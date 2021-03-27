@@ -440,8 +440,6 @@ return( ((p-si->pressure1)*si->radius2 + (si->pressure2-p)*(si->width/2))/
 static void TraceFigureCPs(SplinePoint *last,SplinePoint *cur,TraceData *tlast,TraceData *tcur) {
     TraceData *pt;
 
-    last->nonextcp = false; cur->noprevcp=false;
-
     for ( pt=tlast; !pt->use_as_pt ; pt=pt->prev );
     if ( pt->online ) {
 	last->nextcp.x = last->me.x + ( tlast->x-pt->x );
@@ -456,7 +454,7 @@ static void TraceFigureCPs(SplinePoint *last,SplinePoint *cur,TraceData *tlast,T
 	last->nextcp.x = last->me.x + (last->me.x - last->prevcp.x);
 	last->nextcp.y = last->me.y + (last->me.y - last->prevcp.y);
     } else
-	last->nonextcp = true;
+	last->nextcp = last->me;
 
     if ( tcur->online ) {
 	for ( pt=tcur; !pt->use_as_pt ; pt=pt->next );
@@ -472,7 +470,7 @@ static void TraceFigureCPs(SplinePoint *last,SplinePoint *cur,TraceData *tlast,T
 	cur->prevcp.x = cur->me.x + (cur->me.x - cur->nextcp.x);
 	cur->prevcp.y = cur->me.y + (cur->me.y - cur->nextcp.y);
     } else
-	cur->noprevcp = true;
+	cur->prevcp = cur->me;
 }
 
 static SplineSet *TraceCurve(CharView *cv) {
@@ -578,7 +576,7 @@ static SplineSet *TraceCurve(CharView *cv) {
 	    if ( !last->nonextcp && !cur->noprevcp )
 		ApproximateSplineFromPointsSlopes(last,cur,mids+base->num+1,pt->num-base->num-1,false,mt_matrix);
 	    else {
-		last->nonextcp = false; cur->noprevcp=false;
+		last->nextcp = last->me; cur->prevcp=cur->me;
 		ApproximateSplineFromPoints(last,cur,mids+base->num+1,pt->num-base->num-1,false);
 	    }
 	}

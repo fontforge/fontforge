@@ -699,7 +699,7 @@ return( false );
 return( true );
 }
 
-static int AdjustBP(BasePoint *changeme,BasePoint *rel,
+static void AdjustBP(BasePoint *changeme,BasePoint *rel,
 	BasePoint *shouldbe, BasePoint *shouldberel,
 	BasePoint *fudge,
 	SearchData *s) {
@@ -715,7 +715,6 @@ static int AdjustBP(BasePoint *changeme,BasePoint *rel,
     yoff *= s->matched_scale;
     changeme->x = xoff*s->matched_co - yoff*s->matched_si + fudge->x  + rel->x;
     changeme->y = yoff*s->matched_co + xoff*s->matched_si + fudge->y  + rel->y;
-return( changeme->x==rel->x && changeme->y==rel->y );
 }
 
 static void AdjustAll(SplinePoint *change,BasePoint *rel,
@@ -728,9 +727,6 @@ static void AdjustAll(SplinePoint *change,BasePoint *rel,
     AdjustBP(&change->me,rel,shouldbe,shouldberel,fudge,s);
     change->nextcp.x += change->me.x-old.x; change->nextcp.y += change->me.y-old.y;
     change->prevcp.x += change->me.x-old.x; change->prevcp.y += change->me.y-old.y;
-
-    change->nonextcp = (change->nextcp.x==change->me.x && change->nextcp.y==change->me.y);
-    change->noprevcp = (change->prevcp.x==change->me.x && change->prevcp.y==change->me.y);
 }
 
 static SplinePoint *RplInsertSP(SplinePoint *after,SplinePoint *nrpl,SplinePoint *rpl,SearchData *s, BasePoint *fudge) {
@@ -745,8 +741,6 @@ static SplinePoint *RplInsertSP(SplinePoint *after,SplinePoint *nrpl,SplinePoint
     new->nextcp.y = after->me.y + transform[2]*(nrpl->nextcp.x-rpl->me.x) + transform[3]*(nrpl->nextcp.y-rpl->me.y) + fudge->y;
     new->prevcp.x = after->me.x + transform[0]*(nrpl->prevcp.x-rpl->me.x) + transform[1]*(nrpl->prevcp.y-rpl->me.y) + fudge->x;
     new->prevcp.y = after->me.y + transform[2]*(nrpl->prevcp.x-rpl->me.x) + transform[3]*(nrpl->prevcp.y-rpl->me.y) + fudge->y;
-    new->nonextcp = (new->nextcp.x==new->me.x && new->nextcp.y==new->me.y);
-    new->noprevcp = (new->prevcp.x==new->me.x && new->prevcp.y==new->me.y);
     new->pointtype = rpl->pointtype;
     new->selected = true;
     new->ticked = true;
@@ -833,7 +827,6 @@ static void DoReplaceIncomplete(SplineChar *sc,SearchData *s) {
 	dummy.me.x = sc_p->me.x + xoff*s->matched_co - yoff*s->matched_si;
 	dummy.me.y = sc_p->me.y + yoff*s->matched_co + xoff*s->matched_si;
 	dummy.nextcp = dummy.prevcp = dummy.me;
-	dummy.nonextcp = dummy.noprevcp = true;
 	dummy.next = &dummysp;
 	SplineRefigure(&dummysp);
 	sc_p = &dummy;
@@ -876,9 +869,9 @@ return;
 	    }
 	    np_p = p_p->next->to; nsc_p = sc_p->next->to; nr_p = r_p->next->to;
 	    if ( p_p==path->first ) {
-		sc_p->nonextcp = AdjustBP(&sc_p->nextcp,&sc_p->me,&r_p->nextcp,&r_p->me,&fudge,s);
+		AdjustBP(&sc_p->nextcp,&sc_p->me,&r_p->nextcp,&r_p->me,&fudge,s);
 		if ( p_p->prev!=NULL )
-		    sc_p->noprevcp = AdjustBP(&sc_p->prevcp,&sc_p->me,&r_p->prevcp,&r_p->me,&fudge,s);
+		    AdjustBP(&sc_p->prevcp,&sc_p->me,&r_p->prevcp,&r_p->me,&fudge,s);
 		if ( sc_p->prev!=NULL )
 		    SplineRefigure(sc_p->prev);
 		sc_p->ticked = true;
@@ -886,8 +879,8 @@ return;
 	    if ( np_p==path->first )
 return;
 	    if ( np_p->next!=NULL )
-		nsc_p->nonextcp = AdjustBP(&nsc_p->nextcp,&nsc_p->me,&nr_p->nextcp,&nr_p->me,&fudge,s);
-	    nsc_p->noprevcp = AdjustBP(&nsc_p->prevcp,&nsc_p->me,&nr_p->prevcp,&nr_p->me,&fudge,s);
+		AdjustBP(&nsc_p->nextcp,&nsc_p->me,&nr_p->nextcp,&nr_p->me,&fudge,s);
+	    AdjustBP(&nsc_p->prevcp,&nsc_p->me,&nr_p->prevcp,&nr_p->me,&fudge,s);
 	    AdjustAll(nsc_p,&sc_p->me,&nr_p->me,&r_p->me,&fudge,s);
 	    nsc_p->ticked = true;
 	    nsc_p->pointtype = nr_p->pointtype;

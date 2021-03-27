@@ -58,7 +58,8 @@ return( NULL );
 	    if ( !RealWithin(mid[i].p.x,from->me.x+slope*(mid[i].p.y-from->me.y),.7) )
 return( NULL );
     }
-    from->nonextcp = to->noprevcp = true;
+    from->nextcp = from->me;
+    to->prevcp = to->me;
 return( SplineMake(from,to,order2) );
 }
 
@@ -270,16 +271,16 @@ static void TestForLinear(SplinePoint *from,SplinePoint *to) {
 	}
 	co = cpoff.x*off.y - cpoff.y*off.x; co2 = cpoff2.x*off.y - cpoff2.y*off.x;
 	if ( co<.05 && co>-.05 && co2<.05 && co2>-.05 ) {
-	    from->nextcp = from->me; from->nonextcp = true;
-	    to->prevcp = to->me; to->noprevcp = true;
+	    from->nextcp = from->me;
+	    to->prevcp = to->me;
 	} else {
 	    Spline temp;
 	    memset(&temp,0,sizeof(temp));
 	    temp.from = from; temp.to = to;
 	    SplineRefigure(&temp);
 	    if ( SplineIsLinear(&temp)) {
-		from->nextcp = from->me; from->nonextcp = true;
-		to->prevcp = to->me; to->noprevcp = true;
+		from->nextcp = from->me;
+		to->prevcp = to->me;
 	    }
 	}
     }
@@ -376,7 +377,6 @@ return( SplineMake2(from,to));
 		from->nextcp.x = (-xconst[1]-t_term[1]*to->prevcp.x)/f_term[1];
 		from->nextcp.y = (-yconst[1]-t_term[1]*to->prevcp.y)/f_term[1];
 	    }
-	    to->noprevcp = from->nonextcp = false;
 return( SplineMake3(from,to));
 	}
     }
@@ -388,17 +388,13 @@ return( spline );
 
     if ( ret&1 ) {
 	from->nextcp = nextcp;
-	from->nonextcp = false;
     } else {
 	from->nextcp = from->me;
-	from->nonextcp = true;
     }
     if ( ret&2 ) {
 	to->prevcp = prevcp;
-	to->noprevcp = false;
     } else {
 	to->prevcp = to->me;
-	to->noprevcp = true;
     }
     TestForLinear(from,to);
     spline = SplineMake(from,to,order2);
@@ -690,7 +686,6 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt,order2) );
 	    from->nextcp = from->next->to->me;
 	if ( to->noprevcp )
 	    to->prevcp = to->prev->from->me;
-	from->nonextcp = to->noprevcp = false;
 	fromunit.x = from->nextcp.x-from->me.x; fromunit.y = from->nextcp.y-from->me.y;
 	tounit.x = to->prevcp.x-to->me.x; tounit.y = to->prevcp.y-to->me.y;
 
@@ -699,13 +694,11 @@ return( ApproximateSplineFromPoints(from,to,mid,cnt,order2) );
 		(nextcp.x-to->me.x)*tounit.x + (nextcp.y-to->me.y)*tounit.y < 0 ) {
 	    /* If the slopes don't intersect then use a line */
 	    /*  (or if the intersection is patently absurd) */
-	    from->nonextcp = to->noprevcp = true;
 	    from->nextcp = from->me;
 	    to->prevcp = to->me;
 	    TestForLinear(from,to);
 	} else {
 	    from->nextcp = to->prevcp = nextcp;
-	    from->nonextcp = to->noprevcp = false;
 	}
 return( SplineMake2(from,to));
     }
@@ -716,7 +709,6 @@ return( SplineMake2(from,to));
 	/* But we do sometimes get some cps which are too big */
 	bigreal len = sqrt((to->me.x-from->me.x)*(to->me.x-from->me.x) + (to->me.y-from->me.y)*(to->me.y-from->me.y));
 	if ( len==0 ) {
-	    from->nonextcp = to->noprevcp = true;
 	    from->nextcp = from->me;
 	    to->prevcp = to->me;
 	} else {
@@ -799,7 +791,6 @@ return( SplineMake3(from,to));
     if ( (dot=fromunit.x*tounit.y - fromunit.y*tounit.x)<.0001 && dot>-.0001 &&
 	    (dot=ftunit.x*tounit.y - ftunit.y*tounit.x)<.0001 && dot>-.0001 ) {
 	/* It's a line. Slopes are parallel, and parallel to vector between (from,to) */
-	from->nonextcp = to->noprevcp = true;
 	from->nextcp = from->me; to->prevcp = to->me;
 return( SplineMake3(from,to));
     }
@@ -1132,8 +1123,6 @@ return( SplineMake3(from,to));
 	    from->nextcp.y = from->me.y + rf*fromunit.y;
 	    to->prevcp.x = to->me.x - rt*tounit.x;
 	    to->prevcp.y = to->me.y - rt*tounit.y;
-	    from->nonextcp = rf==0;
-	    to->noprevcp = rt==0;
 return( SplineMake3(from,to));
 	}
     }
@@ -1170,8 +1159,6 @@ return( SplineMake3(from,to));
     fdiff = flen/DECIMATION;
     tdiff = tlen/DECIMATION;
     from->nextcp = from->me;
-    from->nonextcp = false;
-    to->noprevcp = false;
     memset(&temp,0,sizeof(Spline));
     temp.from = from; temp.to = to;
     for ( i=1; i<DECIMATION; ++i ) {

@@ -52,13 +52,13 @@ void SplineRefigure3(Spline *spline) {
     if ( spline->acceptableextrema )
 	old = *spline;
     xsp->d = from->me.x; ysp->d = from->me.y;
-    int nonextcp_effective = 0;
-    int noprevcp_effective = 0;
-    if ( from->nonextcp ) { from->nextcp = from->me; nonextcp_effective = true; }
-    else if ( from->nextcp.x==from->me.x && from->nextcp.y == from->me.y ) { nonextcp_effective = true; }
-    if ( to->noprevcp ) { to->prevcp = to->me; noprevcp_effective = true; }
-    else if ( to->prevcp.x==to->me.x && to->prevcp.y == to->me.y ) { noprevcp_effective = true; }
-    if ( nonextcp_effective && noprevcp_effective ) {
+    // Set noprevcp and nonextcp based on point values but then make sure both
+    // have the same value
+    from->nonextcp = from->nextcp.x==from->me.x && from->nextcp.y == from->me.y;
+    to->noprevcp = to->prevcp.x==to->me.x && to->prevcp.y == to->me.y;
+    if ( !from->nonextcp || !to->noprevcp )
+	from->nonextcp = to->noprevcp = false;
+    if ( from->nonextcp && to->noprevcp ) {
 	spline->islinear = true;
 	xsp->c = to->me.x-from->me.x;
 	ysp->c = to->me.y-from->me.y;

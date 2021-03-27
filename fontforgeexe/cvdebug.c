@@ -492,20 +492,16 @@ static SplineSet *SplineSetsFromPoints(TT_GlyphZoneRec *pts, real scalex, real s
 		if ( last_off && cur->last!=NULL ) {
 		    ScalePoint(&cur->last->nextcp,&pts->cur[i-1],scalex,scaley,actives);
 		    sp->prevcp = cur->last->nextcp;
-		    cur->last->nonextcp = false;
 		    cur->last->nextcpindex = i-1;
-		    sp->noprevcp = false;
 		}
 		last_off = false;
 	    } else if ( last_off ) {
 		ScalePoint(&me,&pts->cur[i],scalex,scaley,actives);
 		ScalePoint(&me2,&pts->cur[i-1],scalex,scaley,actives);
 		sp = SplinePointCreate((me.x+me2.x)/2, (me.y+me2.y)/2 );
-		sp->noprevcp = false;
 		sp->ttfindex = 0xffff;
 		if ( last_off && cur->last!=NULL ) {
 		    cur->last->nextcp = sp->prevcp = me2;
-		    cur->last->nonextcp = false;
 		    cur->last->nextcpindex = i-1;
 		}
 		/* last_off continues to be true */
@@ -532,22 +528,18 @@ static SplineSet *SplineSetsFromPoints(TT_GlyphZoneRec *pts, real scalex, real s
 	    ScalePoint(&me,&pts->cur[start],scalex,scaley,actives);
 	    ScalePoint(&me2,&pts->cur[i-1],scalex,scaley,actives);
 	    sp = SplinePointCreate((me.x+me2.x)/2 , (me.y+me2.y)/2);
-	    sp->noprevcp = sp->nonextcp = false;
 	    cur->last->nextcp = sp->prevcp = me2;
 	    SplineMake2(cur->last,sp);
 	    cur->last = sp;
 	    cur->last->nextcp = cur->first->prevcp = me;
-	    cur->first->noprevcp = false;
 	    cur->last->nextcpindex = start;
 	} else if ( !(pts->tags[i-1]&FT_Curve_Tag_On)) {
 	    ScalePoint(&me,&pts->cur[i-1],scalex,scaley,actives);
 	    cur->last->nextcp = cur->first->prevcp = me;
-	    cur->last->nonextcp = cur->first->noprevcp = false;
 	    cur->last->nextcpindex = i-1;
 	} else if ( !(pts->tags[start]&FT_Curve_Tag_On) ) {
 	    ScalePoint(&me,&pts->cur[start],scalex,scaley,actives);
 	    cur->last->nextcp = cur->first->prevcp = me;
-	    cur->last->nonextcp = cur->first->noprevcp = false;
 	    cur->last->nextcpindex = start;
 	}
 	if ( cur->last!=cur->first ) {

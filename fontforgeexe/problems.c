@@ -416,7 +416,6 @@ return;
 		    (sp->me.y-sp->nextcp.y)*(sp->me.y-sp->nextcp.y));
 	    if ( cplen!=0 && cplen<p->irrelevantfactor*len ) {
 		sp->nextcp = sp->me;
-		sp->nonextcp = true;
 		ncp_changed = true;
 	    }
 	}
@@ -427,7 +426,6 @@ return;
 		    (sp->me.y-sp->prevcp.y)*(sp->me.y-sp->prevcp.y));
 	    if ( cplen!=0 && cplen<p->irrelevantfactor*len ) {
 		sp->prevcp = sp->me;
-		sp->noprevcp = true;
 		pcp_changed = true;
 	    }
 	}

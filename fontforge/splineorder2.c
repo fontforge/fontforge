@@ -249,9 +249,9 @@ static SplinePoint *LinearSpline(Spline *ps,SplinePoint *start, real tmax) {
     end->nextcpindex = 0xfffe;
     start->nextcp.x = start->me.x;
     start->nextcp.y = start->me.y;
-    end->me.x = end->prevcp.x = x;
-    end->me.y = end->prevcp.y = y;
-    end->nonextcp = end->noprevcp = start->nonextcp = true;
+    end->me.x = end->prevcp.x = end->nextcp.x = x;
+    end->me.y = end->prevcp.y = end->nextcp.x = y;
+    end->noprevcp = start->nonextcp = true;
     new->from = start;		start->next = new;
     new->to = end;		end->prev = new;
     new->splines[0].d = start->me.x;
@@ -487,10 +487,6 @@ static SplinePoint *CvtDataToSplines(QPoint *data,int qfirst,int qlast,SplinePoi
     for ( i=qfirst; i<qlast; ++i ) {
 	end = SplinePointCreate(data[i].bp.x,data[i].bp.y);
 	start->nextcp = end->prevcp = data[i-1].cp;
-	start->nonextcp = end->noprevcp = false;
-	if (( data[i-1].cp.x == data[i].bp.x && data[i-1].cp.y == data[i].bp.y ) ||
-		( data[i-1].cp.x == start->me.x && data[i-1].cp.y == start->me.y ))
-	    start->nonextcp = end->noprevcp = true;
 	SplineMake2(start,end);
 	start = end;
     }
@@ -714,7 +710,7 @@ static SplinePoint *AlreadyQuadraticCheck(Spline *ps, SplinePoint *start) {
 	sp->roundx = ps->to->roundx; sp->roundy = ps->to->roundy; sp->dontinterpolate = ps->to->dontinterpolate;
 	sp->ttfindex = 0xfffe;
 	sp->nextcpindex = 0xfffe;
-	sp->nonextcp = true;
+	sp->nextcp = sp->me;
 	spline = chunkalloc(sizeof(Spline));
 	spline->order2 = true;
 	spline->from = start;
@@ -1261,18 +1257,18 @@ void SplineRefigure2(Spline *spline) {
     if ( spline->acceptableextrema )
 	old = *spline;
 
-    if ( from->nonextcp || to->noprevcp ||
-	    ( from->nextcp.x==from->me.x && from->nextcp.y == from->me.y && from->nextcpindex>=0xfffe ) ||
-	    ( to->prevcp.x==to->me.x && to->prevcp.y == to->me.y && from->nextcpindex>=0xfffe )) {
+    if (    ( from->nextcp.x==from->me.x && from->nextcp.y == from->me.y && from->nextcpindex>=0xfffe )
+         || ( to->prevcp.x==to->me.x && to->prevcp.y==to->me.y && from->nextcpindex>=0xfffe ) ) {
 	from->nonextcp = to->noprevcp = true;
 	from->nextcp = from->me;
 	to->prevcp = to->me;
+    } else {
+	from->nonextcp = to->noprevcp = false;
     }
 
     if ( from->nonextcp && to->noprevcp )
 	/* Ok */;
-    else if ( from->nonextcp || to->noprevcp || from->nextcp.x!=to->prevcp.x ||
-	    from->nextcp.y!=to->prevcp.y ) {
+    else if ( from->nextcp.x!=to->prevcp.x || from->nextcp.y!=to->prevcp.y ) {
 	if ( RealNear(from->nextcp.x,to->prevcp.x) &&
 		RealNear(from->nextcp.y,to->prevcp.y)) {
 	    from->nextcp.x = to->prevcp.x = (from->nextcp.x+to->prevcp.x)/2;
@@ -1694,7 +1690,6 @@ void SplinePointPrevCPChanged2(SplinePoint *sp) {
 	    p->nextcp = sp->prevcp;
 	    p->nonextcp = sp->noprevcp;
 	    if ( sp->noprevcp ) {
-		p->nonextcp = true;
 		p->nextcp = p->me;
 		SplineRefigure2(sp->prev);
 	    } else if (( p->pointtype==pt_curve || p->pointtype==pt_hvcurve ) &&
@@ -1748,7 +1743,6 @@ void SplinePointNextCPChanged2(SplinePoint *sp) {
 	    n->prevcp = sp->nextcp;
 	    n->noprevcp = sp->nonextcp;
 	    if ( sp->nonextcp ) {
-		n->noprevcp = true;
 		n->prevcp = n->me;
 		SplineRefigure2(sp->next);
 	    } else if (( n->pointtype==pt_curve || n->pointtype==pt_hvcurve ) &&

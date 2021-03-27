@@ -2434,7 +2434,6 @@ static SplinePoint *MakeSP(real x, real y, SplinePoint *last,int order2) {
 
     new->me.x = x; new->me.y = y;
     new->prevcp = new->nextcp = new->me;
-    new->noprevcp = new->nonextcp = true;
     new->pointtype = pt_corner;
     if ( last!=NULL )
 	SplineMake(last,new,order2);

@@ -1334,8 +1334,6 @@ static void InterpPoint(SplineSet *cur, SplinePoint *base, SplinePoint *other, r
 	p->nextcp.x = base->nextcp.x + amount*(other->nextcp.x-base->nextcp.x);
 	p->nextcp.y = base->nextcp.y + amount*(other->nextcp.y-base->nextcp.y);
     }
-    p->nonextcp = ( p->nextcp.x==p->me.x && p->nextcp.y==p->me.y );
-    p->noprevcp = ( p->prevcp.x==p->me.x && p->prevcp.y==p->me.y );
     p->prevcpdef = base->prevcpdef && other->prevcpdef;
     p->nextcpdef = base->nextcpdef && other->nextcpdef;
     p->selected = false;

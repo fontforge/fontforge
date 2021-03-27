@@ -613,7 +613,6 @@ static SplinePoint *TDMakePoint(TD *td,Spline *old,real t) {
     new->me.x = fp.p.x; new->me.y = fp.p.y;
     new->nextcp = new->me;
     new->prevcp = new->me;
-    new->nonextcp = new->noprevcp = true;
     new->nextcpdef = new->prevcpdef = false;
 return( new );
 }
@@ -663,7 +662,6 @@ static void AdjustSplineSet(TD *td,int order2) {
 		RealNearish(lastsp->me.y,new->first->me.y) ) {
 	    new->first->prev = lastsp->prev;
 	    new->first->prevcp = lastsp->prevcp;
-	    new->first->noprevcp = lastsp->noprevcp;
 	    new->first->prevcpdef = lastsp->prevcpdef;
 	    lastsp->prev->to = new->first;
 	    new->last = new->first;

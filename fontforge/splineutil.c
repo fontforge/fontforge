@@ -7097,13 +7097,13 @@ return( changed );
 		    (&ptspace[i]->prevcp.x)[is_y]-cur<within ) {
 		(&ptspace[i]->prevcp.x)[is_y] = cur;
 		if ( (&ptspace[i]->prevcp.x)[!is_y]==(&ptspace[i]->me.x)[!is_y] )
-		    ptspace[i]->noprevcp = true;
+		    ptspace[i]->prevcp = ptspace[i]->me;
 	    }
 	    if ( (&ptspace[i]->nextcp.x)[is_y]-cur>-within &&
 		    (&ptspace[i]->nextcp.x)[is_y]-cur<within ) {
 		(&ptspace[i]->nextcp.x)[is_y] = cur;
 		if ( (&ptspace[i]->nextcp.x)[!is_y]==(&ptspace[i]->me.x)[!is_y] )
-		    ptspace[i]->nonextcp = true;
+		    ptspace[i]->nextcp = ptspace[i]->me;
 	    }
 	    cspace[i].cnt = 0;
 	}
@@ -7395,7 +7395,7 @@ int SplineRemoveWildControlPoints(Spline *s, bigreal distratio) {
 	if (!s->to->noprevcp)
 		bcdisplacement1 = DistanceBetweenPoints(&s->to->me, &s->to->prevcp);
 	if (pdisplacement == 0 || MAX(bcdisplacement0, bcdisplacement1) / pdisplacement > distratio) {
-		changed = s->islinear = s->from->nonextcp = s->to->noprevcp = true;
+		changed = s->islinear = true;
 		s->from->nextcp = s->from->me;
 		s->to->prevcp = s->to->me;
 		SplineRefigure(s);
@@ -7454,10 +7454,6 @@ SplinePoint *SplineBisect(Spline *spline, extended t) {
 	mid->nextcp.x = xend.c0;	mid->nextcp.y = yend.c0;
 	mid->prevcp.x = xstart.c1;	mid->prevcp.y = ystart.c1;
     }
-    if ( mid->me.x==mid->nextcp.x && mid->me.y==mid->nextcp.y )
-	mid->nonextcp = true;
-    if ( mid->me.x==mid->prevcp.x && mid->me.y==mid->prevcp.y )
-	mid->noprevcp = true;
 
     old0 = spline->from; old1 = spline->to;
     if ( order2 ) {
@@ -7467,8 +7463,6 @@ SplinePoint *SplineBisect(Spline *spline, extended t) {
 	old0->nextcp.x = xstart.c0;	old0->nextcp.y = ystart.c0;
 	old1->prevcp.x = xend.c1;	old1->prevcp.y = yend.c1;
     }
-    old0->nonextcp = (old0->nextcp.x==old0->me.x && old0->nextcp.y==old0->me.y);
-    old1->noprevcp = (old1->prevcp.x==old1->me.x && old1->prevcp.y==old1->me.y);
     old0->nextcpdef = false;
     old1->prevcpdef = false;
     SplineFree(spline);
@@ -7481,7 +7475,7 @@ SplinePoint *SplineBisect(Spline *spline, extended t) {
     old0->next = spline1;
     mid->prev = spline1;
     if ( SplineIsLinear(spline1)) {
-	spline1->islinear = spline1->from->nonextcp = spline1->to->noprevcp = true;
+	spline1->islinear = true;
 	spline1->from->nextcp = spline1->from->me;
 	spline1->to->prevcp = spline1->to->me;
     }
@@ -7495,7 +7489,7 @@ SplinePoint *SplineBisect(Spline *spline, extended t) {
     mid->next = spline2;
     old1->prev = spline2;
     if ( SplineIsLinear(spline2)) {
-	spline2->islinear = spline2->from->nonextcp = spline2->to->noprevcp = true;
+	spline2->islinear = true;
 	spline2->from->nextcp = spline2->from->me;
 	spline2->to->prevcp = spline2->to->me;
     }

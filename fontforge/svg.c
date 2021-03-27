@@ -1371,10 +1371,10 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 		if ( RealNear(cur->last->me.x,cur->first->me.x) &&
 			RealNear(cur->last->me.y,cur->first->me.y) ) {
 		    cur->first->prevcp = cur->last->prevcp;
-		    cur->first->noprevcp = cur->last->noprevcp;
 		    cur->first->prev = cur->last->prev;
 		    cur->first->prev->to = cur->first;
 		    SplinePointFree(cur->last);
+		    SplineRefigure(cur->first->prev);
 		    cur->last = cur->first;
 		}
 	    }
@@ -1401,9 +1401,9 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 		if ( RealNear(cur->last->me.x,cur->first->me.x) &&
 			RealNear(cur->last->me.y,cur->first->me.y) ) {
 		    cur->first->prevcp = cur->last->prevcp;
-		    cur->first->noprevcp = cur->last->noprevcp;
 		    cur->first->prev = cur->last->prev;
 		    cur->first->prev->to = cur->first;
+		    SplineRefigure(cur->first->prev);
 		    SplinePointFree(cur->last);
 		} else
 		    SplineMake(cur->last,cur->first,order2);
@@ -1476,8 +1476,8 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 		    x += current.x; y += current.y;
 		}
 		sp = SplinePointCreate(x,y);
-		sp->prevcp.x = x2; sp->prevcp.y = y2; sp->noprevcp = false;
-		cur->last->nextcp.x = x1; cur->last->nextcp.y = y1; cur->last->nonextcp = false;
+		sp->prevcp.x = x2; sp->prevcp.y = y2;
+		cur->last->nextcp.x = x1; cur->last->nextcp.y = y1;
 		current = sp->me;
 		SplineMake(cur->last,sp,false);
 		cur->last = sp;
@@ -1497,8 +1497,8 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 		    x += current.x; y += current.y;
 		}
 		sp = SplinePointCreate(x,y);
-		sp->prevcp.x = x2; sp->prevcp.y = y2; sp->noprevcp = false;
-		cur->last->nextcp.x = x1; cur->last->nextcp.y = y1; cur->last->nonextcp = false;
+		sp->prevcp.x = x2; sp->prevcp.y = y2;
+		cur->last->nextcp.x = x1; cur->last->nextcp.y = y1;
 		current = sp->me;
 		SplineMake(cur->last,sp,false);
 		cur->last = sp;
@@ -1516,8 +1516,8 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 		    x += current.x; y += current.y;
 		}
 		sp = SplinePointCreate(x,y);
-		sp->prevcp.x = x1; sp->prevcp.y = y1; sp->noprevcp = false;
-		cur->last->nextcp.x = x1; cur->last->nextcp.y = y1; cur->last->nonextcp = false;
+		sp->prevcp.x = x1; sp->prevcp.y = y1;
+		cur->last->nextcp.x = x1; cur->last->nextcp.y = y1;
 		current = sp->me;
 		SplineMake(cur->last,sp,true);
 		cur->last = sp;
@@ -1533,8 +1533,8 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 		x1 = 2*cur->last->me.x - cur->last->prevcp.x;
 		y1 = 2*cur->last->me.y - cur->last->prevcp.y;
 		sp = SplinePointCreate(x,y);
-		sp->prevcp.x = x1; sp->prevcp.y = y1; sp->noprevcp = false;
-		cur->last->nextcp.x = x1; cur->last->nextcp.y = y1; cur->last->nonextcp = false;
+		sp->prevcp.x = x1; sp->prevcp.y = y1;
+		cur->last->nextcp.x = x1; cur->last->nextcp.y = y1;
 		current = sp->me;
 		SplineMake(cur->last,sp,true);
 		cur->last = sp;
@@ -1654,7 +1654,6 @@ return( cur );
 	cur->last = SplinePointCreate(x+rx,y+height);
 	cur->first->nextcp.x = x; cur->first->nextcp.y = y+height;
 	cur->last->prevcp = cur->first->nextcp;
-	cur->first->nonextcp = cur->last->noprevcp = false;
 	SplineMake(cur->first,cur->last,false);
 	if ( rx<2*width ) {
 	    sp = SplinePointCreate(x+width-rx,y+height);
@@ -1664,7 +1663,6 @@ return( cur );
 	sp = SplinePointCreate(x+width,y+height-ry);
 	sp->prevcp.x = x+width; sp->prevcp.y = y+height;
 	cur->last->nextcp = sp->prevcp;
-	cur->last->nonextcp = sp->noprevcp = false;
 	SplineMake(cur->last,sp,false);
 	cur->last = sp;
 	if ( ry<2*height ) {
@@ -1675,7 +1673,6 @@ return( cur );
 	sp = SplinePointCreate(x+width-rx,y);
 	sp->prevcp.x = x+width; sp->prevcp.y = y;
 	cur->last->nextcp = sp->prevcp;
-	cur->last->nonextcp = sp->noprevcp = false;
 	SplineMake(cur->last,sp,false);
 	cur->last = sp;
 	if ( rx<2*width ) {
@@ -1684,14 +1681,11 @@ return( cur );
 	    cur->last = sp;
 	}
 	cur->last->nextcp.x = x; cur->last->nextcp.y = y;
-	cur->last->nonextcp = false;
 	if ( ry>=2*height ) {
 	    cur->first->prevcp = cur->last->nextcp;
-	    cur->first->noprevcp = false;
 	} else {
 	    sp = SplinePointCreate(x,y+ry);
 	    sp->prevcp = cur->last->nextcp;
-	    sp->noprevcp = false;
 	    SplineMake(cur->last,sp,false);
 	    cur->last = sp;
 	}
@@ -1797,22 +1791,18 @@ return( NULL );
     cur->first = SplinePointCreate(cx-rx,cy);
     cur->first->nextcp.x = cx-rx; cur->first->nextcp.y = cy+dry;
     cur->first->prevcp.x = cx-rx; cur->first->prevcp.y = cy-dry;
-    cur->first->noprevcp = cur->first->nonextcp = false;
     cur->last = SplinePointCreate(cx,cy+ry);
     cur->last->prevcp.x = cx-drx; cur->last->prevcp.y = cy+ry;
     cur->last->nextcp.x = cx+drx; cur->last->nextcp.y = cy+ry;
-    cur->last->noprevcp = cur->last->nonextcp = false;
     SplineMake(cur->first,cur->last,false);
     sp = SplinePointCreate(cx+rx,cy);
     sp->prevcp.x = cx+rx; sp->prevcp.y = cy+dry;
     sp->nextcp.x = cx+rx; sp->nextcp.y = cy-dry;
-    sp->nonextcp = sp->noprevcp = false;
     SplineMake(cur->last,sp,false);
     cur->last = sp;
     sp = SplinePointCreate(cx,cy-ry);
     sp->prevcp.x = cx+drx; sp->prevcp.y = cy-ry;
     sp->nextcp.x = cx-drx; sp->nextcp.y = cy-ry;
-    sp->nonextcp = sp->noprevcp = false;
     SplineMake(cur->last,sp,false);
     SplineMake(sp,cur->first,false);
     cur->last = cur->first;

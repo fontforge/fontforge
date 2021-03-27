@@ -2978,7 +2978,6 @@ static void MonoFigure(Spline *s,extended firstt,extended endt, SplinePoint *fir
     Spline1D temp;
 
     f = endt - firstt;
-    first->nonextcp = false; end->noprevcp = false;
     if ( s->order2 ) {
 	/*temp.d = first->me.x;*/
 	/*temp.a = 0;*/
@@ -3012,7 +3011,6 @@ static void MonoFigure(Spline *s,extended firstt,extended endt, SplinePoint *fir
     if ( SplineIsLinear(first->next)) {
 	first->nextcp = first->me;
 	end->prevcp = end->me;
-	first->nonextcp = end->noprevcp = true;
 	SplineRefigure(first->next);
     }
 }
@@ -3097,9 +3095,7 @@ static SplinePoint *MonoFollowForward(Intersection **curil, MList *ml,
 	if ( mstart->tstart==0 && m->tend==1.0 ) {
 	    /* I check for this special case to avoid rounding errors */
 	    last->nextcp = m->s->from->nextcp;
-	    last->nonextcp = m->s->from->nonextcp;
 	    mid->prevcp = m->s->to->prevcp;
-	    mid->noprevcp = m->s->to->noprevcp;
 	    SplineMake(last,mid,m->s->order2);
 	} else {
 	    MonoFigure(m->s,mstart->tstart,m->tend,last,mid);
@@ -3142,9 +3138,7 @@ static SplinePoint *MonoFollowBackward(Intersection **curil, MList *ml,
 	if ( mstart->tend==1.0 && m->tstart==0 ) {
 	    /* I check for this special case to avoid rounding errors */
 	    last->nextcp = m->s->to->prevcp;
-	    last->nonextcp = m->s->to->noprevcp;
 	    mid->prevcp = m->s->from->nextcp;
-	    mid->noprevcp = m->s->from->nonextcp;
 	    SplineMake(last,mid,m->s->order2);
 	} else {
 	    MonoFigure(m->s,mstart->tend,m->tstart,last,mid);
@@ -3526,10 +3520,8 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 			// If the next point has a next control point, we copy it to the next control point for this point.
 			if ( nsp->nonextcp ) {
 			    sp->nextcp = sp->me;
-			    sp->nonextcp = true;
 			} else {
 			    sp->nextcp = nsp->nextcp;
-			    sp->nonextcp = false;
 			}
 			sp->nextcpdef = nsp->nextcpdef;
 			sp->next = nsp->next; // Change the spline reference.
@@ -3613,9 +3605,7 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 		refigure = true;
 	    }
 	    if ( sp->me.x==sp->prevcp.x && sp->me.y==sp->prevcp.y ) {
-		// We disable the control point if necessary.
-		sp->noprevcp = true;
-		if ((sp->prev) && (sp->prev->order2) && (sp->prev->from)) sp->prev->from->nonextcp = true;
+		if ((sp->prev) && (sp->prev->order2) && (sp->prev->from)) sp->prev->from->nextcp = sp->prev->from->me;
 	    }
 	    if ( refigure )
 		SplineRefigure(sp->prev);
@@ -3637,9 +3627,7 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 		refigure = true;
 	    }
 	    if ( sp->me.x==sp->nextcp.x && sp->me.y==sp->nextcp.y ) {
-		// We disable the control point if necessary.
-		sp->nonextcp = true;
-		if ((sp->next) && (sp->next->order2) && (sp->next->to)) sp->next->to->noprevcp = true;
+		if ((sp->next) && (sp->next->order2) && (sp->next->to)) sp->next->to->prevcp = sp->next->to->me;
 	    }
 	    if ( refigure )
 		SplineRefigure(sp->next);
@@ -3810,10 +3798,13 @@ return;
 		    SplinePointFree(isp);
 		    SplinePointFree(sp);
 		    if ( psp->next->order2 ) {
-			psp->nextcp.x = nsp->prevcp.x = (psp->nextcp.x+nsp->prevcp.x)/2;
-			psp->nextcp.y = nsp->prevcp.y = (psp->nextcp.y+nsp->prevcp.y)/2;
-			if ( psp->nonextcp || nsp->noprevcp )
-			    psp->nonextcp = nsp->noprevcp = true;
+			if ( psp->nonextcp || nsp->noprevcp ) {
+			    psp->nextcp = psp->me;
+			    nsp->prevcp = nsp->me;
+			} else {
+			    psp->nextcp.x = nsp->prevcp.x = (psp->nextcp.x+nsp->prevcp.x)/2;
+			    psp->nextcp.y = nsp->prevcp.y = (psp->nextcp.y+nsp->prevcp.y)/2;
+			}
 		    }
 		    SplineRefigure(psp->next);
 		    if ( ss->first==sp )
@@ -3825,7 +3816,7 @@ return;
 		    isp = SplineBisect(sp->prev,t);
 		    nsp->prevcp.x = nsp->me.x + (isp->prevcp.x-isp->me.x);
 		    nsp->prevcp.y = nsp->me.y + (isp->prevcp.y-isp->me.y);
-		    nsp->noprevcp = isp->noprevcp;
+		    psp->noprevcp = isp->noprevcp;
 		    nsp->prev = isp->prev;
 		    isp->prev->to = nsp;
 		    SplineFree(isp->next);
@@ -3833,10 +3824,13 @@ return;
 		    SplinePointFree(isp);
 		    SplinePointFree(sp);
 		    if ( psp->next->order2 ) {
-			psp->nextcp.x = nsp->prevcp.x = (psp->nextcp.x+nsp->prevcp.x)/2;
-			psp->nextcp.y = nsp->prevcp.y = (psp->nextcp.y+nsp->prevcp.y)/2;
-			if ( psp->nonextcp || nsp->noprevcp )
-			    psp->nonextcp = nsp->noprevcp = true;
+			if ( psp->nonextcp || nsp->noprevcp ) {
+			    psp->nextcp = psp->me;
+			    nsp->prevcp = nsp->me;
+			} else {
+			    psp->nextcp.x = nsp->prevcp.x = (psp->nextcp.x+nsp->prevcp.x)/2;
+			    psp->nextcp.y = nsp->prevcp.y = (psp->nextcp.y+nsp->prevcp.y)/2;
+			}
 		    }
 		    SplineRefigure(nsp->prev);
 		    if ( ss->first==sp )

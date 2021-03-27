@@ -464,7 +464,6 @@ static SplinePoint *ArcSpline(SplinePoint *sp,float sa,SplinePoint *ep,float ea,
 
     sp->nextcp.x = sp->me.x - len*ss; sp->nextcp.y = sp->me.y + len*sc;
     ep->prevcp.x = ep->me.x + len*es; ep->prevcp.y = ep->me.y - len*ec;
-    sp->nonextcp = ep->noprevcp = false;
     SplineMake3(sp,ep);
 return( ep );
 }
@@ -611,33 +610,32 @@ static SplineSet * slurppolyline(FILE *fig,SplineChar *sc, SplineSet *sofar) {
 		bottomright.y = bps[2].y;
 	    }
 	    spl->first = SplinePointCreate(topleft.x,topleft.y-r); spl->first->pointtype = pt_tangent;
-	    spl->first->nextcp.y += .552*r; spl->first->nonextcp = false;
+	    spl->first->nextcp.y += .552*r;
 	    spl->last = sp = SplinePointCreate(topleft.x+r,topleft.y); sp->pointtype = pt_tangent;
-	    sp->prevcp.x -= .552*r; sp->noprevcp = false;
+	    sp->prevcp.x -= .552*r;
 	    SplineMake3(spl->first,sp);
 	    sp = SplinePointCreate(bottomright.x-r,topleft.y); sp->pointtype = pt_tangent;
-	    sp->nextcp.x += .552*r; sp->nonextcp = false;
+	    sp->nextcp.x += .552*r;
 	    SplineMake3(spl->last,sp); spl->last = sp;
 	    sp = SplinePointCreate(bottomright.x,topleft.y-r); sp->pointtype = pt_tangent;
-	    sp->prevcp.y += .552*r; sp->noprevcp = false;
+	    sp->prevcp.y += .552*r;
 	    SplineMake3(spl->last,sp); spl->last = sp;
 	    sp = SplinePointCreate(bottomright.x,bottomright.y+r); sp->pointtype = pt_tangent;
-	    sp->nextcp.y -= .552*r; sp->nonextcp = false;
+	    sp->nextcp.y -= .552*r;
 	    SplineMake3(spl->last,sp); spl->last = sp;
 	    sp = SplinePointCreate(bottomright.x-r,bottomright.y); sp->pointtype = pt_tangent;
-	    sp->prevcp.x += .552*r; sp->noprevcp = false;
+	    sp->prevcp.x += .552*r;
 	    SplineMake3(spl->last,sp); spl->last = sp;
 	    sp = SplinePointCreate(topleft.x+r,bottomright.y); sp->pointtype = pt_tangent;
-	    sp->nextcp.x -= .552*r; sp->nonextcp = false;
+	    sp->nextcp.x -= .552*r;
 	    SplineMake3(spl->last,sp); spl->last = sp;
 	    sp = SplinePointCreate(topleft.x,bottomright.y+r); sp->pointtype = pt_tangent;
-	    sp->prevcp.y -= .552*r; sp->noprevcp = false;
+	    sp->prevcp.y -= .552*r;
 	    SplineMake3(spl->last,sp); spl->last = sp;
 	} else {
 	    for ( i=0; i<cnt; ++i ) {
 		sp = chunkalloc(sizeof(SplinePoint));
 		sp->me = sp->nextcp = sp->prevcp = bps[i];
-		sp->nonextcp = sp->noprevcp = true;
 		sp->pointtype = pt_corner;
 		if ( spl->first==NULL )
 		    spl->first = sp;
@@ -784,7 +782,6 @@ static SplineSet *ApproximateXSpline(struct xspline *xs,int order2) {
 	spl->last = sp;
     }
     if ( !xs->closed ) {
-	spl->first->noprevcp = spl->last->nonextcp = true;
 	spl->first->prevcp = spl->first->me;
 	spl->last->nextcp = spl->last->me;
     } else
