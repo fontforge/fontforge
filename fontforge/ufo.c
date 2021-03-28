@@ -2951,7 +2951,6 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			        // We have decided that the curve is quadratic, so we can make the next implied point as well.
 			        sp = SplinePointCreate((x+pre[1].x)/2,(y+pre[1].y)/2);
 			        sp->prevcp = pre[1];
-			        sp->noprevcp = false;
 					sp->ttfindex = 0xffff;
 			        SplineMake(ss->last,sp,true);
 			        ss->last = sp;
@@ -2972,7 +2971,6 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 						sp->name = copy(pname);
 					}
 			        sp->prevcp = pre[0];
-			        sp->noprevcp = false;
 					sp->ttfindex = 0xffff;
 			        if ( ss->first==NULL ) {
 				    	ss->first = sp;
