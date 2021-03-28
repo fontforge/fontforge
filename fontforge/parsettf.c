@@ -1872,8 +1872,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 	sp = NULL;
 	while ( i<=endpt[path] ) {
 	    if ( flags[i]&_On_Curve ) {
-		sp = chunkalloc(sizeof(SplinePoint));
-		sp->me = sp->nextcp = sp->prevcp = pts[i];
+		sp = SplinePointCreate(pts[i].x, pts[i].y);
 		sp->ttfindex = i;
 		sp->nextcpindex = 0xffff;
 		if ( last_off && cur->last!=NULL ) {
@@ -1883,10 +1882,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 	    } else if ( last_off ) {
 		/* two off curve points get a third on curve point created */
 		/* half-way between them. Now isn't that special */
-		sp = chunkalloc(sizeof(SplinePoint));
-		sp->me.x = (pts[i].x+pts[i-1].x)/2;
-		sp->me.y = (pts[i].y+pts[i-1].y)/2;
-		sp->nextcp = sp->prevcp = sp->me;
+		sp = SplinePointCreate((pts[i].x+pts[i-1].x)/2, (pts[i].y+pts[i-1].y)/2);
 		sp->ttfindex = 0xffff;
 		sp->nextcpindex = i;
 		if ( last_off && cur->last!=NULL )
@@ -1912,19 +1908,13 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 	    /*  point. What on earth do they think that means? */
 	    /* Oh. I see. It's used to possition marks and such */
 	    if ( cur->first==NULL ) {
-		sp = chunkalloc(sizeof(SplinePoint));
-		sp->me.x = pts[start].x;
-		sp->me.y = pts[start].y;
-		sp->nextcp = sp->prevcp = sp->me;
+		sp = SplinePointCreate(pts[start].x, pts[start].y);
 		sp->ttfindex = i-1;
 		sp->nextcpindex = 0xffff;
 		cur->first = cur->last = sp;
 	    }
 	} else if ( !(flags[start]&_On_Curve) && !(flags[i-1]&_On_Curve) ) {
-	    sp = chunkalloc(sizeof(SplinePoint));
-	    sp->me.x = (pts[start].x+pts[i-1].x)/2;
-	    sp->me.y = (pts[start].y+pts[i-1].y)/2;
-	    sp->nextcp = sp->prevcp = sp->me;
+	    sp = SplinePointCreate((pts[start].x+pts[i-1].x)/2, (pts[start].y+pts[i-1].y)/2);
 	    sp->ttfindex = 0xffff;
 	    sp->nextcpindex = start;
 	    FigureControls(cur->last,sp,&pts[i-1],is_order2);

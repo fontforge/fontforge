@@ -1310,14 +1310,11 @@ return( head );
 }
 
 static void InterpPoint(SplineSet *cur, SplinePoint *base, SplinePoint *other, real amount ) {
-    SplinePoint *p = chunkalloc(sizeof(SplinePoint));
+    SplinePoint *p = SplinePointCreate(base->me.x + amount*(other->me.x-base->me.x),
+                                       base->me.y + amount*(other->me.y-base->me.y));
     int order2 = base->prev!=NULL ? base->prev->order2 : base->next!=NULL ? base->next->order2 : false;
 
-    p->me.x = base->me.x + amount*(other->me.x-base->me.x);
-    p->me.y = base->me.y + amount*(other->me.y-base->me.y);
-    if ( order2 && base->prev!=NULL && (base->prev->islinear || other->prev->islinear ))
-	p->prevcp = p->me;
-    else {
+    if ( !( order2 && base->prev!=NULL && (base->prev->islinear || other->prev->islinear) ) ) {
 	p->prevcp.x = base->prevcp.x + amount*(other->prevcp.x-base->prevcp.x);
 	p->prevcp.y = base->prevcp.y + amount*(other->prevcp.y-base->prevcp.y);
 	if ( order2 && cur->first!=NULL ) {
@@ -1328,9 +1325,7 @@ static void InterpPoint(SplineSet *cur, SplinePoint *base, SplinePoint *other, r
 	    cur->last->nextcp.y = p->prevcp.y = (cur->last->nextcp.y+p->prevcp.y)/2;
 	}
     }
-    if ( order2 && base->next!=NULL && (base->next->islinear || other->next->islinear ))
-	p->nextcp = p->me;
-    else {
+    if ( ! ( order2 && base->next!=NULL && (base->next->islinear || other->next->islinear ) ) ) {
 	p->nextcp.x = base->nextcp.x + amount*(other->nextcp.x-base->nextcp.x);
 	p->nextcp.y = base->nextcp.y + amount*(other->nextcp.y-base->nextcp.y);
     }

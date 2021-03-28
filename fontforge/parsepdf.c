@@ -1445,9 +1445,9 @@ static void _InterpretPdf(FILE *in, struct pdfcontext *pc, EntityChar *ec) {
 		current.x = stack[sp-2].u.val;
 		current.y = stack[sp-1].u.val;
 		sp -= 2;
-		pt = chunkalloc(sizeof(SplinePoint));
-		Transform(&pt->me,&current,transform);
-		pt->prevcp = pt->me; pt->nextcp = pt->me;
+		BasePoint ini_me;
+		Transform(&ini_me,&current,transform);
+		pt = SplinePointCreate(ini_me.x, ini_me.y);
 		if ( tok==pt_moveto ) {
 		    SplinePointList *spl = chunkalloc(sizeof(SplinePointList));
 		    spl->first = spl->last = pt;
@@ -1487,10 +1487,10 @@ static void _InterpretPdf(FILE *in, struct pdfcontext *pc, EntityChar *ec) {
 		current = to;
 		if ( cur!=NULL && cur->first!=NULL && (cur->first!=cur->last || cur->first->next==NULL) ) {
 		    Transform(&cur->last->nextcp,&ncp,transform);
-		    pt = chunkalloc(sizeof(SplinePoint));
+		    BasePoint ini_me;
+		    Transform(&ini_me,&current,transform);
+		    pt = SplinePointCreate(ini_me.x, ini_me.y);
 		    Transform(&pt->prevcp,&pcp,transform);
-		    Transform(&pt->me,&current,transform);
-		    pt->nextcp = pt->me;
 		    SplineMake3(cur->last,pt);
 		    cur->last = pt;
 		}

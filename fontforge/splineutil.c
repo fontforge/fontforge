@@ -7535,9 +7535,7 @@ return( spline );
 	if ( i==cnt )
 	    sp = spline->to;
 	else {
-	    sp = chunkalloc(sizeof(SplinePoint));
-	    sp->me.x = splines[0][i+1].sp.d;
-	    sp->me.y = splines[1][i+1].sp.d;
+	    sp = SplinePointCreate(splines[0][i+1].sp.d, splines[1][i+1].sp.d);
 	}
 	if ( order2 ) {
 	    sp->prevcp = last->nextcp;

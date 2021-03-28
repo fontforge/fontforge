@@ -2430,10 +2430,7 @@ static void DoSpaces(SplineFont *sf,SplineChar *sc,int layer,BDFFont *bdf,int di
 }
 
 static SplinePoint *MakeSP(real x, real y, SplinePoint *last,int order2) {
-    SplinePoint *new = chunkalloc(sizeof(SplinePoint));
-
-    new->me.x = x; new->me.y = y;
-    new->prevcp = new->nextcp = new->me;
+    SplinePoint *new = SplinePointCreate(x, y);
     new->pointtype = pt_corner;
     if ( last!=NULL )
 	SplineMake(last,new,order2);

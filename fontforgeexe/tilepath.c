@@ -609,12 +609,7 @@ static SplinePoint *TDMakePoint(TD *td,Spline *old,real t) {
     SplinePoint *new;
 
     AdjustPoint(td,old,t,&fp);
-    new = chunkalloc(sizeof(SplinePoint));
-    new->me.x = fp.p.x; new->me.y = fp.p.y;
-    new->nextcp = new->me;
-    new->prevcp = new->me;
-    new->nextcpdef = new->prevcpdef = false;
-return( new );
+    return SplinePointCreate(fp.p.x, fp.p.y);
 }
 
 static Spline *AdjustSpline(TD *td,Spline *old,SplinePoint *newfrom,SplinePoint *newto,

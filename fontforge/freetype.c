@@ -553,9 +553,7 @@ static int FT_MoveTo(const FT_Vector *to,void *user) {
     if ( context->orig_cpl!=NULL )
 	context->orig_sp = context->orig_cpl->first;
 
-    context->last = context->cpl->first = chunkalloc(sizeof(SplinePoint));
-    context->last->me.x = to->x*context->scalex;
-    context->last->me.y = to->y*context->scaley;
+    context->last = context->cpl->first = SplinePointCreate(to->x*context->scalex, to->y*context->scaley);
     if ( context->orig_sp==NULL )
 	context->last->ttfindex = -2;
     else {
