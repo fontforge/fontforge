@@ -3355,7 +3355,7 @@ static void FVMenuMagnify(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUS
     if ( ret==NULL )
 return;
     val = strtol(ret,&end,10);
-    if ( val<1 || val>5 || *end!='\0' )
+    if ( val<1 || val>30 || *end!='\0' )
 	ff_post_error( _("Bad Number"),_("Bad Number") );
     else {
 	fv->user_requested_magnify = val;
