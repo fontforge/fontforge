@@ -53,7 +53,7 @@
 #define FIXUP_MARGIN (1e-1)
 #define CUSPD_MARGIN (1e-5)
 // About .25 degrees
-#define COS_MARGIN (1e-5)
+#define COS_MARGIN (1.5e-5)
 #define MIN_ACCURACY (1e-5)
 
 static inline bigreal NormAngle(bigreal a) {
