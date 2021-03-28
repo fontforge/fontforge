@@ -2909,7 +2909,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 					wasquad = true;
 				if (ss->first == sp) {
 				  firstpointsaidquad = true;
-				}
+				} else {
 					if ( precnt>0 && precnt<=2 ) {
 						if ( precnt==2 ) {
 							// If we have two cached control points and the end point is quadratic, we need an implied point between the two control points.
@@ -2926,6 +2926,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 					}
 					SplineMake(ss->last,sp,true);
 					ss->last = sp;
+				}
 			    } else {
 			        SplinePointFree(sp); sp = NULL;
 			    }
