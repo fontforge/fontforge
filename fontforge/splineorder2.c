@@ -239,10 +239,11 @@ static SplinePoint *LinearSpline(Spline *ps,SplinePoint *start, real tmax) {
     y = ((ps->splines[1].a*tmax+ps->splines[1].b)*tmax+ps->splines[1].c)*tmax+ps->splines[1].d;
     if ( tmax==1 ) {
 	SplinePoint *oldend = ps->to;
-	end->roundx = oldend->roundx; end->roundy = oldend->roundy; end->dontinterpolate = oldend->dontinterpolate;
 	x = oldend->me.x; y = oldend->me.y;	/* Want it to compare exactly */
-    }
-    end = SplinePointCreate(x, y);
+	end = SplinePointCreate(x, y);
+	end->roundx = oldend->roundx; end->roundy = oldend->roundy; end->dontinterpolate = oldend->dontinterpolate;
+    } else
+	end = SplinePointCreate(x, y);
     end->ttfindex = 0xfffe;
     end->nextcpindex = 0xfffe;
     start->nextcp.x = start->me.x;
