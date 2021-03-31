@@ -2577,7 +2577,7 @@ int32 UniFromEnc(int enc, Encoding *encname) {
     char *tpt;
     size_t fromlen, tolen;
 
-    if ( encname->is_custom || encname->is_original )
+    if ( !encname || encname->is_custom || encname->is_original )
 return( -1 );
     if ( enc>=encname->char_cnt )
 return( -1 );

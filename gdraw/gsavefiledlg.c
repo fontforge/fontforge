@@ -334,7 +334,6 @@ unichar_t *GWidgetSaveAsFileWithGadget(const unichar_t *title, const unichar_t *
     d.gfc = gcd[0].ret;
 
     
-    GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
     while ( !d.done )
 	GDrawProcessOneEvent(NULL);

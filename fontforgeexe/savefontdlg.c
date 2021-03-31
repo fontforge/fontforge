@@ -1145,7 +1145,6 @@ return( -1 );
     } else
 	GDrawSetUserData(gw,&done);
 
-    GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
     while ( true ) {
 	done = 0;
@@ -2720,7 +2719,6 @@ return( 0 );
 
     GFD_FigureWhich(&d);
 
-    GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
     while ( !d.done )
         GDrawProcessOneEvent(NULL);

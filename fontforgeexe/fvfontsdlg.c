@@ -262,7 +262,6 @@ void FVMergeFonts(FontView *fv) {
 	d.other = gcd[1].ret;
 	d.fv = fv;
 
-	GWidgetHidePalettes();
 	GDrawSetVisible(gw,true);
 	while ( !d.done )
 	    GDrawProcessOneEvent(NULL);
@@ -426,7 +425,6 @@ void FVInterpolateFonts(FontView *fv) {
     d.other = gcd[1].ret;
     d.fv = fv;
 
-    GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
     while ( !d.done )
 	GDrawProcessOneEvent(NULL);

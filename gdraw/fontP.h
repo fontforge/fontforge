@@ -30,7 +30,6 @@
 
 #include <fontforge-config.h>
 
-#include "charset.h"
 #include "gdrawP.h"
 #ifndef FONTFORGE_CAN_USE_GDK
 #  include "gxdrawP.h"
@@ -53,7 +52,5 @@ typedef struct font_state {
     struct font_name *font_names[26];
     unsigned int names_loaded: 1;
 } FState;
-
-extern enum charset _GDraw_ParseMapping(unichar_t *setname);
 
 #endif /* FONTFORGE_FONTP_H */

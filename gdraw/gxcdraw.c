@@ -207,20 +207,6 @@ void _GXCDraw_ClipPreserve(GXWindow gw) {
     cairo_clip_preserve( gw->cc );
 }
 
-/**
- *  \brief Sets Cairo to use the difference operator with antialiasing disabled.
- *  To ensure that difference mode only applies temporarily, ensure that
- *  PushClip or PushClipOnly has been called before this function. Call PopClip
- *  to return to normal mode. This mode is used to perform cursor blinking
- *  (a minimal replacement for XOR mode).
- *
- *  \param [in] gw The window to set apply the difference operator to.
- */
-void _GXCDraw_SetDifferenceMode(GXWindow gw) {
-    cairo_set_operator(gw->cc, CAIRO_OPERATOR_DIFFERENCE);
-    cairo_set_antialias(gw->cc, CAIRO_ANTIALIAS_NONE);
-}
-
 /* ************************************************************************** */
 /* ***************************** Cairo Drawing ****************************** */
 /* ************************************************************************** */

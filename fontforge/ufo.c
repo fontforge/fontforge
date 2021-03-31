@@ -60,13 +60,6 @@
 
 #undef extended			/* used in xlink.h */
 #include <libxml/tree.h>
-
-#ifndef HAVE_ICONV_H
-# undef iconv
-# undef iconv_t
-# undef iconv_open
-# undef iconv_close
-#endif
 #include <libxml/parser.h>
 
 /* The UFO (Unified Font Object) format ( http://unifiedfontobject.org/ ) */

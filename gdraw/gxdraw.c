@@ -1317,94 +1317,10 @@ static void GXDrawRaise(GWindow w) {
 static GXDisplay *edisp;
 static int error(Display *disp, XErrorEvent *err) {
     /* Under twm I get a bad match, under kde a bad window? */
-    if ( err->error_code == BadMatch || err->error_code == BadWindow ) {
-	if ( edisp!=NULL ) edisp->wm_breaks_raiseabove = true;
-    } else {
+    if ( err->error_code != BadMatch && err->error_code != BadWindow ) {
 	myerrorhandler(disp,err);
     }
 return( 1 );
-}
-
-static void GXDrawRaiseAbove(GWindow w,GWindow below) {
-    GXWindow gw = (GXWindow) w, gbelow = (GXWindow) below;
-    Window gxw = gw->w, gxbelow = gbelow->w;
-    GXDisplay *gdisp = gw->display;
-    XWindowChanges ch;
-
-    /* Sometimes we get a BadWindow error here for no good reason */
-    XSync(gdisp->display,false);
-    GDrawProcessPendingEvents((GDisplay *) gdisp);
-    XSetErrorHandler(/*gdisp->display,*/error);
-    if ( !gdisp->wm_raiseabove_tested ) {
-	edisp = gdisp;
-    } else
-	edisp = NULL;
- retry:
-    if ( gdisp->wm_breaks_raiseabove ) {
-	/* If we do this code in gnome it breaks things */
-	/* if we don't do it in twm it breaks things. Sigh */
-	if ( gw->is_toplevel )
-	    gxw = GetParentissimus(gw);
-	if ( gbelow->is_toplevel )
-	    gxbelow = GetParentissimus(gbelow);
-    }
-    ch.sibling = gxbelow;
-    ch.stack_mode = Above;
-    XConfigureWindow(gdisp->display,gxw,CWSibling|CWStackMode,&ch);
-    XSync(gdisp->display,false);
-    GDrawProcessPendingEvents((GDisplay *) gdisp);
-    if ( !gdisp->wm_raiseabove_tested ) {
-	gdisp->wm_raiseabove_tested = true;
-	if ( gdisp->wm_breaks_raiseabove )
- goto retry;
-    }
-    XSetErrorHandler(/*gdisp->display,*/myerrorhandler);
-}
-
-static int GXDrawIsAbove(GWindow w,GWindow other) {
-    GXWindow gw = (GXWindow) w, gother = (GXWindow) other;
-    Window gxw = gw->w, gxother = gother->w, parent;
-    GXDisplay *gdisp = (GXDisplay *) (gw->display);
-    Window par, *children, root;
-    unsigned int nkids; int i;
-
-    if ( gw->is_toplevel && gother->is_toplevel ) {
-	gxw = GetParentissimus(gw);
-	gxother = GetParentissimus(gother);
-	parent = gdisp->root;
-    } else if ( gw->parent!=gother->parent )
-return( -1 );			/* Incommensurate */
-    else
-	parent = gw->parent->w;
-
-    XQueryTree(gdisp->display,parent,&root,&par,&children,&nkids);
-    /* bottom-most child is children[0], topmost is children[nkids-1] */
-    for ( i=nkids-1; i>=0; --i ) {
-	if ( children[i] == gxw )
-return( true );
-	if ( children[i] == gxother )
-return( false );
-    }
-    if ( children )
-	XFree(children);
-return( -1 );
-}
-
-static void GXDrawLower(GWindow w) {
-    GXWindow gw = (GXWindow) w;
-
-    XLowerWindow(gw->display->display,gw->w);
-}
-
-static void GXDrawSetWindowTitles(GWindow w, const unichar_t *title, const unichar_t *icontit) {
-    GXWindow gw = (GXWindow) w;
-    Display *display = gw->display->display;
-    char *ipt, *tpt;
-
-    XmbSetWMProperties(display,gw->w,(tpt = u2def_copy(title)),
-			(ipt = u2def_copy(icontit)),
-			NULL,0,NULL,NULL,NULL);
-    free(ipt); free(tpt);
 }
 
 static void GXDrawSetWindowTitles8(GWindow w, const char *title, const char *icontit) {
@@ -1454,15 +1370,6 @@ static GCursor GXDrawGetCursor(GWindow w) {
     GXWindow gw = (GXWindow) w;
 
 return( gw->cursor );
-}
-
-static GWindow GXDrawGetRedirectWindow(GDisplay *gd) {
-    GXDisplay *gdisp = (GXDisplay *) gd;
-
-    if ( gdisp->input==NULL )
-return( NULL );
-
-return( gdisp->input->cur_dlg );
 }
 
 static void GXDrawGetPointerPosition(GWindow w, GEvent *ret) {
@@ -1725,18 +1632,6 @@ static void GXDrawClipPreserve(GWindow w)
     if ( ((GXWindow) w)->usecairo )
         _GXCDraw_ClipPreserve((GXWindow) w);
 #endif
-}
-
-static void GXDrawSetDifferenceMode(GWindow w) {
-#ifndef _NO_LIBCAIRO
-    if (((GXWindow) w)->usecairo) {
-        _GXCDraw_SetDifferenceMode((GXWindow)w);
-    } else
-#endif
-    {
-        GXDisplay *gdisp = ((GXWindow) w)->display; ;
-        XSetFunction(gdisp->display, gdisp->gcstate[((GXWindow) w)->ggc->bitmap_col].gc, GXxor);
-    }
 }
 
 static void GXDrawPushClip(GWindow w, GRect *rct, GRect *old) {
@@ -2810,16 +2705,6 @@ return;
 	    else if ( keysym<=XKEYSYM_TOP && keysym>=0 )
 		keysym = gdraw_xkeysym_2_unicode[keysym];
 	    gevent.u.chr.keysym = keysym;
-	    if ( keysym==gdisp->mykey_keysym &&
-		    (event->xkey.state&(ControlMask|Mod1Mask))==gdisp->mykey_mask ) {
-		gdisp->mykeybuild = !gdisp->mykeybuild;
-		gdisp->mykey_state = 0;
-		gevent.u.chr.chars[0] = '\0';
-		gevent.u.chr.keysym = '\0';
-		if ( !gdisp->mykeybuild && _GDraw_BuildCharHook!=NULL )
-		    (_GDraw_BuildCharHook)((GDisplay *) gdisp);
-	    } else if ( gdisp->mykeybuild )
-		_GDraw_ComposeChars((GDisplay *) gdisp,&gevent);
 	} else {
 	    /* XLookupKeysym doesn't do shifts for us (or I don't know how to use the index arg to make it) */
 	    len = XLookupString((XKeyEvent *) event,charbuf,sizeof(charbuf),&keysym,&gdisp->buildingkeys);
@@ -3219,15 +3104,6 @@ static void GXDrawProcessPendingEvents(GDisplay *gdisp) {
     GXDrawCheckPendingTimers((GXDisplay *) gdisp);
     while ( XCheckIfEvent(display,&event,allevents,NULL))
 	dispatchEvent((GXDisplay *) gdisp, &event);
-}
-
-static void GXDrawProcessWindowEvents(GWindow w) {
-    XEvent event;
-    GXWindow gw = (GXWindow) w;
-    Display *display = gw->display->display;
-
-    while ( XCheckIfEvent(display,&event,windowevents,(char *) (gw->w)))
-	dispatchEvent(gw->display, &event);
 }
 
 static void GXDrawSync(GDisplay *gdisp) {
@@ -4077,19 +3953,13 @@ static struct displayfuncs xfuncs = {
     GXDrawResize,
     GXDrawMoveResize,
     GXDrawRaise,
-    GXDrawRaiseAbove,
-    GXDrawIsAbove,
-    GXDrawLower,
-    GXDrawSetWindowTitles,
     GXDrawSetWindowTitles8,
-    GXDrawGetWindowTitle,
     GXDrawGetWindowTitle8,
     GXDrawSetTransientFor,
     GXDrawGetPointerPosition,
     GXDrawGetPointerWindow,
     GXDrawSetCursor,
     GXDrawGetCursor,
-    GXDrawGetRedirectWindow,
     GXDrawTranslateCoordinates,
 
     GXDrawBeep,
@@ -4097,9 +3967,6 @@ static struct displayfuncs xfuncs = {
     GXDrawPushClip,
     GXDrawPopClip,
 
-    GXDrawSetDifferenceMode,
-
-    GXDrawClear,
     GXDrawDrawLine,
     GXDrawDrawArrow,
     GXDrawDrawRect,
@@ -4135,7 +4002,6 @@ static struct displayfuncs xfuncs = {
     GXDrawSync,
     GXDrawSkipMouseMoveEvents,
     GXDrawProcessPendingEvents,
-    GXDrawProcessWindowEvents,
     GXDrawProcessOneEvent,
     GXDrawEventLoop,
     GXDrawPostEvent,
@@ -4245,8 +4111,6 @@ return( NULL );
     gdisp->virtualRoot = BadAlloc;
     gdisp->res = (25.4*WidthOfScreen(DefaultScreenOfDisplay(display)))/
 	    WidthMMOfScreen(DefaultScreenOfDisplay(display));
-    gdisp->mykey_keysym = XK_F12;
-    gdisp->mykey_mask = 0;
     gdisp->do_dithering = true;
     gdisp->desired_vc = gdisp->desired_depth = -1;
 

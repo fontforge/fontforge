@@ -62,7 +62,6 @@ typedef struct gwidgetcreatordata {
 
 extern GWindow GWidgetCreateTopWindow(GDisplay *gdisp, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs);
 extern GWindow GWidgetCreateSubWindow(GWindow w, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs);
-extern GWindow GWidgetCreatePalette(GWindow w, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs);
 
 GWindow GWindowGetCurrentFocusTopWindow(void);
 GWindow GWidgetGetCurrentFocusWindow(void);
@@ -73,8 +72,6 @@ void GWindowClearFocusGadgetOfWindow(GWindow gw);
 void GWidgetIndicateFocusGadget(struct ggadget *g);
 void GWidgetNextFocus(GWindow);
 void GWidgetPrevFocus(GWindow);
-void GWidgetRequestVisiblePalette(GWindow palette,int visible);
-void GWidgetHidePalettes(void);
 
 struct ggadget *GWidgetGetControl(GWindow gw, int cid);
 struct ggadget *_GWidgetGetGadgets(GWindow gw);
@@ -148,10 +145,6 @@ extern struct hslrgba GWidgetColorA(const char *title,struct hslrgba *defcol,str
 #define gwwv_open_filename_with_path(tit,def,filter,filtfunc,path)	GWidgetOpenFileWPath8(tit,def,filter,NULL,filtfunc,path)
 #define gwwv_save_filename(tit,def,filter)		GWidgetSaveAsFile8(tit,def,filter,NULL,NULL)
 #define gwwv_save_filename_with_gadget(tit,def,filter,gcd)		GWidgetSaveAsFileWithGadget8(tit,def,filter,NULL,NULL,NULL,gcd)
-
-void GWidgetCreateInsChar(void);	/* takes input even when a modal dlg is active */
-		/* but is not modal itself */
-void GInsCharSetChar(unichar_t ch);	/* Sets current selection in ins char dlg */
 
 extern GIC *GWidgetCreateInputContext(GWindow w,enum gic_style def_style);
 extern GIC *GWidgetGetInputContext(GWindow w);

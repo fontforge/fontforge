@@ -147,6 +147,16 @@ static GFont *toolsfont=NULL, *layersfont=NULL;
 #define CID_LayersMenu  9003
 #define CID_LayerLabel  9004
 
+static void SetPaletteVisible(GWindow parent, GWindow palette, bool visible) {
+    GDrawSetVisible(palette, visible);
+    if (!palettes_docked) {
+        GDrawSetTransientFor(palette, visible ? parent : NULL);
+        if (visible) {
+            GDrawRaise(palette);
+        }
+    }
+}
+
 /* Initialize a window that is to be used for a palette. Specific widgets and other functionality are added elsewhere. */
 static GWindow CreatePalette(GWindow w, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *wattrs, GWindow v) {
     GWindow gw;
@@ -757,7 +767,6 @@ static int Ask(char *rb1, char *rb2, int rb, char *lab, float *val, int *co,
     d.reg = gcd[6].ret;
     d.pts = gcd[7].ret;
 
-    GWidgetHidePalettes();
     GDrawSetVisible(d.gw,true);
     while ( !d.done )
 	GDrawProcessOneEvent(NULL);
@@ -1460,7 +1469,7 @@ return( true );
 	PostCharToWindow(cv->gw,event);
       break;
       case et_close:
-	GDrawSetVisible(gw,false);
+	SetPaletteVisible(NULL, gw, false);
       break;
     }
 return( true );
@@ -1505,7 +1514,7 @@ return( cvtools );
     }
 
     if ( cvvisible[1])
-	GDrawSetVisible(cvtools,true);
+	SetPaletteVisible(cv->gw, cvtools,true);
 return( cvtools );
 }
 
@@ -1892,7 +1901,7 @@ return( true );
 
     switch ( event->type ) {
       case et_close:
-	GDrawSetVisible(gw,false);
+	SetPaletteVisible(NULL, gw, false);
       break;
       case et_char: case et_charup:
 	PostCharToWindow(cv->gw,event);
@@ -2110,7 +2119,7 @@ return;
     GGadgetGetSize(GWidgetGetControl(cvlayers2, CID_VGrid), &r);
     GGadgetMove(GWidgetGetControl(cvlayers2, CID_LayerLabel), r.x + r.width, 5);
     if ( cvvisible[0] )
-	GDrawSetVisible(cvlayers2,true);
+	SetPaletteVisible(cv->gw, cvlayers2, true);
 }
 
 static void LayersSwitch(CharView *cv) {
@@ -2921,7 +2930,7 @@ static int cvlayers_e_h(GWindow gw, GEvent *event) {
 
     switch ( event->type ) {
       case et_close:
-	GDrawSetVisible(gw,false);
+	SetPaletteVisible(NULL, gw, false);
       break;
       case et_char: case et_charup:
 	if ( event->u.chr.keysym == GK_Return) {
@@ -3376,7 +3385,7 @@ return( cvlayers );
 
     GGadgetsCreate(cvlayers,gcd);
     if ( cvvisible[0] )
-	GDrawSetVisible(cvlayers,true);
+	SetPaletteVisible(cv->gw, cvlayers, true);
     layers_max=2;
 
     gadget=GWidgetGetControl(cvlayers,CID_AddLayer);
@@ -3755,11 +3764,11 @@ return( cvlayers!=NULL && GDrawIsVisible(cvlayers) );
 void CVPaletteSetVisible(CharView *cv,int which,int visible) {
     CVPaletteCheck(cv);
     if ( which==1 && cvtools!=NULL)
-	GDrawSetVisible(cvtools,visible );
+	SetPaletteVisible(cv->gw, cvtools, visible);
     else if ( which==0 && cv->b.sc->parent->multilayer && cvlayers2!=NULL )
-	GDrawSetVisible(cvlayers2,visible );
+	SetPaletteVisible(cv->gw, cvlayers2, visible );
     else if ( which==0 && cvlayers!=NULL )
-	GDrawSetVisible(cvlayers,visible );
+	SetPaletteVisible(cv->gw, cvlayers, visible );
     cvvisible[which] = visible;
     SavePrefs(true);
 }
@@ -3779,14 +3788,14 @@ void _CVPaletteActivate(CharView *cv, int force, int docking_changed) {
     CVPaletteCheck(cv);
     if ( layers2_active!=-1 && layers2_active!=cv->b.sc->parent->multilayer ) {
 	if ( !cvvisible[0] ) {
-	    if ( cvlayers2!=NULL ) GDrawSetVisible(cvlayers2,false);
-	    if ( cvlayers !=NULL ) GDrawSetVisible(cvlayers,false);
+	    if ( cvlayers2!=NULL ) SetPaletteVisible(NULL, cvlayers2, false);
+	    if ( cvlayers !=NULL ) SetPaletteVisible(NULL, cvlayers, false);
 	} else if ( layers2_active && cvlayers!=NULL ) {
-	    if ( cvlayers2!=NULL ) GDrawSetVisible(cvlayers2,false);
-	    GDrawSetVisible(cvlayers,true);
+	    if ( cvlayers2!=NULL ) SetPaletteVisible(NULL, cvlayers2, false);
+	    SetPaletteVisible(cv->gw, cvlayers, true);
 	} else if ( !layers2_active && cvlayers2!=NULL ) {
-	    if ( cvlayers !=NULL ) GDrawSetVisible(cvlayers,false);
-	    GDrawSetVisible(cvlayers2,true);
+	    if ( cvlayers !=NULL ) SetPaletteVisible(NULL, cvlayers, false);
+	    SetPaletteVisible(cv->gw, cvlayers2, true);
 	}
     }
     layers2_active = cv->b.sc->parent->multilayer;
@@ -3841,11 +3850,11 @@ void _CVPaletteActivate(CharView *cv, int force, int docking_changed) {
 	    if ( cvvisible[1])
 		RestoreOffsets(cv->gw,cvtools,&cvtoolsoff);
 	}
-	GDrawSetVisible(cvtools,cvvisible[1]);
+	SetPaletteVisible(cv->gw, cvtools, cvvisible[1]);
 	if ( cv->b.sc->parent->multilayer )
-	    GDrawSetVisible(cvlayers2,cvvisible[0]);
+	    SetPaletteVisible(cv->gw, cvlayers2, cvvisible[0]);
 	else
-	    GDrawSetVisible(cvlayers,cvvisible[0]);
+	    SetPaletteVisible(cv->gw, cvlayers, cvvisible[0]);
 	if ( cvvisible[1]) {
 	    cv->showing_tool = cvt_none;
 	    CVToolsSetCursor(cv,0,NULL);
@@ -3865,9 +3874,9 @@ void _CVPaletteActivate(CharView *cv, int force, int docking_changed) {
 	    GDrawSetUserData(bvlayers,NULL);
 	    GDrawSetUserData(bvshades,NULL);
 	}
-	GDrawSetVisible(bvtools,false);
-	GDrawSetVisible(bvlayers,false);
-	GDrawSetVisible(bvshades,false);
+	SetPaletteVisible(NULL, bvtools, false);
+	SetPaletteVisible(NULL, bvlayers, false);
+	SetPaletteVisible(NULL, bvshades, false);
     }
 }
 
@@ -3913,15 +3922,15 @@ void CVPalettesHideIfMine(CharView *cv) {
 return;
     if ( GDrawGetUserData(cvtools)==cv ) {
 	SaveOffsets(cv->gw,cvtools,&cvtoolsoff);
-	GDrawSetVisible(cvtools,false);
+	SetPaletteVisible(NULL, cvtools, false);
 	GDrawSetUserData(cvtools,NULL);
 	if ( cv->b.sc->parent->multilayer && cvlayers2!=NULL ) {
 	    SaveOffsets(cv->gw,cvlayers2,&cvlayersoff);
-	    GDrawSetVisible(cvlayers2,false);
+	    SetPaletteVisible(NULL, cvlayers2, false);
 	    GDrawSetUserData(cvlayers2,NULL);
 	} else {
 	    SaveOffsets(cv->gw,cvlayers,&cvlayersoff);
-	    GDrawSetVisible(cvlayers,false);
+	    SetPaletteVisible(NULL, cvlayers, false);
 	    GDrawSetUserData(cvlayers,NULL);
 	}
     }
@@ -3954,7 +3963,7 @@ return( true );
 
     switch ( event->type ) {
       case et_close:
-	GDrawSetVisible(gw,false);
+	SetPaletteVisible(NULL, gw, false);
       break;
       case et_char: case et_charup:
 	PostCharToWindow(bv->gw,event);
@@ -4088,7 +4097,7 @@ return(bvlayers);
     GHVBoxFitWindow(boxes[0].ret);
 
     if ( bvvisible[0] )
-	GDrawSetVisible(bvlayers,true);
+	SetPaletteVisible(bv->gw, bvlayers, true);
 return( bvlayers );
 }
 
@@ -4201,7 +4210,7 @@ return( true );
       case et_destroy:
       break;
       case et_close:
-	GDrawSetVisible(gw,false);
+	SetPaletteVisible(NULL, gw, false);
       break;
     }
 return( true );
@@ -4232,7 +4241,7 @@ return( bvshades );
     bvshades = CreatePalette( bv->gw, &r, bvshades_e_h, bv, &wattrs, bv->v );
     bv->shades_hidden = BDFDepth(bv->bdf)==1;
     if ( bvvisible[2] && !bv->shades_hidden )
-	GDrawSetVisible(bvshades,true);
+	SetPaletteVisible(bv->gw, bvshades, true);
 return( bvshades );
 }
 
@@ -4437,7 +4446,7 @@ return( true );
 	PostCharToWindow(bv->gw,event);
       break;
       case et_close:
-	GDrawSetVisible(gw,false);
+	SetPaletteVisible(NULL, gw, false);
       break;
     }
 return( true );
@@ -4464,7 +4473,7 @@ return( bvtools );
     }
     bvtools = CreatePalette( bv->gw, &r, bvtools_e_h, bv, &wattrs, bv->v );
     if ( bvvisible[1] )
-	GDrawSetVisible(bvtools,true);
+	SetPaletteVisible(bv->gw, bvtools, true);
 return( bvtools );
 }
 
@@ -4571,11 +4580,11 @@ return( bvlayers!=NULL && GDrawIsVisible(bvlayers) );
 void BVPaletteSetVisible(BitmapView *bv,int which,int visible) {
     BVPaletteCheck(bv);
     if ( which==1 && bvtools!=NULL)
-	GDrawSetVisible(bvtools,visible );
+	SetPaletteVisible(bv->gw, bvtools, visible );
     else if ( which==2 && bvshades!=NULL)
-	GDrawSetVisible(bvshades,visible );
+	SetPaletteVisible(bv->gw, bvshades, visible );
     else if ( which==0 && bvlayers!=NULL )
-	GDrawSetVisible(bvlayers,visible );
+	SetPaletteVisible(bv->gw, bvlayers, visible );
     bvvisible[which] = visible;
     SavePrefs(true);
 }
@@ -4619,9 +4628,9 @@ static void _BVPaletteActivate(BitmapView *bv, int force, int docking_changed) {
 	    if ( bvvisible[2] && !bv->shades_hidden )
 		RestoreOffsets(bv->gw,bvshades,&bvshadesoff);
 	}
-	GDrawSetVisible(bvtools,bvvisible[1]);
-	GDrawSetVisible(bvlayers,bvvisible[0]);
-	GDrawSetVisible(bvshades,bvvisible[2] && bv->bdf->clut!=NULL);
+	SetPaletteVisible(bv->gw, bvtools, bvvisible[1]);
+	SetPaletteVisible(bv->gw, bvlayers, bvvisible[0]);
+	SetPaletteVisible(bv->gw, bvshades, bvvisible[2] && bv->bdf->clut!=NULL);
 	if ( bvvisible[1]) {
 	    bv->showing_tool = bvt_none;
 	    BVToolsSetCursor(bv,0,NULL);
@@ -4643,11 +4652,11 @@ static void _BVPaletteActivate(BitmapView *bv, int force, int docking_changed) {
 	    if ( cvlayers2!=NULL )
 		GDrawSetUserData(cvlayers2,NULL);
 	}
-	GDrawSetVisible(cvtools,false);
+	SetPaletteVisible(NULL, cvtools, false);
 	if ( cvlayers!=NULL )
-	    GDrawSetVisible(cvlayers,false);
+	    SetPaletteVisible(NULL, cvlayers, false);
 	if ( cvlayers2!=NULL )
-	    GDrawSetVisible(cvlayers2,false);
+	    SetPaletteVisible(NULL, cvlayers2, false);
     }
 }
 
@@ -4662,9 +4671,9 @@ return;
 	SaveOffsets(bv->gw,bvtools,&bvtoolsoff);
 	SaveOffsets(bv->gw,bvlayers,&bvlayersoff);
 	SaveOffsets(bv->gw,bvshades,&bvshadesoff);
-	GDrawSetVisible(bvtools,false);
-	GDrawSetVisible(bvlayers,false);
-	GDrawSetVisible(bvshades,false);
+	SetPaletteVisible(NULL, bvtools, false);
+	SetPaletteVisible(NULL, bvlayers, false);
+	SetPaletteVisible(NULL, bvshades, false);
 	GDrawSetUserData(bvtools,NULL);
 	GDrawSetUserData(bvlayers,NULL);
 	GDrawSetUserData(bvshades,NULL);
@@ -4685,11 +4694,11 @@ void CVPaletteDeactivate(void) {
 		GDrawSetUserData(cvlayers,NULL);
 	    }
 	}
-	GDrawSetVisible(cvtools,false);
+	SetPaletteVisible(NULL, cvtools, false);
 	if ( cvlayers!=NULL )
-	    GDrawSetVisible(cvlayers,false);
+	    SetPaletteVisible(NULL, cvlayers, false);
 	if ( cvlayers2!=NULL )
-	    GDrawSetVisible(cvlayers2,false);
+	    SetPaletteVisible(NULL, cvlayers2, false);
     }
     if ( bvtools!=NULL ) {
 	BitmapView *bv = GDrawGetUserData(bvtools);
@@ -4701,9 +4710,9 @@ void CVPaletteDeactivate(void) {
 	    GDrawSetUserData(bvlayers,NULL);
 	    GDrawSetUserData(bvshades,NULL);
 	}
-	GDrawSetVisible(bvtools,false);
-	GDrawSetVisible(bvlayers,false);
-	GDrawSetVisible(bvshades,false);
+	SetPaletteVisible(NULL, bvtools, false);
+	SetPaletteVisible(NULL, bvlayers, false);
+	SetPaletteVisible(NULL, bvshades, false);
     }
 }
 
@@ -4724,7 +4733,7 @@ void BVPaletteChangedChar(BitmapView *bv) {
     if ( bvshades!=NULL && bvvisible[2]) {
 	int hidden = bv->bdf->clut==NULL;
 	if ( hidden!=bv->shades_hidden ) {
-	    GDrawSetVisible(bvshades,!hidden);
+	    SetPaletteVisible(bv->gw, bvshades, !hidden);
 	    bv->shades_hidden = hidden;
 	    GDrawRequestExpose(bv->gw,NULL,false);
 	} else

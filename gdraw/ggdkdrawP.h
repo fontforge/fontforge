@@ -169,16 +169,10 @@ typedef struct ggdkdisplay { /* :GDisplay */
     int16 res;
     GGDKWindow groot;
     Color def_background, def_foreground;
-    uint16 mykey_state;
-    uint16 mykey_keysym;
-    uint16 mykey_mask;
-    unsigned int mykeybuild: 1;
     unsigned int default_visual: 1;
     unsigned int do_dithering: 1;
     unsigned int focusfollowsmouse: 1;
     unsigned int top_offsets_set: 1;
-    unsigned int wm_breaks_raiseabove: 1;
-    unsigned int wm_raiseabove_tested: 1;
     unsigned int endian_mismatch: 1;
     unsigned int macosx_cmd: 1;     /* if set then map state=0x20 to control */
     unsigned int twobmouse_win: 1;  /* if set then map state=0x40 to mouse button 2 */
@@ -289,8 +283,6 @@ cairo_region_t *_GGDKDraw_ExcludeChildRegions(GGDKWindow gw, cairo_region_t *r, 
 
 void GGDKDrawPushClip(GWindow w, GRect *rct, GRect *old);
 void GGDKDrawPopClip(GWindow gw, GRect *old);
-void GGDKDrawSetDifferenceMode(GWindow gw);
-void GGDKDrawClear(GWindow gw, GRect *rect);
 void GGDKDrawDrawLine(GWindow w, int32 x, int32 y, int32 xend, int32 yend, Color col);
 void GGDKDrawDrawArrow(GWindow gw, int32 x, int32 y, int32 xend, int32 yend, int16 arrows, Color col);
 void GGDKDrawDrawRect(GWindow gw, GRect *rect, Color col);
@@ -305,7 +297,7 @@ void GGDKDrawDrawImage(GWindow gw, GImage *gimg, GRect *src, int32 x, int32 y);
 void GGDKDrawDrawGlyph(GWindow gw, GImage *gimg, GRect *src, int32 x, int32 y);
 void GGDKDrawDrawImageMagnified(GWindow gw, GImage *gimg, GRect *src, int32 x, int32 y, int32 width, int32 height);
 
-void    GGDKDrawDrawPixmap(GWindow gw1, GWindow gw2, GRect *src, int32 x, int32 y);
+void GGDKDrawDrawPixmap(GWindow gw1, GWindow gw2, GRect *src, int32 x, int32 y);
 
 enum gcairo_flags GGDKDrawHasCairo(GWindow w);
 

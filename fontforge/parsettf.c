@@ -4249,71 +4249,71 @@ return( -1 );
     if ( modtype<=1 /* Unicode */ ) {
 	/* No conversion needed, already unicode */;
     } else if ( modtype==2 /* SJIS */ ) {
-	if ( enc<=127 ) {
-	    /* Latin */
-	    if ( enc=='\\' ) enc = 0xa5;	/* Yen */
-	} else if ( enc>=161 && enc<=223 ) {
-	    /* Katakana */
-	    enc = unicode_from_jis201[enc];
-	} else if ( enc<255 ) {
-	    /* This is erroneous as I understand SJIS */
-	    enc = badencoding(info);
-	} else if (enc >= 0xeaa5) {
-        /* Encoded value is outside SJIS range */
-        /* If this happens, it's likely that it's actually CP932 encoded */
-        /* Todo: Detect CP932 encoding earlier and apply that instead of SJIS */
-        enc = badencoding(info);
-	} else {
-	    int ch1 = enc>>8, ch2 = enc&0xff;
-	    if ( ch1 >= 129 && ch1<= 159 )
-		ch1 -= 112;
-	    else
-		ch1 -= 176;
-	    ch1 <<= 1;
-	    if ( ch2>=159 )
-		ch2-= 126;
-	    else if ( ch2>127 ) {
-		--ch1;
-		ch2 -= 32;
-	    } else {
-		--ch1;
-		ch2 -= 31;
-	    }
-	    if ( ch1<0x21 || ch2<0x21 || ch1>0x7e || ch2>0x7e )
-		enc = badencoding(info);
-	    else
-		enc = unicode_from_jis208[(ch1-0x21)*94+(ch2-0x21)];
-	}
-    } else if ( modtype==3 /* GB2312 offset by 0x8080, parse just like wansung */ ) {
-	if ( enc>0xa1a1 ) {
-	    enc -= 0xa1a1;
-	    enc = (enc>>8)*94 + (enc&0xff);
-	    enc = unicode_from_gb2312[enc];
-	    if ( enc==0 ) enc = -1;
-	} else if ( enc>0x100 )
-	    enc = badencoding(info);
+        // Apart from these, cp932 is a strict superset of sjis
+        if (enc == '\\')
+            enc = 0xa5; /* Yen */
+        else {
+            static Encoding* ed;
+            if (!ed) {
+                ed = FindOrMakeEncoding("cp932");
+            }
+            enc = UniFromEnc(enc, ed);
+            if (enc < 0) {
+                enc = badencoding(info);
+            }
+        }
+	} else if (modtype == 3 /* GB2312 offset by 0x8080, parse just like wansung */) {
+        if (enc > 0xa1a1) {
+            static Encoding* ed;
+            if (!ed) {
+                ed = FindOrMakeEncoding("gb2312pk");
+            }
+            enc = UniFromEnc(enc, ed);
+            if (enc < 0) {
+                enc = badencoding(info);
+            }
+        } else if (enc > 0x100)
+            enc = badencoding(info);
     } else if ( modtype==4 /* BIG5 */ ) {	/* old ms docs say big5 is modtype==3, but new ones say 4 */
-	if ( enc>0x8100 )
-	    enc = unicode_from_big5hkscs[enc-0x8100];
-	else if ( enc>0x100 )
-	    enc = badencoding(info);
+        if (enc > 0x8100) {
+            static Encoding* ed;
+            if (!ed) {
+                ed = FindOrMakeEncoding("cp950"); //does not include hkscs extensions...
+            }
+            enc = UniFromEnc(enc, ed);
+            if (enc < 0) {
+                enc = badencoding(info);
+            }
+        } else if (enc > 0x100)
+            enc = badencoding(info);
     } else if ( modtype==5 /* Wansung == KSC 5601-1987, I hope */ ) {
-	if ( enc>0xa1a1 ) {
-	    enc -= 0xa1a1;
-	    enc = (enc>>8)*94 + (enc&0xff);
-	    enc = unicode_from_ksc5601[enc];
-	    if ( enc==0 ) enc = -1;
-	} else if ( enc>0x100 )
-	    enc = badencoding(info);
+        if (enc > 0xa1a1) {
+            static Encoding* ed;
+            if (!ed) {
+                ed = FindOrMakeEncoding("cp949");
+            }
+            enc = UniFromEnc(enc, ed);
+            if (enc < 0) {
+                enc = badencoding(info);
+            }
+        }
+        else if (enc > 0x100)
+            enc = badencoding(info);
     } else if ( modtype==6 /* Johab */ ) {
-	if ( enc>0x8400 )
-	    enc = unicode_from_johab[enc-0x8400];
-	else if ( enc>0x100 )
-	    enc = badencoding(info);
+        if (enc > 0x8400) {
+            static Encoding* ed;
+            if (!ed) {
+                ed = FindOrMakeEncoding("cp1361");
+            }
+            enc = UniFromEnc(enc, ed);
+            if (enc < 0) {
+                enc = badencoding(info);
+            }
+        }
+        else if (enc > 0x100)
+            enc = -1;
     }
-    if ( enc==0 )
-	enc = -1;
-return( enc );
+    return enc;
 }
 
 struct cmap_encs {

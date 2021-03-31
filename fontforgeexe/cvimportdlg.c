@@ -934,7 +934,6 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
     if ( cur_formats!=formats && cur_formats!=fvformats )
 	GTextInfoListFree(cur_formats);
 
-    GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
     while ( !d.done )
 	GDrawProcessOneEvent(NULL);

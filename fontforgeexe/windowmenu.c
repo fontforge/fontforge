@@ -39,14 +39,16 @@ static void WindowSelect(GWindow base,struct gmenuitem *mi,GEvent *e) {
 }
 
 static void AddMI(GMenuItem *mi,GWindow gw,int changed, int top) {
+    char* title = GDrawGetWindowTitle8(gw);
     mi->ti.userdata = gw;
     mi->ti.bg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(gw));
     mi->invoke = WindowSelect;
-    mi->ti.text = GDrawGetWindowTitle(gw);
+    mi->ti.text = utf82u_copy(title);
     if(mi->ti.text == NULL)
 	mi->ti.text = utf82u_copy("(null)");
     if ( u_strlen( mi->ti.text ) > 35 )
 	mi->ti.text[35] = '\0';
+    free(title);
 }
 
 /* Builds up a menu containing the titles of all the major windows */
