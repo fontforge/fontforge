@@ -391,7 +391,7 @@ int ExportSVG(char *filename,SplineChar *sc,int layer, ExportParams *ep) {
 
     svg = fopen(filename,"w");
     if ( svg==NULL ) {
-	perror("SVG fopen error is:");
+	ff_post_error(_("SVG fopen Failed"),"strerror is '%s'", strerror(errno));
 return(0);
     }
     ret = _ExportSVG(svg,sc,layer,ep);
