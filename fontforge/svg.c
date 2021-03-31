@@ -1547,9 +1547,13 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 		end = skipcomma(end);
 		axisrot = strtod(end,&end)*FF_PI/180;
 		end = skipcomma(end);
-		large_arc = strtol(end,&end,10);
+		while (isspace(*end)) ++end;
+		large_arc = *end != '0';
+		end++;
 		end = skipcomma(end);
-		sweep = strtol(end,&end,10);
+		while (isspace(*end)) ++end;
+		sweep = *end != '0';
+		end++;
 		end = skipcomma(end);
 		x = strtod(end,&end);
 		end = skipcomma(end);
