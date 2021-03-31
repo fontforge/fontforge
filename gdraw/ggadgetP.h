@@ -539,8 +539,7 @@ extern int _GListMarkSize;		/* in points, def width of popup mark in buttons */
 extern int _GGadget_Skip;		/* in points, def hor space between gadgets */
 extern int _GGadget_TextImageSkip;	/* in points, def hor space text and image */
 extern GBox _GListMark_Box, _GGroup_LineBox;
-extern GResImage *_GListMark_Image;
-extern FontInstance *_ggadget_default_font;
+extern GResFont _ggadget_default_font;
 
 void _GWidget_AddGGadget(GWindow gw,struct ggadget *g);
 void _GWidget_RemoveGadget(struct ggadget *g);
@@ -554,7 +553,7 @@ void _GWidget_SetPopupOwner(GGadget *g);
 void _GWidget_ClearPopupOwner(GGadget *g);
 
 extern void _GGadgetCopyDefaultBox(GBox *box);
-extern FontInstance *_GGadgetInitDefaultBox(char *class,GBox *box,FontInstance *deffont);
+extern void _GGadgetInitDefaultBox(const char *class, GBox *box);
 extern void _ggadget_underlineMnemonic(GWindow gw,int32 x,int32 y,unichar_t *label,
 	unichar_t mneumonic, Color fg,int ymax);
 extern void _ggadgetFigureSize(GWindow gw, GBox *design, GRect *r, int isdef);
@@ -619,15 +618,5 @@ extern const char* const* _GGadget_GetImagePath(void);
 extern int _GGadget_ImageInCache(GImage *image);
 
 extern GResInfo ggadget_ri, listmark_ri;
-extern GResInfo *_GGadgetRIHead(void), *_GButtonRIHead(void), *_GTextFieldRIHead(void);
-extern GResInfo *_GRadioRIHead(void), *_GScrollBarRIHead(void), *_GLineRIHead(void);
-extern GResInfo *_GMenuRIHead(void), *_GTabSetRIHead(void), *_GHVBoxRIHead(void);
-extern GResInfo *_GFlowBoxRIHead(void), *_GScroll1BoxRIHead(void);
-extern GResInfo *_GListRIHead(void), *_GMatrixEditRIHead(void), *_GDrawableRIHead(void);
-extern GResInfo *_GProgressRIHead(void);
-
-#define SERIF_UI_FAMILIES	"dejavu serif,times,caslon,serif,clearlyu,unifont,unifont upper"
-#define SANS_UI_FAMILIES	"dejavu sans,helvetica,caliban,sans,clearlyu,unifont,unifont upper"
-#define MONO_UI_FAMILIES	"courier,monospace,clearlyu,unifont,unifont upper"
 
 #endif /* FONTFORGE_GGADGET_P_H */

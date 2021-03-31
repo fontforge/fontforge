@@ -30,10 +30,14 @@
 #include "fontP.h"
 #include "gdraw.h"
 #include "gfile.h"
+#include "gresedit.h"
 #include "gresource.h"
 #include "gresourceP.h"
 #include "ustring.h"
 #include "utype.h"
+
+#include "assert.h"
+#include "math.h"
 
 char *GResourceProgramName;
 char *usercharset_names;
@@ -41,14 +45,16 @@ char *usercharset_names;
 static int rcur, rmax=0;
 static int rbase = 0, rsummit=0, rskiplen=0;	/* when restricting a search */
 struct _GResource_Res *_GResource_Res;
+extern GBox _ggadget_Default_Box;
+extern GResFont _ggadget_default_font;
 
 static int rcompar(const void *_r1,const void *_r2) {
     const struct _GResource_Res *r1 = _r1, *r2 = _r2;
 return( strcmp(r1->res,r2->res));
 }
 
-int _GResource_FindResName(const char *name) {
-    int top=rsummit, bottom = rbase;
+int _GResource_FindResName(const char *name, int do_restrict) {
+    int top=do_restrict?rsummit:rcur, bottom = do_restrict?rbase:0;
     int test, cmp;
 
     if ( rcur==0 )
@@ -58,7 +64,7 @@ return( -1 );
 	if ( top==bottom )
 return( -1 );
 	test = (top+bottom)/2;
-	cmp = strcmp(name,_GResource_Res[test].res+rskiplen);
+	cmp = strcmp(name,_GResource_Res[test].res+(do_restrict?rskiplen:0));
 	if ( cmp==0 )
 return( test );
 	if ( test==bottom )
@@ -70,11 +76,12 @@ return( -1 );
     }
 }
 
-static int GResourceRestrict(char *prefix) {
+static int GResourceRestrict(const char *prefix) {
     int top=rcur, bottom = 0;
     int test, cmp;
     int plen;
     int oldtest, oldtop;
+    char *prestr;
 
     if ( prefix==NULL || *prefix=='\0' ) {
 	rbase = rskiplen = 0; rsummit = rcur;
@@ -83,31 +90,37 @@ return( rcur==0?-1:0 );
     if ( rcur==0 )
 return( -1 );
 
-    plen = strlen(prefix);
+    prestr = smprintf("%s.", prefix);
+    plen = strlen(prestr);
 
     for (;;) {
 	test = (top+bottom)/2;
-	cmp = strncmp(prefix,_GResource_Res[test].res,plen);
+	cmp = strncmp(prestr,_GResource_Res[test].res,plen);
 	if ( cmp==0 )
     break;
-	if ( test==bottom )
-return( -1 );
+	if ( test==bottom ) {
+	    free(prestr);
+	    return -1;
+	}
 	if ( cmp>0 ) {
 	    bottom=test+1;
-	    if ( bottom==top )
-return( -1 );
+	    if ( bottom==top ) {
+		free(prestr);
+		return -1;
+	    }
 	} else
 	    top = test;
     }
-    /* at this point the resource at test begins with the prefix */
+    /* at this point the resource at test begins with the prestr */
     /* we want to find the first and last resources that do */
     oldtop = top; oldtest = top = test;		/* find the first resource */
     for (;;) {
 	test = (top+bottom)/2;
-	cmp = strncmp(prefix,_GResource_Res[test].res,plen);
+	cmp = strncmp(prestr,_GResource_Res[test].res,plen);
 	if ( cmp<0 ) {
 	    GDrawIError("Resource list out of order");
-return( -1 );
+	    free(prestr);
+	    return -1;
 	}
 	if ( test==bottom ) {
 	    if ( cmp!=0 ) ++test;
@@ -127,10 +140,11 @@ return( -1 );
 	test = top;
     else for (;;) {
 	test = (top+bottom)/2;
-	cmp = strncmp(prefix,_GResource_Res[test].res,plen);
+	cmp = strncmp(prestr,_GResource_Res[test].res,plen);
 	if ( cmp>0 ) {
 	    GDrawIError("Resource list out of order");
-return( -1 );
+	    free(prestr);
+	    return -1;
 	}
 	if ( test==bottom ) {
 	    if ( cmp==0 ) ++test;
@@ -145,11 +159,12 @@ return( -1 );
     }
     rsummit = test;
     rskiplen = plen;
+    free(prestr);
 return( 0 );
 }
 
-void GResourceSetProg(char *prog) {
-    char *pt;
+void GResourceSetProg(const char *prog) {
+    const char *pt;
 
     if ( prog!=NULL ) {
 	if ( GResourceProgramName!=NULL && strcmp(prog,GResourceProgramName)==0 )
@@ -166,8 +181,9 @@ return;
 return;
 }
 
-void GResourceAddResourceString(char *string,char *prog) {
-    char *pt, *ept, *next;
+void GResourceAddResourceString(const char *string,const char *prog) {
+    char *ept;
+    const char *pt, *next;
     int cnt, plen;
     struct _GResource_Res temp;
     int i,j,k, off;
@@ -255,7 +271,7 @@ return;
 	_GResource_Res[i].new = false;
 }
 
-void GResourceAddResourceFile(char *filename,char *prog,int warn) {
+void GResourceAddResourceFile(const char *filename,const char *prog,int warn) {
     FILE *file;
     char buffer[1000];
 
@@ -270,23 +286,31 @@ return;
     fclose(file);
 }
 
-void GResourceFind( GResStruct *info,char *prefix) {
+static void _GResourceFindFont(const char *resourcename, GResFont *font, int is_value);
+static void _GResourceFindImage(const char *fname, GResImage *img);
+
+void GResourceFind( GResStruct *info,const char *prefix) {
     int pos;
 
     if ( GResourceRestrict(prefix)== -1 ) {
 	rbase = rskiplen = 0; rsummit = rcur;
-return;
+	// return; // Even if no resources are loaded we still need to init
+	// the default images and fonts
     }
     while ( info->resname!=NULL ) {
-	pos = _GResource_FindResName(info->resname);
+	pos = _GResource_FindResName(info->resname, true);
 	info->found = (pos!=-1);
-	if ( pos==-1 )
+	if ( pos==-1 && info->type!=rt_font && info->type!=rt_image ) // rt_font and rt_image may need default initialization
 	    /* Do Nothing */;
 	else if ( info->type == rt_string ) {
 	    if ( info->cvt!=NULL )
 		*(void **) (info->val) = (info->cvt)( _GResource_Res[pos].val, *(void **) (info->val) );
 	    else
 		*(char **) (info->val) = copy( _GResource_Res[pos].val );
+	} else if ( info->type == rt_font ) {
+	    _GResourceFindFont(info->found ? _GResource_Res[pos].val : NULL, (GResFont *) info->val, true);
+	} else if ( info->type == rt_image ) {
+	    _GResourceFindImage(info->found ? _GResource_Res[pos].val : NULL, (GResImage *) info->val);
 	} else if ( info->type == rt_color ) {
 	    Color temp = _GImage_ColourFName(_GResource_Res[pos].val );
 	    if ( temp==-1 ) {
@@ -340,21 +364,21 @@ return;
     rbase = rskiplen = 0; rsummit = rcur;
 }
 
-char *GResourceFindString(char *name) {
+char *GResourceFindString(const char *name) {
     int pos;
 
-    pos = _GResource_FindResName(name);
+    pos = _GResource_FindResName(name, false);
     if ( pos==-1 )
 return( NULL );
     else
 return( copy(_GResource_Res[pos].val));
 }
 
-int GResourceFindBool(char *name, int def) {
+int GResourceFindBool(const char *name, int def) {
     int pos;
     int val = -1;
 
-    pos = _GResource_FindResName(name);
+    pos = _GResource_FindResName(name, false);
     if ( pos==-1 )
 return( def );
 
@@ -371,12 +395,12 @@ return( def );
 return( val );
 }
 
-long GResourceFindInt(char *name, long def) {
+long GResourceFindInt(const char *name, long def) {
     int pos;
     char *end;
     long ret;
 
-    pos = _GResource_FindResName(name);
+    pos = _GResource_FindResName(name, false);
     if ( pos==-1 )
 return( def );
 
@@ -387,11 +411,11 @@ return( def );
 return( ret );
 }
 
-Color GResourceFindColor(char *name, Color def) {
+Color GResourceFindColor(const char *name, Color def) {
     int pos;
     Color ret;
 
-    pos = _GResource_FindResName(name);
+    pos = _GResource_FindResName(name, false);
     if ( pos==-1 )
 return( def );
 
@@ -400,4 +424,387 @@ return( def );
 return( def );
 
 return( ret );
+}
+
+static int match(char **list, char *val) {
+    int i;
+
+    for ( i=0; list[i]!=NULL; ++i )
+	if ( strmatch(val,list[i])==0 )
+return( i );
+
+return( -1 );
+}
+
+static void *border_type_cvt(char *val, void *def) {
+    static char *types[] = { "none", "box", "raised", "lowered", "engraved",
+	    "embossed", "double", NULL };
+    int ret = match(types,val);
+    if ( ret== -1 )
+return( def );
+return( (void *) (intpt) ret );
+}
+
+static void *border_shape_cvt(char *val, void *def) {
+    static char *shapes[] = { "rect", "roundrect", "elipse", "diamond", NULL };
+    int ret = match(shapes,val);
+    if ( ret== -1 )
+return( def );
+return( (void *) (intpt) ret );
+}
+
+void _GGadgetCopyDefaultBox(GBox *box) {
+    *box = _ggadget_Default_Box;
+}
+
+void _GGadgetInitDefaultBox(const char *class, GBox *box) {
+    GResStruct boxtypes[] = {
+	{ "Box.BorderType", rt_string, NULL, border_type_cvt, 0 },
+	{ "Box.BorderShape", rt_string, NULL, border_shape_cvt, 0 },
+	{ "Box.BorderWidth", rt_int, NULL, NULL, 0 },
+	{ "Box.Padding", rt_int, NULL, NULL, 0 },
+	{ "Box.Radius", rt_int, NULL, NULL, 0 },
+	{ "Box.BorderInner", rt_bool, NULL, NULL, 0 },
+	{ "Box.BorderOuter", rt_bool, NULL, NULL, 0 },
+	{ "Box.ActiveInner", rt_bool, NULL, NULL, 0 },
+	{ "Box.DoDepressedBackground", rt_bool, NULL, NULL, 0 },
+	{ "Box.DrawDefault", rt_bool, NULL, NULL, 0 },
+	{ "Box.BorderBrightest", rt_color, NULL, NULL, 0 },
+	{ "Box.BorderBrighter", rt_color, NULL, NULL, 0 },
+	{ "Box.BorderDarkest", rt_color, NULL, NULL, 0 },
+	{ "Box.BorderDarker", rt_color, NULL, NULL, 0 },
+	{ "Box.NormalBackground", rt_color, NULL, NULL, 0 },
+	{ "Box.NormalForeground", rt_color, NULL, NULL, 0 },
+	{ "Box.DisabledBackground", rt_color, NULL, NULL, 0 },
+	{ "Box.DisabledForeground", rt_color, NULL, NULL, 0 },
+	{ "Box.ActiveBorder", rt_color, NULL, NULL, 0 },
+	{ "Box.PressedBackground", rt_color, NULL, NULL, 0 },
+	{ "Box.BorderLeft", rt_color, NULL, NULL, 0 },
+	{ "Box.BorderTop", rt_color, NULL, NULL, 0 },
+	{ "Box.BorderRight", rt_color, NULL, NULL, 0 },
+	{ "Box.BorderBottom", rt_color, NULL, NULL, 0 },
+	{ "Box.GradientBG", rt_bool, NULL, NULL, 0 },
+	{ "Box.GradientStartCol", rt_color, NULL, NULL, 0 },
+	{ "Box.ShadowOuter", rt_bool, NULL, NULL, 0 },
+	{ "Box.BorderInnerCol", rt_color, NULL, NULL, 0 },
+	{ "Box.BorderOuterCol", rt_color, NULL, NULL, 0 },
+	GRESSTRUCT_EMPTY
+    };
+    intpt bt, bs;
+    int bw, pad, rr, inner, outer, active, depressed, def, grad, shadow;
+    char *classstr = NULL;
+
+    bt = box->border_type;
+    bs = box->border_shape;
+    bw = box->border_width;
+    pad = box->padding;
+    rr = box->rr_radius;
+    inner = box->flags & box_foreground_border_inner;
+    outer = box->flags & box_foreground_border_outer;
+    active = box->flags & box_active_border_inner;
+    depressed = box->flags & box_do_depressed_background;
+    def = box->flags & box_draw_default;
+    grad = box->flags & box_gradient_bg;
+    shadow = box->flags & box_foreground_shadow_outer;
+
+    boxtypes[0].val = &bt;
+    boxtypes[1].val = &bs;
+    boxtypes[2].val = &bw;
+    boxtypes[3].val = &pad;
+    boxtypes[4].val = &rr;
+    boxtypes[5].val = &inner;
+    boxtypes[6].val = &outer;
+    boxtypes[7].val = &active;
+    boxtypes[8].val = &depressed;
+    boxtypes[9].val = &def;
+    boxtypes[10].val = &box->border_brightest;
+    boxtypes[11].val = &box->border_brighter;
+    boxtypes[12].val = &box->border_darkest;
+    boxtypes[13].val = &box->border_darker;
+    boxtypes[14].val = &box->main_background;
+    boxtypes[15].val = &box->main_foreground;
+    boxtypes[16].val = &box->disabled_background;
+    boxtypes[17].val = &box->disabled_foreground;
+    boxtypes[18].val = &box->active_border;
+    boxtypes[19].val = &box->depressed_background;
+    boxtypes[20].val = &box->border_brightest;
+    boxtypes[21].val = &box->border_brighter;
+    boxtypes[22].val = &box->border_darkest;
+    boxtypes[23].val = &box->border_darker;
+    boxtypes[24].val = &grad;
+    boxtypes[25].val = &box->gradient_bg_end;
+    boxtypes[26].val = &shadow;
+    boxtypes[27].val = &box->border_inner;
+    boxtypes[28].val = &box->border_outer;
+
+    if ( class!=NULL )
+	classstr = smprintf("%s.", class);
+
+    /* for a plain box, default to all borders being the same. they must change*/
+    /*  explicitly */
+    if ( bt==bt_box || bt==bt_double )
+	box->border_brightest = box->border_brighter = box->border_darker = box->border_darkest;
+    GResourceFind( boxtypes, class);
+    free(classstr);
+
+    box->border_type = bt;
+    box->border_shape = bs;
+    box->border_width = bw;
+    box->padding = pad;
+    box->rr_radius = rr;
+    box->flags=0;
+    if ( inner )
+	box->flags |= box_foreground_border_inner;
+    if ( outer )
+	box->flags |= box_foreground_border_outer;
+    if ( active )
+	box->flags |= box_active_border_inner;
+    if ( depressed )
+	box->flags |= box_do_depressed_background;
+    if ( def )
+	box->flags |= box_draw_default;
+    if ( grad )
+	box->flags |= box_gradient_bg;
+    if ( shadow )
+	box->flags |= box_foreground_shadow_outer;
+}
+
+static void GResHashFree(gpointer p) {
+    free(p);
+}
+
+/* font name may be something like:
+	bold italic extended 12pt courier
+	400 10pt small-caps
+    family name comes at the end, size must have "pt" or "px" after it
+*/
+static int _GResToFontRequest(const char *resname, FontRequest *rq, GHashTable *ht,
+                              int name_is_value, int strict) {
+    static char *styles[] = { "normal", "italic", "oblique", "small-caps",
+	    "bold", "light", "extended", "condensed", NULL };
+    char *val, *pt, *end, ch, *relname=NULL, *e;
+    int ret, top_level = false, percent = 100, adjust = 0;
+    int found_rel = false, found_style = false, found_weight = false, err = false;
+    FontRequest rel_rq;
+
+    if ( ht==NULL ) {
+	ht = g_hash_table_new_full(g_str_hash, g_str_equal, GResHashFree, NULL);
+	top_level = true;
+    }
+
+    memset(rq,0,sizeof(*rq));
+    memset(&rel_rq,0,sizeof(rel_rq));
+    rq->weight = 400;
+
+    if ( name_is_value )
+	val = copy(resname);
+    else {
+	val = GResourceFindString(resname);
+    }
+
+    if ( val==NULL ) {
+	if ( top_level )
+	    GDrawError("Missing font resource reference to '%s': cannot resolve", resname);
+	err = true;
+    }
+
+    for ( pt=val; !err && *pt && *pt!='"'; ) {
+	for ( end=pt; *end!=' ' && *end!='\0'; ++end );
+	ch = *end;
+	*end = '\0';
+	ret = match(styles,pt);
+	if ( ret==-1 && isdigit(*pt)) {
+	    ret = strtol(pt,&e,10);
+	    if ( strmatch(e,"pt")==0 )
+		rq->point_size = ret;
+	    else if ( strmatch(e,"px")==0 )
+		rq->point_size = -ret;
+	    else if ( strmatch(e,"%")==0 ) {
+		percent = ret;
+		if ( percent<0 )
+		    percent = -percent;
+	    } else if ( *e=='\0' ) {
+		found_weight = true;
+		rq->weight = ret;
+	    } else {
+		*end = ch;
+		break;
+	    }
+	} else if ( ret==-1 && *pt=='+' || *pt=='-' ) {
+	    adjust = strtol(pt,&e,10);
+	} else if ( ret==-1 && *pt=='^' ) {
+	    relname = copy(pt+1);
+	    if ( g_hash_table_contains(ht, relname) ) {
+		GDrawError("Circular font resource reference to '%s': cannot resolve", relname);
+		if ( strict ) {
+		    err = true;
+		    break;
+		} else
+		    continue;
+	    }
+	    g_hash_table_add(ht, copy(relname));
+	    if ( !_GResToFontRequest(relname, &rel_rq, ht, false, strict) ) {
+		err = true;
+		break;
+	    }
+	    found_rel = true;
+	} else if ( ret==-1 ) {
+	    *end = ch;
+	    break;
+	} else if ( ret==0 ) {
+	    found_weight = true;
+	    rq->weight = 400;
+	} else if ( ret==1 || ret==2 ) {
+	    found_style = true;
+	    rq->style |= fs_italic;
+	} else if ( ret==3 ) {
+	    found_style = true;
+	    rq->style |= fs_smallcaps;
+	} else if ( ret==4 ) {
+	    found_weight = true;
+	    rq->weight = 700;
+	} else if ( ret==5 ) {
+	    found_weight = true;
+	    rq->weight = 300;
+	} else if ( ret==6 ) {
+	    found_style = true;
+	    rq->style |= fs_extended;
+	} else {
+	    found_style = true;
+	    rq->style |= fs_condensed;
+	}
+	*end = ch;
+	pt = end;
+	while ( *pt==' ' ) ++pt;
+    }
+
+    if ( !err ) {
+	if ( *pt!='\0' )
+	    rq->utf8_family_name = copy(pt);
+	if ( found_rel && rq->utf8_family_name==NULL && rel_rq.utf8_family_name!=NULL )
+	    rq->utf8_family_name = copy(rel_rq.utf8_family_name);
+	if ( found_rel && !found_weight )
+	    rq->weight = rel_rq.weight;
+	if ( found_rel && !found_style )
+	    rq->style = rel_rq.style;
+	if ( rq->point_size==0 ) {
+	    if ( found_rel ) {
+		if ( rel_rq.point_size==0 ) {
+		    GDrawError("Point size not set for '%s': cannot calculate relative point size", relname);
+		    if ( strict )
+			err = true;
+		} else {
+		    float tmp = (float)percent * (float)rel_rq.point_size / 100.0;
+		    rq->point_size = (int) ((tmp - floor(tmp) > 0.5) ? ceil(tmp) : floor(tmp));
+		    if ( rq->point_size < 0 )
+			rq->point_size -= adjust;
+		    else
+			rq->point_size += adjust;
+		}
+	    } else if ( strict ) {
+		err = true;
+	    }
+	}
+    }
+
+    if ( top_level )
+	g_hash_table_destroy(ht);
+
+    free((char *)rel_rq.utf8_family_name);
+    free(val);
+    free(relname);
+
+    if ( err ) {
+	free((char *)rq->utf8_family_name);
+	rq->utf8_family_name = NULL;
+	return false;
+    }
+
+    return true;
+}
+
+int ResStrToFontRequest(const char *resstr, FontRequest *rq) {
+    return _GResToFontRequest(resstr, rq, NULL, true, true);
+}
+
+static void _GResourceFindFont(const char *resourcename, GResFont *font, int is_value) {
+    FontRequest rq;
+    FontInstance *fi;
+    char *rstr;
+    memset(&rq, 0, sizeof(rq));
+    if ( is_value )
+	rstr = rstr!=NULL ? copy(resourcename) : NULL;
+    else
+	rstr = GResourceFindString(resourcename);
+
+    if ( rstr!=NULL && ( font->rstr==NULL || strcmp(rstr, font->rstr)!=0 ) ) {
+	if ( ResStrToFontRequest(rstr, &rq) ) {
+	    fi = GDrawInstanciateFont(NULL, &rq);
+	    if ( fi!=NULL ) {
+		// The original resource string is likely a constant so just accept
+		// leaking in the rare double-set cases.
+		font->rstr = rstr;
+		font->fi = fi;
+	    } else {
+		; //GDrawError("Could not find font corresponding to resource %s '%s', using default", resourcename, rstr);
+	    }
+	} else {
+	    GDrawError("Could not convert font resource %s '%s', using default", resourcename, rstr);
+	}
+    }
+
+    if ( rstr!=font->rstr )
+	free(rstr);
+
+    if ( font->fi==NULL && font->rstr!=NULL ) {
+#ifndef NDEBUG
+	int r =
+#endif
+	ResStrToFontRequest(font->rstr, &rq);
+	assert( r );
+        font->fi = GDrawInstanciateFont(NULL, &rq);
+	free((char *) rq.utf8_family_name);
+	if ( font->fi==NULL ) {
+	    GDrawError("Could not find font corresponding to default '%s', using system default", font->rstr);
+	    font->fi = _ggadget_default_font.fi;
+	}
+    }
+}
+
+void GResourceFindFont(const char *resourcename, const char *elemname, GResFont *font) {
+    char *rstr;
+    if ( resourcename!=NULL )
+	rstr = smprintf("%s.%s", resourcename, elemname);
+    else
+	rstr = (char *) elemname;
+    _GResourceFindFont(rstr, font, false);
+    if ( resourcename!=NULL )
+	free(rstr);
+}
+
+static void _GResourceFindImage(const char *fname, GResImage *img) {
+    GImageCacheBucket *t = NULL;
+
+    if ( fname!=NULL ) {
+	t = _GGadgetImageCache(fname, false);
+	if ( t==NULL || t->image==NULL ) {
+	    GDrawError("Could not find image corresponding to '%s', using default", fname);
+	} else {
+	    img->bucket = t;
+	}
+    }
+
+    if ( GResImageGetImage(img)==NULL && img->ini_name!=NULL ) {
+	img->bucket = _GGadgetImageCache(img->ini_name, true);
+	if ( GResImageGetImage(img)==NULL ) {
+	    GDrawError("Could not find image corresponding to default name '%s'", img->ini_name);
+	}
+    }
+}
+
+GImage *GResImageGetImage(GResImage *ri) {
+    if ( ri==NULL || ri->bucket==NULL )
+	return NULL;
+
+    return ri->bucket->image;
 }

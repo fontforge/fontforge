@@ -28,8 +28,24 @@
 #ifndef FONTFORGE_GRESOURCE_P_H
 #define FONTFORGE_GRESOURCE_P_H
 
-int _GResource_FindResName(const char *name);
+#include "ggadget.h"
+
+int _GResource_FindResName(const char *name, int do_restrict);
 extern struct _GResource_Res { char *res, *val; unsigned int generic: 1; unsigned int new: 1; } *_GResource_Res;
+
+typedef struct gimage_cache_bucket {
+    struct gimage_cache_bucket *next;
+    char *filename, *absname;
+    GImage *image;
+} GImageCacheBucket;
 extern char *_GGadget_ImagePath;
+GImageCacheBucket *_GGadgetImageCache(const char *filename, int keep_empty);
+
+extern void GResourceFind( GResStruct *info, const char *prefix);
+extern char *GResourceFindString(const char *name);
+extern int GResourceFindBool(const char *name, int def);
+extern long GResourceFindInt(const char *name, long def);
+extern Color GResourceFindColor(const char *name, Color def);
+extern void GResourceFindFont(const char *resourcename, const char *elemname, GResFont *font);
 
 #endif /* FONTFORGE_GRESOURCE_P_H */

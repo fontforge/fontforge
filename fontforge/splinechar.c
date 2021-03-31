@@ -33,7 +33,6 @@
 #include "ffglib.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
-#include "gresource.h"
 #include "lookups.h"
 #include "mem.h"
 #include "parsettf.h"

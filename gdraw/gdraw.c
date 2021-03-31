@@ -146,13 +146,15 @@ return(gdisp->groot);
 }
 
 Color GDrawGetDefaultBackground(GDisplay *gdisp) {
-    if ( gdisp==NULL ) gdisp = screen_display;
-return(gdisp->def_background);
+    return _GDraw_res_bg;
 }
 
 Color GDrawGetDefaultForeground(GDisplay *gdisp) {
-    if ( gdisp==NULL ) gdisp = screen_display;
-return(gdisp->def_foreground);
+    return _GDraw_res_fg;
+}
+
+Color GDrawGetWarningForeground(GDisplay *gdisp) {
+    return _GDraw_res_warnfg;
 }
 
 GRect *GDrawGetSize(GWindow w, GRect *ret) {

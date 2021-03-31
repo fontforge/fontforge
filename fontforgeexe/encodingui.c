@@ -32,7 +32,6 @@
 #include "encoding.h"
 #include "fontforgeui.h"
 #include "gfile.h"
-#include "gresource.h"
 #include "ustring.h"
 #include "utype.h"
 

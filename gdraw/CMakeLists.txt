@@ -42,7 +42,6 @@ add_library(gdraw STATIC
   gradio.c
   gresedit.c
   gresource.c
-  gresourceimage.c
   gresourceP.h
   gsavefiledlg.c
   gscrollbar.c

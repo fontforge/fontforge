@@ -54,7 +54,6 @@ FontInstance *GDrawInstanciateFont(GWindow gw, FontRequest *rq) {
 
     fi = calloc(1,sizeof(struct font_instance));
     fi->rq = *rq;
-    fi->rq.family_name = u_copy( fi->rq.family_name );
     fi->rq.utf8_family_name = copy( fi->rq.utf8_family_name );
 
 return( fi );

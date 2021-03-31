@@ -37,38 +37,26 @@
 static int GScroll1BoxTime = 500;		/* half a second between scrolls when mouse out of listbox */
 
 static GBox scroll1box_box = GBOX_EMPTY; /* Don't initialize here */;
-static int gscroll1box_inited = false;
 
+extern GResInfo gmenubar_ri;
 static GResInfo gscroll1box_ri = {
-    NULL, &ggadget_ri, NULL, NULL,
+    &gmenubar_ri, &ggadget_ri, NULL, NULL,
     &scroll1box_box,
     NULL,
     NULL,
     NULL,
     N_("Scroll Box"),
     N_("A box used to scroll widgets vertically or horizontally"),
-    "GGroup",
+    "GScroll1Box",
     "Gdraw",
     false,
-    omf_border_type | omf_border_shape | omf_padding,
-    NULL,
+    omf_border_type | omf_border_width | omf_padding,
+    { bt_none, 0, 1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
     GBOX_EMPTY,
     NULL,
     NULL,
     NULL
 };
-
-static void GScroll1Box_Init() {
-    if (gscroll1box_inited) {
-        return;
-    }
-    _GGadgetCopyDefaultBox(&scroll1box_box);
-    scroll1box_box.border_type = bt_none;
-    scroll1box_box.border_width = 1;
-    scroll1box_box.padding = 3;
-    _GGadgetInitDefaultBox("GScroll1Box", &scroll1box_box, NULL);
-    gscroll1box_inited = true;
-}
 
 static void GScroll1BoxDestroy(GGadget *g) {
     GScroll1Box *s1b = (GScroll1Box *) g;
@@ -589,9 +577,7 @@ GGadget *GScroll1BoxCreate(struct gwindow *base, GGadgetData *gd, void *data) {
     GScroll1Box *s1b = calloc(1, sizeof(GScroll1Box));
     GGadgetData sub_gd;
 
-    if (!gscroll1box_inited) {
-        GScroll1Box_Init();
-    }
+    GResEditDoInit(@gscroll1box_ri);
 
     for (s1b->count = 0; gd->u.boxelements[s1b->count] != NULL; ++s1b->count);
 
@@ -692,9 +678,3 @@ void GScroll1BoxFitWindow(GGadget *g) {
 	GGadgetResize(g, outer.width-2*g->r.x, outer.height-2*g->r.y );
 }
 */
-
-GResInfo *_GScroll1BoxRIHead(void) {
-    GScroll1Box_Init();
-    return &gscroll1box_ri;
-}
-

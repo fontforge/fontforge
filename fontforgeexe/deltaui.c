@@ -32,6 +32,7 @@
 #include "fontforgeui.h"
 #include "gimage.h"
 #include "gkeysym.h"
+#include "gresedit.h"
 #include "ustring.h"
 #include "utype.h"
 
@@ -47,6 +48,11 @@
 #define CID_Ok		105
 #define CID_Cancel	106
 #define CID_Top		107
+
+extern GBox _ggadget_Default_Box;
+#define MAIN_FOREGROUND (_ggadget_Default_Box.main_foreground)
+
+extern GResFont validate_font;
 
 static double delta_within = .02;
 static char *delta_sizes=NULL;
@@ -837,23 +843,24 @@ static void QGDrawWindow(GWindow pixmap, QGData *qg, GEvent *e) {
     y = qg->as;
     memset(&where,0,sizeof(where));
     QG_FindLine(&qg->list,qg->loff_top,&where);
+    GDrawSetFont(pixmap,qg->font);
 
     for ( l=0; l<qg->vlcnt && where.parent!=NULL; ++l ) {
 	for ( parent=where.parent, depth= -2; parent!=NULL; parent=parent->parent, ++depth );
 	if ( where.offset==-1 ) {
 	    r.x = 2+depth*qg->fh;   r.y = y-qg->as+1;
-	    GDrawDrawRect(pixmap,&r,0x000000);
+	    GDrawDrawRect(pixmap,&r,MAIN_FOREGROUND);
 	    GDrawDrawLine(pixmap,r.x+2,r.y+qg->as/2,r.x+qg->as-2,r.y+qg->as/2,
-		    0x000000);
+		    MAIN_FOREGROUND);
 	    if ( !where.parent->open )
 		GDrawDrawLine(pixmap,r.x+qg->as/2,r.y+2,r.x+qg->as/2,r.y+qg->as-2,
-			0x000000);
-	    GDrawDrawText8(pixmap,r.x+qg->fh,y,where.parent->name,-1, 0x000000);
+			MAIN_FOREGROUND);
+	    GDrawDrawText8(pixmap,r.x+qg->fh,y,where.parent->name,-1, MAIN_FOREGROUND);
 	} else {
 	    QuestionableGrid *q = &where.parent->first[where.offset];
 	    sprintf( buffer, _("\"%.40s\" size=%d point=%d (%d,%d) distance=%g"),
 		    q->sc->name, q->size, q->nearestpt, q->x, q->y, q->distance );
-	    GDrawDrawText8(pixmap,2+(depth+1)*qg->fh,y,buffer,-1, 0x000000);
+	    GDrawDrawText8(pixmap,2+(depth+1)*qg->fh,y,buffer,-1, MAIN_FOREGROUND);
 	}
 	y += qg->fh;
 	QG_NextLine(&where);
@@ -961,9 +968,7 @@ static void StartDeltaDisplay(QGData *qg) {
 	    *varray[4];
     GTextInfo label[8];
     int i, k;
-    FontRequest rq;
     int as, ds, ld;
-    static GFont *valfont=NULL;
     static int sorts_translated = 0;
 
     if (!sorts_translated)
@@ -988,15 +993,7 @@ static void StartDeltaDisplay(QGData *qg) {
     qg->gw = gw = GDrawCreateTopWindow(NULL,&pos,qg_e_h,qg,&wattrs);
     qg->done = false;
 
-    if ( valfont==NULL ) {
-	memset(&rq,0,sizeof(rq));
-	rq.utf8_family_name = "Helvetica";
-	rq.point_size = 11;
-	rq.weight = 400;
-	valfont = GDrawInstanciateFont(gw,&rq);
-	valfont = GResourceFindFont("Validate.Font",valfont);
-    }
-    qg->font = valfont;
+    qg->font = validate_font.fi;
     GDrawWindowFontMetrics(gw,qg->font,&as,&ds,&ld);
     qg->fh = as+ds;
     qg->as = as;

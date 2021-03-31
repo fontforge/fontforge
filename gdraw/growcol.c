@@ -829,7 +829,7 @@ static int growcol_inited = false;
 
 static void GRowColInit() {
     list_box.main_background = 0xc0c0c0;
-    list_font = _GGadgetInitDefaultBox("GRowCol.",&list_box,NULL);
+    list_font = _GGadgetInitDefaultBox("GRowCol.",&list_box);
     growcol_inited = true;
 }
 

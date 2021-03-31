@@ -32,7 +32,6 @@
 #include "gdrawP.h"
 #include "ggadgetP.h"
 #include "gkeysym.h"
-#include "gresource.h"
 #include "gwidget.h"
 #include "ustring.h"
 
@@ -40,12 +39,12 @@
 
 static GBox gmatrixedit_box = GBOX_EMPTY; /* Don't initialize here */
 static GBox gmatrixedit_button_box = GBOX_EMPTY; /* Don't initialize here */
-static FontInstance *gmatrixedit_font = NULL, *gmatrixedit_titfont = NULL;
+static GResFont gmatrixedit_font = GRESFONT_INIT("400 12pt " MONO_UI_FAMILIES);
+static GResFont gmatrixedit_titfont = GRESFONT_INIT("400 8pt " SANS_UI_FAMILIES);
 static Color gmatrixedit_title_bg = 0x808080, gmatrixedit_title_fg = 0x000000, gmatrixedit_title_divider = 0xffffff;
 static Color gmatrixedit_rules = 0x000000;
 static Color gmatrixedit_frozencol = 0xff0000,
 	gmatrixedit_activecol = 0x0000ff, gmatrixedit_activebg=0xffffc0;
-static int gmatrixedit_inited = false;
 
 static struct resed gmatrixedit_re[] = {
     {N_("Title Background"), "TitleBG", rt_color, &gmatrixedit_title_bg, N_("Background color of column headers at the top of a matrix edit"), NULL, { 0 }, 0, 0 },
@@ -58,27 +57,30 @@ static struct resed gmatrixedit_re[] = {
     {N_("Title Font"), "TitleFont", rt_font, &gmatrixedit_titfont, N_("Font used to draw titles of a matrix edit"), NULL, { 0 }, 0, 0 },
     RESED_EMPTY
 };
-static GResInfo gmatrixedit_ri = {
-    NULL, &ggadget_ri, NULL,NULL,
+static GResInfo gmatrixedit2_ri;
+GResInfo gmatrixedit_ri = {
+    &gmatrixedit2_ri, &ggadget_ri, &gmatrixedit2_ri,NULL,
     &gmatrixedit_box,
     &gmatrixedit_font,
     NULL,
-    gmatrixedit_re,
+    NULL,
     N_("Matrix Edit"),
     N_("Matrix Edit (sort of like a spreadsheet)"),
     "GMatrixEdit",
     "Gdraw",
     false,
+    false,
     omf_border_type|omf_border_width|omf_border_shape|omf_padding|
 	omf_main_background|omf_disabled_background,
-    NULL,
+    { bt_none, bs_rect, 0, 0, 0, 0, 0, 0, 0, 0, COLOR_TRANSPARENT, 0, COLOR_TRANSPARENT, 0, 0, 0, 0, 0, 0 },
     GBOX_EMPTY,
     NULL,
     NULL,
     NULL
 };
+static GResInfo gmatrixedit_button_ri;
 static GResInfo gmatrixedit2_ri = {
-    NULL, &ggadget_ri, &gmatrixedit_ri,NULL,
+    &gmatrixedit_button_ri, &ggadget_ri, &gmatrixedit_ri,NULL,
     NULL,
     NULL,
     NULL,
@@ -88,49 +90,48 @@ static GResInfo gmatrixedit2_ri = {
     "GMatrixEdit",
     "Gdraw",
     false,
+    false,
     0,
-    NULL,
+    GBOX_EMPTY,
     GBOX_EMPTY,
     NULL,
     NULL,
     NULL
 };
 
+static int GMatrixEditButtonRIInit(GResInfo *ri) {
+    if ( ri->is_initialized )
+	return false;
+    GResEditDoInit(&gmatrixedit_ri);
+    ri->overrides.main_background = gmatrixedit_ri.boxdata->main_background;
+    ri->overrides.disabled_background = gmatrixedit_ri.boxdata->disabled_background;
+    return _GResEditInitialize(ri);
+}
+extern GResInfo gdrawable_ri;
+static GResInfo gmatrixedit_button_ri = {
+    &gdrawable_ri, &ggadget_ri, NULL,NULL,
+    &gmatrixedit_button_box,
+    NULL,
+    NULL,
+    NULL,
+    N_("Matrix Edit Button"),
+    N_("Button in Matrix Edit"),
+    "GMatrixEditButton",
+    "Gdraw",
+    false,
+    false,
+    omf_border_width|omf_padding|omf_main_background|omf_disabled_background|box_foreground_border_inner,
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+    GBOX_EMPTY,
+    NULL,
+    GMatrixEditButtonRIInit,
+    NULL
+};
+
 static void _GMatrixEdit_Init(void) {
-    FontRequest rq;
-
-    if ( gmatrixedit_inited )
-return;
-    _GGadgetCopyDefaultBox(&gmatrixedit_box);
-    gmatrixedit_box.border_type = bt_none;
-    gmatrixedit_box.border_width = 0;
-    gmatrixedit_box.border_shape = bs_rect;
-    gmatrixedit_box.padding = 0;
-    /*gmatrixedit_box.flags = 0;*/
-    gmatrixedit_box.main_background = COLOR_TRANSPARENT;
-    gmatrixedit_box.disabled_background = COLOR_TRANSPARENT;
-    GDrawDecomposeFont(_ggadget_default_font,&rq);
-    gmatrixedit_font = GDrawInstanciateFont(NULL,&rq);
-    gmatrixedit_font = _GGadgetInitDefaultBox("GMatrixEdit.",&gmatrixedit_box,gmatrixedit_font);
-    GDrawDecomposeFont(gmatrixedit_font,&rq);
-    rq.point_size = (rq.point_size>=12) ? rq.point_size-2 : rq.point_size>=10 ? rq.point_size-1 : rq.point_size;
-    rq.weight = 700;
-    gmatrixedit_titfont = GResourceFindFont("GMatrixEdit.TitleFont",GDrawInstanciateFont(NULL,&rq));
-    gmatrixedit_title_bg = GResourceFindColor("GMatrixEdit.TitleBG",gmatrixedit_title_bg);
-    gmatrixedit_title_fg = GResourceFindColor("GMatrixEdit.TitleFG",gmatrixedit_title_fg);
-    gmatrixedit_title_divider = GResourceFindColor("GMatrixEdit.TitleDivider",gmatrixedit_title_divider);
-    gmatrixedit_rules = GResourceFindColor("GMatrixEdit.RuleCol",gmatrixedit_rules);
-    gmatrixedit_frozencol = GResourceFindColor("GMatrixEdit.FrozenCol",gmatrixedit_frozencol);
-    gmatrixedit_activecol = GResourceFindColor("GMatrixEdit.ActiveCol",gmatrixedit_activecol);
-    gmatrixedit_activebg = GResourceFindColor("GMatrixEdit.ActiveBG",gmatrixedit_activebg);
-    gmatrixedit_inited = true;
-
-    _GGadgetCopyDefaultBox(&gmatrixedit_button_box);
-    gmatrixedit_button_box.border_width = 1;
-    gmatrixedit_button_box.flags |= box_foreground_border_inner;
-    gmatrixedit_button_box.main_background = gmatrixedit_box.main_background;
-    gmatrixedit_button_box.disabled_background = gmatrixedit_box.disabled_background;
-    _GGadgetInitDefaultBox("GMatrixEditButton.",&gmatrixedit_button_box,NULL);
+    GResEditDoInit(&gmatrixedit_ri);
+    GResEditDoInit(&gmatrixedit2_ri);
+    GResEditDoInit(&gmatrixedit_button_ri);
 }
 
 static void MatrixDataFree(GMatrixEdit *gme) {
@@ -1960,15 +1961,14 @@ GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     GTextInfo label;
     int as, ds, ld;
 
-    if ( !gmatrixedit_inited )
-	_GMatrixEdit_Init();
+    _GMatrixEdit_Init();
 
     gme->g.funcs = &gmatrixedit_funcs;
     _GGadget_Create(&gme->g,base,gd,data,&gmatrixedit_box);
     gme->g.takes_input = true; gme->g.takes_keyboard = false; gme->g.focusable = false;
 
-    gme->font = gmatrixedit_font;
-    gme->titfont = gmatrixedit_titfont;
+    gme->font = gmatrixedit_font.fi;
+    gme->titfont = gmatrixedit_titfont.fi;
     GDrawWindowFontMetrics(base,gme->font,&as, &ds, &ld);
     gme->font_as = gme->as = as;
     gme->font_fh = gme->fh = as+ds;
@@ -2461,18 +2461,4 @@ void GMatrixEditSetEditable(GGadget *g, int editable ) {
     GGadgetSetVisible(gme->del,editable);
     GMatrixEdit_Resize(&gme->g,gme->g.r.width,gme->g.r.height);
     GDrawRequestExpose(gme->nested,NULL,false);
-}
-
-GResInfo *_GMatrixEditRIHead(void) {
-    /* GRect size; */
-
-    _GMatrixEdit_Init();
-    /* GDrawGetSize(GDrawGetRoot(NULL),&size);*/
-    if ( true /* size.height<900*/ ) {
-	gmatrixedit_ri.next = &gmatrixedit2_ri;
-	gmatrixedit_ri.extras = NULL;
-	gmatrixedit_ri.seealso1 = &gmatrixedit2_ri;
-    }
-
-return( &gmatrixedit_ri );
 }

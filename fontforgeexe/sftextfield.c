@@ -40,11 +40,32 @@
 #include <math.h>
 
 static GBox sftextarea_box = GBOX_EMPTY; /* Don't initialize here */
-static int sftextarea_inited = false;
-static FontInstance *sftextarea_font;
+static GResFont sftextarea_font = GRESFONT_INIT("400 10pt " MONO_UI_FAMILIES);
+extern GBox _ggadget_Default_Box;
+#define MAIN_FOREGROUND (_ggadget_Default_Box.main_foreground)
 
 static unichar_t nullstr[] = { 0 }, 
 	newlinestr[] = { '\n', 0 }, tabstr[] = { '\t', 0 };
+
+GResInfo sftextarea_ri = {
+    NULL, &ggadget_ri,NULL, NULL,
+    &sftextarea_box,
+    &sftextarea_font,
+    NULL,
+    NULL,
+    N_("SFTextArea"),
+    N_("SFTextArea"),
+    "SFTextArea",
+    "fontforge",
+    false,
+    false,
+    omf_padding|box_active_border_inner,
+    { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
+};
 
 static int SFTextArea_Show(SFTextArea *st, int pos);
 static void GTPositionGIC(SFTextArea *st);
@@ -1248,7 +1269,7 @@ static void gt_draw_cursor(GWindow pixmap, SFTextArea *st) {
         GDrawSetLineWidth(st->g.base,0);
         GDrawSetDashedLine(st->g.base,2,2,0);
         GDrawDrawLine(st->g.base,st->g.inner.x+x,st->g.inner.y+y,
-            st->g.inner.x+x,st->g.inner.y+y+st->li.lineheights[l].fh,0);
+            st->g.inner.x+x,st->g.inner.y+y+st->li.lineheights[l].fh,MAIN_FOREGROUND);
         GDrawSetDashedLine(st->g.base,0,0,0);
         return;
     }
@@ -1260,7 +1281,7 @@ return;
     if ( x<0 || x>=st->g.inner.width )
 return;
     GDrawDrawLine(pixmap,st->g.inner.x+x,st->g.inner.y+y,
-	    st->g.inner.x+x,st->g.inner.y+y+fh, 0);
+	    st->g.inner.x+x,st->g.inner.y+y+fh, MAIN_FOREGROUND);
 }
 
 static int sftextarea_expose(GWindow pixmap, GGadget *g, GEvent *event) {
@@ -2089,21 +2110,6 @@ struct gfuncs sftextarea_funcs = {
     NULL
 };
 
-static void SFTextAreaInit() {
-    FontRequest rq;
-
-    GGadgetInit();
-    GDrawDecomposeFont(_ggadget_default_font,&rq);
-    rq.utf8_family_name = MONO_UI_FAMILIES;
-    sftextarea_font = GDrawInstanciateFont(NULL,&rq);
-    sftextarea_font = GResourceFindFont("SFTextArea.Font",sftextarea_font);
-    _GGadgetCopyDefaultBox(&sftextarea_box);
-    sftextarea_box.padding = 3;
-    sftextarea_box.flags = box_active_border_inner;
-    sftextarea_font = _GGadgetInitDefaultBox("SFTextArea.",&sftextarea_box,sftextarea_font);
-    sftextarea_inited = true;
-}
-
 static void SFTextAreaAddVSb(SFTextArea *st) {
     GGadgetData gd;
 
@@ -2214,8 +2220,7 @@ static void SFTextAreaFit(SFTextArea *st) {
 
 static SFTextArea *_SFTextAreaCreate(SFTextArea *st, struct gwindow *base, GGadgetData *gd,void *data, GBox *def) {
 
-    if ( !sftextarea_inited )
-	SFTextAreaInit();
+    GResEditDoInit(&sftextarea_ri);
     st->g.funcs = &sftextarea_funcs;
     _GGadget_Create(&st->g,base,gd,data,def);
 
@@ -2229,7 +2234,7 @@ static SFTextArea *_SFTextAreaCreate(SFTextArea *st, struct gwindow *base, GGadg
     }
     if ( st->li.text==NULL )
 	st->li.text = calloc(1,sizeof(unichar_t));
-    st->font = sftextarea_font;
+    st->font = sftextarea_font.fi;
     if ( gd->label!=NULL && gd->label->font!=NULL )
 	st->font = gd->label->font;
     SFTextAreaFit(st);

@@ -30,7 +30,6 @@
 #include "gdraw.h"
 #include "ggadgetP.h"
 #include "gkeysym.h"
-#include "gresource.h"
 #include "gwidget.h"
 #include "ustring.h"
 
@@ -43,12 +42,12 @@ static GBox _GGadget_colorbutton_box = GBOX_EMPTY; /* Don't initialize here */
 static GBox _GGadget_droplist_box = GBOX_EMPTY; /* Don't initialize here */
 static GBox label_box = GBOX_EMPTY; /* Don't initialize here */
 static int shift_on_press = 0;
-static FontInstance *label_font = NULL, *button_font = NULL;
-static int gbutton_inited = false;
+static GResFont label_font = GRESFONT_INIT("400 10pt " SANS_UI_FAMILIES);
+static GResFont button_font = GRESFONT_INIT("400 10pt " SANS_UI_FAMILIES);
 #define COLOR_BUTTON_BOX_LEN	10
 
 static GResInfo gcancel_ri, gdefault_ri, gbutton_ri, gdroplist_ri, gcolor_ri;
-static GResInfo glabel_ri = {
+GResInfo glabel_ri = {
     &gbutton_ri, &ggadget_ri,NULL, NULL,
     &label_box,
     &label_font,
@@ -59,8 +58,9 @@ static GResInfo glabel_ri = {
     "GLabel",
     "Gdraw",
     false,
+    false,
     omf_border_type|omf_border_width|omf_padding,
-    NULL,
+    { bt_none, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
     GBOX_EMPTY,
     NULL,
     NULL,
@@ -79,7 +79,7 @@ static GGadgetCreateData *barray[] = { GCD_Glue, &button_gcd[0], GCD_Glue, &butt
 static GGadgetCreateData buttonbox =
 	{GHVGroupCreate, { { 2, 2, 0, 0 }, NULL, 0, 0, 0, 0, 0, NULL, { (GTextInfo *) barray }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL };
 static struct resed gbutton_re[] = {
-    { N_("Shift On Press"), "ShiftOnPress", rt_bool, &shift_on_press, N_("Background color of column headers at the top of a matrix edit"), NULL, { 0 }, 0, 0 },
+    { N_("Shift On Press"), "ShiftOnPress", rt_bool, &shift_on_press, N_("When true the button will move slightly when pressed"), NULL, { 0 }, 0, 0 },
     RESED_EMPTY
 };
 static GResInfo gbutton_ri = {
@@ -93,6 +93,7 @@ static GResInfo gbutton_ri = {
     "GButton",
     "Gdraw",
     true,
+    false,
 #ifdef __Mac
     box_do_depressed_background|omf_border_type|omf_border_width|
 	    omf_border_shape|omf_padding,
@@ -101,7 +102,7 @@ static GResInfo gbutton_ri = {
 	/*box_active_border_inner|*/box_do_depressed_background|box_draw_default,
 #endif
     /* Will be initialized later */
-    NULL,
+    { bt_box, bs_roundrect, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
     GBOX_EMPTY,
     NULL,
     NULL,
@@ -125,12 +126,13 @@ static GResInfo gdefault_ri = {
     "GDefaultButton",
     "Gdraw",
     true,
+    false,
 #ifdef __Mac
     box_gradient_bg|omf_main_background|omf_gradient_bg_end,
 #else
     0,
 #endif
-    NULL,
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x64a4f2, 0, 0, 0, 0, 0, 0, 0xb7ceeb, 0, 0 },
     GBOX_EMPTY,
     NULL,
     NULL,
@@ -154,12 +156,13 @@ static GResInfo gcancel_ri = {
     "GCancelButton",
     "Gdraw",
     true,
+    false,
 #ifdef __Mac
     box_gradient_bg|omf_main_background|omf_gradient_bg_end,
 #else
     0,
 #endif
-    NULL,
+    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xf27458, 0, 0, 0, 0, 0, 0, 0xebb4a0, 0, 0 },
     GBOX_EMPTY,
     NULL,
     NULL,
@@ -183,8 +186,9 @@ static GResInfo gcolor_ri = {
     "GColorButton",
     "Gdraw",
     true,
+    false,
     0,
-    NULL,
+    GBOX_EMPTY,
     GBOX_EMPTY,
     NULL,
     NULL,
@@ -197,6 +201,18 @@ static GTextInfo list_choices[] = {
     GTEXTINFO_EMPTY
 };
 
+static int GDropListRIInit(GResInfo *ri) {
+    if ( ri->is_initialized )
+	return false;
+#ifdef __Mac
+    GGadgetInit();
+    ri->overrides.border_type = _ggadget_Default_Box.border_type;
+    ri->overrides.border_width = _ggadget_Default_Box.border_width;
+    ri->overrides.border_shape = _ggadget_Default_Box.border_shape;
+#endif
+    return _GResEditInitialize(ri);
+}
+
 static GGadgetCreateData droplist_gcd[] = {
     { GListButtonCreate, { { 0, 0, 80, 0 }, NULL, 0, 0, 0, 0, 0, &list_choices[0], { list_choices }, gg_visible, NULL, NULL }, NULL, NULL },
     { GListButtonCreate, { { 0, 0, 80, 0 }, NULL, 0, 0, 0, 0, 0, &list_choices[1], { list_choices }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL }
@@ -204,8 +220,9 @@ static GGadgetCreateData droplist_gcd[] = {
 static GGadgetCreateData *dlarray[] = { GCD_Glue, &droplist_gcd[0], GCD_Glue, &droplist_gcd[1], GCD_Glue, NULL, NULL };
 static GGadgetCreateData droplistbox =
     { GHVGroupCreate, { { 2, 2, 0, 0 }, NULL, 0, 0, 0, 0, 0, NULL, { (GTextInfo *) dlarray }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL };
+extern GResInfo gradio_ri;
 static GResInfo gdroplist_ri = {
-    NULL, &gbutton_ri,&listmark_ri,NULL,
+    &gradio_ri, &gbutton_ri,&listmark_ri,NULL,
     &_GGadget_droplist_box,
     NULL,
     &droplistbox,
@@ -215,15 +232,16 @@ static GResInfo gdroplist_ri = {
     "GDropList",
     "Gdraw",
     true,
+    false,
 #ifdef __Mac
     omf_border_type|omf_border_width|omf_border_shape,
 #else
     0,
 #endif
-    NULL,
+    { bt_none, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 ,0 ,0 ,0 },
     GBOX_EMPTY,
     NULL,
-    NULL,
+    GDropListRIInit,
     NULL
 };
 
@@ -954,51 +972,12 @@ return;
 }
 
 void _GButtonInit(void) {
-#ifdef __Mac
-    extern GBox _ggadget_Default_Box;
-#endif
-
-    if ( gbutton_inited )
-return;
-
-    GGadgetInit();
-    _GGadgetCopyDefaultBox(&label_box);
-    _GGadgetCopyDefaultBox(&_GGadget_button_box);
-#ifdef __Mac
-    _GGadget_button_box.border_type = bt_box;
-    _GGadget_button_box.border_width = 1;
-    _GGadget_button_box.border_shape = bs_roundrect;
-    _GGadget_button_box.flags |= box_do_depressed_background;
-    _GGadget_button_box.padding = 1;
-#else
-    _GGadget_button_box.flags |= box_foreground_border_inner|box_foreground_border_outer|
-	/*box_active_border_inner|*/box_do_depressed_background|box_draw_default;
-#endif
-    label_box.border_type = bt_none;
-    label_box.border_width = label_box.padding = /*label_box.flags =*/ 0;
-    button_font = _GGadgetInitDefaultBox("GButton.",&_GGadget_button_box,NULL);
-    label_font = _GGadgetInitDefaultBox("GLabel.",&label_box,button_font);
-    shift_on_press = GResourceFindBool("GButton.ShiftOnPress",false);
-    _GGadget_droplist_box = _GGadget_button_box;
-    _GGadget_defaultbutton_box = _GGadget_button_box;
-    _GGadget_cancelbutton_box  = _GGadget_button_box;
-#ifdef __Mac
-    _GGadget_defaultbutton_box.flags |= box_gradient_bg;
-    _GGadget_defaultbutton_box.main_background = 0x64a4f2;
-    _GGadget_defaultbutton_box.gradient_bg_end = 0xb7ceeb;
-    _GGadget_cancelbutton_box.flags |= box_gradient_bg;
-    _GGadget_cancelbutton_box.main_background = 0xf27458;
-    _GGadget_cancelbutton_box.gradient_bg_end = 0xebb4a0;
-    _GGadget_droplist_box.border_type = _ggadget_Default_Box.border_type;
-    _GGadget_droplist_box.border_width = _ggadget_Default_Box.border_width;
-    _GGadget_droplist_box.border_shape = _ggadget_Default_Box.border_shape;
-#endif
-    _GGadget_colorbutton_box  = _GGadget_button_box;
-    _GGadgetInitDefaultBox("GDefaultButton.",&_GGadget_defaultbutton_box,NULL);
-    _GGadgetInitDefaultBox("GCancelButton.",&_GGadget_cancelbutton_box,NULL);
-    _GGadgetInitDefaultBox("GDropList.",&_GGadget_droplist_box,NULL);
-    _GGadgetInitDefaultBox("GColorButton.",&_GGadget_colorbutton_box,NULL);
-    gbutton_inited = true;
+   GResEditDoInit(&glabel_ri);
+   GResEditDoInit(&gbutton_ri);
+   GResEditDoInit(&gdroplist_ri);
+   GResEditDoInit(&gdefault_ri);
+   GResEditDoInit(&gcancel_ri);
+   GResEditDoInit(&gcolor_ri);
 }
 
 static void GLabelFit(GLabel *gl) {
@@ -1022,8 +1001,7 @@ static void GLabelFit(GLabel *gl) {
 }
 
 static GLabel *_GLabelCreate(GLabel *gl, struct gwindow *base, GGadgetData *gd,void *data, GBox *def) {
-    if ( !gbutton_inited )
-	_GButtonInit();
+    _GButtonInit();
     gl->g.funcs = &gbutton_funcs;
     _GGadget_Create(&gl->g,base,gd,data,def);
 
@@ -1031,7 +1009,7 @@ static GLabel *_GLabelCreate(GLabel *gl, struct gwindow *base, GGadgetData *gd,v
 	_GWidget_SetDefaultButton(&gl->g);
     if (( gl->is_cancel = gd->flags&gg_but_cancel?1:0 ))
 	_GWidget_SetCancelButton(&gl->g);
-    gl->font = def==&label_box ? label_font : button_font;
+    gl->font = def==&label_box ? label_font.fi : button_font.fi;
     if ( gd->label!=NULL ) {
 	gl->image_precedes = gd->label->image_precedes;
 	if ( gd->label->font!=NULL )
@@ -1186,9 +1164,4 @@ GGadget *GListButtonCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     _GLabelCreate((GLabel *) gl,base,gd,data,&_GGadget_droplist_box);
     gl->g.funcs = &glistbutton_funcs;
 return( &gl->g );
-}
-
-GResInfo *_GButtonRIHead(void) {
-    _GButtonInit();
-return( &glabel_ri );
 }

@@ -28,6 +28,7 @@
 #include <fontforge-config.h>
 
 #include "basics.h"
+#include "ffglib.h"
 #include "gdraw.h"
 #include "ggadgetP.h"
 #include "gkeysym.h"
@@ -52,42 +53,81 @@ GBox _ggadget_Default_Box = { bt_raised, bs_rect, 2, 2, 0, 0,
     COLOR_CREATE(0x00,0x00,0x00),		/* border outer */
 };
 GBox _GListMark_Box = GBOX_EMPTY; /* Don't initialize here */
-FontInstance *_ggadget_default_font = NULL;
-static FontInstance *popup_font = NULL;
+GResFont _ggadget_default_font = GRESFONT_INIT("400 10pt " SANS_UI_FAMILIES);
+GResFont popup_font = GRESFONT_INIT("400 8pt " SANS_UI_FAMILIES);
 int _GListMarkSize = 12;
-GResImage *_GListMark_Image = NULL, *_GListMark_DisImage;
+GResImage _GListMark_Image = GRESIMAGE_INIT("downarrow.png");
+GResImage _GListMark_DisImage = GRESIMAGE_INIT("downarrow_disabled.png");
 static int _GGadget_FirstLine = 6;
 static int _GGadget_LeftMargin = 6;
 static int _GGadget_LineSkip = 3;
 int _GGadget_Skip = 6;
 int _GGadget_TextImageSkip = 4;
-char *_GGadget_ImagePath = NULL;
 static int _ggadget_inited=0;
 static Color popup_foreground=0, popup_background=COLOR_CREATE(0xff,0xff,0xc0);
 static int popup_delay=1000, popup_lifetime=20000;
+static char *_GGadget_ImagePathRes;
 
-static GResInfo popup_ri;
+static int GGadgetRIInit(GResInfo *ri) {
+    if ( ri->is_initialized )
+	return false;
+
+    ri->overrides.main_background = GDrawGetDefaultBackground(NULL);
+    ri->overrides.main_foreground = GDrawGetDefaultForeground(NULL);
+    _GResEditInitialize(ri);
+    return true;
+}
+
+static void *_GGadgetImagePathResSet(char *res, void *def) {
+    GGadgetSetImagePath(res);
+    return res;
+}
+
 static struct resed ggadget_re[] = {
-    {N_("Text Image Skip"), "TextImageSkip", rt_int, &_GGadget_TextImageSkip, N_("Space (in points) left between images and text in labels, buttons, menu items, etc. which have both"), NULL, { 0 }, 0, 0 },
-    {N_("Image Path"), "ImagePath", rt_stringlong, &_GGadget_ImagePath, N_("List of directories to search for images, separated by colons"), NULL, { 0 }, 0, 0 },
+    {N_("Skip"), "Skip", rt_int, &_GGadget_Skip, N_("Space (in points) to skip between gadget elements"), NULL, { 0 }, 0, 0 },
+    {N_("Line Skip"), "LineSkip", rt_int, &_GGadget_LineSkip, N_("Space (in points) to skip after a line"), NULL, { 0 }, 0, 0 },
+    {N_("First Line Skip"), "FirstLine", rt_int, &_GGadget_FirstLine, N_("Space (in points) before a line when it is the first element"), NULL, { 0 }, 0, 0 },
+    {N_("Left Margin"), "LeftMargin", rt_int, &_GGadget_LeftMargin, N_("The default left margin (in points)"), NULL, { 0 }, 0, 0 },
+    {N_("Text Image Skip"), "TextImageSkip", rt_int, &_GGadget_TextImageSkip, N_("Space (in points) left between images and text in any labels, buttons, menu items, etc. that have both"), NULL, { 0 }, 0, 0 },
+    {N_("Image Path"), "ImagePath", rt_stringlong, &_GGadget_ImagePathRes, N_("List of directories to search for images, separated by colons"), _GGadgetImagePathResSet, { 0 }, 0, 0 },
     RESED_EMPTY
 };
-GResInfo ggadget_ri = {
+GResInfo ggadget2_ri = {
     &listmark_ri, NULL,NULL, NULL,
+    NULL,
+    NULL,
+    NULL,
+    ggadget_re,
+    N_("GGadget 2"),
+    N_("More configuration parameters for the \"abstract\" gadget."),
+    "GGadget",
+    "Gdraw",
+    false,
+    false,
+    0,
+    GBOX_EMPTY,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
+};
+GResInfo ggadget_ri = {
+    &ggadget2_ri, NULL,NULL, NULL,
     &_ggadget_Default_Box,
     &_ggadget_default_font,
     NULL,
-    ggadget_re,
+    NULL,
     N_("GGadget"),
     N_("This is an \"abstract\" gadget. It will never appear on the screen\nbut it is the root of gadget tree from which all others inherit"),
     "GGadget",
     "Gdraw",
     false,
-    0,
-    NULL,
+    false,
+    omf_main_foreground|omf_main_background,
+    GBOX_EMPTY,
     GBOX_EMPTY,
     NULL,
-    NULL,
+    GGadgetRIInit,
     NULL
 };
 static struct resed popup_re[] = {
@@ -98,8 +138,9 @@ static struct resed popup_re[] = {
     RESED_EMPTY
 };
 static void popup_refresh(void);
-static GResInfo popup_ri = {
-    &ggadget_ri, NULL, NULL,NULL,
+extern GResInfo gprogress_ri;
+GResInfo gpopup_ri = {
+    &gprogress_ri, NULL, NULL,NULL,
     NULL,	/* No box */
     &popup_font,
     NULL,
@@ -109,8 +150,9 @@ static GResInfo popup_ri = {
     "GGadget.Popup",
     "Gdraw",
     false,
+    false,
     omf_refresh,
-    NULL,
+    GBOX_EMPTY,
     GBOX_EMPTY,
     popup_refresh,
     NULL,
@@ -135,8 +177,9 @@ static GGadgetCreateData droplist_gcd[] = {
 static GGadgetCreateData *dlarray[] = { GCD_Glue, &droplist_gcd[0], GCD_Glue, &droplist_gcd[1], GCD_Glue, NULL, NULL };
 static GGadgetCreateData droplistbox =
     { GHVGroupCreate, { { 2, 2, 0, 0 }, NULL, 0, 0, 0, 0, 0, NULL, { (GTextInfo *) dlarray }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL };
+extern GResInfo glabel_ri;
 GResInfo listmark_ri = {
-    NULL, &ggadget_ri, NULL,NULL,
+    &glabel_ri, &ggadget_ri, NULL,NULL,
     &_GListMark_Box,	/* No box */
     NULL,
     &droplistbox,
@@ -147,8 +190,9 @@ GResInfo listmark_ri = {
     "GListMark",
     "Gdraw",
     false,
+    false,
     omf_border_width|omf_padding,
-    NULL,
+    { 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
     GBOX_EMPTY,
     NULL,
     NULL,
@@ -159,251 +203,6 @@ GResInfo listmark_ri = {
 static GWindow popup;
 static GTimer *popup_timer, *popup_vanish_timer;
 static int popup_visible = false;
-
-static int match(char **list, char *val) {
-    int i;
-
-    for ( i=0; list[i]!=NULL; ++i )
-	if ( strmatch(val,list[i])==0 )
-return( i );
-
-return( -1 );
-}
-
-static void *border_type_cvt(char *val, void *def) {
-    static char *types[] = { "none", "box", "raised", "lowered", "engraved",
-	    "embossed", "double", NULL };
-    int ret = match(types,val);
-    if ( ret== -1 )
-return( def );
-return( (void *) (intpt) ret );
-}
-
-static void *border_shape_cvt(char *val, void *def) {
-    static char *shapes[] = { "rect", "roundrect", "elipse", "diamond", NULL };
-    int ret = match(shapes,val);
-    if ( ret== -1 )
-return( def );
-return( (void *) (intpt) ret );
-}
-
-/* font name may be something like:
-	bold italic extended 12pt courier
-	400 10pt small-caps
-    family name comes at the end, size must have "pt" after it
-*/
-void *GResource_font_cvt(char *val, void *def) {
-    static char *styles[] = { "normal", "italic", "oblique", "small-caps",
-	    "bold", "light", "extended", "condensed", NULL };
-    FontRequest rq;
-    FontInstance *fi;
-    char *pt, *end, ch;
-    int ret;
-    char *freeme=NULL;
-
-    memset(&rq,0,sizeof(rq));
-    rq.utf8_family_name = SANS_UI_FAMILIES;
-    rq.point_size = 10;
-    rq.weight = 400;
-    rq.style = 0;
-    if ( def!=NULL )
-	GDrawDecomposeFont((FontInstance *)def, &rq);
-    else if ( _ggadget_default_font!=NULL )
-	GDrawDecomposeFont(_ggadget_default_font, &rq);
-
-    for ( pt=val; *pt && *pt!='"'; ) {
-	for ( end=pt; *end!=' ' && *end!='\0'; ++end );
-	ch = *end; *end = '\0';
-	ret = match(styles,pt);
-	if ( ret==-1 && isdigit(*pt)) {
-	    char *e;
-	    ret = strtol(pt,&e,10);
-	    if ( strmatch(e,"pt")==0 )
-		rq.point_size = ret;
-	    else if ( *e=='\0' )
-		rq.weight = ret;
-	    else {
-		*end = ch;
-    break;
-	    }
-	} else if ( ret==-1 ) {
-	    *end = ch;
-    break;
-	} else if ( ret==0 )
-	    /* Do Nothing */;
-	else if ( ret==1 || ret==2 )
-	    rq.style |= fs_italic;
-	else if ( ret==3 )
-	    rq.style |= fs_smallcaps;
-	else if ( ret==4 )
-	    rq.weight = 700;
-	else if ( ret==5 )
-	    rq.weight = 300;
-	else if ( ret==6 )
-	    rq.style |= fs_extended;
-	else
-	    rq.style |= fs_condensed;
-	*end = ch;
-	pt = end;
-	while ( *pt==' ' ) ++pt;
-    }
-
-    if ( *pt!='\0' )
-	rq.utf8_family_name = freeme = copy(pt);
-		
-    fi = GDrawInstanciateFont(NULL,&rq);
-
-    free(freeme);
-
-    if ( fi==NULL )
-return( def );
-return( (void *) fi );
-}
-
-FontInstance *GResourceFindFont(char *resourcename,FontInstance *deffont) {
-    char *val = GResourceFindString(resourcename);
-    if ( val==NULL )
-return( deffont );
-
-return( GResource_font_cvt(val,deffont));
-}
-
-void _GGadgetCopyDefaultBox(GBox *box) {
-    *box = _ggadget_Default_Box;
-}
-
-FontInstance *_GGadgetInitDefaultBox(char *class,GBox *box, FontInstance *deffont) {
-    GResStruct bordertype[] = {
-	{ "Box.BorderType", rt_string, NULL, border_type_cvt, 0 },
-	GRESSTRUCT_EMPTY
-    };
-    GResStruct boxtypes[] = {
-	{ "Box.BorderType", rt_string, NULL, border_type_cvt, 0 },
-	{ "Box.BorderShape", rt_string, NULL, border_shape_cvt, 0 },
-	{ "Box.BorderWidth", rt_int, NULL, NULL, 0 },
-	{ "Box.Padding", rt_int, NULL, NULL, 0 },
-	{ "Box.Radius", rt_int, NULL, NULL, 0 },
-	{ "Box.BorderInner", rt_bool, NULL, NULL, 0 },
-	{ "Box.BorderOuter", rt_bool, NULL, NULL, 0 },
-	{ "Box.ActiveInner", rt_bool, NULL, NULL, 0 },
-	{ "Box.DoDepressedBackground", rt_bool, NULL, NULL, 0 },
-	{ "Box.DrawDefault", rt_bool, NULL, NULL, 0 },
-	{ "Box.BorderBrightest", rt_color, NULL, NULL, 0 },
-	{ "Box.BorderBrighter", rt_color, NULL, NULL, 0 },
-	{ "Box.BorderDarkest", rt_color, NULL, NULL, 0 },
-	{ "Box.BorderDarker", rt_color, NULL, NULL, 0 },
-	{ "Box.NormalBackground", rt_color, NULL, NULL, 0 },
-	{ "Box.NormalForeground", rt_color, NULL, NULL, 0 },
-	{ "Box.DisabledBackground", rt_color, NULL, NULL, 0 },
-	{ "Box.DisabledForeground", rt_color, NULL, NULL, 0 },
-	{ "Box.ActiveBorder", rt_color, NULL, NULL, 0 },
-	{ "Box.PressedBackground", rt_color, NULL, NULL, 0 },
-	{ "Box.BorderLeft", rt_color, NULL, NULL, 0 },
-	{ "Box.BorderTop", rt_color, NULL, NULL, 0 },
-	{ "Box.BorderRight", rt_color, NULL, NULL, 0 },
-	{ "Box.BorderBottom", rt_color, NULL, NULL, 0 },
-	{ "Font", rt_string, NULL, GResource_font_cvt, 0 },
-	{ "Box.GradientBG", rt_bool, NULL, NULL, 0 },
-	{ "Box.GradientStartCol", rt_color, NULL, NULL, 0 },
-	{ "Box.ShadowOuter", rt_bool, NULL, NULL, 0 },
-	{ "Box.BorderInnerCol", rt_color, NULL, NULL, 0 },
-	{ "Box.BorderOuterCol", rt_color, NULL, NULL, 0 },
-	GRESSTRUCT_EMPTY
-    };
-    intpt bt, bs;
-    int bw, pad, rr, inner, outer, active, depressed, def, grad, shadow;
-    FontInstance *fi=deffont;
-
-    if ( !_ggadget_inited )
-	GGadgetInit();
-    if ( fi==NULL )
-	fi = _ggadget_default_font;
-    bt = box->border_type;
-    bs = box->border_shape;
-    bw = box->border_width;
-    pad = box->padding;
-    rr = box->rr_radius;
-    inner = box->flags & box_foreground_border_inner;
-    outer = box->flags & box_foreground_border_outer;
-    active = box->flags & box_active_border_inner;
-    depressed = box->flags & box_do_depressed_background;
-    def = box->flags & box_draw_default;
-    grad = box->flags & box_gradient_bg;
-    shadow = box->flags & box_foreground_shadow_outer;
-
-    bordertype[0].val = &bt;
-    boxtypes[0].val = &bt;
-    boxtypes[1].val = &bs;
-    boxtypes[2].val = &bw;
-    boxtypes[3].val = &pad;
-    boxtypes[4].val = &rr;
-    boxtypes[5].val = &inner;
-    boxtypes[6].val = &outer;
-    boxtypes[7].val = &active;
-    boxtypes[8].val = &depressed;
-    boxtypes[9].val = &def;
-    boxtypes[10].val = &box->border_brightest;
-    boxtypes[11].val = &box->border_brighter;
-    boxtypes[12].val = &box->border_darkest;
-    boxtypes[13].val = &box->border_darker;
-    boxtypes[14].val = &box->main_background;
-    boxtypes[15].val = &box->main_foreground;
-    boxtypes[16].val = &box->disabled_background;
-    boxtypes[17].val = &box->disabled_foreground;
-    boxtypes[18].val = &box->active_border;
-    boxtypes[19].val = &box->depressed_background;
-    boxtypes[20].val = &box->border_brightest;
-    boxtypes[21].val = &box->border_brighter;
-    boxtypes[22].val = &box->border_darkest;
-    boxtypes[23].val = &box->border_darker;
-    boxtypes[24].val = &fi;
-    boxtypes[25].val = &grad;
-    boxtypes[26].val = &box->gradient_bg_end;
-    boxtypes[27].val = &shadow;
-    boxtypes[28].val = &box->border_inner;
-    boxtypes[29].val = &box->border_outer;
-
-    GResourceFind( bordertype, class);
-    /* for a plain box, default to all borders being the same. they must change*/
-    /*  explicitly */
-    if ( bt==bt_box || bt==bt_double )
-	box->border_brightest = box->border_brighter = box->border_darker = box->border_darkest;
-    GResourceFind( boxtypes, class);
-
-    box->border_type = bt;
-    box->border_shape = bs;
-    box->border_width = bw;
-    box->padding = pad;
-    box->rr_radius = rr;
-    box->flags=0;
-    if ( inner )
-	box->flags |= box_foreground_border_inner;
-    if ( outer )
-	box->flags |= box_foreground_border_outer;
-    if ( active )
-	box->flags |= box_active_border_inner;
-    if ( depressed )
-	box->flags |= box_do_depressed_background;
-    if ( def )
-	box->flags |= box_draw_default;
-    if ( grad )
-	box->flags |= box_gradient_bg;
-    if ( shadow )
-	box->flags |= box_foreground_shadow_outer;
-
-    if ( fi==NULL ) {
-	FontRequest rq;
-	memset(&rq,0,sizeof(rq));
-	rq.utf8_family_name = SANS_UI_FAMILIES;
-	rq.point_size = 10;
-	rq.weight = 400;
-	rq.style = 0;
-	fi = GDrawInstanciateFont(NULL,&rq);
-	if ( fi==NULL )
-	    GDrawFatalError("Cannot find a default font for gadgets");
-    }
-return( fi );
-}
 
 static int localeptsize(void) {
 /* smaller point size to squeeze these languages in */
@@ -422,65 +221,29 @@ static int localeptsize(void) {
 }
 
 void GGadgetInit(void) {
-    static GResStruct res[] = {
-	{ "Font", rt_string, NULL, GResource_font_cvt, 0 },
-	GRESSTRUCT_EMPTY
-    };
-    if ( !_ggadget_inited ) {
-	_ggadget_inited = true;
-	GGadgetSetImagePath(GResourceFindString("GGadget.ImagePath"));
-	_ggadget_Default_Box.main_background = GDrawGetDefaultBackground(NULL);
-	_ggadget_Default_Box.main_foreground = GDrawGetDefaultForeground(NULL);
-	_ggadget_default_font = _GGadgetInitDefaultBox("GGadget.",&_ggadget_Default_Box,NULL);
-	_GGadgetCopyDefaultBox(&_GListMark_Box);
-	_GListMark_Box.border_width = _GListMark_Box.padding = 1;
-	/*_GListMark_Box.flags = 0;*/
-	_GGadgetInitDefaultBox("GListMark.",&_GListMark_Box,NULL);
-	_GListMarkSize = GResourceFindInt("GListMark.Width", _GListMarkSize);
-	_GListMark_Image = GGadgetResourceFindImage("GListMark.Image", NULL);
-	_GListMark_DisImage = GGadgetResourceFindImage("GListMark.DisabledImage", NULL);
-	if ( _GListMark_Image!=NULL && _GListMark_Image->image!=NULL ) {
-	    int size = GDrawPixelsToPoints(NULL,GImageGetWidth(_GListMark_Image->image));
-	    if ( size>_GListMarkSize )
-		_GListMarkSize=size;
-	}
-	_GGadget_FirstLine = GResourceFindInt("GGadget.FirstLine", _GGadget_FirstLine);
-	_GGadget_LeftMargin = GResourceFindInt("GGadget.LeftMargin", _GGadget_LeftMargin);
-	_GGadget_LineSkip = GResourceFindInt("GGadget.LineSkip", _GGadget_LineSkip);
-	_GGadget_Skip = GResourceFindInt("GGadget.Skip", _GGadget_Skip);
-	_GGadget_TextImageSkip = GResourceFindInt("GGadget.TextImageSkip", _GGadget_TextImageSkip);
-
-	popup_foreground = GResourceFindColor("GGadget.Popup.Foreground",popup_foreground);
-	popup_background = GResourceFindColor("GGadget.Popup.Background",popup_background);
-	popup_delay = GResourceFindInt("GGadget.Popup.Delay",popup_delay);
-	popup_lifetime = GResourceFindInt("GGadget.Popup.LifeTime",popup_lifetime);
-	res[0].val = &popup_font;
-	GResourceFind( res, "GGadget.Popup.");
-	if ( popup_font==NULL ) {
-	    FontRequest rq;
-	    memset(&rq,0,sizeof(rq));
-	    rq.utf8_family_name = SANS_UI_FAMILIES;
-	    rq.point_size = localeptsize();
-	    rq.weight = 400;
-	    rq.style = 0;
-	    popup_font = GDrawInstanciateFont(NULL,&rq);
-	    if ( popup_font==NULL )
-		popup_font = _ggadget_default_font;
-	}
-    }
+    GResEditDoInit(&ggadget_ri);
+    GResEditDoInit(&ggadget2_ri);
+    GResEditDoInit(&gpopup_ri);
+    GResEditDoInit(&listmark_ri);
 }
 
 void GListMarkDraw(GWindow pixmap,int x, int y, int height, enum gadget_state state ) {
     GRect r, old;
-    int marklen = GDrawPointsToPixels(pixmap,_GListMarkSize);
+    GImage *mi, *mdi;
+    int gmsize = GDrawPointsToPixels(pixmap,_GListMarkSize);
+    if ( (mi=GResImageGetImage(&_GListMark_Image))!=NULL ) {
+	int size = GImageGetWidth(mi);
+	if ( size>gmsize )
+	    gmsize = size;
+    }
+    int marklen = gmsize;
 
-    if ( state == gs_disabled &&
-           _GListMark_DisImage!=NULL && _GListMark_DisImage->image!=NULL) {
-	GDrawDrawScaledImage(pixmap,_GListMark_DisImage->image,x,
-		y + (height-GImageGetScaledHeight(pixmap,_GListMark_DisImage->image))/2);
-    } else if ( _GListMark_Image!=NULL && _GListMark_Image->image!=NULL ) {
-	GDrawDrawScaledImage(pixmap,_GListMark_Image->image,x,
-		y + (height-GImageGetScaledHeight(pixmap,_GListMark_Image->image))/2);
+    if ( state == gs_disabled && (mdi=GResImageGetImage(&_GListMark_DisImage))!=NULL) {
+	GDrawDrawScaledImage(pixmap,mdi,x,
+		y + (height-GImageGetScaledHeight(pixmap,mdi))/2);
+    } else if ( mi!=NULL ) {
+	GDrawDrawScaledImage(pixmap,mi,x,
+		y + (height-GImageGetScaledHeight(pixmap,mi))/2);
     } else {
 	r.x = x; r.width = marklen;
 	r.height = 2*GDrawPointsToPixels(pixmap,_GListMark_Box.border_width) +
@@ -570,7 +333,7 @@ return( false );
     }
     pt = msg = (unichar_t *) popup_info.msg;
     if ( msg!=NULL ) {
-	GDrawSetFont(popup,popup_font);
+	GDrawSetFont(popup,popup_font.fi);
 	do {
 	    temp = -1;
 	    if (( ept = u_strchr(pt,'\n'))!=NULL )
@@ -581,7 +344,7 @@ return( false );
 	    pt = ept+1;
 	} while ( ept!=NULL && *pt!='\0' );
     }
-    GDrawWindowFontMetrics(popup,popup_font,&as, &ds, &ld);
+    GDrawWindowFontMetrics(popup,popup_font.fi,&as, &ds, &ld);
     pos.width = width+2*GDrawPointsToPixels(popup,2);
     pos.height = lines*(as+ds) + img_height + 2*GDrawPointsToPixels(popup,2);
 
@@ -620,7 +383,7 @@ return( true );
 	    y += GImageGetHeight(popup_info.img);
 	}
 	if ( pt!=NULL ) {
-	    GDrawWindowFontMetrics(popup,popup_font,&as, &ds, &ld);
+	    GDrawWindowFontMetrics(popup,popup_font.fi,&as, &ds, &ld);
 	    fh = as+ds;
 	    y += as;
 	    while ( *pt!='\0' ) {
@@ -675,7 +438,7 @@ return;
 	pos.x = pos.y = 0; pos.width = pos.height = 1;
 	popup = GDrawCreateTopWindow(GDrawGetDisplayOfWindow(base),&pos,
 		msgpopup_eh,NULL,&pattrs);
-	GDrawSetFont(popup,popup_font);
+	GDrawSetFont(popup,popup_font.fi);
     }
     popup_timer = GDrawRequestTimer(popup,popup_delay,0,(void *) msg);
 }
@@ -1262,7 +1025,7 @@ void GGadgetSetFont(GGadget *g,GFont *font) {
 
 GFont *GGadgetGetFont(GGadget *g) {
     if ( g==NULL )
-return( _ggadget_default_font );
+return( _ggadget_default_font.fi );
     if ( g->funcs->get_font!=NULL )
 return( (g->funcs->get_font)(g) );
 
@@ -1450,13 +1213,6 @@ return( false );
 
 void GGadgetTakesKeyboard(GGadget *g, int takes_keyboard) {
     g->takes_keyboard = takes_keyboard;
-}
-
-GResInfo *_GGadgetRIHead(void) {
-
-    if ( !_ggadget_inited )
-	GGadgetInit();
-return( &popup_ri );
 }
 
 void GGadgetSetSkipHotkeyProcessing( GGadget *g, int v )

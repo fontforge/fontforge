@@ -30,7 +30,6 @@
 #include "gdraw.h"
 #include "ggadgetP.h"
 #include "gkeysym.h"
-#include "gresource.h"
 #include "gresourceP.h"
 #include "hotkeys.h"
 #include "ustring.h"
@@ -153,7 +152,7 @@ int GTextInfoDraw(GWindow base,int x,int y,GTextInfo *ti,
     if ( ti->text!=NULL ) {
 	if ( ti->font!=NULL )
 	    font = ti->font;
-	if ( ti->fg!=COLOR_DEFAULT && ti->fg!=COLOR_UNKNOWN )
+	if ( ti->fg!=COLOR_DEFAULT && ti->fg!=COLOR_UNKNOWN && ti->fg!=COLOR_WARNING )
 	    fg = ti->fg;
 
 	GDrawSetFont(base,font);
@@ -164,6 +163,8 @@ int GTextInfoDraw(GWindow base,int x,int y,GTextInfo *ti,
     fh = as+ds;
     if ( fg == COLOR_DEFAULT )
 	fg = GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(base));
+    else if ( fg == COLOR_WARNING )
+	fg = GDrawGetWarningForeground(GDrawGetDisplayOfWindow(base));
     if ( ti->image!=NULL ) {
 	iwidth = GImageGetScaledWidth(base,ti->image);
 	iheight = GImageGetScaledHeight(base,ti->image)+1;
@@ -286,23 +287,17 @@ static char *imagedir = NULL;	/* This is the system pixmap directory */
 static char **imagepath = NULL;			/* May contain user directories too */
 static size_t imagepathlenmax = 0;
 
-struct image_bucket {
-    struct image_bucket *next;
-    char *filename, *absname;
-    GImage *image;
-};
-
 #define IC_SIZE	127
-static struct image_bucket *imagecache[IC_SIZE];
+static GImageCacheBucket *imagecache[IC_SIZE];
 
 void InitImageCache() {
-  memset(imagecache, 0, IC_SIZE * sizeof(struct image_bucket *));
+  memset(imagecache, 0, IC_SIZE * sizeof(GImageCacheBucket *));
 }
 
 void ClearImageCache() {
       for ( int i=0; i<IC_SIZE; ++i ) {
-        struct image_bucket * bucket;
-        struct image_bucket * nextbucket;
+        GImageCacheBucket * bucket;
+        GImageCacheBucket * nextbucket;
 	for ( bucket = imagecache[i]; bucket!=NULL; bucket=nextbucket ) {
           nextbucket = bucket->next;
           if (bucket->filename != NULL) { free(bucket->filename); bucket->filename = NULL; }
@@ -329,14 +324,12 @@ static int hash_filename(const char *_pt ) {
 return( val%IC_SIZE );
 }
 
-static void ImagePathDefault(void) {
+static void InitImagePath(void) {
     if ( imagepath==NULL ) {
 	imagepath = malloc(2*sizeof(void *));
 	imagepath[0] = (imagedir == NULL) ? copy(imagedir_default) : copy(imagedir);
 	imagepath[1] = NULL;
 	imagepathlenmax = strlen(imagepath[0]);
-	if (_GGadget_ImagePath != NULL) free(_GGadget_ImagePath);
-	_GGadget_ImagePath = copy("=");
     }
 }
 
@@ -344,13 +337,13 @@ static void ImagePathDefault(void) {
  * \return The image path. The return value should not be freed or modified.
  */
 const char* const* _GGadget_GetImagePath(void) {
-    ImagePathDefault();
+    InitImagePath();
     return (const char* const*) imagepath;
 }
 
 int _GGadget_ImageInCache(GImage *image) {
     int i;
-    struct image_bucket *bucket;
+    GImageCacheBucket *bucket;
 
     for ( i=0; i<IC_SIZE; ++i ) {
 	for ( bucket=imagecache[i]; bucket!=NULL; bucket=bucket->next )
@@ -360,30 +353,111 @@ return( true );
 return( false );
 }
 
-static void ImageCacheReload(void) {
+static GImage *GadgetNormalizeImageFilenames(const char *inname, char **relname, char **absname) {
+    int l, k;
+    char *home = getenv("HOME"), *path;
+    GImage *img;
+
+    if ( relname!=NULL )
+	*relname=NULL;
+    if ( absname!=NULL )
+	*absname=NULL;
+
+    if ( inname==NULL )
+	return NULL;
+
+    InitImagePath();
+
+    if ( *inname=='/' ) {
+	img = GImageRead((char *)inname);
+	if ( img==NULL )
+	    return NULL;
+	if ( absname!=NULL )
+	    *absname = copy(inname);
+	if ( relname!=NULL ) {
+	    for ( k=0; imagepath[k]!=NULL; ++k ) {
+		l = strlen(imagepath[k]);
+		if ( strncmp(imagepath[k],inname,l)==0 && inname[l]=='/') {
+		    *relname = copy(inname+l+1);
+		    return img;
+		}
+	    }
+	    if ( home!=NULL ) {
+		l = strlen(home);
+		if ( strncmp(home,inname,l)==0 && inname[l]=='/') {
+		    *relname = copy(inname+l+1);
+		    return img;
+		}
+	    }
+	    *relname = copy(inname);
+	    return img;
+	}
+    } else if ( *inname=='~' && inname[1]=='/' ) {
+	if ( home==NULL )
+	    return NULL;
+	path = smprintf("%s/%s", home, inname+1);
+	img = GImageRead(path);
+	if ( img==NULL ) {
+	    free(path);
+	    return NULL;
+	}
+	if ( relname!=NULL )
+	    *relname = copy(inname);
+	if ( absname!=NULL )
+	    *absname = path;
+	return img;
+    }
+
+    for ( k=0; imagepath[k]!=NULL; ++k ) {
+	path = smprintf("%s/%s", imagepath[k], inname );
+	img = GImageRead(path);
+	if ( img!=NULL ) {
+	    if ( relname!=NULL )
+		*relname = copy(inname);
+	    if ( absname!=NULL )
+		*absname = path;
+	    return img;
+	}
+	free(path);
+    }
+    return NULL;
+}
+
+static void ImageCacheReload(int do_absolute) {
     int i,k;
-    struct image_bucket *bucket;
-    char *path=NULL;
-    size_t pathlen;
+    GImageCacheBucket *bucket;
+    char *path;
     GImage *temp, hold;
 
-    ImagePathDefault();
+    InitImagePath();
 
     /* Try to reload the cache from the new directory */
     /* If a file doesn't exist in the new dir when it did in the old then */
     /*  retain the old copy (people may hold pointers to it) */
-    pathlen = imagepathlenmax+270; path = malloc(pathlen);
     for ( i=0; i<IC_SIZE; ++i ) {
 	for ( bucket = imagecache[i]; bucket!=NULL; bucket=bucket->next ) {
-	    if ( strlen(bucket->filename)+imagepathlenmax+3 > pathlen ) {
-		pathlen = strlen(bucket->filename)+imagepathlenmax+20;
-		path = realloc(path,pathlen);
-	    }
-	    for ( k=0; imagepath[k]!=NULL; ++k ) {
-		sprintf( path,"%s/%s", imagepath[k], bucket->filename );
-		temp = GImageRead(path);
-		if ( temp!=NULL )
-	    break;
+	    if ( *bucket->filename=='/' || *bucket->filename=='~' ) {
+		if ( !do_absolute )
+		    continue;
+		if ( bucket->absname!=NULL ) {
+		    temp = GImageRead(bucket->absname);
+		    if ( temp!=NULL )
+			path = copy(bucket->absname);
+		} else {
+		    // This was a negative cache value which means there are
+		    // no references to it. Not much point in attempting to
+		    // reload.
+		    ;
+		}
+	    } else {
+		for ( k=0; imagepath[k]!=NULL; ++k ) {
+		    path = smprintf("%s/%s", imagepath[k], bucket->filename );
+		    temp = GImageRead(path);
+		    if ( temp!=NULL )
+			break;
+		    else
+			free(path);
+		}
 	    }
 	    if ( temp!=NULL ) {
 		if ( bucket->image==NULL )
@@ -397,11 +471,10 @@ static void ImageCacheReload(void) {
 		    GImageDestroy(temp);
 		}
 		free( bucket->absname );
-		bucket->absname = copy( path );
+		bucket->absname = path;
 	    }
 	}
     }
-    free(path);
 }
 
 void GGadgetSetImageDir(char *dir) {
@@ -412,7 +485,7 @@ void GGadgetSetImageDir(char *dir) {
         //We shall check later if ptr should be freed or not
         ptr = (char*) imagedir_default;
     }
-    
+
     if (dir != NULL && strcmp(ptr,dir) != 0) {
         imagedir = copy(dir);
         if (imagepath != NULL) {
@@ -428,10 +501,8 @@ void GGadgetSetImageDir(char *dir) {
             if (imagepath[k] != NULL) {
                 free(imagepath[k]);
                 imagepath[k] = copy(imagedir);
-                ImageCacheReload();
+                ImageCacheReload(false);
             }
-            if (_GGadget_ImagePath != NULL) free(_GGadget_ImagePath);
-            _GGadget_ImagePath = copy("=");
         }
     }
 }
@@ -461,11 +532,16 @@ return( copyn(start,len));
 void GGadgetSetImagePath(char *path) {
     int cnt, k;
     char *pt, *end;
-    extern char *_GGadget_ImagePath;
+    static char *_GGadget_CurrentImagePath=NULL;
 
     if ( path==NULL )
-return;
-    if (_GGadget_ImagePath != NULL) free( _GGadget_ImagePath );
+	return;
+
+    if ( _GGadget_CurrentImagePath!=NULL &&
+         strcmp(_GGadget_CurrentImagePath, path)==0 )
+	return;
+
+    free(_GGadget_CurrentImagePath);
 
     if ( imagepath!=NULL ) {
 	for ( k=0; imagepath[k]!=NULL; ++k )
@@ -482,61 +558,74 @@ return;
     for ( cnt=0; imagepath[cnt]!=NULL; ++cnt )
 	if ( strlen(imagepath[cnt]) > imagepathlenmax )
 	    imagepathlenmax = strlen(imagepath[cnt]);
-    ImageCacheReload();
-    _GGadget_ImagePath = copy(path);
+    ImageCacheReload(false);
+    _GGadget_CurrentImagePath = copy(path);
 }
 
-static GImage *_GGadgetImageCache(const char *filename, char **foundname) {
-    int index = hash_filename(filename);
-    struct image_bucket *bucket;
-    char *path;
-    int k;
+GImageCacheBucket *_GGadgetImageCache(const char *filename, int keep_empty) {
+    int index;
+    GImageCacheBucket *bucket;
+    char *relname, *absname;
+    GImage *img;
 
+    index = hash_filename(filename);
     for ( bucket = imagecache[index]; bucket!=NULL; bucket = bucket->next ) {
-	if ( strcmp(bucket->filename,filename)==0 ) {
-	    if ( foundname!=NULL ) *foundname = copy( bucket->absname );
-return( bucket->image );
+	if ( strcmp(bucket->filename, filename)==0 )
+	    return bucket;
+    }
+
+    img = GadgetNormalizeImageFilenames(filename, &relname, &absname);
+
+    if ( img==NULL ) {
+	if ( keep_empty ) { // Add negative cache value
+	    bucket = calloc(1,sizeof(GImageCacheBucket));
+	    bucket->filename = copy(filename);
+	    bucket->next = imagecache[index];
+	    imagecache[index] = bucket;
+	    return bucket;
+	}
+	return NULL;
+    }
+
+    // Recheck for normalized name in cache
+    index = hash_filename(relname);
+    for ( bucket = imagecache[index]; bucket!=NULL; bucket = bucket->next ) {
+	if ( strcmp(bucket->filename, relname)==0 ) {
+	    GImageDestroy(img);
+	    free(absname);
+	    free(relname);
+	    return bucket;
 	}
     }
-    bucket = calloc(1,sizeof(struct image_bucket));
-    bucket->next = imagecache[index];
-    imagecache[index] = bucket;
-    bucket->filename = copy(filename);
 
-    ImagePathDefault();
-
-    path = malloc(strlen(filename)+imagepathlenmax+10 );
-    for ( k=0; imagepath[k]!=NULL; ++k ) {
-	sprintf( path,"%s/%s", imagepath[k], filename );
-	bucket->image = GImageRead(path);
-	if ( bucket->image!=NULL ) {
-	    bucket->absname = copy(path);
-    break;
-	}
-    }
-    free(path);
-    if ( bucket->image!=NULL ) {
-	/* Play with the clut to make white be transparent */
-	struct _GImage *base = bucket->image->u.image;
-	if ( base->image_type==it_mono && base->clut==NULL )
-	    base->trans = 1;
-	else if ( base->image_type!=it_true && base->clut!=NULL && base->trans==0xffffffff ) {
-	    int i;
-	    for ( i=0 ; i<base->clut->clut_len; ++i ) {
-		if ( base->clut->clut[i]==0xffffff ) {
-		    base->trans = i;
-	    break;
-		}
+    /* Play with the clut to make white be transparent */
+    struct _GImage *base = img->u.image;
+    if ( base->image_type==it_mono && base->clut==NULL )
+	base->trans = 1;
+    else if ( base->image_type!=it_true && base->clut!=NULL && base->trans==0xffffffff ) {
+	int i;
+	for ( i=0 ; i<base->clut->clut_len; ++i ) {
+	    if ( base->clut->clut[i]==0xffffff ) {
+		base->trans = i;
+		break;
 	    }
 	}
     }
-    if ( foundname!=NULL && bucket->image!=NULL )
-	*foundname = copy( bucket->absname );
-return(bucket->image);
+
+    bucket = calloc(1,sizeof(GImageCacheBucket));
+    bucket->filename = relname;
+    bucket->absname = absname;
+    bucket->image = img;
+    bucket->next = imagecache[index];
+    imagecache[index] = bucket;
+    return bucket;
 }
 
 GImage *GGadgetImageCache(const char *filename) {
-return( _GGadgetImageCache(filename,NULL));
+    GImageCacheBucket *bucket = _GGadgetImageCache(filename,true);
+    if ( bucket!=NULL )
+	return bucket->image;
+    return NULL;
 }
 
 /* Substitutes an image contents with what's found in cache. */
@@ -547,46 +636,6 @@ int TryGGadgetImageCache(GImage *image, const char *name) {
 return (loaded != NULL);
 }
 
-GResImage *GGadgetResourceFindImage(char *name, GImage *def) {
-    GImage *ret;
-    char *fname;
-    GResImage *ri;
-
-    fname = GResourceFindString(name);
-    if ( fname==NULL && def==NULL )
-return( NULL );
-    ri = calloc(1,sizeof(GResImage));
-    ri->filename = fname;
-    ri->image = def;
-    if ( fname==NULL )
-return( ri );
-
-    if ( *fname=='/' )
-	ret = GImageRead(fname);
-    else if ( *fname=='~' && fname[1]=='/' && getenv("HOME")!=NULL ) {
-	char *absname = malloc( strlen(getenv("HOME"))+strlen(fname)+8 );
-	strcpy(absname,getenv("HOME"));
-	strcat(absname,fname+1);
-	ret = GImageRead(absname);
-	free(fname);
-	ri->filename = fname = absname;
-    } else {
-	char *absname;
-	ret = _GGadgetImageCache(fname,&absname);
-	if ( ret ) {
-	    free(fname);
-	    ri->filename = fname = absname;
-	}
-    }
-    if ( ret==NULL ) {
-	ri->filename = NULL;
-	free(fname);
-    } else
-	ri->image = ret;
-
-return( ri );
-}
-    
 static void GTextInfoImageLookup(GTextInfo *ti) {
     char *pt;
     int any;
@@ -673,7 +722,7 @@ return;
     free(ti);
 }
 
-/* The list is terminated with an empty entry. Not a NULL pointer, but 
+/* The list is terminated with an empty entry. Not a NULL pointer, but
  * rather an empty entry terminates lists of GTextInfo entries.  (!)
  */
 void GTextInfoArrayFree(GTextInfo **ti) {
@@ -997,10 +1046,10 @@ void HotkeyParse( Hotkey* hk, const char *shortcut ) {
 	}
 #endif
     }
-    
+
 //    fprintf(stderr,"HotkeyParse(end) spec:%d hk->state:%d hk->keysym:%d shortcut:%s\n", GK_Special, hk->state, hk->keysym, shortcut );
 }
-    
+
 void GMenuItemParseShortCut(GMenuItem *mi,char *shortcut) {
     char *pt, *sh;
     int mask, temp, i;

@@ -69,6 +69,10 @@ install(FILES
   viewinsertbefore.png viewlayers.png viewnextdef.png viewnext.png viewpalettes.png viewprevdef.png
   viewprev.png viewreplace.png viewsmallersize.png viewzoomin.png viewzoomout.png wireframe.png
 
+  check_off.png check_off_disabled.png check_on.png check_on_disabled.png
+  radio_off.png radio_off_disabled.png radio_on.png radio_on_disabled.png
+  downarrow.png downarrow_disabled.png
+
   charviewicon.xbm fontview2.xbm logo.xbm
 
   ../tango/Cantarell-BoldOblique.ttf ../tango/Cantarell-Bold.ttf

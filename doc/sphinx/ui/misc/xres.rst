@@ -1,39 +1,152 @@
-X Resources
-===========
+Changing FontForge's UI Appearance
+==================================
 
-Every X application has an inordinate number of resources that you can tweak.
-This one is no exception. However I don't follow standard conventions, so it's
-all different. Sorry (a little anyway).
+FontForge has an extensive appearance editor that evolved out of the X resource
+system but now bears little relation to it beyond its file format.  As of 2021
+every parameter is represented in the editor and almost all have a tooltip
+similar to the explanations below. The editor is therefore the primary source
+of information about the parameters and this document is mostly useful for its
+explanation of the new font specification system.
 
-To use an X resource add a series of lines to your .Xdefaults file and then run
-"$ xrdb ~/.Xdefaults". For example:
+.. _xres.font:
 
-::
+Fonts
+-----
 
-   Gdraw.ScreenWidthInches: 14.7
-   Gdraw.GGadget.Popup.Font: 10pt helvetica
-   Gdraw.Background: white
-   fontforge.FontView.FontFamily: Helvetica, GillSans
+A font specification consists of a *size* directive, one or more *style*
+directives a *weight* directive, an explicit or implicit *family list*, and/or
+a reference font name.
 
-Some systems (the mac) will not automatically load X resources when starting X,
-in this case you must explicitly tell fontforge where to find a resource file
-with the preference item:
+Explicit Size Directives
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+An explicit size directive is either an integer followed by "pt" for a point
+size (as in "10pt") or an integer followed by "px" for a pixel size (as in
+"12px").
+
+Style Directives
+~~~~~~~~~~~~~~~~
+
+A style directive is one or more of "italic", "oblique", "small-caps",
+"extended", and "condensed".
+
+Weight Directives
+~~~~~~~~~~~~~~~~~
+
+A weight directive is either one of the strings "normal", "light", or "bold" or
+an integer multiple of 100, where 400 is equivalent to "normal" and 700 is
+equivalent to "bold".
+
+Family Lists
+~~~~~~~~~~~~
+
+A family list is a comma-separated list of families, where a given family name
+can contain spaces. When present a family list must come last in the specification,
+whereas other directives can occur in any order.
+
+The directive "bold italic 10pt dejavu sans,helvetica,sans" therefore specifies
+10 point bold italic DejaVu Sans as the font, with Helvetica and Sans possibly
+used as fallbacks for missing glyphs.
+
+Reference Font Names
+~~~~~~~~~~~~~~~~~~~~
+
+Instead of specifying a font from scratch you can do so in relation to a
+reference font, given by the name of the resource preceded by a caret. The
+primary fonts to reference are "View.DefaultFont", "View.MonoFont", and
+"View.SerifFont". These are (or should be) specified with appropriate family
+lists for a sans-serif, monospace, and serif font respectively. They also
+specify a reference font size, which is 12 points by default.
+
+To copy the exact specification of a different font you can just include the
+reference name, as in "^View.DefaultFont". To override the size, weight or
+style just include one of those directives, as in "10pt bold ^View.MonoFont".
+Note that style directives are not cumulative, so if "FontInfo.Font" is bold
+then "italic ^FontInfo.Font" will just be italic, not bold italic.
+
+Finally, and most usefully, you can specify a size as a *percentage* rather
+than an absolute size, with an integer followed by a percent sign. "83% bold
+^View.DefaultFont" therefore specifies whatever size (in points or pixels)
+would be 83% of that font.
+
+The default resource file now has these relative font settings, so that
+changing the point size of View.DefaultFont scales the whole UI. There are some
+glitches but for the most part it works at lower point sizes (less than 17).
+
+Other Info
+----------
+
+By default FontForge loads the system configuration file. You can change this
+behavior by adding a custom file in your preferences, which happens
+automatically when you choose Save As" in the :doc:`File->Appearance Editor
+<resedit>` and keep the button checked.  Also see
 :ref:`File->Preference->Generic->ResourceFile <prefs.ResourceFile>`.
 
-You may also use fontforge's resource editor
-(:doc:`File->X Resource Editor <resedit>`)
+When editing resources some will take effect immediately, some when a new window
+is opened, and some on the next restart of the program. It is therefore best to
+restart after each significant change.
 
-If a resource begins with "\ ``Gdraw.``" or "\ ``fontforge.``" then the program
-will look at it.
+The Directives
+--------------
 
-.. object:: fontforge.FontView.ChangedColor
+View
+~~~~
 
-   Sets the color used to mark changed glyphs.
+.. object:: fontforge.View.DefaultFont
+
+   Specifies the main font family used throughout the program, which is usually
+   sans-serif, along with a reference size (12 points by default).
+
+.. object:: fontforge.View.MonoFont
+
+   Specifies the monospace font family used in various fields and tables along
+   with a reference size (copied from View.DefaultFont by default).
+
+.. object:: fontforge.View.SerifFont
+
+   Specifies the serif font family used in a few contexts along with a reference
+   size (copied from View.DefaultFont by default).
+
+.. object:: fontforge.View.Background
+
+   Sets the background color for the drawing areas of the fontview, glyph view,
+   bitmap view and metrics view.
+
+Font View
+~~~~~~~~~
+
+.. object:: fontforge.FontView.GlyphFGColor
+
+   The color of the glyph image in the FontView when not selected
 
 .. object:: fontforge.FontView.GlyphInfoColor
 
    Sets the color used to display information about selected glyph, between the
    FontView menu bar and the glyph array.
+
+.. object:: fontforge.FontView.SlotOutlineColor
+
+   The color of the box around each glyph.
+
+.. object:: fontforge.FontView.SlotDivisionColor
+
+   The color of the line between the glyph label and glyph image
+
+.. object:: fontforge.FontView.LabelColor
+
+   The default color of the label
+
+.. object:: fontforge.FontView.UnencodedLabelColor
+
+   The color of the label when the glyph is not part of the encoding
+
+.. object:: fontforge.FontView.MissingLabelColor
+
+   The color of the substitute label when the proper one is unknown or unavailable.
+
+.. object:: fontforge.FontView.EmptySlotFgColor
+
+   Sets the color of crosses marking empty code points.
 
 .. object:: fontforge.FontView.SelectedColor
 
@@ -43,22 +156,35 @@ will look at it.
 
    Sets the foreground color of selected glyphs.
 
-.. object:: fontforge.FontView.EmptySlotFgColor
+.. object:: fontforge.FontView.ChangedColor
 
-   Sets the color of crosses marking empty code points.
+   Sets the color used to mark changed glyphs.
+
+.. object:: fontforge.FontView.MissingBitmapColor
+
+   In a font with both outline and bitmaps this marks a slot with an outline but not a bitmap
+
+.. object:: fontforge.FontView.MissingOutlineColor
+
+   In a font with both outline and bitmaps this marks a slot with a bitmap but no outline
 
 .. object:: fontforge.FontView.HintingNeededColor
 
    Sets the color of markings for glyphs that need hinting or instructing.
 
-.. object:: fontforge.FontView.FontSize
+.. object:: fontforge.FontView.MetricsAdvanceAtColor
+.. object:: fontforge.FontView.MetricsAdvanceToColor
+.. object:: fontforge.FontView.MetricsBaselineColor
+.. object:: fontforge.FontView.MetricsOriginColor
 
-   Point size of those fonts.
+   The respective colors of these metrics when they are set as visible in the View menu
 
-.. object:: fontforge.CharView.InfoFamily
+.. object:: fontforge.FontView.Font
 
-   A list of font family names to be used in the outline and bitmap character
-   views for information messages.
+   The font used for the lables, which by default is just ^View.DefaultFont
+
+Outline Points
+~~~~~~~~~~~~~~
 
 .. object:: fontforge.CharView.PointColor
 
@@ -104,9 +230,59 @@ will look at it.
 
    Sets the color used to draw a control point that has been selected.
 
-.. object:: fontforge.CharView.CoordinateLineColor
+.. object:: fontforge.CharView.AnchorColor
 
-   Sets the color used to draw the coordinate axes.
+   Sets the color used to draw an anchor point
+
+.. object:: fontforge.CharView.LabelFont
+
+   Used for point and contour names, anchor point names, etc.
+
+.. object:: fontforge.CharView.IconFont
+
+   Used to build window decoration icons in some cases
+
+.. object:: fontforge.CharView.PointNumberFont
+
+   Used for point numbers, hints, etc.
+
+Outline Lines/Fills
+~~~~~~~~~~~~~~~~~~~
+
+.. object:: fontforge.CharView.ForegroundOutlineColor
+
+   Sets the color used to draw foreground outlines.
+
+.. object:: fontforge.CharView.ForegroundThickOutlineColor
+
+   The color of thick outlines in the active layer (when zoomed in)
+
+.. object:: fontforge.CharView.FillColor
+
+   Sets the color used to draw a character's fill
+
+.. object:: fontforge.CharView.PreviewFillColor
+
+   The color to use when performing a preview fill. If this is not set then
+   FontForge will fallback to using fontforge.CharView.FillColor. Neither of
+   these resources are set then black will be used.
+
+.. object:: fontforge.CharView.OpenPathColor
+
+   The color of the line of an open path. (The "thin" color will be with
+   the alpha removed and the "thick" color will be with the alpha included.)
+
+.. object:: fontforge.CharView.ClipPathColor
+
+   The color of a clip path.
+
+.. object:: fontforge.CharView.BackgroundOutlineColor
+
+   Sets the color used to draw background outlines.
+
+.. object:: fontforge.CharView.BackgroundThickOutlineColor
+
+   The color of "thick" background outlines (when zoomed in).
 
 .. object:: fontforge.CharView.WidthColor
 
@@ -116,14 +292,192 @@ will look at it.
 
    Sets the color used to draw the advance width if it is selected.
 
-.. object:: fontforge.CharView.GridFitWidthColor
+.. object:: fontforge.CharView.LBearingSelColor
 
-   Sets the color used to draw the advance width once it has been grid fit (if
-   :menuselection:`View --> Show Grid Fit` is on)
+   The color of the left bearing line wien selected
 
 .. object:: fontforge.CharView.LigatureCaretColor
 
    Sets the color used to draw ligature caret lines.
+
+.. object:: fontforge.CharView.AnchoredOutlineColor
+
+   The color of another glyph drawn in the current view to show
+   where it would be placed by an anchor lookup.
+
+.. object:: fontforge.CharView.CoordinateLineColor
+
+   Sets the color used to draw the baseline and x=0 line.
+
+.. object:: fontforge.CharView.AscentDescentColor
+
+   Sets the color used to draw the ascent and descent lines.
+
+.. object:: fontforge.CharView.ItalicCoordColor
+
+   Sets the color used to draw various horizontal metrics lines when they have
+   been skewed appropriately for an italic font.
+
+.. object:: fontforge.CharView.MetricsLabelColor
+
+   Sets the color used to label metrics lines
+
+.. object:: fontforge.CharView.TemplateOutlineColor
+
+   Sets the color used to draw a template outline. (not currently used)
+
+.. object:: fontforge.CharView.RulerBigTickColor
+
+   Sets the color of coarse-grained ruler ticks.
+
+.. object:: fontforge.CharView.RulerCurrentTickColor
+
+   Sets the color used to draw a vertical and a horizontal tick
+   corresponding to the mouse position.
+
+.. object:: fontforge.CharView.RulerFont
+
+   Font uesd for ruler numbers and other ruler notations.
+
+.. object:: fontforge.CharView.GuideOutlineColor
+
+   Sets the color used to draw outlines in the Guide layer.
+
+.. object:: fontforge.CharView.GuideDragColor
+
+   The color used to display a new guide line dragged from the ruler.
+
+Outline Tools
+~~~~~~~~~~~~~
+
+.. object:: fontforge.CharView.TraceColor
+
+   Sets the color used to draw the trace of the freehand tool.
+
+.. object:: fontforge.CharView.OldOutlineColor
+
+   Sets the color used to draw the original outline of a set of splines being
+   transformed with one of the transform tools (flip, rotate, scale, etc.)
+
+.. object:: fontforge.CharView.TransformOriginColor
+
+   Sets the color used to draw the origin of the current transformation.
+
+.. object:: fontforge.CharView.DraggingComparisonOutlineColor
+
+   The color used to draw the outline of the old spline when you
+   are interactively modifying a glyph
+
+.. object:: fontforge.CharView.DraggingComparisonAlphaChannelColor
+
+   Only the alpha value of this parameter is used. If non zero it will
+   set the alpha channel for the control points, bezier information
+   and other non spline indicators for the Dragging Comparison Outline
+   spline
+
+.. object:: fontforge.CharView.MeasureToolLineColor
+
+   The color used to draw the measure tool line.
+
+.. object:: fontforge.CharView.MeasureToolPointColor
+
+   The color used to draw the measure tool points.
+
+.. object:: fontforge.CharView.MeasureToolPointSnappedColor
+
+   The color used to draw the measure tool points when snapped.
+
+.. object:: fontforge.CharView.MeasureToolCanvasNumbersColor
+
+   The color used to draw the measure tool numbers on the canvas.
+
+.. object:: fontforge.CharView.MeasureToolCanvasNumbersSnappedColor
+
+   The color used to draw the measure tool numbers on the canvas when snapped.
+
+.. object:: fontforge.CharView.MeasureToolWindowForeground
+
+   The measure tool "window" foreground color.
+
+.. object:: fontforge.CharView.MeasureToolWindowBackground
+
+   The measure tool "window" background color.
+
+.. object:: fontforge.CharView.MeasureToolFont
+
+   The font used to display the information in the measure tool
+   "window".
+
+Outline Hints
+~~~~~~~~~~~~~
+
+.. object:: fontforge.CharView.BlueValuesStippledCol
+
+   Sets the color used to draw the BlueValues and OtherBlues zones.
+
+.. object:: fontforge.CharView.FamilyBlueStippledColor
+
+   Sets the color used to draw the FamilyBlueValues and FamilyOtherBlues zones.
+
+.. object:: fontforge.CharView.MDHintColor
+
+   Sets the color used to draw minimum distance hints
+
+.. object:: fontforge.CharView.HintLabelColor
+
+   Sets the color used to label hint lines (and blue value lines)
+
+.. object:: fontforge.CharView.DHintColor
+
+   Sets the color used to draw diagonal hints
+
+.. object:: fontforge.CharView.HHintColor
+
+   Sets the color used to draw horizontal stem hints
+
+.. object:: fontforge.CharView.VHintColor
+
+   Sets the color used to draw vertical stem hints
+
+.. object:: fontforge.CharView.HFlexHintColor
+
+   Sets the color used to draw the halo around horizontal flex hints
+
+.. object:: fontforge.CharView.VFlexHintColor
+
+   Sets the color used to draw the halo around vertical flex hints.
+
+.. object:: fontforge.CharView.ConflictHintColor
+
+   Sets the color used to draw hints when they conflict
+
+.. object:: fontforge.CharView.HHintActiveColor
+
+   Sets the color used to draw a horizontal stem hint when it is active in the
+   review hints dlg.
+
+.. object:: fontforge.CharView.VHintActiveColor
+
+   Sets the color used to draw a vertical stem hint when it is active in the
+   review hints dlg.
+
+.. object:: fontforge.CharView.DeltaGridColor
+
+   Indicates a notable grid pixel when suggesting deltas.
+
+Outline Raster
+~~~~~~~~~~~~~~
+
+.. object:: fontforge.CharView.GridFitOutlineColor
+
+   Sets the color used to draw outlines which have been gridfit (this should
+   probably be the same as BackgroundOutlineColor as both are in the background
+   layer).
+
+.. object:: fontforge.CharView.GridFitWidthColor
+
+   Sets the color used to draw the advance width once it has been grid fit (if
+   :menuselection:`View --> Show Grid Fit` is on)
 
 .. object:: fontforge.CharView.RasterColor
 
@@ -152,209 +506,115 @@ will look at it.
    When doing anti-aliased debugging, sets the color used for the darkest pixel.
    Other pixels will be interpolated between this and the background.
 
-.. object:: fontforge.CharView.ItalicCoordColor
-
-   Sets the color used to draw various horizontal metrics lines when they have
-   been skewed appropriately for an italic font.
-
-.. object:: fontforge.CharView.MetricsLabelColor
-
-   Sets the color used to label metrics lines
-
-.. object:: fontforge.CharView.HintLabelColor
-
-   Sets the color used to label hint lines (and blue value lines)
-
-.. object:: fontforge.CharView.BlueValuesStippledCol
-
-   Sets the color used to draw the BlueValues and OtherBlues zones.
-
-.. object:: fontforge.CharView.FamilyBlueStippledColor
-
-   Sets the color used to draw the FamilyBlueValues and FamilyOtherBlues zones.
-
-.. object:: fontforge.CharView.MDHintColor
-
-   Sets the color used to draw minimum distance hints
-
-.. object:: fontforge.CharView.DHintColor
-
-   Sets the color used to draw diagonal hints
-
-.. object:: fontforge.CharView.HHintColor
-
-   Sets the color used to draw horizontal stem hints
-
-.. object:: fontforge.CharView.VHintColor
-
-   Sets the color used to draw vertical stem hints
-
-.. object:: fontforge.CharView.ConflictHintColor
-
-   Sets the color used to draw hints when they conflict
-
-.. object:: fontforge.CharView.HHintActiveColor
-
-   Sets the color used to draw a horizontal stem hint when it is active in the
-   review hints dlg.
-
-.. object:: fontforge.CharView.VHintActiveColor
-
-   Sets the color used to draw a vertical stem hint when it is active in the
-   review hints dlg.
-
-.. object:: fontforge.CharView.HFlexHintColor
-
-   Sets the color used to draw the halo around horizontal flex hints
-
-.. object:: fontforge.CharView.VFlexHintColor
-
-   Sets the color used to draw the halo around vertical flex hints.
-
-.. object:: fontforge.CharView.AnchorColor
-
-   Sets the color used to draw an anchor point
-
-.. object:: fontforge.CharView.TemplateOutlineColor
-
-   Sets the color used to draw a template outline. (not currently used)
-
-.. object:: fontforge.CharView.OldOutlineColor
-
-   Sets the color used to draw the original outline of a set of splines being
-   transformed with one of the transform tools (flip, rotate, scale, etc.)
-
-.. object:: fontforge.CharView.TransformOriginColor
-
-   Sets the color used to draw the origin of the current transformation.
-
-.. object:: fontforge.CharView.GuideOutlineColor
-
-   Sets the color used to draw outlines in the Guide layer.
-
-.. object:: fontforge.CharView.GridFitOutlineColor
-
-   Sets the color used to draw outlines which have been gridfit (this should
-   probably be the same as BackgroundOutlineColor as both are in the background
-   layer).
-
-.. object:: fontforge.CharView.BackgroundOutlineColor
-
-   Sets the color used to draw background outlines.
-
-.. object:: fontforge.CharView.ForegroundOutlineColor
-
-   Sets the color used to draw foreground outlines.
-
 .. object:: fontforge.CharView.BackgroundImageColor
 
    Sets the color used to draw background images.
 
-.. object:: fontforge.CharView.FillColor
+Palettes
+~~~~~~~~
 
-   Sets the color used to draw a character's fill
+.. object:: fontforge.CharView.CVPaletteForegroundColor
 
-.. object:: fontforge.CharView.PreviewFillColor
+   The foreground color of the tools and layers palettes.
 
-   The color to use when performing a preview fill. If this is not set then
-   FontForge will fallback to using fontforge.CharView.FillColor. Neither of
-   these resources are set then black will be used.
+.. object:: fontforge.CharView.CVPaletteBackgroundColor
 
-.. object:: fontforge.CharView.TraceColor
+   The background color of the tools and layers palettes.
 
-   Sets the color used to draw the trace of the freehand tool.
+.. object:: fontforge.CharView.Button3DEdgeLightColor
 
-.. object:: fontforge.CharView.Rulers.FontSize
+   The color of the light edge of palette buttons when Button3d is True.
 
-   Sets the point size of the font used in the rulers and the info bar. If the
-   font is too big text will be clipped.
+.. object:: fontforge.CharView.Button3DEdgeDarkColor
 
-.. object:: fontforge.CharView.Measure.Font
+   The color of the dark edge of palette buttons when Button3d is True.
 
-   Select the font used to display the information shown in the window
-   associated with the measure tool.
+.. object:: fontforge.CharView.Button3D
 
-.. object:: fontforge.CharView.Hotkey.Tool.Zoom
+   When True palette buttons are displayed with a 3D effect.
 
-   The keyboard shortcut that you desire to switch to the zoom tool. For
-   example: fontforge.CharView.Hotkey.Tool.Zoom: z
+.. object:: fontforge.LayersPalette.Font
 
-.. object:: fontforge.CharView.Hotkey.Tool.Ruler
+   The font used in the layers palettes dialog.
 
-   The keyboard shortcut to select the ruler tool.
+.. object:: fontforge.ToolsPalette.Font
 
-.. object:: fontforge.CharView.Hotkey.Tool.Pointer
+   The font used in the Tools Palette dialog for labelling tool options.
 
-   The keyboard shortcut to select the pointer tool.
+Bitmap View
+~~~~~~~~~~~
 
-.. object:: fontforge.CharView.Hotkey.Tool.Hand
+.. object:: fontforge.BitmapView.BitmapColor
 
-   The keyboard shortcut to select the hand tool.
+   The color of the large bitmap.
 
-.. object:: fontforge.CharView.Hotkey.Tool.PointCurve
+.. object:: fontforge.BitmapView.OverviewColor
 
-   The keyboard shortcut to select the point curve tool.
+   The color of the small bitmap view.
 
-.. object:: fontforge.CharView.Hotkey.Tool.PointHVCurve
+.. object:: fontforge.BitmapView.GuideColor
 
-   The keyboard shortcut to select the point hv curve tool.
+   The color of the guide lines for glyph metrics.
 
-.. object:: fontforge.CharView.Hotkey.Tool.PointCorner
+.. object:: fontforge.BitmapView.WidthGuideColor
 
-   The keyboard shortcut to select the point corner tool.
+   The color of the guide line for the advance width.
 
-.. object:: fontforge.CharView.Hotkey.Tool.PointTangent
+.. object:: fontforge.BitmapView.GridColor
 
-   The keyboard shortcut to select the point tangent tool.
+   The color of the guide lines for the bitmap grid.
 
-.. object:: fontforge.CharView.Hotkey.Tool.Freehand
+.. object:: fontforge.BitmapView.OutlineColor
 
-   The keyboard shortcut to select the point Freehand tool.
+   The color of the outline.
 
-.. object:: fontforge.CharView.Hotkey.Tool.PointTangent
+.. object:: fontforge.BitmapView.ActiveToolColor
 
-   The keyboard shortcut to select the point tangent tool.
+   The color of the preview for drawing lines, rectangles, and ellipses.
 
-.. object:: fontforge.CharView.Hotkey.Tool.Pen
+.. object:: fontforge.BitmapView.SelectedRegionColor
 
-   The keyboard shortcut to select the point Pen tool.
+   The color of the selected region.
 
-.. object:: fontforge.CharView.Hotkey.Tool.SpiroToggle
+.. object:: fontforge.BitmapView.ReferenceColor
 
-   Toggle spiro mode on if it is available.
+   The color of a reference.
 
-.. object:: fontforge.CharView.Hotkey.Tool.SpiroG4
+.. object:: fontforge.BitmapView.SelectedReferenceColor
 
-   SpiroG4 tool.
+   The color of the selected reference.
 
-.. object:: fontforge.CharView.Hotkey.Tool.SpiroCorner
+.. object:: fontforge.BitmapView.ReferenceBorderColor
 
-   SpiroCorner tool.
+   The color used to outline a reference.
 
-.. object:: fontforge.CharView.Hotkey.Tool.SpiroLeft
+.. object:: fontforge.BitmapView.SelectedReferenceBorderColor
 
-   SpiroLeft tool.
+   The color used to outline the selected reference.
 
-.. object:: fontforge.CharView.Hotkey.Tool.SpiroRight
+Metrics View
+~~~~~~~~~~~~
 
-   SpiroRight tool.
+.. object:: fontforge.MetricsView.Font
 
-.. object:: fontforge.CharView.Hotkey.Tool.Knife
+   The font used to display labels in the metrics view.
 
-   Knife tool.
+.. object:: fontforge.MetricsView.GlyphColor
 
-.. object:: fontforge.DebugView.Font
+   The foreground color of the glyph display area.
 
-   Select the font used to display the truetype instructions being debugged.
+.. object:: fontforge.MetricsView.SelectedGlyphColor
 
-.. object:: fontforge.DVRaster.Background
-
-   Sets the background color of the raster window in the debugger.
+   The color for the currently selected glyph.
 
 .. object:: fontforge.MetricsView.AdvanceWidthColor
 
-   Sets the color for the grid lines in the metrics view when nothing special is
-   happening to them.
+   The color of field divider lines.
+
+.. object:: fontforge.MetricsView.AdvanceWidthColor
+
+   Sets the color for the grid lines in the metrics view when nothing special
+   is happening to them.
 
 .. object:: fontforge.MetricsView.ItalicAdvanceColor
 
@@ -371,13 +631,8 @@ will look at it.
    Sets the color for the grid line in the metrics view which currently may be
    moved to change a glyph's right side bearing (or bottom side bearing).
 
-.. object:: fontforge.MetricsView.SelectedGlyphColor
-
-   Sets the color for the currently selected glyph in the metrics view.
-
-.. object:: fontforge.MetricsView.Font
-
-   Select the font used to display labels in the metrics view.
+Misc Windows
+~~~~~~~~~~~~
 
 .. object:: fontforge.BDFProperties.Font
 
@@ -392,6 +647,22 @@ will look at it.
 
    Sets the font used in the 'cvt ' table dialog
 
+.. object:: fontforge.DebugView.Background
+
+   The background of the TTF debugging window.
+
+.. object:: fontforge.DebugView.Font
+
+   The font used to display the truetype instructions being debugged.
+
+.. object:: fontforge.FontInfo.OriginLineColor
+
+   The color used for the baseline and x=0 line in kerning dialogs.
+
+.. object:: fontforge.FontInfo.Font
+
+   The font used for Font Info dialog scrolling lists.
+
 .. object:: fontforge.GlyphInfo.Font
 
    Sets the font used in the glyph info dialog for stand alone text
@@ -404,25 +675,36 @@ will look at it.
 
    Sets the font used in the Histogram dialog
 
+.. object:: fontforge.KernClass.TextColor
+
+   Color for kerning class names.
+
 .. object:: fontforge.KernClass.Font
 
    Sets the font used in the kern class and pair dialogs
 
-.. object:: fontforge.LayersPalette.Font
+.. object:: fontforge.KernFormat.Font
 
-   Sets the font used in the layers palettes dialog
+   The normal font used in the kernig format dialog.
+
+.. object:: fontforge.KernFormat.BoldFont
+
+   The bold font used in the kernig format dialog.
 
 .. object:: fontforge.Math.Font
 
-   Sets the font used in the Math dialog
+   The normal font used in the Math dialog.
 
 .. object:: fontforge.Math.BoldFont
 
-   Sets the bold font used in the Math dialog
+   The bold font used in the Math dialog.
 
-.. object:: fontforge.OFLib.Font
+Misc Windows 2
+~~~~~~~~~~~~~~
 
-   Sets the font used in the Open Font Library browser dialog
+.. object:: fontforge.Prefs.MonoFont
+
+   The monospace font used in the preferences dialog.
 
 .. object:: fontforge.SearchView.Font
 
@@ -432,10 +714,13 @@ will look at it.
 
    Sets the bold font used in the find and replace dialog
 
-.. object:: fontforge.SFTextArea.Font
+.. object:: fontforge.ShowATT.SelectColor
 
-   Sets the font used in the Print dialog and its variants dialog -- except I
-   don't think this ever gets used.
+   Color used for currently selected entry in the Show ATT dialog.
+
+.. object:: fontforge.ShowATT.GlyphNameColor
+
+   Color used for (some) glyph names in the Show ATT dialog.
 
 .. object:: fontforge.ShowATT.Font
 
@@ -444,14 +729,6 @@ will look at it.
 .. object:: fontforge.ShowATT.MonoFont
 
    Sets the monospaced font used in the Show ATT dialog
-
-.. object:: fontforge.Splash.Font
-
-   Sets the font used in the splash screen and About FontForge dialog.
-
-.. object:: fontforge.Splash.ItalicFont
-
-   Sets the italic font used in the About FontForge dialog
 
 .. object:: fontforge.StateMachine.Font
 
@@ -465,10 +742,6 @@ will look at it.
 
    Sets the bold font used in the Tile Path dialog
 
-.. object:: fontforge.ToolsPalette.Font
-
-   Sets the font used in the Tools Palette dialog for labelling tool options
-
 .. object:: fontforge.TTInstruction.Font
 
    Sets the font used in the various dialogs which edit truetype instructions
@@ -478,45 +751,121 @@ will look at it.
 
    Sets the font used in the Validate dialog
 
-.. object:: fontforge.View.Background
-
-   Sets the background color for the drawing areas of the fontview, glyph view,
-   bitmap view and metrics view.
-
 .. object:: fontforge.Warnings.Font
 
    Sets the font used in the Warnings dialog
 
-.. object:: Gdraw.ScreenWidthCentimeters
+Splash Screen
+~~~~~~~~~~~~~
 
-   A double. (centimeters)
+.. object:: fontforge.Splash.Foreground
 
-   X usually does not know the physical width of a screen (it knows the logical,
-   pixel width). Gdraw's internals are based on points rather than pixels, and
-   it will sometimes pick a font that is too small or too large if it relies on
-   X's idea of how wide the screen is.
+   The foreground color of the About dialog.
 
-.. object:: Gdraw.ScreenWidthInches
+.. object:: fontforge.Splash.Background
 
-   A double. (inches)
+   The background color of the About... dialog.
 
-   Same as the above, except measured in inches.
+.. object:: fontforge.Splash.Font
 
-.. object:: Gdraw.ScreenWidthPixels
+   Sets the font used in the splash screen and About FontForge dialog.
+
+.. object:: fontforge.Splash.ItalicFont
+
+   Sets the italic font used in the About... dialog.
+
+.. object:: fontforge.Splash.MonoFont
+
+   The monospace font used in the About... dialog.
+
+.. object:: fontforge.Splash.Image
+
+   The image used on the splash screen and About... dialog.
+
+SFTextArea
+~~~~~~~~~~
+
+.. object:: fontforge.SFTextArea.Box.ActiveInner
+.. object:: fontforge.SFTextArea.Box.Padding
+
+   See the :ref:`GGadget Box <xres.GGadgetBox>` section.
+
+.. object:: fontforge.SFTextArea.Font
+
+   Sets the font used in the Print dialog and its variants dialog -- except I
+   don't think this ever gets used.
+
+GDraw
+~~~~~
+
+.. object:: Gdraw.Background
+
+   The default background color in contexts other than View windows and GGadgets.
+
+.. object:: Gdraw.Foreground
+
+   The default foreground color in contexts other than View windows and GGadgets.
+
+.. object:: Gdraw.WarningForeground
+
+   A color appropriate for displaying warning and error messages relative to
+   GDraw.Background and other background colors.
+
+.. object:: Gdraw.ScreenResolution
+
+   The resolution of the screen in dots per inch. (Don't set this or set it to
+   zero for the system default resolution.)
+
+.. object:: Gdraw.MultiClickTime
+
+   An integer (milliseconds)
+
+   The maximum amount of time allowed between two clicks for them to be
+   considered a double (triple, etc.) click.
+
+.. object:: Gdraw.MultiClickWiggle
 
    An integer (pixels)
 
-   When X creates a virtual screen it may not be possible for Gdraw to find the
-   actual number of pixels on the screen. This again will throw off point
-   calculations.
+   The maximum number of pixels the mouse is allowed to move between two clicks
+   and have them still be considered a double click.
 
-.. object:: Gdraw.ScreenHeightPixels
+.. object:: Gdraw.SelectionNotifyTimeout
 
-   An integer (pixels)
+   An integer (seconds)
 
-   When X creates a virtual screen it may not be possible for Gdraw to find the
-   actual number of pixels on the screen. This is not used in point
-   calculations.
+   Gdraw will wait this many seconds after making a request for a selection (ie.
+   when doing a Paste). If it gets no responce after that period it reports a
+   failure.
+
+.. object:: Gdraw.TwoButtonFixup
+
+   A boolean
+
+   On a windows keyboard use the modifier key with the flag on it to simulate
+   mouse button 2 (middle button). If this key is depressed when a mouse button
+   is pressed or released then pretend it was button 2 that was pressed or
+   release.
+
+.. object:: Gdraw.MacOSXCmd
+
+   A boolean
+
+   On Mac OS X the user will probably expect to use the Command (apple,
+   cloverleaf) key to control the menu (rather than the Control key). If this is
+   set then the command key will be mapped to the control key internally.
+
+.. object:: Gdraw.Synchronize
+
+   A boolean
+
+   Whether to synchronize the display before raising the first window.
+
+GDraw (X backend only)
+~~~~~~~~~~~~~~~~~~~~~~
+
+These are not included in the appearance editor and need to be set
+some other way, perhaps through the normal X Resources system.
 
 .. object:: Gdraw.Depth
 
@@ -552,57 +901,6 @@ will look at it.
    * Private -- FontForge will allocate a private colormap and set the colors just
      as it wants them. It will almost certainly not match the shared colormap.
 
-.. object:: Gdraw.DoDithering
-
-   An integer (0 or 1)
-
-   You can use this to turn off dithering of images on an 8bit screen.
-
-.. object:: Gdraw.MultiClickTime
-
-   An integer (milliseconds)
-
-   The maximum amount of time allowed between two clicks for them to be
-   considered a double (triple, etc.) click.
-
-.. object:: Gdraw.MultiClickWiggle
-
-   An integer (pixels)
-
-   The maximum number of pixels the mouse is allowed to move between two clicks
-   and have them still be considered a double click.
-
-.. object:: Gdraw.TwoButtonFixup
-
-   A boolean
-
-   On a windows keyboard use the modifier key with the flag on it to simulate
-   mouse button 2 (middle button). If this key is depressed when a mouse button
-   is pressed or released then pretend it was button 2 that was pressed or
-   release.
-
-.. object:: Gdraw.DontOpenXDevices
-
-   a booleanVarious people have complained that when FontForge attempts to open
-   the devices of the wacom graphics tablet, the X server gives a BadDevice
-   error. I can't duplicate this, the open works fine on my system, but this
-   resource allows them to tell fontforge not to try to use the tablet.
-
-.. object:: Gdraw.MacOSXCmd
-
-   A boolean
-
-   On Mac OS X the user will probably expect to use the Command (apple,
-   cloverleaf) key to control the menu (rather than the Control key). If this is
-   set then the command key will be mapped to the control key internally.
-
-.. object:: Gdraw.MultiClickWiggle
-
-   An integer (pixels)
-
-   The maximum number of pixels the mouse is allowed to move between two clicks
-   and have them still be considered a double click.
-
 .. _xres.Keyboard:
 
 .. object:: Gdraw.Keyboard
@@ -628,25 +926,14 @@ will look at it.
 
      Uses the Control and Meta keys
 
-.. object:: Gdraw.SelectionNotifyTimeout
+Popup
+~~~~~
 
-   An integer (seconds)
+.. object:: Gdraw.GGadget.Popup.Font
 
-   Gdraw will wait this many seconds after making a request for a selection (ie.
-   when doing a Paste). If it gets no response after that period it reports a
-   failure.
+   A :ref:`font <xres.font>`
 
-.. object:: Gdraw.Background
-
-   A :ref:`color <xres.color>`
-
-   Gdraw will use this as the default background color for the windows.
-
-.. object:: Gdraw.Foreground
-
-   A :ref:`color <xres.color>`
-
-   Gdraw will use this as the default foreground color for dialogs.
+   Specifies the font to use in a popup (tooltip) message.
 
 .. object:: Gdraw.GGadget.Popup.Foreground
 
@@ -658,7 +945,7 @@ will look at it.
 
    A :ref:`color <xres.color>`
 
-   Specifies the background color of popup messages.
+   Specifies the background color of popup (tooltip) messages.
 
 .. object:: Gdraw.GGadget.Popup.Delay
 
@@ -673,23 +960,8 @@ will look at it.
 
    Specifies the length of time the message will display.
 
-.. object:: Gdraw.GGadget.Popup.Font
-
-   A :ref:`font <xres.font>`
-
-   Specifies the font to use in a popup message.
-
-.. object:: Gdraw.GGadget.Progress.FillCol
-
-   A :ref:`color <xres.color>`
-
-   Specifies the color of the progress bar in the progress window.
-
-.. object:: Gdraw.GGadget.Progress.Background
-
-   A :ref:`color <xres.color>`
-
-   Specifies the background color of progress window.
+Progress
+~~~~~~~~
 
 .. object:: Gdraw.GGadget.Progress.Font
 
@@ -697,15 +969,28 @@ will look at it.
 
    Specifies the font to use in a progress window.
 
-.. object:: Gdraw.GGadget.ImagePath
+.. object:: Gdraw.GGadget.Progress.Background
 
-   A unix style path string, with directories separated by ":". The sequence
-   "~/" at the start of a directory will be interpreted as the user's home
-   directory. If a directory is "=" then the installed pixmap directory will be
-   used.
+   A :ref:`color <xres.color>`
 
-   Specifies the search path for images. Specifically those used in the menus,
-   and those used in various gadgets listed below.
+   Specifies the background color of progress window.
+
+.. object:: Gdraw.GGadget.Progress.Foreground
+
+   A :ref:`color <xres.color>`
+
+   Specifies the foreground color of progress window.
+
+.. object:: Gdraw.GGadget.Progress.FillCol
+
+   A :ref:`color <xres.color>`
+
+   Specifies the color of the progress bar in the progress window.
+
+GGadget
+~~~~~~~
+
+.. _xres.GGadgetBox:
 
 .. object:: Gdraw.GGadget...
 
@@ -865,38 +1150,94 @@ will look at it.
 
       Specifies the default font for a ggadget.
 
+GGadget 2
+~~~~~~~~~
+
+.. object:: Gdraw.GGadget.Skip
+
+   Space (in points) to skip between gadget elements.
+
+.. object:: Gdraw.GGadget.LineSkip
+
+   Space (in points) to skip after a line.
+
+.. object:: Gdraw.GGadget.FirstLine
+
+   Space (in points) to skip before a line when it is the first element
+
+.. object:: Gdraw.GGadget.LeftMargin
+
+   The default left margin (in points)
+
+.. object:: Gdraw.GGadget.TextImageSkip
+
+   Space (in points) left between images and text any labels, buttons,
+   menu items, etc. that have both.
+
+.. object:: Gdraw.GGadget.ImagePath
+
+   A unix style path string, with directories separated by ":". The sequence
+   "~/" at the start of a directory will be interpreted as the user's home
+   directory. If a directory is "=" then the installed pixmap directory will be
+   used.
+
+   Specifies the search path for images. Specifically those used in the menus,
+   and those used in various gadgets listed below.
+
+The Gadgets
+~~~~~~~~~~~
+
+.. object:: Gdraw.GListMark... controls the shape of the mark used to show the menu of a combo box.
+
+   .. image:: /images/GListMark.png
+
+   See below for additional directives.
+.. object:: Gdraw.GLabel...
+
+   .. image:: /images/GLabel.png
 .. object:: Gdraw.GButton...
 
    .. image:: /images/GButton.png
+
+   See below for additional directives.
 .. object:: Gdraw.GDefaultButton... Inherits from GButton
 
    .. image:: /images/GDefaultButton.png
 .. object:: Gdraw.GCancelButton...  Inherits from GButton
 
    .. image:: /images/GCancelButton.png
-.. object:: Gdraw.GLabel...
-
-   .. image:: /images/GLabel.png
 .. object:: Gdraw.GDropList...
 
    .. image:: /images/GDropList.png
-.. object:: Gdraw.GListMark... controls the shape of the mark used to show the menu of a combo box.
-
-   .. image:: /images/GListMark.png  
-.. object:: Gdraw.GRadio... affects the text of the radio
+.. object:: Gdraw.GRadio...
 
    .. image:: /images/GRadio.png
-.. object:: GDraw.GRadioOn... -- affects the shape used (above, the diamond to the left of the text) of an on radio button
-            GDraw.GRadioOff... -- affects the shape used of an off radio button
-            Gdraw.GCheckBox...
-            GDraw.GCheckBoxOn...
-            GDraw.GCheckBoxOff...
-            Gdraw.GTextField...
+.. object:: Gdraw.GCheckBox...
+            Gdraw.GVisibilityBox...
+
+   Two forms of checkbox-like element, the first a traditional checkbox
+   and the second an visibility switch in the layer palette.
+
+.. object:: Gdraw.GRadioOn...
+            Gdraw.GRadioOff...
+            Gdraw.GCheckBoxOn...
+            Gdraw.GCheckBoxOff...
+            Gdraw.GVisibilityBoxOn...
+            Gdraw.GVisibilityBoxOff...
+
+   These are mostly means of specifiying images for the radio button and
+   checkboxes, but you can also use them to customize how an activated
+   button looks vs a deactivated one.
+
+   See below for additional directives.
+.. object:: Gdraw.GTextField...
 
    .. image:: /images/GTextField.png
 .. object:: Gdraw.GComboBox...    Inherits from GTextField
 
    .. image:: /images/GComboBox.png
+
+   Also called a "List Field"
 .. object:: Gdraw.GComboBoxMenu...    Inherits from GComboBox (This is the box drawn around the GListMark in a ComboBox)
 
    .. image:: /images/GComboBoxMenu.png
@@ -906,8 +1247,10 @@ will look at it.
 .. object:: Gdraw.GNumericFieldSpinner...    Inherits from GNumericField
 
    .. image:: /images/GNumericFieldSpinner.png
+.. object:: Gdraw.GScrollBar...
+
+   A scroll bar widget. See below for additional directives.
 .. object:: Gdraw.GList...
-            Gdraw.GScrollBar...
             Gdraw.GScrollBarThumb...
             Gdraw.GGroup... -- a frame around groups of gadgets.
             Gdraw.GLine...
@@ -919,6 +1262,7 @@ will look at it.
    As above.
 
    Specifies the box, font, color, etc. for this particular type of ggadget.
+   See below for additional GMenu directives.
 
 .. object:: Gdraw.GHVBox
 
@@ -933,6 +1277,14 @@ will look at it.
 
    Specifies the scrollbar width in points (for horizontal scrollbars it
    specifies the height)
+
+.. object:: Gdraw.GScrollBar.StartTime
+
+   An integer specifying the repeat latency in milliseconds.
+
+.. object:: Gdraw.GScrollBar.RepeatTime
+
+   An integer specifying the time between repeats in milliseconds.
 
 .. object:: Gdraw.GListMark.Width
 
@@ -1139,6 +1491,19 @@ will look at it.
    Used to draw text in the cell which is active (and used for the "<New>"
    entry).
 
+.. object:: Gdraw.GMatrixEdit.ActiveBG
+
+   A color.
+
+   The background color of a cell that is active (and used for the "<New>"
+   entry).
+
+.. object:: Gdraw.GMatrixEdit.TitleFont
+
+   A font.
+
+   Used in the title area of a GMatrixEdit.
+
 .. object:: ...
 
 .. _xres.deprecated:
@@ -1147,6 +1512,7 @@ will look at it.
 
    The following resources are deprecated and will be silently ignored.
 
+   * ``fontforge.FontView.FontSize``
    * ``fontforge.FontView.FontFamily``
    * ``fontforge.FontView.SerifFamily``
    * ``fontforge.FontView.ScriptFamily``
@@ -1155,6 +1521,8 @@ will look at it.
    * ``fontforge.FontView.SansFamily``
    * ``fontforge.FontView.MonoFamily``
    * ``Gdraw.GHVGroupBox``
+   * ``Gdraw.ScreenWidthCentimeters``
+   * ``Gdraw.ScreenWidthInches``
 
 .. _xres.color:
 
@@ -1206,43 +1574,6 @@ will look at it.
    * or one of the color names accepted on the net (red, green, blue, cyan,
      magenta, yellow, white, black, maroon, olive, navy, purple, lime, aqua, teal,
      fuchsia, silver)
-
-.. _xres.font:
-
-.. object:: Fonts
-
-   A font may be specified as:
-
-   <boldness> <italicness> <pointsize> <familyname>
-
-   (I know the order looks a bit weird but that's what is used by css).
-
-   * <boldness> can be:
-
-     * nothing -- the font is not bold
-     * bold -- the font is bold
-     * a number -- (between 0 and 999), a numeric value that gives some idea of how
-       bold the font should be. 200 would be a light font, 400 an normal font, 700 a
-       bold font and 999 and ultra-black font.
-   * <italicness> can be:
-
-     * nothing -- the font is not italic
-     * italic -- the font is italic
-     * oblique -- the font is oblique (italic)
-   * <pointsize> can be:
-
-     * nothing -- a default point size is chosen
-     * a number followed by "pt" -- specifies the point size.
-
-   Examples
-
-   * bold 14pt helvetica
-
-     Helvetica Bold at 14 points
-   * italic 10pt times
-
-     Times italic at 10 points
-
 
 .. _xres.Keyboards:
 

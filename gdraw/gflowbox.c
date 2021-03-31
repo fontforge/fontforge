@@ -42,38 +42,26 @@
 #define GG_Pad10       ((GGadget *) -4)		// Must match GCD_Hpad10 in ggadget.h
 
 static GBox flowbox_box = GBOX_EMPTY; /* Don't initialize here */
-static int gflowbox_inited = false;
 
+extern GResInfo gscroll1box_ri;
 GResInfo gflowbox_ri = {
-    NULL, &ggadget_ri, NULL, NULL,
+    &gscroll1box_ri, &ggadget_ri, NULL, NULL,
     &flowbox_box,
     NULL,
     NULL,
     NULL,
     N_("Flow Box"),
     N_("A box drawn around other gadgets to flow its contents"),
-    "GGroup",
+    "GFlowBox",
     "Gdraw",
     false,
-    omf_border_type | omf_border_shape | omf_padding,
-    NULL,
+    omf_border_type | omf_border_width | omf_padding,
+    { bt_none, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
     GBOX_EMPTY,
     NULL,
     NULL,
     NULL
 };
-
-static void GFlowBox_Init(void) {
-    if (gflowbox_inited) {
-        return;
-    }
-    _GGadgetCopyDefaultBox(&flowbox_box);
-    flowbox_box.border_type = bt_none;
-    flowbox_box.border_width = 0;
-    flowbox_box.padding = 0;
-    _GGadgetInitDefaultBox("GFlowBox.", &flowbox_box, NULL);
-    gflowbox_inited = true;
-}
 
 static void GFlowBox_destroy(GGadget *g) {
     GFlowBox *fb = (GFlowBox *) g;
@@ -525,9 +513,7 @@ GGadget *GFlowBoxCreate(struct gwindow *base, GGadgetData *gd, void *data) {
     GFlowBox *fb = calloc(1, sizeof(GFlowBox));
     GGadgetCreateData *label = (GGadgetCreateData *)(gd->label);
 
-    if (!gflowbox_inited) {
-        GFlowBox_Init();
-    }
+    GResEditDoInit(&gflowbox_ri);
 
     for (fb->count = 0; gd->u.boxelements[fb->count] != NULL; ++fb->count);
 
@@ -560,9 +546,4 @@ GGadget *GFlowBoxCreate(struct gwindow *base, GGadgetData *gd, void *data) {
         }
     }
     return &fb->g;
-}
-
-GResInfo *_GFlowBoxRIHead(void) {
-    GFlowBox_Init();
-    return &gflowbox_ri;
 }

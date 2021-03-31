@@ -30,6 +30,7 @@
 
 #include "fontforgeui.h"
 #include "gkeysym.h"
+#include "gresedit.h"
 #include "lookups.h"
 #include "ttf.h"
 #include "ustring.h"
@@ -79,6 +80,9 @@
 #define SMDE_WIDTH	200
 #define SMDE_HEIGHT	(SMD_DIRDROP+200)
 
+GResFont statemachine_font = GRESFONT_INIT("400 12pt " MONO_UI_FAMILIES);
+extern Color kernclass_classfgcol; // Yes this is cheating
+extern Color fi_originlinescol; // So is this
 extern int _GScrollBar_Width;
 
 typedef struct statemachinedlg {
@@ -924,6 +928,7 @@ static void SMD_Expose(SMD *smd,GWindow pixmap,GEvent *event) {
     int len, off, i, j, x, y, kddd=false;
     unichar_t ubuf[8];
     char buf[101];
+    Color def_fg = GDrawGetDefaultForeground(NULL);
 
     if ( area->y+area->height<smd->ystart )
 return;
@@ -940,7 +945,7 @@ return;
     GDrawPushClip(pixmap,&clip,&old2);
     for ( i=0 ; smd->offtop+i<=smd->state_cnt && (i-1)*smd->stateh<smd->height; ++i ) {
 	GDrawDrawLine(pixmap,smd->xstart,smd->ystart2+i*smd->stateh,smd->xstart+rect.width,smd->ystart2+i*smd->stateh,
-		0x808080);
+		fi_originlinescol);
 	if ( i+smd->offtop<smd->state_cnt ) {
 	    sprintf( buf, i+smd->offtop<100 ? "St%d" : "%d", i+smd->offtop );
 	    len = strlen( buf );
@@ -948,20 +953,20 @@ return;
 	    for ( j=0; j<len; ++j ) {
 		ubuf[0] = buf[j];
 		GDrawDrawText(pixmap,smd->xstart+3,smd->ystart2+i*smd->stateh+off+j*smd->fh+smd->as,
-		    ubuf,1,0xff0000);
+		    ubuf,1,kernclass_classfgcol);
 	    }
 	}
     }
     for ( i=0 ; smd->offleft+i<=smd->class_cnt && (i-1)*smd->statew<smd->width; ++i ) {
 	GDrawDrawLine(pixmap,smd->xstart2+i*smd->statew,smd->ystart,smd->xstart2+i*smd->statew,smd->ystart+rect.height,
-		0x808080);
+		fi_originlinescol);
 	if ( i+smd->offleft<smd->class_cnt ) {
 	    GDrawDrawText8(pixmap,smd->xstart2+i*smd->statew+1,smd->ystart+smd->as+1,
-		"Class",-1,0xff0000);
+		"Class",-1,kernclass_classfgcol);
 	    sprintf( buf, "%d", i+smd->offleft );
 	    len = GDrawGetText8Width(pixmap,buf,-1);
 	    GDrawDrawText8(pixmap,smd->xstart2+i*smd->statew+(smd->statew-len)/2,smd->ystart+smd->fh+smd->as+1,
-		buf,-1,0xff0000);
+		buf,-1,kernclass_classfgcol);
 	}
     }
 
@@ -982,7 +987,7 @@ return;
 	    sprintf( buf, "%d", this->next_state );
 	    len = GDrawGetText8Width(pixmap,buf,-1);
 	    GDrawDrawText8(pixmap,x+(smd->statew-len)/2,y+smd->as+1,
-		buf,-1,0x000000);
+		buf,-1,def_fg);
 
 	    ubuf[0] = (this->flags&0x8000)? 'M' : ' ';
 	    if ( smd->sm->type==asm_kern && (this->flags&0x8000))
@@ -995,7 +1000,7 @@ return;
 	    }
 	    len = GDrawGetTextWidth(pixmap,ubuf,-1);
 	    GDrawDrawText(pixmap,x+(smd->statew-len)/2,y+smd->fh+smd->as+1,
-		ubuf,-1,0x000000);
+		ubuf,-1,def_fg);
 
 	    buf[0]='\0';
 	    if ( smd->sm->type==asm_indic ) {
@@ -1021,7 +1026,7 @@ return;
 	    }
 	    len = GDrawGetText8Width(pixmap,buf,-1);
 	    GDrawDrawText8(pixmap,x+(smd->statew-len)/2,y+2*smd->fh+smd->as+1,
-		buf,-1,0x000000);
+		buf,-1,def_fg);
 
 	    buf[0] = '\0';
 	    if ( smd->sm->type==asm_indic ) {
@@ -1040,17 +1045,17 @@ return;
 	    }
 	    len = GDrawGetText8Width(pixmap,buf,-1);
 	    GDrawDrawText8(pixmap,x+(smd->statew-len)/2,y+3*smd->fh+smd->as+1,
-		buf,-1,0x000000);
+		buf,-1,def_fg);
 	}
     }
 
     GDrawDrawLine(pixmap,smd->xstart,smd->ystart2,smd->xstart+rect.width,smd->ystart2,
-	    0x000000);
+	    def_fg);
     GDrawDrawLine(pixmap,smd->xstart2,smd->ystart,smd->xstart2,smd->ystart+rect.height,
-	    0x000000);
+	    def_fg);
     GDrawPopClip(pixmap,&old2);
     GDrawPopClip(pixmap,&old1);
-    GDrawDrawRect(pixmap,&rect,0x000000);
+    GDrawDrawRect(pixmap,&rect,def_fg);
     rect.y += rect.height;
     rect.x += rect.width;
     LogoExpose(pixmap,event,&rect,dm_fore);
@@ -1312,9 +1317,7 @@ void StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
     GTextInfo label[20];
     int i, k, vk;
     int as, ds, ld, sbsize;
-    FontRequest rq;
     static unichar_t statew[] = { '1', '2', '3', '4', '5', 0 };
-    static GFont *font = NULL;
     struct matrix_data *md;
     struct matrixinit mi;
     static char *specialclasses[4] = { N_("{End of Text}"),
@@ -1479,15 +1482,7 @@ void StateMachineEdit(SplineFont *sf,ASM *sm,struct gfi_data *d) {
 	GMatrixEditSetColumnCompletion(list,0,SMD_GlyphListCompletion);
     }
 
-    if ( font==NULL ) {
-	memset(&rq,'\0',sizeof(rq));
-	rq.point_size = 12;
-	rq.weight = 400;
-	rq.utf8_family_name = MONO_UI_FAMILIES;
-	font = GDrawInstanciateFont(gw,&rq);
-	font = GResourceFindFont("StateMachine.Font",font);
-    }
-    smd.font = font;
+    smd.font = statemachine_font.fi;
     GDrawWindowFontMetrics(gw,smd.font,&as,&ds,&ld);
     smd.fh = as+ds; smd.as = as;
     GDrawSetFont(gw,smd.font);

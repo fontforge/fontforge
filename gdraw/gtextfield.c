@@ -30,7 +30,6 @@
 #include "gdraw.h"
 #include "ggadgetP.h"
 #include "gkeysym.h"
-#include "gresource.h"
 #include "gwidget.h"
 #include "ustring.h"
 #include "utype.h"
@@ -43,8 +42,7 @@ static GBox glistfield_box = GBOX_EMPTY; /* Don't initialize here */
 static GBox glistfieldmenu_box = GBOX_EMPTY; /* Don't initialize here */
 static GBox gnumericfield_box = GBOX_EMPTY; /* Don't initialize here */
 static GBox gnumericfieldspinner_box = GBOX_EMPTY; /* Don't initialize here */
-FontInstance *_gtextfield_font = NULL;
-static int gtextfield_inited = false;
+GResFont _gtextfield_font = GRESFONT_INIT("400 10pt " MONO_UI_FAMILIES);
 
 static GResInfo listfield_ri, listfieldmenu_ri, numericfield_ri, numericfieldspinner_ri;
 static GTextInfo text_lab[] = {
@@ -64,7 +62,7 @@ static GGadgetCreateData text_gcd[] = {
 static GGadgetCreateData *tarray[] = { GCD_Glue, &text_gcd[0], GCD_Glue, &text_gcd[1], GCD_Glue, NULL, NULL };
 static GGadgetCreateData textbox =
     { GHVGroupCreate, { { 2, 2, 0, 0 }, NULL, 0, 0, 0, 0, 0, NULL, { (GTextInfo *) tarray }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL };
-static GResInfo gtextfield_ri = {
+GResInfo gtextfield_ri = {
     &listfield_ri, &ggadget_ri,NULL, NULL,
     &_GGadget_gtextfield_box,
     &_gtextfield_font,
@@ -75,8 +73,9 @@ static GResInfo gtextfield_ri = {
     "GTextField",
     "Gdraw",
     false,
-    omf_font|omf_padding,
-    NULL,
+    false,
+    omf_padding,
+    { 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
     GBOX_EMPTY,
     NULL,
     NULL,
@@ -90,7 +89,7 @@ static GGadgetCreateData *tlarray[] = { GCD_Glue, &textlist_gcd[0], GCD_Glue, &t
 static GGadgetCreateData textlistbox =
     { GHVGroupCreate, { { 2, 2, 0, 0 }, NULL, 0, 0, 0, 0, 0, NULL, { (GTextInfo *) tlarray }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL };
 static GResInfo listfield_ri = {
-    &listfieldmenu_ri, &gtextfield_ri,&listfieldmenu_ri, &listmark_ri,
+    &listfieldmenu_ri,&gtextfield_ri,&listfieldmenu_ri, &listmark_ri,
     &glistfield_box,
     NULL,
     &textlistbox,
@@ -100,8 +99,9 @@ static GResInfo listfield_ri = {
     "GComboBox",
     "Gdraw",
     false,
+    false,
     0,
-    NULL,
+    GBOX_EMPTY,
     GBOX_EMPTY,
     NULL,
     NULL,
@@ -118,8 +118,9 @@ static GResInfo listfieldmenu_ri = {
     "GComboBoxMenu",
     "Gdraw",
     false,
+    false,
     omf_padding,
-    NULL,
+    { 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
     GBOX_EMPTY,
     NULL,
     NULL,
@@ -143,15 +144,17 @@ static GResInfo numericfield_ri = {
     "GNumericField",
     "Gdraw",
     false,
+    false,
     0,
-    NULL,
+    GBOX_EMPTY,
     GBOX_EMPTY,
     NULL,
     NULL,
     NULL
 };
+extern GResInfo glist_ri;
 static GResInfo numericfieldspinner_ri = {
-    NULL, &numericfield_ri,NULL, NULL,
+    &glist_ri, &numericfield_ri,NULL, NULL,
     &gnumericfieldspinner_box,
     NULL,
     &numbox,
@@ -161,8 +164,9 @@ static GResInfo numericfieldspinner_ri = {
     "GNumericFieldSpinner",
     "Gdraw",
     false,
+    false,
     omf_border_type|omf_border_width|omf_padding,
-    NULL,
+    { bt_none, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
     GBOX_EMPTY,
     NULL,
     NULL,
@@ -1082,7 +1086,7 @@ return;
     _ggadget_redraw(&gt->g);
     GTextFieldChanged(gt,-1);
 }
-    
+
 static int GTextFieldDoChange(GTextField *gt, GEvent *event) {
     int ss = gt->sel_start, se = gt->sel_end;
     int pos, l, xpos, sel;
@@ -1673,7 +1677,7 @@ static int GTextFieldDoDrop(GTextField *gt,GEvent *event,int endpos) {
     _ggadget_redraw(&gt->g);
 return( false );
 }
-    
+
 static int gtextfield_mouse(GGadget *g, GEvent *event) {
     GTextField *gt = (GTextField *) g;
     GListField *ge = (GListField *) g;
@@ -1941,8 +1945,8 @@ return( true );
 		++gt->loff_top;
 		l = gt->loff_top + g->inner.width/gt->fh;
 	    } else if ( l<gt->loff_top )
-		l = gt->loff_top; 
-	    else if ( l>=gt->loff_top + g->inner.height/gt->fh ) 
+		l = gt->loff_top;
+	    else if ( l>=gt->loff_top + g->inner.height/gt->fh )
 		l = gt->loff_top + g->inner.height/gt->fh-1;
 	    if ( l>=gt->lcnt ) l = gt->lcnt-1;
 
@@ -2000,7 +2004,7 @@ static int gtextfield_sel(GGadget *g, GEvent *event) {
 	gt_set_dd_cursor(gt, end - gt->text);
     } else if ( event->type == et_dragout ) {
 	/* this event exists simply to clear the dd cursor line. We've done */
-	/*  that already */ 
+	/*  that already */
     } else if ( event->type == et_drop ) {
 	gt->sel_start = gt->sel_end = gt->sel_base = end-gt->text;
 	GTextFieldPaste(gt,sn_drag_and_drop);
@@ -2551,31 +2555,15 @@ struct gfuncs glistfield_funcs = {
     NULL
 };
 
-static void GTextFieldInit() {
-    FontRequest rq;
-
-    memset(&rq,0,sizeof(rq));
-    GGadgetInit();
-    GDrawDecomposeFont(_ggadget_default_font,&rq);
-    rq.family_name = NULL;
-    rq.utf8_family_name = MONO_UI_FAMILIES;
-    _gtextfield_font = GDrawInstanciateFont(NULL,&rq);
-    _GGadgetCopyDefaultBox(&_GGadget_gtextfield_box);
-    _GGadget_gtextfield_box.padding = 3;
-    /*_GGadget_gtextfield_box.flags = box_active_border_inner;*/
-    _gtextfield_font = _GGadgetInitDefaultBox("GTextField.",&_GGadget_gtextfield_box,_gtextfield_font);
-    glistfield_box = _GGadget_gtextfield_box;
-    _GGadgetInitDefaultBox("GComboBox.",&glistfield_box,_gtextfield_font);
-    glistfieldmenu_box = glistfield_box;
-    glistfieldmenu_box.padding = 1;
-    _GGadgetInitDefaultBox("GComboBoxMenu.",&glistfieldmenu_box,_gtextfield_font);
-    gnumericfield_box = _GGadget_gtextfield_box;
-    _GGadgetInitDefaultBox("GNumericField.",&gnumericfield_box,_gtextfield_font);
-    gnumericfieldspinner_box = gnumericfield_box;
-    gnumericfieldspinner_box.border_type = bt_none;
-    gnumericfieldspinner_box.border_width = 0;
-    gnumericfieldspinner_box.padding = 0;
-    _GGadgetInitDefaultBox("GNumericFieldSpinner.",&gnumericfieldspinner_box,_gtextfield_font);
+void GTextFieldInit() {
+    static int gtextfield_inited = false;
+    if ( gtextfield_inited )
+	return;
+    GResEditDoInit(&gtextfield_ri);
+    GResEditDoInit(&listfield_ri);
+    GResEditDoInit(&listfieldmenu_ri);
+    GResEditDoInit(&numericfield_ri);
+    GResEditDoInit(&numericfieldspinner_ri);
     gtextfield_inited = true;
 }
 
@@ -2701,8 +2689,7 @@ static void GTextFieldFit(GTextField *gt) {
 
 static GTextField *_GTextFieldCreate(GTextField *gt, struct gwindow *base, GGadgetData *gd,void *data, GBox *def) {
 
-    if ( !gtextfield_inited )
-	GTextFieldInit();
+    GTextFieldInit();
     gt->g.funcs = &gtextfield_funcs;
     _GGadget_Create(&gt->g,base,gd,data,def);
 
@@ -2716,7 +2703,7 @@ static GTextField *_GTextFieldCreate(GTextField *gt, struct gwindow *base, GGadg
     }
     if ( gt->text==NULL )
 	gt->text = calloc(1,sizeof(unichar_t));
-    gt->font = _gtextfield_font;
+    gt->font = _gtextfield_font.fi;
     if ( gd->label!=NULL && gd->label->font!=NULL )
 	gt->font = gd->label->font;
     if ( (gd->flags & gg_textarea_wrap) && gt->multi_line )
@@ -3140,11 +3127,4 @@ void GCompletionFieldSetCompletion(GGadget *g,GTextCompletionHandler completion)
 
 void GCompletionFieldSetCompletionMode(GGadget *g,int enabled) {
     ((GTextField *) g)->was_completing = enabled;
-}
-
-GResInfo *_GTextFieldRIHead(void) {
-
-    if ( !gtextfield_inited )
-	GTextFieldInit();
-return( &gtextfield_ri );
 }

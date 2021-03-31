@@ -34,11 +34,10 @@ enum font_style { fs_none, fs_italic=1, fs_smallcaps=2, fs_condensed=4, fs_exten
 enum font_type { ft_unknown, ft_serif, ft_sans, ft_mono, ft_cursive, ft_max };
 
 typedef struct {
-    const unichar_t *family_name;	/* may be more than one */
+    const char *utf8_family_name;	/* may be more than one */
     int16 point_size;			/* negative values are in pixels */
     int16 weight;
     enum font_style style;
-    char *utf8_family_name;
 } FontRequest;
 
 typedef struct font_instance FontInstance, GFont;
@@ -272,8 +271,15 @@ enum gcairo_flags { gc_buildpath=1,	/* Has build path commands (postscript, cair
 
 typedef int (*GDrawEH)(GWindow,GEvent *);
 
+extern Color _GDraw_res_fg, _GDraw_res_bg, _GDraw_res_warnfg;
+extern int _GDraw_res_res, _GDraw_res_multiclicktime, _GDraw_res_multiclickwiggle;
+extern int _GDraw_res_selnottime, _GDraw_res_twobuttonfixup, _GDraw_res_macosxcmd;
+extern int _GDraw_res_synchronize;
+
 extern unichar_t *GDrawKeysyms[];
 extern GDisplay *screen_display;
+
+extern void GDrawResourceFind();
 
 extern void GDrawDestroyDisplays(void);
 extern void GDrawCreateDisplays(char *displayname,char *programname);
@@ -319,6 +325,7 @@ extern void GDrawMoveResize(GWindow w, int32 x, int32 y, int32 width, int32 heig
 extern GWindow GDrawGetRoot(GDisplay *);
 extern Color GDrawGetDefaultBackground(GDisplay *);
 extern Color GDrawGetDefaultForeground(GDisplay *);
+extern Color GDrawGetWarningForeground(GDisplay *);
 extern GRect *GDrawGetSize(GWindow w, GRect *ret);
 extern GDrawEH GDrawGetEH(GWindow w);
 extern void GDrawSetEH(GWindow w,GDrawEH e_h);

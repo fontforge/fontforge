@@ -41,9 +41,9 @@
 #include "fvcomposite.h"
 #include "fvfonts.h"
 #include "gfile.h"
+#include "gimage.h"
 #include "gkeysym.h"
 #include "gresedit.h"
-#include "gresource.h"
 #include "groups.h"
 #include "mm.h"
 #include "namelist.h"
@@ -80,8 +80,11 @@ int compact_font_on_open=0;
 int warn_script_unsaved = 0;
 int navigation_mask = 0;		/* Initialized in startui.c */
 
-static char *fv_fontnames = MONO_UI_FAMILIES;
+static int fv_fontpx;
+static GResFont fv_font = GRESFONT_INIT("400 12pt " SANS_UI_FAMILIES);
 extern void python_call_onClosingFunctions();
+
+extern GResInfo fontview_ri, view_ri;
 
 #define	FV_LAB_HEIGHT	15
 
@@ -111,20 +114,29 @@ static unsigned char fontview2_bits[] = {
 
 extern int _GScrollBar_Width;
 
-static int fv_fontsize = 11, fv_fs_init=0;
+static int fv_fs_init=0;
+Color fvfgcol = 0x000000;
 static Color fvselcol = 0xffff00, fvselfgcol=0x000000;
 Color view_bgcol;
+static Color fvslotcol = 0x000000;
+static Color fvslotdivcol = 0x808080;
+static Color fvlabelcol = 0x000000;
+static Color fvunenclabelcol = 0x505050;
+static Color fvmissinglabelcol = 0xff0000;
 static Color fvglyphinfocol = 0xff0000;
 static Color fvemtpyslotfgcol = 0xd08080;
 static Color fvchangedcol = 0x000060;
 static Color fvhintingneededcol = 0x0000ff;
+static Color fvmetbaselinecol = 0x0000c0;
+static Color fvmetorigincol = 0xc00000;
+static Color fvmetadvanceatcol = 0x008000;
+static Color fvmetadvancetocol = 0x008000;
+static Color fvmissingbitmapcol = 0xff0000;
+static Color fvmissingoutlinecol = 0x008000;
 
 enum glyphlable { gl_glyph, gl_name, gl_unicode, gl_encoding };
 int default_fv_showhmetrics=false, default_fv_showvmetrics=false,
 	default_fv_glyphlabel = gl_glyph;
-#define METRICS_BASELINE 0x0000c0
-#define METRICS_ORIGIN	 0xc00000
-#define METRICS_ADVANCE	 0x008000
 FontView *fv_list=NULL;
 
 
@@ -221,6 +233,19 @@ return( -1 );
 return( gid );
 }
 
+extern BDFFont *FVSplineFontPieceMeal(SplineFont *sf, int layer, int ptsize, int dpi, int flags, void *freetype_context) {
+    BDFFont *new = SplineFontPieceMeal(sf, layer, ptsize, dpi, flags, freetype_context);
+    Color bg = view_bgcol;
+    Color fg = fvfgcol;
+    int l, scale = new->clut->clut_len;
+    for ( l=0; l<scale; ++l )
+	new->clut->clut[l] = COLOR_CREATE(
+                         COLOR_RED(bg) + ((int32) (l*(COLOR_RED(fg)-COLOR_RED(bg))))/(scale-1),
+                         COLOR_GREEN(bg) + ((int32) (l*(COLOR_GREEN(fg)-COLOR_GREEN(bg))))/(scale-1),
+                         COLOR_BLUE(bg) + ((int32) (l*(COLOR_BLUE(fg)-COLOR_BLUE(bg))))/(scale-1) );
+    return new;
+}
+
 static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int forcebg ) {
     GRect box, old2;
     int feat_gid;
@@ -265,9 +290,9 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int forcebg ) {
 	    /* If we have an outline but no bitmap for this slot */
 	    box.x = j*fv->cbw+1; box.width = fv->cbw-2;
 	    box.y = i*fv->cbh+fv->lab_height+2; box.height = box.width+1;
-	    GDrawDrawRect(pixmap,&box,0xff0000);
+	    GDrawDrawRect(pixmap,&box,fvmissingbitmapcol);
 	    ++box.x; ++box.y; box.width -= 2; box.height -= 2;
-	    GDrawDrawRect(pixmap,&box,0xff0000);
+	    GDrawDrawRect(pixmap,&box,fvmissingbitmapcol);
 /* When reencoding a font we can find times where index>=show->charcnt */
 	} else if ( fv->show!=NULL && feat_gid<fv->show->glyphcnt && feat_gid!=-1 &&
 		fv->show->glyphs[feat_gid]!=NULL ) {
@@ -307,7 +332,7 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int forcebg ) {
 		base.clut = &clut;
 		clut.clut_len = 2;
 		clut.clut[0] = fv->b.selected[index] ? fvselcol : view_bgcol ;
-		clut.clut[1] = fv->b.selected[index] ? fvselfgcol : 0 ;
+		clut.clut[1] = fv->b.selected[index] ? fvselfgcol : fvfgcol ;
 	    }
 	    base.trans = 0;
 	    base.clut->trans_index = 0;
@@ -326,9 +351,9 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int forcebg ) {
 		/* If we have a bitmap but no outline character... */
 		GRect b;
 		b.x = box.x+1; b.y = box.y+1; b.width = box.width-2; b.height = box.height-2;
-		GDrawDrawRect(pixmap,&b,0x008000);
+		GDrawDrawRect(pixmap,&b,fvmissingoutlinecol);
 		++b.x; ++b.y; b.width -= 2; b.height -= 2;
-		GDrawDrawRect(pixmap,&b,0x008000);
+		GDrawDrawRect(pixmap,&b,fvmissingoutlinecol);
 	    }
 
 	    // Keep centering consistent to bdfc->width. If base.width!=bdfc->width,
@@ -358,14 +383,14 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int forcebg ) {
 		/* Draw advance width & horizontal origin */
 		if ( fv->showhmetrics&fvm_origin )
 		    GDrawDrawLine(pixmap,x0,i*fv->cbh+fv->lab_height+yorg-3,x0,
-			    i*fv->cbh+fv->lab_height+yorg+2,METRICS_ORIGIN);
+			    i*fv->cbh+fv->lab_height+yorg+2,fvmetorigincol);
 		x1 = x0 + fv->magnify*bdfc->width;
 		if ( fv->showhmetrics&fvm_advanceat )
 		    GDrawDrawLine(pixmap,x1,i*fv->cbh+fv->lab_height+1,x1,
-			    (i+1)*fv->cbh-1,METRICS_ADVANCE);
+			    (i+1)*fv->cbh-1,fvmetadvanceatcol);
 		if ( fv->showhmetrics&fvm_advanceto )
 		    GDrawDrawLine(pixmap,x0,(i+1)*fv->cbh-2,x1,
-			    (i+1)*fv->cbh-2,METRICS_ADVANCE);
+			    (i+1)*fv->cbh-2,fvmetadvancetocol);
 	    }
 	    if ( fv->showvmetrics ) {
 		int x0 = j*fv->cbw+(fv->cbw-1-fv->magnify*xwidth)/2- bdfc->xmin*fv->magnify
@@ -374,15 +399,15 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int forcebg ) {
 		int yvw = y0 + fv->magnify*sc->vwidth*fv->show->pixelsize/em;
 		if ( fv->showvmetrics&fvm_baseline )
 		    GDrawDrawLine(pixmap,x0,i*fv->cbh+fv->lab_height+1,x0,
-			    (i+1)*fv->cbh-1,METRICS_BASELINE);
+			    (i+1)*fv->cbh-1,fvmetbaselinecol);
 		if ( fv->showvmetrics&fvm_advanceat )
 		    GDrawDrawLine(pixmap,j*fv->cbw,yvw,(j+1)*fv->cbw,
-			    yvw,METRICS_ADVANCE);
+			    yvw,fvmetadvanceatcol);
 		if ( fv->showvmetrics&fvm_advanceto )
 		    GDrawDrawLine(pixmap,j*fv->cbw+2,y0,j*fv->cbw+2,
-			    yvw,METRICS_ADVANCE);
+			    yvw,fvmetadvancetocol);
 		if ( fv->showvmetrics&fvm_origin )
-		    GDrawDrawLine(pixmap,x0-3,i*fv->cbh+fv->lab_height+yorg,x0+2,i*fv->cbh+fv->lab_height+yorg,METRICS_ORIGIN);
+		    GDrawDrawLine(pixmap,x0-3,i*fv->cbh+fv->lab_height+yorg,x0+2,i*fv->cbh+fv->lab_height+yorg,fvmetorigincol);
 	    }
 	    GDrawPopClip(pixmap,&old2);
 	    if ( !fv->show->piecemeal ) BDFCharFree( bdfc );
@@ -2917,7 +2942,7 @@ static void FVShowSubFont(FontView *fv,SplineFont *new) {
 	FontViewReformatOne(&fv->b);
 	FVSetTitle(&fv->b);
     }
-    newbdf = SplineFontPieceMeal(fv->b.sf,fv->b.active_layer,fv->filled->pixelsize,72,
+    newbdf = FVSplineFontPieceMeal(fv->b.sf,fv->b.active_layer,fv->filled->pixelsize,72,
 	    (fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0)|
 		(use_freetype_to_rasterize_fv && !fv->b.sf->strokedfont && !fv->b.sf->multilayer?pf_ft_nohints:0),
 	    NULL);
@@ -3267,7 +3292,7 @@ static void FVMenuSize(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     if ( fv->filled!=fv->show || fv->filled->pixelsize != dspsize || changedmodifier ) {
 	BDFFont *new, *old;
 	old = fv->filled;
-	new = SplineFontPieceMeal(fv->b.sf,fv->b.active_layer,dspsize,72,
+	new = FVSplineFontPieceMeal(fv->b.sf,fv->b.active_layer,dspsize,72,
 	    (fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0)|
 		(use_freetype_to_rasterize_fv && !fv->b.sf->strokedfont && !fv->b.sf->multilayer?pf_ft_nohints:0),
 	    NULL);
@@ -3299,7 +3324,7 @@ return;
 	destfv->bbsized = srcfv->bbsized;
 	destfv->antialias = srcfv->antialias;
 	old = destfv->filled;
-	new = SplineFontPieceMeal(destfv->b.sf,destfv->b.active_layer,srcfv->filled->pixelsize,72,
+	new = FVSplineFontPieceMeal(destfv->b.sf,destfv->b.active_layer,srcfv->filled->pixelsize,72,
 	    (destfv->antialias?pf_antialias:0)|(destfv->bbsized?pf_bbsized:0)|
 		(use_freetype_to_rasterize_fv && !destfv->b.sf->strokedfont && !destfv->b.sf->multilayer?pf_ft_nohints:0),
 	    NULL);
@@ -3317,7 +3342,7 @@ static void FV_LayerChanged( FontView *fv ) {
     fv->user_requested_magnify = -1;
 
     old = fv->filled;
-    new = SplineFontPieceMeal(fv->b.sf,fv->b.active_layer,fv->filled->pixelsize,72,
+    new = FVSplineFontPieceMeal(fv->b.sf,fv->b.active_layer,fv->filled->pixelsize,72,
 	(fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0)|
 	    (use_freetype_to_rasterize_fv && !fv->b.sf->strokedfont && !fv->b.sf->multilayer?pf_ft_nohints:0),
 	NULL);
@@ -4421,7 +4446,7 @@ static GMenuItem2 fllist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
 #endif
     { { (unichar_t *) N_("Pr_eferences..."), (GImage *) "fileprefs.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("Preferences...|No Shortcut"), NULL, NULL, MenuPrefs, 0 },
-    { { (unichar_t *) N_("_X Resource Editor..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("X Resource Editor...|No Shortcut"), NULL, NULL, MenuXRes, 0 },
+    { { (unichar_t *) N_("Appearance Editor..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("Appearance Editor...|No Shortcut"), NULL, NULL, MenuXRes, 0 },
 #ifndef _NO_PYTHON
     { { (unichar_t *) N_("Config_ure Plugins..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'u' }, H_("Configure Plugins...|No Shortcut"), NULL, NULL, MenuPlug, 0 },
 #endif
@@ -5707,10 +5732,8 @@ static GFont *FVCheckFont(FontView *fv,int type) {
     FontRequest rq;
 
     if ( fv->fontset[type]==NULL ) {
-	memset(&rq,0,sizeof(rq));
-	rq.utf8_family_name = fv_fontnames;
-	rq.point_size = fv_fontsize;
-	rq.weight = 400;
+	memset(&rq, 0, sizeof(rq));
+	GDrawDecomposeFont(fv_font.fi, &rq);
 	rq.style = 0;
 	if (type&_uni_italic)
 	    rq.style |= fs_italic;
@@ -5748,10 +5771,9 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
     GImage gi;
     SplineChar dummy;
     int styles, laststyles=0;
-    Color bg, def_fg;
+    Color bg;
     int fgxor;
 
-    def_fg = GDrawGetDefaultForeground(NULL);
     memset(&gi,'\0',sizeof(gi));
     memset(&base,'\0',sizeof(base));
     if ( fv->show->clut!=NULL ) {
@@ -5774,11 +5796,11 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
     GDrawPushClip(pixmap,&event->u.expose.rect,&old);
     GDrawFillRect(pixmap,NULL,view_bgcol);
     for ( i=0; i<=fv->rowcnt; ++i ) {
-	GDrawDrawLine(pixmap,0,i*fv->cbh,fv->width,i*fv->cbh,def_fg);
-	GDrawDrawLine(pixmap,0,i*fv->cbh+fv->lab_height,fv->width,i*fv->cbh+fv->lab_height,0x808080);
+	GDrawDrawLine(pixmap,0,i*fv->cbh,fv->width,i*fv->cbh,fvslotcol);
+	GDrawDrawLine(pixmap,0,i*fv->cbh+fv->lab_height,fv->width,i*fv->cbh+fv->lab_height,fvslotdivcol);
     }
     for ( i=0; i<=fv->colcnt; ++i )
-	GDrawDrawLine(pixmap,i*fv->cbw,0,i*fv->cbw,fv->height,def_fg);
+	GDrawDrawLine(pixmap,i*fv->cbw,0,i*fv->cbw,fv->height,fvslotcol);
     for ( i=event->u.expose.rect.y/fv->cbh; i<=fv->rowcnt &&
 	    (event->u.expose.rect.y+event->u.expose.rect.height+fv->cbh-1)/fv->cbh; ++i ) for ( j=0; j<fv->colcnt; ++j ) {
 	int index = (i+fv->rowoff)*fv->colcnt+j;
@@ -5799,9 +5821,9 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 	    if ( ( fv->b.map->enc==&custom && index<256 ) ||
 		 ( fv->b.map->enc!=&custom && index<fv->b.map->enc->char_cnt ) ||
 		 ( cidmap!=NULL && index<MaxCID(cidmap) ))
-		fg = def_fg;
+		fg = fvlabelcol;
 	    else
-		fg = 0x505050;
+		fg = fvunenclabelcol;
 	    if ( sc==NULL )
 		sc = SCBuildDummy(&dummy,fv->b.sf,fv->b.map,index);
 	    uni = sc->unicodeenc;
@@ -5857,7 +5879,7 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 		} else {
 		    char *pt = strchr(sc->name,'.');
 		    buf[0] = '?';
-		    fg = 0xff0000;
+		    fg = fvmissinglabelcol;
 		    if ( pt!=NULL ) {
 			int i, n = pt-sc->name;
 			char *end;
@@ -5885,7 +5907,7 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 			if ( strstr(pt,".vert")!=NULL )
 			    styles = _uni_vertical;
 			if ( buf[0]!='?' ) {
-			    fg = def_fg;
+			    fg = fvlabelcol;
 			    if ( strstr(pt,".italic")!=NULL )
 				styles = _uni_italic;
 			}
@@ -5897,7 +5919,7 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 			int uni=-1;
 			sscanf(sc->name,"italicuni%x", (unsigned *) &uni );
 			if ( uni!=-1 ) { buf[0] = uni; styles=_uni_italic; }
-			fg = def_fg;
+			fg = fvlabelcol;
 		    } else if ( strncmp(sc->name,"vertcid_",8)==0 ||
 			    strncmp(sc->name,"vertuni",7)==0 ) {
 			styles = _uni_vertical;
@@ -5930,7 +5952,7 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 		     ( fv->b.sf->layers[fv->b.active_layer].order2 && sc->instructions_out_of_date ) ) {
 		Color hintcol = fvhintingneededcol;
 		if ( fv->b.sf->layers[fv->b.active_layer].order2 && sc->instructions_out_of_date && sc->ttf_instrs_len>0 )
-		    hintcol = 0xff0000;
+		    hintcol = GDrawGetWarningForeground(NULL);
 		GDrawDrawLine(pixmap,r.x,r.y,r.x,r.y+r.height-1,hintcol);
 		GDrawDrawLine(pixmap,r.x+1,r.y,r.x+1,r.y+r.height-1,hintcol);
 		GDrawDrawLine(pixmap,r.x+2,r.y,r.x+2,r.y+r.height-1,hintcol);
@@ -5998,7 +6020,7 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
     }
     if ( fv->showhmetrics&fvm_baseline ) {
 	for ( i=0; i<=fv->rowcnt; ++i )
-	    GDrawDrawLine(pixmap,0,i*fv->cbh+fv->lab_height+fv->magnify*fv->show->ascent+1,fv->width,i*fv->cbh+fv->lab_height+fv->magnify*fv->show->ascent+1,METRICS_BASELINE);
+	    GDrawDrawLine(pixmap,0,i*fv->cbh+fv->lab_height+fv->magnify*fv->show->ascent+1,fv->width,i*fv->cbh+fv->lab_height+fv->magnify*fv->show->ascent+1,fvmetbaselinecol);
     }
     GDrawPopClip(pixmap,&old);
     GDrawSetDither(NULL, true);
@@ -6774,7 +6796,7 @@ return;
 	GDrawSetCursor(fv->v,ct_watch);
 	old = fv->filled;
 				/* In CID fonts fv->b.sf may not be same as sf */
-	new = SplineFontPieceMeal(fv->b.sf,fv->b.active_layer,fv->filled->pixelsize,72,
+	new = FVSplineFontPieceMeal(fv->b.sf,fv->b.active_layer,fv->filled->pixelsize,72,
 		(fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0)|
 		    (use_freetype_to_rasterize_fv && !sf->strokedfont && !sf->multilayer?pf_ft_nohints:0),
 		NULL);
@@ -6802,7 +6824,7 @@ return;
     }
     for ( mvs=sf->metrics; mvs!=NULL; mvs=mvs->next ) if ( mvs->bdf==NULL ) {
 	BDFFontFree(mvs->show);
-	mvs->show = SplineFontPieceMeal(sf,mvs->layer,mvs->ptsize,mvs->dpi,
+	mvs->show = FVSplineFontPieceMeal(sf,mvs->layer,mvs->ptsize,mvs->dpi,
 		mvs->antialias?(pf_antialias|pf_ft_recontext):pf_ft_recontext,NULL);
 	GDrawRequestExpose(mvs->gw,NULL,false);
     }
@@ -7032,15 +7054,130 @@ return;
     atexit(&FontViewFinishNonStatic);
 }
 
+// These aren't used but exist to make the resource system work.
+static GResFont sans_viewfont = GRESFONT_INIT("400 12pt " SANS_UI_FAMILIES);
+static GResFont mono_viewfont = GRESFONT_INIT("400 12pt " MONO_UI_FAMILIES);
+static GResFont serif_viewfont = GRESFONT_INIT("400 12pt " SERIF_UI_FAMILIES);
+
+static struct resed view_re[] = {
+    {N_("DefaultFont"), "DefaultFont", rt_font, &sans_viewfont, N_("The primary display font family (normally sans-serif) at the normal size for FontView characters"), NULL, { 0 }, 0, 0 },
+    {N_("MonoFont"), "MonoFont", rt_font, &mono_viewfont, N_("A monospace font family at the same size as DefaultFont"), NULL, { 0 }, 0, 0 },
+    {N_("SerifFont"), "SerifFont", rt_font, &serif_viewfont, N_("A font family with serifs at the same size as DefaultFont (for the splash screen)"), NULL, { 0 }, 0, 0 },
+    {N_("Color|Background"), "Background", rt_color, &view_bgcol, N_("Background color for the drawing area of all views"), NULL, { 0 }, 0, 0 },
+    RESED_EMPTY
+};
 static struct resed fontview_re[] = {
+    {N_("Glyph FG Color"), "GlyphFGColor", rt_color, &fvfgcol, N_("Color of used to draw the foreground of (unselected) glyphs"), NULL, { 0 }, 0, 0 },
     {N_("Glyph Info Color"), "GlyphInfoColor", rt_color, &fvglyphinfocol, N_("Color of the font used to display glyph information in the fontview"), NULL, { 0 }, 0, 0 },
+    {N_("Slot Outline Color"), "SlotOutlineColor", rt_color, &fvslotcol, N_("Color of the lines around glyph slots"), NULL, { 0 }, 0, 0 },
+    {N_("Slot Division Color"), "SlotDivisionColor", rt_color, &fvslotdivcol, N_("Color of the line between label and glyph"), NULL, { 0 }, 0, 0 },
+    {N_("Label Color"), "LabelColor", rt_color, &fvlabelcol, N_("Default color of glyph labels"), NULL, { 0 }, 0, 0 },
+    {N_("Unencoded Label Color"), "UnencodedLabelColor", rt_color, &fvunenclabelcol, N_("Color of glyph labels when glyph is not encoded"), NULL, { 0 }, 0, 0 },
+    {N_("Missing Label Color"), "MissingLabelColor", rt_color, &fvmissinglabelcol, N_("Color of glyph labels when label is missing"), NULL, { 0 }, 0, 0 },
     {N_("Empty Slot FG Color"), "EmptySlotFgColor", rt_color, &fvemtpyslotfgcol, N_("Color used to draw the foreground of empty slots"), NULL, { 0 }, 0, 0 },
     {N_("Selected BG Color"), "SelectedColor", rt_color, &fvselcol, N_("Color used to draw the background of selected glyphs"), NULL, { 0 }, 0, 0 },
     {N_("Selected FG Color"), "SelectedFgColor", rt_color, &fvselfgcol, N_("Color used to draw the foreground of selected glyphs"), NULL, { 0 }, 0, 0 },
     {N_("Changed Color"), "ChangedColor", rt_color, &fvchangedcol, N_("Color used to mark a changed glyph"), NULL, { 0 }, 0, 0 },
+    {N_("Missing Bitmap Color"), "MissingBitmapColor", rt_color, &fvmissingbitmapcol, N_("Color used to mark a glyph with an outline and no bitmap when displaying bitmaps"), NULL, { 0 }, 0, 0 },
+    {N_("Missing Outline Color"), "MissingOutlineColor", rt_color, &fvmissingoutlinecol, N_("Color used to mark a glyph with a bitmap but no outline when displaying outlines"), NULL, { 0 }, 0, 0 },
     {N_("Hinting Needed Color"), "HintingNeededColor", rt_color, &fvhintingneededcol, N_("Color used to mark glyphs that need hinting"), NULL, { 0 }, 0, 0 },
-    {N_("Font Size"), "FontSize", rt_int, &fv_fontsize, N_("Size (in points) of the font used to display information and glyph labels in the fontview"), NULL, { 0 }, 0, 0 },
-    {N_("Font Family"), "FontFamily", rt_stringlong, &fv_fontnames, N_("A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs"), NULL, { 0 }, 0, 0 },
+    {N_("Metrics Advance At Color"), "MetricsAdvanceAtColor", rt_color, &fvmetadvanceatcol, N_("Color used to draw the (vertical or) horizontal line at the advance when that metric is selected in View"), NULL, { 0 }, 0, 0 },
+    {N_("Metrics Advance To Color"), "MetricsAdvanceToColor", rt_color, &fvmetadvancetocol, N_("Color used to draw the (horizontal or) vertical line from the origin to the advance when that metric is selected in View"), NULL, { 0 }, 0, 0 },
+    {N_("Metrics Baseline Color"), "MetricsBaselineColor", rt_color, &fvmetbaselinecol, N_("Color used to draw the (vertical or) horizontal baseline when that metric is selected in View"), NULL, { 0 }, 0, 0 },
+    {N_("Metrics Origin Color"), "MetricsOriginColor", rt_color, &fvmetorigincol, N_("Color used to draw the (vertical or) horizontal origin tick when that metric is selected in View"), NULL, { 0 }, 0, 0 },
+    {N_("Font"), "Font", rt_font, &fv_font, N_("Font used to display small example images of glyphs over the user designed glyphs"), NULL, { 0 }, 0, 0 },
+    RESED_EMPTY
+};
+
+extern GResFont bdfprop_font;
+extern GResFont combinations_font;
+extern GResFont cvt_font;
+#ifdef FREETYPE_HAS_DEBUGGER
+extern Color dv_rasterbackcol;
+extern GResFont debugview_font;
+#endif
+extern GResFont fontinfo_font;
+extern Color fi_originlinescol;
+extern GResFont glyphinfo_font;
+extern GResFont groups_font;
+extern Color histogram_graphcol;
+extern GResFont histogram_font;
+extern GResFont kernclass_font;
+extern Color kernclass_classfgcol;
+extern GResFont kernformat_font;
+extern GResFont kernformat_boldfont;
+extern GResFont math_font;
+extern GResFont math_boldfont;
+extern GResFont prefs_monofont;
+extern GResFont searchview_font;
+extern GResFont searchview_boldfont;
+extern Color showatt_selcol;
+extern Color showatt_glyphnamecol;
+extern GResFont showatt_font;
+extern GResFont showatt_monofont;
+extern GResFont splash_font;
+extern GResFont splash_monofont;
+extern GResFont splash_italicfont;
+extern GResFont statemachine_font;
+extern GResImage splashresimage;
+extern Color splashfg;
+extern Color splashbg;
+
+#ifdef FONTFORGE_CONFIG_TILEPATH
+extern GResFont tilepath_font;
+extern GResFont tilepath_boldfont;
+#endif
+extern GResFont ttinstruction_font;
+extern GResFont validate_font;
+extern GResFont errfont;
+static struct resed miscwin_re[] = {
+    {N_("BDFProperties.Font"), "BDFProperties.Font", rt_font, &bdfprop_font, N_("Font used in the BDF Info dialog"), NULL, { 0 }, 0, 0 },
+    {N_("Combinations.Font"), "Combinations.Font", rt_font, &combinations_font, N_("Font used in the View Combinations dialogs"), NULL, { 0 }, 0, 0 },
+    {N_("CVT.Font"), "CVT.Font", rt_font, &cvt_font, N_("Font used in the TTF Instruction Control Value Table dialog"), NULL, { 0 }, 0, 0 },
+#ifdef FREETYPE_HAS_DEBUGGER
+    { N_("Debug View Background Color"), "Background", rt_color, &dv_rasterbackcol, N_("The background of the TTF debugging window"), NULL, { 0 }, 0, 0 },
+    {N_("DebugView.Font"), "DebugView.Font", rt_font, &debugview_font, N_("Font used in the TTF Instruction Debug window"), NULL, { 0 }, 0, 0 },
+#endif
+    {N_("FontInfo Origin Lines Color"), "FontInfo.OriginLineColor", rt_color, &fi_originlinescol, N_("Color used for the baseline and x=0 line in kerning dialogs"), NULL, { 0 }, 0, 0 },
+    {N_("FontInfo.Font"), "FontInfo.Font", rt_font, &fontinfo_font, N_("Font used for Font Info dialog scrolling lists"), NULL, { 0 }, 0, 0 },
+    {N_("GlyphInfo.Font"), "GlyphInfo.Font", rt_font, &glyphinfo_font, N_("Font used in the Glyph Info dialog"), NULL, { 0 }, 0, 0 },
+    {N_("Groups.Font"), "Groups.Font", rt_font, &groups_font, N_("Font used in the Define Encoding Groups dialog"), NULL, { 0 }, 0, 0 },
+    {N_("Histogram Graph Color"), "Histogram.GraphColor", rt_color, &histogram_graphcol, N_("Color used for the hint histogram graphs"), NULL, { 0 }, 0, 0 },
+    {N_("Histogram.Font"), "Histogram.Font", rt_font, &histogram_font, N_("Font used in the Histogram dialog"), NULL, { 0 }, 0, 0 },
+    {N_("Kern Class Text Color"), "KernClass.TextColor", rt_color, &kernclass_classfgcol, N_("Color for kerning class names"), NULL, { 0 }, 0, 0 },
+    {N_("KernClass.Font"), "KernClass.Font", rt_font, &kernclass_font, N_("Font used in the Kerning Classes dialog"), NULL, { 0 }, 0, 0 },
+    {N_("KernFormat.Font"), "KernFormat.Font", rt_font, &kernformat_font, N_("Normal font used in the Kerning Format dialog"), NULL, { 0 }, 0, 0 },
+    {N_("KernFormat.BoldFont"), "KernFormat.BoldFont", rt_font, &kernformat_boldfont, N_("Bold font used in the Kerning Format dialog"), NULL, { 0 }, 0, 0 },
+    {N_("Math.Font"), "Math.Font", rt_font, &math_font, N_("Normal font used in the Math dialog"), NULL, { 0 }, 0, 0 },
+    {N_("Math.BoldFont"), "Math.BoldFont", rt_font, &math_boldfont, N_("Bold font used in the Math dialog"), NULL, { 0 }, 0, 0 },
+    RESED_EMPTY
+};
+static struct resed miscwin2_re[] = {
+    {N_("Prefs.MonoFont"), "Prefs.MonoFont", rt_font, &prefs_monofont, N_("Font for Mac Features in Preferences dialog"), NULL, { 0 }, 0, 0 },
+    {N_("SearchView.Font"), "SearchView.Font", rt_font, &searchview_font, N_("Normal font used in the Find/Replace window"), NULL, { 0 }, 0, 0 },
+    {N_("SearchView.BoldFont"), "SearchView.BoldFont", rt_font, &searchview_boldfont, N_("Bold font used in the Find/Replace window"), NULL, { 0 }, 0, 0 },
+    {N_("Show ATT Selection Color"), "ShowAtt.SelectColor", rt_color, &showatt_selcol, N_("Color used for currently selected entry in Show ATT dialog"), NULL, { 0 }, 0, 0 },
+    {N_("Show ATT Glyph Name Color"), "ShowAtt.GlyphNameColor", rt_color, &showatt_glyphnamecol, N_("Color used for (some) glyph names in Show ATT dialog"), NULL, { 0 }, 0, 0 },
+    {N_("ShowATT.Font"), "ShowATT.Font", rt_font, &showatt_font, N_("Normal font used in the Advanced Typographic Tables dialog"), NULL, { 0 }, 0, 0 },
+    {N_("ShowATT.MonoFont"), "ShowATT.MonoFont", rt_font, &showatt_monofont, N_("Monospace font used in the Advanced Typographic Tables dialog"), NULL, { 0 }, 0, 0 },
+    {N_("StateMachine.Font"), "StateMachine.Font", rt_font, &statemachine_font, N_("Font used in the MacOS kerning State Machine dialog"), NULL, { 0 }, 0, 0 },
+#ifdef FONTFORGE_CONFIG_TILEPATH
+    {N_("TilePath.Font"), "TilePath.Font", rt_font, &tilepath_font, N_("Normal font used in the Tile Path dialog"), NULL, { 0 }, 0, 0 },
+    {N_("TilePath.BoldFont"), "TilePath.BoldFont", rt_font, &tilepath_boldfont, N_("Bold font used in the Tile Path dialog"), NULL, { 0 }, 0, 0 },
+#endif
+    {N_("TTInstruction.Font"), "TTInstruction.Font", rt_font, &ttinstruction_font, N_("Font used in the Edit Instructions dialog"), NULL, { 0 }, 0, 0 },
+    {N_("Validate.Font"), "Validate.Font", rt_font, &validate_font, N_("Font used in the Validate and Suggest Deltas dialogs"), NULL, { 0 }, 0, 0 },
+    {N_("Warnings.Font"), "Warnings.Font", rt_font, &errfont, N_("Font used in the Warnings dialog"), NULL, { 0 }, 0, 0 },
+    RESED_EMPTY
+};
+extern void *_SplashResImageSet(char *res, void *def);
+static struct resed splash_re[] = {
+    {N_("Splash Foreground"), "Foreground", rt_color, &splashfg, N_("Foreground color in the About dialog"), NULL, { 0 }, 0, 0 },
+    {N_("Splash Background"), "Background", rt_color, &splashbg, N_("Background color in the About dialog"), NULL, { 0 }, 0, 0 },
+    {N_("Splash Font"), "Font", rt_font, &splash_font, N_("Serif font used in the About dialog"), NULL, { 0 }, 0, 0 },
+    {N_("Splash ItalicFont"), "ItalicFont", rt_font, &splash_italicfont, N_("Italic serif font used in the About... dialog"), NULL, { 0 }, 0, 0 },
+    {N_("Splash.MonoFont"), "MonoFont", rt_font, &splash_monofont, N_("Monospace font used in the About dialog"), NULL, { 0 }, 0, 0 },
+    {N_("Splash Image"), "Image", rt_image, &splashresimage, N_("Image used in the splash screen and About dialog"), _SplashResImageSet, { 0 }, 0, 0 },
     RESED_EMPTY
 };
 
@@ -7048,13 +7185,12 @@ static void FVCreateInnards(FontView *fv,GRect *pos) {
     GWindow gw = fv->gw;
     GWindowAttrs wattrs;
     GGadgetData gd;
-    FontRequest rq;
     BDFFont *bdf;
     int as,ds,ld;
     extern int use_freetype_to_rasterize_fv;
     SplineFont *sf = fv->b.sf;
 
-    fv->lab_height = FV_LAB_HEIGHT-13+GDrawPointsToPixels(NULL,fv_fontsize);
+    fv->lab_height = FV_LAB_HEIGHT-13+fv_fontpx;
 
     memset(&gd,0,sizeof(gd));
     gd.pos.y = pos->y; gd.pos.height = pos->height;
@@ -7064,7 +7200,6 @@ static void FVCreateInnards(FontView *fv,GRect *pos) {
     gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_sb_vert;
     gd.handle_controlevent = FVScroll;
     fv->vsb = GScrollBarCreate(gw,&gd,fv);
-
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_backcol;
@@ -7081,17 +7216,13 @@ static void FVCreateInnards(FontView *fv,GRect *pos) {
     GDrawSetGIC(fv->gw,fv->gic,0,20);
 
     fv->fontset = calloc(_uni_fontmax,sizeof(GFont *));
-    memset(&rq,0,sizeof(rq));
-    rq.utf8_family_name = fv_fontnames;
-    rq.point_size = fv_fontsize;
-    rq.weight = 400;
-    fv->fontset[0] = GDrawInstanciateFont(gw,&rq);
+    fv->fontset[0] = fv_font.fi;
     GDrawSetFont(fv->v,fv->fontset[0]);
     GDrawWindowFontMetrics(fv->v,fv->fontset[0],&as,&ds,&ld);
     fv->lab_as = as;
     fv->showhmetrics = default_fv_showhmetrics;
     fv->showvmetrics = default_fv_showvmetrics && sf->hasvmetrics;
-    bdf = SplineFontPieceMeal(fv->b.sf,fv->b.active_layer,sf->display_size<0?-sf->display_size:default_fv_font_size,72,
+    bdf = FVSplineFontPieceMeal(fv->b.sf,fv->b.active_layer,sf->display_size<0?-sf->display_size:default_fv_font_size,72,
 	    (fv->antialias?pf_antialias:0)|(fv->bbsized?pf_bbsized:0)|
 		(use_freetype_to_rasterize_fv && !sf->strokedfont && !sf->multilayer?pf_ft_nohints:0),
 	    NULL);
@@ -7146,8 +7277,8 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     GDrawSetWindowTypeName(fv->gw, "FontView");
 
     if ( !fv_fs_init ) {
-	GResEditFind( fontview_re, "FontView.");
-	view_bgcol = GResourceFindColor("View.Background",GDrawGetDefaultBackground(NULL));
+	GResEditDoInit(&fontview_ri);
+	GResEditDoInit(&view_ri);
 	fv_fs_init = true;
     }
 
@@ -7171,7 +7302,14 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     fv->mb = GMenu2BarCreate( gw, &gd, NULL);
     GGadgetGetSize(fv->mb,&gsize);
     fv->mbh = gsize.height;
-    fv->infoh = 1+GDrawPointsToPixels(NULL,fv_fontsize);
+
+    // Reset this static here in case fv_font has changed
+    FontRequest rq;
+    GDrawDecomposeFont(fv_font.fi, &rq);
+    fv_fontpx = -rq.point_size; // positive means points, negative means pixels
+    if ( fv_fontpx < 0 )
+	fv_fontpx = GDrawPointsToPixels(NULL, -fv_fontpx);
+    fv->infoh = 1+fv_fontpx;
 
     pos.x = 0; pos.y = fv->mbh+fv->infoh;
     FVCreateInnards(fv,&pos);
@@ -7340,24 +7478,21 @@ struct fv_interface gdraw_fv_interface = {
     SF_CloseAllInstrs
 };
 
-extern GResInfo charview_ri;
-static struct resed view_re[] = {
-    {N_("Color|Background"), "Background", rt_color, &view_bgcol, N_("Background color for the drawing area of all views"), NULL, { 0 }, 0, 0 },
-    RESED_EMPTY
-};
+extern GResInfo charviewpoints_ri;
 GResInfo view_ri = {
-    NULL, NULL,NULL, NULL,
+    &fontview_ri, NULL,NULL, NULL,
     NULL,
     NULL,
     NULL,
     view_re,
     N_("View"),
-    N_("This is an abstract class which defines common features of the\nFontView, CharView, BitmapView and MetricsView"),
+    N_("This is an abstract class which defines common features of the\nFontView, CharView, BitmapView and MetricsView.\n\nPress the help key or F1 to open a web page about this tool.\n"),
     "View",
     "fontforge",
     false,
+    false,
     0,
-    NULL,
+    GBOX_EMPTY,
     GBOX_EMPTY,
     NULL,
     NULL,
@@ -7365,23 +7500,89 @@ GResInfo view_ri = {
 };
 
 GResInfo fontview_ri = {
-    &charview_ri, NULL,NULL, NULL,
+    &charviewpoints_ri, NULL,NULL, NULL,
     NULL,
     NULL,
     NULL,
     fontview_re,
-    N_("FontView"),
+    N_("Font View"),
     N_("This is the main fontforge window displaying a font"),
     "FontView",
     "fontforge",
     false,
+    false,
     0,
-    NULL,
+    GBOX_EMPTY,
     GBOX_EMPTY,
     NULL,
     NULL,
     NULL
 };
+extern GResInfo sftextarea_ri;
+GResInfo splash_ri = {
+    &sftextarea_ri, NULL,NULL, NULL,
+    NULL,
+    NULL,
+    NULL,
+    splash_re,
+    N_("Splash Screen"),
+    N_("Splash screen and About dialog"),
+    "Splash",
+    "fontforge",
+    false,
+    false,
+    0,
+    GBOX_EMPTY,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
+};
+GResInfo miscwin2_ri = {
+    &splash_ri, NULL,NULL, NULL,
+    NULL,
+    NULL,
+    NULL,
+    miscwin2_re,
+    N_("Misc Windows 2"),
+    N_("Other colors and fonts in various windows (mostly dialogs)"),
+    "",
+    "fontforge",
+    false,
+    false,
+    0,
+    GBOX_EMPTY,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
+};
+GResInfo miscwin_ri = {
+    &miscwin2_ri, NULL,NULL, NULL,
+    NULL,
+    NULL,
+    NULL,
+    miscwin_re,
+    N_("Misc Windows"),
+    N_("Colors and fonts in other windows (mostly dialogs)"),
+    "",
+    "fontforge",
+    false,
+    false,
+    0,
+    GBOX_EMPTY,
+    GBOX_EMPTY,
+    NULL,
+    NULL,
+    NULL
+};
+
+
+void MiscWinInit(void) {
+    GResEditDoInit(&miscwin_ri);
+    GResEditDoInit(&miscwin2_ri);
+    GResEditDoInit(&splash_ri);
+}
 
 /* ************************************************************************** */
 /* ***************************** Embedded FontViews ************************* */
@@ -7426,7 +7627,7 @@ void KFFontViewInits(struct kf_dlg *kf,GGadget *drawable) {
     kf->first_fv = __FontViewCreate(kf->sf); kf->first_fv->b.container = (struct fvcontainer *) kf;
     kf->second_fv = __FontViewCreate(kf->sf); kf->second_fv->b.container = (struct fvcontainer *) kf;
 
-    kf->infoh = infoh = 1+GDrawPointsToPixels(NULL,fv_fontsize);
+    kf->infoh = infoh = 1+fv_fontpx;
     kf->first_fv->mbh = kf->mbh;
     pos.x = 0; pos.y = kf->mbh+infoh+kf->fh+4;
     pos.width = 16*kf->first_fv->cbw+1;
@@ -7719,7 +7920,7 @@ char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current) {
     ps = sf->display_size; sf->display_size = -24;
     gs.fv = __FontViewCreate(sf);
 
-    infoh = 1+GDrawPointsToPixels(NULL,fv_fontsize);
+    infoh = 1+fv_fontpx;
     gs.fv->mbh = mbh;
     pos.x = 0; pos.y = mbh+infoh;
     pos.width = 16*gs.fv->cbw+1;

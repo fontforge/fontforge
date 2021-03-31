@@ -30,6 +30,7 @@
 #include "cvundoes.h"
 #include "fontforgeui.h"
 #include "gkeysym.h"
+#include "gresedit.h"
 #include "splineutil.h"
 #include "ttf.h"
 #include "ttfinstrs.h"
@@ -39,6 +40,9 @@
 extern GBox _ggadget_Default_Box;
 #define ACTIVE_BORDER   (_ggadget_Default_Box.active_border)
 #define MAIN_FOREGROUND (_ggadget_Default_Box.main_foreground)
+
+GResFont cvt_font = GRESFONT_INIT("400 12px " MONO_UI_FAMILIES) ;
+GResFont ttinstruction_font = GRESFONT_INIT("400 12px " MONO_UI_FAMILIES);
 
 extern int _GScrollBar_Width;
 #define EDGE_SPACING	2
@@ -345,7 +349,8 @@ static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
     int addr_end, num_end;
     static unichar_t nums[] = { '0', '0', '0', '0', '0', '0', '\0' };
     int indent;
-    extern GBox _ggadget_Default_Box;
+
+    Color warnfg = GDrawGetWarningForeground(NULL);
 
     GDrawSetFont(pixmap,ii->gfont);
     GDrawSetLineWidth(pixmap,0);
@@ -369,9 +374,9 @@ static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
     }
 
     if ( ii->showaddr )
-	GDrawDrawLine(pixmap,addr_end,rect->y,addr_end,rect->y+rect->height,0x000000);
+	GDrawDrawLine(pixmap,addr_end,rect->y,addr_end,rect->y+rect->height,MAIN_FOREGROUND);
     if ( ii->showhex )
-	GDrawDrawLine(pixmap,num_end,rect->y,num_end,rect->y+rect->height,0x000000);
+	GDrawDrawLine(pixmap,num_end,rect->y,num_end,rect->y+rect->height,MAIN_FOREGROUND);
 
     indent = 0;
     for ( i=0, y=EDGE_SPACING-ii->lpos*ii->fh; y<low && i<ii->instrdata->instr_cnt; ++i ) {
@@ -387,10 +392,10 @@ static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
     }
     if ( y<=high && ii->instrdata->instr_cnt==0 && i==0 ) {
 	if ( ii->instrdata->in_composit ) {
-	    GDrawDrawText8(pixmap,num_end+EDGE_SPACING,y+ii->as,_("<instrs inherited>"),-1,0xff0000);
+	    GDrawDrawText8(pixmap,num_end+EDGE_SPACING,y+ii->as,_("<instrs inherited>"),-1,warnfg);
 	    y += ii->fh;
 	}
-	GDrawDrawText8(pixmap,num_end+EDGE_SPACING,y+ii->as,_("<no instrs>"),-1,0xff0000);
+	GDrawDrawText8(pixmap,num_end+EDGE_SPACING,y+ii->as,_("<no instrs>"),-1,warnfg);
     } else {
 	int temp_indent;
 	for ( ; y<=high && i<ii->instrdata->instr_cnt+1; ++i ) {
@@ -692,11 +697,9 @@ static void InstrDlgCreate(struct instrdata *id,char *title) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    FontRequest rq;
     int as,ds,ld, lh;
     GGadgetCreateData gcd[11], *butarray[9], *harray[3], *varray[8];
     GTextInfo label[6];
-    static GFont *font=NULL;
 
     instrhelpsetup();
 
@@ -829,15 +832,7 @@ static void InstrDlgCreate(struct instrdata *id,char *title) {
     iv->instrinfo.v = GWidgetCreateSubWindow(gw,&pos,ii_v_e_h,&iv->instrinfo,&wattrs);
     GDrawSetVisible(iv->instrinfo.v,true);
 
-    if ( font==NULL ) {
-	memset(&rq,0,sizeof(rq));
-	rq.utf8_family_name = MONO_UI_FAMILIES;
-	rq.point_size = -12;
-	rq.weight = 400;
-	font = GDrawInstanciateFont(gw,&rq);
-	font = GResourceFindFont("TTInstruction.Font",font);
-    }
-    iv->instrinfo.gfont = font;
+    iv->instrinfo.gfont = ttinstruction_font.fi;
     GDrawSetFont(iv->instrinfo.v,iv->instrinfo.gfont);
     GGadgetSetFont(iv->text,iv->instrinfo.gfont);
     GDrawWindowFontMetrics(iv->instrinfo.v,iv->instrinfo.gfont,&as,&ds,&ld);
@@ -1198,8 +1193,8 @@ static void short_expose(ShortView *sv,GWindow pixmap,GRect *rect) {
     high = ( (rect->y+rect->height+sv->fh-1-EDGE_SPACER)/sv->fh ) * sv->fh +EDGE_SPACER;
     if ( high>sv->vheight-EDGE_SPACER ) high = sv->vheight-EDGE_SPACER;
 
-    GDrawDrawLine(pixmap,sv->addrend-ADDR_SPACER/2,rect->y,sv->addrend-ADDR_SPACER/2,rect->y+rect->height,0x000000);
-    GDrawDrawLine(pixmap,sv->valend-ADDR_SPACER/2,rect->y,sv->valend-ADDR_SPACER/2,rect->y+rect->height,0x000000);
+    GDrawDrawLine(pixmap,sv->addrend-ADDR_SPACER/2,rect->y,sv->addrend-ADDR_SPACER/2,rect->y+rect->height,MAIN_FOREGROUND);
+    GDrawDrawLine(pixmap,sv->valend-ADDR_SPACER/2,rect->y,sv->valend-ADDR_SPACER/2,rect->y+rect->height,MAIN_FOREGROUND);
 
     index = (sv->lpos+(low-EDGE_SPACER)/sv->fh);
     y = low;
@@ -1328,18 +1323,19 @@ static int sv_e_h(GWindow gw, GEvent *event) {
     GRect r;
     int x;
 
+    Color fg = GDrawGetDefaultForeground(NULL);
+
     switch ( event->type ) {
       case et_expose:
 	r.x = r.y = 0; r.width = sv->vwidth+40; r.height = sv->fh-1;
-	GDrawFillRect(gw,&r,0x808080);
 	GDrawSetFont(gw,sv->gfont);
 	x = sv->addrend - ADDR_SPACER - 2 - GDrawGetText8Width(gw,_("Index"),-1);
-	GDrawDrawText8(gw,x,sv->as,_("Index"),-1,0xffffff);
-	GDrawDrawText8(gw,sv->addrend,sv->as,_("Value"),-1,0xffffff);
-	GDrawDrawText8(gw,sv->valend,sv->as,_("Comment"),-1,0xffffff);
+	GDrawDrawText8(gw,x,sv->as,_("Index"),-1,fg);
+	GDrawDrawText8(gw,sv->addrend,sv->as,_("Value"),-1,fg);
+	GDrawDrawText8(gw,sv->valend,sv->as,_("Comment"),-1,fg);
 	
-	GDrawDrawLine(gw,0,sv->fh-1,r.width,sv->fh-1,0x000000);
-	GDrawDrawLine(gw,0,sv->vheight+sv->fh,sv->vwidth,sv->vheight+sv->fh,0x000000);
+	GDrawDrawLine(gw,0,sv->fh-1,r.width,sv->fh-1,fg);
+	GDrawDrawLine(gw,0,sv->vheight+sv->fh,sv->vwidth,sv->vheight+sv->fh,fg);
       break;
       case et_resize:
 	short_resize(sv,event);
@@ -1372,7 +1368,6 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     GRect pos, subpos, gsize;
     GWindow gw;
     GWindowAttrs wattrs;
-    FontRequest rq;
     int as,ds,ld, lh;
     GGadgetCreateData gcd[9], *butarray[8], *harray[4], *harray2[3], *varray[7];
     GTextInfo label[5], lab;
@@ -1381,7 +1376,6 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     int numlen;
     static GBox tfbox;
     int i;
-    static GFont *font = NULL;
 
     sv->table = tab;
     sv->sf = sf;
@@ -1521,15 +1515,7 @@ static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     sv->v = GWidgetCreateSubWindow(gw,&subpos,sv_v_e_h,sv,&wattrs);
     GDrawSetVisible(sv->v,true);
 
-    if ( font==NULL ) {
-	memset(&rq,0,sizeof(rq));
-	rq.utf8_family_name = MONO_UI_FAMILIES;
-	rq.point_size = -12;
-	rq.weight = 400;
-	font = GDrawInstanciateFont(gw,&rq);
-	font = GResourceFindFont("CVT.Font",font);
-    }
-    sv->gfont = font;
+    sv->gfont = cvt_font.fi;
     GDrawSetFont(sv->v,sv->gfont);
     GDrawSetFont(sv->gw,sv->gfont);
     GDrawWindowFontMetrics(sv->gw,sv->gfont,&as,&ds,&ld);

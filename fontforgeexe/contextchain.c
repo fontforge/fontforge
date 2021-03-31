@@ -29,6 +29,7 @@
 
 #include "asmfpst.h"
 #include "fontforgeui.h"
+#include "../gdraw/ggadgetP.h"
 #include "gkeysym.h"
 #include "lookups.h"
 #include "splineutil.h"
@@ -2390,10 +2391,7 @@ void ContextChainEdit(SplineFont *sf,FPST *fpst,
     extrabuttonslab[i].text_is_1byte = true;
     extrabuttonsgcd[i].gd.u.list = addlookup_list;
     extrabuttonsgcd[i].gd.label = &extrabuttonslab[i];
-    {
-	extern FontInstance *_ggadget_default_font;
-	GDrawSetFont(ccd->glyphs_simple,_ggadget_default_font);
-    }
+    GDrawSetFont(ccd->glyphs_simple,_ggadget_default_font.fi);
     extrabuttonsgcd[i].gd.pos.width = GDrawPixelsToPoints(ccd->glyphs_simple,
 	    GDrawGetText8Width(ccd->glyphs_simple,(char *)extrabuttonslab[i].text,-1))+50;
     extrabuttonsgcd[i].gd.cid = CID_GAddLookup;
