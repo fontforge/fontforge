@@ -527,6 +527,78 @@ static void ApproxBounds(DBounds *b, FitPoint *mid, int cnt, struct dotbounds *d
     }
 }
 
+/* The coefficients of a polynomial which is at most of 4th order */
+/* (The struct "Quartic" is without array...) */
+typedef struct polynomial {
+    int length; // length of polynomial =5
+    bigreal coeff[5];
+} Polynomial;
+
+/* Evaluates a polynomial with coefficients p in x with (Horner) */
+static bigreal evaluate(bigreal x,Polynomial p, int length) {
+	bigreal result = 0;
+	for (int i=0; i<length; i++) 
+		result = result*x+p.coeff[i];
+	return result;
+}
+
+/* Newton's algorithm for determing a root of a polynomial with */
+/* coefficients coeffs (starting value x=0) */
+static bigreal newtonRoot(Polynomial p) {
+	// derive the polynomial
+	Polynomial derivative;
+	derivative.length = p.length-1;
+	for (int i=0; i<derivative.length; i++) {
+		derivative.coeff[i] = p.coeff[i]*(p.length-i-1);
+	}
+	bigreal x = 0;
+	bigreal derivativeValue,d;
+	for (int i=0; i<100; i++) { // run it at most 100-times
+		derivativeValue = evaluate(x,derivative,derivative.length);
+		if ( derivativeValue == 0 ) {
+			x += 1e-9;
+			derivativeValue = evaluate(x,derivative,derivative.length);
+		}
+		d = evaluate(x,p,p.length)/derivativeValue;
+		x -= d;
+		if ( fabs(d) < 1e-9 ){
+			return x;
+		}
+	}
+	return -999999; // algorithm did not converge
+}
+
+/* Same as newtonRoot(p) but returns ALL real roots of p */
+static Polynomial newtonRoots(Polynomial p) {
+	Polynomial f; // f is p but without leading zeroes
+	int noLeadingZeros = 0; // boolean
+	f.length = 0;
+	for (int i=0; i<p.length; i++) {
+		if ( abs(p.coeff[i]) > 0.000001) { // 0 or nearly 0
+			noLeadingZeros = 1;
+		}
+		if ( noLeadingZeros) {
+			f.coeff[f.length++] = p.coeff[i];
+		}
+	}
+	Polynomial roots;
+	roots.length = 0;
+	bigreal r;
+	while ( f.length > 1 ) {
+		r = newtonRoot(f);
+		if ( r == -999999) { // no solution
+			break;
+		}
+		roots.coeff[roots.length++] = r;
+		// polynomial division:
+		for (int i=1; i < f.length-1; i++) { 
+			f.coeff[i] = f.coeff[i]+f.coeff[i-1]*r;
+		}
+		f.length -= 1; // -1 because of no remainder
+	}
+	return roots;
+}
+
 /* pf == point from (start point) */
 /* Δf == slope from (cp(from) - from) */
 /* pt == point to (end point, t==1) */
@@ -733,67 +805,182 @@ return( SplineMake3(from,to));
     }
     /* This is the generic case, where a generic part is approximated by a cubic */
     /* bezier spline. */
-    if (is_accurate) { /* More accurate but slower function by Linus Romer */
-	bigreal best_error = 1e30;
-	bigreal t,error,errorsum,dist;
-	BasePoint prevcp,coeff1,coeff2,coeff3;
-	bigreal best_fromhandle = 0.0;
-	bigreal best_tohandle = 0.0;
-	BasePoint approx[99]; /* The 99 points on the approximate cubic bezier */
-	/* We make 2 runs: The first run to narrow the variation range, the second run to finetune */
-	/* The optimal length of the two handles are determined by brute force. */
-	for (int run=0; run<2; ++run) {
-		for (int fromhandle=((run==0)?1:-29); fromhandle<=((run==0)?60:29); ++fromhandle) {
-			for (int tohandle=((run==0)?1:-29); tohandle<=((run==0)?60:29); ++tohandle) {
-				nextcp.x = from->me.x+ftlen*fromunit.x*( (run==0)?fromhandle:best_fromhandle+fromhandle/30.0 )/60.0;
-				nextcp.y = from->me.y+ftlen*fromunit.y*( (run==0)?fromhandle:best_fromhandle+fromhandle/30.0 )/60.0;
-				prevcp.x = to->me.x+ftlen*tounit.x*( (run==0)?tohandle:best_tohandle+tohandle/30.0 )/60.0;
-				prevcp.y = to->me.y+ftlen*tounit.y*( (run==0)?tohandle:best_tohandle+tohandle/30.0 )/60.0;
-				/* Calculate the error of the cubic bezier path from,nextcp,prevcp,to: */
-				/* In order to do that we calculate 99 points on the bezier path. */
-				coeff3.x = -from->me.x+3*nextcp.x-3*prevcp.x+to->me.x;
-				coeff3.y = -from->me.y+3*nextcp.y-3*prevcp.y+to->me.y;
-				coeff2.x = 3*from->me.x-6*nextcp.x+3*prevcp.x;
-				coeff2.y = 3*from->me.y-6*nextcp.y+3*prevcp.y;
-				coeff1.x = -3*from->me.x+3*nextcp.x;
-				coeff1.y = -3*from->me.y+3*nextcp.y;
-				for (int i=0; i<99; ++i) {
-					t = (i+1)/100.0;
-					approx[i].x = from->me.x+t*(coeff1.x+t*(coeff2.x+t*coeff3.x));
-					approx[i].y = from->me.y+t*(coeff1.y+t*(coeff2.y+t*coeff3.y));
-				}
-				/* Now we calculate the error by determing the minimal quadratic distance to the mid points. */
-				errorsum = 0.0;
-				for (int i=0; i<cnt; ++i) { /* Going through the mid points */
-					error = (mid[i].p.x-approx[0].x)*(mid[i].p.x-approx[0].x)
-					+(mid[i].p.y-approx[0].y)*(mid[i].p.y-approx[0].y);
-					/* Above we have just initialized the error and */
-					/* now we are going through the remaining 98 of */
-					/* 99 points on the approximate cubic bezier: */
-					for (int j=1; j<99; ++j) {
-						dist = (mid[i].p.x-approx[j].x)*(mid[i].p.x-approx[j].x)
-						+(mid[i].p.y-approx[j].y)*(mid[i].p.y-approx[j].y);
-						if (dist < error)
-							error = dist;
-					}
-					errorsum += error;
-					if (errorsum > best_error)
-						break;
-				}
-				if (errorsum < best_error) {
-					best_error = errorsum;
-					if (run == 0) {
-						best_fromhandle = fromhandle;
-						best_tohandle = tohandle;
-					}
-					from->nextcp = nextcp;
-					to->prevcp = prevcp;
-				}
+    /* If is_accurate is true, a more accurate function by Linus Romer */
+    /* is used that implements a slightly modified algorithm by Raph Levien:*/
+    /* raphlinus.github.io/curves/2021/03/11/bezier-fitting.html */
+    /* The notation used here is a bit different: Instead of theta1, theta2, */
+    /* delta1, delta2, momentx, area we use alpha,beta,a,b,m,f: */
+    if (is_accurate) { 
+	bigreal a,b,alpha,beta,rotation,ca,sa,sasa,cb,sb,sab,f,m,xa,ya,xb,yb,xc,yc,xd,yd;
+	int numberOfSolutions;
+    alpha = acos(ftunit.x*fromunit.x+ftunit.y*fromunit.y); /* signed angle */
+    if ( ftunit.x*fromunit.y-ftunit.y*fromunit.x < 0 ){
+		alpha = -alpha;	
+	}
+    beta = acos(-ftunit.x*tounit.x-ftunit.y*tounit.y); /* signed angle */
+    if ( ftunit.x*tounit.y-ftunit.y*tounit.x < 0 ){
+		beta = -beta;	
+	}
+    rotation = atan2(ftunit.y,ftunit.x);
+    ca = cos(-rotation);
+	sa = sin(-rotation);
+    printf("alpha %f\n",alpha);
+    printf("beta %f\n",beta);
+    printf("rotation %f\n",rotation);
+    SplinePoint *frompoint,*topoint;
+    f = 0; /* area */
+    m = 0; /* first area moment about y (along x) */
+    for ( frompoint = from, topoint = from->next->to ; ; frompoint = topoint->next->from, topoint = topoint->next->to ) {
+		/* normalizing transformation (chord to x axis and length 1) */
+		xa = ((frompoint->me.x-from->me.x)*ca-(frompoint->me.y-from->me.y)*sa)/ftlen;
+		ya = ((frompoint->me.x-from->me.x)*sa+(frompoint->me.y-from->me.y)*ca)/ftlen;
+		xb = ((frompoint->nextcp.x-from->me.x)*ca-(frompoint->nextcp.y-from->me.y)*sa)/ftlen;
+		yb = ((frompoint->nextcp.x-from->me.x)*sa+(frompoint->nextcp.y-from->me.y)*ca)/ftlen;
+		xc = ((topoint->prevcp.x-from->me.x)*ca-(topoint->prevcp.y-from->me.y)*sa)/ftlen;
+		yc = ((topoint->prevcp.x-from->me.x)*sa+(topoint->prevcp.y-from->me.y)*ca)/ftlen;
+		xd = ((topoint->me.x-from->me.x)*ca-(topoint->me.y-from->me.y)*sa)/ftlen;
+		yd = ((topoint->me.x-from->me.x)*sa+(topoint->me.y-from->me.y)*ca)/ftlen;
+		printf("normed coordinates %f,%f,%f,%f,%f,%f,%f,%f\n",xa,ya,xb,yb,xc,yc,xd,yd);
+		f += ((xb-xa)*(10*ya+6*yb+3*yc+yd)+(xc-xb)*(4*ya+6*yb+6*yc+4*yd)+(xd-xc)*(ya+3*yb+6*yc+10*yd))/20;
+		m += (280*xd*xd*yd-105*xc*xd*yd-30*xb*xd*yd-5*xa*xd*yd-45*xc*xc*yd-45*xb*xc*yd-12*xa*xc*yd-18*xb*xb*yd
+		-15*xa*xb*yd-5*xa*xa*yd+105*xd*xd*yc+45*xc*xd*yc-3*xa*xd*yc-27*xb*xc*yc-18*xa*xc*yc-27*xb*xb*yc
+		-45*xa*xb*yc-30*xa*xa*yc+30*xd*xd*yb+45*xc*xd*yb+18*xb*xd*yb+3*xa*xd*yb+27*xc*xc*yb+27*xb*xc*yb
+		-45*xa*xb*yb-105*xa*xa*yb+5*xd*xd*ya+15*xc*xd*ya+12*xb*xd*ya+5*xa*xd*ya+18*xc*xc*ya+45*xb*xc*ya
+		+30*xa*xc*ya+45*xb*xb*ya+105*xa*xb*ya-280*xa*xa*ya)/840;
+		if ( topoint==to )
+			break;
+    }
+    /* normalize alpha to >= 0: */
+    if ( alpha < 0 ) {
+		alpha = -alpha;	
+		beta = -beta;
+		m = -m;
+		f = -f;
+	}
+	/* start approximation by solving the quartic equation */
+	sa = sin(alpha); /* overwriting previous sa */
+	ca = cos(alpha); /* overwriting previous ca */
+	sasa = sa*sa;
+	sb = sin(beta);
+	cb = cos(beta);
+	sab = sin(alpha+beta);
+	Polynomial aQuartic;
+	aQuartic.length = 5;
+	if ( fabs(alpha+beta-M_PI) < .001) { /* handles head in the same direction */
+		aQuartic.length = 3;
+		aQuartic.coeff[0] = -72*ca*sasa*sa;
+		aQuartic.coeff[1] = 48*sasa*(4*sa+5*ca*f);	
+		aQuartic.coeff[2] = 80*sa*((42*m-25*f)*sa-25*ca*f*f);
+	} else { /* generic situation */
+		aQuartic.coeff[0] = -9*ca*(((2*sb*cb*ca+sa*(2*cb*cb-1))*ca-2*sb*cb)*ca-cb*cb*sa);
+		aQuartic.coeff[1] = 12*((((cb*(30*f*cb-sb)-15*f)*ca+2*sa-cb*sa*(cb+30*f*sb))
+							*ca+cb*(sb-15*f*cb))*ca-sa*cb*cb);	
+		aQuartic.coeff[2] = 12*((((70*m+15*f)*sb*sb+cb*(9*sb-70*cb*m-5*cb*f))
+							*ca-5*sa*sb*(3*sb-4*cb*(7*m+f)))*ca-cb*(9*sb-70*cb*m-5*cb*f));
+		aQuartic.coeff[3] = 16*(((12*sa-5*ca*(42*m-17*f))*sb-70*cb*(3*m-f)*sa-75*ca*cb*f*f)
+							*sb-75*cb*cb*f*f*sa);
+		aQuartic.coeff[4] = 80*sb*(42*sb*m-25*f*(sb-cb*f));
+	}
+	Polynomial aSolutions = newtonRoots(aQuartic); /* misusing Polynomial as array */
+	bigreal abSolutions[9][2]; /* there are at most 4+3+1+1=9 solutions of pairs of a and b (quartic=0,derivative=0,b=0.01,a=0.01) */
+	numberOfSolutions = 0;
+	printf("alpha = %f, beta = %f, f = %f, m = %f\n",alpha,beta,f,m);
+	for( int i = 0; i < aSolutions.length; i++ ){
+		a = aSolutions.coeff[i];
+		if ( a >= 0 && a < 100 ) {
+			b = (20*f-6*a*sa)/(3*(2*sb-a*sab));
+			printf("solution (a,b) = (%f,%f)\n",a,b);
+			if ( b >= 0 && b < 100 ) {
+				abSolutions[numberOfSolutions][0] = a;
+				abSolutions[numberOfSolutions++][1] = b;
 			}
 		}
 	}
-	return( SplineMake3(from,to));
-    } else { /* original and fast function */
+	// and now again for the derivative: (as Levien suggests)
+	aQuartic.length -= 1;
+	for( int i = 0; i < aQuartic.length; i++ ){
+		aQuartic.coeff[i] = (aQuartic.length-i)*aQuartic.coeff[i];
+	}
+	aSolutions = newtonRoots(aQuartic); // overwriting (reusing)
+	for( int i = 0; i < aSolutions.length; i++ ){
+		a = aSolutions.coeff[i];
+		if ( a >= 0 && a < 100 ) {
+			b = (20*f-6*a*sa)/(3*(2*sb-a*sab));
+			if ( b >= 0 && b < 100 ) {
+				abSolutions[numberOfSolutions][0] = a;
+				abSolutions[numberOfSolutions++][1] = b;
+			} 
+		}
+	}
+	/* Add the solution of b = 0.01 (approximately 0 but above because of direction). */
+	/* This solution is not part of the original algorithm by Raph Levien. */
+	a = (2000*f-6*sb)/(600*sa-3*sab);
+	if ( a >= 0 && a < 100 ) {
+		abSolutions[numberOfSolutions][0] = a;
+		abSolutions[numberOfSolutions++][1] = 0.01;
+	}
+	/* Add the solution of a = 0.01 (approximately 0 but above because of direction). */
+	/* This solution is not part of the original algorithm by Raph Levien. */
+	b = (2000*f-6*sa)/(600*sb-3*sab);
+	if ( b >= 0 && b < 100 ) {
+		abSolutions[numberOfSolutions][0] = 0.01;
+		abSolutions[numberOfSolutions++][1] = b;
+	}
+	if ( numberOfSolutions == 1) { 
+		from->nextcp.x = from->me.x+ftlen*fromunit.x*abSolutions[0][0];
+		from->nextcp.y = from->me.y+ftlen*fromunit.y*abSolutions[0][0];
+		to->prevcp.x = to->me.x+ftlen*tounit.x*abSolutions[0][1];
+		to->prevcp.y = to->me.y+ftlen*tounit.y*abSolutions[0][1];
+	} else { /* compare L2 errors to choose the best solution */
+		bigreal bestError = 1e30;
+		bigreal t,error,errorsum,dist;
+		BasePoint prevcp,coeff1,coeff2,coeff3;	
+		for (int k=0; k<numberOfSolutions; k++) {
+			nextcp.x = from->me.x+ftlen*fromunit.x*abSolutions[k][0];
+			nextcp.y = from->me.y+ftlen*fromunit.y*abSolutions[k][0];
+			prevcp.x = to->me.x+ftlen*tounit.x*abSolutions[k][1];
+			prevcp.y = to->me.y+ftlen*tounit.y*abSolutions[k][1];
+			/* Calculate the error of the cubic bezier path from,nextcp,prevcp,to: */
+			/* In order to do that we calculate 99 points on the bezier path. */
+			coeff3.x = -from->me.x+3*nextcp.x-3*prevcp.x+to->me.x;
+			coeff3.y = -from->me.y+3*nextcp.y-3*prevcp.y+to->me.y;
+			coeff2.x = 3*from->me.x-6*nextcp.x+3*prevcp.x;
+			coeff2.y = 3*from->me.y-6*nextcp.y+3*prevcp.y;
+			coeff1.x = -3*from->me.x+3*nextcp.x;
+			coeff1.y = -3*from->me.y+3*nextcp.y;
+			BasePoint approx[99];
+			for (int i=0; i<99; i++) {
+				t = (i+1)/100.0;
+				approx[i].x = from->me.x+t*(coeff1.x+t*(coeff2.x+t*coeff3.x));
+				approx[i].y = from->me.y+t*(coeff1.y+t*(coeff2.y+t*coeff3.y));
+			}
+			/* Now we calculate the error by determing the minimal quadratic distance to the mid points. */
+			errorsum = 0.0;
+			for (int i=0; i<cnt; i++) { /* Going through the mid points */
+				error = (mid[i].p.x-approx[0].x)*(mid[i].p.x-approx[0].x)
+				+(mid[i].p.y-approx[0].y)*(mid[i].p.y-approx[0].y);
+				/* Above we have just initialized the error and */
+				/* now we are going through the remaining 98 of */
+				/* 99 points on the approximate cubic bezier: */
+				for (int j=1; j<99; j++) {
+					dist = (mid[i].p.x-approx[j].x)*(mid[i].p.x-approx[j].x)
+					+(mid[i].p.y-approx[j].y)*(mid[i].p.y-approx[j].y);
+					if (dist < error)
+						error = dist;
+				}
+				errorsum += error;
+				if (errorsum > bestError)
+					break;
+			}
+			if (errorsum < bestError) {
+				bestError = errorsum;
+				from->nextcp = nextcp;
+				to->prevcp = prevcp;
+			}
+		}
+    } 
+    return( SplineMake3(from,to));
+	} else { /* original and fast function */
     pt_pf_x = to->me.x - from->me.x;
     pt_pf_y = to->me.y - from->me.y;
     consts[0] = consts[1] = rt_terms[0] = rt_terms[1] = rf_terms[0] = rf_terms[1] = 0;

@@ -1307,7 +1307,7 @@ return( false );
     memcpy(fp2,fp,tot*sizeof(FitPoint));
 
     if ( !(flags&sf_ignoreslopes) )
-	ApproximateSplineFromPointsSlopes(from,to,fp,tot-1,order2,false);
+	ApproximateSplineFromPointsSlopes(from,to,fp,tot-1,order2,true);
     else {
 	ApproximateSplineFromPoints(from,to,fp,tot-1,order2);
     }
