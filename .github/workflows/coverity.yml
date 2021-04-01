@@ -1,5 +1,8 @@
 name: Coverity Scan
-on: ["workflow_dispatch"]
+on:
+  push:
+    branches: [ coverity ]
+  workflow_dispatch:
 env:
   PYTHON: python3.9
 jobs:
@@ -32,6 +35,7 @@ jobs:
           mkdir build && pushd build
           cmake -GNinja $FFCONFIG ..
           cov-build --dir cov-int ninja
+          cat build/cov-int/build-log.txt
       - name: Submit the result to Coverity Scan
         working-directory: repo/build
         run: |
