@@ -7,7 +7,7 @@ env:
   PYTHON: python3.9
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v2
         with:
@@ -25,7 +25,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: deps/install
-          key: ${{ matrix.os }}-deps-${{ hashFiles('repo/.github/workflows/scripts/setup_linux_deps.sh') }}
+          key: ${{ runner.os }}-deps-${{ hashFiles('repo/.github/workflows/scripts/setup_linux_deps.sh') }}
       - name: Install dependencies and setup env vars
         run: ${{ github.workspace }}/repo/.github/workflows/scripts/setup_linux_deps.sh
       - name: Build FontForge with Coverity
@@ -35,7 +35,7 @@ jobs:
           mkdir build && pushd build
           cmake -GNinja $FFCONFIG ..
           cov-build --dir cov-int ninja
-          cat build/cov-int/build-log.txt
+          # cat cov-int/build-log.txt
       - name: Submit the result to Coverity Scan
         working-directory: repo/build
         run: |
