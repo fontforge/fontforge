@@ -824,9 +824,6 @@ return( SplineMake3(from,to));
     rotation = atan2(ftunit.y,ftunit.x);
     ca = cos(-rotation);
 	sa = sin(-rotation);
-    printf("alpha %f\n",alpha);
-    printf("beta %f\n",beta);
-    printf("rotation %f\n",rotation);
     SplinePoint *frompoint,*topoint;
     f = 0; /* area */
     m = 0; /* first area moment about y (along x) */
@@ -840,7 +837,6 @@ return( SplineMake3(from,to));
 		yc = ((topoint->prevcp.x-from->me.x)*sa+(topoint->prevcp.y-from->me.y)*ca)/ftlen;
 		xd = ((topoint->me.x-from->me.x)*ca-(topoint->me.y-from->me.y)*sa)/ftlen;
 		yd = ((topoint->me.x-from->me.x)*sa+(topoint->me.y-from->me.y)*ca)/ftlen;
-		printf("normed coordinates %f,%f,%f,%f,%f,%f,%f,%f\n",xa,ya,xb,yb,xc,yc,xd,yd);
 		f += ((xb-xa)*(10*ya+6*yb+3*yc+yd)+(xc-xb)*(4*ya+6*yb+6*yc+4*yd)+(xd-xc)*(ya+3*yb+6*yc+10*yd))/20;
 		m += (280*xd*xd*yd-105*xc*xd*yd-30*xb*xd*yd-5*xa*xd*yd-45*xc*xc*yd-45*xb*xc*yd-12*xa*xc*yd-18*xb*xb*yd
 		-15*xa*xb*yd-5*xa*xa*yd+105*xd*xd*yc+45*xc*xd*yc-3*xa*xd*yc-27*xb*xc*yc-18*xa*xc*yc-27*xb*xb*yc
@@ -884,12 +880,10 @@ return( SplineMake3(from,to));
 	Polynomial aSolutions = newtonRoots(aQuartic); /* misusing Polynomial as array */
 	bigreal abSolutions[9][2]; /* there are at most 4+3+1+1=9 solutions of pairs of a and b (quartic=0,derivative=0,b=0.01,a=0.01) */
 	numberOfSolutions = 0;
-	printf("alpha = %f, beta = %f, f = %f, m = %f\n",alpha,beta,f,m);
 	for( int i = 0; i < aSolutions.length; i++ ){
 		a = aSolutions.coeff[i];
 		if ( a >= 0 && a < 100 ) {
 			b = (20*f-6*a*sa)/(3*(2*sb-a*sab));
-			printf("solution (a,b) = (%f,%f)\n",a,b);
 			if ( b >= 0 && b < 100 ) {
 				abSolutions[numberOfSolutions][0] = a;
 				abSolutions[numberOfSolutions++][1] = b;
