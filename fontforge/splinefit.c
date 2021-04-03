@@ -33,6 +33,7 @@
 #include "splineorder2.h"
 #include "splineutil.h"
 #include "splineutil2.h"
+#include "utanvec.h"
 
 #include <math.h>
 
@@ -811,32 +812,21 @@ return( SplineMake3(from,to));
     /* The notation used here is a bit different: Instead of theta1, theta2, */
     /* delta1, delta2, momentx, area we use alpha,beta,a,b,m,f: */
     if (is_accurate) { 
-	bigreal a,b,alpha,beta,rotation,ca,sa,sasa,cb,sb,sab,f,m,xa,ya,xb,yb,xc,yc,xd,yd;
+	bigreal a,b,f,m,xa,ya,xb,yb,xc,yc,xd,yd,sasa,sab;
 	int numberOfSolutions;
-    alpha = acos(ftunit.x*fromunit.x+ftunit.y*fromunit.y); /* signed angle */
-    if ( ftunit.x*fromunit.y-ftunit.y*fromunit.x < 0 ){
-		alpha = -alpha;	
-	}
-    beta = acos(-ftunit.x*tounit.x-ftunit.y*tounit.y); /* signed angle */
-    if ( ftunit.x*tounit.y-ftunit.y*tounit.x < 0 ){
-		beta = -beta;	
-	}
-    rotation = atan2(ftunit.y,ftunit.x);
-    ca = cos(-rotation);
-	sa = sin(-rotation);
     SplinePoint *frompoint,*topoint;
     f = 0; /* area */
     m = 0; /* first area moment about y (along x) */
     for ( frompoint = from, topoint = from->next->to ; ; frompoint = topoint->next->from, topoint = topoint->next->to ) {
 		/* normalizing transformation (chord to x axis and length 1) */
-		xa = ((frompoint->me.x-from->me.x)*ca-(frompoint->me.y-from->me.y)*sa)/ftlen;
-		ya = ((frompoint->me.x-from->me.x)*sa+(frompoint->me.y-from->me.y)*ca)/ftlen;
-		xb = ((frompoint->nextcp.x-from->me.x)*ca-(frompoint->nextcp.y-from->me.y)*sa)/ftlen;
-		yb = ((frompoint->nextcp.x-from->me.x)*sa+(frompoint->nextcp.y-from->me.y)*ca)/ftlen;
-		xc = ((topoint->prevcp.x-from->me.x)*ca-(topoint->prevcp.y-from->me.y)*sa)/ftlen;
-		yc = ((topoint->prevcp.x-from->me.x)*sa+(topoint->prevcp.y-from->me.y)*ca)/ftlen;
-		xd = ((topoint->me.x-from->me.x)*ca-(topoint->me.y-from->me.y)*sa)/ftlen;
-		yd = ((topoint->me.x-from->me.x)*sa+(topoint->me.y-from->me.y)*ca)/ftlen;
+		xa = ((frompoint->me.x-from->me.x)*ftunit.x+(frompoint->me.y-from->me.y)*ftunit.y)/ftlen;
+		ya = (-(frompoint->me.x-from->me.x)*ftunit.y+(frompoint->me.y-from->me.y)*ftunit.x)/ftlen;
+		xb = ((frompoint->nextcp.x-from->me.x)*ftunit.x+(frompoint->nextcp.y-from->me.y)*ftunit.y)/ftlen;
+		yb = (-(frompoint->nextcp.x-from->me.x)*ftunit.y+(frompoint->nextcp.y-from->me.y)*ftunit.x)/ftlen;
+		xc = ((topoint->prevcp.x-from->me.x)*ftunit.x+(topoint->prevcp.y-from->me.y)*ftunit.y)/ftlen;
+		yc = (-(topoint->prevcp.x-from->me.x)*ftunit.y+(topoint->prevcp.y-from->me.y)*ftunit.x)/ftlen;
+		xd = ((topoint->me.x-from->me.x)*ftunit.x+(topoint->me.y-from->me.y)*ftunit.y)/ftlen;
+		yd = (-(topoint->me.x-from->me.x)*ftunit.y+(topoint->me.y-from->me.y)*ftunit.x)/ftlen;
 		f += ((xb-xa)*(10*ya+6*yb+3*yc+yd)+(xc-xb)*(4*ya+6*yb+6*yc+4*yd)+(xd-xc)*(ya+3*yb+6*yc+10*yd))/20;
 		m += (280*xd*xd*yd-105*xc*xd*yd-30*xb*xd*yd-5*xa*xd*yd-45*xc*xc*yd-45*xb*xc*yd-12*xa*xc*yd-18*xb*xb*yd
 		-15*xa*xb*yd-5*xa*xa*yd+105*xd*xd*yc+45*xc*xd*yc-3*xa*xd*yc-27*xb*xc*yc-18*xa*xc*yc-27*xb*xb*yc
@@ -846,36 +836,40 @@ return( SplineMake3(from,to));
 		if ( topoint==to )
 			break;
     }
-    /* normalize alpha to >= 0: */
-    if ( alpha < 0 ) {
-		alpha = -alpha;	
-		beta = -beta;
+    BasePoint aunit = (BasePoint) { BPDot(ftunit, fromunit), BPCross(ftunit, fromunit) }; /* normed direction at "from" */
+    BasePoint bunit = (BasePoint) { BPDot(BPRev(ftunit), tounit),BPCross(ftunit, tounit) }; /* normed direction at "to" */
+    if ( aunit.y < 0 ) { /* normalize aunit.y to >= 0: */
+		aunit.y = -aunit.y;
+		bunit.y = -bunit.y;
 		m = -m;
 		f = -f;
 	}
 	/* start approximation by solving the quartic equation */
-	sa = sin(alpha); /* overwriting previous sa */
-	ca = cos(alpha); /* overwriting previous ca */
-	sasa = sa*sa;
-	sb = sin(beta);
-	cb = cos(beta);
-	sab = sin(alpha+beta);
+	sasa = aunit.y*aunit.y;
+	sab = aunit.y*bunit.x+aunit.x*bunit.y;
 	Polynomial aQuartic;
 	aQuartic.length = 5;
-	if ( fabs(alpha+beta-M_PI) < .001) { /* handles head in the same direction */
+	if ( fabs( BPCross(ftunit, tounit) ) < .001 ) { /* handles head in the same direction */
 		aQuartic.length = 3;
-		aQuartic.coeff[0] = -72*ca*sasa*sa;
-		aQuartic.coeff[1] = 48*sasa*(4*sa+5*ca*f);	
-		aQuartic.coeff[2] = 80*sa*((42*m-25*f)*sa-25*ca*f*f);
+		aQuartic.coeff[0] = -72*aunit.x*sasa*aunit.y;
+		aQuartic.coeff[1] = 48*sasa*(4*aunit.y+5*aunit.x*f);	
+		aQuartic.coeff[2] = 80*aunit.y*((42*m-25*f)*aunit.y-25*aunit.x*f*f);
 	} else { /* generic situation */
-		aQuartic.coeff[0] = -9*ca*(((2*sb*cb*ca+sa*(2*cb*cb-1))*ca-2*sb*cb)*ca-cb*cb*sa);
-		aQuartic.coeff[1] = 12*((((cb*(30*f*cb-sb)-15*f)*ca+2*sa-cb*sa*(cb+30*f*sb))
-							*ca+cb*(sb-15*f*cb))*ca-sa*cb*cb);	
-		aQuartic.coeff[2] = 12*((((70*m+15*f)*sb*sb+cb*(9*sb-70*cb*m-5*cb*f))
-							*ca-5*sa*sb*(3*sb-4*cb*(7*m+f)))*ca-cb*(9*sb-70*cb*m-5*cb*f));
-		aQuartic.coeff[3] = 16*(((12*sa-5*ca*(42*m-17*f))*sb-70*cb*(3*m-f)*sa-75*ca*cb*f*f)
-							*sb-75*cb*cb*f*f*sa);
-		aQuartic.coeff[4] = 80*sb*(42*sb*m-25*f*(sb-cb*f));
+		aQuartic.coeff[0] = -9*aunit.x*(((2*bunit.y*bunit.x*aunit.x+aunit.y
+							*(2*bunit.x*bunit.x-1))*aunit.x-2*bunit.y*bunit.x)
+							*aunit.x-bunit.x*bunit.x*aunit.y);
+		aQuartic.coeff[1] = 12*((((bunit.x*(30*f*bunit.x-bunit.y)-15*f)
+							*aunit.x+2*aunit.y-bunit.x*aunit.y*(bunit.x+30*f*bunit.y))
+							*aunit.x+bunit.x*(bunit.y-15*f*bunit.x))
+							*aunit.x-aunit.y*bunit.x*bunit.x);	
+		aQuartic.coeff[2] = 12*((((70*m+15*f)*bunit.y*bunit.y+bunit.x
+							*(9*bunit.y-70*bunit.x*m-5*bunit.x*f))
+							*aunit.x-5*aunit.y*bunit.y*(3*bunit.y-4*bunit.x
+							*(7*m+f)))*aunit.x-bunit.x*(9*bunit.y-70*bunit.x*m-5*bunit.x*f));
+		aQuartic.coeff[3] = 16*(((12*aunit.y-5*aunit.x*(42*m-17*f))*bunit.y
+							-70*bunit.x*(3*m-f)*aunit.y-75*aunit.x*bunit.x*f*f)
+							*bunit.y-75*bunit.x*bunit.x*f*f*aunit.y);
+		aQuartic.coeff[4] = 80*bunit.y*(42*bunit.y*m-25*f*(bunit.y-bunit.x*f));
 	}
 	Polynomial aSolutions = newtonRoots(aQuartic); /* misusing Polynomial as array */
 	bigreal abSolutions[9][2]; /* there are at most 4+3+1+1=9 solutions of pairs of a and b (quartic=0,derivative=0,b=0.01,a=0.01) */
@@ -883,7 +877,7 @@ return( SplineMake3(from,to));
 	for( int i = 0; i < aSolutions.length; i++ ){
 		a = aSolutions.coeff[i];
 		if ( a >= 0 && a < 100 ) {
-			b = (20*f-6*a*sa)/(3*(2*sb-a*sab));
+			b = (20*f-6*a*aunit.y)/(3*(2*bunit.y-a*sab));
 			if ( b >= 0 && b < 100 ) {
 				abSolutions[numberOfSolutions][0] = a;
 				abSolutions[numberOfSolutions++][1] = b;
@@ -899,7 +893,7 @@ return( SplineMake3(from,to));
 	for( int i = 0; i < aSolutions.length; i++ ){
 		a = aSolutions.coeff[i];
 		if ( a >= 0 && a < 100 ) {
-			b = (20*f-6*a*sa)/(3*(2*sb-a*sab));
+			b = (20*f-6*a*aunit.y)/(3*(2*bunit.y-a*sab));
 			if ( b >= 0 && b < 100 ) {
 				abSolutions[numberOfSolutions][0] = a;
 				abSolutions[numberOfSolutions++][1] = b;
@@ -908,14 +902,14 @@ return( SplineMake3(from,to));
 	}
 	/* Add the solution of b = 0.01 (approximately 0 but above because of direction). */
 	/* This solution is not part of the original algorithm by Raph Levien. */
-	a = (2000*f-6*sb)/(600*sa-3*sab);
+	a = (2000*f-6*bunit.y)/(600*aunit.y-3*sab);
 	if ( a >= 0 && a < 100 ) {
 		abSolutions[numberOfSolutions][0] = a;
 		abSolutions[numberOfSolutions++][1] = 0.01;
 	}
 	/* Add the solution of a = 0.01 (approximately 0 but above because of direction). */
 	/* This solution is not part of the original algorithm by Raph Levien. */
-	b = (2000*f-6*sa)/(600*sb-3*sab);
+	b = (2000*f-6*aunit.y)/(600*bunit.y-3*sab);
 	if ( b >= 0 && b < 100 ) {
 		abSolutions[numberOfSolutions][0] = 0.01;
 		abSolutions[numberOfSolutions++][1] = b;
