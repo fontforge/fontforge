@@ -844,9 +844,22 @@ return( SplineMake3(from,to));
 		m = -m;
 		f = -f;
 	}
+	/* calculate the Tunni point (where the tangents at "from" and "to" interesect) */
+	bigreal aMax = 100; /* maximal value that the handle a can reach up to the Tunni point, 100 is really long */
+	bigreal bMax = 100; /* maximal value that the handle b can reach up to the Tunni point, 100 is really long */
+	sab = aunit.y*bunit.x+aunit.x*bunit.y; 
+	if (sab != 0) { /* if handles not parallel */
+		aMax = bunit.y/sab;
+		bMax = aunit.y/sab;
+		if ( aMax < 0 ) {
+				aMax = 100;
+		}
+		if ( bMax < 0 ) {
+				bMax = 100;
+		}
+	}
 	/* start approximation by solving the quartic equation */
-	sasa = aunit.y*aunit.y;
-	sab = aunit.y*bunit.x+aunit.x*bunit.y;
+	sasa = aunit.y*aunit.y; /* reducing the multiplications */
 	Polynomial aQuartic;
 	aQuartic.length = 5;
 	if ( fabs( BPCross(ftunit, tounit) ) < .001 ) { /* handles head in the same direction */
@@ -876,9 +889,9 @@ return( SplineMake3(from,to));
 	numberOfSolutions = 0;
 	for( int i = 0; i < aSolutions.length; i++ ){
 		a = aSolutions.coeff[i];
-		if ( a >= 0 && a < 100 ) {
+		if ( a >= 0 && a < aMax ) {
 			b = (20*f-6*a*aunit.y)/(3*(2*bunit.y-a*sab));
-			if ( b >= 0 && b < 100 ) {
+			if ( b >= 0 && b < bMax ) {
 				abSolutions[numberOfSolutions][0] = a;
 				abSolutions[numberOfSolutions++][1] = b;
 			}
@@ -892,9 +905,9 @@ return( SplineMake3(from,to));
 	aSolutions = newtonRoots(aQuartic); // overwriting (reusing)
 	for( int i = 0; i < aSolutions.length; i++ ){
 		a = aSolutions.coeff[i];
-		if ( a >= 0 && a < 100 ) {
+		if ( a >= 0 && a < aMax ) {
 			b = (20*f-6*a*aunit.y)/(3*(2*bunit.y-a*sab));
-			if ( b >= 0 && b < 100 ) {
+			if ( b >= 0 && b < bMax ) {
 				abSolutions[numberOfSolutions][0] = a;
 				abSolutions[numberOfSolutions++][1] = b;
 			} 
@@ -903,16 +916,33 @@ return( SplineMake3(from,to));
 	/* Add the solution of b = 0.01 (approximately 0 but above because of direction). */
 	/* This solution is not part of the original algorithm by Raph Levien. */
 	a = (2000*f-6*bunit.y)/(600*aunit.y-3*sab);
-	if ( a >= 0 && a < 100 ) {
+	if ( a >= 0 && a < aMax ) {
 		abSolutions[numberOfSolutions][0] = a;
 		abSolutions[numberOfSolutions++][1] = 0.01;
 	}
 	/* Add the solution of a = 0.01 (approximately 0 but above because of direction). */
 	/* This solution is not part of the original algorithm by Raph Levien. */
 	b = (2000*f-6*aunit.y)/(600*bunit.y-3*sab);
-	if ( b >= 0 && b < 100 ) {
+	if ( b >= 0 && b < bMax ) {
 		abSolutions[numberOfSolutions][0] = 0.01;
 		abSolutions[numberOfSolutions++][1] = b;
+	}	
+	if ( numberOfSolutions == 0) { /* add solutions that extend up to the Tunni point */
+		/* solution with a = aMax and b = bMax*/
+		abSolutions[numberOfSolutions][0] = aMax;
+		abSolutions[numberOfSolutions++][1] = bMax;
+		/* try solution with a = aMax and b area-equal*/
+		b = (20*f-6*aMax*aunit.y)/(3*(2*bunit.y-aMax*sab));
+		if ( b >= 0 && b < bMax ) {
+			abSolutions[numberOfSolutions][0] = aMax;
+			abSolutions[numberOfSolutions++][1] = b;
+		}
+		/* try solution with b = bMax and a area-equal*/
+		a = (20*f-6*bMax*bunit.y)/(3*(2*aunit.y-bMax*sab));
+		if ( a >= 0 && a < aMax ) {
+			abSolutions[numberOfSolutions][0] = a;
+			abSolutions[numberOfSolutions++][1] = bMax;
+		}
 	}
 	if ( numberOfSolutions == 1) { 
 		from->nextcp.x = from->me.x+ftlen*fromunit.x*abSolutions[0][0];
