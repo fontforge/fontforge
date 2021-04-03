@@ -817,7 +817,12 @@ return( SplineMake3(from,to));
     SplinePoint *frompoint,*topoint;
     f = 0; /* area */
     m = 0; /* first area moment about y (along x) */
-    for ( frompoint = from, topoint = from->next->to ; ; frompoint = topoint->next->from, topoint = topoint->next->to ) {
+    frompoint = from;
+    if ( from->next==NULL )
+		topoint=to;
+	else
+		topoint=from->next->to;
+	for ( ; ; frompoint = topoint->next->from, topoint = topoint->next->to ) {
 		/* normalizing transformation (chord to x axis and length 1) */
 		xa = ((frompoint->me.x-from->me.x)*ftunit.x+(frompoint->me.y-from->me.y)*ftunit.y)/ftlen;
 		ya = (-(frompoint->me.x-from->me.x)*ftunit.y+(frompoint->me.y-from->me.y)*ftunit.x)/ftlen;
@@ -1273,7 +1278,7 @@ SplinePoint *_ApproximateSplineSetFromGen(SplinePoint *from, SplinePoint *to,
     to->prevcp.x = to->me.x - fp[cnt-1].ut.x;
     to->prevcp.y = to->me.y - fp[cnt-1].ut.y;
     to->noprevcp = false;
-    ApproximateSplineFromPointsSlopes(from,to,fp+1,cnt-2,order2,false);
+    ApproximateSplineFromPointsSlopes(from,to,fp+1,cnt-2,order2,true);
 
     for ( i=0; i<cnt; ++i ) {
 	d = SplineMinDistanceToPoint(from->next, &fp[i].p);
