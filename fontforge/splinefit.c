@@ -575,7 +575,7 @@ static Polynomial newtonRoots(Polynomial p) {
 	int noLeadingZeros = 0; // boolean
 	f.length = 0;
 	for (int i=0; i<p.length; i++) {
-		if ( abs(p.coeff[i]) > 0.000001) { // 0 or nearly 0
+		if (p.coeff[i] != 0) { 
 			noLeadingZeros = 1;
 		}
 		if ( noLeadingZeros) {
@@ -867,7 +867,7 @@ return( SplineMake3(from,to));
 	sasa = aunit.y*aunit.y; /* reducing the multiplications */
 	Polynomial aQuartic;
 	aQuartic.length = 5;
-	if ( fabs( BPCross(ftunit, tounit) ) < .001 ) { /* handles head in the same direction */
+	if ( (aunit.x == -bunit.x && aunit.y == bunit.y) || (aunit.x == bunit.x && aunit.y == -bunit.y) ) { /* handles are more or less parallel */
 		aQuartic.length = 3;
 		aQuartic.coeff[0] = -72*aunit.x*sasa*aunit.y;
 		aQuartic.coeff[1] = 48*sasa*(4*aunit.y+5*aunit.x*f);	
@@ -957,7 +957,7 @@ return( SplineMake3(from,to));
 	} else { /* compare L2 errors to choose the best solution */
 		bigreal bestError = 1e30;
 		bigreal t,error,errorsum,dist;
-		BasePoint prevcp,coeff1,coeff2,coeff3;	
+		BasePoint prevcp,nextcp,coeff1,coeff2,coeff3;	
 		for (int k=0; k<numberOfSolutions; k++) {
 			nextcp.x = from->me.x+ftlen*fromunit.x*abSolutions[k][0];
 			nextcp.y = from->me.y+ftlen*fromunit.y*abSolutions[k][0];
