@@ -933,9 +933,6 @@ return( SplineMake3(from,to));
 		abSolutions[numberOfSolutions++][1] = b;
 	}	
 	if ( numberOfSolutions == 0) { /* add solutions that extend up to the Tunni point */
-		/* solution with a = aMax and b = bMax*/
-		abSolutions[numberOfSolutions][0] = aMax;
-		abSolutions[numberOfSolutions++][1] = bMax;
 		/* try solution with a = aMax and b area-equal*/
 		b = (20*f-6*aMax*aunit.y)/(3*(2*bunit.y-aMax*sab));
 		if ( b >= 0 && b < bMax ) {
@@ -948,6 +945,11 @@ return( SplineMake3(from,to));
 			abSolutions[numberOfSolutions][0] = a;
 			abSolutions[numberOfSolutions++][1] = bMax;
 		}
+	}
+	if ( numberOfSolutions == 0) {
+		/* solution with a = aMax and b = bMax*/
+		abSolutions[numberOfSolutions][0] = aMax;
+		abSolutions[numberOfSolutions++][1] = bMax;
 	}
 	if ( numberOfSolutions == 1) { 
 		from->nextcp.x = from->me.x+ftlen*fromunit.x*abSolutions[0][0];
