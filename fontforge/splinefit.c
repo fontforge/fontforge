@@ -646,7 +646,7 @@ static Polynomial newtonRoots(Polynomial p) {
 #define TRY_CNT		2
 #define DECIMATION	5
 Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
-	FitPoint *mid, int cnt, int order2, int is_accurate) {
+	FitPoint *mid, int cnt, int order2, int midIsOnSpline) {
     BasePoint tounit, fromunit, ftunit;
     bigreal flen,tlen,ftlen,dot;
     Spline *spline, temp;
@@ -806,12 +806,12 @@ return( SplineMake3(from,to));
     }
     /* This is the generic case, where a generic part is approximated by a cubic */
     /* bezier spline. */
-    /* If is_accurate is true, a more accurate function by Linus Romer */
-    /* is used that implements a slightly modified algorithm by Raph Levien:*/
+    /* If midIsOnSpline is true, a slightly modified algorithm by Raph Levien */
+    /* is used (implemented here by Linus Romer): */
     /* raphlinus.github.io/curves/2021/03/11/bezier-fitting.html */
     /* The notation used here is a bit different: Instead of theta1, theta2, */
     /* delta1, delta2, momentx, area we use alpha,beta,a,b,m,f: */
-    if (is_accurate) { 
+    if (midIsOnSpline) { 
 	bigreal a,b,f,m,xa,ya,xb,yb,xc,yc,xd,yd,sasa,sab;
 	int numberOfSolutions;
     SplinePoint *frompoint,*topoint;
