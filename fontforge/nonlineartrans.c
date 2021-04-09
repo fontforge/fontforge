@@ -609,7 +609,7 @@ static void SplineSetNLTrans(SplineSet *ss, struct expr_context *c,
 		    }
 		}
 		if ( sp->prev->order2 )	/* Can't be order2 */
-		    ApproximateSplineFromPoints(last,next,mids,20,true);
+		    ApproximateSplineFromPoints(last,next,mids,20,false);
 		else
 		    /* We transformed the slopes carefully, and I hope correctly */
 		    /* This should give smoother joins that the above function */

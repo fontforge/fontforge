@@ -1280,7 +1280,7 @@ SplinePoint *_ApproximateSplineSetFromGen(SplinePoint *from, SplinePoint *to,
     to->prevcp.x = to->me.x - fp[cnt-1].ut.x;
     to->prevcp.y = to->me.y - fp[cnt-1].ut.y;
     to->noprevcp = false;
-    ApproximateSplineFromPointsSlopes(from,to,fp+1,cnt-2,order2,true);
+    ApproximateSplineFromPointsSlopes(from,to,fp+1,cnt-2,order2,false);
 
     for ( i=0; i<cnt; ++i ) {
 	d = SplineMinDistanceToPoint(from->next, &fp[i].p);
