@@ -644,9 +644,67 @@ static Polynomial newtonRoots(Polynomial p) {
 /* This still isn't as good as I'd like it... But I haven't been able to */
 /*  improve it further yet */
 /* The mergetype mt is either of: */
-/*  mt_matrix; original, fast, all-purpose */
-/*  mt_levien; by Raph Levien, fast, accurate, use iff mid is on spline */
-/*  mt_bruteforce; slow, all_purpose, normally more accurate than mt_matrix.*/
+/*  mt_matrix; original, fast, all-purpose (relies on matrix calculations) */
+/*  mt_levien; by Raph Levien (implemented by Linus Romer), fast, accurate, use only if mid is on spline */
+/*  mt_bruteforce; slow, all-purpose, normally more accurate than mt_matrix.*/
+/* The mt_levien algorithm is explained here: */
+/* raphlinus.github.io/curves/2021/03/11/bezier-fitting.html */
+/* The notation used here is a bit different: Instead of theta1, theta2, */
+/* delta1, delta2, momentx, area we use alpha,beta,a,b,m,f: */
+/* Here is to complete math that we are using: */
+/* Signed area of the cubic bezier spline a .. controls b and c .. d to the x-axis  */
+/* f = ((xb-xa)*(10*ya+6*yb+3*yc+yd)+(xc-xb)*(4*ya+6*yb+6*yc+4*yd)+(xd-xc)*(ya+3*yb+6*yc+10*yd))/20; */
+/* simplified for the normed case */
+/* f = 3/20*(2*a*sin(alpha)+2*b*sin(beta)-a*b*sin(alpha+beta)); */
+/* solved for b */
+/* b = (20*f-6*a*sin(alpha))/(6*sin(beta)-3*a*sin(alpha+beta)). */
+/* Signed area of the cubic bezier spline a .. controls b and c .. d to the x-axis  */
+/* from point a up to the bezier point at time t */
+/* f(t) = ((((1-t)*xa+xb*t)-xa)*(10*ya+6*((1-t)*ya+yb*t)+3*((1-t)^2*ya+2*(1-t)*t*yb+t^2*yc) */
+/* +((1-t)^3*ya+3*(1-t)^2*t*yb+3*(1-t)*t^2*yc+t^3*yd))+(((1-t)^2*xa+2*(1-t)*t*xb+t^2*xc) */
+/* -((1-t)*xa+xb*t))*(4*ya+6*((1-t)*ya+yb*t)+6*((1-t)^2*ya+2*(1-t)*t*yb+t^2*yc) */
+/* +4*((1-t)^3*ya+3*(1-t)^2*t*yb+3*(1-t)*t^2*yc+t^3*yd))+(((1-t)^3*xa+3*(1-t)^2*t*xb */
+/* +3*(1-t)*t^2*xc+t^3*xd)-((1-t)^2*xa+2*(1-t)*t*xb+t^2*xc))*(ya+3*((1-t)*ya+yb*t) */
+/* +6*((1-t)^2*ya+2*(1-t)*t*yb+t^2*yc)+10*((1-t)^3*ya+3*(1-t)^2*t*yb+3*(1-t)*t^2*yc+t^3*yd)))/20; */
+/* simplified for the normed case: */
+/* f(t) = -(3*(30*a*b*sin(beta-alpha)*t^6+15*b^2*sin(2*beta)*t^6-20*b*sin(beta)*t^6 */
+/* -15*a^2*sin(2*alpha)*t^6+20*a*sin(alpha)*t^6+6*a*b*sin(beta+alpha)*t^5 */
+/* -90*a*b*sin(beta-alpha)*t^5-30*b^2*sin(2*beta)*t^5+48*b*sin(beta)*t^5 */
+/* +60*a^2*sin(2*alpha)*t^5-72*a*sin(alpha)*t^5-15*a*b*sin(beta+alpha)*t^4 */
+/* +90*a*b*sin(beta-alpha)*t^4+15*b^2*sin(2*beta)*t^4-30*b*sin(beta)*t^4 */
+/* -90*a^2*sin(2*alpha)*t^4+90*a*sin(alpha)*t^4+10*a*b*sin(beta+alpha)*t^3 */
+/* -30*a*b*sin(beta-alpha)*t^3+60*a^2*sin(2*alpha)*t^3-40*a*sin(alpha)*t^3 */
+/* -15*a^2*sin(2*alpha)*t^2))/20. */
+/* First moment about y-axis = \int x dA = \int x dA/dt dt for a cubic bezier  */
+/* path a .. controls b and c .. d */
+/* m = (280*xd^2*yd-105*xc*xd*yd-30*xb*xd*yd-5*xa*xd*yd-45*xc^2*yd-45*xb*xc*yd */
+/* -12*xa*xc*yd-18*xb^2*yd-15*xa*xb*yd-5*xa^2*yd+105*xd^2*yc+45*xc*xd*yc */
+/* -3*xa*xd*yc-27*xb*xc*yc-18*xa*xc*yc-27*xb^2*yc-45*xa*xb*yc-30*xa^2*yc */
+/* +30*xd^2*yb+45*xc*xd*yb+18*xb*xd*yb+3*xa*xd*yb+27*xc^2*yb+27*xb*xc*yb */
+/* -45*xa*xb*yb-105*xa^2*yb+5*xd^2*ya+15*xc*xd*ya+12*xb*xd*ya+5*xa*xd*ya */
+/* +18*xc^2*ya+45*xb*xc*ya+30*xa*xc*ya+45*xb^2*ya+105*xa*xb*ya-280*xa^2*ya)/840; */
+/* simplified for the normed case */
+/* m = (9*a*cos(alpha)*b^2*cos(beta)*sin(beta)-15*b^2*cos(beta)*sin(beta) */
+/* -9*a^2*cos(alpha)^2*b*sin(beta)-9*a*cos(alpha)*b*sin(beta)+50*b*sin(beta) */
+/* +9*a*sin(alpha)*b^2*cos(beta)^2-9*a^2*cos(alpha)*sin(alpha)*b*cos(beta) */
+/* -33*a*sin(alpha)*b*cos(beta)+15*a^2*cos(alpha)*sin(alpha)+34*a*sin(alpha))/280; */
+/* normed case combined with the formula for b depending on the area (see above): */
+/* m = (34*a*sin(alpha)+50*(20*f-6*a*sin(alpha))/(6*sin(beta)-3*a*sin(beta+alpha))*sin(beta) */
+/* +15*a^2*sin(alpha)*cos(alpha)-15*(20*f-6*a*sin(alpha))/(6*sin(beta) */
+/* -3*a*sin(beta+alpha))^2*sin(beta)*cos(beta)-a*(20*f-6*a*sin(alpha))/(6*sin(beta) */
+/* -3*a*sin(beta+alpha))*(33*sin(alpha)*cos(beta)+9*cos(alpha)*sin(beta)) */
+/* -9*a^2*(20*f-6*a*sin(alpha))/(6*sin(beta)-3*a*sin(beta+alpha))*sin(alpha+beta)*cos(alpha) */
+/* +9*a*(20*f-6*a*sin(alpha))/(6*sin(beta)-3*a*sin(beta+alpha))^2*sin(alpha+beta)*cos(beta))/280; */
+/* and reduced to a quartic equation with sa = sin(alpha), sb = sin(beta), ca = cos(alpha), cb = cos(beta) */
+/* 0 = -9*ca*(((2*sb*cb*ca+sa*(2*cb*cb-1))*ca-2*sb*cb)*ca-cb*cb*sa) * a^4 */
+/* + 12*((((cb*(30*f*cb-sb)-15*f)*ca+2*sa-cb*sa*(cb+30*f*sb))*ca+cb*(sb-15*f*cb))*ca-sa*cb*cb) * a^3 */
+/* + 12*((((70*m+15*f)*sb^2+cb*(9*sb-70*cb*m-5*cb*f))*ca-5*sa*sb*(3*sb-4*cb*(7*m+f)))*ca-cb*(9*sb-70*cb*m-5*cb*f)) * a^2 */
+/* + 16*(((12*sa-5*ca*(42*m-17*f))*sb-70*cb*(3*m-f)*sa-75*ca*cb*f*f)*sb-75*cb^2*f^2*sa) * a */
+/* + 80*sb*(42*sb*m-25*f*(sb-cb*f)); */
+/* this quartic equation reduces to a quadratic for the special case beta = pi - alpha or beta = -alpha */
+/* 0 = -72*ca*sa^3 * a^3  */
+/* + 48*sa^2*(4*sa+5*ca*f) * a^2 */
+/* + 80*sa*((42*m-25*f)*sa-25*ca*f^2). */
 #define TRY_CNT		2
 #define DECIMATION	5
 Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
@@ -810,11 +868,6 @@ return( SplineMake3(from,to));
     }
     /* This is the generic case, where a generic part is approximated by a cubic */
     /* bezier spline. */
-    /* If mt is mt_levien, a slightly modified algorithm by Raph Levien */
-    /* is used (implemented here by Linus Romer): */
-    /* raphlinus.github.io/curves/2021/03/11/bezier-fitting.html */
-    /* The notation used here is a bit different: Instead of theta1, theta2, */
-    /* delta1, delta2, momentx, area we use alpha,beta,a,b,m,f: */
     if ( mt == mt_levien ) { 
 	bigreal a,b,f,m,xa,ya,xb,yb,xc,yc,xd,yd,sasa,sab;
 	int numberOfSolutions;
