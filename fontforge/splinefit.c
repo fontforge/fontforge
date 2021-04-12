@@ -877,6 +877,8 @@ return( SplineMake3(from,to));
     }
     /* This is the generic case, where a generic part is approximated by a cubic */
     /* bezier spline. */
+    if ( ( ftlen == 0 ) && ( mt != mt_matrix ) )
+		mt = mt_matrix; 
     if ( mt == mt_levien ) { 
 	bigreal a,b,f,m,xa,ya,xb,yb,xc,yc,xd,yd,sasa,sab;
 	int numberOfSolutions;
