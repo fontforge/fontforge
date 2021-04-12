@@ -36,7 +36,6 @@
 /* available (oldest function listed first, latest function listed last). */
 /* These functions simplify the interface between FontForge and libraries */
 /* so that either library can be used or none at all with common results. */
-extern void inituninameannot(void);
 extern char *unicode_name(int32 unienc);
 extern char *unicode_annot(int32 unienc);
 extern int32 unicode_block_start(int32 block_i);

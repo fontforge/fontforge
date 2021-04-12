@@ -137,7 +137,7 @@ endif()
 find_package_auto(ENABLE_PYTHON_SCRIPTING Python3 3.3 COMPONENTS Development Interpreter)
 find_package_auto(ENABLE_DOCS             Sphinx) # Should come after ENABLE_PYTHON_SCRIPTING
 find_package_auto(ENABLE_LIBSPIRO         Libspiro)
-find_package_auto(ENABLE_LIBUNINAMESLIST  Libuninameslist)
+find_package_auto(ENABLE_LIBUNINAMESLIST  Libuninameslist 20180408)
 find_package_auto(ENABLE_LIBGIF           GIF)
 find_package_auto(ENABLE_LIBJPEG          JPEG)
 find_package_auto(ENABLE_LIBPNG           PNG)

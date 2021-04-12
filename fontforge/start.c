@@ -85,8 +85,6 @@ void InitSimpleStuff(void) {
     else if ( *localeinfo.decimal_point!='.' ) coord_sep=" ";
     if ( getenv("FF_SCRIPT_IN_LATIN1") ) use_utf8_in_script=false;
 
-    inituninameannot();	/* Note: unicodenames done after locales set */
-
     SetDefaults();
 }
 
