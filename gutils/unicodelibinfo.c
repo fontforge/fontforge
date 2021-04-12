@@ -42,13 +42,8 @@ struct unicode_block {
 #endif
 const struct unicode_nameannot * const *const *_UnicodeNameAnnot = NULL; /* deprecated */
 const struct unicode_block *_UnicodeBlock = NULL;
-#ifndef _NO_LIBUNICODENAMES
-#include <libunicodenames.h>
-uninm_names_db names_db; /* Unicode character names and annotations database */
-uninm_blocks_db blocks_db;
-#endif
 
-#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
+#if _NO_LIBUNINAMESLIST
 #else
 static const char *chosung[] = { "G", "GG", "N", "D", "DD", "L", "M", "B",	\
 	"BB", "S", "SS", "", "J", "JJ", "C", "K", "T", "P", "H", NULL };
@@ -71,24 +66,6 @@ void inituninameannot(void) {
     _UnicodeNameAnnot = UnicodeNameAnnot;
     _UnicodeBlock = UnicodeBlock;
 #endif
-
-#ifndef _NO_LIBUNICODENAMES
-    /* Open database file, read data for this 'local', then close. */
-    char *names_db_file;
-    char *blocks_db_file;
-
-    /* Load character names and annotations that come from the Unicode NamesList.txt */
-    /* This should not be done until after the locale has been set */
-    names_db_file = uninm_find_names_db(NULL);
-    names_db = (names_db_file == NULL) ? ((uninm_names_db) 0) : uninm_names_db_open(names_db_file);
-    free(names_db_file);
-    /* NOTE: you need to do uninm_names_db_close(names_db); when you exit program */
-
-    blocks_db_file = uninm_find_blocks_db(NULL);
-    blocks_db = (blocks_db_file == NULL) ? ((uninm_blocks_db) 0) : uninm_blocks_db_open(blocks_db_file);
-    free(blocks_db_file);
-    /* NOTE: you need to do uninm_blocks_db_close(blocks_db); when you exit program */
-#endif
 }
 
 char *unicode_name(int32 unienc) {
@@ -96,7 +73,7 @@ char *unicode_name(int32 unienc) {
 /* If there's no data available for this code, or no library, return NULL */
 /* User should free the return string when finished with this information */
 
-#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
+#if _NO_LIBUNINAMESLIST
     /* no nameslist library code available to use */
     //fprintf(stderr,"no library\n");
     return( NULL );
@@ -119,10 +96,6 @@ char *unicode_name(int32 unienc) {
     name_data=copy(uniNamesList_name(unienc));
     //fprintf(stderr,"new library ->%s<-\n",name_data\n");
 #endif
-#else
-    /* libunicodesnames library code */
-    name_data=copy(uninm_name(names_db,(unsigned int)(unienc)));
-    //fprintf(stderr,"libunicodes library ->%s<-\n",name_data);
 #endif
 
     /* Unicode name derivation rule NR1
@@ -219,7 +192,7 @@ char *unicode_annot(int32 unienc) {
 /* If there's no data available for this code, or no library, return NULL */
 /* User should free the return string when finished with this information */
 
-#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
+#if _NO_LIBUNINAMESLIST
     /* no nameslist library code available to use */
     //fprintf(stderr,"no library - annotation\n");
     return( NULL );
@@ -243,10 +216,6 @@ char *unicode_annot(int32 unienc) {
     annot_data=unicode_nicer(uniNamesList_annot(unienc));
     //fprintf(stderr,"new unicode_annot() - annotation ->%s<-\n",annot_data);
 #endif
-#else
-    /* libunicodesnames library code */
-    annot_data=copy(uninm_annotation(names_db,(unsigned int)(unienc)));
-    //fprintf(stderr,"libunicodes unicode_annot() - annotation ->%s<-\n",annot_data);
 #endif
 
     return( annot_data );
@@ -255,7 +224,7 @@ char *unicode_annot(int32 unienc) {
 
 int32 unicode_block_count(void) {
 /* Return the number of unicode blocks contained in this NameList library */
-#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
+#if _NO_LIBUNINAMESLIST
     /* no nameslist library available to use */
     return( -1 );
 #else
@@ -280,10 +249,6 @@ int32 unicode_block_count(void) {
 	//fprintf(stderr,"old code unicode_block_count(), have %d, %d\n",i,unicount);
     }
 #endif
-#else
-    /* libunicodesnames library code */
-    unicount=uninm_num_blocks(blocks_db);
-    //fprintf(stderr,"libunicodes unicode_block_count() have %d\n",unicount);
 #endif
 
     return( unicount );
@@ -294,7 +259,7 @@ int32 unicode_block_start(int32 block_i) {
 /* Return the unicode value for the start of next unicode block. If no	  */
 /* library or data available, then return -1.				  */
 
-#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
+#if _NO_LIBUNINAMESLIST
     /* no nameslist library available to use */
     //fprintf(stderr,"no block library\n");
     return( -1 );
@@ -313,10 +278,6 @@ int32 unicode_block_start(int32 block_i) {
 	unistart=_UnicodeBlock[unistart].start;
     //fprintf(stderr,"use old code unicode_block_start(), have %d %d\n",block_i,unistart);
 #endif
-#else
-    /* libunicodesnames library code */
-    unistart=uninm_block_start(blocks_db,(unsigned int)(block_i));
-    //fprintf(stderr,"libunicodes unicode_block_start()have %d %d\n",block_i,unistart);
 #endif
 
     return( unistart );
@@ -327,7 +288,7 @@ int32 unicode_block_end(int32 block_i) {
 /* Return the unicode value for the end of this unicode block. If there	  */
 /* is no library or data available, then return -1			  */
 
-#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
+#if _NO_LIBUNINAMESLIST
     /* no nameslist library available to use */
     //fprintf(stderr,"no block library\n");
     return( -1 );
@@ -346,10 +307,6 @@ int32 unicode_block_end(int32 block_i) {
 	uniend=_UnicodeBlock[uniend].end;
     //fprintf(stderr,"use old code unicode_block_end(), have %d %d\n",block_i,uniend);
 #endif
-#else
-    /* libunicodesnames library code */
-    uniend=uninm_block_end(blocks_db,(unsigned int)(block_i));
-    //fprintf(stderr,"libunicodes unicode_block_end(), have %d %d\n",block_i,uniend);
 #endif
 
     return( uniend );
@@ -360,7 +317,7 @@ char *unicode_block_name(int32 block_i) {
 /* Return the unicode name for this unicode block. If there is no library */
 /* then return NULL							  */
 
-#if _NO_LIBUNINAMESLIST && _NO_LIBUNICODENAMES
+#if _NO_LIBUNINAMESLIST
     /* no nameslist library code available to use */
     //fprintf(stderr,"no library\n");
     return( NULL );
@@ -378,10 +335,6 @@ char *unicode_block_name(int32 block_i) {
 	name_data=copy(_UnicodeBlock[i].name);
     //fprintf(stderr,"use old code unicode_block_name(), have %d %d ->%s<-\n",i,block_i,name_data);
 #endif
-#else
-    /* libunicodesnames library code */
-    name_data=copy(uninm_block_name(blocks_db,(unsigned int)(block_i)));
-    //fprintf(stderr,"libunicodes unicode_block_name() %d ->%s<-\n",block_i,name_data);
 #endif
 
     return( name_data );

@@ -57,7 +57,6 @@ function(fontforge_generate_config template destination)
 
   # These are hard requirements/unsupported, should get rid of these
   set(HAVE_LIBINTL_H 1)
-  set(_NO_LIBUNICODENAMES 1)
 
   # Configurable settings
   set(FONTFORGE_CONFIG_SHOW_RAW_POINTS ${ENABLE_DEBUG_RAW_POINTS})

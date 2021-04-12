@@ -107,8 +107,6 @@
 
 #cmakedefine _NO_LIBUNINAMESLIST 1
 
-#cmakedefine _NO_LIBUNICODENAMES 1
-
 #cmakedefine _NO_PYTHON 1
 
 #cmakedefine _NO_LIBREADLINE 1
