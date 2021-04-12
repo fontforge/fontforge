@@ -134,7 +134,7 @@ set(Python3_FIND_REGISTRY LAST)
 if(BUILD_SHARED_LIBS)
   set(Python3_USE_STATIC_LIBS FALSE)
 endif()
-find_package_auto(ENABLE_PYTHON_SCRIPTING Python3 3.3 COMPONENTS Development Interpreter)
+find_package_auto(ENABLE_PYTHON_SCRIPTING Python3 3.6 COMPONENTS Development Interpreter)
 find_package_auto(ENABLE_DOCS             Sphinx) # Should come after ENABLE_PYTHON_SCRIPTING
 find_package_auto(ENABLE_LIBSPIRO         Libspiro)
 find_package_auto(ENABLE_LIBUNINAMESLIST  Libuninameslist 20180408)
