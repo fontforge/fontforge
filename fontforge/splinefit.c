@@ -702,9 +702,18 @@ static Polynomial newtonRoots(Polynomial p) {
 /* + 16*(((12*sa-5*ca*(42*m-17*f))*sb-70*cb*(3*m-f)*sa-75*ca*cb*f*f)*sb-75*cb^2*f^2*sa) * a */
 /* + 80*sb*(42*sb*m-25*f*(sb-cb*f)); */
 /* this quartic equation reduces to a quadratic for the special case beta = pi - alpha or beta = -alpha */
-/* 0 = -72*ca*sa^3 * a^3  */
-/* + 48*sa^2*(4*sa+5*ca*f) * a^2 */
-/* + 80*sa*((42*m-25*f)*sa-25*ca*f^2). */
+/* 0 = -9*ca*sa^3 * a^3  */
+/* + 6*sa^2*(4*sa+5*ca*f) * a^2 */
+/* + 10*sa*((42*m-25*f)*sa-25*ca*f^2). */
+/* The derivative of the first moment (not the quartic) = 0 results in a quartic as well: */
+/* 0 = -9*ca*sa*sab^3 * a^4 */
+/* -3*sab^2*(9*ca*sa*sb-(17*sa+30*ca*f)*sab+15*cb*sa^2) * a^3 */
+/* +18*sab*sb*(21*ca*sa*sb-(17*sa+30*ca*f)*sab+15*cb*sa^2) * a^2 */
+/* -4*(144*ca*sa*sb^3+((-78*sa-135*ca*f)*sab+108*cb*sa^2)*sb^2+(-125*f*sab^2-45*cb*f*sa*sab)*sb+150*cb*f^2*sab^2) * a */
+/* +8*sb*((24*sa+45*ca*f)*sb^2+(15*cb*f*sa-125*f*sab)*sb+100*cb*f^2*sab) */
+/* this quartic equation reduces to a linear for the special case beta = pi - alpha or beta = -alpha */
+/* 0 = -3*ca*sa * a */
+/* +4*sa+5*ca*f */
 #define TRY_CNT		2
 #define DECIMATION	5
 Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
@@ -924,11 +933,11 @@ return( SplineMake3(from,to));
 	sasa = aunit.y*aunit.y; /* reducing the multiplications */
 	Polynomial aQuartic;
 	aQuartic.length = 5;
-	if ( (aunit.x == -bunit.x && aunit.y == bunit.y) || (aunit.x == bunit.x && aunit.y == -bunit.y) ) { /* handles are more or less parallel */
+	if ( (aunit.x == -bunit.x && aunit.y == bunit.y) || (aunit.x == bunit.x && aunit.y == -bunit.y) ) { /* handles are parallel */
 		aQuartic.length = 3;
-		aQuartic.coeff[0] = -72*aunit.x*sasa*aunit.y;
-		aQuartic.coeff[1] = 48*sasa*(4*aunit.y+5*aunit.x*f);	
-		aQuartic.coeff[2] = 80*aunit.y*((42*m-25*f)*aunit.y-25*aunit.x*f*f);
+		aQuartic.coeff[0] = -9*aunit.x*sasa;
+		aQuartic.coeff[1] = 6*aunit.y*(4*aunit.y+5*aunit.x*f);	
+		aQuartic.coeff[2] = 10*((42*m-25*f)*aunit.y-25*aunit.x*f*f);
 	} else { /* generic situation */
 		aQuartic.coeff[0] = -9*aunit.x*(((2*bunit.y*bunit.x*aunit.x+aunit.y
 							*(2*bunit.x*bunit.x-1))*aunit.x-2*bunit.y*bunit.x)
@@ -947,7 +956,7 @@ return( SplineMake3(from,to));
 		aQuartic.coeff[4] = 80*bunit.y*(42*bunit.y*m-25*f*(bunit.y-bunit.x*f));
 	}
 	Polynomial aSolutions = newtonRoots(aQuartic); /* misusing Polynomial as array */
-	bigreal abSolutions[9][2]; /* there are at most 4+3+1+1=9 solutions of pairs of a and b (quartic=0,derivative=0,b=0.01,a=0.01) */
+	bigreal abSolutions[10][2]; /* there are at most 4+4+1+1=10 solutions of pairs of a and b (quartic=0,derivative=0,b=0.01,a=0.01) */
 	numberOfSolutions = 0;
 	for( int i = 0; i < aSolutions.length; i++ ){
 		a = aSolutions.coeff[i];
@@ -959,12 +968,26 @@ return( SplineMake3(from,to));
 			}
 		}
 	}
-	// and now again for the derivative: (as Levien suggests)
-	aQuartic.length -= 1;
-	for( int i = 0; i < aQuartic.length; i++ ){
-		aQuartic.coeff[i] = (aQuartic.length-i)*aQuartic.coeff[i];
+	/* and now again for the derivative (of m not of the upper quartic): */
+	if ( (aunit.x == -bunit.x && aunit.y == bunit.y) || (aunit.x == bunit.x && aunit.y == -bunit.y) ) { /* handles are parallel */
+		aQuartic.length = 2;
+		aQuartic.coeff[0] = -3*aunit.x*aunit.y;
+		aQuartic.coeff[1] = 4*aunit.y+5*aunit.x*f;
+	} else { /* generic situation */
+		bigreal sbsb = bunit.y*bunit.y;
+		bigreal sabsab = sab*sab;
+		aQuartic.coeff[0] = -9*aunit.x*aunit.y*sabsab*sab;
+		aQuartic.coeff[1] = -3*sabsab*(9*aunit.x*aunit.y*bunit.y-(17*aunit.y
+							+30*aunit.x*f)*sab+15*bunit.x*sasa);	
+		aQuartic.coeff[2] = 18*sab*bunit.y*(21*aunit.x*aunit.y*bunit.y-(17*aunit.y
+							+30*aunit.x*f)*sab+15*bunit.x*sasa);
+		aQuartic.coeff[3] = -4*(144*aunit.x*aunit.y*sbsb*bunit.y+((-78*aunit.y-
+							135*aunit.x*f)*sab+108*bunit.x*sasa)*sbsb+(-125*f*sabsab
+							-45*bunit.x*f*aunit.y*sab)*bunit.y+150*bunit.x*f*f*sabsab);
+		aQuartic.coeff[4] = 8*bunit.y*((24*aunit.y+45*aunit.x*f)*sbsb
+							+(15*bunit.x*f*aunit.y-125*f*sab)*bunit.y+100*bunit.x*f*f*sab);				
 	}
-	aSolutions = newtonRoots(aQuartic); // overwriting (reusing)
+	aSolutions = newtonRoots(aQuartic); /* overwriting (reusing) */
 	for( int i = 0; i < aSolutions.length; i++ ){
 		a = aSolutions.coeff[i];
 		if ( a >= 0 && a < aMax ) {
