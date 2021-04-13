@@ -7,6 +7,10 @@
 #include "ttfinstrs.h"
 #include "views.h"
 
+typedef struct quartic {
+    bigreal a,b,c,d,e;
+} Quartic;
+
 extern AnchorClass *SFFindOrAddAnchorClass(SplineFont *sf, char *name, struct lookup_subtable *sub);
 extern AnchorPoint *AnchorPointsCopy(AnchorPoint *alist);
 extern AnchorPoint *APAnchorClassMerge(AnchorPoint *anchors, AnchorClass *into, AnchorClass *from);
@@ -40,6 +44,7 @@ extern ImageList *ImageListCopy(ImageList *cimg);
 extern ImageList *ImageListTransform(ImageList *img, real transform[6], int everything);
 extern int CountKerningClasses(SplineFont *sf);
 extern int _CubicSolve(const Spline1D *sp, bigreal sought, extended ts[3]);
+extern int _QuarticSolve(Quartic *q,extended ts[4]);
 extern int GroupNameType(const char *input);
 extern int IntersectLines(BasePoint *inter, BasePoint *line1_1, BasePoint *line1_2, BasePoint *line2_1, BasePoint *line2_2);
 extern int IntersectLinesClip(BasePoint *inter, BasePoint *line1_1, BasePoint *line1_2, BasePoint *line2_1, BasePoint *line2_2);
