@@ -35,6 +35,8 @@
 
 #include <stdarg.h>
 
+extern void GTextFieldInit();
+
 static GWindow last;
 static const char *last_title;
 
@@ -439,7 +441,6 @@ return( NULL );
 	if ( w>maxw ) maxw = w;
     }
     if ( add_text && defstr!=NULL ) {
-	extern void GTextFieldInit();
 	extern GResFont _gtextfield_font;
 
 	GTextFieldInit();
