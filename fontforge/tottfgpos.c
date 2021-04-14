@@ -221,7 +221,7 @@ static uint32 scripts[][61] = {
 /* Syloti Nagri */
 		{ CHR('s','y','l','o'), 0xa800, 0xa82f },
 /* Syriac */	{ CHR('s','y','r','c'), 0x0700, 0x074f, 0x0860, 0x086f },
-/* Tagalog */	{ CHR('t','a','g','l'), 0x1700, 0x171f },
+/* Tagalog */	{ CHR('t','g','l','g'), 0x1700, 0x171f },
 /* Tagbanwa */	{ CHR('t','a','g','b'), 0x1760, 0x177f },
 /* Tai Le */	{ CHR('t','a','l','e'), 0x1950, 0x197f },
 /* Tai Tham */	{ CHR('l','a','n','a'), 0x1a20, 0x1aaf },

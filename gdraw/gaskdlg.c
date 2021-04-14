@@ -301,7 +301,6 @@ return( NULL );
     if ( add_text )
 	pos.height += fh + GDrawPointsToPixels(gw,16);
     GDrawResize(gw,pos.width,pos.height);
-    GWidgetHidePalettes();
     if ( d!=NULL ) {
 	d->ret  = cancel;
 	d->bcnt = bcnt;
@@ -617,7 +616,6 @@ return( NULL );
 	GHVBoxSetExpandableCol(boxes[2].ret,gb_expandglue);
     GHVBoxFitWindow(boxes[0].ret);
 
-    GWidgetHidePalettes();
     if ( d!=NULL ) {
 	d->ret  = cancel;
 	d->bcnt = bcnt;
@@ -1049,7 +1047,6 @@ static GWindow ChoiceDlgCreate8(struct dlg_info *d,const char *title,
     if ( boxes[2].ret!=NULL )
 	GHVBoxSetExpandableCol(boxes[2].ret,gb_expandglue);
     GHVBoxFitWindow(boxes[0].ret);
-    GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
     d->ret = -1;
     d->size_diff = pos.height - gcd[listi].gd.pos.height;

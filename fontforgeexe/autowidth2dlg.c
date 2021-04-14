@@ -321,7 +321,6 @@ void FVAutoWidth2(FontView *fv) {
 
     GWidgetIndicateFocusGadget(gcd[2].ret);
     GTextFieldSelect(gcd[2].ret,0,-1);
-    GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
     while ( !wi.done )
 	GDrawProcessOneEvent(NULL);

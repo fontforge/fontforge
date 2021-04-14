@@ -179,7 +179,6 @@ return;
     GGadgetsCreate(gw,gcd);
     GTextInfoListFree(gcd[0].gd.u.list);
 
-    GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
     while ( !done )
 	GDrawProcessOneEvent(NULL);

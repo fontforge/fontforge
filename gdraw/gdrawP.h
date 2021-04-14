@@ -141,16 +141,10 @@ struct gdisplay {
     int16 res;
     GWindow groot;
     Color def_background, def_foreground;
-    uint16 mykey_state;
-    uint16 mykey_keysym;
-    uint16 mykey_mask;
-    unsigned int mykeybuild: 1;
     unsigned int default_visual: 1;
     unsigned int do_dithering: 1;
     unsigned int focusfollowsmouse: 1;
     unsigned int top_offsets_set: 1;
-    unsigned int wm_breaks_raiseabove: 1;
-    unsigned int wm_raiseabove_tested: 1;
     unsigned int endian_mismatch: 1;
     unsigned int macosx_cmd: 1;		/* if set then map state=0x20 to control */
     unsigned int twobmouse_win: 1;	/* if set then map state=0x40 to mouse button 2 */
@@ -193,19 +187,13 @@ struct displayfuncs {
     void (*resize)(GWindow,int32,int32);
     void (*moveResize)(GWindow,int32,int32,int32,int32);
     void (*raise)(GWindow);
-    void (*raiseAbove)(GWindow,GWindow);
-    int  (*isAbove)(GWindow,GWindow);
-    void (*lower)(GWindow);
-    void (*setWindowTitles)(GWindow, const unichar_t *title, const unichar_t *icontitle);
     void (*setWindowTitles8)(GWindow, const char *title, const char *icontitle);
-    unichar_t *(*getWindowTitle)(GWindow);
     char *(*getWindowTitle8)(GWindow);
     void (*setTransientFor)(GWindow, GWindow);
     void (*getPointerPos)(GWindow,GEvent *);
     GWindow (*getPointerWindow)(GWindow);
     void (*setCursor)(GWindow, GCursor);
     GCursor (*getCursor)(GWindow);
-    GWindow (*getRedirectWindow)(GDisplay *gd);
     void (*translateCoordinates)(GWindow from, GWindow to, GPoint *pt);
 
     void (*beep)(GDisplay *);
@@ -213,9 +201,6 @@ struct displayfuncs {
     void (*pushClip)(GWindow, GRect *rct, GRect *old);
     void (*popClip)(GWindow, GRect *old);
 
-    void (*setDifferenceMode)(GWindow);
-
-    void (*clear)(GWindow,GRect *);
     void (*drawLine)(GWindow, int32 x,int32 y, int32 xend,int32 yend, Color col);
     void (*drawArrow)(GWindow, int32 x,int32 y, int32 xend,int32 yend, int16 arrows, Color col); /* arrows&1 => arrow at start, &2 => at end */
     void (*drawRect)(GWindow, GRect *rect, Color col);
@@ -253,7 +238,6 @@ struct displayfuncs {
     void (*sync)(GDisplay *);
     void (*skipMouseMoveEvents)(GWindow, GEvent *);
     void (*processPendingEvents)(GDisplay *);
-    void (*processWindowEvents)(GWindow);
     void (*processOneEvent)(GDisplay *);
     void (*eventLoop)(GDisplay *);
     void (*postEvent)(GEvent *e);
@@ -309,8 +293,5 @@ extern void _GDraw_ComposeChars(GDisplay *gdisp,GEvent *gevent);
 extern void _GDraw_getimageclut(struct _GImage *base, struct gcol *clut);
 extern const GCol *_GImage_GetIndexedPixel(Color col,RevCMap *rev);
 extern const GCol *_GImage_GetIndexedPixelPrecise(Color col,RevCMap *rev);
-
-extern void (*_GDraw_BuildCharHook)(GDisplay *);
-extern void (*_GDraw_InsCharHook)(GDisplay *,unichar_t);
 
 #endif /* FONTFORGE_GDRAWP_H */

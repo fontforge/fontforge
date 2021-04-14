@@ -501,10 +501,6 @@ static void FVReselect(FontView *fv, int newpos) {
 	}
     }
     fv->end_pos = newpos;
-    if ( newpos>=0 && newpos<fv->b.map->enccount && (i = fv->b.map->map[newpos])!=-1 &&
-	    fv->b.sf->glyphs[i]!=NULL &&
-	    fv->b.sf->glyphs[i]->unicodeenc>=0 && fv->b.sf->glyphs[i]->unicodeenc<0x10000 )
-	GInsCharSetChar(fv->b.sf->glyphs[i]->unicodeenc);
 }
 
 static void FVFlattenAllBitmapSelections(FontView *fv) {
@@ -1698,7 +1694,7 @@ const uint8 mergefunc[] = {
 };
 
 static enum merge_type SelMergeType(GEvent *e) {
-    if ( e->type!=et_mouseup )
+    if ( e==NULL || e->type!=et_mouseup )
 return( mt_set );
 
 return( ((e->u.mouse.state&ksm_shift)?mt_merge:0) |
@@ -3355,7 +3351,7 @@ static void FVMenuMagnify(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUS
     if ( ret==NULL )
 return;
     val = strtol(ret,&end,10);
-    if ( val<1 || val>5 || *end!='\0' )
+    if ( val<1 || val>30 || *end!='\0' )
 	ff_post_error( _("Bad Number"),_("Bad Number") );
     else {
 	fv->user_requested_magnify = val;
@@ -3566,7 +3562,7 @@ static void FVMenuHistograms(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)
 
 
 static void FontViewSetTitle(FontView *fv) {
-    unichar_t *title, *ititle, *temp;
+    char *title;
     char *file=NULL;
     char *enc;
     int len;
@@ -3586,27 +3582,22 @@ return;
     }
     if ( file!=NULL )
 	len += 2+strlen(file);
-    title = malloc((len+1)*sizeof(unichar_t));
-    uc_strcpy(title,"");
-    uc_strcat(title,fv->b.sf->fontname);
+    title = malloc((len+1)*sizeof(char));
+    strcpy(title,fv->b.sf->fontname);
     if ( fv->b.sf->changed )
-	uc_strcat(title,"*");
+	strcat(title,"*");
     if ( file!=NULL ) {
-	uc_strcat(title,"  ");
-	temp = def2u_copy(GFileNameTail(file));
-	u_strcat(title,temp);
-	free(temp);
+	strcat(title,"  ");
+    strcat(title, GFileNameTail(file));
     }
-    uc_strcat(title, " (" );
-    if ( fv->b.normal ) { utf82u_strcat(title,_("Compact")); uc_strcat(title," "); }
-    uc_strcat(title,enc);
-    uc_strcat(title, ")" );
+    strcat(title, " (" );
+    if ( fv->b.normal ) { strcat(title,_("Compact")); strcat(title," "); }
+    strcat(title,enc);
+    strcat(title, ")" );
     free(enc);
 
-    ititle = uc_copy(fv->b.sf->fontname);
-    GDrawSetWindowTitles(fv->gw,title,ititle);
+    GDrawSetWindowTitles8(fv->gw,title,fv->b.sf->fontname);
     free(title);
-    free(ititle);
 }
 
 void FVTitleUpdate(FontViewBase *fv)
@@ -4442,6 +4433,9 @@ static GMenuItem2 fllist[] = {
 #endif
     { { (unichar_t *) N_("Pr_eferences..."), (GImage *) "fileprefs.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("Preferences...|No Shortcut"), NULL, NULL, MenuPrefs, 0 },
     { { (unichar_t *) N_("_X Resource Editor..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("X Resource Editor...|No Shortcut"), NULL, NULL, MenuXRes, 0 },
+#ifndef _NO_PYTHON
+    { { (unichar_t *) N_("Config_ure Plugins..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'u' }, H_("Configure Plugins...|No Shortcut"), NULL, NULL, MenuPlug, 0 },
+#endif
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("_Quit"), (GImage *) "filequit.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'Q' }, H_("Quit|Ctl+Q"), /* WARNING: THIS BINDING TO PROPERLY INITIALIZE KEYBOARD INPUT */
       NULL, NULL, FVMenuExit, 0 },

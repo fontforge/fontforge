@@ -1,5 +1,5 @@
 /* -*- coding: utf-8 -*- */
-/* Copyright (C) 2000-2012 by George Williams */
+/* Copyright (C) 2000-2012 by George Williams, 2021 by Linus Romer */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -573,7 +573,7 @@ static void ApproxBounds(DBounds *b, FitPoint *mid, int cnt, struct dotbounds *d
 #define TRY_CNT		2
 #define DECIMATION	5
 Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
-	FitPoint *mid, int cnt, int order2) {
+	FitPoint *mid, int cnt, int order2, int is_accurate) {
     BasePoint tounit, fromunit, ftunit;
     bigreal flen,tlen,ftlen,dot;
     Spline *spline, temp;
@@ -731,7 +731,69 @@ return( SplineMake3(from,to));
 	from->nextcp = from->me; to->prevcp = to->me;
 return( SplineMake3(from,to));
     }
-
+    /* This is the generic case, where a generic part is approximated by a cubic */
+    /* bezier spline. */
+    if (is_accurate) { /* More accurate but slower function by Linus Romer */
+	bigreal best_error = 1e30;
+	bigreal t,error,errorsum,dist;
+	BasePoint prevcp,coeff1,coeff2,coeff3;
+	bigreal best_fromhandle = 0.0;
+	bigreal best_tohandle = 0.0;
+	BasePoint approx[99]; /* The 99 points on the approximate cubic bezier */
+	/* We make 2 runs: The first run to narrow the variation range, the second run to finetune */
+	/* The optimal length of the two handles are determined by brute force. */
+	for (int run=0; run<2; ++run) {
+		for (int fromhandle=((run==0)?1:-29); fromhandle<=((run==0)?60:29); ++fromhandle) {
+			for (int tohandle=((run==0)?1:-29); tohandle<=((run==0)?60:29); ++tohandle) {
+				nextcp.x = from->me.x+ftlen*fromunit.x*( (run==0)?fromhandle:best_fromhandle+fromhandle/30.0 )/60.0;
+				nextcp.y = from->me.y+ftlen*fromunit.y*( (run==0)?fromhandle:best_fromhandle+fromhandle/30.0 )/60.0;
+				prevcp.x = to->me.x+ftlen*tounit.x*( (run==0)?tohandle:best_tohandle+tohandle/30.0 )/60.0;
+				prevcp.y = to->me.y+ftlen*tounit.y*( (run==0)?tohandle:best_tohandle+tohandle/30.0 )/60.0;
+				/* Calculate the error of the cubic bezier path from,nextcp,prevcp,to: */
+				/* In order to do that we calculate 99 points on the bezier path. */
+				coeff3.x = -from->me.x+3*nextcp.x-3*prevcp.x+to->me.x;
+				coeff3.y = -from->me.y+3*nextcp.y-3*prevcp.y+to->me.y;
+				coeff2.x = 3*from->me.x-6*nextcp.x+3*prevcp.x;
+				coeff2.y = 3*from->me.y-6*nextcp.y+3*prevcp.y;
+				coeff1.x = -3*from->me.x+3*nextcp.x;
+				coeff1.y = -3*from->me.y+3*nextcp.y;
+				for (int i=0; i<99; ++i) {
+					t = (i+1)/100.0;
+					approx[i].x = from->me.x+t*(coeff1.x+t*(coeff2.x+t*coeff3.x));
+					approx[i].y = from->me.y+t*(coeff1.y+t*(coeff2.y+t*coeff3.y));
+				}
+				/* Now we calculate the error by determing the minimal quadratic distance to the mid points. */
+				errorsum = 0.0;
+				for (int i=0; i<cnt; ++i) { /* Going through the mid points */
+					error = (mid[i].p.x-approx[0].x)*(mid[i].p.x-approx[0].x)
+					+(mid[i].p.y-approx[0].y)*(mid[i].p.y-approx[0].y);
+					/* Above we have just initialized the error and */
+					/* now we are going through the remaining 98 of */
+					/* 99 points on the approximate cubic bezier: */
+					for (int j=1; j<99; ++j) {
+						dist = (mid[i].p.x-approx[j].x)*(mid[i].p.x-approx[j].x)
+						+(mid[i].p.y-approx[j].y)*(mid[i].p.y-approx[j].y);
+						if (dist < error)
+							error = dist;
+					}
+					errorsum += error;
+					if (errorsum > best_error)
+						break;
+				}
+				if (errorsum < best_error) {
+					best_error = errorsum;
+					if (run == 0) {
+						best_fromhandle = fromhandle;
+						best_tohandle = tohandle;
+					}
+					from->nextcp = nextcp;
+					to->prevcp = prevcp;
+				}
+			}
+		}
+	}
+	return( SplineMake3(from,to));
+    } else { /* original and fast function */
     pt_pf_x = to->me.x - from->me.x;
     pt_pf_y = to->me.y - from->me.y;
     consts[0] = consts[1] = rt_terms[0] = rt_terms[1] = rf_terms[0] = rf_terms[1] = 0;
@@ -969,6 +1031,7 @@ return( SplineMake3(from,to));
     SplineRefigure(spline);
 
 return( spline );
+    }
 }
 #undef TRY_CNT
 #undef DECIMATION
@@ -1005,7 +1068,7 @@ SplinePoint *_ApproximateSplineSetFromGen(SplinePoint *from, SplinePoint *to,
     to->prevcp.x = to->me.x - fp[cnt-1].ut.x;
     to->prevcp.y = to->me.y - fp[cnt-1].ut.y;
     to->noprevcp = false;
-    ApproximateSplineFromPointsSlopes(from,to,fp+1,cnt-2,order2);
+    ApproximateSplineFromPointsSlopes(from,to,fp+1,cnt-2,order2,false);
 
     for ( i=0; i<cnt; ++i ) {
 	d = SplineMinDistanceToPoint(from->next, &fp[i].p);

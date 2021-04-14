@@ -1619,13 +1619,15 @@ return(( lbx + rbx )/2 - ( rbb->maxx - rbb->minx )/2 - rbb->minx );
 return( 0x70000000 );
 }
 
-void _SCAddRef(SplineChar *sc,SplineChar *rsc,int layer,real transform[6]) {
+void _SCAddRef(SplineChar *sc,SplineChar *rsc,int layer,real transform[6],
+        int selected) {
     RefChar *ref = RefCharCreate();
 
     ref->sc = rsc;
     ref->unicode_enc = rsc->unicodeenc;
     ref->orig_pos = rsc->orig_pos;
     ref->adobe_enc = getAdobeEnc(rsc->name);
+    ref->selected = selected;
     ref->next = sc->layers[layer].refs;
     sc->layers[layer].refs = ref;
     memcpy(ref->transform,transform,sizeof(real [6]));
@@ -1638,7 +1640,7 @@ void SCAddRef(SplineChar *sc,SplineChar *rsc,int layer, real xoff, real yoff) {
     transform[0] = transform[3] = 1;
     transform[1] = transform[2] = 0;
     transform[4] = xoff; transform[5] = yoff;
-    _SCAddRef(sc,rsc,layer,transform);
+    _SCAddRef(sc,rsc,layer,transform,false);
 }
 
 static void BCClearAndCopyBelow(BDFFont *bdf,int togid,int fromgid, int ymax) {
@@ -2243,7 +2245,7 @@ return;
     /*if ( invert ) transform[5] -= yoff; else */transform[5] += yoff;
 
     if ( bdf == NULL || !disp_only ) {
-	_SCAddRef(sc,rsc,layer,transform);
+	_SCAddRef(sc,rsc,layer,transform,false);
 	if ( pos != FF_UNICODE_NOPOSDATAGIVEN && (pos & FF_UNICODE_RIGHT) )
 	    SCSynchronizeWidth(sc,sc->width + rbb.maxx-rbb.minx+spacing,sc->width,NULL);
 	if ( pos != FF_UNICODE_NOPOSDATAGIVEN && (pos & (FF_UNICODE_LEFT|FF_UNICODE_RIGHT|FF_UNICODE_CENTERLEFT|FF_UNICODE_LEFTEDGE|FF_UNICODE_CENTERRIGHT|FF_UNICODE_RIGHTEDGE)) )

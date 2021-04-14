@@ -575,6 +575,6 @@ int main() {
     ParseUnicodeFile(in);
     for ( i=0; i<95; ++i )
 	info[i] = RevQueue(info[i]);
-    dumpinfo();
+    // dumpinfo(); // charbuilder removed
     return( 0 );
 }

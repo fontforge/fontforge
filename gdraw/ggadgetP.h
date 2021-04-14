@@ -287,7 +287,6 @@ typedef struct gtextfield {
     unsigned int wrap: 1;
     unsigned int password: 1;
     unsigned int dontdraw: 1;	/* Used when the tf is part of a larger control, and the control determines when to draw the tf */
-    unsigned int donthook: 1;	/* Used when the tf is part of a the gchardlg.c */
     unsigned int numericfield: 1;
     unsigned int incr_down: 1;	/* Direction of increments when numeric_scroll events happen */
     unsigned int completionfield: 1;

@@ -38,6 +38,7 @@ set(FONTFORGE_NOINST_HEADERS
   parsettfatt.h
   parsettfbmf.h
   parsettfvar.h
+  plugin.h
   psread.h
   pua.h
   savefont.h
@@ -168,6 +169,7 @@ add_library(fontforge
   parsettfatt.c
   parsettfbmf.c
   parsettfvar.c
+  plugin.c
   print.c
   psread.c
   pua.c

@@ -2679,7 +2679,8 @@ void PSCharsFree(struct pschars *chrs) {
 return;
     for ( i=0; i<chrs->next; ++i ) {
 	if ( chrs->keys!=NULL ) free(chrs->keys[i]);
-	free(chrs->values[i]);
+	if ( chrs->lens!=NULL && chrs->lens[i]!=0 )
+	    free(chrs->values[i]);
     }
     free(chrs->lens);
     free(chrs->keys);

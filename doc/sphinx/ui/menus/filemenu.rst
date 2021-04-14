@@ -358,6 +358,16 @@ The File Menu
    may either save them to a file for perminant storage, or change the current
    settings for this use of FontForge.
 
+.. _filemenu.ConfPlugin:
+
+.. object:: Configure Plugins...
+
+   :doc:`This dialog </techref/plugins>` allows you to configure which
+   FontForge plugins—discovered among python packages installed and available
+   to the FontForge application—are loaded, and in what order. Plugins extend
+   the functionalty of FontForge, most often by adding entries in the Font View
+   and Char View :doc:`Tools menu <toolsmenu>`.
+
 .. _filemenu.Quit:
 
 .. object:: Quit

@@ -119,7 +119,6 @@ static int unique = 0;
 #else
     static int listen_to_apple_events = false;
 #endif
-static bool ProcessPythonInitFiles = 1;
 
 static void _dousage(void) {
     printf( "fontforge [options] [fontfiles]\n" );
@@ -129,10 +128,10 @@ static void _dousage(void) {
     printf( "\t-newkorean\t\t (creates a new korean font)\n" );
 #endif
     printf( "\t-recover none|auto|inquire|clean (control error recovery)\n" );
-    printf( "\t-allglyphs\t\t (load all glyphs in the 'glyf' table\n\t\t\t of a truetype collection)\n" );
+    printf( "\t-allglyphs\t\t (load all glyphs in the 'glyf' table\n\t\t\t\t  of a truetype collection)\n" );
     printf( "\t-nosplash\t\t (no splash screen)\n" );
-    printf( "\t-quiet\t\t\t (don't print non-essential information to stderr)\n" );
-    printf( "\t-unique\t\t\t (if a fontforge is already running open\n\t\t\t all arguments in it and have this process exit)\n" );
+    printf( "\t-quiet\t\t\t (don't print non-essential\n\t\t\t\t  information to stderr)\n" );
+    printf( "\t-unique\t\t\t (if a fontforge is already running open all\n\t\t\t\t  arguments in it and have this process exit)\n" );
     printf( "\t-display display-name\t (sets the X display)\n" );
     printf( "\t-depth val\t\t (sets the display depth if possible)\n" );
     printf( "\t-vc val\t\t\t (sets the visual class if possible)\n" );
@@ -150,10 +149,10 @@ static void _dousage(void) {
     printf( "\t-docs\t\t\t (displays this message, invokes a browser)\n\t\t\t\t (Using the BROWSER environment variable)\n" );
     printf( "\t-version\t\t (prints the version of fontforge and exits)\n" );
 #ifndef _NO_PYTHON
-    printf( "\t-lang=py\t\t use python for scripts (may precede -script)\n" );
+    printf( "\t-lang=py\t\t (use python for scripts (may precede -script))\n" );
 #endif
 #ifndef _NO_FFSCRIPT
-    printf( "\t-lang=ff\t\t use fontforge's legacy scripting language\n" );
+    printf( "\t-lang=ff\t\t (use fontforge's legacy scripting language)\n" );
 #endif
     printf( "\t-script scriptfile\t (executes scriptfile)\n" );
     printf( "\t\tmust be the first option (or follow -lang).\n" );
@@ -163,6 +162,8 @@ static void _dousage(void) {
     printf( "\t\tOnly for fontforge's own scripting language, not python.\n" );
     printf( "\t-c script-string\t (executes argument as scripting cmds)\n" );
     printf( "\t\tmust be the first option. All others passed to the script.\n" );
+    printf( "\t-skippyfile\t\t (do not execute python init scripts)\n" );
+    printf( "\t-skippyplug\t\t (do not load python plugins)\n" );
     printf( "\n" );
     printf( "FontForge will read postscript (pfa, pfb, ps, cid), opentype (otf),\n" );
     printf( "\ttruetype (ttf,ttc), macintosh resource fonts (dfont,bin,hqx),\n" );
@@ -194,14 +195,6 @@ struct delayed_event {
     void *data;
     void (*func)(void *);
 };
-
-static void BuildCharHook(GDisplay *gd) {
-    GWidgetCreateInsChar();
-}
-
-static void InsCharHook(GDisplay *gd,unichar_t ch) {
-    GInsCharSetChar(ch);
-}
 
 extern GImage splashimage_legacy;
 static GImage *splashimagep;
@@ -921,6 +914,8 @@ int fontforge_main( int argc, char **argv ) {
     int recover=2;
     int any;
     int next_recent=0;
+    int run_python_init_files = true;
+    int import_python_plugins = true;
     GRect pos;
     GWindowAttrs wattrs;
     char *display = NULL;
@@ -1235,8 +1230,10 @@ int fontforge_main( int argc, char **argv ) {
     for ( i=1; i<argc; ++i ) {
 	char *pt = argv[i];
 
-	if ( !strcmp(pt,"-SkipPythonInitFiles")) {
-	    ProcessPythonInitFiles = 0;
+	if ( strcmp(pt,"-SkipPythonInitFiles")==0 || strcmp(pt,"-skippyfile")==0 ) {
+	    run_python_init_files = false;
+	} else if ( strcmp(pt,"-skippyplug")==0 ) {
+	    import_python_plugins = false;
 	}
     }
     
@@ -1247,8 +1244,7 @@ int fontforge_main( int argc, char **argv ) {
 #endif
 
 #ifndef _NO_PYTHON
-    if( ProcessPythonInitFiles )
-	PyFF_ProcessInitFiles();
+    PyFF_ProcessInitFiles(run_python_init_files, import_python_plugins);
 #endif
 
     /* the splash screen used not to have a title bar (wam_nodecor) */
@@ -1315,7 +1311,6 @@ exit( 0 );
 	autosave_timer=GDrawRequestTimer(splashw,2*AutoSaveFrequency*1000,AutoSaveFrequency*1000,NULL);
 
     GDrawProcessPendingEvents(NULL);
-    GDrawSetBuildCharHooks(BuildCharHook,InsCharHook);
 
     any = 0;
     if ( recover==-1 )
@@ -1339,7 +1334,9 @@ exit( 0 );
 	    MenuNewComposition(NULL,NULL,NULL);
 	    any = 1;
 #  endif
-	} else if ( !strcmp(pt,"-SkipPythonInitFiles")) {
+	} else if ( strcmp(pt,"-SkipPythonInitFiles")==0 ||
+	            strcmp(pt,"-skippyfile")==0 ||
+	            strcmp(pt,"-skippyplug")==0 ) {
 	    // already handled above.
 	} else if ( strcmp(pt,"-last")==0 ) {
 	    if ( next_recent<RECENT_MAX && RecentFiles[next_recent]!=NULL )

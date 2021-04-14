@@ -56,6 +56,7 @@
 #include "namelist.h"
 #include "nonlineartrans.h"
 #include "othersubrs.h"
+#include "plugin.h"
 #include "print.h"
 #include "psread.h"
 #include "savefont.h"
@@ -1019,7 +1020,13 @@ return( Py_BuildValue("s", FONTFORGE_VERSION ));
 
 static PyObject *PyFF_RunInitScripts(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
     InitializePythonMainNamespace();
-    PyFF_ProcessInitFiles();
+    PyFF_ProcessInitFiles(true, false);
+Py_RETURN_NONE;
+}
+
+static PyObject *PyFF_LoadPlugins(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
+    InitializePythonMainNamespace();
+    PyFF_ProcessInitFiles(false, true);
 Py_RETURN_NONE;
 }
 
@@ -1289,7 +1296,7 @@ return;
     PyTuple_SetItem(arglist,1,glyph);
     PyTuple_SetItem(arglist,2,PyUnicode_DecodeUTF8(filename,strlen(filename),NULL));
     PyTuple_SetItem(arglist,3,Py_BuildValue("i",toback));
-    result = PyEval_CallObject(py_ie[ie_index].import, arglist);
+    result = PyObject_CallObject(py_ie[ie_index].import, arglist);
     Py_DECREF(arglist);
     Py_XDECREF(result);
     if ( PyErr_Occurred()!=NULL )
@@ -1312,7 +1319,7 @@ return;
     PyTuple_SetItem(arglist,1,glyph);
     PyTuple_SetItem(arglist,2,PyUnicode_DecodeUTF8(filename,strlen(filename),NULL));
     PyTuple_SetItem(arglist,2,PyUnicode_DecodeUTF8(filename,strlen(filename),NULL));
-    result = PyEval_CallObject(py_ie[ie_index].export, arglist);
+    result = PyObject_CallObject(py_ie[ie_index].export, arglist);
     Py_DECREF(arglist);
     Py_XDECREF(result);
     if ( PyErr_Occurred()!=NULL )
@@ -1410,7 +1417,7 @@ static void python_call_onClosingFunctions_fe( gpointer data, gpointer udata )
     {
 	PyObject *arglist, *result;
 	arglist = PyTuple_New(0);
-	result = PyEval_CallObject( func, arglist);
+	result = PyObject_CallObject( func, arglist);
 	if ( !result )
 	{ // error
 	}
@@ -3496,7 +3503,7 @@ return;
 	Py_DECREF(func);
 return;
     }
-    result = PyEval_CallObject(func, args_tuple);
+    result = PyObject_CallObject(func, args_tuple);
     Py_DECREF(args_tuple);
     Py_XDECREF(result);
     Py_DECREF(func);
@@ -5695,9 +5702,9 @@ static PyObject *PyFFGlyphPen_addComponent(PyObject *self, PyObject *args) {
     int layer = ((PyFF_GlyphPen *) self)->layer;
     real transform[6];
     SplineChar *rsc;
-    double m[6];
+    double m[6] = {1.0,0.0,0.0,1.0,0.0,0.0};
     char *str;
-    int j;
+    int j, selected=false;
 
     if ( !((PyFF_GlyphPen *) self)->ended ) {
 	PyErr_Format(PyExc_EnvironmentError, "The addComponent operator may not be called while drawing a contour");
@@ -5706,10 +5713,8 @@ return( NULL );
     if ( ((PyFF_GlyphPen *) self)->replace )
 	GlyphClear(self);
 
-    memset(m,0,sizeof(m));
-    m[0] = m[3] = 1;
-    if ( !PyArg_ParseTuple(args,"s|(dddddd)",&str,
-	    &m[0], &m[1], &m[2], &m[3], &m[4], &m[5]) )
+    if ( !PyArg_ParseTuple(args,"s|(dddddd)p",&str,
+	    &m[0], &m[1], &m[2], &m[3], &m[4], &m[5], &selected) )
 return( NULL );
     rsc = SFGetChar(sc->parent,-1,str);
     if ( rsc==NULL ) {
@@ -5718,7 +5723,8 @@ return( NULL );
     }
     for ( j=0; j<6; ++j )
 	transform[j] = m[j];
-    _SCAddRef(sc,rsc,layer,transform);
+    _SCAddRef(sc,rsc,layer,transform,selected);
+    SCCharChangedUpdate(sc,layer);
 
 Py_RETURN( self );
 }
@@ -5791,8 +5797,7 @@ static PyTypeObject PyFF_GlyphPenType = {
 /* Glyph Utilities */
 /* ************************************************************************** */
 
-static PyObject *PyFF_Glyph_get_layer_references(PyFF_Glyph *self, void *UNUSED(closure),
-	int layer) {
+static PyObject *PyFF_Glyph_get_layer_references(PyFF_Glyph *self, int layer) {
     RefChar *ref;
     int cnt;
     SplineChar *sc = self->sc;
@@ -5801,15 +5806,16 @@ static PyObject *PyFF_Glyph_get_layer_references(PyFF_Glyph *self, void *UNUSED(
     for ( ref=sc->layers[layer].refs, cnt=0; ref!=NULL; ++cnt, ref=ref->next );
     tuple = PyTuple_New(cnt);
     for ( ref=sc->layers[layer].refs, cnt=0; ref!=NULL; ++cnt, ref=ref->next )
-	PyTuple_SET_ITEM(tuple,cnt,Py_BuildValue("(s(dddddd))", ref->sc->name,
+	PyTuple_SET_ITEM(tuple,cnt,Py_BuildValue("(s(dddddd)O)", ref->sc->name,
 		ref->transform[0], ref->transform[1], ref->transform[2],
-		ref->transform[3], ref->transform[4], ref->transform[5]));
+		ref->transform[3], ref->transform[4], ref->transform[5],
+		ref->selected ? Py_True : Py_False));
 return( tuple );
 }
 
 static int PyFF_Glyph_set_layer_references(PyFF_Glyph *self,PyObject *value,
-	void *UNUSED(closure), int layer) {
-    int i, j, cnt;
+	int layer) {
+    int i, j, cnt, selected;
     double m[6];
     real transform[6];
     char *str;
@@ -5828,8 +5834,11 @@ return( -1 );
     }
     sc->layers[layer].refs = NULL;
     for ( i=0; i<cnt; ++i ) {
-	if ( !PyArg_ParseTuple(PySequence_GetItem(value,i),"s(dddddd)",&str,
-		&m[0], &m[1], &m[2], &m[3], &m[4], &m[5]) )
+	m[1] = m[2] = m[4] = m[5] = 0.0;
+	m[0] = m[3] = 1.0;
+	selected = false;
+	if ( !PyArg_ParseTuple(PySequence_GetItem(value,i),"s|(dddddd)p",&str,
+		&m[0], &m[1], &m[2], &m[3], &m[4], &m[5], &selected) )
 return( -1 );
 	rsc = SFGetChar(sf,-1,str);
 	if ( rsc==NULL ) {
@@ -5838,8 +5847,9 @@ return( -1 );
 	}
 	for ( j=0; j<6; ++j )
 	    transform[j] = m[j];
-	_SCAddRef(sc,rsc,layer,transform);
+	_SCAddRef(sc,rsc,layer,transform,selected);
     }
+    SCCharChangedUpdate(sc,layer);
 return( 0 );
 }
 
@@ -6216,7 +6226,7 @@ return( NULL );
 	PyErr_Format(PyExc_TypeError, "Index must be a layer name or index" );
 return( NULL );
     }
-return( PyFF_Glyph_get_layer_references((PyFF_Glyph *) PySC_From_SC(sc),NULL,layer));
+return( PyFF_Glyph_get_layer_references((PyFF_Glyph *) PySC_From_SC(sc),layer));
 }
 
 static int PyFF_RefArrayIndexAssign( PyObject *self, PyObject *index, PyObject *value ) {
@@ -6237,7 +6247,7 @@ return( -1 );
 	PyErr_Format(PyExc_TypeError, "Index must be a layer name or index" );
 return( -1 );
     }
-return( PyFF_Glyph_set_layer_references((PyFF_Glyph *) PySC_From_SC(sc),value,NULL,layer));
+return( PyFF_Glyph_set_layer_references((PyFF_Glyph *) PySC_From_SC(sc),value,layer));
 }
 
 static PyMappingMethods PyFF_RefArrayMapping = {
@@ -7056,11 +7066,11 @@ Py_RETURN_NONE;
 }
 
 static PyObject *PyFF_Glyph_get_references(PyFF_Glyph *self, void *closure) {
-return( PyFF_Glyph_get_layer_references(self,closure,self->layer));
+return( PyFF_Glyph_get_layer_references(self,self->layer));
 }
 
 static int PyFF_Glyph_set_references(PyFF_Glyph *self,PyObject *value, void *closure) {
-return( PyFF_Glyph_set_layer_references(self,value,closure,self->layer));
+return( PyFF_Glyph_set_layer_references(self,value,self->layer));
 }
 
 static PyObject *PyFF_Glyph_get_layerrefs(PyFF_Glyph *self, void *UNUSED(closure)) {
@@ -7545,11 +7555,13 @@ return( Py_BuildValue("i", self->sc->color ));
 
 static int PyFF_Glyph_set_color(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     int val;
+    SplineChar *sc = self->sc;
 
     val = PyLong_AsLong(value);
     if ( PyErr_Occurred()!=NULL )
 return( -1 );
-    self->sc->color = val;
+    sc->color = val;
+    SCCharChangedUpdate(sc,ly_none);
 return( 0 );
 }
 
@@ -8203,17 +8215,15 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFGlyph_AddReference(PyObject *self, PyObject *args) {
-    double m[6];
+    double m[6] = {1.0,0.0,0.0,1.0,0.0,0.0};
     real transform[6];
     char *str;
     SplineChar *sc = ((PyFF_Glyph *) self)->sc, *rsc;
     SplineFont *sf = sc->parent;
-    int j;
+    int j, selected=false;
 
-    memset(m,0,sizeof(m));
-    m[0] = m[3] = 1;
-    if ( !PyArg_ParseTuple(args,"s|(dddddd)",&str,
-	    &m[0], &m[1], &m[2], &m[3], &m[4], &m[5]) )
+    if ( !PyArg_ParseTuple(args,"s|(dddddd)p",&str,
+	    &m[0], &m[1], &m[2], &m[3], &m[4], &m[5], &selected) )
 return( NULL );
     rsc = SFGetChar(sf,-1,str);
     if ( rsc==NULL ) {
@@ -8222,7 +8232,7 @@ return( NULL );
     }
     for ( j=0; j<6; ++j )
 	transform[j] = m[j];
-    _SCAddRef(sc,rsc,((PyFF_Glyph *) self)->layer,transform);
+    _SCAddRef(sc,rsc,((PyFF_Glyph *) self)->layer,transform,selected);
     SCCharChangedUpdate(sc,((PyFF_Glyph *) self)->layer);
 
 Py_RETURN( self );
@@ -16465,7 +16475,7 @@ struct flaglist gen_flags[] = {
     { "afm", fm_flag_afm },
     { "pfm", fm_flag_pfm },
     { "short-post", fm_flag_shortps },
-    { "omit-instructions", fm_flag_nopshints },
+    { "omit-instructions", fm_flag_nottfhints },
     { "apple", fm_flag_apple },
     { "opentype", fm_flag_opentype },
     { "PfEd-comments", fm_flag_pfed_comments },
@@ -16484,7 +16494,7 @@ struct flaglist gen_flags[] = {
     { "no-FFTM-table", fm_flag_nofftm },
     { "tfm", fm_flag_tfm },
     { "no-flex", fm_flag_noflex },
-    { "no-hints", fm_flag_nottfhints },
+    { "no-hints", fm_flag_nopshints },
     { "round", fm_flag_round },
     { "composites-in-afm", fm_flag_afmwithmarks },
     { "no-mac-names", fm_flag_nomacnames },
@@ -17884,6 +17894,7 @@ static PyObject *PyFFFont_correctDirection(PyFF_Font *self, PyObject *UNUSED(arg
     int checkrefs = true;
     RefChar *ref;
     SplineChar *sc;
+    RefChar *next;
 
     if ( CheckIfFontClosed(self) )
 return (NULL);
@@ -17893,14 +17904,18 @@ return (NULL);
     for ( i=0; i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && (sc=sf->glyphs[gid])!=NULL && fv->selected[i] ) {
 	changed = refchanged = false;
 	if ( checkrefs ) {
-	    for ( ref=sc->layers[self->fv->active_layer].refs; ref!=NULL; ref=ref->next ) {
+	    for ( ref=sc->layers[self->fv->active_layer].refs; ref!=NULL; ) {
 		if ( ref->transform[0]*ref->transform[3]<0 ||
 			(ref->transform[0]==0 && ref->transform[1]*ref->transform[2]>0)) {
 		    if ( !refchanged ) {
 			refchanged = true;
 			SCPreserveLayer(sc,self->fv->active_layer,false);
 		    }
+		    next = ref->next;
 		    SCRefToSplines(sc,ref,self->fv->active_layer);
+		    ref = next;
+		} else {
+		    ref=ref->next;
 		}
 	    }
 	}
@@ -18680,7 +18695,7 @@ return( -1 );
 	PyTuple_SetItem(arglist,3,PyFF_GlyphSeparationArg);
 	Py_XINCREF(PyFF_GlyphSeparationArg);
     }
-    result = PyEval_CallObject(PyFF_GlyphSeparationHook, arglist);
+    result = PyObject_CallObject(PyFF_GlyphSeparationHook, arglist);
     Py_DECREF(arglist);
     if ( PyErr_Occurred()!=NULL ) {
 	PyErr_Print();
@@ -18794,6 +18809,9 @@ PyMethodDef module_fontforge_methods[] = {
     { "ucOFracChartUGetAltVal", PyFF_OFracChartUGetAltVal, METH_VARARGS, "Return internal Alternate value for given unicode Other_Fraction value" },
     { "version", PyFF_Version, METH_NOARGS, "Returns a string containing the current version of FontForge, as 20061116" },
     { "runInitScripts", PyFF_RunInitScripts, METH_NOARGS, "Run the system and user initialization scripts, if not already run" },
+    { "loadPlugins", PyFF_LoadPlugins, METH_NOARGS, "Load and initialize any active plugins not already initialized." },
+    { "getPluginInfo", PyFF_GetPluginInfo, METH_NOARGS, "Returns an ordered list of tuples with configuration and other information about each discovered or recorded plugin." },
+    { "configurePlugins", PyFF_ConfigurePlugins, METH_VARARGS, "Change the order of or enable/disable plugins." },
     { "scriptPath", PyFF_GetScriptPath, METH_NOARGS, "Returns a list of the directories searched for scripts"},
     { "userConfigPath", PyFF_GetUserConfigPath, METH_NOARGS, "Returns the path to the user's FontForge configuration directory, which should be writable."},
     { "fonts", PyFF_FontTuple, METH_NOARGS, "Returns a tuple of all loaded fonts" },
@@ -19039,7 +19057,7 @@ char *PyFF_PickleMeToString(void *pydata) {
     Py_XINCREF(pyobj);
     PyTuple_SetItem(arglist,0,pyobj);
     PyTuple_SetItem(arglist,1,Py_BuildValue("i",0));	/* ASCII protocol */
-    result = PyEval_CallObject(pickler, arglist);
+    result = PyObject_CallObject(pickler, arglist);
     Py_DECREF(arglist);
     if ( result!=NULL )
 	ret = copy(PyBytes_AsString(result));
@@ -19058,7 +19076,7 @@ void *PyFF_UnPickleMeToObjects(char *str) {
     PyFF_PicklerInit();
     arglist = PyTuple_New(1);
     PyTuple_SetItem(arglist,0,Py_BuildValue("y",str)); /* Bytes/String object */
-    result = PyEval_CallObject(unpickler, arglist);
+    result = PyObject_CallObject(unpickler, arglist);
     Py_DECREF(arglist);
     if ( PyErr_Occurred()!=NULL ) {
 	PyErr_Print();
@@ -19418,7 +19436,8 @@ static wchar_t ** copy_argv(char *arg0, int argc ,char **argv);
  * options up to and including the '-script' option, but while
  * preserving argv[0].
  */
-_Noreturn void PyFF_Main(int argc,char **argv,int start) {
+_Noreturn void PyFF_Main(int argc,char **argv,int start, int do_inits,
+                         int do_plugins) {
     char *arg;
     wchar_t **newargv;
     int newargc;
@@ -19427,7 +19446,7 @@ _Noreturn void PyFF_Main(int argc,char **argv,int start) {
     no_windowing_ui = running_script = true;
 
     FontForge_InitializeEmbeddedPython();
-    PyFF_ProcessInitFiles();
+    PyFF_ProcessInitFiles(do_inits, do_plugins);
 
     /* Skip '-script' option */
     arg = argv[start];
@@ -19521,11 +19540,11 @@ static void AddSpiroConstants( PyObject *module ) {
 }
 
 
-_Noreturn void PyFF_Stdin(void) {
+_Noreturn void PyFF_Stdin(int do_inits, int do_plugins) {
     no_windowing_ui = running_script = true;
 
     FontForge_InitializeEmbeddedPython();
-    PyFF_ProcessInitFiles();
+    PyFF_ProcessInitFiles(do_inits, do_plugins);
 
     if ( isatty(fileno(stdin)))
 	PyRun_InteractiveLoop(stdin,"<stdin>");
@@ -19699,12 +19718,15 @@ static GPtrArray *default_pyinit_dirs(void) {
     return pathlist;
 }
 
-void PyFF_ProcessInitFiles(void) {
+void PyFF_ProcessInitFiles(int do_inits, int do_plugins) {
     static int done = false;
     GPtrArray *dpath;
 
-    if ( done )
-return;
+    PyFF_ImportPlugins(do_plugins);
+
+    if ( done || !do_inits ) // Idempotency, I presume
+	return;
+
     dpath = default_pyinit_dirs();
     for (guint i = 0; i < dpath->len; ++i ) {
 	LoadFilesInPythonInitDir( (char*)dpath->pdata[i] );
@@ -19752,7 +19774,7 @@ return;
 	PyTuple_SetItem(arglist,i,arg);
     }
     va_end(ap);
-    result = PyEval_CallObject(func, arglist);
+    result = PyObject_CallObject(func, arglist);
     Py_DECREF(arglist);
     Py_XDECREF(result);
     if ( PyErr_Occurred()!=NULL )
@@ -20014,7 +20036,7 @@ static struct flaglist sfnt_name_mslangs[] = {
     { "Russian", 0x419},
     { "Russian (Moldova)", 0x819},
     { "Sami (Lappish)", 0x43b},
-    { "Sanskrit", 0x43b},
+    { "Sanskrit", 0x44f},
     { "Sepedi", 0x46c},
     { "Serbian (Cyrillic)", 0xc1a},
     { "Serbian (Latin)", 0x81a},

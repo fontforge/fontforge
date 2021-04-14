@@ -7649,7 +7649,7 @@ int SSBoundsWithin(SplineSet *ss,bigreal z1, bigreal z2, bigreal *wmin, bigreal 
 
     while ( ss!=NULL ) {
 	first = NULL;
-	for ( s=ss->first->next; s!=first; s=s->to->next ) {
+	for ( s=ss->first->next; s!=first && s!=NULL; s=s->to->next ) {
 	    if ( first==NULL ) first = s;
 	    ws = &s->splines[other];
 	    zs = &s->splines[major];

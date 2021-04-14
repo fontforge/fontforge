@@ -194,7 +194,6 @@ static unichar_t *GWidgetOpenFileWPath(const unichar_t *title, const unichar_t *
     memset(&d,'\0',sizeof(d));
     d.gfc = gcd[0].ret;
 
-    GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
     while ( !d.done )
 	GDrawProcessOneEvent(NULL);

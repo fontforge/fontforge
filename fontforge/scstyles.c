@@ -2061,9 +2061,15 @@ static SplineChar *MakeSmallCapName(char *buffer, int bufsize, SplineFont *sf,
 	ext = genchange->extension_for_symbols;
     }
     lc_sc = SFGetChar(sf,lower,NULL);
-    if ( lc_sc!=NULL )
-	snprintf(buffer,bufsize,"%s.%s", lc_sc->name, ext );
-    else {
+    if ( lc_sc!=NULL ) {
+	// The Turkish dotted İ must be special cased because it rightly lowercases to the regular ASCII
+	// i, however, so does I.
+	if ( sc->unicodeenc == 0x130 ) {
+	    snprintf(buffer, bufsize, "idotaccent.%s", ext);
+	} else {
+	    snprintf(buffer, bufsize, "%s.%s", lc_sc->name, ext);
+	}
+    } else {
 	const char *pt = StdGlyphName(buffer,lower,sf->uni_interp,sf->for_new_glyphs);
 	if ( pt!=buffer )
 	    strcpy(buffer,pt);

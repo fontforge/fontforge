@@ -971,7 +971,7 @@ static GTextInfo mslanguages[] = {
     { (unichar_t *) N_("Russian"), NULL, 0, 0, (void *) 0x419, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("Russian (Moldova)"), NULL, 0, 0, (void *) 0x819, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("Sami (Lappish)"), NULL, 0, 0, (void *) 0x43b, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
-    { (unichar_t *) N_("Sanskrit"), NULL, 0, 0, (void *) 0x43b, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Sanskrit"), NULL, 0, 0, (void *) 0x44f, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("Sepedi"), NULL, 0, 0, (void *) 0x46c, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("Serbian (Cyrillic)"), NULL, 0, 0, (void *) 0xc1a, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("Serbian (Latin)"), NULL, 0, 0, (void *) 0x81a, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
@@ -2509,39 +2509,6 @@ static struct otfname *OtfNameFromStyleNames(GGadget *me) {
 return( head );
 }
 
-void GListMoveSelected(GGadget *list,int offset) {
-    int32 len; int i,j;
-    GTextInfo **old, **new;
-
-    old = GGadgetGetList(list,&len);
-    new = calloc(len+1,sizeof(GTextInfo *));
-    j = (offset<0 ) ? 0 : len-1;
-    for ( i=0; i<len; ++i ) if ( old[i]->selected ) {
-	if ( offset==0x80000000 || offset==0x7fffffff )
-	    /* Do Nothing */;
-	else if ( offset<0 ) {
-	    if ( (j= i+offset)<0 ) j=0;
-	    while ( new[j] ) ++j;
-	} else {
-	    if ( (j= i+offset)>=len ) j=len-1;
-	    while ( new[j] ) --j;
-	}
-	new[j] = malloc(sizeof(GTextInfo));
-	*new[j] = *old[i];
-	new[j]->text = u_copy(new[j]->text);
-	if ( offset<0 ) ++j; else --j;
-    }
-    for ( i=j=0; i<len; ++i ) if ( !old[i]->selected ) {
-	while ( new[j] ) ++j;
-	new[j] = malloc(sizeof(GTextInfo));
-	*new[j] = *old[i];
-	new[j]->text = u_copy(new[j]->text);
-	++j;
-    }
-    new[len] = calloc(1,sizeof(GTextInfo));
-    GGadgetSetList(list,new,false);
-}
-
 void GListDelSelected(GGadget *list) {
     int32 len; int i,j;
     GTextInfo **old, **new;
@@ -3266,10 +3233,7 @@ static int GFI_AddOFL(GGadget *g, GEvent *e) {
 	int rows;
 	struct matrix_data *tns, *newtns;
 	int i,j,k,l,m, extras, len;
-	char *all, *pt, **data;
-	char buffer[1024], *bpt;
-	const char *author = GetAuthor();
-	char *reservedname, *fallback;
+	char *all, *pt, **data, *bpt;
 	time_t now;
 	struct tm *tm;
 
@@ -3296,34 +3260,14 @@ static int GFI_AddOFL(GGadget *g, GEvent *e) {
 		    newtns[j*3+1].u.md_ival = ofl_str_lang_data[i].strid;
 		    newtns[j*3+0].u.md_ival = ofl_str_lang_data[i].lang;
 		    data = ofl_str_lang_data[i].data;
-		    reservedname = fallback = NULL;
-		    for ( m=0; m<rows; ++m ) {
-			if ( newtns[j*3+1].u.md_ival==ttf_family ) {
-			    if ( newtns[j*3+0].u.md_ival==0x409 )
-				fallback = newtns[3*j+2].u.md_str;
-			    else if ( newtns[j*3+0].u.md_ival==ofl_str_lang_data[i].lang )
-				reservedname = newtns[3*j+2].u.md_str;
-			}
-		    }
-		    if ( reservedname==NULL )
-			reservedname = fallback;
-		    if ( reservedname==NULL )
-			reservedname = d->sf->familyname;
 		    for ( m=0; m<2; ++m ) {
 			len = 0;
 			for ( l=0; data[l]!=NULL; ++l ) {
-			    if ( l==0 ) {
-				sprintf( buffer, data[l], tm->tm_year+1900, author );
-			        bpt = buffer;
-			    } else if ( l==1 ) {
-				sprintf( buffer, data[l], reservedname );
-			        bpt = buffer;
-			    } else
-				bpt = data[l];
+			    bpt = data[l];
 			    if ( m ) {
 				strcpy( pt, bpt );
-			        pt += strlen( bpt );
-			        *pt++ = '\n';
+				pt += strlen( bpt );
+				*pt++ = '\n';
 			    } else
 				len += strlen( bpt ) + 1;		/* for a new line */
 			}
@@ -3346,8 +3290,8 @@ static int GFI_AddOFL(GGadget *g, GEvent *e) {
 	    "The OFL is a community-approved software license designed for libre/open font projects. \n"
 	    "Fonts under the OFL can be used, studied, copied, modified, embedded, merged and redistributed while giving authors enough control and artistic integrity. For more details including an FAQ see http://scripts.sil.org/OFL. \n\n"
 	    "This font metadata will help users, designers and distribution channels to know who you are, how to contact you and what rights you are granting. \n" 
-        "When releasing modified versions, remember to add your additional notice, including any extra Reserved Font Name(s). \n\n" 
-	    "Have fun designing open fonts!" ));
+	    "When releasing modified versions, remember to add your additional notice, including any extra Reserved Font Name(s). FontForge used to add RFN's by default, but no longer does, as they are used by a minority of OFL fonts and FontForge's RFN's were often legally invalid. Please see the official SIL FAQ and FontForge GitHub issue №4434 for more information. \n\n"
+	    "Have fun designing open fonts! 🔣🔧🥳" ));
     }
 return( true );
 }
@@ -10888,7 +10832,6 @@ return;
 
     GHVBoxFitWindow(mb[0].ret);
 
-    GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
 
     if ( sync ) {

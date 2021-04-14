@@ -28,7 +28,6 @@
 #include <fontforge-config.h>
 
 #include "autotrace.h"
-#include "charset.h"
 #include "encoding.h"
 #include "ffglib.h"
 #include "fontforge.h"
@@ -36,22 +35,20 @@
 #include "groups.h"
 #include "macenc.h"
 #include "namelist.h"
+#include "plugin.h"
 #include "othersubrs.h"
 #include "sfd.h"
 #include "splineutil.h"
 #include "ttf.h"
 #include "ustring.h"
 
+#include <assert.h>
 #include <dirent.h>
 #include <locale.h>
 #include <stdlib.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <time.h>
-
-#if HAVE_LANGINFO_H
-# include <langinfo.h>
-#endif
 
 #if defined(__MINGW32__)
 #include <windows.h>
@@ -121,6 +118,9 @@ static float snapdistance=3.5;
 static int stop_at_join=0;
 static int updateflex=0;				/* in charview.c */
 static int ask_user_for_resolution=1;
+#ifndef _NO_LIBPNG
+extern int WritePNGInSFD;
+#endif
 static int default_fv_showhmetrics=0;	/* in fontview */
 static int default_fv_showvmetrics=0;	/* in fontview */
 static int default_fv_glyphlabel=0;	/* in fontview */
@@ -164,6 +164,9 @@ static int home_char = 'A';
 static int compact_font_on_open=0;
 static int aa_pixelsize;			/* from anchorsaway.c */
 
+extern float OpenTypeLoadHintEqualityTolerance;  /* autohint.c */
+extern float GenerateHintWidthEqualityTolerance; /* splinesave.c */
+
 static int gfc_showhidden, gfc_dirplace;
 static char *gfc_bookmarks=NULL;
 static char *pixmapdir=NULL;
@@ -193,6 +196,7 @@ static struct prefs_list {
     { N_("PreferCJKEncodings"), pr_bool, &prefer_cjk_encodings, NULL, NULL, 'C', NULL, 0, N_("When loading a truetype or opentype font which has both a unicode\nand a CJK encoding table, use this flag to specify which\nshould be loaded for the font.") },
     { N_("AskUserForCMap"), pr_bool, &ask_user_for_cmap, NULL, NULL, 'O', NULL, 0, N_("When loading a font in sfnt format (TrueType, OpenType, etc.),\nask the user to specify which cmap to use initially.") },
     { N_("PreserveTables"), pr_string, &SaveTablesPref, NULL, NULL, 'P', NULL, 0, N_("Enter a list of 4 letter table tags, separated by commas.\nFontForge will make a binary copy of these tables when it\nloads a True/OpenType font, and will output them (unchanged)\nwhen it generates the font. Do not include table tags which\nFontForge thinks it understands.") },
+    { N_("OpenTypeLoadHintEqualityTolerance"), pr_real, &OpenTypeLoadHintEqualityTolerance, NULL, NULL, '\0', NULL, 0, N_( "When importing an OpenType font, for the purposes of hinting spline points might not exactly match boundaries. For example, a point might be -0.0002 instead of exactly 0\nThis setting gives the user some control over this allowing a small tolerance value to be fed into the OpenType loading code.\nComparisons are then not performed for raw equality but for equality within tolerance (e.g., values within the range -0.0002 to 0.0002 will be considered equal to 0 when figuring out hints).") },
     { N_("ItalicConstrained"), pr_bool, &ItalicConstrained, NULL, NULL, '\0', NULL, 0, N_("In the Outline View, the Shift key constrains motion to be parallel to the ItalicAngle rather than constraining it to be vertical.") },
     { N_("SnapToInt"), pr_bool, &snaptoint, NULL, NULL, '\0', NULL, 0, N_("When the user clicks in the editing window, round the location to the nearest integers.") },
     { N_("JoinSnap"), pr_real, &joinsnap, NULL, NULL, '\0', NULL, 0, N_("The Edit->Join command will join points which are this close together\nA value of 0 means they must be coincident") },
@@ -221,11 +225,18 @@ static struct prefs_list {
     { N_("XUID-Base"), pr_string, &xuid, NULL, NULL, 'X', NULL, 0, N_("If specified this should be a space separated list of integers each\nless than 16777216 which uniquely identify your organization\nFontForge will generate a random number for the final component.") },
     { N_("AskBDFResolution"), pr_bool, &ask_user_for_resolution, NULL, NULL, 'B', NULL, 0, N_("When generating a set of BDF fonts ask the user\nto specify the screen resolution of the fonts\notherwise FontForge will guess depending on the pixel size.") },
     { N_("AutoHint"), pr_bool, &autohint_before_generate, NULL, NULL, 'H', NULL, 0, N_("AutoHint changed glyphs before generating a font") },
+#ifndef _NO_LIBPNG
+    { N_("WritePNGInSFD"), pr_bool, &WritePNGInSFD, NULL, NULL, 'B', NULL, 0, N_("If your SFD contains images, write them as PNG; this results in smaller SFDs; but was not supported in FontForge versions compiled before July 2019, so older FontForge versions cannot read them.") },
+#endif
+    { N_("GenerateHintWidthEqualityTolerance"), pr_real, &GenerateHintWidthEqualityTolerance, NULL, NULL, '\0', NULL, 0, N_( "When generating a font, ignore slight rounding errors for hints that should be at the top or bottom of the glyph. For example, you might like to set this to 0.02 so that 19.999 will be considered 20. But only for the hint width value.") },
     { N_("HintBoundingBoxes"), pr_bool, &hint_bounding_boxes, NULL, NULL, '\0', NULL, 0, N_("FontForge will place vertical or horizontal hints to describe the bounding boxes of suitable glyphs.") },
     { N_("HintDiagonalEnds"), pr_bool, &hint_diagonal_ends, NULL, NULL, '\0', NULL, 0, N_("FontForge will place vertical or horizontal hints at the ends of diagonal stems.") },
     { N_("HintDiagonalInter"), pr_bool, &hint_diagonal_intersections, NULL, NULL, '\0', NULL, 0, N_("FontForge will place vertical or horizontal hints at the intersections of diagonal stems.") },
     { N_("DetectDiagonalStems"), pr_bool, &detect_diagonal_stems, NULL, NULL, '\0', NULL, 0, N_("FontForge will generate diagonal stem hints, which then can be used by the AutoInstr command.") },
     { N_("UseNewIndicScripts"), pr_bool, &use_second_indic_scripts, NULL, NULL, 'C', NULL, 0, N_("MS has changed (in August 2006) the inner workings of their Indic shaping\nengine, and to disambiguate this change has created a parallel set of script\ntags (generally ending in '2') for Indic writing systems. If you are working\nwith the new system set this flag, if you are working with the old unset it.\n(if you aren't doing Indic work, this flag is irrelevant).") },
+#ifndef _NO_PYTHON
+    { N_("UsePlugins"), pr_bool, &use_plugins, NULL, NULL, '\0', NULL, 0, N_( "Whether or not to try to discover and import Python plugins.") },
+#endif
     { "AntiAlias", pr_bool, &default_fv_antialias, NULL, NULL, '\0', NULL, 1, NULL },
     { "DefaultFVSize", pr_int, &default_fv_font_size, NULL, NULL, 'S', NULL, 1, NULL },
     { "DefaultFVRowCount", pr_int, &default_fv_row_count, NULL, NULL, 'S', NULL, 1, NULL },
@@ -245,6 +256,9 @@ static struct prefs_list {
     { "CoverageFormatsAllowed", pr_int, &coverageformatsallowed, NULL, NULL, '\0', NULL, 1, NULL },
     { "ForceNamesWhenOpening", pr_namelist, &force_names_when_opening, NULL, NULL, '\0', NULL, 1, NULL },
     { "ForceNamesWhenSaving", pr_namelist, &force_names_when_saving, NULL, NULL, '\0', NULL, 1, NULL },
+#ifndef _NO_PYTHON
+    { "PluginStartupMode", pr_string, NULL, &GetPluginStartupMode, &SetPluginStartupMode, '\0', NULL, 1, NULL },
+#endif
     { NULL, 0, NULL, NULL, NULL, '\0', NULL, 0, NULL } /* Sentinel */
 },
 extras[] = {
@@ -454,198 +468,17 @@ static char *NOUI_getFontForgeShareDir(void) {
 	return getShareDir();
 }
 
-static int encmatch(const char *enc,int subok) {
-    static struct { char *name; int enc; } encs[] = {
-	{ "US-ASCII", e_usascii },
-	{ "ASCII", e_usascii },
-	{ "ISO646-NO", e_iso646_no },
-	{ "ISO646-SE", e_iso646_se },
-	{ "LATIN10", e_iso8859_16 },
-	{ "LATIN1", e_iso8859_1 },
-	{ "ISO-8859-1", e_iso8859_1 },
-	{ "ISO-8859-2", e_iso8859_2 },
-	{ "ISO-8859-3", e_iso8859_3 },
-	{ "ISO-8859-4", e_iso8859_4 },
-	{ "ISO-8859-5", e_iso8859_4 },
-	{ "ISO-8859-6", e_iso8859_4 },
-	{ "ISO-8859-7", e_iso8859_4 },
-	{ "ISO-8859-8", e_iso8859_4 },
-	{ "ISO-8859-9", e_iso8859_4 },
-	{ "ISO-8859-10", e_iso8859_10 },
-	{ "ISO-8859-11", e_iso8859_11 },
-	{ "ISO-8859-13", e_iso8859_13 },
-	{ "ISO-8859-14", e_iso8859_14 },
-	{ "ISO-8859-15", e_iso8859_15 },
-	{ "ISO-8859-16", e_iso8859_16 },
-	{ "ISO_8859-1", e_iso8859_1 },
-	{ "ISO_8859-2", e_iso8859_2 },
-	{ "ISO_8859-3", e_iso8859_3 },
-	{ "ISO_8859-4", e_iso8859_4 },
-	{ "ISO_8859-5", e_iso8859_4 },
-	{ "ISO_8859-6", e_iso8859_4 },
-	{ "ISO_8859-7", e_iso8859_4 },
-	{ "ISO_8859-8", e_iso8859_4 },
-	{ "ISO_8859-9", e_iso8859_4 },
-	{ "ISO_8859-10", e_iso8859_10 },
-	{ "ISO_8859-11", e_iso8859_11 },
-	{ "ISO_8859-13", e_iso8859_13 },
-	{ "ISO_8859-14", e_iso8859_14 },
-	{ "ISO_8859-15", e_iso8859_15 },
-	{ "ISO_8859-16", e_iso8859_16 },
-	{ "ISO8859-1", e_iso8859_1 },
-	{ "ISO8859-2", e_iso8859_2 },
-	{ "ISO8859-3", e_iso8859_3 },
-	{ "ISO8859-4", e_iso8859_4 },
-	{ "ISO8859-5", e_iso8859_4 },
-	{ "ISO8859-6", e_iso8859_4 },
-	{ "ISO8859-7", e_iso8859_4 },
-	{ "ISO8859-8", e_iso8859_4 },
-	{ "ISO8859-9", e_iso8859_4 },
-	{ "ISO8859-10", e_iso8859_10 },
-	{ "ISO8859-11", e_iso8859_11 },
-	{ "ISO8859-13", e_iso8859_13 },
-	{ "ISO8859-14", e_iso8859_14 },
-	{ "ISO8859-15", e_iso8859_15 },
-	{ "ISO8859-16", e_iso8859_16 },
-	{ "ISO88591", e_iso8859_1 },
-	{ "ISO88592", e_iso8859_2 },
-	{ "ISO88593", e_iso8859_3 },
-	{ "ISO88594", e_iso8859_4 },
-	{ "ISO88595", e_iso8859_4 },
-	{ "ISO88596", e_iso8859_4 },
-	{ "ISO88597", e_iso8859_4 },
-	{ "ISO88598", e_iso8859_4 },
-	{ "ISO88599", e_iso8859_4 },
-	{ "ISO885910", e_iso8859_10 },
-	{ "ISO885911", e_iso8859_11 },
-	{ "ISO885913", e_iso8859_13 },
-	{ "ISO885914", e_iso8859_14 },
-	{ "ISO885915", e_iso8859_15 },
-	{ "ISO885916", e_iso8859_16 },
-	{ "8859_1", e_iso8859_1 },
-	{ "8859_2", e_iso8859_2 },
-	{ "8859_3", e_iso8859_3 },
-	{ "8859_4", e_iso8859_4 },
-	{ "8859_5", e_iso8859_4 },
-	{ "8859_6", e_iso8859_4 },
-	{ "8859_7", e_iso8859_4 },
-	{ "8859_8", e_iso8859_4 },
-	{ "8859_9", e_iso8859_4 },
-	{ "8859_10", e_iso8859_10 },
-	{ "8859_11", e_iso8859_11 },
-	{ "8859_13", e_iso8859_13 },
-	{ "8859_14", e_iso8859_14 },
-	{ "8859_15", e_iso8859_15 },
-	{ "8859_16", e_iso8859_16 },
-	{ "KOI8-R", e_koi8_r },
-	{ "KOI8R", e_koi8_r },
-	{ "WINDOWS-1252", e_win },
-	{ "CP1252", e_win },
-	{ "Big5", e_big5 },
-	{ "Big-5", e_big5 },
-	{ "BigFive", e_big5 },
-	{ "Big-Five", e_big5 },
-	{ "Big5HKSCS", e_big5hkscs },
-	{ "Big5-HKSCS", e_big5hkscs },
-	{ "UTF-8", e_utf8 },
-	{ "utf-8", e_utf8 },
-	{ "UTF8", e_utf8 },
-	{ "utf8", e_utf8 },
-	{ "ISO-10646/UTF-8", e_utf8 },
-	{ "ISO_10646/UTF-8", e_utf8 },
-	{ "UCS2", e_unicode },
-	{ "UCS-2", e_unicode },
-	{ "UCS-2-INTERNAL", e_unicode },
-	{ "ISO-10646", e_unicode },
-	{ "ISO_10646", e_unicode },
-	/* { "eucJP", e_euc }, */
-	/* { "EUC-JP", e_euc }, */
-	/* { "ujis", ??? }, */
-	/* { "EUC-KR", e_euckorean }, */
-	{ NULL, 0 }
-    };
-    int i;
-    char buffer[80];
-#if HAVE_ICONV_H
-    static char *last_complaint;
+static void DefaultEncoding(void) {
+    const char* charset = NULL;
+    bool is_utf8 = g_get_charset(&charset);
 
-    iconv_t test;
-    free(iconv_local_encoding_name);
-    iconv_local_encoding_name= NULL;
-#endif
-
-    if ( strchr(enc,'@')!=NULL && strlen(enc)<sizeof(buffer)-1 ) {
-	strcpy(buffer,enc);
-	*strchr(buffer,'@') = '\0';
-	enc = buffer;
+    if (!SetupUCharMap(FindUnicharName(), charset, is_utf8)) {
+        fprintf(stderr, "Failed to set up unichar<->system local encoding, assuming utf-8 and trying again...\n");
+        if (!SetupUCharMap(FindUnicharName(), "UTF-8", true)) {
+            fprintf(stderr, "Failed to set up unichar<->utf-8 encoding.");
+            assert(false);
+        }
     }
-
-    for ( i=0; encs[i].name!=NULL; ++i )
-	if ( strmatch(enc,encs[i].name)==0 )
-return( encs[i].enc );
-
-    if ( subok ) {
-	for ( i=0; encs[i].name!=NULL; ++i )
-	    if ( strstrmatch(enc,encs[i].name)!=NULL )
-return( encs[i].enc );
-
-#if HAVE_ICONV_H
-	/* I only try to use iconv if the encoding doesn't match one I support*/
-	/*  loading iconv unicode data takes a while */
-	test = iconv_open(enc,FindUnicharName());
-	if ( test==(iconv_t) (-1) || test==NULL ) {
-	    if ( last_complaint==NULL || strcmp(last_complaint,enc)!=0 ) {
-		fprintf( stderr, "Neither FontForge nor iconv() supports your encoding (%s) we will pretend\n you asked for latin1 instead.\n", enc );
-		free( last_complaint );
-		last_complaint = copy(enc);
-	    }
-	} else {
-	    if ( last_complaint==NULL || strcmp(last_complaint,enc)!=0 ) {
-		fprintf( stderr, "FontForge does not support your encoding (%s), it will try to use iconv()\n or it will pretend the local encoding is latin1\n", enc );
-		free( last_complaint );
-		last_complaint = copy(enc);
-	    }
-	    iconv_local_encoding_name= copy(enc);
-	    iconv_close(test);
-	}
-#else
-	fprintf( stderr, "FontForge does not support your encoding (%s), it will pretend the local encoding is latin1\n", enc );
-#endif
-
-return( e_iso8859_1 );
-    }
-return( e_unknown );
-}
-
-static int DefaultEncoding(void) {
-    const char *loc;
-    int enc;
-
-#if HAVE_NL_LANGINFO
-    loc = nl_langinfo(CODESET);
-    enc = encmatch(loc,false);
-    if ( enc!=e_unknown )
-return( enc );
-#endif
-    loc = getenv("LC_ALL");
-    if ( loc==NULL ) loc = getenv("LC_CTYPE");
-    /*if ( loc==NULL ) loc = getenv("LC_MESSAGES");*/
-    if ( loc==NULL ) loc = getenv("LANG");
-
-    if ( loc==NULL )
-return( e_iso8859_1 );
-
-    enc = encmatch(loc,false);
-    if ( enc==e_unknown ) {
-	loc = strrchr(loc,'.');
-	if ( loc==NULL )
-return( e_iso8859_1 );
-	enc = encmatch(loc+1,true);
-    }
-    if ( enc==e_unknown )
-return( e_iso8859_1 );
-
-return( enc );
 }
 
 static void DefaultXUID(void) {
@@ -671,9 +504,8 @@ static void DefaultXUID(void) {
 }
 
 static void NOUI_SetDefaults(void) {
-
     DefaultXUID();
-    local_encoding = DefaultEncoding();
+    DefaultEncoding();
 }
 
 static void ParseMacMapping(char *pt,struct macsettingname *ms) {

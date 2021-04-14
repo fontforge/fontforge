@@ -1210,9 +1210,49 @@ return;
     GDrawSetGIC(st->g.base,st->gic,st->g.inner.x+x,st->g.inner.y+y+st->as);
 }
 
+static void gt_set_dd_cursor(SFTextArea *st, int pos) {
+    st->has_dd_cursor = true;
+    st->dd_cursor_pos = pos;
+}
+
+static void gt_request_redraw_cursor(GWindow pixmap, SFTextArea *st) {
+    GRect clip;
+    int x, y, fh;
+
+    gt_cursor_pos(st,&x,&y,&fh);
+
+    if ( x<0 || x>=st->g.inner.width )
+return;
+
+    clip.x = st->g.inner.x + x;
+    clip.y = st->g.inner.y + y;
+    clip.width = 1;
+    clip.height = fh + 1;
+
+    GDrawRequestExpose(pixmap, &clip, false);
+}
+
 static void gt_draw_cursor(GWindow pixmap, SFTextArea *st) {
     GRect old;
-    int x, y, fh;
+    int x, y, fh, l;
+
+    if (st->has_dd_cursor) {
+        st->has_dd_cursor = false;
+        l = SFTextAreaFindLine(st, st->dd_cursor_pos);
+        y = st->li.lineheights[l].y - st->li.lineheights[st->loff_top].y;
+        if (y < 0 || y > st->g.inner.height)
+            return;
+        x = SFTextAreaGetXPosFromOffset(st, l, st->dd_cursor_pos);
+        if (x < 0 || x >= st->g.inner.width)
+            return;
+
+        GDrawSetLineWidth(st->g.base,0);
+        GDrawSetDashedLine(st->g.base,2,2,0);
+        GDrawDrawLine(st->g.base,st->g.inner.x+x,st->g.inner.y+y,
+            st->g.inner.x+x,st->g.inner.y+y+st->li.lineheights[l].fh,0);
+        GDrawSetDashedLine(st->g.base,0,0,0);
+        return;
+    }
 
     if ( !st->cursor_on || st->sel_start != st->sel_end )
 return;
@@ -1220,39 +1260,13 @@ return;
 
     if ( x<0 || x>=st->g.inner.width )
 return;
-    GDrawPushClip(pixmap,&st->g.inner,&old);
-    GDrawSetDifferenceMode(pixmap);
-    GDrawDrawLine(pixmap, st->g.inner.x+x,st->g.inner.y+y,
-	    st->g.inner.x+x,st->g.inner.y+y+fh, COLOR_WHITE);
-    GDrawPopClip(pixmap,&old);
-}
-
-static void SFTextAreaDrawDDCursor(SFTextArea *st, int pos) {
-    GRect old;
-    int x, y, l;
-
-    l = SFTextAreaFindLine(st,pos);
-    y = st->li.lineheights[l].y - st->li.lineheights[st->loff_top].y;
-    if ( y<0 || y>st->g.inner.height )
-return;
-    x = SFTextAreaGetXPosFromOffset(st,l,pos);
-    if ( x<0 || x>=st->g.inner.width )
-return;
-
-    GDrawPushClip(st->g.base,&st->g.inner,&old);
-    GDrawSetDifferenceMode(st->g.base);
-    GDrawDrawLine(st->g.base,st->g.inner.x+x,st->g.inner.y+y,
-	    st->g.inner.x+x,st->g.inner.y+y+st->li.lineheights[l].fh,
-        COLOR_WHITE);
-    GDrawPopClip(st->g.base,&old);
-    GDrawSetDashedLine(st->g.base,0,0,0);
-    st->has_dd_cursor = !st->has_dd_cursor;
-    st->dd_cursor_pos = pos;
+    GDrawDrawLine(pixmap,st->g.inner.x+x,st->g.inner.y+y,
+	    st->g.inner.x+x,st->g.inner.y+y+fh, 0);
 }
 
 static int sftextarea_expose(GWindow pixmap, GGadget *g, GEvent *event) {
     SFTextArea *st = (SFTextArea *) g;
-    GRect old1, old2, *r = &g->r, selr;
+    GRect old1, old2, old3, *r = &g->r, selr;
     Color fg,sel;
     int y,x,p,i,dotext,j,xend;
     struct opentype_str **line;
@@ -1260,13 +1274,23 @@ static int sftextarea_expose(GWindow pixmap, GGadget *g, GEvent *event) {
     if ( g->state == gs_invisible || st->dontdraw )
 return( false );
 
-    GDrawPushClip(pixmap,r,&old1);
+    GDrawPushClip(pixmap,&event->u.expose.rect, &old1);
+    GDrawPushClip(pixmap,r,&old2);
 
-    GBoxDrawBackground(pixmap,r,g->box,
-	    g->state==gs_enabled? gs_pressedactive: g->state,false);
-    GBoxDrawBorder(pixmap,r,g->box,g->state,false);
+    if (!GDrawClipContains(pixmap, &g->inner, true)) {
+        GBoxDrawBackground(pixmap,r,g->box,
+            g->state==gs_enabled? gs_pressedactive: g->state,false);
+        GBoxDrawBorder(pixmap,r,g->box,g->state,false);
+    } else {
+        // It's clipped enough that the border shape doesn't matter, so do a rect fill for speed
+        enum border_shape old = g->box->border_shape;
+        g->box->border_shape = bs_rect;
+        GBoxDrawBackground(pixmap,r,g->box,
+           g->state==gs_enabled? gs_pressedactive: g->state,false);
+        g->box->border_shape = old;
+    }
 
-    GDrawPushClip(pixmap,&g->inner,&old2);
+    GDrawPushClip(pixmap,&g->inner,&old3);
     GDrawSetFont(pixmap,st->font);
     GDrawSetDither(NULL, false);	/* on 8 bit displays we don't want any dithering */
     GDrawSetLineWidth(pixmap,0);
@@ -1327,21 +1351,18 @@ return( false );
     }
 
     GDrawSetDither(NULL, true);
+    gt_draw_cursor(pixmap, st);
+    GDrawPopClip(pixmap,&old3);
     GDrawPopClip(pixmap,&old2);
     GDrawPopClip(pixmap,&old1);
-    gt_draw_cursor(pixmap, st);
 return( true );
 }
 
 static int SFTextAreaDoDrop(SFTextArea *st,GEvent *event,int endpos) {
-
-    if ( st->has_dd_cursor )
-	SFTextAreaDrawDDCursor(st,st->dd_cursor_pos);
-
     if ( event->type == et_mousemove ) {
 	if ( GGadgetInnerWithin(&st->g,event->u.mouse.x,event->u.mouse.y) ) {
 	    if ( endpos<st->sel_start || endpos>=st->sel_end )
-		SFTextAreaDrawDDCursor(st,endpos);
+		gt_set_dd_cursor(st, endpos);
 	} else if ( !GGadgetWithin(&st->g,event->u.mouse.x,event->u.mouse.y) ) {
 	    GDrawPostDragEvent(st->g.base,event,et_drag);
 	}
@@ -1393,8 +1414,8 @@ static int SFTextAreaDoDrop(SFTextArea *st,GEvent *event,int endpos) {
 	}
 	st->drag_and_drop = false;
 	GDrawSetCursor(st->g.base,st->old_cursor);
-	_ggadget_redraw(&st->g);
     }
+    _ggadget_redraw(&st->g);
 return( false );
 }
 
@@ -1569,10 +1590,7 @@ return( false );
 	st->hidden_cursor = true;
 	_GWidget_SetGrabGadget(g);	/* so that we get the next mouse movement to turn the cursor on */
     }
-    if( st->cursor_on ) {	/* undraw the blinky text cursor if it is drawn */
-	gt_draw_cursor(g->base, st);
-	st->cursor_on = false;
-    }
+    st->cursor_on = false; // Hide the cursor
 
     ret = SFTextAreaDoChange(st,event);
     if ( st->changefontcallback )
@@ -1620,14 +1638,9 @@ static int sftextarea_timer(GGadget *g, GEvent *event) {
 
     if ( !g->takes_input || (g->state!=gs_enabled && g->state!=gs_active && g->state!=gs_focused ))
 return(false);
-    if ( st->cursor == event->u.timer.timer ) {
-	if ( st->cursor_on ) {
-	    gt_draw_cursor(g->base, st);
-	    st->cursor_on = false;
-	} else {
-	    st->cursor_on = true;
-	    gt_draw_cursor(g->base, st);
-	}
+    if ( st->cursor == event->u.timer.timer && st->sel_start == st->sel_end ) {
+	st->cursor_on = !st->cursor_on;
+	gt_request_redraw_cursor(g->base, st);
 return( true );
     }
     if ( st->pressed == event->u.timer.timer ) {
@@ -1701,8 +1714,6 @@ return( true );
 return( false );
     }
 
-    if ( st->has_dd_cursor )
-	SFTextAreaDrawDDCursor(st,st->dd_cursor_pos);
     GDrawSetFont(g->base,st->font);
     for ( i=st->loff_top ; i<st->li.lcnt-1 && st->li.lineheights[i+1].y-st->li.lineheights[st->loff_top].y<
 	    event->u.drag_drop.y-g->inner.y; ++i );
@@ -1712,7 +1723,7 @@ return( false );
     else
 	end = SFTextAreaGetOffsetFromXPos(st,i,event->u.drag_drop.x - st->g.inner.x - st->xoff_left);
     if ( event->type == et_drag ) {
-	SFTextAreaDrawDDCursor(st,end);
+	gt_set_dd_cursor(st, end);
     } else if ( event->type == et_dragout ) {
 	/* this event exists simply to clear the dd cursor line. We've done */
 	/*  that already */ 
@@ -1720,10 +1731,10 @@ return( false );
 	st->sel_start = st->sel_end = st->sel_base = end;
 	SFTextAreaPaste(st,sn_drag_and_drop);
 	SFTextArea_Show(st,st->sel_start);
-	_ggadget_redraw(&st->g);
     } else
 return( false );
 
+_ggadget_redraw(&st->g);
 return( true );
 }
 

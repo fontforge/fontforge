@@ -1394,15 +1394,11 @@ static void GGDKDrawDestroyWindow(GWindow w) {
             // is destroyed, but they *are* when it's first hidden...
             GDrawSetVisible((GWindow)gw, false);
 
-            // HACK! Reparent all windows transient to this
-            // If they were truly transient in the normal sense, they would just be
-            // destroyed when this window goes away
+            // Delete all transient references to this window
             for (int i = ((int)gw->display->transient_stack->len) - 1; i >= 0; --i) {
                 GGDKWindow tw = (GGDKWindow)gw->display->transient_stack->pdata[i];
                 if (tw->transient_owner == gw) {
-                    Log(LOGWARN, "Resetting transient owner on %p(%s) as %p(%s) is dying",
-                        tw, tw->window_title, gw, gw->window_title);
-                    GGDKDrawSetTransientFor((GWindow)tw, (GWindow)-1);
+                    GGDKDrawSetTransientFor((GWindow)tw, NULL);
                 }
             }
         }
@@ -1533,33 +1529,6 @@ static void GGDKDrawRaise(GWindow w) {
     }
 }
 
-static void GGDKDrawRaiseAbove(GWindow gw1, GWindow gw2) {
-    Log(LOGDEBUG, " ");
-    _GGDKDraw_CleanupAutoPaint(((GGDKWindow)gw1)->display);
-    gdk_window_restack(((GGDKWindow)gw1)->w, ((GGDKWindow)gw2)->w, true);
-    if (!gw1->is_toplevel) {
-        _GGDKDraw_FakeConfigureEvent((GGDKWindow)gw1);
-    }
-    if (!gw2->is_toplevel) {
-        _GGDKDraw_FakeConfigureEvent((GGDKWindow)gw2);
-    }
-}
-
-// Only used once in gcontainer - force it to call GDrawRaiseAbove
-static int GGDKDrawIsAbove(GWindow UNUSED(gw1), GWindow UNUSED(gw2)) {
-    Log(LOGDEBUG, " ");
-    return false;
-}
-
-static void GGDKDrawLower(GWindow gw) {
-    Log(LOGDEBUG, " ");
-    _GGDKDraw_CleanupAutoPaint(((GGDKWindow)gw)->display);
-    gdk_window_lower(((GGDKWindow)gw)->w);
-    if (!gw->is_toplevel) {
-        _GGDKDraw_FakeConfigureEvent((GGDKWindow)gw);
-    }
-}
-
 // Icon title is ignored.
 static void GGDKDrawSetWindowTitles8(GWindow w, const char *title, const char *UNUSED(icontitle)) {
     Log(LOGDEBUG, " ");// assert(false);
@@ -1572,21 +1541,7 @@ static void GGDKDrawSetWindowTitles8(GWindow w, const char *title, const char *U
     }
 }
 
-static void GGDKDrawSetWindowTitles(GWindow gw, const unichar_t *title, const unichar_t *UNUSED(icontitle)) {
-    Log(LOGDEBUG, " ");
-    char *str = u2utf8_copy(title);
-    if (str != NULL) {
-        GGDKDrawSetWindowTitles8(gw, str, NULL);
-        free(str);
-    }
-}
-
 // Sigh. GDK doesn't provide a way to get the window title...
-static unichar_t *GGDKDrawGetWindowTitle(GWindow gw) {
-    Log(LOGDEBUG, " "); // assert(false);
-    return utf82u_copy(((GGDKWindow)gw)->window_title);
-}
-
 static char *GGDKDrawGetWindowTitle8(GWindow gw) {
     Log(LOGDEBUG, " ");
     return copy(((GGDKWindow)gw)->window_title);
@@ -1630,7 +1585,7 @@ static void GGDKDrawSetTransientFor(GWindow transient, GWindow owner) {
 
     if (ow != NULL) {
         gdk_window_set_transient_for(gw->w, ow->w);
-        gdk_window_set_modal_hint(gw->w, true);
+        gdk_window_set_modal_hint(gw->w, gw->restrict_input_to_me || gdisp->restrict_count > 0);
         gw->istransient = true;
         g_ptr_array_add(gdisp->transient_stack, gw);
         if (gw->restrict_input_to_me) {
@@ -1736,12 +1691,6 @@ static void GGDKDrawSetCursor(GWindow w, GCursor gcursor) {
 static GCursor GGDKDrawGetCursor(GWindow gw) {
     Log(LOGDEBUG, " ");
     return ((GGDKWindow)gw)->current_cursor;
-}
-
-static GWindow GGDKDrawGetRedirectWindow(GDisplay *UNUSED(gdisp)) {
-    //Log(LOGDEBUG, " ");
-    // Not implemented.
-    return NULL;
 }
 
 static void GGDKDrawTranslateCoordinates(GWindow from, GWindow to, GPoint *pt) {
@@ -2178,14 +2127,6 @@ static void GGDKDrawProcessPendingEvents(GDisplay *gdisp) {
     }
 }
 
-static void GGDKDrawProcessWindowEvents(GWindow w) {
-    Log(LOGWARN, "This function SHOULD NOT BE CALLED! Will likely not do as expected! Window: %p", w);
-
-    if (w != NULL)  {
-        GGDKDrawProcessPendingEvents(w->display);
-    }
-}
-
 static void GGDKDrawProcessOneEvent(GDisplay *gdisp) {
     //Log(LOGDEBUG, " ");
     GMainContext *ctx = g_main_loop_get_context(((GGDKDisplay *)gdisp)->main_loop);
@@ -2349,19 +2290,13 @@ static struct displayfuncs gdkfuncs = {
     GGDKDrawResize,
     GGDKDrawMoveResize,
     GGDKDrawRaise,
-    GGDKDrawRaiseAbove,
-    GGDKDrawIsAbove,
-    GGDKDrawLower,
-    GGDKDrawSetWindowTitles,
     GGDKDrawSetWindowTitles8,
-    GGDKDrawGetWindowTitle,
     GGDKDrawGetWindowTitle8,
     GGDKDrawSetTransientFor,
     GGDKDrawGetPointerPosition,
     GGDKDrawGetPointerWindow,
     GGDKDrawSetCursor,
     GGDKDrawGetCursor,
-    GGDKDrawGetRedirectWindow,
     GGDKDrawTranslateCoordinates,
 
     GGDKDrawBeep,
@@ -2369,9 +2304,6 @@ static struct displayfuncs gdkfuncs = {
     GGDKDrawPushClip,
     GGDKDrawPopClip,
 
-    GGDKDrawSetDifferenceMode,
-
-    GGDKDrawClear,
     GGDKDrawDrawLine,
     GGDKDrawDrawArrow,
     GGDKDrawDrawRect,
@@ -2407,7 +2339,6 @@ static struct displayfuncs gdkfuncs = {
     GGDKDrawSync,
     GGDKDrawSkipMouseMoveEvents,
     GGDKDrawProcessPendingEvents,
-    GGDKDrawProcessWindowEvents,
     GGDKDrawProcessOneEvent,
     GGDKDrawEventLoop,
     GGDKDrawPostEvent,

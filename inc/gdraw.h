@@ -28,7 +28,6 @@
 #ifndef FONTFORGE_GDRAW_H
 #define FONTFORGE_GDRAW_H
 
-#include "charset.h"
 #include "gimage.h"
 
 enum font_style { fs_none, fs_italic=1, fs_smallcaps=2, fs_condensed=4, fs_extended=8, fs_vertical=16 };
@@ -290,7 +289,6 @@ extern GWindow GDrawCreateBitmap(GDisplay *gdisp, uint16 width, uint16 height, u
 extern GCursor GDrawCreateCursor(GWindow src,GWindow mask,Color fg,Color bg,
 	int16 x, int16 y );
 extern void GDrawDestroyWindow(GWindow w);
-extern void GDrawDestroyCursor(GDisplay *gdisp, GCursor ct);
 extern int  GDrawNativeWindowExists(GDisplay *gdisp, void *native);
 extern void GDrawSetZoom(GWindow w, GRect *zoomsize, enum gzoom_flags);
 extern void GDrawSetWindowBackground(GWindow w, Color color);
@@ -327,17 +325,11 @@ extern void GDrawSetEH(GWindow w,GDrawEH e_h);
 extern void GDrawGetPointerPosition(GWindow w, GEvent *mouse);
 extern GWindow GDrawGetPointerWindow(GWindow w);
 extern void GDrawRaise(GWindow w);
-extern void GDrawRaiseAbove(GWindow w,GWindow below);
-extern int  GDrawIsAbove(GWindow w,GWindow other);
-extern void GDrawLower(GWindow w);
-extern void GDrawSetWindowTitles(GWindow w, const unichar_t *title, const unichar_t *icontit);
 extern void GDrawSetWindowTitles8(GWindow w, const char *title, const char *icontit);
-extern unichar_t *GDrawGetWindowTitle(GWindow w);
 extern char *GDrawGetWindowTitle8(GWindow w);
 extern void GDrawSetTransientFor(GWindow transient,GWindow owner);
 extern void GDrawSetCursor(GWindow w, GCursor ct);
 extern GCursor GDrawGetCursor(GWindow w);
-extern GWindow GDrawGetRedirectWindow(GDisplay *gd);
 extern GWindow GDrawGetParentWindow(GWindow gw);
 extern int GDrawWindowIsAncestor(GWindow ancester, GWindow descendent);
 extern void GDrawSetUserData(GWindow gw, void *ud);
@@ -348,20 +340,18 @@ extern int32 GDrawEventInWindow(GWindow inme,GEvent *event);
 extern void GDrawBeep(GDisplay *gdisp);
 extern void GDrawFlush(GDisplay *gdisp);
 
+extern bool GDrawClipContains(const GWindow w, const GRect *other, bool rev);
+extern bool GDrawClipOverlaps(const GWindow w, const GRect *other);
 extern void GDrawGetClip(GWindow w, GRect *ret);
-extern void GDrawSetClip(GWindow w, GRect *rct);
 extern void GDrawPushClip(GWindow w, GRect *rct, GRect *old);
 extern void GDrawPopClip(GWindow w, GRect *old);
 extern void GDrawPushClipOnly(GWindow w);
 extern void GDrawClipPreserve(GWindow w);
-extern GGC *GDrawGetWindowGGC(GWindow w);
-extern void GDrawSetDifferenceMode(GWindow w);
 extern void GDrawSetDashedLine(GWindow w,int16 dash_len, int16 skip_len, int16 off);
 extern void GDrawSetStippled(GWindow w,int16 ts, int32 yoff,int32 xoff);
 extern void GDrawSetLineWidth(GWindow w,int16 width);
 extern int16 GDrawGetLineWidth( GWindow w );
 
-extern void GDrawSetForeground(GWindow w,Color col);
 extern void GDrawSetBackground(GWindow w,Color col);
 
 extern GFont *GDrawSetFont(GWindow gw, GFont *fi);
@@ -383,7 +373,6 @@ extern GIC *GDrawCreateInputContext(GWindow w,enum gic_style def_style);
 extern void GDrawSetGIC(GWindow w,GIC *gic,int x, int y);
 extern int GDrawKeyState(GWindow w, int keysym);
 
-extern void GDrawClear(GWindow w, GRect *rect);
 extern void GDrawDrawLine(GWindow w, int32 x,int32 y, int32 xend,int32 yend, Color col);
 extern void GDrawDrawArrow(GWindow w, int32 x,int32 y, int32 xend,int32 yend, int arrows, Color col);
 extern void GDrawDrawRect(GWindow w, GRect *rect, Color col);
@@ -419,7 +408,6 @@ extern void GDrawSync(GDisplay *gdisp);
 extern void GDrawForceUpdate(GWindow w);
 extern void GDrawProcessOneEvent(GDisplay *disp);
 extern void GDrawProcessPendingEvents(GDisplay *disp);
-extern void GDrawProcessWindowEvents(GWindow w);
 extern void GDrawSkipMouseMoveEvents(GWindow w,GEvent *last);
 extern void GDrawEventLoop(GDisplay *disp);
 extern void GDrawPostEvent(GEvent *e);
@@ -428,8 +416,6 @@ extern void GDrawPostDragEvent(GWindow gw,GEvent *e,enum event_type);
 extern GTimer *GDrawRequestTimer(GWindow w,int32 time_from_now,int32 frequency,
 	void *userdata);
 extern void GDrawCancelTimer(GTimer *timer);
-
-extern void GDrawSetBuildCharHooks(void (*hook)(GDisplay *), void (*inshook)(GDisplay *,unichar_t));
 
 extern int GDrawRequestDeviceEvents(GWindow w,int devcnt,struct gdeveventmask *de);
 

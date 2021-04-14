@@ -276,7 +276,10 @@ return;
     }
     if ( es->interesting ) {
 	/* Mark the other end of the spline as interesting */
-	es->interesting[(int) ceil(e->mmax)]=1;
+	int idx = (int) ceil(e->mmax);
+	if (idx >= es->cnt) // Floating point madness
+	    idx = es->cnt-1;
+	es->interesting[idx]=1;
     }
 }
 

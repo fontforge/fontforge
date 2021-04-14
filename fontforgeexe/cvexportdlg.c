@@ -341,7 +341,6 @@ static int AskSizeBits(int *pixelsize,int *bitsperpixel) {
     GWidgetIndicateFocusGadget(GWidgetGetControl(gw,CID_Size));
     GTextFieldSelect(GWidgetGetControl(gw,CID_Size),0,-1);
 
-    GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
     while ( !sb.done )
 	GDrawProcessOneEvent(NULL);
@@ -842,7 +841,6 @@ static int _Export(SplineChar *sc,BDFChar *bc,int layer) {
 
     GHVBoxFitWindow(boxes[0].ret);
 
-    GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
     while ( !d.done )
 	GDrawProcessOneEvent(NULL);

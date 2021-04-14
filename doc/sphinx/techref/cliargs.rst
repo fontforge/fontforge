@@ -163,6 +163,17 @@ FontForge recognizes the following options:
    script file and type its name to your shell and fontforge will be invoked to
    process that file as a script file (passing any arguments to it)).
 
+.. option:: -skippyfile
+
+   Do not execute python init scripts. These can be run later using the
+   :py:meth:`fontforge.runInitScripts` Python method.
+
+.. option:: -skippyplug
+
+   Do not load (enabled) Python plugins. These can be loaded later via the
+   :doc:`Configure Plugins dialog </techref/plugins>` or the
+   :py:meth:`fontforge.loadPlugins` Python method.
+
 .. option:: -sync
 
    Do synchronous screen drawing. Slows things down, makes some things easier to

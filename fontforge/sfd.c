@@ -6090,6 +6090,8 @@ return( 0 );
     }
     if ( enc<0 ||xmax<xmin || ymax<ymin )
 return( 0 );
+	else if ( orig>=0 && ( orig>=bdf->sf->glyphcnt || bdf->sf->glyphs[orig]==NULL ) )
+        return 0;
 
     bfc = chunkalloc(sizeof(BDFChar));
     if (bfc == NULL)
@@ -6150,7 +6152,7 @@ static int SFDGetBitmapReference(FILE *sfd,BDFFont *bdf) {
     /* available. So we will find them later */
     if ( getint(sfd,&gid)!=1 || gid<=0 || gid >= bdf->glyphcnt || ( bc = bdf->glyphs[gid] ) == NULL )
 return( 0 );
-    if ( getint(sfd,&rgid)!=1 || rgid<0 )
+    if ( getint(sfd,&rgid)!=1 || rgid<0 || rgid >= bdf->glyphcnt || rgid==gid )
 return( 0 );
     if ( getint(sfd,&xoff)!=1 )
 return( 0 );
@@ -9024,6 +9026,8 @@ exit( 1 );
 	SFTimesFromFile(sf,sfd);
     // Make a blank encoding if there are no characters so as to avoid crashes later.
     if (sf->map == NULL) sf->map = EncMapNew(sf->glyphcnt,sf->glyphcnt,&custom);
+    if (sf->uni_interp == ui_unset)
+	sf->uni_interp = interp_from_encoding(sf->map->enc, ui_none);
 
     SFDFixupUndoRefs(sf);
 return( sf );

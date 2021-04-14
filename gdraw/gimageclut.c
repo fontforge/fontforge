@@ -27,7 +27,6 @@
 
 #include <fontforge-config.h>
 
-#include "charset.h"
 #include "colorP.h"
 #include "gdrawP.h"
 #include "ustring.h"

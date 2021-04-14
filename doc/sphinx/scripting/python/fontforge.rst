@@ -405,6 +405,83 @@ Module functions
 
    Returns FontForge's version number. This will be a large number like 20070406.
 
+.. function:: loadPlugins()
+
+   Discovers and loads FontForge python plugins according to the current
+   configuration, if not already loaded. This is primarily intended when
+   importing FontForge into a python process but can also be when loading
+   is delayed by the ``-skippyplug`` command-line flag.
+
+.. function:: getPluginInfo()
+
+   Returns a list of dictionary objects describing configured and/or discovered
+   plugins. Configured plugins are listed first in loading order followed by
+   any newly discovered plugins. Each dictionary object will have the keys:
+
+   .. object:: name
+
+      The name of the plugin as defined by its author.
+
+   .. object:: enabled
+
+      "On" if the plugin is enabled, "Off" if it is disabled, "New" if the
+      user has not yet configured this plugin.
+
+   .. object:: status
+
+      "Not Found" if the plugin is configured but was not discovered.
+      "Couldn't Load" if the plugin was discovered and its load status is
+      "On" but the relevant module could not be imported. "Couldn't Start"
+      if the module could be imported but the initialization function
+      was missing or returned an error. "Unloaded" if the plugin was discovered
+      and its load status is "On" but loading has not been attempted (most
+      likely because of a configuration change or startup flag). ``None``
+      if the plugin was discovered but has load status "Off" or New" or if
+      it was loaded successfully.
+
+   .. object:: package_name
+
+      The name of the Python package containing the plugin.
+
+   .. object:: module_name
+
+      The name of the Python module carrying the initialization function.
+
+   .. object:: attrs
+
+      Additional sub-objects or properties of the module needed to pick
+      out the location of the initialization function (if any).
+
+   .. object:: prefs
+
+      A boolean indicating whether the plugin has configurable preferences.
+
+   .. object:: package_url
+
+      The "Home-page" URL listed in the package, if any.
+
+   .. object:: summary
+
+      The "Summary" line in the package's metadata with a brief description
+      of the plugin.
+
+   Some of these values will be ``None`` if the plugin has not been loaded
+   and a few more will be ``None`` if the plugin was not discovered.
+
+.. function:: configurePlugins([List of dictionaries])
+
+   This method allows plugins to be reconfigured using the Python API. It
+   accepts a list (or any other iterable object) of dictionaries similar to
+   those provided by ``getPluginInfo()`` except that only the ``name`` and
+   ``enabled`` fields are examined. The ``name`` value must be the name of a
+   known (currently configured or discovered) plugin.  The ``enabled`` value
+   must be "On" or "Off". The configuration will be updated to correspond to
+   the listed plugins in the specified order.
+
+   If a plugin that was *not* discovered is missing from the list it will be
+   removed from the configuration. Any missing but discovered plugins will
+   be added to the end of the configuration list with load status "New".
+
 .. function:: runInitScripts()
 
    Runs the system or user initialization scripts, if not already run. This is
@@ -1242,17 +1319,17 @@ Layers may be compared to see if their contours are similar.
    Exports the current layer (in outline format) to a file. The type of file is
    determined by the extension.
 
-   The following optional keywords modify the export process for various formats: 
+   The following optional keywords modify the export process for various formats:
 
    .. object:: usetransform (boolean, default=False)
 
       Flip the Y-axis of exported SVGs with a transform element rather than
-      modifying the individual Y values. 
+      modifying the individual Y values.
 
    .. object:: usesystem (boolean, default=False)
 
       Ignore the above keyword settings and use the values set by the user
-      in the Import options dialog. 
+      in the Import options dialog.
 
    .. object:: asksystem (boolean, default=False)
 
@@ -1517,10 +1594,12 @@ This type may not be pickled.
    Ends the contour without closing it. This is only relevant if you are
    stroking contours.
 
-.. method:: glyphPen.addComponent(glyph_name, transform)
+.. method:: glyphPen.addComponent(glyph_name[, transform, selected])
 
    Adds a reference (a component) to the glyph. The PostScript transformation
-   matrix is a 6 element tuple.
+   matrix is a 6 element tuple (with a default of the identity transformation).
+   When ``selected`` is true the reference will be marked as selected in the
+   UI and related API calls.
 
 
 Glyph
@@ -1776,8 +1855,10 @@ must be created through the font.
 
 .. attribute:: glyph.references
 
-   A tuple of tuples containing glyph-name and a transformation matrix for each
-   reference in the foreground. See also :attr:`glyph.foreground` and :attr:`glyph.layerrefs`.
+   A tuple of tuples containing, for each reference in the foreground, a
+   glyph-name, a transformation matrix, and whether the reference is currently
+   selected. When assigning to the object the matrix and ``selected`` values
+   are optional. See also :attr:`glyph.foreground` and :attr:`glyph.layerrefs`.
 
 .. attribute:: glyph.right_side_bearing
 
@@ -2041,10 +2122,11 @@ must be created through the font.
       As above but also merge away on-curve points which are very close to,
       but not on, an added extremum
 
-.. method:: glyph.addReference(glyph_name[, transform])
+.. method:: glyph.addReference(glyph_name[, transform, selected])
 
    Adds a reference to the specified glyph into the current glyph. Optionally
-   specifying a transformation matrix
+   specifying a transformation matrix and whether the reference is to be
+   marked selected in the UI and related API calls.
 
 .. method:: glyph.addHint(is_vertical, start, width)
 
@@ -2188,7 +2270,7 @@ must be created through the font.
    Creates a file with the specified name containing a representation of
    the glyph. Uses the file's extension to determine output file type.
 
-   The following optional keywords modify the export process for various formats: 
+   The following optional keywords modify the export process for various formats:
 
    .. object:: layer (string or integer, default=glyph.activeLayer)
 
@@ -2205,12 +2287,12 @@ must be created through the font.
    .. object:: usetransform (boolean, default=False)
 
       Flip the Y-axis of exported SVGs with a transform element rather than
-      modifying the individual Y values. 
+      modifying the individual Y values.
 
    .. object:: usesystem (boolean, default=False)
 
       Ignore the above keyword settings and use the values set by the user
-      in the Import options dialog. 
+      in the Import options dialog.
 
    .. object:: asksystem (boolean, default=False)
 
@@ -2289,15 +2371,15 @@ must be created through the font.
    .. object:: usesystem (boolean, default=False)
 
       Ignore the above keyword settings and use the values set by the user
-      in the Import options dialog. 
+      in the Import options dialog.
 
    .. object:: asksystem (boolean, default=False)
 
       If the UI is present show the Import options dialog to the user
       and use the chosen values (does nothing otherwise).
 
-   Note: The old PostScript correctdir/handle_eraser flag tuple is still 
-   supported but is not compatible with the other keywords. 
+   Note: The old PostScript correctdir/handle_eraser flag tuple is still
+   supported but is not compatible with the other keywords.
 
 .. method:: glyph.intersect()
 

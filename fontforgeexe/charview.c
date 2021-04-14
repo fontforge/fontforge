@@ -3469,9 +3469,6 @@ return( icon );
 
 static int CVCurEnc(CharView *cv)
 {
-    if ( cv->map_of_enc == ((FontView *) (cv->b.fv))->b.map && cv->enc!=-1 )
-        return( cv->enc );
-
     return( ((FontView *) (cv->b.fv))->b.map->backmap[cv->b.sc->orig_pos] );
 }
 
@@ -5388,7 +5385,9 @@ return;
 	p.cx = p.spiro->x;
 	p.cy = p.spiro->y;
     } else {
-	CVDoSnaps(cv,&fs);
+	// Require some movement before snapping objects with the pointer tool
+	if ( !RealNear(cv->info.x,cv->p.cx) || !RealNear(cv->info.y,cv->p.cy) )
+	    CVDoSnaps(cv,&fs);
     }
     cx = (p.cx -cv->p.cx) / tab->scale;
     cy = (p.cy - cv->p.cy) / tab->scale;
@@ -9062,7 +9061,6 @@ static char* getValueFromUser( CharView *cv, const char* windowTitle, const char
     GWidgetIndicateFocusGadget(GWidgetGetControl(gw,CID_getValueFromUser));
     GTextFieldSelect(GWidgetGetControl(gw,CID_getValueFromUser),0,-1);
 
-    GWidgetHidePalettes();
     GDrawSetVisible(gw,true);
     while ( !DATA.done )
 	GDrawProcessOneEvent(NULL);
@@ -11765,6 +11763,9 @@ static GMenuItem2 fllist[] = {
 #endif
     { { (unichar_t *) N_("Pr_eferences..."), (GImage *) "fileprefs.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("Preferences...|No Shortcut"), NULL, NULL, MenuPrefs, 0 },
     { { (unichar_t *) N_("_X Resource Editor..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("X Resource Editor...|No Shortcut"), NULL, NULL, MenuXRes, 0 },
+#if !defined(_NO_PYTHON)
+    { { (unichar_t *) N_("Config_ure Plugins..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'u' }, H_("Configure Plugins...|No Shortcut"), NULL, NULL, MenuPlug, 0 },
+#endif
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("_Quit"), (GImage *) "filequit.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'Q' }, H_("Quit|No Shortcut"), NULL, NULL, MenuExit, MID_Quit },
     GMENUITEM2_EMPTY
@@ -12678,7 +12679,6 @@ static void _CharViewCreate(CharView *cv, SplineChar *sc, FontView *fv,int enc,i
     cv->ft_dpi = 72; cv->ft_pointsizex = cv->ft_pointsizey = 12.0;
     cv->ft_ppemx = cv->ft_ppemy = 12;
 
-    /*GWidgetHidePalettes();*/
     /*cv->tools = CVMakeTools(cv);*/
     /*cv->layers = CVMakeLayers(cv);*/
 
