@@ -28,6 +28,7 @@
 #include <fontforge-config.h>
 
 #include "gdraw.h"
+#include "gfile.h"
 #include "ggadgetP.h"
 #include "gkeysym.h"
 #include "gresourceP.h"
@@ -355,7 +356,7 @@ return( false );
 
 static GImage *GadgetNormalizeImageFilenames(const char *inname, char **relname, char **absname) {
     int l, k;
-    char *home = getenv("HOME"), *path;
+    char *home = GFileGetHomeDir(), *path;
     GImage *img;
 
     if ( relname!=NULL )
@@ -508,16 +509,17 @@ void GGadgetSetImageDir(char *dir) {
 }
 
 static char *ImagePathFigureElement(char *start, int len) {
+    char *homedir = GFileGetHomeDir();
     if ( *start=='=' && len==1 ) {
         if (imagedir == NULL) {
             return copy(imagedir_default);
         }
         return copy(imagedir);
     }
-    else if ( *start=='~' && start[1]=='/' && len>=2 && getenv("HOME")!=NULL ) {
-	int hlen = strlen(getenv("HOME"));
+    else if ( *start=='~' && start[1]=='/' && len>=2 && homedir!=NULL ) {
+	int hlen = strlen(homedir);
 	char *absname = malloc( hlen+len+8 );
-	strcpy(absname,getenv("HOME"));
+	strcpy(absname,homedir);
 	strncpy(absname+hlen,start+1,len-1);
 	absname[hlen+len-1] = '\0';
 return( absname );

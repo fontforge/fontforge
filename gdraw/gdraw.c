@@ -29,6 +29,7 @@
 
 #include "gdraw.h"
 #include "gdrawP.h"
+#include "ggadgetP.h"
 #include "gkeysym.h"
 #include "ustring.h"
 
@@ -506,6 +507,9 @@ void GDrawWindowFontMetrics(GWindow w,FontInstance *fi,int *as, int *ds, int *ld
     (w->display->funcs->getFontMetrics)(w,fi,as,ds,ld);
 }
 
+void GDrawDefaultFontMetrics(GWindow w,int *as, int *ds, int *ld) {
+    (w->display->funcs->getFontMetrics)(w,_ggadget_default_font.fi,as,ds,ld);
+}
 
 enum gcairo_flags GDrawHasCairo(GWindow w) {
 return( (w->display->funcs->hasCairo)(w));

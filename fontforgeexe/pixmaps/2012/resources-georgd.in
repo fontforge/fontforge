@@ -1,6 +1,6 @@
 fontforge.View.DefaultFont: 12pt Cantarell,sans,clearlyu,unifont,unifont upper
 fontforge.View.MonoFont: ^View.DefaultFont Inconsolata,monospace,clearlyu,unifont,unifont upper
-fontforge.View.SerifFont: ^View.DefaultFont @CMAKE_SERIF_FAMILIES@
+fontforge.View.SerifFont: ^View.DefaultFont @FONTFORGE_SERIF_FAMILIES@
 fontforge.View.Background: #ffffff
 fontforge.FontView.GlyphFGColor: #000000
 fontforge.FontView.GlyphInfoColor: #598ec6

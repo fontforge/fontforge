@@ -36,9 +36,9 @@
 /* The install prefix configured at configure/compile time, used as a last resort */
 #define FONTFORGE_INSTALL_PREFIX "@CMAKE_INSTALL_PREFIX@"
 
-#define SERIF_UI_FAMILIES "@CMAKE_SERIF_FAMILIES@"
-#define SANS_UI_FAMILIES  "@CMAKE_SANS_FAMILIES@"
-#define MONO_UI_FAMILIES  "@CMAKE_MONO_FAMILIES@"
+#define SERIF_UI_FAMILIES "@FONTFORGE_SERIF_FAMILIES@"
+#define SANS_UI_FAMILIES  "@FONTFORGE_SANS_FAMILIES@"
+#define MONO_UI_FAMILIES  "@FONTFORGE_MONO_FAMILIES@"
 
 /* Platform checks */
 

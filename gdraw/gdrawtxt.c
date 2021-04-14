@@ -29,6 +29,7 @@
 
 #include "fontP.h"
 #include "gdrawP.h"
+#include "ggadgetP.h"
 #include "gxcdrawP.h"
 #include "ustring.h"
 
@@ -36,6 +37,12 @@ FontInstance *GDrawSetFont(GWindow gw, FontInstance *fi) {
     FontInstance *old = gw->ggc->fi;
     gw->ggc->fi = fi;
 return( old );
+}
+
+FontInstance *GDrawSetDefaultFont(GWindow gw) {
+    FontInstance *old = gw->ggc->fi;
+    gw->ggc->fi = _ggadget_default_font.fi;
+    return old;
 }
 
 FontInstance *GDrawInstanciateFont(GWindow gw, FontRequest *rq) {

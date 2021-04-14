@@ -362,10 +362,12 @@ extern int16 GDrawGetLineWidth( GWindow w );
 extern void GDrawSetBackground(GWindow w,Color col);
 
 extern GFont *GDrawSetFont(GWindow gw, GFont *fi);
+extern GFont *GDrawSetDefaultFont(GWindow gw);
 extern GFont *GDrawInstanciateFont(GWindow gw, FontRequest *rq);
 extern GFont *GDrawAttachFont(GWindow gw, FontRequest *rq);
 extern FontRequest *GDrawDecomposeFont(GFont *fi, FontRequest *rq);
 extern void GDrawWindowFontMetrics(GWindow gw,GFont *fi,int *as, int *ds, int *ld);
+extern void GDrawDefaultFontMetrics(GWindow gw,int *as, int *ds, int *ld);
 
 extern int32 GDrawGetTextBounds(GWindow gw,const unichar_t *text, int32 cnt, GTextBounds *size);
 extern int32 GDrawGetTextWidth(GWindow gw, const unichar_t *text, int32 cnt);
