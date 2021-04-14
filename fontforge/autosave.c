@@ -59,8 +59,10 @@ static char *getAutoDirName(void) {
         buffer = smprintf("%s/autosave", dir);
         free(dir);
         if ( access(buffer,F_OK)==-1 )
-            if ( GFileMkDir(buffer, 0755)==-1 )
-                return( NULL );
+            if ( GFileMkDir(buffer, 0755)==-1 ) {
+		free(buffer);
+                return NULL;
+	    }
         return buffer;
     } else
 	return NULL;
@@ -71,16 +73,16 @@ static void MakeAutoSaveName(SplineFont *sf) {
     static int cnt=0;
 
     if ( sf->autosavename )
-return;
+	return;
     autosavedir = getAutoDirName();
     if ( autosavedir==NULL )
-return;
+	return;
     while ( 1 ) {
 	buffer = smprintf("%s/auto%06x-%d.asfd", autosavedir, getpid(), ++cnt);
 	if ( access(buffer,F_OK)==-1 ) {
-	    sf->autosavename = copy(buffer);
+	    sf->autosavename = buffer;
             free(autosavedir);
-return;
+	    return;
 	} else {
 	    free(buffer);
 	}

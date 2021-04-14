@@ -431,9 +431,8 @@ void GListMoveOneSelected(GGadget *list, int offset) {
 }
 
 static int PLUG_PluginListOrder(GGadget *g, GEvent *e) {
-    if (!e->type == et_controlevent || e->u.control.subtype != et_buttonactivate) {
+    if ( e->type!=et_controlevent || e->u.control.subtype!=et_buttonactivate)
         return true;
-    }
 
     struct plg_data *d = GDrawGetUserData(GGadgetGetWindow(g));
     GGadget *list = GWidgetGetControl(d->gw, CID_PluginList);

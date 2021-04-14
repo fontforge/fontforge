@@ -2803,7 +2803,8 @@ return;
 	    if ( sc->orig_pos < mm->instances[i]->glyphcnt ) {
 		scs[i] = mm->instances[i]->glyphs[sc->orig_pos];
 		SCClearHintMasks(scs[i],layer,false);
-	    }
+	    } else
+		scs[i] = NULL;
 	ResolveSplitHints(scs,layer,instance_count);
     }
     conflicts = false;
