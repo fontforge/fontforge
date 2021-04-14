@@ -29,9 +29,11 @@
 
 #include "fontP.h"
 #include "gdrawP.h"
-#include "ggadgetP.h"
+#include "gresource.h"
 #include "gxcdrawP.h"
 #include "ustring.h"
+
+extern GResFont _ggadget_default_font;
 
 FontInstance *GDrawSetFont(GWindow gw, FontInstance *fi) {
     FontInstance *old = gw->ggc->fi;
