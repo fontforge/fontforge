@@ -206,6 +206,7 @@ static int GDropListRIInit(GResInfo *ri) {
 	return false;
 #ifdef __Mac
     GGadgetInit();
+    extern GBox _ggadget_Default_Box;
     ri->overrides.border_type = _ggadget_Default_Box.border_type;
     ri->overrides.border_width = _ggadget_Default_Box.border_width;
     ri->overrides.border_shape = _ggadget_Default_Box.border_shape;
