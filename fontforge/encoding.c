@@ -1095,7 +1095,7 @@ return( ret );
 struct cidmap *FindCidMap(char *registry,char *ordering,int supplement,SplineFont *sf) {
     struct cidmap *map, *maybe=NULL;
     char *file;
-    char *maybefile=NULL;
+    char *maybefile=NULL, *sharedir=NULL;
     int maybe_sup = -1;
     const char *buts[3], *buts2[3], *buts3[3];
     char *buf = NULL;
@@ -1117,8 +1117,10 @@ return( map );
 return( maybe );	/* User has said it's ok to use maybe at this supplement level */
 
     file = SearchDirForCidMap(".",registry,ordering,supplement,&maybefile);
-    if ( file==NULL )
-	file = SearchDirForCidMap(getFontForgeShareDir(),registry,ordering,supplement,&maybefile);
+    if ( file==NULL ) {
+	sharedir = getShareSubDir("/cidmap");
+	file = SearchDirForCidMap(sharedir,registry,ordering,supplement,&maybefile);
+    }
 
     if ( file==NULL && (maybe!=NULL || maybefile!=NULL)) {
 	if ( maybefile!=NULL ) {
@@ -1155,9 +1157,8 @@ return( maybe );
 	buf = smprintf( "%s-%s-*.cidmap", registry, ordering );
 	if ( maybe==NULL && maybefile==NULL ) {
 	    buts3[0] = _("_Browse"); buts3[1] = _("_Give Up"); buts3[2] = NULL;
-	    ret = ff_ask(_("No cidmap file..."),(const char **)buts3,0,1,_("FontForge was unable to find a cidmap file for this font. It is not essential to have one, but some things will work better if you do. If you have not done so you might want to download the cidmaps from:\n   http://FontForge.sourceforge.net/cidmaps.tgz\nand then gunzip and untar them and move them to:\n  %.80s\n\nWould you like to search your local disk for an appropriate file?"),
-		    getFontForgeShareDir()==NULL?"/usr/share/fontforge":getFontForgeShareDir()
-		    );
+	    ret = ff_ask(_("No cidmap file..."),(const char **)buts3,0,1,_("FontForge was unable to find a cidmap file for this font. The following path was searched:\n   %.80s\n\nIt is not essential to have one, but some things will work better if you do. Would you like to search your local disk for an appropriate file?"),
+	    sharedir);
 	    if ( ret==1 || no_windowing_ui )
 		buf = NULL;
 	}
@@ -1192,6 +1193,7 @@ return( maybe );
 	}
     }
 
+    free(sharedir);
     free(maybefile);
     if ( file!=NULL ) {
 	map = LoadMapFromFile(file,registry,ordering,supplement);

@@ -49,6 +49,7 @@
 
 static char *program_dir = NULL;
 static char dirname_[MAXPATHLEN+1];
+static const char *FONTFORGE_SHARE_SUBDIR = "/share/fontforge";
 
 /**
  * \brief Removes the extension from a file path, if it exists.
@@ -809,29 +810,42 @@ void FindProgDir(char *prog) {
 #endif
 }
 
-char *getShareDir(void) {
-    static char *sharedir=NULL;
-    static int set=false;
-    char *pt;
+// When calling this function, make sure you prepend "/" to the subdirectory
+// you want. So, to get e.g. /usr/share/cidmaps, call
+// getShareSubDir("/cidmaps").
+char *getShareSubDir(const char* subdir) {
+    char *sharedir, *pt;
     int len;
-
-    if ( set )
-	return( sharedir );
-
-    set = true;
 
     //Assume share folder is one directory up
     pt = strrchr(program_dir, '/');
     if ( pt==NULL ) {
 	pt = program_dir + strlen(program_dir);
     }
-    len = (pt-program_dir)+strlen("/share/fontforge")+1;
+    len = (pt-program_dir)+strlen(FONTFORGE_SHARE_SUBDIR)+1;
+    if (subdir != NULL) {
+        len += strlen(subdir);
+    }
     sharedir = malloc(len);
     strncpy(sharedir,program_dir,pt-program_dir);
-    strcpy(sharedir+(pt-program_dir),"/share/fontforge");
+    strcpy(sharedir+(pt-program_dir),FONTFORGE_SHARE_SUBDIR);
+    if (subdir != NULL) {
+        strcat(sharedir, subdir);
+    }
     return( sharedir );
 }
 
+char *getShareDir(void) {
+    static char *sharedir=NULL;
+    static int set=false;
+
+    if ( set )
+	return( sharedir );
+
+    sharedir = getShareSubDir(NULL);
+    set = true;
+    return sharedir;
+}
 
 char *getLocaleDir(void) {
     static char *sharedir=NULL;
@@ -840,11 +854,7 @@ char *getLocaleDir(void) {
     if ( set )
 	return( sharedir );
 
-    char* prefix = getShareDir();
-    int len = strlen(prefix) + strlen("/../locale") + 2;
-    sharedir = malloc(len);
-    strcpy(sharedir,prefix);
-    strcat(sharedir,"/../locale");
+    sharedir = getShareSubDir("/../locale");
     set = true;
     return sharedir;
 }
@@ -856,11 +866,7 @@ char *getPixmapDir(void) {
     if ( set )
 	return( sharedir );
 
-    char* prefix = getShareDir();
-    int len = strlen(prefix) + strlen("/pixmaps") + 2;
-    sharedir = malloc(len);
-    strcpy(sharedir,prefix);
-    strcat(sharedir,"/pixmaps");
+    sharedir = getShareSubDir("/pixmaps");
     set = true;
     return sharedir;
 }
@@ -872,12 +878,7 @@ char *getHelpDir(void) {
     if ( set )
 	return( sharedir );
 
-    char* prefix = getShareDir();
-    const char* postfix = "/../doc/fontforge/";
-    int len = strlen(prefix) + strlen(postfix) + 2;
-    sharedir = malloc(len);
-    strcpy(sharedir,prefix);
-    strcat(sharedir,postfix);
+    sharedir = getShareSubDir("/../doc/fontforge/");
     set = true;
     return sharedir;
 }

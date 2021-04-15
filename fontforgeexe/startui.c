@@ -720,12 +720,13 @@ int fontforge_main( int argc, char **argv ) {
     bindtextdomain("FontForge", getLocaleDir());
     textdomain("FontForge");
     {
-	char path[PATH_MAX];
-	snprintf(path, PATH_MAX, "%s%s", getShareDir(), "/pixmaps" );
+	char* path = getPixmapDir();
 	GGadgetSetImageDir( path );
+	free(path);
 
-	snprintf(path, PATH_MAX, "%s%s", getShareDir(), "/resources/fontforge.resource" );
+	path = getShareSubDir("/resources/fontforge.resource");
 	GResourceAddResourceFile(path, GResourceProgramName,false);
+	free(path);
     }
     hotkeysLoad();
 //    loadPrefsFiles();
