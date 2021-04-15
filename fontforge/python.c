@@ -1737,16 +1737,17 @@ PyObject *multiDlgExtractAnswers(MultiDlgSpec *dspec) {
 		if ( qspec->multiple )
 		    v = vtuple;
 	    } else {
-		if ( qspec->str_answer==NULL )
+		if ( qspec->str_answer==NULL ) {
 		    v = Py_None;
-		else
+		    Py_INCREF(Py_None);
+		} else
 		    v = PyUnicode_FromString(qspec->str_answer);
 	    }
 	    k = qspec->tag;
 	    assert( !PyDict_Contains(r, k) );
+	    PyDict_SetItem(r, k, v);
 	    // XXX seems like v should have an extra reference at this point,
 	    // (because _SetItem() doesn't steal) but DECREFing v causes crashes
-	    PyDict_SetItem(r, k, v);
 	}
     }
     return r;

@@ -33,7 +33,6 @@
 #include "ffglib.h"
 #include "fontforgeui.h"
 #include "multidialog.h"
-#include "../gdraw/ggadgetP.h"
 
 #include <assert.h>
 
@@ -41,6 +40,12 @@
 #define CID_STR_START 0x1000
 #define CID_LIST_START 0x4000
 
+// Instead of a "done" boolean the window has a multi_done_state to
+// track "how" it is done. It is pointed to by the window's user
+// data value. The bottom buttons (OK, Cancel, and Apply)
+// have a copy of the corresponding state in their user data and a
+// generic "Multi_Button" handler to copy it into the window's
+// user data.
 enum multi_done_state { mds_not = 0, mds_ok = 1, mds_cancel = 2, mds_apply = 3 };
 
 static int Multi_Button(GGadget *g, GEvent *e) {
@@ -56,12 +61,12 @@ static int md_e_h(GWindow gw, GEvent *event) {
     if (event->type == et_close) {
         enum multi_done_state *mdsp = GDrawGetUserData(gw);
         *mdsp = mds_cancel;
-    } else {
-        return false;
+	return true;
     }
-    return true;
+    return false;
 }
 
+// Opens a file chooser dialog when the handler-carrying button is pressed
 static int Multi_BrowseFile(GGadget *g, GEvent *e) {
     if (e->type == et_controlevent && e->u.control.subtype == et_buttonactivate) {
         GWindow gw = GGadgetGetWindow(g);
@@ -87,6 +92,12 @@ static int Multi_BrowseFile(GGadget *g, GEvent *e) {
     return true;
 }
 
+// On a radio or checkbox change event copies the new state into the
+// MultiDlgAnswer is_checked value. (Each radio button and check box
+// has its MultiDlgAnswer pointer as its user data.)
+//
+// MultiDlgAnswer->question points back to its "parent" so that
+// corresponding radio button _is_checked values can be set to false.
 static int Multi_DoRC(GGadget *g, GEvent *e) {
     if (e->type == et_controlevent && e->u.control.subtype == et_radiochanged) {
         MultiDlgAnswer *ans = GGadgetGetUserData(g);
@@ -105,6 +116,8 @@ static int Multi_DoRC(GGadget *g, GEvent *e) {
     return true;
 }
 
+// Translates a changed list value into appropriate answer is_checked settings.
+// Each list has a pointer to is MultiDlgQuestion as its user data
 static int Multi_DoL(GGadget *g, GEvent *e) {
     if (e->type == et_controlevent && e->u.control.subtype == et_listselected) {
         MultiDlgQuestion *qstn = GGadgetGetUserData(g);
@@ -119,6 +132,8 @@ static int Multi_DoL(GGadget *g, GEvent *e) {
     return true;
 }
 
+// A handler for the "check all" and "check none" buttons next to a
+// multi-list with multiple selection options.
 static int Multi_MLSelect(GGadget *g, GEvent *e, int sel) {
     if (e->type == et_controlevent && e->u.control.subtype == et_buttonactivate) {
         GWindow gw = GGadgetGetWindow(g);
@@ -371,7 +386,7 @@ static GGadgetCreateData *LayoutMultiDlgCategoryBody(MultiDlgCategory *cat, stru
     return gcd;
 }
 
-static void MultiSyncChoices(MultiDlgSpec *spec) {
+static void MultiSetDefaultChoices(MultiDlgSpec *spec) {
     for (int c = 0; c < spec->len; ++c) {
         MultiDlgCategory *catspec = spec->categories + c;
         for (int q = 0; q < catspec->len; ++q) {
@@ -385,7 +400,7 @@ static void MultiSyncChoices(MultiDlgSpec *spec) {
     }
 }
 
-static void MultiCopyStrings(GWindow gw, int strcid, int fbpair) {
+static void MultiSetStringsFromControls(GWindow gw, int strcid, int fbpair) {
     int i;
     GGadget *g;
     MultiDlgQuestion *qstn;
@@ -621,7 +636,7 @@ int UI_Ask_Multi(const char *title, MultiDlgSpec *dlg) {
     }
     g_list_free(mpp.memlist);
 
-    MultiSyncChoices(dlg);
+    MultiSetDefaultChoices(dlg);
 
     GDrawSetVisible(gw, true);
 
@@ -630,10 +645,10 @@ int UI_Ask_Multi(const char *title, MultiDlgSpec *dlg) {
     }
 
     if (mds == mds_cancel) {
-        MultiSyncChoices(dlg);
+        MultiSetDefaultChoices(dlg);
     } else {
         assert(mds == mds_ok);
-        MultiCopyStrings(gw, mpp.strcid, mpp.fbpair);
+        MultiSetStringsFromControls(gw, mpp.strcid, mpp.fbpair);
     }
 
     GDrawDestroyWindow(gw);
