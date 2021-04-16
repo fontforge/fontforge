@@ -167,8 +167,8 @@ void SavePluginConfig() {
     if (pdir != NULL) {
         char *fname = smprintf("%s/plugin_config.ini", pdir);
         GError *gerror = NULL;
-        g_key_file_save_to_file(conf, fname, &gerror);
-        if (gerror != NULL) {
+        int ok = g_key_file_save_to_file(conf, fname, &gerror);
+        if (!ok && gerror != NULL) {
             LogError(_("Error saving plugin configuration file '%s': %s\n"), fname, gerror->message);
             g_error_free(gerror);
         }
@@ -390,7 +390,7 @@ static bool DiscoverPlugins(int do_import) {
         } else if (do_import && pe->startup_mode == sm_ask) {
             do_ask = true;
         }
-        Py_DECREF(dist);
+        Py_XDECREF(dist);
     }
     if (PyErr_Occurred()) {
         PyErr_Print();
