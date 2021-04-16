@@ -3424,6 +3424,8 @@ static GWindow CharIcon(CharView *cv, FontView *fv) {
 	base.height = bdfc->ymax-bdfc->ymin+1;
 	GDrawDrawImage(icon,&gi,NULL,(r.width-base.width)/2,(r.height-base.height)/2);
     } else if ( sc->unicodeenc!=-1 ) {
+	if ( cv_iconfont.fi==NULL )
+	    GResEditDoInit(&charviewpoints_ri);
 	unichar_t text[2];
 	int as, ds, ld, width;
 	GDrawSetFont(icon,cv_iconfont.fi);
