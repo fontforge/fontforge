@@ -1546,7 +1546,7 @@ return( false );
     GDrawPopClip(pixmap,&old3);
     GDrawPopClip(pixmap,&old2);
 
-    if (!GDrawClipOverlaps(pixmap, &ge->buttonrect)) {
+    if ( (gt->listfield || gt->numericfield) && !GDrawClipOverlaps(pixmap, &ge->buttonrect)) {
         GDrawPopClip(pixmap,&old1);
         return true;
     }
