@@ -181,7 +181,9 @@ static char *mncopy(const char *str, unichar_t *mn, int extra) {
     if ( str==NULL ) {
 	if ( mn!=NULL )
 	    *mn = 0;
-	return NULL;
+	ret = malloc(1+extra);
+	ret[0] = 0;
+	return ret;
     }
 
     while ( *src!=0 ) {
@@ -212,22 +214,28 @@ static char *SetMnemonicSuffix(const char*menu_string, unichar_t c) {
     char *r = mncopy(menu_string, NULL, 4);
     int l = strlen(r), i=l-1;
 
-    while ( *(r+i)==' ' )
+    // Remove trailing spaces (if any)
+    while ( i>=0 && *(r+i)==' ' )
 	--i;
-    if ( *(r+i)==')' ) {
+    *(r+i+1) = 0;
+    // The following is intended to remove a parenthetical mnemonic
+    // if one is already present in the string, or do nothing otherwise.
+    // If the input is something less "standard" we just append the
+    // new mnemonic character and hope for the best.
+    if ( i>=0 && *(r+i)==')' ) {
 	--i;
-	if ( *(r+i)>0 ) {
+	if ( i>=0 && *(r+i)>0 ) {
 	    --i;
-	    if ( *(r+i)=='(' ) {
+	    if ( i>=0 && *(r+i)=='(' ) {
 		--i;
-		while ( *(r+i)==' ' )
+		while ( i>=0 && *(r+i)==' ' )
 		    --i;
-		if ( i<0 )
-		    i=-1;
 		*(r+i+1) = 0;
 	    }
 	}
     }
+
+    // There is room for this strcat because mncopy ensures it.
     if ( c!=0 ) {
 	char buffer[10];
 	sprintf(buffer, " (%c)", (char) c);
