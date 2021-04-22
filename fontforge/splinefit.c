@@ -885,12 +885,12 @@ return( SplineMake3(from,to));
 				*bunit.y-75*bunit.x*bunit.x*f*f*aunit.y);
 		quad.e = 80*bunit.y*(42*bunit.y*m-25*f*(bunit.y-bunit.x*f));
 	}
-	extended solutions[5] = {-999999,-999999,-999999,-999999,-999999};
+	extended solutions[4] = {-999999,-999999,-999999,-999999};
 	_QuarticSolve(&quad,solutions);
 	extended abSolutions[10][2]; /* there are at most 4+4+1+1=10 solutions of pairs of a and b (quartic=0,derivative=0,b=0.01,a=0.01) */
 	numberOfSolutions = 0;
 	extended a,b;
-	for( int i = 0; i < 5; i++ ){
+	for( int i = 0; i < 4; i++ ){
 		a = solutions[i];
 		if ( a >= 0 && a < aMax ) {
 			b = (20*f-6*a*aunit.y)/(3*(2*bunit.y-a*sab));
@@ -921,10 +921,10 @@ return( SplineMake3(from,to));
 		quad.e = 8*bunit.y*((24*aunit.y+45*aunit.x*f)*sbsb
 				+(15*bunit.x*f*aunit.y-125*f*sab)*bunit.y+100*bunit.x*f*f*sab);				
 	}
-	for( int i = 0; i < 5; i++ ) /* overwriting (reusing) */
+	for( int i = 0; i < 4; i++ ) /* overwriting (reusing) */
 		solutions[i] = -999999;
 	_QuarticSolve(&quad,solutions); 
-	for( int i = 0; i < 5; i++ ){
+	for( int i = 0; i < 4; i++ ){
 		a = solutions[i];
 		if ( a >= 0 && a < aMax ) {
 			b = (20*f-6*a*aunit.y)/(3*(2*bunit.y-a*sab));
