@@ -24,7 +24,6 @@ Build-Depends: bzip2,
                libpng-dev,
                libspiro-dev,
                libtiff-dev,
-               libuninameslist-dev,
                libxml2-dev,
                python3-dev (>= 3.3)
 Standards-Version: 3.9.7

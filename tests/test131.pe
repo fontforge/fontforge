@@ -1,57 +1,88 @@
-# test some libuninameslist functions (if the library is included).
+# test unicode support functions
+
+if (!IsLower("a") || !IsLower("ā") || IsLower("A") || IsLower("Ā"))
+  Error("IsLower was wrong")
+endif
+
+if (!IsUpper("A") || !IsUpper("Ā") || IsUpper("a") || IsUpper("ā"))
+  Error("IsUpper was wrong")
+endif
+
+if (ToLower("A") != "a" || ToLower("Ā") != "ā" || ToLower("a") != "a" || ToLower("ā") != "ā")
+  Error("ToLower was wrong")
+endif
+
+if (ToUpper("a") != "A" || ToUpper("ā") != "Ā" || ToUpper("A") != "A" || ToUpper("Ā") != "Ā")
+  Error("ToUpper was wrong")
+endif
+
+if (ToMirror("(") != ")" || ToMirror(")") != "(" || ToMirror("｟") != "｠")
+  Error("ToMirror was wrong")
+endif
+
+if (!IsAlNum("A") || !IsAlNum("a") || !IsAlNum("Ā") || !IsAlNum("ā") || !IsAlNum("1") || IsAlNum("$") || IsAlNum(" "))
+  Error("IsAlNum was wrong")
+endif
+
+if (!IsAlpha("A") || !IsAlpha("a") || !IsAlpha("Ā") || !IsAlpha("ā") || IsAlpha("1") || IsAlpha("$") || IsAlNum(" "))
+  Error("IsAlpha was wrong")
+endif
+
+if (!IsDigit("0") || !IsDigit("1") || IsDigit("a") || IsDigit("A"))
+  Error("IsDigit was wrong")
+endif
+
+if (!IsHexDigit("a") || !IsHexDigit("A") || !IsHexDigit("F") || !IsHexDigit("f") || !IsHexDigit("0") || !IsHexDigit("9") || IsHexDigit("G"))
+  Error("IsHexDigit was wrong")
+endif
+
+ver = UnicodeNamesListVersion()
+Print("nameslist version is: ",ver)
+if (Strlen(ver) <= 0)
+  Error("Bad nameslist version")
+endif
+
+if (UnicodeNameFromLib(0x1FBA9) != "BOX DRAWINGS LIGHT DIAGONAL UPPER CENTRE TO MIDDLE RIGHT AND MIDDLE LEFT TO LOWER CENTRE")
+  Error("Unexpected name for U+1FBA9")
+endif
+
+annot = UnicodeAnnotationFromLib(0x27)
+ind = Strstr(annot, "= apostrophe-quote (1.0)")
+if (ind < 0)
+  Error("Unexpected annotation for U+0027")
+endif
+if (Strlen(annot) < 480)
+  Error("Unexpected annotation length for U+0027")
+endif
+Print("Strlen for U+0027:", Strlen(annot))
+Print("Annotation for U+0027:\n", annot)
 
 cnt = UnicodeBlockCountFromLib()
-if ( cnt < 1 )
-  Print("No NamesList library - Nothing to test.")
-  Quit()
+if (cnt <= 0)
+  Error("Unexpected unicode block count")
 endif
 
-if ( cnt < 294 )
-  Print("Pre-20170701 or older library - Nothing to test beyond here.")
-  Quit()
-endif
-ver = UnicodeNamesListVersion()
-Print("Libuninameslist version is :",ver)
+i = 0
+while ( i<cnt )
+  start = UnicodeBlockStartFromLib(i)
+  end = UnicodeBlockEndFromLib(i)
+  name = UnicodeBlockNameFromLib(i)
 
+  if (start < 0 || start > end)
+    Error("Bad unicode block at index ", i)
+  endif
 
-# test Names2 functions (if we have libuninameslist version>=10.9)
-if ( cnt < 305 )
-  Print("Pre-20180408 or older library - Nothing to test beyond here.")
-  Quit()
-endif
+  if (Strlen(name) <= 0)
+    Error("Bad unicode block name at index", i)
+  endif
+  ++i;
+endloop
 
-cnt = UnicodeNames2GetCntFromLib()
-Print("Libuninameslist internal table has ",cnt," Names2.")
-if ( cnt < 25 )
-  Print("Test Names2 functions. Must be libuninameslist 10.9 or newer.")
-  Error("Expected 25 or more values that have Names2.")
-endif
-
-# none of these are -1 if library loaded
-u0 = UnicodeNames2NxtUniFromLib(0)
-u1 = UnicodeNames2NxtUniFromLib(1)
-u2 = UnicodeNames2NxtUniFromLib(2)
-Print("Sample of internal table has ",u0,", ",u1,", ",u2," as the first 3 unicode values.")
-if ( u0 < 0 || u1 < 1 || u2 < 2 )
-  Error("these values may be different, but expected 418,419,1801 for ver10.9.")
-endif
-
-# We know these Names2 exist, but these 'tX' values may change if more errors found
-t0 = UnicodeNames2GetNxtFromLib(0x01A2)
-t1 = UnicodeNames2GetNxtFromLib(0xFEFF)
-t2 = UnicodeNames2GetNxtFromLib(118981)
-Print("Internal table[",t0,"]=0x01A2, table[",t1,"]=0xFEFF, table[",t2,"]=118981 as expected Names2 values.")
-if ( t0 < 0 || t1 < 0 || t2 < 0 )
-  Error("These Names2 must exist, so we expected these to return valid table locations.")
-endif
-
-s0 = UnicodeNames2FrmTabFromLib(3)
-Print("Example unicode from table[3]=",s0)
 s1 = UnicodeNames2FromLib(65)
 s2 = UnicodeNames2FromLib(0x709)
 Print("There should be no Names2 for character 65, the value returned is=",s1)
 Print("There should be a Names2 for character 0x709, the value returned is=",s2)
-if ( Strlen(s0)<3 || Strlen(s2)<3 )
+if ( Strlen(s1)>0 || Strlen(s2)<3 )
   Error("Expected to return a valid Names2 string.")
 endif
 

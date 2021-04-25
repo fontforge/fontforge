@@ -40,7 +40,6 @@
 #include "splineutil.h"
 #include "tottfgpos.h"
 #include "ttf.h"		/* For MAC_DELETED_GLYPH_NAME */
-#include "unicodelibinfo.h"
 #include "ustring.h"
 #include "utype.h"
 
@@ -1712,7 +1711,7 @@ return( true );
 /* Generate default settings for the entries in ligature lookup */
 static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
     const unichar_t *alt=NULL, *pt;
-    char *components = NULL, *tmp;
+    char *components = NULL;
     int len;
     unichar_t hack[30], *upt;
     char buffer[80];
@@ -1732,23 +1731,7 @@ static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
 		uni!=0x215f &&			/* exclude 1/ */
 		!((uni>=0x0958 && uni<=0x095f) || uni==0x929 || uni==0x931 || uni==0x934)) {
 	    alt = NULL;
-	} else if ( (tmp=unicode_name(65))==NULL ) { /* test for 'A' to see if library exists */
-	    if ( (uni>=0xbc && uni<=0xbe ) ||		/* Latin1 vulgar fractions */
-		    (uni>=0x2150 && uni<=0x215e ) ||	/* other vulgar fractions */
-		    (uni>=0x2189) ||			/* other vulgar fraction */
-		    (uni>=0xfb00 && uni<=0xfb06 ) ||	/* latin ligatures */
-		    (uni>=0xfb13 && uni<=0xfb17 ) ||	/* armenian ligatures */
-		    uni==0xfb1f ||			/* hebrew ligature */
-		    (uni>=0xfb2a && uni<=0xfb4f ) ||	/* hebrew precomposed chars */
-		    (uni>=0xfbea && uni<=0xfd3d ) ||	/* arabic ligatures */
-		    (uni>=0xfd50 && uni<=0xfdcf ) ||	/* arabic ligatures */
-		    (uni>=0xfdf0 && uni<=0xfdfb ) ||	/* arabic ligatures */
-		    (uni>=0xfef5 && uni<=0xfefc ))	/* arabic ligatures */
-		;	/* These are good */
-	    else
-		alt = NULL;
-	} else
-	    free(tmp); /* found 'A' means there is a library, now cleanup */
+	}
     }
     if ( alt==NULL ) {
 	if ( name==NULL || alt_lig )

@@ -1015,6 +1015,7 @@ def makeutypeheader(utype_funcs):
 
         fprint("extern char* uniname_name(unichar_t ch);")
         fprint("extern char* uniname_annotation(unichar_t ch, int prettify);")
+        fprint("extern char* uniname_formal_alias(unichar_t ch);")
         fprint("extern const struct unicode_range* uniname_block(unichar_t ch);")
         fprint("extern const struct unicode_range* uniname_plane(unichar_t ch);")
         fprint("extern const struct unicode_range* uniname_blocks(int *sz);")

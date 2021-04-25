@@ -180,6 +180,7 @@ struct unicode_range {
 
 extern char* uniname_name(unichar_t ch);
 extern char* uniname_annotation(unichar_t ch, int prettify);
+extern char* uniname_formal_alias(unichar_t ch);
 extern const struct unicode_range* uniname_block(unichar_t ch);
 extern const struct unicode_range* uniname_plane(unichar_t ch);
 extern const struct unicode_range* uniname_blocks(int *sz);

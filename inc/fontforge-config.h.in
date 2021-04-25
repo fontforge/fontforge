@@ -105,15 +105,11 @@
 
 #cmakedefine _NO_LIBUNGIF 1
 
-#cmakedefine _NO_LIBUNINAMESLIST 1
-
 #cmakedefine _NO_PYTHON 1
 
 #cmakedefine _NO_LIBREADLINE 1
 
 #cmakedefine _LIBSPIRO_FUN @_LIBSPIRO_FUN@
-
-#cmakedefine _LIBUNINAMESLIST_FUN @_LIBUNINAMESLIST_FUN@
 
 
 /* More or less obsolete settings from the old configure-fontforge.h */

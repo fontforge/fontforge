@@ -81,7 +81,6 @@
 #include "tottfgpos.h"
 #include "ttf.h"
 #include "ttfinstrs.h"
-#include "unicodelibinfo.h"
 #include "ustring.h"
 #include "utype.h"
 
@@ -464,7 +463,8 @@ static void PrintVal(Val *val) {
 	char *t1 = script2utf8_copy(val->u.sval);
 	char *loc = utf82def_copy(t1);
 	printf( "%s", loc );
-	free(loc); free(t1);
+	free(loc);
+    free(t1);
     } else if ( val->type==v_arr || val->type==v_arrfree ) {
 	putchar( '[' );
 	if ( val->u.aval->argc>0 ) {
@@ -1107,28 +1107,34 @@ static void bNameFromUnicode(Context *c) {
 }
 
 
-/* --start of libuninameslist functions------------------------ */
+/* --start of names list functions------------------------ */
 
 static void bUnicodeBlockCountFromLib(Context *c) {
 /* If the library is available, then return the number of name blocks */
 
     c->return_val.type=v_int;
-    c->return_val.u.ival=unicode_block_count();
+    uniname_blocks(&c->return_val.u.ival);
 }
 
 static void bUnicodeBlockEndFromLib(Context *c) {
 /* If the library is available, then get the official Nth block end */
+    const struct unicode_range *blocks;
     if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode ) {
 	c->error = ce_badargtype;
 	return;
     }
     c->return_val.type=v_int;
-    c->return_val.u.ival=unicode_block_end(c->a.vals[1].u.ival);
+    blocks = uniname_blocks(&c->return_val.u.ival);
+    if (c->a.vals[1].u.ival < 0 || c->a.vals[1].u.ival >= c->return_val.u.ival) {
+        c->return_val.u.ival = -1;
+    } else {
+        c->return_val.u.ival = blocks[c->a.vals[1].u.ival].end;
+    }
 }
 
 static void bUnicodeBlockNameFromLib(Context *c) {
 /* If the library is available, then get the official Nth block name */
-    char *temp;
+    const struct unicode_range *blocks;
 
     if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode ) {
 	c->error = ce_badargtype;
@@ -1136,21 +1142,28 @@ static void bUnicodeBlockNameFromLib(Context *c) {
     }
     c->return_val.type = v_str;
 
-    if ( (temp=unicode_block_name(c->a.vals[1].u.ival))==NULL ) {
-	temp=malloc(1*sizeof(char)); *temp='\0';
+    blocks = uniname_blocks(&c->return_val.u.ival);
+    if (c->a.vals[1].u.ival < 0 || c->a.vals[1].u.ival >= c->return_val.u.ival) {
+        c->return_val.u.sval = calloc(1, sizeof(char));
+    } else {
+        c->return_val.u.sval = copy(blocks[c->a.vals[1].u.ival].name);
     }
-    c->return_val.u.sval=temp;
 }
 
 static void bUnicodeBlockStartFromLib(Context *c) {
 /* If the library is available, then get the official Nth block start */
-
+    const struct unicode_range *blocks;
     if ( c->a.vals[1].type!=v_int && c->a.vals[1].type!=v_unicode ) {
 	c->error = ce_badargtype;
 	return;
     }
     c->return_val.type=v_int;
-    c->return_val.u.ival=unicode_block_start(c->a.vals[1].u.ival);
+    blocks = uniname_blocks(&c->return_val.u.ival);
+    if (c->a.vals[1].u.ival < 0 || c->a.vals[1].u.ival >= c->return_val.u.ival) {
+        c->return_val.u.ival = -1;
+    } else {
+        c->return_val.u.ival = blocks[c->a.vals[1].u.ival].start;
+    }
 }
 
 static void bUnicodeNameFromLib(Context *c) {
@@ -1163,7 +1176,7 @@ static void bUnicodeNameFromLib(Context *c) {
     }
     c->return_val.type = v_str;
 
-    if ( (temp=unicode_name(c->a.vals[1].u.ival))==NULL ) {
+    if ( (temp=uniname_name(c->a.vals[1].u.ival))==NULL ) {
 	temp=malloc(1*sizeof(char)); *temp='\0';
     }
     c->return_val.u.sval = temp;
@@ -1178,7 +1191,7 @@ static void bUnicodeAnnotationFromLib(Context *c) {
     }
     c->return_val.type = v_str;
 
-    if ( (temp=unicode_annot(c->a.vals[1].u.ival))==NULL ) {
+    if ( (temp=uniname_annotation(c->a.vals[1].u.ival, false))==NULL ) {
 	temp=malloc(1*sizeof(char)); *temp='\0';
     }
     c->return_val.u.sval = temp;
@@ -1186,91 +1199,35 @@ static void bUnicodeAnnotationFromLib(Context *c) {
 
 static void bUnicodeNamesListVersion(Context *c) {
 /* If the library is available, then return the Nameslist Version */
-    char *temp;
-
-    if ( (temp=unicode_library_version())==NULL ) {
-	temp=malloc(1*sizeof(char)); *temp='\0';
-    }
     c->return_val.type = v_str;
-    c->return_val.u.sval = temp;
-}
-
-/* ----start of libuninameslist Names2 functions--------------- */
-
-static void bUnicodeNames2GetCntFromLib(Context *c) {
-/* If the library is available, then Get the Names2 table Count */
-    c->return_val.type=v_int;
-    c->return_val.u.ival=unicode_names2cnt();
-}
-
-static void bUnicodeNames2GetNxtFromLib(Context *c) {
-/* If the library is available, use unicode val to find Names2, */
-/* if exists, return location in table, if not found return -1. */
-    const char *pt;
-    long ch;
-
-    c->return_val.type = v_int;
-    if ( c->a.vals[1].type==v_str ) {
-	pt = c->a.vals[1].u.sval;
-	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = unicode_names2getUtabLoc(ch);
-    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	c->return_val.u.ival = unicode_names2getUtabLoc(c->a.vals[1].u.ival);
-    else
-	c->error = ce_badargtype;
-}
-
-static void bUnicodeNames2NxtUniFromLib(Context *c) {
-/* If the library is available, return unicode val for table[n] */
-    const char *pt;
-    long ch;
-
-    c->return_val.type = v_int;
-    if ( c->a.vals[1].type==v_str ) {
-	pt = c->a.vals[1].u.sval;
-	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = unicode_names2valFrmTab(ch);
-    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	c->return_val.u.ival = unicode_names2valFrmTab(c->a.vals[1].u.ival);
-    else
-	c->error = ce_badargtype;
-}
-
-static void bUnicodeNames2FrmTabFromLib(Context *c) {
-/* If the library is available, return table[n]->Names2 string. */
-    const char *pt;
-    long ch;
-
-    c->return_val.type = v_str;
-    if ( c->a.vals[1].type==v_str ) {
-	pt = c->a.vals[1].u.sval;
-	ch = utf8_ildb(&pt);
-	c->return_val.u.sval = unicode_name2FrmTab(ch);
-    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	c->return_val.u.sval = unicode_name2FrmTab(c->a.vals[1].u.ival);
-    else
-	c->error = ce_badargtype;
+    c->return_val.u.sval = copy("NamesList-Version: " UNICODE_VERSION);
 }
 
 static void bUnicodeNames2FromLib(Context *c) {
 /* If the library is available, use unicode val to find Names2, */
-/* if exists, return Names2, and if not exist then return NULL. */
-    const char *pt;
-    long ch;
+/* if exists, return Names2, and if not exist then return and empty str. */
+/* This function is poorly named. This actually corresponds to the
+   formal alias in the NamesList annotation. */
+    unichar_t ch;
 
+    c->error = ce_false;
     c->return_val.type = v_str;
     if ( c->a.vals[1].type==v_str ) {
-	pt = c->a.vals[1].u.sval;
-	ch = utf8_ildb(&pt);
-	c->return_val.u.sval = unicode_name2(ch);
+	ch = utf8_ildb((const char**)&c->a.vals[1].u.sval);
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	c->return_val.u.sval = unicode_name2(c->a.vals[1].u.ival);
+	ch = c->a.vals[1].u.ival;
     else
 	c->error = ce_badargtype;
+
+    if (c->error == ce_false) {
+        c->return_val.u.sval = uniname_formal_alias(ch);
+        if (!c->return_val.u.sval) {
+            c->return_val.u.sval = calloc(1, sizeof(char));
+        }
+    }
 }
 
-/* ----end of libuninameslist Names2 functions----------------- */
-/* --end of libuninameslist functions-------------------------- */
+/* --end of names list functions-------------------------- */
 
 
 static void bChr(Context *c) {
@@ -8417,7 +8374,7 @@ static struct builtins {
     { "SpiroVersion", bSpiroVersion, 1,1,0 },
     { "UnicodeFromName", bUnicodeFromName, 1,2,v_str },
     { "NameFromUnicode", bNameFromUnicode, 1,0,0 },
-    /* --start of libuninameslist functions------------------------ */
+    /* --start of names list functions------------------------ */
     { "UnicodeBlockCountFromLib", bUnicodeBlockCountFromLib, 1,1,0 },
     { "UnicodeBlockEndFromLib", bUnicodeBlockEndFromLib, 1,2,0 },
     { "UnicodeBlockNameFromLib", bUnicodeBlockNameFromLib, 1,2,0 },
@@ -8425,14 +8382,8 @@ static struct builtins {
     { "UnicodeNameFromLib", bUnicodeNameFromLib, 1,2,0 },
     { "UnicodeAnnotationFromLib", bUnicodeAnnotationFromLib, 1,2,0 },
     { "UnicodeNamesListVersion", bUnicodeNamesListVersion, 1,1,0 },
-    /* ----start of libuninameslist Names2 functions--------------- */
-    { "UnicodeNames2GetCntFromLib", bUnicodeNames2GetCntFromLib, 1,1,0 },
-    { "UnicodeNames2GetNxtFromLib", bUnicodeNames2GetNxtFromLib, 1,2,0 },
-    { "UnicodeNames2NxtUniFromLib", bUnicodeNames2NxtUniFromLib, 1,2,0 },
-    { "UnicodeNames2FrmTabFromLib", bUnicodeNames2FrmTabFromLib, 1,2,0 },
     { "UnicodeNames2FromLib", bUnicodeNames2FromLib, 1,2,0 },
-    /* ----end of libuninameslist Names2 functions----------------- */
-    /* --end of libuninameslist functions-------------------------- */
+    /* --end of names list functions-------------------------- */
     { "Chr", bChr, 1,0,0 },
     { "Ord", bOrd, 1,0,0 },
     { "Real", bReal, 1,2,0 },

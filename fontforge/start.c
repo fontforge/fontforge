@@ -36,7 +36,6 @@
 #include "gfile.h"
 #include "namelist.h"
 #include "psfont.h"
-#include "unicodelibinfo.h"
 
 #include <locale.h>
 #include <sys/time.h>

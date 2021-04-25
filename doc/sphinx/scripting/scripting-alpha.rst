@@ -2894,15 +2894,13 @@ the fourth argument you must specify the second and third arguments too.
 
    Return the number of Unicode Blocks for this list as described by
    www.unicode.org. Currently, the blocks are {0..233}, spanning unicode values
-   {uni0..uni10FFFF}. If there is no library available, then return -1. This can
-   execute with no current font.
+   {uni0..uni10FFFF}. This can execute with no current font.
 
 .. function:: UnicodeBlockEndFromLib(val)
 
    Returns the Unicode Block end value as described by www.unicode.org.
    Currently, the blocks are {0..233}, spanning unicode values
-   {uni0..uni10FFFF}. If there is no value, or no library available, then return
-   -1. This can execute with no current font.
+   {uni0..uni10FFFF}. This can execute with no current font.
 
 .. function:: UnicodeBlockNameFromLib(val)
 
@@ -2915,8 +2913,8 @@ the fourth argument you must specify the second and third arguments too.
 
    Returns the Unicode Block start value as described by www.unicode.org.
    Currently, the blocks are {0..233}, spanning unicode values
-   {uni0..uni10FFFF}. If there is no value, or no library available, then return
-   -1. This can execute with no current font.
+   {uni0..uni10FFFF}. If there is no value, then return -1. This can execute
+   with no current font.
 
 .. function:: UnicodeFromName(name)
 
@@ -2928,57 +2926,20 @@ the fourth argument you must specify the second and third arguments too.
 .. function:: UnicodeNameFromLib(val)
 
    Returns the Unicode Name for this value as described by www.unicode.org. If
-   there is no unicode name for this value, or no library available, then return
-   empty string "". It can execute with no current font.
+   there is no unicode name for this value, then return empty string "". It can
+   execute with no current font.
 
 .. function:: UnicodeNamesListVersion()
 
    Return the Unicode Nameslist Version (as described by www.unicode.org).
-   libuninameslist is released on a schedule that depends on when
-   www.unicode.org releases new information. These dates do not match FontForge
-   release dates, therefore users might not keep this optional library upto
-   current updates. This instruction can be used to test if the Nameslist
-   library is recent for your script. This function currently works only for
-   libuninameslist ver_0.3.20130501 or later, else it returns empty string "".
+
    This can execute with no current font.
-
-.. function:: UnicodeNames2GetCntFromLib()
-
-   Return the Total Count of all Names that were corrected with a new name.
-   Errors and corrections happen, therefore names can be corrected in the next
-   Unicode Nameslist version. If there is no libuninameslist ver 0.5 or later
-   available, then return -1
-
-.. function:: UnicodeNames2GetNxtFromLib(val)
-
-   Errors and corrections happen, therefore names can be corrected in the next
-   Unicode Nameslist version. With val==unicode value, this function returns -1
-   if no Names2 exists, or the Nth table location for this unicode value listed
-   in libuninameslist that was corrected to a new name. If there is no
-   libuninameslist ver 0.5 or later, then return -1.
-
-.. function:: UnicodeNames2NxtUniFromLib(val)
-
-   Errors and corrections happen, therefore names can be corrected in the next
-   Unicode Nameslist version. This function returns the Next Unicode value
-   listed in libuninameslist internal table that was corrected to a new name.
-   The internal table of Unicode values is of size UnicodeNames2GetCntFromLib().
-   If there is no libuninameslist ver 0.5 or later, then return -1.
-
-.. function:: UnicodeNames2FrmTabFromLib(val)
-
-   Errors and corrections happen, therefore names can be corrected in the next
-   Unicode Nameslist version. This function returns the Next Names2 listed in
-   libuninameslist internal table that was corrected to a new name. The internal
-   table of Unicode values is of size UnicodeNames2GetCntFromLib(). If there is
-   no libuninameslist ver 0.5 or later, then return NULL.
 
 .. function:: UnicodeNames2FromLib(val)
 
    Errors and corrections happen, therefore names can be corrected in the next
-   Unicode Nameslist version. This function returns the Names2 or NULL based on
-   the unicode value given. If there is no libuninameslist ver 0.5 or later,
-   then return NULL.
+   Unicode Nameslist version. This function returns the formal alias for the
+   unicode value given, or an empty string if there is no such alias.
 
 .. function:: UnlinkReference
 

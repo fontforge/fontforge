@@ -51,7 +51,6 @@ build_option(ENABLE_PYTHON_SCRIPTING BOOL ON  "Enables FontForge's Python script
 build_option(ENABLE_PYTHON_EXTENSION AUTO ON  "Builds the Python models for use with system python")
 
 build_option(ENABLE_LIBSPIRO         BOOL ON  "Enables libspiro support")
-build_option(ENABLE_LIBUNINAMESLIST  BOOL ON  "Enables libuninameslist support")
 build_option(ENABLE_LIBGIF           AUTO ON  "Enables GIF support")
 build_option(ENABLE_LIBJPEG          AUTO ON  "Enables JPEG support")
 build_option(ENABLE_LIBPNG           AUTO ON  "Enables PNG support")
@@ -137,7 +136,6 @@ endif()
 find_package_auto(ENABLE_PYTHON_SCRIPTING Python3 3.6 COMPONENTS Development Interpreter)
 find_package_auto(ENABLE_DOCS             Sphinx) # Should come after ENABLE_PYTHON_SCRIPTING
 find_package_auto(ENABLE_LIBSPIRO         Libspiro)
-find_package_auto(ENABLE_LIBUNINAMESLIST  Libuninameslist 20180408)
 find_package_auto(ENABLE_LIBGIF           GIF)
 find_package_auto(ENABLE_LIBJPEG          JPEG)
 find_package_auto(ENABLE_LIBPNG           PNG)

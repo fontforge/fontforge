@@ -158,7 +158,7 @@ Upon success, this will leave binary packages in `~/rpmbuild/RPMS` and source pa
 
 You may need to install dependencies, typically packaged for Fedora-derived systems as:
 
-    rpm-devel rpm-build git ninja-build cmake gcc g++ python3-devel libjpeg-devel libtiff-devel libpng-devel giflib-devel freetype-devel libxml2-devel libuninameslist-devel libspiro-devel pango-devel cairo-devel gtk3-devel
+    rpm-devel rpm-build git ninja-build cmake gcc g++ python3-devel libjpeg-devel libtiff-devel libpng-devel giflib-devel freetype-devel libxml2-devel libspiro-devel pango-devel cairo-devel gtk3-devel
 
 ### Building a Mac OS X app bundle
 

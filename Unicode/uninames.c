@@ -134,13 +134,11 @@ char* uniname_annotation(unichar_t ch, int prettify) {
         *dst++ = '\t';
         dst = prettify_annotation_start(dst, *src++, &bufsiz);
         *dst++ = ' ';
-        bufsiz -= 2;
     } else {
-        *dst++ = '\t';
         *dst++ = *src++;
         *dst++ = ' ';
-        bufsiz -= 3;
     }
+    bufsiz -= 2;
 
     while (*src != '\0' && bufsiz > 4) {
         switch (*src >> 4) {
@@ -164,16 +162,15 @@ char* uniname_annotation(unichar_t ch, int prettify) {
             *dst = *src++;
             --bufsiz;
             if (*dst++ == '\n') {
-                *dst++ = '\t';
                 if (prettify) {
+                    *dst++ = '\t';
                     dst = prettify_annotation_start(dst, *src++, &bufsiz);
                     *dst++ = ' ';
-                    bufsiz -= 2;
                 } else {
                     *dst++ = *src++;
                     *dst++ = ' ';
-                    bufsiz -= 3;
                 }
+                bufsiz -= 2;
             }
         }
     }
@@ -183,6 +180,21 @@ char* uniname_annotation(unichar_t ch, int prettify) {
         bufsiz = 0;
     }
     return copyn(ret, sizeof(ret)/sizeof(ret[0]) - bufsiz);
+}
+
+char* uniname_formal_alias(unichar_t ch) {
+    char *annot = uniname_annotation(ch, false), *ret = NULL;
+    if (annot) {
+        if (annot[0] == '%') {
+            char* pt = strchr(annot, '\n');
+            if (pt) {
+                *pt = '\0';
+            }
+            ret = copy(annot + 2);
+        }
+        free(annot);
+    }
+    return ret;
 }
 
 static const struct unicode_range* find_range(unichar_t ch, const struct unicode_range* data, size_t hi) {
