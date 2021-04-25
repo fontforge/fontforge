@@ -29,7 +29,6 @@
 
 #include "parsettfatt.h"
 
-#include "chardata.h"
 #include "fontforge.h"
 #include "ggadget.h"		/* For GTextInfo */
 #include "lookups.h"

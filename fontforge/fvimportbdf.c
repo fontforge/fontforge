@@ -31,7 +31,6 @@
 
 #include "bitmapchar.h"
 #include "bvedit.h"
-#include "chardata.h"
 #include "cvimages.h"
 #include "encoding.h"
 #include "fontforgevw.h"

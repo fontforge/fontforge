@@ -29,7 +29,6 @@
 
 #include "fvfonts.h"
 
-#include "chardata.h"
 #include "encoding.h"
 #include "fontforgevw.h"
 #include "gfile.h"

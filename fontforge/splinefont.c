@@ -141,8 +141,7 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,EncMap *map,int i) {
 	}
     }
     dummy->width = dummy->vwidth = sf->ascent+sf->descent;
-    if ( dummy->unicodeenc>0 && dummy->unicodeenc<0x10000 &&
-	    iscombining(dummy->unicodeenc)) {
+    if (iscombining(dummy->unicodeenc)) {
 	/* Mark characters should be 0 width */
 	dummy->width = 0;
 	/* Except in monospaced fonts on windows, where they should be the */

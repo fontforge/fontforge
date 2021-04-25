@@ -30,7 +30,6 @@
 
 #include "autowidth.h"
 #include "bitmapchar.h"
-#include "chardata.h"
 #include "dumppfa.h"
 #include "encoding.h"
 #include "featurefile.h"

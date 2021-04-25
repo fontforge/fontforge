@@ -31,7 +31,6 @@
 #include "splineutil2.h"
 
 #include "autohint.h"
-#include "chardata.h"
 #include "cvundoes.h"
 #include "edgelist.h"
 #include "fontforge.h"

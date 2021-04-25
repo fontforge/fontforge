@@ -76,10 +76,10 @@ void SFShowLigatures(SplineFont *sf,SplineChar *searchfor) {
 			if ( pst->type==pst_ligature &&
 				(searchfor==NULL || PSTContains(pst->u.lig.components,searchfor->name))) {
 		    if ( choices!=NULL ) {
-			line = pt = malloc((strlen(sc->name)+13+3*strlen(pst->u.lig.components)));
+			line = pt = malloc((strlen(sc->name)+14+4*strlen(pst->u.lig.components)));
 			strcpy(pt,sc->name);
 			pt += strlen(pt);
-			if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 ) {
+			if ( sc->unicodeenc!=-1 && sc->unicodeenc<UNICODE_MAX ) {
 			    *pt++='(';
 			    pt = utf8_idpb(pt,sc->unicodeenc,0);
 			    *pt++=')';
@@ -97,7 +97,7 @@ void SFShowLigatures(SplineFont *sf,SplineChar *searchfor) {
 			    pt += strlen(pt);
 			    sc2 = SFGetChar(sf,-1,start);
 			    *end = ch;
-			    if ( sc2!=NULL && sc2->unicodeenc!=-1 && sc2->unicodeenc<0x10000 ) {
+			    if ( sc2!=NULL && sc2->unicodeenc!=-1 && sc2->unicodeenc<UNICODE_MAX ) {
 				*pt++='(';
 				*pt++ = sc2->unicodeenc;
 				*pt++=')';

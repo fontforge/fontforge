@@ -30,7 +30,6 @@
 
 #include "parsepdf.h"
 
-#include "chardata.h"
 #include "cvimages.h"
 #include "dumppfa.h"
 #include "encoding.h"

@@ -33,7 +33,6 @@
 #include "autowidth2.h"
 #include "bitmapchar.h"
 #include "bvedit.h"
-#include "chardata.h"
 #include "cvundoes.h"
 #include "dumppfa.h"
 #include "encoding.h"
@@ -5667,10 +5666,10 @@ return( base_sc );
 		 fl->featuretag == CHR('m','e','d','i') ||
 		 fl->featuretag == CHR('f','i','n','a') ||
 		 fl->featuretag == CHR('i','s','o','l')) ) {
-	    uni = fl->featuretag == CHR('i','n','i','t') ? ArabicForms[base_sc->unicodeenc-0x600].initial  :
-		  fl->featuretag == CHR('m','e','d','i') ? ArabicForms[base_sc->unicodeenc-0x600].medial   :
-		  fl->featuretag == CHR('f','i','n','a') ? ArabicForms[base_sc->unicodeenc-0x600].final    :
-		  fl->featuretag == CHR('i','s','o','l') ? ArabicForms[base_sc->unicodeenc-0x600].isolated :
+	    uni = fl->featuretag == CHR('i','n','i','t') ? arabicform(base_sc->unicodeenc)->initial  :
+		  fl->featuretag == CHR('m','e','d','i') ? arabicform(base_sc->unicodeenc)->medial   :
+		  fl->featuretag == CHR('f','i','n','a') ? arabicform(base_sc->unicodeenc)->final    :
+		  fl->featuretag == CHR('i','s','o','l') ? arabicform(base_sc->unicodeenc)->isolated :
 		  -1;
 	    feat_sc = SFGetChar(sf,uni,NULL);
 	    if ( feat_sc!=NULL )

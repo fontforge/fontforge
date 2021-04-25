@@ -30,7 +30,6 @@
 #include "tottf.h"
 
 #include "autohint.h"
-#include "chardata.h"
 #include "dumpbdf.h"
 #include "dumppfa.h"
 #include "encoding.h"
@@ -2746,8 +2745,7 @@ static void sethead(struct head *head,SplineFont *sf,struct alltabs *at,
 	int uni = sc->unicodeenc ;
 	if ( SCRightToLeft(sc) )
 	    rl = 1;
-	else if (( uni!=-1 && uni<0x10000 && islefttoright(uni)) ||
-		 (uni>=0x10300 && uni<0x107ff))
+	else if (islefttoright(uni) || (uni>=0x10300 && uni<0x107ff))
 	    lr = 1;
 	if ( SCScriptFromUnicode(sc)==CHR('a','r','a','b') )
 	    arabic = 1;

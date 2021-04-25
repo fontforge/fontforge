@@ -29,7 +29,6 @@
 
 #include "parsettfvar.h"
 
-#include "chardata.h"
 #include "fontforge.h"
 #include "fvfonts.h"
 #include "gwidget.h"

@@ -27,7 +27,6 @@
 
 #include <fontforge-config.h>
 
-#include "chardata.h"
 #include "cvundoes.h"
 #include "delta.h"
 #include "fontforgeui.h"

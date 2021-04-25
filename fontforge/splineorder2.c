@@ -29,7 +29,6 @@
 
 #include "splineorder2.h"
 
-#include "chardata.h"
 #include "fontforge.h"
 #include "splinerefigure.h"
 #include "splineutil.h"

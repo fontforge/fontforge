@@ -2105,7 +2105,7 @@ static void ScriptCharInit(SplineFont *sf,uint32 script, struct script_chars *ch
 	    break;
 	    if ( pst!=NULL )		/* Ligatures don't count */
 	continue;
-	    if ( sc->unicodeenc<0x10000 && isupper(sc->unicodeenc))
+	    if ( isupper(sc->unicodeenc))
 	continue;
 	    if ( isideoalpha(sc->unicodeenc) &&
 		    ScriptFromUnicode(sc->unicodeenc,subsf)==script )
@@ -2132,7 +2132,7 @@ static void ScriptCharInit(SplineFont *sf,uint32 script, struct script_chars *ch
 	for ( gid = 0 ; gid<subsf->glyphcnt; ++gid ) if ( SCWorthOutputting(sc=subsf->glyphs[gid]) ) {
 	    if ( sc->unicodeenc==-1 )
 	continue;
-	    if ( sc->unicodeenc<0x10000 && isupper(sc->unicodeenc))
+	    if ( isupper(sc->unicodeenc))
 	continue;
 	    for ( pst=sc->possub; pst!=NULL; pst=pst->next )
 		if ( pst->type == pst_ligature )
@@ -2310,9 +2310,9 @@ int SF2Scripts(SplineFont *sf,uint32 scripts[100]) {
     do {
 	subsf = sf->subfontcnt==0 ? sf : sf->subfonts[k];
 	for ( gid = 0 ; gid<subsf->glyphcnt; ++gid ) if ( SCWorthOutputting(sc=subsf->glyphs[gid]) ) {
-	    if ( sc->unicodeenc==-1 || (sc->unicodeenc<0x10000 && !isideoalpha(sc->unicodeenc )) )
+	    if ( sc->unicodeenc==-1 || !isideoalpha(sc->unicodeenc) )
 	continue;
-	    if ( sc->unicodeenc<0x10000 && isupper(sc->unicodeenc ))
+	    if ( isupper(sc->unicodeenc ))
 	continue;
 	    for ( pst=sc->possub; pst!=NULL; pst=pst->next )
 		if ( pst->type == pst_ligature )

@@ -29,7 +29,6 @@
 #include <fontforge-config.h>
 
 #include "autowidth2.h"
-#include "chardata.h"
 #include "cvundoes.h"
 #include "fontforgeui.h"
 #include "fvcomposite.h"
@@ -1710,8 +1709,7 @@ static int CI_TileMarginChange(GGadget *g, GEvent *e) {
 return( true );
 }
 
-/* Generate default settings for the entries in ligature lookup
- * TODO: expand beyond (bmp) */
+/* Generate default settings for the entries in ligature lookup */
 static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
     const unichar_t *alt=NULL, *pt;
     char *components = NULL, *tmp;
@@ -1719,21 +1717,15 @@ static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
     unichar_t hack[30], *upt;
     char buffer[80];
 
-    /* If it's not (bmp) unicode we have no info on it */
-    /*  Unless it looks like one of adobe's special ligature names */
-    if ( uni==-1 || uni>=0x10000 )
+    if ( uni==-1 )
 	/* Nope */;
-    else if ( isdecompositionnormative(uni) &&
-		unicode_alternates[uni>>8]!=NULL &&
-		(alt = unicode_alternates[uni>>8][uni&0xff])!=NULL ) {
-	if ( alt[1]=='\0' ||
-		Ligature_alt_getC(Ligature_find_N(uni))<=1 ||
-		Fraction_alt_getC(Fraction_find_N(uni))<=1 )
+    else if ( isdecompositionnormative(uni) && (alt = unialt(uni))!=NULL ) {
+	if ( alt[1]=='\0' )
 	    alt = NULL;		/* Single replacements aren't ligatures */
 	else if ( iscombining(alt[1]) && ( alt[2]=='\0' || iscombining(alt[2]))) {
 	    if ( alt_lig != -10 )	/* alt_lig = 10 => mac unicode decomp */
 		alt = NULL;		/* Otherwise, don't treat accented letters as ligatures */
-	} else if (! is_LIGATURE_or_VULGAR_FRACTION((uint32)(uni)) &&
+	} else if (! isligvulgfrac((uint32)(uni)) &&
 		uni!=0x152 && uni!=0x153 &&	/* oe ligature should not be standard */
 		uni!=0x132 && uni!=0x133 &&	/* nor ij */
 		(uni<0xfb2a || uni>0xfb4f) &&	/* Allow hebrew precomposed chars */
@@ -1784,16 +1776,16 @@ return( NULL );
 		for ( upt=hack ; *upt ; ++upt ) {
 		    /* Make everything medial */
 		    if ( *upt>=0x600 && *upt<=0x6ff )
-			*upt = ArabicForms[*upt-0x600].medial;
+			*upt = arabicform(*upt)->medial;
 		}
 		if ( isarabisolated(uni) || isarabfinal(uni) ) {
 		    int len = upt-hack-1;
 		    if ( alt[len]>=0x600 && alt[len]<=0x6ff )
-			hack[len] = ArabicForms[alt[len]-0x600].final;
+			hack[len] = arabicform(alt[len])->final;
 		}
 		if ( isarabisolated(uni) || isarabinitial(uni) ) {
 		    if ( alt[0]>=0x600 && alt[0]<=0x6ff )
-			hack[0] = ArabicForms[alt[0]-0x600].initial;
+			hack[0] = arabicform(alt[0])->initial;
 		}
 		alt = hack;
 	    }
@@ -1937,8 +1929,7 @@ return( NULL );
     /* So if I want a 'smcp' feature I must convert "a" to "A.small" */
     /* And if I want a 'c2sc' feature I must convert "A" to "a.sc" */
     if ( cvt2lc ) {
-	if ( alt==NULL && sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 &&
-		isupper(sc->unicodeenc)) {
+	if ( alt==NULL && isupper(sc->unicodeenc)) {
 	    sprintf( namebuf, "uni%04X.%s", tolower(sc->unicodeenc), suffix );
 	    alt = SFGetChar(sf,-1,namebuf);
 	}
@@ -1947,8 +1938,7 @@ return( NULL );
 	    alt = SFGetChar(sf,-1,namebuf);
 	}
     } else {
-	if ( alt==NULL && sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 &&
-		islower(sc->unicodeenc)) {
+	if ( alt==NULL && islower(sc->unicodeenc)) {
 	    sprintf( namebuf, "uni%04X.%s", toupper(sc->unicodeenc), suffix );
 	    alt = SFGetChar(sf,-1,namebuf);
 	}
@@ -2553,7 +2543,7 @@ return;
 		if ( alt==NULL )
 		    alt = SuffixCheckCase(sc,"sc",true);
 	    } else if ( fl->featuretag == CHR('r','t','l','a') ) {
-		if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 && tomirror(sc->unicodeenc)!=0 )
+		if ( tomirror(sc->unicodeenc)!=0 )
 		    alt = SFGetChar(sc->parent,tomirror(sc->unicodeenc),NULL);
 	    } else if ( sc->unicodeenc==0x3c3 && fl->featuretag==CHR('f','i','n','a') ) {
 		/* Greek final sigma */
@@ -2570,9 +2560,9 @@ return;
 	    if ( alt==NULL && sc->unicodeenc>=0x600 && sc->unicodeenc<0x700 ) {
 		/* Arabic forms */
 		for ( i=0; form_tags[i]!=0; ++i ) if ( form_tags[i]==fl->featuretag ) {
-		    if ( (&(ArabicForms[sc->unicodeenc-0x600].initial))[i]!=0 &&
-			    (&(ArabicForms[sc->unicodeenc-0x600].initial))[i]!=sc->unicodeenc &&
-			    (alt = SFGetChar(sc->parent,(&(ArabicForms[sc->unicodeenc-0x600].initial))[i],NULL))!=NULL )
+		    if ( (&(arabicform(sc->unicodeenc)->initial))[i]!=0 &&
+			    (&(arabicform(sc->unicodeenc)->initial))[i]!=sc->unicodeenc &&
+			    (alt = SFGetChar(sc->parent,(&(arabicform(sc->unicodeenc)->initial))[i],NULL))!=NULL )
 		break;
 		}
 	    }
@@ -3522,7 +3512,7 @@ static struct matrixinit mi_extensionpart =
     { sizeof(extensionpart)/sizeof(struct col_init)-1, extensionpart, 0, NULL, NULL, NULL, extpart_finishedit, NULL, NULL, NULL };
 
 static int isxheight(int uni) {
-    if ( uni>=0x10000 || !islower(uni))
+    if (!islower(uni))
 return( false );
 
     if ( uni=='a' || uni=='c' || uni=='e' || uni=='i' || uni=='j' ||
@@ -3573,20 +3563,16 @@ static int TeX_Default(GGadget *g, GEvent *e) {
 	basesc = ci->sc;
 	/* Try to align the top of lowercase (xheight) letters all at the */
 	/*  same height. Ditto for uppercase & ascender letters */
-	if ( cid==CID_TeX_HeightD && ci->sc->unicodeenc<0x10000 &&
-		isxheight(ci->sc->unicodeenc) &&
+	if ( cid==CID_TeX_HeightD && isxheight(ci->sc->unicodeenc) &&
 		(basesc = SFGetChar(sf,'x',NULL))!=NULL )
 	    /* Done */;
-	else if ( cid==CID_TeX_HeightD && ci->sc->unicodeenc<0x10000 &&
-		islower(ci->sc->unicodeenc) &&
+	else if ( cid==CID_TeX_HeightD && islower(ci->sc->unicodeenc) &&
 		(basesc = SFGetChar(sf,'l',NULL))!=NULL )
 	    /* Done */;
-	else if ( cid==CID_TeX_HeightD && ci->sc->unicodeenc<0x10000 &&
-		isupper(ci->sc->unicodeenc) &&
+	else if ( cid==CID_TeX_HeightD && isupper(ci->sc->unicodeenc) &&
 		(basesc = SFGetChar(sf,'I',NULL))!=NULL )
 	    /* Done */;
-	else if ( cid==CID_TeX_DepthD && ci->sc->unicodeenc<0x10000 &&
-		isbaseline(ci->sc->unicodeenc) &&
+	else if ( cid==CID_TeX_DepthD && isbaseline(ci->sc->unicodeenc) &&
 		(basesc = SFGetChar(sf,'I',NULL))!=NULL )
 	    /* Done */;
 	else

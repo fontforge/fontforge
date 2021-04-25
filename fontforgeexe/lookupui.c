@@ -29,7 +29,6 @@
 #include <fontforge-config.h>
 
 #include "autowidth2.h"
-#include "chardata.h"
 #include "fontforgeui.h"
 #include "fvfonts.h"
 #include "gfile.h"
@@ -2669,10 +2668,7 @@ return;
 	int uni = si->sc->unicodeenc;
 	char *pt;
 
-        if ( uni!=-1 && uni<0x10000 &&
-        	isdecompositionnormative(uni) &&
-		unicode_alternates[uni>>8]!=NULL &&
-		(alt = unicode_alternates[uni>>8][uni&0xff])!=NULL )
+        if (isdecompositionnormative(uni) && (alt = unialt(uni)) != NULL)
 	    si->base = SFGetChar(pstkd->sf,alt[0],NULL);
 	if ( si->base==NULL &&
 		((pt=strchr(si->glyphname,'.'))!=NULL ||
@@ -2723,8 +2719,8 @@ return( -1 );
 	    /* First ignore case */
 	    uni1 = (md1->base->unicodeenc!=-1)? md1->base->unicodeenc : 0xffffff;
 	    uni2 = (md2->base->unicodeenc!=-1)? md2->base->unicodeenc : 0xffffff;
-	    if ( uni1<0x10000 && islower(uni1)) uni1 = toupper(uni1);
-	    if ( uni2<0x10000 && islower(uni2)) uni2 = toupper(uni2);
+	    if (islower(uni1)) uni1 = toupper(uni1);
+	    if (islower(uni2)) uni2 = toupper(uni2);
 
 	    if ( uni1>uni2 )
 return( 1 );
@@ -3572,11 +3568,8 @@ return( true );
     if ( strncmp(sc->name,"uni",3)==0 && (len-3)%4==0 && len>7 )
 return( true );
 
-    if ( sc->unicodeenc==-1 || sc->unicodeenc>=0x10000 )
-return( false );
-    else if ( isdecompositionnormative(sc->unicodeenc) &&
-		unicode_alternates[sc->unicodeenc>>8]!=NULL &&
-		(alt = unicode_alternates[sc->unicodeenc>>8][sc->unicodeenc&0xff])!=NULL ) {
+    if ( isdecompositionnormative(sc->unicodeenc) &&
+		(alt = unialt(sc->unicodeenc))!=NULL ) {
 	if ( alt[1]=='\0' )
 return( false );		/* Single replacements aren't ligatures */
 	else if ( iscombining(alt[1]) && ( alt[2]=='\0' || iscombining(alt[2])))
@@ -4652,7 +4645,7 @@ return( NULL );
 	++pt;
     do_wildcards = *pt!='\0';
 
-    if (( !do_wildcards && pt-spt==1 && ( *spt>=0x10000 || !isalpha(*spt))) ||
+    if (( !do_wildcards && pt-spt==1 && !isalpha(*spt)) ||
 	    (!from_tab && do_wildcards && pt-spt==2 && spt[1]==' ')) {
 	sc = SFGetChar(sf,*spt,NULL);
 	/* One unicode character which isn't a glyph name (so not "A") and */

@@ -37,7 +37,6 @@
 #include "bitmapchar.h"
 #include "bitmapcontrol.h"
 #include "bvedit.h"
-#include "chardata.h"
 #include "cvexport.h"
 #include "cvimages.h"
 #include "cvundoes.h"
@@ -842,7 +841,7 @@ static void bisupper(Context *c) {
     if ( c->a.vals[1].type==v_str ) {
 	pt = c->a.vals[1].u.sval;
 	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = ch>=0 && ch<0x10000?isupper(ch):0;
+	c->return_val.u.ival = isupper(ch);
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
 	c->return_val.u.ival = isupper(c->a.vals[1].u.ival);
     else
@@ -857,7 +856,7 @@ static void bislower(Context *c) {
     if ( c->a.vals[1].type==v_str ) {
 	pt = c->a.vals[1].u.sval;
 	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = ch>=0 && ch<0x10000?islower(ch):0;
+	c->return_val.u.ival = islower(ch);
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
 	c->return_val.u.ival = islower(c->a.vals[1].u.ival);
     else
@@ -872,7 +871,7 @@ static void bisdigit(Context *c) {
     if ( c->a.vals[1].type==v_str ) {
 	pt = c->a.vals[1].u.sval;
 	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = ch>=0 && ch<0x10000?isdigit(ch):0;
+	c->return_val.u.ival = isdigit(ch);
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
 	c->return_val.u.ival = isdigit(c->a.vals[1].u.ival);
     else
@@ -887,7 +886,7 @@ static void bishexdigit(Context *c) {
     if ( c->a.vals[1].type==v_str ) {
 	pt = c->a.vals[1].u.sval;
 	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = ch>=0 && ch<0x10000?ishexdigit(ch):0;
+	c->return_val.u.ival = ishexdigit(ch);
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
 	c->return_val.u.ival = ishexdigit(c->a.vals[1].u.ival);
     else
@@ -902,7 +901,7 @@ static void bisalpha(Context *c) {
     if ( c->a.vals[1].type==v_str ) {
 	pt = c->a.vals[1].u.sval;
 	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = ch>=0 && ch<0x10000?isalpha(ch):0;
+	c->return_val.u.ival = isalpha(ch);
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
 	c->return_val.u.ival = isalpha(c->a.vals[1].u.ival);
     else
@@ -917,7 +916,7 @@ static void bisalnum(Context *c) {
     if ( c->a.vals[1].type==v_str ) {
 	pt = c->a.vals[1].u.sval;
 	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = ch>=0 && ch<0x10000?isalnum(ch):0;
+	c->return_val.u.ival = isalnum(ch);
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
 	c->return_val.u.ival = isalnum(c->a.vals[1].u.ival);
     else
@@ -932,72 +931,9 @@ static void bisspace(Context *c) {
     if ( c->a.vals[1].type==v_str ) {
 	pt = c->a.vals[1].u.sval;
 	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = ch>=0 && ch<0x10000?isspace(ch):0;
+	c->return_val.u.ival = isspace(ch);
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
 	c->return_val.u.ival = isspace(c->a.vals[1].u.ival);
-    else
-	c->error = ce_badargtype;
-}
-
-static void bisligature(Context *c) {
-    const char *pt;
-    long ch;
-
-    c->return_val.type = v_int;
-    if ( c->a.vals[1].type==v_str ) {
-	pt = c->a.vals[1].u.sval;
-	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = is_LIGATURE(ch)==0?1:0;
-    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	c->return_val.u.ival = is_LIGATURE(c->a.vals[1].u.ival)==0?1:0;
-    else
-	c->error = ce_badargtype;
-}
-
-static void bisvulgarfraction(Context *c) {
-    const char *pt;
-    long ch;
-
-    c->return_val.type = v_int;
-    if ( c->a.vals[1].type==v_str ) {
-	pt = c->a.vals[1].u.sval;
-	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = is_VULGAR_FRACTION(ch)==0?1:0;
-    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	c->return_val.u.ival = is_VULGAR_FRACTION(c->a.vals[1].u.ival)==0?1:0;
-    else
-	c->error = ce_badargtype;
-}
-
-static void bisotherfraction(Context *c) {
-    const char *pt;
-    long ch;
-
-    c->return_val.type = v_int;
-    if ( c->a.vals[1].type==v_str ) {
-	pt = c->a.vals[1].u.sval;
-	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = is_OTHER_FRACTION(ch)==0?1:0;
-    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	c->return_val.u.ival = is_OTHER_FRACTION(c->a.vals[1].u.ival)==0?1:0;
-    else
-	c->error = ce_badargtype;
-}
-
-
-static void bisfraction(Context *c) {
-    const char *pt;
-    long ch;
-
-    c->return_val.type = v_int;
-    if ( c->a.vals[1].type==v_str ) {
-	pt = c->a.vals[1].u.sval;
-	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = (is_VULGAR_FRACTION(c->a.vals[1].u.ival)==0 || \
-				is_OTHER_FRACTION(ch)==0)?1:0;
-    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	c->return_val.u.ival = (is_VULGAR_FRACTION(c->a.vals[1].u.ival)==0 || \
-				is_OTHER_FRACTION(c->a.vals[1].u.ival)==0)?1:0;
     else
 	c->error = ce_badargtype;
 }
@@ -1013,13 +949,13 @@ static void btoupper(Context *c) {
 	    ch = utf8_ildb(&ipt);
 	    if ( ch==-1 )
 	break;
-	    if ( ch<0x10000 ) ch = toupper(ch);
+	    ch = toupper(ch);
 	    pt = utf8_idpb(pt,ch,UTF8IDPB_NOZERO);
 	}
 	*pt = '\0';
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode ) {
 	c->return_val.type = v_int;
-	c->return_val.u.ival = c->a.vals[1].u.ival<0x10000?toupper(c->a.vals[1].u.ival): c->a.vals[1].u.ival;
+	c->return_val.u.ival = toupper(c->a.vals[1].u.ival);
     } else
 	c->error = ce_badargtype;
 }
@@ -1035,13 +971,13 @@ static void btolower(Context *c) {
 	    ch = utf8_ildb(&ipt);
 	    if ( ch==-1 )
 	break;
-	    if ( ch<0x10000 ) ch = tolower(ch);
+	    ch = tolower(ch);
 	    pt = utf8_idpb(pt,ch,UTF8IDPB_NOZERO);
 	}
 	*pt = '\0';
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode ) {
 	c->return_val.type = v_int;
-	c->return_val.u.ival = c->a.vals[1].u.ival<0x10000?tolower(c->a.vals[1].u.ival): c->a.vals[1].u.ival;
+	c->return_val.u.ival = tolower(c->a.vals[1].u.ival);
     } else
 	c->error = ce_badargtype;
 }
@@ -1057,13 +993,13 @@ static void btomirror(Context *c) {
 	    ch = utf8_ildb(&ipt);
 	    if ( ch==-1 )
 	break;
-	    if ( ch<0x10000 ) ch = tomirror(ch);
+	    ch = tomirror(ch);
 	    pt = utf8_idpb(pt,ch,UTF8IDPB_NOZERO);
 	}
 	*pt = '\0';
     } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode ) {
 	c->return_val.type = v_int;
-	c->return_val.u.ival = c->a.vals[1].u.ival<0x10000?tomirror(c->a.vals[1].u.ival): c->a.vals[1].u.ival;
+	c->return_val.u.ival = tomirror(c->a.vals[1].u.ival);
     } else
 	c->error = ce_badargtype;
 }
@@ -5778,8 +5714,7 @@ static void bDefaultUseMyMetrics(Context *c) {
 		if ( match==NULL ) match = r;
 		/* I shan't bother checking for multiple matches */
 		/* I think the transform check is strict enough. */
-		if ( r->unicode_enc>=0 && r->unicode_enc<0x10000 &&
-			isalpha(r->unicode_enc) ) {
+		if ( isalpha(r->unicode_enc) ) {
 		    if ( goodmatch==NULL ) {
 			goodmatch = r;
 	break;
@@ -6942,8 +6877,7 @@ static void bAddAnchorPoint(Context *c) {
 	    type = at_cexit;
 	else if ( val==-3 || t->type==act_curs )
 	    type = at_centry;
-	else if (( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 &&
-		iscombining(sc->unicodeenc)) || sc->width==0 || sc->glyph_class==2 /* base class+1 */ )
+	else if ( iscombining(sc->unicodeenc) || sc->width==0 || sc->glyph_class==2 /* base class+1 */ )
 	    type = at_mark;
 	else if ( pst!=NULL && type==at_basechar )
 	    type = at_baselig;
@@ -8434,348 +8368,6 @@ static void bclearSpecialData(Context *c) {
     if (c->curfv) SplineFontClearSpecial(c->curfv->sf);
 }
 
-/* Ligature & Fraction information based on current Unicode (builtin) chart. */
-/* Unicode chart seems to distinguish vulgar fractions from other fractions. */
-/* Cnt returns lookup table-size, Nxt returns next Unicode value from array, */
-/* Loc returns 'n' for table array[0..n..(Cnt-1)] pointer. Errors return -1. */
-static void bLigChartGetCnt(Context *c) {
-    c->return_val.type=v_int;
-    c->return_val.u.ival=LigatureCount();
-}
-
-static void bVulChartGetCnt(Context *c) {
-    c->return_val.type=v_int;
-    c->return_val.u.ival=VulgarFractionCount();
-}
-
-static void bOFracChartGetCnt(Context *c) {
-    c->return_val.type=v_int;
-    c->return_val.u.ival=OtherFractionCount();
-}
-
-static void bFracChartGetCnt(Context *c) {
-    c->return_val.type=v_int;
-    c->return_val.u.ival=FractionCount();
-}
-
-static void bLigChartGetNxt(Context *c) {
-    const char *pt;
-    long ch;
-
-    c->return_val.type = v_int;
-    if ( c->a.vals[1].type==v_str ) {
-	pt = c->a.vals[1].u.sval;
-	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = Ligature_get_U(ch);
-    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	c->return_val.u.ival = Ligature_get_U(c->a.vals[1].u.ival);
-    else
-	c->error = ce_badargtype;
-}
-
-static void bVulChartGetNxt(Context *c) {
-    const char *pt;
-    long ch;
-
-    c->return_val.type = v_int;
-    if ( c->a.vals[1].type==v_str ) {
-	pt = c->a.vals[1].u.sval;
-	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = VulgFrac_get_U(ch);
-    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	c->return_val.u.ival = VulgFrac_get_U(c->a.vals[1].u.ival);
-    else
-	c->error = ce_badargtype;
-}
-
-static void bOFracChartGetNxt(Context *c) {
-    const char *pt;
-    long ch;
-
-    c->return_val.type = v_int;
-    if ( c->a.vals[1].type==v_str ) {
-	pt = c->a.vals[1].u.sval;
-	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = Fraction_get_U(ch);
-    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	c->return_val.u.ival = Fraction_get_U(c->a.vals[1].u.ival);
-    else
-	c->error = ce_badargtype;
-}
-
-static void bLigChartGetLoc(Context *c) {
-    const char *pt;
-    long ch;
-
-    c->return_val.type = v_int;
-    if ( c->a.vals[1].type==v_str ) {
-	pt = c->a.vals[1].u.sval;
-	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = Ligature_find_N(ch);
-    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	c->return_val.u.ival = Ligature_find_N(c->a.vals[1].u.ival);
-    else
-	c->error = ce_badargtype;
-}
-
-static void bVulChartGetLoc(Context *c) {
-    const char *pt;
-    long ch;
-
-    c->return_val.type = v_int;
-    if ( c->a.vals[1].type==v_str ) {
-	pt = c->a.vals[1].u.sval;
-	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = VulgFrac_find_N(ch);
-    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	c->return_val.u.ival = VulgFrac_find_N(c->a.vals[1].u.ival);
-    else
-	c->error = ce_badargtype;
-}
-
-static void bOFracChartGetLoc(Context *c) {
-    const char *pt;
-    long ch;
-
-    c->return_val.type = v_int;
-    if ( c->a.vals[1].type==v_str ) {
-	pt = c->a.vals[1].u.sval;
-	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = Fraction_find_N(ch);
-    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	c->return_val.u.ival = Fraction_find_N(c->a.vals[1].u.ival);
-    else
-	c->error = ce_badargtype;
-}
-
-static void bLigChartGetAltCnt(Context *c) {
-    const char *pt;
-    long ch;
-
-    c->return_val.type = v_int;
-    if ( c->a.vals[1].type==v_str ) {
-	pt = c->a.vals[1].u.sval;
-	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = Ligature_alt_getC(ch);
-    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	c->return_val.u.ival = Ligature_alt_getC(c->a.vals[1].u.ival);
-    else
-	c->error = ce_badargtype;
-}
-
-static void bLigChartUGetAltCnt(Context *c) {
-    const char *pt;
-    long ch;
-
-    c->return_val.type = v_int;
-    if ( c->a.vals[1].type==v_str ) {
-	pt = c->a.vals[1].u.sval;
-	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = LigatureU_alt_getC(ch);
-    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	c->return_val.u.ival = LigatureU_alt_getC(c->a.vals[1].u.ival);
-    else
-	c->error = ce_badargtype;
-}
-
-static void bVulChartGetAltCnt(Context *c) {
-    const char *pt;
-    long ch;
-
-    c->return_val.type = v_int;
-    if ( c->a.vals[1].type==v_str ) {
-	pt = c->a.vals[1].u.sval;
-	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = VulgFrac_alt_getC(ch);
-    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	c->return_val.u.ival = VulgFrac_alt_getC(c->a.vals[1].u.ival);
-    else
-	c->error = ce_badargtype;
-}
-
-static void bVulChartUGetAltCnt(Context *c) {
-    const char *pt;
-    long ch;
-
-    c->return_val.type = v_int;
-    if ( c->a.vals[1].type==v_str ) {
-	pt = c->a.vals[1].u.sval;
-	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = VulgFracU_alt_getC(ch);
-    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	c->return_val.u.ival = VulgFracU_alt_getC(c->a.vals[1].u.ival);
-    else
-	c->error = ce_badargtype;
-}
-
-static void bOFracChartGetAltCnt(Context *c) {
-    const char *pt;
-    long ch;
-
-    c->return_val.type = v_int;
-    if ( c->a.vals[1].type==v_str ) {
-	pt = c->a.vals[1].u.sval;
-	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = Fraction_alt_getC(ch);
-    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	c->return_val.u.ival = Fraction_alt_getC(c->a.vals[1].u.ival);
-    else
-	c->error = ce_badargtype;
-}
-
-static void bOFracChartUGetAltCnt(Context *c) {
-    const char *pt;
-    long ch;
-
-    c->return_val.type = v_int;
-    if ( c->a.vals[1].type==v_str ) {
-	pt = c->a.vals[1].u.sval;
-	ch = utf8_ildb(&pt);
-	c->return_val.u.ival = FractionU_alt_getC(ch);
-    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	c->return_val.u.ival = FractionU_alt_getC(c->a.vals[1].u.ival);
-    else
-	c->error = ce_badargtype;
-}
-
-static void bLigChartGetAltVal(Context *c) {
-    const char *pt;
-    long ch1,ch2;
-
-    if ( c->a.vals[1].type==v_str ) {
-	pt = c->a.vals[1].u.sval;
-	ch1 = utf8_ildb(&pt);
-    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	ch1 = c->a.vals[1].u.ival;
-    else
-	c->error = ce_badargtype;
-
-    c->return_val.type = v_int;
-    if ( c->a.vals[2].type==v_str ) {
-	pt = c->a.vals[2].u.sval;
-	ch2 = utf8_ildb(&pt);
-	c->return_val.u.ival = Ligature_alt_getV(ch1,ch2);
-    } else if ( c->a.vals[2].type==v_int || c->a.vals[2].type==v_unicode )
-	c->return_val.u.ival = Ligature_alt_getV(ch1,c->a.vals[2].u.ival);
-    else
-	c->error = ce_badargtype;
-}
-
-static void bLigChartUGetAltVal(Context *c) {
-    const char *pt;
-    long ch1,ch2;
-
-    if ( c->a.vals[1].type==v_str ) {
-	pt = c->a.vals[1].u.sval;
-	ch1 = utf8_ildb(&pt);
-    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	ch1 = c->a.vals[1].u.ival;
-    else
-	c->error = ce_badargtype;
-
-    c->return_val.type = v_int;
-    if ( c->a.vals[2].type==v_str ) {
-	pt = c->a.vals[2].u.sval;
-	ch2 = utf8_ildb(&pt);
-	c->return_val.u.ival = LigatureU_alt_getV(ch1,ch2);
-    } else if ( c->a.vals[2].type==v_int || c->a.vals[2].type==v_unicode )
-	c->return_val.u.ival = LigatureU_alt_getV(ch1,c->a.vals[2].u.ival);
-    else
-	c->error = ce_badargtype;
-}
-
-static void bVulChartGetAltVal(Context *c) {
-    const char *pt;
-    long ch1,ch2;
-
-    if ( c->a.vals[1].type==v_str ) {
-	pt = c->a.vals[1].u.sval;
-	ch1 = utf8_ildb(&pt);
-    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	ch1 = c->a.vals[1].u.ival;
-    else
-	c->error = ce_badargtype;
-
-    c->return_val.type = v_int;
-    if ( c->a.vals[2].type==v_str ) {
-	pt = c->a.vals[2].u.sval;
-	ch2 = utf8_ildb(&pt);
-	c->return_val.u.ival = VulgFrac_alt_getV(ch1,ch2);
-    } else if ( c->a.vals[2].type==v_int || c->a.vals[2].type==v_unicode )
-	c->return_val.u.ival = VulgFrac_alt_getV(ch1,c->a.vals[2].u.ival);
-    else
-	c->error = ce_badargtype;
-}
-
-static void bVulChartUGetAltVal(Context *c) {
-    const char *pt;
-    long ch1,ch2;
-
-    if ( c->a.vals[1].type==v_str ) {
-	pt = c->a.vals[1].u.sval;
-	ch1 = utf8_ildb(&pt);
-    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	ch1 = c->a.vals[1].u.ival;
-    else
-	c->error = ce_badargtype;
-
-    c->return_val.type = v_int;
-    if ( c->a.vals[2].type==v_str ) {
-	pt = c->a.vals[2].u.sval;
-	ch2 = utf8_ildb(&pt);
-	c->return_val.u.ival = VulgFracU_alt_getV(ch1,ch2);
-    } else if ( c->a.vals[2].type==v_int || c->a.vals[2].type==v_unicode )
-	c->return_val.u.ival = VulgFracU_alt_getV(ch1,c->a.vals[2].u.ival);
-    else
-	c->error = ce_badargtype;
-}
-
-static void bOFracChartGetAltVal(Context *c) {
-    const char *pt;
-    long ch1,ch2;
-
-    if ( c->a.vals[1].type==v_str ) {
-	pt = c->a.vals[1].u.sval;
-	ch1 = utf8_ildb(&pt);
-    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	ch1 = c->a.vals[1].u.ival;
-    else
-	c->error = ce_badargtype;
-
-    c->return_val.type = v_int;
-    if ( c->a.vals[2].type==v_str ) {
-	pt = c->a.vals[2].u.sval;
-	ch2 = utf8_ildb(&pt);
-	c->return_val.u.ival = Fraction_alt_getV(ch1,ch2);
-    } else if ( c->a.vals[2].type==v_int || c->a.vals[2].type==v_unicode )
-	c->return_val.u.ival = Fraction_alt_getV(ch1,c->a.vals[2].u.ival);
-    else
-	c->error = ce_badargtype;
-}
-
-static void bOFracChartUGetAltVal(Context *c) {
-    const char *pt;
-    long ch1,ch2;
-
-    if ( c->a.vals[1].type==v_str ) {
-	pt = c->a.vals[1].u.sval;
-	ch1 = utf8_ildb(&pt);
-    } else if ( c->a.vals[1].type==v_int || c->a.vals[1].type==v_unicode )
-	ch1 = c->a.vals[1].u.ival;
-    else
-	c->error = ce_badargtype;
-
-    c->return_val.type = v_int;
-    if ( c->a.vals[2].type==v_str ) {
-	pt = c->a.vals[2].u.sval;
-	ch2 = utf8_ildb(&pt);
-	c->return_val.u.ival = FractionU_alt_getV(ch1,ch2);
-    } else if ( c->a.vals[2].type==v_int || c->a.vals[2].type==v_unicode )
-	c->return_val.u.ival = FractionU_alt_getV(ch1,c->a.vals[2].u.ival);
-    else
-	c->error = ce_badargtype;
-}
-
 static struct builtins {
     const char *name;
     void (*func)(Context *);
@@ -8810,10 +8402,6 @@ static struct builtins {
     { "IsAlpha", bisalpha, 1,2,0 },
     { "IsAlNum", bisalnum, 1,2,0 },
     { "IsSpace", bisspace, 1,2,0 },
-    { "IsLigature", bisligature, 1,2,0 },
-    { "IsVulgarFraction", bisvulgarfraction, 1,2,0 },
-    { "IsOtherFraction", bisotherfraction, 1,2,0 },
-    { "IsFraction", bisfraction, 1,2,0 },
     { "ToUpper", btoupper, 1,2,0 },
     { "ToLower", btolower, 1,2,0 },
     { "ToMirror", btomirror, 1,2,0 },
@@ -9129,28 +8717,6 @@ static struct builtins {
     { "Validate", bValidate, 0,0,0 },
     { "DebugCrashFontForge", bDebugCrashFontForge, 1,0,0 },
     { "ClearSpecialData", bclearSpecialData, 0,1,0 },
-    { "ucLigChartGetCnt", bLigChartGetCnt, 1,1,0 },
-    { "ucVulChartGetCnt", bVulChartGetCnt, 1,1,0 },
-    { "ucOFracChartGetCnt", bOFracChartGetCnt, 1,1,0 },
-    { "ucFracChartGetCnt", bFracChartGetCnt, 1,1,0 },
-    { "ucLigChartGetNxt", bLigChartGetNxt, 1,2,0 },
-    { "ucVulChartGetNxt", bVulChartGetNxt, 1,2,0 },
-    { "ucOFracChartGetNxt", bOFracChartGetNxt, 1,2,0 },
-    { "ucLigChartGetLoc", bLigChartGetLoc, 1,2,0 },
-    { "ucVulChartGetLoc", bVulChartGetLoc, 1,2,0 },
-    { "ucOFracChartGetLoc", bOFracChartGetLoc, 1,2,0 },
-    { "ucLigChartGetAltCnt", bLigChartGetAltCnt, 1,2,0 },
-    { "ucLigChartGetAltVal", bLigChartGetAltVal, 1,3,0 },
-    { "ucVulChartGetAltCnt", bVulChartGetAltCnt, 1,2,0 },
-    { "ucVulChartGetAltVal", bVulChartGetAltVal, 1,3,0 },
-    { "ucOFracChartGetAltCnt", bOFracChartGetAltCnt, 1,2,0 },
-    { "ucOFracChartGetAltVal", bOFracChartGetAltVal, 1,3,0 },
-    { "ucLigChartUGetAltCnt", bLigChartUGetAltCnt, 1,2,0 },
-    { "ucLigChartUGetAltVal", bLigChartUGetAltVal, 1,3,0 },
-    { "ucVulChartUGetAltCnt", bVulChartUGetAltCnt, 1,2,0 },
-    { "ucVulChartUGetAltVal", bVulChartUGetAltVal, 1,3,0 },
-    { "ucOFracChartUGetAltCnt", bOFracChartUGetAltCnt, 1,2,0 },
-    { "ucOFracChartUGetAltVal", bOFracChartUGetAltVal, 1,3,0 },
     { NULL, 0, 0,0,0 }
 };
 

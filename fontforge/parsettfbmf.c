@@ -31,7 +31,6 @@
 
 #include "bitmapchar.h"
 #include "bvedit.h"
-#include "chardata.h"
 #include "fontforge.h"
 #include "gfile.h"
 #include "gwidget.h"

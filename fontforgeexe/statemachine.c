@@ -28,7 +28,6 @@
 
 #include <fontforge-config.h>
 
-#include "chardata.h"
 #include "fontforgeui.h"
 #include "gkeysym.h"
 #include "lookups.h"

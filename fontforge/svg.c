@@ -30,7 +30,6 @@
 #include "svg.h"
 
 #include "autohint.h"
-#include "chardata.h"
 #include "cvimages.h"
 #include "dumppfa.h"
 #include "encoding.h"
@@ -808,11 +807,8 @@ static void svg_scdump(FILE *file, SplineChar *sc,int defwid, int encuni, int vs
 		encuni!='"' && encuni!='&' &&
 		encuni!='<' && encuni!='>' )
 	    fprintf( file, "unicode=\"%c\" ", encuni);
-	else if ( encuni<0x10000 &&
-		( isarabisolated(encuni) || isarabinitial(encuni) || isarabmedial(encuni) || isarabfinal(encuni) ) &&
-		unicode_alternates[encuni>>8]!=NULL &&
-		(alt = unicode_alternates[encuni>>8][encuni&0xff])!=NULL &&
-		alt[1]=='\0' )
+	else if (( isarabisolated(encuni) || isarabinitial(encuni) || isarabmedial(encuni) || isarabfinal(encuni) ) &&
+		(alt = unialt(encuni))!=NULL && alt[1]=='\0' )
 	    /* For arabic forms use the base representation in the 0600 block */
 	    fprintf( file, "unicode=\"&#x%x;\" ", alt[0]);
 	else if ( vs!=-1 )
@@ -826,7 +822,7 @@ static void svg_scdump(FILE *file, SplineChar *sc,int defwid, int encuni, int vs
 	fprintf( file, "vert-adv-y=\"%d\" ", sc->vwidth );
     if ( strstr(sc->name,".vert")!=NULL || strstr(sc->name,".vrt2")!=NULL )
 	fprintf( file, "orientation=\"v\" " );
-    if ( encuni!=-1 && encuni<0x10000 ) {
+    if ( encuni!=-1 ) {
 	if ( isarabinitial(encuni))
 	    fprintf( file,"arabic-form=\"initial\" " );
 	else if ( isarabmedial(encuni))
@@ -928,14 +924,14 @@ static void svg_outfonttrailer(FILE *file) {
 static int AnyArabicForm( SplineChar *sc ) {
     struct altuni *altuni;
 
-    if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 &&
+    if ( sc->unicodeenc!=-1 &&
 		(isarabinitial(sc->unicodeenc) ||
 		 isarabmedial(sc->unicodeenc) ||
 		 isarabfinal(sc->unicodeenc) ||
 		 isarabisolated(sc->unicodeenc)))
 return( sc->unicodeenc );
     for ( altuni = sc->altuni; altuni!=NULL; altuni = altuni->next )
-	if ( altuni->unienc!=-1 && altuni->unienc<0x10000 &&
+	if ( altuni->unienc!=-1 &&
 		altuni->vs==-1 && altuni->fid==0 &&
 		(isarabinitial(altuni->unienc) ||
 		 isarabmedial(altuni->unienc) ||
@@ -988,24 +984,24 @@ static void svg_sfdump(FILE *file,SplineFont *sf,int layer) {
 		/* The conventions now (as I understand them) suggest that */
 		/*  fonts not use the unicode encodings for formed arabic */
 		/*  but should use simple substitutions instead */
-		int arab_off = sc->unicodeenc-0x600;
+		const struct arabicforms* form = arabicform(sc->unicodeenc);
 		SplineChar *formed;
 		formed = SCHasSubs(sc,CHR('i','n','i','t'));
 		if ( SCWorthOutputting(formed) && formed->unicodeenc==-1 &&
-			!formed->ticked && ArabicForms[arab_off].initial!=0 )
-		    svg_scdump(file,formed,defwid,ArabicForms[arab_off].initial,-1,layer);
+			!formed->ticked && form->initial!=0 )
+		    svg_scdump(file,formed,defwid,form->initial,-1,layer);
 		formed = SCHasSubs(sc,CHR('m','e','d','i'));
 		if ( SCWorthOutputting(formed) && formed->unicodeenc==-1 &&
-			!formed->ticked && ArabicForms[arab_off].medial!=0 )
-		    svg_scdump(file,formed,defwid,ArabicForms[arab_off].medial,-1,layer);
+			!formed->ticked && form->medial!=0 )
+		    svg_scdump(file,formed,defwid,form->medial,-1,layer);
 		formed = SCHasSubs(sc,CHR('f','i','n','a'));
 		if ( SCWorthOutputting(formed) && formed->unicodeenc==-1 &&
-			!formed->ticked && ArabicForms[arab_off].final!=0 )
-		    svg_scdump(file,formed,defwid,ArabicForms[arab_off].final,-1,layer);
+			!formed->ticked && form->final!=0 )
+		    svg_scdump(file,formed,defwid,form->final,-1,layer);
 		formed = SCHasSubs(sc,CHR('i','s','o','l'));
 		if ( SCWorthOutputting(formed) && formed->unicodeenc==-1 &&
-			!formed->ticked && ArabicForms[arab_off].isolated!=0 )
-		    svg_scdump(file,formed,defwid,ArabicForms[arab_off].isolated,-1,layer);
+			!formed->ticked && form->isolated!=0 )
+		    svg_scdump(file,formed,defwid,form->isolated,-1,layer);
 	    }
 	}
     }
@@ -2905,14 +2901,15 @@ static SplineChar *SVGParseGlyphArgs(xmlNodePtr glyph,int defh, int defv,
 	if ( u[1]=='\0' ) {
 	    sc->unicodeenc = u[0];
 	    if ( form!=NULL && u[0]>=0x600 && u[0]<=0x6ff ) {
+		const struct arabicforms* aform = arabicform(u[0]);
 		if ( xmlStrcmp(form,(xmlChar *) "initial")==0 )
-		    sc->unicodeenc = ArabicForms[u[0]-0x600].initial;
+		    sc->unicodeenc = aform->initial;
 		else if ( xmlStrcmp(form,(xmlChar *) "medial")==0 )
-		    sc->unicodeenc = ArabicForms[u[0]-0x600].medial;
+		    sc->unicodeenc = aform->medial;
 		else if ( xmlStrcmp(form,(xmlChar *) "final")==0 )
-		    sc->unicodeenc = ArabicForms[u[0]-0x600].final;
+		    sc->unicodeenc = aform->final;
 		else if ( xmlStrcmp(form,(xmlChar *) "isolated")==0 )
-		    sc->unicodeenc = ArabicForms[u[0]-0x600].isolated;
+		    sc->unicodeenc = aform->isolated;
 	    }
 	}
 	free(u);

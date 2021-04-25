@@ -29,7 +29,6 @@
 #include <fontforge-config.h>
 
 #include "bvedit.h"
-#include "chardata.h"
 #include "encoding.h"
 #include "ffglib.h"
 #include "fontforgevw.h"
@@ -47,6 +46,11 @@
 #include <math.h>
 #include <unistd.h>
 
+#define BREAK_AFTER 0x1
+#define BREAK_BEFORE 0x2
+#define BREAK_NONSTART 0x4
+#define BREAK_NONEND 0x8
+
 static uint32 simple_stdfeatures[] = { CHR('c','c','m','p'), CHR('l','o','c','a'), CHR('k','e','r','n'), CHR('l','i','g','a'), CHR('c','a','l','t'), CHR('m','a','r','k'), CHR('m','k','m','k'), REQUIRED_FEATURE, 0 };
 static uint32 arab_stdfeatures[] = { CHR('c','c','m','p'), CHR('l','o','c','a'), CHR('i','s','o','l'), CHR('i','n','i','t'), CHR('m','e','d','i'),CHR('f','i','n','a'), CHR('r','l','i','g'), CHR('l','i','g','a'), CHR('c','a','l','t'), CHR('k','e','r','n'), CHR('c','u','r','s'), CHR('m','a','r','k'), CHR('m','k','m','k'), REQUIRED_FEATURE, 0 };
 static uint32 hebrew_stdfeatures[] = { CHR('c','c','m','p'), CHR('l','o','c','a'), CHR('l','i','g','a'), CHR('c','a','l','t'), CHR('k','e','r','n'), CHR('m','a','r','k'), CHR('m','k','m','k'), REQUIRED_FEATURE, 0 };
@@ -59,6 +63,50 @@ static struct { uint32 script, *stdfeatures; } script_2_std[] = {
     { CHR('h','e','b','r'), hebrew_stdfeatures },
     { 0, NULL }
 };
+
+static int BreakClassify(unichar_t ch) {
+    int flags = 0;
+    switch (g_unichar_break_type(ch)) {
+        case G_UNICODE_BREAK_SPACE:
+        case G_UNICODE_BREAK_HYPHEN:
+        case G_UNICODE_BREAK_AFTER:
+        case G_UNICODE_BREAK_ZERO_WIDTH_SPACE:
+            flags |= BREAK_AFTER;
+            break;
+        case G_UNICODE_BREAK_BEFORE:
+            flags |= BREAK_BEFORE;
+            break;
+        case G_UNICODE_BREAK_BEFORE_AND_AFTER:
+        case G_UNICODE_BREAK_IDEOGRAPHIC:
+            flags |= BREAK_AFTER | BREAK_BEFORE;
+            break;
+        case G_UNICODE_BREAK_NON_STARTER:
+        case G_UNICODE_BREAK_CLOSE_PUNCTUATION:
+            flags |= BREAK_NONSTART;
+            break;
+        case G_UNICODE_BREAK_NON_BREAKING_GLUE:
+            flags |= BREAK_NONSTART | BREAK_NONEND;
+            break;
+        case G_UNICODE_BREAK_OPEN_PUNCTUATION:
+        case G_UNICODE_BREAK_COMBINING_MARK:
+            flags |= BREAK_NONEND;
+            break;
+        default:
+            break;
+    }
+    return flags;
+}
+
+// This is a copy of the algorithm from the old utype.c/makeutype.c
+// See https://github.com/fontforge/fontforge/blob/a5dedb4010cd49a5fcfaeed5d188dd7942294005/Unicode/makeutype.c#L687-L706
+static int IsBreakBetweenOk(unichar_t ch1, unichar_t ch2) {
+    int b1 = BreakClassify(ch1), b2 = BreakClassify(ch2);
+    return (
+        ((b1 & BREAK_AFTER) && !(b2 & BREAK_NONSTART)) ||
+        ((b2 & BREAK_BEFORE) && !(b1 & BREAK_NONEND)) ||
+        (!isdigit(ch2) && ch1 == '/')
+    );
+}
 
 uint32 *StdFeaturesOfScript(uint32 script) {
     int i;
@@ -200,9 +248,7 @@ return( 1 );
 	    }
 	    pos = paratext[end]->orig_index +
 		    ((struct fontlist *) (paratext[end]->fl))->start;
-	    if ( ((li->text[pos+1]<0x10000 && li->text[pos]<0x10000 &&
-			isbreakbetweenok(li->text[pos],li->text[pos+1])) ||
-		    (li->text[pos]==' ' && li->text[pos+1]>=0x10000 )))
+	    if (IsBreakBetweenOk(li->text[pos],li->text[pos+1]))
 		break_pos = end;
 	}
 	if ( paratext[end]==NULL && end!=0 ) {

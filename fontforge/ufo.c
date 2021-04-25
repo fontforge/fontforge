@@ -28,7 +28,6 @@
 #include <fontforge-config.h>
 
 #include "autohint.h"
-#include "chardata.h"
 #include "dumppfa.h"
 #include "featurefile.h"
 #include "fontforgevw.h"

@@ -30,7 +30,6 @@
 
 #include "lookups.h"
 
-#include "chardata.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
 #include "macenc.h"

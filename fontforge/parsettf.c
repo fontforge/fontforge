@@ -29,7 +29,6 @@
 
 #include "parsettf.h"
 
-#include "chardata.h"
 #include "cvundoes.h"
 #include "encoding.h"
 #include "fontforge.h"

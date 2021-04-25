@@ -603,11 +603,11 @@ static int GTextFieldSelBackword(unichar_t *text,int start) {
 	/* Can't go back */;
     else if ( isalnum(ch) || ch=='_' ) {
 	int i;
-	for ( i=start-1; i>=0 && ((text[i]<0x10000 && isalnum(text[i])) || text[i]=='_') ; --i );
+	for ( i=start-1; i>=0 && (isalnum(text[i]) || text[i]=='_') ; --i );
 	start = i+1;
     } else {
 	int i;
-	for ( i=start-1; i>=0 && !(text[i]<0x10000 && isalnum(text[i])) && text[i]!='_' ; --i );
+	for ( i=start-1; i>=0 && !isalnum(text[i]) && text[i]!='_' ; --i );
 	start = i+1;
     }
 return( start );
@@ -620,11 +620,11 @@ static int GTextFieldSelForeword(unichar_t *text,int end) {
 	/* Nothing */;
     else if ( isalnum(ch) || ch=='_' ) {
 	int i;
-	for ( i=end; (text[i]<0x10000 && isalnum(text[i])) || text[i]=='_' ; ++i );
+	for ( i=end; isalnum(text[i]) || text[i]=='_' ; ++i );
 	end = i;
     } else {
 	int i;
-	for ( i=end; !(text[i]<0x10000 && isalnum(text[i])) && text[i]!='_' && text[i]!='\0' ; ++i );
+	for ( i=end; !isalnum(text[i]) && text[i]!='_' && text[i]!='\0' ; ++i );
 	end = i;
     }
 return( end );
@@ -639,23 +639,23 @@ static void GTextFieldSelectWord(GTextField *gt,int mid, int16 *start, int16 *en
 
     if ( ch=='\0' )
 	*start = *end = mid;
-    else if ( (ch<0x10000 && isspace(ch)) ) {
+    else if ( isspace(ch) ) {
 	int i;
-	for ( i=mid; text[i]<0x10000 && isspace(text[i]); ++i );
+	for ( i=mid; isspace(text[i]); ++i );
 	*end = i;
-	for ( i=mid-1; i>=0 && text[i]<0x10000 && isspace(text[i]) ; --i );
+	for ( i=mid-1; i>=0 && isspace(text[i]) ; --i );
 	*start = i+1;
-    } else if ( (ch<0x10000 && isalnum(ch)) || ch=='_' ) {
+    } else if ( isalnum(ch) || ch=='_' ) {
 	int i;
-	for ( i=mid; (text[i]<0x10000 && isalnum(text[i])) || text[i]=='_' ; ++i );
+	for ( i=mid; isalnum(text[i]) || text[i]=='_' ; ++i );
 	*end = i;
-	for ( i=mid-1; i>=0 && ((text[i]<0x10000 && isalnum(text[i])) || text[i]=='_') ; --i );
+	for ( i=mid-1; i>=0 && (isalnum(text[i]) || text[i]=='_') ; --i );
 	*start = i+1;
     } else {
 	int i;
-	for ( i=mid; !(text[i]<0x10000 && isalnum(text[i])) && text[i]!='_' && text[i]!='\0' ; ++i );
+	for ( i=mid; !isalnum(text[i]) && text[i]!='_' && text[i]!='\0' ; ++i );
 	*end = i;
-	for ( i=mid-1; i>=0 && !(text[i]<0x10000 && isalnum(text[i])) && text[i]!='_' ; --i );
+	for ( i=mid-1; i>=0 && !isalnum(text[i]) && text[i]!='_' ; --i );
 	*start = i+1;
     }
 }

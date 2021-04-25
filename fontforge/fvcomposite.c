@@ -32,7 +32,6 @@
 #include "autowidth.h"
 #include "bitmapchar.h"
 #include "bvedit.h"
-#include "chardata.h"
 #include "cvundoes.h"
 #include "encoding.h"
 #include "fontforgevw.h"
@@ -982,7 +981,7 @@ return( max );
 
 int isaccent(int uni) {
 
-    if ( uni<0x10000 && iscombining(uni) )
+    if ( iscombining(uni) )
 return( true );
     if ( uni>=0x2b0 && uni<0x2ff )
 return( true );
@@ -1042,12 +1041,12 @@ static const unichar_t *arabicfixup(SplineFont *sf, const unichar_t *upt, int in
 	} else if ( *pt<0x600 || *pt>0x6ff )
 	    *apt = *pt;
 	else if ( ini ) {
-	    *apt = ArabicForms[*pt-0x600].initial;
+	    *apt = arabicform(*pt)->initial;
 	    ini = false;
 	} else if ( pt[1]==' ' || (pt[1]=='\0' && final))
-	    *apt = ArabicForms[*pt-0x600].final;
+	    *apt = arabicform(*pt)->final;
 	else
-	    *apt = ArabicForms[*pt-0x600].medial;
+	    *apt = arabicform(*pt)->medial;
 	if ( !haschar(sf,*apt,NULL))
     break;
     }
@@ -1159,8 +1158,7 @@ return( greekalts );
 	    adobes_pua_alts[base-0xf600]!=0 )
 return( adobes_pua_alts[base-0xf600]);
 
-    if ( base==-1 || base>=65536 || unicode_alternates[base>>8]==NULL ||
-	    (upt = unicode_alternates[base>>8][base&0xff])==NULL )
+    if ( (upt = unialt(base))==NULL )
 return( SFAlternateFromLigature(sf,base,sc));
 
 	    /* The definitions of some of the greek letters may make some */
@@ -1230,6 +1228,11 @@ return( greekalts );
 	greekalts[1] = 0x315;
 	greekalts[2] = '\0';
 return( greekalts );
+    } else if (isdecompcircle(base) && u_strlen(upt) < (sizeof(greekalts)/sizeof(greekalts[0])-1)) {
+	static const unichar_t circle[] = {0x20dd, 0};
+	u_strcpy(greekalts, upt);
+	u_strcat(greekalts, circle);
+	return greekalts;
     }
 
 return( upt );
@@ -1954,7 +1957,7 @@ return( NULL );
 }
 
 static void _BCCenterAccent( BDFFont *bdf, int gid, int rgid, int ch, int basech, int italicoff,
-	uint32 pos,	/* unicode char position info, see #define for utype2[] in utype.h */
+	uint32 pos,	/* pose info from unicode canonical combining class and manual overrides, see utype.h */
 	real em ) {
     BDFChar *bc, *rbc;
     int ixoff, iyoff, ispacing;
@@ -2008,7 +2011,7 @@ static void _SCCenterAccent(SplineChar *sc,SplineChar *basersc, SplineFont *sf,
 	int layer, int ch, BDFFont *bdf, int disp_only,
 	SplineChar *rsc, real ia, int basech,
 	int invert,	/* invert accent, false==0, true!=0 */
-	uint32 pos	/* unicode char position info, see #define for utype2[] in utype.h */ ) {
+	uint32 pos	/* pose info from unicode canonical combining class and manual overrides, see utype.h */ ) {
     real transform[6];
     DBounds bb, rbb, bbb;
     real xoff, yoff;
@@ -2052,13 +2055,11 @@ return;
     }
     if ( ia==0 && baserch!=basech && basersc!=NULL ) {
 	ybase = SplineCharFindSlantedBounds(basersc,layer,&bbb,ia);
-	if ( (ffUnicodeUtype2(ch) & (FF_UNICODE_ABOVE|FF_UNICODE_BELOW)) ) {
-	    /* if unicode.org character definition matches ABOVE or BELOW, then... */
+	if ( (pose(ch) & (FF_UNICODE_ABOVE|FF_UNICODE_BELOW)) ) {
 	    bbb.maxy = bb.maxy;
 	    bbb.miny = bb.miny;
 	}
-	if ( (ffUnicodeUtype2(ch) & (FF_UNICODE_RIGHT|FF_UNICODE_LEFT)) ) {
-	    /* if unicode.org character definition matches RIGHT or LEFT, then... */
+	if ( (pose(ch) & (FF_UNICODE_RIGHT|FF_UNICODE_LEFT)) ) {
 	    bbb.maxx = bb.maxx;
 	    bbb.minx = bb.minx;
 	}
@@ -2077,11 +2078,11 @@ return;
 	/*  If so then figure offsets relative to it. */
 	xoff = ap1->me.x-ap2->me.x + sc->layers[layer].refs->transform[4];
 	yoff = ap1->me.y-ap2->me.y + sc->layers[layer].refs->transform[5];
-	pos = ffUnicodeUtype2(ch);	/* init with unicode.org position information */
+	pos = pose(ch);
     } else if ( AnchorClassMatch(basersc,rsc,(AnchorClass *) -1,&ap1,&ap2)!=NULL && ap2->type==at_mark ) {
 	xoff = ap1->me.x-ap2->me.x;
 	yoff = ap1->me.y-ap2->me.y;
-	pos = ffUnicodeUtype2(ch);	/* init with unicode.org position information */
+	pos = pose(ch);
     } else {
  /* try to establish a common line on which all accents lie. The problem being*/
  /*  that an accent above a,e,o will usually be slightly higher than an accent */
@@ -2119,10 +2120,7 @@ return;
 	}
 	if ( pos==FF_UNICODE_NOPOSDATAGIVEN ) {
 	    /* if here, then we need to initialize some type of position info for the accent */
-	    if ( ch<0 || ch>=0x10000 )	/* makeutype.c only built data in utype.c for {0...MAXC} */
-		pos = FF_UNICODE_ABOVE;
-	    else
-		pos = ffUnicodeUtype2(ch);	/* init with unicode.org position information */
+	    pos = pose(ch);
 	    /* In greek, PSILI and friends are centered above lower case, and kern left*/
 	    /*  for upper case */
 	    if (( basech>=0x390 && basech<=0x3ff) || (basech>=0x1f00 && basech<=0x1fff)) {
@@ -2644,7 +2642,7 @@ static int SCMakeRightToLeftLig(SplineChar *sc,SplineFont *sf,
     pt = start+cnt-1;
     ch = *pt;
     if ( ch>=0x621 && ch<=0x6ff ) {
-	alt_ch = ArabicForms[ch-0x600].final;
+	alt_ch = arabicform(ch)->final;
 	if ( alt_ch!=0 && haschar(sf,alt_ch,NULL))
 	    ch = alt_ch;
     }
@@ -2653,9 +2651,9 @@ static int SCMakeRightToLeftLig(SplineChar *sc,SplineFont *sf,
 	    ch = *pt;
 	    if ( ch>=0x621 && ch<=0x6ff ) {
 		if ( pt==start )
-		    alt_ch = ArabicForms[ch-0x600].initial;
+		    alt_ch = arabicform(ch)->initial;
 		else
-		    alt_ch = ArabicForms[ch-0x600].medial;
+		    alt_ch = arabicform(ch)->medial;
 		if ( alt_ch!=0 && haschar(sf,alt_ch,NULL))
 		    ch = alt_ch;
 	    }
@@ -2859,7 +2857,7 @@ return;
     if ( dot==NULL && ( ch=='i' || ch=='j' || ch==0x456 )) {
 	/* if we're combining i (or j) with an accent that would interfere */
 	/*  with the dot, then get rid of the dot. (use dotlessi) */
-	for ( apt = pt; *apt && combiningposmask(*apt) != FF_UNICODE_ABOVE; ++apt);
+	for ( apt = pt; *apt && pose(*apt) != FF_UNICODE_ABOVE; ++apt);
 	if ( *apt!='\0' ) {
 	    if ( ch=='i' || ch==0x456 ) ch = 0x0131;
 	    else if ( ch=='j' ) {
@@ -2910,7 +2908,7 @@ return;
 int SCAppendAccent(SplineChar *sc,int layer,
 	char *glyph_name,	/* unicode char name */
 	int uni,		/* unicode char value */
-	uint32 pos		/* unicode char position info, see #define for (uint32)(utype2[]) */ ) {
+	uint32 pos		/* pose info from unicode canonical combining class and manual overrides, see utype.h */ ) {
     SplineFont *sf = sc->parent;
     double ia;
     int basech;
