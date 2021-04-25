@@ -113,7 +113,7 @@ char* uniname_name(unichar_t ch) {
     return copyn(ret, (sizeof(ret)/sizeof(ret[0])) - bufsiz);
 }
 
-char* uniname_annotation(unichar_t ch) {
+char* uniname_annotation(unichar_t ch, int prettify) {
     const unsigned char *src;
     char ret[MAX_ANNOTATION_LENGTH];
     int bufsiz = sizeof(ret)/sizeof(ret[0]);
@@ -130,10 +130,17 @@ char* uniname_annotation(unichar_t ch) {
     }
     ++src;
 
-    *dst++ = '\t';
-    dst = prettify_annotation_start(dst, *src++, &bufsiz);
-    *dst++ = ' ';
-    bufsiz -= 2;
+    if (prettify) {
+        *dst++ = '\t';
+        dst = prettify_annotation_start(dst, *src++, &bufsiz);
+        *dst++ = ' ';
+        bufsiz -= 2;
+    } else {
+        *dst++ = '\t';
+        *dst++ = *src++;
+        *dst++ = ' ';
+        bufsiz -= 3;
+    }
 
     while (*src != '\0' && bufsiz > 4) {
         switch (*src >> 4) {
@@ -158,9 +165,15 @@ char* uniname_annotation(unichar_t ch) {
             --bufsiz;
             if (*dst++ == '\n') {
                 *dst++ = '\t';
-                dst = prettify_annotation_start(dst, *src++, &bufsiz);
-                *dst++ = ' ';
-                bufsiz -= 2;
+                if (prettify) {
+                    dst = prettify_annotation_start(dst, *src++, &bufsiz);
+                    *dst++ = ' ';
+                    bufsiz -= 2;
+                } else {
+                    *dst++ = *src++;
+                    *dst++ = ' ';
+                    bufsiz -= 3;
+                }
             }
         }
     }
