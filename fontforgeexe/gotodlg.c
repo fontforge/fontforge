@@ -29,7 +29,6 @@
 
 #include "fontforgeui.h"
 #include "fvfonts.h"
-#include "unicoderange.h"
 #include "ustring.h"
 #include "utype.h"
 
@@ -40,20 +39,19 @@ return( strcmp((char *) (t1->text),(char *) (t2->text)));
 }
 
 static GTextInfo *AvailableRanges(SplineFont *sf,EncMap *map) {
-    GTextInfo *ret = calloc(unicoderange_cnt+3,sizeof(GTextInfo));
-    int i, cnt, ch, pos;
+    int i, cnt, pos, num_blocks;
+    const struct unicode_range* blocks = uniname_blocks(&num_blocks);
+    GTextInfo *ret = calloc(num_blocks+3,sizeof(GTextInfo));
 
-    for ( i=cnt=0; unicoderange[i].name!=NULL; ++i ) {
-	if ( unicoderange[i].display ) {
-	    ch = unicoderange[i].defined==-1 ? unicoderange[i].first : unicoderange[i].defined;
-	    pos = SFFindSlot(sf,map,ch,NULL);
-	    if ( pos!=-1 ) {
-	        ret[cnt].text = (unichar_t *) _(unicoderange[i].name);
-	        ret[cnt].text_is_1byte = true;
-	        ret[cnt++].userdata = (void *) (intpt) pos;
-	    }
-	}
+    for (i = cnt = 0; i < num_blocks; ++i) {
+        pos = SFFindSlot(sf, map, blocks[i].first_char, NULL);
+        if (pos != -1) {
+            ret[cnt].text = (unichar_t *) _(blocks[i].name);
+            ret[cnt].text_is_1byte = true;
+            ret[cnt++].userdata = (void *) (intpt) pos;
+        }
     }
+
     qsort(ret,cnt,sizeof(GTextInfo),alpha);
 return( ret );
 }

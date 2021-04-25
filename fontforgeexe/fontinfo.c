@@ -5173,26 +5173,26 @@ static void FigureUnicode(struct gfi_data *d) {
     char buffer[200];
 
     GGadgetClearList(list);
-    ri = SFUnicodeRanges(d->sf,(includeempties?ur_includeempty:0)|ur_sortbyunicode);
+    ri = SFUnicodeRanges(d->sf,includeempties);
     if ( ri==NULL ) cnt=0;
     else
 	for ( cnt=0; ri[cnt].range!=NULL; ++cnt );
 
     ti = malloc((cnt+1) * sizeof( GTextInfo * ));
     for ( i=0; i<cnt; ++i ) {
-	if ( ri[i].range->first==-1 )
+	if ( ri[i].range->start==(unichar_t)-1 )
 	    snprintf( buffer, sizeof(buffer),
 		    "%s  %d/0", _(ri[i].range->name), ri[i].cnt);
 	else
 	    snprintf( buffer, sizeof(buffer),
 		    "%s  U+%04X-U+%04X %d/%d",
 		    _(ri[i].range->name),
-		    (int) ri[i].range->first, (int) ri[i].range->last,
-		    ri[i].cnt, ri[i].range->actual );
+		    (int) ri[i].range->start, (int) ri[i].range->end,
+		    ri[i].cnt, ri[i].range->num_assigned );
 	ti[i] = calloc(1,sizeof(GTextInfo));
 	ti[i]->fg = ti[i]->bg = COLOR_DEFAULT;
 	ti[i]->text = utf82u_copy(buffer);
-	ti[i]->userdata = ri[i].range;
+	ti[i]->userdata = (void*)ri[i].range;
     }
     ti[i] = calloc(1,sizeof(GTextInfo));
     GGadgetSetList(list,ti,false);
@@ -5202,7 +5202,7 @@ static void FigureUnicode(struct gfi_data *d) {
 static int GFI_UnicodeRangeChange(GGadget *g, GEvent *e) {
     struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
     GTextInfo *ti = GGadgetGetListItemSelected(g);
-    struct unicoderange *r;
+    const struct unicode_range *r;
     int gid, first=-1;
     SplineFont *sf = d->sf;
     FontView *fv = (FontView *) (sf->fv);
@@ -5223,23 +5223,23 @@ return( true );
     if ( e->u.control.subtype == et_listselected ) {
 	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( sf->glyphs[gid]!=NULL ) {
 	    enc = map->backmap[gid];
-	    if ( sf->glyphs[gid]->unicodeenc>=r->first && sf->glyphs[gid]->unicodeenc<=r->last &&
+	    if ( sf->glyphs[gid]->unicodeenc>=r->start && sf->glyphs[gid]->unicodeenc<=r->end &&
 		    enc!=-1 ) {
 		if ( first==-1 || enc<first ) first = enc;
 		fv->b.selected[enc] = true;
 	    }
 	}
-    } else if ( e->u.control.subtype == et_listdoubleclick && !r->unassigned ) {
-	char *found = calloc(r->last-r->first+1,1);
+    } else if ( e->u.control.subtype == et_listdoubleclick && r->num_assigned>0 ) {
+	char *found = calloc(r->end-r->start+1,1);
 	for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( sf->glyphs[gid]!=NULL ) {
 	    int u = sf->glyphs[gid]->unicodeenc;
-	    if ( u>=r->first && u<=r->last ) {
-		found[u-r->first] = true;
+	    if ( u>=r->start && u<=r->end ) {
+		found[u-r->start] = true;
 	    }
 	}
-	for ( i=0; i<=r->last-r->first; ++i ) {
-	    if ( isunicodepointassigned(i+r->first) && !found[i] ) {
-		enc = EncFromUni(i+r->first,map->enc);
+	for ( i=0; i<=r->end-r->start; ++i ) {
+	    if ( isunicodepointassigned(i+r->start) && !found[i] ) {
+		enc = EncFromUni(i+r->start,map->enc);
 		if ( enc!=-1 ) {
 		    if ( first==-1 || enc<first ) first = enc;
 		    fv->b.selected[enc] = true;
