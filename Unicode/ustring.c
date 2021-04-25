@@ -27,7 +27,6 @@
 
 #include <fontforge-config.h>
 
-#include "chardata.h"
 #include "ffglib.h"
 #include "ustring.h"
 #include "utype.h"
@@ -905,8 +904,7 @@ char *StripToASCII(const char *utf8_str) {
 	    }
 	    while ( *str )
 		*pt++ = *str++;
-	} else if ( unicode_alternates[ch>>8]!=NULL &&
-		(alt = unicode_alternates[ch>>8][ch&0xff])!=NULL ) {
+	} else if ( (alt = unialt(ch))!=NULL ) {
 	    while ( *alt!='\0' ) {
 		if ( pt>=end ) {
 		    int off = pt-newcr;

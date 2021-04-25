@@ -1,5 +1,7 @@
 build/
 contrib/admintools/splashimage.c
+Unicode/data/*.txt
+Unicode/data/*.zip
 
 .vscode/
 .vs/
@@ -11,3 +13,8 @@ contrib/admintools/splashimage.c
 .Trashes
 ehthumbs.db
 Thumbs.db
+tags
+
+__pycache__
+*.py[co]
+

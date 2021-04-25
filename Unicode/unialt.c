@@ -1,8959 +1,2322 @@
-#include "chardata.h"
+/* This is a GENERATED file - from makeutype.py with Unicode 13.0.0 */
 
-/* This file was generated using the program 'makeutype' for Unicode_version 12.1 */
+/* Copyright (C) 2000-2012 by George Williams */
+/*
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are met:
 
-static const unichar_t str_a0[] = { 0x0020, 0 };
-static const unichar_t str_a8[] = { 0x0020, 0x0308, 0 };
-static const unichar_t str_aa[] = { 0x0061, 0 };
-static const unichar_t str_af[] = { 0x0020, 0x0304, 0 };
-static const unichar_t str_b2[] = { 0x0032, 0 };
-static const unichar_t str_b3[] = { 0x0033, 0 };
-static const unichar_t str_b4[] = { 0x0020, 0x0301, 0 };
-static const unichar_t str_b5[] = { 0x03bc, 0 };
-static const unichar_t str_b8[] = { 0x0020, 0x0327, 0 };
-static const unichar_t str_b9[] = { 0x0031, 0 };
-static const unichar_t str_ba[] = { 0x006f, 0 };
-static const unichar_t str_bc[] = { 0x0031, 0x2044, 0x0034, 0 };
-static const unichar_t str_bd[] = { 0x0031, 0x2044, 0x0032, 0 };
-static const unichar_t str_be[] = { 0x0033, 0x2044, 0x0034, 0 };
-static const unichar_t str_c0[] = { 0x0041, 0x0300, 0 };
-static const unichar_t str_c1[] = { 0x0041, 0x0301, 0 };
-static const unichar_t str_c2[] = { 0x0041, 0x0302, 0 };
-static const unichar_t str_c3[] = { 0x0041, 0x0303, 0 };
-static const unichar_t str_c4[] = { 0x0041, 0x0308, 0 };
-static const unichar_t str_c5[] = { 0x0041, 0x030a, 0 };
-static const unichar_t str_c7[] = { 0x0043, 0x0327, 0 };
-static const unichar_t str_c8[] = { 0x0045, 0x0300, 0 };
-static const unichar_t str_c9[] = { 0x0045, 0x0301, 0 };
-static const unichar_t str_ca[] = { 0x0045, 0x0302, 0 };
-static const unichar_t str_cb[] = { 0x0045, 0x0308, 0 };
-static const unichar_t str_cc[] = { 0x0049, 0x0300, 0 };
-static const unichar_t str_cd[] = { 0x0049, 0x0301, 0 };
-static const unichar_t str_ce[] = { 0x0049, 0x0302, 0 };
-static const unichar_t str_cf[] = { 0x0049, 0x0308, 0 };
-static const unichar_t str_d1[] = { 0x004e, 0x0303, 0 };
-static const unichar_t str_d2[] = { 0x004f, 0x0300, 0 };
-static const unichar_t str_d3[] = { 0x004f, 0x0301, 0 };
-static const unichar_t str_d4[] = { 0x004f, 0x0302, 0 };
-static const unichar_t str_d5[] = { 0x004f, 0x0303, 0 };
-static const unichar_t str_d6[] = { 0x004f, 0x0308, 0 };
-static const unichar_t str_d9[] = { 0x0055, 0x0300, 0 };
-static const unichar_t str_da[] = { 0x0055, 0x0301, 0 };
-static const unichar_t str_db[] = { 0x0055, 0x0302, 0 };
-static const unichar_t str_dc[] = { 0x0055, 0x0308, 0 };
-static const unichar_t str_dd[] = { 0x0059, 0x0301, 0 };
-static const unichar_t str_e0[] = { 0x0061, 0x0300, 0 };
-static const unichar_t str_e1[] = { 0x0061, 0x0301, 0 };
-static const unichar_t str_e2[] = { 0x0061, 0x0302, 0 };
-static const unichar_t str_e3[] = { 0x0061, 0x0303, 0 };
-static const unichar_t str_e4[] = { 0x0061, 0x0308, 0 };
-static const unichar_t str_e5[] = { 0x0061, 0x030a, 0 };
-static const unichar_t str_e7[] = { 0x0063, 0x0327, 0 };
-static const unichar_t str_e8[] = { 0x0065, 0x0300, 0 };
-static const unichar_t str_e9[] = { 0x0065, 0x0301, 0 };
-static const unichar_t str_ea[] = { 0x0065, 0x0302, 0 };
-static const unichar_t str_eb[] = { 0x0065, 0x0308, 0 };
-static const unichar_t str_ec[] = { 0x0069, 0x0300, 0 };
-static const unichar_t str_ed[] = { 0x0069, 0x0301, 0 };
-static const unichar_t str_ee[] = { 0x0069, 0x0302, 0 };
-static const unichar_t str_ef[] = { 0x0069, 0x0308, 0 };
-static const unichar_t str_f1[] = { 0x006e, 0x0303, 0 };
-static const unichar_t str_f2[] = { 0x006f, 0x0300, 0 };
-static const unichar_t str_f3[] = { 0x006f, 0x0301, 0 };
-static const unichar_t str_f4[] = { 0x006f, 0x0302, 0 };
-static const unichar_t str_f5[] = { 0x006f, 0x0303, 0 };
-static const unichar_t str_f6[] = { 0x006f, 0x0308, 0 };
-static const unichar_t str_f9[] = { 0x0075, 0x0300, 0 };
-static const unichar_t str_fa[] = { 0x0075, 0x0301, 0 };
-static const unichar_t str_fb[] = { 0x0075, 0x0302, 0 };
-static const unichar_t str_fc[] = { 0x0075, 0x0308, 0 };
-static const unichar_t str_fd[] = { 0x0079, 0x0301, 0 };
-static const unichar_t str_ff[] = { 0x0079, 0x0308, 0 };
-static const unichar_t str_100[] = { 0x0041, 0x0304, 0 };
-static const unichar_t str_101[] = { 0x0061, 0x0304, 0 };
-static const unichar_t str_102[] = { 0x0041, 0x0306, 0 };
-static const unichar_t str_103[] = { 0x0061, 0x0306, 0 };
-static const unichar_t str_104[] = { 0x0041, 0x0328, 0 };
-static const unichar_t str_105[] = { 0x0061, 0x0328, 0 };
-static const unichar_t str_106[] = { 0x0043, 0x0301, 0 };
-static const unichar_t str_107[] = { 0x0063, 0x0301, 0 };
-static const unichar_t str_108[] = { 0x0043, 0x0302, 0 };
-static const unichar_t str_109[] = { 0x0063, 0x0302, 0 };
-static const unichar_t str_10a[] = { 0x0043, 0x0307, 0 };
-static const unichar_t str_10b[] = { 0x0063, 0x0307, 0 };
-static const unichar_t str_10c[] = { 0x0043, 0x030c, 0 };
-static const unichar_t str_10d[] = { 0x0063, 0x030c, 0 };
-static const unichar_t str_10e[] = { 0x0044, 0x030c, 0 };
-static const unichar_t str_10f[] = { 0x0064, 0x030c, 0 };
-static const unichar_t str_110[] = { 0x00d0, 0 };
-static const unichar_t str_112[] = { 0x0045, 0x0304, 0 };
-static const unichar_t str_113[] = { 0x0065, 0x0304, 0 };
-static const unichar_t str_114[] = { 0x0045, 0x0306, 0 };
-static const unichar_t str_115[] = { 0x0065, 0x0306, 0 };
-static const unichar_t str_116[] = { 0x0045, 0x0307, 0 };
-static const unichar_t str_117[] = { 0x0065, 0x0307, 0 };
-static const unichar_t str_118[] = { 0x0045, 0x0328, 0 };
-static const unichar_t str_119[] = { 0x0065, 0x0328, 0 };
-static const unichar_t str_11a[] = { 0x0045, 0x030c, 0 };
-static const unichar_t str_11b[] = { 0x0065, 0x030c, 0 };
-static const unichar_t str_11c[] = { 0x0047, 0x0302, 0 };
-static const unichar_t str_11d[] = { 0x0067, 0x0302, 0 };
-static const unichar_t str_11e[] = { 0x0047, 0x0306, 0 };
-static const unichar_t str_11f[] = { 0x0067, 0x0306, 0 };
-static const unichar_t str_120[] = { 0x0047, 0x0307, 0 };
-static const unichar_t str_121[] = { 0x0067, 0x0307, 0 };
-static const unichar_t str_122[] = { 0x0047, 0x0327, 0 };
-static const unichar_t str_123[] = { 0x0067, 0x0327, 0 };
-static const unichar_t str_124[] = { 0x0048, 0x0302, 0 };
-static const unichar_t str_125[] = { 0x0068, 0x0302, 0 };
-static const unichar_t str_128[] = { 0x0049, 0x0303, 0 };
-static const unichar_t str_129[] = { 0x0069, 0x0303, 0 };
-static const unichar_t str_12a[] = { 0x0049, 0x0304, 0 };
-static const unichar_t str_12b[] = { 0x0069, 0x0304, 0 };
-static const unichar_t str_12c[] = { 0x0049, 0x0306, 0 };
-static const unichar_t str_12d[] = { 0x0069, 0x0306, 0 };
-static const unichar_t str_12e[] = { 0x0049, 0x0328, 0 };
-static const unichar_t str_12f[] = { 0x0069, 0x0328, 0 };
-static const unichar_t str_130[] = { 0x0049, 0x0307, 0 };
-static const unichar_t str_132[] = { 0x0049, 0x004a, 0 };
-static const unichar_t str_133[] = { 0x0069, 0x006a, 0 };
-static const unichar_t str_134[] = { 0x004a, 0x0302, 0 };
-static const unichar_t str_135[] = { 0x006a, 0x0302, 0 };
-static const unichar_t str_136[] = { 0x004b, 0x0327, 0 };
-static const unichar_t str_137[] = { 0x006b, 0x0327, 0 };
-static const unichar_t str_138[] = { 0x03ba, 0 };
-static const unichar_t str_139[] = { 0x004c, 0x0301, 0 };
-static const unichar_t str_13a[] = { 0x006c, 0x0301, 0 };
-static const unichar_t str_13b[] = { 0x004c, 0x0327, 0 };
-static const unichar_t str_13c[] = { 0x006c, 0x0327, 0 };
-static const unichar_t str_13d[] = { 0x004c, 0x030c, 0 };
-static const unichar_t str_13e[] = { 0x006c, 0x030c, 0 };
-static const unichar_t str_13f[] = { 0x004c, 0x00b7, 0 };
-static const unichar_t str_140[] = { 0x006c, 0x00b7, 0 };
-static const unichar_t str_143[] = { 0x004e, 0x0301, 0 };
-static const unichar_t str_144[] = { 0x006e, 0x0301, 0 };
-static const unichar_t str_145[] = { 0x004e, 0x0327, 0 };
-static const unichar_t str_146[] = { 0x006e, 0x0327, 0 };
-static const unichar_t str_147[] = { 0x004e, 0x030c, 0 };
-static const unichar_t str_148[] = { 0x006e, 0x030c, 0 };
-static const unichar_t str_149[] = { 0x02bc, 0x006e, 0 };
-static const unichar_t str_14c[] = { 0x004f, 0x0304, 0 };
-static const unichar_t str_14d[] = { 0x006f, 0x0304, 0 };
-static const unichar_t str_14e[] = { 0x004f, 0x0306, 0 };
-static const unichar_t str_14f[] = { 0x006f, 0x0306, 0 };
-static const unichar_t str_150[] = { 0x004f, 0x030b, 0 };
-static const unichar_t str_151[] = { 0x006f, 0x030b, 0 };
-static const unichar_t str_152[] = { 0x004f, 0x0045, 0 };
-static const unichar_t str_153[] = { 0x006f, 0x0065, 0 };
-static const unichar_t str_154[] = { 0x0052, 0x0301, 0 };
-static const unichar_t str_155[] = { 0x0072, 0x0301, 0 };
-static const unichar_t str_156[] = { 0x0052, 0x0327, 0 };
-static const unichar_t str_157[] = { 0x0072, 0x0327, 0 };
-static const unichar_t str_158[] = { 0x0052, 0x030c, 0 };
-static const unichar_t str_159[] = { 0x0072, 0x030c, 0 };
-static const unichar_t str_15a[] = { 0x0053, 0x0301, 0 };
-static const unichar_t str_15b[] = { 0x0073, 0x0301, 0 };
-static const unichar_t str_15c[] = { 0x0053, 0x0302, 0 };
-static const unichar_t str_15d[] = { 0x0073, 0x0302, 0 };
-static const unichar_t str_15e[] = { 0x0053, 0x0327, 0 };
-static const unichar_t str_15f[] = { 0x0073, 0x0327, 0 };
-static const unichar_t str_160[] = { 0x0053, 0x030c, 0 };
-static const unichar_t str_161[] = { 0x0073, 0x030c, 0 };
-static const unichar_t str_162[] = { 0x0054, 0x0327, 0 };
-static const unichar_t str_163[] = { 0x0074, 0x0327, 0 };
-static const unichar_t str_164[] = { 0x0054, 0x030c, 0 };
-static const unichar_t str_165[] = { 0x0074, 0x030c, 0 };
-static const unichar_t str_168[] = { 0x0055, 0x0303, 0 };
-static const unichar_t str_169[] = { 0x0075, 0x0303, 0 };
-static const unichar_t str_16a[] = { 0x0055, 0x0304, 0 };
-static const unichar_t str_16b[] = { 0x0075, 0x0304, 0 };
-static const unichar_t str_16c[] = { 0x0055, 0x0306, 0 };
-static const unichar_t str_16d[] = { 0x0075, 0x0306, 0 };
-static const unichar_t str_16e[] = { 0x0055, 0x030a, 0 };
-static const unichar_t str_16f[] = { 0x0075, 0x030a, 0 };
-static const unichar_t str_170[] = { 0x0055, 0x030b, 0 };
-static const unichar_t str_171[] = { 0x0075, 0x030b, 0 };
-static const unichar_t str_172[] = { 0x0055, 0x0328, 0 };
-static const unichar_t str_173[] = { 0x0075, 0x0328, 0 };
-static const unichar_t str_174[] = { 0x0057, 0x0302, 0 };
-static const unichar_t str_175[] = { 0x0077, 0x0302, 0 };
-static const unichar_t str_176[] = { 0x0059, 0x0302, 0 };
-static const unichar_t str_177[] = { 0x0079, 0x0302, 0 };
-static const unichar_t str_178[] = { 0x0059, 0x0308, 0 };
-static const unichar_t str_179[] = { 0x005a, 0x0301, 0 };
-static const unichar_t str_17a[] = { 0x007a, 0x0301, 0 };
-static const unichar_t str_17b[] = { 0x005a, 0x0307, 0 };
-static const unichar_t str_17c[] = { 0x007a, 0x0307, 0 };
-static const unichar_t str_17d[] = { 0x005a, 0x030c, 0 };
-static const unichar_t str_17e[] = { 0x007a, 0x030c, 0 };
-static const unichar_t str_17f[] = { 0x0073, 0 };
-static const unichar_t str_182[] = { 0x0402, 0 };
-static const unichar_t str_189[] = { 0x00d0, 0 };
-static const unichar_t str_19e[] = { 0x03b7, 0 };
-static const unichar_t str_19f[] = { 0x0398, 0 };
-static const unichar_t str_1a0[] = { 0x004f, 0x031b, 0 };
-static const unichar_t str_1a1[] = { 0x006f, 0x031b, 0 };
-static const unichar_t str_1a9[] = { 0x03a3, 0 };
-static const unichar_t str_1af[] = { 0x0055, 0x031b, 0 };
-static const unichar_t str_1b0[] = { 0x0075, 0x031b, 0 };
-static const unichar_t str_1c0[] = { 0x007c, 0 };
-static const unichar_t str_1c1[] = { 0x007c, 0x007c, 0 };
-static const unichar_t str_1c4[] = { 0x0044, 0x017d, 0 };
-static const unichar_t str_1c5[] = { 0x0044, 0x017e, 0 };
-static const unichar_t str_1c6[] = { 0x0064, 0x017e, 0 };
-static const unichar_t str_1c7[] = { 0x004c, 0x004a, 0 };
-static const unichar_t str_1c8[] = { 0x004c, 0x006a, 0 };
-static const unichar_t str_1c9[] = { 0x006c, 0x006a, 0 };
-static const unichar_t str_1ca[] = { 0x004e, 0x004a, 0 };
-static const unichar_t str_1cb[] = { 0x004e, 0x006a, 0 };
-static const unichar_t str_1cc[] = { 0x006e, 0x006a, 0 };
-static const unichar_t str_1cd[] = { 0x0041, 0x030c, 0 };
-static const unichar_t str_1ce[] = { 0x0061, 0x030c, 0 };
-static const unichar_t str_1cf[] = { 0x0049, 0x030c, 0 };
-static const unichar_t str_1d0[] = { 0x0069, 0x030c, 0 };
-static const unichar_t str_1d1[] = { 0x004f, 0x030c, 0 };
-static const unichar_t str_1d2[] = { 0x006f, 0x030c, 0 };
-static const unichar_t str_1d3[] = { 0x0055, 0x030c, 0 };
-static const unichar_t str_1d4[] = { 0x0075, 0x030c, 0 };
-static const unichar_t str_1d5[] = { 0x00dc, 0x0304, 0 };
-static const unichar_t str_1d6[] = { 0x00fc, 0x0304, 0 };
-static const unichar_t str_1d7[] = { 0x00dc, 0x0301, 0 };
-static const unichar_t str_1d8[] = { 0x00fc, 0x0301, 0 };
-static const unichar_t str_1d9[] = { 0x00dc, 0x030c, 0 };
-static const unichar_t str_1da[] = { 0x00fc, 0x030c, 0 };
-static const unichar_t str_1db[] = { 0x00dc, 0x0300, 0 };
-static const unichar_t str_1dc[] = { 0x00fc, 0x0300, 0 };
-static const unichar_t str_1de[] = { 0x00c4, 0x0304, 0 };
-static const unichar_t str_1df[] = { 0x00e4, 0x0304, 0 };
-static const unichar_t str_1e0[] = { 0x0226, 0x0304, 0 };
-static const unichar_t str_1e1[] = { 0x0227, 0x0304, 0 };
-static const unichar_t str_1e2[] = { 0x00c6, 0x0304, 0 };
-static const unichar_t str_1e3[] = { 0x00e6, 0x0304, 0 };
-static const unichar_t str_1e6[] = { 0x0047, 0x030c, 0 };
-static const unichar_t str_1e7[] = { 0x0067, 0x030c, 0 };
-static const unichar_t str_1e8[] = { 0x004b, 0x030c, 0 };
-static const unichar_t str_1e9[] = { 0x006b, 0x030c, 0 };
-static const unichar_t str_1ea[] = { 0x004f, 0x0328, 0 };
-static const unichar_t str_1eb[] = { 0x006f, 0x0328, 0 };
-static const unichar_t str_1ec[] = { 0x01ea, 0x0304, 0 };
-static const unichar_t str_1ed[] = { 0x01eb, 0x0304, 0 };
-static const unichar_t str_1ee[] = { 0x01b7, 0x030c, 0 };
-static const unichar_t str_1ef[] = { 0x0292, 0x030c, 0 };
-static const unichar_t str_1f0[] = { 0x006a, 0x030c, 0 };
-static const unichar_t str_1f1[] = { 0x0044, 0x005a, 0 };
-static const unichar_t str_1f2[] = { 0x0044, 0x007a, 0 };
-static const unichar_t str_1f3[] = { 0x0064, 0x007a, 0 };
-static const unichar_t str_1f4[] = { 0x0047, 0x0301, 0 };
-static const unichar_t str_1f5[] = { 0x0067, 0x0301, 0 };
-static const unichar_t str_1f8[] = { 0x004e, 0x0300, 0 };
-static const unichar_t str_1f9[] = { 0x006e, 0x0300, 0 };
-static const unichar_t str_1fa[] = { 0x00c5, 0x0301, 0 };
-static const unichar_t str_1fb[] = { 0x00e5, 0x0301, 0 };
-static const unichar_t str_1fc[] = { 0x00c6, 0x0301, 0 };
-static const unichar_t str_1fd[] = { 0x00e6, 0x0301, 0 };
-static const unichar_t str_1fe[] = { 0x00d8, 0x0301, 0 };
-static const unichar_t str_1ff[] = { 0x00f8, 0x0301, 0 };
-static const unichar_t str_200[] = { 0x0041, 0x030f, 0 };
-static const unichar_t str_201[] = { 0x0061, 0x030f, 0 };
-static const unichar_t str_202[] = { 0x0041, 0x0311, 0 };
-static const unichar_t str_203[] = { 0x0061, 0x0311, 0 };
-static const unichar_t str_204[] = { 0x0045, 0x030f, 0 };
-static const unichar_t str_205[] = { 0x0065, 0x030f, 0 };
-static const unichar_t str_206[] = { 0x0045, 0x0311, 0 };
-static const unichar_t str_207[] = { 0x0065, 0x0311, 0 };
-static const unichar_t str_208[] = { 0x0049, 0x030f, 0 };
-static const unichar_t str_209[] = { 0x0069, 0x030f, 0 };
-static const unichar_t str_20a[] = { 0x0049, 0x0311, 0 };
-static const unichar_t str_20b[] = { 0x0069, 0x0311, 0 };
-static const unichar_t str_20c[] = { 0x004f, 0x030f, 0 };
-static const unichar_t str_20d[] = { 0x006f, 0x030f, 0 };
-static const unichar_t str_20e[] = { 0x004f, 0x0311, 0 };
-static const unichar_t str_20f[] = { 0x006f, 0x0311, 0 };
-static const unichar_t str_210[] = { 0x0052, 0x030f, 0 };
-static const unichar_t str_211[] = { 0x0072, 0x030f, 0 };
-static const unichar_t str_212[] = { 0x0052, 0x0311, 0 };
-static const unichar_t str_213[] = { 0x0072, 0x0311, 0 };
-static const unichar_t str_214[] = { 0x0055, 0x030f, 0 };
-static const unichar_t str_215[] = { 0x0075, 0x030f, 0 };
-static const unichar_t str_216[] = { 0x0055, 0x0311, 0 };
-static const unichar_t str_217[] = { 0x0075, 0x0311, 0 };
-static const unichar_t str_218[] = { 0x0053, 0x0326, 0 };
-static const unichar_t str_219[] = { 0x0073, 0x0326, 0 };
-static const unichar_t str_21a[] = { 0x0054, 0x0326, 0 };
-static const unichar_t str_21b[] = { 0x0074, 0x0326, 0 };
-static const unichar_t str_21e[] = { 0x0048, 0x030c, 0 };
-static const unichar_t str_21f[] = { 0x0068, 0x030c, 0 };
-static const unichar_t str_226[] = { 0x0041, 0x0307, 0 };
-static const unichar_t str_227[] = { 0x0061, 0x0307, 0 };
-static const unichar_t str_228[] = { 0x0045, 0x0327, 0 };
-static const unichar_t str_229[] = { 0x0065, 0x0327, 0 };
-static const unichar_t str_22a[] = { 0x00d6, 0x0304, 0 };
-static const unichar_t str_22b[] = { 0x00f6, 0x0304, 0 };
-static const unichar_t str_22c[] = { 0x00d5, 0x0304, 0 };
-static const unichar_t str_22d[] = { 0x00f5, 0x0304, 0 };
-static const unichar_t str_22e[] = { 0x004f, 0x0307, 0 };
-static const unichar_t str_22f[] = { 0x006f, 0x0307, 0 };
-static const unichar_t str_230[] = { 0x022e, 0x0304, 0 };
-static const unichar_t str_231[] = { 0x022f, 0x0304, 0 };
-static const unichar_t str_232[] = { 0x0059, 0x0304, 0 };
-static const unichar_t str_233[] = { 0x0079, 0x0304, 0 };
-static const unichar_t str_269[] = { 0x03b9, 0 };
-static const unichar_t str_278[] = { 0x03a6, 0 };
-static const unichar_t str_292[] = { 0x01b7, 0 };
-static const unichar_t str_299[] = { 0x0432, 0 };
-static const unichar_t str_29c[] = { 0x043d, 0 };
-static const unichar_t str_2b0[] = { 0x0068, 0 };
-static const unichar_t str_2b1[] = { 0x0266, 0 };
-static const unichar_t str_2b2[] = { 0x006a, 0 };
-static const unichar_t str_2b3[] = { 0x0072, 0 };
-static const unichar_t str_2b4[] = { 0x0279, 0 };
-static const unichar_t str_2b5[] = { 0x027b, 0 };
-static const unichar_t str_2b6[] = { 0x0281, 0 };
-static const unichar_t str_2b7[] = { 0x0077, 0 };
-static const unichar_t str_2b8[] = { 0x0079, 0 };
-static const unichar_t str_2b9[] = { 0x0027, 0 };
-static const unichar_t str_2ba[] = { 0x0022, 0 };
-static const unichar_t str_2bc[] = { 0x0027, 0 };
-static const unichar_t str_2c4[] = { 0x005e, 0 };
-static const unichar_t str_2c6[] = { 0x005e, 0 };
-static const unichar_t str_2c8[] = { 0x0027, 0 };
-static const unichar_t str_2d8[] = { 0x0020, 0x0306, 0 };
-static const unichar_t str_2d9[] = { 0x0020, 0x0307, 0 };
-static const unichar_t str_2da[] = { 0x0020, 0x030a, 0 };
-static const unichar_t str_2db[] = { 0x0020, 0x0328, 0 };
-static const unichar_t str_2dc[] = { 0x0020, 0x0303, 0 };
-static const unichar_t str_2dd[] = { 0x0020, 0x030b, 0 };
-static const unichar_t str_2e0[] = { 0x0263, 0 };
-static const unichar_t str_2e1[] = { 0x006c, 0 };
-static const unichar_t str_2e2[] = { 0x0073, 0 };
-static const unichar_t str_2e3[] = { 0x0078, 0 };
-static const unichar_t str_2e4[] = { 0x0295, 0 };
-static const unichar_t str_301[] = { 0x00b4, 0 };
-static const unichar_t str_302[] = { 0x005e, 0 };
-static const unichar_t str_303[] = { 0x007e, 0 };
-static const unichar_t str_308[] = { 0x00a8, 0 };
-static const unichar_t str_30a[] = { 0x00b0, 0 };
-static const unichar_t str_30b[] = { 0x0022, 0 };
-static const unichar_t str_30e[] = { 0x0022, 0 };
-static const unichar_t str_327[] = { 0x00b8, 0 };
-static const unichar_t str_340[] = { 0x0300, 0 };
-static const unichar_t str_341[] = { 0x0301, 0 };
-static const unichar_t str_343[] = { 0x0313, 0 };
-static const unichar_t str_344[] = { 0x0308, 0x0301, 0 };
-static const unichar_t str_374[] = { 0x02b9, 0 };
-static const unichar_t str_375[] = { 0x02cf, 0 };
-static const unichar_t str_37a[] = { 0x0020, 0x0345, 0 };
-static const unichar_t str_37e[] = { 0x003b, 0 };
-static const unichar_t str_384[] = { 0x0020, 0x0301, 0 };
-static const unichar_t str_385[] = { 0x00a8, 0x0301, 0 };
-static const unichar_t str_386[] = { 0x0391, 0x0301, 0 };
-static const unichar_t str_387[] = { 0x00b7, 0 };
-static const unichar_t str_388[] = { 0x0395, 0x0301, 0 };
-static const unichar_t str_389[] = { 0x0397, 0x0301, 0 };
-static const unichar_t str_38a[] = { 0x0399, 0x0301, 0 };
-static const unichar_t str_38c[] = { 0x039f, 0x0301, 0 };
-static const unichar_t str_38e[] = { 0x03a5, 0x0301, 0 };
-static const unichar_t str_38f[] = { 0x03a9, 0x0301, 0 };
-static const unichar_t str_390[] = { 0x03ca, 0x0301, 0 };
-static const unichar_t str_391[] = { 0x0041, 0 };
-static const unichar_t str_392[] = { 0x0042, 0 };
-static const unichar_t str_393[] = { 0x0413, 0 };
-static const unichar_t str_395[] = { 0x0045, 0 };
-static const unichar_t str_396[] = { 0x005a, 0 };
-static const unichar_t str_397[] = { 0x0048, 0 };
-static const unichar_t str_399[] = { 0x0049, 0 };
-static const unichar_t str_39a[] = { 0x004b, 0 };
-static const unichar_t str_39c[] = { 0x004d, 0 };
-static const unichar_t str_39d[] = { 0x004e, 0 };
-static const unichar_t str_39f[] = { 0x004f, 0 };
-static const unichar_t str_3a1[] = { 0x0050, 0 };
-static const unichar_t str_3a4[] = { 0x0054, 0 };
-static const unichar_t str_3a5[] = { 0x0059, 0 };
-static const unichar_t str_3a7[] = { 0x0058, 0 };
-static const unichar_t str_3aa[] = { 0x0399, 0x0308, 0 };
-static const unichar_t str_3ab[] = { 0x03a5, 0x0308, 0 };
-static const unichar_t str_3ac[] = { 0x03b1, 0x0301, 0 };
-static const unichar_t str_3ad[] = { 0x03b5, 0x0301, 0 };
-static const unichar_t str_3ae[] = { 0x03b7, 0x0301, 0 };
-static const unichar_t str_3af[] = { 0x03b9, 0x0301, 0 };
-static const unichar_t str_3b0[] = { 0x03cb, 0x0301, 0 };
-static const unichar_t str_3ba[] = { 0x0138, 0 };
-static const unichar_t str_3bf[] = { 0x006f, 0 };
-static const unichar_t str_3c1[] = { 0x0070, 0 };
-static const unichar_t str_3c7[] = { 0x0078, 0 };
-static const unichar_t str_3ca[] = { 0x03b9, 0x0308, 0 };
-static const unichar_t str_3cb[] = { 0x03c5, 0x0308, 0 };
-static const unichar_t str_3cc[] = { 0x03bf, 0x0301, 0 };
-static const unichar_t str_3cd[] = { 0x03c5, 0x0301, 0 };
-static const unichar_t str_3ce[] = { 0x03c9, 0x0301, 0 };
-static const unichar_t str_3d0[] = { 0x03b2, 0 };
-static const unichar_t str_3d1[] = { 0x03b8, 0 };
-static const unichar_t str_3d2[] = { 0x03a5, 0 };
-static const unichar_t str_3d3[] = { 0x03d2, 0x0301, 0 };
-static const unichar_t str_3d4[] = { 0x03d2, 0x0308, 0 };
-static const unichar_t str_3d5[] = { 0x03c6, 0 };
-static const unichar_t str_3d6[] = { 0x03c0, 0 };
-static const unichar_t str_3f0[] = { 0x03ba, 0 };
-static const unichar_t str_3f1[] = { 0x03c1, 0 };
-static const unichar_t str_3f2[] = { 0x03c2, 0 };
-static const unichar_t str_3f4[] = { 0x0398, 0 };
-static const unichar_t str_3f5[] = { 0x03b5, 0 };
-static const unichar_t str_3f9[] = { 0x03a3, 0 };
-static const unichar_t str_400[] = { 0x0415, 0x0300, 0 };
-static const unichar_t str_401[] = { 0x0415, 0x0308, 0 };
-static const unichar_t str_403[] = { 0x0413, 0x0301, 0 };
-static const unichar_t str_405[] = { 0x0053, 0 };
-static const unichar_t str_406[] = { 0x0049, 0 };
-static const unichar_t str_407[] = { 0x0406, 0x0308, 0 };
-static const unichar_t str_408[] = { 0x004a, 0 };
-static const unichar_t str_40c[] = { 0x041a, 0x0301, 0 };
-static const unichar_t str_40d[] = { 0x0418, 0x0300, 0 };
-static const unichar_t str_40e[] = { 0x0423, 0x0306, 0 };
-static const unichar_t str_410[] = { 0x0041, 0 };
-static const unichar_t str_412[] = { 0x0042, 0 };
-static const unichar_t str_413[] = { 0x0393, 0 };
-static const unichar_t str_415[] = { 0x0045, 0 };
-static const unichar_t str_419[] = { 0x0418, 0x0306, 0 };
-static const unichar_t str_41a[] = { 0x004b, 0 };
-static const unichar_t str_41c[] = { 0x004d, 0 };
-static const unichar_t str_41d[] = { 0x0048, 0 };
-static const unichar_t str_41e[] = { 0x004f, 0 };
-static const unichar_t str_41f[] = { 0x03a0, 0 };
-static const unichar_t str_420[] = { 0x0050, 0 };
-static const unichar_t str_421[] = { 0x0043, 0 };
-static const unichar_t str_422[] = { 0x0054, 0 };
-static const unichar_t str_424[] = { 0x03a6, 0 };
-static const unichar_t str_425[] = { 0x0058, 0 };
-static const unichar_t str_430[] = { 0x0061, 0 };
-static const unichar_t str_435[] = { 0x0065, 0 };
-static const unichar_t str_439[] = { 0x0438, 0x0306, 0 };
-static const unichar_t str_43a[] = { 0x03ba, 0 };
-static const unichar_t str_43e[] = { 0x006f, 0 };
-static const unichar_t str_43f[] = { 0x03c0, 0 };
-static const unichar_t str_440[] = { 0x0070, 0 };
-static const unichar_t str_441[] = { 0x0063, 0 };
-static const unichar_t str_443[] = { 0x0079, 0 };
-static const unichar_t str_445[] = { 0x0078, 0 };
-static const unichar_t str_450[] = { 0x0435, 0x0300, 0 };
-static const unichar_t str_451[] = { 0x0435, 0x0308, 0 };
-static const unichar_t str_453[] = { 0x0433, 0x0301, 0 };
-static const unichar_t str_455[] = { 0x0073, 0 };
-static const unichar_t str_456[] = { 0x0069, 0 };
-static const unichar_t str_457[] = { 0x0456, 0x0308, 0 };
-static const unichar_t str_458[] = { 0x006a, 0 };
-static const unichar_t str_45c[] = { 0x043a, 0x0301, 0 };
-static const unichar_t str_45d[] = { 0x0438, 0x0300, 0 };
-static const unichar_t str_45e[] = { 0x0443, 0x0306, 0 };
-static const unichar_t str_470[] = { 0x03a8, 0 };
-static const unichar_t str_471[] = { 0x03c8, 0 };
-static const unichar_t str_476[] = { 0x0474, 0x030f, 0 };
-static const unichar_t str_477[] = { 0x0475, 0x030f, 0 };
-static const unichar_t str_4ae[] = { 0x0059, 0 };
-static const unichar_t str_4c0[] = { 0x0049, 0 };
-static const unichar_t str_4c1[] = { 0x0416, 0x0306, 0 };
-static const unichar_t str_4c2[] = { 0x0436, 0x0306, 0 };
-static const unichar_t str_4d0[] = { 0x0410, 0x0306, 0 };
-static const unichar_t str_4d1[] = { 0x0430, 0x0306, 0 };
-static const unichar_t str_4d2[] = { 0x0410, 0x0308, 0 };
-static const unichar_t str_4d3[] = { 0x0430, 0x0308, 0 };
-static const unichar_t str_4d4[] = { 0x00c6, 0 };
-static const unichar_t str_4d5[] = { 0x00e6, 0 };
-static const unichar_t str_4d6[] = { 0x0415, 0x0306, 0 };
-static const unichar_t str_4d7[] = { 0x0435, 0x0306, 0 };
-static const unichar_t str_4da[] = { 0x04d8, 0x0308, 0 };
-static const unichar_t str_4db[] = { 0x04d9, 0x0308, 0 };
-static const unichar_t str_4dc[] = { 0x0416, 0x0308, 0 };
-static const unichar_t str_4dd[] = { 0x0436, 0x0308, 0 };
-static const unichar_t str_4de[] = { 0x0417, 0x0308, 0 };
-static const unichar_t str_4df[] = { 0x0437, 0x0308, 0 };
-static const unichar_t str_4e0[] = { 0x01b7, 0 };
-static const unichar_t str_4e1[] = { 0x0292, 0 };
-static const unichar_t str_4e2[] = { 0x0418, 0x0304, 0 };
-static const unichar_t str_4e3[] = { 0x0438, 0x0304, 0 };
-static const unichar_t str_4e4[] = { 0x0418, 0x0308, 0 };
-static const unichar_t str_4e5[] = { 0x0438, 0x0308, 0 };
-static const unichar_t str_4e6[] = { 0x041e, 0x0308, 0 };
-static const unichar_t str_4e7[] = { 0x043e, 0x0308, 0 };
-static const unichar_t str_4e8[] = { 0x0398, 0 };
-static const unichar_t str_4e9[] = { 0x03b8, 0 };
-static const unichar_t str_4ea[] = { 0x04e8, 0x0308, 0 };
-static const unichar_t str_4eb[] = { 0x04e9, 0x0308, 0 };
-static const unichar_t str_4ec[] = { 0x042d, 0x0308, 0 };
-static const unichar_t str_4ed[] = { 0x044d, 0x0308, 0 };
-static const unichar_t str_4ee[] = { 0x0423, 0x0304, 0 };
-static const unichar_t str_4ef[] = { 0x0443, 0x0304, 0 };
-static const unichar_t str_4f0[] = { 0x0423, 0x0308, 0 };
-static const unichar_t str_4f1[] = { 0x0443, 0x0308, 0 };
-static const unichar_t str_4f2[] = { 0x0423, 0x030b, 0 };
-static const unichar_t str_4f3[] = { 0x0443, 0x030b, 0 };
-static const unichar_t str_4f4[] = { 0x0427, 0x0308, 0 };
-static const unichar_t str_4f5[] = { 0x0447, 0x0308, 0 };
-static const unichar_t str_4f8[] = { 0x042b, 0x0308, 0 };
-static const unichar_t str_4f9[] = { 0x044b, 0x0308, 0 };
-static const unichar_t str_54f[] = { 0x0053, 0 };
-static const unichar_t str_555[] = { 0x004f, 0 };
-static const unichar_t str_570[] = { 0x0068, 0 };
-static const unichar_t str_578[] = { 0x006e, 0 };
-static const unichar_t str_57a[] = { 0x0270, 0 };
-static const unichar_t str_57d[] = { 0x0075, 0 };
-static const unichar_t str_581[] = { 0x0261, 0 };
-static const unichar_t str_582[] = { 0x0269, 0 };
-static const unichar_t str_584[] = { 0x0066, 0 };
-static const unichar_t str_585[] = { 0x006f, 0 };
-static const unichar_t str_587[] = { 0x0565, 0x0582, 0 };
-static const unichar_t str_589[] = { 0x003a, 0 };
-static const unichar_t str_5f0[] = { 0x05d5, 0x05d5, 0 };
-static const unichar_t str_5f1[] = { 0x05d5, 0x05d9, 0 };
-static const unichar_t str_5f2[] = { 0x05d9, 0x05d9, 0 };
-static const unichar_t str_60c[] = { 0x2018, 0 };
-static const unichar_t str_621[] = { 0xfe80, 0 };
-static const unichar_t str_622[] = { 0x0627, 0x0653, 0 };
-static const unichar_t str_623[] = { 0x0627, 0x0654, 0 };
-static const unichar_t str_624[] = { 0x0648, 0x0654, 0 };
-static const unichar_t str_625[] = { 0x0627, 0x0655, 0 };
-static const unichar_t str_626[] = { 0x064a, 0x0654, 0 };
-static const unichar_t str_627[] = { 0xfe8d, 0 };
-static const unichar_t str_628[] = { 0xfe8f, 0 };
-static const unichar_t str_629[] = { 0xfe93, 0 };
-static const unichar_t str_62a[] = { 0xfe95, 0 };
-static const unichar_t str_62b[] = { 0xfe99, 0 };
-static const unichar_t str_62c[] = { 0xfe9d, 0 };
-static const unichar_t str_62d[] = { 0xfea1, 0 };
-static const unichar_t str_62e[] = { 0xfea5, 0 };
-static const unichar_t str_62f[] = { 0xfea9, 0 };
-static const unichar_t str_630[] = { 0xfeab, 0 };
-static const unichar_t str_631[] = { 0xfead, 0 };
-static const unichar_t str_632[] = { 0xfeaf, 0 };
-static const unichar_t str_633[] = { 0xfeb1, 0 };
-static const unichar_t str_634[] = { 0xfeb5, 0 };
-static const unichar_t str_635[] = { 0xfeb9, 0 };
-static const unichar_t str_636[] = { 0xfebd, 0 };
-static const unichar_t str_637[] = { 0xfec1, 0 };
-static const unichar_t str_638[] = { 0xfec5, 0 };
-static const unichar_t str_639[] = { 0xfec9, 0 };
-static const unichar_t str_63a[] = { 0xfecd, 0 };
-static const unichar_t str_641[] = { 0xfed1, 0 };
-static const unichar_t str_642[] = { 0xfed5, 0 };
-static const unichar_t str_643[] = { 0xfed9, 0 };
-static const unichar_t str_644[] = { 0xfedd, 0 };
-static const unichar_t str_645[] = { 0xfee1, 0 };
-static const unichar_t str_646[] = { 0xfee5, 0 };
-static const unichar_t str_647[] = { 0xfee9, 0 };
-static const unichar_t str_648[] = { 0xfeed, 0 };
-static const unichar_t str_649[] = { 0xfeef, 0 };
-static const unichar_t str_64a[] = { 0xfef1, 0 };
-static const unichar_t str_66a[] = { 0x0025, 0 };
-static const unichar_t str_66c[] = { 0x002c, 0 };
-static const unichar_t str_66d[] = { 0x22c6, 0 };
-static const unichar_t str_671[] = { 0xfb50, 0 };
-static const unichar_t str_675[] = { 0x0627, 0x0674, 0 };
-static const unichar_t str_676[] = { 0x0648, 0x0674, 0 };
-static const unichar_t str_677[] = { 0x06c7, 0x0674, 0 };
-static const unichar_t str_678[] = { 0x064a, 0x0674, 0 };
-static const unichar_t str_679[] = { 0xfb66, 0 };
-static const unichar_t str_67a[] = { 0xfb5e, 0 };
-static const unichar_t str_67b[] = { 0xfb52, 0 };
-static const unichar_t str_67e[] = { 0xfb56, 0 };
-static const unichar_t str_67f[] = { 0xfb62, 0 };
-static const unichar_t str_680[] = { 0xfb5a, 0 };
-static const unichar_t str_683[] = { 0xfb76, 0 };
-static const unichar_t str_684[] = { 0xfb72, 0 };
-static const unichar_t str_686[] = { 0xfb7a, 0 };
-static const unichar_t str_687[] = { 0xfb7e, 0 };
-static const unichar_t str_688[] = { 0xfb88, 0 };
-static const unichar_t str_68c[] = { 0xfb84, 0 };
-static const unichar_t str_68d[] = { 0xfb82, 0 };
-static const unichar_t str_68e[] = { 0xfb86, 0 };
-static const unichar_t str_691[] = { 0xfb8c, 0 };
-static const unichar_t str_698[] = { 0xfb8a, 0 };
-static const unichar_t str_6a4[] = { 0xfb6a, 0 };
-static const unichar_t str_6a6[] = { 0xfb6e, 0 };
-static const unichar_t str_6a9[] = { 0xfb8e, 0 };
-static const unichar_t str_6ad[] = { 0xfbd3, 0 };
-static const unichar_t str_6af[] = { 0xfb92, 0 };
-static const unichar_t str_6b1[] = { 0xfb9a, 0 };
-static const unichar_t str_6b3[] = { 0xfb96, 0 };
-static const unichar_t str_6ba[] = { 0xfb9e, 0 };
-static const unichar_t str_6bb[] = { 0xfba0, 0 };
-static const unichar_t str_6be[] = { 0xfbaa, 0 };
-static const unichar_t str_6c0[] = { 0x06d5, 0x0654, 0 };
-static const unichar_t str_6c1[] = { 0xfba6, 0 };
-static const unichar_t str_6c2[] = { 0x06c1, 0x0654, 0 };
-static const unichar_t str_6c5[] = { 0xfbe0, 0 };
-static const unichar_t str_6c6[] = { 0xfbd9, 0 };
-static const unichar_t str_6c7[] = { 0xfbd7, 0 };
-static const unichar_t str_6c8[] = { 0xfbdb, 0 };
-static const unichar_t str_6c9[] = { 0xfbe2, 0 };
-static const unichar_t str_6cb[] = { 0xfbde, 0 };
-static const unichar_t str_6cc[] = { 0xfbfc, 0 };
-static const unichar_t str_6d0[] = { 0xfbe4, 0 };
-static const unichar_t str_6d2[] = { 0xfbae, 0 };
-static const unichar_t str_6d3[] = { 0x06d2, 0x0654, 0 };
-static const unichar_t str_6d4[] = { 0x00b7, 0 };
-static const unichar_t str_929[] = { 0x0928, 0x093c, 0 };
-static const unichar_t str_931[] = { 0x0930, 0x093c, 0 };
-static const unichar_t str_934[] = { 0x0933, 0x093c, 0 };
-static const unichar_t str_958[] = { 0x0915, 0x093c, 0 };
-static const unichar_t str_959[] = { 0x0916, 0x093c, 0 };
-static const unichar_t str_95a[] = { 0x0917, 0x093c, 0 };
-static const unichar_t str_95b[] = { 0x091c, 0x093c, 0 };
-static const unichar_t str_95c[] = { 0x0921, 0x093c, 0 };
-static const unichar_t str_95d[] = { 0x0922, 0x093c, 0 };
-static const unichar_t str_95e[] = { 0x092b, 0x093c, 0 };
-static const unichar_t str_95f[] = { 0x092f, 0x093c, 0 };
-static const unichar_t str_9cb[] = { 0x09c7, 0x09be, 0 };
-static const unichar_t str_9cc[] = { 0x09c7, 0x09d7, 0 };
-static const unichar_t str_9dc[] = { 0x09a1, 0x09bc, 0 };
-static const unichar_t str_9dd[] = { 0x09a2, 0x09bc, 0 };
-static const unichar_t str_9df[] = { 0x09af, 0x09bc, 0 };
-static const unichar_t str_a33[] = { 0x0a32, 0x0a3c, 0 };
-static const unichar_t str_a36[] = { 0x0a38, 0x0a3c, 0 };
-static const unichar_t str_a59[] = { 0x0a16, 0x0a3c, 0 };
-static const unichar_t str_a5a[] = { 0x0a17, 0x0a3c, 0 };
-static const unichar_t str_a5b[] = { 0x0a1c, 0x0a3c, 0 };
-static const unichar_t str_a5e[] = { 0x0a2b, 0x0a3c, 0 };
-static const unichar_t str_b48[] = { 0x0b47, 0x0b56, 0 };
-static const unichar_t str_b4b[] = { 0x0b47, 0x0b3e, 0 };
-static const unichar_t str_b4c[] = { 0x0b47, 0x0b57, 0 };
-static const unichar_t str_b5c[] = { 0x0b21, 0x0b3c, 0 };
-static const unichar_t str_b5d[] = { 0x0b22, 0x0b3c, 0 };
-static const unichar_t str_b94[] = { 0x0b92, 0x0bd7, 0 };
-static const unichar_t str_bca[] = { 0x0bc6, 0x0bbe, 0 };
-static const unichar_t str_bcb[] = { 0x0bc7, 0x0bbe, 0 };
-static const unichar_t str_bcc[] = { 0x0bc6, 0x0bd7, 0 };
-static const unichar_t str_c48[] = { 0x0c46, 0x0c56, 0 };
-static const unichar_t str_cc0[] = { 0x0cbf, 0x0cd5, 0 };
-static const unichar_t str_cc7[] = { 0x0cc6, 0x0cd5, 0 };
-static const unichar_t str_cc8[] = { 0x0cc6, 0x0cd6, 0 };
-static const unichar_t str_cca[] = { 0x0cc6, 0x0cc2, 0 };
-static const unichar_t str_ccb[] = { 0x0cca, 0x0cd5, 0 };
-static const unichar_t str_d4a[] = { 0x0d46, 0x0d3e, 0 };
-static const unichar_t str_d4b[] = { 0x0d47, 0x0d3e, 0 };
-static const unichar_t str_d4c[] = { 0x0d46, 0x0d57, 0 };
-static const unichar_t str_dda[] = { 0x0dd9, 0x0dca, 0 };
-static const unichar_t str_ddc[] = { 0x0dd9, 0x0dcf, 0 };
-static const unichar_t str_ddd[] = { 0x0ddc, 0x0dca, 0 };
-static const unichar_t str_dde[] = { 0x0dd9, 0x0ddf, 0 };
-static const unichar_t str_e33[] = { 0x0e4d, 0x0e32, 0 };
-static const unichar_t str_eb3[] = { 0x0ecd, 0x0eb2, 0 };
-static const unichar_t str_edc[] = { 0x0eab, 0x0e99, 0 };
-static const unichar_t str_edd[] = { 0x0eab, 0x0ea1, 0 };
-static const unichar_t str_f0c[] = { 0x0f0b, 0 };
-static const unichar_t str_f43[] = { 0x0f42, 0x0fb7, 0 };
-static const unichar_t str_f4d[] = { 0x0f4c, 0x0fb7, 0 };
-static const unichar_t str_f52[] = { 0x0f51, 0x0fb7, 0 };
-static const unichar_t str_f57[] = { 0x0f56, 0x0fb7, 0 };
-static const unichar_t str_f5c[] = { 0x0f5b, 0x0fb7, 0 };
-static const unichar_t str_f69[] = { 0x0f40, 0x0fb5, 0 };
-static const unichar_t str_f73[] = { 0x0f71, 0x0f72, 0 };
-static const unichar_t str_f75[] = { 0x0f71, 0x0f74, 0 };
-static const unichar_t str_f76[] = { 0x0fb2, 0x0f80, 0 };
-static const unichar_t str_f77[] = { 0x0fb2, 0x0f81, 0 };
-static const unichar_t str_f78[] = { 0x0fb3, 0x0f80, 0 };
-static const unichar_t str_f79[] = { 0x0fb3, 0x0f81, 0 };
-static const unichar_t str_f81[] = { 0x0f71, 0x0f80, 0 };
-static const unichar_t str_f93[] = { 0x0f92, 0x0fb7, 0 };
-static const unichar_t str_f9d[] = { 0x0f9c, 0x0fb7, 0 };
-static const unichar_t str_fa2[] = { 0x0fa1, 0x0fb7, 0 };
-static const unichar_t str_fa7[] = { 0x0fa6, 0x0fb7, 0 };
-static const unichar_t str_fac[] = { 0x0fab, 0x0fb7, 0 };
-static const unichar_t str_fb9[] = { 0x0f90, 0x0fb5, 0 };
-static const unichar_t str_1026[] = { 0x1025, 0x102e, 0 };
-static const unichar_t str_10fc[] = { 0x10dc, 0 };
-static const unichar_t str_1101[] = { 0x1100, 0x1100, 0 };
-static const unichar_t str_1104[] = { 0x1103, 0x1103, 0 };
-static const unichar_t str_1108[] = { 0x1107, 0x1107, 0 };
-static const unichar_t str_110a[] = { 0x1109, 0x1109, 0 };
-static const unichar_t str_110d[] = { 0x110c, 0x110c, 0 };
-static const unichar_t str_1113[] = { 0x1102, 0x1100, 0 };
-static const unichar_t str_1114[] = { 0x1102, 0x1102, 0 };
-static const unichar_t str_1115[] = { 0x1102, 0x1103, 0 };
-static const unichar_t str_1116[] = { 0x1102, 0x1107, 0 };
-static const unichar_t str_1117[] = { 0x1103, 0x1100, 0 };
-static const unichar_t str_1118[] = { 0x1105, 0x1102, 0 };
-static const unichar_t str_1119[] = { 0x1105, 0x1105, 0 };
-static const unichar_t str_111a[] = { 0x1105, 0x1112, 0 };
-static const unichar_t str_111b[] = { 0x1105, 0x110b, 0 };
-static const unichar_t str_111c[] = { 0x1106, 0x1107, 0 };
-static const unichar_t str_111d[] = { 0x1106, 0x110b, 0 };
-static const unichar_t str_111e[] = { 0x1107, 0x1100, 0 };
-static const unichar_t str_111f[] = { 0x1107, 0x1102, 0 };
-static const unichar_t str_1120[] = { 0x1107, 0x1103, 0 };
-static const unichar_t str_1121[] = { 0x1107, 0x1109, 0 };
-static const unichar_t str_1122[] = { 0x1107, 0x1109, 0x1100, 0 };
-static const unichar_t str_1123[] = { 0x1107, 0x1109, 0x1103, 0 };
-static const unichar_t str_1124[] = { 0x1107, 0x1109, 0x1107, 0 };
-static const unichar_t str_1125[] = { 0x1107, 0x1109, 0x1109, 0 };
-static const unichar_t str_1126[] = { 0x1107, 0x1109, 0x110c, 0 };
-static const unichar_t str_1127[] = { 0x1107, 0x110c, 0 };
-static const unichar_t str_1128[] = { 0x1107, 0x110e, 0 };
-static const unichar_t str_1129[] = { 0x1107, 0x1110, 0 };
-static const unichar_t str_112a[] = { 0x1107, 0x1111, 0 };
-static const unichar_t str_112b[] = { 0x1107, 0x110b, 0 };
-static const unichar_t str_112c[] = { 0x1107, 0x1107, 0x110b, 0 };
-static const unichar_t str_112d[] = { 0x1109, 0x1100, 0 };
-static const unichar_t str_112e[] = { 0x1109, 0x1102, 0 };
-static const unichar_t str_112f[] = { 0x1109, 0x1103, 0 };
-static const unichar_t str_1130[] = { 0x1109, 0x1105, 0 };
-static const unichar_t str_1131[] = { 0x1109, 0x1106, 0 };
-static const unichar_t str_1132[] = { 0x1109, 0x1107, 0 };
-static const unichar_t str_1133[] = { 0x1109, 0x1107, 0x1100, 0 };
-static const unichar_t str_1134[] = { 0x1109, 0x1109, 0x1109, 0 };
-static const unichar_t str_1135[] = { 0x1109, 0x110b, 0 };
-static const unichar_t str_1136[] = { 0x1109, 0x110c, 0 };
-static const unichar_t str_1137[] = { 0x1109, 0x110e, 0 };
-static const unichar_t str_1138[] = { 0x1109, 0x110f, 0 };
-static const unichar_t str_1139[] = { 0x1109, 0x1110, 0 };
-static const unichar_t str_113a[] = { 0x1109, 0x1111, 0 };
-static const unichar_t str_113b[] = { 0x1109, 0x1112, 0 };
-static const unichar_t str_113d[] = { 0x113c, 0x113c, 0 };
-static const unichar_t str_113f[] = { 0x113e, 0x113e, 0 };
-static const unichar_t str_1141[] = { 0x110b, 0x1100, 0 };
-static const unichar_t str_1142[] = { 0x110b, 0x1103, 0 };
-static const unichar_t str_1143[] = { 0x110b, 0x1106, 0 };
-static const unichar_t str_1144[] = { 0x110b, 0x1107, 0 };
-static const unichar_t str_1145[] = { 0x110b, 0x1109, 0 };
-static const unichar_t str_1146[] = { 0x110b, 0x1140, 0 };
-static const unichar_t str_1147[] = { 0x110b, 0x110b, 0 };
-static const unichar_t str_1148[] = { 0x110b, 0x110c, 0 };
-static const unichar_t str_1149[] = { 0x110b, 0x110e, 0 };
-static const unichar_t str_114a[] = { 0x110b, 0x1110, 0 };
-static const unichar_t str_114b[] = { 0x110b, 0x1111, 0 };
-static const unichar_t str_114d[] = { 0x110c, 0x110b, 0 };
-static const unichar_t str_114f[] = { 0x114e, 0x114e, 0 };
-static const unichar_t str_1151[] = { 0x1150, 0x1150, 0 };
-static const unichar_t str_1152[] = { 0x110e, 0x110f, 0 };
-static const unichar_t str_1153[] = { 0x110e, 0x1112, 0 };
-static const unichar_t str_1156[] = { 0x1111, 0x1107, 0 };
-static const unichar_t str_1157[] = { 0x1111, 0x110b, 0 };
-static const unichar_t str_1158[] = { 0x1112, 0x1112, 0 };
-static const unichar_t str_1162[] = { 0x1161, 0x1175, 0 };
-static const unichar_t str_1164[] = { 0x1163, 0x1175, 0 };
-static const unichar_t str_1166[] = { 0x1165, 0x1175, 0 };
-static const unichar_t str_1168[] = { 0x1167, 0x1175, 0 };
-static const unichar_t str_116a[] = { 0x1169, 0x1161, 0 };
-static const unichar_t str_116b[] = { 0x1169, 0x1162, 0 };
-static const unichar_t str_116c[] = { 0x1169, 0x1175, 0 };
-static const unichar_t str_116f[] = { 0x116e, 0x1165, 0 };
-static const unichar_t str_1170[] = { 0x116e, 0x1166, 0 };
-static const unichar_t str_1171[] = { 0x116e, 0x1175, 0 };
-static const unichar_t str_1174[] = { 0x1173, 0x1175, 0 };
-static const unichar_t str_1176[] = { 0x1161, 0x1169, 0 };
-static const unichar_t str_1177[] = { 0x1161, 0x116e, 0 };
-static const unichar_t str_1178[] = { 0x1163, 0x1169, 0 };
-static const unichar_t str_1179[] = { 0x1163, 0x116d, 0 };
-static const unichar_t str_117a[] = { 0x1165, 0x1169, 0 };
-static const unichar_t str_117b[] = { 0x1165, 0x116e, 0 };
-static const unichar_t str_117c[] = { 0x1165, 0x1173, 0 };
-static const unichar_t str_117d[] = { 0x1167, 0x1169, 0 };
-static const unichar_t str_117e[] = { 0x1167, 0x116e, 0 };
-static const unichar_t str_117f[] = { 0x1169, 0x1165, 0 };
-static const unichar_t str_1180[] = { 0x1169, 0x1166, 0 };
-static const unichar_t str_1181[] = { 0x1169, 0x1168, 0 };
-static const unichar_t str_1182[] = { 0x1169, 0x1169, 0 };
-static const unichar_t str_1183[] = { 0x1169, 0x116e, 0 };
-static const unichar_t str_1184[] = { 0x116d, 0x1163, 0 };
-static const unichar_t str_1185[] = { 0x116d, 0x1164, 0 };
-static const unichar_t str_1186[] = { 0x116d, 0x1167, 0 };
-static const unichar_t str_1187[] = { 0x116d, 0x1169, 0 };
-static const unichar_t str_1188[] = { 0x116d, 0x1175, 0 };
-static const unichar_t str_1189[] = { 0x116e, 0x1161, 0 };
-static const unichar_t str_118a[] = { 0x116e, 0x1162, 0 };
-static const unichar_t str_118b[] = { 0x116e, 0x1165, 0x1173, 0 };
-static const unichar_t str_118c[] = { 0x116e, 0x1168, 0 };
-static const unichar_t str_118d[] = { 0x116e, 0x116e, 0 };
-static const unichar_t str_118e[] = { 0x1172, 0x1161, 0 };
-static const unichar_t str_118f[] = { 0x1172, 0x1165, 0 };
-static const unichar_t str_1190[] = { 0x1172, 0x1166, 0 };
-static const unichar_t str_1191[] = { 0x1172, 0x1167, 0 };
-static const unichar_t str_1192[] = { 0x1172, 0x1168, 0 };
-static const unichar_t str_1193[] = { 0x1172, 0x116e, 0 };
-static const unichar_t str_1194[] = { 0x1172, 0x1175, 0 };
-static const unichar_t str_1195[] = { 0x1173, 0x116e, 0 };
-static const unichar_t str_1196[] = { 0x1173, 0x1173, 0 };
-static const unichar_t str_1197[] = { 0x1174, 0x116e, 0 };
-static const unichar_t str_1198[] = { 0x1175, 0x1161, 0 };
-static const unichar_t str_1199[] = { 0x1175, 0x1163, 0 };
-static const unichar_t str_119a[] = { 0x1175, 0x1169, 0 };
-static const unichar_t str_119b[] = { 0x1175, 0x116e, 0 };
-static const unichar_t str_119c[] = { 0x1175, 0x1173, 0 };
-static const unichar_t str_119d[] = { 0x1175, 0x119e, 0 };
-static const unichar_t str_119f[] = { 0x119e, 0x1165, 0 };
-static const unichar_t str_11a0[] = { 0x119e, 0x116e, 0 };
-static const unichar_t str_11a1[] = { 0x119e, 0x1175, 0 };
-static const unichar_t str_11a2[] = { 0x119e, 0x119e, 0 };
-static const unichar_t str_11a8[] = { 0x1100, 0 };
-static const unichar_t str_11a9[] = { 0x11a8, 0x11a8, 0 };
-static const unichar_t str_11aa[] = { 0x11a8, 0x11ba, 0 };
-static const unichar_t str_11ab[] = { 0x1102, 0 };
-static const unichar_t str_11ac[] = { 0x11ab, 0x11bd, 0 };
-static const unichar_t str_11ad[] = { 0x11ab, 0x11c2, 0 };
-static const unichar_t str_11ae[] = { 0x1103, 0 };
-static const unichar_t str_11af[] = { 0x1105, 0 };
-static const unichar_t str_11b0[] = { 0x11af, 0x11a8, 0 };
-static const unichar_t str_11b1[] = { 0x11af, 0x11b7, 0 };
-static const unichar_t str_11b2[] = { 0x11af, 0x11b8, 0 };
-static const unichar_t str_11b3[] = { 0x11af, 0x11ba, 0 };
-static const unichar_t str_11b4[] = { 0x11af, 0x11c0, 0 };
-static const unichar_t str_11b5[] = { 0x11af, 0x11c1, 0 };
-static const unichar_t str_11b6[] = { 0x11af, 0x11c2, 0 };
-static const unichar_t str_11b7[] = { 0x1106, 0 };
-static const unichar_t str_11b8[] = { 0x1107, 0 };
-static const unichar_t str_11b9[] = { 0x11b8, 0x11ba, 0 };
-static const unichar_t str_11ba[] = { 0x1109, 0 };
-static const unichar_t str_11bb[] = { 0x11ba, 0x11ba, 0 };
-static const unichar_t str_11bc[] = { 0x110b, 0 };
-static const unichar_t str_11bd[] = { 0x110c, 0 };
-static const unichar_t str_11be[] = { 0x110e, 0 };
-static const unichar_t str_11bf[] = { 0x110f, 0 };
-static const unichar_t str_11c0[] = { 0x1110, 0 };
-static const unichar_t str_11c1[] = { 0x1111, 0 };
-static const unichar_t str_11c2[] = { 0x1112, 0 };
-static const unichar_t str_11c3[] = { 0x11a8, 0x11af, 0 };
-static const unichar_t str_11c4[] = { 0x11a8, 0x11ba, 0x11a8, 0 };
-static const unichar_t str_11c5[] = { 0x11ab, 0x11a8, 0 };
-static const unichar_t str_11c6[] = { 0x11ab, 0x11ae, 0 };
-static const unichar_t str_11c7[] = { 0x11ab, 0x11ba, 0 };
-static const unichar_t str_11c8[] = { 0x11ab, 0x11eb, 0 };
-static const unichar_t str_11c9[] = { 0x11ab, 0x11c0, 0 };
-static const unichar_t str_11ca[] = { 0x11ae, 0x11a8, 0 };
-static const unichar_t str_11cb[] = { 0x11ae, 0x11af, 0 };
-static const unichar_t str_11cc[] = { 0x11af, 0x11a8, 0x11ba, 0 };
-static const unichar_t str_11cd[] = { 0x11af, 0x11ab, 0 };
-static const unichar_t str_11ce[] = { 0x11af, 0x11ae, 0 };
-static const unichar_t str_11cf[] = { 0x11af, 0x11ae, 0x11c2, 0 };
-static const unichar_t str_11d0[] = { 0x11af, 0x11af, 0 };
-static const unichar_t str_11d1[] = { 0x11af, 0x11b7, 0x11a8, 0 };
-static const unichar_t str_11d2[] = { 0x11af, 0x11b7, 0x11ba, 0 };
-static const unichar_t str_11d3[] = { 0x11af, 0x11b8, 0x11ba, 0 };
-static const unichar_t str_11d4[] = { 0x11af, 0x11b8, 0x11c2, 0 };
-static const unichar_t str_11d5[] = { 0x11af, 0x11e6, 0 };
-static const unichar_t str_11d6[] = { 0x11af, 0x11ba, 0x11ba, 0 };
-static const unichar_t str_11d7[] = { 0x11af, 0x11eb, 0 };
-static const unichar_t str_11d8[] = { 0x11af, 0x11bf, 0 };
-static const unichar_t str_11d9[] = { 0x11af, 0x11f9, 0 };
-static const unichar_t str_11da[] = { 0x11b7, 0x11a8, 0 };
-static const unichar_t str_11db[] = { 0x11b7, 0x11af, 0 };
-static const unichar_t str_11dc[] = { 0x11b7, 0x11b8, 0 };
-static const unichar_t str_11dd[] = { 0x11b7, 0x11ba, 0 };
-static const unichar_t str_11de[] = { 0x11b7, 0x11ba, 0x11ba, 0 };
-static const unichar_t str_11df[] = { 0x11b7, 0x11eb, 0 };
-static const unichar_t str_11e0[] = { 0x11b7, 0x11be, 0 };
-static const unichar_t str_11e1[] = { 0x11b7, 0x11c2, 0 };
-static const unichar_t str_11e2[] = { 0x11b7, 0x11bc, 0 };
-static const unichar_t str_11e3[] = { 0x11b8, 0x11af, 0 };
-static const unichar_t str_11e4[] = { 0x11b8, 0x11c1, 0 };
-static const unichar_t str_11e5[] = { 0x11b8, 0x11c2, 0 };
-static const unichar_t str_11e6[] = { 0x11b8, 0x11bc, 0 };
-static const unichar_t str_11e7[] = { 0x11ba, 0x11a8, 0 };
-static const unichar_t str_11e8[] = { 0x11ba, 0x11ae, 0 };
-static const unichar_t str_11e9[] = { 0x11ba, 0x11af, 0 };
-static const unichar_t str_11ea[] = { 0x11ba, 0x11b8, 0 };
-static const unichar_t str_11eb[] = { 0x1140, 0 };
-static const unichar_t str_11ec[] = { 0x11bc, 0x11a8, 0 };
-static const unichar_t str_11ed[] = { 0x11bc, 0x11a8, 0x11a8, 0 };
-static const unichar_t str_11ee[] = { 0x11bc, 0x11bc, 0 };
-static const unichar_t str_11ef[] = { 0x11bc, 0x11bf, 0 };
-static const unichar_t str_11f0[] = { 0x114c, 0 };
-static const unichar_t str_11f1[] = { 0x11f0, 0x11ba, 0 };
-static const unichar_t str_11f2[] = { 0x11f0, 0x11eb, 0 };
-static const unichar_t str_11f3[] = { 0x11c1, 0x11b8, 0 };
-static const unichar_t str_11f4[] = { 0x11c1, 0x11bc, 0 };
-static const unichar_t str_11f5[] = { 0x11c2, 0x11ab, 0 };
-static const unichar_t str_11f6[] = { 0x11c2, 0x11af, 0 };
-static const unichar_t str_11f7[] = { 0x11c2, 0x11b7, 0 };
-static const unichar_t str_11f8[] = { 0x11c2, 0x11b8, 0 };
-static const unichar_t str_11f9[] = { 0x1159, 0 };
-static const unichar_t str_13a0[] = { 0x0044, 0 };
-static const unichar_t str_13a1[] = { 0x0052, 0 };
-static const unichar_t str_13a2[] = { 0x0054, 0 };
-static const unichar_t str_13a9[] = { 0x0423, 0 };
-static const unichar_t str_13aa[] = { 0x0041, 0 };
-static const unichar_t str_13ab[] = { 0x004a, 0 };
-static const unichar_t str_13ac[] = { 0x0045, 0 };
-static const unichar_t str_13b1[] = { 0x0393, 0 };
-static const unichar_t str_13b3[] = { 0x0057, 0 };
-static const unichar_t str_13b7[] = { 0x004d, 0 };
-static const unichar_t str_13bb[] = { 0x0048, 0 };
-static const unichar_t str_13be[] = { 0x0398, 0 };
-static const unichar_t str_13c0[] = { 0x0047, 0 };
-static const unichar_t str_13c2[] = { 0x0068, 0 };
-static const unichar_t str_13c3[] = { 0x005a, 0 };
-static const unichar_t str_13cf[] = { 0x042c, 0 };
-static const unichar_t str_13d9[] = { 0x0056, 0 };
-static const unichar_t str_13da[] = { 0x0053, 0 };
-static const unichar_t str_13de[] = { 0x004c, 0 };
-static const unichar_t str_13df[] = { 0x0043, 0 };
-static const unichar_t str_13e2[] = { 0x0050, 0 };
-static const unichar_t str_13e6[] = { 0x004b, 0 };
-static const unichar_t str_13f4[] = { 0x0042, 0 };
-static const unichar_t str_1b06[] = { 0x1b05, 0x1b35, 0 };
-static const unichar_t str_1b08[] = { 0x1b07, 0x1b35, 0 };
-static const unichar_t str_1b0a[] = { 0x1b09, 0x1b35, 0 };
-static const unichar_t str_1b0c[] = { 0x1b0b, 0x1b35, 0 };
-static const unichar_t str_1b0e[] = { 0x1b0d, 0x1b35, 0 };
-static const unichar_t str_1b12[] = { 0x1b11, 0x1b35, 0 };
-static const unichar_t str_1b3b[] = { 0x1b3a, 0x1b35, 0 };
-static const unichar_t str_1b3d[] = { 0x1b3c, 0x1b35, 0 };
-static const unichar_t str_1b40[] = { 0x1b3e, 0x1b35, 0 };
-static const unichar_t str_1b41[] = { 0x1b3f, 0x1b35, 0 };
-static const unichar_t str_1b43[] = { 0x1b42, 0x1b35, 0 };
-static const unichar_t str_1d2c[] = { 0x0041, 0 };
-static const unichar_t str_1d2d[] = { 0x00c6, 0 };
-static const unichar_t str_1d2e[] = { 0x0042, 0 };
-static const unichar_t str_1d30[] = { 0x0044, 0 };
-static const unichar_t str_1d31[] = { 0x0045, 0 };
-static const unichar_t str_1d32[] = { 0x018e, 0 };
-static const unichar_t str_1d33[] = { 0x0047, 0 };
-static const unichar_t str_1d34[] = { 0x0048, 0 };
-static const unichar_t str_1d35[] = { 0x0049, 0 };
-static const unichar_t str_1d36[] = { 0x004a, 0 };
-static const unichar_t str_1d37[] = { 0x004b, 0 };
-static const unichar_t str_1d38[] = { 0x004c, 0 };
-static const unichar_t str_1d39[] = { 0x004d, 0 };
-static const unichar_t str_1d3a[] = { 0x004e, 0 };
-static const unichar_t str_1d3c[] = { 0x004f, 0 };
-static const unichar_t str_1d3d[] = { 0x0222, 0 };
-static const unichar_t str_1d3e[] = { 0x0050, 0 };
-static const unichar_t str_1d3f[] = { 0x0052, 0 };
-static const unichar_t str_1d40[] = { 0x0054, 0 };
-static const unichar_t str_1d41[] = { 0x0055, 0 };
-static const unichar_t str_1d42[] = { 0x0057, 0 };
-static const unichar_t str_1d43[] = { 0x0061, 0 };
-static const unichar_t str_1d44[] = { 0x0250, 0 };
-static const unichar_t str_1d45[] = { 0x0251, 0 };
-static const unichar_t str_1d46[] = { 0x1d02, 0 };
-static const unichar_t str_1d47[] = { 0x0062, 0 };
-static const unichar_t str_1d48[] = { 0x0064, 0 };
-static const unichar_t str_1d49[] = { 0x0065, 0 };
-static const unichar_t str_1d4a[] = { 0x0259, 0 };
-static const unichar_t str_1d4b[] = { 0x025b, 0 };
-static const unichar_t str_1d4c[] = { 0x025c, 0 };
-static const unichar_t str_1d4d[] = { 0x0067, 0 };
-static const unichar_t str_1d4f[] = { 0x006b, 0 };
-static const unichar_t str_1d50[] = { 0x006d, 0 };
-static const unichar_t str_1d51[] = { 0x014b, 0 };
-static const unichar_t str_1d52[] = { 0x006f, 0 };
-static const unichar_t str_1d53[] = { 0x0254, 0 };
-static const unichar_t str_1d54[] = { 0x1d16, 0 };
-static const unichar_t str_1d55[] = { 0x1d17, 0 };
-static const unichar_t str_1d56[] = { 0x0070, 0 };
-static const unichar_t str_1d57[] = { 0x0074, 0 };
-static const unichar_t str_1d58[] = { 0x0075, 0 };
-static const unichar_t str_1d59[] = { 0x1d1d, 0 };
-static const unichar_t str_1d5a[] = { 0x026f, 0 };
-static const unichar_t str_1d5b[] = { 0x0076, 0 };
-static const unichar_t str_1d5c[] = { 0x1d25, 0 };
-static const unichar_t str_1d5d[] = { 0x03b2, 0 };
-static const unichar_t str_1d5e[] = { 0x03b3, 0 };
-static const unichar_t str_1d5f[] = { 0x03b4, 0 };
-static const unichar_t str_1d60[] = { 0x03c6, 0 };
-static const unichar_t str_1d61[] = { 0x03c7, 0 };
-static const unichar_t str_1d62[] = { 0x0069, 0 };
-static const unichar_t str_1d63[] = { 0x0072, 0 };
-static const unichar_t str_1d64[] = { 0x0075, 0 };
-static const unichar_t str_1d65[] = { 0x0076, 0 };
-static const unichar_t str_1d66[] = { 0x03b2, 0 };
-static const unichar_t str_1d67[] = { 0x03b3, 0 };
-static const unichar_t str_1d68[] = { 0x03c1, 0 };
-static const unichar_t str_1d69[] = { 0x03c6, 0 };
-static const unichar_t str_1d6a[] = { 0x03c7, 0 };
-static const unichar_t str_1d78[] = { 0x043d, 0 };
-static const unichar_t str_1d9b[] = { 0x0252, 0 };
-static const unichar_t str_1d9c[] = { 0x0063, 0 };
-static const unichar_t str_1d9d[] = { 0x0255, 0 };
-static const unichar_t str_1d9e[] = { 0x00f0, 0 };
-static const unichar_t str_1d9f[] = { 0x025c, 0 };
-static const unichar_t str_1da0[] = { 0x0066, 0 };
-static const unichar_t str_1da1[] = { 0x025f, 0 };
-static const unichar_t str_1da2[] = { 0x0261, 0 };
-static const unichar_t str_1da3[] = { 0x0265, 0 };
-static const unichar_t str_1da4[] = { 0x0268, 0 };
-static const unichar_t str_1da5[] = { 0x0269, 0 };
-static const unichar_t str_1da6[] = { 0x026a, 0 };
-static const unichar_t str_1da7[] = { 0x1d7b, 0 };
-static const unichar_t str_1da8[] = { 0x029d, 0 };
-static const unichar_t str_1da9[] = { 0x026d, 0 };
-static const unichar_t str_1daa[] = { 0x1d85, 0 };
-static const unichar_t str_1dab[] = { 0x029f, 0 };
-static const unichar_t str_1dac[] = { 0x0271, 0 };
-static const unichar_t str_1dad[] = { 0x0270, 0 };
-static const unichar_t str_1dae[] = { 0x0272, 0 };
-static const unichar_t str_1daf[] = { 0x0273, 0 };
-static const unichar_t str_1db0[] = { 0x0274, 0 };
-static const unichar_t str_1db1[] = { 0x0275, 0 };
-static const unichar_t str_1db2[] = { 0x0278, 0 };
-static const unichar_t str_1db3[] = { 0x0282, 0 };
-static const unichar_t str_1db4[] = { 0x0283, 0 };
-static const unichar_t str_1db5[] = { 0x01ab, 0 };
-static const unichar_t str_1db6[] = { 0x0289, 0 };
-static const unichar_t str_1db7[] = { 0x028a, 0 };
-static const unichar_t str_1db8[] = { 0x1d1c, 0 };
-static const unichar_t str_1db9[] = { 0x028b, 0 };
-static const unichar_t str_1dba[] = { 0x028c, 0 };
-static const unichar_t str_1dbb[] = { 0x007a, 0 };
-static const unichar_t str_1dbc[] = { 0x0290, 0 };
-static const unichar_t str_1dbd[] = { 0x0291, 0 };
-static const unichar_t str_1dbe[] = { 0x0292, 0 };
-static const unichar_t str_1dbf[] = { 0x03b8, 0 };
-static const unichar_t str_1e00[] = { 0x0041, 0x0325, 0 };
-static const unichar_t str_1e01[] = { 0x0061, 0x0325, 0 };
-static const unichar_t str_1e02[] = { 0x0042, 0x0307, 0 };
-static const unichar_t str_1e03[] = { 0x0062, 0x0307, 0 };
-static const unichar_t str_1e04[] = { 0x0042, 0x0323, 0 };
-static const unichar_t str_1e05[] = { 0x0062, 0x0323, 0 };
-static const unichar_t str_1e06[] = { 0x0042, 0x0331, 0 };
-static const unichar_t str_1e07[] = { 0x0062, 0x0331, 0 };
-static const unichar_t str_1e08[] = { 0x00c7, 0x0301, 0 };
-static const unichar_t str_1e09[] = { 0x00e7, 0x0301, 0 };
-static const unichar_t str_1e0a[] = { 0x0044, 0x0307, 0 };
-static const unichar_t str_1e0b[] = { 0x0064, 0x0307, 0 };
-static const unichar_t str_1e0c[] = { 0x0044, 0x0323, 0 };
-static const unichar_t str_1e0d[] = { 0x0064, 0x0323, 0 };
-static const unichar_t str_1e0e[] = { 0x0044, 0x0331, 0 };
-static const unichar_t str_1e0f[] = { 0x0064, 0x0331, 0 };
-static const unichar_t str_1e10[] = { 0x0044, 0x0327, 0 };
-static const unichar_t str_1e11[] = { 0x0064, 0x0327, 0 };
-static const unichar_t str_1e12[] = { 0x0044, 0x032d, 0 };
-static const unichar_t str_1e13[] = { 0x0064, 0x032d, 0 };
-static const unichar_t str_1e14[] = { 0x0112, 0x0300, 0 };
-static const unichar_t str_1e15[] = { 0x0113, 0x0300, 0 };
-static const unichar_t str_1e16[] = { 0x0112, 0x0301, 0 };
-static const unichar_t str_1e17[] = { 0x0113, 0x0301, 0 };
-static const unichar_t str_1e18[] = { 0x0045, 0x032d, 0 };
-static const unichar_t str_1e19[] = { 0x0065, 0x032d, 0 };
-static const unichar_t str_1e1a[] = { 0x0045, 0x0330, 0 };
-static const unichar_t str_1e1b[] = { 0x0065, 0x0330, 0 };
-static const unichar_t str_1e1c[] = { 0x0228, 0x0306, 0 };
-static const unichar_t str_1e1d[] = { 0x0229, 0x0306, 0 };
-static const unichar_t str_1e1e[] = { 0x0046, 0x0307, 0 };
-static const unichar_t str_1e1f[] = { 0x0066, 0x0307, 0 };
-static const unichar_t str_1e20[] = { 0x0047, 0x0304, 0 };
-static const unichar_t str_1e21[] = { 0x0067, 0x0304, 0 };
-static const unichar_t str_1e22[] = { 0x0048, 0x0307, 0 };
-static const unichar_t str_1e23[] = { 0x0068, 0x0307, 0 };
-static const unichar_t str_1e24[] = { 0x0048, 0x0323, 0 };
-static const unichar_t str_1e25[] = { 0x0068, 0x0323, 0 };
-static const unichar_t str_1e26[] = { 0x0048, 0x0308, 0 };
-static const unichar_t str_1e27[] = { 0x0068, 0x0308, 0 };
-static const unichar_t str_1e28[] = { 0x0048, 0x0327, 0 };
-static const unichar_t str_1e29[] = { 0x0068, 0x0327, 0 };
-static const unichar_t str_1e2a[] = { 0x0048, 0x032e, 0 };
-static const unichar_t str_1e2b[] = { 0x0068, 0x032e, 0 };
-static const unichar_t str_1e2c[] = { 0x0049, 0x0330, 0 };
-static const unichar_t str_1e2d[] = { 0x0069, 0x0330, 0 };
-static const unichar_t str_1e2e[] = { 0x00cf, 0x0301, 0 };
-static const unichar_t str_1e2f[] = { 0x00ef, 0x0301, 0 };
-static const unichar_t str_1e30[] = { 0x004b, 0x0301, 0 };
-static const unichar_t str_1e31[] = { 0x006b, 0x0301, 0 };
-static const unichar_t str_1e32[] = { 0x004b, 0x0323, 0 };
-static const unichar_t str_1e33[] = { 0x006b, 0x0323, 0 };
-static const unichar_t str_1e34[] = { 0x004b, 0x0331, 0 };
-static const unichar_t str_1e35[] = { 0x006b, 0x0331, 0 };
-static const unichar_t str_1e36[] = { 0x004c, 0x0323, 0 };
-static const unichar_t str_1e37[] = { 0x006c, 0x0323, 0 };
-static const unichar_t str_1e38[] = { 0x1e36, 0x0304, 0 };
-static const unichar_t str_1e39[] = { 0x1e37, 0x0304, 0 };
-static const unichar_t str_1e3a[] = { 0x004c, 0x0331, 0 };
-static const unichar_t str_1e3b[] = { 0x006c, 0x0331, 0 };
-static const unichar_t str_1e3c[] = { 0x004c, 0x032d, 0 };
-static const unichar_t str_1e3d[] = { 0x006c, 0x032d, 0 };
-static const unichar_t str_1e3e[] = { 0x004d, 0x0301, 0 };
-static const unichar_t str_1e3f[] = { 0x006d, 0x0301, 0 };
-static const unichar_t str_1e40[] = { 0x004d, 0x0307, 0 };
-static const unichar_t str_1e41[] = { 0x006d, 0x0307, 0 };
-static const unichar_t str_1e42[] = { 0x004d, 0x0323, 0 };
-static const unichar_t str_1e43[] = { 0x006d, 0x0323, 0 };
-static const unichar_t str_1e44[] = { 0x004e, 0x0307, 0 };
-static const unichar_t str_1e45[] = { 0x006e, 0x0307, 0 };
-static const unichar_t str_1e46[] = { 0x004e, 0x0323, 0 };
-static const unichar_t str_1e47[] = { 0x006e, 0x0323, 0 };
-static const unichar_t str_1e48[] = { 0x004e, 0x0331, 0 };
-static const unichar_t str_1e49[] = { 0x006e, 0x0331, 0 };
-static const unichar_t str_1e4a[] = { 0x004e, 0x032d, 0 };
-static const unichar_t str_1e4b[] = { 0x006e, 0x032d, 0 };
-static const unichar_t str_1e4c[] = { 0x00d5, 0x0301, 0 };
-static const unichar_t str_1e4d[] = { 0x00f5, 0x0301, 0 };
-static const unichar_t str_1e4e[] = { 0x00d5, 0x0308, 0 };
-static const unichar_t str_1e4f[] = { 0x00f5, 0x0308, 0 };
-static const unichar_t str_1e50[] = { 0x014c, 0x0300, 0 };
-static const unichar_t str_1e51[] = { 0x014d, 0x0300, 0 };
-static const unichar_t str_1e52[] = { 0x014c, 0x0301, 0 };
-static const unichar_t str_1e53[] = { 0x014d, 0x0301, 0 };
-static const unichar_t str_1e54[] = { 0x0050, 0x0301, 0 };
-static const unichar_t str_1e55[] = { 0x0070, 0x0301, 0 };
-static const unichar_t str_1e56[] = { 0x0050, 0x0307, 0 };
-static const unichar_t str_1e57[] = { 0x0070, 0x0307, 0 };
-static const unichar_t str_1e58[] = { 0x0052, 0x0307, 0 };
-static const unichar_t str_1e59[] = { 0x0072, 0x0307, 0 };
-static const unichar_t str_1e5a[] = { 0x0052, 0x0323, 0 };
-static const unichar_t str_1e5b[] = { 0x0072, 0x0323, 0 };
-static const unichar_t str_1e5c[] = { 0x1e5a, 0x0304, 0 };
-static const unichar_t str_1e5d[] = { 0x1e5b, 0x0304, 0 };
-static const unichar_t str_1e5e[] = { 0x0052, 0x0331, 0 };
-static const unichar_t str_1e5f[] = { 0x0072, 0x0331, 0 };
-static const unichar_t str_1e60[] = { 0x0053, 0x0307, 0 };
-static const unichar_t str_1e61[] = { 0x0073, 0x0307, 0 };
-static const unichar_t str_1e62[] = { 0x0053, 0x0323, 0 };
-static const unichar_t str_1e63[] = { 0x0073, 0x0323, 0 };
-static const unichar_t str_1e64[] = { 0x015a, 0x0307, 0 };
-static const unichar_t str_1e65[] = { 0x015b, 0x0307, 0 };
-static const unichar_t str_1e66[] = { 0x0160, 0x0307, 0 };
-static const unichar_t str_1e67[] = { 0x0161, 0x0307, 0 };
-static const unichar_t str_1e68[] = { 0x1e62, 0x0307, 0 };
-static const unichar_t str_1e69[] = { 0x1e63, 0x0307, 0 };
-static const unichar_t str_1e6a[] = { 0x0054, 0x0307, 0 };
-static const unichar_t str_1e6b[] = { 0x0074, 0x0307, 0 };
-static const unichar_t str_1e6c[] = { 0x0054, 0x0323, 0 };
-static const unichar_t str_1e6d[] = { 0x0074, 0x0323, 0 };
-static const unichar_t str_1e6e[] = { 0x0054, 0x0331, 0 };
-static const unichar_t str_1e6f[] = { 0x0074, 0x0331, 0 };
-static const unichar_t str_1e70[] = { 0x0054, 0x032d, 0 };
-static const unichar_t str_1e71[] = { 0x0074, 0x032d, 0 };
-static const unichar_t str_1e72[] = { 0x0055, 0x0324, 0 };
-static const unichar_t str_1e73[] = { 0x0075, 0x0324, 0 };
-static const unichar_t str_1e74[] = { 0x0055, 0x0330, 0 };
-static const unichar_t str_1e75[] = { 0x0075, 0x0330, 0 };
-static const unichar_t str_1e76[] = { 0x0055, 0x032d, 0 };
-static const unichar_t str_1e77[] = { 0x0075, 0x032d, 0 };
-static const unichar_t str_1e78[] = { 0x0168, 0x0301, 0 };
-static const unichar_t str_1e79[] = { 0x0169, 0x0301, 0 };
-static const unichar_t str_1e7a[] = { 0x016a, 0x0308, 0 };
-static const unichar_t str_1e7b[] = { 0x016b, 0x0308, 0 };
-static const unichar_t str_1e7c[] = { 0x0056, 0x0303, 0 };
-static const unichar_t str_1e7d[] = { 0x0076, 0x0303, 0 };
-static const unichar_t str_1e7e[] = { 0x0056, 0x0323, 0 };
-static const unichar_t str_1e7f[] = { 0x0076, 0x0323, 0 };
-static const unichar_t str_1e80[] = { 0x0057, 0x0300, 0 };
-static const unichar_t str_1e81[] = { 0x0077, 0x0300, 0 };
-static const unichar_t str_1e82[] = { 0x0057, 0x0301, 0 };
-static const unichar_t str_1e83[] = { 0x0077, 0x0301, 0 };
-static const unichar_t str_1e84[] = { 0x0057, 0x0308, 0 };
-static const unichar_t str_1e85[] = { 0x0077, 0x0308, 0 };
-static const unichar_t str_1e86[] = { 0x0057, 0x0307, 0 };
-static const unichar_t str_1e87[] = { 0x0077, 0x0307, 0 };
-static const unichar_t str_1e88[] = { 0x0057, 0x0323, 0 };
-static const unichar_t str_1e89[] = { 0x0077, 0x0323, 0 };
-static const unichar_t str_1e8a[] = { 0x0058, 0x0307, 0 };
-static const unichar_t str_1e8b[] = { 0x0078, 0x0307, 0 };
-static const unichar_t str_1e8c[] = { 0x0058, 0x0308, 0 };
-static const unichar_t str_1e8d[] = { 0x0078, 0x0308, 0 };
-static const unichar_t str_1e8e[] = { 0x0059, 0x0307, 0 };
-static const unichar_t str_1e8f[] = { 0x0079, 0x0307, 0 };
-static const unichar_t str_1e90[] = { 0x005a, 0x0302, 0 };
-static const unichar_t str_1e91[] = { 0x007a, 0x0302, 0 };
-static const unichar_t str_1e92[] = { 0x005a, 0x0323, 0 };
-static const unichar_t str_1e93[] = { 0x007a, 0x0323, 0 };
-static const unichar_t str_1e94[] = { 0x005a, 0x0331, 0 };
-static const unichar_t str_1e95[] = { 0x007a, 0x0331, 0 };
-static const unichar_t str_1e96[] = { 0x0068, 0x0331, 0 };
-static const unichar_t str_1e97[] = { 0x0074, 0x0308, 0 };
-static const unichar_t str_1e98[] = { 0x0077, 0x030a, 0 };
-static const unichar_t str_1e99[] = { 0x0079, 0x030a, 0 };
-static const unichar_t str_1e9a[] = { 0x0061, 0x02be, 0 };
-static const unichar_t str_1e9b[] = { 0x017f, 0x0307, 0 };
-static const unichar_t str_1ea0[] = { 0x0041, 0x0323, 0 };
-static const unichar_t str_1ea1[] = { 0x0061, 0x0323, 0 };
-static const unichar_t str_1ea2[] = { 0x0041, 0x0309, 0 };
-static const unichar_t str_1ea3[] = { 0x0061, 0x0309, 0 };
-static const unichar_t str_1ea4[] = { 0x00c2, 0x0301, 0 };
-static const unichar_t str_1ea5[] = { 0x00e2, 0x0301, 0 };
-static const unichar_t str_1ea6[] = { 0x00c2, 0x0300, 0 };
-static const unichar_t str_1ea7[] = { 0x00e2, 0x0300, 0 };
-static const unichar_t str_1ea8[] = { 0x00c2, 0x0309, 0 };
-static const unichar_t str_1ea9[] = { 0x00e2, 0x0309, 0 };
-static const unichar_t str_1eaa[] = { 0x00c2, 0x0303, 0 };
-static const unichar_t str_1eab[] = { 0x00e2, 0x0303, 0 };
-static const unichar_t str_1eac[] = { 0x1ea0, 0x0302, 0 };
-static const unichar_t str_1ead[] = { 0x1ea1, 0x0302, 0 };
-static const unichar_t str_1eae[] = { 0x0102, 0x0301, 0 };
-static const unichar_t str_1eaf[] = { 0x0103, 0x0301, 0 };
-static const unichar_t str_1eb0[] = { 0x0102, 0x0300, 0 };
-static const unichar_t str_1eb1[] = { 0x0103, 0x0300, 0 };
-static const unichar_t str_1eb2[] = { 0x0102, 0x0309, 0 };
-static const unichar_t str_1eb3[] = { 0x0103, 0x0309, 0 };
-static const unichar_t str_1eb4[] = { 0x0102, 0x0303, 0 };
-static const unichar_t str_1eb5[] = { 0x0103, 0x0303, 0 };
-static const unichar_t str_1eb6[] = { 0x1ea0, 0x0306, 0 };
-static const unichar_t str_1eb7[] = { 0x1ea1, 0x0306, 0 };
-static const unichar_t str_1eb8[] = { 0x0045, 0x0323, 0 };
-static const unichar_t str_1eb9[] = { 0x0065, 0x0323, 0 };
-static const unichar_t str_1eba[] = { 0x0045, 0x0309, 0 };
-static const unichar_t str_1ebb[] = { 0x0065, 0x0309, 0 };
-static const unichar_t str_1ebc[] = { 0x0045, 0x0303, 0 };
-static const unichar_t str_1ebd[] = { 0x0065, 0x0303, 0 };
-static const unichar_t str_1ebe[] = { 0x00ca, 0x0301, 0 };
-static const unichar_t str_1ebf[] = { 0x00ea, 0x0301, 0 };
-static const unichar_t str_1ec0[] = { 0x00ca, 0x0300, 0 };
-static const unichar_t str_1ec1[] = { 0x00ea, 0x0300, 0 };
-static const unichar_t str_1ec2[] = { 0x00ca, 0x0309, 0 };
-static const unichar_t str_1ec3[] = { 0x00ea, 0x0309, 0 };
-static const unichar_t str_1ec4[] = { 0x00ca, 0x0303, 0 };
-static const unichar_t str_1ec5[] = { 0x00ea, 0x0303, 0 };
-static const unichar_t str_1ec6[] = { 0x1eb8, 0x0302, 0 };
-static const unichar_t str_1ec7[] = { 0x1eb9, 0x0302, 0 };
-static const unichar_t str_1ec8[] = { 0x0049, 0x0309, 0 };
-static const unichar_t str_1ec9[] = { 0x0069, 0x0309, 0 };
-static const unichar_t str_1eca[] = { 0x0049, 0x0323, 0 };
-static const unichar_t str_1ecb[] = { 0x0069, 0x0323, 0 };
-static const unichar_t str_1ecc[] = { 0x004f, 0x0323, 0 };
-static const unichar_t str_1ecd[] = { 0x006f, 0x0323, 0 };
-static const unichar_t str_1ece[] = { 0x004f, 0x0309, 0 };
-static const unichar_t str_1ecf[] = { 0x006f, 0x0309, 0 };
-static const unichar_t str_1ed0[] = { 0x00d4, 0x0301, 0 };
-static const unichar_t str_1ed1[] = { 0x00f4, 0x0301, 0 };
-static const unichar_t str_1ed2[] = { 0x00d4, 0x0300, 0 };
-static const unichar_t str_1ed3[] = { 0x00f4, 0x0300, 0 };
-static const unichar_t str_1ed4[] = { 0x00d4, 0x0309, 0 };
-static const unichar_t str_1ed5[] = { 0x00f4, 0x0309, 0 };
-static const unichar_t str_1ed6[] = { 0x00d4, 0x0303, 0 };
-static const unichar_t str_1ed7[] = { 0x00f4, 0x0303, 0 };
-static const unichar_t str_1ed8[] = { 0x1ecc, 0x0302, 0 };
-static const unichar_t str_1ed9[] = { 0x1ecd, 0x0302, 0 };
-static const unichar_t str_1eda[] = { 0x01a0, 0x0301, 0 };
-static const unichar_t str_1edb[] = { 0x01a1, 0x0301, 0 };
-static const unichar_t str_1edc[] = { 0x01a0, 0x0300, 0 };
-static const unichar_t str_1edd[] = { 0x01a1, 0x0300, 0 };
-static const unichar_t str_1ede[] = { 0x01a0, 0x0309, 0 };
-static const unichar_t str_1edf[] = { 0x01a1, 0x0309, 0 };
-static const unichar_t str_1ee0[] = { 0x01a0, 0x0303, 0 };
-static const unichar_t str_1ee1[] = { 0x01a1, 0x0303, 0 };
-static const unichar_t str_1ee2[] = { 0x01a0, 0x0323, 0 };
-static const unichar_t str_1ee3[] = { 0x01a1, 0x0323, 0 };
-static const unichar_t str_1ee4[] = { 0x0055, 0x0323, 0 };
-static const unichar_t str_1ee5[] = { 0x0075, 0x0323, 0 };
-static const unichar_t str_1ee6[] = { 0x0055, 0x0309, 0 };
-static const unichar_t str_1ee7[] = { 0x0075, 0x0309, 0 };
-static const unichar_t str_1ee8[] = { 0x01af, 0x0301, 0 };
-static const unichar_t str_1ee9[] = { 0x01b0, 0x0301, 0 };
-static const unichar_t str_1eea[] = { 0x01af, 0x0300, 0 };
-static const unichar_t str_1eeb[] = { 0x01b0, 0x0300, 0 };
-static const unichar_t str_1eec[] = { 0x01af, 0x0309, 0 };
-static const unichar_t str_1eed[] = { 0x01b0, 0x0309, 0 };
-static const unichar_t str_1eee[] = { 0x01af, 0x0303, 0 };
-static const unichar_t str_1eef[] = { 0x01b0, 0x0303, 0 };
-static const unichar_t str_1ef0[] = { 0x01af, 0x0323, 0 };
-static const unichar_t str_1ef1[] = { 0x01b0, 0x0323, 0 };
-static const unichar_t str_1ef2[] = { 0x0059, 0x0300, 0 };
-static const unichar_t str_1ef3[] = { 0x0079, 0x0300, 0 };
-static const unichar_t str_1ef4[] = { 0x0059, 0x0323, 0 };
-static const unichar_t str_1ef5[] = { 0x0079, 0x0323, 0 };
-static const unichar_t str_1ef6[] = { 0x0059, 0x0309, 0 };
-static const unichar_t str_1ef7[] = { 0x0079, 0x0309, 0 };
-static const unichar_t str_1ef8[] = { 0x0059, 0x0303, 0 };
-static const unichar_t str_1ef9[] = { 0x0079, 0x0303, 0 };
-static const unichar_t str_1f00[] = { 0x03b1, 0x0313, 0 };
-static const unichar_t str_1f01[] = { 0x03b1, 0x0314, 0 };
-static const unichar_t str_1f02[] = { 0x1f00, 0x0300, 0 };
-static const unichar_t str_1f03[] = { 0x1f01, 0x0300, 0 };
-static const unichar_t str_1f04[] = { 0x1f00, 0x0301, 0 };
-static const unichar_t str_1f05[] = { 0x1f01, 0x0301, 0 };
-static const unichar_t str_1f06[] = { 0x1f00, 0x0342, 0 };
-static const unichar_t str_1f07[] = { 0x1f01, 0x0342, 0 };
-static const unichar_t str_1f08[] = { 0x0391, 0x0313, 0 };
-static const unichar_t str_1f09[] = { 0x0391, 0x0314, 0 };
-static const unichar_t str_1f0a[] = { 0x1f08, 0x0300, 0 };
-static const unichar_t str_1f0b[] = { 0x1f09, 0x0300, 0 };
-static const unichar_t str_1f0c[] = { 0x1f08, 0x0301, 0 };
-static const unichar_t str_1f0d[] = { 0x1f09, 0x0301, 0 };
-static const unichar_t str_1f0e[] = { 0x1f08, 0x0342, 0 };
-static const unichar_t str_1f0f[] = { 0x1f09, 0x0342, 0 };
-static const unichar_t str_1f10[] = { 0x03b5, 0x0313, 0 };
-static const unichar_t str_1f11[] = { 0x03b5, 0x0314, 0 };
-static const unichar_t str_1f12[] = { 0x1f10, 0x0300, 0 };
-static const unichar_t str_1f13[] = { 0x1f11, 0x0300, 0 };
-static const unichar_t str_1f14[] = { 0x1f10, 0x0301, 0 };
-static const unichar_t str_1f15[] = { 0x1f11, 0x0301, 0 };
-static const unichar_t str_1f18[] = { 0x0395, 0x0313, 0 };
-static const unichar_t str_1f19[] = { 0x0395, 0x0314, 0 };
-static const unichar_t str_1f1a[] = { 0x1f18, 0x0300, 0 };
-static const unichar_t str_1f1b[] = { 0x1f19, 0x0300, 0 };
-static const unichar_t str_1f1c[] = { 0x1f18, 0x0301, 0 };
-static const unichar_t str_1f1d[] = { 0x1f19, 0x0301, 0 };
-static const unichar_t str_1f20[] = { 0x03b7, 0x0313, 0 };
-static const unichar_t str_1f21[] = { 0x03b7, 0x0314, 0 };
-static const unichar_t str_1f22[] = { 0x1f20, 0x0300, 0 };
-static const unichar_t str_1f23[] = { 0x1f21, 0x0300, 0 };
-static const unichar_t str_1f24[] = { 0x1f20, 0x0301, 0 };
-static const unichar_t str_1f25[] = { 0x1f21, 0x0301, 0 };
-static const unichar_t str_1f26[] = { 0x1f20, 0x0342, 0 };
-static const unichar_t str_1f27[] = { 0x1f21, 0x0342, 0 };
-static const unichar_t str_1f28[] = { 0x0397, 0x0313, 0 };
-static const unichar_t str_1f29[] = { 0x0397, 0x0314, 0 };
-static const unichar_t str_1f2a[] = { 0x1f28, 0x0300, 0 };
-static const unichar_t str_1f2b[] = { 0x1f29, 0x0300, 0 };
-static const unichar_t str_1f2c[] = { 0x1f28, 0x0301, 0 };
-static const unichar_t str_1f2d[] = { 0x1f29, 0x0301, 0 };
-static const unichar_t str_1f2e[] = { 0x1f28, 0x0342, 0 };
-static const unichar_t str_1f2f[] = { 0x1f29, 0x0342, 0 };
-static const unichar_t str_1f30[] = { 0x03b9, 0x0313, 0 };
-static const unichar_t str_1f31[] = { 0x03b9, 0x0314, 0 };
-static const unichar_t str_1f32[] = { 0x1f30, 0x0300, 0 };
-static const unichar_t str_1f33[] = { 0x1f31, 0x0300, 0 };
-static const unichar_t str_1f34[] = { 0x1f30, 0x0301, 0 };
-static const unichar_t str_1f35[] = { 0x1f31, 0x0301, 0 };
-static const unichar_t str_1f36[] = { 0x1f30, 0x0342, 0 };
-static const unichar_t str_1f37[] = { 0x1f31, 0x0342, 0 };
-static const unichar_t str_1f38[] = { 0x0399, 0x0313, 0 };
-static const unichar_t str_1f39[] = { 0x0399, 0x0314, 0 };
-static const unichar_t str_1f3a[] = { 0x1f38, 0x0300, 0 };
-static const unichar_t str_1f3b[] = { 0x1f39, 0x0300, 0 };
-static const unichar_t str_1f3c[] = { 0x1f38, 0x0301, 0 };
-static const unichar_t str_1f3d[] = { 0x1f39, 0x0301, 0 };
-static const unichar_t str_1f3e[] = { 0x1f38, 0x0342, 0 };
-static const unichar_t str_1f3f[] = { 0x1f39, 0x0342, 0 };
-static const unichar_t str_1f40[] = { 0x03bf, 0x0313, 0 };
-static const unichar_t str_1f41[] = { 0x03bf, 0x0314, 0 };
-static const unichar_t str_1f42[] = { 0x1f40, 0x0300, 0 };
-static const unichar_t str_1f43[] = { 0x1f41, 0x0300, 0 };
-static const unichar_t str_1f44[] = { 0x1f40, 0x0301, 0 };
-static const unichar_t str_1f45[] = { 0x1f41, 0x0301, 0 };
-static const unichar_t str_1f48[] = { 0x039f, 0x0313, 0 };
-static const unichar_t str_1f49[] = { 0x039f, 0x0314, 0 };
-static const unichar_t str_1f4a[] = { 0x1f48, 0x0300, 0 };
-static const unichar_t str_1f4b[] = { 0x1f49, 0x0300, 0 };
-static const unichar_t str_1f4c[] = { 0x1f48, 0x0301, 0 };
-static const unichar_t str_1f4d[] = { 0x1f49, 0x0301, 0 };
-static const unichar_t str_1f50[] = { 0x03c5, 0x0313, 0 };
-static const unichar_t str_1f51[] = { 0x03c5, 0x0314, 0 };
-static const unichar_t str_1f52[] = { 0x1f50, 0x0300, 0 };
-static const unichar_t str_1f53[] = { 0x1f51, 0x0300, 0 };
-static const unichar_t str_1f54[] = { 0x1f50, 0x0301, 0 };
-static const unichar_t str_1f55[] = { 0x1f51, 0x0301, 0 };
-static const unichar_t str_1f56[] = { 0x1f50, 0x0342, 0 };
-static const unichar_t str_1f57[] = { 0x1f51, 0x0342, 0 };
-static const unichar_t str_1f59[] = { 0x03a5, 0x0314, 0 };
-static const unichar_t str_1f5b[] = { 0x1f59, 0x0300, 0 };
-static const unichar_t str_1f5d[] = { 0x1f59, 0x0301, 0 };
-static const unichar_t str_1f5f[] = { 0x1f59, 0x0342, 0 };
-static const unichar_t str_1f60[] = { 0x03c9, 0x0313, 0 };
-static const unichar_t str_1f61[] = { 0x03c9, 0x0314, 0 };
-static const unichar_t str_1f62[] = { 0x1f60, 0x0300, 0 };
-static const unichar_t str_1f63[] = { 0x1f61, 0x0300, 0 };
-static const unichar_t str_1f64[] = { 0x1f60, 0x0301, 0 };
-static const unichar_t str_1f65[] = { 0x1f61, 0x0301, 0 };
-static const unichar_t str_1f66[] = { 0x1f60, 0x0342, 0 };
-static const unichar_t str_1f67[] = { 0x1f61, 0x0342, 0 };
-static const unichar_t str_1f68[] = { 0x03a9, 0x0313, 0 };
-static const unichar_t str_1f69[] = { 0x03a9, 0x0314, 0 };
-static const unichar_t str_1f6a[] = { 0x1f68, 0x0300, 0 };
-static const unichar_t str_1f6b[] = { 0x1f69, 0x0300, 0 };
-static const unichar_t str_1f6c[] = { 0x1f68, 0x0301, 0 };
-static const unichar_t str_1f6d[] = { 0x1f69, 0x0301, 0 };
-static const unichar_t str_1f6e[] = { 0x1f68, 0x0342, 0 };
-static const unichar_t str_1f6f[] = { 0x1f69, 0x0342, 0 };
-static const unichar_t str_1f70[] = { 0x03b1, 0x0300, 0 };
-static const unichar_t str_1f71[] = { 0x03ac, 0 };
-static const unichar_t str_1f72[] = { 0x03b5, 0x0300, 0 };
-static const unichar_t str_1f73[] = { 0x03ad, 0 };
-static const unichar_t str_1f74[] = { 0x03b7, 0x0300, 0 };
-static const unichar_t str_1f75[] = { 0x03ae, 0 };
-static const unichar_t str_1f76[] = { 0x03b9, 0x0300, 0 };
-static const unichar_t str_1f77[] = { 0x03af, 0 };
-static const unichar_t str_1f78[] = { 0x03bf, 0x0300, 0 };
-static const unichar_t str_1f79[] = { 0x03cc, 0 };
-static const unichar_t str_1f7a[] = { 0x03c5, 0x0300, 0 };
-static const unichar_t str_1f7b[] = { 0x03cd, 0 };
-static const unichar_t str_1f7c[] = { 0x03c9, 0x0300, 0 };
-static const unichar_t str_1f7d[] = { 0x03ce, 0 };
-static const unichar_t str_1f80[] = { 0x1f00, 0x0345, 0 };
-static const unichar_t str_1f81[] = { 0x1f01, 0x0345, 0 };
-static const unichar_t str_1f82[] = { 0x1f02, 0x0345, 0 };
-static const unichar_t str_1f83[] = { 0x1f03, 0x0345, 0 };
-static const unichar_t str_1f84[] = { 0x1f04, 0x0345, 0 };
-static const unichar_t str_1f85[] = { 0x1f05, 0x0345, 0 };
-static const unichar_t str_1f86[] = { 0x1f06, 0x0345, 0 };
-static const unichar_t str_1f87[] = { 0x1f07, 0x0345, 0 };
-static const unichar_t str_1f88[] = { 0x1f08, 0x0345, 0 };
-static const unichar_t str_1f89[] = { 0x1f09, 0x0345, 0 };
-static const unichar_t str_1f8a[] = { 0x1f0a, 0x0345, 0 };
-static const unichar_t str_1f8b[] = { 0x1f0b, 0x0345, 0 };
-static const unichar_t str_1f8c[] = { 0x1f0c, 0x0345, 0 };
-static const unichar_t str_1f8d[] = { 0x1f0d, 0x0345, 0 };
-static const unichar_t str_1f8e[] = { 0x1f0e, 0x0345, 0 };
-static const unichar_t str_1f8f[] = { 0x1f0f, 0x0345, 0 };
-static const unichar_t str_1f90[] = { 0x1f20, 0x0345, 0 };
-static const unichar_t str_1f91[] = { 0x1f21, 0x0345, 0 };
-static const unichar_t str_1f92[] = { 0x1f22, 0x0345, 0 };
-static const unichar_t str_1f93[] = { 0x1f23, 0x0345, 0 };
-static const unichar_t str_1f94[] = { 0x1f24, 0x0345, 0 };
-static const unichar_t str_1f95[] = { 0x1f25, 0x0345, 0 };
-static const unichar_t str_1f96[] = { 0x1f26, 0x0345, 0 };
-static const unichar_t str_1f97[] = { 0x1f27, 0x0345, 0 };
-static const unichar_t str_1f98[] = { 0x1f28, 0x0345, 0 };
-static const unichar_t str_1f99[] = { 0x1f29, 0x0345, 0 };
-static const unichar_t str_1f9a[] = { 0x1f2a, 0x0345, 0 };
-static const unichar_t str_1f9b[] = { 0x1f2b, 0x0345, 0 };
-static const unichar_t str_1f9c[] = { 0x1f2c, 0x0345, 0 };
-static const unichar_t str_1f9d[] = { 0x1f2d, 0x0345, 0 };
-static const unichar_t str_1f9e[] = { 0x1f2e, 0x0345, 0 };
-static const unichar_t str_1f9f[] = { 0x1f2f, 0x0345, 0 };
-static const unichar_t str_1fa0[] = { 0x1f60, 0x0345, 0 };
-static const unichar_t str_1fa1[] = { 0x1f61, 0x0345, 0 };
-static const unichar_t str_1fa2[] = { 0x1f62, 0x0345, 0 };
-static const unichar_t str_1fa3[] = { 0x1f63, 0x0345, 0 };
-static const unichar_t str_1fa4[] = { 0x1f64, 0x0345, 0 };
-static const unichar_t str_1fa5[] = { 0x1f65, 0x0345, 0 };
-static const unichar_t str_1fa6[] = { 0x1f66, 0x0345, 0 };
-static const unichar_t str_1fa7[] = { 0x1f67, 0x0345, 0 };
-static const unichar_t str_1fa8[] = { 0x1f68, 0x0345, 0 };
-static const unichar_t str_1fa9[] = { 0x1f69, 0x0345, 0 };
-static const unichar_t str_1faa[] = { 0x1f6a, 0x0345, 0 };
-static const unichar_t str_1fab[] = { 0x1f6b, 0x0345, 0 };
-static const unichar_t str_1fac[] = { 0x1f6c, 0x0345, 0 };
-static const unichar_t str_1fad[] = { 0x1f6d, 0x0345, 0 };
-static const unichar_t str_1fae[] = { 0x1f6e, 0x0345, 0 };
-static const unichar_t str_1faf[] = { 0x1f6f, 0x0345, 0 };
-static const unichar_t str_1fb0[] = { 0x03b1, 0x0306, 0 };
-static const unichar_t str_1fb1[] = { 0x03b1, 0x0304, 0 };
-static const unichar_t str_1fb2[] = { 0x1f70, 0x0345, 0 };
-static const unichar_t str_1fb3[] = { 0x03b1, 0x0345, 0 };
-static const unichar_t str_1fb4[] = { 0x03ac, 0x0345, 0 };
-static const unichar_t str_1fb6[] = { 0x03b1, 0x0342, 0 };
-static const unichar_t str_1fb7[] = { 0x1fb6, 0x0345, 0 };
-static const unichar_t str_1fb8[] = { 0x0391, 0x0306, 0 };
-static const unichar_t str_1fb9[] = { 0x0391, 0x0304, 0 };
-static const unichar_t str_1fba[] = { 0x0391, 0x0300, 0 };
-static const unichar_t str_1fbb[] = { 0x0386, 0 };
-static const unichar_t str_1fbc[] = { 0x0391, 0x0345, 0 };
-static const unichar_t str_1fbd[] = { 0x0020, 0x0313, 0 };
-static const unichar_t str_1fbe[] = { 0x03b9, 0 };
-static const unichar_t str_1fbf[] = { 0x0020, 0x0313, 0 };
-static const unichar_t str_1fc0[] = { 0x0020, 0x0342, 0 };
-static const unichar_t str_1fc1[] = { 0x00a8, 0x0342, 0 };
-static const unichar_t str_1fc2[] = { 0x1f74, 0x0345, 0 };
-static const unichar_t str_1fc3[] = { 0x03b7, 0x0345, 0 };
-static const unichar_t str_1fc4[] = { 0x03ae, 0x0345, 0 };
-static const unichar_t str_1fc6[] = { 0x03b7, 0x0342, 0 };
-static const unichar_t str_1fc7[] = { 0x1fc6, 0x0345, 0 };
-static const unichar_t str_1fc8[] = { 0x0395, 0x0300, 0 };
-static const unichar_t str_1fc9[] = { 0x0388, 0 };
-static const unichar_t str_1fca[] = { 0x0397, 0x0300, 0 };
-static const unichar_t str_1fcb[] = { 0x0389, 0 };
-static const unichar_t str_1fcc[] = { 0x0397, 0x0345, 0 };
-static const unichar_t str_1fcd[] = { 0x1fbf, 0x0300, 0 };
-static const unichar_t str_1fce[] = { 0x1fbf, 0x0301, 0 };
-static const unichar_t str_1fcf[] = { 0x1fbf, 0x0342, 0 };
-static const unichar_t str_1fd0[] = { 0x03b9, 0x0306, 0 };
-static const unichar_t str_1fd1[] = { 0x03b9, 0x0304, 0 };
-static const unichar_t str_1fd2[] = { 0x03ca, 0x0300, 0 };
-static const unichar_t str_1fd3[] = { 0x0390, 0 };
-static const unichar_t str_1fd6[] = { 0x03b9, 0x0342, 0 };
-static const unichar_t str_1fd7[] = { 0x03ca, 0x0342, 0 };
-static const unichar_t str_1fd8[] = { 0x0399, 0x0306, 0 };
-static const unichar_t str_1fd9[] = { 0x0399, 0x0304, 0 };
-static const unichar_t str_1fda[] = { 0x0399, 0x0300, 0 };
-static const unichar_t str_1fdb[] = { 0x038a, 0 };
-static const unichar_t str_1fdd[] = { 0x1ffe, 0x0300, 0 };
-static const unichar_t str_1fde[] = { 0x1ffe, 0x0301, 0 };
-static const unichar_t str_1fdf[] = { 0x1ffe, 0x0342, 0 };
-static const unichar_t str_1fe0[] = { 0x03c5, 0x0306, 0 };
-static const unichar_t str_1fe1[] = { 0x03c5, 0x0304, 0 };
-static const unichar_t str_1fe2[] = { 0x03cb, 0x0300, 0 };
-static const unichar_t str_1fe3[] = { 0x03b0, 0 };
-static const unichar_t str_1fe4[] = { 0x03c1, 0x0313, 0 };
-static const unichar_t str_1fe5[] = { 0x03c1, 0x0314, 0 };
-static const unichar_t str_1fe6[] = { 0x03c5, 0x0342, 0 };
-static const unichar_t str_1fe7[] = { 0x03cb, 0x0342, 0 };
-static const unichar_t str_1fe8[] = { 0x03a5, 0x0306, 0 };
-static const unichar_t str_1fe9[] = { 0x03a5, 0x0304, 0 };
-static const unichar_t str_1fea[] = { 0x03a5, 0x0300, 0 };
-static const unichar_t str_1feb[] = { 0x038e, 0 };
-static const unichar_t str_1fec[] = { 0x03a1, 0x0314, 0 };
-static const unichar_t str_1fed[] = { 0x00a8, 0x0300, 0 };
-static const unichar_t str_1fee[] = { 0x0385, 0 };
-static const unichar_t str_1fef[] = { 0x0060, 0 };
-static const unichar_t str_1ff2[] = { 0x1f7c, 0x0345, 0 };
-static const unichar_t str_1ff3[] = { 0x03c9, 0x0345, 0 };
-static const unichar_t str_1ff4[] = { 0x03ce, 0x0345, 0 };
-static const unichar_t str_1ff6[] = { 0x03c9, 0x0342, 0 };
-static const unichar_t str_1ff7[] = { 0x1ff6, 0x0345, 0 };
-static const unichar_t str_1ff8[] = { 0x039f, 0x0300, 0 };
-static const unichar_t str_1ff9[] = { 0x038c, 0 };
-static const unichar_t str_1ffa[] = { 0x03a9, 0x0300, 0 };
-static const unichar_t str_1ffb[] = { 0x038f, 0 };
-static const unichar_t str_1ffc[] = { 0x03a9, 0x0345, 0 };
-static const unichar_t str_1ffd[] = { 0x00b4, 0 };
-static const unichar_t str_1ffe[] = { 0x0020, 0x0314, 0 };
-static const unichar_t str_2000[] = { 0x2002, 0 };
-static const unichar_t str_2001[] = { 0x2003, 0 };
-static const unichar_t str_2002[] = { 0x0020, 0 };
-static const unichar_t str_2003[] = { 0x0020, 0 };
-static const unichar_t str_2004[] = { 0x0020, 0 };
-static const unichar_t str_2005[] = { 0x0020, 0 };
-static const unichar_t str_2006[] = { 0x0020, 0 };
-static const unichar_t str_2007[] = { 0x0020, 0 };
-static const unichar_t str_2008[] = { 0x0020, 0 };
-static const unichar_t str_2009[] = { 0x0020, 0 };
-static const unichar_t str_200a[] = { 0x0020, 0 };
-static const unichar_t str_2010[] = { 0x002d, 0 };
-static const unichar_t str_2011[] = { 0x2010, 0 };
-static const unichar_t str_2012[] = { 0x002d, 0 };
-static const unichar_t str_2013[] = { 0x002d, 0 };
-static const unichar_t str_2014[] = { 0x002d, 0 };
-static const unichar_t str_2015[] = { 0x002d, 0 };
-static const unichar_t str_2016[] = { 0x007c, 0x007c, 0 };
-static const unichar_t str_2017[] = { 0x0020, 0x0333, 0 };
-static const unichar_t str_2018[] = { 0x0060, 0 };
-static const unichar_t str_2019[] = { 0x0027, 0 };
-static const unichar_t str_201c[] = { 0x0022, 0 };
-static const unichar_t str_201d[] = { 0x0022, 0 };
-static const unichar_t str_2024[] = { 0x002e, 0 };
-static const unichar_t str_2025[] = { 0x002e, 0x002e, 0 };
-static const unichar_t str_2026[] = { 0x002e, 0x002e, 0x002e, 0 };
-static const unichar_t str_202f[] = { 0x0020, 0 };
-static const unichar_t str_2032[] = { 0x0027, 0 };
-static const unichar_t str_2033[] = { 0x2032, 0x2032, 0 };
-static const unichar_t str_2034[] = { 0x2032, 0x2032, 0x2032, 0 };
-static const unichar_t str_2035[] = { 0x0060, 0 };
-static const unichar_t str_2036[] = { 0x2035, 0x2035, 0 };
-static const unichar_t str_2037[] = { 0x2035, 0x2035, 0x2035, 0 };
-static const unichar_t str_2039[] = { 0x003c, 0 };
-static const unichar_t str_203a[] = { 0x003e, 0 };
-static const unichar_t str_203c[] = { 0x0021, 0x0021, 0 };
-static const unichar_t str_203e[] = { 0x0020, 0x0305, 0 };
-static const unichar_t str_2047[] = { 0x003f, 0x003f, 0 };
-static const unichar_t str_2048[] = { 0x003f, 0x0021, 0 };
-static const unichar_t str_2049[] = { 0x0021, 0x003f, 0 };
-static const unichar_t str_2057[] = { 0x2032, 0x2032, 0x2032, 0x2032, 0 };
-static const unichar_t str_205f[] = { 0x0020, 0 };
-static const unichar_t str_2070[] = { 0x0030, 0 };
-static const unichar_t str_2071[] = { 0x0069, 0 };
-static const unichar_t str_2074[] = { 0x0034, 0 };
-static const unichar_t str_2075[] = { 0x0035, 0 };
-static const unichar_t str_2076[] = { 0x0036, 0 };
-static const unichar_t str_2077[] = { 0x0037, 0 };
-static const unichar_t str_2078[] = { 0x0038, 0 };
-static const unichar_t str_2079[] = { 0x0039, 0 };
-static const unichar_t str_207a[] = { 0x002b, 0 };
-static const unichar_t str_207b[] = { 0x2212, 0 };
-static const unichar_t str_207c[] = { 0x003d, 0 };
-static const unichar_t str_207d[] = { 0x0028, 0 };
-static const unichar_t str_207e[] = { 0x0029, 0 };
-static const unichar_t str_207f[] = { 0x006e, 0 };
-static const unichar_t str_2080[] = { 0x0030, 0 };
-static const unichar_t str_2081[] = { 0x0031, 0 };
-static const unichar_t str_2082[] = { 0x0032, 0 };
-static const unichar_t str_2083[] = { 0x0033, 0 };
-static const unichar_t str_2084[] = { 0x0034, 0 };
-static const unichar_t str_2085[] = { 0x0035, 0 };
-static const unichar_t str_2086[] = { 0x0036, 0 };
-static const unichar_t str_2087[] = { 0x0037, 0 };
-static const unichar_t str_2088[] = { 0x0038, 0 };
-static const unichar_t str_2089[] = { 0x0039, 0 };
-static const unichar_t str_208a[] = { 0x002b, 0 };
-static const unichar_t str_208b[] = { 0x2212, 0 };
-static const unichar_t str_208c[] = { 0x003d, 0 };
-static const unichar_t str_208d[] = { 0x0028, 0 };
-static const unichar_t str_208e[] = { 0x0029, 0 };
-static const unichar_t str_2090[] = { 0x0061, 0 };
-static const unichar_t str_2091[] = { 0x0065, 0 };
-static const unichar_t str_2092[] = { 0x006f, 0 };
-static const unichar_t str_2093[] = { 0x0078, 0 };
-static const unichar_t str_2094[] = { 0x0259, 0 };
-static const unichar_t str_2095[] = { 0x0068, 0 };
-static const unichar_t str_2096[] = { 0x006b, 0 };
-static const unichar_t str_2097[] = { 0x006c, 0 };
-static const unichar_t str_2098[] = { 0x006d, 0 };
-static const unichar_t str_2099[] = { 0x006e, 0 };
-static const unichar_t str_209a[] = { 0x0070, 0 };
-static const unichar_t str_209b[] = { 0x0073, 0 };
-static const unichar_t str_209c[] = { 0x0074, 0 };
-static const unichar_t str_20a8[] = { 0x0052, 0x0073, 0 };
-static const unichar_t str_2100[] = { 0x0061, 0x002f, 0x0063, 0 };
-static const unichar_t str_2101[] = { 0x0061, 0x002f, 0x0073, 0 };
-static const unichar_t str_2102[] = { 0x0043, 0 };
-static const unichar_t str_2103[] = { 0x00b0, 0x0043, 0 };
-static const unichar_t str_2105[] = { 0x0063, 0x002f, 0x006f, 0 };
-static const unichar_t str_2106[] = { 0x0063, 0x002f, 0x0075, 0 };
-static const unichar_t str_2107[] = { 0x0190, 0 };
-static const unichar_t str_2109[] = { 0x00b0, 0x0046, 0 };
-static const unichar_t str_210a[] = { 0x0067, 0 };
-static const unichar_t str_210b[] = { 0x0048, 0 };
-static const unichar_t str_210c[] = { 0x0048, 0 };
-static const unichar_t str_210d[] = { 0x0048, 0 };
-static const unichar_t str_210e[] = { 0x0068, 0 };
-static const unichar_t str_210f[] = { 0x0127, 0 };
-static const unichar_t str_2110[] = { 0x0049, 0 };
-static const unichar_t str_2111[] = { 0x0049, 0 };
-static const unichar_t str_2112[] = { 0x004c, 0 };
-static const unichar_t str_2113[] = { 0x006c, 0 };
-static const unichar_t str_2115[] = { 0x004e, 0 };
-static const unichar_t str_2116[] = { 0x004e, 0x006f, 0 };
-static const unichar_t str_2119[] = { 0x0050, 0 };
-static const unichar_t str_211a[] = { 0x0051, 0 };
-static const unichar_t str_211b[] = { 0x0052, 0 };
-static const unichar_t str_211c[] = { 0x0052, 0 };
-static const unichar_t str_211d[] = { 0x0052, 0 };
-static const unichar_t str_2120[] = { 0x0053, 0x004d, 0 };
-static const unichar_t str_2121[] = { 0x0054, 0x0045, 0x004c, 0 };
-static const unichar_t str_2122[] = { 0x0054, 0x004d, 0 };
-static const unichar_t str_2124[] = { 0x005a, 0 };
-static const unichar_t str_2126[] = { 0x03a9, 0 };
-static const unichar_t str_2128[] = { 0x005a, 0 };
-static const unichar_t str_212a[] = { 0x004b, 0 };
-static const unichar_t str_212b[] = { 0x00c5, 0 };
-static const unichar_t str_212c[] = { 0x0042, 0 };
-static const unichar_t str_212d[] = { 0x0043, 0 };
-static const unichar_t str_212f[] = { 0x0065, 0 };
-static const unichar_t str_2130[] = { 0x0045, 0 };
-static const unichar_t str_2131[] = { 0x0046, 0 };
-static const unichar_t str_2133[] = { 0x004d, 0 };
-static const unichar_t str_2134[] = { 0x006f, 0 };
-static const unichar_t str_2135[] = { 0x05d0, 0 };
-static const unichar_t str_2136[] = { 0x05d1, 0 };
-static const unichar_t str_2137[] = { 0x05d2, 0 };
-static const unichar_t str_2138[] = { 0x05d3, 0 };
-static const unichar_t str_2139[] = { 0x0069, 0 };
-static const unichar_t str_213b[] = { 0x0046, 0x0041, 0x0058, 0 };
-static const unichar_t str_213c[] = { 0x03c0, 0 };
-static const unichar_t str_213d[] = { 0x03b3, 0 };
-static const unichar_t str_213e[] = { 0x0393, 0 };
-static const unichar_t str_213f[] = { 0x03a0, 0 };
-static const unichar_t str_2140[] = { 0x2211, 0 };
-static const unichar_t str_2145[] = { 0x0044, 0 };
-static const unichar_t str_2146[] = { 0x0064, 0 };
-static const unichar_t str_2147[] = { 0x0065, 0 };
-static const unichar_t str_2148[] = { 0x0069, 0 };
-static const unichar_t str_2149[] = { 0x006a, 0 };
-static const unichar_t str_2150[] = { 0x0031, 0x2044, 0x0037, 0 };
-static const unichar_t str_2151[] = { 0x0031, 0x2044, 0x0039, 0 };
-static const unichar_t str_2152[] = { 0x0031, 0x2044, 0x0031, 0x0030, 0 };
-static const unichar_t str_2153[] = { 0x0031, 0x2044, 0x0033, 0 };
-static const unichar_t str_2154[] = { 0x0032, 0x2044, 0x0033, 0 };
-static const unichar_t str_2155[] = { 0x0031, 0x2044, 0x0035, 0 };
-static const unichar_t str_2156[] = { 0x0032, 0x2044, 0x0035, 0 };
-static const unichar_t str_2157[] = { 0x0033, 0x2044, 0x0035, 0 };
-static const unichar_t str_2158[] = { 0x0034, 0x2044, 0x0035, 0 };
-static const unichar_t str_2159[] = { 0x0031, 0x2044, 0x0036, 0 };
-static const unichar_t str_215a[] = { 0x0035, 0x2044, 0x0036, 0 };
-static const unichar_t str_215b[] = { 0x0031, 0x2044, 0x0038, 0 };
-static const unichar_t str_215c[] = { 0x0033, 0x2044, 0x0038, 0 };
-static const unichar_t str_215d[] = { 0x0035, 0x2044, 0x0038, 0 };
-static const unichar_t str_215e[] = { 0x0037, 0x2044, 0x0038, 0 };
-static const unichar_t str_215f[] = { 0x0031, 0x2044, 0 };
-static const unichar_t str_2160[] = { 0x0049, 0 };
-static const unichar_t str_2161[] = { 0x0049, 0x0049, 0 };
-static const unichar_t str_2162[] = { 0x0049, 0x0049, 0x0049, 0 };
-static const unichar_t str_2163[] = { 0x0049, 0x0056, 0 };
-static const unichar_t str_2164[] = { 0x0056, 0 };
-static const unichar_t str_2165[] = { 0x0056, 0x0049, 0 };
-static const unichar_t str_2166[] = { 0x0056, 0x0049, 0x0049, 0 };
-static const unichar_t str_2167[] = { 0x0056, 0x0049, 0x0049, 0x0049, 0 };
-static const unichar_t str_2168[] = { 0x0049, 0x0058, 0 };
-static const unichar_t str_2169[] = { 0x0058, 0 };
-static const unichar_t str_216a[] = { 0x0058, 0x0049, 0 };
-static const unichar_t str_216b[] = { 0x0058, 0x0049, 0x0049, 0 };
-static const unichar_t str_216c[] = { 0x004c, 0 };
-static const unichar_t str_216d[] = { 0x0043, 0 };
-static const unichar_t str_216e[] = { 0x0044, 0 };
-static const unichar_t str_216f[] = { 0x004d, 0 };
-static const unichar_t str_2170[] = { 0x0069, 0 };
-static const unichar_t str_2171[] = { 0x0069, 0x0069, 0 };
-static const unichar_t str_2172[] = { 0x0069, 0x0069, 0x0069, 0 };
-static const unichar_t str_2173[] = { 0x0069, 0x0076, 0 };
-static const unichar_t str_2174[] = { 0x0076, 0 };
-static const unichar_t str_2175[] = { 0x0076, 0x0069, 0 };
-static const unichar_t str_2176[] = { 0x0076, 0x0069, 0x0069, 0 };
-static const unichar_t str_2177[] = { 0x0076, 0x0069, 0x0069, 0x0069, 0 };
-static const unichar_t str_2178[] = { 0x0069, 0x0078, 0 };
-static const unichar_t str_2179[] = { 0x0078, 0 };
-static const unichar_t str_217a[] = { 0x0078, 0x0069, 0 };
-static const unichar_t str_217b[] = { 0x0078, 0x0069, 0x0069, 0 };
-static const unichar_t str_217c[] = { 0x006c, 0 };
-static const unichar_t str_217d[] = { 0x0063, 0 };
-static const unichar_t str_217e[] = { 0x0064, 0 };
-static const unichar_t str_217f[] = { 0x006d, 0 };
-static const unichar_t str_2189[] = { 0x0030, 0x2044, 0x0033, 0 };
-static const unichar_t str_219a[] = { 0x2190, 0x0338, 0 };
-static const unichar_t str_219b[] = { 0x2192, 0x0338, 0 };
-static const unichar_t str_21ae[] = { 0x2194, 0x0338, 0 };
-static const unichar_t str_21cd[] = { 0x21d0, 0x0338, 0 };
-static const unichar_t str_21ce[] = { 0x21d4, 0x0338, 0 };
-static const unichar_t str_21cf[] = { 0x21d2, 0x0338, 0 };
-static const unichar_t str_2204[] = { 0x2203, 0x0338, 0 };
-static const unichar_t str_2205[] = { 0x00d8, 0 };
-static const unichar_t str_2206[] = { 0x0394, 0 };
-static const unichar_t str_2209[] = { 0x2208, 0x0338, 0 };
-static const unichar_t str_220c[] = { 0x220b, 0x0338, 0 };
-static const unichar_t str_220f[] = { 0x03a0, 0 };
-static const unichar_t str_2211[] = { 0x03a3, 0 };
-static const unichar_t str_2212[] = { 0x002d, 0 };
-static const unichar_t str_2215[] = { 0x002f, 0 };
-static const unichar_t str_2216[] = { 0x005c, 0 };
-static const unichar_t str_2217[] = { 0x002a, 0 };
-static const unichar_t str_2218[] = { 0x00b0, 0 };
-static const unichar_t str_2219[] = { 0x00b7, 0 };
-static const unichar_t str_2223[] = { 0x007c, 0 };
-static const unichar_t str_2224[] = { 0x2223, 0x0338, 0 };
-static const unichar_t str_2225[] = { 0x007c, 0x007c, 0 };
-static const unichar_t str_2226[] = { 0x2225, 0x0338, 0 };
-static const unichar_t str_222c[] = { 0x222b, 0x222b, 0 };
-static const unichar_t str_222d[] = { 0x222b, 0x222b, 0x222b, 0 };
-static const unichar_t str_222f[] = { 0x222e, 0x222e, 0 };
-static const unichar_t str_2230[] = { 0x222e, 0x222e, 0x222e, 0 };
-static const unichar_t str_2236[] = { 0x003a, 0 };
-static const unichar_t str_223c[] = { 0x007e, 0 };
-static const unichar_t str_2241[] = { 0x223c, 0x0338, 0 };
-static const unichar_t str_2244[] = { 0x2243, 0x0338, 0 };
-static const unichar_t str_2247[] = { 0x2245, 0x0338, 0 };
-static const unichar_t str_2249[] = { 0x2248, 0x0338, 0 };
-static const unichar_t str_2260[] = { 0x003d, 0x0338, 0 };
-static const unichar_t str_2262[] = { 0x2261, 0x0338, 0 };
-static const unichar_t str_226a[] = { 0x00ab, 0 };
-static const unichar_t str_226b[] = { 0x00bb, 0 };
-static const unichar_t str_226d[] = { 0x224d, 0x0338, 0 };
-static const unichar_t str_226e[] = { 0x003c, 0x0338, 0 };
-static const unichar_t str_226f[] = { 0x003e, 0x0338, 0 };
-static const unichar_t str_2270[] = { 0x2264, 0x0338, 0 };
-static const unichar_t str_2271[] = { 0x2265, 0x0338, 0 };
-static const unichar_t str_2274[] = { 0x2272, 0x0338, 0 };
-static const unichar_t str_2275[] = { 0x2273, 0x0338, 0 };
-static const unichar_t str_2278[] = { 0x2276, 0x0338, 0 };
-static const unichar_t str_2279[] = { 0x2277, 0x0338, 0 };
-static const unichar_t str_2280[] = { 0x227a, 0x0338, 0 };
-static const unichar_t str_2281[] = { 0x227b, 0x0338, 0 };
-static const unichar_t str_2284[] = { 0x2282, 0x0338, 0 };
-static const unichar_t str_2285[] = { 0x2283, 0x0338, 0 };
-static const unichar_t str_2288[] = { 0x2286, 0x0338, 0 };
-static const unichar_t str_2289[] = { 0x2287, 0x0338, 0 };
-static const unichar_t str_2299[] = { 0x0298, 0 };
-static const unichar_t str_22ac[] = { 0x22a2, 0x0338, 0 };
-static const unichar_t str_22ad[] = { 0x22a8, 0x0338, 0 };
-static const unichar_t str_22ae[] = { 0x22a9, 0x0338, 0 };
-static const unichar_t str_22af[] = { 0x22ab, 0x0338, 0 };
-static const unichar_t str_22c4[] = { 0x25ca, 0 };
-static const unichar_t str_22c5[] = { 0x00b7, 0 };
-static const unichar_t str_22e0[] = { 0x227c, 0x0338, 0 };
-static const unichar_t str_22e1[] = { 0x227d, 0x0338, 0 };
-static const unichar_t str_22e2[] = { 0x2291, 0x0338, 0 };
-static const unichar_t str_22e3[] = { 0x2292, 0x0338, 0 };
-static const unichar_t str_22ea[] = { 0x22b2, 0x0338, 0 };
-static const unichar_t str_22eb[] = { 0x22b3, 0x0338, 0 };
-static const unichar_t str_22ec[] = { 0x22b4, 0x0338, 0 };
-static const unichar_t str_22ed[] = { 0x22b5, 0x0338, 0 };
-static const unichar_t str_22ef[] = { 0x00b7, 0x00b7, 0x00b7, 0 };
-static const unichar_t str_2303[] = { 0x005e, 0 };
-static const unichar_t str_2329[] = { 0x3008, 0 };
-static const unichar_t str_232a[] = { 0x3009, 0 };
-static const unichar_t str_2373[] = { 0x03b9, 0 };
-static const unichar_t str_2374[] = { 0x03c1, 0 };
-static const unichar_t str_2375[] = { 0x03c9, 0 };
-static const unichar_t str_237a[] = { 0x03b1, 0 };
-static const unichar_t str_2400[] = { 0x004e, 0x0055, 0x004c, 0 };
-static const unichar_t str_2401[] = { 0x0053, 0x004f, 0x0048, 0 };
-static const unichar_t str_2402[] = { 0x0053, 0x0054, 0x0058, 0 };
-static const unichar_t str_2403[] = { 0x0045, 0x0054, 0x0058, 0 };
-static const unichar_t str_2404[] = { 0x0045, 0x004f, 0x0054, 0 };
-static const unichar_t str_2405[] = { 0x0045, 0x004e, 0x0041, 0 };
-static const unichar_t str_2406[] = { 0x0041, 0x0043, 0x004b, 0 };
-static const unichar_t str_2407[] = { 0x0042, 0x0045, 0x004c, 0 };
-static const unichar_t str_2408[] = { 0x0042, 0x0053, 0 };
-static const unichar_t str_2409[] = { 0x0048, 0x0054, 0 };
-static const unichar_t str_240a[] = { 0x004c, 0x0046, 0 };
-static const unichar_t str_240b[] = { 0x0056, 0x0054, 0 };
-static const unichar_t str_240c[] = { 0x0046, 0x0046, 0 };
-static const unichar_t str_240d[] = { 0x0043, 0x0052, 0 };
-static const unichar_t str_240e[] = { 0x0053, 0x004f, 0 };
-static const unichar_t str_240f[] = { 0x0053, 0x0049, 0 };
-static const unichar_t str_2410[] = { 0x0044, 0x004c, 0x0045, 0 };
-static const unichar_t str_2411[] = { 0x0044, 0x0043, 0x0031, 0 };
-static const unichar_t str_2412[] = { 0x0044, 0x0043, 0x0032, 0 };
-static const unichar_t str_2413[] = { 0x0044, 0x0043, 0x0033, 0 };
-static const unichar_t str_2414[] = { 0x0044, 0x0043, 0x0034, 0 };
-static const unichar_t str_2415[] = { 0x004e, 0x0041, 0x004b, 0 };
-static const unichar_t str_2416[] = { 0x0053, 0x0059, 0x004e, 0 };
-static const unichar_t str_2417[] = { 0x0045, 0x0054, 0x0042, 0 };
-static const unichar_t str_2418[] = { 0x0043, 0x0041, 0x004e, 0 };
-static const unichar_t str_2419[] = { 0x0045, 0x004d, 0 };
-static const unichar_t str_241a[] = { 0x0053, 0x0055, 0x0042, 0 };
-static const unichar_t str_241b[] = { 0x0045, 0x0053, 0x0043, 0 };
-static const unichar_t str_241c[] = { 0x0046, 0x0053, 0 };
-static const unichar_t str_241d[] = { 0x0047, 0x0053, 0 };
-static const unichar_t str_241e[] = { 0x0052, 0x0053, 0 };
-static const unichar_t str_241f[] = { 0x0055, 0x0053, 0 };
-static const unichar_t str_2420[] = { 0x0053, 0x0050, 0 };
-static const unichar_t str_2421[] = { 0x0044, 0x0045, 0x004c, 0 };
-static const unichar_t str_2422[] = { 0x0180, 0 };
-static const unichar_t str_2460[] = { 0x0031, 0x20dd, 0 };
-static const unichar_t str_2461[] = { 0x0032, 0x20dd, 0 };
-static const unichar_t str_2462[] = { 0x0033, 0x20dd, 0 };
-static const unichar_t str_2463[] = { 0x0034, 0x20dd, 0 };
-static const unichar_t str_2464[] = { 0x0035, 0x20dd, 0 };
-static const unichar_t str_2465[] = { 0x0036, 0x20dd, 0 };
-static const unichar_t str_2466[] = { 0x0037, 0x20dd, 0 };
-static const unichar_t str_2467[] = { 0x0038, 0x20dd, 0 };
-static const unichar_t str_2468[] = { 0x0039, 0x20dd, 0 };
-static const unichar_t str_2469[] = { 0x0031, 0x0030, 0x20dd, 0 };
-static const unichar_t str_246a[] = { 0x0031, 0x0031, 0x20dd, 0 };
-static const unichar_t str_246b[] = { 0x0031, 0x0032, 0x20dd, 0 };
-static const unichar_t str_246c[] = { 0x0031, 0x0033, 0x20dd, 0 };
-static const unichar_t str_246d[] = { 0x0031, 0x0034, 0x20dd, 0 };
-static const unichar_t str_246e[] = { 0x0031, 0x0035, 0x20dd, 0 };
-static const unichar_t str_246f[] = { 0x0031, 0x0036, 0x20dd, 0 };
-static const unichar_t str_2470[] = { 0x0031, 0x0037, 0x20dd, 0 };
-static const unichar_t str_2471[] = { 0x0031, 0x0038, 0x20dd, 0 };
-static const unichar_t str_2472[] = { 0x0031, 0x0039, 0x20dd, 0 };
-static const unichar_t str_2473[] = { 0x0032, 0x0030, 0x20dd, 0 };
-static const unichar_t str_2474[] = { 0x0028, 0x0031, 0x0029, 0 };
-static const unichar_t str_2475[] = { 0x0028, 0x0032, 0x0029, 0 };
-static const unichar_t str_2476[] = { 0x0028, 0x0033, 0x0029, 0 };
-static const unichar_t str_2477[] = { 0x0028, 0x0034, 0x0029, 0 };
-static const unichar_t str_2478[] = { 0x0028, 0x0035, 0x0029, 0 };
-static const unichar_t str_2479[] = { 0x0028, 0x0036, 0x0029, 0 };
-static const unichar_t str_247a[] = { 0x0028, 0x0037, 0x0029, 0 };
-static const unichar_t str_247b[] = { 0x0028, 0x0038, 0x0029, 0 };
-static const unichar_t str_247c[] = { 0x0028, 0x0039, 0x0029, 0 };
-static const unichar_t str_247d[] = { 0x0028, 0x0031, 0x0030, 0x0029, 0 };
-static const unichar_t str_247e[] = { 0x0028, 0x0031, 0x0031, 0x0029, 0 };
-static const unichar_t str_247f[] = { 0x0028, 0x0031, 0x0032, 0x0029, 0 };
-static const unichar_t str_2480[] = { 0x0028, 0x0031, 0x0033, 0x0029, 0 };
-static const unichar_t str_2481[] = { 0x0028, 0x0031, 0x0034, 0x0029, 0 };
-static const unichar_t str_2482[] = { 0x0028, 0x0031, 0x0035, 0x0029, 0 };
-static const unichar_t str_2483[] = { 0x0028, 0x0031, 0x0036, 0x0029, 0 };
-static const unichar_t str_2484[] = { 0x0028, 0x0031, 0x0037, 0x0029, 0 };
-static const unichar_t str_2485[] = { 0x0028, 0x0031, 0x0038, 0x0029, 0 };
-static const unichar_t str_2486[] = { 0x0028, 0x0031, 0x0039, 0x0029, 0 };
-static const unichar_t str_2487[] = { 0x0028, 0x0032, 0x0030, 0x0029, 0 };
-static const unichar_t str_2488[] = { 0x0031, 0x002e, 0 };
-static const unichar_t str_2489[] = { 0x0032, 0x002e, 0 };
-static const unichar_t str_248a[] = { 0x0033, 0x002e, 0 };
-static const unichar_t str_248b[] = { 0x0034, 0x002e, 0 };
-static const unichar_t str_248c[] = { 0x0035, 0x002e, 0 };
-static const unichar_t str_248d[] = { 0x0036, 0x002e, 0 };
-static const unichar_t str_248e[] = { 0x0037, 0x002e, 0 };
-static const unichar_t str_248f[] = { 0x0038, 0x002e, 0 };
-static const unichar_t str_2490[] = { 0x0039, 0x002e, 0 };
-static const unichar_t str_2491[] = { 0x0031, 0x0030, 0x002e, 0 };
-static const unichar_t str_2492[] = { 0x0031, 0x0031, 0x002e, 0 };
-static const unichar_t str_2493[] = { 0x0031, 0x0032, 0x002e, 0 };
-static const unichar_t str_2494[] = { 0x0031, 0x0033, 0x002e, 0 };
-static const unichar_t str_2495[] = { 0x0031, 0x0034, 0x002e, 0 };
-static const unichar_t str_2496[] = { 0x0031, 0x0035, 0x002e, 0 };
-static const unichar_t str_2497[] = { 0x0031, 0x0036, 0x002e, 0 };
-static const unichar_t str_2498[] = { 0x0031, 0x0037, 0x002e, 0 };
-static const unichar_t str_2499[] = { 0x0031, 0x0038, 0x002e, 0 };
-static const unichar_t str_249a[] = { 0x0031, 0x0039, 0x002e, 0 };
-static const unichar_t str_249b[] = { 0x0032, 0x0030, 0x002e, 0 };
-static const unichar_t str_249c[] = { 0x0028, 0x0061, 0x0029, 0 };
-static const unichar_t str_249d[] = { 0x0028, 0x0062, 0x0029, 0 };
-static const unichar_t str_249e[] = { 0x0028, 0x0063, 0x0029, 0 };
-static const unichar_t str_249f[] = { 0x0028, 0x0064, 0x0029, 0 };
-static const unichar_t str_24a0[] = { 0x0028, 0x0065, 0x0029, 0 };
-static const unichar_t str_24a1[] = { 0x0028, 0x0066, 0x0029, 0 };
-static const unichar_t str_24a2[] = { 0x0028, 0x0067, 0x0029, 0 };
-static const unichar_t str_24a3[] = { 0x0028, 0x0068, 0x0029, 0 };
-static const unichar_t str_24a4[] = { 0x0028, 0x0069, 0x0029, 0 };
-static const unichar_t str_24a5[] = { 0x0028, 0x006a, 0x0029, 0 };
-static const unichar_t str_24a6[] = { 0x0028, 0x006b, 0x0029, 0 };
-static const unichar_t str_24a7[] = { 0x0028, 0x006c, 0x0029, 0 };
-static const unichar_t str_24a8[] = { 0x0028, 0x006d, 0x0029, 0 };
-static const unichar_t str_24a9[] = { 0x0028, 0x006e, 0x0029, 0 };
-static const unichar_t str_24aa[] = { 0x0028, 0x006f, 0x0029, 0 };
-static const unichar_t str_24ab[] = { 0x0028, 0x0070, 0x0029, 0 };
-static const unichar_t str_24ac[] = { 0x0028, 0x0071, 0x0029, 0 };
-static const unichar_t str_24ad[] = { 0x0028, 0x0072, 0x0029, 0 };
-static const unichar_t str_24ae[] = { 0x0028, 0x0073, 0x0029, 0 };
-static const unichar_t str_24af[] = { 0x0028, 0x0074, 0x0029, 0 };
-static const unichar_t str_24b0[] = { 0x0028, 0x0075, 0x0029, 0 };
-static const unichar_t str_24b1[] = { 0x0028, 0x0076, 0x0029, 0 };
-static const unichar_t str_24b2[] = { 0x0028, 0x0077, 0x0029, 0 };
-static const unichar_t str_24b3[] = { 0x0028, 0x0078, 0x0029, 0 };
-static const unichar_t str_24b4[] = { 0x0028, 0x0079, 0x0029, 0 };
-static const unichar_t str_24b5[] = { 0x0028, 0x007a, 0x0029, 0 };
-static const unichar_t str_24b6[] = { 0x0041, 0x20dd, 0 };
-static const unichar_t str_24b7[] = { 0x0042, 0x20dd, 0 };
-static const unichar_t str_24b8[] = { 0x0043, 0x20dd, 0 };
-static const unichar_t str_24b9[] = { 0x0044, 0x20dd, 0 };
-static const unichar_t str_24ba[] = { 0x0045, 0x20dd, 0 };
-static const unichar_t str_24bb[] = { 0x0046, 0x20dd, 0 };
-static const unichar_t str_24bc[] = { 0x0047, 0x20dd, 0 };
-static const unichar_t str_24bd[] = { 0x0048, 0x20dd, 0 };
-static const unichar_t str_24be[] = { 0x0049, 0x20dd, 0 };
-static const unichar_t str_24bf[] = { 0x004a, 0x20dd, 0 };
-static const unichar_t str_24c0[] = { 0x004b, 0x20dd, 0 };
-static const unichar_t str_24c1[] = { 0x004c, 0x20dd, 0 };
-static const unichar_t str_24c2[] = { 0x004d, 0x20dd, 0 };
-static const unichar_t str_24c3[] = { 0x004e, 0x20dd, 0 };
-static const unichar_t str_24c4[] = { 0x004f, 0x20dd, 0 };
-static const unichar_t str_24c5[] = { 0x0050, 0x20dd, 0 };
-static const unichar_t str_24c6[] = { 0x0051, 0x20dd, 0 };
-static const unichar_t str_24c7[] = { 0x0052, 0x20dd, 0 };
-static const unichar_t str_24c8[] = { 0x0053, 0x20dd, 0 };
-static const unichar_t str_24c9[] = { 0x0054, 0x20dd, 0 };
-static const unichar_t str_24ca[] = { 0x0055, 0x20dd, 0 };
-static const unichar_t str_24cb[] = { 0x0056, 0x20dd, 0 };
-static const unichar_t str_24cc[] = { 0x0057, 0x20dd, 0 };
-static const unichar_t str_24cd[] = { 0x0058, 0x20dd, 0 };
-static const unichar_t str_24ce[] = { 0x0059, 0x20dd, 0 };
-static const unichar_t str_24cf[] = { 0x005a, 0x20dd, 0 };
-static const unichar_t str_24d0[] = { 0x0061, 0x20dd, 0 };
-static const unichar_t str_24d1[] = { 0x0062, 0x20dd, 0 };
-static const unichar_t str_24d2[] = { 0x0063, 0x20dd, 0 };
-static const unichar_t str_24d3[] = { 0x0064, 0x20dd, 0 };
-static const unichar_t str_24d4[] = { 0x0065, 0x20dd, 0 };
-static const unichar_t str_24d5[] = { 0x0066, 0x20dd, 0 };
-static const unichar_t str_24d6[] = { 0x0067, 0x20dd, 0 };
-static const unichar_t str_24d7[] = { 0x0068, 0x20dd, 0 };
-static const unichar_t str_24d8[] = { 0x0069, 0x20dd, 0 };
-static const unichar_t str_24d9[] = { 0x006a, 0x20dd, 0 };
-static const unichar_t str_24da[] = { 0x006b, 0x20dd, 0 };
-static const unichar_t str_24db[] = { 0x006c, 0x20dd, 0 };
-static const unichar_t str_24dc[] = { 0x006d, 0x20dd, 0 };
-static const unichar_t str_24dd[] = { 0x006e, 0x20dd, 0 };
-static const unichar_t str_24de[] = { 0x006f, 0x20dd, 0 };
-static const unichar_t str_24df[] = { 0x0070, 0x20dd, 0 };
-static const unichar_t str_24e0[] = { 0x0071, 0x20dd, 0 };
-static const unichar_t str_24e1[] = { 0x0072, 0x20dd, 0 };
-static const unichar_t str_24e2[] = { 0x0073, 0x20dd, 0 };
-static const unichar_t str_24e3[] = { 0x0074, 0x20dd, 0 };
-static const unichar_t str_24e4[] = { 0x0075, 0x20dd, 0 };
-static const unichar_t str_24e5[] = { 0x0076, 0x20dd, 0 };
-static const unichar_t str_24e6[] = { 0x0077, 0x20dd, 0 };
-static const unichar_t str_24e7[] = { 0x0078, 0x20dd, 0 };
-static const unichar_t str_24e8[] = { 0x0079, 0x20dd, 0 };
-static const unichar_t str_24e9[] = { 0x007a, 0x20dd, 0 };
-static const unichar_t str_24ea[] = { 0x0030, 0x20dd, 0 };
-static const unichar_t str_2500[] = { 0x2014, 0 };
-static const unichar_t str_2502[] = { 0x007c, 0 };
-static const unichar_t str_25b3[] = { 0x2206, 0 };
-static const unichar_t str_25b8[] = { 0x2023, 0 };
-static const unichar_t str_25bd[] = { 0x2207, 0 };
-static const unichar_t str_25c7[] = { 0x25ca, 0 };
-static const unichar_t str_25e6[] = { 0x00b0, 0 };
-static const unichar_t str_2662[] = { 0x25ca, 0 };
-static const unichar_t str_2731[] = { 0x002a, 0 };
-static const unichar_t str_2758[] = { 0x007c, 0 };
-static const unichar_t str_2762[] = { 0x0021, 0 };
-static const unichar_t str_2a0c[] = { 0x222b, 0x222b, 0x222b, 0x222b, 0 };
-static const unichar_t str_2a74[] = { 0x003a, 0x003a, 0x003d, 0 };
-static const unichar_t str_2a75[] = { 0x003d, 0x003d, 0 };
-static const unichar_t str_2a76[] = { 0x003d, 0x003d, 0x003d, 0 };
-static const unichar_t str_2adc[] = { 0x2add, 0x0338, 0 };
-static const unichar_t str_2c7c[] = { 0x006a, 0 };
-static const unichar_t str_2c7d[] = { 0x0056, 0 };
-static const unichar_t str_2d6f[] = { 0x2d61, 0 };
-static const unichar_t str_2e28[] = { 0xff5f, 0 };
-static const unichar_t str_2e29[] = { 0xff60, 0 };
-static const unichar_t str_2e9f[] = { 0x6bcd, 0 };
-static const unichar_t str_2ef3[] = { 0x9f9f, 0 };
-static const unichar_t str_2f00[] = { 0x4e00, 0 };
-static const unichar_t str_2f01[] = { 0x4e28, 0 };
-static const unichar_t str_2f02[] = { 0x4e36, 0 };
-static const unichar_t str_2f03[] = { 0x4e3f, 0 };
-static const unichar_t str_2f04[] = { 0x4e59, 0 };
-static const unichar_t str_2f05[] = { 0x4e85, 0 };
-static const unichar_t str_2f06[] = { 0x4e8c, 0 };
-static const unichar_t str_2f07[] = { 0x4ea0, 0 };
-static const unichar_t str_2f08[] = { 0x4eba, 0 };
-static const unichar_t str_2f09[] = { 0x513f, 0 };
-static const unichar_t str_2f0a[] = { 0x5165, 0 };
-static const unichar_t str_2f0b[] = { 0x516b, 0 };
-static const unichar_t str_2f0c[] = { 0x5182, 0 };
-static const unichar_t str_2f0d[] = { 0x5196, 0 };
-static const unichar_t str_2f0e[] = { 0x51ab, 0 };
-static const unichar_t str_2f0f[] = { 0x51e0, 0 };
-static const unichar_t str_2f10[] = { 0x51f5, 0 };
-static const unichar_t str_2f11[] = { 0x5200, 0 };
-static const unichar_t str_2f12[] = { 0x529b, 0 };
-static const unichar_t str_2f13[] = { 0x52f9, 0 };
-static const unichar_t str_2f14[] = { 0x5315, 0 };
-static const unichar_t str_2f15[] = { 0x531a, 0 };
-static const unichar_t str_2f16[] = { 0x5338, 0 };
-static const unichar_t str_2f17[] = { 0x5341, 0 };
-static const unichar_t str_2f18[] = { 0x535c, 0 };
-static const unichar_t str_2f19[] = { 0x5369, 0 };
-static const unichar_t str_2f1a[] = { 0x5382, 0 };
-static const unichar_t str_2f1b[] = { 0x53b6, 0 };
-static const unichar_t str_2f1c[] = { 0x53c8, 0 };
-static const unichar_t str_2f1d[] = { 0x53e3, 0 };
-static const unichar_t str_2f1e[] = { 0x56d7, 0 };
-static const unichar_t str_2f1f[] = { 0x571f, 0 };
-static const unichar_t str_2f20[] = { 0x58eb, 0 };
-static const unichar_t str_2f21[] = { 0x5902, 0 };
-static const unichar_t str_2f22[] = { 0x590a, 0 };
-static const unichar_t str_2f23[] = { 0x5915, 0 };
-static const unichar_t str_2f24[] = { 0x5927, 0 };
-static const unichar_t str_2f25[] = { 0x5973, 0 };
-static const unichar_t str_2f26[] = { 0x5b50, 0 };
-static const unichar_t str_2f27[] = { 0x5b80, 0 };
-static const unichar_t str_2f28[] = { 0x5bf8, 0 };
-static const unichar_t str_2f29[] = { 0x5c0f, 0 };
-static const unichar_t str_2f2a[] = { 0x5c22, 0 };
-static const unichar_t str_2f2b[] = { 0x5c38, 0 };
-static const unichar_t str_2f2c[] = { 0x5c6e, 0 };
-static const unichar_t str_2f2d[] = { 0x5c71, 0 };
-static const unichar_t str_2f2e[] = { 0x5ddb, 0 };
-static const unichar_t str_2f2f[] = { 0x5de5, 0 };
-static const unichar_t str_2f30[] = { 0x5df1, 0 };
-static const unichar_t str_2f31[] = { 0x5dfe, 0 };
-static const unichar_t str_2f32[] = { 0x5e72, 0 };
-static const unichar_t str_2f33[] = { 0x5e7a, 0 };
-static const unichar_t str_2f34[] = { 0x5e7f, 0 };
-static const unichar_t str_2f35[] = { 0x5ef4, 0 };
-static const unichar_t str_2f36[] = { 0x5efe, 0 };
-static const unichar_t str_2f37[] = { 0x5f0b, 0 };
-static const unichar_t str_2f38[] = { 0x5f13, 0 };
-static const unichar_t str_2f39[] = { 0x5f50, 0 };
-static const unichar_t str_2f3a[] = { 0x5f61, 0 };
-static const unichar_t str_2f3b[] = { 0x5f73, 0 };
-static const unichar_t str_2f3c[] = { 0x5fc3, 0 };
-static const unichar_t str_2f3d[] = { 0x6208, 0 };
-static const unichar_t str_2f3e[] = { 0x6236, 0 };
-static const unichar_t str_2f3f[] = { 0x624b, 0 };
-static const unichar_t str_2f40[] = { 0x652f, 0 };
-static const unichar_t str_2f41[] = { 0x6534, 0 };
-static const unichar_t str_2f42[] = { 0x6587, 0 };
-static const unichar_t str_2f43[] = { 0x6597, 0 };
-static const unichar_t str_2f44[] = { 0x65a4, 0 };
-static const unichar_t str_2f45[] = { 0x65b9, 0 };
-static const unichar_t str_2f46[] = { 0x65e0, 0 };
-static const unichar_t str_2f47[] = { 0x65e5, 0 };
-static const unichar_t str_2f48[] = { 0x66f0, 0 };
-static const unichar_t str_2f49[] = { 0x6708, 0 };
-static const unichar_t str_2f4a[] = { 0x6728, 0 };
-static const unichar_t str_2f4b[] = { 0x6b20, 0 };
-static const unichar_t str_2f4c[] = { 0x6b62, 0 };
-static const unichar_t str_2f4d[] = { 0x6b79, 0 };
-static const unichar_t str_2f4e[] = { 0x6bb3, 0 };
-static const unichar_t str_2f4f[] = { 0x6bcb, 0 };
-static const unichar_t str_2f50[] = { 0x6bd4, 0 };
-static const unichar_t str_2f51[] = { 0x6bdb, 0 };
-static const unichar_t str_2f52[] = { 0x6c0f, 0 };
-static const unichar_t str_2f53[] = { 0x6c14, 0 };
-static const unichar_t str_2f54[] = { 0x6c34, 0 };
-static const unichar_t str_2f55[] = { 0x706b, 0 };
-static const unichar_t str_2f56[] = { 0x722a, 0 };
-static const unichar_t str_2f57[] = { 0x7236, 0 };
-static const unichar_t str_2f58[] = { 0x723b, 0 };
-static const unichar_t str_2f59[] = { 0x723f, 0 };
-static const unichar_t str_2f5a[] = { 0x7247, 0 };
-static const unichar_t str_2f5b[] = { 0x7259, 0 };
-static const unichar_t str_2f5c[] = { 0x725b, 0 };
-static const unichar_t str_2f5d[] = { 0x72ac, 0 };
-static const unichar_t str_2f5e[] = { 0x7384, 0 };
-static const unichar_t str_2f5f[] = { 0x7389, 0 };
-static const unichar_t str_2f60[] = { 0x74dc, 0 };
-static const unichar_t str_2f61[] = { 0x74e6, 0 };
-static const unichar_t str_2f62[] = { 0x7518, 0 };
-static const unichar_t str_2f63[] = { 0x751f, 0 };
-static const unichar_t str_2f64[] = { 0x7528, 0 };
-static const unichar_t str_2f65[] = { 0x7530, 0 };
-static const unichar_t str_2f66[] = { 0x758b, 0 };
-static const unichar_t str_2f67[] = { 0x7592, 0 };
-static const unichar_t str_2f68[] = { 0x7676, 0 };
-static const unichar_t str_2f69[] = { 0x767d, 0 };
-static const unichar_t str_2f6a[] = { 0x76ae, 0 };
-static const unichar_t str_2f6b[] = { 0x76bf, 0 };
-static const unichar_t str_2f6c[] = { 0x76ee, 0 };
-static const unichar_t str_2f6d[] = { 0x77db, 0 };
-static const unichar_t str_2f6e[] = { 0x77e2, 0 };
-static const unichar_t str_2f6f[] = { 0x77f3, 0 };
-static const unichar_t str_2f70[] = { 0x793a, 0 };
-static const unichar_t str_2f71[] = { 0x79b8, 0 };
-static const unichar_t str_2f72[] = { 0x79be, 0 };
-static const unichar_t str_2f73[] = { 0x7a74, 0 };
-static const unichar_t str_2f74[] = { 0x7acb, 0 };
-static const unichar_t str_2f75[] = { 0x7af9, 0 };
-static const unichar_t str_2f76[] = { 0x7c73, 0 };
-static const unichar_t str_2f77[] = { 0x7cf8, 0 };
-static const unichar_t str_2f78[] = { 0x7f36, 0 };
-static const unichar_t str_2f79[] = { 0x7f51, 0 };
-static const unichar_t str_2f7a[] = { 0x7f8a, 0 };
-static const unichar_t str_2f7b[] = { 0x7fbd, 0 };
-static const unichar_t str_2f7c[] = { 0x8001, 0 };
-static const unichar_t str_2f7d[] = { 0x800c, 0 };
-static const unichar_t str_2f7e[] = { 0x8012, 0 };
-static const unichar_t str_2f7f[] = { 0x8033, 0 };
-static const unichar_t str_2f80[] = { 0x807f, 0 };
-static const unichar_t str_2f81[] = { 0x8089, 0 };
-static const unichar_t str_2f82[] = { 0x81e3, 0 };
-static const unichar_t str_2f83[] = { 0x81ea, 0 };
-static const unichar_t str_2f84[] = { 0x81f3, 0 };
-static const unichar_t str_2f85[] = { 0x81fc, 0 };
-static const unichar_t str_2f86[] = { 0x820c, 0 };
-static const unichar_t str_2f87[] = { 0x821b, 0 };
-static const unichar_t str_2f88[] = { 0x821f, 0 };
-static const unichar_t str_2f89[] = { 0x826e, 0 };
-static const unichar_t str_2f8a[] = { 0x8272, 0 };
-static const unichar_t str_2f8b[] = { 0x8278, 0 };
-static const unichar_t str_2f8c[] = { 0x864d, 0 };
-static const unichar_t str_2f8d[] = { 0x866b, 0 };
-static const unichar_t str_2f8e[] = { 0x8840, 0 };
-static const unichar_t str_2f8f[] = { 0x884c, 0 };
-static const unichar_t str_2f90[] = { 0x8863, 0 };
-static const unichar_t str_2f91[] = { 0x897e, 0 };
-static const unichar_t str_2f92[] = { 0x898b, 0 };
-static const unichar_t str_2f93[] = { 0x89d2, 0 };
-static const unichar_t str_2f94[] = { 0x8a00, 0 };
-static const unichar_t str_2f95[] = { 0x8c37, 0 };
-static const unichar_t str_2f96[] = { 0x8c46, 0 };
-static const unichar_t str_2f97[] = { 0x8c55, 0 };
-static const unichar_t str_2f98[] = { 0x8c78, 0 };
-static const unichar_t str_2f99[] = { 0x8c9d, 0 };
-static const unichar_t str_2f9a[] = { 0x8d64, 0 };
-static const unichar_t str_2f9b[] = { 0x8d70, 0 };
-static const unichar_t str_2f9c[] = { 0x8db3, 0 };
-static const unichar_t str_2f9d[] = { 0x8eab, 0 };
-static const unichar_t str_2f9e[] = { 0x8eca, 0 };
-static const unichar_t str_2f9f[] = { 0x8f9b, 0 };
-static const unichar_t str_2fa0[] = { 0x8fb0, 0 };
-static const unichar_t str_2fa1[] = { 0x8fb5, 0 };
-static const unichar_t str_2fa2[] = { 0x9091, 0 };
-static const unichar_t str_2fa3[] = { 0x9149, 0 };
-static const unichar_t str_2fa4[] = { 0x91c6, 0 };
-static const unichar_t str_2fa5[] = { 0x91cc, 0 };
-static const unichar_t str_2fa6[] = { 0x91d1, 0 };
-static const unichar_t str_2fa7[] = { 0x9577, 0 };
-static const unichar_t str_2fa8[] = { 0x9580, 0 };
-static const unichar_t str_2fa9[] = { 0x961c, 0 };
-static const unichar_t str_2faa[] = { 0x96b6, 0 };
-static const unichar_t str_2fab[] = { 0x96b9, 0 };
-static const unichar_t str_2fac[] = { 0x96e8, 0 };
-static const unichar_t str_2fad[] = { 0x9751, 0 };
-static const unichar_t str_2fae[] = { 0x975e, 0 };
-static const unichar_t str_2faf[] = { 0x9762, 0 };
-static const unichar_t str_2fb0[] = { 0x9769, 0 };
-static const unichar_t str_2fb1[] = { 0x97cb, 0 };
-static const unichar_t str_2fb2[] = { 0x97ed, 0 };
-static const unichar_t str_2fb3[] = { 0x97f3, 0 };
-static const unichar_t str_2fb4[] = { 0x9801, 0 };
-static const unichar_t str_2fb5[] = { 0x98a8, 0 };
-static const unichar_t str_2fb6[] = { 0x98db, 0 };
-static const unichar_t str_2fb7[] = { 0x98df, 0 };
-static const unichar_t str_2fb8[] = { 0x9996, 0 };
-static const unichar_t str_2fb9[] = { 0x9999, 0 };
-static const unichar_t str_2fba[] = { 0x99ac, 0 };
-static const unichar_t str_2fbb[] = { 0x9aa8, 0 };
-static const unichar_t str_2fbc[] = { 0x9ad8, 0 };
-static const unichar_t str_2fbd[] = { 0x9adf, 0 };
-static const unichar_t str_2fbe[] = { 0x9b25, 0 };
-static const unichar_t str_2fbf[] = { 0x9b2f, 0 };
-static const unichar_t str_2fc0[] = { 0x9b32, 0 };
-static const unichar_t str_2fc1[] = { 0x9b3c, 0 };
-static const unichar_t str_2fc2[] = { 0x9b5a, 0 };
-static const unichar_t str_2fc3[] = { 0x9ce5, 0 };
-static const unichar_t str_2fc4[] = { 0x9e75, 0 };
-static const unichar_t str_2fc5[] = { 0x9e7f, 0 };
-static const unichar_t str_2fc6[] = { 0x9ea5, 0 };
-static const unichar_t str_2fc7[] = { 0x9ebb, 0 };
-static const unichar_t str_2fc8[] = { 0x9ec3, 0 };
-static const unichar_t str_2fc9[] = { 0x9ecd, 0 };
-static const unichar_t str_2fca[] = { 0x9ed1, 0 };
-static const unichar_t str_2fcb[] = { 0x9ef9, 0 };
-static const unichar_t str_2fcc[] = { 0x9efd, 0 };
-static const unichar_t str_2fcd[] = { 0x9f0e, 0 };
-static const unichar_t str_2fce[] = { 0x9f13, 0 };
-static const unichar_t str_2fcf[] = { 0x9f20, 0 };
-static const unichar_t str_2fd0[] = { 0x9f3b, 0 };
-static const unichar_t str_2fd1[] = { 0x9f4a, 0 };
-static const unichar_t str_2fd2[] = { 0x9f52, 0 };
-static const unichar_t str_2fd3[] = { 0x9f8d, 0 };
-static const unichar_t str_2fd4[] = { 0x9f9c, 0 };
-static const unichar_t str_2fd5[] = { 0x9fa0, 0 };
-static const unichar_t str_3000[] = { 0x0020, 0 };
-static const unichar_t str_3001[] = { 0x002c, 0 };
-static const unichar_t str_3008[] = { 0x003c, 0 };
-static const unichar_t str_3009[] = { 0x003e, 0 };
-static const unichar_t str_300a[] = { 0x00ab, 0 };
-static const unichar_t str_300b[] = { 0x00bb, 0 };
-static const unichar_t str_3036[] = { 0x3012, 0 };
-static const unichar_t str_3038[] = { 0x5341, 0 };
-static const unichar_t str_3039[] = { 0x5344, 0 };
-static const unichar_t str_303a[] = { 0x5345, 0 };
-static const unichar_t str_304c[] = { 0x304b, 0x3099, 0 };
-static const unichar_t str_304e[] = { 0x304d, 0x3099, 0 };
-static const unichar_t str_3050[] = { 0x304f, 0x3099, 0 };
-static const unichar_t str_3052[] = { 0x3051, 0x3099, 0 };
-static const unichar_t str_3054[] = { 0x3053, 0x3099, 0 };
-static const unichar_t str_3056[] = { 0x3055, 0x3099, 0 };
-static const unichar_t str_3058[] = { 0x3057, 0x3099, 0 };
-static const unichar_t str_305a[] = { 0x3059, 0x3099, 0 };
-static const unichar_t str_305c[] = { 0x305b, 0x3099, 0 };
-static const unichar_t str_305e[] = { 0x305d, 0x3099, 0 };
-static const unichar_t str_3060[] = { 0x305f, 0x3099, 0 };
-static const unichar_t str_3062[] = { 0x3061, 0x3099, 0 };
-static const unichar_t str_3065[] = { 0x3064, 0x3099, 0 };
-static const unichar_t str_3067[] = { 0x3066, 0x3099, 0 };
-static const unichar_t str_3069[] = { 0x3068, 0x3099, 0 };
-static const unichar_t str_3070[] = { 0x306f, 0x3099, 0 };
-static const unichar_t str_3071[] = { 0x306f, 0x309a, 0 };
-static const unichar_t str_3073[] = { 0x3072, 0x3099, 0 };
-static const unichar_t str_3074[] = { 0x3072, 0x309a, 0 };
-static const unichar_t str_3076[] = { 0x3075, 0x3099, 0 };
-static const unichar_t str_3077[] = { 0x3075, 0x309a, 0 };
-static const unichar_t str_3079[] = { 0x3078, 0x3099, 0 };
-static const unichar_t str_307a[] = { 0x3078, 0x309a, 0 };
-static const unichar_t str_307c[] = { 0x307b, 0x3099, 0 };
-static const unichar_t str_307d[] = { 0x307b, 0x309a, 0 };
-static const unichar_t str_3094[] = { 0x3046, 0x3099, 0 };
-static const unichar_t str_309b[] = { 0x0020, 0x3099, 0 };
-static const unichar_t str_309c[] = { 0x0020, 0x309a, 0 };
-static const unichar_t str_309e[] = { 0x309d, 0x3099, 0 };
-static const unichar_t str_309f[] = { 0x3088, 0x308a, 0 };
-static const unichar_t str_30ac[] = { 0x30ab, 0x3099, 0 };
-static const unichar_t str_30ae[] = { 0x30ad, 0x3099, 0 };
-static const unichar_t str_30b0[] = { 0x30af, 0x3099, 0 };
-static const unichar_t str_30b2[] = { 0x30b1, 0x3099, 0 };
-static const unichar_t str_30b4[] = { 0x30b3, 0x3099, 0 };
-static const unichar_t str_30b6[] = { 0x30b5, 0x3099, 0 };
-static const unichar_t str_30b8[] = { 0x30b7, 0x3099, 0 };
-static const unichar_t str_30ba[] = { 0x30b9, 0x3099, 0 };
-static const unichar_t str_30bc[] = { 0x30bb, 0x3099, 0 };
-static const unichar_t str_30be[] = { 0x30bd, 0x3099, 0 };
-static const unichar_t str_30c0[] = { 0x30bf, 0x3099, 0 };
-static const unichar_t str_30c2[] = { 0x30c1, 0x3099, 0 };
-static const unichar_t str_30c5[] = { 0x30c4, 0x3099, 0 };
-static const unichar_t str_30c7[] = { 0x30c6, 0x3099, 0 };
-static const unichar_t str_30c9[] = { 0x30c8, 0x3099, 0 };
-static const unichar_t str_30d0[] = { 0x30cf, 0x3099, 0 };
-static const unichar_t str_30d1[] = { 0x30cf, 0x309a, 0 };
-static const unichar_t str_30d3[] = { 0x30d2, 0x3099, 0 };
-static const unichar_t str_30d4[] = { 0x30d2, 0x309a, 0 };
-static const unichar_t str_30d6[] = { 0x30d5, 0x3099, 0 };
-static const unichar_t str_30d7[] = { 0x30d5, 0x309a, 0 };
-static const unichar_t str_30d9[] = { 0x30d8, 0x3099, 0 };
-static const unichar_t str_30da[] = { 0x30d8, 0x309a, 0 };
-static const unichar_t str_30dc[] = { 0x30db, 0x3099, 0 };
-static const unichar_t str_30dd[] = { 0x30db, 0x309a, 0 };
-static const unichar_t str_30f4[] = { 0x30a6, 0x3099, 0 };
-static const unichar_t str_30f7[] = { 0x30ef, 0x3099, 0 };
-static const unichar_t str_30f8[] = { 0x30f0, 0x3099, 0 };
-static const unichar_t str_30f9[] = { 0x30f1, 0x3099, 0 };
-static const unichar_t str_30fa[] = { 0x30f2, 0x3099, 0 };
-static const unichar_t str_30fe[] = { 0x30fd, 0x3099, 0 };
-static const unichar_t str_30ff[] = { 0x30b3, 0x30c8, 0 };
-static const unichar_t str_3131[] = { 0x1100, 0 };
-static const unichar_t str_3132[] = { 0x1101, 0 };
-static const unichar_t str_3133[] = { 0x11aa, 0 };
-static const unichar_t str_3134[] = { 0x1102, 0 };
-static const unichar_t str_3135[] = { 0x11ac, 0 };
-static const unichar_t str_3136[] = { 0x11ad, 0 };
-static const unichar_t str_3137[] = { 0x1103, 0 };
-static const unichar_t str_3138[] = { 0x1104, 0 };
-static const unichar_t str_3139[] = { 0x1105, 0 };
-static const unichar_t str_313a[] = { 0x11b0, 0 };
-static const unichar_t str_313b[] = { 0x11b1, 0 };
-static const unichar_t str_313c[] = { 0x11b2, 0 };
-static const unichar_t str_313d[] = { 0x11b3, 0 };
-static const unichar_t str_313e[] = { 0x11b4, 0 };
-static const unichar_t str_313f[] = { 0x11b5, 0 };
-static const unichar_t str_3140[] = { 0x111a, 0 };
-static const unichar_t str_3141[] = { 0x1106, 0 };
-static const unichar_t str_3142[] = { 0x1107, 0 };
-static const unichar_t str_3143[] = { 0x1108, 0 };
-static const unichar_t str_3144[] = { 0x1121, 0 };
-static const unichar_t str_3145[] = { 0x1109, 0 };
-static const unichar_t str_3146[] = { 0x110a, 0 };
-static const unichar_t str_3147[] = { 0x110b, 0 };
-static const unichar_t str_3148[] = { 0x110c, 0 };
-static const unichar_t str_3149[] = { 0x110d, 0 };
-static const unichar_t str_314a[] = { 0x110e, 0 };
-static const unichar_t str_314b[] = { 0x110f, 0 };
-static const unichar_t str_314c[] = { 0x1110, 0 };
-static const unichar_t str_314d[] = { 0x1111, 0 };
-static const unichar_t str_314e[] = { 0x1112, 0 };
-static const unichar_t str_314f[] = { 0x1161, 0 };
-static const unichar_t str_3150[] = { 0x1162, 0 };
-static const unichar_t str_3151[] = { 0x1163, 0 };
-static const unichar_t str_3152[] = { 0x1164, 0 };
-static const unichar_t str_3153[] = { 0x1165, 0 };
-static const unichar_t str_3154[] = { 0x1166, 0 };
-static const unichar_t str_3155[] = { 0x1167, 0 };
-static const unichar_t str_3156[] = { 0x1168, 0 };
-static const unichar_t str_3157[] = { 0x1169, 0 };
-static const unichar_t str_3158[] = { 0x116a, 0 };
-static const unichar_t str_3159[] = { 0x116b, 0 };
-static const unichar_t str_315a[] = { 0x116c, 0 };
-static const unichar_t str_315b[] = { 0x116d, 0 };
-static const unichar_t str_315c[] = { 0x116e, 0 };
-static const unichar_t str_315d[] = { 0x116f, 0 };
-static const unichar_t str_315e[] = { 0x1170, 0 };
-static const unichar_t str_315f[] = { 0x1171, 0 };
-static const unichar_t str_3160[] = { 0x1172, 0 };
-static const unichar_t str_3161[] = { 0x1173, 0 };
-static const unichar_t str_3162[] = { 0x1174, 0 };
-static const unichar_t str_3163[] = { 0x1175, 0 };
-static const unichar_t str_3164[] = { 0x1160, 0 };
-static const unichar_t str_3165[] = { 0x1114, 0 };
-static const unichar_t str_3166[] = { 0x1115, 0 };
-static const unichar_t str_3167[] = { 0x11c7, 0 };
-static const unichar_t str_3168[] = { 0x11c8, 0 };
-static const unichar_t str_3169[] = { 0x11cc, 0 };
-static const unichar_t str_316a[] = { 0x11ce, 0 };
-static const unichar_t str_316b[] = { 0x11d3, 0 };
-static const unichar_t str_316c[] = { 0x11d7, 0 };
-static const unichar_t str_316d[] = { 0x11d9, 0 };
-static const unichar_t str_316e[] = { 0x111c, 0 };
-static const unichar_t str_316f[] = { 0x11dd, 0 };
-static const unichar_t str_3170[] = { 0x11df, 0 };
-static const unichar_t str_3171[] = { 0x111d, 0 };
-static const unichar_t str_3172[] = { 0x111e, 0 };
-static const unichar_t str_3173[] = { 0x1120, 0 };
-static const unichar_t str_3174[] = { 0x1122, 0 };
-static const unichar_t str_3175[] = { 0x1123, 0 };
-static const unichar_t str_3176[] = { 0x1127, 0 };
-static const unichar_t str_3177[] = { 0x1129, 0 };
-static const unichar_t str_3178[] = { 0x112b, 0 };
-static const unichar_t str_3179[] = { 0x112c, 0 };
-static const unichar_t str_317a[] = { 0x112d, 0 };
-static const unichar_t str_317b[] = { 0x112e, 0 };
-static const unichar_t str_317c[] = { 0x112f, 0 };
-static const unichar_t str_317d[] = { 0x1132, 0 };
-static const unichar_t str_317e[] = { 0x1136, 0 };
-static const unichar_t str_317f[] = { 0x1140, 0 };
-static const unichar_t str_3180[] = { 0x1147, 0 };
-static const unichar_t str_3181[] = { 0x114c, 0 };
-static const unichar_t str_3182[] = { 0x11f1, 0 };
-static const unichar_t str_3183[] = { 0x11f2, 0 };
-static const unichar_t str_3184[] = { 0x1157, 0 };
-static const unichar_t str_3185[] = { 0x1158, 0 };
-static const unichar_t str_3186[] = { 0x1159, 0 };
-static const unichar_t str_3187[] = { 0x1184, 0 };
-static const unichar_t str_3188[] = { 0x1185, 0 };
-static const unichar_t str_3189[] = { 0x1188, 0 };
-static const unichar_t str_318a[] = { 0x1191, 0 };
-static const unichar_t str_318b[] = { 0x1192, 0 };
-static const unichar_t str_318c[] = { 0x1194, 0 };
-static const unichar_t str_318d[] = { 0x119e, 0 };
-static const unichar_t str_318e[] = { 0x11a1, 0 };
-static const unichar_t str_3192[] = { 0x4e00, 0 };
-static const unichar_t str_3193[] = { 0x4e8c, 0 };
-static const unichar_t str_3194[] = { 0x4e09, 0 };
-static const unichar_t str_3195[] = { 0x56db, 0 };
-static const unichar_t str_3196[] = { 0x4e0a, 0 };
-static const unichar_t str_3197[] = { 0x4e2d, 0 };
-static const unichar_t str_3198[] = { 0x4e0b, 0 };
-static const unichar_t str_3199[] = { 0x7532, 0 };
-static const unichar_t str_319a[] = { 0x4e59, 0 };
-static const unichar_t str_319b[] = { 0x4e19, 0 };
-static const unichar_t str_319c[] = { 0x4e01, 0 };
-static const unichar_t str_319d[] = { 0x5929, 0 };
-static const unichar_t str_319e[] = { 0x5730, 0 };
-static const unichar_t str_319f[] = { 0x4eba, 0 };
-static const unichar_t str_3200[] = { 0x0028, 0x1100, 0x0029, 0 };
-static const unichar_t str_3201[] = { 0x0028, 0x1102, 0x0029, 0 };
-static const unichar_t str_3202[] = { 0x0028, 0x1103, 0x0029, 0 };
-static const unichar_t str_3203[] = { 0x0028, 0x1105, 0x0029, 0 };
-static const unichar_t str_3204[] = { 0x0028, 0x1106, 0x0029, 0 };
-static const unichar_t str_3205[] = { 0x0028, 0x1107, 0x0029, 0 };
-static const unichar_t str_3206[] = { 0x0028, 0x1109, 0x0029, 0 };
-static const unichar_t str_3207[] = { 0x0028, 0x110b, 0x0029, 0 };
-static const unichar_t str_3208[] = { 0x0028, 0x110c, 0x0029, 0 };
-static const unichar_t str_3209[] = { 0x0028, 0x110e, 0x0029, 0 };
-static const unichar_t str_320a[] = { 0x0028, 0x110f, 0x0029, 0 };
-static const unichar_t str_320b[] = { 0x0028, 0x1110, 0x0029, 0 };
-static const unichar_t str_320c[] = { 0x0028, 0x1111, 0x0029, 0 };
-static const unichar_t str_320d[] = { 0x0028, 0x1112, 0x0029, 0 };
-static const unichar_t str_320e[] = { 0x0028, 0x1100, 0x1161, 0x0029, 0 };
-static const unichar_t str_320f[] = { 0x0028, 0x1102, 0x1161, 0x0029, 0 };
-static const unichar_t str_3210[] = { 0x0028, 0x1103, 0x1161, 0x0029, 0 };
-static const unichar_t str_3211[] = { 0x0028, 0x1105, 0x1161, 0x0029, 0 };
-static const unichar_t str_3212[] = { 0x0028, 0x1106, 0x1161, 0x0029, 0 };
-static const unichar_t str_3213[] = { 0x0028, 0x1107, 0x1161, 0x0029, 0 };
-static const unichar_t str_3214[] = { 0x0028, 0x1109, 0x1161, 0x0029, 0 };
-static const unichar_t str_3215[] = { 0x0028, 0x110b, 0x1161, 0x0029, 0 };
-static const unichar_t str_3216[] = { 0x0028, 0x110c, 0x1161, 0x0029, 0 };
-static const unichar_t str_3217[] = { 0x0028, 0x110e, 0x1161, 0x0029, 0 };
-static const unichar_t str_3218[] = { 0x0028, 0x110f, 0x1161, 0x0029, 0 };
-static const unichar_t str_3219[] = { 0x0028, 0x1110, 0x1161, 0x0029, 0 };
-static const unichar_t str_321a[] = { 0x0028, 0x1111, 0x1161, 0x0029, 0 };
-static const unichar_t str_321b[] = { 0x0028, 0x1112, 0x1161, 0x0029, 0 };
-static const unichar_t str_321c[] = { 0x0028, 0x110c, 0x116e, 0x0029, 0 };
-static const unichar_t str_321d[] = { 0x0028, 0x110b, 0x1169, 0x110c, 0x1165, 0x11ab, 0x0029, 0 };
-static const unichar_t str_321e[] = { 0x0028, 0x110b, 0x1169, 0x1112, 0x116e, 0x0029, 0 };
-static const unichar_t str_3220[] = { 0x0028, 0x4e00, 0x0029, 0 };
-static const unichar_t str_3221[] = { 0x0028, 0x4e8c, 0x0029, 0 };
-static const unichar_t str_3222[] = { 0x0028, 0x4e09, 0x0029, 0 };
-static const unichar_t str_3223[] = { 0x0028, 0x56db, 0x0029, 0 };
-static const unichar_t str_3224[] = { 0x0028, 0x4e94, 0x0029, 0 };
-static const unichar_t str_3225[] = { 0x0028, 0x516d, 0x0029, 0 };
-static const unichar_t str_3226[] = { 0x0028, 0x4e03, 0x0029, 0 };
-static const unichar_t str_3227[] = { 0x0028, 0x516b, 0x0029, 0 };
-static const unichar_t str_3228[] = { 0x0028, 0x4e5d, 0x0029, 0 };
-static const unichar_t str_3229[] = { 0x0028, 0x5341, 0x0029, 0 };
-static const unichar_t str_322a[] = { 0x0028, 0x6708, 0x0029, 0 };
-static const unichar_t str_322b[] = { 0x0028, 0x706b, 0x0029, 0 };
-static const unichar_t str_322c[] = { 0x0028, 0x6c34, 0x0029, 0 };
-static const unichar_t str_322d[] = { 0x0028, 0x6728, 0x0029, 0 };
-static const unichar_t str_322e[] = { 0x0028, 0x91d1, 0x0029, 0 };
-static const unichar_t str_322f[] = { 0x0028, 0x571f, 0x0029, 0 };
-static const unichar_t str_3230[] = { 0x0028, 0x65e5, 0x0029, 0 };
-static const unichar_t str_3231[] = { 0x0028, 0x682a, 0x0029, 0 };
-static const unichar_t str_3232[] = { 0x0028, 0x6709, 0x0029, 0 };
-static const unichar_t str_3233[] = { 0x0028, 0x793e, 0x0029, 0 };
-static const unichar_t str_3234[] = { 0x0028, 0x540d, 0x0029, 0 };
-static const unichar_t str_3235[] = { 0x0028, 0x7279, 0x0029, 0 };
-static const unichar_t str_3236[] = { 0x0028, 0x8ca1, 0x0029, 0 };
-static const unichar_t str_3237[] = { 0x0028, 0x795d, 0x0029, 0 };
-static const unichar_t str_3238[] = { 0x0028, 0x52b4, 0x0029, 0 };
-static const unichar_t str_3239[] = { 0x0028, 0x4ee3, 0x0029, 0 };
-static const unichar_t str_323a[] = { 0x0028, 0x547c, 0x0029, 0 };
-static const unichar_t str_323b[] = { 0x0028, 0x5b66, 0x0029, 0 };
-static const unichar_t str_323c[] = { 0x0028, 0x76e3, 0x0029, 0 };
-static const unichar_t str_323d[] = { 0x0028, 0x4f01, 0x0029, 0 };
-static const unichar_t str_323e[] = { 0x0028, 0x8cc7, 0x0029, 0 };
-static const unichar_t str_323f[] = { 0x0028, 0x5354, 0x0029, 0 };
-static const unichar_t str_3240[] = { 0x0028, 0x796d, 0x0029, 0 };
-static const unichar_t str_3241[] = { 0x0028, 0x4f11, 0x0029, 0 };
-static const unichar_t str_3242[] = { 0x0028, 0x81ea, 0x0029, 0 };
-static const unichar_t str_3243[] = { 0x0028, 0x81f3, 0x0029, 0 };
-static const unichar_t str_3244[] = { 0x554f, 0x20dd, 0 };
-static const unichar_t str_3245[] = { 0x5e7c, 0x20dd, 0 };
-static const unichar_t str_3246[] = { 0x6587, 0x20dd, 0 };
-static const unichar_t str_3247[] = { 0x7b8f, 0x20dd, 0 };
-static const unichar_t str_3250[] = { 0x0050, 0x0054, 0x0045, 0 };
-static const unichar_t str_3251[] = { 0x0032, 0x0031, 0x20dd, 0 };
-static const unichar_t str_3252[] = { 0x0032, 0x0032, 0x20dd, 0 };
-static const unichar_t str_3253[] = { 0x0032, 0x0033, 0x20dd, 0 };
-static const unichar_t str_3254[] = { 0x0032, 0x0034, 0x20dd, 0 };
-static const unichar_t str_3255[] = { 0x0032, 0x0035, 0x20dd, 0 };
-static const unichar_t str_3256[] = { 0x0032, 0x0036, 0x20dd, 0 };
-static const unichar_t str_3257[] = { 0x0032, 0x0037, 0x20dd, 0 };
-static const unichar_t str_3258[] = { 0x0032, 0x0038, 0x20dd, 0 };
-static const unichar_t str_3259[] = { 0x0032, 0x0039, 0x20dd, 0 };
-static const unichar_t str_325a[] = { 0x0033, 0x0030, 0x20dd, 0 };
-static const unichar_t str_325b[] = { 0x0033, 0x0031, 0x20dd, 0 };
-static const unichar_t str_325c[] = { 0x0033, 0x0032, 0x20dd, 0 };
-static const unichar_t str_325d[] = { 0x0033, 0x0033, 0x20dd, 0 };
-static const unichar_t str_325e[] = { 0x0033, 0x0034, 0x20dd, 0 };
-static const unichar_t str_325f[] = { 0x0033, 0x0035, 0x20dd, 0 };
-static const unichar_t str_3260[] = { 0x1100, 0x20dd, 0 };
-static const unichar_t str_3261[] = { 0x1102, 0x20dd, 0 };
-static const unichar_t str_3262[] = { 0x1103, 0x20dd, 0 };
-static const unichar_t str_3263[] = { 0x1105, 0x20dd, 0 };
-static const unichar_t str_3264[] = { 0x1106, 0x20dd, 0 };
-static const unichar_t str_3265[] = { 0x1107, 0x20dd, 0 };
-static const unichar_t str_3266[] = { 0x1109, 0x20dd, 0 };
-static const unichar_t str_3267[] = { 0x110b, 0x20dd, 0 };
-static const unichar_t str_3268[] = { 0x110c, 0x20dd, 0 };
-static const unichar_t str_3269[] = { 0x110e, 0x20dd, 0 };
-static const unichar_t str_326a[] = { 0x110f, 0x20dd, 0 };
-static const unichar_t str_326b[] = { 0x1110, 0x20dd, 0 };
-static const unichar_t str_326c[] = { 0x1111, 0x20dd, 0 };
-static const unichar_t str_326d[] = { 0x1112, 0x20dd, 0 };
-static const unichar_t str_326e[] = { 0x1100, 0x1161, 0x20dd, 0 };
-static const unichar_t str_326f[] = { 0x1102, 0x1161, 0x20dd, 0 };
-static const unichar_t str_3270[] = { 0x1103, 0x1161, 0x20dd, 0 };
-static const unichar_t str_3271[] = { 0x1105, 0x1161, 0x20dd, 0 };
-static const unichar_t str_3272[] = { 0x1106, 0x1161, 0x20dd, 0 };
-static const unichar_t str_3273[] = { 0x1107, 0x1161, 0x20dd, 0 };
-static const unichar_t str_3274[] = { 0x1109, 0x1161, 0x20dd, 0 };
-static const unichar_t str_3275[] = { 0x110b, 0x1161, 0x20dd, 0 };
-static const unichar_t str_3276[] = { 0x110c, 0x1161, 0x20dd, 0 };
-static const unichar_t str_3277[] = { 0x110e, 0x1161, 0x20dd, 0 };
-static const unichar_t str_3278[] = { 0x110f, 0x1161, 0x20dd, 0 };
-static const unichar_t str_3279[] = { 0x1110, 0x1161, 0x20dd, 0 };
-static const unichar_t str_327a[] = { 0x1111, 0x1161, 0x20dd, 0 };
-static const unichar_t str_327b[] = { 0x1112, 0x1161, 0x20dd, 0 };
-static const unichar_t str_327c[] = { 0x110e, 0x1161, 0x11b7, 0x1100, 0x1169, 0x20dd, 0 };
-static const unichar_t str_327d[] = { 0x110c, 0x116e, 0x110b, 0x1174, 0x20dd, 0 };
-static const unichar_t str_327e[] = { 0x110b, 0x116e, 0x20dd, 0 };
-static const unichar_t str_3280[] = { 0x4e00, 0x20dd, 0 };
-static const unichar_t str_3281[] = { 0x4e8c, 0x20dd, 0 };
-static const unichar_t str_3282[] = { 0x4e09, 0x20dd, 0 };
-static const unichar_t str_3283[] = { 0x56db, 0x20dd, 0 };
-static const unichar_t str_3284[] = { 0x4e94, 0x20dd, 0 };
-static const unichar_t str_3285[] = { 0x516d, 0x20dd, 0 };
-static const unichar_t str_3286[] = { 0x4e03, 0x20dd, 0 };
-static const unichar_t str_3287[] = { 0x516b, 0x20dd, 0 };
-static const unichar_t str_3288[] = { 0x4e5d, 0x20dd, 0 };
-static const unichar_t str_3289[] = { 0x5341, 0x20dd, 0 };
-static const unichar_t str_328a[] = { 0x6708, 0x20dd, 0 };
-static const unichar_t str_328b[] = { 0x706b, 0x20dd, 0 };
-static const unichar_t str_328c[] = { 0x6c34, 0x20dd, 0 };
-static const unichar_t str_328d[] = { 0x6728, 0x20dd, 0 };
-static const unichar_t str_328e[] = { 0x91d1, 0x20dd, 0 };
-static const unichar_t str_328f[] = { 0x571f, 0x20dd, 0 };
-static const unichar_t str_3290[] = { 0x65e5, 0x20dd, 0 };
-static const unichar_t str_3291[] = { 0x682a, 0x20dd, 0 };
-static const unichar_t str_3292[] = { 0x6709, 0x20dd, 0 };
-static const unichar_t str_3293[] = { 0x793e, 0x20dd, 0 };
-static const unichar_t str_3294[] = { 0x540d, 0x20dd, 0 };
-static const unichar_t str_3295[] = { 0x7279, 0x20dd, 0 };
-static const unichar_t str_3296[] = { 0x8ca1, 0x20dd, 0 };
-static const unichar_t str_3297[] = { 0x795d, 0x20dd, 0 };
-static const unichar_t str_3298[] = { 0x52b4, 0x20dd, 0 };
-static const unichar_t str_3299[] = { 0x79d8, 0x20dd, 0 };
-static const unichar_t str_329a[] = { 0x7537, 0x20dd, 0 };
-static const unichar_t str_329b[] = { 0x5973, 0x20dd, 0 };
-static const unichar_t str_329c[] = { 0x9069, 0x20dd, 0 };
-static const unichar_t str_329d[] = { 0x512a, 0x20dd, 0 };
-static const unichar_t str_329e[] = { 0x5370, 0x20dd, 0 };
-static const unichar_t str_329f[] = { 0x6ce8, 0x20dd, 0 };
-static const unichar_t str_32a0[] = { 0x9805, 0x20dd, 0 };
-static const unichar_t str_32a1[] = { 0x4f11, 0x20dd, 0 };
-static const unichar_t str_32a2[] = { 0x5199, 0x20dd, 0 };
-static const unichar_t str_32a3[] = { 0x6b63, 0x20dd, 0 };
-static const unichar_t str_32a4[] = { 0x4e0a, 0x20dd, 0 };
-static const unichar_t str_32a5[] = { 0x4e2d, 0x20dd, 0 };
-static const unichar_t str_32a6[] = { 0x4e0b, 0x20dd, 0 };
-static const unichar_t str_32a7[] = { 0x5de6, 0x20dd, 0 };
-static const unichar_t str_32a8[] = { 0x53f3, 0x20dd, 0 };
-static const unichar_t str_32a9[] = { 0x533b, 0x20dd, 0 };
-static const unichar_t str_32aa[] = { 0x5b97, 0x20dd, 0 };
-static const unichar_t str_32ab[] = { 0x5b66, 0x20dd, 0 };
-static const unichar_t str_32ac[] = { 0x76e3, 0x20dd, 0 };
-static const unichar_t str_32ad[] = { 0x4f01, 0x20dd, 0 };
-static const unichar_t str_32ae[] = { 0x8cc7, 0x20dd, 0 };
-static const unichar_t str_32af[] = { 0x5354, 0x20dd, 0 };
-static const unichar_t str_32b0[] = { 0x591c, 0x20dd, 0 };
-static const unichar_t str_32b1[] = { 0x0033, 0x0036, 0x20dd, 0 };
-static const unichar_t str_32b2[] = { 0x0033, 0x0037, 0x20dd, 0 };
-static const unichar_t str_32b3[] = { 0x0033, 0x0038, 0x20dd, 0 };
-static const unichar_t str_32b4[] = { 0x0033, 0x0039, 0x20dd, 0 };
-static const unichar_t str_32b5[] = { 0x0034, 0x0030, 0x20dd, 0 };
-static const unichar_t str_32b6[] = { 0x0034, 0x0031, 0x20dd, 0 };
-static const unichar_t str_32b7[] = { 0x0034, 0x0032, 0x20dd, 0 };
-static const unichar_t str_32b8[] = { 0x0034, 0x0033, 0x20dd, 0 };
-static const unichar_t str_32b9[] = { 0x0034, 0x0034, 0x20dd, 0 };
-static const unichar_t str_32ba[] = { 0x0034, 0x0035, 0x20dd, 0 };
-static const unichar_t str_32bb[] = { 0x0034, 0x0036, 0x20dd, 0 };
-static const unichar_t str_32bc[] = { 0x0034, 0x0037, 0x20dd, 0 };
-static const unichar_t str_32bd[] = { 0x0034, 0x0038, 0x20dd, 0 };
-static const unichar_t str_32be[] = { 0x0034, 0x0039, 0x20dd, 0 };
-static const unichar_t str_32bf[] = { 0x0035, 0x0030, 0x20dd, 0 };
-static const unichar_t str_32c0[] = { 0x0031, 0x6708, 0 };
-static const unichar_t str_32c1[] = { 0x0032, 0x6708, 0 };
-static const unichar_t str_32c2[] = { 0x0033, 0x6708, 0 };
-static const unichar_t str_32c3[] = { 0x0034, 0x6708, 0 };
-static const unichar_t str_32c4[] = { 0x0035, 0x6708, 0 };
-static const unichar_t str_32c5[] = { 0x0036, 0x6708, 0 };
-static const unichar_t str_32c6[] = { 0x0037, 0x6708, 0 };
-static const unichar_t str_32c7[] = { 0x0038, 0x6708, 0 };
-static const unichar_t str_32c8[] = { 0x0039, 0x6708, 0 };
-static const unichar_t str_32c9[] = { 0x0031, 0x0030, 0x6708, 0 };
-static const unichar_t str_32ca[] = { 0x0031, 0x0031, 0x6708, 0 };
-static const unichar_t str_32cb[] = { 0x0031, 0x0032, 0x6708, 0 };
-static const unichar_t str_32cc[] = { 0x0048, 0x0067, 0 };
-static const unichar_t str_32cd[] = { 0x0065, 0x0072, 0x0067, 0 };
-static const unichar_t str_32ce[] = { 0x0065, 0x0056, 0 };
-static const unichar_t str_32cf[] = { 0x004c, 0x0054, 0x0044, 0 };
-static const unichar_t str_32d0[] = { 0x30a2, 0x20dd, 0 };
-static const unichar_t str_32d1[] = { 0x30a4, 0x20dd, 0 };
-static const unichar_t str_32d2[] = { 0x30a6, 0x20dd, 0 };
-static const unichar_t str_32d3[] = { 0x30a8, 0x20dd, 0 };
-static const unichar_t str_32d4[] = { 0x30aa, 0x20dd, 0 };
-static const unichar_t str_32d5[] = { 0x30ab, 0x20dd, 0 };
-static const unichar_t str_32d6[] = { 0x30ad, 0x20dd, 0 };
-static const unichar_t str_32d7[] = { 0x30af, 0x20dd, 0 };
-static const unichar_t str_32d8[] = { 0x30b1, 0x20dd, 0 };
-static const unichar_t str_32d9[] = { 0x30b3, 0x20dd, 0 };
-static const unichar_t str_32da[] = { 0x30b5, 0x20dd, 0 };
-static const unichar_t str_32db[] = { 0x30b7, 0x20dd, 0 };
-static const unichar_t str_32dc[] = { 0x30b9, 0x20dd, 0 };
-static const unichar_t str_32dd[] = { 0x30bb, 0x20dd, 0 };
-static const unichar_t str_32de[] = { 0x30bd, 0x20dd, 0 };
-static const unichar_t str_32df[] = { 0x30bf, 0x20dd, 0 };
-static const unichar_t str_32e0[] = { 0x30c1, 0x20dd, 0 };
-static const unichar_t str_32e1[] = { 0x30c4, 0x20dd, 0 };
-static const unichar_t str_32e2[] = { 0x30c6, 0x20dd, 0 };
-static const unichar_t str_32e3[] = { 0x30c8, 0x20dd, 0 };
-static const unichar_t str_32e4[] = { 0x30ca, 0x20dd, 0 };
-static const unichar_t str_32e5[] = { 0x30cb, 0x20dd, 0 };
-static const unichar_t str_32e6[] = { 0x30cc, 0x20dd, 0 };
-static const unichar_t str_32e7[] = { 0x30cd, 0x20dd, 0 };
-static const unichar_t str_32e8[] = { 0x30ce, 0x20dd, 0 };
-static const unichar_t str_32e9[] = { 0x30cf, 0x20dd, 0 };
-static const unichar_t str_32ea[] = { 0x30d2, 0x20dd, 0 };
-static const unichar_t str_32eb[] = { 0x30d5, 0x20dd, 0 };
-static const unichar_t str_32ec[] = { 0x30d8, 0x20dd, 0 };
-static const unichar_t str_32ed[] = { 0x30db, 0x20dd, 0 };
-static const unichar_t str_32ee[] = { 0x30de, 0x20dd, 0 };
-static const unichar_t str_32ef[] = { 0x30df, 0x20dd, 0 };
-static const unichar_t str_32f0[] = { 0x30e0, 0x20dd, 0 };
-static const unichar_t str_32f1[] = { 0x30e1, 0x20dd, 0 };
-static const unichar_t str_32f2[] = { 0x30e2, 0x20dd, 0 };
-static const unichar_t str_32f3[] = { 0x30e4, 0x20dd, 0 };
-static const unichar_t str_32f4[] = { 0x30e6, 0x20dd, 0 };
-static const unichar_t str_32f5[] = { 0x30e8, 0x20dd, 0 };
-static const unichar_t str_32f6[] = { 0x30e9, 0x20dd, 0 };
-static const unichar_t str_32f7[] = { 0x30ea, 0x20dd, 0 };
-static const unichar_t str_32f8[] = { 0x30eb, 0x20dd, 0 };
-static const unichar_t str_32f9[] = { 0x30ec, 0x20dd, 0 };
-static const unichar_t str_32fa[] = { 0x30ed, 0x20dd, 0 };
-static const unichar_t str_32fb[] = { 0x30ef, 0x20dd, 0 };
-static const unichar_t str_32fc[] = { 0x30f0, 0x20dd, 0 };
-static const unichar_t str_32fd[] = { 0x30f1, 0x20dd, 0 };
-static const unichar_t str_32fe[] = { 0x30f2, 0x20dd, 0 };
-static const unichar_t str_32ff[] = { 0x4ee4, 0x548c, 0 };
-static const unichar_t str_3300[] = { 0x30a2, 0x30d1, 0x30fc, 0x30c8, 0 };
-static const unichar_t str_3301[] = { 0x30a2, 0x30eb, 0x30d5, 0x30a1, 0 };
-static const unichar_t str_3302[] = { 0x30a2, 0x30f3, 0x30da, 0x30a2, 0 };
-static const unichar_t str_3303[] = { 0x30a2, 0x30fc, 0x30eb, 0 };
-static const unichar_t str_3304[] = { 0x30a4, 0x30cb, 0x30f3, 0x30b0, 0 };
-static const unichar_t str_3305[] = { 0x30a4, 0x30f3, 0x30c1, 0 };
-static const unichar_t str_3306[] = { 0x30a6, 0x30a9, 0x30f3, 0 };
-static const unichar_t str_3307[] = { 0x30a8, 0x30b9, 0x30af, 0x30fc, 0x30c9, 0 };
-static const unichar_t str_3308[] = { 0x30a8, 0x30fc, 0x30ab, 0x30fc, 0 };
-static const unichar_t str_3309[] = { 0x30aa, 0x30f3, 0x30b9, 0 };
-static const unichar_t str_330a[] = { 0x30aa, 0x30fc, 0x30e0, 0 };
-static const unichar_t str_330b[] = { 0x30ab, 0x30a4, 0x30ea, 0 };
-static const unichar_t str_330c[] = { 0x30ab, 0x30e9, 0x30c3, 0x30c8, 0 };
-static const unichar_t str_330d[] = { 0x30ab, 0x30ed, 0x30ea, 0x30fc, 0 };
-static const unichar_t str_330e[] = { 0x30ac, 0x30ed, 0x30f3, 0 };
-static const unichar_t str_330f[] = { 0x30ac, 0x30f3, 0x30de, 0 };
-static const unichar_t str_3310[] = { 0x30ae, 0x30ac, 0 };
-static const unichar_t str_3311[] = { 0x30ae, 0x30cb, 0x30fc, 0 };
-static const unichar_t str_3312[] = { 0x30ad, 0x30e5, 0x30ea, 0x30fc, 0 };
-static const unichar_t str_3313[] = { 0x30ae, 0x30eb, 0x30c0, 0x30fc, 0 };
-static const unichar_t str_3314[] = { 0x30ad, 0x30ed, 0 };
-static const unichar_t str_3315[] = { 0x30ad, 0x30ed, 0x30b0, 0x30e9, 0x30e0, 0 };
-static const unichar_t str_3316[] = { 0x30ad, 0x30ed, 0x30e1, 0x30fc, 0x30c8, 0x30eb, 0 };
-static const unichar_t str_3317[] = { 0x30ad, 0x30ed, 0x30ef, 0x30c3, 0x30c8, 0 };
-static const unichar_t str_3318[] = { 0x30b0, 0x30e9, 0x30e0, 0 };
-static const unichar_t str_3319[] = { 0x30b0, 0x30e9, 0x30e0, 0x30c8, 0x30f3, 0 };
-static const unichar_t str_331a[] = { 0x30af, 0x30eb, 0x30bc, 0x30a4, 0x30ed, 0 };
-static const unichar_t str_331b[] = { 0x30af, 0x30ed, 0x30fc, 0x30cd, 0 };
-static const unichar_t str_331c[] = { 0x30b1, 0x30fc, 0x30b9, 0 };
-static const unichar_t str_331d[] = { 0x30b3, 0x30eb, 0x30ca, 0 };
-static const unichar_t str_331e[] = { 0x30b3, 0x30fc, 0x30dd, 0 };
-static const unichar_t str_331f[] = { 0x30b5, 0x30a4, 0x30af, 0x30eb, 0 };
-static const unichar_t str_3320[] = { 0x30b5, 0x30f3, 0x30c1, 0x30fc, 0x30e0, 0 };
-static const unichar_t str_3321[] = { 0x30b7, 0x30ea, 0x30f3, 0x30b0, 0 };
-static const unichar_t str_3322[] = { 0x30bb, 0x30f3, 0x30c1, 0 };
-static const unichar_t str_3323[] = { 0x30bb, 0x30f3, 0x30c8, 0 };
-static const unichar_t str_3324[] = { 0x30c0, 0x30fc, 0x30b9, 0 };
-static const unichar_t str_3325[] = { 0x30c7, 0x30b7, 0 };
-static const unichar_t str_3326[] = { 0x30c9, 0x30eb, 0 };
-static const unichar_t str_3327[] = { 0x30c8, 0x30f3, 0 };
-static const unichar_t str_3328[] = { 0x30ca, 0x30ce, 0 };
-static const unichar_t str_3329[] = { 0x30ce, 0x30c3, 0x30c8, 0 };
-static const unichar_t str_332a[] = { 0x30cf, 0x30a4, 0x30c4, 0 };
-static const unichar_t str_332b[] = { 0x30d1, 0x30fc, 0x30bb, 0x30f3, 0x30c8, 0 };
-static const unichar_t str_332c[] = { 0x30d1, 0x30fc, 0x30c4, 0 };
-static const unichar_t str_332d[] = { 0x30d0, 0x30fc, 0x30ec, 0x30eb, 0 };
-static const unichar_t str_332e[] = { 0x30d4, 0x30a2, 0x30b9, 0x30c8, 0x30eb, 0 };
-static const unichar_t str_332f[] = { 0x30d4, 0x30af, 0x30eb, 0 };
-static const unichar_t str_3330[] = { 0x30d4, 0x30b3, 0 };
-static const unichar_t str_3331[] = { 0x30d3, 0x30eb, 0 };
-static const unichar_t str_3332[] = { 0x30d5, 0x30a1, 0x30e9, 0x30c3, 0x30c9, 0 };
-static const unichar_t str_3333[] = { 0x30d5, 0x30a3, 0x30fc, 0x30c8, 0 };
-static const unichar_t str_3334[] = { 0x30d6, 0x30c3, 0x30b7, 0x30a7, 0x30eb, 0 };
-static const unichar_t str_3335[] = { 0x30d5, 0x30e9, 0x30f3, 0 };
-static const unichar_t str_3336[] = { 0x30d8, 0x30af, 0x30bf, 0x30fc, 0x30eb, 0 };
-static const unichar_t str_3337[] = { 0x30da, 0x30bd, 0 };
-static const unichar_t str_3338[] = { 0x30da, 0x30cb, 0x30d2, 0 };
-static const unichar_t str_3339[] = { 0x30d8, 0x30eb, 0x30c4, 0 };
-static const unichar_t str_333a[] = { 0x30da, 0x30f3, 0x30b9, 0 };
-static const unichar_t str_333b[] = { 0x30da, 0x30fc, 0x30b8, 0 };
-static const unichar_t str_333c[] = { 0x30d9, 0x30fc, 0x30bf, 0 };
-static const unichar_t str_333d[] = { 0x30dd, 0x30a4, 0x30f3, 0x30c8, 0 };
-static const unichar_t str_333e[] = { 0x30dc, 0x30eb, 0x30c8, 0 };
-static const unichar_t str_333f[] = { 0x30db, 0x30f3, 0 };
-static const unichar_t str_3340[] = { 0x30dd, 0x30f3, 0x30c9, 0 };
-static const unichar_t str_3341[] = { 0x30db, 0x30fc, 0x30eb, 0 };
-static const unichar_t str_3342[] = { 0x30db, 0x30fc, 0x30f3, 0 };
-static const unichar_t str_3343[] = { 0x30de, 0x30a4, 0x30af, 0x30ed, 0 };
-static const unichar_t str_3344[] = { 0x30de, 0x30a4, 0x30eb, 0 };
-static const unichar_t str_3345[] = { 0x30de, 0x30c3, 0x30cf, 0 };
-static const unichar_t str_3346[] = { 0x30de, 0x30eb, 0x30af, 0 };
-static const unichar_t str_3347[] = { 0x30de, 0x30f3, 0x30b7, 0x30e7, 0x30f3, 0 };
-static const unichar_t str_3348[] = { 0x30df, 0x30af, 0x30ed, 0x30f3, 0 };
-static const unichar_t str_3349[] = { 0x30df, 0x30ea, 0 };
-static const unichar_t str_334a[] = { 0x30df, 0x30ea, 0x30d0, 0x30fc, 0x30eb, 0 };
-static const unichar_t str_334b[] = { 0x30e1, 0x30ac, 0 };
-static const unichar_t str_334c[] = { 0x30e1, 0x30ac, 0x30c8, 0x30f3, 0 };
-static const unichar_t str_334d[] = { 0x30e1, 0x30fc, 0x30c8, 0x30eb, 0 };
-static const unichar_t str_334e[] = { 0x30e4, 0x30fc, 0x30c9, 0 };
-static const unichar_t str_334f[] = { 0x30e4, 0x30fc, 0x30eb, 0 };
-static const unichar_t str_3350[] = { 0x30e6, 0x30a2, 0x30f3, 0 };
-static const unichar_t str_3351[] = { 0x30ea, 0x30c3, 0x30c8, 0x30eb, 0 };
-static const unichar_t str_3352[] = { 0x30ea, 0x30e9, 0 };
-static const unichar_t str_3353[] = { 0x30eb, 0x30d4, 0x30fc, 0 };
-static const unichar_t str_3354[] = { 0x30eb, 0x30fc, 0x30d6, 0x30eb, 0 };
-static const unichar_t str_3355[] = { 0x30ec, 0x30e0, 0 };
-static const unichar_t str_3356[] = { 0x30ec, 0x30f3, 0x30c8, 0x30b2, 0x30f3, 0 };
-static const unichar_t str_3357[] = { 0x30ef, 0x30c3, 0x30c8, 0 };
-static const unichar_t str_3358[] = { 0x0030, 0x70b9, 0 };
-static const unichar_t str_3359[] = { 0x0031, 0x70b9, 0 };
-static const unichar_t str_335a[] = { 0x0032, 0x70b9, 0 };
-static const unichar_t str_335b[] = { 0x0033, 0x70b9, 0 };
-static const unichar_t str_335c[] = { 0x0034, 0x70b9, 0 };
-static const unichar_t str_335d[] = { 0x0035, 0x70b9, 0 };
-static const unichar_t str_335e[] = { 0x0036, 0x70b9, 0 };
-static const unichar_t str_335f[] = { 0x0037, 0x70b9, 0 };
-static const unichar_t str_3360[] = { 0x0038, 0x70b9, 0 };
-static const unichar_t str_3361[] = { 0x0039, 0x70b9, 0 };
-static const unichar_t str_3362[] = { 0x0031, 0x0030, 0x70b9, 0 };
-static const unichar_t str_3363[] = { 0x0031, 0x0031, 0x70b9, 0 };
-static const unichar_t str_3364[] = { 0x0031, 0x0032, 0x70b9, 0 };
-static const unichar_t str_3365[] = { 0x0031, 0x0033, 0x70b9, 0 };
-static const unichar_t str_3366[] = { 0x0031, 0x0034, 0x70b9, 0 };
-static const unichar_t str_3367[] = { 0x0031, 0x0035, 0x70b9, 0 };
-static const unichar_t str_3368[] = { 0x0031, 0x0036, 0x70b9, 0 };
-static const unichar_t str_3369[] = { 0x0031, 0x0037, 0x70b9, 0 };
-static const unichar_t str_336a[] = { 0x0031, 0x0038, 0x70b9, 0 };
-static const unichar_t str_336b[] = { 0x0031, 0x0039, 0x70b9, 0 };
-static const unichar_t str_336c[] = { 0x0032, 0x0030, 0x70b9, 0 };
-static const unichar_t str_336d[] = { 0x0032, 0x0031, 0x70b9, 0 };
-static const unichar_t str_336e[] = { 0x0032, 0x0032, 0x70b9, 0 };
-static const unichar_t str_336f[] = { 0x0032, 0x0033, 0x70b9, 0 };
-static const unichar_t str_3370[] = { 0x0032, 0x0034, 0x70b9, 0 };
-static const unichar_t str_3371[] = { 0x0068, 0x0050, 0x0061, 0 };
-static const unichar_t str_3372[] = { 0x0064, 0x0061, 0 };
-static const unichar_t str_3373[] = { 0x0041, 0x0055, 0 };
-static const unichar_t str_3374[] = { 0x0062, 0x0061, 0x0072, 0 };
-static const unichar_t str_3375[] = { 0x006f, 0x0056, 0 };
-static const unichar_t str_3376[] = { 0x0070, 0x0063, 0 };
-static const unichar_t str_3377[] = { 0x0064, 0x006d, 0 };
-static const unichar_t str_3378[] = { 0x0064, 0x006d, 0x00b2, 0 };
-static const unichar_t str_3379[] = { 0x0064, 0x006d, 0x00b3, 0 };
-static const unichar_t str_337a[] = { 0x0049, 0x0055, 0 };
-static const unichar_t str_337b[] = { 0x5e73, 0x6210, 0 };
-static const unichar_t str_337c[] = { 0x662d, 0x548c, 0 };
-static const unichar_t str_337d[] = { 0x5927, 0x6b63, 0 };
-static const unichar_t str_337e[] = { 0x660e, 0x6cbb, 0 };
-static const unichar_t str_337f[] = { 0x682a, 0x5f0f, 0x4f1a, 0x793e, 0 };
-static const unichar_t str_3380[] = { 0x0070, 0x0041, 0 };
-static const unichar_t str_3381[] = { 0x006e, 0x0041, 0 };
-static const unichar_t str_3382[] = { 0x03bc, 0x0041, 0 };
-static const unichar_t str_3383[] = { 0x006d, 0x0041, 0 };
-static const unichar_t str_3384[] = { 0x006b, 0x0041, 0 };
-static const unichar_t str_3385[] = { 0x004b, 0x0042, 0 };
-static const unichar_t str_3386[] = { 0x004d, 0x0042, 0 };
-static const unichar_t str_3387[] = { 0x0047, 0x0042, 0 };
-static const unichar_t str_3388[] = { 0x0063, 0x0061, 0x006c, 0 };
-static const unichar_t str_3389[] = { 0x006b, 0x0063, 0x0061, 0x006c, 0 };
-static const unichar_t str_338a[] = { 0x0070, 0x0046, 0 };
-static const unichar_t str_338b[] = { 0x006e, 0x0046, 0 };
-static const unichar_t str_338c[] = { 0x03bc, 0x0046, 0 };
-static const unichar_t str_338d[] = { 0x03bc, 0x0067, 0 };
-static const unichar_t str_338e[] = { 0x006d, 0x0067, 0 };
-static const unichar_t str_338f[] = { 0x006b, 0x0067, 0 };
-static const unichar_t str_3390[] = { 0x0048, 0x007a, 0 };
-static const unichar_t str_3391[] = { 0x006b, 0x0048, 0x007a, 0 };
-static const unichar_t str_3392[] = { 0x004d, 0x0048, 0x007a, 0 };
-static const unichar_t str_3393[] = { 0x0047, 0x0048, 0x007a, 0 };
-static const unichar_t str_3394[] = { 0x0054, 0x0048, 0x007a, 0 };
-static const unichar_t str_3395[] = { 0x03bc, 0x2113, 0 };
-static const unichar_t str_3396[] = { 0x006d, 0x2113, 0 };
-static const unichar_t str_3397[] = { 0x0064, 0x2113, 0 };
-static const unichar_t str_3398[] = { 0x006b, 0x2113, 0 };
-static const unichar_t str_3399[] = { 0x0066, 0x006d, 0 };
-static const unichar_t str_339a[] = { 0x006e, 0x006d, 0 };
-static const unichar_t str_339b[] = { 0x03bc, 0x006d, 0 };
-static const unichar_t str_339c[] = { 0x006d, 0x006d, 0 };
-static const unichar_t str_339d[] = { 0x0063, 0x006d, 0 };
-static const unichar_t str_339e[] = { 0x006b, 0x006d, 0 };
-static const unichar_t str_339f[] = { 0x006d, 0x006d, 0x00b2, 0 };
-static const unichar_t str_33a0[] = { 0x0063, 0x006d, 0x00b2, 0 };
-static const unichar_t str_33a1[] = { 0x006d, 0x00b2, 0 };
-static const unichar_t str_33a2[] = { 0x006b, 0x006d, 0x00b2, 0 };
-static const unichar_t str_33a3[] = { 0x006d, 0x006d, 0x00b3, 0 };
-static const unichar_t str_33a4[] = { 0x0063, 0x006d, 0x00b3, 0 };
-static const unichar_t str_33a5[] = { 0x006d, 0x00b3, 0 };
-static const unichar_t str_33a6[] = { 0x006b, 0x006d, 0x00b3, 0 };
-static const unichar_t str_33a7[] = { 0x006d, 0x2215, 0x0073, 0 };
-static const unichar_t str_33a8[] = { 0x006d, 0x2215, 0x0073, 0x00b2, 0 };
-static const unichar_t str_33a9[] = { 0x0050, 0x0061, 0 };
-static const unichar_t str_33aa[] = { 0x006b, 0x0050, 0x0061, 0 };
-static const unichar_t str_33ab[] = { 0x004d, 0x0050, 0x0061, 0 };
-static const unichar_t str_33ac[] = { 0x0047, 0x0050, 0x0061, 0 };
-static const unichar_t str_33ad[] = { 0x0072, 0x0061, 0x0064, 0 };
-static const unichar_t str_33ae[] = { 0x0072, 0x0061, 0x0064, 0x2215, 0x0073, 0 };
-static const unichar_t str_33af[] = { 0x0072, 0x0061, 0x0064, 0x2215, 0x0073, 0x00b2, 0 };
-static const unichar_t str_33b0[] = { 0x0070, 0x0073, 0 };
-static const unichar_t str_33b1[] = { 0x006e, 0x0073, 0 };
-static const unichar_t str_33b2[] = { 0x03bc, 0x0073, 0 };
-static const unichar_t str_33b3[] = { 0x006d, 0x0073, 0 };
-static const unichar_t str_33b4[] = { 0x0070, 0x0056, 0 };
-static const unichar_t str_33b5[] = { 0x006e, 0x0056, 0 };
-static const unichar_t str_33b6[] = { 0x03bc, 0x0056, 0 };
-static const unichar_t str_33b7[] = { 0x006d, 0x0056, 0 };
-static const unichar_t str_33b8[] = { 0x006b, 0x0056, 0 };
-static const unichar_t str_33b9[] = { 0x004d, 0x0056, 0 };
-static const unichar_t str_33ba[] = { 0x0070, 0x0057, 0 };
-static const unichar_t str_33bb[] = { 0x006e, 0x0057, 0 };
-static const unichar_t str_33bc[] = { 0x03bc, 0x0057, 0 };
-static const unichar_t str_33bd[] = { 0x006d, 0x0057, 0 };
-static const unichar_t str_33be[] = { 0x006b, 0x0057, 0 };
-static const unichar_t str_33bf[] = { 0x004d, 0x0057, 0 };
-static const unichar_t str_33c0[] = { 0x006b, 0x03a9, 0 };
-static const unichar_t str_33c1[] = { 0x004d, 0x03a9, 0 };
-static const unichar_t str_33c2[] = { 0x0061, 0x002e, 0x006d, 0x002e, 0 };
-static const unichar_t str_33c3[] = { 0x0042, 0x0071, 0 };
-static const unichar_t str_33c4[] = { 0x0063, 0x0063, 0 };
-static const unichar_t str_33c5[] = { 0x0063, 0x0064, 0 };
-static const unichar_t str_33c6[] = { 0x0043, 0x2215, 0x006b, 0x0067, 0 };
-static const unichar_t str_33c7[] = { 0x0043, 0x006f, 0x002e, 0 };
-static const unichar_t str_33c8[] = { 0x0064, 0x0042, 0 };
-static const unichar_t str_33c9[] = { 0x0047, 0x0079, 0 };
-static const unichar_t str_33ca[] = { 0x0068, 0x0061, 0 };
-static const unichar_t str_33cb[] = { 0x0048, 0x0050, 0 };
-static const unichar_t str_33cc[] = { 0x0069, 0x006e, 0 };
-static const unichar_t str_33cd[] = { 0x004b, 0x004b, 0 };
-static const unichar_t str_33ce[] = { 0x004b, 0x004d, 0 };
-static const unichar_t str_33cf[] = { 0x006b, 0x0074, 0 };
-static const unichar_t str_33d0[] = { 0x006c, 0x006d, 0 };
-static const unichar_t str_33d1[] = { 0x006c, 0x006e, 0 };
-static const unichar_t str_33d2[] = { 0x006c, 0x006f, 0x0067, 0 };
-static const unichar_t str_33d3[] = { 0x006c, 0x0078, 0 };
-static const unichar_t str_33d4[] = { 0x006d, 0x0062, 0 };
-static const unichar_t str_33d5[] = { 0x006d, 0x0069, 0x006c, 0 };
-static const unichar_t str_33d6[] = { 0x006d, 0x006f, 0x006c, 0 };
-static const unichar_t str_33d7[] = { 0x0050, 0x0048, 0 };
-static const unichar_t str_33d8[] = { 0x0070, 0x002e, 0x006d, 0x002e, 0 };
-static const unichar_t str_33d9[] = { 0x0050, 0x0050, 0x004d, 0 };
-static const unichar_t str_33da[] = { 0x0050, 0x0052, 0 };
-static const unichar_t str_33db[] = { 0x0073, 0x0072, 0 };
-static const unichar_t str_33dc[] = { 0x0053, 0x0076, 0 };
-static const unichar_t str_33dd[] = { 0x0057, 0x0062, 0 };
-static const unichar_t str_33de[] = { 0x0056, 0x2215, 0x006d, 0 };
-static const unichar_t str_33df[] = { 0x0041, 0x2215, 0x006d, 0 };
-static const unichar_t str_33e0[] = { 0x0031, 0x65e5, 0 };
-static const unichar_t str_33e1[] = { 0x0032, 0x65e5, 0 };
-static const unichar_t str_33e2[] = { 0x0033, 0x65e5, 0 };
-static const unichar_t str_33e3[] = { 0x0034, 0x65e5, 0 };
-static const unichar_t str_33e4[] = { 0x0035, 0x65e5, 0 };
-static const unichar_t str_33e5[] = { 0x0036, 0x65e5, 0 };
-static const unichar_t str_33e6[] = { 0x0037, 0x65e5, 0 };
-static const unichar_t str_33e7[] = { 0x0038, 0x65e5, 0 };
-static const unichar_t str_33e8[] = { 0x0039, 0x65e5, 0 };
-static const unichar_t str_33e9[] = { 0x0031, 0x0030, 0x65e5, 0 };
-static const unichar_t str_33ea[] = { 0x0031, 0x0031, 0x65e5, 0 };
-static const unichar_t str_33eb[] = { 0x0031, 0x0032, 0x65e5, 0 };
-static const unichar_t str_33ec[] = { 0x0031, 0x0033, 0x65e5, 0 };
-static const unichar_t str_33ed[] = { 0x0031, 0x0034, 0x65e5, 0 };
-static const unichar_t str_33ee[] = { 0x0031, 0x0035, 0x65e5, 0 };
-static const unichar_t str_33ef[] = { 0x0031, 0x0036, 0x65e5, 0 };
-static const unichar_t str_33f0[] = { 0x0031, 0x0037, 0x65e5, 0 };
-static const unichar_t str_33f1[] = { 0x0031, 0x0038, 0x65e5, 0 };
-static const unichar_t str_33f2[] = { 0x0031, 0x0039, 0x65e5, 0 };
-static const unichar_t str_33f3[] = { 0x0032, 0x0030, 0x65e5, 0 };
-static const unichar_t str_33f4[] = { 0x0032, 0x0031, 0x65e5, 0 };
-static const unichar_t str_33f5[] = { 0x0032, 0x0032, 0x65e5, 0 };
-static const unichar_t str_33f6[] = { 0x0032, 0x0033, 0x65e5, 0 };
-static const unichar_t str_33f7[] = { 0x0032, 0x0034, 0x65e5, 0 };
-static const unichar_t str_33f8[] = { 0x0032, 0x0035, 0x65e5, 0 };
-static const unichar_t str_33f9[] = { 0x0032, 0x0036, 0x65e5, 0 };
-static const unichar_t str_33fa[] = { 0x0032, 0x0037, 0x65e5, 0 };
-static const unichar_t str_33fb[] = { 0x0032, 0x0038, 0x65e5, 0 };
-static const unichar_t str_33fc[] = { 0x0032, 0x0039, 0x65e5, 0 };
-static const unichar_t str_33fd[] = { 0x0033, 0x0030, 0x65e5, 0 };
-static const unichar_t str_33fe[] = { 0x0033, 0x0031, 0x65e5, 0 };
-static const unichar_t str_33ff[] = { 0x0067, 0x0061, 0x006c, 0 };
-static const unichar_t str_a69c[] = { 0x044a, 0 };
-static const unichar_t str_a69d[] = { 0x044c, 0 };
-static const unichar_t str_a770[] = { 0xa76f, 0 };
-static const unichar_t str_a7f8[] = { 0x0126, 0 };
-static const unichar_t str_a7f9[] = { 0x0153, 0 };
-static const unichar_t str_ab5c[] = { 0xa727, 0 };
-static const unichar_t str_ab5d[] = { 0xab37, 0 };
-static const unichar_t str_ab5e[] = { 0x026b, 0 };
-static const unichar_t str_ab5f[] = { 0xab52, 0 };
-static const unichar_t str_f900[] = { 0x8c48, 0 };
-static const unichar_t str_f901[] = { 0x66f4, 0 };
-static const unichar_t str_f902[] = { 0x8eca, 0 };
-static const unichar_t str_f903[] = { 0x8cc8, 0 };
-static const unichar_t str_f904[] = { 0x6ed1, 0 };
-static const unichar_t str_f905[] = { 0x4e32, 0 };
-static const unichar_t str_f906[] = { 0x53e5, 0 };
-static const unichar_t str_f907[] = { 0x9f9c, 0 };
-static const unichar_t str_f908[] = { 0x9f9c, 0 };
-static const unichar_t str_f909[] = { 0x5951, 0 };
-static const unichar_t str_f90a[] = { 0x91d1, 0 };
-static const unichar_t str_f90b[] = { 0x5587, 0 };
-static const unichar_t str_f90c[] = { 0x5948, 0 };
-static const unichar_t str_f90d[] = { 0x61f6, 0 };
-static const unichar_t str_f90e[] = { 0x7669, 0 };
-static const unichar_t str_f90f[] = { 0x7f85, 0 };
-static const unichar_t str_f910[] = { 0x863f, 0 };
-static const unichar_t str_f911[] = { 0x87ba, 0 };
-static const unichar_t str_f912[] = { 0x88f8, 0 };
-static const unichar_t str_f913[] = { 0x908f, 0 };
-static const unichar_t str_f914[] = { 0x6a02, 0 };
-static const unichar_t str_f915[] = { 0x6d1b, 0 };
-static const unichar_t str_f916[] = { 0x70d9, 0 };
-static const unichar_t str_f917[] = { 0x73de, 0 };
-static const unichar_t str_f918[] = { 0x843d, 0 };
-static const unichar_t str_f919[] = { 0x916a, 0 };
-static const unichar_t str_f91a[] = { 0x99f1, 0 };
-static const unichar_t str_f91b[] = { 0x4e82, 0 };
-static const unichar_t str_f91c[] = { 0x5375, 0 };
-static const unichar_t str_f91d[] = { 0x6b04, 0 };
-static const unichar_t str_f91e[] = { 0x721b, 0 };
-static const unichar_t str_f91f[] = { 0x862d, 0 };
-static const unichar_t str_f920[] = { 0x9e1e, 0 };
-static const unichar_t str_f921[] = { 0x5d50, 0 };
-static const unichar_t str_f922[] = { 0x6feb, 0 };
-static const unichar_t str_f923[] = { 0x85cd, 0 };
-static const unichar_t str_f924[] = { 0x8964, 0 };
-static const unichar_t str_f925[] = { 0x62c9, 0 };
-static const unichar_t str_f926[] = { 0x81d8, 0 };
-static const unichar_t str_f927[] = { 0x881f, 0 };
-static const unichar_t str_f928[] = { 0x5eca, 0 };
-static const unichar_t str_f929[] = { 0x6717, 0 };
-static const unichar_t str_f92a[] = { 0x6d6a, 0 };
-static const unichar_t str_f92b[] = { 0x72fc, 0 };
-static const unichar_t str_f92c[] = { 0x90ce, 0 };
-static const unichar_t str_f92d[] = { 0x4f86, 0 };
-static const unichar_t str_f92e[] = { 0x51b7, 0 };
-static const unichar_t str_f92f[] = { 0x52de, 0 };
-static const unichar_t str_f930[] = { 0x64c4, 0 };
-static const unichar_t str_f931[] = { 0x6ad3, 0 };
-static const unichar_t str_f932[] = { 0x7210, 0 };
-static const unichar_t str_f933[] = { 0x76e7, 0 };
-static const unichar_t str_f934[] = { 0x8001, 0 };
-static const unichar_t str_f935[] = { 0x8606, 0 };
-static const unichar_t str_f936[] = { 0x865c, 0 };
-static const unichar_t str_f937[] = { 0x8def, 0 };
-static const unichar_t str_f938[] = { 0x9732, 0 };
-static const unichar_t str_f939[] = { 0x9b6f, 0 };
-static const unichar_t str_f93a[] = { 0x9dfa, 0 };
-static const unichar_t str_f93b[] = { 0x788c, 0 };
-static const unichar_t str_f93c[] = { 0x797f, 0 };
-static const unichar_t str_f93d[] = { 0x7da0, 0 };
-static const unichar_t str_f93e[] = { 0x83c9, 0 };
-static const unichar_t str_f93f[] = { 0x9304, 0 };
-static const unichar_t str_f940[] = { 0x9e7f, 0 };
-static const unichar_t str_f941[] = { 0x8ad6, 0 };
-static const unichar_t str_f942[] = { 0x58df, 0 };
-static const unichar_t str_f943[] = { 0x5f04, 0 };
-static const unichar_t str_f944[] = { 0x7c60, 0 };
-static const unichar_t str_f945[] = { 0x807e, 0 };
-static const unichar_t str_f946[] = { 0x7262, 0 };
-static const unichar_t str_f947[] = { 0x78ca, 0 };
-static const unichar_t str_f948[] = { 0x8cc2, 0 };
-static const unichar_t str_f949[] = { 0x96f7, 0 };
-static const unichar_t str_f94a[] = { 0x58d8, 0 };
-static const unichar_t str_f94b[] = { 0x5c62, 0 };
-static const unichar_t str_f94c[] = { 0x6a13, 0 };
-static const unichar_t str_f94d[] = { 0x6dda, 0 };
-static const unichar_t str_f94e[] = { 0x6f0f, 0 };
-static const unichar_t str_f94f[] = { 0x7d2f, 0 };
-static const unichar_t str_f950[] = { 0x7e37, 0 };
-static const unichar_t str_f951[] = { 0x964b, 0 };
-static const unichar_t str_f952[] = { 0x52d2, 0 };
-static const unichar_t str_f953[] = { 0x808b, 0 };
-static const unichar_t str_f954[] = { 0x51dc, 0 };
-static const unichar_t str_f955[] = { 0x51cc, 0 };
-static const unichar_t str_f956[] = { 0x7a1c, 0 };
-static const unichar_t str_f957[] = { 0x7dbe, 0 };
-static const unichar_t str_f958[] = { 0x83f1, 0 };
-static const unichar_t str_f959[] = { 0x9675, 0 };
-static const unichar_t str_f95a[] = { 0x8b80, 0 };
-static const unichar_t str_f95b[] = { 0x62cf, 0 };
-static const unichar_t str_f95c[] = { 0x6a02, 0 };
-static const unichar_t str_f95d[] = { 0x8afe, 0 };
-static const unichar_t str_f95e[] = { 0x4e39, 0 };
-static const unichar_t str_f95f[] = { 0x5be7, 0 };
-static const unichar_t str_f960[] = { 0x6012, 0 };
-static const unichar_t str_f961[] = { 0x7387, 0 };
-static const unichar_t str_f962[] = { 0x7570, 0 };
-static const unichar_t str_f963[] = { 0x5317, 0 };
-static const unichar_t str_f964[] = { 0x78fb, 0 };
-static const unichar_t str_f965[] = { 0x4fbf, 0 };
-static const unichar_t str_f966[] = { 0x5fa9, 0 };
-static const unichar_t str_f967[] = { 0x4e0d, 0 };
-static const unichar_t str_f968[] = { 0x6ccc, 0 };
-static const unichar_t str_f969[] = { 0x6578, 0 };
-static const unichar_t str_f96a[] = { 0x7d22, 0 };
-static const unichar_t str_f96b[] = { 0x53c3, 0 };
-static const unichar_t str_f96c[] = { 0x585e, 0 };
-static const unichar_t str_f96d[] = { 0x7701, 0 };
-static const unichar_t str_f96e[] = { 0x8449, 0 };
-static const unichar_t str_f96f[] = { 0x8aaa, 0 };
-static const unichar_t str_f970[] = { 0x6bba, 0 };
-static const unichar_t str_f971[] = { 0x8fb0, 0 };
-static const unichar_t str_f972[] = { 0x6c88, 0 };
-static const unichar_t str_f973[] = { 0x62fe, 0 };
-static const unichar_t str_f974[] = { 0x82e5, 0 };
-static const unichar_t str_f975[] = { 0x63a0, 0 };
-static const unichar_t str_f976[] = { 0x7565, 0 };
-static const unichar_t str_f977[] = { 0x4eae, 0 };
-static const unichar_t str_f978[] = { 0x5169, 0 };
-static const unichar_t str_f979[] = { 0x51c9, 0 };
-static const unichar_t str_f97a[] = { 0x6881, 0 };
-static const unichar_t str_f97b[] = { 0x7ce7, 0 };
-static const unichar_t str_f97c[] = { 0x826f, 0 };
-static const unichar_t str_f97d[] = { 0x8ad2, 0 };
-static const unichar_t str_f97e[] = { 0x91cf, 0 };
-static const unichar_t str_f97f[] = { 0x52f5, 0 };
-static const unichar_t str_f980[] = { 0x5442, 0 };
-static const unichar_t str_f981[] = { 0x5973, 0 };
-static const unichar_t str_f982[] = { 0x5eec, 0 };
-static const unichar_t str_f983[] = { 0x65c5, 0 };
-static const unichar_t str_f984[] = { 0x6ffe, 0 };
-static const unichar_t str_f985[] = { 0x792a, 0 };
-static const unichar_t str_f986[] = { 0x95ad, 0 };
-static const unichar_t str_f987[] = { 0x9a6a, 0 };
-static const unichar_t str_f988[] = { 0x9e97, 0 };
-static const unichar_t str_f989[] = { 0x9ece, 0 };
-static const unichar_t str_f98a[] = { 0x529b, 0 };
-static const unichar_t str_f98b[] = { 0x66c6, 0 };
-static const unichar_t str_f98c[] = { 0x6b77, 0 };
-static const unichar_t str_f98d[] = { 0x8f62, 0 };
-static const unichar_t str_f98e[] = { 0x5e74, 0 };
-static const unichar_t str_f98f[] = { 0x6190, 0 };
-static const unichar_t str_f990[] = { 0x6200, 0 };
-static const unichar_t str_f991[] = { 0x649a, 0 };
-static const unichar_t str_f992[] = { 0x6f23, 0 };
-static const unichar_t str_f993[] = { 0x7149, 0 };
-static const unichar_t str_f994[] = { 0x7489, 0 };
-static const unichar_t str_f995[] = { 0x79ca, 0 };
-static const unichar_t str_f996[] = { 0x7df4, 0 };
-static const unichar_t str_f997[] = { 0x806f, 0 };
-static const unichar_t str_f998[] = { 0x8f26, 0 };
-static const unichar_t str_f999[] = { 0x84ee, 0 };
-static const unichar_t str_f99a[] = { 0x9023, 0 };
-static const unichar_t str_f99b[] = { 0x934a, 0 };
-static const unichar_t str_f99c[] = { 0x5217, 0 };
-static const unichar_t str_f99d[] = { 0x52a3, 0 };
-static const unichar_t str_f99e[] = { 0x54bd, 0 };
-static const unichar_t str_f99f[] = { 0x70c8, 0 };
-static const unichar_t str_f9a0[] = { 0x88c2, 0 };
-static const unichar_t str_f9a1[] = { 0x8aaa, 0 };
-static const unichar_t str_f9a2[] = { 0x5ec9, 0 };
-static const unichar_t str_f9a3[] = { 0x5ff5, 0 };
-static const unichar_t str_f9a4[] = { 0x637b, 0 };
-static const unichar_t str_f9a5[] = { 0x6bae, 0 };
-static const unichar_t str_f9a6[] = { 0x7c3e, 0 };
-static const unichar_t str_f9a7[] = { 0x7375, 0 };
-static const unichar_t str_f9a8[] = { 0x4ee4, 0 };
-static const unichar_t str_f9a9[] = { 0x56f9, 0 };
-static const unichar_t str_f9aa[] = { 0x5be7, 0 };
-static const unichar_t str_f9ab[] = { 0x5dba, 0 };
-static const unichar_t str_f9ac[] = { 0x601c, 0 };
-static const unichar_t str_f9ad[] = { 0x73b2, 0 };
-static const unichar_t str_f9ae[] = { 0x7469, 0 };
-static const unichar_t str_f9af[] = { 0x7f9a, 0 };
-static const unichar_t str_f9b0[] = { 0x8046, 0 };
-static const unichar_t str_f9b1[] = { 0x9234, 0 };
-static const unichar_t str_f9b2[] = { 0x96f6, 0 };
-static const unichar_t str_f9b3[] = { 0x9748, 0 };
-static const unichar_t str_f9b4[] = { 0x9818, 0 };
-static const unichar_t str_f9b5[] = { 0x4f8b, 0 };
-static const unichar_t str_f9b6[] = { 0x79ae, 0 };
-static const unichar_t str_f9b7[] = { 0x91b4, 0 };
-static const unichar_t str_f9b8[] = { 0x96b8, 0 };
-static const unichar_t str_f9b9[] = { 0x60e1, 0 };
-static const unichar_t str_f9ba[] = { 0x4e86, 0 };
-static const unichar_t str_f9bb[] = { 0x50da, 0 };
-static const unichar_t str_f9bc[] = { 0x5bee, 0 };
-static const unichar_t str_f9bd[] = { 0x5c3f, 0 };
-static const unichar_t str_f9be[] = { 0x6599, 0 };
-static const unichar_t str_f9bf[] = { 0x6a02, 0 };
-static const unichar_t str_f9c0[] = { 0x71ce, 0 };
-static const unichar_t str_f9c1[] = { 0x7642, 0 };
-static const unichar_t str_f9c2[] = { 0x84fc, 0 };
-static const unichar_t str_f9c3[] = { 0x907c, 0 };
-static const unichar_t str_f9c4[] = { 0x9f8d, 0 };
-static const unichar_t str_f9c5[] = { 0x6688, 0 };
-static const unichar_t str_f9c6[] = { 0x962e, 0 };
-static const unichar_t str_f9c7[] = { 0x5289, 0 };
-static const unichar_t str_f9c8[] = { 0x677b, 0 };
-static const unichar_t str_f9c9[] = { 0x67f3, 0 };
-static const unichar_t str_f9ca[] = { 0x6d41, 0 };
-static const unichar_t str_f9cb[] = { 0x6e9c, 0 };
-static const unichar_t str_f9cc[] = { 0x7409, 0 };
-static const unichar_t str_f9cd[] = { 0x7559, 0 };
-static const unichar_t str_f9ce[] = { 0x786b, 0 };
-static const unichar_t str_f9cf[] = { 0x7d10, 0 };
-static const unichar_t str_f9d0[] = { 0x985e, 0 };
-static const unichar_t str_f9d1[] = { 0x516d, 0 };
-static const unichar_t str_f9d2[] = { 0x622e, 0 };
-static const unichar_t str_f9d3[] = { 0x9678, 0 };
-static const unichar_t str_f9d4[] = { 0x502b, 0 };
-static const unichar_t str_f9d5[] = { 0x5d19, 0 };
-static const unichar_t str_f9d6[] = { 0x6dea, 0 };
-static const unichar_t str_f9d7[] = { 0x8f2a, 0 };
-static const unichar_t str_f9d8[] = { 0x5f8b, 0 };
-static const unichar_t str_f9d9[] = { 0x6144, 0 };
-static const unichar_t str_f9da[] = { 0x6817, 0 };
-static const unichar_t str_f9db[] = { 0x7387, 0 };
-static const unichar_t str_f9dc[] = { 0x9686, 0 };
-static const unichar_t str_f9dd[] = { 0x5229, 0 };
-static const unichar_t str_f9de[] = { 0x540f, 0 };
-static const unichar_t str_f9df[] = { 0x5c65, 0 };
-static const unichar_t str_f9e0[] = { 0x6613, 0 };
-static const unichar_t str_f9e1[] = { 0x674e, 0 };
-static const unichar_t str_f9e2[] = { 0x68a8, 0 };
-static const unichar_t str_f9e3[] = { 0x6ce5, 0 };
-static const unichar_t str_f9e4[] = { 0x7406, 0 };
-static const unichar_t str_f9e5[] = { 0x75e2, 0 };
-static const unichar_t str_f9e6[] = { 0x7f79, 0 };
-static const unichar_t str_f9e7[] = { 0x88cf, 0 };
-static const unichar_t str_f9e8[] = { 0x88e1, 0 };
-static const unichar_t str_f9e9[] = { 0x91cc, 0 };
-static const unichar_t str_f9ea[] = { 0x96e2, 0 };
-static const unichar_t str_f9eb[] = { 0x533f, 0 };
-static const unichar_t str_f9ec[] = { 0x6eba, 0 };
-static const unichar_t str_f9ed[] = { 0x541d, 0 };
-static const unichar_t str_f9ee[] = { 0x71d0, 0 };
-static const unichar_t str_f9ef[] = { 0x7498, 0 };
-static const unichar_t str_f9f0[] = { 0x85fa, 0 };
-static const unichar_t str_f9f1[] = { 0x96a3, 0 };
-static const unichar_t str_f9f2[] = { 0x9c57, 0 };
-static const unichar_t str_f9f3[] = { 0x9e9f, 0 };
-static const unichar_t str_f9f4[] = { 0x6797, 0 };
-static const unichar_t str_f9f5[] = { 0x6dcb, 0 };
-static const unichar_t str_f9f6[] = { 0x81e8, 0 };
-static const unichar_t str_f9f7[] = { 0x7acb, 0 };
-static const unichar_t str_f9f8[] = { 0x7b20, 0 };
-static const unichar_t str_f9f9[] = { 0x7c92, 0 };
-static const unichar_t str_f9fa[] = { 0x72c0, 0 };
-static const unichar_t str_f9fb[] = { 0x7099, 0 };
-static const unichar_t str_f9fc[] = { 0x8b58, 0 };
-static const unichar_t str_f9fd[] = { 0x4ec0, 0 };
-static const unichar_t str_f9fe[] = { 0x8336, 0 };
-static const unichar_t str_f9ff[] = { 0x523a, 0 };
-static const unichar_t str_fa00[] = { 0x5207, 0 };
-static const unichar_t str_fa01[] = { 0x5ea6, 0 };
-static const unichar_t str_fa02[] = { 0x62d3, 0 };
-static const unichar_t str_fa03[] = { 0x7cd6, 0 };
-static const unichar_t str_fa04[] = { 0x5b85, 0 };
-static const unichar_t str_fa05[] = { 0x6d1e, 0 };
-static const unichar_t str_fa06[] = { 0x66b4, 0 };
-static const unichar_t str_fa07[] = { 0x8f3b, 0 };
-static const unichar_t str_fa08[] = { 0x884c, 0 };
-static const unichar_t str_fa09[] = { 0x964d, 0 };
-static const unichar_t str_fa0a[] = { 0x898b, 0 };
-static const unichar_t str_fa0b[] = { 0x5ed3, 0 };
-static const unichar_t str_fa0c[] = { 0x5140, 0 };
-static const unichar_t str_fa0d[] = { 0x55c0, 0 };
-static const unichar_t str_fa10[] = { 0x585a, 0 };
-static const unichar_t str_fa12[] = { 0x6674, 0 };
-static const unichar_t str_fa15[] = { 0x51de, 0 };
-static const unichar_t str_fa16[] = { 0x732a, 0 };
-static const unichar_t str_fa17[] = { 0x76ca, 0 };
-static const unichar_t str_fa18[] = { 0x793c, 0 };
-static const unichar_t str_fa19[] = { 0x795e, 0 };
-static const unichar_t str_fa1a[] = { 0x7965, 0 };
-static const unichar_t str_fa1b[] = { 0x798f, 0 };
-static const unichar_t str_fa1c[] = { 0x9756, 0 };
-static const unichar_t str_fa1d[] = { 0x7cbe, 0 };
-static const unichar_t str_fa1e[] = { 0x7fbd, 0 };
-static const unichar_t str_fa20[] = { 0x8612, 0 };
-static const unichar_t str_fa22[] = { 0x8af8, 0 };
-static const unichar_t str_fa25[] = { 0x9038, 0 };
-static const unichar_t str_fa26[] = { 0x90fd, 0 };
-static const unichar_t str_fa2a[] = { 0x98ef, 0 };
-static const unichar_t str_fa2b[] = { 0x98fc, 0 };
-static const unichar_t str_fa2c[] = { 0x9928, 0 };
-static const unichar_t str_fa2d[] = { 0x9db4, 0 };
-static const unichar_t str_fa2e[] = { 0x90de, 0 };
-static const unichar_t str_fa2f[] = { 0x96b7, 0 };
-static const unichar_t str_fa30[] = { 0x4fae, 0 };
-static const unichar_t str_fa31[] = { 0x50e7, 0 };
-static const unichar_t str_fa32[] = { 0x514d, 0 };
-static const unichar_t str_fa33[] = { 0x52c9, 0 };
-static const unichar_t str_fa34[] = { 0x52e4, 0 };
-static const unichar_t str_fa35[] = { 0x5351, 0 };
-static const unichar_t str_fa36[] = { 0x559d, 0 };
-static const unichar_t str_fa37[] = { 0x5606, 0 };
-static const unichar_t str_fa38[] = { 0x5668, 0 };
-static const unichar_t str_fa39[] = { 0x5840, 0 };
-static const unichar_t str_fa3a[] = { 0x58a8, 0 };
-static const unichar_t str_fa3b[] = { 0x5c64, 0 };
-static const unichar_t str_fa3c[] = { 0x5c6e, 0 };
-static const unichar_t str_fa3d[] = { 0x6094, 0 };
-static const unichar_t str_fa3e[] = { 0x6168, 0 };
-static const unichar_t str_fa3f[] = { 0x618e, 0 };
-static const unichar_t str_fa40[] = { 0x61f2, 0 };
-static const unichar_t str_fa41[] = { 0x654f, 0 };
-static const unichar_t str_fa42[] = { 0x65e2, 0 };
-static const unichar_t str_fa43[] = { 0x6691, 0 };
-static const unichar_t str_fa44[] = { 0x6885, 0 };
-static const unichar_t str_fa45[] = { 0x6d77, 0 };
-static const unichar_t str_fa46[] = { 0x6e1a, 0 };
-static const unichar_t str_fa47[] = { 0x6f22, 0 };
-static const unichar_t str_fa48[] = { 0x716e, 0 };
-static const unichar_t str_fa49[] = { 0x722b, 0 };
-static const unichar_t str_fa4a[] = { 0x7422, 0 };
-static const unichar_t str_fa4b[] = { 0x7891, 0 };
-static const unichar_t str_fa4c[] = { 0x793e, 0 };
-static const unichar_t str_fa4d[] = { 0x7949, 0 };
-static const unichar_t str_fa4e[] = { 0x7948, 0 };
-static const unichar_t str_fa4f[] = { 0x7950, 0 };
-static const unichar_t str_fa50[] = { 0x7956, 0 };
-static const unichar_t str_fa51[] = { 0x795d, 0 };
-static const unichar_t str_fa52[] = { 0x798d, 0 };
-static const unichar_t str_fa53[] = { 0x798e, 0 };
-static const unichar_t str_fa54[] = { 0x7a40, 0 };
-static const unichar_t str_fa55[] = { 0x7a81, 0 };
-static const unichar_t str_fa56[] = { 0x7bc0, 0 };
-static const unichar_t str_fa57[] = { 0x7df4, 0 };
-static const unichar_t str_fa58[] = { 0x7e09, 0 };
-static const unichar_t str_fa59[] = { 0x7e41, 0 };
-static const unichar_t str_fa5a[] = { 0x7f72, 0 };
-static const unichar_t str_fa5b[] = { 0x8005, 0 };
-static const unichar_t str_fa5c[] = { 0x81ed, 0 };
-static const unichar_t str_fa5d[] = { 0x8279, 0 };
-static const unichar_t str_fa5e[] = { 0x8279, 0 };
-static const unichar_t str_fa5f[] = { 0x8457, 0 };
-static const unichar_t str_fa60[] = { 0x8910, 0 };
-static const unichar_t str_fa61[] = { 0x8996, 0 };
-static const unichar_t str_fa62[] = { 0x8b01, 0 };
-static const unichar_t str_fa63[] = { 0x8b39, 0 };
-static const unichar_t str_fa64[] = { 0x8cd3, 0 };
-static const unichar_t str_fa65[] = { 0x8d08, 0 };
-static const unichar_t str_fa66[] = { 0x8fb6, 0 };
-static const unichar_t str_fa67[] = { 0x9038, 0 };
-static const unichar_t str_fa68[] = { 0x96e3, 0 };
-static const unichar_t str_fa69[] = { 0x97ff, 0 };
-static const unichar_t str_fa6a[] = { 0x983b, 0 };
-static const unichar_t str_fa6b[] = { 0x6075, 0 };
-static const unichar_t str_fa6c[] = { 0x242ee, 0 };
-static const unichar_t str_fa6d[] = { 0x8218, 0 };
-static const unichar_t str_fa70[] = { 0x4e26, 0 };
-static const unichar_t str_fa71[] = { 0x51b5, 0 };
-static const unichar_t str_fa72[] = { 0x5168, 0 };
-static const unichar_t str_fa73[] = { 0x4f80, 0 };
-static const unichar_t str_fa74[] = { 0x5145, 0 };
-static const unichar_t str_fa75[] = { 0x5180, 0 };
-static const unichar_t str_fa76[] = { 0x52c7, 0 };
-static const unichar_t str_fa77[] = { 0x52fa, 0 };
-static const unichar_t str_fa78[] = { 0x559d, 0 };
-static const unichar_t str_fa79[] = { 0x5555, 0 };
-static const unichar_t str_fa7a[] = { 0x5599, 0 };
-static const unichar_t str_fa7b[] = { 0x55e2, 0 };
-static const unichar_t str_fa7c[] = { 0x585a, 0 };
-static const unichar_t str_fa7d[] = { 0x58b3, 0 };
-static const unichar_t str_fa7e[] = { 0x5944, 0 };
-static const unichar_t str_fa7f[] = { 0x5954, 0 };
-static const unichar_t str_fa80[] = { 0x5a62, 0 };
-static const unichar_t str_fa81[] = { 0x5b28, 0 };
-static const unichar_t str_fa82[] = { 0x5ed2, 0 };
-static const unichar_t str_fa83[] = { 0x5ed9, 0 };
-static const unichar_t str_fa84[] = { 0x5f69, 0 };
-static const unichar_t str_fa85[] = { 0x5fad, 0 };
-static const unichar_t str_fa86[] = { 0x60d8, 0 };
-static const unichar_t str_fa87[] = { 0x614e, 0 };
-static const unichar_t str_fa88[] = { 0x6108, 0 };
-static const unichar_t str_fa89[] = { 0x618e, 0 };
-static const unichar_t str_fa8a[] = { 0x6160, 0 };
-static const unichar_t str_fa8b[] = { 0x61f2, 0 };
-static const unichar_t str_fa8c[] = { 0x6234, 0 };
-static const unichar_t str_fa8d[] = { 0x63c4, 0 };
-static const unichar_t str_fa8e[] = { 0x641c, 0 };
-static const unichar_t str_fa8f[] = { 0x6452, 0 };
-static const unichar_t str_fa90[] = { 0x6556, 0 };
-static const unichar_t str_fa91[] = { 0x6674, 0 };
-static const unichar_t str_fa92[] = { 0x6717, 0 };
-static const unichar_t str_fa93[] = { 0x671b, 0 };
-static const unichar_t str_fa94[] = { 0x6756, 0 };
-static const unichar_t str_fa95[] = { 0x6b79, 0 };
-static const unichar_t str_fa96[] = { 0x6bba, 0 };
-static const unichar_t str_fa97[] = { 0x6d41, 0 };
-static const unichar_t str_fa98[] = { 0x6edb, 0 };
-static const unichar_t str_fa99[] = { 0x6ecb, 0 };
-static const unichar_t str_fa9a[] = { 0x6f22, 0 };
-static const unichar_t str_fa9b[] = { 0x701e, 0 };
-static const unichar_t str_fa9c[] = { 0x716e, 0 };
-static const unichar_t str_fa9d[] = { 0x77a7, 0 };
-static const unichar_t str_fa9e[] = { 0x7235, 0 };
-static const unichar_t str_fa9f[] = { 0x72af, 0 };
-static const unichar_t str_faa0[] = { 0x732a, 0 };
-static const unichar_t str_faa1[] = { 0x7471, 0 };
-static const unichar_t str_faa2[] = { 0x7506, 0 };
-static const unichar_t str_faa3[] = { 0x753b, 0 };
-static const unichar_t str_faa4[] = { 0x761d, 0 };
-static const unichar_t str_faa5[] = { 0x761f, 0 };
-static const unichar_t str_faa6[] = { 0x76ca, 0 };
-static const unichar_t str_faa7[] = { 0x76db, 0 };
-static const unichar_t str_faa8[] = { 0x76f4, 0 };
-static const unichar_t str_faa9[] = { 0x774a, 0 };
-static const unichar_t str_faaa[] = { 0x7740, 0 };
-static const unichar_t str_faab[] = { 0x78cc, 0 };
-static const unichar_t str_faac[] = { 0x7ab1, 0 };
-static const unichar_t str_faad[] = { 0x7bc0, 0 };
-static const unichar_t str_faae[] = { 0x7c7b, 0 };
-static const unichar_t str_faaf[] = { 0x7d5b, 0 };
-static const unichar_t str_fab0[] = { 0x7df4, 0 };
-static const unichar_t str_fab1[] = { 0x7f3e, 0 };
-static const unichar_t str_fab2[] = { 0x8005, 0 };
-static const unichar_t str_fab3[] = { 0x8352, 0 };
-static const unichar_t str_fab4[] = { 0x83ef, 0 };
-static const unichar_t str_fab5[] = { 0x8779, 0 };
-static const unichar_t str_fab6[] = { 0x8941, 0 };
-static const unichar_t str_fab7[] = { 0x8986, 0 };
-static const unichar_t str_fab8[] = { 0x8996, 0 };
-static const unichar_t str_fab9[] = { 0x8abf, 0 };
-static const unichar_t str_faba[] = { 0x8af8, 0 };
-static const unichar_t str_fabb[] = { 0x8acb, 0 };
-static const unichar_t str_fabc[] = { 0x8b01, 0 };
-static const unichar_t str_fabd[] = { 0x8afe, 0 };
-static const unichar_t str_fabe[] = { 0x8aed, 0 };
-static const unichar_t str_fabf[] = { 0x8b39, 0 };
-static const unichar_t str_fac0[] = { 0x8b8a, 0 };
-static const unichar_t str_fac1[] = { 0x8d08, 0 };
-static const unichar_t str_fac2[] = { 0x8f38, 0 };
-static const unichar_t str_fac3[] = { 0x9072, 0 };
-static const unichar_t str_fac4[] = { 0x9199, 0 };
-static const unichar_t str_fac5[] = { 0x9276, 0 };
-static const unichar_t str_fac6[] = { 0x967c, 0 };
-static const unichar_t str_fac7[] = { 0x96e3, 0 };
-static const unichar_t str_fac8[] = { 0x9756, 0 };
-static const unichar_t str_fac9[] = { 0x97db, 0 };
-static const unichar_t str_faca[] = { 0x97ff, 0 };
-static const unichar_t str_facb[] = { 0x980b, 0 };
-static const unichar_t str_facc[] = { 0x983b, 0 };
-static const unichar_t str_facd[] = { 0x9b12, 0 };
-static const unichar_t str_face[] = { 0x9f9c, 0 };
-static const unichar_t str_facf[] = { 0x2284a, 0 };
-static const unichar_t str_fad0[] = { 0x22844, 0 };
-static const unichar_t str_fad1[] = { 0x233d5, 0 };
-static const unichar_t str_fad2[] = { 0x3b9d, 0 };
-static const unichar_t str_fad3[] = { 0x4018, 0 };
-static const unichar_t str_fad4[] = { 0x4039, 0 };
-static const unichar_t str_fad5[] = { 0x25249, 0 };
-static const unichar_t str_fad6[] = { 0x25cd0, 0 };
-static const unichar_t str_fad7[] = { 0x27ed3, 0 };
-static const unichar_t str_fad8[] = { 0x9f43, 0 };
-static const unichar_t str_fad9[] = { 0x9f8e, 0 };
-static const unichar_t str_fb00[] = { 0x0066, 0x0066, 0 };
-static const unichar_t str_fb01[] = { 0x0066, 0x0069, 0 };
-static const unichar_t str_fb02[] = { 0x0066, 0x006c, 0 };
-static const unichar_t str_fb03[] = { 0x0066, 0x0066, 0x0069, 0 };
-static const unichar_t str_fb04[] = { 0x0066, 0x0066, 0x006c, 0 };
-static const unichar_t str_fb05[] = { 0x017f, 0x0074, 0 };
-static const unichar_t str_fb06[] = { 0x0073, 0x0074, 0 };
-static const unichar_t str_fb13[] = { 0x0574, 0x0576, 0 };
-static const unichar_t str_fb14[] = { 0x0574, 0x0565, 0 };
-static const unichar_t str_fb15[] = { 0x0574, 0x056b, 0 };
-static const unichar_t str_fb16[] = { 0x057e, 0x0576, 0 };
-static const unichar_t str_fb17[] = { 0x0574, 0x056d, 0 };
-static const unichar_t str_fb1d[] = { 0x05d9, 0x05b4, 0 };
-static const unichar_t str_fb1f[] = { 0x05f2, 0x05b7, 0 };
-static const unichar_t str_fb20[] = { 0x05e2, 0 };
-static const unichar_t str_fb21[] = { 0x05d0, 0 };
-static const unichar_t str_fb22[] = { 0x05d3, 0 };
-static const unichar_t str_fb23[] = { 0x05d4, 0 };
-static const unichar_t str_fb24[] = { 0x05db, 0 };
-static const unichar_t str_fb25[] = { 0x05dc, 0 };
-static const unichar_t str_fb26[] = { 0x05dd, 0 };
-static const unichar_t str_fb27[] = { 0x05e8, 0 };
-static const unichar_t str_fb28[] = { 0x05ea, 0 };
-static const unichar_t str_fb29[] = { 0x002b, 0 };
-static const unichar_t str_fb2a[] = { 0x05e9, 0x05c1, 0 };
-static const unichar_t str_fb2b[] = { 0x05e9, 0x05c2, 0 };
-static const unichar_t str_fb2c[] = { 0xfb49, 0x05c1, 0 };
-static const unichar_t str_fb2d[] = { 0xfb49, 0x05c2, 0 };
-static const unichar_t str_fb2e[] = { 0x05d0, 0x05b7, 0 };
-static const unichar_t str_fb2f[] = { 0x05d0, 0x05b8, 0 };
-static const unichar_t str_fb30[] = { 0x05d0, 0x05bc, 0 };
-static const unichar_t str_fb31[] = { 0x05d1, 0x05bc, 0 };
-static const unichar_t str_fb32[] = { 0x05d2, 0x05bc, 0 };
-static const unichar_t str_fb33[] = { 0x05d3, 0x05bc, 0 };
-static const unichar_t str_fb34[] = { 0x05d4, 0x05bc, 0 };
-static const unichar_t str_fb35[] = { 0x05d5, 0x05bc, 0 };
-static const unichar_t str_fb36[] = { 0x05d6, 0x05bc, 0 };
-static const unichar_t str_fb38[] = { 0x05d8, 0x05bc, 0 };
-static const unichar_t str_fb39[] = { 0x05d9, 0x05bc, 0 };
-static const unichar_t str_fb3a[] = { 0x05da, 0x05bc, 0 };
-static const unichar_t str_fb3b[] = { 0x05db, 0x05bc, 0 };
-static const unichar_t str_fb3c[] = { 0x05dc, 0x05bc, 0 };
-static const unichar_t str_fb3e[] = { 0x05de, 0x05bc, 0 };
-static const unichar_t str_fb40[] = { 0x05e0, 0x05bc, 0 };
-static const unichar_t str_fb41[] = { 0x05e1, 0x05bc, 0 };
-static const unichar_t str_fb43[] = { 0x05e3, 0x05bc, 0 };
-static const unichar_t str_fb44[] = { 0x05e4, 0x05bc, 0 };
-static const unichar_t str_fb46[] = { 0x05e6, 0x05bc, 0 };
-static const unichar_t str_fb47[] = { 0x05e7, 0x05bc, 0 };
-static const unichar_t str_fb48[] = { 0x05e8, 0x05bc, 0 };
-static const unichar_t str_fb49[] = { 0x05e9, 0x05bc, 0 };
-static const unichar_t str_fb4a[] = { 0x05ea, 0x05bc, 0 };
-static const unichar_t str_fb4b[] = { 0x05d5, 0x05b9, 0 };
-static const unichar_t str_fb4c[] = { 0x05d1, 0x05bf, 0 };
-static const unichar_t str_fb4d[] = { 0x05db, 0x05bf, 0 };
-static const unichar_t str_fb4e[] = { 0x05e4, 0x05bf, 0 };
-static const unichar_t str_fb4f[] = { 0x05d0, 0x05dc, 0 };
-static const unichar_t str_fb50[] = { 0x0671, 0 };
-static const unichar_t str_fb51[] = { 0x0671, 0 };
-static const unichar_t str_fb52[] = { 0x067b, 0 };
-static const unichar_t str_fb53[] = { 0x067b, 0 };
-static const unichar_t str_fb54[] = { 0x067b, 0 };
-static const unichar_t str_fb55[] = { 0x067b, 0 };
-static const unichar_t str_fb56[] = { 0x067e, 0 };
-static const unichar_t str_fb57[] = { 0x067e, 0 };
-static const unichar_t str_fb58[] = { 0x067e, 0 };
-static const unichar_t str_fb59[] = { 0x067e, 0 };
-static const unichar_t str_fb5a[] = { 0x0680, 0 };
-static const unichar_t str_fb5b[] = { 0x0680, 0 };
-static const unichar_t str_fb5c[] = { 0x0680, 0 };
-static const unichar_t str_fb5d[] = { 0x0680, 0 };
-static const unichar_t str_fb5e[] = { 0x067a, 0 };
-static const unichar_t str_fb5f[] = { 0x067a, 0 };
-static const unichar_t str_fb60[] = { 0x067a, 0 };
-static const unichar_t str_fb61[] = { 0x067a, 0 };
-static const unichar_t str_fb62[] = { 0x067f, 0 };
-static const unichar_t str_fb63[] = { 0x067f, 0 };
-static const unichar_t str_fb64[] = { 0x067f, 0 };
-static const unichar_t str_fb65[] = { 0x067f, 0 };
-static const unichar_t str_fb66[] = { 0x0679, 0 };
-static const unichar_t str_fb67[] = { 0x0679, 0 };
-static const unichar_t str_fb68[] = { 0x0679, 0 };
-static const unichar_t str_fb69[] = { 0x0679, 0 };
-static const unichar_t str_fb6a[] = { 0x06a4, 0 };
-static const unichar_t str_fb6b[] = { 0x06a4, 0 };
-static const unichar_t str_fb6c[] = { 0x06a4, 0 };
-static const unichar_t str_fb6d[] = { 0x06a4, 0 };
-static const unichar_t str_fb6e[] = { 0x06a6, 0 };
-static const unichar_t str_fb6f[] = { 0x06a6, 0 };
-static const unichar_t str_fb70[] = { 0x06a6, 0 };
-static const unichar_t str_fb71[] = { 0x06a6, 0 };
-static const unichar_t str_fb72[] = { 0x0684, 0 };
-static const unichar_t str_fb73[] = { 0x0684, 0 };
-static const unichar_t str_fb74[] = { 0x0684, 0 };
-static const unichar_t str_fb75[] = { 0x0684, 0 };
-static const unichar_t str_fb76[] = { 0x0683, 0 };
-static const unichar_t str_fb77[] = { 0x0683, 0 };
-static const unichar_t str_fb78[] = { 0x0683, 0 };
-static const unichar_t str_fb79[] = { 0x0683, 0 };
-static const unichar_t str_fb7a[] = { 0x0686, 0 };
-static const unichar_t str_fb7b[] = { 0x0686, 0 };
-static const unichar_t str_fb7c[] = { 0x0686, 0 };
-static const unichar_t str_fb7d[] = { 0x0686, 0 };
-static const unichar_t str_fb7e[] = { 0x0687, 0 };
-static const unichar_t str_fb7f[] = { 0x0687, 0 };
-static const unichar_t str_fb80[] = { 0x0687, 0 };
-static const unichar_t str_fb81[] = { 0x0687, 0 };
-static const unichar_t str_fb82[] = { 0x068d, 0 };
-static const unichar_t str_fb83[] = { 0x068d, 0 };
-static const unichar_t str_fb84[] = { 0x068c, 0 };
-static const unichar_t str_fb85[] = { 0x068c, 0 };
-static const unichar_t str_fb86[] = { 0x068e, 0 };
-static const unichar_t str_fb87[] = { 0x068e, 0 };
-static const unichar_t str_fb88[] = { 0x0688, 0 };
-static const unichar_t str_fb89[] = { 0x0688, 0 };
-static const unichar_t str_fb8a[] = { 0x0698, 0 };
-static const unichar_t str_fb8b[] = { 0x0698, 0 };
-static const unichar_t str_fb8c[] = { 0x0691, 0 };
-static const unichar_t str_fb8d[] = { 0x0691, 0 };
-static const unichar_t str_fb8e[] = { 0x06a9, 0 };
-static const unichar_t str_fb8f[] = { 0x06a9, 0 };
-static const unichar_t str_fb90[] = { 0x06a9, 0 };
-static const unichar_t str_fb91[] = { 0x06a9, 0 };
-static const unichar_t str_fb92[] = { 0x06af, 0 };
-static const unichar_t str_fb93[] = { 0x06af, 0 };
-static const unichar_t str_fb94[] = { 0x06af, 0 };
-static const unichar_t str_fb95[] = { 0x06af, 0 };
-static const unichar_t str_fb96[] = { 0x06b3, 0 };
-static const unichar_t str_fb97[] = { 0x06b3, 0 };
-static const unichar_t str_fb98[] = { 0x06b3, 0 };
-static const unichar_t str_fb99[] = { 0x06b3, 0 };
-static const unichar_t str_fb9a[] = { 0x06b1, 0 };
-static const unichar_t str_fb9b[] = { 0x06b1, 0 };
-static const unichar_t str_fb9c[] = { 0x06b1, 0 };
-static const unichar_t str_fb9d[] = { 0x06b1, 0 };
-static const unichar_t str_fb9e[] = { 0x06ba, 0 };
-static const unichar_t str_fb9f[] = { 0x06ba, 0 };
-static const unichar_t str_fba0[] = { 0x06bb, 0 };
-static const unichar_t str_fba1[] = { 0x06bb, 0 };
-static const unichar_t str_fba2[] = { 0x06bb, 0 };
-static const unichar_t str_fba3[] = { 0x06bb, 0 };
-static const unichar_t str_fba4[] = { 0x06c0, 0 };
-static const unichar_t str_fba5[] = { 0x06c0, 0 };
-static const unichar_t str_fba6[] = { 0x06c1, 0 };
-static const unichar_t str_fba7[] = { 0x06c1, 0 };
-static const unichar_t str_fba8[] = { 0x06c1, 0 };
-static const unichar_t str_fba9[] = { 0x06c1, 0 };
-static const unichar_t str_fbaa[] = { 0x06be, 0 };
-static const unichar_t str_fbab[] = { 0x06be, 0 };
-static const unichar_t str_fbac[] = { 0x06be, 0 };
-static const unichar_t str_fbad[] = { 0x06be, 0 };
-static const unichar_t str_fbae[] = { 0x06d2, 0 };
-static const unichar_t str_fbaf[] = { 0x06d2, 0 };
-static const unichar_t str_fbb0[] = { 0x06d3, 0 };
-static const unichar_t str_fbb1[] = { 0x06d3, 0 };
-static const unichar_t str_fbd3[] = { 0x06ad, 0 };
-static const unichar_t str_fbd4[] = { 0x06ad, 0 };
-static const unichar_t str_fbd5[] = { 0x06ad, 0 };
-static const unichar_t str_fbd6[] = { 0x06ad, 0 };
-static const unichar_t str_fbd7[] = { 0x06c7, 0 };
-static const unichar_t str_fbd8[] = { 0x06c7, 0 };
-static const unichar_t str_fbd9[] = { 0x06c6, 0 };
-static const unichar_t str_fbda[] = { 0x06c6, 0 };
-static const unichar_t str_fbdb[] = { 0x06c8, 0 };
-static const unichar_t str_fbdc[] = { 0x06c8, 0 };
-static const unichar_t str_fbdd[] = { 0x0677, 0 };
-static const unichar_t str_fbde[] = { 0x06cb, 0 };
-static const unichar_t str_fbdf[] = { 0x06cb, 0 };
-static const unichar_t str_fbe0[] = { 0x06c5, 0 };
-static const unichar_t str_fbe1[] = { 0x06c5, 0 };
-static const unichar_t str_fbe2[] = { 0x06c9, 0 };
-static const unichar_t str_fbe3[] = { 0x06c9, 0 };
-static const unichar_t str_fbe4[] = { 0x06d0, 0 };
-static const unichar_t str_fbe5[] = { 0x06d0, 0 };
-static const unichar_t str_fbe6[] = { 0x06d0, 0 };
-static const unichar_t str_fbe7[] = { 0x06d0, 0 };
-static const unichar_t str_fbe8[] = { 0x0649, 0 };
-static const unichar_t str_fbe9[] = { 0x0649, 0 };
-static const unichar_t str_fbea[] = { 0x0626, 0x0627, 0 };
-static const unichar_t str_fbeb[] = { 0x0626, 0x0627, 0 };
-static const unichar_t str_fbec[] = { 0x0626, 0x06d5, 0 };
-static const unichar_t str_fbed[] = { 0x0626, 0x06d5, 0 };
-static const unichar_t str_fbee[] = { 0x0626, 0x0648, 0 };
-static const unichar_t str_fbef[] = { 0x0626, 0x0648, 0 };
-static const unichar_t str_fbf0[] = { 0x0626, 0x06c7, 0 };
-static const unichar_t str_fbf1[] = { 0x0626, 0x06c7, 0 };
-static const unichar_t str_fbf2[] = { 0x0626, 0x06c6, 0 };
-static const unichar_t str_fbf3[] = { 0x0626, 0x06c6, 0 };
-static const unichar_t str_fbf4[] = { 0x0626, 0x06c8, 0 };
-static const unichar_t str_fbf5[] = { 0x0626, 0x06c8, 0 };
-static const unichar_t str_fbf6[] = { 0x0626, 0x06d0, 0 };
-static const unichar_t str_fbf7[] = { 0x0626, 0x06d0, 0 };
-static const unichar_t str_fbf8[] = { 0x0626, 0x06d0, 0 };
-static const unichar_t str_fbf9[] = { 0x0626, 0x0649, 0 };
-static const unichar_t str_fbfa[] = { 0x0626, 0x0649, 0 };
-static const unichar_t str_fbfb[] = { 0x0626, 0x0649, 0 };
-static const unichar_t str_fbfc[] = { 0x06cc, 0 };
-static const unichar_t str_fbfd[] = { 0x06cc, 0 };
-static const unichar_t str_fbfe[] = { 0x06cc, 0 };
-static const unichar_t str_fbff[] = { 0x06cc, 0 };
-static const unichar_t str_fc00[] = { 0x0626, 0x062c, 0 };
-static const unichar_t str_fc01[] = { 0x0626, 0x062d, 0 };
-static const unichar_t str_fc02[] = { 0x0626, 0x0645, 0 };
-static const unichar_t str_fc03[] = { 0x0626, 0x0649, 0 };
-static const unichar_t str_fc04[] = { 0x0626, 0x064a, 0 };
-static const unichar_t str_fc05[] = { 0x0628, 0x062c, 0 };
-static const unichar_t str_fc06[] = { 0x0628, 0x062d, 0 };
-static const unichar_t str_fc07[] = { 0x0628, 0x062e, 0 };
-static const unichar_t str_fc08[] = { 0x0628, 0x0645, 0 };
-static const unichar_t str_fc09[] = { 0x0628, 0x0649, 0 };
-static const unichar_t str_fc0a[] = { 0x0628, 0x064a, 0 };
-static const unichar_t str_fc0b[] = { 0x062a, 0x062c, 0 };
-static const unichar_t str_fc0c[] = { 0x062a, 0x062d, 0 };
-static const unichar_t str_fc0d[] = { 0x062a, 0x062e, 0 };
-static const unichar_t str_fc0e[] = { 0x062a, 0x0645, 0 };
-static const unichar_t str_fc0f[] = { 0x062a, 0x0649, 0 };
-static const unichar_t str_fc10[] = { 0x062a, 0x064a, 0 };
-static const unichar_t str_fc11[] = { 0x062b, 0x062c, 0 };
-static const unichar_t str_fc12[] = { 0x062b, 0x0645, 0 };
-static const unichar_t str_fc13[] = { 0x062b, 0x0649, 0 };
-static const unichar_t str_fc14[] = { 0x062b, 0x064a, 0 };
-static const unichar_t str_fc15[] = { 0x062c, 0x062d, 0 };
-static const unichar_t str_fc16[] = { 0x062c, 0x0645, 0 };
-static const unichar_t str_fc17[] = { 0x062d, 0x062c, 0 };
-static const unichar_t str_fc18[] = { 0x062d, 0x0645, 0 };
-static const unichar_t str_fc19[] = { 0x062e, 0x062c, 0 };
-static const unichar_t str_fc1a[] = { 0x062e, 0x062d, 0 };
-static const unichar_t str_fc1b[] = { 0x062e, 0x0645, 0 };
-static const unichar_t str_fc1c[] = { 0x0633, 0x062c, 0 };
-static const unichar_t str_fc1d[] = { 0x0633, 0x062d, 0 };
-static const unichar_t str_fc1e[] = { 0x0633, 0x062e, 0 };
-static const unichar_t str_fc1f[] = { 0x0633, 0x0645, 0 };
-static const unichar_t str_fc20[] = { 0x0635, 0x062d, 0 };
-static const unichar_t str_fc21[] = { 0x0635, 0x0645, 0 };
-static const unichar_t str_fc22[] = { 0x0636, 0x062c, 0 };
-static const unichar_t str_fc23[] = { 0x0636, 0x062d, 0 };
-static const unichar_t str_fc24[] = { 0x0636, 0x062e, 0 };
-static const unichar_t str_fc25[] = { 0x0636, 0x0645, 0 };
-static const unichar_t str_fc26[] = { 0x0637, 0x062d, 0 };
-static const unichar_t str_fc27[] = { 0x0637, 0x0645, 0 };
-static const unichar_t str_fc28[] = { 0x0638, 0x0645, 0 };
-static const unichar_t str_fc29[] = { 0x0639, 0x062c, 0 };
-static const unichar_t str_fc2a[] = { 0x0639, 0x0645, 0 };
-static const unichar_t str_fc2b[] = { 0x063a, 0x062c, 0 };
-static const unichar_t str_fc2c[] = { 0x063a, 0x0645, 0 };
-static const unichar_t str_fc2d[] = { 0x0641, 0x062c, 0 };
-static const unichar_t str_fc2e[] = { 0x0641, 0x062d, 0 };
-static const unichar_t str_fc2f[] = { 0x0641, 0x062e, 0 };
-static const unichar_t str_fc30[] = { 0x0641, 0x0645, 0 };
-static const unichar_t str_fc31[] = { 0x0641, 0x0649, 0 };
-static const unichar_t str_fc32[] = { 0x0641, 0x064a, 0 };
-static const unichar_t str_fc33[] = { 0x0642, 0x062d, 0 };
-static const unichar_t str_fc34[] = { 0x0642, 0x0645, 0 };
-static const unichar_t str_fc35[] = { 0x0642, 0x0649, 0 };
-static const unichar_t str_fc36[] = { 0x0642, 0x064a, 0 };
-static const unichar_t str_fc37[] = { 0x0643, 0x0627, 0 };
-static const unichar_t str_fc38[] = { 0x0643, 0x062c, 0 };
-static const unichar_t str_fc39[] = { 0x0643, 0x062d, 0 };
-static const unichar_t str_fc3a[] = { 0x0643, 0x062e, 0 };
-static const unichar_t str_fc3b[] = { 0x0643, 0x0644, 0 };
-static const unichar_t str_fc3c[] = { 0x0643, 0x0645, 0 };
-static const unichar_t str_fc3d[] = { 0x0643, 0x0649, 0 };
-static const unichar_t str_fc3e[] = { 0x0643, 0x064a, 0 };
-static const unichar_t str_fc3f[] = { 0x0644, 0x062c, 0 };
-static const unichar_t str_fc40[] = { 0x0644, 0x062d, 0 };
-static const unichar_t str_fc41[] = { 0x0644, 0x062e, 0 };
-static const unichar_t str_fc42[] = { 0x0644, 0x0645, 0 };
-static const unichar_t str_fc43[] = { 0x0644, 0x0649, 0 };
-static const unichar_t str_fc44[] = { 0x0644, 0x064a, 0 };
-static const unichar_t str_fc45[] = { 0x0645, 0x062c, 0 };
-static const unichar_t str_fc46[] = { 0x0645, 0x062d, 0 };
-static const unichar_t str_fc47[] = { 0x0645, 0x062e, 0 };
-static const unichar_t str_fc48[] = { 0x0645, 0x0645, 0 };
-static const unichar_t str_fc49[] = { 0x0645, 0x0649, 0 };
-static const unichar_t str_fc4a[] = { 0x0645, 0x064a, 0 };
-static const unichar_t str_fc4b[] = { 0x0646, 0x062c, 0 };
-static const unichar_t str_fc4c[] = { 0x0646, 0x062d, 0 };
-static const unichar_t str_fc4d[] = { 0x0646, 0x062e, 0 };
-static const unichar_t str_fc4e[] = { 0x0646, 0x0645, 0 };
-static const unichar_t str_fc4f[] = { 0x0646, 0x0649, 0 };
-static const unichar_t str_fc50[] = { 0x0646, 0x064a, 0 };
-static const unichar_t str_fc51[] = { 0x0647, 0x062c, 0 };
-static const unichar_t str_fc52[] = { 0x0647, 0x0645, 0 };
-static const unichar_t str_fc53[] = { 0x0647, 0x0649, 0 };
-static const unichar_t str_fc54[] = { 0x0647, 0x064a, 0 };
-static const unichar_t str_fc55[] = { 0x064a, 0x062c, 0 };
-static const unichar_t str_fc56[] = { 0x064a, 0x062d, 0 };
-static const unichar_t str_fc57[] = { 0x064a, 0x062e, 0 };
-static const unichar_t str_fc58[] = { 0x064a, 0x0645, 0 };
-static const unichar_t str_fc59[] = { 0x064a, 0x0649, 0 };
-static const unichar_t str_fc5a[] = { 0x064a, 0x064a, 0 };
-static const unichar_t str_fc5b[] = { 0x0630, 0x0670, 0 };
-static const unichar_t str_fc5c[] = { 0x0631, 0x0670, 0 };
-static const unichar_t str_fc5d[] = { 0x0649, 0x0670, 0 };
-static const unichar_t str_fc5e[] = { 0x0020, 0x064c, 0x0651, 0 };
-static const unichar_t str_fc5f[] = { 0x0020, 0x064d, 0x0651, 0 };
-static const unichar_t str_fc60[] = { 0x0020, 0x064e, 0x0651, 0 };
-static const unichar_t str_fc61[] = { 0x0020, 0x064f, 0x0651, 0 };
-static const unichar_t str_fc62[] = { 0x0020, 0x0650, 0x0651, 0 };
-static const unichar_t str_fc63[] = { 0x0020, 0x0651, 0x0670, 0 };
-static const unichar_t str_fc64[] = { 0x0626, 0x0631, 0 };
-static const unichar_t str_fc65[] = { 0x0626, 0x0632, 0 };
-static const unichar_t str_fc66[] = { 0x0626, 0x0645, 0 };
-static const unichar_t str_fc67[] = { 0x0626, 0x0646, 0 };
-static const unichar_t str_fc68[] = { 0x0626, 0x0649, 0 };
-static const unichar_t str_fc69[] = { 0x0626, 0x064a, 0 };
-static const unichar_t str_fc6a[] = { 0x0628, 0x0631, 0 };
-static const unichar_t str_fc6b[] = { 0x0628, 0x0632, 0 };
-static const unichar_t str_fc6c[] = { 0x0628, 0x0645, 0 };
-static const unichar_t str_fc6d[] = { 0x0628, 0x0646, 0 };
-static const unichar_t str_fc6e[] = { 0x0628, 0x0649, 0 };
-static const unichar_t str_fc6f[] = { 0x0628, 0x064a, 0 };
-static const unichar_t str_fc70[] = { 0x062a, 0x0631, 0 };
-static const unichar_t str_fc71[] = { 0x062a, 0x0632, 0 };
-static const unichar_t str_fc72[] = { 0x062a, 0x0645, 0 };
-static const unichar_t str_fc73[] = { 0x062a, 0x0646, 0 };
-static const unichar_t str_fc74[] = { 0x062a, 0x0649, 0 };
-static const unichar_t str_fc75[] = { 0x062a, 0x064a, 0 };
-static const unichar_t str_fc76[] = { 0x062b, 0x0631, 0 };
-static const unichar_t str_fc77[] = { 0x062b, 0x0632, 0 };
-static const unichar_t str_fc78[] = { 0x062b, 0x0645, 0 };
-static const unichar_t str_fc79[] = { 0x062b, 0x0646, 0 };
-static const unichar_t str_fc7a[] = { 0x062b, 0x0649, 0 };
-static const unichar_t str_fc7b[] = { 0x062b, 0x064a, 0 };
-static const unichar_t str_fc7c[] = { 0x0641, 0x0649, 0 };
-static const unichar_t str_fc7d[] = { 0x0641, 0x064a, 0 };
-static const unichar_t str_fc7e[] = { 0x0642, 0x0649, 0 };
-static const unichar_t str_fc7f[] = { 0x0642, 0x064a, 0 };
-static const unichar_t str_fc80[] = { 0x0643, 0x0627, 0 };
-static const unichar_t str_fc81[] = { 0x0643, 0x0644, 0 };
-static const unichar_t str_fc82[] = { 0x0643, 0x0645, 0 };
-static const unichar_t str_fc83[] = { 0x0643, 0x0649, 0 };
-static const unichar_t str_fc84[] = { 0x0643, 0x064a, 0 };
-static const unichar_t str_fc85[] = { 0x0644, 0x0645, 0 };
-static const unichar_t str_fc86[] = { 0x0644, 0x0649, 0 };
-static const unichar_t str_fc87[] = { 0x0644, 0x064a, 0 };
-static const unichar_t str_fc88[] = { 0x0645, 0x0627, 0 };
-static const unichar_t str_fc89[] = { 0x0645, 0x0645, 0 };
-static const unichar_t str_fc8a[] = { 0x0646, 0x0631, 0 };
-static const unichar_t str_fc8b[] = { 0x0646, 0x0632, 0 };
-static const unichar_t str_fc8c[] = { 0x0646, 0x0645, 0 };
-static const unichar_t str_fc8d[] = { 0x0646, 0x0646, 0 };
-static const unichar_t str_fc8e[] = { 0x0646, 0x0649, 0 };
-static const unichar_t str_fc8f[] = { 0x0646, 0x064a, 0 };
-static const unichar_t str_fc90[] = { 0x0649, 0x0670, 0 };
-static const unichar_t str_fc91[] = { 0x064a, 0x0631, 0 };
-static const unichar_t str_fc92[] = { 0x064a, 0x0632, 0 };
-static const unichar_t str_fc93[] = { 0x064a, 0x0645, 0 };
-static const unichar_t str_fc94[] = { 0x064a, 0x0646, 0 };
-static const unichar_t str_fc95[] = { 0x064a, 0x0649, 0 };
-static const unichar_t str_fc96[] = { 0x064a, 0x064a, 0 };
-static const unichar_t str_fc97[] = { 0x0626, 0x062c, 0 };
-static const unichar_t str_fc98[] = { 0x0626, 0x062d, 0 };
-static const unichar_t str_fc99[] = { 0x0626, 0x062e, 0 };
-static const unichar_t str_fc9a[] = { 0x0626, 0x0645, 0 };
-static const unichar_t str_fc9b[] = { 0x0626, 0x0647, 0 };
-static const unichar_t str_fc9c[] = { 0x0628, 0x062c, 0 };
-static const unichar_t str_fc9d[] = { 0x0628, 0x062d, 0 };
-static const unichar_t str_fc9e[] = { 0x0628, 0x062e, 0 };
-static const unichar_t str_fc9f[] = { 0x0628, 0x0645, 0 };
-static const unichar_t str_fca0[] = { 0x0628, 0x0647, 0 };
-static const unichar_t str_fca1[] = { 0x062a, 0x062c, 0 };
-static const unichar_t str_fca2[] = { 0x062a, 0x062d, 0 };
-static const unichar_t str_fca3[] = { 0x062a, 0x062e, 0 };
-static const unichar_t str_fca4[] = { 0x062a, 0x0645, 0 };
-static const unichar_t str_fca5[] = { 0x062a, 0x0647, 0 };
-static const unichar_t str_fca6[] = { 0x062b, 0x0645, 0 };
-static const unichar_t str_fca7[] = { 0x062c, 0x062d, 0 };
-static const unichar_t str_fca8[] = { 0x062c, 0x0645, 0 };
-static const unichar_t str_fca9[] = { 0x062d, 0x062c, 0 };
-static const unichar_t str_fcaa[] = { 0x062d, 0x0645, 0 };
-static const unichar_t str_fcab[] = { 0x062e, 0x062c, 0 };
-static const unichar_t str_fcac[] = { 0x062e, 0x0645, 0 };
-static const unichar_t str_fcad[] = { 0x0633, 0x062c, 0 };
-static const unichar_t str_fcae[] = { 0x0633, 0x062d, 0 };
-static const unichar_t str_fcaf[] = { 0x0633, 0x062e, 0 };
-static const unichar_t str_fcb0[] = { 0x0633, 0x0645, 0 };
-static const unichar_t str_fcb1[] = { 0x0635, 0x062d, 0 };
-static const unichar_t str_fcb2[] = { 0x0635, 0x062e, 0 };
-static const unichar_t str_fcb3[] = { 0x0635, 0x0645, 0 };
-static const unichar_t str_fcb4[] = { 0x0636, 0x062c, 0 };
-static const unichar_t str_fcb5[] = { 0x0636, 0x062d, 0 };
-static const unichar_t str_fcb6[] = { 0x0636, 0x062e, 0 };
-static const unichar_t str_fcb7[] = { 0x0636, 0x0645, 0 };
-static const unichar_t str_fcb8[] = { 0x0637, 0x062d, 0 };
-static const unichar_t str_fcb9[] = { 0x0638, 0x0645, 0 };
-static const unichar_t str_fcba[] = { 0x0639, 0x062c, 0 };
-static const unichar_t str_fcbb[] = { 0x0639, 0x0645, 0 };
-static const unichar_t str_fcbc[] = { 0x063a, 0x062c, 0 };
-static const unichar_t str_fcbd[] = { 0x063a, 0x0645, 0 };
-static const unichar_t str_fcbe[] = { 0x0641, 0x062c, 0 };
-static const unichar_t str_fcbf[] = { 0x0641, 0x062d, 0 };
-static const unichar_t str_fcc0[] = { 0x0641, 0x062e, 0 };
-static const unichar_t str_fcc1[] = { 0x0641, 0x0645, 0 };
-static const unichar_t str_fcc2[] = { 0x0642, 0x062d, 0 };
-static const unichar_t str_fcc3[] = { 0x0642, 0x0645, 0 };
-static const unichar_t str_fcc4[] = { 0x0643, 0x062c, 0 };
-static const unichar_t str_fcc5[] = { 0x0643, 0x062d, 0 };
-static const unichar_t str_fcc6[] = { 0x0643, 0x062e, 0 };
-static const unichar_t str_fcc7[] = { 0x0643, 0x0644, 0 };
-static const unichar_t str_fcc8[] = { 0x0643, 0x0645, 0 };
-static const unichar_t str_fcc9[] = { 0x0644, 0x062c, 0 };
-static const unichar_t str_fcca[] = { 0x0644, 0x062d, 0 };
-static const unichar_t str_fccb[] = { 0x0644, 0x062e, 0 };
-static const unichar_t str_fccc[] = { 0x0644, 0x0645, 0 };
-static const unichar_t str_fccd[] = { 0x0644, 0x0647, 0 };
-static const unichar_t str_fcce[] = { 0x0645, 0x062c, 0 };
-static const unichar_t str_fccf[] = { 0x0645, 0x062d, 0 };
-static const unichar_t str_fcd0[] = { 0x0645, 0x062e, 0 };
-static const unichar_t str_fcd1[] = { 0x0645, 0x0645, 0 };
-static const unichar_t str_fcd2[] = { 0x0646, 0x062c, 0 };
-static const unichar_t str_fcd3[] = { 0x0646, 0x062d, 0 };
-static const unichar_t str_fcd4[] = { 0x0646, 0x062e, 0 };
-static const unichar_t str_fcd5[] = { 0x0646, 0x0645, 0 };
-static const unichar_t str_fcd6[] = { 0x0646, 0x0647, 0 };
-static const unichar_t str_fcd7[] = { 0x0647, 0x062c, 0 };
-static const unichar_t str_fcd8[] = { 0x0647, 0x0645, 0 };
-static const unichar_t str_fcd9[] = { 0x0647, 0x0670, 0 };
-static const unichar_t str_fcda[] = { 0x064a, 0x062c, 0 };
-static const unichar_t str_fcdb[] = { 0x064a, 0x062d, 0 };
-static const unichar_t str_fcdc[] = { 0x064a, 0x062e, 0 };
-static const unichar_t str_fcdd[] = { 0x064a, 0x0645, 0 };
-static const unichar_t str_fcde[] = { 0x064a, 0x0647, 0 };
-static const unichar_t str_fcdf[] = { 0x0626, 0x0645, 0 };
-static const unichar_t str_fce0[] = { 0x0626, 0x0647, 0 };
-static const unichar_t str_fce1[] = { 0x0628, 0x0645, 0 };
-static const unichar_t str_fce2[] = { 0x0628, 0x0647, 0 };
-static const unichar_t str_fce3[] = { 0x062a, 0x0645, 0 };
-static const unichar_t str_fce4[] = { 0x062a, 0x0647, 0 };
-static const unichar_t str_fce5[] = { 0x062b, 0x0645, 0 };
-static const unichar_t str_fce6[] = { 0x062b, 0x0647, 0 };
-static const unichar_t str_fce7[] = { 0x0633, 0x0645, 0 };
-static const unichar_t str_fce8[] = { 0x0633, 0x0647, 0 };
-static const unichar_t str_fce9[] = { 0x0634, 0x0645, 0 };
-static const unichar_t str_fcea[] = { 0x0634, 0x0647, 0 };
-static const unichar_t str_fceb[] = { 0x0643, 0x0644, 0 };
-static const unichar_t str_fcec[] = { 0x0643, 0x0645, 0 };
-static const unichar_t str_fced[] = { 0x0644, 0x0645, 0 };
-static const unichar_t str_fcee[] = { 0x0646, 0x0645, 0 };
-static const unichar_t str_fcef[] = { 0x0646, 0x0647, 0 };
-static const unichar_t str_fcf0[] = { 0x064a, 0x0645, 0 };
-static const unichar_t str_fcf1[] = { 0x064a, 0x0647, 0 };
-static const unichar_t str_fcf2[] = { 0x0640, 0x064e, 0x0651, 0 };
-static const unichar_t str_fcf3[] = { 0x0640, 0x064f, 0x0651, 0 };
-static const unichar_t str_fcf4[] = { 0x0640, 0x0650, 0x0651, 0 };
-static const unichar_t str_fcf5[] = { 0x0637, 0x0649, 0 };
-static const unichar_t str_fcf6[] = { 0x0637, 0x064a, 0 };
-static const unichar_t str_fcf7[] = { 0x0639, 0x0649, 0 };
-static const unichar_t str_fcf8[] = { 0x0639, 0x064a, 0 };
-static const unichar_t str_fcf9[] = { 0x063a, 0x0649, 0 };
-static const unichar_t str_fcfa[] = { 0x063a, 0x064a, 0 };
-static const unichar_t str_fcfb[] = { 0x0633, 0x0649, 0 };
-static const unichar_t str_fcfc[] = { 0x0633, 0x064a, 0 };
-static const unichar_t str_fcfd[] = { 0x0634, 0x0649, 0 };
-static const unichar_t str_fcfe[] = { 0x0634, 0x064a, 0 };
-static const unichar_t str_fcff[] = { 0x062d, 0x0649, 0 };
-static const unichar_t str_fd00[] = { 0x062d, 0x064a, 0 };
-static const unichar_t str_fd01[] = { 0x062c, 0x0649, 0 };
-static const unichar_t str_fd02[] = { 0x062c, 0x064a, 0 };
-static const unichar_t str_fd03[] = { 0x062e, 0x0649, 0 };
-static const unichar_t str_fd04[] = { 0x062e, 0x064a, 0 };
-static const unichar_t str_fd05[] = { 0x0635, 0x0649, 0 };
-static const unichar_t str_fd06[] = { 0x0635, 0x064a, 0 };
-static const unichar_t str_fd07[] = { 0x0636, 0x0649, 0 };
-static const unichar_t str_fd08[] = { 0x0636, 0x064a, 0 };
-static const unichar_t str_fd09[] = { 0x0634, 0x062c, 0 };
-static const unichar_t str_fd0a[] = { 0x0634, 0x062d, 0 };
-static const unichar_t str_fd0b[] = { 0x0634, 0x062e, 0 };
-static const unichar_t str_fd0c[] = { 0x0634, 0x0645, 0 };
-static const unichar_t str_fd0d[] = { 0x0634, 0x0631, 0 };
-static const unichar_t str_fd0e[] = { 0x0633, 0x0631, 0 };
-static const unichar_t str_fd0f[] = { 0x0635, 0x0631, 0 };
-static const unichar_t str_fd10[] = { 0x0636, 0x0631, 0 };
-static const unichar_t str_fd11[] = { 0x0637, 0x0649, 0 };
-static const unichar_t str_fd12[] = { 0x0637, 0x064a, 0 };
-static const unichar_t str_fd13[] = { 0x0639, 0x0649, 0 };
-static const unichar_t str_fd14[] = { 0x0639, 0x064a, 0 };
-static const unichar_t str_fd15[] = { 0x063a, 0x0649, 0 };
-static const unichar_t str_fd16[] = { 0x063a, 0x064a, 0 };
-static const unichar_t str_fd17[] = { 0x0633, 0x0649, 0 };
-static const unichar_t str_fd18[] = { 0x0633, 0x064a, 0 };
-static const unichar_t str_fd19[] = { 0x0634, 0x0649, 0 };
-static const unichar_t str_fd1a[] = { 0x0634, 0x064a, 0 };
-static const unichar_t str_fd1b[] = { 0x062d, 0x0649, 0 };
-static const unichar_t str_fd1c[] = { 0x062d, 0x064a, 0 };
-static const unichar_t str_fd1d[] = { 0x062c, 0x0649, 0 };
-static const unichar_t str_fd1e[] = { 0x062c, 0x064a, 0 };
-static const unichar_t str_fd1f[] = { 0x062e, 0x0649, 0 };
-static const unichar_t str_fd20[] = { 0x062e, 0x064a, 0 };
-static const unichar_t str_fd21[] = { 0x0635, 0x0649, 0 };
-static const unichar_t str_fd22[] = { 0x0635, 0x064a, 0 };
-static const unichar_t str_fd23[] = { 0x0636, 0x0649, 0 };
-static const unichar_t str_fd24[] = { 0x0636, 0x064a, 0 };
-static const unichar_t str_fd25[] = { 0x0634, 0x062c, 0 };
-static const unichar_t str_fd26[] = { 0x0634, 0x062d, 0 };
-static const unichar_t str_fd27[] = { 0x0634, 0x062e, 0 };
-static const unichar_t str_fd28[] = { 0x0634, 0x0645, 0 };
-static const unichar_t str_fd29[] = { 0x0634, 0x0631, 0 };
-static const unichar_t str_fd2a[] = { 0x0633, 0x0631, 0 };
-static const unichar_t str_fd2b[] = { 0x0635, 0x0631, 0 };
-static const unichar_t str_fd2c[] = { 0x0636, 0x0631, 0 };
-static const unichar_t str_fd2d[] = { 0x0634, 0x062c, 0 };
-static const unichar_t str_fd2e[] = { 0x0634, 0x062d, 0 };
-static const unichar_t str_fd2f[] = { 0x0634, 0x062e, 0 };
-static const unichar_t str_fd30[] = { 0x0634, 0x0645, 0 };
-static const unichar_t str_fd31[] = { 0x0633, 0x0647, 0 };
-static const unichar_t str_fd32[] = { 0x0634, 0x0647, 0 };
-static const unichar_t str_fd33[] = { 0x0637, 0x0645, 0 };
-static const unichar_t str_fd34[] = { 0x0633, 0x062c, 0 };
-static const unichar_t str_fd35[] = { 0x0633, 0x062d, 0 };
-static const unichar_t str_fd36[] = { 0x0633, 0x062e, 0 };
-static const unichar_t str_fd37[] = { 0x0634, 0x062c, 0 };
-static const unichar_t str_fd38[] = { 0x0634, 0x062d, 0 };
-static const unichar_t str_fd39[] = { 0x0634, 0x062e, 0 };
-static const unichar_t str_fd3a[] = { 0x0637, 0x0645, 0 };
-static const unichar_t str_fd3b[] = { 0x0638, 0x0645, 0 };
-static const unichar_t str_fd3c[] = { 0x0627, 0x064b, 0 };
-static const unichar_t str_fd3d[] = { 0x0627, 0x064b, 0 };
-static const unichar_t str_fd50[] = { 0x062a, 0x062c, 0x0645, 0 };
-static const unichar_t str_fd51[] = { 0x062a, 0x062d, 0x062c, 0 };
-static const unichar_t str_fd52[] = { 0x062a, 0x062d, 0x062c, 0 };
-static const unichar_t str_fd53[] = { 0x062a, 0x062d, 0x0645, 0 };
-static const unichar_t str_fd54[] = { 0x062a, 0x062e, 0x0645, 0 };
-static const unichar_t str_fd55[] = { 0x062a, 0x0645, 0x062c, 0 };
-static const unichar_t str_fd56[] = { 0x062a, 0x0645, 0x062d, 0 };
-static const unichar_t str_fd57[] = { 0x062a, 0x0645, 0x062e, 0 };
-static const unichar_t str_fd58[] = { 0x062c, 0x0645, 0x062d, 0 };
-static const unichar_t str_fd59[] = { 0x062c, 0x0645, 0x062d, 0 };
-static const unichar_t str_fd5a[] = { 0x062d, 0x0645, 0x064a, 0 };
-static const unichar_t str_fd5b[] = { 0x062d, 0x0645, 0x0649, 0 };
-static const unichar_t str_fd5c[] = { 0x0633, 0x062d, 0x062c, 0 };
-static const unichar_t str_fd5d[] = { 0x0633, 0x062c, 0x062d, 0 };
-static const unichar_t str_fd5e[] = { 0x0633, 0x062c, 0x0649, 0 };
-static const unichar_t str_fd5f[] = { 0x0633, 0x0645, 0x062d, 0 };
-static const unichar_t str_fd60[] = { 0x0633, 0x0645, 0x062d, 0 };
-static const unichar_t str_fd61[] = { 0x0633, 0x0645, 0x062c, 0 };
-static const unichar_t str_fd62[] = { 0x0633, 0x0645, 0x0645, 0 };
-static const unichar_t str_fd63[] = { 0x0633, 0x0645, 0x0645, 0 };
-static const unichar_t str_fd64[] = { 0x0635, 0x062d, 0x062d, 0 };
-static const unichar_t str_fd65[] = { 0x0635, 0x062d, 0x062d, 0 };
-static const unichar_t str_fd66[] = { 0x0635, 0x0645, 0x0645, 0 };
-static const unichar_t str_fd67[] = { 0x0634, 0x062d, 0x0645, 0 };
-static const unichar_t str_fd68[] = { 0x0634, 0x062d, 0x0645, 0 };
-static const unichar_t str_fd69[] = { 0x0634, 0x062c, 0x064a, 0 };
-static const unichar_t str_fd6a[] = { 0x0634, 0x0645, 0x062e, 0 };
-static const unichar_t str_fd6b[] = { 0x0634, 0x0645, 0x062e, 0 };
-static const unichar_t str_fd6c[] = { 0x0634, 0x0645, 0x0645, 0 };
-static const unichar_t str_fd6d[] = { 0x0634, 0x0645, 0x0645, 0 };
-static const unichar_t str_fd6e[] = { 0x0636, 0x062d, 0x0649, 0 };
-static const unichar_t str_fd6f[] = { 0x0636, 0x062e, 0x0645, 0 };
-static const unichar_t str_fd70[] = { 0x0636, 0x062e, 0x0645, 0 };
-static const unichar_t str_fd71[] = { 0x0637, 0x0645, 0x062d, 0 };
-static const unichar_t str_fd72[] = { 0x0637, 0x0645, 0x062d, 0 };
-static const unichar_t str_fd73[] = { 0x0637, 0x0645, 0x0645, 0 };
-static const unichar_t str_fd74[] = { 0x0637, 0x0645, 0x064a, 0 };
-static const unichar_t str_fd75[] = { 0x0639, 0x062c, 0x0645, 0 };
-static const unichar_t str_fd76[] = { 0x0639, 0x0645, 0x0645, 0 };
-static const unichar_t str_fd77[] = { 0x0639, 0x0645, 0x0645, 0 };
-static const unichar_t str_fd78[] = { 0x0639, 0x0645, 0x0649, 0 };
-static const unichar_t str_fd79[] = { 0x063a, 0x0645, 0x0645, 0 };
-static const unichar_t str_fd7a[] = { 0x063a, 0x0645, 0x064a, 0 };
-static const unichar_t str_fd7b[] = { 0x063a, 0x0645, 0x0649, 0 };
-static const unichar_t str_fd7c[] = { 0x0641, 0x062e, 0x0645, 0 };
-static const unichar_t str_fd7d[] = { 0x0641, 0x062e, 0x0645, 0 };
-static const unichar_t str_fd7e[] = { 0x0642, 0x0645, 0x062d, 0 };
-static const unichar_t str_fd7f[] = { 0x0642, 0x0645, 0x0645, 0 };
-static const unichar_t str_fd80[] = { 0x0644, 0x062d, 0x0645, 0 };
-static const unichar_t str_fd81[] = { 0x0644, 0x062d, 0x064a, 0 };
-static const unichar_t str_fd82[] = { 0x0644, 0x062d, 0x0649, 0 };
-static const unichar_t str_fd83[] = { 0x0644, 0x062c, 0x062c, 0 };
-static const unichar_t str_fd84[] = { 0x0644, 0x062c, 0x062c, 0 };
-static const unichar_t str_fd85[] = { 0x0644, 0x062e, 0x0645, 0 };
-static const unichar_t str_fd86[] = { 0x0644, 0x062e, 0x0645, 0 };
-static const unichar_t str_fd87[] = { 0x0644, 0x0645, 0x062d, 0 };
-static const unichar_t str_fd88[] = { 0x0644, 0x0645, 0x062d, 0 };
-static const unichar_t str_fd89[] = { 0x0645, 0x062d, 0x062c, 0 };
-static const unichar_t str_fd8a[] = { 0x0645, 0x062d, 0x0645, 0 };
-static const unichar_t str_fd8b[] = { 0x0645, 0x062d, 0x064a, 0 };
-static const unichar_t str_fd8c[] = { 0x0645, 0x062c, 0x062d, 0 };
-static const unichar_t str_fd8d[] = { 0x0645, 0x062c, 0x0645, 0 };
-static const unichar_t str_fd8e[] = { 0x0645, 0x062e, 0x062c, 0 };
-static const unichar_t str_fd8f[] = { 0x0645, 0x062e, 0x0645, 0 };
-static const unichar_t str_fd92[] = { 0x0645, 0x062c, 0x062e, 0 };
-static const unichar_t str_fd93[] = { 0x0647, 0x0645, 0x062c, 0 };
-static const unichar_t str_fd94[] = { 0x0647, 0x0645, 0x0645, 0 };
-static const unichar_t str_fd95[] = { 0x0646, 0x062d, 0x0645, 0 };
-static const unichar_t str_fd96[] = { 0x0646, 0x062d, 0x0649, 0 };
-static const unichar_t str_fd97[] = { 0x0646, 0x062c, 0x0645, 0 };
-static const unichar_t str_fd98[] = { 0x0646, 0x062c, 0x0645, 0 };
-static const unichar_t str_fd99[] = { 0x0646, 0x062c, 0x0649, 0 };
-static const unichar_t str_fd9a[] = { 0x0646, 0x0645, 0x064a, 0 };
-static const unichar_t str_fd9b[] = { 0x0646, 0x0645, 0x0649, 0 };
-static const unichar_t str_fd9c[] = { 0x064a, 0x0645, 0x0645, 0 };
-static const unichar_t str_fd9d[] = { 0x064a, 0x0645, 0x0645, 0 };
-static const unichar_t str_fd9e[] = { 0x0628, 0x062e, 0x064a, 0 };
-static const unichar_t str_fd9f[] = { 0x062a, 0x062c, 0x064a, 0 };
-static const unichar_t str_fda0[] = { 0x062a, 0x062c, 0x0649, 0 };
-static const unichar_t str_fda1[] = { 0x062a, 0x062e, 0x064a, 0 };
-static const unichar_t str_fda2[] = { 0x062a, 0x062e, 0x0649, 0 };
-static const unichar_t str_fda3[] = { 0x062a, 0x0645, 0x064a, 0 };
-static const unichar_t str_fda4[] = { 0x062a, 0x0645, 0x0649, 0 };
-static const unichar_t str_fda5[] = { 0x062c, 0x0645, 0x064a, 0 };
-static const unichar_t str_fda6[] = { 0x062c, 0x062d, 0x0649, 0 };
-static const unichar_t str_fda7[] = { 0x062c, 0x0645, 0x0649, 0 };
-static const unichar_t str_fda8[] = { 0x0633, 0x062e, 0x0649, 0 };
-static const unichar_t str_fda9[] = { 0x0635, 0x062d, 0x064a, 0 };
-static const unichar_t str_fdaa[] = { 0x0634, 0x062d, 0x064a, 0 };
-static const unichar_t str_fdab[] = { 0x0636, 0x062d, 0x064a, 0 };
-static const unichar_t str_fdac[] = { 0x0644, 0x062c, 0x064a, 0 };
-static const unichar_t str_fdad[] = { 0x0644, 0x0645, 0x064a, 0 };
-static const unichar_t str_fdae[] = { 0x064a, 0x062d, 0x064a, 0 };
-static const unichar_t str_fdaf[] = { 0x064a, 0x062c, 0x064a, 0 };
-static const unichar_t str_fdb0[] = { 0x064a, 0x0645, 0x064a, 0 };
-static const unichar_t str_fdb1[] = { 0x0645, 0x0645, 0x064a, 0 };
-static const unichar_t str_fdb2[] = { 0x0642, 0x0645, 0x064a, 0 };
-static const unichar_t str_fdb3[] = { 0x0646, 0x062d, 0x064a, 0 };
-static const unichar_t str_fdb4[] = { 0x0642, 0x0645, 0x062d, 0 };
-static const unichar_t str_fdb5[] = { 0x0644, 0x062d, 0x0645, 0 };
-static const unichar_t str_fdb6[] = { 0x0639, 0x0645, 0x064a, 0 };
-static const unichar_t str_fdb7[] = { 0x0643, 0x0645, 0x064a, 0 };
-static const unichar_t str_fdb8[] = { 0x0646, 0x062c, 0x062d, 0 };
-static const unichar_t str_fdb9[] = { 0x0645, 0x062e, 0x064a, 0 };
-static const unichar_t str_fdba[] = { 0x0644, 0x062c, 0x0645, 0 };
-static const unichar_t str_fdbb[] = { 0x0643, 0x0645, 0x0645, 0 };
-static const unichar_t str_fdbc[] = { 0x0644, 0x062c, 0x0645, 0 };
-static const unichar_t str_fdbd[] = { 0x0646, 0x062c, 0x062d, 0 };
-static const unichar_t str_fdbe[] = { 0x062c, 0x062d, 0x064a, 0 };
-static const unichar_t str_fdbf[] = { 0x062d, 0x062c, 0x064a, 0 };
-static const unichar_t str_fdc0[] = { 0x0645, 0x062c, 0x064a, 0 };
-static const unichar_t str_fdc1[] = { 0x0641, 0x0645, 0x064a, 0 };
-static const unichar_t str_fdc2[] = { 0x0628, 0x062d, 0x064a, 0 };
-static const unichar_t str_fdc3[] = { 0x0643, 0x0645, 0x0645, 0 };
-static const unichar_t str_fdc4[] = { 0x0639, 0x062c, 0x0645, 0 };
-static const unichar_t str_fdc5[] = { 0x0635, 0x0645, 0x0645, 0 };
-static const unichar_t str_fdc6[] = { 0x0633, 0x062e, 0x064a, 0 };
-static const unichar_t str_fdc7[] = { 0x0646, 0x062c, 0x064a, 0 };
-static const unichar_t str_fdf0[] = { 0x0635, 0x0644, 0x06d2, 0 };
-static const unichar_t str_fdf1[] = { 0x0642, 0x0644, 0x06d2, 0 };
-static const unichar_t str_fdf2[] = { 0x0627, 0x0644, 0x0644, 0x0647, 0 };
-static const unichar_t str_fdf3[] = { 0x0627, 0x0643, 0x0628, 0x0631, 0 };
-static const unichar_t str_fdf4[] = { 0x0645, 0x062d, 0x0645, 0x062f, 0 };
-static const unichar_t str_fdf5[] = { 0x0635, 0x0644, 0x0639, 0x0645, 0 };
-static const unichar_t str_fdf6[] = { 0x0631, 0x0633, 0x0648, 0x0644, 0 };
-static const unichar_t str_fdf7[] = { 0x0639, 0x0644, 0x064a, 0x0647, 0 };
-static const unichar_t str_fdf8[] = { 0x0648, 0x0633, 0x0644, 0x0645, 0 };
-static const unichar_t str_fdf9[] = { 0x0635, 0x0644, 0x0649, 0 };
-static const unichar_t str_fdfa[] = { 0x0635, 0x0644, 0x0649, 0x0020, 0x0627, 0x0644, 0x0644, 0x0647, 0x0020, 0x0639, 0x0644, 0x064a, 0x0647, 0x0020, 0x0648, 0x0633, 0x0644, 0x0645, 0 };
-static const unichar_t str_fdfb[] = { 0x062c, 0x0644, 0x0020, 0x062c, 0x0644, 0x0627, 0x0644, 0x0647, 0 };
-static const unichar_t str_fdfc[] = { 0x0631, 0x06cc, 0x0627, 0x0644, 0 };
-static const unichar_t str_fe10[] = { 0x002c, 0 };
-static const unichar_t str_fe11[] = { 0x3001, 0 };
-static const unichar_t str_fe12[] = { 0x3002, 0 };
-static const unichar_t str_fe13[] = { 0x003a, 0 };
-static const unichar_t str_fe14[] = { 0x003b, 0 };
-static const unichar_t str_fe15[] = { 0x0021, 0 };
-static const unichar_t str_fe16[] = { 0x003f, 0 };
-static const unichar_t str_fe17[] = { 0x3016, 0 };
-static const unichar_t str_fe18[] = { 0x3017, 0 };
-static const unichar_t str_fe19[] = { 0x2026, 0 };
-static const unichar_t str_fe30[] = { 0x2025, 0 };
-static const unichar_t str_fe31[] = { 0x2014, 0 };
-static const unichar_t str_fe32[] = { 0x2013, 0 };
-static const unichar_t str_fe33[] = { 0x005f, 0 };
-static const unichar_t str_fe34[] = { 0x005f, 0 };
-static const unichar_t str_fe35[] = { 0x0028, 0 };
-static const unichar_t str_fe36[] = { 0x0029, 0 };
-static const unichar_t str_fe37[] = { 0x007b, 0 };
-static const unichar_t str_fe38[] = { 0x007d, 0 };
-static const unichar_t str_fe39[] = { 0x3014, 0 };
-static const unichar_t str_fe3a[] = { 0x3015, 0 };
-static const unichar_t str_fe3b[] = { 0x3010, 0 };
-static const unichar_t str_fe3c[] = { 0x3011, 0 };
-static const unichar_t str_fe3d[] = { 0x300a, 0 };
-static const unichar_t str_fe3e[] = { 0x300b, 0 };
-static const unichar_t str_fe3f[] = { 0x3008, 0 };
-static const unichar_t str_fe40[] = { 0x3009, 0 };
-static const unichar_t str_fe41[] = { 0x300c, 0 };
-static const unichar_t str_fe42[] = { 0x300d, 0 };
-static const unichar_t str_fe43[] = { 0x300e, 0 };
-static const unichar_t str_fe44[] = { 0x300f, 0 };
-static const unichar_t str_fe47[] = { 0x005b, 0 };
-static const unichar_t str_fe48[] = { 0x005d, 0 };
-static const unichar_t str_fe49[] = { 0x203e, 0 };
-static const unichar_t str_fe4a[] = { 0x203e, 0 };
-static const unichar_t str_fe4b[] = { 0x203e, 0 };
-static const unichar_t str_fe4c[] = { 0x203e, 0 };
-static const unichar_t str_fe4d[] = { 0x005f, 0 };
-static const unichar_t str_fe4e[] = { 0x005f, 0 };
-static const unichar_t str_fe4f[] = { 0x005f, 0 };
-static const unichar_t str_fe50[] = { 0x002c, 0 };
-static const unichar_t str_fe51[] = { 0x3001, 0 };
-static const unichar_t str_fe52[] = { 0x002e, 0 };
-static const unichar_t str_fe54[] = { 0x003b, 0 };
-static const unichar_t str_fe55[] = { 0x003a, 0 };
-static const unichar_t str_fe56[] = { 0x003f, 0 };
-static const unichar_t str_fe57[] = { 0x0021, 0 };
-static const unichar_t str_fe58[] = { 0x2014, 0 };
-static const unichar_t str_fe59[] = { 0x0028, 0 };
-static const unichar_t str_fe5a[] = { 0x0029, 0 };
-static const unichar_t str_fe5b[] = { 0x007b, 0 };
-static const unichar_t str_fe5c[] = { 0x007d, 0 };
-static const unichar_t str_fe5d[] = { 0x3014, 0 };
-static const unichar_t str_fe5e[] = { 0x3015, 0 };
-static const unichar_t str_fe5f[] = { 0x0023, 0 };
-static const unichar_t str_fe60[] = { 0x0026, 0 };
-static const unichar_t str_fe61[] = { 0x002a, 0 };
-static const unichar_t str_fe62[] = { 0x002b, 0 };
-static const unichar_t str_fe63[] = { 0x002d, 0 };
-static const unichar_t str_fe64[] = { 0x003c, 0 };
-static const unichar_t str_fe65[] = { 0x003e, 0 };
-static const unichar_t str_fe66[] = { 0x003d, 0 };
-static const unichar_t str_fe68[] = { 0x005c, 0 };
-static const unichar_t str_fe69[] = { 0x0024, 0 };
-static const unichar_t str_fe6a[] = { 0x0025, 0 };
-static const unichar_t str_fe6b[] = { 0x0040, 0 };
-static const unichar_t str_fe70[] = { 0x0020, 0x064b, 0 };
-static const unichar_t str_fe71[] = { 0x0640, 0x064b, 0 };
-static const unichar_t str_fe72[] = { 0x0020, 0x064c, 0 };
-static const unichar_t str_fe74[] = { 0x0020, 0x064d, 0 };
-static const unichar_t str_fe76[] = { 0x0020, 0x064e, 0 };
-static const unichar_t str_fe77[] = { 0x0640, 0x064e, 0 };
-static const unichar_t str_fe78[] = { 0x0020, 0x064f, 0 };
-static const unichar_t str_fe79[] = { 0x0640, 0x064f, 0 };
-static const unichar_t str_fe7a[] = { 0x0020, 0x0650, 0 };
-static const unichar_t str_fe7b[] = { 0x0640, 0x0650, 0 };
-static const unichar_t str_fe7c[] = { 0x0020, 0x0651, 0 };
-static const unichar_t str_fe7d[] = { 0x0640, 0x0651, 0 };
-static const unichar_t str_fe7e[] = { 0x0020, 0x0652, 0 };
-static const unichar_t str_fe7f[] = { 0x0640, 0x0652, 0 };
-static const unichar_t str_fe80[] = { 0x0621, 0 };
-static const unichar_t str_fe81[] = { 0x0622, 0 };
-static const unichar_t str_fe82[] = { 0x0622, 0 };
-static const unichar_t str_fe83[] = { 0x0623, 0 };
-static const unichar_t str_fe84[] = { 0x0623, 0 };
-static const unichar_t str_fe85[] = { 0x0624, 0 };
-static const unichar_t str_fe86[] = { 0x0624, 0 };
-static const unichar_t str_fe87[] = { 0x0625, 0 };
-static const unichar_t str_fe88[] = { 0x0625, 0 };
-static const unichar_t str_fe89[] = { 0x0626, 0 };
-static const unichar_t str_fe8a[] = { 0x0626, 0 };
-static const unichar_t str_fe8b[] = { 0x0626, 0 };
-static const unichar_t str_fe8c[] = { 0x0626, 0 };
-static const unichar_t str_fe8d[] = { 0x0627, 0 };
-static const unichar_t str_fe8e[] = { 0x0627, 0 };
-static const unichar_t str_fe8f[] = { 0x0628, 0 };
-static const unichar_t str_fe90[] = { 0x0628, 0 };
-static const unichar_t str_fe91[] = { 0x0628, 0 };
-static const unichar_t str_fe92[] = { 0x0628, 0 };
-static const unichar_t str_fe93[] = { 0x0629, 0 };
-static const unichar_t str_fe94[] = { 0x0629, 0 };
-static const unichar_t str_fe95[] = { 0x062a, 0 };
-static const unichar_t str_fe96[] = { 0x062a, 0 };
-static const unichar_t str_fe97[] = { 0x062a, 0 };
-static const unichar_t str_fe98[] = { 0x062a, 0 };
-static const unichar_t str_fe99[] = { 0x062b, 0 };
-static const unichar_t str_fe9a[] = { 0x062b, 0 };
-static const unichar_t str_fe9b[] = { 0x062b, 0 };
-static const unichar_t str_fe9c[] = { 0x062b, 0 };
-static const unichar_t str_fe9d[] = { 0x062c, 0 };
-static const unichar_t str_fe9e[] = { 0x062c, 0 };
-static const unichar_t str_fe9f[] = { 0x062c, 0 };
-static const unichar_t str_fea0[] = { 0x062c, 0 };
-static const unichar_t str_fea1[] = { 0x062d, 0 };
-static const unichar_t str_fea2[] = { 0x062d, 0 };
-static const unichar_t str_fea3[] = { 0x062d, 0 };
-static const unichar_t str_fea4[] = { 0x062d, 0 };
-static const unichar_t str_fea5[] = { 0x062e, 0 };
-static const unichar_t str_fea6[] = { 0x062e, 0 };
-static const unichar_t str_fea7[] = { 0x062e, 0 };
-static const unichar_t str_fea8[] = { 0x062e, 0 };
-static const unichar_t str_fea9[] = { 0x062f, 0 };
-static const unichar_t str_feaa[] = { 0x062f, 0 };
-static const unichar_t str_feab[] = { 0x0630, 0 };
-static const unichar_t str_feac[] = { 0x0630, 0 };
-static const unichar_t str_fead[] = { 0x0631, 0 };
-static const unichar_t str_feae[] = { 0x0631, 0 };
-static const unichar_t str_feaf[] = { 0x0632, 0 };
-static const unichar_t str_feb0[] = { 0x0632, 0 };
-static const unichar_t str_feb1[] = { 0x0633, 0 };
-static const unichar_t str_feb2[] = { 0x0633, 0 };
-static const unichar_t str_feb3[] = { 0x0633, 0 };
-static const unichar_t str_feb4[] = { 0x0633, 0 };
-static const unichar_t str_feb5[] = { 0x0634, 0 };
-static const unichar_t str_feb6[] = { 0x0634, 0 };
-static const unichar_t str_feb7[] = { 0x0634, 0 };
-static const unichar_t str_feb8[] = { 0x0634, 0 };
-static const unichar_t str_feb9[] = { 0x0635, 0 };
-static const unichar_t str_feba[] = { 0x0635, 0 };
-static const unichar_t str_febb[] = { 0x0635, 0 };
-static const unichar_t str_febc[] = { 0x0635, 0 };
-static const unichar_t str_febd[] = { 0x0636, 0 };
-static const unichar_t str_febe[] = { 0x0636, 0 };
-static const unichar_t str_febf[] = { 0x0636, 0 };
-static const unichar_t str_fec0[] = { 0x0636, 0 };
-static const unichar_t str_fec1[] = { 0x0637, 0 };
-static const unichar_t str_fec2[] = { 0x0637, 0 };
-static const unichar_t str_fec3[] = { 0x0637, 0 };
-static const unichar_t str_fec4[] = { 0x0637, 0 };
-static const unichar_t str_fec5[] = { 0x0638, 0 };
-static const unichar_t str_fec6[] = { 0x0638, 0 };
-static const unichar_t str_fec7[] = { 0x0638, 0 };
-static const unichar_t str_fec8[] = { 0x0638, 0 };
-static const unichar_t str_fec9[] = { 0x0639, 0 };
-static const unichar_t str_feca[] = { 0x0639, 0 };
-static const unichar_t str_fecb[] = { 0x0639, 0 };
-static const unichar_t str_fecc[] = { 0x0639, 0 };
-static const unichar_t str_fecd[] = { 0x063a, 0 };
-static const unichar_t str_fece[] = { 0x063a, 0 };
-static const unichar_t str_fecf[] = { 0x063a, 0 };
-static const unichar_t str_fed0[] = { 0x063a, 0 };
-static const unichar_t str_fed1[] = { 0x0641, 0 };
-static const unichar_t str_fed2[] = { 0x0641, 0 };
-static const unichar_t str_fed3[] = { 0x0641, 0 };
-static const unichar_t str_fed4[] = { 0x0641, 0 };
-static const unichar_t str_fed5[] = { 0x0642, 0 };
-static const unichar_t str_fed6[] = { 0x0642, 0 };
-static const unichar_t str_fed7[] = { 0x0642, 0 };
-static const unichar_t str_fed8[] = { 0x0642, 0 };
-static const unichar_t str_fed9[] = { 0x0643, 0 };
-static const unichar_t str_feda[] = { 0x0643, 0 };
-static const unichar_t str_fedb[] = { 0x0643, 0 };
-static const unichar_t str_fedc[] = { 0x0643, 0 };
-static const unichar_t str_fedd[] = { 0x0644, 0 };
-static const unichar_t str_fede[] = { 0x0644, 0 };
-static const unichar_t str_fedf[] = { 0x0644, 0 };
-static const unichar_t str_fee0[] = { 0x0644, 0 };
-static const unichar_t str_fee1[] = { 0x0645, 0 };
-static const unichar_t str_fee2[] = { 0x0645, 0 };
-static const unichar_t str_fee3[] = { 0x0645, 0 };
-static const unichar_t str_fee4[] = { 0x0645, 0 };
-static const unichar_t str_fee5[] = { 0x0646, 0 };
-static const unichar_t str_fee6[] = { 0x0646, 0 };
-static const unichar_t str_fee7[] = { 0x0646, 0 };
-static const unichar_t str_fee8[] = { 0x0646, 0 };
-static const unichar_t str_fee9[] = { 0x0647, 0 };
-static const unichar_t str_feea[] = { 0x0647, 0 };
-static const unichar_t str_feeb[] = { 0x0647, 0 };
-static const unichar_t str_feec[] = { 0x0647, 0 };
-static const unichar_t str_feed[] = { 0x0648, 0 };
-static const unichar_t str_feee[] = { 0x0648, 0 };
-static const unichar_t str_feef[] = { 0x0649, 0 };
-static const unichar_t str_fef0[] = { 0x0649, 0 };
-static const unichar_t str_fef1[] = { 0x064a, 0 };
-static const unichar_t str_fef2[] = { 0x064a, 0 };
-static const unichar_t str_fef3[] = { 0x064a, 0 };
-static const unichar_t str_fef4[] = { 0x064a, 0 };
-static const unichar_t str_fef5[] = { 0x0644, 0x0622, 0 };
-static const unichar_t str_fef6[] = { 0x0644, 0x0622, 0 };
-static const unichar_t str_fef7[] = { 0x0644, 0x0623, 0 };
-static const unichar_t str_fef8[] = { 0x0644, 0x0623, 0 };
-static const unichar_t str_fef9[] = { 0x0644, 0x0625, 0 };
-static const unichar_t str_fefa[] = { 0x0644, 0x0625, 0 };
-static const unichar_t str_fefb[] = { 0x0644, 0x0627, 0 };
-static const unichar_t str_fefc[] = { 0x0644, 0x0627, 0 };
-static const unichar_t str_ff01[] = { 0x0021, 0 };
-static const unichar_t str_ff02[] = { 0x0022, 0 };
-static const unichar_t str_ff03[] = { 0x0023, 0 };
-static const unichar_t str_ff04[] = { 0x0024, 0 };
-static const unichar_t str_ff05[] = { 0x0025, 0 };
-static const unichar_t str_ff06[] = { 0x0026, 0 };
-static const unichar_t str_ff07[] = { 0x0027, 0 };
-static const unichar_t str_ff08[] = { 0x0028, 0 };
-static const unichar_t str_ff09[] = { 0x0029, 0 };
-static const unichar_t str_ff0a[] = { 0x002a, 0 };
-static const unichar_t str_ff0b[] = { 0x002b, 0 };
-static const unichar_t str_ff0c[] = { 0x002c, 0 };
-static const unichar_t str_ff0d[] = { 0x002d, 0 };
-static const unichar_t str_ff0e[] = { 0x002e, 0 };
-static const unichar_t str_ff0f[] = { 0x002f, 0 };
-static const unichar_t str_ff10[] = { 0x0030, 0 };
-static const unichar_t str_ff11[] = { 0x0031, 0 };
-static const unichar_t str_ff12[] = { 0x0032, 0 };
-static const unichar_t str_ff13[] = { 0x0033, 0 };
-static const unichar_t str_ff14[] = { 0x0034, 0 };
-static const unichar_t str_ff15[] = { 0x0035, 0 };
-static const unichar_t str_ff16[] = { 0x0036, 0 };
-static const unichar_t str_ff17[] = { 0x0037, 0 };
-static const unichar_t str_ff18[] = { 0x0038, 0 };
-static const unichar_t str_ff19[] = { 0x0039, 0 };
-static const unichar_t str_ff1a[] = { 0x003a, 0 };
-static const unichar_t str_ff1b[] = { 0x003b, 0 };
-static const unichar_t str_ff1c[] = { 0x003c, 0 };
-static const unichar_t str_ff1d[] = { 0x003d, 0 };
-static const unichar_t str_ff1e[] = { 0x003e, 0 };
-static const unichar_t str_ff1f[] = { 0x003f, 0 };
-static const unichar_t str_ff20[] = { 0x0040, 0 };
-static const unichar_t str_ff21[] = { 0x0041, 0 };
-static const unichar_t str_ff22[] = { 0x0042, 0 };
-static const unichar_t str_ff23[] = { 0x0043, 0 };
-static const unichar_t str_ff24[] = { 0x0044, 0 };
-static const unichar_t str_ff25[] = { 0x0045, 0 };
-static const unichar_t str_ff26[] = { 0x0046, 0 };
-static const unichar_t str_ff27[] = { 0x0047, 0 };
-static const unichar_t str_ff28[] = { 0x0048, 0 };
-static const unichar_t str_ff29[] = { 0x0049, 0 };
-static const unichar_t str_ff2a[] = { 0x004a, 0 };
-static const unichar_t str_ff2b[] = { 0x004b, 0 };
-static const unichar_t str_ff2c[] = { 0x004c, 0 };
-static const unichar_t str_ff2d[] = { 0x004d, 0 };
-static const unichar_t str_ff2e[] = { 0x004e, 0 };
-static const unichar_t str_ff2f[] = { 0x004f, 0 };
-static const unichar_t str_ff30[] = { 0x0050, 0 };
-static const unichar_t str_ff31[] = { 0x0051, 0 };
-static const unichar_t str_ff32[] = { 0x0052, 0 };
-static const unichar_t str_ff33[] = { 0x0053, 0 };
-static const unichar_t str_ff34[] = { 0x0054, 0 };
-static const unichar_t str_ff35[] = { 0x0055, 0 };
-static const unichar_t str_ff36[] = { 0x0056, 0 };
-static const unichar_t str_ff37[] = { 0x0057, 0 };
-static const unichar_t str_ff38[] = { 0x0058, 0 };
-static const unichar_t str_ff39[] = { 0x0059, 0 };
-static const unichar_t str_ff3a[] = { 0x005a, 0 };
-static const unichar_t str_ff3b[] = { 0x005b, 0 };
-static const unichar_t str_ff3c[] = { 0x005c, 0 };
-static const unichar_t str_ff3d[] = { 0x005d, 0 };
-static const unichar_t str_ff3e[] = { 0x005e, 0 };
-static const unichar_t str_ff3f[] = { 0x005f, 0 };
-static const unichar_t str_ff40[] = { 0x0060, 0 };
-static const unichar_t str_ff41[] = { 0x0061, 0 };
-static const unichar_t str_ff42[] = { 0x0062, 0 };
-static const unichar_t str_ff43[] = { 0x0063, 0 };
-static const unichar_t str_ff44[] = { 0x0064, 0 };
-static const unichar_t str_ff45[] = { 0x0065, 0 };
-static const unichar_t str_ff46[] = { 0x0066, 0 };
-static const unichar_t str_ff47[] = { 0x0067, 0 };
-static const unichar_t str_ff48[] = { 0x0068, 0 };
-static const unichar_t str_ff49[] = { 0x0069, 0 };
-static const unichar_t str_ff4a[] = { 0x006a, 0 };
-static const unichar_t str_ff4b[] = { 0x006b, 0 };
-static const unichar_t str_ff4c[] = { 0x006c, 0 };
-static const unichar_t str_ff4d[] = { 0x006d, 0 };
-static const unichar_t str_ff4e[] = { 0x006e, 0 };
-static const unichar_t str_ff4f[] = { 0x006f, 0 };
-static const unichar_t str_ff50[] = { 0x0070, 0 };
-static const unichar_t str_ff51[] = { 0x0071, 0 };
-static const unichar_t str_ff52[] = { 0x0072, 0 };
-static const unichar_t str_ff53[] = { 0x0073, 0 };
-static const unichar_t str_ff54[] = { 0x0074, 0 };
-static const unichar_t str_ff55[] = { 0x0075, 0 };
-static const unichar_t str_ff56[] = { 0x0076, 0 };
-static const unichar_t str_ff57[] = { 0x0077, 0 };
-static const unichar_t str_ff58[] = { 0x0078, 0 };
-static const unichar_t str_ff59[] = { 0x0079, 0 };
-static const unichar_t str_ff5a[] = { 0x007a, 0 };
-static const unichar_t str_ff5b[] = { 0x007b, 0 };
-static const unichar_t str_ff5c[] = { 0x007c, 0 };
-static const unichar_t str_ff5d[] = { 0x007d, 0 };
-static const unichar_t str_ff5e[] = { 0x007e, 0 };
-static const unichar_t str_ff5f[] = { 0x2985, 0 };
-static const unichar_t str_ff60[] = { 0x2986, 0 };
-static const unichar_t str_ff61[] = { 0x3002, 0 };
-static const unichar_t str_ff62[] = { 0x300c, 0 };
-static const unichar_t str_ff63[] = { 0x300d, 0 };
-static const unichar_t str_ff64[] = { 0x3001, 0 };
-static const unichar_t str_ff65[] = { 0x30fb, 0 };
-static const unichar_t str_ff66[] = { 0x30f2, 0 };
-static const unichar_t str_ff67[] = { 0x30a1, 0 };
-static const unichar_t str_ff68[] = { 0x30a3, 0 };
-static const unichar_t str_ff69[] = { 0x30a5, 0 };
-static const unichar_t str_ff6a[] = { 0x30a7, 0 };
-static const unichar_t str_ff6b[] = { 0x30a9, 0 };
-static const unichar_t str_ff6c[] = { 0x30e3, 0 };
-static const unichar_t str_ff6d[] = { 0x30e5, 0 };
-static const unichar_t str_ff6e[] = { 0x30e7, 0 };
-static const unichar_t str_ff6f[] = { 0x30c3, 0 };
-static const unichar_t str_ff70[] = { 0x30fc, 0 };
-static const unichar_t str_ff71[] = { 0x30a2, 0 };
-static const unichar_t str_ff72[] = { 0x30a4, 0 };
-static const unichar_t str_ff73[] = { 0x30a6, 0 };
-static const unichar_t str_ff74[] = { 0x30a8, 0 };
-static const unichar_t str_ff75[] = { 0x30aa, 0 };
-static const unichar_t str_ff76[] = { 0x30ab, 0 };
-static const unichar_t str_ff77[] = { 0x30ad, 0 };
-static const unichar_t str_ff78[] = { 0x30af, 0 };
-static const unichar_t str_ff79[] = { 0x30b1, 0 };
-static const unichar_t str_ff7a[] = { 0x30b3, 0 };
-static const unichar_t str_ff7b[] = { 0x30b5, 0 };
-static const unichar_t str_ff7c[] = { 0x30b7, 0 };
-static const unichar_t str_ff7d[] = { 0x30b9, 0 };
-static const unichar_t str_ff7e[] = { 0x30bb, 0 };
-static const unichar_t str_ff7f[] = { 0x30bd, 0 };
-static const unichar_t str_ff80[] = { 0x30bf, 0 };
-static const unichar_t str_ff81[] = { 0x30c1, 0 };
-static const unichar_t str_ff82[] = { 0x30c4, 0 };
-static const unichar_t str_ff83[] = { 0x30c6, 0 };
-static const unichar_t str_ff84[] = { 0x30c8, 0 };
-static const unichar_t str_ff85[] = { 0x30ca, 0 };
-static const unichar_t str_ff86[] = { 0x30cb, 0 };
-static const unichar_t str_ff87[] = { 0x30cc, 0 };
-static const unichar_t str_ff88[] = { 0x30cd, 0 };
-static const unichar_t str_ff89[] = { 0x30ce, 0 };
-static const unichar_t str_ff8a[] = { 0x30cf, 0 };
-static const unichar_t str_ff8b[] = { 0x30d2, 0 };
-static const unichar_t str_ff8c[] = { 0x30d5, 0 };
-static const unichar_t str_ff8d[] = { 0x30d8, 0 };
-static const unichar_t str_ff8e[] = { 0x30db, 0 };
-static const unichar_t str_ff8f[] = { 0x30de, 0 };
-static const unichar_t str_ff90[] = { 0x30df, 0 };
-static const unichar_t str_ff91[] = { 0x30e0, 0 };
-static const unichar_t str_ff92[] = { 0x30e1, 0 };
-static const unichar_t str_ff93[] = { 0x30e2, 0 };
-static const unichar_t str_ff94[] = { 0x30e4, 0 };
-static const unichar_t str_ff95[] = { 0x30e6, 0 };
-static const unichar_t str_ff96[] = { 0x30e8, 0 };
-static const unichar_t str_ff97[] = { 0x30e9, 0 };
-static const unichar_t str_ff98[] = { 0x30ea, 0 };
-static const unichar_t str_ff99[] = { 0x30eb, 0 };
-static const unichar_t str_ff9a[] = { 0x30ec, 0 };
-static const unichar_t str_ff9b[] = { 0x30ed, 0 };
-static const unichar_t str_ff9c[] = { 0x30ef, 0 };
-static const unichar_t str_ff9d[] = { 0x30f3, 0 };
-static const unichar_t str_ff9e[] = { 0x3099, 0 };
-static const unichar_t str_ff9f[] = { 0x309a, 0 };
-static const unichar_t str_ffa0[] = { 0x3164, 0 };
-static const unichar_t str_ffa1[] = { 0x3131, 0 };
-static const unichar_t str_ffa2[] = { 0x3132, 0 };
-static const unichar_t str_ffa3[] = { 0x3133, 0 };
-static const unichar_t str_ffa4[] = { 0x3134, 0 };
-static const unichar_t str_ffa5[] = { 0x3135, 0 };
-static const unichar_t str_ffa6[] = { 0x3136, 0 };
-static const unichar_t str_ffa7[] = { 0x3137, 0 };
-static const unichar_t str_ffa8[] = { 0x3138, 0 };
-static const unichar_t str_ffa9[] = { 0x3139, 0 };
-static const unichar_t str_ffaa[] = { 0x313a, 0 };
-static const unichar_t str_ffab[] = { 0x313b, 0 };
-static const unichar_t str_ffac[] = { 0x313c, 0 };
-static const unichar_t str_ffad[] = { 0x313d, 0 };
-static const unichar_t str_ffae[] = { 0x313e, 0 };
-static const unichar_t str_ffaf[] = { 0x313f, 0 };
-static const unichar_t str_ffb0[] = { 0x3140, 0 };
-static const unichar_t str_ffb1[] = { 0x3141, 0 };
-static const unichar_t str_ffb2[] = { 0x3142, 0 };
-static const unichar_t str_ffb3[] = { 0x3143, 0 };
-static const unichar_t str_ffb4[] = { 0x3144, 0 };
-static const unichar_t str_ffb5[] = { 0x3145, 0 };
-static const unichar_t str_ffb6[] = { 0x3146, 0 };
-static const unichar_t str_ffb7[] = { 0x3147, 0 };
-static const unichar_t str_ffb8[] = { 0x3148, 0 };
-static const unichar_t str_ffb9[] = { 0x3149, 0 };
-static const unichar_t str_ffba[] = { 0x314a, 0 };
-static const unichar_t str_ffbb[] = { 0x314b, 0 };
-static const unichar_t str_ffbc[] = { 0x314c, 0 };
-static const unichar_t str_ffbd[] = { 0x314d, 0 };
-static const unichar_t str_ffbe[] = { 0x314e, 0 };
-static const unichar_t str_ffc2[] = { 0x314f, 0 };
-static const unichar_t str_ffc3[] = { 0x3150, 0 };
-static const unichar_t str_ffc4[] = { 0x3151, 0 };
-static const unichar_t str_ffc5[] = { 0x3152, 0 };
-static const unichar_t str_ffc6[] = { 0x3153, 0 };
-static const unichar_t str_ffc7[] = { 0x3154, 0 };
-static const unichar_t str_ffca[] = { 0x3155, 0 };
-static const unichar_t str_ffcb[] = { 0x3156, 0 };
-static const unichar_t str_ffcc[] = { 0x3157, 0 };
-static const unichar_t str_ffcd[] = { 0x3158, 0 };
-static const unichar_t str_ffce[] = { 0x3159, 0 };
-static const unichar_t str_ffcf[] = { 0x315a, 0 };
-static const unichar_t str_ffd2[] = { 0x315b, 0 };
-static const unichar_t str_ffd3[] = { 0x315c, 0 };
-static const unichar_t str_ffd4[] = { 0x315d, 0 };
-static const unichar_t str_ffd5[] = { 0x315e, 0 };
-static const unichar_t str_ffd6[] = { 0x315f, 0 };
-static const unichar_t str_ffd7[] = { 0x3160, 0 };
-static const unichar_t str_ffda[] = { 0x3161, 0 };
-static const unichar_t str_ffdb[] = { 0x3162, 0 };
-static const unichar_t str_ffdc[] = { 0x3163, 0 };
-static const unichar_t str_ffe0[] = { 0x00a2, 0 };
-static const unichar_t str_ffe1[] = { 0x00a3, 0 };
-static const unichar_t str_ffe2[] = { 0x00ac, 0 };
-static const unichar_t str_ffe3[] = { 0x00af, 0 };
-static const unichar_t str_ffe4[] = { 0x00a6, 0 };
-static const unichar_t str_ffe5[] = { 0x00a5, 0 };
-static const unichar_t str_ffe6[] = { 0x20a9, 0 };
-static const unichar_t str_ffe8[] = { 0x2502, 0 };
-static const unichar_t str_ffe9[] = { 0x2190, 0 };
-static const unichar_t str_ffea[] = { 0x2191, 0 };
-static const unichar_t str_ffeb[] = { 0x2192, 0 };
-static const unichar_t str_ffec[] = { 0x2193, 0 };
-static const unichar_t str_ffed[] = { 0x25a0, 0 };
-static const unichar_t str_ffee[] = { 0x25cb, 0 };
+ * Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
 
-static const unichar_t *const up_allzeros[256] = { NULL };
+ * Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation
+ * and/or other materials provided with the distribution.
 
-static const unichar_t * const tab_0[] = {
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_a0,
-0, 0, 0, 0, 0, 0, 0, str_a8,
-0, str_aa,
-0, 0, 0, 0, str_af,
-0, 0, str_b2,
-str_b3,
-str_b4,
-str_b5,
-0, 0, str_b8,
-str_b9,
-str_ba,
-0, str_bc,
-str_bd,
-str_be,
-0, str_c0,
-str_c1,
-str_c2,
-str_c3,
-str_c4,
-str_c5,
-0, str_c7,
-str_c8,
-str_c9,
-str_ca,
-str_cb,
-str_cc,
-str_cd,
-str_ce,
-str_cf,
-0, str_d1,
-str_d2,
-str_d3,
-str_d4,
-str_d5,
-str_d6,
-0, 0, str_d9,
-str_da,
-str_db,
-str_dc,
-str_dd,
-0, 0, str_e0,
-str_e1,
-str_e2,
-str_e3,
-str_e4,
-str_e5,
-0, str_e7,
-str_e8,
-str_e9,
-str_ea,
-str_eb,
-str_ec,
-str_ed,
-str_ee,
-str_ef,
-0, str_f1,
-str_f2,
-str_f3,
-str_f4,
-str_f5,
-str_f6,
-0, 0, str_f9,
-str_fa,
-str_fb,
-str_fc,
-str_fd,
-0, str_ff,
-0};
+ * The name of the author may not be used to endorse or promote products
+ * derived from this software without specific prior written permission.
 
-static const unichar_t * const tab_1[] = {
-str_100,
-str_101,
-str_102,
-str_103,
-str_104,
-str_105,
-str_106,
-str_107,
-str_108,
-str_109,
-str_10a,
-str_10b,
-str_10c,
-str_10d,
-str_10e,
-str_10f,
-str_110,
-0, str_112,
-str_113,
-str_114,
-str_115,
-str_116,
-str_117,
-str_118,
-str_119,
-str_11a,
-str_11b,
-str_11c,
-str_11d,
-str_11e,
-str_11f,
-str_120,
-str_121,
-str_122,
-str_123,
-str_124,
-str_125,
-0, 0, str_128,
-str_129,
-str_12a,
-str_12b,
-str_12c,
-str_12d,
-str_12e,
-str_12f,
-str_130,
-0, str_132,
-str_133,
-str_134,
-str_135,
-str_136,
-str_137,
-str_138,
-str_139,
-str_13a,
-str_13b,
-str_13c,
-str_13d,
-str_13e,
-str_13f,
-str_140,
-0, 0, str_143,
-str_144,
-str_145,
-str_146,
-str_147,
-str_148,
-str_149,
-0, 0, str_14c,
-str_14d,
-str_14e,
-str_14f,
-str_150,
-str_151,
-str_152,
-str_153,
-str_154,
-str_155,
-str_156,
-str_157,
-str_158,
-str_159,
-str_15a,
-str_15b,
-str_15c,
-str_15d,
-str_15e,
-str_15f,
-str_160,
-str_161,
-str_162,
-str_163,
-str_164,
-str_165,
-0, 0, str_168,
-str_169,
-str_16a,
-str_16b,
-str_16c,
-str_16d,
-str_16e,
-str_16f,
-str_170,
-str_171,
-str_172,
-str_173,
-str_174,
-str_175,
-str_176,
-str_177,
-str_178,
-str_179,
-str_17a,
-str_17b,
-str_17c,
-str_17d,
-str_17e,
-str_17f,
-0, 0, str_182,
-0, 0, 0, 0, 0, 0, str_189,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_19e,
-str_19f,
-str_1a0,
-str_1a1,
-0, 0, 0, 0, 0, 0, 0, str_1a9,
-0, 0, 0, 0, 0, str_1af,
-str_1b0,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_1c0,
-str_1c1,
-0, 0, str_1c4,
-str_1c5,
-str_1c6,
-str_1c7,
-str_1c8,
-str_1c9,
-str_1ca,
-str_1cb,
-str_1cc,
-str_1cd,
-str_1ce,
-str_1cf,
-str_1d0,
-str_1d1,
-str_1d2,
-str_1d3,
-str_1d4,
-str_1d5,
-str_1d6,
-str_1d7,
-str_1d8,
-str_1d9,
-str_1da,
-str_1db,
-str_1dc,
-0, str_1de,
-str_1df,
-str_1e0,
-str_1e1,
-str_1e2,
-str_1e3,
-0, 0, str_1e6,
-str_1e7,
-str_1e8,
-str_1e9,
-str_1ea,
-str_1eb,
-str_1ec,
-str_1ed,
-str_1ee,
-str_1ef,
-str_1f0,
-str_1f1,
-str_1f2,
-str_1f3,
-str_1f4,
-str_1f5,
-0, 0, str_1f8,
-str_1f9,
-str_1fa,
-str_1fb,
-str_1fc,
-str_1fd,
-str_1fe,
-str_1ff,
-0};
+ * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
+ * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+ * MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+ * EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+ * OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+ * WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+ * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+ * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
-static const unichar_t * const tab_2[] = {
-str_200,
-str_201,
-str_202,
-str_203,
-str_204,
-str_205,
-str_206,
-str_207,
-str_208,
-str_209,
-str_20a,
-str_20b,
-str_20c,
-str_20d,
-str_20e,
-str_20f,
-str_210,
-str_211,
-str_212,
-str_213,
-str_214,
-str_215,
-str_216,
-str_217,
-str_218,
-str_219,
-str_21a,
-str_21b,
-0, 0, str_21e,
-str_21f,
-0, 0, 0, 0, 0, 0, str_226,
-str_227,
-str_228,
-str_229,
-str_22a,
-str_22b,
-str_22c,
-str_22d,
-str_22e,
-str_22f,
-str_230,
-str_231,
-str_232,
-str_233,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_269,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_278,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_292,
-0, 0, 0, 0, 0, 0, str_299,
-0, 0, str_29c,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_2b0,
-str_2b1,
-str_2b2,
-str_2b3,
-str_2b4,
-str_2b5,
-str_2b6,
-str_2b7,
-str_2b8,
-str_2b9,
-str_2ba,
-0, str_2bc,
-0, 0, 0, 0, 0, 0, 0, str_2c4,
-0, str_2c6,
-0, str_2c8,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_2d8,
-str_2d9,
-str_2da,
-str_2db,
-str_2dc,
-str_2dd,
-0, 0, str_2e0,
-str_2e1,
-str_2e2,
-str_2e3,
-str_2e4,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+#include <assert.h>
+#include <utype.h>
 
-static const unichar_t * const tab_3[] = {
-0, str_301,
-str_302,
-str_303,
-0, 0, 0, 0, str_308,
-0, str_30a,
-str_30b,
-0, 0, str_30e,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_327,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_340,
-str_341,
-0, str_343,
-str_344,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_374,
-str_375,
-0, 0, 0, 0, str_37a,
-0, 0, 0, str_37e,
-0, 0, 0, 0, 0, str_384,
-str_385,
-str_386,
-str_387,
-str_388,
-str_389,
-str_38a,
-0, str_38c,
-0, str_38e,
-str_38f,
-str_390,
-str_391,
-str_392,
-str_393,
-0, str_395,
-str_396,
-str_397,
-0, str_399,
-str_39a,
-0, str_39c,
-str_39d,
-0, str_39f,
-0, str_3a1,
-0, 0, str_3a4,
-str_3a5,
-0, str_3a7,
-0, 0, str_3aa,
-str_3ab,
-str_3ac,
-str_3ad,
-str_3ae,
-str_3af,
-str_3b0,
-0, 0, 0, 0, 0, 0, 0, 0, 0, str_3ba,
-0, 0, 0, 0, str_3bf,
-0, str_3c1,
-0, 0, 0, 0, 0, str_3c7,
-0, 0, str_3ca,
-str_3cb,
-str_3cc,
-str_3cd,
-str_3ce,
-0, str_3d0,
-str_3d1,
-str_3d2,
-str_3d3,
-str_3d4,
-str_3d5,
-str_3d6,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_3f0,
-str_3f1,
-str_3f2,
-0, str_3f4,
-str_3f5,
-0, 0, 0, str_3f9,
-0, 0, 0, 0, 0, 0, 0};
+/* decomposition + visual alternates data */
+static const unsigned int unialt_data[] = {
+    0, 32, 0, 32, 776, 0, 97, 0, 32, 772, 0, 50, 0, 51, 0, 32, 769, 0, 956,
+    0, 32, 807, 0, 49, 0, 111, 0, 49, 8260, 52, 0, 49, 8260, 50, 0, 51, 8260,
+    52, 0, 65, 768, 0, 65, 769, 0, 65, 770, 0, 65, 771, 0, 65, 776, 0, 65,
+    778, 0, 67, 807, 0, 69, 768, 0, 69, 769, 0, 69, 770, 0, 69, 776, 0, 73,
+    768, 0, 73, 769, 0, 73, 770, 0, 73, 776, 0, 78, 771, 0, 79, 768, 0, 79,
+    769, 0, 79, 770, 0, 79, 771, 0, 79, 776, 0, 85, 768, 0, 85, 769, 0, 85,
+    770, 0, 85, 776, 0, 89, 769, 0, 97, 768, 0, 97, 769, 0, 97, 770, 0, 97,
+    771, 0, 97, 776, 0, 97, 778, 0, 99, 807, 0, 101, 768, 0, 101, 769, 0,
+    101, 770, 0, 101, 776, 0, 105, 768, 0, 105, 769, 0, 105, 770, 0, 105,
+    776, 0, 110, 771, 0, 111, 768, 0, 111, 769, 0, 111, 770, 0, 111, 771, 0,
+    111, 776, 0, 117, 768, 0, 117, 769, 0, 117, 770, 0, 117, 776, 0, 121,
+    769, 0, 121, 776, 0, 65, 772, 0, 97, 772, 0, 65, 774, 0, 97, 774, 0, 65,
+    808, 0, 97, 808, 0, 67, 769, 0, 99, 769, 0, 67, 770, 0, 99, 770, 0, 67,
+    775, 0, 99, 775, 0, 67, 780, 0, 99, 780, 0, 68, 780, 0, 100, 780, 0, 208,
+    0, 69, 772, 0, 101, 772, 0, 69, 774, 0, 101, 774, 0, 69, 775, 0, 101,
+    775, 0, 69, 808, 0, 101, 808, 0, 69, 780, 0, 101, 780, 0, 71, 770, 0,
+    103, 770, 0, 71, 774, 0, 103, 774, 0, 71, 775, 0, 103, 775, 0, 71, 807,
+    0, 103, 807, 0, 72, 770, 0, 104, 770, 0, 73, 771, 0, 105, 771, 0, 73,
+    772, 0, 105, 772, 0, 73, 774, 0, 105, 774, 0, 73, 808, 0, 105, 808, 0,
+    73, 775, 0, 73, 74, 0, 105, 106, 0, 74, 770, 0, 106, 770, 0, 75, 807, 0,
+    107, 807, 0, 954, 0, 76, 769, 0, 108, 769, 0, 76, 807, 0, 108, 807, 0,
+    76, 780, 0, 108, 780, 0, 76, 183, 0, 108, 183, 0, 78, 769, 0, 110, 769,
+    0, 78, 807, 0, 110, 807, 0, 78, 780, 0, 110, 780, 0, 700, 110, 0, 79,
+    772, 0, 111, 772, 0, 79, 774, 0, 111, 774, 0, 79, 779, 0, 111, 779, 0,
+    79, 69, 0, 111, 101, 0, 82, 769, 0, 114, 769, 0, 82, 807, 0, 114, 807, 0,
+    82, 780, 0, 114, 780, 0, 83, 769, 0, 115, 769, 0, 83, 770, 0, 115, 770,
+    0, 83, 807, 0, 115, 807, 0, 83, 780, 0, 115, 780, 0, 84, 807, 0, 116,
+    807, 0, 84, 780, 0, 116, 780, 0, 85, 771, 0, 117, 771, 0, 85, 772, 0,
+    117, 772, 0, 85, 774, 0, 117, 774, 0, 85, 778, 0, 117, 778, 0, 85, 779,
+    0, 117, 779, 0, 85, 808, 0, 117, 808, 0, 87, 770, 0, 119, 770, 0, 89,
+    770, 0, 121, 770, 0, 89, 776, 0, 90, 769, 0, 122, 769, 0, 90, 775, 0,
+    122, 775, 0, 90, 780, 0, 122, 780, 0, 115, 0, 1026, 0, 208, 0, 951, 0,
+    920, 0, 79, 795, 0, 111, 795, 0, 931, 0, 85, 795, 0, 117, 795, 0, 124, 0,
+    124, 124, 0, 68, 381, 0, 68, 382, 0, 100, 382, 0, 76, 74, 0, 76, 106, 0,
+    108, 106, 0, 78, 74, 0, 78, 106, 0, 110, 106, 0, 65, 780, 0, 97, 780, 0,
+    73, 780, 0, 105, 780, 0, 79, 780, 0, 111, 780, 0, 85, 780, 0, 117, 780,
+    0, 220, 772, 0, 252, 772, 0, 220, 769, 0, 252, 769, 0, 220, 780, 0, 252,
+    780, 0, 220, 768, 0, 252, 768, 0, 196, 772, 0, 228, 772, 0, 550, 772, 0,
+    551, 772, 0, 198, 772, 0, 230, 772, 0, 71, 780, 0, 103, 780, 0, 75, 780,
+    0, 107, 780, 0, 79, 808, 0, 111, 808, 0, 490, 772, 0, 491, 772, 0, 439,
+    780, 0, 658, 780, 0, 106, 780, 0, 68, 90, 0, 68, 122, 0, 100, 122, 0, 71,
+    769, 0, 103, 769, 0, 78, 768, 0, 110, 768, 0, 197, 769, 0, 229, 769, 0,
+    198, 769, 0, 230, 769, 0, 216, 769, 0, 248, 769, 0, 65, 783, 0, 97, 783,
+    0, 65, 785, 0, 97, 785, 0, 69, 783, 0, 101, 783, 0, 69, 785, 0, 101, 785,
+    0, 73, 783, 0, 105, 783, 0, 73, 785, 0, 105, 785, 0, 79, 783, 0, 111,
+    783, 0, 79, 785, 0, 111, 785, 0, 82, 783, 0, 114, 783, 0, 82, 785, 0,
+    114, 785, 0, 85, 783, 0, 117, 783, 0, 85, 785, 0, 117, 785, 0, 83, 806,
+    0, 115, 806, 0, 84, 806, 0, 116, 806, 0, 72, 780, 0, 104, 780, 0, 65,
+    775, 0, 97, 775, 0, 69, 807, 0, 101, 807, 0, 214, 772, 0, 246, 772, 0,
+    213, 772, 0, 245, 772, 0, 79, 775, 0, 111, 775, 0, 558, 772, 0, 559, 772,
+    0, 89, 772, 0, 121, 772, 0, 953, 0, 934, 0, 439, 0, 1074, 0, 1085, 0,
+    104, 0, 614, 0, 106, 0, 114, 0, 633, 0, 635, 0, 641, 0, 119, 0, 121, 0,
+    39, 0, 34, 0, 39, 0, 94, 0, 94, 0, 39, 0, 32, 774, 0, 32, 775, 0, 32,
+    778, 0, 32, 808, 0, 32, 771, 0, 32, 779, 0, 611, 0, 108, 0, 115, 0, 120,
+    0, 661, 0, 180, 0, 94, 0, 126, 0, 168, 0, 176, 0, 34, 0, 34, 0, 184, 0,
+    768, 0, 769, 0, 787, 0, 776, 769, 0, 697, 0, 719, 0, 32, 837, 0, 59, 0,
+    32, 769, 0, 168, 769, 0, 913, 769, 0, 183, 0, 917, 769, 0, 919, 769, 0,
+    921, 769, 0, 927, 769, 0, 933, 769, 0, 937, 769, 0, 970, 769, 0, 65, 0,
+    66, 0, 1043, 0, 69, 0, 90, 0, 72, 0, 73, 0, 75, 0, 77, 0, 78, 0, 79, 0,
+    80, 0, 84, 0, 89, 0, 88, 0, 921, 776, 0, 933, 776, 0, 945, 769, 0, 949,
+    769, 0, 951, 769, 0, 953, 769, 0, 971, 769, 0, 312, 0, 111, 0, 112, 0,
+    120, 0, 953, 776, 0, 965, 776, 0, 959, 769, 0, 965, 769, 0, 969, 769, 0,
+    946, 0, 952, 0, 933, 0, 978, 769, 0, 978, 776, 0, 966, 0, 960, 0, 954, 0,
+    961, 0, 962, 0, 920, 0, 949, 0, 931, 0, 1045, 768, 0, 1045, 776, 0, 1043,
+    769, 0, 83, 0, 73, 0, 1030, 776, 0, 74, 0, 1050, 769, 0, 1048, 768, 0,
+    1059, 774, 0, 65, 0, 66, 0, 915, 0, 69, 0, 1048, 774, 0, 75, 0, 77, 0,
+    72, 0, 79, 0, 928, 0, 80, 0, 67, 0, 84, 0, 934, 0, 88, 0, 97, 0, 101, 0,
+    1080, 774, 0, 954, 0, 111, 0, 960, 0, 112, 0, 99, 0, 121, 0, 120, 0,
+    1077, 768, 0, 1077, 776, 0, 1075, 769, 0, 115, 0, 105, 0, 1110, 776, 0,
+    106, 0, 1082, 769, 0, 1080, 768, 0, 1091, 774, 0, 936, 0, 968, 0, 1140,
+    783, 0, 1141, 783, 0, 89, 0, 73, 0, 1046, 774, 0, 1078, 774, 0, 1040,
+    774, 0, 1072, 774, 0, 1040, 776, 0, 1072, 776, 0, 198, 0, 230, 0, 1045,
+    774, 0, 1077, 774, 0, 1240, 776, 0, 1241, 776, 0, 1046, 776, 0, 1078,
+    776, 0, 1047, 776, 0, 1079, 776, 0, 439, 0, 658, 0, 1048, 772, 0, 1080,
+    772, 0, 1048, 776, 0, 1080, 776, 0, 1054, 776, 0, 1086, 776, 0, 920, 0,
+    952, 0, 1256, 776, 0, 1257, 776, 0, 1069, 776, 0, 1101, 776, 0, 1059,
+    772, 0, 1091, 772, 0, 1059, 776, 0, 1091, 776, 0, 1059, 779, 0, 1091,
+    779, 0, 1063, 776, 0, 1095, 776, 0, 1067, 776, 0, 1099, 776, 0, 83, 0,
+    79, 0, 104, 0, 110, 0, 624, 0, 117, 0, 609, 0, 617, 0, 102, 0, 111, 0,
+    1381, 1410, 0, 58, 0, 1493, 1493, 0, 1493, 1497, 0, 1497, 1497, 0, 8216,
+    0, 65152, 0, 1575, 1619, 0, 1575, 1620, 0, 1608, 1620, 0, 1575, 1621, 0,
+    1610, 1620, 0, 65165, 0, 65167, 0, 65171, 0, 65173, 0, 65177, 0, 65181,
+    0, 65185, 0, 65189, 0, 65193, 0, 65195, 0, 65197, 0, 65199, 0, 65201, 0,
+    65205, 0, 65209, 0, 65213, 0, 65217, 0, 65221, 0, 65225, 0, 65229, 0,
+    65233, 0, 65237, 0, 65241, 0, 65245, 0, 65249, 0, 65253, 0, 65257, 0,
+    65261, 0, 65263, 0, 65265, 0, 37, 0, 44, 0, 8902, 0, 64336, 0, 1575,
+    1652, 0, 1608, 1652, 0, 1735, 1652, 0, 1610, 1652, 0, 64358, 0, 64350, 0,
+    64338, 0, 64342, 0, 64354, 0, 64346, 0, 64374, 0, 64370, 0, 64378, 0,
+    64382, 0, 64392, 0, 64388, 0, 64386, 0, 64390, 0, 64396, 0, 64394, 0,
+    64362, 0, 64366, 0, 64398, 0, 64467, 0, 64402, 0, 64410, 0, 64406, 0,
+    64414, 0, 64416, 0, 64426, 0, 1749, 1620, 0, 64422, 0, 1729, 1620, 0,
+    64480, 0, 64473, 0, 64471, 0, 64475, 0, 64482, 0, 64478, 0, 64508, 0,
+    64484, 0, 64430, 0, 1746, 1620, 0, 183, 0, 2344, 2364, 0, 2352, 2364, 0,
+    2355, 2364, 0, 2325, 2364, 0, 2326, 2364, 0, 2327, 2364, 0, 2332, 2364,
+    0, 2337, 2364, 0, 2338, 2364, 0, 2347, 2364, 0, 2351, 2364, 0, 2503,
+    2494, 0, 2503, 2519, 0, 2465, 2492, 0, 2466, 2492, 0, 2479, 2492, 0,
+    2610, 2620, 0, 2616, 2620, 0, 2582, 2620, 0, 2583, 2620, 0, 2588, 2620,
+    0, 2603, 2620, 0, 2887, 2902, 0, 2887, 2878, 0, 2887, 2903, 0, 2849,
+    2876, 0, 2850, 2876, 0, 2962, 3031, 0, 3014, 3006, 0, 3015, 3006, 0,
+    3014, 3031, 0, 3142, 3158, 0, 3263, 3285, 0, 3270, 3285, 0, 3270, 3286,
+    0, 3270, 3266, 0, 3274, 3285, 0, 3398, 3390, 0, 3399, 3390, 0, 3398,
+    3415, 0, 3545, 3530, 0, 3545, 3535, 0, 3548, 3530, 0, 3545, 3551, 0,
+    3661, 3634, 0, 3789, 3762, 0, 3755, 3737, 0, 3755, 3745, 0, 3851, 0,
+    3906, 4023, 0, 3916, 4023, 0, 3921, 4023, 0, 3926, 4023, 0, 3931, 4023,
+    0, 3904, 4021, 0, 3953, 3954, 0, 3953, 3956, 0, 4018, 3968, 0, 4018,
+    3969, 0, 4019, 3968, 0, 4019, 3969, 0, 3953, 3968, 0, 3986, 4023, 0,
+    3996, 4023, 0, 4001, 4023, 0, 4006, 4023, 0, 4011, 4023, 0, 3984, 4021,
+    0, 4133, 4142, 0, 4316, 0, 4352, 4352, 0, 4355, 4355, 0, 4359, 4359, 0,
+    4361, 4361, 0, 4364, 4364, 0, 4354, 4352, 0, 4354, 4354, 0, 4354, 4355,
+    0, 4354, 4359, 0, 4355, 4352, 0, 4357, 4354, 0, 4357, 4357, 0, 4357,
+    4370, 0, 4357, 4363, 0, 4358, 4359, 0, 4358, 4363, 0, 4359, 4352, 0,
+    4359, 4354, 0, 4359, 4355, 0, 4359, 4361, 0, 4359, 4361, 4352, 0, 4359,
+    4361, 4355, 0, 4359, 4361, 4359, 0, 4359, 4361, 4361, 0, 4359, 4361,
+    4364, 0, 4359, 4364, 0, 4359, 4366, 0, 4359, 4368, 0, 4359, 4369, 0,
+    4359, 4363, 0, 4359, 4359, 4363, 0, 4361, 4352, 0, 4361, 4354, 0, 4361,
+    4355, 0, 4361, 4357, 0, 4361, 4358, 0, 4361, 4359, 0, 4361, 4359, 4352,
+    0, 4361, 4361, 4361, 0, 4361, 4363, 0, 4361, 4364, 0, 4361, 4366, 0,
+    4361, 4367, 0, 4361, 4368, 0, 4361, 4369, 0, 4361, 4370, 0, 4412, 4412,
+    0, 4414, 4414, 0, 4363, 4352, 0, 4363, 4355, 0, 4363, 4358, 0, 4363,
+    4359, 0, 4363, 4361, 0, 4363, 4416, 0, 4363, 4363, 0, 4363, 4364, 0,
+    4363, 4366, 0, 4363, 4368, 0, 4363, 4369, 0, 4364, 4363, 0, 4430, 4430,
+    0, 4432, 4432, 0, 4366, 4367, 0, 4366, 4370, 0, 4369, 4359, 0, 4369,
+    4363, 0, 4370, 4370, 0, 4449, 4469, 0, 4451, 4469, 0, 4453, 4469, 0,
+    4455, 4469, 0, 4457, 4449, 0, 4457, 4450, 0, 4457, 4469, 0, 4462, 4453,
+    0, 4462, 4454, 0, 4462, 4469, 0, 4467, 4469, 0, 4449, 4457, 0, 4449,
+    4462, 0, 4451, 4457, 0, 4451, 4461, 0, 4453, 4457, 0, 4453, 4462, 0,
+    4453, 4467, 0, 4455, 4457, 0, 4455, 4462, 0, 4457, 4453, 0, 4457, 4454,
+    0, 4457, 4456, 0, 4457, 4457, 0, 4457, 4462, 0, 4461, 4451, 0, 4461,
+    4452, 0, 4461, 4455, 0, 4461, 4457, 0, 4461, 4469, 0, 4462, 4449, 0,
+    4462, 4450, 0, 4462, 4453, 4467, 0, 4462, 4456, 0, 4462, 4462, 0, 4466,
+    4449, 0, 4466, 4453, 0, 4466, 4454, 0, 4466, 4455, 0, 4466, 4456, 0,
+    4466, 4462, 0, 4466, 4469, 0, 4467, 4462, 0, 4467, 4467, 0, 4468, 4462,
+    0, 4469, 4449, 0, 4469, 4451, 0, 4469, 4457, 0, 4469, 4462, 0, 4469,
+    4467, 0, 4469, 4510, 0, 4510, 4453, 0, 4510, 4462, 0, 4510, 4469, 0,
+    4510, 4510, 0, 4352, 0, 4520, 4520, 0, 4520, 4538, 0, 4354, 0, 4523,
+    4541, 0, 4523, 4546, 0, 4355, 0, 4357, 0, 4527, 4520, 0, 4527, 4535, 0,
+    4527, 4536, 0, 4527, 4538, 0, 4527, 4544, 0, 4527, 4545, 0, 4527, 4546,
+    0, 4358, 0, 4359, 0, 4536, 4538, 0, 4361, 0, 4538, 4538, 0, 4363, 0,
+    4364, 0, 4366, 0, 4367, 0, 4368, 0, 4369, 0, 4370, 0, 4520, 4527, 0,
+    4520, 4538, 4520, 0, 4523, 4520, 0, 4523, 4526, 0, 4523, 4538, 0, 4523,
+    4587, 0, 4523, 4544, 0, 4526, 4520, 0, 4526, 4527, 0, 4527, 4520, 4538,
+    0, 4527, 4523, 0, 4527, 4526, 0, 4527, 4526, 4546, 0, 4527, 4527, 0,
+    4527, 4535, 4520, 0, 4527, 4535, 4538, 0, 4527, 4536, 4538, 0, 4527,
+    4536, 4546, 0, 4527, 4582, 0, 4527, 4538, 4538, 0, 4527, 4587, 0, 4527,
+    4543, 0, 4527, 4601, 0, 4535, 4520, 0, 4535, 4527, 0, 4535, 4536, 0,
+    4535, 4538, 0, 4535, 4538, 4538, 0, 4535, 4587, 0, 4535, 4542, 0, 4535,
+    4546, 0, 4535, 4540, 0, 4536, 4527, 0, 4536, 4545, 0, 4536, 4546, 0,
+    4536, 4540, 0, 4538, 4520, 0, 4538, 4526, 0, 4538, 4527, 0, 4538, 4536,
+    0, 4416, 0, 4540, 4520, 0, 4540, 4520, 4520, 0, 4540, 4540, 0, 4540,
+    4543, 0, 4428, 0, 4592, 4538, 0, 4592, 4587, 0, 4545, 4536, 0, 4545,
+    4540, 0, 4546, 4523, 0, 4546, 4527, 0, 4546, 4535, 0, 4546, 4536, 0,
+    4441, 0, 68, 0, 82, 0, 84, 0, 1059, 0, 65, 0, 74, 0, 69, 0, 915, 0, 87,
+    0, 77, 0, 72, 0, 920, 0, 71, 0, 104, 0, 90, 0, 1068, 0, 86, 0, 83, 0, 76,
+    0, 67, 0, 80, 0, 75, 0, 66, 0, 6917, 6965, 0, 6919, 6965, 0, 6921, 6965,
+    0, 6923, 6965, 0, 6925, 6965, 0, 6929, 6965, 0, 6970, 6965, 0, 6972,
+    6965, 0, 6974, 6965, 0, 6975, 6965, 0, 6978, 6965, 0, 65, 0, 198, 0, 66,
+    0, 68, 0, 69, 0, 398, 0, 71, 0, 72, 0, 73, 0, 74, 0, 75, 0, 76, 0, 77, 0,
+    78, 0, 79, 0, 546, 0, 80, 0, 82, 0, 84, 0, 85, 0, 87, 0, 97, 0, 592, 0,
+    593, 0, 7426, 0, 98, 0, 100, 0, 101, 0, 601, 0, 603, 0, 604, 0, 103, 0,
+    107, 0, 109, 0, 331, 0, 111, 0, 596, 0, 7446, 0, 7447, 0, 112, 0, 116, 0,
+    117, 0, 7453, 0, 623, 0, 118, 0, 7461, 0, 946, 0, 947, 0, 948, 0, 966, 0,
+    967, 0, 105, 0, 114, 0, 117, 0, 118, 0, 946, 0, 947, 0, 961, 0, 966, 0,
+    967, 0, 1085, 0, 594, 0, 99, 0, 597, 0, 240, 0, 604, 0, 102, 0, 607, 0,
+    609, 0, 613, 0, 616, 0, 617, 0, 618, 0, 7547, 0, 669, 0, 621, 0, 7557, 0,
+    671, 0, 625, 0, 624, 0, 626, 0, 627, 0, 628, 0, 629, 0, 632, 0, 642, 0,
+    643, 0, 427, 0, 649, 0, 650, 0, 7452, 0, 651, 0, 652, 0, 122, 0, 656, 0,
+    657, 0, 658, 0, 952, 0, 65, 805, 0, 97, 805, 0, 66, 775, 0, 98, 775, 0,
+    66, 803, 0, 98, 803, 0, 66, 817, 0, 98, 817, 0, 199, 769, 0, 231, 769, 0,
+    68, 775, 0, 100, 775, 0, 68, 803, 0, 100, 803, 0, 68, 817, 0, 100, 817,
+    0, 68, 807, 0, 100, 807, 0, 68, 813, 0, 100, 813, 0, 274, 768, 0, 275,
+    768, 0, 274, 769, 0, 275, 769, 0, 69, 813, 0, 101, 813, 0, 69, 816, 0,
+    101, 816, 0, 552, 774, 0, 553, 774, 0, 70, 775, 0, 102, 775, 0, 71, 772,
+    0, 103, 772, 0, 72, 775, 0, 104, 775, 0, 72, 803, 0, 104, 803, 0, 72,
+    776, 0, 104, 776, 0, 72, 807, 0, 104, 807, 0, 72, 814, 0, 104, 814, 0,
+    73, 816, 0, 105, 816, 0, 207, 769, 0, 239, 769, 0, 75, 769, 0, 107, 769,
+    0, 75, 803, 0, 107, 803, 0, 75, 817, 0, 107, 817, 0, 76, 803, 0, 108,
+    803, 0, 7734, 772, 0, 7735, 772, 0, 76, 817, 0, 108, 817, 0, 76, 813, 0,
+    108, 813, 0, 77, 769, 0, 109, 769, 0, 77, 775, 0, 109, 775, 0, 77, 803,
+    0, 109, 803, 0, 78, 775, 0, 110, 775, 0, 78, 803, 0, 110, 803, 0, 78,
+    817, 0, 110, 817, 0, 78, 813, 0, 110, 813, 0, 213, 769, 0, 245, 769, 0,
+    213, 776, 0, 245, 776, 0, 332, 768, 0, 333, 768, 0, 332, 769, 0, 333,
+    769, 0, 80, 769, 0, 112, 769, 0, 80, 775, 0, 112, 775, 0, 82, 775, 0,
+    114, 775, 0, 82, 803, 0, 114, 803, 0, 7770, 772, 0, 7771, 772, 0, 82,
+    817, 0, 114, 817, 0, 83, 775, 0, 115, 775, 0, 83, 803, 0, 115, 803, 0,
+    346, 775, 0, 347, 775, 0, 352, 775, 0, 353, 775, 0, 7778, 775, 0, 7779,
+    775, 0, 84, 775, 0, 116, 775, 0, 84, 803, 0, 116, 803, 0, 84, 817, 0,
+    116, 817, 0, 84, 813, 0, 116, 813, 0, 85, 804, 0, 117, 804, 0, 85, 816,
+    0, 117, 816, 0, 85, 813, 0, 117, 813, 0, 360, 769, 0, 361, 769, 0, 362,
+    776, 0, 363, 776, 0, 86, 771, 0, 118, 771, 0, 86, 803, 0, 118, 803, 0,
+    87, 768, 0, 119, 768, 0, 87, 769, 0, 119, 769, 0, 87, 776, 0, 119, 776,
+    0, 87, 775, 0, 119, 775, 0, 87, 803, 0, 119, 803, 0, 88, 775, 0, 120,
+    775, 0, 88, 776, 0, 120, 776, 0, 89, 775, 0, 121, 775, 0, 90, 770, 0,
+    122, 770, 0, 90, 803, 0, 122, 803, 0, 90, 817, 0, 122, 817, 0, 104, 817,
+    0, 116, 776, 0, 119, 778, 0, 121, 778, 0, 97, 702, 0, 383, 775, 0, 65,
+    803, 0, 97, 803, 0, 65, 777, 0, 97, 777, 0, 194, 769, 0, 226, 769, 0,
+    194, 768, 0, 226, 768, 0, 194, 777, 0, 226, 777, 0, 194, 771, 0, 226,
+    771, 0, 7840, 770, 0, 7841, 770, 0, 258, 769, 0, 259, 769, 0, 258, 768,
+    0, 259, 768, 0, 258, 777, 0, 259, 777, 0, 258, 771, 0, 259, 771, 0, 7840,
+    774, 0, 7841, 774, 0, 69, 803, 0, 101, 803, 0, 69, 777, 0, 101, 777, 0,
+    69, 771, 0, 101, 771, 0, 202, 769, 0, 234, 769, 0, 202, 768, 0, 234, 768,
+    0, 202, 777, 0, 234, 777, 0, 202, 771, 0, 234, 771, 0, 7864, 770, 0,
+    7865, 770, 0, 73, 777, 0, 105, 777, 0, 73, 803, 0, 105, 803, 0, 79, 803,
+    0, 111, 803, 0, 79, 777, 0, 111, 777, 0, 212, 769, 0, 244, 769, 0, 212,
+    768, 0, 244, 768, 0, 212, 777, 0, 244, 777, 0, 212, 771, 0, 244, 771, 0,
+    7884, 770, 0, 7885, 770, 0, 416, 769, 0, 417, 769, 0, 416, 768, 0, 417,
+    768, 0, 416, 777, 0, 417, 777, 0, 416, 771, 0, 417, 771, 0, 416, 803, 0,
+    417, 803, 0, 85, 803, 0, 117, 803, 0, 85, 777, 0, 117, 777, 0, 431, 769,
+    0, 432, 769, 0, 431, 768, 0, 432, 768, 0, 431, 777, 0, 432, 777, 0, 431,
+    771, 0, 432, 771, 0, 431, 803, 0, 432, 803, 0, 89, 768, 0, 121, 768, 0,
+    89, 803, 0, 121, 803, 0, 89, 777, 0, 121, 777, 0, 89, 771, 0, 121, 771,
+    0, 945, 787, 0, 945, 788, 0, 7936, 768, 0, 7937, 768, 0, 7936, 769, 0,
+    7937, 769, 0, 7936, 834, 0, 7937, 834, 0, 913, 787, 0, 913, 788, 0, 7944,
+    768, 0, 7945, 768, 0, 7944, 769, 0, 7945, 769, 0, 7944, 834, 0, 7945,
+    834, 0, 949, 787, 0, 949, 788, 0, 7952, 768, 0, 7953, 768, 0, 7952, 769,
+    0, 7953, 769, 0, 917, 787, 0, 917, 788, 0, 7960, 768, 0, 7961, 768, 0,
+    7960, 769, 0, 7961, 769, 0, 951, 787, 0, 951, 788, 0, 7968, 768, 0, 7969,
+    768, 0, 7968, 769, 0, 7969, 769, 0, 7968, 834, 0, 7969, 834, 0, 919, 787,
+    0, 919, 788, 0, 7976, 768, 0, 7977, 768, 0, 7976, 769, 0, 7977, 769, 0,
+    7976, 834, 0, 7977, 834, 0, 953, 787, 0, 953, 788, 0, 7984, 768, 0, 7985,
+    768, 0, 7984, 769, 0, 7985, 769, 0, 7984, 834, 0, 7985, 834, 0, 921, 787,
+    0, 921, 788, 0, 7992, 768, 0, 7993, 768, 0, 7992, 769, 0, 7993, 769, 0,
+    7992, 834, 0, 7993, 834, 0, 959, 787, 0, 959, 788, 0, 8000, 768, 0, 8001,
+    768, 0, 8000, 769, 0, 8001, 769, 0, 927, 787, 0, 927, 788, 0, 8008, 768,
+    0, 8009, 768, 0, 8008, 769, 0, 8009, 769, 0, 965, 787, 0, 965, 788, 0,
+    8016, 768, 0, 8017, 768, 0, 8016, 769, 0, 8017, 769, 0, 8016, 834, 0,
+    8017, 834, 0, 933, 788, 0, 8025, 768, 0, 8025, 769, 0, 8025, 834, 0, 969,
+    787, 0, 969, 788, 0, 8032, 768, 0, 8033, 768, 0, 8032, 769, 0, 8033, 769,
+    0, 8032, 834, 0, 8033, 834, 0, 937, 787, 0, 937, 788, 0, 8040, 768, 0,
+    8041, 768, 0, 8040, 769, 0, 8041, 769, 0, 8040, 834, 0, 8041, 834, 0,
+    945, 768, 0, 940, 0, 949, 768, 0, 941, 0, 951, 768, 0, 942, 0, 953, 768,
+    0, 943, 0, 959, 768, 0, 972, 0, 965, 768, 0, 973, 0, 969, 768, 0, 974, 0,
+    7936, 837, 0, 7937, 837, 0, 7938, 837, 0, 7939, 837, 0, 7940, 837, 0,
+    7941, 837, 0, 7942, 837, 0, 7943, 837, 0, 7944, 837, 0, 7945, 837, 0,
+    7946, 837, 0, 7947, 837, 0, 7948, 837, 0, 7949, 837, 0, 7950, 837, 0,
+    7951, 837, 0, 7968, 837, 0, 7969, 837, 0, 7970, 837, 0, 7971, 837, 0,
+    7972, 837, 0, 7973, 837, 0, 7974, 837, 0, 7975, 837, 0, 7976, 837, 0,
+    7977, 837, 0, 7978, 837, 0, 7979, 837, 0, 7980, 837, 0, 7981, 837, 0,
+    7982, 837, 0, 7983, 837, 0, 8032, 837, 0, 8033, 837, 0, 8034, 837, 0,
+    8035, 837, 0, 8036, 837, 0, 8037, 837, 0, 8038, 837, 0, 8039, 837, 0,
+    8040, 837, 0, 8041, 837, 0, 8042, 837, 0, 8043, 837, 0, 8044, 837, 0,
+    8045, 837, 0, 8046, 837, 0, 8047, 837, 0, 945, 774, 0, 945, 772, 0, 8048,
+    837, 0, 945, 837, 0, 940, 837, 0, 945, 834, 0, 8118, 837, 0, 913, 774, 0,
+    913, 772, 0, 913, 768, 0, 902, 0, 913, 837, 0, 32, 787, 0, 953, 0, 32,
+    787, 0, 32, 834, 0, 168, 834, 0, 8052, 837, 0, 951, 837, 0, 942, 837, 0,
+    951, 834, 0, 8134, 837, 0, 917, 768, 0, 904, 0, 919, 768, 0, 905, 0, 919,
+    837, 0, 8127, 768, 0, 8127, 769, 0, 8127, 834, 0, 953, 774, 0, 953, 772,
+    0, 970, 768, 0, 912, 0, 953, 834, 0, 970, 834, 0, 921, 774, 0, 921, 772,
+    0, 921, 768, 0, 906, 0, 8190, 768, 0, 8190, 769, 0, 8190, 834, 0, 965,
+    774, 0, 965, 772, 0, 971, 768, 0, 944, 0, 961, 787, 0, 961, 788, 0, 965,
+    834, 0, 971, 834, 0, 933, 774, 0, 933, 772, 0, 933, 768, 0, 910, 0, 929,
+    788, 0, 168, 768, 0, 901, 0, 96, 0, 8060, 837, 0, 969, 837, 0, 974, 837,
+    0, 969, 834, 0, 8182, 837, 0, 927, 768, 0, 908, 0, 937, 768, 0, 911, 0,
+    937, 837, 0, 180, 0, 32, 788, 0, 8194, 0, 8195, 0, 32, 0, 32, 0, 32, 0,
+    32, 0, 32, 0, 32, 0, 32, 0, 32, 0, 32, 0, 45, 0, 8208, 0, 45, 0, 45, 0,
+    45, 0, 45, 0, 124, 124, 0, 32, 819, 0, 96, 0, 39, 0, 34, 0, 34, 0, 46, 0,
+    46, 46, 0, 46, 46, 46, 0, 32, 0, 39, 0, 8242, 8242, 0, 8242, 8242, 8242,
+    0, 96, 0, 8245, 8245, 0, 8245, 8245, 8245, 0, 60, 0, 62, 0, 33, 33, 0,
+    32, 773, 0, 63, 63, 0, 63, 33, 0, 33, 63, 0, 8242, 8242, 8242, 8242, 0,
+    32, 0, 48, 0, 105, 0, 52, 0, 53, 0, 54, 0, 55, 0, 56, 0, 57, 0, 43, 0,
+    8722, 0, 61, 0, 40, 0, 41, 0, 110, 0, 48, 0, 49, 0, 50, 0, 51, 0, 52, 0,
+    53, 0, 54, 0, 55, 0, 56, 0, 57, 0, 43, 0, 8722, 0, 61, 0, 40, 0, 41, 0,
+    97, 0, 101, 0, 111, 0, 120, 0, 601, 0, 104, 0, 107, 0, 108, 0, 109, 0,
+    110, 0, 112, 0, 115, 0, 116, 0, 82, 115, 0, 97, 47, 99, 0, 97, 47, 115,
+    0, 67, 0, 176, 67, 0, 99, 47, 111, 0, 99, 47, 117, 0, 400, 0, 176, 70, 0,
+    103, 0, 72, 0, 72, 0, 72, 0, 104, 0, 295, 0, 73, 0, 73, 0, 76, 0, 108, 0,
+    78, 0, 78, 111, 0, 80, 0, 81, 0, 82, 0, 82, 0, 82, 0, 83, 77, 0, 84, 69,
+    76, 0, 84, 77, 0, 90, 0, 937, 0, 90, 0, 75, 0, 197, 0, 66, 0, 67, 0, 101,
+    0, 69, 0, 70, 0, 77, 0, 111, 0, 1488, 0, 1489, 0, 1490, 0, 1491, 0, 105,
+    0, 70, 65, 88, 0, 960, 0, 947, 0, 915, 0, 928, 0, 8721, 0, 68, 0, 100, 0,
+    101, 0, 105, 0, 106, 0, 49, 8260, 55, 0, 49, 8260, 57, 0, 49, 8260, 49,
+    48, 0, 49, 8260, 51, 0, 50, 8260, 51, 0, 49, 8260, 53, 0, 50, 8260, 53,
+    0, 51, 8260, 53, 0, 52, 8260, 53, 0, 49, 8260, 54, 0, 53, 8260, 54, 0,
+    49, 8260, 56, 0, 51, 8260, 56, 0, 53, 8260, 56, 0, 55, 8260, 56, 0, 49,
+    8260, 0, 73, 0, 73, 73, 0, 73, 73, 73, 0, 73, 86, 0, 86, 0, 86, 73, 0,
+    86, 73, 73, 0, 86, 73, 73, 73, 0, 73, 88, 0, 88, 0, 88, 73, 0, 88, 73,
+    73, 0, 76, 0, 67, 0, 68, 0, 77, 0, 105, 0, 105, 105, 0, 105, 105, 105, 0,
+    105, 118, 0, 118, 0, 118, 105, 0, 118, 105, 105, 0, 118, 105, 105, 105,
+    0, 105, 120, 0, 120, 0, 120, 105, 0, 120, 105, 105, 0, 108, 0, 99, 0,
+    100, 0, 109, 0, 48, 8260, 51, 0, 8592, 824, 0, 8594, 824, 0, 8596, 824,
+    0, 8656, 824, 0, 8660, 824, 0, 8658, 824, 0, 8707, 824, 0, 216, 0, 916,
+    0, 8712, 824, 0, 8715, 824, 0, 928, 0, 931, 0, 45, 0, 47, 0, 92, 0, 42,
+    0, 176, 0, 183, 0, 124, 0, 8739, 824, 0, 124, 124, 0, 8741, 824, 0, 8747,
+    8747, 0, 8747, 8747, 8747, 0, 8750, 8750, 0, 8750, 8750, 8750, 0, 58, 0,
+    126, 0, 8764, 824, 0, 8771, 824, 0, 8773, 824, 0, 8776, 824, 0, 61, 824,
+    0, 8801, 824, 0, 171, 0, 187, 0, 8781, 824, 0, 60, 824, 0, 62, 824, 0,
+    8804, 824, 0, 8805, 824, 0, 8818, 824, 0, 8819, 824, 0, 8822, 824, 0,
+    8823, 824, 0, 8826, 824, 0, 8827, 824, 0, 8834, 824, 0, 8835, 824, 0,
+    8838, 824, 0, 8839, 824, 0, 664, 0, 8866, 824, 0, 8872, 824, 0, 8873,
+    824, 0, 8875, 824, 0, 9674, 0, 183, 0, 8828, 824, 0, 8829, 824, 0, 8849,
+    824, 0, 8850, 824, 0, 8882, 824, 0, 8883, 824, 0, 8884, 824, 0, 8885,
+    824, 0, 183, 183, 183, 0, 94, 0, 12296, 0, 12297, 0, 953, 0, 961, 0, 969,
+    0, 945, 0, 78, 85, 76, 0, 83, 79, 72, 0, 83, 84, 88, 0, 69, 84, 88, 0,
+    69, 79, 84, 0, 69, 78, 65, 0, 65, 67, 75, 0, 66, 69, 76, 0, 66, 83, 0,
+    72, 84, 0, 76, 70, 0, 86, 84, 0, 70, 70, 0, 67, 82, 0, 83, 79, 0, 83, 73,
+    0, 68, 76, 69, 0, 68, 67, 49, 0, 68, 67, 50, 0, 68, 67, 51, 0, 68, 67,
+    52, 0, 78, 65, 75, 0, 83, 89, 78, 0, 69, 84, 66, 0, 67, 65, 78, 0, 69,
+    77, 0, 83, 85, 66, 0, 69, 83, 67, 0, 70, 83, 0, 71, 83, 0, 82, 83, 0, 85,
+    83, 0, 83, 80, 0, 68, 69, 76, 0, 384, 0, 49, 0, 50, 0, 51, 0, 52, 0, 53,
+    0, 54, 0, 55, 0, 56, 0, 57, 0, 49, 48, 0, 49, 49, 0, 49, 50, 0, 49, 51,
+    0, 49, 52, 0, 49, 53, 0, 49, 54, 0, 49, 55, 0, 49, 56, 0, 49, 57, 0, 50,
+    48, 0, 40, 49, 41, 0, 40, 50, 41, 0, 40, 51, 41, 0, 40, 52, 41, 0, 40,
+    53, 41, 0, 40, 54, 41, 0, 40, 55, 41, 0, 40, 56, 41, 0, 40, 57, 41, 0,
+    40, 49, 48, 41, 0, 40, 49, 49, 41, 0, 40, 49, 50, 41, 0, 40, 49, 51, 41,
+    0, 40, 49, 52, 41, 0, 40, 49, 53, 41, 0, 40, 49, 54, 41, 0, 40, 49, 55,
+    41, 0, 40, 49, 56, 41, 0, 40, 49, 57, 41, 0, 40, 50, 48, 41, 0, 49, 46,
+    0, 50, 46, 0, 51, 46, 0, 52, 46, 0, 53, 46, 0, 54, 46, 0, 55, 46, 0, 56,
+    46, 0, 57, 46, 0, 49, 48, 46, 0, 49, 49, 46, 0, 49, 50, 46, 0, 49, 51,
+    46, 0, 49, 52, 46, 0, 49, 53, 46, 0, 49, 54, 46, 0, 49, 55, 46, 0, 49,
+    56, 46, 0, 49, 57, 46, 0, 50, 48, 46, 0, 40, 97, 41, 0, 40, 98, 41, 0,
+    40, 99, 41, 0, 40, 100, 41, 0, 40, 101, 41, 0, 40, 102, 41, 0, 40, 103,
+    41, 0, 40, 104, 41, 0, 40, 105, 41, 0, 40, 106, 41, 0, 40, 107, 41, 0,
+    40, 108, 41, 0, 40, 109, 41, 0, 40, 110, 41, 0, 40, 111, 41, 0, 40, 112,
+    41, 0, 40, 113, 41, 0, 40, 114, 41, 0, 40, 115, 41, 0, 40, 116, 41, 0,
+    40, 117, 41, 0, 40, 118, 41, 0, 40, 119, 41, 0, 40, 120, 41, 0, 40, 121,
+    41, 0, 40, 122, 41, 0, 65, 0, 66, 0, 67, 0, 68, 0, 69, 0, 70, 0, 71, 0,
+    72, 0, 73, 0, 74, 0, 75, 0, 76, 0, 77, 0, 78, 0, 79, 0, 80, 0, 81, 0, 82,
+    0, 83, 0, 84, 0, 85, 0, 86, 0, 87, 0, 88, 0, 89, 0, 90, 0, 97, 0, 98, 0,
+    99, 0, 100, 0, 101, 0, 102, 0, 103, 0, 104, 0, 105, 0, 106, 0, 107, 0,
+    108, 0, 109, 0, 110, 0, 111, 0, 112, 0, 113, 0, 114, 0, 115, 0, 116, 0,
+    117, 0, 118, 0, 119, 0, 120, 0, 121, 0, 122, 0, 48, 0, 8212, 0, 124, 0,
+    8710, 0, 8227, 0, 8711, 0, 9674, 0, 176, 0, 9674, 0, 42, 0, 124, 0, 33,
+    0, 8747, 8747, 8747, 8747, 0, 58, 58, 61, 0, 61, 61, 0, 61, 61, 61, 0,
+    10973, 824, 0, 106, 0, 86, 0, 11617, 0, 65375, 0, 65376, 0, 27597, 0,
+    40863, 0, 19968, 0, 20008, 0, 20022, 0, 20031, 0, 20057, 0, 20101, 0,
+    20108, 0, 20128, 0, 20154, 0, 20799, 0, 20837, 0, 20843, 0, 20866, 0,
+    20886, 0, 20907, 0, 20960, 0, 20981, 0, 20992, 0, 21147, 0, 21241, 0,
+    21269, 0, 21274, 0, 21304, 0, 21313, 0, 21340, 0, 21353, 0, 21378, 0,
+    21430, 0, 21448, 0, 21475, 0, 22231, 0, 22303, 0, 22763, 0, 22786, 0,
+    22794, 0, 22805, 0, 22823, 0, 22899, 0, 23376, 0, 23424, 0, 23544, 0,
+    23567, 0, 23586, 0, 23608, 0, 23662, 0, 23665, 0, 24027, 0, 24037, 0,
+    24049, 0, 24062, 0, 24178, 0, 24186, 0, 24191, 0, 24308, 0, 24318, 0,
+    24331, 0, 24339, 0, 24400, 0, 24417, 0, 24435, 0, 24515, 0, 25096, 0,
+    25142, 0, 25163, 0, 25903, 0, 25908, 0, 25991, 0, 26007, 0, 26020, 0,
+    26041, 0, 26080, 0, 26085, 0, 26352, 0, 26376, 0, 26408, 0, 27424, 0,
+    27490, 0, 27513, 0, 27571, 0, 27595, 0, 27604, 0, 27611, 0, 27663, 0,
+    27668, 0, 27700, 0, 28779, 0, 29226, 0, 29238, 0, 29243, 0, 29247, 0,
+    29255, 0, 29273, 0, 29275, 0, 29356, 0, 29572, 0, 29577, 0, 29916, 0,
+    29926, 0, 29976, 0, 29983, 0, 29992, 0, 30000, 0, 30091, 0, 30098, 0,
+    30326, 0, 30333, 0, 30382, 0, 30399, 0, 30446, 0, 30683, 0, 30690, 0,
+    30707, 0, 31034, 0, 31160, 0, 31166, 0, 31348, 0, 31435, 0, 31481, 0,
+    31859, 0, 31992, 0, 32566, 0, 32593, 0, 32650, 0, 32701, 0, 32769, 0,
+    32780, 0, 32786, 0, 32819, 0, 32895, 0, 32905, 0, 33251, 0, 33258, 0,
+    33267, 0, 33276, 0, 33292, 0, 33307, 0, 33311, 0, 33390, 0, 33394, 0,
+    33400, 0, 34381, 0, 34411, 0, 34880, 0, 34892, 0, 34915, 0, 35198, 0,
+    35211, 0, 35282, 0, 35328, 0, 35895, 0, 35910, 0, 35925, 0, 35960, 0,
+    35997, 0, 36196, 0, 36208, 0, 36275, 0, 36523, 0, 36554, 0, 36763, 0,
+    36784, 0, 36789, 0, 37009, 0, 37193, 0, 37318, 0, 37324, 0, 37329, 0,
+    38263, 0, 38272, 0, 38428, 0, 38582, 0, 38585, 0, 38632, 0, 38737, 0,
+    38750, 0, 38754, 0, 38761, 0, 38859, 0, 38893, 0, 38899, 0, 38913, 0,
+    39080, 0, 39131, 0, 39135, 0, 39318, 0, 39321, 0, 39340, 0, 39592, 0,
+    39640, 0, 39647, 0, 39717, 0, 39727, 0, 39730, 0, 39740, 0, 39770, 0,
+    40165, 0, 40565, 0, 40575, 0, 40613, 0, 40635, 0, 40643, 0, 40653, 0,
+    40657, 0, 40697, 0, 40701, 0, 40718, 0, 40723, 0, 40736, 0, 40763, 0,
+    40778, 0, 40786, 0, 40845, 0, 40860, 0, 40864, 0, 32, 0, 44, 0, 60, 0,
+    62, 0, 171, 0, 187, 0, 12306, 0, 21313, 0, 21316, 0, 21317, 0, 12363,
+    12441, 0, 12365, 12441, 0, 12367, 12441, 0, 12369, 12441, 0, 12371,
+    12441, 0, 12373, 12441, 0, 12375, 12441, 0, 12377, 12441, 0, 12379,
+    12441, 0, 12381, 12441, 0, 12383, 12441, 0, 12385, 12441, 0, 12388,
+    12441, 0, 12390, 12441, 0, 12392, 12441, 0, 12399, 12441, 0, 12399,
+    12442, 0, 12402, 12441, 0, 12402, 12442, 0, 12405, 12441, 0, 12405,
+    12442, 0, 12408, 12441, 0, 12408, 12442, 0, 12411, 12441, 0, 12411,
+    12442, 0, 12358, 12441, 0, 32, 12441, 0, 32, 12442, 0, 12445, 12441, 0,
+    12424, 12426, 0, 12459, 12441, 0, 12461, 12441, 0, 12463, 12441, 0,
+    12465, 12441, 0, 12467, 12441, 0, 12469, 12441, 0, 12471, 12441, 0,
+    12473, 12441, 0, 12475, 12441, 0, 12477, 12441, 0, 12479, 12441, 0,
+    12481, 12441, 0, 12484, 12441, 0, 12486, 12441, 0, 12488, 12441, 0,
+    12495, 12441, 0, 12495, 12442, 0, 12498, 12441, 0, 12498, 12442, 0,
+    12501, 12441, 0, 12501, 12442, 0, 12504, 12441, 0, 12504, 12442, 0,
+    12507, 12441, 0, 12507, 12442, 0, 12454, 12441, 0, 12527, 12441, 0,
+    12528, 12441, 0, 12529, 12441, 0, 12530, 12441, 0, 12541, 12441, 0,
+    12467, 12488, 0, 4352, 0, 4353, 0, 4522, 0, 4354, 0, 4524, 0, 4525, 0,
+    4355, 0, 4356, 0, 4357, 0, 4528, 0, 4529, 0, 4530, 0, 4531, 0, 4532, 0,
+    4533, 0, 4378, 0, 4358, 0, 4359, 0, 4360, 0, 4385, 0, 4361, 0, 4362, 0,
+    4363, 0, 4364, 0, 4365, 0, 4366, 0, 4367, 0, 4368, 0, 4369, 0, 4370, 0,
+    4449, 0, 4450, 0, 4451, 0, 4452, 0, 4453, 0, 4454, 0, 4455, 0, 4456, 0,
+    4457, 0, 4458, 0, 4459, 0, 4460, 0, 4461, 0, 4462, 0, 4463, 0, 4464, 0,
+    4465, 0, 4466, 0, 4467, 0, 4468, 0, 4469, 0, 4448, 0, 4372, 0, 4373, 0,
+    4551, 0, 4552, 0, 4556, 0, 4558, 0, 4563, 0, 4567, 0, 4569, 0, 4380, 0,
+    4573, 0, 4575, 0, 4381, 0, 4382, 0, 4384, 0, 4386, 0, 4387, 0, 4391, 0,
+    4393, 0, 4395, 0, 4396, 0, 4397, 0, 4398, 0, 4399, 0, 4402, 0, 4406, 0,
+    4416, 0, 4423, 0, 4428, 0, 4593, 0, 4594, 0, 4439, 0, 4440, 0, 4441, 0,
+    4484, 0, 4485, 0, 4488, 0, 4497, 0, 4498, 0, 4500, 0, 4510, 0, 4513, 0,
+    19968, 0, 20108, 0, 19977, 0, 22235, 0, 19978, 0, 20013, 0, 19979, 0,
+    30002, 0, 20057, 0, 19993, 0, 19969, 0, 22825, 0, 22320, 0, 20154, 0, 40,
+    4352, 41, 0, 40, 4354, 41, 0, 40, 4355, 41, 0, 40, 4357, 41, 0, 40, 4358,
+    41, 0, 40, 4359, 41, 0, 40, 4361, 41, 0, 40, 4363, 41, 0, 40, 4364, 41,
+    0, 40, 4366, 41, 0, 40, 4367, 41, 0, 40, 4368, 41, 0, 40, 4369, 41, 0,
+    40, 4370, 41, 0, 40, 4352, 4449, 41, 0, 40, 4354, 4449, 41, 0, 40, 4355,
+    4449, 41, 0, 40, 4357, 4449, 41, 0, 40, 4358, 4449, 41, 0, 40, 4359,
+    4449, 41, 0, 40, 4361, 4449, 41, 0, 40, 4363, 4449, 41, 0, 40, 4364,
+    4449, 41, 0, 40, 4366, 4449, 41, 0, 40, 4367, 4449, 41, 0, 40, 4368,
+    4449, 41, 0, 40, 4369, 4449, 41, 0, 40, 4370, 4449, 41, 0, 40, 4364,
+    4462, 41, 0, 40, 4363, 4457, 4364, 4453, 4523, 41, 0, 40, 4363, 4457,
+    4370, 4462, 41, 0, 40, 19968, 41, 0, 40, 20108, 41, 0, 40, 19977, 41, 0,
+    40, 22235, 41, 0, 40, 20116, 41, 0, 40, 20845, 41, 0, 40, 19971, 41, 0,
+    40, 20843, 41, 0, 40, 20061, 41, 0, 40, 21313, 41, 0, 40, 26376, 41, 0,
+    40, 28779, 41, 0, 40, 27700, 41, 0, 40, 26408, 41, 0, 40, 37329, 41, 0,
+    40, 22303, 41, 0, 40, 26085, 41, 0, 40, 26666, 41, 0, 40, 26377, 41, 0,
+    40, 31038, 41, 0, 40, 21517, 41, 0, 40, 29305, 41, 0, 40, 36001, 41, 0,
+    40, 31069, 41, 0, 40, 21172, 41, 0, 40, 20195, 41, 0, 40, 21628, 41, 0,
+    40, 23398, 41, 0, 40, 30435, 41, 0, 40, 20225, 41, 0, 40, 36039, 41, 0,
+    40, 21332, 41, 0, 40, 31085, 41, 0, 40, 20241, 41, 0, 40, 33258, 41, 0,
+    40, 33267, 41, 0, 21839, 0, 24188, 0, 25991, 0, 31631, 0, 80, 84, 69, 0,
+    50, 49, 0, 50, 50, 0, 50, 51, 0, 50, 52, 0, 50, 53, 0, 50, 54, 0, 50, 55,
+    0, 50, 56, 0, 50, 57, 0, 51, 48, 0, 51, 49, 0, 51, 50, 0, 51, 51, 0, 51,
+    52, 0, 51, 53, 0, 4352, 0, 4354, 0, 4355, 0, 4357, 0, 4358, 0, 4359, 0,
+    4361, 0, 4363, 0, 4364, 0, 4366, 0, 4367, 0, 4368, 0, 4369, 0, 4370, 0,
+    4352, 4449, 0, 4354, 4449, 0, 4355, 4449, 0, 4357, 4449, 0, 4358, 4449,
+    0, 4359, 4449, 0, 4361, 4449, 0, 4363, 4449, 0, 4364, 4449, 0, 4366,
+    4449, 0, 4367, 4449, 0, 4368, 4449, 0, 4369, 4449, 0, 4370, 4449, 0,
+    4366, 4449, 4535, 4352, 4457, 0, 4364, 4462, 4363, 4468, 0, 4363, 4462,
+    0, 19968, 0, 20108, 0, 19977, 0, 22235, 0, 20116, 0, 20845, 0, 19971, 0,
+    20843, 0, 20061, 0, 21313, 0, 26376, 0, 28779, 0, 27700, 0, 26408, 0,
+    37329, 0, 22303, 0, 26085, 0, 26666, 0, 26377, 0, 31038, 0, 21517, 0,
+    29305, 0, 36001, 0, 31069, 0, 21172, 0, 31192, 0, 30007, 0, 22899, 0,
+    36969, 0, 20778, 0, 21360, 0, 27880, 0, 38917, 0, 20241, 0, 20889, 0,
+    27491, 0, 19978, 0, 20013, 0, 19979, 0, 24038, 0, 21491, 0, 21307, 0,
+    23447, 0, 23398, 0, 30435, 0, 20225, 0, 36039, 0, 21332, 0, 22812, 0, 51,
+    54, 0, 51, 55, 0, 51, 56, 0, 51, 57, 0, 52, 48, 0, 52, 49, 0, 52, 50, 0,
+    52, 51, 0, 52, 52, 0, 52, 53, 0, 52, 54, 0, 52, 55, 0, 52, 56, 0, 52, 57,
+    0, 53, 48, 0, 49, 26376, 0, 50, 26376, 0, 51, 26376, 0, 52, 26376, 0, 53,
+    26376, 0, 54, 26376, 0, 55, 26376, 0, 56, 26376, 0, 57, 26376, 0, 49, 48,
+    26376, 0, 49, 49, 26376, 0, 49, 50, 26376, 0, 72, 103, 0, 101, 114, 103,
+    0, 101, 86, 0, 76, 84, 68, 0, 12450, 0, 12452, 0, 12454, 0, 12456, 0,
+    12458, 0, 12459, 0, 12461, 0, 12463, 0, 12465, 0, 12467, 0, 12469, 0,
+    12471, 0, 12473, 0, 12475, 0, 12477, 0, 12479, 0, 12481, 0, 12484, 0,
+    12486, 0, 12488, 0, 12490, 0, 12491, 0, 12492, 0, 12493, 0, 12494, 0,
+    12495, 0, 12498, 0, 12501, 0, 12504, 0, 12507, 0, 12510, 0, 12511, 0,
+    12512, 0, 12513, 0, 12514, 0, 12516, 0, 12518, 0, 12520, 0, 12521, 0,
+    12522, 0, 12523, 0, 12524, 0, 12525, 0, 12527, 0, 12528, 0, 12529, 0,
+    12530, 0, 20196, 21644, 0, 12450, 12497, 12540, 12488, 0, 12450, 12523,
+    12501, 12449, 0, 12450, 12531, 12506, 12450, 0, 12450, 12540, 12523, 0,
+    12452, 12491, 12531, 12464, 0, 12452, 12531, 12481, 0, 12454, 12457,
+    12531, 0, 12456, 12473, 12463, 12540, 12489, 0, 12456, 12540, 12459,
+    12540, 0, 12458, 12531, 12473, 0, 12458, 12540, 12512, 0, 12459, 12452,
+    12522, 0, 12459, 12521, 12483, 12488, 0, 12459, 12525, 12522, 12540, 0,
+    12460, 12525, 12531, 0, 12460, 12531, 12510, 0, 12462, 12460, 0, 12462,
+    12491, 12540, 0, 12461, 12517, 12522, 12540, 0, 12462, 12523, 12480,
+    12540, 0, 12461, 12525, 0, 12461, 12525, 12464, 12521, 12512, 0, 12461,
+    12525, 12513, 12540, 12488, 12523, 0, 12461, 12525, 12527, 12483, 12488,
+    0, 12464, 12521, 12512, 0, 12464, 12521, 12512, 12488, 12531, 0, 12463,
+    12523, 12476, 12452, 12525, 0, 12463, 12525, 12540, 12493, 0, 12465,
+    12540, 12473, 0, 12467, 12523, 12490, 0, 12467, 12540, 12509, 0, 12469,
+    12452, 12463, 12523, 0, 12469, 12531, 12481, 12540, 12512, 0, 12471,
+    12522, 12531, 12464, 0, 12475, 12531, 12481, 0, 12475, 12531, 12488, 0,
+    12480, 12540, 12473, 0, 12487, 12471, 0, 12489, 12523, 0, 12488, 12531,
+    0, 12490, 12494, 0, 12494, 12483, 12488, 0, 12495, 12452, 12484, 0,
+    12497, 12540, 12475, 12531, 12488, 0, 12497, 12540, 12484, 0, 12496,
+    12540, 12524, 12523, 0, 12500, 12450, 12473, 12488, 12523, 0, 12500,
+    12463, 12523, 0, 12500, 12467, 0, 12499, 12523, 0, 12501, 12449, 12521,
+    12483, 12489, 0, 12501, 12451, 12540, 12488, 0, 12502, 12483, 12471,
+    12455, 12523, 0, 12501, 12521, 12531, 0, 12504, 12463, 12479, 12540,
+    12523, 0, 12506, 12477, 0, 12506, 12491, 12498, 0, 12504, 12523, 12484,
+    0, 12506, 12531, 12473, 0, 12506, 12540, 12472, 0, 12505, 12540, 12479,
+    0, 12509, 12452, 12531, 12488, 0, 12508, 12523, 12488, 0, 12507, 12531,
+    0, 12509, 12531, 12489, 0, 12507, 12540, 12523, 0, 12507, 12540, 12531,
+    0, 12510, 12452, 12463, 12525, 0, 12510, 12452, 12523, 0, 12510, 12483,
+    12495, 0, 12510, 12523, 12463, 0, 12510, 12531, 12471, 12519, 12531, 0,
+    12511, 12463, 12525, 12531, 0, 12511, 12522, 0, 12511, 12522, 12496,
+    12540, 12523, 0, 12513, 12460, 0, 12513, 12460, 12488, 12531, 0, 12513,
+    12540, 12488, 12523, 0, 12516, 12540, 12489, 0, 12516, 12540, 12523, 0,
+    12518, 12450, 12531, 0, 12522, 12483, 12488, 12523, 0, 12522, 12521, 0,
+    12523, 12500, 12540, 0, 12523, 12540, 12502, 12523, 0, 12524, 12512, 0,
+    12524, 12531, 12488, 12466, 12531, 0, 12527, 12483, 12488, 0, 48, 28857,
+    0, 49, 28857, 0, 50, 28857, 0, 51, 28857, 0, 52, 28857, 0, 53, 28857, 0,
+    54, 28857, 0, 55, 28857, 0, 56, 28857, 0, 57, 28857, 0, 49, 48, 28857, 0,
+    49, 49, 28857, 0, 49, 50, 28857, 0, 49, 51, 28857, 0, 49, 52, 28857, 0,
+    49, 53, 28857, 0, 49, 54, 28857, 0, 49, 55, 28857, 0, 49, 56, 28857, 0,
+    49, 57, 28857, 0, 50, 48, 28857, 0, 50, 49, 28857, 0, 50, 50, 28857, 0,
+    50, 51, 28857, 0, 50, 52, 28857, 0, 104, 80, 97, 0, 100, 97, 0, 65, 85,
+    0, 98, 97, 114, 0, 111, 86, 0, 112, 99, 0, 100, 109, 0, 100, 109, 178, 0,
+    100, 109, 179, 0, 73, 85, 0, 24179, 25104, 0, 26157, 21644, 0, 22823,
+    27491, 0, 26126, 27835, 0, 26666, 24335, 20250, 31038, 0, 112, 65, 0,
+    110, 65, 0, 956, 65, 0, 109, 65, 0, 107, 65, 0, 75, 66, 0, 77, 66, 0, 71,
+    66, 0, 99, 97, 108, 0, 107, 99, 97, 108, 0, 112, 70, 0, 110, 70, 0, 956,
+    70, 0, 956, 103, 0, 109, 103, 0, 107, 103, 0, 72, 122, 0, 107, 72, 122,
+    0, 77, 72, 122, 0, 71, 72, 122, 0, 84, 72, 122, 0, 956, 8467, 0, 109,
+    8467, 0, 100, 8467, 0, 107, 8467, 0, 102, 109, 0, 110, 109, 0, 956, 109,
+    0, 109, 109, 0, 99, 109, 0, 107, 109, 0, 109, 109, 178, 0, 99, 109, 178,
+    0, 109, 178, 0, 107, 109, 178, 0, 109, 109, 179, 0, 99, 109, 179, 0, 109,
+    179, 0, 107, 109, 179, 0, 109, 8725, 115, 0, 109, 8725, 115, 178, 0, 80,
+    97, 0, 107, 80, 97, 0, 77, 80, 97, 0, 71, 80, 97, 0, 114, 97, 100, 0,
+    114, 97, 100, 8725, 115, 0, 114, 97, 100, 8725, 115, 178, 0, 112, 115, 0,
+    110, 115, 0, 956, 115, 0, 109, 115, 0, 112, 86, 0, 110, 86, 0, 956, 86,
+    0, 109, 86, 0, 107, 86, 0, 77, 86, 0, 112, 87, 0, 110, 87, 0, 956, 87, 0,
+    109, 87, 0, 107, 87, 0, 77, 87, 0, 107, 937, 0, 77, 937, 0, 97, 46, 109,
+    46, 0, 66, 113, 0, 99, 99, 0, 99, 100, 0, 67, 8725, 107, 103, 0, 67, 111,
+    46, 0, 100, 66, 0, 71, 121, 0, 104, 97, 0, 72, 80, 0, 105, 110, 0, 75,
+    75, 0, 75, 77, 0, 107, 116, 0, 108, 109, 0, 108, 110, 0, 108, 111, 103,
+    0, 108, 120, 0, 109, 98, 0, 109, 105, 108, 0, 109, 111, 108, 0, 80, 72,
+    0, 112, 46, 109, 46, 0, 80, 80, 77, 0, 80, 82, 0, 115, 114, 0, 83, 118,
+    0, 87, 98, 0, 86, 8725, 109, 0, 65, 8725, 109, 0, 49, 26085, 0, 50,
+    26085, 0, 51, 26085, 0, 52, 26085, 0, 53, 26085, 0, 54, 26085, 0, 55,
+    26085, 0, 56, 26085, 0, 57, 26085, 0, 49, 48, 26085, 0, 49, 49, 26085, 0,
+    49, 50, 26085, 0, 49, 51, 26085, 0, 49, 52, 26085, 0, 49, 53, 26085, 0,
+    49, 54, 26085, 0, 49, 55, 26085, 0, 49, 56, 26085, 0, 49, 57, 26085, 0,
+    50, 48, 26085, 0, 50, 49, 26085, 0, 50, 50, 26085, 0, 50, 51, 26085, 0,
+    50, 52, 26085, 0, 50, 53, 26085, 0, 50, 54, 26085, 0, 50, 55, 26085, 0,
+    50, 56, 26085, 0, 50, 57, 26085, 0, 51, 48, 26085, 0, 51, 49, 26085, 0,
+    103, 97, 108, 0, 1098, 0, 1100, 0, 42863, 0, 294, 0, 339, 0, 42791, 0,
+    43831, 0, 619, 0, 43858, 0, 653, 0, 35912, 0, 26356, 0, 36554, 0, 36040,
+    0, 28369, 0, 20018, 0, 21477, 0, 40860, 0, 40860, 0, 22865, 0, 37329, 0,
+    21895, 0, 22856, 0, 25078, 0, 30313, 0, 32645, 0, 34367, 0, 34746, 0,
+    35064, 0, 37007, 0, 27138, 0, 27931, 0, 28889, 0, 29662, 0, 33853, 0,
+    37226, 0, 39409, 0, 20098, 0, 21365, 0, 27396, 0, 29211, 0, 34349, 0,
+    40478, 0, 23888, 0, 28651, 0, 34253, 0, 35172, 0, 25289, 0, 33240, 0,
+    34847, 0, 24266, 0, 26391, 0, 28010, 0, 29436, 0, 37070, 0, 20358, 0,
+    20919, 0, 21214, 0, 25796, 0, 27347, 0, 29200, 0, 30439, 0, 32769, 0,
+    34310, 0, 34396, 0, 36335, 0, 38706, 0, 39791, 0, 40442, 0, 30860, 0,
+    31103, 0, 32160, 0, 33737, 0, 37636, 0, 40575, 0, 35542, 0, 22751, 0,
+    24324, 0, 31840, 0, 32894, 0, 29282, 0, 30922, 0, 36034, 0, 38647, 0,
+    22744, 0, 23650, 0, 27155, 0, 28122, 0, 28431, 0, 32047, 0, 32311, 0,
+    38475, 0, 21202, 0, 32907, 0, 20956, 0, 20940, 0, 31260, 0, 32190, 0,
+    33777, 0, 38517, 0, 35712, 0, 25295, 0, 27138, 0, 35582, 0, 20025, 0,
+    23527, 0, 24594, 0, 29575, 0, 30064, 0, 21271, 0, 30971, 0, 20415, 0,
+    24489, 0, 19981, 0, 27852, 0, 25976, 0, 32034, 0, 21443, 0, 22622, 0,
+    30465, 0, 33865, 0, 35498, 0, 27578, 0, 36784, 0, 27784, 0, 25342, 0,
+    33509, 0, 25504, 0, 30053, 0, 20142, 0, 20841, 0, 20937, 0, 26753, 0,
+    31975, 0, 33391, 0, 35538, 0, 37327, 0, 21237, 0, 21570, 0, 22899, 0,
+    24300, 0, 26053, 0, 28670, 0, 31018, 0, 38317, 0, 39530, 0, 40599, 0,
+    40654, 0, 21147, 0, 26310, 0, 27511, 0, 36706, 0, 24180, 0, 24976, 0,
+    25088, 0, 25754, 0, 28451, 0, 29001, 0, 29833, 0, 31178, 0, 32244, 0,
+    32879, 0, 36646, 0, 34030, 0, 36899, 0, 37706, 0, 21015, 0, 21155, 0,
+    21693, 0, 28872, 0, 35010, 0, 35498, 0, 24265, 0, 24565, 0, 25467, 0,
+    27566, 0, 31806, 0, 29557, 0, 20196, 0, 22265, 0, 23527, 0, 23994, 0,
+    24604, 0, 29618, 0, 29801, 0, 32666, 0, 32838, 0, 37428, 0, 38646, 0,
+    38728, 0, 38936, 0, 20363, 0, 31150, 0, 37300, 0, 38584, 0, 24801, 0,
+    20102, 0, 20698, 0, 23534, 0, 23615, 0, 26009, 0, 27138, 0, 29134, 0,
+    30274, 0, 34044, 0, 36988, 0, 40845, 0, 26248, 0, 38446, 0, 21129, 0,
+    26491, 0, 26611, 0, 27969, 0, 28316, 0, 29705, 0, 30041, 0, 30827, 0,
+    32016, 0, 39006, 0, 20845, 0, 25134, 0, 38520, 0, 20523, 0, 23833, 0,
+    28138, 0, 36650, 0, 24459, 0, 24900, 0, 26647, 0, 29575, 0, 38534, 0,
+    21033, 0, 21519, 0, 23653, 0, 26131, 0, 26446, 0, 26792, 0, 27877, 0,
+    29702, 0, 30178, 0, 32633, 0, 35023, 0, 35041, 0, 37324, 0, 38626, 0,
+    21311, 0, 28346, 0, 21533, 0, 29136, 0, 29848, 0, 34298, 0, 38563, 0,
+    40023, 0, 40607, 0, 26519, 0, 28107, 0, 33256, 0, 31435, 0, 31520, 0,
+    31890, 0, 29376, 0, 28825, 0, 35672, 0, 20160, 0, 33590, 0, 21050, 0,
+    20999, 0, 24230, 0, 25299, 0, 31958, 0, 23429, 0, 27934, 0, 26292, 0,
+    36667, 0, 34892, 0, 38477, 0, 35211, 0, 24275, 0, 20800, 0, 21952, 0,
+    22618, 0, 26228, 0, 20958, 0, 29482, 0, 30410, 0, 31036, 0, 31070, 0,
+    31077, 0, 31119, 0, 38742, 0, 31934, 0, 32701, 0, 34322, 0, 35576, 0,
+    36920, 0, 37117, 0, 39151, 0, 39164, 0, 39208, 0, 40372, 0, 37086, 0,
+    38583, 0, 20398, 0, 20711, 0, 20813, 0, 21193, 0, 21220, 0, 21329, 0,
+    21917, 0, 22022, 0, 22120, 0, 22592, 0, 22696, 0, 23652, 0, 23662, 0,
+    24724, 0, 24936, 0, 24974, 0, 25074, 0, 25935, 0, 26082, 0, 26257, 0,
+    26757, 0, 28023, 0, 28186, 0, 28450, 0, 29038, 0, 29227, 0, 29730, 0,
+    30865, 0, 31038, 0, 31049, 0, 31048, 0, 31056, 0, 31062, 0, 31069, 0,
+    31117, 0, 31118, 0, 31296, 0, 31361, 0, 31680, 0, 32244, 0, 32265, 0,
+    32321, 0, 32626, 0, 32773, 0, 33261, 0, 33401, 0, 33401, 0, 33879, 0,
+    35088, 0, 35222, 0, 35585, 0, 35641, 0, 36051, 0, 36104, 0, 36790, 0,
+    36920, 0, 38627, 0, 38911, 0, 38971, 0, 24693, 0, 148206, 0, 33304, 0,
+    20006, 0, 20917, 0, 20840, 0, 20352, 0, 20805, 0, 20864, 0, 21191, 0,
+    21242, 0, 21917, 0, 21845, 0, 21913, 0, 21986, 0, 22618, 0, 22707, 0,
+    22852, 0, 22868, 0, 23138, 0, 23336, 0, 24274, 0, 24281, 0, 24425, 0,
+    24493, 0, 24792, 0, 24910, 0, 24840, 0, 24974, 0, 24928, 0, 25074, 0,
+    25140, 0, 25540, 0, 25628, 0, 25682, 0, 25942, 0, 26228, 0, 26391, 0,
+    26395, 0, 26454, 0, 27513, 0, 27578, 0, 27969, 0, 28379, 0, 28363, 0,
+    28450, 0, 28702, 0, 29038, 0, 30631, 0, 29237, 0, 29359, 0, 29482, 0,
+    29809, 0, 29958, 0, 30011, 0, 30237, 0, 30239, 0, 30410, 0, 30427, 0,
+    30452, 0, 30538, 0, 30528, 0, 30924, 0, 31409, 0, 31680, 0, 31867, 0,
+    32091, 0, 32244, 0, 32574, 0, 32773, 0, 33618, 0, 33775, 0, 34681, 0,
+    35137, 0, 35206, 0, 35222, 0, 35519, 0, 35576, 0, 35531, 0, 35585, 0,
+    35582, 0, 35565, 0, 35641, 0, 35722, 0, 36104, 0, 36664, 0, 36978, 0,
+    37273, 0, 37494, 0, 38524, 0, 38627, 0, 38742, 0, 38875, 0, 38911, 0,
+    38923, 0, 38971, 0, 39698, 0, 40860, 0, 141386, 0, 141380, 0, 144341, 0,
+    15261, 0, 16408, 0, 16441, 0, 152137, 0, 154832, 0, 163539, 0, 40771, 0,
+    40846, 0, 102, 102, 0, 102, 105, 0, 102, 108, 0, 102, 102, 105, 0, 102,
+    102, 108, 0, 383, 116, 0, 115, 116, 0, 1396, 1398, 0, 1396, 1381, 0,
+    1396, 1387, 0, 1406, 1398, 0, 1396, 1389, 0, 1497, 1460, 0, 1522, 1463,
+    0, 1506, 0, 1488, 0, 1491, 0, 1492, 0, 1499, 0, 1500, 0, 1501, 0, 1512,
+    0, 1514, 0, 43, 0, 1513, 1473, 0, 1513, 1474, 0, 64329, 1473, 0, 64329,
+    1474, 0, 1488, 1463, 0, 1488, 1464, 0, 1488, 1468, 0, 1489, 1468, 0,
+    1490, 1468, 0, 1491, 1468, 0, 1492, 1468, 0, 1493, 1468, 0, 1494, 1468,
+    0, 1496, 1468, 0, 1497, 1468, 0, 1498, 1468, 0, 1499, 1468, 0, 1500,
+    1468, 0, 1502, 1468, 0, 1504, 1468, 0, 1505, 1468, 0, 1507, 1468, 0,
+    1508, 1468, 0, 1510, 1468, 0, 1511, 1468, 0, 1512, 1468, 0, 1513, 1468,
+    0, 1514, 1468, 0, 1493, 1465, 0, 1489, 1471, 0, 1499, 1471, 0, 1508,
+    1471, 0, 1488, 1500, 0, 1649, 0, 1649, 0, 1659, 0, 1659, 0, 1659, 0,
+    1659, 0, 1662, 0, 1662, 0, 1662, 0, 1662, 0, 1664, 0, 1664, 0, 1664, 0,
+    1664, 0, 1658, 0, 1658, 0, 1658, 0, 1658, 0, 1663, 0, 1663, 0, 1663, 0,
+    1663, 0, 1657, 0, 1657, 0, 1657, 0, 1657, 0, 1700, 0, 1700, 0, 1700, 0,
+    1700, 0, 1702, 0, 1702, 0, 1702, 0, 1702, 0, 1668, 0, 1668, 0, 1668, 0,
+    1668, 0, 1667, 0, 1667, 0, 1667, 0, 1667, 0, 1670, 0, 1670, 0, 1670, 0,
+    1670, 0, 1671, 0, 1671, 0, 1671, 0, 1671, 0, 1677, 0, 1677, 0, 1676, 0,
+    1676, 0, 1678, 0, 1678, 0, 1672, 0, 1672, 0, 1688, 0, 1688, 0, 1681, 0,
+    1681, 0, 1705, 0, 1705, 0, 1705, 0, 1705, 0, 1711, 0, 1711, 0, 1711, 0,
+    1711, 0, 1715, 0, 1715, 0, 1715, 0, 1715, 0, 1713, 0, 1713, 0, 1713, 0,
+    1713, 0, 1722, 0, 1722, 0, 1723, 0, 1723, 0, 1723, 0, 1723, 0, 1728, 0,
+    1728, 0, 1729, 0, 1729, 0, 1729, 0, 1729, 0, 1726, 0, 1726, 0, 1726, 0,
+    1726, 0, 1746, 0, 1746, 0, 1747, 0, 1747, 0, 1709, 0, 1709, 0, 1709, 0,
+    1709, 0, 1735, 0, 1735, 0, 1734, 0, 1734, 0, 1736, 0, 1736, 0, 1655, 0,
+    1739, 0, 1739, 0, 1733, 0, 1733, 0, 1737, 0, 1737, 0, 1744, 0, 1744, 0,
+    1744, 0, 1744, 0, 1609, 0, 1609, 0, 1574, 1575, 0, 1574, 1575, 0, 1574,
+    1749, 0, 1574, 1749, 0, 1574, 1608, 0, 1574, 1608, 0, 1574, 1735, 0,
+    1574, 1735, 0, 1574, 1734, 0, 1574, 1734, 0, 1574, 1736, 0, 1574, 1736,
+    0, 1574, 1744, 0, 1574, 1744, 0, 1574, 1744, 0, 1574, 1609, 0, 1574,
+    1609, 0, 1574, 1609, 0, 1740, 0, 1740, 0, 1740, 0, 1740, 0, 1574, 1580,
+    0, 1574, 1581, 0, 1574, 1605, 0, 1574, 1609, 0, 1574, 1610, 0, 1576,
+    1580, 0, 1576, 1581, 0, 1576, 1582, 0, 1576, 1605, 0, 1576, 1609, 0,
+    1576, 1610, 0, 1578, 1580, 0, 1578, 1581, 0, 1578, 1582, 0, 1578, 1605,
+    0, 1578, 1609, 0, 1578, 1610, 0, 1579, 1580, 0, 1579, 1605, 0, 1579,
+    1609, 0, 1579, 1610, 0, 1580, 1581, 0, 1580, 1605, 0, 1581, 1580, 0,
+    1581, 1605, 0, 1582, 1580, 0, 1582, 1581, 0, 1582, 1605, 0, 1587, 1580,
+    0, 1587, 1581, 0, 1587, 1582, 0, 1587, 1605, 0, 1589, 1581, 0, 1589,
+    1605, 0, 1590, 1580, 0, 1590, 1581, 0, 1590, 1582, 0, 1590, 1605, 0,
+    1591, 1581, 0, 1591, 1605, 0, 1592, 1605, 0, 1593, 1580, 0, 1593, 1605,
+    0, 1594, 1580, 0, 1594, 1605, 0, 1601, 1580, 0, 1601, 1581, 0, 1601,
+    1582, 0, 1601, 1605, 0, 1601, 1609, 0, 1601, 1610, 0, 1602, 1581, 0,
+    1602, 1605, 0, 1602, 1609, 0, 1602, 1610, 0, 1603, 1575, 0, 1603, 1580,
+    0, 1603, 1581, 0, 1603, 1582, 0, 1603, 1604, 0, 1603, 1605, 0, 1603,
+    1609, 0, 1603, 1610, 0, 1604, 1580, 0, 1604, 1581, 0, 1604, 1582, 0,
+    1604, 1605, 0, 1604, 1609, 0, 1604, 1610, 0, 1605, 1580, 0, 1605, 1581,
+    0, 1605, 1582, 0, 1605, 1605, 0, 1605, 1609, 0, 1605, 1610, 0, 1606,
+    1580, 0, 1606, 1581, 0, 1606, 1582, 0, 1606, 1605, 0, 1606, 1609, 0,
+    1606, 1610, 0, 1607, 1580, 0, 1607, 1605, 0, 1607, 1609, 0, 1607, 1610,
+    0, 1610, 1580, 0, 1610, 1581, 0, 1610, 1582, 0, 1610, 1605, 0, 1610,
+    1609, 0, 1610, 1610, 0, 1584, 1648, 0, 1585, 1648, 0, 1609, 1648, 0, 32,
+    1612, 1617, 0, 32, 1613, 1617, 0, 32, 1614, 1617, 0, 32, 1615, 1617, 0,
+    32, 1616, 1617, 0, 32, 1617, 1648, 0, 1574, 1585, 0, 1574, 1586, 0, 1574,
+    1605, 0, 1574, 1606, 0, 1574, 1609, 0, 1574, 1610, 0, 1576, 1585, 0,
+    1576, 1586, 0, 1576, 1605, 0, 1576, 1606, 0, 1576, 1609, 0, 1576, 1610,
+    0, 1578, 1585, 0, 1578, 1586, 0, 1578, 1605, 0, 1578, 1606, 0, 1578,
+    1609, 0, 1578, 1610, 0, 1579, 1585, 0, 1579, 1586, 0, 1579, 1605, 0,
+    1579, 1606, 0, 1579, 1609, 0, 1579, 1610, 0, 1601, 1609, 0, 1601, 1610,
+    0, 1602, 1609, 0, 1602, 1610, 0, 1603, 1575, 0, 1603, 1604, 0, 1603,
+    1605, 0, 1603, 1609, 0, 1603, 1610, 0, 1604, 1605, 0, 1604, 1609, 0,
+    1604, 1610, 0, 1605, 1575, 0, 1605, 1605, 0, 1606, 1585, 0, 1606, 1586,
+    0, 1606, 1605, 0, 1606, 1606, 0, 1606, 1609, 0, 1606, 1610, 0, 1609,
+    1648, 0, 1610, 1585, 0, 1610, 1586, 0, 1610, 1605, 0, 1610, 1606, 0,
+    1610, 1609, 0, 1610, 1610, 0, 1574, 1580, 0, 1574, 1581, 0, 1574, 1582,
+    0, 1574, 1605, 0, 1574, 1607, 0, 1576, 1580, 0, 1576, 1581, 0, 1576,
+    1582, 0, 1576, 1605, 0, 1576, 1607, 0, 1578, 1580, 0, 1578, 1581, 0,
+    1578, 1582, 0, 1578, 1605, 0, 1578, 1607, 0, 1579, 1605, 0, 1580, 1581,
+    0, 1580, 1605, 0, 1581, 1580, 0, 1581, 1605, 0, 1582, 1580, 0, 1582,
+    1605, 0, 1587, 1580, 0, 1587, 1581, 0, 1587, 1582, 0, 1587, 1605, 0,
+    1589, 1581, 0, 1589, 1582, 0, 1589, 1605, 0, 1590, 1580, 0, 1590, 1581,
+    0, 1590, 1582, 0, 1590, 1605, 0, 1591, 1581, 0, 1592, 1605, 0, 1593,
+    1580, 0, 1593, 1605, 0, 1594, 1580, 0, 1594, 1605, 0, 1601, 1580, 0,
+    1601, 1581, 0, 1601, 1582, 0, 1601, 1605, 0, 1602, 1581, 0, 1602, 1605,
+    0, 1603, 1580, 0, 1603, 1581, 0, 1603, 1582, 0, 1603, 1604, 0, 1603,
+    1605, 0, 1604, 1580, 0, 1604, 1581, 0, 1604, 1582, 0, 1604, 1605, 0,
+    1604, 1607, 0, 1605, 1580, 0, 1605, 1581, 0, 1605, 1582, 0, 1605, 1605,
+    0, 1606, 1580, 0, 1606, 1581, 0, 1606, 1582, 0, 1606, 1605, 0, 1606,
+    1607, 0, 1607, 1580, 0, 1607, 1605, 0, 1607, 1648, 0, 1610, 1580, 0,
+    1610, 1581, 0, 1610, 1582, 0, 1610, 1605, 0, 1610, 1607, 0, 1574, 1605,
+    0, 1574, 1607, 0, 1576, 1605, 0, 1576, 1607, 0, 1578, 1605, 0, 1578,
+    1607, 0, 1579, 1605, 0, 1579, 1607, 0, 1587, 1605, 0, 1587, 1607, 0,
+    1588, 1605, 0, 1588, 1607, 0, 1603, 1604, 0, 1603, 1605, 0, 1604, 1605,
+    0, 1606, 1605, 0, 1606, 1607, 0, 1610, 1605, 0, 1610, 1607, 0, 1600,
+    1614, 1617, 0, 1600, 1615, 1617, 0, 1600, 1616, 1617, 0, 1591, 1609, 0,
+    1591, 1610, 0, 1593, 1609, 0, 1593, 1610, 0, 1594, 1609, 0, 1594, 1610,
+    0, 1587, 1609, 0, 1587, 1610, 0, 1588, 1609, 0, 1588, 1610, 0, 1581,
+    1609, 0, 1581, 1610, 0, 1580, 1609, 0, 1580, 1610, 0, 1582, 1609, 0,
+    1582, 1610, 0, 1589, 1609, 0, 1589, 1610, 0, 1590, 1609, 0, 1590, 1610,
+    0, 1588, 1580, 0, 1588, 1581, 0, 1588, 1582, 0, 1588, 1605, 0, 1588,
+    1585, 0, 1587, 1585, 0, 1589, 1585, 0, 1590, 1585, 0, 1591, 1609, 0,
+    1591, 1610, 0, 1593, 1609, 0, 1593, 1610, 0, 1594, 1609, 0, 1594, 1610,
+    0, 1587, 1609, 0, 1587, 1610, 0, 1588, 1609, 0, 1588, 1610, 0, 1581,
+    1609, 0, 1581, 1610, 0, 1580, 1609, 0, 1580, 1610, 0, 1582, 1609, 0,
+    1582, 1610, 0, 1589, 1609, 0, 1589, 1610, 0, 1590, 1609, 0, 1590, 1610,
+    0, 1588, 1580, 0, 1588, 1581, 0, 1588, 1582, 0, 1588, 1605, 0, 1588,
+    1585, 0, 1587, 1585, 0, 1589, 1585, 0, 1590, 1585, 0, 1588, 1580, 0,
+    1588, 1581, 0, 1588, 1582, 0, 1588, 1605, 0, 1587, 1607, 0, 1588, 1607,
+    0, 1591, 1605, 0, 1587, 1580, 0, 1587, 1581, 0, 1587, 1582, 0, 1588,
+    1580, 0, 1588, 1581, 0, 1588, 1582, 0, 1591, 1605, 0, 1592, 1605, 0,
+    1575, 1611, 0, 1575, 1611, 0, 1578, 1580, 1605, 0, 1578, 1581, 1580, 0,
+    1578, 1581, 1580, 0, 1578, 1581, 1605, 0, 1578, 1582, 1605, 0, 1578,
+    1605, 1580, 0, 1578, 1605, 1581, 0, 1578, 1605, 1582, 0, 1580, 1605,
+    1581, 0, 1580, 1605, 1581, 0, 1581, 1605, 1610, 0, 1581, 1605, 1609, 0,
+    1587, 1581, 1580, 0, 1587, 1580, 1581, 0, 1587, 1580, 1609, 0, 1587,
+    1605, 1581, 0, 1587, 1605, 1581, 0, 1587, 1605, 1580, 0, 1587, 1605,
+    1605, 0, 1587, 1605, 1605, 0, 1589, 1581, 1581, 0, 1589, 1581, 1581, 0,
+    1589, 1605, 1605, 0, 1588, 1581, 1605, 0, 1588, 1581, 1605, 0, 1588,
+    1580, 1610, 0, 1588, 1605, 1582, 0, 1588, 1605, 1582, 0, 1588, 1605,
+    1605, 0, 1588, 1605, 1605, 0, 1590, 1581, 1609, 0, 1590, 1582, 1605, 0,
+    1590, 1582, 1605, 0, 1591, 1605, 1581, 0, 1591, 1605, 1581, 0, 1591,
+    1605, 1605, 0, 1591, 1605, 1610, 0, 1593, 1580, 1605, 0, 1593, 1605,
+    1605, 0, 1593, 1605, 1605, 0, 1593, 1605, 1609, 0, 1594, 1605, 1605, 0,
+    1594, 1605, 1610, 0, 1594, 1605, 1609, 0, 1601, 1582, 1605, 0, 1601,
+    1582, 1605, 0, 1602, 1605, 1581, 0, 1602, 1605, 1605, 0, 1604, 1581,
+    1605, 0, 1604, 1581, 1610, 0, 1604, 1581, 1609, 0, 1604, 1580, 1580, 0,
+    1604, 1580, 1580, 0, 1604, 1582, 1605, 0, 1604, 1582, 1605, 0, 1604,
+    1605, 1581, 0, 1604, 1605, 1581, 0, 1605, 1581, 1580, 0, 1605, 1581,
+    1605, 0, 1605, 1581, 1610, 0, 1605, 1580, 1581, 0, 1605, 1580, 1605, 0,
+    1605, 1582, 1580, 0, 1605, 1582, 1605, 0, 1605, 1580, 1582, 0, 1607,
+    1605, 1580, 0, 1607, 1605, 1605, 0, 1606, 1581, 1605, 0, 1606, 1581,
+    1609, 0, 1606, 1580, 1605, 0, 1606, 1580, 1605, 0, 1606, 1580, 1609, 0,
+    1606, 1605, 1610, 0, 1606, 1605, 1609, 0, 1610, 1605, 1605, 0, 1610,
+    1605, 1605, 0, 1576, 1582, 1610, 0, 1578, 1580, 1610, 0, 1578, 1580,
+    1609, 0, 1578, 1582, 1610, 0, 1578, 1582, 1609, 0, 1578, 1605, 1610, 0,
+    1578, 1605, 1609, 0, 1580, 1605, 1610, 0, 1580, 1581, 1609, 0, 1580,
+    1605, 1609, 0, 1587, 1582, 1609, 0, 1589, 1581, 1610, 0, 1588, 1581,
+    1610, 0, 1590, 1581, 1610, 0, 1604, 1580, 1610, 0, 1604, 1605, 1610, 0,
+    1610, 1581, 1610, 0, 1610, 1580, 1610, 0, 1610, 1605, 1610, 0, 1605,
+    1605, 1610, 0, 1602, 1605, 1610, 0, 1606, 1581, 1610, 0, 1602, 1605,
+    1581, 0, 1604, 1581, 1605, 0, 1593, 1605, 1610, 0, 1603, 1605, 1610, 0,
+    1606, 1580, 1581, 0, 1605, 1582, 1610, 0, 1604, 1580, 1605, 0, 1603,
+    1605, 1605, 0, 1604, 1580, 1605, 0, 1606, 1580, 1581, 0, 1580, 1581,
+    1610, 0, 1581, 1580, 1610, 0, 1605, 1580, 1610, 0, 1601, 1605, 1610, 0,
+    1576, 1581, 1610, 0, 1603, 1605, 1605, 0, 1593, 1580, 1605, 0, 1589,
+    1605, 1605, 0, 1587, 1582, 1610, 0, 1606, 1580, 1610, 0, 1589, 1604,
+    1746, 0, 1602, 1604, 1746, 0, 1575, 1604, 1604, 1607, 0, 1575, 1603,
+    1576, 1585, 0, 1605, 1581, 1605, 1583, 0, 1589, 1604, 1593, 1605, 0,
+    1585, 1587, 1608, 1604, 0, 1593, 1604, 1610, 1607, 0, 1608, 1587, 1604,
+    1605, 0, 1589, 1604, 1609, 0, 1589, 1604, 1609, 32, 1575, 1604, 1604,
+    1607, 32, 1593, 1604, 1610, 1607, 32, 1608, 1587, 1604, 1605, 0, 1580,
+    1604, 32, 1580, 1604, 1575, 1604, 1607, 0, 1585, 1740, 1575, 1604, 0, 44,
+    0, 12289, 0, 12290, 0, 58, 0, 59, 0, 33, 0, 63, 0, 12310, 0, 12311, 0,
+    8230, 0, 8229, 0, 8212, 0, 8211, 0, 95, 0, 95, 0, 40, 0, 41, 0, 123, 0,
+    125, 0, 12308, 0, 12309, 0, 12304, 0, 12305, 0, 12298, 0, 12299, 0,
+    12296, 0, 12297, 0, 12300, 0, 12301, 0, 12302, 0, 12303, 0, 91, 0, 93, 0,
+    8254, 0, 8254, 0, 8254, 0, 8254, 0, 95, 0, 95, 0, 95, 0, 44, 0, 12289, 0,
+    46, 0, 59, 0, 58, 0, 63, 0, 33, 0, 8212, 0, 40, 0, 41, 0, 123, 0, 125, 0,
+    12308, 0, 12309, 0, 35, 0, 38, 0, 42, 0, 43, 0, 45, 0, 60, 0, 62, 0, 61,
+    0, 92, 0, 36, 0, 37, 0, 64, 0, 32, 1611, 0, 1600, 1611, 0, 32, 1612, 0,
+    32, 1613, 0, 32, 1614, 0, 1600, 1614, 0, 32, 1615, 0, 1600, 1615, 0, 32,
+    1616, 0, 1600, 1616, 0, 32, 1617, 0, 1600, 1617, 0, 32, 1618, 0, 1600,
+    1618, 0, 1569, 0, 1570, 0, 1570, 0, 1571, 0, 1571, 0, 1572, 0, 1572, 0,
+    1573, 0, 1573, 0, 1574, 0, 1574, 0, 1574, 0, 1574, 0, 1575, 0, 1575, 0,
+    1576, 0, 1576, 0, 1576, 0, 1576, 0, 1577, 0, 1577, 0, 1578, 0, 1578, 0,
+    1578, 0, 1578, 0, 1579, 0, 1579, 0, 1579, 0, 1579, 0, 1580, 0, 1580, 0,
+    1580, 0, 1580, 0, 1581, 0, 1581, 0, 1581, 0, 1581, 0, 1582, 0, 1582, 0,
+    1582, 0, 1582, 0, 1583, 0, 1583, 0, 1584, 0, 1584, 0, 1585, 0, 1585, 0,
+    1586, 0, 1586, 0, 1587, 0, 1587, 0, 1587, 0, 1587, 0, 1588, 0, 1588, 0,
+    1588, 0, 1588, 0, 1589, 0, 1589, 0, 1589, 0, 1589, 0, 1590, 0, 1590, 0,
+    1590, 0, 1590, 0, 1591, 0, 1591, 0, 1591, 0, 1591, 0, 1592, 0, 1592, 0,
+    1592, 0, 1592, 0, 1593, 0, 1593, 0, 1593, 0, 1593, 0, 1594, 0, 1594, 0,
+    1594, 0, 1594, 0, 1601, 0, 1601, 0, 1601, 0, 1601, 0, 1602, 0, 1602, 0,
+    1602, 0, 1602, 0, 1603, 0, 1603, 0, 1603, 0, 1603, 0, 1604, 0, 1604, 0,
+    1604, 0, 1604, 0, 1605, 0, 1605, 0, 1605, 0, 1605, 0, 1606, 0, 1606, 0,
+    1606, 0, 1606, 0, 1607, 0, 1607, 0, 1607, 0, 1607, 0, 1608, 0, 1608, 0,
+    1609, 0, 1609, 0, 1610, 0, 1610, 0, 1610, 0, 1610, 0, 1604, 1570, 0,
+    1604, 1570, 0, 1604, 1571, 0, 1604, 1571, 0, 1604, 1573, 0, 1604, 1573,
+    0, 1604, 1575, 0, 1604, 1575, 0, 33, 0, 34, 0, 35, 0, 36, 0, 37, 0, 38,
+    0, 39, 0, 40, 0, 41, 0, 42, 0, 43, 0, 44, 0, 45, 0, 46, 0, 47, 0, 48, 0,
+    49, 0, 50, 0, 51, 0, 52, 0, 53, 0, 54, 0, 55, 0, 56, 0, 57, 0, 58, 0, 59,
+    0, 60, 0, 61, 0, 62, 0, 63, 0, 64, 0, 65, 0, 66, 0, 67, 0, 68, 0, 69, 0,
+    70, 0, 71, 0, 72, 0, 73, 0, 74, 0, 75, 0, 76, 0, 77, 0, 78, 0, 79, 0, 80,
+    0, 81, 0, 82, 0, 83, 0, 84, 0, 85, 0, 86, 0, 87, 0, 88, 0, 89, 0, 90, 0,
+    91, 0, 92, 0, 93, 0, 94, 0, 95, 0, 96, 0, 97, 0, 98, 0, 99, 0, 100, 0,
+    101, 0, 102, 0, 103, 0, 104, 0, 105, 0, 106, 0, 107, 0, 108, 0, 109, 0,
+    110, 0, 111, 0, 112, 0, 113, 0, 114, 0, 115, 0, 116, 0, 117, 0, 118, 0,
+    119, 0, 120, 0, 121, 0, 122, 0, 123, 0, 124, 0, 125, 0, 126, 0, 10629, 0,
+    10630, 0, 12290, 0, 12300, 0, 12301, 0, 12289, 0, 12539, 0, 12530, 0,
+    12449, 0, 12451, 0, 12453, 0, 12455, 0, 12457, 0, 12515, 0, 12517, 0,
+    12519, 0, 12483, 0, 12540, 0, 12450, 0, 12452, 0, 12454, 0, 12456, 0,
+    12458, 0, 12459, 0, 12461, 0, 12463, 0, 12465, 0, 12467, 0, 12469, 0,
+    12471, 0, 12473, 0, 12475, 0, 12477, 0, 12479, 0, 12481, 0, 12484, 0,
+    12486, 0, 12488, 0, 12490, 0, 12491, 0, 12492, 0, 12493, 0, 12494, 0,
+    12495, 0, 12498, 0, 12501, 0, 12504, 0, 12507, 0, 12510, 0, 12511, 0,
+    12512, 0, 12513, 0, 12514, 0, 12516, 0, 12518, 0, 12520, 0, 12521, 0,
+    12522, 0, 12523, 0, 12524, 0, 12525, 0, 12527, 0, 12531, 0, 12441, 0,
+    12442, 0, 12644, 0, 12593, 0, 12594, 0, 12595, 0, 12596, 0, 12597, 0,
+    12598, 0, 12599, 0, 12600, 0, 12601, 0, 12602, 0, 12603, 0, 12604, 0,
+    12605, 0, 12606, 0, 12607, 0, 12608, 0, 12609, 0, 12610, 0, 12611, 0,
+    12612, 0, 12613, 0, 12614, 0, 12615, 0, 12616, 0, 12617, 0, 12618, 0,
+    12619, 0, 12620, 0, 12621, 0, 12622, 0, 12623, 0, 12624, 0, 12625, 0,
+    12626, 0, 12627, 0, 12628, 0, 12629, 0, 12630, 0, 12631, 0, 12632, 0,
+    12633, 0, 12634, 0, 12635, 0, 12636, 0, 12637, 0, 12638, 0, 12639, 0,
+    12640, 0, 12641, 0, 12642, 0, 12643, 0, 162, 0, 163, 0, 172, 0, 175, 0,
+    166, 0, 165, 0, 8361, 0, 9474, 0, 8592, 0, 8593, 0, 8594, 0, 8595, 0,
+    9632, 0, 9675, 0, 69785, 69818, 0, 69787, 69818, 0, 69797, 69818, 0,
+    69937, 69927, 0, 69938, 69927, 0, 70471, 70462, 0, 70471, 70487, 0,
+    70841, 70842, 0, 70841, 70832, 0, 70841, 70845, 0, 71096, 71087, 0,
+    71097, 71087, 0, 71989, 71984, 0, 119127, 119141, 0, 119128, 119141, 0,
+    119135, 119150, 0, 119135, 119151, 0, 119135, 119152, 0, 119135, 119153,
+    0, 119135, 119154, 0, 119225, 119141, 0, 119226, 119141, 0, 119227,
+    119150, 0, 119228, 119150, 0, 119227, 119151, 0, 119228, 119151, 0, 65,
+    0, 66, 0, 67, 0, 68, 0, 69, 0, 70, 0, 71, 0, 72, 0, 73, 0, 74, 0, 75, 0,
+    76, 0, 77, 0, 78, 0, 79, 0, 80, 0, 81, 0, 82, 0, 83, 0, 84, 0, 85, 0, 86,
+    0, 87, 0, 88, 0, 89, 0, 90, 0, 97, 0, 98, 0, 99, 0, 100, 0, 101, 0, 102,
+    0, 103, 0, 104, 0, 105, 0, 106, 0, 107, 0, 108, 0, 109, 0, 110, 0, 111,
+    0, 112, 0, 113, 0, 114, 0, 115, 0, 116, 0, 117, 0, 118, 0, 119, 0, 120,
+    0, 121, 0, 122, 0, 65, 0, 66, 0, 67, 0, 68, 0, 69, 0, 70, 0, 71, 0, 72,
+    0, 73, 0, 74, 0, 75, 0, 76, 0, 77, 0, 78, 0, 79, 0, 80, 0, 81, 0, 82, 0,
+    83, 0, 84, 0, 85, 0, 86, 0, 87, 0, 88, 0, 89, 0, 90, 0, 97, 0, 98, 0, 99,
+    0, 100, 0, 101, 0, 102, 0, 103, 0, 105, 0, 106, 0, 107, 0, 108, 0, 109,
+    0, 110, 0, 111, 0, 112, 0, 113, 0, 114, 0, 115, 0, 116, 0, 117, 0, 118,
+    0, 119, 0, 120, 0, 121, 0, 122, 0, 65, 0, 66, 0, 67, 0, 68, 0, 69, 0, 70,
+    0, 71, 0, 72, 0, 73, 0, 74, 0, 75, 0, 76, 0, 77, 0, 78, 0, 79, 0, 80, 0,
+    81, 0, 82, 0, 83, 0, 84, 0, 85, 0, 86, 0, 87, 0, 88, 0, 89, 0, 90, 0, 97,
+    0, 98, 0, 99, 0, 100, 0, 101, 0, 102, 0, 103, 0, 104, 0, 105, 0, 106, 0,
+    107, 0, 108, 0, 109, 0, 110, 0, 111, 0, 112, 0, 113, 0, 114, 0, 115, 0,
+    116, 0, 117, 0, 118, 0, 119, 0, 120, 0, 121, 0, 122, 0, 65, 0, 67, 0, 68,
+    0, 71, 0, 74, 0, 75, 0, 78, 0, 79, 0, 80, 0, 81, 0, 83, 0, 84, 0, 85, 0,
+    86, 0, 87, 0, 88, 0, 89, 0, 90, 0, 97, 0, 98, 0, 99, 0, 100, 0, 102, 0,
+    104, 0, 105, 0, 106, 0, 107, 0, 108, 0, 109, 0, 110, 0, 112, 0, 113, 0,
+    114, 0, 115, 0, 116, 0, 117, 0, 118, 0, 119, 0, 120, 0, 121, 0, 122, 0,
+    65, 0, 66, 0, 67, 0, 68, 0, 69, 0, 70, 0, 71, 0, 72, 0, 73, 0, 74, 0, 75,
+    0, 76, 0, 77, 0, 78, 0, 79, 0, 80, 0, 81, 0, 82, 0, 83, 0, 84, 0, 85, 0,
+    86, 0, 87, 0, 88, 0, 89, 0, 90, 0, 97, 0, 98, 0, 99, 0, 100, 0, 101, 0,
+    102, 0, 103, 0, 104, 0, 105, 0, 106, 0, 107, 0, 108, 0, 109, 0, 110, 0,
+    111, 0, 112, 0, 113, 0, 114, 0, 115, 0, 116, 0, 117, 0, 118, 0, 119, 0,
+    120, 0, 121, 0, 122, 0, 65, 0, 66, 0, 68, 0, 69, 0, 70, 0, 71, 0, 74, 0,
+    75, 0, 76, 0, 77, 0, 78, 0, 79, 0, 80, 0, 81, 0, 83, 0, 84, 0, 85, 0, 86,
+    0, 87, 0, 88, 0, 89, 0, 97, 0, 98, 0, 99, 0, 100, 0, 101, 0, 102, 0, 103,
+    0, 104, 0, 105, 0, 106, 0, 107, 0, 108, 0, 109, 0, 110, 0, 111, 0, 112,
+    0, 113, 0, 114, 0, 115, 0, 116, 0, 117, 0, 118, 0, 119, 0, 120, 0, 121,
+    0, 122, 0, 65, 0, 66, 0, 68, 0, 69, 0, 70, 0, 71, 0, 73, 0, 74, 0, 75, 0,
+    76, 0, 77, 0, 79, 0, 83, 0, 84, 0, 85, 0, 86, 0, 87, 0, 88, 0, 89, 0, 97,
+    0, 98, 0, 99, 0, 100, 0, 101, 0, 102, 0, 103, 0, 104, 0, 105, 0, 106, 0,
+    107, 0, 108, 0, 109, 0, 110, 0, 111, 0, 112, 0, 113, 0, 114, 0, 115, 0,
+    116, 0, 117, 0, 118, 0, 119, 0, 120, 0, 121, 0, 122, 0, 65, 0, 66, 0, 67,
+    0, 68, 0, 69, 0, 70, 0, 71, 0, 72, 0, 73, 0, 74, 0, 75, 0, 76, 0, 77, 0,
+    78, 0, 79, 0, 80, 0, 81, 0, 82, 0, 83, 0, 84, 0, 85, 0, 86, 0, 87, 0, 88,
+    0, 89, 0, 90, 0, 97, 0, 98, 0, 99, 0, 100, 0, 101, 0, 102, 0, 103, 0,
+    104, 0, 105, 0, 106, 0, 107, 0, 108, 0, 109, 0, 110, 0, 111, 0, 112, 0,
+    113, 0, 114, 0, 115, 0, 116, 0, 117, 0, 118, 0, 119, 0, 120, 0, 121, 0,
+    122, 0, 65, 0, 66, 0, 67, 0, 68, 0, 69, 0, 70, 0, 71, 0, 72, 0, 73, 0,
+    74, 0, 75, 0, 76, 0, 77, 0, 78, 0, 79, 0, 80, 0, 81, 0, 82, 0, 83, 0, 84,
+    0, 85, 0, 86, 0, 87, 0, 88, 0, 89, 0, 90, 0, 97, 0, 98, 0, 99, 0, 100, 0,
+    101, 0, 102, 0, 103, 0, 104, 0, 105, 0, 106, 0, 107, 0, 108, 0, 109, 0,
+    110, 0, 111, 0, 112, 0, 113, 0, 114, 0, 115, 0, 116, 0, 117, 0, 118, 0,
+    119, 0, 120, 0, 121, 0, 122, 0, 65, 0, 66, 0, 67, 0, 68, 0, 69, 0, 70, 0,
+    71, 0, 72, 0, 73, 0, 74, 0, 75, 0, 76, 0, 77, 0, 78, 0, 79, 0, 80, 0, 81,
+    0, 82, 0, 83, 0, 84, 0, 85, 0, 86, 0, 87, 0, 88, 0, 89, 0, 90, 0, 97, 0,
+    98, 0, 99, 0, 100, 0, 101, 0, 102, 0, 103, 0, 104, 0, 105, 0, 106, 0,
+    107, 0, 108, 0, 109, 0, 110, 0, 111, 0, 112, 0, 113, 0, 114, 0, 115, 0,
+    116, 0, 117, 0, 118, 0, 119, 0, 120, 0, 121, 0, 122, 0, 65, 0, 66, 0, 67,
+    0, 68, 0, 69, 0, 70, 0, 71, 0, 72, 0, 73, 0, 74, 0, 75, 0, 76, 0, 77, 0,
+    78, 0, 79, 0, 80, 0, 81, 0, 82, 0, 83, 0, 84, 0, 85, 0, 86, 0, 87, 0, 88,
+    0, 89, 0, 90, 0, 97, 0, 98, 0, 99, 0, 100, 0, 101, 0, 102, 0, 103, 0,
+    104, 0, 105, 0, 106, 0, 107, 0, 108, 0, 109, 0, 110, 0, 111, 0, 112, 0,
+    113, 0, 114, 0, 115, 0, 116, 0, 117, 0, 118, 0, 119, 0, 120, 0, 121, 0,
+    122, 0, 65, 0, 66, 0, 67, 0, 68, 0, 69, 0, 70, 0, 71, 0, 72, 0, 73, 0,
+    74, 0, 75, 0, 76, 0, 77, 0, 78, 0, 79, 0, 80, 0, 81, 0, 82, 0, 83, 0, 84,
+    0, 85, 0, 86, 0, 87, 0, 88, 0, 89, 0, 90, 0, 97, 0, 98, 0, 99, 0, 100, 0,
+    101, 0, 102, 0, 103, 0, 104, 0, 105, 0, 106, 0, 107, 0, 108, 0, 109, 0,
+    110, 0, 111, 0, 112, 0, 113, 0, 114, 0, 115, 0, 116, 0, 117, 0, 118, 0,
+    119, 0, 120, 0, 121, 0, 122, 0, 65, 0, 66, 0, 67, 0, 68, 0, 69, 0, 70, 0,
+    71, 0, 72, 0, 73, 0, 74, 0, 75, 0, 76, 0, 77, 0, 78, 0, 79, 0, 80, 0, 81,
+    0, 82, 0, 83, 0, 84, 0, 85, 0, 86, 0, 87, 0, 88, 0, 89, 0, 90, 0, 97, 0,
+    98, 0, 99, 0, 100, 0, 101, 0, 102, 0, 103, 0, 104, 0, 105, 0, 106, 0,
+    107, 0, 108, 0, 109, 0, 110, 0, 111, 0, 112, 0, 113, 0, 114, 0, 115, 0,
+    116, 0, 117, 0, 118, 0, 119, 0, 120, 0, 121, 0, 122, 0, 305, 0, 567, 0,
+    913, 0, 914, 0, 915, 0, 916, 0, 917, 0, 918, 0, 919, 0, 920, 0, 921, 0,
+    922, 0, 923, 0, 924, 0, 925, 0, 926, 0, 927, 0, 928, 0, 929, 0, 1012, 0,
+    931, 0, 932, 0, 933, 0, 934, 0, 935, 0, 936, 0, 937, 0, 8711, 0, 945, 0,
+    946, 0, 947, 0, 948, 0, 949, 0, 950, 0, 951, 0, 952, 0, 953, 0, 954, 0,
+    955, 0, 956, 0, 957, 0, 958, 0, 959, 0, 960, 0, 961, 0, 962, 0, 963, 0,
+    964, 0, 965, 0, 966, 0, 967, 0, 968, 0, 969, 0, 8706, 0, 1013, 0, 977, 0,
+    1008, 0, 981, 0, 1009, 0, 982, 0, 913, 0, 914, 0, 915, 0, 916, 0, 917, 0,
+    918, 0, 919, 0, 920, 0, 921, 0, 922, 0, 923, 0, 924, 0, 925, 0, 926, 0,
+    927, 0, 928, 0, 929, 0, 1012, 0, 931, 0, 932, 0, 933, 0, 934, 0, 935, 0,
+    936, 0, 937, 0, 8711, 0, 945, 0, 946, 0, 947, 0, 948, 0, 949, 0, 950, 0,
+    951, 0, 952, 0, 953, 0, 954, 0, 955, 0, 956, 0, 957, 0, 958, 0, 959, 0,
+    960, 0, 961, 0, 962, 0, 963, 0, 964, 0, 965, 0, 966, 0, 967, 0, 968, 0,
+    969, 0, 8706, 0, 1013, 0, 977, 0, 1008, 0, 981, 0, 1009, 0, 982, 0, 913,
+    0, 914, 0, 915, 0, 916, 0, 917, 0, 918, 0, 919, 0, 920, 0, 921, 0, 922,
+    0, 923, 0, 924, 0, 925, 0, 926, 0, 927, 0, 928, 0, 929, 0, 1012, 0, 931,
+    0, 932, 0, 933, 0, 934, 0, 935, 0, 936, 0, 937, 0, 8711, 0, 945, 0, 946,
+    0, 947, 0, 948, 0, 949, 0, 950, 0, 951, 0, 952, 0, 953, 0, 954, 0, 955,
+    0, 956, 0, 957, 0, 958, 0, 959, 0, 960, 0, 961, 0, 962, 0, 963, 0, 964,
+    0, 965, 0, 966, 0, 967, 0, 968, 0, 969, 0, 8706, 0, 1013, 0, 977, 0,
+    1008, 0, 981, 0, 1009, 0, 982, 0, 913, 0, 914, 0, 915, 0, 916, 0, 917, 0,
+    918, 0, 919, 0, 920, 0, 921, 0, 922, 0, 923, 0, 924, 0, 925, 0, 926, 0,
+    927, 0, 928, 0, 929, 0, 1012, 0, 931, 0, 932, 0, 933, 0, 934, 0, 935, 0,
+    936, 0, 937, 0, 8711, 0, 945, 0, 946, 0, 947, 0, 948, 0, 949, 0, 950, 0,
+    951, 0, 952, 0, 953, 0, 954, 0, 955, 0, 956, 0, 957, 0, 958, 0, 959, 0,
+    960, 0, 961, 0, 962, 0, 963, 0, 964, 0, 965, 0, 966, 0, 967, 0, 968, 0,
+    969, 0, 8706, 0, 1013, 0, 977, 0, 1008, 0, 981, 0, 1009, 0, 982, 0, 913,
+    0, 914, 0, 915, 0, 916, 0, 917, 0, 918, 0, 919, 0, 920, 0, 921, 0, 922,
+    0, 923, 0, 924, 0, 925, 0, 926, 0, 927, 0, 928, 0, 929, 0, 1012, 0, 931,
+    0, 932, 0, 933, 0, 934, 0, 935, 0, 936, 0, 937, 0, 8711, 0, 945, 0, 946,
+    0, 947, 0, 948, 0, 949, 0, 950, 0, 951, 0, 952, 0, 953, 0, 954, 0, 955,
+    0, 956, 0, 957, 0, 958, 0, 959, 0, 960, 0, 961, 0, 962, 0, 963, 0, 964,
+    0, 965, 0, 966, 0, 967, 0, 968, 0, 969, 0, 8706, 0, 1013, 0, 977, 0,
+    1008, 0, 981, 0, 1009, 0, 982, 0, 988, 0, 989, 0, 48, 0, 49, 0, 50, 0,
+    51, 0, 52, 0, 53, 0, 54, 0, 55, 0, 56, 0, 57, 0, 48, 0, 49, 0, 50, 0, 51,
+    0, 52, 0, 53, 0, 54, 0, 55, 0, 56, 0, 57, 0, 48, 0, 49, 0, 50, 0, 51, 0,
+    52, 0, 53, 0, 54, 0, 55, 0, 56, 0, 57, 0, 48, 0, 49, 0, 50, 0, 51, 0, 52,
+    0, 53, 0, 54, 0, 55, 0, 56, 0, 57, 0, 48, 0, 49, 0, 50, 0, 51, 0, 52, 0,
+    53, 0, 54, 0, 55, 0, 56, 0, 57, 0, 1575, 0, 1576, 0, 1580, 0, 1583, 0,
+    1608, 0, 1586, 0, 1581, 0, 1591, 0, 1610, 0, 1603, 0, 1604, 0, 1605, 0,
+    1606, 0, 1587, 0, 1593, 0, 1601, 0, 1589, 0, 1602, 0, 1585, 0, 1588, 0,
+    1578, 0, 1579, 0, 1582, 0, 1584, 0, 1590, 0, 1592, 0, 1594, 0, 1646, 0,
+    1722, 0, 1697, 0, 1647, 0, 1576, 0, 1580, 0, 1607, 0, 1581, 0, 1610, 0,
+    1603, 0, 1604, 0, 1605, 0, 1606, 0, 1587, 0, 1593, 0, 1601, 0, 1589, 0,
+    1602, 0, 1588, 0, 1578, 0, 1579, 0, 1582, 0, 1590, 0, 1594, 0, 1580, 0,
+    1581, 0, 1610, 0, 1604, 0, 1606, 0, 1587, 0, 1593, 0, 1589, 0, 1602, 0,
+    1588, 0, 1582, 0, 1590, 0, 1594, 0, 1722, 0, 1647, 0, 1576, 0, 1580, 0,
+    1607, 0, 1581, 0, 1591, 0, 1610, 0, 1603, 0, 1605, 0, 1606, 0, 1587, 0,
+    1593, 0, 1601, 0, 1589, 0, 1602, 0, 1588, 0, 1578, 0, 1579, 0, 1582, 0,
+    1590, 0, 1592, 0, 1594, 0, 1646, 0, 1697, 0, 1575, 0, 1576, 0, 1580, 0,
+    1583, 0, 1607, 0, 1608, 0, 1586, 0, 1581, 0, 1591, 0, 1610, 0, 1604, 0,
+    1605, 0, 1606, 0, 1587, 0, 1593, 0, 1601, 0, 1589, 0, 1602, 0, 1585, 0,
+    1588, 0, 1578, 0, 1579, 0, 1582, 0, 1584, 0, 1590, 0, 1592, 0, 1594, 0,
+    1576, 0, 1580, 0, 1583, 0, 1608, 0, 1586, 0, 1581, 0, 1591, 0, 1610, 0,
+    1604, 0, 1605, 0, 1606, 0, 1587, 0, 1593, 0, 1601, 0, 1589, 0, 1602, 0,
+    1585, 0, 1588, 0, 1578, 0, 1579, 0, 1582, 0, 1584, 0, 1590, 0, 1592, 0,
+    1594, 0, 48, 46, 0, 48, 44, 0, 49, 44, 0, 50, 44, 0, 51, 44, 0, 52, 44,
+    0, 53, 44, 0, 54, 44, 0, 55, 44, 0, 56, 44, 0, 57, 44, 0, 40, 65, 41, 0,
+    40, 66, 41, 0, 40, 67, 41, 0, 40, 68, 41, 0, 40, 69, 41, 0, 40, 70, 41,
+    0, 40, 71, 41, 0, 40, 72, 41, 0, 40, 73, 41, 0, 40, 74, 41, 0, 40, 75,
+    41, 0, 40, 76, 41, 0, 40, 77, 41, 0, 40, 78, 41, 0, 40, 79, 41, 0, 40,
+    80, 41, 0, 40, 81, 41, 0, 40, 82, 41, 0, 40, 83, 41, 0, 40, 84, 41, 0,
+    40, 85, 41, 0, 40, 86, 41, 0, 40, 87, 41, 0, 40, 88, 41, 0, 40, 89, 41,
+    0, 40, 90, 41, 0, 12308, 83, 12309, 0, 67, 0, 82, 0, 67, 68, 0, 87, 90,
+    0, 65, 0, 66, 0, 67, 0, 68, 0, 69, 0, 70, 0, 71, 0, 72, 0, 73, 0, 74, 0,
+    75, 0, 76, 0, 77, 0, 78, 0, 79, 0, 80, 0, 81, 0, 82, 0, 83, 0, 84, 0, 85,
+    0, 86, 0, 87, 0, 88, 0, 89, 0, 90, 0, 72, 86, 0, 77, 86, 0, 83, 68, 0,
+    83, 83, 0, 80, 80, 86, 0, 87, 67, 0, 77, 67, 0, 77, 68, 0, 77, 82, 0, 68,
+    74, 0, 12411, 12363, 0, 12467, 12467, 0, 12469, 0, 25163, 0, 23383, 0,
+    21452, 0, 12487, 0, 20108, 0, 22810, 0, 35299, 0, 22825, 0, 20132, 0,
+    26144, 0, 28961, 0, 26009, 0, 21069, 0, 24460, 0, 20877, 0, 26032, 0,
+    21021, 0, 32066, 0, 29983, 0, 36009, 0, 22768, 0, 21561, 0, 28436, 0,
+    25237, 0, 25429, 0, 19968, 0, 19977, 0, 36938, 0, 24038, 0, 20013, 0,
+    21491, 0, 25351, 0, 36208, 0, 25171, 0, 31105, 0, 31354, 0, 21512, 0,
+    28288, 0, 26377, 0, 26376, 0, 30003, 0, 21106, 0, 21942, 0, 37197, 0,
+    12308, 26412, 12309, 0, 12308, 19977, 12309, 0, 12308, 20108, 12309, 0,
+    12308, 23433, 12309, 0, 12308, 28857, 12309, 0, 12308, 25171, 12309, 0,
+    12308, 30423, 12309, 0, 12308, 21213, 12309, 0, 12308, 25943, 12309, 0,
+    24471, 0, 21487, 0, 48, 0, 49, 0, 50, 0, 51, 0, 52, 0, 53, 0, 54, 0, 55,
+    0, 56, 0, 57, 0, 20029, 0, 20024, 0, 20033, 0, 131362, 0, 20320, 0,
+    20398, 0, 20411, 0, 20482, 0, 20602, 0, 20633, 0, 20711, 0, 20687, 0,
+    13470, 0, 132666, 0, 20813, 0, 20820, 0, 20836, 0, 20855, 0, 132380, 0,
+    13497, 0, 20839, 0, 20877, 0, 132427, 0, 20887, 0, 20900, 0, 20172, 0,
+    20908, 0, 20917, 0, 168415, 0, 20981, 0, 20995, 0, 13535, 0, 21051, 0,
+    21062, 0, 21106, 0, 21111, 0, 13589, 0, 21191, 0, 21193, 0, 21220, 0,
+    21242, 0, 21253, 0, 21254, 0, 21271, 0, 21321, 0, 21329, 0, 21338, 0,
+    21363, 0, 21373, 0, 21375, 0, 21375, 0, 21375, 0, 133676, 0, 28784, 0,
+    21450, 0, 21471, 0, 133987, 0, 21483, 0, 21489, 0, 21510, 0, 21662, 0,
+    21560, 0, 21576, 0, 21608, 0, 21666, 0, 21750, 0, 21776, 0, 21843, 0,
+    21859, 0, 21892, 0, 21892, 0, 21913, 0, 21931, 0, 21939, 0, 21954, 0,
+    22294, 0, 22022, 0, 22295, 0, 22097, 0, 22132, 0, 20999, 0, 22766, 0,
+    22478, 0, 22516, 0, 22541, 0, 22411, 0, 22578, 0, 22577, 0, 22700, 0,
+    136420, 0, 22770, 0, 22775, 0, 22790, 0, 22810, 0, 22818, 0, 22882, 0,
+    136872, 0, 136938, 0, 23020, 0, 23067, 0, 23079, 0, 23000, 0, 23142, 0,
+    14062, 0, 14076, 0, 23304, 0, 23358, 0, 23358, 0, 137672, 0, 23491, 0,
+    23512, 0, 23527, 0, 23539, 0, 138008, 0, 23551, 0, 23558, 0, 24403, 0,
+    23586, 0, 14209, 0, 23648, 0, 23662, 0, 23744, 0, 23693, 0, 138724, 0,
+    23875, 0, 138726, 0, 23918, 0, 23915, 0, 23932, 0, 24033, 0, 24034, 0,
+    14383, 0, 24061, 0, 24104, 0, 24125, 0, 24169, 0, 14434, 0, 139651, 0,
+    14460, 0, 24240, 0, 24243, 0, 24246, 0, 24266, 0, 172946, 0, 24318, 0,
+    140081, 0, 140081, 0, 33281, 0, 24354, 0, 24354, 0, 14535, 0, 144056, 0,
+    156122, 0, 24418, 0, 24427, 0, 14563, 0, 24474, 0, 24525, 0, 24535, 0,
+    24569, 0, 24705, 0, 14650, 0, 14620, 0, 24724, 0, 141012, 0, 24775, 0,
+    24904, 0, 24908, 0, 24910, 0, 24908, 0, 24954, 0, 24974, 0, 25010, 0,
+    24996, 0, 25007, 0, 25054, 0, 25074, 0, 25078, 0, 25104, 0, 25115, 0,
+    25181, 0, 25265, 0, 25300, 0, 25424, 0, 142092, 0, 25405, 0, 25340, 0,
+    25448, 0, 25475, 0, 25572, 0, 142321, 0, 25634, 0, 25541, 0, 25513, 0,
+    14894, 0, 25705, 0, 25726, 0, 25757, 0, 25719, 0, 14956, 0, 25935, 0,
+    25964, 0, 143370, 0, 26083, 0, 26360, 0, 26185, 0, 15129, 0, 26257, 0,
+    15112, 0, 15076, 0, 20882, 0, 20885, 0, 26368, 0, 26268, 0, 32941, 0,
+    17369, 0, 26391, 0, 26395, 0, 26401, 0, 26462, 0, 26451, 0, 144323, 0,
+    15177, 0, 26618, 0, 26501, 0, 26706, 0, 26757, 0, 144493, 0, 26766, 0,
+    26655, 0, 26900, 0, 15261, 0, 26946, 0, 27043, 0, 27114, 0, 27304, 0,
+    145059, 0, 27355, 0, 15384, 0, 27425, 0, 145575, 0, 27476, 0, 15438, 0,
+    27506, 0, 27551, 0, 27578, 0, 27579, 0, 146061, 0, 138507, 0, 146170, 0,
+    27726, 0, 146620, 0, 27839, 0, 27853, 0, 27751, 0, 27926, 0, 27966, 0,
+    28023, 0, 27969, 0, 28009, 0, 28024, 0, 28037, 0, 146718, 0, 27956, 0,
+    28207, 0, 28270, 0, 15667, 0, 28363, 0, 28359, 0, 147153, 0, 28153, 0,
+    28526, 0, 147294, 0, 147342, 0, 28614, 0, 28729, 0, 28702, 0, 28699, 0,
+    15766, 0, 28746, 0, 28797, 0, 28791, 0, 28845, 0, 132389, 0, 28997, 0,
+    148067, 0, 29084, 0, 148395, 0, 29224, 0, 29237, 0, 29264, 0, 149000, 0,
+    29312, 0, 29333, 0, 149301, 0, 149524, 0, 29562, 0, 29579, 0, 16044, 0,
+    29605, 0, 16056, 0, 16056, 0, 29767, 0, 29788, 0, 29809, 0, 29829, 0,
+    29898, 0, 16155, 0, 29988, 0, 150582, 0, 30014, 0, 150674, 0, 30064, 0,
+    139679, 0, 30224, 0, 151457, 0, 151480, 0, 151620, 0, 16380, 0, 16392, 0,
+    30452, 0, 151795, 0, 151794, 0, 151833, 0, 151859, 0, 30494, 0, 30495, 0,
+    30495, 0, 30538, 0, 16441, 0, 30603, 0, 16454, 0, 16534, 0, 152605, 0,
+    30798, 0, 30860, 0, 30924, 0, 16611, 0, 153126, 0, 31062, 0, 153242, 0,
+    153285, 0, 31119, 0, 31211, 0, 16687, 0, 31296, 0, 31306, 0, 31311, 0,
+    153980, 0, 154279, 0, 154279, 0, 31470, 0, 16898, 0, 154539, 0, 31686, 0,
+    31689, 0, 16935, 0, 154752, 0, 31954, 0, 17056, 0, 31976, 0, 31971, 0,
+    32000, 0, 155526, 0, 32099, 0, 17153, 0, 32199, 0, 32258, 0, 32325, 0,
+    17204, 0, 156200, 0, 156231, 0, 17241, 0, 156377, 0, 32634, 0, 156478, 0,
+    32661, 0, 32762, 0, 32773, 0, 156890, 0, 156963, 0, 32864, 0, 157096, 0,
+    32880, 0, 144223, 0, 17365, 0, 32946, 0, 33027, 0, 17419, 0, 33086, 0,
+    23221, 0, 157607, 0, 157621, 0, 144275, 0, 144284, 0, 33281, 0, 33284, 0,
+    36766, 0, 17515, 0, 33425, 0, 33419, 0, 33437, 0, 21171, 0, 33457, 0,
+    33459, 0, 33469, 0, 33510, 0, 158524, 0, 33509, 0, 33565, 0, 33635, 0,
+    33709, 0, 33571, 0, 33725, 0, 33767, 0, 33879, 0, 33619, 0, 33738, 0,
+    33740, 0, 33756, 0, 158774, 0, 159083, 0, 158933, 0, 17707, 0, 34033, 0,
+    34035, 0, 34070, 0, 160714, 0, 34148, 0, 159532, 0, 17757, 0, 17761, 0,
+    159665, 0, 159954, 0, 17771, 0, 34384, 0, 34396, 0, 34407, 0, 34409, 0,
+    34473, 0, 34440, 0, 34574, 0, 34530, 0, 34681, 0, 34600, 0, 34667, 0,
+    34694, 0, 17879, 0, 34785, 0, 34817, 0, 17913, 0, 34912, 0, 34915, 0,
+    161383, 0, 35031, 0, 35038, 0, 17973, 0, 35066, 0, 13499, 0, 161966, 0,
+    162150, 0, 18110, 0, 18119, 0, 35488, 0, 35565, 0, 35722, 0, 35925, 0,
+    162984, 0, 36011, 0, 36033, 0, 36123, 0, 36215, 0, 163631, 0, 133124, 0,
+    36299, 0, 36284, 0, 36336, 0, 133342, 0, 36564, 0, 36664, 0, 165330, 0,
+    165357, 0, 37012, 0, 37105, 0, 37137, 0, 165678, 0, 37147, 0, 37432, 0,
+    37591, 0, 37592, 0, 37500, 0, 37881, 0, 37909, 0, 166906, 0, 38283, 0,
+    18837, 0, 38327, 0, 167287, 0, 18918, 0, 38595, 0, 23986, 0, 38691, 0,
+    168261, 0, 168474, 0, 19054, 0, 19062, 0, 38880, 0, 168970, 0, 19122, 0,
+    169110, 0, 38923, 0, 38923, 0, 38953, 0, 169398, 0, 39138, 0, 19251, 0,
+    39209, 0, 39335, 0, 39362, 0, 39422, 0, 19406, 0, 170800, 0, 39698, 0,
+    40000, 0, 40189, 0, 19662, 0, 19693, 0, 40295, 0, 172238, 0, 19704, 0,
+    172293, 0, 172558, 0, 172689, 0, 40635, 0, 19798, 0, 40697, 0, 40702, 0,
+    40709, 0, 40719, 0, 40726, 0, 40763, 0, 173568, 0,
+};
 
-static const unichar_t * const tab_4[] = {
-str_400,
-str_401,
-0, str_403,
-0, str_405,
-str_406,
-str_407,
-str_408,
-0, 0, 0, str_40c,
-str_40d,
-str_40e,
-0, str_410,
-0, str_412,
-str_413,
-0, str_415,
-0, 0, 0, str_419,
-str_41a,
-0, str_41c,
-str_41d,
-str_41e,
-str_41f,
-str_420,
-str_421,
-str_422,
-0, str_424,
-str_425,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_430,
-0, 0, 0, 0, str_435,
-0, 0, 0, str_439,
-str_43a,
-0, 0, 0, str_43e,
-str_43f,
-str_440,
-str_441,
-0, str_443,
-0, str_445,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_450,
-str_451,
-0, str_453,
-0, str_455,
-str_456,
-str_457,
-str_458,
-0, 0, 0, str_45c,
-str_45d,
-str_45e,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_470,
-str_471,
-0, 0, 0, 0, str_476,
-str_477,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_4ae,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_4c0,
-str_4c1,
-str_4c2,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_4d0,
-str_4d1,
-str_4d2,
-str_4d3,
-str_4d4,
-str_4d5,
-str_4d6,
-str_4d7,
-0, 0, str_4da,
-str_4db,
-str_4dc,
-str_4dd,
-str_4de,
-str_4df,
-str_4e0,
-str_4e1,
-str_4e2,
-str_4e3,
-str_4e4,
-str_4e5,
-str_4e6,
-str_4e7,
-str_4e8,
-str_4e9,
-str_4ea,
-str_4eb,
-str_4ec,
-str_4ed,
-str_4ee,
-str_4ef,
-str_4f0,
-str_4f1,
-str_4f2,
-str_4f3,
-str_4f4,
-str_4f5,
-0, 0, str_4f8,
-str_4f9,
-0, 0, 0, 0, 0, 0, 0};
+/* unialt indexes */
+#define UNIALT_SHIFT 7
+static const unsigned char unialt_index1[] = {
+    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 0, 0, 0, 0, 14, 15, 16, 0,
+    17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 0, 0, 0, 31, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 33, 34, 35, 36, 37,
+    38, 39, 40, 41, 42, 43, 44, 45, 0, 46, 47, 48, 49, 50, 0, 51, 0, 0, 0, 0,
+    0, 52, 53, 0, 0, 54, 0, 55, 0, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65,
+    66, 67, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 68, 69, 70, 0, 0, 0, 0, 0,
+    0, 71, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 72, 73, 74, 75, 76, 77, 78, 79,
+    80, 81, 82, 83, 84, 85, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 86, 87, 0, 0, 0, 88,
+    0, 0, 89, 0, 90, 0, 0, 0, 0, 0, 0, 91, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 92, 93, 0, 0,
+    0, 0, 94, 95, 96, 97, 98, 99, 100, 101, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 102, 103, 0, 0, 0, 0, 104, 105, 106, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 107, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 108, 109, 110, 111, 112,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0,
+};
 
-static const unichar_t * const tab_5[] = {
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_54f,
-0, 0, 0, 0, 0, str_555,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_570,
-0, 0, 0, 0, 0, 0, 0, str_578,
-0, str_57a,
-0, 0, str_57d,
-0, 0, 0, str_581,
-str_582,
-0, str_584,
-str_585,
-0, str_587,
-0, str_589,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_5f0,
-str_5f1,
-str_5f2,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static const unsigned short unialt_index2[] = {
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0,
+    3, 0, 6, 0, 0, 0, 0, 8, 0, 0, 11, 13, 15, 18, 0, 0, 20, 23, 25, 0, 27,
+    31, 35, 0, 39, 42, 45, 48, 51, 54, 0, 57, 60, 63, 66, 69, 72, 75, 78, 81,
+    0, 84, 87, 90, 93, 96, 99, 0, 0, 102, 105, 108, 111, 114, 0, 0, 117, 120,
+    123, 126, 129, 132, 0, 135, 138, 141, 144, 147, 150, 153, 156, 159, 0,
+    162, 165, 168, 171, 174, 177, 0, 0, 180, 183, 186, 189, 192, 0, 195, 198,
+    201, 204, 207, 210, 213, 216, 219, 222, 225, 228, 231, 234, 237, 240,
+    243, 246, 0, 248, 251, 254, 257, 260, 263, 266, 269, 272, 275, 278, 281,
+    284, 287, 290, 293, 296, 299, 302, 305, 0, 0, 308, 311, 314, 317, 320,
+    323, 326, 329, 332, 0, 335, 338, 341, 344, 347, 350, 353, 355, 358, 361,
+    364, 367, 370, 373, 376, 0, 0, 379, 382, 385, 388, 391, 394, 397, 0, 0,
+    400, 403, 406, 409, 412, 415, 418, 421, 424, 427, 430, 433, 436, 439,
+    442, 445, 448, 451, 454, 457, 460, 463, 466, 469, 472, 475, 0, 0, 478,
+    481, 484, 487, 490, 493, 496, 499, 502, 505, 508, 511, 514, 517, 520,
+    523, 526, 529, 532, 535, 538, 541, 544, 547, 0, 0, 549, 0, 0, 0, 0, 0, 0,
+    551, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 553,
+    555, 557, 560, 0, 0, 0, 0, 0, 0, 0, 563, 0, 0, 0, 0, 0, 565, 568, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 571, 573, 0, 0, 576, 579, 582,
+    585, 588, 591, 594, 597, 600, 603, 606, 609, 612, 615, 618, 621, 624,
+    627, 630, 633, 636, 639, 642, 645, 648, 0, 651, 654, 657, 660, 663, 666,
+    0, 0, 669, 672, 675, 678, 681, 684, 687, 690, 693, 696, 699, 702, 705,
+    708, 711, 714, 0, 0, 717, 720, 723, 726, 729, 732, 735, 738, 741, 744,
+    747, 750, 753, 756, 759, 762, 765, 768, 771, 774, 777, 780, 783, 786,
+    789, 792, 795, 798, 801, 804, 807, 810, 813, 816, 819, 822, 0, 0, 825,
+    828, 0, 0, 0, 0, 0, 0, 831, 834, 837, 840, 843, 846, 849, 852, 855, 858,
+    861, 864, 867, 870, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 873, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 875, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 877, 0, 0, 0, 0, 0, 0, 879, 0, 0, 881, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 883, 885, 887, 889, 891, 893, 895,
+    897, 899, 901, 903, 0, 905, 0, 0, 0, 0, 0, 0, 0, 907, 0, 909, 0, 911, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 913, 916, 919, 922, 925, 928,
+    0, 0, 931, 933, 935, 937, 939, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 941, 943, 945, 0, 0, 0, 0, 947,
+    0, 949, 951, 0, 0, 953, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 955, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 957, 959, 0, 961, 963, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 966, 968, 0, 0, 0, 0, 970,
+    0, 0, 0, 973, 0, 0, 0, 0, 0, 975, 978, 981, 984, 986, 989, 992, 0, 995,
+    0, 998, 1001, 1004, 1007, 1009, 1011, 0, 1013, 1015, 1017, 0, 1019, 1021,
+    0, 1023, 1025, 0, 1027, 0, 1029, 0, 0, 1031, 1033, 0, 1035, 0, 0, 1037,
+    1040, 1043, 1046, 1049, 1052, 1055, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1058, 0,
+    0, 0, 0, 1060, 0, 1062, 0, 0, 0, 0, 0, 1064, 0, 0, 1066, 1069, 1072,
+    1075, 1078, 0, 1081, 1083, 1085, 1087, 1090, 1093, 1095, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1097, 1099,
+    1101, 0, 1103, 1105, 0, 0, 0, 1107, 0, 0, 0, 0, 0, 0, 1109, 1112, 0,
+    1115, 0, 1118, 1120, 1122, 1125, 0, 0, 0, 1127, 1130, 1133, 0, 1136, 0,
+    1138, 1140, 0, 1142, 0, 0, 0, 1144, 1147, 0, 1149, 1151, 1153, 1155,
+    1157, 1159, 1161, 0, 1163, 1165, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1167, 0,
+    0, 0, 0, 1169, 0, 0, 0, 1171, 1174, 0, 0, 0, 1176, 1178, 1180, 1182, 0,
+    1184, 0, 1186, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1188, 1191, 0, 1194, 0,
+    1197, 1199, 1201, 1204, 0, 0, 0, 1206, 1209, 1212, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1215, 1217, 0, 0, 0, 0, 1219, 1222, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 1225, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1227, 1229, 1232, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1235, 1238,
+    1241, 1244, 1247, 1249, 1251, 1254, 0, 0, 1257, 1260, 1263, 1266, 1269,
+    1272, 1275, 1277, 1279, 1282, 1285, 1288, 1291, 1294, 1297, 1299, 1301,
+    1304, 1307, 1310, 1313, 1316, 1319, 1322, 1325, 1328, 1331, 1334, 0, 0,
+    1337, 1340, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1343, 0, 0, 0, 0, 0,
+    1345, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 1347, 0, 0, 0, 0, 0, 0, 0, 1349, 0, 1351, 0, 0, 1353, 0, 0,
+    0, 1355, 1357, 0, 1359, 1361, 0, 1363, 0, 1366, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1368,
+    1371, 1374, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 1377, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 1379, 1381, 1384, 1387, 1390, 1393, 1396, 1398, 1400, 1402,
+    1404, 1406, 1408, 1410, 1412, 1414, 1416, 1418, 1420, 1422, 1424, 1426,
+    1428, 1430, 1432, 1434, 0, 0, 0, 0, 0, 0, 1436, 1438, 1440, 1442, 1444,
+    1446, 1448, 1450, 1452, 1454, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1456, 0, 1458, 1460,
+    0, 0, 0, 1462, 0, 0, 0, 1464, 1467, 1470, 1473, 1476, 1478, 1480, 0, 0,
+    1482, 1484, 1486, 0, 0, 1488, 1490, 0, 1492, 1494, 1496, 0, 0, 0, 1498,
+    1500, 1502, 0, 0, 1504, 0, 0, 0, 0, 0, 0, 1506, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 1508, 0, 1510, 0, 0, 1512, 0, 0, 0, 1514, 0, 1516, 0, 1518, 0,
+    1520, 0, 0, 0, 0, 0, 0, 1522, 1524, 0, 0, 1526, 0, 1528, 1531, 1533, 0,
+    0, 1536, 1538, 1540, 1542, 1544, 0, 1546, 1548, 0, 0, 0, 1550, 0, 1552,
+    1554, 1557, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1559, 0, 0, 0, 0, 0, 0,
+    0, 1562, 0, 0, 1565, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1568, 1571, 1574,
+    1577, 1580, 1583, 1586, 1589, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1592,
+    1595, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1598, 1601, 0, 1604,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1607, 0, 0, 1610, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 1613, 1616, 1619, 0, 0, 1622, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1625,
+    0, 0, 1628, 1631, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1634,
+    1637, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 1640, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1643, 1646, 1649, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1652, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 1655, 0, 0, 0, 0, 0, 0, 1658, 1661, 0, 1664, 1667, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1670, 1673, 1676, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 1679, 0, 1682, 1685, 1688, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1691, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 1694, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 1697, 1700, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 1703, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1705, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1708, 0, 0, 0, 0, 1711, 0, 0, 0, 0, 1714, 0, 0, 0, 0, 1717, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 1720, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1723, 0, 1726,
+    1729, 1732, 1735, 1738, 0, 0, 0, 0, 0, 0, 0, 1741, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1744, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1747, 0,
+    0, 0, 0, 1750, 0, 0, 0, 0, 1753, 0, 0, 0, 0, 1756, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 1759, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1762, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1765, 0, 0, 0, 0,
+    1767, 0, 0, 1770, 0, 0, 0, 1773, 0, 1776, 0, 0, 1779, 0, 0, 0, 0, 0,
+    1782, 1785, 1788, 1791, 1794, 1797, 1800, 1803, 1806, 1809, 1812, 1815,
+    1818, 1821, 1824, 1827, 1831, 1835, 1839, 1843, 1847, 1850, 1853, 1856,
+    1859, 1862, 1866, 1869, 1872, 1875, 1878, 1881, 1884, 1888, 1892, 1895,
+    1898, 1901, 1904, 1907, 1910, 0, 1913, 0, 1916, 0, 1919, 1922, 1925,
+    1928, 1931, 1934, 1937, 1940, 1943, 1946, 1949, 0, 1952, 0, 1955, 0,
+    1958, 1961, 1964, 0, 0, 1967, 1970, 1973, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    1976, 0, 1979, 0, 1982, 0, 1985, 0, 1988, 1991, 1994, 0, 0, 1997, 2000,
+    2003, 0, 0, 2006, 0, 2009, 2012, 2015, 2018, 2021, 2024, 2027, 2030,
+    2033, 2036, 2039, 2042, 2045, 2048, 2051, 2054, 2057, 2060, 2063, 2066,
+    2069, 2072, 2076, 2079, 2082, 2085, 2088, 2091, 2094, 2097, 2100, 2103,
+    2106, 2109, 2112, 2115, 2118, 2121, 2124, 2127, 0, 2130, 2133, 2136,
+    2139, 0, 0, 0, 0, 0, 2142, 2144, 2147, 2150, 2152, 2155, 2158, 2160,
+    2162, 2165, 2168, 2171, 2174, 2177, 2180, 2183, 2185, 2187, 2190, 2192,
+    2195, 2197, 2199, 2201, 2203, 2205, 2207, 2209, 2212, 2216, 2219, 2222,
+    2225, 2228, 2231, 2234, 2237, 2241, 2244, 2247, 2251, 2254, 2258, 2262,
+    2266, 2270, 2273, 2277, 2280, 2283, 2286, 2289, 2292, 2295, 2298, 2302,
+    2305, 2308, 2311, 2314, 2317, 2320, 2323, 2326, 2329, 2332, 2335, 2338,
+    2340, 2343, 2347, 2350, 2353, 2355, 2358, 2361, 2364, 2367, 2370, 2373,
+    2376, 2379, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2381, 2383, 2385,
+    0, 0, 0, 0, 0, 0, 2387, 2389, 2391, 2393, 0, 0, 0, 0, 2395, 0, 2397, 0,
+    0, 0, 2399, 0, 0, 0, 2401, 0, 0, 2403, 0, 2405, 0, 2407, 2409, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 2411, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2413, 2415, 0,
+    0, 0, 2417, 2419, 0, 0, 2421, 0, 0, 0, 2423, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 2425, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    2427, 0, 2430, 0, 2433, 0, 2436, 0, 2439, 0, 0, 0, 2442, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2445, 0, 2448, 0, 0, 2451, 2454, 0,
+    2457, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2460, 2462, 2464, 0, 2466, 2468, 2470,
+    2472, 2474, 2476, 2478, 2480, 2482, 2484, 2486, 0, 2488, 2490, 2492,
+    2494, 2496, 2498, 2500, 2502, 2504, 2506, 2508, 2510, 2512, 2514, 2516,
+    2518, 2520, 2522, 0, 2524, 2526, 2528, 2530, 2532, 2534, 2536, 2538,
+    2540, 2542, 2544, 2546, 2548, 2550, 2552, 2554, 2556, 2558, 2560, 2562,
+    2564, 2566, 2568, 2570, 2572, 2574, 2576, 2578, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 2580, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2582, 2584, 2586,
+    2588, 2590, 2592, 2594, 2596, 2598, 2600, 2602, 2604, 2606, 2608, 2610,
+    2612, 2614, 2616, 2618, 2620, 2622, 2624, 2626, 2628, 2630, 2632, 2634,
+    2636, 2638, 2640, 2642, 2644, 2646, 2648, 2650, 2652, 2654, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2656, 2659, 2662, 2665, 2668, 2671,
+    2674, 2677, 2680, 2683, 2686, 2689, 2692, 2695, 2698, 2701, 2704, 2707,
+    2710, 2713, 2716, 2719, 2722, 2725, 2728, 2731, 2734, 2737, 2740, 2743,
+    2746, 2749, 2752, 2755, 2758, 2761, 2764, 2767, 2770, 2773, 2776, 2779,
+    2782, 2785, 2788, 2791, 2794, 2797, 2800, 2803, 2806, 2809, 2812, 2815,
+    2818, 2821, 2824, 2827, 2830, 2833, 2836, 2839, 2842, 2845, 2848, 2851,
+    2854, 2857, 2860, 2863, 2866, 2869, 2872, 2875, 2878, 2881, 2884, 2887,
+    2890, 2893, 2896, 2899, 2902, 2905, 2908, 2911, 2914, 2917, 2920, 2923,
+    2926, 2929, 2932, 2935, 2938, 2941, 2944, 2947, 2950, 2953, 2956, 2959,
+    2962, 2965, 2968, 2971, 2974, 2977, 2980, 2983, 2986, 2989, 2992, 2995,
+    2998, 3001, 3004, 3007, 3010, 3013, 3016, 3019, 3022, 3025, 3028, 3031,
+    3034, 3037, 3040, 3043, 3046, 3049, 3052, 3055, 3058, 3061, 3064, 3067,
+    3070, 3073, 3076, 3079, 3082, 3085, 3088, 3091, 3094, 3097, 3100, 3103,
+    3106, 3109, 3112, 3115, 3118, 3121, 0, 0, 0, 0, 3124, 3127, 3130, 3133,
+    3136, 3139, 3142, 3145, 3148, 3151, 3154, 3157, 3160, 3163, 3166, 3169,
+    3172, 3175, 3178, 3181, 3184, 3187, 3190, 3193, 3196, 3199, 3202, 3205,
+    3208, 3211, 3214, 3217, 3220, 3223, 3226, 3229, 3232, 3235, 3238, 3241,
+    3244, 3247, 3250, 3253, 3256, 3259, 3262, 3265, 3268, 3271, 3274, 3277,
+    3280, 3283, 3286, 3289, 3292, 3295, 3298, 3301, 3304, 3307, 3310, 3313,
+    3316, 3319, 3322, 3325, 3328, 3331, 3334, 3337, 3340, 3343, 3346, 3349,
+    3352, 3355, 3358, 3361, 3364, 3367, 3370, 3373, 3376, 3379, 3382, 3385,
+    3388, 3391, 0, 0, 0, 0, 0, 0, 3394, 3397, 3400, 3403, 3406, 3409, 3412,
+    3415, 3418, 3421, 3424, 3427, 3430, 3433, 3436, 3439, 3442, 3445, 3448,
+    3451, 3454, 3457, 0, 0, 3460, 3463, 3466, 3469, 3472, 3475, 0, 0, 3478,
+    3481, 3484, 3487, 3490, 3493, 3496, 3499, 3502, 3505, 3508, 3511, 3514,
+    3517, 3520, 3523, 3526, 3529, 3532, 3535, 3538, 3541, 3544, 3547, 3550,
+    3553, 3556, 3559, 3562, 3565, 3568, 3571, 3574, 3577, 3580, 3583, 3586,
+    3589, 0, 0, 3592, 3595, 3598, 3601, 3604, 3607, 0, 0, 3610, 3613, 3616,
+    3619, 3622, 3625, 3628, 3631, 0, 3634, 0, 3637, 0, 3640, 0, 3643, 3646,
+    3649, 3652, 3655, 3658, 3661, 3664, 3667, 3670, 3673, 3676, 3679, 3682,
+    3685, 3688, 3691, 3694, 3697, 3699, 3702, 3704, 3707, 3709, 3712, 3714,
+    3717, 3719, 3722, 3724, 3727, 0, 0, 3729, 3732, 3735, 3738, 3741, 3744,
+    3747, 3750, 3753, 3756, 3759, 3762, 3765, 3768, 3771, 3774, 3777, 3780,
+    3783, 3786, 3789, 3792, 3795, 3798, 3801, 3804, 3807, 3810, 3813, 3816,
+    3819, 3822, 3825, 3828, 3831, 3834, 3837, 3840, 3843, 3846, 3849, 3852,
+    3855, 3858, 3861, 3864, 3867, 3870, 3873, 3876, 3879, 3882, 3885, 0,
+    3888, 3891, 3894, 3897, 3900, 3903, 3905, 3908, 3911, 3913, 3916, 3919,
+    3922, 3925, 3928, 0, 3931, 3934, 3937, 3940, 3942, 3945, 3947, 3950,
+    3953, 3956, 3959, 3962, 3965, 3968, 0, 0, 3970, 3973, 3976, 3979, 3982,
+    3985, 0, 3987, 3990, 3993, 3996, 3999, 4002, 4005, 4007, 4010, 4013,
+    4016, 4019, 4022, 4025, 4028, 4030, 4033, 4036, 4038, 0, 0, 4040, 4043,
+    4046, 0, 4049, 4052, 4055, 4058, 4060, 4063, 4065, 4068, 4070, 0, 4073,
+    4075, 4077, 4079, 4081, 4083, 4085, 4087, 4089, 4091, 4093, 0, 0, 0, 0,
+    0, 4095, 4097, 4099, 4101, 4103, 4105, 4107, 4110, 4113, 4115, 0, 0,
+    4117, 4119, 0, 0, 0, 0, 0, 0, 4121, 4123, 4126, 0, 0, 0, 0, 0, 0, 0, 0,
+    4130, 0, 0, 4132, 4134, 4137, 4141, 4143, 4146, 0, 4150, 4152, 0, 4154,
+    0, 4157, 0, 0, 0, 0, 0, 0, 0, 0, 4160, 4163, 4166, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 4169, 0, 0, 0, 0, 0, 0, 0, 4174, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 4176, 4178, 0, 0, 4180, 4182, 4184, 4186,
+    4188, 4190, 4192, 4194, 4196, 4198, 4200, 4202, 4204, 4206, 4208, 4210,
+    4212, 4214, 4216, 4218, 4220, 4222, 4224, 4226, 4228, 4230, 4232, 0,
+    4234, 4236, 4238, 4240, 4242, 4244, 4246, 4248, 4250, 4252, 4254, 4256,
+    4258, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4260, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 4263, 4267, 4271, 4273, 0, 4276, 4280, 4284, 0, 4286,
+    4289, 4291, 4293, 4295, 4297, 4299, 4301, 4303, 4305, 4307, 0, 4309,
+    4311, 0, 0, 4314, 4316, 4318, 4320, 4322, 0, 0, 4324, 4327, 4331, 0,
+    4334, 0, 4336, 0, 4338, 0, 4340, 4342, 4344, 4346, 0, 4348, 4350, 4352,
+    0, 4354, 4356, 4358, 4360, 4362, 4364, 4366, 0, 4368, 4372, 4374, 4376,
+    4378, 4380, 0, 0, 0, 0, 4382, 4384, 4386, 4388, 4390, 0, 0, 0, 0, 0, 0,
+    4392, 4396, 4400, 4405, 4409, 4413, 4417, 4421, 4425, 4429, 4433, 4437,
+    4441, 4445, 4449, 4453, 4456, 4458, 4461, 4465, 4468, 4470, 4473, 4477,
+    4482, 4485, 4487, 4490, 4494, 4496, 4498, 4500, 4502, 4504, 4507, 4511,
+    4514, 4516, 4519, 4523, 4528, 4531, 4533, 4536, 4540, 4542, 4544, 4546,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 4548, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 4552, 4555, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 4558, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 4561, 4564, 4567, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4570, 4573,
+    4575, 0, 0, 4577, 0, 0, 4580, 0, 0, 4583, 0, 4585, 4587, 0, 0, 4589,
+    4591, 4593, 4595, 4597, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4599, 4601, 4604,
+    4607, 0, 0, 0, 0, 0, 4610, 4613, 0, 4617, 4620, 0, 0, 0, 0, 0, 4624, 0,
+    0, 0, 0, 0, 4626, 0, 0, 0, 0, 4628, 0, 0, 4631, 0, 0, 4634, 0, 4637, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4640, 0,
+    4643, 0, 0, 0, 0, 0, 0, 0, 4646, 4648, 0, 4650, 4653, 4656, 4659, 4662,
+    0, 0, 4665, 4668, 0, 0, 4671, 4674, 0, 0, 0, 0, 0, 0, 4677, 4680, 0, 0,
+    4683, 4686, 0, 0, 4689, 4692, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 4695, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4697,
+    4700, 4703, 4706, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 4709, 4711, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 4713, 4716, 4719, 4722, 0, 0, 0, 0, 0, 0, 4725,
+    4728, 4731, 4734, 0, 4737, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 4741, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4743, 4745, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    4747, 4749, 4751, 0, 0, 0, 0, 4753, 0, 0, 0, 0, 0, 4755, 4759, 4763,
+    4767, 4771, 4775, 4779, 4783, 4787, 4790, 4793, 4796, 4799, 4802, 4805,
+    4808, 4811, 4815, 4819, 4823, 4827, 4831, 4835, 4839, 4843, 4847, 4850,
+    4854, 4858, 4861, 4864, 4867, 4870, 4873, 4877, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 4879, 4881, 4883, 4885, 4887, 4889, 4891, 4893, 4895,
+    4897, 4900, 4903, 4906, 4909, 4912, 4915, 4918, 4921, 4924, 4927, 4930,
+    4934, 4938, 4942, 4946, 4950, 4954, 4958, 4962, 4966, 4971, 4976, 4981,
+    4986, 4991, 4996, 5001, 5006, 5011, 5016, 5021, 5024, 5027, 5030, 5033,
+    5036, 5039, 5042, 5045, 5048, 5052, 5056, 5060, 5064, 5068, 5072, 5076,
+    5080, 5084, 5088, 5092, 5096, 5100, 5104, 5108, 5112, 5116, 5120, 5124,
+    5128, 5132, 5136, 5140, 5144, 5148, 5152, 5156, 5160, 5164, 5168, 5172,
+    5176, 5180, 5184, 5188, 5192, 5196, 5198, 5200, 5202, 5204, 5206, 5208,
+    5210, 5212, 5214, 5216, 5218, 5220, 5222, 5224, 5226, 5228, 5230, 5232,
+    5234, 5236, 5238, 5240, 5242, 5244, 5246, 5248, 5250, 5252, 5254, 5256,
+    5258, 5260, 5262, 5264, 5266, 5268, 5270, 5272, 5274, 5276, 5278, 5280,
+    5282, 5284, 5286, 5288, 5290, 5292, 5294, 5296, 5298, 5300, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5302, 0, 5304, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 5306, 0, 0, 0, 0, 5308, 0, 0, 0, 0, 5310, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 5312, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5314, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5316, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 5318, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5320, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 5322, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    5324, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 5329, 5333, 5336, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5340, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5343, 5345, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5347, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5349, 5351,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5353, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5355, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    5357, 5359, 5361, 5363, 5365, 5367, 5369, 5371, 5373, 5375, 5377, 5379,
+    5381, 5383, 5385, 5387, 5389, 5391, 5393, 5395, 5397, 5399, 5401, 5403,
+    5405, 5407, 5409, 5411, 5413, 5415, 5417, 5419, 5421, 5423, 5425, 5427,
+    5429, 5431, 5433, 5435, 5437, 5439, 5441, 5443, 5445, 5447, 5449, 5451,
+    5453, 5455, 5457, 5459, 5461, 5463, 5465, 5467, 5469, 5471, 5473, 5475,
+    5477, 5479, 5481, 5483, 5485, 5487, 5489, 5491, 5493, 5495, 5497, 5499,
+    5501, 5503, 5505, 5507, 5509, 5511, 5513, 5515, 5517, 5519, 5521, 5523,
+    5525, 5527, 5529, 5531, 5533, 5535, 5537, 5539, 5541, 5543, 5545, 5547,
+    5549, 5551, 5553, 5555, 5557, 5559, 5561, 5563, 5565, 5567, 5569, 5571,
+    5573, 5575, 5577, 5579, 5581, 5583, 5585, 5587, 5589, 5591, 5593, 5595,
+    5597, 5599, 5601, 5603, 5605, 5607, 5609, 5611, 5613, 5615, 5617, 5619,
+    5621, 5623, 5625, 5627, 5629, 5631, 5633, 5635, 5637, 5639, 5641, 5643,
+    5645, 5647, 5649, 5651, 5653, 5655, 5657, 5659, 5661, 5663, 5665, 5667,
+    5669, 5671, 5673, 5675, 5677, 5679, 5681, 5683, 5685, 5687, 5689, 5691,
+    5693, 5695, 5697, 5699, 5701, 5703, 5705, 5707, 5709, 5711, 5713, 5715,
+    5717, 5719, 5721, 5723, 5725, 5727, 5729, 5731, 5733, 5735, 5737, 5739,
+    5741, 5743, 5745, 5747, 5749, 5751, 5753, 5755, 5757, 5759, 5761, 5763,
+    5765, 5767, 5769, 5771, 5773, 5775, 5777, 5779, 5781, 5783, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5785, 5787, 0, 0, 0, 0, 0, 0,
+    5789, 5791, 5793, 5795, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 5797, 0, 5799, 5801, 5803, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 5805, 0, 5808, 0, 5811, 0, 5814, 0, 5817, 0, 5820, 0, 5823,
+    0, 5826, 0, 5829, 0, 5832, 0, 5835, 0, 5838, 0, 0, 5841, 0, 5844, 0,
+    5847, 0, 0, 0, 0, 0, 0, 5850, 5853, 0, 5856, 5859, 0, 5862, 5865, 0,
+    5868, 5871, 0, 5874, 5877, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 5880, 0, 0, 0, 0, 0, 0, 5883, 5886, 0, 5889, 5892,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5895, 0, 5898, 0, 5901, 0, 5904, 0,
+    5907, 0, 5910, 0, 5913, 0, 5916, 0, 5919, 0, 5922, 0, 5925, 0, 5928, 0,
+    0, 5931, 0, 5934, 0, 5937, 0, 0, 0, 0, 0, 0, 5940, 5943, 0, 5946, 5949,
+    0, 5952, 5955, 0, 5958, 5961, 0, 5964, 5967, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5970, 0, 0, 5973, 5976, 5979,
+    5982, 0, 0, 0, 5985, 5988, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 5991, 5993, 5995, 5997, 5999, 6001, 6003,
+    6005, 6007, 6009, 6011, 6013, 6015, 6017, 6019, 6021, 6023, 6025, 6027,
+    6029, 6031, 6033, 6035, 6037, 6039, 6041, 6043, 6045, 6047, 6049, 6051,
+    6053, 6055, 6057, 6059, 6061, 6063, 6065, 6067, 6069, 6071, 6073, 6075,
+    6077, 6079, 6081, 6083, 6085, 6087, 6089, 6091, 6093, 6095, 6097, 6099,
+    6101, 6103, 6105, 6107, 6109, 6111, 6113, 6115, 6117, 6119, 6121, 6123,
+    6125, 6127, 6129, 6131, 6133, 6135, 6137, 6139, 6141, 6143, 6145, 6147,
+    6149, 6151, 6153, 6155, 6157, 6159, 6161, 6163, 6165, 6167, 6169, 6171,
+    6173, 6175, 6177, 0, 0, 0, 6179, 6181, 6183, 6185, 6187, 6189, 6191,
+    6193, 6195, 6197, 6199, 6201, 6203, 6205, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 6207, 6211, 6215, 6219, 6223,
+    6227, 6231, 6235, 6239, 6243, 6247, 6251, 6255, 6259, 6263, 6268, 6273,
+    6278, 6283, 6288, 6293, 6298, 6303, 6308, 6313, 6318, 6323, 6328, 6333,
+    6338, 6346, 0, 6353, 6357, 6361, 6365, 6369, 6373, 6377, 6381, 6385,
+    6389, 6393, 6397, 6401, 6405, 6409, 6413, 6417, 6421, 6425, 6429, 6433,
+    6437, 6441, 6445, 6449, 6453, 6457, 6461, 6465, 6469, 6473, 6477, 6481,
+    6485, 6489, 6493, 6497, 6499, 6501, 6503, 0, 0, 0, 0, 0, 0, 0, 0, 6505,
+    6509, 6512, 6515, 6518, 6521, 6524, 6527, 6530, 6533, 6536, 6539, 6542,
+    6545, 6548, 6551, 6554, 6556, 6558, 6560, 6562, 6564, 6566, 6568, 6570,
+    6572, 6574, 6576, 6578, 6580, 6582, 6585, 6588, 6591, 6594, 6597, 6600,
+    6603, 6606, 6609, 6612, 6615, 6618, 6621, 6624, 6630, 6635, 0, 6638,
+    6640, 6642, 6644, 6646, 6648, 6650, 6652, 6654, 6656, 6658, 6660, 6662,
+    6664, 6666, 6668, 6670, 6672, 6674, 6676, 6678, 6680, 6682, 6684, 6686,
+    6688, 6690, 6692, 6694, 6696, 6698, 6700, 6702, 6704, 6706, 6708, 6710,
+    6712, 6714, 6716, 6718, 6720, 6722, 6724, 6726, 6728, 6730, 6732, 6734,
+    6736, 6739, 6742, 6745, 6748, 6751, 6754, 6757, 6760, 6763, 6766, 6769,
+    6772, 6775, 6778, 6781, 6784, 6787, 6790, 6793, 6796, 6799, 6802, 6805,
+    6808, 6812, 6816, 6820, 6823, 6827, 6830, 6834, 6836, 6838, 6840, 6842,
+    6844, 6846, 6848, 6850, 6852, 6854, 6856, 6858, 6860, 6862, 6864, 6866,
+    6868, 6870, 6872, 6874, 6876, 6878, 6880, 6882, 6884, 6886, 6888, 6890,
+    6892, 6894, 6896, 6898, 6900, 6902, 6904, 6906, 6908, 6910, 6912, 6914,
+    6916, 6918, 6920, 6922, 6924, 6926, 6928, 6931, 6936, 6941, 6946, 6950,
+    6955, 6959, 6963, 6969, 6974, 6978, 6982, 6986, 6991, 6996, 7000, 7004,
+    7007, 7011, 7016, 7021, 7024, 7030, 7037, 7043, 7047, 7053, 7059, 7064,
+    7068, 7072, 7076, 7081, 7087, 7092, 7096, 7100, 7104, 7107, 7110, 7113,
+    7116, 7120, 7124, 7130, 7134, 7139, 7145, 7149, 7152, 7155, 7161, 7166,
+    7172, 7176, 7182, 7185, 7189, 7193, 7197, 7201, 7205, 7210, 7214, 7217,
+    7221, 7225, 7229, 7234, 7238, 7242, 7246, 7252, 7257, 7260, 7266, 7269,
+    7274, 7279, 7283, 7287, 7291, 7296, 7299, 7303, 7308, 7311, 7317, 7321,
+    7324, 7327, 7330, 7333, 7336, 7339, 7342, 7345, 7348, 7351, 7355, 7359,
+    7363, 7367, 7371, 7375, 7379, 7383, 7387, 7391, 7395, 7399, 7403, 7407,
+    7411, 7415, 7418, 7421, 7425, 7428, 7431, 7434, 7438, 7442, 7445, 7448,
+    7451, 7454, 7457, 7462, 7465, 7468, 7471, 7474, 7477, 7480, 7483, 7486,
+    7490, 7495, 7498, 7501, 7504, 7507, 7510, 7513, 7516, 7520, 7524, 7528,
+    7532, 7535, 7538, 7541, 7544, 7547, 7550, 7553, 7556, 7559, 7562, 7566,
+    7570, 7573, 7577, 7581, 7585, 7588, 7592, 7596, 7601, 7604, 7608, 7612,
+    7616, 7620, 7626, 7633, 7636, 7639, 7642, 7645, 7648, 7651, 7654, 7657,
+    7660, 7663, 7666, 7669, 7672, 7675, 7678, 7681, 7684, 7687, 7692, 7695,
+    7698, 7701, 7706, 7710, 7713, 7716, 7719, 7722, 7725, 7728, 7731, 7734,
+    7737, 7740, 7744, 7747, 7750, 7754, 7758, 7761, 7766, 7770, 7773, 7776,
+    7779, 7782, 7786, 7790, 7793, 7796, 7799, 7802, 7805, 7808, 7811, 7814,
+    7817, 7821, 7825, 7829, 7833, 7837, 7841, 7845, 7849, 7853, 7857, 7861,
+    7865, 7869, 7873, 7877, 7881, 7885, 7889, 7893, 7897, 7901, 7905, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 7909, 7911, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    7913, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7915, 7917, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    7919, 7921, 7923, 7925, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7927, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7929, 7931, 7933,
+    7935, 7937, 7939, 7941, 7943, 7945, 7947, 7949, 7951, 7953, 7955, 7957,
+    7959, 7961, 7963, 7965, 7967, 7969, 7971, 7973, 7975, 7977, 7979, 7981,
+    7983, 7985, 7987, 7989, 7991, 7993, 7995, 7997, 7999, 8001, 8003, 8005,
+    8007, 8009, 8011, 8013, 8015, 8017, 8019, 8021, 8023, 8025, 8027, 8029,
+    8031, 8033, 8035, 8037, 8039, 8041, 8043, 8045, 8047, 8049, 8051, 8053,
+    8055, 8057, 8059, 8061, 8063, 8065, 8067, 8069, 8071, 8073, 8075, 8077,
+    8079, 8081, 8083, 8085, 8087, 8089, 8091, 8093, 8095, 8097, 8099, 8101,
+    8103, 8105, 8107, 8109, 8111, 8113, 8115, 8117, 8119, 8121, 8123, 8125,
+    8127, 8129, 8131, 8133, 8135, 8137, 8139, 8141, 8143, 8145, 8147, 8149,
+    8151, 8153, 8155, 8157, 8159, 8161, 8163, 8165, 8167, 8169, 8171, 8173,
+    8175, 8177, 8179, 8181, 8183, 8185, 8187, 8189, 8191, 8193, 8195, 8197,
+    8199, 8201, 8203, 8205, 8207, 8209, 8211, 8213, 8215, 8217, 8219, 8221,
+    8223, 8225, 8227, 8229, 8231, 8233, 8235, 8237, 8239, 8241, 8243, 8245,
+    8247, 8249, 8251, 8253, 8255, 8257, 8259, 8261, 8263, 8265, 8267, 8269,
+    8271, 8273, 8275, 8277, 8279, 8281, 8283, 8285, 8287, 8289, 8291, 8293,
+    8295, 8297, 8299, 8301, 8303, 8305, 8307, 8309, 8311, 8313, 8315, 8317,
+    8319, 8321, 8323, 8325, 8327, 8329, 8331, 8333, 8335, 8337, 8339, 8341,
+    8343, 8345, 8347, 8349, 8351, 8353, 8355, 8357, 8359, 8361, 8363, 8365,
+    8367, 8369, 8371, 8373, 8375, 8377, 8379, 8381, 8383, 8385, 8387, 8389,
+    8391, 8393, 8395, 8397, 8399, 8401, 8403, 8405, 8407, 8409, 8411, 8413,
+    8415, 8417, 8419, 8421, 8423, 8425, 8427, 8429, 8431, 8433, 8435, 8437,
+    8439, 8441, 8443, 8445, 8447, 8449, 8451, 8453, 8455, 8457, 8459, 8461,
+    8463, 8465, 8467, 0, 0, 8469, 0, 8471, 0, 0, 8473, 8475, 8477, 8479,
+    8481, 8483, 8485, 8487, 8489, 8491, 0, 8493, 0, 8495, 0, 0, 8497, 8499,
+    0, 0, 0, 8501, 8503, 8505, 8507, 8509, 8511, 8513, 8515, 8517, 8519,
+    8521, 8523, 8525, 8527, 8529, 8531, 8533, 8535, 8537, 8539, 8541, 8543,
+    8545, 8547, 8549, 8551, 8553, 8555, 8557, 8559, 8561, 8563, 8565, 8567,
+    8569, 8571, 8573, 8575, 8577, 8579, 8581, 8583, 8585, 8587, 8589, 8591,
+    8593, 8595, 8597, 8599, 8601, 8603, 8605, 8607, 8609, 8611, 8613, 8615,
+    8617, 8619, 8621, 8623, 8625, 8627, 8629, 8631, 8633, 8635, 0, 0, 8637,
+    8639, 8641, 8643, 8645, 8647, 8649, 8651, 8653, 8655, 8657, 8659, 8661,
+    8663, 8665, 8667, 8669, 8671, 8673, 8675, 8677, 8679, 8681, 8683, 8685,
+    8687, 8689, 8691, 8693, 8695, 8697, 8699, 8701, 8703, 8705, 8707, 8709,
+    8711, 8713, 8715, 8717, 8719, 8721, 8723, 8725, 8727, 8729, 8731, 8733,
+    8735, 8737, 8739, 8741, 8743, 8745, 8747, 8749, 8751, 8753, 8755, 8757,
+    8759, 8761, 8763, 8765, 8767, 8769, 8771, 8773, 8775, 8777, 8779, 8781,
+    8783, 8785, 8787, 8789, 8791, 8793, 8795, 8797, 8799, 8801, 8803, 8805,
+    8807, 8809, 8811, 8813, 8815, 8817, 8819, 8821, 8823, 8825, 8827, 8829,
+    8831, 8833, 8835, 8837, 8839, 8841, 8843, 8845, 8847, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 8849, 8852, 8855, 8858, 8862, 8866, 8869, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 8872, 8875, 8878, 8881, 8884, 0, 0, 0, 0,
+    0, 8887, 0, 8890, 8893, 8895, 8897, 8899, 8901, 8903, 8905, 8907, 8909,
+    8911, 8913, 8916, 8919, 8922, 8925, 8928, 8931, 8934, 8937, 8940, 8943,
+    8946, 8949, 0, 8952, 8955, 8958, 8961, 8964, 0, 8967, 0, 8970, 8973, 0,
+    8976, 8979, 0, 8982, 8985, 8988, 8991, 8994, 8997, 9000, 9003, 9006,
+    9009, 9012, 9014, 9016, 9018, 9020, 9022, 9024, 9026, 9028, 9030, 9032,
+    9034, 9036, 9038, 9040, 9042, 9044, 9046, 9048, 9050, 9052, 9054, 9056,
+    9058, 9060, 9062, 9064, 9066, 9068, 9070, 9072, 9074, 9076, 9078, 9080,
+    9082, 9084, 9086, 9088, 9090, 9092, 9094, 9096, 9098, 9100, 9102, 9104,
+    9106, 9108, 9110, 9112, 9114, 9116, 9118, 9120, 9122, 9124, 9126, 9128,
+    9130, 9132, 9134, 9136, 9138, 9140, 9142, 9144, 9146, 9148, 9150, 9152,
+    9154, 9156, 9158, 9160, 9162, 9164, 9166, 9168, 9170, 9172, 9174, 9176,
+    9178, 9180, 9182, 9184, 9186, 9188, 9190, 9192, 9194, 9196, 9198, 9200,
+    9202, 9204, 9206, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9208, 9210, 9212, 9214,
+    9216, 9218, 9220, 9222, 9224, 9226, 9228, 9230, 9232, 9234, 9236, 9238,
+    9240, 9242, 9244, 9246, 9248, 9250, 9252, 9254, 9257, 9260, 9263, 9266,
+    9269, 9272, 9275, 9278, 9281, 9284, 9287, 9290, 9293, 9296, 9299, 9302,
+    9305, 9308, 9310, 9312, 9314, 9316, 9319, 9322, 9325, 9328, 9331, 9334,
+    9337, 9340, 9343, 9346, 9349, 9352, 9355, 9358, 9361, 9364, 9367, 9370,
+    9373, 9376, 9379, 9382, 9385, 9388, 9391, 9394, 9397, 9400, 9403, 9406,
+    9409, 9412, 9415, 9418, 9421, 9424, 9427, 9430, 9433, 9436, 9439, 9442,
+    9445, 9448, 9451, 9454, 9457, 9460, 9463, 9466, 9469, 9472, 9475, 9478,
+    9481, 9484, 9487, 9490, 9493, 9496, 9499, 9502, 9505, 9508, 9511, 9514,
+    9517, 9520, 9523, 9526, 9529, 9532, 9535, 9538, 9541, 9544, 9547, 9550,
+    9553, 9556, 9559, 9562, 9565, 9568, 9571, 9574, 9577, 9580, 9583, 9586,
+    9589, 9592, 9595, 9598, 9602, 9606, 9610, 9614, 9618, 9622, 9625, 9628,
+    9631, 9634, 9637, 9640, 9643, 9646, 9649, 9652, 9655, 9658, 9661, 9664,
+    9667, 9670, 9673, 9676, 9679, 9682, 9685, 9688, 9691, 9694, 9697, 9700,
+    9703, 9706, 9709, 9712, 9715, 9718, 9721, 9724, 9727, 9730, 9733, 9736,
+    9739, 9742, 9745, 9748, 9751, 9754, 9757, 9760, 9763, 9766, 9769, 9772,
+    9775, 9778, 9781, 9784, 9787, 9790, 9793, 9796, 9799, 9802, 9805, 9808,
+    9811, 9814, 9817, 9820, 9823, 9826, 9829, 9832, 9835, 9838, 9841, 9844,
+    9847, 9850, 9853, 9856, 9859, 9862, 9865, 9868, 9871, 9874, 9877, 9880,
+    9883, 9886, 9889, 9892, 9895, 9898, 9901, 9904, 9907, 9910, 9913, 9916,
+    9919, 9922, 9925, 9928, 9931, 9934, 9937, 9940, 9943, 9946, 9949, 9952,
+    9955, 9958, 9961, 9964, 9967, 9970, 9973, 9976, 9979, 9982, 9985, 9988,
+    9991, 9994, 9997, 10000, 10003, 10006, 10009, 10012, 10015, 10018, 10021,
+    10024, 10027, 10030, 10033, 10036, 10039, 10042, 10045, 10048, 10052,
+    10056, 10060, 10063, 10066, 10069, 10072, 10075, 10078, 10081, 10084,
+    10087, 10090, 10093, 10096, 10099, 10102, 10105, 10108, 10111, 10114,
+    10117, 10120, 10123, 10126, 10129, 10132, 10135, 10138, 10141, 10144,
+    10147, 10150, 10153, 10156, 10159, 10162, 10165, 10168, 10171, 10174,
+    10177, 10180, 10183, 10186, 10189, 10192, 10195, 10198, 10201, 10204,
+    10207, 10210, 10213, 10216, 10219, 10222, 10225, 10228, 10231, 10234,
+    10237, 10240, 10243, 10246, 10249, 10252, 10255, 10258, 10261, 10264,
+    10267, 10270, 10273, 10276, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 10279, 10283, 10287, 10291, 10295, 10299, 10303, 10307, 10311,
+    10315, 10319, 10323, 10327, 10331, 10335, 10339, 10343, 10347, 10351,
+    10355, 10359, 10363, 10367, 10371, 10375, 10379, 10383, 10387, 10391,
+    10395, 10399, 10403, 10407, 10411, 10415, 10419, 10423, 10427, 10431,
+    10435, 10439, 10443, 10447, 10451, 10455, 10459, 10463, 10467, 10471,
+    10475, 10479, 10483, 10487, 10491, 10495, 10499, 10503, 10507, 10511,
+    10515, 10519, 10523, 10527, 10531, 0, 0, 10535, 10539, 10543, 10547,
+    10551, 10555, 10559, 10563, 10567, 10571, 10575, 10579, 10583, 10587,
+    10591, 10595, 10599, 10603, 10607, 10611, 10615, 10619, 10623, 10627,
+    10631, 10635, 10639, 10643, 10647, 10651, 10655, 10659, 10663, 10667,
+    10671, 10675, 10679, 10683, 10687, 10691, 10695, 10699, 10703, 10707,
+    10711, 10715, 10719, 10723, 10727, 10731, 10735, 10739, 10743, 10747, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10751, 10755, 10759, 10764,
+    10769, 10774, 10779, 10784, 10789, 10794, 10798, 10817, 10826, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10831, 10833, 10835,
+    10837, 10839, 10841, 10843, 10845, 10847, 10849, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10851, 10853, 10855, 10857,
+    10859, 10861, 10863, 10865, 10867, 10869, 10871, 10873, 10875, 10877,
+    10879, 10881, 10883, 10885, 10887, 10889, 10891, 0, 0, 10893, 10895,
+    10897, 10899, 10901, 10903, 10905, 10907, 10909, 10911, 10913, 10915, 0,
+    10917, 10919, 10921, 10923, 10925, 10927, 10929, 10931, 10933, 10935,
+    10937, 10939, 10941, 10943, 10945, 10947, 10949, 10951, 10953, 0, 10955,
+    10957, 10959, 10961, 0, 0, 0, 0, 10963, 10966, 10969, 0, 10972, 0, 10975,
+    10978, 10981, 10984, 10987, 10990, 10993, 10996, 10999, 11002, 11005,
+    11007, 11009, 11011, 11013, 11015, 11017, 11019, 11021, 11023, 11025,
+    11027, 11029, 11031, 11033, 11035, 11037, 11039, 11041, 11043, 11045,
+    11047, 11049, 11051, 11053, 11055, 11057, 11059, 11061, 11063, 11065,
+    11067, 11069, 11071, 11073, 11075, 11077, 11079, 11081, 11083, 11085,
+    11087, 11089, 11091, 11093, 11095, 11097, 11099, 11101, 11103, 11105,
+    11107, 11109, 11111, 11113, 11115, 11117, 11119, 11121, 11123, 11125,
+    11127, 11129, 11131, 11133, 11135, 11137, 11139, 11141, 11143, 11145,
+    11147, 11149, 11151, 11153, 11155, 11157, 11159, 11161, 11163, 11165,
+    11167, 11169, 11171, 11173, 11175, 11177, 11179, 11181, 11183, 11185,
+    11187, 11189, 11191, 11193, 11195, 11197, 11199, 11201, 11203, 11205,
+    11207, 11209, 11211, 11213, 11215, 11217, 11219, 11221, 11223, 11225,
+    11227, 11229, 11231, 11233, 11235, 11237, 11239, 11242, 11245, 11248,
+    11251, 11254, 11257, 11260, 0, 0, 0, 0, 11263, 11265, 11267, 11269,
+    11271, 11273, 11275, 11277, 11279, 11281, 11283, 11285, 11287, 11289,
+    11291, 11293, 11295, 11297, 11299, 11301, 11303, 11305, 11307, 11309,
+    11311, 11313, 11315, 11317, 11319, 11321, 11323, 11325, 11327, 11329,
+    11331, 11333, 11335, 11337, 11339, 11341, 11343, 11345, 11347, 11349,
+    11351, 11353, 11355, 11357, 11359, 11361, 11363, 11365, 11367, 11369,
+    11371, 11373, 11375, 11377, 11379, 11381, 11383, 11385, 11387, 11389,
+    11391, 11393, 11395, 11397, 11399, 11401, 11403, 11405, 11407, 11409,
+    11411, 11413, 11415, 11417, 11419, 11421, 11423, 11425, 11427, 11429,
+    11431, 11433, 11435, 11437, 11439, 11441, 11443, 11445, 11447, 11449,
+    11451, 11453, 11455, 11457, 11459, 11461, 11463, 11465, 11467, 11469,
+    11471, 11473, 11475, 11477, 11479, 11481, 11483, 11485, 11487, 11489,
+    11491, 11493, 11495, 11497, 11499, 11501, 11503, 11505, 11507, 11509,
+    11511, 11513, 11515, 11517, 11519, 11521, 11523, 11525, 11527, 11529,
+    11531, 11533, 11535, 11537, 11539, 11541, 11543, 11545, 11547, 11549,
+    11551, 11553, 11555, 11557, 11559, 11561, 11563, 11565, 11567, 11569,
+    11571, 11573, 11575, 11577, 11579, 11581, 11583, 11585, 11587, 11589,
+    11591, 11593, 11595, 11597, 11599, 11601, 11603, 11605, 11607, 11609,
+    11611, 11613, 11615, 11617, 11619, 11621, 11623, 11625, 11627, 11629,
+    11631, 11633, 11635, 11637, 11639, 11641, 0, 0, 0, 11643, 11645, 11647,
+    11649, 11651, 11653, 0, 0, 11655, 11657, 11659, 11661, 11663, 11665, 0,
+    0, 11667, 11669, 11671, 11673, 11675, 11677, 0, 0, 11679, 11681, 11683,
+    0, 0, 0, 11685, 11687, 11689, 11691, 11693, 11695, 11697, 0, 11699,
+    11701, 11703, 11705, 11707, 11709, 11711, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 11713, 0, 11716, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 11719, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11722, 11725, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 11728, 11731, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 11734, 11737, 0, 11740, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11743, 11746, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11749, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 11752, 11755,
+    11758, 11761, 11764, 11767, 11770, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 11773, 11776, 11779, 11782, 11785, 11788, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 11791, 11793, 11795, 11797, 11799, 11801, 11803, 11805,
+    11807, 11809, 11811, 11813, 11815, 11817, 11819, 11821, 11823, 11825,
+    11827, 11829, 11831, 11833, 11835, 11837, 11839, 11841, 11843, 11845,
+    11847, 11849, 11851, 11853, 11855, 11857, 11859, 11861, 11863, 11865,
+    11867, 11869, 11871, 11873, 11875, 11877, 11879, 11881, 11883, 11885,
+    11887, 11889, 11891, 11893, 11895, 11897, 11899, 11901, 11903, 11905,
+    11907, 11909, 11911, 11913, 11915, 11917, 11919, 11921, 11923, 11925,
+    11927, 11929, 11931, 11933, 11935, 11937, 11939, 11941, 11943, 11945,
+    11947, 11949, 11951, 11953, 11955, 11957, 11959, 0, 11961, 11963, 11965,
+    11967, 11969, 11971, 11973, 11975, 11977, 11979, 11981, 11983, 11985,
+    11987, 11989, 11991, 11993, 11995, 11997, 11999, 12001, 12003, 12005,
+    12007, 12009, 12011, 12013, 12015, 12017, 12019, 12021, 12023, 12025,
+    12027, 12029, 12031, 12033, 12035, 12037, 12039, 12041, 12043, 12045,
+    12047, 12049, 12051, 12053, 12055, 12057, 12059, 12061, 12063, 12065,
+    12067, 12069, 12071, 12073, 12075, 12077, 12079, 12081, 12083, 12085,
+    12087, 12089, 12091, 12093, 12095, 12097, 12099, 12101, 0, 12103, 12105,
+    0, 0, 12107, 0, 0, 12109, 12111, 0, 0, 12113, 12115, 12117, 12119, 0,
+    12121, 12123, 12125, 12127, 12129, 12131, 12133, 12135, 12137, 12139,
+    12141, 12143, 0, 12145, 0, 12147, 12149, 12151, 12153, 12155, 12157,
+    12159, 0, 12161, 12163, 12165, 12167, 12169, 12171, 12173, 12175, 12177,
+    12179, 12181, 12183, 12185, 12187, 12189, 12191, 12193, 12195, 12197,
+    12199, 12201, 12203, 12205, 12207, 12209, 12211, 12213, 12215, 12217,
+    12219, 12221, 12223, 12225, 12227, 12229, 12231, 12233, 12235, 12237,
+    12239, 12241, 12243, 12245, 12247, 12249, 12251, 12253, 12255, 12257,
+    12259, 12261, 12263, 12265, 12267, 12269, 12271, 12273, 12275, 12277,
+    12279, 12281, 12283, 12285, 12287, 12289, 0, 12291, 12293, 12295, 12297,
+    0, 0, 12299, 12301, 12303, 12305, 12307, 12309, 12311, 12313, 0, 12315,
+    12317, 12319, 12321, 12323, 12325, 12327, 0, 12329, 12331, 12333, 12335,
+    12337, 12339, 12341, 12343, 12345, 12347, 12349, 12351, 12353, 12355,
+    12357, 12359, 12361, 12363, 12365, 12367, 12369, 12371, 12373, 12375,
+    12377, 12379, 12381, 12383, 0, 12385, 12387, 12389, 12391, 0, 12393,
+    12395, 12397, 12399, 12401, 0, 12403, 0, 0, 0, 12405, 12407, 12409,
+    12411, 12413, 12415, 12417, 0, 12419, 12421, 12423, 12425, 12427, 12429,
+    12431, 12433, 12435, 12437, 12439, 12441, 12443, 12445, 12447, 12449,
+    12451, 12453, 12455, 12457, 12459, 12461, 12463, 12465, 12467, 12469,
+    12471, 12473, 12475, 12477, 12479, 12481, 12483, 12485, 12487, 12489,
+    12491, 12493, 12495, 12497, 12499, 12501, 12503, 12505, 12507, 12509,
+    12511, 12513, 12515, 12517, 12519, 12521, 12523, 12525, 12527, 12529,
+    12531, 12533, 12535, 12537, 12539, 12541, 12543, 12545, 12547, 12549,
+    12551, 12553, 12555, 12557, 12559, 12561, 12563, 12565, 12567, 12569,
+    12571, 12573, 12575, 12577, 12579, 12581, 12583, 12585, 12587, 12589,
+    12591, 12593, 12595, 12597, 12599, 12601, 12603, 12605, 12607, 12609,
+    12611, 12613, 12615, 12617, 12619, 12621, 12623, 12625, 12627, 12629,
+    12631, 12633, 12635, 12637, 12639, 12641, 12643, 12645, 12647, 12649,
+    12651, 12653, 12655, 12657, 12659, 12661, 12663, 12665, 12667, 12669,
+    12671, 12673, 12675, 12677, 12679, 12681, 12683, 12685, 12687, 12689,
+    12691, 12693, 12695, 12697, 12699, 12701, 12703, 12705, 12707, 12709,
+    12711, 12713, 12715, 12717, 12719, 12721, 12723, 12725, 12727, 12729,
+    12731, 12733, 12735, 12737, 12739, 12741, 12743, 12745, 12747, 12749,
+    12751, 12753, 12755, 12757, 12759, 12761, 12763, 12765, 12767, 12769,
+    12771, 12773, 12775, 12777, 12779, 12781, 12783, 12785, 12787, 12789,
+    12791, 12793, 12795, 12797, 12799, 12801, 12803, 12805, 12807, 12809,
+    12811, 12813, 12815, 12817, 12819, 12821, 12823, 12825, 12827, 12829,
+    12831, 12833, 12835, 12837, 12839, 12841, 12843, 12845, 12847, 12849,
+    12851, 12853, 12855, 12857, 12859, 12861, 12863, 12865, 12867, 12869,
+    12871, 12873, 12875, 12877, 12879, 12881, 12883, 12885, 12887, 12889,
+    12891, 12893, 12895, 12897, 12899, 12901, 12903, 12905, 12907, 12909,
+    12911, 12913, 12915, 12917, 12919, 12921, 12923, 12925, 12927, 12929,
+    12931, 12933, 12935, 12937, 12939, 12941, 12943, 12945, 12947, 12949,
+    12951, 12953, 12955, 12957, 12959, 12961, 12963, 12965, 12967, 12969,
+    12971, 12973, 12975, 12977, 12979, 12981, 12983, 12985, 12987, 12989,
+    12991, 12993, 12995, 12997, 12999, 13001, 13003, 13005, 13007, 13009,
+    13011, 13013, 13015, 13017, 13019, 13021, 13023, 13025, 13027, 13029,
+    13031, 13033, 13035, 13037, 13039, 13041, 13043, 13045, 13047, 13049,
+    13051, 13053, 13055, 13057, 13059, 13061, 13063, 13065, 13067, 13069,
+    13071, 13073, 13075, 13077, 13079, 13081, 13083, 13085, 13087, 13089,
+    13091, 13093, 13095, 13097, 0, 0, 13099, 13101, 13103, 13105, 13107,
+    13109, 13111, 13113, 13115, 13117, 13119, 13121, 13123, 13125, 13127,
+    13129, 13131, 13133, 13135, 13137, 13139, 13141, 13143, 13145, 13147,
+    13149, 13151, 13153, 13155, 13157, 13159, 13161, 13163, 13165, 13167,
+    13169, 13171, 13173, 13175, 13177, 13179, 13181, 13183, 13185, 13187,
+    13189, 13191, 13193, 13195, 13197, 13199, 13201, 13203, 13205, 13207,
+    13209, 13211, 13213, 13215, 13217, 13219, 13221, 13223, 13225, 13227,
+    13229, 13231, 13233, 13235, 13237, 13239, 13241, 13243, 13245, 13247,
+    13249, 13251, 13253, 13255, 13257, 13259, 13261, 13263, 13265, 13267,
+    13269, 13271, 13273, 13275, 13277, 13279, 13281, 13283, 13285, 13287,
+    13289, 13291, 13293, 13295, 13297, 13299, 13301, 13303, 13305, 13307,
+    13309, 13311, 13313, 13315, 13317, 13319, 13321, 13323, 13325, 13327,
+    13329, 13331, 13333, 13335, 13337, 13339, 13341, 13343, 13345, 13347,
+    13349, 13351, 13353, 13355, 13357, 13359, 13361, 13363, 13365, 13367,
+    13369, 13371, 13373, 13375, 13377, 13379, 13381, 13383, 13385, 13387,
+    13389, 13391, 13393, 13395, 13397, 13399, 13401, 13403, 13405, 13407,
+    13409, 13411, 13413, 13415, 13417, 13419, 13421, 13423, 13425, 13427,
+    13429, 13431, 13433, 13435, 13437, 13439, 13441, 13443, 13445, 13447,
+    13449, 13451, 13453, 13455, 13457, 13459, 13461, 13463, 13465, 13467,
+    13469, 13471, 13473, 13475, 13477, 13479, 13481, 13483, 13485, 13487,
+    13489, 13491, 13493, 13495, 13497, 13499, 13501, 13503, 13505, 13507,
+    13509, 13511, 13513, 13515, 13517, 13519, 13521, 13523, 13525, 13527,
+    13529, 13531, 13533, 13535, 13537, 13539, 13541, 13543, 13545, 13547,
+    13549, 13551, 13553, 13555, 13557, 13559, 13561, 13563, 13565, 13567,
+    13569, 13571, 13573, 13575, 13577, 13579, 13581, 13583, 13585, 13587,
+    13589, 13591, 13593, 13595, 13597, 13599, 13601, 13603, 13605, 13607,
+    13609, 13611, 13613, 13615, 13617, 13619, 13621, 13623, 13625, 13627,
+    13629, 13631, 13633, 13635, 13637, 13639, 13641, 13643, 13645, 13647,
+    13649, 13651, 13653, 13655, 13657, 13659, 13661, 13663, 13665, 13667,
+    13669, 13671, 13673, 13675, 13677, 13679, 13681, 0, 0, 13683, 13685,
+    13687, 13689, 13691, 13693, 13695, 13697, 13699, 13701, 13703, 13705,
+    13707, 13709, 13711, 13713, 13715, 13717, 13719, 13721, 13723, 13725,
+    13727, 13729, 13731, 13733, 13735, 13737, 13739, 13741, 13743, 13745,
+    13747, 13749, 13751, 13753, 13755, 13757, 13759, 13761, 13763, 13765,
+    13767, 13769, 13771, 13773, 13775, 13777, 13779, 13781, 13783, 13785,
+    13787, 13789, 0, 13791, 13793, 13795, 13797, 13799, 13801, 13803, 13805,
+    13807, 13809, 13811, 13813, 13815, 13817, 13819, 13821, 13823, 13825,
+    13827, 13829, 13831, 13833, 13835, 13837, 13839, 13841, 13843, 0, 13845,
+    13847, 0, 13849, 0, 0, 13851, 0, 13853, 13855, 13857, 13859, 13861,
+    13863, 13865, 13867, 13869, 13871, 0, 13873, 13875, 13877, 13879, 0,
+    13881, 0, 13883, 0, 0, 0, 0, 0, 0, 13885, 0, 0, 0, 0, 13887, 0, 13889, 0,
+    13891, 0, 13893, 13895, 13897, 0, 13899, 13901, 0, 13903, 0, 0, 13905, 0,
+    13907, 0, 13909, 0, 13911, 0, 13913, 0, 13915, 13917, 0, 13919, 0, 0,
+    13921, 13923, 13925, 13927, 0, 13929, 13931, 13933, 13935, 13937, 13939,
+    13941, 0, 13943, 13945, 13947, 13949, 0, 13951, 13953, 13955, 13957, 0,
+    13959, 0, 13961, 13963, 13965, 13967, 13969, 13971, 13973, 13975, 13977,
+    13979, 0, 13981, 13983, 13985, 13987, 13989, 13991, 13993, 13995, 13997,
+    13999, 14001, 14003, 14005, 14007, 14009, 14011, 14013, 0, 0, 0, 0, 0,
+    14015, 14017, 14019, 0, 14021, 14023, 14025, 14027, 14029, 0, 14031,
+    14033, 14035, 14037, 14039, 14041, 14043, 14045, 14047, 14049, 14051,
+    14053, 14055, 14057, 14059, 14061, 14063, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14065, 14068, 14071, 14074, 14077, 14080,
+    14083, 14086, 14089, 14092, 14095, 0, 0, 0, 0, 0, 14098, 14102, 14106,
+    14110, 14114, 14118, 14122, 14126, 14130, 14134, 14138, 14142, 14146,
+    14150, 14154, 14158, 14162, 14166, 14170, 14174, 14178, 14182, 14186,
+    14190, 14194, 14198, 14202, 14206, 14208, 14210, 14213, 0, 14216, 14218,
+    14220, 14222, 14224, 14226, 14228, 14230, 14232, 14234, 14236, 14238,
+    14240, 14242, 14244, 14246, 14248, 14250, 14252, 14254, 14256, 14258,
+    14260, 14262, 14264, 14266, 14268, 14271, 14274, 14277, 14280, 14284, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 14287, 14290, 14293, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14296, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14299, 14302, 14305, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 14307, 14309, 14311, 14313, 14315, 14317, 14319,
+    14321, 14323, 14325, 14327, 14329, 14331, 14333, 14335, 14337, 14339,
+    14341, 14343, 14345, 14347, 14349, 14351, 14353, 14355, 14357, 14359,
+    14361, 14363, 14365, 14367, 14369, 14371, 14373, 14375, 14377, 14379,
+    14381, 14383, 14385, 14387, 14389, 14391, 14393, 0, 0, 0, 0, 14395,
+    14399, 14403, 14407, 14411, 14415, 14419, 14423, 14427, 0, 0, 0, 0, 0, 0,
+    0, 14431, 14433, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14435, 14437,
+    14439, 14441, 14443, 14445, 14447, 14449, 14451, 14453, 0, 0, 0, 0, 0, 0,
+    14455, 14457, 14459, 14461, 14463, 14465, 14467, 14469, 14471, 14473,
+    14475, 14477, 14479, 14481, 14483, 14485, 14487, 14489, 14491, 14493,
+    14495, 14497, 14499, 14501, 14503, 14505, 14507, 14509, 14511, 14513,
+    14515, 14517, 14519, 14521, 14523, 14525, 14527, 14529, 14531, 14533,
+    14535, 14537, 14539, 14541, 14543, 14545, 14547, 14549, 14551, 14553,
+    14555, 14557, 14559, 14561, 14563, 14565, 14567, 14569, 14571, 14573,
+    14575, 14577, 14579, 14581, 14583, 14585, 14587, 14589, 14591, 14593,
+    14595, 14597, 14599, 14601, 14603, 14605, 14607, 14609, 14611, 14613,
+    14615, 14617, 14619, 14621, 14623, 14625, 14627, 14629, 14631, 14633,
+    14635, 14637, 14639, 14641, 14643, 14645, 14647, 14649, 14651, 14653,
+    14655, 14657, 14659, 14661, 14663, 14665, 14667, 14669, 14671, 14673,
+    14675, 14677, 14679, 14681, 14683, 14685, 14687, 14689, 14691, 14693,
+    14695, 14697, 14699, 14701, 14703, 14705, 14707, 14709, 14711, 14713,
+    14715, 14717, 14719, 14721, 14723, 14725, 14727, 14729, 14731, 14733,
+    14735, 14737, 14739, 14741, 14743, 14745, 14747, 14749, 14751, 14753,
+    14755, 14757, 14759, 14761, 14763, 14765, 14767, 14769, 14771, 14773,
+    14775, 14777, 14779, 14781, 14783, 14785, 14787, 14789, 14791, 14793,
+    14795, 14797, 14799, 14801, 14803, 14805, 14807, 14809, 14811, 14813,
+    14815, 14817, 14819, 14821, 14823, 14825, 14827, 14829, 14831, 14833,
+    14835, 14837, 14839, 14841, 14843, 14845, 14847, 14849, 14851, 14853,
+    14855, 14857, 14859, 14861, 14863, 14865, 14867, 14869, 14871, 14873,
+    14875, 14877, 14879, 14881, 14883, 14885, 14887, 14889, 14891, 14893,
+    14895, 14897, 14899, 14901, 14903, 14905, 14907, 14909, 14911, 14913,
+    14915, 14917, 14919, 14921, 14923, 14925, 14927, 14929, 14931, 14933,
+    14935, 14937, 14939, 14941, 14943, 14945, 14947, 14949, 14951, 14953,
+    14955, 14957, 14959, 14961, 14963, 14965, 14967, 14969, 14971, 14973,
+    14975, 14977, 14979, 14981, 14983, 14985, 14987, 14989, 14991, 14993,
+    14995, 14997, 14999, 15001, 15003, 15005, 15007, 15009, 15011, 15013,
+    15015, 15017, 15019, 15021, 15023, 15025, 15027, 15029, 15031, 15033,
+    15035, 15037, 15039, 15041, 15043, 15045, 15047, 15049, 15051, 15053,
+    15055, 15057, 15059, 15061, 15063, 15065, 15067, 15069, 15071, 15073,
+    15075, 15077, 15079, 15081, 15083, 15085, 15087, 15089, 15091, 15093,
+    15095, 15097, 15099, 15101, 15103, 15105, 15107, 15109, 15111, 15113,
+    15115, 15117, 15119, 15121, 15123, 15125, 15127, 15129, 15131, 15133,
+    15135, 15137, 15139, 15141, 15143, 15145, 15147, 15149, 15151, 15153,
+    15155, 15157, 15159, 15161, 15163, 15165, 15167, 15169, 15171, 15173,
+    15175, 15177, 15179, 15181, 15183, 15185, 15187, 15189, 15191, 15193,
+    15195, 15197, 15199, 15201, 15203, 15205, 15207, 15209, 15211, 15213,
+    15215, 15217, 15219, 15221, 15223, 15225, 15227, 15229, 15231, 15233,
+    15235, 15237, 15239, 15241, 15243, 15245, 15247, 15249, 15251, 15253,
+    15255, 15257, 15259, 15261, 15263, 15265, 15267, 15269, 15271, 15273,
+    15275, 15277, 15279, 15281, 15283, 15285, 15287, 15289, 15291, 15293,
+    15295, 15297, 15299, 15301, 15303, 15305, 15307, 15309, 15311, 15313,
+    15315, 15317, 15319, 15321, 15323, 15325, 15327, 15329, 15331, 15333,
+    15335, 15337, 15339, 15341, 15343, 15345, 15347, 15349, 15351, 15353,
+    15355, 15357, 15359, 15361, 15363, 15365, 15367, 15369, 15371, 15373,
+    15375, 15377, 15379, 15381, 15383, 15385, 15387, 15389, 15391, 15393,
+    15395, 15397, 15399, 15401, 15403, 15405, 15407, 15409, 15411, 15413,
+    15415, 15417, 15419, 15421, 15423, 15425, 15427, 15429, 15431, 15433,
+    15435, 15437, 15439, 15441, 15443, 15445, 15447, 15449, 15451, 15453,
+    15455, 15457, 15459, 15461, 15463, 15465, 15467, 15469, 15471, 15473,
+    15475, 15477, 15479, 15481, 15483, 15485, 15487, 15489, 15491, 15493,
+    15495, 15497, 15499, 15501, 15503, 15505, 15507, 15509, 15511, 15513,
+    15515, 15517, 15519, 15521, 15523, 15525, 15527, 15529, 15531, 15533,
+    15535, 15537, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0,
+};
 
-static const unichar_t * const tab_6[] = {
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_60c,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_621,
-str_622,
-str_623,
-str_624,
-str_625,
-str_626,
-str_627,
-str_628,
-str_629,
-str_62a,
-str_62b,
-str_62c,
-str_62d,
-str_62e,
-str_62f,
-str_630,
-str_631,
-str_632,
-str_633,
-str_634,
-str_635,
-str_636,
-str_637,
-str_638,
-str_639,
-str_63a,
-0, 0, 0, 0, 0, 0, str_641,
-str_642,
-str_643,
-str_644,
-str_645,
-str_646,
-str_647,
-str_648,
-str_649,
-str_64a,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_66a,
-0, str_66c,
-str_66d,
-0, 0, 0, str_671,
-0, 0, 0, str_675,
-str_676,
-str_677,
-str_678,
-str_679,
-str_67a,
-str_67b,
-0, 0, str_67e,
-str_67f,
-str_680,
-0, 0, str_683,
-str_684,
-0, str_686,
-str_687,
-str_688,
-0, 0, 0, str_68c,
-str_68d,
-str_68e,
-0, 0, str_691,
-0, 0, 0, 0, 0, 0, str_698,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_6a4,
-0, str_6a6,
-0, 0, str_6a9,
-0, 0, 0, str_6ad,
-0, str_6af,
-0, str_6b1,
-0, str_6b3,
-0, 0, 0, 0, 0, 0, str_6ba,
-str_6bb,
-0, 0, str_6be,
-0, str_6c0,
-str_6c1,
-str_6c2,
-0, 0, str_6c5,
-str_6c6,
-str_6c7,
-str_6c8,
-str_6c9,
-0, str_6cb,
-str_6cc,
-0, 0, 0, str_6d0,
-0, str_6d2,
-str_6d3,
-str_6d4,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+static const unichar_t* get_unialt(unichar_t ch) {
+    int index = 0;
+    if (ch < UNICODE_MAX) {
+        index = unialt_index1[ch >> UNIALT_SHIFT];
+        index = unialt_index2[(index << UNIALT_SHIFT) + (ch & ((1 << UNIALT_SHIFT) - 1))];
+    }
+    assert(index >= 0 && (size_t)index < sizeof(unialt_data)/sizeof(unialt_data[0]));
+    return &unialt_data[index];
+}
 
-static const unichar_t * const tab_9[] = {
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_929,
-0, 0, 0, 0, 0, 0, 0, str_931,
-0, 0, str_934,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_958,
-str_959,
-str_95a,
-str_95b,
-str_95c,
-str_95d,
-str_95e,
-str_95f,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_9cb,
-str_9cc,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_9dc,
-str_9dd,
-0, str_9df,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+int ff_unicode_hasunialt(unichar_t ch) {
+   return *get_unialt(ch) != 0;
+}
 
-static const unichar_t * const tab_a[] = {
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_a33,
-0, 0, str_a36,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_a59,
-str_a5a,
-str_a5b,
-0, 0, str_a5e,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+const unichar_t* ff_unicode_unialt(unichar_t ch) {
+    const unichar_t* ptr = get_unialt(ch);
+    if (!*ptr) {
+        return NULL;
+    }
+    return ptr;
+}
 
-static const unichar_t * const tab_b[] = {
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_b48,
-0, 0, str_b4b,
-str_b4c,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_b5c,
-str_b5d,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_b94,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_bca,
-str_bcb,
-str_bcc,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-static const unichar_t * const tab_c[] = {
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_c48,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_cc0,
-0, 0, 0, 0, 0, 0, str_cc7,
-str_cc8,
-0, str_cca,
-str_ccb,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-static const unichar_t * const tab_d[] = {
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_d4a,
-str_d4b,
-str_d4c,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_dda,
-0, str_ddc,
-str_ddd,
-str_dde,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-static const unichar_t * const tab_e[] = {
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_e33,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_eb3,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_edc,
-str_edd,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-static const unichar_t * const tab_f[] = {
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_f0c,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_f43,
-0, 0, 0, 0, 0, 0, 0, 0, 0, str_f4d,
-0, 0, 0, 0, str_f52,
-0, 0, 0, 0, str_f57,
-0, 0, 0, 0, str_f5c,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_f69,
-0, 0, 0, 0, 0, 0, 0, 0, 0, str_f73,
-0, str_f75,
-str_f76,
-str_f77,
-str_f78,
-str_f79,
-0, 0, 0, 0, 0, 0, 0, str_f81,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_f93,
-0, 0, 0, 0, 0, 0, 0, 0, 0, str_f9d,
-0, 0, 0, 0, str_fa2,
-0, 0, 0, 0, str_fa7,
-0, 0, 0, 0, str_fac,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_fb9,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-static const unichar_t * const tab_10[] = {
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_1026,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_10fc,
-0, 0, 0, 0};
-
-static const unichar_t * const tab_11[] = {
-0, str_1101,
-0, 0, str_1104,
-0, 0, 0, str_1108,
-0, str_110a,
-0, 0, str_110d,
-0, 0, 0, 0, 0, str_1113,
-str_1114,
-str_1115,
-str_1116,
-str_1117,
-str_1118,
-str_1119,
-str_111a,
-str_111b,
-str_111c,
-str_111d,
-str_111e,
-str_111f,
-str_1120,
-str_1121,
-str_1122,
-str_1123,
-str_1124,
-str_1125,
-str_1126,
-str_1127,
-str_1128,
-str_1129,
-str_112a,
-str_112b,
-str_112c,
-str_112d,
-str_112e,
-str_112f,
-str_1130,
-str_1131,
-str_1132,
-str_1133,
-str_1134,
-str_1135,
-str_1136,
-str_1137,
-str_1138,
-str_1139,
-str_113a,
-str_113b,
-0, str_113d,
-0, str_113f,
-0, str_1141,
-str_1142,
-str_1143,
-str_1144,
-str_1145,
-str_1146,
-str_1147,
-str_1148,
-str_1149,
-str_114a,
-str_114b,
-0, str_114d,
-0, str_114f,
-0, str_1151,
-str_1152,
-str_1153,
-0, 0, str_1156,
-str_1157,
-str_1158,
-0, 0, 0, 0, 0, 0, 0, 0, 0, str_1162,
-0, str_1164,
-0, str_1166,
-0, str_1168,
-0, str_116a,
-str_116b,
-str_116c,
-0, 0, str_116f,
-str_1170,
-str_1171,
-0, 0, str_1174,
-0, str_1176,
-str_1177,
-str_1178,
-str_1179,
-str_117a,
-str_117b,
-str_117c,
-str_117d,
-str_117e,
-str_117f,
-str_1180,
-str_1181,
-str_1182,
-str_1183,
-str_1184,
-str_1185,
-str_1186,
-str_1187,
-str_1188,
-str_1189,
-str_118a,
-str_118b,
-str_118c,
-str_118d,
-str_118e,
-str_118f,
-str_1190,
-str_1191,
-str_1192,
-str_1193,
-str_1194,
-str_1195,
-str_1196,
-str_1197,
-str_1198,
-str_1199,
-str_119a,
-str_119b,
-str_119c,
-str_119d,
-0, str_119f,
-str_11a0,
-str_11a1,
-str_11a2,
-0, 0, 0, 0, 0, str_11a8,
-str_11a9,
-str_11aa,
-str_11ab,
-str_11ac,
-str_11ad,
-str_11ae,
-str_11af,
-str_11b0,
-str_11b1,
-str_11b2,
-str_11b3,
-str_11b4,
-str_11b5,
-str_11b6,
-str_11b7,
-str_11b8,
-str_11b9,
-str_11ba,
-str_11bb,
-str_11bc,
-str_11bd,
-str_11be,
-str_11bf,
-str_11c0,
-str_11c1,
-str_11c2,
-str_11c3,
-str_11c4,
-str_11c5,
-str_11c6,
-str_11c7,
-str_11c8,
-str_11c9,
-str_11ca,
-str_11cb,
-str_11cc,
-str_11cd,
-str_11ce,
-str_11cf,
-str_11d0,
-str_11d1,
-str_11d2,
-str_11d3,
-str_11d4,
-str_11d5,
-str_11d6,
-str_11d7,
-str_11d8,
-str_11d9,
-str_11da,
-str_11db,
-str_11dc,
-str_11dd,
-str_11de,
-str_11df,
-str_11e0,
-str_11e1,
-str_11e2,
-str_11e3,
-str_11e4,
-str_11e5,
-str_11e6,
-str_11e7,
-str_11e8,
-str_11e9,
-str_11ea,
-str_11eb,
-str_11ec,
-str_11ed,
-str_11ee,
-str_11ef,
-str_11f0,
-str_11f1,
-str_11f2,
-str_11f3,
-str_11f4,
-str_11f5,
-str_11f6,
-str_11f7,
-str_11f8,
-str_11f9,
-0, 0, 0, 0, 0, 0, 0};
-
-static const unichar_t * const tab_13[] = {
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_13a0,
-str_13a1,
-str_13a2,
-0, 0, 0, 0, 0, 0, str_13a9,
-str_13aa,
-str_13ab,
-str_13ac,
-0, 0, 0, 0, str_13b1,
-0, str_13b3,
-0, 0, 0, str_13b7,
-0, 0, 0, str_13bb,
-0, 0, str_13be,
-0, str_13c0,
-0, str_13c2,
-str_13c3,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_13cf,
-0, 0, 0, 0, 0, 0, 0, 0, 0, str_13d9,
-str_13da,
-0, 0, 0, str_13de,
-str_13df,
-0, 0, str_13e2,
-0, 0, 0, str_13e6,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_13f4,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-static const unichar_t * const tab_1b[] = {
-0, 0, 0, 0, 0, 0, str_1b06,
-0, str_1b08,
-0, str_1b0a,
-0, str_1b0c,
-0, str_1b0e,
-0, 0, 0, str_1b12,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_1b3b,
-0, str_1b3d,
-0, 0, str_1b40,
-str_1b41,
-0, str_1b43,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-static const unichar_t * const tab_1d[] = {
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_1d2c,
-str_1d2d,
-str_1d2e,
-0, str_1d30,
-str_1d31,
-str_1d32,
-str_1d33,
-str_1d34,
-str_1d35,
-str_1d36,
-str_1d37,
-str_1d38,
-str_1d39,
-str_1d3a,
-0, str_1d3c,
-str_1d3d,
-str_1d3e,
-str_1d3f,
-str_1d40,
-str_1d41,
-str_1d42,
-str_1d43,
-str_1d44,
-str_1d45,
-str_1d46,
-str_1d47,
-str_1d48,
-str_1d49,
-str_1d4a,
-str_1d4b,
-str_1d4c,
-str_1d4d,
-0, str_1d4f,
-str_1d50,
-str_1d51,
-str_1d52,
-str_1d53,
-str_1d54,
-str_1d55,
-str_1d56,
-str_1d57,
-str_1d58,
-str_1d59,
-str_1d5a,
-str_1d5b,
-str_1d5c,
-str_1d5d,
-str_1d5e,
-str_1d5f,
-str_1d60,
-str_1d61,
-str_1d62,
-str_1d63,
-str_1d64,
-str_1d65,
-str_1d66,
-str_1d67,
-str_1d68,
-str_1d69,
-str_1d6a,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_1d78,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_1d9b,
-str_1d9c,
-str_1d9d,
-str_1d9e,
-str_1d9f,
-str_1da0,
-str_1da1,
-str_1da2,
-str_1da3,
-str_1da4,
-str_1da5,
-str_1da6,
-str_1da7,
-str_1da8,
-str_1da9,
-str_1daa,
-str_1dab,
-str_1dac,
-str_1dad,
-str_1dae,
-str_1daf,
-str_1db0,
-str_1db1,
-str_1db2,
-str_1db3,
-str_1db4,
-str_1db5,
-str_1db6,
-str_1db7,
-str_1db8,
-str_1db9,
-str_1dba,
-str_1dbb,
-str_1dbc,
-str_1dbd,
-str_1dbe,
-str_1dbf,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-static const unichar_t * const tab_1e[] = {
-str_1e00,
-str_1e01,
-str_1e02,
-str_1e03,
-str_1e04,
-str_1e05,
-str_1e06,
-str_1e07,
-str_1e08,
-str_1e09,
-str_1e0a,
-str_1e0b,
-str_1e0c,
-str_1e0d,
-str_1e0e,
-str_1e0f,
-str_1e10,
-str_1e11,
-str_1e12,
-str_1e13,
-str_1e14,
-str_1e15,
-str_1e16,
-str_1e17,
-str_1e18,
-str_1e19,
-str_1e1a,
-str_1e1b,
-str_1e1c,
-str_1e1d,
-str_1e1e,
-str_1e1f,
-str_1e20,
-str_1e21,
-str_1e22,
-str_1e23,
-str_1e24,
-str_1e25,
-str_1e26,
-str_1e27,
-str_1e28,
-str_1e29,
-str_1e2a,
-str_1e2b,
-str_1e2c,
-str_1e2d,
-str_1e2e,
-str_1e2f,
-str_1e30,
-str_1e31,
-str_1e32,
-str_1e33,
-str_1e34,
-str_1e35,
-str_1e36,
-str_1e37,
-str_1e38,
-str_1e39,
-str_1e3a,
-str_1e3b,
-str_1e3c,
-str_1e3d,
-str_1e3e,
-str_1e3f,
-str_1e40,
-str_1e41,
-str_1e42,
-str_1e43,
-str_1e44,
-str_1e45,
-str_1e46,
-str_1e47,
-str_1e48,
-str_1e49,
-str_1e4a,
-str_1e4b,
-str_1e4c,
-str_1e4d,
-str_1e4e,
-str_1e4f,
-str_1e50,
-str_1e51,
-str_1e52,
-str_1e53,
-str_1e54,
-str_1e55,
-str_1e56,
-str_1e57,
-str_1e58,
-str_1e59,
-str_1e5a,
-str_1e5b,
-str_1e5c,
-str_1e5d,
-str_1e5e,
-str_1e5f,
-str_1e60,
-str_1e61,
-str_1e62,
-str_1e63,
-str_1e64,
-str_1e65,
-str_1e66,
-str_1e67,
-str_1e68,
-str_1e69,
-str_1e6a,
-str_1e6b,
-str_1e6c,
-str_1e6d,
-str_1e6e,
-str_1e6f,
-str_1e70,
-str_1e71,
-str_1e72,
-str_1e73,
-str_1e74,
-str_1e75,
-str_1e76,
-str_1e77,
-str_1e78,
-str_1e79,
-str_1e7a,
-str_1e7b,
-str_1e7c,
-str_1e7d,
-str_1e7e,
-str_1e7f,
-str_1e80,
-str_1e81,
-str_1e82,
-str_1e83,
-str_1e84,
-str_1e85,
-str_1e86,
-str_1e87,
-str_1e88,
-str_1e89,
-str_1e8a,
-str_1e8b,
-str_1e8c,
-str_1e8d,
-str_1e8e,
-str_1e8f,
-str_1e90,
-str_1e91,
-str_1e92,
-str_1e93,
-str_1e94,
-str_1e95,
-str_1e96,
-str_1e97,
-str_1e98,
-str_1e99,
-str_1e9a,
-str_1e9b,
-0, 0, 0, 0, str_1ea0,
-str_1ea1,
-str_1ea2,
-str_1ea3,
-str_1ea4,
-str_1ea5,
-str_1ea6,
-str_1ea7,
-str_1ea8,
-str_1ea9,
-str_1eaa,
-str_1eab,
-str_1eac,
-str_1ead,
-str_1eae,
-str_1eaf,
-str_1eb0,
-str_1eb1,
-str_1eb2,
-str_1eb3,
-str_1eb4,
-str_1eb5,
-str_1eb6,
-str_1eb7,
-str_1eb8,
-str_1eb9,
-str_1eba,
-str_1ebb,
-str_1ebc,
-str_1ebd,
-str_1ebe,
-str_1ebf,
-str_1ec0,
-str_1ec1,
-str_1ec2,
-str_1ec3,
-str_1ec4,
-str_1ec5,
-str_1ec6,
-str_1ec7,
-str_1ec8,
-str_1ec9,
-str_1eca,
-str_1ecb,
-str_1ecc,
-str_1ecd,
-str_1ece,
-str_1ecf,
-str_1ed0,
-str_1ed1,
-str_1ed2,
-str_1ed3,
-str_1ed4,
-str_1ed5,
-str_1ed6,
-str_1ed7,
-str_1ed8,
-str_1ed9,
-str_1eda,
-str_1edb,
-str_1edc,
-str_1edd,
-str_1ede,
-str_1edf,
-str_1ee0,
-str_1ee1,
-str_1ee2,
-str_1ee3,
-str_1ee4,
-str_1ee5,
-str_1ee6,
-str_1ee7,
-str_1ee8,
-str_1ee9,
-str_1eea,
-str_1eeb,
-str_1eec,
-str_1eed,
-str_1eee,
-str_1eef,
-str_1ef0,
-str_1ef1,
-str_1ef2,
-str_1ef3,
-str_1ef4,
-str_1ef5,
-str_1ef6,
-str_1ef7,
-str_1ef8,
-str_1ef9,
-0, 0, 0, 0, 0, 0, 0};
-
-static const unichar_t * const tab_1f[] = {
-str_1f00,
-str_1f01,
-str_1f02,
-str_1f03,
-str_1f04,
-str_1f05,
-str_1f06,
-str_1f07,
-str_1f08,
-str_1f09,
-str_1f0a,
-str_1f0b,
-str_1f0c,
-str_1f0d,
-str_1f0e,
-str_1f0f,
-str_1f10,
-str_1f11,
-str_1f12,
-str_1f13,
-str_1f14,
-str_1f15,
-0, 0, str_1f18,
-str_1f19,
-str_1f1a,
-str_1f1b,
-str_1f1c,
-str_1f1d,
-0, 0, str_1f20,
-str_1f21,
-str_1f22,
-str_1f23,
-str_1f24,
-str_1f25,
-str_1f26,
-str_1f27,
-str_1f28,
-str_1f29,
-str_1f2a,
-str_1f2b,
-str_1f2c,
-str_1f2d,
-str_1f2e,
-str_1f2f,
-str_1f30,
-str_1f31,
-str_1f32,
-str_1f33,
-str_1f34,
-str_1f35,
-str_1f36,
-str_1f37,
-str_1f38,
-str_1f39,
-str_1f3a,
-str_1f3b,
-str_1f3c,
-str_1f3d,
-str_1f3e,
-str_1f3f,
-str_1f40,
-str_1f41,
-str_1f42,
-str_1f43,
-str_1f44,
-str_1f45,
-0, 0, str_1f48,
-str_1f49,
-str_1f4a,
-str_1f4b,
-str_1f4c,
-str_1f4d,
-0, 0, str_1f50,
-str_1f51,
-str_1f52,
-str_1f53,
-str_1f54,
-str_1f55,
-str_1f56,
-str_1f57,
-0, str_1f59,
-0, str_1f5b,
-0, str_1f5d,
-0, str_1f5f,
-str_1f60,
-str_1f61,
-str_1f62,
-str_1f63,
-str_1f64,
-str_1f65,
-str_1f66,
-str_1f67,
-str_1f68,
-str_1f69,
-str_1f6a,
-str_1f6b,
-str_1f6c,
-str_1f6d,
-str_1f6e,
-str_1f6f,
-str_1f70,
-str_1f71,
-str_1f72,
-str_1f73,
-str_1f74,
-str_1f75,
-str_1f76,
-str_1f77,
-str_1f78,
-str_1f79,
-str_1f7a,
-str_1f7b,
-str_1f7c,
-str_1f7d,
-0, 0, str_1f80,
-str_1f81,
-str_1f82,
-str_1f83,
-str_1f84,
-str_1f85,
-str_1f86,
-str_1f87,
-str_1f88,
-str_1f89,
-str_1f8a,
-str_1f8b,
-str_1f8c,
-str_1f8d,
-str_1f8e,
-str_1f8f,
-str_1f90,
-str_1f91,
-str_1f92,
-str_1f93,
-str_1f94,
-str_1f95,
-str_1f96,
-str_1f97,
-str_1f98,
-str_1f99,
-str_1f9a,
-str_1f9b,
-str_1f9c,
-str_1f9d,
-str_1f9e,
-str_1f9f,
-str_1fa0,
-str_1fa1,
-str_1fa2,
-str_1fa3,
-str_1fa4,
-str_1fa5,
-str_1fa6,
-str_1fa7,
-str_1fa8,
-str_1fa9,
-str_1faa,
-str_1fab,
-str_1fac,
-str_1fad,
-str_1fae,
-str_1faf,
-str_1fb0,
-str_1fb1,
-str_1fb2,
-str_1fb3,
-str_1fb4,
-0, str_1fb6,
-str_1fb7,
-str_1fb8,
-str_1fb9,
-str_1fba,
-str_1fbb,
-str_1fbc,
-str_1fbd,
-str_1fbe,
-str_1fbf,
-str_1fc0,
-str_1fc1,
-str_1fc2,
-str_1fc3,
-str_1fc4,
-0, str_1fc6,
-str_1fc7,
-str_1fc8,
-str_1fc9,
-str_1fca,
-str_1fcb,
-str_1fcc,
-str_1fcd,
-str_1fce,
-str_1fcf,
-str_1fd0,
-str_1fd1,
-str_1fd2,
-str_1fd3,
-0, 0, str_1fd6,
-str_1fd7,
-str_1fd8,
-str_1fd9,
-str_1fda,
-str_1fdb,
-0, str_1fdd,
-str_1fde,
-str_1fdf,
-str_1fe0,
-str_1fe1,
-str_1fe2,
-str_1fe3,
-str_1fe4,
-str_1fe5,
-str_1fe6,
-str_1fe7,
-str_1fe8,
-str_1fe9,
-str_1fea,
-str_1feb,
-str_1fec,
-str_1fed,
-str_1fee,
-str_1fef,
-0, 0, str_1ff2,
-str_1ff3,
-str_1ff4,
-0, str_1ff6,
-str_1ff7,
-str_1ff8,
-str_1ff9,
-str_1ffa,
-str_1ffb,
-str_1ffc,
-str_1ffd,
-str_1ffe,
-0, 0};
-
-static const unichar_t * const tab_20[] = {
-str_2000,
-str_2001,
-str_2002,
-str_2003,
-str_2004,
-str_2005,
-str_2006,
-str_2007,
-str_2008,
-str_2009,
-str_200a,
-0, 0, 0, 0, 0, str_2010,
-str_2011,
-str_2012,
-str_2013,
-str_2014,
-str_2015,
-str_2016,
-str_2017,
-str_2018,
-str_2019,
-0, 0, str_201c,
-str_201d,
-0, 0, 0, 0, 0, 0, str_2024,
-str_2025,
-str_2026,
-0, 0, 0, 0, 0, 0, 0, 0, str_202f,
-0, 0, str_2032,
-str_2033,
-str_2034,
-str_2035,
-str_2036,
-str_2037,
-0, str_2039,
-str_203a,
-0, str_203c,
-0, str_203e,
-0, 0, 0, 0, 0, 0, 0, 0, str_2047,
-str_2048,
-str_2049,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_2057,
-0, 0, 0, 0, 0, 0, 0, str_205f,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_2070,
-str_2071,
-0, 0, str_2074,
-str_2075,
-str_2076,
-str_2077,
-str_2078,
-str_2079,
-str_207a,
-str_207b,
-str_207c,
-str_207d,
-str_207e,
-str_207f,
-str_2080,
-str_2081,
-str_2082,
-str_2083,
-str_2084,
-str_2085,
-str_2086,
-str_2087,
-str_2088,
-str_2089,
-str_208a,
-str_208b,
-str_208c,
-str_208d,
-str_208e,
-0, str_2090,
-str_2091,
-str_2092,
-str_2093,
-str_2094,
-str_2095,
-str_2096,
-str_2097,
-str_2098,
-str_2099,
-str_209a,
-str_209b,
-str_209c,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_20a8,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-static const unichar_t * const tab_21[] = {
-str_2100,
-str_2101,
-str_2102,
-str_2103,
-0, str_2105,
-str_2106,
-str_2107,
-0, str_2109,
-str_210a,
-str_210b,
-str_210c,
-str_210d,
-str_210e,
-str_210f,
-str_2110,
-str_2111,
-str_2112,
-str_2113,
-0, str_2115,
-str_2116,
-0, 0, str_2119,
-str_211a,
-str_211b,
-str_211c,
-str_211d,
-0, 0, str_2120,
-str_2121,
-str_2122,
-0, str_2124,
-0, str_2126,
-0, str_2128,
-0, str_212a,
-str_212b,
-str_212c,
-str_212d,
-0, str_212f,
-str_2130,
-str_2131,
-0, str_2133,
-str_2134,
-str_2135,
-str_2136,
-str_2137,
-str_2138,
-str_2139,
-0, str_213b,
-str_213c,
-str_213d,
-str_213e,
-str_213f,
-str_2140,
-0, 0, 0, 0, str_2145,
-str_2146,
-str_2147,
-str_2148,
-str_2149,
-0, 0, 0, 0, 0, 0, str_2150,
-str_2151,
-str_2152,
-str_2153,
-str_2154,
-str_2155,
-str_2156,
-str_2157,
-str_2158,
-str_2159,
-str_215a,
-str_215b,
-str_215c,
-str_215d,
-str_215e,
-str_215f,
-str_2160,
-str_2161,
-str_2162,
-str_2163,
-str_2164,
-str_2165,
-str_2166,
-str_2167,
-str_2168,
-str_2169,
-str_216a,
-str_216b,
-str_216c,
-str_216d,
-str_216e,
-str_216f,
-str_2170,
-str_2171,
-str_2172,
-str_2173,
-str_2174,
-str_2175,
-str_2176,
-str_2177,
-str_2178,
-str_2179,
-str_217a,
-str_217b,
-str_217c,
-str_217d,
-str_217e,
-str_217f,
-0, 0, 0, 0, 0, 0, 0, 0, 0, str_2189,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_219a,
-str_219b,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_21ae,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_21cd,
-str_21ce,
-str_21cf,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-static const unichar_t * const tab_22[] = {
-0, 0, 0, 0, str_2204,
-str_2205,
-str_2206,
-0, 0, str_2209,
-0, 0, str_220c,
-0, 0, str_220f,
-0, str_2211,
-str_2212,
-0, 0, str_2215,
-str_2216,
-str_2217,
-str_2218,
-str_2219,
-0, 0, 0, 0, 0, 0, 0, 0, 0, str_2223,
-str_2224,
-str_2225,
-str_2226,
-0, 0, 0, 0, 0, str_222c,
-str_222d,
-0, str_222f,
-str_2230,
-0, 0, 0, 0, 0, str_2236,
-0, 0, 0, 0, 0, str_223c,
-0, 0, 0, 0, str_2241,
-0, 0, str_2244,
-0, 0, str_2247,
-0, str_2249,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_2260,
-0, str_2262,
-0, 0, 0, 0, 0, 0, 0, str_226a,
-str_226b,
-0, str_226d,
-str_226e,
-str_226f,
-str_2270,
-str_2271,
-0, 0, str_2274,
-str_2275,
-0, 0, str_2278,
-str_2279,
-0, 0, 0, 0, 0, 0, str_2280,
-str_2281,
-0, 0, str_2284,
-str_2285,
-0, 0, str_2288,
-str_2289,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_2299,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_22ac,
-str_22ad,
-str_22ae,
-str_22af,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_22c4,
-str_22c5,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_22e0,
-str_22e1,
-str_22e2,
-str_22e3,
-0, 0, 0, 0, 0, 0, str_22ea,
-str_22eb,
-str_22ec,
-str_22ed,
-0, str_22ef,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-static const unichar_t * const tab_23[] = {
-0, 0, 0, str_2303,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_2329,
-str_232a,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_2373,
-str_2374,
-str_2375,
-0, 0, 0, 0, str_237a,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-static const unichar_t * const tab_24[] = {
-str_2400,
-str_2401,
-str_2402,
-str_2403,
-str_2404,
-str_2405,
-str_2406,
-str_2407,
-str_2408,
-str_2409,
-str_240a,
-str_240b,
-str_240c,
-str_240d,
-str_240e,
-str_240f,
-str_2410,
-str_2411,
-str_2412,
-str_2413,
-str_2414,
-str_2415,
-str_2416,
-str_2417,
-str_2418,
-str_2419,
-str_241a,
-str_241b,
-str_241c,
-str_241d,
-str_241e,
-str_241f,
-str_2420,
-str_2421,
-str_2422,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_2460,
-str_2461,
-str_2462,
-str_2463,
-str_2464,
-str_2465,
-str_2466,
-str_2467,
-str_2468,
-str_2469,
-str_246a,
-str_246b,
-str_246c,
-str_246d,
-str_246e,
-str_246f,
-str_2470,
-str_2471,
-str_2472,
-str_2473,
-str_2474,
-str_2475,
-str_2476,
-str_2477,
-str_2478,
-str_2479,
-str_247a,
-str_247b,
-str_247c,
-str_247d,
-str_247e,
-str_247f,
-str_2480,
-str_2481,
-str_2482,
-str_2483,
-str_2484,
-str_2485,
-str_2486,
-str_2487,
-str_2488,
-str_2489,
-str_248a,
-str_248b,
-str_248c,
-str_248d,
-str_248e,
-str_248f,
-str_2490,
-str_2491,
-str_2492,
-str_2493,
-str_2494,
-str_2495,
-str_2496,
-str_2497,
-str_2498,
-str_2499,
-str_249a,
-str_249b,
-str_249c,
-str_249d,
-str_249e,
-str_249f,
-str_24a0,
-str_24a1,
-str_24a2,
-str_24a3,
-str_24a4,
-str_24a5,
-str_24a6,
-str_24a7,
-str_24a8,
-str_24a9,
-str_24aa,
-str_24ab,
-str_24ac,
-str_24ad,
-str_24ae,
-str_24af,
-str_24b0,
-str_24b1,
-str_24b2,
-str_24b3,
-str_24b4,
-str_24b5,
-str_24b6,
-str_24b7,
-str_24b8,
-str_24b9,
-str_24ba,
-str_24bb,
-str_24bc,
-str_24bd,
-str_24be,
-str_24bf,
-str_24c0,
-str_24c1,
-str_24c2,
-str_24c3,
-str_24c4,
-str_24c5,
-str_24c6,
-str_24c7,
-str_24c8,
-str_24c9,
-str_24ca,
-str_24cb,
-str_24cc,
-str_24cd,
-str_24ce,
-str_24cf,
-str_24d0,
-str_24d1,
-str_24d2,
-str_24d3,
-str_24d4,
-str_24d5,
-str_24d6,
-str_24d7,
-str_24d8,
-str_24d9,
-str_24da,
-str_24db,
-str_24dc,
-str_24dd,
-str_24de,
-str_24df,
-str_24e0,
-str_24e1,
-str_24e2,
-str_24e3,
-str_24e4,
-str_24e5,
-str_24e6,
-str_24e7,
-str_24e8,
-str_24e9,
-str_24ea,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-static const unichar_t * const tab_25[] = {
-str_2500,
-0, str_2502,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_25b3,
-0, 0, 0, 0, str_25b8,
-0, 0, 0, 0, str_25bd,
-0, 0, 0, 0, 0, 0, 0, 0, 0, str_25c7,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_25e6,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-static const unichar_t * const tab_26[] = {
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_2662,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-static const unichar_t * const tab_27[] = {
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_2731,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_2758,
-0, 0, 0, 0, 0, 0, 0, 0, 0, str_2762,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-static const unichar_t * const tab_2a[] = {
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_2a0c,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_2a74,
-str_2a75,
-str_2a76,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_2adc,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-static const unichar_t * const tab_2c[] = {
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_2c7c,
-str_2c7d,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-static const unichar_t * const tab_2d[] = {
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_2d6f,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-static const unichar_t * const tab_2e[] = {
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_2e28,
-str_2e29,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_2e9f,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_2ef3,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-static const unichar_t * const tab_2f[] = {
-str_2f00,
-str_2f01,
-str_2f02,
-str_2f03,
-str_2f04,
-str_2f05,
-str_2f06,
-str_2f07,
-str_2f08,
-str_2f09,
-str_2f0a,
-str_2f0b,
-str_2f0c,
-str_2f0d,
-str_2f0e,
-str_2f0f,
-str_2f10,
-str_2f11,
-str_2f12,
-str_2f13,
-str_2f14,
-str_2f15,
-str_2f16,
-str_2f17,
-str_2f18,
-str_2f19,
-str_2f1a,
-str_2f1b,
-str_2f1c,
-str_2f1d,
-str_2f1e,
-str_2f1f,
-str_2f20,
-str_2f21,
-str_2f22,
-str_2f23,
-str_2f24,
-str_2f25,
-str_2f26,
-str_2f27,
-str_2f28,
-str_2f29,
-str_2f2a,
-str_2f2b,
-str_2f2c,
-str_2f2d,
-str_2f2e,
-str_2f2f,
-str_2f30,
-str_2f31,
-str_2f32,
-str_2f33,
-str_2f34,
-str_2f35,
-str_2f36,
-str_2f37,
-str_2f38,
-str_2f39,
-str_2f3a,
-str_2f3b,
-str_2f3c,
-str_2f3d,
-str_2f3e,
-str_2f3f,
-str_2f40,
-str_2f41,
-str_2f42,
-str_2f43,
-str_2f44,
-str_2f45,
-str_2f46,
-str_2f47,
-str_2f48,
-str_2f49,
-str_2f4a,
-str_2f4b,
-str_2f4c,
-str_2f4d,
-str_2f4e,
-str_2f4f,
-str_2f50,
-str_2f51,
-str_2f52,
-str_2f53,
-str_2f54,
-str_2f55,
-str_2f56,
-str_2f57,
-str_2f58,
-str_2f59,
-str_2f5a,
-str_2f5b,
-str_2f5c,
-str_2f5d,
-str_2f5e,
-str_2f5f,
-str_2f60,
-str_2f61,
-str_2f62,
-str_2f63,
-str_2f64,
-str_2f65,
-str_2f66,
-str_2f67,
-str_2f68,
-str_2f69,
-str_2f6a,
-str_2f6b,
-str_2f6c,
-str_2f6d,
-str_2f6e,
-str_2f6f,
-str_2f70,
-str_2f71,
-str_2f72,
-str_2f73,
-str_2f74,
-str_2f75,
-str_2f76,
-str_2f77,
-str_2f78,
-str_2f79,
-str_2f7a,
-str_2f7b,
-str_2f7c,
-str_2f7d,
-str_2f7e,
-str_2f7f,
-str_2f80,
-str_2f81,
-str_2f82,
-str_2f83,
-str_2f84,
-str_2f85,
-str_2f86,
-str_2f87,
-str_2f88,
-str_2f89,
-str_2f8a,
-str_2f8b,
-str_2f8c,
-str_2f8d,
-str_2f8e,
-str_2f8f,
-str_2f90,
-str_2f91,
-str_2f92,
-str_2f93,
-str_2f94,
-str_2f95,
-str_2f96,
-str_2f97,
-str_2f98,
-str_2f99,
-str_2f9a,
-str_2f9b,
-str_2f9c,
-str_2f9d,
-str_2f9e,
-str_2f9f,
-str_2fa0,
-str_2fa1,
-str_2fa2,
-str_2fa3,
-str_2fa4,
-str_2fa5,
-str_2fa6,
-str_2fa7,
-str_2fa8,
-str_2fa9,
-str_2faa,
-str_2fab,
-str_2fac,
-str_2fad,
-str_2fae,
-str_2faf,
-str_2fb0,
-str_2fb1,
-str_2fb2,
-str_2fb3,
-str_2fb4,
-str_2fb5,
-str_2fb6,
-str_2fb7,
-str_2fb8,
-str_2fb9,
-str_2fba,
-str_2fbb,
-str_2fbc,
-str_2fbd,
-str_2fbe,
-str_2fbf,
-str_2fc0,
-str_2fc1,
-str_2fc2,
-str_2fc3,
-str_2fc4,
-str_2fc5,
-str_2fc6,
-str_2fc7,
-str_2fc8,
-str_2fc9,
-str_2fca,
-str_2fcb,
-str_2fcc,
-str_2fcd,
-str_2fce,
-str_2fcf,
-str_2fd0,
-str_2fd1,
-str_2fd2,
-str_2fd3,
-str_2fd4,
-str_2fd5,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-static const unichar_t * const tab_30[] = {
-str_3000,
-str_3001,
-0, 0, 0, 0, 0, 0, str_3008,
-str_3009,
-str_300a,
-str_300b,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_3036,
-0, str_3038,
-str_3039,
-str_303a,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_304c,
-0, str_304e,
-0, str_3050,
-0, str_3052,
-0, str_3054,
-0, str_3056,
-0, str_3058,
-0, str_305a,
-0, str_305c,
-0, str_305e,
-0, str_3060,
-0, str_3062,
-0, 0, str_3065,
-0, str_3067,
-0, str_3069,
-0, 0, 0, 0, 0, 0, str_3070,
-str_3071,
-0, str_3073,
-str_3074,
-0, str_3076,
-str_3077,
-0, str_3079,
-str_307a,
-0, str_307c,
-str_307d,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_3094,
-0, 0, 0, 0, 0, 0, str_309b,
-str_309c,
-0, str_309e,
-str_309f,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_30ac,
-0, str_30ae,
-0, str_30b0,
-0, str_30b2,
-0, str_30b4,
-0, str_30b6,
-0, str_30b8,
-0, str_30ba,
-0, str_30bc,
-0, str_30be,
-0, str_30c0,
-0, str_30c2,
-0, 0, str_30c5,
-0, str_30c7,
-0, str_30c9,
-0, 0, 0, 0, 0, 0, str_30d0,
-str_30d1,
-0, str_30d3,
-str_30d4,
-0, str_30d6,
-str_30d7,
-0, str_30d9,
-str_30da,
-0, str_30dc,
-str_30dd,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_30f4,
-0, 0, str_30f7,
-str_30f8,
-str_30f9,
-str_30fa,
-0, 0, 0, str_30fe,
-str_30ff,
-0};
-
-static const unichar_t * const tab_31[] = {
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_3131,
-str_3132,
-str_3133,
-str_3134,
-str_3135,
-str_3136,
-str_3137,
-str_3138,
-str_3139,
-str_313a,
-str_313b,
-str_313c,
-str_313d,
-str_313e,
-str_313f,
-str_3140,
-str_3141,
-str_3142,
-str_3143,
-str_3144,
-str_3145,
-str_3146,
-str_3147,
-str_3148,
-str_3149,
-str_314a,
-str_314b,
-str_314c,
-str_314d,
-str_314e,
-str_314f,
-str_3150,
-str_3151,
-str_3152,
-str_3153,
-str_3154,
-str_3155,
-str_3156,
-str_3157,
-str_3158,
-str_3159,
-str_315a,
-str_315b,
-str_315c,
-str_315d,
-str_315e,
-str_315f,
-str_3160,
-str_3161,
-str_3162,
-str_3163,
-str_3164,
-str_3165,
-str_3166,
-str_3167,
-str_3168,
-str_3169,
-str_316a,
-str_316b,
-str_316c,
-str_316d,
-str_316e,
-str_316f,
-str_3170,
-str_3171,
-str_3172,
-str_3173,
-str_3174,
-str_3175,
-str_3176,
-str_3177,
-str_3178,
-str_3179,
-str_317a,
-str_317b,
-str_317c,
-str_317d,
-str_317e,
-str_317f,
-str_3180,
-str_3181,
-str_3182,
-str_3183,
-str_3184,
-str_3185,
-str_3186,
-str_3187,
-str_3188,
-str_3189,
-str_318a,
-str_318b,
-str_318c,
-str_318d,
-str_318e,
-0, 0, 0, str_3192,
-str_3193,
-str_3194,
-str_3195,
-str_3196,
-str_3197,
-str_3198,
-str_3199,
-str_319a,
-str_319b,
-str_319c,
-str_319d,
-str_319e,
-str_319f,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-static const unichar_t * const tab_32[] = {
-str_3200,
-str_3201,
-str_3202,
-str_3203,
-str_3204,
-str_3205,
-str_3206,
-str_3207,
-str_3208,
-str_3209,
-str_320a,
-str_320b,
-str_320c,
-str_320d,
-str_320e,
-str_320f,
-str_3210,
-str_3211,
-str_3212,
-str_3213,
-str_3214,
-str_3215,
-str_3216,
-str_3217,
-str_3218,
-str_3219,
-str_321a,
-str_321b,
-str_321c,
-str_321d,
-str_321e,
-0, str_3220,
-str_3221,
-str_3222,
-str_3223,
-str_3224,
-str_3225,
-str_3226,
-str_3227,
-str_3228,
-str_3229,
-str_322a,
-str_322b,
-str_322c,
-str_322d,
-str_322e,
-str_322f,
-str_3230,
-str_3231,
-str_3232,
-str_3233,
-str_3234,
-str_3235,
-str_3236,
-str_3237,
-str_3238,
-str_3239,
-str_323a,
-str_323b,
-str_323c,
-str_323d,
-str_323e,
-str_323f,
-str_3240,
-str_3241,
-str_3242,
-str_3243,
-str_3244,
-str_3245,
-str_3246,
-str_3247,
-0, 0, 0, 0, 0, 0, 0, 0, str_3250,
-str_3251,
-str_3252,
-str_3253,
-str_3254,
-str_3255,
-str_3256,
-str_3257,
-str_3258,
-str_3259,
-str_325a,
-str_325b,
-str_325c,
-str_325d,
-str_325e,
-str_325f,
-str_3260,
-str_3261,
-str_3262,
-str_3263,
-str_3264,
-str_3265,
-str_3266,
-str_3267,
-str_3268,
-str_3269,
-str_326a,
-str_326b,
-str_326c,
-str_326d,
-str_326e,
-str_326f,
-str_3270,
-str_3271,
-str_3272,
-str_3273,
-str_3274,
-str_3275,
-str_3276,
-str_3277,
-str_3278,
-str_3279,
-str_327a,
-str_327b,
-str_327c,
-str_327d,
-str_327e,
-0, str_3280,
-str_3281,
-str_3282,
-str_3283,
-str_3284,
-str_3285,
-str_3286,
-str_3287,
-str_3288,
-str_3289,
-str_328a,
-str_328b,
-str_328c,
-str_328d,
-str_328e,
-str_328f,
-str_3290,
-str_3291,
-str_3292,
-str_3293,
-str_3294,
-str_3295,
-str_3296,
-str_3297,
-str_3298,
-str_3299,
-str_329a,
-str_329b,
-str_329c,
-str_329d,
-str_329e,
-str_329f,
-str_32a0,
-str_32a1,
-str_32a2,
-str_32a3,
-str_32a4,
-str_32a5,
-str_32a6,
-str_32a7,
-str_32a8,
-str_32a9,
-str_32aa,
-str_32ab,
-str_32ac,
-str_32ad,
-str_32ae,
-str_32af,
-str_32b0,
-str_32b1,
-str_32b2,
-str_32b3,
-str_32b4,
-str_32b5,
-str_32b6,
-str_32b7,
-str_32b8,
-str_32b9,
-str_32ba,
-str_32bb,
-str_32bc,
-str_32bd,
-str_32be,
-str_32bf,
-str_32c0,
-str_32c1,
-str_32c2,
-str_32c3,
-str_32c4,
-str_32c5,
-str_32c6,
-str_32c7,
-str_32c8,
-str_32c9,
-str_32ca,
-str_32cb,
-str_32cc,
-str_32cd,
-str_32ce,
-str_32cf,
-str_32d0,
-str_32d1,
-str_32d2,
-str_32d3,
-str_32d4,
-str_32d5,
-str_32d6,
-str_32d7,
-str_32d8,
-str_32d9,
-str_32da,
-str_32db,
-str_32dc,
-str_32dd,
-str_32de,
-str_32df,
-str_32e0,
-str_32e1,
-str_32e2,
-str_32e3,
-str_32e4,
-str_32e5,
-str_32e6,
-str_32e7,
-str_32e8,
-str_32e9,
-str_32ea,
-str_32eb,
-str_32ec,
-str_32ed,
-str_32ee,
-str_32ef,
-str_32f0,
-str_32f1,
-str_32f2,
-str_32f3,
-str_32f4,
-str_32f5,
-str_32f6,
-str_32f7,
-str_32f8,
-str_32f9,
-str_32fa,
-str_32fb,
-str_32fc,
-str_32fd,
-str_32fe,
-str_32ff,
-0};
-
-static const unichar_t * const tab_33[] = {
-str_3300,
-str_3301,
-str_3302,
-str_3303,
-str_3304,
-str_3305,
-str_3306,
-str_3307,
-str_3308,
-str_3309,
-str_330a,
-str_330b,
-str_330c,
-str_330d,
-str_330e,
-str_330f,
-str_3310,
-str_3311,
-str_3312,
-str_3313,
-str_3314,
-str_3315,
-str_3316,
-str_3317,
-str_3318,
-str_3319,
-str_331a,
-str_331b,
-str_331c,
-str_331d,
-str_331e,
-str_331f,
-str_3320,
-str_3321,
-str_3322,
-str_3323,
-str_3324,
-str_3325,
-str_3326,
-str_3327,
-str_3328,
-str_3329,
-str_332a,
-str_332b,
-str_332c,
-str_332d,
-str_332e,
-str_332f,
-str_3330,
-str_3331,
-str_3332,
-str_3333,
-str_3334,
-str_3335,
-str_3336,
-str_3337,
-str_3338,
-str_3339,
-str_333a,
-str_333b,
-str_333c,
-str_333d,
-str_333e,
-str_333f,
-str_3340,
-str_3341,
-str_3342,
-str_3343,
-str_3344,
-str_3345,
-str_3346,
-str_3347,
-str_3348,
-str_3349,
-str_334a,
-str_334b,
-str_334c,
-str_334d,
-str_334e,
-str_334f,
-str_3350,
-str_3351,
-str_3352,
-str_3353,
-str_3354,
-str_3355,
-str_3356,
-str_3357,
-str_3358,
-str_3359,
-str_335a,
-str_335b,
-str_335c,
-str_335d,
-str_335e,
-str_335f,
-str_3360,
-str_3361,
-str_3362,
-str_3363,
-str_3364,
-str_3365,
-str_3366,
-str_3367,
-str_3368,
-str_3369,
-str_336a,
-str_336b,
-str_336c,
-str_336d,
-str_336e,
-str_336f,
-str_3370,
-str_3371,
-str_3372,
-str_3373,
-str_3374,
-str_3375,
-str_3376,
-str_3377,
-str_3378,
-str_3379,
-str_337a,
-str_337b,
-str_337c,
-str_337d,
-str_337e,
-str_337f,
-str_3380,
-str_3381,
-str_3382,
-str_3383,
-str_3384,
-str_3385,
-str_3386,
-str_3387,
-str_3388,
-str_3389,
-str_338a,
-str_338b,
-str_338c,
-str_338d,
-str_338e,
-str_338f,
-str_3390,
-str_3391,
-str_3392,
-str_3393,
-str_3394,
-str_3395,
-str_3396,
-str_3397,
-str_3398,
-str_3399,
-str_339a,
-str_339b,
-str_339c,
-str_339d,
-str_339e,
-str_339f,
-str_33a0,
-str_33a1,
-str_33a2,
-str_33a3,
-str_33a4,
-str_33a5,
-str_33a6,
-str_33a7,
-str_33a8,
-str_33a9,
-str_33aa,
-str_33ab,
-str_33ac,
-str_33ad,
-str_33ae,
-str_33af,
-str_33b0,
-str_33b1,
-str_33b2,
-str_33b3,
-str_33b4,
-str_33b5,
-str_33b6,
-str_33b7,
-str_33b8,
-str_33b9,
-str_33ba,
-str_33bb,
-str_33bc,
-str_33bd,
-str_33be,
-str_33bf,
-str_33c0,
-str_33c1,
-str_33c2,
-str_33c3,
-str_33c4,
-str_33c5,
-str_33c6,
-str_33c7,
-str_33c8,
-str_33c9,
-str_33ca,
-str_33cb,
-str_33cc,
-str_33cd,
-str_33ce,
-str_33cf,
-str_33d0,
-str_33d1,
-str_33d2,
-str_33d3,
-str_33d4,
-str_33d5,
-str_33d6,
-str_33d7,
-str_33d8,
-str_33d9,
-str_33da,
-str_33db,
-str_33dc,
-str_33dd,
-str_33de,
-str_33df,
-str_33e0,
-str_33e1,
-str_33e2,
-str_33e3,
-str_33e4,
-str_33e5,
-str_33e6,
-str_33e7,
-str_33e8,
-str_33e9,
-str_33ea,
-str_33eb,
-str_33ec,
-str_33ed,
-str_33ee,
-str_33ef,
-str_33f0,
-str_33f1,
-str_33f2,
-str_33f3,
-str_33f4,
-str_33f5,
-str_33f6,
-str_33f7,
-str_33f8,
-str_33f9,
-str_33fa,
-str_33fb,
-str_33fc,
-str_33fd,
-str_33fe,
-str_33ff,
-0};
-
-static const unichar_t * const tab_a6[] = {
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_a69c,
-str_a69d,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-static const unichar_t * const tab_a7[] = {
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_a770,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_a7f8,
-str_a7f9,
-0, 0, 0, 0, 0, 0, 0};
-
-static const unichar_t * const tab_ab[] = {
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_ab5c,
-str_ab5d,
-str_ab5e,
-str_ab5f,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-static const unichar_t * const tab_f9[] = {
-str_f900,
-str_f901,
-str_f902,
-str_f903,
-str_f904,
-str_f905,
-str_f906,
-str_f907,
-str_f908,
-str_f909,
-str_f90a,
-str_f90b,
-str_f90c,
-str_f90d,
-str_f90e,
-str_f90f,
-str_f910,
-str_f911,
-str_f912,
-str_f913,
-str_f914,
-str_f915,
-str_f916,
-str_f917,
-str_f918,
-str_f919,
-str_f91a,
-str_f91b,
-str_f91c,
-str_f91d,
-str_f91e,
-str_f91f,
-str_f920,
-str_f921,
-str_f922,
-str_f923,
-str_f924,
-str_f925,
-str_f926,
-str_f927,
-str_f928,
-str_f929,
-str_f92a,
-str_f92b,
-str_f92c,
-str_f92d,
-str_f92e,
-str_f92f,
-str_f930,
-str_f931,
-str_f932,
-str_f933,
-str_f934,
-str_f935,
-str_f936,
-str_f937,
-str_f938,
-str_f939,
-str_f93a,
-str_f93b,
-str_f93c,
-str_f93d,
-str_f93e,
-str_f93f,
-str_f940,
-str_f941,
-str_f942,
-str_f943,
-str_f944,
-str_f945,
-str_f946,
-str_f947,
-str_f948,
-str_f949,
-str_f94a,
-str_f94b,
-str_f94c,
-str_f94d,
-str_f94e,
-str_f94f,
-str_f950,
-str_f951,
-str_f952,
-str_f953,
-str_f954,
-str_f955,
-str_f956,
-str_f957,
-str_f958,
-str_f959,
-str_f95a,
-str_f95b,
-str_f95c,
-str_f95d,
-str_f95e,
-str_f95f,
-str_f960,
-str_f961,
-str_f962,
-str_f963,
-str_f964,
-str_f965,
-str_f966,
-str_f967,
-str_f968,
-str_f969,
-str_f96a,
-str_f96b,
-str_f96c,
-str_f96d,
-str_f96e,
-str_f96f,
-str_f970,
-str_f971,
-str_f972,
-str_f973,
-str_f974,
-str_f975,
-str_f976,
-str_f977,
-str_f978,
-str_f979,
-str_f97a,
-str_f97b,
-str_f97c,
-str_f97d,
-str_f97e,
-str_f97f,
-str_f980,
-str_f981,
-str_f982,
-str_f983,
-str_f984,
-str_f985,
-str_f986,
-str_f987,
-str_f988,
-str_f989,
-str_f98a,
-str_f98b,
-str_f98c,
-str_f98d,
-str_f98e,
-str_f98f,
-str_f990,
-str_f991,
-str_f992,
-str_f993,
-str_f994,
-str_f995,
-str_f996,
-str_f997,
-str_f998,
-str_f999,
-str_f99a,
-str_f99b,
-str_f99c,
-str_f99d,
-str_f99e,
-str_f99f,
-str_f9a0,
-str_f9a1,
-str_f9a2,
-str_f9a3,
-str_f9a4,
-str_f9a5,
-str_f9a6,
-str_f9a7,
-str_f9a8,
-str_f9a9,
-str_f9aa,
-str_f9ab,
-str_f9ac,
-str_f9ad,
-str_f9ae,
-str_f9af,
-str_f9b0,
-str_f9b1,
-str_f9b2,
-str_f9b3,
-str_f9b4,
-str_f9b5,
-str_f9b6,
-str_f9b7,
-str_f9b8,
-str_f9b9,
-str_f9ba,
-str_f9bb,
-str_f9bc,
-str_f9bd,
-str_f9be,
-str_f9bf,
-str_f9c0,
-str_f9c1,
-str_f9c2,
-str_f9c3,
-str_f9c4,
-str_f9c5,
-str_f9c6,
-str_f9c7,
-str_f9c8,
-str_f9c9,
-str_f9ca,
-str_f9cb,
-str_f9cc,
-str_f9cd,
-str_f9ce,
-str_f9cf,
-str_f9d0,
-str_f9d1,
-str_f9d2,
-str_f9d3,
-str_f9d4,
-str_f9d5,
-str_f9d6,
-str_f9d7,
-str_f9d8,
-str_f9d9,
-str_f9da,
-str_f9db,
-str_f9dc,
-str_f9dd,
-str_f9de,
-str_f9df,
-str_f9e0,
-str_f9e1,
-str_f9e2,
-str_f9e3,
-str_f9e4,
-str_f9e5,
-str_f9e6,
-str_f9e7,
-str_f9e8,
-str_f9e9,
-str_f9ea,
-str_f9eb,
-str_f9ec,
-str_f9ed,
-str_f9ee,
-str_f9ef,
-str_f9f0,
-str_f9f1,
-str_f9f2,
-str_f9f3,
-str_f9f4,
-str_f9f5,
-str_f9f6,
-str_f9f7,
-str_f9f8,
-str_f9f9,
-str_f9fa,
-str_f9fb,
-str_f9fc,
-str_f9fd,
-str_f9fe,
-str_f9ff,
-0};
-
-static const unichar_t * const tab_fa[] = {
-str_fa00,
-str_fa01,
-str_fa02,
-str_fa03,
-str_fa04,
-str_fa05,
-str_fa06,
-str_fa07,
-str_fa08,
-str_fa09,
-str_fa0a,
-str_fa0b,
-str_fa0c,
-str_fa0d,
-0, 0, str_fa10,
-0, str_fa12,
-0, 0, str_fa15,
-str_fa16,
-str_fa17,
-str_fa18,
-str_fa19,
-str_fa1a,
-str_fa1b,
-str_fa1c,
-str_fa1d,
-str_fa1e,
-0, str_fa20,
-0, str_fa22,
-0, 0, str_fa25,
-str_fa26,
-0, 0, 0, str_fa2a,
-str_fa2b,
-str_fa2c,
-str_fa2d,
-str_fa2e,
-str_fa2f,
-str_fa30,
-str_fa31,
-str_fa32,
-str_fa33,
-str_fa34,
-str_fa35,
-str_fa36,
-str_fa37,
-str_fa38,
-str_fa39,
-str_fa3a,
-str_fa3b,
-str_fa3c,
-str_fa3d,
-str_fa3e,
-str_fa3f,
-str_fa40,
-str_fa41,
-str_fa42,
-str_fa43,
-str_fa44,
-str_fa45,
-str_fa46,
-str_fa47,
-str_fa48,
-str_fa49,
-str_fa4a,
-str_fa4b,
-str_fa4c,
-str_fa4d,
-str_fa4e,
-str_fa4f,
-str_fa50,
-str_fa51,
-str_fa52,
-str_fa53,
-str_fa54,
-str_fa55,
-str_fa56,
-str_fa57,
-str_fa58,
-str_fa59,
-str_fa5a,
-str_fa5b,
-str_fa5c,
-str_fa5d,
-str_fa5e,
-str_fa5f,
-str_fa60,
-str_fa61,
-str_fa62,
-str_fa63,
-str_fa64,
-str_fa65,
-str_fa66,
-str_fa67,
-str_fa68,
-str_fa69,
-str_fa6a,
-str_fa6b,
-str_fa6c,
-str_fa6d,
-0, 0, str_fa70,
-str_fa71,
-str_fa72,
-str_fa73,
-str_fa74,
-str_fa75,
-str_fa76,
-str_fa77,
-str_fa78,
-str_fa79,
-str_fa7a,
-str_fa7b,
-str_fa7c,
-str_fa7d,
-str_fa7e,
-str_fa7f,
-str_fa80,
-str_fa81,
-str_fa82,
-str_fa83,
-str_fa84,
-str_fa85,
-str_fa86,
-str_fa87,
-str_fa88,
-str_fa89,
-str_fa8a,
-str_fa8b,
-str_fa8c,
-str_fa8d,
-str_fa8e,
-str_fa8f,
-str_fa90,
-str_fa91,
-str_fa92,
-str_fa93,
-str_fa94,
-str_fa95,
-str_fa96,
-str_fa97,
-str_fa98,
-str_fa99,
-str_fa9a,
-str_fa9b,
-str_fa9c,
-str_fa9d,
-str_fa9e,
-str_fa9f,
-str_faa0,
-str_faa1,
-str_faa2,
-str_faa3,
-str_faa4,
-str_faa5,
-str_faa6,
-str_faa7,
-str_faa8,
-str_faa9,
-str_faaa,
-str_faab,
-str_faac,
-str_faad,
-str_faae,
-str_faaf,
-str_fab0,
-str_fab1,
-str_fab2,
-str_fab3,
-str_fab4,
-str_fab5,
-str_fab6,
-str_fab7,
-str_fab8,
-str_fab9,
-str_faba,
-str_fabb,
-str_fabc,
-str_fabd,
-str_fabe,
-str_fabf,
-str_fac0,
-str_fac1,
-str_fac2,
-str_fac3,
-str_fac4,
-str_fac5,
-str_fac6,
-str_fac7,
-str_fac8,
-str_fac9,
-str_faca,
-str_facb,
-str_facc,
-str_facd,
-str_face,
-str_facf,
-str_fad0,
-str_fad1,
-str_fad2,
-str_fad3,
-str_fad4,
-str_fad5,
-str_fad6,
-str_fad7,
-str_fad8,
-str_fad9,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-static const unichar_t * const tab_fb[] = {
-str_fb00,
-str_fb01,
-str_fb02,
-str_fb03,
-str_fb04,
-str_fb05,
-str_fb06,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_fb13,
-str_fb14,
-str_fb15,
-str_fb16,
-str_fb17,
-0, 0, 0, 0, 0, str_fb1d,
-0, str_fb1f,
-str_fb20,
-str_fb21,
-str_fb22,
-str_fb23,
-str_fb24,
-str_fb25,
-str_fb26,
-str_fb27,
-str_fb28,
-str_fb29,
-str_fb2a,
-str_fb2b,
-str_fb2c,
-str_fb2d,
-str_fb2e,
-str_fb2f,
-str_fb30,
-str_fb31,
-str_fb32,
-str_fb33,
-str_fb34,
-str_fb35,
-str_fb36,
-0, str_fb38,
-str_fb39,
-str_fb3a,
-str_fb3b,
-str_fb3c,
-0, str_fb3e,
-0, str_fb40,
-str_fb41,
-0, str_fb43,
-str_fb44,
-0, str_fb46,
-str_fb47,
-str_fb48,
-str_fb49,
-str_fb4a,
-str_fb4b,
-str_fb4c,
-str_fb4d,
-str_fb4e,
-str_fb4f,
-str_fb50,
-str_fb51,
-str_fb52,
-str_fb53,
-str_fb54,
-str_fb55,
-str_fb56,
-str_fb57,
-str_fb58,
-str_fb59,
-str_fb5a,
-str_fb5b,
-str_fb5c,
-str_fb5d,
-str_fb5e,
-str_fb5f,
-str_fb60,
-str_fb61,
-str_fb62,
-str_fb63,
-str_fb64,
-str_fb65,
-str_fb66,
-str_fb67,
-str_fb68,
-str_fb69,
-str_fb6a,
-str_fb6b,
-str_fb6c,
-str_fb6d,
-str_fb6e,
-str_fb6f,
-str_fb70,
-str_fb71,
-str_fb72,
-str_fb73,
-str_fb74,
-str_fb75,
-str_fb76,
-str_fb77,
-str_fb78,
-str_fb79,
-str_fb7a,
-str_fb7b,
-str_fb7c,
-str_fb7d,
-str_fb7e,
-str_fb7f,
-str_fb80,
-str_fb81,
-str_fb82,
-str_fb83,
-str_fb84,
-str_fb85,
-str_fb86,
-str_fb87,
-str_fb88,
-str_fb89,
-str_fb8a,
-str_fb8b,
-str_fb8c,
-str_fb8d,
-str_fb8e,
-str_fb8f,
-str_fb90,
-str_fb91,
-str_fb92,
-str_fb93,
-str_fb94,
-str_fb95,
-str_fb96,
-str_fb97,
-str_fb98,
-str_fb99,
-str_fb9a,
-str_fb9b,
-str_fb9c,
-str_fb9d,
-str_fb9e,
-str_fb9f,
-str_fba0,
-str_fba1,
-str_fba2,
-str_fba3,
-str_fba4,
-str_fba5,
-str_fba6,
-str_fba7,
-str_fba8,
-str_fba9,
-str_fbaa,
-str_fbab,
-str_fbac,
-str_fbad,
-str_fbae,
-str_fbaf,
-str_fbb0,
-str_fbb1,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_fbd3,
-str_fbd4,
-str_fbd5,
-str_fbd6,
-str_fbd7,
-str_fbd8,
-str_fbd9,
-str_fbda,
-str_fbdb,
-str_fbdc,
-str_fbdd,
-str_fbde,
-str_fbdf,
-str_fbe0,
-str_fbe1,
-str_fbe2,
-str_fbe3,
-str_fbe4,
-str_fbe5,
-str_fbe6,
-str_fbe7,
-str_fbe8,
-str_fbe9,
-str_fbea,
-str_fbeb,
-str_fbec,
-str_fbed,
-str_fbee,
-str_fbef,
-str_fbf0,
-str_fbf1,
-str_fbf2,
-str_fbf3,
-str_fbf4,
-str_fbf5,
-str_fbf6,
-str_fbf7,
-str_fbf8,
-str_fbf9,
-str_fbfa,
-str_fbfb,
-str_fbfc,
-str_fbfd,
-str_fbfe,
-str_fbff,
-0};
-
-static const unichar_t * const tab_fc[] = {
-str_fc00,
-str_fc01,
-str_fc02,
-str_fc03,
-str_fc04,
-str_fc05,
-str_fc06,
-str_fc07,
-str_fc08,
-str_fc09,
-str_fc0a,
-str_fc0b,
-str_fc0c,
-str_fc0d,
-str_fc0e,
-str_fc0f,
-str_fc10,
-str_fc11,
-str_fc12,
-str_fc13,
-str_fc14,
-str_fc15,
-str_fc16,
-str_fc17,
-str_fc18,
-str_fc19,
-str_fc1a,
-str_fc1b,
-str_fc1c,
-str_fc1d,
-str_fc1e,
-str_fc1f,
-str_fc20,
-str_fc21,
-str_fc22,
-str_fc23,
-str_fc24,
-str_fc25,
-str_fc26,
-str_fc27,
-str_fc28,
-str_fc29,
-str_fc2a,
-str_fc2b,
-str_fc2c,
-str_fc2d,
-str_fc2e,
-str_fc2f,
-str_fc30,
-str_fc31,
-str_fc32,
-str_fc33,
-str_fc34,
-str_fc35,
-str_fc36,
-str_fc37,
-str_fc38,
-str_fc39,
-str_fc3a,
-str_fc3b,
-str_fc3c,
-str_fc3d,
-str_fc3e,
-str_fc3f,
-str_fc40,
-str_fc41,
-str_fc42,
-str_fc43,
-str_fc44,
-str_fc45,
-str_fc46,
-str_fc47,
-str_fc48,
-str_fc49,
-str_fc4a,
-str_fc4b,
-str_fc4c,
-str_fc4d,
-str_fc4e,
-str_fc4f,
-str_fc50,
-str_fc51,
-str_fc52,
-str_fc53,
-str_fc54,
-str_fc55,
-str_fc56,
-str_fc57,
-str_fc58,
-str_fc59,
-str_fc5a,
-str_fc5b,
-str_fc5c,
-str_fc5d,
-str_fc5e,
-str_fc5f,
-str_fc60,
-str_fc61,
-str_fc62,
-str_fc63,
-str_fc64,
-str_fc65,
-str_fc66,
-str_fc67,
-str_fc68,
-str_fc69,
-str_fc6a,
-str_fc6b,
-str_fc6c,
-str_fc6d,
-str_fc6e,
-str_fc6f,
-str_fc70,
-str_fc71,
-str_fc72,
-str_fc73,
-str_fc74,
-str_fc75,
-str_fc76,
-str_fc77,
-str_fc78,
-str_fc79,
-str_fc7a,
-str_fc7b,
-str_fc7c,
-str_fc7d,
-str_fc7e,
-str_fc7f,
-str_fc80,
-str_fc81,
-str_fc82,
-str_fc83,
-str_fc84,
-str_fc85,
-str_fc86,
-str_fc87,
-str_fc88,
-str_fc89,
-str_fc8a,
-str_fc8b,
-str_fc8c,
-str_fc8d,
-str_fc8e,
-str_fc8f,
-str_fc90,
-str_fc91,
-str_fc92,
-str_fc93,
-str_fc94,
-str_fc95,
-str_fc96,
-str_fc97,
-str_fc98,
-str_fc99,
-str_fc9a,
-str_fc9b,
-str_fc9c,
-str_fc9d,
-str_fc9e,
-str_fc9f,
-str_fca0,
-str_fca1,
-str_fca2,
-str_fca3,
-str_fca4,
-str_fca5,
-str_fca6,
-str_fca7,
-str_fca8,
-str_fca9,
-str_fcaa,
-str_fcab,
-str_fcac,
-str_fcad,
-str_fcae,
-str_fcaf,
-str_fcb0,
-str_fcb1,
-str_fcb2,
-str_fcb3,
-str_fcb4,
-str_fcb5,
-str_fcb6,
-str_fcb7,
-str_fcb8,
-str_fcb9,
-str_fcba,
-str_fcbb,
-str_fcbc,
-str_fcbd,
-str_fcbe,
-str_fcbf,
-str_fcc0,
-str_fcc1,
-str_fcc2,
-str_fcc3,
-str_fcc4,
-str_fcc5,
-str_fcc6,
-str_fcc7,
-str_fcc8,
-str_fcc9,
-str_fcca,
-str_fccb,
-str_fccc,
-str_fccd,
-str_fcce,
-str_fccf,
-str_fcd0,
-str_fcd1,
-str_fcd2,
-str_fcd3,
-str_fcd4,
-str_fcd5,
-str_fcd6,
-str_fcd7,
-str_fcd8,
-str_fcd9,
-str_fcda,
-str_fcdb,
-str_fcdc,
-str_fcdd,
-str_fcde,
-str_fcdf,
-str_fce0,
-str_fce1,
-str_fce2,
-str_fce3,
-str_fce4,
-str_fce5,
-str_fce6,
-str_fce7,
-str_fce8,
-str_fce9,
-str_fcea,
-str_fceb,
-str_fcec,
-str_fced,
-str_fcee,
-str_fcef,
-str_fcf0,
-str_fcf1,
-str_fcf2,
-str_fcf3,
-str_fcf4,
-str_fcf5,
-str_fcf6,
-str_fcf7,
-str_fcf8,
-str_fcf9,
-str_fcfa,
-str_fcfb,
-str_fcfc,
-str_fcfd,
-str_fcfe,
-str_fcff,
-0};
-
-static const unichar_t * const tab_fd[] = {
-str_fd00,
-str_fd01,
-str_fd02,
-str_fd03,
-str_fd04,
-str_fd05,
-str_fd06,
-str_fd07,
-str_fd08,
-str_fd09,
-str_fd0a,
-str_fd0b,
-str_fd0c,
-str_fd0d,
-str_fd0e,
-str_fd0f,
-str_fd10,
-str_fd11,
-str_fd12,
-str_fd13,
-str_fd14,
-str_fd15,
-str_fd16,
-str_fd17,
-str_fd18,
-str_fd19,
-str_fd1a,
-str_fd1b,
-str_fd1c,
-str_fd1d,
-str_fd1e,
-str_fd1f,
-str_fd20,
-str_fd21,
-str_fd22,
-str_fd23,
-str_fd24,
-str_fd25,
-str_fd26,
-str_fd27,
-str_fd28,
-str_fd29,
-str_fd2a,
-str_fd2b,
-str_fd2c,
-str_fd2d,
-str_fd2e,
-str_fd2f,
-str_fd30,
-str_fd31,
-str_fd32,
-str_fd33,
-str_fd34,
-str_fd35,
-str_fd36,
-str_fd37,
-str_fd38,
-str_fd39,
-str_fd3a,
-str_fd3b,
-str_fd3c,
-str_fd3d,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_fd50,
-str_fd51,
-str_fd52,
-str_fd53,
-str_fd54,
-str_fd55,
-str_fd56,
-str_fd57,
-str_fd58,
-str_fd59,
-str_fd5a,
-str_fd5b,
-str_fd5c,
-str_fd5d,
-str_fd5e,
-str_fd5f,
-str_fd60,
-str_fd61,
-str_fd62,
-str_fd63,
-str_fd64,
-str_fd65,
-str_fd66,
-str_fd67,
-str_fd68,
-str_fd69,
-str_fd6a,
-str_fd6b,
-str_fd6c,
-str_fd6d,
-str_fd6e,
-str_fd6f,
-str_fd70,
-str_fd71,
-str_fd72,
-str_fd73,
-str_fd74,
-str_fd75,
-str_fd76,
-str_fd77,
-str_fd78,
-str_fd79,
-str_fd7a,
-str_fd7b,
-str_fd7c,
-str_fd7d,
-str_fd7e,
-str_fd7f,
-str_fd80,
-str_fd81,
-str_fd82,
-str_fd83,
-str_fd84,
-str_fd85,
-str_fd86,
-str_fd87,
-str_fd88,
-str_fd89,
-str_fd8a,
-str_fd8b,
-str_fd8c,
-str_fd8d,
-str_fd8e,
-str_fd8f,
-0, 0, str_fd92,
-str_fd93,
-str_fd94,
-str_fd95,
-str_fd96,
-str_fd97,
-str_fd98,
-str_fd99,
-str_fd9a,
-str_fd9b,
-str_fd9c,
-str_fd9d,
-str_fd9e,
-str_fd9f,
-str_fda0,
-str_fda1,
-str_fda2,
-str_fda3,
-str_fda4,
-str_fda5,
-str_fda6,
-str_fda7,
-str_fda8,
-str_fda9,
-str_fdaa,
-str_fdab,
-str_fdac,
-str_fdad,
-str_fdae,
-str_fdaf,
-str_fdb0,
-str_fdb1,
-str_fdb2,
-str_fdb3,
-str_fdb4,
-str_fdb5,
-str_fdb6,
-str_fdb7,
-str_fdb8,
-str_fdb9,
-str_fdba,
-str_fdbb,
-str_fdbc,
-str_fdbd,
-str_fdbe,
-str_fdbf,
-str_fdc0,
-str_fdc1,
-str_fdc2,
-str_fdc3,
-str_fdc4,
-str_fdc5,
-str_fdc6,
-str_fdc7,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_fdf0,
-str_fdf1,
-str_fdf2,
-str_fdf3,
-str_fdf4,
-str_fdf5,
-str_fdf6,
-str_fdf7,
-str_fdf8,
-str_fdf9,
-str_fdfa,
-str_fdfb,
-str_fdfc,
-0, 0, 0, 0};
-
-static const unichar_t * const tab_fe[] = {
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_fe10,
-str_fe11,
-str_fe12,
-str_fe13,
-str_fe14,
-str_fe15,
-str_fe16,
-str_fe17,
-str_fe18,
-str_fe19,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, str_fe30,
-str_fe31,
-str_fe32,
-str_fe33,
-str_fe34,
-str_fe35,
-str_fe36,
-str_fe37,
-str_fe38,
-str_fe39,
-str_fe3a,
-str_fe3b,
-str_fe3c,
-str_fe3d,
-str_fe3e,
-str_fe3f,
-str_fe40,
-str_fe41,
-str_fe42,
-str_fe43,
-str_fe44,
-0, 0, str_fe47,
-str_fe48,
-str_fe49,
-str_fe4a,
-str_fe4b,
-str_fe4c,
-str_fe4d,
-str_fe4e,
-str_fe4f,
-str_fe50,
-str_fe51,
-str_fe52,
-0, str_fe54,
-str_fe55,
-str_fe56,
-str_fe57,
-str_fe58,
-str_fe59,
-str_fe5a,
-str_fe5b,
-str_fe5c,
-str_fe5d,
-str_fe5e,
-str_fe5f,
-str_fe60,
-str_fe61,
-str_fe62,
-str_fe63,
-str_fe64,
-str_fe65,
-str_fe66,
-0, str_fe68,
-str_fe69,
-str_fe6a,
-str_fe6b,
-0, 0, 0, 0, str_fe70,
-str_fe71,
-str_fe72,
-0, str_fe74,
-0, str_fe76,
-str_fe77,
-str_fe78,
-str_fe79,
-str_fe7a,
-str_fe7b,
-str_fe7c,
-str_fe7d,
-str_fe7e,
-str_fe7f,
-str_fe80,
-str_fe81,
-str_fe82,
-str_fe83,
-str_fe84,
-str_fe85,
-str_fe86,
-str_fe87,
-str_fe88,
-str_fe89,
-str_fe8a,
-str_fe8b,
-str_fe8c,
-str_fe8d,
-str_fe8e,
-str_fe8f,
-str_fe90,
-str_fe91,
-str_fe92,
-str_fe93,
-str_fe94,
-str_fe95,
-str_fe96,
-str_fe97,
-str_fe98,
-str_fe99,
-str_fe9a,
-str_fe9b,
-str_fe9c,
-str_fe9d,
-str_fe9e,
-str_fe9f,
-str_fea0,
-str_fea1,
-str_fea2,
-str_fea3,
-str_fea4,
-str_fea5,
-str_fea6,
-str_fea7,
-str_fea8,
-str_fea9,
-str_feaa,
-str_feab,
-str_feac,
-str_fead,
-str_feae,
-str_feaf,
-str_feb0,
-str_feb1,
-str_feb2,
-str_feb3,
-str_feb4,
-str_feb5,
-str_feb6,
-str_feb7,
-str_feb8,
-str_feb9,
-str_feba,
-str_febb,
-str_febc,
-str_febd,
-str_febe,
-str_febf,
-str_fec0,
-str_fec1,
-str_fec2,
-str_fec3,
-str_fec4,
-str_fec5,
-str_fec6,
-str_fec7,
-str_fec8,
-str_fec9,
-str_feca,
-str_fecb,
-str_fecc,
-str_fecd,
-str_fece,
-str_fecf,
-str_fed0,
-str_fed1,
-str_fed2,
-str_fed3,
-str_fed4,
-str_fed5,
-str_fed6,
-str_fed7,
-str_fed8,
-str_fed9,
-str_feda,
-str_fedb,
-str_fedc,
-str_fedd,
-str_fede,
-str_fedf,
-str_fee0,
-str_fee1,
-str_fee2,
-str_fee3,
-str_fee4,
-str_fee5,
-str_fee6,
-str_fee7,
-str_fee8,
-str_fee9,
-str_feea,
-str_feeb,
-str_feec,
-str_feed,
-str_feee,
-str_feef,
-str_fef0,
-str_fef1,
-str_fef2,
-str_fef3,
-str_fef4,
-str_fef5,
-str_fef6,
-str_fef7,
-str_fef8,
-str_fef9,
-str_fefa,
-str_fefb,
-str_fefc,
-0, 0, 0, 0};
-
-static const unichar_t * const tab_ff[] = {
-0, str_ff01,
-str_ff02,
-str_ff03,
-str_ff04,
-str_ff05,
-str_ff06,
-str_ff07,
-str_ff08,
-str_ff09,
-str_ff0a,
-str_ff0b,
-str_ff0c,
-str_ff0d,
-str_ff0e,
-str_ff0f,
-str_ff10,
-str_ff11,
-str_ff12,
-str_ff13,
-str_ff14,
-str_ff15,
-str_ff16,
-str_ff17,
-str_ff18,
-str_ff19,
-str_ff1a,
-str_ff1b,
-str_ff1c,
-str_ff1d,
-str_ff1e,
-str_ff1f,
-str_ff20,
-str_ff21,
-str_ff22,
-str_ff23,
-str_ff24,
-str_ff25,
-str_ff26,
-str_ff27,
-str_ff28,
-str_ff29,
-str_ff2a,
-str_ff2b,
-str_ff2c,
-str_ff2d,
-str_ff2e,
-str_ff2f,
-str_ff30,
-str_ff31,
-str_ff32,
-str_ff33,
-str_ff34,
-str_ff35,
-str_ff36,
-str_ff37,
-str_ff38,
-str_ff39,
-str_ff3a,
-str_ff3b,
-str_ff3c,
-str_ff3d,
-str_ff3e,
-str_ff3f,
-str_ff40,
-str_ff41,
-str_ff42,
-str_ff43,
-str_ff44,
-str_ff45,
-str_ff46,
-str_ff47,
-str_ff48,
-str_ff49,
-str_ff4a,
-str_ff4b,
-str_ff4c,
-str_ff4d,
-str_ff4e,
-str_ff4f,
-str_ff50,
-str_ff51,
-str_ff52,
-str_ff53,
-str_ff54,
-str_ff55,
-str_ff56,
-str_ff57,
-str_ff58,
-str_ff59,
-str_ff5a,
-str_ff5b,
-str_ff5c,
-str_ff5d,
-str_ff5e,
-str_ff5f,
-str_ff60,
-str_ff61,
-str_ff62,
-str_ff63,
-str_ff64,
-str_ff65,
-str_ff66,
-str_ff67,
-str_ff68,
-str_ff69,
-str_ff6a,
-str_ff6b,
-str_ff6c,
-str_ff6d,
-str_ff6e,
-str_ff6f,
-str_ff70,
-str_ff71,
-str_ff72,
-str_ff73,
-str_ff74,
-str_ff75,
-str_ff76,
-str_ff77,
-str_ff78,
-str_ff79,
-str_ff7a,
-str_ff7b,
-str_ff7c,
-str_ff7d,
-str_ff7e,
-str_ff7f,
-str_ff80,
-str_ff81,
-str_ff82,
-str_ff83,
-str_ff84,
-str_ff85,
-str_ff86,
-str_ff87,
-str_ff88,
-str_ff89,
-str_ff8a,
-str_ff8b,
-str_ff8c,
-str_ff8d,
-str_ff8e,
-str_ff8f,
-str_ff90,
-str_ff91,
-str_ff92,
-str_ff93,
-str_ff94,
-str_ff95,
-str_ff96,
-str_ff97,
-str_ff98,
-str_ff99,
-str_ff9a,
-str_ff9b,
-str_ff9c,
-str_ff9d,
-str_ff9e,
-str_ff9f,
-str_ffa0,
-str_ffa1,
-str_ffa2,
-str_ffa3,
-str_ffa4,
-str_ffa5,
-str_ffa6,
-str_ffa7,
-str_ffa8,
-str_ffa9,
-str_ffaa,
-str_ffab,
-str_ffac,
-str_ffad,
-str_ffae,
-str_ffaf,
-str_ffb0,
-str_ffb1,
-str_ffb2,
-str_ffb3,
-str_ffb4,
-str_ffb5,
-str_ffb6,
-str_ffb7,
-str_ffb8,
-str_ffb9,
-str_ffba,
-str_ffbb,
-str_ffbc,
-str_ffbd,
-str_ffbe,
-0, 0, 0, str_ffc2,
-str_ffc3,
-str_ffc4,
-str_ffc5,
-str_ffc6,
-str_ffc7,
-0, 0, str_ffca,
-str_ffcb,
-str_ffcc,
-str_ffcd,
-str_ffce,
-str_ffcf,
-0, 0, str_ffd2,
-str_ffd3,
-str_ffd4,
-str_ffd5,
-str_ffd6,
-str_ffd7,
-0, 0, str_ffda,
-str_ffdb,
-str_ffdc,
-0, 0, 0, str_ffe0,
-str_ffe1,
-str_ffe2,
-str_ffe3,
-str_ffe4,
-str_ffe5,
-str_ffe6,
-0, str_ffe8,
-str_ffe9,
-str_ffea,
-str_ffeb,
-str_ffec,
-str_ffed,
-str_ffee,
-0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-
-const unichar_t *const * const unicode_alternates[] = {
-tab_0,
-tab_1,
-tab_2,
-tab_3,
-tab_4,
-tab_5,
-tab_6,
-up_allzeros, up_allzeros, tab_9,
-tab_a,
-tab_b,
-tab_c,
-tab_d,
-tab_e,
-tab_f,
-tab_10,
-tab_11,
-up_allzeros, tab_13,
-up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, tab_1b,
-up_allzeros, tab_1d,
-tab_1e,
-tab_1f,
-tab_20,
-tab_21,
-tab_22,
-tab_23,
-tab_24,
-tab_25,
-tab_26,
-tab_27,
-up_allzeros, up_allzeros, tab_2a,
-up_allzeros, tab_2c,
-tab_2d,
-tab_2e,
-tab_2f,
-tab_30,
-tab_31,
-tab_32,
-tab_33,
-up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, tab_a6,
-tab_a7,
-up_allzeros, up_allzeros, up_allzeros, tab_ab,
-up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, up_allzeros, tab_f9,
-tab_fa,
-tab_fb,
-tab_fc,
-tab_fd,
-tab_fe,
-tab_ff,
-0};

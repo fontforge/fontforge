@@ -28,7 +28,6 @@
 #include <fontforge-config.h>
 #include <assert.h>
 
-#include "chardata.h"
 #include "gwwiconv.h"
 #include "ustring.h"
 #include "utype.h"
@@ -69,7 +68,7 @@ unichar_t *def2u_strncpy(unichar_t *uto, const char *from, size_t n) {
     char *cto = (char *) uto;
     if (is_local_encoding_utf8) {
         return utf82u_strncpy(uto, from, n);
-    } else if (iconv(to_unicode, (iconv_arg2_t) &from, &in_left, &cto, &out_left) == -1) {
+    } else if (iconv(to_unicode, (iconv_arg2_t) &from, &in_left, &cto, &out_left) == (size_t)-1) {
         return NULL;
     }
     if ( cto<((char *) uto)+2*n) *cto++ = '\0';
@@ -84,7 +83,7 @@ char *u2def_strncpy(char *to, const unichar_t *ufrom, size_t n) {
     char *cfrom = (char *) ufrom, *cto=to;
     if (is_local_encoding_utf8) {
         return u2utf8_strncpy(to, ufrom, n);
-    } else if (iconv(from_unicode, (iconv_arg2_t) &cfrom, &in_left, &cto, &out_left) == -1) {
+    } else if (iconv(from_unicode, (iconv_arg2_t) &cfrom, &in_left, &cto, &out_left) == (size_t)-1) {
         return NULL;
     }
     if ( cto<to+n ) *cto++ = '\0';
@@ -96,7 +95,7 @@ return( to );
 
 unichar_t *def2u_copy(const char *from) {
     int len;
-    unichar_t *uto, *ret;
+    unichar_t *uto;
 
     if (is_local_encoding_utf8)
         return utf82u_copy(from);
@@ -108,7 +107,7 @@ unichar_t *def2u_copy(const char *from) {
 
     size_t in_left = len, out_left = sizeof(unichar_t)*len;
     char *cto = (char *) uto;
-    if (iconv(to_unicode, (iconv_arg2_t) &from, &in_left, &cto, &out_left) == -1) {
+    if (iconv(to_unicode, (iconv_arg2_t) &from, &in_left, &cto, &out_left) == (size_t)-1) {
         free(uto);
         return NULL;
     }
@@ -121,7 +120,7 @@ unichar_t *def2u_copy(const char *from) {
 
 char *u2def_copy(const unichar_t *ufrom) {
     int len;
-    char *to, *ret;
+    char *to;
 
     if (is_local_encoding_utf8)
         return u2utf8_copy(ufrom);
@@ -133,7 +132,7 @@ char *u2def_copy(const unichar_t *ufrom) {
     char *cfrom = (char *) ufrom, *cto;
     cto = to = (char *) malloc(3*len+2);
     if ( cto==NULL ) return( NULL );
-    if (iconv(from_unicode, (iconv_arg2_t) &cfrom, &in_left, &cto, &out_left) == -1) {
+    if (iconv(from_unicode, (iconv_arg2_t) &cfrom, &in_left, &cto, &out_left) == (size_t)-1) {
         free(to);
         return NULL;
     }
@@ -147,8 +146,6 @@ char *u2def_copy(const unichar_t *ufrom) {
 
 char *def2utf8_copy(const char *from) {
     int len;
-    char *ret;
-    unichar_t *temp, *uto;
 
     if (is_local_encoding_utf8)
         return copy(from);
@@ -158,7 +155,7 @@ char *def2utf8_copy(const char *from) {
     size_t in_left = len, out_left = 3*(len+1);
     char *cto = (char *) malloc(3*(len+1)), *cret = cto;
     if ( cto==NULL ) return( NULL );
-    if (iconv(to_utf8, (iconv_arg2_t) &from, &in_left, &cto, &out_left) == -1) {
+    if (iconv(to_utf8, (iconv_arg2_t) &from, &in_left, &cto, &out_left) == (size_t)-1) {
         free(cto);
         return NULL;
     }
@@ -171,8 +168,6 @@ char *def2utf8_copy(const char *from) {
 
 char *utf82def_copy(const char *ufrom) {
     int len;
-    char *ret;
-    unichar_t *u2from;
 
     if (is_local_encoding_utf8)
         return copy(ufrom);
@@ -183,7 +178,7 @@ char *utf82def_copy(const char *ufrom) {
     char *cfrom = (char *) ufrom, *cto, *to;
     cto = to = (char *) malloc(3*len+2);
     if ( cto==NULL ) return( NULL );
-    if (iconv(from_utf8, (iconv_arg2_t) &cfrom, &in_left, &cto, &out_left) == -1) {
+    if (iconv(from_utf8, (iconv_arg2_t) &cfrom, &in_left, &cto, &out_left) == (size_t)-1) {
         free(to);
         return NULL;
     }
