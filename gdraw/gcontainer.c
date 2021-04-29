@@ -31,7 +31,6 @@
 #include "ggadget.h"
 #include "ggadgetP.h"
 #include "gkeysym.h"
-#include "gresource.h"
 #include "gwidgetP.h"
 #include "utype.h"
 

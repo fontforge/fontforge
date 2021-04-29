@@ -29,11 +29,9 @@
 
 #include "gdraw.h"
 #include "ggadgetP.h"
-#include "gresource.h"
 
 GBox _GGroup_LineBox = GBOX_EMPTY; /* Don't initialize here */
 static GBox group_box = GBOX_EMPTY; /* Don't initialize here */
-static int ggroup_inited = false;
 
 static GGadgetCreateData gline_gcd[] = {
     { GLineCreate, { { 0, 0, 100, 0 }, NULL, 0, 0, 0, 0, 0, NULL, { NULL }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL }
@@ -41,8 +39,9 @@ static GGadgetCreateData gline_gcd[] = {
 static GGadgetCreateData *larray[] = { GCD_Glue, &gline_gcd[0], GCD_Glue, NULL, NULL };
 static GGadgetCreateData linebox =
     { GHVGroupCreate, { { 2, 2, 0, 0 }, NULL, 0, 0, 0, 0, 0, NULL, { (GTextInfo *) larray }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL };
-GResInfo gline_ri = {
-    NULL, &ggadget_ri, NULL, NULL,
+extern GResInfo ghvbox_ri;
+static GResInfo gline_ri = {
+    &ghvbox_ri, &ggadget_ri, NULL, NULL,
     &_GGroup_LineBox,
     NULL,
     &linebox,
@@ -52,8 +51,28 @@ GResInfo gline_ri = {
     "GLine",
     "Gdraw",
     false,
+    false,
     omf_border_type|omf_border_shape|omf_padding,
+    { bt_engraved, bs_rect, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 ,0 ,0 ,0 },
+    GBOX_EMPTY,
     NULL,
+    NULL,
+    NULL
+};
+GResInfo ggroup_ri = {
+    &gline_ri, &ggadget_ri, NULL, NULL,
+    &group_box,
+    NULL,
+    NULL,
+    NULL,
+    N_("Group"),
+    N_("A grouping of elements"),
+    "GGroup",
+    "Gdraw",
+    false,
+    false,
+    omf_border_type|omf_border_shape|omf_padding|omf_main_background|omf_disabled_background,
+    { bt_engraved, bs_rect, 0, 0, 0, 0, 0, 0, 0, 0, COLOR_TRANSPARENT, 0, COLOR_TRANSPARENT, 0, 0 ,0 ,0 ,0 ,0 },
     GBOX_EMPTY,
     NULL,
     NULL,
@@ -61,19 +80,8 @@ GResInfo gline_ri = {
 };
 
 void _GGroup_Init(void) {
-    if ( ggroup_inited )
-return;
-    _GGadgetCopyDefaultBox(&_GGroup_LineBox);
-    _GGadgetCopyDefaultBox(&group_box);
-    group_box.border_type = _GGroup_LineBox.border_type = bt_engraved;
-    group_box.border_shape = _GGroup_LineBox.border_shape = bs_rect;
-    group_box.padding = _GGroup_LineBox.padding = 0;
-    /*group_box.flags = _GGroup_LineBox.flags = 0;*/
-    group_box.main_background = COLOR_TRANSPARENT;
-    group_box.disabled_background = COLOR_TRANSPARENT;
-    _GGadgetInitDefaultBox("GLine.",&_GGroup_LineBox,NULL);
-    _GGadgetInitDefaultBox("GGroup.",&group_box,NULL);
-    ggroup_inited = true;
+    GResEditDoInit(&ggroup_ri);
+    GResEditDoInit(&gline_ri);
 }
 
 static int ggroup_expose(GWindow pixmap, GGadget *g, GEvent *event) {
@@ -259,8 +267,7 @@ static void GGroupFit(GGadget *g) {
 GGadget *GLineCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     GGadget *g = calloc(1,sizeof(GLine));
 
-    if ( !ggroup_inited )
-	_GGroup_Init();
+    _GGroup_Init();
     g->funcs = &gline_funcs;
     _GGadget_Create(g,base,gd,data,&_GGroup_LineBox);
     if ( gd->flags & gg_line_vert )
@@ -274,8 +281,7 @@ return( g );
 GGadget *GGroupCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     GGadget *g = calloc(1,sizeof(GGroup));
 
-    if ( !ggroup_inited )
-	_GGroup_Init();
+    _GGroup_Init();
     g->funcs = &ggroup_funcs;
     _GGadget_Create(g,base,gd,data,&group_box);
 
@@ -286,10 +292,4 @@ GGadget *GGroupCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     GGroupFit(g);
     _GGadget_FinalPosition(g,base,gd);
 return( g );
-}
-
-GResInfo *_GLineRIHead(void) {
-
-    _GGroup_Init();
-return( &gline_ri );
 }

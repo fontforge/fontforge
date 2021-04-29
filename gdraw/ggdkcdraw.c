@@ -171,14 +171,7 @@ static PangoFontDescription *_GGDKDraw_configfont(GWindow w, GFont *font) {
         return NULL;
     }
 
-    if (font->rq.utf8_family_name != NULL) {
-        pango_font_description_set_family(fd, font->rq.utf8_family_name);
-    } else {
-        char *temp = u2utf8_copy(font->rq.family_name);
-        pango_font_description_set_family(fd, temp);
-        free(temp);
-    }
-
+    pango_font_description_set_family(fd, font->rq.utf8_family_name);
     pango_font_description_set_style(fd, (font->rq.style & fs_italic) ?
                                      PANGO_STYLE_ITALIC : PANGO_STYLE_NORMAL);
     pango_font_description_set_variant(fd, (font->rq.style & fs_smallcaps) ?

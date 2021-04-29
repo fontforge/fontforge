@@ -35,7 +35,6 @@
 #include "gfile.h"
 #include "gkeysym.h"
 #include "gresedit.h"
-#include "gresource.h"
 #include "groups.h"
 #include "macenc.h"
 #include "namelist.h"
@@ -58,6 +57,7 @@
 #define RAD2DEG	(180/FF_PI)
 
 static void change_res_filename(const char *newname);
+GResFont prefs_monofont = GRESFONT_INIT("400 12pt " MONO_UI_FAMILIES);
 
 extern int splash;
 extern int adjustwidth;
@@ -1825,8 +1825,6 @@ void DoPrefs(void) {
     static unichar_t nullstr[] = { 0 };
     struct prefs_list *pl;
     char *tempstr;
-    FontRequest rq;
-    GFont *font;
 
     PrefsInit();
 
@@ -2334,13 +2332,8 @@ void DoPrefs(void) {
     for ( k=0; k<TOPICS; ++k )
 	GHVBoxSetExpandableRow(boxes[2*k].ret,gb_expandglue);
 
-    memset(&rq,0,sizeof(rq));
-    rq.utf8_family_name = MONO_UI_FAMILIES;
-    rq.point_size = 12;
-    rq.weight = 400;
-    font = GDrawInstanciateFont(gw,&rq);
-    GGadgetSetFont(mfgcd[0].ret,font);
-    GGadgetSetFont(msgcd[0].ret,font);
+    GGadgetSetFont(mfgcd[0].ret,prefs_monofont.fi);
+    GGadgetSetFont(msgcd[0].ret,prefs_monofont.fi);
     GHVBoxFitWindow(mboxes[0].ret);
 
     for ( k=0; visible_prefs_list[k].tab_name!=0; ++k ) for ( gc=0,i=0; visible_prefs_list[k].pl[i].name!=NULL; ++i ) {
@@ -2454,12 +2447,12 @@ static void change_res_filename(const char *newname) {
 }
 
 void DoXRes(void) {
-    extern GResInfo fontview_ri;
+    extern GResInfo view_ri;
 
     MVColInit();
     CVColInit();
     BVColInit();
-    GResEdit(&fontview_ri,xdefs_filename,change_res_filename);
+    GResEdit(&view_ri,xdefs_filename,change_res_filename);
 }
 
 struct prefs_list pointer_dialog_list[] = {

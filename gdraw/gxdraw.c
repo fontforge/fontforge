@@ -31,6 +31,7 @@
  
 #include "fontP.h"
 #include "gresource.h"
+#include "gresourceP.h"
 #include "gxcdrawP.h"
 #include "gxdrawP.h"
 #include "ustring.h"
@@ -603,8 +604,8 @@ return( ct-ct_user );
 return( CopyFromParent );
     if ( StdCursor[ct]==0 ) {
 	XColor fb[2];
-	fb[0].red = COLOR_RED(gdisp->def_foreground)*0x101; fb[0].green = COLOR_GREEN(gdisp->def_foreground)*0x101; fb[0].blue = COLOR_BLUE(gdisp->def_foreground)*0x101;
-	fb[1].red = COLOR_RED(gdisp->def_background)*0x101; fb[1].green = COLOR_GREEN(gdisp->def_background)*0x101; fb[1].blue = COLOR_BLUE(gdisp->def_background)*0x101;
+	fb[0].red = COLOR_RED(_GDraw_res_fg)*0x101; fb[0].green = COLOR_GREEN(_GDraw_res_fg)*0x101; fb[0].blue = COLOR_BLUE(_GDraw_res_fg)*0x101;
+	fb[1].red = COLOR_RED(_GDraw_res_bg)*0x101; fb[1].green = COLOR_GREEN(_GDraw_res_bg)*0x101; fb[1].blue = COLOR_BLUE(_GDraw_res_bg)*0x101;
 	if ( ct==ct_invisible ) {
 	    static short zeros[16]={0};
 	    Pixmap temp = XCreatePixmapFromBitmapData(display,gdisp->root,
@@ -791,7 +792,7 @@ return( NULL );
 	wmask |= CWBorderPixel;
     }
     if ( !(wattrs->mask&wam_backcol) || wattrs->background_color==COLOR_DEFAULT )
-	wattrs->background_color = gdisp->def_background;
+	wattrs->background_color = _GDraw_res_bg;
     if ( wattrs->background_color != COLOR_UNKNOWN ) {
 	attrs.background_pixel = _GXDraw_GetScreenPixel(gdisp,wattrs->background_color);
 	wmask |= CWBackPixel;
@@ -1020,7 +1021,7 @@ static GWindow GXDrawCreatePixmap(GDisplay *gdisp, GWindow UNUSED(similar), uint
     if ( gw==NULL )
 return( NULL );
     gw->ggc = _GXDraw_NewGGC();
-    gw->ggc->bg = ((GXDisplay *) gdisp)->def_background;
+    gw->ggc->bg = _GDraw_res_bg;
     if ( gw->ggc==NULL ) {
 	free(gw);
 return( NULL );
@@ -2167,12 +2168,12 @@ return( NULL );
     gic->w = w;
     gic->ploc.y = 20; gic->sloc.y = 40;
     listp = XVaCreateNestedList(0, XNFontSet, gdisp->def_im_fontset,
-		    XNForeground, _GXDraw_GetScreenPixel(gdisp,gdisp->def_foreground),
-		    XNBackground, _GXDraw_GetScreenPixel(gdisp,gdisp->def_background),
+		    XNForeground, _GXDraw_GetScreenPixel(gdisp,_GDraw_res_fg),
+		    XNBackground, _GXDraw_GetScreenPixel(gdisp,_GDraw_res_bg),
 		    XNSpotLocation, &gic->ploc, NULL);
     lists = XVaCreateNestedList(0, XNFontSet, gdisp->def_im_fontset,
-		    XNForeground, _GXDraw_GetScreenPixel(gdisp,gdisp->def_foreground),
-		    XNBackground, _GXDraw_GetScreenPixel(gdisp,gdisp->def_background),
+		    XNForeground, _GXDraw_GetScreenPixel(gdisp,_GDraw_res_fg),
+		    XNBackground, _GXDraw_GetScreenPixel(gdisp,_GDraw_res_bg),
 		    XNSpotLocation, &gic->sloc, NULL);
     for ( i=(def_style&gic_type); i>=gic_hidden; --i ) {
 	ic = XCreateIC(gdisp->im,XNInputStyle,styles[i],
@@ -2221,12 +2222,12 @@ static void GXDrawSetGIC(GWindow w, GIC *_gic, int x, int y) {
 	XSetICFocus(gic->ic);
 	if ( gic->style==gic_overspot ) {
 	    listp = XVaCreateNestedList(0, XNFontSet, gdisp->def_im_fontset,
-		    XNForeground, _GXDraw_GetScreenPixel(gdisp,gdisp->def_foreground),
-		    XNBackground, _GXDraw_GetScreenPixel(gdisp,gdisp->def_background),
+		    XNForeground, _GXDraw_GetScreenPixel(gdisp,_GDraw_res_fg),
+		    XNBackground, _GXDraw_GetScreenPixel(gdisp,_GDraw_res_bg),
 		    XNSpotLocation, &gic->ploc, NULL);
 	    lists = XVaCreateNestedList(0, XNFontSet, gdisp->def_im_fontset,
-		    XNForeground, _GXDraw_GetScreenPixel(gdisp,gdisp->def_foreground),
-		    XNBackground, _GXDraw_GetScreenPixel(gdisp,gdisp->def_background),
+		    XNForeground, _GXDraw_GetScreenPixel(gdisp,_GDraw_res_fg),
+		    XNBackground, _GXDraw_GetScreenPixel(gdisp,_GDraw_res_bg),
 		    XNSpotLocation, &gic->sloc, NULL);
 	    XSetICValues(gic->ic,
 		    XNPreeditAttributes, listp,
@@ -3867,15 +3868,8 @@ static void GXResourceInit(GXDisplay *gdisp,char *programname) {
     Atom rmatom, type;
     int format, i; unsigned long nitems, bytes_after;
     unsigned char *ret = NULL;
-    GResStruct res[21];
-    int dithertemp; double sizetemp, sizetempcm;
-    int depth = -1, vc = -1, cm=-1, cmpos;
-    int tbf = 1;
-#if __Mac
-    int mxc = 1;	/* Don't leave this on by default. The cmd key uses the same bit as numlock on other systems */
-#else
-    int mxc = 0;
-#endif
+    GResStruct res[4];
+    int depth = -1, vc = -1, cm=-1;
 
     rmatom = XInternAtom(gdisp->display,"RESOURCE_MANAGER",true);
     if ( rmatom!=None ) {
@@ -3892,42 +3886,26 @@ static void GXResourceInit(GXDisplay *gdisp,char *programname) {
     GResourceAddResourceString((char *) ret,programname);
     if ( ret!=NULL ) XFree(ret);
 
+    GDrawResourceFind();
+    gdisp->bs.double_time = _GDraw_res_multiclicktime;
+    gdisp->bs.double_wiggle = _GDraw_res_multiclickwiggle;
+    gdisp->SelNotifyTimeout = _GDraw_res_selnottime;
+    gdisp->macosx_cmd = _GDraw_res_macosxcmd;
+    gdisp->twobmouse_win = _GDraw_res_twobuttonfixup;
+    gdisp->res = _GDraw_res_res>0 ? _GDraw_res_res : 100;
+    if ( _GDraw_res_synchronize )
+        XSynchronize(gdisp->display,true);
+
     memset(res,0,sizeof(res));
     i = 0;
-    res[i].resname = "MultiClickTime"; res[i].type = rt_int; res[i].val = &gdisp->bs.double_time; ++i;
-    res[i].resname = "MultiClickWiggle"; res[i].type = rt_int; res[i].val = &gdisp->bs.double_wiggle; ++i;
-    res[i].resname = "SelectionNotifyTimeout"; res[i].type = rt_int; res[i].val = &gdisp->SelNotifyTimeout; ++i;
-    dithertemp = gdisp->do_dithering;
-    res[i].resname = "DoDithering"; res[i].type = rt_bool; res[i].val = &dithertemp; ++i;
-    res[i].resname = "ScreenWidthPixels"; res[i].type = rt_int; res[i].val = &gdisp->groot->pos.width; ++i;
-    res[i].resname = "ScreenHeightPixels"; res[i].type = rt_int; res[i].val = &gdisp->groot->pos.height; ++i;
-    sizetemp = WidthMMOfScreen(DefaultScreenOfDisplay(gdisp->display))/25.4;
-    sizetempcm = WidthMMOfScreen(DefaultScreenOfDisplay(gdisp->display))/10;
-    gdisp->xres = gdisp->groot->pos.width/sizetemp;
-    res[i].resname = "ScreenWidthInches"; res[i].type = rt_double; res[i].val = &sizetemp; ++i;
-    cmpos = i;
-    res[i].resname = "ScreenWidthCentimeters"; res[i].type = rt_double; res[i].val = &sizetempcm; ++i;
     res[i].resname = "Depth"; res[i].type = rt_int; res[i].val = &depth; ++i;
     res[i].resname = "VisualClass"; res[i].type = rt_string; res[i].val = &vc; res[i].cvt=vc_cvt; ++i;
-    res[i].resname = "TwoButtonFixup"; res[i].type = rt_bool; res[i].val = &tbf; ++i;
-    res[i].resname = "MacOSXCmd"; res[i].type = rt_bool; res[i].val = &mxc; ++i;
     res[i].resname = "Colormap"; res[i].type = rt_string; res[i].val = &cm; res[i].cvt=cm_cvt; ++i;
     res[i].resname = NULL;
     GResourceFind(res,NULL);
 
-    if ( !res[cmpos].found && !res[cmpos-1].found && rint(gdisp->groot->pos.width/sizetemp) == 75 )
-	gdisp->res = 100;	/* X seems to think that if it doesn't know */
-				/*  the screen width, then 75 dpi is a good guess */
-			        /*  Now-a-days, 100 seems better */
-    else
-    if ( res[cmpos].found && sizetempcm>=1 )
-	gdisp->res = gdisp->groot->pos.width*2.54/sizetempcm;
-    else if ( sizetemp>=1 )
-	gdisp->res = gdisp->groot->pos.width/sizetemp;
     gdisp->desired_depth = depth; gdisp->desired_vc = vc;
     gdisp->desired_cm = cm;
-    gdisp->macosx_cmd = mxc;
-    gdisp->twobmouse_win = tbf;
 }
 
 static struct displayfuncs xfuncs = {
@@ -4150,12 +4128,6 @@ return( NULL );
     groot->is_visible = true;
     
     GXResourceInit(gdisp,programname);
-
-    gdisp->bs.double_time = GResourceFindInt( "DoubleClickTime", gdisp->bs.double_time );
-    gdisp->def_background = GResourceFindColor( "Background", COLOR_CREATE(0xf5,0xff,0xfa));
-    gdisp->def_foreground = GResourceFindColor( "Foreground", COLOR_CREATE(0x00,0x00,0x00));
-    if ( GResourceFindBool("Synchronize", false ))
-	XSynchronize(gdisp->display,true);
 
 #ifdef X_HAVE_UTF8_STRING	/* Don't even try without this. I don't want to have to guess encodings myself... */
     /* X Input method initialization */

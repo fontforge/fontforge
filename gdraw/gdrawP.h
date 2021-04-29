@@ -140,7 +140,6 @@ struct gdisplay {
     struct font_state *fontstate;
     int16 res;
     GWindow groot;
-    Color def_background, def_foreground;
     unsigned int default_visual: 1;
     unsigned int do_dithering: 1;
     unsigned int focusfollowsmouse: 1;

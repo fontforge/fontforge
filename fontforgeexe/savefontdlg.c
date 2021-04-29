@@ -34,7 +34,6 @@
 #include "gicons.h"
 #include "gio.h"
 #include "gkeysym.h"
-#include "gresource.h"
 #include "macbinary.h"
 #include "mm.h"
 #include "namelist.h"

@@ -39,7 +39,6 @@
 #include "gfile.h"
 #include "gkeysym.h"
 #include "gresedit.h"
-#include "gresource.h"
 #include "lookups.h"
 #include "mm.h"
 #include "splinefill.h"
@@ -67,9 +66,13 @@ static double mv_scales[] = { 8.0, 4.0, 2.0, 1.5, 1.0, 2.0/3.0, .5, 1.0/3.0, .25
 
 static Color widthcol = 0x808080;
 static Color italicwidthcol = 0x909090;
+static Color glyphcol = 0x000000;
+static Color dividercol = 0x000000;
 static Color selglyphcol = 0x909090;
 static Color kernlinecol = 0x008000;
 static Color rbearinglinecol = 0x000080;
+
+static GResFont mv_font = GRESFONT_INIT("400 12px " SANS_UI_FAMILIES);
 
 int pref_mv_shift_and_arrow_skip = 10;
 int pref_mv_control_shift_and_arrow_skip = 5;
@@ -202,21 +205,9 @@ static int MVGetSplineFontPieceMealFlags( MetricsView *mv )
     return ret;
 }
 
-
+extern GResInfo metricsview_ri;
 void MVColInit( void ) {
-    static int cinit=false;
-    GResStruct mvcolors[] = {
-	{ "AdvanceWidthColor", rt_color, &widthcol, NULL, 0 },
-	{ "ItalicAdvanceColor", rt_color, &italicwidthcol, NULL, 0 },
-	{ "SelectedGlyphColor", rt_color, &selglyphcol, NULL, 0 },
-	{ "KernLineColor", rt_color, &kernlinecol, NULL, 0 },
-	{ "SideBearingLineColor", rt_color, &rbearinglinecol, NULL, 0 },
-	GRESSTRUCT_EMPTY
-    };
-    if ( !cinit ) {
-	GResourceFind( mvcolors, "MetricsView.");
-	cinit = true;
-    }
+    GResEditDoInit(&metricsview_ri);
 }
 
 static int MVSetVSb(MetricsView *mv);
@@ -297,9 +288,8 @@ static void MVSubVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
 	    if ( !bdfc->byte_data ) {
 		base.image_type = it_mono;
 		clut.clut_len = 2;
-		clut.clut[0] = 0xffffff;
-		if ( mv->perchar[i].selected )
-		    clut.clut[1] = selglyphcol;
+		clut.clut[0] = view_bgcol;
+		clut.clut[1] = mv->perchar[i].selected ? selglyphcol : glyphcol;
 	    } else {
 		int scale, l;
 		Color fg, bg;
@@ -310,7 +300,7 @@ static void MVSubVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
 		base.image_type = it_index;
 		clut.clut_len = 1<<scale;
 		bg = view_bgcol;
-		fg = ( mv->perchar[i].selected ) ? selglyphcol : 0x000000;
+		fg = ( mv->perchar[i].selected ) ? selglyphcol : glyphcol;
 		for ( l=0; l<(1<<scale); ++l )
 		    clut.clut[l] =
 			COLOR_CREATE(
@@ -417,9 +407,8 @@ return;
 	    if ( !bdfc->byte_data ) {
 		base.image_type = it_mono;
 		clut.clut_len = 2;
-		clut.clut[0] = 0xffffff;
-		if ( mv->perchar[i].selected )
-		    clut.clut[1] = selglyphcol;
+		clut.clut[0] = view_bgcol;
+		clut.clut[1] = mv->perchar[i].selected ? selglyphcol : glyphcol;
 	    } else {
 		int lscale = 3000/mv->pixelsize, l;
 		Color fg, bg;
@@ -432,7 +421,7 @@ return;
 		scale = lscale==8?256:lscale==4?16:4;
 		clut.clut_len = scale;
 		bg = view_bgcol;
-		fg = ( mv->perchar[i].selected ) ? selglyphcol : 0x000000;
+		fg = ( mv->perchar[i].selected ) ? selglyphcol : glyphcol;
 		for ( l=0; l<scale; ++l )
 		    clut.clut[l] =
 			COLOR_CREATE(
@@ -479,16 +468,16 @@ return;
     GDrawPushClip(pixmap,clip,&old);
     GDrawSetLineWidth(pixmap,0);
     for ( x=mv->mwidth; x<mv->width; x+=mv->mwidth ) {
-	GDrawDrawLine(pixmap,x,mv->displayend,x,ke,0x000000);
-	GDrawDrawLine(pixmap,x+mv->mwidth/2,ke,x+mv->mwidth/2,mv->height-mv->sbh,0x000000);
+	GDrawDrawLine(pixmap,x,mv->displayend,x,ke,dividercol);
+	GDrawDrawLine(pixmap,x+mv->mwidth/2,ke,x+mv->mwidth/2,mv->height-mv->sbh,dividercol);
     }
-    GDrawDrawLine(pixmap,0,mv->topend,mv->width,mv->topend,0x000000);
-    GDrawDrawLine(pixmap,0,mv->displayend,mv->width,mv->displayend,0x000000);
-    GDrawDrawLine(pixmap,0,mv->displayend+mv->fh+4,mv->width,mv->displayend+mv->fh+4,0x000000);
-    GDrawDrawLine(pixmap,0,mv->displayend+2*(mv->fh+4),mv->width,mv->displayend+2*(mv->fh+4),0x000000);
-    GDrawDrawLine(pixmap,0,mv->displayend+3*(mv->fh+4),mv->width,mv->displayend+3*(mv->fh+4),0x000000);
-    GDrawDrawLine(pixmap,0,mv->displayend+4*(mv->fh+4),mv->width,mv->displayend+4*(mv->fh+4),0x000000);
-    GDrawDrawLine(pixmap,0,mv->displayend+5*(mv->fh+4),mv->width,mv->displayend+5*(mv->fh+4),0x000000);
+    GDrawDrawLine(pixmap,0,mv->topend,mv->width,mv->topend,dividercol);
+    GDrawDrawLine(pixmap,0,mv->displayend,mv->width,mv->displayend,dividercol);
+    GDrawDrawLine(pixmap,0,mv->displayend+mv->fh+4,mv->width,mv->displayend+mv->fh+4,dividercol);
+    GDrawDrawLine(pixmap,0,mv->displayend+2*(mv->fh+4),mv->width,mv->displayend+2*(mv->fh+4),dividercol);
+    GDrawDrawLine(pixmap,0,mv->displayend+3*(mv->fh+4),mv->width,mv->displayend+3*(mv->fh+4),dividercol);
+    GDrawDrawLine(pixmap,0,mv->displayend+4*(mv->fh+4),mv->width,mv->displayend+4*(mv->fh+4),dividercol);
+    GDrawDrawLine(pixmap,0,mv->displayend+5*(mv->fh+4),mv->width,mv->displayend+5*(mv->fh+4),dividercol);
     GDrawPopClip(pixmap,&old);
 }
 
@@ -822,8 +811,9 @@ static void MVMakeLabels(MetricsView *mv) {
     gd.pos.y = mv->displayend+2;
     gd.pos.height = mv->fh;
     gd.label = &label;
-    gd.box = &small;
-    gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_dontcopybox;
+    //gd.box = &small;
+    //gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_dontcopybox;
+    gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
     mv->namelab = GLabelCreate(mv->gw,&gd,NULL);
 
     label.text = (unichar_t *) (mv->vertical ? _("Height:") : _("Width:") );
@@ -3523,7 +3513,7 @@ static GMenuItem2 fllist[] = {
     { { (unichar_t *) N_("_Print..."), (GImage *) "fileprint.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Print...|No Shortcut"), NULL, NULL, MVMenuPrint, 0 },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Pr_eferences..."), (GImage *) "fileprefs.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("Preferences...|No Shortcut"), NULL, NULL, MenuPrefs, 0 },
-    { { (unichar_t *) N_("_X Resource Editor..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("X Resource Editor...|No Shortcut"), NULL, NULL, MenuXRes, 0 },
+    { { (unichar_t *) N_("Appea_rance Editor..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("Appearance Editor...|No Shortcut"), NULL, NULL, MenuXRes, 0 },
 #ifndef _NO_PYTHON
     { { (unichar_t *) N_("Config_ure Plugins..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'u' }, H_("Configure Plugins...|No Shortcut"), NULL, NULL, MenuPlug, 0 },
 #endif
@@ -5189,7 +5179,6 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     GGadgetData gd;
     GRect gsize;
     MetricsView *mv = calloc(1,sizeof(MetricsView));
-    FontRequest rq;
     static GWindow icon = NULL;
     extern int _GScrollBar_Width;
     // The maximum length of a glyph's name is 31 chars:
@@ -5201,7 +5190,6 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     GTextInfo label;
     int i,j,cnt;
     int as,ds,ld;
-    static GFont *mvfont=NULL;
     SplineFont *master = fv->b.sf->cidmaster ? fv->b.sf->cidmaster : fv->b.sf;
 
     MetricsViewInit();
@@ -5262,15 +5250,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     gd.flags = gg_visible|gg_enabled|gg_pos_in_pixels|gg_sb_vert;
     mv->vsb = GScrollBarCreate(gw,&gd,mv);
 
-    if ( mvfont==NULL ) {
-	memset(&rq,0,sizeof(rq));
-	rq.utf8_family_name = SANS_UI_FAMILIES;
-	rq.point_size = -12;
-	rq.weight = 400;
-	mvfont = GDrawInstanciateFont(gw,&rq);
-	mvfont = GResourceFindFont("MetricsView.Font",mvfont);
-    }
-    mv->font = mvfont;
+    mv->font = mv_font.fi;
     GDrawWindowFontMetrics(gw,mv->font,&as,&ds,&ld);
     mv->fh = as+ds; mv->as = as;
 
@@ -5462,31 +5442,45 @@ struct mv_interface gdraw_mv_interface = {
     MV_CloseAll
 };
 
+static int MetricsViewRIInit(GResInfo *ri) {
+    extern GResInfo fontview_ri;
+    extern Color fvfgcol;
+    if ( ri->is_initialized )
+        return false;
+    GResEditDoInit(&fontview_ri);
+    glyphcol = fvfgcol;
+    dividercol = GDrawGetDefaultForeground(NULL);
+    return _GResEditInitialize(ri);
+}
+
 static struct resed metricsview_re[] = {
+    {N_("Glyph Color"), "GlyphColor", rt_color, &glyphcol, N_("Foreground color of glyph area"), NULL, { 0 }, 0, 0 },
+    {N_("Selected Glyph Col"), "SelectedGlyphColor", rt_color, &selglyphcol, N_("Color used to mark the selected glyph"), NULL, { 0 }, 0, 0 },
+    {N_("Divider Color"), "DividerColor", rt_color, &dividercol, N_("Color of field divider lines"), NULL, { 0 }, 0, 0 },
     {N_("Advance Width Col"), "AdvanceWidthColor", rt_color, &widthcol, N_("Color used to draw the advance width line of a glyph"), NULL, { 0 }, 0, 0 },
     {N_("Italic Advance Col"), "ItalicAdvanceColor", rt_color, &widthcol, N_("Color used to draw the italic advance width line of a glyph"), NULL, { 0 }, 0, 0 },
     {N_("Kern Line Color"), "KernLineColor", rt_color, &kernlinecol, N_("Color used to draw the kerning line"), NULL, { 0 }, 0, 0 },
     {N_("Side Bearing Color"), "SideBearingLineColor", rt_color, &rbearinglinecol, N_("Color used to draw the left side bearing"), NULL, { 0 }, 0, 0 },
-    {N_("Selected Glyph Col"), "SelectedGlyphColor", rt_color, &selglyphcol, N_("Color used to mark the selected glyph"), NULL, { 0 }, 0, 0 },
     RESED_EMPTY
 };
-extern GResInfo view_ri;
+extern GResInfo miscwin_ri;
 GResInfo metricsview_ri = {
-    &view_ri, NULL,NULL, NULL,
+    &miscwin_ri, NULL,NULL, NULL,
     NULL,
-    NULL,
+    &mv_font,
     NULL,
     metricsview_re,
-    N_("MetricsView"),
+    N_("Metrics View"),
     N_("This window displays metrics information about a font"),
     "MetricsView",
     "fontforge",
     false,
+    false,
     0,
-    NULL,
+    GBOX_EMPTY,
     GBOX_EMPTY,
     NULL,
-    NULL,
+    MetricsViewRIInit,
     NULL
 };
 

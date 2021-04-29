@@ -152,7 +152,8 @@ enum box_flags {
     box_do_depressed_background = 0x10,
     box_draw_default = 0x20,	/* if a default button draw a depressed rect around button */
     box_generate_colors = 0x40,	/* use border_brightest to compute other border cols */
-    box_gradient_bg = 0x80
+    box_gradient_bg = 0x80,
+    box_flag_mask = 0xFF
     };
 typedef struct gbox {
     unsigned char border_type;	
@@ -356,8 +357,6 @@ extern void GStringSetFallbackArray(const unichar_t **array,const unichar_t *mn,
 	const int *ires);
 unichar_t *GStringFileGetResource(char *filename, int index,unichar_t *mnemonic);
 extern void GResourceUseGetText(void);
-extern void *GResource_font_cvt(char *val, void *def);
-extern FontInstance *GResourceFindFont(char *resourcename,FontInstance *deffont);
 
 void GGadgetDestroy(GGadget *g);
 void GGadgetSetVisible(GGadget *g,int visible);
@@ -600,11 +599,6 @@ GGadget *CreateFileChooser(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *CreateGadgets(struct gwindow *base, GGadgetCreateData *gcd);
 
 GTextInfo **GTextInfoArrayFromList(GTextInfo *ti, uint16 *cnt);
-typedef struct gresimage {
-    GImage *image;
-    char *filename;
-} GResImage;
-GResImage *GGadgetResourceFindImage(char *name, GImage *def);
 
 void InitImageCache();
 void ClearImageCache();

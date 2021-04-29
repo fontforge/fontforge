@@ -31,6 +31,7 @@
 #include "fontforgeui.h"
 #include "fvfonts.h"
 #include "gkeysym.h"
+#include "gresedit.h"
 #include "search.h"
 #include "splineutil.h"
 #include "ustring.h"
@@ -53,6 +54,11 @@ static SearchView *searcher=NULL;
 #define CID_TopBox	1010
 #define CID_Fuzzy	1011
 #define CID_Endpoints	1012
+
+GResFont searchview_font = GRESFONT_INIT("400 12pt " SANS_UI_FAMILIES);
+GResFont searchview_boldfont = GRESFONT_INIT("700 12pt " SANS_UI_FAMILIES);
+extern GBox _ggadget_Default_Box;
+#define MAIN_FOREGROUND (_ggadget_Default_Box.main_foreground)
 
 static double old_fudge = .001;
 
@@ -365,18 +371,18 @@ static void SVDraw(SearchView *sv, GWindow pixmap, GEvent *event) {
     else
 	GDrawSetFont(pixmap,sv->bold);
     GDrawDrawText8(pixmap,10,sv->mbh+5+sv->as,
-	    _("Search Pattern:"),-1,0);
+	    _("Search Pattern:"),-1,MAIN_FOREGROUND);
     if ( sv->cv_rpl.inactive )
 	GDrawSetFont(pixmap,sv->plain);
     else
 	GDrawSetFont(pixmap,sv->bold);
     GDrawDrawText8(pixmap,sv->rpl_x,sv->mbh+5+sv->as,
-	    _("Replace Pattern:"),-1,0);
+	    _("Replace Pattern:"),-1,MAIN_FOREGROUND);
     r.x = 10-1; r.y=sv->cv_y-1;
     r.width = sv->cv_width+1; r.height = sv->cv_height+1;
-    GDrawDrawRect(pixmap,&r,0);
+    GDrawDrawRect(pixmap,&r,MAIN_FOREGROUND);
     r.x = sv->rpl_x-1;
-    GDrawDrawRect(pixmap,&r,0);
+    GDrawDrawRect(pixmap,&r,MAIN_FOREGROUND);
 }
 
 static void SVCheck(SearchView *sv) {
@@ -644,11 +650,9 @@ SearchView *SVCreate(FontView *fv) {
     GGadgetCreateData gcd[14], boxes[6], *butarray[14], *allowarray[6],
 	    *fudgearray[4], *halfarray[3], *varray[14];
     GTextInfo label[14];
-    FontRequest rq;
     int as, ds, ld;
     char fudgebuf[20];
     int k, sel_pos, efdo_pos;
-    static GFont *plainfont = NULL, *boldfont=NULL;
 
     if ( searcher!=NULL ) {
 	if ( SVAttachFV(fv,true)) {
@@ -675,19 +679,8 @@ return( NULL );
     sv->gw = gw = GDrawCreateTopWindow(NULL,&pos,sv_e_h,&sv->cv_srch,&wattrs);
     SVSetTitle(sv);
 
-    if ( plainfont==NULL ) {
-	memset(&rq,0,sizeof(rq));
-	rq.utf8_family_name = SANS_UI_FAMILIES;
-	rq.point_size = 12;
-	rq.weight = 400;
-	plainfont = GDrawInstanciateFont(NULL,&rq);
-	plainfont = GResourceFindFont("SearchView.Font",plainfont);
-	GDrawDecomposeFont(plainfont, &rq);
-	rq.weight = 700;
-	boldfont = GDrawInstanciateFont(NULL,&rq);
-	boldfont = GResourceFindFont("SearchView.BoldFont",boldfont);
-    }
-    sv->plain = plainfont; sv->bold = boldfont;
+    sv->plain = searchview_font.fi;
+    sv->bold = searchview_boldfont.fi;
     GDrawWindowFontMetrics(sv->gw,sv->plain,&as,&ds,&ld);
     sv->fh = as+ds; sv->as = as;
 

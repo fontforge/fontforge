@@ -30,6 +30,7 @@
 #include "fontforgeui.h"
 #include "fvfonts.h"
 #include "gkeysym.h"
+#include "gresedit.h"
 #include "groups.h"
 #include "namelist.h"
 #include "splineutil.h"
@@ -39,7 +40,7 @@
 #include <math.h>
 #include <unistd.h>
 
-
+GResFont groups_font = GRESFONT_INIT("400 12pt " SANS_UI_FAMILIES);
 
 /******************************************************************************/
 /******************************** Group Widget ********************************/
@@ -237,7 +238,7 @@ static void GroupWExpose(struct groupdlg *grp,GWindow pixmap,GRect *rect) {
     while ( group!=NULL ) {
 	r.y = y-grp->as+1;
 	r.x = 5+8*depth - grp->off_left;
-	fg = group->selected ? 0xff0000 : 0x000000;
+	fg = group->selected ? GDrawGetWarningForeground(NULL) : GDrawGetDefaultForeground(NULL);
 	if ( group->glyphs==NULL ) {
 	    GDrawDrawRect(pixmap,&r,fg);
 	    GDrawDrawLine(pixmap,r.x+2,r.y+grp->as/2,r.x+grp->as-2,r.y+grp->as/2,
@@ -549,23 +550,13 @@ return( true );
 }
 
 static void GroupWCreate(struct groupdlg *grp,GRect *pos) {
-    FontRequest rq;
     int as, ds, ld;
     GGadgetCreateData gcd[5];
     GTextInfo label[4];
     int sbsize = GDrawPointsToPixels(NULL,_GScrollBar_Width);
     GWindowAttrs wattrs;
-    static GFont *font=NULL;
 
-    if ( font==NULL ) {
-	memset(&rq,'\0',sizeof(rq));
-	rq.utf8_family_name = SANS_UI_FAMILIES;
-	rq.point_size = 12;
-	rq.weight = 400;
-	font = GDrawInstanciateFont(grp->gw,&rq);
-	font = GResourceFindFont("Groups.Font",font);
-    }
-    grp->font = font;
+    grp->font = groups_font.fi;
     GDrawWindowFontMetrics(grp->gw,grp->font,&as,&ds,&ld);
     grp->fh = as+ds; grp->as = as;
 
@@ -574,7 +565,7 @@ static void GroupWCreate(struct groupdlg *grp,GRect *pos) {
     wattrs.mask = wam_events|wam_cursor/*|wam_bordwidth|wam_bordcol*/;
     wattrs.event_masks = ~0;
     wattrs.border_width = 1;
-    wattrs.border_color = 0x000000;
+    wattrs.border_color = GDrawGetDefaultForeground(NULL);
     wattrs.cursor = ct_pointer;
     pos->x = 0; pos->y = 0;
     pos->width -= sbsize; pos->height = grp->lines_page*grp->fh;

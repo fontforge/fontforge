@@ -35,6 +35,7 @@
 #include "fvcomposite.h"
 #include "fvfonts.h"
 #include "gkeysym.h"
+#include "gresedit.h"
 #include "lookups.h"
 #include "namelist.h"
 #include "splinefill.h"
@@ -48,6 +49,8 @@
 #include <math.h>
 
 extern int lookup_hideunused;
+
+GResFont glyphinfo_font = GRESFONT_INIT("400 12pt " MONO_UI_FAMILIES);
 
 static int last_gi_aspect = 0;
 
@@ -4336,8 +4339,6 @@ void SCCharInfo(SplineChar *sc,int deflayer, EncMap *map,int enc) {
     GTabInfo aspects[17];
     static GBox smallbox = { bt_raised, bs_rect, 2, 1, 0, 0, 0, 0, 0, 0, COLOR_DEFAULT, COLOR_DEFAULT, 0, 0, 0, 0, 0, 0, 0 };
     static int boxset=0;
-    FontRequest rq;
-    static GFont *font=NULL;
 
     CharInfoInit();
 
@@ -5275,16 +5276,8 @@ return;
 
 	GHVBoxFitWindow(mbox[0].ret);
 
-	if ( font==NULL ) {
-	    memset(&rq,0,sizeof(rq));
-	    rq.utf8_family_name = MONO_UI_FAMILIES;
-	    rq.point_size = 12;
-	    rq.weight = 400;
-	    font = GDrawInstanciateFont(ci->gw,&rq);
-	    font = GResourceFindFont("GlyphInfo.Font",font);
-	}
 	for ( i=0; i<5; ++i )
-	    GGadgetSetFont(psgcd[i][0].ret,font);
+	    GGadgetSetFont(psgcd[i][0].ret,glyphinfo_font.fi);
 	for ( i=0; i<2; ++i ) {
 	    GCompletionFieldSetCompletion(vargcd[i][1].ret,CI_GlyphNameCompletion);
 	    GCompletionFieldSetCompletionMode(vargcd[i][1].ret,true);

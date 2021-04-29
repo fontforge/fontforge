@@ -363,7 +363,7 @@ static void FigurePluginList(struct plg_data *d) {
         ti[i]->text = pluginDescString(pe, &has_err);
         ti[i]->fg = ti[i]->bg = COLOR_DEFAULT;
         if (has_err) {
-            ti[i]->fg = COLOR_CREATE(0xBD, 0x43, 0x37);
+            ti[i]->fg = GDrawGetWarningForeground(GDrawGetDisplayOfWindow(d->gw));
         }
         ti[i]->userdata = pe;
     }

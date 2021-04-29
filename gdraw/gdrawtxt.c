@@ -29,13 +29,22 @@
 
 #include "fontP.h"
 #include "gdrawP.h"
+#include "gresource.h"
 #include "gxcdrawP.h"
 #include "ustring.h"
+
+extern GResFont _ggadget_default_font;
 
 FontInstance *GDrawSetFont(GWindow gw, FontInstance *fi) {
     FontInstance *old = gw->ggc->fi;
     gw->ggc->fi = fi;
 return( old );
+}
+
+FontInstance *GDrawSetDefaultFont(GWindow gw) {
+    FontInstance *old = gw->ggc->fi;
+    gw->ggc->fi = _ggadget_default_font.fi;
+    return old;
 }
 
 FontInstance *GDrawInstanciateFont(GWindow gw, FontRequest *rq) {
@@ -54,7 +63,6 @@ FontInstance *GDrawInstanciateFont(GWindow gw, FontRequest *rq) {
 
     fi = calloc(1,sizeof(struct font_instance));
     fi->rq = *rq;
-    fi->rq.family_name = u_copy( fi->rq.family_name );
     fi->rq.utf8_family_name = copy( fi->rq.utf8_family_name );
 
 return( fi );

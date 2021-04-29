@@ -32,6 +32,7 @@
 #include "bitmapchar.h"
 #include "fontforgeui.h"
 #include "gkeysym.h"
+#include "gresedit.h"
 #include "splinefill.h"
 #include "splinefont.h"
 #include "ustring.h"
@@ -43,6 +44,11 @@
 extern GBox _ggadget_Default_Box;
 #define ACTIVE_BORDER   (_ggadget_Default_Box.active_border)
 #define MAIN_FOREGROUND (_ggadget_Default_Box.main_foreground)
+extern Color showatt_selcol; // Yes this is cheating
+extern Color fi_originlinescol; // So is this
+extern Color kernclass_classfgcol; // and this
+
+GResFont bdfprop_font = GRESFONT_INIT("400 10pt " SANS_UI_FAMILIES);
 
 struct bdf_dlg_font {
     int old_prop_cnt;
@@ -520,7 +526,7 @@ static void BdfP_Expose(struct bdf_dlg *bd, GWindow pixmap) {
 	    GDrawDrawText8(pixmap,bd->value_x+2,i*(bd->fh+1)+bd->as,buffer,-1,MAIN_FOREGROUND);
 	  break;
 	}
-	GDrawDrawLine(pixmap,0,i*(bd->fh+1)+bd->fh,bd->vwidth,i*(bd->fh+1)+bd->fh,0x808080);
+	GDrawDrawLine(pixmap,0,i*(bd->fh+1)+bd->fh,bd->vwidth,i*(bd->fh+1)+bd->fh,fi_originlinescol);
     }
     if ( i<page ) {
 /* GT: I am told that the use of "|" to provide contextual information in a */
@@ -539,7 +545,7 @@ static void BdfP_Expose(struct bdf_dlg *bd, GWindow pixmap) {
 /* GT: word is used for the latin script and the latin language) and that you, as */
 /* GT: a translator may need to ask me to disambiguate more strings. Please do so: */
 /* GT:      <pfaedit@users.sourceforge.net> */
-	GDrawDrawText8(pixmap,4,i*(bd->fh+1)+bd->as,S_("Property|New..."),-1,0xff0000);
+	GDrawDrawText8(pixmap,4,i*(bd->fh+1)+bd->as,S_("Property|New..."),-1,showatt_selcol);
 	GDrawDrawLine(pixmap,0,i*(bd->fh+1)+bd->fh,bd->vwidth,i*(bd->fh+1)+bd->fh, _ggadget_Default_Box.border_darker);
     }
     GDrawDrawLine(pixmap,bd->value_x,0,bd->value_x,bd->vheight, _ggadget_Default_Box.border_darker);
@@ -693,8 +699,8 @@ static int bdfp_e_h(GWindow gw, GEvent *event) {
     } else if ( event->type == et_expose ) {
 	GRect r;
 	GDrawGetSize(bd->v,&r);
-	GDrawDrawLine(gw,0,r.y-1,bd->width,r.y-1,0x808080);
-	GDrawDrawLine(gw,0,r.y+r.height,bd->width,r.y+r.height,0x808080);
+	GDrawDrawLine(gw,0,r.y-1,bd->width,r.y-1,fi_originlinescol);
+	GDrawDrawLine(gw,0,r.y+r.height,bd->width,r.y+r.height,fi_originlinescol);
     } else if ( event->type == et_char ) {
 return( BdfP_Char(bd,event));
     } else if ( event->type == et_resize ) {
@@ -715,11 +721,8 @@ void SFBdfProperties(SplineFont *sf, EncMap *map, BDFFont *thisone) {
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[10];
     GTextInfo label[9];
-    FontRequest rq;
-    static GFont *font = NULL;
     extern int _GScrollBar_Width;
     int sbwidth;
-    static unichar_t sans[] = { 'h','e','l','v','e','t','i','c','a',',','c','l','e','a','r','l','y','u',',','u','n','i','f','o','n','t',  '\0' };
     static GBox small = GBOX_EMPTY;
     GGadgetData gd;
     /* I don't use a MatrixEdit here because I want to be able to display */
@@ -781,15 +784,7 @@ return;
     bd.width = pos.width; bd.height = pos.height;
     bd.value_x = GDrawPointsToPixels(bd.gw,135);
 
-    if ( font==NULL ) {
-	memset(&rq,0,sizeof(rq));
-	rq.family_name = sans;
-	rq.point_size = 10;
-	rq.weight = 400;
-	font = GDrawInstanciateFont(gw,&rq);
-	font = GResourceFindFont("BDFProperties.Font",font);
-    }
-    bd.font = font;
+    bd.font = bdfprop_font.fi;
     {
 	int as, ds, ld;
 	GDrawWindowFontMetrics(gw,bd.font,&as,&ds,&ld);
@@ -889,7 +884,7 @@ return;
     bd.vsb = gcd[1].ret;
 
     small.main_background = small.main_foreground = COLOR_DEFAULT;
-    small.main_foreground = 0x0000ff;
+    small.main_foreground = kernclass_classfgcol;
     memset(&gd,'\0',sizeof(gd));
     memset(&label[0],'\0',sizeof(label[0]));
 
