@@ -1017,7 +1017,7 @@ return( true );
 return( false );
 }
 
-static int SameBaseAP(SplineChar *sc1,SplineChar *sc2,struct lookup_subtable *sub) {
+static int AsymmetricSameBaseAP(SplineChar *sc1,SplineChar *sc2,struct lookup_subtable *sub) {
     AnchorPoint *ap1, *ap2;
 
     for ( ap1=sc1->anchor; ap1!=NULL; ap1=ap1->next ) {
@@ -1034,10 +1034,15 @@ return( false );
 	    break;
 		}
 	    }
-return( ap2!=NULL );
+	    if ( ap2==NULL )
+return( false );
 	}
     }
-return( false );
+return( true );
+}
+
+static int SameBaseAP(SplineChar *sc1,SplineChar *sc2,struct lookup_subtable *sub) {
+    return AsymmetricSameBaseAP(sc1,sc2,sub) && AsymmetricSameBaseAP(sc2,sc1,sub);
 }
 
 static void dump_anchors(FILE *out,SplineFont *sf,struct lookup_subtable *sub) {
