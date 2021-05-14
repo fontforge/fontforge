@@ -61,13 +61,6 @@ jobs:
         env:
           CROWDIN_API_KEY: ${{ secrets.CROWDIN_API_KEY }}
         run: java -jar $DEPSPREFIX/crowdin-cli.jar -c .crowdin.yml upload
-      - name: Push AppImage to Bintray
-        if: matrix.target == 'Release' && github.ref == 'refs/heads/master' && github.repository == 'fontforge/fontforge' && github.event_name == 'push'
-        working-directory: repo/build
-        run: |
-          BINTRAY_URL=https://api.bintray.com/content/fontforge/fontforge/fontforge-travis/$(date +appimage-ci-%Y-%m-%d)
-          ls -1 FontForge-*-x86_64.AppImage | head -n1 | xargs -I{} curl --fail -T {} -ufontforge-ci-bot:${{ secrets.BINTRAY_TOKEN }} $BINTRAY_URL/{}
-          curl --fail -X POST -ufontforge-ci-bot:${{ secrets.BINTRAY_TOKEN }} $BINTRAY_URL/publish
       - name: Dist archive artifact
         uses: actions/upload-artifact@v2
         if: matrix.target == 'NoUI'
@@ -114,13 +107,6 @@ jobs:
       - name: Build App Bundle
         working-directory: repo/build
         run: ninja macbundle
-      - name: Push App Bundle to Bintray
-        if: matrix.target == 'Release' && github.ref == 'refs/heads/master' && github.repository == 'fontforge/fontforge' && github.event_name == 'push'
-        working-directory: repo/build/osx
-        run: |
-          BINTRAY_URL=https://api.bintray.com/content/fontforge/fontforge/fontforge-travis/$(date +mac-ci-%Y-%m-%d)
-          ls -1 FontForge-*.dmg | head -n1 | xargs -I{} curl --fail -T {} -ufontforge-ci-bot:${{ secrets.BINTRAY_TOKEN }} $BINTRAY_URL/{}
-          curl --fail -X POST -ufontforge-ci-bot:${{ secrets.BINTRAY_TOKEN }} $BINTRAY_URL/publish
       - name: App Bundle artifact
         uses: actions/upload-artifact@v2
         with:

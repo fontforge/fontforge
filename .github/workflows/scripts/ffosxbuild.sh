@@ -68,11 +68,4 @@ if [ ! -z "$CI" ]; then
         -srcfolder $APPDIR       \
         -ov        -format UDBZ  \
         $dmgname
-
-    # Update the bintray descriptor... sigh. If this fails, then oh well, no bintray
-    #echo "Updating the bintray descriptor..."
-    #sed -i '' s/ciXXXX/$(date +mac-ci-%Y-%m-%d)/g $SCRIPT_BASE/bintray_descriptor.json || true
-    #sed -i '' s/releaseXXXX/$(date +%Y-%m-%d)/g $SCRIPT_BASE/bintray_descriptor.json || true
-    #echo "Bintray descriptor:"
-    #cat $SCRIPT_BASE/bintray_descriptor.json
 fi

@@ -61,9 +61,9 @@ Note: `Appveyor` builds with the `FF_PORTABLE` flag, which changes various
 initialization and configuration search paths.
 
 CI via Github Actions also builds a Mac OS X bundle and a Linux AppImage.
-When those builds are successful they can be downloaded from:
+When those builds are successful they can be downloaded as per:
 
-    https://dl.bintray.com/fontforge/fontforge/
+    https://docs.github.com/en/actions/managing-workflow-runs/downloading-workflow-artifacts
 
 ## Translating FontForge
 We are trialling the use of Crowdin for handling translations. If you'd like to contribute translations for FontForge, please do so here: https://crowdin.com/project/fontforge
