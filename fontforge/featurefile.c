@@ -2276,6 +2276,7 @@ struct parseState {
     unsigned int in_vkrn: 1;
     unsigned int backedup: 1;
     unsigned int skipping: 1;
+    unsigned int in_ufo: 1;
     SplineFont *sf;
     struct scriptlanglist *def_langsyses;
     struct glyphclasses *classes; // TODO: This eventually needs to merge with the SplineFont group storage. For now, it needs to copy from it at first invocation.
@@ -2391,7 +2392,7 @@ static void fea_ParseTok(struct parseState *tok);
 
 static void fea_handle_include(struct parseState *tok) {
     FILE *in;
-    char namebuf[1025], *pt, *filename;
+    char namebuf[1025], *pt, *filename, *filename_deprecated;
     int ch;
 
     fea_ParseTok(tok);
@@ -2440,21 +2441,49 @@ return;
 return;
     }
 
-    if ( *namebuf=='/' ||
-	    ( pt = strrchr(tok->filename[tok->inc_depth],'/') )==NULL )
-	filename=copy(namebuf);
-    else {
-	*pt = '\0';
-	filename = GFileAppendFile(tok->filename[tok->inc_depth],namebuf,false);
-	*pt = '/';
+
+    pt = strrchr(tok->filename[tok->inc_depth],'/');
+    if ( pt != NULL ) *pt = '\0';
+    filename_deprecated = GFileAppendFile(tok->filename[tok->inc_depth],namebuf,false);
+    if ( pt != NULL ) *pt = '/';
+    if ( tok->in_ufo && *namebuf!='/' ) {
+        // we know this is a UFO's features.fea file
+        filename = GFileDirName(tok->filename[tok->inc_depth]);
+        char* filename_above = GFileAppendFile(filename, "..", false);
+        char* filename_fea = GFileAppendFile(filename_above, namebuf, false);
+        TRACE("fea_handle_include: FEA: %s, deprecated FEA: %s\n", filename_fea, filename_deprecated);
+        free(filename_above);
+        free(filename);
+        filename = filename_fea;
+    } else {
+        if ( *namebuf=='/' || pt == NULL ) {
+            filename = copy(namebuf);
+        } else {
+            filename = filename_deprecated;
+        }
     }
+
     in = fopen(filename,"r");
     if ( in==NULL ) {
-	LogError(_("Could not open include file (%s) on line %d of %s"),
-		filename, tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
-	++tok->err_count;
-	free(filename);
+        if ( filename != filename_deprecated ) {
+            free(filename);
+            filename = filename_deprecated;
+            in = fopen(filename,"r");
+        }
+        if ( in == NULL ) {
+            LogError(_("Could not open include file (%s) on line %d of %s"),
+                     filename, tok->line[tok->inc_depth], tok->filename[tok->inc_depth]);
+            ++tok->err_count;
+            free(filename);
 return;
+        } else {
+            LogError(_("Warning: FontForge's implementation of \
+include statements in UFO features.fea files was wrong. Please \
+correct your path `%s` as per the specification for guaranteed \
+future compatibility. (See GitHub issue №4629 for more info.)"), namebuf);
+        }
+    } else if ( filename != filename_deprecated ) {
+        free(filename_deprecated);
     }
 
     ++tok->inc_depth;
@@ -7309,6 +7338,10 @@ static void CopySplineFontGroupsForFeatureFile(SplineFont *sf, struct parseState
   }
 }
 
+static bool fea_isInUFO(char *filename) {
+    return g_regex_match_simple("^.*ufo[23]?[/\\\\]features.fea$", filename, 0, 0);
+}
+
 void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename) {
     struct parseState tok;
     struct glyphclasses *gc, *gcnext;
@@ -7316,10 +7349,12 @@ void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename) {
     struct namedvalue *nvr, *nvrnext;
 
     memset(&tok,0,sizeof(tok));
+
     tok.line[0] = 1;
     tok.filename[0] = filename;
     tok.inlist[0] = file;
     tok.base = 10;
+    tok.in_ufo = fea_isInUFO(filename);
     if ( sf->cidmaster ) sf = sf->cidmaster;
     tok.sf = sf;
     CopySplineFontGroupsForFeatureFile(sf, &tok);
