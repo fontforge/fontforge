@@ -9,12 +9,6 @@ if(UNIX)
   endforeach()
   install(FILES "${THEME}/scalable/org.fontforge.FontForge.svg" DESTINATION ${CMAKE_INSTALL_DATADIR}/icons/hicolor/scalable/apps)
 
-  install(
-    FILES
-      "${THEME}/32x32/org.fontforge.FontForge.png"
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/pixmaps
-  )
-
   file(STRINGS "${CMAKE_SOURCE_DIR}/po/LINGUAS" _langs)
   foreach(_lang ${_langs})
     list(APPEND _pofiles "${CMAKE_SOURCE_DIR}/po/${_lang}.po")
