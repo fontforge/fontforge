@@ -11,7 +11,6 @@ if(UNIX)
 
   install(
     FILES
-      "${THEME}/pixmaps/org.fontforge.FontForge.xpm"
       "${THEME}/32x32/org.fontforge.FontForge.png"
     DESTINATION ${CMAKE_INSTALL_DATADIR}/pixmaps
   )
