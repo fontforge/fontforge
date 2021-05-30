@@ -99,8 +99,8 @@ the appropriate glyph being determined by the letters around it. Here are four
 forms of the arabic character "seen" |arabic-seen|.
 
 .. |As| image:: /images/As.png
-.. |short-long-s| image:: /images/arabic-seen.png
-.. |arabic-seen| image:: /images/short-long-s.png
+.. |short-long-s| image:: /images/short-long-s.png
+.. |arabic-seen| image:: /images/arabic-seen.png
 
 
 What is an outline font? What is a bitmap font?

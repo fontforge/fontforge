@@ -2,13 +2,13 @@
 
 set -eo pipefail
 
+sudo apt-get remove python3-pip
 sudo add-apt-repository -y ppa:deadsnakes/ppa && sudo apt-get update -y
-sudo apt remove -y python3-pip
 sudo apt-get install -y autoconf automake libtool gcc g++ gettext \
     libjpeg-dev libtiff5-dev libpng-dev libfreetype6-dev libgif-dev \
     libx11-dev libgtk-3-dev libxml2-dev libpango1.0-dev libcairo2-dev \
     libbrotli-dev ninja-build cmake lcov $PYTHON-dev $PYTHON-venv
-sudo $PYTHON -m ensurepip
+curl https://bootstrap.pypa.io/get-pip.py | sudo $PYTHON
 
 PREFIX=$GITHUB_WORKSPACE/target
 DEPSPREFIX=$GITHUB_WORKSPACE/deps/install
