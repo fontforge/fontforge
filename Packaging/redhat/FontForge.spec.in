@@ -107,7 +107,6 @@ FontForge provides a complete suite of tools for producing high-quality typeface
 %defattr(-,root,root)
 %attr(0644,root,root) %{_datadir}/locale/*/LC_MESSAGES/FontForge.mo
 %attr(0644,root,root) %{_datadir}/icons/*/*/*/*
-%attr(0644,root,root) %{_datadir}/pixmaps/*
 %attr(0644,root,root) %{_datadir}/fontforge/hotkeys/*
 %attr(0644,root,root) %{_datadir}/fontforge/pixmaps/*
 %attr(0644,root,root) %{_datadir}/fontforge/prefs
