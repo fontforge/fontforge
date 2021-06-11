@@ -14,7 +14,7 @@ Use it to create, edit and convert fonts in OpenType, TrueType, UFO, CID-keyed, 
 The bug tracker is for _reporting bugs_, not for asking questions. Please direct questions to one of the following:
 
 * [Mailing list](https://sourceforge.net/p/fontforge/mailman/fontforge-users/)
-* [Live chat](https://webchat.freenode.net/?channel=#fontforge) &mdash; #fontforge on [Freenode](https://freenode.net/)
+* [Live chat](https://web.libera.chat/?channel=#fontforge) &mdash; #fontforge on [Libera](https://libera.chat/)
 
 # Installation & contributing
 
