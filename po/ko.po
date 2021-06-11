@@ -10,6 +10,7 @@
 # Juyewon <https://crowdin.com/profile/Juyewon>
 # suji8073 <https://crowdin.com/profile/suji8073>
 # 119dnwls <https://crowdin.com/profile/119dnwls>
+# Damheo Lee (Hurss) <leedheo@gmail.com>, 2021
 #
 msgid ""
 msgstr ""
@@ -75,7 +76,7 @@ msgid "font;fonts;editor;TTF;OTF;typeface;"
 msgstr "font;fonts;editor;TTF;OTF;typeface;"
 
 msgid "Additional arguments for autotrace program:"
-msgstr "autotrace프로그램에의 추가 인수:"
+msgstr "autotrace 프로그램에 대한 추가 인수:"
 
 msgid "Can't find autotrace"
 msgstr "autotrace를 찾을 수 없었습니다."
@@ -95,7 +96,7 @@ msgid "Nothing to trace"
 msgstr "추적 대상이 없습니다."
 
 msgid "Can't find mf"
-msgstr "mf를 실행할 수 없습니다"
+msgstr "mf를 실행할 수 없습니다."
 
 msgid ""
 "Can't find mf program -- metafont (set MF environment variable) or download "
@@ -104,11 +105,11 @@ msgid ""
 "  http://www.ctan.org/\n"
 "It's part of the TeX distribution"
 msgstr ""
-"프로그램mf를 찾을 수 없습니다― metafont(환경변수 MF에 설정)로 실행하거나,\n"
+"mf 프로그램을 찾을 수 없습니다. metafont(환경변수 MF에 설정)를 실행하거나,\n"
 "이것을 포함하는 TeX 배포판 \n"
 "  http://www.tug.org/\n"
 "  http://www.ctan.org/\n"
-"다운로드할 필요가 있습니다"
+"을 다운로드할 필요가 있습니다"
 
 msgid "Can't create temporary directory"
 msgstr "임시폴더를 생성할 수 없습니다."
@@ -117,7 +118,7 @@ msgid "Can't run mf"
 msgstr "mf를 실행할 수 없습니다."
 
 msgid "Could not read (or perhaps find) mf output file"
-msgstr "mf 출력파일을 읽을 수 없습니다(찾을 수 없었을지 모릅니다)."
+msgstr "mf 출력파일을 읽거나 찾을 수 없습니다."
 
 msgid "MetaFont exited with an error"
 msgstr "MetaFont가 비정상 종료하였습니다."
@@ -148,7 +149,7 @@ msgstr ""
 "무시되었습니다."
 
 msgid "Glyph too big"
-msgstr "글자의 모양이 너무 크다"
+msgstr "글자의 모양이 너무 큽니다."
 
 msgid "Spiros did not converge"
 msgstr "Spiros 가 수렴하지 않았습니다."
@@ -161,66 +162,66 @@ msgid "Attempt to regenerate a pixel size that has not been created (%d@%d)"
 msgstr "생성하지 않은 크기 (%d@%d) 비트맵을 다시 생성하려고 합니다."
 
 msgid "Missing Bitmap"
-msgstr "비트맵가 없습니다"
+msgstr "비트맵이 없습니다."
 
 msgid "Save Failed"
-msgstr "저장 실패 ."
+msgstr "저장 실패"
 
 msgid ""
 "I'm sorry this file is too complex for me to understand (or is erroneous, or "
 "is empty)"
 msgstr ""
-"죄송합니다만, 이 파일은 너무 복잡해 해석 할 수 없습니다(또는 오류를 포함하고 "
-"있거나 비어있습니다)"
+"죄송합니다. 이 파일은 너무 복잡해 해석 할 수 없습니다(또는 오류를 포함하고 있"
+"거나 비어있습니다)."
 
 msgid "Too Complex or Bad"
-msgstr "너무 복잡하거나 올바르지 않습니다"
+msgstr "너무 복잡하거나 올바르지 않습니다."
 
 msgid "Not a plate file"
-msgstr "플레이트 파일이 아니다."
+msgstr "플레이트 파일이 아닙니다."
 
 msgid ""
 "This does not seem to be a plate file\n"
 "First line wrong"
 msgstr ""
-"이것은 플레이트 파일이 아닌 것 같다.\n"
-"첫번째 줄이 잘못되었다."
+"이것은 플레이트 파일이 아닌 것 같습니다.\n"
+"첫번째 줄이 잘못되었습니다."
 
 msgid ""
 "This does not seem to be a plate file\n"
 "Expected left paren"
 msgstr ""
-"이것은 플레이트 파일이 아닌 것 같다.\n"
-"왼쪽 괄호로 예상된다."
+"이것은 플레이트 파일이 아닌 것 같습니다.\n"
+"왼쪽 괄호로 예상됩니다."
 
 msgid ""
 "This does not seem to be a plate file\n"
 "Expected one of 'voc[]z'"
 msgstr ""
-"이것은 플레이트 파일이 아닌 것 같다.\n"
-"'voc[]z'  중 하나로 예상된다"
+"이것은 플레이트 파일이 아닌 것 같습니다.\n"
+"'voc[]z'  중 하나로 예상됩니다."
 
 msgid ""
 "This does not seem to be a plate file\n"
 "Expected two real numbers"
 msgstr ""
-"이것은 플레이트 파일이 아닌 것 같다.\n"
-"두개의 실수로 예상된다."
+"이것은 플레이트 파일이 아닌 것 같습니다.\n"
+"두개의 실수(real number)로 예상됩니다."
 
 msgid ""
 "I'm sorry this file is too complex for me to understand (or is erroneous)"
 msgstr ""
-"죄송합니다만, 이 파일은 너무 복잡해 해석 할 수 없습니다(또는 오류를 포함하고 "
-"있습니다)"
+"죄송합니다. 이 파일은 너무 복잡해 해석 할 수 없습니다(또는 오류를 포함하고 있"
+"습니다)."
 
 msgid "Can't find the file"
 msgstr "파일을 찾을 수 없습니다."
 
 msgid "Bad xfig file"
-msgstr "xfig파일이 부적합합니다."
+msgstr "xfig파일이 부적절합니다."
 
 msgid "Bad image file"
-msgstr "이미지파일이 부적합합니다."
+msgstr "이미지파일이 부적절합니다."
 
 #, c-format
 msgid "Bad image file: %.100s"
@@ -238,13 +239,13 @@ msgid "More Images Than Selected Glyphs"
 msgstr "선택된 글리프의 수보다 많은 이미지가 있습니다."
 
 msgid "Bad Template"
-msgstr "템플릿이 부적합합니다."
+msgstr "템플릿이 부적절합니다."
 
 msgid "Bad template, no extension"
-msgstr "템플릿이 부적합합니다. 확장자가 없습니다."
+msgstr "템플릿이 부적절합니다. 확장자가 없습니다."
 
 msgid "Bad template, unrecognized format"
-msgstr "템플릿이 부적합합니다. 인식가능한 포맷이 아닙니다."
+msgstr "템플릿이 부적절합니다. 인식가능한 포맷이 아닙니다."
 
 msgid "Nothing Loaded"
 msgstr "아무것도 불러오지 않았습니다."
@@ -254,14 +255,14 @@ msgid "Unicode value (%x) not in font, ignored"
 msgstr "폰트에 포함되어있지 않은 Unicode값 (%x) 를 무시합니다."
 
 msgid "Unicode value not in font"
-msgstr "그 Unicode값은 폰트내에 없습니다."
+msgstr "해당 Unicode값은 폰트 내에 없습니다."
 
 #, c-format
 msgid "Encoding value (%x) not in font, ignored"
-msgstr "폰트내에 포함되어있지 않은 글자코드 (%x) 를 무시합니다."
+msgstr "폰트 내에 포함되어 있지 않은 글자코드 (%x) 를 무시합니다."
 
 msgid "Encoding value not in font"
-msgstr "글자코드가 폰트내에 없습니다."
+msgstr "글자코드가 폰트 내에 없습니다."
 
 #, c-format
 msgid "Bad image file, not a bitmap: %.100s"
@@ -274,7 +275,7 @@ msgid "_OK"
 msgstr "_OK"
 
 msgid "Bad Reference"
-msgstr "참조가 부적합합니다."
+msgstr "참조가 부적절합니다."
 
 #, c-format
 msgid ""
@@ -341,10 +342,10 @@ msgstr ""
 "른 폰트로는 불가능합니다.그래도 계속하시겠습니까?"
 
 msgid "Please don't do that"
-msgstr "해당 실행을 하지 말아야 한다."
+msgstr "해당 작업을 실행하지 마십시오."
 
 msgid "You may not paste a reference into this window"
-msgstr "당신은 이 창에 참조를 붙여넣을 수 없다."
+msgstr "이 창에는 참조를 붙여넣을 수 없습니다."
 
 msgid "Attempt to make a glyph that refers to itself"
 msgstr "자기자신을 참조하는 글리프 만들기를 시도하였습니다."
@@ -363,10 +364,10 @@ msgstr ""
 "요소(L)→폰트정보(F)를 이용해 가능하도록 설정해 주십시오."
 
 msgid "Could not find original glyph"
-msgstr "원래의 문자를 찾을 수 없다."
+msgstr "원본 글리프를 찾을 수 없습니다."
 
 msgid "Missing glyph"
-msgstr "문자가 존재하지 않습니다."
+msgstr "글리프가 존재하지 않습니다."
 
 msgid "_Cancel"
 msgstr "취소(_C)"
@@ -387,7 +388,7 @@ msgid "No Lookups"
 msgstr "검색 색인이 없음"
 
 msgid "No lookups to copy"
-msgstr "복사할 색인이 없다."
+msgstr "복사할 색인이 없습니다."
 
 msgid "Lookups"
 msgstr "검색"
@@ -402,7 +403,7 @@ msgid "Self-referential character"
 msgstr "글리프가 자기참조합니다."
 
 msgid "No selection\n"
-msgstr "선택 되지 않음.\n"
+msgstr "선택되지 않음.\n"
 
 msgid "Bitmap Paste"
 msgstr "비트맵 붙이기"
@@ -416,11 +417,11 @@ msgstr "%s를 열 수 없습니다.\n"
 
 #, c-format
 msgid "Failed to write %s\n"
-msgstr "%s 내보내기에 실패\n"
+msgstr "%s 내보내기 실패\n"
 
 #, c-format
 msgid "No glyph named %s, used as a pattern in %s\n"
-msgstr "%s라는 문자가 존재하지 않으며, %s에서 패턴으로 사용되었다.\n"
+msgstr "%s라는 문자가 존재하지 않으며, %s에서 패턴으로 사용되었습니다.\n"
 
 msgid "Auto Hinting Font..."
 msgstr "폰트를 자동힌트 처리 중..."
@@ -455,7 +456,7 @@ msgid "Please name this encoding"
 msgstr "이 인코딩에 이름을 붙여주십시오."
 
 msgid "Bad encoding file format"
-msgstr "인코딩파일 포맷이 부적합합니다."
+msgstr "인코딩파일 포맷이 부적절합니다."
 
 msgid ""
 "This file contains an unnamed encoding, which cannot be named in a script"
@@ -464,7 +465,7 @@ msgstr ""
 
 #, c-format
 msgid "Please name encoding %d in this file"
-msgstr "이 파일에서 인코딩 %d 이름을 지정해라"
+msgstr "이 파일에서 인코딩 %d 이름을 지정하세요."
 
 msgid "couldn't write encodings file\n"
 msgstr "인코딩파일에 출력할수 없었습니다\n"
@@ -486,7 +487,7 @@ msgstr ""
 "에서부터 다운로드해 주십시오."
 
 msgid "Bad cidmap file"
-msgstr "cidmap파일이 부적합합니다"
+msgstr "cidmap파일이 부적절합니다."
 
 msgid "_Search"
 msgstr "검색(_S)"
@@ -528,7 +529,7 @@ msgstr ""
 "필수는 아닙니다만, 이 파일이 있는 편이 좋은 처리가 몇가지 있습니다.\n"
 "아직 cidmap를 다운로드하지않았다면, \n"
 "http://FontForge.sourceforge.net/cidmaps.tgz\n"
-"에서 다운로드하요, gunzip 의 뒤에 tar 를 붙여\n"
+"에서 다운로드하십시오. gunzip과 untar를 이용하여 압축을 풀고 옮긴 다음\n"
 "  %.80s\n"
 "에 설치해 주십시오.\n"
 "\n"
@@ -1389,7 +1390,7 @@ msgstr "편집타입이 다른 폰트를 보간하려 합니다(예를들면 Typ
 
 #, c-format
 msgid "Bad bounding box for %s.\n"
-msgstr "%s의 바운딩 박스가 부적합합니다.\n"
+msgstr "%s의 바운딩 박스가 부적절합니다.\n"
 
 #, c-format
 msgid "Various specifications of PIXEL_SIZE do not match in %s"
@@ -4306,7 +4307,7 @@ msgid "This glyph contains different kerning pairs in different instances"
 msgstr "본 글리프는, 타 인스턴스과 다른 커닝 짝을 포함합니다"
 
 msgid "Bad Multiple Master Font"
-msgstr "멀티플마스터폰트가 부적합합니다"
+msgstr "멀티플마스터폰트가 부적절합니다"
 
 msgid "Various errors occurred at the selected glyphs"
 msgstr "선택한 글리프 중 다양한 에러가 발생했습니다"
@@ -4525,7 +4526,7 @@ msgstr "%s 의 Unicode 값 %x 에 해당하는 이름이 없습니다"
 
 #, c-format
 msgid "Bad name when parsing %s for unicode %x"
-msgstr "%s 의 Unicode 값 %x 에 해당 하는 이름이 부적합합니다"
+msgstr "%s 의 Unicode 값 %x 에 해당 하는 이름이 부적절합니다"
 
 #, c-format
 msgid "Multiple names when parsing %s for unicode %x"
@@ -5349,7 +5350,7 @@ msgid "Warning: Font Bucket version 4 treated as 0.\n"
 msgstr "경고: Font Bucket Version 의 4 는 0 로 처리.\n"
 
 msgid "Bad Metrics"
-msgstr "메트릭이 부적합합니다"
+msgstr "메트릭이 부적절합니다"
 
 msgid "Only the first 256 glyphs in the encoding will be used"
 msgstr "인코딩의 선두에 포함되는 256자만 사용됩니다"
@@ -5537,7 +5538,7 @@ msgid "Didn't understand \"%s\" in blended font defn"
 msgstr "혼합 글꼴 정의의 \"%s\"를 이해할 수 없다"
 
 msgid "Bad CharString. Does not include lenIV bytes.\n"
-msgstr "CharString이 부적합합니다. lenIV 의 바이트수가 포함되어있지 않습니다\n"
+msgstr "CharString이 부적절합니다. lenIV 의 바이트수가 포함되어있지 않습니다\n"
 
 #, c-format
 msgid "Duplicate definition of subroutine %d\n"
@@ -5557,13 +5558,13 @@ msgstr "부적합한 FD (%d) 가 CID %d 에 대입되어 있습니다.\n"
 
 #, c-format
 msgid "Bad CID offset for CID %d\n"
-msgstr "CID %d 의 CID 오프셋이 부적합합니다\n"
+msgstr "CID %d 의 CID 오프셋이 부적절합니다\n"
 
 msgid "Failed to parse the StartData command properly\n"
 msgstr "StartData 명령을 올바르게 해석 할 수 없었습니다 \n"
 
 msgid "Failed to parse the StartData command properly, bad count\n"
-msgstr "StartData명령을 올바르게 해석 할 수 없었습니다. 갯수가 부적합합니다\n"
+msgstr "StartData명령을 올바르게 해석 할 수 없었습니다. 갯수가 부적절합니다\n"
 
 msgid "Cannot open a temporary file\n"
 msgstr "임시파일을 열 수 없습니다\n"
@@ -5987,7 +5988,7 @@ msgstr ""
 "는 그 중 하나 ( 'BASE')을 읽습니다.\n"
 
 msgid "Bad Glyph Count"
-msgstr "글리프의 갯수이 부적합합니다"
+msgstr "글리프의 갯수이 부적절합니다"
 
 #, c-format
 msgid "Font file has bad glyph count field. maxp says: %d sizeof(loca)=>%d"
@@ -6006,7 +6007,7 @@ msgid "A PostScript name may not be a number"
 msgstr "숫자를 PostScript명으로 사용할 수 없습니다."
 
 msgid "Bad Font Name"
-msgstr "폰트명이 부적합합니다."
+msgstr "폰트명이 부적절합니다."
 
 #, c-format
 msgid ""
@@ -6105,7 +6106,7 @@ msgstr "복합자 %d 가 비어있습니다\n"
 #, c-format
 msgid "Bad flags value, implied MORE components at end of glyph %d\n"
 msgstr ""
-"플래그의 값이 부적합합니다. 글리프 %d 의 말미에 아직 구성요소가 남아 있습니"
+"플래그의 값이 부적절합니다. 글리프 %d 의 말미에 아직 구성요소가 남아 있습니"
 "다\n"
 
 #, c-format
@@ -6157,7 +6158,7 @@ msgstr ""
 #. GT: is bad. It is an index of many of the names used in the CFF font.
 #. GT: We hope the user will never see this.
 msgid "Bad CFF name INDEX\n"
-msgstr "CFF의 name INDEX가 부적합합니다\n"
+msgstr "CFF의 name INDEX가 부적절합니다\n"
 
 #, c-format
 msgid "Unexpected value in dictionary %d\n"
@@ -6220,7 +6221,7 @@ msgid "Unexpected charset format in cff: %d\n"
 msgstr "CFF에 예상치 못한 글자세트 포맷 %d가 사용되고 있습니다\n"
 
 msgid "Bad fdselect\n"
-msgstr "fdselect가 부적합합니다\n"
+msgstr "fdselect가 부적절합니다\n"
 
 #, c-format
 msgid "Didn't understand format for fdselect %d\n"
@@ -6258,12 +6259,12 @@ msgstr ""
 
 msgid "Invalid ttf hmtx table (or hhea), numOfLongMetrics is 0\n"
 msgstr ""
-"TTF의 hmtx (또는 hhea) 테이블이 부적합합니다. numOfLongMetrics가 0 으로 되어 "
+"TTF의 hmtx (또는 hhea) 테이블이 부적절합니다. numOfLongMetrics가 0 으로 되어 "
 "있습니다\n"
 
 msgid "Invalid ttf vmtx table (or vhea), numOfLongVerMetrics is 0\n"
 msgstr ""
-"TTF의 vmtx (또는 vhea) 테이블이 부적합합니다. numOvLongVerMetrics 가 0으로 되"
+"TTF의 vmtx (또는 vhea) 테이블이 부적절합니다. numOvLongVerMetrics 가 0으로 되"
 "어 있습니다\n"
 
 msgid "Bad encoding information in 'cmap' table."
@@ -6434,7 +6435,7 @@ msgstr ""
 "FontForge는 자동적으로 명칭변경를 수행합니다.\n"
 
 msgid "Invalid point match. Point would be after this reference.\n"
-msgstr "점의 매칭이 부적합합니다. 점은 참조 뒤에 있어야 합니다.\n"
+msgstr "점의 매칭이 부적절합니다. 점은 참조 뒤에 있어야 합니다.\n"
 
 #, c-format
 msgid ""
@@ -6506,7 +6507,7 @@ msgid "Invalid font count in TTC %s."
 msgstr "TTC %s의 글꼴이 유효하지 않습니다."
 
 msgid "Bad Apple Kern Class\n"
-msgstr "Apple 커닝클래스가 부적합합니다\n"
+msgstr "Apple 커닝클래스가 부적절합니다\n"
 
 #, c-format
 msgid "Class index out of range %d (must be <%d)\n"
@@ -6526,12 +6527,12 @@ msgstr "범위테이블의 도중에 파일이 끝나있습니다\n"
 
 #, c-format
 msgid "Bad coverage table. Glyph %d out of range [0,%d)\n"
-msgstr "범위테이블이 부적합합니다. 글리프 %d 가 [0,%d) 의 범위 밖입니다\n"
+msgstr "범위테이블이 부적절합니다. 글리프 %d 가 [0,%d) 의 범위 밖입니다\n"
 
 #, c-format
 msgid "Bad coverage table. Glyph range %d-%d out of range [0,%d)\n"
 msgstr ""
-"범위테이블이 부적합합니다. 글리프범위 %d-%d 가 [0,%d) 의 범위 밖입니다\n"
+"범위테이블이 부적절합니다. 글리프범위 %d-%d 가 [0,%d) 의 범위 밖입니다\n"
 
 #, c-format
 msgid "Bad format for coverage table %d\n"
@@ -6542,12 +6543,12 @@ msgstr "클래스 정의 서브 테이블이 테이블의 끝을 초과합니다
 
 #, c-format
 msgid "Bad class def table. start=%d cnt=%d, max glyph=%d\n"
-msgstr "클래스정의테이블이 부적합합니다. 선두=%d, 갯수=%d, 최대글리프=%d\n"
+msgstr "클래스정의테이블이 부적절합니다. 선두=%d, 갯수=%d, 최대글리프=%d\n"
 
 #, c-format
 msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)\n"
 msgstr ""
-"클래스정의테이블이 부적합합니다. 글리프범위 %d-%d 가 범위 [0,%d) 를 넘어서 있"
+"클래스정의테이블이 부적절합니다. 글리프범위 %d-%d 가 범위 [0,%d) 를 넘어서 있"
 "습니다\n"
 
 #, c-format
@@ -6561,15 +6562,15 @@ msgstr ""
 "%d\n"
 
 msgid "Bad device table\n"
-msgstr "디바이스테이블이 부적합합니다\n"
+msgstr "디바이스테이블이 부적절합니다\n"
 
 #, c-format
 msgid "Bad pair position: glyphs %d & %d should have been < %d\n"
-msgstr " 짝위치지정이 부적합합니다: 글리프 %d 과  %d 는 %d 미만이어야 합니다\n"
+msgstr " 짝위치지정이 부적절합니다: 글리프 %d 과  %d 는 %d 미만이어야 합니다\n"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d should have been < %d\n"
-msgstr "커닝 짝이 부적합합니다: 글리프 %d 과  %d 는 %d 미만이어야 합니다\n"
+msgstr "커닝 짝이 부적절합니다: 글리프 %d 과  %d 는 %d 미만이어야 합니다\n"
 
 #. GT: This continues a multi-line error message, hence the leading space
 msgid " Bad pairwise kerning table, ignored\n"
@@ -6588,7 +6589,7 @@ msgid "Cursive-%d"
 msgstr "필기체-%d"
 
 msgid "Bad mark table.\n"
-msgstr "마크테이블이 부적합합니다.\n"
+msgstr "마크테이블이 부적절합니다.\n"
 
 msgid "Class out of bounds in GPOS mark sub-table\n"
 msgstr "GPOS 마크서브 테이블내의 클래스가 범위 밖입니다\n"
@@ -6598,13 +6599,13 @@ msgid "Class out of bounds in GPOS mark sub-table for mark %.30s\n"
 msgstr "마크 % .30s의 GPOS 마크 서브 테이블의 범위 외의 클래스\n"
 
 msgid "Bad base table.\n"
-msgstr "base테이블이 부적합합니다\n"
+msgstr "base테이블이 부적절합니다\n"
 
 msgid "Bad ligature base table.\n"
-msgstr "합음자base테이블이 부적합합니다.\n"
+msgstr "합음자base테이블이 부적절합니다.\n"
 
 msgid "Bad ligature anchor count.\n"
-msgstr "합음자고정점의 갯수이 부적합합니다.\n"
+msgstr "합음자고정점의 갯수이 부적절합니다.\n"
 
 msgid " Bad mark attachment table, ignored\n"
 msgstr "잘못된 마크 첨부 테이블 무시되었습니다\n"
@@ -6627,7 +6628,7 @@ msgstr "잘못된 컨텍스트 테이블 무시되었습니다\n"
 #, c-format
 msgid "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)\n"
 msgstr ""
-"문맥의존/문맥연쇄의존 서브테이블이 부적합합니다. 글리프 %d 가 범위 [0,%d) 를 "
+"문맥의존/문맥연쇄의존 서브테이블이 부적절합니다. 글리프 %d 가 범위 [0,%d) 를 "
 "넘어섭니다\n"
 
 #, c-format
@@ -6680,7 +6681,7 @@ msgstr "잘못된 단순 치환 테이블 무시되었습니다\n"
 
 #, c-format
 msgid "Bad substitution glyph: GID %d not less than %d\n"
-msgstr "변경할 글리프이 부적합합니다: GID %d 가 %d 미만의 값이 아닙니다\n"
+msgstr "변경할 글리프이 부적절합니다: GID %d 가 %d 미만의 값이 아닙니다\n"
 
 msgid "Unexpected end of file in GSUB sub-table.\n"
 msgstr "GSUB서브테이블의 도중에 파일이 끝나있습니다.\n"
@@ -6698,7 +6699,7 @@ msgstr ""
 #, c-format
 msgid "Bad Multiple/Alternate substitution glyph. GID %d not less than %d\n"
 msgstr ""
-"복수/선택가능 변경할 글리프이 부적합합니다. GID %d が가%d 미만이 아닙니다\n"
+"복수/선택가능 변경할 글리프이 부적절합니다. GID %d が가%d 미만이 아닙니다\n"
 
 msgid "Unexpected end of file in GSUB ligature sub-table.\n"
 msgstr "GSUB 합음자 서브테이블 의 도중에 파일이 끝나있습니다.\n"
@@ -6708,7 +6709,7 @@ msgstr "잘못된 합자 표 무시되었습니다\n"
 
 #, c-format
 msgid "Bad ligature glyph. GID %d not less than %d\n"
-msgstr "합음자글리프가 부적합합니다. GID %d가 %d 미만이 아닙니다\n"
+msgstr "합음자글리프가 부적절합니다. GID %d가 %d 미만이 아닙니다\n"
 
 #, c-format
 msgid ""
@@ -6728,7 +6729,7 @@ msgstr "합자 구성 요소의 문양이 올바르지 않습니다. GID %d %d �
 msgid ""
 "Bad reverse contextual chaining substitution glyph: %d is not less than %d\n"
 msgstr ""
-"전방문맥연쇄의존 변경할 글리프이 부적합합니다: %d 가 %d 미만이 아닙니다\n"
+"전방문맥연쇄의존 변경할 글리프이 부적절합니다: %d 가 %d 미만이 아닙니다\n"
 
 #, c-format
 msgid ""
@@ -6934,7 +6935,7 @@ msgstr ""
 "'mort'/'morx' 테이블 %d 의 경계를 넘어서는 치환대상의 글리프가 있습니다\n"
 
 msgid "Invalid ligature offset\n"
-msgstr "합음자오프셋이 부적합합니다\n"
+msgstr "합음자오프셋이 부적절합니다\n"
 
 #, c-format
 msgid "Attempt to make a ligature for glyph %d out of "
@@ -6959,13 +6960,13 @@ msgstr ""
 "이하의 글리프로부터 (존재하지 않는) 글리프 %d의 합음자를 생성하려고 합니다 : "
 
 msgid "Bad mort ligature table. Not long enough\n"
-msgstr "mort 합음자테이블이 부적합합니다. 길이가 부족\n"
+msgstr "mort 합음자테이블이 부적절합니다. 길이가 부족\n"
 
 msgid "Bad class in state machine.\n"
 msgstr "상태기계에 올바르지 않은 클래스가 포함되어 있습니다.\n"
 
 msgid "Bad glyph count in mort table.\n"
-msgstr "mort 테이블 내 글리프의 갯수가 부적합합니다.\n"
+msgstr "mort 테이블 내 글리프의 갯수가 부적절합니다.\n"
 
 msgid ""
 "It looks to me as though there's a morx sub-table with more than 1000\n"
@@ -7003,7 +7004,7 @@ msgstr "잘못된 케른 쌍: 글리프 %d 및 %d 은 (는) 음수가 아니어�
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d must be less than %d\n"
-msgstr "커닝 짝글리프 %d 과  %d 이 부적합합니다. %d미만이어야 합니다\n"
+msgstr "커닝 짝글리프 %d 과  %d 이 부적절합니다. %d미만이어야 합니다\n"
 
 #, c-format
 msgid "Bad kern pair: glyphs at %d & %d are null\n"
@@ -7193,7 +7194,7 @@ msgstr "로컬 tuple플래그와 공유 tuple플래그가 일치하지 않습니
 
 #, c-format
 msgid "Incorrect number of deltas in glyph %d (%s)\n"
-msgstr "글리프 %d (%s) 의 델타의 갯수가 부적합합니다\n"
+msgstr "글리프 %d (%s) 의 델타의 갯수가 부적절합니다\n"
 
 msgid ""
 "Hmm, the axis count in the 'gvar' table is different from that in the 'fvar' "
@@ -7226,7 +7227,7 @@ msgstr ""
 "  FontForge는 어느쪽도 지원하지 않습니다.\n"
 
 msgid "Incorrect number of deltas in cvt\n"
-msgstr "cvt 에 포함되는 delta의 갯수가 부적합합니다\n"
+msgstr "cvt 에 포함되는 delta의 갯수가 부적절합니다\n"
 
 msgid ""
 "Warning: 'cvar' contains intermediate tuple data.\n"
@@ -7672,7 +7673,7 @@ msgid "Tfm Save Failed"
 msgstr "Tfm저장 실패"
 
 msgid "Bad Extension"
-msgstr "확장자가 부적합합니다"
+msgstr "확장자가 부적절합니다"
 
 msgid "You must specify a standard type1 extension (.pfb or .pfa)"
 msgstr "표준 Type1확장자(.pfb 또는 .pfa)를 지정해야 합니다"
@@ -7684,7 +7685,7 @@ msgid "Saving Multiple PostScript Fonts"
 msgstr "복수 PostScript폰트를 저장 중"
 
 msgid "Bad Drawing Operation"
-msgstr "스케치 조작이 부적합합니다"
+msgstr "스케치 조작이 부적절합니다"
 
 msgid ""
 "This font contains at least one translucent layer, but type3 does not "
@@ -8584,7 +8585,7 @@ msgid "Bracketted value is too large"
 msgstr "괄호안의 값이 너무 큽니다"
 
 msgid "Bad glyph range specified in glyph comment subtable of PfEd table\n"
-msgstr "PfEd 테이블글리프메모 서브테이블에 지정된 글리프범위이 부적합합니다\n"
+msgstr "PfEd 테이블글리프메모 서브테이블에 지정된 글리프범위이 부적절합니다\n"
 
 #, c-format
 msgid "Invalid comment string (negative length?) in 'PfEd' table for glyph %s."
@@ -8767,7 +8768,7 @@ msgid "C0 Control Character"
 msgstr "C0 문자 제어"
 
 msgid "NUL, Default Character"
-msgstr "NUL, 기본 문자"
+msgstr "NUL (기본 문자)"
 
 msgid "Basic Latin"
 msgstr "기본 로마자"
@@ -8812,7 +8813,7 @@ msgid "Hebrew"
 msgstr "히브리 문자"
 
 msgid "Arabic"
-msgstr "아랍어"
+msgstr "아라비아 문자"
 
 msgid "Syriac"
 msgstr "시리아 문자"
@@ -8821,13 +8822,13 @@ msgid "Arabic Supplement"
 msgstr "아랍 문자 보충"
 
 msgid "NKo"
-msgstr "NKo"
+msgstr "응코 문자"
 
 msgid "Samaritan"
 msgstr "사마리아 문자"
 
 msgid "Samaritan, Punctuation"
-msgstr "사마리안 문자, 구두점"
+msgstr "사마리아 문자 구두점"
 
 msgid "Mandaic"
 msgstr "만다이아 문자"
@@ -8845,46 +8846,46 @@ msgid "Gujarati"
 msgstr "구자라트 문자"
 
 msgid "Oriya"
-msgstr "오리야어"
+msgstr "오리야 문자"
 
 msgid "Tamil"
-msgstr "타밀어"
+msgstr "타밀 문자"
 
 msgid "Telugu"
-msgstr "텔루구어"
+msgstr "텔루구 문자"
 
 msgid "Kannada"
-msgstr "칸나디어"
+msgstr "칸나다 문자"
 
 msgid "Malayalam"
-msgstr "말라얄람어"
+msgstr "말라얄람 문자"
 
 msgid "Sinhala"
-msgstr "싱할라어"
+msgstr "싱할라 문자"
 
 msgid "Thai"
-msgstr "태국어"
+msgstr "타이 문자"
 
 msgid "Lao"
-msgstr "라오어"
+msgstr "라오 문자"
 
 msgid "Tibetan"
-msgstr "티베트어"
+msgstr "티베트 문자"
 
 msgid "Myanmar"
-msgstr "미안마"
+msgstr "미얀마 문자"
 
 msgid "Georgian"
-msgstr "조지아어"
+msgstr "조지아 문자"
 
 msgid "Hangul Jamo, Choseong"
-msgstr "한글 자모, 초성"
+msgstr "한글 자모 초성"
 
 msgid "Hangul Jamo, Jungseong"
-msgstr "한글 자모, 중성"
+msgstr "한글 자모 중성"
 
 msgid "Hangul Jamo, Jongseong"
-msgstr "한글 자모, 종성"
+msgstr "한글 자모 종성"
 
 msgid "Ethiopic"
 msgstr "에티오피아어"
@@ -8899,7 +8900,7 @@ msgid "Unified Canadian Aboriginal Syllabics"
 msgstr "통일 캐나다 원주민 음절"
 
 msgid "Tagalog"
-msgstr "타갈로그어"
+msgstr "타갈로그 문자"
 
 msgid "Hanunóo"
 msgstr "하누누 문자"
@@ -8911,10 +8912,10 @@ msgid "Tagbanwa"
 msgstr "타그반와 문자"
 
 msgid "Khmer"
-msgstr "크메르어"
+msgstr "크메르 문자"
 
 msgid "Mongolian"
-msgstr "몽골어"
+msgstr "몽골 문자"
 
 msgid "Unified Canadian Aboriginal Syllabics Extended"
 msgstr "통합 캐나다 원주민 글자 확장"
@@ -8923,7 +8924,7 @@ msgid "Limbu"
 msgstr "림부 문자"
 
 msgid "Khmer Symbols"
-msgstr "크메르어 기호"
+msgstr "크메르 문자 기호"
 
 msgid "Buginese"
 msgstr "부기 문자"
@@ -8935,7 +8936,7 @@ msgid "Balinese"
 msgstr "발리 문자"
 
 msgid "Sundanese"
-msgstr "순다어"
+msgstr "순다 문자"
 
 msgid "Batak"
 msgstr "바탁 문자"
@@ -9013,22 +9014,22 @@ msgid "Technical Symbols Misc."
 msgstr "음악적 기술 기호"
 
 msgid "Control Pictures"
-msgstr "사진 대조"
+msgstr "제어 문자"
 
 msgid "Optical Character Recognition"
 msgstr "광학 문자 인식"
 
 msgid "Enclosed Alphanumerics"
-msgstr "포함된 영숫자"
+msgstr "원괄호 영숫자"
 
 msgid "Box Drawing"
-msgstr "상자 그림"
+msgstr "상자 그리기"
 
 msgid "Block Elements"
 msgstr "블록 요소"
 
 msgid "Geometric Shapes"
-msgstr "기하학적 모형"
+msgstr "기하학적 기호"
 
 msgid "Miscellaneous Symbols"
 msgstr "기타 기호"
@@ -9040,16 +9041,16 @@ msgid "Dingbats"
 msgstr "딩뱃"
 
 msgid "Zapf Dingbats"
-msgstr "자프 딩벳"
+msgstr "자프 딩뱃"
 
 msgid "Miscellaneous Mathematical Symbols-A"
-msgstr "기타 수학적 기호- A"
+msgstr "기타 수학 기호- A"
 
 msgid "Miscellaneous Math Symbols-A"
 msgstr "기타 수학 기호-A"
 
 msgid "Math Misc. Symbols-A"
-msgstr "수학 음악, 기호-A"
+msgstr "수학 기타 기호-A"
 
 msgid "Supplemental Arrows-A"
 msgstr "보조 화살표-A"
@@ -9070,10 +9071,10 @@ msgid "Miscellaneous Mathematical Symbols-B"
 msgstr "기타 수학 기호-B"
 
 msgid "Miscellaneous Math Symbols-B"
-msgstr "기타 산술 기호-B"
+msgstr "기타 수학 기호-B"
 
 msgid "Math Misc. Symbols-B"
-msgstr "수학 음악. 기호-B"
+msgstr "수학 기타 기호-B"
 
 msgid "Supplemental Mathematical Operators"
 msgstr "보충수학 연산자"
@@ -9094,22 +9095,22 @@ msgid "Symbols and Arrows Supplement"
 msgstr "기호와 화살표 부록"
 
 msgid "Alphabetic Extended"
-msgstr "알파벳의 확장"
+msgstr "알파벳 확장"
 
 msgid "Latin Extended-C"
 msgstr "로마자 확장-C"
 
 msgid "Coptic"
-msgstr "콥트 자"
+msgstr "콥트 문자"
 
 msgid "Georgian Supplement"
-msgstr "조지아 자"
+msgstr "조지아 문자"
 
 msgid "Tifinagh"
-msgstr "티피나그 자"
+msgstr "티피나그 문자"
 
 msgid "Ethiopic Extended"
-msgstr "에티오피아 확장 문자"
+msgstr "에티오피아 문자 확장"
 
 msgid "Cyrillic Extended-A"
 msgstr "키릴문자 확장-A"
@@ -9118,64 +9119,64 @@ msgid "Supplemental Punctuation"
 msgstr "보충 구두점"
 
 msgid "Punctuation Supplement"
-msgstr "임시 보충"
+msgstr "구두점 보충"
 
 msgid "CJK Radicals Supplement"
-msgstr "CJK의 근본적인 보충"
+msgstr "한중일 부수 보충"
 
 msgid "Kangxi Radicals"
-msgstr "Kangxi Radicals"
+msgstr "강희자전 부수"
 
 msgid "Ideographic Description Characters"
-msgstr "Idc"
+msgstr "한자 기술 문자"
 
 msgid "CJK Phonetics and Symbols"
-msgstr "한중일 통합 음석학 및 기호"
+msgstr "한중일 통합 구두점 및 기호"
 
 msgid "CJK Symbols and Punctuation"
-msgstr "한중일 통합 기호 및 구두좀"
+msgstr "한중일 통합 기호 및 구두점"
 
 msgid "Hangul Compatibility Jamo"
-msgstr "한글 호환성 Jamo"
+msgstr "한글 호환 자모"
 
 msgid "Kanbun"
 msgstr "간분(일본 한문)"
 
 msgid "Bopomofo Extended"
-msgstr "주음 부호 확장 영역 문자"
+msgstr "주음 부호 확장"
 
 msgid "CJK Strokes"
-msgstr "CJK 스트로크"
+msgstr "한중일 필획"
 
 msgid "Katakana Phonetic Extensions"
 msgstr "가타카나 음성 확장"
 
 msgid "Enclosed CJK Letters and Months"
-msgstr "한중일 괄호 문자가 동반 되어 있습니다"
+msgstr "한중일 괄호 문자 및 날짜"
 
 msgid "CJK Enclosed Letters and Months"
-msgstr "한중일 괄호 문자"
+msgstr "한중일 괄호 문자 및 날짜"
 
 msgid "CJK Compatibility"
 msgstr "한중일 통합 호환성"
 
 msgid "CJK Unified Ideographs Extension A"
-msgstr "한중일 통합 문자 확장 A"
+msgstr "한중일 통합 한자 확장 A"
 
 msgid "Yijing Hexagram Symbols"
 msgstr "역경 6줄 기호"
 
 msgid "CJK Unified Ideographs"
-msgstr "한중일 통합 문자"
+msgstr "한중일 통합 한자"
 
 msgid "Yi Syllables"
-msgstr "Yi Syllables"
+msgstr "이족 문자 음절"
 
 msgid "Yi"
-msgstr "Yi"
+msgstr "이족 문자"
 
 msgid "Yi Radicals"
-msgstr "Yi Radicals"
+msgstr "이족 문자 부수"
 
 msgid "Vai"
 msgstr "Vai"
@@ -9184,34 +9185,34 @@ msgid "Cyrillic Extended-B"
 msgstr "키릴문자 확장-B"
 
 msgid "Modifier Tone Letters"
-msgstr "톤 문자 수정자"
+msgstr "성조 조정 문자"
 
 msgid "Latin Extended-D"
 msgstr "로마자 확장-D"
 
 msgid "Syloti Nagri"
-msgstr "실헤티 나가리 자"
+msgstr "실헤티 나가리 문자"
 
 msgid "Common Indic Number Forms"
 msgstr "일반적 인도 번호 양식"
 
 msgid "Phags-pa"
-msgstr "파스파 자"
+msgstr "파스파 문자"
 
 msgid "Devanagari Extended"
-msgstr "데바나가리 확장 문자"
+msgstr "데바나가리 확장"
 
 msgid "Hangul Jamo Extended-A"
 msgstr "한글 자모 확장-A"
 
 msgid "Javanese"
-msgstr "자바어"
+msgstr "자바 문자"
 
 msgid "Myanmar Extended-B"
 msgstr "미얀마 문자 확장-B"
 
 msgid "Cham"
-msgstr "참 자"
+msgstr "참 문자"
 
 msgid "Myanmar Extended-A"
 msgstr "미얀마 문자 확장-A"
@@ -9226,7 +9227,7 @@ msgid "Latin Extended-E"
 msgstr "로마자 확장-E"
 
 msgid "Cherokee Supplement"
-msgstr "체로키어 보충"
+msgstr "체로키문자 보충"
 
 msgid "Hangul Syllables"
 msgstr "한글 음절"
@@ -9235,22 +9236,22 @@ msgid "Hangul Jamo Extended-B"
 msgstr "한글 자모 확장-B"
 
 msgid "High Surrogates"
-msgstr "상위 Surrogates"
+msgstr "상위 서러게이트"
 
 msgid "High Surrogate"
-msgstr "상위 Surrogate"
+msgstr "상위 서러게이트"
 
 msgid "Surrogate High"
-msgstr "써로게이트 높게"
+msgstr "서러게이트 상단"
 
 msgid "Surrogate High, Non Private Use"
-msgstr "써로게이트 높게, 개인용을 사용하지 마세요"
+msgstr "서러게이트 상단 비개인용"
 
 msgid "Surrogate High, Private Use"
-msgstr "써로게이트 높게, 개인용을 사용 하세요"
+msgstr "서러게이트 상단, 개인용
 
 msgid "Low Surrogates"
-msgstr "하위 Surrogates"
+msgstr "하위 서러게이트"
 
 msgid "Private Use Area"
 msgstr "개인용 영역"
@@ -9274,19 +9275,19 @@ msgid "Latin Ligatures"
 msgstr "라틴어 합음자"
 
 msgid "Armenian Ligatures"
-msgstr "아르메니아의 결합"
+msgstr "아르메니아 문자 결합형"
 
 msgid "Hebrew Ligatures/Pointed Letters"
 msgstr "히브리어 통합/핵심 문자"
 
 msgid "Arabic Presentation Forms-A"
-msgstr "아랍어 프리젠테이션 양식-A"
+msgstr "아랍어 표현 양식-A"
 
 msgid "Variation Selectors"
 msgstr "변형 선택기"
 
 msgid "Vertical Forms"
-msgstr "수직형"
+msgstr "수직 형태"
 
 msgid "Combining Half Marks"
 msgstr "반점 결합"
@@ -9298,7 +9299,7 @@ msgid "Small Form Variants"
 msgstr "소문자 변형"
 
 msgid "Arabic Presentation Forms-B"
-msgstr "아랍어 프리젠테이션 양식-B"
+msgstr "아랍어 표현 양식-B"
 
 msgid "Byte Order Mark"
 msgstr "바이트 순서 표시"
@@ -9337,7 +9338,7 @@ msgid "Not a Unicode Character"
 msgstr "유니코드 문자가 아님"
 
 msgid "Signature Mark"
-msgstr "시그니처 기호"
+msgstr "서명 기호"
 
 msgid "Unicode Supplementary Multilingual Plane"
 msgstr "다국어 보조 기본 유니코드"
@@ -9373,16 +9374,16 @@ msgid "Alphabetic and syllabic LTR scripts"
 msgstr "영문자 및 LTR 스크립트 음절자"
 
 msgid "Old Italic"
-msgstr "오래된 이탤릭체"
+msgstr "오래된 이탤릭"
 
 msgid "Old Permic"
-msgstr "오래된 페르믹어"
+msgstr "오래된 페르믹"
 
 msgid "Ugaritic"
-msgstr "우가릿 자"
+msgstr "우가릿 문자"
 
 msgid "Old Persian"
-msgstr "오래된 페르시아어"
+msgstr "오래된 페르시아 문자"
 
 msgid "Deseret"
 msgstr "데저렛 문자"
@@ -9394,7 +9395,7 @@ msgid "Cypriot Syllabary"
 msgstr "키프로스 음절자"
 
 msgid "Phoenician"
-msgstr "파이스토스(원반) 자"
+msgstr "페니키아 문자"
 
 msgid "Kharoshthi"
 msgstr "카로슈티 문자"
@@ -9406,40 +9407,40 @@ msgid "Rumi Numeral Symbols"
 msgstr "루미 숫자 기호"
 
 msgid "Yezidi"
-msgstr "예지디 자"
+msgstr "예지드 문자"
 
 msgid "Chorasmian"
-msgstr "합창의"
+msgstr "Chorasmian"
 
 msgid "Elymaic"
-msgstr "엘리 마 문자"
+msgstr "엘리마 문자"
 
 msgid "Brahmi"
-msgstr "브라흐마 자"
+msgstr "브라흐마 문자"
 
 msgid "Sinhala Archaic Numbers"
 msgstr "신할라 고대 숫자"
 
 msgid "Mongolian Supplement"
-msgstr "몽골어 보충"
+msgstr "몽골문자 보충"
 
 msgid "Dives Akuru"
 msgstr "Dives Akuru"
 
 msgid "Nandinagari"
-msgstr "난디나가리 자"
+msgstr "난디나가리 문자"
 
 msgid "Lisu Supplement"
-msgstr "리수어 보충"
+msgstr "리수 보충"
 
 msgid "Tamil Supplement"
-msgstr "타밀 보충"
+msgstr "타밀문자 보충"
 
 msgid "Cuneiform and other ancient scripts"
-msgstr "설형문자와 다른 고대 문자"
+msgstr "쐐기문자 및 기타 고대 문자"
 
 msgid "Cuneiform"
-msgstr "쐐기 문자"
+msgstr "쐐기문자"
 
 msgid "Cuneiform Numbers and Punctuation"
 msgstr "설형 문자 숫자와 문자 부호"
@@ -9454,19 +9455,19 @@ msgid "Egyptian Hieroglyph Format Controls"
 msgstr "이집트 상형문자 형식 제어"
 
 msgid "Bamum Supplement"
-msgstr "바뭄어 보충"
+msgstr "바뭄문자 보충"
 
 msgid "Ideographic Symbols and Punctuation"
-msgstr "이집트문자 기호와 분장 부호"
+msgstr "이집트 상형문자 기호 및 부호"
 
 msgid "Tangut Components"
-msgstr "탕쿠르족 구성"
+msgstr "서하문자 부수"
 
 msgid "Khitan Small Script"
-msgstr "거란의 작은 대본"
+msgstr "거란 소전"
 
 msgid "Tangut Supplement"
-msgstr "탕쿠르족어 보충"
+msgstr "서하문자 보충"
 
 msgid "Kana Supplement"
 msgstr "가나 보충"
@@ -9481,13 +9482,13 @@ msgid "Shorthand Format Controls"
 msgstr "속기 형식 제어"
 
 msgid "Byzantine Musical Symbols"
-msgstr "비잔틴 음악적 기호"
+msgstr "비잔틴 음악 기호"
 
 msgid "Musical Symbols"
-msgstr "음악적인 기호"
+msgstr "음악 기호"
 
 msgid "Ancient Greek Musical Notation"
-msgstr "고대 그리스 음악적 표기법"
+msgstr "고대 그리스 음악 표기"
 
 msgid "Mayan Numerals"
 msgstr "마야 숫자"
@@ -9496,16 +9497,16 @@ msgid "Tai Xuan Jing Symbols"
 msgstr "태현경 기호"
 
 msgid "Counting Rod Numerals"
-msgstr "카운팅 로드 숫자"
+msgstr "산자 숫자"
 
 msgid "Chinese Counting Rod Numerals"
-msgstr "중국 카운팅 로드 숫자"
+msgstr "중국 산자 숫자"
 
 msgid "Glagolitic Supplement"
-msgstr "글라골루어 보충"
+msgstr "글라골문자 보충"
 
 msgid "Nyiakeng Puachue Hmong"
-msgstr "니야켄그 푸아추에 흐몽"
+msgstr "니야켕 푸아추에 몽"
 
 msgid "Wancho"
 msgstr "완초"
@@ -9529,10 +9530,10 @@ msgid "Playing Cards"
 msgstr "카드 놀이"
 
 msgid "Enclosed Alphanumeric Supplement"
-msgstr "영숫자 부록을 동반한다"
+msgstr "영숫자 원문자 보충"
 
 msgid "Enclosed Ideographic Supplement"
-msgstr "표의 문자 부록을 동반한다"
+msgstr "표의 원문자 보충"
 
 msgid "Miscellaneous Symbols and Pictographs"
 msgstr "기타 기호 및 포토 그래프"
@@ -9544,7 +9545,7 @@ msgid "Ornamental Dingbats"
 msgstr "장식 딩벳"
 
 msgid "Transport and Map Symbols"
-msgstr "전송 및 지도 기호"
+msgstr "교통 및 지도 기호"
 
 msgid "Alchemical Symbols"
 msgstr "연금술 기호"
@@ -10106,7 +10107,7 @@ msgid "Not ASCII"
 msgstr "ASCII가 아닙니다"
 
 msgid "Must be a number"
-msgstr "수치여야 합니다"
+msgstr "숫자여야 합니다"
 
 #. GT: I am told that the use of "|" to provide contextual information in a
 #. GT: gettext string is non-standard. However it is documented in section
@@ -10347,7 +10348,7 @@ msgid "Skew..."
 msgstr "기울기..."
 
 msgid "Font|_New"
-msgstr "새롭게 폰트를 만들다"
+msgstr "새 폰트(_N)"
 
 msgid "_Open"
 msgstr "열기(_O)"
@@ -12302,7 +12303,7 @@ msgid "PointNumbers|_None"
 msgstr "없음(_N)"
 
 msgid "_TrueType"
-msgstr "올바른 타입(_T)"
+msgstr "트루타입(_T)"
 
 msgid "_PostScript®"
 msgstr "_PostScript®"
@@ -12514,7 +12515,7 @@ msgid "There are no entries in the Sequence/Lookup List, was this intentional?"
 msgstr "시퀀스 / 조회 목록에 항목이 없습니다. 이것은 의도적 인 것이 었습니까?"
 
 msgid "Bad Sequence/Lookup List"
-msgstr "시퀀스/룩업 리스트가 부적합합니다"
+msgstr "시퀀스/룩업 리스트가 부적절합니다"
 
 #, c-format
 msgid ""
@@ -12545,7 +12546,7 @@ msgid "Missing rules"
 msgstr "룰이 없습니다"
 
 msgid "Bad Coverage Table"
-msgstr "범위테이블이 부적합합니다"
+msgstr "범위테이블이 부적절합니다"
 
 msgid "There must be at least one match coverage table"
 msgstr "최소 1개의 일치하는 범위테이블가 필요합니다"
@@ -12929,10 +12930,10 @@ msgid "_Always raise this dialog when exporting"
 msgstr "내보낼 때 항상 이 대화 상자 표시(_A)"
 
 msgid "Bits/Pixel:"
-msgstr "픽셀쉐이드의 비트수:"
+msgstr "픽셀셰이드의 비트수:"
 
 msgid "The only valid values for bits/pixel are 1, 2, 4 or 8"
-msgstr "픽셀쉐이드 비트수로 사용가능한 값은  1, 2, 4, 8 뿐입니다."
+msgstr "픽셀셰이드 비트수로 사용가능한 값은  1, 2, 4, 8 뿐입니다."
 
 msgid "Pixel size?"
 msgstr "픽셀수는 얼마입니까?"
@@ -13021,7 +13022,7 @@ msgid "Ref:"
 msgstr "참조:"
 
 msgid "Bad Point Match"
-msgstr "점의 맞춤이 부적합합니다"
+msgstr "점의 맞춤이 부적절합니다"
 
 msgid "Both points must be specified, or neither"
 msgstr "양쪽의 점을 지정하던지,모두 지정하지 않던지 해야합니다"
@@ -13480,8 +13481,8 @@ msgid ""
 "The Expand Stroke algorithm will attempt to be (at\n"
 "least) this accurate, but there may be exceptions."
 msgstr ""
-"Expand Stroke 알고리즘은 (적어도) 이것을 정확하게하려고하지만 예외가있을 수"
-"도 있습니다."
+"스트로크 확장 알고리즘은 (적어도) 이것을 정확하게 하려고 하지만 예외가 있을"
+"수도 있습니다."
 
 msgid "_Always raise this dialog when importing"
 msgstr "가져올 때 항상 이 대화 표시(_A)"
@@ -13907,7 +13908,7 @@ msgid "Outline"
 msgstr "아웃라인"
 
 msgid "Shades"
-msgstr "쉐이드"
+msgstr "셰이드"
 
 msgid "Draw a Line"
 msgstr "선 그리기"
@@ -14397,16 +14398,16 @@ msgid "Transform:"
 msgstr "변환:"
 
 msgid "Bad Color"
-msgstr "색상이 부적합합니다"
+msgstr "색상이 부적절합니다"
 
 msgid "Opacity:"
 msgstr "투명도:"
 
 msgid "Bad Transformation Matrix"
-msgstr "변환행렬이 부적합합니다"
+msgstr "변환행렬이 부적절합니다"
 
 msgid "Bad dash list"
-msgstr "점선패턴이 부적합합니다"
+msgstr "점선패턴이 부적절합니다"
 
 #, c-format
 msgid "Too many dashes (at most %d allowed)"
@@ -14640,7 +14641,7 @@ msgid "_Pointsize:"
 msgstr "포인트 크기(_P):"
 
 msgid "Invalid point size"
-msgstr "포인트수이 부적합합니다"
+msgstr "포인트수이 부적절합니다"
 
 msgid "Print To File..."
 msgstr "파일로 출력..."
@@ -14649,7 +14650,7 @@ msgid "Bad Font"
 msgstr "폰트가 불량입니다."
 
 msgid "Bad Size"
-msgstr "크기가 부적합합니다."
+msgstr "크기가 부적절합니다."
 
 #, c-format
 msgid "Requested bitmap size not available in font. Font supports %s"
@@ -14716,7 +14717,7 @@ msgstr ""
 " pfb - 표준 사후 스크립트 유형1\n"
 " ttf - truetype이다.\n"
 " otf - opentype\n"
-" nohints -- 프리테프가 힌트 없이 래스터화\n"
+" nohints -- 프리타입이 힌트 없이 래스터화\n"
 " bitmap - 렌더링을 위해 freetype에 전달되지 않음\n"
 " 비트맵 글꼴이 이미 생성되어 있어야 함\n"
 " FontForge - FontForge가 아닌 FontForge의 자체 래스터라이저를 사용\n"
@@ -14941,34 +14942,34 @@ msgid "ISO 10646-1 (Unicode, Full)"
 msgstr "ISO 10646-1 (유니코드, Full)"
 
 msgid "SJIS (Kanji)"
-msgstr "シフトJIS (한자)"
+msgstr "Shift JIS (일본어 한자)"
 
 msgid "JIS 208 (Kanji)"
-msgstr "JIS X0208 (한자)"
+msgstr "JIS X0208 (일본어 한자)"
 
 msgid "JIS 212 (Kanji)"
-msgstr "JIS X0212 (보조한자)"
+msgstr "JIS X0212 (일본어 보조한자)"
 
 msgid "Wansung (Korean)"
-msgstr "Wansung (한국어)"
+msgstr "완성형 (한국어)"
 
 msgid "KSC 5601-1987 (Korean)"
 msgstr "KSC 5601-1987 (한국어)"
 
 msgid "Johab (Korean)"
-msgstr "Johab (한국어)"
+msgstr "조합형 (한국어)"
 
 msgid "GB 2312 (Simp. Chinese)"
-msgstr "GB 2312 (Simp. Chinese)"
+msgstr "GB 2312 (중국어 간체)"
 
 msgid "EUC GB 2312 (Chinese)"
-msgstr "EUC GB 2312 (Chinese)"
+msgstr "EUC GB 2312 (중국어 간체))"
 
 msgid "Big5 (Trad. Chinese)"
-msgstr "Big5 (Trad. Chinese)"
+msgstr "Big5 (중국어 번체)"
 
 msgid "Big5 HKSCS (Trad. Chinese)"
-msgstr "Big5 HKSCS (繁Trad. Chinese)"
+msgstr "Big5 HKSCS (중국어 번체)"
 
 #. GT: See the long comment at "Property|New"
 #. GT: The msgstr should contain a translation of "None", ignore "Interpretation|"
@@ -15111,7 +15112,7 @@ msgid "OSS Contemporary"
 msgstr "OSS/Contemporary"
 
 msgid "OSS Calligraphic"
-msgstr "OSS 서예"
+msgstr "OSS 캘리그래프체"
 
 msgid "OSS Miscellaneous"
 msgstr "OSS/그 외"
@@ -15132,7 +15133,7 @@ msgid "Modern Serifs"
 msgstr "모던 세리프(MS)"
 
 msgid "MS Italian"
-msgstr "MS/이탈리아풍"
+msgstr "MS/이탤릭체"
 
 msgid "MS Script"
 msgstr "MS/문자열체"
@@ -15162,7 +15163,7 @@ msgid "CS Monotone"
 msgstr "CS/선폭 일정"
 
 msgid "CS Typewriter"
-msgstr "CS/타입라이터체"
+msgstr "CS/타이프라이터체"
 
 msgid "CS Miscellaneous"
 msgstr "CS/그 외"
@@ -15258,7 +15259,7 @@ msgid "S Monotone Joined"
 msgstr "S/이어지는 선폭일정체"
 
 msgid "S Calligraphic"
-msgstr "S/캘리그래픽적"
+msgstr "S/캘리그래프체"
 
 msgid "S Brush Unjoined"
 msgstr "S/단독적 붓글씨"
@@ -15318,20 +15319,20 @@ msgid "PanoseFamily|No Fit"
 msgstr "맞지 않음"
 
 msgid "Latin: Text and Display"
-msgstr "라틴어: 텍스트 및 표시"
+msgstr "라틴 문자: 텍스트 및 표시"
 
 #. GT: See the long comment at "Property|New"
 #. GT: The msgstr should contain a translation of "Script", ignore "cursive|"
 #. GT: English uses "script" to me a general writing style (latin, greek, kanji)
 #. GT: and the cursive handwriting style. Here we mean cursive handwriting.
 msgid "cursive|Latin: Handwritten"
-msgstr "손으로 쓴 라틴어"
+msgstr "손으로 쓴 라틴 문자"
 
 msgid "Latin: Decorative"
-msgstr "라틴어: 장식"
+msgstr "라틴 문자: 장식"
 
 msgid "Latin: Pictorial and Symbol"
-msgstr "라틴어: 그림 및 기호"
+msgstr "라틴 문자: 그림 및 기호"
 
 msgid "PanoseSerifs|Any"
 msgstr "아무거나"
@@ -15370,7 +15371,7 @@ msgid "Normal Sans"
 msgstr "기본 폰트"
 
 msgid "Obtuse Sans"
-msgstr "Sans Obtuse"
+msgstr "Obtuse Sans
 
 msgid "Perpendicular Sans"
 msgstr "수직 Sans"
@@ -15694,7 +15695,7 @@ msgid "PanoseSpacing|No Fit"
 msgstr "맞지 않음"
 
 msgid "Proportional Spaced"
-msgstr "비례 스페이스"
+msgstr "균등하게 띄어진"
 
 msgid "PanoseAspectRatio|Any"
 msgstr "어떤 것이든"
@@ -15727,13 +15728,13 @@ msgid "PanoseTopology|No Fit"
 msgstr "맞지 않음"
 
 msgid "Roman Disconnected"
-msgstr "로마어와 연관되지 않은"
+msgstr "로마자와 연관되지 않은"
 
 msgid "Roman Trailing"
-msgstr "로마어의 흔적"
+msgstr "로마자의 흔적"
 
 msgid "Roman Connected"
-msgstr "로마어와 연관된"
+msgstr "로마자와 연관된"
 
 msgid "Cursive Disconnected"
 msgstr "필기체와 연관되지 않은"
@@ -15745,13 +15746,13 @@ msgid "Cursive Connected"
 msgstr "필기체와 연관된"
 
 msgid "Blackletter Disconnected"
-msgstr "흑체활자와 연관되지 않은"
+msgstr "블랙레터와 연관되지 않은"
 
 msgid "Blackletter Trailing"
-msgstr "흑체 활자의 흔적"
+msgstr "블랙레터의 흔적"
 
 msgid "Blackletter Connected"
-msgstr "흑체활자와 연관된"
+msgstr "블랙레터와 연관된"
 
 msgid "PanoseForm|Any"
 msgstr "어떤 것이든"
@@ -15961,7 +15962,7 @@ msgid "Shaped Fill"
 msgstr "모양 채우기"
 
 msgid "Drawn or Distressed"
-msgstr "그리기 또는 괴로움"
+msgstr "그리기 또는 어려움"
 
 msgid "PanoseLining|Any"
 msgstr "어떤 것이든"
@@ -16021,13 +16022,13 @@ msgid "Implied Topology"
 msgstr "내재된 위상"
 
 msgid "Horseshoe E and A"
-msgstr "편자 E와 A"
+msgstr "E와 A 편자"
 
 msgid "Cursive"
 msgstr "필기체"
 
 msgid "Blackletter"
-msgstr "흑체활자"
+msgstr "블랙레터"
 
 msgid "Swash Variance"
 msgstr "스와쉬 자형 변화"
@@ -16087,7 +16088,7 @@ msgid "Logos"
 msgstr "로고"
 
 msgid "Industry Specific"
-msgstr "산업 고유"
+msgstr "산업 사양"
 
 msgid "No Width"
 msgstr "너비 없음"
@@ -16237,13 +16238,13 @@ msgid "Arabic (Libya)"
 msgstr "아랍어(리비아)"
 
 msgid "Arabic (Algeria)"
-msgstr "아랍어(알제리아)"
+msgstr "아랍어(알제리)"
 
 msgid "Arabic (Morocco)"
 msgstr "아랍어(모로코)"
 
 msgid "Arabic (Tunisia)"
-msgstr "아랍어(튜니지아)"
+msgstr "아랍어(튀니지)"
 
 msgid "Arabic (Oman)"
 msgstr "아랍어(오만)"
@@ -16264,7 +16265,7 @@ msgid "Arabic (Kuwait)"
 msgstr "아랍어(쿠웨이트)"
 
 msgid "Arabic (U.A.E.)"
-msgstr "아랍어(U.A.E.)"
+msgstr "아랍어(아랍에미리트)"
 
 msgid "Arabic (Bahrain)"
 msgstr "아랍어(바레인)"
@@ -16273,16 +16274,16 @@ msgid "Arabic (Qatar)"
 msgstr "아랍어(카타르)"
 
 msgid "Azeri (Latin)"
-msgstr "아제르바이잔어(라틴자)"
+msgstr "아제르바이잔어(라틴문자)"
 
 msgid "Azeri (Cyrillic)"
-msgstr "아제르바이잔어(키릴자)"
+msgstr "아제르바이잔어(키릴문자)"
 
 msgid "Bengali Bangladesh"
 msgstr "벵골어(방글라데시)"
 
 msgid "Cambodian"
-msgstr "캄보디아어"
+msgstr "캄보디아어(크메르어)"
 
 msgid "Lang|Cherokee"
 msgstr "체로키어"
@@ -16291,25 +16292,25 @@ msgid "Chinese (Taiwan)"
 msgstr "중국어(대만)"
 
 msgid "Chinese (PRC)"
-msgstr "중국어(중화인민공화국)"
+msgstr "중국어(중국)"
 
 msgid "Chinese (Hong Kong)"
 msgstr "중국어(홍콩)"
 
 msgid "Chinese (Singapore)"
-msgstr "중국어(싱가폴)"
+msgstr "중국어(싱가포르)"
 
 msgid "Chinese (Macau)"
 msgstr "중국어(마카오)"
 
 msgid "Croatian Bosnia/Herzegovina"
-msgstr "크로아티아어(보스니아・헤르체코비나)"
+msgstr "크로아티아어(보스니아헤르체고비나)"
 
 msgid "Divehi"
 msgstr "디베히어"
 
 msgid "Flemish (Belgian Dutch)"
-msgstr "플라망어(벨기안 더치)"
+msgstr "플랑드르어(벨기에네덜란드어)"
 
 msgid "Edo"
 msgstr "에도어"
@@ -16375,7 +16376,7 @@ msgid "Filipino"
 msgstr "필리핀어"
 
 msgid "French French"
-msgstr "프랑스어(프랑서)"
+msgstr "프랑스어(프랑스)"
 
 msgid "French Belgium"
 msgstr "프랑스어(벨기에)"
@@ -16393,7 +16394,7 @@ msgid "French Monaco"
 msgstr "프랑스어(모나코)"
 
 msgid "French West Indies"
-msgstr "프랑스어(서인도국가)"
+msgstr "프랑스어(서인도제도)"
 
 msgid "French Réunion"
 msgstr "프랑스어(레위니옹)"
@@ -16408,7 +16409,7 @@ msgid "French Camaroon"
 msgstr "프랑스어(카메룬)"
 
 msgid "French Côte d'Ivoire"
-msgstr "프랑스어(코트디부아르)"
+msgstr "프랑스어(코트디부와르)"
 
 msgid "French Mali"
 msgstr "프랑스어(말리)"
@@ -16417,7 +16418,7 @@ msgid "French Morocco"
 msgstr "프랑스어(모로코)"
 
 msgid "French Haiti"
-msgstr "프랑스어(하이티)"
+msgstr "프랑스어(아이티)"
 
 msgid "French North Africa"
 msgstr "프랑스어(북아프리카)"
@@ -16447,7 +16448,7 @@ msgid "German Luxembourg"
 msgstr "독일어(룩셈부르크)"
 
 msgid "German Liechtenstein"
-msgstr "독일어(리히텐스타인)"
+msgstr "독일어(리히텐슈타인)"
 
 msgid "Hausa"
 msgstr "하우사어"
@@ -16459,7 +16460,7 @@ msgid "Ibibio"
 msgstr "이비비오어"
 
 msgid "Igbo"
-msgstr "이그보우어"
+msgstr "이그보어"
 
 msgid "Italian Swiss"
 msgstr "이탈리아어(스위스)"
@@ -16477,7 +16478,7 @@ msgid "Korean (Johab)"
 msgstr "한국어(조합)"
 
 msgid "Lithuanian (Classic)"
-msgstr "리투아니아어(전통적)"
+msgstr "리투아니아어(전통)"
 
 msgid "Malay"
 msgstr "말레이어"
@@ -16498,7 +16499,7 @@ msgid "Nepali (India)"
 msgstr "네팔어(인도)"
 
 msgid "Norwegian (Bokmal)"
-msgstr "노르웨이어(부크몰)"
+msgstr "노르웨이어(보크몰)"
 
 msgid "Norwegian (Nynorsk)"
 msgstr "노르웨이어(뉘노르스크)"
@@ -16531,22 +16532,22 @@ msgid "Quecha (Peru)"
 msgstr "케추아어(페루)"
 
 msgid "Rhaeto-Romanic"
-msgstr "레토・로만어"
+msgstr "레토로망스어"
 
 msgid "Romanian (Moldova)"
-msgstr "ルーマニア語(몰도바)"
+msgstr "루마니아어(몰도바)"
 
 msgid "Russian (Moldova)"
-msgstr "ロシア語(몰도바)"
+msgstr "러시아어(몰도바)"
 
 msgid "Sepedi"
 msgstr "세페디어"
 
 msgid "Serbian (Cyrillic)"
-msgstr "세르비아어(키릴자)"
+msgstr "세르비아어(키릴문자)"
 
 msgid "Serbian (Latin)"
-msgstr "세르비아어(라틴자)"
+msgstr "세르비아어(라틴문자)"
 
 msgid "Sindhi India"
 msgstr "신드어(인도)"
@@ -16558,13 +16559,13 @@ msgid "Sorbian"
 msgstr "소르브어"
 
 msgid "Spanish (Traditional)"
-msgstr "스페인어(전통적)"
+msgstr "스페인어(전통)"
 
 msgid "Spanish Mexico"
 msgstr "스페인어(멕시코)"
 
 msgid "Spanish (Modern)"
-msgstr "스페인어(현대적)"
+msgstr "스페인어(현대)"
 
 msgid "Spanish (Guatemala)"
 msgstr "스페인어(과테말라)"
@@ -16615,7 +16616,7 @@ msgid "Spanish (Nicaragua)"
 msgstr "스페인어(니카라과)"
 
 msgid "Spanish (Puerto Rico)"
-msgstr "스페인어(푸에토리코)"
+msgstr "스페인어(푸에르토리코)"
 
 msgid "Spanish (United States)"
 msgstr "스페인어(미국)"
@@ -16624,7 +16625,7 @@ msgid "Spanish (Latin America)"
 msgstr "스페인어(라틴아메리카)"
 
 msgid "Sutu"
-msgstr "스투어"
+msgstr "소토어"
 
 msgid "Swahili (Kenyan)"
 msgstr "스와힐리어(케냐)"
@@ -16642,10 +16643,10 @@ msgid "Tajik"
 msgstr "타지크어"
 
 msgid "Tamazight (Arabic)"
-msgstr "타마지트어(아라비아자)"
+msgstr "타마지트어(아랍문자)"
 
 msgid "Tamazight (Latin)"
-msgstr "타마지트어(라틴자)"
+msgstr "타마지트어(라틴문자)"
 
 msgid "Tatar (Tatarstan)"
 msgstr "타타르어(타타르스탄)"
@@ -16666,7 +16667,7 @@ msgid "Tsonga"
 msgstr "총가어"
 
 msgid "Tswana"
-msgstr "시와나어"
+msgstr "츠와나어"
 
 msgid "Urdu (Pakistan)"
 msgstr "우르두어(파키스탄)"
@@ -16675,22 +16676,22 @@ msgid "Urdu (India)"
 msgstr "우르두어(인도)"
 
 msgid "Uzbek (Latin)"
-msgstr "우즈벡어(라틴자)"
+msgstr "우즈벡어(라틴문자)"
 
 msgid "Uzbek (Cyrillic)"
-msgstr "우즈벡어(키릴자)"
+msgstr "우즈벡어(키릴문자)"
 
 msgid "Venda"
 msgstr "벤다어"
 
 msgid "Xhosa"
-msgstr "호사어"
+msgstr "코사어"
 
 msgid "Lang|Yi"
-msgstr "Yi어"
+msgstr "이어"
 
 msgid "Yoruba"
-msgstr "요르바어"
+msgstr "요루바어"
 
 msgid "Zulu"
 msgstr "줄루어"
@@ -16717,7 +16718,7 @@ msgid "Trademark"
 msgstr "상표"
 
 msgid "Manufacturer"
-msgstr "제조원"
+msgstr "제작자"
 
 msgid "Designer"
 msgstr "디자이너"
@@ -17207,10 +17208,10 @@ msgid "This mark set (%s) was used in lookup %s"
 msgstr "이 마크 셋(%s) 은 %s lookup에서 사용되었습니다."
 
 msgid "Bad Family Name"
-msgstr "패밀리명이 부적합합니다"
+msgstr "패밀리명이 부적절합니다"
 
 msgid "Bad Family Name, must begin with an alphabetic character."
-msgstr "패밀리명이 부적합합니다. 알파벳으로 시작해야 합니다."
+msgstr "패밀리명이 부적절합니다. 알파벳으로 시작해야 합니다."
 
 #, c-format
 msgid ""
@@ -17225,7 +17226,7 @@ msgid "A Font Family name is required"
 msgstr "폰트패밀리명가 필요합니다."
 
 msgid "Bad Font Family Name"
-msgstr "폰트패밀리명이 부적합합니다."
+msgstr "폰트패밀리명이 부적절합니다."
 
 msgid ""
 "Some versions of Windows will refuse to install postscript fonts if the "
@@ -17624,7 +17625,7 @@ msgid "Strikeout"
 msgstr "수정선"
 
 msgid "Bad IBM Family"
-msgstr "IBM패밀리분류로 부적합합니다"
+msgstr "IBM패밀리분류로 부적절합니다"
 
 msgid "Tag must be 4 characters long"
 msgstr "태그의 길이가 4자이어야 합니다"
@@ -17644,7 +17645,7 @@ msgstr ""
 "없습니다)"
 
 msgid "Bad Style"
-msgstr "스타일이 부적합합니다"
+msgstr "스타일이 부적절합니다"
 
 msgid ""
 "Glyph names should be limited to characters in the ASCII character set,\n"
@@ -19786,11 +19787,11 @@ msgid "Glyph names must be valid postscript names"
 msgstr "상형문자 이름은 유효한 포스트스크립트 이름이어야 함"
 
 msgid "Bad Range"
-msgstr "범위가 부적합합니다"
+msgstr "범위가 부적절합니다"
 
 #, c-format
 msgid "Bad Range, start (%1$04X) is greater than end (%2$04X)"
-msgstr "범위가 부적합합니다. 선두(%1$04X)가 말미(%2$04X)보다 큽니다"
+msgstr "범위가 부적절합니다. 선두(%1$04X)가 말미(%2$04X)보다 큽니다"
 
 #, c-format
 msgid "The code point U+%1$04X occurs in groups %2$.30s and %3$.30s"
@@ -22758,10 +22759,10 @@ msgid "Axis 4"
 msgstr "제4축"
 
 msgid "Bad MM Weights"
-msgstr "MM의 가중치가 부적합합니다"
+msgstr "MM의 가중치가 부적절합니다"
 
 msgid "Incorrect number of instances weights, or illegal numbers"
-msgstr "가중치 인스턴스의 갯수가 틀렸거나, 수치가 부적합합니다"
+msgstr "가중치 인스턴스의 갯수가 틀렸거나, 수치가 부적절합니다"
 
 msgid "The weights for the default version of the font must sum to 1.0"
 msgstr "기본버전 폰트의 가중치의 합은 1.0 이어야 합니다"
@@ -22812,7 +22813,7 @@ msgid "Named Styles"
 msgstr "이름 붙은 스타일"
 
 msgid "Bad Axis"
-msgstr "축이 부적합합니다"
+msgstr "축이 부적절합니다"
 
 #, c-format
 msgid "Bad Number in %s"
@@ -22820,7 +22821,7 @@ msgstr "%s는 올바르지 않은 수치를 포함합니다"
 
 #, c-format
 msgid "Wrong number of entries in %s"
-msgstr "%s에 포함되는 항목의 수가 부적합합니다"
+msgstr "%s에 포함되는 항목의 수가 부적절합니다"
 
 #, c-format
 msgid "The %s list is not ordered"
@@ -22850,7 +22851,7 @@ msgid "AxisValue|Default"
 msgstr "기본값"
 
 msgid "Axis range not valid"
-msgstr "축의 범위가 부적합합니다"
+msgstr "축의 범위가 부적절합니다"
 
 msgid "Design Settings:"
 msgstr "디자인 설정:"
@@ -22891,7 +22892,7 @@ msgstr ""
 "정말 진행하시겠습니까?"
 
 msgid "Disordered designs"
-msgstr "디자인의 순서가 부적합합니다"
+msgstr "디자인의 순서가 부적절합니다"
 
 msgid ""
 "The master designs are not positioned in the expected order. FontForge will "
@@ -22901,7 +22902,7 @@ msgstr ""
 "ConvertDesignVector를 추측할 수 없습니다. 정말 이대로 진행하시겠습니까?"
 
 msgid "Bad PostScript function"
-msgstr "PostScript함수가 부적합합니다"
+msgstr "PostScript함수가 부적절합니다"
 
 msgid "CID keyed fonts may not be a master design of a multiple master font"
 msgstr "CID폰트는 멀티플마스터폰트의 마스터 디자인으로 사용할 수 없습니다"
@@ -23032,7 +23033,7 @@ msgid "PostScript"
 msgstr "추신"
 
 msgid "TrueType"
-msgstr "올바른 타입"
+msgstr "트루타입"
 
 msgid "OpenType"
 msgstr "OpenType의 사양"
@@ -23098,14 +23099,14 @@ msgid "Open Font"
 msgstr "폰트를 열기"
 
 msgid "FreeTypeAAFillInOutlineView"
-msgstr "자유형 AA채우기 개요 보기"
+msgstr "프리타입 AA채우기 개요 보기"
 
 msgid ""
 "When filling using freetype in the outline view,\n"
 "have freetype render the glyph antialiased."
 msgstr ""
-"윤곽선 보기에서 자유형 유형을 사용하여 채울 때,\n"
-"자유형에게 글리프를 항알레네이션을 시키다"
+"윤곽선 보기에서 프리타입을 사용하여 채울 때,\n"
+"프리타입 글리프를 안티앨리어싱한다"
 
 msgid ""
 "Use the cairo library for drawing (if available)\n"
@@ -23122,7 +23123,7 @@ msgid "UseCairoDrawing"
 msgstr "카이로 드로잉을 사용한다."
 
 msgid "ExportClipboard"
-msgstr "내보내기클립보드"
+msgstr "클립보드로 내보내기"
 
 msgid ""
 "If you are running an X11 clipboard manager you might want\n"
@@ -23140,7 +23141,7 @@ msgstr ""
 "자료의 손실과 함께"
 
 msgid "AutoSaveFrequency"
-msgstr "자주 자동 저장"
+msgstr "정기 자동 저장"
 
 msgid ""
 "The number of seconds between autosaves. If you set this to 0 there will be "
@@ -25548,7 +25549,7 @@ msgstr ""
 "십시오"
 
 msgid "The 'POST' type1 format is probably deprecated"
-msgstr "'POST' Type1 포맷はおそらく廃止されるでしょう."
+msgstr "'POST' Type1 포맷은 곧 없어질 것입니다."
 
 msgid ""
 "The 'POST' type1 format is probably deprecated and may not work in future "
@@ -25578,7 +25579,7 @@ msgid "Create directory..."
 msgstr "폴더를 생성..."
 
 msgid "Bad Mac Family"
-msgstr "Mac패밀리로 부적합합니다"
+msgstr "Mac패밀리로 부적절합니다"
 
 msgid ""
 "To generate a Mac family file, the current font must have plain (Normal, "
@@ -26175,10 +26176,10 @@ msgid ""
 "And on в, г, д, е, ж, л, м, ц, щ, ъ, ђ\n"
 "And on all Greek lower case letters. And maybe everything else."
 msgstr ""
-"이탤릭체 변환은 불완전할 것 입니다!\n"
-"e, g, k 및 v-z에서 수동 수정 작업을 수행하려는 경우\n"
-"그리고 в, е, е, е, е, е, е, ђ, ђ, ђ.\n"
-"그리고 모든 그리스 소문자 그리고 다른 모든 것들 또한 불완전 할 것 입니다."
+"이탤릭체 변환은 불완전하게 진행됩니다.\n"
+"e, g, k 및 v부터 z까지, в, г, д, е, ж, л, м, ц, щ, ъ, ђ,\n"
+"모든 그리스 소문자와 그 외 문자 범위에서 수동 수정 작업을 수행할 경우,\n"
+"결과는 불완전할 것입니다."
 
 msgid "Current X-Height"
 msgstr "현재 X-높이"
@@ -26656,22 +26657,22 @@ msgid "Strong Left to Right"
 msgstr "왼쪽에서 오른쪽(강제적용)"
 
 msgid "Strong Right to Left"
-msgstr "오른쪽에서 왼쪽(강제적용的)"
+msgstr "오른쪽에서 왼쪽(강제적용)"
 
 msgid "Arabic Right to Left"
 msgstr "오른쪽에서 왼쪽(아랍어)"
 
 msgid "European Number"
-msgstr "유럽식 숫자:"
+msgstr "유럽식 숫자"
 
 msgid "European Number Separator"
-msgstr "셈숫자의 구분"
+msgstr "유럽식 숫자 구분자"
 
 msgid "European Number Terminator"
-msgstr "셈숫자의 소수점"
+msgstr "유럽식 숫자 소수점"
 
 msgid "Arabic Number"
-msgstr "아라비아 숫자"
+msgstr "아랍식 숫자"
 
 msgid "Common Number Separator"
 msgstr "일반적인 숫자 구분"
@@ -26708,10 +26709,10 @@ msgid "  Mirror=%.30s"
 msgstr "  미러=%.30s"
 
 msgid "No Advanced Typography"
-msgstr "Advanced Typography無し"
+msgstr "고급 타이포그래피 미적용"
 
 msgid "OpenType Tables"
-msgstr "OpenType테이블"
+msgstr "OpenType 테이블"
 
 msgid "'BASE' Baseline Table"
 msgstr "'BASE' 기준선 표"
@@ -26727,13 +26728,13 @@ msgid_plural "Vertical: %d baselines"
 msgstr[0] "%d 기준 수직선"
 
 msgid "'GDEF' Glyph Definition Table"
-msgstr "'GDEF' 글리프정의테이블"
+msgstr "'GDEF' 글리프 정의 테이블"
 
 msgid "'GPOS' Glyph Positioning Table"
-msgstr "'GPOS' 글리프위치지정테이블"
+msgstr "'GPOS' 글리프 위치 지정 테이블"
 
 msgid "'GSUB' Glyph Substitution Table"
-msgstr "'GSUB' 글리프바꾸기테이블"
+msgstr "'GSUB' 글리프 바꾸기 테이블"
 
 msgid "'JSTF' Justification Table"
 msgstr "'JSTF' 정당성 테이블"
@@ -26748,10 +26749,10 @@ msgid "'kern' Horizontal Kerning Table"
 msgstr "'kern' 가로쓰기 커닝테이블"
 
 msgid "'lcar' Ligature Caret Table"
-msgstr "'lcar' 합음자캬렛테이블"
+msgstr "'lcar' 합음자 캐럿 테이블"
 
 msgid "'morx' Glyph Extended Metamorphosis Table"
-msgstr "'morx' 글리프확장변형테이블"
+msgstr "'morx' 글리프 확장변형 테이블"
 
 msgid "'opbd' Optical Bounds Table"
 msgstr "'opbd' 시각적 경계테이블"
