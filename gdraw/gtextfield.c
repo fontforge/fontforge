@@ -35,6 +35,7 @@
 #include "ustring.h"
 #include "utype.h"
 
+#include <assert.h>
 #include <math.h>
 
 GBox _GGadget_gtextfield_box = GBOX_EMPTY; /* Don't initialize here */
@@ -3085,8 +3086,10 @@ static void GTextFieldComplete(GTextField *gt,int from_tab) {
 		    } else if ( !doit )
 			ret2 = malloc((cnt+1)*sizeof(unichar_t *));
 		    else {
-			if ( type2 )
-			    cnt = type2;
+			if ( type2 ) {
+			    cnt = (cnt+MAXBRACKETS-1)/MAXBRACKETS;
+			    assert(cnt <= type2);
+			}
 			ret2[cnt] = NULL;
 		    }
 		}
