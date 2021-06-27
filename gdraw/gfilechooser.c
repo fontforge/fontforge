@@ -727,7 +727,6 @@ return( true );
 
 /* Handle events from the file list list */
 static int GFileChooserFListSelected(GGadget *gl,GEvent *e) {
-    GFileChooser *gfc;
     int i;
     int32 listlen; int len, cnt, dirpos, apos;
     unichar_t *dir, *newdir;
@@ -765,8 +764,8 @@ return( true );
     }
     if ( apos==-1 )
 return(true);
-    gfc = (GFileChooser *) GGadgetGetUserData(gl);
     ti = GGadgetGetListItem(gl,apos);
+    GFileChooser *gfc = (GFileChooser *) GGadgetGetUserData(gl);
     if ( e->u.control.subtype==et_listselected && cnt==1 ) {
 	/* Nope, quite doesn't work. Goal is to remember first filename. But */
 	/*  if user types into the list box we'll (probably) get several diff*/
@@ -805,7 +804,8 @@ return(true);
 	}
 	GGadgetSetTitle(&gfc->name->g,val);
 	free(val);
-    } else if ( ti->checked /* it's a directory */ ) {
+    /*          it's a directory    AND isn't matched by current filter e.g. *.ufo */
+    } else if ( ti->checked &&      !GGadgetWildMatch(gfc->wildcard, ti->text, true) ) {
 	dir = GFileChooserGetCurDir(gfc,-1);
 	newdir = u_GFileAppendFile(dir,ti->text,true);
 	GFileChooserScanDir(gfc,newdir);
