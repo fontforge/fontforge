@@ -573,7 +573,8 @@ static SplineSet *TraceCurve(CharView *cv) {
 	    SplineMake(last,cur,false);
 	else {
 	    TraceFigureCPs(last,cur,base,pt);
-	    if ( !last->nonextcp && !cur->noprevcp )
+	    if ( last->nextcp.x == last->me.x && last->nextcp.y == last->me.y &&
+	         cur->prevcp.x == cur->me.x && cur->prevcp.y == cur->me.y )
 		ApproximateSplineFromPointsSlopes(last,cur,mids+base->num+1,pt->num-base->num-1,false,mt_matrix);
 	    else {
 		last->nextcp = last->me; cur->prevcp=cur->me;

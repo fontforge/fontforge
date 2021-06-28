@@ -628,6 +628,7 @@ return;
     } else if ( pointtype==pt_tangent ) {
 	if ( sp->next!=NULL && !sp->nonextcp && sp->next->knownlinear ) {
 	    sp->nextcp = sp->me;
+        SplineRefigure(sp->next);
 	} else if ( sp->prev!=NULL && !sp->nonextcp &&
 		BpColinear(&sp->prev->from->me,&sp->me,&sp->nextcp) ) {
 	    /* The current control point is reasonable */
@@ -637,6 +638,7 @@ return;
 	}
 	if ( sp->prev!=NULL && !sp->noprevcp && sp->prev->knownlinear ) {
 	    sp->prevcp = sp->me;
+        SplineRefigure(sp->prev);
 	} else if ( sp->next!=NULL && !sp->noprevcp &&
 		BpColinear(&sp->next->to->me,&sp->me,&sp->prevcp) ) {
 	    /* The current control point is reasonable */

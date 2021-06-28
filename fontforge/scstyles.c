@@ -5184,6 +5184,10 @@ static void SerifRemove(SplinePoint *start,SplinePoint *end,SplineSet *ss) {
     }
     start->next = end->prev = NULL;
     start->nextcp = start->me;
+    // The following is probably unneeded but restores the
+    // state of each now-open contour to what it would be when
+    // points are allocated with SplinePointCreate()
+    start->nonextcp = end->noprevcp = true;
     end->prevcp = end->me;
 }
 

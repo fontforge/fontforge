@@ -777,10 +777,7 @@ static SplineSet *ApproximateXSpline(struct xspline *xs,int order2) {
 	SPAverageCps(spl->last);
 	spl->last = sp;
     }
-    if ( !xs->closed ) {
-	spl->first->prevcp = spl->first->me;
-	spl->last->nextcp = spl->last->me;
-    } else
+    if ( xs->closed )
 	SPAverageCps(spl->first);
 return( spl );
 }

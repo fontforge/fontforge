@@ -660,6 +660,7 @@ static void AdjustSplineSet(TD *td,int order2) {
 	    new->first->prevcpdef = lastsp->prevcpdef;
 	    lastsp->prev->to = new->first;
 	    new->last = new->first;
+	    SplineRefigure(new->first->prev);
 	    SplinePointFree(lastsp);
 	} else
 	    new->last = lastsp;

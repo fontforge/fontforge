@@ -244,8 +244,6 @@ static SplinePoint *LinearSpline(Spline *ps,SplinePoint *start, real tmax) {
 	end->roundx = oldend->roundx; end->roundy = oldend->roundy; end->dontinterpolate = oldend->dontinterpolate;
     } else
 	end = SplinePointCreate(x, y);
-    end->ttfindex = 0xfffe;
-    end->nextcpindex = 0xfffe;
     start->nextcp.x = start->me.x;
     start->nextcp.y = start->me.y;
     new->from = start;		start->next = new;
@@ -1253,8 +1251,6 @@ void SplineRefigure2(Spline *spline) {
 
     if (    ( from->nextcp.x==from->me.x && from->nextcp.y==from->me.y && from->nextcpindex>=0xfffe )
          || ( to->prevcp.x==to->me.x && to->prevcp.y==to->me.y && from->nextcpindex>=0xfffe ) ) {
-    /*if (    ( from->nextcp.x==from->me.x && from->nextcp.y==from->me.y )
-         || ( to->prevcp.x==to->me.x && to->prevcp.y==to->me.y ) ) {*/
 	from->nonextcp = to->noprevcp = true;
 	from->nextcp = from->me;
 	to->prevcp = to->me;
