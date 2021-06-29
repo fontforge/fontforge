@@ -630,9 +630,9 @@ static void ApproxBounds(DBounds *b, FitPoint *mid, int cnt, struct dotbounds *d
 /* + 16*(((12*sa-5*ca*(42*m-17*f))*sb-70*cb*(3*m-f)*sa-75*ca*cb*f*f)*sb-75*cb^2*f^2*sa) * a */
 /* + 80*sb*(42*sb*m-25*f*(sb-cb*f)); */
 /* this quartic equation reduces to a quadratic for the special case beta = pi - alpha or beta = -alpha */
-/* 0 = -9*ca*sa^3 * a^3  */
-/* + 6*sa^2*(4*sa+5*ca*f) * a^2 */
-/* + 10*sa*((42*m-25*f)*sa-25*ca*f^2). */
+/* 0 = -9*ca*sa^2 * a^3  */
+/* + 6*sa*(4*sa+5*ca*f) * a^2 */
+/* + 10*((42*m-25*f)*sa-25*ca*f^2). */
 /* The derivative of the first moment (not the quartic) = 0 results in a quartic as well: */
 /* 0 = -9*ca*sa*sab^3 * a^4 */
 /* -3*sab^2*(9*ca*sa*sb-(17*sa+30*ca*f)*sab+15*cb*sa^2) * a^3 */
