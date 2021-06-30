@@ -1719,9 +1719,9 @@ static int osx_handle_keysyms( int st, int k )
 }
 #endif
 
-#endif // FONTFORGE_CAN_USE_GDK
-
 int osx_fontview_copy_cut_counter = 0;
+
+#endif // FONTFORGE_CAN_USE_GDK
 
 
 static int GMenuBarCheckHotkey(GWindow top, GGadget *g, GEvent *event) {
