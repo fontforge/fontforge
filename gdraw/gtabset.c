@@ -533,7 +533,7 @@ return(false);
 		else
 		    sel = i;
 	    }
-        if ( i <= gts->tabcnt && i >= 0 )
+        if ( i < gts->tabcnt && i >= 0 )
 		if ( gts->closable && event->type==et_mouseup && event->u.mouse.x>=gts->tabs[i].x+gts->tabs[i].width+(-GTS_TABPADDING/2-10) ) {
 			TRACE("Closing tab %d\n", sel);
 			GTabSetRemoveTabByPos(&gts->g, i);
