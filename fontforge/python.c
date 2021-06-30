@@ -4590,9 +4590,9 @@ static int Stroke_Parse(StrokeInfo *si, PyObject *args, PyObject *keywds) {
 	f = FlagsFromTuple(flagtuple,strokeflags,"stroke flag");
 	if ( f==FLAG_UNKNOWN )
 	    return( -1 );
-	si->removeinternal = ( f&1!=0 );
-	si->removeexternal = ( f&2!=0 );
-	si->simplify = ( f&4!=0 );
+	si->removeinternal = ( (f&1)!=0 );
+	si->removeexternal = ( (f&2)!=0 );
+	si->simplify = ( (f&4)!=0 );
     }
     return( 0 );
 }
