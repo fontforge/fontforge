@@ -3816,7 +3816,7 @@ return;
 		    isp = SplineBisect(sp->prev,t);
 		    nsp->prevcp.x = nsp->me.x + (isp->prevcp.x-isp->me.x);
 		    nsp->prevcp.y = nsp->me.y + (isp->prevcp.y-isp->me.y);
-		    psp->noprevcp = isp->noprevcp;
+		    nsp->noprevcp = isp->noprevcp;
 		    nsp->prev = isp->prev;
 		    isp->prev->to = nsp;
 		    SplineFree(isp->next);
