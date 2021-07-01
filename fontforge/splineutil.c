@@ -48,6 +48,7 @@
 #include "splinefill.h"
 #include "splineorder2.h"
 #include "splinerefigure.h"
+#include "splineutil.h"
 #include "splineutil2.h"
 #include "tottf.h"
 #include "ustring.h"
@@ -62,10 +63,6 @@
 #endif
 
 /*#define DEBUG 1*/
-
-typedef struct quartic {
-    bigreal a,b,c,d,e;
-} Quartic;
 
 /* In an attempt to make allocation more efficient I just keep preallocated */
 /*  lists of certain common sizes. It doesn't seem to make much difference */
@@ -3447,7 +3444,7 @@ return( false );
 return( true );
 }
 
-static int _QuarticSolve(Quartic *q,extended ts[4]) {
+int _QuarticSolve(Quartic *q,extended ts[4]) {
     extended extrema[5];
     Spline1D sp;
     int ecnt = 0, i, zcnt;

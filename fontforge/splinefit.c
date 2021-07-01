@@ -33,6 +33,7 @@
 #include "splineorder2.h"
 #include "splineutil.h"
 #include "splineutil2.h"
+#include "utanvec.h"
 
 #include <math.h>
 
@@ -570,10 +571,81 @@ static void ApproxBounds(DBounds *b, FitPoint *mid, int cnt, struct dotbounds *d
 /*  try that too. */
 /* This still isn't as good as I'd like it... But I haven't been able to */
 /*  improve it further yet */
+/* The mergetype mt is either of: */
+/*  mt_matrix; original, fast, all-purpose (relies on matrix calculations) */
+/*  mt_levien; by Raph Levien (implemented by Linus Romer), fast, accurate, use only if mid is on spline */
+/*  mt_bruteforce; slow, all-purpose, normally more accurate than mt_matrix.*/
+/* The mt_levien algorithm is explained here: */
+/* raphlinus.github.io/curves/2021/03/11/bezier-fitting.html */
+/* The notation used here is a bit different: Instead of theta1, theta2, */
+/* delta1, delta2, momentx, area we use alpha,beta,a,b,m,f: */
+/* Here is to complete math that we are using: */
+/* Signed area of the cubic bezier spline a .. controls b and c .. d to the x-axis  */
+/* f = ((xb-xa)*(10*ya+6*yb+3*yc+yd)+(xc-xb)*(4*ya+6*yb+6*yc+4*yd)+(xd-xc)*(ya+3*yb+6*yc+10*yd))/20; */
+/* simplified for the normed case */
+/* f = 3/20*(2*a*sin(alpha)+2*b*sin(beta)-a*b*sin(alpha+beta)); */
+/* solved for b */
+/* b = (20*f-6*a*sin(alpha))/(6*sin(beta)-3*a*sin(alpha+beta)). */
+/* Signed area of the cubic bezier spline a .. controls b and c .. d to the x-axis  */
+/* from point a up to the bezier point at time t */
+/* f(t) = ((((1-t)*xa+xb*t)-xa)*(10*ya+6*((1-t)*ya+yb*t)+3*((1-t)^2*ya+2*(1-t)*t*yb+t^2*yc) */
+/* +((1-t)^3*ya+3*(1-t)^2*t*yb+3*(1-t)*t^2*yc+t^3*yd))+(((1-t)^2*xa+2*(1-t)*t*xb+t^2*xc) */
+/* -((1-t)*xa+xb*t))*(4*ya+6*((1-t)*ya+yb*t)+6*((1-t)^2*ya+2*(1-t)*t*yb+t^2*yc) */
+/* +4*((1-t)^3*ya+3*(1-t)^2*t*yb+3*(1-t)*t^2*yc+t^3*yd))+(((1-t)^3*xa+3*(1-t)^2*t*xb */
+/* +3*(1-t)*t^2*xc+t^3*xd)-((1-t)^2*xa+2*(1-t)*t*xb+t^2*xc))*(ya+3*((1-t)*ya+yb*t) */
+/* +6*((1-t)^2*ya+2*(1-t)*t*yb+t^2*yc)+10*((1-t)^3*ya+3*(1-t)^2*t*yb+3*(1-t)*t^2*yc+t^3*yd)))/20; */
+/* simplified for the normed case: */
+/* f(t) = -(3*(30*a*b*sin(beta-alpha)*t^6+15*b^2*sin(2*beta)*t^6-20*b*sin(beta)*t^6 */
+/* -15*a^2*sin(2*alpha)*t^6+20*a*sin(alpha)*t^6+6*a*b*sin(beta+alpha)*t^5 */
+/* -90*a*b*sin(beta-alpha)*t^5-30*b^2*sin(2*beta)*t^5+48*b*sin(beta)*t^5 */
+/* +60*a^2*sin(2*alpha)*t^5-72*a*sin(alpha)*t^5-15*a*b*sin(beta+alpha)*t^4 */
+/* +90*a*b*sin(beta-alpha)*t^4+15*b^2*sin(2*beta)*t^4-30*b*sin(beta)*t^4 */
+/* -90*a^2*sin(2*alpha)*t^4+90*a*sin(alpha)*t^4+10*a*b*sin(beta+alpha)*t^3 */
+/* -30*a*b*sin(beta-alpha)*t^3+60*a^2*sin(2*alpha)*t^3-40*a*sin(alpha)*t^3 */
+/* -15*a^2*sin(2*alpha)*t^2))/20. */
+/* First moment about y-axis = \int x dA = \int x dA/dt dt for a cubic bezier  */
+/* path a .. controls b and c .. d */
+/* m = (280*xd^2*yd-105*xc*xd*yd-30*xb*xd*yd-5*xa*xd*yd-45*xc^2*yd-45*xb*xc*yd */
+/* -12*xa*xc*yd-18*xb^2*yd-15*xa*xb*yd-5*xa^2*yd+105*xd^2*yc+45*xc*xd*yc */
+/* -3*xa*xd*yc-27*xb*xc*yc-18*xa*xc*yc-27*xb^2*yc-45*xa*xb*yc-30*xa^2*yc */
+/* +30*xd^2*yb+45*xc*xd*yb+18*xb*xd*yb+3*xa*xd*yb+27*xc^2*yb+27*xb*xc*yb */
+/* -45*xa*xb*yb-105*xa^2*yb+5*xd^2*ya+15*xc*xd*ya+12*xb*xd*ya+5*xa*xd*ya */
+/* +18*xc^2*ya+45*xb*xc*ya+30*xa*xc*ya+45*xb^2*ya+105*xa*xb*ya-280*xa^2*ya)/840; */
+/* simplified for the normed case */
+/* m = (9*a*cos(alpha)*b^2*cos(beta)*sin(beta)-15*b^2*cos(beta)*sin(beta) */
+/* -9*a^2*cos(alpha)^2*b*sin(beta)-9*a*cos(alpha)*b*sin(beta)+50*b*sin(beta) */
+/* +9*a*sin(alpha)*b^2*cos(beta)^2-9*a^2*cos(alpha)*sin(alpha)*b*cos(beta) */
+/* -33*a*sin(alpha)*b*cos(beta)+15*a^2*cos(alpha)*sin(alpha)+34*a*sin(alpha))/280; */
+/* normed case combined with the formula for b depending on the area (see above): */
+/* m = (34*a*sin(alpha)+50*(20*f-6*a*sin(alpha))/(6*sin(beta)-3*a*sin(beta+alpha))*sin(beta) */
+/* +15*a^2*sin(alpha)*cos(alpha)-15*(20*f-6*a*sin(alpha))/(6*sin(beta) */
+/* -3*a*sin(beta+alpha))^2*sin(beta)*cos(beta)-a*(20*f-6*a*sin(alpha))/(6*sin(beta) */
+/* -3*a*sin(beta+alpha))*(33*sin(alpha)*cos(beta)+9*cos(alpha)*sin(beta)) */
+/* -9*a^2*(20*f-6*a*sin(alpha))/(6*sin(beta)-3*a*sin(beta+alpha))*sin(alpha+beta)*cos(alpha) */
+/* +9*a*(20*f-6*a*sin(alpha))/(6*sin(beta)-3*a*sin(beta+alpha))^2*sin(alpha+beta)*cos(beta))/280; */
+/* and reduced to a quartic equation with sa = sin(alpha), sb = sin(beta), ca = cos(alpha), cb = cos(beta) */
+/* 0 = -9*ca*(((2*sb*cb*ca+sa*(2*cb*cb-1))*ca-2*sb*cb)*ca-cb*cb*sa) * a^4 */
+/* + 12*((((cb*(30*f*cb-sb)-15*f)*ca+2*sa-cb*sa*(cb+30*f*sb))*ca+cb*(sb-15*f*cb))*ca-sa*cb*cb) * a^3 */
+/* + 12*((((70*m+15*f)*sb^2+cb*(9*sb-70*cb*m-5*cb*f))*ca-5*sa*sb*(3*sb-4*cb*(7*m+f)))*ca-cb*(9*sb-70*cb*m-5*cb*f)) * a^2 */
+/* + 16*(((12*sa-5*ca*(42*m-17*f))*sb-70*cb*(3*m-f)*sa-75*ca*cb*f*f)*sb-75*cb^2*f^2*sa) * a */
+/* + 80*sb*(42*sb*m-25*f*(sb-cb*f)); */
+/* this quartic equation reduces to a quadratic for the special case beta = pi - alpha or beta = -alpha */
+/* 0 = -9*ca*sa^2 * a^3  */
+/* + 6*sa*(4*sa+5*ca*f) * a^2 */
+/* + 10*((42*m-25*f)*sa-25*ca*f^2). */
+/* The derivative of the first moment (not the quartic) = 0 results in a quartic as well: */
+/* 0 = -9*ca*sa*sab^3 * a^4 */
+/* -3*sab^2*(9*ca*sa*sb-(17*sa+30*ca*f)*sab+15*cb*sa^2) * a^3 */
+/* +18*sab*sb*(21*ca*sa*sb-(17*sa+30*ca*f)*sab+15*cb*sa^2) * a^2 */
+/* -4*(144*ca*sa*sb^3+((-78*sa-135*ca*f)*sab+108*cb*sa^2)*sb^2+(-125*f*sab^2-45*cb*f*sa*sab)*sb+150*cb*f^2*sab^2) * a */
+/* +8*sb*((24*sa+45*ca*f)*sb^2+(15*cb*f*sa-125*f*sab)*sb+100*cb*f^2*sab) */
+/* this quartic equation reduces to a linear for the special case beta = pi - alpha or beta = -alpha */
+/* 0 = -3*ca*sa * a */
+/* +4*sa+5*ca*f */
 #define TRY_CNT		2
 #define DECIMATION	5
 Spline *ApproximateSplineFromPointsSlopes(SplinePoint *from, SplinePoint *to,
-	FitPoint *mid, int cnt, int order2, int is_accurate) {
+	FitPoint *mid, int cnt, int order2, enum mergetype mt) {
     BasePoint tounit, fromunit, ftunit;
     bigreal flen,tlen,ftlen,dot;
     Spline *spline, temp;
@@ -733,7 +805,223 @@ return( SplineMake3(from,to));
     }
     /* This is the generic case, where a generic part is approximated by a cubic */
     /* bezier spline. */
-    if (is_accurate) { /* More accurate but slower function by Linus Romer */
+    if ( ( ftlen == 0 ) && ( mt != mt_matrix ) )
+		mt = mt_matrix; 
+    if ( mt == mt_levien ) { 
+	bigreal f,m,xa,ya,xb,yb,xc,yc,xd,yd,sasa,sab;
+	int numberOfSolutions;
+    SplinePoint *frompoint,*topoint;
+    f = 0; /* area */
+    m = 0; /* first area moment about y (along x) */
+    frompoint = from;
+    if ( from->next==NULL )
+		topoint=to;
+	else
+		topoint=from->next->to;
+	for ( ; ; frompoint = topoint->next->from, topoint = topoint->next->to ) {
+		/* normalizing transformation (chord to x axis and length 1) */
+		xa = ((frompoint->me.x-from->me.x)*ftunit.x+(frompoint->me.y-from->me.y)*ftunit.y)/ftlen;
+		ya = (-(frompoint->me.x-from->me.x)*ftunit.y+(frompoint->me.y-from->me.y)*ftunit.x)/ftlen;
+		xb = ((frompoint->nextcp.x-from->me.x)*ftunit.x+(frompoint->nextcp.y-from->me.y)*ftunit.y)/ftlen;
+		yb = (-(frompoint->nextcp.x-from->me.x)*ftunit.y+(frompoint->nextcp.y-from->me.y)*ftunit.x)/ftlen;
+		xc = ((topoint->prevcp.x-from->me.x)*ftunit.x+(topoint->prevcp.y-from->me.y)*ftunit.y)/ftlen;
+		yc = (-(topoint->prevcp.x-from->me.x)*ftunit.y+(topoint->prevcp.y-from->me.y)*ftunit.x)/ftlen;
+		xd = ((topoint->me.x-from->me.x)*ftunit.x+(topoint->me.y-from->me.y)*ftunit.y)/ftlen;
+		yd = (-(topoint->me.x-from->me.x)*ftunit.y+(topoint->me.y-from->me.y)*ftunit.x)/ftlen;
+		f += ((xb-xa)*(10*ya+6*yb+3*yc+yd)+(xc-xb)*(4*ya+6*yb+6*yc+4*yd)+(xd-xc)*(ya+3*yb+6*yc+10*yd))/20;
+		m += (280*xd*xd*yd-105*xc*xd*yd-30*xb*xd*yd-5*xa*xd*yd-45*xc*xc*yd-45*xb*xc*yd-12*xa*xc*yd-18*xb*xb*yd
+		-15*xa*xb*yd-5*xa*xa*yd+105*xd*xd*yc+45*xc*xd*yc-3*xa*xd*yc-27*xb*xc*yc-18*xa*xc*yc-27*xb*xb*yc
+		-45*xa*xb*yc-30*xa*xa*yc+30*xd*xd*yb+45*xc*xd*yb+18*xb*xd*yb+3*xa*xd*yb+27*xc*xc*yb+27*xb*xc*yb
+		-45*xa*xb*yb-105*xa*xa*yb+5*xd*xd*ya+15*xc*xd*ya+12*xb*xd*ya+5*xa*xd*ya+18*xc*xc*ya+45*xb*xc*ya
+		+30*xa*xc*ya+45*xb*xb*ya+105*xa*xb*ya-280*xa*xa*ya)/840;
+		if ( topoint==to )
+			break;
+    }
+    BasePoint aunit = (BasePoint) { BPDot(ftunit, fromunit), BPCross(ftunit, fromunit) }; /* normed direction at "from" */
+    BasePoint bunit = (BasePoint) { BPDot(BPRev(ftunit), tounit),BPCross(ftunit, tounit) }; /* normed direction at "to" */
+    if ( aunit.y < 0 ) { /* normalize aunit.y to >= 0: */
+		aunit.y = -aunit.y;
+		bunit.y = -bunit.y;
+		m = -m;
+		f = -f;
+	}
+	/* calculate the Tunni point (where the tangents at "from" and "to" interesect) */
+	bigreal aMax = 100; /* maximal value that the handle a can reach up to the Tunni point, 100 is really long */
+	bigreal bMax = 100; /* maximal value that the handle b can reach up to the Tunni point, 100 is really long */
+	sab = aunit.y*bunit.x+aunit.x*bunit.y; 
+	if (sab != 0) { /* if handles not parallel */
+		aMax = bunit.y/sab;
+		bMax = aunit.y/sab;
+		if ( aMax < 0 ) {
+				aMax = 100;
+		}
+		if ( bMax < 0 ) {
+				bMax = 100;
+		}
+	}
+	/* start approximation by solving the quartic equation */
+	sasa = aunit.y*aunit.y; /* reducing the multiplications */
+	Quartic quad;
+	if ( (aunit.x == -bunit.x && aunit.y == bunit.y) || (aunit.x == bunit.x && aunit.y == -bunit.y) ) { /* handles are parallel */
+		quad.a = 0;
+		quad.b = 0;
+		quad.c = -9*aunit.x*sasa;
+		quad.d = 6*aunit.y*(4*aunit.y+5*aunit.x*f);	
+		quad.e = 10*((42*m-25*f)*aunit.y-25*aunit.x*f*f);
+	} else { /* generic situation */
+		quad.a = -9*aunit.x*(((2*bunit.y*bunit.x*aunit.x+aunit.y
+				*(2*bunit.x*bunit.x-1))*aunit.x-2*bunit.y*bunit.x)
+				*aunit.x-bunit.x*bunit.x*aunit.y);
+		quad.b = 12*((((bunit.x*(30*f*bunit.x-bunit.y)-15*f)
+				*aunit.x+2*aunit.y-bunit.x*aunit.y*(bunit.x+30*f*bunit.y))
+				*aunit.x+bunit.x*(bunit.y-15*f*bunit.x))
+				*aunit.x-aunit.y*bunit.x*bunit.x);	
+		quad.c = 12*((((70*m+15*f)*bunit.y*bunit.y+bunit.x
+				*(9*bunit.y-70*bunit.x*m-5*bunit.x*f))
+				*aunit.x-5*aunit.y*bunit.y*(3*bunit.y-4*bunit.x
+				*(7*m+f)))*aunit.x-bunit.x*(9*bunit.y-70*bunit.x*m-5*bunit.x*f));
+		quad.d = 16*(((12*aunit.y-5*aunit.x*(42*m-17*f))*bunit.y
+				-70*bunit.x*(3*m-f)*aunit.y-75*aunit.x*bunit.x*f*f)
+				*bunit.y-75*bunit.x*bunit.x*f*f*aunit.y);
+		quad.e = 80*bunit.y*(42*bunit.y*m-25*f*(bunit.y-bunit.x*f));
+	}
+	extended solutions[4] = {-999999,-999999,-999999,-999999};
+	_QuarticSolve(&quad,solutions);
+	extended abSolutions[10][2]; /* there are at most 4+4+1+1=10 solutions of pairs of a and b (quartic=0,derivative=0,b=0.01,a=0.01) */
+	numberOfSolutions = 0;
+	extended a,b;
+	for( int i = 0; i < 4; i++ ){
+		a = solutions[i];
+		if ( a >= 0 && a < aMax ) {
+			b = (20*f-6*a*aunit.y)/(3*(2*bunit.y-a*sab));
+			if ( b >= 0 && b < bMax ) {
+				abSolutions[numberOfSolutions][0] = a;
+				abSolutions[numberOfSolutions++][1] = b;
+			}
+		}
+	}
+	/* and now again for the derivative (of m not of the upper quartic): */
+	if ( (aunit.x == -bunit.x && aunit.y == bunit.y) || (aunit.x == bunit.x && aunit.y == -bunit.y) ) { /* handles are parallel */
+		quad.a = 0;
+		quad.b = 0;
+		quad.c = 0;
+		quad.d = -3*aunit.x*aunit.y;
+		quad.e = 4*aunit.y+5*aunit.x*f;
+	} else { /* generic situation */
+		bigreal sbsb = bunit.y*bunit.y;
+		bigreal sabsab = sab*sab;
+		quad.a = -9*aunit.x*aunit.y*sabsab*sab;
+		quad.b = -3*sabsab*(9*aunit.x*aunit.y*bunit.y-(17*aunit.y
+				+30*aunit.x*f)*sab+15*bunit.x*sasa);	
+		quad.c = 18*sab*bunit.y*(21*aunit.x*aunit.y*bunit.y-(17*aunit.y
+				+30*aunit.x*f)*sab+15*bunit.x*sasa);
+		quad.d = -4*(144*aunit.x*aunit.y*sbsb*bunit.y+((-78*aunit.y-
+				135*aunit.x*f)*sab+108*bunit.x*sasa)*sbsb+(-125*f*sabsab
+				-45*bunit.x*f*aunit.y*sab)*bunit.y+150*bunit.x*f*f*sabsab);
+		quad.e = 8*bunit.y*((24*aunit.y+45*aunit.x*f)*sbsb
+				+(15*bunit.x*f*aunit.y-125*f*sab)*bunit.y+100*bunit.x*f*f*sab);				
+	}
+	for( int i = 0; i < 4; i++ ) /* overwriting (reusing) */
+		solutions[i] = -999999;
+	_QuarticSolve(&quad,solutions); 
+	for( int i = 0; i < 4; i++ ){
+		a = solutions[i];
+		if ( a >= 0 && a < aMax ) {
+			b = (20*f-6*a*aunit.y)/(3*(2*bunit.y-a*sab));
+			if ( b >= 0 && b < bMax ) {
+				abSolutions[numberOfSolutions][0] = a;
+				abSolutions[numberOfSolutions++][1] = b;
+			} 
+		}
+	}
+	/* Add the solution of b = 0.01 (approximately 0 but above because of direction). */
+	/* This solution is not part of the original algorithm by Raph Levien. */
+	a = (2000*f-6*bunit.y)/(600*aunit.y-3*sab);
+	if ( a >= 0 && a < aMax ) {
+		abSolutions[numberOfSolutions][0] = a;
+		abSolutions[numberOfSolutions++][1] = 0.01;
+	}
+	/* Add the solution of a = 0.01 (approximately 0 but above because of direction). */
+	/* This solution is not part of the original algorithm by Raph Levien. */
+	b = (2000*f-6*aunit.y)/(600*bunit.y-3*sab);
+	if ( b >= 0 && b < bMax ) {
+		abSolutions[numberOfSolutions][0] = 0.01;
+		abSolutions[numberOfSolutions++][1] = b;
+	}	
+	if ( numberOfSolutions == 0) { /* add solutions that extend up to the Tunni point */
+		/* try solution with a = aMax and b area-equal*/
+		b = (20*f-6*aMax*aunit.y)/(3*(2*bunit.y-aMax*sab));
+		if ( b >= 0 && b < bMax ) {
+			abSolutions[numberOfSolutions][0] = aMax;
+			abSolutions[numberOfSolutions++][1] = b;
+		}
+		/* try solution with b = bMax and a area-equal*/
+		a = (20*f-6*bMax*bunit.y)/(3*(2*aunit.y-bMax*sab));
+		if ( a >= 0 && a < aMax ) {
+			abSolutions[numberOfSolutions][0] = a;
+			abSolutions[numberOfSolutions++][1] = bMax;
+		}
+	}
+	if ( numberOfSolutions == 0) {
+		/* solution with a = aMax and b = bMax*/
+		abSolutions[numberOfSolutions][0] = aMax;
+		abSolutions[numberOfSolutions++][1] = bMax;
+	}
+	if ( numberOfSolutions == 1) { 
+		from->nextcp.x = from->me.x+ftlen*fromunit.x*abSolutions[0][0];
+		from->nextcp.y = from->me.y+ftlen*fromunit.y*abSolutions[0][0];
+		to->prevcp.x = to->me.x+ftlen*tounit.x*abSolutions[0][1];
+		to->prevcp.y = to->me.y+ftlen*tounit.y*abSolutions[0][1];
+	} else { /* compare L2 errors to choose the best solution */
+		bigreal bestError = 1e30;
+		bigreal t,error,errorsum,dist;
+		BasePoint prevcp,nextcp,coeff1,coeff2,coeff3;	
+		for (int k=0; k<numberOfSolutions; k++) {
+			nextcp.x = from->me.x+ftlen*fromunit.x*abSolutions[k][0];
+			nextcp.y = from->me.y+ftlen*fromunit.y*abSolutions[k][0];
+			prevcp.x = to->me.x+ftlen*tounit.x*abSolutions[k][1];
+			prevcp.y = to->me.y+ftlen*tounit.y*abSolutions[k][1];
+			/* Calculate the error of the cubic bezier path from,nextcp,prevcp,to: */
+			/* In order to do that we calculate 99 points on the bezier path. */
+			coeff3.x = -from->me.x+3*nextcp.x-3*prevcp.x+to->me.x;
+			coeff3.y = -from->me.y+3*nextcp.y-3*prevcp.y+to->me.y;
+			coeff2.x = 3*from->me.x-6*nextcp.x+3*prevcp.x;
+			coeff2.y = 3*from->me.y-6*nextcp.y+3*prevcp.y;
+			coeff1.x = -3*from->me.x+3*nextcp.x;
+			coeff1.y = -3*from->me.y+3*nextcp.y;
+			BasePoint approx[99];
+			for (int i=0; i<99; i++) {
+				t = (i+1)/100.0;
+				approx[i].x = from->me.x+t*(coeff1.x+t*(coeff2.x+t*coeff3.x));
+				approx[i].y = from->me.y+t*(coeff1.y+t*(coeff2.y+t*coeff3.y));
+			}
+			/* Now we calculate the error by determing the minimal quadratic distance to the mid points. */
+			errorsum = 0.0;
+			for (int i=0; i<cnt; i++) { /* Going through the mid points */
+				error = (mid[i].p.x-approx[0].x)*(mid[i].p.x-approx[0].x)
+				+(mid[i].p.y-approx[0].y)*(mid[i].p.y-approx[0].y);
+				/* Above we have just initialized the error and */
+				/* now we are going through the remaining 98 of */
+				/* 99 points on the approximate cubic bezier: */
+				for (int j=1; j<99; j++) {
+					dist = (mid[i].p.x-approx[j].x)*(mid[i].p.x-approx[j].x)
+					+(mid[i].p.y-approx[j].y)*(mid[i].p.y-approx[j].y);
+					if (dist < error)
+						error = dist;
+				}
+				errorsum += error;
+				if (errorsum > bestError)
+					break;
+			}
+			if (errorsum < bestError) {
+				bestError = errorsum;
+				from->nextcp = nextcp;
+				to->prevcp = prevcp;
+			}
+		}
+    } 
+    return( SplineMake3(from,to));
+	} else if ( mt == mt_bruteforce ) { 
 	bigreal best_error = 1e30;
 	bigreal t,error,errorsum,dist;
 	BasePoint prevcp,coeff1,coeff2,coeff3;
@@ -793,7 +1081,8 @@ return( SplineMake3(from,to));
 		}
 	}
 	return( SplineMake3(from,to));
-    } else { /* original and fast function */
+    }
+	else { /* mergetype mt_matrix (original algorithm) */
     pt_pf_x = to->me.x - from->me.x;
     pt_pf_y = to->me.y - from->me.y;
     consts[0] = consts[1] = rt_terms[0] = rt_terms[1] = rf_terms[0] = rf_terms[1] = 0;
@@ -1068,7 +1357,7 @@ SplinePoint *_ApproximateSplineSetFromGen(SplinePoint *from, SplinePoint *to,
     to->prevcp.x = to->me.x - fp[cnt-1].ut.x;
     to->prevcp.y = to->me.y - fp[cnt-1].ut.y;
     to->noprevcp = false;
-    ApproximateSplineFromPointsSlopes(from,to,fp+1,cnt-2,order2,false);
+    ApproximateSplineFromPointsSlopes(from,to,fp+1,cnt-2,order2,mt_matrix);
 
     for ( i=0; i<cnt; ++i ) {
 	d = SplineMinDistanceToPoint(from->next, &fp[i].p);

@@ -551,7 +551,7 @@ static Spline *SplineBindToPath(Spline *s,SplineSet *path) {
 	mids[i].p.x = pos.x - spos.y*mids[i].ut.y;
 	mids[i].p.y = pos.y + spos.y*mids[i].ut.x;
     }
-    ret = ApproximateSplineFromPointsSlopes(s->from,s->to,mids,i,false,false);
+    ret = ApproximateSplineFromPointsSlopes(s->from,s->to,mids,i,false,mt_matrix);
     SplineFree(s);
 return( ret );
 }
@@ -776,7 +776,7 @@ void SplinesRemoveBetween(SplineChar *sc, SplinePoint *from, SplinePoint *to,int
     fp = SplinesFigureFPsBetween(from,to,&tot);
 
     if ( type==1 )
-	ApproximateSplineFromPointsSlopes(from,to,fp,tot-1,order2,true); /* changed by Linus Romer */
+	ApproximateSplineFromPointsSlopes(from,to,fp,tot-1,order2,mt_levien);
     else
 	ApproximateSplineFromPoints(from,to,fp,tot-1,order2);
 
@@ -1307,7 +1307,7 @@ return( false );
     memcpy(fp2,fp,tot*sizeof(FitPoint));
 
     if ( !(flags&sf_ignoreslopes) )
-	ApproximateSplineFromPointsSlopes(from,to,fp,tot-1,order2,false);
+	ApproximateSplineFromPointsSlopes(from,to,fp,tot-1,order2,mt_levien);
     else {
 	ApproximateSplineFromPoints(from,to,fp,tot-1,order2);
     }
