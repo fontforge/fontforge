@@ -172,8 +172,6 @@ static SplinePoint *MakeQuadSpline(SplinePoint *start,Spline *ttf,real x,
 	end->roundx = oldend->roundx; end->roundy = oldend->roundy; end->dontinterpolate = oldend->dontinterpolate;
 	x = oldend->me.x; y = oldend->me.y;	/* Want it to compare exactly */
     }
-    end->ttfindex = 0xfffe;
-    end->nextcpindex = 0xfffe;
 
     *new = *ttf;
     new->from = start;		start->next = new;
