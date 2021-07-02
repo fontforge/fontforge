@@ -2501,6 +2501,10 @@ void GResEdit(GResInfo *additional,const char *def_res_file,void (*change_res_fi
 	for ( re_end = _GLineRIHead(); re_end->next!=NULL; re_end = re_end->next );
 	re_end->next = _GHVBoxRIHead();
 	for ( re_end = _GHVBoxRIHead(); re_end->next!=NULL; re_end = re_end->next );
+	re_end->next = _GFlowBoxRIHead();
+	for ( re_end = _GFlowBoxRIHead(); re_end->next!=NULL; re_end = re_end->next );
+	re_end->next = _GScroll1BoxRIHead();
+	for ( re_end = _GScroll1BoxRIHead(); re_end->next!=NULL; re_end = re_end->next );
 	re_end->next = _GMenuRIHead();
 	for ( re_end = _GMenuRIHead(); re_end->next!=NULL; re_end = re_end->next );
 	re_end->next = _GMatrixEditRIHead();

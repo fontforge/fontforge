@@ -22,6 +22,7 @@ add_library(gdraw STATIC
   gdrawtxt.c
   gfilechooser.c
   gfiledlg.c
+  gflowbox.c
   ggadgetP.h
   ggadgets.c
   ggdkcdraw.c
@@ -45,6 +46,7 @@ add_library(gdraw STATIC
   gresourceP.h
   gsavefiledlg.c
   gscrollbar.c
+  gscroll1box.c
   gspacer.c
   gtabset.c
   gtextfield.c

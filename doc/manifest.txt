@@ -431,6 +431,7 @@ sphinx/images/mmfinal.png
 sphinx/images/mmfuncs.png
 sphinx/images/mmnamedstyles.png
 sphinx/images/mmnamingastyle.png
+sphinx/images/multi_example.png
 sphinx/images/newcountermask.png
 sphinx/images/newfont.png
 sphinx/images/non-linear.png
@@ -802,6 +803,7 @@ sphinx/techref/SuggestDeltas.rst
 sphinx/techref/TrueOpenTables.rst
 sphinx/techref/UniqueID.rst
 sphinx/techref/accented.rst
+sphinx/techref/askmulti.rst
 sphinx/techref/autotrace.rst
 sphinx/techref/bezier.rst
 sphinx/techref/bitmaponlysfnt.rst

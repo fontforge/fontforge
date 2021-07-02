@@ -29,6 +29,7 @@ set(FONTFORGE_NOINST_HEADERS
   macbinary.h
   macenc.h
   mathconstants.h
+  multidialog.h
   namelist.h
   othersubrs.h
   palmfonts.h

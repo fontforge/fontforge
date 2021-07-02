@@ -626,6 +626,8 @@ return;
 /*	if ( gts->tabs[i].w!=NULL ) */
 /*	    GDrawDestroyWindow(gts->tabs[i].w); */
     }
+    if ( gts->vsb!=NULL )
+	GGadgetDestroy(gts->vsb);
     free(gts->tabs);
     _ggadget_destroy(g);
 }
@@ -885,7 +887,10 @@ GGadget *GTabSetCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     gts->tabcnt = i;
     gts->tabs = calloc(i, sizeof(struct tabs));
     for ( i=0; gd->u.tabs[i].text!=NULL; ++i ) {
-	if ( gd->u.tabs[i].text_in_resource )
+	if ( gd->u.tabs[i].text_is_1byte && gd->u.tabs[i].text_in_resource ) {
+	    unichar_t mn;
+	    gts->tabs[i].name = utf82u_mncopy((char *) (gd->u.tabs[i].text), &mn);
+	} else if ( gd->u.tabs[i].text_in_resource )
 	    gts->tabs[i].name = u_copy(GStringGetResource((intpt) (gd->u.tabs[i].text),NULL));
 	else if ( gd->u.tabs[i].text_is_1byte )
 	    gts->tabs[i].name = utf82u_copy((char *) (gd->u.tabs[i].text));
