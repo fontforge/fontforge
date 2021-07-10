@@ -22,6 +22,7 @@ PYVER=$(ldd $APPDIR/usr/bin/fontforge | grep -Eom1 'python[0-9.]{3}' | head -1 |
 
 ( cd $APPDIR ; dpkg -x /var/cache/apt/archives/libpython${PYVER}-minimal*.deb . )
 ( cd $APPDIR ; dpkg -x /var/cache/apt/archives/libpython${PYVER}-stdlib*.deb . )
+"python${PYVER}" -m pip install -I --target "$APPDIR/usr/lib/python${PYVER}/dist-packages" setuptools
 
 if [ ! -f linuxdeployqt.AppImage ]; then
     curl -Lo linuxdeployqt.AppImage "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
