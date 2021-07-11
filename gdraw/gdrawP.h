@@ -243,6 +243,7 @@ struct displayfuncs {
     void (*postEvent)(GEvent *e);
     void (*postDragEvent)(GWindow w,GEvent *mouse,enum event_type et);
     int  (*requestDeviceEvents)(GWindow w,int devcnt,struct gdeveventmask *de);
+    int  (*shortcutKeyMatches)(const GEvent *e, unichar_t ch);
 
     GTimer *(*requestTimer)(GWindow w,int32 time_from_now,int32 frequency, void *userdata);
     void (*cancelTimer)(GTimer *timer);
@@ -275,7 +276,6 @@ struct displayfuncs {
 
     void (*PushClipOnly)(GWindow w);
     void (*ClipPreserve)(GWindow w);
-    
 };
 
 extern int16 div_tables[257][2]; // in div_tables.c

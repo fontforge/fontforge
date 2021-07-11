@@ -3390,6 +3390,14 @@ return( 0 );
 #endif
 }
 
+static int GXDrawShortcutKeyMatches(const GEvent *e, unichar_t ch) {
+    if ((e->type != et_char && e->type != et_charup) || ch == 0) {
+        return false;
+    }
+
+	return toupper(e->u.chr.chars[0]) == ch;
+}
+
 static Bool exposeornotify(Display *d,XEvent *e,XPointer arg) {
     if ( e->type == Expose || e->type == GraphicsExpose ||
 	    e->type == CreateNotify || e->type == MapNotify ||
@@ -4007,6 +4015,7 @@ static struct displayfuncs xfuncs = {
     GXDrawPostEvent,
     GXDrawPostDragEvent,
     GXDrawRequestDeviceEvents,
+	GXDrawShortcutKeyMatches,
 
     GXDrawRequestTimer,
     GXDrawCancelTimer,

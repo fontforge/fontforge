@@ -106,6 +106,8 @@ typedef struct ggdkkeystate {
     GdkEventType type;
     guint state;
     guint keyval;
+    guint16 keycode;
+    guint8 group;
 } GGDKKeyState;
 
 typedef struct ggdkdndcontext {

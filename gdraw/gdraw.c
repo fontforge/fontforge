@@ -714,6 +714,10 @@ int GDrawRequestDeviceEvents(GWindow w,int devcnt,struct gdeveventmask *de) {
 return( (w->display->funcs->requestDeviceEvents)(w,devcnt,de) );
 }
 
+int GDrawShortcutKeyMatches(const GEvent *e, unichar_t ch) {
+    return (e->w->display->funcs->shortcutKeyMatches)(e, ch);
+}
+
 void GDrawDestroyDisplays() {
   if (screen_display != NULL) {
 #ifndef FONTFORGE_CAN_USE_GDK

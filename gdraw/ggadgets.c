@@ -991,7 +991,7 @@ return;
     char *cpt = utf8_strchr(ctext,mnemonic);
     GRect space;
     if ( cpt==NULL && isupper(mnemonic))
-	cpt = strchr(ctext,tolower(mnemonic));
+	cpt = utf8_strchr(ctext,tolower(mnemonic));
     if ( cpt==NULL )
 return;
     GDrawLayoutInit(gw,ctext,-1,NULL);

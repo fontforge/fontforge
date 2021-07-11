@@ -36,6 +36,7 @@
 #include "gkeysym.h"
 #include "gresource.h"
 #include "ustring.h"
+#include "utype.h"
 
 #include <assert.h>
 #include <math.h>
@@ -914,24 +915,6 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             gevent.type = event->type == GDK_KEY_PRESS ? et_char : et_charup;
             gevent.u.chr.state = _GGDKDraw_GdkModifierToKsm(((GdkEventKey *)event)->state);
 
-#ifdef GDK_WINDOWING_QUARTZ
-            // On Mac, the Alt/Option key is used for alternate input.
-            // We want accelerators, so translate ourselves, forcing the group to 0.
-            if ((gevent.u.chr.state & ksm_meta) && key->group != 0) {
-                GdkKeymap *km = gdk_keymap_get_for_display(gdisp->display);
-                guint keyval;
-
-                gdk_keymap_translate_keyboard_state(km, key->hardware_keycode,
-                    key->state, 0, &keyval, NULL, NULL, NULL);
-
-                //Log(LOGDEBUG, "Fixed keyval from 0x%x(%s) -> 0x%x(%s)",
-                //	key->keyval, gdk_keyval_name(key->keyval),
-                //	keyval, gdk_keyval_name(keyval));
-
-                key->keyval = keyval;
-            }
-#endif
-
             gevent.u.chr.autorepeat =
                 event->type    == GDK_KEY_PRESS &&
                 gdisp->ks.type == GDK_KEY_PRESS &&
@@ -953,9 +936,11 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
                 gevent.u.chr.chars[0] = gdk_keyval_to_unicode(key->keyval);
             }
 
-            gdisp->ks.type   = key->type;
-            gdisp->ks.keyval = key->keyval;
-            gdisp->ks.state  = key->state;
+            gdisp->ks.group   = key->group;
+            gdisp->ks.keycode = key->hardware_keycode;
+            gdisp->ks.keyval  = key->keyval;
+            gdisp->ks.state   = key->state;
+            gdisp->ks.type    = key->type;
         }
         break;
         case GDK_MOTION_NOTIFY: {
@@ -2238,6 +2223,36 @@ static int GGDKDrawRequestDeviceEvents(GWindow w, int devcnt, struct gdeveventma
     return 0; //Not sure how to handle... For tablets...
 }
 
+static int GGDKDrawShortcutKeyMatches(const GEvent *e, unichar_t ch) {
+    if ((e->type != et_char && e->type != et_charup) || ch == 0) {
+        return false;
+    }
+
+    unichar_t k = toupper(e->u.chr.chars[0]);
+    if (k == ch) {
+        return true;
+    }
+
+    GGDKWindow gw = (GGDKWindow)e->w;
+    if (gw->display->ks.group == 0) {
+        return false;
+    }
+
+    GdkKeymap *km = gdk_keymap_get_for_display(gw->display->display);
+    if (!km) {
+        return false;
+    }
+
+    guint keyval;
+    if (!gdk_keymap_translate_keyboard_state(km, gw->display->ks.keycode,
+        gw->display->ks.state, 0, &keyval, NULL, NULL, NULL)) {
+        return false;
+    }
+
+    k = toupper(gdk_keyval_to_unicode(keyval));
+    return k == ch;
+}
+
 static GTimer *GGDKDrawRequestTimer(GWindow w, int32 time_from_now, int32 frequency, void *userdata) {
     //Log(LOGDEBUG, " ");
     GGDKTimer *timer = calloc(1, sizeof(GGDKTimer));
@@ -2344,6 +2359,7 @@ static struct displayfuncs gdkfuncs = {
     GGDKDrawPostEvent,
     GGDKDrawPostDragEvent,
     GGDKDrawRequestDeviceEvents,
+    GGDKDrawShortcutKeyMatches,
 
     GGDKDrawRequestTimer,
     GGDKDrawCancelTimer,

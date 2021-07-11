@@ -1171,15 +1171,13 @@ static GMenuItem *GMenuSearchAction( GWindow gw,
 static GMenuItem *GMenuSearchShortcut(GWindow gw, GMenuItem *mi, GEvent *event,
 	int call_moveto) {
     int i;
-    unichar_t keysym = event->u.chr.keysym;
 
-    if ( keysym<GK_Special && islower(keysym))
-	keysym = toupper(keysym); /*getkey(keysym,event->u.chr.state&0x2000 );*/
     for ( i=0; mi[i].ti.text!=NULL || mi[i].ti.image!=NULL || mi[i].ti.line; ++i ) {
 	if ( call_moveto && mi[i].moveto != NULL)
 	    (mi[i].moveto)(gw,&(mi[i]),event);
-	if ( mi[i].sub==NULL && mi[i].shortcut == keysym &&
-		(menumask&event->u.chr.state)==mi[i].short_mask )
+	if ( mi[i].sub==NULL &&
+		(menumask&event->u.chr.state)==mi[i].short_mask &&
+		GDrawShortcutKeyMatches(event, mi[i].shortcut) )
 return( &mi[i]);
 	else if ( mi[i].sub!=NULL ) {
 	    GMenuItem *ret = GMenuSearchShortcut(gw,mi[i].sub,event,call_moveto);
@@ -1316,20 +1314,18 @@ static int gmenu_key(struct gmenu *m, GEvent *event) {
     int i;
     GMenuItem *mi;
     GMenu *top;
-    unichar_t keysym = event->u.chr.keysym;
 
     if ( m->dying )
 	return( false );
 
-    if ( islower(keysym)) keysym = toupper(keysym);
     if ( event->u.chr.state&ksm_meta && !(event->u.chr.state&(menumask&~(ksm_meta|ksm_shift)))) {
 	/* Only look for mneumonics in the child */
 	while ( m->child!=NULL )
 	    m = m->child;
 	for ( i=0; i<m->mcnt; ++i ) {
-	    if ( m->mi[i].ti.mnemonic == keysym &&
-			!m->disabled &&
-			!m->mi[i].ti.disabled ) {
+	    if ( !m->disabled &&
+			!m->mi[i].ti.disabled &&
+			GDrawShortcutKeyMatches(event, m->mi[i].ti.mnemonic) ) {
 		GMenuKeyInvoke(m,i);
 return( true );
 	    }
@@ -1705,6 +1701,7 @@ int GMenuPopupCheckKey(GEvent *event) {
     return( gmenu_key(most_recent_popup_menu,event) );
 }
 
+#ifndef FONTFORGE_CAN_USE_GDK
 /* ************************************************************************** */
 
 int GGadgetUndoMacEnglishOptionCombinations(GEvent *event) {
@@ -1861,6 +1858,8 @@ static int osx_handle_keysyms( int st, int k )
 }
 #endif
 
+#endif // FONTFORGE_CAN_USE_GDK
+
 int osx_fontview_copy_cut_counter = 0;
 
 
@@ -1884,7 +1883,7 @@ static int GMenuBarCheckHotkey(GWindow top, GGadget *g, GEvent *event) {
 	    event->u.chr.state ^= (ksm_cmdmacosx|ksm_control);
 	}
     }
-#ifdef __Mac
+#if defined(__Mac) && !defined(FONTFORGE_CAN_USE_GDK)
 
     //
     // Command + Alt + Shift + F on OSX doesn't give the keysym one
@@ -1991,20 +1990,22 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 
     if ( g==NULL || keysym==0 ) return( false ); /* exit if no gadget or key */
 
+#ifndef FONTFORGE_CAN_USE_GDK
     if ( (menumask&ksm_cmdmacosx) && keysym>0x7f &&
 	    (event->u.chr.state&ksm_meta) &&
 	    !(event->u.chr.state&menumask&(ksm_control|ksm_cmdmacosx)) )
 	keysym = GGadgetUndoMacEnglishOptionCombinations(event);
-
     if ( keysym<GK_Special && islower(keysym))
 	keysym = toupper(keysym);
+#endif
+
     if ( event->u.chr.state&ksm_meta && !(event->u.chr.state&(menumask&~(ksm_meta|ksm_shift)))) {
 	/* Only look for mneumonics in the leaf of the displayed menu structure */
 	if ( mb->child!=NULL )
 	    return( gmenu_key(mb->child,event)); /* this routine will do shortcuts too */
 
 	for ( i=0; i<mb->mtot; ++i ) {
-	    if ( mb->mi[i].ti.mnemonic == keysym && !mb->mi[i].ti.disabled ) {
+	    if ( !mb->mi[i].ti.disabled && GDrawShortcutKeyMatches(event, mb->mi[i].ti.mnemonic) ) {
 		GMenuBarKeyInvoke(mb,i);
 		return( true );
 	    }
@@ -2399,19 +2400,15 @@ void GMenuBarSetItemName(GGadget *g, int mid, const unichar_t *name) {
 /*  syntax and subject to gettext translation */
 int GMenuIsCommand(GEvent *event,char *shortcut) {
     GMenuItem foo;
-    unichar_t keysym = event->u.chr.keysym;
 
     if ( event->type!=et_char )
 return( false );
-
-    if ( keysym<GK_Special && islower(keysym))
-	keysym = toupper(keysym);
 
     memset(&foo,0,sizeof(foo));
 
     GMenuItemParseShortCut(&foo,shortcut);
 
-return( (menumask&event->u.chr.state)==foo.short_mask && foo.shortcut == keysym );
+return( (menumask&event->u.chr.state)==foo.short_mask && GDrawShortcutKeyMatches(event, foo.shortcut) );
 }
 
 int GMenuMask(void) {
