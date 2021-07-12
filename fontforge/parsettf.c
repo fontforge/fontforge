@@ -5226,7 +5226,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	    i = 258;
 	    /* Read the pascal strings. There can be more strings than the
 	     * glyph count, so we read tell the end of the table */
-	    while ( ftell(ttf)+1<bounds ) {
+	    while ( i<65536 && ftell(ttf)+1<bounds ) {
 		len = getc(ttf);
 		if ( len<0 )		/* Don't crash on EOF */
 	    break;
