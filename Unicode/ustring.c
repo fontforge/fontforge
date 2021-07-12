@@ -511,30 +511,27 @@ return( ubuf );
 }
 
 unichar_t *utf82u_strncpy(unichar_t *ubuf,const char *utf8buf,int len) {
-    unichar_t *upt=ubuf, *uend=ubuf+len-1;
-    const uint8 *pt = (const uint8 *) utf8buf, *end = pt+strlen(utf8buf);
-    int w, w2;
+    unichar_t *upt = ubuf;
+    int32 ch;
 
-    while ( pt<end && *pt!='\0' && upt<uend ) {
-	if ( *pt<=127 )
-	    *upt = *pt++;
-	else if ( *pt<=0xdf ) {
-	    *upt = ((*pt&0x1f)<<6) | (pt[1]&0x3f);
-	    pt += 2;
-	} else if ( *pt<=0xef ) {
-	    *upt = ((*pt&0xf)<<12) | ((pt[1]&0x3f)<<6) | (pt[2]&0x3f);
-	    pt += 3;
-	} else {
-	    w = ( ((*pt&0x7)<<2) | ((pt[1]&0x30)>>4) )-1;
-	    w = (w<<6) | ((pt[1]&0xf)<<2) | ((pt[2]&0x30)>>4);
-	    w2 = ((pt[2]&0xf)<<6) | (pt[3]&0x3f);
-	    *upt = w*0x400 + w2 + 0x10000;
-	    pt += 4;
-	}
-	++upt;
+    if (!ubuf || !utf8buf || len <= 0) {
+        return ubuf;
+    }
+
+    while (len > 1 && (ch = utf8_ildb(&utf8buf)) != 0) {
+        if (ch > 0) {
+            *upt++ = ch;
+            --len;
+        } else {
+            TRACE("Invalid UTF-8 sequence detected %s\n", utf8buf);
+            do {
+                ++utf8buf;
+            } while ((*utf8buf & 0xc0) == 0x80);
+        }
     }
     *upt = '\0';
-return( ubuf );
+
+    return ubuf;
 }
 
 unichar_t *utf82u_strcpy(unichar_t *ubuf,const char *utf8buf) {
