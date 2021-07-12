@@ -394,10 +394,8 @@ int SCRightToLeft(SplineChar *sc) {
     if ( sc->unicodeenc>=0x10800 && sc->unicodeenc<=0x10fff ||
 	    sc->unicodeenc>=0x1e800 && sc->unicodeenc<=0x1efff )
 return( true );		/* Supplemental Multilingual Plane, RTL scripts */
-    if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 )
-return( isrighttoleft(sc->unicodeenc ));
 
-return( ScriptIsRightToLeft(SCScriptFromUnicode(sc)));
+return( isrighttoleft(sc->unicodeenc ));
 }
 
 static void GlyphMapFree(SplineChar ***map) {

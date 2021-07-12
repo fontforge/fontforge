@@ -33,7 +33,6 @@
 #include "baseviews.h"
 #include "bitmapchar.h"
 #include "bvedit.h"
-#include "chardata.h"
 #include "cvundoes.h"
 #include "encoding.h"
 #include "fontforge.h"
@@ -744,7 +743,6 @@ void FVTrans(FontViewBase *fv,SplineChar *sc,real transform[6], uint8 *sel,
     if ( transform[1]==0 && transform[2]==0 ) {
 	if ( transform[0]==1 && transform[3]==1 &&
 		transform[5]==0 && transform[4]!=0 && 
-		sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 &&
 		isalpha(sc->unicodeenc)) {
 	    SCUndoSetLBearingChange(sc,(int) rint(transform[4]));
 	    SCSynchronizeLBearing(sc,transform[4],fv->active_layer);	/* this moves the hints */

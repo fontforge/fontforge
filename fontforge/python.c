@@ -79,7 +79,6 @@
 #include "tottfgpos.h"
 #include "ttf.h"
 #include "ttfinstrs.h"
-#include "unicodelibinfo.h"
 #include "ustring.h"
 #include "utanvec.h"
 #include "utype.h"
@@ -667,8 +666,8 @@ static PyObject *PyFF_UnicodeAnnotationFromLib(PyObject *UNUSED(self), PyObject 
     if ( !PyArg_ParseTuple(args,"|l",&val) )
 	return( NULL );
 
-    if ( (temp=unicode_annot(val))==NULL ) {
-	temp=malloc(1*sizeof(char)); *temp='\0';
+    if ( (temp=uniname_annotation(val, false))==NULL ) {
+	return Py_BuildValue("s", "");
     }
     ret=Py_BuildValue("s",temp); free(temp);
     return( ret );
@@ -684,8 +683,8 @@ static PyObject *PyFF_UnicodeNameFromLib(PyObject *UNUSED(self), PyObject *args)
     if ( !PyArg_ParseTuple(args,"|l",&val) )
 	return( NULL );
 
-    if ( (temp=unicode_name(val))==NULL ) {
-	temp=malloc(1*sizeof(char)); *temp='\0';
+    if ( (temp=uniname_name(val))==NULL ) {
+	return Py_BuildValue("s", "");
     }
     ret=Py_BuildValue("s",temp); free(temp);
     return( ret );
@@ -693,94 +692,71 @@ static PyObject *PyFF_UnicodeNameFromLib(PyObject *UNUSED(self), PyObject *args)
 
 static PyObject *PyFF_UnicodeBlockCountFromLib(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
 /* If the library is available, then return the number of name blocks */
-
-    return( Py_BuildValue("i", unicode_block_count()) );
+    int count;
+    uniname_blocks(&count);
+    return( Py_BuildValue("i", count) );
 }
 
 static PyObject *PyFF_UnicodeBlockStartFromLib(PyObject *UNUSED(self), PyObject *args) {
 /* If the library is available, then get the official start for this unicode block */
 /* Use this function with UnicodeBlockNameFromLib(n) & UnicodeBlockEndFromLib(n). */
+    const struct unicode_range *blocks;
+    int num_blocks;
     long val;
 
     if ( !PyArg_ParseTuple(args,"|l",&val) )
 	return( NULL );
 
-    return( Py_BuildValue("l", (long)unicode_block_start(val)) );
+    blocks = uniname_blocks(&num_blocks);
+    if (val < 0 || val >= num_blocks) {
+        val = -1;
+    } else {
+        val = blocks[val].start;
+    }
+
+    return( Py_BuildValue("l", val) );
 }
 
 static PyObject *PyFF_UnicodeBlockEndFromLib(PyObject *UNUSED(self), PyObject *args) {
 /* If the library is available, then get the official end for this unicode block. */
 /* Use this function with UnicodeBlockStartFromLib(n), UnicodeBlockNameFromLib(n) */
+    const struct unicode_range *blocks;
+    int num_blocks;
     long val;
 
     if ( !PyArg_ParseTuple(args,"|l",&val) )
 	return( NULL );
 
-    return( Py_BuildValue("l", (long)unicode_block_end(val)) );
+    blocks = uniname_blocks(&num_blocks);
+    if (val < 0 || val >= num_blocks) {
+        val = -1;
+    } else {
+        val = blocks[val].end;
+    }
+
+    return( Py_BuildValue("l", val) );
 }
 
 static PyObject *PyFF_UnicodeBlockNameFromLib(PyObject *UNUSED(self), PyObject *args) {
 /* If the library is available, then get the official name for this unicode block */
 /* Use this function with UnicodeBlockStartFromLib(n), UnicodeBlockEndFromLib(n). */
-    PyObject *ret;
-    char *temp;
+    const struct unicode_range *blocks;
+    int num_blocks;
     long val;
 
     if ( !PyArg_ParseTuple(args,"|l",&val) )
 	return( NULL );
 
-    if ( (temp=unicode_block_name(val))==NULL ) {
-	temp=malloc(1*sizeof(char)); *temp='\0';
+    blocks = uniname_blocks(&num_blocks);
+    if (val < 0 || val >= num_blocks) {
+        return Py_BuildValue("s", "");
     }
-    ret=Py_BuildValue("s",temp); free(temp);
-    return( ret );
+    return Py_BuildValue("s", blocks[val].name);
 }
 
 static PyObject *PyFF_UnicodeNamesListVersion(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
 /* If the library is available, then return the Nameslist Version number */
-    char *temp;
-
-    if ( (temp=unicode_library_version())==NULL ) {
-	temp=malloc(1*sizeof(char)); *temp='\0';
-    }
-    PyObject *ret=Py_BuildValue("s",temp); free(temp);
-    return( ret );
-}
-
-/* Names2 lookup commands to get info from attached libuninameslist >= v0.5. */
-/* Cnt returns lookup table-size, Nxt returns next Unicode value from array, */
-/* Nxt returns 'n' for table array[0..n..(Cnt-1)] pointer. Errors return -1. */
-static PyObject *PyFF_UnicodeNames2GetCntFromLib(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
-    return( Py_BuildValue("i", unicode_names2cnt()) );
-}
-
-static PyObject *PyFF_UnicodeNames2GetNxtFromLib(PyObject *UNUSED(self), PyObject *args) {
-    long val;
-
-    if ( !PyArg_ParseTuple(args,"|l",&val) )
-	return( NULL );
-    return( Py_BuildValue("l", (long)unicode_names2getUtabLoc(val)) );
-}
-
-static PyObject *PyFF_UnicodeNames2NxtUniFromLib(PyObject *UNUSED(self), PyObject *args) {
-    long val;
-
-    if ( !PyArg_ParseTuple(args,"|l",&val) )
-	return( NULL );
-    return( Py_BuildValue("l", (long)unicode_names2valFrmTab(val)) );
-}
-
-static PyObject *PyFF_UnicodeNames2FrmTabFromLib(PyObject *UNUSED(self), PyObject *args) {
-    long val;
-    char *temp;
-
-    if ( !PyArg_ParseTuple(args,"|l",&val) )
-	return( NULL );
-    if ( (temp=unicode_name2FrmTab(val))==NULL ) {
-	return Py_BuildValue("s", "");
-    }
-    PyObject *ret=Py_BuildValue("s",temp); free(temp);
-    return( ret );
+    return Py_BuildValue("s", "NamesList-Version: " UNICODE_VERSION);
 }
 
 static PyObject *PyFF_UnicodeNames2FromLib(PyObject *UNUSED(self), PyObject *args) {
@@ -789,228 +765,11 @@ static PyObject *PyFF_UnicodeNames2FromLib(PyObject *UNUSED(self), PyObject *arg
 
     if ( !PyArg_ParseTuple(args,"|l",&val) )
 	return( NULL );
-    if ( (temp=unicode_name2(val))==NULL ) {
+    if ( (temp=uniname_formal_alias(val))==NULL ) {
 	return Py_BuildValue("s", "");
     }
     PyObject *ret=Py_BuildValue("s",temp); free(temp);
     return( ret );
-}
-
-
-/* Ligature & Fraction information based on current Unicode (builtin) chart. */
-/* Unicode chart seems to distinguish vulgar fractions from other fractions. */
-/* These routines test value with internal table. Returns true/false values. */
-static PyObject *PyFF_isligature(PyObject *UNUSED(self), PyObject *args) {
-    long codepoint;
-
-    if ( !PyArg_ParseTuple(args,"|l",&codepoint) )
-	return( NULL );
-
-    return( Py_BuildValue("i", is_LIGATURE(codepoint)==0?1:0) );
-}
-
-static PyObject *PyFF_isvulgarfraction(PyObject *UNUSED(self), PyObject *args) {
-    long codepoint;
-
-    if ( !PyArg_ParseTuple(args,"|l",&codepoint) )
-	return( NULL );
-
-    return( Py_BuildValue("i", is_VULGAR_FRACTION(codepoint)==0?1:0) );
-}
-
-static PyObject *PyFF_isotherfraction(PyObject *UNUSED(self), PyObject *args) {
-    long codepoint;
-
-    if ( !PyArg_ParseTuple(args,"|l",&codepoint) )
-	return( NULL );
-
-    return( Py_BuildValue("i", is_OTHER_FRACTION(codepoint)==0?1:0) );
-}
-
-static PyObject *PyFF_isfraction(PyObject *UNUSED(self), PyObject *args) {
-    long codepoint;
-
-    if ( !PyArg_ParseTuple(args,"|l",&codepoint) )
-	return( NULL );
-
-    return( Py_BuildValue("i", (is_VULGAR_FRACTION(codepoint)==0 || \
-				is_OTHER_FRACTION(codepoint)==0)?1:0) );
-}
-
-/* Cnt returns lookup table-size, Nxt returns next Unicode value from array, */
-/* Loc returns 'n' for table array[0..n..(Cnt-1)] pointer. Errors return -1. */
-static PyObject *PyFF_LigChartGetCnt(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
-    return( Py_BuildValue("i", LigatureCount()) );
-}
-
-static PyObject *PyFF_VulChartGetCnt(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
-    return( Py_BuildValue("i", VulgarFractionCount()) );
-}
-
-static PyObject *PyFF_OFracChartGetCnt(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
-    return( Py_BuildValue("i", OtherFractionCount()) );
-}
-
-static PyObject *PyFF_FracChartGetCnt(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
-    return( Py_BuildValue("i", FractionCount()) );
-}
-
-/* These routines return builtin table unicode values for n in {0..(Cnt-1)}. */
-/* Internal table array size and values will depend on which unicodelist was */
-/* used at time makeutype was run to make FontForge's internal utype tables. */
-static PyObject *PyFF_LigChartGetNxt(PyObject *UNUSED(self), PyObject *args) {
-    long val;
-
-    if ( !PyArg_ParseTuple(args,"|l",&val) )
-	return( NULL );
-
-    return( Py_BuildValue("l", (long)Ligature_get_U(val)) );
-}
-
-static PyObject *PyFF_VulChartGetNxt(PyObject *UNUSED(self), PyObject *args) {
-    long val;
-
-    if ( !PyArg_ParseTuple(args,"|l",&val) )
-	return( NULL );
-
-    return( Py_BuildValue("l", (long)VulgFrac_get_U(val)) );
-}
-
-static PyObject *PyFF_OFracChartGetNxt(PyObject *UNUSED(self), PyObject *args) {
-    long val;
-
-    if ( !PyArg_ParseTuple(args,"|l",&val) )
-	return( NULL );
-
-    return( Py_BuildValue("l", (long)Fraction_get_U(val)) );
-}
-
-/* If you have a unicode ligature, or fraction, these routines return loc n. */
-/* Internal table array size and values will depend on which unicodelist was */
-/* used at time makeutype was run to make FontForge's internal utype tables. */
-static PyObject *PyFF_LigChartGetLoc(PyObject *UNUSED(self), PyObject *args) {
-    long codepoint;
-
-    if ( !PyArg_ParseTuple(args,"|l",&codepoint) )
-	return( NULL );
-
-    return( Py_BuildValue("i", Ligature_find_N(codepoint)) );
-}
-
-static PyObject *PyFF_VulChartGetLoc(PyObject *UNUSED(self), PyObject *args) {
-    long codepoint;
-
-    if ( !PyArg_ParseTuple(args,"|l",&codepoint) )
-	return( NULL );
-
-    return( Py_BuildValue("i", VulgFrac_find_N(codepoint)) );
-}
-
-static PyObject *PyFF_OFracChartGetLoc(PyObject *UNUSED(self), PyObject *args) {
-    long codepoint;
-
-    if ( !PyArg_ParseTuple(args,"|l",&codepoint) )
-	return( NULL );
-
-    return( Py_BuildValue("i", Fraction_find_N(codepoint)) );
-}
-
-/* If you have a unicode ligature, or fraction, these routines return alt c. */
-static PyObject *PyFF_LigChartGetAltCnt(PyObject *UNUSED(self), PyObject *args) {
-    long codepoint;
-
-    if ( !PyArg_ParseTuple(args,"l",&codepoint) )
-	return( NULL );
-    return( Py_BuildValue("i", Ligature_alt_getC(codepoint)) );
-}
-
-static PyObject *PyFF_LigChartUGetAltCnt(PyObject *UNUSED(self), PyObject *args) {
-    long codepoint;
-
-    if ( !PyArg_ParseTuple(args,"l",&codepoint) )
-	return( NULL );
-    return( Py_BuildValue("i", LigatureU_alt_getC(codepoint)) );
-}
-
-static PyObject *PyFF_VulChartGetAltCnt(PyObject *UNUSED(self), PyObject *args) {
-    long codepoint;
-
-    if ( !PyArg_ParseTuple(args,"l",&codepoint) )
-	return( NULL );
-    return( Py_BuildValue("i", VulgFrac_alt_getC(codepoint)) );
-}
-
-static PyObject *PyFF_VulChartUGetAltCnt(PyObject *UNUSED(self), PyObject *args) {
-    long codepoint;
-
-    if ( !PyArg_ParseTuple(args,"l",&codepoint) )
-	return( NULL );
-    return( Py_BuildValue("i", VulgFracU_alt_getC(codepoint)) );
-}
-
-static PyObject *PyFF_OFracChartGetAltCnt(PyObject *UNUSED(self), PyObject *args) {
-    long codepoint;
-
-    if ( !PyArg_ParseTuple(args,"l",&codepoint) )
-	return( NULL );
-    return( Py_BuildValue("i", Fraction_alt_getC(codepoint)) );
-}
-
-static PyObject *PyFF_OFracChartUGetAltCnt(PyObject *UNUSED(self), PyObject *args) {
-    long codepoint;
-
-    if ( !PyArg_ParseTuple(args,"l",&codepoint) )
-	return( NULL );
-    return( Py_BuildValue("i", FractionU_alt_getC(codepoint)) );
-}
-
-/* If you have a unicode ligature, or fraction, these routines return alt v. */
-static PyObject *PyFF_LigChartGetAltVal(PyObject *UNUSED(self), PyObject *args) {
-    long nthCode,altN;
-
-    if ( !PyArg_ParseTuple(args,"ll",&nthCode, &altN) )
-	return( NULL );
-    return( Py_BuildValue("l", (long)Ligature_alt_getV(nthCode,altN)) );
-}
-
-static PyObject *PyFF_LigChartUGetAltVal(PyObject *UNUSED(self), PyObject *args) {
-    long nthCode,altN;
-
-    if ( !PyArg_ParseTuple(args,"ll",&nthCode, &altN) )
-	return( NULL );
-    return( Py_BuildValue("l", (long)LigatureU_alt_getV(nthCode,altN)) );
-}
-
-static PyObject *PyFF_VulChartGetAltVal(PyObject *UNUSED(self), PyObject *args) {
-    long nthCode,altN;
-
-    if ( !PyArg_ParseTuple(args,"ll",&nthCode, &altN) )
-	return( NULL );
-    return( Py_BuildValue("l", (long)VulgFrac_alt_getV(nthCode,altN)) );
-}
-
-static PyObject *PyFF_VulChartUGetAltVal(PyObject *UNUSED(self), PyObject *args) {
-    long nthCode,altN;
-
-    if ( !PyArg_ParseTuple(args,"ll",&nthCode, &altN) )
-	return( NULL );
-    return( Py_BuildValue("l", (long)VulgFracU_alt_getV(nthCode,altN)) );
-}
-
-static PyObject *PyFF_OFracChartGetAltVal(PyObject *UNUSED(self), PyObject *args) {
-    long nthCode,altN;
-
-    if ( !PyArg_ParseTuple(args,"ll",&nthCode, &altN) )
-	return( NULL );
-    return( Py_BuildValue("l", (long)Fraction_alt_getV(nthCode,altN)) );
-}
-
-static PyObject *PyFF_OFracChartUGetAltVal(PyObject *UNUSED(self), PyObject *args) {
-    long nthCode,altN;
-
-    if ( !PyArg_ParseTuple(args,"ll",&nthCode, &altN) )
-	return( NULL );
-    return( Py_BuildValue("l", (long)FractionU_alt_getV(nthCode,altN)) );
 }
 
 static PyObject *PyFF_Version(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
@@ -18741,7 +18500,7 @@ PyMethodDef module_fontforge_methods[] = {
     { "preloadCidmap", PyFF_PreloadCidmap, METH_VARARGS, "Load a cidmap file" },
     { "unicodeFromName", PyFF_UnicodeFromName, METH_VARARGS, "Given a name, look it up in the namelists and find what unicode code point it maps to (returns -1 if not found)" },
     { "nameFromUnicode", PyFF_NameFromUnicode, METH_VARARGS, "Given a unicode code point and (optionally) a namelist, find the corresponding glyph name" },
-    /* --start of libuninameslist functions------------------------ */
+    /* --start of names list functions------------------------ */
     { "UnicodeNameFromLib", PyFF_UnicodeNameFromLib, METH_VARARGS, "Return the www.unicode.org name for a given unicode character value" },
     { "UnicodeAnnotationFromLib", PyFF_UnicodeAnnotationFromLib, METH_VARARGS, "Return the www.unicode.org annotation(s) for a given unicode character value" },
     { "UnicodeBlockCountFromLib", PyFF_UnicodeBlockCountFromLib, METH_NOARGS, "Return the www.unicode.org block count" },
@@ -18749,39 +18508,9 @@ PyMethodDef module_fontforge_methods[] = {
     { "UnicodeBlockEndFromLib", PyFF_UnicodeBlockEndFromLib, METH_VARARGS, "Return the www.unicode.org block end, for example block[1]={128..255} -> 255" },
     { "UnicodeBlockNameFromLib", PyFF_UnicodeBlockNameFromLib, METH_VARARGS, "Return the www.unicode.org block name, for example block[2]={256..383} -> Latin Extended-A" },
     { "UnicodeNamesListVersion", PyFF_UnicodeNamesListVersion, METH_NOARGS, "Return the www.unicode.org NamesList version for this library" },
-    { "UnicodeNames2GetCntFromLib", PyFF_UnicodeNames2GetCntFromLib, METH_NOARGS, "Return the www.unicode.org NamesList total count of Names2 corrections for this library" },
-    { "UnicodeNames2NxtUniFromLib", PyFF_UnicodeNames2NxtUniFromLib, METH_VARARGS, "Return the table location of the next www.unicode.org Names2 for this library" },
-    { "UnicodeNames2GetNxtFromLib", PyFF_UnicodeNames2GetNxtFromLib, METH_VARARGS, "Return the table location of the next www.unicode.org Names2 for this library" },
-    { "UnicodeNames2FrmTabFromLib", PyFF_UnicodeNames2FrmTabFromLib, METH_VARARGS, "Return the www.unicode.org NamesList Names2 from internal table[0<=N<UnicodeNames2GetCnt()] for this library" },
-    { "UnicodeNames2FromLib", PyFF_UnicodeNames2FromLib, METH_VARARGS, "Return the www.unicode.org NamesList Names2 for this Unicode value if it exists for this library" },
+    { "UnicodeNames2FromLib", PyFF_UnicodeNames2FromLib, METH_VARARGS, "Return the www.unicode.org NamesList formal alias for this Unicode value if it exists for this library" },
     { "scriptFromUnicode", PyFF_scriptFromUnicode, METH_VARARGS, "Return the script tag for the given Unicode codepoint. So, 'Q' would return \"latn\"." },
-    /* --end of libuninameslist functions-------------------------- */
-    { "IsFraction", PyFF_isfraction, METH_VARARGS, "Compare value with internal Vulgar_Fraction and Other_Fraction table. Return true/false" },
-    { "IsLigature", PyFF_isligature, METH_VARARGS, "Compare value with internal Ligature table. Return true/false" },
-    { "IsVulgarFraction", PyFF_isvulgarfraction, METH_VARARGS, "Compare value with internal Vulgar_Fraction table. Return true/false" },
-    { "IsOtherFraction", PyFF_isotherfraction, METH_VARARGS, "Compare value with internal Other_Fraction table. Return true/false" },
-    { "ucLigChartGetCnt", PyFF_LigChartGetCnt, METH_NOARGS, "Return internal www.unicode.org chart Ligature count" },
-    { "ucVulChartGetCnt", PyFF_VulChartGetCnt, METH_NOARGS, "Return internal www.unicode.org chart Vulgar_Fractions count" },
-    { "ucOFracChartGetCnt", PyFF_OFracChartGetCnt, METH_NOARGS, "Return internal www.unicode.org chart Other_Fractions count" },
-    { "ucFracChartGetCnt", PyFF_FracChartGetCnt, METH_NOARGS, "Return internal www.unicode.org chart {Vulgar+Other} Fractions count" },
-    { "ucLigChartGetNxt", PyFF_LigChartGetNxt, METH_VARARGS, "Return internal array unicode value Ligature[n]" },
-    { "ucVulChartGetNxt", PyFF_VulChartGetNxt, METH_VARARGS, "Return internal array unicode value Vulgar_Fraction[n]" },
-    { "ucOFracChartGetNxt", PyFF_OFracChartGetNxt, METH_VARARGS, "Return internal array unicode value Other_Fraction[n]" },
-    { "ucLigChartGetLoc", PyFF_LigChartGetLoc, METH_VARARGS, "Return internal array location n for given unicode Ligature value" },
-    { "ucVulChartGetLoc", PyFF_VulChartGetLoc, METH_VARARGS, "Return internal array location n for given unicode Vulgar_Fraction value" },
-    { "ucOFracChartGetLoc", PyFF_OFracChartGetLoc, METH_VARARGS, "Return internal array location n for given unicode Other_Fraction value" },
-    { "ucLigChartGetAltCnt", PyFF_LigChartGetAltCnt, METH_VARARGS, "Return internal Alternate count for given unicode Ligature value" },
-    { "ucLigChartGetAltVal", PyFF_LigChartGetAltVal, METH_VARARGS, "Return internal Alternate value for given unicode Ligature value" },
-    { "ucVulChartGetAltCnt", PyFF_VulChartGetAltCnt, METH_VARARGS, "Return internal Alternate count for given unicode Vulgar_Fraction value" },
-    { "ucVulChartGetAltVal", PyFF_VulChartGetAltVal, METH_VARARGS, "Return internal Alternate value for given unicode Vulgar_Fraction value" },
-    { "ucOFracChartGetAltCnt", PyFF_OFracChartGetAltCnt, METH_VARARGS, "Return internal Alternate count for given unicode Other_Fraction value" },
-    { "ucOFracChartGetAltVal", PyFF_OFracChartGetAltVal, METH_VARARGS, "Return internal Alternate value for given unicode Other_Fraction value" },
-    { "ucLigChartUGetAltCnt", PyFF_LigChartUGetAltCnt, METH_VARARGS, "Return internal Alternate count for given unicode Ligature value" },
-    { "ucLigChartUGetAltVal", PyFF_LigChartUGetAltVal, METH_VARARGS, "Return internal Alternate value for given unicode Ligature value" },
-    { "ucVulChartUGetAltCnt", PyFF_VulChartUGetAltCnt, METH_VARARGS, "Return internal Alternate count for given unicode Vulgar_Fraction value" },
-    { "ucVulChartUGetAltVal", PyFF_VulChartUGetAltVal, METH_VARARGS, "Return internal Alternate value for given unicode Vulgar_Fraction value" },
-    { "ucOFracChartUGetAltCnt", PyFF_OFracChartUGetAltCnt, METH_VARARGS, "Return internal Alternate count for given unicode Other_Fraction value" },
-    { "ucOFracChartUGetAltVal", PyFF_OFracChartUGetAltVal, METH_VARARGS, "Return internal Alternate value for given unicode Other_Fraction value" },
+    /* --end of names list functions-------------------------- */
     { "version", PyFF_Version, METH_NOARGS, "Returns a string containing the current version of FontForge, as 20061116" },
     { "runInitScripts", PyFF_RunInitScripts, METH_NOARGS, "Run the system and user initialization scripts, if not already run" },
     { "loadPlugins", PyFF_LoadPlugins, METH_NOARGS, "Load and initialize any active plugins not already initialized." },

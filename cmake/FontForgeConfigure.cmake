@@ -57,7 +57,6 @@ function(fontforge_generate_config template destination)
 
   # These are hard requirements/unsupported, should get rid of these
   set(HAVE_LIBINTL_H 1)
-  set(_NO_LIBUNICODENAMES 1)
 
   # Configurable settings
   set(FONTFORGE_CONFIG_SHOW_RAW_POINTS ${ENABLE_DEBUG_RAW_POINTS})
@@ -90,15 +89,11 @@ function(fontforge_generate_config template destination)
   _set_negated(_NO_LIBSPIRO "${ENABLE_LIBSPIRO_RESULT}")
   _set_negated(_NO_LIBTIFF "${ENABLE_LIBTIFF_RESULT}")
   _set_negated(_NO_LIBUNGIF "${ENABLE_LIBGIF_RESULT}")
-  _set_negated(_NO_LIBUNINAMESLIST "${ENABLE_LIBUNINAMESLIST_RESULT}")
   _set_negated(_NO_PYTHON "${ENABLE_PYTHON_SCRIPTING_RESULT}")
   _set_negated(_NO_LIBREADLINE "${ENABLE_LIBREADLINE_RESULT}")
 
   if(ENABLE_LIBSPIRO_RESULT)
     set(_LIBSPIRO_FUN ${Libspiro_FEATURE_LEVEL})
-  endif()
-  if(ENABLE_LIBUNINAMESLIST_RESULT)
-    set(_LIBUNINAMESLIST_FUN ${Libuninameslist_FEATURE_LEVEL})
   endif()
 
   configure_file(${template} ${destination} ESCAPE_QUOTES @ONLY)

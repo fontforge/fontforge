@@ -6,7 +6,7 @@ The exact method to do this depends on your OS distribution.
 To download all dependencies on Ubuntu, run:
 
 ```sh
-sudo apt-get install libjpeg-dev libtiff5-dev libpng-dev libfreetype6-dev libgif-dev libgtk-3-dev libxml2-dev libpango1.0-dev libcairo2-dev libspiro-dev libuninameslist-dev python3-dev ninja-build cmake build-essential gettext;
+sudo apt-get install libjpeg-dev libtiff5-dev libpng-dev libfreetype6-dev libgif-dev libgtk-3-dev libxml2-dev libpango1.0-dev libcairo2-dev libspiro-dev python3-dev ninja-build cmake build-essential gettext;
 ```
 
 Now run the build and installation scripts:
@@ -65,7 +65,6 @@ If your machine doesn't have them and you want them they are available from:
     -   [libjpeg](http://www.ijg.org/)
 -   [libxml2](http://xmlsoft.org/) To parse SVG files and fonts
 -   [libspiro](https://github.com/fontforge/libspiro) Raph Levien's clothoid to bezier spline conversion routines. If this is available FontForge will allow you to edit with clothoid splines (spiro).
--   [libuninameslist](https://github.com/fontforge/libuninameslist) To display unicode names and annotations.
 -   [libiconv](http://www.gnu.org/software/libiconv/) Only important for systems with no built-in iconv().
     If not present FontForge contains a minimal version of the library which allows it to work.
     But if you want to use libiconv you must configure it with `--enable-extra-encodings`, as FontForge requires Shift-JIS.

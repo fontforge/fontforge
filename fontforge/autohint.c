@@ -29,7 +29,6 @@
 
 #include "autohint.h"
 
-#include "chardata.h"
 #include "cvundoes.h"
 #include "dumppfa.h"
 #include "edgelist.h"
@@ -111,15 +110,13 @@ void FindBlues( SplineFont *sf, int layer, real blues[14], real otherblues[10]) 
 	if ( sf->glyphs[i]!=NULL && sf->glyphs[i]->layers[layer].splines!=NULL ) {
 	    int enc = sf->glyphs[i]->unicodeenc;
 	    const unichar_t *upt;
-	    if ( enc<0x10000 && isalnum(enc) &&
+	    if ( isalnum(enc) &&
 		    ((enc>=32 && enc<128 ) || enc == 0xfe || enc==0xf0 || enc==0xdf ||
 		      enc==0x131 ||
 		     (enc>=0x391 && enc<=0x3f3 ) ||
 		     (enc>=0x400 && enc<=0x4e9 ) )) {
 		/* no accented characters (or ligatures) */
-		if ( unicode_alternates[enc>>8]!=NULL &&
-			(upt =unicode_alternates[enc>>8][enc&0xff])!=NULL &&
-			upt[1]!='\0' )
+		if ( (upt = unialt(enc))!=NULL && upt[1]!='\0' )
     continue;
 		SplineCharFindBounds(sf->glyphs[i],&b);
 		if ( b.miny==0 && b.maxy==0 )
@@ -168,11 +165,11 @@ void FindBlues( SplineFont *sf, int layer, real blues[14], real otherblues[10]) 
 		    digith[0] += b.maxy;
 		    digith[1] += b.maxy*b.maxy;
 		    ++digith[2];
-		} else if ( enc<0x10000 && isdigit(enc) ) {
+		} else if ( isdigit(enc) ) {
 		    otherdigits[0] += b.maxy;
 		    otherdigits[1] += b.maxy*b.maxy;
 		    ++otherdigits[2];
-		} else if ( enc<0x10000 && isupper(enc) && enc!=0x462 && enc!=0x490 ) {
+		} else if ( isupper(enc) && enc!=0x462 && enc!=0x490 ) {
 		    caph[0] += b.maxy;
 		    caph[1] += b.maxy*b.maxy;
 		    ++caph[2];
@@ -272,14 +269,12 @@ void FindBlues( SplineFont *sf, int layer, real blues[14], real otherblues[10]) 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 	int enc = sf->glyphs[i]->unicodeenc;
 	const unichar_t *upt;
-	if ( enc<0x10000 && isalnum(enc) &&
+	if ( isalnum(enc) &&
 		((enc>=32 && enc<128 ) || enc == 0xfe || enc==0xf0 || enc==0xdf ||
 		 (enc>=0x391 && enc<=0x3f3 ) ||
 		 (enc>=0x400 && enc<=0x4e9 ) )) {
 	    /* no accented characters (or ligatures) */
-	    if ( unicode_alternates[enc>>8]!=NULL &&
-		    (upt =unicode_alternates[enc>>8][enc&0xff])!=NULL &&
-		    upt[1]!='\0' )
+	    if ( (upt = unialt(enc))!=NULL && upt[1]!='\0' )
     continue;
 	    SplineCharFindBounds(sf->glyphs[i],&b);
 	    if ( b.miny==0 && b.maxy==0 )
@@ -293,9 +288,9 @@ void FindBlues( SplineFont *sf, int layer, real blues[14], real otherblues[10]) 
 		/*  are beyond 1 sd */
 		AddBlue(b.miny,base,enc=='O' || enc=='o');
 	    }
-	    if ( enc<0x10000 && isdigit(enc)) {
+	    if ( isdigit(enc)) {
 		AddBlue(b.maxy,digith,false);
-	    } else if ( enc<0x10000 && isupper(enc)) {
+	    } else if ( isupper(enc)) {
 		AddBlue(b.maxy,caph,enc=='O');
 	    } else if ( enc=='b' || enc=='d' || enc=='f' || enc=='h' || enc=='k' ||
 		    enc == 'l' || enc=='t' || enc==0xf0 || enc==0xfe || enc == 0xdf ||
@@ -1909,8 +1904,7 @@ static void AutoHintRefs(SplineChar *sc,int layer, BlueData *bd, int picky, int 
 		    AutoHintRefs(ref->sc,layer,bd,true,gen_undoes);
 	    } else if ( !ref->sc->manualhints && ref->sc->changedsincelasthinted )
 		__SplineCharAutoHint(ref->sc,layer,bd,gen_undoes);
-	    if ( ref->sc->unicodeenc!=-1 && ref->sc->unicodeenc<0x10000 &&
-		    isalnum(ref->sc->unicodeenc) ) {
+	    if ( ref->sc->unicodeenc!=-1 && isalnum(ref->sc->unicodeenc) ) {
 		sc->hstem = RefHintsMerge(sc->hstem,ref->sc->hstem,ref->transform[3], ref->transform[5], ref->transform[0], ref->transform[4]);
 		sc->vstem = RefHintsMerge(sc->vstem,ref->sc->vstem,ref->transform[0], ref->transform[4], ref->transform[3], ref->transform[5]);
 		sc->dstem = RefDHintsMerge(sc->parent,sc->dstem,ref->sc->dstem,ref->transform[0], ref->transform[4], ref->transform[3], ref->transform[5]);
@@ -1920,8 +1914,7 @@ static void AutoHintRefs(SplineChar *sc,int layer, BlueData *bd, int picky, int 
 
     for ( ref=sc->layers[layer].refs; ref!=NULL; ref=ref->next ) {
 	if ( ref->transform[1]==0 && ref->transform[2]==0 &&
-		(ref->sc->unicodeenc==-1 || ref->sc->unicodeenc>=0x10000 ||
-			!isalnum(ref->sc->unicodeenc)) ) {
+		(ref->sc->unicodeenc==-1 || !isalnum(ref->sc->unicodeenc)) ) {
 	    sc->hstem = RefHintsMerge(sc->hstem,ref->sc->hstem,ref->transform[3], ref->transform[5], ref->transform[0], ref->transform[4]);
 	    sc->vstem = RefHintsMerge(sc->vstem,ref->sc->vstem,ref->transform[0], ref->transform[4], ref->transform[3], ref->transform[5]);
 	    sc->dstem = RefDHintsMerge(sc->parent,sc->dstem,ref->sc->dstem,ref->transform[0], ref->transform[4], ref->transform[3], ref->transform[5]);

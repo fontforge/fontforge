@@ -1,54 +1,76 @@
-# test some libuninameslist functions (if the library is included).
+# unicode tests
 
-import sys, fontforge
+import sys, fontforge, unittest, re
 
-cnt = fontforge.UnicodeBlockCountFromLib()
-if cnt < 1:
-  print("No NamesList library - Nothing to test.")
-  sys.exit()
 
-if cnt < 294:
-  print("Pre-20170701 or older library - Nothing to test beyond here.")
-  sys.exit()
+class UnicodeTests(unittest.TestCase):
+    def test_UnicodeNameFromLib(self):
+        for i in [-1, 0, 0x110000, 0x1100001]:
+            self.assertEqual(
+                "", fontforge.UnicodeNameFromLib(i), f"{i} should have no name"
+            )
 
-ver = fontforge.UnicodeNamesListVersion()
-print("Libuninameslist version is : %s" % ver)
+        # Longest name as of Unicode 13.0.0
+        self.assertEqual(
+            "BOX DRAWINGS LIGHT DIAGONAL UPPER CENTRE TO MIDDLE RIGHT AND MIDDLE LEFT TO LOWER CENTRE",
+            fontforge.UnicodeNameFromLib(0x1FBA9),
+        )
 
-# test Names2 functions (if we have libuninameslist version>=10.9)
-if cnt < 305:
-  print("Pre-20180408 or older library - Nothing to test beyond here.")
-  sys.exit()
+        # All ASCII
+        for i in range(0x110000):
+            name = fontforge.UnicodeNameFromLib(i)
+            self.assertTrue(name.isascii(), f"U+{i:04X} is all ascii")
 
-cnt = fontforge.UnicodeNames2GetCntFromLib()
-print("Libuninameslist internal table has %s Names2." % cnt)
-if cnt < 25:
-  print("Test Names2 functions. Must be libuninameslist 10.9 or newer.")
-  raise ValueError("Expected 25 or more values that have Names2.")
+    def test_UnicodeAnnotationFromLib(self):
+        for i in [-1, 0x110000, 0x1100001]:
+            self.assertEqual(
+                "",
+                fontforge.UnicodeAnnotationFromLib(i),
+                f"{i} should have no annotation",
+            )
 
-# none of these are -1 if library loaded
-u0 = fontforge.UnicodeNames2NxtUniFromLib(0)
-u1 = fontforge.UnicodeNames2NxtUniFromLib(1)
-u2 = fontforge.UnicodeNames2NxtUniFromLib(2)
-print("Sample of internal table has %s, %s, %s as the first 3 unicode values." % (u0, u1, u2))
-if u0 < 0 or u1 < 1 or u2 < 2:
-  raise ValueError("these values may be different, but expected 418,419,1801 for ver10.9.")
+        # Longest annotation as of Unicode 13.0.0
+        annot = fontforge.UnicodeAnnotationFromLib(0x27)
+        self.assertTrue(
+            annot.startswith("= apostrophe-quote (1.0)"), "apostrophe has annotation"
+        )
 
-# We know these Names2 exist, but these 'tX' values may change if more errors found
-t0 = fontforge.UnicodeNames2GetNxtFromLib(0x01A2)
-t1 = fontforge.UnicodeNames2GetNxtFromLib(0xFEFF)
-t2 = fontforge.UnicodeNames2GetNxtFromLib(118981)
-print("Internal table[%s]=0x01A2, table[%s]=0xFEFF, table[%s]=118981 as expected Names2 values." % (t0, t1, t2))
-if t0 < 0 or t1 < 0 or t2 < 0:
-  raise ValueError("These Names2 must exist, so we expected these to return valid table locations.")
+        # utf-8/unicode support
+        annot = fontforge.UnicodeAnnotationFromLib(0x2052)
+        self.assertIn("abzüglich", annot)
 
-s0 = fontforge.UnicodeNames2FrmTabFromLib(3)
-print("Example unicode from table[3]=%s" % s0)
-s1 = fontforge.UnicodeNames2FromLib(65)
-s2 = fontforge.UnicodeNames2FromLib(0x709)
-print("There should be no Names2 for character 65, the value returned is=%s" % s1)
-print("There should be a Names2 for character 0x709, the value returned is=%s" % s2)
-if len(s0) < 3 or len(s2) < 3:
-  raise ValueError("Expected to return a valid Names2 string.")
+    def test_unicode_blocks(self):
+        self.assertGreater(fontforge.UnicodeBlockCountFromLib(), 0)
+        for i in range(fontforge.UnicodeBlockCountFromLib()):
+            self.assertGreater(len(fontforge.UnicodeBlockNameFromLib(i)), 0)
+            self.assertGreaterEqual(fontforge.UnicodeBlockStartFromLib(i), 0)
+            self.assertGreaterEqual(
+                fontforge.UnicodeBlockEndFromLib(i),
+                fontforge.UnicodeBlockStartFromLib(i),
+            )
 
-print("All Tests done and valid.")
+    def test_UnicodeNamesListVersion(self):
+        self.assertIsNotNone(
+            re.match(
+                r"NamesList-Version: \d+(?:\.\d+)+", fontforge.UnicodeNamesListVersion()
+            )
+        )
 
+    def test_UnicodeNames2FromLib(self):
+        for i in [-1, 0, 1, 0x110000, 0x1100001]:
+            self.assertEqual(
+                "",
+                fontforge.UnicodeNames2FromLib(i),
+                f"{i} should have no formal alias",
+            )
+        self.assertEqual(
+            "WEIERSTRASS ELLIPTIC FUNCTION", fontforge.UnicodeNames2FromLib(0x2118)
+        )
+        self.assertEqual(
+            "PRESENTATION FORM FOR VERTICAL RIGHT WHITE LENTICULAR BRACKET",
+            fontforge.UnicodeNames2FromLib(0xFE18),
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()

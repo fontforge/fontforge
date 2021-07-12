@@ -39,7 +39,6 @@
 #include "gresource.h"
 #include "splinefill.h"
 #include "splinesaveafm.h"
-#include "unicodelibinfo.h"
 #include "ustring.h"
 #include "utype.h"
 
@@ -204,7 +203,7 @@ static char *BVMakeTitles(BitmapView *bv, BDFChar *bc,char *buf) {
     title = copy(buf);
 
     /* Enhance 'buf' description with Nameslist.txt unicode name definition */
-    if ( (uniname=unicode_name(sc->unicodeenc))!=NULL ) {
+    if ( (uniname=uniname_name(sc->unicodeenc))!=NULL ) {
 	strcat(buf, " ");
 	strcpy(buf+strlen(buf), uniname);
 	free(uniname);

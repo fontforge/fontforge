@@ -56,12 +56,6 @@
 #define sleep(n) Sleep(1000 * (n))
 #endif
 
-#ifndef _NO_LIBUNICODENAMES
-#include <libunicodenames.h>	/* need to open a database when we start */
-extern uninm_names_db names_db; /* Unicode character names and annotations database */
-extern uninm_blocks_db blocks_db;
-#endif
-
 #ifdef __Mac
 extern void setup_cocoa_app();
 #endif
@@ -1437,11 +1431,6 @@ exit( 0 );
     ClearImageCache(); // This frees the contents of imagecache.
     // hotkeysSave();
     LastFonts_Save();
-
-#ifndef _NO_LIBUNICODENAMES
-    uninm_names_db_close(names_db);	/* close this database before exiting */
-    uninm_blocks_db_close(blocks_db);
-#endif
 
 return( 0 );
 }

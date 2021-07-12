@@ -2144,11 +2144,10 @@ uint16 *props_array(SplineFont *sf,struct glyphinfo *gi) {
 	    if ( dir==1 || dir==2 ) doit = true;
 	    isfloat = false;
 	    if ( sc->width==0 &&
-		    ((sc->anchor!=NULL && sc->anchor->type==at_mark) ||
-		     (sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 && iscombining(sc->unicodeenc))))
+		    ((sc->anchor!=NULL && sc->anchor->type==at_mark) || iscombining(sc->unicodeenc)))
 		isfloat = doit = true;
 	    isbracket = offset = 0;
-	    if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 && tomirror(sc->unicodeenc)!=0 ) {
+	    if ( tomirror(sc->unicodeenc)!=0 ) {
 		bsc = SFGetChar(sf,tomirror(sc->unicodeenc),NULL);
 		if ( bsc!=NULL && bsc->ttf_glyph-sc->ttf_glyph>-8 && bsc->ttf_glyph-sc->ttf_glyph<8 ) {
 		    isbracket = true;

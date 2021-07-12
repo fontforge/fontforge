@@ -28,31 +28,11 @@
 #ifndef FONTFORGE_UNICODERANGE_H
 #define FONTFORGE_UNICODERANGE_H
 
-extern struct unicoderange {
-    char *name;		/* The range's name */
-    int32 first, last, defined;
-    			/* The first codepoint, last codepoint in the range */
-			/*  and a codepoint which actually has a character */
-			/*  associated with it */
-    uint8 display;
-    uint8 unassigned;	/* No characters in this range are assigned */
-    int actual;		/* Count of assigned codepoints in this range */
-} unicoderange[];
-
-#define UNICODERANGE_EMPTY { NULL, 0, 0, 0, 0, 0, 0 }
-
-
 struct rangeinfo {
-    struct unicoderange *range;
+    const struct unicode_range *range;
     int cnt;
-    int actual;
 };
 
-#define RANGEINFO_EMPTY { NULL, 0, 0 }
-
-
-enum ur_flags { ur_includeempty = 1, ur_sortbyname = 2, ur_sortbyunicode = 4 };
-extern struct rangeinfo *SFUnicodeRanges(SplineFont *sf, enum ur_flags flags);
-extern int unicoderange_cnt;
+extern struct rangeinfo *SFUnicodeRanges(SplineFont *sf, int include_empty);
 
 #endif /* FONTFORGE_UNICODERANGE_H */

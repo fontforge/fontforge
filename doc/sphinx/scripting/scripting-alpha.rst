@@ -1445,24 +1445,12 @@ the fourth argument you must specify the second and third arguments too.
    Returns whether the value is finite (not infinite and not a nan). It can
    execute with no current font.
 
-.. function:: IsFraction(val)
-
-   Return 1 if n is a unicode fraction (either a vulgar fraction or other
-   fraction) as described by www.unicode.org. Return 0 if there is no fraction
-   for this value. It can execute with no current font.
-
 .. function:: IsHexDigit(val)
 
    Returns whether val is a hex-digit. Val may be either an integer, a unicode
    or a string. The first two cases are treated as unicode code points, the
    third looks at the first (utf8) character in the string. It can execute with
    no current font.
-
-.. function:: IsLigature(val)
-
-   Return 1 if n is a ligature as described by www.unicode.org. Return 0 if
-   there is no unicode ligature for this value. It can execute with no current
-   font.
 
 .. function:: IsLower(val)
 
@@ -1474,12 +1462,6 @@ the fourth argument you must specify the second and third arguments too.
 .. function:: IsNan(real)
 
    Returns whether the value is a nan. It can execute with no current font.
-
-.. function:: IsOtherFraction(val)
-
-   Return 1 if n is a unicode fraction (not defined as vulgar fraction) as
-   described by www.unicode.org. Return 0 if there is no fraction for this
-   value. It can execute with no current font.
 
 .. function:: IsSpace(val)
 
@@ -1494,12 +1476,6 @@ the fourth argument you must specify the second and third arguments too.
    unicode or a string. The first two cases are treated as unicode code points,
    the third looks at the first (utf8) character in the string. It can execute
    with no current font.
-
-.. function:: IsVulgarFraction(val)
-
-   Return 1 if n is a unicode vulgar fraction as described by www.unicode.org.
-   Return 0 if there is no fraction for this value. It can execute with no
-   current font.
 
 .. function:: Italic([angle[,[xscale[,flags[,serif[,bearings[,stems[,counters[,lcstems[,lccounters]]]]]]]]]])
 
@@ -2902,100 +2878,10 @@ the fourth argument you must specify the second and third arguments too.
 
    It can execute with no current font.
 
-.. function:: ucFracChartGetCnt()
-
-   Returns total count of Fractions found in the Unicode chart as described by
-   www.unicode.org. It can execute with no current font.
-
-   .. note::
-
-      Count depends on chart version built into FontForge.
-
-.. function:: ucLigChartGetCnt()
-
-   Returns total count of Ligatures found in the Unicode chart as described by
-   www.unicode.org. It can execute with no current font.
-
-   .. note::
-
-      Count depends on chart version built into FontForge.
-
-.. function:: ucLigChartGetLoc(val)
-
-   Returns n for FontForge internal table Unicode val=Ligature[n]. If val does
-   not exist in table, then return -1. Can execute with no current font.
-
-   .. note::
-
-      Count depends on chart version built into FontForge.
-
-.. function:: ucLigChartGetNxt(int)
-
-   Returns FontForge internal table Unicode Ligature[n]. Return -1 if n<0 or
-   n>=ucLigChartGetCnt(). It can execute with no current font.
-
-   .. note::
-
-      Count depends on chart version built into FontForge.
-
 .. function:: UCodePoint(int)
 
    Converts the argument to a unicode code point (a special type used in several
    commands). It can execute with no current font.
-
-.. function:: ucOFracChartGetCnt()
-
-   Returns total count of non-Vulgar Fractions found in the Unicode chart as
-   described by www.unicode.org. It can execute with no current font.
-
-   .. note::
-
-      Count depends on chart version built into FontForge.
-
-.. function:: ucOFracChartGetLoc(val)
-
-   Returns n for FontForge internal table Unicode val=OtherFraction[n]. If val
-   does not exist in table, then return -1. Can execute with no current font.
-
-   .. note::
-
-      Count depends on chart version built into FontForge.
-
-.. function:: ucOFracChartGetNxt(int)
-
-   Returns FontForge internal table Unicode (non-vulgar) Fraction[n]. Return -1
-   if n<0 or n>=ucOFracChartGetCnt(). Can execute with no current font.
-
-   .. note::
-
-      Count depends on chart version built into FontForge.
-
-.. function:: ucVulChartGetCnt()
-
-   Returns total count of Vulgar Fractions found in the Unicode chart as
-   described by www.unicode.org. It can execute with no current font.
-
-   .. note::
-
-      Count depends on chart version built into FontForge.
-
-.. function:: ucVulChartGetLoc(val)
-
-   Returns n for FontForge internal table Unicode val=VulgarFraction[n]. If val
-   does not exist in table, then return -1. Can execute with no current font.
-
-   .. note::
-
-      Count depends on chart version built into FontForge.
-
-.. function:: ucVulChartGetNxt(int)
-
-   Returns FontForge internal table Unicode Vulgar Fraction[n]. Returns -1 if
-   n<0 or n>=ucVulChartGetCnt(). Can execute with no current font.
-
-   .. note::
-
-      Count depends on chart version built into FontForge.
 
 .. function:: UnicodeAnnotationFromLib(val)
 
@@ -3008,15 +2894,13 @@ the fourth argument you must specify the second and third arguments too.
 
    Return the number of Unicode Blocks for this list as described by
    www.unicode.org. Currently, the blocks are {0..233}, spanning unicode values
-   {uni0..uni10FFFF}. If there is no library available, then return -1. This can
-   execute with no current font.
+   {uni0..uni10FFFF}. This can execute with no current font.
 
 .. function:: UnicodeBlockEndFromLib(val)
 
    Returns the Unicode Block end value as described by www.unicode.org.
    Currently, the blocks are {0..233}, spanning unicode values
-   {uni0..uni10FFFF}. If there is no value, or no library available, then return
-   -1. This can execute with no current font.
+   {uni0..uni10FFFF}. This can execute with no current font.
 
 .. function:: UnicodeBlockNameFromLib(val)
 
@@ -3029,8 +2913,8 @@ the fourth argument you must specify the second and third arguments too.
 
    Returns the Unicode Block start value as described by www.unicode.org.
    Currently, the blocks are {0..233}, spanning unicode values
-   {uni0..uni10FFFF}. If there is no value, or no library available, then return
-   -1. This can execute with no current font.
+   {uni0..uni10FFFF}. If there is no value, then return -1. This can execute
+   with no current font.
 
 .. function:: UnicodeFromName(name)
 
@@ -3042,57 +2926,20 @@ the fourth argument you must specify the second and third arguments too.
 .. function:: UnicodeNameFromLib(val)
 
    Returns the Unicode Name for this value as described by www.unicode.org. If
-   there is no unicode name for this value, or no library available, then return
-   empty string "". It can execute with no current font.
+   there is no unicode name for this value, then return empty string "". It can
+   execute with no current font.
 
 .. function:: UnicodeNamesListVersion()
 
    Return the Unicode Nameslist Version (as described by www.unicode.org).
-   libuninameslist is released on a schedule that depends on when
-   www.unicode.org releases new information. These dates do not match FontForge
-   release dates, therefore users might not keep this optional library upto
-   current updates. This instruction can be used to test if the Nameslist
-   library is recent for your script. This function currently works only for
-   libuninameslist ver_0.3.20130501 or later, else it returns empty string "".
+
    This can execute with no current font.
-
-.. function:: UnicodeNames2GetCntFromLib()
-
-   Return the Total Count of all Names that were corrected with a new name.
-   Errors and corrections happen, therefore names can be corrected in the next
-   Unicode Nameslist version. If there is no libuninameslist ver 0.5 or later
-   available, then return -1
-
-.. function:: UnicodeNames2GetNxtFromLib(val)
-
-   Errors and corrections happen, therefore names can be corrected in the next
-   Unicode Nameslist version. With val==unicode value, this function returns -1
-   if no Names2 exists, or the Nth table location for this unicode value listed
-   in libuninameslist that was corrected to a new name. If there is no
-   libuninameslist ver 0.5 or later, then return -1.
-
-.. function:: UnicodeNames2NxtUniFromLib(val)
-
-   Errors and corrections happen, therefore names can be corrected in the next
-   Unicode Nameslist version. This function returns the Next Unicode value
-   listed in libuninameslist internal table that was corrected to a new name.
-   The internal table of Unicode values is of size UnicodeNames2GetCntFromLib().
-   If there is no libuninameslist ver 0.5 or later, then return -1.
-
-.. function:: UnicodeNames2FrmTabFromLib(val)
-
-   Errors and corrections happen, therefore names can be corrected in the next
-   Unicode Nameslist version. This function returns the Next Names2 listed in
-   libuninameslist internal table that was corrected to a new name. The internal
-   table of Unicode values is of size UnicodeNames2GetCntFromLib(). If there is
-   no libuninameslist ver 0.5 or later, then return NULL.
 
 .. function:: UnicodeNames2FromLib(val)
 
    Errors and corrections happen, therefore names can be corrected in the next
-   Unicode Nameslist version. This function returns the Names2 or NULL based on
-   the unicode value given. If there is no libuninameslist ver 0.5 or later,
-   then return NULL.
+   Unicode Nameslist version. This function returns the formal alias for the
+   unicode value given, or an empty string if there is no such alias.
 
 .. function:: UnlinkReference
 

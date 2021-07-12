@@ -786,11 +786,11 @@ void Default_Properties(BDFFont *bdf,EncMap *map,char *onlyme) {
 	lc_cnt = lc_sum = uc_cnt = uc_sum = 0;
 	for ( gid = 0; gid<bdf->glyphcnt; ++gid ) if ( (bdfc=bdf->glyphs[gid])!=NULL ) {
 	    SplineChar *sc = bdfc->sc;
-	    if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 && islower(sc->unicodeenc ) ) {
+	    if ( sc->unicodeenc!=-1 && islower(sc->unicodeenc ) ) {
 		++lc_cnt;
 		lc_sum += bdfc->width;
 	    }
-	    if ( sc->unicodeenc!=-1 && sc->unicodeenc<0x10000 && isupper(sc->unicodeenc ) ) {
+	    if ( sc->unicodeenc!=-1 && isupper(sc->unicodeenc ) ) {
 		++uc_cnt;
 		uc_sum += bdfc->width;
 	    }

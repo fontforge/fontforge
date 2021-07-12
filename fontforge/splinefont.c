@@ -141,8 +141,7 @@ SplineChar *SCBuildDummy(SplineChar *dummy,SplineFont *sf,EncMap *map,int i) {
 	}
     }
     dummy->width = dummy->vwidth = sf->ascent+sf->descent;
-    if ( dummy->unicodeenc>0 && dummy->unicodeenc<0x10000 &&
-	    iscombining(dummy->unicodeenc)) {
+    if (iscombining(dummy->unicodeenc)) {
 	/* Mark characters should be 0 width */
 	dummy->width = 0;
 	/* Except in monospaced fonts on windows, where they should be the */
@@ -244,10 +243,6 @@ return( NULL );
 return( _SFMakeChar(sf,map,enc));
 }
 
-struct unicoderange specialnames[] = {
-    UNICODERANGE_EMPTY
-};
-
 int NameToEncoding(SplineFont *sf,EncMap *map,const char *name) {
     int enc, uni, i, ch;
     char *end, *freeme=NULL;
@@ -298,13 +293,6 @@ return( enc );
     } else {
 	if ( enc==-1 ) {
 	    uni = UniFromName(name,sf->uni_interp,map->enc);
-	    if ( uni<0 ) {
-		for ( i=0; specialnames[i].name!=NULL; ++i )
-		    if ( strcmp(name,specialnames[i].name)==0 ) {
-			uni = specialnames[i].first;
-		break;
-		    }
-	    }
 	    if ( uni<0 && name[1]=='\0' )
 		uni = name[0];
 	}

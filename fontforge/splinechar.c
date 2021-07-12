@@ -152,10 +152,7 @@ return;
     if ( !adjustwidth )
 return;
 
-    isprobablybase = true;
-    if ( sc->unicodeenc==-1 || sc->unicodeenc>=0x10000 ||
-	    !isalpha(sc->unicodeenc) || iscombining(sc->unicodeenc))
-	isprobablybase = false;
+    isprobablybase = isalpha(sc->unicodeenc) && !iscombining(sc->unicodeenc);
 
     for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next ) {
 	RefChar *metrics = HasUseMyMetrics(dlist->sc,ly_fore);
@@ -204,10 +201,7 @@ void SCSynchronizeLBearing(SplineChar *sc,real off,int layer) {
     if ( !adjustlbearing )
 return;
 
-    isprobablybase = true;
-    if ( sc->unicodeenc==-1 || sc->unicodeenc>=0x10000 ||
-	    !isalpha(sc->unicodeenc) || iscombining(sc->unicodeenc))
-	isprobablybase = false;
+    isprobablybase = isalpha(sc->unicodeenc) && !iscombining(sc->unicodeenc);
 
     for ( dlist=sc->dependents; dlist!=NULL; dlist=dlist->next ) {
 	RefChar *metrics = HasUseMyMetrics(dlist->sc,layer);

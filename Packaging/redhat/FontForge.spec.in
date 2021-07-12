@@ -8,7 +8,7 @@ Packager: Package Maintainer <releases@fontforge.org>
 Summary: Computer typeface editor
 Source: fontforge-%{version}.tar.xz
 Requires: libfontforge4 = %{version}, fontforge-common = %{version}
-BuildRequires: cmake ninja-build gcc g++ gtk3-devel libspiro-devel libuninameslist-devel readline-devel woff2-devel libtiff-devel libjpeg-devel giflib-devel libpng-devel python3-devel libxml2-devel
+BuildRequires: cmake ninja-build gcc g++ gtk3-devel libspiro-devel readline-devel woff2-devel libtiff-devel libjpeg-devel giflib-devel libpng-devel python3-devel libxml2-devel
 
 %define _unpackaged_files_terminate_build 0
 

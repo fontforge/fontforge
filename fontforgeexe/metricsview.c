@@ -1932,8 +1932,8 @@ static void MVTextChanged(MetricsView *mv) {
     	WordlistEscapedInputStringToRealString_getFakeUnicodeAs_MVFakeUnicodeOfSc, mv );
     ret = WordListLine_toustr( wll );
 
-    if (( ret[0]<0x10000 && isrighttoleft(ret[0]) && !mv->right_to_left ) ||
-	    ( ret[0]<0x10000 && !isrighttoleft(ret[0]) && mv->right_to_left )) {
+    if (( isrighttoleft(ret[0]) && !mv->right_to_left ) ||
+	    ( !isrighttoleft(ret[0]) && mv->right_to_left )) {
 	direction_change = true;
 	mv->right_to_left = !mv->right_to_left;
     }

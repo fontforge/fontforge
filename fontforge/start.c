@@ -36,7 +36,6 @@
 #include "gfile.h"
 #include "namelist.h"
 #include "psfont.h"
-#include "unicodelibinfo.h"
 
 #include <locale.h>
 #include <sys/time.h>
@@ -84,8 +83,6 @@ void InitSimpleStuff(void) {
     if ( *localeinfo.decimal_point=='.' ) coord_sep=",";
     else if ( *localeinfo.decimal_point!='.' ) coord_sep=" ";
     if ( getenv("FF_SCRIPT_IN_LATIN1") ) use_utf8_in_script=false;
-
-    inituninameannot();	/* Note: unicodenames done after locales set */
 
     SetDefaults();
 }

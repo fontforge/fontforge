@@ -33,7 +33,6 @@
 #include "autowidth2.h"
 #include "bitmapchar.h"
 #include "bvedit.h"
-#include "chardata.h"
 #include "cvundoes.h"
 #include "dumppfa.h"
 #include "encoding.h"
@@ -61,7 +60,6 @@
 #include "splineutil.h"
 #include "splineutil2.h"
 #include "tottfgpos.h"
-#include "unicodelibinfo.h"
 #include "ustring.h"
 #include "utype.h"
 
@@ -5667,10 +5665,10 @@ return( base_sc );
 		 fl->featuretag == CHR('m','e','d','i') ||
 		 fl->featuretag == CHR('f','i','n','a') ||
 		 fl->featuretag == CHR('i','s','o','l')) ) {
-	    uni = fl->featuretag == CHR('i','n','i','t') ? ArabicForms[base_sc->unicodeenc-0x600].initial  :
-		  fl->featuretag == CHR('m','e','d','i') ? ArabicForms[base_sc->unicodeenc-0x600].medial   :
-		  fl->featuretag == CHR('f','i','n','a') ? ArabicForms[base_sc->unicodeenc-0x600].final    :
-		  fl->featuretag == CHR('i','s','o','l') ? ArabicForms[base_sc->unicodeenc-0x600].isolated :
+	    uni = fl->featuretag == CHR('i','n','i','t') ? arabicform(base_sc->unicodeenc)->initial  :
+		  fl->featuretag == CHR('m','e','d','i') ? arabicform(base_sc->unicodeenc)->medial   :
+		  fl->featuretag == CHR('f','i','n','a') ? arabicform(base_sc->unicodeenc)->final    :
+		  fl->featuretag == CHR('i','s','o','l') ? arabicform(base_sc->unicodeenc)->isolated :
 		  -1;
 	    feat_sc = SFGetChar(sf,uni,NULL);
 	    if ( feat_sc!=NULL )
@@ -6024,7 +6022,7 @@ void FVDrawInfo(FontView *fv,GWindow pixmap, GEvent *event) {
     EncMap *map = fv->b.map;
     int gid, uni, localenc;
     GString *output = g_string_new( "" );
-    gchar *uniname = NULL;
+    char *uniname = NULL;
 
     if ( event->u.expose.rect.y+event->u.expose.rect.height<=fv->mbh ) {
         g_string_free( output, TRUE ); output = NULL;
@@ -6087,15 +6085,15 @@ void FVDrawInfo(FontView *fv,GWindow pixmap, GEvent *event) {
 
     /* code point name or range name */
     if( uni != -1 ) {
-	uniname = (gchar *) unicode_name( uni );
+	uniname = uniname_name( uni );
 	if ( uniname == NULL ) {
-	    uniname = g_strdup( UnicodeRange( uni ) );
+	    uniname = copy( UnicodeRange( uni ) );
 	}
     }
 
     if ( uniname != NULL ) {
 	output = g_string_append( output, uniname );
-	g_free( uniname );
+	free( uniname );
     }
 
     GDrawDrawText8( pixmap, 10, fv->mbh+fv->lab_as, output->str, -1, fg );
@@ -6352,7 +6350,7 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 		(sc->name == NULL) ? "" : sc->name );
     } else {
 	/* unicode name or range name */
-	char *uniname = unicode_name( upos );
+	char *uniname = uniname_name( upos );
 	if( uniname == NULL ) uniname = strdup( UnicodeRange( upos ) );
 	msg = smprintf ( "%u 0x%x U+%04X \"%.25s\" %.100s",
 		localenc, localenc, upos,
@@ -6360,7 +6358,7 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 	if ( uniname != NULL ) free( uniname ); uniname = NULL;
 
 	/* annotation */
-        char *uniannot = unicode_annot( upos );
+        char *uniannot = uniname_annotation( upos, true );
         if( uniannot != NULL ) {
             msg_old = msg;
             msg = smprintf("%s\n%s", msg_old, uniannot);

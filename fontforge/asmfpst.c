@@ -29,7 +29,6 @@
 
 #include "asmfpst.h"
 
-#include "chardata.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
 #include "splineutil.h"

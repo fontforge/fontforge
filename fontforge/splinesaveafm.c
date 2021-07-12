@@ -30,7 +30,6 @@
 #include "splinesaveafm.h"
 
 #include "autohint.h"
-#include "chardata.h"
 #include "featurefile.h"
 #include "fontforgevw.h"		/* For Error */
 #include "fvcomposite.h"
@@ -1306,9 +1305,8 @@ static int FigureUnicodes(int *unicode,SplineChar *sc,int u) {
 return( -1 );
     if ( sc->unicodeenc==-1 )
 return( FigureName(unicode,sc->name,u));
-    if ( isdecompositionnormative(sc->unicodeenc) && sc->unicodeenc>=65536 &&
-	    unicode_alternates[sc->unicodeenc>>8]!=NULL &&
-	    (upt = unicode_alternates[sc->unicodeenc>>8][sc->unicodeenc&0xff])!=NULL ) {
+    if ( isdecompositionnormative(sc->unicodeenc) &&
+	    (upt = unialt(sc->unicodeenc))!=NULL ) {
 	while ( *upt!='\0' )
 	    unicode[u++] = *upt++;
     } else
@@ -1321,9 +1319,8 @@ static int FindDecomposition(int *unicode, int u) {
     const unichar_t *upt;
     int i;
 
-    for ( uni=0; uni<65536; ++uni ) {
-	if ( unicode_alternates[uni>>8]!=NULL &&
-		(upt = unicode_alternates[uni>>8][uni&0xff])!=NULL ) {
+    for ( uni=0; uni<0x10000; ++uni ) {
+	if ( (upt = unialt(uni))!=NULL ) {
 	    for ( i=0; *upt!='\0' && i<u && *upt==(unichar_t)unicode[i]; ++i, ++upt );
 	    if ( *upt=='\0' && i==u )
 return( uni );

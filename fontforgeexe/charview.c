@@ -57,7 +57,6 @@
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "splineutil2.h"
-#include "unicodelibinfo.h"
 #include "ustring.h"
 #include "utype.h"
 #include "wordlistparser.h"
@@ -3493,7 +3492,7 @@ static char *CVMakeTitles(CharView *cv,char *buf,size_t len) {
 
     if (used < len) {
 	/* Enhance 'buf' description with Nameslist.txt unicode name definition */
-	if ( (uniname=unicode_name(sc->unicodeenc))!=NULL ) {
+	if ( (uniname=uniname_name(sc->unicodeenc))!=NULL ) {
 	    used += snprintf(buf+used, len-used, " %s", uniname);
 	    free(uniname);
 	}
