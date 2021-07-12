@@ -278,21 +278,17 @@ return(NULL);
 		    new->ticked = false; sp->ticked = false;
 		    if ( sp->next->rightedge ) {
 			sp->next->from = new;
-			sp->nonextcp = true;
 			sp->nextcp = sp->me;
 			new->me.x += shadow_length;
 			new->nextcp.x += shadow_length;
-			new->noprevcp = true;
 			new->prevcp = new->me;
 			SplineMake(sp,new,sp->prev->order2);
 			sp = new;
 		    } else {
 			sp->prev->to = new;
-			sp->noprevcp = true;
 			sp->prevcp = sp->me;
 			new->me.x += shadow_length;
 			new->prevcp.x += shadow_length;
-			new->nonextcp = true;
 			new->nextcp = new->me;
 			SplineMake(new,sp,sp->next->order2);
 			SplineRefigure(new->prev);
@@ -392,14 +388,12 @@ static void SSCleanup(SplineSet *spl) {
 	    if ( x==s->from->nextcp.x && x==s->to->prevcp.x && x==s->to->me.x &&
 		    ((y<s->to->me.y && s->from->nextcp.y>=y && s->from->nextcp.y<=s->to->prevcp.y && s->to->prevcp.y<=s->to->me.y) ||
 		     (y>=s->to->me.y && s->from->nextcp.y<=y && s->from->nextcp.y>=s->to->prevcp.y && s->to->prevcp.y>=s->to->me.y))) {
-		s->from->nonextcp = true; s->to->noprevcp = true;
 		s->from->nextcp = s->from->me;
 		s->to->prevcp = s->to->me;
 	    }
 	    if ( y==s->from->nextcp.y && y==s->to->prevcp.y && y==s->to->me.y &&
 		    ((x<s->to->me.x && s->from->nextcp.x>=x && s->from->nextcp.x<=s->to->prevcp.x && s->to->prevcp.x<=s->to->me.x) ||
 		     (x>=s->to->me.x && s->from->nextcp.x<=x && s->from->nextcp.x>=s->to->prevcp.x && s->to->prevcp.x>=s->to->me.x))) {
-		s->from->nonextcp = true; s->to->noprevcp = true;
 		s->from->nextcp = s->from->me;
 		s->to->prevcp = s->to->me;
 	    }
@@ -572,7 +566,6 @@ static void SplineComplete(SplineSet *cur,Spline *s,bigreal t_of_from,bigreal t_
     y.a = dt*dt*dt*s->splines[1].a;
     cur->last->nextcp.y = y.c/3 + y.d;
     to->prevcp.y = cur->last->nextcp.y + (y.b+y.c)/3;
-    to->noprevcp = cur->last->nonextcp = false;
 
     SplineMake(cur->last,to,s->order2);
     cur->last = to;

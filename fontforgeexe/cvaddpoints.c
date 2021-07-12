@@ -317,7 +317,6 @@ static void CVMergeSPLS(CharView *cv,SplineSet *ss, SplinePoint *base,SplinePoin
     }
     if ( order2 && (!RealNear(base->nextcp.x,sp->prevcp.x) ||
 	    !RealNear(base->nextcp.y,sp->prevcp.y)) ) {
-	base->nonextcp = sp->noprevcp = true;
 	base->nextcp = base->me;
 	sp->prevcp = sp->me;
     }
@@ -513,25 +512,21 @@ return;			/* We clicked on the active point, that's a no-op */
 	    /* Add a new point */
 	    SplineSetSpirosClear(sel);
 	    sp = SplinePointCreate( cv->p.cx, cv->p.cy );
-	    sp->noprevcp = sp->nonextcp = 1;
+	    sp->prevcp = sp->nextcp = sp->me;
 	    sp->nextcpdef = sp->prevcpdef = 1;
 	    sp->pointtype = ptype;
 	    sp->selected = true;
 	    if ( !base->nonextcp && order2_style &&
 		    cv->active_tool==cvt_pen ) {
 		sp->prevcp = base->nextcp;
-		sp->noprevcp = false;
 		sp->me.x = ( sp->prevcp.x + sp->nextcp.x )/2;
 		sp->me.y = ( sp->prevcp.y + sp->nextcp.y )/2;
-		sp->nonextcp = false;
 		sp->pointtype = pt_curve;
 	    } else if ( order2 && !base->nonextcp ) {
 		sp->prevcp = base->nextcp;
-		sp->noprevcp = false;
 		if (  cv->active_tool==cvt_pen ) {
 		    sp->nextcp.x = sp->me.x - (sp->prevcp.x-sp->me.x);
 		    sp->nextcp.y = sp->me.y - (sp->prevcp.y-sp->me.y);
-		    sp->nonextcp = false;
 		    sp->pointtype = pt_curve;
 		}
 	    }
@@ -550,7 +545,6 @@ return;			/* We clicked on the active point, that's a no-op */
 	    cv->joinpos = *sp; cv->joinpos.selected = false;
 	    if ( order2 ) {
 		if ( base->nonextcp || sp->noprevcp ) {
-		    base->nonextcp = sp->noprevcp = true;
 		    base->nextcp = base->me;
 		    sp->prevcp = sp->me;
 		} else {
@@ -598,7 +592,7 @@ return;			/* We clicked on the active point, that's a no-op */
 	ss->first = ss->last = sp;
 	ss->next = cv->b.layerheads[cv->b.drawmode]->splines;
 	cv->b.layerheads[cv->b.drawmode]->splines = ss;
-	sp->nonextcp = sp->noprevcp = 1;
+	sp->nextcp = sp->prevcp = sp->me;
 	sp->nextcpdef = sp->prevcpdef = 1;
 	sp->pointtype = ptype;
 	sp->selected = true;
@@ -661,7 +655,6 @@ void CVMergeSplineSets(CharView *cv, SplinePoint *active, SplineSet *activess,
     if ( merge->next==NULL )
 	SplineSetReverse(mergess);
     active->nextcp = merge->nextcp;
-    active->nonextcp = merge->nonextcp;
     active->nextcpdef = merge->nextcpdef;
     active->next = merge->next;
     if ( merge->next!= NULL ) {
@@ -799,10 +792,7 @@ return;
     if ( order2_style && active->next==NULL ) {
 	active->me.x = (active->nextcp.x + active->prevcp.x)/2;
 	active->me.y = (active->nextcp.y + active->prevcp.y)/2;
-	if ( active->me.x == active->nextcp.x && active->me.y == active->nextcp.y ) {
-	    active->nonextcp = active->noprevcp = true;
-	} else {
-	    active->nonextcp = active->noprevcp = false;
+	if ( active->me.x != active->nextcp.x || active->me.y != active->nextcp.y ) {
 	    active->pointtype = pt_curve;
 	}
 	if ( active->prev!=NULL )
@@ -810,33 +800,29 @@ return;
 	SCUpdateAll(cv->b.sc);
 return;
     } else if ( active->nextcp.x==active->me.x && active->nextcp.y==active->me.y ) {
-	active->prevcp = active->me;
-	active->nonextcp = active->noprevcp = true;
+	active->prevcp = active->nextcp = active->me;
 	active->pointtype = pt_corner;
     } else {
 	active->prevcp.x = active->me.x - (active->nextcp.x-active->me.x);
 	active->prevcp.y = active->me.y - (active->nextcp.y-active->me.y);
-	active->nonextcp = active->noprevcp = false;
 	active->nextcpdef = active->prevcpdef = false;
 	active->pointtype = pt_curve;
     }
     if ( cv->b.layerheads[cv->b.drawmode]->order2 ) {
 	if ( active->prev!=NULL ) {
-	    if ( active->noprevcp )
-		active->prev->from->nonextcp = true;
+	    if ( active->prevcp.x==active->me.x && active->prevcp.y==active->me.y )
+		active->prev->from->nextcp = active->prev->from->me;
 	    else {
 		active->prev->from->nextcp = active->prevcp;
-		active->prev->from->nonextcp = false;
 	    }
 	    SplinePointNextCPChanged2(active->prev->from);
 	    SplineRefigureFixup(active->prev);
 	}
 	if ( active->next!=NULL ) {
-	    if ( active->nonextcp )
-		active->next->to->noprevcp = true;
+	    if ( active->nextcp.x==active->me.x && active->nextcp.y==active->me.y )
+		active->next->to->prevcp = active->next->to->me;
 	    else {
 		active->next->to->prevcp = active->nextcp;
-		active->next->to->noprevcp = false;
 	    }
 	    SplineRefigureFixup(active->next);
 	}

@@ -932,7 +932,6 @@ SplinePoint *AppendCubicSplinePortion(Spline *s, bigreal t_fm, bigreal t_to,
     sp = SplinePointCreate(qcf.x*u_to + qt.x*t_to + v.x,
                             qcf.y*u_to + qt.y*t_to + v.y);
 
-    tailp->nonextcp = false; sp->noprevcp = false;
     tailp->nextcp.x = qf.x*u_to + qct.x*t_to + v.x;
     tailp->nextcp.y = qf.y*u_to + qct.y*t_to + v.y;
     sp->prevcp.x = qcf.x*u_fm + qt.x*t_fm + v.x;
@@ -943,7 +942,6 @@ SplinePoint *AppendCubicSplinePortion(Spline *s, bigreal t_fm, bigreal t_to,
     if ( SplineIsLinear(tailp->next)) { // Linearish instead?
         tailp->nextcp = tailp->me;
         sp->prevcp = sp->me;
-        tailp->nonextcp = sp->noprevcp = true;
         SplineRefigure(tailp->next);
     }
     return sp;
@@ -2381,7 +2379,6 @@ static SplinePoint *SpOnCircle(int i,bigreal radius,BasePoint *center) {
     sp->prevcp.y = unitcircle[i].prevcp.y*radius + center->y;
     sp->nextcp.x = unitcircle[i].nextcp.x*radius + center->x;
     sp->nextcp.y = unitcircle[i].nextcp.y*radius + center->y;
-    sp->nonextcp = sp->noprevcp = false;
 return( sp );
 }
 

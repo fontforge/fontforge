@@ -4905,7 +4905,6 @@ return( NULL );
 		    sp->prevcp.x = c->points[index]->x;
 		    sp->prevcp.y = c->points[index]->y;
 		    sp->prevcpselected = c->points[index]->selected;
-		    sp->noprevcp = false;
 		}
 		if ( ss->last==NULL ) {
 		    ss->first = sp;
@@ -4921,7 +4920,6 @@ return( NULL );
 		    sp->prevcp.x = c->points[i-1]->x;
 		    sp->prevcp.y = c->points[i-1]->y;
 		    sp->prevcpselected = c->points[i-1]->selected;
-		    sp->noprevcp = false;
 		    if ( ss->last==NULL ) {
 			ss->first = sp;
 			ss->start_offset = 0;
@@ -4932,7 +4930,6 @@ return( NULL );
 		ss->last->nextcp.x = c->points[i]->x;
 		ss->last->nextcp.y = c->points[i]->y;
 		ss->last->nextcpselected = c->points[i]->selected;
-		ss->last->nonextcp = false;
 		ss->last->nextcpindex = next++;
 	    }
 	    ++i;
@@ -4945,7 +4942,6 @@ return( NULL );
 		sp->prevcp.x = c->points[i-1]->x;
 		sp->prevcp.y = c->points[i-1]->y;
 		sp->prevcpselected = c->points[i-1]->selected;
-		sp->noprevcp = false;
 		if ( ss->last==NULL ) {
 		    ss->first = sp;
 		    ss->start_offset = 0;
@@ -4956,7 +4952,6 @@ return( NULL );
 	    ss->last->nextcp.x = c->points[0]->x;
 	    ss->last->nextcp.y = c->points[0]->y;
 	    ss->last->nextcpselected = c->points[0]->selected;
-	    ss->last->nonextcp = false;
 	    ss->last->nextcpindex = start;
 	}
     } else {
@@ -4982,8 +4977,6 @@ return( NULL );
 		sp->prevcp.x = c->points[previ]->x;
 		sp->prevcp.y = c->points[previ]->y;
 		sp->prevcpselected = c->points[previ]->selected;
-		// if ( sp->prevcp.x!=sp->me.x || sp->prevcp.y!=sp->me.y ) // This is unnecessary since the other converter only makes a control point if there is supposed to be one.
-		    sp->noprevcp = false;
 	    }
 	    if ( i==c->pt_cnt-1 )
 		nexti = 0;
@@ -4994,8 +4987,6 @@ return( NULL );
 		sp->nextcp.y = c->points[nexti]->y;
 		sp->nextcpselected = c->points[nexti]->selected;
 		next += 2;
-		// if ( sp->nextcp.x!=sp->me.x || sp->nextcp.y!=sp->me.y ) // This is unnecessary since the other converter only makes a control point if there is supposed to be one.
-		    sp->nonextcp = false;
 		if ( nexti==c->pt_cnt-1 )
 		    nexti = 0;
 		else
@@ -5302,9 +5293,7 @@ return( NULL );
     ss = sc->layers[layer].splines;
     sp = SplinePointCreate(x[2],y[2]);
     sp->prevcp.x = x[1]; sp->prevcp.y = y[1];
-    sp->noprevcp = false;
     ss->last->nextcp.x = x[0], ss->last->nextcp.y = y[0];
-    ss->last->nonextcp = false;
     SplineMake(ss->last,sp,sc->layers[layer].order2);
     ss->last = sp;
 
@@ -5354,9 +5343,7 @@ return( NULL );
 	    if ( !PyArg_ParseTuple(pt_tuple,"dd", &x2, &y2 ))
 return( NULL );
 	    sp = SplinePointCreate((x1+x2)/2,(y1+y2)/2);
-	    sp->noprevcp = false;
 	    sp->prevcp.x = x1; sp->prevcp.y = y1;
-	    sp->nonextcp = false;
 	    sp->nextcp.x = x2; sp->nextcp.y = y2;
 	    if ( ss->first==NULL ) {
 		ss->first = ss->last = sp;
@@ -5368,9 +5355,7 @@ return( NULL );
 	    x1=x2; y1=y2;
 	}
 	sp = SplinePointCreate((x0+x2)/2,(y0+y2)/2);
-	sp->noprevcp = false;
 	sp->prevcp.x = x2; sp->prevcp.y = y2;
-	sp->nonextcp = false;
 	sp->nextcp.x = x0; sp->nextcp.y = y0;
 	SplineMake2(ss->last,sp);
 	SplineMake2(sp,ss->first);
@@ -5391,15 +5376,12 @@ return( NULL );
 	if ( !PyArg_ParseTuple(pt_tuple,"dd", &x1, &y1 ))
 return( NULL );
 	ss->last->nextcp.x = x1; ss->last->nextcp.y = y1;
-	ss->last->nonextcp = false;
 	for ( i=1; i<len-1; ++i ) {
 	    pt_tuple = PySequence_GetItem(args,i);
 	    if ( !PyArg_ParseTuple(pt_tuple,"dd", &x2, &y2 ))
 return( NULL );
 	    sp = SplinePointCreate((x1+x2)/2,(y1+y2)/2);
-	    sp->noprevcp = false;
 	    sp->prevcp.x = x1; sp->prevcp.y = y1;
-	    sp->nonextcp = false;
 	    sp->nextcp.x = x2; sp->nextcp.y = y2;
 	    SplineMake2(ss->last,sp);
 	    ss->last = sp;
@@ -5409,7 +5391,6 @@ return( NULL );
 	if ( !PyArg_ParseTuple(pt_tuple,"dd", &x2, &y2 ))
 return( NULL );
 	sp = SplinePointCreate(x2,y2);
-	sp->noprevcp = false;
 	sp->prevcp.x = x1; sp->prevcp.y = y1;
 	SplineMake2(ss->last,sp);
 	ss->last = sp;

@@ -609,13 +609,7 @@ static SplinePoint *TDMakePoint(TD *td,Spline *old,real t) {
     SplinePoint *new;
 
     AdjustPoint(td,old,t,&fp);
-    new = chunkalloc(sizeof(SplinePoint));
-    new->me.x = fp.p.x; new->me.y = fp.p.y;
-    new->nextcp = new->me;
-    new->prevcp = new->me;
-    new->nonextcp = new->noprevcp = true;
-    new->nextcpdef = new->prevcpdef = false;
-return( new );
+    return SplinePointCreate(fp.p.x, fp.p.y);
 }
 
 static Spline *AdjustSpline(TD *td,Spline *old,SplinePoint *newfrom,SplinePoint *newto,
@@ -663,10 +657,10 @@ static void AdjustSplineSet(TD *td,int order2) {
 		RealNearish(lastsp->me.y,new->first->me.y) ) {
 	    new->first->prev = lastsp->prev;
 	    new->first->prevcp = lastsp->prevcp;
-	    new->first->noprevcp = lastsp->noprevcp;
 	    new->first->prevcpdef = lastsp->prevcpdef;
 	    lastsp->prev->to = new->first;
 	    new->last = new->first;
+	    SplineRefigure(new->first->prev);
 	    SplinePointFree(lastsp);
 	} else
 	    new->last = lastsp;

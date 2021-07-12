@@ -4126,9 +4126,7 @@ static SplineSet *SFDGetSplineSet(FILE *sfd,int order2) {
 		current.x = stack[sp-2];
 		current.y = stack[sp-1];
 		sp -= 2;
-		pt = chunkalloc(sizeof(SplinePoint));
-		pt->me = current;
-		pt->noprevcp = true; pt->nonextcp = true;
+		pt = SplinePointCreate(current.x, current.y);
 		if ( ch=='m' ) {
 		    SplinePointList *spl = chunkalloc(sizeof(SplinePointList));
 		    spl->first = spl->last = pt;
@@ -4145,8 +4143,6 @@ static SplineSet *SFDGetSplineSet(FILE *sfd,int order2) {
 			if ( cur->last->nextcpindex==0xfffe )
 			    cur->last->nextcpindex = 0xffff;
 			SplineMake(cur->last,pt,order2);
-			cur->last->nonextcp = 1;
-			pt->noprevcp = 1;
 			cur->last = pt;
 		    }
 		}
@@ -4160,12 +4156,9 @@ static SplineSet *SFDGetSplineSet(FILE *sfd,int order2) {
 		if ( cur!=NULL && cur->first!=NULL && (cur->first!=cur->last || cur->first->next==NULL) ) {
 		    cur->last->nextcp.x = stack[sp-6];
 		    cur->last->nextcp.y = stack[sp-5];
-		    cur->last->nonextcp = false;
-		    pt = chunkalloc(sizeof(SplinePoint));
+		    pt = SplinePointCreate(current.x, current.y);
 		    pt->prevcp.x = stack[sp-4];
 		    pt->prevcp.y = stack[sp-3];
-		    pt->me = current;
-		    pt->nonextcp = true;
 		    if ( cur->last->nextcpindex==0xfffe )
 			cur->last->nextcpindex = ttfindex++;
 		    else if ( cur->last->nextcpindex!=0xffff )

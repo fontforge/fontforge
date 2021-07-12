@@ -112,10 +112,8 @@ bezctx_ff_quadto(bezctx *z, double xm, double ym, double x3, double y3) {
 	y2 = ym + (1./3) * (y3 - ym);
 	bc->ss->last->nextcp.x = x1;
 	bc->ss->last->nextcp.y = y1;
-	bc->ss->last->nonextcp = false;
 	sp->prevcp.x = x2;
 	sp->prevcp.y = y2;
-	sp->noprevcp = false;
 	if ( SplineMake3(bc->ss->last,sp)!=NULL )
 	    bc->ss->last = sp;
     }
@@ -135,10 +133,8 @@ bezctx_ff_curveto(bezctx *z, double x1, double y1, double x2, double y2,
     if ( (sp=SplinePointCreate(x3,y3))!=NULL ) {
 	bc->ss->last->nextcp.x = x1;
 	bc->ss->last->nextcp.y = y1;
-	bc->ss->last->nonextcp = false;
 	sp->prevcp.x = x2;
 	sp->prevcp.y = y2;
-	sp->noprevcp = false;
 	if ( SplineMake3(bc->ss->last,sp)!=NULL )
 	    bc->ss->last = sp;
     }

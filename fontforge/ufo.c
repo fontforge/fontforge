@@ -2891,9 +2891,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 				}
 				if ( precnt==2 && ss->first != sp ) {
 				    ss->last->nextcp = pre[0];
-				    ss->last->nonextcp = false;
 				    sp->prevcp = pre[1];
-				    sp->noprevcp = false;
 				    SplineMake(ss->last,sp,false);
 				}
 			        ss->last = sp;
@@ -2907,14 +2905,12 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 							// If we have two cached control points and the end point is quadratic, we need an implied point between the two control points.
 							sp2 = SplinePointCreate((pre[1].x+pre[0].x)/2,(pre[1].y+pre[0].y)/2);
 							sp2->prevcp = ss->last->nextcp = pre[0];
-							sp2->noprevcp = ss->last->nonextcp = false;
 							sp2->ttfindex = 0xffff;
 							SplineMake(ss->last,sp2,true);
 							ss->last = sp2;
 						}
 						// Now we connect the real point.
 						sp->prevcp = ss->last->nextcp = pre[precnt-1];
-						sp->noprevcp = ss->last->nonextcp = false;
 					}
 					SplineMake(ss->last,sp,true);
 					ss->last = sp;
@@ -2938,7 +2934,6 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 						sp->name = copy(pname);
 					}
 			        sp->nextcp = pre[1];
-			        sp->nonextcp = false;
 			        if ( ss->first==NULL ) {
 				    // This is indeed possible if the first three points are control points.
 				    ss->first = sp;
@@ -2946,7 +2941,6 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 				    initcnt = 1;
 				} else {
 				    ss->last->nextcp = sp->prevcp = pre[0];
-				    ss->last->nonextcp = sp->noprevcp = false;
 				    initcnt = 0;
 				    SplineMake(ss->last,sp,true);
 				}
@@ -2956,7 +2950,6 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			        // We have decided that the curve is quadratic, so we can make the next implied point as well.
 			        sp = SplinePointCreate((x+pre[1].x)/2,(y+pre[1].y)/2);
 			        sp->prevcp = pre[1];
-			        sp->noprevcp = false;
 					sp->ttfindex = 0xffff;
 			        SplineMake(ss->last,sp,true);
 			        ss->last = sp;
@@ -2977,7 +2970,6 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 						sp->name = copy(pname);
 					}
 			        sp->prevcp = pre[0];
-			        sp->noprevcp = false;
 					sp->ttfindex = 0xffff;
 			        if ( ss->first==NULL ) {
 				    	ss->first = sp;
@@ -2985,8 +2977,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			            initcnt = 1;
 					} else {
 					    ss->last->nextcp = sp->prevcp;
-			            ss->last->nonextcp = false;
-				    	SplineMake(ss->last,sp,true);
+					    SplineMake(ss->last,sp,true);
 					}
 					ss->last = sp;
 			        pre[0].x = x; pre[0].y = y;
@@ -3020,18 +3011,15 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 					// If the final curve is declared quadratic but has more than one control point, we add implied points.
 					sp = SplinePointCreate((init[i+1].x+init[i].x)/2,(init[i+1].y+init[i].y)/2);
 			        sp->prevcp = ss->last->nextcp = init[i];
-			        sp->noprevcp = ss->last->nonextcp = false;
 					sp->ttfindex = 0xffff;
 			        SplineMake(ss->last,sp,true);
 			        ss->last = sp;
 			    }
 			    ss->last->nextcp = ss->first->prevcp = init[initcnt-1];
-			    ss->last->nonextcp = ss->first->noprevcp = false;
 			    wasquad = true;
 			} else if ( initcnt==2 ) {
 			    ss->last->nextcp = init[0];
 			    ss->first->prevcp = init[1];
-			    ss->last->nonextcp = ss->first->noprevcp = false;
 				wasquad = false;
 			}
 			SplineMake(ss->last, ss->first, (firstpointsaidquad==true || (firstpointsaidquad == -1 && wasquad == true)));

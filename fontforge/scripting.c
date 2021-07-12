@@ -5395,11 +5395,9 @@ static void SCMakeLine(SplineChar *sc) {
 			changed = true;
 		    }
 		    sp->prevcp = sp->me;
-		    sp->noprevcp = true;
 		    if ( sp->prev )
 			SplineRefigure(sp->prev);
 		    sp->nextcp = sp->me;
-		    sp->nonextcp = true;
 		    if ( sp->next )
 			SplineRefigure(sp->next);
 		}

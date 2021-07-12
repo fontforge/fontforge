@@ -220,22 +220,18 @@ static SplineSet *ReadSplineSets(FILE *file,int flags,SplineSet *old,int closed)
 		fprintf( stderr, "No initial point, assuming 0,0\n" );
 		active = calloc(1,sizeof(SplineSet));
 		active->first = active->last = calloc(1,sizeof(SplinePoint));
-		active->first->nonextcp = active->first->noprevcp = true;
 	    }
 	    next = calloc(1,sizeof(SplinePoint));
 	    if ( (verb&3)==2 ) {		/* Line to */
 		next->me.x = x1; next->me.y = y1;
 		next->nextcp = next->prevcp = next->me;
-		next->nonextcp = next->noprevcp = true;
 	    } else {				/* Curve to */
 		readcoords(file,flags&1,&x2,&y2);
 		readcoords(file,flags&1,&x3,&y3);
 		active->last->nextcp.x = x1; active->last->nextcp.y = y1;
-		active->last->nonextcp = false;
 		next->prevcp.x = x2; next->prevcp.y = y2;
 		next->me.x = x3; next->me.y = y3;
 		next->nextcp = next->me;
-		next->nonextcp = true;
 	    }
 	    SplineMake3(active->last,next);
 	    active->last = next;

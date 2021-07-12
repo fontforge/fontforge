@@ -621,8 +621,8 @@ return;
 	sp->prevcpdef = sp->noprevcp;
     } else if ( pointtype==pt_tangent ) {
 	if ( sp->next!=NULL && !sp->nonextcp && sp->next->knownlinear ) {
-	    sp->nonextcp = true;
 	    sp->nextcp = sp->me;
+        SplineRefigure(sp->next);
 	} else if ( sp->prev!=NULL && !sp->nonextcp &&
 		BpColinear(&sp->prev->from->me,&sp->me,&sp->nextcp) ) {
 	    /* The current control point is reasonable */
@@ -631,8 +631,8 @@ return;
 	    if ( sp->next ) SplineRefigure(sp->next);
 	}
 	if ( sp->prev!=NULL && !sp->noprevcp && sp->prev->knownlinear ) {
-	    sp->noprevcp = true;
 	    sp->prevcp = sp->me;
+        SplineRefigure(sp->prev);
 	} else if ( sp->next!=NULL && !sp->noprevcp &&
 		BpColinear(&sp->next->to->me,&sp->me,&sp->prevcp) ) {
 	    /* The current control point is reasonable */
@@ -748,10 +748,6 @@ void SplinePointRound(SplinePoint *sp,real factor) {
 	sp->next->to->prevcp = sp->nextcp;
     if ( sp->prev!=NULL && sp->prev->order2 )
 	sp->prev->from->nextcp = sp->prevcp;
-    if ( sp->nextcp.x==sp->me.x && sp->nextcp.y==sp->me.y )
-	sp->nonextcp = true;
-    if ( sp->prevcp.x==sp->me.x && sp->prevcp.y==sp->me.y )
-	sp->noprevcp = true;
 }
 
 static void SpiroRound2Int(spiro_cp *cp,real factor) {
@@ -1894,7 +1890,6 @@ static SplinePoint *CirclePoint(int which) {
     };
 
     sp = SplinePointCreate(ellipse3[which].me.x,ellipse3[which].me.y);
-    sp->nonextcp = sp->noprevcp = false;
     sp->nextcp = ellipse3[which].nextcp;
     sp->prevcp = ellipse3[which].prevcp;
 return( sp );
@@ -2032,7 +2027,6 @@ static int EllipseClockwise(SplinePoint *sp1,SplinePoint *sp2,BasePoint *slope1,
     e1 = SplinePointCreate(sp1->me.x,sp1->me.y);
     e2 = SplinePointCreate(sp2->me.x,sp2->me.y);
     SplineMake3(e2,e1);
-    e1->nonextcp = false; e2->noprevcp = false;
     len = sqrt((sp1->me.x-sp2->me.x) * (sp1->me.x-sp2->me.x)  +
 	  (sp1->me.y-sp2->me.y) * (sp1->me.y-sp2->me.y));
     e1->nextcp.x = e1->me.x + len*slope1->x;
@@ -2331,9 +2325,7 @@ static int MakeShape(CharViewBase *cv,SplinePointList *spl1,SplinePointList *spl
     if ( !do_arc || ( sp1->me.x==sp2->me.x && sp1->me.y==sp2->me.y )) {
 	if ( !changed )
 	    CVPreserveState(cv);
-	sp1->nonextcp = true;
 	sp1->nextcp = sp1->me;
-	sp2->noprevcp = true;
 	sp2->prevcp = sp2->me;
 	if ( sp1->next==NULL )
 	    SplineMake(sp1,sp2,order2);
@@ -2452,7 +2444,6 @@ void _CVMenuMakeLine(CharViewBase *cv,int do_arc,int ellipse_to_back) {
 		    }
 		    if (!do_arc) {
 			sp->nextcp = sp->me;
-			sp->nonextcp = true;
 			sp->next->to->prevcp = sp->next->to->me;
 			sp->next->to->noprevcp = true;
 		    }

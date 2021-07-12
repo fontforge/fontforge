@@ -27,7 +27,7 @@ for (i,t) in [(0,hv),(3,hv),(6,hv),(9,hv)]:
 
 g.setLayer(l,1,('select_all','hvcurve','force'))
 cc = g.layers[1][0]
-for (i,t) in [(1,False),(2,True),(4,True),(5,False),(7,False),(8,False)]:
+for (i,t) in [(1,True),(2,True),(4,True),(5,False),(7,False),(8,False)]:
     if (cc[i] == c[i]) != t:
         print(cc[i],c[i])
         raise ValueError("Coordinates of point " + str(i) + " should have " + ("stayed the same" if t else "changed"))

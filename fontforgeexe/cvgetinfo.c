@@ -2196,14 +2196,12 @@ static int PI_InterpChanged(GGadget *g, GEvent *e) {
 		    cursp->nextcp.x = rint((n->me.x+cursp->me.x)/2);
 		    cursp->nextcp.y = rint((n->me.y+cursp->me.y)/2);
 		    n->prevcp = cursp->nextcp;
-		    cursp->nonextcp = n->noprevcp = false;
 		}
 		if ( cursp->noprevcp && cursp->prev ) {
 		    SplinePoint *p = cursp->prev->from;
 		    cursp->prevcp.x = rint((p->me.x+cursp->me.x)/2);
 		    cursp->prevcp.y = rint((p->me.y+cursp->me.y)/2);
 		    p->nextcp = cursp->prevcp;
-		    cursp->noprevcp = p->nonextcp = false;
 		}
 		cursp->me.x = (cursp->nextcp.x + cursp->prevcp.x)/2;
 		cursp->me.y = (cursp->nextcp.y + cursp->prevcp.y)/2;
@@ -2322,7 +2320,6 @@ return( true );
 	}
 	cursp->nextcp.x += dx;
 	cursp->nextcp.y += dy;
-	cursp->nonextcp = false;
 	SplineSetSpirosClear(ci->curspl);
 	ci->nextchanged = true;
 	if (( dx>.1 || dx<-.1 || dy>.1 || dy<-.1 ) && cursp->nextcpdef ) {
@@ -2399,7 +2396,6 @@ return( true );
 	}
 	cursp->prevcp.x += dx;
 	cursp->prevcp.y += dy;
-	cursp->noprevcp = false;
 	ci->prevchanged = true;
 	SplineSetSpirosClear(ci->curspl);
 	if (( dx>.1 || dx<-.1 || dy>.1 || dy<-.1 ) && cursp->prevcpdef ) {

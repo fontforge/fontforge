@@ -1195,10 +1195,8 @@ return;
 
 	    current->nextcp.x = current->me.x+offx;
 	    current->nextcp.y = current->me.y+offy;
-	    current->nonextcp = false;
 	    sp = SplinePointCreate(current->nextcp.x+offx1,current->nextcp.y+offy1);
 	    sp->prevcp = current->nextcp;
-	    sp->noprevcp = false;
 	    if ( was_implicit ) {
 		current->me.x = (current->prevcp.x + current->nextcp.x)/2;
 		current->me.y = (current->prevcp.y + current->nextcp.y)/2;
@@ -1227,11 +1225,9 @@ return;
 	    }
 	    current->nextcp.x = current->me.x+offx;
 	    current->nextcp.y = current->me.y+offy;
-	    current->nonextcp = false;
 	    sp = SplinePointCreate(current->nextcp.x+offx1+offx2,current->nextcp.y+offy1+offy2);
 	    sp->prevcp.x = current->nextcp.x+offx1;
 	    sp->prevcp.y = current->nextcp.y+offy1;
-	    sp->noprevcp = false;
 	} else {
 	    LogError(_("Whoops, unexpected verb in contour %d.%d\n"), v, m );
     break;

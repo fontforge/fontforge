@@ -133,7 +133,6 @@ static void SetCurve(SplinePoint *sp,BasePoint *center,real xrad, real yrad,
     sp->me.x = center->x+xrad*pt_d->me.x; sp->me.y = center->y+yrad*pt_d->me.y;
     sp->nextcp.x = center->x+xrad*pt_d->nextcp.x; sp->nextcp.y = center->y+yrad*pt_d->nextcp.y;
     sp->prevcp.x = center->x+xrad*pt_d->prevcp.x; sp->prevcp.y = center->y+yrad*pt_d->prevcp.y;
-    sp->nonextcp = sp->noprevcp = (xrad==0 && yrad==0);
 }
 
 static void SetPTangent(SplinePoint *sp,real x, real y,real xrad, real yrad) {
@@ -146,7 +145,6 @@ static void SetPTangent(SplinePoint *sp,real x, real y,real xrad, real yrad) {
     }
     sp->prevcp.x += xrad;
     sp->prevcp.y += yrad;
-    sp->noprevcp = (xrad==0 && yrad==0);
 }
 
 static void SetNTangent(SplinePoint *sp,real x, real y,real xrad, real yrad) {
@@ -159,7 +157,6 @@ static void SetNTangent(SplinePoint *sp,real x, real y,real xrad, real yrad) {
     sp->nextcp.x += xrad;
     sp->nextcp.y += yrad;
     sp->prevcp = sp->me;
-    sp->nonextcp = (xrad==0 && yrad==0);
 }
 
 static void RedoActiveSplineSet(SplineSet *ss) {
