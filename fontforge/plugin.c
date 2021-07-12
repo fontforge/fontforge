@@ -293,6 +293,7 @@ static bool DiscoverPlugins(int do_import) {
     PyObject *pkgres = PyImport_ImportModule("pkg_resources");
     if (pkgres == NULL || !PyObject_HasAttrString(pkgres, "iter_entry_points")) {
         LogError(_("Core python package 'pkg_resources' not found: Cannot discover plugins\n"));
+	PyErr_Clear();
         return false;
     }
     str = PyUnicode_FromString("iter_entry_points");
