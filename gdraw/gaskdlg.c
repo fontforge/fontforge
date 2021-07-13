@@ -27,7 +27,6 @@
 
 #include <fontforge-config.h>
 
-#include "ffglib.h"
 #include "gdraw.h"
 #include "ggadget.h"
 #include "ggadgetP.h"
@@ -157,22 +156,22 @@ static GWindow DlgCreate(const unichar_t *title,const unichar_t *question,va_lis
     int as, ds, ld, fh;
     int w, maxw, bw, bspace;
     int i, y;
-    gchar *buf, *qbuf;
+    char *buf, *qbuf;
     unichar_t *ubuf;
     extern GBox _GGadget_defaultbutton_box;
 
     if ( d!=NULL )
 	memset(d,0,sizeof(*d));
     GGadgetInit();
-    qbuf = g_ucs4_to_utf8( (const gunichar *)question, -1, NULL, NULL, NULL );
+    qbuf = u2utf8_copy(question);
     if( !qbuf ) {
 	fprintf( stderr, "Failed to convert question string in DlgCreate()\n" );
 	return( NULL );
     }
-    g_vasprintf(&buf, qbuf, ap);
-    g_free( qbuf );
-    ubuf = (unichar_t *) g_utf8_to_ucs4( buf, -1, NULL, NULL, NULL );
-    g_free( buf );
+    buf = vsmprintf(qbuf, ap);
+    free(qbuf);
+    ubuf = utf82u_copy(buf);
+    free(buf);
     if( !ubuf ) {
 	fprintf( stderr, "Failed to convert formatted string in DlgCreate()\n" );
 	return( NULL );
@@ -443,22 +442,20 @@ static GWindow DlgCreate8(const char *title,const char *question,va_list ap,
     int as, ds, ld, fh;
     int w, maxw, bw, bspace;
     int i, y;
-    gchar *buf;
+    char *buf;
     unichar_t *ubuf;
     extern GBox _GGadget_defaultbutton_box;
 
     if ( d!=NULL )
 	memset(d,0,sizeof(*d));
-    /*vsnprintf(buf,sizeof(buf)/sizeof(buf[0]),question,ap);*/
-    g_vasprintf( &buf, (const gchar *) question, ap );
+    buf = vsmprintf(question, ap);
     if ( screen_display==NULL ) {
 	fprintf(stderr, "%s\n", buf );
 	if ( d!=NULL ) d->done = true;
 return( NULL );
     }
-    /*ubuf = utf82u_copy(buf);*/
-    ubuf = (unichar_t *) g_utf8_to_ucs4( (const gchar *) buf, -1, NULL, NULL, NULL);
-    g_free( buf );
+    ubuf = utf82u_copy(buf);
+    free(buf);
     if( !ubuf ) {
 	fprintf( stderr, "Failed to convert question string in DlgCreate8()\n" );
 	return( NULL );
