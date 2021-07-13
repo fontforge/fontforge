@@ -1025,6 +1025,7 @@ return;
 	continue;
 	    (&fpst->nccnt)[i] = clen[i];
 	    (&fpst->nclass)[i] = malloc(clen[i]*sizeof(char*));
+	    (&fpst->nclassnames)[i] = malloc(clen[i]*sizeof(char*));
 	    (&fpst->nclass)[i][0] = NULL;
 	    had_class0 = i==0 && !isEverythingElse(classes[i][0].u.md_str);
 	    for ( k=had_class0 ? 0 : 1 ; k<clen[i]; ++k )
