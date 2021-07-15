@@ -8,15 +8,11 @@ including the user interface. Most of these are documented in the :ref:`User
 Interface Module Functions <fontforge.ui_functions>` section of the Python
 documentation.
 
-This document will gradually be expanded with advice on using those functions
-together with other parts of the API to build custom tools. For now, though, it
-mostly documents the FontForge plugin API.
-
 Modifying Points and Contours, References, and Anchor Points
 ------------------------------------------------------------
 
-Given that points and contours are locus of vector font data, many extensions
-will need to modify them. There is one misleading aspect of the "layer" API
+Given that points and contours are basis of vector font data many extensions
+will want to modify them. There is one misleading aspect of the "layer" API
 that must be clarified in order to do so. It is also important to be aware
 of layers and how they relate to the FontForge user interface.
 
@@ -122,39 +118,132 @@ of the foreground layer. They can be accessed and edited through the
 taken to construct the tuples so that the name, type, position, selection and
 (when relevant) ligature information are preserved or changed as desired.
 
-Selection State and Enable Functions
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+.. _fontforge.plugin_menu:
 
-When a user invokes a menu option or some other means of extending FontForge
-they express an intention. Even at a glyph level, however, knowledge of *just*
-the menu option is not enough to express an interesting or useful intention.
-Other ways of getting more "data" are raising dialogs or adding preference
-settings, but these are also often insufficient or cumbersome.  In most cases
-the key to "interacting" with a user will be in terms of the *selection state*.
+Adding a Menu Item
+------------------
 
-Each point, reference, and anchor point has a boolean selection state. For
-points this is true of both on-curve and control points, although these often
-need different "treatment". Many FontForge-internal facilities use on-curve
-point selection status as the primary state. The "Transform ..." dialog, for
-example, transforms selected on-curve points (and references) and their
-associated off-curve points regardless of the latter's selection status. (This
-is true unless no points are selected, in which case all points are
-transformed.) Other contour-level facilities, such as "Correct Direction",
-consider a contour to be selected if at least one of its on-curve points is
-selected, and changes those contours accordingly.
+The functions ``shiftBy15()`` and ``shiftRefsBy15()`` above were written to
+be added as menu items using :py:meth:`fontforge.registerMenuItem`.  This is
+the most common form of FontForge UI extension and we recommend familiarizing
+(or re-familiarizing) yourself with the documentation as the API has recently
+been enhanced.
 
-In designing an additional menu option you should think carefully about what
-meaning to ascribe to a given selection state, and in particular about what
-combinations of selection are applicable to your extension. Then you should
-add an "enable_function" (see the :py:meth:`fontforge.registerMenuItem`
-documentation) that disables the menu item for selection combinations that
-are *not* applicable. This is a key form of feedback or "education" for the
-user who may never read your documentation or only glance at it.
+Selection State
+^^^^^^^^^^^^^^^
 
-The font-level of the API has its own selection state accessible via the
+In the case of many menu items, probably most of them, the user should have
+some "input" into how one applies in a given situation. Sometimes this is a
+reason to raise a dialog asking the user for input, but in the majority of
+cases a menu callback will "interact" with a user by way of *selection state*.
+
+Each point, both on-curve and control, has a boolean selection state. The
+selection state of on-curve points is generally more important or "primary".
+The "Transform ..." dialog, for example, transforms selected on-curve points
+(and references) and their associated off-curve points regardless of the
+latter's selection status. (This is true unless no points are selected, in
+which case all points are transformed.) Other contour-level facilities, such as
+"Correct Direction", consider a contour to be selected if at least one of its
+on-curve points is selected, and changes those contours accordingly.
+
+Still, in some cases you may want to attend to the selection state of
+control points.
+
+Each reference and anchor point also has a selection state. The Python
+reference API has recently been enhanced to make the state available.
+
+As an example, consider the ``shiftRefsBy15`` function above. We could
+enhance it to shift only *selected* references unless there are none,
+in all references are shifted: ::
+
+    def shiftRefsBy15(u, glyph):
+        rl = glyph.layerrefs[glyph.activeLayer]
+        has_selected = False
+        for r in rl:
+            if r[2]:
+                has_selected = True
+        nl = []
+        tr = psMat.translate(15,0)
+        for r in rl:
+            if not has_selected or r[2]:
+                nl.append((r[0], psMat.compose(r[1], tr), r[2]))
+            else:
+                nl.append(r)
+        glyph.preserveLayerAsUndo(glyph.activeLayer)
+        glyph.layerrefs[glyph.activeLayer] = nl
+
+At the font level each font has its own selection state accessible via the
 :py:attr:`fontforge.font.selection` property. Many useful font-level tools will
-be selection-agnostic but some should only apply to selected glyphs.  These
-should also have enable_functions analogous to those of a glyph-level tool.
+be selection-agnostic but some should only apply to selected glyphs.  When
+these are added as menu items they should include enable_functions analogous to
+those of a glyph-level tool, so that a user learns whey they do and do not
+apply.
+
+Enable Functions
+^^^^^^^^^^^^^^^^
+
+Some menu items, such as one that adds a new point in a CharView, may always be
+"applicable". Others can only do something sensible if the character (or font)
+has certain features, such as at least one point or reference, or if certain
+combinations of points, anchor points, and references are selected. When adding
+a new option you should help the user understand when it is and is not
+applicable by writing and registering an ``enable`` function. This will allow
+FontForge to display the item as enabled in the menu when it applies and as
+disabled when it does not apply.
+
+The enhanced version of ``shiftRefsBy15()`` only applies if there is at least
+one reference, so it's enable function could be: ::
+
+    def SRB15Enable(u, glyph):
+        return len(glyph.layerrefs[glyph.activeLayer])>0
+
+See the next section for an example of how to register this function.
+
+Hotkeys and Mnemonics
+^^^^^^^^^^^^^^^^^^^^^
+
+A menu item can have both a Hotkey and a Mnemonic. These are two different means
+of picking a menu item using the keyboard.
+
+A Hotkey is a single key combination, usually including modifiers like Control,
+Alt, and Shift, that directly invokes a menu item or other action. Because
+hotkeys are a "limited resource", unless you are confident that a menu item you
+register should have one it may be better to let the user add their own if they
+find your addition particularly useful. As the
+:py:meth:`fontforge.registerMenuItem` documentation notes, even if you do
+include a ``hotkey`` string when registering that key combination may already
+be taken, in which case no hotkey will be assigned.
+
+Mnemonics provide a *per-menu* key accelerator, usually activated by pressing
+Alt and then the mnemonic key displayed with an underline. Using sequences of
+mnemonic key combinations a user can navigate from the menu bar down through
+sub-menus and choose a menu action entirely with the keyboard. Mnemonics are also
+a "limited resource" but *less* limited, and we encourage all plugin developers to
+specify them.
+
+You specify a mnemonic key by preceding it with an underscore in the name, as in: ::
+
+    fontforge.registerMenuItem(callback=shiftRefsBy15, enable=SRB15Enable,
+            context=("Glyph"), name=("_Shift References by 15", "MyExt.shiftRefsBy15"),
+            submenu=("_MyExt", "MyExt.submenu"))
+
+which specifes "M" as the mnemonic for the "MyExt" submenu and "S" as the mnemonic for
+the action.
+
+Note, however, that the specified mnemonic for the top level is only taken as a
+suggestion, and if it is not available another will be assigned. This is
+because different users will have different combinations of plugins and init
+scripts installed in different orders, so any given mnemonic may already be
+in use. Because lower menu levels will typically have entries for one plugin
+or script you can count on getting the mnemonic you specify.
+
+Best Practices
+^^^^^^^^^^^^^^
+
+In addition to the advice above, we recommend that a plugin put all of its
+added menu items into or under a single sub-menu of "Tools". A user may have
+many plugins installed or have their own init scripts so a single plugin should
+avoid taking up a lot of space.
 
 Storing Per-Font and Per-Glyph Information
 ------------------------------------------
@@ -220,8 +309,8 @@ midway between the two selected points.::
         glyph.preserveLayerAsUndo(layer_id)
         glyph.layers[layer_id] = l
 
-    fontforge.registerMenuItem(addMidContour, midContourEnable,
-            None, ("Glyph"), None, "Add Midpoint Contour")
+    fontforge.registerMenuItem(callback=addMidContour, enable=midContourEnable,
+            context=("Glyph"), name="_Add Midpoint Contour")
 
 This script is typical in that it starts with some imports, defines some
 functions, and ends by invoking :py:meth:`fontforge.registerMenuItem`. Other
@@ -235,8 +324,9 @@ is packaged appropriately this function will be called after FontForge
 discovers and loads the plugin (if the user has Enabled it).::
 
     def fontforge_plugin_init(**kw):
-        fontforge.registerMenuItem(addMidContour, midContourEnable,
-                None, ("Glyph"), None, "Add Midpoint Contour")
+        fontforge.registerMenuItem(callback=addMidContour,
+                enable=midContourEnable, context=("Glyph"),
+                name="_Add Midpoint Contour")
 
 The ``**kw`` function argument will capture any keyword arguments passed
 to the function. There is currently one, discussed below, but more may

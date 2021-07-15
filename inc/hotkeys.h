@@ -92,6 +92,9 @@
  * current version of ff offers in terms of actions.
  * 
  */
+
+enum hk_source { hk_ff=1, hk_user=2, hk_python=3 };
+
 typedef struct hotkey {
     /**
      * Hotkeys are stored in a doubly linked list. Having this entry
@@ -125,7 +128,7 @@ typedef struct hotkey {
      * then the hotkey should be saved back to the user
      * ~/.FontForge/hotkeys file instead of any system file.
      */
-    int    isUserDefined;
+    enum hk_source source;
 
     /**
      * The plain text representation for the key combination that is
@@ -219,9 +222,9 @@ extern Hotkey* isImmediateKey( GWindow w, char* path, GEvent *event );
  *
  * The new hotkey is returned.
  */
-extern Hotkey* hotkeySet( char* action, char* keydefinition, int append );
+extern Hotkey* hotkeySetFull( const char* action, const char* keydefinition, int append, enum hk_source source);
 
-extern void HotkeyParse( Hotkey* hk, const char *shortcut );
+extern int HotkeyParse( Hotkey* hk, const char *shortcut );
 
 /**
  * Set to true if the hotkey system can use the Command key for its
