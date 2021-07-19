@@ -363,8 +363,9 @@ struct cidmap *AskUserForCIDMap(void) {
 	AddToBlock(&block,buffer,NULL);
     }
     FindMapsInDir(&block,".");
-    FindMapsInDir(&block,getFontForgeShareDir());
-    FindMapsInDir(&block,"/usr/share/fontforge");
+    char* sharedir = getShareSubDir("/cidmap");
+    FindMapsInDir(&block,sharedir);
+    free(sharedir);
 
     choices = calloc(block.cur+2,sizeof(unichar_t *));
     choices[0] = copy(_("Browse..."));

@@ -1074,12 +1074,11 @@ int fontforge_main( int argc, char **argv ) {
     textdomain("FontForge");
     GResourceUseGetText();
     {
-	char path[PATH_MAX];
-	snprintf(path, PATH_MAX, "%s%s", getShareDir(), "/pixmaps" );
-	GGadgetSetImageDir( path );
+	GGadgetSetImageDir( getPixmapDir() );
 
-	snprintf(path, PATH_MAX, "%s%s", getShareDir(), "/resources/fontforge.resource" );
-	GResourceAddResourceFile(path, GResourceProgramName,false);
+	char* resource_filename = getShareSubDir("/resources/fontforge.resource");
+	GResourceAddResourceFile(resource_filename, GResourceProgramName,false);
+	free(resource_filename);
     }
     hotkeysLoad();
 //    loadPrefsFiles();
