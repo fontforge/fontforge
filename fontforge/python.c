@@ -7904,7 +7904,7 @@ return( embolden_error );
     else if ( PyLong_Check(zoneO))
 	zones->top_bound = PyLong_AsLong(zoneO);
     else if ( PyTuple_Check(zoneO)) {
-	if ( !PyArg_ParseTuple(zoneO,"dddd",
+	if ( !PyArg_ParseTuple(zoneO,"iiii",
 		&zones->top_bound,&zones->top_zone,&zones->bottom_zone,&zones->bottom_bound))
 return( embolden_error );
 	just_top = false;
