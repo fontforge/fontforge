@@ -32,7 +32,7 @@
 #include "gwidget.h"
 #include "ustring.h"
 
-void GGadgetProtest8(char *label) {
+void GGadgetProtest8(const char *label) {
     char buf[80];
 
     snprintf( buf, sizeof(buf),_("Bad Number in %s"), label);

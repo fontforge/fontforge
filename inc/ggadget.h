@@ -620,7 +620,7 @@ extern double GetReal8(GWindow gw,int cid,char *namer,int *err);
 extern int GetCalmInt8(GWindow gw,int cid,char *name,int *err);
 extern int GetInt8(GWindow gw,int cid,char *namer,int *err);
 extern int GetUnicodeChar8(GWindow gw,int cid,char *namer,int *err);
-extern void GGadgetProtest8(char *labelr);
+extern void GGadgetProtest8(const char *labelr);
 
 extern void GMenuItemParseShortCut(GMenuItem *mi,char *shortcut);
 extern int GMenuItemParseMask(char *shortcut);

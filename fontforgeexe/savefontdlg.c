@@ -202,8 +202,9 @@ extern int oldbitmapstate;
 
 static const char *pfaeditflag = "SplineFontDB:";
 
-int32 *ParseBitmapSizes(GGadget *g,char *msg,int *err) {
+static int32 *ParseBitmapSizes(GGadget *g, int *err) {
     const unichar_t *val = _GGadgetGetTitle(g), *pt; unichar_t *end, *end2;
+    const char *msg = _("Pixel List"); // Before switching to C locale
     int i;
     int32 *sizes;
 
@@ -224,9 +225,7 @@ int32 *ParseBitmapSizes(GGadget *g,char *msg,int *err) {
 
     for ( i=0, pt = val; *pt!='\0' ; ) {
 	sizes[i]=rint(u_strtod(pt,&end));
-	if ( msg!=_("Pixel List") )
-	    /* No bit depth allowed */;
-	else if ( *end!='@' )
+	if ( *end!='@' )
 	    sizes[i] |= 0x10000;
 	else
 	    sizes[i] |= (u_strtol(end+1,&end,10)<<16);
@@ -1448,7 +1447,7 @@ return;
 
     oldbitmapstate = GGadgetGetFirstListSelectedItem(d->bmptype);
     if ( oldbitmapstate!=bf_none )
-	sizes = ParseBitmapSizes(d->bmpsizes,_("Pixel List"),&err);
+	sizes = ParseBitmapSizes(d->bmpsizes,&err);
     if ( err )
 return;
     if ( oldbitmapstate==bf_nfntmacbin && oldformatstate!=ff_pfbmacbin && !nfnt_warned ) {
@@ -1477,7 +1476,7 @@ return;
 		last = cur;
 		cur->sf = GGadgetGetUserData(GWidgetGetControl(d->gw,CID_Family+10*i));
 		if ( oldbitmapstate!=bf_none )
-		    cur->sizes = ParseBitmapSizes(GWidgetGetControl(d->gw,CID_Family+10*i+1),_("Pixel List"),&err);
+		    cur->sizes = ParseBitmapSizes(GWidgetGetControl(d->gw,CID_Family+10*i+1),&err);
 		if ( err ) {
 		    SfListFree(sfs);
 return;
