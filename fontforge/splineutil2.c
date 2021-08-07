@@ -3349,7 +3349,6 @@ return;
     }
 }
     
-#define NICE_PROPORTION	.39
 void SplineCharDefaultNextCP(SplinePoint *base) {
     SplinePoint *prev=NULL, *next;
     bigreal len, plen, ulen;

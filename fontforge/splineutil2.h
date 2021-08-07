@@ -3,6 +3,7 @@
 
 #include "splinefont.h"
 
+#define NICE_PROPORTION	.39
 enum ae_type { ae_all, ae_between_selected, ae_only_good, ae_only_good_rm_later };
 
 extern bigreal PathLength(SplineSet *ss);
