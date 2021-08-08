@@ -656,7 +656,7 @@ return;
 			if ( nextlinearity >= prevlinearity ) { /* make prev linear */
 				sp->prev->islinear = true;
 				sp->prev->from->nextcp = sp->prev->from->me;
-				sp->prevcp = sp->prev->from->me; 
+				sp->prevcp = sp->me; 
 				if ( sp->prev->from->pointtype!=pt_tangent) 
 					sp->prev->from->pointtype = pt_corner;
 				if ( sp->prev->order2 ) {
@@ -675,7 +675,7 @@ return;
 			} else { /* make next linear */
 				sp->next->islinear = true;
 				sp->next->to->prevcp = sp->next->to->me;
-				sp->nextcp = sp->next->to->me; 
+				sp->nextcp = sp->me; 
 				if ( sp->next->to->pointtype!=pt_tangent) 
 					sp->next->to->pointtype = pt_corner;
 				if ( sp->prev->order2 ) {
@@ -689,7 +689,7 @@ return;
 				else {
 					unitprev = NormVec(BPSub(sp->me,sp->next->to->me));
 					sp->prevcp = BPAdd(sp->me, BPScale(unitprev,fabs(BPDot(BPSub(sp->prevcp, sp->me), unitprev))));
-					SplineRefigure(sp->prev);
+					SplineRefigure(sp->next);
 				}
 			}
 		} /* else do nothing - this would not make any sense */
