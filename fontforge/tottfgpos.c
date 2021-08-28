@@ -26,6 +26,7 @@
  */
 
 #include <fontforge-config.h>
+#include <assert.h>
 
 #include "tottfgpos.h"
 
@@ -677,6 +678,7 @@ static void dumpcoveragetable(FILE *gpos,SplineChar **glyphs) {
 
 static int sc_ttf_order( const void *_sc1, const void *_sc2) {
     const SplineChar *sc1 = *(const SplineChar **) _sc1, *sc2 = *(const SplineChar **) _sc2;
+    assert(sc1->ttf_glyph != sc2->ttf_glyph);
 return( sc1->ttf_glyph - sc2->ttf_glyph );
 }
 
@@ -1130,6 +1132,7 @@ struct sckppst {
 
 static int cmp_gid( const void *_s1, const void *_s2 ) {
     const struct sckppst *s1 = _s1, *s2 = _s2;
+    assert( ((int) s1->other_gid) != ((int) s2->other_gid) );
 return( ((int) s1->other_gid) - ((int) s2->other_gid) );
 }
 
@@ -1708,6 +1711,7 @@ return;
 
 static int orderglyph(const void *_sc1,const void *_sc2) {
     SplineChar * const *sc1 = _sc1, * const *sc2 = _sc2;
+    assert( (*sc1)->ttf_glyph != (*sc2)->ttf_glyph );
 
 return( (*sc1)->ttf_glyph - (*sc2)->ttf_glyph );
 }
@@ -2613,6 +2617,7 @@ static void AnchorsAway(FILE *lfile,SplineFont *sf,
 
 static int lookup_size_cmp(const void *_l1, const void *_l2) {
     const OTLookup *l1 = *(OTLookup **) _l1, *l2 = *(OTLookup **) _l2;
+    assert( l1->lookup_length != l2->lookup_length );
 return( l1->lookup_length-l2->lookup_length );
 }
 
@@ -2912,8 +2917,12 @@ static int feat_alphabetize(const void *_fl1, const void *_fl2) {
 return( -1 );
     if ( fl1->tag>fl2->tag )
 return( 1 );
+    if ( fl1->feature_id<fl2->feature_id )
+return( -1 );
+    if ( fl1->feature_id>fl2->feature_id )
+return( 1 );
 
-return( 0 );
+assert( 0 );
 }
 
 static int numeric_order(const void *_i1, const void *_i2) {
@@ -2924,7 +2933,7 @@ return( -1 );
     if ( i1>i2 )
 return( 1 );
 
-return( 0 );
+assert( 0 );
 }
 
 static int LangSysMatch(struct scriptset *s,int ils1, int ils2 ) {
@@ -4496,7 +4505,8 @@ return( 1 );
     else if ( s1->script<s2->script )
 return( -1 );
     else
-return( 0 );
+assert( 0 );
+
 }
 
 static int jlangsort(const void *_s1,const void *_s2) {
@@ -4506,7 +4516,7 @@ static int jlangsort(const void *_s1,const void *_s2) {
     const struct jstf_lang *s2 = *__s2;
 
     if ( s1->lang==s2->lang )
-return( 0 );
+assert( 0 );
 
     if ( s1->lang==DEFAULT_LANG )
 return( -1 );
@@ -4530,7 +4540,7 @@ return( 1 );
     else if ( s1->lookup_index<s2->lookup_index )
 return( -1 );
     else
-return( 0 );
+assert( 0 );
 }
 
 static void SFJstfSort(SplineFont *sf) {
