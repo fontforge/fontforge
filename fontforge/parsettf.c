@@ -3354,7 +3354,7 @@ return( NULL );
     }
     else if ( sid<nStdStrings )
 return( cffnames[sid] );
-    else if ( sid-nStdStrings>scnt ) {
+    else if ( sid-nStdStrings>=scnt ) {
 	LogError( _("Bad sid %d (must be less than %d)\n"), sid, scnt+nStdStrings );
 	if ( info!=NULL ) info->bad_cff = true;
 return( NULL );
