@@ -2705,6 +2705,7 @@ return( true );
 	ld->layer->stroke_pen.brush.gradient = ld->strokegrad;
 	ld->layer->fill_brush.pattern = ld->fillpat;
 	ld->layer->stroke_pen.brush.pattern = ld->strokepat;
+    ld->layer->order2 = false; // Cubic by default
     }
 return( true );
 }
