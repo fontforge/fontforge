@@ -1072,7 +1072,6 @@ int fontforge_main( int argc, char **argv ) {
     bind_textdomain_codeset("FontForge","UTF-8");
     bindtextdomain("FontForge", getLocaleDir());
     textdomain("FontForge");
-    GResourceUseGetText();
     {
 	char path[PATH_MAX];
 	snprintf(path, PATH_MAX, "%s%s", getShareDir(), "/pixmaps" );

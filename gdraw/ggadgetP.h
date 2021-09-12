@@ -589,8 +589,6 @@ extern void GListMarkDraw(GWindow pixmap,int x, int y, int height, enum gadget_s
 extern const char* const* _GGadget_GetImagePath(void);
 extern int _GGadget_ImageInCache(GImage *image);
 
-extern int _ggadget_use_gettext;
-
 extern GResInfo ggadget_ri, listmark_ri;
 extern GResInfo *_GGadgetRIHead(void), *_GButtonRIHead(void), *_GTextFieldRIHead(void);
 extern GResInfo *_GRadioRIHead(void), *_GScrollBarRIHead(void), *_GLineRIHead(void);

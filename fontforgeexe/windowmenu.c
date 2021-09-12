@@ -91,17 +91,11 @@ return;
     mi->sub = sub;
 
     for ( i=0; sub[i].ti.text!=NULL || sub[i].ti.line; ++i ) {
-	if ( sub[i].ti.text_is_1byte && sub[i].ti.text_in_resource) {
+	if ( sub[i].ti.text_is_1byte ) {
 	    sub[i].ti.text = utf82u_mncopy((char *) sub[i].ti.text,&sub[i].ti.mnemonic);
-	    sub[i].ti.text_is_1byte = sub[i].ti.text_in_resource = false;
-	} else if ( sub[i].ti.text_is_1byte ) {
-	    sub[i].ti.text = utf82u_copy((char *) sub[i].ti.text);
-	    sub[i].ti.text_is_1byte = false;
-	} else if ( sub[i].ti.text_in_resource ) {
-	    sub[i].ti.text = u_copy(GStringGetResource((intpt) sub[i].ti.text,NULL));
-	    sub[i].ti.text_in_resource = false;
 	} else
 	    sub[i].ti.text = u_copy(sub[i].ti.text);
+	sub[i].ti.text_is_1byte = sub[i].ti.text_in_resource = false;
     }
     cnt = precnt;
     for ( fv = (FontViewBase *) fv_list; fv!=NULL; fv = fv->next ) {
