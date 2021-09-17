@@ -1,4 +1,4 @@
-/* This is a GENERATED file - from makeutype.py with Unicode 13.0.0 */
+/* This is a GENERATED file - from makeutype.py with Unicode 14.0.0 */
 
 /* Copyright (C) 2000-2012 by George Williams */
 /* Contributions: Khaled Hosny, Joe Da Silva */
@@ -61,7 +61,7 @@ static struct arabicforms arabic_forms[] = {
     { 0x061a, 0x061a, 0x061a, 0x061a, 0, 0, 0 },
     { 0x061b, 0x061b, 0x061b, 0x061b, 0, 0, 0 },
     { 0x061c, 0x061c, 0x061c, 0x061c, 1, 0, 0 },
-    { 0x0000, 0x0000, 0x0000, 0x0000, 0, 0, 0 },
+    { 0x061d, 0x061d, 0x061d, 0x061d, 0, 0, 0 },
     { 0x061e, 0x061e, 0x061e, 0x061e, 0, 0, 0 },
     { 0x061f, 0x061f, 0x061f, 0x061f, 0, 0, 0 },
     { 0x0620, 0x0620, 0x0620, 0x0620, 1, 0, 0 },    /* 0x0620 */

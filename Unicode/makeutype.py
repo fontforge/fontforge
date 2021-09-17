@@ -27,7 +27,7 @@ import sys
 BASE = os.path.dirname(os.path.abspath(__file__))
 SCRIPT = os.path.basename(__file__)
 
-UNIDATA_VERSION = "13.0.0"
+UNIDATA_VERSION = "14.0.0"
 UNICODE_DATA = "UnicodeData%s.txt"
 DERIVED_CORE_PROPERTIES = "DerivedCoreProperties%s.txt"
 PROP_LIST = "PropList%s.txt"
