@@ -162,7 +162,7 @@ matrix if you desire.
 
    ..
 
-The transformation matrix maps points in the glyph being refered to into their
+The transformation matrix maps points in the glyph being referred to into their
 location in the current glyph:
 
 .. math::
@@ -184,7 +184,7 @@ In a truetype font a reference may be positioned by matching two points, one in
 the base character, and one in the reference itself. In the example at right,
 the reference to "acute" will be moved until point 12 in "acute" is at the same
 place as point 33 in the base glyph. The glory of this method is that the
-truetype instructions assocated with the glyphs can move these points around to
+truetype instructions associated with the glyphs can move these points around to
 an appropriate location for the current pixelsize.
 
 Points in a composite glyph are numbered by counting the points of the first

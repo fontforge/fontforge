@@ -1263,7 +1263,7 @@ return( fonts[choice] );
 return( NULL );
 }
 
-/* I don't see where the spec says that the seperator between numbers is */
+/* I don't see where the spec says that the separator between numbers is */
 /*  comma or whitespace (both is ok too) */
 /* But the style sheet spec says it, so I probably just missed it */
 static char *skipcomma(char *pt) {
@@ -2965,7 +2965,7 @@ static void SVGLigatureFixupCheck(SplineChar *sc,xmlNodePtr glyph) {
 		((u[1]>=0x180B && u[1]<=0x180D) ||	/* Mongolian VS */
 		 (u[1]>=0xfe00 && u[1]<=0xfe0f) ||	/* First VS block */
 		 (u[1]>=0xE0100 && u[1]<=0xE01EF)) ) {	/* Second VS block */
-	    /* Problably a variant glyph marked with a variation selector */
+	    /* Probably a variant glyph marked with a variation selector */
 	    /* ... not a true ligature at all */
 	    /* http://babelstone.blogspot.com/2007/06/secret-life-of-variation-selectors.html */
 	    struct altuni *altuni = chunkalloc(sizeof(struct altuni));

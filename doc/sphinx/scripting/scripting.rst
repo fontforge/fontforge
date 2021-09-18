@@ -147,7 +147,7 @@ operators (and their precedences) are:
   If the first operand of + is a string then + will be treated as concatenation
   rather than addition. If the second operand is a number it will be converted to
   a string (decimal representation) and then concatenated. If the first operand of
-  + is an array then + will do array concatenation -- if the second argment is
+  + is an array then + will do array concatenation -- if the second argument is
   also an array the two will be concatenated ([1,2] + [3,4] yields [1,2,3,4],
   while [1,2] + 3 yields [1,2,3]). Otherwise these are the normal arithmetric
   operations.

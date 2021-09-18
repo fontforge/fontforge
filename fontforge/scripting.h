@@ -116,7 +116,7 @@ void arrayfree(Array *);
 
 void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height);
 
- /* Adds a user defined scripting function to the interpretter */
+ /* Adds a user defined scripting function to the interpreter */
  /* (you can't override a built-in name) */
  /* (you can replace a previous user defined function */
  /* Most functions will require a font to be loaded, but a few do not */

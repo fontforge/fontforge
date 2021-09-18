@@ -5493,7 +5493,7 @@ struct selection_bits {
     int lookup_cnt, sub_cnt;	/* Number of selected lookups, and selected sub tables */
     int a_lookup, a_sub;	/* The index of one of those lookups, or subtables */
     int a_sub_lookup;		/*  the index of the lookup containing a_sub */
-    int any_first, any_last;	/* Whether any of the selected items is first or last in its catagory */
+    int any_first, any_last;	/* Whether any of the selected items is first or last in its category */
     int sub_table_mergeable;	/* Can we merge the selected subtables? */
     int lookup_mergeable;	/* Can we merge the selected lookups? */
 };

@@ -33,7 +33,7 @@ for you.
 
   If components ``Interpreter`` and ``Development`` are both specified, this
   module search only for interpreter with same platform architecture as the one
-  defined by ``CMake`` configuration. This contraint does not apply if only
+  defined by ``CMake`` configuration. This constraint does not apply if only
   ``Interpreter`` component is specified.
 
 Imported Targets
@@ -122,7 +122,7 @@ This module will set the following variables in your project
 ``Python3_NumPy_FOUND``
   System has the NumPy.
 ``Python3_NumPy_INCLUDE_DIRS``
-  The NumPy include directries.
+  The NumPy include directories.
 ``Python3_NumPy_VERSION``
   The NumPy version.
 
@@ -176,7 +176,7 @@ Hints
   variable will be used, if any.
 
 ``Python3_FIND_VIRTUALENV``
-  This variable defines the handling of virtual environments. It is meaningfull
+  This variable defines the handling of virtual environments. It is meaningful
   only when a virtual environment is active (i.e. the ``activate`` script has
   been evaluated). In this case, it takes precedence over
   ``Python3_FIND_REGISTRY`` and ``CMAKE_FIND_FRAMEWORK`` variables.

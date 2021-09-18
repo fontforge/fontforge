@@ -1088,7 +1088,7 @@ static GCursor GXDrawCreateCursor(GWindow src,GWindow mask,Color fg,Color bg,
     XColor fgc, bgc;
     /* The XServer shipping with redhat 7.1 seems to suffer a protocol change */
     /*  with the red and blue members of XColor structure reversed */
-    /* The XServer runing on Mac OS/X can only handle 16x16 cursors */
+    /* The XServer running on Mac OS/X can only handle 16x16 cursors */
 
     fgc.red = COLOR_RED(fg)*0x101; fgc.green = COLOR_GREEN(fg)*0x101; fgc.blue = COLOR_BLUE(fg)*0x101;
     bgc.red = COLOR_RED(bg)*0x101; bgc.green = COLOR_GREEN(bg)*0x101; bgc.blue = COLOR_BLUE(bg)*0x101;
@@ -2096,7 +2096,7 @@ static void GXDrawScroll(GWindow _w, GRect *rect, int32 hor, int32 vert) {
 #ifndef _NO_LIBCAIRO
     if ( gw->usecairo ) {
 	/* Cairo can happily scroll the window -- except it doesn't know about*/
-	/*  child windows, and so we don't get the requisit events to redraw */
+	/*  child windows, and so we don't get the requisite events to redraw */
 	/*  areas covered by children. Rats. */
 	GXDrawSendExpose(gw,rect->x,rect->y,rect->x+rect->width,rect->y+rect->height);
 	GXDrawPopClip(_w,&old);
@@ -2435,7 +2435,7 @@ return( false );
 	    /*  this timer */
 	ret = true;
     }
-    if ( GTimerInList(gdisp,timer)) {		/* carefull, they might have cancelled it */
+    if ( GTimerInList(gdisp,timer)) {		/* careful, they might have cancelled it */
 	timer->active = false;
 	if ( timer->repeat_time==0 )
 	    GXDrawCancelTimer(timer);

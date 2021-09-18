@@ -32,7 +32,7 @@ Typographical glossary
       a :term:`syllabary <Syllabary>`. The Indic writing systems are
       probably the best known abugidas.
 
-      In most abugidas there are independant glyphs for the consonants, and each
+      In most abugidas there are independent glyphs for the consonants, and each
       consonant is implicitly followed by a default vowel sound. All vowels other
       than the default will be marked by either diacritics or some other
       modification to the base consonant.
@@ -193,7 +193,7 @@ Typographical glossary
    CID
       Character Identifier, a number. In some :term:`CJK`
       :term:`PostScript` fonts the glyphs are not named but
-      are refered to by a CID number.
+      are referred to by a CID number.
 
    CID-keyed font
       A :term:`PostScript` font in which the glyphs are index
@@ -431,7 +431,7 @@ Typographical glossary
 
    Hangul
       The Korean :term:`Syllabary`. The only syllabary (that
-      I'm aware of anway) based on an alphabet -- the letters of the alphabet never
+      I'm aware of anyway) based on an alphabet -- the letters of the alphabet never
       appear alone, but only as groups of two or three making up a syllable.
 
    Hanja
@@ -470,7 +470,7 @@ Typographical glossary
       The letters of the Korean alphabet. These are almost never seen alone,
       generally appearing in groups of three as part of a
       :term:`Hangul` syllable. The Jamo are divided into three
-      catagories (with considerable overlap between the first and third), the
+      categories (with considerable overlap between the first and third), the
       choseong -- initial consonants, the jungseong -- medial vowels, and the
       jongseong -- final consonants. A syllable is composed by placing a choseong
       glyph in the upper left of an em-square, a jungseong in the upper right, and
@@ -576,7 +576,7 @@ Typographical glossary
       weights and different widths of a font family, it could be used to generate:
       Thin, Normal, Semi-Bold, Bold, Condensed, Expanded, Bold-Condensed, etc.
 
-      Adobe is no longer developing this format. Apple has a format which acheives
+      Adobe is no longer developing this format. Apple has a format which achieves
       the same effect but has not produced many examples. FontForge
       :doc:`supports both </ui/dialogs/multiplemaster>`.
 
@@ -642,7 +642,7 @@ Typographical glossary
       it generates and are taken from Peter Karow's *Digital Formats for
       Typefaces*, p. 26).
 
-      The overshoot is also dependant on the point-size of a font, the larger the
+      The overshoot is also dependent on the point-size of a font, the larger the
       point-size the smaller the overshoot should be. Generally modern fonts will
       be used at multiple point-sizes, but in some font families there are multiple
       faces for the different point-sizes, and in such a case the overshoot will
@@ -775,7 +775,7 @@ Typographical glossary
    Reference
       A :ref:`reference <overview.References>` is a way of storing the outlines of
       one glyph in another (for example in accented glyphs). Sometimes called a
-      "componant".
+      "component".
 
    Right side bearing
       .. image:: /images/sidebearings.png

@@ -2558,7 +2558,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 		--sp;
 	  break;
 	  case pt_currentsmoothness:
-	    /* default value is installation dependant. I don't handle this properly */
+	    /* default value is installation dependent. I don't handle this properly */
 	    if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
 		stack[sp].u.val = 1.0;
 		stack[sp++].type = ps_num;
@@ -2570,7 +2570,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 		--sp;
 	  break;
 	  case pt_currentobjectformat:
-	    /* default value is installation dependant. I don't handle this properly */
+	    /* default value is installation dependent. I don't handle this properly */
 	    if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
 		stack[sp].u.val = 0.0;
 		stack[sp++].type = ps_num;
@@ -3899,14 +3899,14 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 		    popsp = 0;
 		    for ( k=sp-3; k>=sp-2-tot; --k )
 			pops[popsp++] = stack[k];
-		    /* othersubrs 0-3 must be interpretted. 0-2 are Flex, 3 is Hint Replacement */
+		    /* othersubrs 0-3 must be interpreted. 0-2 are Flex, 3 is Hint Replacement */
 		    /* othersubrs 12,13 are for counter hints. We don't need to */
 		    /*  do anything to ignore them */
 		    /* Subroutines 14-18 are multiple master blenders. We need */
 		    /*  to pay attention to them too */
 		    switch ( (int) stack[sp-1] ) {
 		      case 3: {
-			/* when we weren't capabable of hint replacement we */
+			/* when we weren't capable of hint replacement we */
 			/*  punted by putting 3 on the stack (T1 spec page 70) */
 			/*  subroutine 3 is a noop */
 			/*pops[popsp-1] = 3;*/
@@ -4000,7 +4000,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 			is_type2 = context->is_type2;
 			/* If we found a type2 font with a type1 flex sequence */
 			/*  (an illegal idea, but never mind, someone gave us one)*/
-			/*  then we had to turn off type2 untill the end of the */
+			/*  then we had to turn off type2 until the end of the */
 			/*  flex sequence. Which is here */
 		      break;
 		      case 14: 		/* results in 1 blended value */

@@ -39,7 +39,7 @@ little program called Fontastic which allowed people to design their own 'FONT'
 resources (mac bitmap fonts).
 
 Then a friend, Godfrey DiGiorgi, recommended that I buy a copy of Fontographer
-and design PostScript fonts. I was leary initially. How could a rasterizer match
+and design PostScript fonts. I was leery initially. How could a rasterizer match
 the quality of a hand crafted bitmap? But eventually I succumbed to the
 attractions of the cubic spline.
 
@@ -257,7 +257,7 @@ good use of the PostScript concept of subroutines. In June of 2006 I did a
 substantial rewrite of the type2 output code and decreased the size of my output
 fonts considerably. My new comparison command was helpful in debugging.
 Nonetheless I introduced a number of bugs. Which got fixed, of course. But it
-made me leary of doing the same thing for type1 output. After all, Adobe doesn't
+made me leery of doing the same thing for type1 output. After all, Adobe doesn't
 even produce type1 fonts any more, so surely I don't need to optimize them.
 Michael Zedler said otherwise, and after great effort on his part induced me (in
 October 2006) to make better use of subroutines in Type1 output also. No bugs
@@ -344,14 +344,14 @@ That basically worked. Still a few oddities, but basically functional.
 
 In July Michal Nowakowski gave me a patch which vastly improved the truetype
 auto instructor. I told him I'd only accept it if he would support it. After
-some initial grumbling he did so -- and then proceded to make it even better!
+some initial grumbling he did so -- and then proceeded to make it even better!
 Then about a week later Alexej Kryukov said he wanted to make the autoinstructor
 support diagonal stems, and the two of them started working together on this.
 
 At the Libre Graphics Meeting Dave demoed Raph Levien's spiro splines and
 encouraged me to integrate them into fontforge. But Raph released under GPL and
 wasn't willing to change, and I released under BSD and wasn't willing to change.
-I got permision from Raph to repackage his spiro routines into a small shared
+I got permission from Raph to repackage his spiro routines into a small shared
 library (libspiro) which could be released separately from FontForge but to
 which FontForge could link. And we had Raph's spiros in FontForge.
 
@@ -364,7 +364,7 @@ ugly -- and less functional than my own widget set in the ways that mattered to
 me, so I had given up on it). Dave offered to fund development of a gtk
 fontforge UI, but only if I'd switch to GPL. I dislike GPL, it seems so
 restrictive to me, so I said I wouldn't. Then I realized that I could rework my
-library until it was independant of widget set, and allow Dave to write a UI to
+library until it was independent of widget set, and allow Dave to write a UI to
 sit on top of it, not bound by the fontforge license. So I reworked the
 internals of fontforge to make them extensible, stripped the UI out of
 libfontforge. And started to work on a gtk based fontforge of my own.
@@ -411,11 +411,11 @@ the autohinter. So he greatly improved the output.
 
 I was also intregued by italics. Converting a font to italics involves so many
 different things -- the font is slanted, compressed, serifs change, letter forms
-change, ... I studied exisiting fonts to see what I could learn and asked
-various real typographers. The consensis I heard from them was that I could
+change, ... I studied existing fonts to see what I could learn and asked
+various real typographers. The consensus I heard from them was that I could
 never make a good italic font from a roman one mechanically and should not
 bother to try -- it would just lead to people making bad italic fonts. Good
-advice, but I didn't follow it. I thought it was a neat challange. And it was
+advice, but I didn't follow it. I thought it was a neat challenge. And it was
 something Ikarus had done, so I wanted to do it too.
 
 In July a friend of mine, who is a mac user, said she wouldn't even consider

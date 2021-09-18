@@ -280,7 +280,7 @@ return( false );
     if ( gsb->g.vert ) { r.y += ar ; r.height -= 2*ar; }
     else { r.x += ar; r.width -= 2*ar; }
 
-    /* Mimick old border behavior to retain compatibility with older themes, */
+    /* Mimic old border behavior to retain compatibility with older themes, */
     /* but match border shape with that of background. */
     box.flags = box_foreground_border_outer;
     box.border_width = 0;

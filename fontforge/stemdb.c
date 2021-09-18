@@ -767,7 +767,7 @@ static int FindMatchingHVEdge( struct glyphdata *gd,struct pointdata *pd,
     /*  to the side a tiny bit and hope that doesn't matter */
     if ( is_next==2 ) {
 	/* Consider the case of the bottom of the circumflex (or a chevron) */
-	/*  Think of it as a flattend breve. It is symetrical and we want to */
+	/*  Think of it as a flattened breve. It is symetrical and we want to */
 	/*  note the vertical distance between the two points that define */
 	/*  the bottom, so treat them as a funky stem */
 	/*                 \ \     / /              */
@@ -3026,7 +3026,7 @@ static int WalkSpline( struct glyphdata *gd, struct pointdata *pd,int gonext,
 	    ( nsp->me.y - base->y )*stem->l_to_r.y;
     /* Some splines have tiny control points and are almost flat */
     /*  think of them as lines then rather than treating them as curves */
-    /*  figure out how long they remain within a few orthoganal units of */
+    /*  figure out how long they remain within a few orthogonal units of */
     /*  the point */
     /* We used to check the distance between a control point and a spline */
     /* and consider the segment "flat" if this distance is smaller than   */
@@ -5231,7 +5231,7 @@ static void LookForMasterHVStem( struct stemdata *stem,BlueData *bd ) {
 /* with the "master" of the stem it overlaps (or any other stems), then */
 /* this dependency is unneeded and processing it in the autoinstructor  */
 /* can even lead to undesired effects. Unfortunately we can't prevent   */
-/* detecting such dependecies in LookForMasterHVStem(), because we      */
+/* detecting such dependencies in LookForMasterHVStem(), because we      */
 /* need to know the whole stem hierarchy first. So look for undesired   */
 /* dependencies and clean them now */
 static void ClearUnneededDeps( struct stemdata *stem ) {

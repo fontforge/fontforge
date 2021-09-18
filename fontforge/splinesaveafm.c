@@ -1256,7 +1256,7 @@ struct cc_data {
 
 struct cc_container {
     struct cc_data *ccs;
-    int cnt, max;	 /* total number of ccs used/alocated */
+    int cnt, max;	 /* total number of ccs used/allocated */
     SplineChar ***marks; /* For each ac this is a list of all mark glyphs in it */
     int *mcnt;		 /* Count of the above list */
     int *mpos;
@@ -3062,7 +3062,7 @@ static int _OTfmSplineFont(FILE *tfm, SplineFont *sf,EncMap *map,int maxc,int la
 		depths[i] = sc->tex_depth*scale;
 	    if ( depths[i]<0 ) depths[i] = 0;		/* Werner says depth should never be negative. Something about how accents are positioned */
 	    if ( sc->width==0 )
-		widths[i] = 1;	/* TeX/Omega use a 0 width as a flag for non-existant character. Stupid. So zero width glyphs must be given the smallest posible non-zero width, to ensure they exists. GRRR. */
+		widths[i] = 1;	/* TeX/Omega use a 0 width as a flag for non-existant character. Stupid. So zero width glyphs must be given the smallest possible non-zero width, to ensure they exists. GRRR. */
 	    else if ( sc->width*scale >= (16<<20) ) {
 		LogError( _("The width of %s is too big to fit in a tfm fix_word, it shall be truncated to the largest size allowed."), sc->name );
 		widths[i] = (16<<20)-1;
@@ -3491,7 +3491,7 @@ return( mf_ofm );
 	    (buffer[2]|(buffer[3]<<8)|(buffer[4]<<16)|(buffer[5]<<24))== sb.st_size )
 return( mf_pfm );
 
-    /* I don't see any distinquishing marks for a feature file */
+    /* I don't see any distinguishing marks for a feature file */
 
     if ( strstrmatch(filename,".afm")!=NULL )
 return( mf_afm );

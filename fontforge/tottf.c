@@ -1143,7 +1143,7 @@ static void dumpcomposite(SplineChar *sc, struct glyphinfo *gi) {
 	    flags |= _ARGS_ARE_XY|_UNSCALED_OFFSETS;
 	    /* The values I output are the values I want to see */
 	    /* There is some very strange stuff wrongly-documented on the apple*/
-	    /*  site about how these should be interpretted when there are */
+	    /*  site about how these should be interpreted when there are */
 	    /*  scale factors, or rotations */
 	    /* That description does not match the behavior of their rasterizer*/
 	    /*  I've reverse engineered something else (see parsettf.c) */
@@ -3021,7 +3021,7 @@ void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname) {
 	if ( samewid==-1 )
 	    pfminfo->pfmfamily |= 0x1;	/* Else it assumes monospace */
 
-/* urw uses 4 character abreviations */
+/* urw uses 4 character abbreviations */
 	if ( weight!=NULL )
 	    OS2WeightCheck(pfminfo,weight);
 	OS2WeightCheck(pfminfo,fontname);
@@ -3968,7 +3968,7 @@ static void AddMacName(NamTab *nt,struct macname *mn, int strid) {
     ++nt->cur;
 }
 
-/* There's an inconsistancy here. Apple's docs say there most be only one */
+/* There's an inconsistency here. Apple's docs say there most be only one */
 /*  nameid==6 and that name must be ascii (presumably plat=1, spec=0, lang=0) */
 /* The opentype docs say there must be two (psl=1,0,0 & psl=3,1,0x409) any */
 /*  others are to be ignored */
@@ -4195,7 +4195,7 @@ static FILE *_Gen816Enc(SplineFont *sf,int *tlen,EncMap *map) {
 	basebound = 0xf9;
 	lbase = 0x31;
 	subheadcnt = basebound-base+1;
-	planesize = 0xfe -0x31+1;	/* Stupid gcc bug, thinks 0xfe- is ambiguous (exponant) */
+	planesize = 0xfe -0x31+1;	/* Stupid gcc bug, thinks 0xfe- is ambiguous (exponent) */
     } else if ( strstrmatch(encname,"sjis")!=NULL  || strstrmatch(encname,"cp932")!=NULL ) {
 	base = 129;
 	basebound = 159;
@@ -5264,7 +5264,7 @@ static void MaxpFromTable(struct alltabs *at,SplineFont *sf) {
     if ( maxp==NULL || maxp->len<13*sizeof(uint16) )
 return;
     /* We can figure out the others ourselves, but these depend on the contents */
-    /*  of uninterpretted tables */
+    /*  of uninterpreted tables */
     at->maxp.maxZones = memushort(maxp->data,maxp->len, 7*sizeof(uint16));
     at->maxp.maxTwilightPts = memushort(maxp->data,maxp->len, 8*sizeof(uint16));
     at->maxp.maxStorage = memushort(maxp->data,maxp->len, 9*sizeof(uint16));
@@ -5372,7 +5372,7 @@ static void initATTables(struct alltabs *at, SplineFont *sf, enum fontformat for
 	aat_dumpbsln(at,sf);
     }
     if ( !at->applemode && (!at->opentypemode || (at->gi.flags&ttf_flag_oldkern)) )
-	ttf_dumpkerns(at,sf);		/* everybody supports a mimimal kern table */
+	ttf_dumpkerns(at,sf);		/* everybody supports a minimal kern table */
 
     dumpnames(at,sf,format);		/* Must be after dumpmorx which may create extra names */
 					    /* GPOS 'size' can also create names (so must be after that too) */
@@ -5867,7 +5867,7 @@ return( false );
 /*  difference to order them, time to do a seek seems likely to be small, but */
 /*  other people make a big thing about ordering them so I'll do it. */
 /* I got bored after glyph. Adobe follows the same scheme for their otf fonts */
-/*  so at least the world is consistant */
+/*  so at least the world is consistent */
 /* On the other hand, MS Font validator has a different idea. Oh well */
 /* From: http://partners.adobe.com/asn/tech/type/opentype/recom.jsp	      */
 /* TrueType Ordering							      */

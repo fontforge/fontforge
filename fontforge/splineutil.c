@@ -1333,7 +1333,7 @@ SplinePointList *SplinePointListCopy1(const SplinePointList *spl) {
 return( cur );
 }
 
-/* If this routine is called we are guarenteed that:
+/* If this routine is called we are guaranteed that:
     at least one point on the splineset is selected
     not all points on the splineset are selected
 */
@@ -1400,7 +1400,7 @@ static SplinePointList *SplinePointListCopySelected1(SplinePointList *spl) {
 return( head );
 }
 
-/* If this routine is called we are guarenteed that:
+/* If this routine is called we are guaranteed that:
     at least one point on the splineset is selected
     not all points on the splineset are selected
 */
@@ -2653,7 +2653,7 @@ static void _SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext 
 	}
     }
     /* sometimes (some apple oblique fonts) the fontmatrix is not just a */
-    /*  formality, it acutally contains a skew. So be ready */
+    /*  formality, it actually contains a skew. So be ready */
     if ( fd->fontmatrix[0]!=0 )
 	TransByFontMatrix(sf,fd->fontmatrix);
     AltUniFigure(sf,sf->map,true);
@@ -3354,7 +3354,7 @@ int _CubicSolve(const Spline1D *sp,bigreal sought, extended ts[3]) {
 	}
     } else if ( sa!=0 ) {
     /* http://www.m-a.org.uk/eb/mg/mg077ch.pdf */
-    /* this nifty solution to the cubic neatly avoids complex arithmatic */
+    /* this nifty solution to the cubic neatly avoids complex arithmetic */
 	xN = -sb/(3*(extended) sa);
 	yN = ((sa*xN + sb)*xN+sc)*xN + sd;
 
@@ -5245,7 +5245,7 @@ static AnchorPoint *AnchorPointsRemoveName(AnchorPoint *alist,AnchorClass *an) {
 	    if ( an->type == act_mark || (an->type==act_mklg && ap->type==at_mark))
 		next = NULL;	/* Only one instance of an anchor class in a glyph for mark to base anchors */
 				/*  Or for the mark glyphs of ligature classes */
-			        /*  Mark to mark & cursive will (probably) have 2 occurances */
+			        /*  Mark to mark & cursive will (probably) have 2 occurrences */
 			        /*  and ligatures may have lots */
 	    AnchorPointsFree(ap);
 	} else
@@ -7255,7 +7255,7 @@ return( changed );
 
 static int SplineRemoveAnnoyingExtrema1(Spline *s,int which,bigreal err_sq) {
     /* Remove extrema which are very close to one of the spline end-points */
-    /*  and which are in the oposite direction (along the normal of the */
+    /*  and which are in the opposite direction (along the normal of the */
     /*  close end-point's cp) from the other end-point */
     extended ts[2], t1, t2;
     bigreal df, dt;

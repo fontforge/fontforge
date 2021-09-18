@@ -4440,7 +4440,7 @@ OTLookup *NewAALTLookup(SplineFont *sf,struct sllk *sllk, int sllk_cnt, int i) {
 
     /* Now look at every glyph in the font, and see if it has any of the */
     /*  lookups we are interested in, and if it does, build a new pst */
-    /*  containing all posibilities listed on any of them */
+    /*  containing all possibilities listed on any of them */
     if ( sf->cidmaster ) sf = sf->cidmaster;
     psts = malloc(sllk[i].cnt*sizeof(PST *));
     k=0;
@@ -4740,7 +4740,7 @@ char *FPSTRule_To_Str(SplineFont *sf,FPST *fpst,struct fpst_rule *rule) {
     int seq=0;
     GrowBuf gb;
 
-    /* Note that nothing in the output distinquishes between back, match and forward */
+    /* Note that nothing in the output distinguishes between back, match and forward */
     /*  the thought being that to all intents and purposes, match starts at */
     /*  the first lookup and ends at the last. Anything before is back, */
     /*  anything after is for */ /* Adobe uses this convention in feature files*/
@@ -4969,8 +4969,8 @@ return( smprintf( _("Unterminated lookup invocation, starting at: %.20s..."), st
 		*lpt = '>';
 return( ret );
 	    } else if ( (isgpos && lookup->lookup_type<gpos_start) || (!isgpos && lookup->lookup_type>gpos_start)) {
-		ret = smprintf( isgpos ? _("GSUB lookup refered to in this GPOS contextual lookup: %s"):
-			    _("GPOS lookup refered to in this GSUB contextual lookup: %s"),
+		ret = smprintf( isgpos ? _("GSUB lookup referred to in this GPOS contextual lookup: %s"):
+			    _("GPOS lookup referred to in this GSUB contextual lookup: %s"),
 			start );
 		*lpt = '>';
 return( ret );

@@ -1387,7 +1387,7 @@ return( false );
 		}
 	    }
 
-	    // avoid dangling refrences to kp
+	    // avoid dangling references to kp
 	    int i = 0;
 	    for( i=0; mv->glyphs[i].sc; i++ ) {
 		if( i!=which && mv->glyphs[i].kp == kp ) {
@@ -1440,7 +1440,7 @@ return( false );
      * on the right indexes to update the kern value entry boxes. On
      * the other hand, we have to make sure the guide and glyph
      * display is adjusted accordingly too otherwise the user will not
-     * see the currect kerning for all other digraphs in the same
+     * see the correct kerning for all other digraphs in the same
      * class even thuogh the kerning entry box is updated.
      */
     if( kc && psc && sc )
@@ -1925,7 +1925,7 @@ static void MVTextChanged(MetricsView *mv) {
 
     ret = _GGadgetGetTitle(mv->text);
 
-    // convert the slash escpae codes and the like to the real string we will use
+    // convert the slash escape codes and the like to the real string we will use
     // for the metrics window
     WordListLine wll = WordlistEscapedInputStringToParsedDataComplex(
     	mv->sf, _GGadgetGetTitle(mv->text),

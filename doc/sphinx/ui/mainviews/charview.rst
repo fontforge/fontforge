@@ -180,7 +180,7 @@ moved or scaled.
 
 A simple click on an unselected point selects it and deselects everything else.
 A shift click on a point toggles whether that point is selected or not. A double
-click selects all points on the path containing that point. A tripple click
+click selects all points on the path containing that point. A triple click
 selects everything in the layer. Clicking on the background will deselect
 everything. Clicking on the background and dragging out a rectangle will select
 everything within the rectangle. Clicking on a line or spline will select the
@@ -499,10 +499,10 @@ including the start and end points of the line itself. If there are more than
 two intersections then the x, y, and total distance between the first and last
 intersections are shown before the point list.
 
-[0] indicates the starting point of the measure line, and the (x-y) co-ordinates
+[0] indicates the starting point of the measure line, and the (x-y) coordinates
 of that point. Initially [1] is the end point; when it intersects with one
 spline then [1] becomes the first intersection point and [2] becomes the end
-point, and so on. The co-ordinates are followed by the x and y distances and
+point, and so on. The coordinates are followed by the x and y distances and
 then the final number is the length of the section ending at that point; which
 is also shown directly on the canvas.
 

@@ -22,7 +22,7 @@ Example:
     - Row 2 Col 2
 
 The syntax is very similar to the docutils list-table directive. However the
-number of columns per row does *not* need to be homogenous.
+number of columns per row does *not* need to be homogeneous.
 
 The flex-widths parameter is specified on a per-row basis. It should be a list
 of numbers whose length is equal to the number of columns in that row. It

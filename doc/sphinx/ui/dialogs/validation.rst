@@ -13,7 +13,7 @@ always quick) to insure that you are not breaking any rules.
 * All paths must be drawn in a consistent direction. Clockwise for external paths,
   anti-clockwise for internal paths. (Actually PostScript requires the exact
   opposite, but FontForge reverses PostScript contours when it loads them so that
-  everything is consistant internally -- and reverses them again when it saves
+  everything is consistent internally -- and reverses them again when it saves
   them, of course).
 * There may be no flipped references (this is a special case of the above, a
   flipped reference will have its contours drawn in the wrong direction).
@@ -85,7 +85,7 @@ I say that these options "may" fix problems. Let me give some examples where
 they can't.
 
 * If a glyph contains a reference which is drawn in the wrong direction then you
-  can't fix it in the refering glyph.
+  can't fix it in the referring glyph.
 * If a glyph contains two references which intersect one another, then Remove
   Overlap can't fix them. You must inline the references before you can correct
   them.

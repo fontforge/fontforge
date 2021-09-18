@@ -448,7 +448,7 @@ exit( 1 );
 	    command = argv[++i];
 #endif
 	} else {
-	    fprintf( stderr, "%s [options]\tGenerate random erroneous fonts and attmpt to parse them\n", argv[0] );
+	    fprintf( stderr, "%s [options]\tGenerate random erroneous fonts and attempt to parse them\n", argv[0] );
 	    fprintf( stderr, "\t--dir <path-spec>\tAdds <path-spec> to list of dirs searched for fonts\n" );
 	    fprintf( stderr, "\t--ext <extension>\tAdds <extension> to list of extension indicating fonts\n" );
 	    fprintf( stderr, "\t--all \t\tAll non-directory files are assumed to be fonts\n" );

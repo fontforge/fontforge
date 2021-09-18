@@ -340,7 +340,7 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int forcebg ) {
 
 	    /* I assume that the bitmap image matches the bounding*/
 	    /*  box. In some bitmap fonts the bitmap has white space on the*/
-	    /*  right. This can throw off the centering algorithem */
+	    /*  right. This can throw off the centering algorithm */
 	    if ( fv->magnify>1 ) {
 		GDrawDrawImageMagnified(pixmap,&gi,NULL,
 			j*fv->cbw+(fv->cbw-1-fv->magnify*xwidth)/2,

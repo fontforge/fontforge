@@ -1130,7 +1130,7 @@ static GMenuItem *GMenuSearchActionRecursive( GWindow gw,
 	    if( HKActionMatchesFirstPartOfTextInfo( action, &mi[i].ti )) {
 		char* subaction = HKActionPointerPastLeftmostKey(action);
 
-//		TRACE("GMenuSearchAction() action:%s decending menu:%s\n", action, u_to_c(mi[i].ti.text) );
+//		TRACE("GMenuSearchAction() action:%s descending menu:%s\n", action, u_to_c(mi[i].ti.text) );
 		GMenuItem *ret = GMenuSearchActionRecursive(gw,mi[i].sub,subaction,event,call_moveto);
 		if ( ret!=NULL )
 		    return( ret );

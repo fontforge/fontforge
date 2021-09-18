@@ -126,13 +126,13 @@ typedef struct {
 /* Typedef 'module_definition' -- Create one of these structures for
  * each Python module that is being defined.
  *
- * Be sure to register the defintion in the "MODULE REGISTRY" section.
+ * Be sure to register the definition in the "MODULE REGISTRY" section.
  */
 typedef struct {
     /* Set these members as initial constant values. */
     const char *module_name;
     const char *docstring;
-    python_type_info *types; /* array of type defintions, or NULL */
+    python_type_info *types; /* array of type definitions, or NULL */
     PyMethodDef *methods; /* array of module-level methods/functions, or NULL */
     int auto_import;  /* automatically import module in embedded mode? */
 
@@ -1223,7 +1223,7 @@ return( NULL );
 Py_RETURN_NONE;
 }
 
-// This allows the init code to post only less agressive warning
+// This allows the init code to post only less aggressive warning
 // messages during startup.
 static bool showPythonErrors = 1;
 
@@ -3423,7 +3423,7 @@ static PyMethodDef PyFFContour_methods[] = {
     {"cluster", (PyCFunction)PyFFContour_Cluster, METH_VARARGS,
 	     "Round points on a contour" },
     {"boundingBox", (PyCFunction)PyFFContour_BoundingBox, METH_NOARGS,
-	     "Finds a bounding box for the countour (xmin,ymin,xmax,ymax)" },
+	     "Finds a bounding box for the contour (xmin,ymin,xmax,ymax)" },
     {"getSplineAfterPoint", (PyCFunction)PyFFContour_GetSplineAfterPoint, METH_VARARGS,
 	     "Returns the coordinates of two cubic splines, one for x movement, one for y.\n"
 	     "(Quadratic curves will have 0s for the first coordinates).\n"
@@ -4800,7 +4800,7 @@ return( true );
 return( 0 );
 }
 
-/* Point convertion flags: see 'enum pconvert_flags' in splinefont.h */
+/* Point conversion flags: see 'enum pconvert_flags' in splinefont.h */
 struct flaglist pconvertflags[] = {
     { "select_none", pconvert_flag_none },
     { "select_all", pconvert_flag_all },
@@ -6215,7 +6215,7 @@ static PyObject *PyFFGlyph_Repr(PyFF_Glyph *self) {
     int at;
     const struct altuni *alt;
 
-    /* Get space to hold string. For effeciency try to avoid malloc
+    /* Get space to hold string. For efficiency try to avoid malloc
      * except for rare cases where more is needed.
      */
     space_needed = 64;
@@ -11108,7 +11108,7 @@ static PyObject *fontiter_iternextkey(fontiterobject *di) {
 	    PyObject *glyph, *tempdict;
 	    PyObject *matched;
 	    glyph = PySC_From_SC_I( sc );
-	    /* Fill matched result into the glyph.temporary atribute. */
+	    /* Fill matched result into the glyph.temporary attribute. */
 	    tempdict = PyFF_Glyph_get_temporary((PyFF_Glyph *)glyph, NULL);
 	    if (tempdict == NULL || !PyDict_Check(tempdict)) {
 		tempdict = PyDict_New();
@@ -12502,7 +12502,7 @@ return( 0 );
 static PyObject *PyFF_Font_get_vertical_origin(PyFF_Font *self, void *UNUSED(closure)) {
     if ( CheckIfFontClosed(self) )
 return (NULL);
-return( Py_BuildValue("i", 0 )); /* No longer implemented, return 0 for backwards compatability */
+return( Py_BuildValue("i", 0 )); /* No longer implemented, return 0 for backwards compatibility */
 }
 
 static int PyFF_Font_set_vertical_origin(PyFF_Font *UNUSED(self), PyObject *UNUSED(value), void *UNUSED(closure)) {

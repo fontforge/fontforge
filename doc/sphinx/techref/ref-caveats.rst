@@ -88,7 +88,7 @@ Let us examine the most common font formats:
    the final composite contain any hints at all. Again this is not an all or
    nothing affair.
 
-   And again FontForge can break glyphs into smaller segements which can be
+   And again FontForge can break glyphs into smaller segments which can be
    placed in subroutines and shared among glyphs. These are not true references
    but do make the font smaller.
 

@@ -165,7 +165,7 @@ return;
     flavour = getlong(sfnt);
     /* The woff standard says we should accept all flavours of sfnt, so can't */
     /*  test flavour to make sure we've got a valid sfnt */
-    /* But we can test the rest of the header for consistancy */
+    /* But we can test the rest of the header for consistency */
     num_tabs = getushort(sfnt);
     for ( i=1, j=0; 2*i<=num_tabs; i<<=1, ++j );
     test = getushort(sfnt);

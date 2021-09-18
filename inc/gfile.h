@@ -58,7 +58,7 @@ extern char *GFileReplaceName(char *oldname,char *fname,char *buffer,size_t size
  *
  * The return value is a pointer either being the same as path or a
  * pointer into the string that path points to. So no memory is
- * allocated by this function and the return value is dependant on the
+ * allocated by this function and the return value is dependent on the
  * 'path' string you passed in.
  */ 
 extern char *GFileNameTail(const char *oldname);

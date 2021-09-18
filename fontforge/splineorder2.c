@@ -404,7 +404,7 @@ return( end );
 	SplinePointFree(s->to);
 	SplineFree(s);
     }
-/* Hmm. With my algorithem, checking for points of inflection actually makes */
+/* Hmm. With my algorithm, checking for points of inflection actually makes */
 /*  things worse. It uses more points and the splines don't join as nicely */
 /* However if we get a bad match (a line) in the normal approx, then check */
 /*  Err... I was computing POI incorrectly. Above statement might not be correct*/
@@ -1069,7 +1069,7 @@ static void SCConvertRefs(SplineChar *sc,int layer) {
     for ( rf=sc->layers[layer].refs; rf!=NULL; rf=rf->next ) {
 	if ( !rf->sc->ticked )
 	    SCConvertRefs(rf->sc,layer);
-	SCReinstanciateRefChar(sc,rf,layer);	/* Conversion is done by reinstanciating */
+	SCReinstanciateRefChar(sc,rf,layer);	/* Conversion is done by reinstantiating */
 		/* Since the base thing will have been converted, all we do is copy its data */
     }
 }
@@ -1533,7 +1533,7 @@ return;
 	}
       break;
     } else {
-	/* Can't set things arbetrarily here, but make sure they are consistant */
+	/* Can't set things arbetrarily here, but make sure they are consistent */
 	if ( (from->pointtype==pt_curve || from->pointtype==pt_hvcurve ) &&
 		!from->noprevcp && !from->nonextcp ) {
 	    unit.x = from->nextcp.x-from->me.x;

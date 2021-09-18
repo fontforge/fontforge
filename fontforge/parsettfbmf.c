@@ -650,7 +650,7 @@ static struct bdfcharlist bl[3];
 
 static struct bdfcharlist *BDFAddDefaultGlyphs(BDFFont *bdf, int format) {
     /* when I dump out the glyf table I add 3 glyphs at the start. One is glyph*/
-    /*  0, the one used when there is no match, and the other two are varients*/
+    /*  0, the one used when there is no match, and the other two are variants*/
     /*  on space. These might or might not be in the font.  Add the ones that */
     /*  don't exist */
     /* Werner tells me he doesn't want them added. He thinks sparse bitmaps */

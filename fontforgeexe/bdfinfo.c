@@ -723,7 +723,7 @@ void SFBdfProperties(SplineFont *sf, EncMap *map, BDFFont *thisone) {
     static GBox small = GBOX_EMPTY;
     GGadgetData gd;
     /* I don't use a MatrixEdit here because I want to be able to display */
-    /*  non-standard properties. And a MatrixEdit can only disply things in */
+    /*  non-standard properties. And a MatrixEdit can only display things in */
     /*  its pull-down list */
 
     memset(&bd,0,sizeof(bd));

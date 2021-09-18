@@ -798,7 +798,7 @@ static void MakeStrokeDlg(void *cv, void (*strokeit)(void *,StrokeInfo *,int),
 	gcd[gcdoff].gd.popup_msg = _(
 	    "A calligraphic pen or an elliptical pen has two widths\n"
 	    "(which may be the same, giving a circular or square pen,\n"
-	    "or different giving an eliptical or rectangular pen).");
+	    "or different giving an elliptical or rectangular pen).");
 	tfpos[1] = gcdoff;
 	gcd[gcdoff++].creator = GTextFieldCreate;
 	split[sp][4] = &gcd[gcdoff-1];

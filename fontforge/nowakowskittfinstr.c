@@ -242,7 +242,7 @@ return( rint(num*16384) );
 /* An apparatus for instructing sets of points with given truetype command.
  * The command must pop exactly 1 element from the stack and mustn't push any.
  * These points must be marked as 'touched' elsewhere! this function only
- * generates intructions.
+ * generates instructions.
  */
 static uint8 *instructpoints(uint8 *instrs, int ptcnt, const int *pts, uint8 command) {
     int i, use_sloop;
@@ -929,7 +929,7 @@ static void init_fpgm(GlobalInstrCt *gic) {
 
         /* Function 3: round a stack element as a black distance, respecting
          * minimum distance of 1px. This is used for rounding stems after width
-         * normalization. Often preceeded with SROUND, so finally sets RTG.
+         * normalization. Often preceded with SROUND, so finally sets RTG.
          * Leaves the rounded width on the stack.
          * Syntax: PUSHX_2 width_to_be_rounded 3 CALL
          */
@@ -2055,7 +2055,7 @@ typedef struct pointvector {
     int done;
 } PointVector;
 
-/* In this structure we store information about diagonales,
+/* In this structure we store information about diagonals,
    relatively to which the given point should be positioned */
 typedef struct diagpointinfo {
     struct pointvector line[2];
@@ -3403,7 +3403,7 @@ static void instruct_dependent(InstrCt *ct, StemData *stem) {
  * to hint them explicitly.
  *
  * TODO! We currently instruct hints dependent on those controlled by blues.
- * This may be not always corrrect (e.g. if a dependent hint is itself
+ * This may be not always correct (e.g. if a dependent hint is itself
  * controlled by blue zone - possibly even different). Research needed.
  *
  * Important notes:
@@ -4064,7 +4064,7 @@ return( 1 );
 return( 0 );
 }
 
-/* Takes a line defined by two points and returns a vector decribed as a
+/* Takes a line defined by two points and returns a vector described as a
  * pair of x and y values, such that the value (x2 + y2) is equal to 1.
  * Note that the BasePoint structure is used to store the vector, although
  * it is not a point itself. This is just because that structure has "x"
@@ -4167,7 +4167,7 @@ return;
  * information about points assigned to each stem. Then run on stem chunks
  * and associate with each point the line it should be aligned by. Note that
  * we have to do this on a relatively early stage, as it may be important
- * to know, if the given point is subject to the subsequent diagonale hinting,
+ * to know, if the given point is subject to the subsequent diagonal hinting,
  * before any actual processing of diagonal stems is started.
  */
 static void InitDStemData( InstrCt *ct ) {
@@ -4497,7 +4497,7 @@ return( instrs );
  *
  * For each point we first determine a direction at which it still can
  * be moved. If a point has already been positioned relatively to another
- * diagonal line, then we move it along that diagonale. Thus this algorithm
+ * diagonal line, then we move it along that diagonal. Thus this algorithm
  * can handle things like "V" where one line's ending point is another
  * line's starting point without special exceptions.
  */
@@ -4549,7 +4549,7 @@ return( ct->pt );
 
         /* Always put the calculated stem width into the CVT table, unless it is
          * already there. This approach would be wrong for vertical or horizontal
-         * stems, but for diagonales it is just unlikely that we can find an
+         * stems, but for diagonals it is just unlikely that we can find an
          * acceptable predefined value in StemSnapH or StemSnapV
          */
         cvt = TTF_getcvtval( ct->gic->sf,ds->width );
@@ -4703,7 +4703,7 @@ return( instrs );
 }
 
 /* When all stem edges have already been positioned, run through other
- * points which are known to be related with some diagonales and position
+ * points which are known to be related with some diagonals and position
  * them too. This may include both intersections and points which just
  * lie on a diagonal line. This function does not care about starting/ending
  * points of stems, unless they should be additionally positioned relatively

@@ -89,7 +89,7 @@ Top Accent Attachment
 
 .. figure:: /images/MATH-TopAccent.png
 
-When positioning an accent above a glyph Mathmatical typesetting follows complex
+When positioning an accent above a glyph Mathematical typesetting follows complex
 rules to determine how high about the glyph it should go. The standard Mark To
 Base GPOS lookup is inappropriate here.
 
@@ -166,7 +166,7 @@ Vertical and Horizontal Glyph Variants
 Some glyphs, like parentheses and brackets need to be drawn in many sizes
 depending on the size of the formula they are enclosing. One possibility is just
 to draw them at a larger pointsize, but that is non-optimal because then the
-glyph will be symetrically scaled and so much bolder than it should be. Another
+glyph will be symmetrically scaled and so much bolder than it should be. Another
 solution is to design several variants of these glyphs at steadily increasing
 sizes. A third solution (which we will come to in the next section) is to design
 the glyph in sections so that it can be composed at any size.

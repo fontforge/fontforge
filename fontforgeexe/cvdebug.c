@@ -721,7 +721,7 @@ static void DVFigureNewState(DebugView *dv,TT_ExecContext exc) {
 	}
 	if ( exc->pts.n_points<=2 )
 	    cv->b.ft_gridfitwidth = 0;
-	/* suport for vertical phantom pts */
+	/* support for vertical phantom pts */
 	else if ( FreeTypeAtLeast(2,1,8))
 	    cv->b.ft_gridfitwidth = exc->pts.cur[exc->pts.n_points-3].x * dv->scalex;
 	else

@@ -876,8 +876,8 @@ return;
 		pt.y = ((m->s->splines[1].a*m->tstart+m->s->splines[1].b)*m->tstart+
 			m->s->splines[1].c)*m->tstart+m->s->splines[1].d;
 	    }
-	/* t may not be perfectly correct (because the correct value isn't expressable) */
-	/* so evalutating the spline at t may produce a slight variation */
+	/* t may not be perfectly correct (because the correct value isn't expressible) */
+	/* so evaluating the spline at t may produce a slight variation */
 	/* now if t is a double and inter.x/y are floats that doesn't matter */
 	/* but if both are doubles then it does */
 	/*  Similar behavior seems needed above and below where we test against m->start/m->end */
@@ -2488,7 +2488,7 @@ int MonotonicFindAt(Monotonic *ms,int which, extended test, Monotonic **space ) 
     break;
 	/* If the next monotonic continues in the same direction, and we found*/
 	/*  it too, then don't count both. They represent the same intersect */
-	/* If they are in oposite directions then they cancel each other out */
+	/* If they are in opposite directions then they cancel each other out */
 	/*  and that is correct */
 	if ( mm!=m &&	/* Should always be true */
 		(&mm->xup)[which]==(&m->xup)[which] ) {
@@ -2708,7 +2708,7 @@ static void FigureNeeds(Monotonic *ms,int which, extended test, Monotonic **spac
 	/*  would appear after reversing the two. So... */
 	/* needed -- means the current mono is needed with the current order */
 	/* nneeded -- next mono is needed with the current order */
-	/* nineeded -- next mono is needed with reveresed order */
+	/* nineeded -- next mono is needed with reversed order */
 	/* inneeded -- cur mono is needed with reversed order */
 	niwinding = winding; niew = ew;
 	nnwinding = nwinding; nnew = new;
@@ -3928,7 +3928,7 @@ static SplineSet *SSRemoveReversals(SplineSet *base) {
 			    /* We have a line that backtracks, but doesn't cover */
 			    /*  the entire spline, so we intersect */
 			    /* We want to remove sp, the shorter of sp->next, sp->prev */
-			    /*  and a bit of the other one. Also reomve one of nsp,psp */
+			    /*  and a bit of the other one. Also remove one of nsp,psp */
 			    if ( isp==psp )
 			    {
 				RemoveNextSP(psp,sp,nsp,base);

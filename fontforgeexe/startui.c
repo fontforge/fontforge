@@ -881,7 +881,7 @@ int fontforge_main( int argc, char **argv ) {
     /* the splash screen used not to have a title bar (wam_nodecor) */
     /*  but I found I needed to know how much the window manager moved */
     /*  the window around, which I can determine if I have a positioned */
-    /*  decorated window created at the begining */
+    /*  decorated window created at the beginning */
     /* Actually I don't care any more */
     wattrs.mask = wam_events|wam_cursor|wam_bordwidth|wam_backcol|wam_positioned|wam_utf8_wtitle|wam_isdlg;
     wattrs.event_masks = ~(1<<et_charup);

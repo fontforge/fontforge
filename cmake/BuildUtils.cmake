@@ -16,7 +16,7 @@ The ``AUTO`` type is for tri-state Boolean options. The ``value`` parameter
 is ignored; it will always be initialised to ``AUTO``.
 
 The ``ENUM`` type is for options that may be one of a number of defined
-values. All arguments afer the description are treated as allowed values
+values. All arguments after the description are treated as allowed values
 of the enumeration.
 
 All other types are passed directly to ``set()``.

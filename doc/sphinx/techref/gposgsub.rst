@@ -628,7 +628,7 @@ like this in the 'morx' table.
 
 Both formats have ligature sub-tables. The 'GSUB' version is unconditional
 (the ligature is always applied -- though a ligature substitution could be
-embedded in an OpenType contextual substitution to make it condtional). The
+embedded in an OpenType contextual substitution to make it conditional). The
 'morx' version can be contextual (though in fonts I have examined it is
 usually uncontextual). FontForge only supports unconditional ligatures.
 

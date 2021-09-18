@@ -1753,7 +1753,7 @@ static int GGDKDrawKeyState(GWindow w, int keysym) {
         return 0;
     }
     // Since this function is only used to check the state of the space button
-    // Dont't bother with a full implementation...
+    // Don't bother with a full implementation...
     return ((GGDKWindow)w)->display->is_space_pressed;
 }
 

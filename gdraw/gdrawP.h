@@ -112,7 +112,7 @@ struct gwindow {
     unsigned int usecairo: 1;		/* use a cairo context -- if meaningful */
     /**
      * This is an optional window type string that is used by the hotkey subsystem.
-     * It is a pointer to a constant string which is never to be freeed or NULL.
+     * It is a pointer to a constant string which is never to be freed or NULL.
      * This will be, for example, "CharView" for the glyph editing window.
      */
     char* window_type_name;

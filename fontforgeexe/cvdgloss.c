@@ -1027,7 +1027,7 @@ return(1);
 		val1&(1<<5) ? "greyscale (result in bit 12)" : "", 
 		val1&(1<<6) ? "ClearType (result in bit 13)" : "", 
 		val1&(1<<7) ? "CT widths compat (result in bit 14)" : "", 
-		val1&(1<<8) ? "CT symetrical smoothing (result in bit 15)" : "",
+		val1&(1<<8) ? "CT symmetrical smoothing (result in bit 15)" : "",
 		val1&(1<<9) ? "CT processes in BGR(1) or RGB(0) (result in bit 16)" : "");
 	if ( val1&1 ) {
 	    scrprintf(&scr, "  Versions: 1 => Mac OS 6" );

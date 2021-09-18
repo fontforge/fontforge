@@ -447,8 +447,8 @@ return;			/* We clicked on the active point, that's a no-op */
 
 /* When the user tries to add a point (by doing a mouse down with a point tool
   selected) there are several cases to be looked at:
-	If there is a single point selected and it is at the begining/end of an open spline set
-	    if we clicked on another point which is the begining/end of an open splineset
+	If there is a single point selected and it is at the beginning/end of an open spline set
+	    if we clicked on another point which is the beginning/end of an open splineset
 		draw a spline connecting the two spline sets and merge them
 			(or if it's the same spline set, then close it)
 	    else

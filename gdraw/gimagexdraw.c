@@ -2054,7 +2054,7 @@ return;
 /*  does support bitwise boolean operators, and an "or" will always produce */
 /*  a value somewhere between those extremes. */
 /* Actually since the color values (black==foreground, white==background)   */
-/*  generally run in the oposite direction from the alpha channel (100%=fore, */
+/*  generally run in the opposite direction from the alpha channel (100%=fore, */
 /*  0%=back) we will need to reverse the "or" to be an "and", but the idea    */
 /*  is the same */
 void _GXDraw_Glyph( GWindow _w, GImage *image, GRect *src, int32 x, int32 y) {

@@ -143,7 +143,7 @@ giving a transformation matrix here.
 A line may be dashed. Dash patterns are specified as a list of numbers, the
 first number in the list will draw a line segment at most that many em-units,
 the next number will skip that many em-units, the third will be drawn, and so
-on. After then entire list has been used, it will start again at the begining.
+on. After then entire list has been used, it will start again at the beginning.
 If the list has an odd number of elements, then this time through the first
 entry indicates that many units should be skipped. So "10" would mean a line
 which alternates being drawn every 10 units, while "20 10" would draw 20 units,

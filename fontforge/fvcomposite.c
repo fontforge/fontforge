@@ -2090,7 +2090,7 @@ return;
  /*  have much of a problem because ascenders are (usually) all the same shape*/
  /* Obviously this test is only meaningful for latin,greek,cyrillic alphas */
  /*  hence test for isupper,islower. And I'm assuming greek,cyrillic will */
- /*  be consistant with latin */
+ /*  be consistent with latin */
 	if ( islower(basech) || isupper(basech)) {
 	    SplineChar *common = SFGetChar(sf,islower(basech)?'o':'O',NULL);
 	    if ( common!=NULL ) {
@@ -2191,7 +2191,7 @@ return;
 	    yoff = bb.miny - rbb.miny;
 
 	if ( pos & (FF_UNICODE_ABOVE|FF_UNICODE_BELOW) ) {
-	    /* When we center an accent above an asymetric character like "C" we */
+	    /* When we center an accent above an asymmetric character like "C" we */
 	    /*  should not pick the mid point of the char. Rather we should pick */
 	    /*  the highest point (mostly anyway, there are exceptions) */
 	    if ( pos & FF_UNICODE_ABOVE ) {

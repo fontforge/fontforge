@@ -32,7 +32,7 @@ will look at it.
 
 .. object:: fontforge.FontView.GlyphInfoColor
 
-   Sets the color used to dislpay information about selected glyph, betwen the
+   Sets the color used to display information about selected glyph, between the
    FontView menu bar and the glyph array.
 
 .. object:: fontforge.FontView.SelectedColor
@@ -609,7 +609,7 @@ will look at it.
 
    ibm | mac | sun | ppc | 0 | 1 | 2 | 3
 
-   Allows you to specify the type of keyboard. Currently this is only relevent
+   Allows you to specify the type of keyboard. Currently this is only relevant
    when generating menus. The modifier keys are in different locations on
    different keyboards (under different operating systems) and if FontForge
    knows what keyboard you are using it can make the hot-keys have better
@@ -633,7 +633,7 @@ will look at it.
    An integer (seconds)
 
    Gdraw will wait this many seconds after making a request for a selection (ie.
-   when doing a Paste). If it gets no responce after that period it reports a
+   when doing a Paste). If it gets no response after that period it reports a
    failure.
 
 .. object:: Gdraw.Background
@@ -968,7 +968,7 @@ will look at it.
    A boolean
 
    Controls whether menus show shortcuts as the standard mac icons (cloverleaf
-   for Command key, up arrow for shift, ^ for control and wierd squiggle for
+   for Command key, up arrow for shift, ^ for control and weird squiggle for
    Option(Meta/Alt)) or as text ("Cnt-Shft-A"). Default is True on the mac and
    False elsewhere.
 

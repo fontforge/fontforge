@@ -4723,7 +4723,7 @@ static void CVSwitchActiveSC( CharView *cv, SplineChar* sc, int idx )
 	    uc_strcat( p, "/" );
 
 	// only update when the selection has changed.
-	// updating this string is a non reversable operation if the
+	// updating this string is a non reversible operation if the
 	// user is part way through typing some text.
 	if( !Wordlist_selectionsEqual( srctxt, p ))
 	{
@@ -8869,7 +8869,7 @@ static void _CVUnlinkRef(CharView *cv) {
 	}
 	CVSetCharChanged(cv,true);
 	SCUpdateAll(cv->b.sc);
-	/* Don't need to update dependancies, their splines won't have changed*/
+	/* Don't need to update dependencies, their splines won't have changed*/
     }
 }
 
@@ -13190,7 +13190,7 @@ void SVCharViewInits(SearchView *sv) {
     sv->mbh = gsize.height;
 
     pos.y = sv->mbh+sv->fh+10; pos.height = 220;
-    pos.width = pos.height; pos.x = 10+pos.width+20;	/* Do replace first so palettes appear propperly */
+    pos.width = pos.height; pos.x = 10+pos.width+20;	/* Do replace first so palettes appear properly */
     sv->rpl_x = pos.x; sv->cv_y = pos.y;
     sv->cv_height = pos.height; sv->cv_width = pos.width;
     memset(&wattrs,0,sizeof(wattrs));

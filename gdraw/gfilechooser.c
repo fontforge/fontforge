@@ -753,7 +753,7 @@ return( true );
 	    }
 	}
 	if ( dirpos!=-1 && cnt>0 ) {
-	    /* If a directory was selected, clear everthing else */
+	    /* If a directory was selected, clear everything else */
 	    for ( i=0; i<listlen; ++i ) if ( i!=dirpos )
 		all[i]->selected = false;
 	    _ggadget_redraw(gl);

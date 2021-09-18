@@ -70,7 +70,7 @@ int autohint_before_generate = 1;
 /*  we need to know where the subr will leave us, so we actually allocate 2 */
 /*  BasePoints, one containing the start point, one the end point */
 /*   But that's still not good enough, hints are defined in such a way that */
-/*  they are not relocateable. So our subrs can't include any hint definitions*/
+/*  they are not relocatable. So our subrs can't include any hint definitions*/
 /*  (or if they do then that subr can't be translated at all). So hints must */
 /*  be set outside the subrs, and the subrs can't be for chars that need hint */
 /*  substitution. Unless... The subr will never be relocated. */
@@ -84,7 +84,7 @@ int autohint_before_generate = 1;
 /*  guarantee that all invocations of that subr are done with the same number */
 /*  of hints in the character). This again means that no char with hint subs- */
 /*  titutions may be put in a subr. UNLESS all the other references in a */
-/*  refering character contain no hints */
+/*  referring character contain no hints */
 
 /* That's very complex. And it doesn't do a very good job. */
 /* Instead let's take all strings bounded by either moveto or hintmask operators */
@@ -1780,7 +1780,7 @@ static void SplineFont2FullSubrs1(int flags,GlyphInfo *gi) {
 		if ( r!=NULL )	/* Contains a reference to something which is */
 	continue;		/* not in a sub itself. Skip it for now, we'll*/
 				/* come back to it next pass when perhaps the */
-			        /* reference will be nicely ensconsed itself */
+			        /* reference will be nicely ensconced itself */
 		if ( gi->pcnt>=gi->pmax )
 		    gi->psubrs = realloc(gi->psubrs,(gi->pmax+=gi->glyphcnt)*sizeof(struct potentialsubrs));
 		ps = &gi->psubrs[gi->pcnt];

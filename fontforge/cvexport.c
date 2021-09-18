@@ -563,7 +563,7 @@ int ExportImage(char *filename,SplineChar *sc, int layer, int format, int pixels
 		(int) rint(sc->width*pixelsize/emsize),
 		(int) rint(sc->parent->ascent*pixelsize/emsize));
 
-	/* Sigh. Bitmaps use a different defn of set than images do. make it consistant */
+	/* Sigh. Bitmaps use a different defn of set than images do. make it consistent */
 	tot = bdfc->bytes_per_line*(bdfc->ymax-bdfc->ymin+1);
 	for ( pt = bdfc->bitmap, end = pt+tot; pt<end; *pt++ ^= 0xff );
 
@@ -639,7 +639,7 @@ int BCExportXBM(char *filename,BDFChar *bdfc, int format) {
 
     if ( !bdfc->byte_data ) {
 	BCRegularizeBitmap(bdfc);
-	/* Sigh. Bitmaps use a different defn of set than images do. make it consistant */
+	/* Sigh. Bitmaps use a different defn of set than images do. make it consistent */
 	tot = bdfc->bytes_per_line*(bdfc->ymax-bdfc->ymin+1);
 	for ( pt = bdfc->bitmap, end = pt+tot; pt<end; *pt++ ^= 0xff );
 

@@ -3117,7 +3117,7 @@ return( ss );
 /* However many glyphs have diagonal stems: V, A, W, M, K, X, Y */
 /*  Many of these have two zones (like "B" above) W, M, K, Y (maybe X) */
 /* Find the places where these guys hit the baseline/cap-height (x-height) */
-/*  and define these as potential counter boundries. Ignore places where   */
+/*  and define these as potential counter boundaries. Ignore places where   */
 /*  glyphs hit with curves (like O, Q, p). */
 /* Remember to merge a hint with a top/bottom hit (harder with serifs) */
 
@@ -4692,7 +4692,7 @@ static SplineSet *MakeItalicDSerif(DStemInfo *d,double stemwidth,
     double cur_sw;
     int order2 = ii->order2;
 
-    ii->order2 = false;		/* Don't convert to order2 untill after */
+    ii->order2 = false;		/* Don't convert to order2 until after */
     ss = MakeBottomItalicSerif(stemwidth,0,ii,seriftype);
     ii->order2 = order2;	/* We finish messing with the serif */
 

@@ -860,7 +860,7 @@ static void GListGetDesiredSize(GGadget *g,GRect *outer, GRect *inner) {
     int bp = GBoxBorderWidth(gl->g.base,gl->g.box);
     int i;
 
-    /* can't deal with eliptical scrolling lists nor diamond ones. Just rects and roundrects */
+    /* can't deal with elliptical scrolling lists nor diamond ones. Just rects and roundrects */
     if ( g->desired_width<=0 ) {
 	GListFindXMax(gl);
 

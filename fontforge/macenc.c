@@ -625,7 +625,7 @@ static unichar_t *macencodings[] = {
 	centeuro,	/* Baltic/Slavic */
 /*30*/	NULL,		/* Vietnamese */
 	NULL,		/* Extended Arabic for Sindhi */
-	NULL		/* Uninterpretted */
+	NULL		/* Uninterpreted */
 };
 
 /* The icelandic encoding also uses 0 (mac roman) encoding even though it's not*/

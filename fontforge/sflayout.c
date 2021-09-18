@@ -401,7 +401,7 @@ static void LIFigureLineHeight(LayoutInfo *li,int l,int p) {
 static void SFDoBiText(struct opentype_str **line) {
     int i, j, start, end, inr;
     /* I'm going to make a huge simplification. Instead of doing the unicode */
-    /*  algorithem to determine whether a glyph should be r2l or l2r, I'm */
+    /*  algorithm to determine whether a glyph should be r2l or l2r, I'm */
     /*  just going to assume that the script tells us that. Each glyph is */
     /*  tagged with a script because each fontlist is. So things are easy */
 
@@ -575,7 +575,7 @@ void LayoutInfoRefigureLines(LayoutInfo *li, int start_of_change,
 	int eol=0;
 	do {
 	    li->lines[l] = LineFromPara(&li->paras[p].para[eol],&eol);
-	    LIFigureLineHeight(li,l,p);	/* Must preceed BiText */
+	    LIFigureLineHeight(li,l,p);	/* Must precede BiText */
 	    SFDoBiText(li->lines[l++]);
 	} while ( li->paras[p].para[eol]!=NULL );
     }
@@ -700,7 +700,7 @@ static void LayoutInfoChangeFontList(LayoutInfo *li,int rpllen,
 	int sel_start, int sel_end) {
     /* we are removing a chunk starting at sel_start going to sel_end */
     /*  and replacing it with a chunk that is rpllen long */
-    /* So we remove any chunks wholy within sel_start,sel_end and extend the */
+    /* So we remove any chunks wholly within sel_start,sel_end and extend the */
     /*  chunk at sel_start by rpllen */
     struct fontlist *fl, *next, *test;
     int diff;

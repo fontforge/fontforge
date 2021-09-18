@@ -2570,7 +2570,7 @@ static void gsubSingleSubTable(FILE *ttf, int which, int stoffset, struct ttfinf
     int coverage, cnt, i, type;
     uint16 *glyphs = NULL;
 
-    printf( "\t  Single Sub Table[%d] (varient forms)\n", which );
+    printf( "\t  Single Sub Table[%d] (variant forms)\n", which );
     printf( "\t   Type=%d\n", type = getushort(ttf));
     printf( "\t   Coverage Offset=%d\n", coverage = getushort(ttf));
     if ( type==1 ) {
@@ -2633,7 +2633,7 @@ static void gsubAlternateSubTable(FILE *ttf, int which, int stoffset, struct ttf
     uint16 *seq_offsets;
     uint16 *glyphs;
 
-    printf( "\t  Alternate Sub Table[%d] (varient forms)\n", which );
+    printf( "\t  Alternate Sub Table[%d] (variant forms)\n", which );
     printf( "\t   Type=%d\n", getushort(ttf));
     printf( "\t   Coverage Offset=%d\n", coverage = getushort(ttf));
     printf( "\t   Count=%d\n", cnt = getushort(ttf));
@@ -3170,7 +3170,7 @@ return( (char *)((
 	type==38 ? "Upper Case" :
 	type==39 ? "Language Tag" :
 	type==103 ? "CJK Roman spacing" :
-/* Compatability (deprecated) ... */
+/* Compatibility (deprecated) ... */
 	type==100 ? "(Adobe) Character Spacing" :
 	type==101 ? "(Adobe) Kana Spacing" :
 	type==102 ? "(Adobe) Kanji Spacing" :
@@ -3328,7 +3328,7 @@ return( (char *)((
 	setting==11 ? "periods to ellipsis Off" :
 	    "Unknown")) );
       break;
-      case 15:	/* mathmatical extras */
+      case 15:	/* mathematical extras */
 return( (char *)((
 	setting==0 ? "hyphen to minus On" :
 	setting==1 ? "hyphen to minus Off" :
@@ -4189,7 +4189,7 @@ static void show_contextflags(uint8 *entry,struct statetable *st,struct ttfinfo 
 /* My initial assumption is that there is essentially an big array with one */
 /*  entry for every glyph indicating what glyph it will be replaced with */
 /*  Since not all glyphs would be valid the tables are probably trimmed and */
-/*  the offsets proporting to point to it actually point to garbarge until */
+/*  the offsets proporting to point to it actually point to garbage until */
 /*  adjusted by the appropriate glyph indeces */
 /* user will need to look at the table carefully to try and guess what is */
 /*  meaningful and what isn't */
@@ -5245,7 +5245,7 @@ static void ShowCharString(uint8 *str,int len,int type) {
 	      case 16: printf( "callothersubr " ); break;
 	      case 17: printf( "pop " ); break;
 	      case 33: printf( "setcurrentpoint " ); break;
-/* End obselete codes */
+/* End obsolete codes */
 	      default: printf( "?\?\?-12-%d-??? ", v ); break;
 	    }
 	} else switch ( v ) {
@@ -5275,7 +5275,7 @@ static void ShowCharString(uint8 *str,int len,int type) {
 /* Type 1 codes */
 	  case 9: printf( "closepath " ); break;
 	  case 13: printf( "hsbw " ); break;
-/* End obselete codes */
+/* End obsolete codes */
 	  default: printf( "?\?\?-%d-??? ", v );
 	}
 	--len;

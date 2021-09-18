@@ -857,7 +857,7 @@ static BasePoint SplineStrokeNextAngle(StrokeContext *c, BasePoint ut,
 /******************************************************************************/
 
 /* This is a convenience function that also concisely demonstrates
- * the calculation of an offseted point.
+ * the calculation of an offsetted point.
  */
 BasePoint SplineOffsetAt(StrokeContext *c, Spline *s, bigreal t, int is_right) {
     int is_ccw;
