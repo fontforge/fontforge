@@ -325,15 +325,6 @@ return;
     GProgressTimeCheck();
 }
 
-void GProgressStartIndicatorR( int delay, int win_titler, int line1r, int line2r,
-    int tot, int stages ) {
-    GProgressStartIndicator(delay,
-	GStringGetResource(win_titler,NULL),
-	GStringGetResource(line1r,NULL),
-	line2r==0?NULL:GStringGetResource(line2r,NULL),
-	tot,stages);
-}
-
 void GProgressEndIndicator(void) {
     GProgress *old=current;
 
@@ -370,10 +361,6 @@ return;
 	GDrawRequestExpose(current->gw,NULL,false);
 }
 
-void GProgressChangeLine1R(int line1r) {
-    GProgressChangeLine1(GStringGetResource(line1r,NULL));
-}
-
 void GProgressChangeLine2(const unichar_t *line2) {
     if ( current==NULL )
 return;
@@ -385,10 +372,6 @@ return;
     }
     if ( current->visible )
 	GDrawRequestExpose(current->gw,NULL,false);
-}
-
-void GProgressChangeLine2R(int line2r) {
-    GProgressChangeLine2(GStringGetResource(line2r,NULL));
 }
 
 void GProgressChangeTotal(int tot) {

@@ -317,26 +317,6 @@ typedef int (*GFileChooserInputFilenameFuncType)( GGadget *g,
 						  const unichar_t ** currentFilename,
 						  unichar_t* oldfilename );
 
-    /* Obsolete */
-#define _STR_NULL	(-1)		/* Null string resource */
-#define _STR_Language	0
-#define _STR_OK		1
-#define _STR_Cancel	2
-#define _STR_Open	3
-#define _STR_Save	4
-#define _STR_Filter	5
-#define _STR_New	6
-#define _STR_Replace	7
-#define _STR_Fileexists	8
-#define _STR_Fileexistspre	9
-#define _STR_Fileexistspost	10
-#define _STR_Createdir	11
-#define _STR_Dirname	12
-#define _STR_Couldntcreatedir	13
-#define _STR_SelectAll	14
-#define _STR_None	15
-#define __STR_LastStd	15
-
 #define _NUM_Buttonsize		0
 #define _NUM_ScaleFactor	1
 #define __NUM_LastStd		1
@@ -345,17 +325,8 @@ extern void GTextInfoFree(GTextInfo *ti);
 extern void GTextInfoListFree(GTextInfo *ti);
 extern void GTextInfoArrayFree(GTextInfo **ti);
 extern GTextInfo **GTextInfoFromChars(char **array, int len);
-extern const unichar_t *GStringGetResource(int index,unichar_t *mnemonic);
 extern int GGadgetScale(int xpos);
 extern int GIntGetResource(int index);
-extern int GStringSetResourceFileV(char *filename,uint32 checksum);
-extern int GStringSetResourceFile(char *filename);	/* returns 1 for success, 0 for failure */
-/* fallback string arrays are null terminated. mnemonics is same length as string */
-/* fallback integer arrays are terminated by 0x80000000 (negative infinity) */
-extern void GStringSetFallbackArray(const unichar_t **array,const unichar_t *mn,
-	const int *ires);
-unichar_t *GStringFileGetResource(char *filename, int index,unichar_t *mnemonic);
-extern void GResourceUseGetText(void);
 extern void *GResource_font_cvt(char *val, void *def);
 extern FontInstance *GResourceFindFont(char *resourcename,FontInstance *deffont);
 
@@ -542,7 +513,6 @@ extern void GGadgetPreparePopupImage(GWindow base,const unichar_t *msg,
 	GImage *(*get_image)(const void *data),
 	void (*free_image)(const void *data,GImage *img));
 extern void GGadgetPreparePopup(GWindow base,const unichar_t *msg);
-extern void GGadgetPreparePopupR(GWindow base,int msg);
 extern void GGadgetPreparePopup8(GWindow base, const char *msg);
 extern void GGadgetEndPopup(void);
 extern void GGadgetPopupExternalEvent(GEvent *e);

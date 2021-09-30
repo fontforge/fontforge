@@ -53,32 +53,18 @@ static void GFD_exists(GIOControl *gio) {
     /* The filename the user chose exists, ask user if s/he wants to overwrite */
     struct gfc_data *d = gio->userdata;
 
-    if ( !_ggadget_use_gettext ) {
-	const unichar_t *rcb[3]; unichar_t rcmn[2];
-    unichar_t buffer[200];
-	rcb[2]=NULL;
-	rcb[0] = GStringGetResource( _STR_Replace, &rcmn[0]);
-	rcb[1] = GStringGetResource( _STR_Cancel, &rcmn[1]);
+    const char *rcb[3];
+    char *temp;
+    rcb[2]=NULL;
+    rcb[0] = _("Replace");
+    rcb[1] = _("Cancel");
 
-	u_strcpy(buffer, GStringGetResource(_STR_Fileexistspre,NULL));
-	u_strcat(buffer, u_GFileNameTail(d->ret));
-	u_strcat(buffer, GStringGetResource(_STR_Fileexistspost,NULL));
-	if ( GWidgetAsk(GStringGetResource(_STR_Fileexists,NULL),rcb,rcmn,0,1,buffer)==0 ) {
-	    d->done = true;
-	}
-    } else {
-	const char *rcb[3];
-	char *temp;
-	rcb[2]=NULL;
-	rcb[0] = _("Replace");
-	rcb[1] = _("Cancel");
-
-	if ( GWidgetAsk8(_("File Exists"),rcb,0,1,_("File, %s, exists. Replace it?"),
-		temp = u2utf8_copy(u_GFileNameTail(d->ret)))==0 ) {
-	    d->done = true;
-	}
-	free(temp);
+    if ( GWidgetAsk8(_("File Exists"),rcb,0,1,_("File, %s, exists. Replace it?"),
+	temp = u2utf8_copy(u_GFileNameTail(d->ret)))==0 ) {
+	d->done = true;
     }
+    free(temp);
+
     GFileChooserReplaceIO(d->gfc,NULL);
 }
 
@@ -117,30 +103,12 @@ static void GFD_dircreatefailed(GIOControl *gio) {
     /* We couldn't create the directory */
     struct gfc_data *d = gio->userdata;
 
-    if ( !_ggadget_use_gettext ) {
-	unichar_t buffer[500];
-	unichar_t title[30];
-
-	u_strcpy(title, GStringGetResource(_STR_Couldntcreatedir,NULL));
-	u_strcpy(buffer, title);
-	uc_strcat(buffer,": ");
-	u_strcat(buffer, u_GFileNameTail(gio->path));
-	uc_strcat(buffer, ".\n");
-	if ( gio->error!=NULL ) {
-	    u_strcat(buffer,gio->error);
-	    uc_strcat(buffer, "\n");
-	}
-	if ( gio->status[0]!='\0' )
-	    u_strcat(buffer,gio->status);
-	GWidgetError(title,buffer);
-    } else {
-	char *t1=NULL, *t2=NULL;
-	GWidgetError8(_("Couldn't create directory"),
-		_("Couldn't create directory: %1$s\n%2$s\n%3$s"),
-		gio->error!=NULL ? t1 = u2utf8_copy(gio->error) : "",
-		t2 = u2utf8_copy(gio->status));
-	free(t1); free(t2);
-    }
+    char *t1=NULL, *t2=NULL;
+    GWidgetError8(_("Couldn't create directory"),
+	_("Couldn't create directory: %1$s\n%2$s\n%3$s"),
+	gio->error!=NULL ? t1 = u2utf8_copy(gio->error) : "",
+	t2 = u2utf8_copy(gio->status));
+    free(t1); free(t2);
 
     GFileChooserReplaceIO(d->gfc,NULL);
 }
@@ -149,13 +117,10 @@ static int GFD_NewDir(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	unichar_t *newdir;
-	if ( _ggadget_use_gettext ) {
-	    char *temp;
-	    temp = GWidgetAskString8(_("Create directory..."),NULL,_("Directory name?"));
-	    newdir = utf82u_copy(temp);
-	    free(temp);
-	} else
-	    newdir = GWidgetAskStringR(_STR_Createdir,NULL,_STR_Dirname);
+	char *temp;
+	temp = GWidgetAskString8(_("Create directory..."),NULL,_("Directory name?"));
+	newdir = utf82u_copy(temp);
+	free(temp);
 	if ( newdir==NULL )
 return( true );
 	if ( !u_GFileIsAbsolute(newdir)) {
@@ -191,7 +156,7 @@ return( GGadgetDispatchEvent((GGadget *) (d->gfc),event));
 return( true );
 }
 
-unichar_t *GWidgetSaveAsFileWithGadget(const unichar_t *title, const unichar_t *defaultfile,
+static unichar_t *GWidgetSaveAsFileWithGadget(const unichar_t *title, const unichar_t *defaultfile,
 				       const unichar_t *initial_filter, unichar_t **mimetypes,
 				       GFileChooserFilterType filter,
 				       GFileChooserInputFilenameFuncType filenamefunc,
@@ -239,11 +204,8 @@ unichar_t *GWidgetSaveAsFileWithGadget(const unichar_t *title, const unichar_t *
     gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = 222-3;
     gcd[1].gd.pos.width = -1;
     gcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    if ( _ggadget_use_gettext ) {
-	label[1].text = (unichar_t *) _("_Save");
-	label[1].text_is_1byte = true;
-    } else
-	label[1].text = (unichar_t *) _STR_Save;
+    label[1].text = (unichar_t *) _("_Save");
+    label[1].text_is_1byte = true;
     label[1].text_in_resource = true;
     gcd[1].gd.mnemonic = 'S';
     gcd[1].gd.label = &label[1];
@@ -254,11 +216,8 @@ unichar_t *GWidgetSaveAsFileWithGadget(const unichar_t *title, const unichar_t *
     gcd[2].gd.pos.x = (totwid-bs)*100/GIntGetResource(_NUM_ScaleFactor)/2; gcd[2].gd.pos.y = 222;
     gcd[2].gd.pos.width = -1;
     gcd[2].gd.flags = gg_visible | gg_enabled;
-    if ( _ggadget_use_gettext ) {
-	label[2].text = (unichar_t *) _("_Filter");
-	label[2].text_is_1byte = true;
-    } else
-	label[2].text = (unichar_t *) _STR_Filter;
+    label[2].text = (unichar_t *) _("_Filter");
+    label[2].text_is_1byte = true;
     label[2].text_in_resource = true;
     gcd[2].gd.mnemonic = 'F';
     gcd[2].gd.label = &label[2];
@@ -269,11 +228,8 @@ unichar_t *GWidgetSaveAsFileWithGadget(const unichar_t *title, const unichar_t *
     gcd[3].gd.pos.x = gcd[2].gd.pos.x; gcd[3].gd.pos.y = 192;
     gcd[3].gd.pos.width = -1;
     gcd[3].gd.flags = gg_visible | gg_enabled;
-    if ( _ggadget_use_gettext ) {
-	label[3].text = (unichar_t *) S_("Directory|_New");
-	label[3].text_is_1byte = true;
-    } else
-	label[3].text = (unichar_t *) _STR_New;
+    label[3].text = (unichar_t *) S_("Directory|_New");
+    label[3].text_is_1byte = true;
     label[3].text_in_resource = true;
     label[3].image = &_GIcon_dir;
     label[3].image_precedes = false;
@@ -286,11 +242,8 @@ unichar_t *GWidgetSaveAsFileWithGadget(const unichar_t *title, const unichar_t *
     gcd[4].gd.pos.x = -gcd[1].gd.pos.x; gcd[4].gd.pos.y = 222;
     gcd[4].gd.pos.width = -1;
     gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    if ( _ggadget_use_gettext ) {
-	label[4].text = (unichar_t *) _("_Cancel");
-	label[4].text_is_1byte = true;
-    } else
-	label[4].text = (unichar_t *) _STR_Cancel;
+    label[4].text = (unichar_t *) _("_Cancel");
+    label[4].text_is_1byte = true;
     label[4].text_in_resource = true;
     gcd[4].gd.label = &label[4];
     gcd[4].gd.mnemonic = 'C';
@@ -340,13 +293,6 @@ unichar_t *GWidgetSaveAsFileWithGadget(const unichar_t *title, const unichar_t *
     GDrawDestroyWindow(gw);
     GProgressResumeTimer();
 return(d.ret);
-}
-
-unichar_t *GWidgetSaveAsFile(const unichar_t *title, const unichar_t *defaultfile,
-	const unichar_t *initial_filter, unichar_t **mimetypes,
-	GFileChooserFilterType filter) {
-return( GWidgetSaveAsFileWithGadget(title,defaultfile,initial_filter,mimetypes,
-				    filter, NULL, NULL ));
 }
 
 char *GWidgetSaveAsFileWithGadget8(const char *title, const char *defaultfile,
