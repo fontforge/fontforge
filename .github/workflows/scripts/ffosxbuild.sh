@@ -46,13 +46,14 @@ ln -s ../../../../../../Resources/opt/local/lib/$PYTHON/site-packages
 popd
 
 find "$APPDIR/Contents/Frameworks/Python.framework" -type f -name '*.pyc' | xargs rm -rf
-ln -s ../Frameworks/Python.framework/Versions/$PYVER/bin/$PYTHON "$APPDIR/Contents/MacOS/FFPython"
 
 pushd $APPDIR/Contents/Resources/opt/local
 echo "Collecting and patching dependent libraries..."
 $LDDX --overwrite --modify-special-paths --recursive --ignore-prefix /opt/X11 --collect lib \
     bin/ $APPDIR/Contents/Frameworks/Python.framework/ lib/
 popd
+
+mkdir -p $APPDIR/Contents/MacOS
 
 # Package it up
 if [ ! -z "$CI" ]; then
