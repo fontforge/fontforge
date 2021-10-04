@@ -32,7 +32,6 @@
 #include "ggadget.h"
 #include "ggadgetP.h"
 #include "gicons.h"
-#include "gio.h"
 #include "gwidget.h"
 #include "ustring.h"
 
@@ -42,32 +41,6 @@ struct gfc_data {
     GGadget *gfc;
 };
 
-static void GFD_doesnt(GIOControl *gio) {
-    /* The filename the user chose doesn't exist, so everything is happy */
-    struct gfc_data *d = gio->userdata;
-    d->done = true;
-    GFileChooserReplaceIO(d->gfc,NULL);
-}
-
-static void GFD_exists(GIOControl *gio) {
-    /* The filename the user chose exists, ask user if s/he wants to overwrite */
-    struct gfc_data *d = gio->userdata;
-
-    const char *rcb[3];
-    char *temp;
-    rcb[2]=NULL;
-    rcb[0] = _("Replace");
-    rcb[1] = _("Cancel");
-
-    if ( GWidgetAsk8(_("File Exists"),rcb,0,1,_("File, %s, exists. Replace it?"),
-	temp = u2utf8_copy(u_GFileNameTail(d->ret)))==0 ) {
-	d->done = true;
-    }
-    free(temp);
-
-    GFileChooserReplaceIO(d->gfc,NULL);
-}
-
 static int GFD_SaveOk(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
@@ -75,8 +48,19 @@ static int GFD_SaveOk(GGadget *g, GEvent *e) {
 	GFileChooserGetChildren(d->gfc,NULL,NULL,&tf);
 	if ( *_GGadgetGetTitle(tf)!='\0' ) {
 	    d->ret = GGadgetGetTitle(d->gfc);
-	    GIOfileExists(GFileChooserReplaceIO(d->gfc,
-		    GIOCreate(d->ret,d,GFD_exists,GFD_doesnt)));
+	    char *path = u2def_copy(d->ret);
+
+	    if (GFileExists(path)) {
+		const char *rcb[3];
+		rcb[2]=NULL;
+		rcb[0] = _("Replace");
+		rcb[1] = _("Cancel");
+
+		d->done = GWidgetAsk8(_("File Exists"),rcb,0,1,_("File, %s, exists. Replace it?"), path) == 0;
+	    } else {
+		d->done = true;
+	    }
+	    free(path);
 	}
     }
 return( true );
@@ -88,29 +72,6 @@ static int GFD_Cancel(GGadget *g, GEvent *e) {
 	d->done = true;
     }
 return( true );
-}
-
-static void GFD_dircreated(GIOControl *gio) {
-    struct gfc_data *d = gio->userdata;
-    unichar_t *dir = u_copy(gio->path);
-
-    GFileChooserReplaceIO(d->gfc,NULL);
-    GFileChooserSetDir(d->gfc,dir);
-    free(dir);
-}
-
-static void GFD_dircreatefailed(GIOControl *gio) {
-    /* We couldn't create the directory */
-    struct gfc_data *d = gio->userdata;
-
-    char *t1=NULL, *t2=NULL;
-    GWidgetError8(_("Couldn't create directory"),
-	_("Couldn't create directory: %1$s\n%2$s\n%3$s"),
-	gio->error!=NULL ? t1 = u2utf8_copy(gio->error) : "",
-	t2 = u2utf8_copy(gio->status));
-    free(t1); free(t2);
-
-    GFileChooserReplaceIO(d->gfc,NULL);
 }
 
 static int GFD_NewDir(GGadget *g, GEvent *e) {
@@ -128,8 +89,13 @@ return( true );
 	    free(newdir);
 	    newdir = temp;
 	}
-	GIOmkDir(GFileChooserReplaceIO(d->gfc,
-		GIOCreate(newdir,d,GFD_dircreated,GFD_dircreatefailed)));
+    if (u_GFileMkDir(newdir)) {
+        gwwv_post_error(_("Couldn't create directory"),
+		    _("Couldn't create directory: %s"),
+            newdir);
+    } else {
+        GFileChooserSetDir(d->gfc,newdir);
+    }
 	free(newdir);
     }
 return( true );

@@ -310,9 +310,14 @@ struct matrixinit {
 
 #define GME_NoChange	0x80000000
 
-struct gdirentry;
-typedef enum fchooserret (*GFileChooserFilterType)(GGadget *g,struct gdirentry *ent,
-	const unichar_t *dir);
+struct gdirentry {
+    const char *fullpath;
+    const char *name;
+    const char *mimetype;
+    bool isdir;
+};
+typedef enum fchooserret (*GFileChooserFilterType)(GGadget *g,
+	const struct gdirentry *ent, const char *dir);
 typedef int (*GFileChooserInputFilenameFuncType)( GGadget *g,
 						  const unichar_t ** currentFilename,
 						  unichar_t* oldfilename );
@@ -522,8 +527,8 @@ extern void GGadgetTakesKeyboard(GGadget *g, int takes_keyboard);
 
 /* Handles *?{}[] wildcards */
 int GGadgetWildMatch(unichar_t *pattern, unichar_t *name,int ignorecase);
-enum fchooserret GFileChooserDefFilter(GGadget *g,struct gdirentry *ent,
-	const unichar_t *dir);
+enum fchooserret GFileChooserDefFilter(GGadget *g,const struct gdirentry *ent,
+	const char *dir);
 
 GWindow GMenuCreatePopupMenu(GWindow owner,GEvent *event, GMenuItem *mi);
 GWindow GMenuCreatePopupMenuWithName(GWindow owner,GEvent *event, char* subMenuName,GMenuItem *mi);

@@ -35,7 +35,6 @@
 #include "fontforgevw.h"
 #include "gfile.h"
 #include "gicons.h"
-#include "gio.h"
 #include "gutils.h"
 #include "print.h"	/* For pdf output routines */
 #include "spiro.h"

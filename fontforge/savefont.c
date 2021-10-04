@@ -36,7 +36,6 @@
 #include "fontforgevw.h"
 #include "fvfonts.h"
 #include "gfile.h"
-#include "gio.h"
 #include "gresource.h"
 #include "macbinary.h"
 #include "namelist.h"

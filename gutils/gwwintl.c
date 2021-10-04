@@ -31,8 +31,6 @@
 #include "basics.h"
 #include "intl.h"
 
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 char *sgettext(const char *msgid) {

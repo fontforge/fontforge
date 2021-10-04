@@ -1118,3 +1118,98 @@ char *GFileDirName(const char *path) {
     return GFileDirNameEx(path, 0);
 }
 
+static int mime_comp(const void *k, const void *v) {
+    return strmatch((const char*)k, ((const char**)v)[0]);
+}
+
+char* GFileMimeType(const char *path) {
+    char* ret, *pt;
+    gboolean uncertain = false;
+    gchar* res = g_content_type_guess(path, NULL, 0, &uncertain);
+    gchar* mres = g_content_type_get_mime_type(res);
+    g_free(res);
+
+    if (!mres || uncertain || strstr(mres, "application/x-ext") || !strcmp(mres, "application/octet-stream")) {
+        path = GFileNameTail(path);
+        pt = strrchr(path, '.');
+
+        if (pt == NULL) {
+            if (!strmatch(path, "makefile") || !strmatch(path, "makefile~"))
+                ret = copy("application/x-makefile");
+            else if (!strmatch(path, "core"))
+                ret = copy("application/x-core");
+            else
+                ret = copy("application/octet-stream");
+        } else {
+            pt = copy(pt + 1);
+            int len = strlen(pt);
+            if (pt[len - 1] == '~') {
+                pt[len - 1] = '\0';
+            }
+
+            // array MUST be sorted by extension
+            static const char* ext_mimes[][2] = {
+                {"bdf",   "application/x-font-bdf"},
+                {"bin",   "application/x-macbinary"},
+                {"bz2",   "application/x-compressed"},
+                {"c",     "text/c"},
+                {"cff",   "application/x-font-type1"},
+                {"cid",   "application/x-font-cid"},
+                {"css",   "text/css"},
+                {"dfont", "application/x-mac-dfont"},
+                {"eps",   "text/ps"},
+                {"gai",   "font/otf"},
+                {"gif",   "image/gif"},
+                {"gz",    "application/x-compressed"},
+                {"h",     "text/h"},
+                {"hqx",   "application/x-mac-binhex40"},
+                {"html",  "text/html"},
+                {"jpeg",  "image/jpeg"},
+                {"jpg",   "image/jpeg"},
+                {"mov",   "video/quicktime"},
+                {"o",     "application/x-object"},
+                {"obj",   "application/x-object"},
+                {"otb",   "font/otf"},
+                {"otf",   "font/otf"},
+                {"pcf",   "application/x-font-pcf"},
+                {"pdf",   "application/pdf"},
+                {"pfa",   "application/x-font-type1"},
+                {"pfb",   "application/x-font-type1"},
+                {"png",   "image/png"},
+                {"ps",    "text/ps"},
+                {"pt3",   "application/x-font-type1"},
+                {"ras",   "image/x-cmu-raster"},
+                {"rgb",   "image/x-rgb"},
+                {"rpm",   "application/x-compressed"},
+                {"sfd",   "application/vnd.font-fontforge-sfd"},
+                {"sgi",   "image/x-sgi"},
+                {"snf",   "application/x-font-snf"},
+                {"svg",   "image/svg+xml"},
+                {"tar",   "application/x-tar"},
+                {"tbz",   "application/x-compressed"},
+                {"text",  "text/plain"},
+                {"tgz",   "application/x-compressed"},
+                {"ttf",   "font/ttf"},
+                {"txt",   "text/plain"},
+                {"wav",   "audio/wave"},
+                {"woff",  "font/woff"},
+                {"woff2", "font/woff2"},
+                {"xbm",   "image/x-xbitmap"},
+                {"xml",   "text/xml"},
+                {"xpm",   "image/x-xpixmap"},
+                {"z",     "application/x-compressed"},
+                {"zip",   "application/x-compressed"},
+            };
+
+            const char** elem = bsearch(pt, ext_mimes,
+                sizeof(ext_mimes)/sizeof(ext_mimes[0]), sizeof(ext_mimes[0]),
+                mime_comp);
+            ret = copy(elem ? elem[1] : "application/octet-stream");
+            free(pt);
+        }
+    } else {
+        ret = copy(mres);
+    }
+    g_free(mres);
+    return ret;
+}

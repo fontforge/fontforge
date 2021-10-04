@@ -25,15 +25,17 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <assert.h>
 #include <fontforge-config.h>
 
+#include <assert.h>
+#include <errno.h>
+
+#include "ffglib.h"
 #include "gdraw.h"
 #include "gdrawP.h"
 #include "gfile.h"
 #include "ggadgetP.h"
 #include "gicons.h"
-#include "gio.h"
 #include "gwidgetP.h"
 #include "ustring.h"
 #include "utype.h"
@@ -43,7 +45,7 @@
 // Returns "CDQ" if C:\, D:\ and Q:\ are available.
 // This could probably be put in fsys.c, but we don't need it anywhere else,
 // and shouldn't ever.
-static unsigned int WIN32_DRIVES_MAXLEN = 26;
+static const int WIN32_DRIVES_MAXLEN = 26;
 static char* _DriveLetters() {
     int idx = -1;
     char* ret = calloc(WIN32_DRIVES_MAXLEN+1,sizeof(char));
@@ -182,263 +184,210 @@ return( true );
 return( false );
 }
 
-enum fchooserret GFileChooserDefFilter(GGadget *g,GDirEntry *ent,const unichar_t *dir) {
+static int GGadgetWildMatch8(unichar_t *pattern, const char *name,int ignorecase) {
+    unichar_t *uname = utf82u_copy(name);
+    int ret = GGadgetWildMatch(pattern, uname, ignorecase);
+    free(uname);
+    return ret;
+}
+
+enum fchooserret GFileChooserDefFilter(GGadget *g,const struct gdirentry *ent,const char *dir) {
     GFileChooser *gfc = (GFileChooser *) g;
     int i;
-    char *mime;
 
-    if ( uc_strcmp(ent->name,".")==0 )	/* Don't show the current directory entry */
+    if ( strcmp(ent->name,".")==0 )	/* Don't show the current directory entry */
 	return( fc_hide );
     if ( gfc->wildcard!=NULL && *gfc->wildcard=='.' )
 	/* If they asked for hidden files, show them */;
-    else if ( !showhidden && ent->name[0]=='.' && uc_strcmp(ent->name,"..")!=0 )
+    else if ( !showhidden && ent->name[0]=='.' && strcmp(ent->name,"..")!=0 )
 	return( fc_hide );
     if ( ent->isdir )			/* Show all other directories */
 	return( fc_show );
     if ( gfc->wildcard==NULL && gfc->mimetypes==NULL )
 	return( fc_show );
     /* If we've got a wildcard, and it matches, then show */
-    if ( gfc->wildcard!=NULL && GGadgetWildMatch(gfc->wildcard,ent->name,true))
+    if ( gfc->wildcard!=NULL && GGadgetWildMatch8(gfc->wildcard,ent->name,true))
 	return( fc_show );
     /* If no mimetypes then we're done */
     if ( gfc->mimetypes==NULL )
 	return( fc_hide );
     /* match the mimetypes */
-    if( ent->mimetype )
-	mime = copy(u_to_c(ent->mimetype));
-    else {
-	char utf8_ent_name[PATH_MAX+1];
-	strncpy(utf8_ent_name,u_to_c( ent->name ),PATH_MAX);
-	utf8_ent_name[PATH_MAX]=0;
-	mime = GIOGetMimeType(utf8_ent_name);
-    }
-
-    if ( mime ) {
+    if ( ent->mimetype ) {
 	for ( i=0; gfc->mimetypes[i]!=NULL; ++i )
-	    if ( strcasecmp(u_to_c(gfc->mimetypes[i]),mime)==0 ) {
-		free(mime);
+	    if ( strcasecmp(u_to_c(gfc->mimetypes[i]),ent->mimetype)==0 ) {
 		return( fc_show );
 	    }
-	free(mime);
     }
 
     return( fc_hide );
 }
 
-static GImage *GFileChooserPickIcon(GDirEntry *e) {
-    char mime[100];
-    char utf8_ent_name[PATH_MAX+1];
-    mime[0] = mime[99] = utf8_ent_name[PATH_MAX] = 0;
-    strncpy(utf8_ent_name,u_to_c(e->name),PATH_MAX);
-
+static GImage *GFileChooserPickIcon(const struct gdirentry *e) {
     InitChooserIcons();
 
     if ( e->isdir ) {
-	if ( !strcmp(utf8_ent_name,"..") )
+	if ( !strcmp(e->name,"..") )
 	    return( &_GIcon_updir );
 	return( &_GIcon_dir );
+    } else if ( !e->mimetype ) {
+	return( &_GIcon_unknown );
     }
-    if ( e->mimetype ) {
-	strncpy(mime,u_to_c(e->mimetype),99);
-    } else {
-	char *temp;
-	if ( (temp=GIOguessMimeType(utf8_ent_name)) || (temp=GIOGetMimeType(utf8_ent_name)) ) {
-	    e->mimetype=u_copy(c_to_u(temp));
-	    strncpy(mime,temp,99);
-	    free(temp);
-	} else
-	    return( &_GIcon_unknown );
-    }
-    if (strncasecmp("text/", mime, 5) == 0) {
-	if (strcasecmp("text/html", mime) == 0)
+    if (strncasecmp("text/", e->mimetype, 5) == 0) {
+	if (strcasecmp("text/html", e->mimetype) == 0)
 	    return( &_GIcon_texthtml );
-	if (strcasecmp("text/xml", mime) == 0)
+	if (strcasecmp("text/xml", e->mimetype) == 0)
 	    return( &_GIcon_textxml );
-	if (strcasecmp("text/css", mime) == 0)
+	if (strcasecmp("text/css", e->mimetype) == 0)
 	    return( &_GIcon_textcss );
-	if (strcasecmp("text/c", mime) == 0)
+	if (strcasecmp("text/c", e->mimetype) == 0)
 	    return( &_GIcon_textc );
-	if (strcasecmp("text/java", mime) == 0)
+	if (strcasecmp("text/java", e->mimetype) == 0)
 	    return( &_GIcon_textjava );
-	if (strcasecmp("text/x-makefile", mime) == 0)
+	if (strcasecmp("text/x-makefile", e->mimetype) == 0)
 	    return( &_GIcon_textmake );
-	if (strcasecmp("text/fontps", mime) == 0)
+	if (strcasecmp("application/x-font-type1", e->mimetype) == 0)
 	    return( &_GIcon_textfontps );
-	if (strcasecmp("text/font", mime) == 0)
+	if (strcasecmp("text/font", e->mimetype) == 0)
 	    return( &_GIcon_textfontbdf );
-	if (strcasecmp("text/ps", mime) == 0)
+	if (strcasecmp("text/ps", e->mimetype) == 0)
 	    return( &_GIcon_textps );
 
 	return( &_GIcon_textplain );
     }
 
-    if (strncasecmp("image/", mime, 6) == 0)
+    if (strncasecmp("image/", e->mimetype, 6) == 0)
 	return( &_GIcon_image );
-    if (strncasecmp("video/", mime, 6) == 0)
+    if (strncasecmp("video/", e->mimetype, 6) == 0)
 	return( &_GIcon_video );
-    if (strncasecmp("audio/", mime, 6) == 0)
+    if (strncasecmp("audio/", e->mimetype, 6) == 0)
 	return( &_GIcon_audio );
-    if (strcasecmp("application/x-navidir", mime) == 0 ||
-	strcasecmp("inode/directory", mime) == 0)
+    if (strcasecmp("application/x-navidir", e->mimetype) == 0 ||
+	strcasecmp("inode/directory", e->mimetype) == 0)
 	return( &_GIcon_dir );
-    if (strcasecmp("application/x-object", mime) == 0)
+    if (strcasecmp("application/x-object", e->mimetype) == 0)
 	return( &_GIcon_object );
-    if (strcasecmp("application/x-core", mime) == 0)
+    if (strcasecmp("application/x-core", e->mimetype) == 0)
 	return( &_GIcon_core );
-    if (strcasecmp("application/x-tar", mime) == 0)
+    if (strcasecmp("application/x-tar", e->mimetype) == 0)
 	return( &_GIcon_tar );
-    if (strcasecmp("application/x-compressed", mime) == 0)
+    if (strcasecmp("application/x-compressed", e->mimetype) == 0)
 	return( &_GIcon_compressed );
-    if (strcasecmp("application/pdf", mime) == 0)
+    if (strcasecmp("application/pdf", e->mimetype) == 0)
 	return( &_GIcon_texthtml );
-    if (strcasecmp("application/vnd.font-fontforge-sfd", mime) == 0)
+    if (strcasecmp("application/vnd.font-fontforge-sfd", e->mimetype) == 0)
 	return( &_GIcon_textfontsfd );
-    if (strcasecmp("application/x-font-type1", mime) == 0)
+    if (strcasecmp("application/x-font-type1", e->mimetype) == 0)
 	return( &_GIcon_textfontps );
-    if (strcasecmp("application/x-font-ttf", mime) == 0 ||
-	strcasecmp("application/x-font-otf", mime) == 0 ||
-	strcasecmp("font/woff", mime) == 0 ||
-	strcasecmp("font/woff2", mime) == 0 ||
-	strcasecmp("font/ttf", mime) == 0 ||
-	strcasecmp("font/otf", mime) == 0) {
+    if (strcasecmp("application/x-font-ttf", e->mimetype) == 0 ||
+	strcasecmp("application/x-font-otf", e->mimetype) == 0 ||
+	strcasecmp("font/woff", e->mimetype) == 0 ||
+	strcasecmp("font/woff2", e->mimetype) == 0 ||
+	strcasecmp("font/ttf", e->mimetype) == 0 ||
+	strcasecmp("font/otf", e->mimetype) == 0) {
 	return( &_GIcon_ttf );
     }
-    if (strcasecmp("application/x-font-cid", mime) == 0 )
+    if (strcasecmp("application/x-font-cid", e->mimetype) == 0 )
 	return( &_GIcon_cid );
-    if (strcasecmp("application/x-macbinary", mime) == 0 ||
-	strcasecmp("application/x-mac-binhex40", mime) == 0 ) {
+    if (strcasecmp("application/x-macbinary", e->mimetype) == 0 ||
+	strcasecmp("application/x-mac-binhex40", e->mimetype) == 0 ) {
 	return( &_GIcon_mac );
     }
-    if (strcasecmp("application/x-mac-dfont", mime) == 0 ||
-	strcasecmp("application/x-mac-suit", mime) == 0 ) {
+    if (strcasecmp("application/x-mac-dfont", e->mimetype) == 0 ||
+	strcasecmp("application/x-mac-suit", e->mimetype) == 0 ) {
 	return( &_GIcon_macttf );
     }
-    if (strcasecmp("application/x-font-pcf", mime) == 0 ||
-	strcasecmp("application/x-font-snf", mime) == 0) {
+    if (strcasecmp("application/x-font-pcf", e->mimetype) == 0 ||
+	strcasecmp("application/x-font-snf", e->mimetype) == 0) {
 	return( &_GIcon_textfontbdf );
     }
 
     return( &_GIcon_unknown );
 }
 
-static void GFileChooserFillList(GFileChooser *gfc,GDirEntry *first,
-	const unichar_t *dir) {
-    GDirEntry *e;
-    int len, dlen;
-    GTextInfo **ti, **dti;
+static void GFileChooserFillList(GFileChooser *gfc, const unichar_t *dirname_) {
+    GDir *dir;
+    GError *err = NULL;
+    char *dirname = u2utf8_copy(dirname_);
+    const gchar *ent_name;
 
-    len = dlen = 0;
-    for ( e=first; e!=NULL; e=e->next ) {
-	e->fcdata = (gfc->filter)(&gfc->g,e,dir);
-	if ( e->fcdata!=fc_hide ) {
-	    if ( e->isdir )
-		++dlen;
-	    else
-		++len;
-	}
+    if (!dirname || (dir = g_dir_open(dirname, 0, &err)) == NULL) {
+        GTextInfo *ti[2], _ti[2] = { 0 };
+        static unichar_t nullstr[] = { 0 };
+
+        _ti[0].text = utf82u_copy((err && err->message) ? err->message : strerror(errno));
+        _ti[0].fg = _ti[0].bg = COLOR_DEFAULT;
+        ti[0] = _ti; ti[1] = _ti+1;
+        GGadgetSetEnabled(&gfc->files->g, false);
+        GGadgetSetList(&gfc->files->g, ti, true);
+        GGadgetSetEnabled(&gfc->subdirs->g, false);
+        GGadgetSetList(&gfc->subdirs->g, ti, true);
+        if (err != NULL) {
+            g_error_free(err);
+        }
+        free(_ti[0].text);
+        if (gfc->lastname != NULL) {
+            GGadgetSetTitle(&gfc->name->g, gfc->lastname);
+            free(gfc->lastname);
+            gfc->lastname=NULL;
+        } else {
+            GGadgetSetTitle(&gfc->name->g, nullstr);
+        }
+
+        if (gfc->filterb != NULL && gfc->ok != NULL) {
+            _GWidget_MakeDefaultButton(&gfc->ok->g);
+        }
+        free(dirname);
+        return;
     }
 
-    if ( dir_placement == dirs_separate ) {
-	ti = malloc((len+1)*sizeof(GTextInfo *));
-	dti = malloc((dlen+1)*sizeof(GTextInfo *));
-	len = dlen = 0;
-	for ( e=first; e!=NULL; e=e->next ) {
-	    if ( e->fcdata!=fc_hide ) {
-		GTextInfo **me;
-		if ( e->isdir )
-		    me = &dti[dlen++];
-		else
-		    me = &ti[len++];
+    GPtrArray *ti = g_ptr_array_new();
+    GPtrArray *dti = (dir_placement == dirs_separate) ? g_ptr_array_new() : NULL;
+    while ((ent_name = g_dir_read_name(dir)) != NULL) {
+        struct gdirentry ent;
+        ent.fullpath = smprintf("%s/%s", dirname, ent_name);
+        ent.name = ent_name;
+        ent.mimetype = GFileMimeType(ent.fullpath);
+        ent.isdir = GFileIsDir(ent.fullpath);
 
-		*me = calloc(1,sizeof(GTextInfo));
-		(*me)->text = u_copy(e->name);
-		(*me)->image = GFileChooserPickIcon(e);
-		(*me)->fg = COLOR_DEFAULT;
-		(*me)->bg = COLOR_DEFAULT;
-		(*me)->font = NULL;
-		(*me)->disabled = e->fcdata==fc_showdisabled;
-		(*me)->image_precedes = true;
-		(*me)->checked = e->isdir;
-	    }
-	}
-	ti[len] = calloc(1,sizeof(GTextInfo));
-	dti[dlen] = calloc(1,sizeof(GTextInfo));
-	GGadgetSetList(&gfc->files->g,ti,false);
-	GGadgetSetList(&gfc->subdirs->g,dti,false);
-    } else {
-	ti = malloc((len+dlen+1)*sizeof(GTextInfo *));
-	len = 0;
-	for ( e=first; e!=NULL; e=e->next ) {
-	    if ( e->fcdata!=fc_hide ) {
-		ti[len] = calloc(1,sizeof(GTextInfo));
-		ti[len]->text = u_copy(e->name);
-		ti[len]->image = GFileChooserPickIcon(e);
-		ti[len]->fg = COLOR_DEFAULT;
-		ti[len]->bg = COLOR_DEFAULT;
-		ti[len]->font = NULL;
-		ti[len]->disabled = e->fcdata==fc_showdisabled;
-		ti[len]->image_precedes = true;
-		ti[len]->checked = e->isdir;
-		if ( dir_placement==dirs_first && e->isdir )
-		    ((GTextInfo2 *) ti[len])->sort_me_first_in_list = true;
-		++len;
-	    }
-	}
-	ti[len] = calloc(1,sizeof(GTextInfo));
-	GGadgetSetList(&gfc->files->g,ti,false);
+        int fcdata = (gfc->filter)(&gfc->g, &ent, dirname);
+        if (fcdata != fc_hide) {
+            GTextInfo *me = calloc(1, sizeof(GTextInfo));
+            me->text = utf82u_copy(ent_name);
+            me->image = GFileChooserPickIcon(&ent);
+            me->fg = COLOR_DEFAULT;
+            me->bg = COLOR_DEFAULT;
+            me->font = NULL;
+            me->disabled = fcdata == fc_showdisabled;
+            me->image_precedes = true;
+            me->checked = ent.isdir;
+            if (dir_placement == dirs_first && ent.isdir) {
+                ((GTextInfo2 *)me)->sort_me_first_in_list = true;
+            }
+            g_ptr_array_add((dti && ent.isdir) ? dti : ti, me);
+        }
+        free((char*)ent.fullpath);
+        free((char*)ent.mimetype);
+    }
+    g_dir_close(dir);
+
+    GTextInfo **rti = malloc((ti->len + 1) * sizeof(GTextInfo*));
+    memcpy(rti, ti->pdata, ti->len * sizeof(GTextInfo*));
+    rti[ti->len] = calloc(1, sizeof(GTextInfo));
+    GGadgetSetList(&gfc->files->g, rti, false);
+    g_ptr_array_free(ti, false);
+
+    if (dti) {
+        GTextInfo **rdti = malloc((dti->len + 1) * sizeof(GTextInfo*));
+        memcpy(rdti, dti->pdata, dti->len * sizeof(GTextInfo*));
+        rdti[dti->len] = calloc(1, sizeof(GTextInfo));
+        GGadgetSetList(&gfc->subdirs->g, rdti, false);
+        g_ptr_array_free(dti, false);
     }
 
     GGadgetScrollListToText(&gfc->files->g,u_GFileNameTail(_GGadgetGetTitle(&gfc->name->g)),true);
-}
-
-static void GFileChooserIntermediateDir(GIOControl *gc) {
-    GFileChooser *gfc = (GFileChooser *) (gc->userdata);
-
-    GFileChooserFillList(gfc,GIOgetDirData(gc),gc->path);
-}
-
-static void GFileChooserReceiveDir(GIOControl *gc) {
-    GFileChooser *gfc = (GFileChooser *) (gc->userdata);
-
-    GGadgetSetEnabled(&gfc->files->g,true);
-    GGadgetSetEnabled(&gfc->subdirs->g,true);
-    if ( gfc->lastname!=NULL ) {
-	GGadgetSetTitle(&gfc->name->g,gfc->lastname);
-	free(gfc->lastname);
-	gfc->lastname=NULL;
-    }
-    GFileChooserFillList(gfc,GIOgetDirData(gc),gc->path);
-    GIOclose(gc);
-    gfc->outstanding = NULL;
-    GDrawSetCursor(gfc->g.base,gfc->old_cursor);
-}
-
-static void GFileChooserErrorDir(GIOControl *gc) {
-    GFileChooser *gfc = (GFileChooser *) (gc->userdata);
-    GTextInfo *ti[3], _ti[3];
-    static unichar_t nullstr[] = { 0 };
-
-    memset(_ti,'\0',sizeof(_ti));
-    _ti[0].text = gc->error;
-    if ( gc->status[0]!='\0' )
-	_ti[1].text = gc->status;
-    _ti[0].fg = _ti[0].bg = _ti[1].fg = _ti[1].bg = COLOR_DEFAULT;
-    ti[0] = _ti; ti[1] = _ti+1; ti[2] = _ti+2;
-    GGadgetSetEnabled(&gfc->files->g,false);
-    GGadgetSetList(&gfc->files->g,ti,true);
-    GGadgetSetEnabled(&gfc->subdirs->g,false);
-    GGadgetSetList(&gfc->subdirs->g,ti,true);
-    if ( gfc->lastname!=NULL ) {
-	GGadgetSetTitle(&gfc->name->g,gfc->lastname);
-	free(gfc->lastname);
-	gfc->lastname=NULL;
-    } else
-	GGadgetSetTitle(&gfc->name->g,nullstr);
-    if ( gfc->filterb!=NULL && gfc->ok!=NULL )
-	_GWidget_MakeDefaultButton(&gfc->ok->g);
-    GIOcancel(gc);
-    gfc->outstanding = NULL;
-    GDrawSetCursor(gfc->g.base,gfc->old_cursor);
+    GGadgetSetEnabled(&gfc->files->g, true);
+    GGadgetSetEnabled(&gfc->subdirs->g, true);
+    free(dirname);
 }
 
 static void GFileChooserScanDir(GFileChooser *gfc,unichar_t *dir) {
@@ -491,7 +440,7 @@ static void GFileChooserScanDir(GFileChooser *gfc,unichar_t *dir) {
 
     for (char* c = drives; *c != '\0'; c++) {
         // Don't put the root twice if we're already on it.
-        if (*c == toupper(dir[0])) continue;
+        if ((unichar_t)*c == toupper(dir[0])) continue;
 
         ti[cnt] = calloc(1,sizeof(GTextInfo));
         unichar_t* utemp = calloc(3,sizeof(unichar_t));
@@ -509,19 +458,6 @@ static void GFileChooserScanDir(GFileChooser *gfc,unichar_t *dir) {
 
     GGadgetSetList(&gfc->directories->g,ti,false);
     GGadgetSelectOneListItem(&gfc->directories->g,0);
-
-    if ( gfc->outstanding!=NULL ) {
-	GIOcancel(gfc->outstanding);
-	gfc->outstanding = NULL;
-    } else {
-	gfc->old_cursor = GDrawGetCursor(gfc->g.base);
-	GDrawSetCursor(gfc->g.base,ct_watch);
-    }
-
-    gfc->outstanding = GIOCreate(dir,gfc,GFileChooserReceiveDir,
-	    GFileChooserErrorDir);
-    gfc->outstanding->receiveintermediate = GFileChooserIntermediateDir;
-    GIOdir(gfc->outstanding);
 
     freeme = NULL;
     if ( dir[u_strlen(dir)-1]!='/' ) {
@@ -542,6 +478,8 @@ static void GFileChooserScanDir(GFileChooser *gfc,unichar_t *dir) {
 	gfc->history[++gfc->hpos] = u_copy(dir);
 	gfc->hcnt = gfc->hpos+1;
     }
+
+    GFileChooserFillList(gfc, dir);
     free(freeme);
 }
 
@@ -1432,8 +1370,6 @@ static void GFileChooser_destroy(GGadget *g) {
     free(lastdir);
     lastdir = GFileChooserGetCurDir(gfc,-1);
 
-    if ( gfc->outstanding )
-	GIOcancel(gfc->outstanding);
     GGadgetDestroy(&gfc->topbox->g);	/* destroys everything */
     if ( gfc->paths!=NULL ) {
 	for ( i=0; gfc->paths[i]!=NULL; ++i )
@@ -1766,22 +1702,6 @@ void GFileChooserSetDir(GGadget *g,unichar_t *dir) {
 
 unichar_t *GFileChooserGetDir(GGadget *g) {
 return( GFileChooserGetCurDir((GFileChooser *) g,-1));
-}
-
-GIOControl *GFileChooserReplaceIO(GGadget *g,GIOControl *gc) {
-    GFileChooser *gfc = (GFileChooser *)g;
-
-    if ( gfc->outstanding!=NULL ) {
-	GIOclose(gfc->outstanding);
-	gfc->outstanding = NULL;
-	GDrawSetCursor(gfc->g.base,gfc->old_cursor);
-    }
-    if ( gc!=NULL ) {
-	gfc->old_cursor = GDrawGetCursor(gfc->g.base);
-	GDrawSetCursor(gfc->g.base,ct_watch);
-	gfc->outstanding = gc;
-    }
-return( gc );
 }
 
 void GFileChooserGetChildren(GGadget *g,GGadget **pulldown, GGadget **list, GGadget **tf) {
