@@ -502,7 +502,8 @@ int GFileUnlink(const char *name) {
 return(unlink(name));
 }
 
-char *_GFile_find_program_dir(char *prog) {
+#ifndef _WIN32
+static char *_GFile_find_program_dir(char *prog) {
     char *pt, *path, *program_dir=NULL;
     char filename[2000];
 
@@ -510,29 +511,6 @@ char *_GFile_find_program_dir(char *prog) {
         return NULL;
     }
 
-#if defined(__MINGW32__)
-    char* pt1 = strrchr(prog, '/');
-    char* pt2 = strrchr(prog, '\\');
-    if(pt1<pt2) pt1=pt2;
-    if(pt1)
-	program_dir = copyn(prog, pt1-prog);
-    else if( (path = getenv("PATH")) != NULL ){
-	char* tmppath = copy(path);
-	path = tmppath;
-	for(;;){
-	    pt1 = strchr(path, ';');
-	    if(pt1) *pt1 = '\0';
-	    sprintf(filename,"%s/%s", path, prog);
-	    if ( access(filename,1)!= -1 ) {
-		program_dir = copy(path);
-		break;
-	    }
-	    if(!pt1) break;
-	    path = pt1+1;
-	}
-	free(tmppath);
-    }
-#else
     if ( (pt = strrchr(prog,'/'))!=NULL )
 	program_dir = copyn(prog,pt-prog);
     else if ( (path = getenv("PATH"))!=NULL ) {
@@ -552,7 +530,6 @@ char *_GFile_find_program_dir(char *prog) {
 		program_dir = copy(path);
 	}
     }
-#endif
 
     if ( program_dir==NULL )
 return( NULL );
@@ -561,6 +538,7 @@ return( NULL );
     program_dir = copy(filename);
 return( program_dir );
 }
+#endif
 
 unichar_t *u_GFileGetAbsoluteName(unichar_t *name, unichar_t *result, int rsiz) {
     /* result may be the same as name */
@@ -809,7 +787,7 @@ void FindProgDir(char *prog) {
         return;
     }
 
-#if defined(__MINGW32__)
+#ifdef _WIN32
     char  path[MAX_PATH+4];
     char* c = path;
     char* tail = 0;

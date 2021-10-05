@@ -110,6 +110,7 @@ function(set_default_rpath)
   endif()
   if(APPLE)
     list(APPEND CMAKE_INSTALL_RPATH "@loader_path/../lib")
+    list(APPEND CMAKE_INSTALL_RPATH "@loader_path/../..") # For fontforge.so
   endif()
   set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_RPATH} PARENT_SCOPE)
 endfunction()
