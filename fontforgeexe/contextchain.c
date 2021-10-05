@@ -1724,7 +1724,7 @@ static int WhichSections(struct contextchaindlg *ccd, GGadget *g) {
     } else if ( off==20 )
 	sections = 0x1;		/* Backtracking */
     else
-	sections = 0x4;		/* Foreword */
+	sections = 0x4;		/* Forward */
 return( sections );
 }
 
