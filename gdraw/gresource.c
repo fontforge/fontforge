@@ -569,10 +569,6 @@ void _GGadgetInitDefaultBox(const char *class, GBox *box) {
 	box->flags |= box_foreground_shadow_outer;
 }
 
-static void GResHashFree(gpointer p) {
-    free(p);
-}
-
 /* font name may be something like:
 	bold italic extended 12pt courier
 	400 10pt small-caps
@@ -588,7 +584,7 @@ static int _GResToFontRequest(const char *resname, FontRequest *rq, GHashTable *
     FontRequest rel_rq;
 
     if ( ht==NULL ) {
-	ht = g_hash_table_new_full(g_str_hash, g_str_equal, GResHashFree, NULL);
+	ht = g_hash_table_new_full(g_str_hash, g_str_equal, free, NULL);
 	top_level = true;
     }
 
@@ -630,7 +626,7 @@ static int _GResToFontRequest(const char *resname, FontRequest *rq, GHashTable *
 		*end = ch;
 		break;
 	    }
-	} else if ( ret==-1 && *pt=='+' || *pt=='-' ) {
+	} else if ( ret==-1 && (*pt=='+' || *pt=='-') ) {
 	    adjust = strtol(pt,&e,10);
 	} else if ( ret==-1 && *pt=='^' ) {
 	    relname = copy(pt+1);
@@ -733,7 +729,7 @@ static void _GResourceFindFont(const char *resourcename, GResFont *font, int is_
     char *rstr;
     memset(&rq, 0, sizeof(rq));
     if ( is_value )
-	rstr = rstr!=NULL ? copy(resourcename) : NULL;
+	rstr = copy(resourcename);
     else
 	rstr = GResourceFindString(resourcename);
 
@@ -746,10 +742,10 @@ static void _GResourceFindFont(const char *resourcename, GResFont *font, int is_
 		font->rstr = rstr;
 		font->fi = fi;
 	    } else {
-		; //GDrawError("Could not find font corresponding to resource %s '%s', using default", resourcename, rstr);
+		TRACE("Could not find font corresponding to resource %s '%s', using default\n", resourcename, rstr);
 	    }
 	} else {
-	    GDrawError("Could not convert font resource %s '%s', using default", resourcename, rstr);
+	    //TRACE("Could not convert font resource %s '%s', using default\n", resourcename, rstr);
 	}
     }
 
@@ -765,7 +761,7 @@ static void _GResourceFindFont(const char *resourcename, GResFont *font, int is_
         font->fi = GDrawInstanciateFont(NULL, &rq);
 	free((char *) rq.utf8_family_name);
 	if ( font->fi==NULL ) {
-	    GDrawError("Could not find font corresponding to default '%s', using system default", font->rstr);
+	    TRACE("Could not find font corresponding to default '%s', using system default\n", font->rstr);
 	    font->fi = _ggadget_default_font.fi;
 	}
     }
@@ -788,7 +784,7 @@ static void _GResourceFindImage(const char *fname, GResImage *img) {
     if ( fname!=NULL ) {
 	t = _GGadgetImageCache(fname, false);
 	if ( t==NULL || t->image==NULL ) {
-	    GDrawError("Could not find image corresponding to '%s', using default", fname);
+	    TRACE("Could not find image corresponding to '%s', using default", fname);
 	} else {
 	    img->bucket = t;
 	}
@@ -797,7 +793,7 @@ static void _GResourceFindImage(const char *fname, GResImage *img) {
     if ( GResImageGetImage(img)==NULL && img->ini_name!=NULL ) {
 	img->bucket = _GGadgetImageCache(img->ini_name, true);
 	if ( GResImageGetImage(img)==NULL ) {
-	    GDrawError("Could not find image corresponding to default name '%s'", img->ini_name);
+	    TRACE("Could not find image corresponding to default name '%s'", img->ini_name);
 	}
     }
 }

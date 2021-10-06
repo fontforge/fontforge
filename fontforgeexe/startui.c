@@ -37,7 +37,6 @@
 #include "fontforgeui.h"
 #include "gfile.h"
 #include "gresedit.h"
-#include "../gdraw/gresourceP.h"
 #include "hotkeys.h"
 #include "lookups.h"
 #include "prefs.h"

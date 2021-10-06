@@ -2447,10 +2447,12 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *UNUSED(programname)) 
     gdisp->sel_notify_timeout = _GDraw_res_selnottime;
     gdisp->macosx_cmd = _GDraw_res_macosxcmd;
     gdisp->twobmouse_win = _GDraw_res_twobuttonfixup;
-    if ( _GDraw_res_res!=0 )
-	gdisp->res = _GDraw_res_res;
-    if ( _GDraw_res_synchronize )
+    if (_GDraw_res_res != 0) {
+        gdisp->res = _GDraw_res_res;
+    }
+    if (_GDraw_res_synchronize){
         gdk_display_sync(gdisp->display);
+    }
 
     pango_cairo_context_set_resolution(gdisp->pangoc_context, gdisp->res);
 

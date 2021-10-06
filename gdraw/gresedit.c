@@ -867,7 +867,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
     wattrs.restrict_input_to_me = 1;
     wattrs.is_dlg = true;
     wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("FontForge Appearance Editor");
+    wattrs.utf8_window_title = _("Appearance Editor");
     pos.x = pos.y = 10;
     pos.width = pos.height = 100;
     gre.gw = gw = GDrawCreateTopWindow(NULL,&pos,gre_e_h,&gre,&wattrs);

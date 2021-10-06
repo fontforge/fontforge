@@ -2195,7 +2195,7 @@ static GMenuItem2 fllist[] = {
     { { (unichar_t *) N_("_Revert File"), (GImage *) "filerevert.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Revert File|Ctl+Shft+R"), NULL, NULL, BVMenuRevert, MID_Revert },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Pr_eferences..."), (GImage *) "fileprefs.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Preferences...|No Shortcut"), NULL, NULL, MenuPrefs, 0 },
-    { { (unichar_t *) N_("_Appearance Editor..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("Appearance Editor...|No Shortcut"), NULL, NULL, MenuXRes, 0 },
+    { { (unichar_t *) N_("Appea_rance Editor..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("Appearance Editor...|No Shortcut"), NULL, NULL, MenuXRes, 0 },
 #ifndef _NO_PYTHON
     { { (unichar_t *) N_("Config_ure Plugins..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'u' }, H_("Configure Plugins...|No Shortcut"), NULL, NULL, MenuPlug, 0 },
 #endif

@@ -493,8 +493,8 @@ static void KP_ExposeKerns(KPData *kpd,GWindow pixmap,GRect *rect) {
     Color fg = GDrawGetDefaultForeground(NULL);
     Color bg = GDrawGetDefaultBackground(NULL);
     memcpy(&clut,kpd->bdf->clut,sizeof(clut));
-    int bgr=((bg>>16)&0xff), bgg=((bg>>8)&0xff), bgb=(bg&0xff);
-    int fgr=((fg>>16)&0xff), fgg=((fg>>8)&0xff), fgb=(fg&0xff);
+    int bgr=COLOR_RED(bg), bgg=COLOR_GREEN(bg), bgb=COLOR_BLUE(bg);
+	int fgr=COLOR_RED(fg), fgg=COLOR_GREEN(fg), fgb=COLOR_BLUE(fg);
     for ( i=0; i<clut.clut_len; ++i )
 	clut.clut[i] = COLOR_CREATE( bgr + (i*(fgr-bgr))/(clut.clut_len-1),
 	                             bgg + (i*(fgg-bgg))/(clut.clut_len-1),
