@@ -950,7 +950,7 @@ typedef void (*visitButtonsVisitor) ( CharView *cv,             // CharView pass
 static void visitButtons( CharView* cv, visitButtonsVisitor v, void* udata ) 
 {
     GImage* (*buttons)[14][2] = (CVInSpiro(cv) ? spirobuttons : normbuttons);
-    int i,j,sel,norm, mi;
+    int i,j,sel, mi;
     int tool = cv->cntrldown?cv->cb1_tool:cv->b1_tool;
     int icony = 1;
     for ( i=0; buttons[0][i][0]; ++i ) {
@@ -1062,12 +1062,10 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
 	    { '^', 'M', 's', 'e', '1',  '\0' },
 	    { 'M', 's', 'e', '2',  '\0' },
 	    { '^', 'M', 's', 'e', '2',  '\0' }};
-    int i,j,sel,norm, mi;
-    int tool = cv->cntrldown?cv->cb1_tool:cv->b1_tool;
+    int j;
     int dither = GDrawSetDither(NULL,false);
     GRect temp;
     int canspiro = hasspiro(), inspiro = canspiro && cv->b.sc->inspiro;
-    GImage* (*buttons)[14][2] = (inspiro ? spirobuttons : normbuttons);
     GImage **smalls = inspiro ? spirosmalls : normsmalls;
 
     normbuttons[0][3][1] = canspiro ? &GIcon_spiroup : &GIcon_spirodisabled;
@@ -1641,7 +1639,6 @@ static void Layers2Expose(CharView *cv,GWindow pixmap,GEvent *event) {
     GRect r, oldclip;
     struct _GImage base;
     GImage gi;
-    int as = (24*cv->b.sc->parent->ascent)/(cv->b.sc->parent->ascent+cv->b.sc->parent->descent);
     int leftOffset, layerCount;
 
     if ( event->u.expose.rect.y+event->u.expose.rect.height<layer2.header_height )

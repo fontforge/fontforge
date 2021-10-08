@@ -3230,7 +3230,6 @@ static int GFI_AddOFL(GGadget *g, GEvent *e) {
 /* Author, and Font Family Name for rows[0,1] of the license. You can access */
 /* this routine from GUI at Element->Font_Info->TTF_Names. info at PS_Names. */
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	struct gfi_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	GGadget *tng = GWidgetGetControl(GGadgetGetWindow(g),CID_TNames);
 	int rows;
 	struct matrix_data *tns, *newtns;

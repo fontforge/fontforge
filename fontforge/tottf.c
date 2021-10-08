@@ -4503,7 +4503,7 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map,int issymbol
     /* We always want a format 4 2byte unicode encoding map */
     /* But if it's symbol, only include encodings 0xff20 - 0xffff */
     int32 *avail = malloc(65536*sizeof(int32));
-    int i,j,l, d, first_delta=0, last_delta, slen;
+    int i,j, first_delta=0, last_delta, slen;
     int curseg=0, segcnt, segmax=SEGMAXINC, cnt=0, mapcnt=0;
     SplineChar *sc;
     FILE *format4 = NULL;

@@ -185,7 +185,6 @@ int _ExportPDF(FILE *pdf,SplineChar *sc,int layer) {
     GDateTime *gdt;
     GTimeSpan zoffset;
     int ret;
-    char oldloc[24];
     int _objlocs[8], xrefloc, streamstart, streamlength, resid = 0, nextobj;
     int *objlocs = _objlocs;
     const char *author = GetAuthor();
@@ -328,7 +327,6 @@ return( ret );
 
 
 int _ExportPlate(FILE *plate,SplineChar *sc,int layer) {
-    char oldloc[24];
     int do_open;
     SplineSet *ss;
     spiro_cp *spiros;

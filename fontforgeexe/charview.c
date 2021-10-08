@@ -9762,18 +9762,10 @@ static void CVMenuPatternTile(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
 static void _CVMenuOverlap(CharView *cv,enum overlap_type ot) {
     /* We know it's more likely that we'll find a problem in the overlap code */
     /*  than anywhere else, so let's save the current state against a crash */
-    int layer = cv->b.drawmode == dm_grid ? ly_grid :
-		cv->b.drawmode == dm_back ? ly_back
-					: cv->b.layerheads[dm_fore] - cv->b.sc->layers;
 
     DoAutoSaves();
-#if 0
-    // We await testing on the necessity of this operation.
-    if ( !SCRoundToCluster(cv->b.sc,layer,false,.03,.12))
-	CVPreserveState(&cv->b);	/* SCRound2Cluster does this when it makes a change, not otherwise */
-#else
     CVPreserveState(&cv->b);
-#endif // 0
+
     if ( cv->b.drawmode==dm_fore ) {
 	MinimumDistancesFree(cv->b.sc->md);
 	cv->b.sc->md = NULL;
@@ -10595,8 +10587,6 @@ void CVAddAnchor(CharView *cv) {
     if ( AnchorClassUnused(cv->b.sc,&waslig)==NULL ) {
         SplineFont *sf = cv->b.sc->parent;
         AnchorClass *ac;
-        GTextInfo **ti;
-        int j;
         char *name = gwwv_ask_string(_("Anchor Class Name"),"",_("Please enter the name of a Anchor point class to create"));
         if ( name==NULL )
 return;

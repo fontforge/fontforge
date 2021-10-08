@@ -864,7 +864,6 @@ static SplineChar **TTFGlyphsFromNames(SplineFont *sf,char *names) {
 
 static SplineChar **OrderedGlyphsFromNames(SplineFont *sf,char *names) {
     SplineChar **glyphs = SFGlyphsFromNames(sf,names);
-    int i,j;
 
     if ( glyphs==NULL || glyphs[0]==NULL )
 return( glyphs );

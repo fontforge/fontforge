@@ -1080,7 +1080,7 @@ static void FVMergeRefigureMapSel(FontViewBase *fv,SplineFont *into,SplineFont *
 }
 
 static void _MergeFont(SplineFont *into,SplineFont *other,struct sfmergecontext *mc) {
-    int i, cnt, doit, emptypos, index, k;
+    int i, cnt, doit, emptypos, index;
     SplineFont *bitmap_into;
     BDFFont *bdf;
     FontViewBase *fvs;
