@@ -5058,14 +5058,12 @@ static void FindBottomSerifOnDStem(SplineChar *sc,int layer,DStemInfo *d,
     SplinePoint *start=NULL, *end=NULL, *sp;
     SplinePointList *ss;
     double sdiff, ediff;
-    double pos;
     double fuzz = (sc->parent->ascent+sc->parent->descent)/100.0;
 
     for ( ss=sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
 	start=end=NULL;
 	for ( sp=ss->first; ; ) {
 	    if ( RoughlyParallel(sp,&d->unit)) {
-		pos = (sp->me.x-d->left.x)*d->unit.x + (sp->me.y-d->left.y)*d->unit.y;
 		if ( ( sdiff = (sp->me.x-d->left.x)*d->unit.y - (sp->me.y-d->left.y)*d->unit.x)<0 ) sdiff = -sdiff;
 		if ( ( ediff = (sp->me.x-d->right.x)*d->unit.y - (sp->me.y-d->right.y)*d->unit.x)<0 ) ediff = -ediff;
 		/* Hint Ranges for diagonals seem not to be what we want here */
@@ -5112,14 +5110,12 @@ static void FindTopSerifOnDStem(SplineChar *sc,int layer,DStemInfo *d,
     SplinePoint *start=NULL, *end=NULL, *sp;
     SplinePointList *ss;
     double sdiff, ediff;
-    double pos;
     double fuzz = (sc->parent->ascent+sc->parent->descent)/100.0;
 
     for ( ss=sc->layers[layer].splines; ss!=NULL; ss=ss->next ) {
 	start=end=NULL;
 	for ( sp=ss->first; ; ) {
 	    if ( RoughlyParallel(sp,&d->unit)) {
-		pos = (sp->me.x-d->left.x)*d->unit.x + (sp->me.y-d->left.y)*d->unit.y;
 		if ( ( sdiff = (sp->me.x-d->left.x)*d->unit.y - (sp->me.y-d->left.y)*d->unit.x)<0 ) sdiff = -sdiff;
 		if ( ( ediff = (sp->me.x-d->right.x)*d->unit.y - (sp->me.y-d->right.y)*d->unit.x)<0 ) ediff = -ediff;
 		/* Hint Ranges for diagonals seem not to be what we want here */
@@ -6181,7 +6177,7 @@ static void FigureFTop(ItalicInfo *ii) {
     StemInfo *h;
     SplinePoint *beste, *bests, *sp;
     SplineSet *ss;
-    double bestediff, sdiff, ediff;
+    double sdiff, ediff;
     DBounds b;
     real trans[6];
 
@@ -6201,7 +6197,6 @@ return;
     for ( h=f->vstem; h!=NULL; h=h->next ) if ( h->tobeused ) {
 	for ( ss=f->layers[ii->layer].splines; ss!=NULL; ss=ss->next ) {
 	    bests = beste = NULL;
-	    bestediff = 10;
 	    for ( sp=ss->first; ; ) {
 		if ( sp->me.y>.9*ii->x_height ) {
 		    if ( (sdiff = sp->me.x-h->start)<0 ) sdiff = -sdiff;
@@ -6209,7 +6204,6 @@ return;
 		    if ( sdiff<3 && (bests==NULL || sp->me.y>bests->me.y ))
 			bests = sp;
 		    else if ( ediff<3 && (beste==NULL || sp->me.y>beste->me.y )) {
-			bestediff = ediff;
 			beste = sp;
 		    }
 		}

@@ -4391,11 +4391,9 @@ return( false );
 static uint8 *FixDStemPoint ( InstrCt *ct,StemData *stem,
     int pt,int refpt,int firstedge,int cvt,BasePoint *fv ) {
     uint8 *instrs, *touched;
-    int ptcnt;
     DiagPointInfo *diagpts;
 
     diagpts = ct->diagpts;
-    ptcnt = ct->gd->realcnt;
     touched = ct->touched;
     instrs = ct->pt;
 
@@ -4502,7 +4500,7 @@ return( instrs );
  * line's starting point without special exceptions.
  */
 static uint8 *FixDstem( InstrCt *ct, StemData *ds, BasePoint *fv ) {
-    int startnum, a1, a2, b1, b2, ptcnt, firstedge, cvt;
+    int startnum, a1, a2, b1, b2, firstedge, cvt;
     int x_ldup, y_ldup, x_edup, y_edup, dsc1, dsc2;
     PointData *v1, *v2;
     uint8 *touched;
@@ -4511,7 +4509,6 @@ static uint8 *FixDstem( InstrCt *ct, StemData *ds, BasePoint *fv ) {
     if ( ds->ldone && ds->rdone )
 return( ct->pt );
 
-    ptcnt = ct->ptcnt;
     touched = ct->touched;
 
     dsc1 = DStemHasSnappableCorners( ct,ds,ds->keypts[0],ds->keypts[2] );
@@ -4598,12 +4595,10 @@ static uint8 *FixPointOnLine ( DiagPointInfo *diagpts,PointVector *line,
 
     uint8 *instrs, *touched;
     BasePoint newpv;
-    int ptcnt;
     int pushpts[4];
 
     touched = ct->touched;
     instrs = ct->pt;
-    ptcnt = ct->ptcnt;
 
     newpv = GetVector( &line->pd1->base,&line->pd2->base,true );
 
@@ -4649,12 +4644,10 @@ static uint8 *InterpolateAlongDiag ( DiagPointInfo *diagpts,PointVector *line,
 
     uint8 *instrs, *touched;
     BasePoint newpv;
-    int ptcnt;
     int pushpts[3];
 
     touched = ct->touched;
     instrs = ct->pt;
-    ptcnt = ct->ptcnt;
 
     if (diagpts[pd->ttfindex].count != 1 || touched[pd->ttfindex] & ( tf_x|tf_y ) ||
         diagpts[pd->ttfindex].line[0].done > 1 )
@@ -4825,13 +4818,11 @@ static uint8 *TouchDStemPoints( InstrCt *ct,BasePoint *fv ) {
     int i, ptcnt, numx=0, numy=0, idx;
     int *tobefixedy, *tobefixedx;
     uint8 *instrs, *touched;
-    DiagPointInfo *diagpts;
     PointData *pd;
 
     touched = ct->touched;
     instrs = ct->pt;
     ptcnt = ct->gd->pcnt;
-    diagpts = ct->diagpts;
 
     tobefixedy = calloc( ptcnt,sizeof( int ));
     tobefixedx = calloc( ptcnt,sizeof( int ));

@@ -2450,12 +2450,11 @@ static void enable_enum(GGadget *g, GMenuItem *mi, int r, int c) {
     int i,rows,j;
     struct matrix_data *possub;
     CharInfo *ci;
-    int sel,cols;
+    int cols;
 
     if ( c!=0 )
 return;
     ci = GDrawGetUserData(GGadgetGetWindow(g));
-    sel = GTabSetGetSel(GWidgetGetControl(ci->gw,CID_Tabs))-2;
     possub = GMatrixEditGet(g, &rows);
     cols = GMatrixEditGetColCnt(g);
 

@@ -876,7 +876,11 @@ int fontforge_main( int argc, char **argv ) {
 	    import_python_plugins = false;
 	}
     }
-    
+
+    // Silence unused warnings, depending on ifdefs
+    (void)run_python_init_files;
+    (void)import_python_plugins;
+
 #ifndef _NO_PYTHON
 /*# ifndef GWW_TEST*/
     FontForge_InitializeEmbeddedPython(); /* !!!!!! debug (valgrind doesn't like python) */

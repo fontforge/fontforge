@@ -585,7 +585,7 @@ return( dc->debug_fpgm );
 struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
     FT_Outline outline;
     FT_Bitmap bitmap;
-    int i, err, j, k, first, xoff, yoff;
+    int i, j, k, first, xoff, yoff;
     IBounds b;
     struct freetype_raster *ret;
 
@@ -668,7 +668,7 @@ struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
     }
     bitmap.buffer = calloc(bitmap.pitch*bitmap.rows,sizeof(uint8));
 
-    err = (FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&bitmap);
+    (FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&bitmap);
 
     for ( i=0; i<outline.n_points; ++i ) {
 	outline.points[i].x += xoff;

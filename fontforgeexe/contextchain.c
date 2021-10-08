@@ -1604,10 +1604,8 @@ return( NULL );
 			ret[cnt] = utf82u_copy(str);
 		    } else {
 			unichar_t *temp = malloc((spt-basept+strlen(str)+4)*sizeof(unichar_t));
-			int len;
 			u_strncpy(temp,basept,spt-basept);
 			utf82u_strcpy(temp+(spt-basept),str);
-			len = u_strlen(temp);
 			ret[cnt] = temp;
 		    }
 		}

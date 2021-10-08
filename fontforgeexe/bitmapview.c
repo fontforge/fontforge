@@ -643,7 +643,7 @@ void BCGeneralFunction(BitmapView *bv,
 }
 
 static void BVDrawRefName(BitmapView *bv,GWindow pixmap,BDFRefChar *ref,int fg) {
-    int x,y, len;
+    int x,y;
     GRect size;
     char *refinfo;
     IBounds bb;
@@ -668,7 +668,6 @@ return;
     GDrawLayoutInit(pixmap,refinfo,-1,bv->small);
     GDrawLayoutExtents(pixmap,&size);
     GDrawLayoutDraw(pixmap,x-size.width/2,y,fg);
-    len = size.width;
     free(refinfo);
 }
 
@@ -1824,7 +1823,7 @@ return;
 
 static void _BVUnlinkRef(BitmapView *bv) {
     int anyrefs = false;
-    BDFRefChar *ref, *next, *prev = NULL;
+    BDFRefChar *ref, *next;
 
     if ( bv->bc->refs!=NULL ) {
 	BCPreserveState(bv->bc);
@@ -1836,8 +1835,7 @@ static void _BVUnlinkRef(BitmapView *bv) {
 		BCPasteInto( bv->bc,ref->bdfc,ref->xoff,ref->yoff,false,false );
 		BCMergeReferences( bv->bc,ref->bdfc,ref->xoff,ref->yoff );
 		BCRemoveDependent( bv->bc,ref );
-	    } else
-		prev = ref;
+	    }
 	}
 	BCCharChangedUpdate(bv->bc);
     }

@@ -4878,7 +4878,6 @@ return;		/* I treat this more like a modifier key change than a button press */
 		if( !xc && cv->additionalCharsToShowActiveIndex > 0 )
 		{
 		    xc = cv->additionalCharsToShow[cv->additionalCharsToShowActiveIndex-1];
-		    int offset = xc->width;
 		    int cumulativeLeftSideBearing = 0;
 //	        TRACE("first offset:%d original cx:%f \n", offset, fsadjusted.p->cx );
 		    int lidx = cv->additionalCharsToShowActiveIndex-1;
@@ -4925,7 +4924,6 @@ return;		/* I treat this more like a modifier key change than a button press */
 			    break;
 			}
 
-			offset = xc->width;
 		    }
 		}
 
@@ -10586,11 +10584,10 @@ void CVAddAnchor(CharView *cv) {
 
     if ( AnchorClassUnused(cv->b.sc,&waslig)==NULL ) {
         SplineFont *sf = cv->b.sc->parent;
-        AnchorClass *ac;
         char *name = gwwv_ask_string(_("Anchor Class Name"),"",_("Please enter the name of a Anchor point class to create"));
         if ( name==NULL )
 return;
-        ac = SFFindOrAddAnchorClass(sf,name,NULL);
+        SFFindOrAddAnchorClass(sf,name,NULL);
         free(name);
 	if ( AnchorClassUnused(cv->b.sc,&waslig)==NULL )
 return;

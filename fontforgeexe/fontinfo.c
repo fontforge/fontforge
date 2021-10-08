@@ -2852,7 +2852,7 @@ return( false );
 
 static int CheckActiveStyleTranslation(struct gfi_data *d,
 	struct matrix_data *strings,int r, int rows, int iswws ) {
-    int i,j, eng_pos, other_pos;
+    int i,j, other_pos;
     char *english, *new=NULL, *temp, *pt;
     int other_lang = strings[3*r].u.md_ival;
     int changed = false;
@@ -2876,7 +2876,6 @@ static int CheckActiveStyleTranslation(struct gfi_data *d,
 	else
 	    new = copy(english);
 	for ( i=0; stylelist[i]!=NULL; ++i ) {
-	    eng_pos = other_pos = -1;
 	    for ( j=0; stylelist[i][j].str!=NULL; ++j ) {
 		if ( stylelist[i][j].lang == other_lang ) {
 		    other_pos = j;
@@ -3235,11 +3234,6 @@ static int GFI_AddOFL(GGadget *g, GEvent *e) {
 	struct matrix_data *tns, *newtns;
 	int i,j,k,l,m, extras, len;
 	char *all, *pt, **data, *bpt;
-	time_t now;
-	struct tm *tm;
-
-	now = GetTime();
-	tm = localtime(&now);
 
 	tns = GMatrixEditGet(tng, &rows); newtns = NULL;
 	for ( k=0; k<2; ++k ) {

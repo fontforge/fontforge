@@ -743,7 +743,7 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
     int i, format, lpos;
     int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid, scalewid;
     static int done= false;
-    GTextInfo *cur_formats, *base;
+    GTextInfo *cur_formats;
 
     if ( !done ) {
 	for ( i=0; formats[i].text!=NULL; ++i )
@@ -754,8 +754,8 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
 	flast_format = (int) fv_bdf;
 	done = true;
     }
-    base = cur_formats = fv==NULL?formats:fvformats;
 #ifndef _NO_PYTHON
+    GTextInfo *base = cur_formats = fv==NULL?formats:fvformats;
     if ( py_ie!=NULL ) {
 	int cnt, extras;
 	for ( cnt=0; base[cnt].text!=NULL; ++cnt );

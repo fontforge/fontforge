@@ -1340,7 +1340,6 @@ return( true );
 static int dvpts_cnt(DebugView *dv) {
     TT_ExecContext exc = DebuggerGetEContext(dv->dc);
     int i, l, cnt;
-    FT_Vector *pts;
     int n;
     TT_GlyphZoneRec *r;
 
@@ -1351,7 +1350,6 @@ return( 0 );
     show_current = GGadgetIsChecked(GWidgetGetControl(dv->points,CID_Current));
     r = show_twilight ? &exc->twilight : &exc->pts;
     n = r->n_points;
-    pts = show_current ? r->cur : r->org;
 
     cnt = 0;
     for ( i=0; i<n; ++i ) {

@@ -10586,6 +10586,10 @@ return;
 	    }
 	}
     }
+    // Silence unused warnings, depending on ifdefs
+    (void)is_python;
+    (void)run_python_init_files;
+    (void)import_python_plugins;
 }
 #endif
 

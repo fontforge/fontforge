@@ -1706,10 +1706,8 @@ static struct stemdata *FindStem( struct glyphdata *gd,struct pointdata *pd,
     
     int i, cove, test_left, hv, stemcnt;
     struct stemdata *stem;
-    SplinePoint *match;
     BasePoint newdir;
 
-    match = pd2->sp;
     stemcnt = ( is_next2 ) ? pd2->nextcnt : pd2->prevcnt;
     
     for ( i=0; i<stemcnt; i++ ) {
@@ -2493,7 +2491,6 @@ static struct stemdata *DiagonalCornerStem( struct glyphdata *gd,
     struct pointdata *pfrom = NULL, *pto = NULL, *pd2 = NULL, *pd3=NULL;
     double width, length;
     struct stemdata *stem;
-    struct stem_chunk *chunk;
 
     pfrom = &gd->points[other->from->ptindex];
     pto = &gd->points[other->to->ptindex];
@@ -2526,10 +2523,10 @@ return( NULL );
     stem = FindOrMakeHVStem(gd,pd,pd2,pd->symetrical_h,require_existing);
     
     if ( pd3 == NULL && stem != NULL )
-	chunk = AddToStem( gd,stem,pd,pd2,2,2,2 );
+	AddToStem( gd,stem,pd,pd2,2,2,2 );
     else if ( stem != NULL ) {
-	chunk = AddToStem( gd,stem,pd,pd2,2,2,3 );
-	chunk = AddToStem( gd,stem,pd,pd3,2,2,3 );
+	AddToStem( gd,stem,pd,pd2,2,2,3 );
+	AddToStem( gd,stem,pd,pd3,2,2,3 );
     }
 return( stem );
 }
@@ -4123,7 +4120,7 @@ static void FindRefPointsNew( struct glyphdata *gd,struct stemdata *stem ) {
 
 static void NormalizeStem( struct glyphdata *gd,struct stemdata *stem ) {
     int i;
-    int is_x, lval, rval, val, lset, rset, best;
+    int lval, rval, val, lset, rset, best;
     double loff=0, roff=0;
     BasePoint lold, rold;
     SplinePoint *lbest, *rbest;
@@ -4132,7 +4129,6 @@ static void NormalizeStem( struct glyphdata *gd,struct stemdata *stem ) {
     /* First sort the stem chunks by their coordinates */
     if ( IsUnitHV( &stem->unit,true )) {
 	qsort( stem->chunks,stem->chunk_cnt,sizeof( struct stem_chunk ),chunk_cmp );
-	is_x = (int) rint( stem->unit.y );
 
 	/* For HV stems we have to check all chunks once more in order */
 	/* to figure out "left" and "right" positions most typical */
@@ -4530,7 +4526,6 @@ static void CheckForGhostHints( struct glyphdata *gd ) {
     /*  ghost hints. The bottom hint has height -21, and the top -20 */
     BlueData *bd = &gd->bd;
     struct stemdata *stem;
-    struct stem_chunk *chunk;
     struct pointdata *pd;
     real base;
     int i, j, leftfound, rightfound, has_h, peak, fuzz;
@@ -4597,10 +4592,10 @@ static void CheckForGhostHints( struct glyphdata *gd ) {
 		peak = IsSplinePeak( gd,pd,false,false,7 );
 		if ( peak > 0 ) {
 		    stem = FindOrMakeGhostStem( gd,pd->sp,j,20 );
-		    chunk = AddToStem( gd,stem,pd,NULL,2,false,false );
+		    AddToStem( gd,stem,pd,NULL,2,false,false );
 		} else if ( peak < 0 ) {
 		    stem = FindOrMakeGhostStem( gd,pd->sp,j,21 );
-		    chunk = AddToStem( gd,stem,NULL,pd,2,false,false );
+		    AddToStem( gd,stem,NULL,pd,2,false,false );
 		}
 	    }
 	}
@@ -5404,9 +5399,9 @@ static void AddSerifOrBall( struct glyphdata *gd,
     struct stemdata *master,struct stemdata *slave,int lbase,int is_ball ) {
     
     struct dependent_serif *tserif;
-    struct pointdata *spd, *bpd=NULL;
+    struct pointdata *spd;
     double width, min, max;
-    int i, j, refidx, scnt, next;
+    int i, j, scnt, next;
     
     if ( lbase ) {
 	width = fabs(
@@ -5439,9 +5434,7 @@ static void AddSerifOrBall( struct glyphdata *gd,
     }
     if ( i<master->serif_cnt )
 return;
-    
-    refidx = ( lbase ) ? master->leftidx : master->rightidx;
-    if ( refidx != -1 ) bpd = &gd->points[refidx];
+
     master->serifs = realloc(
 	master->serifs,( scnt+1 )*sizeof( struct dependent_serif ));
     master->serifs[scnt].stem = slave;
