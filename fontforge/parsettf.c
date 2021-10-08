@@ -3155,7 +3155,7 @@ static struct topdicts *readcfftopdict(FILE *ttf, char *fontname, int len,
 	    td->sid_fontname = stack[sp-1];
 	  break;
 	  case (12<<8)+39:
-	    LogError(_("FontForge does not support Chameleon fonts\n"));;
+	    LogError(_("FontForge does not support Chameleon fonts\n"));
 	  break;
 	  default:
 	    LogError(_("Unknown operator in %s: %x\n"), fontname, oval );

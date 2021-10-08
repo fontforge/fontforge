@@ -2149,7 +2149,7 @@ struct pschars *CID2ChrsSubrs(SplineFont *cidmaster,struct cidbytes *cidbytes,in
 	dummynotdef.name = ".notdef";
 	dummynotdef.parent = cidmaster->subfonts[0];
 	dummynotdef.layer_cnt = layer+1;
-	dummynotdef.layers = calloc(layer+1,sizeof(Layer));;
+	dummynotdef.layers = calloc(layer+1,sizeof(Layer));
 	dummynotdef.width = SFOneWidth(dummynotdef.parent);
 	if ( dummynotdef.width==-1 )
 	    dummynotdef.width = (dummynotdef.parent->ascent+dummynotdef.parent->descent);
@@ -2615,7 +2615,7 @@ static void CvtPsSplineSet2(GrowBuf *gb, SplinePointList *spl,
 	struct hintdb *hdb, int is_order2,int round ) {
     Spline *spline, *first;
     SplinePointList temp, *freeme = NULL;
-    int unhinted = true;;
+    int unhinted = true;
 
     if ( is_order2 )
 	freeme = spl = SplineSetsPSApprox(spl);

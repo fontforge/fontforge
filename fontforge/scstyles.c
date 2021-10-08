@@ -6587,7 +6587,7 @@ static void _SCChangeXHeight(SplineChar *sc,int layer,struct xheightinfo *xi) {
 }
 
 static void SCMakeItalic(SplineChar *sc,int layer,ItalicInfo *ii) {
-    real skew[6], refpos[6];;
+    real skew[6], refpos[6];
     RefChar *ref;
     extern int no_windowing_ui;
     int nwi = no_windowing_ui;
