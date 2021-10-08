@@ -416,13 +416,12 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int forcebg ) {
 }
 
 static void FVToggleCharSelected(FontView *fv,int enc) {
-    int i, j;
+    int i;
 
     if ( fv->v==NULL || fv->colcnt==0 )	/* Can happen in scripts */
 return;
 
     i = enc / fv->colcnt;
-    j = enc - i*fv->colcnt;
     i -= fv->rowoff;
  /* Normally we should be checking against fv->rowcnt (rather than <=rowcnt) */
  /*  but every now and then the WM forces us to use a window size which doesn't */
@@ -3851,7 +3850,6 @@ return;
 static void FVMenuChangeSupplement(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     SplineFont *cidmaster = fv->b.cidmaster;
-    struct cidmap *cidmap;
     char buffer[20];
     char *ret, *end;
     int supple;
@@ -3872,7 +3870,7 @@ return;
     free(ret);
     if ( supple!=cidmaster->supplement ) {
 	    /* this will make noises if it can't find an appropriate cidmap */
-	cidmap = FindCidMap(cidmaster->cidregistry,cidmaster->ordering,supple,cidmaster);
+	FindCidMap(cidmaster->cidregistry,cidmaster->ordering,supple,cidmaster);
 	cidmaster->supplement = supple;
 	FontViewSetTitle(fv);
     }
@@ -5612,7 +5610,7 @@ static GMenuItem2 mblist[] = {
 
 void FVRefreshChar(FontView *fv,int gid) {
     BDFChar *bdfc;
-    int i, j, enc;
+    int i, enc;
     MetricsView *mv;
 
     /* Can happen in scripts */ /* Can happen if we do an AutoHint when generating a tiny font for freetype context */
@@ -5633,7 +5631,6 @@ return;
 	/* A glyph may be encoded in several places, all need updating */
 	for ( enc = 0; enc<fv->b.map->enccount; ++enc ) if ( fv->b.map->map[enc]==gid ) {
 	    i = enc / fv->colcnt;
-	    j = enc - i*fv->colcnt;
 	    i -= fv->rowoff;
 	    if ( i>=0 && i<fv->rowcnt )
 		FVDrawGlyph(fv->v,fv,enc,true);

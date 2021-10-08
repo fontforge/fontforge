@@ -695,8 +695,7 @@ static void pdf_addpages(struct pdfcontext *pc, int obj) {
 			    ++pt;
 			} else {
 			    int o = strtol(pt,&end,10);
-			    int r;
-			    r = strtol(end,&end,10);
+			    strtol(end,&end,10);
 			    if ( pt==end )
 return;
 			    pt = end;
@@ -1290,8 +1289,7 @@ static void _InterpretPdf(FILE *in, struct pdfcontext *pc, EntityChar *ec) {
     int gsp = 0;
     Color fore_stroke=COLOR_INHERITED, fore_fill=COLOR_INHERITED;
     int linecap=lc_inherited, linejoin=lj_inherited; real linewidth=WIDTH_INHERITED;
-    DashType dashes[DASH_MAX];
-    int dash_offset = 0;
+    DashType dashes[DASH_MAX] = {0};
     Entity *ent;
     char tokbuf[100];
     const int tokbufsize = 100;
@@ -1404,7 +1402,6 @@ static void _InterpretPdf(FILE *in, struct pdfcontext *pc, EntityChar *ec) {
 	  case pt_setdash:
 	    if ( sp>=2 && stack[sp-1].type==ps_num && stack[sp-2].type==ps_array ) {
 		sp -= 2;
-		dash_offset = stack[sp+1].u.val;
 		for ( i=0; i<DASH_MAX && i<stack[sp].u.dict.cnt; ++i )
 		    dashes[i] = stack[sp].u.dict.entries[i].u.val;
 		dictfree(&stack[sp].u.dict);
@@ -1565,6 +1562,8 @@ static void _InterpretPdf(FILE *in, struct pdfcontext *pc, EntityChar *ec) {
 		    tok==pt_fillstrokeeo || tok==pt_closefillstrokenz ||
 		    tok==pt_closefillstrokeeo )
 		ent->u.splines.fill.col = fore_fill;
+		// FIXME Where to set?
+		// memcpy(ent->u.splines.stroke.dashes,dashes,sizeof(dashes));
 	    head = NULL; cur = NULL;
 	  break;
 	  case pt_gsave:
@@ -1576,6 +1575,7 @@ static void _InterpretPdf(FILE *in, struct pdfcontext *pc, EntityChar *ec) {
 		gsaves[gsp].linejoin = linejoin;
 		gsaves[gsp].fore_stroke = fore_stroke;
 		gsaves[gsp].fore_fill = fore_fill;
+		memcpy(gsaves[gsp].dashes, dashes, sizeof(dashes));
 		++gsp;
 		/* Unlike PS does not! save current path */
 	    }
@@ -1590,6 +1590,7 @@ static void _InterpretPdf(FILE *in, struct pdfcontext *pc, EntityChar *ec) {
 		linejoin = gsaves[gsp].linejoin;
 		fore_stroke = gsaves[gsp].fore_stroke;
 		fore_fill = gsaves[gsp].fore_fill;
+		memcpy(dashes, gsaves[gsp].dashes, sizeof(dashes));
 	    }
 	  break;
 	  default:

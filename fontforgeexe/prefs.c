@@ -1588,7 +1588,7 @@ return( true );
 
 static int Prefs_Ok(GGadget *g, GEvent *e) {
     int i, j, mi;
-    int err=0, enc;
+    int err=0;
     struct pref_data *p;
     GWindow gw;
     const unichar_t *ret;
@@ -1667,7 +1667,6 @@ return( true );
 		    e = ParseEncodingNameFromList(GWidgetGetControl(gw,j*CID_PrefsOffset+CID_PrefsBase+i));
 		    if ( e!=NULL )
 			*((Encoding **) (pl->val)) = e;
-		    enc = 1;	/* So gcc doesn't complain about unused. It is unused, but why add the ifdef and make the code even messier? Sigh. icc complains anyway */
 		}
 	      break;
 	      case pr_namelist:
@@ -2474,7 +2473,7 @@ static int PrefsSubSet_Ok(GGadget *g, GEvent *e) {
     struct prefs_list* plist = p->plist;
     struct prefs_list* pl = plist;
     int i=0,j=0;
-    int err=0, enc;
+    int err=0;
     const unichar_t *ret;
 
     p->done = true;
@@ -2498,7 +2497,6 @@ static int PrefsSubSet_Ok(GGadget *g, GEvent *e) {
 		e = ParseEncodingNameFromList(GWidgetGetControl(gw,j*CID_PrefsOffset+CID_PrefsBase+i));
 		if ( e!=NULL )
 		    *((Encoding **) (pl->val)) = e;
-		enc = 1;	/* So gcc doesn't complain about unused. It is unused, but why add the ifdef and make the code even messier? Sigh. icc complains anyway */
 	}
 	break;
 	case pr_namelist:

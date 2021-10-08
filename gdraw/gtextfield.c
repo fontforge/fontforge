@@ -409,10 +409,8 @@ return( i );
 }
 
 static unichar_t *GTextFieldGetPtFromPos(GTextField *gt,int i,int xpos) {
-    int ll;
     unichar_t *end;
 
-    ll = gt->lines[i+1]==-1?-1:gt->lines[i+1]-gt->lines[i]-1;
     int index8, uc;
     if ( gt->lines8[i+1]==-1 )
 	GDrawLayoutInit(gt->g.base,gt->utf8_text + gt->lines8[i],-1,NULL);
@@ -1471,7 +1469,7 @@ static int gtextfield_expose(GWindow pixmap, GGadget *g, GEvent *event) {
     GListField *ge = (GListField *) g;
     GRect old1, old2, old3, *r = &g->r;
     Color fg;
-    int ll,i, last;
+    int i, last;
     GRect unpadded_inner;
     int pad;
 
@@ -1507,7 +1505,6 @@ return( false );
     fg = g->state==gs_disabled?g->box->disabled_foreground:
 		    g->box->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap)):
 		    g->box->main_foreground;
-    ll = 0;
     if ( (last = gt->g.inner.height/gt->fh)==0 ) last = 1;
     if ( gt->sel_start != gt->sel_end ) {
 	/* I used to have support for drawing on a bw display where the */
@@ -2601,8 +2598,7 @@ static void GTextFieldAddHSb(GTextField *gt) {
 }
 
 static void GTextFieldFit(GTextField *gt) {
-    GTextBounds bounds;
-    int as=0, ds, ld, width=0;
+    int as=0, ds, ld;
     GRect inner, outer;
     int bp = GBoxBorderWidth(gt->g.base,gt->g.box);
 
@@ -2611,7 +2607,6 @@ static void GTextFieldFit(GTextField *gt) {
 	FontRequest rq;
 	int tries;
 	for ( tries = 0; tries<2; ++tries ) {
-	    width = GDrawGetTextBounds(gt->g.base,gt->text, -1, &bounds);
 	    GDrawWindowFontMetrics(gt->g.base,gt->font,&as, &ds, &ld);
 	    if ( gt->g.r.height==0 || as+ds-3+2*bp<=gt->g.r.height || tries==1 )
 	break;

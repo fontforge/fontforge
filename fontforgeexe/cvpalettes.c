@@ -3159,7 +3159,6 @@ int CVPaletteMnemonicCheck(GEvent *event) {
     int j, i, ch;
     char *foo;
     GEvent fake;
-    GGadget *g;
     CharView *cv;
     SplineFont *parent;
     int curlayer;
@@ -3173,7 +3172,6 @@ return( false );
     if ( isdigit(event->u.chr.keysym) ) {
 	int off = event->u.chr.keysym - '0';
 
-	g = GWidgetGetControl(cvlayers, CID_EBase+off-1);
 	if ( off-1<parent->layer_cnt && off!=curlayer ) {
             CVLSelectLayer(cv, off);
 	    if ( cv->b.sc->parent->multilayer )

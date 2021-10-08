@@ -793,7 +793,6 @@ Py_RETURN_NONE;
 static PyObject *PyFF_GetScriptPath(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
     PyObject *ret;
     GPtrArray *dpath;
-    int cnt;
 
     dpath = default_pyinit_dirs();
     ret = PyTuple_New((int)dpath->len);
@@ -1907,7 +1906,7 @@ static PyObject *PyFFPoint_dup(PyFF_Point *self) {
 static PyFF_Point *PyFFPoint_Parse(PyObject *args, bool dup, bool always) {
     double x,y;
     PyFF_Point *p=NULL;
-    int i, on, sel, type, interp;
+    int on, sel, type, interp;
 
     if ( args==NULL && !always )
 	return NULL;
@@ -2587,7 +2586,6 @@ static PyObject *PyFFContour_Concat( PyObject *_c1, PyObject *_c2 ) {
     int i;
     PyFF_Contour dummy;
     PyFF_Point *dummies[1];
-    double x,y;
 
     if ( PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(c1)) &&
          PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(c2)) ) {
@@ -2628,7 +2626,6 @@ static PyObject *PyFFContour_InPlaceConcat( PyObject *_self, PyObject *_c2 ) {
     int i, old_cnt;
     PyFF_Contour dummy;
     PyFF_Point *dummies[1];
-    double x,y;
 
     if ( PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(self)) &&
          PyType_IsSubtype(&PyFF_ContourType, Py_TYPE(c2)) ) {
@@ -3083,7 +3080,7 @@ Py_RETURN( self );
 static PyObject *PyFFContour_InsertPoint(PyFF_Contour *self, PyObject *args) {
     double x,y;
     PyFF_Point *p=NULL;
-    int i, on, pos, sel, type;
+    int on, pos, sel, type;
 
     x = y = 0.0;
     pos = -1;
@@ -5431,7 +5428,7 @@ SplineSet *SSFromContour(PyFF_Contour *c,int *tt_start) {
 
 static PyFF_Contour *ContourFromSS(SplineSet *ss,PyFF_Contour *ret) {
     int k, cnt;
-    SplinePoint *sp, *skip;
+    SplinePoint *sp;
 
     if ( ret==NULL )
 	ret = (PyFF_Contour *) PyFFContour_new(&PyFF_ContourType,NULL,NULL);
@@ -9619,7 +9616,6 @@ static PyObject *PyFFGlyph_boundingBox(PyFF_Glyph *self, PyObject *UNUSED(args),
 
     PyObject* layerp = NULL;
     if (keywds != NULL) layerp = PyDict_GetItemString(keywds, "layer");
-    int* layerp2;
 
     if (layerp != NULL) {
         layeri = LayerArgToLayer(self->sc->parent, layerp);
@@ -9649,7 +9645,6 @@ static PyObject* PyFF_Glyph_BoundsAt(PyCFunction bounds_func, PyFF_Glyph *self, 
         if (layeri == ly_none) return NULL;
     }
 
-    int arglen = PySequence_Size(args);
     int layer_cnt = self->sc->layer_cnt;
     for (int i = 0; i < layer_cnt; i++) {
         if (layerp != NULL && layeri != i) continue;
@@ -12374,7 +12369,6 @@ return( 0 );
 static int _PyFF_Font_set_str_null(SplineFont *sf,PyObject *value,
 	const char *str,int offset) {
     char *newv, **oldpos;
-    PyObject *temp;
 
     if ( value==NULL ) {
 	PyErr_Format(PyExc_TypeError, "Cannot delete the %s", str);

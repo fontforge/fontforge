@@ -519,7 +519,7 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
 #define OPT_Height	233
 
 static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
-    int k,fontlog_k,group,group2;
+    int k,group,group2;
     GWindow gw;
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[36];
@@ -852,7 +852,6 @@ static void SaveOptionsDlg(struct gfc_data *d,int which,int iscid) {
     boxes[3].gd.label = (GTextInfo *) &gcd[group2-1];
     boxes[3].creator = GHVGroupCreate;
 
-    fontlog_k = k;
     gcd[k].gd.flags = gg_visible | gg_enabled;
     label[k].text = (unichar_t *) _("Output FONTLOG.txt");
     label[k].text_is_1byte = true;

@@ -3920,7 +3920,6 @@ static void cidfigure(struct ttfinfo *info, struct topdicts *dict,
 }
 
 static int readcffglyphs(FILE *ttf,struct ttfinfo *info) {
-    int offsize;
     int hdrsize;
     char **fontnames, **strings;
     struct topdicts **dicts, **subdicts;
@@ -3937,7 +3936,7 @@ return( 0 );
     }
     getc(ttf);				/* Minor version */
     hdrsize = getc(ttf);
-    offsize = getc(ttf);
+    /*offsize =*/ getc(ttf);
     if ( hdrsize!=4 )
 	fseek(ttf,info->cff_start+hdrsize,SEEK_SET);
     fontnames = readcfffontnames(ttf,NULL,info);
@@ -4173,7 +4172,7 @@ return;
 
 static void readttfvwidths(FILE *ttf,struct ttfinfo *info) {
     int i,j;
-    int lastvwidth = info->emsize, vwidth_cnt, tsb/*, cnt=0*/;
+    int lastvwidth = info->emsize, vwidth_cnt;
     /* int32 voff=0; */
 
     fseek(ttf,info->vhea_start+4+4,SEEK_SET);		/* skip over the version number & typo right/left */
@@ -4187,7 +4186,7 @@ static void readttfvwidths(FILE *ttf,struct ttfinfo *info) {
     fseek(ttf,info->vmetrics_start,SEEK_SET);
     for ( i=0; i<vwidth_cnt && i<info->glyph_cnt; ++i ) {
 	lastvwidth = getushort(ttf);
-	tsb = getushort(ttf);
+	/*tsb =*/ getushort(ttf);
 	if ( info->chars[i]!=NULL )		/* can happen in ttc files */
 	    info->chars[i]->vwidth = lastvwidth;
     }
@@ -4348,13 +4347,13 @@ return( ret );
 
 static void ApplyVariationSequenceSubtable(FILE *ttf,uint32 vs_map,
 	struct ttfinfo *info,int justinuse) {
-    int sub_table_len, vs_cnt, i, j, rcnt, gid, cur_gid;
+    int vs_cnt, i, j, rcnt, gid;
     struct vs_data { int vs; uint32 def, non_def; } *vs_data;
     SplineChar *sc;
 
     fseek(ttf,vs_map,SEEK_SET);
     /* We/ve already checked the format is 14 */ getushort(ttf);
-    sub_table_len = getlong(ttf);
+    /*sub_table_len =*/ getlong(ttf);
     vs_cnt = getlong(ttf);
     vs_data = malloc(vs_cnt*sizeof(struct vs_data));
     for ( i=0; i<vs_cnt; ++i ) {
@@ -4420,7 +4419,7 @@ static void ApplyVariationSequenceSubtable(FILE *ttf,uint32 vs_map,
 		    if ( curgid>=info->glyph_cnt || curgid<0 ||
 			    info->chars[curgid]==NULL ) {
 			LogError( _("GID out of range (%d) in format 14 'cmap' subtable\n"),
-				cur_gid );
+				curgid );
 			info->bad_cmap = true;
 		    } else {
 			SplineChar *sc = info->chars[curgid];
@@ -4546,13 +4545,13 @@ static void readttfencodings(FILE *ttf,struct ttfinfo *info, int justinuse) {
     const int32 *trans=NULL;
     enum uni_interp interp = ui_none;
     int platform, specific;
-    int offset, encoff=0;
+    int encoff=0;
     int format, len;
     uint32 vs_map=0;
     uint16 table[256];
     int segCount;
     uint16 *endchars, *startchars, *delta, *rangeOffset, *glyphs;
-    int index, last;
+    int index;
     int mod = 0;
     SplineChar *sc;
     uint8 *used;
@@ -4602,7 +4601,6 @@ return;
 	temp = cmap_encs[i].enc;
 	platform = cmap_encs[i].platform;
 	specific = cmap_encs[i].specific;
-	offset = cmap_encs[i].offset;
 
 	if ( (platform==3 && specific==10) || (platform==0 && specific==4) ) { /* MS Unicode 4 byte */
 	    enc = temp;
@@ -4925,7 +4923,6 @@ return;
 	    glyphs = malloc(cnt*sizeof(uint16));
 	    for ( i=0; i<cnt; ++i )
 		glyphs[i] = getushort(ttf);
-	    last = -1;
 	    for ( i=0; i<256; ++i ) {
 		if ( table[i]==0 ) {
 		    /* Special case, single byte encoding entry, look it up in */
@@ -6377,7 +6374,7 @@ return( sf );
 
 char **NamesReadCFF(char *filename) {
     FILE *cff = fopen(filename,"rb");
-    int32 hdrsize, offsize;
+    int32 hdrsize;
     char **fontnames;
 
     if ( cff==NULL )
@@ -6389,7 +6386,7 @@ return( NULL );
     }
     getc(cff);				/* Minor version */
     hdrsize = getc(cff);
-    offsize = getc(cff);
+    /*offsize =*/ getc(cff);
     if ( hdrsize!=4 )
 	fseek(cff,hdrsize,SEEK_SET);
     fontnames = readcfffontnames(cff,NULL,NULL);

@@ -192,12 +192,10 @@ return( strm.total_out );
 
 SplineFont *_SFReadWOFF(FILE *woff,int flags,enum openflags openflags, char *filename,char *chosenname,struct fontdict *fd) {
     int flavour;
-    int iscff;
     int len, len_stated;
     int num_tabs;
     int major, minor;
     uint32_t metaOffset, metaLenCompressed, metaLenUncompressed;
-    int privOffset, privLength;
     int i,j,err;
     int tag, offset, compLen, uncompLen, checksum;
     FILE *sfnt;
@@ -216,7 +214,6 @@ SplineFont *_SFReadWOFF(FILE *woff,int flags,enum openflags openflags, char *fil
         }
     }
     flavour = getlong(woff);
-    iscff = (flavour==CHR('O','T','T','O'));
     len_stated = getlong(woff);
     if ( len!=len_stated ) {
 	LogError(_("File length as specified in the WOFF header does not match the actual file length."));
@@ -235,8 +232,8 @@ return( NULL );
     metaOffset = (uint32_t)getlong(woff);
     metaLenCompressed = (uint32_t)getlong(woff);
     metaLenUncompressed = (uint32_t)getlong(woff);
-    privOffset = getlong(woff);
-    privLength = getlong(woff);
+    /*privOffset =*/ getlong(woff);
+    /*privLength =*/ getlong(woff);
 
     sfnt = GFileTmpfile();
     if ( sfnt==NULL ) {

@@ -255,7 +255,6 @@ return( end );
 }
 
 static SplinePoint *_ttfapprox(Spline *ps,real tmin, real tmax, SplinePoint *start) {
-    int dim=0;
     real dx, dy, ddim, dt, t, err;
     real x,y, xmin, ymin;
     real dxdtmin, dydtmin, dxdt, dydt;
@@ -304,10 +303,8 @@ static SplinePoint *_ttfapprox(Spline *ps,real tmin, real tmax, SplinePoint *sta
     if ( dx<0 ) dx = -dx;
     if ( dy<0 ) dy = -dy;
     if ( dx>dy ) {
-	dim = 0;
 	ddim = dx;
     } else {
-	dim = 1;
 	ddim = dy;
     }
     if (( err = ddim/3000 )<1 ) err = 1;

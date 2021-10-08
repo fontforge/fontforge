@@ -1094,7 +1094,7 @@ void SFRemoveUnusedLookupSubTables(SplineFont *sf,
     int gpos;
     struct lookup_subtable *sub, *subnext, *prev;
     AnchorClass *ac, *acprev, *acnext;
-    OTLookup *otl, *otlprev, *otlnext;
+    OTLookup *otl, *otlprev = NULL, *otlnext;
 
     /* Presumes someone has called SFFindUnusedLookups first */
 
@@ -1116,7 +1116,7 @@ void SFRemoveUnusedLookupSubTables(SplineFont *sf,
     }
 
     for ( gpos=0; gpos<2; ++gpos ) {
-	for ( otl = gpos ? sf->gpos_lookups : sf->gsub_lookups; otl!=NULL; otl = otlnext ) {
+	for ( otl = gpos ? sf->gpos_lookups : sf->gsub_lookups; otl!=NULL; otlprev = otl, otl = otlnext ) {
 	    otlnext = otl->next;
 	    if ( remove_unused_lookups && (otl->empty ||
 		    (otl->unused && remove_incomplete_anchorclasses)) ) {

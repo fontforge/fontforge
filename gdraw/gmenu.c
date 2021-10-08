@@ -447,8 +447,6 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y,GWindow pixma
 	GMenuDrawArrow(m,ybase,r2l);
     else
     {
-	uint16 short_mask = mi->short_mask;
-
 	/* TRACE("m->menubar: %p\n", m->menubar ); */
 	/* TRACE("m->parent: %p\n", m->parent ); */
 	/* TRACE("m->toplevel: %p\n", getTopLevelMenubar(m)); */
@@ -472,7 +470,6 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y,GWindow pixma
 						GMenuGetMenuPath( m->mi, mi ));
 	}
 
-	short_mask = 0;
 	shortbuf[0] = '\0';
 
 	if( hk )
@@ -480,7 +477,6 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y,GWindow pixma
 	    /* TRACE("m->menubar->mi: %p\n", toplevel->mi ); */
 	    /* TRACE("m->menubar->window: %p\n", toplevel->g.base ); */
 	    /* TRACE("drawline... hk: %p\n", hk ); */
-	    short_mask = hk->state;
 	    char* keydesc = hk->text;
 	    if( mac_menu_icons )
 	    {
@@ -1349,7 +1345,6 @@ static GMenu *_GMenu_Create( GMenuBar* toplevel,
 	    max_iwidth = temp;
 
 	uc_strcpy(buffer,"");
-	uint16 short_mask = 0;
 	/**
 	 * Grab the hotkey if there is one. First we work out the
 	 * menubar for this menu item, and then get the path from the
@@ -1376,7 +1371,6 @@ static GMenu *_GMenu_Create( GMenuBar* toplevel,
 //	TRACE("hk:%p\n", hk);
 	if( hk )
 	{
-	    short_mask = hk->state;
 	    char* keydesc = hk->text;
 	    if( mac_menu_icons )
 	    {

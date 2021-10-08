@@ -686,7 +686,7 @@ void Wordlist_MoveByOffset( GGadget* g, int* idx, int offset )
     if ( cidx!=-1 )
     {
 	int32 len;
-	GTextInfo **ti = GGadgetGetList(g,&len);
+	GGadgetGetList(g,&len);
 	/* We subtract 3 because: There are two lines saying "load * list" */
 	/*  and then a line with a rule on it which we don't want access to */
 	if ( cidx+offset >=0 && cidx+offset<len-3 )
@@ -694,7 +694,6 @@ void Wordlist_MoveByOffset( GGadget* g, int* idx, int offset )
 	    cidx += offset;
 	    *idx = cidx;
 	    GGadgetSelectOneListItem( g, cidx );
-	    ti = NULL;
 	}
 	Wordlist_touch( g );
     }

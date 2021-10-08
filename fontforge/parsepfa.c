@@ -2092,7 +2092,7 @@ static int glorpline(struct fontparse *fp, FILE *temp, char *rdtok) {
     char *rdline2 = "{string currentfile exch readhexstring pop}";
     char *tokpt = NULL, *rdpt;
     char temptok[255];
-    int intok, first;
+    int intok;
     int inPrivate = 0, inSubrs = 0;
     int wasminus=false, isminus, nibble=0, firstnibble=true, inhex;
     int willbehex = false;
@@ -2108,7 +2108,7 @@ return( 0 );
     }
     innum = inr = 0; wasspace = 0; inbinary = 0; rpt = NULL; rdpt = NULL;
     inhex = 0;
-    pt = buffer; binstart=NULL; binlen = 0; intok=0; sptok=0; first=1;
+    pt = buffer; binstart=NULL; binlen = 0; intok=0; sptok=0;
     temptok[0] = '\0';
     while ( (ch=getc(temp))!=EOF ) {
 	if ( pt>=end ) {
@@ -2253,7 +2253,6 @@ return( 0 );
 	}
 	innum = nownum; wasspace = nowspace; inr = nowr;
 	wasminus = isminus;
-	first = 0;
     } /* end while */
     *pt = '\0';
     if ( binstart==NULL ) {

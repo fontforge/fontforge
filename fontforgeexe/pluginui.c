@@ -438,7 +438,8 @@ static int PLUG_PluginListOrder(GGadget *g, GEvent *e) {
     GGadget *list = GWidgetGetControl(d->gw, CID_PluginList);
     int cid = GGadgetGetCid(g);
     int pos = GGadgetGetFirstListSelectedItem(list), newpos, len;
-    GTextInfo **ti = GGadgetGetList(list, &len);
+    GGadgetGetList(list, &len);
+    (void)len; //only used in asserts
 
     if (pos == -1) {
         return true;    // Shouldn't happen
@@ -479,8 +480,6 @@ static int PLUG_PluginOp(GGadget *g, GEvent *e) {
     if (i == NULL) {
         return true;
     }
-    int len;
-    GTextInfo **ti = GGadgetGetList(list, &len);
     PluginEntry *pe = (PluginEntry *) i->userdata;
     int cid = GGadgetGetCid(g);
 

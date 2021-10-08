@@ -4612,7 +4612,7 @@ static void FeatMarkAsEnabled(struct ttfinfo *info,int featureType,
 static uint32 readmortchain(FILE *ttf,struct ttfinfo *info, uint32 base,
 	int ismorx) {
     uint32 chain_len, nfeatures, nsubtables, default_flags;
-    uint32 enable_flags, disable_flags, flags;
+    uint32 enable_flags, flags;
     int featureType, featureSetting;
     int i,j,k;
     uint32 length, coverage;
@@ -4636,7 +4636,7 @@ static uint32 readmortchain(FILE *ttf,struct ttfinfo *info, uint32 base,
 	featureType = getushort(ttf);
 	featureSetting = getushort(ttf);
 	enable_flags = getlong(ttf);
-	disable_flags = getlong(ttf);
+	/*disable_flags =*/ getlong(ttf);
 	if ( feof(ttf))
 return( chain_len );
 	if ( info->justinuse == git_normal && ( enable_flags & default_flags ))
@@ -4995,13 +4995,13 @@ return;
 	    } else {
 		/* format 3, horizontal kerning data (as classes limited to 256 entries) */
 		/*  OpenType's spec doesn't document this */
-		int gc, kv, flags;
+		int gc, kv;
 		int16 *kvs;
 		gc = getushort(ttf);
 		kv = getc(ttf);
 		kc->first_cnt = getc(ttf);
 		kc->second_cnt = getc(ttf);
-		flags = getc(ttf);
+		/*flags =*/ getc(ttf);
 		if ( gc>info->glyph_cnt ) {
 		    LogError( _("Kerning subtable 3 says the glyph count is %d, but maxp says %d\n"),
 			    gc, info->glyph_cnt );

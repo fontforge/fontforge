@@ -601,7 +601,7 @@ SplineFont *SFReadIkarus(char *fontname) {
     FILE *file = fopen(fontname,"rb");
     int ch1, ch2, rpos, wpos, i;
     int hlen, ilen, jlen, llen, mlen;
-    int numchars, maxnum, opt_pt_size;
+    int numchars, maxnum;
     double italic_angle;
     char fnam[13], fullname[81];
     int32 *offsets, *numbers;
@@ -659,7 +659,7 @@ return( NULL );
     /* line thickness = */ getushort(file);
     /* stroke thickness = */ getushort(file);
     italic_angle = getushort(file)/10.0 * FF_PI/180.0;
-    opt_pt_size = getushort(file);
+    /*opt_pt_size =*/ getushort(file);
     /* average char width = */ getushort(file);
 
     fseek(file,2*ilen+2*jlen+2,SEEK_SET);

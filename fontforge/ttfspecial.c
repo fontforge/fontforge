@@ -1257,11 +1257,11 @@ return;
 
 static void pfed_read_spiro_contour(FILE *ttf,SplineSet *ss,
 	uint32 base, int type) {
-    int i, ch;
+    int ch;
 
     fseek(ttf,base,SEEK_SET);
 
-    for ( i=0; ; ) {
+    for (;;) {
 	ch = getc(ttf);
 	if ( ch!=SPIRO_OPEN_CONTOUR && ch!=SPIRO_CORNER && ch!=SPIRO_G4 &&
 		ch!=SPIRO_G2 && ch!=SPIRO_LEFT && ch!=SPIRO_RIGHT &&
@@ -1296,7 +1296,7 @@ static void pfed_read_spiro_contour(FILE *ttf,SplineSet *ss,
 
 static void pfed_read_glyph_layer(FILE *ttf,struct ttfinfo *info,Layer *ly,
 	uint32 base, int type, int version) {
-    int cc, ic, rc, i, j;
+    int cc, rc, i, j;
     SplineSet *ss;
     struct contours { int data_off, name_off; SplineSet *ss; } *contours;
     int gid;
@@ -1307,7 +1307,7 @@ static void pfed_read_glyph_layer(FILE *ttf,struct ttfinfo *info,Layer *ly,
     rc = 0;
     if ( version==1 )
 	rc = getushort(ttf);		/* References */
-    ic = getushort(ttf);		/* Images */
+    /*ic =*/ getushort(ttf);		/* Images */
     contours = malloc(cc*sizeof(struct contours));
     for ( i=0; i<cc; ++i ) {
 	contours[i].data_off = getushort(ttf);
