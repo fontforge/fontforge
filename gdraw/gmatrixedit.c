@@ -1101,7 +1101,7 @@ return;
 	gme->data[gme->active_row*gme->cols+i] = gme->data[(gme->active_row-1)*gme->cols+i];
 	gme->data[(gme->active_row-1)*gme->cols+i] = md;
     }
-    --gme->active_row;;
+    --gme->active_row;
     GGadgetGetSize(gme->tf,&r);
     GGadgetMove(gme->tf,r.x,r.y-(gme->fh+1));
     GME_EnableDelete(gme);
@@ -1129,7 +1129,7 @@ return;
 	gme->data[gme->active_row*gme->cols+i] = gme->data[(gme->active_row+1)*gme->cols+i];
 	gme->data[(gme->active_row+1)*gme->cols+i] = md;
     }
-    ++gme->active_row;;
+    ++gme->active_row;
     GGadgetGetSize(gme->tf,&r);
     GGadgetMove(gme->tf,r.x,r.y-(gme->fh+1));
     GME_EnableDelete(gme);

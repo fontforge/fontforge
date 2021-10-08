@@ -32,7 +32,7 @@ extern void _GXCDraw_FillPoly(GXWindow gw, GPoint *pts, int16 cnt);
 
 extern void _GXCDraw_Image( GXWindow gw, GImage *image, GRect *src, int32 x, int32 y);
 extern void _GXCDraw_TileImage( GXWindow gw, GImage *image, GRect *src, int32 x, int32 y);
-extern void _GXCDraw_Glyph( GXWindow gw, GImage *image, GRect *src, int32 x, int32 y);;
+extern void _GXCDraw_Glyph( GXWindow gw, GImage *image, GRect *src, int32 x, int32 y);
 extern void _GXCDraw_ImageMagnified(GXWindow gw, GImage *image, GRect *magsrc,
 	int32 x, int32 y, int32 width, int32 height);
 extern void _GXCDraw_CopyArea( GXWindow from, GXWindow into, GRect *src, int32 x, int32 y);

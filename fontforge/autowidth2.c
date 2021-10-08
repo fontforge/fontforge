@@ -1037,7 +1037,7 @@ return;
     free(rused);
     free(visual_separation);
 	
-    kc->offsets = calloc(lclasscnt*rclasscnt,sizeof(int16));;
+    kc->offsets = calloc(lclasscnt*rclasscnt,sizeof(int16));
     kc->adjusts = calloc(lclasscnt*rclasscnt,sizeof(DeviceTable));
 
     if ( autokern )

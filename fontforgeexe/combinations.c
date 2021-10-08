@@ -1243,7 +1243,7 @@ return;
     GHVBoxSetExpandableCol(boxes[4].ret,gb_expandgluesame);
     GHVBoxSetPadding(boxes[0].ret,0,2);
     GHVBoxSetPadding(boxes[3].ret,0,0);
-    kpd.v = GDrawableGetWindow(gcd[4].ret);;
+    kpd.v = GDrawableGetWindow(gcd[4].ret);
 
     GGadgetGetSize(gcd[4].ret,&pos);
     kpd.sb_width = pos.width;

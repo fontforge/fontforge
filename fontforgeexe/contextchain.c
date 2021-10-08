@@ -2351,7 +2351,7 @@ void ContextChainEdit(SplineFont *sf,FPST *fpst,
 	glyphs_mi.initial_row_cnt = fpst->rule_cnt;
 	md = calloc(fpst->rule_cnt,sizeof(struct matrix_data));
 	for ( j=0; j<fpst->rule_cnt; ++j ) {
-	    md[j+0].u.md_str = FPSTRule_To_Str(sf,fpst,&fpst->rules[j]);;
+	    md[j+0].u.md_str = FPSTRule_To_Str(sf,fpst,&fpst->rules[j]);
 	}
 	glyphs_mi.matrix_data = md;
     } else {
@@ -2929,7 +2929,7 @@ void ContextChainEdit(SplineFont *sf,FPST *fpst,
 	classsimple_mi.initial_row_cnt = tempfpst->rule_cnt;
 	md = calloc(tempfpst->rule_cnt,sizeof(struct matrix_data));
 	for ( j=0; j<tempfpst->rule_cnt; ++j ) {
-	    md[j+0].u.md_str = FPSTRule_To_Str(sf,tempfpst,&tempfpst->rules[j]);;
+	    md[j+0].u.md_str = FPSTRule_To_Str(sf,tempfpst,&tempfpst->rules[j]);
 	}
 	classsimple_mi.matrix_data = md;
     } else {

@@ -695,7 +695,7 @@ return;
 		cv->lbearingsel = true;
 	    if ( cv->lbearingsel ) {
 //		cv->oldlbearing = cv->b.sc->lbearing;
-		fs->p->cx = 0;;
+		fs->p->cx = 0;
 		CVInfoDraw(cv,cv->gw);
 		fs->p->anysel = true;
 		cv->expandedge = ee_left;
