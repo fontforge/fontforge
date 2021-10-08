@@ -92,7 +92,6 @@ typedef struct ff_point {
     uint8 interpolated;
     char *name;
 } PyFF_Point;
-static PyTypeObject PyFF_PointType;
 
 typedef struct ff_contour {
     PyObject_HEAD
@@ -124,27 +123,23 @@ typedef struct {
     uint8 changed;
     int layer;
 } PyFF_GlyphPen;
-static PyTypeObject PyFF_GlyphPenType;
 
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
     SplineChar *sc;
 } PyFF_LayerArray;
-static PyTypeObject PyFF_LayerArrayType;
 
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
     SplineChar *sc;
 } PyFF_RefArray;
-static PyTypeObject PyFF_RefArrayType;
 
 typedef struct glyphmathkernobject {
     PyObject_HEAD
     SplineChar *sc;
 } PyFF_MathKern;
-static PyTypeObject PyFF_MathKernType;
 
 typedef struct {
     PyObject_HEAD
@@ -155,7 +150,6 @@ typedef struct {
     PyFF_MathKern *mk;
     int layer;
 } PyFF_Glyph;
-static PyTypeObject PyFF_GlyphType;
 
 typedef struct {
     PyObject_HEAD
@@ -163,14 +157,12 @@ typedef struct {
     SplineFont *sf;
     int layer;
 } PyFF_LayerInfo;
-static PyTypeObject PyFF_LayerInfoType;
 
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
     SplineFont *sf;
 } PyFF_LayerInfoArray;
-static PyTypeObject PyFF_LayerInfoArrayType;
 
 typedef struct {
     PyObject_HEAD
@@ -178,7 +170,6 @@ typedef struct {
     SplineFont *sf;
     FontViewBase *fv;
 } PyFF_Private;
-static PyTypeObject PyFF_PrivateType;
 
 typedef struct {
     PyObject_HEAD
@@ -186,7 +177,6 @@ typedef struct {
     FontViewBase *fv;
     int by_glyphs;
 } PyFF_Selection;
-static PyTypeObject PyFF_SelectionType;
 
 typedef struct {
     PyObject_HEAD
@@ -194,13 +184,11 @@ typedef struct {
     SplineFont *sf;
     struct ttf_table *cvt;
 } PyFF_Cvt;
-static PyTypeObject PyFF_CvtType;
 
 typedef struct fontmathobject {
     PyObject_HEAD
     SplineFont *sf;
 } PyFF_Math;
-static PyTypeObject PyFF_MathType;
 
 typedef struct {
     PyObject_HEAD
@@ -212,7 +200,6 @@ typedef struct {
     PyFF_Selection *selection;
     PyFF_Math *math;
 } PyFF_Font;
-static PyTypeObject PyFF_FontType;
 
 extern PyMethodDef PyFF_Font_methods[];
 extern PyMethodDef module_fontforge_methods[];
