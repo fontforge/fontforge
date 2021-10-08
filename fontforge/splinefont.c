@@ -244,7 +244,7 @@ return( _SFMakeChar(sf,map,enc));
 }
 
 int NameToEncoding(SplineFont *sf,EncMap *map,const char *name) {
-    int enc, uni, i, ch;
+    int enc, uni, ch;
     char *end, *freeme=NULL;
     const char *upt = name;
 

@@ -2167,7 +2167,6 @@ return( sf );
 
 Entity *EntityInterpretPDFPage(FILE *pdf,int select_page) {
     struct pdfcontext pc;
-    char oldloc[24];
     Entity *ent;
     char *ret;
     int choice;

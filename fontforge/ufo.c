@@ -155,7 +155,6 @@ char * ufo_name_mangle(const char * input, const char * prefix, const char * suf
   size_t prefix_length = strlen(prefix);
   size_t max_length = 255 - prefix_length - strlen(suffix);
   size_t input_length = strlen(input);
-  size_t stop_pos = ((max_length < input_length) ? max_length : input_length); // Minimum.
   size_t output_length_1 = input_length;
   if (flags & 1) output_length_1 += count_caps(input); // Add space for underscore pads on caps.
   off_t output_pos = 0;
@@ -385,11 +384,9 @@ static char* normalizeToASCII(char *str) {
 xmlDocPtr PlistInit() {
     // Some of this code is pasted from libxml2 samples.
     xmlDocPtr doc = NULL;
-    xmlNodePtr root_node = NULL, dict_node = NULL;
+    xmlNodePtr root_node = NULL;
     xmlDtdPtr dtd = NULL;
     
-    char buff[256];
-    int i, j;
 
     LIBXML_TEST_VERSION;
 
@@ -436,7 +433,7 @@ static void PListAddDate(xmlNodePtr parent, const char *key, time_t timestamp) {
 
 void PListAddString(xmlNodePtr parent, const char *key, const char *value) {
     if ( value==NULL ) value = "";
-    xmlNodePtr keynode = xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key); // "<key>%s</key>" key
+    xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key); // "<key>%s</key>" key
 #ifdef ESCAPE_LIBXML_STRINGS
     size_t main_size = strlen(value) +
                        (count_occurrence(value, "<") * (strlen("&lt")-strlen("<"))) +
@@ -460,9 +457,9 @@ void PListAddString(xmlNodePtr parent, const char *key, const char *value) {
         }
 	++value;
     }
-    xmlNodePtr valnode = xmlNewChild(parent, NULL, BAD_CAST "string", tmpstring); // "<string>%s</string>" tmpstring
+    xmlNewChild(parent, NULL, BAD_CAST "string", tmpstring); // "<string>%s</string>" tmpstring
 #else
-    xmlNodePtr valnode = xmlNewTextChild(parent, NULL, BAD_CAST "string", value); // "<string>%s</string>" tmpstring
+  xmlNewTextChild(parent, NULL, BAD_CAST "string", value); // "<string>%s</string>" tmpstring
 #endif
 }
 
@@ -606,7 +603,7 @@ int stringInStrings(const char *target, const char **reference) {
 
 xmlNodePtr PythonLibToXML(void *python_persistent, const SplineChar *sc, int has_lists) {
     int has_hints = (sc!=NULL && (sc->hstem!=NULL || sc->vstem!=NULL ));
-    xmlNodePtr retval = NULL, dictnode = NULL, keynode = NULL, valnode = NULL;
+    xmlNodePtr retval = NULL, dictnode = NULL;
     // retval = xmlNewNode(NULL, BAD_CAST "lib"); //     "<lib>"
     dictnode = xmlNewNode(NULL, BAD_CAST "dict"); //     "  <dict>"
     if ( has_hints 
@@ -631,7 +628,6 @@ xmlNodePtr PythonLibToXML(void *python_persistent, const SplineChar *sc, int has
                     //                                   "      <array>"
                     xmlNodePtr hintarray = xmlNewChild(hintdict, NULL, BAD_CAST "array", NULL);
                     for ( h = sc->hstem; h!=NULL; h=h->next ) {
-                        char * valtmp = NULL;
                         xmlNodePtr stemdict = xmlNewChild(hintarray, NULL, BAD_CAST "dict", NULL);
 		        //                               "        <dict>"
                         xmlNewChild(stemdict, NULL, BAD_CAST "key", "position");
@@ -653,7 +649,6 @@ xmlNodePtr PythonLibToXML(void *python_persistent, const SplineChar *sc, int has
                     //                                   "      <array>"
                     xmlNodePtr hintarray = xmlNewChild(hintdict, NULL, BAD_CAST "array", NULL);
                     for ( h = sc->vstem; h!=NULL; h=h->next ) {
-                        char * valtmp = NULL;
                         xmlNodePtr stemdict = xmlNewChild(hintarray, NULL, BAD_CAST "dict", NULL);
                         //                               "        <dict>"
                         xmlNewChild(stemdict, NULL, BAD_CAST "key", "position");
@@ -836,7 +831,6 @@ xmlNodePtr _GlifToXML(const SplineChar *sc, int layer, int version) {
     const SplinePoint *sp;
     const AnchorPoint *ap;
     const RefChar *ref;
-    int err;
     char * stringtmp = NULL;
     char numstring[32];
     memset(numstring, 0, sizeof(numstring));
@@ -1019,7 +1013,6 @@ xmlNodePtr _GlifToXML(const SplineChar *sc, int layer, int version) {
     xmlNodePtr componentxml = xmlNewChild(outlinexml, NULL, BAD_CAST "component", NULL);
     xmlSetPropPrintf(componentxml, BAD_CAST "base", "%s", ref->sc->name);
 		// "<component base=\"%s\"" ref->sc->name
-    char *floattmp = NULL;
 		if ( ref->transform[0]!=1 ) {
                   xmlSetPropPrintf(componentxml, BAD_CAST "xScale", "%g", (double) ref->transform[0]);
 		    // "xScale=\"%g\"" (double)ref->transform[0]
@@ -1189,7 +1182,6 @@ static real AngleFromPoints(BasePoint p0, BasePoint p1) {
 }
 
 static GuidelineSet *SplineToGuideline(SplineFont *sf, SplineSet *ss) {
-	SplinePoint *sp1, *sp2;
 	if (ss == NULL) return NULL;
 	if (ss->first == NULL || ss->last == NULL || ss->first == ss->last)
 	return NULL;
@@ -1210,7 +1202,6 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer, int
     xmlNodePtr dictnode = xmlNewChild(rootnode, NULL, BAD_CAST "dict", NULL); if (dictnode == NULL) { xmlFreeDoc(plistdoc); return false; } // Add the dict.
 
     DBounds bb;
-    double test;
 
 /* Same keys in both formats */
     PListAddString(dictnode,"familyName",sf->familyname_with_timestamp ? sf->familyname_with_timestamp : sf->familyname);
@@ -1423,7 +1414,6 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer, int
     PListAddString(dictnode,"macintoshFONDName",sf->fondname);
     // If the version is 3 and the grid layer exists, emit a guidelines group.
     if (version > 2) {
-        xmlNodePtr glkeynode = xmlNewChild(dictnode, NULL, BAD_CAST "key", "guidelines");
         xmlNodePtr gllistnode = xmlNewChild(dictnode, NULL, BAD_CAST "array", NULL);
         SplineSet *ss = NULL;
         for (ss = sf->grid.splines; ss != NULL; ss = ss->next) {
@@ -1541,7 +1531,6 @@ void UFONameKerningClasses(SplineFont *sf, int version) {
 }
 
 static int UFOOutputGroups(const char *basedir, SplineFont *sf, int version) {
-    SplineChar *sc;
     int has_content = 0;
 
     xmlDocPtr plistdoc = PlistInit(); if (plistdoc == NULL) return false; // Make the document.
@@ -1578,7 +1567,6 @@ static int UFOOutputGroups(const char *basedir, SplineFont *sf, int version) {
               struct kernclass *kc;
               int isv;
               int isr;
-              int i;
               int offset;
               if (KerningClassSeekByAbsoluteIndex(sf, absolute_index, &kc, &isv, &isr, &offset)) {
                 // The group still exists.
@@ -1726,8 +1714,6 @@ void ufo_kerning_tree_destroy_contents(struct ufo_kerning_tree_session *session)
 
 int ufo_kerning_tree_attempt_insert(struct ufo_kerning_tree_session *session, const char *left_name, const char *right_name, int value) {
   char *tmppairname = smprintf("%s %s", left_name, right_name);
-  struct ufo_kerning_tree_left *first_left = NULL;
-  struct ufo_kerning_tree_left *last_left = NULL;
   if (!glif_name_search_glif_name(session->class_pair_hash, tmppairname)) {
     struct ufo_kerning_tree_left *current_left;
     // We look for a tree node matching the left side of the pair.
@@ -1874,8 +1860,6 @@ static int UFOOutputKerning2(const char *basedir, SplineFont *sf, int isv, int v
     {
       // Oh. But we've not finished yet. New class kerns may not be in the original list.
       struct kernclass *kc;
-      char *left_name;
-      char *right_name;
       for (kc = isv ? sf->vkerns : sf->kerns; kc != NULL; kc = kc->next)
       if (kc->firsts_names && kc->seconds_names && kc->firsts_flags && kc->seconds_flags &&
         kc->offsets_flags)
@@ -1993,9 +1977,8 @@ int WriteUFOLayer(const char * glyphdir, SplineFont * sf, int layer, int version
 
 int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff, int flags,
 	const EncMap *map, int layer, int all_layers, int version) {
-    char *glyphdir, *gfname;
+    char *glyphdir;
     int err;
-    FILE *plist;
     int i;
     SplineChar *sc;
 
@@ -2794,7 +2777,6 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 		    xmlNodePtr npoints;
 
 			// We now look for anchor points.
-            char *sname;
 
             for ( points=contour->children; points!=NULL; points=points->next )
                 if ( xmlStrcmp(points->name,(const xmlChar *) "point")==0 )
@@ -3504,11 +3486,10 @@ static void UFOHandleGroups(SplineFont *sf, char *basedir) {
     char *fname = buildname(basedir, "groups.plist");
     xmlDocPtr doc=NULL;
     xmlNodePtr plist,dict,keys,value,subkeys;
-    char *keyname, *valname;
+    char *keyname;
     struct ff_glyphclasses *current_group = NULL;
     // We want to start at the end of the list of groups already in the SplineFont (probably not any right now).
     for (current_group = sf->groups; current_group != NULL && current_group->next != NULL; current_group = current_group->next);
-    int group_count;
 
     if ( GFileExists(fname))
 	doc = xmlParseFile(fname);
@@ -3817,10 +3798,11 @@ return;
 		      LogError(_("kerning.plist defines kerning between two glyphs that are already partially kerned.")); continue;
 		    }
 		  } else if (left_class_name_record && right_class_name_record) {
-		    struct kernclass *left_kc, *right_kc;
+		    struct kernclass *left_kc = NULL, *right_kc = NULL;
 		    int left_isv, right_isv, left_isr, right_isr, left_offset, right_offset;
-		    int left_exists = KerningClassSeekByAbsoluteIndex(sf, left_class_name_record->gid, &left_kc, &left_isv, &left_isr, &left_offset);
-		    int right_exists = KerningClassSeekByAbsoluteIndex(sf, right_class_name_record->gid, &right_kc, &right_isv, &right_isr, &right_offset);
+		    KerningClassSeekByAbsoluteIndex(sf, left_class_name_record->gid, &left_kc, &left_isv, &left_isr, &left_offset);
+		    KerningClassSeekByAbsoluteIndex(sf, right_class_name_record->gid, &right_kc, &right_isv, &right_isr, &right_offset);
+
 		    if ((left_kc == NULL) || (right_kc == NULL)) { LogError(_("kerning.plist references a missing kerning class.")); continue; } // I don't know how this would happen, at least as the code is now, but we do need to throw an error.
 		    if ((left_kc != right_kc)) { LogError(_("kerning.plist defines an offset between classes in different lookups.")); continue; }
 		    if ((left_offset > left_kc->first_cnt) || (right_offset > right_kc->second_cnt)) { LogError(_("There is a kerning class index error.")); continue; }

@@ -890,10 +890,6 @@ return( NULL );
 return( space );
 }
 
-static unichar_t txt[] = { '*','.','{','t','x','t',',','p','y','}',  '\0' };
-static unichar_t errort[] = { 'C','o','u','l','d',' ','n','o','t',' ','o','p','e','n',  '\0' };
-static unichar_t error[] = { 'C','o','u','l','d',' ','n','o','t',' ','o','p','e','n',' ','%','.','1','0','0','h','s',  '\0' };
-
 bool GTextFieldIsEmpty(GGadget *g) {
     GTextField *gt = (GTextField *) g;
     return gt->text == NULL || *gt->text == '\0';
@@ -1393,7 +1389,6 @@ return;
 }
 
 static void gt_draw_cursor(GWindow pixmap, GTextField *gt) {
-    GRect old;
     int x, y, l;
 
     if (gt->has_dd_cursor) {

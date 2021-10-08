@@ -1500,7 +1500,6 @@ return( head );
 
 SplinePointList *SplinePointListCopySelected(SplinePointList *base) {
     SplinePointList *head=NULL, *last=NULL, *cur=NULL;
-    SplinePoint *pt, *first;
     bool anysel, allsel;
 
     for ( ; base!=NULL; base = base->next ) {
@@ -1523,7 +1522,6 @@ return( head );
 SplinePointList *SplinePointListCopySpiroSelected(SplinePointList *base) {
     SplinePointList *head=NULL, *last=NULL, *cur=NULL;
     bool anysel, allsel;
-    int i;
 
     for ( ; base!=NULL; base = base->next ) {
 	anysel = SplinePointListCheckSelected1(base, true, &allsel, true);
@@ -1653,7 +1651,6 @@ return( last );
 
 SplinePointList *SplinePointListRemoveSelected(SplineChar *sc,SplinePointList *base) {
     SplinePointList *head=NULL, *last=NULL, *next;
-    SplinePoint *pt, *first;
     bool anysel, allsel;
 
     for ( ; base!=NULL; base = next ) {
@@ -6758,7 +6755,6 @@ int CountKerningClasses(SplineFont *sf) {
     struct kernclass *current_kernclass;
     int isv;
     int isr;
-    int i;
     int absolute_index = 0; // This gives us a unique index for each kerning class.
     // First we catch the existing names.
     absolute_index = 0;
@@ -6860,7 +6856,6 @@ int HashKerningClassNamesCaps(SplineFont *sf, struct glif_name_index * class_nam
 }
 
 int KerningClassSeekByAbsoluteIndex(const struct splinefont *sf, int seek_index, struct kernclass **okc, int *oisv, int *oisr, int *ooffset) {
-    int current = 0;
     struct kernclass *current_kernclass;
     int isv;
     int isr;

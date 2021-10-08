@@ -2270,7 +2270,6 @@ static void KCD_RowMotion(GGadget *g,int oldr, int newr) {
 	    kcd->adjusts[newr*kcd->second_cnt + i] = tempdt;
 	    // Group kerning.
 	    if (kcd->offsets_flags) {
-	      int offflag = kcd->offsets_flags[oldr*kcd->second_cnt + i];
 	      kcd->offsets_flags[oldr*kcd->second_cnt + i] = kcd->offsets_flags[newr*kcd->second_cnt + i];
 	      kcd->offsets_flags[newr*kcd->second_cnt + i] = off;
 	    }
@@ -2296,7 +2295,6 @@ static void KCD_RowMotion(GGadget *g,int oldr, int newr) {
 	    kcd->adjusts[i*kcd->second_cnt + newr] = tempdt;
 	    // Group kerning.
 	    if (kcd->offsets_flags) {
-	      int offflag = kcd->offsets_flags[i*kcd->second_cnt + oldr];
 	      kcd->offsets_flags[i*kcd->second_cnt + oldr] = kcd->offsets_flags[i*kcd->second_cnt + newr];
 	      kcd->offsets_flags[i*kcd->second_cnt + newr] = off;
 	    }

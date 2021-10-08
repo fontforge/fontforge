@@ -146,7 +146,6 @@ static int _Stroke_OK(StrokeDlg *sd,int isapply) {
     int err;
     GWindow sw = sd->gw;
     GGadget *clg;
-    const char *msg;
 
     assert( sd->si!=NULL );
     if ( isapply )
@@ -531,7 +530,6 @@ struct cvcontainer_funcs stroke_funcs = {
 
 
 static void StrokeInit(StrokeDlg *sd) {
-    real transform[6];
 
     sd->base.funcs = &stroke_funcs;
 

@@ -4243,7 +4243,6 @@ Undoes *SFDGetUndo( FILE *sfd, SplineChar *sc,
     RefChar *lastr=NULL;
     ImageList *lasti=NULL;
     AnchorPoint *lastap = NULL;
-    GuidelineSet *lastgl = NULL;
     SplineChar* tsc = 0;
 
     if ( getname(sfd,tok)!=1 )
@@ -9128,7 +9127,7 @@ return( SFD_Read(filename,NULL,true));
 SplineChar *SFDReadOneChar(SplineFont *cur_sf,const char *name) {
     FILE *sfd;
     SplineChar *sc=NULL;
-    char oldloc[25], tok[2000];
+    char  tok[2000];
     uint32 pos;
     SplineFont sf;
     LayerInfo layers[2];

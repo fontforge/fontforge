@@ -44,11 +44,9 @@ extern int interpCPsOnMotion;
 int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi, int *anya) {
     int anypoints = 0, anyrefs=0, anyimages=0, anyanchor=0;
     SplinePointList *spl;
-    Spline *spline, *first;
     RefChar *rf;
     ImageList *il;
     AnchorPoint *ap;
-    int i;
 
     for ( spl = cv->b.layerheads[cv->b.drawmode]->splines; spl!=NULL && !anypoints; spl = spl->next ) {
         anypoints = SplinePointListCheckSelected1(spl, cv->b.sc->inspiro && hasspiro(), NULL, true);

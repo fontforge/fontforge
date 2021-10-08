@@ -777,7 +777,6 @@ int FONFontDump(char *filename,SplineFont *sf, int32 *sizes,int resol,
     NE_TYPEINFO rc_type;
     NE_NAMEINFO rc_name;
     unsigned short first_res = 0x0050, pad, res;
-    struct _fnt_header *fnt_header;
     char buf[0x1000];
     int nread;
 

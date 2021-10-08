@@ -712,7 +712,6 @@ return( 0 );
 	// and alert them to the fact that we have done this and we
 	// are not saving to a OTF, TTF, UFO formatted file
 
-	char* extension = ".sfd";
 	char* newpath = copyn( filename, strlen(filename) + strlen(".sfd") + 1 );
 	strcat( newpath, ".sfd" );
 

@@ -915,7 +915,6 @@ static int MVSetVSb(MetricsView *mv);
 void MVRefreshMetric(MetricsView *mv) {
     double iscale = mv->pixelsize_set_by_window ? 1.0 : mv_scales[mv->scale_index];
     double scale = iscale*mv->pixelsize/(double) (mv->sf->ascent+mv->sf->descent);
-    SplineFont *sf = mv->sf;
     int cnt;
     // Count the valid glyphs and segfault if there is no null splinechar terminator.
     for ( cnt=0; mv->glyphs[cnt].sc!=NULL; ++cnt );
@@ -945,16 +944,12 @@ void MVRefreshMetric(MetricsView *mv) {
 
 static void MVRemetric(MetricsView *mv) {
     SplineChar *anysc, *goodsc;
-    int i, cnt, x, y, goodpos;
+    int i, cnt, goodpos;
     const unichar_t *_script = _GGadgetGetTitle(mv->script);
     uint32 script, lang, *feats;
     char buf[20];
     int32 len;
     GTextInfo **ti;
-    SplineChar *sc;
-    BDFChar *bdfc;
-    double iscale = mv->pixelsize_set_by_window ? 1.0 : mv_scales[mv->scale_index];
-    double scale = iscale*mv->pixelsize/(double) (mv->sf->ascent+mv->sf->descent);
     SplineFont *sf;
 
     anysc = goodsc = NULL; goodpos = -1;
@@ -1505,8 +1500,6 @@ return( false );
 	    {
 		
 		GGadget *g = mv->perchar[i].kern;
-		unichar_t *end;
-		int val = u_strtol(_GGadgetGetTitle(g),&end,10);
 
 		MV_ChangeKerning_Nested = 1;
 		int which = (intpt) GGadgetGetUserData(g);

@@ -290,7 +290,6 @@ u_WordlistEscapedInputStringToRealString_readGlyphName(
 		unichar_t* endptr = 0, *tmp_gn;
 		int gn_len;
 		long unicodepoint = u_strtoul( glyphname+3, &endptr, 16 );
-		char c;
 		SplineChar* tmp = 0;
 		TRACE("uni prefix, codepoint: %ld\n", unicodepoint );
 		sc = SFGetChar( sf, unicodepoint, 0 );
@@ -755,7 +754,6 @@ static GArray* Wordlist_selectedToBitmapArray( GArray* a )
 unichar_t* Wordlist_selectionClear( SplineFont* sf, EncMap *map, unichar_t* txtu )
 {
     static unichar_t ret[ PATH_MAX ];
-    int limit = PATH_MAX;
     memset( ret, 0, sizeof(unichar_t) * PATH_MAX );
 
     unichar_t *dst = ret;
@@ -890,7 +888,6 @@ unichar_t* Wordlist_advanceSelectedCharsBy( SplineFont* sf, EncMap *map, unichar
 static unichar_t* Wordlist_selectionStringOnly( unichar_t* txtu, int* haveSelection )
 {
     static unichar_t ret[ PATH_MAX ];
-    int limit = PATH_MAX;
     memset( ret, 0, sizeof(unichar_t) * PATH_MAX );
     *haveSelection = 0;
     

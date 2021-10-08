@@ -1276,10 +1276,9 @@ static void SVGTraceArc(SplineSet *cur,BasePoint *current,
 	double x,double y,double rx,double ry,double axisrot,
 	int large_arc,int sweep) {
     BasePoint ang, ut_fm, ut_to, c, foc1, foc2, tmp;
-    double x1p, y1p, fd, sqdiff;
+    double x1p, y1p, sqdiff;
     double lambda, factor;
-    double cxp, cyp, cx, cy;
-    SplinePoint *sp;
+    double cxp, cyp;
 
     if ( rx < 0 ) rx = -rx;
     if ( ry < 0 ) ry = -ry;

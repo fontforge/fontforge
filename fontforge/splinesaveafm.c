@@ -1096,7 +1096,7 @@ return( sc!=NULL &&
 }
 
 int SCHasData(SplineChar *sc) {
-    int layer,l;
+    int layer;
 
     if ( sc==NULL )
 return( false );

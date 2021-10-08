@@ -2897,7 +2897,7 @@ static SplinePointList *SplinesFromLayers(SplineChar *sc,
                                           ImportParams *ip,
                                           int tostroke) {
     int layer;
-    SplinePointList *head=NULL, *last, *nlast, *temp, *each, *transed;
+    SplinePointList *head=NULL, *last, *temp, *transed;
     StrokeInfo si;
     /*SplineSet *spl;*/
     real inversetrans[6], transform[6];
@@ -3090,11 +3090,10 @@ void EntityDefaultStrokeFill(Entity *ent) {
 SplinePointList *SplinesFromEntityChar(EntityChar *ec, ImportParams *ip,
                                        int is_stroked) {
     Entity *ent, *next;
-    SplinePointList *head=NULL, *last, *nlast, *temp, *each, *transed;
+    SplinePointList *head=NULL, *last, *temp, *transed;
     StrokeInfo si;
     real inversetrans[6];
     /*SplineSet *spl;*/
-    int ask = false;
 
     EntityDefaultStrokeFill(ec->splines);
 

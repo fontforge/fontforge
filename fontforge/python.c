@@ -1708,7 +1708,7 @@ static int multiDlgDecodeCategory(MultiDlgCategory *category, PyObject *spec, Py
 
 PyObject *multiDlgExtractAnswers(MultiDlgSpec *dspec) {
     PyObject *r = PyDict_New(), *k, *v, *vtuple;
-    int c, q, a, acnt, ai;
+    int c, q, a, ai;
 
     for ( c=0; c<dspec->len; ++c ) {
 	MultiDlgCategory *cspec = dspec->categories + c;

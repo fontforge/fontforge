@@ -2143,7 +2143,7 @@ return( (SplineFont *) names );
 
     for ( i=0; i<subcnt; ++i ) {
 	/* resource id = */ getushort(f);
-	/* rname = */ (short) getushort(f);
+	/* rname = */ getushort(f);
 	/* flags = */ getc(f);
 	ch1 = getc(f); ch2 = getc(f);
 	roff = rdata_pos+((ch1<<16)|(ch2<<8)|getc(f));

@@ -4732,8 +4732,8 @@ static void fea_ParseSubstitute(struct parseState *tok) {
     /* reversesub <marked glyph sequence> by <name> => reverse context chaining */
     int is_reverse = tok->type == tk_reversesub;
     struct markedglyphs *glyphs = fea_ParseMarkedGlyphs(tok,false,true,false),
-	    *g, *rpl, *rp;
-    int cnt, i, has_lookups, mk_num;
+	    *g, *rpl;
+    int cnt, has_lookups, mk_num;
     SplineChar *sc;
     struct feat_item *item, *head;
 
@@ -5390,8 +5390,6 @@ static void fea_ParseFeatureDef(struct parseState *tok) {
     uint32 feat_tag;
     struct feat_item *item, *size_item = NULL;
     int type, ret;
-    enum otlookup_type lookuptype;
-    int has_single, has_multiple, has_ligature, has_alternate;
 
     fea_ParseTag(tok);
     if ( tok->type!=tk_name || !tok->could_be_tag ) {

@@ -31,13 +31,13 @@
 #include "ggadget.h"
 #include "gwidgetP.h"
 
+#ifndef FONTFORGE_CAN_USE_GDK
 /* Temporarily do all drawing in this widget to a pixmap rather than the window */
 /*  if events are orderly then we can share one pixmap for all windows */
 static GWindow pixmap, cairo_pixmap;
 /*  otherwise we create and destroy pixmaps */
 
 GWindow _GWidget_GetPixmap(GWindow gw,GRect *rect) {
-#ifndef FONTFORGE_CAN_USE_GDK
     GWindow ours;
 
     if ( gw->display!=screen_display )
@@ -80,11 +80,13 @@ return( gw );
 	GDrawFillRect(ours,rect,gw->ggc->bg);
     }
 return( ours );
-#else
-    GDrawFillRect(gw, rect, gw->ggc->bg);
-    return gw;
-#endif /* FONTFORGE_CAN_USE_GDK */
 }
+#else
+GWindow _GWidget_GetPixmap(GWindow gw,GRect *rect) {
+	GDrawFillRect(gw, rect, gw->ggc->bg);
+    return gw;
+}
+#endif /* FONTFORGE_CAN_USE_GDK */
 
 void _GWidget_RestorePixmap(GWindow gw, GWindow ours, GRect *rect) {
 #ifndef FONTFORGE_CAN_USE_GDK

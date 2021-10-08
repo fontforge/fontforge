@@ -3165,7 +3165,6 @@ static void bSelectByColor(Context *c) {
 
 /* **** Element Menu **** */
 static void bReencode(Context *c) {
-    Encoding *new_enc;
     int force = 0;
     int ret;
 
