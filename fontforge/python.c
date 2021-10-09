@@ -19956,7 +19956,7 @@ return;
 
 /* This function is called when fontforge is being imported into
 ** a python process.  Actually python first invokes the wrapper
-** functions in the pyhook/*.c files; and those then call this
+** functions in the pyhook/ *.c files; and those then call this
 ** function.
 */
 PyMODINIT_FUNC fontforge_python_init(const char* modulename) {

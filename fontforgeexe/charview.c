@@ -3862,9 +3862,9 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
 
     int oldactiveModifierControl = cv->activeModifierControl;
     int oldactiveModifierAlt = cv->activeModifierAlt;
-    cv->activeModifierControl &= ~( event->u.chr.keysym == GK_Control_L || event->u.chr.keysym == GK_Control_R
+    cv->activeModifierControl = cv->activeModifierControl && !( event->u.chr.keysym == GK_Control_L || event->u.chr.keysym == GK_Control_R
 				    || event->u.chr.keysym == GK_Meta_L || event->u.chr.keysym == GK_Meta_R );
-    cv->activeModifierAlt     &= ~( event->u.chr.keysym == GK_Alt_L || event->u.chr.keysym == GK_Alt_R
+    cv->activeModifierAlt = cv->activeModifierAlt && !( event->u.chr.keysym == GK_Alt_L || event->u.chr.keysym == GK_Alt_R
 				    || event->u.chr.keysym == GK_Mode_switch );
     // helps with keys on the mac
     if( (event->u.chr.state&ksm_meta) )

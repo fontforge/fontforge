@@ -176,7 +176,7 @@ static int OrderedPositions(MMSet *mm,int instance_count, int isapple) {
     /* For a 1 axis system, check that the positions are ordered */
     int i;
 
-    if ( mm->positions[0]!=isapple?-1:0 )		/* must start at 0 */
+    if ( mm->positions[0]!=(isapple?-1:0) )		/* must start at 0 */
 return( false );
     if ( mm->positions[(instance_count-1)*4]!=1 )	/* and end at 1 */
 return( false );

@@ -1459,7 +1459,7 @@ void ClassKerningAddExtensions(struct kernclass * target) {
   if (target->seconds_names == NULL && target->second_cnt) target->seconds_names = calloc(target->second_cnt, sizeof(char *));
   if (target->firsts_flags == NULL && target->first_cnt) target->firsts_flags = calloc(target->first_cnt, sizeof(int));
   if (target->seconds_flags == NULL && target->second_cnt) target->seconds_flags = calloc(target->second_cnt, sizeof(int));
-  if (target->offsets_flags == NULL && (target->first_cnt * target->second_cnt)) target->offsets_flags = calloc(target->first_cnt * target->second_cnt, sizeof(int));
+  if (target->offsets_flags == NULL && (target->first_cnt * target->second_cnt)>0) target->offsets_flags = calloc(target->first_cnt * target->second_cnt, sizeof(int));
 }
 
 void UFONameKerningClasses(SplineFont *sf, int version) {

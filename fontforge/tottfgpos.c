@@ -480,8 +480,8 @@ return( ScriptFromUnicode( sc->unicodeenc,sf ));
 
 int SCRightToLeft(SplineChar *sc) {
 
-    if ( sc->unicodeenc>=0x10800 && sc->unicodeenc<=0x10fff ||
-	    sc->unicodeenc>=0x1e800 && sc->unicodeenc<=0x1efff )
+    if ( (sc->unicodeenc>=0x10800 && sc->unicodeenc<=0x10fff) ||
+	    (sc->unicodeenc>=0x1e800 && sc->unicodeenc<=0x1efff) )
 return( true );		/* Supplemental Multilingual Plane, RTL scripts */
 
 return( isrighttoleft(sc->unicodeenc ));

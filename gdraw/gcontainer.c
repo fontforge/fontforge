@@ -315,7 +315,7 @@ return( true );
 	    }
 	} else {
 	    for ( gadget = gd->gadgets; gadget!=NULL && !handled ; gadget=gadget->prev ) {
-		if ( !gadget->state!=gs_disabled && gadget->state!=gs_invisible &&
+		if ( gadget->state!=gs_disabled && gadget->state!=gs_invisible &&
 			/*gadget->takes_input &&*/	/* everybody needs mouse moves for popups, even labels */
 			GGadgetWithin(gadget,event->u.mouse.x,event->u.mouse.y)) {
 		    if ( gd->lastwiggle!=NULL && gd->lastwiggle!=gadget )

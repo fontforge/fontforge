@@ -486,7 +486,7 @@ extern PyObject *PyFF_ConfigurePlugins(PyObject *UNUSED(noself), PyObject *args)
             pe = (PluginEntry *) l->data;
             pe->new_mode = sm_ask;
         }
-        while (item = PyIter_Next(iter)) {
+        while ((item = PyIter_Next(iter))) {
             if (!PyDict_Check(item)) {
                 type_error = true;
                 break;

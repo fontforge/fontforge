@@ -470,7 +470,7 @@ static void ResetPluginText(GTextInfo *i) {
 }
 
 static int PLUG_PluginOp(GGadget *g, GEvent *e) {
-    if (!e->type == et_controlevent || e->u.control.subtype != et_buttonactivate) {
+    if (e->type != et_controlevent || e->u.control.subtype != et_buttonactivate) {
         return true;
     }
 

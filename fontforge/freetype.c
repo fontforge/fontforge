@@ -90,7 +90,6 @@ int hasFreeTypeDebugger(void) {
     if ( !hasFreeTypeByteCode())
 return( false );
 #if FREETYPE_HAS_DEBUGGER
-    if ( FT_Set_Debug_Hook!=NULL && TT_RunIns!=NULL )
 return( true );
 #endif
 

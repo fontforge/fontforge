@@ -450,7 +450,7 @@ static int GFD_SaveOk(GGadget *g, GEvent *e) {
 
             if (GFileExists(path)) {
                 /* The filename the user chose exists, ask user if s/he wants to overwrite */
-                char *rcb[3], *temp;
+                char *rcb[3];
 
                 rcb[2]=NULL;
                 rcb[0] =  _("_Replace");
