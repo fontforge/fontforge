@@ -523,7 +523,7 @@ return(false);
 		else
 		    sel = i;
 	    }
-        if ( i < gts->tabcnt && i >= 0 )
+        if ( i < gts->tabcnt && i >= 0 ) {
 		if ( gts->closable && event->type==et_mouseup && event->u.mouse.x>=gts->tabs[i].x+gts->tabs[i].width+(-GTS_TABPADDING/2-10) ) {
 			TRACE("Closing tab %d\n", sel);
 			GTabSetRemoveTabByPos(&gts->g, i);
@@ -542,6 +542,7 @@ return(false);
 			}
 			gts->oldsel = sel;
 		}
+	}
 	} else {
 	    l = (event->u.mouse.y-gts->g.r.y)/gts->rowh;	/* screen row */
 	    if ( l>=gts->rcnt ) l = gts->rcnt-1;		/* can happen on single line tabsets (there's extra space then) */

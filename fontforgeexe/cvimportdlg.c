@@ -710,6 +710,7 @@ static int GFD_Options(GGadget *g, GEvent *e) {
 	_ImportParamsDlg(ImportParamsState());
 	d->opts_shown = true;
     }
+    return true;
 }
 
 static int e_h(GWindow gw, GEvent *event) {

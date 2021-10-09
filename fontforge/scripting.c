@@ -9291,7 +9291,6 @@ static void docall(Context *c,char *name,Val *val) {
 			}
 		}
 	    }
-docall_dofunc:
 	    (found->func)(&sub);
 docall_skipfunc:
 	    switch (sub.error) { /* check if any error in results */

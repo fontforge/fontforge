@@ -1195,9 +1195,9 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
 	    sf = SFReadTTF(fullname,0,openflags);
     } else if ( strmatch(fullname+strlen(strippedname)-4, ".svg")==0 && checked!='S' ) {
 	    sf = SFReadSVG(fullname,0);
-    } else if ( strmatch(fullname+strlen(fullname)-4, ".ufo")==0 && checked!='u' ||
-		 strmatch(fullname+strlen(fullname)-5, ".ufo2")==0 && checked!='u' ||
-		 strmatch(fullname+strlen(fullname)-5, ".ufo3")==0 && checked!='u' ) {
+    } else if (( strmatch(fullname+strlen(fullname)-4, ".ufo")==0 ||
+		 strmatch(fullname+strlen(fullname)-5, ".ufo2")==0  ||
+		 strmatch(fullname+strlen(fullname)-5, ".ufo3")==0 ) && checked!='u' ) {
 	    sf = SFReadUFO(fullname,0);
     } else if ( strmatch(fullname+strlen(fullname)-4, ".bdf")==0 && checked!='b' ) {
 	    sf = SFFromBDF(fullname,0,false);

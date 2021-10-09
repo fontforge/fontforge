@@ -959,8 +959,8 @@ static void visitButtons( CharView* cv, visitButtonsVisitor v, void* udata )
 
 	    mi = i;
 	    sel = (tool == mi*2+j );
-	    if( buttons[0][mi][j] == &GIcon_rect && rectelipse
-		|| buttons[0][mi][j] == &GIcon_poly && polystar )
+	    if( (buttons[0][mi][j] == &GIcon_rect && rectelipse)
+		|| (buttons[0][mi][j] == &GIcon_poly && polystar) )
 	    {
 		sel = (tool == (mi+1)*2+j );
 		mi+=2;
