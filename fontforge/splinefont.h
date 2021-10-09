@@ -463,9 +463,12 @@ typedef struct featurescriptlanglist {
     unsigned int ismac: 1;	/* treat the featuretag as a mac feature/setting */
 } FeatureScriptLangList;
 
+/* https://docs.microsoft.com/en-us/typography/opentype/spec/chapter2#lookupFlags */
+/* Low order: traditional flags, High order: markset index, only meaningful if pst_usemarkfilteringset set */
 enum pst_flags { pst_r2l=1, pst_ignorebaseglyphs=2, pst_ignoreligatures=4,
 	pst_ignorecombiningmarks=8, pst_usemarkfilteringset=0x10,
-	pst_markclass=0xff00, pst_markset=0xffff0000 };
+	pst_markclass=0xff00 };
+#define pst_markset 0xffff0000 /* Used as a bitmask to filter to the markset index */
 
 struct lookup_subtable {
     char *subtable_name;
