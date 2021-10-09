@@ -77,6 +77,7 @@ extern int GFileRemove(const char *path, int recursive);
 extern int GFileMkDir(const char *name, int mode);
 extern int GFileRmDir(const char *name);
 extern int GFileUnlink(const char *name);
+extern char* GFileMimeType(const char *path);
 extern unichar_t *u_GFileGetAbsoluteName(unichar_t *name, unichar_t *result, int rsiz);
 extern unichar_t *u_GFileBuildName(unichar_t *dir,unichar_t *fname,unichar_t *buffer,int size);
 extern unichar_t *u_GFileReplaceName(unichar_t *oldname,unichar_t *fname,unichar_t *buffer,int size);
@@ -139,7 +140,6 @@ extern char *GFileDirName(const char *path);
  * The return value must NOT be freed.
  **/
 extern char* getLibexecDir_NonWindows(void);
-
 
 
 

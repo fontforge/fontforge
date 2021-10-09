@@ -31,16 +31,13 @@
 #include "ustring.h"
 
 #include "gfile.h"
-#include "gio.h"
 
 GImage *GImageRead(char * filename) {
 /* Go read an input image file. Return NULL if cannot guess file type */
 /* First try filename dot3 extension then try sniffing if can't guess */
     char *mime;
 
-    if ( filename!=NULL && GFileExists(filename) &&
-	 ((mime=GIOguessMimeType(filename)) || (mime=GIOGetMimeType(filename))) ) {
-
+    if ( filename!=NULL && GFileExists(filename) && (mime=GFileMimeType(filename))) {
 	if ( strcasecmp(mime,"image/bmp")==0 ) {
 	    free(mime);
 	    return( GImageReadBmp(filename) );

@@ -398,9 +398,6 @@ typedef struct gfilechooser {
     unichar_t *lastname;
     GFileChooserFilterType filter;
     GFileChooserInputFilenameFuncType inputfilenamefunc;
-    /*enum fchooserret (*filter)(GGadget *chooser,struct gdirentry *file,const unichar_t *dir);*/
-    struct giocontrol *outstanding;
-    GCursor old_cursor;
     GButton *up, *home;
     GButton *bookmarks, *config;
     struct ghvbox *topbox;

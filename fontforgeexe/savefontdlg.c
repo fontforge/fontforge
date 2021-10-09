@@ -32,7 +32,6 @@
 #include "fontforgeui.h"
 #include "gfile.h"
 #include "gicons.h"
-#include "gio.h"
 #include "gkeysym.h"
 #include "gresource.h"
 #include "macbinary.h"
@@ -1196,18 +1195,14 @@ static char *SearchDirForWernerFile(char *dir,char *filename) {
     return( NULL );
 }
 
-static enum fchooserret GFileChooserFilterWernerSFDs(GGadget *g,GDirEntry *ent,
-	const unichar_t *dir) {
+static enum fchooserret GFileChooserFilterWernerSFDs(GGadget *g,const struct gdirentry *ent,
+	const char *dir) {
     enum fchooserret ret = GFileChooserDefFilter(g,ent,dir);
     char buf2[200];
     FILE *file;
 
     if ( ret==fc_show && !ent->isdir ) {
-	char *filename = malloc(u_strlen(dir)+u_strlen(ent->name)+5);
-	cu_strcpy(filename,dir);
-	strcat(filename,"/");
-	cu_strcat(filename,ent->name);
-	file = fopen(filename,"r");
+	file = fopen(ent->fullpath,"r");
 	if ( file==NULL )
 	    ret = fc_hide;
 	else {
@@ -1216,7 +1211,6 @@ static enum fchooserret GFileChooserFilterWernerSFDs(GGadget *g,GDirEntry *ent,
 		ret = fc_hide;
 	    fclose(file);
 	}
-	free(filename);
     }
 return( ret );
 }
@@ -1605,45 +1599,32 @@ return;
     d->ret = !err;
 }
 
-static void GFD_doesnt(GIOControl *gio) {
-    /* The filename the user chose doesn't exist, so everything is happy */
-    struct gfc_data *d = gio->userdata;
-    DoSave(d,gio->path);
-    GFileChooserReplaceIO(d->gfc,NULL);
-}
-
-static void GFD_exists(GIOControl *gio) {
-    /* The filename the user chose exists, ask user if s/he wants to overwrite */
-    struct gfc_data *d = gio->userdata;
-    char *temp;
-    const char *rcb[3];
-
-    rcb[2]=NULL;
-    rcb[0] =  _("_Replace");
-    rcb[1] =  _("_Cancel");
-
-    if ( gwwv_ask(_("File Exists"),rcb,0,1,_("File, %s, exists. Replace it?"),
-	    temp = u2utf8_copy(u_GFileNameTail(gio->path)))==0 ) {
-	DoSave(d,gio->path);
-    }
-    free(temp);
-    GFileChooserReplaceIO(d->gfc,NULL);
-}
-
 static void _GFD_SaveOk(struct gfc_data *d) {
     GGadget *tf;
     unichar_t *ret;
+	char *tmp;
     int formatstate = GGadgetGetFirstListSelectedItem(d->pstype);
+	bool save = true;
 
     GFileChooserGetChildren(d->gfc,NULL,NULL,&tf);
     if ( *_GGadgetGetTitle(tf)!='\0' ) {
 	ret = GGadgetGetTitle(d->gfc);
-	if ( formatstate!=ff_none )	/* are we actually generating an outline font? */
-	    GIOfileExists(GFileChooserReplaceIO(d->gfc,
-		    GIOCreate(ret,d,GFD_exists,GFD_doesnt)));
-	else
-	    GFD_doesnt(GIOCreate(ret,d,GFD_exists,GFD_doesnt));	/* No point in bugging the user if we aren't doing anything */
+	tmp = u2def_copy(ret);
+	/* No point in bugging the user if we aren't doing anything */
+	if (formatstate != ff_none && GFileExists(tmp)) {
+		const char *rcb[3];
+
+		rcb[2]=NULL;
+		rcb[0] =  _("_Replace");
+		rcb[1] =  _("_Cancel");
+
+		save = gwwv_ask(_("File Exists"),rcb,0,1,_("File, %s, exists. Replace it?"),tmp) == 0;
+	}
+	if (save) {
+		DoSave(d, ret);
+	}
 	free(ret);
+	free(tmp);
     }
 }
 
@@ -1701,31 +1682,11 @@ static int GFD_Options(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static void GFD_dircreated(GIOControl *gio) {
-    struct gfc_data *d = gio->userdata;
-    unichar_t *dir = u_copy(gio->path);
-
-    GFileChooserReplaceIO(d->gfc,NULL);
-    GFileChooserSetDir(d->gfc,dir);
-    free(dir);
-}
-
-static void GFD_dircreatefailed(GIOControl *gio) {
-    /* We couldn't create the directory */
-    struct gfc_data *d = gio->userdata;
-    char *temp;
-
-    ff_post_notice(_("Couldn't create directory"),_("Couldn't create directory: %s"),
-		temp = u2utf8_copy(u_GFileNameTail(gio->path)));
-    free(temp);
-    GFileChooserReplaceIO(d->gfc,NULL);
-}
-
 static int GFD_NewDir(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	char *newdir;
-	unichar_t *temp;
+	unichar_t *temp = NULL;
 	newdir = gwwv_ask_string(_("Create directory..."),NULL,_("Directory name?"));
 	if ( newdir==NULL )
 return( true );
@@ -1735,9 +1696,13 @@ return( true );
 	    free(newdir); free(olddir);
 	    newdir = temp;
 	}
-	temp = utf82u_copy(newdir);
-	GIOmkDir(GFileChooserReplaceIO(d->gfc,
-		GIOCreate(temp,d,GFD_dircreated,GFD_dircreatefailed)));
+	if (GFileMkDir(newdir, 0755)) {
+		ff_post_notice(_("Couldn't create directory"),_("Couldn't create directory: %s"),
+			newdir);
+	} else {
+		temp = utf82u_copy(newdir);
+		GFileChooserSetDir(d->gfc, temp);
+	}
 	free(newdir); free(temp);
     }
 return( true );

@@ -34,7 +34,6 @@
 #include "utype.h"
 
 #include <assert.h>
-#include <gio/gio.h>
 
 extern GBox _ggadget_Default_Box;
 #define ACTIVE_BORDER   (_ggadget_Default_Box.active_border)
