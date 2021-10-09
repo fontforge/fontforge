@@ -633,15 +633,15 @@ return( NULL );
 
 const char *FindAutoTraceName(void) {
     static int searched=0;
-    static int waspotraceprefered;
+    static int waspotracepreferred;
     static const char *name = NULL;
     char buffer[1025];
 
-    if ( searched && waspotraceprefered==preferpotrace )
+    if ( searched && waspotracepreferred==preferpotrace )
 return( name );
 
     searched = true;
-    waspotraceprefered = preferpotrace;
+    waspotracepreferred = preferpotrace;
     if ( preferpotrace ) {
 	if (( name = getenv("POTRACE"))!=NULL )
 return( name );
