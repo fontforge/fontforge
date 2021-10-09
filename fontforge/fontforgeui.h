@@ -168,10 +168,6 @@ extern char *script_filenames[SCRIPT_MENU_MAX];
 #define RECENT_MAX	10
 extern char *RecentFiles[RECENT_MAX];
 
-/* I would like these to be const ints, but gcc doesn't treat them as consts */
-#define et_sb_halfup et_sb_thumbrelease+1
-#define et_sb_halfdown  et_sb_thumbrelease+2
-
 extern FontView *fv_list;
 
 extern struct openfilefilters { char *name, *filter; } def_font_filters[], *user_font_filters;

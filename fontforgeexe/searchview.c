@@ -461,6 +461,7 @@ static int sv_e_h(GWindow gw, GEvent *event) {
 	    CVPalettesHideIfMine(sv->cv_srch.inactive?&sv->cv_rpl:&sv->cv_srch);
 	sv->isvisible = event->u.map.is_visible;
       break;
+      default: break;
     }
 return( true );
 }

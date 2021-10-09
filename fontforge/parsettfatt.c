@@ -944,6 +944,7 @@ return;
 	  MarkGlyphsProcessLigs(ttf,stoffset+baseoffset,
 	    info,l,subtable,baseglyphs,classcnt,classes);
       break;
+      default: break;
     }
     info->anchor_class_cnt += classcnt;
     ++ info->anchor_merge_cnt;

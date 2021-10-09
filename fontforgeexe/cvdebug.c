@@ -1055,6 +1055,7 @@ static void dvreg_scroll(DebugView *dv,struct sbevent *sb) {
       case et_sb_thumbrelease:
         newpos = sb->pos;
       break;
+      case et_sb_halfup: case et_sb_halfdown: break;
     }
     if ( newpos>reg_size-size.height/dv->ii.fh )
         newpos = reg_size-size.height/dv->ii.fh;
@@ -1088,6 +1089,7 @@ return( DVChar(dv,event));
 	  case et_scrollbarchange:
 	    dvreg_scroll(dv,&event->u.control.u.sb);
 	  break;
+	  default: break;
 	}
       break;
       case et_resize:
@@ -1109,6 +1111,7 @@ return( DVChar(dv,event));
       case et_mousemove:
 	GGadgetEndPopup();
       break;
+      default: break;
     }
 return( true );
 }
@@ -1158,6 +1161,7 @@ static void dvstack_scroll(DebugView *dv,struct sbevent *sb) {
       case et_sb_thumbrelease:
         newpos = sb->pos;
       break;
+      case et_sb_halfup: case et_sb_halfdown: break;
     }
     if ( newpos>exc->top-size.height/dv->ii.fh )
         newpos = exc->top-size.height/dv->ii.fh;
@@ -1191,6 +1195,7 @@ return( DVChar(dv,event));
 	  case et_scrollbarchange:
 	    dvstack_scroll(dv,&event->u.control.u.sb);
 	  break;
+	  default: break;
 	}
       break;
       case et_resize:
@@ -1212,6 +1217,7 @@ return( DVChar(dv,event));
       case et_mousemove:
 	GGadgetEndPopup();
       break;
+      default: break;
     }
 return( true );
 }
@@ -1261,6 +1267,7 @@ static void dvstorage_scroll(DebugView *dv,struct sbevent *sb) {
       case et_sb_thumbrelease:
         newpos = sb->pos;
       break;
+      case et_sb_halfup: case et_sb_halfdown: break;
     }
     if ( newpos>exc->storeSize-size.height/dv->ii.fh )
         newpos = exc->storeSize-size.height/dv->ii.fh;
@@ -1294,6 +1301,7 @@ return( DVChar(dv,event));
 	  case et_scrollbarchange:
 	    dvstorage_scroll(dv,&event->u.control.u.sb);
 	  break;
+	  default: break;
 	}
       break;
       case et_resize:
@@ -1333,6 +1341,7 @@ return( DVChar(dv,event));
       case et_mousemove:
 	GGadgetEndPopup();
       break;
+      default: break;
     }
 return( true );
 }
@@ -1442,6 +1451,7 @@ return( DVChar(dv,event));
       case et_resize:
 	DVPointsFigureSB(dv);
       break;
+      default: break;
     }
 return( true );
 }
@@ -1476,6 +1486,7 @@ static void dvpts_scroll(DebugView *dv,struct sbevent *sb) {
       case et_sb_thumbrelease:
         newpos = sb->pos;
       break;
+      case et_sb_halfup: case et_sb_halfdown: break;
     }
     if ( newpos>cnt-size.height/dv->ii.fh )
         newpos = cnt-size.height/dv->ii.fh;
@@ -1513,6 +1524,7 @@ return( DVChar(dv,event));
 	  case et_scrollbarchange:
 	    dvpts_scroll(dv,&event->u.control.u.sb);
 	  break;
+	  default: break;
 	}
       break;
       case et_resize:
@@ -1534,6 +1546,7 @@ return( DVChar(dv,event));
       case et_mousemove:
 	GGadgetEndPopup();
       break;
+      default: break;
     }
 return( true );
 }
@@ -1584,6 +1597,7 @@ static void dvcvt_scroll(DebugView *dv,struct sbevent *sb) {
       case et_sb_thumbrelease:
         newpos = sb->pos;
       break;
+      case et_sb_halfup: case et_sb_halfdown: break;
     }
     if ( newpos>exc->cvtSize-size.height/dv->ii.fh )
         newpos = exc->cvtSize-size.height/dv->ii.fh;
@@ -1617,6 +1631,7 @@ return( DVChar(dv,event));
 	  case et_scrollbarchange:
 	    dvcvt_scroll(dv,&event->u.control.u.sb);
 	  break;
+	  default: break;
 	}
       break;
       case et_resize:
@@ -1656,6 +1671,7 @@ return( DVChar(dv,event));
       case et_mousemove:
 	GGadgetEndPopup();
       break;
+      default: break;
     }
 return( true );
 }
@@ -1943,6 +1959,7 @@ return( DVChar(dv,event));
 	  case et_scrollbarchange:
 	    instr_scroll(&dv->ii,&event->u.control.u.sb);
 	  break;
+	  default: break;
 	}
       break;
       case et_resize:
@@ -1962,6 +1979,7 @@ return( DVChar(dv,event));
       break;
       case et_mousemove:
       break;
+      default: break;
     }
 return( true );
 }

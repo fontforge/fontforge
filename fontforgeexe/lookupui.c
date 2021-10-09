@@ -2519,6 +2519,7 @@ return( false );
       break;
       case et_resize:
       break;
+      default: break;
     }
 return( true );
 }
@@ -3545,6 +3546,7 @@ return( true );
       case et_mousedown: case et_mouseup: case et_mousemove:
 	PSTKern_Mouse(GDrawGetUserData(gw),event);
 return( true );
+      default: break;
     }
 return( true );
 }
@@ -4793,6 +4795,7 @@ return( false );
       break;
       case et_resize:
       break;
+      default: break;
     }
 return( true );
 }
@@ -5666,6 +5669,7 @@ return(false);
       case et_resize:
         kf_sizeSet(kf,pixmap);
       break;
+      default: break;
     }
 return( true );
 }
@@ -5817,6 +5821,7 @@ static int kf_e_h(GWindow gw, GEvent *event) {
       case et_char:
 return( false );
       break;
+      default: break;
     }
 return( true );
 }
@@ -6394,6 +6399,7 @@ return( false );
       case et_close:
 	arl->done = true;
       break;
+      default: break;
     }
 return( true );
 }
@@ -6755,6 +6761,7 @@ return( false );
       case et_close:
 	mrd->done = true;
       break;
+      default: break;
     }
 return( true );
 }

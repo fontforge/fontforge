@@ -1378,6 +1378,7 @@ static void GMatrixEdit_StartSubGadgets(GMatrixEdit *gme,int r, int c,GEvent *ev
 	      case me_enum:
 		d->u.md_ival = (int) (intptr_t) gme->col_data[i].enum_vals[0].ti.userdata;
 	      break;
+	      default: break;
 	    }
 	}
 	if ( gme->initrow!=NULL )
@@ -1780,6 +1781,7 @@ return( false );
 	if ( gme->reporttextchanged!=NULL )
 	    (gme->reporttextchanged)(&gme->g,gme->active_row,gme->active_col,gme->tf);
       break;
+      default: break;
     }
 return( true );
 }
@@ -1813,6 +1815,7 @@ static void GME_HScroll(GMatrixEdit *gme,struct sbevent *sb) {
       case et_sb_thumbrelease:
 	newpos = sb->pos;
       break;
+      case et_sb_halfup: case et_sb_halfdown: break;
     }
 
     if ( newpos + size.width > hend )
@@ -1884,6 +1887,7 @@ static void GME_VScroll(GMatrixEdit *gme,struct sbevent *sb) {
       case et_sb_thumbrelease:
 	newpos = sb->pos;
       break;
+      case et_sb_halfup: case et_sb_halfdown: break;
     }
     if ( newpos + page > gme->rows+1 )
 	newpos = gme->rows+1 - page;

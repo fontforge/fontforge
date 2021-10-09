@@ -501,6 +501,7 @@ static int stroke_sub_e_h(GWindow gw, GEvent *event) {
       case et_mouseup: case et_mousedown: case et_mousemove:
 return( false );
       break;
+      default: break;
     }
 return( true );
 }
@@ -1467,6 +1468,7 @@ static int gdd_sub_e_h(GWindow gw, GEvent *event) {
       case et_mouseup: case et_mousedown: case et_mousemove:
 return( false );
       break;
+      default: break;
     }
 return( true );
 }
@@ -1498,6 +1500,7 @@ static int gdd_e_h(GWindow gw, GEvent *event) {
 	}
 	/* gdd->isvisible = event->u.map.is_visible; */
       break;
+      default: break;
     }
 return( true );
 }
@@ -2275,6 +2278,7 @@ return( false );
       case et_close:
 	ld->pat_done = true;
       break;
+      default: break;
     }
 return( true );
 }

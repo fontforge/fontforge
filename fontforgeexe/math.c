@@ -1365,6 +1365,7 @@ static int mkd_sub_e_h(GWindow gw, GEvent *event) {
       case et_char:
 	MKDChar(mkd,event);
       break;
+      default: break;
     }
 return( true );
 }
@@ -1399,6 +1400,7 @@ static int mkd_e_h(GWindow gw, GEvent *event) {
 	}
 	/* mkd->isvisible = event->u.map.is_visible; */
       break;
+      default: break;
     }
 return( true );
 }

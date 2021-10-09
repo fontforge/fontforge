@@ -505,8 +505,10 @@ return( false );
 	    else
 		smd->edit_done = true;
 	  break;
+	  default: break;
 	}
       break;
+      default: break;
     }
 return( true );
 }
@@ -1123,6 +1125,7 @@ static void SMD_HScroll(SMD *smd,struct sbevent *sb) {
       case et_sb_thumbrelease:
         newpos = sb->pos;
       break;
+      case et_sb_halfup: case et_sb_halfdown: break;
     }
     if ( newpos + (smd->width/smd->statew) >= smd->class_cnt )
 	newpos = smd->class_cnt - (smd->width/smd->statew);
@@ -1171,6 +1174,7 @@ static void SMD_VScroll(SMD *smd,struct sbevent *sb) {
       case et_sb_thumbrelease:
         newpos = sb->pos;
       break;
+      case et_sb_halfup: case et_sb_halfdown: break;
     }
     if ( newpos + (smd->height/smd->stateh) >= smd->state_cnt )
 	newpos = smd->state_cnt - (smd->height/smd->stateh);
@@ -1248,8 +1252,10 @@ return( false );
 	    else
 		SMD_VScroll(smd,&event->u.control.u.sb);
 	  break;
+	  default: break;
 	}
       break;
+      default: break;
     }
 return( true );
 }

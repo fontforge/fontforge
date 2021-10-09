@@ -803,6 +803,7 @@ static int sendtoparent_eh(GWindow gw, GEvent *event) {
       case et_resize:
 	GDrawRequestExpose(gw,NULL,false);
       break;
+      default: break;
     }
 
 return( true );

@@ -171,7 +171,7 @@ static int gfc_showhidden, gfc_dirplace;
 static char *gfc_bookmarks=NULL;
 static char *pixmapdir=NULL;
 
-enum pref_types { pr_int, pr_real, pr_bool, pr_enum, pr_encoding, pr_string,
+enum pref_types { pr_int, pr_real, pr_bool, pr_encoding, pr_string,
 	pr_file, pr_namelist, pr_unicode };
 
 static struct prefs_list {

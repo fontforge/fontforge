@@ -5566,6 +5566,7 @@ void FPSTRuleContentsFree(struct fpst_rule *r, enum fpossub_format format) {
 	    free(r->u.coverage.fcovers[j]);
 	free(r->u.coverage.fcovers);
       break;
+      case pst_formatmax: break;
     }
     free(r->lookups);
 }
@@ -5632,6 +5633,7 @@ return( NULL );
 		    t->u.coverage.fcovers[j] = copy(f->u.coverage.fcovers[j]);
 	    }
 	  break;
+	  case pst_formatmax: break;
 	}
 	if ( f->lookup_cnt!=0 ) {
 	    t->lookup_cnt = f->lookup_cnt;

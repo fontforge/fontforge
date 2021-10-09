@@ -1455,6 +1455,7 @@ return( false );
 	    if ( features->ismac || OTTagToMacFeature(features->featuretag,&ft,&fs))
 return( true );
 	}
+      default: break;
     }
 return( false );
 }

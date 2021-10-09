@@ -1884,6 +1884,7 @@ return( false );
       case et_close:
 	*done = true;
       break;
+      default: break;
     }
 return( true );
 }
@@ -6721,6 +6722,7 @@ static int FVScroll(GGadget *g, GEvent *e) {
       case et_sb_thumbrelease:
         newpos = sb->pos;
       break;
+      case et_sb_halfup: case et_sb_halfdown: break;
     }
     if ( newpos>fv->rowltot-fv->rowcnt )
         newpos = fv->rowltot-fv->rowcnt;
@@ -6769,6 +6771,7 @@ return( GGadgetDispatchEvent(fv->vsb,event));
 	if ( event->u.focus.gained_focus )
 	    GDrawSetGIC(gw,fv->gic,0,20);
       break;
+      default: break;
     }
 return( true );
 }
@@ -6934,6 +6937,7 @@ return( GGadgetDispatchEvent(fv->vsb,event));
 	    QGRmFontView(fv->qg,fv);
 	FontViewRemove(fv);
       break;
+      default: break;
     }
 return( true );
 }
@@ -7810,6 +7814,7 @@ return(false);
       case et_resize:
         gs_sizeSet(gs,pixmap);
       break;
+      default: break;
     }
 return( true );
 }
@@ -7824,6 +7829,7 @@ static int gs_e_h(GWindow gw, GEvent *event) {
       case et_char:
 	FVChar(gs->fv,event);
       break;
+      default: break;
     }
 return( true );
 }

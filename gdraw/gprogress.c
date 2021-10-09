@@ -181,6 +181,7 @@ static int progress_eh(GWindow gw, GEvent *event) {
       case et_map:
 	p->sawmap = true;
       break;
+      default: break;
     }
 return( true );
 }

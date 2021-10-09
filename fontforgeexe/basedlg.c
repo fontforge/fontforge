@@ -270,6 +270,7 @@ return( true );
 	}
 return( false );
       break;
+      default: break;
     }
 return( true );
 }
@@ -682,6 +683,7 @@ return( true );
 	}
 return( false );
       break;
+      default: break;
     }
 return( true );
 }
