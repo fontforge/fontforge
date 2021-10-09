@@ -1354,9 +1354,9 @@ extern bool SPIsPrevCPSelectedSingle( SplinePoint *sp, CharView *cv );
  * only handles a single selected BCP will only honor the primary
  * selected BCP
  *
- * There can also be one or more seconday selected BCP. These might be
+ * There can also be one or more secondary selected BCP. These might be
  * drawn with slightly less highlight graphically and are only handled
- * by code which has been updated to allow mutliple selected BCP to be
+ * by code which has been updated to allow multiple selected BCP to be
  * operated on at once.
  */
 extern bool SPIsNextCPSelected( SplinePoint *sp, CharView *cv );

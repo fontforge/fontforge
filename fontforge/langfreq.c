@@ -56,7 +56,7 @@ static float word_lengths[] = {
     0.000001, 0.000000, 0.000000, 0.000000, 0.000000
 };
 
-/* These data are bigram frequences for various scripts and languages. */
+/* These data are bigram frequencies for various scripts and languages. */
 /* Obviously there is no "perfect" bigram table because every text and writer */
 /*  will be slightly different. These should be representative, however. */
 /* They were derived by analyzing texts downloaded from Project Gutenberg */

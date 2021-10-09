@@ -373,7 +373,7 @@ static struct prefs_list {
 	PREFS_LIST_EMPTY
 },
  tt_list[] = {
-	{ N_("ClearInstrsBigChanges"), pr_bool, &clear_tt_instructions_when_needed, NULL, NULL, 'C', NULL, 0, N_("Instructions in a TrueType font refer to\npoints by number, so if you edit a glyph\nin such a way that some points have different\nnumbers (add points, remove them, etc.) then\nthe instructions will be applied to the wrong\npoints with disasterous results.\n  Normally FontForge will remove the instructions\nif it detects that the points have been renumbered\nin order to avoid the above problem. You may turn\nthis behavior off -- but be careful!") },
+	{ N_("ClearInstrsBigChanges"), pr_bool, &clear_tt_instructions_when_needed, NULL, NULL, 'C', NULL, 0, N_("Instructions in a TrueType font refer to\npoints by number, so if you edit a glyph\nin such a way that some points have different\nnumbers (add points, remove them, etc.) then\nthe instructions will be applied to the wrong\npoints with disastrous results.\n  Normally FontForge will remove the instructions\nif it detects that the points have been renumbered\nin order to avoid the above problem. You may turn\nthis behavior off -- but be careful!") },
 	{ N_("CopyTTFInstrs"), pr_bool, &copyttfinstr, NULL, NULL, '\0', NULL, 0, N_("When copying glyphs from the font view, also copy the\nglyphs' truetype instructions.") },
 	PREFS_LIST_EMPTY
 },
@@ -436,7 +436,7 @@ static struct prefs_list {
 	PREFS_LIST_EMPTY
 },
 /* These are hidden, so will never appear in preference ui, hence, no "N_(" */
-/*  They are controled elsewhere AntiAlias is a menu item in the font window's View menu */
+/*  They are controlled elsewhere AntiAlias is a menu item in the font window's View menu */
 /*  etc. */
  hidden_list[] = {
 	{ "AntiAlias", pr_bool, &default_fv_antialias, NULL, NULL, '\0', NULL, 1, NULL },
@@ -1729,7 +1729,7 @@ return( true );
 	if ( xuid!=NULL ) {
 	    char *pt;
 	    for ( pt=xuid; *pt==' ' ; ++pt );
-	    if ( *pt=='[' ) {	/* People who know PS well, might want to put brackets arround the xuid base array, but I don't want them */
+	    if ( *pt=='[' ) {	/* People who know PS well, might want to put brackets around the xuid base array, but I don't want them */
 		pt = copy(pt+1);
 		if (xuid != NULL) free( xuid );
 		xuid = pt;

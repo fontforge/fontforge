@@ -3741,7 +3741,7 @@ return;
     /*  contain references, and the width of the original glyph is the same as*/
     /*  the width of the original referred character, then we should make sure */
     /*  that the new width of the glyph is the same as the current width of   */
-    /*  the referred char. We can't do this earlier because of foreward refs.  */
+    /*  the referred char. We can't do this earlier because of forward refs.  */
     for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] ) {
 	SplineChar *sc = SFMakeChar(sf,fv->map,i);
 	if ( sc->layers[ly_fore].refs!=NULL && sc->layers[ly_fore].splines==NULL ) {

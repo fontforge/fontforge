@@ -295,7 +295,7 @@ Random questions
      * So I tend to wrestle with it for a while and then decide than my current
        widgets are better after all.
      * I did get a limited version of fontforge running under gtk. I would be
-       greatful if someone else would choose to extend and maintain it.
+       grateful if someone else would choose to extend and maintain it.
 
 .. _faq.C-plus-plus:
 
@@ -980,8 +980,8 @@ Random questions
 .. _faq.How-family:
 
 **How do I create a mac font family? (How do I get the mac to group my fonts so that the italic and bold styles work)?**
-   I am told that in 10.6 the prefered method of grouping fonts is to use ttc
-   files, prior to 10.6 ttc files didn't work (well) and the prefered method was
+   I am told that in 10.6 the preferred method of grouping fonts is to use ttc
+   files, prior to 10.6 ttc files didn't work (well) and the preferred method was
    to produce mac font families.
 
    Snow Leopard (10.6) and after
@@ -1768,7 +1768,7 @@ Random questions
    Unfortunately FontForge cannot do this. FontForge needs to understand and
    then convert the eps file into a simpler format (fonts can use far fewer
    operations than an eps file). So unlike most programs FontForge must
-   interpret each eps file -- but interpretting all of PostScript is a huge job
+   interpret each eps file -- but interpreting all of PostScript is a huge job
    and ff is limited in what it understands. Sometimes it will find a file it
    can't handle.
 
@@ -1912,7 +1912,7 @@ Random questions
      This corresponds to the PostScript Family
    * SubFamily
 
-     Vaguely like the weight field, but takes all stylistic varients not just
+     Vaguely like the weight field, but takes all stylistic variants not just
      weight.
 
      This might be "Bold", "Italic", "Bold Italic", "SemiBold", "Condensed", ...

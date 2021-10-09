@@ -177,7 +177,7 @@ are essentially the same, while Apple's differ significantly from either.
    * - head
      - font header
      - Contains general font information, such as the size of the em-square, a time
-       stamp, check sum infomation, etc.
+       stamp, check sum information, etc.
      - `head <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6head.html>`__
      - `head <http://partners.adobe.com/public/developer/opentype/index_head.html>`__
    * - hhea

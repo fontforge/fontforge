@@ -44,7 +44,7 @@
  * CharView.Menu.File.Open is an action for the file/open menu item in
  * the charview/glyph editing window.
  *
- * This namespace convension uses dot separated strings. The window
+ * This namespace convention uses dot separated strings. The window
  * type as the first string, followed by "Menu", followed by each menu
  * item on the path down to the menu that should be invoked when the
  * hotkey is pressed.
@@ -74,7 +74,7 @@
  * the new hotkeyExecuteAction() function which itself could handle
  * working out if it is a CharView.Python prefix action and
  * dispatching accordingly. The gain to that is that other code might
- * also like to execute a hotkey independant of the existing code. For
+ * also like to execute a hotkey independent of the existing code. For
  * example, python code might execute an "action" through that
  * function.
  *
@@ -107,14 +107,14 @@ typedef struct hotkey {
     char   action[HOTKEY_ACTION_MAX_SIZE+1];
 
     /**
-     * A directly machine usable represetation of the modifiers that
+     * A directly machine usable representation of the modifiers that
      * must be in use for this hotkey to be fired. For example, shift,
      * control etc.
      */
     uint16 state;
 
     /**
-     * A directly machine usable represetation of the key that is to
+     * A directly machine usable representation of the key that is to
      * be pressed fo r this hotkey. This would be a number for a key
      * so that 'k' might be 642
      */

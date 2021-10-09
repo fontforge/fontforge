@@ -1343,7 +1343,7 @@ int GGDKDrawLayoutXYToIndex(GWindow w, int x, int y) {
     GGDKWindow gw = (GGDKWindow)w;
     int trailing, index;
 
-    // Pango retuns the last character if x is negative, not the first.
+    // Pango returns the last character if x is negative, not the first.
     if (x < 0) {
         x = 0;
     }

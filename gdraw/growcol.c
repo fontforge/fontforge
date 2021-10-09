@@ -838,7 +838,7 @@ static void GRowColFit(GRowCol *grc) {
     int bp = GBoxBorderWidth(grc->g.base,grc->g.box);
     int i;
 
-    /* can't deal with eliptical scrolling lists nor diamond ones. Just rects and roundrects */
+    /* can't deal with elliptical scrolling lists nor diamond ones. Just rects and roundrects */
     GRowColFindXMax(grc);
     if ( grc->g.r.width==0 ) {
 	if ( width==0 ) width = GDrawPointsToPixels(grc->g.base,100);

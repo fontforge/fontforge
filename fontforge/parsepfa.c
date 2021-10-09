@@ -1912,7 +1912,7 @@ return;
 	    if ( fp->fd->uniqueid==0 )
 		fp->fd->uniqueid = strtol(endtok,NULL,10);
 	} else if ( mycmp("UniqueId",line+1,endtok)==0 ) {
-	    LogError(_("This font contains a \"UniqueId\" variable, but the correct name for it is\n\t\"UniqueID\" (postscript is case concious)\n") );
+	    LogError(_("This font contains a \"UniqueId\" variable, but the correct name for it is\n\t\"UniqueID\" (postscript is case conscious)\n") );
 	    if ( fp->fd->uniqueid==0 )
 		fp->fd->uniqueid = strtol(endtok,NULL,10);
 	} else if ( mycmp("XUID",line+1,endtok)==0 ) {
@@ -2175,7 +2175,7 @@ return( 0 );
     break;
 	        }
 	    } else if ( !strcmp("CharStrings", temptok) ) {
-	        if (fp->insubs) { /* break CharStrings onto a seperate line */
+	        if (fp->insubs) { /* break CharStrings onto a separate line */
 	            putBack(fp, temp, temptok, ch, &pt);
 	            putBack(fp, temp, "", '/', &pt);
 		    fp->insubs = 0;
@@ -2213,7 +2213,7 @@ return( 0 );
 	    if ( ch=='\n' || ch=='\r' )
     break;
 	    if ( inSubrs && matchFromBack(pt - 2, "array", pt - buffer - 1) )
-    break;  /* Subrs may be on same line with first RD def -- seperate them */
+    break;  /* Subrs may be on same line with first RD def -- separate them */
 	} else if ( wasspace && ch==*rdtok ) {
 	    nowr = 1;
 	    fp->useshexstrings = willbehex;
@@ -2373,7 +2373,7 @@ static unsigned char *readt1str(FILE *temp,int offset,int len,int leniv) {
     unsigned short r = 4330;
     unsigned char plain, cypher;
     /* The CID spec doesn't mention this, but the type 1 strings are all */
-    /*  eexec encrupted (with the nested encryption). Remember leniv varies */
+    /*  eexec encrypted (with the nested encryption). Remember leniv varies */
     /*  from fd to fd (potentially) */
     /* I'm told (by Ian Kemmish) that leniv==-1 => no eexec encryption */
 

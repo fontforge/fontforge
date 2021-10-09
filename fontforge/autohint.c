@@ -177,7 +177,7 @@ void FindBlues( SplineFont *sf, int layer, real blues[14], real otherblues[10]) 
 			enc == 'l' || enc==0xf0 || enc==0xfe || enc == 0xdf ||
 			enc == 0x3b2 || enc==0x3b6 || enc==0x3b8 || enc==0x3bb ||
 			enc == 0x3be ||
-			enc == 0x431 /* cyr be */ /* || enc == 0x444 - ef may have varible height */) {
+			enc == 0x431 /* cyr be */ /* || enc == 0x444 - ef may have variable height */) {
 		    ascenth[0] += b.maxy;
 		    ascenth[1] += b.maxy*b.maxy;
 		    ++ascenth[2];
@@ -3435,7 +3435,7 @@ return( 0 );
     }
 	
     pt = PSDictHasEntry(sf->private,"BlueShift");
-    blueshift = 21;		/* maximum posible flex, not default */
+    blueshift = 21;		/* maximum possible flex, not default */
     if ( pt!=NULL ) {
 	blueshift = strtol(pt,NULL,10);
 	if ( blueshift>21 ) blueshift = 21;

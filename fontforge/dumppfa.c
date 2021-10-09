@@ -1768,7 +1768,7 @@ static void dumpfontcomments(void (*dumpchar)(int ch,void *data), void *data,
     now = GetTime();
     /* Werner points out that the DSC Version comment has a very specific */
     /*  syntax. We can't just put in a random string, must be <real> <int> */
-    /* So we can sort of do that for CID fonts (give it a <revsion> of 0 */
+    /* So we can sort of do that for CID fonts (give it a <revision> of 0 */
     /*  but for type1s just use a comment rather than a DSC statement */
     if (( format==ff_cid || format==ff_cffcid || format==ff_type42cid ) &&
 	    sf->cidregistry!=NULL ) {
@@ -2569,7 +2569,7 @@ static int dumpcidstuff(FILE *out,SplineFont *cidmaster,int flags,EncMap *map,in
 	fprintf( out,"/UIDBase %d def\n", cidmaster->uniqueid?cidmaster->uniqueid: 4000000 + (rand()&0x3ffff) );
 	if ( cidmaster->xuid!=NULL && cidmaster->use_xuid ) {
 	    fprintf( out,"/XUID %s def\n", cidmaster->xuid );
-	    /* SFIncrementXUID(cidmaster); */ /* Unique ID managment in CID fonts is too complex for this simple trick to work */
+	    /* SFIncrementXUID(cidmaster); */ /* Unique ID management in CID fonts is too complex for this simple trick to work */
 	}
     }
 

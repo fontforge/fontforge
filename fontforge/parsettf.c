@@ -366,7 +366,7 @@ static Encoding *enc_from_platspec(int platform,int specific) {
 	    enc = "EUC-KR";
 	else if ( specific==25 )
 	    enc = "EUC-CN";
-    } else if ( platform==2 ) {		/* obselete */
+    } else if ( platform==2 ) {		/* obsolete */
 	if ( specific==0 )
 	    enc = "ASCII";
 	else if ( specific==1 )
@@ -422,7 +422,7 @@ static char *_readencstring(FILE *ttf,int offset,int len,
     fseek(ttf,offset,SEEK_SET);
 
     if ( platform==1 ) {
-	/* Mac is screwy, there are several different varients of MacRoman */
+	/* Mac is screwy, there are several different variants of MacRoman */
 	/*  depending on the language, they didn't get it right when they  */
 	/*  invented their script system */
 	char *cstr, *cpt;
@@ -1905,7 +1905,7 @@ static SplineSet *ttfbuildcontours(int path_cnt,uint16 *endpt, char *flags,
 	if ( start==i-1 ) {
 	    /* MS chinese fonts have contours consisting of a single off curve*/
 	    /*  point. What on earth do they think that means? */
-	    /* Oh. I see. It's used to possition marks and such */
+	    /* Oh. I see. It's used to position marks and such */
 	    if ( cur->first==NULL ) {
 		sp = SplinePointCreate(pts[start].x, pts[start].y);
 		sp->ttfindex = i-1;
@@ -2101,7 +2101,7 @@ return;
 	cur->round_translation_to_grid = (flags & _ROUND) ? 1 : 0;
 	if ( flags & _ARGS_ARE_XY ) {
 	    /* There is some very strange stuff (half-)documented on the apple*/
-	    /*  site about how these should be interpretted when there are */
+	    /*  site about how these should be interpreted when there are */
 	    /*  scale factors, or rotations */
 	    /* It isn't well enough described to be comprehensible */
 	    /*  http://fonts.apple.com/TTRefMan/RM06/Chap6glyf.html */
@@ -2123,7 +2123,7 @@ return;
 	} else {
 	    /* Somehow we can get offsets by looking at the points in the */
 	    /*  points so far generated and comparing them to the points in */
-	    /*  the current componant */
+	    /*  the current component */
 	    /* How exactly is not described on any of the Apple, MS, Adobe */
 	    /* freetype looks up arg1 in the set of points we've got so far */
 	    /*  looks up arg2 in the new component (before renumbering) */
@@ -3208,7 +3208,7 @@ static void readcffprivate(FILE *ttf, struct topdicts *td, struct ttfinfo *info)
 		if ( i!=0 )
 		    td->bluevalues[i] += td->bluevalues[i-1];
 	    }
-	    if ( i==0 ) td->bluevalues[0] = 1234567;	/* Marker for an empty arry, which is legal, and different from no array */
+	    if ( i==0 ) td->bluevalues[0] = 1234567;	/* Marker for an empty array, which is legal, and different from no array */
 	  break;
 	  case 7:
 	    for ( i=0; i<sp && i<10; ++i ) {
@@ -3362,7 +3362,7 @@ return( NULL );
 return( strings[sid-nStdStrings]);
 }
 
-/* I really expect to deal with encodings in ttf cmap, but ocasionally we */
+/* I really expect to deal with encodings in ttf cmap, but occasionally we */
 /*  get a bare cff */
 static void readcffenc(FILE *ttf,struct topdicts *dict,struct ttfinfo *info,
 	char **strings, int scnt) {

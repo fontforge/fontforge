@@ -572,7 +572,7 @@ static void SplineComplete(SplineSet *cur,Spline *s,bigreal t_of_from,bigreal t_
 }
 
 /* I wish I did not need this routine, but unfortunately my remove overlap */
-/*  gets very confused by two splines which are parrallel, and without this */
+/*  gets very confused by two splines which are parallel, and without this */
 /*  fixup we get a lot of those at the edges */
 static SplineSet *MergeLinesToBottoms(SplineSet *bottoms,SplineSet *lines) {
     SplineSet *prev, *l;

@@ -1462,7 +1462,7 @@ void FVCorrectReferences(FontViewBase *fv) {
 			ref->transform[1]>0x7fff/16384.0 ||
 			ref->transform[2]>0x7fff/16384.0 ||
 			ref->transform[3]>0x7fff/16384.0 ||
-			ref->transform[0]<-2.0 ||	/* Numbers are asymetric, negative range slightly bigger */
+			ref->transform[0]<-2.0 ||	/* Numbers are asymmetric, negative range slightly bigger */
 			ref->transform[1]<-2.0 ||
 			ref->transform[2]<-2.0 ||
 			ref->transform[3]<-2.0 ) {

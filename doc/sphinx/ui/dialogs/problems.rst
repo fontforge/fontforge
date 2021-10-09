@@ -398,7 +398,7 @@ Bitmap/Outline Advance Width Mismatch
 
 If you have a font with embedded bitmaps, then you would expect that the bitmap
 advance width would be the same as the outline glyph's advance width (with
-approprate scaling and rounding, of course). This checks to ensure that that is
+appropriate scaling and rounding, of course). This checks to ensure that that is
 true.
 
 

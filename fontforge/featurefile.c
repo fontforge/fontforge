@@ -1643,7 +1643,7 @@ return;					/* No anchor positioning, no ligature carets */
     }
     fprintf( out, "\ntable GDEF {\n" );
     if ( needsclasses ) {
-	/* AFDKO does't like empty classes, there should be just a placeholder */
+	/* AFDKO doesn't like empty classes, there should be just a placeholder */
 	fprintf( out, "  GlyphClassDef %s, %s, %s, %s;\n\n",
 		hasclass[0]? clsnames[0]: "",
 		hasclass[1]? clsnames[1]: "",
@@ -5200,7 +5200,7 @@ static struct nameid *fea_ParseNameId(struct parseState *tok,int strid) {
     char *start, *pt;
     int max, ch, value;
     FILE *in = tok->inlist[tok->inc_depth];
-    /* nameid <id> [<string attibute>] string; */
+    /* nameid <id> [<string attribute>] string; */
     /*  "nameid" and <id> will already have been parsed when we get here */
     /* <string attribute> := <platform> | <platform> <specific> <language> */
     /* <patform>==3 => <specific>=1 <language>=0x409 */
@@ -5351,7 +5351,7 @@ static void fea_ParseFeatureNames(struct parseState *tok,uint32 tag) {
     struct otfname *head=NULL, *string;
     struct nameid *temp;
     struct feat_item *item;
-    /* name [<string attibute>] string; */
+    /* name [<string attribute>] string; */
 
     for (;;) {
 	fea_ParseTok(tok);
@@ -5538,7 +5538,7 @@ return;
 static void fea_ParseNameTable(struct parseState *tok) {
     struct nameid *head=NULL, *string;
     struct feat_item *item;
-    /* nameid <id> [<string attibute>] string; */
+    /* nameid <id> [<string attribute>] string; */
 
     for (;;) {
 	fea_ParseTok(tok);

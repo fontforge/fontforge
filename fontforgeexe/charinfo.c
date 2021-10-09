@@ -3456,7 +3456,7 @@ return;
     if ( !wasnew )
 return;
     /* If they added a new glyph to the sequence then set some defaults for it. */
-    /*  only the full advance has any likelyhood of being correct */
+    /*  only the full advance has any likelihood of being correct */
     ci = GDrawGetUserData(GGadgetGetWindow(g));
     is_horiz = GTabSetGetSel(GWidgetGetControl(ci->gw,CID_Tabs))-ci->vert_aspect;
     possub = GMatrixEditGet(g, &rows);
@@ -3485,7 +3485,7 @@ static GTextInfo truefalse[] = {
 static struct col_init extensionpart[] = {
     { me_string , NULL, NULL, NULL, N_("Glyph") },
     { me_enum, NULL, truefalse, NULL, N_("Extender") },
-/* GT: "Len" is an abreviation for "Length" */
+/* GT: "Len" is an abbreviation for "Length" */
     { me_int, NULL, NULL, NULL, N_("StartLen") },
     { me_int, NULL, NULL, NULL, N_("EndLen") },
     { me_int, NULL, NULL, NULL, N_("FullLen") },

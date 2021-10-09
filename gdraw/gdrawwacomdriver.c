@@ -264,7 +264,7 @@ static void Wacom_SendCoreEvent(GXDisplay *gdisp,int button,int type) {
     XEvent e;
     struct timeval tv;
 
-    /* We don't need to send MotionNotify events becasue WarpPointer does */
+    /* We don't need to send MotionNotify events because WarpPointer does */
     /*  that for us (it won't get the state as we might like it, but there's */
     /*  nothing I can do about that) */
     if ( ws->xw==None )

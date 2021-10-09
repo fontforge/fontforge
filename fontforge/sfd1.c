@@ -775,7 +775,7 @@ void SFD_AssignLookups(SplineFont1 *sf) {
     }
 
     /* Every FPST and ASM lives in its own lookup with one subtable */
-    /* But the old format refered to nested lookups by tag, and now we refer */
+    /* But the old format referred to nested lookups by tag, and now we refer */
     /*  to the lookup itself, so fix that up */
     for ( fpst=(FPST1 *) sf->sf.possub; fpst!=NULL; fpst=((FPST1 *) fpst->fpst.next) ) {
 	otl = CreateLookup(sf,fpst->tag, fpst->script_lang_index,

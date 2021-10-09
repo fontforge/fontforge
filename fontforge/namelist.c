@@ -792,7 +792,7 @@ return( sc->name );
 		*opt = '\0';
 return( buffer );
 	    } else if ( ch=='.' ) {
-		/* don't attempt to translate anything after a '.' just copy that litterally */
+		/* don't attempt to translate anything after a '.' just copy that literally */
 		*pt = ch;
 		while ( opt<oend && *pt )
 		    *opt++ = *pt++;

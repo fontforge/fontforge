@@ -44,7 +44,7 @@ value in "Offset text from path"
 Finally FontForge has two modes for binding text. Either it will use the place
 where the center of the glyph aligns on the path and rotate the entire glyph
 appropriately for that point, or it will distort each bit of the glyph as is
-appropriate for where that bit aligns on the path. In the first aproach the
+appropriate for where that bit aligns on the path. In the first approach the
 letters are cleaner individually but the text as a whole is more jagged.
 
 .. flex-grid::

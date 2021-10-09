@@ -33,7 +33,7 @@ table will be applied before any lookups in the GPOS table.
 
 There are buttons on the side for reordering the lookups. Up, Down, Top, Bottom
 should be obvious. You can also drag and drop lookups to reorder them. The
-[Sort] button will sort lookups depending on the cannonical order of the
+[Sort] button will sort lookups depending on the canonical order of the
 features attached to them. This will not always be the desired ordering, but it
 is a place to start.
 

@@ -45,10 +45,10 @@
 /***************************************************************************/
 /*                                                                         */
 /* Apple documents these tables at                                         */
-/*    http:// developer.apple.com/fonts/TTRefMan/RM06/Chap6[fgca]var.html  */
-/* The documentation for fvar is inconsistant. At one point it says that   */
+/*    http://developer.apple.com/fonts/TTRefMan/RM06/Chap6[fgca]var.html   */
+/* The documentation for fvar is inconsistent. At one point it says that   */
 /*  countSizePairs should be 3, at another point 2. It should be 2.        */
-/* The documentation for gvar is not intelligable, cvar refers you to gvar */
+/* The documentation for gvar is not intelligible, cvar refers you to gvar */
 /*  and is thus also incomprehensible                                      */
 /* The documentation for avar appears correct, but as Apple has no fonts   */
 /*  with an 'avar' table, so it's hard to test.                            */

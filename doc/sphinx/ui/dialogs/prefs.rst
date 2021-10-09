@@ -63,7 +63,7 @@ The Preferences Window...
 .. object:: FreeTypeAAFillInOutlineView
 
    In the :doc:`outline glyph view </ui/mainviews/charview>`, FontForge can generate glyph
-   filles using many techniques. If FontForge is using the freetype library for
+   fills using many techniques. If FontForge is using the freetype library for
    this, you can enable this option to have FontForge generate fills with anti
    aliased edges. The old default was not to antialias in order to save some
    RAM.
@@ -159,7 +159,7 @@ The Preferences Window...
 .. object:: CompactOnOpen
 
    Whether fontforge should make a font compact when it opens one (does not
-   apply to openning an sfd file which already knows whether it should be
+   apply to opening an sfd file which already knows whether it should be
    compact or not).
 
 .. figure:: /images/prefs-navigation.png
@@ -543,9 +543,9 @@ postscript hints, but it has also its own options:
    Instructing stems is sometimes not enough. This option makes FontForge to
    interpolate some important points (sharp corners, inflections, curve
    extremes), not affected by other instructions, between stem edges. Both
-   parallel and perpendicular extremes are controlled. Agressive optimization is
+   parallel and perpendicular extremes are controlled. Aggressive optimization is
    employed, to still leave as many points as possible to IUP, but manual review
-   is nevertheless greatly adviced.
+   is nevertheless greatly advised.
 
 .. object:: CounterControl
 

@@ -602,7 +602,7 @@ static void BuildFPST(struct node *node,struct att_dlg *att) {
 	if ( i ) {
 /* GT: There are various broad classes of lookups here and the first string */
 /* GT: describes those: "Contextual Positioning", Contextual Substitution", etc. */
-/* GT: Each of those may be formated in 3 different ways: by (or perhaps using */
+/* GT: Each of those may be formatted in 3 different ways: by (or perhaps using */
 /* GT: would be a better word) glyphs, classes or coverage tables. */
 /* GT: So this might look like: */
 /* GT:  Contextual Positioning by classes */
@@ -2806,7 +2806,7 @@ static void ShowAttCreateDlg(struct att_dlg *att, SplineFont *sf, int which,
 	propfont = GResourceFindFont("ShowATT.Font",propfont);
 
 	GDrawDecomposeFont(propfont, &rq);
-	rq.utf8_family_name = MONO_UI_FAMILIES;	/* I want to show tabluar data sometimes */
+	rq.utf8_family_name = MONO_UI_FAMILIES;	/* I want to show tabular data sometimes */
 	monofont = GDrawInstanciateFont(att->gw,&rq);
 	monofont = GResourceFindFont("ShowATT.MonoFont",monofont);
     }

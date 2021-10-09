@@ -853,7 +853,7 @@ static void morx_dumpLigaFeature(FILE *temp,SplineChar **glyphs,int gcnt,
 	    states[i][class-1].ismark = true;
 	}
     }
-    /* Ok, we've got the state machine now. Convert it into apple's wierd */
+    /* Ok, we've got the state machine now. Convert it into apple's weird */
     /*  (space saving) format */
     trans = malloc(class*state_cnt*sizeof(struct trans_entries));
     trans_cnt = 0;
@@ -1244,7 +1244,7 @@ static int morx_dumpASM(FILE *temp,ASM *sm, struct alltabs *at, SplineFont *sf )
 	for ( j=0; j<sm->state_cnt*sm->class_cnt; ++j )
 	    putc(transdata[j].transition,temp);
 	if ( ftell(temp)&1 )
-	    putc(0,temp);			/* Pad to a word boundry */
+	    putc(0,temp);			/* Pad to a word boundary */
     } else {
 	for ( j=0; j<sm->state_cnt*sm->class_cnt; ++j )
 	    putshort(temp,transdata[j].transition);
@@ -1441,7 +1441,7 @@ return( true );
       case gpos_single: case gpos_cursive: case gpos_mark2base:
       case gpos_mark2ligature: case gpos_mark2mark:
 return( false );
-    /* These are OpenType only, but they might be convertable to a state */
+    /* These are OpenType only, but they might be convertible to a state */
     /*  machine */
       case gsub_context:
       case gsub_contextchain: case gsub_reversecchain:
@@ -2135,7 +2135,7 @@ uint16 *props_array(SplineFont *sf,struct glyphinfo *gi) {
 		else
 		    dir = 11;		/* Other neutrals */
 		/* Not dealing with unicode 3 classes */
-		/* nor block seperator/ segment seperator */
+		/* nor block separator/ segment separator */
 	    } else if ( SCScriptFromUnicode(sc)==CHR('a','r','a','b') )
 		dir = 2;
 	    else if ( SCScriptFromUnicode(sc)==CHR('h','e','b','r') )

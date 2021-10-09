@@ -894,7 +894,7 @@ typedef struct undoes {
     enum undotype undotype;
     unsigned int was_modified: 1;
     unsigned int was_order2: 1;
-    int layer; /* the layer the undo is assoicated with or -1 if unknown */
+    int layer; /* the layer the undo is associated with or -1 if unknown */
     union {
 	struct {
 	    int16 width, vwidth;
@@ -1150,7 +1150,7 @@ typedef struct spline {
     unsigned int isticked: 1;
     unsigned int isneeded: 1;		/* Used in remove overlap */
     unsigned int isunneeded: 1;		/* Used in remove overlap */
-    unsigned int exclude: 1;		/* Used in remove overlap varient: exclude */
+    unsigned int exclude: 1;		/* Used in remove overlap variant: exclude */
     unsigned int ishorvert: 1;
     unsigned int knowncurved: 1;	/* We know that it curves */
     unsigned int knownlinear: 1;	/* it might have control points, but still traces out a line */
@@ -1164,7 +1164,7 @@ typedef struct spline {
     SplinePoint *to;
     Spline1D splines[2];		/* splines[0] is the x spline, splines[1] is y */
     struct linearapprox *approx;
-    /* Posible optimizations:
+    /* Possible optimizations:
 	Precalculate bounding box
 	Precalculate min/max/ points of inflection
     */
@@ -1459,7 +1459,7 @@ typedef struct splinechar {
     int orig_pos;		/* Original position in the glyph list */
     int16 width, vwidth;
     int16 lsidebearing;		/* only used when reading in a type1 font */
-				/*  Or an otf font where it is the subr number of a refered character */
+				/*  Or an otf font where it is the subr number of a referred character */
 			        /*  or a ttf font without bit 1 of head.flags set */
 			        /*  or (once upon a time, but no longer) a ttf font with vert metrics where it is the ymax value when we had a font-wide vertical offset */
 			        /*  or when generating morx where it is the mask of tables in which the glyph occurs */
@@ -1502,10 +1502,10 @@ typedef struct splinechar {
     /* 5 bits left (one more if we ignore compositionunit below) */
 #if HANYANG
     unsigned int compositionunit: 1;
-    int16 jamo, varient;
+    int16 jamo, variant;
 #endif
     struct splinecharlist *dependents;
-	    /* The dependents list is a list of all characters which refenence*/
+	    /* The dependents list is a list of all characters which reference*/
 	    /*  the current character directly */
     KernPair *kerns; // Note that the left character in the pair has the reference to the kerning pair, which in turn references the right character.
     KernPair *vkerns;

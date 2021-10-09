@@ -63,7 +63,7 @@ int aw_old_spaceguess;
 	rbearing so that our result is the visual spacing if the two
 	characters were jammed up against each other).
 	Here we look at all regions the characters have in common and
-	just find the seperation between.
+	just find the separation between.
 	Then given this array of distances we use a heuristic to define what
 	the visual spacing is.
     Then we find the "average visual distance" between two characters
@@ -81,11 +81,11 @@ Autokern has similar ideas, but is simpler:
     Adjust the kerning between the two characters so that
 	<kern> = <dspace>-(<rb>-<lb>-<visual>)
 	Again check for overlap (<dspace>/4 in any zone)
-    Kerning by the left character can always propigate to dependents
+    Kerning by the left character can always propagate to dependents
     Kerning by the right char should not
 	(ie. A and À kern the same with V
 	 but V kerns differently with e and é-- the accent gets in the way)
-    No, I think it is better not to propigate kerning.
+    No, I think it is better not to propagate kerning.
 */
 
 

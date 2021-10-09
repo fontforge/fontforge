@@ -377,7 +377,7 @@ SVG (Scalable Vector Graphics) fonts, come in two forms, one corresponds roughly
 to a PostScript Type1 font, and one to a PostScript Type 3 font.
 
 In the first format a set of contours is specified for each glyph. There is no
-indication given whether the font should be stroked or filled -- that informaton
+indication given whether the font should be stroked or filled -- that information
 will have inherited from the graphical environment when the font is used on
 text.
 

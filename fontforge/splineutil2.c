@@ -3834,7 +3834,7 @@ void SplineSetsInsertOpen(SplineSet **tbase,SplineSet *open) {
 
 /* The idea behind SplineSetsCorrect is simple. However there are many splinesets */
 /*  where it is impossible, so bear in mind that this only works for nice */
-/*  splines. Figure 8's, interesecting splines all cause problems */
+/*  splines. Figure 8's, intersecting splines all cause problems */
 /* The outermost spline should be clockwise (up), the next splineset we find */
 /*  should be down, if it isn't reverse it (if it's already been dealt with */
 /*  then ignore it) */
@@ -4188,7 +4188,7 @@ return( false );
     dist_error_diag = 0.0065 * ( sf->ascent + sf->descent );
     /* Assume that the first point passed to the function is the starting */
     /* point of the first of two vectors. Then try all possible combinations */
-    /* (there are 3), ensure the vectors are consistantly ordered, and */
+    /* (there are 3), ensure the vectors are consistently ordered, and */
     /* check if they are parallel.*/
     base = bp[0];
     for ( i=1; i<4; i++ ) {

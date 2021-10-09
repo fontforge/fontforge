@@ -1500,7 +1500,7 @@ static void DumpClass(FILE *gpos,uint16 *class,int numGlyphs) {
     }
     if ( ranges*3+1>last-first+1+2 || first==-1 ) {
 	if ( first==-1 ) first = last = 0;
-	putshort(gpos,1);		/* Format 1, list of all posibilities */
+	putshort(gpos,1);		/* Format 1, list of all possibilities */
 	putshort(gpos,first);
 	putshort(gpos,last-first+1);
 	for ( i=first; i<=last ; ++i )
@@ -3175,7 +3175,7 @@ return( NULL );
 	/* ginfo.sc==0 => There are no scripts. */
 	/* If both are true then we don't need to output the table */
 	/* It is perfectly possible to have lookups without scripts */
-	/*  (if some other table refered to them -- we don't currently */
+	/*  (if some other table referred to them -- we don't currently */
 	/*  support this, but we might some day). */
 	/* It is also possible to have scripts without lookups (to get */
 	/*  around a bug in Uniscribe which only processes some scripts */
@@ -3536,7 +3536,7 @@ return( 3 );
 return( 2 );			/* Ligature */
     }
 
-	/* I not quite sure what a componant glyph is. Probably something */
+	/* I not quite sure what a component glyph is. Probably something */
 	/*  that is not in the cmap table and is referenced in other glyphs */
 	/* (I've never seen it used by others) */
 	/* (Note: No glyph in a CID font can be components as all CIDs mean */
@@ -3552,7 +3552,7 @@ void otf_dumpgdef(struct alltabs *at, SplineFont *sf) {
     /* In spite of what the open type docs say, this table does appear to be */
     /*  required (at least the glyph class def table) if we do mark to base */
     /*  positioning */
-    /* I was wondering at the apperant contradiction: something can be both a */
+    /* I was wondering at the apparent contradiction: something can be both a */
     /*  base glyph and a ligature component, but it appears that the component*/
     /*  class is unused and everything is a base unless it is a ligature or */
     /*  mark */
@@ -4835,7 +4835,7 @@ void otf_dump_dummydsig(struct alltabs *at, SplineFont *sf) {
     /* I think it is even more stupid that MS choses this useless table as a*/
     /*  mark of whether a ttf font is OpenType or not. */
     /* But users want their fonts to show up as OpenType under MS. And I'm  */
-    /*  told an empty DSIG table works for that. So... a truely pointless   */
+    /*  told an empty DSIG table works for that. So... a truly pointless   */
     /*  instance of a pointless table. I suppose that's a bit ironic. */
 
     at->dsigf = dsigf = GFileTmpfile();

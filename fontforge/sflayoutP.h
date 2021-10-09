@@ -39,7 +39,7 @@ typedef struct fontdata {
     BDFFont *bdf;
     struct fontdata *next;
     struct fontdata *depends_on;	/* We use much of the ftc allocated for depends_on */
-					/* Can't free depends_on until after we get freeed */
+					/* Can't free depends_on until after we get freed */
     struct _GImage base;
     GImage gi;
     GClut clut;

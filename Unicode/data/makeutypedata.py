@@ -68,7 +68,7 @@ def get_pose(char: int, ccc: int, with_ccc: bool = False) -> Pose:
     return pose
 
 
-# These non-normative decompositions allow display algorithems to
+# These non-normative decompositions allow display algorithms to
 # pick something that looks right, even if the character doesn't mean
 # what it should. For example Alpha LOOKS LIKE A so if we don't have
 # an Alpha character available we can draw it with an A. But this decomp

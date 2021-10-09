@@ -134,7 +134,7 @@ return;
 /*  strictly needed */
 	if ( /*top == current_focus_window &&*/ td->gfocus!=NULL &&
 		td->gfocus->funcs->handle_focus!=NULL ) {
-            // We use the focus handler provided by the presently focussed gadget and process a loss-of-focus event for the currently focused object.
+            // We use the focus handler provided by the presently focused gadget and process a loss-of-focus event for the currently focused object.
             memset(&e, 0, sizeof(GEvent));
 	    e.type = et_focus;
 	    e.w = top;
@@ -925,7 +925,7 @@ return;
 	GRect wsize;
 	GDrawGetSize(gw, &wsize);
 
-	/* Make any offset simmetrical */
+	/* Make any offset symmetrical */
 	if (wsize.width >= 2*gadget->r.x) wsize.width -= 2*gadget->r.x;
 	else wsize.width = 0;
 	

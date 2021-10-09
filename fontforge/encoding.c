@@ -127,7 +127,7 @@ static int32 unicode_from_MacSymbol[] = {
 };
 
 /* I don't think iconv provides encodings for zapfdingbats nor jis201 */
-/*  Perhaps I should list them here for compatability, but I think I'll just */
+/*  Perhaps I should list them here for compatibility, but I think I'll just */
 /*  leave them out. I doubt they get used. */
 static Encoding texbase = { "TeX-Base-Encoding", 256, tex_base_encoding, NULL, NULL, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "", 0, 0, 0, NULL, NULL, NULL, NULL, NULL, 0, 0 };
        Encoding custom = { "Custom", 0, NULL, NULL, &texbase,                        1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, "", 0, 0, 0, NULL, NULL, NULL, NULL, NULL, 0, 0 };
@@ -1484,7 +1484,7 @@ return(NULL);
     new->display_antialias = cidmaster->display_antialias;
     new->hasvmetrics = cidmaster->hasvmetrics;
     new->fv = cidmaster->fv;
-    /* Don't copy the grid splines, there won't be anything meaningfull at top level */
+    /* Don't copy the grid splines, there won't be anything meaningful at top level */
     /*  and won't know which font to copy from below */
     new->bitmaps = cidmaster->bitmaps;		/* should already be flattened */
     cidmaster->bitmaps = NULL;			/* don't free 'em */

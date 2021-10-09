@@ -493,7 +493,7 @@ FontForge.
 
 .. object:: Tile Pattern...
 
-   Also not available in the default build, also controled by $
+   Also not available in the default build, also controlled by $
    ``configure --with-tilepath``. :ref:`This command <tilepath.Pattern>` allows
    you to design a pattern which will be layed down on the current layer m*n
    times (where m is the number of horizontal repeats and n the number of
@@ -859,7 +859,7 @@ FontForge.
    Consider the letters "Alpha" and "A". Often these may be represented by the
    same glyph. This command which change the encoding slightly so that the
    encoding for U+0391 will refer to the glyph named "A". Note that this is
-   subtly different from refering to a glyph named "Alpha" which refers to
+   subtly different from referring to a glyph named "Alpha" which refers to
    another glyph named "A".
 
    Adobe suggests that you use a reference rather than giving to unicode code
@@ -964,5 +964,5 @@ FontForge.
    specify two layers within the current font and then checks that they are
    similar. In the outline view a message box pops up to say if the layers are
    the same or different. In the Font View, the view will scroll to the first
-   glyph whch differs, all differing glyphs will be selected and a message box
+   glyph which differs, all differing glyphs will be selected and a message box
    pops up.

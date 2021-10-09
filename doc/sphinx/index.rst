@@ -539,7 +539,7 @@ a glyph into it's component splines. The
 reference) will bring up a dialog showing you what glyph is referred to, and
 allowing you to bring up an editing window on that glyph. Finally the
 :ref:`Element->Build->Accented Glyphs <elementmenu.Accented>` command will
-figure out what glyphs should be refered to to build this composite glyph, and
+figure out what glyphs should be referred to to build this composite glyph, and
 then will make those references and position them appropriately. So if "à" were
 selected and you did a
 :ref:`Element->Build->Accented Glyphs <elementmenu.Accented>` command, FontForge
@@ -585,7 +585,7 @@ You may add other layers with the
 :ref:`Element->Font Info->Layers <fontinfo.Layers>` pane. Each layer may have a
 name and a different kind of splines (quadratic or cubic).
 
-One potential use of addtional layers: Many people find it easier to edit using
+One potential use of additional layers: Many people find it easier to edit using
 cubic splines but like to produce truetype fonts with quadratic splines. You can
 use one layer to hold the cubic splines and another to hold the quadratics.
 There are commands for comparing layers

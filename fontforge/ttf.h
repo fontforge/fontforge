@@ -251,7 +251,7 @@ struct ttfinfo {
     unsigned int onlystrikes: 1;	/* Only read in the bitmaps, not the outlines */
     unsigned int onlyonestrike: 1;	/* Only read in one bitmap (strike) */
     unsigned int barecff: 1;		/* pay attention to the encoding in the cff file, we won't have a cmap */
-    unsigned int wdthcomplain: 1;	/* We've complained about advance widths exceding the max */
+    unsigned int wdthcomplain: 1;	/* We've complained about advance widths exceeding the max */
     unsigned int bbcomplain: 1;		/* We've complained about glyphs being outside the bounding box */
     unsigned int gbbcomplain: 1;	/* We've complained about points being outside the bounding box */
 
@@ -770,7 +770,7 @@ struct contexttree {
 	/* TrueType Composite glyph flags */
 #define _ARGS_ARE_WORDS	1
 #define _ARGS_ARE_XY	2
-#define _ROUND		4		/* round offsets so componant is on grid */
+#define _ROUND		4		/* round offsets so component is on grid */
 #define _SCALE		8
 /* 0x10 is reserved */
 #define _MORE		0x20

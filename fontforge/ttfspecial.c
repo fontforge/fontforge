@@ -93,7 +93,7 @@ static void PfEd_GlyphComments(SplineFont *sf, struct PfEd_subtabs *pfed,
     FILE *cmnt;
 
     any = 0;
-    /* We don't need to check in bygid order. We just want to know existance */
+    /* We don't need to check in bygid order. We just want to know existence */
     for ( i=0; i<sf->glyphcnt; ++i ) {
 	if ( sf->glyphs[i]!=NULL && sf->glyphs[i]->ttf_glyph!=-1 &&
 		sf->glyphs[i]->comment!=NULL ) {
@@ -748,7 +748,7 @@ static void PfEd_Layers(SplineFont *sf, struct PfEd_subtabs *pfed,
 
     otherlayers = calloc(sf->layer_cnt,sizeof(uint8));
 
-    /* We don't need to check in bygid order. We just want to know existance */
+    /* We don't need to check in bygid order. We just want to know existence */
     /* We don't check for refs because a reference to an empty glyph is empty too */
     for ( i=0; i<sf->glyphcnt; ++i ) {
 	if ( (sc=sf->glyphs[i])!=NULL && sc->ttf_glyph!=-1 ) {
@@ -1344,7 +1344,7 @@ static void pfed_read_glyph_layer(FILE *ttf,struct ttfinfo *info,Layer *ly,
 	    if ( contours[i].name_off!=0 )
 		contours[i].ss->contour_name = pfed_read_utf8(ttf,base+contours[i].name_off);
 	    pfed_read_normal_contour(ttf,contours[i].ss,base+contours[i].data_off,type);
-	} else {			/* Spiros are actually bound to an already existing layer and don't have an independent existance yet */
+	} else {			/* Spiros are actually bound to an already existing layer and don't have an independent existence yet */
 	    contours[i].ss = ss;
 	    if ( ss!=NULL ) {
 		pfed_read_spiro_contour(ttf,ss,base+contours[i].data_off,type);
@@ -1957,7 +1957,7 @@ Then the string table of null terminated strings. These strings should be in
 ASCII.
 */
 
-/* Internally FF stores BDF comments as one psuedo property per line. As you */
+/* Internally FF stores BDF comments as one pseudo property per line. As you */
 /*  might expect. But FreeType merges them into one large lump with newlines */
 /*  between lines. Which means that BDF tables created by FreeType will be in*/
 /*  that format. So we might as well be compatible. We will pack & unpack    */

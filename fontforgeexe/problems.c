@@ -252,7 +252,7 @@ static void FixIt(struct problems *p) {
 		p->sc->layers[p->layer].splines = ss;
 	    SCCharChangedUpdate(p->sc,p->layer);
 	} else
-	    IError("Could not find referenc");
+	    IError("Could not find reference");
 return;
     } else if ( p->explaining==_("This glyph's advance width is different from the standard width") ) {
 	SCSynchronizeWidth(p->sc,p->advancewidthval,p->sc->width,NULL);
@@ -1706,7 +1706,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		    first = s;
 		if ( s->acceptableextrema )
 	    continue;		/* If marked as good, don't check it */
-		/* rough appoximation to spline's length */
+		/* rough approximation to spline's length */
 		x = (s->to->me.x-s->from->me.x);
 		y = (s->to->me.y-s->from->me.y);
 		len2 = x*x + y*y;

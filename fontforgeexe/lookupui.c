@@ -4452,7 +4452,7 @@ return( true );
 	}
 
 	/* compare the updated data to the snapshot we took before and
-	 * trim the undo operation of superfluious data
+	 * trim the undo operation of superfluous data
 	 */
 	if( oldsfd ) {
 

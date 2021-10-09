@@ -100,7 +100,7 @@ Complex version:
 
 /* There are more CIDs used in this file than those listed here */
 /* The CIDs given here are for glyph lists (aw_glyphs & aw_grules) */
-/*  similar controls refering to coverage tables have 100 added to them */
+/*  similar controls referring to coverage tables have 100 added to them */
 /* The CIDs here are also for the "match" aspect of the tabsets */
 /*  those in backtrack get 20 added, those in lookahead get 40 */
 #define CID_GList	305
@@ -1724,7 +1724,7 @@ static int WhichSections(struct contextchaindlg *ccd, GGadget *g) {
     } else if ( off==20 )
 	sections = 0x1;		/* Backtracking */
     else
-	sections = 0x4;		/* Foreward */
+	sections = 0x4;		/* Forward */
 return( sections );
 }
 

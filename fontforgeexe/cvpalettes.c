@@ -1330,7 +1330,7 @@ static void ToolsMouse(CharView *cv, GEvent *event) {
     }
     pos = mi*2 + j;
     GGadgetEndPopup();
-    /* we have two fewer buttons than commands as two bottons each control two commands */
+    /* we have two fewer buttons than commands as two buttons each control two commands */
     if ( pos<0 || pos>=cvt_max )
 	pos = cvt_none;
     if ( event->type == et_mousedown ) {

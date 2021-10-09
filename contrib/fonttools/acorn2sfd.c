@@ -806,7 +806,7 @@ return( NULL );
     if ( outline.ns==-1 )
 	outline.ns = outline.scaffold_size/2;
     else if ( 2*outline.ns+1 > outline.scaffold_size )
-	fprintf( stderr, "Inconsistant scaffold count\n" );
+	fprintf( stderr, "Inconsistent scaffold count\n" );
     /* I don't understand the scaffold stuff. */
     /* there should be outline.ns-1 shorts of offsets, followed by a byte */
     /*  followed by the data the offsets point to. I'm just going to skip */

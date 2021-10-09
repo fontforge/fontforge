@@ -127,7 +127,7 @@ return(false);
 	bc->bitmap = base->data;
 	bc->bytes_per_line = base->bytes_per_line;
 
-	/* Sigh. Bitmaps use a different defn of set than images do. make it consistant */
+	/* Sigh. Bitmaps use a different defn of set than images do. make it consistent */
 	tot = bc->bytes_per_line*(bc->ymax-bc->ymin+1);
 	for ( pt = bc->bitmap, end = pt+tot; pt<end; *pt++ ^= 0xff );
 
