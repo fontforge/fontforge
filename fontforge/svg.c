@@ -2141,7 +2141,7 @@ static void xmlParseColorSource(xmlNodePtr top,char *name,DBounds *bbox,
 
 		prop = xmlGetProp(kid,(xmlChar *) "stop-color");
 		if ( prop!=NULL ) {
-		    xmlParseColor(prop, &grad->grad_stops[scnt].col, NULL, st);
+		    xmlParseColor(BAD_CAST prop, &grad->grad_stops[scnt].col, NULL, st);
 		    xmlFree(prop);
 		}
 
@@ -2518,16 +2518,16 @@ static void SVGFigureStyle(struct svg_state *st,char *name,
 	    if ( *name==';' ) ++name;
 
 	    if ( strcmp(namebuf,"color")==0 )
-		xmlParseColor(propbuf,&st->currentColor,NULL,st);
+		xmlParseColor(BAD_CAST propbuf,&st->currentColor,NULL,st);
 	    else if ( strcmp(namebuf,"fill")==0 )
-		st->dofill = xmlParseColor(propbuf,&st->fillcol,fill_colour_source,st);
+		st->dofill = xmlParseColor(BAD_CAST propbuf,&st->fillcol,fill_colour_source,st);
 	    else if ( strcmp(namebuf,"visibility")==0 )
 		st->isvisible = strcmp(propbuf,"hidden")!=0 &&
 			strcmp(propbuf,"colapse")!=0;
 	    else if ( strcmp(namebuf,"fill-opacity")==0 )
 		st->fillopacity = strtod(propbuf,NULL);
 	    else if ( strcmp(namebuf,"stroke")==0 )
-		st->dostroke = xmlParseColor(propbuf,&st->strokecol,stroke_colour_source,st);
+		st->dostroke = xmlParseColor(BAD_CAST propbuf,&st->strokecol,stroke_colour_source,st);
 	    else if ( strcmp(namebuf,"stroke-opacity")==0 )
 		st->strokeopacity = strtod((char *)propbuf,NULL);
 	    else if ( strcmp(namebuf,"stroke-width")==0 )
@@ -2560,7 +2560,7 @@ static void SVGFigureStyle(struct svg_state *st,char *name,
 		    if ( i<DASH_MAX ) st->dashes[i] = 0;
 		}
 	    } else if ( strcmp(namebuf,"stop-color")==0 )
-		xmlParseColor(propbuf,&st->stopColor,NULL,st);
+		xmlParseColor(BAD_CAST propbuf,&st->stopColor,NULL,st);
 	    else if ( strcmp(namebuf,"stop-opacity")==0 )
 		st->stopOpacity = strtod(propbuf,NULL);
 	    else {
@@ -2605,7 +2605,7 @@ return( NULL );
     }
     name = xmlGetProp(svg,(xmlChar *) "fill");
     if ( name!=NULL ) {
-	st.dofill = xmlParseColor(name,&st.fillcol,&fill_colour_source,&st);
+	st.dofill = xmlParseColor(BAD_CAST name,&st.fillcol,&fill_colour_source,&st);
 	xmlFree(name);
     }
     name = xmlGetProp(svg,(xmlChar *) "fill-opacity");
@@ -2615,7 +2615,7 @@ return( NULL );
     }
     name = xmlGetProp(svg,(xmlChar *) "stroke");
     if ( name!=NULL ) {
-	st.dostroke = xmlParseColor(name,&st.strokecol,&stroke_colour_source,&st);
+	st.dostroke = xmlParseColor(BAD_CAST name,&st.strokecol,&stroke_colour_source,&st);
 	xmlFree(name);
     }
     name = xmlGetProp(svg,(xmlChar *) "stroke-opacity");

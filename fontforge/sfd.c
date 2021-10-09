@@ -3969,7 +3969,7 @@ static struct ttf_table *SFDGetTtTable(FILE *sfd, SplineFont *sf,struct ttf_tabl
 	}
     }
     *pt = '\0';
-    tab->data = _IVParse(sf,buf,&tab->len,tterr,NULL);
+    tab->data = _IVParse(sf,buf,(int*)&tab->len,tterr,NULL);
     free(buf);
 
     if ( lasttab[which]!=NULL )
@@ -4720,7 +4720,7 @@ static GuidelineSet *SFDReadGuideline(FILE *sfd, GuidelineSet **gll, GuidelineSe
     getreal(sfd,&gl->point.x);
     getreal(sfd,&gl->point.y);
     getreal(sfd,&gl->angle);
-    getint(sfd,&gl->color);
+    getint(sfd,(int*)&gl->color);
     getint(sfd,&gl->flags);
     if ( lastgl!=NULL )
 	lastgl->next = gl;

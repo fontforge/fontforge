@@ -2085,7 +2085,7 @@ return( NULL );
 	}
 	while ( (ch=getc(bdf))!='\n' && ch!='\r' && ch!=EOF );
 	pixelsize = slurp_header(bdf,&ascent,&descent,&enc,family,mods,full,
-		&depth,foundry,fontname,comments,&defs,&upos,&uwidth,&dummy,filename);
+		&depth,foundry,fontname,comments,&defs,(int*)&upos,(int*)&uwidth,&dummy,filename);
 	if ( defs.dwidth == 0 ) defs.dwidth = pixelsize;
 	if ( defs.dwidth1 == 0 ) defs.dwidth1 = pixelsize;
     }
