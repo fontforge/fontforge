@@ -2177,6 +2177,7 @@ static void BCProtectUndoes( Undoes *undo,BDFChar *bc ) {
 	  case ut_composit:
 	    BCProtectUndoes( undo->u.composit.bitmaps,bc );
 	  break;
+	  default: break;
 	}
     }
 }

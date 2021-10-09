@@ -521,6 +521,7 @@ static void HistScroll(struct hist_dlg *hist,struct sbevent *sb) {
       case et_sb_thumbrelease:
         newpos = sb->pos;
       break;
+      case et_sb_halfup: case et_sb_halfdown: break;
     }
     if ( newpos>(hist->h->high+1-hist->h->low)-cols + hist->h->low )
         newpos = (hist->h->high+1-hist->h->low)-cols + hist->h->low;
@@ -610,6 +611,7 @@ return( false );
       case et_mousedown:
 	GGadgetEndPopup();
       break;
+      default: break;
     }
 return( true );
 }
@@ -632,6 +634,7 @@ return( false );
       case et_mousedown:
 	GGadgetEndPopup();
       break;
+      default: break;
     }
 return( true );
 }
@@ -658,6 +661,7 @@ return( false );
 	GGadgetEndPopup();
 	HistPress(hist,event);
       break;
+      default: break;
     }
 return( true );
 }
@@ -715,6 +719,7 @@ return( false );
 	    } else
 		hist->done = true;
 	  break;
+	  default: break;
 	}
     }
 return( true );

@@ -119,7 +119,7 @@ enum et_subtype { et_buttonpress, et_buttonactivate, et_radiochanged,
 enum sb { et_sb_top, et_sb_uppage, et_sb_up, et_sb_left=et_sb_up,
 	  et_sb_down, et_sb_right=et_sb_down, et_sb_downpage,
 	  et_sb_bottom,
-	  et_sb_thumb, et_sb_thumbrelease };
+	  et_sb_thumb, et_sb_thumbrelease, et_sb_halfup, et_sb_halfdown };
 
 struct sbevent {
     enum sb type;

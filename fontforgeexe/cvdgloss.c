@@ -1120,6 +1120,7 @@ static void dvgloss_scroll(DebugView *dv,struct sbevent *sb) {
       case et_sb_thumbrelease:
         newpos = sb->pos;
       break;
+      case et_sb_halfup: case et_sb_halfdown: break;
     }
     if ( newpos>max-size.height/dv->ii.fh )
         newpos = max-size.height/dv->ii.fh;
@@ -1178,6 +1179,7 @@ return( DVChar(dv,event));
 	  case et_scrollbarchange:
 	    dvgloss_scroll(dv,&event->u.control.u.sb);
 	  break;
+	  default: break;
 	}
       break;
       case et_resize:
@@ -1198,6 +1200,7 @@ return( DVChar(dv,event));
       case et_mousemove:
 	GGadgetEndPopup();
       break;
+      default: break;
     }
 return( true );
 }

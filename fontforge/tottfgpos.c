@@ -2689,6 +2689,7 @@ static void AnchorsAway(FILE *lfile,SplineFont *sf,
 	if ( marks[0]!=NULL && mkmk!=NULL )
 	    dumpgposAnchorData(lfile,acfirst,at_basemark,marks,mkmk,classcnt,gi);
       break;
+      default: break;
     }
     for ( i=0; i<classcnt; ++i )
 	free(marks[i]);
@@ -2765,6 +2766,7 @@ return( true );
 	/*  Let's output it anyway, just in case we ever support some other */
 	/*  table that uses GPOS/GSUB lookups (I think JUST) */
 return( false );
+      default: break;
     }
     /* Should never get here, but gcc probably thinks we might */
 return( true );
@@ -2832,6 +2834,7 @@ static void otf_dumpALookup(FILE *lfile, OTLookup *otl, SplineFont *sf,
 	      case gsub_reversecchain:
 		dumpg___ContextChain(lfile,sf,sub,at);
 	      break;
+	      default: break;
 	    }
 	    if ( ftell(lfile)-sub->subtable_offset==0 ) {
 		if ( lookup_sub_table_contains_no_data_count < 32 ) {

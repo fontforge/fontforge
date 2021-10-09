@@ -1746,6 +1746,7 @@ static void KCD_HScroll(KernClassDlg *kcd,struct sbevent *sb) {
       case et_sb_thumbrelease:
         newpos = sb->pos;
       break;
+      case et_sb_halfup: case et_sb_halfdown: break;
     }
     if ( newpos + (kcd->width/kcd->kernw) >= kcd->second_cnt )
 	newpos = kcd->second_cnt - (kcd->width/kcd->kernw);
@@ -1806,6 +1807,7 @@ static void KCD_VScroll(KernClassDlg *kcd,struct sbevent *sb) {
       case et_sb_thumbrelease:
         newpos = sb->pos;
       break;
+      case et_sb_halfup: case et_sb_halfdown: break;
     }
     if ( newpos + (kcd->height/kcd->kernh) >= kcd->first_cnt )
 	newpos = kcd->first_cnt - (kcd->height/kcd->kernh);
@@ -1836,6 +1838,7 @@ return( false );
 	kcd->subwidth = event->u.resize.size.width;
 	GDrawRequestExpose(gw,NULL,false);
       break;
+      default: break;
     }
 return( true );
 }
@@ -1893,8 +1896,10 @@ return( false );
 	    else
 		KCD_VScroll(kcd,&event->u.control.u.sb);
 	  break;
+	  default: break;
 	}
       break;
+      default: break;
     }
 return( true );
 }

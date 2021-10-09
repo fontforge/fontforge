@@ -5286,6 +5286,7 @@ return( false );
       case et_timer:
 	VWCheckup(vw);
       break;
+      default: break;
     }
 return( true );
 }

@@ -139,6 +139,7 @@ ret = SFUndoCreateSFD( sfut_fontinfo,
 			   sfdfrag );
 
 break;
+case sfut_none: case sfut_lookups: case sfut_lookups_kerns: case sfut_noop: break;
 }
 
 return ret;

@@ -274,7 +274,7 @@ return( false );
 
 
 /* don't use mnemonics 'C' or 'O' (Cancel & OK) */
-enum pref_types { pr_int, pr_real, pr_bool, pr_enum, pr_encoding, pr_string,
+enum pref_types { pr_int, pr_real, pr_bool, pr_encoding, pr_string,
 	pr_file, pr_namelist, pr_unicode, pr_angle };
 struct enums { char *name; int value; };
 

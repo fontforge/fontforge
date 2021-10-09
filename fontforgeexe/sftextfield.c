@@ -647,6 +647,7 @@ return( true );
 	    SFTextAreaSelectWord(st,st->sel_start,&st->sel_start,&st->sel_end);
 	SFTextArea_Replace(st,nullstr);
 return( true );
+      case ec_search: case ec_backsearch: case ec_max: break;
     }
 return( false );
 }

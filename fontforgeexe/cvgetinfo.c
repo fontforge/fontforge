@@ -908,6 +908,7 @@ static void AI_DisplayRadio(GIData *ci,enum anchor_type type) {
       case at_cexit:
 	GGadgetSetChecked(GWidgetGetControl(ci->gw,CID_CursExit),true);
       break;
+      case at_max: break;
     }
 }
 

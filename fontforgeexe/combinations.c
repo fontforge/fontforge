@@ -1042,6 +1042,7 @@ return( true );
       case et_resize:
 	KPV_Resize(kpd);
       break;
+      default: break;
     }
 return( true );
 }

@@ -433,6 +433,7 @@ static void BdfP_VScroll(struct bdf_dlg *bd,struct sbevent *sb) {
       case et_sb_thumbrelease:
         newpos = sb->pos;
       break;
+      case et_sb_halfup: case et_sb_halfdown: break;
     }
     if ( newpos + page > bd->cur->bdf->prop_cnt+1 )
 	newpos = bd->cur->bdf->prop_cnt+1 - page;
