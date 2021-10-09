@@ -34,10 +34,9 @@
 #include "gkeysym.h"
 #include "gresedit.h"
 #include "gresourceP.h"
+#include "gutils.h"
 #include "gwidget.h"
 #include "ustring.h"
-
-#include <gio/gio.h>
 
 struct tofree {
     GGadgetCreateData *gcd;
@@ -833,7 +832,7 @@ static int gre_e_h(GWindow gw, GEvent *event) {
 	GRE_DoCancel(gre);
     } else if ( event->type == et_char ) {
         if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-            g_app_info_launch_default_for_uri("https://fontforge.org/docs/ui/misc/resedit.html", NULL, NULL);
+			help("ui/misc/resedit.html", NULL);
 	    return true;
         }
 	return false;
