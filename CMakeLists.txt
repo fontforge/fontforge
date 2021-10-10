@@ -79,7 +79,8 @@ build_option(REAL_TYPE ENUM "double" "Sets the floating point type used." "doubl
 build_option(THEME     ENUM "tango"  "Sets the GUI theme." "tango" "2012")
 
 build_option(FONT_FAMILIES_SERIF     STRING "default"  "Serif font family names to use in the UI separated by commas")
-build_option(FONT_FAMILIES_SANS      STRING "default"  "Sans-Serif font family names to use in the UI separated by commas")
+build_option(FONT_FAMILIES_UI      STRING "default"  "Font family names to use in the UI separated by commas (typically sans-serif)")
+build_option(FONT_FAMILIES_LABEL      STRING "default"  "Font family names for labeling unicode characters (very wide unicode coverage, e.g. unifont, recommended)")
 build_option(FONT_FAMILIES_MONO      STRING "default"  "Monospace font family names to use in the UI separated by commas")
 
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
@@ -98,7 +99,8 @@ endif()
 enable_sanitizer("${ENABLE_SANITIZER}")
 
 set_font_family(serif "${FONT_FAMILIES_SERIF}")
-set_font_family(sans "${FONT_FAMILIES_SANS}")
+set_font_family(ui "${FONT_FAMILIES_SANS}")
+set_font_family(label "${FONT_FAMILIES_SANS}")
 set_font_family(mono "${FONT_FAMILIES_MONO}")
 
 # Required and default dependencies

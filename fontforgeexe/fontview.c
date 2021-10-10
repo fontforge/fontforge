@@ -7055,12 +7055,14 @@ return;
 }
 
 // These aren't used but exist to make the resource system work.
-static GResFont sans_viewfont = GRESFONT_INIT("400 12pt " SANS_UI_FAMILIES);
+static GResFont ui_viewfont = GRESFONT_INIT("400 12pt " SANS_UI_FAMILIES);
+static GResFont label_viewfont = GRESFONT_INIT("400 12pt " LABEL_UI_FAMILIES);
 static GResFont mono_viewfont = GRESFONT_INIT("400 12pt " MONO_UI_FAMILIES);
 static GResFont serif_viewfont = GRESFONT_INIT("400 12pt " SERIF_UI_FAMILIES);
 
 static struct resed view_re[] = {
-    {N_("DefaultFont"), "DefaultFont", rt_font, &sans_viewfont, N_("The primary display font family (normally sans-serif) at the normal size for FontView characters"), NULL, { 0 }, 0, 0 },
+    {N_("DefaultFont"), "DefaultFont", rt_font, &ui_viewfont, N_("The primary display font family (normally sans-serif) at the normal size for menus, dialogs, etc."), NULL, { 0 }, 0, 0 },
+    {N_("LabelFont"), "LabelFont", rt_font, &label_viewfont, N_("A font for displaying unicode characters, normally used for FontView glyph labels."), NULL, { 0 }, 0, 0 },
     {N_("MonoFont"), "MonoFont", rt_font, &mono_viewfont, N_("A monospace font family at the same size as DefaultFont"), NULL, { 0 }, 0, 0 },
     {N_("SerifFont"), "SerifFont", rt_font, &serif_viewfont, N_("A font family with serifs at the same size as DefaultFont (for the splash screen)"), NULL, { 0 }, 0, 0 },
     {N_("Color|Background"), "Background", rt_color, &view_bgcol, N_("Background color for the drawing area of all views"), NULL, { 0 }, 0, 0 },

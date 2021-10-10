@@ -1,4 +1,5 @@
-fontforge.View.DefaultFont: 12pt @FONTFORGE_SANS_FAMILIES@
+fontforge.View.DefaultFont: 12pt @FONTFORGE_UI_FAMILIES@
+fontforge.View.LabelFont: ^View.DefaultFont @FONTFORGE_LABEL_FAMILIES@
 fontforge.View.MonoFont: ^View.DefaultFont @FONTFORGE_MONO_FAMILIES@
 fontforge.View.SerifFont: ^View.DefaultFont @FONTFORGE_SERIF_FAMILIES@
 fontforge.View.Background: #ffffff
@@ -21,7 +22,7 @@ fontforge.FontView.MetricsAdvanceAtColor: #008000
 fontforge.FontView.MetricsAdvanceToColor: #008000
 fontforge.FontView.MetricsBaselineColor: #0000c0
 fontforge.FontView.MetricsOriginColor: #c00000
-fontforge.FontView.Font: ^View.DefaultFont
+fontforge.FontView.Font: ^View.LabelFont
 
 fontforge.CharView.PointColor: #ff0000
 fontforge.CharView.FirstPointColor: #707000

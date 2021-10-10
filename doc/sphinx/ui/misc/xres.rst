@@ -53,10 +53,13 @@ Reference Font Names
 
 Instead of specifying a font from scratch you can do so in relation to a
 reference font, given by the name of the resource preceded by a caret. The
-primary fonts to reference are "View.DefaultFont", "View.MonoFont", and
-"View.SerifFont". These are (or should be) specified with appropriate family
-lists for a sans-serif, monospace, and serif font respectively. They also
-specify a reference font size, which is 12 points by default.
+primary fonts to reference are "View.DefaultFont", "View.LabelFont",
+"View.MonoFont", and "View.SerifFont". These are (or should be) specified with
+appropriate family lists for a sans-serif, "unicode", monospace, and serif font
+respectively. They also specify a reference font size, which is 12 points by
+default. The label "unicode" font is typically used in cases where extended
+or obscure unicode characters are directly displayed (most often as glyph
+slot labels in the FontView window).
 
 To copy the exact specification of a different font you can just include the
 reference name, as in "^View.DefaultFont". To override the size, weight or

@@ -1,4 +1,5 @@
 fontforge.View.DefaultFont: 12pt Cantarell,sans,clearlyu,unifont,unifont upper
+fontforge.View.LabelFont: ^View.DefaultFont @FONTFORGE_LABEL_FAMILIES@
 fontforge.View.MonoFont: ^View.DefaultFont Inconsolata,monospace,clearlyu,unifont,unifont upper
 fontforge.View.SerifFont: ^View.DefaultFont @FONTFORGE_SERIF_FAMILIES@
 fontforge.View.Background: #ffffff
@@ -20,7 +21,7 @@ fontforge.FontView.MetricsAdvanceAtColor: #008000
 fontforge.FontView.MetricsAdvanceToColor: #008000
 fontforge.FontView.MetricsBaselineColor: #0000c0
 fontforge.FontView.MetricsOriginColor: #c00000
-fontforge.FontView.Font: ^View.DefaultFont
+fontforge.FontView.Font: ^View.LabelFont
 fontforge.CharView.PointColor: #ff0000
 fontforge.CharView.FirstPointColor: #707000
 fontforge.CharView.SelectedPointColor: #c8c800
