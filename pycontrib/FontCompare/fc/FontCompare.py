@@ -31,10 +31,10 @@
     along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 """
-Contains methods for making comparisions using a host of tests.
+Contains methods for making comparisons using a host of tests.
 They are also for modifying a glyph by altering its
 serif, stroke , stem thickness, size, italic angle etc.
-and then later producing scores by doing bitmap comparision
+and then later producing scores by doing bitmap comparison
 """
 from fc.BitmapHandler import BitmapCompare
 from fc.mockify import MockFont
