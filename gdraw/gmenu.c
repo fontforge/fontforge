@@ -149,26 +149,6 @@ typedef struct gmenu {
     GGadget *vsb;
 } GMenu;
 
-static char*
-translate_shortcut (int i, char *modifier)
-{
-  char buffer[32];
-  char *temp;
-  TRACE("translate_shortcut(top) i:%d modifier:%s\n", i, modifier );
-
-  sprintf (buffer, "Flag0x%02x", 1 << i);
-  temp = dgettext (GMenuGetShortcutDomain (), buffer);
-
-  if (strcmp (temp, buffer) != 0)
-      modifier = temp;
-  else
-      modifier = dgettext (GMenuGetShortcutDomain (), modifier);
-
-  TRACE("translate_shortcut(end) i:%d modifier:%s\n", i, modifier );
-
-  return modifier;
-}
-
 static int GMenuGetMenuPathRecurse( GMenuItem** stack,
 				    GMenuItem *basemi,
 				    GMenuItem *targetmi ) {

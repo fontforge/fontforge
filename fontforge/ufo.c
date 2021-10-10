@@ -282,29 +282,6 @@ static xmlNodePtr xmlNewNodeInteger(xmlNsPtr ns, const xmlChar * name, long int 
   }
   return childtmp;
 }
-static xmlNodePtr xmlNewChildFloat(xmlNodePtr parent, xmlNsPtr ns, const xmlChar * name, double value) {
-  char * valtmp = smprintf("%g", value);
-  // Textify the value to be enclosed.
-  if (valtmp != NULL) {
-    xmlNodePtr childtmp = xmlNewChild(parent, NULL, BAD_CAST name, BAD_CAST valtmp); // Make a text node for the value.
-    free(valtmp); valtmp = NULL; // Free the temporary text store.
-    return childtmp;
-  }
-  return NULL;
-}
-static xmlNodePtr xmlNewNodeFloat(xmlNsPtr ns, const xmlChar * name, double value) {
-  char * valtmp = smprintf("%g", value);
-  xmlNodePtr childtmp = xmlNewNode(NULL, BAD_CAST name); // Create a named node.
-  // Textify the value to be enclosed.
-  if (valtmp != NULL) {
-    xmlNodePtr valtmpxml = xmlNewText(BAD_CAST valtmp); // Make a text node for the value.
-    xmlAddChild(childtmp, valtmpxml); // Attach the text node as content of the named node.
-    free(valtmp); valtmp = NULL; // Free the temporary text store.
-  } else {
-    xmlFreeNode(childtmp); childtmp = NULL;
-  }
-  return NULL;
-}
 static xmlNodePtr xmlNewChildString(xmlNodePtr parent, xmlNsPtr ns, const xmlChar * name, char * value) {
   xmlNodePtr childtmp = xmlNewTextChild(parent, ns, BAD_CAST name, BAD_CAST value); // Make a text node for the value.
   return childtmp;
@@ -325,13 +302,6 @@ static xmlNodePtr xmlNewNodeVPrintf(xmlNsPtr ns, const xmlChar * name, char * fo
   xmlAddChild(childtmp, valtmpxml); // Attach the text node as content of the named node.
   free(valtmp); valtmp = NULL; // Free the temporary text store.
   return childtmp;
-}
-static xmlNodePtr xmlNewNodePrintf(xmlNsPtr ns, const xmlChar * name, char * format, ...) {
-  va_list arguments;
-  va_start(arguments, format);
-  xmlNodePtr output = xmlNewNodeVPrintf(ns, name, format, arguments);
-  va_end(arguments);
-  return output;
 }
 static xmlNodePtr xmlNewChildVPrintf(xmlNodePtr parent, xmlNsPtr ns, const xmlChar * name, char * format, va_list arguments) {
   xmlNodePtr output = xmlNewNodeVPrintf(ns, name, format, arguments);
@@ -816,12 +786,6 @@ xmlNodePtr PythonDictToXML(PyObject *dict, xmlNodePtr target, const char **exclu
 /* ****************************   GLIF Output    **************************** */
 /* ************************************************************************** */
 
-static int refcomp(const void *_r1, const void *_r2) {
-    const RefChar *ref1 = *(RefChar * const *)_r1;
-    const RefChar *ref2 = *(RefChar * const *)_r2;
-return( strcmp( ref1->sc->name, ref2->sc->name) );
-}
-
 xmlNodePtr _GlifToXML(const SplineChar *sc, int layer, int version) {
     if (layer > sc->layer_cnt) return NULL;
     const struct altuni *altuni;
@@ -1002,11 +966,6 @@ xmlNodePtr _GlifToXML(const SplineChar *sc, int layer, int version) {
 	    refs = malloc(cnt*sizeof(RefChar *));
 	    for ( cnt=0, ref = sc->layers[layer].refs; ref!=NULL; ref=ref->next ) if ((SCWorthOutputting(ref->sc) || SCHasData(ref->sc) || ref->sc->glif_name != NULL))
 		refs[cnt++] = ref;
-	    // It seems that sorting these breaks something.
-#if 0
-	    if ( cnt>1 )
-		qsort(refs,cnt,sizeof(RefChar *),refcomp);
-#endif // 0
 	    for ( i=0; i<cnt; ++i ) {
 		ref = refs[i];
     xmlNodePtr componentxml = xmlNewChild(outlinexml, NULL, BAD_CAST "component", NULL);
@@ -1170,10 +1129,6 @@ static int UFOOutputMetaInfo(const char *basedir, SplineFont *sf, int version) {
     xmlFreeDoc(plistdoc); // Free the memory.
     xmlCleanupParser();
     return true;
-}
-
-static real PointsDistance(BasePoint p0, BasePoint p1) {
-	return sqrt(pow((p1.x - p0.x), 2) + pow((p1.y - p0.y), 2));
 }
 
 static real AngleFromPoints(BasePoint p0, BasePoint p1) {
@@ -1658,15 +1613,6 @@ static int UFOOutputGroups(const char *basedir, SplineFont *sf, int version) {
     xmlFreeDoc(plistdoc); // Free the memory.
     xmlCleanupParser();
     return true;
-}
-
-static void KerningPListAddGlyph(xmlNodePtr parent, const char *key, const KernPair *kp) {
-    xmlNewChild(parent, NULL, BAD_CAST "key", BAD_CAST key); // "<key>%s</key>" key
-    xmlNodePtr dictxml = xmlNewChild(parent, NULL, BAD_CAST "dict", NULL); // "<dict>"
-    while ( kp!=NULL ) {
-      PListAddInteger(dictxml, kp->sc->name, kp->off); // "<key>%s</key><integer>%d</integer>" kp->sc->name kp->off
-      kp = kp->next;
-    }
 }
 
 struct ufo_kerning_tree_left;
@@ -2407,12 +2353,6 @@ static AnchorPoint *UFOLoadAnchor(SplineFont *sf, SplineChar *sc, xmlNodePtr xml
             return ap;
         }
         return NULL;
-}
-
-static real PointsSame(BasePoint p0, BasePoint p1) {
-	if (p0.x == p1.x && p0.y == p1.y)
-		return 1;
-	return 0;
 }
 
 static SplineSet *GuidelineToSpline(SplineFont *sf, GuidelineSet *gl) {
@@ -3222,6 +3162,7 @@ static struct ff_glyphclasses *GlyphGroupDeduplicate(struct ff_glyphclasses *gro
   return group_base;
 }
 
+#ifdef UFO_GUESS_SCRIPTS
 static uint32 script_from_glyph_list(SplineFont *sf, const char *glyph_names) {
   uint32 script = DEFAULT_SCRIPT;
   char *delimited_names;
@@ -3237,6 +3178,7 @@ static uint32 script_from_glyph_list(SplineFont *sf, const char *glyph_names) {
   free(delimited_names); delimited_names = NULL;
   return script;
 }
+#endif
 
 #define GROUP_NAME_KERNING_UFO 1
 #define GROUP_NAME_KERNING_FEATURE 2
@@ -3554,93 +3496,6 @@ return;
     sf->groups = GlyphGroupDeduplicate(sf->groups, sf, 1);
     // We now add kerning classes for any groups that are named like kerning classes.
     MakeKerningClasses(sf, sf->groups);
-    xmlFreeDoc(doc);
-}
-
-static void UFOHandleKern(SplineFont *sf,char *basedir,int isv) {
-    char *fname = buildname(basedir,isv ? "vkerning.plist" : "kerning.plist");
-    xmlDocPtr doc=NULL;
-    xmlNodePtr plist,dict,keys,value,subkeys;
-    char *keyname, *valname;
-    int offset;
-    SplineChar *sc, *ssc;
-    KernPair *kp;
-    char *end;
-    uint32 script;
-
-    if ( GFileExists(fname))
-	doc = xmlParseFile(fname);
-    free(fname);
-    if ( doc==NULL )
-return;
-
-    // If there is native kerning (as we would expect if the function has not returned), set the SplineFont flag to prefer it on output.
-    sf->preferred_kerning = 1;
-
-    plist = xmlDocGetRootElement(doc);
-    dict = FindNode(plist->children,"dict");
-    if ( xmlStrcmp(plist->name,(const xmlChar *) "plist")!=0 || dict==NULL ) {
-	LogError(_("Expected property list file"));
-	xmlFreeDoc(doc);
-return;
-    }
-    for ( keys=dict->children; keys!=NULL; keys=keys->next ) {
-	for ( value = keys->next; value!=NULL && xmlStrcmp(value->name,(const xmlChar *) "text")==0;
-		value = value->next );
-	if ( value==NULL )
-    break;
-	if ( xmlStrcmp(keys->name,(const xmlChar *) "key")==0 ) {
-	    keyname = (char *) xmlNodeListGetString(doc, keys->children, true);
-	    sc = SFGetChar(sf,-1,keyname);
-	    free(keyname);
-	    if ( sc==NULL )
-	continue;
-	    keys = value;
-	    for ( subkeys = value->children; subkeys!=NULL; subkeys = subkeys->next ) {
-		for ( value = subkeys->next; value!=NULL && xmlStrcmp(value->name,(const xmlChar *) "text")==0;
-			value = value->next );
-		if ( value==NULL )
-	    break;
-		if ( xmlStrcmp(subkeys->name,(const xmlChar *) "key")==0 ) {
-		    keyname = (char *) xmlNodeListGetString(doc,subkeys->children,true);
-		    ssc = SFGetChar(sf,-1,keyname);
-		    free(keyname);
-		    if ( ssc==NULL )
-		continue;
-		    for ( kp=isv?sc->vkerns:sc->kerns; kp!=NULL && kp->sc!=ssc; kp=kp->next );
-		    if ( kp!=NULL )
-		continue;
-		    subkeys = value;
-		    valname = (char *) xmlNodeListGetString(doc,value->children,true);
-		    offset = strtol(valname,&end,10);
-		    if ( *end=='\0' ) {
-			kp = chunkalloc(sizeof(KernPair));
-			kp->off = offset;
-			kp->sc = ssc;
-			if ( isv ) {
-			    kp->next = sc->vkerns;
-			    sc->vkerns = kp;
-			} else {
-			    kp->next = sc->kerns;
-			    sc->kerns = kp;
-			}
-#ifdef UFO_GUESS_SCRIPTS
-			script = SCScriptFromUnicode(sc);
-			if ( script==DEFAULT_SCRIPT )
-			    script = SCScriptFromUnicode(ssc);
-#else
-			// Some test cases have proven that FontForge would do best to avoid classifying these.
-			script = DEFAULT_SCRIPT;
-#endif // UFO_GUESS_SCRIPTS
-			kp->subtable = SFSubTableFindOrMake(sf,
-				isv?CHR('v','k','r','n'):CHR('k','e','r','n'),
-				script, gpos_pair);
-		    }
-		    free(valname);
-		}
-	    }
-	}
-    }
     xmlFreeDoc(doc);
 }
 

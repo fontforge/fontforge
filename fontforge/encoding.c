@@ -453,50 +453,6 @@ Encoding *FindOrMakeEncoding(const char *name) {
 return( _FindOrMakeEncoding(name,true));
 }
 
-/* Plugin API */
-int AddEncoding(char *name,EncFunc enc_to_uni,EncFunc uni_to_enc,int max) {
-    Encoding *enc;
-    int i;
-
-    for ( enc=enclist; enc!=NULL; enc=enc->next ) {
-	if ( strmatch(name,enc->enc_name)==0 ||
-		(enc->iconv_name!=NULL && strmatch(name,enc->iconv_name)==0)) {
-	    if ( enc->tounicode_func==NULL )
-return( 0 );			/* Failure */
-	    else {
-		enc->tounicode_func   = enc_to_uni;
-		enc->fromunicode_func = uni_to_enc;
-		enc->char_cnt	      = max;
-return( 2 );
-	    }
-	}
-    }
-
-    if ( strmatch(name,"unicode")==0 || strmatch(name,"iso10646")==0 || strmatch(name,"iso10646-1")==0 )
-return( 0 );			/* Failure */
-    if ( strmatch(name,"unicode4")==0 || strmatch(name,"ucs4")==0 )
-return( 0 );			/* Failure */
-
-    enc = chunkalloc(sizeof(Encoding));
-    enc->enc_name = copy(name);
-    enc->next = enclist;
-    enclist = enc;
-    enc->tounicode_func   = enc_to_uni;
-    enc->fromunicode_func = uni_to_enc;
-    enc->char_cnt	      = max;
-    for ( i=0; i<256 && i<max; ++i )
-	if ( enc_to_uni(i)!=-1 )
-    break;
-
-    if ( i<256 && i<max )
-	enc->has_1byte = true;
-    if ( max<256 )
-	enc->only_1byte = true;
-    else
-	enc->has_2byte = true;
-return( 1 );
-}
-
 static char *getPfaEditEncodings(void) {
     static char *encfile=NULL;
     char buffer[1025];

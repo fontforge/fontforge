@@ -6322,20 +6322,6 @@ return;
     }
 }
 
-static void utf82u_annot_strncat(unichar_t *to, const char *from, int len) {
-    register unichar_t ch;
-
-    to += u_strlen(to);
-    while ( (ch = utf8_ildb(&from)) != '\0' && --len>=0 ) {
-	if ( ch=='\t' ) {
-	    *(to++) = ' ';
-	    ch = ' ';
-	}
-	*(to++) = ch;
-    }
-    *to = 0;
-}
-
 void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
 	int actualuni) {
 /* This is for the popup which appears when you hover mouse over a character on main window */
