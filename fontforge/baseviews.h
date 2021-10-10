@@ -251,7 +251,7 @@ struct counterinfo {
     SplineChar *sc;
     int layer;
     DBounds bb;				/* Value before change */
-    double top_y, bottom_y, boundry;
+    double top_y, bottom_y, boundary;
     int has_two_zones;
 #define TOP_Z	0
 #define BOT_Z	1

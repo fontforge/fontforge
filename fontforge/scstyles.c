@@ -3232,7 +3232,7 @@ static void PerGlyphFindCounters(struct counterinfo *ci,SplineChar *sc, int laye
 	ci->top_y = ci->bd.caph>0?ci->bd.caph:4*sc->parent->ascent/5;
     else
 	ci->top_y = ci->bd.xheight>0?ci->bd.xheight:sc->parent->ascent/2;
-    ci->boundry = ci->top_y/2;
+    ci->boundary = ci->top_y/2;
     ci->has_two_zones = false;
     ci->cnts[0] = ci->cnts[1] = 0;
 
@@ -3379,7 +3379,7 @@ static void BPAdjustCE(BasePoint *bp, struct counterinfo *ci) {
 	BPAdjustCEZ(bp,ci,TOP_Z);
     else if ( ci->cnts[TOP_Z]<2 && ci->cnts[BOT_Z]>=2 )
 	BPAdjustCEZ(bp,ci,BOT_Z);
-    else if ( bp->y > ci->boundry )
+    else if ( bp->y > ci->boundary )
 	BPAdjustCEZ(bp,ci,TOP_Z);
     else
 	BPAdjustCEZ(bp,ci,BOT_Z);
@@ -4021,7 +4021,7 @@ static void AdjustCounters(SplineChar *sc, struct lcg_zones *zones,
     ci.stdvw = zones->stdvw;
     ci.top_y = zones->top_bound;
     ci.bottom_y = zones->bottom_bound;
-    ci.boundry = (zones->top_bound+zones->bottom_bound)/2;
+    ci.boundary = (zones->top_bound+zones->bottom_bound)/2;
     ci.c_add = zones->stroke_width;
     ci.c_factor = ci.sb_factor = 100;
     StemInfosFree(sc->vstem); sc->vstem = NULL;
