@@ -39,26 +39,6 @@
 #include <ctype.h>
 #include <string.h>
 
-static void dump_ustr( char* msg, unichar_t* u )
-{
-    char u8buf[1001];
-    char* pt = u8buf;
-    memset( u8buf, 0, 1000 );
-    printf("%s\n", msg );
-    unichar_t* p = u;
-    unichar_t* e = u + u_strlen( u );
-    for( ; p!=e; ++p )
-    {
-	unichar_t buf[5];
-	buf[0] = *p;
-	buf[1] = '\0';
-	printf("walk %d %s\n", *p, u_to_c(buf));
-
-	pt = utf8_idpb( pt, *p, 0);
-    }
-    printf("%s u8str:%s\n", msg, u8buf );
-}
-
 
 const char* Wordlist_getSCName( SplineChar* sc )
 {
@@ -114,112 +94,6 @@ const char* Wordlist_getSCName( SplineChar* sc )
     snprintf( ret, 1024, "/%s", sc->name );
     return ret;
 }
-
-
-
-static SplineChar*
-WordlistEscapedInputStringToRealString_readGlyphName(
-    SplineFont *sf, char* in, char* in_end,
-    char** updated_in, char* glyphname )
-{
-//    printf("WordlistEscapedInputStringToRealString_readGlyphName(top)\n");
-
-    int startedWithBackSlash = (*in == '\\');
-    if( *in != '/' && *in != '\\' )
-	return 0;
-    // move over the delimiter that we know we are on
-    in++;
-    char* startpos = in;
-
-    // Get the largest possible 'glyphname' from the input stream.
-    memset( glyphname, '\0', PATH_MAX );
-    char* outname = glyphname;
-    while( *in != '/' && *in != ' ' && *in != ']' && in != in_end )
-    {
-	*outname = *in;
-	++outname;
-	in++;
-    }
-    bool FullMatchEndsOnSpace = 0;
-    char* maxpos = in;
-    char* endpos = maxpos-1;
-//    printf("WordlistEscapedInputStringToRealString_readGlyphName(x1) -->:%s:<--\n", glyphname);
-//    printf("WordlistEscapedInputStringToRealString_readGlyphName(x2) %c %p %p\n",*in,startpos,endpos);
-
-    int loopCounter = 0;
-    int firstLookup = 1;
-    for( ; endpos >= startpos; endpos--, loopCounter++ )
-    {
-//	printf("WordlistEscapedInputStringToRealString_readGlyphName(trim loop top) gn:%s\n", glyphname );
-	SplineChar* sc = 0;
-	if( startedWithBackSlash )
-	{
-	    if( glyphname[0] == 'u' )
-		glyphname++;
-
-	    char* endptr = 0;
-	    long unicodepoint = strtoul( glyphname+1, &endptr, 16 );
-	    TRACE("AAA glyphname:%s\n", glyphname+1 );
-	    TRACE("AAA unicodepoint:%ld\n", unicodepoint );
-	    sc = SFGetChar( sf, unicodepoint, 0 );
-	    if( sc && endptr )
-	    {
-		char* endofglyphname = glyphname + strlen(glyphname);
-		for( ; endptr < endofglyphname; endptr++ )
-		    --endpos;
-	    }
-	    if( !sc )
-	    {
-//		printf("WordlistEscapedInputStringToRealString_readGlyphName() no char found for backslashed unicodepoint:%ld\n", unicodepoint );
-		strcpy(glyphname,"backslash");
-		sc = SFGetChar( sf, -1, glyphname );
-		endpos = startpos;
-	    }
-	}
-	else
-	{
-	    if( firstLookup && glyphname[0] == '#' )
-	    {
-		char* endptr = 0;
-		long unicodepoint = strtoul( glyphname+1, &endptr, 16 );
-//		printf("WordlistEscapedInputStringToRealString_readGlyphName() unicodepoint:%ld\n", unicodepoint );
-		sc = SFGetChar( sf, unicodepoint, 0 );
-		if( sc && endptr )
-		{
-		    char* endofglyphname = glyphname + strlen(glyphname);
-//		    printf("endptr:%p endofglyphname:%p\n", endptr, endofglyphname );
-		    for( ; endptr < endofglyphname; endptr++ )
-			--endpos;
-		}
-	    }
-	    if( !sc )
-	    {
-//		printf("WordlistEscapedInputStringToRealString_readGlyphName(getchar) gn:%s\n", glyphname );
-		sc = SFGetChar( sf, -1, glyphname );
-	    }
-	}
-
-	if( sc )
-	{
-//	    printf("WordlistEscapedInputStringToRealString_readGlyphName(found!) gn:%s start:%p end:%p\n", glyphname, startpos, endpos );
-	    if( !loopCounter && FullMatchEndsOnSpace )
-	    {
-		endpos++;
-	    }
-	    *updated_in = endpos;
-	    return sc;
-	}
-	if( glyphname[0] != '\0' )
-	    glyphname[ strlen(glyphname)-1 ] = '\0';
-    }
-
-
-    *updated_in = endpos;
-
-    // printf("WordlistEscapedInputStringToRealString_readGlyphName(end) gn:%s\n", glyphname );
-    return 0;
-}
-
 
 static SplineChar*
 u_WordlistEscapedInputStringToRealString_readGlyphName(
@@ -733,21 +607,6 @@ void WordlistLoadToGTextInfo( GGadget* g, int* idx  )
     return;
 }
 
-
-static GArray* Wordlist_selectedToBitmapArray( GArray* a )
-{
-    GArray* ret = g_array_new( 1, 1, sizeof(gint) );
-    ret = g_array_set_size( ret, PATH_MAX+1 );
-    
-    int i = 0;
-    for (i = 0; i < a->len; i++)
-    {
-        int v = g_array_index (a, gint, i);
-        int one = 1;
-        g_array_insert_val( ret, v, one );
-    }
-    return ret;
-}
 
 
 unichar_t* Wordlist_selectionClear( SplineFont* sf, EncMap *map, unichar_t* txtu )
