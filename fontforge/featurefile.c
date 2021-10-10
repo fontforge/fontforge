@@ -4070,7 +4070,7 @@ static void fea_markedglyphsFree(struct markedglyphs *gl) {
     }
 }
 
-static struct feat_item *fea_AddAllLigPosibilities(struct parseState *tok,struct markedglyphs *glyphs,
+static struct feat_item *fea_AddAllLigPossibilities(struct parseState *tok,struct markedglyphs *glyphs,
 	SplineChar *sc,char *sequence_start,char *next, struct feat_item *sofar) {
     char *start, *pt, ch;
     SplineChar *temp;
@@ -4092,7 +4092,7 @@ static struct feat_item *fea_AddAllLigPosibilities(struct parseState *tok,struct
 	after = next+strlen(next);
 	if ( glyphs->next!=NULL && glyphs->next->mark_count == glyphs->mark_count ) {
 	    *after++ = ' ';
-	    sofar = fea_AddAllLigPosibilities(tok,glyphs->next,sc,sequence_start,after,sofar);
+	    sofar = fea_AddAllLigPossibilities(tok,glyphs->next,sc,sequence_start,after,sofar);
 	} else {
 	    *after = '\0';
 	    item = chunkalloc(sizeof(struct feat_item));
@@ -4463,7 +4463,7 @@ static struct feat_item *fea_process_sub_ligature(struct parseState *tok,
 	for ( g=glyphs; g!=NULL && g->mark_count==glyphs->mark_count; g=g->next )
 	    len += strlen(g->name_or_class)+1;
 	space = malloc(len+1);
-	sofar = fea_AddAllLigPosibilities(tok,glyphs,sc,space,space,sofar);
+	sofar = fea_AddAllLigPossibilities(tok,glyphs,sc,space,space,sofar);
 	free(space);
     }
 return( sofar );
