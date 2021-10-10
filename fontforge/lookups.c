@@ -3894,7 +3894,7 @@ static void doreplace(char **haystack,char *start,const char *rpl,int slen) {
     }
 }
 
-static int rplstr(char **haystack,const char *search, const char *rpl,int multipleoccurances) {
+static int rplstr(char **haystack,const char *search, const char *rpl,int multipleoccurrences) {
     char *start, *pt, *base = *haystack;
     int ch, match, slen = strlen(search);
     int any = 0;
@@ -3917,7 +3917,7 @@ return( any );
 	}
 	if ( match==0 ) {
 	    doreplace(haystack,start,rpl,slen);
-	    if ( !multipleoccurances )
+	    if ( !multipleoccurrences )
 return( true );
 	    any = true;
 	    if ( base!=*haystack ) {
@@ -4022,7 +4022,7 @@ void SFGlyphRenameFixup(SplineFont *sf, const char *old, const char *new, int re
 	master = sf->cidmaster;
 
     /* Look through all substitutions (and pairwise psts) stored on the glyphs*/
-    /*  and change any occurances of the name */
+    /*  and change any occurrences of the name */
     /* (KernPairs have a reference to the SC rather than the name, and need no fixup) */
     /* Also if the name is "f" then look for glyph names like "f.sc" or "f_f_l"*/
     /*  and be ready to change them too */
