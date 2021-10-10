@@ -1597,7 +1597,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 	SFDDumpCharMath(sfd,sc);
 #if HANYANG
     if ( sc->compositionunit )
-	fprintf( sfd, "CompositionUnit: %d %d\n", sc->jamo, sc->varient );
+	fprintf( sfd, "CompositionUnit: %d %d\n", sc->jamo, sc->variant );
 #endif
     SFDDumpHintList(sfd,"HStem: ", sc->hstem);
     SFDDumpHintList(sfd,"VStem: ", sc->vstem);
@@ -5492,7 +5492,7 @@ return( NULL );
 #if HANYANG
 	} else if ( strmatch(tok,"CompositionUnit:")==0 ) {
 	    getsint(sfd,&sc->jamo);
-	    getsint(sfd,&sc->varient);
+	    getsint(sfd,&sc->variant);
 	    sc->compositionunit = true;
 #endif
 	} else if ( strmatch(tok,"HStem:")==0 ) {
