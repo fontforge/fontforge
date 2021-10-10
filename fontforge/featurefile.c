@@ -603,7 +603,7 @@ static void dump_contextpstglyphs(FILE *out,SplineFont *sf,
 	putc(' ',out);
     }
     last_start = last_end = NULL;
-    for ( pt=r->u.glyph.names; ; ) {
+    for ( pt=r->u.glyph.names, i=0; ; ++i) {
 	while ( *pt==' ' ) ++pt;
 	if ( *pt=='\0' )
     break;
