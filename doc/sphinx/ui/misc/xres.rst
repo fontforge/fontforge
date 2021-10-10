@@ -528,7 +528,7 @@ will look at it.
 
 .. object:: Gdraw.VisualClass
 
-   A string ("StaticGray", "GrayScale", "StaticColor", "PsuedoColor",
+   A string ("StaticGray", "GrayScale", "StaticColor", "PseudoColor",
    "TrueColor", "DirectColor")
 
    FontForge will search for a visual with the given class (and possibly depth

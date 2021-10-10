@@ -5925,7 +5925,7 @@ static void MMFillFromVAR(SplineFont *sf, struct ttfinfo *info) {
     VariationFree(info);
 }
 
-static void PsuedoEncodeUnencoded(EncMap *map,struct ttfinfo *info) {
+static void PseudoEncodeUnencoded(EncMap *map,struct ttfinfo *info) {
     int extras, base;
     int i;
 
@@ -6183,7 +6183,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     if ( info->map==NULL && info->subfonts==NULL )		/* Can happen when reading a ttf from a pdf */
 	info->map = EncMapFromEncoding(sf,FindOrMakeEncoding("original"));
     if ( info->subfontcnt==0 )
-	PsuedoEncodeUnencoded(info->map,info);
+	PseudoEncodeUnencoded(info->map,info);
     MapDoBack(info->map,info);
     sf->map = info->map;
     sf->cidregistry = info->cidregistry;

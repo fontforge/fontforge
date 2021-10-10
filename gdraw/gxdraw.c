@@ -3843,7 +3843,7 @@ return( -1 );
 }
 
 static void *vc_cvt(char *val, void *def) {
-    static char *classes[] = { "StaticGray", "GrayScale", "StaticColor", "PsuedoColor", "TrueColor", "DirectColor", NULL };
+    static char *classes[] = { "StaticGray", "GrayScale", "StaticColor", "PseudoColor", "TrueColor", "DirectColor", NULL };
     int ret = match(classes,val);
     if ( ret== -1 ) {
 	char *ept;
