@@ -720,11 +720,8 @@ int fontforge_main( int argc, char **argv ) {
     bindtextdomain("FontForge", getLocaleDir());
     textdomain("FontForge");
     {
-	char* path = getPixmapDir();
-	GGadgetSetImageDir( path );
-	free(path);
-
-	path = getShareSubDir("/resources/fontforge.resource");
+	GGadgetSetImageDir( getPixmapDir() );
+	char* path = getShareSubDir("/resources/fontforge.resource");
 	GResourceAddResourceFile(path, GResourceProgramName,false);
 	free(path);
     }

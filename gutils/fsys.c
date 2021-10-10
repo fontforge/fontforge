@@ -49,7 +49,6 @@
 
 static char *program_dir = NULL;
 static char dirname_[MAXPATHLEN+1];
-static const char *FONTFORGE_SHARE_SUBDIR = "/share/fontforge";
 
 /**
  * \brief Removes the extension from a file path, if it exists.
@@ -814,25 +813,10 @@ void FindProgDir(char *prog) {
 // you want. So, to get e.g. /usr/share/cidmaps, call
 // getShareSubDir("/cidmaps").
 char *getShareSubDir(const char* subdir) {
-    char *sharedir, *pt;
-    int len;
-
-    //Assume share folder is one directory up
-    pt = strrchr(program_dir, '/');
-    if ( pt==NULL ) {
-	pt = program_dir + strlen(program_dir);
-    }
-    len = (pt-program_dir)+strlen(FONTFORGE_SHARE_SUBDIR)+1;
-    if (subdir != NULL) {
-        len += strlen(subdir);
-    }
-    sharedir = malloc(len);
-    strncpy(sharedir,program_dir,pt-program_dir);
-    strcpy(sharedir+(pt-program_dir),FONTFORGE_SHARE_SUBDIR);
-    if (subdir != NULL) {
-        strcat(sharedir, subdir);
-    }
-    return( sharedir );
+    const char *pt = strrchr(program_dir, '/');
+    int len = pt ? (pt - program_dir) : strlen(program_dir);
+    return smprintf("%.*s/share/fontforge%s",
+        len, program_dir, subdir ? subdir : "");
 }
 
 char *getShareDir(void) {
