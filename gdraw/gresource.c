@@ -784,7 +784,7 @@ static void _GResourceFindImage(const char *fname, GResImage *img) {
     if ( fname!=NULL ) {
 	t = _GGadgetImageCache(fname, false);
 	if ( t==NULL || t->image==NULL ) {
-	    TRACE("Could not find image corresponding to '%s', using default", fname);
+	    TRACE("Could not find image corresponding to '%s', using default\n", fname);
 	} else {
 	    img->bucket = t;
 	}
@@ -793,7 +793,7 @@ static void _GResourceFindImage(const char *fname, GResImage *img) {
     if ( GResImageGetImage(img)==NULL && img->ini_name!=NULL ) {
 	img->bucket = _GGadgetImageCache(img->ini_name, true);
 	if ( GResImageGetImage(img)==NULL ) {
-	    TRACE("Could not find image corresponding to default name '%s'", img->ini_name);
+	    TRACE("Could not find image corresponding to default name '%s'\n", img->ini_name);
 	}
     }
 }
