@@ -94,13 +94,8 @@ static GResInfo gbutton_ri = {
     "Gdraw",
     true,
     false,
-#ifdef __Mac
-    box_do_depressed_background|omf_border_type|omf_border_width|
-	    omf_border_shape|omf_padding,
-#else
     box_foreground_border_inner|box_foreground_border_outer|
 	/*box_active_border_inner|*/box_do_depressed_background|box_draw_default,
-#endif
     /* Will be initialized later */
     { bt_box, bs_roundrect, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
     GBOX_EMPTY,
@@ -127,12 +122,8 @@ static GResInfo gdefault_ri = {
     "Gdraw",
     true,
     false,
-#ifdef __Mac
-    box_gradient_bg|omf_main_background|omf_gradient_bg_end,
-#else
     0,
-#endif
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x64a4f2, 0, 0, 0, 0, 0, 0, 0xb7ceeb, 0, 0 },
+    GBOX_EMPTY,
     GBOX_EMPTY,
     NULL,
     NULL,
@@ -157,12 +148,8 @@ static GResInfo gcancel_ri = {
     "Gdraw",
     true,
     false,
-#ifdef __Mac
-    box_gradient_bg|omf_main_background|omf_gradient_bg_end,
-#else
     0,
-#endif
-    { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xf27458, 0, 0, 0, 0, 0, 0, 0xebb4a0, 0, 0 },
+    GBOX_EMPTY,
     GBOX_EMPTY,
     NULL,
     NULL,
@@ -204,13 +191,6 @@ static GTextInfo list_choices[] = {
 static int GDropListRIInit(GResInfo *ri) {
     if ( ri->is_initialized )
 	return false;
-#ifdef __Mac
-    GGadgetInit();
-    extern GBox _ggadget_Default_Box;
-    ri->overrides.border_type = _ggadget_Default_Box.border_type;
-    ri->overrides.border_width = _ggadget_Default_Box.border_width;
-    ri->overrides.border_shape = _ggadget_Default_Box.border_shape;
-#endif
     return _GResEditInitialize(ri);
 }
 
@@ -234,11 +214,7 @@ static GResInfo gdroplist_ri = {
     "Gdraw",
     true,
     false,
-#ifdef __Mac
-    omf_border_type|omf_border_width|omf_border_shape,
-#else
     0,
-#endif
     { bt_none, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 ,0 ,0 ,0 },
     GBOX_EMPTY,
     NULL,
