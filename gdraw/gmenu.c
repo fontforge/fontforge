@@ -50,37 +50,6 @@ static int menu_3d_look = 1; // The 3D look is the default/legacy setting.
 static int menu_grabs=true;
 static int mask_set=0;
 static int menumask = ksm_control|ksm_meta|ksm_shift;		/* These are the modifier masks expected in menus. Will be overridden by what's actually there */
-#ifndef _Keyboard
-# define _Keyboard 0
-#endif
-static enum { kb_ibm, kb_mac, kb_sun, kb_ppc } keyboard = _Keyboard;
-/* Sigh. In old XonX the command key is mapped to 0x20 and Option to 0x8 (meta) */
-/*  the option key conversions (option-c => ccidilla) are not done */
-/*  In the next X, the command key is mapped to 0x10 and Option to 0x2000 */
-/*  (again option key conversion are not done) */
-/*  In 10.3, the command key is mapped to 0x10 and Option to 0x8 */
-/*  In 10.5 the command key is mapped to 0x10 and Option to 0x8 */
-/*   (and option conversions are done) */
-/*  While in Suse PPC X, the command key is 0x8 (meta) and option is 0x2000 */
-/*  and the standard mac option conversions are done */
-
-static int GMenuBoxRIInit(GResInfo *ri) {
-    char *keystr, *end;
-    if ( !_GResEditInitialize(ri) )
-	return false; // Already initialized
-
-    keystr = GResourceFindString("Keyboard");
-    if ( keystr!=NULL ) {
-	if ( strmatch(keystr,"mac")==0 ) keyboard = kb_mac;
-	else if ( strmatch(keystr,"sun")==0 ) keyboard = kb_sun;
-	else if ( strmatch(keystr,"ppc")==0 ) keyboard = kb_ppc;
-	else if ( strmatch(keystr,"ibm")==0 || strmatch(keystr,"pc")==0 ) keyboard = kb_ibm;
-	else if ( strtol(keystr,&end,10), *end=='\0' )
-	    keyboard = strtol(keystr,NULL,10);
-        free(keystr);
-    }
-    return true;
-}
 
 static GResInfo gmenu_ri;
 GResInfo gmenubar_ri = {
@@ -99,7 +68,7 @@ GResInfo gmenubar_ri = {
     { 0, bs_rect, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
     GBOX_EMPTY,
     NULL,
-    GMenuBoxRIInit,
+    NULL,
     NULL
 };
 static struct resed menu_re[] = {
@@ -199,105 +168,6 @@ translate_shortcut (int i, char *modifier)
 
   return modifier;
 }
-
-
-
-static void _shorttext(int shortcut, int short_mask, unichar_t *buf) {
-    unichar_t *pt = buf;
-    static int initted = false;
-    struct { int mask; char *modifier; } mods[8] = {
-	{ ksm_shift, H_("Shift+") },
-	{ ksm_capslock, H_("CapsLk+") },
-	{ ksm_control, H_("Ctrl+") },
-	{ ksm_meta, H_("Alt+") },
-	{ 0x10, H_("Flag0x10+") },
-	{ 0x20, H_("Flag0x20+") },
-	{ 0x40, H_("Flag0x40+") },
-	{ 0x80, H_("Flag0x80+") }
-	};
-    int i;
-    char buffer[32];
-
-    uc_strcpy(pt,"xx⎇");
-    pt += u_strlen(pt);
-    *pt = '\0';
-    return;
-
-    if ( !initted )
-    {
-	/* char *temp; */
-	for ( i=0; i<8; ++i )
-	{
-	    /* sprintf( buffer,"Flag0x%02x", 1<<i ); */
-	    /* temp = dgettext(GMenuGetShortcutDomain(),buffer); */
-	    /* if ( strcmp(temp,buffer)!=0 ) */
-	    /* 	mods[i].modifier = temp; */
-	    /* else */
-	    /* 	mods[i].modifier = dgettext(GMenuGetShortcutDomain(),mods[i].modifier); */
-
-          if (mac_menu_icons)
-	  {
-	      TRACE("mods[i].mask: %s\n", mods[i].modifier );
-
-              if (mods[i].mask == ksm_cmdmacosx)
-		  mods[i].modifier = "⌘";
-              else if (mods[i].mask == ksm_control)
-		  mods[i].modifier = "⌃";
-              else if (mods[i].mask == ksm_meta)
-		  mods[i].modifier = "⎇";
-              else if (mods[i].mask == ksm_shift)
-		  mods[i].modifier = "⇧";
-              else
-		  mods[i].modifier = translate_shortcut (i, mods[i].modifier);
-	  }
-	  else
-	  {
-              translate_shortcut (i, mods[i].modifier);
-	  }
-
-
-
-
-	}
-	/* It used to be that the Command key was available to X on the mac */
-	/*  but no longer. So we used to use it, but we can't now */
-	/* It's sort of available. X11->Preferences->Input->Enable Keyboard shortcuts under X11 needs to be OFF */
-	/* if ( strcmp(mods[2].modifier,"Ctl+")==0 ) */
-	    /* mods[2].modifier = keyboard!=kb_mac?"Ctl+":"Cmd+"; */
-	if ( strcmp(mods[3].modifier,"Alt+")==0 )
-	    mods[3].modifier = keyboard==kb_ibm?"Alt+":keyboard==kb_mac?"Opt+":keyboard==kb_ppc?"Cmd+":"Meta+";
-    }
-
-
-    if ( shortcut==0 ) {
-	*pt = '\0';
-return;
-    }
-
-    for ( i=7; i>=0 ; --i ) {
-	if ( short_mask&(1<<i) ) {
-	    uc_strcpy(pt,mods[i].modifier);
-	    pt += u_strlen(pt);
-	}
-    }
-
-
-    if ( shortcut>=0xff00 && GDrawKeysyms[shortcut-0xff00] ) {
-    	cu_strcpy(buffer,GDrawKeysyms[shortcut-0xff00]);
-    	utf82u_strcpy(pt,dgettext(GMenuGetShortcutDomain(),buffer));
-    } else {
-    	*pt++ = islower(shortcut)?toupper(shortcut):shortcut;
-    	*pt = '\0';
-    }
-}
-
-
-/*
- * Unused
-static void shorttext(GMenuItem *gi,unichar_t *buf) {
-    _shorttext(gi->shortcut,gi->short_mask,buf);
-}
-*/
 
 static int GMenuGetMenuPathRecurse( GMenuItem** stack,
 				    GMenuItem *basemi,
@@ -577,7 +447,6 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y,GWindow pixma
 	GMenuDrawArrow(m,ybase,r2l);
     else
     {
-	_shorttext(mi->shortcut,0,shortbuf);
 	uint16 short_mask = mi->short_mask;
 
 	/* TRACE("m->menubar: %p\n", m->menubar ); */
@@ -604,7 +473,7 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y,GWindow pixma
 	}
 
 	short_mask = 0;
-	uc_strcpy(shortbuf,"");
+	shortbuf[0] = '\0';
 
 	if( hk )
 	{

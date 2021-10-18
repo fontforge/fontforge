@@ -50,8 +50,6 @@
 
 #cmakedefine _CursorsMustBe16x16 1
 
-#cmakedefine _Keyboard @_Keyboard@
-
 #cmakedefine __Mac 1
 
 
