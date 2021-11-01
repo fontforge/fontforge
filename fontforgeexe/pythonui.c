@@ -118,7 +118,7 @@
  * have.
  */
 
-static const char mn_order[] = "}{:[]&=~%^;?+/,#$-@*!.7869054321QXZVJWFYGKUBHPCDMLTNSIROEA";
+static const char mn_order[] = NU_("}{:[]&=~%^;?+/,#$-@*!.7869054321QXZVJWFYGKUBHPCDMLTNSIROEA");
 
 struct py_menu_item {
     PyObject *func;
@@ -137,109 +137,97 @@ static struct py_menu_data {
     GMenuItem2 *menu;
     ff_menu_callback moveto, invoke;
     void (*setmenu)(GMenuItem2 *menu);
-    uint8 mn_offset;
-    uint8 mn_avail[128];
+    uint16 mn_offset;
+    unichar_t *mn_string;
+    GHashTable *mn_avail;
     char *hotkey_prefix;
 } *py_menus;
 
 static unichar_t AllocateNextMnemonic(struct py_menu_data *pmd) {
-    while ( *(mn_order+pmd->mn_offset)!=0 && !pmd->mn_avail[*(mn_order + pmd->mn_offset)] )
+    unichar_t uc = 0;
+    while ( (uc=pmd->mn_string[pmd->mn_offset])!=0 &&
+            !g_hash_table_contains(pmd->mn_avail, GUINT_TO_POINTER(uc)) )
 	++pmd->mn_offset;
 
-    char r = *(mn_order+pmd->mn_offset);
-    if ( r!=0 )
-	pmd->mn_avail[r] = false;
+    if ( uc!=0 )
+	g_hash_table_remove(pmd->mn_avail, GUINT_TO_POINTER(uc));
 
-    return (unichar_t) r;
+    return (unichar_t) uc;
 }
 
-static unichar_t FindMnemonic(const char *menu_string, unichar_t alt, struct py_menu_data *pmd) {
-    uint8 *cp;
+static unichar_t FindMnemonic(unichar_t *menu_string, unichar_t alt,
+                              struct py_menu_data *pmd) {
+    unichar_t *cp;
 
-    if ( pmd->mn_avail[alt] ) {
-	pmd->mn_avail[alt] = false;
+    if ( g_hash_table_contains(pmd->mn_avail, GUINT_TO_POINTER(alt)) ) {
+	g_hash_table_remove(pmd->mn_avail, GUINT_TO_POINTER(alt));
 	return alt;
     }
-    for ( cp = (uint8 *) menu_string; *cp!=0; ++cp ) {
-	if ( *cp > 127 )
-	    continue;
-	alt = (unichar_t) toupper(*cp);
-	if ( pmd->mn_avail[alt] ) {
-	    pmd->mn_avail[alt] = false;
+    for ( cp = menu_string; *cp!=0; ++cp ) {
+	alt = toupper(*cp);
+	if ( g_hash_table_contains(pmd->mn_avail, GUINT_TO_POINTER(alt)) ) {
+	    g_hash_table_remove(pmd->mn_avail, GUINT_TO_POINTER(alt));
 	    return alt;
 	}
     }
     return 0;
 }
 
-static char *mncopy(const char *str, unichar_t *mn, int extra) {
-    unichar_t t=0;
-    const char *src = str;
-    char *dst, *ret;
-    size_t l=0;
+static unichar_t StripMN(unichar_t *str) {
+    unichar_t mn = 0;
 
-    if ( str==NULL ) {
-	if ( mn!=NULL )
-	    *mn = 0;
-	ret = malloc(1+extra);
-	ret[0] = 0;
-	return ret;
-    }
+    while ( *str && *str != '_' )
+	str++;
 
-    while ( *src!=0 ) {
-	if ( *src!='_' )
-	    ++l;
-	++src;
-    }
-
-    src = str;
-    ret = dst = malloc(l+1+extra);
-    for( ; *src; src++ ) {
-        if( *src == '_' ) {
-	    t = *(src+1);
-            continue;
+    if ( *str ) {
+	mn = *(str+1);
+	while ( *(str+1) ) {
+	    *str = *(str+1);
+	    str++;
 	}
-        *dst = *src;
-        dst++;
+	*str = 0;
     }
-    *dst = '\0';
-
-    if ( mn!=NULL )
-	*mn = t;
-    return ret;
+    return mn;
 }
 
 // Make sure there is no suffix when c==0 and exactly one suffix " (c)" when c!=0
-static char *SetMnemonicSuffix(const char*menu_string, unichar_t c) {
-    char *r = mncopy(menu_string, NULL, 4);
-    int l = strlen(r), i=l-1;
+static unichar_t *SetMnemonicSuffix(const unichar_t *menu_string, unichar_t c) {
+    int i;
+    unichar_t *r;
+    i = u_strlen(menu_string);
+    r = malloc((i+5) * sizeof(unichar_t));
+    memcpy(r, menu_string, sizeof(unichar_t)*(i+1));
+
+    i--; // Make index of last character
 
     // Remove trailing spaces (if any)
-    while ( i>=0 && *(r+i)==' ' )
+    while ( i>=0 && r[i]==' ' )
 	--i;
-    *(r+i+1) = 0;
+    r[i+1] = 0;
     // The following is intended to remove a parenthetical mnemonic
     // if one is already present in the string, or do nothing otherwise.
     // If the input is something less "standard" we just append the
     // new mnemonic character and hope for the best.
-    if ( i>=0 && *(r+i)==')' ) {
+    if ( i>=0 && r[i]==')' ) {
 	--i;
-	if ( i>=0 && *(r+i)>0 ) {
+	if ( i>=0 && r[i]>0 ) {
 	    --i;
-	    if ( i>=0 && *(r+i)=='(' ) {
+	    if ( i>=0 && r[i]=='(' ) {
 		--i;
-		while ( i>=0 && *(r+i)==' ' )
+		while ( i>=0 && r[i]==' ' )
 		    --i;
-		*(r+i+1) = 0;
+		r[i+1] = 0;
 	    }
 	}
     }
 
-    // There is room for this strcat because mncopy ensures it.
+    // The calloc above ensures there is room for these characters
     if ( c!=0 ) {
-	char buffer[10];
-	sprintf(buffer, " (%c)", (char) c);
-	strcat(r, buffer);
+	r[i+1] = ' ';
+	r[i+2] = '(';
+	r[i+3] = c;
+	r[i+4] = ')';
+	r[i+5] = 0;
     }
     return r;
 }
@@ -357,16 +345,19 @@ static void fvpy_menuactivate(GWindow gw,struct gmenuitem *mi,GEvent *e) {
 
 static void PyMenuInit() {
     int t;
-    uint8 *cp;
+    unichar_t *mn_string, *cp;
     if ( py_menus!=NULL )
 	return;
 
     py_menus = calloc(pmt_size, sizeof(struct py_menu_data));
+    mn_string = utf82u_copy(U_(mn_order));
 
-    for ( cp = (uint8 *) mn_order; *cp!=0; ++cp )
-	py_menus[0].mn_avail[*cp] = true;
-    for ( t=1; t<pmt_size; ++t )
-	memcpy(py_menus[t].mn_avail, py_menus[0].mn_avail, sizeof(py_menus[0].mn_avail));
+    for ( t=0; t<pmt_size; ++t ) {
+	py_menus[t].mn_string = mn_string;
+	py_menus[t].mn_avail = g_hash_table_new(g_direct_hash, g_direct_equal);
+	for ( cp = mn_string; *cp!=0; ++cp )
+	    g_hash_table_add(py_menus[t].mn_avail, GUINT_TO_POINTER(*cp));
+    }
 
     py_menus[pmt_font].hotkey_prefix = "FontView.Menu.Tools.";
     py_menus[pmt_font].moveto = fvpy_tllistcheck;
@@ -419,7 +410,8 @@ static void InsertSubMenus(struct py_menu_spec *spec, struct py_menu_data *pmd) 
     int i, j;
     GMenuItem2 *mmn, *orig_menu, **mn;
     unichar_t alt, tmp_alt;
-    char *untrans, *trans, *tmp_str, *action;
+    char *untrans, *action, *tmp_str;
+    unichar_t *trans, *untrans_uni, *tmp_uni;
 
     mn = &pmd->menu;
     orig_menu = pmd->menu;
@@ -427,25 +419,34 @@ static void InsertSubMenus(struct py_menu_spec *spec, struct py_menu_data *pmd) 
     for ( i=0; i<spec->depth; ++i ) {
 	if ( i==spec->depth-1 && spec->divider ) {
 	    untrans = "_____UNMATCH___ABLE______";
-	    trans = action = NULL;
+	    trans = NULL;
+	    action = NULL;
 	} else {
-	    untrans = SetMnemonicSuffix(spec->levels[i].untranslated, 0);
-	    trans = mncopy(spec->levels[i].localized, &alt, 0);
+	    // Lots of churn just to strip out a potentially unicode
+	    // character from the untrans suffix, but oh well.
+	    tmp_uni = utf82u_copy(spec->levels[i].untranslated);
+	    untrans_uni = SetMnemonicSuffix(tmp_uni, 0);
+	    untrans = u2utf8_copy(untrans_uni);
+	    free(tmp_uni);
+	    free(untrans_uni);
+
+	    trans = utf82u_copy(spec->levels[i].localized);
+	    alt = StripMN(trans);
 	    if ( i==0 ) {
 		action = strconcat(pmd->hotkey_prefix, untrans);
 		tmp_alt = FindMnemonic(trans, alt, pmd);
 		if ( tmp_alt!=0 && tmp_alt!=alt ) {
 		    // The original string might have had a suffix but we only need
 		    // to remove it if the alt code is replaced.
-		    tmp_str = SetMnemonicSuffix(trans, 0);
+		    tmp_uni = SetMnemonicSuffix(trans, 0);
 		    free(trans);
-		    trans = tmp_str;
+		    trans = tmp_uni;
 		    alt = tmp_alt;
 		} else if ( tmp_alt==0 ) {
 		    alt = AllocateNextMnemonic(pmd);
-		    tmp_str = SetMnemonicSuffix(trans, alt);
+		    tmp_uni = SetMnemonicSuffix(trans, alt);
 		    free(trans);
-		    trans = tmp_str;
+		    trans = tmp_uni;
 		}
 	    } else {
 		tmp_str = strconcat3(action, ".", untrans);
@@ -470,9 +471,9 @@ static void InsertSubMenus(struct py_menu_spec *spec, struct py_menu_data *pmd) 
 	if ( mmn[j].ti.text==NULL ) {
 	    mmn[j].ti.fg = mmn[j].ti.bg = COLOR_DEFAULT;
 	    if ( i!=spec->depth-1 ) {
-		mmn[j].ti.text = (unichar_t *) trans;
+		mmn[j].ti.text = trans;
 		mmn[j].ti.text_untranslated = untrans;
-		mmn[j].ti.text_is_1byte = true;
+		mmn[j].ti.text_is_1byte = false;
 		mmn[j].ti.mnemonic = alt;
 		mmn[j].mid = -1;
 		mmn[j].moveto = pmd->moveto;
@@ -480,16 +481,16 @@ static void InsertSubMenus(struct py_menu_spec *spec, struct py_menu_data *pmd) 
 	    } else if ( spec->divider ) {
 		mmn[j].ti.line = true;
 	    } else {
-		mmn[j].ti.text = (unichar_t *) trans;
+		mmn[j].ti.text = trans;
 		mmn[j].ti.text_untranslated = untrans;
-		mmn[j].ti.text_is_1byte = true;
+		mmn[j].ti.text_is_1byte = false;
 		mmn[j].ti.mnemonic = alt;
 		mmn[j].invoke = pmd->invoke;
 		mmn[j].mid = MenuDataAdd(spec,pmd);
 	    }
 	} else {
 	    free(mmn[j].ti.text);
-	    mmn[j].ti.text = (unichar_t *) trans;
+	    mmn[j].ti.text = trans;
 	    mmn[j].ti.mnemonic = alt;
 	    if ( i!=spec->depth-1 )
 		mn = &mmn[j].sub;
