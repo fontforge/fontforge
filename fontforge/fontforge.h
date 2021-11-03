@@ -51,7 +51,7 @@ extern Encoding *default_encoding, custom;
 extern int adjustwidth;
 extern int adjustlbearing;
 extern int autohint_before_generate;
-extern int seperate_hint_controls;
+extern int separate_hint_controls;
 extern int no_windowing_ui;
 extern uint32 default_background;
 extern int use_utf8_in_script;

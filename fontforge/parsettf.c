@@ -5708,7 +5708,7 @@ void AltUniFigure(SplineFont *sf,EncMap *map,int check_dups) {
     }
 }
 
-static void NameConsistancyCheck(SplineFont *sf,EncMap *map) {
+static void NameConsistencyCheck(SplineFont *sf,EncMap *map) {
     /* Many fonts seem to have glyph names which mean something other than */
     /*  what the encoding says of the glyph */
     /* I used to ask about fixing the names up, but people didn't like that */
@@ -5786,7 +5786,7 @@ static void UseGivenEncoding(SplineFont *sf,struct ttfinfo *info) {
     sf->map = info->map;
     sf->uni_interp = info->uni_interp;
     AltUniFigure(sf,sf->map,false);
-    NameConsistancyCheck(sf, sf->map);
+    NameConsistencyCheck(sf, sf->map);
 }
 
 static char *AxisNameConvert(uint32 tag) {
@@ -5925,7 +5925,7 @@ static void MMFillFromVAR(SplineFont *sf, struct ttfinfo *info) {
     VariationFree(info);
 }
 
-static void PsuedoEncodeUnencoded(EncMap *map,struct ttfinfo *info) {
+static void PseudoEncodeUnencoded(EncMap *map,struct ttfinfo *info) {
     int extras, base;
     int i;
 
@@ -6183,7 +6183,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     if ( info->map==NULL && info->subfonts==NULL )		/* Can happen when reading a ttf from a pdf */
 	info->map = EncMapFromEncoding(sf,FindOrMakeEncoding("original"));
     if ( info->subfontcnt==0 )
-	PsuedoEncodeUnencoded(info->map,info);
+	PseudoEncodeUnencoded(info->map,info);
     MapDoBack(info->map,info);
     sf->map = info->map;
     sf->cidregistry = info->cidregistry;

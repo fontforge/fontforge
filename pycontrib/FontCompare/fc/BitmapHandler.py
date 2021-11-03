@@ -70,7 +70,7 @@ class BitmapCompare:
 class CreateSpriteSheet:
     def __init__(self,pixelsize,font,glyphrange,effects):
         master_width = (pixelsize * (glyphrange[1]-glyphrange[0]+1) )
-        #seperate each image with lots of whitespace
+        #separate each image with lots of whitespace
         master_height = pixelsize
         oldfont = font
         print "the master image will by %d by %d" % (master_width, master_height)
