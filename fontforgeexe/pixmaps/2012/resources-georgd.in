@@ -148,7 +148,7 @@ fontforge.Validate.Font: 92% ^View.DefaultFont
 fontforge.Warnings.Font: 81% ^View.DefaultFont
 fontforge.Splash.Foreground: #000000
 fontforge.Splash.Background: #ffffff
-fontforge.Splash.Font: 10pt View.DefaultFont
+fontforge.Splash.Font: 10pt ^View.DefaultFont
 fontforge.Splash.ItalicFont: italic ^Splash.Font
 fontforge.Splash.MonoFont: 10pt ^View.MonoFont
 fontforge.Splash.Image: ffsplash1.png
