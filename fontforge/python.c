@@ -17280,7 +17280,7 @@ static bool PyFFParse_genericGlyphChange(PyObject *args, PyObject *keywds,
 	    &rsbScale, &rsbAdd,
 /* Vertical counter info */
 	    &vCounterType,
-	    &vCounterScale, vCounterAdd,
+	    &vCounterScale, &vCounterAdd,
 	    &vScale,
 	    &vMap
 	    ) )
