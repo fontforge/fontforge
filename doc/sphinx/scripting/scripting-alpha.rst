@@ -2845,16 +2845,16 @@ the fourth argument you must specify the second and third arguments too.
    .. math::
 
       \begin{bmatrix}
-         \frac{t_1}{100} & \frac{t_2}{100} & \frac{t_3}{100} \\
-         \frac{t_4}{100} & \frac{t_5}{100} & \frac{t_6}{100}
+         \frac{t_1}{100} & \frac{t_3}{100} & \frac{t_5}{100} \\
+         \frac{t_2}{100} & \frac{t_4}{100} & \frac{t_6}{100}
       \end{bmatrix}
 
    This is a standard PostScript transformation matrix where
 
    .. math::
 
-      x' &= \frac{t_1}{100}x + \frac{t_2}{100}y + \frac{t_3}{100} \\
-      y' &= \frac{t_4}{100}x + \frac{t_5}{100}y + \frac{t_6}{100}
+      x' &= \frac{t_1}{100}x + \frac{t_3}{100}y + \frac{t_5}{100} \\
+      y' &= \frac{t_2}{100}x + \frac{t_4}{100}y + \frac{t_6}{100}
 
    The peculiar notion of dividing by 100 was to overcome the fact that
    fontforge's scripting language formerly could not handle real numbers. We've
