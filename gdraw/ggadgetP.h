@@ -593,7 +593,7 @@ extern int GTextInfoGetHeight(GWindow base,GTextInfo *ti,FontInstance *font);
 extern int GTextInfoGetMaxHeight(GWindow base,GTextInfo **ti,FontInstance *font,int *allsame);
 extern int GTextInfoGetAs(GWindow base,GTextInfo *ti, FontInstance *font);
 extern int GTextInfoDraw(GWindow base,int x,int y,GTextInfo *ti,
-	FontInstance *font,Color fg,Color sel,int ymax);
+	FontInstance *font,Color fg,Color sel,int ymax, int as, int ds);
 extern GTextInfo *GTextInfoCopy(GTextInfo *ti);
 extern GTextInfo **GTextInfoArrayFromList(GTextInfo *ti, uint16 *cnt);
 extern GTextInfo **GTextInfoArrayCopy(GTextInfo **ti);

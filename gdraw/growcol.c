@@ -401,7 +401,7 @@ return( false );
 	    for ( i=0; i<grc->cols; ++i ) {
 		GTextInfoDraw(pixmap,g->inner.x+grc->colx[i]+grc->hpad-grc->xoff,y,grc->labels[i],
 			grc->font,dfg,g->box->active_border
-			g->inner.y+g->inner.height);
+			g->inner.y+g->inner.height, -1, -1);
 	    }
 	}
 	y += grc->fh;
@@ -415,7 +415,7 @@ return( false );
 		    GTextInfo *ti = grc->ti[l*grc->cols+i];
 		    GTextInfoDraw(pixmap,g->inner.x+grc->colx[i]-grc->xoff+grc->hpad,y,ti,
 			    grc->font,dfg,g->box->active_border,
-			    g->inner.y+g->inner.height);
+			    g->inner.y+g->inner.height, -1, -1);
 		} else {
 		    /* now we can draw the text field */
 		    grc->tf->dontdraw = false;

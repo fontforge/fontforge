@@ -435,7 +435,7 @@ static int GMenuDrawMenuLine(struct gmenu *m, GMenuItem *mi, int y,GWindow pixma
 	x = m->tioff;
     h = GTextInfoDraw(pixmap,x,y,&mi->ti,m->font,
 	    (mi->ti.disabled || m->disabled )?m->box->disabled_foreground:fg,
-	    m->box->active_border,new.y+new.height);
+	    m->box->active_border,new.y+new.height, -1, -1);
     if ( mi->ti.checkable ) {
 	if ( mi->ti.checked )
 	    GMenuDrawCheckMark(m,fg,ybase,r2l);
@@ -1930,7 +1930,8 @@ static int gmenubar_expose(GWindow pixmap, GGadget *g, GEvent *expose) {
     Color fg = g->state==gs_disabled?g->box->disabled_foreground:
 		    g->box->main_foreground==COLOR_DEFAULT?GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(pixmap)):
 		    g->box->main_foreground;
-    int i;
+    int i, as, ds, ld;
+    GTextBounds bounds;
 
     if ( fg==COLOR_DEFAULT )
 	fg = GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(mb->g.base));
@@ -1943,12 +1944,21 @@ static int gmenubar_expose(GWindow pixmap, GGadget *g, GEvent *expose) {
     GDrawSetFont(pixmap,mb->font);
 
     r = g->inner;
+    GDrawWindowFontMetrics(pixmap, mb->font, &as, &ds, &ld);
+    GDrawSetFont(pixmap, mb->font);
+    for ( i=0; i<mb->lastmi; ++i ) {
+	GDrawGetTextBounds(pixmap, mb->mi[i].ti.text, -1, &bounds);
+	if ( as<bounds.as )
+	    as = bounds.as;
+	if ( ds<bounds.ds )
+	    ds = bounds.ds;
+    }
     for ( i=0; i<mb->lastmi; ++i ) {
 	r.x = mb->xs[i]+mb->g.inner.x; r.width = mb->xs[i+1]-mb->xs[i];
 	GDrawPushClip(pixmap,&r,&old3);
 	GTextInfoDraw(pixmap,r.x,r.y,&mb->mi[i].ti,mb->font,
 		mb->mi[i].ti.disabled?mb->g.box->disabled_foreground:fg,
-		mb->g.box->active_border,r.y+r.height);
+		mb->g.box->active_border,r.y+r.height, as, ds);
 	GDrawPopClip(pixmap,&old3);
     }
     if ( i<mb->mtot ) {

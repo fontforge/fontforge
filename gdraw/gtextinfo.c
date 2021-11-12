@@ -142,14 +142,14 @@ return( iheight );
 }
 
 int GTextInfoDraw(GWindow base,int x,int y,GTextInfo *ti,
-	FontInstance *font,Color fg, Color sel, int ymax) {
-    int fh=0, as=0, ds=0, ld;
+	FontInstance *font,Color fg, Color sel, int ymax, int as, int ds) {
+    int fh=0, tas=0, tds=0, ld;
     int iwidth=0, iheight=0;
     int height, skip = 0;
     GTextBounds bounds;
     GRect r, old;
 
-    GDrawWindowFontMetrics(base,font,&as, &ds, &ld);
+    GDrawWindowFontMetrics(base, font, &tas, &tds, &ld);
     if ( ti->text!=NULL ) {
 	if ( ti->font!=NULL )
 	    font = ti->font;
@@ -157,11 +157,18 @@ int GTextInfoDraw(GWindow base,int x,int y,GTextInfo *ti,
 	    fg = ti->fg;
 
 	GDrawSetFont(base,font);
-	GDrawGetTextBounds(base,ti->text, -1, &bounds);
-	if ( as<bounds.as ) as = bounds.as;
-	if ( ds<bounds.ds ) ds = bounds.ds;
+	if ( as<0 || ds<0 ) {
+	    GDrawGetTextBounds(base,ti->text, -1, &bounds);
+            if ( as<0 )
+		as = (tas<bounds.as) ? bounds.as : tas;
+            if ( ds<0 )
+		ds = (tds<bounds.ds) ? bounds.ds : tds;
+	}
+
     }
     fh = as+ds;
+    if ( fh < 0 )
+	fh = 0;
     if ( fg == COLOR_DEFAULT )
 	fg = GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(base));
     else if ( fg == COLOR_WARNING )
