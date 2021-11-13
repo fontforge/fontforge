@@ -361,6 +361,8 @@ typedef struct gmenubar {
     uint16 mtot;
     int16 entry_with_mouse;
     int16 lastmi;		/* If the menubar doesn't fit across the top the make some of it be vertical. Start here */
+    int ascender;
+    int descender;
     struct gmenu *child;
     unsigned int pressed: 1;
     unsigned int initial_press: 1;
