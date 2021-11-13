@@ -164,7 +164,7 @@ which you must select a set of hints that bound a set of counters.
 The Private dictionary
 ^^^^^^^^^^^^^^^^^^^^^^
 
-This contains font-wide hinting infomation. Things like: The standard width of a
+This contains font-wide hinting information. Things like: The standard width of a
 stem in the font (StdVW, StdHW), The standard height of capitals and lower case
 letters (BlueValues, OtherBlues), and so forth. These live in the PostScript
 Private dictionary. Once you have hinted your font fontforge can generate
@@ -181,7 +181,7 @@ Hints and previously existing fonts.
 FontForge will not be able to convert TrueType instructions into PostScript
 hints when it reads a TrueType font (the format is too complex, there are too
 many possibilities, instead FontForge stores all the truetype instructions and
-writes them back out uninterpretted).
+writes them back out uninterpreted).
 
 From a Type1 font it will happily read all the hints in a glyph, and keep track
 of hint substitution points. It will not read counter hints though.

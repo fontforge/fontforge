@@ -78,7 +78,7 @@ FontForge recognizes the following options:
 .. option:: -lang={py|ff}
             -lang {py|ff}
 
-   Specifies whether the script should be interpretted as a python script or a
+   Specifies whether the script should be interpreted as a python script or a
    fontforge script.
 
 .. option:: -version
@@ -93,7 +93,7 @@ FontForge recognizes the following options:
 
    ibm | mac | sun | ppc | 0 | 1 | 2 | 3
 
-   Allows you to specify the type of keyboard. Currently this is only relevent
+   Allows you to specify the type of keyboard. Currently this is only relevant
    when generating menus. The modifier keys are in different locations on
    different keyboards (under different operating systems) and if FontForge
    knows what keyboard you are using it can make the hot-keys have better
@@ -194,7 +194,7 @@ FontForge recognizes the following options:
 
    Where type may be:
 
-   StaticGray GrayScale StaticColor PsuedoColor TrueColor DirectColor
+   StaticGray GrayScale StaticColor PseudoColor TrueColor DirectColor
 
    (See the X manuals for a description of what these mean). FontForge will
    search through the visuals in an attempt to find one with the desired

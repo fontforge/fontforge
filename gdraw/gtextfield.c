@@ -900,14 +900,9 @@ static void GTextFieldImport(GTextField *gt) {
     char *cret;
     unichar_t *str;
 
-    if ( _ggadget_use_gettext ) {
-	char *temp = GWidgetOpenFile8(_("Open"),NULL,"*.{txt,py}",NULL,NULL);
-	ret = utf82u_copy(temp);
-	free(temp);
-    } else {
-	ret = GWidgetOpenFile(GStringGetResource(_STR_Open,NULL),NULL,
-		txt,NULL,NULL);
-    }
+    char *temp = GWidgetOpenFile8(_("Open"),NULL,"*.{txt,py}",NULL,NULL);
+    ret = utf82u_copy(temp);
+    free(temp);
 
     if ( ret==NULL )
 return;
@@ -915,10 +910,7 @@ return;
     free(ret);
     str = _GGadgetFileToUString(cret,65536);
     if ( str==NULL ) {
-	if ( _ggadget_use_gettext )
-	    GWidgetError8(_("Could not open file"), _("Could not open %.100s"),cret);
-	else
-	    GWidgetError(errort,error,cret);
+	GWidgetError8(_("Could not open file"), _("Could not open %.100s"),cret);
 	free(cret);
 return;
     }
@@ -933,13 +925,9 @@ static void GTextFieldSave(GTextField *gt,int utf8) {
     FILE *file;
     unichar_t *pt;
 
-    if ( _ggadget_use_gettext ) {
-	char *temp = GWidgetOpenFile8(_("Save"),NULL,"*.{txt,py}",NULL,NULL);
-	ret = utf82u_copy(temp);
-	free(temp);
-    } else
-	ret = GWidgetSaveAsFile(GStringGetResource(_STR_Save,NULL),NULL,
-		txt,NULL,NULL);
+    char *temp = GWidgetOpenFile8(_("Save"),NULL,"*.{txt,py}",NULL,NULL);
+    ret = utf82u_copy(temp);
+    free(temp);
 
     if ( ret==NULL )
 return;
@@ -947,10 +935,7 @@ return;
     free(ret);
     file = fopen(cret,"w");
     if ( file==NULL ) {
-	if ( _ggadget_use_gettext )
-	    GWidgetError8(_("Could not open file"), _("Could not open %.100s"),cret);
-	else
-	    GWidgetError(errort,error,cret);
+	GWidgetError8(_("Could not open file"), _("Could not open %.100s"),cret);
 	free(cret);
 return;
     }
@@ -2725,8 +2710,6 @@ static GTextField *_GTextFieldCreate(GTextField *gt, struct gwindow *base, GGadg
     if ( gd->label!=NULL ) {
 	if ( gd->label->text_is_1byte )
 	    gt->text = /* def2u_*/ utf82u_copy((char *) gd->label->text);
-	else if ( gd->label->text_in_resource )
-	    gt->text = u_copy((unichar_t *) GStringGetResource((intpt) gd->label->text,&gt->g.mnemonic));
 	else
 	    gt->text = u_copy(gd->label->text);
 	gt->sel_start = gt->sel_end = gt->sel_base = u_strlen(gt->text);

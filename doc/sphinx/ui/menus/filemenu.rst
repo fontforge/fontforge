@@ -195,7 +195,7 @@ The File Menu
    Only available in the font and outline views. Rereads the font from the sfd
    file on the disk searching for a glyph in that file with the same name as the
    current glyph. All changes to this glyph will be lost (but if the glyph has
-   references then any changes made to the glyphs being refered to will still be
+   references then any changes made to the glyphs being referred to will still be
    visible), *this command may be undone.*
 
    So if you have changed the name of the glyph this command will fail.
@@ -365,7 +365,7 @@ The File Menu
    :doc:`This dialog </techref/plugins>` allows you to configure which
    FontForge plugins—discovered among python packages installed and available
    to the FontForge application—are loaded, and in what order. Plugins extend
-   the functionalty of FontForge, most often by adding entries in the Font View
+   the functionality of FontForge, most often by adding entries in the Font View
    and Char View :doc:`Tools menu <toolsmenu>`.
 
 .. _filemenu.Quit:

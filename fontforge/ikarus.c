@@ -302,7 +302,7 @@ return;
     urwtable[677] = 0x2044;
     urwtable[678] = '%';
     urwtable[679] = 0x2030;
-	/* 680 and 681 are some sort of varient on % and per mill */
+	/* 680 and 681 are some sort of variant on % and per mill */
     urwtable[700] = '\\';
     urwtable[701] = 0xa8;
     urwtable[702] = 0x2d9;
@@ -318,7 +318,7 @@ return;
     urwtable[712] = 0x2db;
     urwtable[713] = 0xaf;
     urwtable[714] = 0xaf;
-	/* 751-764 seem to be varients on 701-714 */
+	/* 751-764 seem to be variants on 701-714 */
     urwtable[765] = 0x323;
     urwtable[766] = 0x320;
     urwtable[768] = 0x326;

@@ -206,7 +206,7 @@ extern int u_startswith(const unichar_t *haystack,const unichar_t *needle);
 extern int uc_startswith(const unichar_t *haystack,const char* needle);
 
 /**
- * In the string 's' replace all occurances of 'orig' with 'replacement'.
+ * In the string 's' replace all occurrences of 'orig' with 'replacement'.
  * If you set free_s to true then the string 's' will be freed by this function.
  * Normally you want to set free_s to 0 to avoid that. The case you will want to
  * use free_s to 1 is chaining many calls like:

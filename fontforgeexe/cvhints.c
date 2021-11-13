@@ -466,7 +466,7 @@ void CVReviewHints(CharView *cv) {
 	gcd[k].gd.label = &label[k];
 	gcd[k].gd.flags = gg_enabled|gg_visible;
 	gcd[k].gd.cid = CID_MovePoints;
-	gcd[k].gd.popup_msg = _("When the hint's position is changed\nadjust the postion of any points\nwhich lie on that hint");
+	gcd[k].gd.popup_msg = _("When the hint's position is changed\nadjust the position of any points\nwhich lie on that hint");
 	gcd[k].creator = GCheckBoxCreate;
 	harray3[0] = &gcd[k++]; harray3[1] = GCD_Glue; harray3[2] = NULL;
 

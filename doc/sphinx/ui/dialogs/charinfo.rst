@@ -237,7 +237,7 @@ Variants
 There are two panes for variants, one for glyphs that get longer horizontally
 and one for glyphs that get longer vertically.
 
-In mathmatical typesetting the size of a parenthesis will depend on the vertical
+In mathematical typesetting the size of a parenthesis will depend on the vertical
 size of the formula within that parenthesis. As formulae can be arbetarily
 complex they may be arbetarily tall, so there needs to be a way of making
 arbetarily big parentheses. This pane provides two mechanisms.

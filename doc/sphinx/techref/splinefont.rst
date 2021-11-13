@@ -491,7 +491,7 @@ rotation/scaling/flipping/skewing/... transformations, last row provides for
 translations. (Both postscript and truetype have restrictions on what kinds of
 transformations are acceptable). The splines field provides a quick way of
 drawing the referred character, it is the result of applying the transformation
-matrix on all splines in the refered character. There may be several referred
+matrix on all splines in the referred character. There may be several referred
 characters and they are linked together on the next field. The checked field is
 used to insure that we don't have any loops (ie. on characters which refer to
 themselves). The selected field indicates that the reference is selected. The bb
@@ -603,12 +603,12 @@ changedsincelasthhinted means that we need to run autohint on the horizontal
 stems, changedsincelastvhinted for vertical stems. Manual hints means the user
 has taken control of providing hints, and we should only run autohint if
 explicitly asked to. Ticked is a temporary field usually to avoid infinite loops
-of refered characters. changed_since_autosave indicates that the next time we
+of referred characters. changed_since_autosave indicates that the next time we
 update our autosave database we should write this character to it. Widthset
 means the user has changed the width. If we didn't have this bit we might think
 that an em space had nothing in it (instead of having an em-space in it).
 
-If a SplineChar is refered to in another character, then when we change the
+If a SplineChar is referred to in another character, then when we change the
 original we must also update anything that refers to it (if we change A, we must
 also redisplay Agrave).
 

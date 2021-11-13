@@ -84,7 +84,7 @@ if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
     list(APPEND _test_flags BOTH -fdiagnostics-color=always)
   endif()
   set_supported_compiler_flags(FONTFORGE_DEFAULT_CFLAGS FONTFORGE_DEFAULT_CXXFLAGS ${_test_flags})
-  list(APPEND FONTFORGE_EXTRA_CFLAGS -Wall -Wextra -pedantic)
+  list(APPEND FONTFORGE_EXTRA_CFLAGS -Wall -Wextra -pedantic -Wno-unused-parameter)
   add_compile_options(
     "$<$<COMPILE_LANGUAGE:C>:${FONTFORGE_DEFAULT_CFLAGS}>"
     "$<$<COMPILE_LANGUAGE:CXX>:${FONTFORGE_DEFAULT_CXXFLAGS}>"
@@ -112,6 +112,9 @@ endif()
 # Requirements for options
 if(ENABLE_GUI)
   if(ENABLE_X11)
+    if(APPLE)
+      message(FATAL_ERROR "Using the X11 backend on MacOS is no longer supported.")
+    endif()
     find_package(Cairo 1.6 REQUIRED)
     find_package(Pango 1.10 COMPONENTS pangocairo pangoxft REQUIRED)
     find_package(X11 REQUIRED)

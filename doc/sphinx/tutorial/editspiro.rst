@@ -75,7 +75,7 @@ Now select the corner point from the tool menu (the one that looks like a square
 
 Place it at a location where the slope changes abruptly -- a corner.
 
-We are now readly to talk about the "left tangent point". Pretend you are
+We are now ready to talk about the "left tangent point". Pretend you are
 standing on the corner point, facing toward the tangent point. Is the next
 point after it (in this case the curved point) to your left or to your right?
 If to your left, use a left tangen, if to your right, use a right tangent.

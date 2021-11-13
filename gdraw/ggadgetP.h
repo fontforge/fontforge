@@ -233,7 +233,7 @@ typedef struct gscrollbar {		/* and slider */
     /*unsigned int vert: 1; */	/* Moved to GGadget, shared with line */
     unsigned int thumbpressed: 1;
     unsigned int ignorenext45: 1;
-    int8 repeatcmd;		/*  sb event to be generated on timer interupts (ie. upline)*/
+    int8 repeatcmd;		/*  sb event to be generated on timer interrupts (ie. upline)*/
     int8 thumbborder;		/* Size of the border of the thumbbox */
     int8 sbborder;		/* Size of the border of the main scrollbar */
     int16 size_offset;		/* Thumb size offset when the thumb size gets clamped. */
@@ -398,9 +398,6 @@ typedef struct gfilechooser {
     unichar_t *lastname;
     GFileChooserFilterType filter;
     GFileChooserInputFilenameFuncType inputfilenamefunc;
-    /*enum fchooserret (*filter)(GGadget *chooser,struct gdirentry *file,const unichar_t *dir);*/
-    struct giocontrol *outstanding;
-    GCursor old_cursor;
     GButton *up, *home;
     GButton *bookmarks, *config;
     struct ghvbox *topbox;
@@ -588,8 +585,6 @@ extern void _GButtonInit(void);
 extern void GListMarkDraw(GWindow pixmap,int x, int y, int height, enum gadget_state state );
 extern const char* const* _GGadget_GetImagePath(void);
 extern int _GGadget_ImageInCache(GImage *image);
-
-extern int _ggadget_use_gettext;
 
 extern GResInfo ggadget_ri, listmark_ri;
 extern GResInfo *_GGadgetRIHead(void), *_GButtonRIHead(void), *_GTextFieldRIHead(void);

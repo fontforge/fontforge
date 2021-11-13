@@ -48,8 +48,8 @@
 #include <string.h>
 
 /* Look for
-Source: Microsoft Windows 2.0 SDK Programmer's Refrence, pages 639 through 645
-        Microsoft Windows Device Driver Kit, Device Driver Adaptaion Guide, pages 13-1-13-15
+Source: Microsoft Windows 2.0 SDK Programmer's Reference, pages 639 through 645
+        Microsoft Windows Device Driver Kit, Device Driver Adaptation Guide, pages 13-1-13-15
 
 This is quoted directly from "The PC Programmer's Sourcebook, 2nd Edition", by
 Thom Hogan, pages 6-18 through 6-19.  You need this book.  ISBN 1-55615-321-X.

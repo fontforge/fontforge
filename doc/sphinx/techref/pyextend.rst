@@ -425,7 +425,7 @@ specific parameters. It has two parts:
    The parameter can be extracted from the ``**kw`` dictionary (see above)
    or caught explicitly by changing the definition to
    ``def fontforge_plugin_init(preferences_path=None, **kw):``
-2. Plugin configuration is trigged by a call to ``fontforge_plugin_config``,
+2. Plugin configuration is triggered by a call to ``fontforge_plugin_config``,
    which is a function defined on the same module or object as
    ``fontforge_plugin_init``. If a plugin defines that function it will be
    called when a user presses the "Configure" button in the Plugin dialog.

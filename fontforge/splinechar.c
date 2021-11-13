@@ -177,7 +177,7 @@ return;
 /* If they change the left bearing of a character, then in all chars */
 /*  that depend on it should be adjusted too. */
 /* Also all vstem hints */
-/* I deliberately don't set undoes in the dependants. The change is not */
+/* I deliberately don't set undoes in the dependents. The change is not */
 /*  in them, after all */
 void SCSynchronizeLBearing(SplineChar *sc,real off,int layer) {
     struct splinecharlist *dlist;
@@ -1063,7 +1063,7 @@ return;
 
 void UnlinkThisReference(FontViewBase *fv,SplineChar *sc,int layer) {
     /* We are about to clear out sc. But somebody refers to it and that we */
-    /*  aren't going to delete. So (if the user asked us to) instanciate sc */
+    /*  aren't going to delete. So (if the user asked us to) instantiate sc */
     /*  into all characters which refer to it and which aren't about to be */
     /*  cleared out */
     struct splinecharlist *dep, *dnext;
@@ -1773,7 +1773,7 @@ int SCValidate(SplineChar *sc, int layer, int force) {
 		first = s;
 	    if ( s->acceptableextrema )
 	continue;		/* If marked as good, don't check it */
-	    /* rough appoximation to spline's length */
+	    /* rough approximation to spline's length */
 	    x = (s->to->me.x-s->from->me.x);
 	    y = (s->to->me.y-s->from->me.y);
 	    len2 = x*x + y*y;

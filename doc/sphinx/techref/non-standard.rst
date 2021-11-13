@@ -391,7 +391,7 @@ glyph
 
       * - fixed16.16
         - transform[6]
-        - A PostScript transformaton matrix where each member is a signed 4 byte
+        - A PostScript transformation matrix where each member is a signed 4 byte
           integers which should be divided by 32768.0 to allow for non-integral
           values
       * - uint16

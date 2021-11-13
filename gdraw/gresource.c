@@ -149,8 +149,7 @@ return( 0 );
 }
 
 void GResourceSetProg(char *prog) {
-    char filename[1025], *pt;
-    extern char *_GFile_find_program_dir(char *prog);
+    char *pt;
 
     if ( prog!=NULL ) {
 	if ( GResourceProgramName!=NULL && strcmp(prog,GResourceProgramName)==0 )

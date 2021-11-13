@@ -410,7 +410,7 @@ The View Menu
 
    .. object:: Anti-Alias
 
-      In the Outline view, if grid fitting is turned on, this will toggle whethe
+      In the Outline view, if grid fitting is turned on, this will toggle whether
       the display is in anti alias mode.
 
    .. _viewmenu.GFOff:

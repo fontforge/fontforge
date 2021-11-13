@@ -502,7 +502,8 @@ int GFileUnlink(const char *name) {
 return(unlink(name));
 }
 
-char *_GFile_find_program_dir(char *prog) {
+#ifndef _WIN32
+static char *_GFile_find_program_dir(char *prog) {
     char *pt, *path, *program_dir=NULL;
     char filename[2000];
 
@@ -510,29 +511,6 @@ char *_GFile_find_program_dir(char *prog) {
         return NULL;
     }
 
-#if defined(__MINGW32__)
-    char* pt1 = strrchr(prog, '/');
-    char* pt2 = strrchr(prog, '\\');
-    if(pt1<pt2) pt1=pt2;
-    if(pt1)
-	program_dir = copyn(prog, pt1-prog);
-    else if( (path = getenv("PATH")) != NULL ){
-	char* tmppath = copy(path);
-	path = tmppath;
-	for(;;){
-	    pt1 = strchr(path, ';');
-	    if(pt1) *pt1 = '\0';
-	    sprintf(filename,"%s/%s", path, prog);
-	    if ( access(filename,1)!= -1 ) {
-		program_dir = copy(path);
-		break;
-	    }
-	    if(!pt1) break;
-	    path = pt1+1;
-	}
-	free(tmppath);
-    }
-#else
     if ( (pt = strrchr(prog,'/'))!=NULL )
 	program_dir = copyn(prog,pt-prog);
     else if ( (path = getenv("PATH"))!=NULL ) {
@@ -552,7 +530,6 @@ char *_GFile_find_program_dir(char *prog) {
 		program_dir = copy(path);
 	}
     }
-#endif
 
     if ( program_dir==NULL )
 return( NULL );
@@ -561,6 +538,7 @@ return( NULL );
     program_dir = copy(filename);
 return( program_dir );
 }
+#endif
 
 unichar_t *u_GFileGetAbsoluteName(unichar_t *name, unichar_t *result, int rsiz) {
     /* result may be the same as name */
@@ -809,7 +787,7 @@ void FindProgDir(char *prog) {
         return;
     }
 
-#if defined(__MINGW32__)
+#ifdef _WIN32
     char  path[MAX_PATH+4];
     char* c = path;
     char* tail = 0;
@@ -831,29 +809,27 @@ void FindProgDir(char *prog) {
 #endif
 }
 
+// When calling this function, make sure you prepend "/" to the subdirectory
+// you want. So, to get e.g. /usr/share/cidmaps, call
+// getShareSubDir("/cidmaps").
+char *getShareSubDir(const char* subdir) {
+    const char *pt = strrchr(program_dir, '/');
+    int len = pt ? (pt - program_dir) : strlen(program_dir);
+    return smprintf("%.*s/share/fontforge%s",
+        len, program_dir, subdir ? subdir : "");
+}
+
 char *getShareDir(void) {
     static char *sharedir=NULL;
     static int set=false;
-    char *pt;
-    int len;
 
     if ( set )
 	return( sharedir );
 
+    sharedir = getShareSubDir(NULL);
     set = true;
-
-    //Assume share folder is one directory up
-    pt = strrchr(program_dir, '/');
-    if ( pt==NULL ) {
-	pt = program_dir + strlen(program_dir);
-    }
-    len = (pt-program_dir)+strlen("/share/fontforge")+1;
-    sharedir = malloc(len);
-    strncpy(sharedir,program_dir,pt-program_dir);
-    strcpy(sharedir+(pt-program_dir),"/share/fontforge");
-    return( sharedir );
+    return sharedir;
 }
-
 
 char *getLocaleDir(void) {
     static char *sharedir=NULL;
@@ -862,11 +838,7 @@ char *getLocaleDir(void) {
     if ( set )
 	return( sharedir );
 
-    char* prefix = getShareDir();
-    int len = strlen(prefix) + strlen("/../locale") + 2;
-    sharedir = malloc(len);
-    strcpy(sharedir,prefix);
-    strcat(sharedir,"/../locale");
+    sharedir = getShareSubDir("/../locale");
     set = true;
     return sharedir;
 }
@@ -878,11 +850,7 @@ char *getPixmapDir(void) {
     if ( set )
 	return( sharedir );
 
-    char* prefix = getShareDir();
-    int len = strlen(prefix) + strlen("/pixmaps") + 2;
-    sharedir = malloc(len);
-    strcpy(sharedir,prefix);
-    strcat(sharedir,"/pixmaps");
+    sharedir = getShareSubDir("/pixmaps");
     set = true;
     return sharedir;
 }
@@ -894,12 +862,7 @@ char *getHelpDir(void) {
     if ( set )
 	return( sharedir );
 
-    char* prefix = getShareDir();
-    const char* postfix = "/../doc/fontforge/";
-    int len = strlen(prefix) + strlen(postfix) + 2;
-    sharedir = malloc(len);
-    strcpy(sharedir,prefix);
-    strcat(sharedir,postfix);
+    sharedir = getShareSubDir("/../doc/fontforge/");
     set = true;
     return sharedir;
 }
@@ -1139,3 +1102,98 @@ char *GFileDirName(const char *path) {
     return GFileDirNameEx(path, 0);
 }
 
+static int mime_comp(const void *k, const void *v) {
+    return strmatch((const char*)k, ((const char**)v)[0]);
+}
+
+char* GFileMimeType(const char *path) {
+    char* ret, *pt;
+    gboolean uncertain = false;
+    gchar* res = g_content_type_guess(path, NULL, 0, &uncertain);
+    gchar* mres = g_content_type_get_mime_type(res);
+    g_free(res);
+
+    if (!mres || uncertain || strstr(mres, "application/x-ext") || !strcmp(mres, "application/octet-stream")) {
+        path = GFileNameTail(path);
+        pt = strrchr(path, '.');
+
+        if (pt == NULL) {
+            if (!strmatch(path, "makefile") || !strmatch(path, "makefile~"))
+                ret = copy("application/x-makefile");
+            else if (!strmatch(path, "core"))
+                ret = copy("application/x-core");
+            else
+                ret = copy("application/octet-stream");
+        } else {
+            pt = copy(pt + 1);
+            int len = strlen(pt);
+            if (pt[len - 1] == '~') {
+                pt[len - 1] = '\0';
+            }
+
+            // array MUST be sorted by extension
+            static const char* ext_mimes[][2] = {
+                {"bdf",   "application/x-font-bdf"},
+                {"bin",   "application/x-macbinary"},
+                {"bz2",   "application/x-compressed"},
+                {"c",     "text/c"},
+                {"cff",   "application/x-font-type1"},
+                {"cid",   "application/x-font-cid"},
+                {"css",   "text/css"},
+                {"dfont", "application/x-mac-dfont"},
+                {"eps",   "text/ps"},
+                {"gai",   "font/otf"},
+                {"gif",   "image/gif"},
+                {"gz",    "application/x-compressed"},
+                {"h",     "text/h"},
+                {"hqx",   "application/x-mac-binhex40"},
+                {"html",  "text/html"},
+                {"jpeg",  "image/jpeg"},
+                {"jpg",   "image/jpeg"},
+                {"mov",   "video/quicktime"},
+                {"o",     "application/x-object"},
+                {"obj",   "application/x-object"},
+                {"otb",   "font/otf"},
+                {"otf",   "font/otf"},
+                {"pcf",   "application/x-font-pcf"},
+                {"pdf",   "application/pdf"},
+                {"pfa",   "application/x-font-type1"},
+                {"pfb",   "application/x-font-type1"},
+                {"png",   "image/png"},
+                {"ps",    "text/ps"},
+                {"pt3",   "application/x-font-type1"},
+                {"ras",   "image/x-cmu-raster"},
+                {"rgb",   "image/x-rgb"},
+                {"rpm",   "application/x-compressed"},
+                {"sfd",   "application/vnd.font-fontforge-sfd"},
+                {"sgi",   "image/x-sgi"},
+                {"snf",   "application/x-font-snf"},
+                {"svg",   "image/svg+xml"},
+                {"tar",   "application/x-tar"},
+                {"tbz",   "application/x-compressed"},
+                {"text",  "text/plain"},
+                {"tgz",   "application/x-compressed"},
+                {"ttf",   "font/ttf"},
+                {"txt",   "text/plain"},
+                {"wav",   "audio/wave"},
+                {"woff",  "font/woff"},
+                {"woff2", "font/woff2"},
+                {"xbm",   "image/x-xbitmap"},
+                {"xml",   "text/xml"},
+                {"xpm",   "image/x-xpixmap"},
+                {"z",     "application/x-compressed"},
+                {"zip",   "application/x-compressed"},
+            };
+
+            const char** elem = bsearch(pt, ext_mimes,
+                sizeof(ext_mimes)/sizeof(ext_mimes[0]), sizeof(ext_mimes[0]),
+                mime_comp);
+            ret = copy(elem ? elem[1] : "application/octet-stream");
+            free(pt);
+        }
+    } else {
+        ret = copy(mres);
+    }
+    g_free(mres);
+    return ret;
+}

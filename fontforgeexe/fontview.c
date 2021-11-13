@@ -41,7 +41,6 @@
 #include "fvcomposite.h"
 #include "fvfonts.h"
 #include "gfile.h"
-#include "gio.h"
 #include "gkeysym.h"
 #include "gresedit.h"
 #include "gresource.h"
@@ -340,7 +339,7 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int forcebg ) {
 
 	    /* I assume that the bitmap image matches the bounding*/
 	    /*  box. In some bitmap fonts the bitmap has white space on the*/
-	    /*  right. This can throw off the centering algorithem */
+	    /*  right. This can throw off the centering algorithm */
 	    if ( fv->magnify>1 ) {
 		GDrawDrawImageMagnified(pixmap,&gi,NULL,
 			j*fv->cbw+(fv->cbw-1-fv->magnify*xwidth)/2,
@@ -597,10 +596,9 @@ return( true );
 }
 
 
-static enum fchooserret _FVSaveAsFilterFunc(GGadget *g,struct gdirentry *ent, const unichar_t *dir)
+static enum fchooserret _FVSaveAsFilterFunc(GGadget *g,const struct gdirentry *ent, const char *dir)
 {
-    char* n = u_to_c(ent->name);
-    int ew = endswithi( n, "sfd" ) || endswithi( n, "sfdir" );
+    int ew = endswithi( ent->name, "sfd" ) || endswithi( ent->name, "sfdir" );
     if( ew )
 	return fc_show;
     if( ent->isdir )
@@ -3631,21 +3629,15 @@ return;
     SFRestoreNearTop(fv->b.sf);
 }
 
-static enum fchooserret CMapFilter(GGadget *g,GDirEntry *ent,
-	const unichar_t *dir) {
+static enum fchooserret CMapFilter(GGadget *g,const struct gdirentry *ent,
+	const char *dir) {
     enum fchooserret ret = GFileChooserDefFilter(g,ent,dir);
     char buf2[256];
     FILE *file;
     static char *cmapflag = "%!PS-Adobe-3.0 Resource-CMap";
 
     if ( ret==fc_show && !ent->isdir ) {
-	int len = 3*(u_strlen(dir)+u_strlen(ent->name)+5);
-	char *filename = malloc(len);
-	u2def_strncpy(filename,dir,len);
-	strcat(filename,"/");
-	u2def_strncpy(buf2,ent->name,sizeof(buf2));
-	strcat(filename,buf2);
-	file = fopen(filename,"r");
+	file = fopen(ent->fullpath,"r");
 	if ( file==NULL )
 	    ret = fc_hide;
 	else {
@@ -3654,7 +3646,6 @@ static enum fchooserret CMapFilter(GGadget *g,GDirEntry *ent,
 		ret = fc_hide;
 	    fclose(file);
 	}
-	free(filename);
     }
 return( ret );
 }

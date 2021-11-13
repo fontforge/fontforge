@@ -3398,7 +3398,7 @@ void readttfprop(FILE *ttf,struct ttfinfo *info) {
     int def;
 
     fseek(ttf,info->prop_start,SEEK_SET);
-    /* The one example that I've got has a wierd version, so I don't check it */
+    /* The one example that I've got has a weird version, so I don't check it */
     /*  the three versions that I know about are all pretty much the same, just a few extra flags */
     /* version = */ getlong(ttf);
     /* format = */ getushort(ttf);

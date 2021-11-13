@@ -136,7 +136,7 @@ static void GRE_FigureInheritance( GRE *gre, GResInfo *parent, int cid_off_inh,
 	if ( child->inherits_from==parent &&
 		(( is_font && child->font!=NULL ) ||
 		 ( !is_font && child->boxdata!=NULL)) ) {
-	     /* Fonts may have a different cid offset depending on wether */
+	     /* Fonts may have a different cid offset depending on whether */
 	     /* The ResInfo has a box or not */
 	    if (( is_font && GGadgetIsChecked(GWidgetGetControl(gre->gw,gre->tofree[i].fontcid-2)) ) ||
 		    ( !is_font && GGadgetIsChecked(GWidgetGetControl(gre->gw,gre->tofree[i].startcid+cid_off_inh)) )) {
@@ -1303,7 +1303,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 
 	    l = 0;
 
-/* GT: "I." is an abreviation for "Inherits" */
+/* GT: "I." is an abbreviation for "Inherits" */
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
@@ -1338,7 +1338,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		gcd[k-1].gd.flags &= ~gg_enabled;
 	    }
 
-/* GT: "I." is an abreviation for "Inherits" */
+/* GT: "I." is an abbreviation for "Inherits" */
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
@@ -1375,7 +1375,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    tofree[i].carray[l][7] = GCD_Glue;
 	    tofree[i].carray[l++][8] = NULL;
 
-/* GT: "I." is an abreviation for "Inherits" */
+/* GT: "I." is an abbreviation for "Inherits" */
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
@@ -1410,7 +1410,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		gcd[k-1].gd.flags &= ~gg_enabled;
 	    }
 
-/* GT: "I." is an abreviation for "Inherits" */
+/* GT: "I." is an abbreviation for "Inherits" */
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
@@ -1447,7 +1447,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    tofree[i].carray[l][7] = GCD_Glue;
 	    tofree[i].carray[l++][8] = NULL;
 
-/* GT: "I." is an abreviation for "Inherits" */
+/* GT: "I." is an abbreviation for "Inherits" */
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
@@ -1482,7 +1482,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		gcd[k-1].gd.flags &= ~gg_enabled;
 	    }
 
-/* GT: "I." is an abreviation for "Inherits" */
+/* GT: "I." is an abbreviation for "Inherits" */
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
@@ -1519,7 +1519,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    tofree[i].carray[l][7] = GCD_Glue;
 	    tofree[i].carray[l++][8] = NULL;
 
-/* GT: "I." is an abreviation for "Inherits" */
+/* GT: "I." is an abbreviation for "Inherits" */
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
@@ -1554,7 +1554,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		gcd[k-1].gd.flags &= ~gg_enabled;
 	    }
 
-/* GT: "I." is an abreviation for "Inherits" */
+/* GT: "I." is an abbreviation for "Inherits" */
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
@@ -1592,7 +1592,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    tofree[i].carray[l++][8] = NULL;
 
 
-/* GT: "I." is an abreviation for "Inherits" */
+/* GT: "I." is an abbreviation for "Inherits" */
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
@@ -1627,7 +1627,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		gcd[k-1].gd.flags &= ~gg_enabled;
 	    }
 
-/* GT: "I." is an abreviation for "Inherits" */
+/* GT: "I." is an abbreviation for "Inherits" */
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
@@ -1665,7 +1665,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    tofree[i].carray[l++][8] = NULL;
 
 
-/* GT: "I." is an abreviation for "Inherits" */
+/* GT: "I." is an abbreviation for "Inherits" */
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
@@ -1700,7 +1700,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		gcd[k-1].gd.flags &= ~gg_enabled;
 	    }
 
-/* GT: "I." is an abreviation for "Inherits" */
+/* GT: "I." is an abbreviation for "Inherits" */
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
@@ -1738,7 +1738,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    tofree[i].carray[l++][8] = NULL;
 
 
-/* GT: "I." is an abreviation for "Inherits" */
+/* GT: "I." is an abbreviation for "Inherits" */
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
@@ -1779,7 +1779,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    tofree[i].carray[l][7] = GCD_Glue;
 	    tofree[i].carray[l++][8] = NULL;
 
-/* GT: "I." is an abreviation for "Inherits" */
+/* GT: "I." is an abbreviation for "Inherits" */
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
@@ -1815,7 +1815,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		gcd[k-1].gd.flags &= ~gg_enabled;
 	    }
 
-/* GT: "I." is an abreviation for "Inherits" */
+/* GT: "I." is an abbreviation for "Inherits" */
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
@@ -1853,7 +1853,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    tofree[i].carray[l][7] = GCD_Glue;
 	    tofree[i].carray[l++][8] = NULL;
 
-/* GT: "I." is an abreviation for "Inherits" */
+/* GT: "I." is an abbreviation for "Inherits" */
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
@@ -1892,7 +1892,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 		gcd[k-1].gd.flags &= ~gg_enabled;
 	    }
 
-/* GT: "I." is an abreviation for "Inherits" */
+/* GT: "I." is an abbreviation for "Inherits" */
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];
@@ -1933,7 +1933,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    tofree[i].carray[l][7] = GCD_Glue;
 	    tofree[i].carray[l++][8] = NULL;
 
-/* GT: "I." is an abreviation for "Inherits" */
+/* GT: "I." is an abbreviation for "Inherits" */
 	    lab[k].text = (unichar_t *) _("I.");
 	    lab[k].text_is_1byte = true;
 	    gcd[k].gd.label = &lab[k];

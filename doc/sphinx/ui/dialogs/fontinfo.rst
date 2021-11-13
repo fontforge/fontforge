@@ -298,7 +298,7 @@ the top of the list are executed first, things at the bottom last.
 .. note::
 
    Although the OpenType spec claims that the execution of features (actually
-   lookups) will be ordered by their appearence in the lookup table, MicroSoft
+   lookups) will be ordered by their appearance in the lookup table, MicroSoft
    claims that they will apply features in the order that they think best. So
    the order specified in the font may be ignored.
 
@@ -655,7 +655,7 @@ In the table above:
 * All pixel sizes between 9 and 16 (inclusive) will be grid-fit but not
   anti-aliased.
 * All pixel sizes above 16 will be both grid-fit and anti-aliased, and will have
-  Cleartype Symetric Smoothing done.
+  Cleartype Symmetric Smoothing done.
 
 
 .. _fontinfo.TeX:
@@ -697,7 +697,7 @@ Size
 This allows you to set the design size of a font, the design range, and provide
 a style name for this class of font.
 
-In tradtional typography every point size of a given font would be slightly
+In traditional typography every point size of a given font would be slightly
 different -- generally small point sizes would have proportionally more
 white-space around the glyph and wider stems inside the glyph. This made small
 point sizes more readable than they would otherwise be. Conversely large
@@ -957,7 +957,7 @@ Dates
 Displays what fontforge thinks is the create date and modification date of the
 font data. FontForge started retaining those dates in August of 2006, any prior
 dates are conjectural and based on a best guess -- usually from the modification
-time of the sfd file. When loading a font from somthing other than an sfd file,
+time of the sfd file. When loading a font from something other than an sfd file,
 FontForge will again make the best guess it can.
 
 

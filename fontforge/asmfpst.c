@@ -887,7 +887,7 @@ static void SMSetState(struct asm_state *trans,struct contexttree *cur,int class
 	if ( cur->branches[i].classnum==class ) {
 	    trans->next_state = cur->branches[i].branch->state;
 	    /* If we go back to state 0, it means we want to start from */
-	    /*  the begining again, and we should check against the */
+	    /*  the beginning again, and we should check against the */
 	    /*  current glyph (which failed for us, but might be useful */
 	    /*  to start a new operation).  Even if we did not fail we */
 	    /*  should still do this (so don't advance the glyph) */

@@ -72,6 +72,6 @@ will not automatically load them. You can then open the "Configure Plugins..."
 dialog, Disable the misbehaving plugin, and restart the program.
 
 When an individual plugin is present but cannot be loaded there will be
-relevant warnings logged on startup or when a load is attemped via the dialog
+relevant warnings logged on startup or when a load is attempted via the dialog
 or the python API. There will also be a warning for each *enabled* plugin
 that is not discovered.

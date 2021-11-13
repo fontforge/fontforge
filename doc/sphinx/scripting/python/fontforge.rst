@@ -123,7 +123,7 @@ Module functions
 .. function:: loadEncodingFile(filename[, encname])
 
    Loads an encoding file, returns the name of the encoding or ``None``. When
-   loading encodings in Unicode consortium format, an encname has to be specefied
+   loading encodings in Unicode consortium format, an encname has to be specified
    or the encoding will be ignored and ``None`` will be returned.
 
 .. function:: loadNamelist(filename)
@@ -824,7 +824,7 @@ Two contours may be compared to see if they describe similar paths.
 
 .. attribute:: contour.is_quadratic
 
-   Whether the contour should be interpretted as a set of quadratic or cubic
+   Whether the contour should be interpreted as a set of quadratic or cubic
    splines. Setting this value has the side effect of converting the point list
    to the appropriate format.
 
@@ -977,7 +977,7 @@ Does not support the repeat concept.
 .. method:: contour.isClockwise()
 
    Returns whether the contour is drawn in a clockwise direction. A return
-   value of -1 indicates that no consistant direction could be found (the
+   value of -1 indicates that no consistent direction could be found (the
    contour self-intersects).
 
 .. method:: contour.reverseDirection()
@@ -1116,7 +1116,7 @@ Layers may be compared to see if their contours are similar.
 
 .. method:: layer.is_quadratic()
 
-   Whether the contours should be interpretted as a set of quadratic cubic
+   Whether the contours should be interpreted as a set of quadratic cubic
    splines. Setting this value has the side effect of converting the contour
    list to the appropriate format.
 
@@ -1598,7 +1598,7 @@ must be created through the font.
    A tuple of tuples.
 
    This allows :ref:`constructing <math.GlyphConstruction>` very large versions
-   of the glyph by stacking the componants together. Some components may be
+   of the glyph by stacking the components together. Some components may be
    repeated so there is no bound on the size.
 
    This is different from horizontalVariants which expects prebuilt glyphs of
@@ -1906,7 +1906,7 @@ must be created through the font.
    A tuple of tuples.
 
    This allows :ref:`constructing <math.GlyphConstruction>` very large versions
-   of the glyph by stacking the componants together. Some components may be
+   of the glyph by stacking the components together. Some components may be
    repeated so there is no bound on the size.
 
    This is different from verticalVariants which expects prebuilt glyphs of
@@ -1994,7 +1994,7 @@ must be created through the font.
             glyph.addPosSub(subtable_name, other_glyph_name, xoff1, yoff1, xadv1, yadv1, xoff2, yoff2, xadv2, yadv2)
 
    Adds position/substitution data to the glyph. The number and type of the
-   arguments vary acording to the type of the lookup containing the subtable.
+   arguments vary according to the type of the lookup containing the subtable.
 
    The first argument should always be a lookup subtable name.
 
@@ -2191,7 +2191,7 @@ must be created through the font.
 .. method:: glyph.importOutlines(filename, [KEYWORD])
 
    Uses the file's extension to determine behavior. Imports outline descriptions
-   (eps, svg, glif files) into the forground layer. Imports image descriptions
+   (eps, svg, glif files) into the foreground layer. Imports image descriptions
    (bmp, png, xbm, etc.) into the background layer. The following optional keywords modify the import process for various formats:
 
    .. object:: scale (boolean, default=True)
@@ -2522,7 +2522,7 @@ must be created through the font.
    .. object:: partialRefs
 
       Don't transform any references in the glyph, but do transform their offsets.
-      This is useful if the refered glyph will be (or has been) transformed.
+      This is useful if the referred glyph will be (or has been) transformed.
 
    .. object:: round
 
@@ -3265,7 +3265,7 @@ This type may not be pickled.
 
 .. attribute:: font.is_quadratic
 
-   Deprecated. Whether the contours should be interpretted as a set of quadratic
+   Deprecated. Whether the contours should be interpreted as a set of quadratic
    or cubic splines. Setting this value has the side effect of converting the
    entire font into the other format
 
@@ -3977,7 +3977,7 @@ This type may not be pickled.
       this example would match it the current glyph were named ``glyph-name3``
       and it were preceded by ``glyph-name2`` and that by ``glyph-name1`` and
       followed by ``glyph-name4``. If the match were successful then the lookup
-      named ``lookup-name`` would be applied. The ``@<>`` are litteral
+      named ``lookup-name`` would be applied. The ``@<>`` are literal
       characters and should be present in the rule.
 
       If the invoked lookup is a ligature lookup then it should be invoked
@@ -3987,7 +3987,7 @@ This type may not be pickled.
 
         e | f @<ff-lig> f l | o
 
-      would only apply the ``ff-lig`` lookup if the ``ffl`` were preceeded by
+      would only apply the ``ff-lig`` lookup if the ``ffl`` were preceded by
       ``e`` and followed by ``o``.
 
    .. object:: When type="class"
@@ -4000,7 +4000,7 @@ This type may not be pickled.
       we have class names here. It is possible to have different sets of class
       names in the three different sections (backtrack, match and lookahead).
       If you don't specify any class names then you must use numbers instead,
-      each number refering to the class at that position in the tuple (the first
+      each number referring to the class at that position in the tuple (the first
       class will be class 0, the second class 1, and so on).
 
    .. object:: When type="coverage"
@@ -4049,7 +4049,7 @@ This type may not be pickled.
 
    When it creates a new glyph it will name that glyph by appending ".sc" to
    the original lower case letter name (so "a" would become "a.sc") you may
-   change the extension used with ``letter_extension``. Similary symbols and
+   change the extension used with ``letter_extension``. Similarly symbols and
    digits will use the extension "taboldstyle", but you may change that with
    ``symbol_extension``.
 
@@ -4097,7 +4097,7 @@ This type may not be pickled.
 
 .. method:: font.buildOrReplaceAALTFeatures()
 
-   Removes any existing AALT features (and any lookups solely controled by such
+   Removes any existing AALT features (and any lookups solely controlled by such
    features) and creates new ones containing all possible single and alternate
    substutions available for each glyph.
 
@@ -4653,7 +4653,7 @@ This type may not be pickled.
 
 .. method:: font.replaceAll(srch, rpl[, error_bound])
 
-   Searches the font for all occurences of the srch contour (or layer) and
+   Searches the font for all occurrences of the srch contour (or layer) and
    replaces them with the replace contour (or layer).
 
 .. method:: font.revert()

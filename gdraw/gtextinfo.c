@@ -267,24 +267,17 @@ GTextInfo *GTextInfoCopy(GTextInfo *ti) {
 
     copy = malloc(sizeof(GTextInfo));
     *copy = *ti;
-    copy->text_is_1byte = false;
     if ( copy->fg == 0 && copy->bg == 0 ) {
 	copy->fg = copy->bg = COLOR_UNKNOWN;
     }
     if ( ti->text!=NULL ) {
-	if ( ti->text_is_1byte && ti->text_in_resource ) {
+	if ( ti->text_is_1byte ) {
 	    copy->text = utf82u_mncopy((char *) copy->text,&copy->mnemonic);
-	    copy->text_in_resource = false;
-	    copy->text_is_1byte = false;
-	} else if ( ti->text_in_resource ) {
-	    copy->text = u_copy((unichar_t *) GStringGetResource((intpt) copy->text,&copy->mnemonic));
-	    copy->text_in_resource = false;
-	} else if ( ti->text_is_1byte ) {
-	    copy->text = utf82u_copy((char *) copy->text);
-	    copy->text_is_1byte = false;
 	} else
 	    copy->text = u_copy(copy->text);
     }
+    copy->text_in_resource = false;
+    copy->text_is_1byte = false;
 return( copy);
 }
 
@@ -769,12 +762,8 @@ return( NULL );
 	arr[i] = mi[i];
 	GTextInfoImageLookup(&arr[i].ti);
 	if ( mi[i].ti.text!=NULL ) {
-	    if ( mi[i].ti.text_in_resource && mi[i].ti.text_is_1byte )
+	    if ( mi[i].ti.text_is_1byte )
 		arr[i].ti.text = utf82u_mncopy((char *) mi[i].ti.text,&arr[i].ti.mnemonic);
-	    else if ( mi[i].ti.text_in_resource )
-		arr[i].ti.text = u_copy((unichar_t *) GStringGetResource((intpt) mi[i].ti.text,&arr[i].ti.mnemonic));
-	    else if ( mi[i].ti.text_is_1byte )
-		arr[i].ti.text = utf82u_copy((char *) mi[i].ti.text);
 	    else
 		arr[i].ti.text = u_copy(mi[i].ti.text);
 	    arr[i].ti.text_in_resource = arr[i].ti.text_is_1byte = false;
@@ -1100,12 +1089,8 @@ return( NULL );
 	if ( mi[i].shortcut!=NULL )
 	    GMenuItemParseShortCut(&arr[i],mi[i].shortcut);
 	if ( mi[i].ti.text!=NULL ) {
-	    if ( mi[i].ti.text_in_resource && mi[i].ti.text_is_1byte )
+	    if ( mi[i].ti.text_is_1byte )
 		arr[i].ti.text = utf82u_mncopy((char *) mi[i].ti.text,&arr[i].ti.mnemonic);
-	    else if ( mi[i].ti.text_in_resource )
-		arr[i].ti.text = u_copy((unichar_t *) GStringGetResource((intpt) mi[i].ti.text,&arr[i].ti.mnemonic));
-	    else if ( mi[i].ti.text_is_1byte )
-		arr[i].ti.text = utf82u_copy((char *) mi[i].ti.text);
 	    else
 		arr[i].ti.text = u_copy(mi[i].ti.text);
 	    arr[i].ti.text_in_resource = arr[i].ti.text_is_1byte = false;
@@ -1122,79 +1107,8 @@ return( NULL );
 return( arr );
 }
 
-/* **************************** String Resources **************************** */
-
-/* This is obsolete now. I use gettext instead */
-
-/* A string resource file should begin with two shorts, the first containing
-the number of string resources, and the second the number of integer resources.
-(not the number of resources in the file, but the maximum resource index+1)
-String resources look like
-    <resource number-short> <flag,length-short> <mnemonics?> <unichar_t string>
-Integer resources look like:
-    <resource number-short> <resource value-int>
-(numbers are stored with the high byte first)
-
-We include a resource number because translations may not be provided for all
-strings, so we will need to skip around. The flag,length field is a short where
-the high-order bit is a flag indicating whether a mnemonic is present and the
-remaining 15 bits containing the length of the following char string. If a
-mnemonic is present it follows immediately after the flag,length short. After
-that comes the string. After that a new string.
-After all strings comes the integer list.
-
-By convention string resource 0 should always be present and should be the
-name of the language (or some other identifying name).
-The first 10 or so resources are used by gadgets and containers and must be
- present even if the program doesn't set any resources itself.
-Resource 1 should be the translation of "OK"
-Resource 2 should be the translation of "Cancel"
-   ...
-Resource 7 should be the translation of "Replace"
-   ...
-*/
-static unichar_t lang[] = { 'E', 'n', 'g', 'l', 'i', 's', 'h', '\0' };
-static unichar_t ok[] = { 'O', 'k', '\0' };
-static unichar_t cancel[] = { 'C', 'a', 'n', 'c', 'e', 'l', '\0' };
-static unichar_t _open[] = { 'O', 'p', 'e', 'n', '\0' };
-static unichar_t save[] = { 'S', 'a', 'v', 'e', '\0' };
-static unichar_t filter[] = { 'F', 'i', 'l', 't', 'e', 'r', '\0' };
-static unichar_t new[] = { 'N', 'e', 'w', '.', '.', '.', '\0' };
-static unichar_t replace[] = { 'R', 'e', 'p', 'l', 'a', 'c', 'e', '\0' };
-static unichar_t fileexists[] = { 'F','i','l','e',' ','E','x','i','s','t','s',  '\0' };
-/* "File, %s, exists. Replace it?" */
-static unichar_t fileexistspre[] = { 'F','i','l','e',',',' ',  '\0' };
-static unichar_t fileexistspost[] = { ',',' ','e','x','i','s','t','s','.',' ','R','e','p','l','a','c','e',' ','i','t','?',  '\0' };
-static unichar_t createdir[] = { 'C','r','e','a','t','e',' ','d','i','r','e','c','t','o','r','y','.','.','.',  '\0' };
-static unichar_t dirname_[] = { 'D','i','r','e','c','t','o','r','y',' ','n','a','m','e','?',  '\0' };
-static unichar_t couldntcreatedir[] = { 'C','o','u','l','d','n','\'','t',' ','c','r','e','a','t','e',' ','d','i','r','e','c','t','o','r','y',  '\0' };
-static unichar_t selectall[] = { 'S','e','l','e','c','t',' ','A','l','l',  '\0' };
-static unichar_t none[] = { 'N','o','n','e',  '\0' };
-static const unichar_t *deffall[] = { lang, ok, cancel, _open, save, filter, new,
-	replace, fileexists, fileexistspre, fileexistspost, createdir,
-	dirname_, couldntcreatedir, selectall, none, NULL };
-static const unichar_t deffallmn[] = { 0, 'O', 'C', 'O', 'S', 'F', 'N', 'R', 0, 0, 0, 'A', 'N' };
-static const int deffallint[] = { 55, 100 };
-
-static unichar_t **strarray=NULL; static const unichar_t **fallback=deffall;
-static unichar_t *smnemonics=NULL; static const unichar_t *fmnemonics=deffallmn;
-static int *intarray; static const int *fallbackint = deffallint;
-static int slen=0, flen=sizeof(deffall)/sizeof(deffall[0])-1, ilen=0, filen=sizeof(deffallint)/sizeof(deffallint[0]);
-
-const unichar_t *GStringGetResource(int index,unichar_t *mnemonic) {
-    if ( index<0 || (index>=slen && index>=flen ))
-return( NULL );
-    if ( index<slen && strarray[index]!=NULL ) {
-	if ( mnemonic!=NULL ) *mnemonic = smnemonics[index];
-return( strarray[index]);
-    }
-    if ( mnemonic!=NULL && fmnemonics!=NULL )
-	*mnemonic = fmnemonics[index];
-return( fallback[index]);
-}
-
 int GIntGetResource(int index) {
-    if ( _ggadget_use_gettext && index<2 ) {
+    if ( index<2 ) {
 	static int gt_intarray[2];
 	if ( gt_intarray[0]==0 ) {
 	    char *pt, *end;
@@ -1224,15 +1138,5 @@ int GIntGetResource(int index) {
 return( gt_intarray[index] );
     }
 
-    if ( index<0 || (index>=ilen && index>=filen ))
-return( -1 );
-    if ( index<ilen && intarray[index]!=0x80000000 ) {
-return( intarray[index]);
-    }
-return( fallbackint[index]);
-}
-
-int _ggadget_use_gettext = false;
-void GResourceUseGetText(void) {
-    _ggadget_use_gettext = true;
+    return -1;
 }

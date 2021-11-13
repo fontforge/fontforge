@@ -241,7 +241,7 @@ I did the following:
      echo "\\renewcommand{\\rmdefault}{$BASE}" >> $LOCALTEXMF/tex/latex/$VENDOR/$PACKAGE/$PACKAGE.sty
      echo "\\endinput" >> $LOCALTEXMF/tex/latex/$VENDOR/$PACKAGE/$PACKAGE.sty
      
-     # but updating the map files required a bit more knowlege than this script has
+     # but updating the map files required a bit more knowledge than this script has
      # so I left that to be done by hand
      echo "*********************************************************************"
      echo You need to create your own map files

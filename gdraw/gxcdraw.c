@@ -1163,7 +1163,7 @@ int _GXPDraw_LayoutXYToIndex(GWindow w, int x, int y) {
     GXWindow gw = (GXWindow) w;
     int trailing, index;
 
-    /* Pango retuns the last character if x is negative, not the first */
+    /* Pango returns the last character if x is negative, not the first */
     if ( x<0 ) x=0;
     pango_layout_xy_to_index(gw->pango_layout,x*PANGO_SCALE,y*PANGO_SCALE,&index,&trailing);
     /* If I give pango a position after the last character on a line, it */

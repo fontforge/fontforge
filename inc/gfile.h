@@ -58,7 +58,7 @@ extern char *GFileReplaceName(char *oldname,char *fname,char *buffer,size_t size
  *
  * The return value is a pointer either being the same as path or a
  * pointer into the string that path points to. So no memory is
- * allocated by this function and the return value is dependant on the
+ * allocated by this function and the return value is dependent on the
  * 'path' string you passed in.
  */ 
 extern char *GFileNameTail(const char *oldname);
@@ -77,7 +77,7 @@ extern int GFileRemove(const char *path, int recursive);
 extern int GFileMkDir(const char *name, int mode);
 extern int GFileRmDir(const char *name);
 extern int GFileUnlink(const char *name);
-extern char *_GFile_find_program_dir(char *prog);
+extern char* GFileMimeType(const char *path);
 extern unichar_t *u_GFileGetAbsoluteName(unichar_t *name, unichar_t *result, int rsiz);
 extern unichar_t *u_GFileBuildName(unichar_t *dir,unichar_t *fname,unichar_t *buffer,int size);
 extern unichar_t *u_GFileReplaceName(unichar_t *oldname,unichar_t *fname,unichar_t *buffer,int size);
@@ -97,7 +97,8 @@ extern off_t GFileGetSize(char *name);
 extern char *GFileReadAll(char *name);
 extern int   GFileWriteAll(char *filepath, char *data);
 extern void  FindProgDir(char *prog);
-extern char *getShareDir(void);
+extern char *getShareDir();
+extern char *getShareSubDir(const char* subdir);
 extern char *getLocaleDir(void);
 extern char *getPixmapDir(void);
 extern char *getHelpDir(void);
@@ -139,7 +140,6 @@ extern char *GFileDirName(const char *path);
  * The return value must NOT be freed.
  **/
 extern char* getLibexecDir_NonWindows(void);
-
 
 
 

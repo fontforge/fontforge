@@ -58,7 +58,7 @@ bitmap font.
   one font to another, the substitution contains the name of a lookup-subtable.
   Bad things will probably happen if the lookup subtable isn't in the font.
 * If you copy a glyph containing references -- these are done by glyph index
-  (which is probably different from font to font). You may end up refering to the
+  (which is probably different from font to font). You may end up referring to the
   wrong glyph.
 
 
@@ -346,7 +346,7 @@ The MacStyle field (if present) indicates whether the font is bold, italic,
 condensed, extended, etc.
 
 Some fonts will have PostScript specific information contained in the Private
-dictionary (the value is preceeded by an integer holding the number of
+dictionary (the value is preceded by an integer holding the number of
 characters needed for the string representation. It makes reading the file
 slightly faster, but is ugly. I should not have done that, but too late now).
 
@@ -448,7 +448,7 @@ the kerning offsets array:
    0 {} 0 {} 0 {} ...
    -145 {12-13 -1,1} -145 {} -130 {8-9 -1,-1} ...
 
-If your font has GDEF Mark attachement classes or sets these look like
+If your font has GDEF Mark attachment classes or sets these look like
 
 ::
 
@@ -530,7 +530,7 @@ find any of the keywords
 each of which is followed by a list of lookup names.
 
 If the font contains ttf hinting, then the file may contain truetype tables,
-these may be stored in several formats depending on the table. For containting
+these may be stored in several formats depending on the table. For containing
 truetype instructions (fpgm, prep):
 
 ::
@@ -815,7 +815,7 @@ If your font contains a 'MATH' table you will see lines like:
    MATH:ScriptPercentScaleDown: 80
    MATH:ScriptScriptPercentScaleDown: 60
 
-I shall not list all the posible entries. Basically there is one for every
+I shall not list all the possible entries. Basically there is one for every
 constant that lives in the math table. The names are the same as the names in
 the (English) MATH Info dialog.
 
@@ -1108,7 +1108,7 @@ A character need not contain any splines:
 
 Above is one with just references to other characters (a semi-colon is drawn
 here by drawing a comma and stacking a period on top of it). The first number is
-the glyph index of the character being refered to (in the current font of
+the glyph index of the character being referred to (in the current font of
 course), the next number is the unicode code point, the N says the reference is
 not selected (An "S" indicates it is selected), the following 6 numbers are a
 postscript transformation matrix, the one for comma (unicode 44) is the identity
@@ -1388,7 +1388,7 @@ Specifies the tfm height and depth of a glyph.
 Specifies the Italic Correction (either from a tfm file or the MATH table).
 Italic Correction may also include a device table.
 
-Specifies the horizontal placement of top accents in mathmatical typesetting.
+Specifies the horizontal placement of top accents in mathematical typesetting.
 This may also include a device table.
 
 Specifies the current glyph is an extended shape (and therefore may need special
@@ -1583,7 +1583,7 @@ A bitmap font is ended by:
 CID keyed fonts
 ^^^^^^^^^^^^^^^
 
-A CID font is saved slighlty differently. It begins with the normal font header
+A CID font is saved slightly differently. It begins with the normal font header
 which contains the information in the top level CID font dictionary. As
 mentioned above this will include special keys that specify the CID charset
 (registry, ordering, supplement). It will also include:
@@ -1714,7 +1714,7 @@ directory contains the following:
 * If the font contains any bitmap strikes then there will be subdirectories named
   ``\ *<pixel-size>*.strike``. And these directories will contain a
   ``strike.props`` file and one file per glyph in the strike, these files named
-  ``\ * <glyph-name>*.bitmap``. The ``strike.props`` file will contan the bitmap
+  ``\ * <glyph-name>*.bitmap``. The ``strike.props`` file will contain the bitmap
   header and bdf properties, while the ``*.bitmap`` files will contain the
   per-glyph bitmap data. These will be in the format described in the section on
   :ref:`bitmaps <sfdformat.Bitmap-Fonts>`.

@@ -313,75 +313,6 @@ return( NULL );
 return( gw );
 }
 
-int GWidgetAsk(const unichar_t *title,
-	const unichar_t **answers, const unichar_t *mn, int def, int cancel,
-	const unichar_t *question,...) {
-    struct dlg_info d;
-    GWindow gw;
-    va_list ap;
-
-    if ( screen_display==NULL )
-return( def );
-
-    va_start(ap,question);
-    gw = DlgCreate(title,question,ap,answers,mn,def,cancel,&d,false,true,false);
-    va_end(ap);
-
-    while ( !d.done )
-	GDrawProcessOneEvent(NULL);
-    GDrawDestroyWindow(gw);
-    GDrawSync(NULL);
-    GDrawProcessPendingEvents(NULL);
-return(d.ret);
-}
-
-unichar_t *GWidgetAskStringR(int title,const unichar_t *def,int question,...) {
-    struct dlg_info d;
-    GWindow gw;
-    unichar_t *ret = NULL;
-    const unichar_t *ocb[3]; unichar_t ocmn[2];
-    va_list ap;
-
-    if ( screen_display==NULL )
-return( u_copy(def ));
-
-    ocb[2]=NULL;
-    ocb[0] = GStringGetResource( _STR_OK, &ocmn[0]);
-    ocb[1] = GStringGetResource( _STR_Cancel, &ocmn[1]);
-    va_start(ap,question);
-    gw = DlgCreate(GStringGetResource( title,NULL),GStringGetResource( question,NULL),ap,
-	    ocb,ocmn,0,1,&d,true,true,false);
-    va_end(ap);
-    if ( def!=NULL && *def!='\0' )
-	GGadgetSetTitle(GWidgetGetControl(gw,2),def);
-    while ( !d.done )
-	GDrawProcessOneEvent(NULL);
-    if ( d.ret==0 )
-	ret = GGadgetGetTitle(GWidgetGetControl(gw,2));
-    GDrawDestroyWindow(gw);
-    GDrawSync(NULL);
-    GDrawProcessPendingEvents(NULL);
-return(ret);
-}
-
-void GWidgetError(const unichar_t *title,const unichar_t *statement, ...) {
-    struct dlg_info d;
-    GWindow gw;
-    const unichar_t *ob[2]; unichar_t omn[1];
-    va_list ap;
-
-    ob[1]=NULL;
-    ob[0] = GStringGetResource( _STR_OK, &omn[0]);
-    va_start(ap,statement);
-    gw = DlgCreate(title,statement,ap,ob,omn,0,0,&d,false,true,true);
-    va_end(ap);
-    if ( gw!=NULL ) {
-	while ( !d.done )
-	    GDrawProcessOneEvent(NULL);
-	GDrawDestroyWindow(gw);
-    }
-}
-
 /* ************************************************************************** */
 
 #define CID_Cancel	0
@@ -684,13 +615,8 @@ char *GWidgetAskString8(const char *title,const char *def,
 return( copy(def ));
 
     ocb[2]=NULL;
-    if ( _ggadget_use_gettext ) {
-	ocb[0] = _("_OK");
-	ocb[1] = _("_Cancel");
-    } else {
-	ocb[0] = u2utf8_copy(GStringGetResource( _STR_OK, NULL));
-	ocb[1] = u2utf8_copy(GStringGetResource( _STR_Cancel, NULL));
-    }
+    ocb[0] = _("_OK");
+    ocb[1] = _("_Cancel");
     va_start(ap,question);
     gw = DlgCreate8(title,question,ap,(const char **) ocb,0,1,&d,true,def,true,false);
     va_end(ap);
@@ -703,9 +629,6 @@ return( copy(def ));
     GDrawDestroyWindow(gw);
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);
-    if ( !_ggadget_use_gettext ) {
-	free(ocb[0]); free(ocb[1]);
-    }
 return(ret);
 }
 
@@ -720,14 +643,10 @@ char *GWidgetAskPassword8(const char *title,const char *def,
     if ( screen_display==NULL )
 return( copy(def ));
 
+    ocb[0] = _("_OK");
+    ocb[1] = _("_Cancel");
     ocb[2]=NULL;
-    if ( _ggadget_use_gettext ) {
-	ocb[0] = _("_OK");
-	ocb[1] = _("_Cancel");
-    } else {
-	ocb[0] = u2utf8_copy(GStringGetResource( _STR_OK, NULL));
-	ocb[1] = u2utf8_copy(GStringGetResource( _STR_Cancel, NULL));
-    }
+
     va_start(ap,question);
     gw = DlgCreate8(title,question,ap,(const char **) ocb,0,1,&d,2,def,true,false);
     va_end(ap);
@@ -740,9 +659,6 @@ return( copy(def ));
     GDrawDestroyWindow(gw);
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);
-    if ( !_ggadget_use_gettext ) {
-	free(ocb[0]); free(ocb[1]);
-    }
 return(ret);
 }
 
@@ -757,18 +673,13 @@ void _GWidgetPostNotice8(const char *title,const char *statement,va_list ap, int
 return;
     }
 
+    ob[0] = _("_OK");
     ob[1]=NULL;
-    if ( _ggadget_use_gettext )
-	ob[0] = _("_OK");
-    else
-	ob[0] = u2utf8_copy(GStringGetResource( _STR_OK, NULL));
     gw = DlgCreate8(title,statement,ap,(const char **) ob,0,0,NULL,false,NULL,false,true);
     if ( gw!=NULL && timeout>0 ) 
 	GDrawRequestTimer(gw,timeout*1000,0,NULL);
     /* Continue merrily on our way. Window will destroy itself in 40 secs */
     /*  or when user kills it. We can ignore it */
-    if ( !_ggadget_use_gettext )
-	free(ob[0]);
     last = gw;
     last_title = title;
 }
@@ -813,11 +724,8 @@ void GWidgetError8(const char *title,const char *statement, ...) {
     char *ob[2];
     va_list ap;
 
+    ob[0] = _("_OK");
     ob[1]=NULL;
-    if ( _ggadget_use_gettext )
-	ob[0] = _("_OK");
-    else
-	ob[0] = u2utf8_copy(GStringGetResource( _STR_OK, NULL));
     va_start(ap,statement);
     gw = DlgCreate8(title,statement,ap,(const char **) ob,0,0,&d,false,NULL,true,true);
     va_end(ap);
@@ -826,8 +734,6 @@ void GWidgetError8(const char *title,const char *statement, ...) {
 	    GDrawProcessOneEvent(NULL);
 	GDrawDestroyWindow(gw);
     }
-    if ( !_ggadget_use_gettext )
-	free(ob[0]);
 }
 
 static GWindow ChoiceDlgCreate8(struct dlg_info *d,const char *title,
@@ -964,11 +870,9 @@ static GWindow ChoiceDlgCreate8(struct dlg_info *d,const char *title,
 	gcd[i].gd.pos.x = GDrawPointsToPixels(gw,15); gcd[i].gd.pos.y = y;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0;
 	gcd[i].gd.label = &blabel[2];
-	if ( _ggadget_use_gettext ) {
-	    blabel[2].text = (unichar_t *) _("Select _All");
-	    blabel[2].text_is_1byte = true;
-	} else
-	    blabel[2].text = (unichar_t *) _STR_SelectAll;
+
+	blabel[2].text = (unichar_t *) _("Select _All");
+	blabel[2].text_is_1byte = true;
 	blabel[2].text_in_resource = true;
 	gcd[i].gd.cid = CID_SelectAll;
 	gcd[i].gd.handle_controlevent = GCD_Select;
@@ -981,11 +885,8 @@ static GWindow ChoiceDlgCreate8(struct dlg_info *d,const char *title,
 	gcd[i].gd.pos.width = -1;
 	gcd[i].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels | gg_pos_use0 ;
 	gcd[i].gd.label = &blabel[3];
-	if ( _ggadget_use_gettext ) {
-	    blabel[3].text = (unichar_t *) _("_None");
-	    blabel[3].text_is_1byte = true;
-	} else
-	    blabel[3].text = (unichar_t *) _STR_None;
+	blabel[3].text = (unichar_t *) _("_None");
+	blabel[3].text_is_1byte = true;
 	blabel[3].text_in_resource = true;
 	gcd[i].gd.cid = CID_SelectNone;
 	gcd[i].gd.handle_controlevent = GCD_Select;
@@ -1068,13 +969,8 @@ int GWidgetChoices8(const char *title, const char **choices,int cnt, int def,
 return( -2 );
 
     va_start(ap,question);
-    if ( _ggadget_use_gettext ) {
 	buts[0] = _("_OK");
 	buts[1] = _("_Cancel");
-    } else {
-	buts[0] = u2utf8_copy(GStringGetResource(_STR_OK,NULL));
-	buts[1] = u2utf8_copy(GStringGetResource(_STR_Cancel,NULL));
-    }
     buts[2] = NULL;
     gw = ChoiceDlgCreate8(&d,title,question,ap,
 	    choices,cnt,NULL, buts,def,true,false);
@@ -1084,9 +980,6 @@ return( -2 );
     GDrawDestroyWindow(gw);
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);
-    if ( !_ggadget_use_gettext ) {
-	free(buts[0]); free(buts[1]);
-    }
 return(d.ret);
 }
 
@@ -1127,13 +1020,8 @@ return( -2 );
     if ( buts==NULL ) {
 	buts = buttons;
 	buttons[2] = NULL;
-	if ( _ggadget_use_gettext ) {
-	    buts[0] = _("_OK");
-	    buts[1] = _("_Cancel");
-	} else {
-	    buts[0] = u2utf8_copy(GStringGetResource(_STR_OK,NULL));
-	    buts[1] = u2utf8_copy(GStringGetResource(_STR_Cancel,NULL));
-	}
+	buts[0] = _("_OK");
+	buts[1] = _("_Cancel");
     }
     va_start(ap,question);
     gw = ChoiceDlgCreate8(&d,title,question,ap,
@@ -1153,8 +1041,5 @@ return( -2 );
     GDrawDestroyWindow(gw);
     GDrawSync(NULL);
     GDrawProcessPendingEvents(NULL);
-    if ( !_ggadget_use_gettext ) {
-	free(buts[0]); free(buts[1]);
-    }
 return(d.ret);
 }

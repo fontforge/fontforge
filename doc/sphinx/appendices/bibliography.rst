@@ -99,7 +99,7 @@ Font File Formats
   * `CFF <http://partners.adobe.com/public/developer/en/font/5176.CFF.pdf>`__
   * `Adobe's version of file format <http://partners.adobe.com/public/developer/opentype/index_spec.html>`__
 
-    * `SING Gaiji extention <http://partners.adobe.com/public/developer/opentype/gdk/topic.html>`__
+    * `SING Gaiji extension <http://partners.adobe.com/public/developer/opentype/gdk/topic.html>`__
       (more information is available in the documentation subdirectory of the Glyphlet
       GDK)
   * `Microsoft's version <http://www.microsoft.com/typography/otspec/default.htm>`__
@@ -222,7 +222,7 @@ Unicode
   * `American Mathematical Society's corporate use extensions <http://www.ams.org/STIX/bnb/stix-tbl.asc-2003-10-10>`__
     (0xE000-0xF7D7)
   * MicroSoft uses 0xF000-0xF0FF in their "Symbol" encoding (3,0) when they want to
-    an uninterpretted encoding vector (ie. a mapping from byte to glyph with no
+    an uninterpreted encoding vector (ie. a mapping from byte to glyph with no
     meaning attached to the mapping)
 * `Unicode en français <http://hapax.qc.ca/>`__
 * `Pictures of the characters <http://www.unicode.org/charts/>`__

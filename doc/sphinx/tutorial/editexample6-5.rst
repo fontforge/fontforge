@@ -199,7 +199,7 @@ Greek has a character (U+03D7) which is equivalent to the Latin ampersand. Just
 as the ampersand is (originally) a ligature of "E" and "t", so U+03D7 is a
 ligature of "kappa" and "iota". However this ligature should only be used if
 "kappa" and "iota" make up a word unto themselves, it should not be used for
-more normal occurances of the two within a longer word.
+more normal occurrences of the two within a longer word.
 
 .. image:: /images/kappa_iota-lookup.png
    :align: right

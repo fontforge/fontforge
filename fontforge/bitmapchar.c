@@ -803,7 +803,7 @@ void Default_Properties(BDFFont *bdf,EncMap *map,char *onlyme) {
 
     /* MIN_SPACE, MAX_SPACE & END_SPACE are judgement calls and I shan't default them */
     /* also SMALL_CAP_SIZE, STRIKEOUT_ASCENT, STRIKEOUT_DESCENT, DESTINATION */
-    /* WEIGHT requires a knowlege of stem sizes and I'm not going to do that */
+    /* WEIGHT requires a knowledge of stem sizes and I'm not going to do that */
     /*  much analysis */
     /* NOTICE is very similar to copyright. */
     /* FONT_TYPE, RASTERIZER_NAME, RASTERIZER_VERSION */

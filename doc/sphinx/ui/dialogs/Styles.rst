@@ -571,7 +571,7 @@ currently selected glyphs. It can
 * Change the size of horizontal counters (Condense/Extend)
 * Manipulate alignment zones with respect to one another (Change the x-height)
 
-The dialog has three panes; each controls one of these funtions.
+The dialog has three panes; each controls one of these functions.
 
 The first dialog affects the stem width (or height, as the case may be). In most
 cases you will want to scale horizontal and vertical stems by the same
@@ -607,7 +607,7 @@ proportional Latin fonts, select one of the other two.
 .. image:: /images/ChangeGlyph3Dlg.png
    :align: right
 
-Latin glyphs are asymetric in their behavior along the horizontal and vertical
+Latin glyphs are asymmetric in their behavior along the horizontal and vertical
 axes. Vertically glyphs are aligned at certain fixed heights (baseline,
 x-height, cap-height, etc.), while horizontally there are no corresponding
 alignment zones. So the vertical part of this dialog looks quite different from

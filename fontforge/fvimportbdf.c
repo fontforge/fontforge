@@ -2006,7 +2006,7 @@ void SFSetFontName(SplineFont *sf, char *family, char *mods,char *fullname) {
 	    sf->weight = copy("Black");
 	else if ( strstrmatch(mods,"Nord")!=NULL )
 	    sf->weight = copy("Nord");
-/* Sigh. URW uses 4 letter abreviations... */
+/* Sigh. URW uses 4 letter abbreviations... */
 	else if ( strstrmatch(mods,"Regu")!=NULL )
 	    sf->weight = copy("Regular");
 	else if ( strstrmatch(mods,"Medi")!=NULL )

@@ -27,7 +27,7 @@ do), that should not be a significant problem because such glyphs should have
 the obvious unicode code points and so will still match. A range of unicode code
 points looks like "U+XXXX-U+YYYY" (XXXX < YYYY).
 
-A groups are heirarchical. A group may either contain a list of glyphs, or a
+A groups are hierarchical. A group may either contain a list of glyphs, or a
 list of sub-groups. (If you display (in the fontview) a group which contains
 subgroups you will see all glyphs in all sub-groups. A glyph may occur more than
 once if that is desirable. So a group could contain "A A A A" and the fontview

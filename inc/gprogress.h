@@ -39,13 +39,9 @@ extern void GProgressStartIndicator(
     int tot,			/* Number of sub-entities in the operation */
     int stages			/* Number of stages, each processing tot sub-entities */
 );
-extern void GProgressStartIndicatorR(int delay, int win_titler, int line1r,
-	int line2r, int tot, int stages);
 extern void GProgressEndIndicator(void);	/* Ends the topmost indicator */
 extern void GProgressChangeLine1(const unichar_t *line1); /* Changes the text in the topmost */
 extern void GProgressChangeLine2(const unichar_t *line2); /* Changes the text in the topmost */
-extern void GProgressChangeLine1R(int line1r);		/* Changes the text in the topmost */
-extern void GProgressChangeLine2R(int line2r);		/* Changes the text in the topmost */
 extern void GProgressChangeTotal(int tot);		/* Changes the expected length in the topmost */
 extern void GProgressChangeStages(int stages);		/* Changes the expected number of stages in the topmost */
 extern void GProgressEnableStop(int enabled);		/* Allows you to disable and enable the stop button if it can't be used in a section of code */

@@ -180,7 +180,7 @@ moved or scaled.
 
 A simple click on an unselected point selects it and deselects everything else.
 A shift click on a point toggles whether that point is selected or not. A double
-click selects all points on the path containing that point. A tripple click
+click selects all points on the path containing that point. A triple click
 selects everything in the layer. Clicking on the background will deselect
 everything. Clicking on the background and dragging out a rectangle will select
 everything within the rectangle. Clicking on a line or spline will select the

@@ -63,7 +63,7 @@
  /*  foreach glyph >=start-glyph, <=end-glyph(+1)		 */
  /*   uint32 offset		to glyph comment string (in UCS2)*/
  /*  ...							 */
- /*  And one last offset pointing beyong the end of the last string to enable length calculations */
+ /*  And one last offset pointing beyond the end of the last string to enable length calculations */
  /*  String table in UCS2 (NUL terminated). All offsets from start*/
  /*   of subtable */
 
@@ -76,7 +76,7 @@
 /*  foreach glyph >=start-glyph, <=end-glyph(+1)		 */
 /*   uint32 offset		to glyph comment string (in utf8)*/
 /*  ...								 */
-/*  And one last offset pointing beyong the end of the last string to enable length calculations */
+/*  And one last offset pointing beyond the end of the last string to enable length calculations */
 /*  String table in utf8 (NUL terminated). All offsets from start*/
 /*   of subtable */
 
@@ -116,7 +116,7 @@
 /*  struct { ushort offset; ushort name-off}[contour-count]	 */
 /*  struct { ??? }[image-count]					 */
 /* Each contour consists of one byte of command and a random     */
-/*  amount of data dependant on the command.			 */
+/*  amount of data dependent on the command.			 */
 /* See below for a description of the command verbs		 */
 /* string data in utf8 */
 /*  (offsets relative to start of glyph_layer structure )	 */
@@ -167,7 +167,7 @@
 
 
 /* The layer commands used to draw quadratic and cubic layers have two   */
-/*  componants: A verb, which says what to do, and a modifier which says */
+/*  components: A verb, which says what to do, and a modifier which says */
 /*  how the data are stored. So a command looks like (verb)|(modifier)   */
 /* A moveto command with byte data looks like (V_MoveTo|V_B)             */
 /*  The two commands to end a contour (V_Close and V_End) take no data   */

@@ -4230,7 +4230,7 @@ return;
     src->ttf_instrs_len = 0;
     SplineCharFree(src);
 
-    /* Fix up dependant info */
+    /* Fix up dependent info */
     for ( layer=ly_fore; layer<dest->layer_cnt; ++layer )
 	for ( refs = dest->layers[layer].refs; refs!=NULL; refs=refs->next ) {
 	    for ( scl=refs->sc->dependents; scl!=NULL; scl=scl->next )
@@ -4298,7 +4298,7 @@ static void FVApplySubstitution(FontViewBase *fv,uint32 script, uint32 lang, uin
 	if ( replacements[gid]!=NULL ) {
 	    SCReplaceWith(sc,replacements[gid]);
 	} else if ( removes[gid] ) {
-	    /* This is deliberatly in the else. We don't want to remove a glyph*/
+	    /* This is deliberately in the else. We don't want to remove a glyph*/
 	    /*  we are about to replace */
 	    for ( gid2=0; gid2<sf->glyphcnt; ++gid2 ) if ( (sc2=replacements[gid2])!=NULL ) {
 		if (sc2->layers && ly_fore < sc2->layer_cnt) {

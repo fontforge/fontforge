@@ -2,7 +2,7 @@
 
 # * Run the 'pofiles' command to generate the binary .mo files
 # * Run the 'potfiles' ocmmand to generate the master .pot file
-#   (which cotnains all translatable strings)
+#   (which contains all translatable strings)
 # * Run the 'fullpo' command to generate the .po files, merged
 #   with the master .pot file and with context
 

@@ -501,7 +501,7 @@ return( true );
 	r.y += gb->label_height/2;
 	r.height -= gb->label_height/2;
 	GBoxDrawBorder(pixmap,&r,g->box,g->state,false);
-	/* Background is transperant */
+	/* Background is transparent */
 	(gb->label->funcs->handle_expose)(pixmap,gb->label,event);
     }
 return( true );
@@ -680,7 +680,7 @@ return;
     if ( outer.width > screen.width-20 ) outer.width = screen.width-20;
     if ( outer.height > screen.height-40 ) outer.height = screen.height-40;
     GDrawGetSize(g->base,&cur);
-    /* Make any offset simmetrical */
+    /* Make any offset symmetrical */
     outer.width += 2*g->r.x;
     outer.height += 2*g->r.y;
     if ( cur.width!=outer.width || cur.height!=outer.height ) {

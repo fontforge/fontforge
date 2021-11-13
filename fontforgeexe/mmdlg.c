@@ -2024,7 +2024,7 @@ return;
 		    mmw->mm->positions[i*4+2] = ((j/9)%3==0) ? -1: ((j/9)%3==1) ? 0 : 1;
 		    mmw->mm->positions[i*4+3] = ((j/27)%3==0) ? -1: ((j/27)%3==1) ? 0 : 1;
 		}
-		/* Place the default psuedo-instance last */
+		/* Place the default pseudo-instance last */
 		mmw->mm->positions[i*4  ] = 0;
 		mmw->mm->positions[i*4+1] = 0;
 		mmw->mm->positions[i*4+2] = 0;

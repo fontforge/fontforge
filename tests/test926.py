@@ -89,7 +89,7 @@ validation procedure. The common element structure is as follows:
 
         # In all cases, the dictionary has the attribute name at the top
         # with the possible value(s) as the value. If an attribute has
-        # more than one representation (for exmaple xml:lang and lang)
+        # more than one representation (for example xml:lang and lang)
         # the two are specified as a space separated string for example
         # "xml:lang lang".
 
@@ -1317,9 +1317,9 @@ def _testMetadataPadding(data, reporter):
 #     length = header["metaLength"]
 #     origLength = header["metaOrigLength"]
 #     if length >= origLength:
-#         reporter.logError(message="The compressed metdata length (%d) is higher than or equal to the original, uncompressed length (%d)." % (length, origLength))
+#         reporter.logError(message="The compressed metadata length (%d) is higher than or equal to the original, uncompressed length (%d)." % (length, origLength))
 #         return True
-#     reporter.logPass(message="The compressed metdata length is smaller than the original, uncompressed length.")
+#     reporter.logPass(message="The compressed metadata length is smaller than the original, uncompressed length.")
 
 def _testMetadataDecompression(data, reporter):
     """
@@ -1396,7 +1396,7 @@ def _testMetadataEncoding(data, reporter):
         if not metadata.startswith("<?xml"):
             reporter.logError(message=errorMessage)
             return False, True
-        # go to the first occurance of >
+        # go to the first occurrence of >
         line = metadata.split(">", 1)[0]
         # find an encoding string
         pattern = re.compile(
@@ -1761,7 +1761,7 @@ def getMetadataForDisplay(data):
         }
 
     The value for "children" will be a list of elements
-    folowing the same structure defined above.
+    following the same structure defined above.
     """
     test = unpackMetadata(data, parse=False)
     if not test:

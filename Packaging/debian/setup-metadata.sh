@@ -54,7 +54,7 @@ else
     DEB_PRODUCT_VERSION="$VERSION-0ubuntu1~$DEB_DIST_NAME"
 fi
 
-read -p "Changlog message? [Release] " DEB_CHANGELOG
+read -p "Changelog message? [Release] " DEB_CHANGELOG
 if [ -z "$DEB_CHANGELOG" ]; then
     DEB_CHANGELOG="Release"
 fi

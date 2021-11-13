@@ -690,10 +690,6 @@ void GGadgetPreparePopup(GWindow base,const unichar_t *msg) {
     GGadgetPreparePopupImage(base,msg,NULL,NULL,NULL);
 }
 
-void GGadgetPreparePopupR(GWindow base,int msg) {
-    GGadgetPreparePopupImage(base,GStringGetResource(msg,NULL),NULL,NULL,NULL);
-}
-
 void GGadgetPreparePopup8(GWindow base, const char *msg) {
     static unichar_t popup_msg[500];
     utf82u_strncpy(popup_msg,msg,sizeof(popup_msg)/sizeof(popup_msg[0]));

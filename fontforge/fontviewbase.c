@@ -39,7 +39,6 @@
 #include "fvcomposite.h"
 #include "fvfonts.h"
 #include "gfile.h"
-#include "gio.h"
 #include "gresource.h"
 #include "groups.h"
 #include "namelist.h"
@@ -661,7 +660,7 @@ static void SCTransLayer(FontViewBase *fv, SplineChar *sc, int flags, int i, rea
 }
 
 /* If sel is specified then we decide how to transform references based on */
-/*  whether the refered glyph is selected. (If we tranform a reference that */
+/*  whether the referred glyph is selected. (If we transform a reference that */
 /*  is selected we are, in effect, transforming it twice -- since the glyph */
 /*  itself will be transformed -- so instead we just transform the offsets */
 /*  of the reference */

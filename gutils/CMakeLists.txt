@@ -4,7 +4,6 @@ add_library(gutils OBJECT
   dlist.c
   fsys.c
   gcol.c
-  g_giomime.c
   gimagebmpP.h
   gimage.c
   gimagereadbmp.c
@@ -23,10 +22,6 @@ add_library(gutils OBJECT
   gimagewritepng.c
   gimagewritexbm.c
   gimagewritexpm.c
-  gio.c
-  giofile.c
-  giofuncP.h
-  giotrans.c
   gutils.c
   gwwintl.c
   prefs.c

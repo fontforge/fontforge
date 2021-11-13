@@ -1597,7 +1597,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 	SFDDumpCharMath(sfd,sc);
 #if HANYANG
     if ( sc->compositionunit )
-	fprintf( sfd, "CompositionUnit: %d %d\n", sc->jamo, sc->varient );
+	fprintf( sfd, "CompositionUnit: %d %d\n", sc->jamo, sc->variant );
 #endif
     SFDDumpHintList(sfd,"HStem: ", sc->hstem);
     SFDDumpHintList(sfd,"VStem: ", sc->vstem);
@@ -3215,7 +3215,7 @@ int SFDDoesAnyBackupExist(char* filename)
  *
  * If localRevisionsToRetain == 0 then no revisions are made.
  *
- * If localRevisionsToRetain > 0 then it is taken as an explict number
+ * If localRevisionsToRetain > 0 then it is taken as an explicit number
  * of revisions to make, and revisions are made
  *
  * If localRevisionsToRetain == -1 then it is "not set".
@@ -3536,7 +3536,7 @@ static int getreal(FILE *sfd, real *val) {
     char *pt=tokbuf, *end = tokbuf+100-2, *nend;
 
     while ( isspace(ch = nlgetc(sfd)));
-    if ( ch!='e' && ch!='E' )		/* real's can't begin with exponants */
+    if ( ch!='e' && ch!='E' )		/* real's can't begin with exponents */
 	while ( isdigit(ch) || ch=='-' || ch=='+' || ch=='e' || ch=='E' || ch=='.' || ch==',' ) {
 	    if ( pt<end ) *pt++ = ch;
 	    ch = nlgetc(sfd);
@@ -3789,7 +3789,7 @@ return( img );
 }
 
 static void SFDGetType1(FILE *sfd) {
-    /* We've read the OrigType1 token (this is now obselete, but parse it in case there are any old sfds) */
+    /* We've read the OrigType1 token (this is now obsolete, but parse it in case there are any old sfds) */
     int len;
     struct enc85 dec;
 
@@ -5492,7 +5492,7 @@ return( NULL );
 #if HANYANG
 	} else if ( strmatch(tok,"CompositionUnit:")==0 ) {
 	    getsint(sfd,&sc->jamo);
-	    getsint(sfd,&sc->varient);
+	    getsint(sfd,&sc->variant);
 	    sc->compositionunit = true;
 #endif
 	} else if ( strmatch(tok,"HStem:")==0 ) {
@@ -6393,7 +6393,7 @@ void SFDFixupRefs(SplineFont *sf) {
 	    SplineChar *sc = sf->glyphs[i];
 	    /* A changed character is one that has just been recovered */
 	    /*  unchanged characters will already have been fixed up */
-	    /* Er... maybe not. If the character being recovered is refered to */
+	    /* Er... maybe not. If the character being recovered is referred to */
 	    /*  by another character then we need to fix up that other char too*/
 	    /*if ( isautorecovery && !sc->changed )*/
 	/*continue;*/
@@ -6505,7 +6505,7 @@ void SFDFixupRefs(SplineFont *sf) {
 }
 
 /* When we recover from an autosaved file we must be careful. If that file */
-/*  contains a character that is refered to by another character then the */
+/*  contains a character that is referred to by another character then the */
 /*  dependent list will contain a dead pointer without this routine. Similarly*/
 /*  for kerning */
 /* We might have needed to do something for references except they've already */
@@ -6556,7 +6556,7 @@ static void SFDGetPrivate(FILE *sfd,SplineFont *sf) {
 }
 
 static void SFDGetSubrs(FILE *sfd) {
-    /* Obselete, parse it in case there are any old sfds */
+    /* Obsolete, parse it in case there are any old sfds */
     int i, cnt, tot, len;
     struct enc85 dec;
 

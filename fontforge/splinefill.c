@@ -325,7 +325,7 @@ static void AddSpline(EdgeList *es, Spline *sp ) {
     real fm, tm;
     Spline1D *msp = &sp->splines[es->major], *osp = &sp->splines[es->other];
 
-    /* Find the points of extrema on the curve discribing y behavior */
+    /* Find the points of extrema on the curve describing y behavior */
     if ( !RealNear(msp->a,0) ) {
 	/* cubic, possibly 2 extrema (possibly none) */
 	b2_fourac = 4*msp->b*msp->b - 12*msp->a*msp->c;
@@ -634,7 +634,7 @@ static void InitializeHints(SplineChar *sc, EdgeList *es) {
     /* we only care about hstem hints, and only if they fail to cross a */
     /*  vertical pixel boundary. If that happens, adjust either the top */
     /*  or bottom position so that a boundary forcing is crossed.   Any */
-    /*  vertexes at those points will be similarly adjusted later... */
+    /*  vertices at those points will be similarly adjusted later... */
 
     last = NULL; es->hhints = NULL;
     for ( s=sc->hstem; s!=NULL; s=s->next ) {
@@ -854,7 +854,7 @@ static void Bresenham(uint8 *bytemap,EdgeList *es,int x1,int x2,int y1,int y2,
     int bytes_per_line = es->bytes_per_line<<3;
     int ymax = es->cnt;
 
-    /* We are guarenteed x1<=x2 */
+    /* We are guaranteed x1<=x2 */
     dx = x2-x1;
     if ( (dy = y1-y2)<0 ) dy=-dy;
     if ( dx>=dy ) {
@@ -951,7 +951,7 @@ return;
 	    dx = x1; x1 = x2; x2 = dx;
 	    dy = y1; y1 = y2; y2 = dy;
 	}
-	/* This is just Bresenham's algorithem. We use it twice to draw a rectangle */
+	/* This is just Bresenham's algorithm. We use it twice to draw a rectangle */
 	dx = x2-x1;
 	if ( (dy = y1-y2)<0 ) dy=-dy;
 	if ( dx>=dy ) {

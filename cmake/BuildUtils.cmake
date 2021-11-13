@@ -16,7 +16,7 @@ The ``AUTO`` type is for tri-state Boolean options. The ``value`` parameter
 is ignored; it will always be initialised to ``AUTO``.
 
 The ``ENUM`` type is for options that may be one of a number of defined
-values. All arguments afer the description are treated as allowed values
+values. All arguments after the description are treated as allowed values
 of the enumeration.
 
 All other types are passed directly to ``set()``.
@@ -110,6 +110,7 @@ function(set_default_rpath)
   endif()
   if(APPLE)
     list(APPEND CMAKE_INSTALL_RPATH "@loader_path/../lib")
+    list(APPEND CMAKE_INSTALL_RPATH "@loader_path/../..") # For fontforge.so
   endif()
   set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_RPATH} PARENT_SCOPE)
 endfunction()
