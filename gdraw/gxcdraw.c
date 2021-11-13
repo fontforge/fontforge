@@ -1085,27 +1085,18 @@ return( rect.width );
 }
 
 void _GXPDraw_FontMetrics(GWindow gw, GFont *fi, int *as, int *ds, int *ld) {
-    GXDisplay *gdisp = ((GXWindow) gw)->display;
-    PangoFont *pfont;
-    PangoFontMetrics *fm;
+    struct tf_arg arg = {0};
 
-    _GXPDraw_configfont(gw, fi);
-# if !defined(_NO_LIBCAIRO)
-    if ( gw->usecairo )
-	pfont = pango_font_map_load_font(gdisp->pangoc_fontmap,gdisp->pangoc_context,
-		fi->pangoc_fd);
-    else
-#endif
-	pfont = pango_font_map_load_font(gdisp->pango_fontmap,gdisp->pango_context,
-		fi->pango_fd);
-    fm = pango_font_get_metrics(pfont,NULL);
-    *as = pango_font_metrics_get_ascent(fm)/PANGO_SCALE;
-    *ds = pango_font_metrics_get_descent(fm)/PANGO_SCALE;
+    arg.first = true;
+    gw->ggc->fi = fi;
+    _GXPDraw_DoText8(gw, 0, 0, "AMOfgjyql47", 11, 0x0, tf_rect, &arg);
+    *as = arg.size.fas;
+    if ( *as<arg.size.as )
+	*as = arg.size.as;
+    *ds = arg.size.fds;
+    if ( *ds<arg.size.ds )
+	*ds = arg.size.ds;
     *ld = 0;
-    pango_font_metrics_unref(fm);
-    // pango_font_unref(pfont);
-    // This function has disappeared from Pango with no explanation.
-    // But we still leak memory here.
 }
 
 /* ************************************************************************** */

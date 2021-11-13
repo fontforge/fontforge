@@ -1285,24 +1285,18 @@ void GGDKDrawClipPreserve(GWindow w) {
 // PANGO LAYOUT
 
 void GGDKDrawGetFontMetrics(GWindow gw, GFont *fi, int *as, int *ds, int *ld) {
-    //Log(LOGDEBUG, " ");
+    struct tf_arg arg = {0};
 
-    GGDKDisplay *gdisp = ((GGDKWindow) gw)->display;
-    PangoFont *pfont;
-    PangoFontMetrics *fm;
-    PangoFontMap *pfm;
-
-    _GGDKDraw_configfont(gw, fi);
-    pfm = pango_context_get_font_map(gdisp->pangoc_context);
-    pfont = pango_font_map_load_font(pfm, gdisp->pangoc_context, fi->pangoc_fd);
-    fm = pango_font_get_metrics(pfont, NULL);
-    *as = pango_font_metrics_get_ascent(fm) / PANGO_SCALE;
-    *ds = pango_font_metrics_get_descent(fm) / PANGO_SCALE;
+    arg.first = true;
+    gw->ggc->fi = fi;
+    GGDKDrawDoText8(gw, 0, 0, "AMOfgjyql47", 11, 0x0, tf_rect, &arg);
+    *as = arg.size.fas;
+    if ( *as<arg.size.as )
+        *as = arg.size.as;
+    *ds = arg.size.fds;
+    if ( *ds<arg.size.ds )
+        *ds = arg.size.ds;
     *ld = 0;
-    pango_font_metrics_unref(fm);
-    if (pfont != NULL) {
-        g_object_unref(pfont);
-    }
 }
 
 void GGDKDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi) {
