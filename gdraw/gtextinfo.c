@@ -165,10 +165,11 @@ int GTextInfoDraw(GWindow base,int x,int y,GTextInfo *ti,
 		ds = (tds<bounds.ds) ? bounds.ds : tds;
 	}
 
+    } else {
+	as = tas;
+	ds = tds;
     }
     fh = as+ds;
-    if ( fh < 0 )
-	fh = 0;
     if ( fg == COLOR_DEFAULT )
 	fg = GDrawGetDefaultForeground(GDrawGetDisplayOfWindow(base));
     else if ( fg == COLOR_WARNING )
