@@ -659,12 +659,12 @@ return;
 				sp->prevcp = sp->me; 
 				if ( sp->prev->from->pointtype!=pt_tangent) 
 					sp->prev->from->pointtype = pt_corner;
-				if ( sp->prev->order2 ) {
+				if ( sp->next->order2 ) {
 					BasePoint inter;
 					if ( IntersectLines(&inter,&sp->me,&sp->prev->from->me,&sp->nextcp,&sp->next->to->me) ) {
 						sp->nextcp = inter;
 						sp->next->to->prevcp = inter;
-						SplineRefigure(sp->prev);
+						SplineRefigure(sp->prev); /* display straight line */
 					} /* else just leave things as they are */
 				}
 				else {
@@ -683,7 +683,7 @@ return;
 					if ( IntersectLines(&inter,&sp->me,&sp->next->to->me,&sp->prevcp,&sp->prev->from->me) ) {
 						sp->prevcp = inter;
 						sp->prev->from->nextcp = inter;
-						SplineRefigure(sp->next);
+						SplineRefigure(sp->next); /* display straight line */
 					} /* else just leave things as they are */
 				}
 				else {
@@ -750,13 +750,29 @@ return;
 			if ( sp->prev!=NULL && sp->next!=NULL) {
 				if ( prevlen!=0 && nextlen!=0 ) { /* take the average direction */
 					sp->nextcp = BPAdd(sp->me, BPScale(BPSub(unitnext, unitprev), .5*nextlen));
-					sp->prevcp = BPSub(sp->me, BPScale(BPSub(unitnext, unitprev), .5*prevlen));
+					sp->prevcp = BPSub(sp->me, BPScale(BPSub(unitnext, unitprev), .5*prevlen));	
+					if ( sp->next->order2 ) { /* sp->nextcp and sp->next->to->prevcp are not necessary equal */
+						BasePoint inter; /* this is suboptimal when the intersection is on the wrong side */
+						if ( IntersectLines(&inter,&sp->me,&sp->nextcp,&sp->next->to->prevcp,&sp->next->to->me) ) {
+							sp->nextcp = inter;
+							sp->next->to->prevcp = inter;
+							SplineRefigure(sp->next);
+						} /* else just leave things as they are (not solved yet) */
+					}
+					if ( sp->prev->order2 ) { /* sp->prevcp and sp->prev->from->nextcp are not necessary equal */
+						BasePoint inter; /* this is suboptimal when the intersection is on the wrong side */
+						if ( IntersectLines(&inter,&sp->me,&sp->prevcp,&sp->prev->from->nextcp,&sp->prev->from->me) ) {
+							sp->prevcp = inter;
+							sp->prev->from->nextcp = inter;
+							SplineRefigure(sp->prev);
+						} /* else just leave things as they are (not solved yet) */
+					}
 				}
-				else if ( prevlen!=0 ) { /* and therefore nextlen==0 */
+				else if ( prevlen!=0 && !sp->next->order2 ) { /* and therefore nextlen==0 */
 					sp->nextcp = BPSub(sp->me, BPScale(NormVec(unitprev), 
 					NICE_PROPORTION*BPNorm(BPSub(sp->next->to->me, sp->me))));
 				}
-				else if ( nextlen!=0 ) { /* and therefore prevlen==0 */
+				else if ( nextlen!=0 && !sp->prev->order2 ) { /* and therefore prevlen==0 */
 					sp->prevcp = BPSub(sp->me, BPScale(NormVec(unitnext), 
 					NICE_PROPORTION*BPNorm(BPSub(sp->prev->from->me, sp->me))));
 				}
