@@ -666,8 +666,7 @@ return;
 						sp->next->to->prevcp = inter;
 						SplineRefigure(sp->prev); /* display straight line */
 					} /* else just leave things as they are */
-				}
-				else {
+				} else {
 					unitnext = NormVec(BPSub(sp->me,sp->prev->from->me));
 					sp->nextcp = BPAdd(sp->me, BPScale(unitnext,fabs(BPDot(BPSub(sp->nextcp, sp->me), unitnext))));
 					SplineRefigure(sp->prev);
@@ -685,8 +684,7 @@ return;
 						sp->prev->from->nextcp = inter;
 						SplineRefigure(sp->next); /* display straight line */
 					} /* else just leave things as they are */
-				}
-				else {
+				} else {
 					unitprev = NormVec(BPSub(sp->me,sp->next->to->me));
 					sp->prevcp = BPAdd(sp->me, BPScale(unitprev,fabs(BPDot(BPSub(sp->prevcp, sp->me), unitprev))));
 					SplineRefigure(sp->next);
@@ -752,34 +750,44 @@ return;
 					sp->nextcp = BPAdd(sp->me, BPScale(BPSub(unitnext, unitprev), .5*nextlen));
 					sp->prevcp = BPSub(sp->me, BPScale(BPSub(unitnext, unitprev), .5*prevlen));	
 					if ( sp->next->order2 ) { /* sp->nextcp and sp->next->to->prevcp are not necessary equal */
-						BasePoint inter; /* this is suboptimal when the intersection is on the wrong side */
-						if ( IntersectLines(&inter,&sp->me,&sp->nextcp,&sp->next->to->prevcp,&sp->next->to->me) ) {
+						BasePoint inter; 
+						if ( IntersectLines(&inter,&sp->me,&sp->nextcp,&sp->next->to->prevcp,&sp->next->to->me) 
+						/* check if inter is on the same side of sp->me as sp->nextcp: */ 
+						&& BPDot( BPSub(inter, sp->me), BPSub(sp->nextcp, sp->me) ) >= 0 
+						/* check if inter is on the same side of sp->next->to->me as sp->nextcp: */ 
+						&& BPDot( BPSub(inter, sp->me), BPSub(sp->next->to->me, sp->me) ) >= 0 ) {
 							sp->nextcp = inter;
 							sp->next->to->prevcp = inter;
 							SplineRefigure(sp->next);
-						} /* else just leave things as they are (not solved yet) */
+						} else { /* undo things, the user has to interact (no clear solution) */
+							sp->nextcp = sp->next->to->prevcp;
+						}
 					}
 					if ( sp->prev->order2 ) { /* sp->prevcp and sp->prev->from->nextcp are not necessary equal */
 						BasePoint inter; /* this is suboptimal when the intersection is on the wrong side */
-						if ( IntersectLines(&inter,&sp->me,&sp->prevcp,&sp->prev->from->nextcp,&sp->prev->from->me) ) {
+						if ( IntersectLines(&inter,&sp->me,&sp->prevcp,&sp->prev->from->nextcp,&sp->prev->from->me) 
+						/* check if inter is on the same side of sp->me as sp->prevcp: */ 
+						&& BPDot( BPSub(inter, sp->me), BPSub(sp->prevcp, sp->me) ) >= 0 
+						/* check if inter is on the same side of sp->prev->from->me as sp->prevcp: */ 
+						&& BPDot( BPSub(inter, sp->me), BPSub(sp->prev->from->me, sp->me) ) >= 0 ) {
 							sp->prevcp = inter;
 							sp->prev->from->nextcp = inter;
 							SplineRefigure(sp->prev);
-						} /* else just leave things as they are (not solved yet) */
+						} else { /* undo things, the user has to interact (no clear solution) */
+							sp->prevcp = sp->prev->from->nextcp;
+						}
 					}
-				}
-				else if ( prevlen!=0 && !sp->next->order2 ) { /* and therefore nextlen==0 */
+				} else if ( prevlen!=0 && !sp->next->order2 ) { /* and therefore nextlen==0 */
 					sp->nextcp = BPSub(sp->me, BPScale(NormVec(unitprev), 
 					NICE_PROPORTION*BPNorm(BPSub(sp->next->to->me, sp->me))));
-				}
-				else if ( nextlen!=0 && !sp->prev->order2 ) { /* and therefore prevlen==0 */
+				} else if ( nextlen!=0 && !sp->prev->order2 ) { /* and therefore prevlen==0 */
 					sp->prevcp = BPSub(sp->me, BPScale(NormVec(unitnext), 
 					NICE_PROPORTION*BPNorm(BPSub(sp->prev->from->me, sp->me))));
-				}
-				else makedflt = true;
+				} else makedflt = true;
 			}
-		}
-	    else makedflt = true; /* original behaviour */
+		} else if ( oldpointtype==pt_tangent ) { 
+			makedflt = false; 	
+		} else makedflt = true; /* original behaviour */
 	}
 	
 	if ( makedflt ) {
