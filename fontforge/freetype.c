@@ -959,12 +959,17 @@ BDFChar *SplineCharFreeTypeRasterizeNoHints(SplineChar *sc,int layer,
     FT_Bitmap bitmap, temp;
     int i;
     int cmax, pmax;
-    real rscale = (ptsize*dpi)/72.0/(double) (sc->parent->ascent+sc->parent->descent);
-    real scale = rscale*(1<<6);
+    real rscale, scale;
     BDFChar *bdfc;
     int err = 0;
     DBounds b;
     SplineSet *all;
+
+    if ( sc->parent->ascent+sc->parent->descent == 0 )
+	return NULL;
+
+    rscale = (ptsize*dpi)/72.0/(double) (sc->parent->ascent+sc->parent->descent);
+    scale = rscale*(1<<6);
 
     if ( !hasFreeType())
 return( NULL );
