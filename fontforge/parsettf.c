@@ -5610,6 +5610,11 @@ return( 0 );
     if ( info->os2_start!=0 )
 	readttfos2metrics(ttf,info);
     readttfpostnames(ttf,info);		/* If no postscript table we'll guess at names */
+
+    for ( i=0; i<info->glyph_cnt; ++i )
+	if ( info->chars[i]!=NULL)
+	    info->chars[i]->glyph_class = 1;
+
     if ( info->gdef_start!=0 )		/* ligature caret positioning info */
 	readttfgdef(ttf,info);
     else {
