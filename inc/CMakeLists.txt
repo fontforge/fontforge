@@ -23,3 +23,32 @@ target_link_libraries(fontforge_common_headers
     Gcov::Gcov
 )
 endif()
+
+set(FONTFORGE_INST_COMMON_HEADERS
+  basics.h
+  carbon.h
+  chardata.h
+  charset.h
+  dlist.h
+  ffglib.h
+  "${CMAKE_CURRENT_BINARY_DIR}/fontforge-config.h"
+  gdraw.h
+  gfile.h
+  ggadget.h
+  gicons.h
+  gimage.h
+  gio.h
+  gkeysym.h
+  gprogress.h
+  gresedit.h
+  gresource.h
+  gwidget.h
+  gwwiconv.h
+  intl.h
+  ustring.h
+  utype.h
+)
+
+set_target_properties(fontforge_common_headers PROPERTIES PUBLIC_HEADER "${FONTFORGE_INST_COMMON_HEADERS}")
+
+install(TARGETS fontforge_common_headers PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
