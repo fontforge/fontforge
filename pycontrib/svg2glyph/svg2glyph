@@ -246,12 +246,12 @@ for fname in args:
         queue = deque(re.findall('([mlhvcsqtaz]|-?\d+(?:\.\d+)?(?:e-?\d+)?)', data, re.I))
         indent = 0
         while len(queue) > 0:
-            if cmd == None or re.match('[mlhvcsqtaz]', queue[0], re.I):
+            if cmd is None or re.match('[mlhvcsqtaz]', queue[0], re.I):
                 last_cmd = cmd
                 cmd = queue.popleft()
             if cmd == 'M' or cmd == 'm':
                 pt = getpoint(queue)
-                if pos == None:
+                if pos is None:
                     init_pos = pos = pt
                 elif cmd == 'M':
                     pos = pt
