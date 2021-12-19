@@ -11,6 +11,6 @@ Currently used to:
 #]=======================================================================]
 
 if(CPACK_SOURCE_INSTALLED_DIRECTORIES)
-  message(STATUS "Adding retrieved/generated fonts from @CMAKE_BINARY_DIR@/tests/fonts to ${CMAKE_CURRENT_BINARY_DIR}/tests/fonts...")
-  file(INSTALL "@CMAKE_BINARY_DIR@/tests/fonts" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/tests")
+  message(STATUS "Adding retrieved/generated fonts from @PROJECT_BINARY_DIR@/tests/fonts to ${CMAKE_CURRENT_BINARY_DIR}/tests/fonts...")
+  file(INSTALL "@PROJECT_BINARY_DIR@/tests/fonts" DESTINATION "${CMAKE_CURRENT_BINARY_DIR}/tests")
 endif()

@@ -119,12 +119,12 @@ endfunction()
 function(add_uninstall_target)
   if(NOT TARGET uninstall)
     configure_file(
-        "${CMAKE_SOURCE_DIR}/cmake/scripts/Uninstall.cmake.in"
-        "${CMAKE_BINARY_DIR}/cmake_uninstall.cmake"
+        "${PROJECT_SOURCE_DIR}/cmake/scripts/Uninstall.cmake.in"
+        "${PROJECT_BINARY_DIR}/cmake_uninstall.cmake"
         IMMEDIATE @ONLY
     )
     add_custom_target(uninstall
-        COMMAND "${CMAKE_COMMAND}" -P "${CMAKE_BINARY_DIR}/cmake_uninstall.cmake"
+        COMMAND "${CMAKE_COMMAND}" -P "${PROJECT_BINARY_DIR}/cmake_uninstall.cmake"
         VERBATIM USES_TERMINAL
     )
   endif()
