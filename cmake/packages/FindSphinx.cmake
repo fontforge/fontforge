@@ -33,8 +33,8 @@ function(_find_sphinx)
   find_program(Sphinx_BUILD_BINARY NAMES sphinx-build
     HINTS
       $ENV{SPHINX_DIR}
-      ${CMAKE_BINARY_DIR}/sphinx-venv/Scripts
-      ${CMAKE_BINARY_DIR}/sphinx-venv/bin
+      ${PROJECT_BINARY_DIR}/sphinx-venv/Scripts
+      ${PROJECT_BINARY_DIR}/sphinx-venv/bin
     PATH_SUFFIXES bin
     DOC "Sphinx documentation generator"
   )
@@ -46,13 +46,13 @@ function(_sphinx_from_venv)
     message(STATUS "Python3 not found, skipping")
     return()
   endif()
-  execute_process(COMMAND "${Python3_EXECUTABLE}" -m venv "${CMAKE_BINARY_DIR}/sphinx-venv")
+  execute_process(COMMAND "${Python3_EXECUTABLE}" -m venv "${PROJECT_BINARY_DIR}/sphinx-venv")
 
   find_program(_venv_bin NAMES python
     NO_DEFAULT_PATH
     HINTS
-      "${CMAKE_BINARY_DIR}/sphinx-venv/Scripts"
-      "${CMAKE_BINARY_DIR}/sphinx-venv/bin"
+      "${PROJECT_BINARY_DIR}/sphinx-venv/Scripts"
+      "${PROJECT_BINARY_DIR}/sphinx-venv/bin"
   )
   if(NOT _venv_bin)
     message(WARNING "could not make venv")
@@ -71,7 +71,7 @@ endfunction()
 
 _find_sphinx()
 
-if(NOT Sphinx_BUILD_BINARY AND SPHINX_USE_VENV AND NOT EXISTS "${CMAKE_BINARY_DIR}/sphinx-venv")
+if(NOT Sphinx_BUILD_BINARY AND SPHINX_USE_VENV AND NOT EXISTS "${PROJECT_BINARY_DIR}/sphinx-venv")
   message(STATUS "sphinx-build not found, attempting to install it into a venv...")
   _sphinx_from_venv()
 endif()
