@@ -24,7 +24,8 @@ if [ -z "$LDDX" ]; then
         LDDX="$INVOKE_BASE/lddx"
         if [ ! -f "$LDDX" ]; then
             echo "Fetching lddx..."
-            curl -L https://github.com/jtanx/lddx/releases/download/v0.1.0/lddx-0.1.0.tar.xz | tar -Jxf - -C "$INVOKE_BASE"
+            curl -L https://github.com/jtanx/lddx/releases/download/continuous/lddx -o "$LDDX"
+            chmod +x "$LDDX"
         fi
     fi
 fi
