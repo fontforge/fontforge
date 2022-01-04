@@ -2272,11 +2272,7 @@ return;
 	next = ap->next;
 	for ( test=sc->anchor; test!=NULL; test=test->next )
 	    if ( test->anchor==ap->anchor ) {
-		if (( test->type==at_centry && ap->type==at_cexit) ||
-			(test->type==at_cexit && ap->type==at_centry))
-		    /* It's ok */;
-		else if ( test->type!=at_baselig || ap->type!=at_baselig ||
-			test->lig_index==ap->lig_index )
+		if ( test->type==ap->type || ( test->type==at_baselig && test->lig_index==ap->lig_index ))
 	break;
 	    }
 	if ( test!=NULL ) {

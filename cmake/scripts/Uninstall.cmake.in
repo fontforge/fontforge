@@ -7,11 +7,11 @@ https://gitlab.kitware.com/cmake/community/wikis/FAQ#can-i-do-make-uninstall-wit
 
 #]=======================================================================]
 
-if(NOT EXISTS "@CMAKE_BINARY_DIR@/install_manifest.txt")
-  message(FATAL_ERROR "Cannot find install manifest: @CMAKE_BINARY_DIR@/install_manifest.txt")
-endif(NOT EXISTS "@CMAKE_BINARY_DIR@/install_manifest.txt")
+if(NOT EXISTS "@PROJECT_BINARY_DIR@/install_manifest.txt")
+  message(FATAL_ERROR "Cannot find install manifest: @PROJECT_BINARY_DIR@/install_manifest.txt")
+endif(NOT EXISTS "@PROJECT_BINARY_DIR@/install_manifest.txt")
 
-file(READ "@CMAKE_BINARY_DIR@/install_manifest.txt" files)
+file(READ "@PROJECT_BINARY_DIR@/install_manifest.txt" files)
 string(REGEX REPLACE "\n" ";" files "${files}")
 foreach(file ${files})
   message(STATUS "Uninstalling $ENV{DESTDIR}${file}")

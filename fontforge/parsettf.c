@@ -2147,13 +2147,8 @@ return;
 	    cur->transform[3] = get2dot14(ttf);
 	}
 	if ( flags & _ARGS_ARE_XY ) {	/* Only muck with these guys if they are real offsets and not point matching */
-#ifdef __Mac
-	/* On mac assume scaled offsets unless told unscaled explicitly */
-	if ( !(flags&_UNSCALED_OFFSETS) &&
-#else
 	/* everywhere else assume unscaled offsets unless told scaled explicitly */
 	if ( (flags & _SCALED_OFFSETS) &&
-#endif
 		(flags & _ARGS_ARE_XY) && (flags&(_SCALE|_XY_SCALE|_MATRIX))) {
 	    /*static int asked = 0;*/
 	    /* This is not what Apple documents on their website. But it is */
@@ -5615,6 +5610,11 @@ return( 0 );
     if ( info->os2_start!=0 )
 	readttfos2metrics(ttf,info);
     readttfpostnames(ttf,info);		/* If no postscript table we'll guess at names */
+
+    for ( i=0; i<info->glyph_cnt; ++i )
+	if ( info->chars[i]!=NULL)
+	    info->chars[i]->glyph_class = 1;
+
     if ( info->gdef_start!=0 )		/* ligature caret positioning info */
 	readttfgdef(ttf,info);
     else {

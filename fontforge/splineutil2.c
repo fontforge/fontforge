@@ -3223,6 +3223,11 @@ return;
     ulen = sqrt(unit.x*unit.x + unit.y*unit.y);
     if ( ulen!=0 )
 	unit.x /= ulen, unit.y /= ulen;
+    // Now that nonextcp is set automatically based on equality of
+    // nextcp and me, we force unequal values here to track
+    // the need for a nextcp. It is recalculated below with "len".
+    if ( base->nextcp.x==base->me.x && base->nextcp.y==base->me.y )
+	base->nextcp.x += 1;
 
     if ( base->pointtype == pt_curve || base->pointtype == pt_hvcurve ) {
 	if ( prev!=NULL && (base->prevcpdef || base->noprevcp)) {
@@ -3323,6 +3328,11 @@ return;
     ulen = sqrt(unit.x*unit.x + unit.y*unit.y);
     if ( ulen!=0 )
 	unit.x /= ulen, unit.y /= ulen;
+    // Now that noprevcp is set automatically based on equality of
+    // prevcp and me, we force unequal values here to track
+    // the need for a nextcp. It is recalculated below with "len".
+    if ( base->prevcp.x==base->me.x && base->prevcp.y==base->me.y )
+	base->prevcp.x += 1;
 
     if ( base->pointtype == pt_curve || base->pointtype == pt_hvcurve ) {
 	if ( next!=NULL && (base->nextcpdef || base->nonextcp)) {

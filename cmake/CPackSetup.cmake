@@ -50,10 +50,10 @@ function(setup_cpack)
   # CPACK_SOURCE_INSTALLED_DIRECTORIES won't work because the files we want to include
   # can be in an ignored directory (build/). So use a script instead
   set(CPACK_INSTALL_SCRIPT "${CMAKE_CURRENT_BINARY_DIR}/CPackExtraDist.cmake")
-  configure_file("${CMAKE_SOURCE_DIR}/cmake/scripts/ExtraDist.cmake.in" "CPackExtraDist.cmake" @ONLY)
+  configure_file("${PROJECT_SOURCE_DIR}/cmake/scripts/ExtraDist.cmake.in" "CPackExtraDist.cmake" @ONLY)
   include(CPack)
   add_custom_target(dist
-    COMMAND "${CMAKE_COMMAND}" --build "${CMAKE_BINARY_DIR}" --target package_source
+    COMMAND "${CMAKE_COMMAND}" --build "${PROJECT_BINARY_DIR}" --target package_source
     DEPENDS test_dependencies
     VERBATIM
     USES_TERMINAL
