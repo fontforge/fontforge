@@ -659,17 +659,18 @@ return;
 				sp->prevcp = sp->me; 
 				if ( sp->prev->from->pointtype!=pt_tangent) 
 					sp->prev->from->pointtype = pt_corner;
+				SplineRefigure(sp->prev); /* display straight line */
 				if ( sp->next->order2 ) {
 					BasePoint inter;
 					if ( IntersectLines(&inter,&sp->me,&sp->prev->from->me,&sp->nextcp,&sp->next->to->me) ) {
 						sp->nextcp = inter;
 						sp->next->to->prevcp = inter;
-						SplineRefigure(sp->prev); /* display straight line */
+						SplineRefigure(sp->next); /* update curve */
 					} /* else just leave things as they are */
 				} else {
 					unitnext = NormVec(BPSub(sp->me,sp->prev->from->me));
 					sp->nextcp = BPAdd(sp->me, BPScale(unitnext,fabs(BPDot(BPSub(sp->nextcp, sp->me), unitnext))));
-					SplineRefigure(sp->prev);
+					SplineRefigure(sp->next); /* update curve */
 				}
 			} else { /* make next linear */
 				sp->next->islinear = true;
@@ -677,17 +678,18 @@ return;
 				sp->nextcp = sp->me; 
 				if ( sp->next->to->pointtype!=pt_tangent) 
 					sp->next->to->pointtype = pt_corner;
+				SplineRefigure(sp->next); /* display straight line */
 				if ( sp->prev->order2 ) {
 					BasePoint inter;
 					if ( IntersectLines(&inter,&sp->me,&sp->next->to->me,&sp->prevcp,&sp->prev->from->me) ) {
 						sp->prevcp = inter;
 						sp->prev->from->nextcp = inter;
-						SplineRefigure(sp->next); /* display straight line */
+						SplineRefigure(sp->prev); /* update curve */
 					} /* else just leave things as they are */
 				} else {
 					unitprev = NormVec(BPSub(sp->me,sp->next->to->me));
 					sp->prevcp = BPAdd(sp->me, BPScale(unitprev,fabs(BPDot(BPSub(sp->prevcp, sp->me), unitprev))));
-					SplineRefigure(sp->next);
+					SplineRefigure(sp->prev); /* update curve */
 				}
 			}
 		} /* else do nothing - this would not make any sense */
@@ -785,7 +787,7 @@ return;
 					NICE_PROPORTION*BPNorm(BPSub(sp->prev->from->me, sp->me))));
 				} else makedflt = true;
 			}
-		} else if ( oldpointtype==pt_tangent ) { 
+		} else if ( oldpointtype==pt_tangent || oldpointtype==pt_hvcurve ) { 
 			makedflt = false; 	
 		} else makedflt = true; /* original behaviour */
 	}
