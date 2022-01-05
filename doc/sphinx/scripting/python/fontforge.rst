@@ -3433,6 +3433,10 @@ This type may not be pickled.
 .. attribute:: font.os2_fstype
 
 
+.. attribute:: font.os2_stylemap
+
+   Write access to fsSelection, keep in sync with :attr:`font.macstyle`
+
 .. attribute:: font.os2_panose
 
 
