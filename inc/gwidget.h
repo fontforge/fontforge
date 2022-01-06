@@ -115,8 +115,8 @@ int GWidgetChoicesB8(char *title, const char **choices, int cnt, int def,
 int GWidgetChoicesBM8(const char *title, const char **choices, char *sel,
 	int cnt, char *buts[2], const char *question,...);
 
-extern struct hslrgb GWidgetColor(const char *title,struct hslrgb *defcol,struct hslrgb fontcols[6]);
-extern struct hslrgba GWidgetColorA(const char *title,struct hslrgba *defcol,struct hslrgba fontcols[6]);
+extern struct hslrgb GWidgetColor(const char *title,struct hslrgb *defcol,struct hslrgb *fontcols);
+extern struct hslrgba GWidgetColorA(const char *title,struct hslrgba *defcol,struct hslrgba *fontcols);
 
 #define gwwv_choose_multiple	GWidgetChoicesBM8
 #define gwwv_choose_with_buttons	GWidgetChoicesB8
