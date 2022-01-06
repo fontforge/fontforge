@@ -315,7 +315,7 @@ return;
     gi->bcnt = 0;
 }
 
-static int NumberHints(SplineChar *scs[MmMax], int instance_count) {
+static int NumberHints(SplineChar **scs, int instance_count) {
     int i,j, cnt=-1;
     StemInfo *s;
 
