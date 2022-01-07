@@ -3468,6 +3468,21 @@ return( NULL );
 Py_RETURN( self );
 }
 
+static PyObject *PyFFContour_AddInflections(PyFF_Contour *self) {
+    SplineSet *ss;
+    ss = SSFromContour(self,NULL);
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self );	// no points=> nothing to do
+    }
+    SplineSetAddInflections(NULL,ss,true); 
+    ContourFromSS(ss,self);
+    SplinePointListFree(ss);
+Py_RETURN( self );
+}
+
 static PyObject *PyFFContour_BoundingBox(PyFF_Contour *self, PyObject *UNUSED(args)) {
     double xmin, xmax, ymin, ymax;
     int i;
@@ -3732,6 +3747,8 @@ static PyMethodDef PyFFContour_methods[] = {
 	     "Transform a contour by a 6 element matrix." },
     {"addExtrema", (PyCFunction)PyFFContour_AddExtrema, METH_VARARGS,
 	     "Add Extrema to a contour" },
+	{"addInflections", (PyCFunction)PyFFContour_AddInflections, METH_VARARGS,
+	     "Add points of inflection to a contour" },
     {"round", (PyCFunction)PyFFContour_Round, METH_VARARGS,
 	     "Round points on a contour" },
     {"cluster", (PyCFunction)PyFFContour_Cluster, METH_VARARGS,
@@ -4424,6 +4441,21 @@ return( NULL );
 Py_RETURN( self );
 }
 
+static PyObject *PyFFLayer_AddInflections(PyFF_Layer *self) {
+    SplineSet *ss;
+    ss = SSFromLayer(self);
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self ); // no contours=> nothing to do
+    }
+    SplineCharAddInflections(NULL,ss,true);
+    LayerFromSS(ss,self);
+    SplinePointListsFree(ss);
+Py_RETURN( self );
+}
+
 int NibCheck(SplineSet *nib) {
     enum ShapeType pt;
     SplineSet *ss;
@@ -5006,6 +5038,8 @@ static PyMethodDef PyFFLayer_methods[] = {
 	    "Transform a glyph by two non-linear expressions (one for x, one for y)." },
     {"addExtrema", (PyCFunction)PyFFLayer_AddExtrema, METH_VARARGS,
 	     "Add Extrema to a layer" },
+	{"addInflections", (PyCFunction)PyFFLayer_AddInflections, METH_VARARGS,
+	     "Add points of inflection to a layer" },
     {"round", (PyCFunction)PyFFLayer_Round, METH_VARARGS,
 	     "Round contours on a layer" },
     {"cluster", (PyCFunction)PyFFLayer_Cluster, METH_VARARGS,
@@ -9395,6 +9429,14 @@ return( NULL );
 Py_RETURN( self );
 }
 
+static PyObject *PyFFGlyph_AddInflections(PyFF_Glyph *self) {
+    SplineChar *sc = self->sc;
+    SplineFont *sf = sc->parent;
+    SplineCharAddInflections(sc,sc->layers[self->layer].splines,true);
+    SCCharChangedUpdate(sc,self->layer);
+Py_RETURN( self );
+}
+
 static PyObject *PyFFGlyph_Stroke(PyFF_Glyph *self, PyObject *args, PyObject *keywds) {
     StrokeInfo si;
     SplineSet *newss;
@@ -9687,6 +9729,7 @@ static PyMethodDef PyFF_Glyph_methods[] = {
     { "glyphPen", (PyCFunction) PyFFGlyph_GlyphPen, METH_VARARGS | METH_KEYWORDS, "Create a pen object which can draw into this glyph"},
     { "draw", (PyCFunction) PyFFGlyph_draw, METH_VARARGS , "Draw the glyph's outline to the pen argument"},
     { "addExtrema", (PyCFunction) PyFFGlyph_AddExtrema, METH_VARARGS, "Add extrema to the contours of the glyph"},
+    { "addInflections", (PyCFunction) PyFFGlyph_AddInflections, METH_VARARGS, "Add points of inflection to the contours of the glyph"},
     { "addReference", PyFFGlyph_AddReference, METH_VARARGS, "Add a reference"},
     { "addAnchorPoint", PyFFGlyph_addAnchorPoint, METH_VARARGS, "Adds an anchor point"},
     { "addHint", PyFFGlyph_addHint, METH_VARARGS, "Add a postscript hint (is_vertical_hint,start_pos,width)"},
@@ -17956,6 +17999,16 @@ return (NULL);
 Py_RETURN( self );
 }
 
+static PyObject *PyFFFont_AddInflections(PyFF_Font *self) {
+    FontViewBase *fv;
+
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
+    FVAddInflections(fv, true);
+Py_RETURN( self );
+}
+
 static PyObject *PyFFFont_Stroke(PyFF_Font *self, PyObject *args, PyObject *keywds) {
     StrokeInfo si;
 
@@ -18156,6 +18209,7 @@ PyMethodDef PyFF_Font_methods[] = {
     { "correctReferences", (PyCFunction) PyFFFont_correctReferences, METH_NOARGS, "Replaces any inline copies of any of the selected glyphs with a reference" },
 
     { "addExtrema", (PyCFunction) PyFFFont_AddExtrema, METH_NOARGS, "Add extrema to the contours of the glyph"},
+    { "addInflections", (PyCFunction) PyFFFont_AddInflections, METH_NOARGS, "Add points of inflection to the contours of the glyph"},
     { "addSmallCaps", (PyCFunction) PyFFFont_addSmallCaps, METH_VARARGS | METH_KEYWORDS, "For selected upper/lower case (latin, greek, cyrillic) characters, add a small caps variant of that glyph"},
     { "autoHint", (PyCFunction) PyFFFont_autoHint, METH_NOARGS, "Guess at postscript hints"},
     { "autoInstr", (PyCFunction) PyFFFont_autoInstr, METH_NOARGS, "Guess at truetype instructions"},

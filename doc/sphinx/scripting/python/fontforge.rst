@@ -1041,6 +1041,11 @@ Does not support the repeat concept.
 
       As above but also merge away on-curve points which are very close to, but
       not on, an added extremum
+      
+.. method:: contour.addInflections()
+
+   If the curvature of a spline in the contour changes sign then break the 
+   spline so that there will be a point at all points of inflections. 
 
 .. method:: contour.cluster([within, max])
 
@@ -1169,6 +1174,11 @@ Layers may be compared to see if their contours are similar.
 
       As above but also merge away on-curve points which are very close to, but
       not on, an added extremum
+      
+.. method:: layer.addInflections()
+
+   If the curvature of a spline in the layer changes sign then break the 
+   spline so that there will be a point at all points of inflections. 
 
 .. method:: layer.cluster([within, max])
 
@@ -1988,6 +1998,11 @@ must be created through the font.
 
       As above but also merge away on-curve points which are very close to,
       but not on, an added extremum
+      
+.. method:: glyph.addInflections()
+
+   If the curvature of a spline in the glyph changes sign then break the 
+   spline so that there will be a point at all points of inflections. 
 
 .. method:: glyph.addReference(glyph_name[, transform, selected])
 
@@ -4758,6 +4773,11 @@ See the :class:`selection` type for how to alter the selection.
 
    Extrema should be marked by on-curve points. If a curve in any selected
    glyph lacks a point at a significant extremum this command will add one.
+   
+.. method:: font.addInflections()
+
+   If the curvature of a spline in the font changes sign then break the 
+   spline so that there will be a point at all points of inflections. 
 
 .. method:: font.autoHint()
 

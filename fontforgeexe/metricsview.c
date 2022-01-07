@@ -2245,6 +2245,7 @@ return( true );
 #define MID_FindInter	2230
 #define MID_Effects	2231
 #define MID_SimplifyMore	2232
+#define MID_AddInflections	2256
 #define MID_Center	2600
 #define MID_OpenBitmap	2700
 #define MID_OpenOutline	2701
@@ -2792,6 +2793,21 @@ static void MVMenuAddExtrema(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *U
         SplineChar *sc = mv->glyphs[i].sc;
         SCPreserveLayer(sc, mv->layer, false);
         SplineCharAddExtrema(sc, sc->layers[mv->layer].splines, ae_only_good, emsize);
+        SCCharChangedUpdate(sc, mv->layer);
+    }
+}
+
+static void MVMenuAddInflections(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    int i;
+    SplineFont *sf = mv->sf;
+    for ( i=mv->glyphcnt-1; i>=0; --i )
+        if ( mv->perchar[i].selected )
+    break;
+    if ( i!=-1 ) {
+        SplineChar *sc = mv->glyphs[i].sc;
+        SCPreserveLayer(sc, mv->layer, false);
+        SplineCharAddInflections(sc, sc->layers[mv->layer].splines, true);
         SCCharChangedUpdate(sc, mv->layer);
     }
 }
@@ -3610,6 +3626,7 @@ static GMenuItem2 ellist[] = {
     { { (unichar_t *) N_("_Remove Overlap"), (GImage *) "rmoverlap.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'O' }, H_("Remove Overlap|No Shortcut"), rmlist, NULL, NULL, MID_RmOverlap },
     { { (unichar_t *) N_("_Simplify"), (GImage *) "elementsimplify.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Simplify|No Shortcut"), smlist, NULL, NULL, MID_Simplify },
     { { (unichar_t *) N_("Add E_xtrema"), (GImage *) "elementaddextrema.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Add Extrema|No Shortcut"), NULL, NULL, MVMenuAddExtrema, MID_AddExtrema },
+    { { (unichar_t *) N_("Add Points Of Inflection"), (GImage *) "elementaddinflections.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Add Points Of Inflection|No Shortcut"), NULL, NULL, MVMenuAddInflections, MID_AddInflections },
     { { (unichar_t *) N_("To _Int"), (GImage *) "elementround.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("To Int|No Shortcut"), NULL, NULL, MVMenuRound2Int, MID_Round },
     { { (unichar_t *) N_("Effects"), (GImage *) "elementstyles.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Effects|No Shortcut"), eflist, NULL, NULL, MID_Effects },
     { { (unichar_t *) N_("Autot_race"), (GImage *) "elementautotrace.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'r' }, H_("Autotrace|No Shortcut"), NULL, NULL, MVMenuAutotrace, MID_Autotrace },
@@ -3933,7 +3950,7 @@ static void ellistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	  case MID_RmOverlap: case MID_Stroke:
 	    mi->ti.disabled = sc==NULL || mv->sf->onlybitmaps;
 	  break;
-	  case MID_AddExtrema:
+	  case MID_AddExtrema: case MID_AddInflections:
 	  case MID_Round: case MID_Correct:
 	    mi->ti.disabled = sc==NULL || mv->sf->onlybitmaps;
 	  break;

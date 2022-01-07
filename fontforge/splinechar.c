@@ -44,7 +44,6 @@
 #include "tottf.h"
 #include "ttf.h"
 #include "ustring.h"
-#include "utanvec.h"
 #include "utype.h"
 
 #include <locale.h>
@@ -598,39 +597,11 @@ return( false );
 return( len2>=0 && len2<=len );
 }
 
-/* This is a fast computable measure for linearity. */
-/* First, we norm the spline: Scale and rotate the spline such that */
-/* one end lies on (0,0) and the other on (100,0). */
-/* Then the maximal y coordinate of the horizontal extrema is returned. */
-static bigreal Linearity(Spline *s) {
-    if ( s->islinear ) return 0;  
-    BasePoint ftunit = BPSub(s->to->me, s->from->me);
-    bigreal ftlen = BPNorm(ftunit);
-    if ( ftlen==0 ) return -1; /* flag for error, no norming possible */
-    ftunit = BPScale(ftunit, 1/ftlen);
-    BasePoint nextcpscaled = BPScale(BPSub(s->from->nextcp, s->from->me),100./ftlen);
-    if ( s->order2 ) return .5*fabs(BPCross(ftunit, nextcpscaled));
-    BasePoint prevcpscaled = BPScale(BPSub(s->to->prevcp, s->from->me),100./ftlen);
-    /* we just look a the bezier coefficients of the polynomial in t */
-    /* in y dimension (divided by 3): */
-    Spline1D ys1d;
-    ys1d.d = 0;
-    ys1d.c = BPCross(ftunit, nextcpscaled); /* rotate it to horizontal*/
-    ys1d.b = BPCross(ftunit, prevcpscaled)-2*ys1d.c;
-    ys1d.a = -ys1d.b-ys1d.c;
-    extended te1, te2;
-    SplineFindExtrema(&ys1d, &te1, &te2);
-    if ( te1==-1 && te2==-1 ) return 0;
-    if ( te2==-1 ) return 3*fabs(((ys1d.a*te1+ys1d.b)*te1+ys1d.c)*te1);
-return 3*fmax(fabs(((ys1d.a*te1+ys1d.b)*te1+ys1d.c)*te1), 
-fabs(((ys1d.a*te2+ys1d.b)*te2+ys1d.c)*te2));
-}
-
 void SPChangePointType(SplinePoint *sp, int pointtype) {
     BasePoint unitnext, unitprev;
     bigreal nextlen, prevlen;
     int makedflt;
-    int oldpointtype = sp->pointtype;
+    /*int oldpointtype = sp->pointtype;*/
 
     if ( sp->pointtype==pointtype ) {
 	if ( pointtype==pt_curve || pointtype == pt_hvcurve ) {
@@ -648,50 +619,25 @@ return;
 	sp->nextcpdef = sp->nonextcp;
 	sp->prevcpdef = sp->noprevcp;
     } else if ( pointtype==pt_tangent ) {
-	if ( sp->next!=NULL && sp->prev!=NULL ) {
-		bigreal prevlinearity = Linearity(sp->prev);
-		bigreal nextlinearity = Linearity(sp->next);
-		if ( prevlinearity>=0 && nextlinearity>=0 ) {
-			if ( nextlinearity >= prevlinearity ) { /* make prev linear */
-				sp->prev->islinear = true;
-				sp->prev->from->nextcp = sp->prev->from->me;
-				sp->prevcp = sp->me; 
-				if ( sp->prev->from->pointtype!=pt_tangent) 
-					sp->prev->from->pointtype = pt_corner;
-				SplineRefigure(sp->prev); /* display straight line */
-				if ( sp->next->order2 ) {
-					BasePoint inter;
-					if ( IntersectLines(&inter,&sp->me,&sp->prev->from->me,&sp->nextcp,&sp->next->to->me) ) {
-						sp->nextcp = inter;
-						sp->next->to->prevcp = inter;
-						SplineRefigure(sp->next); /* update curve */
-					} /* else just leave things as they are */
-				} else {
-					unitnext = NormVec(BPSub(sp->me,sp->prev->from->me));
-					sp->nextcp = BPAdd(sp->me, BPScale(unitnext,fabs(BPDot(BPSub(sp->nextcp, sp->me), unitnext))));
-					SplineRefigure(sp->next); /* update curve */
-				}
-			} else { /* make next linear */
-				sp->next->islinear = true;
-				sp->next->to->prevcp = sp->next->to->me;
-				sp->nextcp = sp->me; 
-				if ( sp->next->to->pointtype!=pt_tangent) 
-					sp->next->to->pointtype = pt_corner;
-				SplineRefigure(sp->next); /* display straight line */
-				if ( sp->prev->order2 ) {
-					BasePoint inter;
-					if ( IntersectLines(&inter,&sp->me,&sp->next->to->me,&sp->prevcp,&sp->prev->from->me) ) {
-						sp->prevcp = inter;
-						sp->prev->from->nextcp = inter;
-						SplineRefigure(sp->prev); /* update curve */
-					} /* else just leave things as they are */
-				} else {
-					unitprev = NormVec(BPSub(sp->me,sp->next->to->me));
-					sp->prevcp = BPAdd(sp->me, BPScale(unitprev,fabs(BPDot(BPSub(sp->prevcp, sp->me), unitprev))));
-					SplineRefigure(sp->prev); /* update curve */
-				}
-			}
-		} /* else do nothing - this would not make any sense */
+	if ( sp->next!=NULL && !sp->nonextcp && sp->next->knownlinear ) {
+	    sp->nextcp = sp->me;
+        SplineRefigure(sp->next);
+	} else if ( sp->prev!=NULL && !sp->nonextcp &&
+		BpColinear(&sp->prev->from->me,&sp->me,&sp->nextcp) ) {
+	    /* The current control point is reasonable */
+	} else {
+	    SplineCharTangentNextCP(sp);
+	    if ( sp->next ) SplineRefigure(sp->next);
+	}
+	if ( sp->prev!=NULL && !sp->noprevcp && sp->prev->knownlinear ) {
+	    sp->prevcp = sp->me;
+        SplineRefigure(sp->prev);
+	} else if ( sp->next!=NULL && !sp->noprevcp &&
+		BpColinear(&sp->next->to->me,&sp->me,&sp->prevcp) ) {
+	    /* The current control point is reasonable */
+	} else {
+	    SplineCharTangentPrevCP(sp);
+	    if ( sp->prev ) SplineRefigure(sp->prev);
 	}
     } else if ( pointtype!=pt_curve
 		&& ((BpColinear(&sp->prevcp,&sp->me,&sp->nextcp) ||
@@ -745,53 +691,8 @@ return;
 		SplineRefigure(sp->prev);
 	    makedflt = false;
 	}
-	if( pointtype==pt_curve ) { 
-		if ( oldpointtype==pt_corner ) { 
-			makedflt = false; 	
-			if ( sp->prev!=NULL && sp->next!=NULL) {
-				if ( prevlen!=0 && nextlen!=0 ) { /* take the average direction */
-					sp->nextcp = BPAdd(sp->me, BPScale(BPSub(unitnext, unitprev), .5*nextlen));
-					sp->prevcp = BPSub(sp->me, BPScale(BPSub(unitnext, unitprev), .5*prevlen));	
-					if ( sp->next->order2 ) { /* sp->nextcp and sp->next->to->prevcp are not necessary equal */
-						BasePoint inter; 
-						if ( IntersectLines(&inter,&sp->me,&sp->nextcp,&sp->next->to->prevcp,&sp->next->to->me) 
-						/* check if inter is on the same side of sp->me as sp->nextcp: */ 
-						&& BPDot( BPSub(inter, sp->me), BPSub(sp->nextcp, sp->me) ) >= 0 
-						/* check if inter is on the same side of sp->next->to->me as sp->nextcp: */ 
-						&& BPDot( BPSub(inter, sp->me), BPSub(sp->next->to->me, sp->me) ) >= 0 ) {
-							sp->nextcp = inter;
-							sp->next->to->prevcp = inter;
-							SplineRefigure(sp->next);
-						} else { /* undo things, the user has to interact (no clear solution) */
-							sp->nextcp = sp->next->to->prevcp;
-						}
-					}
-					if ( sp->prev->order2 ) { /* sp->prevcp and sp->prev->from->nextcp are not necessary equal */
-						BasePoint inter; /* this is suboptimal when the intersection is on the wrong side */
-						if ( IntersectLines(&inter,&sp->me,&sp->prevcp,&sp->prev->from->nextcp,&sp->prev->from->me) 
-						/* check if inter is on the same side of sp->me as sp->prevcp: */ 
-						&& BPDot( BPSub(inter, sp->me), BPSub(sp->prevcp, sp->me) ) >= 0 
-						/* check if inter is on the same side of sp->prev->from->me as sp->prevcp: */ 
-						&& BPDot( BPSub(inter, sp->me), BPSub(sp->prev->from->me, sp->me) ) >= 0 ) {
-							sp->prevcp = inter;
-							sp->prev->from->nextcp = inter;
-							SplineRefigure(sp->prev);
-						} else { /* undo things, the user has to interact (no clear solution) */
-							sp->prevcp = sp->prev->from->nextcp;
-						}
-					}
-				} else if ( prevlen!=0 && !sp->next->order2 ) { /* and therefore nextlen==0 */
-					sp->nextcp = BPSub(sp->me, BPScale(NormVec(unitprev), 
-					NICE_PROPORTION*BPNorm(BPSub(sp->next->to->me, sp->me))));
-				} else if ( nextlen!=0 && !sp->prev->order2 ) { /* and therefore prevlen==0 */
-					sp->prevcp = BPSub(sp->me, BPScale(NormVec(unitnext), 
-					NICE_PROPORTION*BPNorm(BPSub(sp->prev->from->me, sp->me))));
-				} else makedflt = true;
-			}
-		} else if ( oldpointtype==pt_tangent || oldpointtype==pt_hvcurve ) { 
-			makedflt = false; 	
-		} else makedflt = true; /* original behaviour */
-	}
+	if( pointtype==pt_curve )
+	    makedflt = true;
 	
 	if ( makedflt ) {
 	    sp->nextcpdef = sp->prevcpdef = true;

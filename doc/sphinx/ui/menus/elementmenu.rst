@@ -641,6 +641,15 @@ FontForge.
    value at this point. If the added extrema is extremely close to an already
    existing point, fontforge may remove that point to avoid creating tiny
    splines.
+   
+.. _elementmenu.Add-Inflections:
+
+.. object:: Add Inflections 
+
+   Not in the bitmap view. In the outline view, if any points are selected, 
+   this will add points at all points of inflections on splines between 
+   selected points. In the font view, metrics view (or if nothing is selected 
+   in the outline view) it will add all points of inflections to the splines.
 
 .. _elementmenu.AutoTrace:
 

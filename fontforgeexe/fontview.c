@@ -1402,6 +1402,7 @@ static void FVMenuCondense(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNU
 #define MID_ChangeGlyph	2251
 #define MID_SetColor	2252
 #define MID_SetExtremumBound	2253
+#define MID_AddInflections	2256
 #define MID_Center	2600
 #define MID_Thirds	2601
 #define MID_SetWidth	2602
@@ -2721,6 +2722,10 @@ static void FVMenuCanonicalContours(GWindow gw, struct gmenuitem *UNUSED(mi), GE
 
 static void FVMenuAddExtrema(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     FVAddExtrema( (FontViewBase *) GDrawGetUserData(gw) , false);
+}
+
+static void FVMenuAddInflections(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) { /* added by Linus Romer */
+    FVAddInflections( (FontViewBase *) GDrawGetUserData(gw) , true );
 }
 
 static void FVMenuCorrectDir(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
@@ -4217,6 +4222,9 @@ static void ellistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	  case MID_AddExtrema:
 	    mi->ti.disabled = anychars==-1 || fv->b.sf->onlybitmaps;
 	  break;
+	  case MID_AddInflections:
+	    mi->ti.disabled = anychars==-1 || fv->b.sf->onlybitmaps;
+	  break;
 	  case MID_Simplify:
 	  case MID_Stroke: case MID_RmOverlap:
 	    mi->ti.disabled = anychars==-1 || fv->b.sf->onlybitmaps;
@@ -4658,6 +4666,7 @@ static GMenuItem2 ellist[] = {
     { { (unichar_t *) N_("O_verlap"), (GImage *) "overlaprm.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'O' }, H_("Overlap|No Shortcut"), rmlist, NULL, NULL, MID_RmOverlap },
     { { (unichar_t *) N_("_Simplify"), (GImage *) "elementsimplify.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Simplify|No Shortcut"), smlist, NULL, NULL, MID_Simplify },
     { { (unichar_t *) N_("Add E_xtrema"), (GImage *) "elementaddextrema.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Add Extrema|No Shortcut"), NULL, NULL, FVMenuAddExtrema, MID_AddExtrema },
+    { { (unichar_t *) N_("Add Points Of Inflection"), (GImage *) "elementaddinflections.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Add Points Of Inflection|No Shortcut"), NULL, NULL, FVMenuAddInflections, MID_AddInflections },
     { { (unichar_t *) N_("Roun_d"), (GImage *) "elementround.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Round|No Shortcut"), rndlist, NULL, NULL, MID_Round },
     { { (unichar_t *) N_("Autot_race"), (GImage *) "elementautotrace.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'r' }, H_("Autotrace|No Shortcut"), NULL, NULL, FVMenuAutotrace, MID_Autotrace },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */

@@ -1169,6 +1169,9 @@ msgstr "Entferne Überlappungen …"
 msgid "Adding points at Extrema..."
 msgstr "Extrempunkte werden hinzufügen …"
 
+msgid "Adding points at Inflections..."
+msgstr "Wendepunkte werden hinzugefügt …"
+
 msgid "Rounding to integer..."
 msgstr "Auf ganze Zahlen runden …"
 
@@ -11986,6 +11989,9 @@ msgstr "Über_lappen"
 
 msgid "Add E_xtrema"
 msgstr "E_xtrempunkte hinzufügen"
+
+msgid "Add Points Of Inflection"
+msgstr "Wendepunkte hinzufügen"
 
 msgid "Autot_race"
 msgstr "Auto_matisch nachzeichnen"

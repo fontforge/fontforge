@@ -168,6 +168,7 @@
 #define MID_CheckSelf		2253
 #define MID_GlyphSelfIntersects	2254
 #define MID_ReverseDir		2255
+#define MID_AddInflections	2256
 #define MID_Corner	2301
 #define MID_Tangent	2302
 #define MID_Curve	2303
