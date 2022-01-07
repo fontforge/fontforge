@@ -1139,7 +1139,10 @@ msgid "Removing overlaps..."
 msgstr "Uklanjanje preklapanja …"
 
 msgid "Adding points at Extrema..."
-msgstr "Dodavanje točaka ektrema …"
+msgstr "Dodavanje točaka ekstrema …"
+
+msgid "Adding points of inflection..."
+msgstr "Dodavanje točaka infleksije …"
 
 msgid "Rounding to integer..."
 msgstr "Zaokruživanje na cijele brojeve …"
@@ -12272,6 +12275,9 @@ msgstr "Pre_klapanje"
 
 msgid "Add E_xtrema"
 msgstr "Dodaj _ekstreme"
+
+msgid "Add Points Of Inflection"
+msgstr "Dodaj točaka infleksije"
 
 msgid "Autot_race"
 msgstr "Automatski pre_crtaj"

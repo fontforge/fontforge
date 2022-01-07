@@ -1111,6 +1111,9 @@ msgstr "Eliminando superposiciones..."
 msgid "Adding points at Extrema..."
 msgstr "Añadiendo puntos a los extremos..."
 
+msgid "Adding points of inflection..."
+msgstr "Añadiendo puntos de inflexión..."
+
 msgid "Rounding to integer..."
 msgstr "Redondeando a entero..."
 
@@ -11350,6 +11353,9 @@ msgstr "Superponer(_V)"
 
 msgid "Add E_xtrema"
 msgstr "Añadir e_xtremos"
+
+msgid "Add Points Of Inflection"
+msgstr "Añadir puntos de inflexión"
 
 msgid "Autot_race"
 msgstr "T_razado automático"

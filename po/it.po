@@ -1124,6 +1124,9 @@ msgstr "Soppressione delle ricoperture..."
 msgid "Adding points at Extrema..."
 msgstr "Aggiungi punti alle estremità..."
 
+msgid "Adding points of inflection..."
+msgstr "Aggiungi punti di flesso..."
+
 msgid "Rounding to integer..."
 msgstr "Arrotonda all'intero..."
 
@@ -11404,6 +11407,9 @@ msgstr "Ricoperture(_V)"
 
 msgid "Add E_xtrema"
 msgstr "Aggiungi gli estremi(_X)"
+
+msgid "Add E_xtrema"
+msgstr "Aggiungi gli punti di flesso"
 
 msgid "Autot_race"
 msgstr ""

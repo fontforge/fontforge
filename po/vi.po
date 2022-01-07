@@ -1155,6 +1155,9 @@ msgstr "Đang gỡ bỏ các chỗ chồng lấp..."
 msgid "Adding points at Extrema..."
 msgstr "Đang thêm các điểm tại thái cực..."
 
+msgid "Adding points of inflection..."
+msgstr ""
+
 msgid "Rounding to integer..."
 msgstr "Đang làm tròn thành số nguyên..."
 
@@ -12202,6 +12205,9 @@ msgstr "Chồng lấ_p"
 
 msgid "Add E_xtrema"
 msgstr "Thêm _thái cực"
+
+msgid "Add Points Of Inflection"
+msgstr ""
 
 msgid "Autot_race"
 msgstr "Tự động đồ _lại"
