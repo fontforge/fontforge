@@ -11408,7 +11408,7 @@ msgstr "Ricoperture(_V)"
 msgid "Add E_xtrema"
 msgstr "Aggiungi gli estremi(_X)"
 
-msgid "Add E_xtrema"
+msgid "Add Points Of Inflection"
 msgstr "Aggiungi gli punti di flesso"
 
 msgid "Autot_race"
