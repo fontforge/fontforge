@@ -2879,6 +2879,50 @@ void SplineCharAddExtrema(SplineChar *sc, SplineSet *head,enum ae_type between_s
 	    SplineSetAddExtrema(sc,ss,between_selected,emsize);
 }
 
+Spline *SplineAddInflections(Spline *s) { /* added by Linus Romer */
+    if ( s->knownlinear )
+return(s);
+    /* First find the inflections, if any */
+    extended inflect[2];
+    int i = Spline2DFindPointsOfInflection(s, inflect);
+    if ( i==2 ) {
+	if ( RealNearish(inflect[0],inflect[1]) )
+	    --i;
+	else if ( inflect[0]>inflect[1] ) {
+	    real temp = inflect[0];
+	    inflect[0] = inflect[1];
+	    inflect[1] = temp;
+	}
+    }   
+    /* Now split the spline at 1 or 2 times */
+    extended splittimes[3] = {-1,-1,-1}; /* this is always 3 */
+    for (int j = 0; j < i; j++) {
+		if ( inflect[j] > .001 && inflect[j] < .999 ) /* avoid rounding issues */
+			splittimes[j] = inflect[j];
+	}
+    if ( splittimes[0] == -1)
+return(s);
+    s = SplineSplit(s,splittimes);
+    /* Should some nodes be additionally ticked, too? */
+return(s);	
+}
+
+void SplineSetAddInflections(SplineChar *sc, SplineSet *ss, int force_adding) { /* added by Linus Romer */
+    Spline *s, *first; 
+    first = NULL;
+    for ( s = ss->first->next; s!=NULL && s!=first; s = s->to->next ) {
+	    if ( force_adding || s->from->selected && s->to->selected )
+			s = SplineAddInflections(s);
+	    if ( first==NULL ) first = s;
+    }
+}
+
+void SplineCharAddInflections(SplineChar *sc, SplineSet *head, int force_adding) { /* added by Linus Romer */
+    SplineSet *ss;
+    for ( ss=head; ss!=NULL; ss=ss->next )
+	    SplineSetAddInflections(sc,ss,force_adding);
+}
+
 char *GetNextUntitledName(void) {
     static int untitled_cnt=1;
     char buffer[80];
@@ -3195,6 +3239,7 @@ return;
     }
 }
     
+#define NICE_PROPORTION	.39
 void SplineCharDefaultNextCP(SplinePoint *base) {
     SplinePoint *prev=NULL, *next;
     bigreal len, plen, ulen;

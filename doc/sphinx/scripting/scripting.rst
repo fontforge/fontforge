@@ -660,6 +660,7 @@ Built-in procedures that act like the Element Menu
 
 * :func:`AddAccent()`
 * :func:`AddExtrema()`
+* :func:`AddInflections()`
 * :func:`ApplySubstitution()`
 * :func:`AutoTrace()`
 * :func:`BitmapsAvail()`

@@ -5377,6 +5377,15 @@ static void bAddExtrema(Context *c) {
     }
 }
 
+static void bAddInflections(Context *c) {
+    if ( c->a.argc==1 )
+	FVAddInflections(c->curfv, true);
+    else {
+	c->error = ce_wrongnumarg;
+	return;
+    }
+}
+
 static void SCMakeLine(SplineChar *sc) {
     int ly, last;
     SplinePointList *spl;
@@ -8549,6 +8558,7 @@ static struct builtins {
     { "NearlyHvLines", bNearlyHvLines, 0,0,0 },
     { "NearlyLines", bNearlyLines, 0,0,0 },
     { "AddExtrema", bAddExtrema, 0,0,0 },
+    { "AddInflections", bAddInflections, 0,0,0 },
     { "RoundToInt", bRoundToInt, 0,0,0 },
     { "RoundToCluster", bRoundToCluster, 0,0,0 },
     { "Autotrace", bAutotrace, 0,1,0 },

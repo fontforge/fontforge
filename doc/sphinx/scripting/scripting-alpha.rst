@@ -83,6 +83,11 @@ the fourth argument you must specify the second and third arguments too.
    more information). If the "all" argument is specified and is a nonzero
    integer, then all extrema will be added; otherwise, some that would be very
    close to existing endpoints will not be added.
+   
+.. function:: AddInflections()
+
+   If the curvature of a spline in a glyph changes sign then break the spline 
+   so that there will be a point at all points of inflections. 
 
 .. function:: AddHHint(start,width)
 
