@@ -622,7 +622,7 @@ msgstr "Einzufügende zu tief verschachtelt in Zeile %d von %s"
 
 #, c-format
 msgid "Could not open include file (%s) on line %d of %s"
-msgstr "Konnte die einzufügende Datei nicht öffnen in Zeile %d von %s"
+msgstr "Konnte die einzufügende Datei (%s) nicht öffnen in Zeile %d von %s"
 
 #, c-format
 msgid "Number too long on line %d of %s"
