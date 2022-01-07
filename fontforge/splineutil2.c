@@ -2879,7 +2879,7 @@ void SplineCharAddExtrema(SplineChar *sc, SplineSet *head,enum ae_type between_s
 	    SplineSetAddExtrema(sc,ss,between_selected,emsize);
 }
 
-Spline *SplineAddInflections(Spline *s) { /* added by Linus Romer */
+Spline *SplineAddInflections(Spline *s) { 
     if ( s->knownlinear )
 return(s);
     /* First find the inflections, if any */
@@ -2907,7 +2907,7 @@ return(s);
 return(s);	
 }
 
-void SplineSetAddInflections(SplineChar *sc, SplineSet *ss, int force_adding) { /* added by Linus Romer */
+void SplineSetAddInflections(SplineChar *sc, SplineSet *ss, int force_adding) {
     Spline *s, *first; 
     first = NULL;
     for ( s = ss->first->next; s!=NULL && s!=first; s = s->to->next ) {
@@ -2917,7 +2917,7 @@ void SplineSetAddInflections(SplineChar *sc, SplineSet *ss, int force_adding) { 
     }
 }
 
-void SplineCharAddInflections(SplineChar *sc, SplineSet *head, int force_adding) { /* added by Linus Romer */
+void SplineCharAddInflections(SplineChar *sc, SplineSet *head, int force_adding) { 
     SplineSet *ss;
     for ( ss=head; ss!=NULL; ss=ss->next )
 	    SplineSetAddInflections(sc,ss,force_adding);

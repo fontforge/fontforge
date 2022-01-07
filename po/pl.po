@@ -1152,6 +1152,9 @@ msgstr "Usuwanie przecięć..."
 msgid "Adding points at Extrema..."
 msgstr "Dodawanie punków w ekstremach..."
 
+msgid "Adding points of inflection..."
+msgstr "Dodawanie punktów przegięcia..." 
+
 msgid "Rounding to integer..."
 msgstr "Zaokrąglanie do całkowitych..."
 
@@ -12280,6 +12283,9 @@ msgstr "_Operacje boolowskie"
 
 msgid "Add E_xtrema"
 msgstr "_Dodaj ekstrema"
+
+msgid "Add Points Of Inflection"
+msgstr "Dodaj punkty przegięcia"
 
 msgid "Autot_race"
 msgstr "_Wektoryzuj"

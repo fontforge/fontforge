@@ -1098,6 +1098,9 @@ msgstr "S'estan eliminant les superposicions..."
 msgid "Adding points at Extrema..."
 msgstr "S'estan afegint nodes extrems..."
 
+msgid "Adding points of inflection..."
+msgstr "S'estan afegint punts d'inflexió..."
+
 msgid "Rounding to integer..."
 msgstr "S'esta arrodonint a valors enters..."
 
@@ -11569,6 +11572,9 @@ msgstr "Superposicions"
 
 msgid "Add E_xtrema"
 msgstr "Afegeix nodes e_xtrems"
+
+msgid "Add Points Of Inflection"
+msgstr "Afegeix punts d'inflexió"
 
 msgid "Autot_race"
 msgstr "_Traça automàticament"

@@ -929,7 +929,7 @@ void FVAddExtrema(FontViewBase *fv, int force_adding ) {
     ff_progress_end_indicator();
 }
 
-void FVAddInflections(FontViewBase *fv, int force_adding) { /* Added by Linus Romer */
+void FVAddInflections(FontViewBase *fv, int force_adding) { 
     int i, cnt=0, layer, first, last, gid;
     SplineChar *sc;
     SplineFont *sf = fv->sf;
@@ -939,7 +939,7 @@ void FVAddInflections(FontViewBase *fv, int force_adding) { /* Added by Linus Ro
 	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
 		SCWorthOutputting(fv->sf->glyphs[gid]) )
 	    ++cnt;
-    ff_progress_start_indicator(10,_("Adding Points Of Inflections..."),_("Adding Points Of Inflections..."),0,cnt,1);
+    ff_progress_start_indicator(10,_("Adding points of inflection..."),_("Adding points of inflection..."),0,cnt,1);
 
     SFUntickAll(fv->sf);
     for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&

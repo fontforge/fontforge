@@ -1130,6 +1130,9 @@ msgstr "Вилучення перетинів…"
 msgid "Adding points at Extrema..."
 msgstr "Додавання точок у екстремумах…"
 
+msgid "Adding points of inflection..."
+msgstr "Додавання точок перегину…"
+
 msgid "Rounding to integer..."
 msgstr "Округлення до цілого…"
 
@@ -12364,6 +12367,9 @@ msgstr "Пере_тини"
 
 msgid "Add E_xtrema"
 msgstr "Додати е_кстремуми"
+
+msgid "Add Points Of Inflection"
+msgstr "Додати точки перегину"
 
 msgid "Autot_race"
 msgstr "_Автотрасування"

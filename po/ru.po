@@ -1067,6 +1067,9 @@ msgstr "Удаление пересечений..."
 msgid "Adding points at Extrema..."
 msgstr "Добавление точек в экстремумах..."
 
+msgid "Adding points of inflection..."
+msgstr "Добавление точек перегиба..."
+
 msgid "Rounding to integer..."
 msgstr "Округление до целого..."
 
@@ -11277,6 +11280,9 @@ msgstr "Пересе_чения"
 
 msgid "Add E_xtrema"
 msgstr "Добавить _экстремумы"
+
+msgid "Add Points Of Inflection"
+msgstr "Добавить точки перегиба"
 
 msgid "Autot_race"
 msgstr "_Автотрассировка..."

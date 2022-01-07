@@ -1103,6 +1103,9 @@ msgstr "重なりの除去中..."
 msgid "Adding points at Extrema..."
 msgstr "極値にある点を追加中..."
 
+msgid "Adding points of inflection..."
+msgstr ""
+
 msgid "Rounding to integer..."
 msgstr "座標値を整数に変換中..."
 
@@ -11755,6 +11758,9 @@ msgstr "重複処理(_V)"
 
 msgid "Add E_xtrema"
 msgstr "極大点を追加(_X)"
+
+msgid "Add Points Of Inflection"
+msgstr ""
 
 msgid "Autot_race"
 msgstr "自動トレース(_R)"

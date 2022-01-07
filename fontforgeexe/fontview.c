@@ -2724,7 +2724,7 @@ static void FVMenuAddExtrema(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *U
     FVAddExtrema( (FontViewBase *) GDrawGetUserData(gw) , false);
 }
 
-static void FVMenuAddInflections(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) { /* added by Linus Romer */
+static void FVMenuAddInflections(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) { 
     FVAddInflections( (FontViewBase *) GDrawGetUserData(gw) , true );
 }
 
