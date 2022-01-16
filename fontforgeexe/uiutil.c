@@ -692,9 +692,10 @@ struct ui_interface gdraw_ui_interface = {
     UI_TTFNameIds,
     UI_MSLangString,
     _ImportParamsDlg,
-    _ExportParamsDlg
+    _ExportParamsDlg,
 #ifndef _NO_PYTHON
-    ,_PluginDlg
+    _PluginDlg,
 #endif
+    UI_Ask_Multi
 };
 

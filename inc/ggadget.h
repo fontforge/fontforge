@@ -208,7 +208,26 @@ enum gg_flags { gg_visible=1, gg_enabled=2, gg_pos_in_pixels=4,
 		/* Reuse some flag values for different widgets */
 		gg_file_pulldown=gg_sb_vert, gg_file_multiple = gg_list_multiplesel,
 		gg_text_xim = gg_tabset_scroll,
-		gg_tabset_vert = gg_sb_vert
+		gg_tabset_vert = gg_sb_vert,
+		gg_s1_vert = gg_sb_vert,
+		gg_s1_flowalign = gg_list_alphabetic,
+		gg_s1_right = gg_list_multiplesel,
+		gg_s1_bottom = gg_s1_right,
+		gg_s1_center = gg_list_internal,
+		gg_s1_expand = gg_group_end,
+		gg_flow_vert = gg_s1_vert,
+		gg_flow_right = gg_s1_right,
+		gg_flow_bottom = gg_flow_right,
+		gg_flow_center = gg_s1_center,
+		gg_flow_expand = gg_s1_expand,
+		gg_flow_obottom = gg_list_exactlyone,
+		gg_flow_oright = gg_flow_obottom,
+		gg_flow_ocenter = gg_group_prevlabel,
+		gg_flow_lright = gg_rowcol_hrules,
+		gg_flow_lbottom = gg_dontcopybox,
+		gg_flow_lhcenter = gg_rowcol_displayonly,
+		gg_flow_lvcenter = gg_pos_use0,
+		gg_flow_noalignlabel = gg_tabset_scroll
 };
 
 typedef struct ggadgetdata {
@@ -479,6 +498,16 @@ void GHVBoxFitWindow(GGadget *g);
 void GHVBoxFitWindowCentered(GGadget *g);
 void GHVBoxReflow(GGadget *g);
 
+void GFlowBoxSetPadding(GGadget *g, int vpad, int hpad, int lpad);
+int GGadgetIsGFlowBox(GGadget *g);
+int GFlowBoxGetLabelSize(GGadget *g);
+void GFlowBoxSetLabelSize(GGadget *g, int size);
+void GScroll1BoxSetPadding(GGadget *g, int pad);
+void GScroll1BoxSetSBAlwaysVisible(GGadget *g,int always);
+void _GScroll1BoxGetDesiredSize(GGadget *g,GRect *outer, GRect *inner, int big);
+int GScroll1BoxMinOppoSize(GGadget *g);
+//void GScroll1BoxFitWindow(GGadget *g);
+
 void GMatrixEditSet(GGadget *g,struct matrix_data *data, int rows, int copy_it);
 struct matrix_data *GMatrixEditGet(GGadget *g, int *rows);
 struct matrix_data *_GMatrixEditGet(GGadget *g, int *rows);
@@ -567,6 +596,8 @@ GGadget *GHBoxCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GVBoxCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GHVBoxCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GHVGroupCreate(struct gwindow *base, GGadgetData *gd,void *data);
+GGadget *GFlowBoxCreate(struct gwindow *base, GGadgetData *gd,void *data);
+GGadget *GScroll1BoxCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GMatrixEditCreate(struct gwindow *base, GGadgetData *gd,void *data);
 GGadget *GDrawableCreate(struct gwindow *base, GGadgetData *gd,void *data);
 
