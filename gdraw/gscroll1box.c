@@ -39,7 +39,7 @@ static int GScroll1BoxTime = 500;		/* half a second between scrolls when mouse o
 static GBox scroll1box_box = GBOX_EMPTY; /* Don't initialize here */;
 
 extern GResInfo gmenubar_ri;
-static GResInfo gscroll1box_ri = {
+GResInfo gscroll1box_ri = {
     &gmenubar_ri, &ggadget_ri, NULL, NULL,
     &scroll1box_box,
     NULL,
@@ -49,6 +49,7 @@ static GResInfo gscroll1box_ri = {
     N_("A box used to scroll widgets vertically or horizontally"),
     "GScroll1Box",
     "Gdraw",
+    false,
     false,
     omf_border_type | omf_border_width | omf_padding,
     { bt_none, 0, 1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
@@ -577,7 +578,7 @@ GGadget *GScroll1BoxCreate(struct gwindow *base, GGadgetData *gd, void *data) {
     GScroll1Box *s1b = calloc(1, sizeof(GScroll1Box));
     GGadgetData sub_gd;
 
-    GResEditDoInit(@gscroll1box_ri);
+    GResEditDoInit(&gscroll1box_ri);
 
     for (s1b->count = 0; gd->u.boxelements[s1b->count] != NULL; ++s1b->count);
 

@@ -55,6 +55,7 @@ GResInfo gflowbox_ri = {
     "GFlowBox",
     "Gdraw",
     false,
+    false,
     omf_border_type | omf_border_width | omf_padding,
     { bt_none, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
     GBOX_EMPTY,

@@ -42,7 +42,7 @@ static GBox hvbox_box = GBOX_EMPTY; /* Don't initialize here */
 
 extern GResInfo gflowbox_ri;
 GResInfo ghvgroupbox_ri = {
-    &flowbox_ri, &ggadget_ri, NULL, NULL,
+    &gflowbox_ri, &ggadget_ri, NULL, NULL,
     &hvgroup_box,
     NULL,
     NULL,
