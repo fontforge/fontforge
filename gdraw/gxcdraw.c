@@ -1059,11 +1059,12 @@ int32 _GXPDraw_DoText8(GWindow w, int32 x, int32 y,
 		/* surrogates, not unicode (0xfffe, 0xffff), etc. */
 		memset(&arg->size,0,sizeof(arg->size));
 	    } else {
+		int baseline = pango_layout_iter_get_baseline(iter) / PANGO_SCALE;
 		fm = pango_font_get_metrics(run->item->analysis.font,NULL);
 		arg->size.fas = pango_font_metrics_get_ascent(fm)/PANGO_SCALE;
 		arg->size.fds = pango_font_metrics_get_descent(fm)/PANGO_SCALE;
-		arg->size.as = ink.y + ink.height - arg->size.fds;
-		arg->size.ds = arg->size.fds - ink.y;
+		arg->size.as = baseline - ink.y;
+		arg->size.ds = ink.y + ink.height - baseline;
 		if ( arg->size.ds<0 ) {
 		    --arg->size.as;
 		    arg->size.ds = 0;
