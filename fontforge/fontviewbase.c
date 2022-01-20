@@ -39,7 +39,6 @@
 #include "fvcomposite.h"
 #include "fvfonts.h"
 #include "gfile.h"
-#include "gresource.h"
 #include "groups.h"
 #include "namelist.h"
 #include "psfont.h"

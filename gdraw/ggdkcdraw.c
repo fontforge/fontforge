@@ -171,14 +171,7 @@ static PangoFontDescription *_GGDKDraw_configfont(GWindow w, GFont *font) {
         return NULL;
     }
 
-    if (font->rq.utf8_family_name != NULL) {
-        pango_font_description_set_family(fd, font->rq.utf8_family_name);
-    } else {
-        char *temp = u2utf8_copy(font->rq.family_name);
-        pango_font_description_set_family(fd, temp);
-        free(temp);
-    }
-
+    pango_font_description_set_family(fd, font->rq.utf8_family_name);
     pango_font_description_set_style(fd, (font->rq.style & fs_italic) ?
                                      PANGO_STYLE_ITALIC : PANGO_STYLE_NORMAL);
     pango_font_description_set_variant(fd, (font->rq.style & fs_smallcaps) ?
@@ -1251,17 +1244,22 @@ int GGDKDrawDoText8(GWindow w, int32 x, int32 y, const char *text, int32 cnt, Co
                 // surrogates, not unicode (0xfffe, 0xffff), etc.
                 memset(&arg->size, 0, sizeof(arg->size));
             } else {
+                int baseline = pango_layout_iter_get_baseline(iter) / PANGO_SCALE;
                 fm = pango_font_get_metrics(run->item->analysis.font, NULL);
                 arg->size.fas = pango_font_metrics_get_ascent(fm) / PANGO_SCALE;
                 arg->size.fds = pango_font_metrics_get_descent(fm) / PANGO_SCALE;
-                arg->size.as = ink.y + ink.height - arg->size.fds;
-                arg->size.ds = arg->size.fds - ink.y;
+                // Layout rects have origin in top left corner extending down/right
+                arg->size.as = baseline - ink.y;
+                arg->size.ds = ink.y + ink.height - baseline;
                 if (arg->size.ds < 0) {
+                    Log(LOGDEBUG, "Negative descent fas(%d) fds(%d) as(%d) ds(%d) baseline(%d) ink_x(%d) ink_y(%d) ink_width(%d) ink_height(%d) font(%s %d %d) text(%s)",
+                        arg->size.fas, arg->size.fds, arg->size.as, arg->size.ds,
+                        baseline, ink.x, ink.y, ink.width, ink.height,
+                        fi->rq.utf8_family_name, (int)fi->rq.point_size, (int)fi->rq.weight,
+                        text);
                     --arg->size.as;
                     arg->size.ds = 0;
                 }
-                // In the one case I've looked at fds is one pixel off from rect.y
-                //  I don't know what to make of that
                 pango_font_metrics_unref(fm);
             }
             pango_layout_iter_free(iter);

@@ -29,7 +29,7 @@
 
 #include "fontforgeui.h"
 #include "gkeysym.h"
-#include "gresource.h"
+#include "gresedit.h"
 #include "ustring.h"
 #include "utype.h"
 
@@ -38,106 +38,6 @@
 extern GBox _ggadget_Default_Box;
 #define ACTIVE_BORDER   (_ggadget_Default_Box.active_border)
 #define MAIN_FOREGROUND (_ggadget_Default_Box.main_foreground)
-
-
-static char* SupportedLocale(const char *locale, const char *fullspec, const char *filename) {
-/* If there's additional help files written for other languages, then check */
-/* to see if this local matches the additional help message language. If so */
-/* then report back that there's another language available to use for help */
-/* NOTE: If Docs are not maintained very well, maybe comment-out lang here. */
-    int i;
-    /* list languages in specific to generic order, ie: en_CA, en_GB, en... */
-    static char *supported[] = { "de","ja", NULL }; /* other html lang list */
-
-    for ( i=0; supported[i]!=NULL; ++i ) {
-        if ( strcmp(locale,supported[i])==0 ) {
-            char *pt = strrchr(filename, '/');
-            return smprintf("%s/old/%s/%s", fullspec, supported[i], pt ? pt : filename);
-        }
-    }
-    return NULL;
-}
-
-static char* CheckSupportedLocale(const char *fullspec, const char *filename) {
-/* Add Browser HELP for this local if there's more html docs for this local */
-
-    /* KANOU has provided a japanese translation of the docs */
-    /* Edward Lee is working on traditional chinese docs */
-    const char *loc = getenv("LC_ALL");
-    char buffer[40], *pt;
-
-    if ( loc==NULL ) loc = getenv("LC_CTYPE");
-    if ( loc==NULL ) loc = getenv("LANG");
-    if ( loc==NULL ) loc = getenv("LC_MESSAGES");
-    if ( loc==NULL )
-        return NULL;
-
-    /* first, try checking entire string */
-    strncpy(buffer,loc,sizeof(buffer));
-    buffer[sizeof(buffer)-1] = '\0';
-    pt = SupportedLocale(buffer, fullspec, filename);
-    if (pt) {
-        return pt;
-    }
-
-    /* parse possible suffixes, such as .UTF-8, then try again */
-    if ( (pt=strchr(buffer,'.'))!=NULL ) {
-        *pt = '\0';
-        pt = SupportedLocale(buffer, fullspec, filename);
-        if (pt) {
-            return pt;
-        }
-    }
-
-    /* parse possible suffixes such as _CA, _GB, and try again */
-    if ( (pt=strchr(buffer,'_'))!=NULL ) {
-        *pt = '\0';
-        return SupportedLocale(buffer, fullspec, filename);
-    }
-
-    return NULL;
-}
-
-void help(const char *file, const char *section) {
-    if (!file) {
-        return;
-    } else if (strstr(file, "://")) {
-        g_app_info_launch_default_for_uri(file, NULL, NULL);
-        return;
-    } else if (!section) {
-        section = "";
-    }
-
-    bool launched = false;
-    const char *help = getHelpDir();
-    if (help) {
-        char *path = CheckSupportedLocale(help, file);
-        if (!path) {
-            path = smprintf("%s/%s", help, file);
-            if (!path) {
-                return;
-            }
-        }
-
-        GFile *gfile = g_file_new_for_path(path);
-        free(path);
-
-        if (g_file_query_exists(gfile, NULL)) {
-            gchar* uri = g_file_get_uri(gfile);
-            path = smprintf("%s%s", uri, section);
-            launched = g_app_info_launch_default_for_uri(path, NULL, NULL);
-            g_free(uri);
-            free(path);
-        }
-        g_object_unref(gfile);
-    }
-
-    if (!launched) {
-        char *path = smprintf("https://fontforge.org/docs/%s%s", file, section);
-        g_app_info_launch_default_for_uri(path, NULL, NULL);
-        free(path);
-    }
-}
 
 static void UI_IError(const char *format,...) {
     va_list ap;
@@ -151,7 +51,6 @@ static void UI_IError(const char *format,...) {
 #define MAX_ERR_LINES	400
 static struct errordata {
     char *errlines[MAX_ERR_LINES];
-    GFont *font;
     int fh, as;
     GGadget *vsb;
     GWindow gw, v;
@@ -161,6 +60,8 @@ static struct errordata {
     int start_l, start_c, end_l, end_c;
     int down;
 } errdata;
+
+GResFont errfont = GRESFONT_INIT("400 10pt " SANS_UI_FAMILIES);
 
 static void ErrHide(void) {
     GDrawSetVisible(errdata.gw,false);
@@ -241,6 +142,8 @@ return( false );
 
 static int warnings_e_h(GWindow gw, GEvent *event) {
 
+    if ( errdata.vsb==NULL )
+	return true; // too early
     if (( event->type==et_mouseup || event->type==et_mousedown ) &&
 	    (event->u.mouse.button>=4 && event->u.mouse.button<=7) ) {
 return( GGadgetDispatchEvent(errdata.vsb,event));
@@ -337,7 +240,7 @@ return( ret );
 static void MouseToPos(GEvent *event,int *_l, int *_c) {
     int l,c=0;
 
-    GDrawSetFont(errdata.v,errdata.font);
+    GDrawSetFont(errdata.v,errfont.fi);
     l = event->u.mouse.y/errdata.fh + errdata.offtop;
     if ( l>=errdata.cnt ) {
 	l = errdata.cnt-1;
@@ -395,7 +298,7 @@ return( GGadgetDispatchEvent(errdata.vsb,event));
     switch ( event->type ) {
       case et_expose:
 	  /*GDrawFillRect(gw,&event->u.expose.rect,GDrawGetDefaultBackground(NULL));*/
-	  GDrawSetFont(gw,errdata.font);
+	  GDrawSetFont(gw,errfont.fi);
 	  s_l = errdata.start_l, s_c = errdata.start_c, e_l = errdata.end_l, e_c = errdata.end_c;
 	  if ( s_l>e_l ) {
 		  s_l = e_l; s_c = e_c; e_l = errdata.start_l; e_c = errdata.start_c;
@@ -473,7 +376,6 @@ return( true );
 
 static void CreateErrorWindow(void) {
     GWindowAttrs wattrs;
-    FontRequest rq;
     GRect pos,size;
     int as, ds, ld;
     GWindow gw;
@@ -495,13 +397,8 @@ static void CreateErrorWindow(void) {
     pos.y = size.height - pos.height - 30;
     errdata.gw = gw = GDrawCreateTopWindow(NULL,&pos,warnings_e_h,&errdata,&wattrs);
 
-    memset(&rq,0,sizeof(rq));
-    rq.utf8_family_name = SANS_UI_FAMILIES;
-    rq.point_size = 10;
-    rq.weight = 400;
-    errdata.font = GDrawInstanciateFont(NULL,&rq);
-    errdata.font = GResourceFindFont("Warnings.Font",errdata.font);
-    GDrawWindowFontMetrics(errdata.gw,errdata.font,&as,&ds,&ld);
+    MiscWinInit();
+    GDrawWindowFontMetrics(errdata.gw,errfont.fi,&as,&ds,&ld);
     errdata.as = as;
     errdata.fh = as+ds;
 

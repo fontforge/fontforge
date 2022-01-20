@@ -33,6 +33,7 @@
 #include "fvfonts.h"
 #include "gfile.h"
 #include "gkeysym.h"
+#include "gresedit.h"
 #include "lookups.h"
 #include "sfd.h"
 #include "sfundo.h"
@@ -56,6 +57,9 @@ void SFUntickAllPSTandKern(SplineFont *sf);
 int kernsLength( KernPair *kp );
 
 static int DEBUG = 1;
+GResFont kernformat_font = GRESFONT_INIT("400 12pt " SANS_UI_FAMILIES);
+GResFont kernformat_boldfont = GRESFONT_INIT("700 12pt " SANS_UI_FAMILIES);
+Color fi_originlinescol = 0x808080;
 
 /* ************************************************************************** */
 /* ******************************* UI routines ****************************** */
@@ -3437,16 +3441,16 @@ return;		/* Couldn't parse the numeric kerning info */
     } else if ( pstkd->sub->lookup->lookup_flags&pst_r2l ) {
 	xorig = 9*size.width/10;
 	yorig = pstkd->sf->ascent*size.height/(pstkd->sf->ascent+pstkd->sf->descent);
-	GDrawDrawLine(pixmap,xorig+vr1.h_adv_off-vr1.xoff,0,xorig+vr1.h_adv_off-vr1.xoff,size.height, 0x808080);
-	GDrawDrawLine(pixmap,0,yorig,size.width,yorig, 0x808080);
+	GDrawDrawLine(pixmap,xorig+vr1.h_adv_off-vr1.xoff,0,xorig+vr1.h_adv_off-vr1.xoff,size.height, fi_originlinescol);
+	GDrawDrawLine(pixmap,0,yorig,size.width,yorig, fi_originlinescol);
 	xorig /= mag; yorig /= mag;
 	PSTKern_DrawGlyph(pixmap,xorig-bc1->width,yorig-vr1.yoff, bc1, mag);
 	PSTKern_DrawGlyph(pixmap,xorig-bc1->width-bc2->width-vr2.h_adv_off-vr2.xoff-vr1.xoff,yorig-vr2.yoff, bc2, mag);
     } else {
 	xorig = size.width/10;
 	yorig = pstkd->sf->ascent*size.height/(pstkd->sf->ascent+pstkd->sf->descent);
-	GDrawDrawLine(pixmap,xorig,0,xorig,size.height, 0x808080);
-	GDrawDrawLine(pixmap,0,yorig,size.width,yorig, 0x808080);
+	GDrawDrawLine(pixmap,xorig,0,xorig,size.height, fi_originlinescol);
+	GDrawDrawLine(pixmap,0,yorig,size.width,yorig, fi_originlinescol);
 	xorig /= mag; yorig /= mag;
 	PSTKern_DrawGlyph(pixmap,xorig+vr1.xoff,yorig-vr1.yoff, bc1, mag);
 	PSTKern_DrawGlyph(pixmap,xorig+bc1->width+vr1.h_adv_off+vr2.xoff,yorig-vr2.yoff, bc2, mag);
@@ -5635,15 +5639,16 @@ return( true );
 return( GGadgetDispatchEvent(active_fv->vsb,event));
     }
 
+    Color fg = GDrawGetDefaultForeground(NULL);
     switch ( event->type ) {
       case et_expose:
 	FVDrawInfo(active_fv,pixmap,event);
 	GDrawSetFont(pixmap, kf->first_fv->notactive? kf->plain : kf->bold );
 	GDrawDrawText8(pixmap,10,kf->mbh+kf->first_fv->infoh+kf->as,
-		_("Select glyphs for the first part of the kern pair"),-1,0x000000);
+		_("Select glyphs for the first part of the kern pair"),-1,fg);
 	GDrawSetFont(pixmap, kf->second_fv->notactive? kf->plain : kf->bold );
 	GDrawDrawText8(pixmap,10,kf->label2_y+kf->as,
-		_("Select glyphs for the second part of the kern pair"),-1,0x000000);
+		_("Select glyphs for the second part of the kern pair"),-1,fg);
       break;
       case et_char:
 	kf_charEvent(&kf->base,event);
@@ -5827,9 +5832,7 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
     struct kf_dlg kf;
     int i,j, guts_row;
     /* Returns are 0=>Pairs, 1=>Classes, 2=>Cancel */
-    FontRequest rq;
     int as, ds, ld;
-    static GFont *plainfont = NULL, *boldfont=NULL;
 
     if ( sub->separation==0 && !sub->kerning_by_touch ) {
 	sub->separation = sf->width_separation;
@@ -5863,19 +5866,8 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
     pos.height = 100;
     kf.gw = GDrawCreateTopWindow(NULL,&pos,kf_e_h,&kf,&wattrs);
 
-    if ( plainfont==NULL ) {
-	memset(&rq,0,sizeof(rq));
-	rq.utf8_family_name = SANS_UI_FAMILIES;
-	rq.point_size = 12;
-	rq.weight = 400;
-	plainfont = GDrawInstanciateFont(NULL,&rq);
-	plainfont = GResourceFindFont("KernFormat.Font",plainfont);
-	GDrawDecomposeFont(plainfont, &rq);
-	rq.weight = 700;
-	boldfont = GDrawInstanciateFont(NULL,&rq);
-	boldfont = GResourceFindFont("KernFormat.BoldFont",boldfont);
-    }
-    kf.plain = plainfont; kf.bold = boldfont;
+    kf.plain = kernformat_font.fi;
+    kf.bold = kernformat_boldfont.fi;
     GDrawWindowFontMetrics(kf.gw,kf.plain,&as,&ds,&ld);
     kf.fh = as+ds; kf.as = as;
 

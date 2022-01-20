@@ -33,6 +33,7 @@
 #include "gfile.h"
 #include "gkeysym.h"
 #include "glyphcomp.h"
+#include "gresedit.h"
 #include "lookups.h"
 #include "splinefill.h"
 #include "splinesaveafm.h"
@@ -48,6 +49,11 @@ extern int _GScrollBar_Width;
 
 /* This file contains routines to build a dialog showing GPOS/GSUB/morx */
 /*  tables and their contents */
+
+GResFont showatt_font = GRESFONT_INIT("400 12pt " SANS_UI_FAMILIES);
+GResFont showatt_monofont = GRESFONT_INIT("400 12pt " MONO_UI_FAMILIES);
+Color showatt_selcol = 0xff0000;
+Color showatt_glyphnamecol = 0x0000ff;
 
 struct att_dlg;
 struct node {
@@ -2250,6 +2256,7 @@ static void AttExpose(struct att_dlg *att,GWindow pixmap,GRect *rect) {
     GDrawFillRect(pixmap,rect,GDrawGetDefaultBackground(NULL));
     GDrawSetLineWidth(pixmap,0);
 
+    Color deffg = GDrawGetDefaultForeground(NULL);
     r.height = r.width = att->as;
     y = (rect->y/att->fh) * att->fh + att->as;
     depth=0;
@@ -2258,7 +2265,7 @@ static void AttExpose(struct att_dlg *att,GWindow pixmap,GRect *rect) {
     while ( node!=NULL ) {
 	r.y = y-att->as+1;
 	r.x = 5+8*depth - att->off_left;
-	fg = node==att->current ? 0xff0000 : 0x000000;
+	fg = node==att->current ? showatt_selcol : deffg;
 	if ( node->build || node->children ) {
 	    GDrawDrawRect(pixmap,&r,fg);
 	    GDrawDrawLine(pixmap,r.x+2,r.y+att->as/2,r.x+att->as-2,r.y+att->as/2,
@@ -2279,7 +2286,7 @@ static void AttExpose(struct att_dlg *att,GWindow pixmap,GRect *rect) {
 	else {
 	    int len;
 	    len = GDrawDrawText8(pixmap,r.x+r.width+5,y,node->label,spt-node->label,fg);
-	    len += GDrawDrawText8(pixmap,r.x+r.width+5+len,y,spt,ept-spt,0x0000ff);
+	    len += GDrawDrawText8(pixmap,r.x+r.width+5+len,y,spt,ept-spt,showatt_glyphnamecol);
 	    GDrawDrawText8(pixmap,r.x+r.width+5+len,y,ept,-1,fg);
 	}
 	if ( node->monospace )
@@ -2771,12 +2778,10 @@ static void ShowAttCreateDlg(struct att_dlg *att, SplineFont *sf, int which,
 	char *win_title) {
     GRect pos;
     GWindowAttrs wattrs;
-    FontRequest rq;
     int as, ds, ld;
     GGadgetCreateData gcd[5];
     GTextInfo label[4];
     int sbsize = GDrawPointsToPixels(NULL,_GScrollBar_Width);
-    static GFont *monofont=NULL, *propfont=NULL;
 
     if ( sf->cidmaster ) sf = sf->cidmaster;
 
@@ -2797,21 +2802,8 @@ static void ShowAttCreateDlg(struct att_dlg *att, SplineFont *sf, int which,
     pos.height = GDrawPointsToPixels(NULL,300);
     att->gw = GDrawCreateTopWindow(NULL,&pos,att_e_h,att,&wattrs);
 
-    if ( propfont==NULL ) {
-	memset(&rq,'\0',sizeof(rq));
-	rq.utf8_family_name = SANS_UI_FAMILIES;
-	rq.point_size = 12;
-	rq.weight = 400;
-	propfont = GDrawInstanciateFont(att->gw,&rq);
-	propfont = GResourceFindFont("ShowATT.Font",propfont);
-
-	GDrawDecomposeFont(propfont, &rq);
-	rq.utf8_family_name = MONO_UI_FAMILIES;	/* I want to show tabular data sometimes */
-	monofont = GDrawInstanciateFont(att->gw,&rq);
-	monofont = GResourceFindFont("ShowATT.MonoFont",monofont);
-    }
-    att->font = propfont;
-    att->monofont = monofont;
+    att->font = showatt_font.fi;
+    att->monofont = showatt_monofont.fi;
     GDrawWindowFontMetrics(att->gw,att->font,&as,&ds,&ld);
     att->fh = as+ds; att->as = as;
 
@@ -2821,7 +2813,7 @@ static void ShowAttCreateDlg(struct att_dlg *att, SplineFont *sf, int which,
     att->page_width = pos.width-sbsize;
     wattrs.mask = wam_events|wam_cursor/*|wam_bordwidth|wam_bordcol*/;
     wattrs.border_width = 1;
-    wattrs.border_color = 0x000000;
+    wattrs.border_color = GDrawGetDefaultForeground(NULL);
     pos.x = 0; pos.y = 0;
     pos.width -= sbsize; pos.height = att->lines_page*att->fh;
     att->v = GWidgetCreateSubWindow(att->gw,&pos,attv_e_h,att,&wattrs);

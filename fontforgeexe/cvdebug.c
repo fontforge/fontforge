@@ -30,7 +30,7 @@
 #include "cvundoes.h"
 #include "fontforgeui.h"
 #include "gkeysym.h"
-#include "gresource.h"
+#include "gresedit.h"
 #include "splineorder2.h"
 #include "splineutil.h"
 #include "ustring.h"
@@ -67,20 +67,11 @@ void CVDebugPointPopup(CharView *cv) {
 # define PPEMX(exc)	((exc)->size->root.metrics.x_ppem)
 # define PPEMY(exc)	((exc)->size->root.metrics.y_ppem)
 
-static Color rasterbackcol = 0xffffff;
-
-static int debuggercolsinited = false;
+GResFont debugview_font = GRESFONT_INIT("400 12px " SANS_UI_FAMILIES);
+Color dv_rasterbackcol = 0xffffff;
 
 static void DebugColInit( void ) {
-    GResStruct debugcolors[] = {
-	{ "Background", rt_color, &rasterbackcol, NULL, 0 },
-	GRESSTRUCT_EMPTY
-    };
-    if ( debuggercolsinited )
-return;
-    rasterbackcol = GDrawGetDefaultBackground(screen_display);
-    GResourceFind( debugcolors, "DVRaster.");
-    debuggercolsinited = true;
+    BVColInit();
 }
 
 static int DVBpCheck(struct instrinfo *ii, int ip) {
@@ -108,7 +99,7 @@ static void DVRasterExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     GRect r;
 
     GDrawGetSize(dv->raster,&r);
-    GDrawFillRect(pixmap,&event->u.expose.rect,rasterbackcol);
+    GDrawFillRect(pixmap,&event->u.expose.rect,dv_rasterbackcol);
     xem = cv->ft_ppemx;
     yem = cv->ft_ppemy;
     x = (r.width - xem)/2;
@@ -131,12 +122,12 @@ static void DVRasterExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 	if ( cv->raster->num_greys<=2 ) {
 	    base.image_type = it_mono;
 	    clut.clut_len = 2;
-	    clut.clut[0] = rasterbackcol;
+	    clut.clut[0] = dv_rasterbackcol;
 	    clut.trans_index = 0;
 	} else {
 	    base.image_type = it_index;
 	    clut.clut_len = 256;
-	    clut.clut[0] = rasterbackcol;
+	    clut.clut[0] = dv_rasterbackcol;
 	    for ( i=1; i<256; ++i ) {
 		clut.clut[i] = ( (COLOR_RED(clut.clut[0])*(0xff-i)/0xff)<<16 ) |
 			( (COLOR_GREEN(clut.clut[0])*(0xff-i)/0xff)<<8 ) |
@@ -2056,14 +2047,12 @@ void CVDebugReInit(CharView *cv,int restart_debug,int dbg_fpgm) {
     GWindowAttrs wattrs;
     GRect pos, size;
     TT_ExecContext exc;
-    FontRequest rq;
     int as,ds,ld;
     GGadgetCreateData gcd[9];
     GTextInfo label[9];
     extern int _GScrollBar_Width;
     double scalex, scaley;
     int i;
-    static GFont *monofont = NULL;
 
     scalex = (cv->b.sc->parent->ascent+cv->b.sc->parent->descent)/(rint(cv->ft_pointsizex*cv->ft_dpi/72.0)) / (1<<6);
     scaley = (cv->b.sc->parent->ascent+cv->b.sc->parent->descent)/(rint(cv->ft_pointsizey*cv->ft_dpi/72.0)) / (1<<6);
@@ -2198,15 +2187,7 @@ return;
 	dv->ii.v = GWidgetCreateSubWindow(dv->dv,&pos,ii_v_e_h,&dv->ii,&wattrs);
 	dv->ii.instrdata = &dv->id;
 
-	if ( monofont==NULL ) {
-	    memset(&rq,0,sizeof(rq));
-	    rq.utf8_family_name = MONO_UI_FAMILIES;
-	    rq.point_size = -12;
-	    rq.weight = 400;
-	    monofont = GDrawInstanciateFont(cv->gw,&rq);
-	    monofont = GResourceFindFont("DebugView.Font",monofont);
-	}
-	dv->ii.gfont = monofont;
+	dv->ii.gfont = debugview_font.fi;
 	GDrawSetFont(dv->ii.v,dv->ii.gfont);
 	GDrawWindowFontMetrics(dv->ii.v,dv->ii.gfont,&as,&ds,&ld);
 	dv->ii.as = as+1;

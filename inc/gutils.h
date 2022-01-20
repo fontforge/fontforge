@@ -36,5 +36,6 @@
 extern const char *GetAuthor(void);
 extern time_t GetTime(void);
 extern time_t GetST_MTime(struct stat s);
+extern void help(const char *filename, const char *section);
 
 #endif /* FONTFORGE_GUTILS_H */

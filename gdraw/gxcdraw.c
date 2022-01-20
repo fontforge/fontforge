@@ -972,13 +972,7 @@ PangoFontDescription *_GXPDraw_configfont(GWindow w, GFont *font) {
 return( *fdbase );
     *fdbase = fd = pango_font_description_new();
 
-    if ( font->rq.utf8_family_name != NULL )
-	pango_font_description_set_family(fd,font->rq.utf8_family_name);
-    else {
-	char *temp = u2utf8_copy(font->rq.family_name);
-	pango_font_description_set_family(fd,temp);
-	free(temp);
-    }
+    pango_font_description_set_family(fd,font->rq.utf8_family_name);
     pango_font_description_set_style(fd,(font->rq.style&fs_italic)?
 	    PANGO_STYLE_ITALIC:
 	    PANGO_STYLE_NORMAL);
@@ -1065,11 +1059,12 @@ int32 _GXPDraw_DoText8(GWindow w, int32 x, int32 y,
 		/* surrogates, not unicode (0xfffe, 0xffff), etc. */
 		memset(&arg->size,0,sizeof(arg->size));
 	    } else {
+		int baseline = pango_layout_iter_get_baseline(iter) / PANGO_SCALE;
 		fm = pango_font_get_metrics(run->item->analysis.font,NULL);
 		arg->size.fas = pango_font_metrics_get_ascent(fm)/PANGO_SCALE;
 		arg->size.fds = pango_font_metrics_get_descent(fm)/PANGO_SCALE;
-		arg->size.as = ink.y + ink.height - arg->size.fds;
-		arg->size.ds = arg->size.fds - ink.y;
+		arg->size.as = baseline - ink.y;
+		arg->size.ds = ink.y + ink.height - baseline;
 		if ( arg->size.ds<0 ) {
 		    --arg->size.as;
 		    arg->size.ds = 0;

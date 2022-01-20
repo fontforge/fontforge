@@ -36,7 +36,7 @@
 #include "ffglib.h"
 #include "fontforgeui.h"
 #include "gfile.h"
-#include "gresource.h"
+#include "gresedit.h"
 #include "hotkeys.h"
 #include "lookups.h"
 #include "prefs.h"
@@ -154,20 +154,34 @@ struct delayed_event {
 };
 
 extern GImage splashimage_legacy;
-static GImage *splashimagep;
 static GWindow splashw;
 static GTimer *autosave_timer, *splasht;
-static GFont *splash_font, *splash_italic, *splash_mono;
+GResFont splash_font = GRESFONT_INIT("400 10pt " SERIF_UI_FAMILIES);
+GResFont splash_monofont = GRESFONT_INIT("400 10pt " MONO_UI_FAMILIES);
+GResFont splash_italicfont = GRESFONT_INIT("400 10pt italic " SERIF_UI_FAMILIES);
+GResImage splashresimage = GRESIMAGE_INIT("splash2019.png");
+Color splashbg = 0xffffff;
+Color splashfg = 0x000000;
+GImage *splashimagep;
 static int as,fh, linecnt;
 static unichar_t msg[546];
 static unichar_t *lines[32], *is, *ie;
 
 static void SplashImageInit() {
+    MiscWinInit();
     if (splashimagep == NULL)
-        splashimagep = GGadgetImageCache("splash2020.png");
+        splashimagep = GResImageGetImage(&splashresimage);
     if (splashimagep == NULL)
 	splashimagep = &splashimage_legacy;
     return;
+}
+
+void *_SplashResImageSet(char *res, void *def) {
+    // Image was already set; this is a hook for side effects
+    GImage *i = GResImageGetImage((GResImage *)def);
+    if ( i!=NULL )
+	splashimagep = i;
+    return NULL;
 }
 
 void ShowAboutScreen(void) {
@@ -192,7 +206,7 @@ static void SplashLayout() {
 
     u_strcpy(msg, utf82u_copy("As he drew closer to completing his book on Renaissance printing (The Craft of Printing and the Publication of Shakespeare’s Works), George Williams IV suggested that his son, George Williams V, write a chapter on computer typography. FontForge—previously called PfaEdit—was his response."));
 
-    GDrawSetFont(splashw,splash_font);
+    GDrawSetFont(splashw,splash_font.fi);
     linecnt = 0;
     lines[linecnt++] = msg-1;
     for ( start = msg; *start!='\0'; start = pt ) {
@@ -389,26 +403,26 @@ static int splash_e_h(GWindow gw, GEvent *event) {
 	GDrawPushClip(gw,&event->u.expose.rect,&old);
 	GDrawDrawImage(gw,splashimagep,NULL,0,0);
 	if ((event->u.expose.rect.y+event->u.expose.rect.height) > splashimagep->u.image->height) {
-	    GDrawSetFont(gw,splash_font);
+	    GDrawSetFont(gw,splash_font.fi);
 	    y = splashimagep->u.image->height + as + fh/2;
 	    for ( i=1; i<linecnt; ++i ) {
 	    // The number 10 comes from lines[linecnt] created in the function SplashLayout. It refers
 	    // to the line at which we want to make the font monospace. If you add or remove a line, 
 	    // you will need to change this.
 	    if (i == 10) {
-		    x = 8+GDrawDrawText(gw,8,y,lines[i-1]+1,0,0x000000);
-		    GDrawSetFont(gw,splash_mono);
-	    GDrawDrawText(gw,8,y,lines[i-1]+1,lines[i]-lines[i-1]-1,0x000000);
+		    x = 8+GDrawDrawText(gw,8,y,lines[i-1]+1,0,splashfg);
+		    GDrawSetFont(gw,splash_monofont.fi);
+	    GDrawDrawText(gw,8,y,lines[i-1]+1,lines[i]-lines[i-1]-1,splashfg);
 	    } else if ( is>=lines[i-1]+1 && is<lines[i] ) {
-		    x = 8+GDrawDrawText(gw,8,y,lines[i-1]+1,is-lines[i-1]-1,0x000000);
-		    GDrawSetFont(gw,splash_italic);
-		    GDrawDrawText(gw,x,y,is,lines[i]-is,0x000000);
+		    x = 8+GDrawDrawText(gw,8,y,lines[i-1]+1,is-lines[i-1]-1,splashfg);
+		    GDrawSetFont(gw,splash_italicfont.fi);
+		    GDrawDrawText(gw,x,y,is,lines[i]-is,splashfg);
 		} else if ( ie>=lines[i-1]+1 && ie<lines[i] ) {
-		    x = 8+GDrawDrawText(gw,8,y,lines[i-1]+1,ie-lines[i-1]-1,0x000000);
-		    GDrawSetFont(gw,splash_font);
-		    GDrawDrawText(gw,x,y,ie,lines[i]-ie,0x000000);
+		    x = 8+GDrawDrawText(gw,8,y,lines[i-1]+1,ie-lines[i-1]-1,splashfg);
+		    GDrawSetFont(gw,splash_font.fi);
+		    GDrawDrawText(gw,x,y,ie,lines[i]-ie,splashfg);
 		} else
-		    GDrawDrawText(gw,8,y,lines[i-1]+1,lines[i]-lines[i-1]-1,0x000000);
+		    GDrawDrawText(gw,8,y,lines[i-1]+1,lines[i]-lines[i-1]-1,splashfg);
 		y += fh;
 	    }
 	}
@@ -607,7 +621,6 @@ int fontforge_main( int argc, char **argv ) {
     GRect pos;
     GWindowAttrs wattrs;
     char *display = NULL;
-    FontRequest rq;
     int ds, ld;
     int openflags=0;
     int doopen=0, quit_request=0;
@@ -886,7 +899,7 @@ int fontforge_main( int argc, char **argv ) {
     wattrs.cursor = ct_pointer;
     wattrs.utf8_window_title = "FontForge";
     wattrs.border_width = 2;
-    wattrs.background_color = 0xffffff;
+    wattrs.background_color = splashbg;
 #ifdef FONTFORGE_CAN_USE_GDK
     wattrs.is_dlg = true;
 #endif
@@ -906,19 +919,7 @@ exit( 0 );
 	splashw = GDrawCreateTopWindow(NULL,&pos,splash_e_h,NULL,&wattrs);
     }
 
-    memset(&rq,0,sizeof(rq));
-    rq.utf8_family_name = SERIF_UI_FAMILIES;
-    rq.point_size = 10;
-    rq.weight = 400;
-    splash_font = GDrawInstanciateFont(NULL,&rq);
-    splash_font = GResourceFindFont("Splash.Font",splash_font);
-    GDrawDecomposeFont(splash_font, &rq);
-    splash_mono = GDrawInstanciateFont(NULL,&rq);
-    splash_mono = GResourceFindFont("GTextField.Font",splash_mono);
-    rq.style = fs_italic;
-    splash_italic = GDrawInstanciateFont(NULL,&rq);
-    splash_italic = GResourceFindFont("Splash.ItalicFont",splash_italic);
-    GDrawSetFont(splashw,splash_font);
+    GDrawSetFont(splashw,splash_font.fi);
 
     SplashLayout();
     localsplash = splash;
@@ -930,7 +931,7 @@ exit( 0 );
     // The below call will initialize the fontconfig cache if required.
     // That can take a while the first time it happens.
     //
-   GDrawWindowFontMetrics(splashw,splash_font,&as,&ds,&ld);
+   GDrawWindowFontMetrics(splashw,splash_font.fi,&as,&ds,&ld);
    fh = as+ds+ld;
 
     if ( AutoSaveFrequency>0 )

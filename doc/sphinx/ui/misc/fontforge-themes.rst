@@ -1,16 +1,8 @@
 FontForge color schemes
 =======================
 
-The following are some suggestions for color schemes. You simply copy these into
-your ~/.Xdefaults file and then run
-
-.. code-block:: default
-   :name: fontforge-themes.shell
-
-   $ xrdb ~/.Xdefaults
-
-For more information see the :doc:`X Resources page <xres>`.
-
+The following are some suggestions for color schemes.  For more information see
+the :doc:`Appearance Editor <xres>` page.
 
 Grey
 ----

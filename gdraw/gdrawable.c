@@ -30,15 +30,13 @@
 #include "gdraw.h"
 #include "ggadgetP.h"
 #include "gkeysym.h"
-#include "gresource.h"
 #include "gwidget.h"
 
 static GBox gdrawable_box = GBOX_EMPTY; /* Don't initialize here */
-static FontInstance *gdrawable_font = NULL;
-static int gdrawable_inited = false;
 
-static GResInfo gdrawable_ri = {
-    NULL, &ggadget_ri, NULL,NULL,
+extern GResInfo gtabset_ri;
+GResInfo gdrawable_ri = {
+    &gtabset_ri, &ggadget_ri, NULL,NULL,
     &gdrawable_box,
     NULL,
     NULL,
@@ -48,23 +46,14 @@ static GResInfo gdrawable_ri = {
     "GDrawable",
     "Gdraw",
     false,
+    false,
     omf_border_width|omf_padding|omf_border_type,
-    NULL,
+    { bt_none, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
     GBOX_EMPTY,
     NULL,
     NULL,
     NULL
 };
-
-static void GDrawableInit() {
-
-    GGadgetInit();
-    _GGadgetCopyDefaultBox(&gdrawable_box);
-    gdrawable_box.border_width = gdrawable_box.padding = 0;
-    gdrawable_box.border_type = bt_none;
-    gdrawable_font = _GGadgetInitDefaultBox("GDrawable.",&gdrawable_box,NULL);
-    gdrawable_inited = true;
-}
 
 static int gdrawable_expose(GWindow pixmap, GGadget *g, GEvent *event) {
     GRect old;
@@ -225,8 +214,7 @@ GGadget *GDrawableCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     GRect r;
     GWindowAttrs childattrs;
 
-    if ( !gdrawable_inited )
-	GDrawableInit();
+    GResEditDoInit(&gdrawable_ri);
     gdr->g.funcs = &gdrawable_funcs;
     _GGadget_Create(&gdr->g,base,gd,data,&gdrawable_box);
 
@@ -272,11 +260,4 @@ return( &gdr->g );
 GWindow GDrawableGetWindow(GGadget *g) {
     GDrawable *gd = (GDrawable *) g;
 return( gd->gw );
-}
-
-GResInfo *_GDrawableRIHead(void) {
-
-    if ( !gdrawable_inited )
-	GDrawableInit();
-return( &gdrawable_ri );
 }

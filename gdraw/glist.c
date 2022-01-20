@@ -478,7 +478,7 @@ return( false );
 	if ( y+gl->hmax > event->u.expose.rect.y )
 	    y += GTextInfoDraw(pixmap,g->inner.x-gl->xoff,y,gl->ti[l],
 		    gl->font,gl->ti[l]->disabled?dfg:fg,g->box->active_border,
-		    ymax);
+		    ymax, -1, -1);
 	else if ( gl->sameheight )
 	    y += gl->hmax;
 	else
@@ -950,8 +950,7 @@ struct gfuncs GList_funcs = {
 };
 
 static GBox list_box = GBOX_EMPTY; /* Don't initialize here */;
-static FontInstance *list_font = NULL;
-static int glist_inited = false;
+GResFont list_font = GRESFONT_INIT("400 10pt " SANS_UI_FAMILIES);
 
 static GTextInfo list_choices[] = {
     { (unichar_t *) "1", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
@@ -959,15 +958,16 @@ static GTextInfo list_choices[] = {
     { (unichar_t *) "3", NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     GTEXTINFO_EMPTY
 };
-static GGadgetCreateData list_gcd[] = {
+GGadgetCreateData list_gcd[] = {
     { GListCreate, { { 0, 0, 0, 36 }, NULL, 0, 0, 0, 0, 0, &list_choices[0], { list_choices }, gg_visible, NULL, NULL }, NULL, NULL },
     { GListCreate, { { 0, 0, 0, 36 }, NULL, 0, 0, 0, 0, 0, &list_choices[0], { list_choices }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL }
 };
 static GGadgetCreateData *tarray[] = { GCD_Glue, &list_gcd[0], GCD_Glue, &list_gcd[1], GCD_Glue, NULL, NULL };
 static GGadgetCreateData listhvbox =
     { GHVGroupCreate, { { 2, 2, 0, 0 }, NULL, 0, 0, 0, 0, 0, NULL, { (GTextInfo *) tarray }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL };
-static GResInfo glist_ri = {
-    NULL, &ggadget_ri,NULL, NULL,
+extern GResInfo gscrollbar_ri;
+GResInfo glist_ri = {
+    &gscrollbar_ri, &ggadget_ri,NULL, NULL,
     &list_box,
     &list_font,
     &listhvbox,
@@ -977,20 +977,14 @@ static GResInfo glist_ri = {
     "GList",
     "Gdraw",
     false,
+    false,
     box_foreground_border_outer,
-    NULL,
+    GBOX_EMPTY,
     GBOX_EMPTY,
     NULL,
     NULL,
     NULL
 };
-
-static void GListInit() {
-    _GGadgetCopyDefaultBox(&list_box);
-    list_box.flags |= box_foreground_border_outer;
-    list_font = _GGadgetInitDefaultBox("GList.",&list_box,NULL);
-    glist_inited = true;
-}
 
 static void GListFit(GList *gl) {
     int bp = GBoxBorderWidth(gl->g.base,gl->g.box);
@@ -1010,11 +1004,10 @@ static void GListFit(GList *gl) {
 static GList *_GListCreate(GList *gl, struct gwindow *base, GGadgetData *gd,void *data, GBox *def) {
     int same;
 
-    if ( !glist_inited )
-	GListInit();
+    GResEditDoInit(&glist_ri);
     gl->g.funcs = &GList_funcs;
     _GGadget_Create(&gl->g,base,gd,data,def);
-    gl->font = list_font;
+    gl->font = list_font.fi;
     gl->g.takes_input = gl->g.takes_keyboard = true; gl->g.focusable = true;
 
     if ( !(gd->flags & gg_list_internal ) ) {
@@ -1095,14 +1088,13 @@ static void GListPopupFigurePos(GGadget *owner,GTextInfo **ti,GRect *pos) {
     int bp;
     GPoint pt;
 
-    if ( !glist_inited )
-	GListInit();
+    GResEditDoInit(&glist_ri);
     GDrawGetSize(GDrawGetRoot(GDrawGetDisplayOfWindow(owner->base)),&rootsize);
     maxh = 2*rootsize.height/3;
-    width = GTextInfoGetMaxWidth(owner->base,ti,list_font);
+    width = GTextInfoGetMaxWidth(owner->base,ti,list_font.fi);
     height = 0;
     for ( i=0; height<maxh && (ti[i]->text!=NULL || ti[i]->image!=NULL || ti[i]->line); ++i )
-	height += GTextInfoGetHeight(owner->base,ti[i],list_font);
+	height += GTextInfoGetHeight(owner->base,ti[i],list_font.fi);
     if ( ti[i]->text!=NULL || ti[i]->image!=NULL || ti[i]->line )	/* Need a scroll bar if more */
 	width += GDrawPointsToPixels(owner->base,_GScrollBar_Width) +
 		GDrawPointsToPixels(owner->base,1);
@@ -1203,15 +1195,4 @@ void GListSetSBAlwaysVisible(GGadget *g,int always) {
 
 void GListSetPopupCallback(GGadget *g,void (*callback)(GGadget *,int)) {
     ((GList *) g)->popup_callback = callback;
-}
-
-GResInfo *_GListRIHead(void) {
-    int as,ds,ld;
-
-    if ( !glist_inited )
-	GListInit();
-    /* bp = GBoxBorderWidth(GDrawGetRoot(NULL),&list_box);*/	/* This gives bizarre values */
-    GDrawWindowFontMetrics(GDrawGetRoot(NULL),list_font,&as, &ds, &ld);	/* I don't have a window yet... */
-    list_gcd[0].gd.pos.height = list_gcd[1].gd.pos.height = 2*(as+ds)+4;
-return( &glist_ri );
 }

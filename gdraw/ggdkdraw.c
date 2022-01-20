@@ -543,7 +543,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
 
     // Set background
     if (!(wattrs->mask & wam_backcol) || wattrs->background_color == COLOR_DEFAULT) {
-        wattrs->background_color = gdisp->def_background;
+        wattrs->background_color = _GDraw_res_bg;
     }
     nw->ggc->bg = wattrs->background_color;
     GGDKDrawSetWindowBackground((GWindow)nw, wattrs->background_color);
@@ -678,7 +678,7 @@ static GWindow _GGDKDraw_NewPixmap(GDisplay *disp, GWindow similar, uint16 width
         free(gw);
         return NULL;
     }
-    gw->ggc->bg = gdisp->def_background;
+    gw->ggc->bg = _GDraw_res_bg;
     width &= 0x7fff; // We're always using a cairo surface...
 
     gw->display = gdisp;
@@ -2441,25 +2441,19 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *UNUSED(programname)) 
     gdisp->selinfo[sn_user1].sel_atom = gdk_atom_intern_static_string("PRIMARY");
     gdisp->selinfo[sn_user2].sel_atom = gdk_atom_intern_static_string("PRIMARY");
 
-    bool tbf = false, mxc = false;
-    int user_res = 0;
-    GResStruct res[] = {
-        {.resname = "MultiClickTime", .type = rt_int, .val = &gdisp->bs.double_time},
-        {.resname = "MultiClickWiggle", .type = rt_int, .val = &gdisp->bs.double_wiggle},
-        {.resname = "SelectionNotifyTimeout", .type = rt_int, .val = &gdisp->sel_notify_timeout},
-        {.resname = "TwoButtonFixup", .type = rt_bool, .val = &tbf},
-        {.resname = "MacOSXCmd", .type = rt_bool, .val = &mxc},
-        {.resname = "ScreenResolution", .type = rt_int, .val = &user_res},
-        {.resname = NULL},
-    };
-    GResourceFind(res, NULL);
-    gdisp->twobmouse_win = tbf;
-    gdisp->macosx_cmd = mxc;
-
-    // Now finalise the resolution
-    if (user_res > 0) {
-        gdisp->res = user_res;
+    GDrawResourceFind();
+    gdisp->bs.double_time = _GDraw_res_multiclicktime;
+    gdisp->bs.double_wiggle = _GDraw_res_multiclickwiggle;
+    gdisp->sel_notify_timeout = _GDraw_res_selnottime;
+    gdisp->macosx_cmd = _GDraw_res_macosxcmd;
+    gdisp->twobmouse_win = _GDraw_res_twobuttonfixup;
+    if (_GDraw_res_res != 0) {
+        gdisp->res = _GDraw_res_res;
     }
+    if (_GDraw_res_synchronize){
+        gdk_display_sync(gdisp->display);
+    }
+
     pango_cairo_context_set_resolution(gdisp->pangoc_context, gdisp->res);
 
     groot = (GGDKWindow)calloc(1, sizeof(struct ggdkwindow));
@@ -2482,12 +2476,6 @@ G_GNUC_END_IGNORE_DEPRECATIONS
     groot->is_toplevel = true;
     groot->is_visible = true;
     g_object_set_data(G_OBJECT(gdisp->root), "GGDKWindow", groot);
-
-    gdisp->def_background = GResourceFindColor("Background", COLOR_CREATE(0xf5, 0xff, 0xfa));
-    gdisp->def_foreground = GResourceFindColor("Foreground", COLOR_CREATE(0x00, 0x00, 0x00));
-    if (GResourceFindBool("Synchronize", false)) {
-        gdk_display_sync(gdisp->display);
-    }
 
     (gdisp->funcs->init)((GDisplay *) gdisp);
 

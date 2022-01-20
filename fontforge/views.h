@@ -715,6 +715,7 @@ struct kf_dlg /* : fvcontainer */ {
 
 enum genfam { gf_none, gf_macfamily, gf_ttc };
 
+extern void MiscWinInit(void);
 extern void FVMarkHintsOutOfDate(SplineChar *sc);
 extern void FVRefreshChar(FontView *fv,int gid);
 extern void _FVMenuOpen(FontView *fv);

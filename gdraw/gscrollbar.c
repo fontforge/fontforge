@@ -29,14 +29,27 @@
 
 #include "gdraw.h"
 #include "ggadgetP.h"
-#include "gresource.h"
 #include "ustring.h"
 
 static GBox scrollbar_box = GBOX_EMPTY; /* Don't initialize here */
 static GBox thumb_box = GBOX_EMPTY; /* Don't initialize here */
 int _GScrollBar_Width = 13;			/* in points */
 int _GScrollBar_StartTime=300, _GScrollBar_RepeatTime=200;
-static int gscrollbar_inited = false;
+
+static int GScrollBarRIInit(GResInfo *ri) {
+    if ( ri->is_initialized )
+	return false;
+    GResEditDoInit(ri->inherits_from);
+    ri->overrides.main_background = GDrawColorBrighten(ri->inherits_from->boxdata->main_background, 0x10);
+    return _GResEditInitialize(ri);
+}
+static int GThumbRIInit(GResInfo *ri) {
+    if ( ri->is_initialized )
+	return false;
+    GResEditDoInit(ri->inherits_from);
+    ri->overrides.main_background = GDrawColorDarken(ri->inherits_from->boxdata->main_background, 0x8);
+    return _GResEditInitialize(ri);
+}
 
 static GGadget *GScrollBarCreateInitialized(struct gwindow *base, GGadgetData *gd,void *data);
 static struct scrollbarinit sbinit = { 0, 40, 20, 10 };
@@ -47,28 +60,36 @@ static GGadgetCreateData scrollbar_gcd[] = {
 static GGadgetCreateData *sarray[] = { GCD_Glue, &scrollbar_gcd[0], GCD_Glue, &scrollbar_gcd[1], GCD_Glue, NULL, NULL };
 static GGadgetCreateData scrollbarbox =
     { GHVGroupCreate, { { 2, 2, 0, 0 }, NULL, 0, 0, 0, 0, 0, NULL, { (GTextInfo *) sarray }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL };
+static struct resed gscrollbar_re[] = {
+    {N_("Start Time"), "StartTime", rt_int, &_GScrollBar_StartTime, N_("Time (in milliseconds) before scrolling starts"), NULL, { 0 }, 0, 0 },
+    {N_("Repeat Time"), "RepeatTime", rt_int, &_GScrollBar_RepeatTime, N_("Time (in milliseconds) between scroll events"), NULL, { 0 }, 0, 0 },
+    {N_("Width"), "Width", rt_int, &_GScrollBar_Width, NULL, NULL, { 0 }, 0, 0 },
+    RESED_EMPTY
+};
 static GResInfo gthumb_ri;
-static GResInfo gscrollbar_ri = {
+GResInfo gscrollbar_ri = {
     &gthumb_ri, &ggadget_ri,&gthumb_ri, NULL,
     &scrollbar_box,
     NULL,
     &scrollbarbox,
-    NULL,
+    gscrollbar_re,
     N_("ScrollBar"),
     N_("Scroll Bar"),
     "GScrollBar",
     "Gdraw",
     false,
+    false,
     box_foreground_border_outer|omf_border_type|omf_border_width|
 	omf_padding|omf_main_background,
-    NULL,
+    { bt_lowered, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
     GBOX_EMPTY,
     NULL,
-    NULL,
+    GScrollBarRIInit,
     NULL
 };
+extern GResInfo ggroup_ri;
 static GResInfo gthumb_ri = {
-    NULL, &ggadget_ri,&gscrollbar_ri, NULL,
+    &ggroup_ri, &ggadget_ri,&gscrollbar_ri, NULL,
     &thumb_box,
     NULL,
     &scrollbarbox,
@@ -78,11 +99,12 @@ static GResInfo gthumb_ri = {
     "GScrollBarThumb",
     "Gdraw",
     true,
+    false,
     omf_main_background|omf_border_width|omf_padding,
-    NULL,
+    { 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
     GBOX_EMPTY,
     NULL,
-    NULL,
+    GThumbRIInit,
     NULL
 };
 
@@ -491,22 +513,8 @@ struct gfuncs gscrollbar_funcs = {
 };
 
 static void GScrollBarInit() {
-    _GGadgetCopyDefaultBox(&scrollbar_box);
-    _GGadgetCopyDefaultBox(&thumb_box);
-    scrollbar_box.border_type = bt_lowered;
-    scrollbar_box.border_width = 1;
-    scrollbar_box.padding = 0;
-    scrollbar_box.flags |= box_foreground_border_outer;
-    scrollbar_box.main_background = GDrawColorBrighten(scrollbar_box.main_background, 0x10);
-    thumb_box.main_background = GDrawColorDarken(thumb_box.main_background,0x8);
-    thumb_box.border_width = 1;
-    thumb_box.padding = 0;
-    _GGadgetInitDefaultBox("GScrollBar.",&scrollbar_box,NULL);
-    _GGadgetInitDefaultBox("GScrollBarThumb.",&thumb_box,NULL);
-    _GScrollBar_Width = GResourceFindInt("GScrollBar.Width",_GScrollBar_Width);
-    _GScrollBar_StartTime = GResourceFindInt("GScrollBar.StartupTime",_GScrollBar_StartTime);
-    _GScrollBar_RepeatTime = GResourceFindInt("GScrollBar.RepeatTime",_GScrollBar_RepeatTime);
-    gscrollbar_inited = true;
+    GResEditDoInit(&gscrollbar_ri);
+    GResEditDoInit(&gthumb_ri);
 }
 
 static void GScrollBarFit(GScrollBar *gsb) {
@@ -543,8 +551,7 @@ static void GScrollBarFit(GScrollBar *gsb) {
 
 static GScrollBar *_GScrollBarCreate(GScrollBar *gsb, struct gwindow *base, GGadgetData *gd,void *data, GBox *def) {
 
-    if ( !gscrollbar_inited )
-	GScrollBarInit();
+    GScrollBarInit();
     gsb->g.funcs = &gscrollbar_funcs;
     gd->flags |= gg_pos_use0;
     _GGadget_Create(&gsb->g,base,gd,data,def);
@@ -649,10 +656,4 @@ void GScrollBarGetBounds(GGadget *g, int32 *sb_min, int32 *sb_max, int32 *sb_pag
     *sb_min = gsb->sb_min;
     *sb_max = gsb->sb_max;
     *sb_pagesize = gsb->sb_pagesize;
-}
-
-GResInfo *_GScrollBarRIHead(void) {
-    if ( !gscrollbar_inited )
-	GScrollBarInit();
-return( &gscrollbar_ri );
 }
