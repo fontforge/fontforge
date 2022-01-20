@@ -2131,7 +2131,7 @@ static void GMenuBarFit(GMenuBar *mb,GGadgetData *gd) {
 	GDrawWindowFontMetrics(mb->g.base, mb->font, &mb->ascender,
 	                       &mb->descender, &ld);
 	GDrawSetFont(mb->g.base, mb->font);
-	for ( i=0; i<mb->lastmi; ++i ) {
+	for ( i=0; i<mb->mtot; ++i ) {
 	    GDrawGetTextBounds(mb->g.base, mb->mi[i].ti.text, -1, &bounds);
 	    if ( mb->ascender<bounds.as )
 		mb->ascender = bounds.as;
