@@ -195,7 +195,7 @@ return( true );
 static void noop(void *_ed) {
 }
 
-static void *genutf8data(void *_ed,int32 *len) {
+static void *genutf8data(void *_ed,int32_t *len) {
     int cnt, l;
     int s_l = errdata.start_l, s_c = errdata.start_c, e_l = errdata.end_l, e_c = errdata.end_c;
     char *ret, *pt;

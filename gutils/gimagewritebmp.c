@@ -106,7 +106,7 @@ int GImageWrite_Bmp(GImage *gi, FILE *file) {
 	int pad=0;
 
 	if ( bitsperpixel==24 ) {
-	    uint32 *pt = (uint32 *) (base->data+row*base->bytes_per_line);
+	    uint32_t *pt = (uint32_t *) (base->data+row*base->bytes_per_line);
 	    for ( col=0; col<base->width; ++col ) {
 		putc(COLOR_BLUE(pt[col]),file);
 		putc(COLOR_GREEN(pt[col]),file);

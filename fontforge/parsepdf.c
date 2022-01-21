@@ -823,10 +823,10 @@ return ret;
 	strm.avail_in = fread(in,1,Z_CHUNK,from);
 	if ( strm.avail_in==0 )
     break;
-	strm.next_in = (uint8 *) in;
+	strm.next_in = (uint8_t *) in;
 	do {
 	    strm.avail_out = Z_CHUNK;
-	    strm.next_out = (uint8 *) out;
+	    strm.next_out = (uint8_t *) out;
 	    ret = inflate(&strm, Z_NO_FLUSH);
 	    if ( ret==Z_NEED_DICT || ret==Z_DATA_ERROR || ret==Z_MEM_ERROR ) {
 		(void)inflateEnd(&strm);

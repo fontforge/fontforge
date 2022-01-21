@@ -425,9 +425,9 @@ return;
 		for ( l=0; l<scale; ++l )
 		    clut.clut[l] =
 			COLOR_CREATE(
-			 COLOR_RED(bg) + ((int32) (l*(COLOR_RED(fg)-COLOR_RED(bg))))/(scale-1),
-			 COLOR_GREEN(bg) + ((int32) (l*(COLOR_GREEN(fg)-COLOR_GREEN(bg))))/(scale-1),
-			 COLOR_BLUE(bg) + ((int32) (l*(COLOR_BLUE(fg)-COLOR_BLUE(bg))))/(scale-1) );
+			 COLOR_RED(bg) + ((int32_t) (l*(COLOR_RED(fg)-COLOR_RED(bg))))/(scale-1),
+			 COLOR_GREEN(bg) + ((int32_t) (l*(COLOR_GREEN(fg)-COLOR_GREEN(bg))))/(scale-1),
+			 COLOR_BLUE(bg) + ((int32_t) (l*(COLOR_BLUE(fg)-COLOR_BLUE(bg))))/(scale-1) );
 	    }
 	    base.data = bdfc->bitmap;
 	    base.bytes_per_line = bdfc->bytes_per_line;
@@ -543,9 +543,9 @@ static void MVSetFeatures(MetricsView *mv) {
     SplineFont *sf = mv->sf;
     int i, j, cnt;
     GTextInfo **ti=NULL;
-    uint32 *tags = NULL, script, lang;
+    uint32_t *tags = NULL, script, lang;
     char buf[16];
-    uint32 *stds;
+    uint32_t *stds;
     const unichar_t *pt = _GGadgetGetTitle(mv->script);
 
     if ( sf->cidmaster ) sf=sf->cidmaster;
@@ -556,14 +556,14 @@ static void MVSetFeatures(MetricsView *mv) {
 	script = (pt[0]<<24) | (pt[1]<<16) | (pt[2]<<8) | pt[3];
     if ( pt[4]=='{' && u_strlen(pt)>=9 )
 	lang = (pt[5]<<24) | (pt[6]<<16) | (pt[7]<<8) | pt[8];
-    if ( (uint32)mv->oldscript!=script || (uint32)mv->oldlang!=lang )
+    if ( (uint32_t)mv->oldscript!=script || (uint32_t)mv->oldlang!=lang )
 	stds = StdFeaturesOfScript(script);
     else {		/* features list may have changed, but retain those set */
-	int32 len, sc;
+	int32_t len, sc;
 	ti = GGadgetGetList(mv->features,&len);
-	stds = malloc((len+1)*sizeof(uint32));
+	stds = malloc((len+1)*sizeof(uint32_t));
 	for ( i=sc=0; i<len; ++i ) if ( ti[i]->selected )
-	    stds[sc++] = (uint32) (intpt) ti[i]->userdata;
+	    stds[sc++] = (uint32_t) (intptr_t) ti[i]->userdata;
 	stds[sc] = 0;
     }
 
@@ -571,7 +571,7 @@ static void MVSetFeatures(MetricsView *mv) {
     /* Never returns NULL */
     for ( cnt=0; tags[cnt]!=0; ++cnt );
 
-    /*qsort(tags,cnt,sizeof(uint32),tag_comp);*/ /* The glist will do this for us */
+    /*qsort(tags,cnt,sizeof(uint32_t),tag_comp);*/ /* The glist will do this for us */
 
     ti = malloc((cnt+2)*sizeof(GTextInfo *));
     for ( i=0; i<cnt; ++i ) {
@@ -583,7 +583,7 @@ static void MVSetFeatures(MetricsView *mv) {
 	    buf[0] = tags[i]>>24; buf[1] = tags[i]>>16; buf[2] = tags[i]>>8; buf[3] = tags[i]; buf[4] = 0;
 	}
 	ti[i]->text = uc_copy(buf);
-	ti[i]->userdata = (void *) (intpt) tags[i];
+	ti[i]->userdata = (void *) (intptr_t) tags[i];
 	for ( j=0; stds[j]!=0; ++j ) {
 	    if ( stds[j] == tags[i] ) {
 		ti[i]->selected = true;
@@ -597,7 +597,7 @@ static void MVSetFeatures(MetricsView *mv) {
 }
 
 static void MVSelectSubtable(MetricsView *mv, struct lookup_subtable *sub) {
-    int32 len; int i;
+    int32_t len; int i;
     GTextInfo **old = GGadgetGetList(mv->subtable_list,&len);
 
     for ( i=0; i<len && (old[i]->userdata!=sub || old[i]->line); ++i )
@@ -664,8 +664,8 @@ static void MVDeselectChar(MetricsView *mv, int i) {
     MVRedrawI(mv,i,0,0);
 }
 
-static void MVSelectSubtableForScript(MetricsView *mv,uint32 script) {
-    int32 len;
+static void MVSelectSubtableForScript(MetricsView *mv,uint32_t script) {
+    int32_t len;
     GTextInfo **ti = GGadgetGetList(mv->subtable_list,&len);
     struct lookup_subtable *sub;
     int i;
@@ -870,30 +870,30 @@ static void MVCreateFields(MetricsView *mv,int i) {
     gd.flags = gg_visible | gg_pos_in_pixels | gg_dontcopybox;
     if ( mv->bdf==NULL )
 	gd.flags |= gg_enabled;
-    mv->perchar[i].name = GLabelCreate(mv->gw,&gd,(void *) (intpt) i);
+    mv->perchar[i].name = GLabelCreate(mv->gw,&gd,(void *) (intptr_t) i);
     if ( mv->perchar[i].selected )
 	GGadgetSetEnabled(mv->perchar[i].name,false);
 
     gd.pos.y += mv->fh+4;
     gd.handle_controlevent = MV_WidthChanged;
-    mv->perchar[i].width = GTextFieldCreate(mv->gw,&gd,(void *) (intpt) i);
+    mv->perchar[i].width = GTextFieldCreate(mv->gw,&gd,(void *) (intptr_t) i);
     mv->perchar[i].updownkparray[udaidx++] = mv->perchar[i].width;
 
     gd.pos.y += mv->fh+4;
     gd.handle_controlevent = MV_LBearingChanged;
-    mv->perchar[i].lbearing = GTextFieldCreate(mv->gw,&gd,(void *) (intpt) i);
+    mv->perchar[i].lbearing = GTextFieldCreate(mv->gw,&gd,(void *) (intptr_t) i);
     mv->perchar[i].updownkparray[udaidx++] = mv->perchar[i].lbearing;
 
     gd.pos.y += mv->fh+4;
     gd.handle_controlevent = MV_RBearingChanged;
-    mv->perchar[i].rbearing = GTextFieldCreate(mv->gw,&gd,(void *) (intpt) i);
+    mv->perchar[i].rbearing = GTextFieldCreate(mv->gw,&gd,(void *) (intptr_t) i);
     mv->perchar[i].updownkparray[udaidx++] = mv->perchar[i].rbearing;
 
     if ( i!=0 ) {
 	gd.pos.y += mv->fh+4;
 	gd.pos.x -= mv->mwidth/2;
 	gd.handle_controlevent = MV_KernChanged;
-	mv->perchar[i].kern = GTextFieldCreate(mv->gw,&gd,(void *) (intpt) i);
+	mv->perchar[i].kern = GTextFieldCreate(mv->gw,&gd,(void *) (intptr_t) i);
 	if( i==1 ) {
 	    mv->perchar[i-1].updownkparray[udaidx] = mv->perchar[i].kern;
 	}
@@ -946,9 +946,9 @@ static void MVRemetric(MetricsView *mv) {
     SplineChar *anysc, *goodsc;
     int i, cnt;
     const unichar_t *_script = _GGadgetGetTitle(mv->script);
-    uint32 script, lang, *feats;
+    uint32_t script, lang, *feats;
     char buf[20];
-    int32 len;
+    int32_t len;
     GTextInfo **ti;
     SplineFont *sf;
 
@@ -998,10 +998,10 @@ static void MVRemetric(MetricsView *mv) {
     ti = GGadgetGetList(mv->features,&len);
     for ( i=cnt=0; i<len; ++i )
 	if ( ti[i]->selected ) ++cnt;
-    feats = calloc(cnt+1,sizeof(uint32));
+    feats = calloc(cnt+1,sizeof(uint32_t));
     for ( i=cnt=0; i<len; ++i )
 	if ( ti[i]->selected )
-	    feats[cnt++] = (intpt) ti[i]->userdata;
+	    feats[cnt++] = (intptr_t) ti[i]->userdata;
 
     // Regenerate glyphs for the selected characters according to features, script, and resolution.
     free(mv->glyphs); mv->glyphs = NULL;
@@ -1129,7 +1129,7 @@ static int MV_WidthChanged(GGadget *g, GEvent *e) {
 /* This routines called during "Advanced Width Metrics" viewing */
 /* any time "Width" changed or screen is updated		*/
     MetricsView *mv = GDrawGetUserData(GGadgetGetWindow(g));
-    int which = (intpt) GGadgetGetUserData(g);
+    int which = (intptr_t) GGadgetGetUserData(g);
     int i;
 
     if ( e->type!=et_controlevent )
@@ -1186,7 +1186,7 @@ static int MV_LBearingChanged(GGadget *g, GEvent *e)
 /* This routines called during "Advanced Width Metrics" viewing */
 /* any time "LBrearing" changed or screen is updated		*/
     MetricsView *mv = GDrawGetUserData(GGadgetGetWindow(g));
-    int which = (intpt) GGadgetGetUserData(g);
+    int which = (intptr_t) GGadgetGetUserData(g);
     int i;
 
     if ( e->type!=et_controlevent )
@@ -1229,7 +1229,7 @@ static int MV_RBearingChanged(GGadget *g, GEvent *e) {
 /* This routines called during "Advanced Width Metrics" viewing */
 /* any time "RBrearing" changed or screen is updated		*/
     MetricsView *mv = GDrawGetUserData(GGadgetGetWindow(g));
-    int which = (intpt) GGadgetGetUserData(g);
+    int which = (intptr_t) GGadgetGetUserData(g);
     int i;
 
     if ( e->type!=et_controlevent )
@@ -1399,7 +1399,7 @@ return( false );
 		MMKern(sc->parent,psc,sc,is_diff?offset:offset-kp->off,sub,kp);
 	}
     }
-    int16 newkernafter = iscale * (offset*mv->pixelsize)/
+    int16_t newkernafter = iscale * (offset*mv->pixelsize)/
 	(mv->sf->ascent+mv->sf->descent);
     mv->perchar[which-1].kernafter = newkernafter;
 
@@ -1501,7 +1501,7 @@ return( false );
 		GGadget *g = mv->perchar[i].kern;
 
 		MV_ChangeKerning_Nested = 1;
-		int which = (intpt) GGadgetGetUserData(g);
+		int which = (intptr_t) GGadgetGetUserData(g);
 		MV_ChangeKerning( mv, which, offset, is_diff );
 		GGadgetSetTitle8( g, tostr(offset) );
 		MV_ChangeKerning_Nested = 0;
@@ -1519,7 +1519,7 @@ static int MV_KernChanged(GGadget *g, GEvent *e) {
 /* This routines called during "Advanced Width Metrics" viewing */
 /* any time "Kern:" changed or screen is updated		*/
     MetricsView *mv = GDrawGetUserData(GGadgetGetWindow(g));
-    int which = (intpt) GGadgetGetUserData(g);
+    int which = (intptr_t) GGadgetGetUserData(g);
     int i;
 
     if ( e->type!=et_controlevent )
@@ -1751,7 +1751,7 @@ static void MVHScroll(MetricsView *mv,struct sbevent *sb) {
 
 static void MVVScroll(MetricsView *mv,struct sbevent *sb) {
     int newpos = mv->yoff;
-    int32 min, max, page;
+    int32_t min, max, page;
 
     GScrollBarGetBounds(mv->vsb,&min,&max,&page);
     switch( sb->type ) {
@@ -1991,7 +1991,7 @@ return;					/* Nothing changed */
     if( !gt )
     {
 	GTextInfo **ti=NULL;
-	int32 len;
+	int32_t len;
 	ti = GGadgetGetList(mv->text,&len);
 	if( len )
 	    gt = ti[0];
@@ -2078,10 +2078,10 @@ static int MV_TextChanged(GGadget *g, GEvent *e) {
 	MetricsView *mv = GGadgetGetUserData(g);
 	int pos = e->u.control.u.tf_changed.from_pulldown;
 	if ( pos!=-1 ) {
-	    int32 len;
+	    int32_t len;
 	    GTextInfo **ti = GGadgetGetList(g,&len);
 	    GTextInfo *cur = ti[pos];
-	    int type = (intpt) cur->userdata;
+	    int type = (intptr_t) cur->userdata;
 	    if ( type < 0 )
 		MVLoadWordList(mv,type);
 	    else if ( cur->text!=NULL ) {
@@ -2131,14 +2131,14 @@ return( true );
 }
 
 void MV_FriendlyFeatures(GGadget *g, int pos) {
-    int32 len;
+    int32_t len;
     GTextInfo **ti = GGadgetGetList(g,&len);
 
     if ( pos<0 || pos>=len )
 	GGadgetEndPopup();
     else {
 	const unichar_t *pt = ti[pos]->text;
-	uint32 tag;
+	uint32_t tag;
 	int i;
 	tag = (pt[0]<<24) | (pt[1]<<16) | (pt[2]<<8) | pt[3];
 	LookupUIInit();
@@ -2154,7 +2154,7 @@ static int MV_SubtableChanged(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
 	MetricsView *mv = GGadgetGetUserData(g);
-	int32 len;
+	int32_t len;
 	GTextInfo **ti = GGadgetGetList(g,&len);
 	int i;
 	KernPair *kp;
@@ -3154,7 +3154,7 @@ static void MVMenuShowBitmap(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)
 static void MVMoveInWordListByOffset( MetricsView *mv, int offset )
 {
     if ( mv->word_index!=-1 ) {
-	int32 len;
+	int32_t len;
 	GGadgetGetList(mv->text,&len);
 	/* We subtract 3 because: There are two lines saying "load * list" */
 	/*  and then a line with a rule on it which we don't want access to */
@@ -4823,7 +4823,7 @@ static void MVDrop(MetricsView *mv,GEvent *event) {
     int x,ex = event->u.drag_drop.x + mv->xoff;
     int y,ey = event->u.drag_drop.y + mv->yoff;
     int within, i, cnt, ch;
-    int32 len;
+    int32_t len;
     char *cnames, *start, *pt;
     unichar_t *newtext;
     const unichar_t *oldtext;
@@ -5091,7 +5091,7 @@ return( true );
 }
 
 GTextInfo *SLOfFont(SplineFont *sf) {
-    uint32 *scripttags, *langtags;
+    uint32_t *scripttags, *langtags;
     int s, l, i, k, cnt;
     extern GTextInfo scripts[], languages[];
     GTextInfo *ret = NULL;
@@ -5108,7 +5108,7 @@ return( NULL );
 	for ( s=0; scripttags[s]!=0; ++s ) {
 	    if ( k ) {
 		for ( i=0; scripts[i].text!=NULL; ++i )
-		    if ( scripttags[s] == (intpt) (scripts[i].userdata))
+		    if ( scripttags[s] == (intptr_t) (scripts[i].userdata))
 		break;
 		sname = (char *) (scripts[i].text);
 		sbuf[0] = scripttags[s]>>24;
@@ -5124,7 +5124,7 @@ return( NULL );
 	    for ( l=0; langtags[l]!=0; ++l ) {
 		if ( k ) {
 		    for ( i=0; languages[i].text!=NULL; ++i )
-			if ( langtags[l] == (intpt) (languages[i].userdata))
+			if ( langtags[l] == (intptr_t) (languages[i].userdata))
 		    break;
 		    lname = (char *) (languages[i].text);
 		    lbuf[0] = langtags[l]>>24;

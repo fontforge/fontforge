@@ -37,8 +37,8 @@ struct letter_frequencies {
 };
 
 struct lang_frequencies {
-	uint32 script;
-	uint32 lang;
+	uint32_t script;
+	uint32_t lang;
 	char *note;
 	struct letter_frequencies *cnts;
 	float *wordlens;
@@ -48,8 +48,8 @@ struct lang_frequencies {
 	float *vowel_run;
 };
 
-extern char *RandomParaFromScriptLang(uint32 script, uint32 lang, SplineFont *sf, struct lang_frequencies *freq);
+extern char *RandomParaFromScriptLang(uint32_t script, uint32_t lang, SplineFont *sf, struct lang_frequencies *freq);
 extern char **SFScriptLangs(SplineFont *sf, struct lang_frequencies ***_freq);
-extern int SF2Scripts(SplineFont *sf, uint32 scripts[100]);
+extern int SF2Scripts(SplineFont *sf, uint32_t scripts[100]);
 
 #endif /* FONTFORGE_LANGFREQ_H */

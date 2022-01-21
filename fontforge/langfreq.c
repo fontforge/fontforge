@@ -2086,7 +2086,7 @@ struct script_chars {
     unichar_t *chars;
 };
 
-static void ScriptCharInit(SplineFont *sf,uint32 script, struct script_chars *chrs) {
+static void ScriptCharInit(SplineFont *sf,uint32_t script, struct script_chars *chrs) {
     int gid, cnt, k;
     SplineFont *subsf;
     SplineChar *sc;
@@ -2222,7 +2222,7 @@ return( copy(""));
 return( copy( parabuf ));
 }
 
-char *RandomParaFromScriptLang(uint32 script, uint32 lang, SplineFont *sf,
+char *RandomParaFromScriptLang(uint32_t script, uint32_t lang, SplineFont *sf,
 	struct lang_frequencies *lf) {
     int i;
     struct script_chars chrs;
@@ -2247,7 +2247,7 @@ char *RandomParaFromScriptLang(uint32 script, uint32 lang, SplineFont *sf,
 return( ret );
 }
 
-char *RandomParaFromScript(uint32 script, uint32 *lang, SplineFont *sf) {
+char *RandomParaFromScript(uint32_t script, uint32_t *lang, SplineFont *sf) {
     int i;
     struct lang_frequencies *lf;
     struct script_chars chrs;
@@ -2290,19 +2290,19 @@ return( ret );
 }
 
 static int tag_compare(const void *tag1, const void *tag2) {
-    if ( *(uint32 *) tag1 > *(uint32 *) tag2 )
+    if ( *(uint32_t *) tag1 > *(uint32_t *) tag2 )
 return( 1 );
-    else if ( *(uint32 *) tag1 < *(uint32 *) tag2 )
+    else if ( *(uint32_t *) tag1 < *(uint32_t *) tag2 )
 return( -1 );
     else
 return( 0 );
 }
 
-int SF2Scripts(SplineFont *sf,uint32 scripts[100]) {
+int SF2Scripts(SplineFont *sf,uint32_t scripts[100]) {
     int scnt, s, gid, k;
     SplineFont *subsf;
     SplineChar *sc;
-    uint32 script;
+    uint32_t script;
     PST *pst;
 
     scnt=0;
@@ -2330,13 +2330,13 @@ int SF2Scripts(SplineFont *sf,uint32 scripts[100]) {
 	}
 	++k;
     } while ( k<sf->subfontcnt );
-    qsort(scripts,scnt,sizeof(uint32),tag_compare);
+    qsort(scripts,scnt,sizeof(uint32_t),tag_compare);
     scripts[scnt] = 0;
 return( scnt );
 }
 
 char **SFScriptLangs(SplineFont *sf,struct lang_frequencies ***_freq) {
-    uint32 scripts[100];
+    uint32_t scripts[100];
     int scnt, s, extras, i, pos;
     char **sl;
     char buffer[100];

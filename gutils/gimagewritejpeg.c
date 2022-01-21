@@ -69,9 +69,9 @@ my_error_exit (j_common_ptr cinfo)
 
 static void transferImageToBuffer(struct _GImage *base,JSAMPLE *buffer,int w,int ypos) {
     JSAMPLE *pt, *end;
-    uint32 *ppt;
+    uint32_t *ppt;
 
-    ppt = (uint32 *) (base->data + ypos*base->bytes_per_line);
+    ppt = (uint32_t *) (base->data + ypos*base->bytes_per_line);
     if ( base->image_type==it_index && base->clut==NULL ) {
 	unsigned char *px = (unsigned char *) ppt; int col;
 	register int bit=0x80;

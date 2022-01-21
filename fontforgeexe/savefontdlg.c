@@ -118,7 +118,7 @@ struct gfc_data {
     int sfnt_flags;		/*  important. We index into them */
   /* WAS otf_flags */
     int psotb_flags;		/*  don't reorder or put junk in between */
-    uint8 optset[3];
+    uint8_t optset[3];
     SplineFont *sf;
     EncMap *map;
     int layer;
@@ -200,11 +200,11 @@ extern int oldbitmapstate;
 
 static const char *pfaeditflag = "SplineFontDB:";
 
-static int32 *ParseBitmapSizes(GGadget *g, int *err) {
+static int32_t *ParseBitmapSizes(GGadget *g, int *err) {
     const unichar_t *val = _GGadgetGetTitle(g), *pt; unichar_t *end, *end2;
     const char *msg = _("Pixel List"); // Before switching to C locale
     int i;
-    int32 *sizes;
+    int32_t *sizes;
 
     locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
     switch_to_c_locale(&tmplocale, &oldlocale); // Switch to the C locale temporarily and cache the old locale.
@@ -219,7 +219,7 @@ static int32 *ParseBitmapSizes(GGadget *g, int *err) {
 	pt = end+1;
 	end2 = NULL;
     }
-    sizes = malloc((i+1)*sizeof(int32));
+    sizes = malloc((i+1)*sizeof(int32_t));
 
     for ( i=0, pt = val; *pt!='\0' ; ) {
 	sizes[i]=rint(u_strtod(pt,&end));
@@ -1313,7 +1313,7 @@ static void prepend_timestamp(struct gfc_data *d){
 static void DoSave(struct gfc_data *d,unichar_t *path) {
     int err=false;
     char *temp;
-    int32 *sizes=NULL;
+    int32_t *sizes=NULL;
     int iscid, i;
     struct sflist *sfs=NULL, *cur, *last=NULL;
     static int psscalewarned=0, ttfscalewarned=0, psfnlenwarned=0;
@@ -1354,7 +1354,7 @@ return;
     }
 
     if ( d->family==gf_none )
-	layer = (intpt) GGadgetGetListItemSelected(GWidgetGetControl(d->gw,CID_Layers))->userdata;
+	layer = (intptr_t) GGadgetGetListItemSelected(GWidgetGetControl(d->gw,CID_Layers))->userdata;
 
     temp = u2def_copy(path);
     oldformatstate = GGadgetGetFirstListSelectedItem(d->pstype);
@@ -1739,7 +1739,7 @@ static int GFD_Format(GGadget *g, GEvent *e) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	unichar_t *pt, *dup, *tpt, *ret;
 	int format = GGadgetGetFirstListSelectedItem(d->pstype);
-	int32 len; int bf;
+	int32_t len; int bf;
 	static unichar_t nullstr[] = { 0 };
 	GTextInfo **list;
 	SplineFont *temp;
@@ -1976,7 +1976,7 @@ static GTextInfo *SFUsableLayerNames(SplineFont *sf,int def_layer) {
 	ti[cnt].text = (unichar_t *) sf->layers[layer].name;
 	ti[cnt].text_is_1byte = true;
 	ti[cnt].selected = layer==def_layer;
-	ti[cnt++].userdata = (void *) (intpt) layer;
+	ti[cnt++].userdata = (void *) (intptr_t) layer;
     }
 return( ti );
 }
@@ -1998,7 +1998,7 @@ int SFGenerateFont(SplineFont *sf,int layer,int family,EncMap *map) {
     int familycnt=0;
     int fondcnt = 0, fondmax = 10;
     SFArray *familysfs=NULL;
-    uint16 psstyle;
+    uint16_t psstyle;
     static int done=false;
     extern NameList *force_names_when_saving;
     char **nlnames;

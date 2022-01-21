@@ -41,7 +41,7 @@ struct dup {
 };
 
 struct taxis {
-    uint32 tag;
+    uint32_t tag;
     real min, def, max;	/* in user design space */
     int nameid;
     int paircount;
@@ -79,8 +79,8 @@ struct macidname {
 };
 
 struct savetab {
-    uint32 tag;
-    uint32 offset;
+    uint32_t tag;
+    uint32_t offset;
     int len;
 };
 
@@ -148,100 +148,100 @@ struct ttfinfo {
 
     int numtables;
     		/* BASE  */
-    uint32 base_start;		/* Offset from sof to start of 'BASE' table */
+    uint32_t base_start;		/* Offset from sof to start of 'BASE' table */
     		/* CFF  */
-    uint32 cff_start;		/* Offset from sof to start of postscript compact font format */
-    uint32 cff_length;
+    uint32_t cff_start;		/* Offset from sof to start of postscript compact font format */
+    uint32_t cff_length;
     		/* cmap */
-    uint32 encoding_start;	/* Offset from sof to start of encoding table */
-    uint32 vs_start;		/* Offset within 'cmap' to variant selector table */
+    uint32_t encoding_start;	/* Offset from sof to start of encoding table */
+    uint32_t vs_start;		/* Offset within 'cmap' to variant selector table */
 		/* gasp */
-    uint32 gasp_start;
+    uint32_t gasp_start;
 		/* glyf */
-    uint32 glyph_start;		/* Offset from sof to start of glyph table */
-    uint32 glyph_length;
+    uint32_t glyph_start;		/* Offset from sof to start of glyph table */
+    uint32_t glyph_length;
 		/* GDEF */
-    uint32 gdef_start;		/* Offset from sof to start of GDEF table (glyph class defn, ligature carets) */
-    uint32 gdef_length;
+    uint32_t gdef_start;		/* Offset from sof to start of GDEF table (glyph class defn, ligature carets) */
+    uint32_t gdef_length;
 		/* GPOS */
-    uint32 gpos_start;		/* Offset from sof to start of GPOS table */
-    uint32 gpos_length;
+    uint32_t gpos_start;		/* Offset from sof to start of GPOS table */
+    uint32_t gpos_length;
 		/* GSUB */
-    uint32 gsub_start;		/* Offset from sof to start of GSUB table */
-    uint32 gsub_length;
-    uint32 g_bounds;		/* Filled in with g???_start+g???_length */
+    uint32_t gsub_start;		/* Offset from sof to start of GSUB table */
+    uint32_t gsub_length;
+    uint32_t g_bounds;		/* Filled in with g???_start+g???_length */
 		/* EBDT, bdat */
-    uint32 bitmapdata_start;	/* Offset to start of bitmap data */
-    uint32 bitmapdata_length;
+    uint32_t bitmapdata_start;	/* Offset to start of bitmap data */
+    uint32_t bitmapdata_length;
 		/* EBLT, bloc */
-    uint32 bitmaploc_start;	/* Offset to start of bitmap locator data */
-    uint32 bitmaploc_length;
+    uint32_t bitmaploc_start;	/* Offset to start of bitmap locator data */
+    uint32_t bitmaploc_length;
 		/* gvar, etc. */
-    uint32 gvar_start, gvar_len;
-    uint32 fvar_start, fvar_len;
-    uint32 avar_start, avar_len;
-    uint32 cvar_start, cvar_len;
+    uint32_t gvar_start, gvar_len;
+    uint32_t fvar_start, fvar_len;
+    uint32_t avar_start, avar_len;
+    uint32_t cvar_start, cvar_len;
 		/* head */
-    uint32 head_start;
+    uint32_t head_start;
 		/* hhea */
-    uint32 hhea_start;
+    uint32_t hhea_start;
 		/* hmtx */
-    uint32 hmetrics_start;
+    uint32_t hmetrics_start;
 		/* JSTF */
-    uint32 jstf_start;
-    uint32 jstf_length;
+    uint32_t jstf_start;
+    uint32_t jstf_length;
 		/* kern */
-    uint32 kern_start;
+    uint32_t kern_start;
 		/* loca */
-    uint32 glyphlocations_start;/* there are glyph_cnt of these, from maxp tab */
-    uint32 loca_length;		/* actually glypn_cnt is wrong. Use the table length (divided by size) instead */
+    uint32_t glyphlocations_start;/* there are glyph_cnt of these, from maxp tab */
+    uint32_t loca_length;		/* actually glypn_cnt is wrong. Use the table length (divided by size) instead */
 		/* maxp */
-    uint32 maxp_start;		/* maximum number of glyphs */
-    uint32 maxp_len;
+    uint32_t maxp_start;		/* maximum number of glyphs */
+    uint32_t maxp_len;
 		/* name */
-    uint32 copyright_start;	/* copyright and fontname */
+    uint32_t copyright_start;	/* copyright and fontname */
 		/* post */
-    uint32 postscript_start;	/* names for the glyphs, italic angle, etc. */
-    uint32 postscript_length;
+    uint32_t postscript_start;	/* names for the glyphs, italic angle, etc. */
+    uint32_t postscript_length;
 		/* OS/2 */
-    uint32 os2_start;
+    uint32_t os2_start;
 		/* TYP1 */
-    uint32 typ1_start;		/* For Adobe's? Apple's? attempt to stuff a type1 font into an sfnt wrapper */
-    uint32 typ1_length;
+    uint32_t typ1_start;		/* For Adobe's? Apple's? attempt to stuff a type1 font into an sfnt wrapper */
+    uint32_t typ1_length;
 		/* vhea */
-    uint32 vhea_start;
+    uint32_t vhea_start;
 		/* vmtx */
-    uint32 vmetrics_start;
+    uint32_t vmetrics_start;
 		/* VORG */
-    uint32 vorg_start;
+    uint32_t vorg_start;
 
 		/* PfEd -- FontForge/PfaEdit specific info */
-    uint32 pfed_start;
+    uint32_t pfed_start;
 		/* TeX  -- TeX table, also non-standard */
-    uint32 tex_start;
+    uint32_t tex_start;
 		/* BDF  -- BDF properties, also non-standard */
-    uint32 bdf_start;
+    uint32_t bdf_start;
 		/* FFTM -- FontForge timestamps */
-    uint32 fftm_start;
+    uint32_t fftm_start;
 
 		/* Apple Advanced Typography Tables */
-    uint32 prop_start;
-    uint32 lcar_start;
-    uint32 opbd_start;
-    uint32 acnt_start;
-    uint32 feat_start;
-    uint32 mort_start;
-    uint32 morx_start;
-    uint32 bsln_start;
+    uint32_t prop_start;
+    uint32_t lcar_start;
+    uint32_t opbd_start;
+    uint32_t acnt_start;
+    uint32_t feat_start;
+    uint32_t mort_start;
+    uint32_t morx_start;
+    uint32_t bsln_start;
 
 		/* MATH Table */
-    uint32 math_start;
-    uint32 math_length;
+    uint32_t math_start;
+    uint32_t math_length;
 
 		/* Info for instructions */
-    uint32 cvt_start, cvt_len;
-    uint32 prep_start, prep_len;
-    uint32 fpgm_start, fpgm_len;
+    uint32_t cvt_start, cvt_len;
+    uint32_t prep_start, prep_len;
+    uint32_t fpgm_start, fpgm_len;
 
     unsigned int one_of_many: 1;	/* A TTCF file, or a opentype font with multiple fonts */
     unsigned int obscomplain: 1;	/* We've complained about obsolete format 3 in EBDT table */
@@ -267,8 +267,8 @@ struct ttfinfo {
 
     OTLookup *mort_subs_lookup, *mort_pos_lookup2;
     int mort_r2l, mort_tag_mac, mort_feat, mort_setting, mort_is_nested;
-    uint16 *morx_classes;
-    uint16 *bsln_values;
+    uint16_t *morx_classes;
+    uint16_t *bsln_values;
 
     int mort_max;
 
@@ -285,11 +285,11 @@ struct ttfinfo {
     struct fontdict *fd;	/* For reading in Type42 fonts. Glyph names in postscript section must be associated with glyphs in TTF section */
     int savecnt;
     struct savetab *savetab;
-    int32 last_size_pos;
-    uint16 design_size;
-    uint16 fontstyle_id;
+    int32_t last_size_pos;
+    uint16_t design_size;
+    uint16_t fontstyle_id;
     struct otfname *fontstyle_name;
-    uint16 design_range_bottom, design_range_top;
+    uint16_t design_range_bottom, design_range_top;
     struct texdata texdata;
     int mark_class_cnt;
     char **mark_classes;		/* glyph name list */
@@ -297,7 +297,7 @@ struct ttfinfo {
     int mark_set_cnt;
     char **mark_sets;			/* glyph name list */
     char **mark_set_names;		/* used within ff (utf8) */
-    uint8 warned_morx_out_of_bounds_glyph;
+    uint8_t warned_morx_out_of_bounds_glyph;
     int badgid_cnt, badgid_max;		/* Used when parsing apple morx tables*/
     SplineChar **badgids;		/* which use out of range glyph IDs as temporary flags */
     long long creationtime;		/* seconds since 1970 */
@@ -324,31 +324,31 @@ struct ttfinfo {
     int fbb[4];		/* x,yMin x,yMax*/
     int isFixedPitch;
 
-    uint32 jstf_script;
-    uint32 jstf_lang;
-    int16 jstf_isShrink, jstf_prio, jstf_lcnt;
+    uint32_t jstf_script;
+    uint32_t jstf_lang;
+    int16_t jstf_isShrink, jstf_prio, jstf_lcnt;
     struct otffeatname *feat_names;
     enum gsub_inusetype justinuse;
     long ttfFileSize;
 };
 
 struct taboff {
-    uint32 tag;	/* Table name */
-    uint32 checksum;/* for table */
-    uint32 offset;	/* to start of table in file */
-    uint32 length;
+    uint32_t tag;	/* Table name */
+    uint32_t checksum;/* for table */
+    uint32_t offset;	/* to start of table in file */
+    uint32_t length;
     FILE *data;
-    uint16 dup_of;
-    uint16 orderingval;
+    uint16_t dup_of;
+    uint16_t orderingval;
 };
 
 #define MAX_TAB	48
 struct tabdir {
-    int32 version;	/* 0x00010000 */
-    uint16 numtab;
-    uint16 searchRange;	/* (Max power of 2 <= numtab) *16 */
-    uint16 entrySel;	/* Log2(Max power of 2 <= numtab ) */
-    uint16 rangeShift;	/* numtab*16 - searchRange */
+    int32_t version;	/* 0x00010000 */
+    uint16_t numtab;
+    uint16_t searchRange;	/* (Max power of 2 <= numtab) *16 */
+    uint16_t entrySel;	/* Log2(Max power of 2 <= numtab ) */
+    uint16_t rangeShift;	/* numtab*16 - searchRange */
     struct taboff tabs[MAX_TAB];/* room for all the tables */
 				/* Not in any particular order. */
     struct taboff *ordered[MAX_TAB];	/* Ordered the way the tables should be output in file */
@@ -356,133 +356,133 @@ struct tabdir {
 };
 
 struct glyphhead {
-    int16 numContours;
-    int16 xmin;
-    int16 ymin;
-    int16 xmax;
-    int16 ymax;
+    int16_t numContours;
+    int16_t xmin;
+    int16_t ymin;
+    int16_t xmax;
+    int16_t ymax;
 };
 
 struct head {
-    int32 version;	/* 0x00010000 */
-    int32 revision;	/* 0 */
-    uint32 checksumAdj;	/* set to 0, sum entire font, store 0xb1b0afba-sum */
-    uint32 magicNum;	/* 0x5f0f3cf5 */
-    uint16 flags;	/* 1 */
-    uint16 emunits;	/* sf->ascent+sf->descent */
-    int32 createtime[2];/* number of seconds since 1904 */
-    int32 modtime[2];
-    int16 xmin;		/* min for entire font */
-    int16 ymin;
-    int16 xmax;
-    int16 ymax;
-    uint16 macstyle;	/* 1=>Bold, 2=>Italic */
-    uint16 lowestreadable;	/* size in pixels. Say about 10? */
-    int16 dirhint;	/* 0=>mixed directional characters, */
-    int16 locais32;	/* is the location table 32bits or 16, 0=>16, 1=>32 */
-    int16 glyphformat;	/* 0 */
-    uint16 mbz;		/* padding */
+    int32_t version;	/* 0x00010000 */
+    int32_t revision;	/* 0 */
+    uint32_t checksumAdj;	/* set to 0, sum entire font, store 0xb1b0afba-sum */
+    uint32_t magicNum;	/* 0x5f0f3cf5 */
+    uint16_t flags;	/* 1 */
+    uint16_t emunits;	/* sf->ascent+sf->descent */
+    int32_t createtime[2];/* number of seconds since 1904 */
+    int32_t modtime[2];
+    int16_t xmin;		/* min for entire font */
+    int16_t ymin;
+    int16_t xmax;
+    int16_t ymax;
+    uint16_t macstyle;	/* 1=>Bold, 2=>Italic */
+    uint16_t lowestreadable;	/* size in pixels. Say about 10? */
+    int16_t dirhint;	/* 0=>mixed directional characters, */
+    int16_t locais32;	/* is the location table 32bits or 16, 0=>16, 1=>32 */
+    int16_t glyphformat;	/* 0 */
+    uint16_t mbz;		/* padding */
 };
 
 struct hhead {
-    int32 version;	/* 0x00010000 */
-    int16 ascender;	/* sf->ascender */
-    int16 descender;	/* -sf->descender */
-    int16 linegap;	/* 0 */
-    int16 maxwidth;	/* of all characters */
-    int16 minlsb;	/* How is this different from xmin above? */
-    int16 minrsb;
-    int16 maxextent;	/* How is this different from xmax above? */
-    int16 caretSlopeRise;/* Uh... let's say 1? */
-    int16 caretSlopeRun;/* Uh... let's say 0 */
+    int32_t version;	/* 0x00010000 */
+    int16_t ascender;	/* sf->ascender */
+    int16_t descender;	/* -sf->descender */
+    int16_t linegap;	/* 0 */
+    int16_t maxwidth;	/* of all characters */
+    int16_t minlsb;	/* How is this different from xmin above? */
+    int16_t minrsb;
+    int16_t maxextent;	/* How is this different from xmax above? */
+    int16_t caretSlopeRise;/* Uh... let's say 1? */
+    int16_t caretSlopeRun;/* Uh... let's say 0 */
 	    /* not exactly specified, but FontValidator wants this to match italicangle */
-    int16 mbz[5];
-    int16 metricformat;	/* 0 */
-    uint16 numMetrics;	/* just set to glyph count */
+    int16_t mbz[5];
+    int16_t metricformat;	/* 0 */
+    uint16_t numMetrics;	/* just set to glyph count */
 };
 
 struct hmtx {
-    uint16 width;	/* NOTE: TTF only allows positive widths!!! */
-    int16 lsb;
+    uint16_t width;	/* NOTE: TTF only allows positive widths!!! */
+    int16_t lsb;
 };
 
 struct kp {
-    uint16 left;	/* left glyph num */
-    uint16 right;	/* right glyph num */
-    /* table is ordered by these two above treated as uint32 */
-    int16 offset;	/* kern amount */
+    uint16_t left;	/* left glyph num */
+    uint16_t right;	/* right glyph num */
+    /* table is ordered by these two above treated as uint32_t */
+    int16_t offset;	/* kern amount */
 };
 
 struct kern {
-    uint16 version;	/* 0 */
-    uint16 ntab;	/* 1, number of subtables */
+    uint16_t version;	/* 0 */
+    uint16_t ntab;	/* 1, number of subtables */
     /* first (and only) subtable */
-    uint16 stversion;	/* 0 */
-    uint16 length;	/* length of subtable beginning at &stversion */
-    uint16 coverage;	/* 1, (set of flags&format) */
-    uint16 nPairs;	/* number of kern pairs */
-    uint16 searchRange;	/* (Max power of 2 <= nPairs) *6 */
-    uint16 entrySel;	/* Log2(Max power of 2 <= nPairs ) */
-    uint16 rangeShift;	/* numtab*6 - searchRange */
+    uint16_t stversion;	/* 0 */
+    uint16_t length;	/* length of subtable beginning at &stversion */
+    uint16_t coverage;	/* 1, (set of flags&format) */
+    uint16_t nPairs;	/* number of kern pairs */
+    uint16_t searchRange;	/* (Max power of 2 <= nPairs) *6 */
+    uint16_t entrySel;	/* Log2(Max power of 2 <= nPairs ) */
+    uint16_t rangeShift;	/* numtab*6 - searchRange */
     struct kp *kerns;	/* Array should be nPairs big */
 };
 
 struct maxp {
-    int32 version;	/* 0x00010000 */
-    uint16 numGlyphs;
-    uint16 maxPoints;	/* max number of points in a simple glyph */
-    uint16 maxContours;	/* max number of paths in a simple glyph */
-    uint16 maxCompositPts;
-    uint16 maxCompositCtrs;
-    uint16 maxZones;	/* 1 */
-    uint16 maxTwilightPts;	/* 0 */
-    uint16 maxStorage;	/* 0 */
-    uint16 maxFDEFs;	/* 0 */
-    uint16 maxIDEFs;	/* 0 */
-    uint16 maxStack;	/* 0 */
-    uint16 maxglyphInstr;/* 0 */
-    uint16 maxnumcomponents;	/* Maximum number of refs in any composit */
-    uint16 maxcomponentdepth;
+    int32_t version;	/* 0x00010000 */
+    uint16_t numGlyphs;
+    uint16_t maxPoints;	/* max number of points in a simple glyph */
+    uint16_t maxContours;	/* max number of paths in a simple glyph */
+    uint16_t maxCompositPts;
+    uint16_t maxCompositCtrs;
+    uint16_t maxZones;	/* 1 */
+    uint16_t maxTwilightPts;	/* 0 */
+    uint16_t maxStorage;	/* 0 */
+    uint16_t maxFDEFs;	/* 0 */
+    uint16_t maxIDEFs;	/* 0 */
+    uint16_t maxStack;	/* 0 */
+    uint16_t maxglyphInstr;/* 0 */
+    uint16_t maxnumcomponents;	/* Maximum number of refs in any composit */
+    uint16_t maxcomponentdepth;
 	/* Apple docs say: 0 (if no composits), maximum value 1 (one level of composit) */
 	/* OpenType docs say: 1 (if no composits), any depth allowed */
 };
 
 struct namerec {
-    uint16 platform;	/* 3 => MS */
-    uint16 specific;	/* 1 */
-    uint16 language;	/* 0x0409 */
-    uint16 nameid;	/* 0=>copyright, 1=>family, 2=>weight, 4=>fullname */
+    uint16_t platform;	/* 3 => MS */
+    uint16_t specific;	/* 1 */
+    uint16_t language;	/* 0x0409 */
+    uint16_t nameid;	/* 0=>copyright, 1=>family, 2=>weight, 4=>fullname */
 			/*  5=>version, 6=>postscript name */
-    uint16 strlen;
-    uint16 stroff;
+    uint16_t strlen;
+    uint16_t stroff;
 };
 
 struct nametab {
-    uint16 format;	/* 0 */
-    uint16 numrec;	/* 1 */
-    uint16 startOfStrings;	/* offset from start of table to start of strings */
+    uint16_t format;	/* 0 */
+    uint16_t numrec;	/* 1 */
+    uint16_t startOfStrings;	/* offset from start of table to start of strings */
     struct namerec nr[6];
 };
 
 struct os2 {
-    uint16 version;	/* 1 */
-    int16 avgCharWid;	/* average all chars (v3) see v2 definition below */
-    uint16 weightClass;	/* 100=>thin, 200=>extra-light, 300=>light, 400=>normal, */
+    uint16_t version;	/* 1 */
+    int16_t avgCharWid;	/* average all chars (v3) see v2 definition below */
+    uint16_t weightClass;	/* 100=>thin, 200=>extra-light, 300=>light, 400=>normal, */
 			/* 500=>Medium, 600=>semi-bold, 700=>bold, 800=>extra-bold, */
 			/* 900=>black */
-    uint16 widthClass;	/* 75=>condensed, 100, 125=>expanded */
-    int16 fstype;	/* 0x0008 => allow embedded editing */
-    int16 ysubXSize;	/* emsize/5 */
-    int16 ysubYSize;	/* emsize/5 */
-    int16 ysubXOff;	/* 0 */
-    int16 ysubYOff;	/* emsize/5 */
-    int16 ysupXSize;	/* emsize/5 */
-    int16 ysupYSize;	/* emsize/5 */
-    int16 ysupXOff;	/* 0 */
-    int16 ysupYOff;	/* emsize/5 */
-    int16 yStrikeoutSize;	/* 102/2048 *emsize */
-    int16 yStrikeoutPos;	/* 530/2048 *emsize */
-    int16 sFamilyClass;	/* ??? 0 */
+    uint16_t widthClass;	/* 75=>condensed, 100, 125=>expanded */
+    int16_t fstype;	/* 0x0008 => allow embedded editing */
+    int16_t ysubXSize;	/* emsize/5 */
+    int16_t ysubYSize;	/* emsize/5 */
+    int16_t ysubXOff;	/* 0 */
+    int16_t ysubYOff;	/* emsize/5 */
+    int16_t ysupXSize;	/* emsize/5 */
+    int16_t ysupYSize;	/* emsize/5 */
+    int16_t ysupXOff;	/* 0 */
+    int16_t ysupYOff;	/* emsize/5 */
+    int16_t yStrikeoutSize;	/* 102/2048 *emsize */
+    int16_t yStrikeoutPos;	/* 530/2048 *emsize */
+    int16_t sFamilyClass;	/* ??? 0 */
 	/* high order byte is the "class", low order byte the sub class */
 	/* class = 0 => no classification */
 	/* class = 1 => old style serifs */
@@ -506,24 +506,24 @@ struct os2 {
 	/* class = 12 => symbolic */
 	/*	subclass: 3 mixed serif; 6 old style serif; 7 neo-grotesque sans; */
     char panose[10];	/* can be set to zero */
-    uint32 unicoderange[4];	
+    uint32_t unicoderange[4];	
 	/* 1<<0=>ascii, 1<<1 => latin1, 2=>100-17f, 3=>180-24f, 4=>250-2af */
 	/* 5=> 2b0-2ff, 6=>300-36f, ... */
     char achVendID[4];	/* can be zero */
-    uint16 fsSel;	/* 1=> italic, 32=>bold, 64 => regular */
+    uint16_t fsSel;	/* 1=> italic, 32=>bold, 64 => regular */
 			/* 2=>underscore, 4=>negative, 8->outlined, 16=>strikeout */
 			/* version 4 of OS/2 */
 			/* 128->don't use win_ascent/descent for line spacing */
 			/* 256=>family varies on weight width slope only */
 			/* 512=>oblique (as opposed to italic) */
-    uint16 firstcharindex; /* minimum unicode encoding */
-    uint16 lastcharindex;  /* maximum unicode encoding */
-    uint16 ascender;	/* font ascender height (not ascent) */
-    uint16 descender;	/* font descender height */
-    uint16 linegap;	/* 0 */
-    uint16 winascent;	/* ymax */
-    uint16 windescent;	/* ymin */
-    uint32 ulCodePage[2];
+    uint16_t firstcharindex; /* minimum unicode encoding */
+    uint16_t lastcharindex;  /* maximum unicode encoding */
+    uint16_t ascender;	/* font ascender height (not ascent) */
+    uint16_t descender;	/* font descender height */
+    uint16_t linegap;	/* 0 */
+    uint16_t winascent;	/* ymax */
+    uint16_t windescent;	/* ymin */
+    uint32_t ulCodePage[2];
 	/* 1<<0 => latin1, 1<<1=>latin2, cyrillic, greek, turkish, hebrew, arabic */
 	/* 1<<30 => mac, 1<<31 => symbol */
     /* OTF stuff (version 2 of OS/2) */
@@ -540,22 +540,22 @@ struct os2 {
 };
 
 struct post {
-    int32 formattype;		/* 0x00020000 */
-    int32 italicAngle;		/* in fixed format */
-    int16 upos;
-    int16 uwidth;
-    uint32 isfixed;
-    uint32 minmem42;
-    uint32 maxmem42;
-    uint32 minmem1;
-    uint32 maxmem1;
-    uint16 numglyphs;
-    uint16 glyphnameindex[1];
+    int32_t formattype;		/* 0x00020000 */
+    int32_t italicAngle;		/* in fixed format */
+    int16_t upos;
+    int16_t uwidth;
+    uint32_t isfixed;
+    uint32_t minmem42;
+    uint32_t maxmem42;
+    uint32_t minmem1;
+    uint32_t maxmem1;
+    uint16_t numglyphs;
+    uint16_t glyphnameindex[1];
 };
 
 struct glyphinfo {
     struct maxp *maxp;		/* this one is given to dumpglyphs, rest blank */
-    uint32 *loca;
+    uint32_t *loca;
     FILE *glyphs;
     FILE *hmtx;
     int hmtxlen;
@@ -570,24 +570,24 @@ struct glyphinfo {
     int hfullcnt, vfullcnt;
     int flags;
     int fixed_width;
-    int32 *bsizes;
+    int32_t *bsizes;
     unsigned int dovariations: 1;
     unsigned int onlybitmaps: 1;
     unsigned int has_instrs: 1;
     unsigned int is_ttf: 1;
     unsigned int ttc_composite_font: 1;
     SplineFont *sf;
-    int32 *pointcounts;
+    int32_t *pointcounts;
     int *bygid;			/* glyph list */
     int gcnt;
     int layer;
 };
 
 struct vorg {
-    uint16 majorVersion;		/* 1 */
-    uint16 minorVersion;		/* 0 */
+    uint16_t majorVersion;		/* 1 */
+    uint16_t minorVersion;		/* 0 */
     short defaultVertOriginY;	/* Y coord of default vertical origin in the design coordinate system */
-    uint16 numVertOriginYMetrics;	/* exceptions to the above, elements in following array */
+    uint16_t numVertOriginYMetrics;	/* exceptions to the above, elements in following array */
 };
 
 struct feat_name {
@@ -736,19 +736,19 @@ struct alltabs {
     unsigned oldcvtlen;
 };
 
-struct subhead { uint16 first, cnt, delta, rangeoff; };	/* a sub header in 8/16 cmap table */
+struct subhead { uint16_t first, cnt, delta, rangeoff; };	/* a sub header in 8/16 cmap table */
 
 enum touchflags { tf_x=1, tf_y=2, tf_d=4, tf_endcontour=0x80, tf_startcontour=0x40 };
 
 struct ct_branch {
-    uint16 classnum;
+    uint16_t classnum;
     struct contexttree *branch;
 };
 
 struct ct_subs {
     struct fpst_rule *rule;
     struct contexttree *branch;/* if the rule ends here this will be null */
-    uint16 thisclassnum;
+    uint16_t thisclassnum;
 };
 
 struct contexttree {
@@ -761,8 +761,8 @@ struct contexttree {
     int pending_pos;
     OTLookup *applymarkedsubs;
     OTLookup *applycursubs;
-    uint16 marked_index, cur_index;
-    uint8 markme;
+    uint16_t marked_index, cur_index;
+    uint8_t markme;
     int state, next_state;
     struct contexttree *parent;
 };
@@ -792,11 +792,11 @@ extern const int nStdStrings;
 extern struct macsettingname {
     int mac_feature_type;
     int mac_feature_setting;
-    uint32 otf_tag;
+    uint32_t otf_tag;
 } macfeat_otftag[], *user_macfeat_otftag;
 
     /* TrueType instructions */
-extern struct ttf_table *SFFindTable(SplineFont *sf,uint32 tag);
+extern struct ttf_table *SFFindTable(SplineFont *sf,uint32_t tag);
 extern int TTF__getcvtval(SplineFont *sf,int val);
 extern int TTF_getcvtval(SplineFont *sf,int val);
 

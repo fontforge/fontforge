@@ -342,7 +342,7 @@ GImage *GImageReadXpm(char * filename) {
     for ( y=0; y<height; ++y ) {
 	if ( !getdata(line,lsiz,fp))
 	    goto errorGImageReadXpm;
-	pt = (uint8 *) (base->data+y*base->bytes_per_line); ipt = NULL; end = pt+width;
+	pt = (uint8_t *) (base->data+y*base->bytes_per_line); ipt = NULL; end = pt+width;
 	if ( cols>256 )
 	    ipt = (unsigned long *) pt;
 	for ( lpt=line; *line && pt<end; ) {

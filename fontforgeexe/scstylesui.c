@@ -432,7 +432,7 @@ static int SS_Feature_Changed(GGadget *g, GEvent *e) {
 	GWindow ew = GGadgetGetWindow(g);
 	StyleDlg *ed = GDrawGetUserData(ew);
 	int index = e->u.control.u.tf_changed.from_pulldown;
-	uint32 tag = (intpt) ss_features[index].userdata;
+	uint32_t tag = (intptr_t) ss_features[index].userdata;
 	char tagbuf[5], offset[40];
 
 	tagbuf[0] = tag>>24; tagbuf[1] = tag>>16; tagbuf[2] = tag>>8; tagbuf[3] = tag; tagbuf[4] = 0;

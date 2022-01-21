@@ -148,7 +148,7 @@ void _GXDraw_Wacom_Init(GXDisplay *gdisp) {
     WState *ws;
 /* Some of this code is stolen from xf86Wacom.c, the XFree driver for wacom */
     char name[256];
-    uint8 bit[2][(KEY_MAX-1)/8];
+    uint8_t bit[2][(KEY_MAX-1)/8];
     int abs[5];
     int j;
 /* End stolen section */

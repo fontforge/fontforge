@@ -111,14 +111,14 @@ typedef struct hotkey {
      * must be in use for this hotkey to be fired. For example, shift,
      * control etc.
      */
-    uint16 state;
+    uint16_t state;
 
     /**
      * A directly machine usable representation of the key that is to
      * be pressed fo r this hotkey. This would be a number for a key
      * so that 'k' might be 642
      */
-    uint16 keysym;
+    uint16_t keysym;
 
     /**
      * If this hotkey is user defined this is true. If this is true

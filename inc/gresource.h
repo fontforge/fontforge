@@ -45,7 +45,7 @@ typedef struct gresimage {
 typedef struct gresfont {
     GFont *fi;
     char *rstr;
-    uint8 can_free_name;
+    uint8_t can_free_name;
 } GResFont;
 
 #define GRESIMAGE_INIT(defstr) { (defstr), NULL }

@@ -246,7 +246,7 @@ static void IVError(void *_iv,char *msg,int offset) {
 static int IVParse(InstrDlg *iv) {
     char *text = GGadgetGetTitle8(iv->text);
     int icnt=0, i;
-    uint8 *instrs;
+    uint8_t *instrs;
 
     instrs = _IVParse(iv->instrdata->sf, text, &icnt, IVError, iv);
     free(text);
@@ -965,18 +965,18 @@ typedef struct shortview /* : tableview */ {
     GGadget *vsb, *tf;
     GGadget *ok, *cancel, *setsize;
     int lpos, lheight;
-    int16 as, fh;
-    int16 vheight, vwidth;
-    int16 sbw, bh;
+    int16_t as, fh;
+    int16_t vheight, vwidth;
+    int16_t sbw, bh;
     GFont *gfont;
-    int16 chrlen, addrend, valend;
-    int16 active;
-    int16 which;
-    int16 *edits;
+    int16_t chrlen, addrend, valend;
+    int16_t active;
+    int16_t which;
+    int16_t *edits;
     char **comments;
-    uint8 *data;
-    int32 len;
-    uint32 tag;
+    uint8_t *data;
+    int32_t len;
+    uint32_t tag;
 } ShortView;
 
 static int sfinishup(ShortView *sv,int showerr) {
@@ -1370,7 +1370,7 @@ return( true );
 }
 
 /* cvt table */
-static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
+static void cvtCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32_t tag) {
     ShortView *sv = calloc(1,sizeof(ShortView));
     char title[60];
     GRect pos, subpos, gsize;
@@ -1697,7 +1697,7 @@ return( false );
 return( true );
 }
 
-static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
+static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32_t tag) {
     char title[60];
     GRect pos;
     GWindow gw;
@@ -1705,7 +1705,7 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     struct maxp_data mp;
     GGadgetCreateData gcd[17], boxes[4], *hvarray[16], *butarray[8], *varray[7];
     GTextInfo label[17];
-    uint8 dummy[32], *data;
+    uint8_t dummy[32], *data;
     char buffer[6][20];
     int k, hv;
 
@@ -1923,7 +1923,7 @@ static void maxpCreateEditor(struct ttf_table *tab,SplineFont *sf,uint32 tag) {
     GDrawDestroyWindow(gw);
 }
 
-void SFEditTable(SplineFont *sf, uint32 tag) {
+void SFEditTable(SplineFont *sf, uint32_t tag) {
     struct instrdata *id;
     struct ttf_table *tab;
     char name[12];

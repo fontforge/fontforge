@@ -33,32 +33,32 @@
 #include "gdraw.h"
 
 typedef struct gcol {
-    int16 red, green, blue;
-    uint32 pixel;
+    int16_t red, green, blue;
+    uint32_t pixel;
 } GCol;
 
 struct revcol /* : GCol */ {
-    int16 red, green, blue;
-    uint32 index;
-    uint8 dist;
+    int16_t red, green, blue;
+    uint32_t index;
+    uint8_t dist;
     struct revcol *next;
 };
 
 struct revitem {
     struct revcol *cols[2];	/* cols[0] => colours in this subcube, cols[1] => those near */
-    int16 cnt;
+    int16_t cnt;
     struct revcmap *sub;
 };
 
 struct revcmap {
-    int16 range;		/* red_max-red_min+1, total number of colors */
+    int16_t range;		/* red_max-red_min+1, total number of colors */
 				/*  in the cube along any linear dimension */
-    int16 side_cnt;		/* Number of sub-cubes along each linear side side of the cube */
+    int16_t side_cnt;		/* Number of sub-cubes along each linear side side of the cube */
 				/* ie. we decimate by a factor of side_cnt, there */
 			        /*  will be side_cnt levels of red, and side_cnt^3*/
 			        /*  subcubes */
-    int16 side_shift;		/* if side_cnt==2^n then this is n */
-    int16 div_mul, div_shift, div_add;
+    int16_t side_shift;		/* if side_cnt==2^n then this is n */
+    int16_t div_mul, div_shift, div_add;
 				/* tricks for dividing by range/side_cnt */
 			        /* We can do (small) integer division by */
 			        /*  multiplying by an integer reciprical and */
@@ -75,8 +75,8 @@ typedef struct {		/* normal 16 bit characters are two bytes */
 } GChar2b;
 
 struct gchr_transform {
-    uint32 oldstate;
-    uint32 newstate;
+    uint32_t oldstate;
+    uint32_t newstate;
     unichar_t resch;
 };
 
@@ -87,7 +87,7 @@ struct gchr_lookup {
 
 struct gchr_accents {
     unichar_t accent;
-    uint32 mask;
+    uint32_t mask;
 };
 
 enum text_funcs { tf_width, tf_drawit, tf_rect, tf_stopat, tf_stopbefore, tf_stopafter };
@@ -128,7 +128,7 @@ struct ginput_context {
 struct gtimer {
     long time_sec;				/* longs not int32s to match timeval */
     long time_usec;
-    int32 repeat_time;				/* 0 => one shot */
+    int32_t repeat_time;				/* 0 => one shot */
     GWindow owner;
     void *userdata;
     struct gtimer *next;
@@ -138,7 +138,7 @@ struct gtimer {
 struct gdisplay {
     struct displayfuncs *funcs;
     struct font_state *fontstate;
-    int16 res;
+    int16_t res;
     GWindow groot;
     unsigned int default_visual: 1;
     unsigned int do_dithering: 1;
@@ -170,9 +170,9 @@ struct displayfuncs {
 
     GWindow (*createTopWindow)(GDisplay *, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *);
     GWindow (*createSubWindow)(GWindow, GRect *pos, int (*eh)(GWindow,GEvent *), void *user_data, GWindowAttrs *);
-    GWindow (*createPixmap)(GDisplay *, GWindow similar, uint16 width, uint16 height);
-    GWindow (*createBitmap)(GDisplay *, uint16 width, uint16 height, uint8 *data);
-    GCursor (*createCursor)(GWindow src, GWindow mask, Color fg, Color bg, int16 x, int16 y);
+    GWindow (*createPixmap)(GDisplay *, GWindow similar, uint16_t width, uint16_t height);
+    GWindow (*createBitmap)(GDisplay *, uint16_t width, uint16_t height, uint8_t *data);
+    GCursor (*createCursor)(GWindow src, GWindow mask, Color fg, Color bg, int16_t x, int16_t y);
     void (*destroyWindow)(GWindow);
     void (*destroyCursor)(GDisplay *,GCursor);
     int (*nativeWindowExists)(GDisplay *,void *native_window);
@@ -181,10 +181,10 @@ struct displayfuncs {
     int (*setDither)(GDisplay *,int);
 
     void (*setVisible)(GWindow,int);
-    void (*move)(GWindow,int32,int32);
-    void (*trueMove)(GWindow,int32,int32);
-    void (*resize)(GWindow,int32,int32);
-    void (*moveResize)(GWindow,int32,int32,int32,int32);
+    void (*move)(GWindow,int32_t,int32_t);
+    void (*trueMove)(GWindow,int32_t,int32_t);
+    void (*resize)(GWindow,int32_t,int32_t);
+    void (*moveResize)(GWindow,int32_t,int32_t,int32_t,int32_t);
     void (*raise)(GWindow);
     void (*setWindowTitles8)(GWindow, const char *title, const char *icontitle);
     char *(*getWindowTitle8)(GWindow);
@@ -200,22 +200,22 @@ struct displayfuncs {
     void (*pushClip)(GWindow, GRect *rct, GRect *old);
     void (*popClip)(GWindow, GRect *old);
 
-    void (*drawLine)(GWindow, int32 x,int32 y, int32 xend,int32 yend, Color col);
-    void (*drawArrow)(GWindow, int32 x,int32 y, int32 xend,int32 yend, int16 arrows, Color col); /* arrows&1 => arrow at start, &2 => at end */
+    void (*drawLine)(GWindow, int32_t x,int32_t y, int32_t xend,int32_t yend, Color col);
+    void (*drawArrow)(GWindow, int32_t x,int32_t y, int32_t xend,int32_t yend, int16_t arrows, Color col); /* arrows&1 => arrow at start, &2 => at end */
     void (*drawRect)(GWindow, GRect *rect, Color col);
     void (*fillRect)(GWindow, GRect *rect, Color col);
     void (*fillRoundRect)(GWindow, GRect *rect, int radius, Color col);
     void (*drawElipse)(GWindow, GRect *rect, Color col);
     void (*fillElipse)(GWindow, GRect *rect, Color col);
-    void (*drawArc)(GWindow, GRect *rect, int32 sangle, int32 eangle, Color col);
-    void (*drawPoly)(GWindow, GPoint *pts, int16 cnt, Color col);
-    void (*fillPoly)(GWindow, GPoint *pts, int16 cnt, Color col);
-    void (*scroll)(GWindow, GRect *rect, int32 hor, int32 vert);
+    void (*drawArc)(GWindow, GRect *rect, int32_t sangle, int32_t eangle, Color col);
+    void (*drawPoly)(GWindow, GPoint *pts, int16_t cnt, Color col);
+    void (*fillPoly)(GWindow, GPoint *pts, int16_t cnt, Color col);
+    void (*scroll)(GWindow, GRect *rect, int32_t hor, int32_t vert);
 
-    void (*drawImage)(GWindow, GImage *, GRect *src, int32 x, int32 y);
-    void (*drawGlyph)(GWindow, GImage *, GRect *src, int32 x, int32 y);
-    void (*drawImageMag)(GWindow, GImage *, GRect *src, int32 x, int32 y, int32 width, int32 height);
-    void (*drawPixmap)(GWindow, GWindow, GRect *src, int32 x, int32 y);
+    void (*drawImage)(GWindow, GImage *, GRect *src, int32_t x, int32_t y);
+    void (*drawGlyph)(GWindow, GImage *, GRect *src, int32_t x, int32_t y);
+    void (*drawImageMag)(GWindow, GImage *, GRect *src, int32_t x, int32_t y, int32_t width, int32_t height);
+    void (*drawPixmap)(GWindow, GWindow, GRect *src, int32_t x, int32_t y);
 
     GIC *(*createInputContext)(GWindow, enum gic_style);
     void (*setGIC)(GWindow, GIC *, int x, int y);
@@ -223,9 +223,9 @@ struct displayfuncs {
 
     void (*grabSelection)(GWindow w,enum selnames sel);
     void (*addSelectionType)(GWindow w,enum selnames sel,char *type,
-	void *data,int32 cnt,int32 unitsize,void *(*gendata)(void *,int32 *len),
+	void *data,int32_t cnt,int32_t unitsize,void *(*gendata)(void *,int32_t *len),
 	void (*freedata)(void *));
-    void *(*requestSelection)(GWindow w,enum selnames sn, char *typename, int32 *len);
+    void *(*requestSelection)(GWindow w,enum selnames sn, char *typename, int32_t *len);
     int (*selectionHasType)(GWindow w,enum selnames sn, char *typename);
     void (*bindSelection)(GDisplay *disp,enum selnames sn, char *atomname);
     int (*selectionHasOwner)(GDisplay *disp,enum selnames sn);
@@ -244,7 +244,7 @@ struct displayfuncs {
     int  (*requestDeviceEvents)(GWindow w,int devcnt,struct gdeveventmask *de);
     int  (*shortcutKeyMatches)(const GEvent *e, unichar_t ch);
 
-    GTimer *(*requestTimer)(GWindow w,int32 time_from_now,int32 frequency, void *userdata);
+    GTimer *(*requestTimer)(GWindow w,int32_t time_from_now,int32_t frequency, void *userdata);
     void (*cancelTimer)(GTimer *timer);
 
     void (*getFontMetrics)(GWindow,GFont *,int *,int *,int *);
@@ -261,7 +261,7 @@ struct displayfuncs {
     void (*fillAndStroke)(GWindow w, Color fillcol,Color strokecol);
 
     void (*layoutInit)(GWindow w, char *text, int cnt, GFont *fi);
-    void (*layoutDraw)(GWindow w, int32 x, int32 y, Color fg);
+    void (*layoutDraw)(GWindow w, int32_t x, int32_t y, Color fg);
     void (*layoutIndexToPos)(GWindow w, int index, GRect *pos);
     int  (*layoutXYToIndex)(GWindow w, int x, int y);
     void (*layoutExtents)(GWindow w, GRect *size);
@@ -271,13 +271,13 @@ struct displayfuncs {
     void (*startNewSubPath)(GWindow w);
     int  (*fillRuleSetWinding)(GWindow w);
 
-    int (*doText8)(GWindow w, int32 x, int32 y, const char *text, int32 cnt, Color col, enum text_funcs drawit, struct tf_arg *arg);
+    int (*doText8)(GWindow w, int32_t x, int32_t y, const char *text, int32_t cnt, Color col, enum text_funcs drawit, struct tf_arg *arg);
 
     void (*PushClipOnly)(GWindow w);
     void (*ClipPreserve)(GWindow w);
 };
 
-extern int16 div_tables[257][2]; // in div_tables.c
+extern int16_t div_tables[257][2]; // in div_tables.c
 
 extern void GDrawIErrorRun(const char *fmt,...);
 extern void GDrawIError(const char *fmt,...);

@@ -414,7 +414,7 @@ return;
 }
 
 static void IkarusAddContour(SplineChar *sc,int npts,BasePoint *bps,
-	uint8 *ptype, int nesting) {
+	uint8_t *ptype, int nesting) {
     SplinePointList *spl;
     SplinePoint *last, *next;
     int i, cw;
@@ -448,13 +448,13 @@ static void IkarusAddContour(SplineChar *sc,int npts,BasePoint *bps,
 static void IkarusReadChar(SplineChar *sc,FILE *file) {
     int n, i, j, number, following, units, ncontours, ptmax;
     DBounds bb;
-    int32 base;
+    int32_t base;
     struct contour {
-	int32 offset;
+	int32_t offset;
 	int dir, nest, col, npts;
     } *contours;
     BasePoint *bps;
-    uint8 *ptype;
+    uint8_t *ptype;
     int x,y;
 
     /* record len of char = */ getushort(file);
@@ -504,7 +504,7 @@ static void IkarusReadChar(SplineChar *sc,FILE *file) {
 	    ptmax = contours[i].npts;
     }
     bps = malloc(ptmax*sizeof(BasePoint));
-    ptype = malloc(ptmax*sizeof(uint8));
+    ptype = malloc(ptmax*sizeof(uint8_t));
 
     base = ftell(file);
     /* 2 words here giving length (in records/words) of image data */
@@ -604,7 +604,7 @@ SplineFont *SFReadIkarus(char *fontname) {
     int numchars, maxnum;
     double italic_angle;
     char fnam[13], fullname[81];
-    int32 *offsets, *numbers;
+    int32_t *offsets, *numbers;
 
     if ( file==NULL )
 return( NULL );
@@ -679,8 +679,8 @@ return( NULL );
     /* last record */ getushort(file);
     /* last word of last record */ getushort(file);
 
-    offsets = malloc(numchars*sizeof(int32));
-    numbers = malloc(numchars*sizeof(int32));
+    offsets = malloc(numchars*sizeof(int32_t));
+    numbers = malloc(numchars*sizeof(int32_t));
     maxnum = 0;
     for ( i=0; i<numchars; ++i ) {
 	numbers[i] = getushort(file);

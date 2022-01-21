@@ -81,14 +81,14 @@ struct debugger_context {
     int bcnt;
     FT_Vector *oldpts;
     FT_Long *oldstore;
-    uint8 *storetouched;
+    uint8_t *storetouched;
     int storeSize;
     FT_Long *oldcvt;
     FT_Long oldsval, oldcval;
     int n_points;
-    uint8 *watch;		/* exc->pts.n_points */
-    uint8 *watchstorage;	/* exc->storeSize, exc->storage[i] */
-    uint8 *watchcvt;		/* exc->cvtSize, exc->cvt[i] */
+    uint8_t *watch;		/* exc->pts.n_points */
+    uint8_t *watchstorage;	/* exc->storeSize, exc->storage[i] */
+    uint8_t *watchcvt;		/* exc->cvtSize, exc->cvt[i] */
     int uninit_index;
 };
 
@@ -200,7 +200,7 @@ return( TT_Err_Execution_Too_Long );		/* Some random error code, says we're prob
     }
     if ( dc->oldstore==NULL && exc->storeSize!=0 ) {
 	dc->oldstore = calloc(exc->storeSize,sizeof(FT_Long));
-	dc->storetouched = calloc(exc->storeSize,sizeof(uint8));
+	dc->storetouched = calloc(exc->storeSize,sizeof(uint8_t));
 	dc->storeSize = exc->storeSize;
     }
     if ( dc->oldcvt==NULL && exc->cvtSize!=0 )
@@ -512,7 +512,7 @@ return;
     dc->breaks[i].ip = ip;
 }
 
-void DebuggerSetWatches(struct debugger_context *dc,int n, uint8 *w) {
+void DebuggerSetWatches(struct debugger_context *dc,int n, uint8_t *w) {
     free(dc->watch); dc->watch=NULL;
     if ( n!=dc->n_points ) IError("Bad watchpoint count");
     else {
@@ -527,12 +527,12 @@ void DebuggerSetWatches(struct debugger_context *dc,int n, uint8 *w) {
     }
 }
 
-uint8 *DebuggerGetWatches(struct debugger_context *dc, int *n) {
+uint8_t *DebuggerGetWatches(struct debugger_context *dc, int *n) {
     *n = dc->n_points;
 return( dc->watch );
 }
 
-void DebuggerSetWatchStores(struct debugger_context *dc,int n, uint8 *w) {
+void DebuggerSetWatchStores(struct debugger_context *dc,int n, uint8_t *w) {
     free(dc->watchstorage); dc->watchstorage=NULL;
     if ( n!=dc->exc->storeSize ) IError("Bad watchpoint count");
     else {
@@ -547,7 +547,7 @@ void DebuggerSetWatchStores(struct debugger_context *dc,int n, uint8 *w) {
     }
 }
 
-uint8 *DebuggerGetWatchStores(struct debugger_context *dc, int *n) {
+uint8_t *DebuggerGetWatchStores(struct debugger_context *dc, int *n) {
     *n = dc->exc->storeSize;
 return( dc->watchstorage );
 }
@@ -558,7 +558,7 @@ return( false );
 return( dc->storetouched[index]&1 );
 }
 
-void DebuggerSetWatchCvts(struct debugger_context *dc,int n, uint8 *w) {
+void DebuggerSetWatchCvts(struct debugger_context *dc,int n, uint8_t *w) {
     free(dc->watchcvt); dc->watchcvt=NULL;
     if ( n!=dc->exc->cvtSize ) IError("Bad watchpoint count");
     else {
@@ -573,7 +573,7 @@ void DebuggerSetWatchCvts(struct debugger_context *dc,int n, uint8 *w) {
     }
 }
 
-uint8 *DebuggerGetWatchCvts(struct debugger_context *dc, int *n) {
+uint8_t *DebuggerGetWatchCvts(struct debugger_context *dc, int *n) {
     *n = dc->exc->cvtSize;
 return( dc->watchcvt );
 }
@@ -666,7 +666,7 @@ struct freetype_raster *DebuggerCurrentRaster(TT_ExecContext exc,int depth) {
 	bitmap.num_grays = 0;
 	bitmap.pixel_mode = ft_pixel_mode_mono;
     }
-    bitmap.buffer = calloc(bitmap.pitch*bitmap.rows,sizeof(uint8));
+    bitmap.buffer = calloc(bitmap.pitch*bitmap.rows,sizeof(uint8_t));
 
     (FT_Outline_Get_Bitmap)(ff_ft_context,&outline,&bitmap);
 
@@ -738,18 +738,18 @@ struct TT_ExecContextRec_ *DebuggerGetEContext(struct debugger_context *dc) {
 return( NULL );
 }
 
-void DebuggerSetWatches(struct debugger_context *dc,int n, uint8 *w) {
+void DebuggerSetWatches(struct debugger_context *dc,int n, uint8_t *w) {
 }
 
-uint8 *DebuggerGetWatches(struct debugger_context *dc, int *n) {
+uint8_t *DebuggerGetWatches(struct debugger_context *dc, int *n) {
     *n = 0;
 return( NULL );
 }
 
-void DebuggerSetWatchStores(struct debugger_context *dc,int n, uint8 *w) {
+void DebuggerSetWatchStores(struct debugger_context *dc,int n, uint8_t *w) {
 }
 
-uint8 *DebuggerGetWatchStores(struct debugger_context *dc, int *n) {
+uint8_t *DebuggerGetWatchStores(struct debugger_context *dc, int *n) {
     *n = 0;
 return( NULL );
 }
@@ -758,10 +758,10 @@ int DebuggerIsStorageSet(struct debugger_context *dc, int index) {
 return( false );
 }
 
-void DebuggerSetWatchCvts(struct debugger_context *dc,int n, uint8 *w) {
+void DebuggerSetWatchCvts(struct debugger_context *dc,int n, uint8_t *w) {
 }
 
-uint8 *DebuggerGetWatchCvts(struct debugger_context *dc, int *n) {
+uint8_t *DebuggerGetWatchCvts(struct debugger_context *dc, int *n) {
     *n = 0;
 return( NULL );
 }

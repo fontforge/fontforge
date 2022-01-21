@@ -1012,7 +1012,7 @@ static int Group_AddColor(GGadget *g, GEvent *e) {
 		set = true;
 	    }
 	} else {
-	    xcol = (intpt) ti->userdata;
+	    xcol = (intptr_t) ti->userdata;
 	    set = true;
 	}
 
@@ -1486,7 +1486,7 @@ static void EncodeToGroups(FontView *fv,Group *group, int compacted) {
 	enc->enc_name = EncNameFromGroups(group);
 	enc->is_temporary = true;
 	enc->char_max = 256;
-	enc->unicode = malloc(256*sizeof(int32));
+	enc->unicode = malloc(256*sizeof(int32_t));
 	enc->psnames = malloc(256*sizeof(char *));
 	map = EncMapNew(0,sf->glyphcnt,enc);
     }

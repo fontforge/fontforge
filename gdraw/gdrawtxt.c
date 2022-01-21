@@ -83,7 +83,7 @@ return( rq );
 
 /* ************************************************************************** */
 
-int32 GDrawDrawText(GWindow gw, int32 x, int32 y, const unichar_t *text, int32 cnt, Color col) {
+int32_t GDrawDrawText(GWindow gw, int32_t x, int32_t y, const unichar_t *text, int32_t cnt, Color col) {
     struct tf_arg arg;
     glong realcnt;
     gchar *temp = g_ucs4_to_utf8((gunichar*)text, cnt, NULL, &realcnt, NULL);
@@ -97,7 +97,7 @@ int32 GDrawDrawText(GWindow gw, int32 x, int32 y, const unichar_t *text, int32 c
     return width;
 }
 
-int32 GDrawGetTextWidth(GWindow gw,const unichar_t *text, int32 cnt) {
+int32_t GDrawGetTextWidth(GWindow gw,const unichar_t *text, int32_t cnt) {
     struct tf_arg arg;
     glong realcnt;
     gchar *temp = g_ucs4_to_utf8((gunichar*)text, cnt, NULL, &realcnt, NULL);
@@ -110,7 +110,7 @@ int32 GDrawGetTextWidth(GWindow gw,const unichar_t *text, int32 cnt) {
     return width;
 }
 
-int32 GDrawGetTextBounds(GWindow gw,const unichar_t *text, int32 cnt, GTextBounds *bounds) {
+int32_t GDrawGetTextBounds(GWindow gw,const unichar_t *text, int32_t cnt, GTextBounds *bounds) {
     int ret = 0;
     struct tf_arg arg = {0};
     glong realcnt;
@@ -127,28 +127,28 @@ int32 GDrawGetTextBounds(GWindow gw,const unichar_t *text, int32 cnt, GTextBound
 
 /* UTF8 routines */
 
-int32 GDrawDrawText8(GWindow gw, int32 x, int32 y, const char *text, int32 cnt, Color col) {
+int32_t GDrawDrawText8(GWindow gw, int32_t x, int32_t y, const char *text, int32_t cnt, Color col) {
     struct tf_arg arg;
 
 return( gw->display->funcs->doText8(gw,x,y,text,cnt,col,tf_drawit,&arg));
 }
 
-int32 GDrawGetText8Width(GWindow gw, const char *text, int32 cnt) {
+int32_t GDrawGetText8Width(GWindow gw, const char *text, int32_t cnt) {
     struct tf_arg arg;
 
 return( gw->display->funcs->doText8(gw,0,0,text,cnt,0x0,tf_width,&arg));
 }
 
-int32 GDrawGetText8Height(GWindow gw, const char *text, int32 cnt)
+int32_t GDrawGetText8Height(GWindow gw, const char *text, int32_t cnt)
 {
     GTextBounds bounds;
-    int32 ret = GDrawGetText8Bounds( gw, text, cnt, &bounds );
+    int32_t ret = GDrawGetText8Bounds( gw, text, cnt, &bounds );
     ret = bounds.as + bounds.ds;
     return ret;
 }
 
 
-int32 GDrawGetText8Bounds(GWindow gw,const char *text, int32 cnt, GTextBounds *bounds) {
+int32_t GDrawGetText8Bounds(GWindow gw,const char *text, int32_t cnt, GTextBounds *bounds) {
     int ret;
     struct tf_arg arg;
 

@@ -79,7 +79,7 @@ static void GFlowBox_destroy(GGadget *g) {
     _ggadget_destroy(g);
 }
 
-static void GFlowBoxMove(GGadget *g, int32 x, int32 y) {
+static void GFlowBoxMove(GGadget *g, int32_t x, int32_t y) {
     GFlowBox *fb = (GFlowBox *) g;
     int offx = x - g->r.x, offy = y - g->r.y;
     int c;
@@ -239,7 +239,7 @@ static void GFlowBoxSizeTo(GFlowBox *fb, struct fsizeinfo *si, int size) {
     si->opposize = rowcoloffset + currowcolsize;
 }
 
-static void GFlowBoxResize(GGadget *g, int32 width, int32 height) {
+static void GFlowBoxResize(GGadget *g, int32_t width, int32_t height) {
     struct fsizeinfo si;
     GFlowBox *fb = (GFlowBox *) g;
     int bp = GBoxBorderWidth(g->base, g->box);

@@ -8,7 +8,7 @@
 extern char *EnforcePostScriptName(char *old);
 extern char **NamesReadCFF(char *filename);
 extern char **NamesReadTTF(char *filename);
-extern char *TTFGetFontName(FILE *ttf, int32 offset, int32 off2);
+extern char *TTFGetFontName(FILE *ttf, int32_t offset, int32_t off2);
 extern int MSLanguageFromLocale(void);
 extern int ttfFindPointInSC(SplineChar *sc, int layer, int pnum, BasePoint *pos, RefChar *bound);
 extern int ttfFixupRef(SplineChar **chars, int i);

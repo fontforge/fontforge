@@ -145,7 +145,7 @@ return(1);
 return(1);
     }
 
-    operator = ((uint8 *) exc->code)[exc->IP];
+    operator = ((uint8_t *) exc->code)[exc->IP];
     if ( operator>=0xc0 && operator <= 0xdf ) {
         scrprintf(&scr," MDRP: Move Direct Relative Point");
 	if ( operator&0x10 )
@@ -584,10 +584,10 @@ return(1);
 	scrprintf(&scr, "CvtCutin: %.2f", exc->GS.control_value_cutin/64.0 );
       break;
       case 0x40:
-	scrprintf(&scr," Push %d Bytes", ((uint8 *) exc->code)[exc->IP+1]);
+	scrprintf(&scr," Push %d Bytes", ((uint8_t *) exc->code)[exc->IP+1]);
       break;
       case 0x41:
-	scrprintf(&scr," Push %d Words", ((uint8 *) exc->code)[exc->IP+1]);
+	scrprintf(&scr," Push %d Words", ((uint8_t *) exc->code)[exc->IP+1]);
       break;
       case 0x42:
         scrprintf(&scr," Write Store" );
@@ -1311,7 +1311,7 @@ return;		/* Not running */
     if ( exc->IP>=exc->codeSize || exc->code==NULL )
 return;		/* At end */
 
-    operator = ((uint8 *) exc->code)[exc->IP];
+    operator = ((uint8_t *) exc->code)[exc->IP];
     changing_point = -1;
     basis_point = -1;
 

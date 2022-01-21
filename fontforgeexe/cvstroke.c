@@ -2592,10 +2592,10 @@ static int Layer_StrokePatAddEdit(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static uint32 getcol(GGadget *g,int *err) {
+static uint32_t getcol(GGadget *g,int *err) {
     const unichar_t *ret=_GGadgetGetTitle(g);
     unichar_t *end;
-    uint32 col = COLOR_INHERITED;
+    uint32_t col = COLOR_INHERITED;
 
     if ( *ret=='#' ) ++ret;
     col = u_strtol(ret,&end,16);
@@ -2722,7 +2722,7 @@ return( true );
 static int Layer_Inherit(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	GWindow gw = GGadgetGetWindow(g);
-	int cid = (intpt) GGadgetGetUserData(g);
+	int cid = (intptr_t) GGadgetGetUserData(g);
 	GGadgetSetEnabled(GWidgetGetControl(gw,cid),
 		!GGadgetIsChecked(g));
     }
@@ -2732,7 +2732,7 @@ return( true );
 static int Layer_DoColorWheel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GWindow gw = GGadgetGetWindow(g);
-	int cid = (intpt) GGadgetGetUserData(g);
+	int cid = (intptr_t) GGadgetGetUserData(g);
 	GGadget *tf = GWidgetGetControl(gw,cid);
 	if ( GGadgetIsEnabled(tf)) {
 	    char *pt, *text = GGadgetGetTitle8(tf);

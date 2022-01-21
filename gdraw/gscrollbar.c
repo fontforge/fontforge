@@ -108,7 +108,7 @@ static GResInfo gthumb_ri = {
     NULL
 };
 
-static void GScrollBarChanged(GScrollBar *gsb, enum sb sbtype, int32 pos) {
+static void GScrollBarChanged(GScrollBar *gsb, enum sb sbtype, int32_t pos) {
     GEvent e;
     int active_len;
 
@@ -591,16 +591,16 @@ GGadget *GScrollBarCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 return( &gsb->g );
 }
 
-int32 GScrollBarGetPos(GGadget *g) {
+int32_t GScrollBarGetPos(GGadget *g) {
 return( ((GScrollBar *) g)->sb_pos );
 }
 
-int32 GScrollBarAddToPos(GGadget *g,int32 pos) {
+int32_t GScrollBarAddToPos(GGadget *g,int32_t pos) {
     return GScrollBarSetPos( g, GScrollBarGetPos(g) + pos );
 }
 
 
-int32 GScrollBarSetPos(GGadget *g,int32 pos) {
+int32_t GScrollBarSetPos(GGadget *g,int32_t pos) {
     GScrollBar *gsb = (GScrollBar *) g;
 
     if ( pos>gsb->sb_max-gsb->sb_mustshow )
@@ -619,8 +619,8 @@ int32 GScrollBarSetPos(GGadget *g,int32 pos) {
 return( pos );
 }
 
-void GScrollBarSetMustShow(GGadget *g, int32 sb_min, int32 sb_max, int32 sb_pagesize,
-	int32 sb_mustshow ) {
+void GScrollBarSetMustShow(GGadget *g, int32_t sb_min, int32_t sb_max, int32_t sb_pagesize,
+	int32_t sb_mustshow ) {
     GScrollBar *gsb = (GScrollBar *) g;
 
     if ( sb_min>sb_max || sb_pagesize<=0 ) {
@@ -647,11 +647,11 @@ return;
     GScrollBarSetPos(g,gsb->sb_pos);
 }
 
-void GScrollBarSetBounds(GGadget *g, int32 sb_min, int32 sb_max, int32 sb_pagesize ) {
+void GScrollBarSetBounds(GGadget *g, int32_t sb_min, int32_t sb_max, int32_t sb_pagesize ) {
     GScrollBarSetMustShow(g,sb_min,sb_max,sb_pagesize,sb_pagesize);
 }
 
-void GScrollBarGetBounds(GGadget *g, int32 *sb_min, int32 *sb_max, int32 *sb_pagesize ) {
+void GScrollBarGetBounds(GGadget *g, int32_t *sb_min, int32_t *sb_max, int32_t *sb_pagesize ) {
     GScrollBar *gsb = (GScrollBar *) g;
     *sb_min = gsb->sb_min;
     *sb_max = gsb->sb_max;

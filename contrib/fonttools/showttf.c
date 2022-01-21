@@ -1,17 +1,11 @@
 #if 0
 #include "basics.h"
 #else
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
-typedef unsigned int uint32;
-typedef int int32;
-typedef short int16;
-typedef signed char int8;
-typedef unsigned short uint16;
-typedef unsigned char uint8;
-#define true	1
-#define false	0
 #endif
 #include <string.h>
 
@@ -29,7 +23,7 @@ struct dup {
 struct features {
     int feature;
     int nsettings;
-    struct settings { uint16 setting; int16 nameid; char *name; } *settings;
+    struct settings { uint16_t setting; int16_t nameid; char *name; } *settings;
     int featureflags;
     char *name;
     int nameIndex;
@@ -150,7 +144,7 @@ struct ttfinfo {
     struct dup *dups;
     struct features *features;
 
-    uint16 *morx_classes;
+    uint16_t *morx_classes;
     int fvar_axiscount;
 };
 
@@ -162,7 +156,7 @@ return( EOF );
 return( (ch1<<8)|ch2 );
 }
 
-static int32 getlong(FILE *ttf) {
+static int32_t getlong(FILE *ttf) {
     int ch1 = getc(ttf);
     int ch2 = getc(ttf);
     int ch3 = getc(ttf);
@@ -172,7 +166,7 @@ return( EOF );
 return( (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4 );
 }
 
-static int32 get3byte(FILE *ttf) {
+static int32_t get3byte(FILE *ttf) {
     int ch1 = getc(ttf);
     int ch2 = getc(ttf);
     int ch3 = getc(ttf);
@@ -181,7 +175,7 @@ return( EOF );
 return( (ch1<<16)|(ch2<<8)|ch3 );
 }
 
-static int32 getoffset(FILE *ttf, int offsize) {
+static int32_t getoffset(FILE *ttf, int offsize) {
     int ch1, ch2, ch3, ch4;
 
     ch1 = getc(ttf);
@@ -206,22 +200,22 @@ return( (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4 );
 }
 
 static double getfixed(FILE *ttf) {
-    int32 val = getlong(ttf);
+    int32_t val = getlong(ttf);
     int mant = val&0xffff;
     /* This oddity may be needed to deal with the first 16 bits being signed */
     /*  and the low-order bits unsigned */
 return( (double) (val>>16) + (mant/65536.0) );
 }
 
-static double long2fixed(int32 val) {
+static double long2fixed(int32_t val) {
     int mant = val&0xffff;
     /* This oddity may be needed to deal with the first 16 bits being signed */
     /*  and the low-order bits unsigned */
 return( (double) (val>>16) + (mant/65536.0) );
 }
 
-static int32 filecheck(FILE *file, int start, int len) {
-    uint32 sum = 0, chunk;
+static int32_t filecheck(FILE *file, int start, int len) {
+    uint32_t sum = 0, chunk;
 
     fseek(file,start,SEEK_SET);
     if ( len!=-1 ) len=(len+3)>>2;
@@ -240,7 +234,7 @@ static int readcff(FILE *ttf,FILE *util, struct ttfinfo *info);
 
 static int readttfheader(FILE *ttf, FILE *util, struct ttfinfo *info) {
     int i;
-    int tag, checksum, offset, length, sr, es, rs, cs; uint32 v;
+    int tag, checksum, offset, length, sr, es, rs, cs; uint32_t v;
     int e_sr, e_es, e_rs;
     double version;
 
@@ -1802,7 +1796,7 @@ static void readttfencodings(FILE *ttf,FILE *util, struct ttfinfo *info) {
     int platform, specific;
     int offset, encoff;
     int format, len;
-    uint16 table[256];
+    uint16_t table[256];
     int segCount;
     unsigned short *endchars, *startchars, *delta, *rangeOffset, *glyphs;
     int index;
@@ -1973,7 +1967,7 @@ return;
 		info->glyph_unicode[getushort(ttf)] = first+i;
 	} else if ( format==2 ) {
 	    int max_sub_head_key = 0, cnt, last;
-	    struct subhead { uint16 first, cnt, delta, rangeoff; } *subheads;
+	    struct subhead { uint16_t first, cnt, delta, rangeoff; } *subheads;
 
 	    for ( i=0; i<256; ++i ) {
 		table[i] = getushort(ttf)/8;	/* Sub-header keys */
@@ -2009,7 +2003,7 @@ return;
 			    subheads[0].rangeoff+(i-subheads[0].first)>=cnt )
 			index = 0;
 		    else if ( (index = glyphs[subheads[0].rangeoff+(i-subheads[0].first)])!= 0 )
-			index = (uint32) (index+subheads[0].delta);
+			index = (uint32_t) (index+subheads[0].delta);
 		    /* I assume the single byte codes are just ascii or latin1*/
 		    if ( index!=0 && index<info->glyph_cnt ) {
 			if ( info->glyph_unicode[index]==0 )
@@ -2023,7 +2017,7 @@ return;
 			if ( subheads[k].rangeoff+j>=cnt )
 			    index = 0;
 			else if ( (index = glyphs[subheads[k].rangeoff+j])!= 0 )
-			    index = (uint16) (index+subheads[k].delta);
+			    index = (uint16_t) (index+subheads[k].delta);
 			if ( index!=0 && index<info->glyph_cnt ) {
 			    enc0 = (i<<8)|(j+subheads[k].first);
 			    if ( info->glyph_unicode[index]==0 )
@@ -2038,7 +2032,7 @@ return;
 	    free(subheads);
 	    free(glyphs);
 	} else if ( format==12 ) {
-	    uint32 ngroups, start, end, startglyph;
+	    uint32_t ngroups, start, end, startglyph;
 	    ngroups = getlong(ttf);
 	    for ( j=0; j<ngroups; ++j ) {
 		start = getlong(ttf);
@@ -2077,7 +2071,7 @@ return;
     } else
 	printf( "Could not understand encoding table\n" );
     if ( vs_map!=-1 ) {
-	struct vs_data { int vs; uint32 defoff, nondefoff; } *vs_data;
+	struct vs_data { int vs; uint32_t defoff, nondefoff; } *vs_data;
 	int cnt, rcnt;
 
 	fseek(ttf,info->encoding_start+vs_map,SEEK_SET);
@@ -2127,7 +2121,7 @@ return;
 static void readttfpost(FILE *ttf, FILE *util, struct ttfinfo *info) {
     int i,j,ind, extras;
     int format, gc, len;
-    uint16 *indexes, *glyphs;
+    uint16_t *indexes, *glyphs;
     char **names, *name;
 
     fseek(ttf,info->postscript_start,SEEK_SET);
@@ -2150,8 +2144,8 @@ static void readttfpost(FILE *ttf, FILE *util, struct ttfinfo *info) {
 	gc = getushort(ttf);
 	if ( gc!=info->glyph_cnt )
 	    fprintf( stderr, "!!!! Post table glyph count does not match that in 'maxp'\n" );
-	indexes = calloc(65536,sizeof(uint16));
-	glyphs = calloc(gc,sizeof(uint16));
+	indexes = calloc(65536,sizeof(uint16_t));
+	glyphs = calloc(gc,sizeof(uint16_t));
 	names = calloc(gc<info->glyph_cnt?info->glyph_cnt:gc,sizeof(char *));
 	/* the index table is backwards from the way I want to use it */
 	extras = 0;
@@ -2208,7 +2202,7 @@ static void readttfpost(FILE *ttf, FILE *util, struct ttfinfo *info) {
     }
 }
 
-static void showlangsys(FILE *ttf,int script_start, uint16 ls_off, uint32 ls_name ) {
+static void showlangsys(FILE *ttf,int script_start, uint16_t ls_off, uint32_t ls_name ) {
     int i,cnt;
 
     if ( ls_name==0 )
@@ -2227,17 +2221,17 @@ static void showlangsys(FILE *ttf,int script_start, uint16 ls_off, uint32 ls_nam
 
 static void showscriptlist(FILE *ttf,int script_start ) {
     int cnt,i, j;
-    uint16 *script_table_offsets;
-    uint32 *script_table_names;
+    uint16_t *script_table_offsets;
+    uint32_t *script_table_names;
     int dlo, ls_cnt;
-    uint32 *ls_names;
-    uint16 *ls_offsets;
+    uint32_t *ls_names;
+    uint16_t *ls_offsets;
 
     fseek(ttf,script_start,SEEK_SET);
     printf( "\tScript List\n" );
     printf( "\t script count=%d\n", cnt=getushort(ttf));
-    script_table_offsets = malloc(cnt*sizeof(uint16));
-    script_table_names = malloc(cnt*sizeof(uint32));
+    script_table_offsets = malloc(cnt*sizeof(uint16_t));
+    script_table_names = malloc(cnt*sizeof(uint32_t));
     for ( i=0; i<cnt; ++i ) {
 	script_table_names[i] = getlong(ttf);
 	script_table_offsets[i] = getushort(ttf);
@@ -2258,8 +2252,8 @@ static void showscriptlist(FILE *ttf,int script_start ) {
 		(char)(script_table_names[i]&0xff) );
 	printf( "\t  default language offset=%d\n", dlo=getushort(ttf));
 	printf( "\t  language systems count=%d\n", ls_cnt = getushort(ttf));
-	ls_names = malloc(ls_cnt*sizeof(uint32));
-	ls_offsets = malloc(ls_cnt*sizeof(uint16));
+	ls_names = malloc(ls_cnt*sizeof(uint32_t));
+	ls_offsets = malloc(ls_cnt*sizeof(uint16_t));
 	for ( j=0; j<ls_cnt; ++j ) {
 	    ls_names[j] = getlong(ttf);
 	    ls_offsets[j] = getushort(ttf);
@@ -2282,15 +2276,15 @@ static void showscriptlist(FILE *ttf,int script_start ) {
 
 static void showfeaturelist(FILE *ttf,int feature_start ) {
     int cnt,i, j, lu_cnt;
-    uint32 *feature_record_names;
-    uint16 *feature_record_offsets;
-    uint16 *lu_offsets;
+    uint32_t *feature_record_names;
+    uint16_t *feature_record_offsets;
+    uint16_t *lu_offsets;
 
     fseek(ttf,feature_start,SEEK_SET);
     printf( "\tFeature List\n" );
     printf( "\t feature count=%d\n", cnt=getushort(ttf));
-    feature_record_offsets = malloc(cnt*sizeof(uint16));
-    feature_record_names = malloc(cnt*sizeof(uint32));
+    feature_record_offsets = malloc(cnt*sizeof(uint16_t));
+    feature_record_names = malloc(cnt*sizeof(uint32_t));
     for ( i=0; i<cnt; ++i ) {
 	feature_record_names[i] = getlong(ttf);
 	feature_record_offsets[i] = getushort(ttf);
@@ -2314,7 +2308,7 @@ static void showfeaturelist(FILE *ttf,int feature_start ) {
 	if ( i+1<cnt && feature_record_offsets[i]<feature_record_offsets[i+1] &&
 		feature_record_offsets[i]+4+2*lu_cnt>feature_record_offsets[i+1] )
 	    printf( "!!!! Bad lookup count. More lookups than there is space for!!!!\n" );
-	lu_offsets = malloc(lu_cnt*sizeof(uint16));
+	lu_offsets = malloc(lu_cnt*sizeof(uint16_t));
 	for ( j=0; j<lu_cnt; ++j ) {
 	    printf( "\t   Lookup List Offset[%d] = %d\n", j,
 		    lu_offsets[j] = getushort(ttf));
@@ -2325,9 +2319,9 @@ static void showfeaturelist(FILE *ttf,int feature_start ) {
     free( feature_record_names );
 }
 
-static uint16 *showCoverageTable(FILE *ttf, int coverage_offset, int specified_cnt) {
+static uint16_t *showCoverageTable(FILE *ttf, int coverage_offset, int specified_cnt) {
     int format, cnt, i,j, rcnt;
-    uint16 *glyphs=NULL;
+    uint16_t *glyphs=NULL;
     int start, end, ind, max;
 
     fseek(ttf,coverage_offset,SEEK_SET);
@@ -2335,13 +2329,13 @@ static uint16 *showCoverageTable(FILE *ttf, int coverage_offset, int specified_c
     printf( "\t    Format=%d\n", format = getushort(ttf));
     if ( format==1 ) {
 	printf("\t    Glyph Count=%d\n\t     ", cnt = getushort(ttf));
-	glyphs = malloc((cnt+1)*sizeof(uint16));
+	glyphs = malloc((cnt+1)*sizeof(uint16_t));
 	for ( i=0; i<cnt; ++i )
 	    printf( "%d ", glyphs[i] = getushort(ttf));
 	glyphs[i] = 0xffff;
 	putchar('\n');
     } else if ( format==2 ) {
-	glyphs = malloc((max=256)*sizeof(uint16));
+	glyphs = malloc((max=256)*sizeof(uint16_t));
 	printf("\t    Range Count=%d\n\t     ", rcnt = getushort(ttf));
 	cnt = 0;
 	for ( i=0; i<rcnt; ++i ) {
@@ -2350,7 +2344,7 @@ static uint16 *showCoverageTable(FILE *ttf, int coverage_offset, int specified_c
 	    printf( "Index=%d\n", ind = getushort(ttf));
 	    if ( ind+end-start+2 >= max ) {
 		max = ind+end-start+2;
-		glyphs = realloc(glyphs,max*sizeof(uint16));
+		glyphs = realloc(glyphs,max*sizeof(uint16_t));
 	    }
 	    for ( j=start; j<=end; ++j )
 		glyphs[j-start+ind] = j;
@@ -2366,13 +2360,13 @@ static uint16 *showCoverageTable(FILE *ttf, int coverage_offset, int specified_c
 return( glyphs );
 }
 
-static uint16 *getClassDefTable(FILE *ttf, int classdef_offset, int cnt) {
+static uint16_t *getClassDefTable(FILE *ttf, int classdef_offset, int cnt) {
     int format, i, j;
-    uint16 start, glyphcnt, rangecnt, end, class;
-    uint16 *glist=NULL;
+    uint16_t start, glyphcnt, rangecnt, end, class;
+    uint16_t *glist=NULL;
 
     fseek(ttf, classdef_offset, SEEK_SET);
-    glist = malloc(cnt*sizeof(uint16));
+    glist = malloc(cnt*sizeof(uint16_t));
     for ( i=0; i<cnt; ++i )
 	glist[i] = 0;	/* Class 0 is default */
     format = getushort(ttf);
@@ -2421,7 +2415,7 @@ static void readvaluerecord(int vf,FILE *ttf,const char *label) {
     printf( "\n" );
 }
 
-static void PrintGlyphs(uint16 *glyphs, struct ttfinfo *info) {
+static void PrintGlyphs(uint16_t *glyphs, struct ttfinfo *info) {
     if ( glyphs==NULL )
 	printf( "<Empty>\n" );
     else if ( info->glyph_names!=NULL ) {
@@ -2436,8 +2430,8 @@ static void PrintGlyphs(uint16 *glyphs, struct ttfinfo *info) {
 
 static void gposPairSubTable(FILE *ttf, int which, int stoffset, struct ttfinfo *info) {
     int coverage, cnt, i, subformat, vf1, vf2, j, pair_cnt;
-    uint16 *glyphs = NULL;
-    uint16 *ps_offsets;
+    uint16_t *glyphs = NULL;
+    uint16_t *ps_offsets;
 
     printf( "\t  Pair Sub Table[%d]\n", which );
     printf( "\t   SubFormat=%d\n", subformat = getushort(ttf));
@@ -2510,10 +2504,10 @@ static void ShowAttach(FILE *ttf) {
 
 static void gposMarkToBaseSubTable(FILE *ttf, int which, int stoffset, struct ttfinfo *info, int m2b) {
     int mcoverage, bcoverage, classcnt, markoff, baseoff;
-    uint16 *mglyphs, *bglyphs;
+    uint16_t *mglyphs, *bglyphs;
     int i, j;
-    uint16 *offsets;
-    uint32 pos;
+    uint16_t *offsets;
+    uint32_t pos;
 
     printf( m2b ? "\t  Mark To Base Sub Table[%d]\n" : "\t  Mark To Mark Sub Table[%d]\n", which );
     printf( "\t   SubFormat=%d\n", getushort(ttf));
@@ -2528,7 +2522,7 @@ static void gposMarkToBaseSubTable(FILE *ttf, int which, int stoffset, struct tt
     bglyphs = showCoverageTable(ttf,stoffset+bcoverage, -1);
     fseek(ttf,stoffset+baseoff,SEEK_SET);
     printf( "\t    Base Glyph Count=%d\n", getushort(ttf));
-    offsets = malloc(classcnt*sizeof(uint16));
+    offsets = malloc(classcnt*sizeof(uint16_t));
     for ( i=0; bglyphs[i]!=0xffff; ++i ) {
 	printf( "\t\tBase Glyph %d (%s)\n", bglyphs[i],
 		bglyphs[i]>=info->glyph_cnt ? "!!! Bad glyph !!!" :
@@ -2568,21 +2562,21 @@ static void gposMarkToBaseSubTable(FILE *ttf, int which, int stoffset, struct tt
 
 static void gsubSingleSubTable(FILE *ttf, int which, int stoffset, struct ttfinfo *info) {
     int coverage, cnt, i, type;
-    uint16 *glyphs = NULL;
+    uint16_t *glyphs = NULL;
 
     printf( "\t  Single Sub Table[%d] (variant forms)\n", which );
     printf( "\t   Type=%d\n", type = getushort(ttf));
     printf( "\t   Coverage Offset=%d\n", coverage = getushort(ttf));
     if ( type==1 ) {
-	uint16 delta = getushort(ttf);
+	uint16_t delta = getushort(ttf);
 	printf( "\t   Delta=%d\n", delta);
 	glyphs = showCoverageTable(ttf,stoffset+coverage, -1);
 	printf( "\t   Which means ...\n" );
 	for ( i=0; glyphs[i]!=0xffff; ++i )
 	    printf( "\t\tGlyph %d (%s) -> %d (%s)\n", glyphs[i],
 		    glyphs[i]>=info->glyph_cnt ? "!!! Bad glyph !!!" : info->glyph_names == NULL ? "" : info->glyph_names[glyphs[i]],
-		    (uint16) (glyphs[i]+delta),
-		    (uint16) (glyphs[i]+delta)>=info->glyph_cnt ? "!!! Bad glyph !!!" : info->glyph_names == NULL ? "" : info->glyph_names[(uint16) (glyphs[i]+delta)]);
+		    (uint16_t) (glyphs[i]+delta),
+		    (uint16_t) (glyphs[i]+delta)>=info->glyph_cnt ? "!!! Bad glyph !!!" : info->glyph_names == NULL ? "" : info->glyph_names[(uint16_t) (glyphs[i]+delta)]);
     } else {
 	int here;
 	printf( "\t   Count=%d\n", cnt = getushort(ttf));
@@ -2602,14 +2596,14 @@ static void gsubSingleSubTable(FILE *ttf, int which, int stoffset, struct ttfinf
 
 static void gsubMultipleSubTable(FILE *ttf, int which, int stoffset, struct ttfinfo *info) {
     int coverage, cnt, i, j, glyph_cnt;
-    uint16 *seq_offsets;
-    uint16 *glyphs;
+    uint16_t *seq_offsets;
+    uint16_t *glyphs;
 
     printf( "\t  Multiple Sub Table[%d] (ligature decomposition)\n", which );
     printf( "\t   Type=%d\n", getushort(ttf));
     printf( "\t   Coverage Offset=%d\n", coverage = getushort(ttf));
     printf( "\t   Count=%d\n", cnt = getushort(ttf));
-    seq_offsets = malloc(cnt*sizeof(uint16));
+    seq_offsets = malloc(cnt*sizeof(uint16_t));
     for ( i=0; i<cnt; ++i )
 	printf( "\t    Sequence Offsets[%d]=%d\n", i, seq_offsets[i]=getushort(ttf));
     glyphs = showCoverageTable(ttf,stoffset+coverage, cnt);
@@ -2630,14 +2624,14 @@ static void gsubMultipleSubTable(FILE *ttf, int which, int stoffset, struct ttfi
 
 static void gsubAlternateSubTable(FILE *ttf, int which, int stoffset, struct ttfinfo *info) {
     int coverage, cnt, i, j, glyph_cnt;
-    uint16 *seq_offsets;
-    uint16 *glyphs;
+    uint16_t *seq_offsets;
+    uint16_t *glyphs;
 
     printf( "\t  Alternate Sub Table[%d] (variant forms)\n", which );
     printf( "\t   Type=%d\n", getushort(ttf));
     printf( "\t   Coverage Offset=%d\n", coverage = getushort(ttf));
     printf( "\t   Count=%d\n", cnt = getushort(ttf));
-    seq_offsets = malloc(cnt*sizeof(uint16));
+    seq_offsets = malloc(cnt*sizeof(uint16_t));
     for ( i=0; i<cnt; ++i )
 	printf( "\t    Alternate Set Offsets[%d]=%d\n", i, seq_offsets[i]=getushort(ttf));
     glyphs = showCoverageTable(ttf,stoffset+coverage, cnt);
@@ -2658,14 +2652,14 @@ static void gsubAlternateSubTable(FILE *ttf, int which, int stoffset, struct ttf
 
 static void gsubLigatureSubTable(FILE *ttf, int which, int stoffset, struct ttfinfo *info) {
     int coverage, cnt, i, j, k, lig_cnt, cc, gl;
-    uint16 *ls_offsets, *lig_offsets;
-    uint16 *glyphs;
+    uint16_t *ls_offsets, *lig_offsets;
+    uint16_t *glyphs;
 
     printf( "\t  Ligature Sub Table[%d]\n", which );
     printf( "\t   Type=%d\n", getushort(ttf));
     printf( "\t   Coverage Offset=%d\n", coverage = getushort(ttf));
     printf( "\t   Lig Set Count=%d\n", cnt = getushort(ttf));
-    ls_offsets = malloc(cnt*sizeof(uint16));
+    ls_offsets = malloc(cnt*sizeof(uint16_t));
     for ( i=0; i<cnt; ++i )
 	printf( "\t    Lig Set Offsets[%d]=%d\n", i, ls_offsets[i]=getushort(ttf));
     glyphs = showCoverageTable(ttf,stoffset+coverage,cnt);
@@ -2673,7 +2667,7 @@ static void gsubLigatureSubTable(FILE *ttf, int which, int stoffset, struct ttfi
 	fseek(ttf,stoffset+ls_offsets[i],SEEK_SET);
 	printf( "\t    Ligature Set[%d] for glyph %d %s\n", i, glyphs[i], glyphs[i]>=info->glyph_cnt ? "!!!! Bad Glyph !!!!" : info->glyph_names == NULL ? "" : info->glyph_names[glyphs[i]]);
 	printf( "\t     Count=%d\n", lig_cnt = getushort(ttf));
-	lig_offsets = malloc(lig_cnt*sizeof(uint16));
+	lig_offsets = malloc(lig_cnt*sizeof(uint16_t));
 	for ( j=0; j<lig_cnt; ++j )
 	    printf("\t     Offsets[%d]=%d\n", j, lig_offsets[j] = getushort(ttf));
 	for ( j=0; j<lig_cnt; ++j ) {
@@ -2702,7 +2696,7 @@ static void gsubChainingContextSubTable(FILE *ttf, int which, int stoffset, stru
 static void showgpossublookup(FILE *ttf,int base, int lkoffset,
 	struct ttfinfo *info, int gpos ) {
     int lu_type, flags, cnt, j, st, is_exten_lu;
-    uint16 *st_offsets;
+    uint16_t *st_offsets;
 
     fseek(ttf,base+lkoffset,SEEK_SET);
     lu_type = getushort(ttf);
@@ -2740,7 +2734,7 @@ static void showgpossublookup(FILE *ttf,int base, int lkoffset,
 	    (flags&0x4)?"IgnoreLigatures":"",
 	    (flags&0x8)?"IgnoreCombiningMarks":"");
     printf( "\t  Sub Table Count=%d\n", cnt);
-    st_offsets = malloc(cnt*sizeof(uint16));
+    st_offsets = malloc(cnt*sizeof(uint16_t));
     for ( j=0; j<cnt; ++j )
 	printf( "\t   Sub Table Offsets[%d]=%d\n", j, st_offsets[j] = getushort(ttf));
     for ( j=0; j<cnt; ++j ) {
@@ -2807,12 +2801,12 @@ static void showgpossublookup(FILE *ttf,int base, int lkoffset,
 
 static void showgpossublookups(FILE *ttf,int lookup_start, struct ttfinfo *info, int gpos ) {
     int i, lu_cnt;
-    uint16 *lu_offsets;
+    uint16_t *lu_offsets;
 
     fseek(ttf,lookup_start,SEEK_SET);
     printf( "\t%s Lookup List Table\n", gpos?"GPOS":"GSUB" );
     printf( "\t Lookup Count=%d\n", lu_cnt = getushort(ttf));
-    lu_offsets = malloc(lu_cnt*sizeof(uint16));
+    lu_offsets = malloc(lu_cnt*sizeof(uint16_t));
     for ( i=0; i<lu_cnt; ++i )
 	printf( "\t Lookup Offset[%d]=%d\n", i, lu_offsets[i] = getushort(ttf));
     printf( "\t--\n");
@@ -2852,7 +2846,7 @@ static void readttfgpos(FILE *ttf, FILE *util, struct ttfinfo *info) {
 }
 
 static void gdefshowglyphclassdef(FILE *ttf,int offset,struct ttfinfo *info) {
-    uint16 *glist=NULL;
+    uint16_t *glist=NULL;
     int i;
     static const char * const classes[] = { "Unspecified", "Base", "Ligature", "Mark", "Component" };
     const int max_class = sizeof(classes)/sizeof(classes[0]);
@@ -2869,14 +2863,14 @@ static void gdefshowglyphclassdef(FILE *ttf,int offset,struct ttfinfo *info) {
 
 static void gdefshowligcaretlist(FILE *ttf,int offset,struct ttfinfo *info) {
     int coverage, cnt, i, j, cc, format;
-    uint16 *lc_offsets, *glyphs, *offsets;
-    uint32 caret_base;
+    uint16_t *lc_offsets, *glyphs, *offsets;
+    uint32_t caret_base;
 
     fseek(ttf,offset,SEEK_SET);
     printf( "  Ligature Caret List\n" );
     printf( "\t   Coverage Offset=%d\n", coverage = getushort(ttf));
     printf( "\t   Ligature Count=%d\n", cnt = getushort(ttf));
-    lc_offsets = malloc(cnt*sizeof(uint16));
+    lc_offsets = malloc(cnt*sizeof(uint16_t));
     for ( i=0; i<cnt; ++i )
 	printf( "\t    Lig Caret Offsets[%d]=%d\n", i, lc_offsets[i]=getushort(ttf));
     glyphs = showCoverageTable(ttf,offset+coverage,cnt);
@@ -2886,7 +2880,7 @@ static void gdefshowligcaretlist(FILE *ttf,int offset,struct ttfinfo *info) {
 		glyphs[i]>=info->glyph_cnt ? "!!! Bad Glyph !!!" : info->glyph_names==NULL ? "" : info->glyph_names[glyphs[i]]);
 	caret_base = ftell(ttf);
 	printf("\t     Count = %d\n", cc = getushort(ttf));
-	offsets = malloc(cc*sizeof(uint16));
+	offsets = malloc(cc*sizeof(uint16_t));
 	for ( j=0; j<cc; ++j )
 	    offsets[j] = getushort(ttf);
 	for ( j=0; j<cc; ++j ) {
@@ -2927,7 +2921,7 @@ static void readttfkern_context(FILE *ttf, FILE *util, struct ttfinfo *info, int
 static void readttfkern(FILE *ttf, FILE *util, struct ttfinfo *info) {
     int version, ntables;
     int header_size, len, coverage, i, j;
-    uint32 begin;
+    uint32_t begin;
     int left, right, val, array, n, sr, es, rs;
 
     fseek(ttf,info->kern_start,SEEK_SET);
@@ -3023,7 +3017,7 @@ static void readttfkern(FILE *ttf, FILE *util, struct ttfinfo *info) {
 
 static void readttffontdescription(FILE *ttf, FILE *util, struct ttfinfo *info) {
     int n, i;
-    uint32 tag, lval;
+    uint32_t tag, lval;
     double val;
 
     fseek(ttf,info->fdsc_start,SEEK_SET);
@@ -3070,7 +3064,7 @@ static void readttffontdescription(FILE *ttf, FILE *util, struct ttfinfo *info) 
 
 static void readttffeatures(FILE *ttf, FILE *util, struct ttfinfo *info) {
     int n, i, j, nameid;
-    uint32 setting_offset;
+    uint32_t setting_offset;
 
     fseek(ttf,info->feat_start,SEEK_SET);
     printf( "\nfeat table (at %d) (feature names)\n", info->feat_start );
@@ -3620,8 +3614,8 @@ static void show_applelookuptable(FILE *ttf,struct ttfinfo *info,void (*show)(FI
     int i, j;
     int format;
     int first, last, cnt, glyph, data_offset;
-    uint32 here;
-    uint32 base = ftell(ttf);
+    uint32_t here;
+    uint32_t base = ftell(ttf);
 
     printf( "\t Lookup table format=%d ", format = getushort(ttf));
     switch ( format ) {
@@ -3706,7 +3700,7 @@ struct classes {
 };
 
 struct statetable {
-    uint32 state_start;
+    uint32_t state_start;
     int nclasses;
     int nstates;
     int nentries;
@@ -3715,20 +3709,20 @@ struct statetable {
     int entry_extras;	/* Number of extra glyph offsets */
     int first_glyph;	/* that's classifyable */
     int nglyphs;
-    uint8 *classes;
-    uint8 *state_table;	/* state_table[nstates][nclasses], each entry is an */
+    uint8_t *classes;
+    uint8_t *state_table;	/* state_table[nstates][nclasses], each entry is an */
 	/* index into the following array */
-    uint16 *state_table2;	/* morx version. States are have 2 byte entries */
-    uint16 *classes2;
-    uint8 *transitions;
-    uint32 extra_offsets[3];
+    uint16_t *state_table2;	/* morx version. States are have 2 byte entries */
+    uint16_t *classes2;
+    uint8_t *transitions;
+    uint32_t extra_offsets[3];
     int len;		/* Size of the entire subtable */
 };
 
 static void show_statetable(struct statetable *st, struct ttfinfo *info, FILE *ttf,
-	void (*entry_print)(uint8 *entry,struct statetable *st,struct ttfinfo *info,FILE *ttf)) {
+	void (*entry_print)(uint8_t *entry,struct statetable *st,struct ttfinfo *info,FILE *ttf)) {
     int i, j;
-    uint8 *pt;
+    uint8_t *pt;
 
     printf( "\t State table\n" );
     printf( "\t  num classes = %d\n", st->nclasses );
@@ -3778,9 +3772,9 @@ static void show_statetable(struct statetable *st, struct ttfinfo *info, FILE *t
 }
 
 static void show_statetablex(struct statetable *st, struct ttfinfo *info, FILE *ttf,
-	void (*entry_print)(uint8 *entry,struct statetable *st,struct ttfinfo *info,FILE *ttf)) {
+	void (*entry_print)(uint8_t *entry,struct statetable *st,struct ttfinfo *info,FILE *ttf)) {
     int i, j;
-    uint8 *pt;
+    uint8_t *pt;
 
     printf( "\t State table\n" );
     printf( "\t  num classes = %d\n", st->nclasses );
@@ -3832,8 +3826,8 @@ static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,
 	void (*apply_default)(struct ttfinfo *info, int gfirst, int glast,void *def),
 	void *def) {
     int format, i, first, last, data_off, cnt, prev;
-    uint32 here;
-    uint32 base = ftell(ttf);
+    uint32_t here;
+    uint32_t base = ftell(ttf);
 
     switch ( format = getushort(ttf)) {
       case 0:	/* Simple array */
@@ -3913,7 +3907,7 @@ static void mortclass_apply_values(struct ttfinfo *info, int gfirst, int glast,F
 }
 
 static void mortclass_apply_value(struct ttfinfo *info, int gfirst, int glast,FILE *ttf) {
-    uint16 class;
+    uint16_t class;
     int i;
 
     class = getushort(ttf);
@@ -3924,7 +3918,7 @@ static void mortclass_apply_value(struct ttfinfo *info, int gfirst, int glast,FI
 
 static struct statetable *read_statetable(FILE *ttf, int ent_extras, int ismorx, struct ttfinfo *info) {
     struct statetable *st = calloc(1,sizeof(struct statetable));
-    uint32 here = ftell(ttf);
+    uint32_t here = ftell(ttf);
     int nclasses, class_off, state_off, entry_off;
     int state_max, ent_max, old_state_max, old_ent_max;
     int i, j, ent, new_state, ent_size;
@@ -3954,7 +3948,7 @@ static struct statetable *read_statetable(FILE *ttf, int ent_extras, int ismorx,
 	/* parse class subtable */
     fseek(ttf,here+class_off,SEEK_SET);
     if ( ismorx ) {
-	st->classes2 = info->morx_classes = malloc(info->glyph_cnt*sizeof(uint16));
+	st->classes2 = info->morx_classes = malloc(info->glyph_cnt*sizeof(uint16_t));
 	for ( i=0; i<info->glyph_cnt; ++i )
 	    st->classes2[i] = 1;			/* Out of bounds */
 	readttf_applelookup(ttf,info,
@@ -3966,7 +3960,7 @@ static struct statetable *read_statetable(FILE *ttf, int ent_extras, int ismorx,
 	fread(st->classes,1,st->nglyphs,ttf);
     }
 
-    /* The size of an entry is variable. There are 2 uint16 fields at the begin-*/
+    /* The size of an entry is variable. There are 2 uint16_t fields at the begin-*/
     /*  ning of all entries. There may be some number of shorts following these*/
     /*  used for indexing special tables. */
     ent_size = 4 + 2*ent_extras;
@@ -3984,7 +3978,7 @@ static struct statetable *read_statetable(FILE *ttf, int ent_extras, int ismorx,
     state_max = 2; ent_max = 0;
     while ( old_state_max!=state_max ) {
 	i = old_state_max*nclasses;
-	fseek(ttf,here+state_off+(ismorx?i*sizeof(uint16):i),SEEK_SET);
+	fseek(ttf,here+state_off+(ismorx?i*sizeof(uint16_t):i),SEEK_SET);
 	old_state_max = state_max;
 	for ( ; i<state_max*nclasses; ++i ) {
 	    ent = ismorx ? getushort(ttf) : getc(ttf);
@@ -4028,7 +4022,7 @@ return( NULL );
     /*  number of classes (classes vary faster than states) */
     /* The first two states are predefined, 0 is start of text, 1 start of line*/
     if ( ismorx ) {
-	st->state_table2 = malloc(st->nstates*st->nclasses*sizeof(uint16));
+	st->state_table2 = malloc(st->nstates*st->nclasses*sizeof(uint16_t));
 	for ( i=0; i<st->nstates*st->nclasses; ++i )
 	    st->state_table2[i] = getushort(ttf);
     } else {
@@ -4054,7 +4048,7 @@ return;
     free( st );
 }
 
-static void show_contextkerndata(uint8 *entry,struct statetable *st,struct ttfinfo *info, FILE *ttf) {
+static void show_contextkerndata(uint8_t *entry,struct statetable *st,struct ttfinfo *info, FILE *ttf) {
     int flags = (entry[2]<<8)|entry[3];
     int offset = flags&0x3fff;
     int i, k;
@@ -4089,7 +4083,7 @@ static void readttfkern_context(FILE *ttf, FILE *util, struct ttfinfo *info, int
     free_statetable(st);
 }
 
-static void show_indicflags(uint8 *entry,struct statetable *st,struct ttfinfo *info,FILE *ttf) {
+static void show_indicflags(uint8_t *entry,struct statetable *st,struct ttfinfo *info,FILE *ttf) {
     int flags = (entry[2]<<8)|entry[3];
 
     printf( "\t   Flags %04x ", (unsigned int)(flags) );
@@ -4169,11 +4163,11 @@ static void readttfmorx_indic(FILE *ttf, FILE *util, struct ttfinfo *info, int s
     free_statetable(st);
 }
 
-static void show_contextflags(uint8 *entry,struct statetable *st,struct ttfinfo *info, FILE *ttf) {
+static void show_contextflags(uint8_t *entry,struct statetable *st,struct ttfinfo *info, FILE *ttf) {
     int flags = (entry[2]<<8)|entry[3];
 /* the docs say this is unsigned, but that appears not to be the case */
-    int mark_offset = (int16) ((entry[4]<<8)|entry[5]);
-    int cur_offset = (int16) ((entry[6]<<8)|entry[7]);
+    int mark_offset = (int16_t) ((entry[4]<<8)|entry[5]);
+    int cur_offset = (int16_t) ((entry[6]<<8)|entry[7]);
     int i, sub;
 
     printf( "\t   Flags %04x ", (unsigned int)(flags) );
@@ -4264,7 +4258,7 @@ static void mort_noncontextualsubs_glyph( FILE *ttf, struct ttfinfo *info ) {
 	    info->glyph_names[gnum]: "" );
 }
 
-static void show_contextflagsx(uint8 *entry,struct statetable *st,struct ttfinfo *info, FILE *ttf) {
+static void show_contextflagsx(uint8_t *entry,struct statetable *st,struct ttfinfo *info, FILE *ttf) {
     int flags = (entry[2]<<8)|entry[3];
     int mark_index = ((entry[4]<<8)|entry[5]);
     int cur_index = ((entry[6]<<8)|entry[7]);
@@ -4300,9 +4294,9 @@ static void readttfmorx_context(FILE *ttf, FILE *util, struct ttfinfo *info, int
     free_statetable(st);
 }
 
-static void show_ligflags(uint8 *entry,struct statetable *st,struct ttfinfo *info, FILE *ttf) {
+static void show_ligflags(uint8_t *entry,struct statetable *st,struct ttfinfo *info, FILE *ttf) {
     int flags = (entry[2]<<8)|entry[3];
-    uint32 val;
+    uint32_t val;
 
     printf( "\t   Flags %04x ", (unsigned int)(flags) );
     if ( flags&0x8000 )
@@ -4321,7 +4315,7 @@ return;
 	printf( "\t    lig action %08x %s offset=%d\n", val,
 		(val&0x80000000)?"last (& store)": 
 		(val&0x40000000)?"store": "delete",
-		(((int32)val)<<2)>>2 );		/* Sign extend */
+		(((int32_t)val)<<2)>>2 );		/* Sign extend */
 	/* I think we take 2 * (glyph_id-st->first_glyph + offset) + state_start */
 	/*  we get the ?ushort? at this file address and we add it to an */
 	/*  accumulated total. When we finally get to a store (or last) */
@@ -4339,10 +4333,10 @@ static void readttfmort_lig(FILE *ttf, FILE *util, struct ttfinfo *info, int sta
     free_statetable(st);
 }
 
-static void show_ligxflags(uint8 *entry,struct statetable *st,struct ttfinfo *info, FILE *ttf) {
+static void show_ligxflags(uint8_t *entry,struct statetable *st,struct ttfinfo *info, FILE *ttf) {
     int flags = (entry[2]<<8)|entry[3];
     int index = (entry[4]<<8)|entry[5];
-    uint32 val;
+    uint32_t val;
 
     printf( "\t   Flags %04x ", (unsigned int)(flags) );
     if ( flags&0x8000 )
@@ -4366,7 +4360,7 @@ return;
 	printf( "\t    lig action %08x %s offset=%d\n", val,
 		(val&0x80000000)?"last (& store)": 
 		(val&0x40000000)?"store": "delete",
-		(((int32)val)<<2)>>2 );		/* Sign extend */
+		(((int32_t)val)<<2)>>2 );		/* Sign extend */
 	/* I think we take 2 * (glyph_id-st->first_glyph + offset) + state_start */
 	/*  we get the ?ushort? at this file address and we add it to an */
 	/*  accumulated total. When we finally get to a store (or last) */
@@ -4384,34 +4378,34 @@ static void readttfmorx_lig(FILE *ttf, FILE *util, struct ttfinfo *info, int sta
     free_statetable(st);
 }
 
-static int32 memlong(uint8 *data,int offset) {
+static int32_t memlong(uint8_t *data,int offset) {
     int ch1 = data[offset], ch2 = data[offset+1], ch3 = data[offset+2], ch4 = data[offset+3];
 return( (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4 );
 }
 
-static int memushort(uint8 *data,int offset) {
+static int memushort(uint8_t *data,int offset) {
     int ch1 = data[offset], ch2 = data[offset+1];
 return( (ch1<<8)|ch2 );
 }
 
 #define MAX_LIG_COMP	16
 struct statemachine {
-    uint8 *data;
+    uint8_t *data;
     int length;
-    uint32 nClasses;
-    uint32 classOffset, stateOffset, entryOffset, ligActOff, compOff, ligOff;
-    uint16 *classes;
-    uint16 lig_comp_classes[MAX_LIG_COMP];
-    uint16 lig_comp_glyphs[MAX_LIG_COMP];
+    uint32_t nClasses;
+    uint32_t classOffset, stateOffset, entryOffset, ligActOff, compOff, ligOff;
+    uint16_t *classes;
+    uint16_t lig_comp_classes[MAX_LIG_COMP];
+    uint16_t lig_comp_glyphs[MAX_LIG_COMP];
     int lcp;
-    uint8 *states_in_use;
+    uint8_t *states_in_use;
     int smax;
     struct ttfinfo *info;
     int cnt;
 };
 
-static void mort_figure_ligatures(struct statemachine *sm, int lcp, int off, int32 lig_offset) {
-    uint32 lig;
+static void mort_figure_ligatures(struct statemachine *sm, int lcp, int off, int32_t lig_offset) {
+    uint32_t lig;
     int i, j, lig_glyph;
 
     if ( lcp<0 || off+3>sm->length )
@@ -4422,7 +4416,7 @@ return;
 
     for ( i=0; i<sm->info->glyph_cnt; ++i ) if ( sm->classes[i]==sm->lig_comp_classes[lcp] ) {
 	sm->lig_comp_glyphs[lcp] = i;
-	lig_offset += memushort(sm->data,2*( ((((int32) lig)<<2)>>2) + i ) );
+	lig_offset += memushort(sm->data,2*( ((((int32_t) lig)<<2)>>2) + i ) );
 	if ( lig&0xc0000000 ) {
 	    if ( lig_offset+1 > sm->length ) {
 		fprintf( stderr, "Invalid ligature offset\n" );
@@ -4443,7 +4437,7 @@ return;
 	    }
 	} else
 	    mort_figure_ligatures(sm,lcp-1,off,lig_offset);
-	lig_offset -= memushort(sm->data,2*( ((((int32) lig)<<2)>>2) + i ) );
+	lig_offset -= memushort(sm->data,2*( ((((int32_t) lig)<<2)>>2) + i ) );
     }
 }
 
@@ -4483,8 +4477,8 @@ return;
     sm->states_in_use[state] = false;
 }
 
-static void morx_figure_ligatures(struct statemachine *sm, int lcp, int ligindex, int32 lig_offset) {
-    uint32 lig;
+static void morx_figure_ligatures(struct statemachine *sm, int lcp, int ligindex, int32_t lig_offset) {
+    uint32_t lig;
     int i, j, lig_glyph;
 
     if ( lcp<0 || sm->ligActOff+4*ligindex+3>sm->length )
@@ -4495,7 +4489,7 @@ return;
 
     for ( i=0; i<sm->info->glyph_cnt; ++i ) if ( sm->classes[i]==sm->lig_comp_classes[lcp] ) {
 	sm->lig_comp_glyphs[lcp] = i;
-	lig_offset += memushort(sm->data,sm->compOff + 2*( ((((int32) lig)<<2)>>2) + i ) );
+	lig_offset += memushort(sm->data,sm->compOff + 2*( ((((int32_t) lig)<<2)>>2) + i ) );
 	if ( lig&0xc0000000 ) {
 	    if ( sm->ligOff+2*lig_offset+1 > sm->length ) {
 		fprintf( stderr, "Invalid ligature offset\n" );
@@ -4516,7 +4510,7 @@ return;
 	    }
 	} else
 	    morx_figure_ligatures(sm,lcp-1,ligindex,lig_offset);
-	lig_offset -= memushort(sm->data,sm->compOff + 2*( ((((int32) lig)<<2)>>2) + i ) );
+	lig_offset -= memushort(sm->data,sm->compOff + 2*( ((((int32_t) lig)<<2)>>2) + i ) );
     }
 }
 
@@ -4559,8 +4553,8 @@ return;
     sm->states_in_use[state] = false;
 }
 
-static void readttf_mortx_lig(FILE *ttf,struct ttfinfo *info,int ismorx,uint32 base,uint32 length) {
-    uint32 here;
+static void readttf_mortx_lig(FILE *ttf,struct ttfinfo *info,int ismorx,uint32_t base,uint32_t length) {
+    uint32_t here;
     struct statemachine sm;
     int first, cnt, i;
 
@@ -4585,31 +4579,31 @@ return;
 	sm.compOff = memlong(sm.data,5*sizeof(long));
 	sm.ligOff = memlong(sm.data,6*sizeof(long));
 	fseek(ttf,here+sm.classOffset,SEEK_SET);
-	sm.classes = info->morx_classes = malloc(info->glyph_cnt*sizeof(uint16));
+	sm.classes = info->morx_classes = malloc(info->glyph_cnt*sizeof(uint16_t));
 	for ( i=0; i<info->glyph_cnt; ++i )
 	    sm.classes[i] = 1;			/* Out of bounds */
 	readttf_applelookup(ttf,info,
 		mortclass_apply_values,mortclass_apply_value,NULL,NULL);
 	sm.smax = length/(2*sm.nClasses);
-	sm.states_in_use = calloc(sm.smax,sizeof(uint8));
+	sm.states_in_use = calloc(sm.smax,sizeof(uint8_t));
 	follow_morx_state(&sm,0,-1);
     } else {
 	sm.nClasses = memushort(sm.data,0);
-	sm.classOffset = memushort(sm.data,sizeof(uint16));
-	sm.stateOffset = memushort(sm.data,2*sizeof(uint16));
-	sm.entryOffset = memushort(sm.data,3*sizeof(uint16));
-	sm.ligActOff = memushort(sm.data,4*sizeof(uint16));
-	sm.compOff = memushort(sm.data,5*sizeof(uint16));
-	sm.ligOff = memushort(sm.data,6*sizeof(uint16));
-	sm.classes = malloc(info->glyph_cnt*sizeof(uint16));
+	sm.classOffset = memushort(sm.data,sizeof(uint16_t));
+	sm.stateOffset = memushort(sm.data,2*sizeof(uint16_t));
+	sm.entryOffset = memushort(sm.data,3*sizeof(uint16_t));
+	sm.ligActOff = memushort(sm.data,4*sizeof(uint16_t));
+	sm.compOff = memushort(sm.data,5*sizeof(uint16_t));
+	sm.ligOff = memushort(sm.data,6*sizeof(uint16_t));
+	sm.classes = malloc(info->glyph_cnt*sizeof(uint16_t));
 	for ( i=0; i<info->glyph_cnt; ++i )
 	    sm.classes[i] = 1;			/* Out of bounds */
 	first = memushort(sm.data,sm.classOffset);
-	cnt = memushort(sm.data,sm.classOffset+sizeof(uint16));
+	cnt = memushort(sm.data,sm.classOffset+sizeof(uint16_t));
 	for ( i=0; i<cnt; ++i )
-	    sm.classes[first+i] = sm.data[sm.classOffset+2*sizeof(uint16)+i];
+	    sm.classes[first+i] = sm.data[sm.classOffset+2*sizeof(uint16_t)+i];
 	sm.smax = length/sm.nClasses;
-	sm.states_in_use = calloc(sm.smax,sizeof(uint8));
+	sm.states_in_use = calloc(sm.smax,sizeof(uint8_t));
 	follow_mort_state(&sm,sm.stateOffset,-1);
     }
     free(sm.data);
@@ -4619,7 +4613,7 @@ return;
 
 static void readttfmetamorph(FILE *ttf, FILE *util, struct ttfinfo *info) {
     int n, i, j, k, l, nf, ns, type, setting, stab_len, coverage;
-    uint32 chain_start, len, temp, stab_start, flags, here;
+    uint32_t chain_start, len, temp, stab_start, flags, here;
     int features[32], settings[32], masks[32];
     int ismorx = false;
 
@@ -4730,13 +4724,13 @@ static void readttfmetamorph(FILE *ttf, FILE *util, struct ttfinfo *info) {
     }
 }
 
-static void showagproperties( uint16 props ) {
+static void showagproperties( uint16_t props ) {
 
     printf( "%04x=", props );
     if ( props&0x8000 ) printf( "Floater|" );
     if ( props&0x4000 ) printf( "HangLeft|" );
     if ( props&0x2000 ) printf( "HangRight|" );
-    if ( props&0x1000 ) printf( "Mirror += %d|", (((int32) props)<<20)>>28 );
+    if ( props&0x1000 ) printf( "Mirror += %d|", (((int32_t) props)<<20)>>28 );
     if ( props&0x0080 ) printf( "AttachRight|" );
     switch (props&0x1f ) {
       case 0: printf( "Strong L2R" ); break;
@@ -4772,7 +4766,7 @@ static void readttfappleprop(FILE *ttf, FILE *util, struct ttfinfo *info) {
 }
 
 static void lcar_show( FILE *ttf, struct ttfinfo *info ) {
-    uint32 here;
+    uint32_t here;
     int cnt,i,off;
 
     off = getushort(ttf);
@@ -4794,7 +4788,7 @@ static void readttfapplelcar(FILE *ttf, FILE *util, struct ttfinfo *info) {
 }
 
 static void opbd_show( FILE *ttf, struct ttfinfo *info ) {
-    uint32 here;
+    uint32_t here;
     int off;
 
     off = getushort(ttf);
@@ -4818,7 +4812,7 @@ static void readttfappleopbd(FILE *ttf, FILE *util, struct ttfinfo *info) {
 
 static void readttfapplefvar(FILE *ttf, FILE *util, struct ttfinfo *info) {
     int dataoff, countsizepairs, axiscount, instancecount, instancesize, nameid;
-    uint32 tag;
+    uint32_t tag;
     char *name;
     int i,j;
 
@@ -4864,7 +4858,7 @@ static void readttfapplefvar(FILE *ttf, FILE *util, struct ttfinfo *info) {
 
 static void readttfapplegvar(FILE *ttf, FILE *util, struct ttfinfo *info) {
     int axiscount, gcc, glyphCount, flags;
-    uint32 *offsets, offset2Coord, offset2Data;
+    uint32_t *offsets, offset2Coord, offset2Data;
     int tupleCount, offset;
     int i, j, k, index;
 
@@ -4879,7 +4873,7 @@ static void readttfapplegvar(FILE *ttf, FILE *util, struct ttfinfo *info) {
     printf( "\t glyph count=%d\n", glyphCount = getushort(ttf));
     printf( "\t flags=%x\n", (unsigned int)((flags = getushort(ttf))) );
     printf( "\t offset to data=%x\n", offset2Data = getlong(ttf));
-    offsets = malloc(glyphCount*sizeof(uint32));
+    offsets = malloc(glyphCount*sizeof(uint32_t));
     if ( flags&1 ) {
 	for ( i=0; i<glyphCount; ++i )
 	    offsets[i] = getlong(ttf) + offset2Data + info->gvar_start;
@@ -5004,9 +4998,9 @@ return;
 }
 
 static char **readcfffontnames(FILE *ttf, int ltype) {
-    uint16 count = getushort(ttf);
+    uint16_t count = getushort(ttf);
     int offsize;
-    uint32 *offsets;
+    uint32_t *offsets;
     char **names;
     int i,j;
     const char *labels[] = { "Font Name", "String", NULL };
@@ -5015,7 +5009,7 @@ static char **readcfffontnames(FILE *ttf, int ltype) {
     printf( "\nThere %s %d %s in this cff\n", count==1?"is":"are", count, lab2[ltype] );
     if ( count==0 )
 return( NULL );
-    offsets = malloc((count+1)*sizeof(uint32));
+    offsets = malloc((count+1)*sizeof(uint32_t));
     offsize = getc(ttf);
     printf( " Name Index Offset Size: %d\n Offsets: ", offsize );
     for ( i=0; i<=count; ++i ) {
@@ -5103,13 +5097,13 @@ return( 0 );
 struct pschars {
     int cnt, next;
     char **keys;
-    uint8 **values;
+    uint8_t **values;
     int *lens;
     int bias;
 };
 
 struct topdicts {
-    int32 cff_start;
+    int32_t cff_start;
 
     char *fontname;	/* From Name Index */
 
@@ -5174,10 +5168,10 @@ struct topdicts {
 
     struct pschars glyphs;
     struct pschars local_subrs;
-    uint16 *charset;
+    uint16_t *charset;
 };
 
-static void ShowCharString(uint8 *str,int len,int type) {
+static void ShowCharString(uint8_t *str,int len,int type) {
     int v;
     int val;
     /* most things are the same about type1 and type2 strings. Type2 just has */
@@ -5293,12 +5287,12 @@ static void ShowCharString(uint8 *str,int len,int type) {
 
 static void readcffsubrs(FILE *ttf,struct topdicts *dict,struct pschars *subs,
 	int type, const char *label) {
-    uint16 count = getushort(ttf);
+    uint16_t count = getushort(ttf);
     int offsize;
-    uint32 *offsets;
+    uint32_t *offsets;
     int i,j;
     const char *text[] = { "char strings", "subrs", NULL };
-    uint8 *temp;
+    uint8_t *temp;
 
     printf( "\nThere are %d %s in the index associated with %s\n",
 	    count, text[type], label );
@@ -5307,13 +5301,13 @@ static void readcffsubrs(FILE *ttf,struct topdicts *dict,struct pschars *subs,
 return;
     subs->cnt = count;
     /*subs->lens = malloc(count*sizeof(int));*/
-    /*subs->values = malloc(count*sizeof(uint8 *));*/
+    /*subs->values = malloc(count*sizeof(uint8_t *));*/
     subs->bias = dict->charstringtype==1 ? 0 :
 	    count<1240 ? 107 :
 	    count<33900 ? 1131 : 32768;
     if ( type==1 )
 	printf( " Bias = %d\n", subs->bias );
-    offsets = malloc((count+1)*sizeof(uint32));
+    offsets = malloc((count+1)*sizeof(uint32_t));
     offsize = getc(ttf);
     printf( " Subr Index Offset Size: %d\n Offsets: ", offsize );
     for ( i=0; i<=count; ++i ) {
@@ -5550,7 +5544,7 @@ return( strdup(">> Bad SID <<"));
 static void readcffprivate(FILE *ttf, struct topdicts *td, char **strings, int smax) {
     int ival, oval, sp, ret, i;
     double stack[50];
-    int32 end = td->cff_start+td->private_offset+td->private_size;
+    int32_t end = td->cff_start+td->private_offset+td->private_size;
     char *name = NULL;
 
     char *nameless_str = "<Nameless>";
@@ -5691,9 +5685,9 @@ static void readcffprivate(FILE *ttf, struct topdicts *td, char **strings, int s
 }
 
 static struct topdicts **readcfftopdicts(FILE *ttf, char **fontnames, int cff_start) {
-    uint16 count = getushort(ttf);
+    uint16_t count = getushort(ttf);
     int offsize;
-    uint32 *offsets;
+    uint32_t *offsets;
     struct topdicts **dicts;
     int i;
 
@@ -5703,7 +5697,7 @@ static struct topdicts **readcfftopdicts(FILE *ttf, char **fontnames, int cff_st
 	printf( "There %s %d subdictionary dictionar%s in this font\n", count==1?"is":"are",count, count==1?"y":"ies" );
     if ( count==0 )
 return( NULL );
-    offsets = malloc((count+1)*sizeof(uint32));
+    offsets = malloc((count+1)*sizeof(uint32_t));
     offsize = getc(ttf);
     printf( " %s Dict Index Offset Size: %d\n Offsets: ",
 	    fontnames!=NULL?"Top":"Sub", offsize );
@@ -5842,13 +5836,13 @@ static void readcffset(FILE *ttf,struct topdicts *dict,char **strings,int smax,
     if ( dict->charsetoff==0 ) {
 	/* ISO Adobe charset */
 	printf( "\nISOAdobe charset\n" );
-	dict->charset = malloc(len*sizeof(uint16));
+	dict->charset = malloc(len*sizeof(uint16_t));
 	for ( i=0; i<len && i<=228; ++i )
 	    dict->charset[i] = i;
     } else if ( dict->charsetoff==1 ) {
 	printf( "\nExpert charset\n" );
 	/* Expert charset */
-	dict->charset = malloc((len<162?162:len)*sizeof(uint16));
+	dict->charset = malloc((len<162?162:len)*sizeof(uint16_t));
 	dict->charset[0] = 0;		/* .notdef */
 	dict->charset[1] = 1;
 	for ( i=2; i<len && i<=238-227; ++i )
@@ -5880,7 +5874,7 @@ static void readcffset(FILE *ttf,struct topdicts *dict,char **strings,int smax,
     } else if ( dict->charsetoff==2 ) {
 	printf( "\nExpert subset charset\n" );
 	/* Expert subset charset */
-	dict->charset = malloc((len<130?130:len)*sizeof(uint16));
+	dict->charset = malloc((len<130?130:len)*sizeof(uint16_t));
 	dict->charset[0] = 0;		/* .notdef */
 	dict->charset[1] = 1;
 	for ( i=2; i<len && i<=238-227; ++i )
@@ -5916,7 +5910,7 @@ static void readcffset(FILE *ttf,struct topdicts *dict,char **strings,int smax,
 	for ( i=110; i<len && i<=346-217; ++i )
 	    dict->charset[i] = i+217;
     } else {
-	dict->charset = malloc(len*sizeof(uint16));
+	dict->charset = malloc(len*sizeof(uint16_t));
 	dict->charset[0] = 0;		/* .notdef */
 	fseek(ttf,dict->cff_start+dict->charsetoff,SEEK_SET);
 	format = getc(ttf);
@@ -6223,8 +6217,8 @@ static int readttfhdmx(FILE *ttf,FILE *util, struct ttfinfo *info) {
 return( 1 );
 }
 
-static void PrintDeviceTable(FILE *ttf, uint32 start) {
-    uint32 here = ftell(ttf);
+static void PrintDeviceTable(FILE *ttf, uint32_t start) {
+    uint32_t here = ftell(ttf);
     int first, last, type;
     signed char *corrections;
     int i,b,c, w;
@@ -6247,17 +6241,17 @@ static void PrintDeviceTable(FILE *ttf, uint32 start) {
 	    for ( i=0; i<c; i+=8 ) {
 		w = getushort(ttf);
 		for ( b=0; b<8 && i+b<c; ++b )
-		    corrections[i+b] = ((int16) ((w<<(b*2))&0xc000))>>14;
+		    corrections[i+b] = ((int16_t) ((w<<(b*2))&0xc000))>>14;
 	    }
 	} else if ( type==2 ) {
 	    for ( i=0; i<c; i+=4 ) {
 		w = getushort(ttf);
 		for ( b=0; b<4 && i+b<c; ++b )
-		    corrections[i+b] = ((int16) ((w<<(b*4))&0xf000))>>12;
+		    corrections[i+b] = ((int16_t) ((w<<(b*4))&0xf000))>>12;
 	    }
 	} else {
 	    for ( i=0; i<c; ++i )
-		corrections[i] = (int8) getc(ttf);
+		corrections[i] = (int8_t) getc(ttf);
 	}
 	putchar('{');
 	any = false;
@@ -6274,9 +6268,9 @@ static void PrintDeviceTable(FILE *ttf, uint32 start) {
     fseek( ttf, here, SEEK_SET );
 }
     
-static void PrintMathValueRecord(FILE *ttf, uint32 start) {
+static void PrintMathValueRecord(FILE *ttf, uint32_t start) {
     int val;
-    uint32 devtaboffset;
+    uint32_t devtaboffset;
 
     val = (short) getushort(ttf);
     devtaboffset = getushort(ttf);
@@ -6285,7 +6279,7 @@ static void PrintMathValueRecord(FILE *ttf, uint32 start) {
 	PrintDeviceTable(ttf,start+devtaboffset);
 }
 
-static void readttfmathConstants(FILE *ttf,uint32 start, struct ttfinfo *info) {
+static void readttfmathConstants(FILE *ttf,uint32_t start, struct ttfinfo *info) {
     int i;
 
     fseek(ttf,start,SEEK_SET);
@@ -6306,10 +6300,10 @@ return;
     }
 }
 
-static void readttfmathICTA(FILE *ttf,uint32 start, struct ttfinfo *info, int is_ic) {
+static void readttfmathICTA(FILE *ttf,uint32_t start, struct ttfinfo *info, int is_ic) {
     int coverage, cnt, i;
-    uint16 *glyphs;
-    uint32 here;
+    uint16_t *glyphs;
+    uint32_t here;
 
     fseek(ttf,start,SEEK_SET);
     if ( is_ic )
@@ -6336,9 +6330,9 @@ return;
     printf( "\n");
 }
 
-static void PrintMathKernTable(FILE *ttf,uint32 start, struct ttfinfo *info) {
+static void PrintMathKernTable(FILE *ttf,uint32_t start, struct ttfinfo *info) {
     int cnt, i;
-    uint32 here = ftell(ttf);
+    uint32_t here = ftell(ttf);
 
     fseek(ttf,start,SEEK_SET);
     cnt = getushort(ttf);
@@ -6355,10 +6349,10 @@ static void PrintMathKernTable(FILE *ttf,uint32 start, struct ttfinfo *info) {
     fseek(ttf,here,SEEK_SET);
 }
 
-static void readttfmathKern(FILE *ttf,uint32 start, struct ttfinfo *info) {
+static void readttfmathKern(FILE *ttf,uint32_t start, struct ttfinfo *info) {
     int coverage, cnt, i, j;
-    uint16 *glyphs;
-    uint32 here;
+    uint16_t *glyphs;
+    uint32_t here;
     const char *cornernames[] = { "TopRight:", "TopLeft:", "BottomRight:", "BottomLeft:" };
 
     fseek(ttf,start,SEEK_SET);
@@ -6388,8 +6382,8 @@ return;
     printf( "\n");
 }
 
-static void readttfmathGlyphInfo(FILE *ttf,uint32 start, struct ttfinfo *info) {
-    uint32 ic, ta, es, mk;
+static void readttfmathGlyphInfo(FILE *ttf,uint32_t start, struct ttfinfo *info) {
+    uint32_t ic, ta, es, mk;
 
     fseek(ttf,start,SEEK_SET);
     printf( "\n MATH Glyph Info sub-table (at %d)\n", (int)(start) );
@@ -6414,8 +6408,8 @@ return;
 	readttfmathKern(ttf,start+mk,info);
 }
 
-static void PrintMathGlyphConstruction(FILE *ttf,uint32 start, struct ttfinfo *info) {
-    uint32 here = ftell(ttf);
+static void PrintMathGlyphConstruction(FILE *ttf,uint32_t start, struct ttfinfo *info) {
+    uint32_t here = ftell(ttf);
     int offset, variant_cnt, part_cnt;
     int i;
 
@@ -6458,10 +6452,10 @@ return;
     fseek(ttf,here,SEEK_SET);
 }
 
-static void readttfmathVariants(FILE *ttf,uint32 start, struct ttfinfo *info) {
+static void readttfmathVariants(FILE *ttf,uint32_t start, struct ttfinfo *info) {
     int vcoverage, vcnt, hcoverage, hcnt, i, offset;
-    uint16 *vglyphs=NULL, *hglyphs=NULL;
-    uint32 here;
+    uint16_t *vglyphs=NULL, *hglyphs=NULL;
+    uint32_t here;
 
     fseek(ttf,start,SEEK_SET);
     printf( "\n MATH Variants sub-table (at %d)\n", (int)(start) );
@@ -6511,7 +6505,7 @@ return;
 
 static int readttfmath(FILE *ttf,FILE *util, struct ttfinfo *info) {
     int version;
-    uint32 constants, glyphinfo, variants;
+    uint32_t constants, glyphinfo, variants;
 
     fseek(ttf,info->math_start,SEEK_SET);
     printf( "\nMATH table (at %d)\n", info->math_start);
@@ -6540,8 +6534,8 @@ return( 0 );
 return( 1 );
 }
 
-static void readttfbaseminmax(FILE *ttf,uint32 offset,struct ttfinfo *info,
-	uint32 script_tag,uint32 lang_tag) {
+static void readttfbaseminmax(FILE *ttf,uint32_t offset,struct ttfinfo *info,
+	uint32_t script_tag,uint32_t lang_tag) {
     int min, max;
     int j,feat_cnt;
 
@@ -6562,7 +6556,7 @@ static void readttfbaseminmax(FILE *ttf,uint32 offset,struct ttfinfo *info,
 		(char)((script_tag>>8)&0xff), (char)(script_tag&0xf) );
     feat_cnt = getushort(ttf);
     for ( j=0; j<feat_cnt; ++j ) {
-	uint32 feat_tag = getlong(ttf);
+	uint32_t feat_tag = getlong(ttf);
 	min = (short) getushort(ttf);
 	max = (short) getushort(ttf);
 	if ( lang_tag == 0 )
@@ -6584,14 +6578,14 @@ static void readttfbaseminmax(FILE *ttf,uint32 offset,struct ttfinfo *info,
     }
 }
 
-struct tagoff { uint32 tag; uint32 offset; };
+struct tagoff { uint32_t tag; uint32_t offset; };
 
 static int readttfbase(FILE *ttf,FILE *util, struct ttfinfo *info) {
     int version;
-    uint32 axes[2];
-    uint32 basetags, basescripts;
+    uint32_t axes[2];
+    uint32_t basetags, basescripts;
     int basetagcnt, basescriptcnt;
-    uint32 *tags;
+    uint32_t *tags;
     struct tagoff *bs;
     int axis,i,j;
 
@@ -6619,7 +6613,7 @@ static int readttfbase(FILE *ttf,FILE *util, struct ttfinfo *info) {
 	} else {
 	    fseek(ttf,info->base_start+axes[axis]+basetags,SEEK_SET);
 	    basetagcnt = getushort(ttf);
-	    tags = calloc(basetagcnt,sizeof(uint32));
+	    tags = calloc(basetagcnt,sizeof(uint32_t));
 	    for ( i=0; i<basetagcnt; ++i )
 		tags[i] = getlong(ttf);
 	    printf( "\t %d Baseline tags for %s\n", basetagcnt, axis==0 ? "Horizontal": "Vertical" );
@@ -6782,7 +6776,7 @@ return;
 	printf( "\t\tLookup %d\n", getushort(ttf));
 }
 
-static void readttfjustlangsys(FILE *ttf,int offset,uint32 stag, uint32 ltag, struct ttfinfo *info) {
+static void readttfjustlangsys(FILE *ttf,int offset,uint32_t stag, uint32_t ltag, struct ttfinfo *info) {
     int pcnt,j;
     int *offsets;
     int shrinkenablesub, shrinkenablepos, shrinkdisablesub, shrinkdisablepos;

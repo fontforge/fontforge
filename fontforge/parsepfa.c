@@ -1059,7 +1059,7 @@ static void InitChars(struct pschars *chars,char *line) {
     chars->cnt = strtol(line,NULL,10);
     if ( chars->cnt>0 ) {
 	chars->keys = calloc(chars->cnt,sizeof(char *));
-	chars->values = calloc(chars->cnt,sizeof(uint8 *));
+	chars->values = calloc(chars->cnt,sizeof(uint8_t *));
 	chars->lens = calloc(chars->cnt,sizeof(int));
 	ff_progress_change_total(chars->cnt);
     }
@@ -1290,7 +1290,7 @@ static void findnumbers(struct pschars *chars,char *str) {
 	val = strtol(str,&end,10);
 	chars->lens[index] = 0;
 	chars->keys[index] = copy(namestrt);
-	chars->values[index] = (void *) (intpt) val;
+	chars->values[index] = (void *) (intptr_t) val;
 	chars->next = index+1;
 	str = end;
 	while ( isspace(*str)) ++str;
@@ -2407,9 +2407,9 @@ static void figurecids(struct fontparse *fp,FILE *temp) {
     int leniv;
     /* Some cid formats don't have any of these */
 
-    fd->cidstrs = malloc(cidcnt*sizeof(uint8 *));
-    fd->cidlens = malloc(cidcnt*sizeof(int16));
-    fd->cidfds = malloc((cidcnt+1)*sizeof(int16));
+    fd->cidstrs = malloc(cidcnt*sizeof(uint8_t *));
+    fd->cidlens = malloc(cidcnt*sizeof(int16_t));
+    fd->cidfds = malloc((cidcnt+1)*sizeof(int16_t));
     offsets = malloc((cidcnt+1)*sizeof(int));
     ff_progress_change_total(cidcnt);
 
@@ -2458,7 +2458,7 @@ static void figurecids(struct fontparse *fp,FILE *temp) {
 		(sdbytes=strtol(ssdbytes,NULL,10))>0 &&
 		(subrcnt=strtol(ssubrcnt,NULL,10))>0 ) {
 	    private->subrs->cnt = subrcnt;
-	    private->subrs->values = calloc(subrcnt,sizeof(uint8 *));
+	    private->subrs->values = calloc(subrcnt,sizeof(uint8_t *));
 	    private->subrs->lens = calloc(subrcnt,sizeof(int));
 	    leniv = private->leniv;
 	    offsets = malloc((subrcnt+1)*sizeof(int));

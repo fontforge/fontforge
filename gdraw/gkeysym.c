@@ -368,7 +368,7 @@ unichar_t *GDrawKeysyms[] = {
 	NULL
 };
 
-int GKeysymIsModifier(uint16 keysym) {
+int GKeysymIsModifier(uint16_t keysym) {
     switch(keysym) {
         case GK_Shift_L:
         case GK_Shift_R:

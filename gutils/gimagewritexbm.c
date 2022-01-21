@@ -35,7 +35,7 @@ int GImageWriteXbm(GImage *gi, char *filename) {
     FILE *file;
     int i,j, val,val2,k;
     char stem[256];
-    char *pt; uint8 *scanline;
+    char *pt; uint8_t *scanline;
 
     /* This routine only exports 1-pixel mono-type images */
     if ( base->image_type!=it_mono ) {

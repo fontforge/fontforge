@@ -254,7 +254,7 @@ static GTextInfo *Pref_MacNamesList(struct macname *all) {
 	if ( temp==NULL )
     continue;
 	for ( j=0 ; maclanguages[j].text!=0; ++j )
-	    if ( maclanguages[j].userdata == (void *) (intpt) (mn->lang ))
+	    if ( maclanguages[j].userdata == (void *) (intptr_t) (mn->lang ))
 	break;
 	if ( maclanguages[j].text!=0 ) {
 	    char *lang = (char *) maclanguages[j].text;
@@ -341,7 +341,7 @@ struct namedata {
 static int name_e_h(GWindow gw, GEvent *event) {
     struct namedata *nd = GDrawGetUserData(gw);
     int i;
-    int32 len;
+    int32_t len;
     GTextInfo **ti, *sel;
     char *ret1, *temp; unichar_t *full;
     int val1, val2;
@@ -367,7 +367,7 @@ return( false );
 	    sel = GGadgetGetListItemSelected(GWidgetGetControl(nd->gw,CID_Language));
 	    language = nd->changing->lang;
 	    if ( sel!=NULL )
-		language = (intpt) sel->userdata;
+		language = (intptr_t) sel->userdata;
 	    else if ( nd->index==-1 ) {
 		ff_post_error(_("Bad Language"),_("Bad Language"));
 return( true );
@@ -481,7 +481,7 @@ static char *AskName(struct macname *changing,struct macname *all,GGadget *list,
     gcd[1].creator = GListButtonCreate;
 
     for ( i=0; maclanguages[i].text!=NULL; ++i ) {
-	if ( maclanguages[i].userdata == (void *) (intpt) (changing->lang) )
+	if ( maclanguages[i].userdata == (void *) (intptr_t) (changing->lang) )
 	    maclanguages[i].selected = true;
 	else
 	    maclanguages[i].selected = false;
@@ -564,7 +564,7 @@ static int Pref_DelName(GGadget *g, GEvent *e) {
 	struct macname *mn, *p, *all, *next;
 	GWindow gw = GGadgetGetWindow(g);
 	GGadget *list = GWidgetGetControl(gw,CID_NameList);
-	int32 len;
+	int32_t len;
 	GTextInfo **ti = GGadgetGetList(list,&len);
 	int i;
 
@@ -603,7 +603,7 @@ return( true );
 
 static int Pref_NameSel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
-	int32 len;
+	int32_t len;
 	GTextInfo **ti = GGadgetGetList(g,&len);
 	GWindow gw = GGadgetGetWindow(g);
 	int i, sel_cnt=0;
@@ -630,7 +630,7 @@ void NameGadgetsSetEnabled( GWindow gw, int enable ) {
 	GGadgetSetEnabled(GWidgetGetControl(gw,CID_NameDel),false);
 	GGadgetSetEnabled(GWidgetGetControl(gw,CID_NameEdit),false);
     } else {
-	int32 len;
+	int32_t len;
 	GGadget *list = GWidgetGetControl(gw,CID_NameList);
 	GTextInfo **ti = GGadgetGetList(list,&len);
 	int i, sel_cnt=0;
@@ -700,7 +700,7 @@ struct setdata {
 static int set_e_h(GWindow gw, GEvent *event) {
     struct setdata *sd = GDrawGetUserData(gw);
     int i;
-    int32 len;
+    int32_t len;
     GTextInfo **ti;
     const unichar_t *ret1; unichar_t *end, *res; char *temp;
     int val1, val2;
@@ -933,7 +933,7 @@ static int Pref_DelSetting(GGadget *g, GEvent *e) {
 	struct macsetting *ms, *p, *all, *next;
 	GWindow gw = GGadgetGetWindow(g);
 	GGadget *list = GWidgetGetControl(gw,CID_Settings);
-	int32 len;
+	int32_t len;
 	GTextInfo **ti = GGadgetGetList(list,&len);
 	int i;
 
@@ -972,7 +972,7 @@ return( true );
 
 static int Pref_SettingSel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
-	int32 len;
+	int32_t len;
 	GTextInfo **ti = GGadgetGetList(g,&len);
 	GWindow gw = GGadgetGetWindow(g);
 	int i, sel_cnt=0;
@@ -998,7 +998,7 @@ struct featdata {
 static int feat_e_h(GWindow gw, GEvent *event) {
     struct featdata *fd = GDrawGetUserData(gw);
     int i;
-    int32 len;
+    int32_t len;
     GTextInfo **ti;
     const unichar_t *ret1; unichar_t *end, *res; char *temp;
     int val1, val2;
@@ -1270,7 +1270,7 @@ static int Pref_DelFeat(GGadget *g, GEvent *e) {
 	MacFeat *mf, *p, *all, *next;
 	GWindow gw = GGadgetGetWindow(g);
 	GGadget *list = GWidgetGetControl(gw,CID_Features);
-	int32 len;
+	int32_t len;
 	GTextInfo **ti = GGadgetGetList(list,&len);
 	int i;
 
@@ -1309,7 +1309,7 @@ return( true );
 
 static int Pref_FeatureSel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
-	int32 len;
+	int32_t len;
 	GTextInfo **ti = GGadgetGetList(g,&len);
 	GWindow gw = GGadgetGetWindow(g);
 	int i, sel_cnt=0;
@@ -1327,9 +1327,9 @@ return( true );
 static int Pref_DefaultFeat(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GGadget *list = GWidgetGetControl(GGadgetGetWindow(g),CID_Features);
-	int inprefs = (intpt) GGadgetGetUserData(g);
+	int inprefs = (intptr_t) GGadgetGetUserData(g);
 	GTextInfo *ti, **arr;
-	uint16 cnt;
+	uint16_t cnt;
 	/* In preferences the default is the built in data. */
 	/* in a font the default is the preference data (which might be built in or might not) */
 	MacFeat *def = inprefs ? builtin_mac_feature_map : default_mac_feature_map;
@@ -1407,7 +1407,7 @@ void GCDFillMacFeat(GGadgetCreateData *mfgcd,GTextInfo *mflabels, int width,
     mflabels[sgc].text_is_1byte = true;
     mfgcd[sgc].gd.label = &mflabels[sgc];
     mfgcd[sgc].gd.handle_controlevent = Pref_DefaultFeat;
-    mfgcd[sgc].data = (void *) (intpt) fromprefs;
+    mfgcd[sgc].data = (void *) (intptr_t) fromprefs;
     mfgcd[sgc++].creator = GButtonCreate;
     butarray[6] = GCD_Glue; butarray[7] = &mfgcd[sgc-1];
     butarray[8] = GCD_Glue; butarray[9] = NULL;

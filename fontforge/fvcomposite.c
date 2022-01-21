@@ -1957,7 +1957,7 @@ return( NULL );
 }
 
 static void _BCCenterAccent( BDFFont *bdf, int gid, int rgid, int ch, int basech, int italicoff,
-	uint32 pos,	/* pose info from unicode canonical combining class and manual overrides, see utype.h */
+	uint32_t pos,	/* pose info from unicode canonical combining class and manual overrides, see utype.h */
 	real em ) {
     BDFChar *bc, *rbc;
     int ixoff, iyoff, ispacing;
@@ -2011,7 +2011,7 @@ static void _SCCenterAccent(SplineChar *sc,SplineChar *basersc, SplineFont *sf,
 	int layer, int ch, BDFFont *bdf, int disp_only,
 	SplineChar *rsc, real ia, int basech,
 	int invert,	/* invert accent, false==0, true!=0 */
-	uint32 pos	/* pose info from unicode canonical combining class and manual overrides, see utype.h */ ) {
+	uint32_t pos	/* pose info from unicode canonical combining class and manual overrides, see utype.h */ ) {
     real transform[6];
     DBounds bb, rbb, bbb;
     real xoff, yoff;
@@ -2356,7 +2356,7 @@ static void BCMakeSpace(BDFFont *bdf, int gid, int width, int em) {
 	bc->ymax = 1;
 	bc->bytes_per_line = 1;
 	bc->width = rint(width*bdf->pixelsize/(real) em);
-	bc->bitmap = calloc(bc->bytes_per_line*(bc->ymax-bc->ymin+1),sizeof(uint8));
+	bc->bitmap = calloc(bc->bytes_per_line*(bc->ymax-bc->ymin+1),sizeof(uint8_t));
     }
 }
 
@@ -2904,7 +2904,7 @@ return;
 int SCAppendAccent(SplineChar *sc,int layer,
 	char *glyph_name,	/* unicode char name */
 	int uni,		/* unicode char value */
-	uint32 pos		/* pose info from unicode canonical combining class and manual overrides, see utype.h */ ) {
+	uint32_t pos		/* pose info from unicode canonical combining class and manual overrides, see utype.h */ ) {
     SplineFont *sf = sc->parent;
     double ia;
     int basech;

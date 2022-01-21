@@ -1218,7 +1218,7 @@ static void adjustLBearing( CharView *cv, SplineChar *sc, real val )
 }
 
 /* Move the selection and return whether we did a merge */
-int CVMoveSelection(CharView *cv, real dx, real dy, uint32 input_state) {
+int CVMoveSelection(CharView *cv, real dx, real dy, uint32_t input_state) {
     CharViewTab* tab = CVGetActiveTab(cv);
     real transform[6];
     RefChar *refs;
@@ -1309,9 +1309,9 @@ return(false);
     }
     fudge = snapdistance/tab->scale/2;
     if ( cv->widthsel ) {
-	if ( cv->b.sc->width+dx>0 && ((int16) (cv->b.sc->width+dx))<0 )
+	if ( cv->b.sc->width+dx>0 && ((int16_t) (cv->b.sc->width+dx))<0 )
 	    cv->b.sc->width = 32767;
-	else if ( cv->b.sc->width+dx<0 && ((int16) (cv->b.sc->width+dx))>0 )
+	else if ( cv->b.sc->width+dx<0 && ((int16_t) (cv->b.sc->width+dx))>0 )
 	    cv->b.sc->width = -32768;
 	else
 	    cv->b.sc->width += dx;
@@ -1326,9 +1326,9 @@ return(false);
 	changed = true;
     }
     if ( cv->vwidthsel ) {
-	if ( cv->b.sc->vwidth-dy>0 && ((int16) (cv->b.sc->vwidth-dy))<0 )
+	if ( cv->b.sc->vwidth-dy>0 && ((int16_t) (cv->b.sc->vwidth-dy))<0 )
 	    cv->b.sc->vwidth = 32767;
-	else if ( cv->b.sc->vwidth-dy<0 && ((int16) (cv->b.sc->vwidth-dy))>0 )
+	else if ( cv->b.sc->vwidth-dy<0 && ((int16_t) (cv->b.sc->vwidth-dy))>0 )
 	    cv->b.sc->vwidth = -32768;
 	else
 	    cv->b.sc->vwidth -= dy;
@@ -1337,9 +1337,9 @@ return(false);
 	changed = true;
     }
     if ( cv->icsel ) {
-	if ( cv->b.sc->italic_correction+dx>0 && ((int16) (cv->b.sc->italic_correction+dx))<0 )
+	if ( cv->b.sc->italic_correction+dx>0 && ((int16_t) (cv->b.sc->italic_correction+dx))<0 )
 	    cv->b.sc->italic_correction = 32767-1;
-	else if ( cv->b.sc->italic_correction+dx<0 && ((int16) (cv->b.sc->italic_correction+dx))>0 )
+	else if ( cv->b.sc->italic_correction+dx<0 && ((int16_t) (cv->b.sc->italic_correction+dx))>0 )
 	    cv->b.sc->italic_correction = -32768;
 	else
 	    cv->b.sc->italic_correction += dx;
@@ -1348,9 +1348,9 @@ return(false);
 	changed = true;
     }
     if ( cv->tah_sel ) {
-	if ( cv->b.sc->top_accent_horiz+dx>0 && ((int16) (cv->b.sc->top_accent_horiz+dx))<0 )
+	if ( cv->b.sc->top_accent_horiz+dx>0 && ((int16_t) (cv->b.sc->top_accent_horiz+dx))<0 )
 	    cv->b.sc->top_accent_horiz = 32767-1;
-	else if ( cv->b.sc->top_accent_horiz+dx<0 && ((int16) (cv->b.sc->top_accent_horiz+dx))>0 )
+	else if ( cv->b.sc->top_accent_horiz+dx<0 && ((int16_t) (cv->b.sc->top_accent_horiz+dx))>0 )
 	    cv->b.sc->top_accent_horiz = -32768;
 	else
 	    cv->b.sc->top_accent_horiz += dx;

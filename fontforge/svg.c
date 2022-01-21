@@ -68,7 +68,7 @@ static void latin1ToUtf8Out(FILE *file,char *str) {
     /* beware of characters above 0x80, also &, <, > (things that are magic for xml) */
     while ( *str ) {
 	if ( *str=='&' || *str=='<' || *str=='>' || (*str&0x80) )
-	    fprintf( file, "&#%d;", (uint8) *str);
+	    fprintf( file, "&#%d;", (uint8_t) *str);
 	else
 	    putc(*str,file);
 	++str;
@@ -714,7 +714,7 @@ static void svg_scpathdump(FILE *file, SplineChar *sc,const char *endpath,int la
     }
 }
 
-static int LigCnt(SplineFont *sf,PST *lig,int32 *univals,int max) {
+static int LigCnt(SplineFont *sf,PST *lig,int32_t *univals,int max) {
     char *pt, *end;
     int c=0;
     SplineChar *sc;
@@ -744,7 +744,7 @@ return( c );
 static PST *HasLigature(SplineChar *sc) {
     PST *pst, *best=NULL;
     int bestc=0,c;
-    int32 univals[50];
+    int32_t univals[50];
 
     for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
 	if ( pst->type==pst_ligature ) {
@@ -758,7 +758,7 @@ static PST *HasLigature(SplineChar *sc) {
 return( best );
 }
 
-SplineChar *SCHasSubs(SplineChar *sc, uint32 tag) {
+SplineChar *SCHasSubs(SplineChar *sc, uint32_t tag) {
     PST *pst;
 
     for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
@@ -772,7 +772,7 @@ return( NULL );
 static void svg_scdump(FILE *file, SplineChar *sc,int defwid, int encuni, int vs,int layer) {
     PST *best=NULL;
     const unichar_t *alt;
-    int32 univals[50];
+    int32_t univals[50];
     int i, c;
 
     best = HasLigature(sc);
@@ -1848,7 +1848,7 @@ struct svg_state {
     double linewidth;
     double miterlimit;
     int dofill, dostroke;
-    uint32 fillcol, strokecol;
+    uint32_t fillcol, strokecol;
     float fillopacity, strokeopacity;
     int isvisible;
     enum linecap lc;
@@ -1856,9 +1856,9 @@ struct svg_state {
     real transform[6];
     DashType dashes[DASH_MAX];
     SplineSet *clippath;
-    uint8 free_clip;
-    uint32 currentColor;
-    uint32 stopColor;
+    uint8_t free_clip;
+    uint32_t currentColor;
+    uint32_t stopColor;
     float stopOpacity;
 };
 
@@ -2003,7 +2003,7 @@ static real parseGCoord(xmlChar *prop,int bb_units,real bb_low, real bb_high) {
 return( val );
 }
 
-static int xmlParseColor(xmlChar *name,uint32 *color, char **url,struct svg_state *st);
+static int xmlParseColor(xmlChar *name,uint32_t *color, char **url,struct svg_state *st);
 
 static void xmlParseColorSource(xmlNodePtr top,char *name,DBounds *bbox,
 	struct svg_state *st,struct gradient **_grad,struct epattern **_epat) {
@@ -2221,9 +2221,9 @@ static void xmlApplyColourSources(xmlNodePtr top,Entity *head,
     }
 }
 
-static int xmlParseColor(xmlChar *name,uint32 *color, char **url,struct svg_state *st) {
+static int xmlParseColor(xmlChar *name,uint32_t *color, char **url,struct svg_state *st) {
     int doit, i;
-    static struct { char *name; uint32 col; } stdcols[] = {
+    static struct { char *name; uint32_t col; } stdcols[] = {
 	{ "red", 0xff0000 },
 	{ "green", 0x008000 },
 	{ "blue", 0x0000ff },
@@ -2856,7 +2856,7 @@ static SplineChar *SVGParseGlyphArgs(xmlNodePtr glyph,int defh, int defv,
 	SplineFont *sf) {
     SplineChar *sc = SFSplineCharCreate(sf);
     xmlChar *name, *form, *glyphname, *unicode, *orientation;
-    uint32 *u;
+    uint32_t *u;
     char buffer[100];
 
     name = xmlGetProp(glyph,(xmlChar *) "horiz-adv-x");
@@ -2951,7 +2951,7 @@ return( sc );
 
 static void SVGLigatureFixupCheck(SplineChar *sc,xmlNodePtr glyph) {
     xmlChar *unicode;
-    uint32 *u;
+    uint32_t *u;
     int len, len2;
     SplineChar **chars, *any = NULL;
     char *comp, *pt;
@@ -3031,7 +3031,7 @@ static void SVGLigatureFixupCheck(SplineChar *sc,xmlNodePtr glyph) {
 }
 
 static char *SVGGetNames(SplineFont *sf,xmlChar *g,xmlChar *utf8,SplineChar **sc) {
-    uint32 *u=NULL;
+    uint32_t *u=NULL;
     char *names;
     int len, i, ch;
     SplineChar *temp;
@@ -3088,7 +3088,7 @@ static void SVGParseKern(SplineFont *sf,xmlNodePtr kern,int isv) {
     char *c1, *c2;
     char *pt1, *pt2, *end1, *end2;
     SplineChar *sc1, *sc2;
-    uint32 script;
+    uint32_t script;
     struct lookup_subtable *subtable;
 
     k = xmlGetProp(kern,(xmlChar *) "k");

@@ -130,10 +130,10 @@ const int mac_dpi = 72;
 
 /* ******************************** Creation ******************************** */
 
-static uint16 HashToId(char *fontname,SplineFont *sf,EncMap *map) {
+static uint16_t HashToId(char *fontname,SplineFont *sf,EncMap *map) {
     int low = 128, high = 0x3fff;
     /* A FOND ID should be between these two numbers for roman script (I think) */
-    uint32 hash = 0;
+    uint32_t hash = 0;
     int i, gid;
     SplineChar *sc;
 
@@ -266,25 +266,25 @@ return( cnt );
 }
 
 struct resource {
-    uint32 pos;
-    uint8 flags;
-    uint16 id;
+    uint32_t pos;
+    uint8_t flags;
+    uint16_t id;
     char *name;
-    uint32 nameloc;
-    uint32 nameptloc;
+    uint32_t nameloc;
+    uint32_t nameptloc;
 };
 
 struct resourcetype {
-    uint32 tag;
+    uint32_t tag;
     struct resource *res;
-    uint32 resloc;
+    uint32_t resloc;
 };
 
 struct macbinaryheader {
     char *macfilename;
     char *binfilename;		/* if macfilename is null and this is set we will figure out macfilename by removing .bin */
-    uint32 type;
-    uint32 creator;
+    uint32_t type;
+    uint32_t creator;
 };
 
 static struct resource *PSToResources(FILE *res,FILE *pfbfile) {
@@ -339,11 +339,11 @@ return( NULL );
 return( resstarts );
 }
 
-static uint32 TTFToResource(FILE *res,FILE *ttffile) {
+static uint32_t TTFToResource(FILE *res,FILE *ttffile) {
     /* A truetype font just gets dropped into a resource */
     struct stat statb;
     int ch;
-    uint32 resstart;
+    uint32_t resstart;
 
     fstat(fileno(ttffile),&statb);
     resstart = ftell(res);
@@ -354,7 +354,7 @@ static uint32 TTFToResource(FILE *res,FILE *ttffile) {
 return( resstart );
 }
 
-static int BDFCCopyBitmaps(uint8 **rows,int offset,BDFChar *bdfc, BDFFont *bdf) {
+static int BDFCCopyBitmaps(uint8_t **rows,int offset,BDFChar *bdfc, BDFFont *bdf) {
     int i, r, y, ipos, j, c;
 
     y = bdf->ascent-1; r = i = 0;
@@ -377,11 +377,11 @@ static int BDFCCopyBitmaps(uint8 **rows,int offset,BDFChar *bdfc, BDFFont *bdf) 
 return( offset + bdfc->xmax-bdfc->xmin+1 );
 }
 
-static uint32 BDFToNFNT(FILE *res, BDFFont *bdf, EncMap *map) {
+static uint32_t BDFToNFNT(FILE *res, BDFFont *bdf, EncMap *map) {
     short widths[258], lbearings[258], locs[258]/*, idealwidths[256]*/;
-    uint8 **rows = malloc(bdf->pixelsize*sizeof(uint8 *));
+    uint8_t **rows = malloc(bdf->pixelsize*sizeof(uint8_t *));
     int i, k, width, kernMax=1, descentMax=bdf->descent-1, rectMax=1, widMax=3;
-    uint32 rlenpos = ftell(res), end, owloc, owpos;
+    uint32_t rlenpos = ftell(res), end, owloc, owpos;
     int gid;
     BDFChar *bdfc;
 
@@ -404,7 +404,7 @@ static uint32 BDFToNFNT(FILE *res, BDFFont *bdf, EncMap *map) {
     if ( descentMax>bdf->descent ) descentMax = bdf->descent;
     ++width;			/* For the "undefined character */
     for ( k=0; k<bdf->pixelsize; ++k )
-	rows[k] = calloc((width+7)/8 + 4 , sizeof(uint8));
+	rows[k] = calloc((width+7)/8 + 4 , sizeof(uint8_t));
     for ( i=width=0; i<256 ; ++i ) {
 	locs[i] = width;
 	if ( i>=map->enccount || (gid=map->map[i])==-1 || gid>=bdf->glyphcnt || bdf->glyphs[gid]==NULL ||
@@ -485,13 +485,13 @@ static uint32 BDFToNFNT(FILE *res, BDFFont *bdf, EncMap *map) {
 return(rlenpos);
 }
 
-static uint32 DummyNFNT(FILE *res, BDFFont *bdf, EncMap *map) {
+static uint32_t DummyNFNT(FILE *res, BDFFont *bdf, EncMap *map) {
     /* This produces a stub NFNT which appears when the real data lives inside */
     /*  an sfnt (truetype) resource. We still need to produce an NFNT to tell */
     /*  the system that the pointsize is available. This NFNT has almost nothing */
     /*  in it, just the initial header, no metrics, no bitmaps */
     int i, width, kernMax=1, descentMax=bdf->descent-1, rectMax=1, widMax=3;
-    uint32 rlenpos = ftell(res);
+    uint32_t rlenpos = ftell(res);
     int gid;
 
     for ( i=width=0; i<256 && i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && gid<bdf->glyphcnt && bdf->glyphs[gid]!=NULL ) {
@@ -525,7 +525,7 @@ static uint32 DummyNFNT(FILE *res, BDFFont *bdf, EncMap *map) {
 return(rlenpos);
 }
 
-static struct resource *SFToNFNTs(FILE *res, SplineFont *sf, int32 *sizes,
+static struct resource *SFToNFNTs(FILE *res, SplineFont *sf, int32_t *sizes,
 	EncMap *map) {
     int i, baseresid = HashToId(sf->fontname,sf,map);
     struct resource *resstarts;
@@ -595,7 +595,7 @@ return(resstarts);
 }
 
 static struct resource *BuildDummyNFNTlist(FILE *res, SplineFont *sf,
-	int32 *sizes, int baseresid, EncMap *map) {
+	int32_t *sizes, int baseresid, EncMap *map) {
     int i;
     struct resource *resstarts;
     BDFFont *bdf;
@@ -665,7 +665,7 @@ return(resstarts);
 enum psstyle_flags { psf_bold = 1, psf_italic = 2, psf_outline = 4,
 	psf_shadow = 0x8, psf_condense = 0x10, psf_extend = 0x20 };
 
-uint16 _MacStyleCode( const char *styles, SplineFont *sf, uint16 *psstylecode ) {
+uint16_t _MacStyleCode( const char *styles, SplineFont *sf, uint16_t *psstylecode ) {
     unsigned short stylecode= 0, psstyle=0;
 
     if ( strstrmatch( styles, "Bold" ) || strstrmatch(styles,"Demi") ||
@@ -726,7 +726,7 @@ uint16 _MacStyleCode( const char *styles, SplineFont *sf, uint16 *psstylecode ) 
 return( stylecode );
 }
 
-uint16 MacStyleCode( SplineFont *sf, uint16 *psstylecode ) {
+uint16_t MacStyleCode( SplineFont *sf, uint16_t *psstylecode ) {
     const char *styles;
 
     if ( sf->cidmaster!=NULL )
@@ -742,9 +742,9 @@ return( sf->macstyle );
 return( _MacStyleCode(styles,sf,psstylecode));
 }
 
-static uint32 SFToFOND(FILE *res,SplineFont *sf,uint32 id,int dottf,
-	int32 *sizes, EncMap *map) {
-    uint32 rlenpos = ftell(res), widoffpos, widoffloc, kernloc, styleloc, end;
+static uint32_t SFToFOND(FILE *res,SplineFont *sf,uint32_t id,int dottf,
+	int32_t *sizes, EncMap *map) {
+    uint32_t rlenpos = ftell(res), widoffpos, widoffloc, kernloc, styleloc, end;
     int i,j,k,cnt, strcnt, fontclass, stylecode, glyphenc, geoffset, realstylecode;
     int gid;
     KernPair *kp;
@@ -942,7 +942,7 @@ struct sflistlist {
 static struct sflistlist *FondSplitter(struct sflist *sfs,int *fondcnt) {
     struct sflist *psfaces[48], *sfi, *last, *start;
     struct sflistlist *sfsl=NULL, *lastl=NULL, *cur, *test;
-    uint16 psstyle;
+    uint16_t psstyle;
     int fc = 0;
 
     sfi = sfs;
@@ -1025,12 +1025,12 @@ static void SFListListFree(struct sflistlist *sfsl) {
     }
 }
 
-static uint32 SFsToFOND(FILE *res,struct sflist *sfs,uint32 id,int format) {
-    uint32 rlenpos = ftell(res), widoffpos, widoffloc, kernloc, styleloc, end;
+static uint32_t SFsToFOND(FILE *res,struct sflist *sfs,uint32_t id,int format) {
+    uint32_t rlenpos = ftell(res), widoffpos, widoffloc, kernloc, styleloc, end;
     int i,j,k,cnt, scnt, kcnt, pscnt, strcnt, fontclass, glyphenc, geoffset;
     int gid;
     int size;
-    uint16 psstyle, stylecode;
+    uint16_t psstyle, stylecode;
     int exact, famlen, has_hyphen;
     char *familyname;
     KernPair *kp;
@@ -1255,9 +1255,9 @@ return(rlenpos);
 
 /* I presume this routine is called after all resources have been written */
 static void DumpResourceMap(FILE *res,struct resourcetype *rtypes,enum fontformat format) {
-    uint32 rfork_base = format>=ff_ttfdfont?0:128;	/* space for mac binary header */
-    uint32 resource_base = rfork_base+0x100;
-    uint32 rend, rtypesstart, mend, namestart;
+    uint32_t rfork_base = format>=ff_ttfdfont?0:128;	/* space for mac binary header */
+    uint32_t resource_base = rfork_base+0x100;
+    uint32_t rend, rtypesstart, mend, namestart;
     int i,j;
 
     fseek(res,0,SEEK_END);
@@ -1374,8 +1374,8 @@ long mactime(void) {
 
 static int DumpMacBinaryHeader(FILE *res,struct macbinaryheader *mb) {
 #if !__Mac
-    uint8 header[128], *hpt; char buffer[256], *pt, *dpt;
-    uint32 len;
+    uint8_t header[128], *hpt; char buffer[256], *pt, *dpt;
+    uint32_t len;
     time_t now;
     int crc;
 
@@ -1479,7 +1479,7 @@ return( true );
 	free(dirname);
 	dirname = copy(".");
     }
-    ret=FSPathMakeRef( (uint8 *) dirname,&parentref,NULL);
+    ret=FSPathMakeRef( (uint8_t *) dirname,&parentref,NULL);
     free(dirname);
     if ( ret!=noErr )
 return( false );
@@ -1501,7 +1501,7 @@ return( false );
     free(filename);
     if ( ret==dupFNErr ) {
     	/* File already exists, create failed, didn't get an FSRef */
-	ret=FSPathMakeRef( (uint8 *) fname,&ref,NULL);
+	ret=FSPathMakeRef( (uint8_t *) fname,&ref,NULL);
     }
     if ( ret!=noErr )
 return( false );
@@ -1650,7 +1650,7 @@ return( ret );
 }
 
 int WriteMacTTFFont(char *filename,SplineFont *sf,enum fontformat format,
-	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *map,int layer) {
+	int32_t *bsizes, enum bitmapformat bf,int flags,EncMap *map,int layer) {
     FILE *res, *tempttf;
     int ret = 1, r;
     struct resourcetype resources[4];
@@ -1721,7 +1721,7 @@ return( 0 );
 return( ret );
 }
 
-int WriteMacBitmaps(char *filename,SplineFont *sf, int32 *sizes, int is_dfont,
+int WriteMacBitmaps(char *filename,SplineFont *sf, int32_t *sizes, int is_dfont,
 	EncMap *map) {
     FILE *res;
     int ret = 1;
@@ -2368,7 +2368,7 @@ static FOND *BuildFondList(FILE *f,long rlistpos,int subcnt,long rdata_pos,
 	    }
 	}
 	if ( styleoff!=0 ) {
-	    uint8 stringoffsets[48];
+	    uint8_t stringoffsets[48];
 	    int strcnt, stringlen, format;
 	    char **strings, *pt;
 	    fseek(f,styleoff,SEEK_SET);
@@ -2433,14 +2433,14 @@ static BDFChar *NFNTCvtBitmap(struct MacFontRec *font,int index,SplineFont *sf,i
     bdfc->width = font->offsetWidths[index]&0xff;
     bdfc->vwidth = font->ascent + font->descent;
     bdfc->bytes_per_line = ((bdfc->xmax-bdfc->xmin)>>3) + 1;
-    bdfc->bitmap = calloc(bdfc->bytes_per_line*font->fRectHeight,sizeof(uint8));
+    bdfc->bitmap = calloc(bdfc->bytes_per_line*font->fRectHeight,sizeof(uint8_t));
     bdfc->orig_pos = gid;
     bdfc->sc = sf->glyphs[gid];
 
     bits = font->locs[index]; bite = font->locs[index+1];
     for ( i=0; i<font->fRectHeight; ++i ) {
-	uint16 *test = font->fontImage + i*font->rowWords;
-	uint8 *bpt = bdfc->bitmap + i*bdfc->bytes_per_line;
+	uint16_t *test = font->fontImage + i*font->rowWords;
+	uint8_t *bpt = bdfc->bitmap + i*bdfc->bytes_per_line;
 	for ( bit=bits, j=0; bit<bite; ++bit, ++j ) {
 	    if ( test[bit>>4]&(0x8000>>(bit&0xf)) )
 		bpt[j>>3] |= (0x80>>(j&7));
@@ -2566,7 +2566,7 @@ return( -1 );
 static FOND *PickFOND(FOND *fondlist,char *filename,char **name, int *style) {
     int i,j;
     FOND *test;
-    uint8 stylesused[96];
+    uint8_t stylesused[96];
     char **names;
     FOND **fonds, *fond;
     int *styles;
@@ -2767,7 +2767,7 @@ return( NULL );
 	    if ( kp->sc==sc2 )
 	break;
 	if ( kp==NULL ) {
-	    uint32 script;
+	    uint32_t script;
 	    kp = chunkalloc(sizeof(KernPair));
 	    kp->sc = sc2;
 	    kp->next = sc1->kerns;
@@ -2785,7 +2785,7 @@ return( into );
 }
 
 /* Look for a bare truetype font in a binhex/macbinary wrapper */
-static SplineFont *MightBeTrueType(FILE *binary,int32 pos,int32 dlen,int flags,
+static SplineFont *MightBeTrueType(FILE *binary,int32_t pos,int32_t dlen,int flags,
 	enum openflags openflags) {
     FILE *temp = NULL;
     char *buffer = NULL;
@@ -2830,8 +2830,8 @@ static SplineFont *IsResourceFork(FILE *f, long offset,char *filename,int flags,
     /*  file, not at the beginning */
     unsigned char buffer[16], buffer2[16];
     long rdata_pos, map_pos, type_list, name_list, rpos;
-    int32 rdata_len;
-    uint32 nfnt_pos, font_pos, fond_pos;
+    int32_t rdata_len;
+    uint32_t nfnt_pos, font_pos, fond_pos;
     unsigned long tag;
     int i, cnt, subcnt, nfnt_subcnt=0, font_subcnt=0, fond_subcnt=0;
     SplineFont *sf;

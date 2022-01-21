@@ -48,7 +48,7 @@ SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
     return( NULL );
 }
 
-spiro_cp *SplineSet2SpiroCP(SplineSet *ss,uint16 *cnt) {
+spiro_cp *SplineSet2SpiroCP(SplineSet *ss,uint16_t *cnt) {
 return( NULL );
 }
 
@@ -164,7 +164,7 @@ SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
     return ss;
 }
 
-spiro_cp *SplineSet2SpiroCP(SplineSet *ss,uint16 *_cnt) {
+spiro_cp *SplineSet2SpiroCP(SplineSet *ss,uint16_t *_cnt) {
     /* I don't know a good way to do this. I hope including a couple of */
     /*  mid-points on every spline will do a reasonable job */
     SplinePoint *sp;
@@ -260,7 +260,7 @@ char *libspiro_version(void){
     return( version_str ); /* free this string when you are done. */
 }
 
-spiro_cp *SpiroCPCopy(spiro_cp *spiros,uint16 *_cnt) {
+spiro_cp *SpiroCPCopy(spiro_cp *spiros,uint16_t *_cnt) {
 /* Make a copy of a (closed='z' or open='{}') spiro */
     int ch, n = 0;
     spiro_cp *nspiros;

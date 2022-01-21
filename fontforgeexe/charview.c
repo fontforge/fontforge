@@ -1403,7 +1403,7 @@ static void CVDrawPointName(CharView *cv, GWindow pixmap, SplinePoint *sp, Color
 {
     CharViewTab* tab = CVGetActiveTab(cv);
     if (sp->name && *sp->name) {
-	int32 theight;
+	int32_t theight;
 
 	GDrawSetFont(pixmap, cv->normal);
 	theight = GDrawGetText8Height(pixmap, sp->name, -1);
@@ -1687,7 +1687,7 @@ void CVDrawSplineSetSpecialized( CharView *cv, GWindow pixmap, SplinePointList *
                 strokefg = (strokefg | 0x01000000) & 0x01ffffff;
             }
 
-            int16 oldwidth = GDrawGetLineWidth( pixmap );
+            int16_t oldwidth = GDrawGetLineWidth( pixmap );
             GDrawSetLineWidth( pixmap, strokeWidth );
             GDrawPushClipOnly( pixmap );
 
@@ -3849,9 +3849,9 @@ static void CVDoFindInFontView(CharView *cv) {
     GDrawRaise(((FontView *) (cv->b.fv))->gw);
 }
 
-static uint16 HaveModifiers = 0;
-static uint16 PressingTilde = 0;
-static uint16 PrevCharEventWasCharUpOnControl = 0;
+static uint16_t HaveModifiers = 0;
+static uint16_t PressingTilde = 0;
+static uint16_t PrevCharEventWasCharUpOnControl = 0;
 
 
 static void CVCharUp(CharView *cv, GEvent *event ) {
@@ -4332,7 +4332,7 @@ return( true );
 return( fs->p->anysel );
 }
 
-static int16 MouseToCX( CharView *cv, int16 mx )
+static int16_t MouseToCX( CharView *cv, int16_t mx )
 {
     CharViewTab* tab = CVGetActiveTab(cv);
     return( mx - tab->xoff ) / tab->scale;
@@ -4740,8 +4740,8 @@ return;		/* I treat this more like a modifier key change than a button press */
 	   (cv->showing_tool == cvt_pointer),
 	   cv->activeModifierControl, cv->activeModifierAlt );
 
-    int8 override_showing_tool = cvt_none;
-    int8 old_showing_tool = cv->showing_tool;
+    int8_t override_showing_tool = cvt_none;
+    int8_t old_showing_tool = cv->showing_tool;
     if( cv->showing_tool == cvt_pointer
 	&& cv->activeModifierControl
 	&& cv->activeModifierAlt )
@@ -5633,7 +5633,7 @@ static void CVTimer(CharView *cv,GEvent *event) {
 
 static void CVDrop(CharView *cv,GEvent *event) {
     /* We should get a list of character names. Add each as a RefChar */
-    int32 len;
+    int32_t len;
     int ch, first = true;
     char *start, *pt, *cnames;
     SplineChar *rsc;
@@ -9238,7 +9238,7 @@ static void cv_ptlistcheck(CharView *cv, struct gmenuitem *mi) {
     SplinePoint *selpt=NULL;
     int notimplicit = -1;
     int acceptable = -1;
-    uint16 junk;
+    uint16_t junk;
     int i;
 
     if ( cv->showing_spiro_pt_menu != (cv->b.sc->inspiro && hasspiro())) {
@@ -10307,7 +10307,7 @@ return( true );
 static int IOSA_FocusChange(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textfocuschanged ) {
 	struct insertonsplineat *iosa = GDrawGetUserData(GGadgetGetWindow(g));
-	int cid = (intpt) GGadgetGetUserData(g);
+	int cid = (intptr_t) GGadgetGetUserData(g);
 	GGadgetSetChecked(GWidgetGetControl(iosa->gw,cid),true);
     }
 return( true );
@@ -10316,7 +10316,7 @@ return( true );
 static int IOSA_RadioChange(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
 	struct insertonsplineat *iosa = GDrawGetUserData(GGadgetGetWindow(g));
-	int cid = (intpt) GGadgetGetUserData(g);
+	int cid = (intptr_t) GGadgetGetUserData(g);
 	GWidgetIndicateFocusGadget(GWidgetGetControl(iosa->gw,cid));
 	GTextFieldSelect(GWidgetGetControl(iosa->gw,cid),0,-1);
     }
@@ -12322,7 +12322,7 @@ static GMenuItem2 vwlist[] = {
 
 static void CVMenuShowMMMask(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    uint32 changemask = (uint32) (intpt) mi->ti.userdata;
+    uint32_t changemask = (uint32_t) (intptr_t) mi->ti.userdata;
     /* Change which mms get displayed in the "background" */
 
     if ( mi->mid==MID_MMAll ) {
@@ -12346,7 +12346,7 @@ static void mvlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     int i, base, j;
     MMSet *mm = cv->b.sc->parent->mm;
-    uint32 submask;
+    uint32_t submask;
     SplineFont *sub;
     GMenuItem2 *mml;
 
@@ -12367,15 +12367,15 @@ static void mvlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	    mml[i].ti.text = uc_copy(sub->fontname);
 	    mml[i].ti.checkable = true;
 	    mml[i].ti.checked = (cv->mmvisible & (1<<j))?1:0;
-	    mml[i].ti.userdata = (void *) (intpt) (1<<j);
+	    mml[i].ti.userdata = (void *) (intptr_t) (1<<j);
 	    mml[i].invoke = CVMenuShowMMMask;
 	    mml[i].ti.fg = mml[i].ti.bg = COLOR_DEFAULT;
 	    if ( sub==cv->b.sc->parent )
 		submask = (1<<j);
 	}
 	/* All */
-	mml[0].ti.userdata = (void *) (intpt) ((1<<j)-1);
-	mml[0].ti.checked = (cv->mmvisible == (uint32) (intpt) mml[0].ti.userdata);
+	mml[0].ti.userdata = (void *) (intptr_t) ((1<<j)-1);
+	mml[0].ti.checked = (cv->mmvisible == (uint32_t) (intptr_t) mml[0].ti.userdata);
 	    /* None */
 	mml[1].ti.checked = (cv->mmvisible == 0 || cv->mmvisible == submask);
     }
@@ -12732,10 +12732,10 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 
 	if ( pos!=-1 )
 	{
-	    int32 len;
+	    int32_t len;
 	    GTextInfo **ti = GGadgetGetList(g,&len);
 	    GTextInfo *cur = ti[pos];
-	    int type = (intpt) cur->userdata;
+	    int type = (intptr_t) cur->userdata;
 	    if ( type < 0 )
 	    {
 		TRACE("load wordlist...! pos:%d\n",pos);

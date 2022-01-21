@@ -510,8 +510,8 @@ static void pdf_BrushCheck(PI *pi,struct glyph_res *gr,struct brush *brush,
 		    col = grad->grad_stops[j].col;
 		else {
 		    double percent = (t-grad->grad_stops[j-1].offset)/ (grad->grad_stops[j].offset-grad->grad_stops[j-1].offset);
-		    uint32 col1 = grad->grad_stops[j-1].col;
-		    uint32 col2 = grad->grad_stops[j  ].col;
+		    uint32_t col1 = grad->grad_stops[j-1].col;
+		    uint32_t col2 = grad->grad_stops[j  ].col;
 		    if ( col1==COLOR_INHERITED ) col1 = 0x000000;
 		    if ( col2==COLOR_INHERITED ) col2 = 0x000000;
 		    int red   = ((col1>>16)&0xff)*(1-percent) + ((col2>>16)&0xff)*percent;
@@ -686,7 +686,7 @@ static void pdf_ImageCheck(PI *pi,struct glyph_res *gr,ImageList *images,
 	    fwrite(base->data,1,base->height*base->bytes_per_line,pi->out);
 	} else {
 	    /* My image representation of colors includes a pad byte, pdf's does not */
-	    uint32 *pt = (uint32 *) base->data;
+	    uint32_t *pt = (uint32_t *) base->data;
 	    for ( i=0; i<base->width*base->height; ++i, ++pt ) {
 		int red   = (*pt>>16)&0xff;
 		int green = (*pt>>8 )&0xff;
@@ -1023,7 +1023,7 @@ static void pdf_build_type0(PI *pi, int sfid) {
     struct sfbits *sfbit = &pi->sfbits[sfid];
     SplineFont *sf = sfbit->sf;
     SplineFont *cidmaster = sf->cidmaster!=NULL?sf->cidmaster:sf;
-    uint16 *widths;
+    uint16_t *widths;
     int defwidth = sf->ascent+sf->descent;
 
     fseek( sfbit->fontfile,0,SEEK_END);
@@ -1071,7 +1071,7 @@ static void pdf_build_type0(PI *pi, int sfid) {
     } else
 	cidmax = cidmaster->glyphcnt + 2;	/* two extra useless glyphs in ttf */
 
-    widths = malloc(cidmax*sizeof(uint16));
+    widths = malloc(cidmax*sizeof(uint16_t));
 
     for ( i=0; i<cidmax; ++i ) {
 	SplineChar *sc = NULL;
@@ -2186,7 +2186,7 @@ static char *_simplelatnchoices[] = {
     " příliš žluťoučký kůň úpěl ďábelské kódy ",
     NULL
 };
-static uint32 _simplelatnlangs[] = {
+static uint32_t _simplelatnlangs[] = {
     CHR('E','N','G',' '),
     CHR('E','N','G',' '),
     CHR('E','N','G',' '),
@@ -2233,7 +2233,7 @@ fertilization of genetic hybrids. */
     "Чешће цeђење мрeжастим џаком побољшава фертилизацију генских хибрида.",
     NULL
 };
-static uint32 _simplecyrilliclangs[] = {
+static uint32_t _simplecyrilliclangs[] = {
     CHR('R','U','S',' '),	/* Russian */
     CHR('R','U','S',' '),
     CHR('S','R','B',' '),	/* Serbian */
@@ -2561,7 +2561,7 @@ static struct langsamples {
     char **sample;
     char *iso_lang;		/* ISO 639 two character abbreviation */
     enum scripts script;
-    uint32 otf_script, lang;
+    uint32_t otf_script, lang;
 } sample[] = {
     { _simple, "various", sc_latin, CHR('l','a','t','n'), CHR('E','N','G',' ') },
     { _simplecyrill, "various", sc_cyrillic, CHR('c','y','r','l'), CHR('R','U','S',' ')},
@@ -2708,7 +2708,7 @@ return( false );
 return( true );
 }
 
-static int ScriptInList(uint32 script, uint32 *scripts, int scnt) {
+static int ScriptInList(uint32_t script, uint32_t *scripts, int scnt) {
     int s;
 
     for ( s=0; s<scnt; ++s )
@@ -2719,11 +2719,11 @@ return( false );
 }
 
 unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
-	void (*langsyscallback)(void *tf, int end, uint32 script, uint32 lang) ) {
+	void (*langsyscallback)(void *tf, int end, uint32_t script, uint32_t lang) ) {
     int i, j, gotem, len, any=0, foundsomething=0;
     unichar_t *ret=NULL;
     char **cur;
-    uint32 scriptsdone[100], scriptsthere[100], langs[100];
+    uint32_t scriptsdone[100], scriptsthere[100], langs[100];
     char *randoms[100];
     char buffer[220], *pt;
     int scnt,s,therecnt, rcnt;
@@ -3052,7 +3052,7 @@ return( NULL );
 return( space );
 }
 
-void ScriptPrint(FontViewBase *fv,int type,int32 *pointsizes,char *samplefile,
+void ScriptPrint(FontViewBase *fv,int type,int32_t *pointsizes,char *samplefile,
 	unichar_t *sample, char *outputfile) {
     PI pi;
     char buf[100];
@@ -3079,7 +3079,7 @@ void ScriptPrint(FontViewBase *fv,int type,int32 *pointsizes,char *samplefile,
 	if ( samplefile!=NULL && *samplefile!='\0' )
 	    sample = FileToUString(samplefile,65536);
 	if ( sample==NULL )
-	    sample = PrtBuildDef(pi.mainsf,li,(void (*)(void *, int, uint32, uint32))LayoutInfoInitLangSys);
+	    sample = PrtBuildDef(pi.mainsf,li,(void (*)(void *, int, uint32_t, uint32_t))LayoutInfoInitLangSys);
 	else
 	    LayoutInfoInitLangSys(li,u_strlen(sample),DEFAULT_SCRIPT,DEFAULT_LANG);
 	LayoutInfoSetTitle(li, sample, width);

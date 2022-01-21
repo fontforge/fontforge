@@ -664,7 +664,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     return (GWindow)nw;
 }
 
-static GWindow _GGDKDraw_NewPixmap(GDisplay *disp, GWindow similar, uint16 width, uint16 height, bool is_bitmap,
+static GWindow _GGDKDraw_NewPixmap(GDisplay *disp, GWindow similar, uint16_t width, uint16_t height, bool is_bitmap,
                                    unsigned char *data) {
     GGDKDisplay *gdisp = (GGDKDisplay *)disp;
     GGDKWindow gw = (GGDKWindow)calloc(1, sizeof(struct ggdkwindow));
@@ -718,8 +718,8 @@ static GWindow _GGDKDraw_NewPixmap(GDisplay *disp, GWindow similar, uint16 width
     return (GWindow)gw;
 }
 
-static int16 _GGDKDraw_GdkModifierToKsm(GdkModifierType mask) {
-    int16 state = 0;
+static int16_t _GGDKDraw_GdkModifierToKsm(GdkModifierType mask) {
+    int16_t state = 0;
     //Translate from mask to X11 state
     if (mask & GDK_SHIFT_MASK) {
         state |= ksm_shift;
@@ -1267,14 +1267,14 @@ static GWindow GGDKDrawCreateSubWindow(GWindow gw, GRect *pos, int (*eh)(GWindow
     return _GGDKDraw_CreateWindow(((GGDKWindow) gw)->display, (GGDKWindow) gw, pos, eh, user_data, gattrs);
 }
 
-static GWindow GGDKDrawCreatePixmap(GDisplay *gdisp, GWindow similar, uint16 width, uint16 height) {
+static GWindow GGDKDrawCreatePixmap(GDisplay *gdisp, GWindow similar, uint16_t width, uint16_t height) {
     Log(LOGDEBUG, " ");
 
     //TODO: Check format?
     return _GGDKDraw_NewPixmap(gdisp, similar, width, height, false, NULL);
 }
 
-static GWindow GGDKDrawCreateBitmap(GDisplay *gdisp, uint16 width, uint16 height, uint8 *data) {
+static GWindow GGDKDrawCreateBitmap(GDisplay *gdisp, uint16_t width, uint16_t height, uint8_t *data) {
     Log(LOGDEBUG, " ");
     int stride = cairo_format_stride_for_width(CAIRO_FORMAT_A1, width);
     int actual = (width & 0x7fff) / 8;
@@ -1286,7 +1286,7 @@ static GWindow GGDKDrawCreateBitmap(GDisplay *gdisp, uint16 width, uint16 height
         }
 
         cairo_surface_flush(((GGDKWindow)ret)->cs);
-        uint8 *buf = cairo_image_surface_get_data(((GGDKWindow)ret)->cs);
+        uint8_t *buf = cairo_image_surface_get_data(((GGDKWindow)ret)->cs);
         for (int j = 0; j < height; j++) {
             memcpy(buf + stride * j, data + actual * j, actual);
         }
@@ -1297,7 +1297,7 @@ static GWindow GGDKDrawCreateBitmap(GDisplay *gdisp, uint16 width, uint16 height
     return _GGDKDraw_NewPixmap(gdisp, NULL, width, height, true, data);
 }
 
-static GCursor GGDKDrawCreateCursor(GWindow src, GWindow mask, Color fg, Color bg, int16 x, int16 y) {
+static GCursor GGDKDrawCreateCursor(GWindow src, GWindow mask, Color fg, Color bg, int16_t x, int16_t y) {
     Log(LOGDEBUG, " ");
 
     GGDKDisplay *gdisp = (GGDKDisplay *)(src->display);
@@ -1462,7 +1462,7 @@ static void GGDKDrawSetVisible(GWindow w, int show) {
     }
 }
 
-static void GGDKDrawMove(GWindow gw, int32 x, int32 y) {
+static void GGDKDrawMove(GWindow gw, int32_t x, int32_t y) {
     Log(LOGDEBUG, "%p:%s, %d %d", gw, ((GGDKWindow)gw)->window_title, x, y);
     _GGDKDraw_CleanupAutoPaint(((GGDKWindow)gw)->display);
     gdk_window_move(((GGDKWindow)gw)->w, x, y);
@@ -1472,12 +1472,12 @@ static void GGDKDrawMove(GWindow gw, int32 x, int32 y) {
     }
 }
 
-static void GGDKDrawTrueMove(GWindow w, int32 x, int32 y) {
+static void GGDKDrawTrueMove(GWindow w, int32_t x, int32_t y) {
     Log(LOGDEBUG, " ");
     GGDKDrawMove(w, x, y);
 }
 
-static void GGDKDrawResize(GWindow gw, int32 w, int32 h) {
+static void GGDKDrawResize(GWindow gw, int32_t w, int32_t h) {
     Log(LOGDEBUG, "%p:%s, %d %d", gw, ((GGDKWindow)gw)->window_title, w, h);
     _GGDKDraw_CleanupAutoPaint(((GGDKWindow)gw)->display);
     gdk_window_resize(((GGDKWindow)gw)->w, w, h);
@@ -1489,7 +1489,7 @@ static void GGDKDrawResize(GWindow gw, int32 w, int32 h) {
     }
 }
 
-static void GGDKDrawMoveResize(GWindow gw, int32 x, int32 y, int32 w, int32 h) {
+static void GGDKDrawMoveResize(GWindow gw, int32_t x, int32_t y, int32_t w, int32_t h) {
     Log(LOGDEBUG, "%p:%s, %d %d %d %d", gw, ((GGDKWindow)gw)->window_title, x, y, w, h);
     _GGDKDraw_CleanupAutoPaint(((GGDKWindow)gw)->display);
     gdk_window_move_resize(((GGDKWindow)gw)->w, x, y, w, h);
@@ -1705,7 +1705,7 @@ static void GGDKDrawBeep(GDisplay *gdisp) {
     gdk_display_beep(((GGDKDisplay *)gdisp)->display);
 }
 
-static void GGDKDrawScroll(GWindow w, GRect *rect, int32 hor, int32 vert) {
+static void GGDKDrawScroll(GWindow w, GRect *rect, int32_t hor, int32_t vert) {
     //Log(LOGDEBUG, " ");
     GGDKWindow gw = (GGDKWindow) w;
     GRect temp;
@@ -1771,8 +1771,8 @@ static void GGDKDrawGrabSelection(GWindow w, enum selnames sn) {
     sel->timestamp = gdisp->last_event_time;
 }
 
-static void GGDKDrawAddSelectionType(GWindow w, enum selnames sel, char *type, void *data, int32 cnt, int32 unitsize,
-                                     void *gendata(void *, int32 *len), void freedata(void *)) {
+static void GGDKDrawAddSelectionType(GWindow w, enum selnames sel, char *type, void *data, int32_t cnt, int32_t unitsize,
+                                     void *gendata(void *, int32_t *len), void freedata(void *)) {
     Log(LOGDEBUG, " ");
 
     GGDKWindow gw = (GGDKWindow)w;
@@ -1820,7 +1820,7 @@ static void GGDKDrawAddSelectionType(GWindow w, enum selnames sel, char *type, v
 #endif
 }
 
-static void *GGDKDrawRequestSelection(GWindow w, enum selnames sn, char *typename, int32 *len) {
+static void *GGDKDrawRequestSelection(GWindow w, enum selnames sn, char *typename, int32_t *len) {
     GGDKWindow gw = (GGDKWindow)w;
     GGDKDisplay *gdisp = gw->display;
     GdkAtom type_atom = gdk_atom_intern(typename, false);
@@ -2253,7 +2253,7 @@ static int GGDKDrawShortcutKeyMatches(const GEvent *e, unichar_t ch) {
     return k == ch;
 }
 
-static GTimer *GGDKDrawRequestTimer(GWindow w, int32 time_from_now, int32 frequency, void *userdata) {
+static GTimer *GGDKDrawRequestTimer(GWindow w, int32_t time_from_now, int32_t frequency, void *userdata) {
     //Log(LOGDEBUG, " ");
     GGDKTimer *timer = calloc(1, sizeof(GGDKTimer));
     GGDKWindow gw = (GGDKWindow)w;

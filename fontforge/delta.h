@@ -43,7 +43,7 @@ struct qgnode {
     QuestionableGrid *first;
     struct qgnode *kids, *parent;
     int kid_cnt, qg_cnt, tot_under;
-    uint8 open;
+    uint8_t open;
     char *name;
 };
 
@@ -90,7 +90,7 @@ typedef struct qg_data {
 
     struct qgnode list;
 
-    uint8 inprocess;
+    uint8_t inprocess;
 } QGData;
 
 extern void TopFindQuestionablePoints(struct qg_data *data);

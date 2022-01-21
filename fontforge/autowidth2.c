@@ -134,7 +134,7 @@ static void aw2_figure_all_sidebearing(AW_Data *all) {
     AW_Glyph *me, *other;
     real transform[6], half;
     int width, changed;
-    uint8 *rsel = calloc(all->fv->map->enccount,sizeof(uint8));
+    uint8_t *rsel = calloc(all->fv->map->enccount,sizeof(uint8_t));
     real denom = (all->sf->ascent + all->sf->descent)/DENOM_FACTOR_OF_EMSIZE;
     int ldiff, rdiff;
 
@@ -456,7 +456,7 @@ return( classes );
 void AutoWidth2(FontViewBase *fv,int separation,int min_side,int max_side,
 	int chunk_height, int loop_cnt) {
     struct scriptlist {
-	uint32 script;
+	uint32_t script;
 	AW_Glyph *glyphs;
 	int gcnt;
     } *scripts;
@@ -483,7 +483,7 @@ void AutoWidth2(FontViewBase *fv,int separation,int min_side,int max_side,
 		(sc = sf->glyphs[gid])!=NULL && ! sc->ticked &&
 		HasUseMyMetrics(sc,fv->active_layer)==NULL ) {
 		/* If Use My Metrics is set, then we can't change the width (which we grab from a refchar) */
-	    uint32 script;
+	    uint32_t script;
 	    script = SCScriptFromUnicode(sc);
 	    for ( s=0; s<scnt; ++s ) {
 		if ( scripts[s].script == script )
@@ -1037,7 +1037,7 @@ return;
     free(rused);
     free(visual_separation);
 	
-    kc->offsets = calloc(lclasscnt*rclasscnt,sizeof(int16));
+    kc->offsets = calloc(lclasscnt*rclasscnt,sizeof(int16_t));
     kc->adjusts = calloc(lclasscnt*rclasscnt,sizeof(DeviceTable));
 
     if ( autokern )

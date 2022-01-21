@@ -525,7 +525,7 @@ return( true );
 
 static int WithinList(struct gfc_data *d,GEvent *event) {
     GGadget *list;
-    int32 pos;
+    int32_t pos;
     unichar_t *ufile;
     char *file, **fontnames;
     int cnt, len;

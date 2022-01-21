@@ -106,7 +106,7 @@ static void GScroll1Box_SetScroll(GScroll1Box *s1b) {
     GDrawRequestExpose(s1b->nested, NULL, false);
 }
 
-static void GScroll1BoxMove(GGadget *g, int32 x, int32 y) {
+static void GScroll1BoxMove(GGadget *g, int32_t x, int32_t y) {
     GScroll1Box *s1b = (GScroll1Box *) g;
     int offx = x - g->r.x, offy = y - g->r.y;
 
@@ -115,7 +115,7 @@ static void GScroll1BoxMove(GGadget *g, int32 x, int32 y) {
     _ggadget_move(g, x, y);
 }
 
-static void GScroll1BoxMoveChildren(GScroll1Box *s1b, int32 diff) {
+static void GScroll1BoxMoveChildren(GScroll1Box *s1b, int32_t diff) {
     for (int c = 0; c < s1b->count; ++c) {
         GGadget *g = s1b->children[c];
         if (s1b->vertical) {
@@ -312,7 +312,7 @@ struct childdata {
     int offset;
 };
 
-static void GScroll1BoxResize(GGadget *g, int32 width, int32 height) {
+static void GScroll1BoxResize(GGadget *g, int32_t width, int32_t height) {
     GScroll1Box *s1b = (GScroll1Box *) g;
     int bp = GBoxBorderWidth(g->base, g->box);
     int c, target, move, exp, has_just;

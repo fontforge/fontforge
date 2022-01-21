@@ -2624,7 +2624,7 @@ Spline *SplineAddExtrema(Spline *s,int always,real lenbound, real offsetbound,
 	DBounds *b) {
     /* First find the extrema, if any */
     bigreal t[4], min;
-    uint8 rmfrom[4], rmto[4];
+    uint8_t rmfrom[4], rmto[4];
     int p, i,j, p_s, mini, restart, forced;
     SplinePoint *sp;
     real len;

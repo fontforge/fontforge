@@ -397,7 +397,7 @@ static int PLUG_PluginListChange(GGadget *g, GEvent *e) {
 }
 
 void GListMoveOneSelected(GGadget *list, int offset) {
-    int32 len;
+    int32_t len;
     int i, pos = -1;
     GTextInfo **old, **new, *tmp;
 

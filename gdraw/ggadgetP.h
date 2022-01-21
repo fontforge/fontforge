@@ -33,7 +33,7 @@
 
 struct gfuncs {
     unsigned int is_widget: 1;
-    uint16 size;
+    uint16_t size;
     int (*handle_expose)(GWindow pixmap,GGadget *g,GEvent *event);
     int (*handle_mouse)(GGadget *g,GEvent *event);
     int (*handle_key)(GGadget *g,GEvent *event);
@@ -43,8 +43,8 @@ struct gfuncs {
     int (*handle_sel)(GGadget *g,GEvent *event);
 
     void (*redraw)(GGadget *g);
-    void (*move)(GGadget *g,int32 x, int32 y);
-    void (*resize)(GGadget *g,int32 width, int32 height);
+    void (*move)(GGadget *g,int32_t x, int32_t y);
+    void (*resize)(GGadget *g,int32_t width, int32_t height);
     void (*setvisible)(GGadget *g,int);
     void (*setenabled)(GGadget *g,int);
 
@@ -63,15 +63,15 @@ struct gfuncs {
     GFont *(*get_font)(GGadget *g);
 
     void (*clear_list)(GGadget *g);
-    void (*set_list)(GGadget *g, GTextInfo **ti, int32 copyit);
-    GTextInfo **(*get_list)(GGadget *g,int32 *len);
-    GTextInfo *(*get_list_item)(GGadget *g,int32 pos);
-    void (*select_list_item)(GGadget *g,int32 pos, int32 sel);
-    void (*select_one_list_item)(GGadget *g,int32 pos);
-    int32 (*is_list_item_selected)(GGadget *g,int32 pos);
-    int32 (*get_first_selection)(GGadget *g);
-    void (*scroll_list_to_pos)(GGadget *g,int32 pos);
-    void (*scroll_list_to_text)(GGadget *g,const unichar_t *lab,int32 sel);
+    void (*set_list)(GGadget *g, GTextInfo **ti, int32_t copyit);
+    GTextInfo **(*get_list)(GGadget *g,int32_t *len);
+    GTextInfo *(*get_list_item)(GGadget *g,int32_t pos);
+    void (*select_list_item)(GGadget *g,int32_t pos, int32_t sel);
+    void (*select_one_list_item)(GGadget *g,int32_t pos);
+    int32_t (*is_list_item_selected)(GGadget *g,int32_t pos);
+    int32_t (*get_first_selection)(GGadget *g);
+    void (*scroll_list_to_pos)(GGadget *g,int32_t pos);
+    void (*scroll_list_to_text)(GGadget *g,const unichar_t *lab,int32_t sel);
     void (*set_list_orderer)(GGadget *g,int (*orderer)(const void *, const void *));
 
     void (*get_desired_size)(GGadget *g, GRect *outer, GRect *inner);
@@ -110,7 +110,7 @@ struct ggadget {
     enum gadget_state state;
     unichar_t *popup_msg;
     GGadgetHandler handle_controlevent;
-    int16 desired_width, desired_height;
+    int16_t desired_width, desired_height;
 };
 
 typedef struct ggadget GLine;
@@ -133,7 +133,7 @@ typedef struct glabel {		/* or simple text, or groupbox */
     unichar_t *label;
     GImage *image;
     GTextInfo **ti;
-    uint16 ltot;
+    uint16_t ltot;
 } GLabel, GButton;
 
 typedef struct gimagebutton {
@@ -167,7 +167,7 @@ typedef struct glistbutton {
     unichar_t *label;
     GImage *image;
     GTextInfo **ti;
-    uint16 ltot;
+    uint16_t ltot;
     GWindow popup;
 } GListButton;
 
@@ -226,34 +226,34 @@ typedef struct gradio {
 
 typedef struct gscrollbar {		/* and slider */
     struct ggadget g;
-    int32 sb_min, sb_max, sb_pagesize, sb_pos;
-    int32 sb_mustshow;			/* normally this is sb_pagesize, but might be the height of a single line */
+    int32_t sb_min, sb_max, sb_pagesize, sb_pos;
+    int32_t sb_mustshow;			/* normally this is sb_pagesize, but might be the height of a single line */
 		    /* if we want people to be able to scroll to see white space */
 		    /* after the document */
     /*unsigned int vert: 1; */	/* Moved to GGadget, shared with line */
     unsigned int thumbpressed: 1;
     unsigned int ignorenext45: 1;
-    int8 repeatcmd;		/*  sb event to be generated on timer interrupts (ie. upline)*/
-    int8 thumbborder;		/* Size of the border of the thumbbox */
-    int8 sbborder;		/* Size of the border of the main scrollbar */
-    int16 size_offset;		/* Thumb size offset when the thumb size gets clamped. */
-    int16 thumboff;		/* Offset from where the thumb was pressed to top of thumb */
-    int16 arrowsize;		
-    int16 thumbsize;		/* Current thumb size, refigured after every call to setbounds */
-    int16 thumbpos;		/* Current thumb pos */
+    int8_t repeatcmd;		/*  sb event to be generated on timer interrupts (ie. upline)*/
+    int8_t thumbborder;		/* Size of the border of the thumbbox */
+    int8_t sbborder;		/* Size of the border of the main scrollbar */
+    int16_t size_offset;		/* Thumb size offset when the thumb size gets clamped. */
+    int16_t thumboff;		/* Offset from where the thumb was pressed to top of thumb */
+    int16_t arrowsize;		
+    int16_t thumbsize;		/* Current thumb size, refigured after every call to setbounds */
+    int16_t thumbpos;		/* Current thumb pos */
     GTimer *pressed;
     GBox *thumbbox;
 } GScrollBar;
 
 typedef struct glist {
     GGadget g;
-    uint8 fh;
-    uint8 as;
-    uint8 sofar_max, sofar_pos;
-    uint16 ltot, loff, lcnt;
-    uint16 xoff, xmax;
-    uint16 start, end;			/* current selection drag */
-    uint16 hmax;		/* maximum line height */
+    uint8_t fh;
+    uint8_t as;
+    uint8_t sofar_max, sofar_pos;
+    uint16_t ltot, loff, lcnt;
+    uint16_t xoff, xmax;
+    uint16_t start, end;			/* current selection drag */
+    uint16_t hmax;		/* maximum line height */
     FontInstance *font;
     GTextInfo **ti;
     struct gscrollbar *vsb;
@@ -274,14 +274,14 @@ typedef struct glist {
 
 typedef struct gscroll1box {
     GGadget g;
-    int32 count;
-    int32 sbsize;
-    int32 minsize, oppoatmin;
-    int32 subwidth, subheight;
-    int32 oppoatcur; // Not subwidth/height because the scroll bar can add size
-    int32 pad;
-    int32 scrollchange;
-    int32 offset;    // wrt scrolling
+    int32_t count;
+    int32_t sbsize;
+    int32_t minsize, oppoatmin;
+    int32_t subwidth, subheight;
+    int32_t oppoatcur; // Not subwidth/height because the scroll bar can add size
+    int32_t pad;
+    int32_t scrollchange;
+    int32_t offset;    // wrt scrolling
     GGadget **children;
     GGadget *sb;
     unsigned int vertical: 1;
@@ -311,40 +311,40 @@ typedef struct gtextfield {
     unsigned int incr_down: 1;	/* Direction of increments when numeric_scroll events happen */
     unsigned int completionfield: 1;
     unsigned int was_completing: 1;
-    uint8 fh;
-    uint8 as;
-    uint8 nw;			/* Width of one character (an "n") */
-    int16 xoff_left, loff_top;
-    int16 sel_start, sel_end, sel_base;
-    int16 sel_oldstart, sel_oldend, sel_oldbase;
-    int16 dd_cursor_pos;
+    uint8_t fh;
+    uint8_t as;
+    uint8_t nw;			/* Width of one character (an "n") */
+    int16_t xoff_left, loff_top;
+    int16_t sel_start, sel_end, sel_base;
+    int16_t sel_oldstart, sel_oldend, sel_oldbase;
+    int16_t dd_cursor_pos;
     unichar_t *text, *oldtext;
     FontInstance *font;
     GTimer *pressed;
     GTimer *cursor;
     GCursor old_cursor;
     GScrollBar *hsb, *vsb;
-    int16 lcnt, lmax;
-    int32 *lines;		/* offsets in text to the start of the nth line */
-    int16 xmax;
+    int16_t lcnt, lmax;
+    int32_t *lines;		/* offsets in text to the start of the nth line */
+    int16_t xmax;
     GIC *gic;
     GTimer *numeric_scroll;
     char *utf8_text;		/* For Pango */
-    int32 *lines8;		/* offsets in utf8_text */
+    int32_t *lines8;		/* offsets in utf8_text */
 } GTextField;
 
 typedef struct glistfield {
     GTextField gt;
     GRect fieldrect, buttonrect;
     GTextInfo **ti;
-    uint16 ltot;
+    uint16_t ltot;
     GWindow popup;
 } GListField;
 
 typedef struct gcompletionfield {
     GListField gl;
     unichar_t **choices;
-    uint16 ctot; int16 selected;
+    uint16_t ctot; int16_t selected;
     GWindow choice_popup;
     GTextCompletionHandler completion;
 } GCompletionField;
@@ -357,10 +357,10 @@ typedef struct gnumericfield {
 typedef struct gmenubar {
     GGadget g;
     GMenuItem *mi;
-    uint16 *xs;			/* locations at which to draw each name (+1 to give us width of last one) */
-    uint16 mtot;
-    int16 entry_with_mouse;
-    int16 lastmi;		/* If the menubar doesn't fit across the top the make some of it be vertical. Start here */
+    uint16_t *xs;			/* locations at which to draw each name (+1 to give us width of last one) */
+    uint16_t mtot;
+    int16_t entry_with_mouse;
+    int16_t lastmi;		/* If the menubar doesn't fit across the top the make some of it be vertical. Start here */
     int ascender;
     int descender;
     struct gmenu *child;
@@ -371,24 +371,24 @@ typedef struct gmenubar {
     GMenuItem fake[2];		/* Used if not enough room for menu... */
 } GMenuBar;
 
-struct tabs { unichar_t *name; int16 x, width, tw, nesting; unsigned int disabled: 1; GWindow w; };
+struct tabs { unichar_t *name; int16_t x, width, tw, nesting; unsigned int disabled: 1; GWindow w; };
 
 typedef struct gtabset {
     struct ggadget g;
     struct tabs *tabs;
-    int16 *rowstarts;		/* for each row, index into tab array of its first tab, one extra entry at end with tabcnt */
-    int16 tabcnt;		/* number of tabs */
-    int16 sel;			/* active tab */
-    int16 oldsel;       /* used when swapping tabs */
-    int16 rcnt;			/* number of rows */
-    int16 active_row;		/* row which is closest to the display area */
-    int16 offset_per_row;	/* stagger tabs by this much */
-    int16 rowh;			/* height of each row */
-    int16 toff;			/* amount things are scrolled off left (x, tabs) */
-    int16 arrow_width;		/* width of arrow tab (for scrolling) */
-    int16 arrow_size;		/* size of the actual arrow itself */
-    int16 ds;
-    int16 pressed_sel;
+    int16_t *rowstarts;		/* for each row, index into tab array of its first tab, one extra entry at end with tabcnt */
+    int16_t tabcnt;		/* number of tabs */
+    int16_t sel;			/* active tab */
+    int16_t oldsel;       /* used when swapping tabs */
+    int16_t rcnt;			/* number of rows */
+    int16_t active_row;		/* row which is closest to the display area */
+    int16_t offset_per_row;	/* stagger tabs by this much */
+    int16_t rowh;			/* height of each row */
+    int16_t toff;			/* amount things are scrolled off left (x, tabs) */
+    int16_t arrow_width;		/* width of arrow tab (for scrolling) */
+    int16_t arrow_size;		/* size of the actual arrow itself */
+    int16_t ds;
+    int16_t pressed_sel;
     unsigned int scrolled: 1;	/* big tabsets either get scrolled or appear in multiple rows */
     unsigned int haslarrow: 1;
     unsigned int hasrarrow: 1;
@@ -403,8 +403,8 @@ typedef struct gtabset {
     void (*swap_sync)(GWindow gw, int pos_a, int pos_b);
     void (*nested_expose)(GWindow pixmap, GGadget *g, GEvent *event);
     int (*nested_mouse)(GGadget *g, GEvent *event);
-    int16 vert_list_width;
-    int16 as, fh, offtop;
+    int16_t vert_list_width;
+    int16_t as, fh, offtop;
     GGadget *vsb;
 } GTabSet;
 
@@ -457,10 +457,10 @@ struct col_data {
     void (*enable_enum)(GGadget *,GMenuItem *, int r, int c);
     GTextCompletionHandler completer;
     char *title;
-    int16 width, x;			/* Relative to inner.x */
-    uint8 fixed;
-    uint8 disabled;
-    uint8 hidden;
+    int16_t width, x;			/* Relative to inner.x */
+    uint8_t fixed;
+    uint8_t disabled;
+    uint8_t hidden;
 };
 
 typedef struct gmatrixedit {
@@ -477,8 +477,8 @@ typedef struct gmatrixedit {
     unsigned int no_edit: 1;
     int pressed_col;			/* For changing column spacing */
     struct matrix_data *data;
-    int16 as, fh;
-    int16 font_as, font_fh;
+    int16_t as, fh;
+    int16_t font_as, font_fh;
     FontInstance *font;
     FontInstance *titfont;
     GGadget *tf;
@@ -489,7 +489,7 @@ typedef struct gmatrixedit {
     GGadget *up, *down;
     GGadget **buttonlist;
     GWindow nested;
-    int16 mark_length, mark_size, mark_skip;
+    int16_t mark_length, mark_size, mark_skip;
     char *newtext;
     void (*initrow)(GGadget *g,int row);
     int  (*candelete)(GGadget *g,int row);
@@ -521,7 +521,7 @@ typedef struct rowcol {
     unsigned int vrules: 1;		/* Draw vertical lines between each column */
     unsigned int display_only: 1;
     unsigned int order_entries: 1;	/* normally order rows based on first column entry */
-    uint8 hpad;
+    uint8_t hpad;
     int *colx;				/* col+1 entries, last is xmax */
     GTextInfo **labels;
     GTextInfo **ti;
@@ -556,15 +556,15 @@ void _GWidget_ClearPopupOwner(GGadget *g);
 
 extern void _GGadgetCopyDefaultBox(GBox *box);
 extern void _GGadgetInitDefaultBox(const char *class, GBox *box);
-extern void _ggadget_underlineMnemonic(GWindow gw,int32 x,int32 y,unichar_t *label,
+extern void _ggadget_underlineMnemonic(GWindow gw,int32_t x,int32_t y,unichar_t *label,
 	unichar_t mneumonic, Color fg,int ymax);
 extern void _ggadgetFigureSize(GWindow gw, GBox *design, GRect *r, int isdef);
 extern void _ggadgetSetRects(GGadget *g, GRect *outer, GRect *inner, int xjust, int yjust );
 extern void _GGadgetCloseGroup(GGadget *g);
 extern void _ggadget_redraw(GGadget *g);
 extern int _ggadget_noop(GGadget *g, GEvent *event);
-extern void _ggadget_move(GGadget *g, int32 x, int32 y );
-extern void _ggadget_resize(GGadget *g, int32 width, int32 height );
+extern void _ggadget_move(GGadget *g, int32_t x, int32_t y );
+extern void _ggadget_resize(GGadget *g, int32_t width, int32_t height );
 extern void _ggadget_setvisible(GGadget *g,int visible);
 extern void _ggadget_setenabled(GGadget *g,int enabled);
 extern GRect *_ggadget_getsize(GGadget *g,GRect *rct);
@@ -597,7 +597,7 @@ extern int GTextInfoGetAs(GWindow base,GTextInfo *ti, FontInstance *font);
 extern int GTextInfoDraw(GWindow base,int x,int y,GTextInfo *ti,
 	FontInstance *font,Color fg,Color sel,int ymax, int as, int ds);
 extern GTextInfo *GTextInfoCopy(GTextInfo *ti);
-extern GTextInfo **GTextInfoArrayFromList(GTextInfo *ti, uint16 *cnt);
+extern GTextInfo **GTextInfoArrayFromList(GTextInfo *ti, uint16_t *cnt);
 extern GTextInfo **GTextInfoArrayCopy(GTextInfo **ti);
 extern int GTextInfoArrayCount(GTextInfo **ti);
 extern int GTextInfoCompare(GTextInfo *ti1, GTextInfo *ti2);
@@ -613,7 +613,7 @@ extern GWindow GListPopupCreate(GGadget *owner,void (*inform)(GGadget *,int), GT
 
 extern int GMenuPopupCheckKey(GEvent *event);
 extern int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event);
-extern void _GButton_SetDefault(GGadget *g,int32 is_default);
+extern void _GButton_SetDefault(GGadget *g,int32_t is_default);
 extern void _GButtonInit(void);
 extern void GListMarkDraw(GWindow pixmap,int x, int y, int height, enum gadget_state state );
 extern const char* const* _GGadget_GetImagePath(void);

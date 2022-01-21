@@ -140,7 +140,7 @@ static void SplineFindQuestionablePoints(struct qg_data *data,Spline *s) {
 }
 
 static void SCFindQuestionablePoints(struct qg_data *data) {
-    uint16 width;
+    uint16_t width;
     SplineSet *gridfit = FreeType_GridFitChar(data->freetype_context,
 	    data->sc->orig_pos, data->cur_size, data->cur_size,
 	    data->dpi, &width, data->sc, data->depth, false);

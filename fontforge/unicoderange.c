@@ -51,7 +51,7 @@ struct rangeinfo *SFUnicodeRanges(SplineFont *sf, int include_empty) {
 /* Return NULL if out of memory to hold rangeinfo[cnt]. */
     int cnt, num_planes, num_blocks;
     int i, gid;
-    int32 j;
+    int32_t j;
     struct rangeinfo *ri;
     const struct unicode_range *planes, *blocks;
 
@@ -113,7 +113,7 @@ struct rangeinfo *SFUnicodeRanges(SplineFont *sf, int include_empty) {
 return( ri );
 }
 
-const char *UnicodeRange(int32 unienc) {
+const char *UnicodeRange(int32_t unienc) {
 /* Return the best name that describes this Unicode value */
     const struct unicode_range* block;
     if (isunicodepointassigned(unienc) &&

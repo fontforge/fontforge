@@ -559,7 +559,7 @@ void Wordlist_MoveByOffset( GGadget* g, int* idx, int offset )
     int cidx = *idx;
     if ( cidx!=-1 )
     {
-	int32 len;
+	int32_t len;
 	GGadgetGetList(g,&len);
 	/* We subtract 3 because: There are two lines saying "load * list" */
 	/*  and then a line with a rule on it which we don't want access to */

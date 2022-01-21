@@ -156,8 +156,8 @@ static GResInfo gcancel_ri = {
     NULL
 };
 static GGadgetCreateData color_gcd[] = {
-    { GColorButtonCreate, { GRECT_EMPTY, NULL, 0, 0, 0, 0, 0, NULL, { (GTextInfo *) (intpt) (0x000000) }, gg_visible, NULL, NULL }, NULL, NULL },
-    { GColorButtonCreate, { GRECT_EMPTY, NULL, 0, 0, 0, 0, 0, NULL, { (GTextInfo *) (intpt) (0x000000) }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL }
+    { GColorButtonCreate, { GRECT_EMPTY, NULL, 0, 0, 0, 0, 0, NULL, { (GTextInfo *) (intptr_t) (0x000000) }, gg_visible, NULL, NULL }, NULL, NULL },
+    { GColorButtonCreate, { GRECT_EMPTY, NULL, 0, 0, 0, 0, 0, NULL, { (GTextInfo *) (intptr_t) (0x000000) }, gg_visible|gg_enabled, NULL, NULL }, NULL, NULL }
 };
 static GGadgetCreateData *colarray[] = { GCD_Glue, &color_gcd[0], GCD_Glue, &color_gcd[1], GCD_Glue, NULL, NULL };
 static GGadgetCreateData colorbox =
@@ -622,7 +622,7 @@ static FontInstance *GButtonGetFont(GGadget *g) {
 return( b->font );
 }
 
-static void GListBSelectOne(GGadget *g, int32 pos) {
+static void GListBSelectOne(GGadget *g, int32_t pos) {
     GListButton *gl = (GListButton *) g;
     int i;
 
@@ -636,7 +636,7 @@ static void GListBSelectOne(GGadget *g, int32 pos) {
     }
 }
 
-static int32 GListBIsSelected(GGadget *g, int32 pos) {
+static int32_t GListBIsSelected(GGadget *g, int32_t pos) {
     GListButton *gl = (GListButton *) g;
 
     if ( pos>=gl->ltot )
@@ -649,7 +649,7 @@ return( gl->ti[pos]->selected );
 return( false );
 }
 
-static int32 GListBGetFirst(GGadget *g) {
+static int32_t GListBGetFirst(GGadget *g) {
     int i;
     GListButton *gl = (GListButton *) g;
 
@@ -660,13 +660,13 @@ return( i );
 return( -1 );
 }
 
-static GTextInfo **GListBGet(GGadget *g,int32 *len) {
+static GTextInfo **GListBGet(GGadget *g,int32_t *len) {
     GListButton *gl = (GListButton *) g;
     if ( len!=NULL ) *len = gl->ltot;
 return( gl->ti );
 }
 
-static GTextInfo *GListBGetItem(GGadget *g,int32 pos) {
+static GTextInfo *GListBGetItem(GGadget *g,int32_t pos) {
     GListButton *gl = (GListButton *) g;
     if ( pos<0 || pos>=gl->ltot )
 return( NULL );
@@ -674,7 +674,7 @@ return( NULL );
 return(gl->ti[pos]);
 }
 
-static void GListButSet(GGadget *g,GTextInfo **ti,int32 docopy) {
+static void GListButSet(GGadget *g,GTextInfo **ti,int32_t docopy) {
     GListButton *gl = (GListButton *) g;
     int i;
 
@@ -808,7 +808,7 @@ static void GButtonGetDesiredSize(GGadget *g, GRect *outer, GRect *inner) {
     }
 }
 
-static void _gbutton_resize(GGadget *g, int32 width, int32 height ) {
+static void _gbutton_resize(GGadget *g, int32_t width, int32_t height ) {
     GRect inner;
     int bp = GBoxBorderWidth(g->base,g->box);
 
@@ -920,7 +920,7 @@ struct gfuncs glistbutton_funcs = {
     NULL
 };
 
-void _GButton_SetDefault(GGadget *g,int32 is_default) {
+void _GButton_SetDefault(GGadget *g,int32_t is_default) {
     GButton *gb = (GButton *) g;
     GRect maxr;
     int scale = GDrawPointsToPixels(g->base,1);

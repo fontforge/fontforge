@@ -231,7 +231,7 @@ static void AnchorD_FindComplements(AnchorDlg *a) {
     AnchorPoint *ap;
     int i, k, j, cnt;
     SplineFont *_sf = a->sc->parent, *sf;
-    uint8 *sel, *oldsel;
+    uint8_t *sel, *oldsel;
     FontView *fv = (FontView *) _sf->fv;
     EncMap *map = fv->b.map;
 
@@ -571,7 +571,7 @@ static void AnchorD_DrawPos(AnchorDlg *a) {
 
 static void AnchorD_SelectGlyph(AnchorDlg *a, AnchorPoint *ap) {
     int i;
-    int32 len;
+    int32_t len;
     GTextInfo **ti = GGadgetGetList(GWidgetGetControl(a->gw,CID_Glyph),&len);
 
     for ( i=0; i<len; ++i )

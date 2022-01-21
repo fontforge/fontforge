@@ -966,7 +966,7 @@ return( NULL );
 	memset(&e,0,sizeof(e));
 	e.type = et_create;
 	e.w = (GWindow) nw;
-	e.native_window = (void *) (intpt) nw->w;
+	e.native_window = (void *) (intptr_t) nw->w;
 	(eh)((GWindow) nw,&e);
     }
 #ifndef _NO_LIBCAIRO
@@ -1014,7 +1014,7 @@ static void GXDrawSetZoom(GWindow w, GRect *pos, enum gzoom_flags flags) {
     XSetWMSizeHints(display,((GXWindow) w)->w,&zoom,XA_WM_ZOOM_HINTS);
 }
 
-static GWindow GXDrawCreatePixmap(GDisplay *gdisp, GWindow UNUSED(similar), uint16 width, uint16 height) {
+static GWindow GXDrawCreatePixmap(GDisplay *gdisp, GWindow UNUSED(similar), uint16_t width, uint16_t height) {
     GXWindow gw = calloc(1,sizeof(struct gxwindow));
     int wamcairo = false;
 
@@ -1053,7 +1053,7 @@ return( NULL );
 return( (GWindow) gw );
 }
 
-static GWindow GXDrawCreateBitmap(GDisplay *disp, uint16 width, uint16 height, uint8 *data) {
+static GWindow GXDrawCreateBitmap(GDisplay *disp, uint16_t width, uint16_t height, uint8_t *data) {
     GXDisplay *gdisp = (GXDisplay *) disp;
     GXWindow gw = calloc(1,sizeof(struct gxwindow));
 
@@ -1083,7 +1083,7 @@ return( (GWindow) gw );
 }
 
 static GCursor GXDrawCreateCursor(GWindow src,GWindow mask,Color fg,Color bg,
-	int16 x, int16 y ) {
+	int16_t x, int16_t y ) {
     GXDisplay *gdisp = (GXDisplay *) (src->display);
     Display *display = gdisp->display;
     XColor fgc, bgc;
@@ -1130,7 +1130,7 @@ static void GXDestroyCursor(GDisplay *gdisp,GCursor ct) {
 static int GXNativeWindowExists(GDisplay *gdisp,void *native) {
     void *ret;
 
-    if ( XFindContext(((GXDisplay *) gdisp)->display,(Window) (intpt) native,((GXDisplay *) gdisp)->mycontext,(void *) &ret)==0 &&
+    if ( XFindContext(((GXDisplay *) gdisp)->display,(Window) (intptr_t) native,((GXDisplay *) gdisp)->mycontext,(void *) &ret)==0 &&
 	    ret!=NULL )
 return( true );
 
@@ -1248,7 +1248,7 @@ static void GXDrawSetVisible(GWindow w, int visible) {
     }
 }
 
-static void GXDrawMove(GWindow w, int32 x, int32 y) {
+static void GXDrawMove(GWindow w, int32_t x, int32_t y) {
     GXWindow gw = (GXWindow) w;
 
     if ( gw->is_toplevel ) {
@@ -1264,7 +1264,7 @@ static void GXDrawMove(GWindow w, int32 x, int32 y) {
     XMoveWindow(gw->display->display,gw->w,x,y);
 }
 
-static void GXDrawTrueMove(GWindow w, int32 x, int32 y) {
+static void GXDrawTrueMove(GWindow w, int32_t x, int32_t y) {
     GXWindow gw = (GXWindow) w;
 
     if ( gw->is_toplevel && !gw->is_popup && !gw->istransient ) {
@@ -1274,7 +1274,7 @@ static void GXDrawTrueMove(GWindow w, int32 x, int32 y) {
     GXDrawMove(w,x,y);
 }
 
-static void GXDrawResize(GWindow w, int32 width, int32 height) {
+static void GXDrawResize(GWindow w, int32_t width, int32_t height) {
     GXWindow gw = (GXWindow) w;
 
     XResizeWindow(gw->display->display,gw->w,width,height);
@@ -1290,7 +1290,7 @@ static void GXDrawResize(GWindow w, int32 width, int32 height) {
     }
 }
 
-static void GXDrawMoveResize(GWindow w, int32 x, int32 y, int32 width, int32 height) {
+static void GXDrawMoveResize(GWindow w, int32_t x, int32_t y, int32_t width, int32_t height) {
     GXWindow gw = (GXWindow) w;
 
     if ( gw->is_toplevel ) {
@@ -1705,7 +1705,7 @@ static void GXDrawClear(GWindow gw, GRect *rect) {
     }
  }
 
-static void GXDrawDrawLine(GWindow w, int32 x,int32 y, int32 xend,int32 yend, Color col) {
+static void GXDrawDrawLine(GWindow w, int32_t x,int32_t y, int32_t xend,int32_t yend, Color col) {
     w->ggc->fg = col;
 
 #ifndef _NO_LIBCAIRO
@@ -1720,7 +1720,7 @@ static void GXDrawDrawLine(GWindow w, int32 x,int32 y, int32 xend,int32 yend, Co
     }
 }
 
-static void _DrawArrow(GXWindow gxw, int32 x, int32 y, int32 xother, int32 yother ) {
+static void _DrawArrow(GXWindow gxw, int32_t x, int32_t y, int32_t xother, int32_t yother ) {
     GXDisplay *display = gxw->display;
     XPoint points[3];
     double a;
@@ -1744,7 +1744,7 @@ return;
     XDrawLines(display->display,gxw->w,display->gcstate[gxw->ggc->bitmap_col].gc,points,3,CoordModeOrigin);
 }
 
-static void GXDrawDrawArrow(GWindow gw, int32 x,int32 y, int32 xend,int32 yend, int16 arrows, Color col) {
+static void GXDrawDrawArrow(GWindow gw, int32_t x,int32_t y, int32_t xend,int32_t yend, int16_t arrows, Color col) {
     GXWindow gxw = (GXWindow) gw;
     GXDisplay *display = gxw->display;
     gxw->ggc->fg = col;
@@ -1841,7 +1841,7 @@ static void GXDrawDrawElipse(GWindow gw, GRect *rect, Color col) {
     }
 }
 
-static void GXDrawDrawArc(GWindow gw, GRect *rect, int32 sangle, int32 tangle, Color col) {
+static void GXDrawDrawArc(GWindow gw, GRect *rect, int32_t sangle, int32_t tangle, Color col) {
     GXWindow gxw = (GXWindow) gw;
     GXDisplay *display = gxw->display;
     gxw->ggc->fg = col;
@@ -1876,7 +1876,7 @@ static void GXDrawFillElipse(GWindow gw, GRect *rect, Color col) {
     }
 }
 
-static void GXDrawDrawPoly(GWindow gw, GPoint *pts, int16 cnt, Color col) {
+static void GXDrawDrawPoly(GWindow gw, GPoint *pts, int16_t cnt, Color col) {
     GXWindow gxw = (GXWindow) gw;
     GXDisplay *display = gxw->display;
 
@@ -1892,7 +1892,7 @@ static void GXDrawDrawPoly(GWindow gw, GPoint *pts, int16 cnt, Color col) {
     }
 }
 
-static void GXDrawFillPoly(GWindow gw, GPoint *pts, int16 cnt, Color col) {
+static void GXDrawFillPoly(GWindow gw, GPoint *pts, int16_t cnt, Color col) {
     GXWindow gxw = (GXWindow) gw;
     GXDisplay *display = gxw->display;
 
@@ -2026,7 +2026,7 @@ static void GXDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi) {
     _GXPDraw_LayoutInit(w,text,cnt,fi);
 }
 
-static void GXDraw_LayoutDraw(GWindow w, int32 x, int32 y, Color fg) {
+static void GXDraw_LayoutDraw(GWindow w, int32_t x, int32_t y, Color fg) {
     _GXPDraw_LayoutDraw(w,x,y,fg);
 }
 
@@ -2075,7 +2075,7 @@ return;
     }
 }
 
-static void GXDrawScroll(GWindow _w, GRect *rect, int32 hor, int32 vert) {
+static void GXDrawScroll(GWindow _w, GRect *rect, int32_t hor, int32_t vert) {
     GXWindow gw = (GXWindow) _w;
     GXDisplay *gdisp = gw->display;
     GRect temp, old;
@@ -2120,7 +2120,7 @@ return;
     GXDrawPopClip(_w,&old);
 }
 
-static void _GXDraw_Pixmap( GWindow _w, GWindow _pixmap, GRect *src, int32 x, int32 y) {
+static void _GXDraw_Pixmap( GWindow _w, GWindow _pixmap, GRect *src, int32_t x, int32_t y) {
     GXWindow gw = (GXWindow) _w, pixmap = (GXWindow) _pixmap;
     GXDisplay *gdisp = gw->display;
 
@@ -2303,7 +2303,7 @@ return;
     }
 }
 
-static void GTimerSetNext(GTimer *timer,int32 time_from_now) {
+static void GTimerSetNext(GTimer *timer,int32_t time_from_now) {
     struct timeval tv;
 
     gettimeofday(&tv,NULL);
@@ -2393,7 +2393,7 @@ static void GTimerReinstall(GXDisplay *gdisp,GTimer *timer) {
 	free(timer);
 }
 
-static GTimer *GXDrawRequestTimer(GWindow w,int32 time_from_now,int32 frequency,
+static GTimer *GXDrawRequestTimer(GWindow w,int32_t time_from_now,int32_t frequency,
 	void *userdata) {
     GTimer *timer = calloc(1,sizeof(GTimer));
 
@@ -3525,7 +3525,7 @@ static void GXDrawGrabSelection(GWindow w,enum selnames sel) {
 	memset(&e,0,sizeof(e));
 	e.type = et_selclear;
 	e.u.selclear.sel = sel;
-	e.native_window = (void *) (intpt) gd->selinfo[sel].owner->w;
+	e.native_window = (void *) (intptr_t) gd->selinfo[sel].owner->w;
 	if ( gd->selinfo[sel].owner->eh!=NULL )
 	    (gd->selinfo[sel].owner->eh)((GWindow) gd->selinfo[sel].owner, &e);
     }
@@ -3541,7 +3541,7 @@ static void GXDrawGrabSelection(GWindow w,enum selnames sel) {
 }
 
 static void GXDrawAddSelectionType(GWindow w,enum selnames sel,char *type,
-	void *data,int32 cnt,int32 unitsize, void *(*gendata)(void *,int32 *len),
+	void *data,int32_t cnt,int32_t unitsize, void *(*gendata)(void *,int32_t *len),
 	void (*freedata)(void *)) {
     GXDisplay *gd = (GXDisplay *) (w->display);
     int typeatom = GXDrawGetAtom(gd,type);
@@ -3578,7 +3578,7 @@ static void GXDrawTransmitSelection(GXDisplay *gd,XEvent *event) {
     int is_multiple = cur_targ == GXDrawGetAtom(gd,"MULTIPLE");
     int found = 0;
     void *temp;
-    int32 proplen;
+    int32_t proplen;
 
     for ( which = 0; which<sn_max; ++which )
 	if ( event->xselectionrequest.selection == gd->selinfo[which].sel_atom )
@@ -3703,7 +3703,7 @@ return;
     XSendEvent(gd->display,e_to_send.xselection.requestor,True,0,&e_to_send);
 }
 
-static void *GXDrawRequestSelection(GWindow w,enum selnames sn, char *typename, int32 *len) {
+static void *GXDrawRequestSelection(GWindow w,enum selnames sn, char *typename, int32_t *len) {
     GXDisplay *gd = (GXDisplay *) (w->display);
     GXWindow gw = (GXWindow) w;
     Display *display = gd->display;
@@ -3860,7 +3860,7 @@ static void *vc_cvt(char *val, void *def) {
 	if ( ept==val || *ept!='\0' )
 return( def );
     }
-return( (void *) (intpt) ret );
+return( (void *) (intptr_t) ret );
 }
 
 static void *cm_cvt(char *val, void *def) {
@@ -3869,7 +3869,7 @@ static void *cm_cvt(char *val, void *def) {
     if ( ret== -1 )
 return( (void *) -1 );
 
-return( (void *) (intpt) (ret-1) );
+return( (void *) (intptr_t) (ret-1) );
 }
 
 static void GXResourceInit(GXDisplay *gdisp,char *programname) {

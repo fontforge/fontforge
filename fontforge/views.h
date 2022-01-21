@@ -80,14 +80,14 @@ enum debug_wins { dw_registers=0x1, dw_stack=0x2, dw_storage=0x4, dw_points=0x8,
 
 struct instrinfo {
     int isel_pos;
-    int16 lheight,lpos;
+    int16_t lheight,lpos;
     char *scroll, *offset;
     GWindow v;
     GGadget *vsb;
-    int16 sbw;
-    int16 vheight, vwidth;
-    int16 lstopped;
-    int16 as, fh;
+    int16_t sbw;
+    int16_t vheight, vwidth;
+    int16_t lstopped;
+    int16_t as, fh;
     struct instrdata *instrdata;
     GFont *gfont;
     unsigned int showaddr: 1;
@@ -125,7 +125,7 @@ typedef struct debugview {
     int points_offtop;
 
     int codeSize;
-    uint8 initialbytes[4];
+    uint8_t initialbytes[4];
     struct reflist *active_refs;
     int last_npoints;
     int layer;
@@ -163,7 +163,7 @@ enum { charview_cvtabssz = 100 };
 
 typedef struct charview {
     CharViewBase b;
-    uint32 showback[BACK_LAYERS_VIEW_MAX];
+    uint32_t showback[BACK_LAYERS_VIEW_MAX];
     unsigned int showfore:1;
     unsigned int showgrids:1;
     unsigned int showhhints:1;
@@ -244,7 +244,7 @@ typedef struct charview {
     int charselectorh;  //< char selection input box height
     int infoh;  //< info bar height
     int rulerh; //< ruler height
-    int16 sas, sfh, sdh, nas, nfh;
+    int16_t sas, sfh, sdh, nas, nfh;
     BasePoint info;
     SplinePoint *info_sp;
     Spline *info_spline;
@@ -261,16 +261,16 @@ typedef struct charview {
     SplinePoint *lastselpt;
     spiro_cp *lastselcp;
     /*GWindow tools, layers;*/
-    int8 b1_tool, cb1_tool, b2_tool, cb2_tool;	/* Button 3 does a popup */
-    int8 b1_tool_old;				/* Used by mingw port */
-    int8 s1_tool, s2_tool, er_tool;		/* Bindings for wacom stylus and eraser */
-    int8 showing_tool, pressed_tool, pressed_display, had_control, active_tool;
-    int8 spacebar_hold;				/* spacebar is held down */
+    int8_t b1_tool, cb1_tool, b2_tool, cb2_tool;	/* Button 3 does a popup */
+    int8_t b1_tool_old;				/* Used by mingw port */
+    int8_t s1_tool, s2_tool, er_tool;		/* Bindings for wacom stylus and eraser */
+    int8_t showing_tool, pressed_tool, pressed_display, had_control, active_tool;
+    int8_t spacebar_hold;				/* spacebar is held down */
     SplinePointList *active_spl;
     SplinePoint *active_sp;
     spiro_cp *active_cp;
     IPoint handscroll_base;
-    uint16 rfh, ras;
+    uint16_t rfh, ras;
     BasePoint lastknife;
     struct freehand freehand;
     enum expandedge expandedge;
@@ -285,7 +285,7 @@ typedef struct charview {
 #endif
     real oldwidth, oldvwidth;
     real oldlbearing;
-    int16 oldic, oldtah;
+    int16_t oldic, oldtah;
 #if _ModKeysAutoRepeat
     GTimer *autorpt;
     int keysym, oldstate;
@@ -293,20 +293,20 @@ typedef struct charview {
     GWindow oldkeyw;
 #endif
     PST *lcarets;
-    int16 nearcaret;
+    int16_t nearcaret;
 	/* freetype results display */
-    int16 ft_dpi, ft_ppemy, ft_ppemx, ft_depth;
+    int16_t ft_dpi, ft_ppemy, ft_ppemx, ft_depth;
     real ft_pointsizey, ft_pointsizex;
     struct freetype_raster *raster, *oldraster;
     DebugView *dv;
-    uint32 mmvisible;
+    uint32_t mmvisible;
     char *former_names[CV_TABMAX];
     int former_cnt;
     AnchorPoint *apmine, *apmatch;
     SplineChar *apsc;
     int guide_pos;
     struct qg_data *qg;
-    int16 note_x, note_y;
+    int16_t note_x, note_y;
     struct dlistnode* pointInfoDialogs;
     GGadget* charselector;     //< let the user type in more than one char to view at once.
     GGadget* charselectorNext; //< move to next word in charselector
@@ -345,13 +345,13 @@ typedef struct bitmapview {
     unsigned int shades_hidden:1;
     unsigned int shades_down:1;
     /*GWindow tools, layers;*/
-    int8 b1_tool, cb1_tool, b2_tool, cb2_tool;		/* Button 3 does a popup */
-    int8 s1_tool, s2_tool, er_tool;			/* Bindings for wacom stylus and eraser */
-    int8 showing_tool, pressed_tool, pressed_display, had_control, active_tool;
+    int8_t b1_tool, cb1_tool, b2_tool, cb2_tool;		/* Button 3 does a popup */
+    int8_t s1_tool, s2_tool, er_tool;			/* Bindings for wacom stylus and eraser */
+    int8_t showing_tool, pressed_tool, pressed_display, had_control, active_tool;
     int pressed_x, pressed_y;
     int info_x, info_y;
     int event_x, event_y;
-    int16 sas, sfh;
+    int16_t sas, sfh;
 #if _ModKeysAutoRepeat
     GTimer *autorpt;
     int keysym, oldstate;
@@ -366,11 +366,11 @@ enum mv_grids { mv_hidegrid, mv_showgrid, mv_partialgrid, mv_hidemovinggrid };
 enum mv_type { mv_kernonly, mv_widthonly, mv_kernwidth };
 
 struct metricchar {
-    int16 dx, dwidth;	/* position and width of the displayed char */
-    int16 dy, dheight;	/*  displayed info for vertical metrics */
+    int16_t dx, dwidth;	/* position and width of the displayed char */
+    int16_t dy, dheight;	/*  displayed info for vertical metrics */
     int xoff, yoff;
-    int16 mx, mwidth;	/* position and width of the text underneath */
-    int16 kernafter;
+    int16_t mx, mwidth;	/* position and width of the text underneath */
+    int16_t kernafter;
     unsigned int selected: 1;
     GGadget *width, *lbearing, *rbearing, *kern, *name;
     GGadget* updownkparray[10]; /* Cherry picked elements from width...kern allowing up/down key navigation */
@@ -389,22 +389,22 @@ typedef struct metricsview {
     GFont *font;
     GGadget *hsb, *vsb, *mb, *text, *textPrev, *textNext, *script, *features, *subtable_list;
     GGadget *namelab, *widthlab, *lbearinglab, *rbearinglab, *kernlab;
-    int16 xstart;
-    int16 width, height, dwidth;
-    int16 vwidth, vheight;
-    int16 mbh,sbh;
-    int16 topend;		/* y value of the end of the region containing the text field */
-    int16 displayend;		/* y value of the end of the region showing filled characters */
-    int16 fh, as;
-    int16 cmax, clen;
+    int16_t xstart;
+    int16_t width, height, dwidth;
+    int16_t vwidth, vheight;
+    int16_t mbh,sbh;
+    int16_t topend;		/* y value of the end of the region containing the text field */
+    int16_t displayend;		/* y value of the end of the region showing filled characters */
+    int16_t fh, as;
+    int16_t cmax, clen;
     SplineChar **chars;		/* Character input stream */
     struct opentype_str *glyphs;/* after going through the various gsub/gpos transformations */
     struct metricchar *perchar;	/* One for each glyph above */
     SplineChar **sstr;		/* Character input stream */
-    int16 mwidth, mbase;
-    int16 glyphcnt, max;
-    int16 pressed_x, pressed_y;
-    int16 activeoff;
+    int16_t mwidth, mbase;
+    int16_t glyphcnt, max;
+    int16_t pressed_x, pressed_y;
+    int16_t activeoff;
     int xoff, coff, yoff;
     struct metricsview *next;
     unsigned int right_to_left: 1;
@@ -445,11 +445,11 @@ typedef struct fontview {
     GIC *gic;
     GIC *gwgic;
     int width, height;		/* of v */
-    int16 infoh,mbh;
-    int16 lab_height, lab_as;
-    int16 colcnt, rowcnt;		/* of display window */
-    int32 rowoff, rowltot;		/* Can be really big in full unicode */
-    int16 cbw,cbh;			/* width/height of a character box */
+    int16_t infoh,mbh;
+    int16_t lab_height, lab_as;
+    int16_t colcnt, rowcnt;		/* of display window */
+    int32_t rowoff, rowltot;		/* Can be really big in full unicode */
+    int16_t cbw,cbh;			/* width/height of a character box */
     int pressed_pos, end_pos;
     unsigned int antialias:1;
     unsigned int bbsized:1;		/* displayed bitmap should be scaled by bounding box rather than emsize */
@@ -468,8 +468,8 @@ typedef struct fontview {
 	/*  stays the same size, so kludge things */
     unsigned int glyphlabel: 2;
     unsigned int notactive:1;			/* When embedded in a dlg */
-    int16 magnify;
-    int16 user_requested_magnify;
+    int16_t magnify;
+    int16_t user_requested_magnify;
     struct searchview *sv;
     SplineChar *sc_near_top;
     int sel_index;
@@ -500,8 +500,8 @@ typedef struct searchview {
     LayerInfo layerinfo[2];
     SplineChar *chars[2];
     EncMap dummy_map;
-    int32 map[2], backmap[2];
-    uint8 sel[2];
+    int32_t map[2], backmap[2];
+    uint8_t sel[2];
     CharView cv_srch, cv_rpl;
     CharView *lastcv;
 /* ****** */
@@ -530,8 +530,8 @@ typedef struct mathkernview {
     SplineChar sc_topright, sc_topleft, sc_bottomright, sc_bottomleft;
     SplineChar *chars[4];
     EncMap dummy_map;
-    int32 map[4], backmap[4];
-    uint8 sel[4];
+    int32_t map[4], backmap[4];
+    uint8_t sel[4];
     CharView cv_topright, cv_topleft, cv_bottomright, cv_bottomleft;
     CharView *lastcv;
 /* ****** */
@@ -548,9 +548,9 @@ typedef struct mathkernview {
     SplineChar *cursc;
     int def_layer;
     struct mathkern *orig_mathkern;
-    uint8 saved_mathkern;		/* Can't just check if orig is non-NULL, because NULL is a perfectly valid initial state */
-    uint8 last_aspect;
-    uint8 done;
+    uint8_t saved_mathkern;		/* Can't just check if orig is non-NULL, because NULL is a perfectly valid initial state */
+    uint8_t last_aspect;
+    uint8_t done;
 } MathKernDlg;
 
 # ifdef FONTFORGE_CONFIG_TILEPATH
@@ -563,8 +563,8 @@ typedef struct tilepathdlg {
     SplineChar sc_first, sc_medial, sc_final, sc_isolated;
     SplineChar *chars[4];
     EncMap dummy_map;
-    int32 map[4], backmap[4];
-    uint8 sel[4];
+    int32_t map[4], backmap[4];
+    uint8_t sel[4];
     CharView cv_first, cv_medial, cv_final, cv_isolated;
     CharView *lastcv;
 /* ****** */
@@ -578,7 +578,7 @@ typedef struct tilepathdlg {
 /* ****** */
     struct tiledata *td;
     SplineFont *base_sf;
-    uint8 done, oked;
+    uint8_t done, oked;
 } TilePathDlg;
 extern void TPDCharViewInits(TilePathDlg *tpd, int cid);
 extern void PTDCharViewInits(TilePathDlg *tpd, int cid);
@@ -592,8 +592,8 @@ typedef struct gradientdlg {
     SplineChar sc_grad;
     SplineChar *chars[1];
     EncMap dummy_map;
-    int32 map[1], backmap[1];
-    uint8 sel[1];
+    int32_t map[1], backmap[1];
+    uint8_t sel[1];
     CharView cv_grad;
 /* ****** */
     GWindow gw;
@@ -604,7 +604,7 @@ typedef struct gradientdlg {
     int mid_space, cv_y;
     int cv_width, cv_height;
 /* ****** */
-    uint8 done, oked;
+    uint8_t done, oked;
     struct gradient *active;
 } GradientDlg;
 extern void GDDCharViewInits(GradientDlg *gdd,int cid);
@@ -617,8 +617,8 @@ typedef struct strokedlg {
     SplineChar sc_stroke;
     SplineChar *chars[1];
     EncMap dummy_map;
-    int32 map[1], backmap[1];
-    uint8 sel[1];
+    int32_t map[1], backmap[1];
+    uint8_t sel[1];
     CharView cv_stroke;
     int cv_width, cv_height;
     GGadget *mb;
@@ -653,7 +653,7 @@ struct lkinfo {
     unsigned int new: 1;
     unsigned int selected: 1;
     unsigned int moved: 1;
-    int16 subtable_cnt, subtable_max;
+    int16_t subtable_cnt, subtable_max;
     struct lksubinfo *subtables;
 };
 
@@ -757,13 +757,13 @@ extern void DebuggerGo(struct debugger_context *dc,enum debug_gotype,DebugView *
 extern struct  TT_ExecContextRec_ *DebuggerGetEContext(struct debugger_context *dc);
 extern void DebuggerToggleBp(struct debugger_context *dc,int range,int ip);
 extern int DebuggerBpCheck(struct debugger_context *dc,int range,int ip);
-extern void DebuggerSetWatches(struct debugger_context *dc,int n, uint8 *w);
-extern uint8 *DebuggerGetWatches(struct debugger_context *dc, int *n);
-extern void DebuggerSetWatchStores(struct debugger_context *dc,int n, uint8 *w);
-extern uint8 *DebuggerGetWatchStores(struct debugger_context *dc, int *n);
+extern void DebuggerSetWatches(struct debugger_context *dc,int n, uint8_t *w);
+extern uint8_t *DebuggerGetWatches(struct debugger_context *dc, int *n);
+extern void DebuggerSetWatchStores(struct debugger_context *dc,int n, uint8_t *w);
+extern uint8_t *DebuggerGetWatchStores(struct debugger_context *dc, int *n);
 extern int DebuggerIsStorageSet(struct debugger_context *dc, int index);
-extern void DebuggerSetWatchCvts(struct debugger_context *dc,int n, uint8 *w);
-extern uint8 *DebuggerGetWatchCvts(struct debugger_context *dc, int *n);
+extern void DebuggerSetWatchCvts(struct debugger_context *dc,int n, uint8_t *w);
+extern uint8_t *DebuggerGetWatchCvts(struct debugger_context *dc, int *n);
 extern int DebuggingFpgm(struct debugger_context *dc);
 
 
@@ -794,15 +794,15 @@ extern void SVDestroy(struct searchview *sv);
 
 
 extern int  SLICount(SplineFont *sf);
-extern unichar_t *ClassName(const char *name,uint32 feature_tag,
-	uint16 flags, int script_lang_index, int merge_with, int act_type,
+extern unichar_t *ClassName(const char *name,uint32_t feature_tag,
+	uint16_t flags, int script_lang_index, int merge_with, int act_type,
 	int macfeature,SplineFont *sf);
 extern unichar_t *DecomposeClassName(const unichar_t *clsnm, unichar_t **name,
-	uint32 *feature_tag, int *macfeature,
-	uint16 *flags, uint16 *script_lang_index,int *merge_with,int *act_type,
+	uint32_t *feature_tag, int *macfeature,
+	uint16_t *flags, uint16_t *script_lang_index,int *merge_with,int *act_type,
 	SplineFont *sf);
-extern PST *AddSubs(PST *last,uint32 tag,char *name,uint16 flags,
-	uint16 sli,SplineChar *sc);
+extern PST *AddSubs(PST *last,uint32_t tag,char *name,uint16_t flags,
+	uint16_t sli,SplineChar *sc);
 
 
 extern void FVSetUIToMatch(FontView *destfv,FontView *srcfv);
@@ -831,7 +831,7 @@ extern int RecentFilesAny(void);
 extern void _aplistbuild(struct gmenuitem *mi,SplineFont *sf,
 	void (*func)(GWindow,struct gmenuitem *,GEvent *));
 extern GTextInfo *AddMacFeatures(GTextInfo *opentype,enum possub_type type,SplineFont *sf);
-extern unichar_t *AskNameTag(char *title,unichar_t *def,uint32 def_tag,uint16 flags,
+extern unichar_t *AskNameTag(char *title,unichar_t *def,uint32_t def_tag,uint16_t flags,
 	int script_lang_index, enum possub_type type, SplineFont *sf, SplineChar *default_script,
 	int merge_with,int act_type);
 extern unichar_t *ShowScripts(unichar_t *usedef);
@@ -1034,7 +1034,7 @@ extern void CVAdjustPoint(CharView *cv, SplinePoint *sp);
 extern void CVMergeSplineSets(CharView *cv, SplinePoint *active, SplineSet *activess,
 	SplinePoint *merge, SplineSet *mergess);
 extern void CVAdjustControl(CharView *cv,BasePoint *cp, BasePoint *to);
-extern int  CVMoveSelection(CharView *cv, real dx, real dy, uint32 input_state);
+extern int  CVMoveSelection(CharView *cv, real dx, real dy, uint32_t input_state);
 extern int  CVTestSelectFromEvent(CharView *cv,GEvent *event);
 extern void CVMouseMovePen(CharView *cv, PressedOn *p, GEvent *event);
 extern void CVMouseUpPoint(CharView *cv,GEvent *event);
@@ -1151,7 +1151,7 @@ extern void SFShowKernPairs(SplineFont *sf,SplineChar *sc,AnchorClass *ac,int la
 extern void SFShowLigatures(SplineFont *sf,SplineChar *sc);
 
 extern void SCEditInstructions(SplineChar *sc);
-extern void SFEditTable(SplineFont *sf, uint32 tag);
+extern void SFEditTable(SplineFont *sf, uint32_t tag);
 extern void IIScrollTo(struct instrinfo *ii,int ip,int mark_stop);
 extern void IIReinit(struct instrinfo *ii,int ip);
 extern int ii_v_e_h(GWindow gw, GEvent *event);
@@ -1187,7 +1187,7 @@ extern void FVSelectByPST(FontView *fv);
 
 enum hist_type { hist_hstem, hist_vstem, hist_blues };
 struct psdict;
-extern void SFHistogram(SplineFont *sf,int layer, struct psdict *private,uint8 *selected,
+extern void SFHistogram(SplineFont *sf,int layer, struct psdict *private,uint8_t *selected,
 	EncMap *map, enum hist_type which);
 
 extern void ContextChainEdit(SplineFont *sf,FPST *fpst,

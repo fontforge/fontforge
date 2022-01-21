@@ -79,7 +79,7 @@ typedef struct ggdkwindow *GGDKWindow;
 typedef struct ggdktimer { // :GTimer
     long time_sec;             // longs not int32s to match timeval
     long time_usec;
-    int32 repeat_time;          // 0 == one shot (run once)
+    int32_t repeat_time;          // 0 == one shot (run once)
     GWindow owner;
     void *userdata;
     struct gtimer *next;       // Unused in favour of a GLib list
@@ -93,13 +93,13 @@ typedef struct ggdktimer { // :GTimer
 } GGDKTimer;
 
 typedef struct ggdkbuttonstate {
-    uint32 last_press_time;
+    uint32_t last_press_time;
     GGDKWindow release_w;
-    int16 release_x, release_y;
-    int16 release_button;
-    int16 cur_click;
-    int16 double_time;		// max milliseconds between release & click
-    int16 double_wiggle;	// max pixel wiggle allowed between release&click
+    int16_t release_x, release_y;
+    int16_t release_button;
+    int16_t cur_click;
+    int16_t double_time;		// max milliseconds between release & click
+    int16_t double_wiggle;	// max pixel wiggle allowed between release&click
 } GGDKButtonState;
 
 typedef struct ggdkkeystate {
@@ -117,11 +117,11 @@ typedef struct ggdkdndcontext {
 } GGDKDNDContext;
 
 struct seldata {
-    int32 typeatom;
-    int32 cnt;
-    int32 unitsize;
+    int32_t typeatom;
+    int32_t cnt;
+    int32_t unitsize;
     void *data;
-    void *(*gendata)(void *, int32 *len);
+    void *(*gendata)(void *, int32_t *len);
     /* Either the data are stored here, or we use this function to generate them on the fly */
     void (*freedata)(void *);
     struct seldata *next;
@@ -168,7 +168,7 @@ typedef struct ggdkdisplay { /* :GDisplay */
     // Inherit GDisplay start
     struct displayfuncs *funcs;
     struct font_state *fontstate;
-    int16 res;
+    int16_t res;
     GGDKWindow groot;
     unsigned int default_visual: 1;
     unsigned int do_dithering: 1;
@@ -284,21 +284,21 @@ cairo_region_t *_GGDKDraw_ExcludeChildRegions(GGDKWindow gw, cairo_region_t *r, 
 
 void GGDKDrawPushClip(GWindow w, GRect *rct, GRect *old);
 void GGDKDrawPopClip(GWindow gw, GRect *old);
-void GGDKDrawDrawLine(GWindow w, int32 x, int32 y, int32 xend, int32 yend, Color col);
-void GGDKDrawDrawArrow(GWindow gw, int32 x, int32 y, int32 xend, int32 yend, int16 arrows, Color col);
+void GGDKDrawDrawLine(GWindow w, int32_t x, int32_t y, int32_t xend, int32_t yend, Color col);
+void GGDKDrawDrawArrow(GWindow gw, int32_t x, int32_t y, int32_t xend, int32_t yend, int16_t arrows, Color col);
 void GGDKDrawDrawRect(GWindow gw, GRect *rect, Color col);
 void GGDKDrawFillRect(GWindow gw, GRect *rect, Color col);
 void GGDKDrawFillRoundRect(GWindow gw, GRect *rect, int radius, Color col);
 void GGDKDrawDrawEllipse(GWindow gw, GRect *rect, Color col);
 void GGDKDrawFillEllipse(GWindow gw, GRect *rect, Color col);
-void GGDKDrawDrawArc(GWindow gw, GRect *rect, int32 sangle, int32 eangle, Color col);
-void GGDKDrawDrawPoly(GWindow gw, GPoint *pts, int16 cnt, Color col);
-void GGDKDrawFillPoly(GWindow gw, GPoint *pts, int16 cnt, Color col);
-void GGDKDrawDrawImage(GWindow gw, GImage *gimg, GRect *src, int32 x, int32 y);
-void GGDKDrawDrawGlyph(GWindow gw, GImage *gimg, GRect *src, int32 x, int32 y);
-void GGDKDrawDrawImageMagnified(GWindow gw, GImage *gimg, GRect *src, int32 x, int32 y, int32 width, int32 height);
+void GGDKDrawDrawArc(GWindow gw, GRect *rect, int32_t sangle, int32_t eangle, Color col);
+void GGDKDrawDrawPoly(GWindow gw, GPoint *pts, int16_t cnt, Color col);
+void GGDKDrawFillPoly(GWindow gw, GPoint *pts, int16_t cnt, Color col);
+void GGDKDrawDrawImage(GWindow gw, GImage *gimg, GRect *src, int32_t x, int32_t y);
+void GGDKDrawDrawGlyph(GWindow gw, GImage *gimg, GRect *src, int32_t x, int32_t y);
+void GGDKDrawDrawImageMagnified(GWindow gw, GImage *gimg, GRect *src, int32_t x, int32_t y, int32_t width, int32_t height);
 
-void GGDKDrawDrawPixmap(GWindow gw1, GWindow gw2, GRect *src, int32 x, int32 y);
+void GGDKDrawDrawPixmap(GWindow gw1, GWindow gw2, GRect *src, int32_t x, int32_t y);
 
 enum gcairo_flags GGDKDrawHasCairo(GWindow w);
 
@@ -312,14 +312,14 @@ void GGDKDrawPathFill(GWindow w, Color col);
 void GGDKDrawPathFillAndStroke(GWindow w, Color fillcol, Color strokecol);
 void GGDKDrawStartNewSubPath(GWindow w);
 int  GGDKDrawFillRuleSetWinding(GWindow w);
-int  GGDKDrawDoText8(GWindow w, int32 x, int32 y, const char *text, int32 cnt, Color col, enum text_funcs drawit, struct tf_arg *arg);
+int  GGDKDrawDoText8(GWindow w, int32_t x, int32_t y, const char *text, int32_t cnt, Color col, enum text_funcs drawit, struct tf_arg *arg);
 
 void GGDKDrawPushClipOnly(GWindow w);
 void GGDKDrawClipPreserve(GWindow w);
 
 void GGDKDrawGetFontMetrics(GWindow gw, GFont *fi, int *as, int *ds, int *ld);
 void GGDKDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi);
-void GGDKDrawLayoutDraw(GWindow w, int32 x, int32 y, Color fg);
+void GGDKDrawLayoutDraw(GWindow w, int32_t x, int32_t y, Color fg);
 void GGDKDrawLayoutIndexToPos(GWindow w, int index, GRect *pos);
 int  GGDKDrawLayoutXYToIndex(GWindow w, int x, int y);
 void GGDKDrawLayoutExtents(GWindow w, GRect *size);

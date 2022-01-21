@@ -388,7 +388,7 @@ compareOffsets(const void * lhs, const void * rhs)
 }
 
 int _WriteWOFFFont(FILE *woff,SplineFont *sf, enum fontformat format,
-	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *enc,int layer) {
+	int32_t *bsizes, enum bitmapformat bf,int flags,EncMap *enc,int layer) {
     int ret;
     FILE *sfnt;
     int major=sf->woffMajor, minor=sf->woffMinor;
@@ -462,7 +462,7 @@ return( ret );
         return false;
     }
     for ( i=0; i<num_tabs; ++i ) {
-        fseek(sfnt,(3 + 4*i + 2)*sizeof(int32),SEEK_SET);
+        fseek(sfnt,(3 + 4*i + 2)*sizeof(int32_t),SEEK_SET);
         tableOrder[i].index = i;
         tableOrder[i].offset = getlong(sfnt);
     }
@@ -489,7 +489,7 @@ return( ret );
 	putlong(woff,0);
 
     for ( i=0; i<num_tabs; ++i ) {
-	fseek(sfnt,(3 + 4*tableOrder[i].index)*sizeof(int32),SEEK_SET);
+	fseek(sfnt,(3 + 4*tableOrder[i].index)*sizeof(int32_t),SEEK_SET);
 	tag = getlong(sfnt);
 	checksum = getlong(sfnt);
 	offset = getlong(sfnt);
@@ -503,7 +503,7 @@ return( ret );
 	    if ( ftell(woff)&2 )
 		putshort(woff,0);
 	}
-	fseek(woff,tab_start+(5*tableOrder[i].index)*sizeof(int32),SEEK_SET);
+	fseek(woff,tab_start+(5*tableOrder[i].index)*sizeof(int32_t),SEEK_SET);
 	putlong(woff,tag);
 	putlong(woff,newoffset);
 	putlong(woff,compLen);
@@ -545,7 +545,7 @@ return( true );		/* No errors */
 }
 
 int WriteWOFFFont(char *fontname,SplineFont *sf, enum fontformat format,
-	int32 *bsizes, enum bitmapformat bf,int flags,EncMap *enc,int layer) {
+	int32_t *bsizes, enum bitmapformat bf,int flags,EncMap *enc,int layer) {
     FILE *woff;
     int ret;
 

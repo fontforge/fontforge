@@ -4,7 +4,7 @@
 #include "splinefont.h"
 #include "ttf.h"
 
-extern void ttfdumpbitmapscaling(SplineFont *sf, struct alltabs *at, int32 *sizes);
+extern void ttfdumpbitmapscaling(SplineFont *sf, struct alltabs *at, int32_t *sizes);
 extern void TTFLoadBitmaps(FILE *ttf, struct ttfinfo *info, int onlyone);
 
 #endif /* FONTFORGE_PARSETTFBMF_H */

@@ -408,7 +408,7 @@ static void GTabSet_Remetric(GTabSet *gts) {
 	/* Nothing much to do */
     } else if ( gts->scrolled ) {
 	free(gts->rowstarts);
-	gts->rowstarts = malloc(2*sizeof(int16));
+	gts->rowstarts = malloc(2*sizeof(int16_t));
 	gts->rowstarts[0] = 0; gts->rowstarts[1] = gts->tabcnt;
 	gts->rcnt = 1;
     } else {
@@ -418,7 +418,7 @@ static void GTabSet_Remetric(GTabSet *gts) {
 	    while ( (r2 = GTabSetRCnt(gts,width-(r-1)*gts->offset_per_row))!=r )
 		r = r2;
 	free(gts->rowstarts);
-	gts->rowstarts = malloc((r+1)*sizeof(int16));
+	gts->rowstarts = malloc((r+1)*sizeof(int16_t));
 	gts->rcnt = r;
 	gts->rowstarts[r] = gts->tabcnt;
 	for ( i=r=0; i<gts->tabcnt; ++i ) {
@@ -644,10 +644,10 @@ static void _gtabset_redraw(GGadget *g) {
 	GDrawRequestExpose(gts->tabs[i].w, NULL, false);
 }
 
-static void _gtabset_move(GGadget *g, int32 x, int32 y ) {
+static void _gtabset_move(GGadget *g, int32_t x, int32_t y ) {
     GTabSet *gts = (GTabSet *) g;
     int i;
-    int32 nx = x+g->inner.x-g->r.x, ny = y+g->inner.y-g->r.y;
+    int32_t nx = x+g->inner.x-g->r.x, ny = y+g->inner.y-g->r.y;
 
     for ( i=0; i<gts->tabcnt; ++i ) if ( gts->tabs[i].w!=NULL )
 	GDrawMove(gts->tabs[i].w,nx,ny);
@@ -659,7 +659,7 @@ static void _gtabset_move(GGadget *g, int32 x, int32 y ) {
     }
 }
 
-static void _gtabset_resize(GGadget *g, int32 width, int32 height ) {
+static void _gtabset_resize(GGadget *g, int32_t width, int32_t height ) {
     GTabSet *gts = (GTabSet *) g;
     int i;
 

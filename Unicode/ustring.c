@@ -512,7 +512,7 @@ return( ubuf );
 
 unichar_t *utf82u_strncpy(unichar_t *ubuf,const char *utf8buf,int len) {
     unichar_t *upt = ubuf;
-    int32 ch;
+    int32_t ch;
 
     if (!ubuf || !utf8buf || len <= 0) {
         return ubuf;
@@ -668,10 +668,10 @@ char *u2utf8_copyn(const unichar_t *ubuf,int len) {
     return( utf8buf );
 }
 
-int32 utf8_ildb(const char **_text) {
-    int32 val= -1;
+int32_t utf8_ildb(const char **_text) {
+    int32_t val= -1;
     int ch;
-    const uint8 *text = (const uint8 *) *_text;
+    const uint8_t *text = (const uint8_t *) *_text;
     /* Increment and load character */
 
     if ( text==NULL )
@@ -703,7 +703,7 @@ int32 utf8_ildb(const char **_text) {
 return( val );
 }
 
-char *utf8_idpb(char *utf8_text,uint32 ch,int flags) {
+char *utf8_idpb(char *utf8_text,uint32_t ch,int flags) {
 /* Increment and deposit character, no '\0' appended */
 /* NOTE: Unicode only needs range of 17x65535 values */
 /* and strings must be long enough to hold +4 chars. */
@@ -851,7 +851,7 @@ long utf8_strlen(const char *utf8_str) {
 
 long utf82u_strlen(const char *utf8_str) {
 /* Count how many shorts needed to represent in UCS2 */
-    int32 ch;
+    int32_t ch;
     long len = 0;
 
     while ( (ch = utf8_ildb(&utf8_str))>0 && ++len>0 )

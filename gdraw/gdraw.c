@@ -76,18 +76,18 @@ GWindow GDrawCreateSubWindow(GWindow w, GRect *pos,
 return( (w->display->funcs->createSubWindow)(w,pos,eh,user_data,wattrs) );
 }
 
-GWindow GDrawCreatePixmap(GDisplay *gdisp, GWindow similar, uint16 width, uint16 height) {
+GWindow GDrawCreatePixmap(GDisplay *gdisp, GWindow similar, uint16_t width, uint16_t height) {
     if ( gdisp==NULL ) gdisp = screen_display;
 return( (gdisp->funcs->createPixmap)(gdisp,similar,width,height));
 }
 
-GWindow GDrawCreateBitmap(GDisplay *gdisp, uint16 width, uint16 height, uint8 *data) {
+GWindow GDrawCreateBitmap(GDisplay *gdisp, uint16_t width, uint16_t height, uint8_t *data) {
     if ( gdisp==NULL ) gdisp = screen_display;
 return( (gdisp->funcs->createBitmap)(gdisp,width,height,data));
 }
 
 GCursor GDrawCreateCursor(GWindow src,GWindow mask,Color fg,Color bg,
-	int16 x, int16 y ) {
+	int16_t x, int16_t y ) {
 return( (src->display->funcs->createCursor)(src,mask,fg,bg,x,y));
 }
 
@@ -125,19 +125,19 @@ return( false );
 return( w==NULL );
 }
 
-void GDrawMove(GWindow w, int32 x, int32 y) {
+void GDrawMove(GWindow w, int32_t x, int32_t y) {
     (w->display->funcs->move)(w,x,y);
 }
 
-void GDrawTrueMove(GWindow w, int32 x, int32 y) {
+void GDrawTrueMove(GWindow w, int32_t x, int32_t y) {
     (w->display->funcs->trueMove)(w,x,y);
 }
 
-void GDrawResize(GWindow w, int32 width, int32 height) {
+void GDrawResize(GWindow w, int32_t width, int32_t height) {
     (w->display->funcs->resize)(w,width,height);
 }
 
-void GDrawMoveResize(GWindow w, int32 x, int32 y, int32 width, int32 height) {
+void GDrawMoveResize(GWindow w, int32_t x, int32_t y, int32_t width, int32_t height) {
     (w->display->funcs->moveResize)(w,x,y,width,height);
 }
 
@@ -214,7 +214,7 @@ return;
     (gd->funcs->translateCoordinates)(from,to,pt);
 }
 
-int32 GDrawEventInWindow(GWindow inme,GEvent *event) {
+int32_t GDrawEventInWindow(GWindow inme,GEvent *event) {
     GPoint pt;
     if ( event->type<et_char || event->type>et_crossing )
 return( false );
@@ -313,22 +313,22 @@ void GDrawPopClip(GWindow w, GRect *old) {
     (w->display->funcs->popClip)(w,old);
 }
 
-void GDrawSetDashedLine(GWindow w,int16 dash_len, int16 skip_len, int16 off) {
+void GDrawSetDashedLine(GWindow w,int16_t dash_len, int16_t skip_len, int16_t off) {
     w->ggc->dash_offset = off;
     w->ggc->dash_len = dash_len;
     w->ggc->skip_len = skip_len;
 }
 
-void GDrawSetStippled(GWindow w,int16 ts, int32 yoff,int32 xoff) {
+void GDrawSetStippled(GWindow w,int16_t ts, int32_t yoff,int32_t xoff) {
     w->ggc->ts = ts;
     w->ggc->ts_xoff = xoff; w->ggc->ts_yoff = yoff;
 }
 
-void GDrawSetLineWidth(GWindow w,int16 width) {
+void GDrawSetLineWidth(GWindow w,int16_t width) {
     w->ggc->line_width = width;
 }
 
-int16 GDrawGetLineWidth( GWindow w ) 
+int16_t GDrawGetLineWidth( GWindow w ) 
 {
     return w->ggc->line_width;
 }
@@ -337,12 +337,12 @@ void GDrawSetBackground(GWindow w,Color col) {
     w->ggc->bg = col;
 }
 
-void GDrawDrawLine(GWindow w, int32 x,int32 y, int32 xend,int32 yend, Color col) {
+void GDrawDrawLine(GWindow w, int32_t x,int32_t y, int32_t xend,int32_t yend, Color col) {
     if ( col!=COLOR_UNKNOWN )
 	(w->display->funcs->drawLine)(w,x,y,xend,yend,col);
 }
 
-void GDrawDrawArrow(GWindow w, int32 x,int32 y, int32 xend,int32 yend, int arrows, Color col) {
+void GDrawDrawArrow(GWindow w, int32_t x,int32_t y, int32_t xend,int32_t yend, int arrows, Color col) {
     if ( col!=COLOR_UNKNOWN )
 	(w->display->funcs->drawArrow)(w,x,y,xend,yend,arrows,col);
 }
@@ -385,27 +385,27 @@ void GDrawFillElipse(GWindow w, GRect *rect, Color col) {
 /* angles expressed as in X, in 64's of a degree with 0 angle at 3 o'clock */
 /*  and positive measured counter-clockwise (or the same way as in polar coords)*/
 /* tangle is NOT the end angle, it's the angle offset from the first to the end*/
-void GDrawDrawArc(GWindow w, GRect *rect, int32 sangle, int32 tangle, Color col) {
+void GDrawDrawArc(GWindow w, GRect *rect, int32_t sangle, int32_t tangle, Color col) {
     if ( col!=COLOR_UNKNOWN )
 	(w->display->funcs->drawArc)(w,rect,sangle,tangle,col);
 }
 
-void GDrawDrawPoly(GWindow w, GPoint *pts, int16 cnt, Color col) {
+void GDrawDrawPoly(GWindow w, GPoint *pts, int16_t cnt, Color col) {
     if ( col!=COLOR_UNKNOWN )
 	(w->display->funcs->drawPoly)(w,pts,cnt,col);
 }
 
-void GDrawFillPoly(GWindow w, GPoint *pts, int16 cnt, Color col) {
+void GDrawFillPoly(GWindow w, GPoint *pts, int16_t cnt, Color col) {
     if ( col!=COLOR_UNKNOWN )
 	(w->display->funcs->fillPoly)(w,pts,cnt,col);
 }
 
-void GDrawScroll(GWindow w, GRect *rect, int32 hor, int32 vert) {
+void GDrawScroll(GWindow w, GRect *rect, int32_t hor, int32_t vert) {
     (w->display->funcs->scroll)(w,rect,hor,vert);
 }
 
 /* draws the subset of the image specified by src starting at loc (x,y) */
-void GDrawDrawImage(GWindow w, GImage *img, GRect *src, int32 x, int32 y) {
+void GDrawDrawImage(GWindow w, GImage *img, GRect *src, int32_t x, int32_t y) {
     int width = GImageGetWidth(img);
     int height = GImageGetHeight(img);
     GRect r = src ? *src : (GRect){0, 0, width, height};
@@ -444,7 +444,7 @@ void GDrawDrawImage(GWindow w, GImage *img, GRect *src, int32 x, int32 y) {
 
 /* Draw the entire image so that it is approximately the same size on other */
 /*  displays as on the screen */
-void GDrawDrawScaledImage(GWindow w, GImage *img, int32 x, int32 y) {
+void GDrawDrawScaledImage(GWindow w, GImage *img, int32_t x, int32_t y) {
     GRect r;
 
     r.x = r.y = 0;
@@ -456,7 +456,7 @@ void GDrawDrawScaledImage(GWindow w, GImage *img, int32 x, int32 y) {
 /* Similar to DrawImage, but can in some cases make improvements -- if the */
 /*  is an indexed image, then treat as the alpha channel rather than a color */
 /*  in its own right */
-void GDrawDrawGlyph(GWindow w, GImage *img, GRect *src, int32 x, int32 y) {
+void GDrawDrawGlyph(GWindow w, GImage *img, GRect *src, int32_t x, int32_t y) {
     GRect r;
     if ( src==NULL ) {
 	struct _GImage *base = img->list_len==0?img->u.image:img->u.images[0];
@@ -468,7 +468,7 @@ void GDrawDrawGlyph(GWindow w, GImage *img, GRect *src, int32 x, int32 y) {
 }
 
 /* same as drawImage except with pixmaps */
-void GDrawDrawPixmap(GWindow w, GWindow pixmap, GRect *src, int32 x, int32 y) {
+void GDrawDrawPixmap(GWindow w, GWindow pixmap, GRect *src, int32_t x, int32_t y) {
     (w->display->funcs->drawPixmap)(w,pixmap,src,x,y);
 }
 
@@ -477,8 +477,8 @@ void GDrawDrawPixmap(GWindow w, GWindow pixmap, GRect *src, int32 x, int32 y) {
 /*		(x+src->x,y+src->y,x+src->width,y+src->height)		 */
 /* Ie. if you get an expose event in the middle of the image subtract off the */
 /*  image base (x,y) and pass in the exposed rectangle */
-void GDrawDrawImageMagnified(GWindow w, GImage *img, GRect *dest, int32 x, int32 y,
-	int32 width, int32 height) {
+void GDrawDrawImageMagnified(GWindow w, GImage *img, GRect *dest, int32_t x, int32_t y,
+	int32_t width, int32_t height) {
     GRect temp;
     struct _GImage *base = img->list_len==0?img->u.image:img->u.images[0];
 
@@ -562,7 +562,7 @@ void GDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi) {
     (w->display->funcs->layoutInit)(w,text,cnt,fi);
 }
 
-void GDrawLayoutDraw(GWindow w, int32 x, int32 y, Color fg) {
+void GDrawLayoutDraw(GWindow w, int32_t x, int32_t y, Color fg) {
     (w->display->funcs->layoutDraw)(w,x,y,fg);
 }
 
@@ -608,12 +608,12 @@ void GDrawGrabSelection(GWindow w,enum selnames sel) {
 }
 
 void GDrawAddSelectionType(GWindow w,enum selnames sel,char *type,
-	void *data,int32 cnt,int32 unitsize,void *(*gendata)(void *,int32 *len),
+	void *data,int32_t cnt,int32_t unitsize,void *(*gendata)(void *,int32_t *len),
 	void (*freedata)(void *)) {
     (w->display->funcs->addSelectionType)(w,sel,type,data,cnt,unitsize,gendata,freedata);
 }
 
-void *GDrawRequestSelection(GWindow w,enum selnames sn, char *typename, int32 *len) {
+void *GDrawRequestSelection(GWindow w,enum selnames sn, char *typename, int32_t *len) {
 return( (w->display->funcs->requestSelection)(w,sn,typename,len));
 }
 
@@ -703,7 +703,7 @@ void GDrawPostDragEvent(GWindow w,GEvent *mouse,enum event_type et) {
     (gdisp->funcs->postDragEvent)(w,mouse,et);
 }
 
-GTimer *GDrawRequestTimer(GWindow w,int32 time_from_now,int32 frequency,
+GTimer *GDrawRequestTimer(GWindow w,int32_t time_from_now,int32_t frequency,
 	void *userdata) {
 return( (w->display->funcs->requestTimer)(w,time_from_now,frequency,userdata));
 }

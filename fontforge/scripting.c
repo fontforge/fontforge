@@ -1261,9 +1261,9 @@ static void bChr(Context *c) {
 }
 
 static void bUtf8(Context *c) {
-    uint32 buf[2];
+    uint32_t buf[2];
     int i;
-    uint32 *temp;
+    uint32_t *temp;
 
     if ( c->a.vals[1].type==v_int ) {
 	if ( c->a.vals[1].u.ival<0 || c->a.vals[1].u.ival>0x10ffff ) {
@@ -1275,7 +1275,7 @@ static void bUtf8(Context *c) {
 	c->return_val.u.sval = u2utf8_copy(buf);
     } else if ( c->a.vals[1].type==v_arr || c->a.vals[1].type==v_arrfree ) {
 	Array *arr = c->a.vals[1].u.aval;
-	temp = malloc((arr->argc+1)*sizeof(uint32));
+	temp = malloc((arr->argc+1)*sizeof(uint32_t));
 	for ( i=0; i<arr->argc; ++i ) {
 	    if ( arr->vals[i].type!=v_int ) {
 		c->error = ce_badargtype;
@@ -1326,14 +1326,14 @@ static void bOrd(Context *c) {
 	    return;
 	}
 	c->return_val.type = v_int;
-	c->return_val.u.ival = (uint8) c->a.vals[1].u.sval[c->a.vals[2].u.ival];
+	c->return_val.u.ival = (uint8_t) c->a.vals[1].u.sval[c->a.vals[2].u.ival];
     } else {
 	int i, len = strlen(c->a.vals[1].u.sval);
 	c->return_val.type = v_arrfree;
 	c->return_val.u.aval = arraynew(len);
 	for ( i=0; i<len; ++i ) {
 	    c->return_val.u.aval->vals[i].type = v_int;
-	    c->return_val.u.aval->vals[i].u.ival = (uint8) c->a.vals[1].u.sval[i];
+	    c->return_val.u.aval->vals[i].u.ival = (uint8_t) c->a.vals[1].u.sval[i];
 	}
     }
 }
@@ -1980,7 +1980,7 @@ static void bGenerateFamily(Context *c) {
     Array *fonts;
     FontViewBase *fv;
     int i, j, fc, added;
-    uint16 psstyle;
+    uint16_t psstyle;
     int fondcnt = 0, fondmax = 10;
     SFArray *familysfs=NULL;
     char *t;
@@ -2140,7 +2140,7 @@ static void bControlAfmLigatureOutput(Context *c) {
 }
 
 static void Bitmapper(Context *c,int isavail) {
-    int32 *sizes;
+    int32_t *sizes;
     int i;
     int rasterize = true;
 
@@ -2163,7 +2163,7 @@ static void Bitmapper(Context *c,int isavail) {
 	}
 	rasterize = c->a.vals[2].u.ival;
     }
-    sizes = malloc((c->a.vals[1].u.aval->argc+1)*sizeof(int32));
+    sizes = malloc((c->a.vals[1].u.aval->argc+1)*sizeof(int32_t));
     for ( i=0; i<c->a.vals[1].u.aval->argc; ++i ) {
 	sizes[i] = c->a.vals[1].u.aval->vals[i].u.ival;
 	if ( (sizes[i]>>16)==0 )
@@ -2508,7 +2508,7 @@ static void bPrintSetup(Context *c) {
 
 static void bPrintFont(Context *c) {
     int type, i, inlinesample = false;
-    int32 *pointsizes=NULL;
+    int32_t *pointsizes=NULL;
     char *samplefile=NULL, *output=NULL;
     unichar_t *sample=NULL;
     char *t; char *locfilename=NULL;
@@ -2527,12 +2527,12 @@ static void bPrintFont(Context *c) {
     if ( c->a.argc>=3 ) {
 	if ( c->a.vals[2].type==v_int ) {
 	    if ( c->a.vals[2].u.ival>0 ) {
-		pointsizes = calloc(2,sizeof(int32));
+		pointsizes = calloc(2,sizeof(int32_t));
 		pointsizes[0] = c->a.vals[2].u.ival;
 	    }
 	} else if ( c->a.vals[2].type==v_arr ) {
 	    Array *a = c->a.vals[2].u.aval;
-	    pointsizes = malloc((a->argc+1)*sizeof(int32));
+	    pointsizes = malloc((a->argc+1)*sizeof(int32_t));
 	    for ( i=0; i<a->argc; ++i ) {
 		if ( a->vals[i].type!=v_int )
 		    ScriptError( c, "Bad type for array contents");
@@ -3210,8 +3210,8 @@ return;
 	c->curfv->selected = realloc(c->curfv->selected,newcnt);
 	if ( newcnt>map->encmax ) {
 	    memset(c->curfv->selected+map->enccount,0,newcnt-map->enccount);
-	    map->map = realloc(map->map,(map->encmax=newcnt+10)*sizeof(int32));
-	    memset(map->map+map->enccount,-1,(newcnt-map->enccount)*sizeof(int32));
+	    map->map = realloc(map->map,(map->encmax=newcnt+10)*sizeof(int32_t));
+	    memset(map->map+map->enccount,-1,(newcnt-map->enccount)*sizeof(int32_t));
 	}
     }
     map->enccount = newcnt;
@@ -3257,7 +3257,7 @@ static void bRemoveDetachedGlyphs(Context *c) {
 
 static void bLoadTableFromFile(Context *c) {
     SplineFont *sf = c->curfv->sf;
-    uint32 tag;
+    uint32_t tag;
     char *tstr, *end;
     struct ttf_table *tab;
     FILE *file;
@@ -3297,7 +3297,7 @@ static void bLoadTableFromFile(Context *c) {
 
 static void bSaveTableToFile(Context *c) {
     SplineFont *sf = c->curfv->sf;
-    uint32 tag;
+    uint32_t tag;
     char *tstr, *end;
     struct ttf_table *tab;
     FILE *file;
@@ -3328,7 +3328,7 @@ static void bSaveTableToFile(Context *c) {
 
 static void bRemovePreservedTable(Context *c) {
     SplineFont *sf = c->curfv->sf;
-    uint32 tag;
+    uint32_t tag;
     char *tstr, *end;
     struct ttf_table *tab, *prev;
 
@@ -3354,7 +3354,7 @@ static void bRemovePreservedTable(Context *c) {
 
 static void bHasPreservedTable(Context *c) {
     SplineFont *sf = c->curfv->sf;
-    uint32 tag;
+    uint32_t tag;
     char *tstr, *end;
     struct ttf_table *tab;
 
@@ -3659,14 +3659,14 @@ static void bSetPanose(Context *c) {
     c->curfv->sf->changed = true;
 }
 
-static void setint16(int16 *val,Context *c) {
+static void setint16(int16_t *val,Context *c) {
     if ( c->a.vals[2].type!=v_int )
 	c->error = ce_badargtype;
     else
 	*val = c->a.vals[2].u.ival;
 }
 
-static void setss16(int16 *val,SplineFont *sf,Context *c) {
+static void setss16(int16_t *val,SplineFont *sf,Context *c) {
     if ( c->a.vals[2].type!=v_int ) {
 	c->error = ce_badargtype;
 	return;
@@ -3912,17 +3912,17 @@ static void bSetMaxpValue(Context *c) {
 	tab->len = tab->maxlen = 32;
     }
     if ( strmatch(c->a.vals[1].u.sval,"Zones")==0 )
-	memputshort(tab->data,7*sizeof(uint16),c->a.vals[2].u.ival);
+	memputshort(tab->data,7*sizeof(uint16_t),c->a.vals[2].u.ival);
     else if ( strmatch(c->a.vals[1].u.sval,"TwilightPntCnt")==0 )
-	memputshort(tab->data,8*sizeof(uint16),c->a.vals[2].u.ival);
+	memputshort(tab->data,8*sizeof(uint16_t),c->a.vals[2].u.ival);
     else if ( strmatch(c->a.vals[1].u.sval,"StorageCnt")==0 )
-	memputshort(tab->data,9*sizeof(uint16),c->a.vals[2].u.ival);
+	memputshort(tab->data,9*sizeof(uint16_t),c->a.vals[2].u.ival);
     else if ( strmatch(c->a.vals[1].u.sval,"MaxStackDepth")==0 )
-	memputshort(tab->data,12*sizeof(uint16),c->a.vals[2].u.ival);
+	memputshort(tab->data,12*sizeof(uint16_t),c->a.vals[2].u.ival);
     else if ( strmatch(c->a.vals[1].u.sval,"FDEFs")==0 )
-	memputshort(tab->data,10*sizeof(uint16),c->a.vals[2].u.ival);
+	memputshort(tab->data,10*sizeof(uint16_t),c->a.vals[2].u.ival);
     else if ( strmatch(c->a.vals[1].u.sval,"IDEFs")==0 )
-	memputshort(tab->data,11*sizeof(uint16),c->a.vals[2].u.ival);
+	memputshort(tab->data,11*sizeof(uint16_t),c->a.vals[2].u.ival);
     else
 	ScriptErrorString(c,"Unknown 'maxp' field: ", c->a.vals[1].u.sval );
 }
@@ -3930,7 +3930,7 @@ static void bSetMaxpValue(Context *c) {
 static void bGetMaxpValue(Context *c) {
     SplineFont *sf = c->curfv->sf;
     struct ttf_table *tab;
-    uint8 *data, dummy[32];
+    uint8_t *data, dummy[32];
 
     memset(dummy,0,32);
     dummy[15] = 2;
@@ -3945,17 +3945,17 @@ static void bGetMaxpValue(Context *c) {
 
     c->return_val.type = v_int;
     if ( strmatch(c->a.vals[1].u.sval,"Zones")==0 )
-	c->return_val.u.ival = memushort(data,32,7*sizeof(uint16));
+	c->return_val.u.ival = memushort(data,32,7*sizeof(uint16_t));
     else if ( strmatch(c->a.vals[1].u.sval,"TwilightPntCnt")==0 )
-	c->return_val.u.ival = memushort(data,32,8*sizeof(uint16));
+	c->return_val.u.ival = memushort(data,32,8*sizeof(uint16_t));
     else if ( strmatch(c->a.vals[1].u.sval,"StorageCnt")==0 )
-	c->return_val.u.ival = memushort(data,32,9*sizeof(uint16));
+	c->return_val.u.ival = memushort(data,32,9*sizeof(uint16_t));
     else if ( strmatch(c->a.vals[1].u.sval,"MaxStackDepth")==0 )
-	c->return_val.u.ival = memushort(data,32,12*sizeof(uint16));
+	c->return_val.u.ival = memushort(data,32,12*sizeof(uint16_t));
     else if ( strmatch(c->a.vals[1].u.sval,"FDEFs")==0 )
-	c->return_val.u.ival = memushort(data,32,10*sizeof(uint16));
+	c->return_val.u.ival = memushort(data,32,10*sizeof(uint16_t));
     else if ( strmatch(c->a.vals[1].u.sval,"IDEFs")==0 )
-	c->return_val.u.ival = memushort(data,32,11*sizeof(uint16));
+	c->return_val.u.ival = memushort(data,32,11*sizeof(uint16_t));
     else
 	ScriptErrorString(c,"Unknown 'maxp' field: ", c->a.vals[1].u.sval );
 }
@@ -4239,7 +4239,7 @@ return;
     SCCharChangedUpdate(dest,ly_fore);
 }
 
-static int FSLMatch(FeatureScriptLangList *fl,uint32 feat_tag,uint32 script,uint32 lang) {
+static int FSLMatch(FeatureScriptLangList *fl,uint32_t feat_tag,uint32_t script,uint32_t lang) {
     struct scriptlanglist *sl;
     int l;
 
@@ -4248,7 +4248,7 @@ static int FSLMatch(FeatureScriptLangList *fl,uint32 feat_tag,uint32 script,uint
 	    for ( sl=fl->scripts; sl!=NULL ; sl=sl->next ) {
 		if ( sl->script==script || script==CHR('*',' ',' ',' ')) {
 		    for ( l=0; l<sl->lang_cnt; ++l ) {
-			uint32 lng = l<MAX_LANG ? sl->langs[l] : sl->morelangs[l-MAX_LANG];
+			uint32_t lng = l<MAX_LANG ? sl->langs[l] : sl->morelangs[l-MAX_LANG];
 			if ( lng==lang || lang==CHR('*',' ',' ',' '))
 return( true );
 		    }
@@ -4260,14 +4260,14 @@ return( true );
 return( false );
 }
 
-static void FVApplySubstitution(FontViewBase *fv,uint32 script, uint32 lang, uint32 feat_tag) {
+static void FVApplySubstitution(FontViewBase *fv,uint32_t script, uint32_t lang, uint32_t feat_tag) {
     SplineFont *sf = fv->sf, *sf_sl=sf;
     SplineChar *sc, *replacement, *sc2;
     PST *pst;
     EncMap *map = fv->map;
     int i, gid, gid2;
     SplineChar **replacements;
-    uint8 *removes;
+    uint8_t *removes;
 
     if ( sf_sl->cidmaster!=NULL ) sf_sl = sf_sl->cidmaster;
     else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
@@ -4275,7 +4275,7 @@ static void FVApplySubstitution(FontViewBase *fv,uint32 script, uint32 lang, uin
     /* I used to do replaces and removes as I went along, and then Werner */
     /*  gave me a font were "a" was replaced by "b" replaced by "a" */
     replacements = calloc(sf->glyphcnt,sizeof(SplineChar *));
-    removes = calloc(sf->glyphcnt,sizeof(uint8));
+    removes = calloc(sf->glyphcnt,sizeof(uint8_t));
 
     for ( i=0; i<map->enccount; ++i ) if ( fv->selected[i] &&
 	    (gid=map->map[i])!=-1 && (sc=sf->glyphs[gid])!=NULL ) {
@@ -4319,7 +4319,7 @@ static void FVApplySubstitution(FontViewBase *fv,uint32 script, uint32 lang, uin
 }
 
 static void bApplySubstitution(Context *c) {
-    uint32 tags[3];
+    uint32_t tags[3];
     int i;
 
     for ( i=0; i<3; ++i ) {
@@ -5582,7 +5582,7 @@ static void bBuildAccented(Context *c) {
 }
 
 static void bAppendAccent(Context *c) {
-    int pos = FF_UNICODE_NOPOSDATAGIVEN; /* unicode char pos info, see #define for (uint32)(utype2[]) */
+    int pos = FF_UNICODE_NOPOSDATAGIVEN; /* unicode char pos info, see #define for (uint32_t)(utype2[]) */
     char *glyph_name = NULL;		/* unicode char name */
     int uni = -1;			/* unicode char value */
 
@@ -5602,10 +5602,10 @@ static void bAppendAccent(Context *c) {
     else
 	uni = c->a.vals[1].u.ival;
     if ( c->a.argc==3 )
-	pos = (uint32)(c->a.vals[2].u.ival);
+	pos = (uint32_t)(c->a.vals[2].u.ival);
 
     sc = GetOneSelChar(c);
-    ret = SCAppendAccent(sc,ly_fore,glyph_name,uni,(uint32)(pos));
+    ret = SCAppendAccent(sc,ly_fore,glyph_name,uni,(uint32_t)(pos));
     if ( ret==1 )
 	ScriptError(c,"No base character reference found");
     else if ( ret==2 )
@@ -5758,8 +5758,8 @@ static void bAutoInstr(Context *c) {
     FVAutoInstr(c->curfv);
 }
 
-static void TableAddInstrs(SplineFont *sf, uint32 tag,int replace,
-	uint8 *instrs,int icnt) {
+static void TableAddInstrs(SplineFont *sf, uint32_t tag,int replace,
+	uint8_t *instrs,int icnt) {
     struct ttf_table *tab;
 
     for ( tab=sf->ttf_tables; tab!=NULL && tab->tag!=tag; tab=tab->next );
@@ -5782,7 +5782,7 @@ return;
 	memcpy(tab->data,instrs,icnt);
 	tab->len = icnt;
     } else {
-	uint8 *newi = malloc(icnt+tab->len);
+	uint8_t *newi = malloc(icnt+tab->len);
 	memcpy(newi,tab->data,tab->len);
 	memcpy(newi+tab->len,instrs,icnt);
 	free(tab->data);
@@ -5793,7 +5793,7 @@ return;
 }
 
 static void GlyphAddInstrs(SplineChar *sc,int replace,
-	uint8 *instrs,int icnt) {
+	uint8_t *instrs,int icnt) {
 
     if ( replace ) {
 	free(sc->ttf_instrs);
@@ -5809,7 +5809,7 @@ return;
 	memcpy(sc->ttf_instrs,instrs,icnt);
 	sc->ttf_instrs_len = icnt;
     } else {
-	uint8 *newi = malloc(icnt+sc->ttf_instrs_len);
+	uint8_t *newi = malloc(icnt+sc->ttf_instrs_len);
 	memcpy(newi,sc->ttf_instrs,sc->ttf_instrs_len);
 	memcpy(newi+sc->ttf_instrs_len,instrs,icnt);
 	free(sc->ttf_instrs);
@@ -5826,8 +5826,8 @@ static void bAddInstrs(Context *c) {
     int replace;
     SplineChar *sc = NULL;
     int icnt;
-    uint8 *instrs;
-    uint32 tag=0;
+    uint8_t *instrs;
+    uint32_t tag=0;
     SplineFont *sf = c->curfv->sf;
     int i;
     EncMap *map = c->curfv->map;
@@ -5889,7 +5889,7 @@ static void bGetCvtAt(Context *c) {
 	ScriptError(c,"Cvt table is either not present or too short");
     c->return_val.type = v_int;
     c->return_val.u.ival = memushort(tab->data,tab->len,
-	    sizeof(uint16)*c->a.vals[1].u.ival);
+	    sizeof(uint16_t)*c->a.vals[1].u.ival);
 }
 
 static void bReplaceCvtAt(Context *c) {
@@ -5899,7 +5899,7 @@ static void bReplaceCvtAt(Context *c) {
     for ( tab=sf->ttf_tables; tab!=NULL && tab->tag!=CHR('c','v','t',' '); tab=tab->next );
     if ( tab==NULL || c->a.vals[1].u.ival>=(int)tab->len/2 )
 	ScriptError(c,"Cvt table is either not present or too short");
-    memputshort(tab->data,sizeof(uint16)*c->a.vals[1].u.ival,
+    memputshort(tab->data,sizeof(uint16_t)*c->a.vals[1].u.ival,
 	    c->a.vals[2].u.ival);
 }
 
@@ -5955,8 +5955,8 @@ static void bClearInstrs(Context *c) {
 }
 
 static void bClearTable(Context *c) {
-    uint32 tag;
-    uint8 _tag[4];
+    uint32_t tag;
+    uint8_t _tag[4];
     SplineFont *sf = c->curfv->sf;
     struct ttf_table *table, *prev;
 
@@ -6615,9 +6615,9 @@ static void bCIDChangeSubFont(Context *c) {
 	free(c->curfv->selected);
 	c->curfv->selected = calloc(new->glyphcnt,sizeof(char));
 	if ( new->glyphcnt>map->encmax )
-	    map->map = realloc(map->map,(map->encmax = new->glyphcnt)*sizeof(int32));
+	    map->map = realloc(map->map,(map->encmax = new->glyphcnt)*sizeof(int32_t));
 	if ( new->glyphcnt>map->backmax )
-	    map->backmap = realloc(map->backmap,(map->backmax = new->glyphcnt)*sizeof(int32));
+	    map->backmap = realloc(map->backmap,(map->backmax = new->glyphcnt)*sizeof(int32_t));
 	for ( i=0; i<new->glyphcnt; ++i )
 	    map->map[i] = map->backmap[i] = i;
 	map->enccount = new->glyphcnt;
@@ -7080,7 +7080,7 @@ static void bMergeLookupSubtables(Context *c) {
     SFRemoveLookupSubTable(c->curfv->sf,sub2,0);
 }
 
-static int32 ParseTag(Context *c,Val *tagstr,int macok,int *wasmac) {
+static int32_t ParseTag(Context *c,Val *tagstr,int macok,int *wasmac) {
     char tag[4];
     int feat,set;
     char *str;
@@ -7159,9 +7159,9 @@ static FeatureScriptLangList *ParseFeatureList(Context *c,Array *a) {
 	    } else {
 		sl->lang_cnt = langs->argc;
 		if ( langs->argc>MAX_LANG )
-		    sl->morelangs = malloc((langs->argc-MAX_LANG)*sizeof(uint32));
+		    sl->morelangs = malloc((langs->argc-MAX_LANG)*sizeof(uint32_t));
 		for ( l=0; l<langs->argc; ++l ) {
-		    uint32 lang = ParseTag(c,&langs->vals[l],false,&wasmac);
+		    uint32_t lang = ParseTag(c,&langs->vals[l],false,&wasmac);
 		    if ( l<MAX_LANG )
 			sl->langs[l] = lang;
 		    else
@@ -7287,7 +7287,7 @@ static void bLookupStoreLigatureInAfm(Context *c) {
     otl->store_in_afm = c->a.vals[2].u.ival;
 }
 
-static char *Tag2Str(uint32 tag, int ismac) {
+static char *Tag2Str(uint32_t tag, int ismac) {
     char buffer[20];
 
     if ( ismac )

@@ -38,7 +38,7 @@ static GImage *ColorWheel(int width,int height) {
     struct _GImage *base;
     int i,j;
     double x,y, hh, hw;
-    uint32 *row;
+    uint32_t *row;
 
     memset(&col,0,sizeof(col));
     col.v = 1.0;
@@ -50,7 +50,7 @@ static GImage *ColorWheel(int width,int height) {
     wheel = GImageCreate(it_true,width,height);
     base = wheel->u.image;
     for ( i=0; i<height; ++i ) {
-	row = (uint32 *) (base->data + i*base->bytes_per_line);
+	row = (uint32_t *) (base->data + i*base->bytes_per_line);
 	y = (i-hh)/(hh-1);
 	for ( j=0; j<width; ++j ) {
 	    x = (j-hw)/(hw-1);
@@ -73,14 +73,14 @@ static GImage *Gradient(int height) {
     GImage *grad;
     struct _GImage *base;
     int i,j,c;
-    uint32 *row;
+    uint32_t *row;
 
     if ( height<10 ) height = 10;
 
     grad = GImageCreate(it_true,GRAD_WIDTH,height);
     base = grad->u.image;
     for ( i=0; i<height; ++i ) {
-	row = (uint32 *) (base->data + i*base->bytes_per_line);
+	row = (uint32_t *) (base->data + i*base->bytes_per_line);
 	c = 255*(height-1-i)/(height-1);
 	for ( j=0; j<GRAD_WIDTH; ++j ) {
 	    *row++ = COLOR_CREATE(c,c,c);
@@ -92,7 +92,7 @@ return( grad );
 /* ************************************************************************** */
 #define USEFUL_MAX	6
 
-static uint8 image_data[] = {
+static uint8_t image_data[] = {
     0x00, 0x00,
     0x7f, 0xfe,
     0x7f, 0xfe,
@@ -121,18 +121,18 @@ static GClut cluts[2*USEFUL_MAX] = {
     { 2, 0, COLOR_UNKNOWN, GCLUT_CLUT_EMPTY }
 };
 static struct _GImage bases[2*USEFUL_MAX] = {
-    { it_mono, 0,16,12,2, (uint8 *) image_data, &cluts[0], COLOR_UNKNOWN },
-    { it_mono, 0,16,12,2, (uint8 *) image_data, &cluts[1], COLOR_UNKNOWN },
-    { it_mono, 0,16,12,2, (uint8 *) image_data, &cluts[2], COLOR_UNKNOWN },
-    { it_mono, 0,16,12,2, (uint8 *) image_data, &cluts[3], COLOR_UNKNOWN },
-    { it_mono, 0,16,12,2, (uint8 *) image_data, &cluts[4], COLOR_UNKNOWN },
-    { it_mono, 0,16,12,2, (uint8 *) image_data, &cluts[5], COLOR_UNKNOWN },
-    { it_mono, 0,16,12,2, (uint8 *) image_data, &cluts[6], COLOR_UNKNOWN },
-    { it_mono, 0,16,12,2, (uint8 *) image_data, &cluts[7], COLOR_UNKNOWN },
-    { it_mono, 0,16,12,2, (uint8 *) image_data, &cluts[8], COLOR_UNKNOWN },
-    { it_mono, 0,16,12,2, (uint8 *) image_data, &cluts[9], COLOR_UNKNOWN },
-    { it_mono, 0,16,12,2, (uint8 *) image_data, &cluts[10], COLOR_UNKNOWN },
-    { it_mono, 0,16,12,2, (uint8 *) image_data, &cluts[11], COLOR_UNKNOWN }
+    { it_mono, 0,16,12,2, (uint8_t *) image_data, &cluts[0], COLOR_UNKNOWN },
+    { it_mono, 0,16,12,2, (uint8_t *) image_data, &cluts[1], COLOR_UNKNOWN },
+    { it_mono, 0,16,12,2, (uint8_t *) image_data, &cluts[2], COLOR_UNKNOWN },
+    { it_mono, 0,16,12,2, (uint8_t *) image_data, &cluts[3], COLOR_UNKNOWN },
+    { it_mono, 0,16,12,2, (uint8_t *) image_data, &cluts[4], COLOR_UNKNOWN },
+    { it_mono, 0,16,12,2, (uint8_t *) image_data, &cluts[5], COLOR_UNKNOWN },
+    { it_mono, 0,16,12,2, (uint8_t *) image_data, &cluts[6], COLOR_UNKNOWN },
+    { it_mono, 0,16,12,2, (uint8_t *) image_data, &cluts[7], COLOR_UNKNOWN },
+    { it_mono, 0,16,12,2, (uint8_t *) image_data, &cluts[8], COLOR_UNKNOWN },
+    { it_mono, 0,16,12,2, (uint8_t *) image_data, &cluts[9], COLOR_UNKNOWN },
+    { it_mono, 0,16,12,2, (uint8_t *) image_data, &cluts[10], COLOR_UNKNOWN },
+    { it_mono, 0,16,12,2, (uint8_t *) image_data, &cluts[11], COLOR_UNKNOWN }
 };
 static GImage blanks[2*USEFUL_MAX] = {
     { 0, { &bases[0] }, NULL },

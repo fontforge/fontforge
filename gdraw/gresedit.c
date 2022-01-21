@@ -62,21 +62,21 @@ typedef struct greseditdlg {
 } GRE;
 
 static GTextInfo bordertype[] = {
-    { (unichar_t *) "None", NULL, 0, 0, (void *) (intpt) bt_none, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
-    { (unichar_t *) "Box", NULL, 0, 0, (void *) (intpt) bt_box, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
-    { (unichar_t *) "Raised", NULL, 0, 0, (void *) (intpt) bt_raised, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
-    { (unichar_t *) "Lowered", NULL, 0, 0, (void *) (intpt) bt_lowered, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
-    { (unichar_t *) "Engraved", NULL, 0, 0, (void *) (intpt) bt_engraved, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
-    { (unichar_t *) "Embossed", NULL, 0, 0, (void *) (intpt) bt_embossed, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
-    { (unichar_t *) "Double", NULL, 0, 0, (void *) (intpt) bt_double, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "None", NULL, 0, 0, (void *) (intptr_t) bt_none, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Box", NULL, 0, 0, (void *) (intptr_t) bt_box, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Raised", NULL, 0, 0, (void *) (intptr_t) bt_raised, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Lowered", NULL, 0, 0, (void *) (intptr_t) bt_lowered, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Engraved", NULL, 0, 0, (void *) (intptr_t) bt_engraved, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Embossed", NULL, 0, 0, (void *) (intptr_t) bt_embossed, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Double", NULL, 0, 0, (void *) (intptr_t) bt_double, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     GTEXTINFO_EMPTY
 };
 
 static GTextInfo bordershape[] = {
-    { (unichar_t *) "Rect", NULL, 0, 0, (void *) (intpt) bs_rect, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
-    { (unichar_t *) "Round Rect", NULL, 0, 0, (void *) (intpt) bs_roundrect, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
-    { (unichar_t *) "Elipse", NULL, 0, 0, (void *) (intpt) bs_elipse, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
-    { (unichar_t *) "Diamond", NULL, 0, 0, (void *) (intpt) bs_diamond, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Rect", NULL, 0, 0, (void *) (intptr_t) bs_rect, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Round Rect", NULL, 0, 0, (void *) (intptr_t) bs_roundrect, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Elipse", NULL, 0, 0, (void *) (intptr_t) bs_elipse, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) "Diamond", NULL, 0, 0, (void *) (intptr_t) bs_diamond, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     GTEXTINFO_EMPTY
 };
 
@@ -138,7 +138,7 @@ static void GRE_FigureInheritance( GRE *gre, GResInfo *parent, int cid_off_inh,
 static void inherit_color_change(GRE *gre, int childindex, int cid_off,
 	void *whatever) {
     GGadget *g = GWidgetGetControl(gre->gw,gre->tofree[childindex].startcid+cid_off);
-    Color col = (Color) (intpt) whatever;
+    Color col = (Color) (intptr_t) whatever;
 
     GColorButtonSetColor(g,col);
     *((Color *) GGadgetGetUserData(g)) = col;
@@ -147,28 +147,28 @@ static void inherit_color_change(GRE *gre, int childindex, int cid_off,
 static void inherit_list_change(GRE *gre, int childindex, int cid_off,
 	void *whatever) {
     GGadget *g = GWidgetGetControl(gre->gw,gre->tofree[childindex].startcid+cid_off);
-    int sel = (intpt) whatever;
+    int sel = (intptr_t) whatever;
 
     GGadgetSelectOneListItem(g,sel);
-    *((uint8 *) GGadgetGetUserData(g)) = sel;
+    *((uint8_t *) GGadgetGetUserData(g)) = sel;
 }
 
 static void inherit_byte_change(GRE *gre, int childindex, int cid_off,
 	void *whatever) {
     GGadget *g = GWidgetGetControl(gre->gw,gre->tofree[childindex].startcid+cid_off);
-    int val = (intpt) whatever;
+    int val = (intptr_t) whatever;
     char buf[20];
 
     sprintf( buf, "%d", val );
     GGadgetSetTitle8(g,buf);
-    *((uint8 *) GGadgetGetUserData(g)) = val;
+    *((uint8_t *) GGadgetGetUserData(g)) = val;
 }
 
 static void inherit_flag_change(GRE *gre, int childindex, int cid_off,
 	void *whatever) {
     GGadget *g = GWidgetGetControl(gre->gw,gre->tofree[childindex].startcid+cid_off);
-    int on = (intpt) whatever;
-    int flag = (intpt) GGadgetGetUserData(g);
+    int on = (intptr_t) whatever;
+    int flag = (intptr_t) GGadgetGetUserData(g);
     GResInfo *res = gre->tofree[childindex].res;
 
     if ( on )
@@ -196,7 +196,7 @@ static int GRE_InheritColChange(GGadget *g, GEvent *e) {
 		GColorButtonSetColor(g,col);
 		*((Color *) GGadgetGetUserData(g)) = col;
 		GRE_FigureInheritance(gre,res,cid_off,cid_off+2,
-			(void *) (intpt) col, inherit_color_change);
+			(void *) (intptr_t) col, inherit_color_change);
 		GRE_RefreshAll(gre);
 	    }
 	}
@@ -216,13 +216,13 @@ static int GRE_InheritListChange(GGadget *g, GEvent *e) {
 	    int index = GTabSetGetSel(gre->tabset);
 	    GResInfo *res = gre->tofree[index].res;
 	    int offset = ((char *) GGadgetGetUserData(g)) - ((char *) (res->boxdata));
-	    int sel = *((uint8 *) (((char *) (res->inherits_from->boxdata))+offset));
-	    if ( sel != *(uint8 *) GGadgetGetUserData(g) ) {
+	    int sel = *((uint8_t *) (((char *) (res->inherits_from->boxdata))+offset));
+	    if ( sel != *(uint8_t *) GGadgetGetUserData(g) ) {
 		int cid_off = cid - gre->tofree[index].startcid;
 		GGadgetSelectOneListItem(g,sel);
-		*((uint8 *) GGadgetGetUserData(g)) = sel;
+		*((uint8_t *) GGadgetGetUserData(g)) = sel;
 		GRE_FigureInheritance(gre,res,cid_off,cid_off+2,
-			(void *) (intpt) sel, inherit_list_change);
+			(void *) (intptr_t) sel, inherit_list_change);
 		GRE_Reflow(gre,res);
 	    }
 	}
@@ -242,15 +242,15 @@ static int GRE_InheritByteChange(GGadget *g, GEvent *e) {
 	    int index = GTabSetGetSel(gre->tabset);
 	    GResInfo *res = gre->tofree[index].res;
 	    int offset = ((char *) GGadgetGetUserData(g)) - ((char *) (res->boxdata));
-	    int val = *((uint8 *) (((char *) (res->inherits_from->boxdata))+offset));
-	    if ( val != *(uint8 *) GGadgetGetUserData(g) ) {
+	    int val = *((uint8_t *) (((char *) (res->inherits_from->boxdata))+offset));
+	    if ( val != *(uint8_t *) GGadgetGetUserData(g) ) {
 		int cid_off = cid - gre->tofree[index].startcid;
 		char buf[20];
 		sprintf( buf, "%d", val );
 		GGadgetSetTitle8(g,buf);
-		*((uint8 *) GGadgetGetUserData(g)) = val;
+		*((uint8_t *) GGadgetGetUserData(g)) = val;
 		GRE_FigureInheritance(gre,res,cid_off,cid_off+2,
-			(void *) (intpt) val, inherit_byte_change);
+			(void *) (intptr_t) val, inherit_byte_change);
 		GRE_Reflow(gre,res);
 	    }
 	}
@@ -268,7 +268,7 @@ static int GRE_InheritFlagChange(GGadget *g, GEvent *e) {
 	if ( on ) {
 	    int index = GTabSetGetSel(gre->tabset);
 	    GResInfo *res = gre->tofree[index].res;
-	    int flag = (intpt) GGadgetGetUserData(g);
+	    int flag = (intptr_t) GGadgetGetUserData(g);
 	    if ( (res->boxdata->flags&flag) != (res->inherits_from->boxdata->flags&flag)) {
 		int cid_off = cid - gre->tofree[index].startcid;
 		int on = (res->inherits_from->boxdata->flags&flag)?1:0 ;
@@ -278,7 +278,7 @@ static int GRE_InheritFlagChange(GGadget *g, GEvent *e) {
 		else
 		    res->boxdata->flags &= ~flag;
 		GRE_FigureInheritance(gre,res,cid_off,cid_off+2,
-			(void *) (intpt) on, inherit_flag_change);
+			(void *) (intptr_t) on, inherit_flag_change);
 		GRE_Reflow(gre,res);
 	    }
 	}
@@ -295,11 +295,11 @@ static int GRE_FlagChanged(GGadget *g, GEvent *e) {
 	int cid_off = GGadgetGetCid(g) - gre->tofree[index].startcid;
 	int on;
 	if ( (on = GGadgetIsChecked(g)) )
-	    res->boxdata->flags |= (int) (intpt) GGadgetGetUserData(g);
+	    res->boxdata->flags |= (int) (intptr_t) GGadgetGetUserData(g);
 	else
-	    res->boxdata->flags &= ~(int) (intpt) GGadgetGetUserData(g);
+	    res->boxdata->flags &= ~(int) (intptr_t) GGadgetGetUserData(g);
 	GRE_FigureInheritance(gre,res,cid_off-1,cid_off,
-		(void *) (intpt) on, inherit_flag_change);
+		(void *) (intptr_t) on, inherit_flag_change);
 	GRE_Reflow(gre,res);
     }
 return( true );
@@ -314,9 +314,9 @@ static int GRE_ListChanged(GGadget *g, GEvent *e) {
 	int cid_off = GGadgetGetCid(g) - gre->tofree[index].startcid;
 	int sel = GGadgetGetFirstListSelectedItem(g);
 
-	*((uint8 *) GGadgetGetUserData(g)) = sel;
+	*((uint8_t *) GGadgetGetUserData(g)) = sel;
 	GRE_FigureInheritance(gre,res,cid_off-2,cid_off,
-		(void *) (intpt) sel, inherit_list_change);
+		(void *) (intptr_t) sel, inherit_list_change);
 	GRE_Reflow(gre,res);
     }
 return( true );
@@ -340,9 +340,9 @@ static int GRE_ByteChanged(GGadget *g, GEvent *e) {
 	GResInfo *res = gre->tofree[index].res;
 	if ( *end=='\0' && val>=0 && val<=255 ) {
 	    int cid_off = GGadgetGetCid(g) - gre->tofree[index].startcid;
-	    *((uint8 *) GGadgetGetUserData(g)) = val;
+	    *((uint8_t *) GGadgetGetUserData(g)) = val;
 	    GRE_FigureInheritance(gre,res,cid_off-2,cid_off,
-		    (void *) (intpt) val, inherit_byte_change);
+		    (void *) (intptr_t) val, inherit_byte_change);
 	    GRE_Reflow(gre,res);
 	}
 	free(txt);
@@ -390,7 +390,7 @@ static int GRE_ColorChanged(GGadget *g, GEvent *e) {
 
 	*((Color *) GGadgetGetUserData(g)) = col;
 	GRE_FigureInheritance(gre,res,cid_off-2,cid_off,
-		(void *) (intpt) col, inherit_color_change);
+		(void *) (intptr_t) col, inherit_color_change);
 	GRE_RefreshAll(gre);
     }
 return( true );
@@ -983,7 +983,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    if ( res->boxdata->flags & box_foreground_border_inner )
 		gcd[k].gd.flags |= gg_cb_on;
 	    gcd[k].gd.handle_controlevent = GRE_FlagChanged;
-	    gcd[k].data = (void *) (intpt) box_foreground_border_inner;
+	    gcd[k].data = (void *) (intptr_t) box_foreground_border_inner;
 	    gcd[k++].creator = GCheckBoxCreate;
 	    tofree[i].farray[l][1] = &gcd[k-1];
 	    if ( res->inherits_from==NULL )
@@ -1011,7 +1011,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    if ( res->boxdata->flags & box_foreground_border_outer )
 		gcd[k].gd.flags |= gg_cb_on;
 	    gcd[k].gd.handle_controlevent = GRE_FlagChanged;
-	    gcd[k].data = (void *) (intpt) box_foreground_border_outer;
+	    gcd[k].data = (void *) (intptr_t) box_foreground_border_outer;
 	    gcd[k++].creator = GCheckBoxCreate;
 	    tofree[i].farray[l][3] = &gcd[k-1];
 	    if ( res->inherits_from==NULL )
@@ -1042,7 +1042,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    if ( res->boxdata->flags & box_active_border_inner )
 		gcd[k].gd.flags |= gg_cb_on;
 	    gcd[k].gd.handle_controlevent = GRE_FlagChanged;
-	    gcd[k].data = (void *) (intpt) box_active_border_inner;
+	    gcd[k].data = (void *) (intptr_t) box_active_border_inner;
 	    gcd[k++].creator = GCheckBoxCreate;
 	    tofree[i].farray[l][1] = &gcd[k-1];
 	    if ( res->inherits_from==NULL )
@@ -1070,7 +1070,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    if ( res->boxdata->flags & box_foreground_shadow_outer )
 		gcd[k].gd.flags |= gg_cb_on;
 	    gcd[k].gd.handle_controlevent = GRE_FlagChanged;
-	    gcd[k].data = (void *) (intpt) box_foreground_shadow_outer;
+	    gcd[k].data = (void *) (intptr_t) box_foreground_shadow_outer;
 	    gcd[k++].creator = GCheckBoxCreate;
 	    tofree[i].farray[l][3] = &gcd[k-1];
 	    if ( res->inherits_from==NULL )
@@ -1101,7 +1101,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    if ( res->boxdata->flags & box_do_depressed_background )
 		gcd[k].gd.flags |= gg_cb_on;
 	    gcd[k].gd.handle_controlevent = GRE_FlagChanged;
-	    gcd[k].data = (void *) (intpt) box_do_depressed_background;
+	    gcd[k].data = (void *) (intptr_t) box_do_depressed_background;
 	    gcd[k++].creator = GCheckBoxCreate;
 	    tofree[i].farray[l][1] = &gcd[k-1];
 	    if ( res->inherits_from==NULL )
@@ -1129,7 +1129,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    if ( res->boxdata->flags & box_draw_default )
 		gcd[k].gd.flags |= gg_cb_on;
 	    gcd[k].gd.handle_controlevent = GRE_FlagChanged;
-	    gcd[k].data = (void *) (intpt) box_draw_default;
+	    gcd[k].data = (void *) (intptr_t) box_draw_default;
 	    gcd[k++].creator = GCheckBoxCreate;
 	    tofree[i].farray[l][3] = &gcd[k-1];
 	    if ( res->inherits_from==NULL )
@@ -1160,7 +1160,7 @@ static void GResEditDlg(GResInfo *all,const char *def_res_file,void (*change_res
 	    if ( res->boxdata->flags & box_gradient_bg )
 		gcd[k].gd.flags |= gg_cb_on;
 	    gcd[k].gd.handle_controlevent = GRE_FlagChanged;
-	    gcd[k].data = (void *) (intpt) box_gradient_bg;
+	    gcd[k].data = (void *) (intptr_t) box_gradient_bg;
 	    gcd[k++].creator = GCheckBoxCreate;
 	    tofree[i].farray[l][1] = &gcd[k-1];
 	    if ( res->inherits_from==NULL )

@@ -31,7 +31,7 @@
 #include "mem.h"
 #include "uiinterface.h"
 
-int32 memlong(uint8 *data,int len, int offset) {
+int32_t memlong(uint8_t *data,int len, int offset) {
 	if (offset>=0 && offset+3<len) {
 		int ch1 = data[offset], ch2 = data[offset+1], ch3 = data[offset+2], ch4 = data[offset+3];
 		return (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4;
@@ -41,7 +41,7 @@ int32 memlong(uint8 *data,int len, int offset) {
 	}
 }
 
-int memushort(uint8 *data,int len, int offset) {
+int memushort(uint8_t *data,int len, int offset) {
 	if (offset>=0 && offset+1<len) {
 		int ch1 = data[offset], ch2 = data[offset+1];
 		return (ch1<<8)|ch2;
@@ -51,7 +51,7 @@ int memushort(uint8 *data,int len, int offset) {
 	}
 }
 
-void memputshort(uint8 *data,int offset,uint16 val) {
+void memputshort(uint8_t *data,int offset,uint16_t val) {
 	data[offset] = (val>>8);
 	data[offset+1] = val&0xff;
 }
@@ -78,7 +78,7 @@ int get3byte(FILE *ttf) {
 	return (ch1<<16)|(ch2<<8)|ch3;
 }
 
-int32 getlong(FILE *ttf) {
+int32_t getlong(FILE *ttf) {
 	int ch1 = getc(ttf);
 	int ch2 = getc(ttf);
 	int ch3 = getc(ttf);
@@ -91,7 +91,7 @@ int32 getlong(FILE *ttf) {
 }
 
 real getfixed(FILE *ttf) {
-	int32 val = getlong(ttf);
+	int32_t val = getlong(ttf);
 	int mant = val&0xffff;
 	/* This oddity may be needed to deal with the first 16 bits being signed */
 	/*  and the low-order bits unsigned */
@@ -99,7 +99,7 @@ real getfixed(FILE *ttf) {
 }
 
 real get2dot14(FILE *ttf) {
-	int32 val = getushort(ttf);
+	int32_t val = getushort(ttf);
 	int mant = val&0x3fff;
 	/* This oddity may be needed to deal with the first 2 bits being signed */
 	/*  and the low-order bits unsigned */

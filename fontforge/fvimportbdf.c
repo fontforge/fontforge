@@ -226,7 +226,7 @@ static int figureProperEncoding(SplineFont *sf,EncMap *map, BDFFont *b, int enc,
 	if ( i>=map->enccount || map->map[i]==-1 )
 	    MakeEncChar(sf,map,i,name);
     } else {
-	int32 uni = UniFromEnc(enc,encname);
+	int32_t uni = UniFromEnc(enc,encname);
 	if ( uni==-1 )
 	    uni = UniFromName(name,sf->uni_interp,map->enc);
 	i = EncFromUni(uni,map->enc);
@@ -292,7 +292,7 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,EncMap *map,int dep
     int swidth= defs->swidth, swidth1=defs->swidth1;
     int vwidth = defs->dwidth1;
     int i,ch;
-    uint8 *pt, *end, *eol;
+    uint8_t *pt, *end, *eol;
 
     gettoken(bdf,name,sizeof(tok));
     while ( gettoken(bdf,tok,sizeof(tok))!=-1 ) {
@@ -757,8 +757,8 @@ return(bc);
 }
 
 static void gf_skip_noops(FILE *gf,char *char_name) {
-    uint8 cmd;
-    int32 val;
+    uint8_t cmd;
+    int32_t val;
     int i;
     char buffer[257];
 
@@ -822,7 +822,7 @@ static int gf_postamble(FILE *gf, int *_as, int *_ds, Encoding **_enc, char *fam
     int design_size, pixels_per_point;
     double size;
     char *pt, *fpt;
-    int32 pos, off;
+    int32_t pos, off;
 
     fseek(gf,-4,SEEK_END);
     pos = ftell(gf);
@@ -869,7 +869,7 @@ return( pixelsize );
 }
 
 static int gf_char(FILE *gf, SplineFont *sf, BDFFont *b,EncMap *map) {
-    int32 pos, to;
+    int32_t pos, to;
     int ch, enc, dx, aw;
     int min_c, max_c, min_r, max_r, w;
     int r,c, col,cnt,i;
@@ -995,8 +995,8 @@ return( true );
 enum pk_cmd { pk_rrr1=240, pk_rrr2, pk_rrr3, pk_rrr4, pk_yyy, pk_post, pk_no_op,
 	pk_pre, pk_version_number=89 };
 static void pk_skip_noops(FILE *pk) {
-    uint8 cmd;
-    int32 val;
+    uint8_t cmd;
+    int32_t val;
     int i;
 
     while ( 1 ) {
@@ -1115,7 +1115,7 @@ static int pk_char(FILE *pk, SplineFont *sf, BDFFont *b, EncMap *map) {
     int gid;
     BDFChar *bc;
     struct pkstate st;
-    int32 char_end;
+    int32_t char_end;
 
     memset(&st,'\0', sizeof(st));
 
@@ -1592,7 +1592,7 @@ return(NULL);
 return( metrics );
 }
 
-static uint8 bitinvert[] = {
+static uint8_t bitinvert[] = {
 	0x00, 0x80, 0x40, 0xc0, 0x20, 0xa0, 0x60, 0xe0,
 	0x10, 0x90, 0x50, 0xd0, 0x30, 0xb0, 0x70, 0xf0,
 	0x08, 0x88, 0x48, 0xc8, 0x28, 0xa8, 0x68, 0xe8,
@@ -1627,14 +1627,14 @@ static uint8 bitinvert[] = {
 	0x1f, 0x9f, 0x5f, 0xdf, 0x3f, 0xbf, 0x7f, 0xff
 };
 
-static void BitOrderInvert(uint8 *bitmap,int sizebitmaps) {
+static void BitOrderInvert(uint8_t *bitmap,int sizebitmaps) {
     int i;
 
     for ( i=0; i<sizebitmaps; ++i )
 	bitmap[i] = bitinvert[bitmap[i]];
 }
 
-static void TwoByteSwap(uint8 *bitmap,int sizebitmaps) {
+static void TwoByteSwap(uint8_t *bitmap,int sizebitmaps) {
     int i, t;
 
     for ( i=0; i<sizebitmaps-1; i+=2 ) {
@@ -1644,7 +1644,7 @@ static void TwoByteSwap(uint8 *bitmap,int sizebitmaps) {
     }
 }
 
-static void FourByteSwap(uint8 *bitmap,int sizebitmaps) {
+static void FourByteSwap(uint8_t *bitmap,int sizebitmaps) {
     int i, t;
 
     for ( i=0; i<sizebitmaps-1; i+=4 ) {
@@ -1660,7 +1660,7 @@ static void FourByteSwap(uint8 *bitmap,int sizebitmaps) {
 static int PcfReadBitmaps(FILE *file,struct toc *toc,BDFFont *b) {
     int format, cnt, i, sizebitmaps, j;
     int *offsets;
-    uint8 *bitmap;
+    uint8_t *bitmap;
     int bitmapSizes[GLYPHPADOPTIONS];
 
     if ( !pcfSeekToType(file,toc,PCF_BITMAPS))
@@ -2341,7 +2341,7 @@ int FVImportBDF(FontViewBase *fv, char *filename, int ispk, int toback) {
 	FontViewBase *fvs;
 	for ( fvs=fv->sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
 	    free(fvs->selected);
-	    fvs->selected = calloc(fvs->map->enccount,sizeof(uint8));
+	    fvs->selected = calloc(fvs->map->enccount,sizeof(uint8_t));
 	}
 	FontViewReformatAll(fv->sf);
     }

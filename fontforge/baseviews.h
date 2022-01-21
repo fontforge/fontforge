@@ -119,11 +119,11 @@ typedef struct bvtfunc {
 } BVTFunc;
 
 struct freetype_raster {
-    int16 rows, cols;
-    int16 as, lb;
-    int16 bytes_per_row;
-    int16 num_greys;
-    uint8 *bitmap;
+    int16_t rows, cols;
+    int16_t as, lb;
+    int16_t bytes_per_row;
+    int16_t num_greys;
+    uint8_t *bitmap;
 };
 
 struct cvcontainer {
@@ -151,8 +151,8 @@ typedef struct charviewbase {
     struct fontviewbase *fv;
     SplineChar *sc;
     Layer *layerheads[dm_max];
-    uint8 drawmode;
-    uint16 ft_gridfitwidth;
+    uint8_t drawmode;
+    uint16_t ft_gridfitwidth;
     SplineSet *gridfit;
     struct cvcontainer *container;		/* The sv (or whatever) within which this view is embedded (if it is embedded) */
 } CharViewBase;
@@ -182,7 +182,7 @@ typedef struct fontviewbase {
     SplineFont *cidmaster;		/* If CID keyed, contains master font */
     int active_layer;
     BDFFont *active_bitmap;		/* Set if the fontview displays a bitmap strike */
-    uint8 *selected;			/* Current selection */
+    uint8_t *selected;			/* Current selection */
 #ifndef _NO_FFSCRIPT
     struct dictionary *fontvars;	/* Scripting */
 #endif
@@ -286,7 +286,7 @@ extern void FVUndo(FontViewBase *fv);
 extern void FVRedo(FontViewBase *fv);
 extern void FVJoin(FontViewBase *fv);
 extern void FVBuildDuplicate(FontViewBase *fv);
-extern void FVTrans(FontViewBase *fv,SplineChar *sc,real transform[6],uint8 *sel,
+extern void FVTrans(FontViewBase *fv,SplineChar *sc,real transform[6],uint8_t *sel,
 	enum fvtrans_flags);
 extern void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
 	enum fvtrans_flags );
@@ -347,7 +347,7 @@ struct fixed_maps {
 
 struct genericchange {
     enum glyphchange_type gc;
-    uint32 feature_tag;
+    uint32_t feature_tag;
     char *glyph_extension;
     char *extension_for_letters, *extension_for_symbols;
     double stem_height_scale, stem_width_scale;
@@ -358,10 +358,10 @@ struct genericchange {
     double hcounter_scale, hcounter_add;
     double lsb_scale, lsb_add;
     double rsb_scale, rsb_add;
-    uint8 center_in_hor_advance;
-    uint8 use_vert_mapping;
-    uint8 do_smallcap_symbols;
-    uint8 petite;				/* generate petite caps rather than smallcaps */
+    uint8_t center_in_hor_advance;
+    uint8_t use_vert_mapping;
+    uint8_t do_smallcap_symbols;
+    uint8_t petite;				/* generate petite caps rather than smallcaps */
     double vcounter_scale, vcounter_add;	/* If not using mapping */
     double v_scale;				/* If using mapping */
     struct fixed_maps m;
@@ -423,7 +423,7 @@ extern void PyFF_SCImport(SplineChar *sc,int ie_index,char *filename,
 	int layer, int clear);
 extern void PyFF_InitFontHook(FontViewBase *fv);
 
-extern uint32 *StdFeaturesOfScript(uint32 script);
+extern uint32_t *StdFeaturesOfScript(uint32_t script);
 
 extern void FVMetricsCenter(FontViewBase *fv,int docenter);
 extern void FVRevert(FontViewBase *fv);

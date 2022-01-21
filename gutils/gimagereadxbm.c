@@ -47,7 +47,7 @@ GImage *GImageReadXbm(char * filename) {
     struct _GImage *base;
     int ch,i,j,l = 0;
     long pixels;
-    uint8 *scanline;
+    uint8_t *scanline;
 
     if ( (file=fopen(filename,"r"))==NULL ) {
 	fprintf(stderr,"Can't open \"%s\"\n", filename);

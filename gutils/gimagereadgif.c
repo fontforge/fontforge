@@ -50,7 +50,7 @@ static GImage *ProcessSavedImage(GifFileType *gif,struct SavedImage *si,int il) 
     ColorMapObject *m = gif->SColorMap;  /* gif_lib.h, NULL if not exists. */
     int i,j,k,*id = NULL;
     long l;
-    uint8 *d,*iv = NULL;
+    uint8_t *d,*iv = NULL;
 
     /* Create memory to hold image, exit with NULL if not enough memory */
     if ( si->ImageDesc.ColorMap!=NULL ) m=si->ImageDesc.ColorMap;
@@ -73,7 +73,7 @@ static GImage *ProcessSavedImage(GifFileType *gif,struct SavedImage *si,int il) 
 	if ( (ret=GImageCreate(it_index,si->ImageDesc.Width,si->ImageDesc.Height))==NULL )
 	    return( NULL );
     if ( il && ((id=(int *) malloc(si->ImageDesc.Height*sizeof(int)))==NULL || \
-		(iv=(uint8 *) malloc(si->ImageDesc.Height*sizeof(uint8)))==NULL) ) {
+		(iv=(uint8_t *) malloc(si->ImageDesc.Height*sizeof(uint8_t)))==NULL) ) {
 	free(ret->u.image->clut);
 	free(ret);
 	free(id);

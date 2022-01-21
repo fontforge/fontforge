@@ -1230,7 +1230,7 @@ static void SDCopyToSC(SplineChar *checksc,SplineChar *into,enum fvcopy_type ful
 
 void FVBReplaceOutlineWithReference( FontViewBase *fv, double fudge ) {
     SearchData *sv;
-    uint8 *selected, *changed;
+    uint8_t *selected, *changed;
     SplineFont *sf = fv->sf;
     int i, j, selcnt = 0, gid;
     SplineChar *checksc;
