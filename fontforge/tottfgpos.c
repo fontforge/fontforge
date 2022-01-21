@@ -3171,12 +3171,12 @@ return( NULL );
 	    continue;
 		if ( sub->extra_subtables!=NULL ) {
 		    for ( i=0; sub->extra_subtables[i]!=-1; ++i ) {
-			if ( sub->extra_subtables[i]+offset>65535 )
+			if ( sub->extra_subtables[i]+offset+len>65535 )
 		    break;
 		    }
 		    if ( sub->extra_subtables[i]!=-1 )
 	    break;
-		} else if ( sub->subtable_offset+offset>65535 )
+		} else if ( sub->subtable_offset+offset+len>65535 )
 	    break;
 	    }
 	    if ( sub!=NULL ) {
