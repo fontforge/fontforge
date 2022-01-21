@@ -60,7 +60,6 @@ typedef struct gprogress {
 static Color progress_background = 0xffffff, progress_foreground;
 static Color progress_fillcol = 0xc0c0ff;
 static GResFont progress_font = GRESFONT_INIT("400 12pt " MONO_UI_FAMILIES);
-static int progress_init = false;
 
 static GProgress *current;
 

@@ -2338,7 +2338,6 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv, int enc) {
     static GWindow icon = NULL;
     GTextInfo ti;
     int as, ds, ld;
-    static char *infofamily = NULL;
 
     BitmapViewInit();
 

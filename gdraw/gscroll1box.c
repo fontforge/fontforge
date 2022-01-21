@@ -34,8 +34,6 @@
 #include "gwidget.h"
 #include "ustring.h"
 
-static int GScroll1BoxTime = 500;		/* half a second between scrolls when mouse out of listbox */
-
 static GBox scroll1box_box = GBOX_EMPTY; /* Don't initialize here */;
 
 extern GResInfo gmenubar_ri;
@@ -168,6 +166,7 @@ static int GScroll1Box_Scroll(GGadget *g, GEvent *e) {
     case et_sb_thumbrelease:
         newpos = sb->pos;
         break;
+    case et_sb_halfup: case et_sb_halfdown: break;
     }
     if (newpos < 0) {
         newpos = 0;
@@ -314,11 +313,10 @@ struct childdata {
 
 static void GScroll1BoxResize(GGadget *g, int32_t width, int32_t height) {
     GScroll1Box *s1b = (GScroll1Box *) g;
-    int bp = GBoxBorderWidth(g->base, g->box);
-    int c, target, move, exp, has_just;
+    int c, move, exp, has_just;
     int old_enabled = GDrawEnableExposeRequests(g->base, false);
     struct childdata *cd = calloc(s1b->count, sizeof(struct childdata));
-    GRect rect, wsize;
+    GRect rect;
 
     // This gadget
     _ggadget_resize(g, width, height);
@@ -508,6 +506,8 @@ static int gs1bsub_e_h(GWindow gw, GEvent *event) {
         break;
     case et_destroy:
         s1b->nested = NULL;
+        break;
+    default:
         break;
     }
     return true;

@@ -6669,16 +6669,16 @@ return( dumpstoredtable(sf,tag,len));
 static void ttc_perfonttables(struct alltabs *all, int me, int mainpos,
 	enum fontformat format ) {
     struct alltabs *at = &all[me];
-    struct alltabs *main = &all[mainpos];
+    struct alltabs *maintab = &all[mainpos];
     SplineFont *sf = at->sf;
     struct ttf_table *tab;
 
-    at->gi.xmin = main->gi.xmin; at->gi.xmax = main->gi.xmax;
-    at->gi.ymin = main->gi.ymin; at->gi.ymax = main->gi.ymax;
-    at->gi.glyph_len = main->gi.glyph_len;
-    at->gi.gcnt = main->maxp.numGlyphs;
+    at->gi.xmin = maintab->gi.xmin; at->gi.xmax = maintab->gi.xmax;
+    at->gi.ymin = maintab->gi.ymin; at->gi.ymax = maintab->gi.ymax;
+    at->gi.glyph_len = maintab->gi.glyph_len;
+    at->gi.gcnt = maintab->maxp.numGlyphs;
     sethead(&at->head,sf,at,format,NULL);
-    memcpy(at->head.modtime,main->head.modtime,sizeof(at->head.modtime));
+    memcpy(at->head.modtime,maintab->head.modtime,sizeof(at->head.modtime));
     memcpy(at->head.createtime,at->head.modtime,sizeof(at->head.modtime));
     initATTables(at, sf, format);	/* also name and OS/2 */
 
@@ -6702,9 +6702,9 @@ static void ttc_perfonttables(struct alltabs *all, int me, int mainpos,
 	int cnt = sf->glyphcnt;
 	SplineChar **g = sf->glyphs;
 	int *bygid = at->gi.bygid;
-	sf->glyphcnt = main->sf->glyphcnt;
-	sf->glyphs = main->sf->glyphs;
-	at->gi.bygid = main->gi.bygid;
+	sf->glyphcnt = maintab->sf->glyphcnt;
+	sf->glyphs = maintab->sf->glyphs;
+	at->gi.bygid = maintab->gi.bygid;
 	dumppost(at,sf,format);
 	sf->glyphcnt = cnt;
 	sf->glyphs = g;
