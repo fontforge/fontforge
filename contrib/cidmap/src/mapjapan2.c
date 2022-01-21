@@ -25,6 +25,7 @@ return( 4 );
 return( 5 );
 }
 
+#if 0
 static int allstars(char *buffer) {
     while ( isdigit(*buffer))
 	++buffer;
@@ -34,6 +35,7 @@ static int allstars(char *buffer) {
     if ( *buffer=='\n' ) ++buffer;
 return( *buffer=='\0' );
 }
+#endif
 
 static int getnth(char *buffer, int col, int *mults) {
     int i,j=0, val=0, best;
@@ -98,7 +100,6 @@ return( val );
 int main(int argc, char **argv) {
     char buffer[600];
     int cid, uni, max=0, maxcid=0, i;
-    extern char *psunicodenames[];
 
     nonuni_names[0] = ".notdef";
     for ( cid=0; cid<0x10000; ++cid ) cid_2_unicode[cid] = -1;

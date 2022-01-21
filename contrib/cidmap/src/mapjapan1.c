@@ -102,7 +102,6 @@ return( val );
 int main(int argc, char **argv) {
     char buffer[600];
     int cid, uni, max=0, maxcid=0, i,j, fakeuni;
-    extern char *psunicodenames[];
 
     nonuni_names[0] = ".notdef";
     for ( cid=0; cid<0x10000; ++cid ) cid_2_unicode[cid] = -1;

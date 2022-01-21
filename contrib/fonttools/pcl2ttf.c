@@ -1249,7 +1249,6 @@ static int slurpbdf_glyph(FILE *pcl,struct ttf_header *hdr, FILE *bdf,
     int encoding, size, ch;
     int desc_size, i;
     int class;
-    int glyph_start;
     int restart = ftell(pcl);
     int left_off, top_off, width, height, deltax, bpl;
 
@@ -1274,7 +1273,6 @@ return( false );
 	fprintf( stderr, "Bad font, glyph size does not end in \"W\"\n" );
 return( false );
     }
-    glyph_start = ftell(pcl);
 
     if ( getc(pcl)!=4 ) {
 	fprintf( stderr, "Bad font, glyph format must be 4\n" );
