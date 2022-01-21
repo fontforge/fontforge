@@ -63,7 +63,6 @@ static int _GGadget_LeftMargin = 6;
 static int _GGadget_LineSkip = 3;
 int _GGadget_Skip = 6;
 int _GGadget_TextImageSkip = 4;
-static int _ggadget_inited=0;
 static Color popup_foreground=0, popup_background=COLOR_CREATE(0xff,0xff,0xc0);
 static int popup_delay=1000, popup_lifetime=20000;
 static char *_GGadget_ImagePathRes;

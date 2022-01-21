@@ -2352,8 +2352,6 @@ return( true );
 void GResEdit(GResInfo *additional,const char *def_res_file,void (*change_res_filename)(const char *)) {
     GResInfo *re_end, *re;
     static int inited = false;
-    char *oldimagepath;
-    extern char *_GGadget_ImagePath;
 
     if ( additional!=NULL ) {
 	for ( re_end=additional; re_end->next!=NULL; re_end = re_end->next );

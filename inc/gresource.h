@@ -33,7 +33,7 @@
 
 #include <iconv.h>
 
-enum res_type { rt_int, rt_double, rt_bool/* int */, rt_color, rt_string, rt_image, rt_font };
+enum res_type { rt_int, rt_double, rt_bool/* int */, rt_color, rt_string, rt_image, rt_font, rt_stringlong, rt_coloralpha };
 
 struct gimage_cache_bucket;
 

@@ -363,7 +363,7 @@ static GGadgetCreateData *LayoutMultiDlgQuestion(MultiDlgQuestion *qstn, struct 
 }
 
 static GGadgetCreateData *LayoutMultiDlgCategoryBody(MultiDlgCategory *cat, struct multi_postproc *mpp) {
-    int gcnt = 1, flcnt = 1, g = 0, l = 0, fl = 0, i;
+    int i;
     GGadgetCreateData *gcd, **s1barray;
 
     s1barray = calloc(cat->len + 1, sizeof(GGadgetCreateData *));

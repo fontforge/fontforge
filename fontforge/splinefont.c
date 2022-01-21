@@ -309,20 +309,20 @@ return( enc );
 }
 
 void SFRemoveUndoes(SplineFont *sf,uint8_t *selected, EncMap *map) {
-    SplineFont *main = sf->cidmaster? sf->cidmaster : sf, *ssf;
+    SplineFont *mainfont = sf->cidmaster? sf->cidmaster : sf, *ssf;
     int i,k, max, layer, gid;
     SplineChar *sc;
     BDFFont *bdf;
 
-    if ( selected!=NULL || main->subfontcnt==0 )
+    if ( selected!=NULL || mainfont->subfontcnt==0 )
 	max = sf->glyphcnt;
     else {
 	max = 0;
-	for ( k=0; k<main->subfontcnt; ++k )
-	    if ( main->subfonts[k]->glyphcnt>max ) max = main->subfonts[k]->glyphcnt;
+	for ( k=0; k<mainfont->subfontcnt; ++k )
+	    if ( mainfont->subfonts[k]->glyphcnt>max ) max = mainfont->subfonts[k]->glyphcnt;
     }
     for ( i=0; ; ++i ) {
-	if ( selected==NULL || main->subfontcnt!=0 ) {
+	if ( selected==NULL || mainfont->subfontcnt!=0 ) {
 	    if ( i>=max )
     break;
 	    gid = i;
@@ -335,7 +335,7 @@ void SFRemoveUndoes(SplineFont *sf,uint8_t *selected, EncMap *map) {
 	    if ( gid==-1 )
     continue;
 	}
-	for ( bdf=main->bitmaps; bdf!=NULL; bdf=bdf->next ) {
+	for ( bdf=mainfont->bitmaps; bdf!=NULL; bdf=bdf->next ) {
 	    if ( bdf->glyphs[gid]!=NULL ) {
 		UndoesFree(bdf->glyphs[gid]->undoes); bdf->glyphs[gid]->undoes = NULL;
 		UndoesFree(bdf->glyphs[gid]->redoes); bdf->glyphs[gid]->redoes = NULL;
@@ -343,7 +343,7 @@ void SFRemoveUndoes(SplineFont *sf,uint8_t *selected, EncMap *map) {
 	}
 	k = 0;
 	do {
-	    ssf = main->subfontcnt==0? main: main->subfonts[k];
+	    ssf = mainfont->subfontcnt==0? mainfont: mainfont->subfonts[k];
 	    if ( gid<ssf->glyphcnt && ssf->glyphs[gid]!=NULL ) {
 		sc = ssf->glyphs[gid];
 		for ( layer = 0; layer<sc->layer_cnt; ++layer ) {
@@ -352,7 +352,7 @@ void SFRemoveUndoes(SplineFont *sf,uint8_t *selected, EncMap *map) {
 		}
 	    }
 	    ++k;
-	} while ( k<main->subfontcnt );
+	} while ( k<mainfont->subfontcnt );
     }
 }
 

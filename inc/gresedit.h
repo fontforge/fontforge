@@ -32,8 +32,6 @@
 #include "ggadget.h"
 #include "gresource.h"
 
-enum res_type2 { rt_stringlong = rt_font+1, rt_coloralpha };
-
 struct resed {
     const char *name, *resname;
     enum res_type type;
