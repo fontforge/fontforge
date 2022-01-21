@@ -43,6 +43,7 @@
 #include "splineorder2.h"
 #include "splineoverlap.h"
 #include "splineutil.h"
+#include "utanvec.h"
 #include "ustring.h"
 #include "views.h"		/* For SCCharChangedUpdate */
 
@@ -2895,7 +2896,7 @@ return(s);
 	}
     }   
     /* Now split the spline at 1 or 2 times */
-    extended splittimes[3] = {-1,-1,-1}; /* this is always 3 */
+    extended splittimes[3] = {-1,-1,-1}; /* 3 slots due to SplineSplit() */
     for (int j = 0; j < i; j++) {
 		if ( inflect[j] > .001 && inflect[j] < .999 ) /* avoid rounding issues */
 			splittimes[j] = inflect[j];
@@ -2903,7 +2904,6 @@ return(s);
     if ( splittimes[0] == -1)
 return(s);
     s = SplineSplit(s,splittimes);
-    /* Should some nodes be additionally ticked, too? */
 return(s);	
 }
 
@@ -2921,6 +2921,74 @@ void SplineCharAddInflections(SplineChar *sc, SplineSet *head, int force_adding)
     SplineSet *ss;
     for ( ss=head; ss!=NULL; ss=ss->next )
 	    SplineSetAddInflections(sc,ss,force_adding);
+}
+
+Spline *SplineBalance(Spline *s) { 
+    if ( s->knownlinear )
+return(s);
+	bigreal flen,tlen,ftlen;
+	BasePoint fromhandle = BPSub(s->from->nextcp, s->from->me);
+	BasePoint tohandle = BPSub(s->to->prevcp, s->to->me);
+	BasePoint ft = BPSub(s->to->me, s->from->me);
+	flen = BPNorm(fromhandle);
+	tlen = BPNorm(tohandle);
+	ftlen = BPNorm(ft);
+	if ( ( flen == 0 && tlen == 0 ) || ftlen == 0) 
+return(s); /* line or closed path*/
+	if ( flen == 0 ) 
+		fromhandle = BPSub(s->to->prevcp, s->from->me);
+	if ( tlen == 0 ) 
+		tohandle = BPSub(s->from->nextcp, s->to->me);
+	BasePoint fromunit = NormVec(fromhandle); /* do not divide by flen (could be 0) */
+	BasePoint tounit = NormVec(tohandle); /* do not divide by tlen (could be 0) */
+	BasePoint ftunit = BPScale(ft,1/ftlen);
+	BasePoint aunit = (BasePoint) { BPDot(ftunit, fromunit), BPCross(ftunit, fromunit) }; 
+    BasePoint bunit = (BasePoint) { BPDot(BPRev(ftunit), tounit),BPCross(ftunit, tounit) }; 
+    if ( aunit.y < 0 ) { /* normalize aunit.y to >= 0: */
+		aunit.y = -aunit.y;
+		bunit.y = -bunit.y;
+	}
+	bigreal sab = aunit.y * bunit.x + aunit.x * bunit.y; /* sin(alpha+beta) */
+	if (sab == 0) { /* if handles are parallel */
+		bigreal len = (flen + tlen) / 2;
+		s->from->nextcp = BPAdd(s->from->me, BPScale(fromunit, len));
+		s->to->prevcp = BPAdd(s->to->me, BPScale(tounit, len));
+return(s);
+	}
+	if ( bunit.y <= 0 || aunit.y == 0)
+return(s); /* impossible */
+	/* generic case: */
+	flen /= ftlen;
+	tlen /= ftlen;
+	bigreal asa = flen * aunit.y; /* a*sin(alpha) */
+	bigreal bsb = tlen * bunit.y; /* b*sin(beta) */
+	bigreal area = 2*(asa+bsb)-flen*tlen*sab;	
+	bigreal c = aunit.x/aunit.y + bunit.x/bunit.y;
+	bigreal discriminant = 4-c*area;
+	if ( discriminant < 0 ) /* occurs sometimes for splines with inflections */
+return(s); /* one could take the absolute value, but this leads to ugly solutions */ 
+	bigreal h = (2-sqrt(discriminant))/c; /* take the smaller solution as the larger could have loops */
+	if ( h < 0 ) 
+		h = (2+sqrt(discriminant))/c;
+	s->from->nextcp = BPAdd(s->from->me, BPScale(fromunit, h/aunit.y*ftlen));
+	s->to->prevcp = BPAdd(s->to->me, BPScale(tounit, h/bunit.y*ftlen));
+return(s);
+}
+
+void SplineSetBalance(SplineChar *sc, SplineSet *ss, int force_balancing) {
+    Spline *s, *first; 
+    first = NULL;
+    for ( s = ss->first->next; s!=NULL && s!=first; s = s->to->next ) {
+	    if ( force_balancing || s->from->selected && s->to->selected )
+			s = SplineBalance(s);
+	    if ( first==NULL ) first = s;
+    }
+}
+
+void SplineCharBalance(SplineChar *sc, SplineSet *head, int force_balancing) { 
+    SplineSet *ss;
+    for ( ss=head; ss!=NULL; ss=ss->next )
+	    SplineSetBalance(sc,ss,force_balancing);
 }
 
 char *GetNextUntitledName(void) {
