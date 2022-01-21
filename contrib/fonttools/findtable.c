@@ -29,8 +29,8 @@ return( (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4 );
 
 static int readttfheader(FILE *ttf, int search_tag) {
     int i, numtables;
-    int tag, checksum, offset, length, sr, es, rs; uint32_t v;
-    int e_sr, e_es, e_rs;
+    int tag; uint32_t v;
+    // int e_sr, e_es, e_rs;
 
     v = getlong(ttf);
     if ( v==CHR('t','t','c','f')) {
@@ -53,9 +53,9 @@ return( false );
     }
 	
     numtables = getushort(ttf);
-    sr = getushort(ttf),
-    es = getushort(ttf),
-    rs = getushort(ttf);
+    /* sr = */ getushort(ttf),
+    /* es = */ getushort(ttf),
+    /* rs = */ getushort(ttf);
     if ( v==CHR('O','T','T','O'))
 	;
     else if ( v==CHR('t','r','u','e'))
@@ -71,16 +71,16 @@ return( false );
     else if ( v==CHR('t','y','p','1')) { /* TODO: this does nothing now */
     } else { /* TODO: this also does nothing now */ }
 	;
-    e_sr = (numtables<8?4:numtables<16?8:numtables<32?16:numtables<64?32:64)*16;
-    e_es = (numtables<8?2:numtables<16?3:numtables<32?4:numtables<64?5:6);
-    e_rs = numtables*16-e_sr;
+    // e_sr = (numtables<8?4:numtables<16?8:numtables<32?16:numtables<64?32:64)*16;
+    // e_es = (numtables<8?2:numtables<16?3:numtables<32?4:numtables<64?5:6);
+    // e_rs = numtables*16-e_sr;
 
 
     for ( i=0; i<numtables; ++i ) {
 	tag = getlong(ttf);
-	checksum = getlong(ttf);
-	offset = getlong(ttf);
-	length = getlong(ttf);
+	/* checksum = */ getlong(ttf);
+	/* offset = */ getlong(ttf);
+	/* length = */ getlong(ttf);
 	if ( tag == search_tag )
 return( true );
     }

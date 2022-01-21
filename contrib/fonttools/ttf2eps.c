@@ -659,18 +659,17 @@ static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
 
 static int readttfheader(FILE *ttf, struct ttfinfo *info) {
     int i;
-    int tag, checksum, offset, length, sr, es, rs;
-    double version;
+    int tag, offset, length;
 
-    version = getfixed(ttf);
+    /* version = */ getfixed(ttf);
     info->numtables = getushort(ttf);
-    sr = getushort(ttf),
-    es = getushort(ttf),
-    rs = getushort(ttf);
+    /* sr = */ getushort(ttf),
+    /* es = */ getushort(ttf),
+    /* rs = */ getushort(ttf);
 
     for ( i=0; i<info->numtables; ++i ) {
 	tag = getlong(ttf);
-	checksum = getlong(ttf);
+	/* checksum = */ getlong(ttf);
 	offset = getlong(ttf);
 	length = getlong(ttf);
 	switch ( tag ) {

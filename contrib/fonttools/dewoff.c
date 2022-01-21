@@ -101,10 +101,10 @@ return( we_decompressfailed );
         }
         if (strm.avail_in == 0)
     break;
-        strm.next_in = in;
+        strm.next_in = (Bytef*)in;
         do {
             strm.avail_out = CHUNK;
-            strm.next_out = out;
+            strm.next_out = (Bytef*)out;
             ret = inflate(&strm, Z_NO_FLUSH);
 	    if ( ret!=Z_OK && ret!=Z_STREAM_END ) {
 		(void)inflateEnd(&strm);

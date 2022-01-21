@@ -6678,12 +6678,12 @@ static int readttfbase(FILE *ttf,FILE *util, struct ttfinfo *info) {
 		    for ( j=0; j<coordcnt; ++j )
 			coords[j] = getushort(ttf);
 		    for ( j=0; j<coordcnt; ++j ) if ( coords[j]!=0 ) {
-			int format, coord, gid, pt, devtab_off;
+			int format, coord, gid, pt;
 			fseek( ttf,bs[i].offset+basevalues+coords[j],SEEK_SET);
 			format = getushort(ttf);
 			coord  = (short) getushort(ttf);
 			if ( format==3 ) {
-			    devtab_off = getushort(ttf);
+			    /* devtab_off = */ getushort(ttf);
 			    printf("\t   Baseline '%c%c%c%c' in script '%c%c%c%c' is at %d, with device table\n",
 				    (char)((tags[j]>>24)&0xff), (char)((tags[j]>>16)&0xff),
 				    (char)((tags[j]>>8)&0xff), (char)(tags[j]&0xff),
