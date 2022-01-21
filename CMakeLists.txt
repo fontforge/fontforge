@@ -84,12 +84,12 @@ build_option(FONT_FAMILIES_LABEL     STRING "default"  "Font family names for la
 build_option(FONT_FAMILIES_MONO      STRING "default"  "Monospace font family names to use in the UI separated by commas")
 
 if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-  list(APPEND _test_flags CFLAGS -Werror=implicit-function-declaration -Werror=int-conversion)
+  list(APPEND _test_flags CFLAGS -Wall -Werror=implicit-function-declaration -Werror=int-conversion -Wno-misleading-indentation)
   if(CMAKE_GENERATOR STREQUAL "Ninja") # https://github.com/ninja-build/ninja/wiki/FAQ
     list(APPEND _test_flags BOTH -fdiagnostics-color=always)
   endif()
   set_supported_compiler_flags(FONTFORGE_DEFAULT_CFLAGS FONTFORGE_DEFAULT_CXXFLAGS ${_test_flags})
-  list(APPEND FONTFORGE_EXTRA_CFLAGS -Wall -Wextra -pedantic -Wno-unused-parameter)
+  list(APPEND FONTFORGE_EXTRA_CFLAGS -Wextra -pedantic -Wno-unused-parameter)
   add_compile_options(
     "$<$<COMPILE_LANGUAGE:C>:${FONTFORGE_DEFAULT_CFLAGS}>"
     "$<$<COMPILE_LANGUAGE:CXX>:${FONTFORGE_DEFAULT_CXXFLAGS}>"
