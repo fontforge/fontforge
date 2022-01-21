@@ -420,9 +420,9 @@ void PyFF_Glyph_Set_Layer(SplineChar *sc,int layer) {
     ((PyFF_Glyph *) pysc)->layer = layer;
 }
 
-#define BAD_TAG ((uint32)0xffffffff)
-static uint32 StrToTag(const char *tag_name, int *was_mac) {
-    uint8 foo[4];
+#define BAD_TAG ((uint32_t)0xffffffff)
+static uint32_t StrToTag(const char *tag_name, int *was_mac) {
+    uint8_t foo[4];
     int feat, set;
 
     if ( tag_name==NULL ) {
@@ -436,7 +436,7 @@ return( BAD_TAG );
 return( BAD_TAG );
 	}
 	*was_mac = true;
-return( ( ((uint32)feat)<<16) | set );
+return( ( ((uint32_t)feat)<<16) | set );
     }
 
     if ( was_mac ) *was_mac = false;
@@ -460,12 +460,12 @@ return( BAD_TAG );
 return( (foo[0]<<24) | (foo[1]<<16) | (foo[2]<<8) | foo[3] );
 }
 
-static uint32 StrObjToTag(PyObject *obj, int *was_mac) {
+static uint32_t StrObjToTag(PyObject *obj, int *was_mac) {
     const char *str = PyUnicode_AsUTF8(obj);
     return str ? StrToTag(str, was_mac) : BAD_TAG;
 }
 
-static PyObject *TagToPythonString(uint32 tag,int ismac) {
+static PyObject *TagToPythonString(uint32_t tag,int ismac) {
     char foo[30];
 
     if ( ismac ) {
@@ -936,7 +936,7 @@ static PyObject *PyFF_ParseTTFInstrs(PyObject *UNUSED(self), PyObject *args) {
     PyObject *binstr;
     char *instr_str;
     int icnt;
-    uint8 *instrs;
+    uint8_t *instrs;
 
     if ( !PyArg_ParseTuple(args,"s",&instr_str) )
 return( NULL );
@@ -954,7 +954,7 @@ return( binstr );
 static PyObject *PyFF_UnParseTTFInstrs(PyObject *UNUSED(self), PyObject *args) {
     PyObject *tuple, *ret;
     int icnt, i;
-    uint8 *instrs;
+    uint8_t *instrs;
     char *as_str;
 
     if ( !PyArg_ParseTuple(args,"O",&tuple) )
@@ -966,7 +966,7 @@ return( NULL );
     if ( PyBytes_Check(tuple)) {
 	char *space; Py_ssize_t len;
 	PyBytes_AsStringAndSize(tuple,&space,&len);
-	instrs = calloc(len,sizeof(uint8));
+	instrs = calloc(len,sizeof(uint8_t));
 	icnt = len;
 	memcpy(instrs,space,len);
     } else {
@@ -1214,7 +1214,7 @@ static PyObject *PyFF_scriptFromUnicode(PyObject *UNUSED(self), PyObject *args) 
     if ( !PyArg_ParseTuple(args,"k",&u) )
 	return( NULL );
 
-    uint32 script = ScriptFromUnicode(u, NULL);
+    uint32_t script = ScriptFromUnicode(u, NULL);
     return TagToPythonString(script, false);
 }
 
@@ -2441,7 +2441,7 @@ return( NULL );
     }
     if ( self->spiro_cnt==0 ) {
 	SplineSet *ss;
-	uint16 cnt;
+	uint16_t cnt;
 	ss = SSFromContour(self,NULL);
         if ( ss==NULL ) {
 	    if ( PyErr_Occurred() == NULL )
@@ -6453,7 +6453,7 @@ static PyObject *PyFF_MathKern_get_kerns(PyFF_MathKern *self, void *closure) {
 
     if ( self->sc->mathkern==NULL )
 Py_RETURN_NONE;
-    mkv = &self->sc->mathkern->top_right + (int) (intpt) closure;
+    mkv = &self->sc->mathkern->top_right + (int) (intptr_t) closure;
     if ( mkv->cnt==0 )
 Py_RETURN_NONE;
 
@@ -6477,7 +6477,7 @@ static int PyFF_MathKern_set_kerns(PyFF_MathKern *self, PyObject *value, void *c
 return( 0 );
 	self->sc->mathkern = chunkalloc(sizeof(struct mathkern));
     }
-    mkv = &self->sc->mathkern->top_right + (int) (intpt) closure;
+    mkv = &self->sc->mathkern->top_right + (int) (intptr_t) closure;
     if ( value==Py_None ) {
 	MathKernVContentsFree(mkv);
 	mkv->cnt = 0;
@@ -6512,16 +6512,16 @@ return( 0 );
 static PyGetSetDef PyFFMathKern_members[] = {
     {(char *)"topRight",
      (getter)PyFF_MathKern_get_kerns, (setter)PyFF_MathKern_set_kerns,
-     (char *)"Math Kerning information for the top right corner", (void *) (intpt) 0},
+     (char *)"Math Kerning information for the top right corner", (void *) (intptr_t) 0},
     {(char *)"topLeft",
      (getter)PyFF_MathKern_get_kerns, (setter)PyFF_MathKern_set_kerns,
-     (char *)"Math Kerning information for the top left corner", (void *) (intpt) 1},
+     (char *)"Math Kerning information for the top left corner", (void *) (intptr_t) 1},
     {(char *)"bottomLeft",
      (getter)PyFF_MathKern_get_kerns, (setter)PyFF_MathKern_set_kerns,
-     (char *)"Math Kerning information for the bottom left corner", (void *) (intpt) 3},
+     (char *)"Math Kerning information for the bottom left corner", (void *) (intptr_t) 3},
     {(char *)"bottomRight",
      (getter)PyFF_MathKern_get_kerns, (setter)PyFF_MathKern_set_kerns,
-     (char *)"Math Kerning information for the bottom right corner", (void *) (intpt) 2},
+     (char *)"Math Kerning information for the bottom right corner", (void *) (intptr_t) 2},
     PYGETSETDEF_EMPTY /* Sentinel */
 };
 
@@ -7128,7 +7128,7 @@ static int PyFF_Glyph_set_lcarets(PyFF_Glyph *self,PyObject *value, void *UNUSED
     SplineChar *sc = self->sc;
     int i, cnt, lig_comp_max = 0, lc;
     char *pt;
-    int16 *carets;
+    int16_t *carets;
     PST *pst, *lcar = NULL;
 
     cnt = PySequence_Size(value);
@@ -7136,7 +7136,7 @@ static int PyFF_Glyph_set_lcarets(PyFF_Glyph *self,PyObject *value, void *UNUSED
 return( -1 );
 
     if ( cnt > 0 )
-       carets = malloc( cnt*sizeof(int16) );
+       carets = malloc( cnt*sizeof(int16_t) );
     for ( i=0; i<cnt; ++i ) {
        carets[i] = PyLong_AsLong( PySequence_GetItem(value,i) );
        if ( PyErr_Occurred()) {
@@ -7235,11 +7235,11 @@ return( 0 );
     if ( PyBytes_Check(value)) {
 	char *space; Py_ssize_t len;
 	PyBytes_AsStringAndSize(value,&space,&len);
-	sc->ttf_instrs = calloc(len,sizeof(uint8));
+	sc->ttf_instrs = calloc(len,sizeof(uint8_t));
 	sc->ttf_instrs_len = len;
 	memcpy(sc->ttf_instrs,space,len);
     } else {
-	sc->ttf_instrs = calloc(cnt,sizeof(uint8));
+	sc->ttf_instrs = calloc(cnt,sizeof(uint8_t));
 	for ( i=0; i<cnt; ++i ) {
 	    int val = PyLong_AsLong(PySequence_GetItem(value,i));
 	    if ( PyErr_Occurred()!=NULL )
@@ -7690,7 +7690,7 @@ return( 0 );
 }
 
 static PyObject *PyFF_Glyph_get_script(PyFF_Glyph *self, void *UNUSED(closure)) {
-    uint32 script = SCScriptFromUnicode(self->sc);
+    uint32_t script = SCScriptFromUnicode(self->sc);
 
 return( TagToPythonString(script, false ));
 }
@@ -8163,7 +8163,7 @@ static const char *appendaccent_keywords[] = { "name", "unicode", "pos", NULL };
 static PyObject *PyFFGlyph_appendAccent(PyObject *self, PyObject *args, PyObject *keywds) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     int layer = ((PyFF_Glyph *) self)->layer;
-    int pos = FF_UNICODE_NOPOSDATAGIVEN; /* unicode char pos info, see #define for (uint32)(utype2[]) */
+    int pos = FF_UNICODE_NOPOSDATAGIVEN; /* unicode char pos info, see #define for (uint32_t)(utype2[]) */
     int uni=-1;				/* unicode char value */
     char *name = NULL;			/* unicode char name */
     int ret;
@@ -8175,7 +8175,7 @@ return( NULL );
 	PyErr_Format(PyExc_ValueError, "You must specify either a name of a unicode code point");
 return( NULL );
     }
-    ret = SCAppendAccent(sc,layer,name,uni,(uint32)(pos));
+    ret = SCAppendAccent(sc,layer,name,uni,(uint32_t)(pos));
     if ( ret==1 ) {
 	PyErr_Format(PyExc_ValueError, "No base character reference found");
 return( NULL );
@@ -8276,10 +8276,10 @@ static enum embolden_type CW_ParseArgs(SplineFont *sf, struct lcg_zones *zones, 
 	    &zoneO ))
 return( embolden_error );
     type = FlagsFromString(type_name,cw_types,"embolden type");
-    if ( type==(uint32)FLAG_UNKNOWN )
+    if ( type==(uint32_t)FLAG_UNKNOWN )
 return( embolden_error );
     zones->counter_type = FlagsFromString(counter_name,co_types,"counter type");
-    if ( zones->counter_type==(uint32)FLAG_UNKNOWN )
+    if ( zones->counter_type==(uint32_t)FLAG_UNKNOWN )
 return( embolden_error );
 
     just_top = true;
@@ -10051,10 +10051,10 @@ return( NULL );
     }
     ret = PyTuple_New(len1+len2);
     for ( i=0; i<len1; ++i )
-	PyTuple_SetItem(ret,i,Py_BuildValue("i",memushort(c1->cvt->data,c1->cvt->len,i*sizeof(uint16))) );
+	PyTuple_SetItem(ret,i,Py_BuildValue("i",memushort(c1->cvt->data,c1->cvt->len,i*sizeof(uint16_t))) );
     if ( is_cvt2 ) {
 	for ( i=0; i<len2; ++i )
-	    PyTuple_SetItem(ret,len1+i,Py_BuildValue("i",memushort(c2->cvt->data,c2->cvt->len,i*sizeof(uint16))) );
+	    PyTuple_SetItem(ret,len1+i,Py_BuildValue("i",memushort(c2->cvt->data,c2->cvt->len,i*sizeof(uint16_t))) );
     } else {
 	for ( i=0; i<len2; ++i )
 	    PyTuple_SetItem(ret,len1+i,Py_BuildValue("i",PySequence_GetItem(_c2,i)));
@@ -10088,13 +10088,13 @@ return( NULL );
 	cvt->data = realloc(cvt->data,cvt->maxlen = 2*(len1+len2)+10 );
     if ( is_cvt2 ) {
 	if ( len2!=0 )
-	    memcpy(cvt->data+len1*sizeof(uint16),c2->cvt->data, 2*len2);
+	    memcpy(cvt->data+len1*sizeof(uint16_t),c2->cvt->data, 2*len2);
     } else {
 	for ( i=0; i<len2; ++i ) {
 	    int val = PyLong_AsLong(PySequence_GetItem(_c2,i));
 	    if ( PyErr_Occurred())
 return( NULL );
-	    memputshort(cvt->data,sizeof(uint16)*(len1+i),val);
+	    memputshort(cvt->data,sizeof(uint16_t)*(len1+i),val);
 	}
     }
     cvt->len += 2*len2;
@@ -10108,7 +10108,7 @@ static PyObject *PyFFCvt_Index( PyObject *self, Py_ssize_t pos ) {
 	PyErr_Format(PyExc_TypeError, "Index out of bounds");
 return( NULL );
     }
-return( Py_BuildValue("i",(short)memushort(c->cvt->data,c->cvt->len,pos*sizeof(uint16))) );
+return( Py_BuildValue("i",(short)memushort(c->cvt->data,c->cvt->len,pos*sizeof(uint16_t))) );
 }
 
 static int PyFFCvt_IndexAssign( PyObject *self, Py_ssize_t pos, PyObject *value ) {
@@ -10127,10 +10127,10 @@ return( -1 );
 return( -1 );
     }
     if ( 2*pos>=cvt->maxlen )
-	cvt->data = realloc(cvt->data,cvt->maxlen = sizeof(uint16)*pos+10 );
+	cvt->data = realloc(cvt->data,cvt->maxlen = sizeof(uint16_t)*pos+10 );
     if ( 2*pos>=cvt->len )
-	cvt->len = sizeof(uint16)*pos;
-    memputshort(cvt->data,sizeof(uint16)*pos,val);
+	cvt->len = sizeof(uint16_t)*pos;
+    memputshort(cvt->data,sizeof(uint16_t)*pos,val);
 return( 0 );
 }
 
@@ -10174,7 +10174,7 @@ return( -1 );
 return( -1 );
     }
     for ( i=start; i<=end; ++i ) {
-	memputshort(cvt->data,sizeof(uint16)*i,
+	memputshort(cvt->data,sizeof(uint16_t)*i,
 		PyLong_AsLong(PySequence_GetItem(rpl,i-start)));
 	if ( PyErr_Occurred())
 return( -1 );
@@ -11079,16 +11079,16 @@ return(sf->MATH);
 }
 
 static PyObject *PyFFMath_get(PyFF_Math *self, void *closure) {
-    int offset = (int) (intpt) closure;
+    int offset = (int) (intptr_t) closure;
     struct MATH *math;
 
     math = SFGetMathTable(self->sf);
 	/* some entries are unsigned, but I don't know which here */
-return( Py_BuildValue("i", *(int16 *) (((char *) math) + offset) ));
+return( Py_BuildValue("i", *(int16_t *) (((char *) math) + offset) ));
 }
 
 static int PyFFMath_set(PyFF_Math *self, PyObject *value, void *closure) {
-    int offset = (int) (intpt) closure;
+    int offset = (int) (intptr_t) closure;
     struct MATH *math;
     long val;
 
@@ -11100,7 +11100,7 @@ return( -1 );
 	PyErr_Format(PyExc_ValueError, "The math table constants must have 16 bit values, but this (%ld) is out of range", val);
 return( -1 );
     }
-    *(int16 *) (((char *) math) + offset) = val;
+    *(int16_t *) (((char *) math) + offset) = val;
 return( 0 );
 }
 
@@ -11196,7 +11196,7 @@ static int setup_math_type(PyTypeObject* mathtype) {
 	getset[cnt].get = (getter) PyFFMath_get;
 	getset[cnt].set = (setter) PyFFMath_set;
 	getset[cnt].doc = math_constants_descriptor[cnt].message;
-	getset[cnt].closure = (void *) (intpt) math_constants_descriptor[cnt].offset;
+	getset[cnt].closure = (void *) (intptr_t) math_constants_descriptor[cnt].offset;
     }
     mathtype->tp_getset = getset;
     return 0;
@@ -12299,7 +12299,7 @@ return( -1 );
     if ( cvt==NULL )
 	cvt = BuildCvt(sf,len2*2);
     if ( len2*2>=cvt->maxlen )
-	cvt->data = realloc(cvt->data,cvt->maxlen = sizeof(uint16)*len2+10 );
+	cvt->data = realloc(cvt->data,cvt->maxlen = sizeof(uint16_t)*len2+10 );
     if ( is_cvt2 ) {
 	if ( len2!=0 )
 	    memcpy(cvt->data,c2->cvt->data,2*len2 );
@@ -12515,7 +12515,7 @@ return( -1 );
     temp = PyLong_AsLong(value);
     if ( PyErr_Occurred()!=NULL )
 return( -1 );
-    * (int16 *) (((char *) (self->fv->sf)) + offset ) = temp;
+    * (int16_t *) (((char *) (self->fv->sf)) + offset ) = temp;
 return( 0 );
 }
 
@@ -13123,7 +13123,7 @@ return( -1 );
     }
     base = chunkalloc(sizeof( struct Base));
     base->baseline_cnt = basecnt;
-    base->baseline_tags = malloc(basecnt*sizeof(uint32));
+    base->baseline_tags = malloc(basecnt*sizeof(uint32_t));
     base->scripts = NULL;
     for ( i=0; i<basecnt; ++i ) {
 	PyObject *str = PyTuple_GetItem(basetags,i);
@@ -13170,7 +13170,7 @@ return( -1 );
 	    /* That's reasonable */;
 	else if ( basecnt!=0 && (def_baseln!=NULL && offsets!=NULL)) {
 	    /* Also reasonable */;
-	    uint32 tag = StrToTag(def_baseln,NULL);
+	    uint32_t tag = StrToTag(def_baseln,NULL);
 	    if ( tag==BAD_TAG ) {
 		BaseFree(base);
 return( -1 );
@@ -13187,7 +13187,7 @@ return( -1 );
 return( -1 );
 	    }
 	    bs->def_baseline = i;
-	    bs->baseline_pos = malloc(basecnt*sizeof(int16));
+	    bs->baseline_pos = malloc(basecnt*sizeof(int16_t));
 	    for ( i=0; i<basecnt; ++i ) {
 		if ( !PyLong_Check(PyTuple_GetItem(offsets,i))) {
 		    PyErr_Format(PyExc_TypeError, "Baseline positions must be integers");
@@ -13923,24 +13923,24 @@ return( -1 );
 	tab->len = tab->maxlen = 32;
     }
     if ( strmatch(str,"Zones")==0 )
-	memputshort(tab->data,7*sizeof(uint16),val);
+	memputshort(tab->data,7*sizeof(uint16_t),val);
     else if ( strmatch(str,"TwilightPntCnt")==0 )
-	memputshort(tab->data,8*sizeof(uint16),val);
+	memputshort(tab->data,8*sizeof(uint16_t),val);
     else if ( strmatch(str,"StorageCnt")==0 )
-	memputshort(tab->data,9*sizeof(uint16),val);
+	memputshort(tab->data,9*sizeof(uint16_t),val);
     else if ( strmatch(str,"MaxStackDepth")==0 )
-	memputshort(tab->data,12*sizeof(uint16),val);
+	memputshort(tab->data,12*sizeof(uint16_t),val);
     else if ( strmatch(str,"FDEFs")==0 )
-	memputshort(tab->data,10*sizeof(uint16),val);
+	memputshort(tab->data,10*sizeof(uint16_t),val);
     else if ( strmatch(str,"IDEFs")==0 )
-	memputshort(tab->data,11*sizeof(uint16),val);
+	memputshort(tab->data,11*sizeof(uint16_t),val);
 return( 0 );
 }
 
 static PyObject *PyFF_Font_GetMaxpValue(PyFF_Font *self,const char *str) {
     SplineFont *sf;
     struct ttf_table *tab;
-    uint8 *data, dummy[32];
+    uint8_t *data, dummy[32];
     int val;
 
     if ( CheckIfFontClosed(self) )
@@ -13958,17 +13958,17 @@ return (NULL);
 	data = tab->data;
 
     if ( strmatch(str,"Zones")==0 )
-	val = memushort(data,32,7*sizeof(uint16));
+	val = memushort(data,32,7*sizeof(uint16_t));
     else if ( strmatch(str,"TwilightPntCnt")==0 )
-	val = memushort(data,32,8*sizeof(uint16));
+	val = memushort(data,32,8*sizeof(uint16_t));
     else if ( strmatch(str,"StorageCnt")==0 )
-	val = memushort(data,32,9*sizeof(uint16));
+	val = memushort(data,32,9*sizeof(uint16_t));
     else if ( strmatch(str,"MaxStackDepth")==0 )
-	val = memushort(data,32,12*sizeof(uint16));
+	val = memushort(data,32,12*sizeof(uint16_t));
     else if ( strmatch(str,"FDEFs")==0 )
-	val = memushort(data,32,10*sizeof(uint16));
+	val = memushort(data,32,10*sizeof(uint16_t));
     else if ( strmatch(str,"IDEFs")==0 )
-	val = memushort(data,32,11*sizeof(uint16));
+	val = memushort(data,32,11*sizeof(uint16_t));
     else
 	val = -1;
 return( Py_BuildValue("i",val));
@@ -14448,7 +14448,7 @@ static PyGetSetDef PyFF_Font_getset[] = {
 
 static PyObject *PyFFFont_GetTableData(PyFF_Font *self, PyObject *args) {
     char *table_name;
-    uint32 tag;
+    uint32_t tag;
     struct ttf_table *tab;
     PyObject *binstr;
 
@@ -14471,8 +14471,8 @@ Py_RETURN_NONE;
 return( binstr );
 }
 
-static void TableAddInstrs(SplineFont *sf, uint32 tag,int replace,
-			   uint8 *instrs,int icnt) {
+static void TableAddInstrs(SplineFont *sf, uint32_t tag,int replace,
+			   uint8_t *instrs,int icnt) {
     struct ttf_table *tab;
 
     for ( tab=sf->ttf_tables; tab!=NULL && tab->tag!=tag; tab=tab->next );
@@ -14503,7 +14503,7 @@ return;
 	memcpy(tab->data,instrs,icnt);
 	tab->len = icnt;
     } else {
-	uint8 *newi = malloc(icnt+tab->len);
+	uint8_t *newi = malloc(icnt+tab->len);
 	memcpy(newi,tab->data,tab->len);
 	memcpy(newi+tab->len,instrs,icnt);
 	free(tab->data);
@@ -14515,9 +14515,9 @@ return;
 
 static PyObject *PyFFFont_SetTableData(PyFF_Font *self, PyObject *args) {
     char *table_name;
-    uint32 tag;
+    uint32_t tag;
     PyObject *tuple;
-    uint8 *instrs;
+    uint8_t *instrs;
     int icnt, i;
 
     if ( CheckIfFontClosed(self) )
@@ -14540,7 +14540,7 @@ return( NULL );
     if ( PyBytes_Check(tuple)) {
 	char *space; Py_ssize_t len;
 	PyBytes_AsStringAndSize(tuple,&space,&len);
-	instrs = calloc(len,sizeof(uint8));
+	instrs = calloc(len,sizeof(uint8_t));
 	icnt = len;
 	memcpy(instrs,space,len);
     } else {
@@ -15169,7 +15169,7 @@ return (NULL);
     PyObject *arg3, *arg4, *arg5;
     char **class1_strs, **class2_strs;
     int cnt1, cnt2, acnt;
-    int16 *offs=NULL;
+    int16_t *offs=NULL;
     int separation= -1, touch=0, do_autokern=false, only_closer=0, autokern=true;
     double class_error_distance = -1;
     /* arguments:
@@ -15251,7 +15251,7 @@ return( NULL );
 		PyErr_Format(PyExc_ValueError, "There aren't enough kerning offsets for the number of kerning classes. Should be %d", cnt1*cnt2 );
 return( NULL );
 	    }
-	    offs = malloc(cnt1*cnt2*sizeof(int16));
+	    offs = malloc(cnt1*cnt2*sizeof(int16_t));
 	    for ( i=0 ; i<cnt1*cnt2; ++i ) {
 		offs[i] = PyLong_AsLong(PySequence_GetItem(offsets,i));
 		if ( PyErr_Occurred()) {
@@ -15260,7 +15260,7 @@ return( NULL );
 }
 	    }
 	} else
-	    offs = calloc(cnt1*cnt2,sizeof(int16));
+	    offs = calloc(cnt1*cnt2,sizeof(int16_t));
     }
 
     sub = addLookupSubtable(sf, lookup, subtable, after_str);
@@ -15317,7 +15317,7 @@ static PyObject *PyFFFont_alterKerningClass(PyFF_Font *self, PyObject *args) {
     PyObject *class1s, *class2s, *offsets;
     char **class1_strs, **class2_strs;
     int cnt1, cnt2;
-    int16 *offs;
+    int16_t *offs;
 
     if ( CheckIfFontClosed(self) )
 return (NULL);
@@ -15342,7 +15342,7 @@ return( NULL );
 	PyErr_Format(PyExc_ValueError, "There aren't enough kerning offsets for the number of kerning classes. Should be %d", cnt1*cnt2 );
 return( NULL );
     }
-    offs = malloc(cnt1*cnt2*sizeof(int16));
+    offs = malloc(cnt1*cnt2*sizeof(int16_t));
     for ( i=0 ; i<cnt1*cnt2; ++i ) {
 	offs[i] = PyLong_AsLong(PySequence_GetItem(offsets,i));
 	if ( PyErr_Occurred()) {
@@ -15784,7 +15784,7 @@ return( BAD_FEATURE_LIST );
 	    sltail = sl;
 	    langs = PySequence_GetItem(scriptsubs,1);
 	    if ( PyUnicode_Check(langs) ) {
-		uint32 lang = StrObjToTag(langs,NULL);
+		uint32_t lang = StrObjToTag(langs,NULL);
 		if ( lang==BAD_TAG ) {
 		    FeatureScriptLangListFree(flhead);
 return( BAD_FEATURE_LIST );
@@ -15801,9 +15801,9 @@ return( BAD_FEATURE_LIST );
 	    } else {
 		sl->lang_cnt = PySequence_Size(langs);
 		if ( sl->lang_cnt>MAX_LANG )
-		    sl->morelangs = malloc((sl->lang_cnt-MAX_LANG)*sizeof(uint32));
+		    sl->morelangs = malloc((sl->lang_cnt-MAX_LANG)*sizeof(uint32_t));
 		for ( l=0; l<sl->lang_cnt; ++l ) {
-		    uint32 lang = StrObjToTag(PySequence_GetItem(langs,l),NULL);
+		    uint32_t lang = StrObjToTag(PySequence_GetItem(langs,l),NULL);
 		    if ( lang==BAD_TAG ) {
 			FeatureScriptLangListFree(flhead);
 return( BAD_FEATURE_LIST );
@@ -16058,7 +16058,7 @@ return( NULL );
     }
 
     for ( i=0; lookup_types[i].name!=NULL ; ++i )
-	if ( (uint32)lookup_types[i].flag == otl->lookup_type )
+	if ( (uint32_t)lookup_types[i].flag == otl->lookup_type )
     break;
     type = lookup_types[i].name;
 
@@ -16782,7 +16782,7 @@ return(NULL);
 	BDFFont *bdf;
 	for ( cnt=0, bdf=ret->sf->bitmaps; bdf!=NULL; bdf=bdf->next, ++cnt );
 	if ( cnt!=0 ) {
-	    ret->sizes = malloc((cnt+1)*sizeof(int32));
+	    ret->sizes = malloc((cnt+1)*sizeof(int32_t));
 	    ret->sizes[cnt] = 0;
 	    for ( cnt=0, bdf=ret->sf->bitmaps; bdf!=NULL; bdf=bdf->next, ++cnt ) {
 		ret->sizes[cnt] = (BDFDepth(bdf)<<16) | bdf->pixelsize;
@@ -17219,7 +17219,7 @@ static PyObject *PyFFFont_printSample(PyFF_Font *self, PyObject *args) {
     int pointsizeArg=INT_MIN;
     PyObject *pointsizeTuple=NULL;
     PyObject *arg;
-    int32 *pointsizes=NULL;
+    int32_t *pointsizes=NULL;
     char *samplefile=NULL;
     unichar_t *sample=NULL;
 
@@ -17254,12 +17254,12 @@ static PyObject *PyFFFont_printSample(PyFF_Font *self, PyObject *args) {
     }
     if ( pointsizeArg!=INT_MIN ) {
         if ( pointsizeArg>0 ) {
-            pointsizes = calloc(2,sizeof(int32));
+            pointsizes = calloc(2,sizeof(int32_t));
             pointsizes[0] = pointsizeArg;
         }
     } else if ( pointsizeTuple!=NULL ) {
         int subcnt = PySequence_Size(pointsizeTuple);
-        pointsizes = malloc((subcnt+1)*sizeof(int32));
+        pointsizes = malloc((subcnt+1)*sizeof(int32_t));
         for ( i=0; i<subcnt; ++i ) {
             arg = PySequence_GetItem(pointsizeTuple,i);
             pointsizes[i] = PyLong_AsLong(arg);
@@ -17291,7 +17291,7 @@ static PyObject *PyFFFont_printSample(PyFF_Font *self, PyObject *args) {
 static PyObject *PyFFFont_randomText(PyFF_Font *self, PyObject *args) {
     FontViewBase *fv;
     char *script=NULL, *lang=NULL, *txt;
-    uint32 stag, ltag=0;
+    uint32_t stag, ltag=0;
     PyObject *ret;
 
     if ( CheckIfFontClosed(self) )

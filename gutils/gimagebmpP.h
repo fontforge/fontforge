@@ -46,12 +46,12 @@ struct bmpheader {
     long ignore2;	/* suggested y pixels per meter */
     long colorsused;	/* size of color table */
     long colorsimportant;
-    uint32 clut[256];
+    uint32_t clut[256];
     long red_mask, green_mask, blue_mask;
     int red_shift, green_shift, blue_shift;
     unsigned int invert: 1;
     unsigned char *byte_pixels;
-    uint32 *int32_pixels;
+    uint32_t *int32_pixels;
 };
 
 #endif /* FONTFORGE_GIMAGEBMPP_H */

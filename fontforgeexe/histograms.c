@@ -67,7 +67,7 @@ static void HistDataFree(HistData *h) {
     free(h);
 }
 
-static HistData *HistFindBlues(SplineFont *sf,int layer, uint8 *selected, EncMap *map) {
+static HistData *HistFindBlues(SplineFont *sf,int layer, uint8_t *selected, EncMap *map) {
     int i, gid, low,high, top,bottom;
     SplineChar *sc;
     DBounds b;
@@ -142,7 +142,7 @@ static HistData *HistFindBlues(SplineFont *sf,int layer, uint8 *selected, EncMap
 return( hist );
 }
 
-static HistData *HistFindStemWidths(SplineFont *sf,int layer, uint8 *selected,EncMap *map,int hor) {
+static HistData *HistFindStemWidths(SplineFont *sf,int layer, uint8_t *selected,EncMap *map,int hor) {
     int i, gid, low,high, val;
     SplineChar *sc;
     HistData *hist;
@@ -206,11 +206,11 @@ static HistData *HistFindStemWidths(SplineFont *sf,int layer, uint8 *selected,En
 return( hist );
 }
 
-static HistData *HistFindHStemWidths(SplineFont *sf,int layer, uint8 *selected,EncMap *map) {
+static HistData *HistFindHStemWidths(SplineFont *sf,int layer, uint8_t *selected,EncMap *map) {
 return( HistFindStemWidths(sf,layer,selected,map,true) );
 }
 
-static HistData *HistFindVStemWidths(SplineFont *sf,int layer, uint8 *selected,EncMap *map) {
+static HistData *HistFindVStemWidths(SplineFont *sf,int layer, uint8_t *selected,EncMap *map) {
 return( HistFindStemWidths(sf,layer,selected,map,false) );
 }
 
@@ -257,7 +257,7 @@ struct hist_dlg {
     SplineFont *sf;
     int layer;
     struct psdict *private;
-    uint8 *selected;
+    uint8_t *selected;
     HistData *h;
 
     int pending_blue;
@@ -725,7 +725,7 @@ return( false );
 return( true );
 }
 
-static void CheckSmallSelection(uint8 *selected,EncMap *map,SplineFont *sf) {
+static void CheckSmallSelection(uint8_t *selected,EncMap *map,SplineFont *sf) {
     int i, cnt, tot;
 
     for ( i=cnt=tot=0; i<map->enccount; ++i ) {
@@ -740,7 +740,7 @@ static void CheckSmallSelection(uint8 *selected,EncMap *map,SplineFont *sf) {
 	ff_post_notice(_("Tiny Selection"),_("There are so few glyphs selected that it seems unlikely to me that you will get a representative sample of this aspect of your font. If you deselect everything the command will apply to all glyphs in the font"));
 }
 
-void SFHistogram(SplineFont *sf,int layer, struct psdict *private, uint8 *selected,
+void SFHistogram(SplineFont *sf,int layer, struct psdict *private, uint8_t *selected,
 	EncMap *map,enum hist_type which) {
     struct hist_dlg hist;
     GWindow gw;

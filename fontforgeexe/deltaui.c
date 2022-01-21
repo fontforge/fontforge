@@ -736,10 +736,10 @@ static void QGDoSort(QGData *qg) {
     char buffer[200];
 
     pos = GGadgetGetFirstListSelectedItem(GWidgetGetControl(qg->gw,CID_Sort));
-    qg->info_sort = (intpt) sorts[pos].userdata;
+    qg->info_sort = (intptr_t) sorts[pos].userdata;
 
     pos = GGadgetGetFirstListSelectedItem(GWidgetGetControl(qg->gw,CID_GlyphSort));
-    qg->glyph_sort = (intpt) glyphsorts[pos].userdata;
+    qg->glyph_sort = (intptr_t) glyphsorts[pos].userdata;
 
     kludge = qg;
     qsort(qg->qg,qg->cur,sizeof(QuestionableGrid),qg_sorter);

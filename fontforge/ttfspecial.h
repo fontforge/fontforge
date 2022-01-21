@@ -15,7 +15,7 @@ extern void tex_dump(struct alltabs *at, SplineFont *sf);
 extern void tex_read(FILE *ttf, struct ttfinfo *info);
 
 /* The BDF table, to contain bdf properties the X people want */
-extern int ttf_bdf_dump(SplineFont *sf, struct alltabs *at,int32 *sizes);
+extern int ttf_bdf_dump(SplineFont *sf, struct alltabs *at,int32_t *sizes);
 extern void ttf_bdf_read(FILE *ttf, struct ttfinfo *info);
 
 /* The FFTM table, to some timestamps I'd like */

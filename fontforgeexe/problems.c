@@ -60,8 +60,8 @@ struct mgrpl {
 };
 
 struct mlrpl {
-    uint32 search;
-    uint32 rpl;
+    uint32_t search;
+    uint32_t rpl;
 };
 
 struct problems {
@@ -2167,8 +2167,8 @@ static void ClearMissingState(struct problems *p) {
 enum missingglyph_type { mg_pst, mg_fpst, mg_kern, mg_vkern, mg_asm };
 struct mgask_data {
     GWindow gw;
-    uint8 done, skipped;
-    uint32 tag;
+    uint8_t done, skipped;
+    uint32_t tag;
     char **_str, *start, *end;
     SplineChar *sc;
     PST *pst;
@@ -2253,7 +2253,7 @@ return( false );
 return( true );
 }
 
-static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32 tag,
+static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32_t tag,
 	SplineChar *sc,enum missingglyph_type which,void *data) {
     char buffer[200];
     static char *pstnames[] = { "", N_("position"), N_("pair"), N_("substitution"),
@@ -2551,7 +2551,7 @@ return( found );
 }
 
 static int LookupFeaturesMissScript(struct problems *p,OTLookup *otl,OTLookup *nested,
-	uint32 script, SplineFont *sf, char *glyph_name) {
+	uint32_t script, SplineFont *sf, char *glyph_name) {
     OTLookup *invokers, *any;
     struct lookup_subtable *subs;
     int i,l, ret;
@@ -2643,7 +2643,7 @@ return( found );
 static int SCMissingScriptFeat(struct problems *p,SplineFont *sf,SplineChar *sc) {
     PST *pst;
     int found = false;
-    uint32 script;
+    uint32_t script;
     AnchorPoint *ap;
 
     if ( !p->missingscriptinfeature || p->finish || sc==NULL )
@@ -2662,7 +2662,7 @@ static int StrMissingScript(struct problems *p,SplineFont *sf,OTLookup *otl,char
     char *pt, *start;
     int ch;
     SplineChar *sc;
-    uint32 script;
+    uint32_t script;
     int found = 0;
 
     if ( class==NULL )
@@ -3027,7 +3027,7 @@ return( true );
 
 static int Prob_TextChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
-	GGadgetSetChecked(GWidgetGetControl(GGadgetGetWindow(g),(intpt) GGadgetGetUserData(g)),true);
+	GGadgetSetChecked(GWidgetGetControl(GGadgetGetWindow(g),(intptr_t) GGadgetGetUserData(g)),true);
     }
 return( true );
 }

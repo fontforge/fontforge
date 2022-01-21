@@ -1,15 +1,9 @@
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-typedef unsigned int uint32;
-typedef int int32;
-typedef short int16;
-typedef signed char int8;
-typedef unsigned short uint16;
-typedef unsigned char uint8;
-#define true	1
-#define false	0
 #define CHR(ch1,ch2,ch3,ch4) (((ch1)<<24)|((ch2)<<16)|((ch3)<<8)|(ch4))
 
 /* This little program looks through all its arguments trying to find a file */
@@ -23,7 +17,7 @@ return( EOF );
 return( (ch1<<8)|ch2 );
 }
 
-static int32 getlong(FILE *ttf) {
+static int32_t getlong(FILE *ttf) {
     int ch1 = getc(ttf);
     int ch2 = getc(ttf);
     int ch3 = getc(ttf);
@@ -35,7 +29,7 @@ return( (ch1<<24)|(ch2<<16)|(ch3<<8)|ch4 );
 
 static int readttfheader(FILE *ttf, int search_tag) {
     int i, numtables;
-    int tag, checksum, offset, length, sr, es, rs; uint32 v;
+    int tag, checksum, offset, length, sr, es, rs; uint32_t v;
     int e_sr, e_es, e_rs;
 
     v = getlong(ttf);

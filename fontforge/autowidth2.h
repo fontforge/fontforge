@@ -60,7 +60,7 @@ typedef struct aw_data {
     SplineFont *sf;
     FontViewBase *fv;
     int layer;
-    /*uint32 *script_list;*/
+    /*uint32_t *script_list;*/
     AW_Glyph *glyphs;
     int gcnt;
     int *visual_separation; 	/* array[gcnt][gcnt] of my guess at the visual */

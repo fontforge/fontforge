@@ -62,9 +62,9 @@ typedef struct printffdlg {
     FontView *fv;
     CharView *cv;
     SplineSet *fit_to_path;
-    uint8 script_unknown;
-    uint8 insert_text;
-    uint8 ready;
+    uint8_t script_unknown;
+    uint8_t insert_text;
+    uint8_t ready;
     int *done;
 } PD;
 
@@ -903,11 +903,11 @@ return;
 }
 
 static void DSP_ChangeFontCallback(void *context,SplineFont *sf,enum sftf_fonttype type,
-	int size, int aa, uint32 script, uint32 lang, uint32 *feats) {
+	int size, int aa, uint32_t script, uint32_t lang, uint32_t *feats) {
     PD *di = context;
     char buf[16];
     int i,j,cnt;
-    uint32 *tags;
+    uint32_t *tags;
     GTextInfo **ti;
 
     GGadgetSetChecked(GWidgetGetControl(di->gw,CID_AA),aa);
@@ -917,7 +917,7 @@ static void DSP_ChangeFontCallback(void *context,SplineFont *sf,enum sftf_fontty
 
     {
 	GTextInfo **ti;
-	int i,set; int32 len;
+	int i,set; int32_t len;
 	ti = GGadgetGetList(GWidgetGetControl(di->gw,CID_Font),&len);
 	for ( i=0; i<len; ++i )
 	    if ( ti[i]->userdata == sf )
@@ -985,7 +985,7 @@ static void DSP_ChangeFontCallback(void *context,SplineFont *sf,enum sftf_fontty
 	    buf[0] = tags[i]>>24; buf[1] = tags[i]>>16; buf[2] = tags[i]>>8; buf[3] = tags[i]; buf[4] = 0;
 	}
 	ti[i]->text = uc_copy(buf);
-	ti[i]->userdata = (void *) (intpt) tags[i];
+	ti[i]->userdata = (void *) (intptr_t) tags[i];
 	if ( feats!=NULL ) {
 	    for ( j=0; feats[j]!=0; ++j ) {
 		if ( feats[j] == tags[i] ) {
@@ -1009,7 +1009,7 @@ static void DSP_ChangeFontCallback(void *context,SplineFont *sf,enum sftf_fontty
 		ti[cnt]->selected = true;
 		buf[0] = feats[i]>>24; buf[1] = feats[i]>>16; buf[2] = feats[i]>>8; buf[3] = feats[i]; buf[4] = 0;
 		ti[cnt]->text = uc_copy(buf);
-		ti[cnt++]->userdata = (void *) (intpt) feats[i];
+		ti[cnt++]->userdata = (void *) (intptr_t) feats[i];
 	    }
 	}
     ti[cnt] = calloc(1,sizeof(GTextInfo));
@@ -1046,7 +1046,7 @@ static int DSP_FontChanged(GGadget *g, GEvent *e) {
 	BDFFont *best;
 	int flags, pick = 0, i;
 	char size[12]; unichar_t usize[12];
-	uint16 cnt;
+	uint16_t cnt;
 
 	if ( sel==NULL )
 return( true );
@@ -1371,7 +1371,7 @@ static int DSP_ScriptLangChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
 	const unichar_t *sstr = _GGadgetGetTitle(g);
 	PD *di = GDrawGetUserData(GGadgetGetWindow(g));
-	uint32 script, lang;
+	uint32_t script, lang;
 
 	if ( e->u.control.u.tf_changed.from_pulldown!=-1 ) {
 	    GGadgetSetTitle8(g,di->scriptlangs[e->u.control.u.tf_changed.from_pulldown].userdata );
@@ -1419,17 +1419,17 @@ static int DSP_FeaturesChanged(GGadget *g, GEvent *e) {
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
 	PD *di = GDrawGetUserData(GGadgetGetWindow(g));
-	uint32 *feats;
-	int32 len;
+	uint32_t *feats;
+	int32_t len;
 	GTextInfo **ti = GGadgetGetList(g,&len);
 	int i,cnt;
 
 	for ( i=cnt=0; i<len; ++i )
 	    if ( ti[i]->selected ) ++cnt;
-	feats = malloc((cnt+1)*sizeof(uint32));
+	feats = malloc((cnt+1)*sizeof(uint32_t));
 	for ( i=cnt=0; i<len; ++i )
 	    if ( ti[i]->selected )
-		feats[cnt++] = (intpt) ti[i]->userdata;
+		feats[cnt++] = (intptr_t) ti[i]->userdata;
 	feats[cnt] = 0;
 	/* These will be ordered because the list widget will do that */
 	SFTFSetFeatures(GWidgetGetControl(di->gw,CID_SampleText),-1,-1,feats);
@@ -1470,7 +1470,7 @@ static int DSP_TextChanged(GGadget *g, GEvent *e) {
 		GGadgetSetTitle8(GWidgetGetControl(di->gw,CID_ScriptLang),"DFLT{dflt}");
 	    }
 	} else if ( di->script_unknown ) {
-	    uint32 script = ScriptFromUnicode(*pt,NULL);
+	    uint32_t script = ScriptFromUnicode(*pt,NULL);
 	    struct fontlist *fl;
 	    unichar_t buf[20];
 	    for ( fl=li->fontlist; fl!=NULL && ta->sel_start>fl->end; fl=fl->next );
@@ -2221,7 +2221,7 @@ return;
     if ( isprint ) {
 	SFTFSetDPI(gcd[13].ret,dpi);
 	temp = PrtBuildDef(sf,&((SFTextArea *) gcd[13].ret)->li,
-		(void (*)(void *, int, uint32, uint32))LayoutInfoInitLangSys);
+		(void (*)(void *, int, uint32_t, uint32_t))LayoutInfoInitLangSys);
 	GGadgetSetTitle(gcd[13].ret, temp);
 	free(temp);
     } else {

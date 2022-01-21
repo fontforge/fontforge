@@ -2036,7 +2036,7 @@ static void GMenuBarTestSize(GMenuBar *mb) {
     }
 }
 
-static void GMenuBarResize(GGadget *g, int32 width, int32 height) {
+static void GMenuBarResize(GGadget *g, int32_t width, int32_t height) {
     _ggadget_resize(g,width,height);
     GMenuBarTestSize((GMenuBar *) g);
 }
@@ -2151,7 +2151,7 @@ GGadget *GMenuBarCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     _GGadget_Create(&mb->g,base,gd,data,&menubar_box);
 
     mb->mi = GMenuItemArrayCopy(gd->u.menu,&mb->mtot);
-    mb->xs = malloc((mb->mtot+1)*sizeof(uint16));
+    mb->xs = malloc((mb->mtot+1)*sizeof(uint16_t));
     mb->entry_with_mouse = -1;
     mb->font = menubar_font.fi;
 
@@ -2177,7 +2177,7 @@ GGadget *GMenu2BarCreate(struct gwindow *base, GGadgetData *gd,void *data) {
     _GGadget_Create(&mb->g,base,gd,data,&menubar_box);
 
     mb->mi = GMenuItem2ArrayCopy(gd->u.menu2,&mb->mtot);
-    mb->xs = malloc((mb->mtot+1)*sizeof(uint16));
+    mb->xs = malloc((mb->mtot+1)*sizeof(uint16_t));
     mb->entry_with_mouse = -1;
     mb->font = menubar_font.fi;
 

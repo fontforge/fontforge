@@ -406,7 +406,7 @@ static void BVDrawTempPoint(BitmapView *bv,int x, int y,void *pixmap) {
 }
 
 static void BVDrawRefBorder(BitmapView *bv, BDFChar *bc, GWindow pixmap,
-	uint8 selected, int8 xoff, int8 yoff) {
+	uint8_t selected, int8_t xoff, int8_t yoff) {
     int i, j;
     int isblack, lw, rw, tw, bw;
     int tx, ty;
@@ -672,7 +672,7 @@ return;
 }
 
 static void BVDrawGlyph(BitmapView *bv, BDFChar *bc, GWindow pixmap, GRect *pixel,
-	uint8 is_ref, uint8 selected, int8 xoff, int8 yoff) {
+	uint8_t is_ref, uint8_t selected, int8_t xoff, int8_t yoff) {
     int i, j;
     BDFFont *bdf = bv->bdf;
     BDFRefChar *cur;

@@ -13,8 +13,8 @@
 
 extern char *libspiro_version(void);
 extern int hasspiro(void);
-extern spiro_cp *SpiroCPCopy(spiro_cp *spiros, uint16 *_cnt);
-extern spiro_cp *SplineSet2SpiroCP(SplineSet *ss, uint16 *cnt);
+extern spiro_cp *SpiroCPCopy(spiro_cp *spiros, uint16_t *_cnt);
+extern spiro_cp *SplineSet2SpiroCP(SplineSet *ss, uint16_t *cnt);
 extern SplineSet *SpiroCP2SplineSet(spiro_cp *spiros);
 extern void SSRegenerateFromSpiros(SplineSet *spl);
 

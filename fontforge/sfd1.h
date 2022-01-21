@@ -41,64 +41,64 @@
 
 typedef struct anchorclass1 {
     AnchorClass ac;
-    uint32 feature_tag;
-    uint16 script_lang_index;
-    uint16 flags;
-    uint16 merge_with;
-    uint8 has_bases;
-    uint8 has_ligatures;
+    uint32_t feature_tag;
+    uint16_t script_lang_index;
+    uint16_t flags;
+    uint16_t merge_with;
+    uint8_t has_bases;
+    uint8_t has_ligatures;
 } AnchorClass1;
 
 typedef struct kernpair1 {
     KernPair kp;
-    uint16 sli, flags;
+    uint16_t sli, flags;
 } KernPair1;
 
 typedef struct kernclass1 {
     KernClass kc;
-    uint16 sli;
-    uint16 flags;
+    uint16_t sli;
+    uint16_t flags;
 } KernClass1;
 
 typedef struct generic_pst1 {
     PST pst;
-    uint8 macfeature;		/* tag should be interpreted as <feature,setting> rather than 'abcd' */
-    uint16 flags;
-    uint16 script_lang_index;		/* 0xffff means none */
-    uint32 tag;
+    uint8_t macfeature;		/* tag should be interpreted as <feature,setting> rather than 'abcd' */
+    uint16_t flags;
+    uint16_t script_lang_index;		/* 0xffff means none */
+    uint32_t tag;
 } PST1;
 
 typedef struct generic_fpst1 {
     FPST fpst;
-    uint16 script_lang_index;
-    uint16 flags;
-    uint32 tag;
+    uint16_t script_lang_index;
+    uint16_t flags;
+    uint32_t tag;
 } FPST1;
 
 typedef struct generic_asm1 {		/* Apple State Machine */
     ASM sm;
-    uint16 feature, setting;
-    uint32 opentype_tag;		/* If converted from opentype */
+    uint16_t feature, setting;
+    uint32_t opentype_tag;		/* If converted from opentype */
 } ASM1;
 
 struct table_ordering {
-    uint32 table_tag;
-    uint32 *ordered_features;
+    uint32_t table_tag;
+    uint32_t *ordered_features;
     struct table_ordering *next;
 };
 
 struct script_record {
-    uint32 script;
-    uint32 *langs;
+    uint32_t script;
+    uint32_t *langs;
 };
 
 struct tagtype {
     enum possub_type type;
-    uint32 tag;
+    uint32_t tag;
 };
 
 struct gentagtype {
-    uint16 tt_cur, tt_max;
+    uint16_t tt_cur, tt_max;
     struct tagtype *tagtype;
 };
 
@@ -115,13 +115,13 @@ typedef struct splinefont1 {
     /*  store all choices used here, and just store an index into this list */
     /*  in the PST. All lists are terminated by a 0 entry */
     struct script_record **script_lang;
-    int16 sli_cnt;
+    int16_t sli_cnt;
 
     struct gentagtype gentags;
 } SplineFont1;
 
-extern int SFFindBiggestScriptLangIndex(SplineFont *_sf,uint32 script,uint32 lang);
-extern int SFAddScriptIndex(SplineFont1 *sf,uint32 *scripts,int scnt);
+extern int SFFindBiggestScriptLangIndex(SplineFont *_sf,uint32_t script,uint32_t lang);
+extern int SFAddScriptIndex(SplineFont1 *sf,uint32_t *scripts,int scnt);
 extern void SFD_AssignLookups(SplineFont1 *sf);
 
 extern enum uni_interp interp_from_encoding(Encoding *enc, enum uni_interp interp);

@@ -72,12 +72,12 @@ return( CID_Win );
 return( CID_Mac );
 }
     
-static int32 *ParseList(GWindow gw, int cid,int *err, int final) {
+static int32_t *ParseList(GWindow gw, int cid,int *err, int final) {
     const unichar_t *val = _GGadgetGetTitle(GWidgetGetControl(gw,cid)), *pt;
     unichar_t *end, *end2;
     int i;
     real *sizes;
-    int32 *ret;
+    int32_t *ret;
     int system = GetSystem(gw);
     int scale;
 
@@ -92,7 +92,7 @@ static int32 *ParseList(GWindow gw, int cid,int *err, int final) {
 	end2 = NULL;
     }
     sizes = malloc((i+1)*sizeof(real));
-    ret = malloc((i+1)*sizeof(int32));
+    ret = malloc((i+1)*sizeof(int32_t));
 
     for ( i=0, pt = val; *pt!='\0' ; ) {
 	sizes[i]=u_strtod(pt,&end);
@@ -133,7 +133,7 @@ static int CB_OK(GGadget *g, GEvent *e) {
 	int err;
 	GWindow gw = GGadgetGetWindow(g);
 	CreateBitmapData *bd = GDrawGetUserData(gw);
-	int32 *sizes = ParseList(gw, CID_Pixel,&err, true);
+	int32_t *sizes = ParseList(gw, CID_Pixel,&err, true);
 	if ( err )
 return( true );
 	oldusefreetype = GGadgetIsChecked(GWidgetGetControl(gw,CID_FreeType));
@@ -158,7 +158,7 @@ static int CB_Cancel(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static unichar_t *GenText(int32 *sizes,real scale) {
+static unichar_t *GenText(int32_t *sizes,real scale) {
     int i;
     char *cret, *pt;
     unichar_t *uret;
@@ -188,7 +188,7 @@ static void _CB_TextChange(CreateBitmapData *bd, GGadget *g) {
     int cid = (int) GGadgetGetCid(g);
     unichar_t *val;
     int err=false;
-    int32 *sizes = ParseList(((CreateBitmapDlg *) bd)->gw,cid,&err,false);
+    int32_t *sizes = ParseList(((CreateBitmapDlg *) bd)->gw,cid,&err,false);
     int ncid;
     int system = GetSystem(((CreateBitmapDlg *) bd)->gw);
     int scale;
@@ -265,7 +265,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     GTextInfo label[18];
     CreateBitmapDlg bd;
     int i,j,k,y;
-    int32 *sizes;
+    int32_t *sizes;
     BDFFont *bdf;
     static int done= false;
 
@@ -287,7 +287,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     if ( i==0 && isavail )
 	i = 2;
 */
-    sizes = malloc((i+1)*sizeof(int32));
+    sizes = malloc((i+1)*sizeof(int32_t));
     for ( bdf=bd.bd.sf->bitmaps, i=0; bdf!=NULL; bdf=bdf->next, ++i )
 	sizes[i] = bdf->pixelsize | (BDFDepth(bdf)<<16);
 /*

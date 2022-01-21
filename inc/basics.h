@@ -34,21 +34,12 @@
 #include <limits.h>
 #include <memory.h>
 #include <stdbool.h>
+#include <stdint.h>
 #include <stdio.h>		/* for NULL */
 #include <stdlib.h>		/* for free */
 #include <string.h>
 
-typedef int32_t		int32;
-typedef uint32_t	uint32;
-typedef int16_t		int16;
-typedef uint16_t	uint16;
-typedef int8_t		int8;
-typedef uint8_t		uint8;
-
-/* An integral type which can hold a pointer */
-typedef intptr_t	intpt;
-
-typedef uint32 unichar_t;
+typedef uint32_t unichar_t;
 
 #define FF_PI 3.1415926535897932
 

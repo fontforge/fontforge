@@ -57,7 +57,7 @@ static GTextInfo *SFLayerList(SplineFont *sf,int def_layer) {
     for ( l=0; l<sf->layer_cnt; ++l ) {
 	ret[l].text = (unichar_t *) copy(sf->layers[l].name);
 	ret[l].text_is_1byte = true;
-	ret[l].userdata = (void *) (intpt) l;
+	ret[l].userdata = (void *) (intptr_t) l;
     }
     ret[def_layer].selected = true;
 return( ret );

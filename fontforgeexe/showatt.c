@@ -63,11 +63,11 @@ struct node {
     unsigned int macfeat: 1;
     unsigned int monospace: 1;
     unsigned int horizontal: 1;
-    uint16 cnt;
+    uint16_t cnt;
     struct node *children, *parent;
     void (*build)(struct node *,struct att_dlg *);
     char *label;		/* utf8 */
-    uint32 tag;
+    uint32_t tag;
     union sak {
 	SplineChar *sc;
 	int index;
@@ -1044,7 +1044,7 @@ static void BuildGSUBlookups(struct node *node,struct att_dlg *att) {
 
 static void BuildGSUBfeatures(struct node *node,struct att_dlg *att) {
     int isgsub = node->parent->parent->parent->tag==CHR('G','S','U','B');
-    uint32 script = node->parent->parent->tag, lang = node->parent->tag, feat=node->tag;
+    uint32_t script = node->parent->parent->tag, lang = node->parent->tag, feat=node->tag;
     OTLookup *otl;
     SplineFont *sf = att->sf;
     int match;
@@ -1062,7 +1062,7 @@ static void BuildGSUBfeatures(struct node *node,struct att_dlg *att) {
 		    for ( sl = fl->scripts; sl!=NULL && !match; sl=sl->next ) {
 			if ( sl->script == script ) {
 			    for ( l=0; l<sl->lang_cnt; ++l ) {
-				uint32 _lang = l<MAX_LANG ? sl->langs[l] : sl->morelangs[l-MAX_LANG];
+				uint32_t _lang = l<MAX_LANG ? sl->langs[l] : sl->morelangs[l-MAX_LANG];
 				if ( _lang == lang ) {
 				    match = true;
 			    break;
@@ -1092,11 +1092,11 @@ static void BuildGSUBfeatures(struct node *node,struct att_dlg *att) {
 
 static void BuildGSUBlang(struct node *node,struct att_dlg *att) {
     int isgsub = node->parent->parent->tag==CHR('G','S','U','B');
-    uint32 script = node->parent->tag, lang = node->tag;
+    uint32_t script = node->parent->tag, lang = node->tag;
     int i,j;
     SplineFont *_sf = att->sf;
     struct node *featnodes;
-    uint32 *featlist;
+    uint32_t *featlist;
 
     /* Build up the list of features in this lang entry of this script in GSUB/GPOS */
 
@@ -1120,7 +1120,7 @@ static void BuildGSUBscript(struct node *node,struct att_dlg *att) {
     int lang_max;
     int i,j;
     struct node *langnodes;
-    uint32 *langlist;
+    uint32_t *langlist;
     extern GTextInfo languages[];
     char buf[100];
     int isgpos = node->parent->tag == CHR('G','P','O','S');
@@ -1137,7 +1137,7 @@ static void BuildGSUBscript(struct node *node,struct att_dlg *att) {
     free( langlist );
 
     for ( i=0; i<lang_max; ++i ) {
-	for ( j=0; languages[j].text!=NULL && langnodes[i].tag!=(uint32) (intpt) languages[j].userdata; ++j );
+	for ( j=0; languages[j].text!=NULL && langnodes[i].tag!=(uint32_t) (intptr_t) languages[j].userdata; ++j );
 	buf[0] = '\'';
 	buf[1] = langnodes[i].tag>>24;
 	buf[2] = (langnodes[i].tag>>16)&0xff;
@@ -1284,7 +1284,7 @@ static void BuildJSTFscript(struct node *node,struct att_dlg *att) {
 	    
     for ( jlang=jscript->langs, i=1; jlang!=NULL; jlang=jlang->next, ++i ) {
 	langnodes[i].tag = jlang->lang;
-	for ( j=0; languages[j].text!=NULL && langnodes[i].tag!=(uint32) (intpt) languages[j].userdata; ++j );
+	for ( j=0; languages[j].text!=NULL && langnodes[i].tag!=(uint32_t) (intptr_t) languages[j].userdata; ++j );
 	buf[0] = '\'';
 	buf[1] = langnodes[i].tag>>24;
 	buf[2] = (langnodes[i].tag>>16)&0xff;
@@ -1578,7 +1578,7 @@ static void BuildBsLnTable(struct node *node,struct att_dlg *att) {
     SplineFont *_sf = att->sf;
     int def_baseline;
     int offsets[32];
-    int16 *baselines;
+    int16_t *baselines;
     char buffer[300];
     struct node *glyphs;
     int gid,i;
@@ -1685,7 +1685,7 @@ static void BuildProperties(struct node *node,struct att_dlg *att) {
     int i, cmax, l,j,k, ccnt;
     SplineChar *sc;
     struct node *chars;
-    uint16 *props;
+    uint16_t *props;
     char buffer[200];
 
     cmax = 0;
@@ -1851,7 +1851,7 @@ static void BuildTable(struct node *node,struct att_dlg *att) {
     SplineFont *_sf = att->sf;
     int script_max;
     int i,j;
-    uint32 *scriptlist;
+    uint32_t *scriptlist;
     struct node *scriptnodes;
     extern GTextInfo scripts[];
     int isgsub = node->tag==CHR('G','S','U','B');
@@ -1869,7 +1869,7 @@ return;
     free( scriptlist );
 
     for ( i=0; i<script_max; ++i ) {
-	for ( j=0; scripts[j].text!=NULL && scriptnodes[i].tag!=(uint32) (intpt) scripts[j].userdata; ++j );
+	for ( j=0; scripts[j].text!=NULL && scriptnodes[i].tag!=(uint32_t) (intptr_t) scripts[j].userdata; ++j );
 	buf[0] = '\'';
 	buf[1] = scriptnodes[i].tag>>24;
 	buf[2] = (scriptnodes[i].tag>>16)&0xff;
@@ -1907,7 +1907,7 @@ static void BuildJSTFTable(struct node *node,struct att_dlg *att) {
     scriptnodes = calloc(sub_cnt+1,sizeof(struct node));
     for ( i=0, jscript=_sf->justify; jscript!=NULL; jscript=jscript->next, ++i ) {
 	scriptnodes[i].tag = jscript->script;
-	for ( j=0; scripts[j].text!=NULL && scriptnodes[i].tag!=(uint32) (intpt) scripts[j].userdata; ++j );
+	for ( j=0; scripts[j].text!=NULL && scriptnodes[i].tag!=(uint32_t) (intptr_t) scripts[j].userdata; ++j );
 	buf[0] = '\'';
 	buf[1] = scriptnodes[i].tag>>24;
 	buf[2] = (scriptnodes[i].tag>>16)&0xff;
@@ -2325,7 +2325,7 @@ return;
     }
 }
 
-static void pututf8(uint32 ch,FILE *file) {
+static void pututf8(uint32_t ch,FILE *file) {
     if ( ch<0x80 )
 	putc(ch,file);
     else if ( ch<0x800 ) {

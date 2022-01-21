@@ -432,6 +432,6 @@ SOFTWARE.
 
 #endif /* FONTFORGE_CAN_USE_GDK */
 
-int GKeysymIsModifier(uint16 keysym);
+int GKeysymIsModifier(uint16_t keysym);
 
 #endif /* FONTFORGE_GKEYSYM_H */

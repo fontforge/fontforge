@@ -30,7 +30,7 @@
 
 #include "basics.h"
 
-typedef uint32 Color;
+typedef uint32_t Color;
 
 #define COLOR_UNKNOWN		((Color) 0xffffffff)
 #define COLOR_TRANSPARENT	((Color) 0xffffffff)
@@ -46,20 +46,20 @@ typedef uint32 Color;
 struct hslrgb {
     double h,s,l,v;
     double r,g,b;
-    uint8 rgb, hsl, hsv;
+    uint8_t rgb, hsl, hsv;
 };
 
 struct hslrgba {
     double h,s,l,v;
     double r,g,b;
-    uint8 rgb, hsl, hsv, has_alpha;
+    uint8_t rgb, hsl, hsv, has_alpha;
     double alpha;
 };
 
 typedef struct clut {
-    int16 clut_len;
+    int16_t clut_len;
     unsigned int is_grey: 1;
-    uint32 trans_index;		/* will be ignored for cluts in images, use base->trans instead */
+    uint32_t trans_index;		/* will be ignored for cluts in images, use base->trans instead */
     Color clut[256];
 } GClut;
 
@@ -94,10 +94,10 @@ struct _GImage {
 	    rgba       images are stored in 4 byte units, alpha,red,green blue
 */
     enum image_type image_type: 2;
-    int16 delay;		/* for animated GIFs, delay to next frame */
-    int32 width, height;
-    int32 bytes_per_line;
-    uint8 *data;
+    int16_t delay;		/* for animated GIFs, delay to next frame */
+    int32_t width, height;
+    int32_t bytes_per_line;
+    uint8_t *data;
     GClut *clut;
     Color trans;		/* PNG supports more than one transparent color, we don't */
 				/* for non-true color images this is the index, not a color */
@@ -120,21 +120,21 @@ typedef struct gimage {
 enum pastetrans_type { ptt_paste_trans_to_trans, ptt_old_shines_through};
 
 typedef struct grect {
-    int32 x,y,width,height;
+    int32_t x,y,width,height;
 } GRect;
 
 #define GRECT_EMPTY { 0, 0, 0, 0 }
 
 
 typedef struct gpoint {
-    int16 x,y;
+    int16_t x,y;
 } GPoint;
 
 #define GPOINT_EMPTY { 0, 0 }
 
 
-extern GImage *GImageCreate(enum image_type type, int32 width, int32 height);
-extern GImage *_GImage_Create(enum image_type type, int32 width, int32 height);
+extern GImage *GImageCreate(enum image_type type, int32_t width, int32_t height);
+extern GImage *_GImage_Create(enum image_type type, int32_t width, int32_t height);
 extern void GImageDestroy(GImage *gi);
 extern GImage *GImageCreateAnimation(GImage **images, int n);
 extern GImage *GImageAddImageBefore(GImage *dest, GImage *src, int pos);

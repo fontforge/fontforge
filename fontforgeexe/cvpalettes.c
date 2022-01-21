@@ -2215,9 +2215,9 @@ return;
  * Get the offset at the right hand size of the eyeball to show/hide
  * a layer. This is the x offset where the Q/C indicators might be drawn.
  */
-static int32 Layers_getOffsetAtRightOfViewLayer(CharView *cv)
+static int32_t Layers_getOffsetAtRightOfViewLayer(CharView *cv)
 {
-    int32 ret = 64;
+    int32_t ret = 64;
     GGadget *v = GWidgetGetControl(cvlayers,CID_VBack);
     if( v )
     {
@@ -3265,8 +3265,8 @@ return( cvlayers );
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
 
-    int32 plusw = GDrawGetText8Width(cv->gw,  _("+"), -1);
-    int32 plush = GDrawGetText8Height(cv->gw, _("+"), -1);
+    int32_t plusw = GDrawGetText8Width(cv->gw,  _("+"), -1);
+    int32_t plush = GDrawGetText8Height(cv->gw, _("+"), -1);
     plusw = GDrawPointsToPixels(NULL,plusw+4);
     plush = GDrawPointsToPixels(NULL,plush+4);
     plush = MAX( plush, plusw ); // make it square.
@@ -3363,7 +3363,7 @@ return( cvlayers );
 
     GGadgetGetSize(GWidgetGetControl(cvlayers,CID_VGrid),&size);
     layer_height = size.height;
-    int32 w = GDrawGetText8Width(cvlayers, "W", -1);
+    int32_t w = GDrawGetText8Width(cvlayers, "W", -1);
     layerinfo.column_width = w+6;
 
     layerinfo.active = CVLayer(&cv->b); /* the index of the active layer */

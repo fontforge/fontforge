@@ -635,7 +635,7 @@ static unichar_t *macencodings[] = {
 
 /* I've no idea what encoding code farsi uses, it isn't documented to be arabic 4, nor is it documented to have its own code */
 
-static uint8 _MacScriptFromLanguage[] = {
+static uint8_t _MacScriptFromLanguage[] = {
 	sm_roman,		/* English */
 	sm_roman,		/* French */
 	sm_roman,		/* German */
@@ -790,7 +790,7 @@ static uint8 _MacScriptFromLanguage[] = {
 	0xff
 };
 
-static uint16 _WinLangFromMac[] = {
+static uint16_t _WinLangFromMac[] = {
 	0x409,		/* English */
 	0x40c,		/* French */
 	0x407,		/* German */
@@ -1121,7 +1121,7 @@ return( table );
 char *MacStrToUtf8(const char *str,int macenc,int maclang) {
     const unichar_t *table;
     char *ret, *rpt;
-    const uint8 *ustr = (uint8 *) str;
+    const uint8_t *ustr = (uint8_t *) str;
 
     if ( str==NULL )
 return( NULL );
@@ -1233,14 +1233,14 @@ return( NULL );
 return( ret );
 }
 
-uint8 MacEncFromMacLang(int maclang) {
+uint8_t MacEncFromMacLang(int maclang) {
     if ( maclang<0 || maclang>=sizeof(_MacScriptFromLanguage)/sizeof(_MacScriptFromLanguage[0]))
 return( 0xff );
 
 return( _MacScriptFromLanguage[maclang] );
 }
 
-uint16 WinLangFromMac(int maclang) {
+uint16_t WinLangFromMac(int maclang) {
 
     if ( maclang<0 || maclang>=sizeof(_WinLangFromMac)/sizeof(_WinLangFromMac[0]))
 return( 0xffff );
@@ -1248,7 +1248,7 @@ return( 0xffff );
 return( _WinLangFromMac[maclang] );
 }
 
-uint16 WinLangToMac(int winlang) {
+uint16_t WinLangToMac(int winlang) {
     int i;
 
     for ( i=0; i<sizeof(_WinLangFromMac)/sizeof(_WinLangFromMac[0]); ++i )
@@ -1275,8 +1275,8 @@ return( false );
 return( true );
 }
 
-const int32 *MacEncToUnicode(int script,int lang) {
-    static int32 temp[256];
+const int32_t *MacEncToUnicode(int script,int lang) {
+    static int32_t temp[256];
     int i;
     const unichar_t *table;
 

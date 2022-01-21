@@ -48,7 +48,7 @@ static GTextInfo *AvailableRanges(SplineFont *sf,EncMap *map) {
         if (pos != -1) {
             ret[cnt].text = (unichar_t *) _(blocks[i].name);
             ret[cnt].text_is_1byte = true;
-            ret[cnt++].userdata = (void *) (intpt) pos;
+            ret[cnt++].userdata = (void *) (intptr_t) pos;
         }
     }
 
@@ -95,7 +95,7 @@ static int Goto_OK(GGadget *g, GEvent *e) {
 	if ( d->ret==-1 && d->ranges!=NULL ) {
 	    for ( i=0; d->ranges[i].text!=NULL; ++i ) {
 		if ( strcmp(ret,(char *) d->ranges[i].text)==0 ) {
-		    d->ret = (intpt) d->ranges[i].userdata;
+		    d->ret = (intptr_t) d->ranges[i].userdata;
 	    break;
 		}
 	    }

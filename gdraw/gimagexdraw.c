@@ -127,8 +127,8 @@ static void gdraw_32_on_1_nomag_dithered_masked(GXDisplay *gdisp, GImage *image,
     int i,j, index;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     int trans = base->trans;
-    uint32 *pt;
-    uint8 *ipt, *mpt;
+    uint32_t *pt;
+    uint8_t *ipt, *mpt;
     short *g_d;
     register int gd;
     int bit;
@@ -137,9 +137,9 @@ static void gdraw_32_on_1_nomag_dithered_masked(GXDisplay *gdisp, GImage *image,
 	gdisp->gg.green_dith[i] = 0;
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
-	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
-	ipt = (uint8 *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
-	mpt = (uint8 *) (gdisp->gg.mask->data) + (i-src->y)*gdisp->gg.mask->bytes_per_line;
+	pt = (uint32_t *) (base->data + i*base->bytes_per_line) + src->x;
+	ipt = (uint8_t *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
+	mpt = (uint8_t *) (gdisp->gg.mask->data) + (i-src->y)*gdisp->gg.mask->bytes_per_line;
 	if ( gdisp->gg.img->bitmap_bit_order == MSBFirst )
 	    bit = 0x80;
 	else
@@ -177,8 +177,8 @@ static void gdraw_32a_on_1_nomag_dithered(GXDisplay *gdisp, GImage *image, GRect
     unsigned int index;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     int trans = base->trans;
-    uint32 *pt;
-    uint8 *ipt, *mpt;
+    uint32_t *pt;
+    uint8_t *ipt, *mpt;
     short *g_d;
     register int gd;
     int bit;
@@ -187,9 +187,9 @@ static void gdraw_32a_on_1_nomag_dithered(GXDisplay *gdisp, GImage *image, GRect
 	gdisp->gg.green_dith[i] = 0;
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
-	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
-	ipt = (uint8 *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
-	mpt = (uint8 *) (gdisp->gg.mask->data) + (i-src->y)*gdisp->gg.mask->bytes_per_line;
+	pt = (uint32_t *) (base->data + i*base->bytes_per_line) + src->x;
+	ipt = (uint8_t *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
+	mpt = (uint8_t *) (gdisp->gg.mask->data) + (i-src->y)*gdisp->gg.mask->bytes_per_line;
 	if ( gdisp->gg.img->bitmap_bit_order == MSBFirst )
 	    bit = 0x80;
 	else
@@ -270,8 +270,8 @@ static void gdraw_32_on_1_nomag_dithered_nomask(GXDisplay *gdisp, GImage *image,
     struct gcol clut[256];
     int i,j, index;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
-    uint32 *pt;
-    uint8 *ipt;
+    uint32_t *pt;
+    uint8_t *ipt;
     short *g_d;
     register int gd;
     int bit;
@@ -282,8 +282,8 @@ static void gdraw_32_on_1_nomag_dithered_nomask(GXDisplay *gdisp, GImage *image,
 	gdisp->gg.green_dith[i] = 0;
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
-	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
-	ipt = (uint8 *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
+	pt = (uint32_t *) (base->data + i*base->bytes_per_line) + src->x;
+	ipt = (uint8_t *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
 	if ( gdisp->gg.img->bitmap_bit_order == MSBFirst )
 	    bit = 0x80;
 	else
@@ -314,7 +314,7 @@ static void gdraw_8_on_8_nomag_dithered_masked(GXDisplay *gdisp, GImage *image, 
     int i,j, index;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     int trans = base->trans;
-    uint8 *pt, *ipt, *mpt;
+    uint8_t *pt, *ipt, *mpt;
     short *r_d, *g_d, *b_d;
     register int rd, gd, bd;
     const struct gcol *pos;
@@ -328,9 +328,9 @@ static void gdraw_8_on_8_nomag_dithered_masked(GXDisplay *gdisp, GImage *image, 
 	gdisp->gg.red_dith[i]= gdisp->gg.green_dith[i] = gdisp->gg.blue_dith[i] = 0;
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
-	pt = (uint8 *) (base->data) + i*base->bytes_per_line + src->x;
-	ipt = (uint8 *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
-	mpt = (uint8 *) (gdisp->gg.mask->data) + (i-src->y)*gdisp->gg.mask->bytes_per_line;
+	pt = (uint8_t *) (base->data) + i*base->bytes_per_line + src->x;
+	ipt = (uint8_t *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
+	mpt = (uint8_t *) (gdisp->gg.mask->data) + (i-src->y)*gdisp->gg.mask->bytes_per_line;
 #if FAST_BITS
 	if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst )
 	    mbit = 0x80;
@@ -382,7 +382,7 @@ static void gdraw_8_on_8_nomag_nodithered_masked(GXDisplay *gdisp, GImage *image
     int i,index;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     int trans = base->trans;
-    register uint8 *pt, *ipt, *mpt;
+    register uint8_t *pt, *ipt, *mpt;
     struct gcol *pos; const struct gcol *temp;
 #if FAST_BITS
     int mbit;
@@ -396,9 +396,9 @@ static void gdraw_8_on_8_nomag_nodithered_masked(GXDisplay *gdisp, GImage *image
     }
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
-	pt = (uint8 *) (base->data) + i*base->bytes_per_line + src->x;
-	ipt = (uint8 *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
-	mpt = (uint8 *) (gdisp->gg.mask->data) + (i-src->y)*gdisp->gg.mask->bytes_per_line;
+	pt = (uint8_t *) (base->data) + i*base->bytes_per_line + src->x;
+	ipt = (uint8_t *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
+	mpt = (uint8_t *) (gdisp->gg.mask->data) + (i-src->y)*gdisp->gg.mask->bytes_per_line;
 #if FAST_BITS
 	if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst )
 	    mbit = 0x80;
@@ -437,8 +437,8 @@ static void gdraw_32_on_8_nomag_dithered_masked(GXDisplay *gdisp, GImage *image,
     int i,j;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     int trans = base->trans;
-    uint32 *pt, index;
-    uint8 *ipt, *mpt;
+    uint32_t *pt, index;
+    uint8_t *ipt, *mpt;
     short *r_d, *g_d, *b_d;
     register int rd, gd, bd;
     const struct gcol *pos;
@@ -450,9 +450,9 @@ static void gdraw_32_on_8_nomag_dithered_masked(GXDisplay *gdisp, GImage *image,
 	gdisp->gg.red_dith[i]= gdisp->gg.green_dith[i] = gdisp->gg.blue_dith[i] = 0;
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
-	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
-	ipt = (uint8 *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
-	mpt = (uint8 *) (gdisp->gg.mask->data) + (i-src->y)*gdisp->gg.mask->bytes_per_line;
+	pt = (uint32_t *) (base->data + i*base->bytes_per_line) + src->x;
+	ipt = (uint8_t *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
+	mpt = (uint8_t *) (gdisp->gg.mask->data) + (i-src->y)*gdisp->gg.mask->bytes_per_line;
 #if FAST_BITS
 	if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst )
 	    mbit = 0x80;
@@ -501,8 +501,8 @@ static void gdraw_32a_on_8_nomag_dithered(GXDisplay *gdisp, GImage *image, GRect
     int i,j;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     int trans = base->trans;
-    uint32 *pt, index;
-    uint8 *ipt, *mpt;
+    uint32_t *pt, index;
+    uint8_t *ipt, *mpt;
     short *r_d, *g_d, *b_d;
     register int rd, gd, bd;
     const struct gcol *pos;
@@ -514,9 +514,9 @@ static void gdraw_32a_on_8_nomag_dithered(GXDisplay *gdisp, GImage *image, GRect
 	gdisp->gg.red_dith[i]= gdisp->gg.green_dith[i] = gdisp->gg.blue_dith[i] = 0;
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
-	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
-	ipt = (uint8 *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
-	mpt = (uint8 *) (gdisp->gg.mask->data) + (i-src->y)*gdisp->gg.mask->bytes_per_line;
+	pt = (uint32_t *) (base->data + i*base->bytes_per_line) + src->x;
+	ipt = (uint8_t *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
+	mpt = (uint8_t *) (gdisp->gg.mask->data) + (i-src->y)*gdisp->gg.mask->bytes_per_line;
 #if FAST_BITS
 	if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst )
 	    mbit = 0x80;
@@ -565,16 +565,16 @@ static void gdraw_32_on_8_nomag_nodithered_masked(GXDisplay *gdisp, GImage *imag
     int i,j;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     int trans = base->trans;
-    uint32 *pt, index;
-    register uint8 *ipt, *mpt;
+    uint32_t *pt, index;
+    register uint8_t *ipt, *mpt;
 #if FAST_BITS
     int mbit;
 #endif
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
-	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
-	ipt = (uint8 *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
-	mpt = (uint8 *) (gdisp->gg.mask->data) + (i-src->y)*gdisp->gg.mask->bytes_per_line;
+	pt = (uint32_t *) (base->data + i*base->bytes_per_line) + src->x;
+	ipt = (uint8_t *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
+	mpt = (uint8_t *) (gdisp->gg.mask->data) + (i-src->y)*gdisp->gg.mask->bytes_per_line;
 #if FAST_BITS
 	if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst )
 	    mbit = 0x80;
@@ -613,16 +613,16 @@ static void gdraw_32a_on_8_nomag_nodithered(GXDisplay *gdisp, GImage *image, GRe
     int i,j;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     int trans = base->trans;
-    uint32 *pt, index;
-    register uint8 *ipt, *mpt;
+    uint32_t *pt, index;
+    register uint8_t *ipt, *mpt;
 #if FAST_BITS
     int mbit;
 #endif
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
-	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
-	ipt = (uint8 *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
-	mpt = (uint8 *) (gdisp->gg.mask->data) + (i-src->y)*gdisp->gg.mask->bytes_per_line;
+	pt = (uint32_t *) (base->data + i*base->bytes_per_line) + src->x;
+	ipt = (uint8_t *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
+	mpt = (uint8_t *) (gdisp->gg.mask->data) + (i-src->y)*gdisp->gg.mask->bytes_per_line;
 #if FAST_BITS
 	if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst )
 	    mbit = 0x80;
@@ -661,7 +661,7 @@ static void gdraw_8_on_8_nomag_dithered_nomask(GXDisplay *gdisp, GImage *image, 
     struct gcol clut[256];
     int i,j, index;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
-    uint8 *pt, *ipt;
+    uint8_t *pt, *ipt;
     short *r_d, *g_d, *b_d;
     register int rd, gd, bd;
     const struct gcol *pos;
@@ -672,8 +672,8 @@ static void gdraw_8_on_8_nomag_dithered_nomask(GXDisplay *gdisp, GImage *image, 
 	gdisp->gg.red_dith[i]= gdisp->gg.green_dith[i] = gdisp->gg.blue_dith[i] = 0;
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
-	pt = (uint8 *) (base->data) + i*base->bytes_per_line + src->x;
-	ipt = (uint8 *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
+	pt = (uint8_t *) (base->data) + i*base->bytes_per_line + src->x;
+	ipt = (uint8_t *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
 	rd = gd = bd = 0;
 	r_d = gdisp->gg.red_dith; g_d = gdisp->gg.green_dith; b_d = gdisp->gg.blue_dith;
 	for ( j=src->width-1; j>=0; --j ) {
@@ -696,7 +696,7 @@ static void gdraw_8_on_8_nomag_nodithered_nomask(GXDisplay *gdisp, GImage *image
     register int j;
     int i,index;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
-    register uint8 *pt, *ipt;
+    register uint8_t *pt, *ipt;
     struct gcol *pos; const struct gcol *temp;
 
     _GDraw_getimageclut(base,clut);
@@ -707,8 +707,8 @@ static void gdraw_8_on_8_nomag_nodithered_nomask(GXDisplay *gdisp, GImage *image
     }
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
-	pt = (uint8 *) (base->data) + i*base->bytes_per_line + src->x;
-	ipt = (uint8 *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
+	pt = (uint8_t *) (base->data) + i*base->bytes_per_line + src->x;
+	ipt = (uint8_t *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
 	for ( j=src->width-1; j>=0; --j ) {
 	    index = *pt++;
 	    *ipt++ = clut[index].pixel;
@@ -719,8 +719,8 @@ static void gdraw_8_on_8_nomag_nodithered_nomask(GXDisplay *gdisp, GImage *image
 static void gdraw_32_on_8_nomag_dithered_nomask(GXDisplay *gdisp, GImage *image, GRect *src) {
     int i,j;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
-    uint32 *pt, index;
-    uint8 *ipt;
+    uint32_t *pt, index;
+    uint8_t *ipt;
     short *r_d, *g_d, *b_d;
     register int rd, gd, bd;
     const struct gcol *pos;
@@ -729,8 +729,8 @@ static void gdraw_32_on_8_nomag_dithered_nomask(GXDisplay *gdisp, GImage *image,
 	gdisp->gg.red_dith[i]= gdisp->gg.green_dith[i] = gdisp->gg.blue_dith[i] = 0;
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
-	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
-	ipt = (uint8 *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
+	pt = (uint32_t *) (base->data + i*base->bytes_per_line) + src->x;
+	ipt = (uint8_t *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
 	rd = gd = bd = 0;
 	r_d = gdisp->gg.red_dith; g_d = gdisp->gg.green_dith; b_d = gdisp->gg.blue_dith;
 	for ( j=src->width-1; j>=0; --j ) {
@@ -750,12 +750,12 @@ static void gdraw_32_on_8_nomag_dithered_nomask(GXDisplay *gdisp, GImage *image,
 static void gdraw_32_on_8_nomag_nodithered_nomask(GXDisplay *gdisp, GImage *image, GRect *src) {
     int i,j;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
-    uint32 *pt, index;
-    register uint8 *ipt;
+    uint32_t *pt, index;
+    register uint8_t *ipt;
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
-	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
-	ipt = (uint8 *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
+	pt = (uint32_t *) (base->data + i*base->bytes_per_line) + src->x;
+	ipt = (uint8_t *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
 	for ( j=src->width-1; j>=0; --j ) {
 	    index = *pt++;
 	    *ipt++ = _GXDraw_GetScreenPixel(gdisp,index);
@@ -770,13 +770,13 @@ static void gdraw_8_on_16_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *s
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     int trans = base->trans;
 #if FAST_BITS==0
-    uint16 *mpt;
+    uint16_t *mpt;
 #else
     int mbit;
-    uint8 *mpt;
+    uint8_t *mpt;
 #endif
-    register uint8 *pt;
-    uint16 *ipt;
+    register uint8_t *pt;
+    uint16_t *ipt;
     struct gcol *pos;
     Color col;
 
@@ -790,12 +790,12 @@ static void gdraw_8_on_16_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *s
     }
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
-	pt = (uint8 *) (base->data) + i*base->bytes_per_line + src->x;
-	ipt = (uint16 *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
+	pt = (uint8_t *) (base->data) + i*base->bytes_per_line + src->x;
+	ipt = (uint16_t *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
 #if FAST_BITS==0
-	mpt = (uint16 *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
+	mpt = (uint16_t *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
 #else
-	mpt = (uint8 *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
+	mpt = (uint8_t *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
 	if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst )
 	    mbit = 0x80;
 	else
@@ -833,23 +833,23 @@ static void gdraw_32_on_16_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *
     int i,j;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     int trans = base->trans;
-    register uint32 *pt, index;
-    register uint16 *ipt;
+    register uint32_t *pt, index;
+    register uint16_t *ipt;
     int endian_mismatch = gdisp->endian_mismatch;
 #if FAST_BITS==0
-    register uint16 *mpt;
+    register uint16_t *mpt;
 #else
-    register uint8 *mpt;
+    register uint8_t *mpt;
     int mbit;
 #endif
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
-	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
-	ipt = (uint16 *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
+	pt = (uint32_t *) (base->data + i*base->bytes_per_line) + src->x;
+	ipt = (uint16_t *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
 #if FAST_BITS==0
-	mpt = (uint16 *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
+	mpt = (uint16_t *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
 #else
-	mpt = (uint8 *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
+	mpt = (uint8_t *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
 	if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst )
 	    mbit = 0x80;
 	else
@@ -889,23 +889,23 @@ static void gdraw_32a_on_16_nomag(GXDisplay *gdisp, GImage *image, GRect *src) {
     int i,j;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     int trans = base->trans;
-    register uint32 *pt, index;
-    register uint16 *ipt;
+    register uint32_t *pt, index;
+    register uint16_t *ipt;
     int endian_mismatch = gdisp->endian_mismatch;
 #if FAST_BITS==0
-    register uint16 *mpt;
+    register uint16_t *mpt;
 #else
-    register uint8 *mpt;
+    register uint8_t *mpt;
     int mbit;
 #endif
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
-	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
-	ipt = (uint16 *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
+	pt = (uint32_t *) (base->data + i*base->bytes_per_line) + src->x;
+	ipt = (uint16_t *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
 #if FAST_BITS==0
-	mpt = (uint16 *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
+	mpt = (uint16_t *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
 #else
-	mpt = (uint8 *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
+	mpt = (uint8_t *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
 	if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst )
 	    mbit = 0x80;
 	else
@@ -946,8 +946,8 @@ static void gdraw_8_on_16_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *s
     register int j;
     int i,index;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
-    register uint8 *pt;
-    uint16 *ipt;
+    register uint8_t *pt;
+    uint16_t *ipt;
     struct gcol *pos;
     Color col;
 
@@ -961,8 +961,8 @@ static void gdraw_8_on_16_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *s
     }
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
-	pt = (uint8 *) (base->data) + i*base->bytes_per_line + src->x;
-	ipt = (uint16 *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
+	pt = (uint8_t *) (base->data) + i*base->bytes_per_line + src->x;
+	ipt = (uint16_t *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
 	for ( j=src->width-1; j>=0; --j ) {
 	    index = *pt++;
 	    *ipt++ = clut[index].pixel;
@@ -973,13 +973,13 @@ static void gdraw_8_on_16_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *s
 static void gdraw_32_on_16_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *src) {
     int i,j;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
-    register uint32 *pt, index;
-    register uint16 *ipt;
+    register uint32_t *pt, index;
+    register uint16_t *ipt;
     int endian_mismatch = gdisp->endian_mismatch;
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
-	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
-	ipt = (uint16 *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
+	pt = (uint32_t *) (base->data + i*base->bytes_per_line) + src->x;
+	ipt = (uint16_t *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
 	for ( j=src->width-1; j>=0; --j ) {
 	    index = *pt++;
 	    *ipt++ = Pixel16(gdisp,index);
@@ -995,7 +995,7 @@ static void gdraw_8_on_any_nomag_glyph(GXDisplay *gdisp, GImage *image, GRect *s
     int i,index;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     int trans = base->trans;
-    register uint8 *pt;
+    register uint8_t *pt;
     struct gcol *pos;
     Color col;
     int msbf = gdisp->gg.img->byte_order == MSBFirst/*,
@@ -1004,7 +1004,7 @@ static void gdraw_8_on_any_nomag_glyph(GXDisplay *gdisp, GImage *image, GRect *s
     _GDraw_getimageclut(base,clut);
 
     if ( gdisp->pixel_size==16 ) {
-	uint16 *ipt;
+	uint16_t *ipt;
 	for ( i=base->clut->clut_len-1; i>=0; --i ) {
 	    pos = &clut[i];
 	    col = (pos->red<<16)|(pos->green<<8)|pos->blue;
@@ -1016,15 +1016,15 @@ static void gdraw_8_on_any_nomag_glyph(GXDisplay *gdisp, GImage *image, GRect *s
 	}
 
 	for ( i=src->y; i<src->y+src->height; ++i ) {
-	    pt = (uint8 *) (base->data) + i*base->bytes_per_line + src->x;
-	    ipt = (uint16 *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
+	    pt = (uint8_t *) (base->data) + i*base->bytes_per_line + src->x;
+	    ipt = (uint16_t *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
 	    for ( j=src->width-1; j>=0; --j ) {
 		index = *pt++;
 		*ipt++ = clut[index].pixel;
 	    }
 	}
     } else if ( gdisp->pixel_size==24 ) {
-	uint8 *ipt;
+	uint8_t *ipt;
 	for ( i=base->clut->clut_len-1; i>=0; --i ) {
 	    pos = &clut[i];
 	    pos->pixel = Pixel24(gdisp,COLOR_CREATE(pos->red,pos->green,pos->blue));
@@ -1033,10 +1033,10 @@ static void gdraw_8_on_any_nomag_glyph(GXDisplay *gdisp, GImage *image, GRect *s
 	}
 
 	for ( i=src->y; i<src->y+src->height; ++i ) {
-	    pt = (uint8 *) (base->data) + i*base->bytes_per_line + src->x;
-	    ipt = (uint8 *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
+	    pt = (uint8_t *) (base->data) + i*base->bytes_per_line + src->x;
+	    ipt = (uint8_t *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
 	    for ( j=src->width-1; j>=0; --j ) {
-		register uint32 col;
+		register uint32_t col;
 		index = *pt++;
 		col = clut[index].pixel;
 		if ( msbf ) {
@@ -1051,7 +1051,7 @@ static void gdraw_8_on_any_nomag_glyph(GXDisplay *gdisp, GImage *image, GRect *s
 	    }
 	}
     } else {
-	uint32 *ipt;
+	uint32_t *ipt;
 	for ( i=base->clut->clut_len-1; i>=0; --i ) {
 	    pos = &clut[i];
 	    pos->pixel = Pixel32(gdisp,COLOR_CREATE(pos->red,pos->green,pos->blue));
@@ -1062,8 +1062,8 @@ static void gdraw_8_on_any_nomag_glyph(GXDisplay *gdisp, GImage *image, GRect *s
 	}
 
 	for ( i=src->y; i<src->y+src->height; ++i ) {
-	    pt = (uint8 *) (base->data) + i*base->bytes_per_line + src->x;
-	    ipt = (uint32 *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
+	    pt = (uint8_t *) (base->data) + i*base->bytes_per_line + src->x;
+	    ipt = (uint32_t *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
 	    for ( j=src->width-1; j>=0; --j ) {
 		index = *pt++;
 		*ipt++ = clut[index].pixel;
@@ -1081,8 +1081,8 @@ static void gdraw_8_on_24_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *s
 #endif
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     int trans = base->trans;
-    register uint8 *ipt;
-    register uint8 *pt, *mpt;
+    register uint8_t *ipt;
+    register uint8_t *pt, *mpt;
     struct gcol *pos;
     int msbf = gdisp->gg.img->byte_order == MSBFirst/*,
 	    msBf = gdisp->gg.mask->bitmap_bit_order == MSBFirst*/;
@@ -1094,9 +1094,9 @@ static void gdraw_8_on_24_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *s
     }
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
-	pt = (uint8 *) (base->data) + i*base->bytes_per_line + src->x;
-	ipt = (uint8 *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
-	mpt = (uint8 *) (gdisp->gg.mask->data) + (i-src->y)*gdisp->gg.mask->bytes_per_line;
+	pt = (uint8_t *) (base->data) + i*base->bytes_per_line + src->x;
+	ipt = (uint8_t *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
+	mpt = (uint8_t *) (gdisp->gg.mask->data) + (i-src->y)*gdisp->gg.mask->bytes_per_line;
 #if FAST_BITS
 	if ( msBf )
 	    mbit = 0x80;
@@ -1113,7 +1113,7 @@ static void gdraw_8_on_24_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *s
 #endif
 		*ipt++ = 0x00; *ipt++ = 0x00; *ipt++ = 0x00;
 	    } else {
-		register uint32 col = clut[index].pixel;
+		register uint32_t col = clut[index].pixel;
 		if ( msbf ) {
 		    *ipt++ = col>>16;
 		    *ipt++ = (col>>8)&0xff;
@@ -1144,17 +1144,17 @@ static void gdraw_32_on_24_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *
     int i,j;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     int trans = base->trans;
-    register uint32 *pt, index;
-    register uint8 *mpt, *ipt;
+    register uint32_t *pt, index;
+    register uint8_t *mpt, *ipt;
 #if FAST_BITS
     int mbit;
 #endif
     int msbf = gdisp->gg.img->byte_order == MSBFirst;
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
-	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
-	ipt = (uint8 *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
-	mpt = (uint8 *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
+	pt = (uint32_t *) (base->data + i*base->bytes_per_line) + src->x;
+	ipt = (uint8_t *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
+	mpt = (uint8_t *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
 #if FAST_BITS
 	if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst )
 	    mbit = 0x80;
@@ -1202,17 +1202,17 @@ static void gdraw_32a_on_24_nomag(GXDisplay *gdisp, GImage *image, GRect *src) {
     int i,j;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     int trans = base->trans;
-    register uint32 *pt, index;
-    register uint8 *mpt, *ipt;
+    register uint32_t *pt, index;
+    register uint8_t *mpt, *ipt;
 #if FAST_BITS
     int mbit;
 #endif
     int msbf = gdisp->gg.img->byte_order == MSBFirst;
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
-	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
-	ipt = (uint8 *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
-	mpt = (uint8 *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
+	pt = (uint32_t *) (base->data + i*base->bytes_per_line) + src->x;
+	ipt = (uint8_t *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
+	mpt = (uint8_t *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
 #if FAST_BITS
 	if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst )
 	    mbit = 0x80;
@@ -1258,8 +1258,8 @@ static void gdraw_32a_on_24_nomag(GXDisplay *gdisp, GImage *image, GRect *src) {
 
 static void gdraw_8_on_24_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *src) {
     struct gcol clut[256];
-    register uint8 *ipt;
-    register uint8 *pt;
+    register uint8_t *ipt;
+    register uint8_t *pt;
     register int index, j;
     int i;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
@@ -1272,8 +1272,8 @@ static void gdraw_8_on_24_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *s
     }
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
-	pt = (uint8 *) (base->data) + i*base->bytes_per_line + src->x;
-	ipt = (uint8 *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
+	pt = (uint8_t *) (base->data) + i*base->bytes_per_line + src->x;
+	ipt = (uint8_t *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
 	if ( gdisp->gg.img->byte_order == MSBFirst ) {
 	    for ( j=src->width-1; j>=0; --j ) {
 		index = *pt++;
@@ -1297,12 +1297,12 @@ static void gdraw_8_on_24_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *s
 static void gdraw_32_on_24_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *src) {
     int i,j;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
-    register uint32 *pt, index;
-    register uint8 *ipt;
+    register uint32_t *pt, index;
+    register uint8_t *ipt;
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
-	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
-	ipt = (uint8 *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
+	pt = (uint32_t *) (base->data + i*base->bytes_per_line) + src->x;
+	ipt = (uint8_t *) (gdisp->gg.img->data) + (i-src->y)*gdisp->gg.img->bytes_per_line;
 	if ( gdisp->gg.img->byte_order == MSBFirst ) {
 	    for ( j=src->width-1; j>=0; --j ) {
 		index = *pt++;
@@ -1329,8 +1329,8 @@ static void gdraw_8_on_32a_nomag(GXDisplay *gdisp, GImage *image, GRect *src) {
     int i,index;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     int trans = base->trans;
-    register uint8 *pt;
-    uint32 *ipt;
+    register uint8_t *pt;
+    uint32_t *ipt;
     struct gcol *pos;
 
     _GDraw_getimageclut(base,clut);
@@ -1344,8 +1344,8 @@ static void gdraw_8_on_32a_nomag(GXDisplay *gdisp, GImage *image, GRect *src) {
     }
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
-	pt = (uint8 *) (base->data) + i*base->bytes_per_line + src->x;
-	ipt = (uint32 *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
+	pt = (uint8_t *) (base->data) + i*base->bytes_per_line + src->x;
+	ipt = (uint32_t *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
 	for ( j=src->width-1; j>=0; --j ) {
 	    index = *pt++;
 	    *ipt++ = clut[index].pixel;
@@ -1358,13 +1358,13 @@ static void gdraw_8a_on_32a_nomag(GXDisplay *gdisp, GImage *image, GRect *src,
     register int j;
     int i,index;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
-    register uint8 *pt;
-    uint32 *ipt;
-    uint32 fg_pixel = Pixel32(gdisp,fg) & 0xffffff;
+    register uint8_t *pt;
+    uint32_t *ipt;
+    uint32_t fg_pixel = Pixel32(gdisp,fg) & 0xffffff;
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
-	pt = (uint8 *) (base->data) + i*base->bytes_per_line + src->x;
-	ipt = (uint32 *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
+	pt = (uint8_t *) (base->data) + i*base->bytes_per_line + src->x;
+	ipt = (uint32_t *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
 	for ( j=src->width-1; j>=0; --j ) {
 	    index = *pt++;
 	    *ipt++ = fg_pixel | (index<<24);
@@ -1376,13 +1376,13 @@ static void gdraw_32_on_32a_nomag(GXDisplay *gdisp, GImage *image, GRect *src) {
     int i,j;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     int trans = base->trans;
-    register uint32 *pt, index, *ipt;
+    register uint32_t *pt, index, *ipt;
     int endian_mismatch = gdisp->endian_mismatch;
     int has_alpha = base->image_type == it_rgba;
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
-	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
-	ipt = (uint32 *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
+	pt = (uint32_t *) (base->data + i*base->bytes_per_line) + src->x;
+	ipt = (uint32_t *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
 	for ( j=src->width-1; j>=0; --j ) {
 	    index = *pt++;
 	    if ( index==trans ) {
@@ -1404,15 +1404,15 @@ static void gdraw_8_on_32_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *s
     register int j;
     int i,index;
 #if FAST_BITS==0
-    register uint32 *mpt;
+    register uint32_t *mpt;
 #else
     int mbit;
-    register uint8 *mpt;
+    register uint8_t *mpt;
 #endif
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     int trans = base->trans;
-    register uint8 *pt;
-    uint32 *ipt;
+    register uint8_t *pt;
+    uint32_t *ipt;
     struct gcol *pos;
 
     _GDraw_getimageclut(base,clut);
@@ -1424,12 +1424,12 @@ static void gdraw_8_on_32_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *s
     }
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
-	pt = (uint8 *) (base->data) + i*base->bytes_per_line + src->x;
-	ipt = (uint32 *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
+	pt = (uint8_t *) (base->data) + i*base->bytes_per_line + src->x;
+	ipt = (uint32_t *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
 #if FAST_BITS==0
-	mpt = (uint32 *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
+	mpt = (uint32_t *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
 #else
-	mpt = (uint8 *) (gdisp->gg.mask->data) + (i-src->y)*gdisp->gg.mask->bytes_per_line;
+	mpt = (uint8_t *) (gdisp->gg.mask->data) + (i-src->y)*gdisp->gg.mask->bytes_per_line;
 	if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst )
 	    mbit = 0x80;
 	else
@@ -1467,22 +1467,22 @@ static void gdraw_32_on_32_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *
     int i,j;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     int trans = base->trans;
-    register uint32 *pt, index, *ipt;
+    register uint32_t *pt, index, *ipt;
     int endian_mismatch = gdisp->endian_mismatch;
 #if FAST_BITS==0
-    register uint32 *mpt;
+    register uint32_t *mpt;
 #else
-    register uint8 *mpt;
+    register uint8_t *mpt;
     int mbit;
 #endif
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
-	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
-	ipt = (uint32 *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
+	pt = (uint32_t *) (base->data + i*base->bytes_per_line) + src->x;
+	ipt = (uint32_t *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
 #if FAST_BITS==0
-	mpt = (uint32 *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
+	mpt = (uint32_t *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
 #else
-	mpt = (uint8 *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
+	mpt = (uint8_t *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
 	if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst )
 	    mbit = 0x80;
 	else
@@ -1522,22 +1522,22 @@ static void gdraw_32a_on_32_nomag(GXDisplay *gdisp, GImage *image, GRect *src) {
     int i,j;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
     int trans = base->trans;
-    register uint32 *pt, index, *ipt;
+    register uint32_t *pt, index, *ipt;
     int endian_mismatch = gdisp->endian_mismatch;
 #if FAST_BITS==0
-    register uint32 *mpt;
+    register uint32_t *mpt;
 #else
-    register uint8 *mpt;
+    register uint8_t *mpt;
     int mbit;
 #endif
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
-	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
-	ipt = (uint32 *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
+	pt = (uint32_t *) (base->data + i*base->bytes_per_line) + src->x;
+	ipt = (uint32_t *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
 #if FAST_BITS==0
-	mpt = (uint32 *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
+	mpt = (uint32_t *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
 #else
-	mpt = (uint8 *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
+	mpt = (uint8_t *) (gdisp->gg.mask->data + (i-src->y)*gdisp->gg.mask->bytes_per_line);
 	if ( gdisp->gg.mask->bitmap_bit_order == MSBFirst )
 	    mbit = 0x80;
 	else
@@ -1578,8 +1578,8 @@ static void gdraw_8_on_32_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *s
     register int j;
     int i,index;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
-    register uint8 *pt;
-    uint32 *ipt;
+    register uint8_t *pt;
+    uint32_t *ipt;
     struct gcol *pos;
 
     _GDraw_getimageclut(base,clut);
@@ -1591,8 +1591,8 @@ static void gdraw_8_on_32_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *s
     }
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
-	pt = (uint8 *) (base->data) + i*base->bytes_per_line + src->x;
-	ipt = (uint32 *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
+	pt = (uint8_t *) (base->data) + i*base->bytes_per_line + src->x;
+	ipt = (uint32_t *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
 	for ( j=src->width-1; j>=0; --j ) {
 	    index = *pt++;
 	    *ipt++ = clut[index].pixel;
@@ -1603,12 +1603,12 @@ static void gdraw_8_on_32_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *s
 static void gdraw_32_on_32_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *src) {
     int i,j;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
-    register uint32 *pt, index, *ipt;
+    register uint32_t *pt, index, *ipt;
     int endian_mismatch = gdisp->endian_mismatch;
 
     for ( i=src->y; i<src->y+src->height; ++i ) {
-	pt = (uint32 *) (base->data + i*base->bytes_per_line) + src->x;
-	ipt = (uint32 *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
+	pt = (uint32_t *) (base->data + i*base->bytes_per_line) + src->x;
+	ipt = (uint32_t *) (gdisp->gg.img->data + (i-src->y)*gdisp->gg.img->bytes_per_line);
 	for ( j=src->width-1; j>=0; --j ) {
 	    index = *pt++;
 	    *ipt++ = Pixel32(gdisp,index);
@@ -1668,7 +1668,7 @@ static void gdraw_bitmap(GXWindow w, struct _GImage *image, GClut *clut,
 	Color trans, GRect *src, int x, int y) {
     XImage *xi;
     GXDisplay *gdisp = w->display;
-    uint8 *newdata = NULL;
+    uint8_t *newdata = NULL;
 
     xi = XCreateImage(gdisp->display,gdisp->visual,1,XYBitmap,0,(char *) (image->data),
 	    image->width, image->height,8,image->bytes_per_line);
@@ -1676,7 +1676,7 @@ static void gdraw_bitmap(GXWindow w, struct _GImage *image, GClut *clut,
 	/* sigh. The server doesn't use our convention. I might be able just */
 	/*  to change this field but it doesn't say, so best not to */
 	int len = image->bytes_per_line*image->height;
-	uint8 *pt, *ipt, *end;
+	uint8_t *pt, *ipt, *end;
 	int m1,m2,val;
 
 	for ( ipt = image->data, pt=newdata=malloc(len), end=pt+len; pt<end; ++pt, ++ipt ) {
@@ -1688,7 +1688,7 @@ static void gdraw_bitmap(GXWindow w, struct _GImage *image, GClut *clut,
 	xi->data = (char *) newdata;
     }
     gdraw_xbitmap(w,xi,clut,trans,src,x,y);
-    if ( (uint8 *) (xi->data)==image->data || (uint8 *) (xi->data)==newdata ) xi->data = NULL;
+    if ( (uint8_t *) (xi->data)==image->data || (uint8_t *) (xi->data)==newdata ) xi->data = NULL;
     XDestroyImage(xi);
 }
 
@@ -1696,7 +1696,7 @@ static void check_image_buffers(GXDisplay *gdisp, int neww, int newh, int is_bit
     int width = gdisp->gg.iwidth, height = gdisp->gg.iheight;
     char *temp;
     int depth = gdisp->depth, pixel_size;
-    union { int32 foo; uint8 bar[4]; } endian;
+    union { int32_t foo; uint8_t bar[4]; } endian;
 
     if ( is_bitmap ) depth=1;
     if ( neww > gdisp->gg.iwidth ) {
@@ -1933,7 +1933,7 @@ static void gximage_to_ximage(GXWindow gw, GImage *image, GRect *src) {
     }
 }
 
-void _GXDraw_Image( GWindow _w, GImage *image, GRect *src, int32 x, int32 y) {
+void _GXDraw_Image( GWindow _w, GImage *image, GRect *src, int32_t x, int32_t y) {
     GXWindow gw = (GXWindow) _w;
     GXDisplay *gdisp = gw->display;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
@@ -2057,7 +2057,7 @@ return;
 /*  generally run in the opposite direction from the alpha channel (100%=fore, */
 /*  0%=back) we will need to reverse the "or" to be an "and", but the idea    */
 /*  is the same */
-void _GXDraw_Glyph( GWindow _w, GImage *image, GRect *src, int32 x, int32 y) {
+void _GXDraw_Glyph( GWindow _w, GImage *image, GRect *src, int32_t x, int32_t y) {
     GXWindow gw = (GXWindow) _w;
     GXDisplay *gdisp = gw->display;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
@@ -2104,7 +2104,7 @@ GImage *_GImageExtract(struct _GImage *base,GRect *src,GRect *size,
 	double xscale, double yscale) {
     static GImage temp;
     static struct _GImage tbase;
-    static uint8 *data;
+    static uint8_t *data;
     static int dlen;
     int r,c;
 
@@ -2129,8 +2129,8 @@ GImage *_GImageExtract(struct _GImage *base,GRect *src,GRect *size,
 	memset(data,0,tbase.height*tbase.bytes_per_line);
 	for ( r=0; r<size->height; ++r ) {
 	    int or = ((int) floor( (r+size->y)/yscale ));
-	    uint8 *pt = data+r*tbase.bytes_per_line;
-	    uint8 *opt = base->data+or*base->bytes_per_line;
+	    uint8_t *pt = data+r*tbase.bytes_per_line;
+	    uint8_t *opt = base->data+or*base->bytes_per_line;
 	    for ( c=0; c<size->width; ++c ) {
 		int oc = ((int) floor( (c+size->x)/xscale));
 		if ( opt[oc>>3] & (0x80>>(oc&7)) )
@@ -2140,8 +2140,8 @@ GImage *_GImageExtract(struct _GImage *base,GRect *src,GRect *size,
     } else if ( base->image_type==it_index ) {
 	for ( r=0; r<size->height; ++r ) {
 	    int or = ((int) floor( (r+size->y)/yscale ));
-	    uint8 *pt = data+r*tbase.bytes_per_line;
-	    uint8 *opt = base->data+or*base->bytes_per_line;
+	    uint8_t *pt = data+r*tbase.bytes_per_line;
+	    uint8_t *opt = base->data+or*base->bytes_per_line;
 	    for ( c=0; c<size->width; ++c ) {
 		int oc = ((int) floor( (c+size->x)/xscale));
 		*pt++ = opt[oc];
@@ -2150,8 +2150,8 @@ GImage *_GImageExtract(struct _GImage *base,GRect *src,GRect *size,
     } else {
 	for ( r=0; r<size->height; ++r ) {
 	    int or = ((int) floor( (r+size->y)/yscale ));
-	    uint32 *pt = (uint32 *) (data+r*tbase.bytes_per_line);
-	    uint32 *opt = (uint32 *) (base->data+or*base->bytes_per_line);
+	    uint32_t *pt = (uint32_t *) (data+r*tbase.bytes_per_line);
+	    uint32_t *opt = (uint32_t *) (base->data+or*base->bytes_per_line);
 	    for ( c=0; c<size->width; ++c ) {
 		int oc = ((int) floor( (c+size->x)/xscale));
 		*pt++ = opt[oc];
@@ -2165,7 +2165,7 @@ return( &temp );
 /*  then extract the given given rectangle (in magnified coords) and */
 /*  place it on the screen at x,y */
 void _GXDraw_ImageMagnified(GWindow _w, GImage *image, GRect *magsrc,
-	int32 x, int32 y, int32 width, int32 height) {
+	int32_t x, int32_t y, int32_t width, int32_t height) {
     GXWindow gw = (GXWindow) _w;
     GXDisplay *gdisp = gw->display;
     struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
@@ -2236,17 +2236,17 @@ return( NULL );
     base->width = xi->width;
     base->height = xi->height;
     base->bytes_per_line = xi->bytes_per_line;
-    base->data = (uint8 *) (xi->data);
+    base->data = (uint8_t *) (xi->data);
     base->clut = NULL;
     base->trans = COLOR_UNKNOWN;
 
     if ( xi->bitmap_bit_order==LSBFirst ) {
 	/* sigh. The server doesn't use our convention. invert all bytes */
 	int len = base->height*base->bytes_per_line;
-	uint8 *newdata = malloc(len), *pt, *ipt, *end;
+	uint8_t *newdata = malloc(len), *pt, *ipt, *end;
 	int m1,m2,val;
 
-	for ( ipt = (uint8 *) xi->data, pt=newdata, end=pt+len; pt<end; ++pt, ++ipt ) {
+	for ( ipt = (uint8_t *) xi->data, pt=newdata, end=pt+len; pt<end; ++pt, ++ipt ) {
 	    val = 0;
 	    for ( m1=1, m2=0x80; m2!=0; m1<<=1, m2>>=1 )
 		if ( *ipt&m1 ) val|=m2;
@@ -2284,7 +2284,7 @@ return( NULL );
     base->width = xi->width;
     base->height = xi->height;
     base->bytes_per_line = xi->bytes_per_line;
-    base->data = (uint8 *) xi->data;
+    base->data = (uint8_t *) xi->data;
     base->clut = clut;
     base->trans = COLOR_UNKNOWN;
 
@@ -2301,7 +2301,7 @@ return( gi );
 static GImage *xi16_to_gi32(GXDisplay *gdisp,XImage *xi) {
     GImage *gi;
     struct _GImage *base;
-    uint16 *pt; uint32 *ipt, val;
+    uint16_t *pt; uint32_t *ipt, val;
     int i,j,rs,gs,bs;
     int rs2,gs2=0,bs2;
     int rm, gm, bm;
@@ -2342,8 +2342,8 @@ return( NULL );
     }
 
     for ( i=0; i<base->height; ++i ) {
-	pt = (uint16 *) (xi->data + i*xi->bytes_per_line);
-	ipt = (uint32 *) (base->data + i*base->bytes_per_line);
+	pt = (uint16_t *) (xi->data + i*xi->bytes_per_line);
+	ipt = (uint32_t *) (base->data + i*base->bytes_per_line);
 	for ( j=0; j<base->width; ++j ) {
 	    val = *pt++;
 	    if ( val!=0 )
@@ -2357,7 +2357,7 @@ return( gi );
 static GImage *xi24_to_gi32(GXDisplay *gdisp,XImage *xi) {
     GImage *gi;
     struct _GImage *base;
-    uint8 *pt; uint32 *ipt, val;
+    uint8_t *pt; uint32_t *ipt, val;
     int i,j,rs,gs,bs;
 
     if (( gi = GImageCreate(it_true,xi->width,xi->height))==NULL )
@@ -2366,8 +2366,8 @@ return( NULL );
 
     rs = gdisp->cs.red_shift; gs = gdisp->cs.green_shift; bs = gdisp->cs.blue_shift;
     for ( i=0; i<base->height; ++i ) {
-	pt = (uint8 *) xi->data + i*xi->bytes_per_line;
-	ipt = (uint32 *) (base->data + i*base->bytes_per_line);
+	pt = (uint8_t *) xi->data + i*xi->bytes_per_line;
+	ipt = (uint32_t *) (base->data + i*base->bytes_per_line);
 	for ( j=0; j<base->width; ++j ) {
 	    if ( xi->byte_order==MSBFirst ) {
 		val = *pt++;
@@ -2387,7 +2387,7 @@ return( gi );
 static GImage *xi32_to_gi32(GXDisplay *gdisp,XImage *xi) {
     GImage *gi;
     struct _GImage *base;
-    uint32 *pt; uint32 *ipt, val;
+    uint32_t *pt; uint32_t *ipt, val;
     int i,j,rs,gs,bs;
 
     if (( gi = GImageCreate(it_true,xi->width,xi->height))==NULL )
@@ -2396,8 +2396,8 @@ return( NULL );
 
     rs = gdisp->cs.red_shift; gs = gdisp->cs.green_shift; bs = gdisp->cs.blue_shift;
     for ( i=0; i<base->height; ++i ) {
-	pt = (uint32 *) (xi->data + i*xi->bytes_per_line);
-	ipt = (uint32 *) (base->data + i*base->bytes_per_line);
+	pt = (uint32_t *) (xi->data + i*xi->bytes_per_line);
+	ipt = (uint32_t *) (base->data + i*base->bytes_per_line);
 	for ( j=0; j<base->width; ++j ) {
 	    val = *pt++;
 	    *ipt++ = COLOR_CREATE((val>>rs)&0xff,(val>>gs)&0xff,(val>>bs)&0xff);

@@ -331,11 +331,11 @@ static int SCPointCount(SplineChar *sc) {
 return( ptcnt );
 }
 
-int16 **SCFindDeltas(MMSet *mm, int gid, int *_ptcnt) {
+int16_t **SCFindDeltas(MMSet *mm, int gid, int *_ptcnt) {
     /* When figuring out the deltas the first thing we must do is figure */
     /*  out each point's number */
     int i, j, k, l, cnt, ptcnt;
-    int16 **deltas;
+    int16_t **deltas;
     SplineSet *ss1, *ss2;
     SplinePoint *sp1, *sp2;
     RefChar *r1, *r2;
@@ -346,9 +346,9 @@ return( NULL );
 return( NULL );
 
     *_ptcnt = ptcnt = SCPointCount(mm->normal->glyphs[gid])+4;
-    deltas = malloc(2*mm->instance_count*sizeof(int16 *));
+    deltas = malloc(2*mm->instance_count*sizeof(int16_t *));
     for ( i=0; i<2*mm->instance_count; ++i )
-	deltas[i] = calloc(ptcnt,sizeof(int16));
+	deltas[i] = calloc(ptcnt,sizeof(int16_t));
     for ( i=0; i<mm->instance_count; ++i ) {
 	for ( ss1=mm->normal->glyphs[gid]->layers[ly_fore].splines,
 		  ss2=mm->instances[i]->glyphs[gid]->layers[ly_fore].splines;
@@ -433,9 +433,9 @@ return( NULL );
 return( deltas );
 }
 
-int16 **CvtFindDeltas(MMSet *mm, int *_ptcnt) {
+int16_t **CvtFindDeltas(MMSet *mm, int *_ptcnt) {
     int i, j, k, l, cnt, ptcnt;
-    int16 **deltas;
+    int16_t **deltas;
     struct ttf_table *cvt, *icvt;
     for ( cvt = mm->normal->ttf_tables; cvt!=NULL && cvt->tag!=CHR('c','v','t',' '); cvt=cvt->next );
 
@@ -450,12 +450,12 @@ return( NULL );
 return( NULL );
 
     *_ptcnt = ptcnt = cvt->len/2;
-    deltas = calloc(mm->instance_count,sizeof(int16 *));
+    deltas = calloc(mm->instance_count,sizeof(int16_t *));
     for ( i=0; i<mm->instance_count; ++i ) if ( (icvt=mm->instances[i]->ttf_tables)!=NULL ) {
-	deltas[i] = calloc(ptcnt,sizeof(int16));
+	deltas[i] = calloc(ptcnt,sizeof(int16_t));
 	for ( j=0; j<ptcnt; ++j )
-	    deltas[i][j] = memushort(icvt->data,icvt->len, sizeof(uint16)*j)-
-		    memushort(cvt->data,cvt->len, sizeof(uint16)*j);
+	    deltas[i][j] = memushort(icvt->data,icvt->len, sizeof(uint16_t)*j)-
+		    memushort(cvt->data,cvt->len, sizeof(uint16_t)*j);
     }
 
     /* Ok, each delta now contains the difference between the instance[i] points */
@@ -506,12 +506,12 @@ return( deltas );
 }
 
 static void ttf_dumpcvar(struct alltabs *at, MMSet *mm) {
-    int16 **deltas;
+    int16_t **deltas;
     int ptcnt, cnt, pcnt;
     int i,j,rj,big;
     int tuple_size;
-    uint32 start, end;
-    uint16 *pts;
+    uint32_t start, end;
+    uint16_t *pts;
 
     deltas = CvtFindDeltas(mm,&ptcnt);
     if ( deltas == NULL ) return;
@@ -543,7 +543,7 @@ return;
 	for ( j=pcnt=0; j<ptcnt; ++j )
 	    if ( deltas[i][j]!=0 )
 		++pcnt;
-	pts = malloc(pcnt*sizeof(uint16));
+	pts = malloc(pcnt*sizeof(uint16_t));
 	for ( j=pcnt=0; j<ptcnt; ++j )
 	    if ( deltas[i][j]!=0 )
 		pts[pcnt++]=j;
@@ -612,7 +612,7 @@ return;
 	putshort(at->cvar,0);
 }
 
-static void dumpdeltas(struct alltabs *at,int16 *deltas,int ptcnt) {
+static void dumpdeltas(struct alltabs *at,int16_t *deltas,int ptcnt) {
     int j,rj;
 
     for ( j=0; j<ptcnt; ) {
@@ -649,8 +649,8 @@ static void dumpdeltas(struct alltabs *at,int16 *deltas,int ptcnt) {
 
 static void ttf_dumpgvar(struct alltabs *at, MMSet *mm) {
     int i,j, last;
-    uint32 gcoordoff, glyphoffs, start, here, tupledataend, tupledatastart;
-    int16 **deltas;
+    uint32_t gcoordoff, glyphoffs, start, here, tupledataend, tupledatastart;
+    int16_t **deltas;
     int ptcnt;
 
     at->gvar = GFileTmpfile();
@@ -747,7 +747,7 @@ return;					/* No need for a variation table */
 	putshort(at->avar,0);
 }
 
-static uint32 AxisNameToTag(char *name) {
+static uint32_t AxisNameToTag(char *name) {
     char buf[4];
     int i;
 

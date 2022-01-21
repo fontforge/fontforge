@@ -51,7 +51,7 @@ int GImageWriteXpm(GImage *gi, char *filename) {
     struct _GImage *base = gi->list_len==0?gi->u.image:gi->u.images[0];
     FILE *file;
     char stem[256];
-    char *pt,*color_type; uint8 *scanline;
+    char *pt,*color_type; uint8_t *scanline;
     int i,j;
 
     /* This routine only exports mono or color-indexed type images */

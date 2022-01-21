@@ -80,7 +80,7 @@ static void GListClose(GList *l) {
 static int GListTopInWindow(GList *gl,int last) {
     /* If we want to display last at the bottom of our list, then what line */
     /*  do we display at the top? */
-    int32 height = gl->g.inner.height, temp;
+    int32_t height = gl->g.inner.height, temp;
     int l;
 
     for ( l=last; l>=0; --l ) {
@@ -95,7 +95,7 @@ return( 0 );
 static int GListLinesInWindow(GList *gl,int first) {
     /* Ok, the first line displayed is "first", how many others do we have */
     /*  room for? */
-    int32 height = gl->g.inner.height, temp;
+    int32_t height = gl->g.inner.height, temp;
     int l, lcnt=0;
 
     for ( l=first; l<gl->ltot; ++l ) {
@@ -154,7 +154,7 @@ return( true );
 return( false );
 }
 
-static int32 GListGetFirstSelPos(GGadget *g) {
+static int32_t GListGetFirstSelPos(GGadget *g) {
     int i;
     GList *gl = (GList *) g;
 
@@ -165,7 +165,7 @@ return( i );
 return( -1 );
 }
 
-static void GListSelect(GGadget *g, int32 pos, int32 sel) {
+static void GListSelect(GGadget *g, int32_t pos, int32_t sel) {
     GList *gl = (GList *) g;
     int i;
 
@@ -189,7 +189,7 @@ return;
     }
 }
 
-static void GListSelectOne(GGadget *g, int32 pos) {
+static void GListSelectOne(GGadget *g, int32_t pos) {
     GList *gl = (GList *) g;
 
     GListClearSel(gl);
@@ -201,7 +201,7 @@ static void GListSelectOne(GGadget *g, int32 pos) {
     }
 }
 
-static int32 GListIsItemSelected(GGadget *g, int32 pos) {
+static int32_t GListIsItemSelected(GGadget *g, int32_t pos) {
     GList *gl = (GList *) g;
 
     if ( pos>=gl->ltot )
@@ -331,14 +331,14 @@ static int GListAdjustPos(GGadget *g,int pos) {
 return( newoff );
 }
 
-static void GListShowPos(GGadget *g,int32 pos) {
+static void GListShowPos(GGadget *g,int32_t pos) {
     GList *gl = (GList *) g;
     int newoff = GListAdjustPos(g,pos);
     if ( newoff!=gl->loff )
 	GListScrollBy(gl,newoff-gl->loff,0);
 }
 
-static void GListScrollToText(GGadget *g,const unichar_t *text,int32 sel) {
+static void GListScrollToText(GGadget *g,const unichar_t *text,int32_t sel) {
     GList *gl = (GList *) g;
     int pos;
 
@@ -412,7 +412,7 @@ static int GListFindXMax(GList *gl) {
 return( width );
 }
 
-static void GListSetList(GGadget *g,GTextInfo **ti,int32 docopy) {
+static void GListSetList(GGadget *g,GTextInfo **ti,int32_t docopy) {
     GList *gl = (GList *) g;
     int same;
 
@@ -434,13 +434,13 @@ static void GListClear(GGadget *g) {
     GListSetList(g,NULL,true);
 }
 
-static GTextInfo **GListGetList(GGadget *g,int32 *len) {
+static GTextInfo **GListGetList(GGadget *g,int32_t *len) {
     GList *gl = (GList *) g;
     if ( len!=NULL ) *len = gl->ltot;
 return( gl->ti );
 }
 
-static GTextInfo *GListGetListItem(GGadget *g,int32 pos) {
+static GTextInfo *GListGetListItem(GGadget *g,int32_t pos) {
     GList *gl = (GList *) g;
     if ( pos<0 || pos>=gl->ltot )
 return( NULL );
@@ -606,7 +606,7 @@ return( true );
 
 static int glist_key(GGadget *g, GEvent *event) {
     GList *gl = (GList *) g;
-    uint16 keysym = event->u.chr.keysym;
+    uint16_t keysym = event->u.chr.keysym;
     int sofar_pos = gl->sofar_pos;
     int loff, xoff, sel=-1;
     int refresh = false;
@@ -815,14 +815,14 @@ static void glist_redraw(GGadget *g) {
     _ggadget_redraw(g);
 }
 
-static void glist_move(GGadget *g, int32 x, int32 y ) {
+static void glist_move(GGadget *g, int32_t x, int32_t y ) {
     GList *gl = (GList *) g;
     if ( gl->vsb!=NULL )
 	_ggadget_move((GGadget *) (gl->vsb),x+(gl->vsb->g.r.x-g->r.x),y);
     _ggadget_move(g,x,y);
 }
 
-static void glist_resize(GGadget *g, int32 width, int32 height ) {
+static void glist_resize(GGadget *g, int32_t width, int32_t height ) {
     GList *gl = (GList *) g;
     if ( gl->vsb!=NULL ) {
 	int oldwidth = gl->vsb->g.r.x+gl->vsb->g.r.width-g->r.x;

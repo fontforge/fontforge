@@ -228,7 +228,7 @@ struct hi_data {
 static int HI_Ok(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct hi_data *hi = GDrawGetUserData(GGadgetGetWindow(g));
-	int32 i, len;
+	int32_t i, len;
 	GTextInfo **ti = GGadgetGetList(GWidgetGetControl(hi->gw,CID_HintMask),&len);
 
 	for ( i=0; i<len; ++i )
@@ -431,7 +431,7 @@ return( true );
 }
 
 static int CI_DeleteCounter(GGadget *g, GEvent *e) {
-    int32 len; int i,j, offset;
+    int32_t len; int i,j, offset;
     GTextInfo **old, **new_;
     GGadget *list;
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
@@ -550,7 +550,7 @@ return( true );
 }
 
 static void CI_ParseCounters(CharInfo *ci) {
-    int32 i,len;
+    int32_t i,len;
     GTextInfo **ti = GGadgetGetList(GWidgetGetControl(ci->gw,CID_List+600),&len);
     SplineChar *sc = ci->cachedsc;
 
@@ -951,8 +951,8 @@ return( false );
 	if ( lcpst->u.lcaret.carets!=NULL )
 	    free(lcpst->u.lcaret.carets);
 	lcpst->u.lcaret.cnt = pst->u.lcaret.cnt;
-	lcpst->u.lcaret.carets = malloc(pst->u.lcaret.cnt*sizeof(int16));
-	memcpy(lcpst->u.lcaret.carets,pst->u.lcaret.carets,pst->u.lcaret.cnt*sizeof(int16));
+	lcpst->u.lcaret.carets = malloc(pst->u.lcaret.cnt*sizeof(int16_t));
+	memcpy(lcpst->u.lcaret.carets,pst->u.lcaret.carets,pst->u.lcaret.cnt*sizeof(int16_t));
 	lcpst->ticked = true;
     }
 
@@ -1232,8 +1232,8 @@ static PST *CI_PSTCopy(PST *pst) {
 	    newpst->u.pair.vr[0].adjust = ValDevTabCopy(pst->u.pair.vr[0].adjust);
 	    newpst->u.pair.vr[1].adjust = ValDevTabCopy(pst->u.pair.vr[1].adjust);
 	} else if ( newpst->type==pst_lcaret ) {
-	    newpst->u.lcaret.carets = malloc(pst->u.lcaret.cnt*sizeof(int16));
-	    memcpy(newpst->u.lcaret.carets,pst->u.lcaret.carets,pst->u.lcaret.cnt*sizeof(int16));
+	    newpst->u.lcaret.carets = malloc(pst->u.lcaret.cnt*sizeof(int16_t));
+	    memcpy(newpst->u.lcaret.carets,pst->u.lcaret.carets,pst->u.lcaret.cnt*sizeof(int16_t));
 	} else if ( newpst->type==pst_substitution || newpst->type==pst_multiple || newpst->type==pst_alternate )
 	    newpst->u.subs.variant = copy(pst->u.subs.variant);
 	newpst->next = NULL;
@@ -1499,7 +1499,7 @@ return( false );
     ci->cachedsc->glyph_class = GGadgetGetFirstListSelectedItem(GWidgetGetControl(ci->gw,CID_GClass));
     val = GGadgetGetFirstListSelectedItem(GWidgetGetControl(ci->gw,CID_Color));
     if ( val!=-1 )
-	ci->cachedsc->color = (intpt) (std_colors[val].userdata);
+	ci->cachedsc->color = (intptr_t) (std_colors[val].userdata);
     CI_ParseCounters(ci);
     ci->cachedsc->tex_height = tex_height;
     ci->cachedsc->tex_depth  = tex_depth;
@@ -1540,7 +1540,7 @@ return( false );
 		ci->cachedsc->possub = pst;
 	    }
 	    if ( lc_cnt>pst->u.lcaret.cnt )
-		pst->u.lcaret.carets = realloc(pst->u.lcaret.carets,lc_cnt*sizeof(int16));
+		pst->u.lcaret.carets = realloc(pst->u.lcaret.carets,lc_cnt*sizeof(int16_t));
 	    for ( i=pst->u.lcaret.cnt; i<lc_cnt; ++i )
 		pst->u.lcaret.carets[i] = 0;
 	    pst->u.lcaret.cnt = lc_cnt;
@@ -1727,7 +1727,7 @@ static char *LigDefaultStr(int uni, char *name, int alt_lig ) {
 	else if ( iscombining(alt[1]) && ( alt[2]=='\0' || iscombining(alt[2]))) {
 	    if ( alt_lig != -10 )	/* alt_lig = 10 => mac unicode decomp */
 		alt = NULL;		/* Otherwise, don't treat accented letters as ligatures */
-	} else if (! isligvulgfrac((uint32)(uni)) &&
+	} else if (! isligvulgfrac((uint32_t)(uni)) &&
 		uni!=0x152 && uni!=0x153 &&	/* oe ligature should not be standard */
 		uni!=0x132 && uni!=0x133 &&	/* nor ij */
 		(uni<0xfb2a || uni>0xfb4f) &&	/* Allow hebrew precomposed chars */
@@ -1836,7 +1836,7 @@ return( components );
 
 /* TODO: see what can be brought-in from is_Ligature_data.h tables, but this */
 /* also appears to run various features beyond ligatures and fractions too.  */
-uint32 LigTagFromUnicode(int uni) {
+uint32_t LigTagFromUnicode(int uni) {
     int tag = CHR('l','i','g','a');	/* standard */
 
     if ( (uni>=0xbc && uni<=0xbe) ||	/* latin1 vulgar fractions */
@@ -1989,9 +1989,9 @@ return;
 return;
     }
     if ( carets->u.lcaret.carets==NULL )
-	carets->u.lcaret.carets = (int16 *) calloc(lig_comp_max,sizeof(int16));
+	carets->u.lcaret.carets = (int16_t *) calloc(lig_comp_max,sizeof(int16_t));
     else {
-	carets->u.lcaret.carets = (int16 *) realloc(carets->u.lcaret.carets,lig_comp_max*sizeof(int16));
+	carets->u.lcaret.carets = (int16_t *) realloc(carets->u.lcaret.carets,lig_comp_max*sizeof(int16_t));
 	for ( i=carets->u.lcaret.cnt; i<lig_comp_max; ++i )
 	    carets->u.lcaret.carets[i] = 0;
     }
@@ -2068,7 +2068,7 @@ static void CI_SetNameList(CharInfo *ci,int val) {
     GGadget *g = GWidgetGetControl(ci->gw,CID_UName);
     int cnt;
 
-    if ( GGadgetGetUserData(g)==(void *) (intpt) val )
+    if ( GGadgetGetUserData(g)==(void *) (intptr_t) val )
 return;		/* Didn't change */
     {
 	GTextInfo **list = NULL;
@@ -2084,7 +2084,7 @@ return;		/* Didn't change */
 	list[cnt] = TIFromName(NULL);
 	GGadgetSetList(g,list,true);
     }
-    GGadgetSetUserData(g,(void *) (intpt) val);
+    GGadgetSetUserData(g,(void *) (intptr_t) val);
 }
 
 static int CI_UValChanged(GGadget *g, GEvent *e) {
@@ -2489,7 +2489,7 @@ void SCSubtableDefaultSubsCheck(SplineChar *sc, struct lookup_subtable *sub,
     SplineChar *alt;
     char buffer[8];
     int i;
-    static uint32 form_tags[] = { CHR('i','n','i','t'), CHR('m','e','d','i'), CHR('f','i','n','a'), CHR('i','s','o','l'), 0 };
+    static uint32_t form_tags[] = { CHR('i','n','i','t'), CHR('m','e','d','i'), CHR('f','i','n','a'), CHR('i','s','o','l'), 0 };
     real loff, roff;
 
     if ( lookup_type == gsub_single && sub->suffix != NULL ) {
@@ -2563,7 +2563,7 @@ return;
 		    if ( components==NULL )
 		break;
 		    for ( i=0; i<r; ++i ) {
-			if ( possub[i*col_cnt+0].u.md_ival == (intpt) sub &&
+			if ( possub[i*col_cnt+0].u.md_ival == (intptr_t) sub &&
 				strcmp(possub[i*col_cnt+1].u.md_str,components)==0 )
 		    break;
 		    }
@@ -2605,7 +2605,7 @@ return;
     sd.flags = sdf_dontedit;
     sub = SFNewLookupSubtableOfType(ci->sc->parent,pst2lookuptype[sel+1],&sd,ci->def_layer);
     if ( sub!=NULL ) {
-	possub[r*cols+0].u.md_ival = (intpt) sub;
+	possub[r*cols+0].u.md_ival = (intptr_t) sub;
 	ti = SFSubtableListOfType(ci->sc->parent, pst2lookuptype[sel+1], false, false);
 	GMatrixEditSetColumnChoices(g,0,ti);
 	GTextInfoListFree(ti);
@@ -2613,7 +2613,7 @@ return;
 	    SCSubtableDefaultSubsCheck(ci->sc,sub, possub, cols, r, CVLayer((CharViewBase *) (ci->cv)));
     } else if ( ci->old_sub!=NULL ) {
 	/* Restore old value */
-	possub[r*cols+0].u.md_ival = (intpt) ci->old_sub;
+	possub[r*cols+0].u.md_ival = (intptr_t) ci->old_sub;
     } else {
 	GMatrixEditDeleteRow(g,r);
     }
@@ -2665,7 +2665,7 @@ static void kernfinishedit(GGadget *g, int r, int c, int wasnew) {
 	finishedit(g,r,c,wasnew);
 }
 
-static int SubHasScript(uint32 script,struct lookup_subtable *sub) {
+static int SubHasScript(uint32_t script,struct lookup_subtable *sub) {
     FeatureScriptLangList *f;
     struct scriptlanglist *s;
 
@@ -2685,7 +2685,7 @@ static void kerninit(GGadget *g, int r) {
     GMenuItem *mi = GMatrixEditGetColumnChoices(g,0);
     int i,cols,rows;
     struct matrix_data *possub;
-    uint32 script;
+    uint32_t script;
 
     possub = GMatrixEditGet(g, &rows);
     cols = GMatrixEditGetColCnt(g);
@@ -2699,7 +2699,7 @@ static void kerninit(GGadget *g, int r) {
 	break;
 	}
 	if ( mi[i].ti.line || mi[i].ti.text!=NULL )
-	    possub[r*cols+0].u.md_ival = (intpt) mi[i].ti.userdata;
+	    possub[r*cols+0].u.md_ival = (intptr_t) mi[i].ti.userdata;
     }
 }
 
@@ -2707,7 +2707,7 @@ static void CI_DoHideUnusedSingle(CharInfo *ci) {
     GGadget *pstk = GWidgetGetControl(ci->gw,CID_List+(pst_position-1)*100);
     int rows, cols = GMatrixEditGetColCnt(pstk);
     struct matrix_data *old = GMatrixEditGet(pstk,&rows);
-    uint8 cols_used[20];
+    uint8_t cols_used[20];
     int r, col, tot;
 
     if ( lookup_hideunused ) {
@@ -2745,7 +2745,7 @@ static void CI_DoHideUnusedPair(CharInfo *ci) {
     GGadget *pstk = GWidgetGetControl(ci->gw,CID_List+(pst_pair-1)*100);
     int rows, cols = GMatrixEditGetColCnt(pstk);
     struct matrix_data *old = GMatrixEditGet(pstk,&rows);
-    uint8 cols_used[20];
+    uint8_t cols_used[20];
     int r, col, tot;
 
     if ( lookup_hideunused ) {
@@ -3784,17 +3784,17 @@ return;
 
 static void CI_SetColorList(CharInfo *ci,Color color) {
     int i;
-    uint16 junk;
+    uint16_t junk;
 
     std_colors[CUSTOM_COLOR].image = NULL;
     for ( i=0; std_colors[i].image!=NULL; ++i ) {
-	if ( std_colors[i].userdata == (void *) (intpt) color )
+	if ( std_colors[i].userdata == (void *) (intptr_t) color )
     break;
     }
     if ( std_colors[i].image==NULL ) {
 	std_colors[i].image = &customcolor_image;
 	customcolor_image.u.image->clut->clut[1] = color;
-	std_colors[i].userdata = (void *) (intpt) color;
+	std_colors[i].userdata = (void *) (intptr_t) color;
     }
     GGadgetSetList(GWidgetGetControl(ci->gw,CID_Color), GTextInfoArrayFromList(std_colors,&junk), false);
     GGadgetSelectOneListItem(GWidgetGetControl(ci->gw,CID_Color),i);
@@ -3886,9 +3886,9 @@ static int CI_PickColor(GGadget *g, GEvent *e) {
 	    } else /* Cancelled */
 		CI_SetColorList(ci,ci->real_last);
 	} else {
-	    if ( (intpt) ti->userdata!=COLOR_DEFAULT )
-		ci->last = (intpt) ti->userdata;
-	    ci->real_last = (intpt) ti->userdata;
+	    if ( (intptr_t) ti->userdata!=COLOR_DEFAULT )
+		ci->last = (intptr_t) ti->userdata;
+	    ci->real_last = (intptr_t) ti->userdata;
 	}
     }
 return( true );
@@ -3968,7 +3968,7 @@ static void CIFillup(CharInfo *ci) {
     memset(cnts,0,sizeof(cnts));
     for ( pst = sc->possub; pst!=NULL; pst=pst->next ) if ( pst->type!=pst_lcaret ) {
 	j = (cnts[pst->type]++ * mi[pst->type-1].col_cnt);
-	mds[pst->type][j+0].u.md_ival = (intpt) pst->subtable;
+	mds[pst->type][j+0].u.md_ival = (intptr_t) pst->subtable;
 	if ( pst->type==pst_position ) {
 	    mds[pst->type][j+SIM_DX].u.md_ival = pst->u.pos.xoff;
 	    mds[pst->type][j+SIM_DY].u.md_ival = pst->u.pos.yoff;
@@ -3994,7 +3994,7 @@ static void CIFillup(CharInfo *ci) {
     for ( isv=0; isv<2; ++isv ) {
 	for ( kp=isv ? sc->vkerns : sc->kerns; kp!=NULL; kp=kp->next ) {
 	    j = (cnts[pst_pair]++ * mi[pst_pair-1].col_cnt);
-	    mds[pst_pair][j+0].u.md_ival = (intpt) kp->subtable;
+	    mds[pst_pair][j+0].u.md_ival = (intptr_t) kp->subtable;
 	    mds[pst_pair][j+1].u.md_str = SCNameUniStr(kp->sc);
 	    if ( isv ) {
 		mds[pst_pair][j+PAIR_DY_ADV1].u.md_ival = kp->off;
@@ -4242,7 +4242,7 @@ return( true );
 }
 
 static void CI_DoCancel(CharInfo *ci) {
-    int32 i,len;
+    int32_t i,len;
     GTextInfo **ti = GGadgetGetList(GWidgetGetControl(ci->gw,CID_List+600),&len);
 
     for ( i=0; i<len; ++i )

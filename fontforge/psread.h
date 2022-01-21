@@ -11,7 +11,7 @@ extern Entity *EntityInterpretPS(FILE *ps, int *width);
 extern int EvaluatePS(char *str, real *stack, int size);
 extern int MatIsIdentity(real transform[6]);
 extern int UnblendedCompare(real u1[MmMax], real u2[MmMax], int cnt);
-extern SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *context, struct pschars *subrs, struct pschars *gsubrs, const char *name);
+extern SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *context, struct pschars *subrs, struct pschars *gsubrs, const char *name);
 extern SplinePointList *SplinePointListInterpretPS(FILE *ps, ImportParams *ip, int is_stroked, int *width);
 extern SplinePointList *SplinesFromEntities(Entity *ent, ImportParams *ip, int is_stroked);
 extern SplinePointList *SplinesFromEntityChar(EntityChar *ec, ImportParams *ip, int is_stroked);

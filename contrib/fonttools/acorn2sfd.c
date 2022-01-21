@@ -504,7 +504,7 @@ static void ReadIntmetrics(char *dir, struct Outlines *outline) {
     int i, flags, m, n, left, right;
     int kern_offset, table_base, misc_offset;
     char buffer[100];
-    uint8 *mapping=NULL;
+    uint8_t *mapping=NULL;
     int *widths;
     struct r_kern *kern;
 
@@ -837,10 +837,10 @@ return( NULL );
     outline.sf->map = calloc(1,sizeof(EncMap));
     outline.sf->map->enc = &custom;
     outline.sf->map->encmax = outline.sf->map->enccount = outline.sf->map->backmax = outline.sf->glyphmax;
-    outline.sf->map->map = malloc(outline.sf->glyphmax*sizeof(int32));
-    outline.sf->map->backmap = malloc(outline.sf->glyphmax*sizeof(int32));
-    memset(outline.sf->map->map,-1,outline.sf->glyphmax*sizeof(int32));
-    memset(outline.sf->map->backmap,-1,outline.sf->glyphmax*sizeof(int32));
+    outline.sf->map->map = malloc(outline.sf->glyphmax*sizeof(int32_t));
+    outline.sf->map->backmap = malloc(outline.sf->glyphmax*sizeof(int32_t));
+    memset(outline.sf->map->map,-1,outline.sf->glyphmax*sizeof(int32_t));
+    memset(outline.sf->map->backmap,-1,outline.sf->glyphmax*sizeof(int32_t));
     outline.sf->for_new_glyphs = namelist_for_new_fonts;
     outline.sf->fontname = despace(outline.fontname);
     outline.sf->fullname = copy(outline.fontname);

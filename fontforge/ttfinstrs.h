@@ -62,14 +62,14 @@ enum ttf_instructions {
 extern const char *ff_ttf_instrnames[];
 
 struct instrdata {
-    uint8 *instrs;
+    uint8_t *instrs;
     int instr_cnt, max;
-    uint8 *bts;
+    uint8_t *bts;
     unsigned int changed: 1;
     unsigned int in_composit: 1;
     SplineFont *sf;
     SplineChar *sc;
-    uint32 tag;
+    uint32_t tag;
     struct instrdlg *id; /* FIXME: struct instrdlg is defined in exe/ttfstrsui.c, remove from this struct */
     struct instrdata *next;
 };
@@ -78,14 +78,14 @@ typedef struct instrbase {
     unsigned int inedit: 1;
     struct instrdata *instrdata;
     int isel_pos;
-    int16 lheight,lpos;
+    int16_t lheight,lpos;
     char *scroll, *offset;
 } InstrBase;
 
 enum byte_types { bt_instr, bt_cnt, bt_byte, bt_wordhi, bt_wordlo, bt_impliedreturn };
 
-extern uint8 *_IVParse(SplineFont *sf, char *text, int *len, void (*IVError)(void *, char *, int), void *iv);
-extern char *_IVUnParseInstrs(uint8 *instrs, int instr_cnt);
+extern uint8_t *_IVParse(SplineFont *sf, char *text, int *len, void (*IVError)(void *, char *, int), void *iv);
+extern char *_IVUnParseInstrs(uint8_t *instrs, int instr_cnt);
 extern char *__IVUnParseInstrs(InstrBase *iv);
 extern int instr_typify(struct instrdata *);
 

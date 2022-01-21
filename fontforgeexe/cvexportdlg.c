@@ -404,7 +404,7 @@ static void DoExport(struct gfc_data *d,unichar_t *path) {
     int format, good = 0;
 
     temp = cu_copy(path);
-    format = (intpt) (GGadgetGetListItemSelected(d->format)->userdata);
+    format = (intptr_t) (GGadgetGetListItemSelected(d->format)->userdata);
     if ( d->bc!=NULL )
         blast_format = format;
     else
@@ -485,7 +485,7 @@ static int GFD_Format(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
 	unichar_t *pt, *file, *f2;
-	int format = (intpt) (GGadgetGetListItemSelected(d->format)->userdata);
+	int format = (intptr_t) (GGadgetGetListItemSelected(d->format)->userdata);
 	file = GGadgetGetTitle(d->gfc);
 	f2 = malloc(sizeof(unichar_t) * (u_strlen(file)+6));
 	u_strcpy(f2,file);
@@ -639,7 +639,7 @@ static int _Export(SplineChar *sc,BDFChar *bc,int layer) {
 		if ( py_ie[i].export!=NULL ) {
 		    cur_formats[cnt+extras].text = (unichar_t *) copy(py_ie[i].name);
 		    cur_formats[cnt+extras].text_is_1byte = true;
-		    cur_formats[cnt+extras].userdata = (void *) (intpt) (fv_pythonbase+i);
+		    cur_formats[cnt+extras].userdata = (void *) (intptr_t) (fv_pythonbase+i);
 		    ++extras;
 		}
 	    }

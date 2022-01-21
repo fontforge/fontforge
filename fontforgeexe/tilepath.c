@@ -73,7 +73,7 @@ typedef struct tiledata {
 			        /*  higher than the last */
     SplineSet *result;		/* Final result after transformation */
     DBounds bb, fbb, lbb, ibb;	/* Of the basetile, first & last tiles */
-    uint8 include_white, finclude_white, linclude_white, iinclude_white;
+    uint8_t include_white, finclude_white, linclude_white, iinclude_white;
     bigreal xscale[3];
 
     SplineSet *path;

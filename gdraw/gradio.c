@@ -624,7 +624,7 @@ static FontInstance *GRadioGetFont(GGadget *g) {
 return( b->font );
 }
 
-static void _gradio_move(GGadget *g, int32 x, int32 y ) {
+static void _gradio_move(GGadget *g, int32_t x, int32_t y ) {
     GRadio *b = (GRadio *) g;
     b->onoffrect.x = x+(b->onoffrect.x-g->r.x);
     b->onoffinner.x = x+(b->onoffinner.x-g->r.x);

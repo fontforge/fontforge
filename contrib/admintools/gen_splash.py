@@ -36,7 +36,7 @@ TEMPLATE = """/* Copyright (C) 2000-2012 by George Williams
 
 #include "gimage.h"
 
-static uint8 splashimage0_data[] = {{
+static uint8_t splashimage0_data[] = {{
 {data}
 }};
 
@@ -46,7 +46,7 @@ static struct _GImage splashimage0_base = {{
     {width},
     {height},
     {bytes_per_line},
-    (uint8 *) splashimage0_data,
+    (uint8_t *) splashimage0_data,
     NULL,
     0xffffffff
 }};

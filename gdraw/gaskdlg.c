@@ -843,7 +843,7 @@ int GWidgetChoicesBM8(const char *title, const char **choices,char *sel,
     va_list ap;
     GGadget *list;
     GTextInfo **lsel;
-    int i; int32 len;
+    int i; int32_t len;
     char *buttons[3];
 
     if ( screen_display==NULL )

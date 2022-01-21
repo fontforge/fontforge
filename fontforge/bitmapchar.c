@@ -285,7 +285,7 @@ return( false );
 }
 
 static void def_Charset_Col(SplineFont *sf,EncMap *map, char *buffer) {
-    uint32 codepages[2];
+    uint32_t codepages[2];
     /* A buffer with 250 bytes should be more than big enough */
 
     OS2FigureCodePages(sf,codepages);

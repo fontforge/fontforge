@@ -849,7 +849,7 @@ xmlNodePtr _GlifToXML(const SplineChar *sc, int layer, int version) {
 		        xmlSetPropPrintf(guidelinexml, BAD_CAST "angle", "%g", fmod(gl->angle + 360, 360));
 		    if (gl->name != NULL)
 		        xmlSetPropPrintf(guidelinexml, BAD_CAST "name", "%s", gl->name);
-		    if (gl->flags & 0x20) // color is set. Repack RGBA from a uint32 to a string with 0-1 scaled values comma-joined.
+		    if (gl->flags & 0x20) // color is set. Repack RGBA from a uint32_t to a string with 0-1 scaled values comma-joined.
 		        xmlSetPropPrintf(guidelinexml, BAD_CAST "color", "%g,%g,%g,%g",
 		        (((double)((gl->color >> 24) & 0xFF)) / 255),
 		        (((double)((gl->color >> 16) & 0xFF)) / 255),
@@ -2473,7 +2473,7 @@ static void *UFOLoadGuideline(SplineFont *sf, SplineChar *sc, int layer, xmlDocP
 				colorv = strtod(colors + colorps, &after_color);
 				if (after_color != colors + colorp)
 					LogError(_("Error parsing color component.\n"));
-				gl->color |= (((uint32)(colorv * 255.0)) << (8 * (4 - colori)));
+				gl->color |= (((uint32_t)(colorv * 255.0)) << (8 * (4 - colori)));
 			} else {
 				LogError(_("Missing color component.\n"));
 			}
@@ -3163,8 +3163,8 @@ static struct ff_glyphclasses *GlyphGroupDeduplicate(struct ff_glyphclasses *gro
 }
 
 #ifdef UFO_GUESS_SCRIPTS
-static uint32 script_from_glyph_list(SplineFont *sf, const char *glyph_names) {
-  uint32 script = DEFAULT_SCRIPT;
+static uint32_t script_from_glyph_list(SplineFont *sf, const char *glyph_names) {
+  uint32_t script = DEFAULT_SCRIPT;
   char *delimited_names;
   off_t name_char_pos;
   name_char_pos = 0;
@@ -3220,7 +3220,7 @@ static void MakeKerningClasses(SplineFont *sf, struct ff_glyphclasses *group_bas
     sf->kerns->seconds = calloc(1, sizeof(char *));
     sf->kerns->seconds_names = calloc(1, sizeof(char *));
     sf->kerns->seconds_flags = calloc(1, sizeof(int));
-    sf->kerns->offsets = calloc(1, sizeof(int16));
+    sf->kerns->offsets = calloc(1, sizeof(int16_t));
     sf->kerns->offsets_flags = calloc(1, sizeof(int));
     sf->kerns->first_cnt = 1;
     sf->kerns->second_cnt = 1;
@@ -3234,7 +3234,7 @@ static void MakeKerningClasses(SplineFont *sf, struct ff_glyphclasses *group_bas
     sf->vkerns->seconds = calloc(1, sizeof(char *));
     sf->vkerns->seconds_names = calloc(1, sizeof(char *));
     sf->vkerns->seconds_flags = calloc(1, sizeof(int));
-    sf->vkerns->offsets = calloc(1, sizeof(int16));
+    sf->vkerns->offsets = calloc(1, sizeof(int16_t));
     sf->vkerns->offsets_flags = calloc(1, sizeof(int));
     sf->vkerns->first_cnt = 1;
     sf->vkerns->second_cnt = 1;
@@ -3246,11 +3246,11 @@ static void MakeKerningClasses(SplineFont *sf, struct ff_glyphclasses *group_bas
   // We start by allocating space for the offsets and offsets flags. We then copy the old contents, row-by-row.
   if ((left_count > 0 || right_count > 0) && ((sf->kerns->first_cnt + left_count) * (sf->kerns->second_cnt + right_count) > 0)) {
     // Offsets.
-    int16 *tmp_offsets = calloc((sf->kerns->first_cnt + left_count) * (sf->kerns->second_cnt + right_count), sizeof(int16));
+    int16_t *tmp_offsets = calloc((sf->kerns->first_cnt + left_count) * (sf->kerns->second_cnt + right_count), sizeof(int16_t));
     if (sf->kerns->offsets) {
       int rowpos;
       for (rowpos = 0; rowpos < sf->kerns->first_cnt; rowpos ++) {
-        memcpy((void *)tmp_offsets + (rowpos * (sf->kerns->second_cnt + right_count)) * sizeof(int16), (void *)(sf->kerns->offsets) + (rowpos * sf->kerns->second_cnt) * sizeof(int16), sf->kerns->second_cnt * sizeof(int16));
+        memcpy((void *)tmp_offsets + (rowpos * (sf->kerns->second_cnt + right_count)) * sizeof(int16_t), (void *)(sf->kerns->offsets) + (rowpos * sf->kerns->second_cnt) * sizeof(int16_t), sf->kerns->second_cnt * sizeof(int16_t));
       }
       free(sf->kerns->offsets);
     }
@@ -3278,11 +3278,11 @@ static void MakeKerningClasses(SplineFont *sf, struct ff_glyphclasses *group_bas
   }
   if ((above_count > 0 || below_count > 0) && ((sf->vkerns->first_cnt + above_count) * (sf->vkerns->second_cnt + below_count) > 0)) {
     // Offsets.
-    int16 *tmp_offsets = calloc((sf->vkerns->first_cnt + above_count) * (sf->vkerns->second_cnt + below_count), sizeof(int16));
+    int16_t *tmp_offsets = calloc((sf->vkerns->first_cnt + above_count) * (sf->vkerns->second_cnt + below_count), sizeof(int16_t));
     if (sf->vkerns->offsets) {
       int rowpos;
       for (rowpos = 0; rowpos < sf->vkerns->first_cnt; rowpos ++) {
-        memcpy((void *)tmp_offsets + (rowpos * (sf->vkerns->second_cnt + below_count)) * sizeof(int16), (void *)(sf->vkerns->offsets) + (rowpos * sf->vkerns->second_cnt) * sizeof(int16), sf->vkerns->second_cnt * sizeof(int16));
+        memcpy((void *)tmp_offsets + (rowpos * (sf->vkerns->second_cnt + below_count)) * sizeof(int16_t), (void *)(sf->vkerns->offsets) + (rowpos * sf->vkerns->second_cnt) * sizeof(int16_t), sf->vkerns->second_cnt * sizeof(int16_t));
       }
       free(sf->vkerns->offsets);
     }
@@ -3381,7 +3381,7 @@ static void MakeKerningClasses(SplineFont *sf, struct ff_glyphclasses *group_bas
 #ifdef UFO_GUESS_SCRIPTS
   // Check the script in each element of each group (for each polarity) until a character is of a script other than DFLT.
   if (sf->kerns != NULL) {
-    uint32 script = DEFAULT_SCRIPT;
+    uint32_t script = DEFAULT_SCRIPT;
     int class_index;
     class_index = 0;
     while (script == DEFAULT_SCRIPT && class_index < sf->kerns->first_cnt) {
@@ -3396,7 +3396,7 @@ static void MakeKerningClasses(SplineFont *sf, struct ff_glyphclasses *group_bas
     sf->kerns->subtable = SFSubTableFindOrMake(sf, CHR('k','e','r','n'), script, gpos_pair);
   }
   if (sf->vkerns != NULL) {
-    uint32 script = DEFAULT_SCRIPT;
+    uint32_t script = DEFAULT_SCRIPT;
     int class_index;
     class_index = 0;
     while (script == DEFAULT_SCRIPT && class_index < sf->vkerns->first_cnt) {
@@ -3412,7 +3412,7 @@ static void MakeKerningClasses(SplineFont *sf, struct ff_glyphclasses *group_bas
   }
 #else
   // Some test cases have proven that FontForge would do best to avoid classifying these.
-  uint32 script = DEFAULT_SCRIPT;
+  uint32_t script = DEFAULT_SCRIPT;
   if (sf->kerns != NULL) {
     sf->kerns->subtable = SFSubTableFindOrMake(sf, CHR('k','e','r','n'), script, gpos_pair);
   }
@@ -3530,7 +3530,7 @@ static void UFOHandleKern3(SplineFont *sf,char *basedir,int isv) {
     SplineChar *sc, *ssc;
     KernPair *kp;
     char *end;
-    uint32 script;
+    uint32_t script;
 
     if ( GFileExists(fname))
 	doc = xmlParseFile(fname);
@@ -3768,7 +3768,7 @@ return( 0 );
 return( mask );
 }
 
-static void UFOGetBitArray(xmlDocPtr doc,xmlNodePtr value,uint32 *res,int len) {
+static void UFOGetBitArray(xmlDocPtr doc,xmlNodePtr value,uint32_t *res,int len) {
     xmlNodePtr kid;
     int index;
 

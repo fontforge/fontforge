@@ -15,7 +15,7 @@ struct cidmap {
     int supplement, maxsupple;
     int cidmax;			/* Max cid found in the charset */
     int namemax;		/* Max cid with useful info */
-    uint32 *unicode;
+    uint32_t *unicode;
     char **name;
     struct cidaltuni *alts;
     struct cidmap *next;
@@ -33,9 +33,9 @@ extern EncMap *CompactEncMap(EncMap *map, SplineFont *sf);
 extern EncMap *EncMapFromEncoding(SplineFont *sf, Encoding *enc);
 extern Encoding *FindOrMakeEncoding(const char *name);
 extern Encoding *_FindOrMakeEncoding(const char *name, int make_it);
-extern int32 EncFromName(const char *name, enum uni_interp interp, Encoding *encname);
-extern int32 EncFromUni(int32 uni, Encoding *enc);
-extern int32 UniFromEnc(int enc, Encoding *encname);
+extern int32_t EncFromName(const char *name, enum uni_interp interp, Encoding *encname);
+extern int32_t EncFromUni(int32_t uni, Encoding *enc);
+extern int32_t UniFromEnc(int enc, Encoding *encname);
 
 /* The "Encoding" here is a little different from what you normally see*/
 /*  It isn't a mapping from a byte stream to unicode, but from an int */

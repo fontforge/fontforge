@@ -308,7 +308,7 @@ return( enc );
 return( enc );
 }
 
-void SFRemoveUndoes(SplineFont *sf,uint8 *selected, EncMap *map) {
+void SFRemoveUndoes(SplineFont *sf,uint8_t *selected, EncMap *map) {
     SplineFont *main = sf->cidmaster? sf->cidmaster : sf, *ssf;
     int i,k, max, layer, gid;
     SplineChar *sc;
@@ -523,7 +523,7 @@ int SFScaleToEm(SplineFont *sf, int as, int des) {
     bigreal scale;
     real transform[6];
     BVTFunc bvts;
-    uint8 *oldselected = sf->fv->selected;
+    uint8_t *oldselected = sf->fv->selected;
     enum fvtrans_flags trans_flags =
 	fvt_alllayers|fvt_round_to_int|fvt_dontsetwidth|fvt_scalekernclasses|fvt_scalepstpos|fvt_dogrid;
 

@@ -41,13 +41,13 @@
 # define bigreal        double
 #endif
 
-extern int32 memlong(uint8 *data, int len, int offset);
-extern int memushort(uint8 *data, int len, int offset);
-extern void memputshort(uint8 *data, int offset, uint16 val);
+extern int32_t memlong(uint8_t *data, int len, int offset);
+extern int memushort(uint8_t *data, int len, int offset);
+extern void memputshort(uint8_t *data, int offset, uint16_t val);
 
 extern int getushort(FILE *ttf);
 extern int get3byte(FILE *ttf);
-extern int32 getlong(FILE *ttf);
+extern int32_t getlong(FILE *ttf);
 extern real getfixed(FILE *ttf);
 extern real get2dot14(FILE *ttf);
 

@@ -46,7 +46,7 @@ enum { bd_all, bd_selected, bd_current };
 
 extern int bdfcontrol_lastwhich;
 
-void BitmapsDoIt(CreateBitmapData *bd,int32 *sizes,int usefreetype);
-extern int BitmapControl(FontViewBase *fv, int32 *sizes, int isavail, int rasterize);
+void BitmapsDoIt(CreateBitmapData *bd,int32_t *sizes,int usefreetype);
+extern int BitmapControl(FontViewBase *fv, int32_t *sizes, int isavail, int rasterize);
 
 #endif /* FONTFORGE_BITMAPCONTROL_H */

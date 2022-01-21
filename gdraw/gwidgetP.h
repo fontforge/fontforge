@@ -108,7 +108,7 @@ typedef struct gtopleveldata /* : GContainerD */{
     struct ggadget *gfocus;
     int (*handle_key)(GWindow top, GWindow ew, GEvent *);	/* All key events are handled by top level window */
     struct gtopleveldata *palettes, *nextp, *owner;
-    int16 owner_off_x, owner_off_y;		/* Offset of palette from owner*/
+    int16_t owner_off_x, owner_off_y;		/* Offset of palette from owner*/
 } GTopLevelD;
 
 GWidgetD *_GWidget_ChangeInternalFocus(GWidget gw,GWidgetD *to,struct ggadget *gto);

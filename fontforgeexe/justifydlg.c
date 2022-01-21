@@ -341,7 +341,7 @@ static void LookupMatrixInit(struct matrixinit *mi,char *lookupstr,
 	    if ( k ) {
 		for ( j=0; (temp=(char *) (lookup_ci[0].enum_vals[j].text))!=NULL; ++j )
 		    if ( strlen(temp)==end-start && strncmp(temp,start,end-start)==0 ) {
-			md[1*cnt++ + 0].u.md_ival = (intpt) lookup_ci[0].enum_vals[j].userdata;
+			md[1*cnt++ + 0].u.md_ival = (intptr_t) lookup_ci[0].enum_vals[j].userdata;
 		break;
 		    }
 	    } else
@@ -514,7 +514,7 @@ return( gld.ret );
 /* ************************************************************************** */
 /* dlg which presents a list of languages and associated lookups              */
 /* ************************************************************************** */
-static char *Tag2Str(uint32 tag) {
+static char *Tag2Str(uint32_t tag) {
     static char foo[8];
     foo[0] = tag>>24;
     foo[1] = tag>>16;
@@ -524,7 +524,7 @@ static char *Tag2Str(uint32 tag) {
 return( foo );
 }
 
-static uint32 Str2Tag(char *str) {
+static uint32_t Str2Tag(char *str) {
     unsigned char foo[4];
 
     memset(foo,' ',4);

@@ -5507,7 +5507,7 @@ return;
 		adjust->corrections[i] = 0;
 	    adjust->last_pixel_size = size;
 	} else {
-	    int8 *new = malloc(adjust->last_pixel_size-size+1);
+	    int8_t *new = malloc(adjust->last_pixel_size-size+1);
 	    memset(new,0,adjust->first_pixel_size-size);
 	    memcpy(new+adjust->first_pixel_size-size,
 		    adjust->corrections, len);
@@ -5599,18 +5599,18 @@ return( NULL );
 	    t->u.class.ncnt = f->u.class.ncnt;
 	    t->u.class.bcnt = f->u.class.bcnt;
 	    t->u.class.fcnt = f->u.class.fcnt;
-	    t->u.class.nclasses = malloc( f->u.class.ncnt*sizeof(uint16));
+	    t->u.class.nclasses = malloc( f->u.class.ncnt*sizeof(uint16_t));
 	    memcpy(t->u.class.nclasses,f->u.class.nclasses,
-		    f->u.class.ncnt*sizeof(uint16));
+		    f->u.class.ncnt*sizeof(uint16_t));
 	    if ( t->u.class.bcnt!=0 ) {
-		t->u.class.bclasses = malloc( f->u.class.bcnt*sizeof(uint16));
+		t->u.class.bclasses = malloc( f->u.class.bcnt*sizeof(uint16_t));
 		memcpy(t->u.class.bclasses,f->u.class.bclasses,
-			f->u.class.bcnt*sizeof(uint16));
+			f->u.class.bcnt*sizeof(uint16_t));
 	    }
 	    if ( t->u.class.fcnt!=0 ) {
-		t->u.class.fclasses = malloc( f->u.class.fcnt*sizeof(uint16));
+		t->u.class.fclasses = malloc( f->u.class.fcnt*sizeof(uint16_t));
 		memcpy(t->u.class.fclasses,f->u.class.fclasses,
-			f->u.class.fcnt*sizeof(uint16));
+			f->u.class.fcnt*sizeof(uint16_t));
 	    }
 	  break;
 	  case pst_reversecoverage:
@@ -6018,7 +6018,7 @@ void TtfTablesFree(struct ttf_table *tab) {
     }
 }
 
-void SFRemoveSavedTable(SplineFont *sf, uint32 tag) {
+void SFRemoveSavedTable(SplineFont *sf, uint32_t tag) {
     struct ttf_table *tab, *prev;
 
     for ( prev=NULL, tab=sf->ttf_tables; tab!=NULL && tab->tag!=tag; prev=tab, tab=tab->next );
@@ -6098,8 +6098,8 @@ return( NULL );
     *new = *kc;
     new->firsts = malloc(new->first_cnt*sizeof(char *));
     new->seconds = malloc(new->second_cnt*sizeof(char *));
-    new->offsets = malloc(new->first_cnt*new->second_cnt*sizeof(int16));
-    memcpy(new->offsets,kc->offsets, new->first_cnt*new->second_cnt*sizeof(int16));
+    new->offsets = malloc(new->first_cnt*new->second_cnt*sizeof(int16_t));
+    memcpy(new->offsets,kc->offsets, new->first_cnt*new->second_cnt*sizeof(int16_t));
     // Group kerning.
     if (kc->firsts_names) new->firsts_names = calloc(new->first_cnt,sizeof(char *));
     if (kc->seconds_names) new->seconds_names = calloc(new->second_cnt,sizeof(char *));
@@ -6127,7 +6127,7 @@ return( NULL );
     memcpy(new->adjusts,kc->adjusts, new->first_cnt*new->second_cnt*sizeof(DeviceTable));
     for ( i=new->first_cnt*new->second_cnt-1; i>=0 ; --i ) {
 	if ( new->adjusts[i].corrections!=NULL ) {
-	    int8 *old = new->adjusts[i].corrections;
+	    int8_t *old = new->adjusts[i].corrections;
 	    int len = new->adjusts[i].last_pixel_size - new->adjusts[i].first_pixel_size + 1;
 	    new->adjusts[i].corrections = malloc(len);
 	    memcpy(new->adjusts[i].corrections,old,len);
@@ -6294,12 +6294,12 @@ EncMap *EncMapNew(int enccount,int backmax,Encoding *enc) {
 
     /* Ensure all memory available, otherwise cleanup and exit as NULL */
     if ( (map=chunkalloc(sizeof(EncMap)))!=NULL ) {
-	if ( (map->map=malloc(enccount*sizeof(int32)))!=NULL ) {
-	    if ( (map->backmap=malloc(backmax*sizeof(int32)))!=NULL ) {
+	if ( (map->map=malloc(enccount*sizeof(int32_t)))!=NULL ) {
+	    if ( (map->backmap=malloc(backmax*sizeof(int32_t)))!=NULL ) {
 		map->enccount = map->encmax = enccount;
 		map->backmax = backmax;
-		memset(map->map,-1,enccount*sizeof(int32));
-		memset(map->backmap,-1,backmax*sizeof(int32));
+		memset(map->map,-1,enccount*sizeof(int32_t));
+		memset(map->backmap,-1,backmax*sizeof(int32_t));
 		map->enc = enc;
 		return( map );
 	    }
@@ -6345,10 +6345,10 @@ EncMap *EncMapCopy(EncMap *map) {
     /* Ensure all memory available, otherwise cleanup and exit as NULL */
     if ( (new=chunkalloc(sizeof(EncMap)))!=NULL ) {
 	*new = *map;
-	if ( (new->map=malloc(map->encmax*sizeof(int32)))!=NULL ) {
-	    if ( (new->backmap=malloc(map->backmax*sizeof(int32)))!=NULL ) {
-		memcpy(new->map,map->map,map->enccount*sizeof(int32));
-		memcpy(new->backmap,map->backmap,map->backmax*sizeof(int32));
+	if ( (new->map=malloc(map->encmax*sizeof(int32_t)))!=NULL ) {
+	    if ( (new->backmap=malloc(map->backmax*sizeof(int32_t)))!=NULL ) {
+		memcpy(new->map,map->map,map->enccount*sizeof(int32_t));
+		memcpy(new->backmap,map->backmap,map->backmax*sizeof(int32_t));
 		/* NOTE: This new->enc 'also' points to same map->enc. */
 		if ( map->remap==NULL )
 		    return( new );

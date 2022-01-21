@@ -603,7 +603,7 @@ static void KCTrans(KernClass *kc,double scale) {
 	kc->offsets[i] = rint(scale*kc->offsets[i]);
 }
 
-static void SCTransLayer(FontViewBase *fv, SplineChar *sc, int flags, int i, real transform[6], uint8 *sel) {
+static void SCTransLayer(FontViewBase *fv, SplineChar *sc, int flags, int i, real transform[6], uint8_t *sel) {
     int j;
     RefChar *refs;
     real t[6];
@@ -664,7 +664,7 @@ static void SCTransLayer(FontViewBase *fv, SplineChar *sc, int flags, int i, rea
 /*  of the reference */
 /* If sel is NULL then we transform the reference */
 /* if flags&fvt_partialreftrans then we always just transform the offsets */
-void FVTrans(FontViewBase *fv,SplineChar *sc,real transform[6], uint8 *sel,
+void FVTrans(FontViewBase *fv,SplineChar *sc,real transform[6], uint8_t *sel,
 	enum fvtrans_flags flags) {
     AnchorPoint *ap;
     int i,first,last;
@@ -1253,8 +1253,8 @@ void CIDSetEncMap(FontViewBase *fv, SplineFont *new ) {
     if ( fv->cidmaster!=NULL && gcnt!=fv->sf->glyphcnt ) {
 	int i;
 	if ( fv->map->encmax<gcnt ) {
-	    fv->map->map = realloc(fv->map->map,gcnt*sizeof(int32));
-	    fv->map->backmap = realloc(fv->map->backmap,gcnt*sizeof(int32));
+	    fv->map->map = realloc(fv->map->map,gcnt*sizeof(int32_t));
+	    fv->map->backmap = realloc(fv->map->backmap,gcnt*sizeof(int32_t));
 	    fv->map->backmax = fv->map->encmax = gcnt;
 	}
 	for ( i=0; i<gcnt; ++i )
@@ -1263,7 +1263,7 @@ void CIDSetEncMap(FontViewBase *fv, SplineFont *new ) {
 	    memset(fv->selected+gcnt,0,fv->map->enccount-gcnt);
 	else {
 	    free(fv->selected);
-	    fv->selected = calloc(gcnt,sizeof(uint8));
+	    fv->selected = calloc(gcnt,sizeof(uint8_t));
 	}
 	fv->map->enccount = gcnt;
     }
@@ -1979,7 +1979,7 @@ static FontViewBase *_FontViewBaseCreate(SplineFont *sf) {
 	fv->map = EncMap1to1(sf->glyphcnt);
 	if ( fv->nextsame==NULL ) { sf->map = fv->map; }
     }
-    fv->selected = calloc(fv->map->enccount,sizeof(uint8));
+    fv->selected = calloc(fv->map->enccount,sizeof(uint8_t));
 
 #ifndef _NO_PYTHON
     PyFF_InitFontHook(fv);

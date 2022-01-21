@@ -65,8 +65,8 @@ typedef struct monotonic {
     extended otstart, otend;
 #endif
     struct monotonic *next, *prev;	/* along original contour */
-    uint8 xup;				/* increasing t => increasing x */
-    uint8 yup;
+    uint8_t xup;				/* increasing t => increasing x */
+    uint8_t yup;
     unsigned int isneeded : 1;
     unsigned int isunneeded : 1;
     unsigned int mutual_collapse : 1;

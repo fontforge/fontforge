@@ -12,7 +12,7 @@ extern int SFFindOrder(SplineFont *sf);
 extern int SFLFindOrder(SplineFont *sf, int layerdest);
 extern int WriteSVGFont(const char *fontname, SplineFont *sf, enum fontformat format, int flags, EncMap *enc, int layer);
 extern int _WriteSVGFont(FILE *file, SplineFont *sf, int flags, EncMap *enc, int layer);
-extern SplineChar *SCHasSubs(SplineChar *sc, uint32 tag);
+extern SplineChar *SCHasSubs(SplineChar *sc, uint32_t tag);
 extern SplineFont *SFReadSVG(char *filename, int flags);
 extern SplineFont *SFReadSVGMem(char *data, int flags);
 extern SplineSet *SplinePointListInterpretSVG(char *filename, char *memory, int memlen, int em_size, int ascent, int is_stroked, ImportParams *eip);

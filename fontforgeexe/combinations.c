@@ -766,7 +766,7 @@ static void KP_Resize(KPData *kpd) {
 static int KP_ChangeSize(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
 	KPData *kpd = GDrawGetUserData(GGadgetGetWindow(g));
-	int newsize = (intpt) (GGadgetGetListItemSelected(g)->userdata);
+	int newsize = (intptr_t) (GGadgetGetListItemSelected(g)->userdata);
 	BDFFont *temp;
 	if ( newsize==kpd->bdf->pixelsize )
 return( true );
@@ -1251,7 +1251,7 @@ return;
     GGadgetGetSize(gcd[3].ret,&pos);
     kpd.header_height = pos.y+pos.height+4;
 
-    kpd.bdf = SplineFontPieceMeal(kpd.sf,kpd.layer,(intpt) (gcd[1].gd.label->userdata),72,true,NULL);
+    kpd.bdf = SplineFontPieceMeal(kpd.sf,kpd.layer,(intptr_t) (gcd[1].gd.label->userdata),72,true,NULL);
 
     kpd.font = combinations_font.fi;
     GDrawWindowFontMetrics(gw,kpd.font,&as,&ds,&ld);

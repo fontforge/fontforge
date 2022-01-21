@@ -69,7 +69,7 @@ struct garbage {
     int cnt;
     struct garbage *next;
     struct pskeyval *entries[GARBAGE_MAX];
-    int16 cnts[GARBAGE_MAX];
+    int16_t cnts[GARBAGE_MAX];
 };
 
 static bigreal MinTransMag(real trans[6]) {
@@ -1000,9 +1000,9 @@ static Entity *EntityCreate(SplinePointList *head,int linecap,int linejoin,
 return( ent );
 }
 
-static uint8 *StringToBytes(struct psstack *stackel,int *len) {
+static uint8_t *StringToBytes(struct psstack *stackel,int *len) {
     char *pt;
-    uint8 *upt, *base, *ret;
+    uint8_t *upt, *base, *ret;
     int half, sofar, val, nesting;
     int i,j;
 
@@ -1148,7 +1148,7 @@ return(ret);
 
 static int PSAddImagemask(EntityChar *ec,struct psstack *stack,int sp,
 	real transform[6],Color fillcol) {
-    uint8 *data;
+    uint8_t *data;
     int datalen, width, height, polarity;
     real trans[6];
     struct _GImage *base;
@@ -3349,7 +3349,7 @@ void PSFontInterpretPS(FILE *ps,struct charprocs *cp,char **encoding) {
 We're not smart here no: 0 1 255 {1 index exch /.notdef put} for */
 Encoding *PSSlurpEncodings(FILE *file) {
     char *names[1024];
-    int32 encs[1024];
+    int32_t encs[1024];
     Encoding *item, *head = NULL, *last;
     char *encname;
     char tokbuf[200];
@@ -3411,8 +3411,8 @@ return( head );
 	    item = calloc(1,sizeof(Encoding));
 	    item->enc_name = encname;
 	    item->char_cnt = max;
-	    item->unicode = malloc(max*sizeof(int32));
-	    memcpy(item->unicode,encs,max*sizeof(int32));
+	    item->unicode = malloc(max*sizeof(int32_t));
+	    memcpy(item->unicode,encs,max*sizeof(int32_t));
 	    if ( any && !codepointsonly ) {
 		item->psnames = calloc(max,sizeof(char *));
 		memcpy(item->psnames,names,max*sizeof(char *));
@@ -3614,7 +3614,7 @@ return( sum );
 /*  we'll get it right */
 /* Char width is done differently. Moveto starts a newpath. 0xff starts a 16.16*/
 /*  number rather than a 32 bit number */
-SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *context,
+SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *context,
 	struct pschars *subrs, struct pschars *gsubrs, const char *name) {
     int is_type2 = context->is_type2;
     real stack[50]; int sp=0, v;		/* Type1 stack is about 25 long, Type2 stack is 48 */
@@ -3648,7 +3648,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 
     ret->name = copy( name );
     ret->unicodeenc = -1;
-    ret->width = (int16) 0x8000;
+    ret->width = (int16_t) 0x8000;
     if ( name==NULL ) name = "unnamed";
     ret->manualhints = true;
 
@@ -4206,7 +4206,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	  case 1: /* hstem */
 	  case 18: /* hstemhm */
 	    base = 0;
-	    if ( (sp&1) && ret->width == (int16) 0x8000 )
+	    if ( (sp&1) && ret->width == (int16_t) 0x8000 )
 		ret->width = stack[0];
 	    if ( sp&1 )
 		base=1;
@@ -4252,7 +4252,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	  case 23: /* vstemhm */
 	    base = 0;
 	    if ( cur==NULL || v==3 || v==23 ) {
-		if ( (sp&1) && is_type2 && ret->width == (int16) 0x8000 ) {
+		if ( (sp&1) && is_type2 && ret->width == (int16_t) 0x8000 ) {
 		    ret->width = stack[0];
 		}
 		if ( sp&1 )
@@ -4322,7 +4322,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	  break;
 	  case 14: /* endchar */
 	    /* endchar is allowed to terminate processing even within a subroutine */
-	    if ( (sp&1) && is_type2 && ret->width == (int16) 0x8000 )
+	    if ( (sp&1) && is_type2 && ret->width == (int16_t) 0x8000 )
 		ret->width = stack[0];
 	    if ( context->painttype!=2 )
 		closepath(cur,is_type2);
@@ -4365,7 +4365,7 @@ SplineChar *PSCharStringToSplines(uint8 *type1, int len, struct pscontext *conte
 	  case 22: /* hmoveto */
 	  case 4: /* vmoveto */
 	    if ( is_type2 ) {
-		if (( (v==21 && sp==3) || (v!=21 && sp==2))  && ret->width == (int16) 0x8000 )
+		if (( (v==21 && sp==3) || (v!=21 && sp==2))  && ret->width == (int16_t) 0x8000 )
 		    /* Character's width may be specified on the first moveto */
 		    ret->width = stack[0];
 		if ( v==21 && sp>2 ) {

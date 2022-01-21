@@ -205,7 +205,7 @@ return( uc_copy(""));
 return( uc_copy( buffer ));
 }
 
-static real DoDelta(int16 **deltas,int pt,int is_y,real *blends,int instance_count) {
+static real DoDelta(int16_t **deltas,int pt,int is_y,real *blends,int instance_count) {
     real diff = 0;
     int j;
 
@@ -218,7 +218,7 @@ return( diff );
 
 static void DistortChar(SplineFont *sf,MMSet *mm,int gid,real *blends) {
     int i,j,ptcnt;
-    int16 **deltas;
+    int16_t **deltas;
     SplineSet *ss;
     SplinePoint *sp;
     RefChar *ref;
@@ -284,7 +284,7 @@ return;
 static void DistortCvt(struct ttf_table *cvt,MMSet *mm,real *blends) {
     int i,j,ptcnt;
     real diff;
-    int16 **deltas;
+    int16_t **deltas;
 
     deltas = CvtFindDeltas(mm,&ptcnt);
     if ( deltas==NULL )
@@ -1100,7 +1100,7 @@ static void SetMasterToAxis(MMW *mmw, int initial) {
     isadobe = GGadgetIsChecked(GWidgetGetControl(mmw->subwins[mmw_counts],CID_Adobe));
     if ( cnt!=mmw->old_axis_count || isadobe!=mmw->old_adobe ) {
 	GGadget *list = GWidgetGetControl(mmw->subwins[mmw_counts],CID_MasterCount);
-	int32 len;
+	int32_t len;
 	GTextInfo **ti = GGadgetGetList(list,&len);
 	if ( isadobe ) {
 	    for ( i=0; i<MmMax; ++i )
@@ -1194,7 +1194,7 @@ static void MMDetachOld(SplineFont *sf) {
 static void MMW_Close(MMW *mmw) {
     int i;
     GGadget *list = GWidgetGetControl(mmw->subwins[mmw_named],CID_NamedDesigns);
-    int32 len;
+    int32_t len;
     GTextInfo **ti = GGadgetGetList(list,&len);
 
     for ( i=0; i<len; ++i )
@@ -1737,7 +1737,7 @@ static void MMW_DesignsSetup(MMW *mmw) {
 
 static void MMW_ParseNamedStyles(MMSet *setto,MMW *mmw) {
     GGadget *list = GWidgetGetControl(mmw->subwins[mmw_named],CID_NamedDesigns);
-    int32 i,j,len;
+    int32_t i,j,len;
     GTextInfo **ti = GGadgetGetList(list,&len);
     unichar_t *upt, *end;
 
@@ -2281,7 +2281,7 @@ static int MMW_NamedDelete(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GWindow gw = GGadgetGetWindow(g);
 	GGadget *list = GWidgetGetControl(gw,CID_NamedDesigns);
-	int32 i,len;
+	int32_t i,len;
 	GTextInfo **ti = GGadgetGetList(list,&len);
 	for ( i=0; i<len; ++i ) {
 	    if ( ti[i]->selected ) {
@@ -2298,7 +2298,7 @@ return( true );
 
 static int MMW_NamedSel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
-	int32 len;
+	int32_t len;
 	GTextInfo **ti = GGadgetGetList(g,&len);
 	GWindow gw = GGadgetGetWindow(g);
 	int i, sel_cnt=0;

@@ -1258,7 +1258,7 @@ return( ti );
 }
 
 void GListAddStr(GGadget *list,unichar_t *str, void *ud) {
-    int32 i,len;
+    int32_t i,len;
     GTextInfo **ti = GGadgetGetList(list,&len);
     GTextInfo **replace = malloc((len+2)*sizeof(GTextInfo *));
 
@@ -1276,7 +1276,7 @@ void GListAddStr(GGadget *list,unichar_t *str, void *ud) {
 }
 
 void GListReplaceStr(GGadget *list,int index, unichar_t *str, void *ud) {
-    int32 i,len;
+    int32_t i,len;
     GTextInfo **ti = GGadgetGetList(list,&len);
     GTextInfo **replace = malloc((len+2)*sizeof(GTextInfo *));
 
@@ -1309,7 +1309,7 @@ struct setdata {
 static int set_e_h(GWindow gw, GEvent *event) {
     struct setdata *sd = GDrawGetUserData(gw);
     int i;
-    int32 len;
+    int32_t len;
     GTextInfo **ti;
     const unichar_t *ret1; unichar_t *end;
     int on, feat, val1, val2;
@@ -1388,7 +1388,7 @@ static unichar_t *AskSetting(struct macsettingname *temp,GGadget *list, int inde
     struct setdata sd;
     char buf[20];
     unichar_t ubuf3[6];
-    int32 len, i;
+    int32_t len, i;
     GTextInfo **ti;
 
     memset(&sd,0,sizeof(sd));
@@ -1503,7 +1503,7 @@ return( sd.ret );
 
 static void ChangeSetting(GGadget *list,int index,GGadget *flist) {
     struct macsettingname temp;
-    int32 len;
+    int32_t len;
     GTextInfo **ti = GGadgetGetList(list,&len);
     char *str;
     unichar_t *ustr;
@@ -1556,7 +1556,7 @@ return( true );
 
 static int Pref_MappingSel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
-	int32 len;
+	int32_t len;
 	GTextInfo **ti = GGadgetGetList(g,&len);
 	GWindow gw = GGadgetGetWindow(g);
 	int i, sel_cnt=0;
@@ -1576,7 +1576,7 @@ static int Pref_DefaultMapping(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	GGadget *list = GWidgetGetControl(GGadgetGetWindow(g),CID_Mapping);
 	GTextInfo *ti, **arr;
-	uint16 cnt;
+	uint16_t cnt;
 
 	ti = Pref_MappingList(false);
 	arr = GTextInfoArrayFromList(ti,&cnt);
@@ -1595,7 +1595,7 @@ static int Prefs_Ok(GGadget *g, GEvent *e) {
     const unichar_t *names[SCRIPT_MENU_MAX], *scripts[SCRIPT_MENU_MAX];
     struct prefs_list *pl;
     GTextInfo **list;
-    int32 len;
+    int32_t len;
     char *buf, *str;
     real dangle;
 
@@ -1818,7 +1818,7 @@ void DoPrefs(void) {
     GGadgetCreateData **hvarray, boxes[2*TOPICS];
     struct pref_data p;
     int i, gc, sgc, j, k, line, line_max, y, y2, ii, si;
-    int32 llen;
+    int32_t llen;
     char buf[20];
     int gcnt[20];
     static unichar_t nullstr[] = { 0 };
@@ -2349,7 +2349,7 @@ void DoPrefs(void) {
 	    list = GGadgetGetList(g,&llen);
 	    for ( j=0; j<llen ; ++j ) {
 		if ( list[j]->text!=NULL &&
-			(void *) (intpt) ( *((int *) pl->val)) == list[j]->userdata )
+			(void *) (intptr_t) ( *((int *) pl->val)) == list[j]->userdata )
 		    list[j]->selected = true;
 		else
 		    list[j]->selected = false;

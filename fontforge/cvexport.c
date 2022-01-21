@@ -531,7 +531,7 @@ int ExportImage(char *filename,SplineChar *sc, int layer, int format, int pixels
     BDFChar *bdfc;
     int ret;
     int tot, i;
-    uint8 *pt, *end;
+    uint8_t *pt, *end;
     int scale;
     void *freetypecontext;
     double emsize = sc->parent->ascent+sc->parent->descent;
@@ -628,7 +628,7 @@ int BCExportXBM(char *filename,BDFChar *bdfc, int format) {
     int ret;
     int tot;
     int scale, i;
-    uint8 *pt, *end;
+    uint8_t *pt, *end;
 
     memset(&gi,'\0', sizeof(gi));
     memset(&base,'\0', sizeof(base));

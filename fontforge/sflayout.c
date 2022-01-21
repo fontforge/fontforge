@@ -51,10 +51,10 @@
 #define BREAK_NONSTART 0x4
 #define BREAK_NONEND 0x8
 
-static uint32 simple_stdfeatures[] = { CHR('c','c','m','p'), CHR('l','o','c','a'), CHR('k','e','r','n'), CHR('l','i','g','a'), CHR('c','a','l','t'), CHR('m','a','r','k'), CHR('m','k','m','k'), REQUIRED_FEATURE, 0 };
-static uint32 arab_stdfeatures[] = { CHR('c','c','m','p'), CHR('l','o','c','a'), CHR('i','s','o','l'), CHR('i','n','i','t'), CHR('m','e','d','i'),CHR('f','i','n','a'), CHR('r','l','i','g'), CHR('l','i','g','a'), CHR('c','a','l','t'), CHR('k','e','r','n'), CHR('c','u','r','s'), CHR('m','a','r','k'), CHR('m','k','m','k'), REQUIRED_FEATURE, 0 };
-static uint32 hebrew_stdfeatures[] = { CHR('c','c','m','p'), CHR('l','o','c','a'), CHR('l','i','g','a'), CHR('c','a','l','t'), CHR('k','e','r','n'), CHR('m','a','r','k'), CHR('m','k','m','k'), REQUIRED_FEATURE, 0 };
-static struct { uint32 script, *stdfeatures; } script_2_std[] = {
+static uint32_t simple_stdfeatures[] = { CHR('c','c','m','p'), CHR('l','o','c','a'), CHR('k','e','r','n'), CHR('l','i','g','a'), CHR('c','a','l','t'), CHR('m','a','r','k'), CHR('m','k','m','k'), REQUIRED_FEATURE, 0 };
+static uint32_t arab_stdfeatures[] = { CHR('c','c','m','p'), CHR('l','o','c','a'), CHR('i','s','o','l'), CHR('i','n','i','t'), CHR('m','e','d','i'),CHR('f','i','n','a'), CHR('r','l','i','g'), CHR('l','i','g','a'), CHR('c','a','l','t'), CHR('k','e','r','n'), CHR('c','u','r','s'), CHR('m','a','r','k'), CHR('m','k','m','k'), REQUIRED_FEATURE, 0 };
+static uint32_t hebrew_stdfeatures[] = { CHR('c','c','m','p'), CHR('l','o','c','a'), CHR('l','i','g','a'), CHR('c','a','l','t'), CHR('k','e','r','n'), CHR('m','a','r','k'), CHR('m','k','m','k'), REQUIRED_FEATURE, 0 };
+static struct { uint32_t script, *stdfeatures; } script_2_std[] = {
     { CHR('l','a','t','n'), simple_stdfeatures },
     { CHR('D','F','L','T'), simple_stdfeatures },
     { CHR('c','y','r','l'), simple_stdfeatures },
@@ -108,7 +108,7 @@ static int IsBreakBetweenOk(unichar_t ch1, unichar_t ch2) {
     );
 }
 
-uint32 *StdFeaturesOfScript(uint32 script) {
+uint32_t *StdFeaturesOfScript(uint32_t script) {
     int i;
 
     for ( i=0; script_2_std[i].script!=0; ++i )
@@ -169,21 +169,21 @@ return( x );
 return( x );
 }
 
-uint32 *LI_TagsCopy(uint32 *tags) {
+uint32_t *LI_TagsCopy(uint32_t *tags) {
     int i;
-    uint32 *ret;
+    uint32_t *ret;
 
     if ( tags==NULL )
 return( NULL );
     for ( i=0; tags[i]!=0; ++i );
-    ret = malloc((i+1)*sizeof(uint32));
+    ret = malloc((i+1)*sizeof(uint32_t));
     for ( i=0; tags[i]!=0; ++i )
 	ret[i] = tags[i];
     ret[i] = 0;
 return( ret );
 }
 
-static int TagsSame(uint32 *tags1, uint32 *tags2) {
+static int TagsSame(uint32_t *tags1, uint32_t *tags2) {
     int i;
 
     if ( tags1==NULL || tags2==NULL )
@@ -280,7 +280,7 @@ return( ret );
 }
 
 static struct basescript *FindBS(struct Base *base,struct opentype_str *ch,LayoutInfo *li) {
-    uint32 script = SCScriptFromUnicode(ch->sc);
+    uint32_t script = SCScriptFromUnicode(ch->sc);
     struct basescript *bs;
     if ( script == DEFAULT_SCRIPT ) {
 	struct fontlist *fl = ch->fl;
@@ -291,7 +291,7 @@ static struct basescript *FindBS(struct Base *base,struct opentype_str *ch,Layou
 return( bs );
 }
 
-static uint32 FigureBaselineTag(struct opentype_str *ch,LayoutInfo *li,
+static uint32_t FigureBaselineTag(struct opentype_str *ch,LayoutInfo *li,
 	struct Base *cur_base,struct Base *start_base) {
     struct basescript *bs;
 
@@ -306,7 +306,7 @@ return( start_base->baseline_tags[bs->def_baseline] );
 return( 0 );
 }
 
-static int BaselineOffset(struct Base *base, struct basescript *bs,uint32 cur_bsln_tag) {
+static int BaselineOffset(struct Base *base, struct basescript *bs,uint32_t cur_bsln_tag) {
     int i;
 
     for ( i=0; i<base->baseline_cnt; ++i )
@@ -327,7 +327,7 @@ static void LIFigureLineHeight(LayoutInfo *li,int l,int p) {
 	FontData *start_fd = ((struct fontlist *) (line[0]->fl))->fd;
 	struct Base *start_base=start_fd->sf->horiz_base;
 	struct basescript *start_bs = NULL;
-	uint32 start_bsln_tag = 0;
+	uint32_t start_bsln_tag = 0;
 
 	for ( i=0; line[i]!=NULL; ++i )
 	    line[i]->bsln_off = 0;
@@ -343,7 +343,7 @@ static void LIFigureLineHeight(LayoutInfo *li,int l,int p) {
 	    for ( i=1; line[i]!=NULL; ++i ) {
 		FontData *fd = ((struct fontlist *) (line[i]->fl))->fd;
 		struct Base *base = fd->sf->horiz_base;
-		uint32 cur_bsln_tag;
+		uint32_t cur_bsln_tag;
 		if ( fd->sf->horiz_base==NULL )
 	    continue;
 		cur_bsln_tag = FigureBaselineTag(line[i],li,base,start_base);
@@ -1009,7 +1009,7 @@ static FontData *FontDataCopyNoBDF(LayoutInfo *print_li, FontData *source) {
 return( head );
 }
 
-void LayoutInfoInitLangSys(LayoutInfo *li, int end, uint32 script, uint32 lang) {
+void LayoutInfoInitLangSys(LayoutInfo *li, int end, uint32_t script, uint32_t lang) {
     struct fontlist *prev, *next;
 
     if ( (li->text!=NULL && li->text[0]!='\0') || li->fontlist==NULL ) {
@@ -1097,7 +1097,7 @@ return( head );
 
 static Array *SFDefaultScriptsLines(Array *arr,SplineFont *sf) {
     int pixelsize=24;
-    uint32 scripts[200], script;
+    uint32_t scripts[200], script;
     char *lines[209];
     int i, scnt, lcnt, gid;
     /* If the font has more than 200 scripts we can't give a good sample image */
@@ -1227,7 +1227,7 @@ void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
     GImage *image;
     struct _GImage *base;
     unichar_t *upt;
-    uint32 script;
+    uint32_t script;
     struct opentype_str **line;
     int ybase=0;
     Array *freeme=NULL;

@@ -108,7 +108,7 @@ static int BVImportImage(BitmapView *bv,char *path) {
     GImage *image;
     struct _GImage *base;
     int tot;
-    uint8 *pt, *end;
+    uint8_t *pt, *end;
     BDFChar *bc = bv->bc;
     int i, j;
 
@@ -547,7 +547,7 @@ static int GFD_ImportOk(GGadget *g, GEvent *e) {
 	unichar_t *ret = GGadgetGetTitle(d->gfc);
 	char *temp = u2def_copy(ret);
 	int lpos = GGadgetGetFirstListSelectedItem(d->format);
-	int format = (intpt) (GGadgetGetListItemSelected(d->format)->userdata);
+	int format = (intptr_t) (GGadgetGetListItemSelected(d->format)->userdata);
 	GGadget *tf;
 
 	ImportParams *ip = ImportParamsState();
@@ -659,7 +659,7 @@ return( true );
 static int GFD_Format(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
 	struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
-	int format = (intpt) (GGadgetGetListItemSelected(d->format)->userdata);
+	int format = (intptr_t) (GGadgetGetListItemSelected(d->format)->userdata);
 	if ( format<fv_pythonbase )
 	    GFileChooserSetFilterText(d->gfc,wildfmt[format]);
 #ifndef _NO_PYTHON
@@ -773,7 +773,7 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
 		if ( py_ie[i].import!=NULL ) {
 		    cur_formats[cnt+extras].text = (unichar_t *) copy(py_ie[i].name);
 		    cur_formats[cnt+extras].text_is_1byte = true;
-		    cur_formats[cnt+extras].userdata = (void *) (intpt) (fv_pythonbase+i);
+		    cur_formats[cnt+extras].userdata = (void *) (intptr_t) (fv_pythonbase+i);
 		    ++extras;
 		}
 	    }
@@ -782,8 +782,8 @@ static void _Import(CharView *cv,BitmapView *bv,FontView *fv) {
 #endif
     if ( !hasspiro()) {
 	for ( i=0; cur_formats[i].text!=NULL; ++i )
-	    if ( ((intpt) cur_formats[i].userdata)==fv_plate ||
-		    ((intpt) cur_formats[i].userdata)==fv_platetemplate )
+	    if ( ((intptr_t) cur_formats[i].userdata)==fv_plate ||
+		    ((intptr_t) cur_formats[i].userdata)==fv_platetemplate )
 		cur_formats[i].disabled = true;
     }
 

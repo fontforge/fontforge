@@ -16,11 +16,11 @@ extern void aat_dumpbsln(struct alltabs *at, SplineFont *sf);
 
 extern int LookupHasDefault(OTLookup *otl);
 extern int scriptsHaveDefault(struct scriptlanglist *sl);
-extern uint32 MacFeatureToOTTag(int featureType, int featureSetting);
-extern int OTTagToMacFeature(uint32 tag, int *featureType, int *featureSetting);
-extern uint16 *props_array(SplineFont *sf, struct glyphinfo *gi);
+extern uint32_t MacFeatureToOTTag(int featureType, int featureSetting);
+extern int OTTagToMacFeature(uint32_t tag, int *featureType, int *featureSetting);
+extern uint16_t *props_array(SplineFont *sf, struct glyphinfo *gi);
 extern int haslrbounds(SplineChar *sc, PST **left, PST **right);
-extern int16 *PerGlyphDefBaseline(SplineFont *sf, int *def_baseline);
+extern int16_t *PerGlyphDefBaseline(SplineFont *sf, int *def_baseline);
 extern void FigureBaseOffsets(SplineFont *sf, int def_bsln, int offsets[32]);
 
 extern int Macable(SplineFont *sf, OTLookup *otl);

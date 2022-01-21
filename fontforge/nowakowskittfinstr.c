@@ -115,7 +115,7 @@ int instruct_diagonal_stems = 1,
  *
  ******************************************************************************/
 
-static uint8 *pushheader(uint8 *instrs, int isword, int tot) {
+static uint8_t *pushheader(uint8_t *instrs, int isword, int tot) {
     if ( isword ) {
 	if ( tot>8 ) {
 	    *instrs++ = 0x41;		/* N(next word) Push words */
@@ -132,7 +132,7 @@ static uint8 *pushheader(uint8 *instrs, int isword, int tot) {
 return( instrs );
 }
 
-static uint8 *addpoint(uint8 *instrs,int isword,int pt) {
+static uint8_t *addpoint(uint8_t *instrs,int isword,int pt) {
     if ( !isword ) {
 	*instrs++ = pt;
     } else {
@@ -148,14 +148,14 @@ return( instrs );
  * speaks for itself in the code.
  */
 
-static uint8 *pushpoint(uint8 *instrs,int pt) {
+static uint8_t *pushpoint(uint8_t *instrs,int pt) {
     instrs = pushheader(instrs,(pt>255)||(pt<0),1);
 return( addpoint(instrs,(pt>255)||(pt<0),pt));
 }
 
 #define pushnum(a, b) pushpoint(a, b)
 
-static uint8 *pushpointstem(uint8 *instrs, int pt, int stem) {
+static uint8_t *pushpointstem(uint8_t *instrs, int pt, int stem) {
     int isword = pt>255 || stem>255 || pt<0 || stem<0;
     instrs = pushheader(instrs,isword,2);
     instrs = addpoint(instrs,isword,pt);
@@ -173,7 +173,7 @@ return( addpoint(instrs,isword,stem));
  *     poor space efficiency in case of a word among several bytes).
  *   - push bytes and words separately
  */
-static uint8 *pushpoints(uint8 *instrs, int ptcnt, const int *pts) {
+static uint8_t *pushpoints(uint8_t *instrs, int ptcnt, const int *pts) {
     int i, isword = 0;
     for (i=0; i<ptcnt; i++) if (pts[i]>255 || pts[i]<0) isword=1;
 
@@ -201,7 +201,7 @@ return( instrs );
  *
  * There are no checks for overflow!
  */
-static uint8 *pushF26Dot6(uint8 *instrs, double num) {
+static uint8_t *pushF26Dot6(uint8_t *instrs, double num) {
     int a, elems[3];
     int negative=0;
 
@@ -244,7 +244,7 @@ return( rint(num*16384) );
  * These points must be marked as 'touched' elsewhere! this function only
  * generates instructions.
  */
-static uint8 *instructpoints(uint8 *instrs, int ptcnt, const int *pts, uint8 command) {
+static uint8_t *instructpoints(uint8_t *instrs, int ptcnt, const int *pts, uint8_t command) {
     int i, use_sloop;
 
     use_sloop = 0;
@@ -280,7 +280,7 @@ return( instrs );
  *
  ******************************************************************************/
 
-struct ttf_table *SFFindTable(SplineFont *sf,uint32 tag) {
+struct ttf_table *SFFindTable(SplineFont *sf,uint32_t tag) {
     struct ttf_table *tab;
 
     for ( tab=sf->ttf_tables; tab!=NULL && tab->tag!=tag; tab=tab->next );
@@ -299,18 +299,18 @@ int TTF__getcvtval(SplineFont *sf,int val) {
         cvt_tab->next = sf->ttf_tables;
         sf->ttf_tables = cvt_tab;
     }
-    for ( i=0; (int)sizeof(uint16)*i<cvt_tab->len; ++i ) {
-        int tval = (int16) memushort(cvt_tab->data,cvt_tab->len, sizeof(uint16)*i);
+    for ( i=0; (int)sizeof(uint16_t)*i<cvt_tab->len; ++i ) {
+        int tval = (int16_t) memushort(cvt_tab->data,cvt_tab->len, sizeof(uint16_t)*i);
         if ( val>=tval-1 && val<=tval+1 )
 return( i );
     }
-    if ( (int)sizeof(uint16)*i>=cvt_tab->maxlen ) {
+    if ( (int)sizeof(uint16_t)*i>=cvt_tab->maxlen ) {
         if ( cvt_tab->maxlen==0 ) cvt_tab->maxlen = cvt_tab->len;
         cvt_tab->maxlen += 200;
         cvt_tab->data = realloc(cvt_tab->data,cvt_tab->maxlen);
     }
-    memputshort(cvt_tab->data,sizeof(uint16)*i,val);
-    cvt_tab->len += sizeof(uint16);
+    memputshort(cvt_tab->data,sizeof(uint16_t)*i,val);
+    cvt_tab->len += sizeof(uint16_t);
 return( i );
 }
 
@@ -683,7 +683,7 @@ static void GICImportStems(int xdir, GlobalInstrCt *gic) {
 static void init_cvt(GlobalInstrCt *gic) {
     int i, cvtindex, cvtsize;
     struct ttf_table *tab;
-    uint8 *cvt;
+    uint8_t *cvt;
 
     cvtsize = 1;
     if (gic->stdhw.width != -1) cvtsize++;
@@ -692,7 +692,7 @@ static void init_cvt(GlobalInstrCt *gic) {
     cvtsize += gic->stemsnapvcnt;
     cvtsize += gic->bluecnt * 2; /* possible family blues */
 
-    cvt = calloc(cvtsize, cvtsize * sizeof(int16));
+    cvt = calloc(cvtsize, cvtsize * sizeof(int16_t));
     cvtindex = 0;
 
     /* Assign cvt indices */
@@ -727,7 +727,7 @@ static void init_cvt(GlobalInstrCt *gic) {
     }
 
     cvtsize = cvtindex;
-    cvt = realloc(cvt, cvtsize * sizeof(int16));
+    cvt = realloc(cvt, cvtsize * sizeof(int16_t));
 
     /* Try to implant the new cvt table */
     gic->cvt_done = 0;
@@ -740,15 +740,15 @@ static void init_cvt(GlobalInstrCt *gic) {
 	gic->sf->ttf_tables = tab;
 	tab->tag = CHR('c','v','t',' ');
 
-	tab->len = tab->maxlen = cvtsize * sizeof(int16);
+	tab->len = tab->maxlen = cvtsize * sizeof(int16_t);
 	if (tab->maxlen >256) tab->maxlen = 256;
         tab->data = cvt;
 
         gic->cvt_done = 1;
     }
     else {
-        if (tab->len >= cvtsize * (int)sizeof(int16) &&
-	    memcmp(cvt, tab->data, cvtsize * sizeof(int16)) == 0)
+        if (tab->len >= cvtsize * (int)sizeof(int16_t) &&
+	    memcmp(cvt, tab->data, cvtsize * sizeof(int16_t)) == 0)
 	        gic->cvt_done = 1;
 
         free(cvt);
@@ -802,7 +802,7 @@ return;
  */
 static void init_maxp(GlobalInstrCt *gic) {
     struct ttf_table *tab = SFFindTable(gic->sf, CHR('m','a','x','p'));
-    uint16 zones, twpts, store, fdefs, stack;
+    uint16_t zones, twpts, store, fdefs, stack;
 
     if ( tab==NULL ) {
         tab = chunkalloc(sizeof(struct ttf_table));
@@ -817,11 +817,11 @@ static void init_maxp(GlobalInstrCt *gic) {
         tab->len = tab->maxlen = 32;
     }
 
-    zones = memushort(tab->data, 32,  7*sizeof(uint16));
-    twpts = memushort(tab->data, 32,  8*sizeof(uint16));
-    store = memushort(tab->data, 32,  9*sizeof(uint16));
-    fdefs = memushort(tab->data, 32, 10*sizeof(uint16));
-    stack = memushort(tab->data, 32, 12*sizeof(uint16));
+    zones = memushort(tab->data, 32,  7*sizeof(uint16_t));
+    twpts = memushort(tab->data, 32,  8*sizeof(uint16_t));
+    store = memushort(tab->data, 32,  9*sizeof(uint16_t));
+    fdefs = memushort(tab->data, 32, 10*sizeof(uint16_t));
+    stack = memushort(tab->data, 32, 12*sizeof(uint16_t));
 
     if (gic->fpgm_done && zones<2) zones=2;
     if (gic->fpgm_done && twpts<1) twpts=1;
@@ -829,11 +829,11 @@ static void init_maxp(GlobalInstrCt *gic) {
     if (gic->fpgm_done && fdefs<22) fdefs=22;
     if (stack<STACK_DEPTH) stack=STACK_DEPTH;
 
-    memputshort(tab->data, 7*sizeof(uint16), zones);
-    memputshort(tab->data, 8*sizeof(uint16), twpts);
-    memputshort(tab->data, 9*sizeof(uint16), store);
-    memputshort(tab->data,10*sizeof(uint16), fdefs);
-    memputshort(tab->data,12*sizeof(uint16), stack);
+    memputshort(tab->data, 7*sizeof(uint16_t), zones);
+    memputshort(tab->data, 8*sizeof(uint16_t), twpts);
+    memputshort(tab->data, 9*sizeof(uint16_t), store);
+    memputshort(tab->data,10*sizeof(uint16_t), fdefs);
+    memputshort(tab->data,12*sizeof(uint16_t), stack);
 }
 
 /* Other hinting software puts certain actions in FPGM to ease developer's life
@@ -846,7 +846,7 @@ static void init_maxp(GlobalInstrCt *gic) {
  * glyphs that do need it.
  */
 static void init_fpgm(GlobalInstrCt *gic) {
-    uint8 new_fpgm[] =
+    uint8_t new_fpgm[] =
     {
         /* Function 0: position a point within a blue zone (given via cvt).
          * Note: in case of successful init of 'cvt' and 'prep' this function
@@ -1679,7 +1679,7 @@ static int compute_blue_height(real val, int EM, int bluescale, int ppem) {
 return (scaled_val + 32) / 64 * (val / fabs(val));
 }
 
-static uint8 *use_family_blues(uint8 *prep_head, GlobalInstrCt *gic) {
+static uint8_t *use_family_blues(uint8_t *prep_head, GlobalInstrCt *gic) {
     int i, h1, h2, stopat;
     int bs = GetBlueScale(gic->sf);
     int EM = gic->sf->ascent + gic->sf->descent;
@@ -1738,7 +1738,7 @@ return (scaled_width + 32) / 64;
 /* Normalize a single stem. The code generated assumes there is a scaled stem
  * width on bytecode interpreter's stack, and leaves normalized width there.
  */
-static uint8 *normalize_stem(uint8 *prep_head, int xdir, StdStem *stem, GlobalInstrCt *gic) {
+static uint8_t *normalize_stem(uint8_t *prep_head, int xdir, StdStem *stem, GlobalInstrCt *gic) {
     int callargs[3];
     int i;
 
@@ -1788,7 +1788,7 @@ return prep_head;
 
 /* Append the code for normalizing standard stems' widths to 'prep'.
  */
-static uint8 *normalize_stems(uint8 *prep_head, int xdir, GlobalInstrCt *gic) {
+static uint8_t *normalize_stems(uint8_t *prep_head, int xdir, GlobalInstrCt *gic) {
     int i, t;
     StdStem *mainstem = xdir?&(gic->stdvw):&(gic->stdhw);
     StdStem *otherstems = xdir?gic->stemsnapv:gic->stemsnaph;
@@ -1843,7 +1843,7 @@ return prep_head;
  * TODO! We should take 'gasp' table into account and set up blues here.
  */
 static void init_prep(GlobalInstrCt *gic) {
-    uint8 new_prep_preamble[] =
+    uint8_t new_prep_preamble[] =
     {
         /* Enable dropout control. FreeType 2.3.7 need explicit SCANTYPE. */
         0xb8, // PUSHW_1
@@ -1893,7 +1893,7 @@ static void init_prep(GlobalInstrCt *gic) {
 
     int preplen = sizeof(new_prep_preamble);
     int prepmaxlen = preplen;
-    uint8 *new_prep, *prep_head;
+    uint8_t *new_prep, *prep_head;
     struct ttf_table *tab;
 
     if (gic->cvt_done) {
@@ -1904,8 +1904,8 @@ static void init_prep(GlobalInstrCt *gic) {
     if (gic->fpgm_done)
         prepmaxlen += 3;
 
-    new_prep = calloc(prepmaxlen, sizeof(uint8));
-    memmove(new_prep, new_prep_preamble, preplen*sizeof(uint8));
+    new_prep = calloc(prepmaxlen, sizeof(uint8_t));
+    memmove(new_prep, new_prep_preamble, preplen*sizeof(uint8_t));
     prep_head = new_prep + preplen;
 
     if (gic->cvt_done && gic->fpgm_done) {
@@ -2072,18 +2072,18 @@ typedef struct instrct {
     SplineSet *ss;
 
     /* instructions */
-    uint8 *instrs;        /* the beginning of the instructions */
-    uint8 *pt;            /* the current position in the instructions */
+    uint8_t *instrs;        /* the beginning of the instructions */
+    uint8_t *pt;            /* the current position in the instructions */
 
     /* properties indexed by contour number */
     int *contourends;     /* points ending their contours. Null-terminated. */
-    uint8 *clockwise;     /* is given contour clockwise? */
+    uint8_t *clockwise;     /* is given contour clockwise? */
 
     /* properties, indexed by ttf point index. Some could be compressed. */
     int ptcnt;            /* number of points in this glyph */
     BasePoint *bp;        /* point coordinates */
-    uint8 *touched;       /* touchflags; points explicitly instructed */
-    uint8 *affected;      /* touchflags; almost touched, but optimized out */
+    uint8_t *touched;       /* touchflags; points explicitly instructed */
+    uint8_t *affected;      /* touchflags; almost touched, but optimized out */
 
     /* data from stem detector */
     GlyphData *gd;
@@ -2281,10 +2281,10 @@ static void RunOnPoints(InstrCt *ct, int contour_direction,
 {
     SplineSet *ss = ct->ss;
     SplinePoint *sp;
-    uint8 *done;
+    uint8_t *done;
     int c, p;
 
-    done = (uint8 *)calloc(ct->ptcnt, sizeof(uint8));
+    done = (uint8_t *)calloc(ct->ptcnt, sizeof(uint8_t));
 
     for ( c=0; ss!=NULL; ss=ss->next, ++c ) {
         ct->cdir = ct->clockwise[c];
@@ -2358,7 +2358,7 @@ static void RunOnPoints(InstrCt *ct, int contour_direction,
 static int value_point(InstrCt *ct, int p, SplinePoint *sp, real fudge) {
     int score = 0;
     int EM = ct->gic->sf->ascent + ct->gic->sf->descent;
-    uint8 touchflag = ct->xdir?tf_x:tf_y;
+    uint8_t touchflag = ct->xdir?tf_x:tf_y;
 
     if (IsCornerExtremum(ct->xdir, ct->contourends, ct->bp, p) ||
         IsExtremum(ct->xdir, p, sp))
@@ -2392,7 +2392,7 @@ return( score );
 static void search_edge(int p, SplinePoint *sp, InstrCt *ct) {
     int tmp, score;
     real fudge = ct->gic->fudge;
-    uint8 touchflag = ct->xdir?tf_x:tf_y;
+    uint8_t touchflag = ct->xdir?tf_x:tf_y;
     real refcoord, coord = ct->xdir?ct->bp[p].x:ct->bp[p].y;
 
     if (fabs(coord - ct->edge.base) <= fudge)
@@ -2711,14 +2711,14 @@ static void optimize_blue(InstrCt *ct) {
     int othercnt = ct->edge.othercnt;
     int touchflag = (ct->xdir)?tf_x:tf_y;
     int *contourends = ct->contourends;
-    uint8 *touched = ct->touched;
-    uint8 *affected = ct->affected;
-    uint8 *tosnap;
+    uint8_t *touched = ct->touched;
+    uint8_t *affected = ct->affected;
+    uint8_t *tosnap;
 
     if (othercnt == 0)
 return;
 
-    tosnap = (uint8 *)calloc(ct->ptcnt, sizeof(uint8));
+    tosnap = (uint8_t *)calloc(ct->ptcnt, sizeof(uint8_t));
 
     for(i=0; i<ct->edge.othercnt; i++)
     {
@@ -2786,13 +2786,13 @@ static void optimize_strongpts_step1(InstrCt *ct) {
     int *others = ct->edge.others;
     int othercnt = ct->edge.othercnt;
     int *contourends = ct->contourends;
-    uint8 *tocull, *tocheck;
+    uint8_t *tocull, *tocheck;
 
     if (othercnt == 0)
 return;
 
-    tocull = (uint8 *)calloc(ct->ptcnt, sizeof(uint8));
-    tocheck = (uint8 *)calloc(ct->ptcnt, sizeof(uint8));
+    tocull = (uint8_t *)calloc(ct->ptcnt, sizeof(uint8_t));
+    tocheck = (uint8_t *)calloc(ct->ptcnt, sizeof(uint8_t));
     for(i=0; i<ct->edge.othercnt; i++) tocheck[ct->edge.others[i]] = 1;
 
     /* for each point of "edge" (would be better called "zone") */
@@ -2849,16 +2849,16 @@ static void optimize_strongpts_step2(InstrCt *ct) {
     int othercnt = ct->edge.othercnt;
     int touchflag = (ct->xdir)?tf_x:tf_y;
     int *contourends = ct->contourends;
-    uint8 *touched = ct->touched;
-    uint8 *affected = ct->affected;
-    uint8 *toinstr, *tocull, *tocheck;
+    uint8_t *touched = ct->touched;
+    uint8_t *affected = ct->affected;
+    uint8_t *toinstr, *tocull, *tocheck;
 
     if (othercnt == 0)
 return;
 
-    toinstr = (uint8 *)calloc(ct->ptcnt, sizeof(uint8));
-    tocull = (uint8 *)calloc(ct->ptcnt, sizeof(uint8));
-    tocheck = (uint8 *)calloc(ct->ptcnt, sizeof(uint8));
+    toinstr = (uint8_t *)calloc(ct->ptcnt, sizeof(uint8_t));
+    tocull = (uint8_t *)calloc(ct->ptcnt, sizeof(uint8_t));
+    tocheck = (uint8_t *)calloc(ct->ptcnt, sizeof(uint8_t));
     for(i=0; i<ct->edge.othercnt; i++) tocheck[ct->edge.others[i]] = 1;
 
     /* two passes... */
@@ -2954,7 +2954,7 @@ return;
 /* Finish instructing the edge. Try to hint only those points on edge that are
  * necessary - IUP should do the rest.
  */
-static void finish_edge(InstrCt *ct, uint8 command) {
+static void finish_edge(InstrCt *ct, uint8_t command) {
     int i;
 
     optimize_edge(ct);
@@ -2983,7 +2983,7 @@ return;
 static void mark_startenddones(StemData *stem, int is_l ) {
     struct dependent_stem *slave;
     int i;
-    uint8 *done;
+    uint8_t *done;
 
     done = is_l ? &stem->ldone : &stem->rdone;
     *done = true;
@@ -4088,7 +4088,7 @@ static int SetDStemKeyPoint( InstrCt *ct,StemData *stem,PointData *pd,int aindex
 
     int nextidx, previdx, cpidx, prev_outer, next_outer, is_start;
     int nsidx, psidx, sidx;
-    uint8 flag;
+    uint8_t flag;
     PointData *ncpd, *pcpd, *cpd, *best = NULL;
     real prevdot, nextdot, cpdist;
 
@@ -4279,7 +4279,7 @@ static void InitDStemData( InstrCt *ct ) {
 /* Usually we have to start doing each diagonal stem from the point which
  * is most touched in any directions.
  */
-static int FindDiagStartPoint( StemData *stem, uint8 *touched ) {
+static int FindDiagStartPoint( StemData *stem, uint8_t *touched ) {
     int i;
 
     for ( i=0; i<4; ++i ) {
@@ -4307,8 +4307,8 @@ return( 0 );
  * (i. e. has not yet been touched) and set freedom vector to that
  * direction in case it has not already been set.
  */
-static int SetFreedomVector( uint8 **instrs,int pnum,
-    uint8 *touched,DiagPointInfo *diagpts,BasePoint *norm,BasePoint *fv,int pvset,int fpgm_ok ) {
+static int SetFreedomVector( uint8_t **instrs,int pnum,
+    uint8_t *touched,DiagPointInfo *diagpts,BasePoint *norm,BasePoint *fv,int pvset,int fpgm_ok ) {
 
     int i, pushpts[3];
     PointData *start=NULL, *end=NULL;
@@ -4388,9 +4388,9 @@ return( true );
 return( false );
 }
 
-static uint8 *FixDStemPoint ( InstrCt *ct,StemData *stem,
+static uint8_t *FixDStemPoint ( InstrCt *ct,StemData *stem,
     int pt,int refpt,int firstedge,int cvt,BasePoint *fv ) {
-    uint8 *instrs, *touched;
+    uint8_t *instrs, *touched;
     DiagPointInfo *diagpts;
 
     diagpts = ct->diagpts;
@@ -4435,7 +4435,7 @@ return( instrs );
 }
 
 static int DStemHasSnappableCorners ( InstrCt *ct,StemData *stem,PointData *pd1,PointData *pd2 ) {
-    uint8 *touched = ct->touched;
+    uint8_t *touched = ct->touched;
 
     /* We should be dealing with oncurve points */
     if ( pd1->sp == NULL || pd2->sp == NULL )
@@ -4455,8 +4455,8 @@ return( true );
 return( false );
 }
 
-static uint8 *SnapDStemCorners ( InstrCt *ct,StemData *stem,PointData *pd1,PointData *pd2,BasePoint *fv ) {
-    uint8 *instrs, *touched;
+static uint8_t *SnapDStemCorners ( InstrCt *ct,StemData *stem,PointData *pd1,PointData *pd2,BasePoint *fv ) {
+    uint8_t *instrs, *touched;
     int xbase, ybase;
 
     instrs = ct->pt;
@@ -4499,11 +4499,11 @@ return( instrs );
  * can handle things like "V" where one line's ending point is another
  * line's starting point without special exceptions.
  */
-static uint8 *FixDstem( InstrCt *ct, StemData *ds, BasePoint *fv ) {
+static uint8_t *FixDstem( InstrCt *ct, StemData *ds, BasePoint *fv ) {
     int startnum, a1, a2, b1, b2, firstedge, cvt;
     int x_ldup, y_ldup, x_edup, y_edup, dsc1, dsc2;
     PointData *v1, *v2;
-    uint8 *touched;
+    uint8_t *touched;
     int pushpts[3];
 
     if ( ds->ldone && ds->rdone )
@@ -4590,10 +4590,10 @@ return( ct->pt );
 return( ct->pt );
 }
 
-static uint8 *FixPointOnLine ( DiagPointInfo *diagpts,PointVector *line,
+static uint8_t *FixPointOnLine ( DiagPointInfo *diagpts,PointVector *line,
     PointData *pd,InstrCt *ct,BasePoint *fv,BasePoint *pv,int *rp1,int *rp2 ) {
 
-    uint8 *instrs, *touched;
+    uint8_t *instrs, *touched;
     BasePoint newpv;
     int pushpts[4];
 
@@ -4639,10 +4639,10 @@ return( instrs );
  * then we can interpolate it along that line. This usually produces
  * better results for things like a Danish slashed "O".
  */
-static uint8 *InterpolateAlongDiag ( DiagPointInfo *diagpts,PointVector *line,
+static uint8_t *InterpolateAlongDiag ( DiagPointInfo *diagpts,PointVector *line,
     PointData *pd,InstrCt *ct,BasePoint *fv,BasePoint *pv,int *rp1,int *rp2 ) {
 
-    uint8 *instrs, *touched;
+    uint8_t *instrs, *touched;
     BasePoint newpv;
     int pushpts[3];
 
@@ -4702,10 +4702,10 @@ return( instrs );
  * points of stems, unless they should be additionally positioned relatively
  * to another stem. Thus is can handle things like "X" or "K".
  */
-static uint8 *MovePointsToIntersections( InstrCt *ct,BasePoint *fv ) {
+static uint8_t *MovePointsToIntersections( InstrCt *ct,BasePoint *fv ) {
 
     int i, j, ptcnt, rp1=-1, rp2=-1;
-    uint8 *touched;
+    uint8_t *touched;
     BasePoint pv;
     PointData *curpd, *npd, *ppd;
     DiagPointInfo *diagpts;
@@ -4782,7 +4782,7 @@ static void TouchControlPoint( InstrCt *ct,PointData *pd,
 
     int idx, cpidx;
     PointData *cpd;
-    uint8 *touched = ct->touched;
+    uint8_t *touched = ct->touched;
 
     idx = pd->ttfindex;
     cpidx = next ? pd->sp->nextcpindex : pd->sp->prev->from->nextcpindex;
@@ -4813,11 +4813,11 @@ static void TouchControlPoint( InstrCt *ct,PointData *pd,
 /* Finally explicitly touch all affected points by X and Y (unless they
  * have already been), so that subsequent IUP's can't distort our stems.
  */
-static uint8 *TouchDStemPoints( InstrCt *ct,BasePoint *fv ) {
+static uint8_t *TouchDStemPoints( InstrCt *ct,BasePoint *fv ) {
 
     int i, ptcnt, numx=0, numy=0, idx;
     int *tobefixedy, *tobefixedx;
-    uint8 *instrs, *touched;
+    uint8_t *instrs, *touched;
     PointData *pd;
 
     touched = ct->touched;
@@ -4957,7 +4957,7 @@ static int AddEdge(InstrCt *ct, StemData *stem, int is_l, struct stemedge *edgel
 static void InterpolateStrongPoints(InstrCt *ct) {
     StemBundle *bundle;
     StemData *stem;
-    uint8 touchflag = ct->xdir?tf_x:tf_y;
+    uint8_t touchflag = ct->xdir?tf_x:tf_y;
     real fudge;
     struct stemedge edgelist[192];
     int edgecnt=0, i, j;
@@ -5044,7 +5044,7 @@ return;
  *
  ******************************************************************************/
 
-static uint8 *dogeninstructions(InstrCt *ct) {
+static uint8_t *dogeninstructions(InstrCt *ct) {
     StemData *stem;
     int max, i;
     DStemInfo *dstem;
@@ -5159,9 +5159,9 @@ void NowakowskiSCAutoInstr(GlobalInstrCt *gic, SplineChar *sc) {
     int cnt, contourcnt;
     BasePoint *bp;
     int *contourends;
-    uint8 *clockwise;
-    uint8 *touched;
-    uint8 *affected;
+    uint8_t *clockwise;
+    uint8_t *touched;
+    uint8_t *affected;
     SplineSet *ss;
     RefChar *ref;
     InstrCt ct;

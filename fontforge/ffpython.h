@@ -86,10 +86,10 @@ typedef struct ff_point {
     PyObject_HEAD
     /* Type-specific fields go here. */
     double x,y;
-    uint8 on_curve;
-    uint8 selected;
-    uint8 type;
-    uint8 interpolated;
+    uint8_t on_curve;
+    uint8_t selected;
+    uint8_t type;
+    uint8_t interpolated;
     char *name;
 } PyFF_Point;
 
@@ -118,9 +118,9 @@ typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
     SplineChar *sc;
-    uint8 replace;
-    uint8 ended;
-    uint8 changed;
+    uint8_t replace;
+    uint8_t ended;
+    uint8_t changed;
     int layer;
 } PyFF_GlyphPen;
 

@@ -157,7 +157,7 @@ static void dump_glyphnamelist(FILE *out, SplineFont *sf, char *names) {
     }
 }
 
-static int MarkNeeded(uint8 *needed,uint8 *setsneeded,OTLookup *otl) {
+static int MarkNeeded(uint8_t *needed,uint8_t *setsneeded,OTLookup *otl) {
     int index = (otl->lookup_flags>>8)&0xff;
     int sindex = (otl->lookup_flags>>16)&0xffff;
     int any = false;
@@ -185,8 +185,8 @@ return( any );
 }
 
 static void gdef_markclasscheck(FILE *out,SplineFont *sf,OTLookup *otl) {
-    uint8 *needed;
-    uint8 *setsneeded;
+    uint8_t *needed;
+    uint8_t *setsneeded;
     int any = false;
     int gpos;
 
@@ -829,7 +829,7 @@ static int ClassUsed(FPST *fpst, int which, int class_num) {
     for ( j=0; j<fpst->rule_cnt; ++j ) {
 	struct fpst_rule *r = &fpst->rules[j];
 	int cnt = which==0? r->u.class.ncnt : which==1 ? r->u.class.bcnt : r->u.class.fcnt;
-	uint16 *checkme = which==0? r->u.class.nclasses : which==1 ? r->u.class.bclasses : r->u.class.fclasses;
+	uint16_t *checkme = which==0? r->u.class.nclasses : which==1 ? r->u.class.bclasses : r->u.class.fclasses;
 	for ( i=0; i<cnt; ++i )
 	    if ( checkme[i] == class_num )
 return( true );
@@ -1541,7 +1541,7 @@ void FeatDumpOneLookup(FILE *out,SplineFont *sf, OTLookup *otl) {
 	    fprintf( out, "  script %c%c%c%c;\n",
 		    sl->script>>24, sl->script>>16, sl->script>>8, sl->script );
 	    for ( l=0; l<sl->lang_cnt; ++l ) {
-		uint32 lang = l<MAX_LANG ? sl->langs[l] : sl->morelangs[l-MAX_LANG];
+		uint32_t lang = l<MAX_LANG ? sl->langs[l] : sl->morelangs[l-MAX_LANG];
 		fprintf( out, "     language %c%c%c%c %s;\n",
 			lang>>24, lang>>16, lang>>8, lang,
 			lang!=DEFAULT_LANG ? "exclude_dflt" : "" );
@@ -1675,15 +1675,15 @@ static void dump_baseaxis(FILE *out,struct Base *axis,char *key) {
 return;
     fprintf( out, "  %sAxis.BaseTagList", key );
     for ( i=0; i<axis->baseline_cnt; ++i ) {
-	uint32 tag = axis->baseline_tags[i];
+	uint32_t tag = axis->baseline_tags[i];
 	fprintf( out, " %c%c%c%c", tag>>24, tag>>16, tag>>8, tag );
     }
     fprintf( out, ";\n");
 
     fprintf( out, "  %sAxis.BaseScriptList\n", key );
     for ( script=axis->scripts; script!=NULL; script=script->next ) {
-	uint32 scrtag = script->script;
-	uint32 tag = axis->baseline_tags[script->def_baseline];
+	uint32_t scrtag = script->script;
+	uint32_t tag = axis->baseline_tags[script->def_baseline];
 	fprintf( out, "\t%c%c%c%c", scrtag>>24, scrtag>>16, scrtag>>8, scrtag );
 	fprintf( out, " %c%c%c%c", tag>>24, tag>>16, tag>>8, tag );
 	for ( i=0; i<axis->baseline_cnt; ++i )
@@ -1748,24 +1748,24 @@ static void dump_header_languagesystem(FILE *out, SplineFont *sf) {
     GTree* ht = g_tree_new_full( tree_strcasecmp, 0, free, NULL );
 
     for ( isgpos=0; isgpos<2; ++isgpos ) {
-	uint32 *feats = SFFeaturesInScriptLang(sf,isgpos,0xffffffff,0xffffffff);
+	uint32_t *feats = SFFeaturesInScriptLang(sf,isgpos,0xffffffff,0xffffffff);
 	if ( feats[0]!=0 ) {
-	    uint32 *scripts = SFScriptsInLookups(sf,isgpos);
+	    uint32_t *scripts = SFScriptsInLookups(sf,isgpos);
 	    note_nested_lookups_used_twice(isgpos ? sf->gpos_lookups : sf->gsub_lookups);
 	    for ( i=0; feats[i]!=0; ++i ) {
 
 		for ( s=0; scripts[s]!=0; ++s ) {
-		    uint32 *langs = SFLangsInScript(sf,isgpos,scripts[s]);
+		    uint32_t *langs = SFLangsInScript(sf,isgpos,scripts[s]);
 		    for ( l=0; langs[l]!=0; ++l ) {
 			for ( otl = isgpos ? sf->gpos_lookups : sf->gsub_lookups; otl!=NULL; otl=otl->next ) {
 			    for ( fl=otl->features; fl!=NULL; fl=fl->next ) if ( fl->featuretag==feats[i] ) {
 				    for ( sl=fl->scripts; sl!=NULL; sl=sl->next ) if ( sl->script==scripts[s] ) {
 					    for ( subl=0; subl<sl->lang_cnt; ++subl ) {
 						char key[100];
-                                                const uint32 DFLT_int = (uint32)'D' << 24 | (uint32)'F' << 16 |
-                                                (uint32)'L' << 8 | (uint32)'T';
-                                                const uint32 dflt_int = (uint32)'d' << 24 | (uint32)'f' << 16 |
-                                                (uint32)'l' << 8 | (uint32)'t';
+                                                const uint32_t DFLT_int = (uint32_t)'D' << 24 | (uint32_t)'F' << 16 |
+                                                (uint32_t)'L' << 8 | (uint32_t)'T';
+                                                const uint32_t dflt_int = (uint32_t)'d' << 24 | (uint32_t)'f' << 16 |
+                                                (uint32_t)'l' << 8 | (uint32_t)'t';
 						if ((scripts[s] == DFLT_int) && (langs[l] == dflt_int)) {
 						  has_DFLT = 1;
 						} else {
@@ -1801,9 +1801,9 @@ static void dump_gsubgpos(FILE *out, SplineFont *sf) {
     struct otfname *on;
 
     for ( isgpos=0; isgpos<2; ++isgpos ) {
-	uint32 *feats = SFFeaturesInScriptLang(sf,isgpos,0xffffffff,0xffffffff);
+	uint32_t *feats = SFFeaturesInScriptLang(sf,isgpos,0xffffffff,0xffffffff);
 	if ( feats[0]!=0 ) {
-	    uint32 *scripts = SFScriptsInLookups(sf,isgpos);
+	    uint32_t *scripts = SFScriptsInLookups(sf,isgpos);
 	    fprintf( out, "\n# %s \n\n", isgpos ? "GPOS" : "GSUB" );
 	    note_nested_lookups_used_twice(isgpos ? sf->gpos_lookups : sf->gsub_lookups);
 	    for ( otl= isgpos ? sf->gpos_lookups : sf->gsub_lookups; otl!=NULL; otl=otl->next )
@@ -1845,7 +1845,7 @@ static void dump_gsubgpos(FILE *out, SplineFont *sf) {
 		    } else
 			fprintf( out, " 0 0 0;\n" );
 		} else for ( s=0; scripts[s]!=0; ++s ) {
-		    uint32 *langs = SFLangsInScript(sf,isgpos,scripts[s]);
+		    uint32_t *langs = SFLangsInScript(sf,isgpos,scripts[s]);
 		    int firsts = true;
 		    for ( l=0; langs[l]!=0; ++l ) {
 			int first = true;
@@ -1853,7 +1853,7 @@ static void dump_gsubgpos(FILE *out, SplineFont *sf) {
 			    for ( fl=otl->features; fl!=NULL; fl=fl->next ) if ( fl->featuretag==feats[i] ) {
 				for ( sl=fl->scripts; sl!=NULL; sl=sl->next ) if ( sl->script==scripts[s] ) {
 				    for ( subl=0; subl<sl->lang_cnt; ++subl ) {
-					uint32 lang = subl<MAX_LANG ? sl->langs[subl] : sl->morelangs[subl-MAX_LANG];
+					uint32_t lang = subl<MAX_LANG ? sl->langs[subl] : sl->morelangs[subl-MAX_LANG];
 			                if ( lang==langs[l] )
 			    goto found;
 				    }
@@ -1998,15 +1998,15 @@ void FeatDumpFontLookups(FILE *out,SplineFont *sf) {
 /* ************************************************************************** */
 
 struct nameid {
-    uint16 strid;
-    uint16 platform, specific, language;
+    uint16_t strid;
+    uint16_t platform, specific, language;
     char *utf8_str;
     struct nameid *next;
 };
 
 struct tablekeywords {
     char *name;
-    int size;			/* 1=>byte, 2=>short, 4=>int32 */
+    int size;			/* 1=>byte, 2=>short, 4=>int32_t */
     int cnt;			/* normally 1, but 10 for panose, -1 for infinite */
     int offset;			/* -1 => parse but don't store */
 };
@@ -2015,7 +2015,7 @@ struct tablekeywords {
 struct tablevalues {
     int index;			/* in the table key structure above */
     int value;
-    uint8 panose_vals[10];
+    uint8_t panose_vals[10];
     struct tablevalues *next;
 };
 
@@ -2025,13 +2025,13 @@ enum feat_type { ft_lookup_start, ft_lookup_end, ft_feat_start, ft_feat_end,
     ft_subtable, ft_script, ft_lang, ft_lookupflags, ft_langsys,
     ft_pst, ft_pstclass, ft_fpst, ft_ap, ft_lookup_ref, ft_featname };
 struct feat_item {
-    uint16 /* enum feat_type */ type;
-    uint8 ticked;
+    uint16_t /* enum feat_type */ type;
+    uint8_t ticked;
     union {
 	SplineChar *sc;		/* For psts, aps */
 	char *class;		/* List of glyph names for kerning by class, lcarets */
 	char *lookup_name;	/* for lookup_start/ lookup_ref */
-	uint32 tag;		/* for feature/script/lang tag */
+	uint32_t tag;		/* for feature/script/lang tag */
 	int *params;		/* size params */
 	struct tablekeywords *offsets;
 	char **gdef_classes;
@@ -2046,7 +2046,7 @@ struct feat_item {
 	int exclude_dflt;		/* for lang tags */
 	struct nameid *names;		/* size params */
 	struct tablevalues *tvals;
-	int16 *lcaret;
+	int16_t *lcaret;
 	struct otffeatname *featnames;
     } u2;
     struct gpos_mark *mclass;		/* v1.8 For mark to base-ligature-mark, names of all marks which attach to this anchor */
@@ -2264,7 +2264,7 @@ struct parseState {
     char tokbuf[MAXT+1];
     long value;
     enum toktype type;
-    uint32 tag;
+    uint32_t tag;
     int could_be_tag;
     FILE *inlist[MAXI];
     int inc_depth;
@@ -2371,7 +2371,7 @@ static struct tablekeywords vhead_keys[] = {
 
 static struct tablekeywords os2_keys[] = {
     { "FSType", sizeof(short), 1, offsetof(struct pfminfo,fstype)+offsetof(SplineFont,pfminfo) },
-    { "Panose", sizeof(uint8), 10, offsetof(struct pfminfo,panose)+offsetof(SplineFont,pfminfo) },
+    { "Panose", sizeof(uint8_t), 10, offsetof(struct pfminfo,panose)+offsetof(SplineFont,pfminfo) },
     { "UnicodeRange", sizeof(short), -1, -1 },
     { "CodePageRange", sizeof(short), -1, -1 },
     { "TypoAscender", sizeof(short), 1, offsetof(struct pfminfo,os2_typoascent)+offsetof(SplineFont,pfminfo) },
@@ -3261,7 +3261,7 @@ return;
 }
 
 static void fea_ParseLangSys(struct parseState *tok, int inside_feat) {
-    uint32 script, lang;
+    uint32_t script, lang;
     struct scriptlanglist *sl;
     int l;
 
@@ -3291,7 +3291,7 @@ return;
 	tok->def_langsyses = sl;
     }
     for ( l=0; l<sl->lang_cnt; ++l ) {
-	uint32 language = l<MAX_LANG ? sl->langs[l] : sl->morelangs[l-MAX_LANG];
+	uint32_t language = l<MAX_LANG ? sl->langs[l] : sl->morelangs[l-MAX_LANG];
 	if ( language==lang )
     break;
     }
@@ -3300,7 +3300,7 @@ return;
     else if ( sl->lang_cnt<MAX_LANG )
 	sl->langs[sl->lang_cnt++] = lang;
     else {
-	sl->morelangs = realloc(sl->morelangs,(sl->lang_cnt+1)*sizeof(uint32));
+	sl->morelangs = realloc(sl->morelangs,(sl->lang_cnt+1)*sizeof(uint32_t));
 	sl->morelangs[sl->lang_cnt++ - MAX_LANG] = lang;
     }
     fea_end_statement(tok);
@@ -3317,7 +3317,7 @@ return;
 struct apmark {
     AnchorPoint *ap;
     struct gpos_mark *mark_class;
-    uint16 mark_count;
+    uint16_t mark_count;
 };
 
 struct ligcomponent {
@@ -3335,7 +3335,7 @@ struct markedglyphs {
     unsigned int is_mark2lig: 1;
     unsigned int is_name: 1;		/* Otherwise a class */
     unsigned int hidden_marked_glyphs: 1;/* for glyphs with marked marks in a mark2base sequence */
-    uint16 mark_count;			/* 0=>unmarked, 1=>first mark, etc. */
+    uint16_t mark_count;			/* 0=>unmarked, 1=>first mark, etc. */
     char *name_or_class;		/* Glyph name / class contents */
     struct vr *vr;			/* A value record. Only in position sequences */
     int ap_cnt;				/* Number of anchor points */
@@ -3354,7 +3354,7 @@ static void fea_ParseDeviceTable(struct parseState *tok,DeviceTable *adjust)
 	{
     int first = true;
     int min=0, max= -1;
-    int8 values[512];
+    int8_t values[512];
 
     memset(values,0,sizeof(values));
 
@@ -4980,7 +4980,7 @@ return( ot_undef );		/* Can happen */
     }
 }
 
-static struct feat_item *fea_AddFeatItem(struct parseState *tok,enum feat_type type,uint32 tag) {
+static struct feat_item *fea_AddFeatItem(struct parseState *tok,enum feat_type type,uint32_t tag) {
     struct feat_item *item;
 
     item = chunkalloc(sizeof(struct feat_item));
@@ -5346,7 +5346,7 @@ static struct feat_item *fea_ParseSizeMenuName(struct parseState *tok, struct fe
 return( feat );
 }
 
-static void fea_ParseFeatureNames(struct parseState *tok,uint32 tag) {
+static void fea_ParseFeatureNames(struct parseState *tok,uint32_t tag) {
     struct otffeatname *cur;
     struct otfname *head=NULL, *string;
     struct nameid *temp;
@@ -5387,7 +5387,7 @@ static void fea_ParseFeatureNames(struct parseState *tok,uint32 tag) {
 }
 
 static void fea_ParseFeatureDef(struct parseState *tok) {
-    uint32 feat_tag;
+    uint32_t feat_tag;
     struct feat_item *item, *size_item = NULL;
     int type, ret;
 
@@ -5595,7 +5595,7 @@ static void fea_ParseTableKeywords(struct parseState *tok, struct tablekeywords 
 		/* Accept a normal tag, since that's what it really is */
 		tv->value = tok->tag;
 	    else if ( tok->type==tk_char && tok->tokbuf[0]=='"' ) {
-		uint8 foo[4]; int ch;
+		uint8_t foo[4]; int ch;
 		FILE *in = tok->inlist[tok->inc_depth];
 		memset(foo,' ',sizeof(foo));
 		for ( i=0; i<4; ++i ) {
@@ -5689,7 +5689,7 @@ static void fea_ParseGDEFTable(struct parseState *tok) {
     /* LigatureCaretByIndex <glyph>|<glyph class> <number>+; */	/* parse & ignore */
     int i;
     struct feat_item *item;
-    int16 *carets=NULL; int len=0, max=0;
+    int16_t *carets=NULL; int len=0, max=0;
 
     for (;;) {
 	fea_ParseTok(tok);
@@ -5740,7 +5740,7 @@ static void fea_ParseGDEFTable(struct parseState *tok) {
 		    fea_ParseCaret(tok);
 		else
 	    break;
-		carets = realloc(carets,(max+=10)*sizeof(int16));
+		carets = realloc(carets,(max+=10)*sizeof(int16_t));
 		carets[len++] = tok->value;
 	    }
 	    if ( tok->type!=tk_char || tok->tokbuf[0]!=';' ) {
@@ -5749,8 +5749,8 @@ static void fea_ParseGDEFTable(struct parseState *tok) {
 		fea_skip_to_semi(tok);
 	    }
 	    if (carets != NULL) {
-		item->u2.lcaret = malloc((len+1)*sizeof(int16));
-		memcpy(item->u2.lcaret,carets,len*sizeof(int16));
+		item->u2.lcaret = malloc((len+1)*sizeof(int16_t));
+		memcpy(item->u2.lcaret,carets,len*sizeof(int16_t));
 		item->u2.lcaret[len] = 0;
 	    } else {
 		LogError(_("Expected integer or list of integers after %s on line %d of %s"), item->u1.class,
@@ -5820,8 +5820,8 @@ static void fea_ParseBaseTable(struct parseState *tok) {
 /*  what might be right */
     struct Base h, v, *active;
     int cnt=0, i, off;
-    uint32 baselines[50];
-    int16 poses[50];
+    uint32_t baselines[50];
+    int16_t poses[50];
     struct basescript *last=NULL, *cur;
 
     memset(&h,0,sizeof(h));
@@ -5854,13 +5854,13 @@ static void fea_ParseBaseTable(struct parseState *tok) {
 		    baselines[cnt++] = tok->tag;
 	    }
 	    active->baseline_cnt = cnt;
-	    active->baseline_tags = malloc(cnt*sizeof(uint32));
-	    memcpy(active->baseline_tags,baselines,cnt*sizeof(uint32));
+	    active->baseline_tags = malloc(cnt*sizeof(uint32_t));
+	    memcpy(active->baseline_tags,baselines,cnt*sizeof(uint32_t));
 	} else if ( strcmp(tok->tokbuf+off,"BaseScriptList")==0 ) {
 	    last = NULL;
 	    while ( (fea_ParseTag(tok), tok->could_be_tag) ) {
-		uint32 script_tag = tok->tag;
-		uint32 base_tag;
+		uint32_t script_tag = tok->tag;
+		uint32_t base_tag;
 		int err=0;
 		fea_ParseTag(tok);
 		if ( !tok->could_be_tag ) {
@@ -5886,8 +5886,8 @@ static void fea_ParseBaseTable(struct parseState *tok) {
 			active->scripts = cur;
 		    last = cur;
 		    cur->script = script_tag;
-		    cur->baseline_pos = calloc(cnt,sizeof(int16));
-		    memcpy(cur->baseline_pos,poses,i*sizeof(int16));
+		    cur->baseline_pos = calloc(cnt,sizeof(int16_t));
+		    memcpy(cur->baseline_pos,poses,i*sizeof(int16_t));
 		    for ( i=0; i<active->baseline_cnt; ++i ) {
 			if ( base_tag == active->baseline_tags[i] ) {
 			    cur->def_baseline = i;
@@ -5934,7 +5934,7 @@ static void fea_ParseBaseTable(struct parseState *tok) {
 }
 
 static void fea_ParseTableDef(struct parseState *tok) {
-    uint32 table_tag;
+    uint32_t table_tag;
     struct feat_item *item;
 
     fea_ParseTag(tok);
@@ -6718,7 +6718,7 @@ static void fea_ApplyLookupListPair(struct parseState *tok,
 	    for ( i=0; i<rights.cnt; ++i )
 		kc->seconds[i+1] = rights.classes[i];
 	    kc->subtable = sub;
-	    kc->offsets = calloc(kc->first_cnt*kc->second_cnt,sizeof(int16));
+	    kc->offsets = calloc(kc->first_cnt*kc->second_cnt,sizeof(int16_t));
 	    kc->adjusts = calloc(kc->first_cnt*kc->second_cnt,sizeof(DeviceTable));
 	    fea_fillKernClass(kc,first);
 	    KernClass *lastkc = NULL;
@@ -6837,7 +6837,7 @@ static struct otfname *fea_NameID2OTFName(struct nameid *names) {
 return( head );
 }
 
-static void fea_AttachFeatureToLookup(OTLookup *otl,uint32 feat_tag,
+static void fea_AttachFeatureToLookup(OTLookup *otl,uint32_t feat_tag,
 	struct scriptlanglist *sl) {
     FeatureScriptLangList *fl;
 
@@ -6889,11 +6889,11 @@ static void fea_TableByKeywords(SplineFont *sf, struct feat_item *f) {
 	    /* We don't support this guy, whatever he may be, but we did parse it */;
 	else if ( cur->cnt==1 ) {
 	    if ( cur->size==4 )
-		*((uint32 *) (((uint8 *) sf) + cur->offset)) = tv->value;
+		*((uint32_t *) (((uint8_t *) sf) + cur->offset)) = tv->value;
 	    else if ( cur->size==2 )
-		*((uint16 *) (((uint8 *) sf) + cur->offset)) = tv->value;
+		*((uint16_t *) (((uint8_t *) sf) + cur->offset)) = tv->value;
 	    else
-		*((uint8 *) (((uint8 *) sf) + cur->offset)) = tv->value;
+		*((uint8_t *) (((uint8_t *) sf) + cur->offset)) = tv->value;
 	    if ( strcmp(cur->name,"Ascender")==0 )
 		sf->pfminfo.hheadascent_add = false;
 	    else if ( strcmp(cur->name,"Descender")==0 )
@@ -6908,7 +6908,7 @@ static void fea_TableByKeywords(SplineFont *sf, struct feat_item *f) {
 		sf->pfminfo.typodescent_add = false;
 	} else if ( cur->cnt==10 && cur->size==1 ) {
 	    for ( i=0; i<10; ++i )
-		(((uint8 *) sf) + cur->offset)[i] = tv->panose_vals[i];
+		(((uint8_t *) sf) + cur->offset)[i] = tv->panose_vals[i];
 	}
     }
 }
@@ -6977,7 +6977,7 @@ static void fea_GDefLigCarets(SplineFont *sf, struct feat_item *f) {
 static struct feat_item *fea_ApplyFeatureList(struct parseState *tok,
 	struct feat_item *feat_data) {
     int lookup_flags = 0;
-    uint32 feature_tag = feat_data->u1.tag;
+    uint32_t feature_tag = feat_data->u1.tag;
     struct scriptlanglist *sl = feat_data->u2.sl;
     struct feat_item *f, *start;
     OTLookup *otl;

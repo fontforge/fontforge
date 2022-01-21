@@ -181,7 +181,7 @@ extern void SCRemoveLayerDependents(SplineChar *dependent, int layer);
 extern void SFInstanciateRefs(SplineFont *sf);
 extern void SFReinstanciateRefs(SplineFont *sf);
 extern void SFRemoveAnchorClass(SplineFont *sf, AnchorClass *an);
-extern void SFRemoveSavedTable(SplineFont *sf, uint32 tag);
+extern void SFRemoveSavedTable(SplineFont *sf, uint32_t tag);
 extern void SplineCharFindBounds(SplineChar *sc, DBounds *bounds);
 extern void SplineCharFreeContents(SplineChar *sc);
 extern void SplineCharLayerFindBounds(SplineChar *sc, int layer, DBounds *bounds);

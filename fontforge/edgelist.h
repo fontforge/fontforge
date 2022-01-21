@@ -66,7 +66,7 @@ typedef struct edgelist {
     real omin, omax;
     real scale;
     int bytes_per_line;
-    uint8 *bitmap;
+    uint8_t *bitmap;
     Edge *last, *splinesetfirst;
     SplineChar *sc;
     int layer;

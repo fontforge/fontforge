@@ -231,7 +231,7 @@ unichar_t *utf82u_mncopy(const char *utf8buf,unichar_t *mn) {
     int len = strlen(utf8buf);
     unichar_t *ubuf = malloc((len+1)*sizeof(unichar_t));
     unichar_t *upt=ubuf, *uend=ubuf+len;
-    const uint8 *pt = (const uint8 *) utf8buf, *end = pt+strlen(utf8buf);
+    const uint8_t *pt = (const uint8_t *) utf8buf, *end = pt+strlen(utf8buf);
     int w;
     int was_mn = false;
 
@@ -670,7 +670,7 @@ return;
     ti->image = GGadgetImageCache((char *) (ti->image));
 }
 
-GTextInfo **GTextInfoArrayFromList(GTextInfo *ti, uint16 *cnt) {
+GTextInfo **GTextInfoArrayFromList(GTextInfo *ti, uint16_t *cnt) {
     int i;
     GTextInfo **arr;
 
@@ -807,7 +807,7 @@ return;
     free(mi);
 }
 
-GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16 *cnt) {
+GMenuItem *GMenuItemArrayCopy(GMenuItem *mi, uint16_t *cnt) {
     int i;
     GMenuItem *arr;
 
@@ -1129,7 +1129,7 @@ return;
     }
 }
 
-GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16 *cnt) {
+GMenuItem *GMenuItem2ArrayCopy(GMenuItem2 *mi, uint16_t *cnt) {
     int i;
     GMenuItem *arr;
 

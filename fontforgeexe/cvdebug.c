@@ -266,7 +266,7 @@ static void DVStorageExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 	GDrawDrawText8(pixmap,3,y,_("<empty>"),-1,MAIN_FOREGROUND);
     } else {
 	int n_watch;
-	uint8 *watches = DebuggerGetWatchStores(dv->dc,&n_watch);
+	uint8_t *watches = DebuggerGetWatchStores(dv->dc,&n_watch);
 	for ( i=0; i<exc->storeSize; ++i ) {
 	    if ( !DebuggerIsStorageSet(dv->dc,i) )
 		sprintf( buffer, _("%3d: <uninitialized>"), i );
@@ -295,7 +295,7 @@ static void DVCvtExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 	GDrawDrawText8(pixmap,3,y,_("<empty>"),-1,MAIN_FOREGROUND);
     } else {
 	int n_watch;
-	uint8 *watches = DebuggerGetWatchCvts(dv->dc,&n_watch);
+	uint8_t *watches = DebuggerGetWatchCvts(dv->dc,&n_watch);
 	for ( i=0; dv->cvt_offtop+i<exc->cvtSize; ++i ) {
 	    sprintf(buffer, "%3d: %3ld (%.2f)", dv->cvt_offtop+i,
 		    exc->cvt[dv->cvt_offtop+i], exc->cvt[dv->cvt_offtop+i]/64.0 );
@@ -350,7 +350,7 @@ static void DVPointsVExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
     FT_Vector *pts;
     int n, n_watch, ph;
     TT_GlyphZoneRec *r;
-    uint8 *watches;
+    uint8_t *watches;
     BasePoint me,me2;
     struct reflist *actives;
 
@@ -582,14 +582,14 @@ static int SameInstructionSet(DebugView *dv,TT_ExecContext exc) {
     /*  much harder */
     int i;
 
-    if ( dv->id.instrs!=(uint8 *) exc->code )
+    if ( dv->id.instrs!=(uint8_t *) exc->code )
 return( false );	/* We called (or returned from) a subroutine */
 
     if ( dv->codeSize != exc->codeSize )
 return( false );	/* A glyph with a different number of instrs has been copied into the glyph instr area */
 
     for ( i=0 ; i<sizeof(dv->initialbytes) && i<dv->codeSize; ++i )
-	if ( dv->initialbytes[i] != ((uint8 *) exc->code)[i] )
+	if ( dv->initialbytes[i] != ((uint8_t *) exc->code)[i] )
 return( false );
 
 return( true );		/* As best we can tell... */
@@ -621,13 +621,13 @@ static void DVPointsFigureSB(DebugView *dv);
 static void ChangeCode(DebugView *dv,TT_ExecContext exc) {
     int i;
 
-    dv->id.instrs =(uint8 *) exc->code;
+    dv->id.instrs =(uint8_t *) exc->code;
     dv->id.instr_cnt = exc->codeSize;
     IIReinit(&dv->ii,exc->IP);
     dv->codeSize = exc->codeSize;
     dv->last_npoints = exc->pts.n_points;
     for ( i=0 ; i<sizeof(dv->initialbytes) && i<dv->codeSize; ++i )
-	dv->initialbytes[i] = ((uint8 *) exc->code)[i];
+	dv->initialbytes[i] = ((uint8_t *) exc->code)[i];
 
     if ( dv->active_refs==NULL )
 	dv->active_refs = ARFindBase(dv->cv->b.sc,NULL,dv->layer);
@@ -788,7 +788,7 @@ static int DV_WatchPnt(GGadget *g, GEvent *e) {
     int pnum=0, n, any=0;
     SplineSet *ss;
     SplinePoint *sp;
-    uint8 *watches;
+    uint8_t *watches;
 
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	dv = GDrawGetUserData(GGadgetGetWindow(g));
@@ -798,7 +798,7 @@ return( true );
 	}
 
 	DebuggerGetWatches(dv->dc,&n);
-	watches = calloc(n,sizeof(uint8));
+	watches = calloc(n,sizeof(uint8_t));
 
 	for ( ss = dv->cv->b.layerheads[dv->cv->b.drawmode]->splines; ss!=NULL; ss=ss->next ) {
 	    for ( sp=ss->first; ; ) {
@@ -1322,13 +1322,13 @@ return( DVChar(dv,event));
       case et_mouseup: {
 	int i;
 	int n;
-	uint8 *watches;
+	uint8_t *watches;
 	TT_ExecContext exc = DebuggerGetEContext(dv->dc);
 	i = (event->u.mouse.y-3)/dv->ii.fh+dv->storage_offtop;
 	if ( i>=0 && exc!=NULL ) {
 	    watches = DebuggerGetWatchStores(dv->dc,&n);
 	    if ( watches==NULL ) {
-		watches = calloc(n,sizeof(uint8));
+		watches = calloc(n,sizeof(uint8_t));
 		DebuggerSetWatchStores(dv->dc,n,watches);
 	    }
 	    if ( i<n ) {
@@ -1414,10 +1414,10 @@ return( DVChar(dv,event));
 		}
 		if ( k==i ) {
 		    int n;
-		    uint8 *watches;
+		    uint8_t *watches;
 		    watches = DebuggerGetWatches(dv->dc,&n);
 		    if ( watches==NULL ) {
-			watches = calloc(n,sizeof(uint8));
+			watches = calloc(n,sizeof(uint8_t));
 			DebuggerSetWatches(dv->dc,n,watches);
 		    }
 		    if ( j<n ) {
@@ -1652,13 +1652,13 @@ return( DVChar(dv,event));
       case et_mouseup: {
 	int i;
 	int n;
-	uint8 *watches;
+	uint8_t *watches;
 	TT_ExecContext exc = DebuggerGetEContext(dv->dc);
 	i = (event->u.mouse.y-3)/dv->ii.fh+dv->cvt_offtop;
 	if ( i>=0 && exc!=NULL ) {
 	    watches = DebuggerGetWatchCvts(dv->dc,&n);
 	    if ( watches==NULL ) {
-		watches = calloc(n,sizeof(uint8));
+		watches = calloc(n,sizeof(uint8_t));
 		DebuggerSetWatchCvts(dv->dc,n,watches);
 	    }
 	    if ( i<n ) {
@@ -2241,7 +2241,7 @@ void CVDebugPointPopup(CharView *cv) {
     TT_GlyphZoneRec *r;
     FT_Vector *pts;
     int i,l,n;
-    int32 x,y,fudge;
+    int32_t x,y,fudge;
     char cspace[210];
     extern float snapdistance;
 
