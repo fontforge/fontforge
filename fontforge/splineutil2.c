@@ -2923,6 +2923,8 @@ void SplineCharAddInflections(SplineChar *sc, SplineSet *head, int anysel) {
 	    SplineSetAddInflections(sc,ss,anysel);
 }
 
+/* Make the line between the control points parallel to the chord */
+/* such that the area is preserved (kind of an improved "tunnify") */
 Spline *SplineBalance(Spline *s) { 
     if ( s->knownlinear )
 return(s);
@@ -2989,6 +2991,29 @@ void SplineCharBalance(SplineChar *sc, SplineSet *head, int anysel) {
     SplineSet *ss;
     for ( ss=head; ss!=NULL; ss=ss->next )
 	    SplineSetBalance(sc,ss,anysel);
+}
+
+/* Make the splines adjacent to the SplinePoint sp G2-continuous */
+void SplinePointHarmonize(SplinePoint *sp) {
+    if ( sp->prev!=NULL && sp->next!=NULL && !BPEq(sp->prevcp, sp->nextcp) 
+    && ( sp->pointtype==pt_curve || sp->pointtype == pt_hvcurve ) ) {
+		BasePoint tangentunit = NormVec(BPSub(sp->nextcp,sp->prevcp));
+		bigreal p; /* distance of previous point to handle line prevcp--nextcp */
+		bigreal n; /* distance of next point to handle line prevcp--nextcp */
+		if ( sp->prev->order2 ) 
+			p = fabs(BPCross(tangentunit,BPSub(sp->prev->from->me,sp->me)));
+		else
+			p = fabs(BPCross(tangentunit,BPSub(sp->prev->from->nextcp,sp->me)));
+		if ( sp->next->order2 ) 
+			n = fabs(BPCross(tangentunit,BPSub(sp->next->to->me,sp->me)));
+		else
+			n = fabs(BPCross(tangentunit,BPSub(sp->next->to->prevcp,sp->me)));
+		if ( p == n ) sp->me = BPAvg(sp->nextcp,sp->prevcp);
+		else {
+			bigreal t = (p-sqrt(p*n))/(p-n);
+			sp->me = BPAdd(BPScale(sp->prevcp,1-t),BPScale(sp->nextcp,t));
+		}
+	}	
 }
 
 char *GetNextUntitledName(void) {

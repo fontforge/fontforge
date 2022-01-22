@@ -43,6 +43,7 @@ extern SplineSet *SSRemoveZeroLengthSplines(SplineSet *base);
 extern Spline *SplineAddExtrema(Spline *s, int always, real lenbound, real offsetbound, DBounds *b);
 extern Spline *SplineAddInflections(Spline *s);
 extern Spline *SplineBalance(Spline *s);
+extern void SplinePointHarmonize(SplinePoint *sp);
 extern void BP_HVForce(BasePoint *vector);
 extern void CanonicalContours(SplineChar *sc, int layer);
 extern void SFIncrementXUID(SplineFont *sf);
