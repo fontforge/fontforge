@@ -2726,11 +2726,11 @@ static void FVMenuAddExtrema(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *U
 }
 
 static void FVMenuAddInflections(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) { 
-    FVAddInflections( (FontViewBase *) GDrawGetUserData(gw) , true );
+    FVAddInflections( (FontViewBase *) GDrawGetUserData(gw) , false );
 }
 
 static void FVMenuBalance(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) { 
-    FVBalance( (FontViewBase *) GDrawGetUserData(gw) , true );
+    FVBalance( (FontViewBase *) GDrawGetUserData(gw) , false );
 }
 
 static void FVMenuCorrectDir(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
@@ -4224,23 +4224,9 @@ static void ellistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	    mi->ti.disabled = anychars==-1;
 	    /* some Transformations make sense on bitmaps now */
 	  break;
-	  case MID_AddExtrema:
-	    mi->ti.disabled = anychars==-1 || fv->b.sf->onlybitmaps;
-	  break;
-	  case MID_AddInflections:
-	    mi->ti.disabled = anychars==-1 || fv->b.sf->onlybitmaps;
-	  break;
-	   case MID_Balance:
-	    mi->ti.disabled = anychars==-1 || fv->b.sf->onlybitmaps;
-	  break;
-	  case MID_Simplify:
-	  case MID_Stroke: case MID_RmOverlap:
-	    mi->ti.disabled = anychars==-1 || fv->b.sf->onlybitmaps;
-	  break;
-	  case MID_Styles:
-	    mi->ti.disabled = anychars==-1 || fv->b.sf->onlybitmaps;
-	  break;
-	  case MID_Round: case MID_Correct:
+	  case MID_AddExtrema: case MID_AddInflections: case MID_Balance:
+	  case MID_Simplify: case MID_Stroke: case MID_RmOverlap:
+	  case MID_Styles: case MID_Round: case MID_Correct:
 	    mi->ti.disabled = anychars==-1 || fv->b.sf->onlybitmaps;
 	  break;
 #ifdef FONTFORGE_CONFIG_TILEPATH

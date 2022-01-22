@@ -20,7 +20,7 @@ install(FILES
   editcopy.png editcopyrbearing.png editcopyref.png editcopyvwidth.png editcopywidth.png editcut.png
   editfind.png editjoin.png editmerge.png editmergetoline.png editpasteafter.png editpasteinto.png
   editpaste.png editredo.png editrmundoes.png editrplref.png editsameas.png editselect.png
-  editundo.png editunlink.png elementaddextrema.png elementaddinflections.png 
+  editundo.png editunlink.png elementaddextrema.png elementaddinflections.png elemenbalance.png 
   elementalign.png elementanticlock.png
   elementautotrace.png elementbdfinfo.png elementbitmapsavail.png elementbuildaccent.png
   elementbuildcomposite.png elementclockwise.png elementcomparefonts.png elementcomparelayers.png
