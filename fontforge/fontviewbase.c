@@ -930,7 +930,7 @@ void FVAddExtrema(FontViewBase *fv, int force_adding ) {
     ff_progress_end_indicator();
 }
 
-void FVAddInflections(FontViewBase *fv, int force_adding) { 
+void FVAddInflections(FontViewBase *fv, int anysel) { 
     int i, cnt=0, layer, first, last, gid;
     SplineChar *sc;
     SplineFont *sf = fv->sf;
@@ -955,7 +955,7 @@ void FVAddInflections(FontViewBase *fv, int force_adding) {
 	    first = last = fv->active_layer;
 	for ( layer = first; layer<=last; ++layer ) {
 	    SCPreserveLayer(sc,layer,false);
-	    SplineCharAddInflections(sc, sc->layers[layer].splines, force_adding);
+	    SplineCharAddInflections(sc, sc->layers[layer].splines, anysel);
 	}
 	SCCharChangedUpdate(sc,fv->active_layer);
 	if ( !ff_progress_next())
@@ -964,7 +964,7 @@ void FVAddInflections(FontViewBase *fv, int force_adding) {
     ff_progress_end_indicator();
 }
 
-void FVBalance(FontViewBase *fv, int force_balancing) { 
+void FVBalance(FontViewBase *fv, int anysel) { 
     int i, cnt=0, layer, first, last, gid;
     SplineChar *sc;
     SplineFont *sf = fv->sf;
@@ -989,7 +989,7 @@ void FVBalance(FontViewBase *fv, int force_balancing) {
 	    first = last = fv->active_layer;
 	for ( layer = first; layer<=last; ++layer ) {
 	    SCPreserveLayer(sc,layer,false);
-	    SplineCharBalance(sc, sc->layers[layer].splines, force_balancing);
+	    SplineCharBalance(sc, sc->layers[layer].splines, anysel);
 	}
 	SCCharChangedUpdate(sc,fv->active_layer);
 	if ( !ff_progress_next())

@@ -293,8 +293,8 @@ extern void FVTransFunc(void *_fv,real transform[6],int otype, BVTFunc *bvts,
 extern void FVReencode(FontViewBase *fv,Encoding *enc);
 extern void FVOverlap(FontViewBase *fv,enum overlap_type ot);
 extern void FVAddExtrema(FontViewBase *fv, int force_adding);
-extern void FVAddInflections(FontViewBase *fv, int force_adding);
-extern void FVBalance(FontViewBase *fv, int force_balancing);
+extern void FVAddInflections(FontViewBase *fv, int anysel);
+extern void FVBalance(FontViewBase *fv, int anysel);
 extern void FVCorrectDir(FontViewBase *fv);
 extern void FVRound2Int(FontViewBase *fv,real factor);
 extern void FVCanonicalStart(FontViewBase *fv);

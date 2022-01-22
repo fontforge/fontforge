@@ -2907,20 +2907,20 @@ return(s);
 return(s);	
 }
 
-void SplineSetAddInflections(SplineChar *sc, SplineSet *ss, int force_adding) {
+void SplineSetAddInflections(SplineChar *sc, SplineSet *ss, int anysel) {
     Spline *s, *first; 
     first = NULL;
     for ( s = ss->first->next; s!=NULL && s!=first; s = s->to->next ) {
-	    if ( force_adding || s->from->selected && s->to->selected )
+	    if ( !anysel || s->from->selected && s->to->selected )
 			s = SplineAddInflections(s);
 	    if ( first==NULL ) first = s;
     }
 }
 
-void SplineCharAddInflections(SplineChar *sc, SplineSet *head, int force_adding) { 
+void SplineCharAddInflections(SplineChar *sc, SplineSet *head, int anysel) { 
     SplineSet *ss;
     for ( ss=head; ss!=NULL; ss=ss->next )
-	    SplineSetAddInflections(sc,ss,force_adding);
+	    SplineSetAddInflections(sc,ss,anysel);
 }
 
 Spline *SplineBalance(Spline *s) { 
@@ -2975,20 +2975,20 @@ return(s); /* one could take the absolute value, but this leads to ugly solution
 return(s);
 }
 
-void SplineSetBalance(SplineChar *sc, SplineSet *ss, int force_balancing) {
+void SplineSetBalance(SplineChar *sc, SplineSet *ss, int anysel) {
     Spline *s, *first; 
     first = NULL;
     for ( s = ss->first->next; s!=NULL && s!=first; s = s->to->next ) {
-	    if ( force_balancing || s->from->selected && s->to->selected )
+	    if ( !anysel || s->from->selected && s->to->selected )
 			s = SplineBalance(s);
 	    if ( first==NULL ) first = s;
     }
 }
 
-void SplineCharBalance(SplineChar *sc, SplineSet *head, int force_balancing) { 
+void SplineCharBalance(SplineChar *sc, SplineSet *head, int anysel) { 
     SplineSet *ss;
     for ( ss=head; ss!=NULL; ss=ss->next )
-	    SplineSetBalance(sc,ss,force_balancing);
+	    SplineSetBalance(sc,ss,anysel);
 }
 
 char *GetNextUntitledName(void) {
