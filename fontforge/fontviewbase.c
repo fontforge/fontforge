@@ -997,6 +997,74 @@ void FVBalance(FontViewBase *fv, int anysel) {
     ff_progress_end_indicator();
 }
 
+void FVHarmonize(FontViewBase *fv, int anysel) { 
+    int i, cnt=0, layer, first, last, gid;
+    SplineChar *sc;
+    SplineFont *sf = fv->sf;
+    int emsize = sf->ascent+sf->descent;
+
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
+		SCWorthOutputting(fv->sf->glyphs[gid]) )
+	    ++cnt;
+    ff_progress_start_indicator(10,_("Harmonizing..."),_("Harmonizing..."),0,cnt,1);
+
+    SFUntickAll(fv->sf);
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
+	    (gid = fv->map->map[i])!=-1 &&
+	    SCWorthOutputting((sc = fv->sf->glyphs[gid])) &&
+	    !sc->ticked) {
+	sc->ticked = true;
+	if ( sc->parent->multilayer ) {
+	    first = ly_fore;
+	    last = sc->layer_cnt-1;
+	} else
+	    first = last = fv->active_layer;
+	for ( layer = first; layer<=last; ++layer ) {
+	    SCPreserveLayer(sc,layer,false);
+	    SplineCharHarmonize(sc, sc->layers[layer].splines, anysel);
+	}
+	SCCharChangedUpdate(sc,fv->active_layer);
+	if ( !ff_progress_next())
+    break;
+    }
+    ff_progress_end_indicator();
+}
+
+void FVHarmonizeHandles(FontViewBase *fv, int anysel) { 
+    int i, cnt=0, layer, first, last, gid;
+    SplineChar *sc;
+    SplineFont *sf = fv->sf;
+    int emsize = sf->ascent+sf->descent;
+
+    for ( i=0; i<fv->map->enccount; ++i )
+	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
+		SCWorthOutputting(fv->sf->glyphs[gid]) )
+	    ++cnt;
+    ff_progress_start_indicator(10,_("Harmonizing handles..."),_("Harmonizing handles..."),0,cnt,1);
+
+    SFUntickAll(fv->sf);
+    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
+	    (gid = fv->map->map[i])!=-1 &&
+	    SCWorthOutputting((sc = fv->sf->glyphs[gid])) &&
+	    !sc->ticked) {
+	sc->ticked = true;
+	if ( sc->parent->multilayer ) {
+	    first = ly_fore;
+	    last = sc->layer_cnt-1;
+	} else
+	    first = last = fv->active_layer;
+	for ( layer = first; layer<=last; ++layer ) {
+	    SCPreserveLayer(sc,layer,false);
+	    SplineCharHarmonizeHandles(sc, sc->layers[layer].splines, anysel);
+	}
+	SCCharChangedUpdate(sc,fv->active_layer);
+	if ( !ff_progress_next())
+    break;
+    }
+    ff_progress_end_indicator();
+}
+
 void FVCanonicalStart(FontViewBase *fv) {
     int i, gid;
 
