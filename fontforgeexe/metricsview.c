@@ -2247,6 +2247,7 @@ return( true );
 #define MID_SimplifyMore	2232
 #define MID_AddInflections	2256
 #define MID_Balance	2257
+#define MID_Harmonize	2258
 #define MID_Center	2600
 #define MID_OpenBitmap	2700
 #define MID_OpenOutline	2701
@@ -2822,6 +2823,20 @@ static void MVMenuBalance(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUS
         SplineChar *sc = mv->glyphs[i].sc;
         SCPreserveLayer(sc, mv->layer, false);
         SplineCharBalance(sc, sc->layers[mv->layer].splines, false);
+        SCCharChangedUpdate(sc, mv->layer);
+    }
+}
+
+static void MVMenuHarmonize(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    int i;
+    for ( i=mv->glyphcnt-1; i>=0; --i )
+        if ( mv->perchar[i].selected )
+    break;
+    if ( i!=-1 ) {
+        SplineChar *sc = mv->glyphs[i].sc;
+        SCPreserveLayer(sc, mv->layer, false);
+        SplineCharHarmonize(sc, sc->layers[mv->layer].splines, false);
         SCCharChangedUpdate(sc, mv->layer);
     }
 }
@@ -3642,6 +3657,7 @@ static GMenuItem2 ellist[] = {
     { { (unichar_t *) N_("Add E_xtrema"), (GImage *) "elementaddextrema.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Add Extrema|No Shortcut"), NULL, NULL, MVMenuAddExtrema, MID_AddExtrema },
     { { (unichar_t *) N_("Add Points Of Inflection"), (GImage *) "elementaddinflections.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Add Points Of Inflection|No Shortcut"), NULL, NULL, MVMenuAddInflections, MID_AddInflections },
     { { (unichar_t *) N_("Balance"), (GImage *) "elementbalance.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Balance|No Shortcut"), NULL, NULL, MVMenuBalance, MID_Balance },
+    { { (unichar_t *) N_("Harmonize"), (GImage *) "elementharmonize.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Harmonize|No Shortcut"), NULL, NULL, MVMenuHarmonize, MID_Harmonize },
     { { (unichar_t *) N_("To _Int"), (GImage *) "elementround.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("To Int|No Shortcut"), NULL, NULL, MVMenuRound2Int, MID_Round },
     { { (unichar_t *) N_("Effects"), (GImage *) "elementstyles.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Effects|No Shortcut"), eflist, NULL, NULL, MID_Effects },
     { { (unichar_t *) N_("Autot_race"), (GImage *) "elementautotrace.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'r' }, H_("Autotrace|No Shortcut"), NULL, NULL, MVMenuAutotrace, MID_Autotrace },
@@ -3966,7 +3982,7 @@ static void ellistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	    mi->ti.disabled = sc==NULL || mv->sf->onlybitmaps;
 	  break;
 	  case MID_AddExtrema: case MID_AddInflections: case MID_Balance:
-	  case MID_Round: case MID_Correct:
+	  case MID_Harmonize: case MID_Round: case MID_Correct:
 	    mi->ti.disabled = sc==NULL || mv->sf->onlybitmaps;
 	  break;
 #ifdef FONTFORGE_CONFIG_TILEPATH

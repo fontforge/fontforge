@@ -6550,6 +6550,7 @@ return( true );
 #define MID_ReverseDir		2255
 #define MID_AddInflections	2256
 #define MID_Balance	2257
+#define MID_Harmonize	2258
 #define MID_Corner	2301
 #define MID_Tangent	2302
 #define MID_Curve	2303
@@ -9997,6 +9998,14 @@ static void CVMenuBalance(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUS
     CVCharChangedUpdate(&cv->b);
 }
 
+static void CVMenuHarmonize(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+    CharView *cv = (CharView *) GDrawGetUserData(gw);
+    int anysel = CVAnySel(cv,NULL,NULL,NULL,NULL);
+    CVPreserveState(&cv->b);
+    SplineCharHarmonize(cv->b.sc,cv->b.layerheads[cv->b.drawmode]->splines,anysel);
+    CVCharChangedUpdate(&cv->b);
+}
+
 static void CVSimplify(CharView *cv,int type) {
     static struct simplifyinfo smpls[] = {
 	    { sf_normal, 0, 0, 0, 0, 0, 0 },
@@ -10940,7 +10949,8 @@ static void cv_ellistcheck(CharView *cv, struct gmenuitem *mi) {
 	  case MID_RegenBitmaps: case MID_RemoveBitmaps:
 	    mi->ti.disabled = cv->b.fv->sf->bitmaps==NULL;
 	  break;
-	  case MID_AddExtrema: case MID_AddInflections: case MID_Balance:
+	  case MID_AddExtrema: case MID_AddInflections: 
+	  case MID_Balance: case MID_Harmonize:
 	    mi->ti.disabled = cv->b.layerheads[cv->b.drawmode]->splines==NULL || (cv->b.sc->inspiro && hasspiro());
 	  /* Like Simplify, always available, but may not do anything if */
 	  /*  all extrema have points. I'm not going to check for that, too hard */
@@ -12016,6 +12026,7 @@ static GMenuItem2 ellist[] = {
     { { (unichar_t *) N_("Add E_xtrema"), (GImage *) "elementaddextrema.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Add Extrema|No Shortcut"), NULL, NULL, CVMenuAddExtrema, MID_AddExtrema },
     { { (unichar_t *) N_("Add Points Of Inflection"), (GImage *) "elementaddinflections.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Add Points Of Inflection|No Shortcut"), NULL, NULL, CVMenuAddInflections, MID_AddInflections },
     { { (unichar_t *) N_("Balance"), (GImage *) "elementbalance.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Balance|No Shortcut"), NULL, NULL, CVMenuBalance, MID_Balance },
+    { { (unichar_t *) N_("Harmonize"), (GImage *) "elementharmonize.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Harmonize|No Shortcut"), NULL, NULL, CVMenuHarmonize, MID_Harmonize },
     { { (unichar_t *) N_("Autot_race"), (GImage *) "elementautotrace.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'r' }, H_("Autotrace|No Shortcut"), NULL, NULL, CVMenuAutotrace, MID_Autotrace },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("A_lign"), (GImage *) "elementalign.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Align|No Shortcut"), allist, allistcheck, NULL, MID_Align },
