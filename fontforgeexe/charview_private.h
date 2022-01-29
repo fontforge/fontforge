@@ -170,6 +170,7 @@
 #define MID_ReverseDir		2255
 #define MID_AddInflections	2256
 #define MID_Balance	2257
+#define MID_Harmonize	2258
 #define MID_Corner	2301
 #define MID_Tangent	2302
 #define MID_Curve	2303
