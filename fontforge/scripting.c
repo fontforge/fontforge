@@ -5379,7 +5379,25 @@ static void bAddExtrema(Context *c) {
 
 static void bAddInflections(Context *c) {
     if ( c->a.argc==1 )
-	FVAddInflections(c->curfv, true);
+	FVAddInflections(c->curfv, false);
+    else {
+	c->error = ce_wrongnumarg;
+	return;
+    }
+}
+
+static void bBalance(Context *c) {
+    if ( c->a.argc==1 )
+	FVBalance(c->curfv, false);
+    else {
+	c->error = ce_wrongnumarg;
+	return;
+    }
+}
+
+static void bHarmonize(Context *c) {
+    if ( c->a.argc==1 )
+	FVHarmonize(c->curfv, false);
     else {
 	c->error = ce_wrongnumarg;
 	return;
@@ -8559,6 +8577,8 @@ static struct builtins {
     { "NearlyLines", bNearlyLines, 0,0,0 },
     { "AddExtrema", bAddExtrema, 0,0,0 },
     { "AddInflections", bAddInflections, 0,0,0 },
+    { "Balance", bBalance, 0,0,0 },
+    { "Harmonize", bHarmonize, 0,0,0 },
     { "RoundToInt", bRoundToInt, 0,0,0 },
     { "RoundToCluster", bRoundToCluster, 0,0,0 },
     { "Autotrace", bAutotrace, 0,1,0 },

@@ -88,6 +88,17 @@ the fourth argument you must specify the second and third arguments too.
 
    If the curvature of a spline in a glyph changes sign then break the spline 
    so that there will be a point at all points of inflections. 
+   
+.. function:: Balance()
+
+   For all cubic bezier splines of the glyph make the line between the control 
+   points parallel to the chord such that the area is preserved. This is an
+   improved version of the algorithm known as "tunnify".
+   
+.. function:: Harmonize()
+
+   For all bezier splines of the glyph move the smooth on-curve points between 
+   its adjacent control points such that the adjacent curvatures become equal.
 
 .. function:: AddHHint(start,width)
 

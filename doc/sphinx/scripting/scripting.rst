@@ -663,6 +663,7 @@ Built-in procedures that act like the Element Menu
 * :func:`AddInflections()`
 * :func:`ApplySubstitution()`
 * :func:`AutoTrace()`
+* :func:`Balance()`
 * :func:`BitmapsAvail()`
 * :func:`BitmapsRegen()`
 * :func:`BuildAccented()`
@@ -678,6 +679,7 @@ Built-in procedures that act like the Element Menu
 * :func:`DefaultUseMyMetrics()`
 * :func:`ExpandStroke()`
 * :func:`FindIntersections()`
+* :func:`Harmonize()`
 * :func:`HFlip()`
 * :func:`Inline()`
 * :func:`InterpolateFonts()`
