@@ -296,7 +296,6 @@ extern void FVAddExtrema(FontViewBase *fv, int force_adding);
 extern void FVAddInflections(FontViewBase *fv, int anysel);
 extern void FVBalance(FontViewBase *fv, int anysel);
 extern void FVHarmonize(FontViewBase *fv, int anysel);
-extern void FVHarmonizeHandles(FontViewBase *fv, int anysel);
 extern void FVCorrectDir(FontViewBase *fv);
 extern void FVRound2Int(FontViewBase *fv,real factor);
 extern void FVCanonicalStart(FontViewBase *fv);
