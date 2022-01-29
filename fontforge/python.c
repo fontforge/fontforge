@@ -3477,7 +3477,37 @@ static PyObject *PyFFContour_AddInflections(PyFF_Contour *self) {
 	else
 	    Py_RETURN( self );	// no points=> nothing to do
     }
-    SplineSetAddInflections(NULL,ss,true); 
+    SplineSetAddInflections(NULL,ss,false); 
+    ContourFromSS(ss,self);
+    SplinePointListFree(ss);
+Py_RETURN( self );
+}
+
+static PyObject *PyFFContour_Balance(PyFF_Contour *self) {
+    SplineSet *ss;
+    ss = SSFromContour(self,NULL);
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self );	// no points=> nothing to do
+    }
+    SplineSetBalance(NULL,ss,false); 
+    ContourFromSS(ss,self);
+    SplinePointListFree(ss);
+Py_RETURN( self );
+}
+
+static PyObject *PyFFContour_Harmonize(PyFF_Contour *self) {
+    SplineSet *ss;
+    ss = SSFromContour(self,NULL);
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self );	// no points=> nothing to do
+    }
+    SplineSetHarmonize(NULL,ss,false); 
     ContourFromSS(ss,self);
     SplinePointListFree(ss);
 Py_RETURN( self );
@@ -3747,8 +3777,12 @@ static PyMethodDef PyFFContour_methods[] = {
 	     "Transform a contour by a 6 element matrix." },
     {"addExtrema", (PyCFunction)PyFFContour_AddExtrema, METH_VARARGS,
 	     "Add Extrema to a contour" },
-	{"addInflections", (PyCFunction)PyFFContour_AddInflections, METH_VARARGS,
+	{"addInflections", (PyCFunction)PyFFContour_AddInflections, METH_NOARGS,
 	     "Add points of inflection to a contour" },
+	{"balance", (PyCFunction)PyFFContour_Balance, METH_NOARGS,
+	     "Balance handles on a contour" },
+	{"harmonize", (PyCFunction)PyFFContour_Harmonize, METH_NOARGS,
+	     "Harmonize curvatures on a contour" },
     {"round", (PyCFunction)PyFFContour_Round, METH_VARARGS,
 	     "Round points on a contour" },
     {"cluster", (PyCFunction)PyFFContour_Cluster, METH_VARARGS,
@@ -4456,6 +4490,36 @@ static PyObject *PyFFLayer_AddInflections(PyFF_Layer *self) {
 Py_RETURN( self );
 }
 
+static PyObject *PyFFLayer_Balance(PyFF_Layer *self) {
+    SplineSet *ss;
+    ss = SSFromLayer(self);
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self ); // no contours=> nothing to do
+    }
+    SplineCharBalance(NULL,ss,true);
+    LayerFromSS(ss,self);
+    SplinePointListsFree(ss);
+Py_RETURN( self );
+}
+
+static PyObject *PyFFLayer_Harmonize(PyFF_Layer *self) {
+    SplineSet *ss;
+    ss = SSFromLayer(self);
+    if ( ss==NULL ) {
+	if ( PyErr_Occurred() != NULL )
+	    return ( NULL );
+	else
+	    Py_RETURN( self ); // no contours=> nothing to do
+    }
+    SplineCharHarmonize(NULL,ss,true);
+    LayerFromSS(ss,self);
+    SplinePointListsFree(ss);
+Py_RETURN( self );
+}
+
 int NibCheck(SplineSet *nib) {
     enum ShapeType pt;
     SplineSet *ss;
@@ -5038,8 +5102,12 @@ static PyMethodDef PyFFLayer_methods[] = {
 	    "Transform a glyph by two non-linear expressions (one for x, one for y)." },
     {"addExtrema", (PyCFunction)PyFFLayer_AddExtrema, METH_VARARGS,
 	     "Add Extrema to a layer" },
-	{"addInflections", (PyCFunction)PyFFLayer_AddInflections, METH_VARARGS,
+	{"addInflections", (PyCFunction)PyFFLayer_AddInflections, METH_NOARGS,
 	     "Add points of inflection to a layer" },
+	{"balance", (PyCFunction)PyFFLayer_Balance, METH_NOARGS,
+	     "Balance handles on a layer" },
+	{"harmonize", (PyCFunction)PyFFLayer_Harmonize, METH_NOARGS,
+	     "Harmonize curvatures on a layer" },
     {"round", (PyCFunction)PyFFLayer_Round, METH_VARARGS,
 	     "Round contours on a layer" },
     {"cluster", (PyCFunction)PyFFLayer_Cluster, METH_VARARGS,
@@ -9432,7 +9500,23 @@ Py_RETURN( self );
 static PyObject *PyFFGlyph_AddInflections(PyFF_Glyph *self) {
     SplineChar *sc = self->sc;
     SplineFont *sf = sc->parent;
-    SplineCharAddInflections(sc,sc->layers[self->layer].splines,true);
+    SplineCharAddInflections(sc,sc->layers[self->layer].splines,false);
+    SCCharChangedUpdate(sc,self->layer);
+Py_RETURN( self );
+}
+
+static PyObject *PyFFGlyph_Balance(PyFF_Glyph *self) {
+    SplineChar *sc = self->sc;
+    SplineFont *sf = sc->parent;
+    SplineCharBalance(sc,sc->layers[self->layer].splines,false);
+    SCCharChangedUpdate(sc,self->layer);
+Py_RETURN( self );
+}
+
+static PyObject *PyFFGlyph_Harmonize(PyFF_Glyph *self) {
+    SplineChar *sc = self->sc;
+    SplineFont *sf = sc->parent;
+    SplineCharHarmonize(sc,sc->layers[self->layer].splines,false);
     SCCharChangedUpdate(sc,self->layer);
 Py_RETURN( self );
 }
@@ -9729,7 +9813,9 @@ static PyMethodDef PyFF_Glyph_methods[] = {
     { "glyphPen", (PyCFunction) PyFFGlyph_GlyphPen, METH_VARARGS | METH_KEYWORDS, "Create a pen object which can draw into this glyph"},
     { "draw", (PyCFunction) PyFFGlyph_draw, METH_VARARGS , "Draw the glyph's outline to the pen argument"},
     { "addExtrema", (PyCFunction) PyFFGlyph_AddExtrema, METH_VARARGS, "Add extrema to the contours of the glyph"},
-    { "addInflections", (PyCFunction) PyFFGlyph_AddInflections, METH_VARARGS, "Add points of inflection to the contours of the glyph"},
+    { "addInflections", (PyCFunction) PyFFGlyph_AddInflections, METH_NOARGS, "Add points of inflection to the contours of the glyph"},
+    { "balance", (PyCFunction) PyFFGlyph_Balance, METH_NOARGS, "Balance the handles on the contours of the glyph"},
+    { "harmonize", (PyCFunction) PyFFGlyph_Harmonize, METH_NOARGS, "Harmonize the curvatures on the contours of the glyph"},
     { "addReference", PyFFGlyph_AddReference, METH_VARARGS, "Add a reference"},
     { "addAnchorPoint", PyFFGlyph_addAnchorPoint, METH_VARARGS, "Adds an anchor point"},
     { "addHint", PyFFGlyph_addHint, METH_VARARGS, "Add a postscript hint (is_vertical_hint,start_pos,width)"},
@@ -18001,11 +18087,31 @@ Py_RETURN( self );
 
 static PyObject *PyFFFont_AddInflections(PyFF_Font *self) {
     FontViewBase *fv;
-
+    
     if ( CheckIfFontClosed(self) )
 return (NULL);
     fv = self->fv;
-    FVAddInflections(fv, true);
+    FVAddInflections(fv, false);
+Py_RETURN( self );
+}
+
+static PyObject *PyFFFont_Balance(PyFF_Font *self) {
+    FontViewBase *fv;
+    
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
+    FVBalance(fv, false);
+Py_RETURN( self );
+}
+
+static PyObject *PyFFFont_Harmonize(PyFF_Font *self) {
+    FontViewBase *fv;
+    
+    if ( CheckIfFontClosed(self) )
+return (NULL);
+    fv = self->fv;
+    FVHarmonize(fv, false);
 Py_RETURN( self );
 }
 
@@ -18210,6 +18316,8 @@ PyMethodDef PyFF_Font_methods[] = {
 
     { "addExtrema", (PyCFunction) PyFFFont_AddExtrema, METH_NOARGS, "Add extrema to the contours of the glyph"},
     { "addInflections", (PyCFunction) PyFFFont_AddInflections, METH_NOARGS, "Add points of inflection to the contours of the glyph"},
+    { "balance", (PyCFunction) PyFFFont_Balance, METH_NOARGS, "Balance handles on the contours of the glyph"},
+    { "harmonize", (PyCFunction) PyFFFont_Harmonize, METH_NOARGS, "Harmonize curvatures on the contours of the glyph"},
     { "addSmallCaps", (PyCFunction) PyFFFont_addSmallCaps, METH_VARARGS | METH_KEYWORDS, "For selected upper/lower case (latin, greek, cyrillic) characters, add a small caps variant of that glyph"},
     { "autoHint", (PyCFunction) PyFFFont_autoHint, METH_NOARGS, "Guess at postscript hints"},
     { "autoInstr", (PyCFunction) PyFFFont_autoInstr, METH_NOARGS, "Guess at truetype instructions"},
