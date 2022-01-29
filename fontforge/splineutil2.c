@@ -2994,6 +2994,7 @@ void SplineCharBalance(SplineChar *sc, SplineSet *head, int anysel) {
 }
 
 /* Make the splines adjacent to the SplinePoint sp G2-continuous */
+/* by moving sp between its adjacent control points */
 void SplinePointHarmonize(SplinePoint *sp) {
     if ( sp->prev!=NULL && sp->next!=NULL && !BPEq(sp->prevcp, sp->nextcp) 
     && ( sp->pointtype==pt_curve || sp->pointtype == pt_hvcurve ) ) {
@@ -3014,6 +3015,270 @@ void SplinePointHarmonize(SplinePoint *sp) {
 			sp->me = BPAdd(BPScale(sp->prevcp,1-t),BPScale(sp->nextcp,t));
 		}
 	}	
+}
+
+void SplineSetHarmonize(SplineChar *sc, SplineSet *ss, int anysel) {
+    Spline *s, *first; 
+    first = NULL;
+    for ( s = ss->first->next; s!=NULL && s!=first; s = s->to->next ) {
+	    if ( !anysel || s->from->selected )
+			SplinePointHarmonize(s->from);
+	    if ( first==NULL ) first = s;
+    }
+}
+
+void SplineCharHarmonize(SplineChar *sc, SplineSet *head, int anysel) { 
+    SplineSet *ss;
+    for ( ss=head; ss!=NULL; ss=ss->next )
+	    SplineSetHarmonize(sc,ss,anysel);
+}
+
+/* Make the splines adjacent to the SplinePoint sp G2-continuous */
+/* by moving their control points tangentially and preserving */
+/* the curvatures at their adjacent end nodes and trying to preserve */
+/* the signed area as good as possible */
+void SplinePointHarmonizeHandlesOLD(SplinePoint *sp) {
+    if ( sp->prev==NULL || sp->next==NULL || BPEq(sp->prevcp, sp->nextcp) 
+    || !( sp->pointtype==pt_curve || sp->pointtype == pt_hvcurve ) ) return;
+	BasePoint ahandle = BPSub(sp->prev->from->nextcp, sp->prev->from->me);
+	BasePoint bhandle = BPSub(sp->prevcp, sp->me);
+	BasePoint abchord = BPSub(sp->me, sp->prev->from->me);
+	bigreal a = BPNorm(ahandle);
+	bigreal b = BPNorm(bhandle);
+	bigreal ab = BPNorm(abchord);
+	if ( ( a == 0 && b == 0 ) || ab == 0) 
+		return; /* line or closed path*/
+	if ( a == 0 ) 
+		ahandle = BPSub(sp->prevcp, sp->prev->from->me);
+	if ( b == 0 ) 
+		bhandle = BPSub(sp->prev->from->nextcp, sp->me);
+	a /= ab;
+	b /= ab;
+	BasePoint ahandleunit = NormVec(ahandle); 
+	BasePoint bhandleunit = NormVec(bhandle); 
+	BasePoint abunit = BPScale(abchord,1/ab);
+	/* cos(alpha), sin(alpha) and cos(beta), sin(beta) */
+	BasePoint csa = (BasePoint) { BPDot(abunit, ahandleunit), BPCross(abunit, ahandleunit) }; 
+	BasePoint csb = (BasePoint) { BPDot(BPRev(abunit), bhandleunit),BPCross(abunit, bhandleunit) }; 
+	bigreal sab = csa.y * csb.x + csa.x * csb.y; /* sin(alpha+beta) */
+	/* calculate handles and angles for next: */
+	BasePoint dhandle = BPSub(sp->next->to->prevcp, sp->next->to->me);
+	BasePoint chandle = BPSub(sp->nextcp, sp->me);
+	BasePoint cdchord = BPSub(sp->me, sp->next->to->me);
+	bigreal d = BPNorm(dhandle);
+	bigreal c = BPNorm(chandle);
+	bigreal cd = BPNorm(cdchord);
+	if ( ( d == 0 && c == 0 ) || cd == 0) 
+		return; /* line or closed path*/
+	if ( d == 0 ) 
+		dhandle = BPSub(sp->nextcp, sp->next->to->me);
+	if ( c == 0 ) 
+		chandle = BPSub(sp->next->to->prevcp, sp->me);
+	c /= cd;
+	d /= cd;
+	BasePoint dhandleunit = NormVec(dhandle); 
+	BasePoint chandleunit = NormVec(chandle); 
+	BasePoint cdunit = BPScale(cdchord,1/cd);
+	/* cos(delta), sin(delta) and cos(gamma), sin(gamma) */
+	BasePoint csd = (BasePoint) { BPDot(cdunit, dhandleunit), BPCross(cdunit, dhandleunit) }; 
+	BasePoint csc = (BasePoint) { BPDot(BPRev(cdunit), chandleunit),BPCross(cdunit, chandleunit) }; 
+	bigreal scd = csd.y * csc.x + csd.x * csc.y; /* sin(gamma+delta) */
+	/* check if curvatures are already near */
+	bigreal kb = (a*sab-csb.y)/(ab*b*b); /* 3/2*curvature at b */
+	bigreal kc = -(d*scd-csc.y)/(cd*c*c); /* 3/2*curvature at c */
+	//if ( fabs((kb-kc)/(kb+kc))<.05 ) return;
+	/* determine current curvatures and the sum of the signed area */
+	bigreal area_ab = 2*a*csa.y+2*b*csa.y-a*b*sab; /* 20/3*area*ab^2 to chord ab */
+	bigreal area_cd = 2*c*csc.y+2*d*csd.y-c*d*scd; /* 20/3*area*cd^2 to chord cd */
+	bigreal ka = (b*sab-csa.y)/(a*a); /* 3/2*ab*curvature at a */
+	bigreal kd = (c*scd-csd.y)/(d*d); /* 3/2*cd*curvature at d */
+	/* vary a such that ka, kd and f are preserved and */
+	/* trying to minimize the error abs(kb-kc) */
+	bigreal error, best_a, best_b, best_c, best_d;
+	bigreal best_error = 1e30;
+	for (int i=0; i<=5000; ++i) {
+		a = .001*i; /* assuming handles are not 5 times larger than the chord */
+		b = (a*a*ka+csa.y)/sab;
+		if ( b<0 ) continue;
+		error = fabs(2*a*csa.y+2*b*csa.y-a*b*sab-area_ab);
+		kc = -cd*(a*sab-csb.y)/(ab*b*b); /* 3/2*cd*curvature at c */
+		Quartic coeffs;
+		coeffs.a = kc*kd*kd;
+		coeffs.b = 0;
+		coeffs.c = 2*kc*csd.y*kd;
+		coeffs.d = -scd*scd*scd;
+		coeffs.e = kc*csd.y*csd.y+csc.y*scd*scd;
+		extended ds[4] = {-999999,-999999,-999999,-999999};
+		_QuarticSolve(&coeffs,ds);
+		for (int j=0; j<4; j++) {
+			if ( ds[j]<0 ) continue;
+			d = ds[j];
+			c = (d*d*kd+csd.y)/scd;
+			if ( c<0 ) continue;
+			error += fabs(2*c*csc.y+2*d*csd.y-c*d*scd-area_cd);
+			if ( error < best_error ) {
+				best_a = a;
+				best_b = b;
+				best_c = c;
+				best_d = d;
+				best_error = error;
+			}
+		}
+	} /* now set optimal control points : */
+	sp->prev->from->nextcp = BPAdd(sp->prev->from->me, BPScale(ahandleunit,best_a*ab));
+	sp->prevcp = BPAdd(sp->me, BPScale(bhandleunit,best_b*ab));
+	sp->nextcp = BPAdd(sp->me, BPScale(chandleunit,best_c*cd));
+	sp->next->to->prevcp = BPAdd(sp->next->to->me, BPScale(dhandleunit,best_d*cd));
+}
+
+void printSplineInfo(Spline *s) {
+    bigreal curvaturefrom = (s->from->nextcp.x*s->to->prevcp.y-s->from->me.x*s->to->prevcp.y
+    -s->from->nextcp.y*s->to->prevcp.x+s->from->me.y*s->to->prevcp.x+s->from->me.x*s->from->nextcp.y
+    -s->from->me.y*s->from->nextcp.x)/pow((s->from->me.y-s->from->nextcp.y)
+    *(s->from->me.y-s->from->nextcp.y)+(s->from->me.x-s->from->nextcp.x)
+    *(s->from->me.x-s->from->nextcp.x),1.5);//3/2 curvature
+    bigreal curvatureto = -(s->to->prevcp.x*s->from->nextcp.y-s->to->me.x*s->from->nextcp.y-s->to->prevcp.y*s->from->nextcp.x
+    +s->to->me.y*s->from->nextcp.x+s->to->me.x*s->to->prevcp.y-s->to->me.y*s->to->prevcp.x)
+    /pow((s->to->me.y-s->to->prevcp.y)*(s->to->me.y-s->to->prevcp.y)+(s->to->me.x-s->to->prevcp.x)
+    *(s->to->me.x-s->to->prevcp.x),1.5); //3/2 curvature
+    BasePoint ahandle = BPSub(s->from->nextcp, s->from->me);
+	BasePoint bhandle = BPSub(s->to->prevcp, s->to->me);
+	BasePoint abchord = BPSub(s->to->me,s->from->me);
+	bigreal a = BPNorm(ahandle);
+	bigreal b = BPNorm(bhandle);
+	bigreal ab = BPNorm(abchord);
+	if ( ( a == 0 && b == 0 ) || ab == 0) 
+		return; /* line or closed path*/
+	if ( a == 0 ) 
+		ahandle = BPSub(s->to->prevcp, s->from->me);
+	if ( b == 0 ) 
+		bhandle = BPSub(s->from->nextcp, s->to->me);
+	a /= ab;
+	b /= ab;
+	BasePoint ahandleunit = NormVec(ahandle); 
+	BasePoint bhandleunit = NormVec(bhandle); 
+	BasePoint abunit = BPScale(abchord,1/ab);
+	/* cos(alpha), sin(alpha) and cos(beta), sin(beta) */
+	BasePoint csa = (BasePoint) { BPDot(abunit, ahandleunit), BPCross(abunit, ahandleunit) }; 
+	BasePoint csb = (BasePoint) { BPDot(BPRev(abunit), bhandleunit),BPCross(abunit, bhandleunit) }; 
+    printf("alpha=%f\nbeta=%f\nchord=%f\nCurvature from = %f\nCurvature to = %f\n------------\n",acos(csa.x)*180/M_PI,acos(csb.x)*180/M_PI,ab,curvaturefrom,curvatureto);
+    //bigreal sab = csa.y * csb.x + csa.x * csb.y; /* sin(alpha+beta) */
+    //printf("curvature from = %f\n",(b*sab-csa.y)/(ab*a*a)); 
+	//printf("curvature to = %f\n",(a*sab-csb.y)/(ab*b*b));
+}
+
+/* Make the splines adjacent to the SplinePoint sp G2-continuous */
+/* by moving their control points tangentially and preserving */
+/* the curvatures at their adjacent end nodes and trying to preserve */
+/* the signed area as good as possible */
+void SplinePointHarmonizeHandles(SplinePoint *sp) {
+    if ( sp->prev==NULL || sp->next==NULL || BPEq(sp->prevcp, sp->nextcp) 
+    || !( sp->pointtype==pt_curve || sp->pointtype == pt_hvcurve ) ) return;
+	BasePoint ahandle = BPSub(sp->prev->from->nextcp, sp->prev->from->me);
+	BasePoint bhandle = BPSub(sp->prevcp, sp->me);
+	BasePoint abchord = BPSub(sp->me, sp->prev->from->me);
+	bigreal a = BPNorm(ahandle);
+	bigreal b = BPNorm(bhandle);
+	bigreal ab = BPNorm(abchord);
+	if ( ( a == 0 && b == 0 ) || ab == 0) 
+		return; /* line or closed path*/
+	if ( a == 0 ) 
+		ahandle = BPSub(sp->prevcp, sp->prev->from->me);
+	if ( b == 0 ) 
+		bhandle = BPSub(sp->prev->from->nextcp, sp->me);
+	a /= ab;
+	b /= ab;
+	BasePoint ahandleunit = NormVec(ahandle); 
+	BasePoint bhandleunit = NormVec(bhandle); 
+	BasePoint abunit = BPScale(abchord,1/ab);
+	/* cos(alpha), sin(alpha) and cos(beta), sin(beta) */
+	BasePoint csa = (BasePoint) { BPDot(abunit, ahandleunit), BPCross(abunit, ahandleunit) }; 
+	BasePoint csb = (BasePoint) { BPDot(BPRev(abunit), bhandleunit),BPCross(abunit, bhandleunit) }; 
+	bigreal sab = csa.y * csb.x + csa.x * csb.y; /* sin(alpha+beta) */
+	/* calculate handles and angles for next: */
+	BasePoint dhandle = BPSub(sp->next->to->prevcp, sp->next->to->me);
+	BasePoint chandle = BPSub(sp->nextcp, sp->me);
+	BasePoint cdchord = BPSub(sp->me, sp->next->to->me);
+	bigreal d = BPNorm(dhandle);
+	bigreal c = BPNorm(chandle);
+	bigreal cd = BPNorm(cdchord);
+	if ( ( d == 0 && c == 0 ) || cd == 0) 
+		return; /* line or closed path*/
+	if ( d == 0 ) 
+		dhandle = BPSub(sp->nextcp, sp->next->to->me);
+	if ( c == 0 ) 
+		chandle = BPSub(sp->next->to->prevcp, sp->me);
+	c /= cd;
+	d /= cd;
+	BasePoint dhandleunit = NormVec(dhandle); 
+	BasePoint chandleunit = NormVec(chandle); 
+	BasePoint cdunit = BPScale(cdchord,1/cd);
+	/* cos(delta), sin(delta) and cos(gamma), sin(gamma) */
+	BasePoint csd = (BasePoint) { BPDot(cdunit, dhandleunit), BPCross(cdunit, dhandleunit) }; 
+	BasePoint csc = (BasePoint) { BPDot(BPRev(cdunit), chandleunit),BPCross(cdunit, chandleunit) }; 
+	bigreal scd = csd.y * csc.x + csd.x * csc.y; /* sin(gamma+delta) */
+	/* check if curvatures are already near */
+	bigreal kb = (a*sab-csb.y)/(ab*b*b); /* 3/2*curvature at b */
+	bigreal kc = -(d*scd-csc.y)/(cd*c*c); /* 3/2*curvature at c */
+	if ( fabs((kb-kc)/(kb+kc))<.05 ) return;
+	/* determine current curvatures and the sum of the signed area */
+	bigreal ka = (b*sab-csa.y)/(a*a); /* 3/2*ab*curvature at a */
+	bigreal kd = (c*scd-csd.y)/(d*d); /* 3/2*cd*curvature at d */
+	/* vary a such that ka, kd and f are preserved and */
+	/* trying to minimize the error abs(kb-kc) */
+	bigreal error, best_a, best_b, best_c, best_d;
+	bigreal best_error = 1e30;
+	for (int i=0; i<=5000; ++i) {
+		a = .001*i; /* assuming handles are not 5 times larger than the chord */
+		b = (a*a*ka+csa.y)/sab;
+		if ( b<0 ) continue;
+		kc = -cd*(a*sab-csb.y)/(ab*b*b); /* 3/2*cd*curvature at c */
+		Quartic coeffs;
+		coeffs.a = kc*kd*kd;
+		coeffs.b = 0;
+		coeffs.c = 2*kc*csd.y*kd;
+		coeffs.d = -scd*scd*scd;
+		coeffs.e = kc*csd.y*csd.y+csc.y*scd*scd;
+		extended ds[4] = {-999999,-999999,-999999,-999999};
+		_QuarticSolve(&coeffs,ds);
+		for (int j=0; j<4; j++) {
+			if ( ds[j]<0 ) continue;
+			d = ds[j];
+			c = (d*d*kd+csd.y)/scd;
+			if ( c<0 ) continue;
+			error = fabs( (a*csa.y-b*csb.y)/(a*csa.y+b*csb.y) ) /* the more the handles are balanced, the lesser is the error */
+			+ fabs( (c*csc.y-d*csd.y)/(c*csc.y+d*csd.y) );
+			if ( error < best_error ) {
+				best_a = a;
+				best_b = b;
+				best_c = c;
+				best_d = d;
+				best_error = error;
+			}
+		}
+	} /* now set optimal control points : */
+	sp->prev->from->nextcp = BPAdd(sp->prev->from->me, BPScale(ahandleunit,best_a*ab));
+	sp->prevcp = BPAdd(sp->me, BPScale(bhandleunit,best_b*ab));
+	sp->nextcp = BPAdd(sp->me, BPScale(chandleunit,best_c*cd));
+	sp->next->to->prevcp = BPAdd(sp->next->to->me, BPScale(dhandleunit,best_d*cd));
+	printSplineInfo(sp->prev);
+	printSplineInfo(sp->next);
+}
+
+void SplineSetHarmonizeHandles(SplineChar *sc, SplineSet *ss, int anysel) {
+    Spline *s, *first; 
+    first = NULL;
+    for ( s = ss->first->next; s!=NULL && s!=first; s = s->to->next ) {
+	    if ( !anysel || s->from->selected )
+			SplinePointHarmonizeHandles(s->from);
+	    if ( first==NULL ) first = s;
+    }
+}
+
+void SplineCharHarmonizeHandles(SplineChar *sc, SplineSet *head, int anysel) { 
+    SplineSet *ss;
+    for ( ss=head; ss!=NULL; ss=ss->next )
+	    SplineSetHarmonizeHandles(sc,ss,anysel);
 }
 
 char *GetNextUntitledName(void) {

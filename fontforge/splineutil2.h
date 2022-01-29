@@ -44,6 +44,7 @@ extern Spline *SplineAddExtrema(Spline *s, int always, real lenbound, real offse
 extern Spline *SplineAddInflections(Spline *s);
 extern Spline *SplineBalance(Spline *s);
 extern void SplinePointHarmonize(SplinePoint *sp);
+extern void SplinePointHarmonizeHandles(SplinePoint *sp);
 extern void BP_HVForce(BasePoint *vector);
 extern void CanonicalContours(SplineChar *sc, int layer);
 extern void SFIncrementXUID(SplineFont *sf);
@@ -55,6 +56,8 @@ extern void SPLAverageCps(SplinePointList *spl);
 extern void SplineCharAddExtrema(SplineChar *sc, SplineSet *head, enum ae_type between_selected, int emsize);
 extern void SplineCharAddInflections(SplineChar *sc, SplineSet *head, int anysel);
 extern void SplineCharBalance(SplineChar *sc, SplineSet *head, int anysel);
+extern void SplineCharHarmonize(SplineChar *sc, SplineSet *head, int anysel);
+extern void SplineCharHarmonizeHandles(SplineChar *sc, SplineSet *head, int anysel);
 extern void SplineCharDefaultNextCP(SplinePoint *base);
 extern void SplineCharDefaultPrevCP(SplinePoint *base);
 extern void SplineCharMerge(SplineChar *sc, SplineSet **head, int type);
@@ -65,6 +68,8 @@ extern void SplinePointListSimplify(SplineChar *sc, SplinePointList *spl, struct
 extern void SplineSetAddExtrema(SplineChar *sc, SplineSet *ss, enum ae_type between_selected, int emsize);
 extern void SplineSetAddInflections(SplineChar *sc, SplineSet *ss, int anysel);
 extern void SplineSetBalance(SplineChar *sc, SplineSet *ss, int anysel);
+extern void SplineSetHarmonize(SplineChar *sc, SplineSet *ss, int anysel);
+extern void SplineSetHarmonizeHandles(SplineChar *sc, SplineSet *ss, int anysel);
 extern void SplineSetJoinCpFixup(SplinePoint *sp);
 extern void SplineSetsInsertOpen(SplineSet **tbase, SplineSet *open);
 extern void SplineSetsUntick(SplineSet *spl);
