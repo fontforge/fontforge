@@ -4170,7 +4170,7 @@ static PyObject *PyFFLayer_AddInflections(PyFF_Layer *self) {
 	else
 	    Py_RETURN( self ); // no contours=> nothing to do
     }
-    SplineCharAddInflections(NULL,ss,true);
+    SplineCharAddInflections(NULL,ss,false);
     LayerFromSS(ss,self);
     SplinePointListsFree(ss);
 Py_RETURN( self );
@@ -4185,7 +4185,7 @@ static PyObject *PyFFLayer_Balance(PyFF_Layer *self) {
 	else
 	    Py_RETURN( self ); // no contours=> nothing to do
     }
-    SplineCharBalance(NULL,ss,true);
+    SplineCharBalance(NULL,ss,false);
     LayerFromSS(ss,self);
     SplinePointListsFree(ss);
 Py_RETURN( self );
@@ -4200,7 +4200,7 @@ static PyObject *PyFFLayer_Harmonize(PyFF_Layer *self) {
 	else
 	    Py_RETURN( self ); // no contours=> nothing to do
     }
-    SplineCharHarmonize(NULL,ss,true);
+    SplineCharHarmonize(NULL,ss,false);
     LayerFromSS(ss,self);
     SplinePointListsFree(ss);
 Py_RETURN( self );
