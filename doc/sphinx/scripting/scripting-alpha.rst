@@ -87,7 +87,7 @@ the fourth argument you must specify the second and third arguments too.
 .. function:: AddInflections()
 
    If the curvature of a spline in a glyph changes sign then break the spline 
-   so that there will be a point at all points of inflections. 
+   so that there will be a point at all points of inflection. 
    
 .. function:: Balance()
 

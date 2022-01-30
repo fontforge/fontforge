@@ -644,12 +644,12 @@ FontForge.
    
 .. _elementmenu.Add-Inflections:
 
-.. object:: Add Inflections 
+.. object:: Add Points Of Inflection
 
    Not in the bitmap view. In the outline view, if any points are selected, 
-   this will add points at all points of inflections on splines between 
+   this will add points at all points of inflection on splines between 
    selected points. In the font view, metrics view (or if nothing is selected 
-   in the outline view) it will add all points of inflections to the splines.
+   in the outline view) it will add all points of inflection to the splines.
 
 .. _elementmenu.AutoTrace:
 
