@@ -129,6 +129,9 @@ CharView.Menu.Element.Expand Stroke...:Ctrl+Shift+E
 CharView.Menu.Element.Tile Path...:No Shortcut
 CharView.Menu.Element.Tile Pattern...:No Shortcut
 CharView.Menu.Element.Add Extrema:Ctrl+Shift+X
+CharView.Menu.Element.Add Inflections:Ctrl+Shift+N
+CharView.Menu.Element.Balance:Ctrl+Shift+A
+CharView.Menu.Element.Harmonize:Ctrl+Shift+Z
 CharView.Menu.Element.Autotrace:Ctrl+Shift+T
 CharView.Menu.Element.Clockwise:No Shortcut
 CharView.Menu.Element.Check Self-Intersection:No Shortcut
@@ -406,6 +409,9 @@ FontView.Menu.Element.Expand Stroke...:Ctrl+Shift+E
 FontView.Menu.Element.Tile Path...:No Shortcut
 FontView.Menu.Element.Tile Pattern...:No Shortcut
 FontView.Menu.Element.Add Extrema:Ctrl+Shift+X
+FontView.Menu.Element.Add Inflections:Ctrl+Shift+N
+FontView.Menu.Element.Balance:Ctrl+Shift+A
+FontView.Menu.Element.Harmonize:Ctrl+Shift+Z
 FontView.Menu.Element.Autotrace:Ctrl+Shift+T
 FontView.Menu.Element.Correct Direction:Ctrl+Shift+D
 FontView.Menu.Element.Merge Fonts...:No Shortcut
@@ -567,6 +573,9 @@ MetricsView.Menu.Element.Regenerate Bitmap Glyphs...:Ctrl+B
 MetricsView.Menu.Element.Transform...:Ctrl+\
 MetricsView.Menu.Element.Tile Path...:No Shortcut
 MetricsView.Menu.Element.Add Extrema:Ctrl+Shift+X
+MetricsView.Menu.Element.Add Inflections:Ctrl+Shift+N
+MetricsView.Menu.Element.Balance:Ctrl+Shift+A
+MetricsView.Menu.Element.Harmonize:Ctrl+Shift+Z
 MetricsView.Menu.Element.To Int:Ctrl+Shift+_
 MetricsView.Menu.Element.Autotrace:Ctrl+Shift+T
 MetricsView.Menu.Element.Correct Direction:Ctrl+Shift+D
