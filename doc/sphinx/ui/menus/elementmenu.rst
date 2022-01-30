@@ -745,6 +745,24 @@ FontForge.
       randomly. If you don't want that to happen, select your points and then
       single click on the one you want moved).
 
+.. _elementmenu.Balance:
+
+.. object:: Balance
+
+   Not in the bitmap view. In the outline view, if any points are selected, 
+   this will make the line between the control points parallel to the chord 
+   such that the area is preserved. This is an improved version of the algorithm 
+   known as "tunnify". In the font view, metrics view (or if nothing is selected 
+   in the outline view) it will balance all cubic splines.
+   
+.. object:: Harmonize
+
+   Not in the bitmap view. In the outline view, if any points are selected, 
+   this will move the smooth on-curve points between its adjacent control 
+   points such that the adjacent curvatures become equal (except for sign 
+   at points of inflection). In the font view, metrics view (or if nothing 
+   is selected in the outline view) it will harmonize all smooth spline points.
+
 .. object:: Round
 
    .. _elementmenu.Round:
