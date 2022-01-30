@@ -1061,9 +1061,6 @@ msgstr "移除重疊…"
 msgid "Adding points at Extrema..."
 msgstr "於末端加點…"
 
-msgid "Adding points of inflection..."
-msgstr ""
-
 msgid "Rounding to integer..."
 msgstr "四捨五入到整數…"
 
@@ -11412,9 +11409,6 @@ msgstr "重疊(_V)"
 
 msgid "Add E_xtrema"
 msgstr "加入末端(_X)"
-
-msgid "Add Points Of Inflection"
-msgstr ""
 
 msgid "Autot_race"
 msgstr "自動追蹤(_R)"

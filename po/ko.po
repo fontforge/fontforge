@@ -1124,9 +1124,6 @@ msgstr "오버랩을 제거 중..."
 msgid "Adding points at Extrema..."
 msgstr "극값에 있는 점을 추가 중..."
 
-msgid "Adding points of inflection..."
-msgstr ""
-
 msgid "Rounding to integer..."
 msgstr "좌표값을 정수로 변환 중..."
 
@@ -12131,9 +12128,6 @@ msgstr "겹치기(_V)"
 
 msgid "Add E_xtrema"
 msgstr "극대점을 추가(_X)"
-
-msgid "Add Points Of Inflection"
-msgstr ""
 
 msgid "Autot_race"
 msgstr "자동추적(_R)"
