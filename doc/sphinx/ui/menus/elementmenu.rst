@@ -754,6 +754,8 @@ FontForge.
    such that the area is preserved. This is an improved version of the algorithm 
    known as "tunnify". In the font view, metrics view (or if nothing is selected 
    in the outline view) it will balance all cubic splines.
+
+.. _elementmenu.Harmonize:
    
 .. object:: Harmonize
 
