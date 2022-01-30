@@ -1169,9 +1169,6 @@ msgstr "Suppression des recouvrements..."
 msgid "Adding points at Extrema..."
 msgstr "Ajout de points aux extrémités..."
 
-msgid "Adding points of inflection..."
-msgstr "Ajout de points d'inflexion..."
-
 msgid "Rounding to integer..."
 msgstr "Arrondi entier..."
 
@@ -12429,9 +12426,6 @@ msgstr "Recou_vrements"
 
 msgid "Add E_xtrema"
 msgstr "Ajouter des e_xtréma"
-
-msgid "Add Points Of Inflection"
-msgstr "Ajouter des points d'inflexion"
 
 msgid "Autot_race"
 msgstr ""

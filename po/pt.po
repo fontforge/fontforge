@@ -1086,9 +1086,6 @@ msgstr ""
 msgid "Adding points at Extrema..."
 msgstr ""
 
-msgid "Adding points of inflection..."
-msgstr "Adicionando pontos de inflexão..."
-
 msgid "Rounding to integer..."
 msgstr ""
 
@@ -11273,9 +11270,6 @@ msgstr ""
 
 msgid "Add E_xtrema"
 msgstr ""
-
-msgid "Add Points Of Inflection"
-msgstr "Adicione pontos de inflexão"
 
 msgid "Autot_race"
 msgstr ""

@@ -11996,14 +11996,14 @@ msgstr "Über_lappen"
 msgid "Add E_xtrema"
 msgstr "E_xtrempunkte hinzufügen"
 
-msgid "Add Points Of Inflection"
-msgstr "Wendepunkte hinzufügen"
+msgid "Add Points Of I_nflection"
+msgstr "We_ndepunkte hinzufügen"
 
-msgid "Balance"
-msgstr "Ausbalancieren"
+msgid "_Balance"
+msgstr "Aus_balancieren"
 
-msgid "Harmonize"
-msgstr "Harmonisieren"
+msgid "Harmoni_ze"
+msgstr "Harmoni_sieren"
 
 msgid "Autot_race"
 msgstr "Auto_matisch nachzeichnen"
