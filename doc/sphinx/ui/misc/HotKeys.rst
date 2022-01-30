@@ -46,6 +46,7 @@ yourself unless you want to make changes. The defaults are shown below:
 :Ctrl-O:            :ref:`Open <filemenu.Open>`
 :Ctrl-Shift-O:      :ref:`Remove Overlap <elementmenu.Remove>`
 :Ctrl-P:            :ref:`Print <filemenu.Print>`
+:Ctrl-Shift-P:      :ref:`Balance <elementmenu.Balance>`
 :Alt-Ctrl-P:        :doc:`Display </ui/dialogs/display>`
 :Ctrl-Q:            :ref:`Quit <filemenu.Quit>`
 :Ctrl-Shift-Q:      :ref:`Close <filemenu.Close>`
@@ -64,7 +65,9 @@ yourself unless you want to make changes. The defaults are shown below:
 :Ctrl-X:            :ref:`Cut <editmenu.Cut>`
 :Ctrl-Shift-X:      :ref:`Add Extrema <elementmenu.Add-Extrema>`
 :Ctrl-Y:            :ref:`Redo <editmenu.Redo>`
+:Ctrl-Shift-Y:      :ref:`Add Points Of Inflection <elementmenu.Add-Inflections>`
 :Ctrl-Z:            :ref:`Undo <editmenu.Undo>`
+:Ctrl-Shift-Z:      :ref:`Harmonize <elementmenu.Harmonize>`
 :Ctrl-\\:           :ref:`Transform <elementmenu.Transform>`
 :Ctrl-Shift-_:      :ref:`Round to Int <elementmenu.Round>`
 :Ctrl-1:            :ref:`Make First <pointmenu.Make-First>`

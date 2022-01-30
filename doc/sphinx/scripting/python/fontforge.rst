@@ -1031,7 +1031,7 @@ Does not support the repeat concept.
 .. method:: contour.addInflections()
 
    If the curvature of a spline in the contour changes sign then break the 
-   spline so that there will be a point at all points of inflections. 
+   spline so that there will be a point at all points of inflection. 
    
 .. method:: contour.balance()
 
@@ -1175,7 +1175,7 @@ Layers may be compared to see if their contours are similar.
 .. method:: layer.addInflections()
 
    If the curvature of a spline in the layer changes sign then break the 
-   spline so that there will be a point at all points of inflections. 
+   spline so that there will be a point at all points of inflection. 
    
 .. method:: layer.balance()
 
@@ -2010,7 +2010,7 @@ must be created through the font.
 .. method:: glyph.addInflections()
 
    If the curvature of a spline in the glyph changes sign then break the 
-   spline so that there will be a point at all points of inflections. 
+   spline so that there will be a point at all points of inflection. 
 
 .. method:: glyph.addReference(glyph_name[, transform, selected])
 
@@ -4779,7 +4779,7 @@ See the :class:`selection` type for how to alter the selection.
 .. method:: font.addInflections()
 
    If the curvature of a spline in the font changes sign then break the 
-   spline so that there will be a point at all points of inflections. 
+   spline so that there will be a point at all points of inflection. 
 
 .. method:: font.autoHint()
 
