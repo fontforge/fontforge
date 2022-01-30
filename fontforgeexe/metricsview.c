@@ -3655,9 +3655,9 @@ static GMenuItem2 ellist[] = {
     { { (unichar_t *) N_("_Remove Overlap"), (GImage *) "rmoverlap.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'O' }, H_("Remove Overlap|No Shortcut"), rmlist, NULL, NULL, MID_RmOverlap },
     { { (unichar_t *) N_("_Simplify"), (GImage *) "elementsimplify.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Simplify|No Shortcut"), smlist, NULL, NULL, MID_Simplify },
     { { (unichar_t *) N_("Add E_xtrema"), (GImage *) "elementaddextrema.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Add Extrema|No Shortcut"), NULL, NULL, MVMenuAddExtrema, MID_AddExtrema },
-    { { (unichar_t *) N_("Add Points Of Inflection"), (GImage *) "elementaddinflections.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Add Points Of Inflection|No Shortcut"), NULL, NULL, MVMenuAddInflections, MID_AddInflections },
-    { { (unichar_t *) N_("Balance"), (GImage *) "elementbalance.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Balance|No Shortcut"), NULL, NULL, MVMenuBalance, MID_Balance },
-    { { (unichar_t *) N_("Harmonize"), (GImage *) "elementharmonize.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Harmonize|No Shortcut"), NULL, NULL, MVMenuHarmonize, MID_Harmonize },
+    { { (unichar_t *) N_("Add Points Of I_nflection"), (GImage *) "elementaddinflections.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'n' }, H_("Add Points Of Inflection|No Shortcut"), NULL, NULL, MVMenuAddInflections, MID_AddInflections },
+    { { (unichar_t *) N_("B_alance"), (GImage *) "elementbalance.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'a' }, H_("Balance|No Shortcut"), NULL, NULL, MVMenuBalance, MID_Balance },
+    { { (unichar_t *) N_("Harmoni_ze"), (GImage *) "elementharmonize.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'z' }, H_("Harmonize|No Shortcut"), NULL, NULL, MVMenuHarmonize, MID_Harmonize },
     { { (unichar_t *) N_("To _Int"), (GImage *) "elementround.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("To Int|No Shortcut"), NULL, NULL, MVMenuRound2Int, MID_Round },
     { { (unichar_t *) N_("Effects"), (GImage *) "elementstyles.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Effects|No Shortcut"), eflist, NULL, NULL, MID_Effects },
     { { (unichar_t *) N_("Autot_race"), (GImage *) "elementautotrace.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'r' }, H_("Autotrace|No Shortcut"), NULL, NULL, MVMenuAutotrace, MID_Autotrace },
@@ -3981,9 +3981,12 @@ static void ellistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	  case MID_RmOverlap: case MID_Stroke:
 	    mi->ti.disabled = sc==NULL || mv->sf->onlybitmaps;
 	  break;
-	  case MID_AddExtrema: case MID_AddInflections: case MID_Balance:
+	  case MID_AddExtrema: case MID_AddInflections:
 	  case MID_Harmonize: case MID_Round: case MID_Correct:
 	    mi->ti.disabled = sc==NULL || mv->sf->onlybitmaps;
+	  break;
+	  case MID_Balance:
+	    mi->ti.disabled = sc==NULL || mv->sf->onlybitmaps || order2;
 	  break;
 #ifdef FONTFORGE_CONFIG_TILEPATH
 	  case MID_TilePath:

@@ -4214,7 +4214,7 @@ static void validlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) 
 static void ellistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int anychars = FVAnyCharSelected(fv), gid;
-    int anybuildable, anytraceable;
+    int anybuildable, anytraceable, anycubics;
     int in_modal = (fv->b.container!=NULL && fv->b.container->funcs->is_modal);
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
@@ -4229,11 +4229,15 @@ static void ellistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	    mi->ti.disabled = anychars==-1;
 	    /* some Transformations make sense on bitmaps now */
 	  break;
-	  case MID_AddExtrema: case MID_AddInflections: case MID_Balance:
+	  case MID_AddExtrema: case MID_AddInflections:
 	  case MID_Harmonize: case MID_Simplify: 
 	  case MID_Stroke: case MID_RmOverlap: case MID_Styles: 
 	  case MID_Round: case MID_Correct:
 	    mi->ti.disabled = anychars==-1 || fv->b.sf->onlybitmaps;
+	  break;
+	  case MID_Balance:
+	    mi->ti.disabled = anychars==-1 || fv->b.sf->onlybitmaps 
+	    || fv->b.sf->layers[fv->b.active_layer].order2;
 	  break;
 #ifdef FONTFORGE_CONFIG_TILEPATH
 	  case MID_TilePath:
@@ -4666,9 +4670,9 @@ static GMenuItem2 ellist[] = {
     { { (unichar_t *) N_("O_verlap"), (GImage *) "overlaprm.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'O' }, H_("Overlap|No Shortcut"), rmlist, NULL, NULL, MID_RmOverlap },
     { { (unichar_t *) N_("_Simplify"), (GImage *) "elementsimplify.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Simplify|No Shortcut"), smlist, NULL, NULL, MID_Simplify },
     { { (unichar_t *) N_("Add E_xtrema"), (GImage *) "elementaddextrema.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Add Extrema|No Shortcut"), NULL, NULL, FVMenuAddExtrema, MID_AddExtrema },
-    { { (unichar_t *) N_("Add Points Of Inflection"), (GImage *) "elementaddinflections.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Add Points Of Inflection|No Shortcut"), NULL, NULL, FVMenuAddInflections, MID_AddInflections },
-    { { (unichar_t *) N_("Balance"), (GImage *) "elementbalance.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Balance|No Shortcut"), NULL, NULL, FVMenuBalance, MID_Balance },
-    { { (unichar_t *) N_("Harmonize"), (GImage *) "elementharmonize.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Harmonize|No Shortcut"), NULL, NULL, FVMenuHarmonize, MID_Harmonize },
+    { { (unichar_t *) N_("Add Points Of I_nflection"), (GImage *) "elementaddinflections.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'n' }, H_("Add Points Of Inflection|No Shortcut"), NULL, NULL, FVMenuAddInflections, MID_AddInflections },
+    { { (unichar_t *) N_("B_alance"), (GImage *) "elementbalance.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'a' }, H_("Balance|No Shortcut"), NULL, NULL, FVMenuBalance, MID_Balance },
+    { { (unichar_t *) N_("Harmoni_ze"), (GImage *) "elementharmonize.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'z' }, H_("Harmonize|No Shortcut"), NULL, NULL, FVMenuHarmonize, MID_Harmonize },
     { { (unichar_t *) N_("Roun_d"), (GImage *) "elementround.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Round|No Shortcut"), rndlist, NULL, NULL, MID_Round },
     { { (unichar_t *) N_("Autot_race"), (GImage *) "elementautotrace.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'r' }, H_("Autotrace|No Shortcut"), NULL, NULL, FVMenuAutotrace, MID_Autotrace },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */

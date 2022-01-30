@@ -1172,6 +1172,12 @@ msgstr "Extrempunkte werden hinzufgefügt …"
 msgid "Adding points of inflection..."
 msgstr "Wendepunkte werden hinzugefügt …"
 
+msgid "Balancing..."
+msgstr "Kontrollpunkte werden ausbalanciert …"
+
+msgid "Harmonizing..."
+msgstr "Krümmungen werden harmonisiert …"
+
 msgid "Rounding to integer..."
 msgstr "Auf ganze Zahlen runden …"
 
@@ -11992,6 +11998,12 @@ msgstr "E_xtrempunkte hinzufügen"
 
 msgid "Add Points Of Inflection"
 msgstr "Wendepunkte hinzufügen"
+
+msgid "Balance"
+msgstr "Ausbalancieren"
+
+msgid "Harmonize"
+msgstr "Harmonisieren"
 
 msgid "Autot_race"
 msgstr "Auto_matisch nachzeichnen"

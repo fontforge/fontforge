@@ -2926,7 +2926,7 @@ void SplineCharAddInflections(SplineChar *sc, SplineSet *head, int anysel) {
 /* Make the line between the control points parallel to the chord */
 /* such that the area is preserved (kind of an improved "tunnify") */
 Spline *SplineBalance(Spline *s) { 
-    if ( s->knownlinear )
+    if ( s->knownlinear || s->order2 )
 return(s);
 	bigreal flen,tlen,ftlen;
 	BasePoint fromhandle = BPSub(s->from->nextcp, s->from->me);
