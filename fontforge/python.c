@@ -18095,26 +18095,6 @@ return (NULL);
 Py_RETURN( self );
 }
 
-static PyObject *PyFFFont_Balance(PyFF_Font *self) {
-    FontViewBase *fv;
-    
-    if ( CheckIfFontClosed(self) )
-return (NULL);
-    fv = self->fv;
-    FVBalance(fv, false);
-Py_RETURN( self );
-}
-
-static PyObject *PyFFFont_Harmonize(PyFF_Font *self) {
-    FontViewBase *fv;
-    
-    if ( CheckIfFontClosed(self) )
-return (NULL);
-    fv = self->fv;
-    FVHarmonize(fv, false);
-Py_RETURN( self );
-}
-
 static PyObject *PyFFFont_Stroke(PyFF_Font *self, PyObject *args, PyObject *keywds) {
     StrokeInfo si;
 
@@ -18316,8 +18296,6 @@ PyMethodDef PyFF_Font_methods[] = {
 
     { "addExtrema", (PyCFunction) PyFFFont_AddExtrema, METH_NOARGS, "Add extrema to the contours of the glyph"},
     { "addInflections", (PyCFunction) PyFFFont_AddInflections, METH_NOARGS, "Add points of inflection to the contours of the glyph"},
-    { "balance", (PyCFunction) PyFFFont_Balance, METH_NOARGS, "Balance handles on the contours of the glyph"},
-    { "harmonize", (PyCFunction) PyFFFont_Harmonize, METH_NOARGS, "Harmonize curvatures on the contours of the glyph"},
     { "addSmallCaps", (PyCFunction) PyFFFont_addSmallCaps, METH_VARARGS | METH_KEYWORDS, "For selected upper/lower case (latin, greek, cyrillic) characters, add a small caps variant of that glyph"},
     { "autoHint", (PyCFunction) PyFFFont_autoHint, METH_NOARGS, "Guess at postscript hints"},
     { "autoInstr", (PyCFunction) PyFFFont_autoInstr, METH_NOARGS, "Guess at truetype instructions"},

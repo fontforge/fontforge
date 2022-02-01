@@ -1041,28 +1041,12 @@ Does not support the repeat concept.
 
       As above but also merge away on-curve points which are very close to, but
       not on, an added extremum
-      
-.. method:: contour.addInflections()
-
-   If the curvature of a spline in the contour changes sign then break the 
-   spline so that there will be a point at all points of inflection. 
-   
-.. method:: contour.balance()
-
-   For all cubic bezier splines of the contour make the line between the control 
-   points parallel to the chord such that the area is preserved. This is an
-   improved version of the algorithm known as "tunnify".
 
 .. method:: contour.cluster([within, max])
 
    Moves clustered coordinates to a standard central value.
 
    See also :meth:`contour.round()`.
-   
-.. method:: contour.harmonize()
-
-   For all bezier splines of the contour move the smooth on-curve points between 
-   its adjacent control points such that the adjacent curvatures become equal.
 
 .. method:: contour.merge(pos)
 
@@ -1130,6 +1114,27 @@ Does not support the repeat concept.
 .. method:: contour.transform(matrix)
 
    Transforms the contour by the matrix
+   
+.. seealso::
+
+   `Curvatura documentation <https://github.com/linusromer/curvatura/blob/master/curvatura-doc.pdf>`_
+      Documentation for adding points of inflection, balancing and harmonizing.
+   
+.. method:: contour.addInflections()
+
+   If the curvature of a spline in the contour changes sign then break the 
+   spline so that there will be a point at all points of inflection. 
+   
+.. method:: contour.balance()
+
+   For all cubic bezier splines of the contour make the line between the control 
+   points parallel to the chord such that the area is preserved. This is an
+   improved version of the algorithm known as "tunnify".
+   
+.. method:: contour.harmonize()
+
+   For all bezier splines of the contour move the smooth on-curve points between 
+   its adjacent control points such that the adjacent curvatures become equal.
 
 
 Layer
@@ -1186,17 +1191,6 @@ Layers may be compared to see if their contours are similar.
       As above but also merge away on-curve points which are very close to, but
       not on, an added extremum
       
-.. method:: layer.addInflections()
-
-   If the curvature of a spline in the layer changes sign then break the 
-   spline so that there will be a point at all points of inflection. 
-   
-.. method:: layer.balance()
-
-   For all cubic bezier splines of the layer make the line between the control 
-   points parallel to the chord such that the area is preserved. This is an
-   improved version of the algorithm known as "tunnify".
-
 .. method:: layer.cluster([within, max])
 
    Moves clustered coordinates to a standard central value.
@@ -1234,11 +1228,6 @@ Layers may be compared to see if their contours are similar.
 
    Removes the excluded area from the current contours. See also
    :meth:`layer.removeOverlap()` and :meth:`layer.intersect()`.
-   
-.. method:: layer.harmonize()
-
-   For all bezier splines of the layer move the smooth on-curve points between 
-   its adjacent control points such that the adjacent curvatures become equal.
    
 .. method:: layer.intersect()
 
@@ -1388,6 +1377,18 @@ Layers may be compared to see if their contours are similar.
 .. method:: layer.draw(pen)
 
    Draw the layer to the :class:`pen <glyphPen>` argument.
+   
+.. method:: layer.addInflections()
+
+   Please see :meth:`contour.addInflections()`.
+   
+.. method:: layer.balance()
+
+   Please see :meth:`contour.balance()`.
+   
+.. method:: layer.harmonize()
+
+   Please see :meth:`contour.harmonize()`.
 
 
 .. rubric:: Sequence Protocol
@@ -2020,11 +2021,6 @@ must be created through the font.
 
       As above but also merge away on-curve points which are very close to,
       but not on, an added extremum
-      
-.. method:: glyph.addInflections()
-
-   If the curvature of a spline in the glyph changes sign then break the 
-   spline so that there will be a point at all points of inflection. 
 
 .. method:: glyph.addReference(glyph_name[, transform, selected])
 
@@ -2083,12 +2079,6 @@ must be created through the font.
 .. method:: glyph.autoTrace()
 
    Auto traces any background images
-
-.. method:: glyph.balance()
-
-   For all cubic bezier splines of the glyph make the line between the control 
-   points parallel to the chord such that the area is preserved. This is an
-   improved version of the algorithm known as "tunnify".
 
 .. method:: glyph.boundingBox()
 
@@ -2256,11 +2246,6 @@ must be created through the font.
 
    Ligature data will be followed by several strings each containing the name
    of a ligature component glyph.
-   
-.. method:: glyph.harmonize()
-
-   For all bezier splines of the glyph move the smooth on-curve points between 
-   its adjacent control points such that the adjacent curvatures become equal.
 
 .. method:: glyph.importOutlines(filename, [KEYWORD])
 
@@ -2648,6 +2633,18 @@ must be created through the font.
    Creates a new glyphPen which will draw into the current glyph. By default
    the pen will replace any existing contours and references, but setting the
    optional keyword argument, ``replace`` to false will retain the old contents.
+
+.. method:: glyph.addInflections()
+
+   Please see :meth:`contour.addInflections()`.
+
+.. method:: glyph.balance()
+
+   Please see :meth:`contour.balance()`.
+   
+.. method:: glyph.harmonize()
+
+   Please see :meth:`contour.harmonize()`.
 
 
 Selection
@@ -4809,8 +4806,7 @@ See the :class:`selection` type for how to alter the selection.
    
 .. method:: font.addInflections()
 
-   If the curvature of a spline in the font changes sign then break the 
-   spline so that there will be a point at all points of inflection. 
+   Please see :meth:`contour.addInflections()`. 
 
 .. method:: font.autoHint()
 
@@ -4828,12 +4824,6 @@ See the :class:`selection` type for how to alter the selection.
 
    Auto traces any background images in all selected glyphs
    
-.. method:: font.balance()
-
-   For all cubic bezier splines of the font make the line between the control 
-   points parallel to the chord such that the area is preserved. This is an
-   improved version of the algorithm known as "tunnify".
-
 .. method:: font.build()
 
    If any of the selected characters is a composite character, then this
@@ -4929,11 +4919,6 @@ See the :class:`selection` type for how to alter the selection.
 
    Pastes the contents of (FontForge's internal) clipboard into the selected
    glyphs -- and removes what was there before.
-
-.. method:: font.harmonize()
-
-   For all bezier splines of the font move the smooth on-curve points between 
-   its adjacent control points such that the adjacent curvatures become equal.
 
 .. method:: font.intersect()
 
