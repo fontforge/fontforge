@@ -32,7 +32,7 @@ Note that the version of the FreeType source must *exactly* match the installed 
 ### MacOS
 * Missing packages can be installed with Homebrew, like:
 ```
-brew install cmake glib pango
+brew install cmake glib pango gtk+3
 ```
 * `msgfmt` is not found (when using Homebrew):
 
