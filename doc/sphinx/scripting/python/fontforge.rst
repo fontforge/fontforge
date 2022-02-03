@@ -538,8 +538,8 @@ Not a very useful example.
 
       This is the function that will be called when the menu item is activated.
       It will be passed two arguments, the first is the data value specified
-      here (which defaults to ``None``) and the second is a ``fontforge.glyph``
-      or ``fontforge.font`` object (depending on the ``context``).
+      here (which defaults to ``None``) and the second is a :class:`fontforge.glyph`
+      or :class:`fontforge.font` object (depending on the ``context``).
       The callback's return value is ignored.
 
    .. object:: enable
@@ -628,7 +628,7 @@ Not a very useful example.
 
    .. object:: keyword_only
 
-      When `keyword_only`` is ``False`` (the default) the function will attempt
+      When ``keyword_only`` is ``False`` (the default) the function will attempt
       to fall back to the positional interface and any reported errors will be
       relative to that interface. If you're having trouble with keyword parameters
       set ``keyword_only`` to ``True`` to see a more specific error message.

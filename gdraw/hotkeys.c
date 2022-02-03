@@ -180,7 +180,7 @@ static char* trimspaces( char* line ) {
     return line;
 }
 
-// User hotkeys have priority over "native" hotkeys, but since they get after
+// User hotkeys have priority over "native" hotkeys, but since they get set after
 // that takes care of itself. Python hotkeys (from registerMenuItem) have the
 // lowest priority, so this only sets one if it is free.
 Hotkey* hotkeySetFull( const char* action, const char* keydefinition, int append, enum hk_source source )
