@@ -37,6 +37,7 @@
 #define BPUNINIT ((BasePoint) { -INFINITY, INFINITY })
 #define UTZERO ((BasePoint) { 0.0, 1.0 })
 #define UTMIN ((BasePoint) { -1, -DBL_MIN })
+#define UTMARGIN (1e-7)     // Arrived at through testing
 
 static inline bigreal BPLenSq(BasePoint v) {
     return v.x * v.x + v.y * v.y;
