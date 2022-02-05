@@ -28,6 +28,7 @@
 #include <fontforge-config.h>
 
 #include <assert.h>
+#include <dirent.h>
 #include <errno.h>
 
 #include "ffglib.h"
@@ -305,25 +306,21 @@ static GImage *GFileChooserPickIcon(const struct gdirentry *e) {
 }
 
 static void GFileChooserFillList(GFileChooser *gfc, const unichar_t *dirname_) {
-    GDir *dir;
-    GError *err = NULL;
-    char *dirname = u2utf8_copy(dirname_);
-    const gchar *ent_name;
+    DIR *dir;
+    char *dirname = u2def_copy(dirname_);
+    struct dirent *dent;
 
-    if (!dirname || (dir = g_dir_open(dirname, 0, &err)) == NULL) {
+    if (!dirname || (dir = opendir(dirname)) == NULL) {
         GTextInfo *ti[2], _ti[2] = { 0 };
         static unichar_t nullstr[] = { 0 };
 
-        _ti[0].text = utf82u_copy((err && err->message) ? err->message : strerror(errno));
+        _ti[0].text = def2u_copy(strerror(errno));
         _ti[0].fg = _ti[0].bg = COLOR_DEFAULT;
         ti[0] = _ti; ti[1] = _ti+1;
         GGadgetSetEnabled(&gfc->files->g, false);
         GGadgetSetList(&gfc->files->g, ti, true);
         GGadgetSetEnabled(&gfc->subdirs->g, false);
         GGadgetSetList(&gfc->subdirs->g, ti, true);
-        if (err != NULL) {
-            g_error_free(err);
-        }
         free(_ti[0].text);
         if (gfc->lastname != NULL) {
             GGadgetSetTitle(&gfc->name->g, gfc->lastname);
@@ -342,17 +339,20 @@ static void GFileChooserFillList(GFileChooser *gfc, const unichar_t *dirname_) {
 
     GPtrArray *ti = g_ptr_array_new();
     GPtrArray *dti = (dir_placement == dirs_separate) ? g_ptr_array_new() : NULL;
-    while ((ent_name = g_dir_read_name(dir)) != NULL) {
+    while ((dent = readdir(dir)) != NULL) {
         struct gdirentry ent;
-        ent.fullpath = smprintf("%s/%s", dirname, ent_name);
-        ent.name = ent_name;
+        if (!strcmp(dent->d_name, ".")) {
+            continue;
+        }
+        ent.fullpath = smprintf("%s/%s", dirname, dent->d_name);
+        ent.name = dent->d_name;
         ent.mimetype = GFileMimeType(ent.fullpath);
         ent.isdir = GFileIsDir(ent.fullpath);
 
         int fcdata = (gfc->filter)(&gfc->g, &ent, dirname);
         if (fcdata != fc_hide) {
             GTextInfo *me = calloc(1, sizeof(GTextInfo));
-            me->text = utf82u_copy(ent_name);
+            me->text = def2u_copy(dent->d_name);
             me->image = GFileChooserPickIcon(&ent);
             me->fg = COLOR_DEFAULT;
             me->bg = COLOR_DEFAULT;
@@ -368,7 +368,7 @@ static void GFileChooserFillList(GFileChooser *gfc, const unichar_t *dirname_) {
         free((char*)ent.fullpath);
         free((char*)ent.mimetype);
     }
-    g_dir_close(dir);
+    closedir(dir);
 
     GTextInfo **rti = malloc((ti->len + 1) * sizeof(GTextInfo*));
     memcpy(rti, ti->pdata, ti->len * sizeof(GTextInfo*));
