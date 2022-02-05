@@ -117,7 +117,7 @@ extern int _GScrollBar_Width;
 static int fv_fs_init=0;
 Color fvfgcol = 0x000000;
 static Color fvselcol = 0xffff00, fvselfgcol=0x000000;
-Color view_bgcol;
+Color view_bgcol = 0xffffff;
 static Color fvslotcol = 0x000000;
 static Color fvslotdivcol = 0x808080;
 static Color fvlabelcol = 0x000000;
