@@ -142,10 +142,10 @@ static int GProgressProcess(GProgress *p) {
 	else {
 	    GRect r;
 	    r.height = tenpt-1;
-	    r.width = amount - p->last_amount;
-	    r.x = tenpt + p->last_amount;
+	    r.width = width;
+	    r.x = tenpt;
 	    r.y = p->boxy+1;
-	    GDrawFillRect(p->gw,&r,progress_fillcol);
+	    GDrawRequestExpose(p->gw,&r,false);
 	}
 	p->last_amount = amount;
     }
