@@ -69,11 +69,6 @@ static inline int BPNear(BasePoint bp1, BasePoint bp2) {
     return BPWithin(bp1, bp2, INTRASPLINE_MARGIN);
 }
 
-// Not called "BPNear" because this is specific to UTanVecs
-static inline int UTNear(BasePoint bp1, BasePoint bp2) {
-    return BPWithin(bp1, bp2, UTMARGIN);
-}
-
 enum nibtype { nib_ellip, nib_rect, nib_convex };
 
 // c->nibcorners is a structure that models the "corners" of the current nib

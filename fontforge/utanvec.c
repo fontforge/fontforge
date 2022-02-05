@@ -39,11 +39,6 @@
                             // ends of degenerate splines to find
                             // a slope.
 			    //
-// Not called "BPNear" because this is specific to UTanVecs
-static inline int UTNear(BasePoint bp1, BasePoint bp2) {
-    return BPWithin(bp1, bp2, UTMARGIN);
-}
-
 BasePoint MakeUTanVec(bigreal x, bigreal y) {
     BasePoint ret = { 0.0, 0.0 };
     bigreal len = x*x + y*y;
