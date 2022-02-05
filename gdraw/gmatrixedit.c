@@ -331,7 +331,6 @@ return( 0 );
 return( width );
 }
 
-static void GME_RedrawTitles(GMatrixEdit *gme);
 static int GME_AdjustCol(GMatrixEdit *gme,int col) {
     int new_width, x,c, changed;
     int orig_width, min_width;
@@ -376,7 +375,7 @@ static int GME_AdjustCol(GMatrixEdit *gme,int col) {
     if ( changed ) {
 	GME_FixScrollBars(gme);
 	GDrawRequestExpose(gme->nested,NULL,false);
-	GME_RedrawTitles(gme);
+	_ggadget_redraw((GGadget*)gme);
     }
 return( changed );
 }
@@ -568,7 +567,7 @@ return( true );
 	gme->col_data[c].width = nw;
 	if ( event->type==et_mouseup )
 	    GME_FixScrollBars(gme);
-	GME_RedrawTitles(gme);
+	_ggadget_redraw((GGadget*)gme);
 	GME_PositionEdit(gme);
 	GDrawRequestExpose(gme->nested,NULL,false);
 	if ( event->type==et_mouseup ) {
@@ -644,10 +643,6 @@ static int GMatrixEdit_Expose(GWindow pixmap, GGadget *g, GEvent *event) {
 	GDrawPopClip(pixmap,&older);
     }
 return( true );
-}
-
-static void GME_RedrawTitles(GMatrixEdit *gme) {
-    GMatrixEdit_Expose(gme->g.base,&gme->g,NULL);
 }
 
 static void GMatrixEdit_SetVisible(GGadget *g, int visible ) {
@@ -1852,7 +1847,7 @@ static void GME_HScroll(GMatrixEdit *gme,struct sbevent *sb) {
 	}
 	GDrawScroll( gme->nested,&clip,diff,0 );
 	GME_PositionEdit(gme);
-	GME_RedrawTitles(gme);
+	_ggadget_redraw((GGadget*)gme);
     }
 }
 
