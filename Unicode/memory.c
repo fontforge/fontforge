@@ -29,6 +29,7 @@
 
 #include "ustring.h"
 
+#include <ffglib.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -74,7 +75,7 @@ char *vsmprintf(const char *fmt, va_list args) {
     int len;
 
     va_copy(args2, args);
-    len = vsnprintf(NULL, 0, fmt, args2);
+    len = g_vsnprintf(NULL, 0, fmt, args2);
     va_end(args2);
 
     if (len < 0) {
@@ -88,7 +89,7 @@ char *vsmprintf(const char *fmt, va_list args) {
         return NULL;
     }
 
-    len = vsnprintf(ret, len + 1, fmt, args);
+    len = g_vsnprintf(ret, len + 1, fmt, args);
 
     if (len < 0) {
         free(ret);
