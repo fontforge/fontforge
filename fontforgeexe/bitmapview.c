@@ -2137,7 +2137,9 @@ GResInfo bitmapview_ri = {
 };
 
 void BVColInit(void) {
+    extern GResInfo charviewpoints_ri;
     GResEditDoInit(&bitmapview_ri);
+    GResEditDoInit(&charviewpoints_ri);
 }
 
 static GMenuItem2 wnmenu[] = {
