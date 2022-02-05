@@ -878,7 +878,8 @@ return;
 	GDrawDrawImage(pixmap,&gi,NULL, 5,bv->mbh+(bv->infoh-base.height)/2);
 
 	GDrawPopClip(pixmap,&old2);
-
+    }
+    if (event->u.expose.rect.y < bv->mbh + bv->infoh - 1) {
 	GDrawDrawImage(pixmap,&GIcon_rightpointer,NULL,bv->infoh+RPT_BASE,bv->mbh+8);
 	GDrawDrawImage(pixmap,&GIcon_press2ptr,NULL,bv->infoh+RPT_BASE,bv->mbh+18+bv->sfh);
 	BVInfoDrawText(bv,pixmap );
@@ -901,7 +902,10 @@ return;
 }
 
 static void BVShowInfo(BitmapView *bv) {
-    BVInfoDrawText(bv,bv->gw );
+    GRect r;
+    r.x = bv->infoh+RPT_DATA; r.width = 39;
+    r.y = bv->mbh; r.height = 36 /* bv->infoh-1 */;
+    GDrawRequestExpose(bv->gw, &r, false);
 }
 
 static void BVResize(BitmapView *bv, GEvent *event ) {

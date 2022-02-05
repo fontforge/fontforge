@@ -4152,9 +4152,26 @@ static void CVInfoDrawRulers(CharView *cv, GWindow pixmap ) {
 }
 
 void CVInfoDraw(CharView *cv, GWindow pixmap ) {
-    CVInfoDrawText(cv,pixmap);
-    if ( cv->showrulers )
-	CVInfoDrawRulers(cv,pixmap);
+    GRect r;
+    r.x = 0;
+    r.y = cv->mbh+cv->charselectorh;
+    r.width = cv->width;
+    r.height = cv->infoh-1;
+    GDrawRequestExpose(pixmap, &r, false);
+    if (cv->showrulers) {
+        int rstart = cv->mbh+cv->charselectorh+cv->infoh;
+        r.x = cv->rulerh;
+        r.y = rstart;
+        r.height = cv->rulerh;
+        r.width = cv->width;
+        GDrawRequestExpose(pixmap, &r, false);
+
+        r.x = 0;
+        r.y = rstart + cv->rulerh;
+        r.width = cv->rulerh;
+        r.height = cv->height;
+        GDrawRequestExpose(pixmap, &r, false);
+    }
 }
 
 static void CVCrossing(CharView *cv, GEvent *event ) {
