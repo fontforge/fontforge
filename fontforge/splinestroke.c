@@ -634,7 +634,7 @@ static void BuildNibCorners(NibCorner **ncp, SplineSet *nib, int *maxp,
 	    // Flatten potential LineSameSide permissiveness
 	    nc[i].utv[NC_OUT_IDX] = nc[i].utv[NC_IN_IDX];
 	if (    UTanVecGreater(nc[i].utv[NC_IN_IDX], max_utanangle)
-	     || BPNear(nc[i].utv[NC_IN_IDX], max_utanangle) ) {
+	     || UTNear(nc[i].utv[NC_IN_IDX], max_utanangle) ) {
 	    max_utan_index = i;
 	    max_utanangle = nc[i].utv[NC_IN_IDX];
 	}
@@ -712,15 +712,15 @@ static NibOffset *_CalcNibOffset(NibCorner *nc, int n, BasePoint ut,
     // and therefore the only cases where the array values differ
     if (   nc[nci].linear
 	// "Capsule" case
-        && BPNear(ut, nc[ncni].utv[NC_IN_IDX])
-        && BPNear(ut, nc[nci].utv[NC_IN_IDX]) ) {
+        && UTNear(ut, nc[ncni].utv[NC_IN_IDX])
+        && UTNear(ut, nc[nci].utv[NC_IN_IDX]) ) {
 	no->nt = 0.0;
 	no->off[NIBOFF_CCW_IDX] = nc[nci].on_nib->me;
 	no->off[NIBOFF_CW_IDX] = nc[ncni].on_nib->me;
 	no->nci[NIBOFF_CW_IDX] = ncni;
 	no->at_line = true;
 	no->curve = false;
-    } else if ( nc[ncpi].linear && BPNear(ut, nc[ncpi].utv[NC_OUT_IDX]) ) {
+    } else if ( nc[ncpi].linear && UTNear(ut, nc[ncpi].utv[NC_OUT_IDX]) ) {
 	// Other lines
 	no->nt = 0.0;
 	no->off[NIBOFF_CCW_IDX] = nc[ncpi].on_nib->me;
@@ -732,7 +732,7 @@ static NibOffset *_CalcNibOffset(NibCorner *nc, int n, BasePoint ut,
     // draws the offset curve
     } else if (   UTanVecsSequent(nc[nci].utv[NC_IN_IDX], ut,
                                   nc[nci].utv[NC_OUT_IDX], false)
-               || BPNear(ut, nc[nci].utv[NC_OUT_IDX] ) ) {
+               || UTNear(ut, nc[nci].utv[NC_OUT_IDX] ) ) {
 	no->nt = 0.0;
 	no->off[0] = no->off[1] = nc[nci].on_nib->me;
 	no->curve = false;
@@ -774,11 +774,11 @@ static BasePoint SplineStrokeNextAngle(StrokeContext *c, BasePoint ut,
     ncni = NC_NEXTI(c, nci);
     ncpi = NC_PREVI(c, nci);
 
-    if ( BPNear(ut, c->nibcorners[nci].utv[NC_IN_IDX]) ) {
+    if ( UTNear(ut, c->nibcorners[nci].utv[NC_IN_IDX]) ) {
 	if ( is_ccw ) {
-	    if ( BPNear(c->nibcorners[nci].utv[NC_IN_IDX],
+	    if ( UTNear(c->nibcorners[nci].utv[NC_IN_IDX],
 	                c->nibcorners[ncpi].utv[NC_OUT_IDX]) ) {
-		if ( BPNear(c->nibcorners[nci].utv[NC_IN_IDX],
+		if ( UTNear(c->nibcorners[nci].utv[NC_IN_IDX],
 		            c->nibcorners[ncpi].utv[NC_IN_IDX]) ) {
 		    assert(c->nibcorners[ncpi].linear);
 		    *curved = true;
@@ -796,9 +796,9 @@ static BasePoint SplineStrokeNextAngle(StrokeContext *c, BasePoint ut,
 		nci = ncpi;
 	    }
 	} else { // CW
-	    if ( BPNear(c->nibcorners[nci].utv[NC_IN_IDX],
+	    if ( UTNear(c->nibcorners[nci].utv[NC_IN_IDX],
 	                c->nibcorners[nci].utv[NC_OUT_IDX]) ) {
-		if ( BPNear(c->nibcorners[nci].utv[NC_IN_IDX],
+		if ( UTNear(c->nibcorners[nci].utv[NC_IN_IDX],
 		            c->nibcorners[ncni].utv[NC_IN_IDX]) ) {
 		    assert(c->nibcorners[nci].linear);
 		    inout = NC_OUT_IDX;
@@ -813,14 +813,14 @@ static BasePoint SplineStrokeNextAngle(StrokeContext *c, BasePoint ut,
 		*curved = false;
 	    }
 	}
-    } else if ( BPNear(ut, c->nibcorners[nci].utv[NC_OUT_IDX]) ) {
-	assert( ! BPNear(c->nibcorners[nci].utv[NC_IN_IDX],
+    } else if ( UTNear(ut, c->nibcorners[nci].utv[NC_OUT_IDX]) ) {
+	assert( ! UTNear(c->nibcorners[nci].utv[NC_IN_IDX],
 	                 c->nibcorners[nci].utv[NC_OUT_IDX]) );
 	if ( is_ccw ) {
 	    inout = NC_IN_IDX;
 	    *curved = false;
 	} else { // CW
-	    if ( BPNear(c->nibcorners[nci].utv[NC_OUT_IDX],
+	    if ( UTNear(c->nibcorners[nci].utv[NC_OUT_IDX],
 	                c->nibcorners[ncni].utv[NC_IN_IDX]) ) {
 		assert(c->nibcorners[nci].linear);
 		inout = NC_OUT_IDX;

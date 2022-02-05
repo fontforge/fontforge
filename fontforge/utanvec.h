@@ -31,12 +31,18 @@
 #include <fontforge-config.h>
 
 #include "splinefont.h"
+#include "splineutil2.h"
 
 #include <math.h>
 
 #define BPUNINIT ((BasePoint) { -INFINITY, INFINITY })
 #define UTZERO ((BasePoint) { 0.0, 1.0 })
 #define UTMIN ((BasePoint) { -1, -DBL_MIN })
+#define UTMARGIN (1e-7)     // Arrived at through testing
+
+static inline int BPWithin(BasePoint bp1, BasePoint bp2, bigreal f) {
+    return RealWithin(bp1.x, bp2.x, f) && RealWithin(bp1.y, bp2.y, f);
+}
 
 static inline bigreal BPLenSq(BasePoint v) {
     return v.x * v.x + v.y * v.y;
@@ -105,6 +111,11 @@ static inline BasePoint BP90CW(BasePoint v) {
 
 static inline BasePoint BPNeg(BasePoint v) {
     return (BasePoint) { v.x, -v.y };
+}
+
+// Not called "BPNear" because this is specific to UTanVecs
+static inline int UTNear(BasePoint bp1, BasePoint bp2) {
+    return BPWithin(bp1, bp2, UTMARGIN);
 }
 
 extern BasePoint MakeUTanVec(bigreal x, bigreal y);
