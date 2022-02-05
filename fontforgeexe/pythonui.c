@@ -173,23 +173,6 @@ static unichar_t FindMnemonic(unichar_t *menu_string, unichar_t alt,
     return 0;
 }
 
-static unichar_t StripMN(unichar_t *str) {
-    unichar_t mn = 0;
-
-    while ( *str && *str != '_' )
-	str++;
-
-    if ( *str ) {
-	mn = *(str+1);
-	while ( *(str+1) ) {
-	    *str = *(str+1);
-	    str++;
-	}
-	*str = 0;
-    }
-    return mn;
-}
-
 // Make sure there is no suffix when c==0 and exactly one suffix " (c)" when c!=0
 static unichar_t *SetMnemonicSuffix(const unichar_t *menu_string, unichar_t c) {
     int i;
@@ -430,8 +413,7 @@ static void InsertSubMenus(struct py_menu_spec *spec, struct py_menu_data *pmd) 
 	    free(tmp_uni);
 	    free(untrans_uni);
 
-	    trans = utf82u_copy(spec->levels[i].localized);
-	    alt = StripMN(trans);
+	    trans = utf82u_mncopy(spec->levels[i].localized, &alt);
 	    if ( i==0 ) {
 		action = strconcat(pmd->hotkey_prefix, untrans);
 		tmp_alt = FindMnemonic(trans, alt, pmd);
