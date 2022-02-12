@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_NAMEHASH_H
 #define FONTFORGE_NAMEHASH_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define GN_HSIZE	257
 
 struct glyphnamebucket {
@@ -57,5 +61,9 @@ static __inline__ unsigned int hashname(const char *pt) {
     val %= GN_HSIZE;
 return( val );
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_NAMEHASH_H */

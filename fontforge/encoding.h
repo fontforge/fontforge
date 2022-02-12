@@ -1,6 +1,10 @@
 #ifndef FONTFORGE_ENCODING_H
 #define FONTFORGE_ENCODING_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "baseviews.h"
 #include "splinefont.h"
 
@@ -81,5 +85,9 @@ extern void SFEncodeToMap(SplineFont *sf, struct cidmap *map);
 extern void SFExpandGlyphCount(SplineFont *sf, int newcnt);
 extern void SFMatchGlyphs(SplineFont *sf, SplineFont *target, int addempties);
 extern void SFRemoveGlyph(SplineFont *sf, SplineChar *sc);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_ENCODING_H */

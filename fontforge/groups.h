@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_GROUPS_H
 #define FONTFORGE_GROUPS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 
 typedef struct ffgroup {
     char *name;			/* The name of this group (utf8) */
@@ -50,5 +54,9 @@ void SaveGroupList(void);
 void LoadGroupList(void);
 Group *GroupCopy(Group *g);
 void GroupFree(Group *g);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_GROUPS_H */

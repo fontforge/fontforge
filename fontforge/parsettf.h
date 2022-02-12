@@ -1,6 +1,10 @@
 #ifndef FONTFORGE_PARSETTF_H
 #define FONTFORGE_PARSETTF_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <fontforge-config.h>
 
 #include "splinefont.h"
@@ -19,5 +23,9 @@ extern SplineFont *_SFReadTTF(FILE *ttf, int flags, enum openflags openflags, ch
 extern struct otfname *FindAllLangEntries(FILE *ttf, struct ttfinfo *info, int id);
 extern void AltUniFigure(SplineFont *sf, EncMap *map, int check_dups);
 extern void TTF_PSDupsDefault(SplineFont *sf);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_PARSETTF_H */

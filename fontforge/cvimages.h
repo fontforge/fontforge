@@ -1,6 +1,10 @@
 #ifndef FONTFORGE_CVIMAGES_H
 #define FONTFORGE_CVIMAGES_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "baseviews.h"
 #include "gimage.h"
 #include "sd.h"
@@ -32,5 +36,9 @@ extern void SCImportPSFile(SplineChar *sc, int layer, FILE *ps, bool doclear,
 extern void SCImportSVG(SplineChar *sc, int layer, char *path, char *memory,
                         int memlen, bool doclear, ImportParams *ip);
 extern void SCInsertImage(SplineChar *sc, GImage *image, real scale, real yoff, real xoff, int layer);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_CVIMAGES_H */

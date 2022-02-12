@@ -1,6 +1,10 @@
 #ifndef FONTFORGE_AUTOTRACE_H
 #define FONTFORGE_AUTOTRACE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "baseviews.h"
 #include "splinefont.h"
 
@@ -14,5 +18,9 @@ extern void *GetAutoTraceArgs(void);
 extern void MfArgsInit(void);
 extern void _SCAutoTrace(SplineChar *sc, int layer, char **args);
 extern void SetAutoTraceArgs(void *a);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_AUTOTRACE_H */

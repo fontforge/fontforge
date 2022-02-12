@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_BASICS_H
 #define FONTFORGE_BASICS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <fontforge-config.h>
 
 #include <inttypes.h>
@@ -132,6 +136,10 @@ static inline int imax(int a, int b)
 # ifndef MAXPATHLEN
 #  define MAXPATHLEN 4096
 # endif
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* FONTFORGE_BASICS_H */

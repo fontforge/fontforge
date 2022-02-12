@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_GIMAGEBMPP_H
 #define FONTFORGE_GIMAGEBMPP_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct bmpheader {
     char b;		/* should contain 'B' */
     char m;		/* should contain 'M' */
@@ -53,5 +57,9 @@ struct bmpheader {
     unsigned char *byte_pixels;
     uint32_t *int32_pixels;
 };
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_GIMAGEBMPP_H */

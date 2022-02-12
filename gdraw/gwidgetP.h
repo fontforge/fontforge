@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_GWIDGET_P_H
 #define FONTFORGE_GWIDGET_P_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "gwidget.h"
 
 struct wfuncs {
@@ -114,5 +118,9 @@ typedef struct gtopleveldata /* : GContainerD */{
 GWidgetD *_GWidget_ChangeInternalFocus(GWidget gw,GWidgetD *to,struct ggadget *gto);
 void _GWidget_RestorePixmap(GWindow gw, GWindow ours, GRect *rect);
 GWindow _GWidget_GetPixmap(GWindow gw,GRect *rect);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_GWIDGET_P_H */

@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_SPLINEFIT_H
 #define FONTFORGE_SPLINEFIT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <fontforge-config.h>
 
 #include "splinefont.h"
@@ -74,5 +78,9 @@ extern SplinePoint *ApproximateSplineSetFromGen(SplinePoint *from, SplinePoint *
                                                 bigreal start_t, bigreal end_t, 
                                                 bigreal toler, int toler_is_sumsq,
                                                 GenPointsP genp, void *tok, int order2);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_SPLINEFIT_H */

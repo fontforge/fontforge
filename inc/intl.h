@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_INTL_H
 #define FONTFORGE_INTL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <fontforge-config.h>
 
 #if !defined( HAVE_LIBINTL_H )
@@ -71,5 +75,9 @@
 #define H_(str)		(str)
 
 char *sgettext(const char *msgid);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_INTL_H */

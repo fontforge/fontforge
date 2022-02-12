@@ -1,6 +1,10 @@
 #ifndef FONTFORGE_SPLINEUTIL_H
 #define FONTFORGE_SPLINEUTIL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "glif_name_hash.h"
 #include "psfont.h"
 #include "splinefont.h"
@@ -226,5 +230,9 @@ extern int HashKerningClassNamesFlex(SplineFont *sf, struct glif_name_index * cl
 #define SPLINEPVAL(s, t) (BasePoint) { SPLINE1DPVAL(&(s)->splines[0], t), SPLINE1DPVAL(&(s)->splines[1], t) }
 #define SPLINE1DPTANVAL(s, t) ((3*(s)->a*(t) + 2*(s)->b)*(t) + (s)->c)
 #define SPLINEPTANVAL(s, t) (BasePoint) { SPLINE1DPTANVAL(&(s)->splines[0], t), SPLINE1DPTANVAL(&(s)->splines[1], t) }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_SPLINEUTIL_H */

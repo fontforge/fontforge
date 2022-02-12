@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_DLIST_H
 #define FONTFORGE_DLIST_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * Doubly linked list abstraction. Putting a full member of this
  * struct first in another struct means you can treat it as a
@@ -147,6 +151,10 @@ typedef void (*dlist_visitor_func_type)( struct dlistnode* );
  */
 extern void dlist_trim_to_limit( struct dlistnode** list, int limit, dlist_visitor_func_type f );
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_DLIST_H */
 

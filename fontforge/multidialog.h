@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_MULTIDIALOG_H
 #define FONTFORGE_MULTIDIALOG_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <fontforge-config.h>
 
 enum multi_dlg_question_type { mdq_openpath, mdq_savepath, mdq_string, mdq_choice };
@@ -72,5 +76,9 @@ typedef struct multi_dlg_spec {
 } MultiDlgSpec;
 
 extern void multiDlgFree(MultiDlgSpec *dlg, int do_top);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_MULTIDIALOG_H */

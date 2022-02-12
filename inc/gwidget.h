@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_GWIDGET_H
 #define FONTFORGE_GWIDGET_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "gdraw.h"
 #include "ggadget.h"
 #include "gprogress.h"
@@ -136,5 +140,9 @@ extern struct hslrgba GWidgetColorA(const char *title,struct hslrgba *defcol,str
 extern GIC *GWidgetCreateInputContext(GWindow w,enum gic_style def_style);
 extern GIC *GWidgetGetInputContext(GWindow w);
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_GWIDGET_H */

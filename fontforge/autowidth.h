@@ -1,6 +1,10 @@
 #ifndef FONTFORGE_AUTOWIDTH_H
 #define FONTFORGE_AUTOWIDTH_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "baseviews.h"
 #include "splinefont.h"
 
@@ -77,5 +81,9 @@ extern real SFGuessItalicAngle(SplineFont *sf);
 extern void FVRemoveKerns(FontViewBase *fv);
 extern void FVRemoveVKerns(FontViewBase *fv);
 extern void FVVKernFromHKern(FontViewBase *fv);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_AUTOWIDTH_H */

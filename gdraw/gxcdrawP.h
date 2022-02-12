@@ -1,6 +1,10 @@
 #ifndef FONTFORGE_GXCDRAWP_H
 #define FONTFORGE_GXCDRAWP_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <fontforge-config.h>
 
 #ifndef X_DISPLAY_MISSING
@@ -72,5 +76,9 @@ extern int  _GXPDraw_LayoutLineCount(GWindow w);
 extern int  _GXPDraw_LayoutLineStart(GWindow w,int l);
 
 #endif /* X_DISPLAY_MISSING */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_GXCDRAWP_H */

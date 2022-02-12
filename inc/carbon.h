@@ -1,6 +1,10 @@
 #ifndef FONTFORGE_CARBON_H
 #define FONTFORGE_CARBON_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifdef __Mac
 
 #ifdef __GNUC_STDC_INLINE__
@@ -19,5 +23,9 @@
 
 
 #endif /* __Mac */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_CARBON_H */

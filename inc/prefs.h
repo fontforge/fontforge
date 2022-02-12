@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_PREFS_H
 #define FONTFORGE_PREFS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern int cv_auto_goto;
 
 /**
@@ -35,5 +39,9 @@ extern int cv_auto_goto;
  * I've left this little stub of code around for then
  */
 //extern void loadPrefsFiles(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_PREFS_H */

@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_GGADGET_H
 #define FONTFORGE_GGADGET_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "gdraw.h"
 #include "intl.h"
 struct giocontrol;
@@ -642,5 +646,9 @@ extern void GGadgetSetSkipHotkeyProcessing( GGadget *g, int v );
 extern int GGadgetGetSkipHotkeyProcessing( GGadget *g );
 extern void GGadgetSetSkipUnQualifiedHotkeyProcessing( GGadget *g, int v );
 extern int GGadgetGetSkipUnQualifiedHotkeyProcessing( GGadget *g );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_GGADGET_H */

@@ -1,6 +1,10 @@
 #ifndef FONTFORGE_PSREAD_H
 #define FONTFORGE_PSREAD_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <fontforge-config.h>
 
 #include "sd.h"
@@ -21,5 +25,9 @@ extern void MatMultiply(real m1[6], real m2[6], real to[6]);
 extern void PSFontInterpretPS(FILE *ps, struct charprocs *cp, char **encoding);
 extern void SFSetLayerWidthsStroked(SplineFont *sf, real strokewidth);
 extern void SFSplinesFromLayers(SplineFont *sf, int tostroke);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_PSREAD_H */

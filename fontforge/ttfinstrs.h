@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_TTFINSTRS_H
 #define FONTFORGE_TTFINSTRS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "splinefont.h"
 
 enum ttf_instructions {
@@ -88,5 +92,9 @@ extern uint8_t *_IVParse(SplineFont *sf, char *text, int *len, void (*IVError)(v
 extern char *_IVUnParseInstrs(uint8_t *instrs, int instr_cnt);
 extern char *__IVUnParseInstrs(InstrBase *iv);
 extern int instr_typify(struct instrdata *);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_TTFINSTRS_H */

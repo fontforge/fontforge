@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_CHARVIEW_PRIVATE_H
 #define FONTFORGE_CHARVIEW_PRIVATE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "gdraw.h"
 #include "views.h"
 
@@ -255,5 +259,9 @@ extern void CVMerge(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void CVMergeToLine(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void CVLSelectLayer(CharView *cv, int layer);
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_CHARVIEW_PRIVATE_H */

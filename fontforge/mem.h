@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_MEM_H
 #define FONTFORGE_MEM_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <fontforge-config.h>
 
 #include "basics.h"
@@ -50,5 +54,9 @@ extern int get3byte(FILE *ttf);
 extern int32_t getlong(FILE *ttf);
 extern real getfixed(FILE *ttf);
 extern real get2dot14(FILE *ttf);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_MEM_H */

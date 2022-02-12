@@ -1,6 +1,10 @@
 #ifndef FONTFORGE_AUTOHINT_H
 #define FONTFORGE_AUTOHINT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "edgelist.h"
 #include "splinefont.h"
 
@@ -43,5 +47,9 @@ extern void SFSCAutoHint(SplineChar *sc, int layer, BlueData *bd);
 extern void SplineCharAutoHint(SplineChar *sc, int layer, BlueData *bd);
 extern void _SplineCharAutoHint(SplineChar *sc, int layer, BlueData *bd, struct glyphdata *gd2, int gen_undoes);
 extern void SplineFontAutoHintRefs(SplineFont *_sf, int layer);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_AUTOHINT_H */

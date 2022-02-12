@@ -1,6 +1,10 @@
 #ifndef FONTFORGE_CVUNDOES_H
 #define FONTFORGE_CVUNDOES_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "baseviews.h"
 #include "splinefont.h"
 
@@ -81,5 +85,9 @@ extern void SCDoUndo(SplineChar *sc, int layer);
 extern void SCUndoSetLBearingChange(SplineChar *sc, int lbc);
 extern void *UHintCopy(SplineChar *sc, int docopy);
 extern void UndoesFreeButRetainFirstN(Undoes** undopp, int retainAmount);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_CVUNDOES_H */

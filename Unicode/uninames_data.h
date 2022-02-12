@@ -30,6 +30,10 @@
 #ifndef FONTFORGE_UNINAMES_DATA_H
 #define FONTFORGE_UNINAMES_DATA_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <intl.h>
 #include <ustring.h>
 #include <utype.h>
@@ -34603,5 +34607,9 @@ static char* get_derived_name(unichar_t ch) {
     }
     return NULL;
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_UNINAMES_DATA_H */

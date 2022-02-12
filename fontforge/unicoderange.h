@@ -28,11 +28,19 @@
 #ifndef FONTFORGE_UNICODERANGE_H
 #define FONTFORGE_UNICODERANGE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct rangeinfo {
     const struct unicode_range *range;
     int cnt;
 };
 
 extern struct rangeinfo *SFUnicodeRanges(SplineFont *sf, int include_empty);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_UNICODERANGE_H */

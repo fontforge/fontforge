@@ -54,6 +54,10 @@ capable of using composite.
 #ifndef FONTFORGE_XDRAW_H
 #define FONTFORGE_XDRAW_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <fontforge-config.h>
 
 #ifndef FONTFORGE_CAN_USE_GDK
@@ -392,5 +396,9 @@ void _GXDraw_Wacom_TestEvents(GXDisplay *gdisp);
 
 
 #endif // FONTFORGE_CAN_USE_GDK
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_XDRAW_H */

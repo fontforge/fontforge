@@ -1,6 +1,10 @@
 #ifndef FONTFORGE_SFD_H
 #define FONTFORGE_SFD_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <fontforge-config.h>
 
 #include "splinefont.h"
@@ -134,5 +138,9 @@ extern void visitSFDFragment(FILE *sfd, SplineFont *sf, visitSFDFragmentFunc ufu
 
 extern void SFDDumpUTF7Str(FILE *sfd, const char *_str);
 extern char *SFDReadUTF7Str(FILE *sfd);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_SFD_H */

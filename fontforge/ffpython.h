@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_FFPYTHON_H
 #define FONTFORGE_FFPYTHON_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "flaglist.h"
 #include "splinefont.h"
 #include "views.h"
@@ -206,5 +210,9 @@ extern PyMethodDef module_fontforge_methods[];
 
 PyObject* PyFF_FontForFV(FontViewBase *fv);
 PyObject* PyFF_FontForFV_I(FontViewBase *fv);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_FFPYTHON_H */

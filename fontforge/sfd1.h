@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_SFD1_H
 #define FONTFORGE_SFD1_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* This file contains the data structures needed to read in an old sfd file */
 /* features and lookups and scripts are handled differently. That means that */
 /* the KernPair, KernClass, PST, FPST, AnchorClass, StateMachine data structures */
@@ -125,5 +129,9 @@ extern int SFAddScriptIndex(SplineFont1 *sf,uint32_t *scripts,int scnt);
 extern void SFD_AssignLookups(SplineFont1 *sf);
 
 extern enum uni_interp interp_from_encoding(Encoding *enc, enum uni_interp interp);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_SFD1_H */

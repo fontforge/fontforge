@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_VIEWS_H
 #define FONTFORGE_VIEWS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <fontforge-config.h>
 
 #include "ttfinstrs.h"
@@ -1490,5 +1494,9 @@ extern int CVNearLBearingLine( CharView* cv, real x, real fudge );
 extern void CVMenuConstrain(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e));
 
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_VIEWS_H */

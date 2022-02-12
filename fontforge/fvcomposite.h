@@ -1,6 +1,10 @@
 #ifndef FONTFORGE_FVCOMPOSITE_H
 #define FONTFORGE_FVCOMPOSITE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "splinefont.h"
 
 extern AnchorClass *AnchorClassCursMatch(SplineChar *sc1, SplineChar *sc2, AnchorPoint **_ap1, AnchorPoint **_ap2);
@@ -16,5 +20,9 @@ extern int SFIsRotatable(SplineFont *sf, SplineChar *sc);
 extern int SFIsSomethingBuildable(SplineFont *sf, SplineChar *sc, int layer, int onlyaccents);
 extern void _SCAddRef(SplineChar *sc, SplineChar *rsc, int layer, real transform[6], int selected);
 extern void SCBuildComposit(SplineFont *sf, SplineChar *sc, int layer, BDFFont *bdf, int disp_only, int accent_hint);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_FVCOMPOSITE_H */

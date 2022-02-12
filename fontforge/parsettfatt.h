@@ -1,6 +1,10 @@
 #ifndef FONTFORGE_PARSETTFATT_H
 #define FONTFORGE_PARSETTFATT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "ttf.h"
 
 /* The MATH table */
@@ -23,5 +27,9 @@ extern void readttfmort_glyphsused(FILE *ttf, struct ttfinfo *info);
 extern void readttfopbd(FILE *ttf, struct ttfinfo *info);
 extern void readttfprop(FILE *ttf, struct ttfinfo *info);
 extern void GuessNamesFromGSUB(FILE *ttf, struct ttfinfo *info);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_PARSETTFATT_H */

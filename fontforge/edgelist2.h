@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_EDGELIST2_H
 #define FONTFORGE_EDGELIST2_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "splinefont.h"
 
 struct monotonic;
@@ -80,5 +84,9 @@ typedef struct monotonic {
     double when_set;			/* Debugging */
     struct preintersection *pending;
 } Monotonic;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_EDGELIST2_H */

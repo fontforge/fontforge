@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_GGADGET_P_H
 #define FONTFORGE_GGADGET_P_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "ggadget.h"
 #include "gresedit.h"
 
@@ -620,5 +624,9 @@ extern const char* const* _GGadget_GetImagePath(void);
 extern int _GGadget_ImageInCache(GImage *image);
 
 extern GResInfo ggadget_ri, listmark_ri;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_GGADGET_P_H */

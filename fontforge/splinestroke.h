@@ -1,6 +1,10 @@
 #ifndef FONTFORGE_SPLINESTROKE_H
 #define FONTFORGE_SPLINESTROKE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "splinefont.h"
 
 enum ShapeType {
@@ -39,5 +43,9 @@ extern void SSAppendArc(SplineSet *cur, bigreal major, bigreal minor,
 extern SplineSet *SplineSetStroke(SplineSet *ss, StrokeInfo *si, int order2);
 extern SplineSet *UnitShape(int n);
 extern void FVStrokeItScript(void *_fv, StrokeInfo *si, int pointless_argument);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_SPLINESTROKE_H */

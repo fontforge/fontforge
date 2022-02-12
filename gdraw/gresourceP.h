@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_GRESOURCE_P_H
 #define FONTFORGE_GRESOURCE_P_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "ggadget.h"
 
 int _GResource_FindResName(const char *name, int do_restrict);
@@ -47,5 +51,9 @@ extern int GResourceFindBool(const char *name, int def);
 extern long GResourceFindInt(const char *name, long def);
 extern Color GResourceFindColor(const char *name, Color def);
 extern void GResourceFindFont(const char *resourcename, const char *elemname, GResFont *font);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_GRESOURCE_P_H */

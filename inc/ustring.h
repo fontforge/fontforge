@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_UCHAR_H
 #define FONTFORGE_UCHAR_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <fontforge-config.h>
 
 #include "basics.h"
@@ -233,5 +237,9 @@ int toint( char* v );
 char* tostr( int v );
 
 #pragma pop_macro("PRINTF_FORMAT_ATTRIBUTE")
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_UCHAR_H */

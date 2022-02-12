@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_PSFONT_H
 #define FONTFORGE_PSFONT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "splinefont.h"
 
 /* pfb section headers.
@@ -182,5 +186,9 @@ struct fd2data {
 extern const char (*AdobeStandardEncoding[256]);
 extern const char (*AdobeExpertEncoding[256]);
 extern int copymetadata, copyttfinstr;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_PSFONT_H */

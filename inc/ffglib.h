@@ -22,6 +22,10 @@
 #ifndef FONTFORGE_FFGLIB_H
 #define FONTFORGE_FFGLIB_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define GList  GList_Glib
 #define GMenuItem GMenuItem_GIO
 #define GTimer GTimer_GTK
@@ -42,5 +46,9 @@
 #undef GList
 #undef GMenuItem
 #undef GTimer
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_FFGLIB_H */

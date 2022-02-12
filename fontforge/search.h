@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_SEARCH_H
 #define FONTFORGE_SEARCH_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "baseviews.h"
 #include "splinefont.h"
 
@@ -79,5 +83,9 @@ extern SplineChar *SDFindNext(SearchData *sd);
 extern void FVBReplaceOutlineWithReference(FontViewBase *fv, double fudge);
 extern void FVCorrectReferences(FontViewBase *fv);
 extern void SCSplinePointsUntick(SplineChar *sc, int layer);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_SEARCH_H */

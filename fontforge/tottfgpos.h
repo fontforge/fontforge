@@ -1,6 +1,10 @@
 #ifndef FONTFORGE_TOTTFGPOS_H
 #define FONTFORGE_TOTTFGPOS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "splinefont.h"
 #include "ttf.h"
 
@@ -30,5 +34,9 @@ extern SplineChar **SFGlyphsFromNames(SplineFont *sf, char *names);
 
 /* The MATH table */
 extern void otf_dump_math(struct alltabs *at, SplineFont *sf);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_TOTTFGPOS_H */

@@ -29,6 +29,10 @@
 #ifndef FONTFORGE_SFUNDO_H
 #define FONTFORGE_SFUNDO_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "splinefont.h"
 
 void SFUndoFreeAssociated( struct sfundoes *undo );
@@ -51,5 +55,9 @@ SFUndoes* SFUndoCreateRedo( SFUndoes* undo, SplineFont* sf );
 void SFUndoPushFront( struct sfundoes ** undoes, SFUndoes* undo );
 
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_SFUNDO_H */

@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_GFILE_H
 #define FONTFORGE_GFILE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "basics.h"
 
 /* For mode_t */
@@ -140,5 +144,9 @@ extern char* getLibexecDir_NonWindows(void);
 
 
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_GFILE_H */

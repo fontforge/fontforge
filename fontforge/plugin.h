@@ -1,6 +1,10 @@
 #ifndef FONTFORGE_PLUGIN_H
 #define FONTFORGE_PLUGIN_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #ifndef _NO_PYTHON
 
 #include "ffglib.h"
@@ -35,5 +39,9 @@ extern void PyFF_ImportPlugins(int do_import);
 extern PyObject *PyFF_GetPluginInfo(PyObject *, PyObject *);
 extern PyObject *PyFF_ConfigurePlugins(PyObject *, PyObject *);
 
+
+#ifdef __cplusplus
+}
+#endif
 #endif // _NO_PYTHON
 #endif // FONTFORGE_PLUGIN_H

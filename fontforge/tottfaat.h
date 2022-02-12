@@ -1,6 +1,10 @@
 #ifndef FONTFORGE_TOTTFAAT_H
 #define FONTFORGE_TOTTFAAT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "splinefont.h"
 #include "ttf.h"
 
@@ -24,5 +28,9 @@ extern int16_t *PerGlyphDefBaseline(SplineFont *sf, int *def_baseline);
 extern void FigureBaseOffsets(SplineFont *sf, int def_bsln, int offsets[32]);
 
 extern int Macable(SplineFont *sf, OTLookup *otl);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_TOTTFAAT_H */

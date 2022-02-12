@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_SD_H
 #define FONTFORGE_SD_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 # include "gimage.h"
 
 /* All coordinates are in millimeters */
@@ -206,5 +210,9 @@ extern void InitImportParams(ImportParams *ip);
 extern ImportParams *ImportParamsState(void);
 extern void InitExportParams(ExportParams *ep);
 extern ExportParams *ExportParamsState(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_SD_H */

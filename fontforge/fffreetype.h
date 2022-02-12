@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_FFFREETYPE_H
 #define FONTFORGE_FFFREETYPE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "baseviews.h"
 
 #include <ft2build.h>
@@ -79,5 +83,9 @@ extern void *__FreeTypeFontContext(FT_Library context,
 	SplineFont *sf,SplineChar *sc,FontViewBase *fv,
 	int layer,
 	enum fontformat ff,int flags,void *shared_ftc);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_FFFREETYPE_H */

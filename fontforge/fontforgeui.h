@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_PFAEDITUI_H
 #define FONTFORGE_PFAEDITUI_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <fontforge-config.h>
 
 #include "ffglib.h"
@@ -175,5 +179,9 @@ extern int default_font_filter_index;
 
 #define isprivateuse(enc) ((enc)>=0xe000 && (enc)<=0xf8ff)
 #define issurrogate(enc) ((enc)>=0xd800 && (enc)<=0xd8ff)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_PFAEDITUI_H */

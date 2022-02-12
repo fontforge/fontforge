@@ -1,6 +1,10 @@
 #ifndef FONTFORGE_SPLINEFILL_H
 #define FONTFORGE_SPLINEFILL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "edgelist.h"
 #include "gimage.h"
 #include "splinefont.h"
@@ -32,5 +36,9 @@ extern void BDFPropsFree(BDFFont *bdf);
 extern void FindEdgesSplineSet(SplinePointList *spl, EdgeList *es, int ignore_clip);
 extern void FreeEdges(EdgeList *es);
 extern void PatternPrep(SplineChar *sc, struct brush *brush, bigreal scale);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_SPLINEFILL_H */

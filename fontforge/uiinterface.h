@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_UIINTERFACE_H
 #define FONTFORGE_UIINTERFACE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <fontforge-config.h>
 
 #include "basics.h"
@@ -526,5 +530,9 @@ extern struct clip_interface *clip_interface;
 
 extern const char *NOUI_TTFNameIds(int id);
 extern const char *NOUI_MSLangString(int language);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_UIINTERFACE_H */

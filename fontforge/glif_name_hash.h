@@ -1,6 +1,10 @@
 #ifndef FONTFORGE_GLIF_NAME_HASH_H
 #define FONTFORGE_GLIF_NAME_HASH_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <fontforge-config.h>
 
 struct glif_name_index;
@@ -15,5 +19,9 @@ void glif_name_index_destroy(struct glif_name_index * hash);
 
 void glif_name_track_new(struct glif_name_index * hash, long int gid, const char * glif_name);
 struct glif_name * glif_name_search_glif_name(struct glif_name_index * hash, const char * glif_name);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_GLIF_NAME_HASH_H */

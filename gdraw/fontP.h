@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_FONTP_H
 #define FONTFORGE_FONTP_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <fontforge-config.h>
 
 #include "gdrawP.h"
@@ -54,5 +58,9 @@ typedef struct font_state {
     struct font_name *font_names[26];
     unsigned int names_loaded: 1;
 } FState;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_FONTP_H */

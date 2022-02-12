@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_NONLINEARTRANS_H
 #define FONTFORGE_NONLINEARTRANS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "baseviews.h"
 #include "splinefont.h"
 
@@ -85,5 +89,9 @@ extern int SCNLTrans(SplineChar *sc, int layer, char *x_expr, char *y_expr);
 extern int SSNLTrans(SplineSet *ss, char *x_expr, char *y_expr);
 extern void CVYPerspective(CharViewBase *cv, bigreal x_vanish, bigreal y_vanish);
 extern void FVPointOfView(FontViewBase *fv, struct pov_data *pov);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_NONLINEARTRANS_H */

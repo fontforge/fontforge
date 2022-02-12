@@ -1,6 +1,10 @@
 #ifndef FONTFORGE_SPLINEUTIL2_H
 #define FONTFORGE_SPLINEUTIL2_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "splinefont.h"
 
 #define NICE_PROPORTION	.39
@@ -93,5 +97,9 @@ extern void SPTouchControl(SplinePoint *sp, BasePoint *which, int order2);
 extern void SPWeightedAverageCps(SplinePoint *sp);
 extern void SSOverlapClusterCpAngles(SplineSet *base, bigreal within);
 extern void SSRemoveStupidControlPoints(SplineSet *base);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_SPLINEUTIL2_H */

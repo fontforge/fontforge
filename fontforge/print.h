@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_PRINT_H
 #define FONTFORGE_PRINT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "baseviews.h"
 #include "splinefont.h"
 
@@ -123,5 +127,9 @@ extern void makePatName(char *buffer,
 
 extern unichar_t *PrtBuildDef(SplineFont *sf, void *tf, void (*langsyscallback)(void *tf, int end, uint32_t script, uint32_t lang));
 extern void ScriptPrint(FontViewBase *fv, int type, int32_t *pointsizes, char *samplefile, unichar_t *sample, char *outputfile);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_PRINT_H */

@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_LANGFREQ_H
 #define FONTFORGE_LANGFREQ_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "splinefont.h"
 
 struct letter_frequencies {
@@ -51,5 +55,9 @@ struct lang_frequencies {
 extern char *RandomParaFromScriptLang(uint32_t script, uint32_t lang, SplineFont *sf, struct lang_frequencies *freq);
 extern char **SFScriptLangs(SplineFont *sf, struct lang_frequencies ***_freq);
 extern int SF2Scripts(SplineFont *sf, uint32_t scripts[100]);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_LANGFREQ_H */

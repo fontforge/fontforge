@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_GRESEDIT_H
 #define FONTFORGE_GRESEDIT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "basics.h"
 #include "ggadget.h"
 #include "gresource.h"
@@ -100,5 +104,9 @@ extern int _GResEditInitialize(GResInfo *ri);
 extern void GResEdit(GResInfo *additional,const char *def_res_file,void (*change_res_filename)(const char *));
 extern void GResEditFind( struct resed *resed, char *prefix);
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_GRESEDIT_H */

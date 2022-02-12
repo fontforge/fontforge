@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_MM_H
 #define FONTFORGE_MM_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "baseviews.h"
 #include "splinefont.h"
 
@@ -47,5 +51,9 @@ extern FontViewBase *MMCreateBlendedFont(MMSet *mm, FontViewBase *fv, real blend
 extern int MMReblend(FontViewBase *fv, MMSet *mm);
 extern int MMValid(MMSet *mm, int complain);
 extern void MMKern(SplineFont *sf, SplineChar *first, SplineChar *second, int diff, struct lookup_subtable *sub, KernPair *oldkp);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_MM_H */

@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_COLORP_H
 #define FONTFORGE_COLORP_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
     /* how to convert rgb to grey scale */
 #define LRD	3
 #define LGN	6
@@ -47,5 +51,9 @@
 /* for a mono screen, should a color be white, or black? */
 #define COLOR2WHITE(col)	(COLOR_RED(col)*LRD+COLOR_GREEN(col)*LGN+COLOR_BLUE(col)*LBL>=(LRD+LGN+LBL)*128)
 #define COLOR2BLACK(col)	(COLOR_RED(col)*LRD+COLOR_GREEN(col)*LGN+COLOR_BLUE(col)*LBL< (LRD+LGN+LBL)*128)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_COLORP_H */

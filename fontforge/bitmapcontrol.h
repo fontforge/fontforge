@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_BITMAPCONTROL_H
 #define FONTFORGE_BITMAPCONTROL_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "baseviews.h"
 #include "splinefont.h"
 
@@ -48,5 +52,9 @@ extern int bdfcontrol_lastwhich;
 
 void BitmapsDoIt(CreateBitmapData *bd,int32_t *sizes,int usefreetype);
 extern int BitmapControl(FontViewBase *fv, int32_t *sizes, int isavail, int rasterize);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_BITMAPCONTROL_H */

@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_STEMDB_H
 #define FONTFORGE_STEMDB_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 # include "fontforge.h"
 
 struct segment { 
@@ -218,5 +222,9 @@ extern int IsStemAssignedToPoint( struct pointdata *pd,struct stemdata *stem,int
 extern void GlyphDataFree(struct glyphdata *gd);
 
 extern int UnitsParallel(BasePoint *u1, BasePoint *u2, int strict);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_STEMDB_H */

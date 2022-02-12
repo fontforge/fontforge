@@ -1,6 +1,10 @@
 #ifndef FONTFORGE_SPLINESAVEAFM_H
 #define FONTFORGE_SPLINESAVEAFM_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "splinefont.h"
 
 extern const char *EncodingName(Encoding *map);
@@ -31,5 +35,9 @@ extern void SFLigatureCleanup(SplineFont *sf);
 extern void SFLigaturePrepare(SplineFont *sf);
 extern void SubsNew(SplineChar *to, enum possub_type type, int tag, char *components, SplineChar *default_script);
 extern void TeXDefaultParams(SplineFont *sf);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_SPLINESAVEAFM_H */

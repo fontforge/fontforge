@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_GDRAWP_H
 #define FONTFORGE_GDRAWP_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "basics.h"
 
 #include "gdraw.h"
@@ -274,5 +278,9 @@ extern void _GDraw_ComposeChars(GDisplay *gdisp,GEvent *gevent);
 extern void _GDraw_getimageclut(struct _GImage *base, struct gcol *clut);
 extern const GCol *_GImage_GetIndexedPixel(Color col,RevCMap *rev);
 extern const GCol *_GImage_GetIndexedPixelPrecise(Color col,RevCMap *rev);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_GDRAWP_H */

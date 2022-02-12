@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_UTANVEC_H
 #define FONTFORGE_UTANVEC_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <fontforge-config.h>
 
 #include "splinefont.h"
@@ -128,5 +132,9 @@ extern BasePoint SplineUTanVecAt(Spline *s, bigreal t);
 extern bigreal SplineSolveForUTanVec(Spline *spl, BasePoint ut, bigreal min_t,
                                      bool picky);
 extern void UTanVecTests();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // FONTFORGE_UTANVEC_H

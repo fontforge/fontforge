@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_DELTA_H
 #define FONTFORGE_DELTA_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "baseviews.h"
 #include "splinefont.h"
 
@@ -94,5 +98,9 @@ typedef struct qg_data {
 } QGData;
 
 extern void TopFindQuestionablePoints(struct qg_data *data);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_DELTA_H */

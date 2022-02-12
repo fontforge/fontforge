@@ -1,6 +1,10 @@
 #ifndef FONTFORGE_TOTTF_H
 #define FONTFORGE_TOTTF_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "splinefont.h"
 #include "ttf.h"
 
@@ -29,5 +33,9 @@ extern void SFDummyUpCIDs(struct glyphinfo *gi, SplineFont *sf);
 extern void putfixed(FILE *file, real dval);
 extern void putlong(FILE *file, int val);
 extern void putshort(FILE *file, int sval);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_TOTTF_H */

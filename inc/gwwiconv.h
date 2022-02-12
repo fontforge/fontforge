@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_GWWICONV_H
 #define FONTFORGE_GWWICONV_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <fontforge-config.h>
 
 #include <iconv.h>
@@ -48,5 +52,9 @@
 #endif		/* _LIBICONV_VERSION */
 
 #define iconv_arg2_t ICONV_CONST char **
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_GWWICONV_H */

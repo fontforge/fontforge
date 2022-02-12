@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_SFTEXTFIELDP_H
 #define FONTFORGE_SFTEXTFIELDP_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "../gdraw/ggadgetP.h"
 #include "sflayoutP.h"
 
@@ -95,5 +99,9 @@ extern GGadget *SFTextAreaCreate(struct gwindow *base, GGadgetData *gd,void *dat
 extern void SFTFPopupMenu(SFTextArea *st, GEvent *event);
 
 extern struct gfuncs sftextarea_funcs;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_SFTEXTFIELDP_H */

@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_FFGDK_H
 #define FONTFORGE_FFGDK_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <fontforge-config.h>
 
 #ifdef FONTFORGE_CAN_USE_GDK
@@ -43,5 +47,9 @@
 #undef GTimer
 
 #endif // FONTFORGE_CAN_USE_GDK
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_FFGDK_H */

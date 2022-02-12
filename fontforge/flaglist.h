@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_FLAGLIST_H
 #define FONTFORGE_FLAGLIST_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "basics.h"
 
 struct flaglist { const char *name; int flag; };
@@ -36,5 +40,9 @@ struct flaglist { const char *name; int flag; };
 
 extern int FindFlagByName( struct flaglist *flaglist, const char *name );
 extern const char *FindNameOfFlag( struct flaglist *flaglist, int flag );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_FLAGLIST_H */

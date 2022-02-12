@@ -1,6 +1,10 @@
 #ifndef FONTFORGE_BVEDIT_H
 #define FONTFORGE_BVEDIT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "baseviews.h"
 #include "splinefont.h"
 
@@ -26,5 +30,9 @@ extern void BCUnlinkThisReference(struct fontviewbase *fv, BDFChar *bc);
 extern void BDFCharFindBounds(BDFChar *bc, IBounds *bb);
 extern void BDFFloatFree(BDFFloat *sel);
 extern void skewselect(BVTFunc *bvtf, real t);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_BVEDIT_H */

@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_EDGELIST_H
 #define FONTFORGE_EDGELIST_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "splinefont.h"
 
 typedef struct hints {
@@ -131,5 +135,9 @@ typedef struct eilist {
     unsigned leavetiny: 1;
     enum overlap_type ot;
 } EIList;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_EDGELIST_H */

@@ -28,9 +28,17 @@
 #ifndef FONTFORGE_FONTFORGEVW_H
 #define FONTFORGE_FONTFORGEVW_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "baseviews.h"
 #include "fontforge.h"
 #include "gfile.h"
 #include "gimage.h"
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_FONTFORGEVW_H */

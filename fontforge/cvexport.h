@@ -1,6 +1,10 @@
 #ifndef FONTFORGE_CVEXPORT_H
 #define FONTFORGE_CVEXPORT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "splinefont.h"
 #include "sd.h"
 
@@ -18,5 +22,9 @@ extern int ExportSVG(char *filename, SplineChar *sc, int layer,
                      ExportParams *ep);
 extern void ScriptExport(SplineFont *sf, BDFFont *bdf, int format, int gid,
                          char *format_spec, EncMap *map,ExportParams *ep);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_CVEXPORT_H */

@@ -1,6 +1,10 @@
 #ifndef FONTFORGE_SPLINEORDER2_H
 #define FONTFORGE_SPLINEORDER2_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "splinefont.h"
 
 extern SplinePoint *SplineTtfApprox(Spline *ps);
@@ -25,5 +29,9 @@ extern void SplinePointNextCPChanged2(SplinePoint *sp);
 extern void SplinePointPrevCPChanged2(SplinePoint *sp);
 extern void SplineRefigure2(Spline *spline);
 extern void SplineRefigureFixup(Spline *spline);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_SPLINEORDER2_H */

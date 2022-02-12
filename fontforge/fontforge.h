@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_PFAEDIT_H
 #define FONTFORGE_PFAEDIT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <fontforge-config.h>
 
 #include "basics.h"
@@ -76,5 +80,9 @@ extern int quiet;
 extern MacFeat *default_mac_feature_map;
 
 extern int fontforge_main(int, char **);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_PFAEDIT_H */

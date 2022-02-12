@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_BASEVIEWS_H
 #define FONTFORGE_BASEVIEWS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "ffglib.h"
 #include "splinefont.h"
 #include "sd.h"
@@ -448,5 +452,9 @@ extern void AutoKern2(SplineFont *sf, int layer,SplineChar **left,SplineChar **r
 extern void MVSelectFirstKerningTable(struct metricsview *mv);
 
 extern float joinsnap;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_BASEVIEWS_H */

@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_GICONS_H
 #define FONTFORGE_GICONS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern GImage _GIcon_unknown;
 extern GImage _GIcon_object;
 extern GImage _GIcon_updir;
@@ -62,5 +66,9 @@ extern GImage _GIcon_backarrow;
 extern GImage _GIcon_forwardarrow;
 
 extern void InitChooserIcons(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_GICONS_H */

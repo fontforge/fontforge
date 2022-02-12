@@ -1,6 +1,10 @@
 #ifndef FONTFORGE_FVFONTS_H
 #define FONTFORGE_FVFONTS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "baseviews.h"
 #include "splinefont.h"
 
@@ -30,5 +34,9 @@ extern void __GlyphHashFree(struct glyphnamehash *hash);
 extern void MergeFont(FontViewBase *fv, SplineFont *other, int preserveCrossFontKerning);
 extern void SFFinishMergeContext(struct sfmergecontext *mc);
 extern void SFHashGlyph(SplineFont *sf, SplineChar *sc);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_FVFONTS_H */

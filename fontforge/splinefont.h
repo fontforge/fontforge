@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_SPLINEFONT_H
 #define FONTFORGE_SPLINEFONT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "basics.h"
 #include "dlist.h"
 #include "gwwiconv.h"
@@ -2708,5 +2712,9 @@ static inline void freelocale_hack(locale_t dataset) {
 #endif
 
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_SPLINEFONT_H */

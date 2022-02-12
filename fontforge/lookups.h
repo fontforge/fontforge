@@ -1,6 +1,10 @@
 #ifndef FONTFORGE_LOOKUPS_H
 #define FONTFORGE_LOOKUPS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "splinefont.h"
 #include "uiinterface.h"
 
@@ -98,5 +102,9 @@ extern void SFRemoveUnusedLookupSubTables(SplineFont *sf, int remove_incomplete_
 extern void SFSubTablesMerge(SplineFont *_sf, struct lookup_subtable *subfirst, struct lookup_subtable *subsecond);
 extern void SllkFree(struct sllk *sllk, int sllk_cnt);
 extern void SLMerge(FeatureScriptLangList *into, struct scriptlanglist *fsl);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_LOOKUPS_H */

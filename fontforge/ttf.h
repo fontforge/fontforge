@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_TTF_H
 #define FONTFORGE_TTF_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "psfont.h"		/* for struct fddata */
 
 #define MAC_DELETED_GLYPH_NAME	"<Delete>"
@@ -799,5 +803,9 @@ extern struct macsettingname {
 extern struct ttf_table *SFFindTable(SplineFont *sf,uint32_t tag);
 extern int TTF__getcvtval(SplineFont *sf,int val);
 extern int TTF_getcvtval(SplineFont *sf,int val);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_TTF_H */

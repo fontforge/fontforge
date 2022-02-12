@@ -30,6 +30,10 @@
 #ifndef FONTFORGE_CONFIG_H
 #define FONTFORGE_CONFIG_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* The tagged version of FontForge. Additional versioning information in fontforge-version-extras.h */
 #define FONTFORGE_VERSION "@PROJECT_VERSION@"
 
@@ -160,5 +164,9 @@
 /*  why things are worse so I'm leaving the code in to play with              */
 /*                                                                            */
 /* #define FONTFORGE_CONFIG_PS_REFS_GET_SUBRS                                 */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_CONFIG_H */

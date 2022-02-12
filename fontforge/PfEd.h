@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_PFED_H
 #define FONTFORGE_PFED_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* The PfEd table (from PfaEdit, former name of FontForge) is designed to   */
 /*  store information useful for editing the font. This includes stuff like */
 /*  guidelines, background layers, spiro layers, comments, lookup names, etc*/
@@ -215,5 +219,9 @@
 #  define SPIRO_END		'z'
 # endif
 # define SPIRO_CLOSE_CONTOUR	'}'
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_PFED_H */

@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_HOTKEYS_H
 #define FONTFORGE_HOTKEYS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "basics.h"
 #include "dlist.h"
 #include "gdraw.h"
@@ -232,5 +236,9 @@ extern int HotkeyParse( Hotkey* hk, const char *shortcut );
  */
 extern void hotkeySystemSetCanUseMacCommand( int v );
 extern int hotkeySystemGetCanUseMacCommand(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_HOTKEYS_H */

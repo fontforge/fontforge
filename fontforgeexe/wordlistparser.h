@@ -29,6 +29,10 @@
 #ifndef FONTFORGE_WORDLISTPARSER_H
 #define FONTFORGE_WORDLISTPARSER_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "ffglib.h"
 #include "splinefont.h"
 
@@ -117,5 +121,9 @@ extern WordListLine WordlistEscapedInputStringToParsedDataComplex(
     const unichar_t* input_const,
     WordlistEscapedInputStringToRealString_getFakeUnicodeOfScFunc getUnicodeFunc,
     void* udata );
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_WORDLISTPARSER_H */

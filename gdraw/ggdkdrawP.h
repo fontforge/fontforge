@@ -30,6 +30,10 @@
 #ifndef FONTFORGE_GGDKDRAWP_H
 #define FONTFORGE_GGDKDRAWP_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <fontforge-config.h>
 
 #ifdef FONTFORGE_CAN_USE_GDK
@@ -320,5 +324,9 @@ void _GGDKDrawCocoa_SetClipboardText(const char *text);
 // END functions in ggdkcocoa.m
 
 #endif // FONTFORGE_CAN_USE_GDK
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_GGDKDRAWP_H */

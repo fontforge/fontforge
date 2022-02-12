@@ -28,8 +28,16 @@
 #ifndef FONTFORGE_SCRIPTFUNCS_H
 #define FONTFORGE_SCRIPTFUNCS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "scripting.h"
 
 #include "glyphcomp.h"
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_SCRIPTFUNCS_H */

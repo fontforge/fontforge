@@ -1,6 +1,10 @@
 #ifndef FONTFORGE_NAMELIST_H
 #define FONTFORGE_NAMELIST_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "splinefont.h"
 
 extern char **AllGlyphNames(int uni, NameList *for_this_font, SplineChar *sc);
@@ -16,5 +20,9 @@ extern NameList *NameListByName(const char *name);
 extern void LoadNamelistDir(char *dir);
 extern void SFRenameGlyphsToNamelist(SplineFont *sf, NameList *new);
 extern void SFTemporaryRestoreGlyphNames(SplineFont *sf, char **former);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_NAMELIST_H */

@@ -1,6 +1,10 @@
 #ifndef FONTFORGE_USERMENU_H
 #define FONTFORGE_USERMENU_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "ggadget.h"
 
 extern SplineChar *sc_active_in_ui;
@@ -25,5 +29,9 @@ void fv_tl2listcheck(GWindow gw, struct gmenuitem *mi, GEvent *e);
 void RegisterMenuItem(menu_info_func func, menu_info_check check,
                       menu_info_data data, int flags,
                       char *shortcut_str, char **submenu_names);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_USERMENU_H */

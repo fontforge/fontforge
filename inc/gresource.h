@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_GRESOURCE_H
 #define FONTFORGE_GRESOURCE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "gdraw.h"
 #include "ggadget.h"
 
@@ -71,5 +75,9 @@ int ResStrToFontRequest(const char *resname, FontRequest *rq);
 void GResourceSetProg(const char *prog);
 void GResourceAddResourceFile(const char *filename,const char *prog,int warn);
 void GResourceAddResourceString(const char *string,const char *prog);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_GRESOURCE_H */

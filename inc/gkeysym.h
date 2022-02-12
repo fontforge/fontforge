@@ -1,6 +1,10 @@
 #ifndef FONTFORGE_GKEYSYM_H
 #define FONTFORGE_GKEYSYM_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <fontforge-config.h>
 
 #ifdef FONTFORGE_CAN_USE_GDK
@@ -433,5 +437,9 @@ SOFTWARE.
 #endif /* FONTFORGE_CAN_USE_GDK */
 
 int GKeysymIsModifier(uint16_t keysym);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_GKEYSYM_H */

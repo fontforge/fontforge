@@ -28,9 +28,17 @@
 #ifndef FONTFORGE_ZAPFNOMEN_H
 #define FONTFORGE_ZAPFNOMEN_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern char *zapfnomen[];
 extern short zapfwx[];
 extern short zapfbb[][4];
 extern char zapfexists[];
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_ZAPFNOMEN_H */

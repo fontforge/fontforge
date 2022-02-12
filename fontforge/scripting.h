@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_SCRIPTING_H
 #define FONTFORGE_SCRIPTING_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <fontforge-config.h>
 
 #include "baseviews.h"
@@ -164,5 +168,9 @@ extern char **GetFontNames(char *filename, int do_slow);
 extern void ProcessNativeScript(int argc, char *argv[], FILE *script);
 extern void CheckIsScript(int argc, char *argv[]);
 extern void ExecuteScriptFile(FontViewBase *fv, SplineChar *sc, char *filename);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_SCRIPTING_H */

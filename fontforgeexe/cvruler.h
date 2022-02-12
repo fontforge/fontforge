@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_CVRULER_H
 #define FONTFORGE_CVRULER_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "gdraw.h"
 #include "views.h"
 
@@ -42,5 +46,9 @@ extern Color measuretoolwindowbackgroundcol;
 extern Color measuretoolwindowforegroundcol;
 
 extern void CVRulerExpose(GWindow pixmap,CharView *cv);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_CVRULER_H */

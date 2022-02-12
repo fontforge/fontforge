@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_SAVEFONT_H
 #define FONTFORGE_SAVEFONT_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <fontforge-config.h>
 
 #include "splinefont.h"
@@ -75,6 +79,10 @@ extern int GenerateScript(SplineFont *sf, char *filename, const char *bitmaptype
 
 #ifdef FONTFORGE_CONFIG_WRITE_PFM
 extern int WritePfmFile(char *filename, SplineFont *sf, EncMap *map, int layer);
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* FONTFORGE_SAVEFONT_H */

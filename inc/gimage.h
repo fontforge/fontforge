@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_GIMAGE_H
 #define FONTFORGE_GIMAGE_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "basics.h"
 
 typedef uint32_t Color;
@@ -190,5 +194,9 @@ extern void gColor2Hslrgb(struct hslrgb *col,Color from);
 extern void gColor2Hslrgba(struct hslrgba *col,Color from);
 extern Color gHslrgb2Color(struct hslrgb *col);
 extern Color gHslrgba2Color(struct hslrgba *col);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_GIMAGE_H */

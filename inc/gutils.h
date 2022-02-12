@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_GUTILS_H
 #define FONTFORGE_GUTILS_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include <fontforge-config.h>
 
 #include <sys/stat.h>
@@ -37,5 +41,9 @@ extern const char *GetAuthor(void);
 extern time_t GetTime(void);
 extern time_t GetST_MTime(struct stat s);
 extern void help(const char *filename, const char *section);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_GUTILS_H */

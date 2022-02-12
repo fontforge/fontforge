@@ -28,6 +28,10 @@
 #ifndef FONTFORGE_GDRAW_H
 #define FONTFORGE_GDRAW_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "gimage.h"
 
 enum font_style { fs_none, fs_italic=1, fs_smallcaps=2, fs_condensed=4, fs_extended=8, fs_vertical=16 };
@@ -458,5 +462,9 @@ extern void GDrawError(const char *fmt,...);
 
 extern int GImageGetScaledWidth(GWindow gw, GImage *img);
 extern int GImageGetScaledHeight(GWindow gw, GImage *img);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_GDRAW_H */
