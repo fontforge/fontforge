@@ -27,13 +27,13 @@
 
 #include <fontforge-config.h>
 
-#ifdef FONTFORGE_CAN_USE_GDK
+#ifdef X_DISPLAY_MISSING
 
 void GDrawEnableCairo(int on) {
     /* With GDK, Cairo is always enabled. */
 }
 
-#else // FONTFORGE_CAN_USE_GDK
+#else // X_DISPLAY_MISSING
 
 #include "fontP.h"
 #include "gxcdrawP.h"

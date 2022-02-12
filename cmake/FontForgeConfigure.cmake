@@ -84,8 +84,12 @@ function(fontforge_generate_config template destination)
     set(X_DISPLAY_MISSING 1)
   endif()
 
-  if(ENABLE_GUI AND NOT ENABLE_X11)
+  if(ENABLE_GUI AND NOT ENABLE_X11 AND NOT ENABLE_QT)
     set(FONTFORGE_CAN_USE_GDK 1)
+  endif()
+
+  if(ENABLE_GUI AND ENABLE_QT)
+    set(FONTFORGE_CAN_USE_QT 1)
   endif()
 
   set(FONTFORGE_CAN_USE_WOFF2 ${ENABLE_WOFF2_RESULT})

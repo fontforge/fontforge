@@ -369,6 +369,9 @@ unichar_t *GDrawKeysyms[] = {
 };
 
 int GKeysymIsModifier(uint16_t keysym) {
+#ifdef FONTFORGE_CAN_USE_QT
+    return false; // FIXME
+#else
     switch(keysym) {
         case GK_Shift_L:
         case GK_Shift_R:
@@ -386,4 +389,5 @@ int GKeysymIsModifier(uint16_t keysym) {
         default:
             return false;
     }
+#endif
 }

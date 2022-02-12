@@ -15117,7 +15117,7 @@ Py_RETURN( self );
 
 static PyObject *PyFFFont_addAnchorClass(PyFF_Font *self, PyObject *args) {
     SplineFont *sf;
-    char *subtable, *anchor_name, *typename;
+    char *subtable, *anchor_name, *type_name;
     struct lookup_subtable *sub;
     AnchorClass *ac;
     int ac_type, aptype;
@@ -15125,16 +15125,16 @@ static PyObject *PyFFFont_addAnchorClass(PyFF_Font *self, PyObject *args) {
     if ( CheckIfFontClosed(self) )
 return (NULL);
     sf = self->fv->sf;
-    if ( !PyArg_ParseTuple(args,"ss|s", &subtable, &anchor_name, &typename ))
+    if ( !PyArg_ParseTuple(args,"ss|s", &subtable, &anchor_name, &type_name ))
 return( NULL );
 
     sub = SFFindLookupSubtable(sf,subtable);
-    if ( sub==NULL && !typename ) {
+    if ( sub==NULL && !type_name ) {
 	PyErr_Format(PyExc_EnvironmentError, "No subtable named %s", subtable );
 return( NULL );
     }
     else if ( sub==NULL) {
-        aptype = FlagsFromString(typename,ap_types,"anchor type");
+        aptype = FlagsFromString(type_name,ap_types,"anchor type");
         ac_type = aptype==at_basechar                           ? act_mark :
                         aptype==at_baselig                      ? act_mklg :
                         aptype==at_cexit || aptype==at_centry   ? act_curs :

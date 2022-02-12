@@ -27,6 +27,7 @@
 
 #include <fontforge-config.h>
 
+#include "ffglib.h"
 #include "fontP.h"
 #include "gdrawP.h"
 #include "gresource.h"

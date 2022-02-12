@@ -598,11 +598,11 @@ static void bSizeOf(Context *c) {
 }
 
 static void bTypeOf(Context *c) {
-    static const char *typenames[] = { "Integer", "Real", "String", "Unicode", "LValue",
+    static const char *type_names[] = { "Integer", "Real", "String", "Unicode", "LValue",
 	    "Array", "Array", "LValue", "LValue", "LValue", "Void" };
 
     c->return_val.type = v_str;
-    c->return_val.u.sval = copy( typenames[c->a.vals[1].type] );
+    c->return_val.u.sval = copy( type_names[c->a.vals[1].type] );
 }
 
 static void bStrlen(Context *c) {

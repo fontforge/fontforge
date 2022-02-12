@@ -1,4 +1,4 @@
-/* Copyright (C) 2000-2012 by George Williams */
+/* Copyright (C) 2016 by Jeremy Tan */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -9,9 +9,6 @@
  * Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation
  * and/or other materials provided with the distribution.
-
- * The name of the author may not be used to endorse or promote products
- * derived from this software without specific prior written permission.
 
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
  * WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
@@ -25,34 +22,11 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FONTFORGE_FONTP_H
-#define FONTFORGE_FONTP_H
-
 #include <fontforge-config.h>
 
-#include "gdrawP.h"
-#ifndef FONTFORGE_CAN_USE_GDK
-#  include "gxdrawP.h"
-#elif FONTFORGE_CAN_USE_QT
-#  include "gqtdrawP.h"
-#else
-#  include "ggdkdrawP.h"
-#endif
+#ifdef FONTFORGE_CAN_USE_QT
 
-struct font_instance {
-    FontRequest rq;		/* identification of this instance */
-#ifndef FONTFORGE_CAN_USE_QT
-    PangoFontDescription *pango_fd;
-#  ifndef _NO_LIBCAIRO
-    PangoFontDescription *pangoc_fd;
-#  endif
-#endif
-};
+#include "gqtdrawP.h"
 
-typedef struct font_state {
-    int res;
-    struct font_name *font_names[26];
-    unsigned int names_loaded: 1;
-} FState;
 
-#endif /* FONTFORGE_FONTP_H */
+#endif // FONTFORGE_CAN_USE_QT

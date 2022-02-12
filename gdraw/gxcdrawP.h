@@ -3,7 +3,7 @@
 
 #include <fontforge-config.h>
 
-#ifndef FONTFORGE_CAN_USE_GDK
+#ifndef X_DISPLAY_MISSING
 
 #include "gxdrawP.h"
 
@@ -71,6 +71,6 @@ extern void _GXPDraw_LayoutSetWidth(GWindow w, int width);
 extern int  _GXPDraw_LayoutLineCount(GWindow w);
 extern int  _GXPDraw_LayoutLineStart(GWindow w,int l);
 
-#endif /* FONTFORGE_CAN_USE_GDK */
+#endif /* X_DISPLAY_MISSING */
 
 #endif /* FONTFORGE_GXCDRAWP_H */

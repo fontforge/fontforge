@@ -39,6 +39,8 @@ add_library(gdraw STATIC
   gmatrixedit.c
   gmenu.c
   gprogress.c
+  gqtdraw.cc
+  gqtdrawP.h
   gradio.c
   gresedit.c
   gresource.c
@@ -69,6 +71,10 @@ if(ENABLE_X11)
     X11::Xkb
     Cairo::Cairo
     Pango::Pango
+  )
+elseif(ENABLE_QT)
+  target_link_libraries(gdraw PUBLIC
+    Qt5::Widgets
   )
 else()
   if(APPLE)
