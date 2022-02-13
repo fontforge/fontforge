@@ -770,6 +770,6 @@ struct hslrgb GWidgetColor(const char *title,struct hslrgb *defcol,struct hslrgb
     def.alpha = 1.0;
     d = &def;
     temp = GWidgetColorA(title,d,u);
-    memcpy(&ret,&temp,sizeof(ret));
+    memcpy(&ret,&temp,sizeof(struct hslrgb));
 return( ret );
 }

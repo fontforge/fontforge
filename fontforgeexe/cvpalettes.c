@@ -29,6 +29,7 @@
 
 #include "cvundoes.h"
 #include "fontforgeui.h"
+#include "gresedit.h"
 #include "spiro.h"
 #include "splinefill.h"
 #include "splineorder2.h"
@@ -38,7 +39,6 @@
 
 #include "charview_private.h"
 #include "gkeysym.h"
-#include "gresource.h"
 #include "hotkeys.h"
 #include "splinefont.h"
 #include "ustring.h"
@@ -53,14 +53,15 @@ float rr_radius=0;
 int ps_pointcnt=6;
 float star_percent=1.7320508;	/* Regular 6 pointed star */
 extern int interpCPsOnMotion;
+extern Color cvpalettefgcol;
+extern Color cvpalettebgcol;
+extern Color cvpaletteactborcol;
+extern Color cvbutton3dedgelightcol;
+extern Color cvbutton3dedgedarkcol;
 
 static void CVLCheckLayerCount(CharView *cv, int resize);
 
 extern void CVDebugFree(DebugView *dv);
-
-extern GBox _ggadget_Default_Box;
-#define ACTIVE_BORDER   (_ggadget_Default_Box.active_border)
-#define MAIN_FOREGROUND (_ggadget_Default_Box.main_foreground)
 
 extern GDevEventMask input_em[];
 extern const int input_em_cnt;
@@ -104,7 +105,8 @@ static GCursor tools[cvt_max+1] = { ct_pointer }, spirotools[cvt_max+1];
 enum cvtools cv_b1_tool = cvt_pointer, cv_cb1_tool = cvt_pointer,
 	     cv_b2_tool = cvt_magnify, cv_cb2_tool = cvt_ruler;
 
-static GFont *toolsfont=NULL, *layersfont=NULL;
+GResFont toolspalette_font = GRESFONT_INIT("400 10px " SANS_UI_FAMILIES);
+GResFont layerspalette_font = GRESFONT_INIT("400 10px " SANS_UI_FAMILIES);
 
 #define CV_LAYERS_WIDTH		104
 #define CV_LAYERS_HEIGHT	100
@@ -187,7 +189,7 @@ static GWindow CreatePalette(GWindow w, GRect *pos, int (*eh)(GWindow,GEvent *),
     }
     wattrs->mask |= wam_bordcol|wam_bordwidth;
     wattrs->border_width = 1;
-    wattrs->border_color = GDrawGetDefaultForeground(NULL);
+    wattrs->border_color = cvpalettefgcol;
 
     newpos.x = pt.x; newpos.y = pt.y; newpos.width = pos->width; newpos.height = pos->height;
     wattrs->mask|= wam_positioned;
@@ -1010,8 +1012,6 @@ static IJ getIJFromMouse( CharView* cv, int mx, int my )
  */
 
 void cvp_draw_relief(GWindow pixmap, GImage *iconimg, int iconx, int icony, int selected) {
-	extern Color cvbutton3dedgelightcol; // Default 0xe0e0e0.		
-	extern Color cvbutton3dedgedarkcol; // Default 0x707070.
 	int iconw = iconimg->u.image->width;
 	int iconh = iconimg->u.image->height;
 	int norm = !selected;
@@ -1073,7 +1073,7 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
     normbuttons[0][3][1] = canspiro ? &GIcon_spiroup : &GIcon_spirodisabled;
 
     GDrawPushClip(pixmap,r,&old);
-    GDrawFillRect(pixmap,r,GDrawGetDefaultBackground(NULL));
+    GDrawFillRect(pixmap,r,cvpalettebgcol);
     GDrawSetLineWidth(pixmap,0);
 
     ToolsExposeVisitorData d;
@@ -1083,15 +1083,15 @@ static void ToolsExpose(GWindow pixmap, CharView *cv, GRect *r) {
     int bottomOfMainIconsY = d.maxicony + d.lastIconHeight;
     
     
-    GDrawSetFont(pixmap,toolsfont);
+    GDrawSetFont(pixmap,toolspalette_font.fi);
     temp.x = 52-16;
     temp.y = bottomOfMainIconsY;
     temp.width = 16;
     temp.height = 4*12;
-    GDrawFillRect(pixmap,&temp,GDrawGetDefaultBackground(NULL));
+    GDrawFillRect(pixmap,&temp,cvpalettebgcol);
     for ( j=0; j<4; ++j ) {
 	GDrawDrawText(pixmap,2,bottomOfMainIconsY+j*getSmallIconsHeight()+10,
-		      (unichar_t *) _Mouse[j],-1,GDrawGetDefaultForeground(NULL));
+		      (unichar_t *) _Mouse[j],-1,cvpalettefgcol);
 	if ( (&cv->b1_tool)[j]!=cvt_none && smalls[(&cv->b1_tool)[j]])
 	    GDrawDrawImage(pixmap,smalls[(&cv->b1_tool)[j]],NULL,52-16,bottomOfMainIconsY+j*getSmallIconsHeight());
     }
@@ -1478,7 +1478,6 @@ return( true );
 GWindow CVMakeTools(CharView *cv) {
     GRect r;
     GWindowAttrs wattrs;
-    FontRequest rq;
 
     if ( cvtools!=NULL )
 return( cvtools );
@@ -1502,15 +1501,6 @@ return( cvtools );
 
     if ( GDrawRequestDeviceEvents(cvtools,input_em_cnt,input_em)>0 ) {
 	/* Success! They've got a wacom tablet */
-    }
-
-    if ( toolsfont==NULL ) {
-	memset(&rq,0,sizeof(rq));
-	rq.utf8_family_name = SANS_UI_FAMILIES;
-	rq.point_size = -10;
-	rq.weight = 400;
-	toolsfont = GDrawInstanciateFont(NULL,&rq);
-	toolsfont = GResourceFindFont("ToolsPalette.Font",toolsfont);
     }
 
     if ( cvvisible[1])
@@ -1667,7 +1657,7 @@ return;
     r.y = layer2.header_height;
     r.height = r.height - layer2.header_height;
     GDrawPushClip(pixmap, &r, &oldclip);
-    GDrawFillRect(pixmap,&r,GDrawGetDefaultBackground(NULL));
+    GDrawFillRect(pixmap,&r,cvpalettebgcol);
 
     GDrawSetDither(NULL, false);	/* on 8 bit displays we don't want any dithering */
 
@@ -1691,7 +1681,7 @@ return;
             r.width = layer2.sb_start - r.x;
             r.y = layer2.header_height + i * CV_LAYERS2_LINE_HEIGHT;
 	    r.height = CV_LAYERS2_LINE_HEIGHT;
-	    GDrawFillRect(pixmap,&r,GDrawGetDefaultForeground(NULL));
+	    GDrawFillRect(pixmap,&r,cvpalettefgcol);
 	}
         GDrawDrawLine(pixmap, r.x, layer2.header_height + i * CV_LAYERS2_LINE_HEIGHT,
                       r.x + r.width, layer2.header_height + i * CV_LAYERS2_LINE_HEIGHT,
@@ -1699,7 +1689,7 @@ return;
 	if ( i==0 || i==1 ) {
 	    str = i==0?_("Guide") : _("Back");
             GDrawDrawText8(pixmap, r.x + 2, layer2.header_height + i * CV_LAYERS2_LINE_HEIGHT + (CV_LAYERS2_LINE_HEIGHT - 12) / 2 + 12,
-		    (char *) str,-1,ll==layer2.active?0xffffff:GDrawGetDefaultForeground(NULL));
+		    (char *) str,-1,ll==layer2.active?cvpalettebgcol:cvpalettefgcol);
 	} else if ( layer2.offtop+i>=layer2.current_layers ) {
     break;
 	} else if ( layer2.layers[layer2.offtop+i]!=NULL ) {
@@ -1726,7 +1716,7 @@ return;
 	    }
 	    // And this comes from above.
             GDrawDrawText8(pixmap, r.x + 2, layer2.header_height + i * CV_LAYERS2_LINE_HEIGHT + (CV_LAYERS2_LINE_HEIGHT - 12) / 2 + 12,
-		    (char *) layername,-1,ll==layer2.active?0xffffff:GDrawGetDefaultForeground(NULL));
+		    (char *) layername,-1,ll==layer2.active?cvpalettebgcol:cvpalettefgcol);
 #endif // 0
 	}
     }
@@ -2002,7 +1992,6 @@ static void CVMakeLayers2(CharView *cv) {
     GGadgetCreateData gcd[25];
     GTextInfo label[25];
     static GBox radio_box = { bt_none, bs_rect, 0, 0, 0, 0, 0, 0, 0, 0, COLOR_DEFAULT, COLOR_DEFAULT, 0, 0, 0, 0, 0, 0, 0 };
-    FontRequest rq;
     int i;
     extern int _GScrollBar_Width;
 
@@ -2030,18 +2019,9 @@ return;
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));
 
-    if ( layersfont==NULL ) {
-	memset(&rq,'\0',sizeof(rq));
-	rq.utf8_family_name = SANS_UI_FAMILIES;
-	rq.point_size = -12;
-	rq.weight = 400;
-	layersfont = GDrawInstanciateFont(cvlayers2,&rq);
-	layersfont = GResourceFindFont("LayersPalette.Font",layersfont);
-    }
-
     for ( i=0; i<sizeof(label)/sizeof(label[0]); ++i )
-	label[i].font = layersfont;
-    layer2.font = layersfont;
+	label[i].font = layerspalette_font.fi;
+    layer2.font = layerspalette_font.fi;
 
     gcd[0].gd.pos.width = GDrawPointsToPixels(cv->gw,_GScrollBar_Width);
     gcd[0].gd.pos.x = CV_LAYERS2_WIDTH-gcd[0].gd.pos.width;
@@ -2257,7 +2237,6 @@ static void LayersExpose(CharView *cv,GWindow pixmap,GEvent *event) {
     GRect r;
     struct _GImage base;
     GImage gi;
-    Color mocolor = ACTIVE_BORDER; /* mouse over color */
     int ww;
 
     int yt = .7*layer_height; /* vertical spacer to add when drawing text in the row */
@@ -2314,11 +2293,11 @@ return;
                 r.x = quadcol; r.width = column_width;
                 r.y = y;
                 r.height = layer_height;
-                GDrawFillRect(pixmap,&r,mocolor);
+                GDrawFillRect(pixmap,&r,cvpaletteactborcol);
             }
             str = ( ll>=0 && ll<cv->b.sc->layer_cnt ? (cv->b.sc->layers[ll].order2? "Q" : "C") : " ");
 	    GDrawDrawText8(pixmap, quadcol, y + yt,
-		    (char *) str,-1,GDrawGetDefaultForeground(NULL));
+		    (char *) str,-1,cvpalettefgcol);
         }
 
          /* draw fg/bg toggle */
@@ -2327,11 +2306,11 @@ return;
                 r.x = fgcol; r.width = column_width;
                 r.y = y;
                 r.height = layer_height;
-                GDrawFillRect(pixmap,&r,mocolor);
+                GDrawFillRect(pixmap,&r,cvpaletteactborcol);
             }
             str = ( ll>=0 && ll<cv->b.sc->layer_cnt ? (cv->b.sc->layers[ll].background? "B" : "F") : "#");
 	    GDrawDrawText8(pixmap, fgcol, y + yt,
-		    (char *) str,-1,GDrawGetDefaultForeground(NULL));
+		    (char *) str,-1,cvpalettefgcol);
         }
 
          /* draw layer thumbnail and label */
@@ -2339,18 +2318,18 @@ return;
             r.x = editcol; r.width = ww-r.x;
 	    r.y = y;
 	    r.height = layer_height;
-	    GDrawFillRect(pixmap,&r,GDrawGetDefaultForeground(NULL));
+	    GDrawFillRect(pixmap,&r,cvpalettefgcol);
 	} else if ( layerinfo.mo_layer==ll && layerinfo.mo_col==CID_EBase ) {
             r.x = editcol; r.width = ww-r.x;
             r.y = y;
             r.height = layer_height;
-            GDrawFillRect(pixmap,&r,mocolor);
+            GDrawFillRect(pixmap,&r,cvpaletteactborcol);
         }
         r.x=editcol;
 	if ( ll==-1 || ll==0 || ll==1) {
 	    str = ll==-1 ? _("Guide") : (ll==0 ?_("Back") : _("Fore")) ;
 	    GDrawDrawText8(pixmap,r.x+2,y + yt,
-		    (char *) str,-1,ll==layerinfo.active?0xffffff:GDrawGetDefaultForeground(NULL));
+		    (char *) str,-1,ll==layerinfo.active?cvpalettebgcol:cvpalettefgcol);
 	} else if ( ll>=layerinfo.current_layers ) {
              break; /* no more layers to draw! */
 	} else if ( ll>=0 && layerinfo.layers[ll]!=NULL ) {
@@ -2365,7 +2344,7 @@ return;
             str = cv->b.sc->parent->layers[ll].name;
             if ( !str || !*str ) str="-";
 	    GDrawDrawText8(pixmap, r.x+2, y + yt,
-		        (char *) str,-1,ll==layerinfo.active?0xffffff:GDrawGetDefaultForeground(NULL));
+		        (char *) str,-1,ll==layerinfo.active?cvpalettebgcol:cvpalettefgcol);
 	}
     }
 
@@ -3254,7 +3233,6 @@ GWindow CVMakeLayers(CharView *cv) {
     GGadgetCreateData gcd[25];
     GTextInfo label[25];
     GGadget *gadget;
-    FontRequest rq;
     extern int _GScrollBar_Width;
     int i=0;
     int viscol=0;
@@ -3265,15 +3243,8 @@ return( cvlayers );
      /* Initialize layerinfo */
     if ( layerinfo.clut==NULL )
 	layerinfo.clut = _BDFClut(4);
-    if ( layersfont==NULL ) {
-	memset(&rq,'\0',sizeof(rq));
-	rq.utf8_family_name = SANS_UI_FAMILIES;
-	rq.point_size = -12;
-	rq.weight = 400;
-	layersfont = GDrawInstanciateFont(cvlayers2,&rq);
-	layersfont = GResourceFindFont("LayersPalette.Font",layersfont);
-    }
-    layerinfo.font = layersfont;
+
+    layerinfo.font = layerspalette_font.fi;
 
      /* Initialize palette window */
     memset(&wattrs,0,sizeof(wattrs));
@@ -3994,7 +3965,6 @@ GWindow BVMakeLayers(BitmapView *bv) {
     GGadgetCreateData gcd[8], boxes[2], *hvarray[5][3];
     GTextInfo label[8];
     static GBox radio_box = { bt_none, bs_rect, 0, 0, 0, 0, 0, 0, 0, 0, COLOR_DEFAULT, COLOR_DEFAULT, 0, 0, 0, 0, 0, 0, 0 };
-    FontRequest rq;
     int i;
 
     if ( bvlayers!=NULL )
@@ -4020,16 +3990,8 @@ return(bvlayers);
     memset(&gcd,0,sizeof(gcd));
     memset(&boxes,0,sizeof(boxes));
 
-    if ( layersfont==NULL ) {
-	memset(&rq,'\0',sizeof(rq));
-	rq.utf8_family_name = SANS_UI_FAMILIES;
-	rq.point_size = -12;
-	rq.weight = 400;
-	layersfont = GDrawInstanciateFont(cvlayers2,&rq);
-	layersfont = GResourceFindFont("LayersPalette.Font",layersfont);
-    }
     for ( i=0; i<sizeof(label)/sizeof(label[0]); ++i )
-	label[i].font = layersfont;
+	label[i].font = layerspalette_font.fi;
 
 /* GT: Abbreviation for "Visible" */
     label[0].text = (unichar_t *) _("V");
@@ -4260,7 +4222,7 @@ static void BVToolsExpose(GWindow pixmap, BitmapView *bv, GRect *r) {
     int dither = GDrawSetDither(NULL,false);
 
     GDrawPushClip(pixmap,r,&old);
-    GDrawFillRect(pixmap,r,GDrawGetDefaultBackground(NULL));
+    GDrawFillRect(pixmap,r,cvpalettebgcol);
     GDrawSetLineWidth(pixmap,0);
     for ( i=0; i<sizeof(buttons)/sizeof(buttons[0]); ++i ) for ( j=0; j<2; ++j ) {
 	GDrawDrawImage(pixmap,buttons[i][j],NULL,j*27+1,i*27+1);

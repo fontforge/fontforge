@@ -30,6 +30,7 @@
 #include "fontforgeui.h"
 #include "fvfonts.h"
 #include "gkeysym.h"
+#include "gresedit.h"
 #include "mathconstants.h"
 #include "splineutil.h"
 #include "ustring.h"
@@ -51,6 +52,11 @@ static char *aspectnames[] = {
     N_("Connectors"),
     NULL
 };
+
+GResFont math_font = GRESFONT_INIT("400 12pt " SANS_UI_FAMILIES);
+GResFont math_boldfont = GRESFONT_INIT("700 12pt " SANS_UI_FAMILIES);
+extern GBox _ggadget_Default_Box;
+#define MAIN_FOREGROUND (_ggadget_Default_Box.main_foreground)
 
 static char *GlyphConstruction_Dlg(GGadget *g, int r, int c);
 static char *MKChange_Dlg(GGadget *g, int r, int c);
@@ -1290,10 +1296,10 @@ static void MKDDraw(MathKernDlg *mkd, GWindow pixmap, GEvent *event) {
 
 	r.x = 10+i*(mkd->cv_width+mkd->mid_space)-1; r.y=mkd->cv_y-1;
 	r.width = mkd->cv_width+1; r.height = mkd->cv_height+1;
-	GDrawDrawRect(pixmap,&r,0);
+	GDrawDrawRect(pixmap,&r,MAIN_FOREGROUND);
 
 	GDrawSetFont(pixmap,cv->inactive ? mkd->plain : mkd->bold);
-	GDrawDrawText8(pixmap,r.x,5+mkd->as,cornernames[i],-1,0);
+	GDrawDrawText8(pixmap,r.x,5+mkd->as,cornernames[i],-1,MAIN_FOREGROUND);
     }
 }
 
@@ -1843,10 +1849,8 @@ void MathKernDialog(SplineChar *sc,int def_layer) {
     GGadgetCreateData cgcd[4][2], tabsetgcd[2];
     GTextInfo label[6];
     GTabInfo aspects[3], corners[5];
-    FontRequest rq;
     int as, ds, ld;
     int i,k;
-    static GFont *mathfont = NULL, *mathbold=NULL;
 
     MathInit();
     MKDInit( &mkd, sc );
@@ -1864,21 +1868,8 @@ void MathKernDialog(SplineChar *sc,int def_layer) {
     pos.height = 400;
     mkd.gw = gw = GDrawCreateTopWindow(NULL,&pos,mkd_e_h,&mkd.cv_topright,&wattrs);
 
-    if ( mathfont==NULL ) {
-	memset(&rq,0,sizeof(rq));
-	rq.utf8_family_name = SANS_UI_FAMILIES;
-	rq.point_size = 12;
-	rq.weight = 400;
-	mathfont = GDrawInstanciateFont(NULL,&rq);
-	mathfont = GResourceFindFont("Math.Font",mathfont);
-
-	GDrawDecomposeFont(mathfont, &rq);
-	rq.weight = 700;
-	mathbold = GDrawInstanciateFont(NULL,&rq);
-	mathbold = GResourceFindFont("Math.BoldFont",mathbold);
-    }
-    mkd.plain = mathfont;
-    mkd.bold = mathbold;
+    mkd.plain = math_font.fi;
+    mkd.bold = math_boldfont.fi;
     GDrawWindowFontMetrics(mkd.gw,mkd.plain,&as,&ds,&ld);
     mkd.fh = as+ds; mkd.as = as;
 

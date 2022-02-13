@@ -34,13 +34,11 @@
 #include <math.h>
 #include <assert.h>
 
-#define UTMARGIN (1e-7)     // Arrived at through testing
 #define UTSOFTMARGIN (1e-5) // Fallback margin for some cases
-#define BPNEAR(bp1, bp2) BPWithin(bp1, bp2, UTMARGIN)
 #define UTRETRY (1e-9)      // Amount of "t" to walk back from the 
                             // ends of degenerate splines to find
                             // a slope.
-
+			    //
 BasePoint MakeUTanVec(bigreal x, bigreal y) {
     BasePoint ret = { 0.0, 0.0 };
     bigreal len = x*x + y*y;
@@ -66,11 +64,11 @@ int UTanVecGreater(BasePoint uta, BasePoint utb) {
     if (uta.y >= 0) {
 	if (utb.y < 0)
 	    return true;
-	return uta.x < utb.x && !BPNEAR(uta, utb);
+	return uta.x < utb.x && !UTNear(uta, utb);
     }
     if (utb.y >= 0)
 	return false;
-    return uta.x > utb.x && !BPNEAR(uta, utb);
+    return uta.x > utb.x && !UTNear(uta, utb);
 }
 
 /* True if rotating from ut1 to ut3 in the specified direction
@@ -83,10 +81,10 @@ int UTanVecsSequent(BasePoint ut1, BasePoint ut2, BasePoint ut3,
                            int ccw) {
     BasePoint tmp;
 
-    if ( BPNEAR(ut1, ut2) )
+    if ( UTNear(ut1, ut2) )
 	return true;
 
-    if ( BPNEAR(ut2, ut3) || BPNEAR(ut1, ut3) )
+    if ( UTNear(ut2, ut3) || UTNear(ut1, ut3) )
 	return false;
 
     if (ccw) {
@@ -154,7 +152,7 @@ bigreal SplineSolveForUTanVec(Spline *spl, BasePoint ut, bigreal min_t,
         return -1;
 
     // Only check t==0 if min_t is negative
-    if ( min_t<0 && BPNEAR(ut, SplineUTanVecAt(spl, 0.0)) )
+    if ( min_t<0 && UTNear(ut, SplineUTanVecAt(spl, 0.0)) )
        return 0.0;
 
     // This is probably over-optimized
@@ -178,14 +176,14 @@ bigreal SplineSolveForUTanVec(Spline *spl, BasePoint ut, bigreal min_t,
     SplineFindExtrema(&ys1d, &te1, &te2);
 
     if (   te1 != -1 && te1 > (min_t+1e-9)
-        && BPNEAR(ut, SplineUTanVecAt(spl, te1)) )
+        && UTNear(ut, SplineUTanVecAt(spl, te1)) )
 	return te1;
     if (   te2 != -1 && te2 > (min_t+1e-9)
-        && BPNEAR(ut, SplineUTanVecAt(spl, te2)) )
+        && UTNear(ut, SplineUTanVecAt(spl, te2)) )
 	return te2;
 
     // Check t==1
-    if ( (min_t+UTRETRY) < 1 && BPNEAR(ut, SplineUTanVecAt(spl, 1.0)) )
+    if ( (min_t+UTRETRY) < 1 && UTNear(ut, SplineUTanVecAt(spl, 1.0)) )
         return 1.0;
 
     if ( picky )
@@ -229,7 +227,7 @@ void UTanVecTests() {
 	    else
 		assert(    UTanVecGreater(ut[j], ut[i])
 		       	&& !UTanVecGreater(ut[i], ut[j]));
-	    assert(!BPNEAR(ut[i], ut[j]));
+	    assert(!UTNear(ut[i], ut[j]));
 	    x = atan2(ut[i].x, ut[i].y);
 	    y = atan2(ut[j].x, ut[j].y);
 	    z = x-y;

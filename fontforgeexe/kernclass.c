@@ -31,6 +31,7 @@
 #include "fontforgeui.h"
 #include "fvfonts.h"
 #include "gkeysym.h"
+#include "gresedit.h"
 #include "lookups.h"
 #include "splinefill.h"
 #include "splineutil.h"
@@ -43,7 +44,9 @@
 
 extern GBox _ggadget_Default_Box;
 #define ACTIVE_BORDER   (_ggadget_Default_Box.active_border)
-#define MAIN_FOREGROUND (_ggadget_Default_Box.main_foreground)
+
+GResFont kernclass_font = GRESFONT_INIT("400 12pt " MONO_UI_FAMILIES);
+Color kernclass_classfgcol = 0x006080;
 
 typedef struct kernclassdlg {
     struct kernclasslistdlg *kcld;
@@ -410,7 +413,7 @@ void KCD_DrawGlyph(GWindow pixmap,int x,int baseline,BDFChar *bdfc,int mag) {
 	base.image_type = it_mono;
 	clut.clut_len = 2;
 	clut.clut[0] = GDrawGetDefaultBackground(NULL);
-	clut.clut[1] = 0x000000;
+	clut.clut[1] = GDrawGetDefaultBackground(NULL);
     } else {
 	int scale, l;
 	Color fg, bg;
@@ -1567,6 +1570,7 @@ static void KCD_Expose(KernClassDlg *kcd,GWindow pixmap,GEvent *event) {
     GRect *area = &event->u.expose.rect;
     GRect rect, select,r;
     GRect clip,old1,old2,old3;
+    Color fg = GDrawGetDefaultForeground(NULL);
     int len, i, j, x, y;
     char buf[100];
     int fcnt, scnt;
@@ -1609,11 +1613,10 @@ return;
     }
 
     for ( i=0 ; kcd->offtop+i<=kcd->first_cnt && (i-1)*kcd->kernh<kcd->height; ++i ) {
-	GDrawDrawLine(pixmap,kcd->xstart,kcd->ystart2+i*kcd->kernh,kcd->xstart+rect.width,kcd->ystart2+i*kcd->kernh,
-		    0x808080);
+	GDrawDrawLine(pixmap,kcd->xstart,kcd->ystart2+i*kcd->kernh,kcd->xstart+rect.width,kcd->ystart2+i*kcd->kernh,fg);
 	if ( i+kcd->offtop<kcd->first_cnt ) {
 	    int err = KCD_NameClass(kcd->sf,buf,sizeof(buf),fclasses[i+kcd->offtop].u.md_str);
-	    int fg = err ? 0xff0000 : 0x006080;
+	    int fg = err ? GDrawGetWarningForeground(NULL) : kernclass_classfgcol;
 	    len = GDrawGetText8Width(pixmap,buf,-1);
 	    if ( len<=kcd->kernw )
 		GDrawDrawText8(pixmap,kcd->xstart+(kcd->kernw-len)/2,kcd->ystart2+i*kcd->kernh+kcd->as+1,
@@ -1629,11 +1632,10 @@ return;
 	}
     }
     for ( i=0 ; kcd->offleft+i<=scnt && (i-1)*kcd->kernw<kcd->fullwidth; ++i ) {
-	GDrawDrawLine(pixmap,kcd->xstart2+i*kcd->kernw,kcd->ystart,kcd->xstart2+i*kcd->kernw,kcd->ystart+rect.height,
-		0x808080);
+	GDrawDrawLine(pixmap,kcd->xstart2+i*kcd->kernw,kcd->ystart,kcd->xstart2+i*kcd->kernw,kcd->ystart+rect.height,fg);
 	if ( i+kcd->offleft<kcd->second_cnt ) {
 	    int err = KCD_NameClass(kcd->sf,buf,sizeof(buf),sclasses[i+kcd->offleft].u.md_str);
-	    int fg = err ? 0xff0000 : 0x006080;
+	    int fg = err ? GDrawGetWarningForeground(NULL) : kernclass_classfgcol;
 	    len = GDrawGetText8Width(pixmap,buf,-1);
 	    if ( len<=kcd->kernw )
 		GDrawDrawText8(pixmap,kcd->xstart2+i*kcd->kernw+(kcd->kernw-len)/2,kcd->ystart+kcd->as+1,
@@ -1665,18 +1667,16 @@ return;
 	    sprintf( buf, "%d", kcd->offsets[(i+kcd->offtop)*kcd->second_cnt+j+kcd->offleft] );
 	    len = GDrawGetText8Width(pixmap,buf,-1);
 	    GDrawDrawText8(pixmap,x+kcd->kernw-3-len,y+kcd->as+1,
-		buf,-1,MAIN_FOREGROUND);
+		buf,-1,fg);
 	}
     }
 
-    GDrawDrawLine(pixmap,kcd->xstart,kcd->ystart2,kcd->xstart+rect.width,kcd->ystart2,
-	    0x000000);
-    GDrawDrawLine(pixmap,kcd->xstart2,kcd->ystart,kcd->xstart2,kcd->ystart+rect.height,
-	    0x000000);
+    GDrawDrawLine(pixmap,kcd->xstart,kcd->ystart2,kcd->xstart+rect.width,kcd->ystart2,fg);
+    GDrawDrawLine(pixmap,kcd->xstart2,kcd->ystart,kcd->xstart2,kcd->ystart+rect.height,fg);
     GDrawPopClip(pixmap,&old2);
     GDrawPopClip(pixmap,&old1);
     --rect.y; ++rect.height;		/* Makes accented letters show better */
-    GDrawDrawRect(pixmap,&rect,0x000000);
+    GDrawDrawRect(pixmap,&rect,fg);
     rect.y += rect.height;
     rect.x += rect.width;
     LogoExpose(pixmap,event,&rect,dm_fore);
@@ -2780,11 +2780,9 @@ void KernClassD(KernClass *kc, SplineFont *sf, int layer, int isv) {
     KernClassDlg *kcd;
     int i, j, kc_width, vi;
     int as, ds, ld, sbsize;
-    FontRequest rq;
     static unichar_t kernw[] = { '-', '1', '2', '3', '4', '5', 0 };
     GWindow gw;
     char titlebuf[300];
-    static GFont *font;
     char sepbuf[40], mkbuf[40];
     struct matrixinit firstmi, secondmi;
 
@@ -2870,15 +2868,7 @@ return;
 
     kc_width = GDrawPixelsToPoints(NULL,pos.width*100/GGadgetScale(100));
 
-    if ( font==NULL ) {
-	memset(&rq,'\0',sizeof(rq));
-	rq.point_size = 12;
-	rq.weight = 400;
-	rq.utf8_family_name = MONO_UI_FAMILIES;
-	font = GDrawInstanciateFont(gw,&rq);
-	font = GResourceFindFont("KernClass.Font",font);
-    }
-    kcd->font = font;
+    kcd->font = kernclass_font.fi;
     GDrawWindowFontMetrics(gw,kcd->font,&as,&ds,&ld);
     kcd->fh = as+ds; kcd->as = as;
     GDrawSetFont(gw,kcd->font);

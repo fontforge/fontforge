@@ -106,6 +106,8 @@ typedef struct ggdkkeystate {
     GdkEventType type;
     guint state;
     guint keyval;
+    guint16 keycode;
+    guint8 group;
 } GGDKKeyState;
 
 typedef struct ggdkdndcontext {
@@ -168,7 +170,6 @@ typedef struct ggdkdisplay { /* :GDisplay */
     struct font_state *fontstate;
     int16 res;
     GGDKWindow groot;
-    Color def_background, def_foreground;
     unsigned int default_visual: 1;
     unsigned int do_dithering: 1;
     unsigned int focusfollowsmouse: 1;

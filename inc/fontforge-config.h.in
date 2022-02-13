@@ -36,6 +36,11 @@
 /* The install prefix configured at configure/compile time, used as a last resort */
 #define FONTFORGE_INSTALL_PREFIX "@CMAKE_INSTALL_PREFIX@"
 
+#define SERIF_UI_FAMILIES "@FONTFORGE_SERIF_FAMILIES@"
+#define SANS_UI_FAMILIES  "@FONTFORGE_UI_FAMILIES@"
+#define LABEL_UI_FAMILIES "@FONTFORGE_LABEL_FAMILIES@"
+#define MONO_UI_FAMILIES  "@FONTFORGE_MONO_FAMILIES@"
+
 /* Platform checks */
 
 #cmakedefine WORDS_BIGENDIAN 1
@@ -44,8 +49,6 @@
 /* Mac specific defines */
 
 #cmakedefine _CursorsMustBe16x16 1
-
-#cmakedefine _Keyboard @_Keyboard@
 
 #cmakedefine __Mac 1
 

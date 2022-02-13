@@ -58,6 +58,7 @@ if(ENABLE_GUI)
     math.c
     metricsview.c
     mmdlg.c
+    multidialog.c
     nonlineartransui.c
     openfontdlg.c
     pluginui.c

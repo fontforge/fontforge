@@ -36,6 +36,7 @@
 #include "gkeysym.h"
 #include "gresource.h"
 #include "ustring.h"
+#include "utype.h"
 
 #include <assert.h>
 #include <math.h>
@@ -543,7 +544,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
 
     // Set background
     if (!(wattrs->mask & wam_backcol) || wattrs->background_color == COLOR_DEFAULT) {
-        wattrs->background_color = gdisp->def_background;
+        wattrs->background_color = _GDraw_res_bg;
     }
     nw->ggc->bg = wattrs->background_color;
     GGDKDrawSetWindowBackground((GWindow)nw, wattrs->background_color);
@@ -678,7 +679,7 @@ static GWindow _GGDKDraw_NewPixmap(GDisplay *disp, GWindow similar, uint16 width
         free(gw);
         return NULL;
     }
-    gw->ggc->bg = gdisp->def_background;
+    gw->ggc->bg = _GDraw_res_bg;
     width &= 0x7fff; // We're always using a cairo surface...
 
     gw->display = gdisp;
@@ -914,24 +915,6 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             gevent.type = event->type == GDK_KEY_PRESS ? et_char : et_charup;
             gevent.u.chr.state = _GGDKDraw_GdkModifierToKsm(((GdkEventKey *)event)->state);
 
-#ifdef GDK_WINDOWING_QUARTZ
-            // On Mac, the Alt/Option key is used for alternate input.
-            // We want accelerators, so translate ourselves, forcing the group to 0.
-            if ((gevent.u.chr.state & ksm_meta) && key->group != 0) {
-                GdkKeymap *km = gdk_keymap_get_for_display(gdisp->display);
-                guint keyval;
-
-                gdk_keymap_translate_keyboard_state(km, key->hardware_keycode,
-                    key->state, 0, &keyval, NULL, NULL, NULL);
-
-                //Log(LOGDEBUG, "Fixed keyval from 0x%x(%s) -> 0x%x(%s)",
-                //	key->keyval, gdk_keyval_name(key->keyval),
-                //	keyval, gdk_keyval_name(keyval));
-
-                key->keyval = keyval;
-            }
-#endif
-
             gevent.u.chr.autorepeat =
                 event->type    == GDK_KEY_PRESS &&
                 gdisp->ks.type == GDK_KEY_PRESS &&
@@ -953,9 +936,11 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
                 gevent.u.chr.chars[0] = gdk_keyval_to_unicode(key->keyval);
             }
 
-            gdisp->ks.type   = key->type;
-            gdisp->ks.keyval = key->keyval;
-            gdisp->ks.state  = key->state;
+            gdisp->ks.group   = key->group;
+            gdisp->ks.keycode = key->hardware_keycode;
+            gdisp->ks.keyval  = key->keyval;
+            gdisp->ks.state   = key->state;
+            gdisp->ks.type    = key->type;
         }
         break;
         case GDK_MOTION_NOTIFY: {
@@ -2238,6 +2223,36 @@ static int GGDKDrawRequestDeviceEvents(GWindow w, int devcnt, struct gdeveventma
     return 0; //Not sure how to handle... For tablets...
 }
 
+static int GGDKDrawShortcutKeyMatches(const GEvent *e, unichar_t ch) {
+    if ((e->type != et_char && e->type != et_charup) || ch == 0) {
+        return false;
+    }
+
+    unichar_t k = toupper(e->u.chr.chars[0]);
+    if (k == ch) {
+        return true;
+    }
+
+    GGDKWindow gw = (GGDKWindow)e->w;
+    if (gw->display->ks.group == 0) {
+        return false;
+    }
+
+    GdkKeymap *km = gdk_keymap_get_for_display(gw->display->display);
+    if (!km) {
+        return false;
+    }
+
+    guint keyval;
+    if (!gdk_keymap_translate_keyboard_state(km, gw->display->ks.keycode,
+        gw->display->ks.state, 0, &keyval, NULL, NULL, NULL)) {
+        return false;
+    }
+
+    k = toupper(gdk_keyval_to_unicode(keyval));
+    return k == ch;
+}
+
 static GTimer *GGDKDrawRequestTimer(GWindow w, int32 time_from_now, int32 frequency, void *userdata) {
     //Log(LOGDEBUG, " ");
     GGDKTimer *timer = calloc(1, sizeof(GGDKTimer));
@@ -2344,6 +2359,7 @@ static struct displayfuncs gdkfuncs = {
     GGDKDrawPostEvent,
     GGDKDrawPostDragEvent,
     GGDKDrawRequestDeviceEvents,
+    GGDKDrawShortcutKeyMatches,
 
     GGDKDrawRequestTimer,
     GGDKDrawCancelTimer,
@@ -2441,25 +2457,19 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *UNUSED(programname)) 
     gdisp->selinfo[sn_user1].sel_atom = gdk_atom_intern_static_string("PRIMARY");
     gdisp->selinfo[sn_user2].sel_atom = gdk_atom_intern_static_string("PRIMARY");
 
-    bool tbf = false, mxc = false;
-    int user_res = 0;
-    GResStruct res[] = {
-        {.resname = "MultiClickTime", .type = rt_int, .val = &gdisp->bs.double_time},
-        {.resname = "MultiClickWiggle", .type = rt_int, .val = &gdisp->bs.double_wiggle},
-        {.resname = "SelectionNotifyTimeout", .type = rt_int, .val = &gdisp->sel_notify_timeout},
-        {.resname = "TwoButtonFixup", .type = rt_bool, .val = &tbf},
-        {.resname = "MacOSXCmd", .type = rt_bool, .val = &mxc},
-        {.resname = "ScreenResolution", .type = rt_int, .val = &user_res},
-        {.resname = NULL},
-    };
-    GResourceFind(res, NULL);
-    gdisp->twobmouse_win = tbf;
-    gdisp->macosx_cmd = mxc;
-
-    // Now finalise the resolution
-    if (user_res > 0) {
-        gdisp->res = user_res;
+    GDrawResourceFind();
+    gdisp->bs.double_time = _GDraw_res_multiclicktime;
+    gdisp->bs.double_wiggle = _GDraw_res_multiclickwiggle;
+    gdisp->sel_notify_timeout = _GDraw_res_selnottime;
+    gdisp->macosx_cmd = _GDraw_res_macosxcmd;
+    gdisp->twobmouse_win = _GDraw_res_twobuttonfixup;
+    if (_GDraw_res_res != 0) {
+        gdisp->res = _GDraw_res_res;
     }
+    if (_GDraw_res_synchronize){
+        gdk_display_sync(gdisp->display);
+    }
+
     pango_cairo_context_set_resolution(gdisp->pangoc_context, gdisp->res);
 
     groot = (GGDKWindow)calloc(1, sizeof(struct ggdkwindow));
@@ -2482,12 +2492,6 @@ G_GNUC_END_IGNORE_DEPRECATIONS
     groot->is_toplevel = true;
     groot->is_visible = true;
     g_object_set_data(G_OBJECT(gdisp->root), "GGDKWindow", groot);
-
-    gdisp->def_background = GResourceFindColor("Background", COLOR_CREATE(0xf5, 0xff, 0xfa));
-    gdisp->def_foreground = GResourceFindColor("Foreground", COLOR_CREATE(0x00, 0x00, 0x00));
-    if (GResourceFindBool("Synchronize", false)) {
-        gdk_display_sync(gdisp->display);
-    }
 
     (gdisp->funcs->init)((GDisplay *) gdisp);
 

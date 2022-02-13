@@ -347,16 +347,16 @@ The File Menu
    :doc:`dialog allowing you to configure various esoteric bits of fontforge </ui/dialogs/prefs>`.
 
    A number of things, like the colors used in FontForge, that might be
-   controlled from a preference window are controlled by
-   :doc:`X Resources </ui/misc/xres>` below.
+   controlled from a preference window are controlled by the
+   :doc:`Appearance Editor </ui/misc/xres>` below.
 
 .. _filemenu.ResEdit:
 
-.. object:: X Resource Editor...
+.. object:: Appearance Editor...
 
-   :doc:`This dialog </ui/misc/resedit>` allows you to edit FontForge's X Resources, you
-   may either save them to a file for perminant storage, or change the current
-   settings for this use of FontForge.
+   :doc:`This dialog </ui/misc/resedit>` allows you to edit FontForge's appearance.
+   You may either save the changes to a file for perminant storage or change the current
+   settings for this use of FontForge (although the latter does not work for all settings).
 
 .. _filemenu.ConfPlugin:
 

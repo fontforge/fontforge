@@ -140,7 +140,6 @@ struct gdisplay {
     struct font_state *fontstate;
     int16 res;
     GWindow groot;
-    Color def_background, def_foreground;
     unsigned int default_visual: 1;
     unsigned int do_dithering: 1;
     unsigned int focusfollowsmouse: 1;
@@ -243,6 +242,7 @@ struct displayfuncs {
     void (*postEvent)(GEvent *e);
     void (*postDragEvent)(GWindow w,GEvent *mouse,enum event_type et);
     int  (*requestDeviceEvents)(GWindow w,int devcnt,struct gdeveventmask *de);
+    int  (*shortcutKeyMatches)(const GEvent *e, unichar_t ch);
 
     GTimer *(*requestTimer)(GWindow w,int32 time_from_now,int32 frequency, void *userdata);
     void (*cancelTimer)(GTimer *timer);
@@ -275,7 +275,6 @@ struct displayfuncs {
 
     void (*PushClipOnly)(GWindow w);
     void (*ClipPreserve)(GWindow w);
-    
 };
 
 extern int16 div_tables[257][2]; // in div_tables.c

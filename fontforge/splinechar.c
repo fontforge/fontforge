@@ -33,7 +33,6 @@
 #include "ffglib.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
-#include "gresource.h"
 #include "lookups.h"
 #include "mem.h"
 #include "parsettf.h"
@@ -682,12 +681,14 @@ return;
 	    ncp.y = sp->me.y + unitnext.y*nextlen;
 	    sp->nextcp = ncp;
 	    if ( sp->next!=NULL && sp->next->order2 )
-		sp->next->to->prevcp = ncp;
+			sp->next->to->prevcp = ncp;
+		SplineRefigure(sp->next);
 	    pcp.x = sp->me.x + unitprev.x*prevlen;
 	    pcp.y = sp->me.y + unitprev.y*prevlen;
 	    sp->prevcp = pcp;
 	    if ( sp->prev!=NULL && sp->prev->order2 )
-		sp->prev->from->nextcp = pcp;
+			sp->prev->from->nextcp = pcp;
+		SplineRefigure(sp->prev);
 	    makedflt = false;
 	}
 	if( pointtype==pt_curve )

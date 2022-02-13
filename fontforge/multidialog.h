@@ -1,4 +1,4 @@
-/* Copyright (C) 2000-2012 by George Williams */
+/* Copyright (C) 2021 by Skef Iterum */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -25,25 +25,52 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#ifndef FONTFORGE_MULTIDIALOG_H
+#define FONTFORGE_MULTIDIALOG_H
+
 #include <fontforge-config.h>
 
-#include "gdraw.h"
-#include "gfile.h"
-#include "gresource.h"
-#include "gresourceP.h"
-#include "ustring.h"
-#include "utype.h"
+enum multi_dlg_question_type { mdq_openpath, mdq_savepath, mdq_string, mdq_choice };
 
-GImage *GResourceFindImage(char *name, GImage *def) {
-    int pos;
-    GImage *ret;
+/* For _open, _save, and _askstr "in" is the default value (if any) and
+ * out is the user-supplied value.
+ *
+ * For _choice "out" is kept NULL and is_checked indicates the user-supplied
+ * value. If "tag" is present it is used to represent the answer value in place
+ * of "in".
+ */
+struct multi_dlg_question;
 
-    pos = _GResource_FindResName(name);
-    if ( pos==-1 )
-return( def );
+typedef struct multi_dlg_answer {
+    void *tag;
+    unsigned int is_default: 1;
+    unsigned int is_checked: 1;
+    char *name;
+    struct multi_dlg_question *question;
+} MultiDlgAnswer;
 
-    if (( ret = GImageRead(_GResource_Res[pos].val))==NULL )
-	ret = def;
+typedef struct multi_dlg_question {
+    void *tag;
+    enum multi_dlg_question_type type;
+    int answer_len;
+    unsigned int multiple: 1;
+    unsigned int checks: 1;
+    unsigned int align: 1;
+    char *label, *dflt, *filter, *str_answer;
+    MultiDlgAnswer *answers;
+} MultiDlgQuestion;
 
-return( ret );
-}
+typedef struct multi_dlg_category {
+    int len;
+    char *label;
+    MultiDlgQuestion *questions;
+} MultiDlgCategory;
+
+typedef struct multi_dlg_spec {
+    int len;
+    MultiDlgCategory *categories;
+} MultiDlgSpec;
+
+extern void multiDlgFree(MultiDlgSpec *dlg, int do_top);
+
+#endif /* FONTFORGE_MULTIDIALOG_H */

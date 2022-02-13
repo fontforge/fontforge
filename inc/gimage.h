@@ -35,6 +35,7 @@ typedef uint32 Color;
 #define COLOR_UNKNOWN		((Color) 0xffffffff)
 #define COLOR_TRANSPARENT	((Color) 0xffffffff)
 #define COLOR_DEFAULT		((Color) 0xfffffffe)
+#define COLOR_WARNING		((Color) 0xfffffffd)
 #define COLOR_WHITE		((Color) 0xffffff)
 #define COLOR_CREATE(r,g,b)	(((r)<<16) | ((g)<<8) | (b))
 #define COLOR_ALPHA(col)	(((col)>>24))

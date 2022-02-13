@@ -30,10 +30,11 @@ The Preferences Window...
 
 .. object:: ResourceFile
 
-   FontForge will read :doc:`X Resources </ui/misc/xres>` from a property on the screen.
-   But sometimes this isn't enough. You set this preference item to specify a
-   file from which these resources should be read (those on the screen will also
-   be read and will supersede those in the file).
+   (For historical reasons) this is the name of the file containing appearance
+   configuration directives. You can create and edit this file manually according
+   to the information in :doc:`this document </ui/misc/xres>` but normally you
+   just use the :doc:`File->Appearance Editor </ui/misc/resedit>` to initialize and change
+   this file.
 
 .. _prefs.HelpDir:
 

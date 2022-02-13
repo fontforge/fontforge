@@ -35,6 +35,7 @@
 #include "featurefile.h"
 #include "fontforgeui.h"
 #include "gkeysym.h"
+#include "gresedit.h"
 #include "gutils.h"
 #include "lookups.h"
 #include "namelist.h"
@@ -62,6 +63,8 @@ extern int _GScrollBar_Width;
 extern GBox _ggadget_Default_Box;
 #define ACTIVE_BORDER   (_ggadget_Default_Box.active_border)
 #define MAIN_FOREGROUND (_ggadget_Default_Box.main_foreground)
+
+GResFont fontinfo_font = GRESFONT_INIT("400 12pt " SANS_UI_FAMILIES);
 
 static int last_aspect=0;
 
@@ -6515,10 +6518,10 @@ static void LookupExpose(GWindow pixmap, struct gfi_data *gfi, int isgpos) {
 	    }
 	    r.x = LK_MARGIN-lk->off_left; r.width = (gfi->as&~1);
 	    r.y = LK_MARGIN+(lcnt-lk->off_top)*gfi->fh; r.height = r.width;
-	    GDrawDrawRect(pixmap,&r,0x000000);
-	    GDrawDrawLine(pixmap,r.x+2,r.y+(r.height/2), r.x+r.width-2,r.y+(r.height/2), 0x000000);
+	    GDrawDrawRect(pixmap,&r,MAIN_FOREGROUND);
+	    GDrawDrawLine(pixmap,r.x+2,r.y+(r.height/2), r.x+r.width-2,r.y+(r.height/2), MAIN_FOREGROUND);
 	    if ( !lk->all[i].open )
-		GDrawDrawLine(pixmap,r.x+(r.width/2),r.y+2, r.x+(r.width/2),r.y+r.height-2, 0x000000);
+		GDrawDrawLine(pixmap,r.x+(r.width/2),r.y+2, r.x+(r.width/2),r.y+r.height-2, MAIN_FOREGROUND);
 	    GDrawDrawText8(pixmap,r.x+gfi->fh, r.y+gfi->as,
 		    lk->all[i].lookup->lookup_name,-1,MAIN_FOREGROUND);
 	}
@@ -7479,7 +7482,6 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
     int i,j,k,g, psrow;
     int mcs;
     char title[130];
-    FontRequest rq;
     int as, ds, ld;
     char **nlnames;
     char createtime[200], modtime[200];
@@ -7491,7 +7493,6 @@ void FontInfo(SplineFont *sf,int deflayer,int defaspect,int sync) {
     int ltype;
     static GBox small_blue_box;
     extern GBox _GGadget_button_box;
-    static GFont *fi_font=NULL;
     char *copied_copyright;
 
     FontInfoInit();
@@ -10802,15 +10803,7 @@ return;
     OS2_UnicodeChange(GWidgetGetControl(gw,CID_UnicodeRanges),NULL);
     OS2_CodePageChange(GWidgetGetControl(gw,CID_CodePageRanges),NULL);
 
-    if ( fi_font==NULL ) {
-	memset(&rq,0,sizeof(rq));
-	rq.utf8_family_name = SANS_UI_FAMILIES;
-	rq.point_size = 12;
-	rq.weight = 400;
-	fi_font = GDrawInstanciateFont(gw,&rq);
-	fi_font = GResourceFindFont("FontInfo.Font",fi_font);
-    }
-    d->font = fi_font;
+    d->font = fontinfo_font.fi;
     GDrawWindowFontMetrics(gw,d->font,&as,&ds,&ld);
     d->as = as; d->fh = as+ds;
 

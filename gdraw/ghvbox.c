@@ -39,10 +39,10 @@
 
 static GBox hvgroup_box = GBOX_EMPTY; /* Don't initialize here */
 static GBox hvbox_box = GBOX_EMPTY; /* Don't initialize here */
-static int ghvbox_inited = false;
 
+extern GResInfo gflowbox_ri;
 GResInfo ghvgroupbox_ri = {
-    NULL, &ggadget_ri, NULL, NULL,
+    &gflowbox_ri, &ggadget_ri, NULL, NULL,
     &hvgroup_box,
     NULL,
     NULL,
@@ -52,8 +52,28 @@ GResInfo ghvgroupbox_ri = {
     "GGroup",
     "Gdraw",
     false,
+    false,
     omf_border_type|omf_border_shape|omf_padding|omf_main_background|omf_disabled_background,
+    { bt_engraved, bs_rect, 0, 2, 0, 0, 0, 0, 0, 0, COLOR_TRANSPARENT, 0, COLOR_TRANSPARENT, 0, 0, 0, 0, 0, 0 },
+    GBOX_EMPTY,
     NULL,
+    NULL,
+    NULL
+};
+GResInfo ghvbox_ri = {
+    &ghvgroupbox_ri, &ggadget_ri, NULL, NULL,
+    &hvbox_box,
+    NULL,
+    NULL,
+    NULL,
+    N_("HV Box"),
+    N_("A container for other gadgets"),
+    "GHVBox",
+    "Gdraw",
+    false,
+    false,
+    omf_border_type|omf_border_shape|omf_padding,
+    { bt_none, bs_rect, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 },
     GBOX_EMPTY,
     NULL,
     NULL,
@@ -61,22 +81,8 @@ GResInfo ghvgroupbox_ri = {
 };
 
 static void _GHVBox_Init(void) {
-    if ( ghvbox_inited )
-return;
-    _GGadgetCopyDefaultBox(&hvgroup_box);
-    _GGadgetCopyDefaultBox(&hvbox_box);
-    hvgroup_box.border_type = bt_engraved;
-    hvbox_box.border_type = bt_none;
-    hvbox_box.border_width = 0;
-    hvgroup_box.border_shape = hvbox_box.border_shape = bs_rect;
-    hvgroup_box.padding = 2;
-    hvbox_box.padding = 0;
-    /*hvgroup_box.flags = hvbox_box.flags = 0;*/
-    hvgroup_box.main_background = COLOR_TRANSPARENT;
-    hvgroup_box.disabled_background = COLOR_TRANSPARENT;
-    _GGadgetInitDefaultBox("GHVBox.",&hvbox_box,NULL);
-    _GGadgetInitDefaultBox("GGroup.",&hvgroup_box,NULL);
-    ghvbox_inited = true;
+    GResEditDoInit(&ghvgroupbox_ri);
+    GResEditDoInit(&ghvbox_ri);
 }
 
 static void GHVBox_destroy(GGadget *g) {
@@ -580,8 +586,7 @@ static GHVBox *_GHVBoxCreate(struct gwindow *base, GGadgetData *gd,void *data,
     int i, h, v;
     GGadgetCreateData *label = (GGadgetCreateData *) (gd->label);
 
-    if ( !ghvbox_inited )
-	_GHVBox_Init();
+    _GHVBox_Init();
 
     gd->label = NULL;
     gb->g.funcs = &ghvbox_funcs;
@@ -711,10 +716,4 @@ void GHVBoxFitWindowCentered(GGadget *g) {
 
 void GHVBoxReflow(GGadget *g) {
     GHVBoxResize(g, g->r.width, g->r.height);
-}
-
-GResInfo *_GHVBoxRIHead(void) {
-
-    _GHVBox_Init();
-return( &ghvgroupbox_ri );
 }

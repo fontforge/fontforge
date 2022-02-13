@@ -272,6 +272,26 @@ typedef struct glist {
     void (*popup_callback)(GGadget *g,int pos);
 } GList;
 
+typedef struct gscroll1box {
+    GGadget g;
+    int32 count;
+    int32 sbsize;
+    int32 minsize, oppoatmin;
+    int32 subwidth, subheight;
+    int32 oppoatcur; // Not subwidth/height because the scroll bar can add size
+    int32 pad;
+    int32 scrollchange;
+    int32 offset;    // wrt scrolling
+    GGadget **children;
+    GGadget *sb;
+    unsigned int vertical: 1;
+    unsigned int always_show_sb: 1;
+    unsigned int sized_for_sb: 1;
+    unsigned int align_flow_labels: 1;
+    enum gg_flags just;
+    GWindow nested;
+} GScroll1Box;
+
 typedef struct gtextfield {
     GGadget g;
     unsigned int cursor_on: 1;
@@ -341,6 +361,8 @@ typedef struct gmenubar {
     uint16 mtot;
     int16 entry_with_mouse;
     int16 lastmi;		/* If the menubar doesn't fit across the top the make some of it be vertical. Start here */
+    int ascender;
+    int descender;
     struct gmenu *child;
     unsigned int pressed: 1;
     unsigned int initial_press: 1;
@@ -416,6 +438,17 @@ typedef struct ghvbox {
     GGadget *label;
     int label_height;
 } GHVBox;
+
+typedef struct gflowbox {
+    GGadget g;
+    int count;
+    int hpad, vpad, lpad;		/* Internal padding */
+    int label_size;
+    enum gg_flags just;
+    unsigned int vertical: 1;
+    GGadget **children;
+    GGadget *label;
+} GFlowBox;
 
 struct col_data {
     enum me_type me_type;
@@ -508,8 +541,7 @@ extern int _GListMarkSize;		/* in points, def width of popup mark in buttons */
 extern int _GGadget_Skip;		/* in points, def hor space between gadgets */
 extern int _GGadget_TextImageSkip;	/* in points, def hor space text and image */
 extern GBox _GListMark_Box, _GGroup_LineBox;
-extern GResImage *_GListMark_Image;
-extern FontInstance *_ggadget_default_font;
+extern GResFont _ggadget_default_font;
 
 void _GWidget_AddGGadget(GWindow gw,struct ggadget *g);
 void _GWidget_RemoveGadget(struct ggadget *g);
@@ -523,7 +555,7 @@ void _GWidget_SetPopupOwner(GGadget *g);
 void _GWidget_ClearPopupOwner(GGadget *g);
 
 extern void _GGadgetCopyDefaultBox(GBox *box);
-extern FontInstance *_GGadgetInitDefaultBox(char *class,GBox *box,FontInstance *deffont);
+extern void _GGadgetInitDefaultBox(const char *class, GBox *box);
 extern void _ggadget_underlineMnemonic(GWindow gw,int32 x,int32 y,unichar_t *label,
 	unichar_t mneumonic, Color fg,int ymax);
 extern void _ggadgetFigureSize(GWindow gw, GBox *design, GRect *r, int isdef);
@@ -563,7 +595,7 @@ extern int GTextInfoGetHeight(GWindow base,GTextInfo *ti,FontInstance *font);
 extern int GTextInfoGetMaxHeight(GWindow base,GTextInfo **ti,FontInstance *font,int *allsame);
 extern int GTextInfoGetAs(GWindow base,GTextInfo *ti, FontInstance *font);
 extern int GTextInfoDraw(GWindow base,int x,int y,GTextInfo *ti,
-	FontInstance *font,Color fg,Color sel,int ymax);
+	FontInstance *font,Color fg,Color sel,int ymax, int as, int ds);
 extern GTextInfo *GTextInfoCopy(GTextInfo *ti);
 extern GTextInfo **GTextInfoArrayFromList(GTextInfo *ti, uint16 *cnt);
 extern GTextInfo **GTextInfoArrayCopy(GTextInfo **ti);
@@ -571,6 +603,7 @@ extern int GTextInfoArrayCount(GTextInfo **ti);
 extern int GTextInfoCompare(GTextInfo *ti1, GTextInfo *ti2);
 extern int GMenuItemArrayMask(GMenuItem *mi);
 extern int GMenuItemArrayAnyUnmasked(GMenuItem *mi);
+extern void _GFlowBoxGetDesiredSize(GGadget *g, GRect *outer, GRect *inner, int squashed, int ignore_des);
 
 extern GGadget *_GGadget_Create(GGadget *g, struct gwindow *base, GGadgetData *gd,void *data, GBox *def);
 extern void _GGadget_FinalPosition(GGadget *g, struct gwindow *base, GGadgetData *gd);
@@ -587,14 +620,5 @@ extern const char* const* _GGadget_GetImagePath(void);
 extern int _GGadget_ImageInCache(GImage *image);
 
 extern GResInfo ggadget_ri, listmark_ri;
-extern GResInfo *_GGadgetRIHead(void), *_GButtonRIHead(void), *_GTextFieldRIHead(void);
-extern GResInfo *_GRadioRIHead(void), *_GScrollBarRIHead(void), *_GLineRIHead(void);
-extern GResInfo *_GMenuRIHead(void), *_GTabSetRIHead(void), *_GHVBoxRIHead(void);
-extern GResInfo *_GListRIHead(void), *_GMatrixEditRIHead(void), *_GDrawableRIHead(void);
-extern GResInfo *_GProgressRIHead(void);
-
-#define SERIF_UI_FAMILIES	"dejavu serif,times,caslon,serif,clearlyu,unifont,unifont upper"
-#define SANS_UI_FAMILIES	"dejavu sans,helvetica,caliban,sans,clearlyu,unifont,unifont upper"
-#define MONO_UI_FAMILIES	"courier,monospace,clearlyu,unifont,unifont upper"
 
 #endif /* FONTFORGE_GGADGET_P_H */

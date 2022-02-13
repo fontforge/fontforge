@@ -33,7 +33,6 @@
 #include "fontforgeui.h"
 #include "gfile.h"
 #include "gkeysym.h"
-#include "gresource.h"
 #include "scriptfuncs.h"
 #include "scripting.h"
 #include "ustring.h"

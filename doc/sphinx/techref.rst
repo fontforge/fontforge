@@ -11,6 +11,7 @@ Technical References
    techref/autotrace
    techref/accented
    techref/bezier
+   techref/askmulti
    techref/ref-caveats
    techref/sfdchangelog
    techref/cidmapformat

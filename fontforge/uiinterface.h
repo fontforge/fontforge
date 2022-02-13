@@ -43,6 +43,7 @@
 
 struct importparams;
 struct exportparams;
+struct multi_dlg_spec;
 
 struct ui_interface {
    /* The following is used to post a fontforge internal error */
@@ -132,6 +133,7 @@ struct ui_interface {
 #ifndef _NO_PYTHON
     void (*plugin_dlg)(void);
 #endif
+    int (*ask_multi)(const char *title, struct multi_dlg_spec *spec);
 };
 extern struct ui_interface *ui_interface;
 
@@ -173,6 +175,7 @@ extern struct ui_interface *ui_interface;
 #ifndef _NO_PYTHON
 #define PluginDlg			(ui_interface->plugin_dlg)
 #endif
+#define ff_ask_multi			(ui_interface->ask_multi)
 
 void FF_SetUiInterface(struct ui_interface *uii);
 

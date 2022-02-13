@@ -1,14 +1,18 @@
-X Resource Editor
+Appearance Editor
 =================
 
 .. image:: /images/resedit.png
 
-This dialog allows you to control the look and feel of FontForge. You can
-control (most of) the same resources described in the
-:doc:`X Resource page <xres>`, but in (I hope) a more convenient format. Some
-changes will be reflected instantly, other changes require refreshing the
-screen, other changes require invoking a new dialog, and some changes you must
-save the resources and restart fontforge.
+This dialog allows you to control the look and feel of FontForge.
+
+Almost all of the controls are explained in more detail in mouse hover tooltips
+but the full list of parameters is also in :doc:`this document <xres>`. Its
+section on :ref:`specifying fonts <xres.font>` is worth reviewing as there are
+now new options.
+
+Some changes made in the editor will be reflected instantly, other changes
+require refreshing the screen, other changes require invoking a new dialog, and
+some changes you must save the changes and restart fontforge.
 
 To the left of the dialog is a list of all fontforge's controls (and some other
 stuff). Every control is drawn within a box, and the box specifies a background,
@@ -96,12 +100,12 @@ bold), a point size, and a comma separated list of font family names. Changing
 the font will not have any obvious effect until you restart the dialog.
 
 That specifies the standard box used to draw each control. Some controls have
-additional resources. The Button control above contains an additional boolean
-resource which (if set) will cause the text of the button to shift slightly
-right when the button is pressed. (This is another of those resources where you
+additional parameters. The Button control above contains an additional boolean
+parameter which (if set) will cause the text of the button to shift slightly
+right when the button is pressed. (This is another of those parameters where you
 must restart the dialog to see it take effect).
 
-If you press the [OK] button then your current resource settings will be used in
+If you press the [OK] button then your current settings will be used in
 subsequent dialogs created by FontForge -- but any changes you make will vanish
 when you exit. If you press the [Save] button then your changes will be saved to
 disk, and (optionally) used the next time you start fontforge.
