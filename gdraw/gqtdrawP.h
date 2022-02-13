@@ -25,10 +25,6 @@
 #ifndef FONTFORGE_GQTDRAWP_H
 #define FONTFORGE_GQTDRAWP_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include <fontforge-config.h>
 
 #ifdef FONTFORGE_CAN_USE_QT
@@ -37,23 +33,68 @@ extern "C" {
 #include "gdrawlogger.h"
 #include "gdrawP.h"
 
-class QGuiApplication;
+#include <QtWidgets>
+#include <vector>
 
-typedef struct gqtwindow { /* :GWindow */
-    struct gwindow base;
-} *GQtWindow;
+namespace fontforge { namespace gdraw {
 
-typedef struct gqtdisplay { /* :GDisplay */
+struct GQtWindow;
+
+struct GQtDisplay
+{
     struct gdisplay base;
+    std::unique_ptr<QGuiApplication> app;
+    std::vector<QCursor> custom_cursors;
+    GQtWindow *default_icon = nullptr;
 
-    QGuiApplication *app;
-} GQtDisplay;
+    inline GDisplay* operator()() const { return &base; }
+};
 
+struct GQtWindow
+{
+    struct gwindow base;
+    void *q_base = nullptr;
+
+    std::string window_title;
+    GCursor current_cursor = ct_default;
+
+    inline GWindow operator()() const { return &base; }
+
+    inline QPixmap* Pixmap() const {
+        assert(base.is_pixmap);
+        return static_cast<QPixmap*>(q_base);
+    }
+
+    inline GQtWidget* Widget() const {
+        assert(!base.is_pixmap);
+        return static_cast<GQtWidget*>(q_base);
+    }
+
+    inline GQtDisplay* Display() const
+    {
+        return static_cast<GQtDisplay*>(base.display->impl);
+    }
+};
+
+struct GQtWidget : QWidget
+{
+    GQtWindow *gwindow;
+};
+
+static inline GQtDisplay* GQtD(GDisplay *d) {
+    return static_cast<GQtDisplay*>(d->impl);
+}
+
+static inline GQtDisplay* GQtD(GWindow w) {
+    return static_cast<GQtDisplay*>(w->display->impl);
+}
+
+static inline GQtWindow* GQtW(GWindow w) {
+    return static_cast<GQtWindow*>(w->native_window);
+}
+
+}} // fontforge::gdraw
 
 #endif // FONTFORGE_CAN_USE_QT
-
-#ifdef __cplusplus
-}
-#endif
 
 #endif /* FONTFORGE_GQTDRAWP_H */

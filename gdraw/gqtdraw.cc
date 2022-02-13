@@ -31,32 +31,181 @@
 #include <QtWidgets>
 #include <type_traits>
 
-static GGC *_GQtDraw_NewGGC(void) {
-    GGC *ggc = (GGC *)calloc(1, sizeof(GGC));
-    if (ggc == NULL) {
-        Log(LOGDEBUG, "GGC: Memory allocation failed!");
-        return NULL;
-    }
+namespace fontforge { namespace gdraw {
 
+static GGC *_GQtDraw_NewGGC(void) {
+    GGC *ggc = new GGC();
     ggc->clip.width = ggc->clip.height = 0x7fff;
     ggc->fg = 0;
     ggc->bg = 0xffffff;
     return ggc;
 }
 
-static void GQtDrawInit(GDisplay *gdisp) {
-    FState *fs = (FState *)calloc(1, sizeof(FState));
-    if (fs == NULL) {
-        Log(LOGDEBUG, "GQtDraw: FState alloc failed!");
-        assert(false);
+static int16_t _GQtDraw_QtModifierToKsm(Qt::KeyboardModifiers mask) {
+    int16_t state = 0;
+    if (mask & Qt::ShiftModifier) {
+        state |= ksm_shift;
+    }
+    if (mask & Qt::ControlModifier) {
+        state |= ksm_control;
+    }
+    if (mask & Qt::AltModifier) {
+        state |= ksm_meta;
+    }
+    if (mask & Qt::MetaModifier) {
+        state |= ksm_meta;
+    }
+    return state;
+}
+
+
+static GWindow _GQtDraw_CreateWindow(GQtDisplay *gdisp, GQtWindow gw, GRect *pos,
+                                      int (*eh)(GWindow, GEvent *), void *user_data, GWindowAttrs *wattrs) {
+
+    Qt::WindowFlags windowFlags = Qt::Widget;
+    std::unique_ptr<GQtWindow> nw(new GQtWindow());
+    GWindow ret = *nw;
+    ret->native_window = nw.get();
+
+    if (wattrs == nullptr) {
+        static GWindowAttrs temp = GWINDOWATTRS_EMPTY;
+        wattrs = &temp;
     }
 
+    if (gw == nullptr) { // Creating a top-level window. Set parent as default root.
+        windowFlags |= Qt::Window;
+    }
+
+    // Now check window type
+    if ((wattrs->mask & wam_nodecor) && wattrs->nodecoration) {
+        // Is a modeless dialogue
+        ret->is_popup = true;
+        ret->is_dlg = true;
+        ret->not_restricted = true;
+        windowFlags |= Qt::Popup; // hmm
+    } else if ((wattrs->mask & wam_isdlg) && wattrs->is_dlg) {
+        ret->is_dlg = true;
+        windowFlags |= Qt::Dialog;
+    }
+    if ((wattrs->mask & wam_notrestricted) && wattrs->not_restricted) {
+        ret->not_restricted = true;
+    }
+    ret->is_toplevel = (windowFlags & Qt::Window) != 0;
+
+    // Drawing context
+    ret->ggc = _GQtDraw_NewGGC();
+
+    // Base fields
+    ret->display = gdisp;
+    ret->eh = eh;
+    ret->parent = gw;
+    ret->pos = *pos;
+    ret->user_data = user_data;
+
+    QString title;
+
+    // Window title, hints
+    if (ret->is_toplevel) {
+        // Icon titles are ignored.
+        if ((wattrs->mask & wam_utf8_wtitle) && (wattrs->utf8_window_title != nullptr)) {
+            title = QString::fromUtf8(wattrs->utf8_window_title);
+            nw->window_title = wattrs->utf8_window_title;
+        }
+        if (ret->is_popup || (wattrs->mask & wam_palette)) {
+            windowFlags |= Qt::ToolTip;
+        }
+    }
+
+    if (wattrs->mask & wam_restrict) {
+        ret->restrict_input_to_me = wattrs->restrict_input_to_me;
+    }
+    if (wattrs->mask & wam_redirect) {
+        ret->redirect_chars_to_me = wattrs->redirect_chars_to_me;
+        ret->redirect_from = wattrs->redirect_from;
+    }
+
+    std::unique_ptr<QWidget> window(new QWidget(nullptr, windowFlags));
+    nw->q_base = window.get();
+
+    window->resize(pos->width, pos->height);
+
+    // We center windows here because we need to know the window size+decor
+    // There is a bug on Windows (all versions < 3.21.1, <= 2.24.30) so don't use GDK_WA_X/GDK_WA_Y
+    // https://bugzilla.gnome.org/show_bug.cgi?id=764996
+    if (nw->is_toplevel && (!(wattrs->mask & wam_positioned) || (wattrs->mask & wam_centered))) {
+        nw->is_centered = true;
+        // _GQtDraw_CenterWindowOnScreen(nw);
+    } else {
+        window->move(nw->pos.x, nw->pos.y);
+    }
+
+    // Set background
+    if (!(wattrs->mask & wam_backcol) || wattrs->background_color == COLOR_DEFAULT) {
+        wattrs->background_color = _GDraw_res_bg;
+    }
+    nw->ggc->bg = wattrs->background_color;
+    GQtDrawSetWindowBackground((GWindow)nw, wattrs->background_color);
+
+    if (nw->is_toplevel) {
+        // Set icon
+        GQtWindow *icon = gdisp->default_icon;
+        if (((wattrs->mask & wam_icon) && wattrs->icon != nullptr) && ((GQtWindow)wattrs->icon)->is_pixmap) {
+            icon = GQtW(wattrs->icon);
+        }
+        if (icon != nullptr) {
+            window->setIconPixmap(icon->Pixmap());
+        } else {
+            // gdk_window_set_decorations(nw->w, GDK_DECOR_ALL | GDK_DECOR_MENU);
+        }
+
+        if (wattrs->mask & wam_palette) {
+            window->setBaseSize(window->size());
+            window->setMinimumSize(window->size());
+        }
+        if ((wattrs->mask & wam_noresize) && wattrs->noresize) {
+            window->setFixedSize(window->size());
+        }
+        nw->was_positioned = true;
+
+        if ((wattrs->mask & wam_transient) && wattrs->transient != nullptr) {
+            GQtDrawSetTransientFor((GWindow)nw, wattrs->transient);
+            nw->is_dlg = true;
+        } else if (!nw->is_dlg) {
+            ++gdisp->top_window_count;
+        } else if (nw->restrict_input_to_me && gdisp->mru_windows->length > 0) {
+            GQtDrawSetTransientFor((GWindow)nw, (GWindow) - 1);
+        }
+        nw->isverytransient = (wattrs->mask & wam_verytransient) ? 1 : 0;
+    }
+
+    if ((wattrs->mask & wam_cursor) && wattrs->cursor != ct_default) {
+        GQtDrawSetCursor((GWindow)nw, wattrs->cursor);
+    }
+
+    // Event handler
+    if (eh != nullptr) {
+        GEvent e = {0};
+        e.type = et_create;
+        e.w = (GWindow) nw;
+        e.native_window = nw->w;
+        _GQtDraw_CallEHChecked(nw, &e, eh);
+    }
+
+    Log(LOGDEBUG, "Window created: %p[%p][%s][toplevel:%d]", nw, nw->w, nw->window_title, nw->is_toplevel);
+    return ret;
+}
+
+
+static void GQtDrawInit(GDisplay *gdisp) {
+    gdisp->fontstate = new FState();
     // In inches, because that's how fonts are measured
-    gdisp->fontstate = fs;
-    fs->res = gdisp->res;
+    gdisp->fontstate->res = gdisp->res;
 }
 
 static void GQtDrawSetDefaultIcon(GWindow icon) {
+    Log(LOGDEBUG, " ");
+    assert(icon->is_pixmap);
+    GQtD(icon)->default_icon = GQtW(icon);
 }
 
 static GWindow GQtDrawCreateTopWindow(GDisplay *gdisp, GRect *pos, int (*eh)(GWindow gw, GEvent *), void *user_data,
@@ -82,9 +231,37 @@ static GWindow GQtDrawCreateBitmap(GDisplay *gdisp, uint16 width, uint16 height,
     return nullptr;
 }
 
-static GCursor GQtDrawCreateCursor(GWindow src, GWindow mask, Color fg, Color bg, int16 x, int16 y) {
+static GCursor GQtDrawCreateCursor(GWindow src, GWindow mask, Color fg, Color bg, int16_t x, int16_t y) {
     Log(LOGDEBUG, " ");
-    return ct_default;
+
+    GQtDisplay *gdisp = GQtD(src);
+    if (mask == nullptr) { // Use src directly
+        assert(src != nullptr);
+        assert(src->is_pixmap);
+        gdisp->custom_cursors.emplace_back(*GQtW(src)->Pixmap(), x, y);
+    } else { // Assume it's an X11-style cursor
+        QPixmap pixmap(src->pos.width, src->pos.height);
+
+        // Masking
+        //Background
+        QBitmap bgMask((QPixmap*)mask->native_window);
+        QBitmap fgMask((QPixmap*)src->native_window);
+        pixmap.setMask(bgMask);
+
+        QPainter painter(&pixmap);
+        painter.fillRect(pixmap.size(), QBrush(QColor(bg)));
+        painter.end();
+
+        pixmap.setMask(QBitmap());
+        pixmap.setMask(fgMask);
+        painter.begin(&pixmap);
+        painter.fillRect(pixmap.size(), QBrush(QColor(fg)));
+        painter.end();
+
+        gdisp->custom_cursors.emplace_back(pixmap, x, y);
+    }
+
+    return ct_user + (gdisp->custom_cursors.size() - 1);
 }
 
 static void GQtDrawDestroyCursor(GDisplay *disp, GCursor gcursor) {
@@ -135,42 +312,117 @@ static void GQtDrawMoveResize(GWindow gw, int32 x, int32 y, int32 w, int32 h) {
 }
 
 static void GQtDrawRaise(GWindow w) {
-    GQtWindow gw = (GQtWindow) w;
-    Log(LOGDEBUG, "%p[%p][%s]", gw, w->native_window, /* gw->window_title */ nullptr);
+    Log(LOGDEBUG, "%p", gw, /* gw->window_title */ nullptr);
+    GQtW(w)->Widget()->raise();
 }
 
 // Icon title is ignored.
 static void GQtDrawSetWindowTitles8(GWindow w, const char *title, const char *UNUSED(icontitle)) {
     Log(LOGDEBUG, " ");// assert(false);
+    auto* gw = GQtW(w);
+    gw->Widget()->setWindowTitle(QString::fromUtf8(title));
+    gw->window_title = title;
 }
 
-// Sigh. GDK doesn't provide a way to get the window title...
 static char *GQtDrawGetWindowTitle8(GWindow gw) {
     Log(LOGDEBUG, " ");
-    return nullptr;
+    return copy(GQtW(gw)->window_title.c_str());
 }
 
 static void GQtDrawSetTransientFor(GWindow transient, GWindow owner) {
     Log(LOGDEBUG, "transient=%p, owner=%p", transient, owner);
+    assert(transient->is_toplevel);
+    assert(owner->is_toplevel);
+
+    QWidget *trans = GQtW(transient)->Widget();
+    QWidget *parent = GQtW(owner)->Widget();
+    Qt::WindowFlags flags = trans->windowFlags();
+    bool visible = trans->visible();
+
+    trans->setParent(parent);
+    trans->setWindowFlags(flags);
+    if (visible) {
+        trans->show();
+    }
 }
 
 static void GQtDrawGetPointerPosition(GWindow w, GEvent *ret) {
     Log(LOGDEBUG, " ");
+    auto *gdisp = GQtD(w);
+    Qt::KeyboardModifiers modifiers = gdisp->app->keyboardModifiers();
+    QPoint pos = QCursor::pos();
 
+    ret->u.mouse.x = pos.x;
+    ret->u.mouse.y = pos.y;
+    ret->u.mouse.state = _GQtDraw_GdkModifierToKsm(mask);
 }
 
-static GWindow GQtDrawGetPointerWindow(GWindow gw) {
+static GWindow GQtDrawGetPointerWindow(GWindow w) {
     Log(LOGDEBUG, " ");
+    auto *gdisp = GQtD(w);
+    GQtWidget *widget = dynamic_cast<GQtWidget*>(gdisp->app->widgetAt(QCursor::pos()));
+    if (widget) {
+        return *widget->gwindow;
+    }
     return nullptr;
 }
 
 static void GQtDrawSetCursor(GWindow w, GCursor gcursor) {
     Log(LOGDEBUG, " ");
+
+    QCursor cursor;
+    switch (gcursor) {
+        case ct_default:
+        case ct_backpointer:
+        case ct_pointer:
+            break;
+        case ct_hand:
+            cursor = QCursor(Qt::OpenHandCursor);
+            break;
+        case ct_question:
+            cursor = QCursor(Qt::WhatsThisCursor);
+            break;
+        case ct_cross:
+            cursor = QCursor(Qt::CrossCursor);
+            break;
+        case ct_4way:
+            cursor = QCursor(Qt::SizeAllCursor);
+            break;
+        case ct_text:
+            cursor = QCursor(Qt::IBeamCursor);
+            break;
+        case ct_watch:
+            cursor = QCursor(Qt::WaitCursor);
+            break;
+        case ct_draganddrop:
+            cursor = QCursor(Qt::DragMoveCursor);
+            break;
+        case ct_invisible:
+            return; // There is no *good* reason to make the cursor invisible
+            break;
+        default:
+            Log(LOGDEBUG, "CUSTOM CURSOR! %d", gcursor);
+    }
+
+    auto *gw = GQtW(w);
+    if (gcursor >= ct_user) {
+        GQtDisplay *gdisp = GQtD(w);
+        gcursor -= ct_user;
+        if ((size_t)gcursor < gdisp->custom_cursors.size()) {
+            gw->Widget()->setCursor(gdisp->custom_cursors[gcursor]);
+            gw->current_cursor = gcursor + ct_user;
+        } else {
+            Log(LOGWARN, "Invalid cursor value passed: %d", gcursor);
+        }
+    } else {
+        gw->Widget()->setCursor(cursor);
+        gw->current_cursor = gcursor;
+    }
 }
 
 static GCursor GQtDrawGetCursor(GWindow gw) {
     Log(LOGDEBUG, " ");
-    return ct_default;
+    return GQtW(gw)->current_cursor;
 }
 
 static void GQtDrawTranslateCoordinates(GWindow from, GWindow to, GPoint *pt) {
@@ -181,6 +433,7 @@ static void GQtDrawTranslateCoordinates(GWindow from, GWindow to, GPoint *pt) {
 
 static void GQtDrawBeep(GDisplay *gdisp) {
     Log(LOGDEBUG, " ");
+    GQtD(gdisp)->app->beep();
 }
 
 static void GQtDrawScroll(GWindow w, GRect *rect, int32 hor, int32 vert) {
@@ -188,7 +441,7 @@ static void GQtDrawScroll(GWindow w, GRect *rect, int32 hor, int32 vert) {
     GRect temp;
 
     vert = -vert;
-    if (rect == NULL) {
+    if (rect == nullptr) {
         temp.x = temp.y = 0;
         temp.width = w->pos.width;
         temp.height = w->pos.height;
@@ -201,7 +454,7 @@ static void GQtDrawScroll(GWindow w, GRect *rect, int32 hor, int32 vert) {
 
 static GIC *GQtDrawCreateInputContext(GWindow UNUSED(gw), enum gic_style UNUSED(style)) {
     Log(LOGDEBUG, " ");
-    return NULL;
+    return nullptr;
 }
 
 static void GQtDrawSetGIC(GWindow UNUSED(gw), GIC *UNUSED(gic), int UNUSED(x), int UNUSED(y)) {
@@ -258,10 +511,12 @@ static int GQtDrawSelectionHasOwner(GDisplay *disp, enum selnames sn) {
 
 static void GQtDrawPointerUngrab(GDisplay *gdisp) {
     Log(LOGDEBUG, " ");
+
 }
 
 static void GQtDrawPointerGrab(GWindow w) {
     Log(LOGDEBUG, " ");
+    // ((QWidget *)w->native_window)->grabMouse();
 }
 
 static void GQtDrawRequestExpose(GWindow w, GRect *rect, int UNUSED(doclear)) {
@@ -273,7 +528,7 @@ static void GQtDrawRequestExpose(GWindow w, GRect *rect, int UNUSED(doclear)) {
     // if (!gw->is_visible || _GQtDraw_WindowOrParentsDying(gw)) {
     //     return;
     // }
-    // if (rect == NULL) {
+    // if (rect == nullptr) {
     //     clip.x = clip.y = 0;
     //     clip.width = gw->pos.width;
     //     clip.height = gw->pos.height;
@@ -375,7 +630,7 @@ static void GQtDrawDrawLine(GWindow w, int32 x, int32 y, int32 xend, int32 yend,
     Log(LOGDEBUG, " ");
 }
 
-static void GQtDrawDrawArrow(GWindow w, int32 x, int32 y, int32 xend, int32 yend, int16 arrows, Color col) {
+static void GQtDrawDrawArrow(GWindow w, int32 x, int32 y, int32 xend, int32 yend, int16_t arrows, Color col) {
     Log(LOGDEBUG, " ");
 }
 
@@ -403,11 +658,11 @@ static void GQtDrawDrawArc(GWindow w, GRect *rect, int32 sangle, int32 eangle, C
     Log(LOGDEBUG, " ");
 }
 
-static void GQtDrawDrawPoly(GWindow w, GPoint *pts, int16 cnt, Color col) {
+static void GQtDrawDrawPoly(GWindow w, GPoint *pts, int16_t cnt, Color col) {
     Log(LOGDEBUG, " ");
 }
 
-static void GQtDrawFillPoly(GWindow w, GPoint *pts, int16 cnt, Color col) {
+static void GQtDrawFillPoly(GWindow w, GPoint *pts, int16_t cnt, Color col) {
     Log(LOGDEBUG, " ");
 }
 
@@ -536,6 +791,10 @@ static int GQtDrawLayoutLineStart(GWindow w, int l) {
 
 // END DRAW RELATED
 
+}} // fontforge::gdraw
+
+using namespace fontforge::gdraw;
+
 // Our function VTable
 static struct displayfuncs gqtfuncs = {
     GQtDrawInit,
@@ -648,45 +907,35 @@ static struct displayfuncs gqtfuncs = {
     GQtDrawClipPreserve
 };
 
-GDisplay *_GQtDraw_CreateDisplay(char *displayname, char *UNUSED(programname)) {
-    static_assert(std::is_standard_layout<GQtDisplay>::value, "Is std layout");
+extern "C" GDisplay *_GQtDraw_CreateDisplay(char *displayname, int *argc, char ***argv) {
+    std::unique_ptr<GQtDisplay> gdisp(new GQtDisplay());
+    gdisp->app.reset(new QGuiApplication(*argc, *argv));
 
+    GDisplay *ret = *gdisp;
+    ret->funcs = &gqtfuncs;
 
-    static int argc = 1;
-    static char *argv[] = {"a"};
-    std::unique_ptr<QGuiApplication> app(new QGuiApplication(argc, argv));
-    std::unique_ptr<GQtDisplay>gdisp(new GQtDisplay());
+    std::unique_ptr<GQtWindow> groot(new GQtWindow());
+    QRect screenGeom = gdisp->app->primaryScreen()->geometry();
 
-    gdisp->base.funcs = &gqtfuncs;
-    gdisp->app = app.get();
+    ret->groot = *groot;
+    ret->ggc = _GQtDraw_NewGGC();
+    ret->display = (GDisplay*)gdisp.get();
+    ret->native_window = groot.get();
+    ret->pos.width = screenGeom.width();
+    ret->pos.height = screenGeom.height();
+    ret->is_toplevel = true;
+    ret->is_visible = true;
 
-    GQtWindow groot = (GQtWindow)calloc(1, sizeof(struct gqtwindow));
-    if (groot == NULL) {
-        return nullptr;
-    }
+    (ret->funcs->init)(ret);
+    _GDraw_InitError(ret);
 
-    QRect screenGeom = app->primaryScreen()->geometry();
-
-    gdisp->base.groot = (GWindow)groot;
-    groot->base.ggc = _GQtDraw_NewGGC();
-    groot->base.display = (GDisplay*)gdisp.get();
-    groot->base.native_window = groot;
-    groot->base.pos.width = screenGeom.width();
-    groot->base.pos.height = screenGeom.height();
-    groot->base.is_toplevel = true;
-    groot->base.is_visible = true;
-
-    (gdisp->base.funcs->init)((GDisplay *) gdisp.get());
-    _GDraw_InitError((GDisplay *) gdisp.get());
-
-    app.release();
-    return reinterpret_cast<GDisplay*>(gdisp.release());
+    groot.release();
+    gdsip.release();
+    return ret;
 }
 
-void _GQtDraw_DestroyDisplay(GDisplay *disp) {
-    auto* gdisp = reinterpret_cast<GQtDisplay*>(disp);
-    std::unique_ptr<QGuiApplication> app(gdisp->app);
-    delete gdisp;
+extern "C" void _GQtDraw_DestroyDisplay(GDisplay *disp) {
+    delete GQtD(disp);
 }
 
 #endif // FONTFORGE_CAN_USE_QT
