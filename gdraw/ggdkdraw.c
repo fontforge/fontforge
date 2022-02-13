@@ -1121,12 +1121,6 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
             if (crossing->focus) { //Focus or inferior
                 break;
             }
-            if (gdisp->focusfollowsmouse && gw != NULL && gw->eh != NULL) {
-                gevent.type = et_focus;
-                gevent.u.focus.gained_focus = crossing->type == GDK_ENTER_NOTIFY;
-                gevent.u.focus.mnemonic_focus = false;
-                _GGDKDraw_CallEHChecked(gw, &gevent, gw->eh);
-            }
             gevent.type = et_crossing;
             gevent.u.crossing.x = crossing->x;
             gevent.u.crossing.y = crossing->y;
@@ -2127,7 +2121,7 @@ static void GGDKDrawEventLoop(GDisplay *gdisp) {
         do {
             while (((GGDKDisplay *)gdisp)->top_window_count > 0) {
                 g_main_context_iteration(ctx, true);
-                if ((gdisp->err_flag) && (gdisp->err_report)) {
+                if (gdisp->err_report) {
                     GDrawIErrorRun("%s", gdisp->err_report);
                 }
                 if (gdisp->err_report) {
@@ -2459,8 +2453,6 @@ GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *UNUSED(programname)) 
     gdisp->bs.double_time = _GDraw_res_multiclicktime;
     gdisp->bs.double_wiggle = _GDraw_res_multiclickwiggle;
     gdisp->sel_notify_timeout = _GDraw_res_selnottime;
-    gdisp->macosx_cmd = _GDraw_res_macosxcmd;
-    gdisp->twobmouse_win = _GDraw_res_twobuttonfixup;
     if (_GDraw_res_res != 0) {
         gdisp->res = _GDraw_res_res;
     }

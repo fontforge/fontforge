@@ -3104,7 +3104,7 @@ static void GXDrawSync(GDisplay *gdisp) {
 }
 
 void dispatchError(GDisplay *gdisp) {
-    if ((gdisp->err_flag) && (gdisp->err_report)) {
+    if (gdisp->err_report) {
       GDrawIErrorRun("%s",gdisp->err_report);
     }
     if (gdisp->err_report) {

@@ -132,22 +132,10 @@ struct gtimer {
 struct gdisplay {
     struct displayfuncs *funcs;
     struct font_state *fontstate;
-    int16_t res;
     GWindow groot;
-    unsigned int default_visual: 1;
-    unsigned int do_dithering: 1;
-    unsigned int focusfollowsmouse: 1;
-    unsigned int top_offsets_set: 1;
-    unsigned int endian_mismatch: 1;
-    unsigned int macosx_cmd: 1;		/* if set then map state=0x20 to control */
-    unsigned int twobmouse_win: 1;	/* if set then map state=0x40 to mouse button 2 */
-    unsigned int devicesinit: 1;	/* the devices structure has been initialized. Else call XListInputDevices */
-    unsigned int expecting_core_event: 1;/* when we move an input extension device we generally get two events, one for the device, one later for the core device. eat the core event */
-    unsigned int has_xkb: 1;		/* we were able to initialize the XKB extension */
-    unsigned int supports_alpha_images: 1;
-    unsigned int supports_alpha_windows: 1;
-    int err_flag;
-    char * err_report;
+    char *err_report;
+    void *impl;
+    int16_t res;
     /* display specific data */
 };
 #define PointToPixel(points,res)		(((points)*(res)+36)/72)

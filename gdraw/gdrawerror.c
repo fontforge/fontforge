@@ -184,7 +184,7 @@ void GDrawIError(const char *fmt,...) {
     if ( gd==NULL ) {
       fprintf(stderr, "%s", buffer); // If there is no display, we write to stderr.
     } else {
-      if ((gd->err_flag) && (gd->err_report != NULL)) {
+      if (gd->err_report != NULL) {
         if (strlen(gd->err_report) + strlen(buffer) + 1 < 2048) {
           // If there is an existing error message, we concatenate if there is space.
           char * tmp = smprintf("%s%s\n", gd->err_report, buffer);
@@ -194,7 +194,6 @@ void GDrawIError(const char *fmt,...) {
         // If there is no existing error message, we copy to the right spot.
         gd->err_report = smprintf("%s\n", buffer);
       }
-      gd->err_flag |= 1;
     }
   }
   free(buffer); buffer = NULL;
