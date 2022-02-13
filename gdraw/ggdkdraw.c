@@ -471,8 +471,6 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
         // Icon titles are ignored.
         if ((wattrs->mask & wam_utf8_wtitle) && (wattrs->utf8_window_title != NULL)) {
             nw->window_title = copy(wattrs->utf8_window_title);
-        } else if ((wattrs->mask & wam_wtitle) && (wattrs->window_title != NULL)) {
-            nw->window_title = u2utf8_copy(wattrs->window_title);
         }
 
         attribs.title = nw->window_title;

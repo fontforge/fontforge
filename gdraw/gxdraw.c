@@ -893,14 +893,6 @@ return( NULL );
 	    }
 	}
 	XSetWMHints(display,nw->w,&wm_hints);
-	if ( (wattrs->mask&wam_wtitle) && wattrs->window_title!=NULL ) {
-	    XmbSetWMProperties(display,nw->w,(pt = u2def_copy(wattrs->window_title)),NULL,NULL,0,NULL,NULL,NULL);
-	    free(pt);
-	}
-	if ( (wattrs->mask&wam_ititle) && wattrs->icon_title!=NULL ) {
-	    XmbSetWMProperties(display,nw->w,NULL,(pt = u2def_copy(wattrs->icon_title)),NULL,0,NULL,NULL,NULL);
-	    free(pt);
-	}
 	if ( (wattrs->mask&wam_utf8_wtitle) && wattrs->utf8_window_title!=NULL ) {
 #ifdef X_HAVE_UTF8_STRING
         Xutf8SetWMProperties(display, nw->w, wattrs->utf8_window_title, NULL, NULL, 0, NULL, NULL, NULL);

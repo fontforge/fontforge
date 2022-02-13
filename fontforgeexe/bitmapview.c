@@ -2380,7 +2380,7 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv, int enc) {
     DefaultY(&pos);
 
     bv->gw = gw = GDrawCreateTopWindow(NULL,&pos,bv_e_h,bv,&wattrs);
-    free( (unichar_t *) wattrs.icon_title );
+    free( (char *) wattrs.utf8_icon_title );
 
     GDrawGetSize(GDrawGetRoot(screen_display),&zoom);
     zoom.x = BVPalettesWidth(); zoom.width -= zoom.x-10;

@@ -94,19 +94,20 @@ static unichar_t *GWidgetOpenFileWPath(const unichar_t *title, const unichar_t *
 
     GProgressPauseTimer();
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_wtitle|wam_undercursor|wam_restrict|wam_isdlg;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict|wam_isdlg;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
     wattrs.is_dlg = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = (unichar_t *) title;
+    wattrs.utf8_window_title = u2utf8_copy(title);
     pos.x = pos.y = 0;
     totwid = GGadgetScale(223);
     bsbigger = 3*bs+4*14>totwid; totwid = bsbigger?3*bs+4*12:totwid;
     pos.width = GDrawPointsToPixels(NULL,totwid);
     pos.height = GDrawPointsToPixels(NULL,223);
     gw = GDrawCreateTopWindow(NULL,&pos,e_h,&d,&wattrs);
+    free((char*)wattrs.utf8_window_title);
 
     memset(&label,0,sizeof(label));
     memset(&gcd,0,sizeof(gcd));

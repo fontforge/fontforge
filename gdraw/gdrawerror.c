@@ -143,12 +143,12 @@ return;
     GDrawGetSize(GDrawGetRoot(gd),&screen);
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_positioned|wam_cursor|wam_wtitle|wam_backcol|
+    wattrs.mask = wam_events|wam_positioned|wam_cursor|wam_utf8_wtitle|wam_backcol|
 	    wam_restrict|wam_redirect|wam_isdlg;
     wattrs.event_masks = -1;
     wattrs.positioned = 1;
     wattrs.cursor = ct_pointer;
-    wattrs.window_title = title;
+    wattrs.utf8_window_title = u2utf8_copy(title);
     wattrs.background_color = 0xbbbbbb;
     wattrs.restrict_input_to_me = true;
     wattrs.redirect_chars_to_me = true;
@@ -159,6 +159,7 @@ return;
     errinfo.width = pos.width;
 
     error = GDrawCreateTopWindow(gd,&pos,e_h,NULL,&wattrs);
+    free((char*)wattrs.utf8_window_title);
 
     // This is too low-level to be a resource so we leave it as-is
     memset(&rq,0,sizeof(rq));

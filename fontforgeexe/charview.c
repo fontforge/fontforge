@@ -12897,7 +12897,6 @@ CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show 
     DefaultY(&pos);
 
     cv->gw = gw = GDrawCreateTopWindow(NULL,&pos,cv_e_h,cv,&wattrs);
-    free( (unichar_t *) wattrs.icon_title );
     free((char*)wattrs.utf8_icon_title);
     GDrawSetWindowTypeName(cv->gw, "CharView");
 

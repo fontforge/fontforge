@@ -219,8 +219,8 @@ typedef enum cursor_types { ct_default, ct_pointer, ct_backpointer, ct_hand,
 	ct_user, ct_user2 /* and so on */ } GCursor;
 
 enum window_attr_mask { wam_events=0x2, wam_bordwidth=0x4,
-			wam_bordcol=0x8, wam_backcol=0x10, wam_cursor=0x20, wam_wtitle=0x40,
-			wam_ititle=0x80, wam_icon=0x100, wam_nodecor=0x200,
+			wam_bordcol=0x8, wam_backcol=0x10, wam_cursor=0x20, /*wam_wtitle=0x40,*/
+			/*wam_ititle=0x80,*/ wam_icon=0x100, wam_nodecor=0x200,
 			wam_positioned=0x400, wam_centered=0x800, wam_undercursor=0x1000,
 			wam_noresize=0x2000, wam_restrict=0x4000, wam_redirect=0x8000,
 			wam_isdlg=0x10000, wam_notrestricted=0x20000,
@@ -236,8 +236,6 @@ typedef struct gwindow_attrs {
     Color background_color;
     GCursor cursor;
 	/* Remainder is only for top level windows */
-    const unichar_t *window_title;
-    const unichar_t *icon_title;
     struct gwindow *icon;		/* A bitmap pixmap, or NULL */
     unsigned int nodecoration: 1;	/* no wm decoration */
     unsigned int positioned: 1;		/* position information is important */
@@ -254,7 +252,7 @@ typedef struct gwindow_attrs {
     const char *utf8_icon_title;
 } GWindowAttrs;
 
-#define GWINDOWATTRS_EMPTY { 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL }
+#define GWINDOWATTRS_EMPTY { 0, 0, 0, 0, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL }
 
 typedef struct gdeveventmask {
     int event_mask;

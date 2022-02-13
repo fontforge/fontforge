@@ -260,11 +260,11 @@ return;
     new->width = pos.width;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|(win_title!=NULL?wam_wtitle:0)|
+    wattrs.mask = wam_events|wam_cursor|(win_title!=NULL?wam_utf8_wtitle:0)|
 	    wam_centered|wam_restrict|wam_redirect|wam_isdlg|wam_backcol;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.cursor = ct_watch;
-    wattrs.window_title = u_copy(win_title);
+    wattrs.utf8_window_title = u2utf8_copy(win_title);
     wattrs.centered = true;
     wattrs.restrict_input_to_me = true;
     wattrs.redirect_chars_to_me = true;
@@ -273,7 +273,7 @@ return;
     wattrs.background_color = progress_background;
     pos.x = pos.y = 0;
     new->gw = GDrawCreateTopWindow(NULL,&pos,progress_eh,new,&wattrs);
-    free((void *) wattrs.window_title);
+    free((void *) wattrs.utf8_window_title);
 
     memset(&gd,'\0',sizeof(gd)); memset(&label,'\0',sizeof(label));
     gd.pos.width = GDrawPointsToPixels(new->gw,50);
