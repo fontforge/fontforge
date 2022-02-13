@@ -1,4 +1,4 @@
-/* Copyright (C) 2022 by Jeremy Tan */
+/* Copyright (C) 2016-2022 by Jeremy Tan */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -22,8 +22,8 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FONTFORGE_GQTDRAWP_H
-#define FONTFORGE_GQTDRAWP_H
+#ifndef FONTFORGE_GDRAWLOGGER_H
+#define FONTFORGE_GDRAWLOGGER_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -31,29 +31,32 @@ extern "C" {
 
 #include <fontforge-config.h>
 
-#ifdef FONTFORGE_CAN_USE_QT
+#pragma push_macro("PRINTF_FORMAT_ATTRIBUTE")
+#ifdef __GNUC__
+#if defined(__USE_MINGW_ANSI_STDIO) && __USE_MINGW_ANSI_STDIO != 0
+#define PRINTF_FORMAT_ATTRIBUTE(x, y) __attribute__((format(gnu_printf, x, y)))
+#else
+#define PRINTF_FORMAT_ATTRIBUTE(x, y) __attribute__((format(printf, x, y)))
+#endif
+#else
+#define PRINTF_FORMAT_ATTRIBUTE(x, y)
+#endif
 
-#include "fontP.h"
-#include "gdrawlogger.h"
-#include "gdrawP.h"
+//To get around a 'pedantic' C99 rule that you must have at least 1 variadic arg, combine fmt into that.
+#define Log(level, ...) LogEx(level, __func__, __FILE__, __LINE__, __VA_ARGS__)
 
-class QGuiApplication;
+/** An enum to make the severity of log messages human readable in code **/
+enum {LOGNONE = 0, LOGERR = 1, LOGWARN = 2, LOGINFO = 3, LOGDEBUG = 4};
 
-typedef struct gqtwindow { /* :GWindow */
-    struct gwindow base;
-} *GQtWindow;
+extern void LogInit(void);
+extern void LogEx(int level, const char *funct, const char *file, int line, const char *fmt,  ...) PRINTF_FORMAT_ATTRIBUTE(5, 6);   // General function for printing log messages to stderr
 
-typedef struct gqtdisplay { /* :GDisplay */
-    struct gdisplay base;
-
-    QGuiApplication *app;
-} GQtDisplay;
-
-
-#endif // FONTFORGE_CAN_USE_QT
+#ifdef FONTFORGE_CAN_USE_GDK
+extern const char *GdkEventName(int code);
+#endif
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* FONTFORGE_GQTDRAWP_H */
+#endif /* FONTFORGE_GDRAWLOGGER_H */

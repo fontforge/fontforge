@@ -727,22 +727,26 @@ int GDrawShortcutKeyMatches(const GEvent *e, unichar_t ch) {
 
 void GDrawDestroyDisplays() {
   if (screen_display != NULL) {
-#ifndef FONTFORGE_CAN_USE_GDK
-    _GXDraw_DestroyDisplay(screen_display);
-#else
+#ifdef FONTFORGE_CAN_USE_GDK
     _GGDKDraw_DestroyDisplay(screen_display);
+#elif defined(FONTFORGE_CAN_USE_QT)
+    _GQtDraw_DestroyDisplay(screen_display);
+#else
+    _GXDraw_DestroyDisplay(screen_display);
 #endif
     screen_display = NULL;
   }
 }
 
 void GDrawCreateDisplays(char *displayname, int *argc, char ***argv) {
-#ifndef FONTFORGE_CAN_USE_GDK
-    screen_display = _GXDraw_CreateDisplay(displayname,(*argv)[0]);
-#else
+#ifdef FONTFORGE_CAN_USE_GDK
     gdk_set_allowed_backends("win32,quartz,x11");
     gdk_init(argc, argv);
     screen_display = _GGDKDraw_CreateDisplay(displayname, (*argv)[0]);
+#elif defined(FONTFORGE_CAN_USE_QT)
+    screen_display = _GQtDraw_CreateDisplay(displayname, (*argv)[0]);
+#else
+    screen_display = _GXDraw_CreateDisplay(displayname,(*argv)[0]);
 #endif
     if ( screen_display==NULL ) {
 	fprintf( stderr, "Could not open screen.\n" );

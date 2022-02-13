@@ -1,4 +1,4 @@
-/* Copyright (C) 2016 by Jeremy Tan */
+/* Copyright (C) 2016-2022 by Jeremy Tan */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -24,17 +24,17 @@
 
 #include <fontforge-config.h>
 
-/**
- * @file ggdkdrawlogger.c
- * @brief Implement logging and error handling functions
- */
+#include "ffglib.h"
+#include "gdrawlogger.h"
 
-#include "ggdkdrawP.h"
-
-#ifdef FONTFORGE_CAN_USE_GDK
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+
+#ifdef FONTFORGE_CAN_USE_GDK
+#include "ffgdk.h"
+#endif
 
 static const char *unspecified_funct = "???";
 static int log_level = LOGWARN;
@@ -43,7 +43,7 @@ static int log_level = LOGWARN;
  * Initialise the logger
  */
 void LogInit(void) {
-    const char *requested = getenv("GGDK_LOGLEVEL");
+    const char *requested = getenv("GDRAW_LOGLEVEL");
 
     if (requested) {
         if (!strcmp(requested, "none")) {
@@ -114,6 +114,7 @@ void LogEx(int level, const char *funct, const char *file, int line, const char 
     g_date_time_unref(now);
 }
 
+#ifdef FONTFORGE_CAN_USE_GDK
 const char *GdkEventName(int code) {
     switch (code) {
         case GDK_NOTHING:
@@ -254,5 +255,4 @@ const char *GdkEventName(int code) {
             return "UNKNOWN";
     }
 }
-
 #endif // FONTFORGE_CAN_USE_GDK

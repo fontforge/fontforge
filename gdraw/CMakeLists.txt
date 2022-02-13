@@ -18,6 +18,7 @@ add_library(gdraw STATIC
   gdraw.c
   gdrawerror.c
   gdrawgimage.c
+  gdrawlogger.c
   gdrawP.h
   gdrawtxt.c
   gfilechooser.c
@@ -27,7 +28,6 @@ add_library(gdraw STATIC
   ggadgets.c
   ggdkcdraw.c
   ggdkdraw.c
-  ggdkdrawlogger.c
   ggdkdrawP.h
   ggroupbox.c
   ghvbox.c

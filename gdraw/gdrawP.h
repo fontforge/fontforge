@@ -272,6 +272,8 @@ extern void _GXDraw_DestroyDisplay(GDisplay * gdisp);
 extern GDisplay *_GXDraw_CreateDisplay(char *displayname,char *programname);
 extern void _GGDKDraw_DestroyDisplay(GDisplay *disp);
 extern GDisplay *_GGDKDraw_CreateDisplay(char *displayname, char *programname);
+extern void _GQtDraw_DestroyDisplay(GDisplay *disp);
+extern GDisplay *_GQtDraw_CreateDisplay(char *displayname, char *programname);
 extern void _GDraw_InitError(GDisplay *);
 extern void _GDraw_ComposeChars(GDisplay *gdisp,GEvent *gevent);
 
