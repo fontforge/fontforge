@@ -27,6 +27,7 @@
 
 #include <fontforge-config.h>
 
+#include "ffgdk.h"
 #include "gdraw.h"
 #include "gdrawP.h"
 #include "ggadgetP.h"
@@ -735,19 +736,21 @@ void GDrawDestroyDisplays() {
   }
 }
 
-void GDrawCreateDisplays(char *displayname,char *programname) {
+void GDrawCreateDisplays(char *displayname, int *argc, char ***argv) {
 #ifndef FONTFORGE_CAN_USE_GDK
-    screen_display = _GXDraw_CreateDisplay(displayname,programname);
+    screen_display = _GXDraw_CreateDisplay(displayname,(*argv)[0]);
 #else
-    screen_display = _GGDKDraw_CreateDisplay(displayname, programname);
+    gdk_set_allowed_backends("win32,quartz,x11");
+    gdk_init(argc, argv);
+    screen_display = _GGDKDraw_CreateDisplay(displayname, (*argv)[0]);
 #endif
     if ( screen_display==NULL ) {
 	fprintf( stderr, "Could not open screen.\n" );
 #if __Mac
-	fprintf( stderr, "You must start X11 before you can start %s\n", programname);
+	fprintf( stderr, "You must start X11 before you can start %s\n", (*argv)[0]);
 	fprintf( stderr, " X11 is optional software found on your install DVD.\n" );
 #elif __CygWin
-	fprintf( stderr, "You must start X11 before you can start %s\n", programname);
+	fprintf( stderr, "You must start X11 before you can start %s\n", (*argv)[0]);
 	fprintf( stderr, " X11 may be obtained from the cygwin site in a separate package.\n" );
 #endif
 exit(1);

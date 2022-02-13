@@ -32,7 +32,6 @@
 #include "bitmapchar.h"
 #include "clipnoui.h"
 #include "encoding.h"
-#include "ffgdk.h"
 #include "ffglib.h"
 #include "fontforgeui.h"
 #include "gfile.h"
@@ -816,10 +815,6 @@ int fontforge_main( int argc, char **argv ) {
 	else if ( strcmp(pt,"-home")==0 )
 	    /* already did a chdir earlier, don't need to do it again */;
     }
-#ifdef FONTFORGE_CAN_USE_GDK
-    gdk_set_allowed_backends("win32,quartz,x11");
-    gdk_init(&argc, &argv);
-#endif
     ensureDotFontForgeIsSetup();
 #if defined(__MINGW32__) && !defined(_NO_LIBCAIRO)
     //Load any custom fonts for the user interface
@@ -847,7 +842,7 @@ int fontforge_main( int argc, char **argv ) {
 #endif
     InitImageCache(); // This is in gtextinfo.c. It zeroes imagecache for us.
     atexit(&ClearImageCache); // We register the destructor, which is also in gtextinfo.c.
-    GDrawCreateDisplays(display,argv[0]);
+    GDrawCreateDisplays(display, &argc, &argv);
     atexit(&GDrawDestroyDisplays); // We register the destructor so that it runs even if we call exit without finishing this function.
     default_background = GDrawGetDefaultBackground(screen_display);
     InitToolIconClut(default_background);

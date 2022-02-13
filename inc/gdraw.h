@@ -280,7 +280,7 @@ extern GDisplay *screen_display;
 extern void GDrawResourceFind(void);
 
 extern void GDrawDestroyDisplays(void);
-extern void GDrawCreateDisplays(char *displayname,char *programname);
+extern void GDrawCreateDisplays(char *displayname, int* argc, char ***argv);
 
 extern int GDrawPointsToPixels(GWindow gw,int points);
 extern int GDrawPixelsToPoints(GWindow gw,int pixels);
