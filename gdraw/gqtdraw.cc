@@ -584,12 +584,18 @@ static int GQtDrawSelectionHasOwner(GDisplay *disp, enum selnames sn) {
 
 static void GQtDrawPointerUngrab(GDisplay *disp) {
     Log(LOGDEBUG, " ");
-
+    GQtDisplay *gdisp = GQtD(disp);
+    if (gdisp->grabbed_window != nullptr) {
+        gdisp->grabbed_window->Widget()->releaseMouse();
+    }
 }
 
 static void GQtDrawPointerGrab(GWindow w) {
     Log(LOGDEBUG, " ");
-    // ((QWidget *)w->native_window)->grabMouse();
+    GQtDisplay *gdisp = GQtD(w);
+    GQtDrawPointerUngrab(gdisp->Base());
+    gdisp->grabbed_window = GQtW(w);
+    gdisp->grabbed_window->Widget()->grabMouse();
 }
 
 static void GQtDrawRequestExpose(GWindow w, GRect *rect, int UNUSED(doclear)) {

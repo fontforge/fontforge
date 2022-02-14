@@ -61,6 +61,7 @@ struct GQtDisplay
     GQtWindow *default_icon = nullptr;
 
     int top_window_count = 0; // The number of toplevel, non-dialogue windows. When this drops to 0, the event loop stops
+    GQtWindow *grabbed_window = nullptr;
 
     inline GDisplay* Base() const { return const_cast<GDisplay*>(&base); }
 };
