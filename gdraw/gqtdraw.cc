@@ -336,6 +336,11 @@ static void GQtDrawSetZoom(GWindow UNUSED(gw), GRect *UNUSED(size), enum gzoom_f
 
 static void GQtDrawSetWindowBackground(GWindow w, Color gcol) {
     Log(LOGDEBUG, " ");
+    GQtWindow *gw = GQtW(w);
+    QPalette pal = QPalette();
+    pal.setColor(QPalette::Window, QColor(gcol));
+    gw->Widget()->setAutoFillBackground(true);
+    gw->Widget()->setPalette(pal);
 }
 
 static int GQtDrawSetDither(GDisplay *UNUSED(gdisp), int UNUSED(set)) {
