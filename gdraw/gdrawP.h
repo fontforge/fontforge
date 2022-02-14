@@ -126,13 +126,7 @@ struct ginput_context {
 };
 
 struct gtimer {
-    long time_sec;				/* longs not int32s to match timeval */
-    long time_usec;
-    int32_t repeat_time;				/* 0 => one shot */
     GWindow owner;
-    void *userdata;
-    struct gtimer *next;
-    unsigned int active: 1;
 };
 
 struct gdisplay {

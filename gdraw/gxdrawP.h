@@ -250,6 +250,16 @@ struct xkb {
     int opcode, event, error;
 };
 
+typedef struct gxtimer {
+    GWindow owner;
+    long time_sec;				/* longs not int32s to match timeval */
+    long time_usec;
+    int32 repeat_time;				/* 0 => one shot */
+    void *userdata;
+    struct gxtimer *next;
+    unsigned int active: 1;
+} GXTimer;
+
 typedef struct gxdisplay /* : GDisplay */ {
     struct displayfuncs *funcs;
     struct font_state *fontstate;
@@ -289,7 +299,7 @@ typedef struct gxdisplay /* : GDisplay */ {
     Pixmap fence_stipple;
     int32_t mycontext;
     int16_t top_window_count;
-    GTimer *timers;
+    GXTimer *timers;
     Time last_event_time;
     struct gxselinfo selinfo[sn_max];
     int amax, alen;
