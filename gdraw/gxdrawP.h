@@ -256,10 +256,11 @@ struct xkb {
 
 typedef struct gxtimer {
     GWindow owner;
+    void *impl;
+    void *userdata;
     long time_sec;				/* longs not int32s to match timeval */
     long time_usec;
     int32 repeat_time;				/* 0 => one shot */
-    void *userdata;
     struct gxtimer *next;
     unsigned int active: 1;
 } GXTimer;

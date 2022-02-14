@@ -131,6 +131,8 @@ struct ginput_context {
 
 struct gtimer {
     GWindow owner;
+    void *impl;
+    void *userdata;
 };
 
 struct gdisplay {

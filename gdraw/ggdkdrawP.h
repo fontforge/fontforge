@@ -71,9 +71,10 @@ typedef struct ggdkwindow *GGDKWindow;
 // Really GTimer should be opaque...
 typedef struct ggdktimer { // :GTimer
     GWindow owner;
+    void *impl;
+    void *userdata;
     // Extensions below
     int32 repeat_time;          // 0 == one shot (run once)
-    void *userdata;
     unsigned int active: 1;
     unsigned int stopped: 1;
     unsigned int has_differing_repeat_time: 1;

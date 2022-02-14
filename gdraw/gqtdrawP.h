@@ -45,6 +45,14 @@ struct GQtWidget : QWidget
     GQtWindow *gwindow = nullptr;
 };
 
+struct GQtTimer : QTimer
+{
+    explicit GQtTimer(GQtWindow *parent, void *userdata);
+    GTimer* Base() const { return const_cast<GTimer*>(&gtimer); }
+
+    GTimer gtimer;
+};
+
 struct GQtDisplay
 {
     struct gdisplay base;

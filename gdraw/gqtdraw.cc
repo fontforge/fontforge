@@ -653,7 +653,7 @@ static void GQtDrawProcessPendingEvents(GDisplay *disp) {
 
 static void GQtDrawProcessOneEvent(GDisplay *disp) {
     //Log(LOGDEBUG, " ");
-    GQtD(disp)->app->processEvents();
+    GQtD(disp)->app->processEvents(QEventLoop::WaitForMoreEvents);
 }
 
 static void GQtDrawEventLoop(GDisplay *disp) {
@@ -681,13 +681,48 @@ static int GQtDrawShortcutKeyMatches(const GEvent *e, unichar_t ch) {
     return false;
 }
 
+GQtTimer::GQtTimer(GQtWindow *parent, void *userdata)
+    : QTimer(parent->Widget())
+    , gtimer{parent->Base(), this, userdata}
+{
+}
+
 static GTimer *GQtDrawRequestTimer(GWindow w, int32 time_from_now, int32 frequency, void *userdata) {
-    //Log(LOGDEBUG, " ");
-    return nullptr;
+    Log(LOGDEBUG, " ");
+    GQtTimer *timer = new GQtTimer(GQtW(w), userdata);
+    if (frequency == 0) {
+        timer->setSingleShot(true);
+    }
+
+    QObject::connect(timer, &QTimer::timeout, [timer, frequency]{
+        GEvent e = {};
+
+        // if (_GGDKDraw_WindowOrParentsDying((GGDKWindow)timer->owner)) {
+        //     return;
+        // }
+
+        e.type = et_timer;
+        e.w = timer->Base()->owner;
+        e.native_window = GQtW(e.w);
+        e.u.timer.timer = timer->Base();
+        e.u.timer.userdata = timer->Base()->userdata;
+
+        _GQtDraw_CallEHChecked(GQtW(e.w), &e, e.w->eh);
+        if (frequency) {
+            timer->setInterval(frequency);
+        }
+    });
+
+    timer->setInterval(time_from_now);
+    timer->start();
+    return timer->Base();
 }
 
 static void GQtDrawCancelTimer(GTimer *timer) {
-    //Log(LOGDEBUG, " ");
+    Log(LOGDEBUG, " ");
+    GQtTimer *gtimer = (GQtTimer*)timer->impl;
+    gtimer->stop();
+    gtimer->deleteLater();
 }
 
 
@@ -983,6 +1018,8 @@ static struct displayfuncs gqtfuncs = {
 };
 
 extern "C" GDisplay *_GQtDraw_CreateDisplay(char *displayname, int *argc, char ***argv) {
+    LogInit();
+
     std::unique_ptr<GQtDisplay> gdisp(new GQtDisplay());
     gdisp->app.reset(new QApplication(*argc, *argv));
 
