@@ -40,14 +40,21 @@ namespace fontforge { namespace gdraw {
 
 struct GQtWindow;
 
+struct GQtWidget : QWidget
+{
+    GQtWindow *gwindow = nullptr;
+};
+
 struct GQtDisplay
 {
     struct gdisplay base;
-    std::unique_ptr<QGuiApplication> app;
+    std::unique_ptr<QApplication> app;
     std::vector<QCursor> custom_cursors;
     GQtWindow *default_icon = nullptr;
 
-    inline GDisplay* operator()() const { return &base; }
+    int top_window_count = 0; // The number of toplevel, non-dialogue windows. When this drops to 0, the event loop stops
+
+    inline GDisplay* Base() const { return const_cast<GDisplay*>(&base); }
 };
 
 struct GQtWindow
@@ -55,10 +62,21 @@ struct GQtWindow
     struct gwindow base;
     void *q_base = nullptr;
 
+    unsigned int is_dlg: 1;
+    unsigned int was_positioned: 1;
+    unsigned int restrict_input_to_me: 1;/* for dialogs, no input outside of dlg */
+    unsigned int istransient: 1;	/* has transient for hint set */
+    unsigned int isverytransient: 1;
+    unsigned int is_cleaning_up: 1; //Are we running cleanup?
+    unsigned int is_centered: 1;
+    unsigned int is_waiting_for_selection: 1;
+    unsigned int is_notified_of_selection: 1;
+    unsigned int is_in_paint: 1; // Have we called gdk_window_begin_paint_region?
+
     std::string window_title;
     GCursor current_cursor = ct_default;
 
-    inline GWindow operator()() const { return &base; }
+    inline GWindow Base() const { return const_cast<GWindow>(&base); }
 
     inline QPixmap* Pixmap() const {
         assert(base.is_pixmap);
@@ -74,11 +92,6 @@ struct GQtWindow
     {
         return static_cast<GQtDisplay*>(base.display->impl);
     }
-};
-
-struct GQtWidget : QWidget
-{
-    GQtWindow *gwindow;
 };
 
 static inline GQtDisplay* GQtD(GDisplay *d) {

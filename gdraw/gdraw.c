@@ -744,7 +744,7 @@ void GDrawCreateDisplays(char *displayname, int *argc, char ***argv) {
     gdk_init(argc, argv);
     screen_display = _GGDKDraw_CreateDisplay(displayname, (*argv)[0]);
 #elif defined(FONTFORGE_CAN_USE_QT)
-    screen_display = _GQtDraw_CreateDisplay(displayname, (*argv)[0]);
+    screen_display = _GQtDraw_CreateDisplay(displayname, argc, argv);
 #else
     screen_display = _GXDraw_CreateDisplay(displayname,(*argv)[0]);
 #endif

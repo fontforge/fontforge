@@ -256,7 +256,7 @@ typedef struct gwindow_attrs {
     const char *utf8_icon_title;
 } GWindowAttrs;
 
-#define GWINDOWATTRS_EMPTY { 0, 0, 0, 0, 0, 0, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL }
+#define GWINDOWATTRS_EMPTY { (window_attr_mask)0, 0, 0, 0, 0, ct_default, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL }
 
 typedef struct gdeveventmask {
     int event_mask;
