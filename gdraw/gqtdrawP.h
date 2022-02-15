@@ -42,7 +42,40 @@ struct GQtWindow;
 
 struct GQtWidget : QWidget
 {
+    explicit GQtWidget(GQtWindow *base, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags())
+    : QWidget(parent, f)
+    , gwindow(base)
+    {}
+
+    ~GQtWidget()
+    {
+        Log(LOGDEBUG, "CLEANUP %p", this);
+    }
+    void paintEvent(QPaintEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override;
+    void moveEvent(QMoveEvent *event) override;
+    void configureEvent();
+
+    QPainter* Painter() { return painter; }
+
+    QPainter *painter = nullptr;
     GQtWindow *gwindow = nullptr;
+};
+
+struct GQtPixmap : QPixmap
+{
+    explicit GQtPixmap(int w, int h)
+        : QPixmap(w, h)
+    {}
+
+    QPainter* Painter() {
+        if (!painter.isActive()) {
+            painter.begin(this);
+        }
+        return &painter;
+    }
+
+    QPainter painter;
 };
 
 struct GQtTimer : QTimer
@@ -87,9 +120,17 @@ struct GQtWindow
 
     inline GWindow Base() const { return const_cast<GWindow>(&base); }
 
-    inline QPixmap* Pixmap() const {
+    inline GQtPixmap* Pixmap() const {
         assert(base.is_pixmap);
-        return static_cast<QPixmap*>(q_base);
+        return static_cast<GQtPixmap*>(q_base);
+    }
+
+    inline QPainter* Painter() {
+        if (base.is_pixmap) {
+            return Pixmap()->Painter();
+        } else {
+            return Widget()->Painter();
+        }
     }
 
     inline GQtWidget* Widget() const {
