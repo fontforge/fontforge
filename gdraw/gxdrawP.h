@@ -270,6 +270,7 @@ typedef struct gxdisplay /* : GDisplay */ {
     struct font_state *fontstate;
     GXWindow groot;
     char * err_report;
+    void *impl;
     int16_t res;
     /* Inherit GDisplay end */
 

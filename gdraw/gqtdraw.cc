@@ -858,247 +858,87 @@ static QBrush GQtDraw_StippleMePink(int ts, Color fg) {
     return QBrush(pattern);
 }
 
-#if 0
 static QImage _GQtDraw_GImage2QImage(GImage *image, GRect *src) {
     const struct _GImage *base = (image->list_len == 0) ? image->u.image : image->u.images[0];
-    QImage::Format format;
     QImage ret;
 
-    cairo_format_t type;
-    uint8 *pt;
-    uint32 *idata, *ipt, *ito;
-    int i, j, jj, tjj, stride;
-    int bit, tobit;
-    cairo_surface_t *cs;
-
     if (base->image_type == it_rgba) {
-        ret = QImage(base->data, base->width, base->height, base->bytes_per_line, QImage::Format_ARGB32);
-    } else if (base->image_type == it_true && base->trans != COLOR_UNKNOWN) {
-        ret = QImage(base->data, base->width, base->height, base->bytes_per_line, QImage::Format_RGB24);
-        ret = ret.convertToFormat(QImage::Format_ARGB32);
-        // apply trans...
-    } else if (base->image_type == it_index && base->clut->trans_index != COLOR_UNKNOWN) {
-        format = QImage::Format_ARGB32;
+        ret = QImage(base->data + (src->y * base->bytes_per_line), src->width, src->height, base->bytes_per_line, QImage::Format_ARGB32);
     } else if (base->image_type == it_true) {
-        ret = QImage(base->data, base->width, base->height, base->bytes_per_line, QImage::Format_RGB24)
-    } else if (base->image_type == it_mono && base->clut != NULL &&
-               base->clut->trans_index != COLOR_UNKNOWN) {
-        type = QImage::Format_MonoLSB;
-    } else {
-        format = QImage::Format_RGB32;
-    }
+        ret = QImage(base->data + (src->y * base->bytes_per_line), src->width, src->height, base->bytes_per_line, QImage::Format_RGB32);
+        if (base->trans != COLOR_UNKNOWN) {
+            ret = ret.convertToFormat(QImage::Format_ARGB32);
 
-    /* We can't reuse the image's data for alpha images because we must */
-    /*  premultiply each channel by alpha. We can reuse it for non-transparent*/
-    /*  rgb images */
-    if (base->image_type == it_true && type == CAIRO_FORMAT_RGB24) {
-        idata = ((uint32 *)(base->data + src->y * base->bytes_per_line)) + src->x;
-        return cairo_image_surface_create_for_data((uint8 *) idata, type,
-                src->width, src->height,
-                base->bytes_per_line);
-    }
-
-    cs = cairo_image_surface_create(type, src->width, src->height);
-    stride = cairo_image_surface_get_stride(cs);
-    cairo_surface_flush(cs);
-    idata = (uint32 *)cairo_image_surface_get_data(cs);
-
-    if (base->image_type == it_rgba) {
-        ipt = ((uint32 *)(base->data + src->y * base->bytes_per_line)) + src->x;
-        ito = idata;
-        for (i = 0; i < src->height; ++i) {
-            for (j = 0; j < src->width; ++j) {
-                uint32 orig = ipt[j];
-                int alpha = orig >> 24;
-                if (alpha == 0xff) {
-                    ito[j] = orig;
-                } else if (alpha == 0) {
-                    ito[j] = 0x00000000;
-                } else
-                    ito[j] = (alpha << 24) |
-                             ((COLOR_RED(orig) * alpha / 255) << 16) |
-                             ((COLOR_GREEN(orig) * alpha / 255) << 8) |
-                             ((COLOR_BLUE(orig) * alpha / 255));
-            }
-            ipt = (uint32 *)(((uint8 *) ipt) + base->bytes_per_line);
-            ito = (uint32 *)(((uint8 *) ito) + stride);
-        }
-    } else if (base->image_type == it_true && base->trans != COLOR_UNKNOWN) {
-        Color trans = base->trans;
-        ipt = ((uint32 *)(base->data + src->y * base->bytes_per_line)) + src->x;
-        ito = idata;
-        for (i = 0; i < src->height; ++i) {
-            for (j = 0; j < src->width; ++j) {
-                if (ipt[j] == trans) {
-                    ito[j] = 0x00000000;
-                } else {
-                    ito[j] = ipt[j] | 0xff000000;
+            QRgb trans = base->trans;
+            for (int i = 0; i < src->height; ++i) {
+                auto* line = reinterpret_cast<QRgb*>(ret.scanLine(i));
+                for (int j = 0; j < src->width; ++j) {
+                    if (line[j] == trans) {
+                        line[j] = 0x00000000;
+                    }
                 }
             }
-            ipt = (uint32 *)(((uint8 *) ipt) + base->bytes_per_line);
-            ito = (uint32 *)(((uint8 *) ito) + stride);
-        }
-    } else if (base->image_type == it_true) {
-        ipt = ((uint32 *)(base->data + src->y * base->bytes_per_line)) + src->x;
-        ito = idata;
-        for (i = 0; i < src->height; ++i) {
-            for (j = 0; j < src->width; ++j) {
-                ito[j] = ipt[j] | 0xff000000;
-            }
-            ipt = (uint32 *)(((uint8 *) ipt) + base->bytes_per_line);
-            ito = (uint32 *)(((uint8 *) ito) + stride);
-        }
-    } else if (base->image_type == it_index && base->clut->trans_index != COLOR_UNKNOWN) {
-        int trans = base->clut->trans_index;
-        Color *clut = base->clut->clut;
-        pt = base->data + src->y * base->bytes_per_line + src->x;
-        ito = idata;
-        for (i = 0; i < src->height; ++i) {
-            for (j = 0; j < src->width; ++j) {
-                int index = pt[j];
-                if (index == trans) {
-                    ito[j] = 0x00000000;
-                } else
-                    /* In theory RGB24 images don't need the alpha channel set*/
-                    /*  but there is a bug in Cairo 1.2, and they do. */
-                {
-                    ito[j] = clut[index] | 0xff000000;
-                }
-            }
-            pt += base->bytes_per_line;
-            ito = (uint32 *)(((uint8 *) ito) + stride);
         }
     } else if (base->image_type == it_index) {
-        Color *clut = base->clut->clut;
-        pt = base->data + src->y * base->bytes_per_line + src->x;
-        ito = idata;
-        for (i = 0; i < src->height; ++i) {
-            for (j = 0; j < src->width; ++j) {
-                int index = pt[j];
-                ito[j] = clut[index] | 0xff000000;
-            }
-            pt += base->bytes_per_line;
-            ito = (uint32 *)(((uint8 *) ito) + stride);
+        ret = QImage(base->data + (src->y * base->bytes_per_line), src->width, src->height, base->bytes_per_line, QImage::Format_Indexed8);
+        ret.setColorCount(256);
+        for (int i = 0; i < 256; ++i) {
+            ret.setColor(i, 0xff000000 | base->clut->clut[i]);
         }
+        if (base->clut->trans_index != COLOR_UNKNOWN) {
+            ret.setColor(base->clut->trans_index, 0);
+        }
+    } else if (base->image_type == it_mono) {
+        ret = QImage(base->data, src->width, src->height, QImage::Format_ARGB32);
+        QRgb fg = 0xffffffff;
+        QRgb bg = 0xff000000;
+
+        if (base->clut) {
+            if (base->clut->trans_index != COLOR_UNKNOWN) {
+                bg = 0x0000000;
+                if (base->clut->trans_index == 1) {
+                    fg = 0x00000000;
+                    bg = 0xffffffff;
+                }
+            } else {
+                fg = 0xff000000 | base->clut->clut[1];
+                bg = 0xff000000 | base->clut->clut[1];
+            }
+        }
+
+        uint8_t *pt = base->data + src->y * base->bytes_per_line + (src->x >> 3);
 #ifdef WORDS_BIGENDIAN
-    } else if (base->image_type == it_mono && base->clut != NULL &&
-               base->clut->trans_index != COLOR_UNKNOWN) {
-        pt = base->data + src->y * base->bytes_per_line + (src->x >> 3);
-        ito = idata;
-        if (base->clut->trans_index == 0) {
-            for (i = 0; i < src->height; ++i) {
-                bit = (0x80 >> (src->x & 0x7));
-                tobit = 0x80000000;
-                for (j = jj = tjj = 0; j < src->width; ++j) {
-                    if (pt[jj]&bit) {
-                        ito[tjj] |= tobit;
-                    }
-                    if ((bit >>= 1) == 0) {
-                        bit = 0x80;
-                        ++jj;
-                    }
-                    if ((tobit >>= 1) == 0) {
-                        tobit = 0x80000000;
-                        ++tjj;
-                    }
-                }
-                pt += base->bytes_per_line;
-                ito = (uint32 *)(((uint8 *) ito) + stride);
-            }
-        } else {
-            for (i = 0; i < src->height; ++i) {
-                bit = (0x80 >> (src->x & 0x7));
-                tobit = 0x80000000;
-                for (j = jj = tjj = 0; j < src->width; ++j) {
-                    if (!(pt[jj]&bit)) {
-                        ito[tjj] |= tobit;
-                    }
-                    if ((bit >>= 1) == 0) {
-                        bit = 0x80;
-                        ++jj;
-                    }
-                    if ((tobit >>= 1) == 0) {
-                        tobit = 0x80000000;
-                        ++tjj;
-                    }
-                }
-                pt += base->bytes_per_line;
-                ito = (uint32 *)(((uint8 *) ito) + stride);
-            }
-        }
-#else
-    } else if (base->image_type == it_mono && base->clut != NULL &&
-               base->clut->trans_index != COLOR_UNKNOWN) {
-        pt = base->data + src->y * base->bytes_per_line + (src->x >> 3);
-        ito = idata;
-        if (base->clut->trans_index == 0) {
-            for (i = 0; i < src->height; ++i) {
-                bit = (0x80 >> (src->x & 0x7));
-                tobit = 1;
-                for (j = jj = tjj = 0; j < src->width; ++j) {
-                    if (pt[jj]&bit) {
-                        ito[tjj] |= tobit;
-                    }
-                    if ((bit >>= 1) == 0) {
-                        bit = 0x80;
-                        ++jj;
-                    }
-                    if ((tobit <<= 1) == 0) {
-                        tobit = 0x1;
-                        ++tjj;
-                    }
-                }
-                pt += base->bytes_per_line;
-                ito = (uint32 *)(((uint8 *) ito) + stride);
-            }
-        } else {
-            for (i = 0; i < src->height; ++i) {
-                bit = (0x80 >> (src->x & 0x7));
-                tobit = 1;
-                for (j = jj = tjj = 0; j < src->width; ++j) {
-                    if (!(pt[jj]&bit)) {
-                        ito[tjj] |= tobit;
-                    }
-                    if ((bit >>= 1) == 0) {
-                        bit = 0x80;
-                        ++jj;
-                    }
-                    if ((tobit <<= 1) == 0) {
-                        tobit = 0x1;
-                        ++tjj;
-                    }
-                }
-                pt += base->bytes_per_line;
-                ito = (uint32 *)(((uint8 *) ito) + stride);
-            }
-        }
-#endif
-    } else {
-        Color fg = base->clut == NULL ? 0xffffff : base->clut->clut[1];
-        Color bg = base->clut == NULL ? 0x000000 : base->clut->clut[0];
-        /* In theory RGB24 images don't need the alpha channel set*/
-        /*  but there is a bug in Cairo 1.2, and they do. */
-        fg |= 0xff000000;
-        bg |= 0xff000000;
-        pt = base->data + src->y * base->bytes_per_line + (src->x >> 3);
-        ito = idata;
-        for (i = 0; i < src->height; ++i) {
-            bit = (0x80 >> (src->x & 0x7));
-            for (j = jj = 0; j < src->width; ++j) {
-                ito[j] = (pt[jj] & bit) ? fg : bg;
+        for (int i = 0; i < src->height; ++i) {
+            auto* line = reinterpret_cast<QRgb*>(ret.scanLine(i));
+            int bit = (0x80 >> (src->x & 0x7));
+            for (int j = 0, jj = 0; j < src->width; ++j) {
+                line[j] = (pt[jj] & bit) ? fg : bg;
                 if ((bit >>= 1) == 0) {
                     bit = 0x80;
                     ++jj;
                 }
             }
             pt += base->bytes_per_line;
-            ito = (uint32 *)(((uint8 *) ito) + stride);
         }
-    }
-    cairo_surface_mark_dirty(cs);
-    return cs;
-}
+#else
+        for (int i = 0; i < src->height; ++i) {
+            auto* line = reinterpret_cast<QRgb*>(ret.scanLine(i));
+            int bit = (1 << (src->x & 0x7));
+            for (int j = 0, jj = 0; j < src->width; ++j) {
+                line[j] = (pt[jj] & bit) ? fg : bg;
+                if ((bit <<= 1) == 0) {
+                    bit = 0x1;
+                    ++jj;
+                }
+            }
+            pt += base->bytes_per_line;
+        }
 #endif
+    } else {
+        assert(false);
+    }
+    return ret;
+}
 
 static void GQtDrawPushClip(GWindow w, GRect *rct, GRect *old) {
     Log(LOGDEBUG, " ");
@@ -1189,6 +1029,8 @@ static QBrush GQtDrawGetBrush(GGC *mine) {
 static QFont GQtDrawGetFont(GFont *font) {
     QFont fd;
 
+    // fd.setStyleHint(QFont::System);
+    // fd.setFamily("Courier");
     fd.setFamily(QString::fromUtf8(font->rq.utf8_family_name));
     fd.setStyle((font->rq.style & fs_italic) ?
                     QFont::StyleItalic : QFont::StyleNormal);
@@ -1408,43 +1250,8 @@ static void GQtDrawFillPoly(GWindow w, GPoint *pts, int16_t cnt, Color col) {
 static void GQtDrawDrawImage(GWindow w, GImage *image, GRect *src, int32 x, int32 y) {
     Log(LOGDEBUG, " ");
 
-#if 0
-    cairo_surface_t *is = _GGDKDraw_GImage2Surface(image, src), *cs = is;
-    struct _GImage *base = (image->list_len == 0) ? image->u.image : image->u.images[0];
-
-    if (cairo_image_surface_get_format(is) == CAIRO_FORMAT_A1) {
-        /* No color info, just alpha channel */
-        Color fg = base->clut->trans_index == 0 ? base->clut->clut[1] : base->clut->clut[0];
-#ifdef GDK_WINDOWING_QUARTZ
-        // The quartz backend cannot mask/render A1 surfaces directly
-        // So render to intermediate ARGB32 surface first, then render that to screen
-        cs = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, src->width, src->height);
-        cairo_t *cc = cairo_create(cs);
-        cairo_set_source_rgba(cc, COLOR_RED(fg) / 255.0, COLOR_GREEN(fg) / 255.0, COLOR_BLUE(fg) / 255.0, 1.0);
-        cairo_mask_surface(cc, is, 0, 0);
-        cairo_destroy(cc);
-#else
-        cairo_set_source_rgba(COLOR_RED(fg) / 255.0, COLOR_GREEN(fg) / 255.0, COLOR_BLUE(fg) / 255.0, 1.0);
-        cairo_mask_surface(cs, x, y);
-        cs = NULL;
-#endif
-    }
-
-    if (cs != NULL) {
-        cairo_set_source_surface(cs, x, y);
-        cairo_rectangle(x, y, src->width, src->height);
-        cairo_fill(gw->cc);
-
-        if (cs != is) {
-            cairo_surface_destroy(cs);
-        }
-    }
-    /* Clear source and mask, in case we need to */
-    cairo_new_path(gw->cc);
-    cairo_set_source_rgba(0, 0, 0, 0);
-
-    cairo_surface_destroy(is);
-#endif
+    QImage img = _GQtDraw_GImage2QImage(image, src);
+    GQtW(w)->Painter()->drawImage(x, y, img);
 }
 
 // What we really want to do is use the grey levels as an alpha channel
@@ -1459,6 +1266,7 @@ static void GQtDrawDrawImageMagnified(GWindow w, GImage *image, GRect *src, int3
 static void GQtDrawDrawPixmap(GWindow w, GWindow pixmap, GRect *src, int32 x, int32 y) {
     Log(LOGDEBUG, " ");
 
+    // GQtW(pixmap)->Painter()->end(); //hm
     GQtW(w)->Painter()->drawPixmap(x, y, *GQtW(pixmap)->Pixmap(), src->x, src->y, src->width, src->height);
 }
 
@@ -1527,6 +1335,7 @@ static int GQtDrawDoText8(GWindow w, int32 x, int32 y, const char *text, int32 c
             return 0;
         }
         QRect bounds;
+        GQtW(w)->Painter()->setFont(fd);
         GQtW(w)->Painter()->drawText(rct, 0, qtext, &bounds);
         return bounds.width();
     } else if (drawit == tf_rect) {

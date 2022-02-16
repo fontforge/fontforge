@@ -222,7 +222,7 @@ typedef enum cursor_types { ct_default, ct_pointer, ct_backpointer, ct_hand,
 	ct_invisible, 
 	ct_user, ct_user2 /* and so on */ } GCursor;
 
-enum window_attr_mask { wam_events=0x2, wam_bordwidth=0x4,
+enum window_attr_mask { wam_none = 0, wam_events=0x2, wam_bordwidth=0x4,
 			wam_bordcol=0x8, wam_backcol=0x10, wam_cursor=0x20, /*wam_wtitle=0x40,*/
 			/*wam_ititle=0x80,*/ wam_icon=0x100, wam_nodecor=0x200,
 			wam_positioned=0x400, wam_centered=0x800, wam_undercursor=0x1000,
@@ -256,7 +256,7 @@ typedef struct gwindow_attrs {
     const char *utf8_icon_title;
 } GWindowAttrs;
 
-#define GWINDOWATTRS_EMPTY { (window_attr_mask)0, 0, 0, 0, 0, ct_default, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL }
+#define GWINDOWATTRS_EMPTY { wam_none, 0, 0, 0, 0, ct_default, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL }
 
 typedef struct gdeveventmask {
     int event_mask;
