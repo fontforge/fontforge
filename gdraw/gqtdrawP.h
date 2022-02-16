@@ -71,6 +71,8 @@ struct GQtPixmap : QPixmap
     QPainter* Painter() {
         if (!painter.isActive()) {
             painter.begin(this);
+            painter.setRenderHint(QPainter::Antialiasing);
+            painter.setRenderHint(QPainter::HighQualityAntialiasing);
         }
         return &painter;
     }

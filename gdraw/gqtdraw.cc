@@ -152,6 +152,7 @@ static GWindow _GQtDraw_CreateWindow(GQtDisplay *gdisp, GWindow w, GRect *pos,
     std::unique_ptr<GQtWidget> window(new GQtWidget(nw.get(), parent, windowFlags));
     nw->q_base = window.get();
 
+    window->setWindowTitle(title);
     window->resize(pos->width, pos->height);
 
     // We center windows here because we need to know the window size+decor
@@ -266,6 +267,8 @@ static GWindow _GQtDraw_NewPixmap(GDisplay *disp, GWindow similar, uint16 width,
 void GQtWidget::paintEvent(QPaintEvent *event) {
     Log(LOGDEBUG, "PAINTING %p %s", this->gwindow, this->gwindow->window_title.c_str());
     QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setRenderHint(QPainter::HighQualityAntialiasing);
     this->painter = &painter;
 
     const QRect& rect = event->rect();
