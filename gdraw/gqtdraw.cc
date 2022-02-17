@@ -155,13 +155,7 @@ static GWindow _GQtDraw_CreateWindow(GQtDisplay *gdisp, GWindow w, GRect *pos,
     window->setWindowTitle(title);
     window->resize(pos->width, pos->height);
 
-    // We center windows here because we need to know the window size+decor
-    // There is a bug on Windows (all versions < 3.21.1, <= 2.24.30) so don't use Qt_WA_X/Qt_WA_Y
-    // https://bugzilla.gnome.org/show_bug.cgi?id=764996
-    if (ret->is_toplevel && (!(wattrs->mask & wam_positioned) || (wattrs->mask & wam_centered))) {
-        nw->is_centered = true;
-        // _GQtDraw_CenterWindowOnScreen(nw);
-    } else {
+    if (!ret->is_toplevel || ((wattrs->mask & wam_positioned) && !(wattrs->mask & wam_centered))) {
         window->move(ret->pos.x, ret->pos.y);
     }
 
@@ -307,7 +301,6 @@ void GQtWidget::configureEvent() {
     gevent.u.resize.moved       = gevent.u.resize.sized = false;
     if (gevent.u.resize.dx != 0 || gevent.u.resize.dy != 0) {
         gevent.u.resize.moved = true;
-        this->gwindow->is_centered = false;
     }
     if (gevent.u.resize.dwidth != 0 || gevent.u.resize.dheight != 0) {
         gevent.u.resize.sized = true;
@@ -338,6 +331,90 @@ void GQtWidget::resizeEvent(QResizeEvent *event) {
 
 void GQtWidget::moveEvent(QMoveEvent *event) {
     configureEvent();
+}
+
+
+void GQtWidget::mousePressEvent(QMouseEvent *event)
+{
+    GEvent gevent = {};
+    gevent.w = this->gwindow->Base();
+    gevent.native_window = this->gwindow;
+    gevent.type = et_mousedown;
+
+
+    gevent.u.mouse.state = _GQtDraw_QtModifierToKsm(GQtD(gevent.w)->app->keyboardModifiers());
+    gevent.u.mouse.x = event->x();
+    gevent.u.mouse.y = event->y();
+    switch (event->button())
+    {
+    case Qt::LeftButton:
+        gevent.u.mouse.button = 1;
+        break;
+    case Qt::MiddleButton:
+        gevent.u.mouse.button = 2;
+        break;
+    case Qt::RightButton:
+        gevent.u.mouse.button = 3;
+        break;
+    default:
+        gevent.u.mouse.button = 4;
+    }
+    // gevent.u.mouse.time = evt->time; TODO
+    _GQtDraw_CallEHChecked(this->gwindow, &gevent, gevent.w->eh);
+
+    // Log(LOGDEBUG, "Button %7s: [%f %f]", evt->type == GDK_BUTTON_PRESS ? "press" : "release", evt->x, evt->y);
+}
+
+void GQtWidget::mouseReleaseEvent(QMouseEvent *event)
+{
+    GEvent gevent = {};
+    gevent.w = this->gwindow->Base();
+    gevent.native_window = this->gwindow;
+    gevent.type = et_mouseup;
+
+    gevent.u.mouse.state = _GQtDraw_QtModifierToKsm(GQtD(gevent.w)->app->keyboardModifiers());
+    gevent.u.mouse.x = event->x();
+    gevent.u.mouse.y = event->y();
+    switch (event->button())
+    {
+    case Qt::LeftButton:
+        gevent.u.mouse.button = 1;
+        break;
+    case Qt::MiddleButton:
+        gevent.u.mouse.button = 2;
+        break;
+    case Qt::RightButton:
+        gevent.u.mouse.button = 3;
+        break;
+    default:
+        gevent.u.mouse.button = 4;
+    }
+    // gevent.u.mouse.time = evt->time; TODO
+    _GQtDraw_CallEHChecked(this->gwindow, &gevent, gevent.w->eh);
+
+    // Log(LOGDEBUG, "Button %7s: [%f %f]", evt->type == GDK_BUTTON_PRESS ? "press" : "release", evt->x, evt->y);
+}
+
+void GQtWidget::showEvent(QShowEvent *event)
+{
+    GEvent gevent = {};
+    gevent.w = this->gwindow->Base();
+    gevent.native_window = this->gwindow;
+    gevent.type = et_map;
+    gevent.u.map.is_visible = true;
+    gevent.w->is_visible = true;
+    _GQtDraw_CallEHChecked(this->gwindow, &gevent, gevent.w->eh);
+}
+
+void GQtWidget::hideEvent(QHideEvent *event)
+{
+    GEvent gevent = {};
+    gevent.w = this->gwindow->Base();
+    gevent.native_window = this->gwindow;
+    gevent.type = et_map;
+    gevent.u.map.is_visible = false;
+    gevent.w->is_visible = false;
+    _GQtDraw_CallEHChecked(this->gwindow, &gevent, gevent.w->eh);
 }
 
 static void GQtDrawInit(GDisplay *disp) {
@@ -830,9 +907,9 @@ static void GQtDrawCancelTimer(GTimer *timer) {
 
 
 static QBrush GQtDraw_StippleMePink(int ts, Color fg) {
-    static unsigned char grey_init[8] = {0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa};
-    static unsigned char fence_init[8] = {0x55, 0x22, 0x55, 0x88, 0x55, 0x22, 0x55, 0x88};
-    uint8 *spt;
+    static const unsigned char grey_init[8] = {0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa};
+    static const unsigned char fence_init[8] = {0x55, 0x22, 0x55, 0x88, 0x55, 0x22, 0x55, 0x88};
+    const uint8 *spt;
     int bit, i, j;
     uint32 *data;
     uint32 space[8 * 8];
@@ -857,8 +934,11 @@ static QBrush GQtDraw_StippleMePink(int ts, Color fg) {
         }
     }
 
-    QImage pattern((const unsigned char*)space, 8, 8, QImage::Format_ARGB32);
-    return QBrush(pattern);
+    QImage pattern((const unsigned char*)space, 8, 8, QImage::Format_ARGB32_Premultiplied);
+    // QBrush brush(pattern);
+    QBrush brush((ts == 2) ? Qt::Dense5Pattern : Qt::Dense4Pattern);
+    brush.setColor(fg);
+    return brush;
 }
 
 static QImage _GQtDraw_GImage2QImage(GImage *image, GRect *src) {
@@ -1333,15 +1413,29 @@ static int GQtDrawDoText8(GWindow w, int32 x, int32 y, const char *text, int32 c
     QFont fd = GQtDrawGetFont(fi);
     QString qtext = QString::fromUtf8(text);
     if (drawit == tf_drawit) {
-        QRect rct(x, y, w->ggc->clip.width - x, w->ggc->clip.height - y);
-        if (!rct.isValid()) {
-            return 0;
-        }
+        // QFontMetrics metrics(fd);
+        // y -= metrics.ascent() + metrics.descent();
+        // QRect rct(x, y, w->ggc->clip.x + w->ggc->clip.width - x, w->ggc->clip.y + w->ggc->clip.height - y);
+        // if (!rct.isValid()) {
+        //     return 0;
+        // }
         QRect bounds;
         GQtW(w)->Painter()->setFont(fd);
-        GQtW(w)->Painter()->drawText(rct, 0, qtext, &bounds);
-        return bounds.width();
+        GQtW(w)->Painter()->drawText(x, y, qtext);
+        return 0;
+        // GQtW(w)->Painter()->drawText(rct, Qt::AlignLeft|Qt::AlignBottom, qtext, &bounds);
+        // return bounds.width();
     } else if (drawit == tf_rect) {
+        QFontMetrics metrics(fd);
+        QRect br = metrics.tightBoundingRect(qtext);
+        arg->size.width = metrics.horizontalAdvance(qtext);
+        arg->size.lbearing = -br.x();
+        arg->size.rbearing = br.width() - br.x();
+        arg->size.fas = metrics.ascent();
+        arg->size.fds = metrics.descent();
+        arg->size.as = metrics.ascent();
+        arg->size.ds = metrics.descent();
+
         QTextLayout layout; // qt 5.13 supports these relative to the paint device...
         layout.setText(qtext);
         layout.setFont(fd);
@@ -1352,19 +1446,11 @@ static int GQtDrawDoText8(GWindow w, int32 x, int32 y, const char *text, int32 c
             memset(&arg->size, 0, sizeof(arg->size));
             return 0;
         } else {
-            QFontMetrics metrics(fd);
             line.setLineWidth(w->ggc->clip.width - x);
-            auto ink = line.naturalTextRect();
-            auto rect = line.rect();
-            arg->size.lbearing = ink.x() - rect.x();
-            arg->size.rbearing = ink.x() + ink.width() - rect.x();
-            arg->size.width = ink.width();
             arg->size.as = line.ascent();
-            arg->size.ds = line.descent(); // leading?
-            arg->size.fas = metrics.ascent();
-            arg->size.fds = metrics.descent();
-            return arg->size.width;
+            arg->size.ds = line.descent();
         }
+        return arg->size.width;
     }
 
     QFontMetrics metrics(fd);

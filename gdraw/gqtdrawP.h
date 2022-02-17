@@ -55,6 +55,10 @@ struct GQtWidget : QWidget
     void resizeEvent(QResizeEvent *event) override;
     void moveEvent(QMoveEvent *event) override;
     void configureEvent();
+    void mousePressEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
+    void showEvent(QShowEvent *event) override;
+    void hideEvent(QHideEvent *event) override;
 
     QPainter* Painter() { return painter; }
 
@@ -112,7 +116,6 @@ struct GQtWindow
     unsigned int istransient: 1;	/* has transient for hint set */
     unsigned int isverytransient: 1;
     unsigned int is_cleaning_up: 1; //Are we running cleanup?
-    unsigned int is_centered: 1;
     unsigned int is_waiting_for_selection: 1;
     unsigned int is_notified_of_selection: 1;
     unsigned int is_in_paint: 1; // Have we called gdk_window_begin_paint_region?
