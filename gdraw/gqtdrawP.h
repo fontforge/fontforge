@@ -41,6 +41,16 @@ namespace fontforge { namespace gdraw {
 
 struct GQtWindow;
 
+typedef struct gqtbuttonstate {
+    uint32_t last_press_time;
+    GQtWindow *release_w;
+    int16_t release_x, release_y;
+    int16_t release_button;
+    int16_t cur_click;
+    int16_t double_time;		// max milliseconds between release & click
+    int16_t double_wiggle;	// max pixel wiggle allowed between release&click
+} GQtButtonState;
+
 struct GQtWidget : QWidget
 {
     explicit GQtWidget(GQtWindow *base, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags())
@@ -62,6 +72,7 @@ struct GQtWidget : QWidget
     void paintEvent(QPaintEvent *event) override;
     void resizeEvent(QResizeEvent *event) override { configureEvent(); }
     void moveEvent(QMoveEvent *event) override { configureEvent(); }
+    void wheelEvent(QWheelEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override { mouseEvent(event, et_mousedown); }
     void mouseReleaseEvent(QMouseEvent *event) override { mouseEvent(event, et_mouseup); }
@@ -79,9 +90,9 @@ struct GQtWidget : QWidget
     void focusEvent(QFocusEvent* event, bool focusIn);
     void crossingEvent(QEvent* event, bool enter);
     
-    QPainter* Painter() { return painter; }
+    QPainter* Painter();
 
-    QPainter *painter = nullptr;
+    std::unique_ptr<QPainter> painter;
     GQtWindow *gwindow = nullptr;
 };
 
@@ -123,6 +134,8 @@ struct GQtDisplay
     int top_window_count = 0; // The number of toplevel, non-dialogue windows. When this drops to 0, the event loop stops
     ulong last_event_time = 0;
     GQtWindow *grabbed_window = nullptr;
+
+    GQtButtonState bs;
 
     inline GDisplay* Base() const { return const_cast<GDisplay*>(&base); }
 };

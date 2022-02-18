@@ -273,6 +273,25 @@ void GQtWidget::DispatchEvent(const GEvent& e) {
     if (e.w->eh && e.type != et_noevent) {
         (e.w->eh)(e.w, const_cast<GEvent*>(&e)); //yuck
     }
+    if (painter) {
+        Log(LOGDEBUG, "[%] [%s] Cleaning up auto-painter",
+            this->gwindow, this->gwindow->window_title.c_str());
+        painter.reset();
+        backingStore()->endPaint();
+    }
+}
+
+QPainter* GQtWidget::Painter() {
+    if (!painter) {
+        Log(LOGWARN, "[%p] [%s] Auto-creating painter",
+            this->gwindow, this->gwindow->window_title.c_str());
+        
+        const auto& clip = this->gwindow->Base()->ggc->clip;
+        QRegion region(QRect(clip.x, clip.y, clip.width, clip.height));
+        backingStore()->beginPaint(region);
+        painter.reset(new QPainter(this));
+    }
+    return painter.get();
 }
 
 void GQtWidget::keyEvent(QKeyEvent *event, event_type et) {
@@ -308,10 +327,9 @@ void GQtWidget::keyEvent(QKeyEvent *event, event_type et) {
 
 void GQtWidget::paintEvent(QPaintEvent *event) {
     Log(LOGDEBUG, "PAINTING %p %s", this->gwindow, this->gwindow->window_title.c_str());
-    QPainter painter(this);
-    painter.setRenderHint(QPainter::Antialiasing);
-    painter.setRenderHint(QPainter::HighQualityAntialiasing);
-    this->painter = &painter;
+    painter.reset(new QPainter(this));
+    painter->setRenderHint(QPainter::Antialiasing);
+    painter->setRenderHint(QPainter::HighQualityAntialiasing);
 
     const QRect& rect = event->rect();
     GEvent gevent = InitEvent(et_expose, event);
@@ -323,7 +341,7 @@ void GQtWidget::paintEvent(QPaintEvent *event) {
     this->gwindow->is_in_paint = true;
     DispatchEvent(gevent);
     this->gwindow->is_in_paint = false;
-    this->painter = nullptr;
+    painter.reset();
 }
 
 void GQtWidget::configureEvent() {
@@ -380,9 +398,61 @@ void GQtWidget::mouseEvent(QMouseEvent* event, event_type et) {
     default:
         return;
     }
+
+    GQtDisplay *gdisp = GQtD(gevent.w);
+    if (gevent.type == et_mousedown) {
+        int xdiff = abs(gevent.u.mouse.x - gdisp->bs.release_x);
+        int ydiff = abs(gevent.u.mouse.y - gdisp->bs.release_y);
+
+        if (xdiff + ydiff < gdisp->bs.double_wiggle &&
+                this->gwindow == gdisp->bs.release_w &&
+                gevent.u.mouse.button == gdisp->bs.release_button &&
+                (int32_t)(gevent.u.mouse.time - gdisp->bs.last_press_time) < gdisp->bs.double_time &&
+                gevent.u.mouse.time >= gdisp->bs.last_press_time) {  // Time can wrap
+
+            gdisp->bs.cur_click++;
+        } else {
+            gdisp->bs.cur_click = 1;
+        }
+        gdisp->bs.last_press_time = gevent.u.mouse.time;
+    } else {
+        gdisp->bs.release_w = this->gwindow;
+        gdisp->bs.release_x = gevent.u.mouse.x;
+        gdisp->bs.release_y = gevent.u.mouse.y;
+        gdisp->bs.release_button = gevent.u.mouse.button;
+    }
+
+    gevent.u.mouse.clicks = gdisp->bs.cur_click;
     gevent.u.mouse.time = event->timestamp();
+
     DispatchEvent(gevent);
     // Log(LOGDEBUG, "Button %7s: [%f %f]", evt->type == GDK_BUTTON_PRESS ? "press" : "release", evt->x, evt->y);
+}
+
+void GQtWidget::wheelEvent(QWheelEvent *event) {
+    GEvent gevent = InitEvent(et_mousedown, event);
+    GQtDisplay *gdisp = GQtD(gevent.w);
+
+    gevent.u.mouse.state = _GQtDraw_QtModifierToKsm(event->modifiers());
+#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
+    gevent.u.mouse.x = event->x();
+    gevent.u.mouse.y = event->y();
+#else
+    gevent.u.mouse.x = event->position().x();
+    gevent.u.mouse.y = event->position().y();
+#endif
+    gevent.u.mouse.clicks = gdisp->bs.cur_click = 1;
+
+    QPoint angle = event->angleDelta();
+    if (angle.y() != 0) {
+        gevent.u.mouse.button = angle.y() < 0 ? 5 : 4;
+    } else {
+        gevent.u.mouse.button = angle.x() < 0 ? 6 : 7;
+    }
+    // We need to simulate two events... I think.
+    DispatchEvent(gevent);
+    gevent.type = et_mouseup;
+    DispatchEvent(gevent);
 }
 
 void GQtWidget::mouseMoveEvent(QMouseEvent *event) {
@@ -518,6 +588,19 @@ static void GQtDrawDestroyCursor(GDisplay *disp, GCursor gcursor) {
 
 static void GQtDrawDestroyWindow(GWindow w) {
     Log(LOGWARN, " ");
+    GQtWindow *gw = GQtW(w);
+    if (w->is_pixmap) {
+        delete gw->Pixmap();
+        delete gw; // change this
+    } else {
+        GQtDisplay *gdisp = GQtD(w);
+        if (gdisp->grabbed_window == gw) {
+            gw->Widget()->releaseMouse();
+            gdisp->grabbed_window = nullptr;
+        }
+        gw->Widget()->setDisabled(true);
+        gw->Widget()->deleteLater();
+    }
 }
 
 static int GQtDrawNativeWindowExists(GDisplay *UNUSED(gdisp), void *native_window) {
@@ -1708,7 +1791,12 @@ extern "C" GDisplay *_GQtDraw_CreateDisplay(char *displayname, int *argc, char *
     ret->groot->pos.height = screenGeom.height();
     ret->groot->is_toplevel = true;
     ret->groot->is_visible = true;
+
+    gdisp->bs.double_time = 200;
+    gdisp->bs.double_wiggle = 3;
     GDrawResourceFind();
+    gdisp->bs.double_time = _GDraw_res_multiclicktime;
+    gdisp->bs.double_wiggle = _GDraw_res_multiclickwiggle;
 
     (ret->funcs->init)(ret);
     _GDraw_InitError(ret);
