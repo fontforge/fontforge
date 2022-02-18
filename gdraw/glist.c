@@ -606,7 +606,7 @@ return( true );
 
 static int glist_key(GGadget *g, GEvent *event) {
     GList *gl = (GList *) g;
-    uint16_t keysym = event->u.chr.keysym;
+    uint32_t keysym = event->u.chr.keysym;
     int sofar_pos = gl->sofar_pos;
     int loff, xoff, sel=-1;
     int refresh = false;

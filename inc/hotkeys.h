@@ -125,7 +125,7 @@ typedef struct hotkey {
      * be pressed fo r this hotkey. This would be a number for a key
      * so that 'k' might be 642
      */
-    uint16_t keysym;
+    uint32_t keysym;
 
     /**
      * If this hotkey is user defined this is true. If this is true

@@ -1,4 +1,4 @@
-/* Copyright (C) 2016 by Jeremy Tan */
+/* Copyright (C) 2016-2022 by Jeremy Tan */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -82,13 +82,6 @@ static int _GQtDraw_WindowOrParentsDying(GWindow w) {
     return false;
 }
 
-static void _GQtDraw_CallEHChecked(GQtWindow *gw, GEvent *event, int (*eh)(GWindow w, GEvent *)) {
-    if (eh) {
-        (eh)(gw->Base(), event);
-    }
-}
-
-
 static GWindow _GQtDraw_CreateWindow(GQtDisplay *gdisp, GWindow w, GRect *pos,
                                       int (*eh)(GWindow, GEvent *), void *user_data, GWindowAttrs *wattrs) {
 
@@ -139,7 +132,7 @@ static GWindow _GQtDraw_CreateWindow(GQtDisplay *gdisp, GWindow w, GRect *pos,
             nw->window_title = wattrs->utf8_window_title;
         }
         if (ret->is_popup || (wattrs->mask & wam_palette)) {
-            windowFlags |= Qt::ToolTip;
+            // windowFlags |= Qt::ToolTip;
         }
     } else {
         parent = GQtW(w)->Widget();
@@ -154,6 +147,12 @@ static GWindow _GQtDraw_CreateWindow(GQtDisplay *gdisp, GWindow w, GRect *pos,
 
     window->setWindowTitle(title);
     window->resize(pos->width, pos->height);
+    window->setFocusPolicy(Qt::StrongFocus);
+    if (wattrs->mask & wam_events) {
+        if (wattrs->event_masks & (1 << et_mousemove)) {
+            window->setMouseTracking(true);
+        }
+    }
 
     if (!ret->is_toplevel || ((wattrs->mask & wam_positioned) && !(wattrs->mask & wam_centered))) {
         window->move(ret->pos.x, ret->pos.y);
@@ -164,7 +163,7 @@ static GWindow _GQtDraw_CreateWindow(GQtDisplay *gdisp, GWindow w, GRect *pos,
         wattrs->background_color = _GDraw_res_bg;
     }
     ret->ggc->bg = wattrs->background_color;
-    GQtDrawSetWindowBackground(ret, wattrs->background_color);
+    GQtDrawSetWindowBackground(ret, ret->ggc->bg);
 
     if (ret->is_toplevel) {
         // Set icon
@@ -205,11 +204,7 @@ static GWindow _GQtDraw_CreateWindow(GQtDisplay *gdisp, GWindow w, GRect *pos,
 
     // Event handler
     if (eh != nullptr) {
-        GEvent e = {};
-        e.type = et_create;
-        e.w = ret;
-        e.native_window = nw.get();
-        _GQtDraw_CallEHChecked(nw.get(), &e, eh);
+        nw->Widget()->DispatchEvent(nw->Widget()->InitEvent<>(et_create));
     }
 
     Log(LOGDEBUG, "Window created: %p[%p][%s][toplevel:%d]", nw.get(), nw->Widget(), nw->window_title.c_str(), ret->is_toplevel);
@@ -257,6 +252,59 @@ static GWindow _GQtDraw_NewPixmap(GDisplay *disp, GWindow similar, uint16 width,
     return ret;
 }
 
+template<typename E>
+void UpdateLastEventTime(GWindow w, E *event) {}
+template<typename E, typename std::enable_if<std::is_integral<decltype(E::timestamp())>::value>::type* = nullptr>
+void UpdateLastEventTime(GWindow w, E *event) {
+    GQtD(w)->last_event_time = event->timestamp();
+}
+
+template<typename E = void>
+GEvent GQtWidget::InitEvent(event_type et, E *event) {
+    GEvent gevent = {};
+    gevent.w = gwindow->Base();
+    gevent.native_window = gwindow;
+    gevent.type = et;
+    UpdateLastEventTime(gevent.w, event);
+    return gevent;
+}
+
+void GQtWidget::DispatchEvent(const GEvent& e) {
+    if (e.w->eh && e.type != et_noevent) {
+        (e.w->eh)(e.w, const_cast<GEvent*>(&e)); //yuck
+    }
+}
+
+void GQtWidget::keyEvent(QKeyEvent *event, event_type et) {
+    GEvent gevent = InitEvent(et, event);
+    gevent.u.chr.state = _GQtDraw_QtModifierToKsm(event->modifiers());
+    gevent.u.chr.autorepeat = event->isAutoRepeat();
+
+    if (gevent.u.chr.autorepeat && GKeysymIsModifier(event->key())) {
+        return;
+    } else {
+        if (event->key() == Qt::Key_Space) {
+            GQtD(gevent.w)->is_space_pressed = et == et_char;
+        }
+
+        gevent.u.chr.keysym = event->key();
+        QString text = event->text();
+        const QChar* uni = text.unicode();
+        for (size_t i = 0, j = 0; i < text.size() && j< (_GD_EVT_CHRLEN-1); ++i) {
+            if (uni[i].isHighSurrogate() && (i+1) < text.size() &&
+                uni[i+1].isLowSurrogate()) {
+                gevent.u.chr.chars[j++] = QChar::surrogateToUcs4(uni[i], uni[i+1]);
+                ++i;
+            } else {
+                gevent.u.chr.chars[j++] = uni[i].unicode();
+            }
+        }
+        if (gevent.u.chr.chars[0] && !gevent.u.chr.chars[1] && gevent.u.chr.chars[0] < GK_Special) {
+            gevent.u.chr.keysym = gevent.u.chr.chars[0];
+        }
+    }
+    DispatchEvent(gevent);
+}
 
 void GQtWidget::paintEvent(QPaintEvent *event) {
     Log(LOGDEBUG, "PAINTING %p %s", this->gwindow, this->gwindow->window_title.c_str());
@@ -266,28 +314,20 @@ void GQtWidget::paintEvent(QPaintEvent *event) {
     this->painter = &painter;
 
     const QRect& rect = event->rect();
-    GEvent gevent = {};
-    gevent.w = this->gwindow->Base();
-    gevent.native_window = this->gwindow;
-    gevent.type = et_expose;
-
+    GEvent gevent = InitEvent(et_expose, event);
     gevent.u.expose.rect.x = rect.x();
     gevent.u.expose.rect.y = rect.y();
     gevent.u.expose.rect.width = rect.width();
     gevent.u.expose.rect.height = rect.height();
 
     this->gwindow->is_in_paint = true;
-    _GQtDraw_CallEHChecked(this->gwindow, &gevent, gevent.w->eh);
+    DispatchEvent(gevent);
     this->gwindow->is_in_paint = false;
     this->painter = nullptr;
 }
 
 void GQtWidget::configureEvent() {
-    GEvent gevent = {};
-    gevent.w = this->gwindow->Base();
-    gevent.native_window = this->gwindow;
-    gevent.type = et_resize;
-
+    GEvent gevent = InitEvent<>(et_resize);
     auto geom = geometry();
 
     gevent.u.resize.size.x      = geom.x();
@@ -308,10 +348,6 @@ void GQtWidget::configureEvent() {
 
     gevent.w->pos = gevent.u.resize.size;
 
-    // if (gevent.u.resize.sized || gevent.u.resize.moved) {
-    //     return;
-    // }
-
     // I could make this Windows specific... But it doesn't seem necessary on other platforms too.
     // On Windows, repeated configure messages are sent if we move the window around.
     // This causes CPU usage to go up because mouse handlers of this message just redraw the whole window.
@@ -322,27 +358,12 @@ void GQtWidget::configureEvent() {
         Log(LOGDEBUG, "CONFIGURED: %p:%s, %d %d %d %d", gevent.w, this->gwindow->window_title, gevent.w->pos.x, gevent.w->pos.y, gevent.w->pos.width, gevent.w->pos.height);
     }
 
-    _GQtDraw_CallEHChecked(this->gwindow, &gevent, gevent.w->eh);
+    DispatchEvent(gevent);
 }
 
-void GQtWidget::resizeEvent(QResizeEvent *event) {
-    configureEvent();
-}
-
-void GQtWidget::moveEvent(QMoveEvent *event) {
-    configureEvent();
-}
-
-
-void GQtWidget::mousePressEvent(QMouseEvent *event)
-{
-    GEvent gevent = {};
-    gevent.w = this->gwindow->Base();
-    gevent.native_window = this->gwindow;
-    gevent.type = et_mousedown;
-
-
-    gevent.u.mouse.state = _GQtDraw_QtModifierToKsm(GQtD(gevent.w)->app->keyboardModifiers());
+void GQtWidget::mouseEvent(QMouseEvent* event, event_type et) {
+    GEvent gevent = InitEvent(et, event);
+    gevent.u.mouse.state = _GQtDraw_QtModifierToKsm(event->modifiers());
     gevent.u.mouse.x = event->x();
     gevent.u.mouse.y = event->y();
     switch (event->button())
@@ -357,64 +378,71 @@ void GQtWidget::mousePressEvent(QMouseEvent *event)
         gevent.u.mouse.button = 3;
         break;
     default:
-        gevent.u.mouse.button = 4;
+        return;
     }
-    // gevent.u.mouse.time = evt->time; TODO
-    _GQtDraw_CallEHChecked(this->gwindow, &gevent, gevent.w->eh);
-
+    gevent.u.mouse.time = event->timestamp();
+    DispatchEvent(gevent);
     // Log(LOGDEBUG, "Button %7s: [%f %f]", evt->type == GDK_BUTTON_PRESS ? "press" : "release", evt->x, evt->y);
 }
 
-void GQtWidget::mouseReleaseEvent(QMouseEvent *event)
-{
-    GEvent gevent = {};
-    gevent.w = this->gwindow->Base();
-    gevent.native_window = this->gwindow;
-    gevent.type = et_mouseup;
-
-    gevent.u.mouse.state = _GQtDraw_QtModifierToKsm(GQtD(gevent.w)->app->keyboardModifiers());
+void GQtWidget::mouseMoveEvent(QMouseEvent *event) {
+    GEvent gevent = InitEvent(et_mousemove, event);
+    gevent.u.mouse.state = _GQtDraw_QtModifierToKsm(event->modifiers());
     gevent.u.mouse.x = event->x();
     gevent.u.mouse.y = event->y();
-    switch (event->button())
-    {
-    case Qt::LeftButton:
-        gevent.u.mouse.button = 1;
+    DispatchEvent(gevent);
+}
+
+void GQtWidget::mapEvent(bool visible) {
+    GEvent gevent = InitEvent(et_map);
+    gevent.u.map.is_visible = visible;
+    gevent.w->is_visible = visible;
+    DispatchEvent(gevent);
+}
+
+void GQtWidget::focusEvent(QFocusEvent* event, bool focusIn) {
+    GEvent gevent = InitEvent(et_focus, event);
+    gevent.u.focus.gained_focus = focusIn;
+    gevent.u.focus.mnemonic_focus = false;
+
+    switch (event->reason()) {
+    case Qt::TabFocusReason:
+        gevent.u.focus.mnemonic_focus = mf_tab;
         break;
-    case Qt::MiddleButton:
-        gevent.u.mouse.button = 2;
-        break;
-    case Qt::RightButton:
-        gevent.u.mouse.button = 3;
-        break;
+    case Qt::ShortcutFocusReason:
+        gevent.u.focus.mnemonic_focus = mf_shortcut;
     default:
-        gevent.u.mouse.button = 4;
+        break;
     }
-    // gevent.u.mouse.time = evt->time; TODO
-    _GQtDraw_CallEHChecked(this->gwindow, &gevent, gevent.w->eh);
 
-    // Log(LOGDEBUG, "Button %7s: [%f %f]", evt->type == GDK_BUTTON_PRESS ? "press" : "release", evt->x, evt->y);
+    Log(LOGDEBUG, "Focus change %s %p(%s %d)",
+        gevent.u.focus.gained_focus ? "IN" : "OUT",
+        this->gwindow, this->gwindow->window_title.c_str(),
+        gevent.w->is_toplevel);
+
+    DispatchEvent(gevent);
 }
 
-void GQtWidget::showEvent(QShowEvent *event)
-{
-    GEvent gevent = {};
-    gevent.w = this->gwindow->Base();
-    gevent.native_window = this->gwindow;
-    gevent.type = et_map;
-    gevent.u.map.is_visible = true;
-    gevent.w->is_visible = true;
-    _GQtDraw_CallEHChecked(this->gwindow, &gevent, gevent.w->eh);
+void GQtWidget::crossingEvent(QEvent* event, bool enter) {
+    // Why QEvent?!?
+    GEvent gevent = InitEvent(et_crossing, event);
+    QPoint pos = QCursor::pos();
+    GQtDisplay *gdisp = GQtD(gevent.w);
+    gevent.u.crossing.x = pos.x();
+    gevent.u.crossing.y = pos.y();
+    gevent.u.crossing.state = _GQtDraw_QtModifierToKsm(gdisp->app->keyboardModifiers());
+    gevent.u.crossing.entered = enter;
+    gevent.u.crossing.device = NULL;
+    gevent.u.crossing.time = gdisp->last_event_time;
+    // Always set to false when crossing boundary...
+    gdisp->is_space_pressed = false;
+    DispatchEvent(gevent);
 }
 
-void GQtWidget::hideEvent(QHideEvent *event)
-{
-    GEvent gevent = {};
-    gevent.w = this->gwindow->Base();
-    gevent.native_window = this->gwindow;
-    gevent.type = et_map;
-    gevent.u.map.is_visible = false;
-    gevent.w->is_visible = false;
-    _GQtDraw_CallEHChecked(this->gwindow, &gevent, gevent.w->eh);
+void GQtWidget::closeEvent(QCloseEvent *event) {
+    GEvent gevent = InitEvent(et_close, event);
+    event->ignore();
+    DispatchEvent(gevent);
 }
 
 static void GQtDrawInit(GDisplay *disp) {
@@ -489,7 +517,7 @@ static void GQtDrawDestroyCursor(GDisplay *disp, GCursor gcursor) {
 }
 
 static void GQtDrawDestroyWindow(GWindow w) {
-    Log(LOGDEBUG, " ");
+    Log(LOGWARN, " ");
 }
 
 static int GQtDrawNativeWindowExists(GDisplay *UNUSED(gdisp), void *native_window) {
@@ -840,9 +868,8 @@ static void GQtDrawEventLoop(GDisplay *disp) {
 
 static void GQtDrawPostEvent(GEvent *e) {
     //Log(LOGDEBUG, " ");
-    GQtWindow *gw = GQtW(e->w);
-    e->native_window = gw;
-    _GQtDraw_CallEHChecked(gw, e, e->w->eh);
+    e->native_window = GQtW(e->w);
+    GQtW(e->w)->Widget()->DispatchEvent(*e);
 }
 
 static void GQtDrawPostDragEvent(GWindow w, GEvent *mouse, enum event_type et) {
@@ -872,19 +899,17 @@ static GTimer *GQtDrawRequestTimer(GWindow w, int32 time_from_now, int32 frequen
     }
 
     QObject::connect(timer, &QTimer::timeout, [timer, frequency]{
-        GEvent e = {};
+        GQtWindow *gw = GQtW(timer->Base()->owner);
 
-        // if (_GQtDraw_WindowOrParentsDying((GQtWindow)timer->owner)) {
-        //     return;
-        // }
+        Log(LOGDEBUG, "Timer fired [%p][%s]", gw, gw->window_title.c_str());
+        if (_GQtDraw_WindowOrParentsDying(gw->Base())) {
+            return;
+        }
 
-        e.type = et_timer;
-        e.w = timer->Base()->owner;
-        e.native_window = GQtW(e.w);
-        e.u.timer.timer = timer->Base();
-        e.u.timer.userdata = timer->Base()->userdata;
-
-        _GQtDraw_CallEHChecked(GQtW(e.w), &e, e.w->eh);
+        GEvent gevent = gw->Widget()->InitEvent<>(et_timer);
+        gevent.u.timer.timer = timer->Base();
+        gevent.u.timer.userdata = timer->Base()->userdata;
+        gw->Widget()->DispatchEvent(gevent);
         if (frequency) {
             timer->setInterval(frequency);
         }
@@ -1142,7 +1167,7 @@ static QFont GQtDrawGetFont(GFont *font) {
 }
 
 static void GQtDrawDrawLine(GWindow w, int32 x, int32 y, int32 xend, int32 yend, Color col) {
-    Log(LOGDEBUG, " ");
+    // Log(LOGDEBUG, " ");
 
     w->ggc->fg = col;
 
@@ -1267,7 +1292,7 @@ static void GQtDrawFillEllipse(GWindow w, GRect *rect, Color col) {
 }
 
 static void GQtDrawDrawArc(GWindow w, GRect *rect, int32 sangle, int32 eangle, Color col) {
-    Log(LOGDEBUG, " ");
+    // Log(LOGDEBUG, " ");
 
     w->ggc->fg = col;
 
@@ -1479,15 +1504,41 @@ static void GQtDrawGetFontMetrics(GWindow w, GFont *fi, int *as, int *ds, int *l
 
 static void GQtDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi) {
     Log(LOGDEBUG, " ");
+
+    auto& state = GQtW(w)->layout_state;
+    state.reset(new GQtWindow::LayoutState());
+
+    if (fi == NULL) {
+        fi = w->ggc->fi;
+    }
+
+    state->fd = GQtDrawGetFont(fi);
+    state->text = QString::fromUtf8(text, cnt);
 }
 
 static void GQtDrawLayoutDraw(GWindow w, int32 x, int32 y, Color fg) {
     Log(LOGDEBUG, " ");
+    GQtWindow *gw = GQtW(w);
+    auto& state = gw->layout_state;
+    if (!state) {
+        assert(false);
+        return;
+    }
+    gw->Painter()->setPen(QColor(fg));
+    gw->Painter()->setFont(state->fd);
+    gw->Painter()->drawText(x, y, state->text);
 }
 
 static void GQtDrawLayoutIndexToPos(GWindow w, int index, GRect *pos) {
     Log(LOGDEBUG, " ");
-    *pos = {0};
+    // GGDKWindow gw = (GGDKWindow)w;
+    // PangoRectangle rect;
+
+    // pango_layout_index_to_pos(gw->pango_layout, index, &rect);
+    // pos->x = rect.x / PANGO_SCALE;
+    // pos->y = rect.y / PANGO_SCALE;
+    // pos->width  = rect.width / PANGO_SCALE;
+    // pos->height = rect.height / PANGO_SCALE;
 }
 
 static int GQtDrawLayoutXYToIndex(GWindow w, int x, int y) {
@@ -1657,6 +1708,7 @@ extern "C" GDisplay *_GQtDraw_CreateDisplay(char *displayname, int *argc, char *
     ret->groot->pos.height = screenGeom.height();
     ret->groot->is_toplevel = true;
     ret->groot->is_visible = true;
+    GDrawResourceFind();
 
     (ret->funcs->init)(ret);
     _GDraw_InitError(ret);

@@ -90,7 +90,7 @@ static int hotkeyHasMatchingWindowType( GWindow w, Hotkey* hk ) {
 */
 
 static struct dlistnodeExternal*
-hotkeyFindAllByStateAndKeysym( char* windowType, uint16_t state, uint16_t keysym ) {
+hotkeyFindAllByStateAndKeysym( char* windowType, uint16_t state, uint32_t keysym ) {
 
     struct dlistnodeExternal* ret = 0;
     struct dlistnode* node = hotkeys;
@@ -110,7 +110,7 @@ hotkeyFindAllByStateAndKeysym( char* windowType, uint16_t state, uint16_t keysym
 }
 
 
-static Hotkey* hotkeyFindByStateAndKeysym( char* windowType, uint16_t state, uint16_t keysym ) {
+static Hotkey* hotkeyFindByStateAndKeysym( char* windowType, uint16_t state, uint32_t keysym ) {
 
     struct dlistnode* node = hotkeys;
     for( ; node; node=node->next ) {

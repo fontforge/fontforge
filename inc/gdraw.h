@@ -140,7 +140,7 @@ typedef struct gevent {
 	    uint32_t time;
 	    uint16_t state;
 	    int16_t x,y;
-	    uint16_t keysym;
+	    uint32_t keysym;
 	    int16_t autorepeat;
 	    unichar_t chars[_GD_EVT_CHRLEN];
 	} chr;

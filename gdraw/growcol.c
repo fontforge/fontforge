@@ -537,7 +537,7 @@ return( true );
 
 static int growcol_key(GGadget *g, GEvent *event) {
     GRowCol *grc = (GRowCol *) g;
-    uint16_t keysym = event->u.chr.keysym;
+    uint32_t keysym = event->u.chr.keysym;
     int sofar_pos = grc->sofar_pos;
     int loff, xoff, sel=-1;
     int refresh = false;

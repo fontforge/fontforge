@@ -134,7 +134,108 @@ extern "C" {
 
 #define GK_Mode_switch     GDK_KEY_Mode_switch
 
-#else // FONTFORGE_CAN_USE_GDK
+#elif defined(FONTFORGE_CAN_USE_QT)
+
+#define GK_Special         0xfe00   /* keysyms above this value aren't unicode */
+#define GK_TypeAhead       0x0000    /* no single keysym, unicode value in event string */
+
+#define GK_BackSpace       0x01000003 // Qt::Key_Backspace
+#define GK_Tab             0x01000001 // Qt::Key_Tab
+#define GK_BackTab         0x01000002 // Qt::Key_BackTab
+
+#define GK_Linefeed        0x01111000 // IGNORE
+#define GK_Clear           0x0100000b // Qt::Key_Clear
+#define GK_Return          0x01000004 // Qt::Key_Return
+#define GK_Pause           0x01000008 // Qt::Key_Pause
+#define GK_Scroll_Lock     0x01000026 // Qt::Key_ScrollLock
+#define GK_Sys_Req         0x0100000a // Qt::Key_SysReq
+#define GK_Escape          0x01000000 // Qt::Key_Escape
+#define GK_Delete          0x01000007 // Qt::Key_Delete
+
+#define GK_Home            0x01000010 // Qt::Key_Home
+#define GK_Left            0x01000012 // Qt::Key_Left
+#define GK_Up              0x01000013 // Qt::Key_Up
+#define GK_Right           0x01000014 // Qt::Key_Right
+
+#define GK_Down            0x01000015 // Qt::Key_Down
+#define GK_Prior           0x01111001 // IGNORE
+#define GK_Page_Up         0x01000016 // Qt::Key_PageUp
+#define GK_Next            0x01111002 // IGNORE
+#define GK_Page_Down       0x01000017 // Qt::Key_PageDown
+#define GK_End             0x01000011 // Qt::Key_End
+#define GK_Begin           0x01111003 // IGNORE
+
+#define GK_Menu            0x01000055 // Qt::Key_Menu
+#define GK_Help            0x01000058 // Qt::Key_Help
+
+#define GK_KP_Enter        0x01111004 // IGNORE
+#define GK_KP_Home         0x01111005 // IGNORE
+#define GK_KP_Left         0x01111006 // IGNORE
+#define GK_KP_Up           0x01111007 // IGNORE
+#define GK_KP_Right        0x01111008 // IGNORE
+#define GK_KP_Down         0x01111009 // IGNORE
+// #define GK_KP_Prior        IGNORE
+#define GK_KP_Page_Up      0x0111100a // IGNORE
+// #define GK_KP_Next         IGNORE
+#define GK_KP_Page_Down    0x0111100b // IGNORE
+#define GK_KP_End          0x0111100c // IGNORE
+#define GK_KP_Begin        0x0111100d // IGNORE
+
+#define GK_F1              0x01000030 // Qt::Key_F1
+#define GK_F2              0x01000031 // Qt::Key_F2
+#define GK_F3              0x01000032 // Qt::Key_F3
+#define GK_F4              0x01000033 // Qt::Key_F4
+#define GK_F5              0x01000034 // Qt::Key_F5
+#define GK_F6              0x01000035 // Qt::Key_F6
+#define GK_F7              0x01000036 // Qt::Key_F7
+#define GK_F8              0x01000037 // Qt::Key_F8
+#define GK_F9              0x01000038 // Qt::Key_F9
+#define GK_F10             0x01000039 // Qt::Key_F10
+#define GK_F11             0x0100003a // Qt::Key_F11
+#define GK_F12             0x0100003b // Qt::Key_F12
+#define GK_F13             0x0100003c // Qt::Key_F13
+#define GK_F14             0x0100003d // Qt::Key_F14
+#define GK_F15             0x0100003e // Qt::Key_F15
+#define GK_F16             0x0100003f // Qt::Key_F16
+#define GK_F17             0x01000040 // Qt::Key_F17
+#define GK_F18             0x01000041 // Qt::Key_F18
+#define GK_F19             0x01000042 // Qt::Key_F19
+#define GK_F20             0x01000043 // Qt::Key_F20
+#define GK_F21             0x01000044 // Qt::Key_F21
+#define GK_F22             0x01000045 // Qt::Key_F22
+#define GK_F23             0x01000046 // Qt::Key_F23
+#define GK_F24             0x01000047 // Qt::Key_F24
+#define GK_F25             0x01000048 // Qt::Key_F25
+#define GK_F26             0x01000049 // Qt::Key_F26
+#define GK_F27             0x0100004a // Qt::Key_F27
+#define GK_F28             0x0100004b // Qt::Key_F28
+#define GK_F29             0x0100004c // Qt::Key_F29
+#define GK_F30             0x0100004d // Qt::Key_F30
+#define GK_F31             0x0100004e // Qt::Key_F31
+#define GK_F32             0x0100004f // Qt::Key_F32
+#define GK_F33             0x01000050 // Qt::Key_F33
+#define GK_F34             0x01000051 // Qt::Key_F34
+#define GK_F35             0x01000052 // Qt::Key_F35
+
+#define GK_Shift_L         0x01000020 // Qt::Key_Shift
+#define GK_Shift_R         0x0111100e // IGNORE
+#define GK_Control_L       0x01000021 // Qt::Key_Control
+#define GK_Control_R       0x0111100f // IGNORE
+#define GK_Caps_Lock       0x01000024 // Qt::Key_CapsLock
+#define GK_Shift_Lock      0x01111010 // IGNORE
+
+#define GK_Meta_L          0x01000022 // Qt::Key_Meta
+#define GK_Meta_R          0x01111011 // IGNORE
+#define GK_Alt_L           0x01000023 // Qt::Key_Alt
+#define GK_Alt_R           0x01111012 // IGNORE
+#define GK_Super_L         0x01000053 // Qt::Key_Super_L
+#define GK_Super_R         0x01000054 // Qt::Key_Super_R
+#define GK_Hyper_L         0x01000056 // Qt::Key_Hyper_L
+#define GK_Hyper_R         0x01000057 // Qt::Key_Hyper_R
+
+#define GK_Mode_switch     0x0100117e // Qt::Key_Mode_switch
+
+#else // FONTFORGE_CAN_USE_QT
 
 #ifndef X_DISPLAY_MISSING
 #include <X11/keysym.h>
@@ -436,7 +537,7 @@ SOFTWARE.
 
 #endif /* FONTFORGE_CAN_USE_GDK */
 
-int GKeysymIsModifier(uint16_t keysym);
+int GKeysymIsModifier(uint32_t keysym);
 
 #ifdef __cplusplus
 }

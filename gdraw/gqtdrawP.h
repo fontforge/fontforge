@@ -32,6 +32,7 @@
 #include "fontP.h"
 #include "gdrawlogger.h"
 #include "gdrawP.h"
+#include "gkeysym.h"
 
 #include <QtWidgets>
 #include <vector>
@@ -51,15 +52,33 @@ struct GQtWidget : QWidget
     {
         Log(LOGDEBUG, "CLEANUP %p", this);
     }
-    void paintEvent(QPaintEvent *event) override;
-    void resizeEvent(QResizeEvent *event) override;
-    void moveEvent(QMoveEvent *event) override;
-    void configureEvent();
-    void mousePressEvent(QMouseEvent *event) override;
-    void mouseReleaseEvent(QMouseEvent *event) override;
-    void showEvent(QShowEvent *event) override;
-    void hideEvent(QHideEvent *event) override;
 
+    template<typename E = void>
+    GEvent InitEvent(event_type et, E* event = nullptr);
+    void DispatchEvent(const GEvent& e);
+
+    void keyPressEvent(QKeyEvent *event) override { keyEvent(event, et_char); }
+    void keyReleaseEvent(QKeyEvent *event) override { keyEvent(event, et_charup); }
+    void paintEvent(QPaintEvent *event) override;
+    void resizeEvent(QResizeEvent *event) override { configureEvent(); }
+    void moveEvent(QMoveEvent *event) override { configureEvent(); }
+    void mouseMoveEvent(QMouseEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override { mouseEvent(event, et_mousedown); }
+    void mouseReleaseEvent(QMouseEvent *event) override { mouseEvent(event, et_mouseup); }
+    void showEvent(QShowEvent *event) override { mapEvent(true); }
+    void hideEvent(QHideEvent *event) override { mapEvent(false); }
+    void focusInEvent(QFocusEvent *event) override { focusEvent(event, true); }
+    void focusOutEvent(QFocusEvent *event) override { focusEvent(event, false); }
+    void enterEvent(QEvent *event) override { crossingEvent(event, true); }
+    void leaveEvent(QEvent *event) override { crossingEvent(event, false); }
+    void closeEvent(QCloseEvent *event) override;
+    void configureEvent();
+    void keyEvent(QKeyEvent *event, event_type et);
+    void mouseEvent(QMouseEvent* event, event_type et);
+    void mapEvent(bool visible);
+    void focusEvent(QFocusEvent* event, bool focusIn);
+    void crossingEvent(QEvent* event, bool enter);
+    
     QPainter* Painter() { return painter; }
 
     QPainter *painter = nullptr;
@@ -99,7 +118,10 @@ struct GQtDisplay
     std::vector<QCursor> custom_cursors;
     GQtWindow *default_icon = nullptr;
 
+    bool is_space_pressed = false; // Used for GGDKDrawKeyState. We cheat!
+
     int top_window_count = 0; // The number of toplevel, non-dialogue windows. When this drops to 0, the event loop stops
+    ulong last_event_time = 0;
     GQtWindow *grabbed_window = nullptr;
 
     inline GDisplay* Base() const { return const_cast<GDisplay*>(&base); }
@@ -107,6 +129,11 @@ struct GQtDisplay
 
 struct GQtWindow
 {
+    struct LayoutState {
+        QFont fd;
+        QString text;
+    };
+
     struct gwindow base;
     void *q_base = nullptr;
 
@@ -122,6 +149,8 @@ struct GQtWindow
 
     std::string window_title;
     GCursor current_cursor = ct_default;
+
+    std::unique_ptr<LayoutState> layout_state;
 
     inline GWindow Base() const { return const_cast<GWindow>(&base); }
 
@@ -142,11 +171,6 @@ struct GQtWindow
         assert(!base.is_pixmap);
         return static_cast<GQtWidget*>(q_base);
     }
-
-    inline GQtDisplay* Display() const
-    {
-        return static_cast<GQtDisplay*>(base.display->impl);
-    }
 };
 
 static inline GQtDisplay* GQtD(GDisplay *d) {
@@ -155,6 +179,10 @@ static inline GQtDisplay* GQtD(GDisplay *d) {
 
 static inline GQtDisplay* GQtD(GWindow w) {
     return static_cast<GQtDisplay*>(w->display->impl);
+}
+
+static inline GQtDisplay* GQtD(GQtWindow* w) {
+    return GQtD(w->Base());
 }
 
 static inline GQtWindow* GQtW(GWindow w) {
