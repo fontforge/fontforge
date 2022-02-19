@@ -34,7 +34,6 @@
 
 /**
  * TODO
- * Unbreak cursors
  * Window lifecycle
  * Cairo/Pango
  * Text layout
@@ -366,6 +365,7 @@ void GQtWidget::mouseEvent(QMouseEvent* event, event_type et) {
     gevent.u.mouse.state = _GQtDraw_QtModifierToKsm(event->modifiers());
     gevent.u.mouse.x = event->x();
     gevent.u.mouse.y = event->y();
+    gevent.u.mouse.time = event->timestamp();
     switch (event->button())
     {
     case Qt::LeftButton:
@@ -405,7 +405,6 @@ void GQtWidget::mouseEvent(QMouseEvent* event, event_type et) {
     }
 
     gevent.u.mouse.clicks = gdisp->bs.cur_click;
-    gevent.u.mouse.time = event->timestamp();
 
     DispatchEvent(gevent);
     // Log(LOGDEBUG, "Button %7s: [%f %f]", evt->type == GDK_BUTTON_PRESS ? "press" : "release", evt->x, evt->y);
@@ -1099,6 +1098,7 @@ static QImage _GQtDraw_GImage2QImage(GImage *image, GRect *src) {
             }
         }
 
+        // Can't use mono formats as this is potentially not byte aligned
         uint8_t *pt = base->data + src->y * base->bytes_per_line + (src->x >> 3);
 #ifdef WORDS_BIGENDIAN
         for (int i = 0; i < src->height; ++i) {
@@ -1523,19 +1523,19 @@ static int GQtDrawDoText8(GWindow w, int32 x, int32 y, const char *text, int32 c
     QFont fd = GQtDrawGetFont(fi);
     QString qtext = QString::fromUtf8(text);
     if (drawit == tf_drawit) {
-        // QFontMetrics metrics(fd);
-        // y -= metrics.ascent() + metrics.descent();
-        // QRect rct(x, y, w->ggc->clip.x + w->ggc->clip.width - x, w->ggc->clip.y + w->ggc->clip.height - y);
-        // if (!rct.isValid()) {
-        //     return 0;
-        // }
+        QFontMetrics metrics(fd);
+        y -= metrics.ascent();// + metrics.descent();
+        QRect rct(x, y, w->ggc->clip.x + w->ggc->clip.width - x, w->ggc->clip.y + w->ggc->clip.height - y);
+        if (!rct.isValid()) {
+            return 0;
+        }
         QRect bounds;
         GQtW(w)->Painter()->setFont(fd);
         GQtW(w)->Painter()->setPen(QColor(col));
-        GQtW(w)->Painter()->drawText(x, y, qtext);
-        return 0;
-        // GQtW(w)->Painter()->drawText(rct, Qt::AlignLeft|Qt::AlignBottom, qtext, &bounds);
-        // return bounds.width();
+        // GQtW(w)->Painter()->drawText(x, y, qtext);
+        // return 0;
+        GQtW(w)->Painter()->drawText(rct, Qt::AlignLeft|Qt::AlignTop, qtext, &bounds);
+        return bounds.width();
     } else if (drawit == tf_rect) {
         QFontMetrics metrics(fd);
         QRect br = metrics.tightBoundingRect(qtext);
@@ -1585,7 +1585,7 @@ static void GQtDrawGetFontMetrics(GWindow w, GFont *fi, int *as, int *ds, int *l
 
     *as = fm.ascent();
     *ds = fm.descent();
-    *ld = 0;
+    *ld = fm.leading();
 }
 
 static void GQtDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi) {
@@ -1596,6 +1596,9 @@ static void GQtDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi) {
         fi = w->ggc->fi;
     }
 
+    QTextOption qto;
+    qto.setWrapMode(QTextOption::WordWrap);
+    state->layout.setTextOption(qto);
     state->layout.setFont(GQtDrawGetFont(fi));
     state->layout.setText(QString::fromUtf8(text, cnt));
     state->indexes.clear();
@@ -1621,6 +1624,7 @@ static void GQtDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi) {
         line.setPosition(QPointF(0, height));
         height += line.height() + leading;
     }
+    state->layout.endLayout();
 }
 
 static void GQtDrawLayoutDraw(GWindow w, int32 x, int32 y, Color fg) {
@@ -1711,6 +1715,21 @@ static void GQtDrawLayoutExtents(GWindow w, GRect *size) {
 
 static void GQtDrawLayoutSetWidth(GWindow w, int width) {
     Log(LOGDEBUG, " ");
+    auto* state = GQtW(w)->Layout();
+
+    int leading = state->metrics->leading();
+    qreal height = 0;
+    state->layout.beginLayout();
+    while (true) {
+        QTextLine line = state->layout.createLine();
+        if (!line.isValid()) {
+            break;
+        }
+        line.setLineWidth(width); //fixme
+        line.setPosition(QPointF(0, height));
+        height += line.height() + leading;
+    }
+    state->layout.endLayout();
 }
 
 static int GQtDrawLayoutLineCount(GWindow w) {
