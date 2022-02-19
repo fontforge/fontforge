@@ -32,6 +32,17 @@
 #include <QtWidgets>
 #include <type_traits>
 
+/**
+ * TODO
+ * Unbreak cursors
+ * Window lifecycle
+ * Cairo/Pango
+ * Text layout
+ * Clipboard
+ * GIC/input context
+ */
+
+
 namespace fontforge { namespace gdraw {
 
 // Forward declarations
@@ -273,23 +284,14 @@ void GQtWidget::DispatchEvent(const GEvent& e) {
     if (e.w->eh && e.type != et_noevent) {
         (e.w->eh)(e.w, const_cast<GEvent*>(&e)); //yuck
     }
-    if (painter) {
-        Log(LOGDEBUG, "[%] [%s] Cleaning up auto-painter",
-            this->gwindow, this->gwindow->window_title.c_str());
-        painter.reset();
-        backingStore()->endPaint();
-    }
 }
 
 QPainter* GQtWidget::Painter() {
     if (!painter) {
-        Log(LOGWARN, "[%p] [%s] Auto-creating painter",
+        static QPainter sPainter;
+        Log(LOGWARN, "[%p] [%s] that's a paddlin",
             this->gwindow, this->gwindow->window_title.c_str());
-        
-        const auto& clip = this->gwindow->Base()->ggc->clip;
-        QRegion region(QRect(clip.x, clip.y, clip.width, clip.height));
-        backingStore()->beginPaint(region);
-        painter.reset(new QPainter(this));
+        return &sPainter;
     }
     return painter.get();
 }
@@ -589,15 +591,16 @@ static void GQtDrawDestroyCursor(GDisplay *disp, GCursor gcursor) {
 static void GQtDrawDestroyWindow(GWindow w) {
     Log(LOGWARN, " ");
     GQtWindow *gw = GQtW(w);
+    w->is_dying = true;
     if (w->is_pixmap) {
         delete gw->Pixmap();
         delete gw; // change this
     } else {
         GQtDisplay *gdisp = GQtD(w);
-        if (gdisp->grabbed_window == gw) {
-            gw->Widget()->releaseMouse();
-            gdisp->grabbed_window = nullptr;
-        }
+        // if (gdisp->grabbed_window == gw) {
+        //     gw->Widget()->releaseMouse();
+        //     gdisp->grabbed_window = nullptr;
+        // }
         gw->Widget()->setDisabled(true);
         gw->Widget()->deleteLater();
     }
@@ -863,18 +866,18 @@ static int GQtDrawSelectionHasOwner(GDisplay *disp, enum selnames sn) {
 
 static void GQtDrawPointerUngrab(GDisplay *disp) {
     Log(LOGDEBUG, " ");
-    GQtDisplay *gdisp = GQtD(disp);
-    if (gdisp->grabbed_window != nullptr) {
-        gdisp->grabbed_window->Widget()->releaseMouse();
-    }
+    // GQtDisplay *gdisp = GQtD(disp);
+    // if (gdisp->grabbed_window != nullptr) {
+    //     gdisp->grabbed_window->Widget()->releaseMouse();
+    // }
 }
 
 static void GQtDrawPointerGrab(GWindow w) {
     Log(LOGDEBUG, " ");
-    GQtDisplay *gdisp = GQtD(w);
-    GQtDrawPointerUngrab(gdisp->Base());
-    gdisp->grabbed_window = GQtW(w);
-    gdisp->grabbed_window->Widget()->grabMouse();
+    // GQtDisplay *gdisp = GQtD(w);
+    // GQtDrawPointerUngrab(gdisp->Base());
+    // gdisp->grabbed_window = GQtW(w);
+    // gdisp->grabbed_window->Widget()->grabMouse();
 }
 
 static void GQtDrawRequestExpose(GWindow w, GRect *rect, int UNUSED(doclear)) {
@@ -994,7 +997,12 @@ static GTimer *GQtDrawRequestTimer(GWindow w, int32 time_from_now, int32 frequen
         gevent.u.timer.userdata = timer->Base()->userdata;
         gw->Widget()->DispatchEvent(gevent);
         if (frequency) {
-            timer->setInterval(frequency);
+            if (timer->interval() != frequency) {
+                timer->setInterval(frequency);
+            }
+        } else {
+            assert(timer->isSingleShot());
+            timer->deleteLater();
         }
     });
 
