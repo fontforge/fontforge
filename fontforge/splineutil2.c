@@ -2955,6 +2955,7 @@ return(s); /* line or closed path*/
 		bigreal len = (flen + tlen) / 2;
 		s->from->nextcp = BPAdd(s->from->me, BPScale(fromunit, len));
 		s->to->prevcp = BPAdd(s->to->me, BPScale(tounit, len));
+		SplineRefigure(s);
 return(s);
 	}
 	if ( bunit.y <= 0 || aunit.y == 0)
@@ -2968,12 +2969,13 @@ return(s); /* impossible */
 	bigreal c = aunit.x/aunit.y + bunit.x/bunit.y;
 	bigreal discriminant = 4-c*area;
 	if ( discriminant < 0 ) /* occurs sometimes for splines with inflections */
-return(s); /* one could take the absolute value, but this leads to ugly solutions */ 
+return(s); 
 	bigreal h = (2-sqrt(discriminant))/c; /* take the smaller solution as the larger could have loops */
 	if ( h < 0 ) 
 		h = (2+sqrt(discriminant))/c;
 	s->from->nextcp = BPAdd(s->from->me, BPScale(fromunit, h/aunit.y*ftlen));
 	s->to->prevcp = BPAdd(s->to->me, BPScale(tounit, h/bunit.y*ftlen));
+	SplineRefigure(s);
 return(s);
 }
 
@@ -3014,6 +3016,8 @@ void SplinePointHarmonize(SplinePoint *sp) {
 			bigreal t = (p-sqrt(p*n))/(p-n);
 			sp->me = BPAdd(BPScale(sp->prevcp,1-t),BPScale(sp->nextcp,t));
 		}
+		SplineRefigure(sp->prev);
+		SplineRefigure(sp->next);
 	}	
 }
 

@@ -929,7 +929,7 @@ void FVAddExtrema(FontViewBase *fv, int force_adding ) {
     ff_progress_end_indicator();
 }
 
-void FVAddInflections(FontViewBase *fv, int anysel) { 
+void _FVElementAction(FontViewBase *fv, int anysel, void (*func)(SplineChar*, SplineSet*, int), const char* progressmsg) { 
     int i, cnt=0, layer, first, last, gid;
     SplineChar *sc;
     SplineFont *sf = fv->sf;
@@ -939,7 +939,7 @@ void FVAddInflections(FontViewBase *fv, int anysel) {
 	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
 		SCWorthOutputting(fv->sf->glyphs[gid]) )
 	    ++cnt;
-    ff_progress_start_indicator(10,_("Adding points of inflection..."),_("Adding points of inflection..."),0,cnt,1);
+    ff_progress_start_indicator(10,_(progressmsg),_(progressmsg),0,cnt,1);
 
     SFUntickAll(fv->sf);
     for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
@@ -954,7 +954,7 @@ void FVAddInflections(FontViewBase *fv, int anysel) {
 	    first = last = fv->active_layer;
 	for ( layer = first; layer<=last; ++layer ) {
 	    SCPreserveLayer(sc,layer,false);
-	    SplineCharAddInflections(sc, sc->layers[layer].splines, anysel);
+	    func(sc, sc->layers[layer].splines, anysel); 
 	}
 	SCCharChangedUpdate(sc,fv->active_layer);
 	if ( !ff_progress_next())
@@ -963,72 +963,16 @@ void FVAddInflections(FontViewBase *fv, int anysel) {
     ff_progress_end_indicator();
 }
 
-void FVBalance(FontViewBase *fv, int anysel) { 
-    int i, cnt=0, layer, first, last, gid;
-    SplineChar *sc;
-    SplineFont *sf = fv->sf;
-    int emsize = sf->ascent+sf->descent;
-
-    for ( i=0; i<fv->map->enccount; ++i )
-	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
-		SCWorthOutputting(fv->sf->glyphs[gid]) )
-	    ++cnt;
-    ff_progress_start_indicator(10,_("Balancing..."),_("Balancing..."),0,cnt,1);
-
-    SFUntickAll(fv->sf);
-    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
-	    (gid = fv->map->map[i])!=-1 &&
-	    SCWorthOutputting((sc = fv->sf->glyphs[gid])) &&
-	    !sc->ticked) {
-	sc->ticked = true;
-	if ( sc->parent->multilayer ) {
-	    first = ly_fore;
-	    last = sc->layer_cnt-1;
-	} else
-	    first = last = fv->active_layer;
-	for ( layer = first; layer<=last; ++layer ) {
-	    SCPreserveLayer(sc,layer,false);
-	    SplineCharBalance(sc, sc->layers[layer].splines, anysel);
-	}
-	SCCharChangedUpdate(sc,fv->active_layer);
-	if ( !ff_progress_next())
-    break;
-    }
-    ff_progress_end_indicator();
+void FVAddInflections(FontViewBase *fv, int anysel) {
+	_FVElementAction(fv,anysel,&SplineCharAddInflections,"Adding points of inflection...");
 }
 
-void FVHarmonize(FontViewBase *fv, int anysel) { 
-    int i, cnt=0, layer, first, last, gid;
-    SplineChar *sc;
-    SplineFont *sf = fv->sf;
-    int emsize = sf->ascent+sf->descent;
+void FVBalance(FontViewBase *fv, int anysel) {
+	_FVElementAction(fv,anysel,&SplineCharBalance,"Balancing...");
+}
 
-    for ( i=0; i<fv->map->enccount; ++i )
-	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
-		SCWorthOutputting(fv->sf->glyphs[gid]) )
-	    ++cnt;
-    ff_progress_start_indicator(10,_("Harmonizing..."),_("Harmonizing..."),0,cnt,1);
-
-    SFUntickAll(fv->sf);
-    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
-	    (gid = fv->map->map[i])!=-1 &&
-	    SCWorthOutputting((sc = fv->sf->glyphs[gid])) &&
-	    !sc->ticked) {
-	sc->ticked = true;
-	if ( sc->parent->multilayer ) {
-	    first = ly_fore;
-	    last = sc->layer_cnt-1;
-	} else
-	    first = last = fv->active_layer;
-	for ( layer = first; layer<=last; ++layer ) {
-	    SCPreserveLayer(sc,layer,false);
-	    SplineCharHarmonize(sc, sc->layers[layer].splines, anysel);
-	}
-	SCCharChangedUpdate(sc,fv->active_layer);
-	if ( !ff_progress_next())
-    break;
-    }
-    ff_progress_end_indicator();
+void FVHarmonize(FontViewBase *fv, int anysel) {
+	_FVElementAction(fv,anysel,&SplineCharHarmonize,"Harmonizing...");
 }
 
 void FVCanonicalStart(FontViewBase *fv) {
