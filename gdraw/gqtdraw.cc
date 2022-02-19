@@ -239,6 +239,12 @@ static GWindow _GQtDraw_NewPixmap(GDisplay *disp, GWindow similar, uint16 width,
     return ret;
 }
 
+GQtWidget::~GQtWidget()
+{
+    Log(LOGWARN, "CLEANUP [%p] [%p] [%s]", Base(), this, Title());
+    DispatchEvent(InitEvent<>(et_destroy));
+}
+
 template<typename E>
 void UpdateLastEventTime(GWindow w, E *event) {}
 template<typename E, typename std::enable_if<std::is_integral<decltype(E::timestamp())>::value>::type* = nullptr>
@@ -257,7 +263,7 @@ GEvent GQtWidget::InitEvent(event_type et, E *event) {
 }
 
 void GQtWidget::DispatchEvent(const GEvent& e) {
-    if (e.w->eh && e.type != et_noevent) {
+    if (e.w->eh && e.type != et_noevent && (!e.w->is_dying || e.type == et_destroy)) {
         (e.w->eh)(e.w, const_cast<GEvent*>(&e)); //yuck
     }
 }
@@ -566,14 +572,14 @@ static void GQtDrawDestroyWindow(GWindow w) {
                     child->Base(), child->Title());
                 // child->setVisible(false);
                 child->setParent(nullptr);
+                child->Widget()->DispatchEvent(child->Widget()->InitEvent(et_close));
+            } else {
+                GQtDrawDestroyWindow(child->Base());
             }
         }
 
         gw->Widget()->setDisabled(true);
-        QTimer::singleShot(0, [gw]{
-            gw->Widget()->DispatchEvent(gw->Widget()->InitEvent<>(et_destroy));
-            gw->Widget()->deleteLater();
-        });
+        gw->Widget()->deleteLater();
         // if (gdisp->grabbed_window == gw) {
         //     gw->Widget()->releaseMouse();
         //     gdisp->grabbed_window = nullptr;
@@ -1111,7 +1117,7 @@ static QImage _GQtDraw_GImage2QImage(GImage *image, GRect *src) {
             int bit = (1 << (src->x & 0x7));
             for (int j = 0, jj = 0; j < src->width; ++j) {
                 line[j] = (pt[jj] & bit) ? fg : bg;
-                if ((bit = (bit << 1) & 0x7) == 0) {
+                if ((bit = (bit << 1) & 0xff) == 0) {
                     bit = 0x1;
                     ++jj;
                 }

@@ -121,10 +121,7 @@ public:
     {
     }
 
-    ~GQtWidget() override
-    {
-        Log(LOGWARN, "CLEANUP [%p] [%p] [%s]", Base(), this, Title());
-    }
+    ~GQtWidget() override;
 
     template<typename E = void>
     GEvent InitEvent(event_type et, E* event = nullptr);
