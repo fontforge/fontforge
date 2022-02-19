@@ -80,10 +80,14 @@ extern "C" {
 #  include <cairo/cairo-xlib.h>
 #  include <cairo/cairo.h>
 # endif
+#  define GList  GList_Glib
+#  define GMenuItem GMenuItem_GIO
 #  define GTimer GTimer_GTK
 #  include <X11/Xft/Xft.h>
 #  include <ft2build.h>
 #  include <pango/pango.h>
+#  undef GList
+#  undef GMenuItem
 #  undef GTimer
 #endif
 
