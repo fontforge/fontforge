@@ -3468,7 +3468,7 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFContour_AddInflections(PyFF_Contour *self) {
+static PyObject *_PyFFContour_Action(PyFF_Contour *self, void (*func)(SplineChar*, SplineSet*, int)) { 
     SplineSet *ss;
     ss = SSFromContour(self,NULL);
     if ( ss==NULL ) {
@@ -3477,40 +3477,22 @@ static PyObject *PyFFContour_AddInflections(PyFF_Contour *self) {
 	else
 	    Py_RETURN( self );	// no points=> nothing to do
     }
-    SplineSetAddInflections(NULL,ss,false); 
+    func(NULL,ss,false); 
     ContourFromSS(ss,self);
     SplinePointListFree(ss);
 Py_RETURN( self );
+}
+
+static PyObject *PyFFContour_AddInflections(PyFF_Contour *self) {
+    _PyFFContour_Action(self,&SplineSetAddInflections);
 }
 
 static PyObject *PyFFContour_Balance(PyFF_Contour *self) {
-    SplineSet *ss;
-    ss = SSFromContour(self,NULL);
-    if ( ss==NULL ) {
-	if ( PyErr_Occurred() != NULL )
-	    return ( NULL );
-	else
-	    Py_RETURN( self );	// no points=> nothing to do
-    }
-    SplineSetBalance(NULL,ss,false); 
-    ContourFromSS(ss,self);
-    SplinePointListFree(ss);
-Py_RETURN( self );
+    _PyFFContour_Action(self,&SplineSetBalance);
 }
 
 static PyObject *PyFFContour_Harmonize(PyFF_Contour *self) {
-    SplineSet *ss;
-    ss = SSFromContour(self,NULL);
-    if ( ss==NULL ) {
-	if ( PyErr_Occurred() != NULL )
-	    return ( NULL );
-	else
-	    Py_RETURN( self );	// no points=> nothing to do
-    }
-    SplineSetHarmonize(NULL,ss,false); 
-    ContourFromSS(ss,self);
-    SplinePointListFree(ss);
-Py_RETURN( self );
+    _PyFFContour_Action(self,&SplineSetHarmonize);
 }
 
 static PyObject *PyFFContour_BoundingBox(PyFF_Contour *self, PyObject *UNUSED(args)) {
@@ -4475,7 +4457,7 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFLayer_AddInflections(PyFF_Layer *self) {
+static PyObject *_PyFFLayer_Action(PyFF_Layer *self, void (*func)(SplineChar*, SplineSet*, int)) { 
     SplineSet *ss;
     ss = SSFromLayer(self);
     if ( ss==NULL ) {
@@ -4484,40 +4466,22 @@ static PyObject *PyFFLayer_AddInflections(PyFF_Layer *self) {
 	else
 	    Py_RETURN( self ); // no contours=> nothing to do
     }
-    SplineCharAddInflections(NULL,ss,false);
+    func(NULL,ss,false);
     LayerFromSS(ss,self);
     SplinePointListsFree(ss);
 Py_RETURN( self );
+}	
+
+static PyObject *PyFFLayer_AddInflections(PyFF_Layer *self) {
+    _PyFFLayer_Action(self,&SplineCharAddInflections);
 }
 
 static PyObject *PyFFLayer_Balance(PyFF_Layer *self) {
-    SplineSet *ss;
-    ss = SSFromLayer(self);
-    if ( ss==NULL ) {
-	if ( PyErr_Occurred() != NULL )
-	    return ( NULL );
-	else
-	    Py_RETURN( self ); // no contours=> nothing to do
-    }
-    SplineCharBalance(NULL,ss,false);
-    LayerFromSS(ss,self);
-    SplinePointListsFree(ss);
-Py_RETURN( self );
+    _PyFFLayer_Action(self,&SplineCharBalance);
 }
 
 static PyObject *PyFFLayer_Harmonize(PyFF_Layer *self) {
-    SplineSet *ss;
-    ss = SSFromLayer(self);
-    if ( ss==NULL ) {
-	if ( PyErr_Occurred() != NULL )
-	    return ( NULL );
-	else
-	    Py_RETURN( self ); // no contours=> nothing to do
-    }
-    SplineCharHarmonize(NULL,ss,false);
-    LayerFromSS(ss,self);
-    SplinePointListsFree(ss);
-Py_RETURN( self );
+    _PyFFLayer_Action(self,&SplineCharHarmonize);
 }
 
 int NibCheck(SplineSet *nib) {
@@ -9497,28 +9461,24 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFGlyph_AddInflections(PyFF_Glyph *self) {
+static PyObject *_PyFFGlyph_Action(PyFF_Glyph *self, void (*func)(SplineChar*, SplineSet*, int)) { 
     SplineChar *sc = self->sc;
     SplineFont *sf = sc->parent;
-    SplineCharAddInflections(sc,sc->layers[self->layer].splines,false);
+    func(sc,sc->layers[self->layer].splines,false);
     SCCharChangedUpdate(sc,self->layer);
 Py_RETURN( self );
+}
+
+static PyObject *PyFFGlyph_AddInflections(PyFF_Glyph *self) {
+    _PyFFGlyph_Action(self,&SplineCharAddInflections);
 }
 
 static PyObject *PyFFGlyph_Balance(PyFF_Glyph *self) {
-    SplineChar *sc = self->sc;
-    SplineFont *sf = sc->parent;
-    SplineCharBalance(sc,sc->layers[self->layer].splines,false);
-    SCCharChangedUpdate(sc,self->layer);
-Py_RETURN( self );
+    _PyFFGlyph_Action(self,&SplineCharBalance);
 }
 
 static PyObject *PyFFGlyph_Harmonize(PyFF_Glyph *self) {
-    SplineChar *sc = self->sc;
-    SplineFont *sf = sc->parent;
-    SplineCharHarmonize(sc,sc->layers[self->layer].splines,false);
-    SCCharChangedUpdate(sc,self->layer);
-Py_RETURN( self );
+    _PyFFGlyph_Action(self,&SplineCharHarmonize);
 }
 
 static PyObject *PyFFGlyph_Stroke(PyFF_Glyph *self, PyObject *args, PyObject *keywds) {

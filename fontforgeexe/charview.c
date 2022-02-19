@@ -9982,28 +9982,24 @@ static void CVMenuAddExtrema(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *U
     _CVMenuAddExtrema(cv);
 }
 
-static void CVMenuAddInflections(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+static void _CVMenuAction(GWindow gw, void (*func)(SplineChar*, SplineSet*, int)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
     int anysel = CVAnySel(cv,NULL,NULL,NULL,NULL);
     CVPreserveState(&cv->b);
-    SplineCharAddInflections(cv->b.sc,cv->b.layerheads[cv->b.drawmode]->splines,anysel);
+    func(cv->b.sc,cv->b.layerheads[cv->b.drawmode]->splines,anysel);
     CVCharChangedUpdate(&cv->b);
+}
+
+static void CVMenuAddInflections(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+    _CVMenuAction(gw,&SplineCharAddInflections);
 }
 
 static void CVMenuBalance(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    CharView *cv = (CharView *) GDrawGetUserData(gw);
-    int anysel = CVAnySel(cv,NULL,NULL,NULL,NULL);
-    CVPreserveState(&cv->b);
-    SplineCharBalance(cv->b.sc,cv->b.layerheads[cv->b.drawmode]->splines,anysel);
-    CVCharChangedUpdate(&cv->b);
+    _CVMenuAction(gw,&SplineCharBalance);
 }
 
 static void CVMenuHarmonize(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    CharView *cv = (CharView *) GDrawGetUserData(gw);
-    int anysel = CVAnySel(cv,NULL,NULL,NULL,NULL);
-    CVPreserveState(&cv->b);
-    SplineCharHarmonize(cv->b.sc,cv->b.layerheads[cv->b.drawmode]->splines,anysel);
-    CVCharChangedUpdate(&cv->b);
+    _CVMenuAction(gw,&SplineCharHarmonize);
 }
 
 static void CVSimplify(CharView *cv,int type) {
