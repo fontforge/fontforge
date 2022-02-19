@@ -224,10 +224,12 @@ static GWindow _GQtDraw_NewPixmap(GDisplay *disp, GWindow similar, uint16 width,
         if (is_bitmap) {
             QImage img(data, width, height, width / 8, QImage::Format_MonoLSB);
             QBitmap bm = QBitmap::fromImage(img);
+            pixmap->fill(Qt::transparent);
 
-            img.invertPixels();
-            pixmap->convertFromImage(img);
-            pixmap->setMask(bm);
+            QPainter painter(pixmap.get());
+            painter.setPen(Qt::black);
+            painter.setBackgroundMode(Qt::TransparentMode);
+            painter.drawPixmap(0, 0, bm);
         } else {
             pixmap->convertFromImage(QImage(data, width, height, QImage::Format_ARGB32));
         }
@@ -292,9 +294,6 @@ void GQtWidget::keyEvent(QKeyEvent *event, event_type et) {
             } else {
                 gevent.u.chr.chars[j++] = uni[i].unicode();
             }
-        }
-        if (gevent.u.chr.chars[0] && !gevent.u.chr.chars[1] && gevent.u.chr.chars[0] < GK_Special) {
-            gevent.u.chr.keysym = gevent.u.chr.chars[0];
         }
     }
     DispatchEvent(gevent);
@@ -531,21 +530,15 @@ static GCursor GQtDrawCreateCursor(GWindow src, GWindow mask, Color fg, Color bg
         gdisp->custom_cursors.emplace_back(*GQtW(src)->Pixmap(), x, y);
     } else { // Assume it's an X11-style cursor
         QPixmap pixmap(src->pos.width, src->pos.height);
-
-        // Masking
-        //Background
-        QBitmap bgMask(*GQtW(mask)->Pixmap());
-        QBitmap fgMask(*GQtW(src)->Pixmap());
-        pixmap.setMask(bgMask);
+        pixmap.fill(Qt::transparent);
 
         QPainter painter(&pixmap);
-        painter.fillRect(pixmap.rect(), QBrush(QColor(bg)));
-        painter.end();
+        painter.setPen(QColor(0xff000000 | bg));
+        painter.setBackgroundMode(Qt::TransparentMode);
+        painter.drawPixmap(0, 0, GQtW(mask)->Pixmap()->mask());
 
-        pixmap.setMask(QBitmap());
-        pixmap.setMask(fgMask);
-        painter.begin(&pixmap);
-        painter.fillRect(pixmap.rect(), QBrush(QColor(fg)));
+        painter.setPen(QColor(0xff000000 | fg));
+        painter.drawPixmap(0, 0, GQtW(src)->Pixmap()->mask());
         painter.end();
 
         gdisp->custom_cursors.emplace_back(pixmap, x, y);
@@ -575,18 +568,22 @@ static void GQtDrawDestroyWindow(GWindow w) {
                 child->setParent(nullptr);
             }
         }
+
+        gw->Widget()->setDisabled(true);
+        QTimer::singleShot(0, [gw]{
+            gw->Widget()->DispatchEvent(gw->Widget()->InitEvent<>(et_destroy));
+            gw->Widget()->deleteLater();
+        });
         // if (gdisp->grabbed_window == gw) {
         //     gw->Widget()->releaseMouse();
         //     gdisp->grabbed_window = nullptr;
         // }
-        gw->Widget()->setDisabled(true);
-        gw->Widget()->deleteLater();
     }
 }
 
 static int GQtDrawNativeWindowExists(GDisplay *UNUSED(gdisp), void *native_window) {
     Log(LOGDEBUG, " ");
-    return true;
+    return native_window != nullptr;
 }
 
 static void GQtDrawSetZoom(GWindow UNUSED(gw), GRect *UNUSED(size), enum gzoom_flags UNUSED(flags)) {
@@ -1508,7 +1505,7 @@ static int GQtDrawFillRuleSetWinding(GWindow w) {
 
 static int GQtDrawDoText8(GWindow w, int32 x, int32 y, const char *text, int32 cnt, Color col, enum text_funcs drawit,
                     struct tf_arg *arg) {
-    Log(LOGDEBUG, " ");
+    // Log(LOGDEBUG, " ");
 
     struct font_instance *fi = w->ggc->fi;
     if (fi == nullptr || !text[0]) {
@@ -1572,7 +1569,7 @@ static void GQtDrawClipPreserve(GWindow w) {
 
 // PANGO LAYOUT
 static void GQtDrawGetFontMetrics(GWindow w, GFont *fi, int *as, int *ds, int *ld) {
-    Log(LOGDEBUG, " ");
+    // Log(LOGDEBUG, " ");
 
     QFont fd = GQtDrawGetFont(fi);
     QFontMetrics fm(fd);
