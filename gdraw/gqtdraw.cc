@@ -132,6 +132,8 @@ static GWindow _GQtDraw_CreateWindow(GQtDisplay *gdisp, GWindow w, GRect *pos,
         }
     }
 
+    // Expectation is that it is created hidden
+    window->hide();
     window->resize(pos->width, pos->height);
     window->setFocusPolicy(Qt::StrongFocus);
     if (wattrs->mask & wam_events) {
@@ -271,7 +273,7 @@ void GQtWidget::DispatchEvent(const GEvent& e) {
 QPainter* GQtWidget::Painter() {
     if (!m_painter) {
         static QPainter sPainter;
-        Log(LOGWARN, "[%p] [%s] that's a paddlin", Base(), Title());
+        Log(LOGDEBUG, "[%p] [%s] that's a paddlin", Base(), Title());
         return &sPainter;
     }
     return m_painter;
@@ -588,7 +590,7 @@ static void GQtDrawDestroyWindow(GWindow w) {
 }
 
 static int GQtDrawNativeWindowExists(GDisplay *UNUSED(gdisp), void *native_window) {
-    Log(LOGDEBUG, " ");
+    // Log(LOGDEBUG, " ");
     return native_window != nullptr;
 }
 
@@ -1132,7 +1134,7 @@ static QImage _GQtDraw_GImage2QImage(GImage *image, GRect *src) {
 }
 
 static void GQtDrawPushClip(GWindow w, GRect *rct, GRect *old) {
-    Log(LOGDEBUG, " ");
+    // Log(LOGDEBUG, " ");
 
     // Return the current clip, and intersect the current clip with the desired
     // clip to get the new clip.
@@ -1175,7 +1177,7 @@ static void GQtDrawPushClip(GWindow w, GRect *rct, GRect *old) {
 }
 
 static void GQtDrawPopClip(GWindow w, GRect *old) {
-    Log(LOGDEBUG, " ");
+    // Log(LOGDEBUG, " ");
     if (old) {
         w->ggc->clip = *old;
     }
@@ -1307,7 +1309,7 @@ static void GQtDrawDrawArrow(GWindow w, int32 x, int32 y, int32 xend, int32 yend
 }
 
 static void GQtDrawDrawRect(GWindow w, GRect *rect, Color col) {
-    Log(LOGDEBUG, " ");
+    // Log(LOGDEBUG, " ");
 
     w->ggc->fg = col;
 
@@ -1323,7 +1325,7 @@ static void GQtDrawDrawRect(GWindow w, GRect *rect, Color col) {
 }
 
 static void GQtDrawFillRect(GWindow w, GRect *rect, Color col) {
-    Log(LOGDEBUG, " ");
+    // Log(LOGDEBUG, " ");
 
     w->ggc->fg = col;
 
@@ -1335,7 +1337,7 @@ static void GQtDrawFillRect(GWindow w, GRect *rect, Color col) {
 }
 
 static void GQtDrawFillRoundRect(GWindow w, GRect *rect, int radius, Color col) {
-    Log(LOGDEBUG, " ");
+    // Log(LOGDEBUG, " ");
 
     w->ggc->fg = col;
 
@@ -1347,7 +1349,7 @@ static void GQtDrawFillRoundRect(GWindow w, GRect *rect, int radius, Color col) 
 }
 
 static void GQtDrawDrawEllipse(GWindow w, GRect *rect, Color col) {
-    Log(LOGDEBUG, " ");
+    // Log(LOGDEBUG, " ");
 
     w->ggc->fg = col;
 
@@ -1363,7 +1365,7 @@ static void GQtDrawDrawEllipse(GWindow w, GRect *rect, Color col) {
 }
 
 static void GQtDrawFillEllipse(GWindow w, GRect *rect, Color col) {
-    Log(LOGDEBUG, " ");
+    // Log(LOGDEBUG, " ");
 
     w->ggc->fg = col;
 
@@ -1396,7 +1398,7 @@ static void GQtDrawDrawArc(GWindow w, GRect *rect, int32 sangle, int32 eangle, C
 }
 
 static void GQtDrawDrawPoly(GWindow w, GPoint *pts, int16_t cnt, Color col) {
-    Log(LOGDEBUG, " ");
+    // Log(LOGDEBUG, " ");
 
     w->ggc->fg = col;
 
@@ -1413,7 +1415,7 @@ static void GQtDrawDrawPoly(GWindow w, GPoint *pts, int16_t cnt, Color col) {
 }
 
 static void GQtDrawFillPoly(GWindow w, GPoint *pts, int16_t cnt, Color col) {
-    Log(LOGDEBUG, " ");
+    // Log(LOGDEBUG, " ");
 
     w->ggc->fg = col;
 
@@ -1439,7 +1441,7 @@ static void GQtDrawFillPoly(GWindow w, GPoint *pts, int16_t cnt, Color col) {
 }
 
 static void GQtDrawDrawImage(GWindow w, GImage *image, GRect *src, int32 x, int32 y) {
-    Log(LOGDEBUG, " ");
+    // Log(LOGDEBUG, " ");
 
     QImage img = _GQtDraw_GImage2QImage(image, src);
     GQtW(w)->Painter()->drawImage(x, y, img);
@@ -1455,14 +1457,14 @@ static void GQtDrawDrawImageMagnified(GWindow w, GImage *image, GRect *src, int3
 }
 
 static void GQtDrawDrawPixmap(GWindow w, GWindow pixmap, GRect *src, int32 x, int32 y) {
-    Log(LOGDEBUG, " ");
+    // Log(LOGDEBUG, " ");
 
     // GQtW(pixmap)->Painter()->end(); //hm
     GQtW(w)->Painter()->drawPixmap(x, y, *GQtW(pixmap)->Pixmap(), src->x, src->y, src->width, src->height);
 }
 
 static enum gcairo_flags GQtDrawHasCairo(GWindow UNUSED(w)) {
-    Log(LOGDEBUG, " ");
+    // Log(LOGDEBUG, " ");
     return gc_all;
 }
 
@@ -1780,6 +1782,7 @@ extern "C" GDisplay *_GQtDraw_CreateDisplay(char *displayname, int *argc, char *
     std::unique_ptr<GQtWidget> groot(new GQtWidget(nullptr, Qt::Widget));
     QRect screenGeom = gdisp->app->primaryScreen()->geometry();
 
+    groot->SetTitle("GROOT");
     ret->res = gdisp->fs.res = gdisp->app->primaryScreen()->logicalDotsPerInch();
     ret->groot = groot->Base();
     ret->groot->display = (GDisplay*)gdisp.get();
