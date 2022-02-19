@@ -669,10 +669,10 @@ static void GQtDrawSetTransientFor(GWindow transient, GWindow owner) {
         owner = aw->Base();
     }
     assert(transient->is_toplevel);
-    assert(owner->is_toplevel);
+    assert(!owner || owner->is_toplevel);
 
     QWidget *trans = GQtW(transient)->Widget();
-    QWidget *parent = GQtW(owner)->Widget();
+    QWidget *parent = owner ? GQtW(owner)->Widget() : nullptr;
     Qt::WindowFlags flags = trans->windowFlags();
     bool visible = trans->isVisible();
 
@@ -1074,8 +1074,8 @@ static QImage _GQtDraw_GImage2QImage(GImage *image, GRect *src) {
         }
     } else if (base->image_type == it_index) {
         ret = QImage(base->data + (src->y * base->bytes_per_line), src->width, src->height, base->bytes_per_line, QImage::Format_Indexed8);
-        ret.setColorCount(256);
-        for (int i = 0; i < 256; ++i) {
+        ret.setColorCount(base->clut->clut_len);
+        for (int i = 0; i < base->clut->clut_len; ++i) {
             ret.setColor(i, 0xff000000 | base->clut->clut[i]);
         }
         if (base->clut->trans_index != COLOR_UNKNOWN) {
@@ -1531,6 +1531,7 @@ static int GQtDrawDoText8(GWindow w, int32 x, int32 y, const char *text, int32 c
         // }
         QRect bounds;
         GQtW(w)->Painter()->setFont(fd);
+        GQtW(w)->Painter()->setPen(QColor(col));
         GQtW(w)->Painter()->drawText(x, y, qtext);
         return 0;
         // GQtW(w)->Painter()->drawText(rct, Qt::AlignLeft|Qt::AlignBottom, qtext, &bounds);
@@ -1595,8 +1596,31 @@ static void GQtDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi) {
         fi = w->ggc->fi;
     }
 
-    state->fd = GQtDrawGetFont(fi);
-    state->text = QString::fromUtf8(text, cnt);
+    state->layout.setFont(GQtDrawGetFont(fi));
+    state->layout.setText(QString::fromUtf8(text, cnt));
+    state->indexes.clear();
+    state->indexes.reserve(state->layout.text().size());
+
+    char *it = text;
+    while (*it) {
+        state->indexes.push_back(it - text);
+        it = utf8_ib(it);
+    }
+
+    state->metrics.reset(new QFontMetrics(state->layout.font()));
+    int leading = state->metrics->leading();
+    qreal height = 0;
+    state->layout.setCacheEnabled(true);
+    state->layout.beginLayout();
+    while (true) {
+        QTextLine line = state->layout.createLine();
+        if (!line.isValid()) {
+            break;
+        }
+        line.setLineWidth(32767); //fixme
+        line.setPosition(QPointF(0, height));
+        height += line.height() + leading;
+    }
 }
 
 static void GQtDrawLayoutDraw(GWindow w, int32 x, int32 y, Color fg) {
@@ -1607,31 +1631,82 @@ static void GQtDrawLayoutDraw(GWindow w, int32 x, int32 y, Color fg) {
         assert(false);
         return;
     }
+    QPointF pt(x, y - state->metrics->ascent());
     gw->Painter()->setPen(QColor(fg));
-    gw->Painter()->setFont(state->fd);
-    gw->Painter()->drawText(x, y, state->text);
+    state->layout.draw(gw->Painter(), pt);
 }
 
 static void GQtDrawLayoutIndexToPos(GWindow w, int index, GRect *pos) {
     Log(LOGDEBUG, " ");
-    // GGDKWindow gw = (GGDKWindow)w;
-    // PangoRectangle rect;
+    auto* state = GQtW(w)->Layout();
+    auto it = std::lower_bound(state->indexes.begin(), state->indexes.end(), index);
+    *pos = {};
 
-    // pango_layout_index_to_pos(gw->pango_layout, index, &rect);
-    // pos->x = rect.x / PANGO_SCALE;
-    // pos->y = rect.y / PANGO_SCALE;
-    // pos->width  = rect.width / PANGO_SCALE;
-    // pos->height = rect.height / PANGO_SCALE;
+    bool trail = false;
+    if (it == state->indexes.end()) {
+        if (!state->indexes.empty()) {
+            Log(LOGWARN, "HM");
+            if (index < 0) {
+                it = state->indexes.begin();
+            } else {
+                it = std::prev(state->indexes.end());
+                trail = true;
+            }
+        } else {
+            return;
+        }
+    }
+
+    int pidx = std::distance(state->indexes.begin(), it);
+    QTextLine line = state->layout.lineForTextPosition(pidx);
+    if (!line.isValid()) {
+        Log(LOGWARN, "AHYO");
+        return;
+    }
+
+    auto x1 = line.cursorToX(pidx, trail ? QTextLine::Trailing : QTextLine::Leading);
+    auto x2 = line.cursorToX(pidx, QTextLine::Trailing);
+    pos->x = x1;
+    pos->width = x2 - x1;
+    pos->y = line.y();
+    pos->height = line.height();
+
+    Log(LOGWARN, "HMM idx=%d pos=%d x=%d y=%d w=%d h=%d",
+        index, pidx, pos->x, pos->y, pos->width, pos->height);
 }
 
 static int GQtDrawLayoutXYToIndex(GWindow w, int x, int y) {
     Log(LOGDEBUG, " ");
+    auto* state = GQtW(w)->Layout();
+    if (state->indexes.empty()) {
+        return 0;
+    }
+
+    QTextLine line;
+    for (int i = 0; i < state->layout.lineCount(); ++i) {
+        line = state->layout.lineAt(i);
+        if (y >= line.y() && y < (line.y() + line.height())) {
+            break;
+        }
+    }
+    if (line.isValid()) {
+        int pos = line.xToCursor(x);
+        if (pos >= state->indexes.size()) {
+            return *std::prev(state->indexes.end()) + 1;
+        }
+        return state->indexes[pos];
+    }
     return 0;
 }
 
 static void GQtDrawLayoutExtents(GWindow w, GRect *size) {
     Log(LOGDEBUG, " ");
-    *size = {0};
+    auto* state = GQtW(w)->Layout();
+    auto br = state->layout.boundingRect();
+    size->x = br.x();
+    size->y = br.y();
+    size->width = br.width();
+    size->height = br.height();
 }
 
 static void GQtDrawLayoutSetWidth(GWindow w, int width) {
@@ -1640,11 +1715,20 @@ static void GQtDrawLayoutSetWidth(GWindow w, int width) {
 
 static int GQtDrawLayoutLineCount(GWindow w) {
     Log(LOGDEBUG, " ");
-    return 0;
+    auto* state = GQtW(w)->Layout();
+    return state->layout.lineCount();
 }
 
 static int GQtDrawLayoutLineStart(GWindow w, int l) {
     Log(LOGDEBUG, " ");
+    auto* state = GQtW(w)->Layout();
+    if (state->indexes.empty()) {
+        return 0;
+    }
+    QTextLine line = state->layout.lineAt(l);
+    if (line.isValid()) {
+        return state->indexes[line.textStart()];
+    }
     return 0;
 }
 // END PANGO LAYOUT

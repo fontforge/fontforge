@@ -54,8 +54,9 @@ struct GQtButtonState {
 };
 
 struct GQtLayoutState {
-    QFont fd;
-    QString text;
+    std::vector<int> indexes;
+    std::unique_ptr<QFontMetrics> metrics;
+    QTextLayout layout;
 };
 
 struct GQtDisplay
