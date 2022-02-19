@@ -106,6 +106,13 @@ struct gwindow {
     void *user_data;
     struct gwidgetdata *widget_data;
     void *native_window;
+    /**
+     * This is an optional window type string that is used by the hotkey subsystem.
+     * It is a pointer to a constant string which is never to be freed or NULL.
+     * This will be, for example, "CharView" for the glyph editing window.
+     */
+    char* window_type_name;
+
     unsigned int is_visible: 1;
     unsigned int is_pixmap: 1;
     unsigned int is_toplevel: 1;
@@ -114,12 +121,11 @@ struct gwindow {
     unsigned int is_popup: 1;
     unsigned int disable_expose_requests: 1;
     unsigned int usecairo: 1;		/* use a cairo context -- if meaningful */
-    /**
-     * This is an optional window type string that is used by the hotkey subsystem.
-     * It is a pointer to a constant string which is never to be freed or NULL.
-     * This will be, for example, "CharView" for the glyph editing window.
-     */
-    char* window_type_name;
+    unsigned int is_dlg: 1;
+    unsigned int was_positioned: 1;
+    unsigned int restrict_input_to_me: 1;/* for dialogs, no input outside of dlg */
+    unsigned int istransient: 1;	/* has transient for hint set */
+    unsigned int isverytransient: 1;
 };
 
 struct ginput_context {

@@ -124,6 +124,8 @@ typedef struct gxwindow /* :GWindow */ {
     void *user_data;
     void *widget_data;
     Window w;
+    char* window_type_name;
+
     unsigned int is_visible: 1;		/* Filled in when MapNotify events happen */
     unsigned int is_pixmap: 1;
     unsigned int is_toplevel: 1;
@@ -133,13 +135,15 @@ typedef struct gxwindow /* :GWindow */ {
     unsigned int disable_expose_requests: 1;
     unsigned int usecairo: 1;		/* use a cairo context */
     unsigned int is_dlg: 1;
-    unsigned int not_restricted: 1;
     unsigned int was_positioned: 1;
-	/* is_bitmap can be found in the bitmap_col field of the ggc */
     unsigned int restrict_input_to_me: 1;/* for dialogs, no input outside of dlg */
-    unsigned int redirect_chars_to_me: 1;/* ditto, we get any input outside of us */
     unsigned int istransient: 1;	/* has transient for hint set */
     unsigned int isverytransient: 1;
+    /* Inherit GWindow end */
+
+    unsigned int not_restricted: 1;
+	/* is_bitmap can be found in the bitmap_col field of the ggc */
+    unsigned int redirect_chars_to_me: 1;/* ditto, we get any input outside of us */
     GWindow redirect_from;		/* only redirect input from this window and its children */
     GCursor cursor;
     Window parentissimus;

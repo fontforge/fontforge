@@ -39,9 +39,11 @@
 
 namespace fontforge { namespace gdraw {
 
-struct GQtWindow;
+class GQtWindow;
+class GQtPixmap;
+class GQtWidget;
 
-typedef struct gqtbuttonstate {
+struct GQtButtonState {
     uint32_t last_press_time;
     GQtWindow *release_w;
     int16_t release_x, release_y;
@@ -49,18 +51,79 @@ typedef struct gqtbuttonstate {
     int16_t cur_click;
     int16_t double_time;		// max milliseconds between release & click
     int16_t double_wiggle;	// max pixel wiggle allowed between release&click
-} GQtButtonState;
+};
 
-struct GQtWidget : QWidget
+struct GQtLayoutState {
+    QFont fd;
+    QString text;
+};
+
+struct GQtDisplay
 {
-    explicit GQtWidget(GQtWindow *base, QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags())
-    : QWidget(parent, f)
-    , gwindow(base)
-    {}
+    struct gdisplay base;
+    std::unique_ptr<QApplication> app;
+    std::vector<QCursor> custom_cursors;
+    GQtWindow *default_icon = nullptr;
 
-    ~GQtWidget()
+    bool is_space_pressed = false; // Used for GGDKDrawKeyState. We cheat!
+
+    int top_window_count = 0; // The number of toplevel, non-dialogue windows. When this drops to 0, the event loop stops
+    ulong last_event_time = 0;
+    GQtWindow *grabbed_window = nullptr;
+
+    FState fs = {};
+    GQtButtonState bs = {};
+
+    inline GDisplay* Base() const { return const_cast<GDisplay*>(&base); }
+};
+
+class GQtWindow
+{
+public:
+    GQtWindow(bool is_pixmap)
     {
-        Log(LOGDEBUG, "CLEANUP %p", this);
+        m_ggc.clip.width = m_ggc.clip.height = 0x7fff;
+        m_ggc.fg = 0;
+        m_ggc.bg = 0xffffff;
+        m_base.is_pixmap = is_pixmap;
+        m_base.ggc = &m_ggc;
+    }
+    virtual ~GQtWindow() = default;
+
+    inline GWindow Base() const { return const_cast<GWindow>(&m_base); }
+
+    virtual GQtPixmap* Pixmap() { assert(false); return nullptr; }
+    virtual GQtWidget* Widget() { assert(false); return nullptr; }
+    virtual QPainter* Painter() = 0;
+
+    inline const char* Title() const { return m_window_title.c_str(); }
+    inline void SetTitle(const char *title) { m_window_title = title; }
+    GCursor Cursor() const { return m_current_cursor; }
+    void SetCursor(GCursor c) { m_current_cursor = c; }
+    GQtLayoutState* InitLayout() { m_layout_state.reset(new GQtLayoutState()); return m_layout_state.get(); }
+    GQtLayoutState* Layout() { return m_layout_state.get(); }
+
+private:
+    struct gwindow m_base = {};
+    GGC m_ggc = {};
+
+    std::string m_window_title;
+    GCursor m_current_cursor = ct_default;
+    std::unique_ptr<GQtLayoutState> m_layout_state;
+};
+
+class GQtWidget : public QWidget, public GQtWindow
+{
+public:
+    explicit GQtWidget(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags())
+        : QWidget(parent, f)
+        , GQtWindow(false)
+    {
+    }
+
+    ~GQtWidget() override
+    {
+        Log(LOGWARN, "CLEANUP [%p] [%p] [%s]", Base(), this, Title());
     }
 
     template<typename E = void>
@@ -90,100 +153,44 @@ struct GQtWidget : QWidget
     void focusEvent(QFocusEvent* event, bool focusIn);
     void crossingEvent(QEvent* event, bool enter);
     
-    QPainter* Painter();
 
-    std::unique_ptr<QPainter> painter;
-    GQtWindow *gwindow = nullptr;
+    GQtWidget* Widget() override { return this; }
+    QPainter* Painter() override;
+
+private:
+    QPainter* m_painter = nullptr;
 };
 
-struct GQtPixmap : QPixmap
+class GQtPixmap : public QPixmap, public GQtWindow
 {
+public:
     explicit GQtPixmap(int w, int h)
         : QPixmap(w, h)
-    {}
-
-    QPainter* Painter() {
-        if (!painter.isActive()) {
-            painter.begin(this);
-            painter.setRenderHint(QPainter::Antialiasing);
-            painter.setRenderHint(QPainter::HighQualityAntialiasing);
-        }
-        return &painter;
+        , GQtWindow(true)
+    {
     }
 
-    QPainter painter;
+    GQtPixmap* Pixmap() override { return this; }
+    QPainter* Painter() override {
+        if (!m_painter.isActive()) {
+            m_painter.begin(this);
+            m_painter.setRenderHint(QPainter::Antialiasing);
+            m_painter.setRenderHint(QPainter::HighQualityAntialiasing);
+        }
+        return &m_painter;
+    }
+
+private:
+    QPainter m_painter;
 };
 
-struct GQtTimer : QTimer
+class GQtTimer : public QTimer
 {
+public:
     explicit GQtTimer(GQtWindow *parent, void *userdata);
-    GTimer* Base() const { return const_cast<GTimer*>(&gtimer); }
-
-    GTimer gtimer;
-};
-
-struct GQtDisplay
-{
-    struct gdisplay base;
-    std::unique_ptr<QApplication> app;
-    std::vector<QCursor> custom_cursors;
-    GQtWindow *default_icon = nullptr;
-
-    bool is_space_pressed = false; // Used for GGDKDrawKeyState. We cheat!
-
-    int top_window_count = 0; // The number of toplevel, non-dialogue windows. When this drops to 0, the event loop stops
-    ulong last_event_time = 0;
-    GQtWindow *grabbed_window = nullptr;
-
-    GQtButtonState bs;
-
-    inline GDisplay* Base() const { return const_cast<GDisplay*>(&base); }
-};
-
-struct GQtWindow
-{
-    struct LayoutState {
-        QFont fd;
-        QString text;
-    };
-
-    struct gwindow base;
-    void *q_base = nullptr;
-
-    unsigned int is_dlg: 1;
-    unsigned int was_positioned: 1;
-    unsigned int restrict_input_to_me: 1;/* for dialogs, no input outside of dlg */
-    unsigned int istransient: 1;	/* has transient for hint set */
-    unsigned int isverytransient: 1;
-    unsigned int is_cleaning_up: 1; //Are we running cleanup?
-    unsigned int is_waiting_for_selection: 1;
-    unsigned int is_notified_of_selection: 1;
-    unsigned int is_in_paint: 1; // Have we called gdk_window_begin_paint_region?
-
-    std::string window_title;
-    GCursor current_cursor = ct_default;
-
-    std::unique_ptr<LayoutState> layout_state;
-
-    inline GWindow Base() const { return const_cast<GWindow>(&base); }
-
-    inline GQtPixmap* Pixmap() const {
-        assert(base.is_pixmap);
-        return static_cast<GQtPixmap*>(q_base);
-    }
-
-    inline QPainter* Painter() {
-        if (base.is_pixmap) {
-            return Pixmap()->Painter();
-        } else {
-            return Widget()->Painter();
-        }
-    }
-
-    inline GQtWidget* Widget() const {
-        assert(!base.is_pixmap);
-        return static_cast<GQtWidget*>(q_base);
-    }
+    GTimer* Base() const { return const_cast<GTimer*>(&m_gtimer); }
+private:
+    GTimer m_gtimer;
 };
 
 static inline GQtDisplay* GQtD(GDisplay *d) {
