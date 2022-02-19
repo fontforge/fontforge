@@ -3484,15 +3484,15 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFContour_AddInflections(PyFF_Contour *self) {
-    _PyFFContour_Action(self,&SplineSetAddInflections);
+    return _PyFFContour_Action(self,&SplineSetAddInflections);
 }
 
 static PyObject *PyFFContour_Balance(PyFF_Contour *self) {
-    _PyFFContour_Action(self,&SplineSetBalance);
+    return _PyFFContour_Action(self,&SplineSetBalance);
 }
 
 static PyObject *PyFFContour_Harmonize(PyFF_Contour *self) {
-    _PyFFContour_Action(self,&SplineSetHarmonize);
+    return _PyFFContour_Action(self,&SplineSetHarmonize);
 }
 
 static PyObject *PyFFContour_BoundingBox(PyFF_Contour *self, PyObject *UNUSED(args)) {
@@ -4473,15 +4473,15 @@ Py_RETURN( self );
 }	
 
 static PyObject *PyFFLayer_AddInflections(PyFF_Layer *self) {
-    _PyFFLayer_Action(self,&SplineCharAddInflections);
+    return _PyFFLayer_Action(self,&SplineCharAddInflections);
 }
 
 static PyObject *PyFFLayer_Balance(PyFF_Layer *self) {
-    _PyFFLayer_Action(self,&SplineCharBalance);
+    return _PyFFLayer_Action(self,&SplineCharBalance);
 }
 
 static PyObject *PyFFLayer_Harmonize(PyFF_Layer *self) {
-    _PyFFLayer_Action(self,&SplineCharHarmonize);
+    return _PyFFLayer_Action(self,&SplineCharHarmonize);
 }
 
 int NibCheck(SplineSet *nib) {
@@ -9470,15 +9470,15 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFGlyph_AddInflections(PyFF_Glyph *self) {
-    _PyFFGlyph_Action(self,&SplineCharAddInflections);
+    return _PyFFGlyph_Action(self,&SplineCharAddInflections);
 }
 
 static PyObject *PyFFGlyph_Balance(PyFF_Glyph *self) {
-    _PyFFGlyph_Action(self,&SplineCharBalance);
+    return _PyFFGlyph_Action(self,&SplineCharBalance);
 }
 
 static PyObject *PyFFGlyph_Harmonize(PyFF_Glyph *self) {
-    _PyFFGlyph_Action(self,&SplineCharHarmonize);
+    return _PyFFGlyph_Action(self,&SplineCharHarmonize);
 }
 
 static PyObject *PyFFGlyph_Stroke(PyFF_Glyph *self, PyObject *args, PyObject *keywds) {
