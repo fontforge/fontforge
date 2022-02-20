@@ -126,8 +126,9 @@ public:
 
     template<typename E = void>
     GEvent InitEvent(event_type et, E* event = nullptr);
-    void DispatchEvent(const GEvent& e);
+    bool DispatchEvent(const GEvent& e);
 
+    bool event(QEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override { keyEvent(event, et_char); }
     void keyReleaseEvent(QKeyEvent *event) override { keyEvent(event, et_charup); }
     void paintEvent(QPaintEvent *event) override;

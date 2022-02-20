@@ -265,6 +265,8 @@ static void SplashLayout() {
 #endif
 #ifdef FONTFORGE_CAN_USE_GDK
     uc_strcat(pt, "-GDK3");
+#elif defined(FONTFORGE_CAN_USE_QT)
+    uc_strcat(pt, "-Qt");
 #else
     uc_strcat(pt,"-X11");
 #endif
@@ -659,6 +661,9 @@ int fontforge_main( int argc, char **argv ) {
 #ifdef FONTFORGE_CAN_USE_GDK
             "-GDK3"
 #endif
+#ifdef FONTFORGE_CAN_USE_QT
+            "-Qt"
+#endif
 #ifdef BUILT_WITH_XORG
             "-Xorg"
 #endif
@@ -889,7 +894,7 @@ int fontforge_main( int argc, char **argv ) {
     wattrs.utf8_window_title = "FontForge";
     wattrs.border_width = 2;
     wattrs.background_color = splashbg;
-#ifdef FONTFORGE_CAN_USE_GDK
+#ifdef X_DISPLAY_MISSING
     wattrs.is_dlg = true;
 #endif
     pos.x = pos.y = 200;

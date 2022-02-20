@@ -66,7 +66,7 @@ static int16_t _GQtDraw_QtModifierToKsm(Qt::KeyboardModifiers mask) {
         state |= ksm_meta;
     }
     if (mask & Qt::MetaModifier) {
-        state |= ksm_meta;
+        state |= ksm_super;
     }
     return state;
 }
@@ -111,8 +111,8 @@ static GWindow _GQtDraw_CreateWindow(GQtDisplay *gdisp, GWindow w, GRect *pos,
     GWindow ret = window->Base();
     ret->native_window = static_cast<GQtWindow*>(window.get());
     ret->is_toplevel = w == nullptr;
-    ret->is_popup = windowFlags & Qt::Popup;
-    ret->is_dlg = windowFlags & (Qt::Popup | Qt::Dialog);
+    ret->is_popup = (windowFlags & Qt::Popup) == Qt::Popup;
+    ret->is_dlg = ret->is_popup || ((windowFlags & Qt::Dialog) == Qt::Dialog);
     ret->display = gdisp->Base();
     ret->eh = eh;
     ret->parent = w;
@@ -135,6 +135,7 @@ static GWindow _GQtDraw_CreateWindow(GQtDisplay *gdisp, GWindow w, GRect *pos,
     window->hide();
     window->resize(pos->width, pos->height);
     window->setFocusPolicy(Qt::StrongFocus);
+    window->setAttribute(Qt::WA_InputMethodEnabled, true);
     if (wattrs->mask & wam_events) {
         if (wattrs->event_masks & (1 << et_mousemove)) {
             window->setMouseTracking(true);
@@ -183,10 +184,10 @@ static GWindow _GQtDraw_CreateWindow(GQtDisplay *gdisp, GWindow w, GRect *pos,
             ret->is_dlg = true;
         } else if (!ret->is_dlg) {
             ++gdisp->top_window_count;
+            Log(LOGWARN, "INCTP %d", gdisp->top_window_count);
         }
-        // else if (ret->restrict_input_to_me) {
-        //     GQtDrawSetTransientFor(ret, (GWindow) - 1);
-        // }
+        window->setAttribute(Qt::WA_QuitOnClose, !ret->is_dlg);
+        Log(LOGDEBUG, "TP QOC [%p][%s]: %d", window->Base(), window->Title(), !ret->is_dlg);
     }
 
     if ((wattrs->mask & wam_cursor) && wattrs->cursor != ct_default) {
@@ -198,7 +199,7 @@ static GWindow _GQtDraw_CreateWindow(GQtDisplay *gdisp, GWindow w, GRect *pos,
         window->DispatchEvent(window->InitEvent<>(et_create));
     }
 
-    Log(LOGDEBUG, "Window created: %p[%p][%s][toplevel:%d]",
+    Log(LOGWARN, "Window created: %p[%p][%s][toplevel:%d]",
         ret, ret->native_window, window->Title(), ret->is_toplevel);
     window.release();
     return ret;
@@ -243,7 +244,7 @@ static GWindow _GQtDraw_NewPixmap(GDisplay *disp, GWindow similar, uint16 width,
 GQtWidget::~GQtWidget()
 {
     Log(LOGWARN, "CLEANUP [%p] [%p] [%s]", Base(), this, Title());
-    DispatchEvent(InitEvent<>(et_destroy));
+    // DispatchEvent(InitEvent<>(et_destroy));
 }
 
 template<typename E>
@@ -263,10 +264,11 @@ GEvent GQtWidget::InitEvent(event_type et, E *event) {
     return gevent;
 }
 
-void GQtWidget::DispatchEvent(const GEvent& e) {
+bool GQtWidget::DispatchEvent(const GEvent& e) {
     if (e.w->eh && e.type != et_noevent && (!e.w->is_dying || e.type == et_destroy)) {
-        (e.w->eh)(e.w, const_cast<GEvent*>(&e)); //yuck
+        return (e.w->eh)(e.w, const_cast<GEvent*>(&e)); //yuck
     }
+    return false;
 }
 
 QPainter* GQtWidget::Painter() {
@@ -276,6 +278,16 @@ QPainter* GQtWidget::Painter() {
         return &sPainter;
     }
     return m_painter;
+}
+
+bool GQtWidget::event(QEvent *event) {
+    Log(LOGDEBUG, "EVT %s", QMetaEnum::fromType<QEvent::Type>().valueToKey(event->type()));
+    if (event->type() == QEvent::ShortcutOverride) {
+        QKeyEvent *ke = static_cast<QKeyEvent*>(event);
+        Log(LOGWARN, "YOOO key(%d) mods(0x%x)",
+            ke->key(), ke->modifiers());
+    }
+    return QWidget::event(event);
 }
 
 void GQtWidget::keyEvent(QKeyEvent *event, event_type et) {
@@ -490,9 +502,30 @@ void GQtWidget::crossingEvent(QEvent* event, bool enter) {
 }
 
 void GQtWidget::closeEvent(QCloseEvent *event) {
+    if (Base()->is_dying || Base() == Base()->display->groot) {
+        Log(LOGWARN, "ACCEPT CLOSe [%p][%s]: %d", Base(), Title());
+        event->accept();
+        DispatchEvent(InitEvent<>(et_destroy));
+        deleteLater();
+
+        GQtDisplay *gdisp = GQtD(this);
+        if (Base()->parent == nullptr && !Base()->is_dlg) {
+            gdisp->top_window_count--;
+            Log(LOGWARN, "DECTP %d", gdisp->top_window_count);
+            if (gdisp->top_window_count <= 0) {
+                gdisp->app->quit();
+            }
+        }
+
+        return;
+    }
+
+    Log(LOGWARN, "SEND CLOSe [%p][%s]: %d", Base(), Title());
     GEvent gevent = InitEvent(et_close, event);
-    event->ignore();
-    DispatchEvent(gevent);
+    if (DispatchEvent(gevent))
+        event->ignore();
+    else
+        event->accept();
 }
 
 static void GQtDrawInit(GDisplay *disp) {
@@ -580,7 +613,8 @@ static void GQtDrawDestroyWindow(GWindow w) {
         }
 
         gw->Widget()->setDisabled(true);
-        gw->Widget()->deleteLater();
+        gw->Widget()->hide();
+        QMetaObject::invokeMethod(gw->Widget(), "close", Qt::QueuedConnection);
         // if (gdisp->grabbed_window == gw) {
         //     gw->Widget()->releaseMouse();
         //     gdisp->grabbed_window = nullptr;
@@ -942,7 +976,9 @@ static void GQtDrawProcessOneEvent(GDisplay *disp) {
 
 static void GQtDrawEventLoop(GDisplay *disp) {
     Log(LOGDEBUG, " ");
-    GQtD(disp)->app->exec();
+    if (GQtD(disp)->top_window_count > 0) {
+        GQtD(disp)->app->exec();
+    }
 }
 
 static void GQtDrawPostEvent(GEvent *e) {
@@ -961,7 +997,15 @@ static int GQtDrawRequestDeviceEvents(GWindow w, int devcnt, struct gdeveventmas
 }
 
 static int GQtDrawShortcutKeyMatches(const GEvent *e, unichar_t ch) {
-    return false;
+    if ((e->type != et_char && e->type != et_charup) || ch == 0) {
+        return false;
+    }
+
+    Log(LOGWARN, "KSM keysym(%d) ch(%d) tk(%d) tch(%d)",
+        e->u.chr.keysym, ch, toupper(e->u.chr.keysym),
+        toupper(ch));
+    return toupper(e->u.chr.keysym) == toupper(ch) ||
+        toupper(e->u.chr.chars[0]) == toupper(ch);
 }
 
 GQtTimer::GQtTimer(GQtWindow *parent, void *userdata)
@@ -1649,7 +1693,7 @@ static void GQtDrawLayoutIndexToPos(GWindow w, int index, GRect *pos) {
     bool trail = false;
     if (it == state->indexes.end()) {
         if (!state->indexes.empty()) {
-            Log(LOGWARN, "HM");
+            Log(LOGDEBUG, "HM");
             if (index < 0) {
                 it = state->indexes.begin();
             } else {
@@ -1664,7 +1708,7 @@ static void GQtDrawLayoutIndexToPos(GWindow w, int index, GRect *pos) {
     int pidx = std::distance(state->indexes.begin(), it);
     QTextLine line = state->layout.lineForTextPosition(pidx);
     if (!line.isValid()) {
-        Log(LOGWARN, "AHYO");
+        Log(LOGDEBUG, "AHYO");
         return;
     }
 
@@ -1675,7 +1719,7 @@ static void GQtDrawLayoutIndexToPos(GWindow w, int index, GRect *pos) {
     pos->y = line.y();
     pos->height = line.height();
 
-    Log(LOGWARN, "HMM idx=%d pos=%d x=%d y=%d w=%d h=%d",
+    Log(LOGDEBUG, "HMM idx=%d pos=%d x=%d y=%d w=%d h=%d",
         index, pidx, pos->x, pos->y, pos->width, pos->height);
 }
 
@@ -1885,6 +1929,7 @@ extern "C" GDisplay *_GQtDraw_CreateDisplay(char *displayname, int *argc, char *
     std::unique_ptr<GQtWidget> groot(new GQtWidget(nullptr, Qt::Widget));
     QRect screenGeom = gdisp->app->primaryScreen()->geometry();
 
+    groot->setAttribute(Qt::WA_QuitOnClose, false);
     groot->SetTitle("GROOT");
     ret->res = gdisp->fs.res = gdisp->app->primaryScreen()->logicalDotsPerInch();
     ret->groot = groot->Base();
@@ -1900,6 +1945,11 @@ extern "C" GDisplay *_GQtDraw_CreateDisplay(char *displayname, int *argc, char *
     GDrawResourceFind();
     gdisp->bs.double_time = _GDraw_res_multiclicktime;
     gdisp->bs.double_wiggle = _GDraw_res_multiclickwiggle;
+
+    // QObject::connect(gdisp->app.get(), &QGuiApplication::lastWindowClosed, [ret] {
+    //     Log(LOGWARN, "LWC LARP %d",
+    //         GQtD(ret)->top_window_count);
+    // });
 
     (ret->funcs->init)(ret);
     _GDraw_InitError(ret);

@@ -32,6 +32,7 @@
 #include "hotkeys.h"
 #include "intl.h"
 #include "ustring.h"
+#include "utype.h"
 
 #include <errno.h>
 #include <locale.h>
@@ -97,7 +98,7 @@ hotkeyFindAllByStateAndKeysym( char* windowType, uint16_t state, uint32_t keysym
     for( ; node; node=node->next ) {
 	Hotkey* hk = (Hotkey*)node;
 	if( hk->keysym ) {
-	    if( keysym == hk->keysym ) {
+	    if( keysym == hk->keysym || tolower(keysym) == tolower(hk->keysym) ) {
 		if( state == hk->state ) {
 		    if( hotkeyHasMatchingWindowTypeString( windowType, hk ) ) {
 			dlist_pushfront_external( (struct dlistnode **)&ret, hk );
@@ -116,7 +117,7 @@ static Hotkey* hotkeyFindByStateAndKeysym( char* windowType, uint16_t state, uin
     for( ; node; node=node->next ) {
 	Hotkey* hk = (Hotkey*)node;
 	if( hk->keysym ) {
-	    if( keysym == hk->keysym ) {
+	    if( keysym == hk->keysym || tolower(keysym) == tolower(hk->keysym) ) {
 		if( state == hk->state ) {
 		    if( hotkeyHasMatchingWindowTypeString( windowType, hk ) ) {
 			return hk;
