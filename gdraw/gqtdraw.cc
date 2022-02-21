@@ -225,6 +225,10 @@ static GWindow _GQtDraw_NewPixmap(GDisplay *disp, GWindow similar, uint16 width,
     if (data != nullptr) {
         if (is_bitmap) {
             QImage img(data, width, height, width / 8, QImage::Format_MonoLSB);
+            // for some reason converting a mono bitmap directly
+            // causes a crash with qt6
+            img = img.convertToFormat(QImage::Format_ARGB32);
+            img.invertPixels();
             QBitmap bm = QBitmap::fromImage(img);
             pixmap->fill(Qt::transparent);
 
@@ -281,12 +285,8 @@ QPainter* GQtWidget::Painter() {
 }
 
 bool GQtWidget::event(QEvent *event) {
-    Log(LOGDEBUG, "EVT %s", QMetaEnum::fromType<QEvent::Type>().valueToKey(event->type()));
-    if (event->type() == QEvent::ShortcutOverride) {
-        QKeyEvent *ke = static_cast<QKeyEvent*>(event);
-        Log(LOGWARN, "YOOO key(%d) mods(0x%x)",
-            ke->key(), ke->modifiers());
-    }
+    static const QMetaEnum sEventType = QMetaEnum::fromType<QEvent::Type>();
+    Log(LOGVERB, "Received %s", sEventType.valueToKey(event->type()));
     return QWidget::event(event);
 }
 
@@ -318,65 +318,17 @@ void GQtWidget::keyEvent(QKeyEvent *event, event_type et) {
     DispatchEvent(gevent);
 }
 
-void GQtWidget::paintEvent(QPaintEvent *event) {
-    Log(LOGDEBUG, "PAINTING %p %s", Base(), Title());
-
-    const QRect& rect = event->rect();
-    GEvent gevent = InitEvent(et_expose, event);
-    gevent.u.expose.rect.x = rect.x();
-    gevent.u.expose.rect.y = rect.y();
-    gevent.u.expose.rect.width = rect.width();
-    gevent.u.expose.rect.height = rect.height();
-
-    QPainter painter(this);
-    painter.setRenderHint(QPainter::Antialiasing);
-    painter.setRenderHint(QPainter::HighQualityAntialiasing);
-
-    m_painter = &painter;
-    DispatchEvent(gevent);
-    m_painter = nullptr;
-}
-
-void GQtWidget::configureEvent() {
-    GEvent gevent = InitEvent<>(et_resize);
-    auto geom = geometry();
-
-    gevent.u.resize.size.x      = geom.x();
-    gevent.u.resize.size.y      = geom.y();
-    gevent.u.resize.size.width  = geom.width();
-    gevent.u.resize.size.height = geom.height();
-    gevent.u.resize.dx          = geom.x() - gevent.w->pos.x;
-    gevent.u.resize.dy          = geom.y() - gevent.w->pos.y;
-    gevent.u.resize.dwidth      = geom.width() - gevent.w->pos.width;
-    gevent.u.resize.dheight     = geom.height() - gevent.w->pos.height;
-    gevent.u.resize.moved       = gevent.u.resize.sized = false;
-    if (gevent.u.resize.dx != 0 || gevent.u.resize.dy != 0) {
-        gevent.u.resize.moved = true;
-    }
-    if (gevent.u.resize.dwidth != 0 || gevent.u.resize.dheight != 0) {
-        gevent.u.resize.sized = true;
-    }
-
-    gevent.w->pos = gevent.u.resize.size;
-
-    // I could make this Windows specific... But it doesn't seem necessary on other platforms too.
-    // On Windows, repeated configure messages are sent if we move the window around.
-    // This causes CPU usage to go up because mouse handlers of this message just redraw the whole window.
-    if (gevent.w->is_toplevel && !gevent.u.resize.sized && gevent.u.resize.moved) {
-        Log(LOGDEBUG, "Configure DISCARDED: %p:%s, %d %d %d %d", gevent.w, Title(), gevent.w->pos.x, gevent.w->pos.y, gevent.w->pos.width, gevent.w->pos.height);
-        return;
-    } else {
-        Log(LOGDEBUG, "CONFIGURED: %p:%s, %d %d %d %d", gevent.w, Title(), gevent.w->pos.x, gevent.w->pos.y, gevent.w->pos.width, gevent.w->pos.height);
-    }
-
-    DispatchEvent(gevent);
-}
 
 void GQtWidget::mouseEvent(QMouseEvent* event, event_type et) {
     GEvent gevent = InitEvent(et, event);
     gevent.u.mouse.state = _GQtDraw_QtModifierToKsm(event->modifiers());
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    gevent.u.mouse.x = event->position().x();
+    gevent.u.mouse.y = event->position().y();
+#else
     gevent.u.mouse.x = event->x();
     gevent.u.mouse.y = event->y();
+#endif
     gevent.u.mouse.time = event->timestamp();
     switch (event->button())
     {
@@ -427,12 +379,12 @@ void GQtWidget::wheelEvent(QWheelEvent *event) {
     GQtDisplay *gdisp = GQtD(gevent.w);
 
     gevent.u.mouse.state = _GQtDraw_QtModifierToKsm(event->modifiers());
-#if QT_VERSION < QT_VERSION_CHECK(5, 14, 0)
-    gevent.u.mouse.x = event->x();
-    gevent.u.mouse.y = event->y();
-#else
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     gevent.u.mouse.x = event->position().x();
     gevent.u.mouse.y = event->position().y();
+#else
+    gevent.u.mouse.x = event->x();
+    gevent.u.mouse.y = event->y();
 #endif
     gevent.u.mouse.clicks = gdisp->bs.cur_click = 1;
 
@@ -451,8 +403,67 @@ void GQtWidget::wheelEvent(QWheelEvent *event) {
 void GQtWidget::mouseMoveEvent(QMouseEvent *event) {
     GEvent gevent = InitEvent(et_mousemove, event);
     gevent.u.mouse.state = _GQtDraw_QtModifierToKsm(event->modifiers());
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    gevent.u.mouse.x = event->position().x();
+    gevent.u.mouse.y = event->position().y();
+#else
     gevent.u.mouse.x = event->x();
     gevent.u.mouse.y = event->y();
+#endif
+    DispatchEvent(gevent);
+}
+
+void GQtWidget::paintEvent(QPaintEvent *event) {
+    Log(LOGDEBUG, "PAINTING %p %s", Base(), Title());
+
+    const QRect& rect = event->rect();
+    GEvent gevent = InitEvent(et_expose, event);
+    gevent.u.expose.rect.x = rect.x();
+    gevent.u.expose.rect.y = rect.y();
+    gevent.u.expose.rect.width = rect.width();
+    gevent.u.expose.rect.height = rect.height();
+
+    QPainter painter(this);
+    // painter.setRenderHint(QPainter::Antialiasing);
+    // painter.setRenderHint(QPainter::HighQualityAntialiasing);
+
+    m_painter = &painter;
+    DispatchEvent(gevent);
+    m_painter = nullptr;
+}
+
+void GQtWidget::configureEvent() {
+    GEvent gevent = InitEvent<>(et_resize);
+    auto geom = geometry();
+
+    gevent.u.resize.size.x      = geom.x();
+    gevent.u.resize.size.y      = geom.y();
+    gevent.u.resize.size.width  = geom.width();
+    gevent.u.resize.size.height = geom.height();
+    gevent.u.resize.dx          = geom.x() - gevent.w->pos.x;
+    gevent.u.resize.dy          = geom.y() - gevent.w->pos.y;
+    gevent.u.resize.dwidth      = geom.width() - gevent.w->pos.width;
+    gevent.u.resize.dheight     = geom.height() - gevent.w->pos.height;
+    gevent.u.resize.moved       = gevent.u.resize.sized = false;
+    if (gevent.u.resize.dx != 0 || gevent.u.resize.dy != 0) {
+        gevent.u.resize.moved = true;
+    }
+    if (gevent.u.resize.dwidth != 0 || gevent.u.resize.dheight != 0) {
+        gevent.u.resize.sized = true;
+    }
+
+    gevent.w->pos = gevent.u.resize.size;
+
+    // I could make this Windows specific... But it doesn't seem necessary on other platforms too.
+    // On Windows, repeated configure messages are sent if we move the window around.
+    // This causes CPU usage to go up because mouse handlers of this message just redraw the whole window.
+    if (gevent.w->is_toplevel && !gevent.u.resize.sized && gevent.u.resize.moved) {
+        Log(LOGDEBUG, "Configure DISCARDED: %p:%s, %d %d %d %d", gevent.w, Title(), gevent.w->pos.x, gevent.w->pos.y, gevent.w->pos.width, gevent.w->pos.height);
+        return;
+    } else {
+        Log(LOGDEBUG, "CONFIGURED: %p:%s, %d %d %d %d", gevent.w, Title(), gevent.w->pos.x, gevent.w->pos.y, gevent.w->pos.width, gevent.w->pos.height);
+    }
+
     DispatchEvent(gevent);
 }
 
@@ -1266,16 +1277,52 @@ static QBrush GQtDrawGetBrush(GGC *mine) {
 static QFont GQtDrawGetFont(GFont *font) {
     QFont fd;
 
+    QString families = QString::fromUtf8(font->rq.utf8_family_name);
+    QStringList familyList = families.split(QLatin1Char(','), Qt::SkipEmptyParts);
+    for (auto& family : familyList) {
+        family = family.trimmed();
+        if (family == QLatin1String("system-ui")) {
+            family = QFontDatabase::systemFont(QFontDatabase::GeneralFont).family();
+            // family = "Segoe UI";
+        } else if (family == QLatin1String("monospace")) {
+            family = QFontDatabase::systemFont(QFontDatabase::FixedFont).family();
+        }
+    }
+    fd.setFamilies(familyList);
     // fd.setStyleHint(QFont::System);
     // fd.setFamily("Courier");
-    fd.setFamily(QString::fromUtf8(font->rq.utf8_family_name));
     fd.setStyle((font->rq.style & fs_italic) ?
                     QFont::StyleItalic : QFont::StyleNormal);
 
     if (font->rq.style & fs_smallcaps) {
         fd.setCapitalization(QFont::SmallCaps);
     }
-    fd.setWeight(font->rq.weight);
+
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    fd.setWeight(static_cast<QFont::Weight>(font->rq.weight));
+#else
+    static std::array<std::pair<int, int>, 10> sWeightMap {{
+        {100, 0},
+        {200, 12},
+        {300, 25},
+        {400, 50},
+        {500, 57},
+        {600, 63},
+        {700, 75},
+        {800, 81},
+        {900, 87},
+        {1000, 99},
+    }};
+    auto it = std::lower_bound(sWeightMap.begin(), sWeightMap.end(), font->rq.weight,
+        [](const std::pair<int, int>& e, int v) {
+            return e.first < v;
+        });
+    fd.setWeight(it == sWeightMap.end() ? 99 :
+        it->second + (((it+1)->second - it->second) *
+                      (font->rq.weight - it->first)) /
+                     ((it+1)->first - it->first));
+#endif
+
     fd.setStretch((font->rq.style & fs_condensed) ? QFont::Condensed :
                     (font->rq.style & fs_extended) ? QFont::Expanded  :
                     QFont::Unstretched);

@@ -129,25 +129,40 @@ public:
     bool DispatchEvent(const GEvent& e);
 
     bool event(QEvent *event) override;
+    void mousePressEvent(QMouseEvent *event) override { mouseEvent(event, et_mousedown); }
+    void mouseReleaseEvent(QMouseEvent *event) override { mouseEvent(event, et_mouseup); }
+    void wheelEvent(QWheelEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
     void keyPressEvent(QKeyEvent *event) override { keyEvent(event, et_char); }
     void keyReleaseEvent(QKeyEvent *event) override { keyEvent(event, et_charup); }
     void paintEvent(QPaintEvent *event) override;
-    void resizeEvent(QResizeEvent *event) override { configureEvent(); }
     void moveEvent(QMoveEvent *event) override { configureEvent(); }
-    void wheelEvent(QWheelEvent *event) override;
-    void mouseMoveEvent(QMouseEvent *event) override;
-    void mousePressEvent(QMouseEvent *event) override { mouseEvent(event, et_mousedown); }
-    void mouseReleaseEvent(QMouseEvent *event) override { mouseEvent(event, et_mouseup); }
+    void resizeEvent(QResizeEvent *event) override { configureEvent(); }
     void showEvent(QShowEvent *event) override { mapEvent(true); }
     void hideEvent(QHideEvent *event) override { mapEvent(false); }
-    void focusInEvent(QFocusEvent *event) override { focusEvent(event, true); }
-    void focusOutEvent(QFocusEvent *event) override { focusEvent(event, false); }
+    void focusInEvent(QFocusEvent *event) override {
+        QWidget::focusInEvent(event);
+        if (!event->isAccepted()) {
+            focusEvent(event, true);
+        }
+    }
+    void focusOutEvent(QFocusEvent *event) override {
+        QWidget::focusOutEvent(event);
+        if (!event->isAccepted()) {
+            focusEvent(event, false);
+        }
+    }
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    void enterEvent(QEnterEvent *event) override { crossingEvent(event, true); }
+#else
     void enterEvent(QEvent *event) override { crossingEvent(event, true); }
+#endif
     void leaveEvent(QEvent *event) override { crossingEvent(event, false); }
     void closeEvent(QCloseEvent *event) override;
-    void configureEvent();
+
     void keyEvent(QKeyEvent *event, event_type et);
     void mouseEvent(QMouseEvent* event, event_type et);
+    void configureEvent();
     void mapEvent(bool visible);
     void focusEvent(QFocusEvent* event, bool focusIn);
     void crossingEvent(QEvent* event, bool enter);
@@ -173,8 +188,8 @@ public:
     QPainter* Painter() override {
         if (!m_painter.isActive()) {
             m_painter.begin(this);
-            m_painter.setRenderHint(QPainter::Antialiasing);
-            m_painter.setRenderHint(QPainter::HighQualityAntialiasing);
+            // m_painter.setRenderHint(QPainter::Antialiasing);
+            // m_painter.setRenderHint(QPainter::HighQualityAntialiasing);
         }
         return &m_painter;
     }
