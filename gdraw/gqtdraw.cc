@@ -129,10 +129,13 @@ static GWindow _GQtDraw_CreateWindow(GQtDisplay *gdisp, GWindow w, GRect *pos,
             window->setWindowTitle(QString::fromUtf8(wattrs->utf8_window_title));
             window->SetTitle(wattrs->utf8_window_title);
         }
+    } else {
+        // Expectation for GDraw is that it is created hidden
+        // Toplevels are not shown by default, but children are
+        // shown with the toplevel by default, so hide it
+        window->hide();
     }
 
-    // Expectation is that it is created hidden
-    window->hide();
     window->resize(pos->width, pos->height);
     window->setFocusPolicy(Qt::StrongFocus);
     window->setAttribute(Qt::WA_InputMethodEnabled, true);
@@ -1283,14 +1286,11 @@ static QFont GQtDrawGetFont(GFont *font) {
         family = family.trimmed();
         if (family == QLatin1String("system-ui")) {
             family = QFontDatabase::systemFont(QFontDatabase::GeneralFont).family();
-            // family = "Segoe UI";
         } else if (family == QLatin1String("monospace")) {
             family = QFontDatabase::systemFont(QFontDatabase::FixedFont).family();
         }
     }
     fd.setFamilies(familyList);
-    // fd.setStyleHint(QFont::System);
-    // fd.setFamily("Courier");
     fd.setStyle((font->rq.style & fs_italic) ?
                     QFont::StyleItalic : QFont::StyleNormal);
 
@@ -1337,7 +1337,6 @@ static QFont GQtDrawGetFont(GFont *font) {
         GDrawIError("Bad point size for Pango");
     }
 
-    // Or set pixel size??
     fd.setPointSize(font->rq.point_size);
     return fd;
 }
@@ -1612,10 +1611,10 @@ static int GQtDrawDoText8(GWindow w, int32 x, int32 y, const char *text, int32 c
     }
 
     QFont fd = GQtDrawGetFont(fi);
+    QFontMetrics fm(fd);
     QString qtext = QString::fromUtf8(text);
     if (drawit == tf_drawit) {
-        QFontMetrics metrics(fd);
-        y -= metrics.ascent();// + metrics.descent();
+        y -= fm.ascent();// + fm.descent();
         QRect rct(x, y, w->ggc->clip.x + w->ggc->clip.width - x, w->ggc->clip.y + w->ggc->clip.height - y);
         if (!rct.isValid()) {
             return 0;
@@ -1623,20 +1622,17 @@ static int GQtDrawDoText8(GWindow w, int32 x, int32 y, const char *text, int32 c
         QRect bounds;
         GQtW(w)->Painter()->setFont(fd);
         GQtW(w)->Painter()->setPen(QColor(col));
-        // GQtW(w)->Painter()->drawText(x, y, qtext);
-        // return 0;
         GQtW(w)->Painter()->drawText(rct, Qt::AlignLeft|Qt::AlignTop, qtext, &bounds);
         return bounds.width();
     } else if (drawit == tf_rect) {
-        QFontMetrics metrics(fd);
-        QRect br = metrics.tightBoundingRect(qtext);
-        arg->size.width = metrics.horizontalAdvance(qtext);
+        QRect br = fm.tightBoundingRect(qtext);
+        arg->size.width = fm.horizontalAdvance(qtext);
         arg->size.lbearing = -br.x();
         arg->size.rbearing = br.width() - br.x();
-        arg->size.fas = metrics.ascent();
-        arg->size.fds = metrics.descent();
-        arg->size.as = metrics.ascent();
-        arg->size.ds = metrics.descent();
+        arg->size.fas = fm.ascent();
+        arg->size.fds = fm.descent();
+        arg->size.as = fm.ascent();
+        arg->size.ds = fm.descent();
 
         QTextLayout layout; // qt 5.13 supports these relative to the paint device...
         layout.setText(qtext);
@@ -1654,9 +1650,7 @@ static int GQtDrawDoText8(GWindow w, int32 x, int32 y, const char *text, int32 c
         }
         return arg->size.width;
     }
-
-    QFontMetrics metrics(fd);
-    return metrics.horizontalAdvance(qtext);
+    return fm.horizontalAdvance(qtext);
 }
 
 static void GQtDrawPushClipOnly(GWindow w) {
