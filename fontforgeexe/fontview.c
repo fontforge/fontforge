@@ -4212,7 +4212,7 @@ static void validlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) 
 static void ellistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
     int anychars = FVAnyCharSelected(fv), gid;
-    int anybuildable, anytraceable, anycubics;
+    int anybuildable, anytraceable;
     int in_modal = (fv->b.container!=NULL && fv->b.container->funcs->is_modal);
 
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {

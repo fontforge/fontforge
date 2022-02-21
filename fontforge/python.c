@@ -9467,7 +9467,6 @@ Py_RETURN( self );
 
 static PyObject *_PyFFGlyph_Action(PyFF_Glyph *self, void (*func)(SplineChar*, SplineSet*, int)) { 
     SplineChar *sc = self->sc;
-    SplineFont *sf = sc->parent;
     func(sc,sc->layers[self->layer].splines,false);
     SCCharChangedUpdate(sc,self->layer);
 Py_RETURN( self );
