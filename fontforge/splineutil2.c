@@ -2911,7 +2911,7 @@ void SplineSetAddInflections(SplineChar *sc, SplineSet *ss, int anysel) {
     Spline *s, *first; 
     first = NULL;
     for ( s = ss->first->next; s!=NULL && s!=first; s = s->to->next ) {
-	    if ( !anysel || s->from->selected && s->to->selected )
+	    if ( !anysel || (s->from->selected && s->to->selected) )
 			s = SplineAddInflections(s);
 	    if ( first==NULL ) first = s;
     }
@@ -2983,7 +2983,7 @@ void SplineSetBalance(SplineChar *sc, SplineSet *ss, int anysel) {
     Spline *s, *first; 
     first = NULL;
     for ( s = ss->first->next; s!=NULL && s!=first; s = s->to->next ) {
-	    if ( !anysel || s->from->selected && s->to->selected )
+	    if ( !anysel || (s->from->selected && s->to->selected) )
 			s = SplineBalance(s);
 	    if ( first==NULL ) first = s;
     }

@@ -931,8 +931,6 @@ void FVAddExtrema(FontViewBase *fv, int force_adding ) {
 void _FVElementAction(FontViewBase *fv, int anysel, void (*func)(SplineChar*, SplineSet*, int), const char* progressmsg) { 
     int i, cnt=0, layer, first, last, gid;
     SplineChar *sc;
-    SplineFont *sf = fv->sf;
-    int emsize = sf->ascent+sf->descent;
 
     for ( i=0; i<fv->map->enccount; ++i )
 	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
