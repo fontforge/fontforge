@@ -939,7 +939,7 @@ void _FVElementAction(FontViewBase *fv, int anysel, void (*func)(SplineChar*, Sp
 	if ( fv->selected[i] && (gid = fv->map->map[i])!=-1 &&
 		SCWorthOutputting(fv->sf->glyphs[gid]) )
 	    ++cnt;
-    ff_progress_start_indicator(10,_(progressmsg),_(progressmsg),0,cnt,1);
+    ff_progress_start_indicator(10,progressmsg,progressmsg,0,cnt,1);
 
     SFUntickAll(fv->sf);
     for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i] &&
@@ -964,15 +964,15 @@ void _FVElementAction(FontViewBase *fv, int anysel, void (*func)(SplineChar*, Sp
 }
 
 void FVAddInflections(FontViewBase *fv, int anysel) {
-	_FVElementAction(fv,anysel,&SplineCharAddInflections,"Adding points of inflection...");
+	_FVElementAction(fv,anysel,&SplineCharAddInflections,_("Adding points of inflection..."));
 }
 
 void FVBalance(FontViewBase *fv, int anysel) {
-	_FVElementAction(fv,anysel,&SplineCharBalance,"Balancing...");
+	_FVElementAction(fv,anysel,&SplineCharBalance,_("Balancing..."));
 }
 
 void FVHarmonize(FontViewBase *fv, int anysel) {
-	_FVElementAction(fv,anysel,&SplineCharHarmonize,"Harmonizing...");
+	_FVElementAction(fv,anysel,&SplineCharHarmonize,_("Harmonizing..."));
 }
 
 void FVCanonicalStart(FontViewBase *fv) {
