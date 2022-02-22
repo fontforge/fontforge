@@ -208,7 +208,7 @@ static GWindow _GQtDraw_CreateWindow(GQtDisplay *gdisp, GWindow w, GRect *pos,
     return ret;
 }
 
-static GWindow _GQtDraw_NewPixmap(GDisplay *disp, GWindow similar, uint16 width, uint16 height, bool is_bitmap,
+static GWindow _GQtDraw_NewPixmap(GDisplay *disp, GWindow similar, uint16_t width, uint16_t height, bool is_bitmap,
                                    const unsigned char *data) {
     std::unique_ptr<GQtPixmap> pixmap(new GQtPixmap(width, height));
     GWindow ret = pixmap->Base();
@@ -564,12 +564,12 @@ static GWindow GQtDrawCreateSubWindow(GWindow w, GRect *pos, int (*eh)(GWindow w
     return _GQtDraw_CreateWindow(GQtD(w), w, pos, eh, user_data, gattrs);
 }
 
-static GWindow GQtDrawCreatePixmap(GDisplay *disp, GWindow similar, uint16 width, uint16 height) {
+static GWindow GQtDrawCreatePixmap(GDisplay *disp, GWindow similar, uint16_t width, uint16_t height) {
     Log(LOGDEBUG, " ");
     return _GQtDraw_NewPixmap(disp, similar, width, height, false, nullptr);
 }
 
-static GWindow GQtDrawCreateBitmap(GDisplay *disp, uint16 width, uint16 height, uint8 *data) {
+static GWindow GQtDrawCreateBitmap(GDisplay *disp, uint16_t width, uint16_t height, uint8_t *data) {
     Log(LOGDEBUG, " ");
     return _GQtDraw_NewPixmap(disp, nullptr, width, height, true, data);
 }
@@ -665,22 +665,22 @@ static void GQtDrawSetVisible(GWindow w, int show) {
     GQtW(w)->Widget()->setVisible((bool)show);
 }
 
-static void GQtDrawMove(GWindow w, int32 x, int32 y) {
+static void GQtDrawMove(GWindow w, int32_t x, int32_t y) {
     Log(LOGDEBUG, "%p:%s, %d %d", w, GQtW(w)->Title(), x, y);
     GQtW(w)->Widget()->move(x, y);
 }
 
-static void GQtDrawTrueMove(GWindow w, int32 x, int32 y) {
+static void GQtDrawTrueMove(GWindow w, int32_t x, int32_t y) {
     Log(LOGDEBUG, " ");
     GQtW(w)->Widget()->move(x, y);
 }
 
-static void GQtDrawResize(GWindow w, int32 width, int32 height) {
+static void GQtDrawResize(GWindow w, int32_t width, int32_t height) {
     Log(LOGDEBUG, "%p:%s, %d %d", w, GQtW(w)->Title(), width, height);
     GQtW(w)->Widget()->resize(width, height);
 }
 
-static void GQtDrawMoveResize(GWindow w, int32 x, int32 y, int32 width, int32 height) {
+static void GQtDrawMoveResize(GWindow w, int32_t x, int32_t y, int32_t width, int32_t height) {
     Log(LOGDEBUG, "%p:%s, %d %d %d %d", w, GQtW(w)->Title(), x, y, width, height);
     GQtW(w)->Widget()->setGeometry(x, y, width, height);
 }
@@ -832,7 +832,7 @@ static void GQtDrawBeep(GDisplay *disp) {
     GQtD(disp)->app->beep();
 }
 
-static void GQtDrawScroll(GWindow w, GRect *rect, int32 hor, int32 vert) {
+static void GQtDrawScroll(GWindow w, GRect *rect, int32_t hor, int32_t vert) {
     Log(LOGDEBUG, " ");
     GRect temp;
 
@@ -877,12 +877,12 @@ static void GQtDrawGrabSelection(GWindow w, enum selnames sn) {
     }
 }
 
-static void GQtDrawAddSelectionType(GWindow w, enum selnames sel, char *type, void *data, int32 cnt, int32 unitsize,
-                                     void *gendata(void *, int32 *len), void freedata(void *)) {
+static void GQtDrawAddSelectionType(GWindow w, enum selnames sel, char *type, void *data, int32_t cnt, int32_t unitsize,
+                                     void *gendata(void *, int32_t *len), void freedata(void *)) {
     Log(LOGDEBUG, " ");
 }
 
-static void *GQtDrawRequestSelection(GWindow w, enum selnames sn, char *type_name, int32 *len) {
+static void *GQtDrawRequestSelection(GWindow w, enum selnames sn, char *type_name, int32_t *len) {
     return nullptr;
 }
 
@@ -1028,7 +1028,7 @@ GQtTimer::GQtTimer(GQtWindow *parent, void *userdata)
 {
 }
 
-static GTimer *GQtDrawRequestTimer(GWindow w, int32 time_from_now, int32 frequency, void *userdata) {
+static GTimer *GQtDrawRequestTimer(GWindow w, int32_t time_from_now, int32_t frequency, void *userdata) {
     Log(LOGDEBUG, " ");
     GQtTimer *timer = new GQtTimer(GQtW(w), userdata);
     if (frequency == 0) {
@@ -1076,10 +1076,10 @@ static void GQtDrawCancelTimer(GTimer *timer) {
 static QBrush GQtDraw_StippleMePink(int ts, Color fg) {
     static const unsigned char grey_init[8] = {0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa};
     static const unsigned char fence_init[8] = {0x55, 0x22, 0x55, 0x88, 0x55, 0x22, 0x55, 0x88};
-    const uint8 *spt;
+    const uint8_t *spt;
     int bit, i, j;
-    uint32 *data;
-    uint32 space[8 * 8];
+    uint32_t *data;
+    uint32_t space[8 * 8];
 
     if ((fg >> 24) != 0xff) {
         int alpha = fg >> 24, r = COLOR_RED(fg), g = COLOR_GREEN(fg), b = COLOR_BLUE(fg);
@@ -1341,7 +1341,7 @@ static QFont GQtDrawGetFont(GFont *font) {
     return fd;
 }
 
-static void GQtDrawDrawLine(GWindow w, int32 x, int32 y, int32 xend, int32 yend, Color col) {
+static void GQtDrawDrawLine(GWindow w, int32_t x, int32_t y, int32_t xend, int32_t yend, Color col) {
     // Log(LOGDEBUG, " ");
 
     w->ggc->fg = col;
@@ -1359,7 +1359,7 @@ static void GQtDrawDrawLine(GWindow w, int32 x, int32 y, int32 xend, int32 yend,
     GQtW(w)->Painter()->strokePath(path, pen);
 }
 
-static void GQtDrawDrawArrow(GWindow w, int32 x, int32 y, int32 xend, int32 yend, int16_t arrows, Color col) {
+static void GQtDrawDrawArrow(GWindow w, int32_t x, int32_t y, int32_t xend, int32_t yend, int16_t arrows, Color col) {
     Log(LOGDEBUG, " ");
 
     w->ggc->fg = col;
@@ -1466,7 +1466,7 @@ static void GQtDrawFillEllipse(GWindow w, GRect *rect, Color col) {
     GQtW(w)->Painter()->fillPath(path, brush);
 }
 
-static void GQtDrawDrawArc(GWindow w, GRect *rect, int32 sangle, int32 eangle, Color col) {
+static void GQtDrawDrawArc(GWindow w, GRect *rect, int32_t sangle, int32_t eangle, Color col) {
     // Log(LOGDEBUG, " ");
 
     w->ggc->fg = col;
@@ -1530,7 +1530,7 @@ static void GQtDrawFillPoly(GWindow w, GPoint *pts, int16_t cnt, Color col) {
     GQtW(w)->Painter()->strokePath(path, pen);
 }
 
-static void GQtDrawDrawImage(GWindow w, GImage *image, GRect *src, int32 x, int32 y) {
+static void GQtDrawDrawImage(GWindow w, GImage *image, GRect *src, int32_t x, int32_t y) {
     // Log(LOGDEBUG, " ");
 
     QImage img = _GQtDraw_GImage2QImage(image, src);
@@ -1538,15 +1538,15 @@ static void GQtDrawDrawImage(GWindow w, GImage *image, GRect *src, int32 x, int3
 }
 
 // What we really want to do is use the grey levels as an alpha channel
-static void GQtDrawDrawGlyph(GWindow w, GImage *image, GRect *src, int32 x, int32 y) {
+static void GQtDrawDrawGlyph(GWindow w, GImage *image, GRect *src, int32_t x, int32_t y) {
     Log(LOGDEBUG, " ");
 }
 
-static void GQtDrawDrawImageMagnified(GWindow w, GImage *image, GRect *src, int32 x, int32 y, int32 width, int32 height) {
+static void GQtDrawDrawImageMagnified(GWindow w, GImage *image, GRect *src, int32_t x, int32_t y, int32_t width, int32_t height) {
     Log(LOGDEBUG, " ");
 }
 
-static void GQtDrawDrawPixmap(GWindow w, GWindow pixmap, GRect *src, int32 x, int32 y) {
+static void GQtDrawDrawPixmap(GWindow w, GWindow pixmap, GRect *src, int32_t x, int32_t y) {
     // Log(LOGDEBUG, " ");
 
     // GQtW(pixmap)->Painter()->end(); //hm
@@ -1601,7 +1601,7 @@ static int GQtDrawFillRuleSetWinding(GWindow w) {
     return 1;
 }
 
-static int GQtDrawDoText8(GWindow w, int32 x, int32 y, const char *text, int32 cnt, Color col, enum text_funcs drawit,
+static int GQtDrawDoText8(GWindow w, int32_t x, int32_t y, const char *text, int32_t cnt, Color col, enum text_funcs drawit,
                     struct tf_arg *arg) {
     // Log(LOGDEBUG, " ");
 
@@ -1712,7 +1712,7 @@ static void GQtDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi) {
     state->layout.endLayout();
 }
 
-static void GQtDrawLayoutDraw(GWindow w, int32 x, int32 y, Color fg) {
+static void GQtDrawLayoutDraw(GWindow w, int32_t x, int32_t y, Color fg) {
     Log(LOGDEBUG, " ");
     GQtWindow *gw = GQtW(w);
     auto* state = gw->Layout();
