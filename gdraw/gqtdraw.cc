@@ -492,7 +492,7 @@ void GQtWidget::focusEvent(QFocusEvent* event, bool focusIn) {
         break;
     }
 
-    Log(LOGDEBUG, "Focus change %s %p(%s %d)",
+    Log(LOGWARN, "Focus change %s %p(%s %d)",
         gevent.u.focus.gained_focus ? "IN" : "OUT",
         Base(), Title(), gevent.w->is_toplevel);
 
@@ -883,12 +883,37 @@ static void GQtDrawAddSelectionType(GWindow w, enum selnames sel, char *type, vo
 }
 
 static void *GQtDrawRequestSelection(GWindow w, enum selnames sn, char *type_name, int32_t *len) {
-    return nullptr;
+    if ((int)sn < 0 || sn > sn_clipboard) {
+        return nullptr;
+    }
+
+    QClipboard::Mode mode = (QClipboard::Mode)(1 - (int)sn);
+    QClipboard *cb = GQtD(w)->app->clipboard();
+    const QMimeData *data = cb->mimeData(mode);
+    if (!data) {
+        return nullptr;
+    }
+    QByteArray arr = data->data(QString::fromUtf8(type_name));
+    if (arr.isEmpty()) {
+        return nullptr;
+    }
+
+    char* ret = (char*)calloc(4 + arr.size(), 1);
+    memcpy(ret, arr.data(), arr.size());
+    *len = arr.size();
+    return ret;
 }
 
 static int GQtDrawSelectionHasType(GWindow w, enum selnames sn, char *type_name) {
     Log(LOGDEBUG, " ");
-    return false;
+    if ((int)sn < 0 || sn > sn_clipboard) {
+        return false;
+    }
+
+    QClipboard::Mode mode = (QClipboard::Mode)(1 - (int)sn);
+    QClipboard *cb = GQtD(w)->app->clipboard();
+    const QMimeData *data = cb->mimeData(mode);
+    return data && data->hasFormat(QString::fromUtf8(type_name));
 }
 
 static void GQtDrawBindSelection(GDisplay *disp, enum selnames sn, char *atomname) {
@@ -898,11 +923,14 @@ static void GQtDrawBindSelection(GDisplay *disp, enum selnames sn, char *atomnam
 static int GQtDrawSelectionHasOwner(GDisplay *disp, enum selnames sn) {
     Log(LOGDEBUG, " ");
 
-    if ((int)sn < 0 || sn >= sn_max) {
+    if ((int)sn < 0 || sn > sn_clipboard) {
         return false;
     }
 
-    return false;
+    QClipboard::Mode mode = (QClipboard::Mode)(1 - (int)sn);
+    QClipboard *cb = GQtD(disp)->app->clipboard();
+    const QMimeData *data = cb->mimeData(mode);
+    return data && !data->formats().empty();
 }
 
 static void GQtDrawPointerUngrab(GDisplay *disp) {
@@ -1673,53 +1701,82 @@ static void GQtDrawGetFontMetrics(GWindow w, GFont *fi, int *as, int *ds, int *l
     *ld = fm.leading();
 }
 
-static void GQtDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi) {
-    Log(LOGDEBUG, " ");
-
-    auto* state = GQtW(w)->InitLayout();
-    if (fi == NULL) {
-        fi = w->ggc->fi;
+static GQtLayoutState* DoLayout(GQtLayoutState* state) {
+    if (state->laid_out) {
+        return state;
     }
 
-    QTextOption qto;
-    qto.setWrapMode(QTextOption::WordWrap);
-    state->layout.setTextOption(qto);
-    state->layout.setFont(GQtDrawGetFont(fi));
-    state->layout.setText(QString::fromUtf8(text, cnt));
-    state->indexes.clear();
-    state->indexes.reserve(state->layout.text().size());
-
-    char *it = text;
-    while (*it) {
-        state->indexes.push_back(it - text);
-        it = utf8_ib(it);
-    }
-
-    state->metrics.reset(new QFontMetrics(state->layout.font()));
-    int leading = state->metrics->leading();
     qreal height = 0;
+    qreal max_width = state->line_width < 0 ? INT_MAX : state->line_width;
+    int leading = state->metrics->leading();
+
+    state->utf8_line_starts.clear();
     state->layout.setCacheEnabled(true);
     state->layout.beginLayout();
+
+    auto text = state->layout.text();
+    const auto *uitr = state->utf8_text.c_str();
+    int pos = 0;
+
     while (true) {
         QTextLine line = state->layout.createLine();
         if (!line.isValid()) {
             break;
         }
-        line.setLineWidth(32767); //fixme
+        line.setLineWidth(max_width);
         line.setPosition(QPointF(0, height));
         height += line.height() + leading;
+
+        auto start = line.textStart();
+        for (; pos < start; ++pos) {
+            int ch = utf8_ildb(&uitr);
+            if (ch > 0x10000) {
+                ++pos;
+            }
+        }
+        assert(pos == start);
+        start = pos;
+        state->utf8_line_starts.push_back(uitr - state->utf8_text.c_str());
+        Log(LOGDEBUG, "LS (%d) %d vs %d", line.lineNumber(), line.textStart(), state->utf8_line_starts.back());
     }
     state->layout.endLayout();
+    assert(state->layout.lineCount() == state->utf8_line_starts.size());
+
+    state->laid_out = true;
+    return state;
+}
+
+static void GQtDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi) {
+    Log(LOGDEBUG, " ");
+
+    auto* state = GQtW(w)->Layout();
+    if (fi == NULL) {
+        fi = w->ggc->fi;
+    }
+
+    state->laid_out = false;
+    if (cnt < 0) {
+        state->utf8_text = text;
+    } else {
+        state->utf8_text.assign(text, cnt);
+    }
+
+    // [QTBUG-95853] This is a bit of a hack, QTextLayouts are meant to be
+    // used per paragraph. But for the cases where multiline text edits
+    // are used, this is good enough, and is easier to work with.
+    QString qtext = QString::fromUtf8(state->utf8_text.c_str(), state->utf8_text.size());
+    qtext.replace('\n', QChar::LineSeparator);
+
+    state->layout.setFont(GQtDrawGetFont(fi));
+    state->layout.setText(qtext);
+    state->metrics.reset(new QFontMetrics(state->layout.font()));
+    state->line_width = -1;
 }
 
 static void GQtDrawLayoutDraw(GWindow w, int32_t x, int32_t y, Color fg) {
     Log(LOGDEBUG, " ");
     GQtWindow *gw = GQtW(w);
-    auto* state = gw->Layout();
-    if (!state) {
-        assert(false);
-        return;
-    }
+    auto* state = DoLayout(gw->Layout());
     QPointF pt(x, y - state->metrics->ascent());
     gw->Painter()->setPen(QColor(fg));
     state->layout.draw(gw->Painter(), pt);
@@ -1727,70 +1784,68 @@ static void GQtDrawLayoutDraw(GWindow w, int32_t x, int32_t y, Color fg) {
 
 static void GQtDrawLayoutIndexToPos(GWindow w, int index, GRect *pos) {
     Log(LOGDEBUG, " ");
-    auto* state = GQtW(w)->Layout();
-    auto it = std::lower_bound(state->indexes.begin(), state->indexes.end(), index);
-    *pos = {};
+    auto* state = DoLayout(GQtW(w)->Layout());
 
-    bool trail = false;
-    if (it == state->indexes.end()) {
-        if (!state->indexes.empty()) {
-            Log(LOGDEBUG, "HM");
-            if (index < 0) {
-                it = state->indexes.begin();
-            } else {
-                it = std::prev(state->indexes.end());
-                trail = true;
-            }
-        } else {
-            return;
+    QTextLine line;
+    bool trail = index >= state->utf8_text.size();
+    int upos;
+    if (!trail) {
+        auto it = std::lower_bound(state->utf8_line_starts.begin(), state->utf8_line_starts.end(), index);
+        if (it == state->utf8_line_starts.end() || *it > index) {
+            assert(it != state->utf8_line_starts.begin());
+            --it;
         }
+
+        int lineNumber = std::distance(state->utf8_line_starts.begin(), it);
+        line = state->layout.lineAt(lineNumber);
+        upos = *it + utf82u_strnlen(state->utf8_text.c_str() + *it, index - *it);
+    } else {
+        upos = state->layout.text().size();
+        line = state->layout.lineAt(state->layout.lineCount() - 1);
     }
 
-    int pidx = std::distance(state->indexes.begin(), it);
-    QTextLine line = state->layout.lineForTextPosition(pidx);
     if (!line.isValid()) {
-        Log(LOGDEBUG, "AHYO");
+        *pos = {};
         return;
     }
 
-    auto x1 = line.cursorToX(pidx, trail ? QTextLine::Trailing : QTextLine::Leading);
-    auto x2 = line.cursorToX(pidx, QTextLine::Trailing);
+    auto x1 = line.cursorToX(upos, trail ? QTextLine::Trailing : QTextLine::Leading);
+    auto x2 = line.cursorToX(upos, QTextLine::Trailing);
     pos->x = x1;
     pos->width = x2 - x1;
     pos->y = line.y();
     pos->height = line.height();
 
     Log(LOGDEBUG, "HMM idx=%d pos=%d x=%d y=%d w=%d h=%d",
-        index, pidx, pos->x, pos->y, pos->width, pos->height);
+        index, upos, pos->x, pos->y, pos->width, pos->height);
 }
 
 static int GQtDrawLayoutXYToIndex(GWindow w, int x, int y) {
     Log(LOGDEBUG, " ");
-    auto* state = GQtW(w)->Layout();
-    if (state->indexes.empty()) {
-        return 0;
-    }
+    auto* state = DoLayout(GQtW(w)->Layout());
 
-    QTextLine line;
-    for (int i = 0; i < state->layout.lineCount(); ++i) {
-        line = state->layout.lineAt(i);
-        if (y >= line.y() && y < (line.y() + line.height())) {
-            break;
-        }
-    }
+    // May not always be right? But this fn is only used with
+    // A low/0 y-value anyway...
+    int lineNumber = y / state->metrics->lineSpacing();
+    QTextLine line = state->layout.lineAt(lineNumber);
     if (line.isValid()) {
-        int pos = line.xToCursor(x);
-        if (pos >= state->indexes.size()) {
-            return *std::prev(state->indexes.end()) + 1;
+        int curpos = line.xToCursor(x);
+        int upos = state->utf8_line_starts[line.lineNumber()];
+        const char *uitr = state->utf8_text.c_str() + upos;
+        for (int pos = line.textStart(); pos < curpos; ++pos) {
+            int ch = utf8_ildb(&uitr);
+            if (ch > 0x10000) {
+                ++pos;
+            }
         }
-        return state->indexes[pos];
+        return uitr - state->utf8_text.c_str();
     }
     return 0;
 }
 
 static void GQtDrawLayoutExtents(GWindow w, GRect *size) {
     Log(LOGDEBUG, " ");
-    auto* state = GQtW(w)->Layout();
+    auto* state = DoLayout(GQtW(w)->Layout());
     auto br = state->layout.boundingRect();
     size->x = br.x();
     size->y = br.y();
@@ -1801,39 +1856,21 @@ static void GQtDrawLayoutExtents(GWindow w, GRect *size) {
 static void GQtDrawLayoutSetWidth(GWindow w, int width) {
     Log(LOGDEBUG, " ");
     auto* state = GQtW(w)->Layout();
-
-    int leading = state->metrics->leading();
-    qreal height = 0;
-    state->layout.beginLayout();
-    while (true) {
-        QTextLine line = state->layout.createLine();
-        if (!line.isValid()) {
-            break;
-        }
-        line.setLineWidth(width); //fixme
-        line.setPosition(QPointF(0, height));
-        height += line.height() + leading;
-    }
-    state->layout.endLayout();
+    state->line_width = width;
+    state->laid_out = false;
 }
 
 static int GQtDrawLayoutLineCount(GWindow w) {
     Log(LOGDEBUG, " ");
-    auto* state = GQtW(w)->Layout();
+    auto* state = DoLayout(GQtW(w)->Layout());
     return state->layout.lineCount();
 }
 
 static int GQtDrawLayoutLineStart(GWindow w, int l) {
     Log(LOGDEBUG, " ");
-    auto* state = GQtW(w)->Layout();
-    if (state->indexes.empty()) {
-        return 0;
-    }
-    QTextLine line = state->layout.lineAt(l);
-    if (line.isValid()) {
-        return state->indexes[line.textStart()];
-    }
-    return 0;
+    auto* state = DoLayout(GQtW(w)->Layout());
+    assert(l >= 0 && l < state->utf8_line_starts.size());
+    return state->utf8_line_starts[l];
 }
 // END PANGO LAYOUT
 

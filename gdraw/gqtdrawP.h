@@ -54,9 +54,12 @@ struct GQtButtonState {
 };
 
 struct GQtLayoutState {
-    std::vector<int> indexes;
     std::unique_ptr<QFontMetrics> metrics;
     QTextLayout layout;
+    std::vector<int> utf8_line_starts;
+    std::string utf8_text;
+    int line_width = -1;
+    bool laid_out = false;
 };
 
 struct GQtDisplay
@@ -101,8 +104,7 @@ public:
     inline void SetTitle(const char *title) { m_window_title = title; }
     GCursor Cursor() const { return m_current_cursor; }
     void SetCursor(GCursor c) { m_current_cursor = c; }
-    GQtLayoutState* InitLayout() { m_layout_state.reset(new GQtLayoutState()); return m_layout_state.get(); }
-    GQtLayoutState* Layout() { return m_layout_state.get(); }
+    GQtLayoutState* Layout() { return &m_layout_state; }
 
 private:
     struct gwindow m_base = {};
@@ -110,7 +112,7 @@ private:
 
     std::string m_window_title;
     GCursor m_current_cursor = ct_default;
-    std::unique_ptr<GQtLayoutState> m_layout_state;
+    GQtLayoutState m_layout_state;
 };
 
 class GQtWidget : public QWidget, public GQtWindow
@@ -142,15 +144,11 @@ public:
     void hideEvent(QHideEvent *event) override { mapEvent(false); }
     void focusInEvent(QFocusEvent *event) override {
         QWidget::focusInEvent(event);
-        if (!event->isAccepted()) {
-            focusEvent(event, true);
-        }
+        focusEvent(event, true);
     }
     void focusOutEvent(QFocusEvent *event) override {
         QWidget::focusOutEvent(event);
-        if (!event->isAccepted()) {
-            focusEvent(event, false);
-        }
+        focusEvent(event, false);
     }
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     void enterEvent(QEnterEvent *event) override { crossingEvent(event, true); }
