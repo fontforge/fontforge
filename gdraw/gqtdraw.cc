@@ -1640,7 +1640,7 @@ static int GQtDrawDoText8(GWindow w, int32_t x, int32_t y, const char *text, int
 
     QFont fd = GQtDrawGetFont(fi);
     QFontMetrics fm(fd);
-    QString qtext = QString::fromUtf8(text);
+    QString qtext = QString::fromUtf8(text, cnt);
     if (drawit == tf_drawit) {
         y -= fm.ascent();// + fm.descent();
         QRect rct(x, y, w->ggc->clip.x + w->ggc->clip.width - x, w->ggc->clip.y + w->ggc->clip.height - y);
@@ -1660,22 +1660,7 @@ static int GQtDrawDoText8(GWindow w, int32_t x, int32_t y, const char *text, int
         arg->size.fas = fm.ascent();
         arg->size.fds = fm.descent();
         arg->size.as = fm.ascent();
-        arg->size.ds = fm.descent();
-
-        QTextLayout layout; // qt 5.13 supports these relative to the paint device...
-        layout.setText(qtext);
-        layout.setFont(fd);
-        layout.beginLayout();
-
-        QTextLine line = layout.createLine();
-        if (!line.isValid()) {
-            memset(&arg->size, 0, sizeof(arg->size));
-            return 0;
-        } else {
-            line.setLineWidth(w->ggc->clip.width - x);
-            arg->size.as = line.ascent();
-            arg->size.ds = line.descent();
-        }
+        arg->size.ds = br.height() - fm.ascent();
         return arg->size.width;
     }
     return fm.horizontalAdvance(qtext);
@@ -1684,7 +1669,6 @@ static int GQtDrawDoText8(GWindow w, int32_t x, int32_t y, const char *text, int
 // PANGO LAYOUT
 static void GQtDrawGetFontMetrics(GWindow w, GFont *fi, int *as, int *ds, int *ld) {
     // Log(LOGDEBUG, " ");
-
     QFont fd = GQtDrawGetFont(fi);
     QFontMetrics fm(fd);
 
