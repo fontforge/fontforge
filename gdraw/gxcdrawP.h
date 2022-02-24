@@ -21,7 +21,7 @@ extern void _GXCDraw_DestroyWindow(GXWindow gw);
 extern void _GXCDraw_PushClip(GXWindow gw);
 extern void _GXCDraw_PopClip(GXWindow gw);
 extern void _GXCDraw_PushClipOnly(GXWindow gw);
-extern void _GXCDraw_ClipPreserve(GXWindow gw);
+extern void _GXCDraw_PathClipOnly(GXWindow gw);
 
 extern void _GXCDraw_Clear(GXWindow gw, GRect *rect);
 extern void _GXCDraw_DrawLine(GXWindow gw, int32_t x,int32_t y, int32_t xend,int32_t yend);

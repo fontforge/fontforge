@@ -54,6 +54,13 @@ static void GQtDrawSetTransientFor(GWindow transient, GWindow owner);
 static void GQtDrawSetWindowBackground(GWindow w, Color gcol);
 static void GQtDrawSetWindowTitles8(GWindow w, const char *title, const char *UNUSED(icontitle));
 
+static QColor ToQColor(Color col) {
+    if (COLOR_ALPHA(col) == 0) {
+        col |= 0xff000000;
+    }
+    return QColor(COLOR_RED(col), COLOR_GREEN(col), COLOR_BLUE(col), COLOR_ALPHA(col));
+}
+
 static int16_t _GQtDraw_QtModifierToKsm(Qt::KeyboardModifiers mask) {
     int16_t state = 0;
     if (mask & Qt::ShiftModifier) {
@@ -427,12 +434,13 @@ void GQtWidget::paintEvent(QPaintEvent *event) {
     gevent.u.expose.rect.height = rect.height();
 
     QPainter painter(this);
-    // painter.setRenderHint(QPainter::Antialiasing);
-    // painter.setRenderHint(QPainter::HighQualityAntialiasing);
+    painter.setRenderHint(QPainter::Antialiasing);
+    painter.setRenderHint(QPainter::SmoothPixmapTransform);
 
     m_painter = &painter;
     DispatchEvent(gevent);
     m_painter = nullptr;
+    Path()->clear();
 }
 
 void GQtWidget::configureEvent() {
@@ -502,7 +510,7 @@ void GQtWidget::focusEvent(QFocusEvent* event, bool focusIn) {
 void GQtWidget::crossingEvent(QEvent* event, bool enter) {
     // Why QEvent?!?
     GEvent gevent = InitEvent(et_crossing, event);
-    QPoint pos = QCursor::pos();
+    QPoint pos = mapFromGlobal(QCursor::pos());
     GQtDisplay *gdisp = GQtD(gevent.w);
     gevent.u.crossing.x = pos.x();
     gevent.u.crossing.y = pos.y();
@@ -587,11 +595,11 @@ static GCursor GQtDrawCreateCursor(GWindow src, GWindow mask, Color fg, Color bg
         pixmap.fill(Qt::transparent);
 
         QPainter painter(&pixmap);
-        painter.setPen(QColor(0xff000000 | bg));
+        painter.setPen(ToQColor(bg));
         painter.setBackgroundMode(Qt::TransparentMode);
         painter.drawPixmap(0, 0, GQtW(mask)->Pixmap()->mask());
 
-        painter.setPen(QColor(0xff000000 | fg));
+        painter.setPen(ToQColor(fg));
         painter.drawPixmap(0, 0, GQtW(src)->Pixmap()->mask());
         painter.end();
 
@@ -650,7 +658,7 @@ static void GQtDrawSetWindowBackground(GWindow w, Color gcol) {
     Log(LOGDEBUG, " ");
     GQtWindow *gw = GQtW(w);
     QPalette pal = QPalette();
-    pal.setColor(QPalette::Window, QColor(gcol));
+    pal.setColor(QPalette::Window, ToQColor(gcol));
     gw->Widget()->setAutoFillBackground(true);
     gw->Widget()->setPalette(pal);
 }
@@ -734,7 +742,7 @@ static void GQtDrawGetPointerPosition(GWindow w, GEvent *ret) {
     Log(LOGDEBUG, " ");
     auto *gdisp = GQtD(w);
     Qt::KeyboardModifiers modifiers = gdisp->app->keyboardModifiers();
-    QPoint pos = QCursor::pos();
+    QPoint pos = GQtW(w)->Widget()->mapFromGlobal(QCursor::pos());
 
     ret->u.mouse.x = pos.x();
     ret->u.mouse.y = pos.y();
@@ -1100,37 +1108,7 @@ static void GQtDrawCancelTimer(GTimer *timer) {
 
 // DRAW RELATED
 
-
 static QBrush GQtDraw_StippleMePink(int ts, Color fg) {
-    static const unsigned char grey_init[8] = {0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa, 0x55, 0xaa};
-    static const unsigned char fence_init[8] = {0x55, 0x22, 0x55, 0x88, 0x55, 0x22, 0x55, 0x88};
-    const uint8_t *spt;
-    int bit, i, j;
-    uint32_t *data;
-    uint32_t space[8 * 8];
-
-    if ((fg >> 24) != 0xff) {
-        int alpha = fg >> 24, r = COLOR_RED(fg), g = COLOR_GREEN(fg), b = COLOR_BLUE(fg);
-        r = (alpha * r + 128) / 255;
-        g = (alpha * g + 128) / 255;
-        b = (alpha * b + 128) / 255;
-        fg = (alpha << 24) | (r << 16) | (g << 8) | b;
-    }
-
-    spt = (ts == 2) ? fence_init : grey_init;
-    for (i = 0; i < 8; ++i) {
-        data = space + 8 * i;
-        for (j = 0, bit = 0x80; bit != 0; ++j, bit >>= 1) {
-            if (spt[i]&bit) {
-                data[j] = fg;
-            } else {
-                data[j] = 0;
-            }
-        }
-    }
-
-    QImage pattern((const unsigned char*)space, 8, 8, QImage::Format_ARGB32_Premultiplied);
-    // QBrush brush(pattern);
     QBrush brush((ts == 2) ? Qt::Dense5Pattern : Qt::Dense4Pattern);
     brush.setColor(fg);
     return brush;
@@ -1273,10 +1251,6 @@ static void GQtDrawPopClip(GWindow w, GRect *old) {
 
 static QPen GQtDrawGetPen(GGC *mine) {
     Color fg = mine->fg;
-    if ((fg >> 24) == 0) {
-        fg |= 0xff000000;
-    }
-
     QPen pen;
     pen.setWidth(std::max(1, (int)mine->line_width));
 
@@ -1288,20 +1262,17 @@ static QPen GQtDrawGetPen(GGC *mine) {
     if (mine->ts != 0) {
         pen.setBrush(GQtDraw_StippleMePink(mine->ts, fg));
     } else {
-        pen.setColor(QColor(fg));
+        pen.setColor(ToQColor(fg));
     }
     return pen;
 }
 
 static QBrush GQtDrawGetBrush(GGC *mine) {
     Color fg = mine->fg;
-    if ((fg >> 24) == 0) {
-        fg |= 0xff000000;
-    }
     if (mine->ts != 0) {
         return GQtDraw_StippleMePink(mine->ts, fg);
     } else {
-        return QBrush(QColor(fg));
+        return QBrush(ToQColor(fg));
     }
 }
 
@@ -1568,6 +1539,10 @@ static void GQtDrawDrawImage(GWindow w, GImage *image, GRect *src, int32_t x, in
 // What we really want to do is use the grey levels as an alpha channel
 static void GQtDrawDrawGlyph(GWindow w, GImage *image, GRect *src, int32_t x, int32_t y) {
     Log(LOGDEBUG, " ");
+
+    // FIXME
+    struct _GImage *base = (image->list_len) == 0 ? image->u.image : image->u.images[0];
+    GQtDrawDrawImage(w, image, src, x, y);
 }
 
 static void GQtDrawDrawImageMagnified(GWindow w, GImage *image, GRect *src, int32_t x, int32_t y, int32_t width, int32_t height) {
@@ -1586,47 +1561,72 @@ static enum gcairo_flags GQtDrawHasCairo(GWindow UNUSED(w)) {
     return gc_all;
 }
 
-static void GQtDrawPathStartNew(GWindow w) {
-    Log(LOGDEBUG, " ");
-}
-
 static void GQtDrawPathClose(GWindow w) {
     Log(LOGDEBUG, " ");
+    GQtW(w)->Path()->closeSubpath();
+}
+
+static int GQtDrawFillRuleSetWinding(GWindow w) {
+    Log(LOGDEBUG, " ");
+    GQtW(w)->Path()->setFillRule(Qt::WindingFill);
+    return 1;
 }
 
 static void GQtDrawPathMoveTo(GWindow w, double x, double y) {
     Log(LOGDEBUG, " ");
+    GQtW(w)->Path()->moveTo(x, y);
 }
 
 static void GQtDrawPathLineTo(GWindow w, double x, double y) {
     Log(LOGDEBUG, " ");
+    GQtW(w)->Path()->lineTo(x, y);
 }
 
 static void GQtDrawPathCurveTo(GWindow w, double cx1, double cy1, double cx2, double cy2, double x, double y) {
     Log(LOGDEBUG, " ");
+    GQtW(w)->Path()->cubicTo(cx1, cy1, cx2, cy2, x, y);
 }
 
 static void GQtDrawPathStroke(GWindow w, Color col) {
     Log(LOGDEBUG, " ");
     w->ggc->fg = col;
+
+    QPen pen = GQtDrawGetPen(w->ggc);
+    GQtW(w)->Painter()->strokePath(*GQtW(w)->Path(), pen);
+    GQtW(w)->Path()->clear();
 }
 
 static void GQtDrawPathFill(GWindow w, Color col) {
     Log(LOGDEBUG, " ");
+
+    QBrush brush(ToQColor(col));
+    GQtW(w)->Painter()->fillPath(*GQtW(w)->Path(), brush);
+    GQtW(w)->Path()->clear();
 }
 
 static void GQtDrawPathFillAndStroke(GWindow w, Color fillcol, Color strokecol) {
     Log(LOGDEBUG, " ");
     // This function is unused, so it's unclear if it's implemented correctly.
+
+    w->ggc->fg = strokecol;
+    QPen pen = GQtDrawGetPen(w->ggc);
+    QBrush brush(ToQColor(fillcol));
+    GQtW(w)->Painter()->fillPath(*GQtW(w)->Path(), brush);
+    GQtW(w)->Painter()->strokePath(*GQtW(w)->Path(), pen);
+    GQtW(w)->Path()->clear();
 }
 
-static void GQtDrawStartNewSubPath(GWindow w) {
+static void GQtDrawPushClipOnly(GWindow w) {
     Log(LOGDEBUG, " ");
+
+    GQtW(w)->Painter()->save();
+    // HMMMMM
 }
 
-static int GQtDrawFillRuleSetWinding(GWindow w) {
+static void GQtDrawPathClipOnly(GWindow w) {
     Log(LOGDEBUG, " ");
-    return 1;
+    GQtW(w)->Painter()->setClipPath(*GQtW(w)->Path(), Qt::IntersectClip);
+    GQtW(w)->Path()->clear();
 }
 
 static int GQtDrawDoText8(GWindow w, int32_t x, int32_t y, const char *text, int32_t cnt, Color col, enum text_funcs drawit,
@@ -1649,7 +1649,7 @@ static int GQtDrawDoText8(GWindow w, int32_t x, int32_t y, const char *text, int
         }
         QRect bounds;
         GQtW(w)->Painter()->setFont(fd);
-        GQtW(w)->Painter()->setPen(QColor(col));
+        GQtW(w)->Painter()->setPen(ToQColor(col));
         GQtW(w)->Painter()->drawText(rct, Qt::AlignLeft|Qt::AlignTop, qtext, &bounds);
         return bounds.width();
     } else if (drawit == tf_rect) {
@@ -1679,14 +1679,6 @@ static int GQtDrawDoText8(GWindow w, int32_t x, int32_t y, const char *text, int
         return arg->size.width;
     }
     return fm.horizontalAdvance(qtext);
-}
-
-static void GQtDrawPushClipOnly(GWindow w) {
-    Log(LOGDEBUG, " ");
-}
-
-static void GQtDrawClipPreserve(GWindow w) {
-    Log(LOGDEBUG, " ");
 }
 
 // PANGO LAYOUT
@@ -1778,7 +1770,7 @@ static void GQtDrawLayoutDraw(GWindow w, int32_t x, int32_t y, Color fg) {
     GQtWindow *gw = GQtW(w);
     auto* state = DoLayout(gw->Layout());
     QPointF pt(x, y - state->metrics->ascent());
-    gw->Painter()->setPen(QColor(fg));
+    gw->Painter()->setPen(ToQColor(fg));
     state->layout.draw(gw->Painter(), pt);
 }
 
@@ -1967,14 +1959,16 @@ static struct displayfuncs gqtfuncs = {
     GQtDrawGetFontMetrics,
 
     GQtDrawHasCairo,
-    GQtDrawPathStartNew,
     GQtDrawPathClose,
+    GQtDrawFillRuleSetWinding,
     GQtDrawPathMoveTo,
     GQtDrawPathLineTo,
     GQtDrawPathCurveTo,
     GQtDrawPathStroke,
     GQtDrawPathFill,
     GQtDrawPathFillAndStroke, // Currently unused
+    GQtDrawPushClipOnly,
+    GQtDrawPathClipOnly,
 
     GQtDrawLayoutInit,
     GQtDrawLayoutDraw,
@@ -1984,13 +1978,8 @@ static struct displayfuncs gqtfuncs = {
     GQtDrawLayoutSetWidth,
     GQtDrawLayoutLineCount,
     GQtDrawLayoutLineStart,
-    GQtDrawStartNewSubPath,
-    GQtDrawFillRuleSetWinding,
 
     GQtDrawDoText8,
-
-    GQtDrawPushClipOnly,
-    GQtDrawClipPreserve
 };
 
 extern "C" GDisplay *_GQtDraw_CreateDisplay(char *displayname, int *argc, char ***argv) {

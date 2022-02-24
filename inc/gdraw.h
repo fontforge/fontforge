@@ -355,7 +355,7 @@ extern void GDrawGetClip(GWindow w, GRect *ret);
 extern void GDrawPushClip(GWindow w, GRect *rct, GRect *old);
 extern void GDrawPopClip(GWindow w, GRect *old);
 extern void GDrawPushClipOnly(GWindow w);
-extern void GDrawClipPreserve(GWindow w);
+extern void GDrawPathClipOnly(GWindow w);
 extern void GDrawSetDashedLine(GWindow w,int16_t dash_len, int16_t skip_len, int16_t off);
 extern void GDrawSetStippled(GWindow w,int16_t ts, int32_t yoff,int32_t xoff);
 extern void GDrawSetLineWidth(GWindow w,int16_t width);
@@ -432,8 +432,6 @@ extern int GDrawRequestDeviceEvents(GWindow w,int devcnt,struct gdeveventmask *d
 extern int GDrawShortcutKeyMatches(const GEvent *e, unichar_t ch);
 
 extern enum gcairo_flags GDrawHasCairo(GWindow w);
-extern void GDrawPathStartNew(GWindow w);
-extern void GDrawPathStartSubNew(GWindow w);
 extern int GDrawFillRuleSetWinding(GWindow w);
 extern void GDrawPathClose(GWindow w);
 extern void GDrawPathMoveTo(GWindow w,double x, double y);

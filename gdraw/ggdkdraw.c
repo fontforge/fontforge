@@ -2359,14 +2359,16 @@ static struct displayfuncs gdkfuncs = {
     GGDKDrawGetFontMetrics,
 
     GGDKDrawHasCairo,
-    GGDKDrawPathStartNew,
     GGDKDrawPathClose,
+    GGDKDrawFillRuleSetWinding,
     GGDKDrawPathMoveTo,
     GGDKDrawPathLineTo,
     GGDKDrawPathCurveTo,
     GGDKDrawPathStroke,
     GGDKDrawPathFill,
     GGDKDrawPathFillAndStroke, // Currently unused
+    GGDKDrawPushClipOnly,
+    GGDKDrawPathClipOnly,
 
     GGDKDrawLayoutInit,
     GGDKDrawLayoutDraw,
@@ -2376,13 +2378,8 @@ static struct displayfuncs gdkfuncs = {
     GGDKDrawLayoutSetWidth,
     GGDKDrawLayoutLineCount,
     GGDKDrawLayoutLineStart,
-    GGDKDrawStartNewSubPath,
-    GGDKDrawFillRuleSetWinding,
 
     GGDKDrawDoText8,
-
-    GGDKDrawPushClipOnly,
-    GGDKDrawClipPreserve
 };
 
 // Protected member functions (package-level)

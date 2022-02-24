@@ -299,16 +299,13 @@ void GDrawPushClip(GWindow w, GRect *rct, GRect *old) {
 
 void GDrawPushClipOnly(GWindow w)
 {
-    if( w->display->funcs->PushClipOnly )
-        (w->display->funcs->PushClipOnly)( w );
+    (w->display->funcs->pushClipOnly)(w);
 }
 
-void GDrawClipPreserve(GWindow w)
+void GDrawPathClipOnly(GWindow w)
 {
-    if( w->display->funcs->ClipPreserve )
-        (w->display->funcs->ClipPreserve)( w );
+    (w->display->funcs->pathClipOnly)(w);
 }
-
 
 void GDrawPopClip(GWindow w, GRect *old) {
     (w->display->funcs->popClip)(w,old);
@@ -514,14 +511,6 @@ void GDrawDefaultFontMetrics(GWindow w,int *as, int *ds, int *ld) {
 
 enum gcairo_flags GDrawHasCairo(GWindow w) {
 return( (w->display->funcs->hasCairo)(w));
-}
-
-void GDrawPathStartNew(GWindow w) {
-    (w->display->funcs->startNewPath)(w);
-}
-
-void GDrawPathStartSubNew(GWindow w) {
-    (w->display->funcs->startNewSubPath)(w);
 }
 
 int GDrawFillRuleSetWinding(GWindow w) {

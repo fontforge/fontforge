@@ -1133,12 +1133,6 @@ enum gcairo_flags GGDKDrawHasCairo(GWindow UNUSED(w)) {
     return gc_all;
 }
 
-void GGDKDrawPathStartNew(GWindow w) {
-    //Log(LOGDEBUG, " ");
-    _GGDKDraw_CheckAutoPaint((GGDKWindow)w);
-    cairo_new_path(((GGDKWindow)w)->cc);
-}
-
 void GGDKDrawPathClose(GWindow w) {
     //Log(LOGDEBUG, " ");
     cairo_close_path(((GGDKWindow)w)->cc);
@@ -1188,12 +1182,6 @@ void GGDKDrawPathFillAndStroke(GWindow w, Color fillcol, Color strokecol) {
     GGDKDrawSetline(gw, gw->ggc);
     cairo_fill_preserve(gw->cc);
     cairo_stroke(gw->cc);
-}
-
-void GGDKDrawStartNewSubPath(GWindow w) {
-    //Log(LOGDEBUG, " ");
-    _GGDKDraw_CheckAutoPaint((GGDKWindow)w);
-    cairo_new_sub_path(((GGDKWindow)w)->cc);
 }
 
 int GGDKDrawFillRuleSetWinding(GWindow w) {
@@ -1277,10 +1265,10 @@ void GGDKDrawPushClipOnly(GWindow w) {
     cairo_save(((GGDKWindow)w)->cc);
 }
 
-void GGDKDrawClipPreserve(GWindow w) {
+void GGDKDrawPathClipOnly(GWindow w) {
     //Log(LOGDEBUG, " ");
     _GGDKDraw_CheckAutoPaint((GGDKWindow)w);
-    cairo_clip_preserve(((GGDKWindow)w)->cc);
+    cairo_clip(((GGDKWindow)w)->cc);
 }
 
 // PANGO LAYOUT

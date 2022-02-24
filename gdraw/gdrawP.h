@@ -245,14 +245,16 @@ struct displayfuncs {
 
     enum gcairo_flags (*hasCairo)(GWindow w);
 
-    void (*startNewPath)(GWindow w);
     void (*closePath)(GWindow w);
+    int  (*fillRuleSetWinding)(GWindow w);
     void (*moveto)(GWindow w,double x, double y);
     void (*lineto)(GWindow w,double x, double y);
     void (*curveto)(GWindow w, double cx1,double cy1, double cx2,double cy2, double x, double y);
     void (*stroke)(GWindow w, Color col);
     void (*fill)(GWindow w, Color col);
     void (*fillAndStroke)(GWindow w, Color fillcol,Color strokecol);
+    void (*pushClipOnly)(GWindow w);
+    void (*pathClipOnly)(GWindow w);
 
     void (*layoutInit)(GWindow w, char *text, int cnt, GFont *fi);
     void (*layoutDraw)(GWindow w, int32_t x, int32_t y, Color fg);
@@ -262,13 +264,8 @@ struct displayfuncs {
     void (*layoutSetWidth)(GWindow w, int width);
     int  (*layoutLineCount)(GWindow w);
     int  (*layoutLineStart)(GWindow w,int line);
-    void (*startNewSubPath)(GWindow w);
-    int  (*fillRuleSetWinding)(GWindow w);
 
     int (*doText8)(GWindow w, int32_t x, int32_t y, const char *text, int32_t cnt, Color col, enum text_funcs drawit, struct tf_arg *arg);
-
-    void (*PushClipOnly)(GWindow w);
-    void (*ClipPreserve)(GWindow w);
 };
 
 extern int16_t div_tables[257][2]; // in div_tables.c

@@ -1619,11 +1619,11 @@ static void GXDrawPushClipOnly(GWindow w)
 #endif
 }
 
-static void GXDrawClipPreserve(GWindow w)
+static void GXDrawPathClipOnly(GWindow w)
 {
 #ifndef _NO_LIBCAIRO
     if ( ((GXWindow) w)->usecairo )
-        _GXCDraw_ClipPreserve((GXWindow) w);
+        _GXCDraw_PathClipOnly((GXWindow) w);
 #endif
 }
 
@@ -1910,18 +1910,6 @@ return( _GXCDraw_CairoCapabilities( (GXWindow) w));
 return( gc_xor );
 }
 
-static void GXDrawPathStartNew(GWindow w) {
-    if ( !((GXWindow) w)->usecairo )
-return;
-    _GXCDraw_PathStartNew(w);
-}
-
-static void GXDrawPathStartSubNew(GWindow w) {
-    if ( !((GXWindow) w)->usecairo )
-return;
-    _GXCDraw_PathStartSubNew(w);
-}
-
 static int GXDrawFillRuleSetWinding(GWindow w) {
     if ( !((GXWindow) w)->usecairo )
 return 0;
@@ -1976,12 +1964,6 @@ return;
 #else
 static enum gcairo_flags GXDrawHasCairo(GWindow w) {
 return( gc_xor );
-}
-
-static void GXDrawPathStartNew(GWindow w) {
-}
-
-static void GXDrawPathStartSubNew(GWindow w) {
 }
 
 static int GXDrawFillRuleSetWinding(GWindow w) {
@@ -3993,14 +3975,16 @@ static struct displayfuncs xfuncs = {
     GXDrawFontMetrics,
 
     GXDrawHasCairo,
-    GXDrawPathStartNew,
     GXDrawPathClose,
+    GXDrawFillRuleSetWinding,
     GXDrawPathMoveTo,
     GXDrawPathLineTo,
     GXDrawPathCurveTo,
     GXDrawPathStroke,
     GXDrawPathFill,
     GXDrawPathFillAndStroke,
+    GXDrawPushClipOnly,
+    GXDrawPathClipOnly,
 
     GXDrawLayoutInit,
     GXDraw_LayoutDraw,
@@ -4010,13 +3994,8 @@ static struct displayfuncs xfuncs = {
     GXDraw_LayoutSetWidth,
     GXDraw_LayoutLineCount,
     GXDraw_LayoutLineStart,
-    GXDrawPathStartSubNew,
-    GXDrawFillRuleSetWinding,
 
     _GXPDraw_DoText8,
-
-    GXDrawPushClipOnly,
-    GXDrawClipPreserve
 };
 
 static void GDrawInitXKB(GXDisplay *gdisp) {

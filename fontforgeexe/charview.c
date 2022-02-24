@@ -1533,7 +1533,6 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
 	if ( GDrawHasCairo(pixmap)&gc_buildpath ) {
 	    Spline *first, *spline;
 	    double x,y, cx1, cy1, cx2, cy2, dx,dy;
-	    GDrawPathStartSubNew(pixmap);
 	    x = rpt(cv,  tab->xoff + spl->first->me.x*tab->scale);
 	    y = rpt(cv, -tab->yoff + cv->height - spl->first->me.y*tab->scale);
 	    GDrawPathMoveTo(pixmap,x+.5,y+.5);
@@ -1595,10 +1594,7 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
     }
 
     if (strokeFillMode == sfm_clip && (GDrawHasCairo(pixmap) & gc_buildpath)) {
-        // Really only cairo_clip needs to be called
-        // But then I'd have to change the GDraw interface, ew...
-        GDrawClipPreserve( pixmap );
-        GDrawPathStartNew( pixmap );
+        GDrawPathClipOnly( pixmap );
     } else if (strokeFillMode == sfm_fill) {
 	if ( cv->inPreviewMode )
 	    GDrawPathFill(pixmap, previewfillcol|0xff000000);

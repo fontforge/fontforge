@@ -203,8 +203,8 @@ void _GXCDraw_PushClipOnly(GXWindow gw) {
     cairo_save( gw->cc );
 }
 
-void _GXCDraw_ClipPreserve(GXWindow gw) {
-    cairo_clip_preserve( gw->cc );
+void _GXCDraw_PathClipOnly(GXWindow gw) {
+    cairo_clip( gw->cc );
 }
 
 /* ************************************************************************** */

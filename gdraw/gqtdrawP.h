@@ -105,6 +105,7 @@ public:
     GCursor Cursor() const { return m_current_cursor; }
     void SetCursor(GCursor c) { m_current_cursor = c; }
     GQtLayoutState* Layout() { return &m_layout_state; }
+    QPainterPath* Path() { return &m_path; }
 
 private:
     struct gwindow m_base = {};
@@ -113,6 +114,7 @@ private:
     std::string m_window_title;
     GCursor m_current_cursor = ct_default;
     GQtLayoutState m_layout_state;
+    QPainterPath m_path;
 };
 
 class GQtWidget : public QWidget, public GQtWindow
@@ -186,8 +188,8 @@ public:
     QPainter* Painter() override {
         if (!m_painter.isActive()) {
             m_painter.begin(this);
-            // m_painter.setRenderHint(QPainter::Antialiasing);
-            // m_painter.setRenderHint(QPainter::HighQualityAntialiasing);
+            m_painter.setRenderHint(QPainter::Antialiasing);
+            m_painter.setRenderHint(QPainter::SmoothPixmapTransform);
         }
         return &m_painter;
     }

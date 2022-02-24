@@ -74,7 +74,7 @@ typedef struct ggdktimer { // :GTimer
     void *impl;
     void *userdata;
     // Extensions below
-    int32 repeat_time;          // 0 == one shot (run once)
+    int32_t repeat_time;          // 0 == one shot (run once)
     unsigned int active: 1;
     unsigned int stopped: 1;
     unsigned int has_differing_repeat_time: 1;
@@ -280,7 +280,6 @@ void GGDKDrawDrawPixmap(GWindow gw1, GWindow gw2, GRect *src, int32_t x, int32_t
 
 enum gcairo_flags GGDKDrawHasCairo(GWindow w);
 
-void GGDKDrawPathStartNew(GWindow w);
 void GGDKDrawPathClose(GWindow w);
 void GGDKDrawPathMoveTo(GWindow w, double x, double y);
 void GGDKDrawPathLineTo(GWindow w, double x, double y);
@@ -288,12 +287,11 @@ void GGDKDrawPathCurveTo(GWindow w, double cx1, double cy1, double cx2, double c
 void GGDKDrawPathStroke(GWindow w, Color col);
 void GGDKDrawPathFill(GWindow w, Color col);
 void GGDKDrawPathFillAndStroke(GWindow w, Color fillcol, Color strokecol);
-void GGDKDrawStartNewSubPath(GWindow w);
 int  GGDKDrawFillRuleSetWinding(GWindow w);
-int  GGDKDrawDoText8(GWindow w, int32_t x, int32_t y, const char *text, int32_t cnt, Color col, enum text_funcs drawit, struct tf_arg *arg);
-
 void GGDKDrawPushClipOnly(GWindow w);
-void GGDKDrawClipPreserve(GWindow w);
+void GGDKDrawPathClipOnly(GWindow w);
+
+int  GGDKDrawDoText8(GWindow w, int32_t x, int32_t y, const char *text, int32_t cnt, Color col, enum text_funcs drawit, struct tf_arg *arg);
 
 void GGDKDrawGetFontMetrics(GWindow gw, GFont *fi, int *as, int *ds, int *ld);
 void GGDKDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi);
