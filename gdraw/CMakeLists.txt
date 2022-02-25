@@ -74,7 +74,7 @@ if(ENABLE_X11)
   )
 elseif(ENABLE_QT)
   target_link_libraries(gdraw PUBLIC
-    Qt5::Widgets
+    Qt${QT_VERSION_MAJOR}::Widgets
   )
 else()
   if(APPLE)

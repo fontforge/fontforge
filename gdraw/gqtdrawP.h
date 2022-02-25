@@ -188,8 +188,8 @@ public:
     QPainter* Painter() override {
         if (!m_painter.isActive()) {
             m_painter.begin(this);
-            m_painter.setRenderHint(QPainter::Antialiasing);
-            m_painter.setRenderHint(QPainter::SmoothPixmapTransform);
+            // m_painter.setRenderHint(QPainter::Antialiasing);
+            // m_painter.setRenderHint(QPainter::SmoothPixmapTransform);
         }
         return &m_painter;
     }

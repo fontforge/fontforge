@@ -434,8 +434,8 @@ void GQtWidget::paintEvent(QPaintEvent *event) {
     gevent.u.expose.rect.height = rect.height();
 
     QPainter painter(this);
-    painter.setRenderHint(QPainter::Antialiasing);
-    painter.setRenderHint(QPainter::SmoothPixmapTransform);
+    // painter.setRenderHint(QPainter::Antialiasing);
+    // painter.setRenderHint(QPainter::SmoothPixmapTransform);
 
     m_painter = &painter;
     DispatchEvent(gevent);
@@ -871,10 +871,9 @@ static int GQtDrawKeyState(GWindow w, int keysym) {
         Log(LOGWARN, "Cannot check state of unsupported character!");
         return 0;
     }
-    return 0;
     // Since this function is only used to check the state of the space button
     // Don't bother with a full implementation...
-    // return ((GQtWindow)w)->display->is_space_pressed;
+    return GQtD(w)->is_space_pressed;
 }
 
 static void GQtDrawGrabSelection(GWindow w, enum selnames sn) {
