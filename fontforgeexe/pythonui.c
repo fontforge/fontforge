@@ -137,7 +137,7 @@ static struct py_menu_data {
     GMenuItem2 *menu;
     ff_menu_callback moveto, invoke;
     void (*setmenu)(GMenuItem2 *menu);
-    uint16 mn_offset;
+    uint16_t mn_offset;
     unichar_t *mn_string;
     GHashTable *mn_avail;
     char *hotkey_prefix;
