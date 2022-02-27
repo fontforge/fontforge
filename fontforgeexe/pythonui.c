@@ -174,7 +174,7 @@ static unichar_t FindMnemonic(unichar_t *menu_string, unichar_t alt,
 }
 
 // Make sure there is no suffix when c==0 and exactly one suffix " (c)" when c!=0
-static unichar_t *SetMnemonicSuffix(const unichar_t *menu_string, unichar_t c) {
+static unichar_t *SetMnemonicSuffix(const unichar_t *menu_string, unichar_t e, unichar_t c) {
     int i;
     unichar_t *r;
     i = u_strlen(menu_string);
@@ -193,7 +193,7 @@ static unichar_t *SetMnemonicSuffix(const unichar_t *menu_string, unichar_t c) {
     // new mnemonic character and hope for the best.
     if ( i>=0 && r[i]==')' ) {
 	--i;
-	if ( i>=0 && r[i]>0 ) {
+	if ( i>=0 && r[i]==e ) {
 	    --i;
 	    if ( i>=0 && r[i]=='(' ) {
 		--i;
@@ -389,10 +389,31 @@ static int MenuDataAdd(struct py_menu_spec *spec, struct py_menu_data *pmd) {
     return pmd->cnt++;
 }
 
+static unichar_t *DoMnemonic(unichar_t *trans, unichar_t *alt,
+		             struct py_menu_data *pmd) {
+    unichar_t tmp_alt, *tmp_uni;
+
+    tmp_alt = FindMnemonic(trans, *alt, pmd);
+    if ( tmp_alt!=0 && tmp_alt!=*alt ) {
+	// The original string might have had a suffix but we only need
+	// to remove it if the alt code is replaced.
+	tmp_uni = SetMnemonicSuffix(trans, *alt, 0);
+	free(trans);
+	trans = tmp_uni;
+	*alt = tmp_alt;
+    } else if ( tmp_alt==0 ) {
+	*alt = AllocateNextMnemonic(pmd);
+	tmp_uni = SetMnemonicSuffix(trans, 0, *alt);
+	free(trans);
+	trans = tmp_uni;
+    }
+    return trans;
+}
+
 static void InsertSubMenus(struct py_menu_spec *spec, struct py_menu_data *pmd) {
     int i, j;
     GMenuItem2 *mmn, *orig_menu, **mn;
-    unichar_t alt, tmp_alt;
+    unichar_t alt;
     char *untrans, *action, *tmp_str;
     unichar_t *trans, *untrans_uni, *tmp_uni;
 
@@ -404,32 +425,16 @@ static void InsertSubMenus(struct py_menu_spec *spec, struct py_menu_data *pmd) 
 	    untrans = "_____UNMATCH___ABLE______";
 	    trans = NULL;
 	    action = NULL;
+	    alt = 0;
 	} else {
 	    // Lots of churn just to strip out a potentially unicode
 	    // character from the untrans suffix, but oh well.
-	    tmp_uni = utf82u_copy(spec->levels[i].untranslated);
-	    untrans_uni = SetMnemonicSuffix(tmp_uni, 0);
-	    untrans = u2utf8_copy(untrans_uni);
+	    tmp_uni = utf82u_mncopy(spec->levels[i].untranslated, &alt);
+	    untrans = u2utf8_copy(tmp_uni);
 	    free(tmp_uni);
-	    free(untrans_uni);
-
 	    trans = utf82u_mncopy(spec->levels[i].localized, &alt);
 	    if ( i==0 ) {
 		action = strconcat(pmd->hotkey_prefix, untrans);
-		tmp_alt = FindMnemonic(trans, alt, pmd);
-		if ( tmp_alt!=0 && tmp_alt!=alt ) {
-		    // The original string might have had a suffix but we only need
-		    // to remove it if the alt code is replaced.
-		    tmp_uni = SetMnemonicSuffix(trans, 0);
-		    free(trans);
-		    trans = tmp_uni;
-		    alt = tmp_alt;
-		} else if ( tmp_alt==0 ) {
-		    alt = AllocateNextMnemonic(pmd);
-		    tmp_uni = SetMnemonicSuffix(trans, alt);
-		    free(trans);
-		    trans = tmp_uni;
-		}
 	    } else {
 		tmp_str = strconcat3(action, ".", untrans);
 		free(action);
@@ -441,7 +446,7 @@ static void InsertSubMenus(struct py_menu_spec *spec, struct py_menu_data *pmd) 
 	    for ( j=0; (*mn)[j].ti.text!=NULL || (*mn)[j].ti.line; ++j ) {
 		if ( (*mn)[j].ti.text==NULL )
 	    continue;
-		if ( strcmp((const char *) (*mn)[j].ti.text,untrans)==0 )
+		if ( strcmp((const char *) (*mn)[j].ti.text_untranslated,untrans)==0 )
 	    break;
 	    }
 	}
@@ -452,6 +457,8 @@ static void InsertSubMenus(struct py_menu_spec *spec, struct py_menu_data *pmd) 
 	mmn = *mn;
 	if ( mmn[j].ti.text==NULL ) {
 	    mmn[j].ti.fg = mmn[j].ti.bg = COLOR_DEFAULT;
+	    if ( i==0 && !spec->divider )
+		trans = DoMnemonic(trans, &alt, pmd);
 	    if ( i!=spec->depth-1 ) {
 		mmn[j].ti.text = trans;
 		mmn[j].ti.text_untranslated = untrans;
@@ -471,9 +478,16 @@ static void InsertSubMenus(struct py_menu_spec *spec, struct py_menu_data *pmd) 
 		mmn[j].mid = MenuDataAdd(spec,pmd);
 	    }
 	} else {
-	    free(mmn[j].ti.text);
-	    mmn[j].ti.text = trans;
-	    mmn[j].ti.mnemonic = alt;
+	    if ( mmn[j].sub != NULL ) {
+		if ( i==0 && !spec->divider ) {
+		    if ( mmn[j].ti.mnemonic != 0 )
+			g_hash_table_add(pmd->mn_avail, GUINT_TO_POINTER(mmn[j].ti.mnemonic));
+		    trans = DoMnemonic(trans, &alt, pmd);
+		}
+		free(mmn[j].ti.text);
+		mmn[j].ti.text = trans;
+		mmn[j].ti.mnemonic = alt;
+	    }
 	    if ( i!=spec->depth-1 )
 		mn = &mmn[j].sub;
 	    else {

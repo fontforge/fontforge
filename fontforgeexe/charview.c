@@ -13053,7 +13053,7 @@ void CharViewFinishNonStatic() {
 
 #ifndef _NO_PYTHON
 void CVSetToolsSubmenu(GMenuItem2 *py_menu) {
-    mblist[4].ti.disabled = mblist_nomm[4].ti.disabled = false;
+    mblist[4].ti.disabled = mblist_nomm[4].ti.disabled = (py_menu == NULL);
     mblist[4].sub = mblist_nomm[4].sub = py_menu;
 }
 static GMenuItem2 *CVGetToolsSubmenu(void) {

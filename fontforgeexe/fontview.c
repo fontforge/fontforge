@@ -7043,7 +7043,7 @@ void FontViewFinishNonStatic() {
 
 #ifndef _NO_PYTHON
 void FVSetToolsSubmenu(GMenuItem2 *py_menu) {
-    mblist[3].ti.disabled = false;
+    mblist[3].ti.disabled = (py_menu == NULL);
     mblist[3].sub = py_menu;
 }
 
