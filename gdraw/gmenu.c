@@ -1274,7 +1274,7 @@ static GMenu *_GMenu_Create( GMenuBar* toplevel,
 	strncpy(m->subMenuName,subMenuName,sizeof(m->subMenuName)-1);
 /* Mnemonics in menus don't work under gnome. Turning off nodecor makes them */
 /*  work, but that seems a high price to pay */
-    pattrs.mask = wam_events|wam_nodecor|wam_positioned|wam_cursor|wam_transient|wam_verytransient;
+    pattrs.mask = wam_events|wam_nodecor|wam_positioned|wam_cursor|wam_transient|wam_verytransient|wam_restrict;
     pattrs.event_masks = -1;
     pattrs.nodecoration = true;
     pattrs.positioned = true;

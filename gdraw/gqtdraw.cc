@@ -104,21 +104,28 @@ static GWindow _GQtDraw_CreateWindow(GQtDisplay *gdisp, GWindow w, GRect *pos,
     if (w == nullptr) { // Creating a top-level window. Set parent as default root.
         windowFlags |= Qt::Window;
         if ((wattrs->mask & wam_nodecor) && wattrs->nodecoration) {
-            // Is a modeless dialogue
-            windowFlags |= Qt::Popup; // hmm
+            if (wattrs->mask & wam_restrict) {
+                windowFlags |= Qt::Popup; // modal
+            } else {
+                windowFlags |= Qt::ToolTip; // modeless
+            }
         } else if ((wattrs->mask & wam_isdlg) && wattrs->is_dlg) {
-            windowFlags |= Qt::Dialog;
+            if (wattrs->mask & wam_palette) {
+                windowFlags |= Qt::Tool;
+            } else {
+                windowFlags |= Qt::Dialog | Qt::CustomizeWindowHint | Qt::WindowSystemMenuHint | Qt::WindowTitleHint | Qt::WindowMinMaxButtonsHint | Qt::WindowCloseButtonHint;
+            }
+            if ((wattrs->mask & wam_noresize) && wattrs->noresize) {
+                windowFlags &= ~Qt::WindowMaximizeButtonHint;
+            }
         }
-        // if (ret->is_popup || (wattrs->mask & wam_palette)) {
-        //     // windowFlags |= Qt::ToolTip;
-        // }
     }
 
-    std::unique_ptr<GQtWidget> window(new GQtWidget(parent, windowFlags));
+    auto* window = new GQtWidget(parent, windowFlags);
     GWindow ret = window->Base();
-    ret->native_window = static_cast<GQtWindow*>(window.get());
+    ret->native_window = static_cast<GQtWindow*>(window);
     ret->is_toplevel = w == nullptr;
-    ret->is_popup = (windowFlags & Qt::Popup) == Qt::Popup;
+    ret->is_popup = (windowFlags & Qt::ToolTip) == Qt::ToolTip;
     ret->is_dlg = ret->is_popup || ((windowFlags & Qt::Dialog) == Qt::Dialog);
     ret->display = gdisp->Base();
     ret->eh = eh;
@@ -205,26 +212,23 @@ static GWindow _GQtDraw_CreateWindow(GQtDisplay *gdisp, GWindow w, GRect *pos,
     }
 
     // Event handler
-    if (eh != nullptr) {
-        window->DispatchEvent(window->InitEvent<>(et_create), nullptr);
-    }
+    window->DispatchEvent(window->InitEvent<>(et_create), nullptr);
 
     Log(LOGWARN, "Window created: %p[%p][%s][toplevel:%d]",
         ret, ret->native_window, window->Title(), ret->is_toplevel);
-    window.release();
     return ret;
 }
 
 static GWindow _GQtDraw_NewPixmap(GDisplay *disp, GWindow similar, uint16_t width, uint16_t height, bool is_bitmap,
                                    const unsigned char *data) {
-    std::unique_ptr<GQtPixmap> pixmap(new GQtPixmap(width, height));
+    auto* pixmap = new GQtPixmap(width, height);
     GWindow ret = pixmap->Base();
     QImage::Format format;
     int stride;
 
     width &= 0x7fff;
     ret->ggc->bg = _GDraw_res_bg;
-    ret->native_window = static_cast<GQtWindow*>(pixmap.get());
+    ret->native_window = static_cast<GQtWindow*>(pixmap);
     ret->display = disp;
     ret->is_pixmap = 1;
     ret->parent = nullptr;
@@ -242,7 +246,7 @@ static GWindow _GQtDraw_NewPixmap(GDisplay *disp, GWindow similar, uint16_t widt
             QBitmap bm = QBitmap::fromImage(img);
             pixmap->fill(Qt::transparent);
 
-            QPainter painter(pixmap.get());
+            QPainter painter(pixmap);
             painter.setPen(Qt::black);
             painter.setBackgroundMode(Qt::TransparentMode);
             painter.drawPixmap(0, 0, bm);
@@ -251,7 +255,6 @@ static GWindow _GQtDraw_NewPixmap(GDisplay *disp, GWindow similar, uint16_t widt
         }
     }
 
-    pixmap.release();
     return ret;
 }
 
@@ -561,10 +564,6 @@ void GQtWidget::closeEvent(QCloseEvent *event) {
     DispatchEvent(gevent, nullptr);
 }
 
-static void GQtDrawInit(GDisplay *disp) {
-    // Log(LOGDEBUG, " ");
-}
-
 static void GQtDrawSetDefaultIcon(GWindow icon) {
     Log(LOGDEBUG, " ");
     assert(icon->is_pixmap);
@@ -635,11 +634,9 @@ static void GQtDrawDestroyWindow(GWindow w) {
         auto children = gw->Widget()->findChildren<GQtWidget*>();
         for (auto* child : children) {
             if (child->Base()->is_toplevel) {
-                Log(LOGWARN, "Orphaned toplevel [%p] [%s]",
-                    child->Base(), child->Title());
-                // child->setVisible(false);
-                child->setParent(nullptr);
-                child->Widget()->DispatchEvent(child->Widget()->InitEvent(et_close), nullptr);
+                // Can happen e.g. for palette windows
+                Log(LOGINFO, "Orphaned toplevel [%p] [%s]", child->Base(), child->Title());
+                GQtDrawSetTransientFor(child->Base(), nullptr);
             } else {
                 GQtDrawDestroyWindow(child->Base());
             }
@@ -648,10 +645,6 @@ static void GQtDrawDestroyWindow(GWindow w) {
         gw->Widget()->setDisabled(true);
         gw->Widget()->hide();
         QMetaObject::invokeMethod(gw->Widget(), "close", Qt::QueuedConnection);
-        // if (gdisp->grabbed_window == gw) {
-        //     gw->Widget()->releaseMouse();
-        //     gdisp->grabbed_window = nullptr;
-        // }
     }
 }
 
@@ -742,8 +735,7 @@ static void GQtDrawSetTransientFor(GWindow transient, GWindow owner) {
     Qt::WindowFlags flags = trans->windowFlags();
     bool visible = trans->isVisible();
 
-    trans->setParent(parent);
-    trans->setWindowFlags(flags);
+    trans->setParent(parent, flags);
     if (visible) {
         trans->show();
     }
@@ -952,19 +944,12 @@ static int GQtDrawSelectionHasOwner(GDisplay *disp, enum selnames sn) {
 }
 
 static void GQtDrawPointerUngrab(GDisplay *disp) {
-    Log(LOGDEBUG, " ");
-    // GQtDisplay *gdisp = GQtD(disp);
-    // if (gdisp->grabbed_window != nullptr) {
-    //     gdisp->grabbed_window->Widget()->releaseMouse();
-    // }
+    Log(LOGDEBUG, "");
 }
 
 static void GQtDrawPointerGrab(GWindow w) {
-    Log(LOGDEBUG, " ");
-    // GQtDisplay *gdisp = GQtD(w);
-    // GQtDrawPointerUngrab(gdisp->Base());
-    // gdisp->grabbed_window = GQtW(w);
-    // gdisp->grabbed_window->Widget()->grabMouse();
+    Log(LOGDEBUG, "%p [%s]", w, GQtW(w)->Widget()->Title());
+    // Don't use this, just set wam_restrict properly...
 }
 
 static void GQtDrawRequestExpose(GWindow w, GRect *rect, int UNUSED(doclear)) {
@@ -2002,7 +1987,7 @@ using namespace fontforge::gdraw;
 
 // Our function VTable
 static struct displayfuncs gqtfuncs = {
-    GQtDrawInit,
+    nullptr, // GQtDrawInit -> Not needed
 
     GQtDrawSetDefaultIcon,
 
@@ -2112,23 +2097,23 @@ static struct displayfuncs gqtfuncs = {
 extern "C" GDisplay *_GQtDraw_CreateDisplay(char *displayname, int *argc, char ***argv) {
     LogInit();
 
-    std::unique_ptr<GQtDisplay> gdisp(new GQtDisplay());
+    auto* gdisp = new GQtDisplay();
     gdisp->app.reset(new QApplication(*argc, *argv));
 
     GDisplay *ret = gdisp->Base();
-    ret->impl = gdisp.get();
+    ret->impl = gdisp;
     ret->funcs = &gqtfuncs;
     ret->fontstate = &gdisp->fs;
 
-    std::unique_ptr<GQtWidget> groot(new GQtWidget(nullptr, Qt::Widget));
+    auto* groot = new GQtWidget(nullptr, Qt::Widget);
     QRect screenGeom = gdisp->app->primaryScreen()->geometry();
 
     groot->setAttribute(Qt::WA_QuitOnClose, false);
     groot->SetTitle("GROOT");
     ret->res = gdisp->fs.res = gdisp->app->primaryScreen()->logicalDotsPerInch();
     ret->groot = groot->Base();
-    ret->groot->display = (GDisplay*)gdisp.get();
-    ret->groot->native_window = static_cast<GQtWindow*>(groot.get());
+    ret->groot->display = (GDisplay*)gdisp;
+    ret->groot->native_window = static_cast<GQtWindow*>(groot);
     ret->groot->pos.width = screenGeom.width();
     ret->groot->pos.height = screenGeom.height();
     ret->groot->is_toplevel = true;
@@ -2140,16 +2125,12 @@ extern "C" GDisplay *_GQtDraw_CreateDisplay(char *displayname, int *argc, char *
     gdisp->bs.double_time = _GDraw_res_multiclicktime;
     gdisp->bs.double_wiggle = _GDraw_res_multiclickwiggle;
 
-    // QObject::connect(gdisp->app.get(), &QGuiApplication::lastWindowClosed, [ret] {
+    // QObject::connect(gdisp->app, &QGuiApplication::lastWindowClosed, [ret] {
     //     Log(LOGWARN, "LWC LARP %d",
     //         GQtD(ret)->top_window_count);
     // });
 
-    (ret->funcs->init)(ret);
     _GDraw_InitError(ret);
-
-    groot.release();
-    gdisp.release();
     return ret;
 }
 

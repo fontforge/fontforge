@@ -1065,7 +1065,7 @@ static int popup_eh(GWindow popup,GEvent *event) {
 	if ( i>=gl->ltot ) i = -1;
 	GDrawDestroyWindow(popup);
 	(inform)(owner,i);
-    } else if ( event->type == et_close ) {
+    } else if ( event->type == et_close || (event->type == et_mousedown && !GGadgetWithin(owner,event->u.mouse.x,event->u.mouse.y)) ) {
 	GGadget *g = GWindowGetFocusGadgetOfWindow(popup);
 	void (*inform)(GGadget *,int) = (void (*) (GGadget *,int)) GGadgetGetUserData(g);
 	GDrawSetUserData(popup, NULL);
@@ -1153,7 +1153,7 @@ return(NULL);
     GDrawPointerUngrab(disp);
     GDrawGetPointerPosition(owner->base,&e);
 
-    pattrs.mask = wam_events|wam_nodecor|wam_positioned|wam_cursor|wam_transient|wam_verytransient;
+    pattrs.mask = wam_events|wam_nodecor|wam_positioned|wam_cursor|wam_transient|wam_verytransient|wam_restrict;
     pattrs.event_masks = -1;
     pattrs.nodecoration = true;
     pattrs.positioned = true;

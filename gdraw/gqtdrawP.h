@@ -133,11 +133,21 @@ public:
     void DispatchEvent(const GEvent& e, QEvent* trigger);
 
     bool event(QEvent *event) override;
-    void mousePressEvent(QMouseEvent *event) override { mouseEvent(event, et_mousedown); }
+    void mousePressEvent(QMouseEvent *event) override {
+        // QWidget::mousePressEvent(event);
+        // if (!event->isAccepted()) {
+            mouseEvent(event, et_mousedown);
+        // }
+    }
     void mouseReleaseEvent(QMouseEvent *event) override { mouseEvent(event, et_mouseup); }
     void wheelEvent(QWheelEvent *event) override;
     void mouseMoveEvent(QMouseEvent *event) override;
-    void keyPressEvent(QKeyEvent *event) override { keyEvent(event, et_char); }
+    void keyPressEvent(QKeyEvent *event) override {
+        // QWidget::keyPressEvent(event);
+        // if (!event->isAccepted()) {
+            keyEvent(event, et_char);
+        // }
+    }
     void keyReleaseEvent(QKeyEvent *event) override { keyEvent(event, et_charup); }
     void paintEvent(QPaintEvent *event) override;
     void moveEvent(QMoveEvent *event) override { configureEvent(event); }
