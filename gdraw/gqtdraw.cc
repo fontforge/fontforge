@@ -490,6 +490,19 @@ void GQtWidget::focusEvent(QFocusEvent* event, bool focusIn) {
     gevent.u.focus.gained_focus = focusIn;
     gevent.u.focus.mnemonic_focus = false;
 
+    while (!gevent.w->is_toplevel && gevent.w->parent) {
+        gevent.w = gevent.w->parent;
+        gevent.native_window = GQtW(gevent.w);
+    }
+
+    if (gevent.w != Base()) {
+        // Redirect to toplevel
+        GQtW(gevent.w)->Widget()->focusEvent(event, focusIn);
+        return;
+    } else if (m_has_focus == focusIn) {
+        return;
+    }
+
     switch (event->reason()) {
     case Qt::TabFocusReason:
         gevent.u.focus.mnemonic_focus = mf_tab;
@@ -500,10 +513,10 @@ void GQtWidget::focusEvent(QFocusEvent* event, bool focusIn) {
         break;
     }
 
-    Log(LOGWARN, "Focus change %s %p(%s %d)",
-        gevent.u.focus.gained_focus ? "IN" : "OUT",
-        Base(), Title(), gevent.w->is_toplevel);
+    Log(LOGWARN, "Focus change %s %p(%s)",
+        gevent.u.focus.gained_focus ? "IN" : "OUT", Base(), Title());
 
+    m_has_focus = focusIn;
     DispatchEvent(gevent, event);
 }
 
@@ -1190,6 +1203,75 @@ static QImage _GQtDraw_GImage2QImage(GImage *image, GRect *src) {
     return ret;
 }
 
+static GImage *_GQtDraw_GImageExtract(struct _GImage *base, GRect *size,
+                                       double xscale, double yscale) {
+    static GImage temp;
+    static struct _GImage tbase;
+    static std::vector<uint8_t> data;
+    int r, c;
+
+    memset(&temp, 0, sizeof(temp));
+    tbase = *base;
+    temp.u.image = &tbase;
+    tbase.width = size->width;
+    tbase.height = size->height;
+    if (base->image_type == it_mono) {
+        tbase.bytes_per_line = (size->width + 7) / 8;
+    } else if (base->image_type == it_index) {
+        tbase.bytes_per_line = size->width;
+    } else {
+        tbase.bytes_per_line = 4 * size->width;
+    }
+    if (tbase.bytes_per_line * size->height > data.size()) {
+        data.resize(tbase.bytes_per_line * size->height);
+    }
+    tbase.data = data.data();
+
+    // I used to use rint(x). Now I use floor(x). For normal images rint
+    // might be better, but for text we need floor
+    if (base->image_type == it_mono) {
+        memset(tbase.data, 0, tbase.height * tbase.bytes_per_line);
+        for (r = 0; r < size->height; ++r) {
+            int org = ((int) floor((r + size->y) / yscale));
+            uint8_t *pt = tbase.data + r * tbase.bytes_per_line;
+            uint8_t *opt = base->data + org * base->bytes_per_line;
+            for (c = 0; c < size->width; ++c) {
+                int oc = ((int) floor((c + size->x) / xscale));
+#ifdef WORDS_BIGENDIAN
+                if (opt[oc >> 3] & ((1 << (oc & 0x7))) {
+                    pt[c >> 3] |= ((1 << (oc & 0x7)));
+                }
+#else
+                if (opt[oc >> 3] & (0x80 >> (oc & 7))) {
+                    pt[c >> 3] |= (0x80 >> (c & 7));
+                }
+#endif
+            }
+        }
+    } else if (base->image_type == it_index) {
+        for (r = 0; r < size->height; ++r) {
+            int org = ((int) floor((r + size->y) / yscale));
+            uint8_t *pt = tbase.data + r * tbase.bytes_per_line;
+            uint8_t *opt = base->data + org * base->bytes_per_line;
+            for (c = 0; c < size->width; ++c) {
+                int oc = ((int) floor((c + size->x) / xscale));
+                *pt++ = opt[oc];
+            }
+        }
+    } else {
+        for (r = 0; r < size->height; ++r) {
+            int org = ((int) floor((r + size->y) / yscale));
+            uint32_t *pt = (uint32_t *)(tbase.data + r * tbase.bytes_per_line);
+            uint32_t *opt = (uint32_t *)(base->data + org * base->bytes_per_line);
+            for (c = 0; c < size->width; ++c) {
+                int oc = ((int) floor((c + size->x) / xscale));
+                *pt++ = opt[oc];
+            }
+        }
+    }
+    return &temp;
+}
+
 static void GQtDrawPushClip(GWindow w, GRect *rct, GRect *old) {
     // Log(LOGDEBUG, " ");
 
@@ -1558,7 +1640,6 @@ static void GQtDrawDrawImageMagnified(GWindow w, GImage *image, GRect *src, int3
     Log(LOGDEBUG, " ");
 
     struct _GImage *base = (image->list_len == 0) ? image->u.image : image->u.images[0];
-    GRect full;
     double xscale, yscale;
     GRect viewable;
 
@@ -1596,22 +1677,13 @@ static void GQtDrawDrawImageMagnified(GWindow w, GImage *image, GRect *src, int3
     // (translation & scale)
     viewable.x -= x;
     viewable.y -= y;
-    full.x = viewable.x / xscale;
-    full.y = viewable.y / yscale;
-    full.width = viewable.width / xscale;
-    full.height = viewable.height / yscale;
-    if (full.x + full.width > base->width) {
-        full.width = base->width - full.x; // Rounding errors
-    }
-    if (full.y + full.height > base->height) {
-        full.height = base->height - full.y; // Rounding errors
-    }
 
-    Log(LOGWARN, "FULL x(%d) y(%d) w(%d) h(%d) vx(%d) vy(%d) vw(%d) vh(%d)",
-        full.x, full.y, full.width, full.height,
-        viewable.x, viewable.y, viewable.width, viewable.height);
-    QImage img = _GQtDraw_GImage2QImage(image, &full).scaled(QSize(viewable.width, viewable.height));
-    GQtW(w)->Painter()->drawImage(x + viewable.x, y + viewable.y, img);
+    GImage *temp = _GQtDraw_GImageExtract(base, &viewable, xscale, yscale);
+    GRect tsrc;
+    tsrc.x = tsrc.y = 0;
+    tsrc.width = viewable.width;
+    tsrc.height = viewable.height;
+    GQtDrawDrawImage(w, temp, &tsrc, x + viewable.x, y + viewable.y);
 }
 
 static void GQtDrawDrawPixmap(GWindow w, GWindow pixmap, GRect *src, int32_t x, int32_t y) {

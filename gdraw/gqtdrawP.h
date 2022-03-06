@@ -173,6 +173,7 @@ public:
 
 private:
     QPainter* m_painter = nullptr;
+    bool m_has_focus = false;
 };
 
 class GQtPixmap : public QPixmap, public GQtWindow
