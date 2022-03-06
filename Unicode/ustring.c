@@ -860,16 +860,6 @@ long utf82u_strlen(const char *utf8_str) {
     return( len );
 }
 
-long utf82u_strnlen(const char *utf8_str, int max) {
-    int32_t ch;
-    long len = 0;
-
-    while ( max-->0 && (ch = utf8_ildb(&utf8_str))>0 && ++len>0 )
-	if ( ch>=0x10000 )
-	    ++len;
-    return( len );
-}
-
 void utf8_strncpy(register char *to, const char *from, int len) {
     /* copy n characters NOT bytes */
     const char *old = from;

@@ -130,7 +130,7 @@ public:
 
     template<typename E = void>
     GEvent InitEvent(event_type et, E* event = nullptr);
-    bool DispatchEvent(const GEvent& e);
+    void DispatchEvent(const GEvent& e, QEvent* trigger);
 
     bool event(QEvent *event) override;
     void mousePressEvent(QMouseEvent *event) override { mouseEvent(event, et_mousedown); }
@@ -140,10 +140,10 @@ public:
     void keyPressEvent(QKeyEvent *event) override { keyEvent(event, et_char); }
     void keyReleaseEvent(QKeyEvent *event) override { keyEvent(event, et_charup); }
     void paintEvent(QPaintEvent *event) override;
-    void moveEvent(QMoveEvent *event) override { configureEvent(); }
-    void resizeEvent(QResizeEvent *event) override { configureEvent(); }
-    void showEvent(QShowEvent *event) override { mapEvent(true); }
-    void hideEvent(QHideEvent *event) override { mapEvent(false); }
+    void moveEvent(QMoveEvent *event) override { configureEvent(event); }
+    void resizeEvent(QResizeEvent *event) override { configureEvent(event); }
+    void showEvent(QShowEvent *event) override { mapEvent(event, true); }
+    void hideEvent(QHideEvent *event) override { mapEvent(event, false); }
     void focusInEvent(QFocusEvent *event) override {
         QWidget::focusInEvent(event);
         focusEvent(event, true);
@@ -162,8 +162,8 @@ public:
 
     void keyEvent(QKeyEvent *event, event_type et);
     void mouseEvent(QMouseEvent* event, event_type et);
-    void configureEvent();
-    void mapEvent(bool visible);
+    void configureEvent(QEvent* event);
+    void mapEvent(QEvent* event, bool visible);
     void focusEvent(QFocusEvent* event, bool focusIn);
     void crossingEvent(QEvent* event, bool enter);
     
@@ -188,7 +188,7 @@ public:
     QPainter* Painter() override {
         if (!m_painter.isActive()) {
             m_painter.begin(this);
-            // m_painter.setRenderHint(QPainter::Antialiasing);
+            m_painter.setRenderHint(QPainter::Antialiasing);
             // m_painter.setRenderHint(QPainter::SmoothPixmapTransform);
         }
         return &m_painter;

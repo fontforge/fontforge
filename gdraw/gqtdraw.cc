@@ -206,7 +206,7 @@ static GWindow _GQtDraw_CreateWindow(GQtDisplay *gdisp, GWindow w, GRect *pos,
 
     // Event handler
     if (eh != nullptr) {
-        window->DispatchEvent(window->InitEvent<>(et_create));
+        window->DispatchEvent(window->InitEvent<>(et_create), nullptr);
     }
 
     Log(LOGWARN, "Window created: %p[%p][%s][toplevel:%d]",
@@ -258,7 +258,6 @@ static GWindow _GQtDraw_NewPixmap(GDisplay *disp, GWindow similar, uint16_t widt
 GQtWidget::~GQtWidget()
 {
     Log(LOGWARN, "CLEANUP [%p] [%p] [%s]", Base(), this, Title());
-    // DispatchEvent(InitEvent<>(et_destroy));
 }
 
 template<typename E>
@@ -278,11 +277,12 @@ GEvent GQtWidget::InitEvent(event_type et, E *event) {
     return gevent;
 }
 
-bool GQtWidget::DispatchEvent(const GEvent& e) {
+void GQtWidget::DispatchEvent(const GEvent& e, QEvent* trigger) {
     if (e.w->eh && e.type != et_noevent && (!e.w->is_dying || e.type == et_destroy)) {
-        return (e.w->eh)(e.w, const_cast<GEvent*>(&e)); //yuck
+        if ((e.w->eh)(e.w, const_cast<GEvent*>(&e)) && trigger) {
+            trigger->accept();
+        }
     }
-    return false;
 }
 
 QPainter* GQtWidget::Painter() {
@@ -325,7 +325,7 @@ void GQtWidget::keyEvent(QKeyEvent *event, event_type et) {
             }
         }
     }
-    DispatchEvent(gevent);
+    DispatchEvent(gevent, event);
 }
 
 
@@ -380,7 +380,7 @@ void GQtWidget::mouseEvent(QMouseEvent* event, event_type et) {
 
     gevent.u.mouse.clicks = gdisp->bs.cur_click;
 
-    DispatchEvent(gevent);
+    DispatchEvent(gevent, event);
     // Log(LOGDEBUG, "Button %7s: [%f %f]", evt->type == GDK_BUTTON_PRESS ? "press" : "release", evt->x, evt->y);
 }
 
@@ -405,9 +405,9 @@ void GQtWidget::wheelEvent(QWheelEvent *event) {
         gevent.u.mouse.button = angle.x() < 0 ? 6 : 7;
     }
     // We need to simulate two events... I think.
-    DispatchEvent(gevent);
+    DispatchEvent(gevent, event);
     gevent.type = et_mouseup;
-    DispatchEvent(gevent);
+    DispatchEvent(gevent, event);
 }
 
 void GQtWidget::mouseMoveEvent(QMouseEvent *event) {
@@ -420,7 +420,7 @@ void GQtWidget::mouseMoveEvent(QMouseEvent *event) {
     gevent.u.mouse.x = event->x();
     gevent.u.mouse.y = event->y();
 #endif
-    DispatchEvent(gevent);
+    DispatchEvent(gevent, event);
 }
 
 void GQtWidget::paintEvent(QPaintEvent *event) {
@@ -434,16 +434,16 @@ void GQtWidget::paintEvent(QPaintEvent *event) {
     gevent.u.expose.rect.height = rect.height();
 
     QPainter painter(this);
-    // painter.setRenderHint(QPainter::Antialiasing);
+    painter.setRenderHint(QPainter::Antialiasing);
     // painter.setRenderHint(QPainter::SmoothPixmapTransform);
 
     m_painter = &painter;
-    DispatchEvent(gevent);
+    DispatchEvent(gevent, event);
     m_painter = nullptr;
     Path()->clear();
 }
 
-void GQtWidget::configureEvent() {
+void GQtWidget::configureEvent(QEvent* event) {
     GEvent gevent = InitEvent<>(et_resize);
     auto geom = geometry();
 
@@ -475,14 +475,14 @@ void GQtWidget::configureEvent() {
         Log(LOGDEBUG, "CONFIGURED: %p:%s, %d %d %d %d", gevent.w, Title(), gevent.w->pos.x, gevent.w->pos.y, gevent.w->pos.width, gevent.w->pos.height);
     }
 
-    DispatchEvent(gevent);
+    DispatchEvent(gevent, event);
 }
 
-void GQtWidget::mapEvent(bool visible) {
+void GQtWidget::mapEvent(QEvent *event, bool visible) {
     GEvent gevent = InitEvent(et_map);
     gevent.u.map.is_visible = visible;
     gevent.w->is_visible = visible;
-    DispatchEvent(gevent);
+    DispatchEvent(gevent, event);
 }
 
 void GQtWidget::focusEvent(QFocusEvent* event, bool focusIn) {
@@ -504,7 +504,7 @@ void GQtWidget::focusEvent(QFocusEvent* event, bool focusIn) {
         gevent.u.focus.gained_focus ? "IN" : "OUT",
         Base(), Title(), gevent.w->is_toplevel);
 
-    DispatchEvent(gevent);
+    DispatchEvent(gevent, event);
 }
 
 void GQtWidget::crossingEvent(QEvent* event, bool enter) {
@@ -520,14 +520,14 @@ void GQtWidget::crossingEvent(QEvent* event, bool enter) {
     gevent.u.crossing.time = gdisp->last_event_time;
     // Always set to false when crossing boundary...
     gdisp->is_space_pressed = false;
-    DispatchEvent(gevent);
+    DispatchEvent(gevent, event);
 }
 
 void GQtWidget::closeEvent(QCloseEvent *event) {
     if (Base()->is_dying || Base() == Base()->display->groot) {
         Log(LOGWARN, "ACCEPT CLOSe [%p][%s]: %d", Base(), Title());
         event->accept();
-        DispatchEvent(InitEvent<>(et_destroy));
+        DispatchEvent(InitEvent<>(et_destroy), nullptr);
         deleteLater();
 
         GQtDisplay *gdisp = GQtD(this);
@@ -542,12 +542,10 @@ void GQtWidget::closeEvent(QCloseEvent *event) {
         return;
     }
 
+    event->ignore();
     Log(LOGWARN, "SEND CLOSe [%p][%s]: %d", Base(), Title());
     GEvent gevent = InitEvent(et_close, event);
-    if (DispatchEvent(gevent))
-        event->ignore();
-    else
-        event->accept();
+    DispatchEvent(gevent, nullptr);
 }
 
 static void GQtDrawInit(GDisplay *disp) {
@@ -628,7 +626,7 @@ static void GQtDrawDestroyWindow(GWindow w) {
                     child->Base(), child->Title());
                 // child->setVisible(false);
                 child->setParent(nullptr);
-                child->Widget()->DispatchEvent(child->Widget()->InitEvent(et_close));
+                child->Widget()->DispatchEvent(child->Widget()->InitEvent(et_close), nullptr);
             } else {
                 GQtDrawDestroyWindow(child->Base());
             }
@@ -1033,7 +1031,7 @@ static void GQtDrawEventLoop(GDisplay *disp) {
 static void GQtDrawPostEvent(GEvent *e) {
     //Log(LOGDEBUG, " ");
     e->native_window = GQtW(e->w);
-    GQtW(e->w)->Widget()->DispatchEvent(*e);
+    GQtW(e->w)->Widget()->DispatchEvent(*e, nullptr);
 }
 
 static void GQtDrawPostDragEvent(GWindow w, GEvent *mouse, enum event_type et) {
@@ -1081,7 +1079,7 @@ static GTimer *GQtDrawRequestTimer(GWindow w, int32_t time_from_now, int32_t fre
         GEvent gevent = gw->Widget()->InitEvent<>(et_timer);
         gevent.u.timer.timer = timer->Base();
         gevent.u.timer.userdata = timer->Base()->userdata;
-        gw->Widget()->DispatchEvent(gevent);
+        gw->Widget()->DispatchEvent(gevent, nullptr);
         if (frequency) {
             if (timer->interval() != frequency) {
                 timer->setInterval(frequency);
@@ -1118,9 +1116,9 @@ static QImage _GQtDraw_GImage2QImage(GImage *image, GRect *src) {
     QImage ret;
 
     if (base->image_type == it_rgba) {
-        ret = QImage(base->data + (src->y * base->bytes_per_line), src->width, src->height, base->bytes_per_line, QImage::Format_ARGB32);
+        ret = QImage(base->data + (src->y * base->bytes_per_line) + src->x * 4, src->width, src->height, base->bytes_per_line, QImage::Format_ARGB32);
     } else if (base->image_type == it_true) {
-        ret = QImage(base->data + (src->y * base->bytes_per_line), src->width, src->height, base->bytes_per_line, QImage::Format_RGB32);
+        ret = QImage(base->data + (src->y * base->bytes_per_line) + src->x * 4, src->width, src->height, base->bytes_per_line, QImage::Format_RGB32);
         if (base->trans != COLOR_UNKNOWN) {
             ret = ret.convertToFormat(QImage::Format_ARGB32);
 
@@ -1135,7 +1133,7 @@ static QImage _GQtDraw_GImage2QImage(GImage *image, GRect *src) {
             }
         }
     } else if (base->image_type == it_index) {
-        ret = QImage(base->data + (src->y * base->bytes_per_line), src->width, src->height, base->bytes_per_line, QImage::Format_Indexed8);
+        ret = QImage(base->data + (src->y * base->bytes_per_line) + src->x, src->width, src->height, base->bytes_per_line, QImage::Format_Indexed8);
         ret.setColorCount(base->clut->clut_len);
         for (int i = 0; i < base->clut->clut_len; ++i) {
             ret.setColor(i, 0xff000000 | base->clut->clut[i]);
@@ -1149,15 +1147,11 @@ static QImage _GQtDraw_GImage2QImage(GImage *image, GRect *src) {
         QRgb bg = 0xff000000;
 
         if (base->clut) {
+            fg = 0xff000000 | base->clut->clut[1];
+            bg = 0xff000000 | base->clut->clut[0];
             if (base->clut->trans_index != COLOR_UNKNOWN) {
-                bg = 0x0000000;
-                if (base->clut->trans_index == 1) {
-                    fg = 0x00000000;
-                    bg = 0xffffffff;
-                }
-            } else {
-                fg = 0xff000000 | base->clut->clut[1];
-                bg = 0xff000000 | base->clut->clut[1];
+                fg = base->clut->trans_index == 0 ? fg : 0x00000000;
+                bg = base->clut->trans_index == 0 ? 0x00000000 : bg;
             }
         }
 
@@ -1166,11 +1160,11 @@ static QImage _GQtDraw_GImage2QImage(GImage *image, GRect *src) {
 #ifdef WORDS_BIGENDIAN
         for (int i = 0; i < src->height; ++i) {
             auto* line = reinterpret_cast<QRgb*>(ret.scanLine(i));
-            int bit = (0x80 >> (src->x & 0x7));
+            int bit = (1 << (src->x & 0x7));
             for (int j = 0, jj = 0; j < src->width; ++j) {
                 line[j] = (pt[jj] & bit) ? fg : bg;
-                if ((bit >>= 1) == 0) {
-                    bit = 0x80;
+                if ((bit = (bit << 1) & 0xff) == 0) {
+                    bit = 0x1;
                     ++jj;
                 }
             }
@@ -1179,11 +1173,11 @@ static QImage _GQtDraw_GImage2QImage(GImage *image, GRect *src) {
 #else
         for (int i = 0; i < src->height; ++i) {
             auto* line = reinterpret_cast<QRgb*>(ret.scanLine(i));
-            int bit = (1 << (src->x & 0x7));
+            int bit = (0x80 >> (src->x & 0x7));
             for (int j = 0, jj = 0; j < src->width; ++j) {
                 line[j] = (pt[jj] & bit) ? fg : bg;
-                if ((bit = (bit << 1) & 0xff) == 0) {
-                    bit = 0x1;
+                if ((bit >>= 1) == 0) {
+                    bit = 0x80;
                     ++jj;
                 }
             }
@@ -1469,19 +1463,15 @@ static void GQtDrawDrawArc(GWindow w, GRect *rect, int32_t sangle, int32_t eangl
 
     w->ggc->fg = col;
 
+    QPainterPath path;
+    QPen pen = GQtDrawGetPen(w->ggc);
+    double factor = (pen.width() & 1) ? 0.5 : 0;
     // Leftover from XDrawArc: sangle/eangle in degrees*64.
     double start = sangle / 64., end = eangle / 64.;
 
-    QPainterPath path;
-    QPen pen = GQtDrawGetPen(w->ggc);
-    if (pen.width() & 1) {
-        path.arcMoveTo(rect->x + .5, rect->y + .5, rect->width, rect->height, start);
-        path.arcTo(rect->x + .5, rect->y + .5, rect->width, rect->height, start, end);
-    } else {
-        path.arcMoveTo(rect->x, rect->y, rect->width, rect->height, start);
-        path.arcTo(rect->x, rect->y, rect->width, rect->height, start, end);
-    }
-
+    QRectF rct(rect->x + factor, rect->y + factor, rect->width, rect->height);
+    path.arcMoveTo(rct, start);
+    path.arcTo(rct, start, end);
     GQtW(w)->Painter()->strokePath(path, pen);
 }
 
@@ -1535,23 +1525,97 @@ static void GQtDrawDrawImage(GWindow w, GImage *image, GRect *src, int32_t x, in
     GQtW(w)->Painter()->drawImage(x, y, img);
 }
 
-// What we really want to do is use the grey levels as an alpha channel
 static void GQtDrawDrawGlyph(GWindow w, GImage *image, GRect *src, int32_t x, int32_t y) {
     Log(LOGDEBUG, " ");
 
-    // FIXME
-    struct _GImage *base = (image->list_len) == 0 ? image->u.image : image->u.images[0];
-    GQtDrawDrawImage(w, image, src, x, y);
+    const struct _GImage *base = (image->list_len) == 0 ? image->u.image : image->u.images[0];
+    const uint8_t *data = base->data + (src->y * base->bytes_per_line) + src->x;
+
+    if (base->image_type != it_index) {
+        GQtDrawDrawImage(w, image, src, x, y);
+    } else {
+        // Use the grey levels as an alpha channel
+        // TODO: Is this really needed? Seems to do alpha blending just fine without this...
+        QImage img(src->width, src->height, QImage::Format_ARGB32);
+        Color fg = 0x00ffffff & base->clut->clut[base->clut->clut_len - 1];
+        int factor = base->clut->clut_len == 256 ? 1 :
+                     base->clut->clut_len == 16 ? 17 :
+                     base->clut->clut_len == 4 ? 85 : 255;
+
+        for (int i = 0; i < src->height; ++i) {
+            auto* line = reinterpret_cast<QRgb*>(img.scanLine(i));
+            for (int j = 0; j < src->width; ++j) {
+                int alpha = (uint8_t)(data[j] * factor);
+                line[j] = (alpha << 24) | fg;
+            }
+            data += base->bytes_per_line;
+        }
+        GQtW(w)->Painter()->drawImage(x, y, img);
+    }
 }
 
 static void GQtDrawDrawImageMagnified(GWindow w, GImage *image, GRect *src, int32_t x, int32_t y, int32_t width, int32_t height) {
     Log(LOGDEBUG, " ");
+
+    struct _GImage *base = (image->list_len == 0) ? image->u.image : image->u.images[0];
+    GRect full;
+    double xscale, yscale;
+    GRect viewable;
+
+    viewable = w->ggc->clip;
+    if (viewable.width > w->pos.width - viewable.x) {
+        viewable.width = w->pos.width - viewable.x;
+    }
+    if (viewable.height > w->pos.height - viewable.y) {
+        viewable.height = w->pos.height - viewable.y;
+    }
+
+    xscale = (base->width >= 1) ? ((double)(width)) / (base->width) : 1;
+    yscale = (base->height >= 1) ? ((double)(height)) / (base->height) : 1;
+    // Intersect the clip rectangle with the scaled image to find the
+    // portion of screen that we want to draw
+    if (viewable.x < x) {
+        viewable.width -= (x - viewable.x);
+        viewable.x = x;
+    }
+    if (viewable.y < y) {
+        viewable.height -= (y - viewable.y);
+        viewable.y = y;
+    }
+    if (viewable.x + viewable.width > x + width) {
+        viewable.width = x + width - viewable.x;
+    }
+    if (viewable.y + viewable.height > y + height) {
+        viewable.height = y + height - viewable.y;
+    }
+    if (viewable.height < 0 || viewable.width < 0) {
+        return;
+    }
+
+    // Now find that same rectangle in the coordinates of the unscaled image
+    // (translation & scale)
+    viewable.x -= x;
+    viewable.y -= y;
+    full.x = viewable.x / xscale;
+    full.y = viewable.y / yscale;
+    full.width = viewable.width / xscale;
+    full.height = viewable.height / yscale;
+    if (full.x + full.width > base->width) {
+        full.width = base->width - full.x; // Rounding errors
+    }
+    if (full.y + full.height > base->height) {
+        full.height = base->height - full.y; // Rounding errors
+    }
+
+    Log(LOGWARN, "FULL x(%d) y(%d) w(%d) h(%d) vx(%d) vy(%d) vw(%d) vh(%d)",
+        full.x, full.y, full.width, full.height,
+        viewable.x, viewable.y, viewable.width, viewable.height);
+    QImage img = _GQtDraw_GImage2QImage(image, &full).scaled(QSize(viewable.width, viewable.height));
+    GQtW(w)->Painter()->drawImage(x + viewable.x, y + viewable.y, img);
 }
 
 static void GQtDrawDrawPixmap(GWindow w, GWindow pixmap, GRect *src, int32_t x, int32_t y) {
     // Log(LOGDEBUG, " ");
-
-    // GQtW(pixmap)->Painter()->end(); //hm
     GQtW(w)->Painter()->drawPixmap(x, y, *GQtW(pixmap)->Pixmap(), src->x, src->y, src->width, src->height);
 }
 
@@ -1760,31 +1824,37 @@ static void GQtDrawLayoutDraw(GWindow w, int32_t x, int32_t y, Color fg) {
 static void GQtDrawLayoutIndexToPos(GWindow w, int index, GRect *pos) {
     Log(LOGDEBUG, " ");
     auto* state = DoLayout(GQtW(w)->Layout());
+    if (state->utf8_line_starts.empty()) {
+        *pos = {};
+        return;
+    }
 
     QTextLine line;
-    bool trail = index >= state->utf8_text.size();
     int upos;
-    if (!trail) {
+    if (index >= state->utf8_text.size()) {
+        upos = state->layout.text().size();
+        line = state->layout.lineAt(state->layout.lineCount() - 1);
+    } else {
         auto it = std::lower_bound(state->utf8_line_starts.begin(), state->utf8_line_starts.end(), index);
         if (it == state->utf8_line_starts.end() || *it > index) {
             assert(it != state->utf8_line_starts.begin());
             --it;
         }
 
-        int lineNumber = std::distance(state->utf8_line_starts.begin(), it);
-        line = state->layout.lineAt(lineNumber);
-        upos = *it + utf82u_strnlen(state->utf8_text.c_str() + *it, index - *it);
-    } else {
-        upos = state->layout.text().size();
-        line = state->layout.lineAt(state->layout.lineCount() - 1);
+        int i = std::distance(state->utf8_line_starts.begin(), it);
+        line = state->layout.lineAt(i);
+        upos = line.textStart();
+
+        const char* pt = state->utf8_text.c_str() + *it;
+        const char* end = state->utf8_text.c_str() + index;
+        for (; pt < end && (i = utf8_ildb(&pt)) > 0; ++upos) {
+            if (i >= 0x10000) {
+                ++upos;
+            }
+        }
     }
 
-    if (!line.isValid()) {
-        *pos = {};
-        return;
-    }
-
-    auto x1 = line.cursorToX(upos, trail ? QTextLine::Trailing : QTextLine::Leading);
+    auto x1 = line.cursorToX(upos, QTextLine::Leading);
     auto x2 = line.cursorToX(upos, QTextLine::Trailing);
     pos->x = x1;
     pos->width = x2 - x1;
@@ -1813,8 +1883,10 @@ static int GQtDrawLayoutXYToIndex(GWindow w, int x, int y) {
                 ++pos;
             }
         }
+        Log(LOGWARN, "VVV cp(%d) lsp(%d) -> %d", curpos, upos, uitr - state->utf8_text.c_str());
         return uitr - state->utf8_text.c_str();
     }
+    Log(LOGWARN, "MOPE");
     return 0;
 }
 
