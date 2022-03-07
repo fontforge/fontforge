@@ -3,7 +3,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 # Update the version for each new release
-project(fontforge VERSION 20201107 LANGUAGES C CXX)
+project(fontforge VERSION 20220308 LANGUAGES C CXX)
 
 # No in source builds
 if("${PROJECT_SOURCE_DIR}" STREQUAL "${PROJECT_BINARY_DIR}")
