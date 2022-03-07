@@ -472,12 +472,15 @@ before the user directory.
    def nameGlyph(junk, glyph):
       print(glyph.glyphname)
 
-   fontforge.registerMenuItem(nameGlyph, None, None, "Glyph", None, "Print Glyph Name")
+   fontforge.registerMenuItem(callback=nameGlyph, context="Glyph",
+                              name=("Print Glyph Name", "MyExt_PrintGlyphName"))
 
    def neverEnableMe(junk, glyph):
       return False
 
-   fontforge.registerMenuItem(nameGlyph, neverEnableMe, None, "Glyph", None, "SubMenu", "Print Glyph Name")
+   fontforge.registerMenuItem(callback=nameGlyph, enable=neverEnableMe, context="Glyph",
+                              submenu=("SubMenu", "MyExt_SubMenu"),
+                              name=("Print Glyph Name", "MyExt_PrintGlyphName"))
 
    def importGlyph(junk, glyph, filename, toback):
       print("Import")
@@ -511,58 +514,130 @@ Not a very useful example.
 
    Returns ``True`` if this session of FontForge has a user interface
 
-.. function:: registerMenuItem(menu_function, enable_function, data, which_window, shortcut_string, {submenu_names, } menu_name_string)
+.. function:: registerMenuItem(callback, enable, data, context, hotkey, {submenu_names, } name)
+   (Positional interface)
 
-   If FontForge has a user interface this will add this menu item to FontForge's :ref:`Tool <toolsmenu.tools>`
-   menu, either in the font or the outline glyph view (or both).
+.. function:: registerMenuItem(callback=, enable=None, data=None, context=, hotkey=None, name=, submenu=None, keyword_only=False)
+   (Keyword interface)
+   :noindex:
+.. function:: registerMenuItem(context=, divider=, submenu=None)
+   (Divider interface)
+   :noindex:
 
-   .. object:: menu-function
+   If FontForge has a user interface this will add this menu item to the
+   FontForge menu(s) specified by the ``context`` parameter. This second
+   keyword interface is explained in the ``divider`` section.
+
+   We also recommend reading the :ref:`Menu <fontforge.plugin_menu>` section
+   of :doc:`Extending FontForge with Python </techref/pyextend>`
+
+   **Note:** The positional interface is forward-compatible with earlier
+   verions of FontForge.
+
+   .. object:: callback
 
       This is the function that will be called when the menu item is activated.
-      It will be passed two arguments, the first is the data value specified here
-      (which may be ``None``, indeed will probably usually be ``None``), and the
-      second is the glyph or font (depending on the window type) from which the
-      menu item was activated. Its return value is ignored.
+      It will be passed two arguments, the first is the data value specified
+      here (which defaults to ``None``) and the second is a :class:`fontforge.glyph`
+      or :class:`fontforge.font` object (depending on the ``context``).
+      The callback's return value is ignored.
 
-   .. object:: enable_function
+   .. object:: enable
 
-      This may be ``None`` -- in which case the menu item will always be enabled.
-      Otherwise it will be called before the menu pops up on the screen to
-      determine whether this item should be enabled. It will be passed the same
-      arguments as above. It should return ``True`` if the item should be
-      enabled and ``False`` otherwise.
+      When specified this function is called with the same arguments as ``callback``
+      right before the menu or submenu is diplayed. When it returns ``True``
+      the menu item will be enabled and when it returns``False`` it will be
+      disabled. (When ``enable`` is ``None`` the menu item is always enabled.)
 
    .. object:: data
 
-      This can be whatever you want (including ``None``). FontForge keeps track
-      of it and passes it to both of the above functions. Use it if you need to
-      provide some context for the menu item.
+      ``data`` can be whatever you want; it defaults to ``None``. FontForge
+      passes it to both of the above functions. It can be used to provide
+      context or default arguments for the function (so that one function can
+      be used for multiple menu items.)
 
-   .. object:: which_window
+   .. object:: context
 
-      May be either of the strings ``"Font"`` or ``"Glyph"`` (or the tuple
-      ``("Font", "Glyph")``) and it determines which type of window will have
-      this menu item in its "Tools" menu.
+      Currently this can the string ``"Font"``, the string ``"Glyph"``
+      or the tuple ``("Font", "Glyph")``). ``"Font"`` will add the menu item
+      to the FontView "Tools" menu or its submenu, while ``"Glyph"`` will
+      add it to the CharView tools menu or its submenu.
 
-   .. object:: shortcut-string
+   .. object:: hotkey
 
-      .. warning:: Deprecated?
+      ``hotkey`` must be either ``None`` or a string in hotkey format,
+      which is the same as the second part of a
+      :ref:`HotKey assignment <HotKeys.hotkeyassign>`.
+      Because hotkeys are a "limited
+      resource" this string is only a `suggestion`; it has no effect
+      when the specified HotKey is already taken. Therefore, before picking
+      a candidate HotKey you should at least verify that it is not already
+      used by the relevant window in FontForge.
 
-      May be ``None`` if you do not wish to supply a shortcut. Otherwise should
-      be a string like "Menu Name|Cntl-H" (the syntax is defined in the
-      translation section).
+      Even when the specified HotKey is taken a user can still specify their
+      own in the HotKeys file. You can make this easier to do, now and in the
+      future, by providing the full triplet of names for each "level" using
+      the current interface.
 
-   .. object:: submenu-names
+   .. object:: name
 
-      You may specify as many of these as you wish (including leaving them out
-      altogether), this allows you to organize the Tools menu into submenus. (If
-      a submenu of this name does not currently exist, FontForge will create it).
+      ``name`` can be a string but ideally it is a tuple of three strings
+      ``(localized_name, english_name, identifier_string)`` or of two strings
+      ``(english_name, identifier_string)``. Use the three-tuple version when
+      your plugin or other extension is localized and the two-tuple version
+      when it is not localized or the user has configured the base locale.
 
-   .. object:: menu-name
+      **Note:** The ``english_name`` and ``localized_name`` can and should
+      include a *mnemonic*, picked out by a leading underscore. However,
+      mnemonics at the top level (so the first ``submenu`` name or the ``name``
+      if ``submenu`` is ``None``) are taken as a suggestion, similar to the
+      ``hotkey`` argument. Please read the sections on Internationalization and
+      Localization and on Mnemonics in Extending FontForge with Python.
 
-      The name that will appear in the menu for this item. This will only affect
-      windows created after this command is executed. Normally the command will
-      be executed at startup and so it will affect all windows.
+      The ``identifier_string`` should be a single alphanumeric (plus
+      underscores, but no spaces) string to identify this menu item. In the
+      future this will serve as the representation of the menu item in menu
+      configuration files, allowing a user or administrator to put the item
+      where they like. It should include the name of your plugin or an
+      abbreviation of it. For a plugin called "Feature File Helpers" and an
+      item with (English) name "Save Fragment" a reasonable option would be
+      "FeatFileHelp_SaveFragment". (This is for the future, as configurable
+      menus are not yet supported by FontForge.)
+
+   .. object:: submenu
+
+      **Note:** ``submenu`` is a keyword-only argument.
+
+      ``submenu`` can be any of: ``None``, a string, a two-tuple or three-tuple
+      as with ``name``, or a Python *list* of any of these, with each
+      specifying a level of sub-menu. (You cannot specify muitple levels of
+      submenu with a tuple, as this would be ambiguous.) The tuple elements are
+      analogous to ``name``: a three-tuple of ``(localized_name, english_name,
+      identifier_string)``, a two-tuple of ``(english_name,
+      identifier_string)``, or a string which is treated as the
+      ``localized_name``. Submenus can and should also specify a *mnemonic*.
+
+      In the future the ``identfier_string`` will allow a whole submenu to be
+      moved to a different location in the menu hierarchy.
+
+   .. object:: submenu_names
+
+      When using the positional interface, each of these "intermediate" entries
+      can be a three-tuple, two-tuple, or string, corresponding to an entry
+      in the ``submenu`` list.
+
+   .. object:: keyword_only
+
+      When ``keyword_only`` is ``False`` (the default) the function will attempt
+      to fall back to the positional interface and any reported errors will be
+      relative to that interface. If you're having trouble with keyword parameters
+      set ``keyword_only`` to ``True`` to see a more specific error message.
+
+   .. object:: divider
+
+      This special form of the function adds a horizontal line to the menu.
+      The ``context`` keyword is required and ``divider`` must be set to ``True``.
+      If the ``submenu`` keyword is omitted the divider is added to the top level.
 
 .. function:: registerImportExport(import_function, export_function, data, name, extension, [extension_list])
 

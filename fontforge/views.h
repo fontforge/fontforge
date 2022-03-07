@@ -1338,6 +1338,10 @@ extern void Prefs_LoadDefaultPreferences( void );
 extern void SPSelectNextPoint( SplinePoint *sp, int state );
 extern void SPSelectPrevPoint( SplinePoint *sp, int state );
 
+#ifndef _NO_PYTHON
+extern void CVSetToolsSubmenu(GMenuItem2 *py_menu);
+extern void FVSetToolsSubmenu(GMenuItem2 *py_menu);
+#endif
 
 /**
  * Is the next BCP for the sp selected, and is it the primary BCP for the selection

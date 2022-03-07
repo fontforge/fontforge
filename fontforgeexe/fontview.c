@@ -5594,9 +5594,6 @@ static GMenuItem2 mblist[] = {
 #ifndef _NO_PYTHON
     { { (unichar_t *) N_("_Tools"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Tools|No Shortcut"), NULL, fvpy_tllistcheck, NULL, 0 },
 #endif
-#ifdef NATIVE_CALLBACKS
-    { { (unichar_t *) N_("Tools_2"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Tools2|No Shortcut"), NULL, fv_tl2listcheck, NULL, 0 },
-#endif
     { { (unichar_t *) N_("H_ints"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'i' }, H_("Hints|No Shortcut"), htlist, htlistcheck, NULL, 0 },
     { { (unichar_t *) N_("E_ncoding"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("Encoding|No Shortcut"), enlist, enlistcheck, NULL, 0 },
     { { (unichar_t *) N_("_View"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("View|No Shortcut"), vwlist, vwlistcheck, NULL, 0 },
@@ -7044,6 +7041,17 @@ void FontViewFinishNonStatic() {
     FontViewFinish();
 }
 
+#ifndef _NO_PYTHON
+void FVSetToolsSubmenu(GMenuItem2 *py_menu) {
+    mblist[3].ti.disabled = (py_menu == NULL);
+    mblist[3].sub = py_menu;
+}
+
+static GMenuItem2 *FVGetToolsSubmenu(void) {
+    return mblist[3].sub;
+}
+#endif
+
 static void FontViewInit(void) {
     // static int done = false; // superseded by fontview_ready.
 
@@ -7052,7 +7060,17 @@ return;
 
     fontview_ready = true;
 
+// The tools menu handles its own translation. I would rather do this by testing
+// whether ti.text_untranslated is already null but there are hundreds of missing
+// initializers for that field in the menu layout code.
+#ifndef _NO_PYTHON
+    GMenuItem2 *t = FVGetToolsSubmenu();
+    FVSetToolsSubmenu(NULL);
+#endif
     mb2DoGetText(mblist);
+#ifndef _NO_PYTHON
+    FVSetToolsSubmenu(t);
+#endif
     mbDoGetText(fvpopupmenu);
     atexit(&FontViewFinishNonStatic);
 }
@@ -7290,19 +7308,6 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     memset(&gd,0,sizeof(gd));
     gd.flags = gg_visible | gg_enabled;
     helplist[0].invoke = FVMenuContextualHelp;
-#ifndef _NO_PYTHON
-    if ( fvpy_menu!=NULL )
-	mblist[3].ti.disabled = false;
-    mblist[3].sub = fvpy_menu;
-#define CALLBACKS_INDEX 4 /* FIXME: There has to be a better way than this. */
-#else
-#define CALLBACKS_INDEX 3 /* FIXME: There has to be a better way than this. */
-#endif		/* _NO_PYTHON */
-#ifdef NATIVE_CALLBACKS
-    if ( fv_menu!=NULL )
-       mblist[CALLBACKS_INDEX].ti.disabled = false;
-    mblist[CALLBACKS_INDEX].sub = fv_menu;
-#endif      /* NATIVE_CALLBACKS */
     gd.u.menu2 = mblist;
     fv->mb = GMenu2BarCreate( gw, &gd, NULL);
     GGadgetGetSize(fv->mb,&gsize);

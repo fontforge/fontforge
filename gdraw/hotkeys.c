@@ -45,7 +45,7 @@ static int hotkeySystemCanUseMacCommand = 0;
 
 struct dlistnode* hotkeys = 0;
 
-static char* hotkeyGetWindowTypeString( Hotkey* hk ) 
+static char* hotkeyGetWindowTypeString( Hotkey* hk )
 {
     char* pt = strchr(hk->action,'.');
     if( !pt )
@@ -67,7 +67,7 @@ static int hotkeyHasMatchingWindowTypeString( char* windowType, Hotkey* hk ) {
     char* pt = strchr(hk->action,'.');
     if( !pt )
 	return 0;
-    
+
     int len = pt - hk->action;
     if( strlen(windowType) < len )
 	return 0;
@@ -160,7 +160,7 @@ static char* getHotkeyFilename(char* extension) {
     }
     if( !extension )
         extension = "";
-    
+
     sprintf(buffer,"%s/hotkeys%s", ffdir, extension);
     ret = copy(buffer);
     free(ffdir);
@@ -180,7 +180,10 @@ static char* trimspaces( char* line ) {
     return line;
 }
 
-static Hotkey* hotkeySetFull( char* action, char* keydefinition, int append, int isUserDefined ) 
+// User hotkeys have priority over "native" hotkeys, but since they get set after
+// that takes care of itself. Python hotkeys (from registerMenuItem) have the
+// lowest priority, so this only sets one if it is free.
+Hotkey* hotkeySetFull( const char* action, const char* keydefinition, int append, enum hk_source source )
 {
     Hotkey* hk = calloc(1,sizeof(Hotkey));
     if ( hk==NULL ) return 0;
@@ -191,37 +194,33 @@ static Hotkey* hotkeySetFull( char* action, char* keydefinition, int append, int
     // then we move along
     if( !hk->state && !hk->keysym ) {
 	free(hk);
-	return 0;
+	return NULL;
     }
 	
     // If we already have a binding for that hotkey combination
     // for this window, forget the old one. One combo = One action.
-    if( !append ) {
-	Hotkey* oldkey = hotkeyFindByStateAndKeysym( hotkeyGetWindowTypeString(hk),
-						     hk->state, hk->keysym );
-	if( oldkey ) {
-	    dlist_erase( &hotkeys, (struct dlistnode *)oldkey );
-	    free(oldkey);
-	}
+    Hotkey* oldkey = hotkeyFindByStateAndKeysym( hotkeyGetWindowTypeString(hk),
+                                                 hk->state, hk->keysym );
+
+    if( oldkey && oldkey->source!=hk_python && source==hk_python ) {
+	free(hk);
+	return NULL;
+    }
+
+    if( !append && oldkey ) {
+	dlist_erase( &hotkeys, (struct dlistnode *)oldkey );
+	free(oldkey);
     }
 	
-    hk->isUserDefined = isUserDefined;
+    hk->source = source;
     dlist_pushfront( &hotkeys, (struct dlistnode *)hk );
     return hk;
 }
-Hotkey* hotkeySet( char* action, char* keydefinition, int append )
-{
-    int isUserDefined = 1;
-    return hotkeySetFull( action, keydefinition, append, isUserDefined );
-}
-
-
 
 /**
- * Load all the hotkeys from the file at filename, marking them as userdefined
- * if isUserDefined is set.
+ * Load all the hotkeys from the file at filename
  */
-static void loadHotkeysFromFile( const char* filename, int isUserDefined, int warnIfNotFound ) 
+static void loadHotkeysFromFile( const char* filename, enum hk_source source, int warnIfNotFound )
 {
     char line[1100];
     FILE* f = fopen(filename,"r");
@@ -250,7 +249,7 @@ static void loadHotkeysFromFile( const char* filename, int isUserDefined, int wa
 	    action++;
 	}
 	
-	hotkeySetFull( action, keydefinition, append, isUserDefined );
+	hotkeySetFull( action, keydefinition, append, source );
     }
     fclose(f);
 }
@@ -266,36 +265,36 @@ void hotkeysLoad()
     char* sharedir = getShareDir();
 
     snprintf(localefn,PATH_MAX,"%s/hotkeys/default", sharedir );
-    loadHotkeysFromFile( localefn, false, true );
-    
+    loadHotkeysFromFile( localefn, hk_ff, true );
+
     // FUTURE: perhaps find out how to convert en_AU.UTF-8 that setlocale()
     //   gives to its fallback of en_GB. There are likely to be a bunch of other
     //   languages which are similar but have specific locales
     char* currentlocale = copy(setlocale(LC_MESSAGES, 0));
     snprintf(localefn,PATH_MAX,"%s/hotkeys/%s", sharedir, currentlocale);
-    loadHotkeysFromFile( localefn, false, false );
+    loadHotkeysFromFile( localefn, hk_ff, false );
     while((p = strrchr( currentlocale, '.' ))) {
 	*p = '\0';
 	snprintf(localefn,PATH_MAX,"%s/hotkeys/%s", sharedir, currentlocale);
-	loadHotkeysFromFile( localefn, false, false );
+	loadHotkeysFromFile( localefn, hk_ff, false );
     }
     while((p = strrchr( currentlocale, '_' ))) {
 	*p = '\0';
 	snprintf(localefn,PATH_MAX,"%s/hotkeys/%s", sharedir, currentlocale);
-	loadHotkeysFromFile( localefn, false, false );
+	loadHotkeysFromFile( localefn, hk_ff, false );
     }
     free(currentlocale);
-    
+
     char* fn = getHotkeyFilename(0);
     if( !fn ) {
 	return;
     }
-    loadHotkeysFromFile( fn, true, false );
+    loadHotkeysFromFile( fn, hk_user, false );
     free(fn);
 }
 
 static void hotkeysSaveCallback(Hotkey* hk,FILE* f) {
-    if( hk->isUserDefined ) {
+    if( hk->source==hk_user ) {
 	fprintf( f, "%s:%s\n", hk->action, hk->text );
     }
 }
@@ -384,7 +383,7 @@ Hotkey* isImmediateKey( GWindow w, char* path, GEvent *event )
 	return 0;
     if( !hk->action )
 	return 0;
-    
+
     if( event->u.chr.keysym == hk->keysym )
 	return hk;
 
@@ -435,7 +434,7 @@ char* hotkeyTextWithoutModifiers( char* hktext ) {
 	|| !strcmp( hktext, "No shortcut" )
 	|| !strcmp( hktext, "No Shortcut" ))
 	return "";
-    
+
     char* p = strrchr( hktext, '+' );
     if( !p )
 	return hktext;
