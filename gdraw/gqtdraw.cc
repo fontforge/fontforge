@@ -34,9 +34,7 @@
 
 /**
  * TODO
- * Window lifecycle
- * Cairo/Pango
- * Text layout
+ * Window lifecycle - cleanup createwindow
  * Clipboard
  * GIC/input context
  */
@@ -2099,31 +2097,27 @@ extern "C" GDisplay *_GQtDraw_CreateDisplay(char *displayname, int *argc, char *
 
     auto* gdisp = new GQtDisplay();
     gdisp->app.reset(new QApplication(*argc, *argv));
+    gdisp->groot_base.reset(new GQtWidget(nullptr, Qt::Widget));
+    gdisp->groot_base->setAttribute(Qt::WA_QuitOnClose, false);
+    gdisp->groot_base->SetTitle("GROOT");
 
+    GDrawResourceFind();
+    gdisp->bs.double_time = _GDraw_res_multiclicktime;
+    gdisp->bs.double_wiggle = _GDraw_res_multiclickwiggle;
+
+    QRect screenGeom = gdisp->app->primaryScreen()->geometry();
     GDisplay *ret = gdisp->Base();
     ret->impl = gdisp;
     ret->funcs = &gqtfuncs;
     ret->fontstate = &gdisp->fs;
-
-    auto* groot = new GQtWidget(nullptr, Qt::Widget);
-    QRect screenGeom = gdisp->app->primaryScreen()->geometry();
-
-    groot->setAttribute(Qt::WA_QuitOnClose, false);
-    groot->SetTitle("GROOT");
     ret->res = gdisp->fs.res = gdisp->app->primaryScreen()->logicalDotsPerInch();
-    ret->groot = groot->Base();
+    ret->groot = gdisp->groot_base->Base();
     ret->groot->display = (GDisplay*)gdisp;
-    ret->groot->native_window = static_cast<GQtWindow*>(groot);
+    ret->groot->native_window = static_cast<GQtWindow*>(gdisp->groot_base.get());
     ret->groot->pos.width = screenGeom.width();
     ret->groot->pos.height = screenGeom.height();
     ret->groot->is_toplevel = true;
     ret->groot->is_visible = true;
-
-    gdisp->bs.double_time = 200;
-    gdisp->bs.double_wiggle = 3;
-    GDrawResourceFind();
-    gdisp->bs.double_time = _GDraw_res_multiclicktime;
-    gdisp->bs.double_wiggle = _GDraw_res_multiclickwiggle;
 
     // QObject::connect(gdisp->app, &QGuiApplication::lastWindowClosed, [ret] {
     //     Log(LOGWARN, "LWC LARP %d",
@@ -2135,7 +2129,6 @@ extern "C" GDisplay *_GQtDraw_CreateDisplay(char *displayname, int *argc, char *
 }
 
 extern "C" void _GQtDraw_DestroyDisplay(GDisplay *disp) {
-    delete GQtW(disp->groot);
     delete GQtD(disp);
 }
 

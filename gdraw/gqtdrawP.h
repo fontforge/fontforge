@@ -62,25 +62,6 @@ struct GQtLayoutState {
     bool laid_out = false;
 };
 
-struct GQtDisplay
-{
-    struct gdisplay base;
-    std::unique_ptr<QApplication> app;
-    std::vector<QCursor> custom_cursors;
-    GQtWindow *default_icon = nullptr;
-
-    bool is_space_pressed = false; // Used for GGDKDrawKeyState. We cheat!
-
-    int top_window_count = 0; // The number of toplevel, non-dialogue windows. When this drops to 0, the event loop stops
-    ulong last_event_time = 0;
-    GQtWindow *grabbed_window = nullptr;
-
-    FState fs = {};
-    GQtButtonState bs = {};
-
-    inline GDisplay* Base() const { return const_cast<GDisplay*>(&base); }
-};
-
 class GQtWindow
 {
 public:
@@ -216,6 +197,26 @@ public:
     GTimer* Base() const { return const_cast<GTimer*>(&m_gtimer); }
 private:
     GTimer m_gtimer;
+};
+
+struct GQtDisplay
+{
+    struct gdisplay base;
+    std::unique_ptr<QApplication> app;
+    std::unique_ptr<GQtWidget> groot_base;
+    std::vector<QCursor> custom_cursors;
+    GQtWindow *default_icon = nullptr;
+
+    bool is_space_pressed = false; // Used for GGDKDrawKeyState. We cheat!
+
+    int top_window_count = 0; // The number of toplevel, non-dialogue windows. When this drops to 0, the event loop stops
+    ulong last_event_time = 0;
+    GQtWindow *grabbed_window = nullptr;
+
+    FState fs = {};
+    GQtButtonState bs = {};
+
+    inline GDisplay* Base() const { return const_cast<GDisplay*>(&base); }
 };
 
 static inline GQtDisplay* GQtD(GDisplay *d) {
