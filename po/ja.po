@@ -15,9 +15,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-08 09:18+0000\n"
-"PO-Revision-Date: 2020-11-07 04:36\n"
-"Last-Translator: kotaMorishi\n"
+"POT-Creation-Date: 2022-03-08 09:53+0000\n"
+"PO-Revision-Date: 2022-02-21 08:36\n"
+"Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Language: ja_JP\n"
 "MIME-Version: 1.0\n"
@@ -187,7 +187,7 @@ msgstr "%d ピクセル"
 
 #. GT: There are various broad classes of lookups here and the first string
 #. GT: describes those: "Contextual Positioning", Contextual Substitution", etc.
-#. GT: Each of those may be formated in 3 different ways: by (or perhaps using
+#. GT: Each of those may be formatted in 3 different ways: by (or perhaps using
 #. GT: would be a better word) glyphs, classes or coverage tables.
 #. GT: So this might look like:
 #. GT:  Contextual Positioning by classes
@@ -13003,9 +13003,6 @@ msgstr "ツール(_S)"
 msgid "Tools"
 msgstr "ツール"
 
-msgid "Tools_2"
-msgstr "ツール_2"
-
 msgid "Top Bearing does not change."
 msgstr "上ベアリングは変更されません."
 
@@ -15476,3 +15473,6 @@ msgstr "{入力の先頭}"
 
 msgid "{Start of Line}"
 msgstr "{行の先頭}"
+
+#~ msgid "Tools_2"
+#~ msgstr "ツール_2"

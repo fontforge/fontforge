@@ -6,9 +6,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-08 09:18+0000\n"
-"PO-Revision-Date: 2020-11-07 04:36\n"
-"Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
+"POT-Creation-Date: 2022-03-08 09:53+0000\n"
+"PO-Revision-Date: 2022-02-21 08:36\n"
+"Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Language: uk_UA\n"
 "MIME-Version: 1.0\n"
@@ -357,7 +357,7 @@ msgstr "Основа %s"
 
 #. GT: There are various broad classes of lookups here and the first string
 #. GT: describes those: "Contextual Positioning", Contextual Substitution", etc.
-#. GT: Each of those may be formated in 3 different ways: by (or perhaps using
+#. GT: Each of those may be formatted in 3 different ways: by (or perhaps using
 #. GT: would be a better word) glyphs, classes or coverage tables.
 #. GT: So this might look like:
 #. GT:  Contextual Positioning by classes
@@ -16072,9 +16072,6 @@ msgstr "РозпізнНазвPUA"
 msgid "Recover old edit"
 msgstr "Відновити попередню редакцію"
 
-msgid "Recovery Complete"
-msgstr "Відновлення завершено"
-
 msgid "Recovery Failed"
 msgstr "Невдала спроба відновлення"
 
@@ -19095,7 +19092,7 @@ msgstr "Зірка"
 msgid "Start contours at e_xtrema"
 msgstr "Починати контури у _екстремумах"
 
-#. GT: "Len" is an abreviation for "Length"
+#. GT: "Len" is an abbreviation for "Length"
 msgid "StartLen"
 msgstr "Поч. довжина"
 
@@ -23093,9 +23090,6 @@ msgstr "_Інструменти"
 msgid "Tools"
 msgstr "Інструменти"
 
-msgid "Tools_2"
-msgstr "Інструменти_2"
-
 msgid "Top Accent"
 msgstr "Верхній акцент"
 
@@ -25577,14 +25571,6 @@ msgstr ""
 "Покращити інструкції можна заповненням приватного словника шрифту: Елемент-"
 ">Відомості щодо шрифту->Приватне PS"
 
-#, c-format
-msgid ""
-"Your file %s has been recovered.\n"
-"You must now Save your file to continue working on it."
-msgstr ""
-"Ваш файл %s відновлено.\n"
-"Щоб продовжити над ним роботу, вам слід зберегти ваш файл."
-
 msgid ""
 "Your font has a 2 byte encoding, but you are attempting to save it in a "
 "format that only supports one byte encodings. This means that you won't be "
@@ -27354,3 +27340,17 @@ msgstr "∆y_дод №1"
 
 msgid "∆y_adv #2"
 msgstr "∆y_дод №2"
+
+#~ msgid "Recovery Complete"
+#~ msgstr "Відновлення завершено"
+
+#~ msgid "Tools_2"
+#~ msgstr "Інструменти_2"
+
+#, c-format
+#~ msgid ""
+#~ "Your file %s has been recovered.\n"
+#~ "You must now Save your file to continue working on it."
+#~ msgstr ""
+#~ "Ваш файл %s відновлено.\n"
+#~ "Щоб продовжити над ним роботу, вам слід зберегти ваш файл."

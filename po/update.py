@@ -15,12 +15,15 @@ def update(potfile, pofile):
             else:
                 break
 
-    print(f"Updating {pofile} with {potfile}...")
-    subprocess.check_call(
-        ["msgmerge", "--for-msgfmt", "-s", pofile, potfile, "-o", pofile]
-    )
-
     updated_trans = pathlib.Path("updates") / pathlib.Path(pofile).name
+
+    print(f"Updating {pofile} with {potfile}...")
+
+    cmd = ["msgmerge", "-N", "-s", pofile, potfile, "-o", pofile]
+    if not updated_trans.exists():
+        cmd.append("--for-msgfmt")
+    subprocess.check_call(cmd)
+
     if updated_trans.exists():
         print(f"Updating {pofile} with {updated_trans}...")
         subprocess.check_call(

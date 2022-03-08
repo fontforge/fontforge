@@ -7,14 +7,20 @@
 # Lee Chenhwa <leechenhwa@aim.com>, 2006,2007,2008, 2009, 2012.
 # Lee Chenhwa <leechenhwa@aim.com>, 2012-04-29 18:06+0800
 # woclass <https://crowdin.com/profile/wo>, 2020
+# Isabella Liu <https://crowdin.com/profile/isabellaliu>, 2021
+# tumuyan <https://crowdin.com/profile/tumuyan>, 2021
+# NetaP495L <https://crowdin.com/profile/netap495l>
+# NFSL2001 <https://crowdin.com/profile/nightfurysl2001>
+# hulenkius <https://crowdin.com/profile/hulenkius>
+# EldersJavas <https://crowdin.com/profile/maicarons>
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-08 09:18+0000\n"
-"PO-Revision-Date: 2020-11-07 04:36\n"
-"Last-Translator: woclass\n"
+"POT-Creation-Date: 2022-03-08 09:53+0000\n"
+"PO-Revision-Date: 2022-02-21 08:36\n"
+"Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Language: zh_CN\n"
 "MIME-Version: 1.0\n"
@@ -140,6 +146,14 @@ msgstr "参照了缺失字形"
 msgid "!!!! Unknown caret format %d !!!!\n"
 msgstr "!!!! 未知游标格式 %d !!!!\n"
 
+#, c-format
+msgid "\"%s\" is not the name of a known named anchor on line %d of %s."
+msgstr "”%s“不是在第%d行第%s列上已知的锚点的名称。"
+
+#, c-format
+msgid "\"%s\" is not the name of a known named value record on line %d of %s."
+msgstr "%s不是第 %d 行（ %s）上已知的命名值记录里的名称。"
+
 msgid "\"Symbol\""
 msgstr "符号"
 
@@ -218,7 +232,7 @@ msgstr "%s 基础"
 
 #. GT: There are various broad classes of lookups here and the first string
 #. GT: describes those: "Contextual Positioning", Contextual Substitution", etc.
-#. GT: Each of those may be formated in 3 different ways: by (or perhaps using
+#. GT: Each of those may be formatted in 3 different ways: by (or perhaps using
 #. GT: would be a better word) glyphs, classes or coverage tables.
 #. GT: So this might look like:
 #. GT:  Contextual Positioning by classes
@@ -251,6 +265,14 @@ msgstr "%s 的边界框太大，算法无法正常工作。已忽略。"
 #, c-format
 msgid "%s in %s lookup %d"
 msgstr "%s (%s中) 查找 %d"
+
+#, c-format
+msgid ""
+"%s is not a cidmap file, please download\n"
+"http://fontforge.sourceforge.net/cidmaps.tgz"
+msgstr ""
+"%s 不是一个cidmap 文件，请于以下地址下载\n"
+"http://fontforge.sourceforge.net/cidmaps.tgz"
 
 #, c-format
 msgid "%s is not in %.100s"
@@ -366,118 +388,124 @@ msgid ") while in %s it is ("
 msgstr ") 但在 %s为 ("
 
 msgid "100 Thin"
-msgstr "100 细"
+msgstr "100 超细体"
 
 msgid "1250, Latin-2 (Eastern Europe)"
-msgstr "1250, 拉丁文-2 (东欧)"
+msgstr "1250，拉丁文-2（东欧）"
 
 msgid "1251, Cyrillic"
-msgstr "Windows-1251 斯拉夫语"
+msgstr "1251，西里尔文"
 
 msgid "1252, Latin-1"
-msgstr "WIndows-1252, 拉丁语-1"
+msgstr "1252，拉丁文1"
 
 msgid "1253, Greek"
-msgstr "Windows-1253 希腊语"
+msgstr "1253，希腊文"
 
 msgid "1254, Turkish"
-msgstr "Windows-1254 土耳其语"
+msgstr "1254，土耳其语"
 
 msgid "1255, Hebrew"
-msgstr "Windows-1255 希伯来语"
+msgstr "1255，希伯来文"
 
 msgid "1256, Arabic"
-msgstr "Windows-1256 阿拉伯语"
+msgstr "1256，阿拉伯文"
 
 msgid "1257, Windows Baltic"
-msgstr "Windows-1257 波罗的语"
+msgstr "1257，Windows 波罗的文"
 
 msgid "1258, Vietnamese"
-msgstr "Windows-1258, 越南语"
+msgstr "1258，越南语"
 
 msgid "1361, Korean Johab"
-msgstr "1361, 韩文 Johab"
+msgstr "1361，韩文组合式（Johab）"
 
 msgid "200 Extra-Light"
-msgstr "200 极淡"
+msgstr "200 特细体"
 
 msgid "300 Light"
-msgstr "300 淡"
+msgstr "300 细体"
 
 msgid "32x8 cell window"
 msgstr "32x8单元窗口"
 
 msgid "400 Regular"
-msgstr "400 书"
+msgstr "400 标准"
 
 msgid "437, US"
-msgstr "437, 美国"
+msgstr "437，美国"
 
 msgid "500 Medium"
-msgstr "500 正常"
+msgstr "500 中等"
 
 msgid "600 Semi-Bold"
-msgstr "600 略粗"
+msgstr "600 半粗体"
 
 msgid "700 Bold"
-msgstr "700 粗"
+msgstr "700 粗体"
+
+msgid "708, Arabic ASMO 708"
+msgstr "708，阿拉伯文 ASMO 708"
 
 msgid "737, Greek; former 437 G"
-msgstr "737, 希腊文; 原 437 G"
+msgstr "737，希腊文；原为 437 G"
 
 msgid "800 Extra-Bold"
-msgstr "800 粗"
+msgstr "800 特粗体"
 
 msgid "850, WE/Latin 1"
-msgstr "850, WE/拉丁文 1"
+msgstr "850，WE/拉丁文 1"
 
 msgid "852, Latin 2"
-msgstr "852, 拉丁文 2"
+msgstr "852，拉丁文 2"
 
 msgid "855, IBM Cyrillic; primarily Russian"
-msgstr "855, IBM 西里尔文字; 主要为俄语"
+msgstr "855，IBM 西里尔文；主要为俄语"
 
 msgid "857, IBM Turkish"
-msgstr "857, IBM 土耳其语"
+msgstr "857，IBM 土耳其语"
 
 msgid "860, MS-DOS Portuguese"
-msgstr "860, MS-DOS Portuguese葡萄牙语"
+msgstr "860，MS-DOS 葡萄牙语"
 
 msgid "861, MS-DOS Icelandic"
-msgstr "861, MS-DOS 冰岛语"
+msgstr "861，MS-DOS 冰岛语"
 
 msgid "862, Hebrew"
 msgstr "862，希伯来语"
 
 msgid "863, MS-DOS Canadian French"
-msgstr "863, MS-DOS 加拿大法语"
+msgstr "863，MS-DOS 加拿大法语"
 
 msgid "864, Arabic"
-msgstr "864, 阿拉伯语"
+msgstr "864，阿拉伯语"
+
+msgid "865, MS_DOS Nordic"
+msgstr "865，MS_DOS 北欧语"
 
 msgid "866, MS-DOS Russian"
-msgstr "866, MS-DOS 俄语"
+msgstr "866，MS-DOS 俄语"
 
 msgid "869, IBM Greek"
-msgstr "869, IBM Greek希腊语"
+msgstr "869，IBM 希腊语"
 
 msgid "874, Thai"
-msgstr "Windows 泰国语 (CP 874)"
+msgstr "874，泰文"
 
 msgid "900 Black"
-msgstr "900 黑"
+msgstr "900 超粗体"
 
 msgid "932, JIS/Japan"
-msgstr "932, JIS/日本"
+msgstr "932，JIS/日本"
 
 msgid "936, Simplified Chinese"
-msgstr "简体中文(Windows-936)"
+msgstr "936，简体中文"
 
 msgid "949, Korean Wansung"
-msgstr "Windows 韩语 (CP 949)"
+msgstr "949，韩文完整式（Wansung）"
 
 msgid "950, Traditional Chinese"
-msgstr "Windows 繁体中文 (CP 950)"
+msgstr "950，繁体中文"
 
 msgid "< _Prev"
 msgstr "<前(_P)"
@@ -695,6 +723,13 @@ msgstr "添加查找"
 msgid "Add Mark Anchor..."
 msgstr "增加标记锚点..."
 
+#. GT: when translating this please leave the "SIL Open Font License" in
+#. GT: English (possibly translating it in parentheses). I believe there
+#. GT: are legal reasons for this.
+#. GT: So "Añadir SIL Open Font License (licencia de fuentes libres)"
+msgid "Add OFL"
+msgstr "添加 OFL"
+
 msgid "Add Sub_table"
 msgstr "添加子表(_T)"
 
@@ -765,6 +800,18 @@ msgstr "autotrace 附加参数:"
 msgid "Adjust"
 msgstr "调整"
 
+msgid ""
+"Adjust Angle\n"
+"Obsolete instruction\n"
+"Pops one value"
+msgstr ""
+"调整角度\n"
+"已停用指令\n"
+"推出一个值"
+
+msgid "Adlam"
+msgstr "阿德拉姆文"
+
 msgid "Adobe Glyph List"
 msgstr "Adobe 字形列表"
 
@@ -797,8 +844,14 @@ msgstr "前导宽度不"
 msgid "Advance width of glyph %.30s must be less than 127"
 msgstr "字形 %.30s 的前导宽度必须小于127"
 
+msgid "Aegean Numbers"
+msgstr "爱琴数字"
+
 msgid "Afm Save Failed"
 msgstr "Afm保存失败"
+
+msgid "Afrikaans"
+msgstr "南非语"
 
 msgid ""
 "After rotating or skewing a glyph you should probably apply Element->Add "
@@ -807,6 +860,9 @@ msgstr "旋转或倾斜字形后可能要执行“基础->增加极点”"
 
 msgid "Ahead Classes"
 msgstr "向前类属"
+
+msgid "Ahom"
+msgstr "阿洪姆文"
 
 msgid "Albanian"
 msgstr "阿尔巴尼亚语"
@@ -930,6 +986,9 @@ msgstr "写入%s发生了错误"
 msgid "An outline font editor"
 msgstr "一款字体轮廓编辑器"
 
+msgid "Anatolian Hieroglyphs"
+msgstr "安纳托利亚象形文"
+
 msgid "Anchor Class Name"
 msgstr "锚点类属名"
 
@@ -980,6 +1039,9 @@ msgstr "古希腊音符"
 msgid "Ancient Greek Numbers"
 msgstr "古希腊数字"
 
+msgid "Ancient Ligatures (Obsolete)"
+msgstr "古老连字（已停用）"
+
 msgid "Ancient Symbols"
 msgstr "古代符号"
 
@@ -1018,7 +1080,7 @@ msgid "Apps"
 msgstr "应用程序"
 
 msgid "Arabic"
-msgstr "阿拉伯语"
+msgstr "阿拉伯文"
 
 msgid "Arabic (Algeria)"
 msgstr "阿拉伯语(阿尔及利亚)"
@@ -1068,14 +1130,23 @@ msgstr "阿拉伯语(阿联酋)"
 msgid "Arabic (Yemen)"
 msgstr "阿拉伯语(也门)"
 
+msgid "Arabic Extended-A"
+msgstr "阿拉伯文扩展 A"
+
+msgid "Arabic Extended-B"
+msgstr "阿拉伯文扩展 B"
+
+msgid "Arabic Mathematical Alphabetic Symbols"
+msgstr "阿拉伯数学字母符号"
+
 msgid "Arabic Number"
 msgstr "阿拉伯数字"
 
 msgid "Arabic Presentation Forms-A"
-msgstr "阿拉伯表现形式 A"
+msgstr "阿拉伯文表现形式 A"
 
 msgid "Arabic Presentation Forms-B"
-msgstr "阿拉伯表现形式B"
+msgstr "阿拉伯文表现形式B"
 
 msgid "Arabic Right to Left"
 msgstr "阿拉伯文从右到左"
@@ -1097,7 +1168,7 @@ msgstr ""
 "此操作是不可恢复的。"
 
 msgid "Armenian"
-msgstr "亚美尼亚语"
+msgstr "亚美尼亚文"
 
 msgid "Armenian Ligatures"
 msgstr "Armenian 组合字"
@@ -1144,6 +1215,13 @@ msgstr "终点"
 msgid "At Start"
 msgstr "起始"
 
+msgid ""
+"At least one anchor point was lost when pasting from one font to another "
+"because no matching anchor class could be found in the new font."
+msgstr ""
+"因为无法在新字体中找到对应的锚点，在从一个字体复制到另一字体的过程中，至少一"
+"个锚点被丢失。"
+
 msgid "At most 31 glyphs may be specified in an insert list"
 msgstr "插入列表中最多可有31个字形"
 
@@ -1167,6 +1245,10 @@ msgstr "企图创建参照自身的字形"
 #, c-format
 msgid "Attempt to redefine anchor definition of \"%s\" on line %d of %s"
 msgstr "试图重新定义锚点 \"%s\"， 于行%d (%s)"
+
+#, c-format
+msgid "Attempt to redefine value record definition of \"%s\" on line %d of %s"
+msgstr "尝试重新定义”%s“的值于%d行%s列"
 
 #, c-format
 msgid "Attempt to regenerate a pixel size that has not been created (%d@%d)"
@@ -1253,7 +1335,7 @@ msgid "Autotracing..."
 msgstr "自动循迹…"
 
 msgid "Avestan"
-msgstr "阿维斯陀语"
+msgstr "阿维斯塔文"
 
 msgid "Axerbaijani (Arabic)"
 msgstr "阿塞拜疆语(阿拉伯字母)"
@@ -1293,6 +1375,9 @@ msgstr "轴高:"
 
 msgid "AxisValue|Default"
 msgstr "默认"
+
+msgid "Aymara"
+msgstr "艾马拉语"
 
 msgid "Azebaijani (roman)"
 msgstr "阿塞拜疆语(罗马字母)"
@@ -1439,7 +1524,7 @@ msgid "Bad Grid Fitting table"
 msgstr "不良网格填充表"
 
 msgid "Bad Human Fontname"
-msgstr "不良字体名"
+msgstr "不当的人读字型名称"
 
 msgid "Bad IBM Family"
 msgstr "不良IBM字族名"
@@ -1460,7 +1545,7 @@ msgid "Bad Metrics"
 msgstr "不良尺寸"
 
 msgid "Bad Multiple Master Font"
-msgstr "不良字体集"
+msgstr "不良的多母版字体"
 
 msgid "Bad Name"
 msgstr "不良名称"
@@ -1601,6 +1686,9 @@ msgstr "不良设备表%s"
 msgid "Bad encoding file format"
 msgstr "不良编码文件格式"
 
+msgid "Bad encoding information in 'cmap' table."
+msgstr "cmap 表里面的编码信息错误。"
+
 msgid "Bad fdselect\n"
 msgstr "不良 fd 选择\n"
 
@@ -1731,7 +1819,7 @@ msgid "Bad xfig file"
 msgstr "不良 xfig 文件"
 
 msgid "Balinese"
-msgstr "巴里语"
+msgstr "巴厘文"
 
 msgid "Ball (Round Cap)"
 msgstr "圆球(圆头)"
@@ -1791,13 +1879,16 @@ msgid "Basic Latin"
 msgstr "基本拉丁文"
 
 msgid "Basic Multilingual Plane"
-msgstr "基础多语言平面"
+msgstr "基础多文种平面"
 
 msgid "Basque"
 msgstr "巴斯克语"
 
+msgid "Bassa Vah"
+msgstr "巴索奥瓦文"
+
 msgid "Batak"
-msgstr "巴塔克语"
+msgstr "巴塔克文"
 
 msgid "Be_vel"
 msgstr "伞形(_V)"
@@ -1815,10 +1906,13 @@ msgid "Below Base Substitutions"
 msgstr "基本替代之下"
 
 msgid "Bengali"
-msgstr "孟加拉语"
+msgstr "孟加拉文"
 
 msgid "Bengali Bangladesh"
 msgstr "孟加拉塔卡"
+
+msgid "Bhaiksuki"
+msgstr "比克舒基文"
 
 #. GT: I don't really understand these "Big Op Space" things. They have
 #. GT: something to do with TeX and are roughly defined a few strings down
@@ -1838,10 +1932,10 @@ msgid "Big Op Space5:"
 msgstr "大Op间距5:"
 
 msgid "Big5 (Trad. Chinese)"
-msgstr "Big5 (繁体中文)"
+msgstr "Big5（繁体中文）"
 
 msgid "Big5 HKSCS (Trad. Chinese)"
-msgstr "Big5 HKSCS (繁体中文)"
+msgstr "Big5 HKSCS（繁体中文）"
 
 msgid "Bind to Path"
 msgstr "附加到路径"
@@ -1909,6 +2003,9 @@ msgstr "蓝值"
 msgid "Bold"
 msgstr "粗体"
 
+msgid "Bold Italic"
+msgstr "粗斜体"
+
 msgid "Bone"
 msgstr "骨"
 
@@ -1922,10 +2019,13 @@ msgid "Bookmarks"
 msgstr "标记"
 
 msgid "Bopomofo"
-msgstr "注音字母"
+msgstr "注音符号"
+
+msgid "Bopomofo (& Extended)"
+msgstr "注音符号（& 扩展）"
 
 msgid "Bopomofo Extended"
-msgstr "注音字母扩展"
+msgstr "注音符号扩展"
 
 msgid "Border Shape:"
 msgstr "边框型式："
@@ -1993,8 +2093,14 @@ msgstr "值太大"
 msgid "Brahmi"
 msgstr "婆罗米文字"
 
+msgid "Braille"
+msgstr "布莱叶盲文"
+
 msgid "Braille Patterns"
-msgstr "盲文模式"
+msgstr "布莱叶图案"
+
+msgid "Breton"
+msgstr "布列塔尼语"
 
 msgid "Brighter Border:"
 msgstr "更亮边框："
@@ -2011,8 +2117,14 @@ msgstr "浏览…"
 msgid "Brush"
 msgstr "刷子"
 
+msgid "Brāhmī"
+msgstr "婆罗米文字"
+
 msgid "Buginese"
-msgstr "布吉语"
+msgstr "布吉文"
+
+msgid "Buhid"
+msgstr "布希德文"
 
 msgid "Buil_d Duplicate Glyph"
 msgstr "生成复制字形(_D)"
@@ -2087,7 +2199,12 @@ msgid "CID"
 msgstr "字符标识(CID)"
 
 msgid "CID findfont Name"
-msgstr "字符标识名称"
+msgstr "CID字符标识名称"
+
+msgid "CJK (& Ext A/B) & CJK Radicals Sup & Kangxi & IDC & Kanbun"
+msgstr ""
+"中日韩表意文字基本区 (& 扩展 A/B) & 中日韩部首补充 & 康熙部首 & 表意文字描述"
+"符 & 汉文训读"
 
 msgid "CJK Compatibility"
 msgstr "中日韩兼容字符"
@@ -2096,10 +2213,10 @@ msgid "CJK Compatibility Forms"
 msgstr "中日韩兼容形式"
 
 msgid "CJK Compatibility Ideographs"
-msgstr "中日韩兼容表意字符"
+msgstr "中日韩兼容表意文字"
 
 msgid "CJK Compatibility Ideographs Supplement"
-msgstr "中日韩兼容表意字符补充"
+msgstr "中日韩兼容表意文字增补"
 
 msgid "CJK Enclosed Letters and Months"
 msgstr "带圈的中日韩字符和月时"
@@ -2111,28 +2228,40 @@ msgid "CJK Phonetics and Symbols"
 msgstr "中日韩注音符号"
 
 msgid "CJK Radicals Supplement"
-msgstr "CJK 偏旁部首补充"
+msgstr "中日韩偏旁部首增补"
 
 msgid "CJK Strokes"
 msgstr "中日韩笔画"
+
+msgid "CJK Strokes & CJK Compat Ideographs (& Sup)"
+msgstr "中日韩笔画 & 中日韩兼容表意文字 (& 兼容增补)"
 
 msgid "CJK Symbols and Punctuation"
 msgstr "中日韩符号与标点"
 
 msgid "CJK Unified Ideographs"
-msgstr "中日韩统一表意字符"
+msgstr "中日韩统一表意文字"
 
 msgid "CJK Unified Ideographs Extension A"
-msgstr "中日韩统一表意符号扩展A"
+msgstr "中日韩统一表意文字扩展 A"
 
 msgid "CJK Unified Ideographs Extension B"
-msgstr "中日韩统一表意字符扩展B"
+msgstr "中日韩统一表意文字扩展 B"
 
 msgid "CJK Unified Ideographs Extension C"
-msgstr "中日韩统一表意文字扩展区 C"
+msgstr "中日韩统一表意文字扩展 C"
 
 msgid "CJK Unified Ideographs Extension D"
-msgstr "CJK 统一表意扩展 D"
+msgstr "中日韩统一表意文字扩展 D"
+
+msgid "CJK Unified Ideographs Extension E"
+msgstr "中日韩统一表意文字扩展 E"
+
+msgid "CJK Unified Ideographs Extension F"
+msgstr "中日韩统一表意文字扩展 F"
+
+msgid "CJK Unified Ideographs Extension G"
+msgstr "中日韩统一表意文字扩展 G"
 
 msgid "CS Clarendon"
 msgstr "CS粗长体"
@@ -2318,7 +2447,7 @@ msgid "Cannot open file"
 msgstr "无法打开文件"
 
 msgid "Canonical Start _Point"
-msgstr "正则起点(_P)"
+msgstr "标准起点(_P)"
 
 msgid "Canonical _Contours"
 msgstr "正则轮廓(_C)"
@@ -2333,7 +2462,7 @@ msgid "Capitals to Small Capitals"
 msgstr "大写到小大写"
 
 msgid "Carian"
-msgstr "克罗地亚语"
+msgstr "加里亚文"
 
 msgid "Cartoon"
 msgstr "动画(卡通)"
@@ -2343,6 +2472,9 @@ msgstr "大小写区分形"
 
 msgid "Catalan"
 msgstr "加泰罗尼亚语"
+
+msgid "Caucasian Albanian"
+msgstr "高加索阿尔巴尼亚文"
 
 msgid "Center Bet_ween Control Points"
 msgstr "中心处于控制点间(_W)"
@@ -2357,7 +2489,7 @@ msgid "Centered"
 msgstr "居中"
 
 msgid "Centered CJK Punctuation"
-msgstr "居中的CJK标点符号"
+msgstr "居中的中日韩标点符号"
 
 msgid "Chaining Positioning"
 msgstr "链定位"
@@ -2371,8 +2503,11 @@ msgstr "链位置"
 msgid "Chaining substitution"
 msgstr "链式替代"
 
+msgid "Chakma"
+msgstr "查克马文"
+
 msgid "Cham"
-msgstr "占语"
+msgstr "占文"
 
 msgid "Change"
 msgstr "更改"
@@ -2423,37 +2558,301 @@ msgid "CharCenterHighest"
 msgstr "字符中心最高"
 
 msgid "Character Variants 01"
-msgstr "垂直变形01"
+msgstr "字符变体01"
 
 msgid "Character Variants 02"
-msgstr "垂直变形02"
+msgstr "字符变体02"
 
 msgid "Character Variants 03"
-msgstr "垂直变形03"
+msgstr "字符变体03"
 
 msgid "Character Variants 04"
-msgstr "垂直变形04"
+msgstr "字符变体04"
 
 msgid "Character Variants 05"
-msgstr "垂直变形05"
+msgstr "字符变体05"
 
 msgid "Character Variants 06"
-msgstr "垂直变形06"
+msgstr "字符变体06"
 
 msgid "Character Variants 07"
-msgstr "垂直变形07"
+msgstr "字符变体07"
 
 msgid "Character Variants 08"
-msgstr "垂直变形08"
+msgstr "字符变体08"
 
 msgid "Character Variants 09"
-msgstr "垂直变形09"
+msgstr "字符变体09"
 
 msgid "Character Variants 10"
-msgstr "垂直变形10"
+msgstr "字符变体10"
+
+msgid "Character Variants 11"
+msgstr "字符变体11"
+
+msgid "Character Variants 12"
+msgstr "字符变体12"
+
+msgid "Character Variants 13"
+msgstr "字符变体13"
+
+msgid "Character Variants 14"
+msgstr "字符变体14"
+
+msgid "Character Variants 15"
+msgstr "字符变体15"
+
+msgid "Character Variants 16"
+msgstr "字符变体16"
+
+msgid "Character Variants 17"
+msgstr "字符变体17"
+
+msgid "Character Variants 18"
+msgstr "字符变体18"
+
+msgid "Character Variants 19"
+msgstr "字符变体19"
+
+msgid "Character Variants 20"
+msgstr "字符变体20"
+
+msgid "Character Variants 21"
+msgstr "字符变体21"
+
+msgid "Character Variants 22"
+msgstr "字符变体22"
+
+msgid "Character Variants 23"
+msgstr "字符变体23"
+
+msgid "Character Variants 24"
+msgstr "字符变体24"
+
+msgid "Character Variants 25"
+msgstr "字符变体25"
+
+msgid "Character Variants 26"
+msgstr "字符变体26"
+
+msgid "Character Variants 27"
+msgstr "字符变体27"
+
+msgid "Character Variants 28"
+msgstr "字符变体28"
+
+msgid "Character Variants 29"
+msgstr "字符变体29"
+
+msgid "Character Variants 30"
+msgstr "字符变体30"
+
+msgid "Character Variants 31"
+msgstr "字符变体31"
+
+msgid "Character Variants 32"
+msgstr "字符变体32"
+
+msgid "Character Variants 33"
+msgstr "字符变体33"
+
+msgid "Character Variants 34"
+msgstr "字符变体34"
+
+msgid "Character Variants 35"
+msgstr "字符变体35"
+
+msgid "Character Variants 36"
+msgstr "字符变体36"
+
+msgid "Character Variants 37"
+msgstr "字符变体37"
+
+msgid "Character Variants 38"
+msgstr "字符变体38"
+
+msgid "Character Variants 39"
+msgstr "字符变体39"
+
+msgid "Character Variants 40"
+msgstr "字符变体40"
+
+msgid "Character Variants 41"
+msgstr "字符变体41"
+
+msgid "Character Variants 42"
+msgstr "字符变体42"
+
+msgid "Character Variants 43"
+msgstr "字符变体43"
+
+msgid "Character Variants 44"
+msgstr "字符变体44"
+
+msgid "Character Variants 45"
+msgstr "字符变体45"
+
+msgid "Character Variants 46"
+msgstr "字符变体46"
+
+msgid "Character Variants 47"
+msgstr "字符变体47"
+
+msgid "Character Variants 48"
+msgstr "字符变体48"
+
+msgid "Character Variants 49"
+msgstr "字符变体49"
+
+msgid "Character Variants 50"
+msgstr "字符变体50"
+
+msgid "Character Variants 51"
+msgstr "字符变体51"
+
+msgid "Character Variants 52"
+msgstr "字符变体52"
+
+msgid "Character Variants 53"
+msgstr "字符变体53"
+
+msgid "Character Variants 54"
+msgstr "字符变体54"
+
+msgid "Character Variants 55"
+msgstr "字符变体55"
+
+msgid "Character Variants 56"
+msgstr "字符变体56"
+
+msgid "Character Variants 57"
+msgstr "字符变体57"
+
+msgid "Character Variants 58"
+msgstr "字符变体58"
+
+msgid "Character Variants 59"
+msgstr "字符变体59"
+
+msgid "Character Variants 60"
+msgstr "字符变体60"
+
+msgid "Character Variants 61"
+msgstr "字符变体61"
+
+msgid "Character Variants 62"
+msgstr "字符变体62"
+
+msgid "Character Variants 63"
+msgstr "字符变体63"
+
+msgid "Character Variants 64"
+msgstr "字符变体64"
+
+msgid "Character Variants 65"
+msgstr "字符变体65"
+
+msgid "Character Variants 66"
+msgstr "字符变体66"
+
+msgid "Character Variants 67"
+msgstr "字符变体67"
+
+msgid "Character Variants 68"
+msgstr "字符变体68"
+
+msgid "Character Variants 69"
+msgstr "字符变体69"
+
+msgid "Character Variants 70"
+msgstr "字符变体70"
+
+msgid "Character Variants 71"
+msgstr "字符变体71"
+
+msgid "Character Variants 72"
+msgstr "字符变体72"
+
+msgid "Character Variants 73"
+msgstr "字符变体73"
+
+msgid "Character Variants 74"
+msgstr "字符变体74"
+
+msgid "Character Variants 75"
+msgstr "字符变体75"
+
+msgid "Character Variants 76"
+msgstr "字符变体76"
+
+msgid "Character Variants 77"
+msgstr "字符变体77"
+
+msgid "Character Variants 78"
+msgstr "字符变体78"
+
+msgid "Character Variants 79"
+msgstr "字符变体79"
+
+msgid "Character Variants 80"
+msgstr "字符变体80"
+
+msgid "Character Variants 81"
+msgstr "字符变体81"
+
+msgid "Character Variants 82"
+msgstr "字符变体82"
+
+msgid "Character Variants 83"
+msgstr "字符变体83"
+
+msgid "Character Variants 84"
+msgstr "字符变体84"
+
+msgid "Character Variants 85"
+msgstr "字符变体85"
+
+msgid "Character Variants 86"
+msgstr "字符变体86"
+
+msgid "Character Variants 87"
+msgstr "字符变体87"
+
+msgid "Character Variants 88"
+msgstr "字符变体88"
+
+msgid "Character Variants 89"
+msgstr "字符变体89"
+
+msgid "Character Variants 90"
+msgstr "字符变体90"
+
+msgid "Character Variants 91"
+msgstr "字符变体91"
+
+msgid "Character Variants 92"
+msgstr "字符变体92"
+
+msgid "Character Variants 93"
+msgstr "字符变体93"
+
+msgid "Character Variants 94"
+msgstr "字符变体94"
+
+msgid "Character Variants 95"
+msgstr "字符变体95"
+
+msgid "Character Variants 96"
+msgstr "字符变体96"
+
+msgid "Character Variants 97"
+msgstr "字符变体97"
+
+msgid "Character Variants 98"
+msgstr "字符变体98"
 
 msgid "Character Variants 99"
-msgstr "垂直变形99"
+msgstr "字符变体99"
 
 msgid "Charsets"
 msgstr "字符集"
@@ -2521,6 +2920,12 @@ msgstr "查找空字符的替代"
 msgid "Cherokee"
 msgstr "切罗基文"
 
+msgid "Cherokee Supplement"
+msgstr "切罗基文补充"
+
+msgid "Chess Symbols"
+msgstr "国际象棋符号"
+
 msgid "Chin"
 msgstr "钦邦"
 
@@ -2551,11 +2956,29 @@ msgstr "简体中文"
 msgid "Chinese Traditional"
 msgstr "繁体中文"
 
+msgid "Chinese, Phonetic"
+msgstr "汉语注音符号"
+
+msgid "Chinese, Simplified"
+msgstr "简体中文"
+
+msgid "Chinese, Traditional"
+msgstr "繁体中文"
+
+msgid "Chinese, Traditional, Hong Kong SAR"
+msgstr "繁体中文（香港）"
+
+msgid "Chinese, Traditional, Macao SAR"
+msgstr "繁体中文（澳门）"
+
 msgid "Choose a file format..."
 msgstr "选择文件格式..."
 
 msgid "Choose which lookups to copy"
 msgstr "选择要的查找"
+
+msgid "Chorasmian"
+msgstr "花剌子模文"
 
 msgid "Clarendon Serifs"
 msgstr "粗长衬线体(CS)"
@@ -2647,6 +3070,22 @@ msgid "ClearInstrsBigChanges"
 msgstr "清除大变化指令"
 
 msgid ""
+"Click here for more information about the OFL (SIL Open Font License) \n"
+"including the corresponding FAQ. \n"
+msgstr ""
+"点击这里以查阅更多关于 OFL（SIL开源字型授权）的资料\n"
+"以及其常见问题目录（FAQ）。\n"
+
+msgid ""
+"Click here to add the OFL metadata to your own font in the License and "
+"License URL fields. \n"
+"Then click on the License field to fill in the placeholders in sync with OFL."
+"txt. \n"
+msgstr ""
+"点击这里以在你的字体文件中的许可与许可网址栏目中添加 OFL 元数据。\n"
+"然后点击许可栏目并填写与 OFL.txt 一样的资料。\n"
+
+msgid ""
 "Click on a range to select characters in that range.\n"
 "Double click on a range to see characters that should be\n"
 "in the range but aren't."
@@ -2713,16 +3152,22 @@ msgid "Com_binations"
 msgstr "组合(_B)"
 
 msgid "Combining Diacritical Marks"
-msgstr "组合变音标记"
+msgstr "结合变音标记"
+
+msgid "Combining Diacritical Marks (& Supplement)"
+msgstr "结合变音标记（及补充）"
+
+msgid "Combining Diacritical Marks Extended"
+msgstr "结合变音标记扩展"
 
 msgid "Combining Diacritical Marks Supplement"
-msgstr "组合变音标记补充"
+msgstr "结合变音标记补充"
 
 msgid "Combining Diacritical Marks for Symbols"
-msgstr "符号组合变音标记"
+msgstr "结合变音记号"
 
 msgid "Combining Half Marks"
-msgstr "组合半角标记"
+msgstr "结合半边标记"
 
 msgid "Combining Marks for Symbols"
 msgstr "符号组合变音标记"
@@ -2735,7 +3180,7 @@ msgid "Comment"
 msgstr "说明"
 
 msgid "Common Indic Number Forms"
-msgstr "常用印度数字形式"
+msgstr "通用印度数字形式"
 
 msgid "Common Number Separator"
 msgstr "共同数字分隔符"
@@ -2827,6 +3272,9 @@ msgstr "压缩"
 msgid "Condensed (75%)"
 msgstr "压缩至75%"
 
+msgid "Config_ure Plugins..."
+msgstr "插件选项"
+
 msgid "Configure"
 msgstr "配置"
 
@@ -2852,7 +3300,7 @@ msgid "Contextual Chaining Substitution"
 msgstr "关联链替换"
 
 msgid "Contextual Ligatures"
-msgstr "上下文组合"
+msgstr "上下文连字"
 
 msgid "Contextual Position"
 msgstr "上下文关联位置"
@@ -2913,6 +3361,9 @@ msgstr "复制层(_Y)..."
 
 msgid "Coptic"
 msgstr "科普特文"
+
+msgid "Coptic Epact Numbers"
+msgstr "科普特闰余数字"
 
 msgid "Copy Gri_d Fit"
 msgstr "复制网格填充(_d)"
@@ -3012,10 +3463,10 @@ msgid "Could not find a bitmap font in %s"
 msgstr "未能从 %s 中找到位图字体"
 
 msgid "Could not find a usable encoding table"
-msgstr "未能找到可用的编码表"
+msgstr "找不到可用的编码表"
 
 msgid "Could not find any valid encoding tables"
-msgstr "未能找到任何有效的编码表"
+msgstr "找不到有效的编码表"
 
 msgid "Could not find original glyph"
 msgstr "未能找到原始字形"
@@ -3108,6 +3559,10 @@ msgstr "未能找到参照字符 \"%s\" 于 %s\n"
 #, c-format
 msgid "Couldn't open cidmap file: %s"
 msgstr "未能打开cidmap文件： %s"
+
+#, c-format
+msgid "Couldn't open directory as a font: %s"
+msgstr "无法将 %s 目录视为字体文件打开"
 
 msgid "Couldn't open file"
 msgstr "未能打开文件"
@@ -3213,6 +3668,9 @@ msgstr "三次方"
 msgid "Cuneiform"
 msgstr "楔形文字"
 
+msgid "Cuneiform Numbers and Punctuation"
+msgstr "楔形数字和标点符号"
+
 msgid "Currency Symbols"
 msgstr "货币符号"
 
@@ -3306,7 +3764,10 @@ msgid "Cypriot syllabary"
 msgstr "塞浦路斯音节"
 
 msgid "Cyrillic"
-msgstr "西里尔语"
+msgstr "西里尔文"
+
+msgid "Cyrillic (& Supplement & Ext A/B)"
+msgstr "西里尔文补充（及补充、扩展 A/B）"
 
 msgid "Cyrillic Extended-A"
 msgstr "西里尔文扩展 A"
@@ -3314,8 +3775,11 @@ msgstr "西里尔文扩展 A"
 msgid "Cyrillic Extended-B"
 msgstr "西里尔文扩展 B"
 
+msgid "Cyrillic Extended-C"
+msgstr "西里尔文扩展 C"
+
 msgid "Cyrillic Supplement"
-msgstr "Cyrillic增补"
+msgstr "西里尔文补充"
 
 msgid "Czech"
 msgstr "捷克语"
@@ -3486,6 +3950,9 @@ msgstr "不选垂直宽度"
 msgid "Deselect Width"
 msgstr "不选宽度"
 
+msgid "Deseret"
+msgstr "德撒律文"
+
 msgid "Design Axis Values"
 msgstr "设计轴的值"
 
@@ -3499,7 +3966,7 @@ msgid "Designer"
 msgstr "设计者"
 
 msgid "Designer URL"
-msgstr "设计者 URL"
+msgstr "设计者网址"
 
 msgid "Design|_New..."
 msgstr "新建(_N)…"
@@ -3529,7 +3996,7 @@ msgid "Devanagari"
 msgstr "天城文(梵文)"
 
 msgid "Devanagari Extended"
-msgstr "梵文扩展"
+msgstr "天城体扩展"
 
 msgid "Device Table Adjustments"
 msgstr "设备表调整"
@@ -3572,6 +4039,9 @@ msgstr "不同字体"
 msgid "Dingbats"
 msgstr "Dingbats 英文字符"
 
+msgid "Diphthongs (Obsolete)"
+msgstr "双元音（已停用）"
+
 msgid "Direction of gaze:"
 msgstr "查看方向:"
 
@@ -3606,7 +4076,7 @@ msgid "Disabled Text Color:"
 msgstr "失效文本颜色："
 
 msgid "Discretionary Ligatures"
-msgstr "按需组合"
+msgstr "任意连字"
 
 msgid "Disordered designs"
 msgstr "无序设计"
@@ -3653,6 +4123,12 @@ msgstr "到投影面的距离:"
 msgid "Divehi"
 msgstr "迪维希语"
 
+msgid "Divehi (Obsolete)"
+msgstr "迪维希（已停用）"
+
+msgid "Dives Akuru"
+msgstr "迪维希阿库鲁文"
+
 msgid "Divide by zero in postscript code.\n"
 msgstr "postscript 编码中除零.\n"
 
@@ -3679,6 +4155,9 @@ msgstr "不继承"
 
 msgid "Doesn't look like a valid pdf file, couldn't find xref section"
 msgstr "不像有效的pdf文件，未能找到xref段"
+
+msgid "Dogra"
+msgstr "道格拉文"
 
 msgid "Domino Tiles"
 msgstr "骨牌牌面"
@@ -3707,6 +4186,9 @@ msgstr "绘图区域"
 msgid "Drawing plane tilt:"
 msgstr "绘画平面倾斜:"
 
+msgid "Drop Caps (Obsolete)"
+msgstr "首字下沉（已停用）"
+
 msgid "Drop List Button"
 msgstr "下拉列表按钮"
 
@@ -3723,13 +4205,13 @@ msgid "Duplicate Kern data"
 msgstr "复制缩合信息"
 
 msgid "Duplicate Ligature"
-msgstr "复制连写组合"
+msgstr "复制连字组合"
 
 msgid "Duplicate Name"
 msgstr "复制名称"
 
 msgid "Duplicate StyleSet Name"
-msgstr "复制样式名称"
+msgstr "复制 StyleSet 名称"
 
 msgid "Duplicate data"
 msgstr "复制数据"
@@ -3744,8 +4226,14 @@ msgstr "复制名称"
 msgid "Duplicate pixelsize"
 msgstr "复制像素尺寸"
 
+msgid "Duployan"
+msgstr "杜普雷速记文"
+
 msgid "Dutch"
 msgstr "荷兰语"
+
+msgid "Dzongkha"
+msgstr "宗卡语"
 
 msgid "END Function definition"
 msgstr "END 方法定义"
@@ -3754,10 +4242,10 @@ msgid "EPS Template"
 msgstr "EPS模板"
 
 msgid "EUC GB 2312 (Chinese)"
-msgstr "EUC GB 2312 (中文)"
+msgstr "EUC GB 2312（中文）"
 
 msgid "E_lement"
-msgstr "基础(_L)"
+msgstr "元素(_L)"
 
 msgid "E_ncoding"
 msgstr "编码(_N)"
@@ -3767,6 +4255,9 @@ msgstr "执行脚本(_x)…"
 
 msgid "E_xport..."
 msgstr "导出(_X)…"
+
+msgid "Early Dynastic Cuneiform"
+msgstr "早王朝楔形文字"
 
 msgid "Edges near horizontal/vertical/italic"
 msgstr "边线临近水平线/垂直线/倾斜线"
@@ -3840,11 +4331,26 @@ msgstr "编辑查找替代表中的变换。"
 msgid "Effects"
 msgstr "效果"
 
+msgid "Egyptian Hieroglyph Format Controls"
+msgstr "埃及圣书体格式控制符"
+
+msgid "Egyptian Hieroglyphs"
+msgstr "埃及圣书体文字"
+
+msgid "Elbasan"
+msgstr "爱尔巴桑文"
+
 msgid "Ellipse"
 msgstr "椭圆"
 
+msgid "Elymaic"
+msgstr "以利买文"
+
 msgid "Em Units"
 msgstr "M全字单位"
+
+msgid "Embolden as appropriate for Chinese, Japanese, Korean scripts"
+msgstr "加粗适用于中文、日文、韩文文字"
 
 msgid "Embolden by"
 msgstr "内嵌"
@@ -3880,13 +4386,16 @@ msgid "Enclosed Alphanumerics"
 msgstr "带圈的字母数字"
 
 msgid "Enclosed CJK Letters and Months"
-msgstr "带圈的中日韩字符和月时"
+msgstr "带圈中日韩字母和月份"
 
 msgid "Enclosed Ideographic Supplement"
 msgstr "封闭式表意文字补充"
 
 msgid "Encoding Too Large"
 msgstr "编码太大"
+
+msgid "Encoding name"
+msgstr "编码名称"
 
 #, c-format
 msgid "Encoding value (%x) not in font, ignored"
@@ -3922,52 +4431,55 @@ msgid "English"
 msgstr "英语"
 
 msgid "English (Australian)"
-msgstr "英语(澳大利亚)"
+msgstr "英语（澳大利亚）"
 
 msgid "English (Belize)"
-msgstr "英语(伯利兹)"
+msgstr "英语（伯利兹）"
 
 msgid "English (British)"
-msgstr "英语(英国)"
+msgstr "英语（英国）"
 
 msgid "English (Canada)"
-msgstr "英语(加拿大)"
+msgstr "英语（加拿大）"
 
 msgid "English (Caribbean)"
-msgstr "英语(加勒比)"
+msgstr "英语（加勒比）"
 
 msgid "English (Hong Kong)"
 msgstr "英语（香港）"
 
 msgid "English (India)"
-msgstr "英语 (印度)"
+msgstr "英语（印度）"
 
 msgid "English (Indonesia)"
-msgstr "英语(印度尼西亚)"
+msgstr "英语（印度尼西亚）"
 
 msgid "English (Irish)"
-msgstr "英语(爱尔兰)"
+msgstr "英语（爱尔兰）"
 
 msgid "English (Jamaica)"
-msgstr "英语(牙买加)"
+msgstr "英语（牙买加）"
 
 msgid "English (Malaysia)"
-msgstr "英语(马来西亚)"
+msgstr "英语（马来西亚）"
 
 msgid "English (New Zealand)"
-msgstr "英语(新西兰)"
+msgstr "英语（新西兰）"
 
 msgid "English (Philippines)"
-msgstr "英语(菲律宾)"
+msgstr "英语（菲律宾）"
 
 msgid "English (South Africa)"
-msgstr "英语(南非)"
+msgstr "英语（南非）"
+
+msgid "English (Trinidad)"
+msgstr "英语（特立尼达）"
 
 msgid "English (US)"
-msgstr "英语(美国)"
+msgstr "英语（美国）"
 
 msgid "English (Zimbabwe)"
-msgstr "英语(津巴布韦)"
+msgstr "英语（津巴布韦）"
 
 msgid "Engraved"
 msgstr "浮雕"
@@ -4004,7 +4516,10 @@ msgid "Ethiopic Extended"
 msgstr "埃塞额比亚文扩展"
 
 msgid "Ethiopic Extended-A"
-msgstr "埃塞额比亚文扩展-A"
+msgstr "吉兹文扩展 A"
+
+msgid "Ethiopic Extended-B"
+msgstr "吉兹文扩展 B"
 
 msgid "Ethiopic Supplement"
 msgstr "Ethiopic增补"
@@ -4083,12 +4598,20 @@ msgid "Expected ';' on line %d of %s"
 msgstr "期望';'于行%d (%s)"
 
 #, c-format
+msgid "Expected '=' in glyph class definition on line %d of %s"
+msgstr "在第 %d 行（ %s ）的字图类定义需要有'['"
+
+#, c-format
 msgid "Expected '>' in anchor on line %d of %s"
 msgstr "期望有'>'  于行%d (%s)"
 
 #, c-format
 msgid "Expected '>' in caret on line %d of %s"
 msgstr "期望有'>'  于行%d (%s)"
+
+#, c-format
+msgid "Expected '[' in glyph class definition on line %d of %s"
+msgstr "在第 %d 行（ %s ）的字图类定义需要有'['"
 
 #, c-format
 msgid "Expected '}' on line %d of %s"
@@ -4114,8 +4637,21 @@ msgid "Expected comma in device table on line %d of %s"
 msgstr "期望有设备表中有逗号， 于行%d (%s)"
 
 #, c-format
+msgid ""
+"Expected glyph name, cid, or class in glyph class definition on line %d of %s"
+msgstr "在第%d行(%s) 上的字形类定义中应有字形名称，cid，或类"
+
+#, c-format
+msgid "Expected integer in anchor on line %d of %s"
+msgstr "在第 %d 行( %s)中的锚点需要有整数"
+
+#, c-format
 msgid "Expected integer in caret on line %d of %s"
 msgstr "期望光标为整数于行%d (%s)"
+
+#, c-format
+msgid "Expected integer in device table on line %d of %s"
+msgstr "在第行%d (%s) 上的设备表中应该有整数"
 
 #, c-format
 msgid "Expected integer on line %d of %s"
@@ -4128,6 +4664,10 @@ msgstr "期望锚点定义名称， 于行%d (%s)"
 #, c-format
 msgid "Expected name in lookup on line %d of %s"
 msgstr "期望名称于行%d (%s)"
+
+#, c-format
+msgid "Expected name in value record definition on line %d of %s"
+msgstr "期望在记录中的第%d行第%s列定义了名称"
 
 #, c-format
 msgid "Expected name or class on line %d of %s"
@@ -4148,6 +4688,10 @@ msgid "Expected string on line %d of %s"
 msgstr "期望字符串于行%d (%s)"
 
 #, c-format
+msgid "Expected tag in languagesystem on line %d of %s"
+msgstr "在第%d行（%s) 的语言系统应有标签"
+
+#, c-format
 msgid "Expected tag on line %d of %s"
 msgstr "期望标签于行%d (%s)"
 
@@ -4159,7 +4703,7 @@ msgid "Expert"
 msgstr "专家"
 
 msgid "Expert Forms"
-msgstr "专业形"
+msgstr "专业字形"
 
 msgid "Expor_t..."
 msgstr "导出(_T)…"
@@ -4282,13 +4826,13 @@ msgstr "解析StartData命令行参数失败，计数不对\n"
 
 #, c-format
 msgid "Failed to write %s\n"
-msgstr "不能写入 %s\n"
+msgstr "写入 %s失败\n"
 
 msgid "Failure"
 msgstr "失败"
 
 msgid "Family"
-msgstr "族"
+msgstr "家族名"
 
 msgid "Family Blue Color"
 msgstr "字族蓝色"
@@ -4307,7 +4851,7 @@ msgid "Feature Tag:"
 msgstr "特征标签："
 
 msgid "Feature Tags"
-msgstr "特征标签"
+msgstr "功能标签"
 
 msgid "Feature _Id:"
 msgstr "特征标识(_I):"
@@ -4460,7 +5004,7 @@ msgid "Flate decompression failed.\n"
 msgstr "解压缩失败。\n"
 
 msgid "Flemish (Belgian Dutch)"
-msgstr "Flemish (巴尔干荷兰语)"
+msgstr "弗拉芒语（比利时荷兰）"
 
 msgid "Flex Hints"
 msgstr "Flex信息"
@@ -4663,55 +5207,55 @@ msgid "French Antillean"
 msgstr "法语(Antillean)"
 
 msgid "French Belgium"
-msgstr "法语(比利时)"
+msgstr "比利时法语"
 
 msgid "French Camaroon"
-msgstr "法语(Camaroon)"
+msgstr "喀麦隆法语"
 
 msgid "French Canadian"
-msgstr "法语加拿大"
+msgstr "加拿大法语"
 
 msgid "French Côte d'Ivoire"
-msgstr "法语(科特迪瓦)"
+msgstr "科特迪瓦法语"
 
 msgid "French D.R. Congo"
-msgstr "法语（刚果共和国）"
+msgstr "刚果共和国法语"
 
 msgid "French French"
 msgstr "法国法语"
 
 msgid "French Haiti"
-msgstr "法语(海地共和国)"
+msgstr "海地法语"
 
 msgid "French Luxembourg"
-msgstr "法语(卢森堡公国)"
+msgstr "卢森堡公国法语"
 
 msgid "French Mali"
-msgstr "法语(马里共和国)"
+msgstr "马里法语"
 
 msgid "French Monaco"
-msgstr "法语(摩纳哥)"
+msgstr "摩纳哥法语"
 
 msgid "French Morocco"
-msgstr "法语(摩洛哥)"
+msgstr "摩洛哥法语"
 
 msgid "French North Africa"
-msgstr "法语(北非)"
+msgstr "北非法语"
 
 msgid "French Réunion"
-msgstr "法语Réunion"
+msgstr "留尼汪法语"
 
 msgid "French Senegal"
-msgstr "法语(塞内加尔共和国)"
+msgstr "塞内加尔法语"
 
 msgid "French Swiss"
 msgstr "瑞士法语"
 
 msgid "French West Indies"
-msgstr "法语(西 Indies）"
+msgstr "西印度群岛法语"
 
 msgid "Friendly Name"
-msgstr "友好名称"
+msgstr "易读名称"
 
 msgid "Frisian"
 msgstr "弗里斯兰语"
@@ -4744,7 +5288,7 @@ msgid "G4 _Curve"
 msgstr "G4曲线(_C)"
 
 msgid "GB 2312 (Simp. Chinese)"
-msgstr "GB 2312(简体中文)"
+msgstr "GB 2312（简体中文）"
 
 #. GT: This is an unusual string. It is used to get around a limitation in
 #. GT: FontForge's widget set. You should put a number here (do NOT translate
@@ -4770,10 +5314,10 @@ msgid "GID out of range.\n"
 msgstr "GID 超出范围.\n"
 
 msgid "Gaelic (Irish)"
-msgstr "盖尔语(爱尔兰)"
+msgstr "盖尔语（爱尔兰）"
 
 msgid "Gaelic (Scottish)"
-msgstr "盖尔语(苏格兰)"
+msgstr "盖尔语（苏格兰)"
 
 msgid "Galician"
 msgstr "加利西亚语"
@@ -4845,8 +5389,14 @@ msgstr "一般更改"
 msgid "Geometric Shapes"
 msgstr "几何形状"
 
+msgid "Geometric Shapes Extended"
+msgstr "几何形状扩展"
+
 msgid "Georgian"
-msgstr "格鲁吉亚语"
+msgstr "格鲁吉亚文"
+
+msgid "Georgian Extended"
+msgstr "格鲁吉亚文扩展"
 
 msgid "Georgian Supplement"
 msgstr "格鲁吉亚文补充"
@@ -4855,19 +5405,19 @@ msgid "German"
 msgstr "德语"
 
 msgid "German Austrian"
-msgstr "德语 (奥地利)"
+msgstr "奥地利德语"
 
 msgid "German German"
-msgstr "德语(德国)"
+msgstr "德国德语"
 
 msgid "German Liechtenstein"
-msgstr "德语(列支敦士登公国)"
+msgstr "列支敦斯登德语"
 
 msgid "German Luxembourg"
-msgstr "德语(卢森堡公国)"
+msgstr "卢森堡公国德语"
 
 msgid "German Swiss"
-msgstr "德语(瑞士)"
+msgstr "瑞士德语"
 
 msgid "Get Info..."
 msgstr "获取信息…"
@@ -4879,7 +5429,10 @@ msgid "Gl_yph Name:"
 msgstr "字形名称(_N):"
 
 msgid "Glagolitic"
-msgstr "格拉哥里语"
+msgstr "格拉哥里文"
+
+msgid "Glagolitic Supplement"
+msgstr "格拉哥里文补充"
 
 msgid "Glif Template"
 msgstr "Glif模板"
@@ -5127,6 +5680,9 @@ msgstr "交叉"
 msgid "Gradual/Vertical"
 msgstr "垂直"
 
+msgid "Grantha"
+msgstr "格兰他文"
+
 msgid "Graphical"
 msgstr "图形的"
 
@@ -5143,16 +5699,19 @@ msgid "Greek (polytonic)"
 msgstr "Polytonic 希腊语"
 
 msgid "Greek Extended"
-msgstr "希腊扩展"
+msgstr "希腊文扩展"
 
 msgid "Greek and Coptic"
-msgstr "希腊及埃及古文"
+msgstr "希腊文及科普特文"
 
 msgid "Greek small caps"
 msgstr "希腊小大写"
 
 msgid "Green:"
 msgstr "绿："
+
+msgid "Greenlandic"
+msgstr "格陵兰语"
 
 msgid "Grid"
 msgstr "网格"
@@ -5208,7 +5767,10 @@ msgid "Guidelines:"
 msgstr "引导线:"
 
 msgid "Gujarati"
-msgstr "印度古吉拉特语"
+msgstr "古吉拉特文"
+
+msgid "Gunjala Gondi"
+msgstr "贡贾拉贡德文"
 
 msgid "Gurmukhi"
 msgstr "古尔木其文"
@@ -5259,16 +5821,19 @@ msgid "Halfwidth and Fullwidth Forms"
 msgstr "半角及全角形式"
 
 msgid "Hangul"
-msgstr "韩文"
+msgstr "谚文"
 
 msgid "Hangul Compatibility Jamo"
-msgstr "韩文兼容 Jamo"
+msgstr "谚文兼容字母"
 
 msgid "Hangul Jamo"
-msgstr "韩文 Jamo"
+msgstr "韩文字母"
 
 msgid "Hangul Jamo Extended-A"
-msgstr "朝鲜文扩展 A"
+msgstr "谚文字母扩展 A"
+
+msgid "Hangul Jamo Extended-B"
+msgstr "谚文字母扩展 B"
 
 msgid "Hangul Jamo Half Width Forms"
 msgstr "韩语谚文半宽形式"
@@ -5283,10 +5848,19 @@ msgid "Hangul Jamo, Jungseong"
 msgstr "韩文兼容, Jungseong"
 
 msgid "Hangul Syllables"
-msgstr "韩文音节"
+msgstr "谚文音节"
+
+msgid "Hanifi Rohingya"
+msgstr "哈尼菲罗兴亚文"
+
+msgid "Hanunoo"
+msgstr "哈努努奥文"
 
 msgid "Has _Vertical Metrics"
 msgstr "有垂直尺寸(_V)"
+
+msgid "Hatran"
+msgstr "哈特拉文"
 
 msgid "Hausa"
 msgstr "豪萨语"
@@ -5298,7 +5872,7 @@ msgid "Heavy"
 msgstr "粗"
 
 msgid "Hebrew"
-msgstr "希伯来语"
+msgstr "希伯来文"
 
 msgid "Height"
 msgstr "高度"
@@ -5327,8 +5901,14 @@ msgstr "移动时隐藏(_M)"
 msgid "High"
 msgstr "高"
 
+msgid "High Private Use Surrogates"
+msgstr "高位私用替代"
+
 msgid "High Surrogate"
 msgstr "高半超大字符集"
+
+msgid "High Surrogates"
+msgstr "高位替代"
 
 msgid "High-Density Font"
 msgstr "高密度字体"
@@ -5387,13 +5967,16 @@ msgid "Histograms"
 msgstr "直方图"
 
 msgid "Historic Ligatures"
-msgstr "历史组合"
+msgstr "历史连字"
 
 msgid "Historical Forms"
 msgstr "历史形"
 
 msgid "Hit Watch Point"
 msgstr "点击观察点"
+
+msgid "Hojo (JIS X 0212-1990) Kanji Forms"
+msgstr "JIS X 0212-1990 补助汉字表字形"
 
 msgid "Hold [Shift] key to merge"
 msgstr "按住 [Shift] 键合并"
@@ -5481,7 +6064,12 @@ msgid ""
 "I'm sorry this file is too complex for me to understand (or is erroneous)"
 msgstr "抱歉，此文件太复杂，我不能理解。 (它可能有点问题)"
 
-#. GT: "I." is an abreviation for "Inherits"
+msgid ""
+"I'm sorry this file is too complex for me to understand (or is erroneous, or "
+"is empty)"
+msgstr "抱歉，此文件对我来说过于复杂而难以理解（或是错误的，或是空的）"
+
+#. GT: "I." is an abbreviation for "Inherits"
 msgid "I."
 msgstr "继承."
 
@@ -5490,7 +6078,7 @@ msgid "I.C."
 msgstr "倾斜修正"
 
 msgid "IPA Extensions"
-msgstr "IPA 国际音标扩展"
+msgstr "国际音标扩展"
 
 msgid "IPA usage"
 msgstr "IPA 用法"
@@ -5499,10 +6087,10 @@ msgid "ISO (Deprecated)"
 msgstr "ISO (不建议)"
 
 msgid "ISO 10646-1 (Unicode, BMP)"
-msgstr "ISO 10646-1(统一码, 基础页)"
+msgstr "ISO 10646-1(Unicode，基础平面)"
 
 msgid "ISO 10646-1 (Unicode, Full)"
-msgstr "ISO 10646-1(统一码, 全部)"
+msgstr "ISO 10646-1(Unicode, 所有平面)"
 
 msgid "Icelandic"
 msgstr "冰岛语"
@@ -5514,7 +6102,10 @@ msgid "Identify by"
 msgstr "标识"
 
 msgid "Ideographic Description Characters"
-msgstr "表意描述字符"
+msgstr "表意文字描述字符"
+
+msgid "Ideographic Symbols and Punctuation"
+msgstr "表意符号及标点"
 
 msgid "Ignore"
 msgstr "忽略"
@@ -5587,6 +6178,14 @@ msgstr "非活动层颜色"
 msgid "Include Empty Blocks"
 msgstr "包括空白区"
 
+#, c-format
+msgid "Include filename too long on line %d of %s"
+msgstr "在第 %d 行 %s 上包含的文件名过长"
+
+#, c-format
+msgid "Includes nested too deeply on line %d of %s"
+msgstr "第 %d 行（%s）上包含过深的过深的嵌套"
+
 msgid "Incorrect number of deltas in cvt\n"
 msgstr "不正确的增量于 cvt 中\n"
 
@@ -5626,6 +6225,9 @@ msgstr "索引太大 (应小于%d) \"%s"
 msgid "Indic Reordering"
 msgstr "印地语重排序"
 
+msgid "Indic Siyaq Numbers"
+msgstr "印度帐目数字"
+
 msgid "Indic State Machine"
 msgstr "Indic 状态机"
 
@@ -5661,6 +6263,9 @@ msgstr "内联所有参照"
 
 msgid "Inline Flipped References"
 msgstr "在线翻转参照"
+
+msgid "Inlining glyphs"
+msgstr "行内字形"
 
 msgid "Inscriptional Pahlavi"
 msgstr "帕拉维文旧体"
@@ -5779,6 +6384,10 @@ msgstr "介绍"
 msgid "Inuktitut"
 msgstr "因纽特语"
 
+#, c-format
+msgid "Invalid CID range in glyph class on line %d of %s"
+msgstr "在第%d行（%s） 上的字形类的CID范围无效"
+
 msgid "Invalid Encoding"
 msgstr "无效编码"
 
@@ -5789,6 +6398,10 @@ msgstr "'%c%c%c%c' 压缩表长度无效。"
 #, c-format
 msgid "Invalid cursive position on line %d of %s"
 msgstr "无效位置于行%d （ %s）"
+
+#, c-format
+msgid "Invalid glyph name range in glyph class on line %d of %s"
+msgstr "在第%d行（%s） 上的字形类的字形名称范围无效"
 
 msgid "Invalid language"
 msgstr "无效语言"
@@ -5887,8 +6500,23 @@ msgstr "斜体修正。"
 msgid "Italics"
 msgstr "斜体"
 
+msgid "JIS 208 (Kanji)"
+msgstr "JIS 208 (汉字)"
+
+msgid "JIS 212 (Kanji)"
+msgstr "JIS 212 (汉字)"
+
 msgid "JIS2004 Forms"
-msgstr "JIS2004 形式"
+msgstr "JIS2004 字形"
+
+msgid "JIS78 Forms"
+msgstr "JIS78 字形"
+
+msgid "JIS83 Forms"
+msgstr "JIS83 字形"
+
+msgid "JIS90 Forms"
+msgstr "JIS90 字形"
 
 msgid "JSTF table is too long.\n"
 msgstr "JSTF 表太长.\n"
@@ -5896,11 +6524,17 @@ msgstr "JSTF 表太长.\n"
 msgid "Japanese"
 msgstr "日语"
 
+msgid "Japanese Forms (Obsolete)"
+msgstr "日文变体形态（已停用）"
+
 msgid "Javanese"
-msgstr "爪哇语"
+msgstr "爪哇文"
 
 msgid "Javanese (roman)"
 msgstr "Javanese (罗马字母)"
+
+msgid "Johab (Korean)"
+msgstr "组合式（韩文Johab）"
 
 msgid "JoinSnap"
 msgstr "联合捕捉"
@@ -5917,20 +6551,38 @@ msgstr "对齐的文字"
 msgid "Kaithi"
 msgstr "卡罗须提文"
 
+msgid "Kana Extended-A"
+msgstr "假名扩展 A"
+
+msgid "Kana Extended-B"
+msgstr "假名扩展 B"
+
 msgid "Kana Supplement"
-msgstr "日语假名补充"
+msgstr "假名补充"
 
 msgid "Kanbun"
-msgstr "日本汉字"
+msgstr "汉文训读"
+
+msgid "Kangxi Radicals"
+msgstr "康熙部首"
 
 msgid "Kannada"
-msgstr "卡纳达语"
+msgstr "卡纳达文"
+
+msgid "Kashmiri"
+msgstr "克什米尔语"
 
 msgid "Katakana"
 msgstr "日文片假名"
 
+msgid "Katakana (& Phonetic Extensions)"
+msgstr "片假名（& 语音扩展)"
+
 msgid "Katakana Phonetic Extensions"
-msgstr "片假名语音扩展"
+msgstr "片假名音标扩展"
+
+msgid "Kayah Li"
+msgstr "克耶利文"
 
 msgid "Kazakh"
 msgstr "哈萨克语"
@@ -6009,11 +6661,20 @@ msgstr "键"
 msgid "Kharoshthi"
 msgstr "卡罗须提文"
 
+msgid "Khitan Small Script"
+msgstr "契丹小字"
+
 msgid "Khmer"
-msgstr "高棉语"
+msgstr "高棉文"
 
 msgid "Khmer Symbols"
 msgstr "高棉文符号"
+
+msgid "Khojki"
+msgstr "科杰基文"
+
+msgid "Khudawadi"
+msgstr "库达本德文"
 
 msgid "Kinyarwanda/Ruanda"
 msgstr "卢旺达"
@@ -6024,8 +6685,14 @@ msgstr "吉尔吉斯语"
 msgid "Korean"
 msgstr "朝鲜语"
 
+msgid "Korean (Johab)"
+msgstr "韩文（组合式，Johab）"
+
 msgid "Korean Old Hangul"
 msgstr "旧体谚文"
+
+msgid "Kurdish"
+msgstr "库尔德语"
 
 msgid "LBearing:"
 msgstr "左边位："
@@ -6080,7 +6747,7 @@ msgid "Lang|Arabic"
 msgstr "阿拉伯语"
 
 msgid "Lang|Armenian"
-msgstr "Armenian"
+msgstr "亚美尼亚语"
 
 msgid "Lang|Avar"
 msgstr "Avar"
@@ -6143,6 +6810,9 @@ msgstr "拉丁语"
 msgid "Lang|Limbu"
 msgstr "Limbu"
 
+msgid "Lang|Lisu"
+msgstr "傈僳语"
+
 msgid "Lang|Malayalam"
 msgstr "马来语"
 
@@ -6183,7 +6853,7 @@ msgid "Lang|Yi"
 msgstr "彝文"
 
 msgid "Lao"
-msgstr "老挝语"
+msgstr "老挝文"
 
 msgid "Last Anchor Point"
 msgstr "上一锚点"
@@ -6207,6 +6877,15 @@ msgstr "拉丁文扩展 C"
 msgid "Latin Extended-D"
 msgstr "拉丁文扩展 D"
 
+msgid "Latin Extended-E"
+msgstr "拉丁文扩展 E"
+
+msgid "Latin Extended-F"
+msgstr "拉丁文扩展 F"
+
+msgid "Latin Extended-G"
+msgstr "拉丁文扩展 G"
+
 msgid "Latin Full Width Forms"
 msgstr "拉丁全宽形式"
 
@@ -6214,7 +6893,7 @@ msgid "Latin Ligatures"
 msgstr "拉丁组合字"
 
 msgid "Latin-1 Supplement"
-msgstr "拉丁-1增补"
+msgstr "拉丁一补充"
 
 msgid "Latin: Decorative"
 msgstr "拉丁文：修饰"
@@ -6272,6 +6951,9 @@ msgstr "左边位不变。"
 msgid "Left Side Bearing:"
 msgstr "左边位:"
 
+msgid "Lepcha"
+msgstr "雷布查文"
+
 msgid "Letterlike Symbols"
 msgstr "字母符号"
 
@@ -6282,7 +6964,7 @@ msgid "License"
 msgstr "许可"
 
 msgid "License URL"
-msgstr "许可URL"
+msgstr "许可网址"
 
 msgid "Life Time"
 msgstr "生命时间"
@@ -6307,7 +6989,7 @@ msgstr "连体"
 #. GT:  name for the ligature version
 #, c-format
 msgid "Ligature %s"
-msgstr "连体 %s"
+msgstr "连字 %s"
 
 msgid "Ligature Caret Color"
 msgstr "连写位颜色"
@@ -6331,7 +7013,7 @@ msgid "Ligature Substitution"
 msgstr "连字替换"
 
 msgid "Ligatures"
-msgstr "连体"
+msgstr "连字"
 
 msgid "Ligatures & such"
 msgstr "组合字等"
@@ -6343,7 +7025,7 @@ msgid "Light Angle:"
 msgstr "光线角度："
 
 msgid "Limbu"
-msgstr "林布语"
+msgstr "林布文"
 
 msgid "Limits"
 msgstr "限制"
@@ -6361,13 +7043,19 @@ msgid "Line length max"
 msgstr "最大线长"
 
 msgid "Linear"
-msgstr "线性"
+msgstr "线性文字"
+
+msgid "Linear A"
+msgstr "线性文字 A"
+
+msgid "Linear B"
+msgstr "线性文字 B"
 
 msgid "Linear B Ideograms"
-msgstr "线性 B 表意符号"
+msgstr "线性文字 B 表意符号"
 
 msgid "Linear B Syllabary"
-msgstr "线性 B 字音表"
+msgstr "线性文字 B 字音表"
 
 msgid "Lining Figures"
 msgstr "线状图形"
@@ -6391,7 +7079,10 @@ msgid "List of class names"
 msgstr "类属名称列表"
 
 msgid "Lisu"
-msgstr "傈僳文"
+msgstr "傈僳文（老）"
+
+msgid "Lisu Supplement"
+msgstr "傈僳文补充"
 
 msgid "Literals"
 msgstr "可读文字"
@@ -6490,6 +7181,9 @@ msgstr "查找替代表, %s"
 msgid "Lookup Subtable: %s"
 msgstr "查找替代表: %s"
 
+msgid "Lookup Table Edit"
+msgstr "查找表编辑"
+
 msgid "Lookup Type|Unspecified"
 msgstr "未指定"
 
@@ -6544,7 +7238,7 @@ msgid "Low"
 msgstr "低"
 
 msgid "Low Surrogates"
-msgstr "低半超大字符集"
+msgstr "低位替代"
 
 msgid "Lower Case"
 msgstr "小写"
@@ -6559,10 +7253,10 @@ msgid "Luxembourgish"
 msgstr "法语(卢森堡公国)"
 
 msgid "Lycian"
-msgstr "利西亚语"
+msgstr "吕基亚文"
 
 msgid "Lydian"
-msgstr "利西亚语"
+msgstr "吕底亚文"
 
 msgid "MATH table"
 msgstr "数学表"
@@ -6632,6 +7326,9 @@ msgstr "Mac插入状态机"
 msgid "Mac Kerning State Machine"
 msgstr "Mac压缩状态机"
 
+msgid "Mac Roman"
+msgstr "Mac 罗马文"
+
 msgid "Mac Style Set:"
 msgstr "Mac样式集:"
 
@@ -6688,11 +7385,17 @@ msgstr "放大:"
 msgid "Magnify (Minify with alt)"
 msgstr "放大(按Alt缩小)"
 
+msgid "Mahajani"
+msgstr "默哈杰内文"
+
 msgid "Mahjong Tiles"
 msgstr "麻将牌面"
 
 msgid "Maithili"
 msgstr "米德勒语"
+
+msgid "Makasar"
+msgstr "望加锡文"
 
 msgid "Make Clip Path"
 msgstr "生成剪切路径"
@@ -6728,7 +7431,7 @@ msgid "Malay (roman)"
 msgstr "Malay (罗马字母)"
 
 msgid "Malayalam"
-msgstr "马拉雅拉姆语"
+msgstr "马拉雅拉姆文"
 
 msgid "Malayalam Reformed"
 msgstr "新马来语"
@@ -6742,8 +7445,14 @@ msgstr "马累"
 msgid "Maltese"
 msgstr "马耳他语"
 
+msgid "Mandaic"
+msgstr "曼德恩文"
+
+msgid "Manichaean"
+msgstr "摩尼文"
+
 msgid "Manufacturer"
-msgstr "制造者"
+msgstr "制造商"
 
 msgid "Manx Gaelic"
 msgstr "马恩岛盖尔语"
@@ -6759,6 +7468,9 @@ msgstr "映射"
 
 msgid "Marathi"
 msgstr "马拉地语"
+
+msgid "Marchen"
+msgstr "玛尔钦体"
 
 msgid "Mark"
 msgstr "标记"
@@ -6853,6 +7565,9 @@ msgstr "标记"
 msgid "Marwari"
 msgstr "马尔瓦利语"
 
+msgid "Masaram Gondi"
+msgstr "马萨拉姆贡德文"
+
 msgid "Mass Glyph Rename"
 msgstr "批量字形重命名"
 
@@ -6937,8 +7652,14 @@ msgstr "最大堆栈深度"
 msgid "Max _Stack Depth:"
 msgstr "堆栈最大深度:"
 
+msgid "Mayan Numerals"
+msgstr "玛雅数字"
+
 msgid "Measure distance, angle between points"
 msgstr "测量两点间距离及角度"
+
+msgid "Medefaidrin"
+msgstr "梅代法伊德林"
 
 msgid "Medial"
 msgstr "中等"
@@ -6964,8 +7685,14 @@ msgstr "中低"
 msgid "Meetei Mayek"
 msgstr "曼尼普尔文"
 
+msgid "Meetei Mayek Extensions"
+msgstr "米代文扩展"
+
 msgid "Mende"
 msgstr "门德语"
+
+msgid "Mende Kikakui"
+msgstr "门迪基卡奎文"
 
 msgid "Menu"
 msgstr "菜单"
@@ -6996,6 +7723,12 @@ msgstr "合并问题"
 
 msgid "Merging a font with itself achieves nothing"
 msgstr "字体与其自身合并将一无所得"
+
+msgid "Meroitic Cursive"
+msgstr "麦罗埃草书体"
+
+msgid "Meroitic Hieroglyphs"
+msgstr "麦罗埃圣书体"
 
 msgid ""
 "MetaFont (mf) generates lots of verbiage to stdout.\n"
@@ -7037,6 +7770,12 @@ msgstr "MF清除背景"
 msgid "MfShowErr"
 msgstr "MF提示错误"
 
+msgid "Miao"
+msgstr "苗文（柏格理）"
+
+msgid "MicroSoft"
+msgstr "Microsoft"
+
 msgid "Min (descent)"
 msgstr "Min (下深)"
 
@@ -7061,8 +7800,20 @@ msgstr "其他数学符号A"
 msgid "Miscellaneous Math Symbols-B"
 msgstr "其他数学符号B"
 
+msgid "Miscellaneous Mathematical Symbols-A"
+msgstr "各式数学符号 A"
+
+msgid "Miscellaneous Mathematical Symbols-B"
+msgstr "各式数学符号 B"
+
 msgid "Miscellaneous Symbols"
 msgstr "其他符号"
+
+msgid "Miscellaneous Symbols and Arrows"
+msgstr "各式符号与箭头"
+
+msgid "Miscellaneous Symbols and Pictographs"
+msgstr "各式符号及象形"
 
 msgid "Miscellaneous Technical"
 msgstr "其它技术符号"
@@ -7071,7 +7822,7 @@ msgid "Miscellaneous Technical Symbols"
 msgstr "其他科技符号"
 
 msgid "Missing \"OS/2\" table"
-msgstr "缺失OS/2表"
+msgstr "缺失 OS/2 表"
 
 msgid "Missing Bitmap"
 msgstr "缺位图"
@@ -7105,6 +7856,10 @@ msgstr "缺少位图删除线"
 msgid "Missing cidmap file"
 msgstr "缺失cidmap文件"
 
+#, c-format
+msgid "Missing close parenthesis in include on line %d of %s"
+msgstr "在行%d（%s）中缺少右侧括号"
+
 msgid "Missing extension"
 msgstr "缺间距"
 
@@ -7136,11 +7891,26 @@ msgstr ""
 "缺失的重命名 \"为\" 名称 %s\n"
 "%s"
 
+msgid "Missing required table: \"glyf\""
+msgstr "缺少必要的 glyf 表"
+
+msgid "Missing required table: \"head\""
+msgstr "缺少必要的 head 表"
+
+msgid "Missing required table: \"hhea\""
+msgstr "缺少必要的 hhea 表"
+
+msgid "Missing required table: \"loca\""
+msgstr "缺少必要的 loca 表"
+
+msgid "Missing required table: \"maxp\""
+msgstr "缺少必要的 maxp 表"
+
 msgid "Missing required table: \"name\""
-msgstr "缺表:\"名称\""
+msgstr "缺少必要的 name 表"
 
 msgid "Missing required table: \"post\""
-msgstr "缺表:\"post\""
+msgstr "缺少必要的 post 表"
 
 msgid "Missing rules"
 msgstr "缺规则"
@@ -7157,11 +7927,14 @@ msgstr "现代"
 msgid "Modern Serifs"
 msgstr "现代衬线体(MS)"
 
+msgid "Modi"
+msgstr "莫迪文"
+
 msgid "Modification Date:"
 msgstr "修改日期："
 
 msgid "Modifier Tone Letters"
-msgstr "修饰符语调字母"
+msgstr "声调修饰字"
 
 msgid "Mohawk"
 msgstr "莫霍克语"
@@ -7176,7 +7949,7 @@ msgid "Mon"
 msgstr "孟邦"
 
 msgid "Mongolian"
-msgstr "蒙古语"
+msgstr "蒙文"
 
 msgid "Mongolian (Cyrillic)"
 msgstr "蒙古语 (斯拉夫文)"
@@ -7186,6 +7959,9 @@ msgstr "蒙古语(蒙古文)"
 
 msgid "Mongolian (cyrillic)"
 msgstr "蒙古语 (西里尔字母)"
+
+msgid "Mongolian Supplement"
+msgstr "蒙文补充"
 
 msgid "Monospace"
 msgstr "等宽体"
@@ -7219,11 +7995,17 @@ msgstr "按标尺移动..."
 msgid "Move..."
 msgstr "移动..."
 
+msgid "Mro"
+msgstr "姆鲁文"
+
 msgid "Mult Subs"
 msgstr "多重替代"
 
+msgid "Multani"
+msgstr "木尔坦文"
+
 msgid "Multi-Master table, obsolete"
-msgstr "多主表, 失效"
+msgstr "多母版表，已停用"
 
 msgid "Multi-line edit"
 msgstr "多行编辑"
@@ -7236,6 +8018,12 @@ msgstr "多段"
 
 msgid "Multiple Substitution"
 msgstr "多重替代"
+
+#, c-format
+msgid ""
+"Multiple glyphs map to the same unicode encoding U+%04X, only one will be "
+"used\n"
+msgstr "多个字形映射了同一个码位 U+%04X，只有一个字形会显示\n"
 
 msgid "Multiple master font with more than 16 instances\n"
 msgstr "多主字体超过16实例\n"
@@ -7273,6 +8061,12 @@ msgstr "缅甸文"
 msgid "Myanmar Extended-A"
 msgstr "缅甸文扩展 A"
 
+msgid "Myanmar Extended-B"
+msgstr "缅甸文扩展 B"
+
+msgid "NKo"
+msgstr "NKo"
+
 msgid "NLC Kanji Forms"
 msgstr "NLC汉字形式"
 
@@ -7285,11 +8079,14 @@ msgstr "从不插值(_E)"
 msgid "N_umber Points"
 msgstr "数值点"
 
+msgid "Nabataean"
+msgstr "那巴泰文"
+
 msgid "Name"
 msgstr "名称"
 
 msgid "Name For Human_s:"
-msgstr "昵称(_s)："
+msgstr "人读名称(_S)："
 
 msgid "Name List:"
 msgstr "名称列表:"
@@ -7346,6 +8143,9 @@ msgstr "名称列表中包含非 ASCII 字符"
 
 msgid "Namelist creation failed"
 msgstr "名录创建失败"
+
+msgid "Nandinagari"
+msgstr "嫩迪城体"
 
 msgid "Narrow"
 msgstr "窄"
@@ -7432,7 +8232,7 @@ msgid "New Layer..."
 msgstr "新建层…"
 
 msgid "New Ligature"
-msgstr "新连写"
+msgstr "新增连字"
 
 msgid "New Lookup Subtable..."
 msgstr "新查找替代表..."
@@ -7471,16 +8271,19 @@ msgid "New _Metrics Window"
 msgstr "新尺寸窗口(_M)"
 
 msgid "NewCharset"
-msgstr "新字符集"
+msgstr "新建字体字符集"
 
 msgid "NewEmSize"
-msgstr "新M全身尺寸"
+msgstr "新建字体全角宽度"
 
 msgid "NewFontNameList"
 msgstr "新的字体名称列表"
 
 msgid "NewFontsQuadratic"
-msgstr "新字体Quadratic"
+msgstr "新建字体使用二次曲线"
+
+msgid "Newa"
+msgstr "内瓦文"
 
 msgid "Next CP Angle"
 msgstr "下一控制点角度"
@@ -7536,6 +8339,10 @@ msgstr "无位图部件"
 
 msgid "No ByteCode Interpreter"
 msgstr "无字节码解释"
+
+#, c-format
+msgid "No CID named %s"
+msgstr "没有名为 %s 的 CID"
 
 msgid "No Change"
 msgstr "未改变"
@@ -7682,8 +8489,20 @@ msgid "No differences found"
 msgstr "未发现差异"
 
 #, c-format
+msgid "No filename specified in include on line %d of %s"
+msgstr "没有在第 %d 行（%s ）指定文件名"
+
+#, c-format
+msgid "No flags specified in lookupflags on line %d of %s"
+msgstr "第 %d 行（ %s） 的查找标志中没有指定标记"
+
+#, c-format
+msgid "No glyph named %s."
+msgstr "没有字图名称%s"
+
+#, c-format
 msgid "No glyph with unicode U+%05x in font\n"
-msgstr "统一码编码为 U+%05x 的字形不存在于字体\n"
+msgstr "字体里未包含 Unicode 编码为 U+%05x 的字形\n"
 
 msgid "No glyphs matched"
 msgstr "无匹配字形"
@@ -7767,7 +8586,7 @@ msgid "Non-ASCII glyphnames"
 msgstr "非ASCII码字形名"
 
 msgid "Non-Basic Multilingual Plane"
-msgstr "非基础多语言平面"
+msgstr "非基本多文种平面"
 
 msgid "Non-Straight Arms/Double Serif"
 msgstr "非直笔/双衬线"
@@ -7785,7 +8604,7 @@ msgid "Non-Straight Arms/Wedge"
 msgstr "非直笔/楔形"
 
 msgid "Non-Unicode Glyphs"
-msgstr "非统一码字形"
+msgstr "非 Unicode 字形"
 
 msgid "Non-_Integral coordinates"
 msgstr "非整数坐标(_I)"
@@ -7956,6 +8775,9 @@ msgstr "无所循迹"
 msgid "Nothng found."
 msgstr "未找到."
 
+msgid "Nukta Forms"
+msgstr "Nukta 表单"
+
 #. GT: TeX parameters for math fonts. "Num" means numerator, "Denom"
 #. GT: means denominator, "Sup" means superscript, "Sub" means subscript
 msgid "Num1:"
@@ -8004,8 +8826,14 @@ msgstr "数字域记号"
 msgid "Numeric Forms"
 msgstr "数字形"
 
+msgid "Nushu"
+msgstr "女书"
+
 msgid "Nyanja/Chewa"
 msgstr "尼扬贾语"
+
+msgid "Nyiakeng Puachue Hmong"
+msgstr "苗文（创世）"
 
 msgid "O Black Letter"
 msgstr "O 黑体"
@@ -8021,6 +8849,9 @@ msgstr "O三维"
 
 msgid "OEM Charset"
 msgstr "OEM 字符集"
+
+msgid "OK"
+msgstr "确认"
 
 msgid "OS/2 -> Charsets"
 msgstr "OS/2 -> 字符集"
@@ -8091,6 +8922,12 @@ msgstr "方框"
 msgid "Oblique/Weighted"
 msgstr "加粗"
 
+msgid "Obsolete table for a type1 CID keyed font"
+msgstr "type1 CID 键字体中已停用的表格"
+
+msgid "Obsolete table for a type1 font"
+msgstr "type1 字体中已停用的表格"
+
 msgid "Obtuse Cove"
 msgstr "钝凹形"
 
@@ -8119,22 +8956,37 @@ msgid "Ofm Save Failed"
 msgstr "Ofm保存失败"
 
 msgid "Ogham"
-msgstr "欧甘语"
+msgstr "欧甘文"
+
+msgid "Ol Chiki"
+msgstr "奥尔奇基文"
+
+msgid "Old Hungarian"
+msgstr "古匈牙利文"
 
 msgid "Old Italic"
-msgstr "古意大利式"
+msgstr "古意大利文"
 
 msgid "Old Italic (Etruscan, Oscan, etc.)"
-msgstr "老意大利文 (Etruscan, Oscan 等)"
+msgstr "古意大利文 (伊特鲁里亚文、欧斯干文等)"
+
+msgid "Old North Arabian"
+msgstr "古北阿拉伯文"
 
 msgid "Old Outline Color"
 msgstr "旧轮廓颜色"
 
+msgid "Old Permic"
+msgstr "古彼尔姆文"
+
 msgid "Old Persian"
 msgstr "古波斯文"
 
+msgid "Old Sogdian"
+msgstr "古粟特文"
+
 msgid "Old South Arabian"
-msgstr "旧南阿拉伯"
+msgstr "古南阿拉伯文"
 
 msgid "Old Style"
 msgstr "旧体"
@@ -8143,7 +8995,7 @@ msgid "Old Style Serifs"
 msgstr "旧体衬线(OSS)"
 
 msgid "Old Turkic"
-msgstr "古突厥文"
+msgstr "突厥文"
 
 msgid "Old sfd file"
 msgstr "旧SFD文件"
@@ -8156,6 +9008,12 @@ msgstr "旧体外形"
 
 msgid "On"
 msgstr "开"
+
+msgid ""
+"One of the multiple master instances contains quadratic splines. It must be "
+"converted to cubic splines before it can be used in a multiple master"
+msgstr ""
+"多母版的实例里面有一个包含了二次曲线。它必须转化成三次曲线才能用于多母版"
 
 msgid "Only Embed Bitmaps"
 msgstr "仅嵌入位图"
@@ -8249,7 +9107,10 @@ msgid "Original Y Position"
 msgstr "原点Y位置"
 
 msgid "Oriya"
-msgstr "奥里雅语"
+msgstr "奥里亚文"
+
+msgid "Ornamental Dingbats"
+msgstr "装饰什锦"
 
 msgid "Ornamentals"
 msgstr "装饰体(O)"
@@ -8262,6 +9123,12 @@ msgstr "装饰"
 
 msgid "Oromo"
 msgstr "奥罗莫语"
+
+msgid "Osage"
+msgstr "奥色治文"
+
+msgid "Osmanya"
+msgstr "伊斯马尼亚文"
 
 msgid "Other ..."
 msgstr "其他…"
@@ -8277,6 +9144,9 @@ msgstr "其他文件"
 
 msgid "Others"
 msgstr "其他"
+
+msgid "Ottoman Siyaq Numbers"
+msgstr "奥斯曼帐目数字"
 
 msgid "Out Of Order"
 msgstr "失序"
@@ -8363,10 +9233,10 @@ msgid "PS Hints"
 msgstr "PS消隐"
 
 msgid "PS Multiple Master(A)"
-msgstr "PS 字体集(A)"
+msgstr "PS 多母版(A)"
 
 msgid "PS Multiple Master(B)"
-msgstr "PS 字体集(B)"
+msgstr "PS 多母版(B)"
 
 msgid "PS Names"
 msgstr "PS字形名称"
@@ -8404,6 +9274,9 @@ msgstr "页面设置"
 msgid "Page_Size:"
 msgstr "页面："
 
+msgid "Pahawh Hmong"
+msgstr "苗文（帕皓）"
+
 msgid "Pair Position (kerning)"
 msgstr "压缩对位置"
 
@@ -8421,6 +9294,9 @@ msgstr "巴利语"
 
 msgid "Palm OS Bitmap"
 msgstr "手执系统 Bitmap"
+
+msgid "Palmyrene"
+msgstr "巴尔米拉文"
 
 msgid "Panose"
 msgstr "特征"
@@ -8744,6 +9620,9 @@ msgstr "模板填充"
 msgid "Patterns"
 msgstr "模式"
 
+msgid "Pau Cin Hau"
+msgstr "包钦豪字母"
+
 msgid "Pen Slanted"
 msgstr "倾斜笔"
 
@@ -8778,7 +9657,7 @@ msgid "Phaistos Disc"
 msgstr "菲斯特斯圆盘"
 
 msgid "Phoenician"
-msgstr "腓尼基语"
+msgstr "腓尼基文"
 
 msgid "Phonetic Extensions"
 msgstr "音标扩展"
@@ -8837,6 +9716,10 @@ msgstr "请关闭字体"
 
 msgid "Please don't do that"
 msgstr "请勿如此操作"
+
+#, c-format
+msgid "Please name encoding %d in this file"
+msgstr "请给此文件中的编码 %d命名"
 
 msgid "Please name this contour"
 msgstr "请为此轮廓命名"
@@ -9022,7 +9905,7 @@ msgid "Preferences"
 msgstr "选项"
 
 msgid "Preferred Family"
-msgstr "首选族"
+msgstr "首选家族名"
 
 msgid "Preferred Styles"
 msgstr "首选样式"
@@ -9098,7 +9981,7 @@ msgid "Private Use"
 msgstr "私人应用"
 
 msgid "Private Use Area"
-msgstr "私用空间"
+msgstr "私用区"
 
 #, c-format
 msgid "Problem decompressing '%c%c%c%c' table."
@@ -9164,6 +10047,9 @@ msgstr "邻近"
 
 msgid "Proximity:"
 msgstr "邻近："
+
+msgid "Psalter Pahlavi"
+msgstr "诗篇体巴列维文"
 
 msgid "Punctuation Supplement"
 msgstr "补充标点符号"
@@ -9280,7 +10166,7 @@ msgid "Rasterize at sizes:"
 msgstr "光栅化尺寸:"
 
 msgid "Rasterizing..."
-msgstr "光栅化..."
+msgstr "正在光栅化..."
 
 msgid "Raw"
 msgstr "原始"
@@ -9347,6 +10233,18 @@ msgid "Reference point match out of date"
 msgstr "参照点匹配过期"
 
 #, c-format
+msgid "Reference to a CID in a non-CID-keyed font on line %d of %s"
+msgstr "在第 %d 行（ %s） non-CID-keyed 字型中指向一个CID"
+
+#, c-format
+msgid "Reference to a glyph name in a CID-keyed font on line %d of %s"
+msgstr "参照到一个 第 %d 行（ %s）的CID-keyed 字体的字图名称"
+
+#, c-format
+msgid "Reference to a non-existent glyph name on line %d of %s: %s"
+msgstr "指向在第 %d 行（%s）上一个不存在的字图名称：%s"
+
+#, c-format
 msgid "Reference to character %1$.20s at %2$d"
 msgstr "参照字符 %1$.20s 于 %2$d"
 
@@ -9398,6 +10296,9 @@ msgstr "寄存器(TrueType)"
 
 msgid "Regular"
 msgstr "规则"
+
+msgid "Rejang"
+msgstr "雷姜文"
 
 msgid "Remo_ve Undoes"
 msgstr "清除修改历史"
@@ -9553,7 +10454,7 @@ msgid "Required Feature"
 msgstr "需要的特征"
 
 msgid "Required Ligatures"
-msgstr "必要组合"
+msgstr "必要连字"
 
 msgid "Required feature"
 msgstr "需要特征"
@@ -9871,6 +10772,9 @@ msgstr "滚动条滑块"
 msgid "SIL Graphite rule table"
 msgstr "SIL Graphite 规则表"
 
+msgid "SJIS (Kanji)"
+msgstr "SJIS (汉字)"
+
 msgid "SVG Template"
 msgstr "SVG模板"
 
@@ -9911,7 +10815,7 @@ msgid "Sa_ve Lookup..."
 msgstr "保存查找(_V)..."
 
 msgid "Samaritan"
-msgstr "萨马利亚阿拉米语"
+msgstr "撒马利亚文"
 
 msgid "Samaritan, Punctuation"
 msgstr "撒马利亚标点符号"
@@ -9926,7 +10830,7 @@ msgid "Samoan"
 msgstr "萨摩亚语"
 
 msgid "Sample Text"
-msgstr "样本"
+msgstr "示例文本"
 
 msgid "Sango"
 msgstr "桑戈语"
@@ -10168,16 +11072,16 @@ msgid "Script|Arabic"
 msgstr "阿拉伯文"
 
 msgid "Script|Aramaic"
-msgstr "Aramaic"
+msgstr "亚拉姆文字"
 
 msgid "Script|Armenian"
-msgstr "Armenian"
+msgstr "亚美尼亚文"
 
 msgid "Script|Avestan"
-msgstr "Avestan"
+msgstr "阿维斯塔文字"
 
 msgid "Script|Balinese"
-msgstr "Balinese"
+msgstr "巴厘文字"
 
 msgid "Script|Batak"
 msgstr "Batak"
@@ -10209,13 +11113,13 @@ msgstr "Coptic"
 #. GT: Don't ask me what RSymbol means, I don't know either. It's in apple's
 #. GT:  docs though
 msgid "Script|Cyrillic"
-msgstr "Cyrillic"
+msgstr "西里尔文"
 
 msgid "Script|Default"
 msgstr "默认"
 
 msgid "Script|Devanagari"
-msgstr "Devanagari"
+msgstr "天城文"
 
 msgid "Script|Ethiopic"
 msgstr "埃塞俄比亚文"
@@ -10239,7 +11143,7 @@ msgid "Script|Hanunóo"
 msgstr "Hanunóo"
 
 msgid "Script|Hebrew"
-msgstr "希伯来语"
+msgstr "希伯来文"
 
 msgid "Script|Japanese"
 msgstr "日文"
@@ -10299,7 +11203,7 @@ msgid "Script|Oriya2"
 msgstr "Oriya2"
 
 msgid "Script|Phags-pa"
-msgstr "Phags-pa"
+msgstr "八思巴文"
 
 msgid "Script|Phoenician"
 msgstr "Phoenician"
@@ -10323,7 +11227,7 @@ msgid "Script|Sundanese"
 msgstr "巽他语"
 
 msgid "Script|Syloti Nagri"
-msgstr "Syloti Nagri"
+msgstr "西洛蒂城体"
 
 msgid "Script|Syriac"
 msgstr "Syriac"
@@ -10356,10 +11260,10 @@ msgid "Script|Traditional Chinese"
 msgstr "繁体中文"
 
 msgid "Script|Ugaritic"
-msgstr "Ugaritic"
+msgstr "乌加里特文"
 
 msgid "Script|Vai"
-msgstr "Vai"
+msgstr "瓦伊文"
 
 msgid "Script|Yi"
 msgstr "彝文字符"
@@ -10441,7 +11345,7 @@ msgid "Selec_t By Lookup Subtable..."
 msgstr "按查找表选择(_T)…"
 
 msgid "Select All _Points & Refs"
-msgstr "选择全部点及参照(_P)"
+msgstr "选择全部描点及参照(_P)"
 
 msgid "Select Anc_hors"
 msgstr "选择锚点(_H)"
@@ -10481,7 +11385,7 @@ msgid "Select _All"
 msgstr "选择全部(_A)"
 
 msgid "Select a ligature to view"
-msgstr "选看连体"
+msgstr "选择连字以检视"
 
 msgid "Select by Color"
 msgstr "按颜色选择"
@@ -10725,6 +11629,12 @@ msgstr "形状填充"
 msgid "Shapes"
 msgstr "形状"
 
+msgid "Sharada"
+msgstr "沙勒德文"
+
+msgid "Shavian"
+msgstr "萧伯纳文"
+
 msgid "Shift Entire Bitmap"
 msgstr "移动整幅位图"
 
@@ -10733,6 +11643,9 @@ msgstr "按下平移"
 
 msgid "Sho_w"
 msgstr "显示(_W)"
+
+msgid "Shorthand Format Controls"
+msgstr "速记格式控制符"
 
 #, c-format
 msgid "Shouldn't be in addinfo \"%s"
@@ -10789,6 +11702,9 @@ msgstr "收缩："
 msgid "Sidamo"
 msgstr "锡达莫语"
 
+msgid "Siddham"
+msgstr "悉昙文"
+
 msgid "Side Bearing Addition"
 msgstr "侧边位增加"
 
@@ -10814,7 +11730,7 @@ msgid "Simplified Chinese"
 msgstr "简体中文"
 
 msgid "Simplified Forms"
-msgstr "简化形式"
+msgstr "简化字形"
 
 msgid "Simplify"
 msgstr "简化"
@@ -10838,7 +11754,10 @@ msgid "Single Substitution"
 msgstr "单一替代"
 
 msgid "Sinhala"
-msgstr "僧伽罗语"
+msgstr "僧伽罗文"
+
+msgid "Sinhala Archaic Numbers"
+msgstr "僧伽罗古数字"
 
 msgid "Size"
 msgstr "大小"
@@ -10935,7 +11854,10 @@ msgid "Small Caps"
 msgstr "小大写"
 
 msgid "Small Form Variants"
-msgstr "小样式变调"
+msgstr "小型形式变体"
+
+msgid "Small Kana Extension"
+msgstr "小假名扩展"
 
 msgid "Snap Outlines to Pi_xel Grid"
 msgstr "对齐轮廓到像素网格(_X)"
@@ -10946,6 +11868,9 @@ msgstr "捕捉间距"
 msgid "SnapToInt"
 msgstr "捕捉到整点"
 
+msgid "Sogdian"
+msgstr "粟特文"
+
 msgid "Somali"
 msgstr "索马里语"
 
@@ -10954,6 +11879,9 @@ msgstr "出错了"
 
 msgid "Soninke"
 msgstr "索宁克语"
+
+msgid "Sora Sompeng"
+msgstr "索拉索姆彭文"
 
 msgid "Sorbian"
 msgstr "索布语"
@@ -10979,6 +11907,9 @@ msgstr "字母"
 msgid "Source Glyph Names"
 msgstr "源字形名称"
 
+msgid "Soyombo"
+msgstr "索永布文"
+
 msgid "Space Regions"
 msgstr "间隔区域"
 
@@ -10992,7 +11923,7 @@ msgid "SpaceAfterScript:"
 msgstr "字符间距:"
 
 msgid "Spacing Modifier Letters"
-msgstr "空格调整字母"
+msgstr "有距修饰字"
 
 msgid "Spanish"
 msgstr "西班牙语"
@@ -11078,6 +12009,9 @@ msgstr "指定位图尺寸以便移除"
 msgid "Spiro Point Info"
 msgstr "Spiro点信息"
 
+msgid "Spiros did not converge"
+msgstr "Spiros未合并"
+
 msgid "SplashScreen"
 msgstr "欢迎窗口"
 
@@ -11121,7 +12055,7 @@ msgid "Standard"
 msgstr "标准"
 
 msgid "Standard Ligatures"
-msgstr "标准组合"
+msgstr "标准连字"
 
 msgid "Star"
 msgstr "星形"
@@ -11129,7 +12063,7 @@ msgstr "星形"
 msgid "Start contours at e_xtrema"
 msgstr "在极值处开始轮廓"
 
-#. GT: "Len" is an abreviation for "Length"
+#. GT: "Len" is an abbreviation for "Length"
 msgid "StartLen"
 msgstr "起始长度"
 
@@ -11308,10 +12242,10 @@ msgid "Style _ID:"
 msgstr "样式ID:"
 
 msgid "StyleSet Names"
-msgstr "样式名称"
+msgstr "StyleSet 名称"
 
 msgid "Styles (SubFamily)"
-msgstr "样式(子族)"
+msgstr "样式（子族）"
 
 msgid "Stylistic Alternatives"
 msgstr "样式替代"
@@ -11384,6 +12318,9 @@ msgstr "巽他文"
 msgid "Sundanese (roman)"
 msgstr "Sundanese (罗马字母)"
 
+msgid "Sundanese Supplement"
+msgstr "巽他文补充"
+
 msgid "Sup1:"
 msgstr "上标1:"
 
@@ -11417,14 +12354,23 @@ msgstr "上标底端最小值："
 msgid "SuperscriptShiftUp:"
 msgstr "上标上升:"
 
+msgid "Superscripts and Subscripts"
+msgstr "上标及下标"
+
 msgid "Supplemental Arrows-A"
 msgstr "补充箭头 A"
 
 msgid "Supplemental Arrows-B"
 msgstr "补充箭头 B"
 
+msgid "Supplemental Arrows-C"
+msgstr "补充箭头 C"
+
 msgid "Supplemental Math Operators"
 msgstr "补充的数学运算符"
+
+msgid "Supplemental Mathematical Operators"
+msgstr "增补数学运算符"
 
 msgid "Supplemental Punctuation"
 msgstr "补充标点符号"
@@ -11432,20 +12378,26 @@ msgstr "补充标点符号"
 msgid "Supplemental Symbols and Arrows"
 msgstr "其它符号和箭头"
 
+msgid "Supplemental Symbols and Pictographs"
+msgstr "补充符号及象形"
+
 msgid "Supplementary Ideographic Plane"
 msgstr "补充表意字符面"
 
 msgid "Supplementary Multilingual Plane"
 msgstr "补充多语言字符面"
 
+msgid "Supplementary Private Use Area A/B"
+msgstr "补充私用区 A/B"
+
 msgid "Supplementary Private Use Area-A"
-msgstr "补充私用空间 A"
+msgstr "补充私用区 A"
 
 msgid "Supplementary Private Use Area-B"
-msgstr "补充私用空间 B"
+msgstr "补充私用区 B"
 
 msgid "Supplementary Special-purpose Plane"
-msgstr "增补特用平面"
+msgstr "特别用途补充平面"
 
 msgid "Surrogate High"
 msgstr "高半超大字符集"
@@ -11455,6 +12407,12 @@ msgstr "非私用高半超大字符集"
 
 msgid "Surrogate High, Private Use"
 msgstr "私用高半超大字符集"
+
+msgid "Sutton SignWriting"
+msgstr "萨顿手语"
+
+msgid "Sutu"
+msgstr "苏土语"
 
 msgid "Swahili"
 msgstr "斯瓦希里语"
@@ -11486,6 +12444,9 @@ msgstr "Sy混合衬线体"
 msgid "Sy Old Style Serif"
 msgstr "Sy旧式衬线体"
 
+msgid "Syloti Nagri"
+msgstr "西洛蒂城体"
+
 msgid "Symbol"
 msgstr "符号"
 
@@ -11504,6 +12465,12 @@ msgstr "其他符号。"
 msgid "Symbols and Arrows Supplement"
 msgstr "其它符号和箭头"
 
+msgid "Symbols and Pictographs Extended-A"
+msgstr "符号及象形扩展 A"
+
+msgid "Symbols for Legacy Computing"
+msgstr "传统电脑符号"
+
 msgid "Symbols:"
 msgstr "符号："
 
@@ -11515,6 +12482,9 @@ msgstr "同步"
 
 msgid "Syriac"
 msgstr "叙利亚文"
+
+msgid "Syriac Supplement"
+msgstr "叙利亚文补充"
 
 #. GT: Top/Left (side) bearing
 msgid "TBearing:"
@@ -11578,10 +12548,10 @@ msgid "Tag too long"
 msgstr "标签过长"
 
 msgid "Tagalog"
-msgstr "塔加路语"
+msgstr "他加禄文"
 
 msgid "Tagbanwa"
-msgstr "塔格班瓦语"
+msgstr "蒂亚格班瓦文"
 
 msgid "Tags"
 msgstr "标记"
@@ -11607,11 +12577,29 @@ msgstr "太玄经符号"
 msgid "Tajik"
 msgstr "塔吉克语"
 
+msgid "Tajiki"
+msgstr "塔吉克文"
+
+msgid "Takri"
+msgstr "塔克里文"
+
 msgid "Tamazight (Latin)"
-msgstr "Tamazight (拉丁字母)"
+msgstr "柏柏尔语（拉丁字母）"
 
 msgid "Tamil"
-msgstr "泰米尔语"
+msgstr "泰米尔文"
+
+msgid "Tamil Supplement"
+msgstr "泰米尔文补充"
+
+msgid "Tangut"
+msgstr "西夏文"
+
+msgid "Tangut Components"
+msgstr "西夏文部件"
+
+msgid "Tangut Supplement"
+msgstr "西夏文补充"
 
 msgid "Tatar"
 msgstr "塔塔尔语"
@@ -11626,7 +12614,7 @@ msgid "Technical Symbols Misc."
 msgstr "其他科技符号。"
 
 msgid "Telugu"
-msgstr "泰卢固语"
+msgstr "泰卢固文"
 
 msgid "Template Color"
 msgstr "模板颜色"
@@ -11639,6 +12627,9 @@ msgstr "终端形 #2"
 
 msgid "Terminal Forms #3"
 msgstr "终端形 #3"
+
+msgid "Tertiary Ideographic Plane"
+msgstr "表意文字第三平面"
 
 msgid "Text Field"
 msgstr "文本框"
@@ -11678,7 +12669,7 @@ msgid "Thaana"
 msgstr "塔安那文"
 
 msgid "Thai"
-msgstr "泰国语"
+msgstr "泰文"
 
 msgid "The \"DPI\" field must be more than 10 and less than 5000."
 msgstr "\"DPI\"字段取值应介于10和5000之间。"
@@ -11696,7 +12687,7 @@ msgid "The %s list is not ordered"
 msgstr "%s列表无序"
 
 msgid "The 'NFNT' bitmap format is obsolete"
-msgstr "'NFNT' 位图格式已过时"
+msgstr "‘NFNT’ 位图格式已停用"
 
 msgid ""
 "The Edit->Join command will join points which are this close together\n"
@@ -11711,6 +12702,23 @@ msgid ""
 msgstr ""
 "此合并操作不能取消，\n"
 "是否继续？"
+
+msgid ""
+"The OpenType Style Set features ('ss01'-'ss20') may\n"
+"be assigned human readable names here."
+msgstr "OpenType Stylistic Set 功能（'ss01'-'ss20'）可以在这里设置人读名称。"
+
+#, c-format
+msgid ""
+"The PostScript font name \"%.63s\" is invalid.\n"
+"It should be printable ASCII,\n"
+"must not contain (){}[]<>%%/ or space\n"
+"and must be shorter than 63 characters"
+msgstr ""
+"PostScript 字体名 \"%.63s\" 不合法。\n"
+"该名称应为 ASCII 中的可打印字符，\n"
+"亦不能包含 (){}[]<>%%/ 或空格，\n"
+"且长度不能超过 63 个字符"
 
 msgid "The color of a selected point"
 msgstr "选中点的颜色"
@@ -11772,8 +12780,17 @@ msgstr "此颜色用于绘制垂直消隐"
 msgid "The color used to fill the outline if that mode is active"
 msgstr "此颜色用于填充轮廓"
 
+msgid ""
+"The current encoding contains glyphs which I cannot map to CIDs.\n"
+"Should I delete them or add them to the end (where they may conflict with "
+"future ros definitions)?"
+msgstr ""
+"当前编码包含无法映射到 CID的字形。\n"
+"应该删除它们还是将它们添加到末尾(放在末尾可能会导致他们与未来的排序定义相冲"
+"突)？"
+
 msgid "The default size of the Em-Square in a newly created font."
-msgstr "新创字体的M全身尺寸(EM)的默认值。"
+msgstr "新建字体全角宽度的默认值。"
 
 #, c-format
 msgid "The encoding does not contain something named %.40s"
@@ -11805,6 +12822,10 @@ msgstr "字形%.80s未能在此sfd文件中找到"
 #, c-format
 msgid "The glyph, %.80s, is not in the font"
 msgstr "字形%.80s未能在此字体文件中找到"
+
+msgid ""
+"The human-readable fontname text (in the Names pane) must be entirely ASCII."
+msgstr "人读字型名称（在名称窗口中）必须完全使用 ASCII 字符。"
 
 msgid "The layers do not match"
 msgstr "层不匹配"
@@ -11906,6 +12927,10 @@ msgid "There is already a subtable with that name, please pick another."
 msgstr "已有同名子表，请选择另一个。"
 
 #, c-format
+msgid "There is already an anchor point named %1$.40s in %2$.40s."
+msgstr "已存在名为 %1$.40s 的 %2$.40s 的锚点。"
+
+#, c-format
 msgid "There is no glyph named %s (used in %s)"
 msgstr "字体中无字形 %s(用于%s)"
 
@@ -11942,6 +12967,27 @@ msgstr "蒙板的第三个参数必须为布尔类型.\n"
 
 msgid ""
 "This does not seem to be a plate file\n"
+"Expected left paren"
+msgstr ""
+"这似乎不是调色盘档案\n"
+"需有左同位"
+
+msgid ""
+"This does not seem to be a plate file\n"
+"Expected one of 'voc[]z'"
+msgstr ""
+"这似乎不是调色盘档案\n"
+"需包含'voc[]z' 中的一个"
+
+msgid ""
+"This does not seem to be a plate file\n"
+"Expected two real numbers"
+msgstr ""
+"这似乎不是调色盘档案\n"
+"需包含两个实数"
+
+msgid ""
+"This does not seem to be a plate file\n"
 "First line wrong"
 msgstr ""
 "这个看起来不是结构化文件\n"
@@ -11953,6 +12999,10 @@ msgstr "这个看来不像ofm文件，不知道怎么打开。"
 msgid "This feature code is already used"
 msgstr "此特征代码已使用"
 
+msgid ""
+"This file contains an unnamed encoding, which cannot be named in a script"
+msgstr "此文件包含一个不能在脚本中命名的未命名编码。"
+
 msgid "This file contains no SVG fonts.\n"
 msgstr "此文件不含SVG字体。\n"
 
@@ -11961,9 +13011,37 @@ msgid ""
 "reverted successfully."
 msgstr "此字体来源于老格式的sfd文件。不能完全恢复所有的内容。"
 
+msgid ""
+"This font contains both a 'kern' table and a 'GPOS' table.\n"
+"  The 'kern' table will only be read if there is no 'kern' feature in "
+"'GPOS'.\n"
+msgstr ""
+"该字体同时包含 kern 表和 GPOS 表。\n"
+"一旦 GPOS 表包含 kern 特性，就会将 kern 表的内容覆盖掉。\n"
+
+msgid "This font contains neither \"CFF \" nor \"glyf\"/\"loca\" tables"
+msgstr "该字体既没有 CFF 表也没有 glyf/loca 表"
+
 #, c-format
 msgid "This font does not contain a glyph named \"%.40s\""
 msgstr "字体中不包含有名为 %.40s的字形"
+
+msgid ""
+"This font does not have vertical metrics enabled.\n"
+"Use Element->Font Info to enable them."
+msgstr ""
+"此字体没有启用垂直度量。\n"
+"使用元素->字体信息来启用它们。"
+
+#, c-format
+msgid ""
+"This font is based on the charset %1$.20s-%2$.20s-%3$d, but the best I've "
+"been able to find is %1$.20s-%2$.20s-%4$d.\n"
+"Shall I use that or let you search?"
+msgstr ""
+"此字体基于字符集 %1$.20s-%2$.20s-%3$d， 但我能够找到的最好的是 %1$.20s-"
+"%2$.20s-%4$d。\n"
+"我要使用这个或者你要搜索吗？"
 
 msgid "This glyph can use a stem3 hint"
 msgstr "此字形可用 stem3 消隐"
@@ -12102,6 +13180,9 @@ msgstr "弹出窗口可见时长 (毫秒)"
 
 msgid "Tiny Selection"
 msgstr "细微选择"
+
+msgid "Tirhuta"
+msgstr "蒂勒胡塔文"
 
 msgid "Title Background"
 msgstr "标题背景色"
@@ -12327,6 +13408,9 @@ msgstr "X向平移"
 msgid "Translation in Y"
 msgstr "Y向平移"
 
+msgid "Transport and Map Symbols"
+msgstr "交通运输和地图符号"
+
 msgid "Triangle"
 msgstr "三角形"
 
@@ -12438,7 +13522,7 @@ msgid "Unassigned Bit 127"
 msgstr "未分配位 127"
 
 msgid "Unassigned Code Points"
-msgstr "未定的编码点"
+msgstr "未分配的码位"
 
 msgid "Undefined positioning"
 msgstr "未定义位置"
@@ -12483,6 +13567,14 @@ msgid "Unexpected number"
 msgstr "不良数字"
 
 #, c-format
+msgid "Unexpected token in glyph class range on line %d of %s"
+msgstr "在 第%d行（%s）上的字形类范围内有不该存在的字符"
+
+#, c-format
+msgid "Unexpected token in lookupflags on line %d of %s"
+msgstr "第%d行(%s) 上的查找标记有未预期的字符"
+
+#, c-format
 msgid "Unexpected token, %s, on line %d of %s"
 msgstr "未预期的标识,%s,于行%d (%s)"
 
@@ -12502,19 +13594,19 @@ msgid "Unicase"
 msgstr "一致大小写"
 
 msgid "Unicode"
-msgstr "统一码"
+msgstr "Unicode"
 
 msgid "Unicode 1.0"
-msgstr "统一码1.0"
+msgstr "Unicode 1.0"
 
 msgid "Unicode 1.1"
-msgstr "统一码1.1"
+msgstr "Unicode 1.1"
 
 msgid "Unicode 2.0+, BMP only"
-msgstr "统一码2.0+，基础页"
+msgstr "Unicode 2.0+，仅含基础平面"
 
 msgid "Unicode 2.0+, all planes"
-msgstr "统一码2.0+，所有页"
+msgstr "Unicode 2.0+，包含所有平面"
 
 msgid "Unicode Basic Multilingual Plane"
 msgstr "统一码基础多语言平面"
@@ -12551,13 +13643,16 @@ msgid "Unicode value not in font"
 msgstr "字体中无统一码值"
 
 msgid "UnicodeGlyphNames"
-msgstr "统一码字形名称"
+msgstr "Unicode 字形名称"
 
 msgid "Unified Canadian Aboriginal Syllabics"
 msgstr "统一加拿大原住民音节表"
 
 msgid "Unified Canadian Aboriginal Syllabics Extended"
 msgstr "统一加拿大土著音节扩展"
+
+msgid "Unified Canadian Aboriginal Syllabics Extended-A"
+msgstr "统一加拿大土著音节扩展 A"
 
 msgid "Unified Font Object"
 msgstr "统一字体对象"
@@ -12682,10 +13777,10 @@ msgid "Urdu"
 msgstr "乌尔都语"
 
 msgid "Urdu (India)"
-msgstr "乌尔都语(印度)"
+msgstr "乌尔都语（印度）"
 
 msgid "Urdu (Pakistan)"
-msgstr "乌尔都语(巴基斯坦)"
+msgstr "乌尔都语（巴基斯坦）"
 
 msgid "Use CID Map"
 msgstr "使用字符标识映射"
@@ -12719,8 +13814,20 @@ msgstr "使用了未定义的字形类属, %s, 于行 %d (%s中)"
 msgid "Use of undefined mark class, %s, on line %d of %s"
 msgstr "使用了未定义的标记类属, %s, 于行 %d (%s中)"
 
+msgid ""
+"Use the FreeType rasterizer (when available)\n"
+"to rasterize glyphs in the font view.\n"
+"This generally results in better quality."
+msgstr ""
+"使用 FreeType 光栅器 (若可用)\n"
+"将字体视图中的字形光栅化。\n"
+"一般可以提升质量。"
+
 msgid "UseNewIndicScripts"
 msgstr "使用新印地语文字"
+
+msgid "Using the OFL for your open fonts"
+msgstr "在你的开源字体中使用 OFL"
 
 msgid "Uyghur"
 msgstr "维吾尔语"
@@ -12729,10 +13836,10 @@ msgid "Uzbek"
 msgstr "乌兹别克语"
 
 msgid "Uzbek (Cyrillic)"
-msgstr "乌孜别克语 (斯拉夫)"
+msgstr "乌孜别克语（西里尔）"
 
 msgid "Uzbek (Latin)"
-msgstr "乌孜别克语 (拉丁)"
+msgstr "乌孜别克语（拉丁）"
 
 msgid "VFlex Hint Color"
 msgstr "VFlex消隐颜色"
@@ -12762,7 +13869,7 @@ msgid "VWidth"
 msgstr "垂直宽度"
 
 msgid "Vai"
-msgstr "瓦伊语"
+msgstr "瓦伊文"
 
 msgid "Validate Before Saving"
 msgstr "保存之前确认"
@@ -12802,19 +13909,28 @@ msgid "Variation Selector (or 0)"
 msgstr "变形选择(或 0)"
 
 msgid "Variation Selectors"
-msgstr "变调选择器"
+msgstr "变体选择符"
+
+msgid "Variation Selectors (& Supplement)"
+msgstr "变体选择符（& 扩展）"
 
 msgid "Variation Selectors B"
 msgstr "变体选择器 B"
 
+msgid "Variation Selectors Supplement"
+msgstr "变体选择符增补"
+
 msgid "Vattu Variants"
 msgstr "Vattu 变形"
+
+msgid "Vedic Extensions"
+msgstr "吠陀文扩展"
 
 msgid "Vendor ID:"
 msgstr "供应者标识："
 
 msgid "Vendor URL"
-msgstr "供应者URL"
+msgstr "供应商网址"
 
 msgid "Version"
 msgstr "版本"
@@ -12863,6 +13979,9 @@ msgstr "%c%c%c%c的垂直间距"
 
 msgid "Vertical Forms"
 msgstr "垂直形式"
+
+msgid "Vertical Forms & CJK Compatibility Forms"
+msgstr "竖排形式 & 中日韩兼容形式"
 
 msgid "Vertical Fractions"
 msgstr "垂直比例"
@@ -12942,16 +14061,25 @@ msgid "View Point"
 msgstr "视点"
 
 msgid "WWS Family"
-msgstr "WWS 族"
+msgstr "WWS 家族名"
 
 msgid "WWS Subfamily"
-msgstr "WWS 子族"
+msgstr "WWS 子族名"
 
 msgid "W_hitespace Glyphs"
 msgstr "空格字形(_H)"
 
 msgid "W_ithin Rectangle"
 msgstr "矩形内(_I)"
+
+msgid "Wancho"
+msgstr "弯绰文"
+
+msgid "Wansung (Korean)"
+msgstr "完整式（韩文Wansung）"
+
+msgid "Warang Citi"
+msgstr "瓦朗奇文"
 
 msgid "Warn if _unlinked references"
 msgstr "警告未连接的参照"
@@ -13000,6 +14128,14 @@ msgstr ""
 "如名称、编码、注释等。"
 
 msgid ""
+"When loading a truetype or opentype font which has both a unicode\n"
+"and a CJK encoding table, use this flag to specify which\n"
+"should be loaded for the font."
+msgstr ""
+"若加载的 TrueType/OpenType 字体同时具有 Unicode 码表\n"
+"和 CJK 码表，使用此标志来指明使用哪个码表来加载该字体。"
+
+msgid ""
 "When the mouse pointer is within this many pixels\n"
 "of one of the various interesting features (baseline,\n"
 "width, grid splines, etc.) the pointer will snap\n"
@@ -13009,6 +14145,24 @@ msgstr ""
 "中时，鼠标将捕捉到该特征。\n"
 "这些特征包括:\n"
 "基线、宽度、网格样条线等。"
+
+msgid ""
+"Whether fonts loaded from the disk should retain their splines\n"
+"with the original order (quadratic or cubic), or whether the\n"
+"splines should be converted to the default order for new fonts\n"
+"(see NewFontsQuadratic)."
+msgstr ""
+"加载硬盘上的字体时，是否保留\n"
+"原始的曲线阶数 (二次或三次)，\n"
+"或是将曲线转化为新字体的默认阶数\n"
+"(见 NewFontsQuadratic)。"
+
+msgid ""
+"Whether new fonts should contain splines of quadratic (truetype)\n"
+"or cubic (postscript & opentype)."
+msgstr ""
+"新字体是否应包含二次样条 (TrueType)\n"
+"或三次样条 (PostScript 和 OpenType)。"
 
 msgid "White Space"
 msgstr "空白"
@@ -13153,6 +14307,9 @@ msgstr "确定"
 msgid "Yes to _All"
 msgstr "全是(_A)"
 
+msgid "Yezidi"
+msgstr "耶西迪文"
+
 msgid "Yi"
 msgstr "彝语"
 
@@ -13173,6 +14330,37 @@ msgstr "易经卦符"
 
 msgid "Yoruba"
 msgstr "约鲁巴语"
+
+#, c-format
+msgid ""
+"You are attempting to paste a reference to %1$s into %2$s.\n"
+"But %1$s does not exist in this font, nor can I find the original character "
+"referred to.\n"
+"It will not be copied."
+msgstr ""
+"您正在试图将%1$s的指向复制进%2$s。\n"
+"但%1$s在此字体中不存在，或是我无法找到其指向的原字符\n"
+"此复制已被取消。"
+
+#, c-format
+msgid ""
+"You are attempting to paste a reference to %1$s into %2$s.\n"
+"But %1$s does not exist in this font.\n"
+"Would you like to copy the original splines (or delete the reference)?"
+msgstr ""
+"您正在试图将%1$s的指向复制进%2$s。\n"
+"但%1$s在此字体中不存在。\n"
+"您是否要复制原内容（或删除该指向）？"
+
+msgid ""
+"You are attempting to paste glyph instructions from one font to another. "
+"Generally this will not work unless the 'prep', 'fpgm' and 'cvt ' tables are "
+"the same.\n"
+"Do you want to continue anyway?"
+msgstr ""
+"您正在尝试从一个字体粘贴注释到另一个字体。 通常情况下，除"
+"非“prep”、“fpgm”和“cvt ”表是相同的，否则此操作不会成功。\n"
+"您仍然想要继续吗？"
 
 msgid "You changed the point numbering"
 msgstr "你改了点数"
@@ -13269,8 +14457,18 @@ msgstr "需要指定模板"
 msgid "You must specify a replacement glyph for %s"
 msgstr "应为 %s 指定替换字形"
 
+msgid ""
+"Your font has exactly 65535 glyphs. Encoding 65535 is the limit and is often "
+"used as a magic             value, so it may cause quirks.\n"
+msgstr ""
+"您的字体塞满了 65535 个字形，达到了上限。这个值常会作为魔法数字，可能会引起程"
+"序崩溃。\n"
+
 msgid "Z_oom out"
 msgstr "缩小(_O)"
+
+msgid "Zanabazar Square"
+msgstr "札那巴札尔方字"
 
 msgid "Zapf Dingbats"
 msgstr "花体字"
@@ -13600,7 +14798,7 @@ msgid "_Edit..."
 msgstr "编辑(_E)…"
 
 msgid "_Em Size:"
-msgstr "M全字尺寸(_E)："
+msgstr "全角宽度(_E)："
 
 msgid "_Embeddable"
 msgstr "可嵌入(_E)"
@@ -13829,7 +15027,7 @@ msgid "_License..."
 msgstr "许可(_L)…"
 
 msgid "_Ligatures"
-msgstr "连写组合字(_L)"
+msgstr "连字(_L)"
 
 msgid "_Lining"
 msgstr "划线(_L)"
@@ -13989,7 +15187,7 @@ msgid "_Paste"
 msgstr "粘贴(_P)"
 
 msgid "_Point"
-msgstr "点(_P)"
+msgstr "描点(_P)"
 
 msgid "_Point of View Projection..."
 msgstr "投影视点(_P)…"
@@ -13998,7 +15196,7 @@ msgid "_Pointer"
 msgstr "指针(_P)"
 
 msgid "_Points"
-msgstr "点(_P)"
+msgstr "描点(_P)"
 
 msgid "_Points near¹ hint edges"
 msgstr "点临近¹消隐边(_P)"
@@ -14007,10 +15205,10 @@ msgid "_Points too far"
 msgstr "点太远"
 
 msgid "_Pointsize Y:"
-msgstr "点尺寸Y(_P)："
+msgstr "网格大小(_P) Y轴："
 
 msgid "_Pointsize:"
-msgstr "点尺寸："
+msgstr "字号(_P)："
 
 msgid "_Populate"
 msgstr "增加(_P)"
@@ -14348,6 +15546,9 @@ msgstr "X上高(_X)"
 msgid "_X-Height"
 msgstr "_X高度"
 
+msgid "_X:"
+msgstr "_X轴："
+
 msgid "_Y near¹"
 msgstr "_Y 临近¹"
 
@@ -14376,10 +15577,16 @@ msgid "base"
 msgstr "基本"
 
 msgid "baseline table (AAT version)"
-msgstr "基线表(ATT)"
+msgstr "基线表 (AAT)"
+
+msgid "bitmap data table (AAT version)"
+msgstr "点阵字体数据表 (AAT 版本)"
 
 msgid "bitmap font header table"
-msgstr "点阵字体头表格"
+msgstr "点阵字体头部表"
+
+msgid "bitmap location table (AAT version)"
+msgstr "点阵字体位置表 (AAT)"
 
 #. GT: The dialog looks like:
 #. GT:   Interpolating between <fontname> and:
@@ -14394,6 +15601,10 @@ msgstr "不能创建临时文件\n"
 
 msgid "character code mapping table"
 msgstr "字符编码映射表"
+
+#, c-format
+msgid "cidmap entry out of bounds: %s"
+msgstr "地图条目超出边界： %s"
 
 msgid "classes"
 msgstr "类属"
@@ -14500,7 +15711,7 @@ msgid "glyph substitution table"
 msgstr "字形替代表"
 
 msgid "glyph variation table"
-msgstr "字形变差表"
+msgstr "字形变体表"
 
 msgid "glyphs"
 msgstr "字形"
@@ -14651,6 +15862,9 @@ msgstr "卷动越界于 %s\n"
 
 msgid "romn"
 msgstr "romn指令"
+
+msgid "scripts.sil.org/OFL"
+msgstr "scripts.sil.org/OFL"
 
 msgid "sfnt Revision:"
 msgstr "sfnt 版本:"

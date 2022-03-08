@@ -5,15 +5,17 @@
 # Translators:
 # Wei-Lun Chao <william.chao@ossii.com.tw>, 2007, 2010.
 # Wei-Lun Chao <william.chao@ossii.com.tw>, 2011-02-22 14:07+0800
+# NFSL2001 <https://crowdin.com/profile/nightfurysl2001>
+# eason329 <https://crowdin.com/profile/eason329>
 #
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-08 09:18+0000\n"
-"PO-Revision-Date: 2020-11-07 04:36\n"
-"Last-Translator: Wei-Lun Chao <william.chao@ossii.com.tw>\n"
+"POT-Creation-Date: 2022-03-08 09:53+0000\n"
+"PO-Revision-Date: 2022-02-21 08:36\n"
+"Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Language: zh_TW\n"
 "MIME-Version: 1.0\n"
@@ -235,7 +237,7 @@ msgstr "%s 基底"
 
 #. GT: There are various broad classes of lookups here and the first string
 #. GT: describes those: "Contextual Positioning", Contextual Substitution", etc.
-#. GT: Each of those may be formated in 3 different ways: by (or perhaps using
+#. GT: Each of those may be formatted in 3 different ways: by (or perhaps using
 #. GT: would be a better word) glyphs, classes or coverage tables.
 #. GT: So this might look like:
 #. GT:  Contextual Positioning by classes
@@ -427,49 +429,49 @@ msgid "100 Thin"
 msgstr "100 超細體"
 
 msgid "1250, Latin-2 (Eastern Europe)"
-msgstr "1250, 拉丁語-2 (東歐)"
+msgstr "1250，拉丁文-2（東歐）"
 
 msgid "1251, Cyrillic"
-msgstr "1251, 斯拉夫語"
+msgstr "1251，西里爾文"
 
 msgid "1252, Latin-1"
-msgstr "1252, 拉丁語-1"
+msgstr "1252，拉丁文-1"
 
 msgid "1253, Greek"
-msgstr "1253, 希臘語"
+msgstr "1253，希臘文"
 
 msgid "1254, Turkish"
-msgstr "1254, 土耳其語"
+msgstr "1254，土耳其語"
 
 msgid "1255, Hebrew"
-msgstr "1255, 希伯來語"
+msgstr "1255，希伯來文"
 
 msgid "1256, Arabic"
-msgstr "1256, 阿拉伯語"
+msgstr "1256，阿拉伯文"
 
 msgid "1257, Windows Baltic"
-msgstr "1257, Windows 波羅的海語"
+msgstr "1257，Windows 波羅的文"
 
 msgid "1258, Vietnamese"
-msgstr "1258, 越南語"
+msgstr "1258，越南文"
 
 msgid "1361, Korean Johab"
-msgstr "1361, 韓語韓文"
+msgstr "1361，韓文組合式（Johab）"
 
 msgid "200 Extra-Light"
 msgstr "200 特細體"
 
 msgid "300 Light"
-msgstr "300 細體字"
+msgstr "300 細體"
 
 msgid "32x8 cell window"
 msgstr "32x8 儲存格視窗"
 
 msgid "400 Regular"
-msgstr "400 書體"
+msgstr "400 標準"
 
 msgid "437, US"
-msgstr "437, 美語"
+msgstr "437，美國"
 
 msgid "500 Medium"
 msgstr "500 中等"
@@ -481,70 +483,70 @@ msgid "700 Bold"
 msgstr "700 粗體"
 
 msgid "708, Arabic ASMO 708"
-msgstr "708, 阿拉伯語 ASMO 708"
+msgstr "708，阿拉伯文 ASMO 708"
 
 msgid "737, Greek; former 437 G"
-msgstr "737, 希臘語；原為 437 G"
+msgstr "737，希臘文；原爲 437 G"
 
 msgid "775, MS-DOS Baltic"
-msgstr "775, MS-DOS 波羅的海語"
+msgstr "775，MS-DOS 波羅的語"
 
 msgid "800 Extra-Bold"
 msgstr "800 特粗體"
 
 msgid "850, WE/Latin 1"
-msgstr "850, WE/拉丁語 1"
+msgstr "850，WE/拉丁文 1"
 
 msgid "852, Latin 2"
-msgstr "852, 拉丁語 2"
+msgstr "852，拉丁文 2"
 
 msgid "855, IBM Cyrillic; primarily Russian"
-msgstr "855, IBM 斯拉夫語；主要俄語"
+msgstr "855，IBM 西里爾文；主要爲俄語"
 
 msgid "857, IBM Turkish"
-msgstr "857, IBM 土耳其語"
+msgstr "857，IBM 土耳其語"
 
 msgid "860, MS-DOS Portuguese"
-msgstr "860, MS-DOS 葡萄牙"
+msgstr "860，MS-DOS 葡萄牙語"
 
 msgid "861, MS-DOS Icelandic"
-msgstr "861, MS-DOS 冰島語"
+msgstr "861，MS-DOS 冰島語"
 
 msgid "862, Hebrew"
-msgstr "862, 希伯來語"
+msgstr "862，希伯來文"
 
 msgid "863, MS-DOS Canadian French"
-msgstr "863, MS-DOS 加拿大法語"
+msgstr "863，MS-DOS 加拿大法語"
 
 msgid "864, Arabic"
-msgstr "864, 阿拉伯語"
+msgstr "864，阿拉伯文"
 
 msgid "865, MS_DOS Nordic"
-msgstr "865, MS_DOS 北歐語"
+msgstr "865，MS_DOS 北歐語"
 
 msgid "866, MS-DOS Russian"
-msgstr "866, MS-DOS 俄語"
+msgstr "866，MS-DOS 俄文"
 
 msgid "869, IBM Greek"
-msgstr "869, IBM 希臘語"
+msgstr "869，IBM 希臘文"
 
 msgid "874, Thai"
-msgstr "874, 泰語"
+msgstr "874，泰文"
 
 msgid "900 Black"
 msgstr "900 超粗體"
 
 msgid "932, JIS/Japan"
-msgstr "932, JIS/日本"
+msgstr "932，JIS/日本"
 
 msgid "936, Simplified Chinese"
-msgstr "936, 簡化字漢語"
+msgstr "936，簡體中文"
 
 msgid "949, Korean Wansung"
-msgstr "949, 韓語 Wansung"
+msgstr "949，韓文完整式（Wansung）"
 
 msgid "950, Traditional Chinese"
-msgstr "950, 傳統字漢語"
+msgstr "950，正體中文"
 
 msgid "< _Prev"
 msgstr "<上一個(_P)"
@@ -898,6 +900,13 @@ msgstr "加入語言到文字"
 msgid "Add Mark Anchor..."
 msgstr "加入標記錨點…"
 
+#. GT: when translating this please leave the "SIL Open Font License" in
+#. GT: English (possibly translating it in parentheses). I believe there
+#. GT: are legal reasons for this.
+#. GT: So "Añadir SIL Open Font License (licencia de fuentes libres)"
+msgid "Add OFL"
+msgstr "添加 OFL"
+
 msgid "Add Sub_table"
 msgstr "加入子表格(_T)"
 
@@ -978,8 +987,8 @@ msgid ""
 "Obsolete instruction\n"
 "Pops one value"
 msgstr ""
-"Adjust Angle\n"
-"淘汰的指令\n"
+"調整角度\n"
+"已停用指令\n"
 "推出一個值"
 
 msgid "Adobe Glyph List"
@@ -1944,7 +1953,7 @@ msgid "Bad Grid Fitting table"
 msgstr "不當的格線符合表格"
 
 msgid "Bad Human Fontname"
-msgstr "不當的可讀字型名稱"
+msgstr "不當的人讀字型名稱"
 
 msgid "Bad IBM Family"
 msgstr "不當的 IBM 字族"
@@ -2594,10 +2603,10 @@ msgid "Big Op Space5:"
 msgstr "大操作元空間五："
 
 msgid "Big5 (Trad. Chinese)"
-msgstr "Big5 (傳統字漢語)"
+msgstr "Big5（正體中文）"
 
 msgid "Big5 HKSCS (Trad. Chinese)"
-msgstr "Big5 HKSCS (傳統字漢語)"
+msgstr "Big5 HKSCS（正體中文）"
 
 msgid "Bikol"
 msgstr "比科爾語"
@@ -2677,6 +2686,9 @@ msgstr "BlueValues 會成對出現。請選取另外一個。"
 msgid "Bold"
 msgstr "粗體"
 
+msgid "Bold Italic"
+msgstr "粗斜體"
+
 msgid "Bone"
 msgstr "骨幹"
 
@@ -2691,6 +2703,9 @@ msgstr "書籤"
 
 msgid "Bopomofo"
 msgstr "注音符號"
+
+msgid "Bopomofo (& Extended)"
+msgstr "注音符號（& 擴展）"
 
 msgid "Bopomofo Extended"
 msgstr "注音符號擴充"
@@ -2888,8 +2903,13 @@ msgstr "CID 格式不含我們對它的預期。\n"
 msgid "CID keyed fonts may not be a master design of a multiple master font"
 msgstr "CID 鍵的字型不可以是多重主字型的主設計"
 
+msgid "CJK (& Ext A/B) & CJK Radicals Sup & Kangxi & IDC & Kanbun"
+msgstr ""
+"中日韓表意文字基本區 (& 擴展 A/B) & 中日韓部首補充 & 康熙部首 & 表意文字描述"
+"符 & 漢文訓讀"
+
 msgid "CJK Compatibility"
-msgstr "中日韓相容"
+msgstr "中日韓相容字符"
 
 msgid "CJK Compatibility Forms"
 msgstr "中日韓相容形式"
@@ -2909,20 +2929,41 @@ msgstr "中日韓表意文字"
 msgid "CJK Phonetics and Symbols"
 msgstr "中日韓注音符號和符號"
 
+msgid "CJK Radicals Supplement"
+msgstr "中日韓漢字部首補充"
+
 msgid "CJK Strokes"
 msgstr "中日韓筆畫"
 
+msgid "CJK Strokes & CJK Compat Ideographs (& Sup)"
+msgstr "中日韓筆畫 & 中日韓相容表意文字 (& 相容增補)"
+
 msgid "CJK Symbols and Punctuation"
-msgstr "中日韓符號和標點符號"
+msgstr "中日韓符號與標點"
 
 msgid "CJK Unified Ideographs"
 msgstr "中日韓統一表意文字"
 
 msgid "CJK Unified Ideographs Extension A"
-msgstr "中日韓統一表意文字擴充"
+msgstr "中日韓統一表意文字擴展 A"
 
 msgid "CJK Unified Ideographs Extension B"
-msgstr "中日韓統一表意文字擴充 B"
+msgstr "中日韓統一表意文字擴展 B"
+
+msgid "CJK Unified Ideographs Extension C"
+msgstr "中日韓統一表意文字擴展 C"
+
+msgid "CJK Unified Ideographs Extension D"
+msgstr "中日韓統一表意文字擴展 D"
+
+msgid "CJK Unified Ideographs Extension E"
+msgstr "中日韓統一表意文字擴展 E"
+
+msgid "CJK Unified Ideographs Extension F"
+msgstr "中日韓統一表意文字擴展 F"
+
+msgid "CJK Unified Ideographs Extension G"
+msgstr "中日韓統一表意文字擴展 G"
 
 msgid "CS Clarendon"
 msgstr "CS 粗長鉛字"
@@ -3395,19 +3436,19 @@ msgid "Chichewa"
 msgstr "契切瓦語"
 
 msgid "Chinese (Hong Kong)"
-msgstr "漢語(香港)"
+msgstr "中文（香港）"
 
 msgid "Chinese (Macau)"
-msgstr "漢語(澳門)"
+msgstr "中文（澳門）"
 
 msgid "Chinese (PRC)"
-msgstr "漢語(中華人民共和國)"
+msgstr "中文（中華人民共和國）"
 
 msgid "Chinese (Singapore)"
-msgstr "漢語(新加坡)"
+msgstr "中文（新加坡）"
 
 msgid "Chinese (Taiwan)"
-msgstr "漢語(中華民國)"
+msgstr "中文（中華民國）"
 
 msgid "Chinese Hong Kong"
 msgstr "香港漢語"
@@ -3420,6 +3461,21 @@ msgstr "簡化字漢語"
 
 msgid "Chinese Traditional"
 msgstr "傳統字漢語"
+
+msgid "Chinese, Phonetic"
+msgstr "漢語注音符號"
+
+msgid "Chinese, Simplified"
+msgstr "簡體中文"
+
+msgid "Chinese, Traditional"
+msgstr "正體中文"
+
+msgid "Chinese, Traditional, Hong Kong SAR"
+msgstr "繁體中文（香港）"
+
+msgid "Chinese, Traditional, Macao SAR"
+msgstr "繁體中文（澳門）"
 
 msgid "Chipewyan"
 msgstr "奇佩維安語"
@@ -3541,6 +3597,22 @@ msgstr "清除所有與這個組合相關聯的裝置表格校正"
 
 msgid "Clear destination layer before copy"
 msgstr "複製之前清空目的圖層"
+
+msgid ""
+"Click here for more information about the OFL (SIL Open Font License) \n"
+"including the corresponding FAQ. \n"
+msgstr ""
+"點擊這裏以查閲更多關於 OFL（SIL開源字型授權）的資料\n"
+"以及其常見問題目錄（FAQ）。\n"
+
+msgid ""
+"Click here to add the OFL metadata to your own font in the License and "
+"License URL fields. \n"
+"Then click on the License field to fill in the placeholders in sync with OFL."
+"txt. \n"
+msgstr ""
+"點擊這裏以在你的字型中的授權與授權網址欄目中添加 OFL 後設資料。\n"
+"然后點擊授權欄目並填寫與 OFL.txt 一樣的資料。\n"
 
 msgid "Clip Path Color"
 msgstr "裁剪路徑顏色"
@@ -4235,13 +4307,19 @@ msgid "Cypriot syllabary"
 msgstr "塞浦路斯音節文字"
 
 msgid "Cyrillic"
-msgstr "斯拉夫語"
+msgstr "西里爾字母"
+
+msgid "Cyrillic Extended-A"
+msgstr "西里爾字母補充-A"
 
 msgid "Cyrillic Extended-B"
-msgstr "斯拉夫語擴充-B"
+msgstr "西里爾字母補充-B"
+
+msgid "Cyrillic Extended-C"
+msgstr "西里爾字母補充-C"
 
 msgid "Cyrillic Supplement"
-msgstr "斯拉夫語補充"
+msgstr "西里爾字母補充"
 
 msgid "Czech"
 msgstr "捷克語"
@@ -4525,6 +4603,9 @@ msgstr "裝飾符號"
 msgid "Dinka"
 msgstr "丁卡語"
 
+msgid "Diphthongs (Obsolete)"
+msgstr "雙元音（已停用）"
+
 msgid "Directories Amid Files"
 msgstr "目錄摻入檔案"
 
@@ -4630,6 +4711,9 @@ msgstr "到投影平面的距離："
 msgid "Divehi"
 msgstr "迪維西語"
 
+msgid "Divehi (Obsolete)"
+msgstr "迪維希（已停用）"
+
 msgid "Diverse Arms"
 msgstr "多樣臂線"
 
@@ -4708,6 +4792,9 @@ msgstr "繪圖區"
 msgid "Drawing plane tilt:"
 msgstr "繪製平面的斜度："
 
+msgid "Drop Caps (Obsolete)"
+msgstr "首字下沉（已停用）"
+
 msgid "Drop List Button"
 msgstr "下拉清單按鈕"
 
@@ -4730,7 +4817,7 @@ msgid "Duplicate Name"
 msgstr "重製名稱"
 
 msgid "Duplicate StyleSet Name"
-msgstr "重製 StyleSet 名稱"
+msgstr "複製 StyleSet 名稱"
 
 msgid "Duplicate data"
 msgstr "重製資料"
@@ -4755,7 +4842,7 @@ msgid "EPS Template"
 msgstr "EPS 模板"
 
 msgid "EUC GB 2312 (Chinese)"
-msgstr "EUC GB 2312 (簡化字漢語)"
+msgstr "EUC GB 2312（中文）"
 
 msgid "E_lement"
 msgstr "元件(_L)"
@@ -4894,7 +4981,7 @@ msgid "Em Units"
 msgstr "Em 單位"
 
 msgid "Embolden as appropriate for Chinese, Japanese, Korean scripts"
-msgstr "加粗適用於漢語、日語、韓語文字"
+msgstr "加粗適用於中文、日文、韓文文字"
 
 msgid "Embolden as appropriate for Latin, Cyrillic and Greek scripts"
 msgstr "加重適用於拉丁語、斯拉夫語和希臘語文字"
@@ -4920,7 +5007,7 @@ msgid "Enclosed Alphanumerics"
 msgstr "帶括號的字母或數字"
 
 msgid "Enclosed CJK Letters and Months"
-msgstr "被包圍的中日韓字母和月份"
+msgstr "帶圈中日韓字母和月份"
 
 msgid "Encoding Too Large"
 msgstr "編碼太大"
@@ -5002,55 +5089,55 @@ msgid "English"
 msgstr "英語"
 
 msgid "English (Australian)"
-msgstr "英語(澳大利亞)"
+msgstr "英語（澳大利亞）"
 
 msgid "English (Belize)"
-msgstr "英語(貝里斯)"
+msgstr "英語（貝里斯）"
 
 msgid "English (British)"
-msgstr "英語(不列顛)"
+msgstr "英語（英國）"
 
 msgid "English (Canada)"
-msgstr "英語(加拿大)"
+msgstr "英語（加拿大）"
 
 msgid "English (Caribbean)"
-msgstr "英語(加勒比海)"
+msgstr "英語（加勒比海）"
 
 msgid "English (Hong Kong)"
-msgstr "英語(香港)"
+msgstr "英語（香港）"
 
 msgid "English (India)"
-msgstr "英語(印度)"
+msgstr "英語（印度）"
 
 msgid "English (Indonesia)"
-msgstr "英語(印度尼西亞)"
+msgstr "英語（印度尼西亞）"
 
 msgid "English (Irish)"
-msgstr "英語(愛爾蘭)"
+msgstr "英語（愛爾蘭）"
 
 msgid "English (Jamaica)"
-msgstr "英語(牙買加)"
+msgstr "英語（牙買加）"
 
 msgid "English (Malaysia)"
-msgstr "英語(馬來西亞)"
+msgstr "英語（馬來西亞）"
 
 msgid "English (New Zealand)"
-msgstr "英語(紐西蘭)"
+msgstr "英語（紐西蘭）"
 
 msgid "English (Philippines)"
-msgstr "英語(菲律賓)"
+msgstr "英語（菲律賓）"
 
 msgid "English (South Africa)"
-msgstr "英語(南非共和國)"
+msgstr "英語（南非）"
 
 msgid "English (Trinidad)"
-msgstr "英語(千里達)"
+msgstr "英語（千里達）"
 
 msgid "English (US)"
-msgstr "英語(美國)"
+msgstr "英語（美國）"
 
 msgid "English (Zimbabwe)"
-msgstr "英語(辛巴威)"
+msgstr "英語（辛巴威）"
 
 msgid "Engraved"
 msgstr "雕工"
@@ -5503,7 +5590,7 @@ msgid "Feature Tag:"
 msgstr "特徵標記："
 
 msgid "Feature Tags"
-msgstr "特徵標記"
+msgstr "功能標記"
 
 msgid "Feature _Id:"
 msgstr "特徵識別號(_I)："
@@ -5988,7 +6075,7 @@ msgid "French Swiss"
 msgstr "瑞士法語"
 
 msgid "French West Indies"
-msgstr "西印度法語"
+msgstr "西印度群島法語"
 
 msgid "Friendly Name"
 msgstr "易記名稱"
@@ -6040,7 +6127,7 @@ msgid "G4 _Curve"
 msgstr "G4 曲線(_C)"
 
 msgid "GB 2312 (Simp. Chinese)"
-msgstr "GB 2312 (簡化字漢語)"
+msgstr "GB 2312（簡體中文）"
 
 #. GT: This is an unusual string. It is used to get around a limitation in
 #. GT: FontForge's widget set. You should put a number here (do NOT translate
@@ -6073,10 +6160,10 @@ msgid "Ga"
 msgstr "格語"
 
 msgid "Gaelic (Irish)"
-msgstr "蓋爾語(愛爾蘭語)"
+msgstr "蓋爾語（愛爾蘭）"
 
 msgid "Gaelic (Scottish)"
-msgstr "蓋爾語(蘇格蘭)"
+msgstr "蓋爾語（蘇格蘭）"
 
 msgid "Galician"
 msgstr "加里斯亞語"
@@ -6623,7 +6710,7 @@ msgid "Hausa"
 msgstr "豪沙語"
 
 msgid "Hawaiian"
-msgstr "夏威夷"
+msgstr "夏威夷語"
 
 msgid "Heavy"
 msgstr "特粗體"
@@ -6837,7 +6924,7 @@ msgid ""
 "is empty)"
 msgstr "抱歉，這個檔案對我來說太複雜而難以了解(或為錯誤的、空的)"
 
-#. GT: "I." is an abreviation for "Inherits"
+#. GT: "I." is an abbreviation for "Inherits"
 msgid "I."
 msgstr "繼承"
 
@@ -7521,7 +7608,7 @@ msgid "Japanese"
 msgstr "日語"
 
 msgid "Japanese Forms (Obsolete)"
-msgstr "日語形式 (淘汰的)"
+msgstr "日文變體形態（已停用）"
 
 msgid "Javanese"
 msgstr "爪哇語"
@@ -7530,7 +7617,7 @@ msgid "Javanese (roman)"
 msgstr "爪哇語 (羅馬體)"
 
 msgid "Johab (Korean)"
-msgstr "Johab (韓語)"
+msgstr "組合式（韓語Johab）"
 
 msgid "Justification Alternatives"
 msgstr "調整另項選擇"
@@ -7579,6 +7666,9 @@ msgstr "喀什米爾語(印度)"
 
 msgid "Katakana"
 msgstr "片假名"
+
+msgid "Katakana (& Phonetic Extensions)"
+msgstr "片假名（& 語音擴展）"
 
 msgid "Katakana Phonetic Extensions"
 msgstr "片假名注音符號擴充"
@@ -7704,7 +7794,7 @@ msgid "Korean"
 msgstr "韓語"
 
 msgid "Korean (Johab)"
-msgstr "韓語(韓文)"
+msgstr "韓語（組合式，Johab）"
 
 msgid "Korean Old Hangul"
 msgstr "韓語舊的諺文"
@@ -8017,7 +8107,7 @@ msgid "Ligature Glyph Name"
 msgstr "連體字字圖名稱"
 
 msgid "Ligature Substitution"
-msgstr "連體字替代"
+msgstr "連體字替換"
 
 msgid "Ligatures"
 msgstr "連體字"
@@ -9065,7 +9155,7 @@ msgid "Mult Subs"
 msgstr "多重替代"
 
 msgid "Multi-Master table, obsolete"
-msgstr "多主表格，淘汰的"
+msgstr "多母版表格，已停用"
 
 msgid "Multi-line edit"
 msgstr "多列編輯"
@@ -9685,7 +9775,7 @@ msgid "Non-ASCII glyphnames"
 msgstr "非 ASCII glyphnames"
 
 msgid "Non-Basic Multilingual Plane"
-msgstr "非基本多語言平面"
+msgstr "非基本多文種平面"
 
 msgid "Non-Straight Arms/Double Serif"
 msgstr "非直臂/雙倍襯線"
@@ -10058,7 +10148,7 @@ msgid "Oblique/Weighted"
 msgstr "傾斜/加重"
 
 msgid "Obsolete table for a type1 CID keyed font"
-msgstr "淘汰的表格用於 type1 CID 鍵的字型"
+msgstr "type1 CID 鍵字型中已停用的表格"
 
 msgid "Obsolete table for a type1 font"
 msgstr "淘汰的表格用於 type1 字型"
@@ -11272,7 +11362,7 @@ msgid "Private Use"
 msgstr "私人用途"
 
 msgid "Private Use Area"
-msgstr "私用使用區域"
+msgstr "私用區"
 
 #, c-format
 msgid "Problem decompressing '%c%c%c%c' table."
@@ -11777,7 +11867,7 @@ msgid "Required Feature"
 msgstr "必要特徵"
 
 msgid "Required Ligatures"
-msgstr "必要的連體字"
+msgstr "必要連體字"
 
 msgid "Required feature"
 msgstr "必要的特徵"
@@ -11786,94 +11876,94 @@ msgid "Required feature out of bounds in script table.\n"
 msgstr "必要特徵超出文字表格邊界。\n"
 
 msgid "Reserved Bit 10"
-msgstr "保留的第 10 位元"
+msgstr "保留位元 10"
 
 msgid "Reserved Bit 11"
-msgstr "保留的第 11 位元"
+msgstr "保留位元 11"
 
 msgid "Reserved Bit 12"
-msgstr "保留的第 12 位元"
+msgstr "保留位元 12"
 
 msgid "Reserved Bit 13"
-msgstr "保留的第 13 位元"
+msgstr "保留位元 13"
 
 msgid "Reserved Bit 14"
-msgstr "保留的第 14 位元"
+msgstr "保留位元 14"
 
 msgid "Reserved Bit 15"
-msgstr "保留的第 15 位元"
+msgstr "保留位元 15"
 
 msgid "Reserved Bit 22"
-msgstr "保留的第 22 位元"
+msgstr "保留位元 22"
 
 msgid "Reserved Bit 23"
-msgstr "保留的第 23 位元"
+msgstr "保留位元 23"
 
 msgid "Reserved Bit 24"
-msgstr "保留的第 24 位元"
+msgstr "保留位元 24"
 
 msgid "Reserved Bit 25"
-msgstr "保留的第 25 位元"
+msgstr "保留位元 25"
 
 msgid "Reserved Bit 26"
-msgstr "保留的第 26 位元"
+msgstr "保留位元 26"
 
 msgid "Reserved Bit 27"
-msgstr "保留的第 27 位元"
+msgstr "保留位元 27"
 
 msgid "Reserved Bit 28"
-msgstr "保留的第 28 位元"
+msgstr "保留位元 28"
 
 msgid "Reserved Bit 32"
-msgstr "保留的第 32 位元"
+msgstr "保留位元 32"
 
 msgid "Reserved Bit 33"
-msgstr "保留的第 33 位元"
+msgstr "保留位元 33"
 
 msgid "Reserved Bit 34"
-msgstr "保留的第 34 位元"
+msgstr "保留位元 34"
 
 msgid "Reserved Bit 35"
-msgstr "保留的第 35 位元"
+msgstr "保留位元 35"
 
 msgid "Reserved Bit 36"
-msgstr "保留的第 36 位元"
+msgstr "保留位元 36"
 
 msgid "Reserved Bit 37"
-msgstr "保留的第 37 位元"
+msgstr "保留位元 37"
 
 msgid "Reserved Bit 38"
-msgstr "保留的第 38 位元"
+msgstr "保留位元 38"
 
 msgid "Reserved Bit 39"
-msgstr "保留的第 39 位元"
+msgstr "保留位元 39"
 
 msgid "Reserved Bit 40"
-msgstr "保留的第 40 位元"
+msgstr "保留位元 40"
 
 msgid "Reserved Bit 41"
-msgstr "保留的第  41位元"
+msgstr "保留位元 41"
 
 msgid "Reserved Bit 42"
-msgstr "保留的第 42 位元"
+msgstr "保留位元 42"
 
 msgid "Reserved Bit 43"
-msgstr "保留的第 43 位元"
+msgstr "保留位元 43"
 
 msgid "Reserved Bit 44"
-msgstr "保留的第 44 位元"
+msgstr "保留位元 44"
 
 msgid "Reserved Bit 45"
-msgstr "保留的第 45 位元"
+msgstr "保留位元 45"
 
 msgid "Reserved Bit 46"
-msgstr "保留的第 46 位元"
+msgstr "保留位元 46"
 
 msgid "Reserved Bit 47"
-msgstr "保留的第 47 位元"
+msgstr "保留位元 47"
 
 msgid "Reserved Bit 9"
-msgstr "保留的第 9 位元"
+msgstr "保留位元 9"
 
 msgid "Reset"
 msgstr "重置"
@@ -12611,7 +12701,7 @@ msgid "Script|Roman"
 msgstr "羅馬文字"
 
 msgid "Script|Simplified Chinese"
-msgstr "簡化字漢語"
+msgstr "簡體中文"
 
 msgid "Script|Sinhala"
 msgstr "錫蘭語"
@@ -12653,7 +12743,7 @@ msgid "Script|Tibetan"
 msgstr "藏語"
 
 msgid "Script|Traditional Chinese"
-msgstr "傳統字漢語"
+msgstr "正體中文"
 
 msgid "Script|Ugaritic"
 msgstr "烏加里特字母"
@@ -13229,7 +13319,7 @@ msgid "Simple Substitution"
 msgstr "簡單的替代"
 
 msgid "Simplified Chinese"
-msgstr "簡化字漢語"
+msgstr "簡體中文"
 
 msgid "Simplified Forms"
 msgstr "簡化形式"
@@ -13726,7 +13816,7 @@ msgstr "星型"
 msgid "Start contours at e_xtrema"
 msgstr "輪廓起始於末端(_X)"
 
-#. GT: "Len" is an abreviation for "Length"
+#. GT: "Len" is an abbreviation for "Length"
 msgid "StartLen"
 msgstr "開始長度"
 
@@ -13946,7 +14036,7 @@ msgid "StyleSet Names"
 msgstr "StyleSet 名稱"
 
 msgid "Styles (SubFamily)"
-msgstr "樣式 (子字族)"
+msgstr "樣式（子族）"
 
 msgid "Stylistic Alternatives"
 msgstr "文體的另項選擇"
@@ -14095,6 +14185,9 @@ msgstr "補充的表意文字平面"
 msgid "Supplementary Multilingual Plane"
 msgstr "補充的多語言平面"
 
+msgid "Supplementary Private Use Area A/B"
+msgstr "補充私用區 A/B"
+
 msgid "Supplementary Private Use Area-A"
 msgstr "補充的私人使用區域-A"
 
@@ -14191,6 +14284,9 @@ msgstr "剖析 Type3 字型表頭時語法錯誤"
 
 msgid "Syriac"
 msgstr "敘利亞語"
+
+msgid "Syriac Supplement"
+msgstr "敘利亞文補充"
 
 #. GT: Top/Left (side) bearing
 msgid "TBearing:"
@@ -14405,7 +14501,7 @@ msgstr ""
 "仍需建立一個(沒有用處)點陣字型)"
 
 msgid "The 'NFNT' bitmap format is obsolete"
-msgstr "「NFNT」點陣字格式已經淘汰了"
+msgstr "「NFNT」點陣字格式已停用"
 
 msgid "The 'POST' type1 format is probably deprecated"
 msgstr "「POST」type1 格式大致上不宜再用"
@@ -14461,6 +14557,11 @@ msgid ""
 msgstr ""
 "合併作業無法回復。\n"
 "無論如何都要進行嗎？"
+
+msgid ""
+"The OpenType Style Set features ('ss01'-'ss20') may\n"
+"be assigned human readable names here."
+msgstr "OpenType Stylistic Set 功能（'ss01'-'ss20'）可以在這裏設置人讀名称。"
 
 msgid ""
 "The PFM file contains information Windows needs to install a PostScript® "
@@ -14936,7 +15037,7 @@ msgstr "水平和垂直字幹附加數目必須兩者都是零，或者兩者都
 
 msgid ""
 "The human-readable fontname text (in the Names pane) must be entirely ASCII."
-msgstr "容易理解的字型名稱文字 (在名稱窗格中) 必須完全是 ASCII 編碼。"
+msgstr "人讀字型名稱（在名稱窗格中）必須完全使用 ASCII 字符。"
 
 #, c-format
 msgid ""
@@ -16089,7 +16190,7 @@ msgid "Trademark"
 msgstr "商標"
 
 msgid "Traditional Chinese"
-msgstr "傳統字漢語"
+msgstr "正體中文"
 
 msgid "Traditional Forms"
 msgstr "傳統形式"
@@ -16689,7 +16790,7 @@ msgid "Use of \"stop\" when not in a stopped\n"
 msgstr "不在停止項目中使用「stop」\n"
 
 msgid "Use of obsolete blend operator.\n"
-msgstr "使用了淘汰的混色運算子。\n"
+msgstr "使用淘汰的混色運算子。\n"
 
 #, c-format
 msgid "Use of undefined glyph class, %s, on line %d of %s"
@@ -16729,6 +16830,9 @@ msgstr ""
 
 msgid "User controls the emboldening with the next two fields"
 msgstr "使用者利用下列兩欄位控制加粗動作"
+
+msgid "Using the OFL for your open fonts"
+msgstr "在你的開源字型中使用 OFL"
 
 msgid "Uzbek"
 msgstr "烏茲別克語"
@@ -16884,6 +16988,9 @@ msgstr "垂直延展斜體校正"
 msgid "Vertical Extents for %c%c%c%c"
 msgstr "垂直延展用於 %c%c%c%c"
 
+msgid "Vertical Forms & CJK Compatibility Forms"
+msgstr "竪排形式 & 中日韓相容形式"
+
 msgid "Vertical Fractions"
 msgstr "垂直分數"
 
@@ -16968,7 +17075,7 @@ msgid "WWS Family"
 msgstr "WWS 字族"
 
 msgid "WWS Subfamily"
-msgstr "WWS 子字族"
+msgstr "WWS 子族名"
 
 msgid "W_hitespace Glyphs"
 msgstr "空白字圖(_H)"
@@ -16977,7 +17084,7 @@ msgid "W_ithin Rectangle"
 msgstr "在矩形之內(_I)"
 
 msgid "Wansung (Korean)"
-msgstr "Wansung (韓語)"
+msgstr "完整式（韓文Wansung）"
 
 msgid "Warn if _unlinked references"
 msgstr "如果取消連結參照就警告(_U)"
@@ -19043,6 +19150,9 @@ msgstr "不在 %s 的副常式中時回傳\n"
 #, c-format
 msgid "roll out of range in %s\n"
 msgstr "輪轉超出 %s 的範圍\n"
+
+msgid "scripts.sil.org/OFL"
+msgstr "scripts.sil.org/OFL"
 
 msgid "sfnt Revision:"
 msgstr "sfnt 修訂："

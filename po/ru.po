@@ -6,15 +6,15 @@
 #
 # Translators:
 # Александр Прокудин, 2012-08-01 00:27+0400
-# Alexandre Prokoudine <alexandre.prokoudine@gmail.com>, 2016-2020.
+# Alexandre Prokoudine <alexandre.prokoudine@gmail.com>, 2016-2022.
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-08 09:18+0000\n"
-"PO-Revision-Date: 2020-11-07 04:36\n"
-"Last-Translator: Alexandre Prokoudine <alexandre.prokoudine@gmail.com>\n"
+"POT-Creation-Date: 2022-03-08 09:53+0000\n"
+"PO-Revision-Date: 2022-02-21 08:36\n"
+"Last-Translator: \n"
 "Language-Team: Russian\n"
 "Language: ru_RU\n"
 "MIME-Version: 1.0\n"
@@ -1335,6 +1335,300 @@ msgstr "Цвет изменившегося глифа:"
 msgid "Changing glyphs"
 msgstr "Смена глифов"
 
+msgid "Character Variants 01"
+msgstr "Варианты символов 01"
+
+msgid "Character Variants 02"
+msgstr "Варианты символов 02"
+
+msgid "Character Variants 03"
+msgstr "Варианты символов 03"
+
+msgid "Character Variants 04"
+msgstr "Варианты символов 04"
+
+msgid "Character Variants 05"
+msgstr "Варианты символов 05"
+
+msgid "Character Variants 06"
+msgstr "Варианты символов 06"
+
+msgid "Character Variants 07"
+msgstr "Варианты символов 07"
+
+msgid "Character Variants 08"
+msgstr "Варианты символов 08"
+
+msgid "Character Variants 09"
+msgstr "Варианты символов 09"
+
+msgid "Character Variants 10"
+msgstr "Варианты символов 10"
+
+msgid "Character Variants 11"
+msgstr "Варианты символов 11"
+
+msgid "Character Variants 12"
+msgstr "Варианты символов 12"
+
+msgid "Character Variants 13"
+msgstr "Варианты символов 13"
+
+msgid "Character Variants 14"
+msgstr "Варианты символов 14"
+
+msgid "Character Variants 15"
+msgstr "Варианты символов 15"
+
+msgid "Character Variants 16"
+msgstr "Варианты символов 16"
+
+msgid "Character Variants 17"
+msgstr "Варианты символов 17"
+
+msgid "Character Variants 18"
+msgstr "Варианты символов 18"
+
+msgid "Character Variants 19"
+msgstr "Варианты символов 19"
+
+msgid "Character Variants 20"
+msgstr "Варианты символов 20"
+
+msgid "Character Variants 21"
+msgstr "Варианты символов 21"
+
+msgid "Character Variants 22"
+msgstr "Варианты символов 22"
+
+msgid "Character Variants 23"
+msgstr "Варианты символов 23"
+
+msgid "Character Variants 24"
+msgstr "Варианты символов 24"
+
+msgid "Character Variants 25"
+msgstr "Варианты символов 25"
+
+msgid "Character Variants 26"
+msgstr "Варианты символов 26"
+
+msgid "Character Variants 27"
+msgstr "Варианты символов 27"
+
+msgid "Character Variants 28"
+msgstr "Варианты символов 28"
+
+msgid "Character Variants 29"
+msgstr "Варианты символов 29"
+
+msgid "Character Variants 30"
+msgstr "Варианты символов 30"
+
+msgid "Character Variants 31"
+msgstr "Варианты символов 31"
+
+msgid "Character Variants 32"
+msgstr "Варианты символов 32"
+
+msgid "Character Variants 33"
+msgstr "Варианты символов 33"
+
+msgid "Character Variants 34"
+msgstr "Варианты символов 34"
+
+msgid "Character Variants 35"
+msgstr "Варианты символов 35"
+
+msgid "Character Variants 36"
+msgstr "Варианты символов 36"
+
+msgid "Character Variants 37"
+msgstr "Варианты символов 37"
+
+msgid "Character Variants 38"
+msgstr "Варианты символов 38"
+
+msgid "Character Variants 39"
+msgstr "Варианты символов 39"
+
+msgid "Character Variants 40"
+msgstr "Варианты символов 40"
+
+msgid "Character Variants 41"
+msgstr "Варианты символов 41"
+
+msgid "Character Variants 42"
+msgstr "Варианты символов 42"
+
+msgid "Character Variants 43"
+msgstr "Варианты символов 43"
+
+msgid "Character Variants 44"
+msgstr "Варианты символов 44"
+
+msgid "Character Variants 45"
+msgstr "Варианты символов 45"
+
+msgid "Character Variants 46"
+msgstr "Варианты символов 46"
+
+msgid "Character Variants 47"
+msgstr "Варианты символов 47"
+
+msgid "Character Variants 48"
+msgstr "Варианты символов 48"
+
+msgid "Character Variants 49"
+msgstr "Варианты символов 49"
+
+msgid "Character Variants 50"
+msgstr "Варианты символов 50"
+
+msgid "Character Variants 51"
+msgstr "Варианты символов 51"
+
+msgid "Character Variants 52"
+msgstr "Варианты символов 52"
+
+msgid "Character Variants 53"
+msgstr "Варианты символов 53"
+
+msgid "Character Variants 54"
+msgstr "Варианты символов 54"
+
+msgid "Character Variants 55"
+msgstr "Варианты символов 55"
+
+msgid "Character Variants 56"
+msgstr "Варианты символов 56"
+
+msgid "Character Variants 57"
+msgstr "Варианты символов 57"
+
+msgid "Character Variants 58"
+msgstr "Варианты символов 58"
+
+msgid "Character Variants 59"
+msgstr "Варианты символов 59"
+
+msgid "Character Variants 60"
+msgstr "Варианты символов 60"
+
+msgid "Character Variants 61"
+msgstr "Варианты символов 61"
+
+msgid "Character Variants 62"
+msgstr "Варианты символов 62"
+
+msgid "Character Variants 63"
+msgstr "Варианты символов 63"
+
+msgid "Character Variants 64"
+msgstr "Варианты символов 64"
+
+msgid "Character Variants 65"
+msgstr "Варианты символов 65"
+
+msgid "Character Variants 66"
+msgstr "Варианты символов 66"
+
+msgid "Character Variants 67"
+msgstr "Варианты символов 67"
+
+msgid "Character Variants 68"
+msgstr "Варианты символов 68"
+
+msgid "Character Variants 69"
+msgstr "Варианты символов 69"
+
+msgid "Character Variants 70"
+msgstr "Варианты символов 70"
+
+msgid "Character Variants 71"
+msgstr "Варианты символов 71"
+
+msgid "Character Variants 72"
+msgstr "Варианты символов 72"
+
+msgid "Character Variants 73"
+msgstr "Варианты символов 73"
+
+msgid "Character Variants 74"
+msgstr "Варианты символов 74"
+
+msgid "Character Variants 75"
+msgstr "Варианты символов 75"
+
+msgid "Character Variants 76"
+msgstr "Варианты символов 76"
+
+msgid "Character Variants 77"
+msgstr "Варианты символов 77"
+
+msgid "Character Variants 78"
+msgstr "Варианты символов 78"
+
+msgid "Character Variants 79"
+msgstr "Варианты символов 79"
+
+msgid "Character Variants 80"
+msgstr "Варианты символов 80"
+
+msgid "Character Variants 81"
+msgstr "Варианты символов 81"
+
+msgid "Character Variants 82"
+msgstr "Варианты символов 82"
+
+msgid "Character Variants 83"
+msgstr "Варианты символов 83"
+
+msgid "Character Variants 85"
+msgstr "Варианты символов 85"
+
+msgid "Character Variants 86"
+msgstr "Варианты символов 86"
+
+msgid "Character Variants 87"
+msgstr "Варианты символов 87"
+
+msgid "Character Variants 88"
+msgstr "Варианты символов 88"
+
+msgid "Character Variants 89"
+msgstr "Варианты символов 89"
+
+msgid "Character Variants 90"
+msgstr "Варианты символов 90"
+
+msgid "Character Variants 91"
+msgstr "Варианты символов 91"
+
+msgid "Character Variants 92"
+msgstr "Варианты символов 92"
+
+msgid "Character Variants 93"
+msgstr "Варианты символов 93"
+
+msgid "Character Variants 94"
+msgstr "Варианты символов 94"
+
+msgid "Character Variants 95"
+msgstr "Варианты символов 95"
+
+msgid "Character Variants 96"
+msgstr "Варианты символов 96"
+
+msgid "Character Variants 97"
+msgstr "Варианты символов 97"
+
+msgid "Character Variants 98"
+msgstr "Варианты символов 98"
+
+msgid "Character Variants 99"
+msgstr "Варианты символов 99"
+
 msgid "Charsets"
 msgstr "Кодировки"
 
@@ -2118,6 +2412,9 @@ msgstr "Отключённый фон:"
 msgid "Disabled Text Color:"
 msgstr "Цвет отключенного текста:"
 
+msgid "Discarding a duplicate kerning pair."
+msgstr "Отбрасывается дубликат керининговой пары."
+
 msgid "Display"
 msgstr "Отображение"
 
@@ -2516,6 +2813,9 @@ msgstr "Экспорт"
 msgid "ExportClipboard"
 msgstr "Отправлять в буфер обмена X.org"
 
+msgid "Extension"
+msgstr "Расширение"
+
 #. GT: Extra Space, see below for a full comment
 #. GT: Extra Space
 msgid "Extra Sp:"
@@ -2644,6 +2944,9 @@ msgstr "_Найти неполадки..."
 
 msgid "Find Problems"
 msgstr "Поиск неполадок"
+
+msgid "Find a cidmap file..."
+msgstr "Найти файл cidmap..."
 
 msgid "Find an adobe CMap file..."
 msgstr "Укажите файл Adobe CMap..."
@@ -4110,6 +4413,9 @@ msgstr "Лигатура %s"
 msgid "Ligature Glyph Name"
 msgstr "Название глифа лигатуры"
 
+msgid "Ligature Substitution"
+msgstr "Подстановка лигатуры"
+
 msgid "Ligatures"
 msgstr "Лигатуры"
 
@@ -4188,6 +4494,9 @@ msgstr "Загрузка шрифта из %.100s"
 
 msgid "Loading..."
 msgstr "Загрузка..."
+
+msgid "Localized Forms"
+msgstr "Локализованные формы"
 
 msgid "Location"
 msgstr "Расположение"
@@ -4499,6 +4808,9 @@ msgstr ""
 "Объединить две выбранных и совместимых справки в одну\n"
 "или две субтаблицы одной справки в одну субтаблицу"
 
+msgid "Merging Problem"
+msgstr "Проблема при объединении"
+
 msgid ""
 "MetaFont (mf) generates lots of verbiage to stdout.\n"
 "Most of the time I find it an annoyance but it is\n"
@@ -4561,6 +4873,13 @@ msgstr "Отсутствует растр"
 
 msgid "Missing Glyph"
 msgstr "Отсутствует глиф"
+
+#. GT: the string "dotlessi" is the official postscript name for the glyph
+#. GT: containing an "i" without a dot on top of it. The name "dotlessi"
+#. GT: should be left untranslated, though you may wish to explain what it
+#. GT: means
+msgid "Missing Glyph..."
+msgstr "Отсутствует глиф..."
 
 msgid "Missing Points at Extrema"
 msgstr "Отсутствующие точки в экстремумах"
@@ -4658,6 +4977,9 @@ msgstr "Множественные"
 
 msgid "Multi-Master table, obsolete"
 msgstr "таблица Multi-Master, устарела"
+
+msgid "Multiple Substitution"
+msgstr "Множественная подстановка"
 
 msgid "Musical Symbols"
 msgstr "Музыкальные символы"
@@ -4833,6 +5155,10 @@ msgstr "Без растрового"
 msgid "No ByteCode Interpreter"
 msgstr "Нет интерпретатора байт-кода"
 
+#, c-format
+msgid "No CID named %s"
+msgstr "Нет CID с названием %s"
+
 msgid "No Class"
 msgstr "Без класса"
 
@@ -4898,6 +5224,9 @@ msgstr "_Нет для всех"
 
 msgid "No applicable lookup subtables"
 msgstr "Нет применимых субтаблиц справок"
+
+msgid "No cidmap file..."
+msgstr "Нет файла cidmap..."
 
 msgid "No components"
 msgstr "Нет компонентов"
@@ -5268,6 +5597,9 @@ msgstr "С оптимизацией под ClearType"
 
 msgid "Options"
 msgstr "Параметры"
+
+msgid "Ordinals"
+msgstr "Порядковые числительные"
 
 msgid "Origin"
 msgstr "Начало координат"
@@ -7171,6 +7503,9 @@ msgstr "Параметрическое упрощение..."
 msgid "Simplifying..."
 msgstr "Упрощение..."
 
+msgid "Single Substitution"
+msgstr "Единичная подстановка"
+
 msgid "Size"
 msgstr "Размер"
 
@@ -7363,13 +7698,16 @@ msgstr "На_чертание"
 msgid "St_yles"
 msgstr "_Начертания"
 
+msgid "Standard Ligatures"
+msgstr "Стандартные лигатуры"
+
 msgid "Star"
 msgstr "Звезда"
 
 msgid "Start contours at e_xtrema"
 msgstr "Начинать контуры в _экстремумах"
 
-#. GT: "Len" is an abreviation for "Length"
+#. GT: "Len" is an abbreviation for "Length"
 msgid "StartLen"
 msgstr "Нач. длина"
 
@@ -7426,6 +7764,9 @@ msgstr "Названия стилевых наборов"
 
 msgid "Styles (SubFamily)"
 msgstr "Начертания (Подсемейство)"
+
+msgid "Stylistic Alternatives"
+msgstr "Стилистические альтернативы"
 
 msgid "Sub/Super"
 msgstr "Верхний/нижний индекс"
@@ -7529,6 +7870,9 @@ msgstr "Названия TTF"
 
 msgid "TTFFoundry"
 msgstr "Шрифтолитня TTF"
+
+msgid "Tabular Numbers"
+msgstr "Табличные числа"
 
 msgid "Tag must be 4 characters long"
 msgstr "В тэге должно быть четыре символа"
@@ -8288,6 +8632,9 @@ msgstr "Неназначенный бит 126"
 msgid "Unassigned Bit 127"
 msgstr "Неназначенный бит 127"
 
+msgid "Undefined substitution"
+msgstr "Неопределённая подстановка"
+
 msgid "Underline _Position:"
 msgstr "_Линия подчеркивания:"
 
@@ -8545,6 +8892,9 @@ msgstr "Вертикальные просветы:"
 
 msgid "Vertical Fractions"
 msgstr "Вертикальные дроби"
+
+msgid "Vertical Kerning"
+msgstr "Вертикальный кернинг"
 
 msgid "Vertical Offset"
 msgstr "Смещение по вертикали"

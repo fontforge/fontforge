@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-08 09:18+0000\n"
-"PO-Revision-Date: 2020-11-07 04:36\n"
+"POT-Creation-Date: 2022-03-08 09:53+0000\n"
+"PO-Revision-Date: 2022-02-21 08:36\n"
 "Last-Translator: \n"
 "Language-Team: Turkish\n"
 "Language: tr_TR\n"
@@ -31,6 +31,16 @@ msgid ""
 msgstr ""
 "%s bir cidmap dosyası değil, lütfen indirin\n"
 "http://fontforge.sourceforge.net/cidmaps.tgz"
+
+#, c-format
+msgid "%s is not in %.100s"
+msgstr "%s, %.100s üzerinde değil."
+
+msgid "Albanian"
+msgstr "Arnavutça"
+
+msgid "Azebaijani (roman)"
+msgstr "Azerice (latin alfabesi)"
 
 msgid "Bad Template"
 msgstr "Sorunlu şablon"
@@ -101,6 +111,15 @@ msgstr "Dosya açılamıyor"
 msgid "Couldn't open file %.200s"
 msgstr "%.200s Dosya açılamıyor"
 
+msgid "Croatian"
+msgstr "Hırvatça"
+
+msgid "Czech"
+msgstr "Çekçe"
+
+msgid "Danish"
+msgstr "Danca"
+
 msgid "Default Background"
 msgstr "Varsayılan Arkaplan"
 
@@ -116,13 +135,28 @@ msgstr "Pencereler için varsayılan önplan rengi"
 msgid "Different Fonts"
 msgstr "Farklı Yazı Tipleri"
 
+msgid "Don't Warn Again"
+msgstr "Tekrar Uyarma"
+
 #, c-format
 msgid "Duplicate repeat row count in char %d of pk file\n"
 msgstr "PK dosyasındaki karakterde yinelenen satır sayısı %d\n"
 
+msgid "Dutch"
+msgstr "Felemenkçe"
+
+msgid "English"
+msgstr "İngilizce"
+
+msgid "Estonian"
+msgstr "Estonca"
+
 #, c-format
 msgid "Failed to write %s\n"
 msgstr "%s üzerine yazılamadı\n"
+
+msgid "Faroese (Icelandic)"
+msgstr "Faroece (İzlanda)"
 
 msgid "File Exists"
 msgstr "Dosya mevcut"
@@ -133,6 +167,12 @@ msgstr "%s dosyası mevcut. Üzerine yazılsın mı?"
 
 msgid "Find a cidmap file..."
 msgstr "Cidmap dosyası bul..."
+
+msgid "Finnish"
+msgstr "Fince"
+
+msgid "Flemish"
+msgstr "Flamanca"
 
 #, c-format
 msgid ""
@@ -193,6 +233,9 @@ msgstr ""
 msgid "Fontforge showing a glyph being edited"
 msgstr "Fontforge düzenlenen bir sembolü gösterirken"
 
+msgid "French"
+msgstr "Fransızca"
+
 msgid "GDraw"
 msgstr "GDraw"
 
@@ -205,6 +248,91 @@ msgstr "TTC Oluştur"
 msgid "Generate TTC..."
 msgstr "TTC Oluştur..."
 
+msgid "German"
+msgstr "Almanca"
+
+msgid "Greek (polytonic)"
+msgstr "Yunanca (politonik)"
+
+msgid "Greenlandic"
+msgstr "Grönlandca"
+
+msgid "Hindi"
+msgstr "Hintçe"
+
+msgid "Hiragana"
+msgstr "Hiragana"
+
+msgid "Hungarian"
+msgstr "Macarca"
+
+msgid "Icelandic"
+msgstr "İzlandaca"
+
+msgid "Indonesian"
+msgstr "Endonezce"
+
+msgid "Irish Gaelic"
+msgstr "Galce (İrlanda)"
+
+msgid "Is this horizontal or vertical kerning data?"
+msgstr "Bu karakter aralık verisi yatay mı, dikey mi?"
+
+msgid "Italian"
+msgstr "İtalyanca"
+
+msgid "Japanese"
+msgstr "Japonca"
+
+msgid "Katakana"
+msgstr "Katakana"
+
+msgid "Kerning direction"
+msgstr "Karakter aralık yönü"
+
+msgid "Korean"
+msgstr "Korece"
+
+msgid "Lang|Arabic"
+msgstr "Arapça"
+
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "Farsi/Persian"), ignore "Lang|"
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "Farsi/Persian", ignore "Lang|"
+msgid "Lang|Farsi/Persian"
+msgstr "Farsça"
+
+msgid "Lang|Greek"
+msgstr "Yunanca"
+
+msgid "Lang|Hebrew"
+msgstr "İbranice"
+
+msgid "Lang|Kannada"
+msgstr "Kannadaca"
+
+msgid "Lang|Khmer"
+msgstr "Kmerce"
+
+msgid "Lang|Malayalam"
+msgstr "Malayca"
+
+msgid "Lang|Tagalog"
+msgstr "Tagalog"
+
+msgid "Lang|Tamil"
+msgstr "Tamilce"
+
+msgid "Lang|Telugu"
+msgstr "Telugu"
+
+msgid "Lang|Thai"
+msgstr "Tayca"
+
+msgid "Latvian"
+msgstr "Letonca"
+
 msgid ""
 "Learning to use FontForge is easy, and there are various tutorials available "
 "beginning with the basics up to more advanced features such as making and "
@@ -214,8 +342,26 @@ msgstr ""
 "betik oluşturma ve kullanma gibi gelişmiş özellikleri anlatan çeşitli "
 "öğreticileri bulunmaktadır."
 
+msgid "Lithuanian"
+msgstr "Litvanca"
+
 msgid "Loop Count"
 msgstr "Döngü Adedi"
+
+msgid "Malay (arabic)"
+msgstr "Malayca (arap alfabesi)"
+
+msgid "Malay (roman)"
+msgstr "Malayca (latin alfabesi)"
+
+msgid "Maltese"
+msgstr "Maltaca"
+
+msgid "Mathematical Alphanumeric Symbols"
+msgstr "Matematiksel Alfanumerik Semboller"
+
+msgid "Mathematical Greek"
+msgstr "Matematiksel Grekçe"
 
 msgid "MetaFont exited with an error"
 msgstr "MetaFont bir hata verip kapandı"
@@ -223,20 +369,48 @@ msgstr "MetaFont bir hata verip kapandı"
 msgid "Missing cidmap file"
 msgstr "Cidmap dosyası kayıp"
 
+msgid "Missing glyph"
+msgstr "Kayıp sembol"
+
 msgid "More Images Than Selected Glyphs"
 msgstr "Seçilen sembolden fazla resim mevcut"
 
 msgid "No cidmap file..."
 msgstr "Cidmap dosyası yok..."
 
+#, c-format
+msgid "No kerning table for %s\n"
+msgstr "%s için karakter aralık tablosu yok.\n"
+
 msgid "Normal Text Color:"
 msgstr "Normal Metin Rengi:"
+
+msgid "Norwegian"
+msgstr "Norveççe"
 
 msgid "Nothing Selected"
 msgstr "Hiçbir şey seçilmedi"
 
+msgid "Old North Arabian"
+msgstr "Eski Kuzey Arapçası"
+
+msgid "Old Sogdian"
+msgstr "Eski Soğdca"
+
+msgid "Old South Arabian"
+msgstr "Eski Güney Arapçası"
+
+msgid "Old Turkic"
+msgstr "Orhun Alfabesi"
+
 msgid "Old sfd file"
 msgstr "Eski sfd dosyası"
+
+msgid "Out of memory\n"
+msgstr "Yetersiz bellek\n"
+
+msgid "Pick a font, any font..."
+msgstr "Bir yazı tipi seçin, herhangi bir yazı tipi..."
 
 msgid "Please don't do that"
 msgstr "Lütfen bunu yapmayın"
@@ -245,11 +419,29 @@ msgstr "Lütfen bunu yapmayın"
 msgid "Please name encoding %d in this file"
 msgstr "Lütfen dosyadaki %d kodlamasını belirtin"
 
+msgid "Polish"
+msgstr "Lehçe"
+
 msgid "Popup"
 msgstr "Açılır Pencere"
 
 msgid "Popup windows"
 msgstr "Açılır Pencereler"
+
+msgid "Portuguese"
+msgstr "Portekizce"
+
+msgid "Punjabi"
+msgstr "Pencapça"
+
+msgid ""
+"Put CFF fonts into the ttc rather than TTF.\n"
+" These seem to work on the mac and linux\n"
+" but are documented not to work on Windows."
+msgstr ""
+"CFF Yazı Tiplerini TTF yerine TTC'ye koy.\n"
+" Bu özellikler Mac ve Linux üzerinde çalışıyor gibi görünüyor\n"
+" ama Windows üzerinde çalışmadığı belgenmiş."
 
 msgid "Recen_t"
 msgstr "_Son kullanılan"
@@ -273,14 +465,32 @@ msgstr ""
 "Arama listesini orijinal durumuna geri yükler.\n"
 "Fakat alt tablo verisinde yapılan değişiklikler değişmez."
 
+msgid "Romanian"
+msgstr "Romence"
+
+msgid "Runic"
+msgstr "Rünik"
+
+msgid "Russian"
+msgstr "Rusça"
+
 msgid "S_ave as..."
 msgstr "_Farklı kaydet..."
+
+msgid "Sami (Lappish)"
+msgstr "Laponca (Sami)"
+
+msgid "Sanskrit"
+msgstr "Sanskritçe"
 
 msgid "Save A_ll"
 msgstr "_Hepsini Kaydet"
 
 msgid "Save Failed"
 msgstr "Kaydedilemedi"
+
+msgid "Script|Mongolian"
+msgstr "Moğolca"
 
 #. GT: I'm not happy with this phrase. Suggestions for improvements are welcome
 #. GT:  Here I am generating a list of lookup names representing data that can
@@ -297,8 +507,25 @@ msgstr "%s sembolden ikincisi"
 msgid "See also:"
 msgstr "Ayrıca bakınız:"
 
+#, c-format
+msgid ""
+"Separation marks only meaningful in contextual chaining lookups, starting "
+"at: %.20s..."
+msgstr ""
+"Ayırma işaretleri, yalnızca bağlamsal zincirleme aramalarda kullanılmalıdır, "
+"başlangıç noktası: %.20s..."
+
 msgid "Show Hidden Files"
 msgstr "Gizli Dosyaları Göster"
+
+msgid "Simplified Chinese"
+msgstr "Basitleştirilmiş Çince"
+
+msgid "Spanish"
+msgstr "İspanyolca"
+
+msgid "Swedish"
+msgstr "İsveççe"
 
 msgid ""
 "The Merge operation cannot be reverted.\n"
@@ -321,6 +548,9 @@ msgstr ""
 "isimleri kullanıyorum, o sebeple bu sembolü geri çeviremeyeceğim. (Daha "
 "sonraki sembollerde uyarılmayacaksınız.)"
 
+msgid "There are multiple fonts in this file, pick one"
+msgstr "Bu dosyada birden fazla yazı tipi var, birini seçin"
+
 msgid ""
 "This file contains an unnamed encoding, which cannot be named in a script"
 msgstr "Bu dosya script te isimlenemeyen, belirtilmemiş kodlama içeriyor"
@@ -334,6 +564,31 @@ msgstr ""
 
 msgid "Too Complex or Bad"
 msgstr "Çok karışık veya kötü durumda"
+
+#, c-format
+msgid "Too many separation marks, starting at: %.20s..."
+msgstr "Çok fazla ayrıma işareti var, başlangıç noktası: %.20s..."
+
+msgid "Traditional Chinese"
+msgstr "Geleneksel Çince"
+
+msgid "Turkish"
+msgstr "Türkçe"
+
+msgid "Unknown Language"
+msgstr "Bilinmeyen Dil"
+
+msgid "Unspecified Language"
+msgstr "Belirsiz Dil"
+
+msgid "Urdu"
+msgstr "Urduca"
+
+msgid "Vietnamese"
+msgstr "Vietnamca"
+
+msgid "Welsh"
+msgstr "Galce"
 
 msgid "What is the pixel size of the font in this file?"
 msgstr "Bu dosyadaki yazı tipinde pixel boyutu nedir?"
@@ -352,6 +607,9 @@ msgstr "_Oluştur"
 
 msgid "_Generate Fonts..."
 msgstr "Yazı tipi _oluştur..."
+
+msgid "_Horizontal"
+msgstr "_Yatay"
 
 msgid "_Import"
 msgstr "_İçe Aktar"
@@ -385,6 +643,9 @@ msgstr "Dosyayı _Geri Yükle"
 
 msgid "_Save"
 msgstr "Kayde_t"
+
+msgid "_Vertical"
+msgstr "_Dikey"
 
 msgid "couldn't write encodings file\n"
 msgstr "kodlama dosyasına yazılamadı\n"
