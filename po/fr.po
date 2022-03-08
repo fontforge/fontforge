@@ -7,14 +7,15 @@
 # Pierre HANSER, 2007-11-18 10:37+0100
 # Adrien Tétar, 2014
 # Jean-René Bastien, 2017-02-24 15:05-0500
+# Simsimpicpic <https://crowdin.com/profile/simsimpicpic>
 #
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-08 09:18+0000\n"
-"PO-Revision-Date: 2020-11-07 04:36\n"
+"POT-Creation-Date: 2022-03-08 09:53+0000\n"
+"PO-Revision-Date: 2022-02-21 08:36\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -361,7 +362,7 @@ msgstr "Base %s"
 
 #. GT: There are various broad classes of lookups here and the first string
 #. GT: describes those: "Contextual Positioning", Contextual Substitution", etc.
-#. GT: Each of those may be formated in 3 different ways: by (or perhaps using
+#. GT: Each of those may be formatted in 3 different ways: by (or perhaps using
 #. GT: would be a better word) glyphs, classes or coverage tables.
 #. GT: So this might look like:
 #. GT:  Contextual Positioning by classes
@@ -2107,6 +2108,9 @@ msgstr "Arabe yéménite"
 msgid "Arabic Extended-A"
 msgstr "Arabe étendu (A)"
 
+msgid "Arabic Extended-B"
+msgstr "Arabe étendu — B"
+
 msgid "Arabic Mathematical Alphabetic Symbols"
 msgstr "Symboles mathématiques alphabétiques Arable"
 
@@ -3431,6 +3435,9 @@ msgstr "Forme inférieure de diacritique"
 msgid "Below Base Substitutions"
 msgstr "Substitutions inférieures (IND)"
 
+msgid "Bengali"
+msgstr "Bengali"
+
 msgid "Bengali Bangladesh"
 msgstr "Bengali du Bangladesh"
 
@@ -4371,7 +4378,7 @@ msgstr "4. Empattements Clarendon"
 msgid "Class"
 msgid_plural "Classes"
 msgstr[0] "Classe"
-msgstr[1] ""
+msgstr[1] "Classes"
 
 #, c-format
 msgid "Class %d: "
@@ -9077,7 +9084,7 @@ msgid ""
 "is empty)"
 msgstr "Désolé, ce fichier est trop compliqué (ou erroné, ou encore vide)"
 
-#. GT: "I." is an abreviation for "Inherits"
+#. GT: "I." is an abbreviation for "Inherits"
 msgid "I."
 msgstr "H."
 
@@ -10363,6 +10370,9 @@ msgstr "Kanboun"
 msgid "Kangxi Radicals"
 msgstr "Radicaux de Kangxi"
 
+msgid "Kannada"
+msgstr "Kannada"
+
 msgid "Karelian"
 msgstr "Carélien"
 
@@ -10697,6 +10707,9 @@ msgstr "Ouïgour"
 
 msgid "Lang|Yi"
 msgstr "Yi"
+
+msgid "Lao"
+msgstr "Lao"
 
 msgid "Last Anchor Point"
 msgstr "Dernière ancre"
@@ -12588,6 +12601,9 @@ msgstr ""
 msgid "NFNT (Resource)"
 msgstr "NFNT (Ressource)"
 
+msgid "NKo"
+msgstr "N'ko"
+
 msgid "NLC Kanji Forms"
 msgstr "Formes Kanji de la NLC"
 
@@ -13988,7 +14004,7 @@ msgid "Open Contour"
 msgstr "Contour ouvert"
 
 msgid "Open Font"
-msgstr "Ouvrir Fonte"
+msgstr "Ouvrir une fonte"
 
 msgid "Open Glyph"
 msgstr "Ouvrir un glyphe"
@@ -14089,6 +14105,9 @@ msgstr "Couleur initiale"
 
 msgid "Original Y Position"
 msgstr "Position Y originale"
+
+msgid "Oriya"
+msgstr "Odia"
 
 msgid "Ornamental Dingbats"
 msgstr "Casseau ornemental"
@@ -15417,9 +15436,6 @@ msgstr "Utiliser le codage PUA"
 
 msgid "Recover old edit"
 msgstr "Récupérer une ancienne session"
-
-msgid "Recovery Complete"
-msgstr "Récupération complétée"
 
 msgid "Recovery Failed"
 msgstr "Échec de la récupération"
@@ -18342,7 +18358,7 @@ msgstr "Étoile"
 msgid "Start contours at e_xtrema"
 msgstr "Débute les contours aux e_xtréma"
 
-#. GT: "Len" is an abreviation for "Length"
+#. GT: "Len" is an abbreviation for "Length"
 msgid "StartLen"
 msgstr "Début"
 
@@ -18802,6 +18818,9 @@ msgstr "Erreurs de syntaxe lors de l'analyse des entêtes de la fonte de Type3"
 msgid "Syriac"
 msgstr "Syriaque"
 
+msgid "Syriac Supplement"
+msgstr "Supplément syriaque"
+
 #. GT: Top/Left (side) bearing
 msgid "TBearing:"
 msgstr "ApprocheSup:"
@@ -19028,6 +19047,9 @@ msgstr "Textuel"
 
 msgid "Tfm Save Failed"
 msgstr "Échec enregistrement du TFM"
+
+msgid "Thaana"
+msgstr "Thâna"
 
 msgid "Thai"
 msgstr "Thaï"
@@ -22278,9 +22300,6 @@ msgstr "Outil_s"
 msgid "Tools"
 msgstr "Outils"
 
-msgid "Tools_2"
-msgstr "Outils_2"
-
 msgid "Top Accent"
 msgstr "Accent supérieur"
 
@@ -24739,14 +24758,6 @@ msgstr ""
 "dictionnaire privé, Élement-> Infos fonte... -> Dictionnaire PS privé, pour "
 "la fonte"
 
-#, c-format
-msgid ""
-"Your file %s has been recovered.\n"
-"You must now Save your file to continue working on it."
-msgstr ""
-"Votre fichier %s a été récupéré.\n"
-"Vous devez maintenant l'enregistrer pour continuer de travailler avec."
-
 msgid ""
 "Your font has a 2 byte encoding, but you are attempting to save it in a "
 "format that only supports one byte encodings. This means that you won't be "
@@ -26406,3 +26417,17 @@ msgstr "∆y_cha #1"
 
 msgid "∆y_adv #2"
 msgstr "∆y_cha #2"
+
+#~ msgid "Recovery Complete"
+#~ msgstr "Récupération complétée"
+
+#~ msgid "Tools_2"
+#~ msgstr "Outils_2"
+
+#, c-format
+#~ msgid ""
+#~ "Your file %s has been recovered.\n"
+#~ "You must now Save your file to continue working on it."
+#~ msgstr ""
+#~ "Votre fichier %s a été récupéré.\n"
+#~ "Vous devez maintenant l'enregistrer pour continuer de travailler avec."

@@ -18,7 +18,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-08 09:18+0000\n"
+"POT-Creation-Date: 2022-03-08 09:53+0000\n"
 "PO-Revision-Date: 2022-01-07 15:14\n"
 "Last-Translator: Linus Romer\n"
 "Language-Team: German\n"
@@ -396,7 +396,7 @@ msgstr "%s Grundzeichen"
 
 #. GT: There are various broad classes of lookups here and the first string
 #. GT: describes those: "Contextual Positioning", Contextual Substitution", etc.
-#. GT: Each of those may be formated in 3 different ways: by (or perhaps using
+#. GT: Each of those may be formatted in 3 different ways: by (or perhaps using
 #. GT: would be a better word) glyphs, classes or coverage tables.
 #. GT: So this might look like:
 #. GT:  Contextual Positioning by classes
@@ -1215,6 +1215,9 @@ msgstr "Akzent-Anker hinzufügen …"
 msgid "Add OFL"
 msgstr "OFL Lizenz hinzufügen"
 
+msgid "Add Points Of I_nflection"
+msgstr "We_ndepunkte hinzufügen"
+
 msgid "Add Sub_table"
 msgstr "Su_btabelle hinzufügen"
 
@@ -1298,6 +1301,9 @@ msgstr "Zeichen der Namensliste hinzufügen"
 
 msgid "Adding points at Extrema..."
 msgstr "Extrempunkte werden hinzufgefügt …"
+
+msgid "Adding points of inflection..."
+msgstr "Wendepunkte werden hinzugefügt …"
 
 msgid "Additional arguments for autotrace program:"
 msgstr "Zusätzliche Argumente für das autotrace-Programm:"
@@ -2875,6 +2881,9 @@ msgstr "Ungültiger Wert für einen alternativen Unicode / Variationen-Selektor"
 
 msgid "Bad xfig file"
 msgstr "Ungültige xfig-Datei"
+
+msgid "Balancing..."
+msgstr "Kontrollpunkte werden ausbalanciert …"
 
 msgid "Balinese"
 msgstr "Balinesisch"
@@ -7508,6 +7517,12 @@ msgstr "Formen Hangul Jamo-Zeichen halber Breite"
 msgid "Hanja to Hangul (Deprecated)"
 msgstr "Hanja nach Hangul (veraltet)"
 
+msgid "Harmoni_ze"
+msgstr "Harmoni_sieren"
+
+msgid "Harmonizing..."
+msgstr "Krümmungen werden harmonisiert …"
+
 msgid "Has _Vertical Metrics"
 msgstr "Enthält _vertikale Metriken"
 
@@ -7773,7 +7788,7 @@ msgstr ""
 "Diese Datei ist zu komplex um sie zu verstehen (oder sie hat Fehler, oder "
 "sie ist leer)"
 
-#. GT: "I." is an abreviation for "Inherits"
+#. GT: "I." is an abbreviation for "Inherits"
 msgid "I."
 msgstr "E."
 
@@ -15088,7 +15103,7 @@ msgstr "Stern"
 msgid "Start contours at e_xtrema"
 msgstr "Konturenstart bei E_xtrempunkten"
 
-#. GT: "Len" is an abreviation for "Length"
+#. GT: "Len" is an abbreviation for "Length"
 msgid "StartLen"
 msgstr "Längen-Start"
 
@@ -19940,6 +19955,9 @@ msgstr "_BDF Informationen …"
 #. GT: Background, make it short
 msgid "_Back"
 msgstr "_Hinten"
+
+msgid "_Balance"
+msgstr "Aus_balancieren"
 
 msgid "_Base Filename:"
 msgstr "_Grundname für Dateien:"

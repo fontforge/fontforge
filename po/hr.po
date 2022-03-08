@@ -4,16 +4,16 @@
 # George Williams, <pfaedit@users.sourceforge.net>, 2006.
 #
 # Translators:
-# Milo Ivir <mail@milotype.de>, 2019-2020.
+# Milo Ivir <mail@milotype.de>, 2019-2022.
 #
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-08 09:18+0000\n"
-"PO-Revision-Date: 2020-11-07 04:36\n"
-"Last-Translator: Milo Ivir <mail@milotype.de>\n"
+"POT-Creation-Date: 2022-03-08 09:53+0000\n"
+"PO-Revision-Date: 2022-02-21 08:36\n"
+"Last-Translator: \n"
 "Language-Team: Croatian\n"
 "Language: hr_HR\n"
 "MIME-Version: 1.0\n"
@@ -399,7 +399,7 @@ msgstr "%s osnova"
 
 #. GT: There are various broad classes of lookups here and the first string
 #. GT: describes those: "Contextual Positioning", Contextual Substitution", etc.
-#. GT: Each of those may be formated in 3 different ways: by (or perhaps using
+#. GT: Each of those may be formatted in 3 different ways: by (or perhaps using
 #. GT: would be a better word) glyphs, classes or coverage tables.
 #. GT: So this might look like:
 #. GT:  Contextual Positioning by classes
@@ -2241,6 +2241,9 @@ msgstr "Arapski (Jemen)"
 msgid "Arabic Extended-A"
 msgstr "Arapsko, prošireno A"
 
+msgid "Arabic Extended-B"
+msgstr "Arapsko, prošireno B"
+
 msgid "Arabic Mathematical Alphabetic Symbols"
 msgstr "Arapski matematički alfanumerički simboli"
 
@@ -2369,6 +2372,9 @@ msgid "Ascent and Descent must be positive and their sum less than 16384"
 msgstr ""
 "Uzlazni i silazni potezi moraju imati pozitivne vrijednosti, a njihov zbroj "
 "manji od 16384"
+
+msgid "Ask"
+msgstr "Pitaj"
 
 msgid "Ask the user for autotrace arguments each time autotrace is invoked"
 msgstr ""
@@ -3604,6 +3610,9 @@ msgstr "Batačko"
 
 msgid "Baule"
 msgstr "Baule"
+
+msgid "Bavarian"
+msgstr "Bavarski"
 
 msgid "Be_vel"
 msgstr "_Zarezani spoj"
@@ -4932,6 +4941,21 @@ msgstr "Kineski pojednostavljeni"
 msgid "Chinese Traditional"
 msgstr "Kineski tradicionalni"
 
+msgid "Chinese, Phonetic"
+msgstr "Kineski, fonetski"
+
+msgid "Chinese, Simplified"
+msgstr "Kineski, pojednostavljeni"
+
+msgid "Chinese, Traditional"
+msgstr "Kineski, tradicionalni"
+
+msgid "Chinese, Traditional, Hong Kong SAR"
+msgstr "Kineski, tradicionalni, Hong Kong SAR"
+
+msgid "Chinese, Traditional, Macao SAR"
+msgstr "Kineski, tradicionalni, Macao SAR"
+
 msgid "Chipewyan"
 msgstr "Chipewyan"
 
@@ -5328,6 +5352,9 @@ msgstr "Suženi"
 msgid "Condensed (75%)"
 msgstr "Suženi (75%)"
 
+msgid "Config_ure Plugins..."
+msgstr "Konfig_uriraj dodatke …"
+
 msgid "Configure"
 msgstr "Postavi"
 
@@ -5361,6 +5388,9 @@ msgstr "Kontekstno pozicioniranje niza"
 
 msgid "Contextual Chaining Substitution"
 msgstr "Kontekstna zamjena niza"
+
+msgid "Contextual Half-width Spacing"
+msgstr "Kontekstualno poluširinsko spacioniranje"
 
 msgid "Contextual Ligatures"
 msgstr "Kontekstne ligature"
@@ -5551,6 +5581,10 @@ msgstr "Korzički"
 msgid "Cou_nter Clockwise"
 msgstr "Na_lijevo"
 
+#, c-format
+msgid "Could not create plugin directory '%s'\n"
+msgstr "Neuspjelo stvaranje mape dodataka „%s”\n"
+
 msgid "Could not figure out a lookup type"
 msgstr "Nemoguće prepoznati vrstu tablice definicija"
 
@@ -5639,6 +5673,12 @@ msgstr "Neuspjelo zapisivanje %.100s"
 #, c-format
 msgid "Could not write %s"
 msgstr "Neuspjelo zapisivanje %s"
+
+msgid "Couldn't Load"
+msgstr "Neuspjelo učitavanje"
+
+msgid "Couldn't Start"
+msgstr "Neuspjelo pokretanje"
 
 msgid "Couldn't create directory"
 msgstr "Neuspjelo stvaranje mape"
@@ -7167,6 +7207,9 @@ msgstr "Etiopski prošireno"
 msgid "Ethiopic Extended-A"
 msgstr "Etiopski prošireno-A"
 
+msgid "Ethiopic Extended-B"
+msgstr "Etiopski prošireno-B"
+
 msgid "Ethiopic Supplement"
 msgstr "Etiopsko, dopuna"
 
@@ -8142,6 +8185,13 @@ msgid "FontForge font debugging table"
 msgstr "FontForge tablica za ispravljanje grešaka"
 
 msgid ""
+"FontForge has not yet attempted to load Plugins\n"
+"Do you want it to do that now?"
+msgstr ""
+"FontForge još nije pokušao učitati dodatke.\n"
+"Želiš li da to sada učiniti?"
+
+msgid ""
 "FontForge internally uses paths drawn in a\n"
 "clockwise direction. This lets you check that they are.\n"
 "Before doing this test insure that\n"
@@ -8235,6 +8285,22 @@ msgstr ""
 "  %.80s\n"
 "\n"
 "Želiš li potražiti odgovarajuću datoteku na tvom lokalnom disku?"
+
+#, c-format
+msgid ""
+"FontForge was unable to find a cidmap file for this font. The following path "
+"was searched:\n"
+"   %.80s\n"
+"\n"
+"It is not essential to have one, but some things will work better if you do. "
+"Would you like to search your local disk for an appropriate file?"
+msgstr ""
+"FontForge nije uspio pronaći cidmap datoteku za ovaj font. Pretražena je "
+"sljedeća staza:\n"
+"    %.80s\n"
+"\n"
+"Datoteka nije esencijalna, ali neke će stvari funkcionirati bolje ako se "
+"navede. Želiš li na svom lokalnom disku potražiti odgovarajuću datoteku?"
 
 msgid ""
 "FontForge was unable to load libspiro, spiros are not available for use."
@@ -9475,6 +9541,9 @@ msgstr "Visoka"
 msgid "High Mari"
 msgstr "Visoki Mari"
 
+msgid "High Private Use Surrogates"
+msgstr "Visoki zamjenski znakovi za privatnu upotrebu"
+
 msgid "High Surrogate"
 msgstr "Visoki zamjenski znakovi"
 
@@ -9772,7 +9841,7 @@ msgid ""
 "is empty)"
 msgstr "Datoteka je pre kompleksna (ili neispravna ili prazna) za obrađivanje"
 
-#. GT: "I." is an abreviation for "Inherits"
+#. GT: "I." is an abbreviation for "Inherits"
 msgid "I."
 msgstr "Naslij."
 
@@ -10544,6 +10613,9 @@ msgstr "Naslijeđuje od"
 msgid "Initial Forms"
 msgstr "Početni oblici"
 
+msgid "Initialize Plugins?"
+msgstr "Inicijalizirati dodatke?"
+
 msgid "Initials"
 msgstr "Inicijali"
 
@@ -11044,6 +11116,9 @@ msgstr "Kamba"
 msgid "Kana Extended-A"
 msgstr "Kana, prošireno-A"
 
+msgid "Kana Extended-B"
+msgstr "Kana prošireno-B"
+
 msgid "Kana Supplement"
 msgstr "Kana, dopuna"
 
@@ -11475,6 +11550,9 @@ msgstr "Mongolski"
 msgid "Lang|Oriya"
 msgstr "Orijski"
 
+msgid "Lang|Persian"
+msgstr "Perzijski"
+
 msgid "Lang|Sinhalese"
 msgstr "Singalski"
 
@@ -11532,6 +11610,12 @@ msgstr "Latinica prošireno-D"
 
 msgid "Latin Extended-E"
 msgstr "Latinica prošireno-E"
+
+msgid "Latin Extended-F"
+msgstr "Latinica prošireno-F"
+
+msgid "Latin Extended-G"
+msgstr "Latinica prošireno-G"
 
 msgid "Latin Full Width Forms"
 msgstr "Latinični oblici punih širina"
@@ -11717,8 +11801,14 @@ msgstr "Svijetli"
 msgid "Light Angle:"
 msgstr "Kut svijetla:"
 
+msgid "Ligurian"
+msgstr "Ligurski"
+
 msgid "Limbu"
 msgstr "Limbu"
+
+msgid "Limburgish"
+msgstr "Limburški"
 
 msgid ""
 "Limit the font so that only the glyphs referenced in the first 256 "
@@ -11820,6 +11910,9 @@ msgstr "Učitaj popis naziva grafema …"
 
 msgid "Load Namelist"
 msgstr "Učitaj popis naziva grafema"
+
+msgid "Load Plugin?"
+msgstr "Učitati dodatak?"
 
 msgid "Load Word List..."
 msgstr "Učitaj popis riječi …"
@@ -12834,6 +12927,15 @@ msgstr "Meriotski pisani"
 msgid "Meroitic Hieroglyphs"
 msgstr "Meroitski hijeroglifi"
 
+msgid ""
+"MetaFont (mf) generates lots of verbiage to stdout.\n"
+"Most of the time I find it an annoyance but it is\n"
+"important to see if something goes wrong."
+msgstr ""
+"MetaFont (mf) generira veliki broj podataka u stdout.\n"
+"Ta me količina podataka najčešće smeta, ali su ti\n"
+"podaci važni za razumijevanje grešaka."
+
 msgid "MetaFont exited with an error"
 msgstr "MetaFont je izašao s greškom"
 
@@ -13200,6 +13302,9 @@ msgstr "Modifikatorska slova i modifikatorska slova intonacije"
 
 msgid "Modifier Tone Letters"
 msgstr "Modifikatorska slova intonacije"
+
+msgid "Module Name:"
+msgstr "Ime modula:"
 
 msgid "Mohawk"
 msgstr "Mohawk"
@@ -13615,6 +13720,9 @@ msgstr "Neutralno"
 
 msgid "Never Embed/No Editing"
 msgstr "Onemogući ugrađivanje / uređivanje dokumenata"
+
+msgid "New"
+msgstr "Novi"
 
 msgid "New Alternate List"
 msgstr "Novi popis alternativa"
@@ -14560,6 +14668,12 @@ msgstr "OT klasa _grafema:"
 msgid "OTF 'CFF '"
 msgstr "OTF 'CFF '"
 
+msgid "O_ff"
+msgstr "I_sključeno"
+
+msgid "O_n"
+msgstr "Uključe_no"
+
 msgid "O_pen Paths"
 msgstr "_Otvorene staze"
 
@@ -14679,6 +14793,9 @@ msgstr "Ol Chiki"
 msgid "Old Hungarian"
 msgstr "Staro mađarsko"
 
+msgid "Old Irish"
+msgstr "Stari irski"
+
 msgid "Old Italic"
 msgstr "Staro-talijansko"
 
@@ -14714,6 +14831,9 @@ msgstr "1 – Humanistički serifni"
 
 msgid "Old Turkic"
 msgstr "Staro tursko"
+
+msgid "Old Uyghur"
+msgstr "Stari ujgurski"
 
 msgid "Old sfd file"
 msgstr "Stara sfd datoteka"
@@ -14897,6 +15017,9 @@ msgstr "Boja za otvorene staze"
 
 msgid "Open Reference"
 msgstr "Otvori referencu"
+
+msgid "Open _Web Page"
+msgstr "Otvori _web stranicu"
 
 msgid "Open failed"
 msgstr "Neuspješno otvaranje"
@@ -15218,6 +15341,12 @@ msgstr "P_ozicije"
 
 msgid "P_rev Control Point"
 msgstr "P_rethodna točka"
+
+msgid "Package Name:"
+msgstr "Ime paketa:"
+
+msgid "Package URL:"
+msgstr "URL paketa:"
 
 msgid "Padding"
 msgstr "Unutarnji odmak"
@@ -15814,6 +15943,20 @@ msgstr "Odredi novu dopunu za %.20s – %.20s"
 msgid "Please specify a script"
 msgstr "Odredi jedno pismo"
 
+msgid "Plugin Configuration"
+msgstr "Konfiguracija dodatka"
+
+msgid ""
+"Plugins can be Loaded and Configured now.\n"
+"Other changes will take effect at next restart."
+msgstr ""
+"Dodaci se sada mogu učitati i konfigurirati.\n"
+"Ostale promjene stupit će na snagu pri sljedećem\n"
+"ponovnom pokretanju."
+
+msgid "Plugins off in preferences"
+msgstr "Dodaci isključeni u postavkama"
+
 msgid "Poin_ts too close"
 msgstr "Točke koje su pre_blizu"
 
@@ -16369,6 +16512,9 @@ msgstr "Raw"
 msgid "Re_move"
 msgstr "_Ukloni"
 
+msgid "Re_vert List"
+msgstr "Ob_novi popis"
+
 msgid "Reached end of file when reading composite glyph\n"
 msgstr "Dosegnut je kraj datoteke tijekom čitanja kompozitnog grafema\n"
 
@@ -16405,9 +16551,6 @@ msgstr "Prepoznaj PUA nazive"
 
 msgid "Recover old edit"
 msgstr "Obnovi staro uređivanje"
-
-msgid "Recovery Complete"
-msgstr "Obnavljanje završeno"
 
 msgid "Recovery Failed"
 msgstr "Obnavljanje neuspjelo"
@@ -18403,6 +18546,9 @@ msgstr "Sužavanje:"
 msgid "Sibe"
 msgstr "Sibe"
 
+msgid "Sicilian"
+msgstr "Sicilijanski"
+
 msgid "Sidamo"
 msgstr "Sidamo"
 
@@ -19159,7 +19305,7 @@ msgstr "Zvijezda"
 msgid "Start contours at e_xtrema"
 msgstr "Započni s konturama pri točkama ekstrema"
 
-#. GT: "Len" is an abreviation for "Length"
+#. GT: "Len" is an abbreviation for "Length"
 msgid "StartLen"
 msgstr "Početak duljine"
 
@@ -19476,6 +19622,9 @@ msgstr "Pod-tablica se proteže izvan kraja GSUB tablice\n"
 
 msgid "Sum Around:"
 msgstr "Zbroj okolo:"
+
+msgid "Summary:"
+msgstr "Sažetak:"
 
 msgid "Sundanese"
 msgstr "Sudansko"
@@ -19859,6 +20008,9 @@ msgstr "Tamilski, dopuna"
 
 msgid "Tangent"
 msgstr "Tangenta"
+
+msgid "Tangsa"
+msgstr "Tangsa"
 
 msgid "Tangut"
 msgstr "Tangutski"
@@ -20320,6 +20472,15 @@ msgstr ""
 "Type 2 Charstring Reference (dodatak B) kaže, da\n"
 "po znaku ne smije biti više od 96 vodoravnih i okomitih\n"
 "kontrola poteza."
+
+msgid ""
+"The UsePlugins preferences option is currently off.\n"
+"FontForge will not load plugin configuration or\n"
+"attempt discovery unless that option is on."
+msgstr ""
+"Opcija postavki „Koristi dodatke” trenutačno je isključena.\n"
+"FontForge neće učitati konfiguraciju dodatka ili\n"
+"pokušati otkrivati, ako ta opcija nije uključena."
 
 msgid "The X coordinate of the anchor point in this glyph"
 msgstr "X koordinata točke sidra u ovom grafemu"
@@ -21402,6 +21563,13 @@ msgstr ""
 #, c-format
 msgid "The pixel size on line %d is out of bounds."
 msgstr "Veličina piksela u %d. retku je izvan granica."
+
+msgid ""
+"The plugin will be loaded in the order at the next restart\n"
+"of FontForge. You can also load it now. Would you like to?"
+msgstr ""
+"Dodatak će se učitati tim redoslijedom pri sljedećem ponovnom\n"
+"pokretanju FontForgea. Možeš ga i sada učitati. Želiš li to učiniti?"
 
 msgid ""
 "The points have been changed. This may mean that the truetype instructions "
@@ -23236,9 +23404,6 @@ msgstr "_Alati"
 msgid "Tools"
 msgstr "Alati"
 
-msgid "Tools_2"
-msgstr "Alati_2"
-
 msgid "Top Accent"
 msgstr "Gornji naglasak"
 
@@ -23274,6 +23439,9 @@ msgstr "Gore lijevo"
 
 msgid "TopRight"
 msgstr "Gore desno"
+
+msgid "Toto"
+msgstr "Toto"
 
 msgid "Trace Color"
 msgstr "Boja za precrtavanje"
@@ -23866,6 +24034,9 @@ msgstr "Sjedinjeni slogovi kanadskih starosjedilaca"
 msgid "Unified Canadian Aboriginal Syllabics Extended"
 msgstr "Sjedinjeni slogovi kanadskih starosjedilaca prošireno"
 
+msgid "Unified Canadian Aboriginal Syllabics Extended-A"
+msgstr "Sjedinjeni slogovi kanadskih starosjedilaca prošireno-A"
+
 msgid "Unified Font Object"
 msgstr "Ujedinjeni font objekt (UFO)"
 
@@ -24038,6 +24209,9 @@ msgstr "Odspoji"
 
 msgid "Unlink All"
 msgstr "Odspoji sve"
+
+msgid "Unloaded"
+msgstr "Neučitani"
 
 msgid "Unnamed lookup"
 msgstr "Neimenovana tablica definicija"
@@ -24293,6 +24467,9 @@ msgstr "Koristi Cairo crtanje"
 msgid "UseNewIndicScripts"
 msgstr "Koristi novo indijsko pismo"
 
+msgid "UsePlugins"
+msgstr "Koristi dodatke"
+
 msgid "User controls the emboldening with the next two fields"
 msgstr "Korisnik kontrolira podebljavanje pomoću sljedeća dva polja"
 
@@ -24464,6 +24641,9 @@ msgstr "Uspravne alternative za rotaciju"
 
 msgid "Vertical Baselines"
 msgstr "Uspravne osnovne pismovne linije"
+
+msgid "Vertical Contextual Half-width Spacing"
+msgstr "Okomito kontekstualno poluširinsko spacioniranje"
 
 msgid "Vertical Counter Add"
 msgstr "Uspravno dodavanje unutarnjoj bjelini"
@@ -24692,6 +24872,17 @@ msgstr ""
 
 msgid "Warning: Font contained no glyphs"
 msgstr "Upozorenje: Font nije sadržao nijedan grafem"
+
+#, c-format
+msgid ""
+"Warning: FontForge's implementation of include statements in UFO features."
+"fea files was wrong. Please correct your path `%s` as per the specification "
+"for guaranteed future compatibility. (See GitHub issue №4629 for more info.)"
+msgstr ""
+"Upozorenje: FontForge implementacija uključivanja izjava u UFO features.fea "
+"datotekama je bila pogrešna. Ispravi putanju `%s` prema specifikaciji za "
+"zajamčenu buduću kompatibilnost. (Pogledaj GitHub problem broj 4629 za više "
+"informacija.)"
 
 #, c-format
 msgid ""
@@ -24964,6 +25155,19 @@ msgstr ""
 
 msgid "When a font is opened, should it be made compact?"
 msgstr "Kad se font otvori, želiš li imati kompaktni prikaz?"
+
+msgid ""
+"When a new plugin is discovered it is left unrecorded\n"
+"until configured in this dialog."
+msgstr ""
+"Kada se otkrije novi dodatak, on se ne snima,\n"
+"sve dok se ne konfigurira u ovom dijaloškom okviru."
+
+msgid "When a new plugin is discovered it is recorded and activated"
+msgstr "Kad se otkrije novi dodatak, on se zapisuje i aktivira"
+
+msgid "When a new plugin is discovered it is recorded but not activated"
+msgstr "Kad se otkrije novi dodatak, on se zapisuje ali se ne aktivira"
 
 #, c-format
 msgid ""
@@ -25273,6 +25477,9 @@ msgid ""
 msgstr ""
 "Hoće li novi fontovi sadržati kvadratne (TrueType) ili\n"
 "kubične (PostScript i OpenType) krivulje."
+
+msgid "Whether or not to try to discover and import Python plugins."
+msgstr "Treba li se pokušati otkriti i uvesti Python dodatke."
 
 msgid ""
 "Whether or not to warn you if you have an unsaved script in the «Execute "
@@ -25848,14 +26055,6 @@ msgstr ""
 "Dobit češ bolje rezultate za font, ako ispuniš polja privatnog rječnika, "
 "„Element -> Informacije o fontu -> Private”"
 
-#, c-format
-msgid ""
-"Your file %s has been recovered.\n"
-"You must now Save your file to continue working on it."
-msgstr ""
-"Tvoja datoteka %s je obnovljena.\n"
-"Za daljnje obrađivanje datoteke, moraš je sad spremiti."
-
 msgid ""
 "Your font has a 2 byte encoding, but you are attempting to save it in a "
 "format that only supports one byte encodings. This means that you won't be "
@@ -25917,6 +26116,9 @@ msgstr "Zande"
 
 msgid "Zapf Dingbats"
 msgstr "Zapf Dingbats"
+
+msgid "Znamenny Musical Notation"
+msgstr "Znamenny, glazbena notacija"
 
 msgid "Zone:"
 msgstr "Zona:"
@@ -26049,6 +26251,9 @@ msgstr "_Približno"
 msgid "_Ascent:"
 msgstr "_Uzlazni potez:"
 
+msgid "_Ask"
+msgstr "_Pitaj"
+
 msgid "_Aspect"
 msgstr "_Oblik"
 
@@ -26161,6 +26366,9 @@ msgstr "_Kompaktno"
 msgid "_Condense/Extend..."
 msgstr "_Suzi/Proširi …"
 
+msgid "_Configure"
+msgstr "Po_stavi"
+
 msgid "_Contrast"
 msgstr "_Kontrast"
 
@@ -26228,6 +26436,9 @@ msgstr "Od_spoji grafeme"
 msgid "_Diagonal Hints"
 msgstr "_Dijagonalne kontrole"
 
+msgid "_Disable"
+msgstr "_Deaktiviraj"
+
 msgid "_Display Compositions..."
 msgstr "_Prikaži sastavljanja …"
 
@@ -26275,6 +26486,9 @@ msgstr "_Veličina četverca:"
 
 msgid "_Embeddable"
 msgstr "_Ugrađivanje"
+
+msgid "_Enable"
+msgstr "_Aktiviraj"
 
 msgid "_Enabled"
 msgstr "_Aktivirano"
@@ -26532,6 +26746,9 @@ msgstr "_Ligature"
 msgid "_Lining"
 msgstr "_Vrsta crtanja"
 
+msgid "_Load"
+msgstr "_Učitaj"
+
 msgid "_Load Encoding..."
 msgstr "Uči_taj kodiranje …"
 
@@ -26586,6 +26803,9 @@ msgstr "_Promijeni sastavljanje …"
 
 msgid "_Mono"
 msgstr "_Crno-bijelo"
+
+msgid "_More Info"
+msgstr "_Više informacija"
 
 msgid "_More hints than:"
 msgstr "_Više kontrola od:"
@@ -26652,6 +26872,9 @@ msgstr "_OS/2 verzija"
 
 msgid "_Off"
 msgstr "_Isključeno"
+
+msgid "_Ok"
+msgstr "_U redu"
 
 msgid "_Open"
 msgstr "_Otvori"
@@ -27758,3 +27981,17 @@ msgstr "∆y_vis. br.1"
 
 msgid "∆y_adv #2"
 msgstr "∆y_vis. br.2"
+
+#~ msgid "Recovery Complete"
+#~ msgstr "Obnavljanje završeno"
+
+#~ msgid "Tools_2"
+#~ msgstr "Alati_2"
+
+#, c-format
+#~ msgid ""
+#~ "Your file %s has been recovered.\n"
+#~ "You must now Save your file to continue working on it."
+#~ msgstr ""
+#~ "Tvoja datoteka %s je obnovljena.\n"
+#~ "Za daljnje obrađivanje datoteke, moraš je sad spremiti."

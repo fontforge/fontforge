@@ -12,9 +12,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-08 09:18+0000\n"
-"PO-Revision-Date: 2020-11-07 04:36\n"
-"Last-Translator: Adam Jagosz <adamjagosz@gmail.com>\n"
+"POT-Creation-Date: 2022-03-08 09:53+0000\n"
+"PO-Revision-Date: 2022-02-21 08:36\n"
+"Last-Translator: \n"
 "Language-Team: Polish\n"
 "Language: pl_PL\n"
 "MIME-Version: 1.0\n"
@@ -364,7 +364,7 @@ msgstr "%s glif podstawowy"
 
 #. GT: There are various broad classes of lookups here and the first string
 #. GT: describes those: "Contextual Positioning", Contextual Substitution", etc.
-#. GT: Each of those may be formated in 3 different ways: by (or perhaps using
+#. GT: Each of those may be formatted in 3 different ways: by (or perhaps using
 #. GT: would be a better word) glyphs, classes or coverage tables.
 #. GT: So this might look like:
 #. GT:  Contextual Positioning by classes
@@ -9200,7 +9200,7 @@ msgstr ""
 "Niestety ten plik jest zbyt złożony aby można go było wczytać (lub jest "
 "błędny, lub pusty)"
 
-#. GT: "I." is an abreviation for "Inherits"
+#. GT: "I." is an abbreviation for "Inherits"
 msgid "I."
 msgstr "Dz."
 
@@ -15827,9 +15827,6 @@ msgstr "Rozpoznawaj nazwy PUA"
 msgid "Recover old edit"
 msgstr "Odzyskaj starszy"
 
-msgid "Recovery Complete"
-msgstr "Odzyskiwanie zakończone"
-
 msgid "Recovery Failed"
 msgstr "Odzyskiwanie danych nie powiodło się"
 
@@ -18799,7 +18796,7 @@ msgstr "Gwiazda"
 msgid "Start contours at e_xtrema"
 msgstr "Początki konturów w ek_stremach"
 
-#. GT: "Len" is an abreviation for "Length"
+#. GT: "Len" is an abbreviation for "Length"
 msgid "StartLen"
 msgstr "ZakładkaPocz"
 
@@ -22662,9 +22659,6 @@ msgstr "P_rzybornik"
 msgid "Tools"
 msgstr "Narzędzia"
 
-msgid "Tools_2"
-msgstr "Narzędzia_2"
-
 msgid "Top Accent"
 msgstr "Akcenty górne"
 
@@ -25120,14 +25114,6 @@ msgstr ""
 "Wprowadzenie odpowiednich danych w Element -> Właściwości fontu -> PS "
 "prywatne pozwoliłoby otrzymać znacznie lepsze jakościowo instrukcje."
 
-#, c-format
-msgid ""
-"Your file %s has been recovered.\n"
-"You must now Save your file to continue working on it."
-msgstr ""
-"Plik %s został odzyskany.\n"
-"Zachowaj go, zanim rozpoczniesz pracę."
-
 msgid ""
 "Your font has a 2 byte encoding, but you are attempting to save it in a "
 "format that only supports one byte encodings. This means that you won't be "
@@ -26888,3 +26874,17 @@ msgstr "∆wys #1"
 
 msgid "∆y_adv #2"
 msgstr "∆wys #2"
+
+#~ msgid "Recovery Complete"
+#~ msgstr "Odzyskiwanie zakończone"
+
+#~ msgid "Tools_2"
+#~ msgstr "Narzędzia_2"
+
+#, c-format
+#~ msgid ""
+#~ "Your file %s has been recovered.\n"
+#~ "You must now Save your file to continue working on it."
+#~ msgstr ""
+#~ "Plik %s został odzyskany.\n"
+#~ "Zachowaj go, zanim rozpoczniesz pracę."

@@ -13,9 +13,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-08 09:18+0000\n"
-"PO-Revision-Date: 2020-11-07 04:36\n"
-"Last-Translator: sanchezlucas\n"
+"POT-Creation-Date: 2022-03-08 09:53+0000\n"
+"PO-Revision-Date: 2022-02-21 08:36\n"
+"Last-Translator: \n"
 "Language-Team: Portuguese\n"
 "Language: pt_PT\n"
 "MIME-Version: 1.0\n"
@@ -589,9 +589,6 @@ msgstr "Escreva um nome para o glifo"
 msgid "Quechua"
 msgstr "Quíchua"
 
-msgid "Recovery Complete"
-msgstr "Recuperação de Falhas Completa"
-
 msgid "Romanian"
 msgstr "Romeno"
 
@@ -846,14 +843,6 @@ msgstr ""
 msgid "You must select a glyph before you can import an image into it"
 msgstr "Você deve selecionar um glifo antes de importar uma imagem nele"
 
-#, c-format
-msgid ""
-"Your file %s has been recovered.\n"
-"You must now Save your file to continue working on it."
-msgstr ""
-"Seu arquivo %s foi recuperado.\n"
-"Agora, guarda o seu arquivo para continuar usando nele."
-
 msgid "_Add"
 msgstr "_Adicionar"
 
@@ -926,3 +915,14 @@ msgstr "versão"
 #. GT: and the cursive handwriting style. Here we mean the general writing system.
 msgid "writing system|Script"
 msgstr "Script"
+
+#~ msgid "Recovery Complete"
+#~ msgstr "Recuperação de Falhas Completa"
+
+#, c-format
+#~ msgid ""
+#~ "Your file %s has been recovered.\n"
+#~ "You must now Save your file to continue working on it."
+#~ msgstr ""
+#~ "Seu arquivo %s foi recuperado.\n"
+#~ "Agora, guarda o seu arquivo para continuar usando nele."
