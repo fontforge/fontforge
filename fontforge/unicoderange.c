@@ -116,8 +116,7 @@ return( ri );
 const char *UnicodeRange(int32_t unienc) {
 /* Return the best name that describes this Unicode value */
     const struct unicode_range* block;
-    if (isunicodepointassigned(unienc) &&
-        (block = uniname_block(unienc)) != NULL) {
+    if ((block = uniname_block(unienc)) != NULL) {
         return block->name;
     }
     return "Unencoded Unicode";
