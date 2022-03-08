@@ -415,7 +415,7 @@ static void InsertSubMenus(struct py_menu_spec *spec, struct py_menu_data *pmd) 
     GMenuItem2 *mmn, *orig_menu, **mn;
     unichar_t alt;
     char *untrans, *action, *tmp_str;
-    unichar_t *trans, *untrans_uni, *tmp_uni;
+    unichar_t *trans, *tmp_uni;
 
     mn = &pmd->menu;
     orig_menu = pmd->menu;
