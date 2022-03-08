@@ -49,6 +49,13 @@ foreach(_lang ${_langs})
   list(APPEND _fulls "${_full}")
 endforeach()
 
+add_custom_target(poupdate
+  COMMAND "${Python3_EXECUTABLE}" "update.py" "${CMAKE_CURRENT_BINARY_DIR}/FontForge.pot"
+  DEPENDS "${CMAKE_CURRENT_BINARY_DIR}/FontForge.pot"
+  WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+  VERBATIM
+)
+
 add_custom_target(pofiles ALL DEPENDS ${_outputs})
 add_custom_target(fullpo DEPENDS ${_fulls})
 
