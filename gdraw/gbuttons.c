@@ -484,9 +484,11 @@ return( true );
 	    gb->pressed = false;
     } else if ( event->type == et_mousedown &&
 	    GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y)) {
-	gb->pressed = true;
-	gb->within = true;
-	GButtonPressed(gb);
+	if (event->u.mouse.button == 1) {
+	    gb->pressed = true;
+	    gb->within = true;
+	    GButtonPressed(gb);
+	}
     } else if ( event->type == et_mousemove &&
 	    GGadgetWithin(g,event->u.mouse.x,event->u.mouse.y)) {
 	gb->within = true;

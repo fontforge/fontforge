@@ -557,7 +557,7 @@ return(false);
 		sel = i;
 	    }
 	}
-	if ( event->type==et_mousedown ) {
+	if ( event->type==et_mousedown && event->u.mouse.button <= 3 ) {
 	    gts->pressed = true;
 	    gts->pressed_sel = sel;
 	} else {
