@@ -132,34 +132,18 @@ static GWindow _GQtDraw_CreateWindow(GQtDisplay *gdisp, GWindow w, GRect *pos,
     ret->pos = *pos;
     ret->user_data = user_data;
 
-    if (wattrs->mask & wam_restrict) {
-        ret->restrict_input_to_me = wattrs->restrict_input_to_me;
-        window->setWindowModality(Qt::ApplicationModal);
-    }
-    if (ret->is_toplevel) {
-        // Icon titles are ignored.
-        if ((wattrs->mask & wam_utf8_wtitle) && (wattrs->utf8_window_title != nullptr)) {
-            window->setWindowTitle(QString::fromUtf8(wattrs->utf8_window_title));
-            window->SetTitle(wattrs->utf8_window_title);
-        }
-    } else {
-        // Expectation for GDraw is that it is created hidden
-        // Toplevels are not shown by default, but children are
-        // shown with the toplevel by default, so hide it
-        window->hide();
+    window->setFocusPolicy(Qt::StrongFocus);
+    window->resize(pos->width, pos->height);
+    // TODO: Center?
+    if (!ret->is_toplevel || ((wattrs->mask & wam_positioned) && !(wattrs->mask & wam_centered))) {
+        window->move(ret->pos.x, ret->pos.y);
     }
 
-    window->resize(pos->width, pos->height);
-    window->setFocusPolicy(Qt::StrongFocus);
-    window->setAttribute(Qt::WA_InputMethodEnabled, true);
+    // window->setAttribute(Qt::WA_InputMethodEnabled, true);
     if (wattrs->mask & wam_events) {
         if (wattrs->event_masks & (1 << et_mousemove)) {
             window->setMouseTracking(true);
         }
-    }
-
-    if (!ret->is_toplevel || ((wattrs->mask & wam_positioned) && !(wattrs->mask & wam_centered))) {
-        window->move(ret->pos.x, ret->pos.y);
     }
 
     // Set background
@@ -170,11 +154,10 @@ static GWindow _GQtDraw_CreateWindow(GQtDisplay *gdisp, GWindow w, GRect *pos,
     GQtDrawSetWindowBackground(ret, ret->ggc->bg);
 
     if (ret->is_toplevel) {
-        // Icon titles are ignored.
+        // Set title; icon titles are ignored.
         if ((wattrs->mask & wam_utf8_wtitle) && (wattrs->utf8_window_title != nullptr)) {
             GQtDrawSetWindowTitles8(ret, wattrs->utf8_window_title, nullptr);
         }
-
         // Set icon
         GQtWindow *icon = gdisp->default_icon;
         if (((wattrs->mask & wam_icon) && wattrs->icon != nullptr) && wattrs->icon->is_pixmap) {
@@ -182,10 +165,16 @@ static GWindow _GQtDraw_CreateWindow(GQtDisplay *gdisp, GWindow w, GRect *pos,
         }
         if (icon != nullptr) {
             window->setWindowIcon(QIcon(*icon->Pixmap()));
-        } else {
-            // Qt_window_set_decorations(nw->w, Qt_DECOR_ALL | Qt_DECOR_MENU);
+        }
+        // Set cursor
+        if ((wattrs->mask & wam_cursor) && wattrs->cursor != ct_default) {
+            GQtDrawSetCursor(ret, wattrs->cursor);
         }
 
+        if (wattrs->mask & wam_restrict) {
+            ret->restrict_input_to_me = wattrs->restrict_input_to_me;
+            window->setWindowModality(Qt::ApplicationModal);
+        }
         if (wattrs->mask & wam_palette) {
             window->setBaseSize(window->size());
             window->setMinimumSize(window->size());
@@ -193,8 +182,6 @@ static GWindow _GQtDraw_CreateWindow(GQtDisplay *gdisp, GWindow w, GRect *pos,
         if ((wattrs->mask & wam_noresize) && wattrs->noresize) {
             window->setFixedSize(window->size());
         }
-        ret->was_positioned = true;
-
         if ((wattrs->mask & wam_transient) && wattrs->transient != nullptr) {
             GQtDrawSetTransientFor(ret, wattrs->transient);
             ret->is_dlg = true;
@@ -202,19 +189,20 @@ static GWindow _GQtDraw_CreateWindow(GQtDisplay *gdisp, GWindow w, GRect *pos,
             ++gdisp->top_window_count;
             Log(LOGWARN, "INCTP %d", gdisp->top_window_count);
         }
+        ret->was_positioned = true;
         window->setAttribute(Qt::WA_QuitOnClose, !ret->is_dlg);
-        Log(LOGDEBUG, "TP QOC [%p][%s]: %d", window->Base(), window->Title(), !ret->is_dlg);
-    }
-
-    if ((wattrs->mask & wam_cursor) && wattrs->cursor != ct_default) {
-        GQtDrawSetCursor(ret, wattrs->cursor);
+    } else {
+        // Expectation for GDraw is that it is created hidden
+        // Toplevels are not shown by default, but children are
+        // shown with the toplevel by default, so hide it
+        window->hide();
     }
 
     // Event handler
     window->DispatchEvent(window->InitEvent<>(et_create), nullptr);
-
     Log(LOGWARN, "Window created: %p[%p][%s][toplevel:%d]",
         ret, ret->native_window, window->Title(), ret->is_toplevel);
+
     return ret;
 }
 
