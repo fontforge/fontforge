@@ -29,6 +29,7 @@
 #include "gqtdrawP.h"
 #include "ustring.h"
 
+#include <array>
 #include <QtWidgets>
 #include <type_traits>
 
@@ -268,7 +269,7 @@ void UpdateLastEventTime(GWindow w, E *event) {
     GQtD(w)->last_event_time = event->timestamp();
 }
 
-template<typename E = void>
+template<typename E>
 GEvent GQtWidget::InitEvent(event_type et, E *event) {
     GEvent gevent = {};
     gevent.w = Base();
@@ -539,7 +540,7 @@ void GQtWidget::crossingEvent(QEvent* event, bool enter) {
 
 void GQtWidget::closeEvent(QCloseEvent *event) {
     if (Base()->is_dying || Base() == Base()->display->groot) {
-        Log(LOGWARN, "ACCEPT CLOSe [%p][%s]: %d", Base(), Title());
+        Log(LOGWARN, "ACCEPT CLOSe [%p][%s]", Base(), Title());
         event->accept();
         DispatchEvent(InitEvent<>(et_destroy), nullptr);
         deleteLater();
@@ -557,7 +558,7 @@ void GQtWidget::closeEvent(QCloseEvent *event) {
     }
 
     event->ignore();
-    Log(LOGWARN, "SEND CLOSe [%p][%s]: %d", Base(), Title());
+    Log(LOGWARN, "SEND CLOSe [%p][%s]", Base(), Title());
     GEvent gevent = InitEvent(et_close, event);
     DispatchEvent(gevent, nullptr);
 }
@@ -696,7 +697,7 @@ static void GQtDrawMoveResize(GWindow w, int32_t x, int32_t y, int32_t width, in
 }
 
 static void GQtDrawRaise(GWindow w) {
-    Log(LOGDEBUG, "%p", w, GQtW(w)->Title());
+    Log(LOGDEBUG, "%p:%s", w, GQtW(w)->Title());
     GQtW(w)->Widget()->raise();
 }
 
@@ -1938,7 +1939,7 @@ static int GQtDrawLayoutXYToIndex(GWindow w, int x, int y) {
                 ++pos;
             }
         }
-        Log(LOGWARN, "VVV cp(%d) lsp(%d) -> %d", curpos, upos, uitr - state->utf8_text.c_str());
+        Log(LOGWARN, "VVV cp(%d) lsp(%d) -> %d", curpos, upos, (int)(uitr - state->utf8_text.c_str()));
         return uitr - state->utf8_text.c_str();
     }
     Log(LOGWARN, "MOPE");
