@@ -337,6 +337,12 @@ static void GFileChooserFillList(GFileChooser *gfc, const unichar_t *dirname_) {
         return;
     }
 
+    if (gfc->lastname!=NULL) {
+        GGadgetSetTitle(&gfc->name->g, gfc->lastname);
+        free(gfc->lastname);
+        gfc->lastname=NULL;
+    }
+
     GPtrArray *ti = g_ptr_array_new();
     GPtrArray *dti = (dir_placement == dirs_separate) ? g_ptr_array_new() : NULL;
     while ((dent = readdir(dir)) != NULL) {
