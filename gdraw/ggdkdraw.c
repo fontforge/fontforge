@@ -2380,6 +2380,7 @@ static struct displayfuncs gdkfuncs = {
     GGDKDrawLayoutLineStart,
 
     GGDKDrawDoText8,
+    NULL, // DoError -> old behaviour
 };
 
 // Protected member functions (package-level)

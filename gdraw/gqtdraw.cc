@@ -37,7 +37,7 @@
  * TODO
  * Window lifecycle - cleanup createwindow
  * Clipboard
- * GIC/input context
+ * GIC/input context hmm
  */
 
 
@@ -631,6 +631,9 @@ static void GQtDrawSetDefaultIcon(GWindow icon) {
     Log(LOGDEBUG, " ");
     assert(icon->is_pixmap);
     GQtD(icon)->default_icon = GQtW(icon);
+
+    QIcon qicon(*GQtW(icon)->Pixmap());
+    GQtD(icon)->app->setWindowIcon(qicon);
 }
 
 static GWindow GQtDrawCreateTopWindow(GDisplay *disp, GRect *pos, int (*eh)(GWindow w, GEvent *), void *user_data,
@@ -1162,6 +1165,10 @@ static void GQtDrawCancelTimer(GTimer *timer) {
     GQtTimer *gtimer = (GQtTimer*)timer->impl;
     gtimer->stop();
     gtimer->deleteLater();
+}
+
+static void GQtDrawDoError(GDisplay *disp, const char* err) {
+    QMessageBox::critical(GQtD(disp)->app->focusWidget(), QString::fromUtf8("Error"), QString::fromUtf8(err));
 }
 
 
@@ -2156,6 +2163,7 @@ static struct displayfuncs gqtfuncs = {
     GQtDrawLayoutLineStart,
 
     GQtDrawDoText8,
+    GQtDrawDoError,
 };
 
 extern "C" GDisplay *_GQtDraw_CreateDisplay(char *displayname, int *argc, char ***argv) {

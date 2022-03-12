@@ -135,7 +135,7 @@ void _GDraw_InitError(GDisplay *gd) {
 
     global_gd = static_gd;
 
-    if ( gd==NULL )
+    if ( gd==NULL || gd->funcs->doError!=NULL )
 return;
 
     if ( error != NULL )
@@ -184,7 +184,9 @@ void GDrawIError(const char *fmt,...) {
     if ( gd==NULL ) {
       fprintf(stderr, "%s", buffer); // If there is no display, we write to stderr.
     } else {
-      if (gd->err_report != NULL) {
+      if (gd->funcs->doError != NULL) {
+          gd->funcs->doError(gd, buffer);
+      } else if (gd->err_report != NULL) {
         if (strlen(gd->err_report) + strlen(buffer) + 1 < 2048) {
           // If there is an existing error message, we concatenate if there is space.
           char * tmp = smprintf("%s%s\n", gd->err_report, buffer);
@@ -213,36 +215,4 @@ void GDrawIErrorRun(const char *fmt,...) {
 	ProcessText(ubuf,buf,et_error);
 	RunError();
     }
-}
-
-void GDrawError(const char *fmt,...) {
-    char buf[1025]; unichar_t ubuf[1025];
-    va_list ap;
-
-    va_start(ap, fmt);
-    vsprintf(buf, fmt, ap);
-    va_end(ap);
-    _GDraw_InitError(NULL);
-    if ( error==NULL )
-	fprintf( stderr, "%s\n", buf );
-    else {
-	ProcessText(ubuf,buf,et_error);
-	RunError();
-    }
-}
-
-void GDrawFatalError(const char *fmt,...) {
-    char buf[1025]; unichar_t ubuf[1025];
-    va_list ap;
-
-    strcpy(buf,"Fatal Error:\n");
-    va_start(ap, fmt);
-    vsprintf(buf+strlen(buf), fmt, ap);
-    va_end(ap);
-	fprintf( stderr, "%s\n", buf );
-    if ( error!=NULL ) {
-	ProcessText(ubuf,buf,et_fatal);
-	RunError();
-    }
-    exit(1);
 }

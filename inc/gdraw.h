@@ -454,9 +454,7 @@ extern void GDrawLayoutSetWidth(GWindow w, int width);
 extern int  GDrawLayoutLineCount(GWindow w);
 extern int  GDrawLayoutLineStart(GWindow w,int line);
 
-extern void GDrawFatalError(const char *fmt,...);
 extern void GDrawIError(const char *fmt,...);
-extern void GDrawError(const char *fmt,...);
 
 extern int GImageGetScaledWidth(GWindow gw, GImage *img);
 extern int GImageGetScaledHeight(GWindow gw, GImage *img);

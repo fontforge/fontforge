@@ -3996,6 +3996,7 @@ static struct displayfuncs xfuncs = {
     GXDraw_LayoutLineStart,
 
     _GXPDraw_DoText8,
+    NULL, // DoError -> old behaviour
 };
 
 static void GDrawInitXKB(GXDisplay *gdisp) {

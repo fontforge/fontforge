@@ -601,7 +601,7 @@ static int _GResToFontRequest(const char *resname, FontRequest *rq, GHashTable *
 
     if ( val==NULL ) {
 	if ( top_level )
-	    GDrawError("Missing font resource reference to '%s': cannot resolve", resname);
+	    GDrawIError("Missing font resource reference to '%s': cannot resolve", resname);
 	err = true;
     }
 
@@ -632,7 +632,7 @@ static int _GResToFontRequest(const char *resname, FontRequest *rq, GHashTable *
 	} else if ( ret==-1 && *pt=='^' ) {
 	    relname = copy(pt+1);
 	    if ( g_hash_table_contains(ht, relname) ) {
-		GDrawError("Circular font resource reference to '%s': cannot resolve", relname);
+		GDrawIError("Circular font resource reference to '%s': cannot resolve", relname);
 		if ( strict ) {
 		    err = true;
 		    break;
@@ -687,7 +687,7 @@ static int _GResToFontRequest(const char *resname, FontRequest *rq, GHashTable *
 	if ( rq->point_size==0 ) {
 	    if ( found_rel ) {
 		if ( rel_rq.point_size==0 ) {
-		    GDrawError("Point size not set for '%s': cannot calculate relative point size", relname);
+		    GDrawIError("Point size not set for '%s': cannot calculate relative point size", relname);
 		    if ( strict )
 			err = true;
 		} else {

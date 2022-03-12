@@ -266,6 +266,7 @@ struct displayfuncs {
     int  (*layoutLineStart)(GWindow w,int line);
 
     int (*doText8)(GWindow w, int32_t x, int32_t y, const char *text, int32_t cnt, Color col, enum text_funcs drawit, struct tf_arg *arg);
+    void (*doError)(GDisplay *, const char* err);
 };
 
 extern int16_t div_tables[257][2]; // in div_tables.c
