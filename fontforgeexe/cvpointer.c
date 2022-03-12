@@ -1587,7 +1587,9 @@ return( false );
 	did_a_merge = CVMoveSelection(cv,
 		xadj,yadj,
 		event->u.mouse.state);
-	// Rather than create a new set of functions for moving points without their control points, we instead just restore them if we did not want them moved.
+	// Rather than create a new set of functions for moving points without
+	// their control points, we instead just restore them if we did not want
+	// them moved.
 	if (cv->p.sp && touch_control_points == false) {
 		if (no_prev_cp)
 		    cv->p.sp->prevcp = cv->p.sp->me;
@@ -1599,6 +1601,9 @@ return( false );
 		    cv->p.sp->nextcp = cachecp2;
 		SplineRefigure(cv->p.sp->prev);
 		SplineRefigure(cv->p.sp->next);
+		// We presumably still trigger this in case we're dragging other
+		// selected points along
+		touch_control_points = true;
 		// Don't think this is wanted or needed now AdjustControls(cv->p.sp);
 	}
 	needsupdate = true;
