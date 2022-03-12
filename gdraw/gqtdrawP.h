@@ -143,6 +143,8 @@ public:
         QWidget::focusOutEvent(event);
         focusEvent(event, false);
     }
+    void inputMethodEvent(QInputMethodEvent *event) override;
+    QVariant inputMethodQuery(Qt::InputMethodQuery query) const override;
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
     void enterEvent(QEnterEvent *event) override { crossingEvent(event, true); }
 #else
@@ -157,14 +159,16 @@ public:
     void mapEvent(QEvent* event, bool visible);
     void focusEvent(QFocusEvent* event, bool focusIn);
     void crossingEvent(QEvent* event, bool enter);
-    
 
+    void SetICPos(int x, int y);
     GQtWidget* Widget() override { return this; }
     QPainter* Painter() override;
 
 private:
     QPainter* m_painter = nullptr;
     bool m_has_focus = false;
+    bool m_ime_enabled = false;
+    QPoint m_icpos = {};
 };
 
 class GQtPixmap : public QPixmap, public GQtWindow

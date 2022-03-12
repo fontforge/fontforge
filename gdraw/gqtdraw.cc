@@ -52,6 +52,7 @@ static void GQtDrawSetCursor(GWindow w, GCursor gcursor);
 static void GQtDrawSetTransientFor(GWindow transient, GWindow owner);
 static void GQtDrawSetWindowBackground(GWindow w, Color gcol);
 static void GQtDrawSetWindowTitles8(GWindow w, const char *title, const char *UNUSED(icontitle));
+static QFont GQtDrawGetFont(GFont *font);
 
 static QColor ToQColor(Color col) {
     if (COLOR_ALPHA(col) == 0) {
@@ -139,7 +140,6 @@ static GWindow _GQtDraw_CreateWindow(GQtDisplay *gdisp, GWindow w, GRect *pos,
         window->move(ret->pos.x, ret->pos.y);
     }
 
-    // window->setAttribute(Qt::WA_InputMethodEnabled, true);
     if (wattrs->mask & wam_events) {
         if (wattrs->event_masks & (1 << et_mousemove)) {
             window->setMouseTracking(true);
@@ -526,6 +526,66 @@ void GQtWidget::crossingEvent(QEvent* event, bool enter) {
     DispatchEvent(gevent, event);
 }
 
+void GQtWidget::inputMethodEvent(QInputMethodEvent *event)
+{
+    Log(LOGWARN, "%p[%s]: %s", Base(), Title(), event->commitString().toStdString().c_str());
+    if (!event->commitString().isEmpty())
+    {
+        GEvent gevent = InitEvent(et_char, event);
+        gevent.u.chr.autorepeat = false;
+
+        QString text = event->commitString();
+        const QChar* uni = text.unicode();
+        for (size_t i = 0, j = 0; i < text.size(); ++i) {
+            if (uni[i].isHighSurrogate() && (i+1) < text.size() &&
+                uni[i+1].isLowSurrogate()) {
+                gevent.u.chr.chars[j++] = QChar::surrogateToUcs4(uni[i], uni[i+1]);
+                ++i;
+            } else {
+                gevent.u.chr.chars[j++] = uni[i].unicode();
+            }
+
+            if (j >= (_GD_EVT_CHRLEN-1) && (i+1) < text.size()) {
+                gevent.u.chr.keysym = gevent.u.chr.chars[0];
+                DispatchEvent(gevent, event);
+                memset(gevent.u.chr.chars, 0, _GD_EVT_CHRLEN);
+                j = 0;
+            }
+        }
+        QToolTip::hideText();
+        gevent.u.chr.keysym = gevent.u.chr.chars[0];
+        DispatchEvent(gevent, event);
+    } else {
+        if (!event->preeditString().isEmpty()) {
+            QPoint pos = mapToGlobal(m_icpos);
+
+            QFont fd = GQtDrawGetFont(Base()->ggc->fi);
+            QFontMetrics fm(fd);
+            pos.setY(pos.y() - fm.height() * 3);
+            QToolTip::showText(pos, event->preeditString(), this);
+        } else {
+            QToolTip::hideText();
+        }
+        QWidget::inputMethodEvent(event);
+    }
+}
+
+QVariant GQtWidget::inputMethodQuery(Qt::InputMethodQuery query) const
+{
+    Log(LOGWARN, "%p[%s] %x", Base(), Title(), query);
+    switch (query)
+    {
+    case Qt::ImEnabled:
+        return QVariant(true);
+    case Qt::ImCursorPosition:
+        return QVariant(m_icpos);
+    case Qt::ImCursorRectangle:
+        return QRect(m_icpos, m_icpos);
+    default:
+        return QWidget::inputMethodQuery(query);
+    }
+}
+
 void GQtWidget::closeEvent(QCloseEvent *event) {
     if (Base()->is_dying || Base() == Base()->display->groot) {
         Log(LOGWARN, "ACCEPT CLOSe [%p][%s]", Base(), Title());
@@ -549,6 +609,22 @@ void GQtWidget::closeEvent(QCloseEvent *event) {
     Log(LOGWARN, "SEND CLOSe [%p][%s]", Base(), Title());
     GEvent gevent = InitEvent(et_close, event);
     DispatchEvent(gevent, nullptr);
+}
+
+void GQtWidget::SetICPos(int x, int y) {
+    if (x == 10000 && y == 10000) {
+        if (m_ime_enabled) {
+            setAttribute(Qt::WA_InputMethodEnabled, false);
+            m_ime_enabled = false;
+        }
+    } else {
+        if (!m_ime_enabled) {
+            setAttribute(Qt::WA_InputMethodEnabled, true);
+            m_ime_enabled = true;
+        }
+        m_icpos.setX(x);
+        m_icpos.setY(y * 1.05);
+    }
 }
 
 static void GQtDrawSetDefaultIcon(GWindow icon) {
@@ -846,13 +922,14 @@ static void GQtDrawScroll(GWindow w, GRect *rect, int32_t hor, int32_t vert) {
 }
 
 
-static GIC *GQtDrawCreateInputContext(GWindow UNUSED(gw), enum gic_style UNUSED(style)) {
-    Log(LOGDEBUG, " ");
-    return nullptr;
+static GIC *GQtDrawCreateInputContext(GWindow w, enum gic_style UNUSED(style)) {
+    Log(LOGWARN, "%p:%s", w, GQtW(w)->Widget()->Title());
+    return (GIC*)-1;
 }
 
-static void GQtDrawSetGIC(GWindow UNUSED(gw), GIC *UNUSED(gic), int UNUSED(x), int UNUSED(y)) {
-    Log(LOGDEBUG, " ");
+static void GQtDrawSetGIC(GWindow w, GIC *UNUSED(gic), int x, int y) {
+    Log(LOGWARN, "%p:%s %dx%d", w, GQtW(w)->Widget()->Title(), x, y);
+    GQtW(w)->Widget()->SetICPos(x, y);
 }
 
 static int GQtDrawKeyState(GWindow w, int keysym) {
@@ -2107,11 +2184,6 @@ extern "C" GDisplay *_GQtDraw_CreateDisplay(char *displayname, int *argc, char *
     ret->groot->pos.height = screenGeom.height();
     ret->groot->is_toplevel = true;
     ret->groot->is_visible = true;
-
-    // QObject::connect(gdisp->app, &QGuiApplication::lastWindowClosed, [ret] {
-    //     Log(LOGWARN, "LWC LARP %d",
-    //         GQtD(ret)->top_window_count);
-    // });
 
     _GDraw_InitError(ret);
     return ret;
