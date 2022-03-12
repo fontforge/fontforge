@@ -1560,21 +1560,15 @@ return( false );
 	if (cv->p.anysel && cv->p.sp && event->u.mouse.state & ksm_control) {
 		touch_control_points = false;
 		BasePoint prevref, nextref;
-		if (cv->p.sp->noprevcp) {
+		if (cv->p.sp->noprevcp && cv->p.sp->prev) {
 		    no_prev_cp = true;
-		    if (cv->p.sp->prev)
-		    	prevref = cv->p.sp->prev->from->me;
-		    else
-		    	prevref = cv->p.sp->me;
+		    prevref = cv->p.sp->prev->from->me;
 		} else {
 		    prevref = cv->p.sp->prevcp;
 		}
-		if (cv->p.sp->nonextcp) {
+		if (cv->p.sp->nonextcp && cv->p.sp->next) {
 		    no_next_cp = true;
-		    if (cv->p.sp->next)
-		    	nextref = cv->p.sp->next->to->me;
-		    else
-		    	nextref = cv->p.sp->me;
+		    nextref = cv->p.sp->next->to->me;
 		} else {
 		    nextref = cv->p.sp->nextcp;
 		}
