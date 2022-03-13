@@ -996,7 +996,11 @@ bool GQtMimeData::hasFormat(const QString& mimeType) const {
     return false;
 }
 
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+QVariant GQtMimeData::retrieveData(const QString &mimeType, QMetaType type) const {
+#else
 QVariant GQtMimeData::retrieveData(const QString &mimeType, QVariant::Type type) const {
+#endif
     bool isString = mimeType == sTextPlain;
     for (const auto& sel : m_selinfo->data) {
         if (sel->type == mimeType || isString && (sel->type == sUtf8String || sel->type == sString)) {

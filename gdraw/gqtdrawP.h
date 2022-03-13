@@ -121,7 +121,11 @@ public:
     // QMimeData
     QStringList formats() const override;
     bool hasFormat(const QString& mimeType) const override;
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    QVariant retrieveData(const QString &mimeType, QMetaType type) const override;
+#else
     QVariant retrieveData(const QString &mimeType, QVariant::Type type) const override;
+#endif
 
     void setSelInfo(std::shared_ptr<GQtSelectionInfo> selinfo) {
         m_selinfo = std::move(selinfo);
