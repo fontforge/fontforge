@@ -30,6 +30,7 @@
 #include "ustring.h"
 
 #include <array>
+#include <assert.h>
 #include <QtWidgets>
 #include <type_traits>
 
@@ -435,6 +436,7 @@ void GQtWidget::paintEvent(QPaintEvent *event) {
     DispatchEvent(gevent, event);
     m_painter = nullptr;
     Path()->clear();
+    Log(LOGDEBUG, "PAINTING END %p %s", Base(), Title());
 }
 
 void GQtWidget::configureEvent(QEvent* event) {
@@ -1558,8 +1560,7 @@ static void GQtDrawPopClip(GWindow w, GRect *old) {
     if (old) {
         w->ggc->clip = *old;
     }
-    QPainter *painter = GQtW(w)->Painter();
-    painter->restore();
+    GQtW(w)->Painter()->restore();
 }
 
 static QPen GQtDrawGetPen(GGC *mine) {
@@ -2193,7 +2194,7 @@ static int GQtDrawLayoutXYToIndex(GWindow w, int x, int y) {
                 ++pos;
             }
         }
-        Log(LOGWARN, "VVV cp(%d) lsp(%d) -> %d", curpos, upos, (int)(uitr - state->utf8_text.c_str()));
+        // Log(LOGWARN, "VVV cp(%d) lsp(%d) -> %d", curpos, upos, (int)(uitr - state->utf8_text.c_str()));
         return uitr - state->utf8_text.c_str();
     }
     Log(LOGWARN, "MOPE");

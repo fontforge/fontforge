@@ -35,6 +35,7 @@
 #include "gkeysym.h"
 
 #include <QtWidgets>
+#include <memory>
 #include <vector>
 
 namespace fontforge { namespace gdraw {
@@ -144,8 +145,8 @@ public:
 
     inline GWindow Base() const { return const_cast<GWindow>(&m_base); }
 
-    virtual GQtPixmap* Pixmap() { assert(false); return nullptr; }
-    virtual GQtWidget* Widget() { assert(false); return nullptr; }
+    virtual GQtPixmap* Pixmap() { throw std::runtime_error("Not a pixmap"); }
+    virtual GQtWidget* Widget() { throw std::runtime_error("Not a widget"); }
     virtual QPainter* Painter() = 0;
 
     inline const char* Title() const { return m_window_title.c_str(); }
