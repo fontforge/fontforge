@@ -721,6 +721,9 @@ static void GQtDrawDestroyWindow(GWindow w) {
                 }
             }
         }
+        if (GQtD(w)->last_dd.gw == gw) {
+            GQtD(w)->last_dd.gw = nullptr;
+        }
 
         gw->Widget()->setDisabled(true);
         gw->Widget()->hide();
@@ -1224,6 +1227,62 @@ static void GQtDrawPostEvent(GEvent *e) {
 
 static void GQtDrawPostDragEvent(GWindow w, GEvent *mouse, enum event_type et) {
     Log(LOGDEBUG, " ");
+    GQtWindow *gw = GQtW(w), *cw;
+    GQtDisplay *gdisp = GQtD(w);
+    int x, y;
+
+    if (w->is_dying) {
+        return;
+    }
+
+    // If the cursor hasn't moved much, don't bother to send a drag event
+    x = abs(mouse->u.mouse.x - gdisp->last_dd.x);
+    y = abs(mouse->u.mouse.y - gdisp->last_dd.y);
+    if (x + y < 4 && et == et_drag) {
+        return;
+    }
+
+    cw = GQtW(GQtDrawGetPointerWindow(w));
+
+    if (gdisp->last_dd.gw != cw) {
+        if (gdisp->last_dd.gw != nullptr) {
+            GEvent gevent = gdisp->last_dd.gw->Widget()->InitEvent<>(et_dragout);
+            gevent.u.drag_drop.x = gdisp->last_dd.rx;
+            gevent.u.drag_drop.y = gdisp->last_dd.ry;
+            gdisp->last_dd.gw->Widget()->DispatchEvent(gevent, nullptr);
+        } else {
+            /* Send foreign dragout message */
+        }
+        gdisp->last_dd.gw = nullptr;
+    }
+
+    GEvent e = cw->Widget()->InitEvent<>(et);
+    // Are we still within the original window?
+    if (cw == gw) {
+        x = e.u.drag_drop.x = mouse->u.mouse.x;
+        y = e.u.drag_drop.y = mouse->u.mouse.y;
+        cw->Widget()->DispatchEvent(e, nullptr);
+    } else if (cw != nullptr) {
+        GPoint pt = {.x = mouse->u.mouse.x, .y = mouse->u.mouse.y};
+        GQtDrawTranslateCoordinates(w, cw->Base(), &pt);
+        x = pt.x;
+        y = pt.y;
+        e.u.drag_drop.x = x;
+        e.u.drag_drop.y = y;
+        cw->Widget()->DispatchEvent(e, nullptr);
+    } else {
+        // Foreign window
+    }
+
+    if (et != et_drop) {
+        gdisp->last_dd.gw = cw;
+        gdisp->last_dd.x = mouse->u.mouse.x;
+        gdisp->last_dd.y = mouse->u.mouse.y;
+        gdisp->last_dd.rx = x;
+        gdisp->last_dd.ry = y;
+    } else {
+        gdisp->last_dd.gw = nullptr;
+    }
 }
 
 static int GQtDrawRequestDeviceEvents(GWindow w, int devcnt, struct gdeveventmask *de) {

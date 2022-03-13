@@ -284,6 +284,11 @@ struct GQtDisplay
     ulong last_event_time = 0;
 
     std::shared_ptr<GQtSelectionInfo> selinfo[sn_max];
+    struct {
+        GQtWindow *gw;
+        int x, y;
+        int rx, ry;
+    } last_dd;
 
     FState fs = {};
     GQtButtonState bs = {};
