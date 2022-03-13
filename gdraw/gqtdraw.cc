@@ -435,7 +435,7 @@ void GQtWidget::paintEvent(QPaintEvent *event) {
     m_painter = &painter;
     DispatchEvent(gevent, event);
     m_painter = nullptr;
-    Path()->clear();
+    ClearPath();
     Log(LOGDEBUG, "PAINTING END %p %s", Base(), Title());
 }
 
@@ -1139,7 +1139,7 @@ static int GQtDrawSelectionHasOwner(GDisplay *disp, enum selnames sn) {
 }
 
 static void GQtDrawPointerUngrab(GDisplay *disp) {
-    Log(LOGDEBUG, "");
+    Log(LOGDEBUG, " ");
 }
 
 static void GQtDrawPointerGrab(GWindow w) {
@@ -1594,7 +1594,11 @@ static QFont GQtDrawGetFont(GFont *font) {
     QFont fd;
 
     QString families = QString::fromUtf8(font->rq.utf8_family_name);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
     QStringList familyList = families.split(QLatin1Char(','), Qt::SkipEmptyParts);
+#else
+    QStringList familyList = families.split(QLatin1Char(','), QString::SkipEmptyParts);
+#endif
     for (auto& family : familyList) {
         family = family.trimmed();
         if (family == QStringLiteral("system-ui")) {
@@ -1603,7 +1607,11 @@ static QFont GQtDrawGetFont(GFont *font) {
             family = QFontDatabase::systemFont(QFontDatabase::FixedFont).family();
         }
     }
+#if QT_VERSION >= QT_VERSION_CHECK(5, 13, 0)
     fd.setFamilies(familyList);
+#else
+    fd.setFamily(familyList[0]);
+#endif
     fd.setStyle((font->rq.style & fs_italic) ?
                     QFont::StyleItalic : QFont::StyleNormal);
 
@@ -1703,7 +1711,7 @@ static void GQtDrawDrawArrow(GWindow w, int32_t x, int32_t y, int32_t xend, int3
     }
 
     QBrush brush = GQtDrawGetBrush(w->ggc);
-    path.clear();
+    path = QPainterPath();
     path.moveTo(xend, yend);
     path.lineTo(xend + length * cos(angle - head_angle), yend + length * sin(angle - head_angle));
     path.lineTo(xend + length * cos(angle + head_angle), yend + length * sin(angle + head_angle));
@@ -1830,7 +1838,7 @@ static void GQtDrawFillPoly(GWindow w, GPoint *pts, int16_t cnt, Color col) {
     GQtW(w)->Painter()->fillPath(path, brush);
 
     pen.setWidth(1); // hmm
-    path.clear();
+    path = QPainterPath();
     path.moveTo(pts[0].x + .5, pts[0].y + .5);
     for (int i = 1; i < cnt; ++i) {
         path.lineTo(pts[i].x + .5, pts[i].y + .5);
@@ -1967,7 +1975,7 @@ static void GQtDrawPathStroke(GWindow w, Color col) {
 
     QPen pen = GQtDrawGetPen(w->ggc);
     GQtW(w)->Painter()->strokePath(*GQtW(w)->Path(), pen);
-    GQtW(w)->Path()->clear();
+    GQtW(w)->ClearPath();
 }
 
 static void GQtDrawPathFill(GWindow w, Color col) {
@@ -1975,7 +1983,7 @@ static void GQtDrawPathFill(GWindow w, Color col) {
 
     QBrush brush(ToQColor(col));
     GQtW(w)->Painter()->fillPath(*GQtW(w)->Path(), brush);
-    GQtW(w)->Path()->clear();
+    GQtW(w)->ClearPath();
 }
 
 static void GQtDrawPathFillAndStroke(GWindow w, Color fillcol, Color strokecol) {
@@ -1987,7 +1995,7 @@ static void GQtDrawPathFillAndStroke(GWindow w, Color fillcol, Color strokecol) 
     QBrush brush(ToQColor(fillcol));
     GQtW(w)->Painter()->fillPath(*GQtW(w)->Path(), brush);
     GQtW(w)->Painter()->strokePath(*GQtW(w)->Path(), pen);
-    GQtW(w)->Path()->clear();
+    GQtW(w)->ClearPath();
 }
 
 static void GQtDrawPushClipOnly(GWindow w) {
@@ -2000,7 +2008,7 @@ static void GQtDrawPushClipOnly(GWindow w) {
 static void GQtDrawPathClipOnly(GWindow w) {
     Log(LOGDEBUG, " ");
     GQtW(w)->Painter()->setClipPath(*GQtW(w)->Path(), Qt::IntersectClip);
-    GQtW(w)->Path()->clear();
+    GQtW(w)->ClearPath();
 }
 
 static int GQtDrawDoText8(GWindow w, int32_t x, int32_t y, const char *text, int32_t cnt, Color col, enum text_funcs drawit,
@@ -2028,7 +2036,11 @@ static int GQtDrawDoText8(GWindow w, int32_t x, int32_t y, const char *text, int
         return bounds.width();
     } else if (drawit == tf_rect) {
         QRect br = fm.tightBoundingRect(qtext);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
         arg->size.width = fm.horizontalAdvance(qtext);
+#else
+        arg->size.width = fm.boundingRect(qtext).width();
+#endif
         arg->size.lbearing = -br.x();
         arg->size.rbearing = br.width() - br.x();
         arg->size.fas = fm.ascent();
@@ -2037,7 +2049,11 @@ static int GQtDrawDoText8(GWindow w, int32_t x, int32_t y, const char *text, int
         arg->size.ds = br.height() - fm.ascent();
         return arg->size.width;
     }
-    return fm.horizontalAdvance(qtext);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 11, 0)
+        return fm.horizontalAdvance(qtext);
+#else
+        return fm.boundingRect(qtext).width();
+#endif
 }
 
 // PANGO LAYOUT

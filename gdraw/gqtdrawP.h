@@ -155,6 +155,13 @@ public:
     void SetCursor(GCursor c) { m_current_cursor = c; }
     GQtLayoutState* Layout() { return &m_layout_state; }
     QPainterPath* Path() { return &m_path; }
+    void ClearPath() {
+#if QT_VERSION >= QT_VERSION_CHECK(5, 13, 0)
+        m_path.clear();
+#else
+        m_path = QPainterPath();
+#endif
+    }
 
 private:
     struct gwindow m_base = {};
