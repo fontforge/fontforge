@@ -1510,7 +1510,7 @@ int GMenuPopupCheckKey(GEvent *event) {
     return( gmenu_key(most_recent_popup_menu,event) );
 }
 
-#ifndef FONTFORGE_CAN_USE_GDK
+#ifndef X_DISPLAY_MISSING
 /* ************************************************************************** */
 
 int GGadgetUndoMacEnglishOptionCombinations(GEvent *event) {
@@ -1669,7 +1669,7 @@ static int osx_handle_keysyms( int st, int k )
 
 int osx_fontview_copy_cut_counter = 0;
 
-#endif // FONTFORGE_CAN_USE_GDK
+#endif // X_DISPLAY_MISSING
 
 
 static int GMenuBarCheckHotkey(GWindow top, GGadget *g, GEvent *event) {
@@ -1692,7 +1692,7 @@ static int GMenuBarCheckHotkey(GWindow top, GGadget *g, GEvent *event) {
 	    event->u.chr.state ^= (ksm_cmdmacosx|ksm_control);
 	}
     }
-#if defined(__Mac) && !defined(FONTFORGE_CAN_USE_GDK)
+#if defined(__Mac) && !defined(X_DISPLAY_MISSING)
 
     //
     // Command + Alt + Shift + F on OSX doesn't give the keysym one
@@ -1799,7 +1799,7 @@ int GMenuBarCheckKey(GWindow top, GGadget *g, GEvent *event) {
 
     if ( g==NULL || keysym==0 ) return( false ); /* exit if no gadget or key */
 
-#ifndef FONTFORGE_CAN_USE_GDK
+#ifndef X_DISPLAY_MISSING
     if ( (menumask&ksm_cmdmacosx) && keysym>0x7f &&
 	    (event->u.chr.state&ksm_meta) &&
 	    !(event->u.chr.state&menumask&(ksm_control|ksm_cmdmacosx)) )

@@ -7015,7 +7015,7 @@ void FontViewRemove(FontView *fv) {
     FontViewFree(&fv->b);
 }
 
-#ifndef FONTFORGE_CAN_USE_GDK
+#ifndef X_DISPLAY_MISSING
 /**
  * In some cases fontview gets an et_selclear event when using copy
  * and paste on the OSX. So this guard lets us quietly ignore that
@@ -7045,7 +7045,7 @@ return( GGadgetDispatchEvent(fv->vsb,event));
 	  }
 	  break;
       case et_selclear:
-#if defined(__Mac) && !defined(FONTFORGE_CAN_USE_GDK)
+#if defined(__Mac) && !defined(X_DISPLAY_MISSING)
 	  // For some reason command + c and command + x wants
 	  // to send a clear to us, even if that key was pressed
 	  // on a charview.
