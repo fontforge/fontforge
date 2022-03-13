@@ -62,6 +62,73 @@ struct GQtLayoutState {
     bool laid_out = false;
 };
 
+struct GQtSelectionData {
+    ~GQtSelectionData() {
+        Release();
+    }
+    void Release() {
+        if (data) {
+            if (freedata) {
+                (freedata)(data);
+            } else {
+                free(data);
+            }
+        }
+    }
+    QVariant Generate() const {
+        void *ret = data;
+        int32_t len = cnt;
+        if (gendata) {
+            ret = (gendata)(data, &len);
+        }
+        len *= unit_size;
+        if (ret) {
+            QByteArray rv((char*)ret, len);
+            if (gendata) {
+                free(ret);
+            }
+            return rv;
+        }
+        return QVariant();
+    }
+
+    // The identifier of the type of data held e.g. UTF8_STRING
+    QString type;
+    // Number of elements held
+    int32_t cnt = 0;
+    // Size per element held
+    int32_t unit_size = 0;
+    // Data of selection, or context data if generator is provided
+    void *data = nullptr;
+    // Function to generate selection data, or NULL if provided already
+    void *(*gendata)(void *, int32_t *len) = nullptr;
+    // Method by which to free the data element
+    void (*freedata)(void *) = nullptr;
+};
+
+struct GQtSelectionInfo {
+    GQtWindow *owner = nullptr;
+    std::vector<std::unique_ptr<GQtSelectionData>> data;
+};
+
+class GQtMimeData : public QMimeData {
+public:
+    GQtMimeData(std::shared_ptr<GQtSelectionInfo> selinfo)
+        : m_selinfo(std::move(selinfo))
+    {}
+
+    // QMimeData
+    QStringList formats() const override;
+    bool hasFormat(const QString& mimeType) const override;
+    QVariant retrieveData(const QString &mimeType, QVariant::Type type) const override;
+
+    void setSelInfo(std::shared_ptr<GQtSelectionInfo> selinfo) {
+        m_selinfo = std::move(selinfo);
+    }
+private:
+    std::shared_ptr<GQtSelectionInfo> m_selinfo;
+};
+
 class GQtWindow
 {
 public:
@@ -215,7 +282,8 @@ struct GQtDisplay
 
     int top_window_count = 0; // The number of toplevel, non-dialogue windows. When this drops to 0, the event loop stops
     ulong last_event_time = 0;
-    GQtWindow *grabbed_window = nullptr;
+
+    std::shared_ptr<GQtSelectionInfo> selinfo[sn_max];
 
     FState fs = {};
     GQtButtonState bs = {};

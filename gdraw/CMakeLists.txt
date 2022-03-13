@@ -73,6 +73,7 @@ if(ENABLE_X11)
     Pango::Pango
   )
 elseif(ENABLE_QT)
+  target_compile_definitions(gdraw PRIVATE -DQT_NO_CAST_FROM_ASCII)
   target_link_libraries(gdraw PUBLIC
     Qt${QT_VERSION_MAJOR}::Widgets
   )

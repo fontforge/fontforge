@@ -43,6 +43,10 @@
 
 namespace fontforge { namespace gdraw {
 
+static const QString sUtf8String(QStringLiteral("UTF8_STRING"));
+static const QString sString(QStringLiteral("STRING"));
+static const QString sTextPlain(QStringLiteral("text/plain"));
+
 // Forward declarations
 static void GQtDrawCancelTimer(GTimer *timer);
 static void GQtDrawDestroyWindow(GWindow w);
@@ -519,7 +523,7 @@ void GQtWidget::crossingEvent(QEvent* event, bool enter) {
     gevent.u.crossing.y = pos.y();
     gevent.u.crossing.state = _GQtDraw_QtModifierToKsm(gdisp->app->keyboardModifiers());
     gevent.u.crossing.entered = enter;
-    gevent.u.crossing.device = NULL;
+    gevent.u.crossing.device = nullptr;
     gevent.u.crossing.time = gdisp->last_event_time;
     // Always set to false when crossing boundary...
     gdisp->is_space_pressed = false;
@@ -559,7 +563,7 @@ void GQtWidget::inputMethodEvent(QInputMethodEvent *event)
         if (!event->preeditString().isEmpty()) {
             QPoint pos = mapToGlobal(m_icpos);
 
-            QFont fd = GQtDrawGetFont(Base()->ggc->fi);
+            QFont fd = GQtDrawGetFont(Base()->ggc->fi); // FIXME set window font
             QFontMetrics fm(fd);
             pos.setY(pos.y() - fm.height() * 3);
             QToolTip::showText(pos, event->preeditString(), this);
@@ -705,6 +709,16 @@ static void GQtDrawDestroyWindow(GWindow w) {
                 GQtDrawSetTransientFor(child->Base(), nullptr);
             } else {
                 GQtDrawDestroyWindow(child->Base());
+            }
+        }
+
+        for (int i = 0; i < (int)sn_max; ++i) {
+            auto& selinfo = GQtD(w)->selinfo[i];
+            if (selinfo->owner == gw) {
+                selinfo->owner = nullptr;
+                if (i > sn_clipboard) {
+                    selinfo->data.clear();
+                }
             }
         }
 
@@ -946,31 +960,134 @@ static int GQtDrawKeyState(GWindow w, int keysym) {
     return GQtD(w)->is_space_pressed;
 }
 
+QStringList GQtMimeData::formats() const {
+    bool hasString = false, hasTextPlain = false;
+    QStringList ret;
+    ret.reserve(m_selinfo->data.size() + 1);
+
+    for (const auto& sel : m_selinfo->data) {
+        ret.push_back(sel->type);
+        if (sel->type == sString || sel->type == sUtf8String) {
+            hasString = true;
+        } else if (sel->type == sTextPlain) {
+            hasTextPlain = true;
+        }
+    }
+    if (hasString && !hasTextPlain) {
+        ret.push_back(sTextPlain);
+    }
+    return ret;
+}
+
+bool GQtMimeData::hasFormat(const QString& mimeType) const {
+    bool isString = mimeType == sTextPlain;
+    for (const auto& sel : m_selinfo->data) {
+        if (sel->type == mimeType) {
+            return true;
+        } else if (isString && (sel->type == sUtf8String || sel->type == sString)) {
+            return true;
+        }
+    }
+    return false;
+}
+
+QVariant GQtMimeData::retrieveData(const QString &mimeType, QVariant::Type type) const {
+    bool isString = mimeType == sTextPlain;
+    for (const auto& sel : m_selinfo->data) {
+        if (sel->type == mimeType || isString && (sel->type == sUtf8String || sel->type == sString)) {
+            return sel->Generate();
+        }
+    }
+    return QVariant();
+}
+
 static void GQtDrawGrabSelection(GWindow w, enum selnames sn) {
     Log(LOGDEBUG, " ");
 
-    if ((int)sn < 0 || sn >= sn_max) {
+    if ((int)sn < 0 || sn >= sn_max || w->is_dying) {
         return;
     }
+
+    auto& selinfo = GQtD(w)->selinfo[sn];
+
+    // Send a SelectionClear event to the current owner of the selection
+    if (selinfo->owner != nullptr && !selinfo->data.empty()) {
+        GEvent gevent = selinfo->owner->Widget()->InitEvent<>(et_selclear);
+        gevent.u.selclear.sel = sn;
+        selinfo->owner->Widget()->DispatchEvent(gevent, nullptr);
+    }
+    selinfo->owner = GQtW(w);
+    selinfo->data.clear();
 }
 
 static void GQtDrawAddSelectionType(GWindow w, enum selnames sel, char *type, void *data, int32_t cnt, int32_t unitsize,
                                      void *gendata(void *, int32_t *len), void freedata(void *)) {
     Log(LOGDEBUG, " ");
+    GQtDisplay *gdisp = GQtD(w);
+
+    if (unitsize != 1 && unitsize != 2 && unitsize != 4) {
+        GDrawIError("Bad unitsize to GQtDrawAddSelectionType");
+        return;
+    } else if ((int)sel < 0 || sel >= sn_max || w->is_dying) {
+        GDrawIError("Bad selname value");
+        return;
+    }
+
+    QString qtype = QString::fromLatin1(type);
+    auto& selinfo = gdisp->selinfo[sel];
+    auto it = std::find_if(selinfo->data.begin(), selinfo->data.end(), [&qtype](const std::unique_ptr<GQtSelectionData>& d) {
+        return d->type == qtype;
+    });
+    if (it == selinfo->data.end()) {
+        std::unique_ptr<GQtSelectionData> sd(new GQtSelectionData());
+        it = selinfo->data.emplace(selinfo->data.end(), std::move(sd));
+    }
+
+    auto& sd = *it;
+    sd->Release();
+    sd->type = std::move(qtype);
+    sd->cnt = cnt;
+    sd->unit_size = unitsize;
+    sd->data = data;
+    sd->gendata = gendata;
+    sd->freedata = freedata;
+
+    if (selinfo->owner && sel <= sn_clipboard) {
+        assert(selinfo->owner == GQtW(w) && "Owner should match");
+        QClipboard::Mode mode = (QClipboard::Mode)(1 - (int)sel);
+        QClipboard *cb = GQtD(w)->app->clipboard();
+        cb->setMimeData(new GQtMimeData(selinfo), mode);
+    }
 }
 
 static void *GQtDrawRequestSelection(GWindow w, enum selnames sn, char *type_name, int32_t *len) {
-    if ((int)sn < 0 || sn > sn_clipboard) {
+    GQtDisplay *gdisp = GQtD(w);
+    if (len != nullptr) {
+        *len = 0;
+    }
+
+    if ((int)sn < 0 || sn >= sn_max) {
         return nullptr;
     }
 
-    QClipboard::Mode mode = (QClipboard::Mode)(1 - (int)sn);
-    QClipboard *cb = GQtD(w)->app->clipboard();
-    const QMimeData *data = cb->mimeData(mode);
+    static GQtMimeData lmd(nullptr);
+    const QMimeData *data = nullptr;
+    if (sn > sn_clipboard) {
+        if (gdisp->selinfo[sn]->owner != nullptr) {
+            lmd.setSelInfo(gdisp->selinfo[sn]);
+            data = &lmd;
+        }
+    } else {
+        QClipboard::Mode mode = (QClipboard::Mode)(1 - (int)sn);
+        QClipboard *cb = gdisp->app->clipboard();
+        data = cb->mimeData(mode);
+    }
+
     if (!data) {
         return nullptr;
     }
-    QByteArray arr = data->data(QString::fromUtf8(type_name));
+
+    QByteArray arr = data->data(QLatin1String(type_name));
     if (arr.isEmpty()) {
         return nullptr;
     }
@@ -983,14 +1100,18 @@ static void *GQtDrawRequestSelection(GWindow w, enum selnames sn, char *type_nam
 
 static int GQtDrawSelectionHasType(GWindow w, enum selnames sn, char *type_name) {
     Log(LOGDEBUG, " ");
-    if ((int)sn < 0 || sn > sn_clipboard) {
+
+    GQtDisplay *gdisp = GQtD(w);
+    if ((int)sn < 0 || sn >= sn_max) {
         return false;
+    } else if (sn > sn_clipboard) {
+        return gdisp->selinfo[sn]->owner != nullptr && GQtMimeData(gdisp->selinfo[sn]).hasFormat(QLatin1String(type_name));
     }
 
     QClipboard::Mode mode = (QClipboard::Mode)(1 - (int)sn);
-    QClipboard *cb = GQtD(w)->app->clipboard();
+    QClipboard *cb = gdisp->app->clipboard();
     const QMimeData *data = cb->mimeData(mode);
-    return data && data->hasFormat(QString::fromUtf8(type_name));
+    return data && data->hasFormat(QLatin1String(type_name));
 }
 
 static void GQtDrawBindSelection(GDisplay *disp, enum selnames sn, char *atomname) {
@@ -1000,8 +1121,10 @@ static void GQtDrawBindSelection(GDisplay *disp, enum selnames sn, char *atomnam
 static int GQtDrawSelectionHasOwner(GDisplay *disp, enum selnames sn) {
     Log(LOGDEBUG, " ");
 
-    if ((int)sn < 0 || sn > sn_clipboard) {
+    if ((int)sn < 0 || sn >= sn_max) {
         return false;
+    } else if (sn > sn_clipboard) {
+        return GQtD(disp)->selinfo[sn]->owner != nullptr;
     }
 
     QClipboard::Mode mode = (QClipboard::Mode)(1 - (int)sn);
@@ -1168,7 +1291,7 @@ static void GQtDrawCancelTimer(GTimer *timer) {
 }
 
 static void GQtDrawDoError(GDisplay *disp, const char* err) {
-    QMessageBox::critical(GQtD(disp)->app->focusWidget(), QString::fromUtf8("Error"), QString::fromUtf8(err));
+    QMessageBox::critical(GQtD(disp)->app->focusWidget(), QStringLiteral("Error"), QString::fromUtf8(err));
 }
 
 
@@ -1414,9 +1537,9 @@ static QFont GQtDrawGetFont(GFont *font) {
     QStringList familyList = families.split(QLatin1Char(','), Qt::SkipEmptyParts);
     for (auto& family : familyList) {
         family = family.trimmed();
-        if (family == QLatin1String("system-ui")) {
+        if (family == QStringLiteral("system-ui")) {
             family = QFontDatabase::systemFont(QFontDatabase::GeneralFont).family();
-        } else if (family == QLatin1String("monospace")) {
+        } else if (family == QStringLiteral("monospace")) {
             family = QFontDatabase::systemFont(QFontDatabase::FixedFont).family();
         }
     }
@@ -1917,7 +2040,7 @@ static void GQtDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi) {
     Log(LOGDEBUG, " ");
 
     auto* state = GQtW(w)->Layout();
-    if (fi == NULL) {
+    if (fi == nullptr) {
         fi = w->ggc->fi;
     }
 
@@ -1932,7 +2055,7 @@ static void GQtDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi) {
     // used per paragraph. But for the cases where multiline text edits
     // are used, this is good enough, and is easier to work with.
     QString qtext = QString::fromUtf8(state->utf8_text.c_str(), state->utf8_text.size());
-    qtext.replace('\n', QChar::LineSeparator);
+    qtext.replace(QLatin1Char('\n'), QChar::LineSeparator);
 
     state->layout.setFont(GQtDrawGetFont(fi));
     state->layout.setText(qtext);
@@ -2174,6 +2297,10 @@ extern "C" GDisplay *_GQtDraw_CreateDisplay(char *displayname, int *argc, char *
     gdisp->groot_base.reset(new GQtWidget(nullptr, Qt::Widget));
     gdisp->groot_base->setAttribute(Qt::WA_QuitOnClose, false);
     gdisp->groot_base->SetTitle("GROOT");
+
+    for (int i = 0; i < (int)sn_max; ++i) {
+        gdisp->selinfo[i].reset(new GQtSelectionInfo());
+    }
 
     GDrawResourceFind();
     gdisp->bs.double_time = _GDraw_res_multiclicktime;
