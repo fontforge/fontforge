@@ -495,8 +495,6 @@ void GQtWidget::focusEvent(QFocusEvent* event, bool focusIn) {
         // Redirect to toplevel
         GQtW(gevent.w)->Widget()->focusEvent(event, focusIn);
         return;
-    } else if (m_has_focus == focusIn) {
-        return;
     }
 
     switch (event->reason()) {
@@ -512,7 +510,6 @@ void GQtWidget::focusEvent(QFocusEvent* event, bool focusIn) {
     Log(LOGWARN, "Focus change %s %p(%s)",
         gevent.u.focus.gained_focus ? "IN" : "OUT", Base(), Title());
 
-    m_has_focus = focusIn;
     DispatchEvent(gevent, event);
 }
 

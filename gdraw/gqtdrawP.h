@@ -245,7 +245,6 @@ public:
 
 private:
     QPainter* m_painter = nullptr;
-    bool m_has_focus = false;
     bool m_ime_enabled = false;
     QPoint m_icpos = {};
 };
