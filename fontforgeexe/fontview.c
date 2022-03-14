@@ -194,10 +194,7 @@ return;
 		GRect r;
 		r.x = j*fv->cbw+1; r.width = fv->cbw-1;
 		r.y = i*fv->cbh+1; r.height = fv->lab_height-1;
-		GDrawDrawLine(fv->v,r.x,r.y,r.x,r.y+r.height-1,fvhintingneededcol);
-		GDrawDrawLine(fv->v,r.x+1,r.y,r.x+1,r.y+r.height-1,fvhintingneededcol);
-		GDrawDrawLine(fv->v,r.x+r.width-1,r.y,r.x+r.width-1,r.y+r.height-1,fvhintingneededcol);
-		GDrawDrawLine(fv->v,r.x+r.width-2,r.y,r.x+r.width-2,r.y+r.height-1,fvhintingneededcol);
+		GDrawRequestExpose(fv->v, &r, false);
 	    }
 	}
     }
