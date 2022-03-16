@@ -1439,6 +1439,7 @@ int CVMouseMovePointer(CharView *cv, GEvent *event) {
     int needsupdate = false;
     int did_a_merge = false;
     int touch_control_points = false;
+    int no_prev_cp = false, no_next_cp = false;
 
     
     /* if we haven't moved from the original location (ever) then this is a noop */
@@ -1557,26 +1558,53 @@ return( false );
 	touch_control_points = true;
 	// The modifier is wrong.
 	if (cv->p.anysel && cv->p.sp && event->u.mouse.state & ksm_control) {
-		// Identify the individual point clicked. Find its control points. Move the selected point on a line between those control points.
-		tmpp1 = nearest_point_on_line_segment((BasePoint){cv->p.sp->prevcp.x,cv->p.sp->prevcp.y}, \
-			(BasePoint){cv->p.sp->nextcp.x,cv->p.sp->nextcp.y}, (BasePoint){cv->info.x, cv->info.y});
-		// We also need to rebase the original point onto that line segment so that the movement is exactly along the line even if the original click is not.
-		tmpp2 = nearest_point_on_line_segment((BasePoint){cv->p.sp->prevcp.x,cv->p.sp->prevcp.y}, \
-			(BasePoint){cv->p.sp->nextcp.x,cv->p.sp->nextcp.y}, (BasePoint){cv->last_c.x, cv->last_c.y});
+		touch_control_points = false;
+		BasePoint prevref, nextref;
+		if (cv->p.sp->noprevcp && cv->p.sp->prev) {
+		    no_prev_cp = true;
+		    prevref = cv->p.sp->prev->from->me;
+		} else {
+		    prevref = cv->p.sp->prevcp;
+		}
+		if (cv->p.sp->nonextcp && cv->p.sp->next) {
+		    no_next_cp = true;
+		    nextref = cv->p.sp->next->to->me;
+		} else {
+		    nextref = cv->p.sp->nextcp;
+		}
+		// Identify the individual point clicked. Find its control
+		// points. Move the selected point on a line between those
+		// control points.
+		tmpp1 = nearest_point_on_line_segment(prevref, nextref, cv->info);
+		// We also need to rebase the original point onto that line
+		// segment so that the movement is exactly along the line
+		// even if the original click is not.
+		tmpp2 = nearest_point_on_line_segment(prevref, nextref, cv->last_c);
 		xadj = tmpp1.x-tmpp2.x;
 		yadj = tmpp1.y-tmpp2.y;
-		touch_control_points = false; // We will need to move the control points back (but only for the point dragged).
 	}
 	
 	did_a_merge = CVMoveSelection(cv,
 		xadj,yadj,
 		event->u.mouse.state);
-	// Rather than create a new set of functions for moving points without their control points, we instead just restore them if we did not want them moved.
+	// Rather than create a new set of functions for moving points without
+	// their control points, we instead just restore them if we did not want
+	// them moved.
 	if (cv->p.sp && touch_control_points == false) {
-		cv->p.sp->prevcp = cachecp1;
-		cv->p.sp->nextcp = cachecp2;
+		if (no_prev_cp)
+		    cv->p.sp->prevcp = cv->p.sp->me;
+		else
+		    cv->p.sp->prevcp = cachecp1;
+		if (no_next_cp)
+		    cv->p.sp->nextcp = cv->p.sp->me;
+		else
+		    cv->p.sp->nextcp = cachecp2;
+		SplineRefigure(cv->p.sp->prev);
+		SplineRefigure(cv->p.sp->next);
+		// We presumably still trigger this in case we're dragging other
+		// selected points along
 		touch_control_points = true;
-    		AdjustControls(cv->p.sp);
+		// Don't think this is wanted or needed now AdjustControls(cv->p.sp);
 	}
 	needsupdate = true;
 
