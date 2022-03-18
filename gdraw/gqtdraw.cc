@@ -109,6 +109,7 @@ static GWindow _GQtDraw_CreateWindow(GQtDisplay *gdisp, GWindow w, GRect *pos,
     if (w == nullptr) { // Creating a top-level window. Set parent as default root.
         windowFlags |= Qt::Window;
         if ((wattrs->mask & wam_nodecor) && wattrs->nodecoration) {
+            windowFlags |= Qt::FramelessWindowHint;
             if (wattrs->mask & wam_restrict) {
                 windowFlags |= Qt::Popup; // modal
             } else {
@@ -193,6 +194,8 @@ static GWindow _GQtDraw_CreateWindow(GQtDisplay *gdisp, GWindow w, GRect *pos,
         } else if (!ret->is_dlg) {
             ++gdisp->top_window_count;
             Log(LOGWARN, "INCTP %d", gdisp->top_window_count);
+        } else if (ret->restrict_input_to_me) {
+            GQtDrawSetTransientFor(ret, (GWindow) - 1);
         }
         ret->was_positioned = true;
         window->setAttribute(Qt::WA_QuitOnClose, !ret->is_dlg);
@@ -757,6 +760,9 @@ static int GQtDrawSetDither(GDisplay *UNUSED(gdisp), int UNUSED(set)) {
 static void GQtDrawSetVisible(GWindow w, int show) {
     Log(LOGDEBUG, "0x%p %d", w, show);
     GQtW(w)->Widget()->setVisible((bool)show);
+    if (show && w->restrict_input_to_me && GQtW(w)->Widget()->parentWidget() == nullptr) {
+        GQtDrawSetTransientFor(w, (GWindow) - 1);
+    }
 }
 
 static void GQtDrawMove(GWindow w, int32_t x, int32_t y) {
