@@ -1169,7 +1169,7 @@ return( -1 );
     }
 }
 
-static char *SearchDirForWernerFile(char *dir,char *filename) {
+static char *SearchDirForWernerFile(const char *dir,char *filename) {
     char buffer[1025], buf2[200];
     FILE *file;
     int good = 0;

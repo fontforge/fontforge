@@ -486,7 +486,7 @@ static void ImageCacheReload(int do_absolute) {
     }
 }
 
-void GGadgetSetImageDir(char *dir) {
+void GGadgetSetImageDir(const char *dir) {
     int k;
     char *ptr = imagedir;
     //Check if imagedir has been initialised
@@ -516,8 +516,8 @@ void GGadgetSetImageDir(char *dir) {
     }
 }
 
-static char *ImagePathFigureElement(char *start, int len) {
-    char *homedir = GFileGetHomeDir();
+static char *ImagePathFigureElement(const char *start, int len) {
+	const char *homedir = GFileGetHomeDir();
     if ( *start=='=' && len==1 ) {
         if (imagedir == NULL) {
             return copy(imagedir_default);
@@ -539,9 +539,9 @@ return( copyn(start,len));
 # define PATH_SEPARATOR ':'
 #endif
 
-void GGadgetSetImagePath(char *path) {
+void GGadgetSetImagePath(const char *path) {
     int cnt, k;
-    char *pt, *end;
+    const char *pt, *end;
     static char *_GGadget_CurrentImagePath=NULL;
 
     if ( path==NULL )

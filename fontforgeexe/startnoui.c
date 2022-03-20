@@ -84,7 +84,7 @@ int fontforge_main( int argc, char **argv ) {
     bool quiet = false;
     char *pt;
 
-    FindProgDir(argv[0]);
+    FindProgRoot(argv[0]);
     InitSimpleStuff();
 
     bind_textdomain_codeset("FontForge","UTF-8");

@@ -92,7 +92,7 @@ void doinitFontForgeMain(void) {
 
     if ( inited )
 return;
-    FindProgDir(NULL);
+    FindProgRoot(NULL);
     InitSimpleStuff();
     if ( default_encoding==NULL )
 	default_encoding=FindOrMakeEncoding("ISO8859-1");

@@ -2223,7 +2223,7 @@ static void bImport(Context *c) {
 
     t = script2utf8_copy(c->a.vals[1].u.sval);
     locfilename = utf82def_copy(t);
-    filename = GFileMakeAbsoluteName(locfilename);
+    filename = GFileGetAbsoluteName(locfilename);
     free(locfilename); free(t);
 
     ext = strrchr(filename,'.');
@@ -8265,7 +8265,7 @@ static void bCompareFonts(Context *c) {
     t = script2utf8_copy(c->a.vals[1].u.sval);
     locfilename = utf82def_copy(t);
     free(t);
-    t = GFileMakeAbsoluteName(locfilename);
+    t = GFileGetAbsoluteName(locfilename);
     free(locfilename);
     locfilename = t;
     sf2 = FontWithThisFilename(locfilename);

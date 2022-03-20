@@ -34,6 +34,7 @@
 #include "cvundoes.h"
 #include "edgelist.h"
 #include "fontforge.h"
+#include "gfile.h"
 #include "gutils.h"
 #include "namelist.h"
 #include "psread.h"
@@ -3095,7 +3096,7 @@ SplineFont *SplineFontBlank(int charcnt) {
     sf->fullname = copy(sf->fontname);
     sf->familyname = copy(sf->fontname);
     sprintf( buffer, "%s.sfd", sf->fontname);
-    sf->origname = ToAbsolute(buffer);
+    sf->origname = GFileGetAbsoluteName(buffer);
     sf->weight = copy("Regular");
     now = GetTime();
     if (!getenv("SOURCE_DATE_EPOCH")) {

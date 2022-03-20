@@ -362,7 +362,7 @@ struct cidmap *AskUserForCIDMap(void) {
 	AddToBlock(&block,buffer,NULL);
     }
     FindMapsInDir(&block,".");
-    char* sharedir = getShareSubDir("/cidmap");
+    char* sharedir = smprintf("%s/cidmap", getShareDir());
     FindMapsInDir(&block,sharedir);
     free(sharedir);
 

@@ -61,7 +61,6 @@
 
 #cmakedefine _ModKeysAutoRepeat 1
 
-
 /* Header checks */
 
 #cmakedefine HAVE_EXECINFO_H 1
@@ -70,6 +69,9 @@
 
 #cmakedefine HAVE_IEEEFP_H 1
 
+/* Function checks */
+
+#cmakedefine HAVE_REALPATH 1
 
 /* FontForge configurable options */
 

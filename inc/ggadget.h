@@ -608,8 +608,8 @@ GTextInfo **GTextInfoArrayFromList(GTextInfo *ti, uint16_t *cnt);
 
 void InitImageCache();
 void ClearImageCache();
-void GGadgetSetImageDir(char *dir);
-void GGadgetSetImagePath(char *path);
+void GGadgetSetImageDir(const char *dir);
+void GGadgetSetImagePath(const char *path);
 GImage *GGadgetImageCache(const char *filename);
 int TryGGadgetImageCache(GImage *image, const char *name);
 

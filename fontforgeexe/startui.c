@@ -699,7 +699,7 @@ int fontforge_main( int argc, char **argv ) {
     PythonUI_Init();
 #endif
 
-    FindProgDir(argv[0]);
+    FindProgRoot(argv[0]);
     InitSimpleStuff();
 
 #if defined(__MINGW32__)
@@ -724,7 +724,7 @@ int fontforge_main( int argc, char **argv ) {
     textdomain("FontForge");
     {
 	GGadgetSetImageDir( getPixmapDir() );
-	char* path = getShareSubDir("/resources/fontforge.resource");
+	char* path = smprintf("%s/resources/fontforge.resource", getShareDir());
 	GResourceAddResourceFile(path, GResourceProgramName,false);
 	free(path);
     }
@@ -824,7 +824,7 @@ int fontforge_main( int argc, char **argv ) {
 #if defined(__MINGW32__) && !defined(_NO_LIBCAIRO)
     //Load any custom fonts for the user interface
     if (use_cairo) {
-        char *system_load = getShareDir();
+        const char *system_load = getShareDir();
         char *user_load = getFontForgeUserDir(Data);
         char lbuf[MAX_PATH];
         int lret;
@@ -941,7 +941,7 @@ exit( 0 );
 			
     openflags = 0;
     for ( i=1; i<argc; ++i ) {
-	char buffer[1025];
+	char *buffer = NULL;
 	char *pt = argv[i];
 
 	GDrawProcessPendingEvents(NULL);
@@ -983,7 +983,7 @@ exit( 0 );
 	    doopen = true;
 	else {
 //	    printf("else argv[i]:%s\n", argv[i] );
-	    GFileGetAbsoluteName(argv[i],buffer,sizeof(buffer));
+	    buffer = GFileGetAbsoluteName(argv[i]);
 	    if ( GFileIsDir(buffer) ) {
 		char *fname;
 		fname = malloc(strlen(buffer)+strlen("/glyphs/contents.plist")+1);
@@ -1016,6 +1016,7 @@ exit( 0 );
 		}
 	    } else if ( ViewPostScriptFont(buffer,openflags)!=0 )
 		any = 1;
+	    free(buffer);
 	}
     }
     if ( !any && !doopen )
