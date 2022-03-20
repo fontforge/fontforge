@@ -45,8 +45,7 @@ extern char* GFileGetHomeDir(void);
 extern unichar_t* u_GFileGetHomeDir(void);
 
 extern char *GFileRemoveExtension(char *path);
-extern char *GFileGetAbsoluteName(const char *name, char *result, size_t rsiz);
-extern char *GFileMakeAbsoluteName(char *name);
+extern char *GFileGetAbsoluteName(const char *name);
 extern char *GFileBuildName(char *dir,char *fname,char *buffer,size_t size);
 extern char *GFileReplaceName(char *oldname,char *fname,char *buffer,size_t size);
 /**
@@ -78,7 +77,6 @@ extern int GFileMkDir(const char *name, int mode);
 extern int GFileRmDir(const char *name);
 extern int GFileUnlink(const char *name);
 extern char* GFileMimeType(const char *path);
-extern unichar_t *u_GFileGetAbsoluteName(unichar_t *name, unichar_t *result, int rsiz);
 extern unichar_t *u_GFileBuildName(unichar_t *dir,unichar_t *fname,unichar_t *buffer,int size);
 extern unichar_t *u_GFileReplaceName(unichar_t *oldname,unichar_t *fname,unichar_t *buffer,int size);
 extern unichar_t *u_GFileNameTail(const unichar_t *oldname);
@@ -96,13 +94,12 @@ extern int u_GFileUnlink(unichar_t *name);
 extern off_t GFileGetSize(char *name);
 extern char *GFileReadAll(char *name);
 extern int   GFileWriteAll(char *filepath, char *data);
-extern void  FindProgDir(char *prog);
-extern char *getShareDir();
-extern char *getShareSubDir(const char* subdir);
-extern char *getLocaleDir(void);
-extern char *getPixmapDir(void);
-extern char *getHelpDir(void);
-extern char *getUserHomeDir(void);
+extern void  FindProgRoot(const char *prog);
+extern const char *getShareDir();
+extern const char *getLocaleDir(void);
+extern const char *getPixmapDir(void);
+extern const char *getHelpDir(void);
+extern const char *getUserHomeDir(void);
 extern char *getFontForgeUserDir(int dir);
 extern const char *getTempDir(void);
 

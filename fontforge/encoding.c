@@ -1074,7 +1074,7 @@ return( maybe );	/* User has said it's ok to use maybe at this supplement level 
 
     file = SearchDirForCidMap(".",registry,ordering,supplement,&maybefile);
     if ( file==NULL ) {
-	sharedir = getShareSubDir("/cidmap");
+	sharedir = smprintf("%s/cidmap", getShareDir());
 	file = SearchDirForCidMap(sharedir,registry,ordering,supplement,&maybefile);
     }
 

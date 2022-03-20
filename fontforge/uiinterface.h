@@ -189,7 +189,7 @@ struct prefs_interface {
     void  (*load_prefs)(void);
     int   (*get_prefs)(char *name,struct val *value);
     int   (*set_prefs)(char *name,struct val *val1, struct val *val2);
-    char *(*get_exe_share_dir)(void);
+    const char *(*get_exe_share_dir)(void);
     void  (*init_prefs)(void);
 };
 extern struct prefs_interface *prefs_interface;

@@ -54,6 +54,14 @@ function(fontforge_generate_config template destination)
   check_include_file(execinfo.h HAVE_EXECINFO_H)
   check_include_file(ieeefp.h HAVE_IEEEFP_H)
 
+  # Function checks
+  include(CheckFunctionExists)
+  include(CMakePushCheckState)
+  cmake_push_check_state(RESET)
+  set(CMAKE_REQUIRED_INCLUDES stdlib.h)
+  check_function_exists(realpath HAVE_REALPATH)
+  cmake_pop_check_state()
+
   # These are hard requirements/unsupported, should get rid of these
   set(HAVE_LIBINTL_H 1)
 

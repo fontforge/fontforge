@@ -262,7 +262,7 @@ void hotkeysLoad()
 {
     char localefn[PATH_MAX+1];
     char* p = 0;
-    char* sharedir = getShareDir();
+    const char* sharedir = getShareDir();
 
     snprintf(localefn,PATH_MAX,"%s/hotkeys/default", sharedir );
     loadHotkeysFromFile( localefn, hk_ff, true );

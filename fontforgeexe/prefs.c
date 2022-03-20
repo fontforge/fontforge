@@ -787,7 +787,7 @@ static char *getPfaEditPrefs(void) {
     return prefs;
 }
 
-static char *PrefsUI_getFontForgeShareDir(void) {
+static const char *PrefsUI_getFontForgeShareDir(void) {
     return getShareDir();
 }
 
@@ -966,7 +966,7 @@ static void PrefsUI_LoadPrefs_FromFile( char* filename )
 void Prefs_LoadDefaultPreferences( void )
 {
     char filename[PATH_MAX+1];
-    char* sharedir = getShareDir();
+    const char* sharedir = getShareDir();
 
     snprintf(filename,PATH_MAX,"%s/prefs", sharedir );
     PrefsUI_LoadPrefs_FromFile( filename );

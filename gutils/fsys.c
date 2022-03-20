@@ -47,8 +47,7 @@
  #include <windows.h>
 #endif
 
-static char *program_dir = NULL;
-static char dirname_[MAXPATHLEN+1];
+static char *program_root = NULL;
 
 /**
  * \brief Removes the extension from a file path, if it exists.
@@ -199,12 +198,30 @@ static void savestrcpy(char *dest,const char *src) {
     }
 }
 
-char *GFileGetAbsoluteName(const char *name, char *result, size_t rsiz) {
-    /* result may be the same as name */
+char *GFileGetAbsoluteName(const char *name) {
+    if (!name) {
+        return NULL;
+    } else if (!strncasecmp(name, "file://", 7)) {
+        name += 7;
+    }
+
+#if GLIB_CHECK_VERSION(2, 58, 0)
+    gchar* abs = g_canonicalize_filename(name, NULL);
+    char *ret;
+    // If the input ends with '/', preserve that trailing slash
+    if (name && (name = strrchr(name, '/')) && name[1] == '\0') {
+        ret = smprintf("%s/", abs);
+    } else {
+        ret = copy(abs);
+    }
+    g_free(abs);
+    return GFileNormalizePath(ret);
+#else
     char buffer[1000];
 
      if ( ! GFileIsAbsolute(name) ) {
 	char *pt, *spt, *rpt, *bpt;
+	static char dirname_[MAXPATHLEN+1];
 
 	if ( dirname_[0]=='\0' ) {
 	    getcwd(dirname_,sizeof(dirname_));
@@ -213,9 +230,6 @@ char *GFileGetAbsoluteName(const char *name, char *result, size_t rsiz) {
 	if ( buffer[strlen(buffer)-1]!='/' )
 	    strcat(buffer,"/");
 	strcat(buffer,name);
-	#if defined(__MINGW32__)
-	GFileNormalizePath(buffer);
-	#endif
 
 	/* Normalize out any .. */
 	spt = rpt = buffer;
@@ -245,23 +259,9 @@ char *GFileGetAbsoluteName(const char *name, char *result, size_t rsiz) {
 		spt = pt;
 	}
 	name = buffer;
-	if ( rsiz>sizeof(buffer)) rsiz = sizeof(buffer);	/* Else valgrind gets unhappy */
     }
-    if (result!=name) {
-	strncpy(result,name,rsiz);
-	result[rsiz-1]='\0';
-	#if defined(__MINGW32__)
-	GFileNormalizePath(result);
-	#endif
-    }
-return(result);
-}
-
-char *GFileMakeAbsoluteName(char *name) {
-    char buffer[1025];
-
-    GFileGetAbsoluteName(name,buffer,sizeof(buffer));
-return( copy(buffer));
+    return copy(name);
+#endif
 }
 
 char *GFileBuildName(char *dir,char *fname,char *buffer,size_t size) {
@@ -502,91 +502,6 @@ int GFileUnlink(const char *name) {
 return(unlink(name));
 }
 
-#ifndef _WIN32
-static char *_GFile_find_program_dir(char *prog) {
-    char *pt, *path, *program_dir=NULL;
-    char filename[2000];
-
-    if (prog == NULL) {
-        return NULL;
-    }
-
-    if ( (pt = strrchr(prog,'/'))!=NULL )
-	program_dir = copyn(prog,pt-prog);
-    else if ( (path = getenv("PATH"))!=NULL ) {
-	while ((pt = strchr(path,':'))!=NULL ) {
-	  sprintf(filename,"%.*s/%s", (int)(pt-path), path, prog);
-	    /* Under cygwin, applying access to "potrace" will find "potrace.exe" */
-	    /*  no need for special check to add ".exe" */
-	    if ( access(filename,1)!= -1 ) {
-		program_dir = copyn(path,pt-path);
-	break;
-	    }
-	    path = pt+1;
-	}
-	if ( program_dir==NULL ) {
-	    sprintf(filename,"%s/%s", path, prog);
-	    if ( access(filename,1)!= -1 )
-		program_dir = copy(path);
-	}
-    }
-
-    if ( program_dir==NULL )
-return( NULL );
-    GFileGetAbsoluteName(program_dir,filename,sizeof(filename));
-    free(program_dir);
-    program_dir = copy(filename);
-return( program_dir );
-}
-#endif
-
-unichar_t *u_GFileGetAbsoluteName(unichar_t *name, unichar_t *result, int rsiz) {
-    /* result may be the same as name */
-    unichar_t buffer[1000];
-
-    if ( ! u_GFileIsAbsolute(name) ) {
-	unichar_t *pt, *spt, *rpt, *bpt;
-
-	if ( dirname_[0]=='\0' ) {
-	    getcwd(dirname_,sizeof(dirname_));
-	}
-	uc_strcpy(buffer,dirname_);
-	if ( buffer[u_strlen(buffer)-1]!='/' )
-	    uc_strcat(buffer,"/");
-	u_strcat(buffer,name);
-	u_GFileNormalizePath(buffer);
-
-	/* Normalize out any .. */
-	spt = rpt = buffer;
-	while ( *spt!='\0' ) {
-	    if ( *spt=='/' ) ++spt;
-	    for ( pt = spt; *pt!='\0' && *pt!='/'; ++pt );
-	    if ( pt==spt )	/* Found // in a path spec, reduce to / (we've*/
-		u_strcpy(spt,pt); /*  skipped past the :// of the machine name) */
-	    else if ( pt==spt+1 && spt[0]=='.' && *pt=='/' )	/* Noop */
-		u_strcpy(spt,spt+2);
-	    else if ( pt==spt+2 && spt[0]=='.' && spt[1]=='.' ) {
-		for ( bpt=spt-2 ; bpt>rpt && *bpt!='/'; --bpt );
-		if ( bpt>=rpt && *bpt=='/' ) {
-		    u_strcpy(bpt,pt);
-		    spt = bpt;
-		} else {
-		    rpt = pt;
-		    spt = pt;
-		}
-	    } else
-		spt = pt;
-	}
-	name = buffer;
-    }
-    if (result!=name) {
-	u_strncpy(result,name,rsiz);
-	result[rsiz-1]='\0';
-	u_GFileNormalizePath(result);
-    }
-return(result);
-}
-
 unichar_t *u_GFileBuildName(unichar_t *dir,unichar_t *fname,unichar_t *buffer,int size) {
     int len;
 
@@ -656,7 +571,7 @@ static unichar_t *u_GFileRemoveRoot(unichar_t *path) {
     else if (((path[0] >= 'A' && path[0] <= 'Z') ||
               (path[0] >= 'a' && path[0] <= 'z')) &&
              path[1] == ':' && path[2] == '/') {
-             
+
         path += 3;
     }
 #endif
@@ -672,7 +587,7 @@ unichar_t *u_GFileNormalize(unichar_t *name) {
 return( name );
 	++base;
     }
-    
+
     base = u_GFileRemoveRoot(name);
     for ( pt=base; *pt!='\0'; ) {
 	if ( *pt=='/' )
@@ -782,94 +697,93 @@ int u_GFileUnlink(unichar_t *name) {
 return(unlink(buffer));
 }
 
-void FindProgDir(char *prog) {
-    if (program_dir != NULL) {
+void FindProgRoot(const char *prog) {
+    char *tmp = NULL;
+    gchar *rprog = NULL;
+    if (program_root != NULL) {
         return;
     }
 
 #ifdef _WIN32
-    char  path[MAX_PATH+4];
-    char* c = path;
-    char* tail = 0;
-    unsigned int  len = GetModuleFileNameA(NULL, path, MAX_PATH);
+    char path[MAX_PATH+4];
+    unsigned int len = GetModuleFileNameA(NULL, path, MAX_PATH);
     path[len] = '\0';
-    for(; *c; c++){
-    	if(*c == '\\'){
-    	    tail=c;
-    	    *c = '/';
-    	}
+    prog = GFileNormalizePath(path);
+#endif
+
+    if (prog != NULL) {
+        if (strchr(prog, '/') == NULL) {
+            prog = rprog = g_find_program_in_path(prog);
+        }
+        if (prog) {
+            tmp = smprintf("%s/../..", prog);
+        }
+        program_root = GFileGetAbsoluteName(tmp);
+        free(tmp);
     }
-    if(tail) *tail='\0';
-    program_dir = copy(path);
-#else
-    program_dir = _GFile_find_program_dir(prog);
-    if ( program_dir==NULL ) {
-        program_dir = smprintf("%s/%s", FONTFORGE_INSTALL_PREFIX, "bin");
+
+    if (program_root == NULL) {
+        program_root = GFileGetAbsoluteName(FONTFORGE_INSTALL_PREFIX);
+    }
+
+    // Sigh glib doesn't provide symlink resolution
+#ifdef HAVE_REALPATH
+    tmp = smprintf("%s/share/fontforge", program_root);
+    if (!GFileExists(tmp)) {
+        free(tmp);
+        tmp = realpath(prog, NULL);
+        if (tmp) {
+            char *real_root = smprintf("%s/../..", tmp);
+            free(tmp);
+            free(program_root);
+
+            program_root = GFileGetAbsoluteName(real_root);
+            free(real_root);
+        }
+    } else {
+        free(tmp);
     }
 #endif
+
+    g_free(rprog);
+    TRACE("Program root: %s\n", program_root);
 }
 
-// When calling this function, make sure you prepend "/" to the subdirectory
-// you want. So, to get e.g. /usr/share/cidmaps, call
-// getShareSubDir("/cidmaps").
-char *getShareSubDir(const char* subdir) {
-    const char *pt = strrchr(program_dir, '/');
-    int len = pt ? (pt - program_dir) : strlen(program_dir);
-    return smprintf("%.*s/share/fontforge%s",
-        len, program_dir, subdir ? subdir : "");
-}
-
-char *getShareDir(void) {
+const char *getShareDir(void) {
     static char *sharedir=NULL;
-    static int set=false;
-
-    if ( set )
-	return( sharedir );
-
-    sharedir = getShareSubDir(NULL);
-    set = true;
+    if (!sharedir) {
+        sharedir = smprintf("%s/share/fontforge", program_root);
+    }
     return sharedir;
 }
 
-char *getLocaleDir(void) {
-    static char *sharedir=NULL;
-    static int set=false;
-
-    if ( set )
-	return( sharedir );
-
-    sharedir = getShareSubDir("/../locale");
-    set = true;
-    return sharedir;
+const char *getLocaleDir(void) {
+    static char *localedir=NULL;
+    if (!localedir) {
+        localedir = smprintf("%s/share/locale", program_root);
+    }
+    return localedir;
 }
 
-char *getPixmapDir(void) {
-    static char *sharedir=NULL;
-    static int set=false;
-
-    if ( set )
-	return( sharedir );
-
-    sharedir = getShareSubDir("/pixmaps");
-    set = true;
-    return sharedir;
+const char *getPixmapDir(void) {
+    static char *pixmapdir=NULL;
+    if (!pixmapdir) {
+        pixmapdir = smprintf("%s/pixmaps", getShareDir());
+    }
+    return pixmapdir;
 }
 
-char *getHelpDir(void) {
-    static char *sharedir=NULL;
-    static int set=false;
-
-    if ( set )
-	return( sharedir );
-
-    sharedir = getShareSubDir("/../doc/fontforge/");
-    set = true;
-    return sharedir;
+const char *getHelpDir(void) {
+    static char *helpdir=NULL;
+    if (!helpdir) {
+        helpdir = smprintf("%s/share/doc/fontforge/", program_root);
+    }
+    return helpdir;
 }
 
 /* reimplementation of GFileGetHomeDir, avoiding copy().  Returns NULL if home
  * directory cannot be found */
-char *getUserHomeDir(void) {
+const char *getUserHomeDir(void) {
 #if defined(__MINGW32__)
 	char* dir = getenv("APPDATA");
 	if( dir==NULL )
@@ -921,7 +835,7 @@ char *getFontForgeUserDir(int dir) {
 return NULL;
 	}
 #ifdef _WIN32
-	/* Allow for preferences to be saved locally in a 'portable' configuration. */ 
+	/* Allow for preferences to be saved locally in a 'portable' configuration. */
 	if (getenv("FF_PORTABLE") != NULL) {
 		buf = smprintf("%s/preferences/", getShareDir());
 	} else {
@@ -1006,10 +920,10 @@ char *GFileReadAll(char *name) {
  * Write char string 'data' into file 'name'. Return -1 if error.
  **/
 int GFileWriteAll(char *filepath, char *data) {
-    
+
     if( !data )
 	return -1;
-    
+
     size_t bwrite = strlen(data);
     FILE* fp;
 
@@ -1073,10 +987,10 @@ char *GFileDirNameEx(const char *path, int treat_as_file)
         //Must allocate enough space to append a trailing slash.
         size_t len = strlen(path);
         ret = malloc(len + 2);
-        
+
         if (ret != NULL) {
             char *pt;
-            
+
             strcpy(ret, path);
             GFileNormalizePath(ret);
             if (treat_as_file || !GFileIsDir(ret)) {
@@ -1085,7 +999,7 @@ char *GFileDirNameEx(const char *path, int treat_as_file)
                     *pt = '\0';
                 }
             }
-            
+
             //Keep only one trailing slash
             len = strlen(ret);
             for (pt = ret + len - 1; pt >= ret && *pt == '/'; pt--) {

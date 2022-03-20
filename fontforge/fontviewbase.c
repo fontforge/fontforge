@@ -2065,16 +2065,17 @@ return( false );
 }
 
 static SplineFont *FontOfFilename(const char *filename) {
-    char buffer[1025];
     FontViewBase *fv;
+    char *abspath = GFileGetAbsoluteName(filename);
 
-    GFileGetAbsoluteName((char *) filename,buffer,sizeof(buffer)); 
     for ( fv=fv_list; fv!=NULL ; fv=fv->next ) {
-	if ( fv->sf->filename!=NULL && strcmp(fv->sf->filename,buffer)==0 )
-return( fv->sf );
-	else if ( fv->sf->origname!=NULL && strcmp(fv->sf->origname,buffer)==0 )
-return( fv->sf );
+	if ( (fv->sf->filename!=NULL && strcmp(fv->sf->filename,abspath)==0) ||
+	     (fv->sf->origname!=NULL && strcmp(fv->sf->origname,abspath)==0) ) {
+	    free(abspath);
+	    return fv->sf;
+	}
     }
+    free(abspath);
 return( NULL );
 }
 

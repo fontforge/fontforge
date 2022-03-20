@@ -1684,9 +1684,7 @@ GGadget *GFileChooserCreate(struct gwindow *base, GGadgetData *gd,void *data) {
 	_GGadgetCloseGroup(&gfc->g);
 
     if ( lastdir==NULL ) {
-	static unichar_t dot[] = { '.', '\0' };
-	unichar_t buffer[1025];
-	lastdir = u_copy(u_GFileGetAbsoluteName(dot,buffer,sizeof(buffer)/sizeof(unichar_t)));
+	lastdir = def2u_copy(GFileGetAbsoluteName("./"));
     }
     if ( gd->label==NULL || gd->label->text==NULL )
 	GFileChooserSetTitle(&gfc->g,lastdir);

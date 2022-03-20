@@ -464,7 +464,7 @@ return( NULL );
 return( prefs );
 }
 
-static char *NOUI_getFontForgeShareDir(void) {
+static const char *NOUI_getFontForgeShareDir(void) {
 	return getShareDir();
 }
 

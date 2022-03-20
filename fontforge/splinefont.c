@@ -1310,13 +1310,6 @@ SplineFont *ReadSplineFont(const char *filename,enum openflags openflags) {
 return( _ReadSplineFont(NULL,filename,openflags));
 }
 
-char *ToAbsolute(char *filename) {
-    char buffer[1025];
-
-    GFileGetAbsoluteName(filename,buffer,sizeof(buffer));
-return( copy(buffer));
-}
-
 SplineFont *LoadSplineFont(const char *filename,enum openflags openflags) {
     SplineFont *sf;
     const char *pt;
@@ -1363,7 +1356,7 @@ return( NULL );
     sf = NULL;
     sf = FontWithThisFilename(fname);
     if ( sf==NULL && *fname!='/' )
-	fname = tobefreed2 = ToAbsolute(fname);
+	fname = tobefreed2 = GFileGetAbsoluteName(fname);
     if ( sf==NULL )
 	sf = ReadSplineFont(fname,openflags);
 

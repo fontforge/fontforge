@@ -2425,8 +2425,6 @@ extern int BpColinear(BasePoint *first, BasePoint *mid, BasePoint *last);
 extern int BpWithin(BasePoint *first, BasePoint *mid, BasePoint *last);
     /* Colinear & between */
 
-extern char *ToAbsolute(char *filename);
-
 # if HANYANG
 extern void SFDDumpCompositionRules(FILE *sfd,struct compositionrules *rules);
 extern struct compositionrules *SFDReadCompositionRules(FILE *sfd);
