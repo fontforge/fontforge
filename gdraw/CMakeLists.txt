@@ -1,7 +1,7 @@
 # Distributed under the original FontForge BSD 3-clause license
 
 # not included
-#  gdrawwacomdriver.c genkeysym.c growcol.c
+#  gdrawwacomdriver.c growcol.c
 
 add_library(gdraw STATIC
   choosericons.c

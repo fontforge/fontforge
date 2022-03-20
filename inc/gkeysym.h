@@ -537,7 +537,8 @@ SOFTWARE.
 
 #endif /* FONTFORGE_CAN_USE_GDK */
 
-int GKeysymIsModifier(uint32_t keysym);
+extern int GKeysymFromName(const char *name);
+extern int GKeysymIsModifier(uint32_t keysym);
 
 #ifdef __cplusplus
 }

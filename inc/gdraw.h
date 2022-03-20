@@ -277,8 +277,6 @@ extern Color _GDraw_res_fg, _GDraw_res_bg, _GDraw_res_warnfg;
 extern int _GDraw_res_res, _GDraw_res_multiclicktime, _GDraw_res_multiclickwiggle;
 extern int _GDraw_res_selnottime, _GDraw_res_twobuttonfixup, _GDraw_res_macosxcmd;
 extern int _GDraw_res_synchronize;
-
-extern unichar_t *GDrawKeysyms[];
 extern GDisplay *screen_display;
 
 extern void GDrawResourceFind(void);

@@ -1028,14 +1028,9 @@ int HotkeyParse( Hotkey* hk, const char *shortcut ) {
     }
     if ( hk!=NULL )
 	hk->state = mask;
-    for ( i=0; i<0x100; ++i ) {
-	if ( GDrawKeysyms[i]!=NULL && uc_strcmp(GDrawKeysyms[i],sh)==0 ) {
-	    if ( hk!=NULL )
-		hk->keysym = 0xff00 + i;
-	    break;
-	}
-    }
-    if ( i==0x100 ) {
+    if ((i = GKeysymFromName(sh))) {
+	hk->keysym = i;
+    } else {
 	char tmp = utf8_ildb((const char **) &sh);
 	if ( hk!=NULL ) 
 	    hk->keysym = tmp;
@@ -1116,13 +1111,9 @@ return;
 	sh = pt+1;
     }
     mi->short_mask = mask;
-    for ( i=0; i<0x100; ++i ) {
-	if ( GDrawKeysyms[i]!=NULL && uc_strcmp(GDrawKeysyms[i],sh)==0 ) {
-	    mi->shortcut = 0xff00 + i;
-    break;
-	}
-    }
-    if ( i==0x100 ) {
+    if ((i = GKeysymFromName(sh))) {
+	mi->shortcut = i;
+    } else {
 	if ( mask==0 ) {
 	    static int first = true;
 	    if ( first ) {
