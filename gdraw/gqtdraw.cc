@@ -24,7 +24,7 @@
 
 #include <fontforge-config.h>
 
-#ifdef FONTFORGE_CAN_USE_QT
+#if FONTFORGE_CAN_USE_QT
 
 #include "gqtdrawP.h"
 #include "ustring.h"
@@ -57,7 +57,7 @@ static void GQtDrawSetCursor(GWindow w, GCursor gcursor);
 static void GQtDrawSetTransientFor(GWindow transient, GWindow owner);
 static void GQtDrawSetWindowBackground(GWindow w, Color gcol);
 static void GQtDrawSetWindowTitles8(GWindow w, const char *title, const char *UNUSED(icontitle));
-static QFont GQtDrawGetFont(GFont *font);
+static QFont GQtDrawGetFont(GDisplay *gdisp, GFont *font);
 
 static QColor ToQColor(Color col) {
     if (COLOR_ALPHA(col) == 0) {
@@ -177,9 +177,11 @@ static GWindow _GQtDraw_CreateWindow(GQtDisplay *gdisp, GWindow w, GRect *pos,
             GQtDrawSetCursor(ret, wattrs->cursor);
         }
 
-        if (wattrs->mask & wam_restrict) {
+        if ((wattrs->mask & wam_restrict)) {
             ret->restrict_input_to_me = wattrs->restrict_input_to_me;
-            window->setWindowModality(Qt::ApplicationModal);
+            if (!(wattrs->mask & wam_nodecor) || !wattrs->nodecoration) {
+                window->setWindowModality(Qt::ApplicationModal);
+            }
         }
         if (wattrs->mask & wam_palette) {
             window->setBaseSize(window->size());
@@ -294,7 +296,8 @@ QPainter* GQtWidget::Painter() {
 
 bool GQtWidget::event(QEvent *event) {
     static const QMetaEnum sEventType = QMetaEnum::fromType<QEvent::Type>();
-    Log(LOGVERB, "Received %s", sEventType.valueToKey(event->type()));
+    Log(LOGVERB, "Received %s [%p] [%s]",
+        sEventType.valueToKey(event->type()), Base(), Title());
     return QWidget::event(event);
 }
 
@@ -565,7 +568,7 @@ void GQtWidget::inputMethodEvent(QInputMethodEvent *event)
         if (!event->preeditString().isEmpty()) {
             QPoint pos = mapToGlobal(m_icpos);
 
-            QFont fd = GQtDrawGetFont(Base()->ggc->fi); // FIXME set window font
+            QFont fd = GQtDrawGetFont(Base()->display, Base()->ggc->fi); // FIXME set window font
             QFontMetrics fm(fd);
             pos.setY(pos.y() - fm.height() * 3);
             QToolTip::showText(pos, event->preeditString(), this);
@@ -638,8 +641,10 @@ static void GQtDrawSetDefaultIcon(GWindow icon) {
     assert(icon->is_pixmap);
     GQtD(icon)->default_icon = GQtW(icon);
 
+#ifndef Q_OS_DARWIN
     QIcon qicon(*GQtW(icon)->Pixmap());
     GQtD(icon)->app->setWindowIcon(qicon);
+#endif
 }
 
 static GWindow GQtDrawCreateTopWindow(GDisplay *disp, GRect *pos, int (*eh)(GWindow w, GEvent *), void *user_data,
@@ -1597,7 +1602,7 @@ static QBrush GQtDrawGetBrush(GGC *mine) {
     }
 }
 
-static QFont GQtDrawGetFont(GFont *font) {
+static QFont GQtDrawGetFont(GDisplay *disp, GFont *font) {
     QFont fd;
 
     QString families = QString::fromUtf8(font->rq.utf8_family_name);
@@ -1665,7 +1670,7 @@ static QFont GQtDrawGetFont(GFont *font) {
         GDrawIError("Bad point size for Pango");
     }
 
-    fd.setPointSize(font->rq.point_size);
+    fd.setPixelSize(PointToPixel(font->rq.point_size, disp->res));
     return fd;
 }
 
@@ -2027,7 +2032,7 @@ static int GQtDrawDoText8(GWindow w, int32_t x, int32_t y, const char *text, int
         return 0;
     }
 
-    QFont fd = GQtDrawGetFont(fi);
+    QFont fd = GQtDrawGetFont(w->display, fi);
     QFontMetrics fm(fd);
     QString qtext = QString::fromUtf8(text, cnt);
     if (drawit == tf_drawit) {
@@ -2066,7 +2071,7 @@ static int GQtDrawDoText8(GWindow w, int32_t x, int32_t y, const char *text, int
 // PANGO LAYOUT
 static void GQtDrawGetFontMetrics(GWindow w, GFont *fi, int *as, int *ds, int *ld) {
     // Log(LOGDEBUG, " ");
-    QFont fd = GQtDrawGetFont(fi);
+    QFont fd = GQtDrawGetFont(w->display, fi);
     QFontMetrics fm(fd);
 
     *as = fm.ascent();
@@ -2140,7 +2145,7 @@ static void GQtDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi) {
     QString qtext = QString::fromUtf8(state->utf8_text.c_str(), state->utf8_text.size());
     qtext.replace(QLatin1Char('\n'), QChar::LineSeparator);
 
-    state->layout.setFont(GQtDrawGetFont(fi));
+    state->layout.setFont(GQtDrawGetFont(w->display, fi));
     state->layout.setText(qtext);
     state->metrics.reset(new QFontMetrics(state->layout.font()));
     state->line_width = -1;
@@ -2389,12 +2394,22 @@ extern "C" GDisplay *_GQtDraw_CreateDisplay(char *displayname, int *argc, char *
     gdisp->bs.double_time = _GDraw_res_multiclicktime;
     gdisp->bs.double_wiggle = _GDraw_res_multiclickwiggle;
 
+    int res = gdisp->app->primaryScreen()->logicalDotsPerInch();
+#ifdef Q_OS_DARWIN
+    if (res == 72) {
+        res = 96;
+    }
+#endif
+    if (_GDraw_res_res != 0) {
+        res = _GDraw_res_res;
+    }
+
     QRect screenGeom = gdisp->app->primaryScreen()->geometry();
     GDisplay *ret = gdisp->Base();
     ret->impl = gdisp;
     ret->funcs = &gqtfuncs;
     ret->fontstate = &gdisp->fs;
-    ret->res = gdisp->fs.res = gdisp->app->primaryScreen()->logicalDotsPerInch();
+    ret->res = gdisp->fs.res = res;
     ret->groot = gdisp->groot_base->Base();
     ret->groot->display = (GDisplay*)gdisp;
     ret->groot->native_window = static_cast<GQtWindow*>(gdisp->groot_base.get());

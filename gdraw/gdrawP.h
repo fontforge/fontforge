@@ -151,9 +151,7 @@ struct gdisplay {
     /* display specific data */
 };
 #define PointToPixel(points,res)		(((points)*(res)+36)/72)
-#define PointTenthsToPixel(pointtenths,res)	((((pointtenths)*(res)+36)/72)/10)
 #define PixelToPoint(pixels,res)		(((pixels)*72+(res)/2)/(res))
-#define PixelToPointTenths(pixels,res)		(((pixels)*720+(res)/2)/(res))
 
 struct font_data;
 
