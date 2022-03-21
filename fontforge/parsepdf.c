@@ -1962,8 +1962,12 @@ static SplineFont *pdf_loadfont(struct pdfcontext *pc,int font_num) {
     if ( !pdf_findobject(pc,pc->fontobjs[font_num]) || !pdf_readdict(pc) )
 return( NULL );
 
-    if ( (pt=PSDictHasEntry(&pc->pdfdict,"Subtype"))!=NULL && strcmp(pt,"/Type3")==0 )
-return( pdf_loadtype3(pc));
+    if ( (pt=PSDictHasEntry(&pc->pdfdict,"Subtype"))!=NULL && strcmp(pt,"/Type3")==0 ) {
+        sf = pdf_loadtype3(pc);
+        if ( sf != NULL && pc->cmapobjs[font_num] != -1 )
+            pdf_getcmap(pc, sf, font_num);
+        return( sf );
+    }
 
     if ( (pt=PSDictHasEntry(&pc->pdfdict,"FontDescriptor"))==NULL )
   goto fail;
