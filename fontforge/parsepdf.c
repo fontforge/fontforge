@@ -1893,7 +1893,9 @@ static SplineFont *pdf_loadtype3(struct pdfcontext *pc) {
 
     name=PSDictHasEntry(&pc->pdfdict,"Name");
     if ( name==NULL )
-	name=PSDictHasEntry(&pc->pdfdict,"BaseFont");
+        name=PSDictHasEntry(&pc->pdfdict,"BaseFont");
+    if ( name!=NULL )
+        name = copy(name+1);
     if ( (enc=PSDictHasEntry(&pc->pdfdict,"Encoding"))==NULL )
   goto fail;
     if ( (cp=PSDictHasEntry(&pc->pdfdict,"CharProcs"))==NULL )
@@ -1910,7 +1912,6 @@ static SplineFont *pdf_loadtype3(struct pdfcontext *pc) {
 
     sf = SplineFontBlank(charprocdict->next);
     if ( name!=NULL ) {
-        name = copy(name+1);
 	free(sf->fontname); free(sf->fullname); free(sf->familyname);
 	sf->fontname = name;
 	sf->familyname = copy(name);
@@ -1941,6 +1942,7 @@ static SplineFont *pdf_loadtype3(struct pdfcontext *pc) {
 return( sf );
 
   fail:
+    free(name);
     LogError( _("Syntax errors while parsing Type3 font headers") );
 return( NULL );
 }
