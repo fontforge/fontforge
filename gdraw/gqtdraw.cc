@@ -36,9 +36,8 @@
 
 /**
  * TODO
- * Window lifecycle - cleanup createwindow
- * Clipboard
- * GIC/input context hmm
+ * Events through modals
+ * Set font on QWidgets?
  */
 
 
@@ -277,11 +276,45 @@ GEvent GQtWidget::InitEvent(event_type et, E *event) {
     return gevent;
 }
 
+bool GQtWidget::ShouldDispatch(const GEvent& e, QEvent* trigger)
+{
+    // Don't dispatch if no handler or it's dying and event is not et_destroy
+    // Always dispatch if not nested or user-triggered (GDrawPostEvent)
+    if (!e.w->eh || (e.w->is_dying && e.type != et_destroy)) {
+        return false;
+    } else if (!m_dispatch_depth || !trigger || e.type == et_destroy) {
+        return true;
+    }
+    // Don't dispatch these if it's not the active modal
+    switch (e.type) {
+    case et_char:
+    case et_charup:
+    case et_mousedown:
+    case et_mouseup:
+    case et_mousemove:
+    case et_close:
+    case et_focus: {
+        QWidget *activeModal = GQtD(this)->app->activeModalWidget();
+        if (activeModal && activeModal != static_cast<QWidget*>(this)) {
+            Log(LOGDEBUG, "[%p] [%s] Discarding event as widget is not active modal", Base(), Title());
+            return false;
+        }
+    }
+    break;
+    default:
+        break;
+    }
+    return true;
+}
+
 void GQtWidget::DispatchEvent(const GEvent& e, QEvent* trigger) {
-    if (e.w->eh && e.type != et_noevent && (!e.w->is_dying || e.type == et_destroy)) {
+    if (ShouldDispatch(e, trigger)) {
+        ++m_dispatch_depth;
         if ((e.w->eh)(e.w, const_cast<GEvent*>(&e)) && trigger) {
             trigger->accept();
         }
+        --m_dispatch_depth;
+        assert(m_dispatch_depth >= 0);
     }
 }
 

@@ -245,8 +245,11 @@ public:
 
 private:
     QPainter* m_painter = nullptr;
+    int m_dispatch_depth = 0;
     bool m_ime_enabled = false;
     QPoint m_icpos = {};
+
+    bool ShouldDispatch(const GEvent& e, QEvent* trigger);
 };
 
 class GQtPixmap : public QPixmap, public GQtWindow
