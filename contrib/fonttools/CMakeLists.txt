@@ -18,3 +18,27 @@ target_link_libraries(dewoff PRIVATE ZLIB::ZLIB)
 target_link_libraries(pcl2ttf PRIVATE MathLib::MathLib)
 target_link_libraries(ttf2eps PRIVATE fontforge)
 target_link_libraries(woff PRIVATE ZLIB::ZLIB)
+
+install(
+  TARGETS
+    acorn2sfd
+    dewoff
+    findtable
+    pcl2ttf
+    pfadecrypt
+    rmligamarks
+    showttf
+    stripttc
+    ttf2eps
+    woff
+  RUNTIME
+  DESTINATION ${CMAKE_INSTALL_BINDIR}
+)
+
+install(
+  FILES
+    acorn2sfd.1
+    showttf.1
+    ttf2eps.1
+  DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
+)
