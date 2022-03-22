@@ -1942,8 +1942,7 @@ static SplineFont *pdf_loadtype3(struct pdfcontext *pc) {
 return( sf );
 
   fail:
-    if ( name!=NULL )
-        free(name);
+    free(name);
     LogError( _("Syntax errors while parsing Type3 font headers") );
 return( NULL );
 }
