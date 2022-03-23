@@ -217,19 +217,19 @@ char *GFileGetAbsoluteName(const char *name) {
     g_free(abs);
     return GFileNormalizePath(ret);
 #else
-    char buffer[1000];
+    char *buffer, *pt, *spt, *rpt, *bpt;
 
-     if ( ! GFileIsAbsolute(name) ) {
-	char *pt, *spt, *rpt, *bpt;
+    if ( ! GFileIsAbsolute(name) ) {
 	static char dirname_[MAXPATHLEN+1];
 
 	if ( dirname_[0]=='\0' ) {
 	    getcwd(dirname_,sizeof(dirname_));
 	}
-	strcpy(buffer,dirname_);
-	if ( buffer[strlen(buffer)-1]!='/' )
-	    strcat(buffer,"/");
-	strcat(buffer,name);
+
+	buffer = smprintf("%s/%s", dirname_, name);
+    } else {
+	buffer = copy(name);
+    }
 
 	/* Normalize out any .. */
 	spt = rpt = buffer;
@@ -258,9 +258,7 @@ char *GFileGetAbsoluteName(const char *name) {
 	    } else
 		spt = pt;
 	}
-	name = buffer;
-    }
-    return copy(name);
+    return buffer;
 #endif
 }
 
