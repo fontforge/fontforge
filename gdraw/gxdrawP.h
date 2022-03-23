@@ -268,7 +268,7 @@ typedef struct gxtimer {
     void *userdata;
     long time_sec;				/* longs not int32s to match timeval */
     long time_usec;
-    int32 repeat_time;				/* 0 => one shot */
+    int32_t repeat_time;				/* 0 => one shot */
     struct gxtimer *next;
     unsigned int active: 1;
 } GXTimer;
