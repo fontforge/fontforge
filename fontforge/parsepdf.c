@@ -1382,6 +1382,16 @@ static void _InterpretPdf(FILE *in, struct pdfcontext *pc, EntityChar *ec) {
 			MatMultiply(t,transform,transform);
 		    }
 		}
+		else if ( sp>=6 && stack[sp-1].type==ps_num && stack[sp-2].type==ps_num && stack[sp-3].type==ps_num
+		    && stack[sp-4].type==ps_num && stack[sp-5].type==ps_num && stack[sp-6].type==ps_num) {
+		    t[5] = stack[--sp].u.val;
+		    t[4] = stack[--sp].u.val;
+		    t[3] = stack[--sp].u.val;
+		    t[2] = stack[--sp].u.val;
+		    t[1] = stack[--sp].u.val;
+		    t[0] = stack[--sp].u.val;
+		    MatMultiply(t,transform,transform);
+		}
 	    }
 	  break;
 	  case pt_setmiterlimit:
