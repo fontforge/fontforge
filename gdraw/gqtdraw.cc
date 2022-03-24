@@ -43,6 +43,7 @@
 
 namespace fontforge { namespace gdraw {
 
+static const QMetaEnum sEventType = QMetaEnum::fromType<QEvent::Type>();
 static const QString sUtf8String(QStringLiteral("UTF8_STRING"));
 static const QString sString(QStringLiteral("STRING"));
 static const QString sTextPlain(QStringLiteral("text/plain"));
@@ -137,6 +138,11 @@ static GWindow _GQtDraw_CreateWindow(GQtDisplay *gdisp, GWindow w, GRect *pos,
     ret->parent = w;
     ret->pos = *pos;
     ret->user_data = user_data;
+
+    // Add a reference on the parent window
+    if (ret->parent && ret->parent != gdisp->Base()->groot) {
+        GQtW(ret->parent)->AddRef();
+    }
 
     window->setFocusPolicy(Qt::StrongFocus);
     window->resize(pos->width, pos->height);
@@ -292,15 +298,12 @@ bool GQtWidget::ShouldDispatch(const GEvent& e, QEvent* trigger)
     case et_mousedown:
     case et_mouseup:
     case et_mousemove:
-    case et_close:
-    case et_focus: {
-        QWidget *activeModal = GQtD(this)->app->activeModalWidget();
-        if (activeModal && activeModal != static_cast<QWidget*>(this)) {
-            Log(LOGDEBUG, "[%p] [%s] Discarding event as widget is not active modal", Base(), Title());
-            return false;
-        }
-    }
-    break;
+    case et_focus:
+        // Accept so that it doesn't propagate up the focus chain
+        trigger->accept();
+        Log(LOGWARN, "[%p] [%s] Discarding nested event at depth %d type %s",
+            Base(), Title(), m_dispatch_depth, sEventType.valueToKey(trigger->type()));
+        return false;
     default:
         break;
     }
@@ -309,12 +312,14 @@ bool GQtWidget::ShouldDispatch(const GEvent& e, QEvent* trigger)
 
 void GQtWidget::DispatchEvent(const GEvent& e, QEvent* trigger) {
     if (ShouldDispatch(e, trigger)) {
+        AddRef();
         ++m_dispatch_depth;
         if ((e.w->eh)(e.w, const_cast<GEvent*>(&e)) && trigger) {
             trigger->accept();
         }
         --m_dispatch_depth;
         assert(m_dispatch_depth >= 0);
+        DecRef();
     }
 }
 
@@ -327,8 +332,16 @@ QPainter* GQtWidget::Painter() {
     return m_painter;
 }
 
+void GQtWidget::InitiateDestroy() {
+    if (!m_destroying) {
+        Log(LOGWARN, "[%p] [%s] initiating close", Base(), Title());
+        m_destroying = true;
+        // This cannot be done in the same call sequence
+        QMetaObject::invokeMethod(this, "close", Qt::QueuedConnection);
+    }
+}
+
 bool GQtWidget::event(QEvent *event) {
-    static const QMetaEnum sEventType = QMetaEnum::fromType<QEvent::Type>();
     Log(LOGVERB, "Received %s [%p] [%s]",
         sEventType.valueToKey(event->type()), Base(), Title());
     return QWidget::event(event);
@@ -629,11 +642,15 @@ QVariant GQtWidget::inputMethodQuery(Qt::InputMethodQuery query) const
 }
 
 void GQtWidget::closeEvent(QCloseEvent *event) {
-    if (Base()->is_dying || Base() == Base()->display->groot) {
+    if (!event->spontaneous() && m_destroying) {
         Log(LOGWARN, "ACCEPT CLOSe [%p][%s]", Base(), Title());
         event->accept();
         DispatchEvent(InitEvent<>(et_destroy), nullptr);
         deleteLater();
+
+        if (Base()->parent && Base()->parent != Base()->display->groot) {
+            GQtW(Base()->parent)->DecRef();
+        }
 
         GQtDisplay *gdisp = GQtD(this);
         if (Base()->parent == nullptr && !Base()->is_dlg) {
@@ -648,9 +665,11 @@ void GQtWidget::closeEvent(QCloseEvent *event) {
     }
 
     event->ignore();
-    Log(LOGWARN, "SEND CLOSe [%p][%s]", Base(), Title());
-    GEvent gevent = InitEvent(et_close, event);
-    DispatchEvent(gevent, nullptr);
+    if (Base()->is_toplevel) {
+        Log(LOGWARN, "SEND CLOSe [%p][%s]", Base(), Title());
+        GEvent gevent = InitEvent(et_close, event);
+        DispatchEvent(gevent, nullptr);
+    }
 }
 
 void GQtWidget::SetICPos(int x, int y) {
@@ -737,11 +756,9 @@ static void GQtDrawDestroyWindow(GWindow w) {
     Log(LOGWARN, " ");
     GQtWindow *gw = GQtW(w);
     w->is_dying = true;
-    if (w->is_pixmap) {
-        delete gw;
-    } else {
+    if (!w->is_pixmap) {
         GQtDisplay *gdisp = GQtD(w);
-        auto children = gw->Widget()->findChildren<GQtWidget*>();
+        auto children = gw->Widget()->findChildren<GQtWidget*>(QString(), Qt::FindDirectChildrenOnly);
         for (auto* child : children) {
             if (child->Base()->is_toplevel) {
                 // Can happen e.g. for palette windows
@@ -764,11 +781,10 @@ static void GQtDrawDestroyWindow(GWindow w) {
         if (GQtD(w)->last_dd.gw == gw) {
             GQtD(w)->last_dd.gw = nullptr;
         }
-
-        gw->Widget()->setDisabled(true);
-        gw->Widget()->hide();
-        QMetaObject::invokeMethod(gw->Widget(), "close", Qt::QueuedConnection);
+        GQtW(w)->Widget()->setDisabled(true);
+        GQtW(w)->Widget()->hide();
     }
+    gw->DecRef();
 }
 
 static int GQtDrawNativeWindowExists(GDisplay *UNUSED(gdisp), void *native_window) {
@@ -2227,7 +2243,7 @@ static void GQtDrawLayoutIndexToPos(GWindow w, int index, GRect *pos) {
     }
 
     auto x1 = line.cursorToX(upos, QTextLine::Leading);
-    auto x2 = line.cursorToX(upos, QTextLine::Trailing);
+    auto x2 = line.cursorToX(upos+1, QTextLine::Leading);
     pos->x = x1;
     pos->width = x2 - x1;
     pos->y = line.y();

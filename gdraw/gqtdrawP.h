@@ -152,6 +152,16 @@ public:
     virtual GQtPixmap* Pixmap() { throw std::runtime_error("Not a pixmap"); }
     virtual GQtWidget* Widget() { throw std::runtime_error("Not a widget"); }
     virtual QPainter* Painter() = 0;
+    virtual void InitiateDestroy() = 0;
+
+    inline void AddRef() { ++m_reference_count; }
+    inline void DecRef() {
+        --m_reference_count;
+        if (m_reference_count <= 0) {
+            assert(m_reference_count == 0);
+            InitiateDestroy();
+        }
+    }
 
     inline const char* Title() const { return m_window_title.c_str(); }
     inline void SetTitle(const char *title) { m_window_title = title; }
@@ -171,6 +181,7 @@ private:
     struct gwindow m_base = {};
     GGC m_ggc = {};
 
+    int m_reference_count = 1;
     std::string m_window_title;
     GCursor m_current_cursor = ct_default;
     GQtLayoutState m_layout_state;
@@ -242,10 +253,12 @@ public:
     void SetICPos(int x, int y);
     GQtWidget* Widget() override { return this; }
     QPainter* Painter() override;
+    void InitiateDestroy() override;
 
 private:
     QPainter* m_painter = nullptr;
     int m_dispatch_depth = 0;
+    bool m_destroying = false;
     bool m_ime_enabled = false;
     QPoint m_icpos = {};
 
@@ -269,6 +282,9 @@ public:
             // m_painter.setRenderHint(QPainter::SmoothPixmapTransform);
         }
         return &m_painter;
+    }
+    void InitiateDestroy() override {
+        delete this;
     }
 
 private:
