@@ -7609,6 +7609,9 @@ msgstr "Hinting für diagonales Kreuzen"
 msgid "HintMasks only if conflicts"
 msgstr "Hint-Masken nur bei Problemen"
 
+msgid "Hints"
+msgstr "Hints"
+
 #, c-format
 msgid "Hints differ in glyph “%s”\n"
 msgstr "Hints unterscheiden sich in der Glyphe „%s”\n"

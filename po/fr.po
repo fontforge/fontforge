@@ -8856,6 +8856,9 @@ msgstr "Masques de hint si conflit"
 msgid "Hinting Needed Color"
 msgstr "Couleur lorsque le hinting est requis"
 
+msgid "Hints"
+msgstr "Hints"
+
 #, c-format
 msgid "Hints differ in glyph “%s”\n"
 msgstr "Les hints diffèrent dans le glyphe \"%s\"\n"
