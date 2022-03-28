@@ -1520,7 +1520,7 @@ static void _InterpretPdf(FILE *in, struct pdfcontext *pc, EntityChar *ec) {
 		temp1.x += stack[sp-2].u.val;
 		Transform(&temp2,&temp1,transform);
 		second = SplinePointCreate(temp2.x,temp2.y);
-		temp1.y += stack[sp-3].u.val;
+		temp1.y += stack[sp-1].u.val;
 		Transform(&temp2,&temp1,transform);
 		third = SplinePointCreate(temp2.x,temp2.y);
 		temp1.x = stack[sp-4].u.val;
