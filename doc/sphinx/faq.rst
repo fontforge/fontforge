@@ -138,6 +138,7 @@ Random questions
   "Delta", or "Omega", or "pi1")
 * :ref:`Why doesn't Edit->Copy copy glyph names as well as glyph info? <faq.no-copy-names>`
 * :ref:`Why does Edit->Paste complain about name duplication? <faq.copy-names>`
+* :ref:`Why is Element->Build->Build Composite Glyph disabled (or gray)? <faq.disabled-build-menu>`
 * :ref:`How do I set the default glyph of a font? <faq.default-char>`
 * :ref:`I looked at kaiu.ttf or mingliu.ttf and the outlines looked nothing like the correct glyphs. What's wrong? <faq.mingliu>`
 * :ref:`When I use Element->Build->Build Accented Glyph to build one of the Extended Greek glyphs (U+1F00-U+1FFF) FontForge picks the wrong accents. Why? <faq.greek-accents>`
@@ -1672,6 +1673,20 @@ Random questions
 **Why does** :menuselection:`Edit --> Paste` **complain about name duplication?**
    Because you have :menuselection:`Edit --> Copy From --> Copy Metadata`
    checked. Uncheck it.
+
+.. _faq.disabled-build-menu:
+
+**Why is** ::menuselection:`Element --> Build` **disabled (or gray)?**
+   When you click on a glymph such as cacute (ć) and you would like to build this
+   glymp by using the :menuselection:`Element --> Build --> Build Composite Glymph`
+   you must have two things: the letter c and the '. More specifically: you would
+   need to have **COMBINING ACUTE ACCENT** (and not just **MODIFIER LETTER ACUTE ACCENT**).
+   You can find the modifier glymps in the section with the circles. When both are
+   present you the option will become active.
+   
+   How can you know what the requirements are for the glyph?
+   :menuselection:`Element --> Glyph Info...` on the left side go to components.
+   Fontforge will spell out for you what the Accented glyph is composed of.
 
 .. _faq.cidmaps:
 
