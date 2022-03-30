@@ -143,7 +143,7 @@ Random questions
 * :ref:`I looked at kaiu.ttf or mingliu.ttf and the outlines looked nothing like the correct glyphs. What's wrong? <faq.mingliu>`
 * :ref:`When I use Element->Build->Build Accented Glyph to build one of the Extended Greek glyphs (U+1F00-U+1FFF) FontForge picks the wrong accents. Why? <faq.greek-accents>`
 * :ref:`When I use Element->Build->Build Accented Glyph to build accents over "u" or "y" I get the accent over one of the stems not centered on the glyph. Why? <faq.u-accents>`
-* :ref:`When I use Element->Overlap->Remove Overlap the glymp gets inverted (or white) on the overlapping sections. Why? <faq.remove-overlap>`
+* :ref:`When I use Element->Overlap->Remove Overlap the glyph gets inverted (or white) on the overlapping sections. Why? <faq.remove-overlap>`
 * :ref:`Why does ttf2afm crash on FontForge ttf files? <faq.ttf2afm>`
 * `Where can I find a list of known bugs in FontForge? <https://github.com/fontforge/fontforge/issues>`__
 * :ref:`My system keeps crashing because FontForge keeps running out of memory. What can I do about it? <faq.memory>`
