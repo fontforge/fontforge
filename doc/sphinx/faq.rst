@@ -2013,7 +2013,7 @@ Random questions
 
 **When I use** :menuselection:`Element --> Overlap --> Remove Overlap` **the glymp gets inverted (or white) on the overlapping sections. Why?** 
    Because the path that you are combining are ordered in opposing directions.
-   You might have flipped a glymp, and tried to combine it.
+   You might have flipped a glyph, and tried to combine it.
    The resolution is rather simple, select the offending shape, and then
    :menuselection:`Element --> Reverse Direction`.
 
