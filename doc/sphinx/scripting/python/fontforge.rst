@@ -5088,9 +5088,35 @@ See the :class:`selection` type for how to alter the selection.
    syntax and the :doc:`stroke </techref/stroke>` documentation for more general
    information.
 
-.. method:: font.transform(matrix)
+.. method:: font.transform(matrix[, flags])
 
-   Transforms all selected glyphs by the matrix.
+   Transforms all selected glyphs by the matrix. The optional flags argument
+   should be a tuple containing any of the following strings:
+
+   .. object:: activeLayer
+
+      Transform :attr:`font.activeLayer` only. (By default all layers are
+      transformed.)
+
+   .. object:: guide
+
+      Also transform :attr:`font.guide` layer.
+
+   .. object:: noWidth
+
+      Do not change :attr:`glyph.width`.
+
+   .. object:: round
+
+      Round to int after the transformation is done.
+
+   .. object:: simplePos
+
+      Also transform simple positioning features and kern pairs.
+
+   .. object:: kernClasses
+
+      Also transform kerning classes.
 
 .. method:: font.nltransform(xexpr, yexpr)
 
