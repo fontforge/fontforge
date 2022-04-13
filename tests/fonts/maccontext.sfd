@@ -1,0 +1,233 @@
+SplineFontDB: 3.2
+FontName: Untitled1
+FullName: Untitled1
+FamilyName: Untitled1
+Weight: Regular
+Copyright: Copyright (c) 2022, Peter
+Version: 001.000
+ItalicAngle: 0
+UnderlinePosition: -205
+UnderlineWidth: 102
+Ascent: 1638
+Descent: 410
+InvalidEm: 0
+sfntRevision: 0x00010000
+LayerCount: 2
+Layer: 0 0 "Back" 1
+Layer: 1 0 "Fore" 0
+XUID: [1021 683 -826705801 6961819]
+StyleMap: 0x0000
+FSType: 0
+OS2Version: 4
+OS2_WeightWidthSlopeOnly: 0
+OS2_UseTypoMetrics: 1
+CreationTime: 1649572509
+ModificationTime: 1649883042
+PfmFamily: 17
+TTFWeight: 400
+TTFWidth: 5
+LineGap: 184
+VLineGap: 0
+Panose: 2 0 5 3 0 0 0 0 0 0
+OS2TypoAscent: 1638
+OS2TypoAOffset: 0
+OS2TypoDescent: -410
+OS2TypoDOffset: 0
+OS2TypoLinegap: 184
+OS2WinAscent: 1428
+OS2WinAOffset: 0
+OS2WinDescent: 0
+OS2WinDOffset: 0
+HheadAscent: 1428
+HheadAOffset: 0
+HheadDescent: 0
+HheadDOffset: 0
+OS2SubXSize: 1331
+OS2SubYSize: 1433
+OS2SubXOff: 0
+OS2SubYOff: 286
+OS2SupXSize: 1331
+OS2SupYSize: 1433
+OS2SupXOff: 0
+OS2SupYOff: 983
+OS2StrikeYSize: 102
+OS2StrikeYPos: 530
+OS2XHeight: 859
+OS2Vendor: 'PfEd'
+OS2CodePages: 00000001.00000000
+OS2UnicodeRanges: 00000041.00000000.00000000.00000000
+Lookup: 254 0 0 "mac contextual swap" { "mac contextual swap-1"  } [<2,2> ('DFLT' <'dflt' > 'latn' <'dflt' > ) ]
+Lookup: 1 0 0 "a_to_c" { "a_to_c-1"  } []
+Lookup: 5 0 0 "'calt' Contextual Alternates in Latin lookup 1" { "'calt' Contextual Alternates in Latin lookup 1-1"  } ['calt' ('DFLT' <'dflt' > 'latn' <'dflt' > ) ]
+Lookup: 260 0 0 "'mark' Mark Positioning in Latin lookup 0" { "'mark' Mark Positioning in Latin lookup 0 subtable"  } ['mark' ('DFLT' <'dflt' > 'latn' <'dflt' > ) ]
+MarkAttachClasses: 1
+DEI: 91125
+ContextSub2: class "'calt' Contextual Alternates in Latin lookup 1-1" 3 3 3 1
+  Class: 1 a
+  Class: 1 b
+  BClass: 1 a
+  BClass: 1 b
+  FClass: 1 a
+  FClass: 1 b
+ 2 0 0
+  ClsList: 1 2
+  BClsList:
+  FClsList:
+ 1
+  SeqLookup: 0 "a_to_c"
+  ClassNames: "All_Others" "swap" "context"
+  BClassNames: "All_Others" "swap" "context"
+  FClassNames: "All_Others" "swap" "context"
+EndFPST
+MacContext2: "mac contextual swap-1" 0 6 2
+  Class: 1 a
+  Class: 1 b
+ 0 0 ~ ~ 
+ 0 0 ~ ~ 
+ 0 0 ~ ~ 
+ 0 0 ~ ~ 
+ 0 32768 ~ ~ 
+ 0 0 "a_to_c" ~ 
+ 0 0 ~ ~ 
+ 0 0 ~ ~ 
+ 1 0 ~ ~ 
+ 0 0 ~ ~ 
+ 0 0 ~ ~ 
+ 0 0 ~ ~ 
+EndASM
+LangName: 1033 "" "" "" "FontForge : Untitled1 : 10-4-2022" "" "Version 001.000"
+Encoding: UnicodeBmp
+UnicodeInterp: none
+NameList: AGL For New Fonts
+DisplaySize: -48
+AntiAlias: 1
+FitToEm: 0
+WinInfo: 51 17 7
+BeginPrivate: 6
+BlueValues 27 [129 129 859 859 1428 1428]
+BlueShift 1 0
+StdHW 5 [155]
+StdVW 5 [115]
+StemSnapH 17 [155 294 297 730]
+StemSnapV 19 [49 81 115 321 600]
+EndPrivate
+AnchorClass2: "Anchor-0" "'mark' Mark Positioning in Latin lookup 0 subtable"
+BeginChars: 65537 5
+
+StartChar: .notdef
+Encoding: 65536 -1 0
+Width: 1024
+GlyphClass: 1
+Flags: MW
+HStem: 0 102<204 820 204 922> 990 102<204 820 204 204>
+VStem: 102 102<102 102 102 990> 820 102<102 990 990 990>
+LayerCount: 2
+Fore
+SplineSet
+102 0 m 1
+ 102 1092 l 1
+ 922 1092 l 1
+ 922 0 l 1
+ 102 0 l 1
+204 102 m 1
+ 820 102 l 1
+ 820 990 l 1
+ 204 990 l 1
+ 204 102 l 1
+EndSplineSet
+EndChar
+
+StartChar: a
+Encoding: 97 97 1
+Width: 1064
+GlyphClass: 2
+Flags: MW
+HStem: 128.906 730.312<414.609 615.891>
+VStem: 799 81.4062<393.422 594.703 393.422 820> 799 115<130 820 130 820>
+AnchorPoint: "Anchor-0" 535 -2 basechar 0
+LayerCount: 2
+Fore
+SplineSet
+799 820 m 1xa0
+ 914 820 l 1
+ 914 130 l 1xa0
+ 799 130 l 1xc0
+ 799 820 l 1xa0
+150.09375 494.0625 m 0
+ 150.09375 695.34375 313.96875 859.21875 515.25 859.21875 c 0
+ 716.53125 859.21875 880.40625 695.34375 880.40625 494.0625 c 0xc0
+ 880.40625 292.78125 716.53125 128.90625 515.25 128.90625 c 0
+ 313.96875 128.90625 150.09375 292.78125 150.09375 494.0625 c 0
+EndSplineSet
+Substitution2: "a_to_c-1" c
+EndChar
+
+StartChar: b
+Encoding: 98 98 2
+Width: 1094
+GlyphClass: 2
+Flags: MW
+HStem: 128.906 730.312
+VStem: 149.59 115 214.684 49.9062
+AnchorPoint: "Anchor-0" -17 -384 basechar 0
+LayerCount: 2
+Fore
+SplineSet
+149.58984375 1428 m 1xc0
+ 264.58984375 1428 l 1xc0
+ 264.58984375 134 l 1xa0
+ 149.58984375 134 l 1
+ 149.58984375 1428 l 1xc0
+214.68359375 494.0625 m 0xa0
+ 214.68359375 695.34375 378.55859375 859.21875 579.83984375 859.21875 c 0
+ 781.12109375 859.21875 944.99609375 695.34375 944.99609375 494.0625 c 0
+ 944.99609375 292.78125 781.12109375 128.90625 579.83984375 128.90625 c 0
+ 378.55859375 128.90625 214.68359375 292.78125 214.68359375 494.0625 c 0xa0
+EndSplineSet
+EndChar
+
+StartChar: c
+Encoding: 99 99 3
+Width: 998
+GlyphClass: 2
+Flags: MW
+HStem: 128.906 297.094 564.759 294.46
+VStem: 150.03 321.526
+AnchorPoint: "Anchor-0" 315 -24 basechar 0
+LayerCount: 2
+Fore
+SplineSet
+608.172851562 512.517578125 m 1
+ 600.51953125 542.505859375 573.267578125 564.758789062 540.936523438 564.758789062 c 0
+ 502.693359375 564.758789062 471.556640625 533.623046875 471.556640625 495.379882812 c 0
+ 471.556640625 457.135742188 502.693359375 426 540.936523438 426 c 0
+ 574.327148438 426 602.30078125 449.736328125 608.862304688 481.215820312 c 1
+ 835.250976562 318.459960938 l 1
+ 773.049804688 205.583007812 652.869140625 128.90625 515.186523438 128.90625 c 0
+ 313.905273438 128.90625 150.030273438 292.78125 150.030273438 494.0625 c 0
+ 150.030273438 695.34375 313.905273438 859.21875 515.186523438 859.21875 c 0
+ 663.84765625 859.21875 792.103515625 769.827148438 849.002929688 641.995117188 c 1
+ 608.172851562 512.517578125 l 1
+EndSplineSet
+EndChar
+
+StartChar: mark.long
+Encoding: 772 772 4
+Width: 0
+GlyphClass: 4
+Flags: MW
+HStem: 0 155<-300 300 -300 300>
+VStem: -300 600<0 155 0 155>
+AnchorPoint: "Anchor-0" 0 0 mark 0
+LayerCount: 2
+Fore
+SplineSet
+-300 155 m 1
+ 300 155 l 1
+ 300 0 l 1
+ -300 0 l 1
+ -300 155 l 1
+EndSplineSet
+EndChar
+EndChars
+EndSplineFont
