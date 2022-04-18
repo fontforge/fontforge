@@ -18,7 +18,6 @@ install(
   FILES
     Adobe-CNS1-6.cidmap
     Adobe-GB1-5.cidmap
-    Adobe-Identity-0.cidmap
     Adobe-Japan1-5.cidmap
     Adobe-Japan1-6.cidmap
     Adobe-Japan1-7.cidmap
