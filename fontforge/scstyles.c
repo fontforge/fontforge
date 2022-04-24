@@ -933,6 +933,8 @@ static void InterpolateWeak( GlyphData *gd, DBounds *orig_b, DBounds *new_b, dou
 		    (&pd->newprev.x)[!x_dir] = (&pd->newpos.x)[!x_dir] +
 			( coord - (&pd->base.x)[!x_dir] )*scale;
 	    }
+	} else if ( !gd->order2 ) {
+	    (&pd->newprev.x)[!x_dir] = (&pd->newpos.x)[!x_dir];
 	}
 	if ( !pd->sp->nonextcp ) {
 	    coord = (&pd->sp->nextcp.x)[!x_dir];
@@ -951,6 +953,8 @@ static void InterpolateWeak( GlyphData *gd, DBounds *orig_b, DBounds *new_b, dou
 	    }
 	    if ( gd->order2 )
 	       (&tpd->newprev.x)[!x_dir] = (&pd->newnext.x)[!x_dir];
+	} else {
+	    (&pd->newnext.x)[!x_dir] = (&pd->newpos.x)[!x_dir];
 	}
     }
     if ( gd->order2 ) {
@@ -1708,14 +1712,10 @@ return;
 	pd = &gd->points[i];
 	pd->sp->me.x = pd->newpos.x;
 	pd->sp->me.y = pd->newpos.y;
-	if ( !pd->sp->nonextcp ) {
-	    pd->sp->nextcp.x = pd->newnext.x;
-	    pd->sp->nextcp.y = pd->newnext.y;
-	}
-	if ( !pd->sp->noprevcp ) {
-	    pd->sp->prevcp.x = pd->newprev.x;
-	    pd->sp->prevcp.y = pd->newprev.y;
-	}
+	pd->sp->nextcp.x = pd->newnext.x;
+	pd->sp->nextcp.y = pd->newnext.y;
+	pd->sp->prevcp.x = pd->newprev.x;
+	pd->sp->prevcp.y = pd->newprev.y;
     }
     SplineSetRefigure(sc_sc->layers[layer].splines);
     SplineCharLayerFindBounds(sc_sc,layer,&new_b);
