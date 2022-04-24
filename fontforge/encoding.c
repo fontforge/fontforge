@@ -1108,7 +1108,7 @@ return( maybe );
 	}
     }
 
-    if ( file==NULL ) {
+    if ( file==NULL && !(supplement==0 && strcmp(registry, "Adobe")==0 && strcmp(ordering, "Identity")==0) ) {
 	char *uret;
 	buf = smprintf( "%s-%s-*.cidmap", registry, ordering );
 	if ( maybe==NULL && maybefile==NULL ) {
