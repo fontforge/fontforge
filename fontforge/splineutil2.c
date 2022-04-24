@@ -322,9 +322,6 @@ return( ret );
 }
 
 int SplineIsLinearMake(Spline *spline) {
-
-    if ( spline->islinear )
-return( true );
     if ( SplineIsLinear(spline)) {
 	spline->islinear = true;
 	spline->from->nextcp = spline->from->me;
@@ -1332,8 +1329,10 @@ return( false );
 	    SplineFree(sp->next);
 	    SplinePointMDFree(sc,sp);
 	}
-	SplinePointCategorize(from);
-	SplinePointCategorize(to);
+	if ( !SplineIsLinearMake(from->next) ) {
+	    SplinePointCategorize(from);
+	    SplinePointCategorize(to);
+	}
     } else {
 	SplineFree(from->next);
 	from->next = afterfrom->prev;
