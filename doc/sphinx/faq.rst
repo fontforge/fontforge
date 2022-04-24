@@ -138,10 +138,12 @@ Random questions
   "Delta", or "Omega", or "pi1")
 * :ref:`Why doesn't Edit->Copy copy glyph names as well as glyph info? <faq.no-copy-names>`
 * :ref:`Why does Edit->Paste complain about name duplication? <faq.copy-names>`
+* :ref:`Why is Element->Build->Build Accented Glyph disabled (or gray)? <faq.disabled-build-menu>`
 * :ref:`How do I set the default glyph of a font? <faq.default-char>`
 * :ref:`I looked at kaiu.ttf or mingliu.ttf and the outlines looked nothing like the correct glyphs. What's wrong? <faq.mingliu>`
 * :ref:`When I use Element->Build->Build Accented Glyph to build one of the Extended Greek glyphs (U+1F00-U+1FFF) FontForge picks the wrong accents. Why? <faq.greek-accents>`
 * :ref:`When I use Element->Build->Build Accented Glyph to build accents over "u" or "y" I get the accent over one of the stems not centered on the glyph. Why? <faq.u-accents>`
+* :ref:`When I use Element->Overlap->Remove Overlap the glyph gets inverted (or white) on the overlapping sections. Why? <faq.remove-overlap>`
 * :ref:`Why does ttf2afm crash on FontForge ttf files? <faq.ttf2afm>`
 * `Where can I find a list of known bugs in FontForge? <https://github.com/fontforge/fontforge/issues>`__
 * :ref:`My system keeps crashing because FontForge keeps running out of memory. What can I do about it? <faq.memory>`
@@ -1673,6 +1675,20 @@ Random questions
    Because you have :menuselection:`Edit --> Copy From --> Copy Metadata`
    checked. Uncheck it.
 
+.. _faq.disabled-build-menu:
+
+**Why is** ::menuselection:`Element --> Build` **disabled (or gray)?**
+   When you click on a glyph such as cacute (ć) and you would like to build this
+   glyph by using the :menuselection:`Element --> Build --> Build Accented Glyph`
+   you must have two things: the letter c and the '. More specifically: you would
+   need to have **COMBINING ACUTE ACCENT** (and not just **MODIFIER LETTER ACUTE ACCENT**).
+   You can find the modifier glyph in the section with the circles. When both are
+   present you the option will become active.
+   
+   How can you know what the requirements are for the glyph?
+   :menuselection:`Element --> Glyph Info...` on the left side go to components.
+   Fontforge will spell out for you what the Accented glyph is composed of.
+
 .. _faq.cidmaps:
 
 **What on earth are cidmap files and should I care about them?**
@@ -1992,6 +2008,14 @@ Random questions
 
    If you make all your stems be the same height then the accent should be
    properly centered.
+
+.. _faq.remove-overlap:
+
+**When I use** :menuselection:`Element --> Overlap --> Remove Overlap` **the glyph gets inverted (or white) on the overlapping sections. Why?** 
+   Because the path that you are combining are ordered in opposing directions.
+   You might have flipped a glyph, and tried to combine it.
+   The resolution is rather simple, select the offending shape, and then
+   :menuselection:`Element --> Reverse Direction`.
 
 .. _faq.ttf2afm:
 
