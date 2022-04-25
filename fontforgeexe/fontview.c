@@ -235,14 +235,16 @@ return( gid );
 
 extern BDFFont *FVSplineFontPieceMeal(SplineFont *sf, int layer, int ptsize, int dpi, int flags, void *freetype_context) {
     BDFFont *new = SplineFontPieceMeal(sf, layer, ptsize, dpi, flags, freetype_context);
-    Color bg = view_bgcol;
-    Color fg = fvfgcol;
-    int l, scale = new->clut->clut_len;
-    for ( l=0; l<scale; ++l )
-	new->clut->clut[l] = COLOR_CREATE(
-                         COLOR_RED(bg) + ((int32_t) (l*(COLOR_RED(fg)-COLOR_RED(bg))))/(scale-1),
-                         COLOR_GREEN(bg) + ((int32_t) (l*(COLOR_GREEN(fg)-COLOR_GREEN(bg))))/(scale-1),
-                         COLOR_BLUE(bg) + ((int32_t) (l*(COLOR_BLUE(fg)-COLOR_BLUE(bg))))/(scale-1) );
+    if (new->clut != NULL) {
+        Color bg = view_bgcol;
+        Color fg = fvfgcol;
+        int l, scale = new->clut->clut_len;
+        for ( l=0; l<scale; ++l )
+        new->clut->clut[l] = COLOR_CREATE(
+                             COLOR_RED(bg) + ((int32_t) (l*(COLOR_RED(fg)-COLOR_RED(bg))))/(scale-1),
+                             COLOR_GREEN(bg) + ((int32_t) (l*(COLOR_GREEN(fg)-COLOR_GREEN(bg))))/(scale-1),
+                             COLOR_BLUE(bg) + ((int32_t) (l*(COLOR_BLUE(fg)-COLOR_BLUE(bg))))/(scale-1) );
+    }
     return new;
 }
 
