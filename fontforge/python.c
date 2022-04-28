@@ -17967,9 +17967,9 @@ return( NULL );
 return( NULL );
     // Flip fvt_alllayers back
     if ( flags&fvt_alllayers )
-	flags |= fvt_alllayers;
-    else
 	flags &= ~fvt_alllayers;
+    else
+	flags |= fvt_alllayers;
     for ( i=0; i<6; ++i )
 	t[i] = m[i];
     bvts[0].func = bvt_none;
