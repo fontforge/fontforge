@@ -9358,7 +9358,7 @@ return( Py_BuildValue( "i", SCValidate(sc,layer,force)) );
 }
 
 /* Transformation flags: see 'enum fvtrans_flags' in baseviews.h */
-static struct flaglist trans_flags[] = {
+static struct flaglist g_trans_flags[] = {
     { "partialRefs", fvt_partialreftrans },
     { "round", fvt_round_to_int },
     FLAGLIST_EMPTY /* Sentinel */
@@ -9375,7 +9375,7 @@ static PyObject *PyFFGlyph_Transform(PyObject *self, PyObject *args) {
     if ( !PyArg_ParseTuple(args,"(dddddd)|O",&m[0], &m[1], &m[2], &m[3], &m[4], &m[5],
 	    &flagO) )
 return( NULL );
-    flags = FlagsFromTuple(flagO,trans_flags,"transformation flag");
+    flags = FlagsFromTuple(flagO,g_trans_flags,"transformation flag");
     if ( flags==FLAG_UNKNOWN )
 return( NULL );
     flags |= fvt_alllayers;
@@ -17937,22 +17937,43 @@ return (NULL);
 Py_RETURN( self );
 }
 
+/* Transformation flags: see 'enum fvtrans_flags' in baseviews.h */
+static struct flaglist f_trans_flags[] = {
+    { "activeLayer", fvt_alllayers },
+    { "guide", fvt_dogrid },
+    { "noWidth", fvt_dontmovewidth },
+    { "round", fvt_round_to_int },
+    { "simplePos", fvt_scalepstpos },
+    { "kernClasses", fvt_scalekernclasses },
+    FLAGLIST_EMPTY /* Sentinel */
+};
+
 static PyObject *PyFFFont_Transform(PyFF_Font *self, PyObject *args) {
     FontViewBase *fv;
     int i;
     double m[6];
     real t[6];
     BVTFunc bvts[1];
+    int flags;
+    PyObject *flagO=NULL;
 
     if ( CheckIfFontClosed(self) )
 return (NULL);
     fv = self->fv;
-    if ( !PyArg_ParseTuple(args,"(dddddd)",&m[0], &m[1], &m[2], &m[3], &m[4], &m[5] ) )
+    if ( !PyArg_ParseTuple(args,"(dddddd)|O",&m[0], &m[1], &m[2], &m[3], &m[4], &m[5], &flagO ) )
 return( NULL );
+    flags = FlagsFromTuple(flagO,f_trans_flags,"transformation flag");
+    if ( flags==FLAG_UNKNOWN )
+return( NULL );
+    // Flip fvt_alllayers back
+    if ( flags&fvt_alllayers )
+	flags &= ~fvt_alllayers;
+    else
+	flags |= fvt_alllayers;
     for ( i=0; i<6; ++i )
 	t[i] = m[i];
     bvts[0].func = bvt_none;
-    FVTransFunc(fv,t,0,bvts,true);
+    FVTransFunc(fv,t,0,bvts,flags);
 Py_RETURN( self );
 }
 
