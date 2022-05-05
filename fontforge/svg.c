@@ -2872,7 +2872,6 @@ static void SVGParseGlyphBody(SplineChar *sc, xmlNodePtr glyph,
 	sc->layers[ly_fore].splines = SVGParseExtendedPath(glyph,glyph);
 	xmlFree(path);
     } else {
-	fprintf(stderr, "Parsing.");
 	Entity *ent = SVGParseSVG(glyph,sc->parent->ascent+sc->parent->descent,
 		sc->parent->ascent,ip->scale,ip->dimensions ? sc : NULL,false);
 	sc->layer_cnt = 1;
