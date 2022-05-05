@@ -189,6 +189,7 @@ typedef struct importparams {
     int clip;			// SVG
     int erasers;		// PS
     int scale;			// Misc
+    int dimensions;		// Misc
     bigreal accuracy_target;
     bigreal default_joinlimit;
 } ImportParams;

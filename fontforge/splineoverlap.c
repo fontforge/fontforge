@@ -2429,17 +2429,22 @@ int MonotonicFindAt(Monotonic *ms,int which, extended test, Monotonic **space ) 
     int nw = !which;
 
     for ( m=ms, i=0; m!=NULL; m=m->linked ) {
-        if (CheckMonotonicClosed(m) == 0) continue; // Open monotonics break things.
+        if (CheckMonotonicClosed(m) == 0) continue; // Open monotonics break things and are not consequential to filled shapes.
 	if (( which==0 && test >= m->b.minx && test <= m->b.maxx ) ||
 		( which==1 && test >= m->b.miny && test <= m->b.maxy )) {
+	    // The monotonic intersects the test line.
 	    /* Lines parallel to the direction we are testing just get in the */
 	    /*  way and don't add any useful info */
 	    if ( m->s->knownlinear &&
 		    (( which==1 && m->s->from->me.y==m->s->to->me.y ) ||
 			(which==0 && m->s->from->me.x==m->s->to->me.x)))
     continue;
+	    // Find where the monotonic intersects the test line.
 	    t = IterateSplineSolveFixup(&m->s->splines[which],m->tstart,m->tend,test);
 	    if ( t==-1 ) {
+		// The intersection search failed.
+		// We know from the prior condition that the monotonic and the test line intersect.
+		// So we pick the t value on the monotonic nearest to the test line.
 		if ( which==0 ) {
 		    if (( test-m->b.minx > m->b.maxx-test && m->xup ) ||
 			    ( test-m->b.minx < m->b.maxx-test && !m->xup ))
@@ -2455,8 +2460,12 @@ int MonotonicFindAt(Monotonic *ms,int which, extended test, Monotonic **space ) 
 		}
 	    }
 	    m->t = t;
-	    if ( t==m->tend ) t -= (m->tend-m->tstart)/100;
-	    else if ( t==m->tstart ) t += (m->tend-m->tstart)/100;
+	    // Nudge any end value inwards a bit.
+	    // Disabled for testing because it makes no sense.
+	    // TODO: Make a final decision.
+	    if ( 0 && t==m->tend ) t -= (m->tend-m->tstart)/100;
+	    else if ( 0 && t==m->tstart ) t += (m->tend-m->tstart)/100;
+	    // Compute the position on the test line at which the monotonic intersects.
 	    m->other = ((m->s->splines[nw].a*t+m->s->splines[nw].b)*t+
 		    m->s->splines[nw].c)*t+m->s->splines[nw].d;
 	    space[i++] = m;
@@ -2464,12 +2473,16 @@ int MonotonicFindAt(Monotonic *ms,int which, extended test, Monotonic **space ) 
     }
     cnt = i;
 
-    /* Things get a little tricky at end-points */
+    /* Things get a little tricky at end-points of curves (tmin and tmax) */
     for ( i=0; i<cnt; ++i ) {
+	// For each monotonic (m) in the set of test-line crossers (space), we want to eliminate duplicates.
 	m = space[i];
 	if ( m->t==m->tend ) {
+	    // The end of the monotonic is on the test line.
 	    /* Ignore horizontal/vertical lines (as appropriate) */
+	    // Traverse the path.
 	    for ( mm=m->next; mm!=m && mm !=NULL; mm=mm->next ) {
+		// Stop at the first non-linear segment that moves perpendicular to the test line.
 		if ( !mm->s->knownlinear )
 	    break;
 		if (( which==1 && mm->s->from->me.y!=m->s->to->me.y ) ||
@@ -2477,7 +2490,10 @@ int MonotonicFindAt(Monotonic *ms,int which, extended test, Monotonic **space ) 
 	    break;
 	    }
 	} else if ( m->t==m->tstart ) {
+	    // The start of the monotonic is on the test line.
+	    // Traverse the path.
 	    for ( mm=m->prev; mm!=m && mm !=NULL; mm=mm->prev ) {
+		// Stop at the first non-linear segment that moves perpendicular to the test line.
 		if ( !mm->s->knownlinear )
 	    break;
 		if (( which==1 && mm->s->from->me.y!=m->s->to->me.y ) ||
@@ -2485,13 +2501,17 @@ int MonotonicFindAt(Monotonic *ms,int which, extended test, Monotonic **space ) 
 	    break;
 	    }
 	} else
-    break;
+    break; // No need to do anything here since we are on the same monotonic.
+	// Otherwise, prepare for consolidation.
 	/* If the next monotonic continues in the same direction, and we found*/
 	/*  it too, then don't count both. They represent the same intersect */
 	/* If they are in opposite directions then they cancel each other out */
 	/*  and that is correct */
-	if ( mm!=m &&	/* Should always be true */
+	// (&mm->xup)[which] is a dirty hack, but yup is right after xup.
+	if ( mm!=m &&	/* Should always be true unless the path is open or colinear and thus pointless */
 		(&mm->xup)[which]==(&m->xup)[which] ) {
+	    // The second monotonic goes in the same direction as the first.
+	    // Remove it, if present, from the list of significant test-line-crossing monotonics (space).
 	    for ( j=cnt-1; j>=0; --j )
 		if ( space[j]==mm )
 	    break;
@@ -2805,6 +2825,7 @@ return(ilist);
 
     /* Check (again) for coincident spline segments */
     for ( m=ms; m!=NULL; m=m->linked ) {
+	// For each linked monotonic, find the dominant (larger) dimension.
 	if ( m->b.maxx-m->b.minx > m->b.maxy-m->b.miny ) {
 	    top = m->b.maxx;
 	    bottom = m->b.minx;
@@ -2815,18 +2836,29 @@ return(ilist);
 	    which = 1;
 	}
 	test=(top+bottom)/2;
+	// Evaluate the monotonic in the dominant dimension.
+	// Find monotonics that cross the midpoint of the currently considered monotonic in its dominant dimension.
+	// These go into space with the point of intersection on the test line noted in the "other" field.
+	// They are sorted by that position.
+	// TryHarderWhenClose then tinkers with the positions if close to be sure that they are placed correctly.
+	// It then eliminates doubled-back segments and adds intersections where necessary.
 	ilist = TryHarderWhenClose(which,space,MonotonicFindAt(ms,which,test,space),ilist);
     }
 
+    // Make deduplicated, ordered lists of monotonic subsegment endpoints (including at intersections).
+    // This also slips in 1e10.
+    // TODO: Is that necessary?
     ends[0] = FindOrderedEndpoints(ms,0);
     ends[1] = FindOrderedEndpoints(ms,1);
 
+    // We want to note gaps between monotonic segments. A safe number is double the number of monotonics.
     for ( m=ms, cnt=0; m!=NULL; m=m->linked, ++cnt );
     gaps = malloc(2*cnt*sizeof(struct gaps));
 
     /* Look for the longest splines without interruptions first. These are */
     /* least likely to cause problems and will give us a good basis from which*/
     /* to make guesses should rounding errors occur later */
+    // Note from Frank: the endpoints are not in spline order.
     for ( j=k=0; j<2; ++j )
 	for ( i=0; ends[j][i+1]!=1e10; ++i ) {
 	    gaps[k].which = j;
@@ -2834,6 +2866,7 @@ return(ilist);
 	    gaps[k++].test = (ends[j][i+1]+ends[j][i])/2;
 	}
     qsort(gaps,k,sizeof(struct gaps),gcmp);
+    // Find the actual minimum longest dimension of the monotonics involved.
     min_gap = 1e10;
     for ( m=ms; m!=NULL; m=m->linked ) {
 	if ( m->b.maxx-m->b.minx > m->b.maxy-m->b.miny ) {
@@ -2844,8 +2877,10 @@ return(ilist);
 	    if ( min_gap > m->b.maxy-m->b.miny ) min_gap = m->b.maxy-m->b.miny;
 	}
     }
+    // Adjust upwards if too near to zero.
     if ( min_gap<.5 ) min_gap = .5;
-    for ( i=0; i<k && gaps[i].len>=min_gap; ++i )
+    // Figure needed monotonics in each gap.
+    for ( i=0; i<k; ++i ) if (gaps[i].len>=min_gap)
 	FigureNeeds(ms,gaps[i].which,gaps[i].test,space,ot,1.0);
 
     for ( l=0; closeness_level[l]>=0; ++l ) {
@@ -3972,7 +4007,7 @@ SplineSet *SplineSetRemoveOverlap(SplineChar *sc, SplineSet *base,enum overlap_t
     SplineSetsRemoveAnnoyingExtrema(base,.3);
     /*SSOverlapClusterCpAngles(base,.01);*/
     // base = SSRemoveReversals(base);
-    // Frank suspects that improvements to FindIntersections have made SSRemoveReverals unnecessary.
+    // Frank suspects that improvements to FindIntersections have made SSRemoveReversals unnecessary.
     // And it breaks certain glyphs such as the only glyph in rmo-triangle2.sfd from debugfonts.
     ms = SSsToMContours(base,ot);
     {

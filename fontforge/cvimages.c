@@ -62,6 +62,7 @@ void InitImportParams(ImportParams *ip) {
     ip->scale = true;
     ip->accuracy_target = 0.25;
     ip->default_joinlimit = JLIMIT_INHERITED;
+    ip->dimensions = false;
 }
 
 ImportParams *ImportParamsState() {
@@ -350,6 +351,8 @@ void SCImportSVG(SplineChar *sc,int layer,char *path,char *memory, int memlen,
                  bool doclear, ImportParams *ip) {
     SplinePointList *spl, *espl, **head;
 
+    if (ip->dimensions)
+	SCDimensionFromSVGFile(path, sc, false);
     if ( sc->parent->multilayer && layer>ly_back ) {
 	SCAppendEntityLayers(sc,
 	       EntityInterpretSVG(path,memory,memlen,

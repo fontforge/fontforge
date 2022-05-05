@@ -8545,7 +8545,7 @@ Py_RETURN( self );
 
 static char *glyph_import_keywords[] = { "filename", "correctdir",
     "simplify", "handle_clip", "handle_eraser", "scale", "accuracy",
-    "default_joinlimit", "usesystem", "asksystem", NULL };
+    "default_joinlimit", "usesystem", "asksystem", "dimensions", NULL };
 
 /* Legacy PostScript importing flags */
 static struct flaglist import_ps_flags[] = {
@@ -8569,10 +8569,10 @@ static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args,
     InitImportParams(&ip);
 
     if ( !PyArg_ParseTupleAndKeywords(args, keywds,
-                "s|$pppppddpp", glyph_import_keywords, &filename,
+                "s|$pppppddppp", glyph_import_keywords, &filename,
                 &ip.correct_direction, &ip.simplify, &ip.clip, &ip.erasers,
                 &ip.scale, &ip.accuracy_target, &jl_tmp, &use_system,
-		&ask_system) ) {
+		&ask_system, &ip.dimensions) ) {
 	PyErr_Clear();
 	if ( !PyArg_ParseTuple(args,"s|O",&filename, &flags) )
 	    return NULL;
