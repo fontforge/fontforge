@@ -2779,18 +2779,21 @@ return( eret );
 
 void SCDimensionFromSVG(xmlNodePtr svg, SplineChar *sc, bool vert) {
     char *num;
+    char *end;
     double width, height;
     num = (char *) xmlGetProp(svg,(xmlChar *) "width");
     if ( num!=NULL ) {
-	width = strtod(num,NULL);
+	width = strtod(num, &end);
+	if (sc && (*end == '\0' || *end == ' ') && !vert)
+		sc->width = width;
 	xmlFree(num);
-	if (sc && !vert) sc->width = width;
     }
     num = (char *) xmlGetProp(svg,(xmlChar *) "height");
     if ( num!=NULL ) {
-	height = strtod(num,NULL);
+	height = strtod(num, &end);
+	if (sc && (*end == '\0' || *end == ' ') && vert)
+		sc->vwidth = height;
 	xmlFree(num);
-	if (sc && vert) sc->vwidth = height;
     }
     return;
 }
@@ -2829,15 +2832,17 @@ static Entity *SVGParseSVG(xmlNodePtr svg,int em_size,int ascent,bool scale,Spli
 
     num = (char *) xmlGetProp(svg,(xmlChar *) "width");
     if ( num!=NULL ) {
-	width = strtod(num,NULL);
+	width = strtod(num, &end);
+	if (sc && (*end == '\0' || *end == ' ') && !vert)
+		sc->width = width;
 	xmlFree(num);
-	if (sc && !vert) sc->width = width;
     }
     num = (char *) xmlGetProp(svg,(xmlChar *) "height");
     if ( num!=NULL ) {
-	height = strtod(num,NULL);
+	height = strtod(num, &end);
+	if (sc && (*end == '\0' || *end == ' ') && vert)
+		sc->vwidth = height;
 	xmlFree(num);
-	if (sc && vert) sc->vwidth = height;
     }
     if ( height<=0 ) height = 1;
     if ( width<=0 ) width = 1;
