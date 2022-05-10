@@ -267,11 +267,11 @@ void _ImportParamsDlg(ImportParams *ip) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetCreateData gcd[12], boxes[4], *hvarray[12][4], *barray[10];
-    GTextInfo label[12];
+    GGadgetCreateData gcd[13], boxes[4], *hvarray[13][4], *barray[10];
+    GTextInfo label[13];
     char accbuf[20], jlbuf[20];
     int done = false, err = false;
-    int k, he_k, cd_k, si_k, sc_k, cl_k, al_k;
+    int k, he_k, cd_k, si_k, sc_k, cl_k, di_k, al_k;
 
     if ( no_windowing_ui )
 	return;
@@ -373,13 +373,26 @@ void _ImportParamsDlg(ImportParams *ip) {
     hvarray[5][2] = GCD_ColSpan;
     hvarray[5][3] = NULL;
 
+    di_k = k;
+    label[k].text = (unichar_t *) _("Infer glyph width (Misc)");
+    label[k].text_is_1byte = true;
+    gcd[k].gd.label = &label[k];
+    gcd[k].gd.pos.x = gcd[k-1].gd.pos.x; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+15;
+    gcd[k].gd.flags = gg_enabled | gg_visible|
+	    (ip->dimensions?gg_cb_on:0);
+    gcd[k++].creator = GCheckBoxCreate;
+    hvarray[6][0] = &gcd[k-1];
+    hvarray[6][1] = GCD_ColSpan;
+    hvarray[6][2] = GCD_ColSpan;
+    hvarray[6][3] = NULL;
+
     label[k].text = (unichar_t *) _("Default Join Limit (PS/EPS/SVG):");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k++].creator = GLabelCreate;
-    hvarray[6][0] = &gcd[k-1];
+    hvarray[7][0] = &gcd[k-1];
 
     sprintf( jlbuf, "%g", (double) (ip->default_joinlimit) );
     label[k].text = (unichar_t *) jlbuf;
@@ -392,9 +405,9 @@ void _ImportParamsDlg(ImportParams *ip) {
       "of 1/2 stroke-width. Set to -1 to use the format-\n"
       "specific limits of 10.0 for PostScript and 4.0 for SVG.");
     gcd[k++].creator = GTextFieldCreate;
-    hvarray[6][1] = &gcd[k-1];
-    hvarray[6][2] = GCD_Glue;
-    hvarray[6][3] = NULL;
+    hvarray[7][1] = &gcd[k-1];
+    hvarray[7][2] = GCD_Glue;
+    hvarray[7][3] = NULL;
 
     label[k].text = (unichar_t *) _("Accuracy _Target:");
     label[k].text_is_1byte = true;
@@ -402,7 +415,7 @@ void _ImportParamsDlg(ImportParams *ip) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k++].creator = GLabelCreate;
-    hvarray[7][0] = &gcd[k-1];
+    hvarray[8][0] = &gcd[k-1];
 
     sprintf( accbuf, "%g", (double) (ip->accuracy_target) );
     label[k].text = (unichar_t *) accbuf;
@@ -414,9 +427,9 @@ void _ImportParamsDlg(ImportParams *ip) {
       "The Expand Stroke algorithm will attempt to be (at\n"
       "least) this accurate, but there may be exceptions.");
     gcd[k++].creator = GTextFieldCreate;
-    hvarray[7][1] = &gcd[k-1];
-    hvarray[7][2] = GCD_Glue;
-    hvarray[7][3] = NULL;
+    hvarray[8][1] = &gcd[k-1];
+    hvarray[8][2] = GCD_Glue;
+    hvarray[8][3] = NULL;
 
     al_k = k;
     label[k].text = (unichar_t *) _("_Always raise this dialog when importing");
@@ -425,10 +438,10 @@ void _ImportParamsDlg(ImportParams *ip) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_enabled | gg_visible | (ip->show_always?gg_cb_on:0);
     gcd[k++].creator = GCheckBoxCreate;
-    hvarray[8][0] = &gcd[k-1];
-    hvarray[8][1] = GCD_ColSpan;
-    hvarray[8][2] = GCD_ColSpan;
-    hvarray[8][3] = NULL;
+    hvarray[9][0] = &gcd[k-1];
+    hvarray[9][1] = GCD_ColSpan;
+    hvarray[9][2] = GCD_ColSpan;
+    hvarray[9][3] = NULL;
 
     gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
     label[k].text = (unichar_t *) _("_OK");
@@ -445,15 +458,15 @@ void _ImportParamsDlg(ImportParams *ip) {
     boxes[2].gd.flags = gg_enabled | gg_visible;
     boxes[2].gd.u.boxelements = barray;
     boxes[2].creator = GHBoxCreate;
-    hvarray[9][0] = GCD_Glue;
-    hvarray[9][1] = GCD_ColSpan;
-    hvarray[9][2] = GCD_ColSpan;
-    hvarray[9][3] = NULL;
-    hvarray[10][0] = &boxes[2];
+    hvarray[10][0] = GCD_Glue;
     hvarray[10][1] = GCD_ColSpan;
     hvarray[10][2] = GCD_ColSpan;
     hvarray[10][3] = NULL;
-    hvarray[11][0] = NULL;
+    hvarray[11][0] = &boxes[2];
+    hvarray[11][1] = GCD_ColSpan;
+    hvarray[11][2] = GCD_ColSpan;
+    hvarray[11][3] = NULL;
+    hvarray[12][0] = NULL;
 
     boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
     boxes[0].gd.flags = gg_enabled | gg_visible;
@@ -475,6 +488,7 @@ void _ImportParamsDlg(ImportParams *ip) {
     ip->simplify = GGadgetIsChecked(gcd[si_k].ret);
     ip->clip = GGadgetIsChecked(gcd[cl_k].ret);
     ip->scale = GGadgetIsChecked(gcd[sc_k].ret);
+    ip->dimensions = GGadgetIsChecked(gcd[di_k].ret);
     ip->default_joinlimit = GetReal8(gw,CID_JoinLimitVal,_("Default Join Limit (PS/EPS/SVG):"),&err);
     if ( err ) {
 	ip->default_joinlimit = JLIMIT_INHERITED;
