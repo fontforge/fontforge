@@ -2777,7 +2777,39 @@ return( NULL );
 return( eret );
 }
 
-static Entity *SVGParseSVG(xmlNodePtr svg,int em_size,int ascent,bool scale) {
+void SCDimensionFromSVG(xmlNodePtr svg, SplineChar *sc, bool vert) {
+    char *num;
+    char *end;
+    double width, height;
+    num = (char *) xmlGetProp(svg,(xmlChar *) "width");
+    if ( num!=NULL ) {
+	width = strtod(num, &end);
+	if (sc && (*end == '\0' || *end == ' ') && !vert)
+		sc->width = width;
+	xmlFree(num);
+    }
+    num = (char *) xmlGetProp(svg,(xmlChar *) "height");
+    if ( num!=NULL ) {
+	height = strtod(num, &end);
+	if (sc && (*end == '\0' || *end == ' ') && vert)
+		sc->vwidth = height;
+	xmlFree(num);
+    }
+    return;
+}
+
+void SCDimensionFromSVGFile(const char *path, SplineChar *sc, bool vert) {
+    xmlDocPtr doc;
+    xmlNodePtr svg;
+    doc = xmlParseFile(path);
+    if (doc != NULL)
+	svg = xmlDocGetRootElement(doc);
+    if (svg != NULL)
+	SCDimensionFromSVG(svg, sc, vert);
+    return;
+}
+
+static Entity *SVGParseSVG(xmlNodePtr svg,int em_size,int ascent,bool scale,SplineChar *sc,bool vert) {
     struct svg_state st;
     char *num, *end;
     double swidth,sheight,width=1,height=1;
@@ -2800,12 +2832,16 @@ static Entity *SVGParseSVG(xmlNodePtr svg,int em_size,int ascent,bool scale) {
 
     num = (char *) xmlGetProp(svg,(xmlChar *) "width");
     if ( num!=NULL ) {
-	width = strtod(num,NULL);
+	width = strtod(num, &end);
+	if (sc && (*end == '\0' || *end == ' ') && !vert)
+		sc->width = width;
 	xmlFree(num);
     }
     num = (char *) xmlGetProp(svg,(xmlChar *) "height");
     if ( num!=NULL ) {
-	height = strtod(num,NULL);
+	height = strtod(num, &end);
+	if (sc && (*end == '\0' || *end == ' ') && vert)
+		sc->vwidth = height;
 	xmlFree(num);
     }
     if ( height<=0 ) height = 1;
@@ -2842,7 +2878,7 @@ static void SVGParseGlyphBody(SplineChar *sc, xmlNodePtr glyph,
 	xmlFree(path);
     } else {
 	Entity *ent = SVGParseSVG(glyph,sc->parent->ascent+sc->parent->descent,
-		sc->parent->ascent,ip->scale);
+		sc->parent->ascent,ip->scale,ip->dimensions ? sc : NULL,false);
 	sc->layer_cnt = 1;
 	SCAppendEntityLayers(sc,ent,ip);
 	if ( sc->layer_cnt==1 ) ++sc->layer_cnt;
@@ -3693,7 +3729,7 @@ return( NULL );
     strncpy( oldloc,setlocale(LC_NUMERIC,NULL),24 );
     oldloc[24]=0;
     setlocale(LC_NUMERIC,"C");
-    ret = SVGParseSVG(top,em_size,ascent,scale);
+    ret = SVGParseSVG(top,em_size,ascent,scale,NULL,false);
     setlocale(LC_NUMERIC,oldloc);
     xmlFreeDoc(doc);
 
