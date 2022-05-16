@@ -10,7 +10,7 @@ jobs:
   linux:
     runs-on: ${{ matrix.os }}
     env:
-      PYTHON: python3.9
+      PYTHON: python3.10
     strategy:
       matrix:
         os: ["ubuntu-latest"]
@@ -19,12 +19,12 @@ jobs:
           - os: ubuntu-18.04
             target: Release
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           path: repo
       - name: Restore cached custom dependencies
         id: cache-dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: deps/install
           key: ${{ matrix.os }}-deps-${{ hashFiles('repo/.github/workflows/scripts/setup_linux_deps.sh') }}
@@ -62,13 +62,13 @@ jobs:
           CROWDIN_API_KEY: ${{ secrets.CROWDIN_API_KEY }}
         run: java -jar $DEPSPREFIX/crowdin-cli.jar -c .crowdin.yml upload
       - name: Dist archive artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: matrix.target == 'NoUI'
         with:
           name: dist-archive
           path: repo/build/fontforge-*.tar.xz
       - name: AppImage artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         if: matrix.target == 'Release'
         with:
           name: appimage
@@ -78,7 +78,7 @@ jobs:
     env:
       PYTHON: python3
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           path: repo
       - name: Install dependencies
@@ -108,7 +108,7 @@ jobs:
         working-directory: repo/build
         run: ninja macbundle
       - name: App Bundle artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: appbundle
           path: repo/build/osx/FontForge-*.dmg
@@ -120,11 +120,11 @@ jobs:
       matrix:
         arch: ["MINGW32", "MINGW64"]
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           path: repo
       - name: Checkout FontForgeBuilds
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: fontforge/fontforgebuilds
           path: fontforgebuilds
@@ -149,7 +149,7 @@ jobs:
         working-directory: fontforgebuilds/fontforge-setup
         run: iscc -Qp fontforgesetup.iss -DMSYSTEM=${{ matrix.arch }}
       - name: Build artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.arch }}
           path: |
