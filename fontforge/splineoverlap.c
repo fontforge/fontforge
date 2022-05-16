@@ -2062,7 +2062,10 @@ return( false );	/* But otherwise, don't create a new tiny spline */
 	    temp = t2s[1]; t2s[1] = t2s[0]; t2s[0] = temp;
 	}
 	diff = (t1s[1]-t1s[0])/16;
-	for ( t=t1s[0]+diff; t<t1s[1]-diff/4; t += diff ) {
+	for ( int i = 1; i <= 16; ++i ) {
+	    t = t1s[0] + diff*i;
+	    if ( t >= t1s[1]-diff/4 )
+		break;
 	    BasePoint here, slope;
 	    here.x = ((m1->s->splines[0].a*t+m1->s->splines[0].b)*t+m1->s->splines[0].c)*t+m1->s->splines[0].d;
 	    here.y = ((m1->s->splines[1].a*t+m1->s->splines[1].b)*t+m1->s->splines[1].c)*t+m1->s->splines[1].d;
