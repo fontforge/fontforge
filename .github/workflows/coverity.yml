@@ -4,12 +4,12 @@ on:
     branches: [ coverity ]
   workflow_dispatch:
 env:
-  PYTHON: python3.9
+  PYTHON: python3.10
 jobs:
   build:
     runs-on: ubuntu-18.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           path: repo
       - name: Download Coverity Build Tool
@@ -22,7 +22,7 @@ jobs:
           TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
       - name: Restore cached custom dependencies
         id: cache-dependencies
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: deps/install
           key: ${{ runner.os }}-deps-${{ hashFiles('repo/.github/workflows/scripts/setup_linux_deps.sh') }}
