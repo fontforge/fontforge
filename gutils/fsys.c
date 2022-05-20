@@ -1027,6 +1027,15 @@ char* GFileMimeType(const char *path) {
 
     if (!mres || uncertain || strstr(mres, "application/x-ext") || !strcmp(mres, "application/octet-stream")) {
         path = GFileNameTail(path);
+
+        // Prevents a 1-byte underflow when trying to strip '~' further down, as well as breaking
+        // early for this exact match. This may be better abstracted out alongside altering the
+        // behaviour when clicking 'Open' on any directory, however?
+        if (strcmp(path, "..") == 0) {
+            ret = copy("inode/directory");
+            return ret;
+        }
+
         pt = strrchr(path, '.');
 
         if (pt == NULL) {
