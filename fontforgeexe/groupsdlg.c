@@ -98,7 +98,6 @@ return( NULL );
 	    if ( lpos<group->kids[i+1]->lpos )
 	break;
 	}
-   if(!group->kids) return NULL;
 	group = group->kids[i];
 	++*depth;
     }
