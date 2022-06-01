@@ -3382,9 +3382,9 @@ return( NULL );
 		descent = strtod((char *) name,NULL);
 		xmlFree(name);
 	    }
-	    if ( ascent-descent==sf->ascent+sf->descent ) {
+	    if ( ascent+descent==sf->ascent+sf->descent ) {
 		sf->ascent = ascent;
-		sf->descent = -descent;
+		sf->descent = descent;
 	    }
 	    sf->pfminfo.pfmset = true;
 	} else if ( xmlStrcmp(kids->name,(const xmlChar *) "glyph")==0 ||
