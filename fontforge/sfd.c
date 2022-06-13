@@ -81,6 +81,7 @@
 
 int UndoRedoLimitToSave = 0;
 int UndoRedoLimitToLoad = 0;
+int SaveEditorState = 1;
 
 static const char *joins[] = { "miter", "round", "bevel", "inher", NULL };
 static const char *caps[] = { "butt", "round", "square", "inher", NULL };
@@ -719,12 +720,13 @@ static void SFDDumpSplineSet(FILE *sfd, SplineSet *spl, int want_order2) {
 			(double) sp->me.x, (double) sp->me.y );
 #endif
 	    int ptflags = 0;
-	    ptflags = sp->pointtype|(sp->selected<<2)|
+	    ptflags = sp->pointtype|
 		(sp->nextcpdef<<3)|(sp->prevcpdef<<4)|
 		(sp->roundx<<5)|(sp->roundy<<6)|
 		(sp->ttfindex==0xffff?(1<<7):0)|
 		(sp->dontinterpolate<<8)|
 		((sp->prev && sp->prev->acceptableextrema)<<9);
+	    if (SaveEditorState) ptflags |= (sp->selected<<2);
 
 	    // Last point in the splineset, and we are an open path.
 	    if( !sp->next
@@ -1252,7 +1254,7 @@ static void SFDDumpRefs(FILE *sfd,RefChar *refs, int *newgids) {
 	fprintf(sfd, "Refer: %d %d %c %g %g %g %g %g %g %d",
 		    newgids!=NULL ? newgids[ref->sc->orig_pos]:ref->sc->orig_pos,
 		    ref->sc->unicodeenc,
-		    ref->selected?'S':'N',
+		    (ref->selected && SaveEditorState)?'S':'N',
 		    (double) ref->transform[0], (double) ref->transform[1], (double) ref->transform[2],
 		    (double) ref->transform[3], (double) ref->transform[4], (double) ref->transform[5],
 		    ref->use_my_metrics|(ref->round_translation_to_grid<<1)|
@@ -1590,7 +1592,7 @@ static void SFDDumpChar(FILE *sfd,SplineChar *sc,EncMap *map,int *newgids,int to
 		sc->changedsincelasthinted?"H":"",
 		sc->manualhints?"M":"",
 		sc->widthset?"W":"",
-		sc->views!=NULL?"O":"",
+		(sc->views!=NULL && SaveEditorState)?"O":"",
 		sc->instructions_out_of_date?"I":"");
     if ( sc->tex_height!=TEX_UNDEF || sc->tex_depth!=TEX_UNDEF )
 	fprintf( sfd, "TeX: %d %d\n", sc->tex_height, sc->tex_depth );
@@ -2388,7 +2390,8 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
     fprintf(sfd, "OS2_WeightWidthSlopeOnly: %d\n", sf->weight_width_slope_only );
     fprintf(sfd, "OS2_UseTypoMetrics: %d\n", sf->use_typo_metrics );
     fprintf(sfd, "CreationTime: %lld\n", sf->creationtime );
-    fprintf(sfd, "ModificationTime: %lld\n", sf->modificationtime );
+    if (SaveEditorState)
+	fprintf(sfd, "ModificationTime: %lld\n", sf->modificationtime );
     if ( sf->pfminfo.pfmset ) {
 	fprintf(sfd, "PfmFamily: %d\n", sf->pfminfo.pfmfamily );
 	fprintf(sfd, "TTFWeight: %d\n", sf->pfminfo.weight );
@@ -2813,17 +2816,19 @@ static int SFD_Dump( FILE *sfd, SplineFont *sf, EncMap *map, EncMap *normal,
 	for ( remap = map->remap; remap->infont!=-1; ++remap )
 	    fprintf(sfd, "Remap: %x %x %d\n", (int) remap->firstenc, (int) remap->lastenc, (int) remap->infont );
     }
-    if ( sf->display_size!=0 )
+    if ( sf->display_size!=0 && SaveEditorState )
 	fprintf( sfd, "DisplaySize: %d\n", sf->display_size );
     if ( sf->display_layer!=ly_fore )
 	fprintf( sfd, "DisplayLayer: %d\n", sf->display_layer );
-    fprintf( sfd, "AntiAlias: %d\n", sf->display_antialias );
-    fprintf( sfd, "FitToEm: %d\n", sf->display_bbsized );
+    if (SaveEditorState) {
+	fprintf( sfd, "AntiAlias: %d\n", sf->display_antialias );
+	fprintf( sfd, "FitToEm: %d\n", sf->display_bbsized );
+    }
     if ( sf->extrema_bound!=0 )
 	fprintf( sfd, "ExtremaBound: %d\n", sf->extrema_bound );
     if ( sf->width_separation!=0 )
 	fprintf( sfd, "WidthSeparation: %d\n", sf->width_separation );
-    {
+    if (SaveEditorState) {
 	int rc, cc, te;
 	if ( (te = FVWinInfo(sf->fv,&cc,&rc))!= -1 )
 	    fprintf( sfd, "WinInfo: %d %d %d\n", te, cc, rc );
