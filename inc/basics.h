@@ -123,5 +123,13 @@ static inline int imax(int a, int b)
 			last = newitem;		       \
 		    }
 
+#ifdef __GNU__
+# ifndef PATH_MAX
+#  define PATH_MAX 4096
+# endif
+# ifndef MAXPATHLEN
+#  define MAXPATHLEN 4096
+# endif
+#endif
 
 #endif /* FONTFORGE_BASICS_H */
