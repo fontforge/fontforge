@@ -124,6 +124,8 @@ static inline int imax(int a, int b)
 		    }
 
 #ifdef __GNU__
+// This is for GNU Hurd, not GCC.
+// cf. <https://www.gnu.org/software/hurd/community/gsoc/project_ideas/maxpath.html>
 # ifndef PATH_MAX
 #  define PATH_MAX 4096
 # endif
