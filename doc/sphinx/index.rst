@@ -264,7 +264,7 @@ the dash will be 6 pixels long.
 .. image:: /images/sidebearings.png
    :align: right
 
-Every glyph has its own coördinate system. The font's
+Every glyph has its own coordinate system. The font's
 :ref:`baseline <overview.Baseline>` (the line upon which most latin glyphs will
 rest) is 0 in the vertical direction. The horizontal origin is where the glyph
 will start being drawn (what is "drawn" will usually be empty space for a short
