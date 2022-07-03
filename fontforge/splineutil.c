@@ -3517,7 +3517,9 @@ return( _CubicSolve(&sp,0,ts+1)+1);
 	}
 	for (;;) {
 	    t = (topt+bottomt)/2;
-	    if ( t==topt || t==bottomt ) {
+	    if ( isnan(t) ) {
+		break;
+	    } else if ( t==topt || t==bottomt ) {
 		ts[zcnt++] = t;
 	break;
 	    }
