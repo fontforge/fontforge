@@ -98,6 +98,10 @@ return( NULL );
 	    if ( lpos<group->kids[i+1]->lpos )
 	break;
 	}
+
+   // Return null if this is an empty node (prevents segfault on clicks under a group list)
+   if(!group->kids) return NULL;
+
 	group = group->kids[i];
 	++*depth;
     }
