@@ -1039,7 +1039,7 @@ char* GFileMimeType(const char *path) {
         } else {
             pt = copy(pt + 1);
             int len = strlen(pt);
-            if (pt[len - 1] == '~') {
+            if (len && pt[len - 1] == '~') {
                 pt[len - 1] = '\0';
             }
 
