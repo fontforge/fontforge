@@ -186,6 +186,7 @@ extern int AutoSaveFrequency;			/* autosave.c */
 extern int UndoRedoLimitToSave;  /* sfd.c */
 extern int UndoRedoLimitToLoad;  /* sfd.c */
 extern int prefRevisionsToRetain; /* sfd.c */
+extern int SaveEditorState; /* sfd.c */
 extern int prefs_cv_show_control_points_always_initially; /* from charview.c */
 extern int prefs_create_dragging_comparison_outline;      /* from charview.c */
 extern int prefs_cv_outline_thickness; /* from charview.c */
@@ -310,6 +311,7 @@ static struct prefs_list {
 	{ N_("AutoSaveFrequency"), pr_int, &AutoSaveFrequency, NULL, NULL, '\0', NULL, 0, N_( "The number of seconds between autosaves. If you set this to 0 there will be no autosaves.") },
 	{ N_("RevisionsToRetain"), pr_int, &prefRevisionsToRetain, NULL, NULL, '\0', NULL, 0, N_( "When Saving, keep this number of previous versions of the file. file.sfd-01 will be the last saved file, file.sfd-02 will be the file saved before that, and so on. If you set this to 0 then no revisions will be retained.") },
 	{ N_("UndoRedoLimitToSave"), pr_int, &UndoRedoLimitToSave, NULL, NULL, '\0', NULL, 0, N_( "The number of undo and redo operations which will be saved in sfd files.\nIf you set this to 0 undo/redo information is not saved to sfd files.\nIf set to -1 then all available undo/redo information is saved without limit.") },
+	{ N_("SaveEditorState"), pr_bool, &SaveEditorState, NULL, NULL, '\0', NULL, 0, N_( "When saving, keep editor state like window size and position, selected points and references, and open glyphs.") },
 	{ N_("WarnScriptUnsaved"), pr_bool, &warn_script_unsaved, NULL, NULL, '\0', NULL, 0, N_( "Whether or not to warn you if you have an unsaved script in the «Execute Script» dialog.") },
 #ifndef _NO_PYTHON
 	{ N_("UsePlugins"), pr_bool, &use_plugins, NULL, NULL, '\0', NULL, 0, N_( "Whether or not to try to discover and import Python plugins.") },
