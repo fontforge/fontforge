@@ -18,7 +18,8 @@ fi
 echo "Starting appimage build, folder is $APPDIR with version $VERSION"
 
 # TODO: AppStream metainfo
-PYVER=$(ldd $APPDIR/usr/bin/fontforge | grep -Eom1 'python[0-9.]{3}' | head -1 | cut -c 7-)
+PYVER=$(ldd $APPDIR/usr/bin/fontforge | grep -Eom1 'python[0-9\.]+[0-9]+' | head -1 | cut -c 7-)
+echo "FontForge built against Python $PYVER"
 
 ( cd $APPDIR ; dpkg -x /var/cache/apt/archives/libpython${PYVER}-minimal*.deb . )
 ( cd $APPDIR ; dpkg -x /var/cache/apt/archives/libpython${PYVER}-stdlib*.deb . )
