@@ -194,10 +194,7 @@ return;
 		GRect r;
 		r.x = j*fv->cbw+1; r.width = fv->cbw-1;
 		r.y = i*fv->cbh+1; r.height = fv->lab_height-1;
-		GDrawDrawLine(fv->v,r.x,r.y,r.x,r.y+r.height-1,fvhintingneededcol);
-		GDrawDrawLine(fv->v,r.x+1,r.y,r.x+1,r.y+r.height-1,fvhintingneededcol);
-		GDrawDrawLine(fv->v,r.x+r.width-1,r.y,r.x+r.width-1,r.y+r.height-1,fvhintingneededcol);
-		GDrawDrawLine(fv->v,r.x+r.width-2,r.y,r.x+r.width-2,r.y+r.height-1,fvhintingneededcol);
+		GDrawRequestExpose(fv->v, &r, false);
 	    }
 	}
     }
@@ -248,7 +245,7 @@ extern BDFFont *FVSplineFontPieceMeal(SplineFont *sf, int layer, int ptsize, int
     return new;
 }
 
-static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int forcebg ) {
+static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int request_expose ) {
     GRect box, old2;
     int feat_gid;
     SplineChar *sc;
@@ -262,10 +259,17 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int forcebg ) {
     i = index / fv->colcnt;
     j = index - i*fv->colcnt;
     i -= fv->rowoff;
+    box.x = j*fv->cbw+1; box.width = fv->cbw-1;
+    box.y = i*fv->cbh+fv->lab_height+1; box.height = fv->cbw;
 
-    if ( index<fv->b.map->enccount && (fv->b.selected[index] || forcebg)) {
-	box.x = j*fv->cbw+1; box.width = fv->cbw-1;
-	box.y = i*fv->cbh+fv->lab_height+1; box.height = fv->cbw;
+    if (request_expose) {
+        if (index < fv->b.map->enccount) {
+            GDrawRequestExpose(pixmap, &box, false);
+        }
+        return;
+    }
+
+    if ( index<fv->b.map->enccount && fv->b.selected[index] ) {
 	GDrawFillRect(pixmap,&box,fv->b.selected[index] ? fvselcol : view_bgcol );
     }
     feat_gid = FeatureTrans(fv,index);
@@ -5813,7 +5817,9 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
     for ( i=0; i<=fv->colcnt; ++i )
 	GDrawDrawLine(pixmap,i*fv->cbw,0,i*fv->cbw,fv->height,fvslotcol);
     for ( i=event->u.expose.rect.y/fv->cbh; i<=fv->rowcnt &&
-	    (event->u.expose.rect.y+event->u.expose.rect.height+fv->cbh-1)/fv->cbh; ++i ) for ( j=0; j<fv->colcnt; ++j ) {
+	    i<(event->u.expose.rect.y+event->u.expose.rect.height+fv->cbh-1)/fv->cbh; ++i )
+    for ( j=event->u.expose.rect.x/fv->cbw; j<fv->colcnt &&
+        j<(event->u.expose.rect.x+event->u.expose.rect.width+fv->cbw-1)/fv->cbw; ++j ) {
 	int index = (i+fv->rowoff)*fv->colcnt+j;
 	SplineChar *sc;
 	styles = 0;

@@ -234,6 +234,7 @@ static void CVMenuSimplify(GWindow gw,struct gmenuitem *mi,GEvent *e);
 static void CVMenuSimplifyMore(GWindow gw,struct gmenuitem *mi,GEvent *e);
 static void CVPreviewModeSet(GWindow gw, int checked);
 static void CVExposeRulers(CharView *cv, GWindow pixmap);
+static void CVDrawGuideLine(CharView *cv, int guide_pos);
 
 static int cvcolsinited = false;
 
@@ -3101,6 +3102,10 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     }
     CVRulerExpose(pixmap,cv);
 
+    if (cv->guide_pos != -1) {
+        CVDrawGuideLine(cv, cv->guide_pos);
+    }
+
     GDrawPopClip(pixmap,&old);
 }
 
@@ -4152,9 +4157,26 @@ static void CVInfoDrawRulers(CharView *cv, GWindow pixmap ) {
 }
 
 void CVInfoDraw(CharView *cv, GWindow pixmap ) {
-    CVInfoDrawText(cv,pixmap);
-    if ( cv->showrulers )
-	CVInfoDrawRulers(cv,pixmap);
+    GRect r;
+    r.x = 0;
+    r.y = cv->mbh+cv->charselectorh;
+    r.width = cv->width;
+    r.height = cv->infoh-1;
+    GDrawRequestExpose(pixmap, &r, false);
+    if (cv->showrulers) {
+        int rstart = cv->mbh+cv->charselectorh+cv->infoh;
+        r.x = cv->rulerh;
+        r.y = rstart;
+        r.height = cv->rulerh;
+        r.width = cv->width;
+        GDrawRequestExpose(pixmap, &r, false);
+
+        r.x = 0;
+        r.y = rstart + cv->rulerh;
+        r.width = cv->rulerh;
+        r.height = cv->height;
+        GDrawRequestExpose(pixmap, &r, false);
+    }
 }
 
 static void CVCrossing(CharView *cv, GEvent *event ) {
@@ -6175,7 +6197,7 @@ static void CVLogoExpose(CharView *cv,GWindow pixmap,GEvent *event) {
 	    cv->b.layerheads[cv->b.drawmode]->background ? dm_back : dm_fore );
 }
 
-static void CVDrawGuideLine(CharView *cv, int old_guide_pos, int guide_pos) {
+static void CVDrawGuideLine(CharView *cv, int guide_pos) {
     GWindow pixmap = cv->v;
 
     if ( guide_pos<0 )
@@ -6184,16 +6206,8 @@ return;
     GDrawSetLineWidth(pixmap,0);
 
     if ( cv->ruler_pressedv ) {
-        if (old_guide_pos >= 0) {
-            GRect r = {.x = old_guide_pos, .y = 0, .width = 1, .height = cv->height};
-            GDrawRequestExpose(pixmap,&r,false);
-        }
 	GDrawDrawLine(pixmap,guide_pos,0,guide_pos,cv->height,guidedragcol);
     } else {
-        if (old_guide_pos >= 0) {
-            GRect r = {.x = 0, .y = old_guide_pos, .width = cv->width, .height = 1};
-            GDrawRequestExpose(pixmap,&r,false);
-        }
 	GDrawDrawLine(pixmap,0,guide_pos,cv->width,guide_pos,guidedragcol);
     }
     GDrawSetDashedLine(pixmap,0,0,0);
@@ -6338,7 +6352,6 @@ return( GGadgetDispatchEvent(cv->vsb,event));
 		}
 		cv->guide_pos = -1;
 	    } else if ( event->type==et_mouseup && cv->ruler_pressed ) {
-		CVDrawGuideLine(cv,-1,cv->guide_pos);
 		cv->guide_pos = -1;
 		cv->showing_tool = cvt_none;
 		CVToolsSetCursor(cv,event->u.mouse.state&~(1<<(7+event->u.mouse.button)),event->u.mouse.device);		/* X still has the buttons set in the state, even though we just released them. I don't want em */
@@ -6355,7 +6368,6 @@ return( GGadgetDispatchEvent(cv->vsb,event));
       break;
       case et_mousemove:
 	if ( cv->ruler_pressed ) {
-        int old_pos = cv->guide_pos;
         CharViewTab* tab = CVGetActiveTab(cv);
 	    cv->e.x = event->u.mouse.x - cv->rulerh;
 	    cv->e.y = event->u.mouse.y-(cv->mbh+cv->charselectorh+cv->infoh+cv->rulerh);
@@ -6365,7 +6377,7 @@ return( GGadgetDispatchEvent(cv->vsb,event));
 		cv->guide_pos = cv->e.x;
 	    else
 		cv->guide_pos = cv->e.y;
-	    CVDrawGuideLine(cv,old_pos,cv->guide_pos);
+	    GDrawRequestExpose(cv->v,NULL,false);
 	    CVInfoDraw(cv,cv->gw);
 	}
     else if ( event->u.mouse.y > cv->mbh )

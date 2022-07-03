@@ -560,18 +560,6 @@ static void KP_ExposeKerns(KPData *kpd,GWindow pixmap,GRect *rect) {
     GDrawSetDither(NULL, true);
 }
 
-static void KP_RefreshSel(KPData *kpd,int index) {
-    Color col = index==kpd->selected ? 0x000000 : GDrawGetDefaultBackground(NULL);
-    GRect sel;
-
-    if ( index==-1 )
-return;
-    sel.x = 0; sel.width = kpd->vwidth-1;
-    sel.y = (index-kpd->off_top)*kpd->uh; sel.height = kpd->uh-2;
-    GDrawSetLineWidth(kpd->v,0);
-    GDrawDrawRect(kpd->v,&sel,col);
-}
-
 static void KP_RefreshKP(KPData *kpd,int index) {
     GRect sel;
 
@@ -677,7 +665,7 @@ static void KPRemove(KPData *kpd) {
 }
 
 static void KP_Commands(KPData *kpd, GEvent *e) {
-    int old_sel, amount;
+    int amount;
 
     switch( e->u.chr.keysym ) {
       case '\177':
@@ -703,23 +691,19 @@ static void KP_Commands(KPData *kpd, GEvent *e) {
 	}
       break;
       case GK_Up: case GK_KP_Up:
-	old_sel = kpd->selected;
 	if ( kpd->selected<=0 )
 	    kpd->selected = kpd->kcnt-1;
 	else
 	    --kpd->selected;
-	KP_RefreshSel(kpd,old_sel);
-	KP_RefreshSel(kpd,kpd->selected);
+	GDrawRequestExpose(kpd->v,NULL,false);
 	KP_ScrollTo(kpd,kpd->selected);
       break;
       case GK_Down: case GK_KP_Down:
-	old_sel = kpd->selected;
 	if ( kpd->selected==-1 || kpd->selected==kpd->kcnt-1 )
 	    kpd->selected = 0;
 	else
 	    ++kpd->selected;
-	KP_RefreshSel(kpd,old_sel);
-	KP_RefreshSel(kpd,kpd->selected);
+	GDrawRequestExpose(kpd->v,NULL,false);
 	KP_ScrollTo(kpd,kpd->selected);
       break;
       case GK_Left: case GK_KP_Left: case GK_Right: case GK_KP_Right:
@@ -936,7 +920,7 @@ static unichar_t upopupbuf[100];
 
 static int kpdv_e_h(GWindow gw, GEvent *event) {
     KPData *kpd = GDrawGetUserData(gw);
-    int index, old_sel, temp;
+    int index, temp;
     char buffer[100];
     static int done=false;
 
@@ -958,10 +942,8 @@ return( true );
 	if ( index>=kpd->kcnt )
 	    index = -1;
 	if ( index!=kpd->selected ) {
-	    old_sel = kpd->selected;
 	    kpd->selected = index;
-	    KP_RefreshSel(kpd,old_sel);
-	    KP_RefreshSel(kpd,index);
+	    GDrawRequestExpose(kpd->v,NULL,false);
 	}
 	if ( event->u.mouse.button==3 && index>=0 ) {
 	    if ( !done ) {

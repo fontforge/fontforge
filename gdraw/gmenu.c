@@ -515,24 +515,6 @@ static int gmenu_expose(struct gmenu *m, GEvent *event,GWindow pixmap) {
 return( true );
 }
 
-static void GMenuDrawLines(struct gmenu *m, int ln, int cnt) {
-    GRect r, old1, old2, winrect;
-
-    winrect.x = 0; winrect.width = m->width; winrect.y = 0; winrect.height = m->height;
-    r = winrect; r.height = cnt*m->fh;
-    r.y = (ln-m->offtop)*m->fh+m->bp;
-    GDrawPushClip(m->w,&r,&old1);
-    GBoxDrawBackground(m->w,&winrect,m->box,gs_active,false);
-    GBoxDrawBorder(m->w,&winrect,m->box,gs_active,false);
-    r.x = m->tickoff; r.width = m->rightedge-r.x;
-    GDrawPushClip(m->w,&r,&old2);
-    cnt += ln;
-    for ( ; ln<cnt; ++ln )
-	GMenuDrawMenuLine(m, &m->mi[ln], m->bp+(ln-m->offtop)*m->fh,m->w);
-    GDrawPopClip(m->w,&old2);
-    GDrawPopClip(m->w,&old1);
-}
-
 static void GMenuSetPressed(struct gmenu *m, int pressed) {
     while ( m->child!=NULL ) m = m->child;
     while ( m->parent!=NULL ) {
@@ -621,16 +603,7 @@ return;
     if ( old!=-1 )
 	m->mi[old].ti.selected = false;
 
-    if ( newsel==old+1 && old!=-1 ) {
-	GMenuDrawLines(m,old,2);
-    } else if ( old==newsel+1 && newsel!=-1 ) {
-	GMenuDrawLines(m,newsel,2);
-    } else {
-	if ( newsel!=-1 )
-	    GMenuDrawLines(m,newsel,1);
-	if ( old!=-1 )
-	    GMenuDrawLines(m,old,1);
-    }
+    GDrawRequestExpose(m->w, NULL, false);
     if ( newsel!=-1 ) {
 	if ( m->mi[newsel].moveto!=NULL )
 	    (m->mi[newsel].moveto)(m->owner,&m->mi[newsel],event);

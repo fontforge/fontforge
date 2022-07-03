@@ -48,8 +48,11 @@
 static void _GGDKDraw_CheckAutoPaint(GGDKWindow gw) {
     if (gw->cc == NULL) {
         assert(!gw->is_pixmap);
+        if (!gw->is_in_paint) {
+            assert(false && "No window should be drawing outside of expose calls");
+            Log(LOGWARN, "Dirty window is drawing outside of expose call: 0x%p [%s]", gw, gw->window_title);
+        }
 
-        //Log(LOGWARN, "Dirty dirty window! 0x%p", gw);
         if (gw->display->dirty_window != gw) {
             _GGDKDraw_CleanupAutoPaint(gw->display);
             gw->display->dirty_window = gw;
