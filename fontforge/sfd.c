@@ -3269,7 +3269,7 @@ int SFDWriteBakExtended(char* locfilename,
 
 
 int SFDWriteBak(char *filename,SplineFont *sf,EncMap *map,EncMap *normal) {
-    char *buf=0, *buf2=NULL;
+    char *buf=0, *buf2=NULL, *qbuf=NULL;
     int ret;
 
     if ( sf->save_to_dir )
@@ -3325,8 +3325,10 @@ int SFDWriteBak(char *filename,SplineFont *sf,EncMap *map,EncMap *normal) {
     ret = SFDWrite(filename,sf,map,normal,false);
     if ( ret && sf->compression!=0 ) {
 	unlink(buf2);
-	buf = malloc(strlen(filename)+40);
-	sprintf( buf, "%s %s", compressors[sf->compression-1].recomp, filename );
+	qbuf = g_shell_quote(filename);
+	buf = malloc(strlen(qbuf)+40);
+	sprintf( buf, "%s %s", compressors[sf->compression-1].recomp, qbuf );
+	g_free(qbuf);
 	if ( system( buf )!=0 )
 	    sf->compression = 0;
 	free(buf);
