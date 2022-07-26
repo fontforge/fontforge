@@ -67,7 +67,7 @@ static void decodestr(unsigned char *str, int len) {
 
     while ( len-->0 ) {
 	cypher = *str;
-	plain = ( cypher ^ (r>>8));
+	plain = ( cypher ^ (rc>>8));
 	rc = (cypher + rc) * c1 + c2;
 	*str++ = plain;
     }
