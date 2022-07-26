@@ -325,7 +325,7 @@ return;
 		    putc(decode(ch1),temp);
 		}
 	    } else {
-		if ( ch1=='0' ) ++zcnt; else {dumpzeros(temp,zeros,zcnt); zcnt = 0; }
+		if ( ch1=='0' || isspace(ch1) ) ++zcnt; else {dumpzeros(temp,zeros,zcnt); zcnt = 0; }
 		if ( zcnt>EODMARKLEN )
 	break;
 		if ( zcnt==0 )
