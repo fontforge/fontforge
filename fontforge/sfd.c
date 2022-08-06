@@ -204,7 +204,7 @@ static char *base64_encode(char *ostr, long ch) {
 return( ostr );
 }
 
-static void SFDDumpUTF7Str(FILE *sfd, const char *_str) {
+void SFDDumpUTF7Str(FILE *sfd, const char *_str) {
     int ch, prev_cnt=0, prev=0, in=0;
     const unsigned char *str = (const unsigned char *) _str;
 
@@ -410,7 +410,7 @@ return( nlgetc(sfd));
 return( ch );
 }
 
-static char *SFDReadUTF7Str(FILE *sfd) {
+char *SFDReadUTF7Str(FILE *sfd) {
     char *buffer = NULL, *pt, *end = NULL;
     int ch1, ch2, ch3, ch4, done, c;
     int prev_cnt=0, prev=0, in=0;
