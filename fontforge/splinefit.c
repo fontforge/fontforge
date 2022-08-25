@@ -748,17 +748,16 @@ return( SplineMake3(from,to));
 	fromunit.x = from->me.x-from->prevcp.x; fromunit.y = from->me.y-from->prevcp.y;
     }
     flen = sqrt(fromunit.x*fromunit.x + fromunit.y*fromunit.y);
-    if ( tlen==0 || flen==0 ) {
-	if ( from->next!=NULL )
-	    temp = *from->next;
-	else {
-	    memset(&temp,0,sizeof(temp));
-	    temp.from = from; temp.to = to;
-	    SplineRefigure(&temp);
-	    from->next = to->prev = NULL;
-	}
+    if ( (tlen==0 || flen==0) && (from->next==NULL || to->prev==NULL) ) {
+	memset(&temp,0,sizeof(temp));
+	temp.from = from; temp.to = to;
+	SplineRefigure(&temp);
+	from->next = to->prev = NULL;
     }
     if ( tlen==0 ) {
+	if ( to->prev!=NULL ) {
+	    temp = *to->prev;
+	}
 	if ( (to->pointtype==pt_curve || to->pointtype==pt_hvcurve) &&
 		to->next && !to->nonextcp ) {
 	    tounit.x = to->me.x-to->nextcp.x; tounit.y = to->me.y-to->nextcp.y;
@@ -771,6 +770,9 @@ return( SplineMake3(from,to));
     tounit.x /= tlen; tounit.y /= tlen;
 
     if ( flen==0 ) {
+	if ( from->next!=NULL ) {
+	    temp = *from->next;
+	}
 	if ( (from->pointtype==pt_curve || from->pointtype==pt_hvcurve) &&
 		from->prev && !from->noprevcp ) {
 	    fromunit.x = from->me.x-from->prevcp.x; fromunit.y = from->me.y-from->prevcp.y;
