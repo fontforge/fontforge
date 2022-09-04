@@ -6240,6 +6240,7 @@ static void fea_ApplyLookupListPST(struct parseState *tok,
 	    l->u2.pst = NULL;			/* So we don't free it later */
 	  break;
 	  default:
+        if ( l->type != ft_lookup_end || !tok->ignore_invalid_sub ) /* Skip error when lookup list contains no valid substitutions */
 	    IError("Unexpected feature type %d in a PST feature", l->type );
 	  break;
 	}
@@ -6292,6 +6293,7 @@ static void fea_ApplyLookupListContextual(struct parseState *tok,
 	    }
 	  break;
 	  default:
+        if ( l->type != ft_lookup_end || !tok->ignore_invalid_sub ) /* Skip error when lookup list contains no valid substitutions */
 	    IError("Unexpected feature type %d in a FPST feature", l->type );
 	  break;
 	}
@@ -6814,7 +6816,7 @@ return( otl );
 	else if ( otl->lookup_type != temp )
 	    IError(_("Mismatch lookup types inside a parsed lookup"));
     }
-    if ( otl->lookup_type == ot_undef )
+    if ( otl->lookup_type == ot_undef && !tok->ignore_invalid_sub )  /* Skip error on invalid lookup list */
 	IError(_("Could not figure out a lookup type"));
     if ( otl->lookup_type==gpos_mark2base ||
 	    otl->lookup_type==gpos_mark2ligature ||
