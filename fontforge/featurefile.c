@@ -2277,6 +2277,7 @@ struct parseState {
     unsigned int backedup: 1;
     unsigned int skipping: 1;
     unsigned int in_ufo: 1;
+    unsigned int ignore_invalid_sub: 1;      // Don't error out if a substitution rule is not applicable. Used for merging feature files
     SplineFont *sf;
     struct scriptlanglist *def_langsyses;
     struct glyphclasses *classes; // TODO: This eventually needs to merge with the SplineFont group storage. For now, it needs to copy from it at first invocation.
@@ -4745,8 +4746,14 @@ static void fea_ParseSubstitute(struct parseState *tok) {
 	    ++mk_num;
     }
     if ( glyphs==NULL ) {
-	LogError(_("Empty substitute on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
-	++tok->err_count;
+        LogError(_("Empty substitute on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+        if (! tok->ignore_invalid_sub) { // If glyphs in some substitutions rules are not present in this font, warn but skip error
+            ++tok->err_count;
+        }
+        else {
+            fea_skip_to_semi(tok);
+            fea_UnParseTok(tok);    //Semicolon is expected on end of this lookup
+        }
     } else if ( is_reverse && (mk_num!=1 || has_lookups!=0)) {
 	LogError(_("Reverse substitute must have exactly one marked glyph and no lookups on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	++tok->err_count;
@@ -4783,7 +4790,9 @@ static void fea_ParseSubstitute(struct parseState *tok) {
 
 	    if ( rpl==NULL && !next_is_null ) {
 		LogError(_("No substitution specified on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
-		++tok->err_count;
+        if (! tok->ignore_invalid_sub) { // If glyphs in some substitutions rules are not present in this font, warn but skip error
+            ++tok->err_count;
+        }
 	    } else if ( !next_is_null && rpl->has_marks ) {
 		LogError(_("No marked glyphs allowed in replacement on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 		++tok->err_count;
@@ -4835,7 +4844,9 @@ static void fea_ParseSubstitute(struct parseState *tok) {
 	    } else {
 		if ( rpl==NULL ) {
 		    LogError(_("No substitution specified on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
-		    ++tok->err_count;
+		    if (! tok->ignore_invalid_sub) {
+			    ++tok->err_count;
+		    }
 		} else {
 		    if ( rpl->lookupname!=NULL ) {
 			head = chunkalloc(sizeof(struct feat_item));
@@ -5184,7 +5195,9 @@ return;
     if ( lookuptype==ot_undef ) {
 	LogError(_("This lookup has no effect, I can't figure out its type on line %d of %s"),
 		tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
-	++tok->err_count;
+        if (!tok->ignore_invalid_sub) {
+            ++tok->err_count;
+        }
     }
 
     item = chunkalloc(sizeof(struct feat_item));
@@ -7340,7 +7353,7 @@ static bool fea_isInUFO(char *filename) {
     return g_regex_match_simple("^.*ufo[23]?[/\\\\]features.fea$", filename, 0, 0);
 }
 
-void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename) {
+void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename,bool ignore_invalid_sub) {
     struct parseState tok;
     struct glyphclasses *gc, *gcnext;
     struct namedanchor *nap, *napnext;
@@ -7355,6 +7368,7 @@ void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename) {
     tok.in_ufo = fea_isInUFO(filename);
     if ( sf->cidmaster ) sf = sf->cidmaster;
     tok.sf = sf;
+    tok.ignore_invalid_sub = ignore_invalid_sub;
     CopySplineFontGroupsForFeatureFile(sf, &tok);
 
     locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
@@ -7393,13 +7407,13 @@ void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename) {
     }
 }
 
-void SFApplyFeatureFilename(SplineFont *sf,char *filename) {
+void SFApplyFeatureFilename(SplineFont *sf,char *filename,bool ignore_invalid_sub) {
     FILE *in = fopen(filename,"r");
 
     if ( in==NULL ) {
 	ff_post_error(_("Cannot open file"),_("Cannot open feature file %.120s"), filename );
 return;
     }
-    SFApplyFeatureFile(sf,in,filename);
+    SFApplyFeatureFile(sf,in,filename,ignore_invalid_sub);
     fclose(in);
 }

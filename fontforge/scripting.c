@@ -2469,11 +2469,12 @@ static void bFontImage(Context *c) {
 }
 
 static void bMergeKern(Context *c) {
-    char *t; char *locfilename;
+    char *t; char *locfilename; bool ignore_invalid_sub=FALSE;
 
     t = script2utf8_copy(c->a.vals[1].u.sval);
     locfilename = utf82def_copy(t);
-    if ( !LoadKerningDataFromMetricsFile(c->curfv->sf,locfilename,c->curfv->map))
+    ignore_invalid_sub = c->a.vals[2].u.sval;
+    if ( !LoadKerningDataFromMetricsFile(c->curfv->sf,locfilename,c->curfv->map,ignore_invalid_sub))
 	ScriptError( c, "Failed to find kern info in file" );
     free(locfilename); free(t);
 }

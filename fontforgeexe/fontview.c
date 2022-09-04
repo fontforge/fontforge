@@ -1044,6 +1044,71 @@ void MenuExit(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *e) {
 	DelayEvent(_MenuExit,NULL);
 }
 
+
+struct gfc_data {   //GFileChooser
+    int done;
+    int ret;
+    GGadget *gfc;
+    GGadget *ignore_invalid_sub;
+    SplineFont *sf;
+    EncMap *map;
+};
+
+static int feat_e_h(GWindow gw, GEvent *event) {
+    if ( event->type==et_close ) {
+    struct gfc_data *d = GDrawGetUserData(gw);
+    d->done = true;
+    d->ret = false;
+    } else if ( event->type==et_char ) {
+return( false );
+    } else if ( event->type==et_map ) {
+    GDrawRaise(gw);
+    } else if ( event->type==et_mousemove ||
+        (event->type==et_mousedown && event->u.mouse.button==3 )) {
+    struct gfc_data *d = GDrawGetUserData(gw);
+    GFileChooserPopupCheck(d->gfc,event);
+    } else if (( event->type==et_mouseup || event->type==et_mousedown ) &&
+        (event->u.mouse.button>=4 && event->u.mouse.button<=7) ) {
+    struct gfc_data *d = GDrawGetUserData(gw);
+return( GGadgetDispatchEvent((GGadget *) (d->gfc),event));
+    }
+return( true );
+}
+
+static int FEAT_ImportOk(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype==et_buttonactivate ) {
+        struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+        unichar_t *ret = GGadgetGetTitle(d->gfc);
+        char *temp = u2def_copy(ret);
+        int ignore_invalid_sub = GGadgetIsChecked(d->ignore_invalid_sub);
+        GGadget *tf;
+
+        GFileChooserGetChildren(d->gfc,NULL,NULL,&tf);
+        if ( *_GGadgetGetTitle(tf)=='\0' )
+            return( true );
+        GDrawSetCursor(GGadgetGetWindow(g),ct_watch);
+
+        if ( !LoadKerningDataFromMetricsFile(d->sf,temp,d->map,ignore_invalid_sub))
+            ff_post_error(_("Load of Kerning Metrics Failed"),_("Failed to load kern data from %s"), temp);
+        d->done = true;
+
+        GDrawSetCursor(GGadgetGetWindow(g),ct_pointer);
+        free(ret); free(temp);
+    }
+    return( true );
+
+}
+
+static int FEAT_Cancel(GGadget *g, GEvent *e) {
+    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
+        struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+        d->done = true;
+        d->ret = false;
+    }
+    return( true );
+}
+
+
 void MergeKernInfo(SplineFont *sf,EncMap *map) {
 #ifndef __Mac
     static char wild[] = "*.{afm,tfm,ofm,pfm,bin,hqx,dfont,feature,feat,fea}";
@@ -1052,17 +1117,121 @@ void MergeKernInfo(SplineFont *sf,EncMap *map) {
     static char wild[] = "*";	/* Mac resource files generally don't have extensions */
     static char wild2[] = "*";
 #endif
-    char *ret = gwwv_open_filename(_("Merge Feature Info"),NULL,
-	    sf->mm!=NULL?wild2:wild,NULL);
-    char *temp;
+    /* Enhance file open window with 'ignore_invalid_sub' flag added */
+    GRect pos;
+    GWindow gw;
+    GWindowAttrs wattrs;
+    GGadgetCreateData gcd[7], boxes[4], *varray[9], *harray[3], *buttons[10];
+    GTextInfo label[9];
+    struct gfc_data d;
+    int bs = GIntGetResource(_NUM_Buttonsize), bsbigger, totwid, scalewid;
 
-    if ( ret==NULL )
-return;				/* Cancelled */
-    temp = utf82def_copy(ret);
+    memset(&wattrs,0,sizeof(wattrs));
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_restrict|wam_isdlg;
+    wattrs.event_masks = ~(1<<et_charup);
+    wattrs.restrict_input_to_me = 1;
+    wattrs.is_dlg = 1;
+    wattrs.undercursor = 1;
+    wattrs.cursor = ct_pointer;
+    wattrs.utf8_window_title = _("Import feature file");
+    pos.x = pos.y = 0;
+    totwid = 300;
+    scalewid = GGadgetScale(totwid);
+    bsbigger = 3*bs+4*14>scalewid; scalewid = bsbigger?3*bs+4*12:scalewid;
+    pos.width = GDrawPointsToPixels(NULL,scalewid);
+    pos.height = GDrawPointsToPixels(NULL,255);
+    gw = GDrawCreateTopWindow(NULL,&pos,feat_e_h,&d,&wattrs);
 
-    if ( !LoadKerningDataFromMetricsFile(sf,temp,map))
-	ff_post_error(_("Load of Kerning Metrics Failed"),_("Failed to load kern data from %s"), temp);
-    free(ret); free(temp);
+    memset(&label,0,sizeof(label));
+    memset(&gcd,0,sizeof(gcd));
+    memset(&boxes,0,sizeof(boxes));
+    gcd[0].gd.pos.x = 12; gcd[0].gd.pos.y = 6; gcd[0].gd.pos.width = totwid-24; gcd[0].gd.pos.height = 182;
+    gcd[0].gd.flags = gg_visible | gg_enabled;
+    gcd[0].creator = GFileChooserCreate;
+    varray[0] = &gcd[0]; varray[1] = NULL;
+
+    gcd[1].gd.pos.x = 12; gcd[1].gd.pos.y = 224-3; gcd[1].gd.pos.width = -1; gcd[1].gd.pos.height = 0;
+    gcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    label[1].text = (unichar_t *) _("_OK");
+    label[1].text_is_1byte = true;
+    label[1].text_in_resource = true;
+    gcd[1].gd.label = &label[1];
+    gcd[1].gd.handle_controlevent = FEAT_ImportOk;
+    gcd[1].creator = GButtonCreate;
+    buttons[0] = GCD_Glue; buttons[1] = &gcd[1]; buttons[2] = GCD_Glue;
+
+    gcd[2].gd.pos.x = (totwid-bs)*100/GIntGetResource(_NUM_ScaleFactor)/2; gcd[2].gd.pos.y = 224; gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
+    gcd[2].gd.flags = gg_visible | gg_enabled;
+    label[2].text = (unichar_t *) _("_Filter");
+    label[2].text_is_1byte = true;
+    label[2].text_in_resource = true;
+    gcd[2].gd.mnemonic = 'F';
+    gcd[2].gd.label = &label[2];
+    gcd[2].gd.handle_controlevent = GFileChooserFilterEh;
+    gcd[2].creator = GButtonCreate;
+    buttons[3] = GCD_Glue; buttons[4] = &gcd[2]; buttons[5] = GCD_Glue;
+
+    gcd[3].gd.pos.x = -gcd[1].gd.pos.x; gcd[3].gd.pos.y = 224; gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
+    gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    label[3].text = (unichar_t *) _("_Cancel");
+    label[3].text_is_1byte = true;
+    label[3].text_in_resource = true;
+    gcd[3].gd.label = &label[3];
+    gcd[3].gd.handle_controlevent = FEAT_Cancel;
+    gcd[3].creator = GButtonCreate;
+    buttons[6] = GCD_Glue; buttons[7] = &gcd[3]; buttons[8] = GCD_Glue;
+    buttons[9] = NULL;
+
+    gcd[4].gd.pos.x = 12; gcd[4].gd.pos.y = gcd[3].gd.pos.y+6;
+    gcd[4].gd.flags = gg_visible | gg_enabled ;
+    gcd[4].gd.flags = gg_visible | gg_enabled;  // Not 'on' by default
+    label[4].text = (unichar_t *) _("Ignore invalid substitutions");
+    label[4].text_is_1byte = true;
+    gcd[4].gd.label = &label[4];
+    gcd[4].creator = GCheckBoxCreate;
+    harray[0] = &gcd[4]; harray[1] = GCD_Glue; harray[2] = NULL;
+
+
+    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.u.boxelements = harray;
+    boxes[2].creator = GHBoxCreate;
+    varray[2] = &boxes[2]; varray[3] = NULL;
+
+    boxes[3].gd.flags = gg_enabled|gg_visible;
+    boxes[3].gd.u.boxelements = buttons;
+    boxes[3].creator = GHBoxCreate;
+    varray[4] = GCD_Glue; varray[5] = NULL;
+    varray[6] = &boxes[3]; varray[7] = NULL;
+    varray[8] = NULL;
+
+    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
+    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.u.boxelements = varray;
+    boxes[0].creator = GHVGroupCreate;
+
+    GGadgetsCreate(gw,boxes);
+    GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
+    GHVBoxSetExpandableCol(boxes[3].ret,gb_expandgluesame);
+    GHVBoxSetExpandableCol(boxes[2].ret,gb_expandglue);
+    GGadgetSetUserData(gcd[2].ret,gcd[0].ret);
+
+    GFileChooserConnectButtons(gcd[0].ret,gcd[1].ret,gcd[2].ret);
+    GFileChooserSetFilterText8(gcd[0].ret, sf->mm!=NULL?wild2:wild);
+    GFileChooserRefreshList(gcd[0].ret);
+    GHVBoxFitWindow(boxes[0].ret);
+
+    memset(&d,'\0',sizeof(d));
+    d.sf = sf;
+    d.map = map;
+    d.gfc = gcd[0].ret;
+    if ( sf!=NULL )
+    d.ignore_invalid_sub = gcd[4].ret;
+
+    GDrawSetVisible(gw,true);
+    while ( !d.done )
+    GDrawProcessOneEvent(NULL);
+    GDrawDestroyWindow(gw);
+
 }
 
 static void FVMenuMergeKern(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {

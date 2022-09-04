@@ -2095,7 +2095,7 @@ struct enc;
 
 extern char *strconcat(const char *str, const char *str2);
 
-extern void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename);
+extern void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename,bool ignore_invalid_sub);
 /* Any additions to this enum should be accounted for in 
  * splinechar.c:VSMaskFromFormat() . There are also tables 
  * indexed by values of this enum scattered throughout the
