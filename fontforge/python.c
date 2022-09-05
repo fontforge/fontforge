@@ -16964,7 +16964,7 @@ static PyObject *PyFFFont_MergeKern(PyFF_Font *self, PyObject *args) {
     if ( CheckIfFontClosed(self) )
 return (NULL);
     fv = self->fv;
-    if ( !PyArg_ParseTuple(args,"s","UTF-8",&filename,&ignore_invalid_sub) )
+    if ( !PyArg_ParseTuple(args,"s|i",&filename,&ignore_invalid_sub) )
 return( NULL );
     locfilename = utf82def_copy(filename);
 
