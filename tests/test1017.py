@@ -8,6 +8,8 @@ feat = sys.argv[1]
 
 A = font.createChar(ord("A"), "A")
 B = font.createChar(ord("B"), "B")
+a = font.createChar(ord("a"), "a")
+b = font.createChar(ord("b"), "b")
 f = font.createChar(ord("f"), "f")
 l = font.createChar(ord("l"), "l")
 

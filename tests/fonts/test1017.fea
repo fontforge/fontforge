@@ -6,5 +6,6 @@ feature liga {
      sub f f l by f_f_l;
      sub f f i by f_f_i;
      sub xddde by a;        #xdde glyph does not exist
+     sub [a b] by c;
      } liga1;
  } liga;
