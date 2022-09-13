@@ -748,17 +748,16 @@ return( SplineMake3(from,to));
 	fromunit.x = from->me.x-from->prevcp.x; fromunit.y = from->me.y-from->prevcp.y;
     }
     flen = sqrt(fromunit.x*fromunit.x + fromunit.y*fromunit.y);
-    if ( tlen==0 || flen==0 ) {
-	if ( from->next!=NULL )
-	    temp = *from->next;
-	else {
-	    memset(&temp,0,sizeof(temp));
-	    temp.from = from; temp.to = to;
-	    SplineRefigure(&temp);
-	    from->next = to->prev = NULL;
-	}
+    if ( (tlen==0 || flen==0) && (from->next==NULL || to->prev==NULL) ) {
+	memset(&temp,0,sizeof(temp));
+	temp.from = from; temp.to = to;
+	SplineRefigure(&temp);
+	from->next = to->prev = NULL;
     }
     if ( tlen==0 ) {
+	if ( to->prev!=NULL ) {
+	    temp = *to->prev;
+	}
 	if ( (to->pointtype==pt_curve || to->pointtype==pt_hvcurve) &&
 		to->next && !to->nonextcp ) {
 	    tounit.x = to->me.x-to->nextcp.x; tounit.y = to->me.y-to->nextcp.y;
@@ -771,6 +770,9 @@ return( SplineMake3(from,to));
     tounit.x /= tlen; tounit.y /= tlen;
 
     if ( flen==0 ) {
+	if ( from->next!=NULL ) {
+	    temp = *from->next;
+	}
 	if ( (from->pointtype==pt_curve || from->pointtype==pt_hvcurve) &&
 		from->prev && !from->noprevcp ) {
 	    fromunit.x = from->me.x-from->prevcp.x; fromunit.y = from->me.y-from->prevcp.y;
@@ -967,6 +969,7 @@ return( SplineMake3(from,to));
 		bigreal bestError = 1e30;
 		bigreal t,error,errorsum,dist;
 		BasePoint prevcp,nextcp,coeff1,coeff2,coeff3;	
+		int last_best_j;
 		for (int k=0; k<numberOfSolutions; k++) {
 			nextcp.x = from->me.x+ftlen*fromunit.x*abSolutions[k][0];
 			nextcp.y = from->me.y+ftlen*fromunit.y*abSolutions[k][0];
@@ -988,17 +991,21 @@ return( SplineMake3(from,to));
 			}
 			/* Now we calculate the error by determining the minimal quadratic distance to the mid points. */
 			errorsum = 0.0;
+			last_best_j = 0;
 			for (int i=0; i<cnt; i++) { /* Going through the mid points */
-				error = (mid[i].p.x-approx[0].x)*(mid[i].p.x-approx[0].x)
-				+(mid[i].p.y-approx[0].y)*(mid[i].p.y-approx[0].y);
-				/* Above we have just initialized the error and */
-				/* now we are going through the remaining 98 of */
-				/* 99 points on the approximate cubic bezier: */
-				for (int j=1; j<99; j++) {
+				error = 1e30;
+				/* For this mid point, find the distance to the closest one of the */
+				/* 99 points on the approximate cubic bezier. */
+				/* To not favour approximations which trace the original multiple times */
+				/* by going back and forth, only consider monotonic mappings. */
+				/* I.e., start from the point that was closest to the previous mid point: */
+				for (int j=last_best_j; j<99; j++) {
 					dist = (mid[i].p.x-approx[j].x)*(mid[i].p.x-approx[j].x)
 					+(mid[i].p.y-approx[j].y)*(mid[i].p.y-approx[j].y);
-					if (dist < error)
+					if (dist < error) {
 						error = dist;
+						last_best_j = j;
+					}
 				}
 				errorsum += error;
 				if (errorsum > bestError)
