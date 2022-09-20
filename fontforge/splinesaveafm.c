@@ -3509,7 +3509,7 @@ return( mf_feat );
 return( mf_none );
 }
 
-int LoadKerningDataFromMetricsFile(SplineFont *sf,char *filename,EncMap *map, bool ignore_invalid_sub) {
+int LoadKerningDataFromMetricsFile(SplineFont *sf,char *filename,EncMap *map, bool ignore_invalid_replacement) {
     int ret;
 
     switch ( MetricsFormatType(filename)) {
@@ -3529,7 +3529,7 @@ int LoadKerningDataFromMetricsFile(SplineFont *sf,char *filename,EncMap *map, bo
 	ret = LoadKerningDataFromPfm(sf,filename,map);
       break;
       case mf_feat:
-	SFApplyFeatureFilename(sf,filename, ignore_invalid_sub);
+	SFApplyFeatureFilename(sf,filename, ignore_invalid_replacement);
 	ret = true;
       break;
       case mf_none:

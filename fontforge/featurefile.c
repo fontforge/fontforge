@@ -2277,7 +2277,7 @@ struct parseState {
     unsigned int backedup: 1;
     unsigned int skipping: 1;
     unsigned int in_ufo: 1;
-    unsigned int ignore_invalid_sub: 1;      // Don't error out if a substitution rule is not applicable. Used for merging feature files
+    unsigned int ignore_invalid_replacement: 1;      // Don't error out if a substitution rule is not applicable. Used for merging feature files
     SplineFont *sf;
     struct scriptlanglist *def_langsyses;
     struct glyphclasses *classes; // TODO: This eventually needs to merge with the SplineFont group storage. For now, it needs to copy from it at first invocation.
@@ -4747,7 +4747,7 @@ static void fea_ParseSubstitute(struct parseState *tok) {
     }
     if ( glyphs==NULL ) {
         LogError(_("Empty substitute on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
-        if (! tok->ignore_invalid_sub) { // If glyphs in some substitutions rules are not present in this font, warn but skip error
+        if (! tok->ignore_invalid_replacement) { // If glyphs in some substitutions rules are not present in this font, warn but skip error
             ++tok->err_count;
         }
         else {
@@ -4790,7 +4790,7 @@ static void fea_ParseSubstitute(struct parseState *tok) {
 
 	    if ( rpl==NULL && !next_is_null ) {
 		LogError(_("No substitution specified on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
-        if (! tok->ignore_invalid_sub) { // If glyphs in some substitutions rules are not present in this font, warn but skip error
+        if (! tok->ignore_invalid_replacement) { // If glyphs in some substitutions rules are not present in this font, warn but skip error
             ++tok->err_count;
         }
 	    } else if ( !next_is_null && rpl->has_marks ) {
@@ -4844,7 +4844,7 @@ static void fea_ParseSubstitute(struct parseState *tok) {
 	    } else {
 		if ( rpl==NULL ) {
 		    LogError(_("No substitution specified on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
-		    if (! tok->ignore_invalid_sub) {
+		    if (! tok->ignore_invalid_replacement) {
 			    ++tok->err_count;
 		    }
 		} else {
@@ -5195,7 +5195,7 @@ return;
     if ( lookuptype==ot_undef ) {
 	LogError(_("This lookup has no effect, I can't figure out its type on line %d of %s"),
 		tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
-        if (!tok->ignore_invalid_sub) {
+        if (!tok->ignore_invalid_replacement) {
             ++tok->err_count;
         }
     }
@@ -6240,7 +6240,7 @@ static void fea_ApplyLookupListPST(struct parseState *tok,
 	    l->u2.pst = NULL;			/* So we don't free it later */
 	  break;
 	  default:
-        if ( l->type != ft_lookup_end || !tok->ignore_invalid_sub ) /* Skip error when lookup list contains no valid substitutions */
+        if ( l->type != ft_lookup_end || !tok->ignore_invalid_replacement ) /* Skip error when lookup list contains no valid substitutions */
 	    IError("Unexpected feature type %d in a PST feature", l->type );
 	  break;
 	}
@@ -6293,7 +6293,7 @@ static void fea_ApplyLookupListContextual(struct parseState *tok,
 	    }
 	  break;
 	  default:
-        if ( l->type != ft_lookup_end || !tok->ignore_invalid_sub ) /* Skip error when lookup list contains no valid substitutions */
+        if ( l->type != ft_lookup_end || !tok->ignore_invalid_replacement ) /* Skip error when lookup list contains no valid substitutions */
 	    IError("Unexpected feature type %d in a FPST feature", l->type );
 	  break;
 	}
@@ -6816,7 +6816,7 @@ return( otl );
 	else if ( otl->lookup_type != temp )
 	    IError(_("Mismatch lookup types inside a parsed lookup"));
     }
-    if ( otl->lookup_type == ot_undef && !tok->ignore_invalid_sub )  /* Skip error on invalid lookup list */
+    if ( otl->lookup_type == ot_undef && !tok->ignore_invalid_replacement )  /* Skip error on invalid lookup list */
 	IError(_("Could not figure out a lookup type"));
     if ( otl->lookup_type==gpos_mark2base ||
 	    otl->lookup_type==gpos_mark2ligature ||
@@ -7355,7 +7355,7 @@ static bool fea_isInUFO(char *filename) {
     return g_regex_match_simple("^.*ufo[23]?[/\\\\]features.fea$", filename, 0, 0);
 }
 
-void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename,bool ignore_invalid_sub) {
+void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename,bool ignore_invalid_replacement) {
     struct parseState tok;
     struct glyphclasses *gc, *gcnext;
     struct namedanchor *nap, *napnext;
@@ -7370,7 +7370,7 @@ void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename,bool ignore_inv
     tok.in_ufo = fea_isInUFO(filename);
     if ( sf->cidmaster ) sf = sf->cidmaster;
     tok.sf = sf;
-    tok.ignore_invalid_sub = ignore_invalid_sub;
+    tok.ignore_invalid_replacement = ignore_invalid_replacement;
     CopySplineFontGroupsForFeatureFile(sf, &tok);
 
     locale_t tmplocale; locale_t oldlocale; // Declare temporary locale storage.
@@ -7409,13 +7409,13 @@ void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename,bool ignore_inv
     }
 }
 
-void SFApplyFeatureFilename(SplineFont *sf,char *filename,bool ignore_invalid_sub) {
+void SFApplyFeatureFilename(SplineFont *sf,char *filename,bool ignore_invalid_replacement) {
     FILE *in = fopen(filename,"r");
 
     if ( in==NULL ) {
 	ff_post_error(_("Cannot open file"),_("Cannot open feature file %.120s"), filename );
 return;
     }
-    SFApplyFeatureFile(sf,in,filename,ignore_invalid_sub);
+    SFApplyFeatureFile(sf,in,filename,ignore_invalid_replacement);
     fclose(in);
 }

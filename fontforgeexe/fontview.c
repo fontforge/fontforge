@@ -1049,7 +1049,7 @@ struct gfc_data {   //GFileChooser
     int done;
     int ret;
     GGadget *gfc;
-    GGadget *ignore_invalid_sub;
+    GGadget *ignore_invalid_replacement;
     SplineFont *sf;
     EncMap *map;
 };
@@ -1080,7 +1080,7 @@ static int FEAT_ImportOk(GGadget *g, GEvent *e) {
         struct gfc_data *d = GDrawGetUserData(GGadgetGetWindow(g));
         unichar_t *ret = GGadgetGetTitle(d->gfc);
         char *temp = u2def_copy(ret);
-        int ignore_invalid_sub = GGadgetIsChecked(d->ignore_invalid_sub);
+        int ignore_invalid_replacement = GGadgetIsChecked(d->ignore_invalid_replacement);
         GGadget *tf;
 
         GFileChooserGetChildren(d->gfc,NULL,NULL,&tf);
@@ -1088,7 +1088,7 @@ static int FEAT_ImportOk(GGadget *g, GEvent *e) {
             return( true );
         GDrawSetCursor(GGadgetGetWindow(g),ct_watch);
 
-        if ( !LoadKerningDataFromMetricsFile(d->sf,temp,d->map,ignore_invalid_sub))
+        if ( !LoadKerningDataFromMetricsFile(d->sf,temp,d->map,ignore_invalid_replacement))
             ff_post_error(_("Load of Kerning Metrics Failed"),_("Failed to load kern data from %s"), temp);
         d->done = true;
 
@@ -1117,7 +1117,7 @@ void MergeKernInfo(SplineFont *sf,EncMap *map) {
     static char wild[] = "*";	/* Mac resource files generally don't have extensions */
     static char wild2[] = "*";
 #endif
-    /* Enhance file open window with 'ignore_invalid_sub' flag added */
+    /* Enhance file open window with 'ignore_invalid_replacement' flag added */
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
@@ -1225,7 +1225,7 @@ void MergeKernInfo(SplineFont *sf,EncMap *map) {
     d.map = map;
     d.gfc = gcd[0].ret;
     if ( sf!=NULL )
-    d.ignore_invalid_sub = gcd[4].ret;
+    d.ignore_invalid_replacement = gcd[4].ret;
 
     GDrawSetVisible(gw,true);
     while ( !d.done )
