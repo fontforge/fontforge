@@ -1,0 +1,11 @@
+feature liga {
+     lookup liga1 {
+     sub f l by f_l;        #f_l glyph does not exist
+     sub f i by f_i;
+     sub f f by f_f;
+     sub f f l by f_f_l;
+     sub f f i by f_f_i;
+     sub xddde by a;        #xdde glyph does not exist
+     sub [a b] by c;
+     } liga1;
+ } liga;

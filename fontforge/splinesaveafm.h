@@ -12,7 +12,7 @@ extern int doesGlyphExpandHorizontally(SplineChar *UNUSED(sc));
 extern int LayerWorthOutputting(SplineFont *sf, int layer);
 extern int LoadKerningDataFromAfm(SplineFont *sf, char *filename);
 extern int LoadKerningDataFromAmfm(SplineFont *sf, char *filename);
-extern int LoadKerningDataFromMetricsFile(SplineFont *sf, char *filename, EncMap *map);
+extern int LoadKerningDataFromMetricsFile(SplineFont *sf, char *filename, EncMap *map, bool ignore_invalid_replacement);
 extern int LoadKerningDataFromOfm(SplineFont *sf, char *filename, EncMap *map);
 extern int LoadKerningDataFromPfm(SplineFont *sf, char *filename, EncMap *map);
 extern int LoadKerningDataFromTfm(SplineFont *sf, char *filename, EncMap *map);
