@@ -4704,10 +4704,12 @@ This type may not be pickled.
 
    Merges the font in the file into the current font.
 
-.. method:: font.mergeFeature(filename)
+.. method:: font.mergeFeature(filename, boolean)
 
    Merge feature and lookup information from an adobe feature file, or metrics
-   information from the (afm,tfm,etc) file into the current font.
+   information from the (afm, tfm, etc) file into the current font. The optional
+   boolean flag, when set to True will try to skip invalid feature lookups containing
+   non-existent glyphs in the font, which can help in reusing large lookup rules.
 
 .. method:: font.mergeKern(filename)
 
