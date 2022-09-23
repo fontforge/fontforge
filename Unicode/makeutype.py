@@ -27,7 +27,7 @@ import sys
 BASE = os.path.dirname(os.path.abspath(__file__))
 SCRIPT = os.path.basename(__file__)
 
-UNIDATA_VERSION = "14.0.0"
+UNIDATA_VERSION = "15.0.0"
 UNICODE_DATA = "UnicodeData%s.txt"
 DERIVED_CORE_PROPERTIES = "DerivedCoreProperties%s.txt"
 PROP_LIST = "PropList%s.txt"
@@ -719,16 +719,16 @@ def makeuninames(unicode, trace):
     # Chosen empirically, tweak as desired. Only ascii is allowed due to
     # how the lexicon is encoded. Generally longer replacements go first
     # so shorter replacements don't prevent them from working.
-    # As of Unicode 13 this is roughly 454kb excluding the size of the
+    # As of Unicode 15 this is roughly 468kb excluding the size of the
     # offset tables
     regexes = [
         (100, re.compile(rb"[\x20-\x7F]{3,}[ -]")),
         (100, re.compile(rb"(?:[\x21-\x7F]+[ -]+){5}")),
         (150, re.compile(rb"(?:[\x21-\x7F]+[ -]+){4}")),
-        (200, re.compile(rb"(?:[\x21-\x7F]+[ -]+){3}")),
-        (900, re.compile(rb"(?:[\x21-\x7F]+[ -]+){2}")),
+        (250, re.compile(rb"(?:[\x21-\x7F]+[ -]+){3}")),
+        (750, re.compile(rb"(?:[\x21-\x7F]+[ -]+){2}")),
         (3400, re.compile(rb"(?:[\x21-\x7F]+[ -]+){1}")),
-        (5000, re.compile(rb"\b[\x21-\x7F]{3,}\b")),
+        (5000, re.compile(rb"\b(?:[a-z]{3,}|[\x21-\x60\x7B-\x7F]{3,})\b")),
     ]
     # The initial character on annotation lines are excluded from the phrasebook
     # This allows us to substitute them for fancier characters
