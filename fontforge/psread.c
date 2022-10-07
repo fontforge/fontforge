@@ -4412,7 +4412,8 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 		if ( v==4 || v==21 || v==22 ) {
 		    if ( cur!=NULL && cur->first==cur->last && cur->first->prev==NULL && is_type2 ) {
 			/* Two adjacent movetos should not create single point paths */
-			cur->first->me.x = current.x; cur->first->me.y = current.y;
+			cur->first->prevcp.x = cur->first->nextcp.x = cur->first->me.x = current.x;
+            cur->first->prevcp.y = cur->first->nextcp.y = cur->first->me.y = current.y;
 			SplinePointFree(pt);
 		    } else {
 			SplinePointList *spl = chunkalloc(sizeof(SplinePointList));
