@@ -1041,7 +1041,7 @@ Deprecated Names
 Examples
 --------
 
-* `FontForge's testsuite in the test subdirectory <https://github.com/fontforge/fontforge/tree/master/test>`__
+* `FontForge's testsuite in the test subdirectory <https://github.com/fontforge/fontforge/tree/master/tests>`__
   (such as it is)
 * `Directory of donated scripts <https://github.com/fontforge/fontforge/tree/master/pycontrib>`__
 * Scripts used in other projects
