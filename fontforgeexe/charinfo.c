@@ -4437,18 +4437,18 @@ return;
 	ulabel[8].text_is_1byte = true;
 	ugcd[8].gd.label = &ulabel[8];
 	ugcd[8].gd.popup_msg = _(
-	    "Some glyphs may be used for more than one\n"
-	    "unicode code point -- I don't recommend\n"
-	    "doing this, better to use a reference --\n"
-	    "but it is possible.\n"
-	    "The latin \"A\", the greek \"Alpha\" and the\n"
-	    "cyrillic \"A\" look very much the same.\n\n"
-	    "On the other hand certain Mongolian and CJK\n"
-	    "characters have multiple glyphs depending\n"
-	    "on a unicode Variation Selector.\n\n"
-	    "In the first case use a variation selector\n"
-	    "of 0, in the second use the appropriate\n"
-	    "codepoint.");
+		"Some glyphs may be used for more than one\n"
+		"Unicode code point, although it is recommended.\n"
+		"to use a reference.\n\n"
+		"  The Latin \"A\", the Greek alpha \"Α\" and the\n"
+		"Cyrillic \"А\" look very visually similar.\n\n"
+		"  On the other hand, certain Mongolian and CJK\n"
+		"characters have multiple glyphs depending\n"
+		"on a Unicode variation selector.\n\n"
+		"In the first case use a variation selector\n"
+		"of 0, in the second use the appropriate\n"
+		"codepoint."
+	);
 	ugcd[8].creator = GLabelCreate;
 	uhvarray[12] = &ugcd[8]; uhvarray[13] = GCD_ColSpan; uhvarray[14] = NULL;
 
@@ -4481,7 +4481,18 @@ return;
 	ulabel[12].text_in_resource = true;
 	ugcd[12].gd.label = &ulabel[12];
 	ugcd[12].gd.cid = CID_UnlinkRmOverlap;
-	ugcd[12].gd.popup_msg = _("A few glyphs, like Aring, Ccedilla, Eogonek\nare composed of two overlapping references.\nOften it is desirable to retain the references\n(so that changes made to the base glyph are\nreflected in the composed glyph), but that\nmeans you are stuck with overlapping contours.\nThis flag means that just before generating\nthe font, FontForge will unlink the references\nand run remove overlap on them, while\n retaining the references in the SFD.");
+	ugcd[12].gd.popup_msg = _(
+		"A few glyphs, such as those with diacritics,\n"
+		"are composed of two overlapping references.\n"
+		"Often, it is desirable to retain the references\n"
+		"(so that changes made to the base glyph are\n"
+		"reflected in the composed glyph), but that\n"
+		"means you are stuck with overlapping contours.\n\n"
+		"This flag means that just before generating\n"
+		"the font, FontForge will unlink the references\n"
+		"and run remove overlap on them, while\n"
+		"retaining the references in the SFD."
+	);
 	ugcd[12].creator = GCheckBoxCreate;
 	uhvarray[21] = &ugcd[12]; uhvarray[22] = GCD_ColSpan; uhvarray[23] = NULL;
 	uhvarray[24] = GCD_Glue; uhvarray[25] = GCD_Glue; uhvarray[26] = NULL;
@@ -4557,7 +4568,11 @@ return;
 	    psgcd[i-1][1].gd.label = &pslabel[i-1][1];
 	    psgcd[i-1][1].gd.pos.x = 5; psgcd[i-1][1].gd.pos.y = 5+4; 
 	    psgcd[i-1][1].gd.flags = lookup_hideunused ? (gg_enabled|gg_visible|gg_cb_on) : (gg_enabled|gg_visible);
-	    psgcd[i-1][1].gd.popup_msg = _("Don't display columns of 0s.\nThe OpenType lookup allows for up to 8 kinds\nof data, but almost all kerning lookups will use just one.\nOmitting the others makes the behavior clearer.");
+	    psgcd[i-1][1].gd.popup_msg = _(
+		    "The OpenType lookup allows for up to 8 kinds of data,\n"
+		    "but almost all kerning lookups will just use one.\n"
+		    "Omitting the other columns makes this behavior clearer."
+	    );
 	    psgcd[i-1][1].gd.handle_controlevent = i==pst_position ? CI_HideUnusedSingle : CI_HideUnusedPair;
 	    psgcd[i-1][1].creator = GCheckBoxCreate;
 	    pstvarray[i-1][0] = &psgcd[i-1][0];
@@ -4654,7 +4669,10 @@ return;
 	cogcd[3].creator = GCheckBoxCreate;
 
 	cogcd[4].gd.flags = gg_visible;
-	cogcd[4].gd.popup_msg = _("For example, to build this character from U+0061 (lowercase a) as the base and U+030C (combining caron), write:\n0061 030C");
+	cogcd[4].gd.popup_msg = _(
+		"To build a character from multiple components, separate their codepoints with a space.\n"
+		"For example, to build the character from U+0061 (lowercase a) as the base and U+030C (combining caron), write: \"0061 030C\"."
+	);
 	cogcd[4].gd.cid = CID_ComponentTextField;
 	cogcd[4].gd.handle_controlevent = CI_CmpUseNonDefault;
 	cogcd[4].gd.pos.x = 500; cogcd[4].gd.pos.y = 20;
@@ -4678,7 +4696,11 @@ return;
 	tgcd[0].gd.label = &tlabel[0];
 	tgcd[0].gd.pos.x = 5; tgcd[0].gd.pos.y = 5+4; 
 	tgcd[0].gd.flags = gg_enabled|gg_visible;
-	tgcd[0].gd.popup_msg = _("The height and depth fields are the metrics fields used\nby TeX, they are corrected for optical distortion.\nSo 'x' and 'o' probably have the same height.");
+	tgcd[0].gd.popup_msg = _(
+		"The height and depth fields are the metrics fields used\n"
+		"by TeX. They are corrected for optical distortion.\n"
+		"'x' and 'o' likely have the same height."
+	);
 	tgcd[0].creator = GLabelCreate;
 	thvarray[0] = &tgcd[0];
 
@@ -4733,7 +4755,13 @@ return;
 	tgcd[6].gd.pos.x = 5; tgcd[6].gd.pos.y = 57+4; 
 	tgcd[6].gd.flags = gg_enabled|gg_visible;
 	tgcd[6].creator = GLabelCreate;
-	tgcd[6].gd.popup_msg = _("The Italic correction field is used by both TeX and the MS 'MATH'\ntable. It is used when joining slanted text (italic) to upright.\nIt is the amount of extra white space needed so the slanted text\nwill not run into the upright text.");
+	tgcd[6].gd.popup_msg = _(
+		"The Italic correction field is used by both TeX and the\n"
+		"MS 'MATH' table and is used when joining slanted (italic)\n"
+		"text to upright text.\n\n"
+		"It is the amount of extra white space needed so the slanted\n"
+		"text will not run into the upright text."
+	);
 	thvarray[10] = &tgcd[6];
 
 	tgcd[7].gd.pos.x = 85; tgcd[7].gd.pos.y = 57;
@@ -4757,7 +4785,11 @@ return;
 	tgcd[9].gd.flags = gg_enabled|gg_visible;
 	tgcd[9].gd.cid = CID_ItalicDevTab;
 	tgcd[9].creator = GTextFieldCreate;
-	tgcd[9].gd.popup_msg = _("A device table for italic correction.\nExpects a comma separated list of <pixelsize>\":\"<adjustment>\nAs \"9:-1,12:1,13:1\"");
+	tgcd[9].gd.popup_msg = _(
+		"A device table for italic correction.\n"
+		"Expects a comma separated list of <pixelsize>\":\"<adjustment>\n."
+		"For example: \"9:-1,12:1,13:1\"."
+	);
 	thvarray[13] = &tgcd[9]; thvarray[14] = NULL;
 
 	tlabel[10].text = (unichar_t *) _("Top Accent Pos:");
@@ -4767,7 +4799,11 @@ return;
 	tgcd[10].gd.flags = gg_enabled|gg_visible;
 	tgcd[10].gd.popup_msg = tgcd[9].gd.popup_msg;
 	tgcd[10].creator = GLabelCreate;
-	tgcd[10].gd.popup_msg = _("In the MS 'MATH' table this value specifies where (horizontally)\nan accent should be placed above the glyph. Vertical placement\nis handled by other means");
+	tgcd[10].gd.popup_msg = _(
+		"In the MS 'MATH' table this value specifies where (horizontally)\n"
+		"an accent should be placed above the glyph.\n"
+		"Vertical placement is handled by other means."
+	);
 	thvarray[15] = &tgcd[10];
 
 	tgcd[11].gd.pos.x = 85; tgcd[11].gd.pos.y = 57;
@@ -4791,7 +4827,11 @@ return;
 	tgcd[13].gd.flags = gg_enabled|gg_visible;
 	tgcd[13].gd.cid = CID_AccentDevTab;
 	tgcd[13].creator = GTextFieldCreate;
-	tgcd[13].gd.popup_msg = _("A device table for horizontal accent positioning.\nExpects a comma separated list of <pixelsize>\":\"<adjustment>\nAs \"9:-1,12:1,13:1\"");
+	tgcd[13].gd.popup_msg = _(
+		"A device table for horizontal accent positioning.\n"
+		"Expects a comma separated list of <pixelsize>\":\"<adjustment>\n."
+		"For example: \"9:-1,12:1,13:1\"."
+	);
 	thvarray[18] = &tgcd[13]; thvarray[19] = NULL;
 
 	tlabel[14].text = (unichar_t *) _("Is Extended Shape");
@@ -4801,7 +4841,11 @@ return;
 	tgcd[14].gd.flags = gg_enabled|gg_visible;
 	tgcd[14].gd.cid = CID_IsExtended;
 	tgcd[14].creator = GCheckBoxCreate;
-	tgcd[14].gd.popup_msg = _("Is this an extended shape (like a tall parenthesis)?\nExtended shapes need special attention for vertical\nsuperscript placement.");
+	tgcd[14].gd.popup_msg = _(
+		"Is this an extended shape (like a tall parenthesis)?\n"
+		"Extended shapes need special attention for vertical\n"
+		"superscript placement."
+	);
 	thvarray[20] = &tgcd[14];
 	thvarray[21] = thvarray[22] = GCD_ColSpan; thvarray[23] = GCD_Glue; thvarray[24] = NULL;
 
@@ -4811,7 +4855,11 @@ return;
 	tgcd[15].gd.flags = gg_enabled|gg_visible;
 	tgcd[15].gd.handle_controlevent = CI_SubSuperPositionings;
 	tgcd[15].creator = GButtonCreate;
-	tgcd[15].gd.popup_msg = _("Brings up a dialog which gives fine control over\nhorizontal positioning of subscripts and superscripts\ndepending on their vertical positioning.");
+	tgcd[15].gd.popup_msg = _(
+		"Brings up a dialog which gives fine control over\n"
+		"horizontal positioning of subscripts and superscripts\n"
+		"depending on their vertical positioning."
+	);
 	tbarray[0] = GCD_Glue; tbarray[1] = &tgcd[15]; tbarray[2] = GCD_Glue; tbarray[3] = NULL;
 
 	tbox[2].gd.flags = gg_enabled|gg_visible;
@@ -4838,7 +4886,16 @@ return;
 	lcgcd[0].gd.cid = CID_DefLCCount;
 	lcgcd[0].gd.label = &lclabel[0];
 	lcgcd[0].gd.flags = gg_enabled|gg_visible;
-	lcgcd[0].gd.popup_msg = _("Ligature caret locations are used by a text editor\nwhen it needs to draw a text edit caret inside a\nligature. This means there should be a caret between\neach ligature component so if there are n components\nthere should be n-1 caret locations.\n  You may adjust the caret locations themselves in the\noutline glyph view (drag them from to origin to the\nappropriate place)." );
+	lcgcd[0].gd.popup_msg = _(
+		"Ligature caret locations are used by a text editor\n"
+		"when it needs to draw or edit a caret inside a ligature.\n"
+		"This means there should be a caret between each ligature\n"
+		"component so if there are n components there should be\n"
+		"n-1 caret locations.\n\n"
+		"You may adjust the caret locations themselves in the\n"
+		"outline glyph view (drag them from to origin to the\n"
+		"appropriate place)."
+	);
 	lcgcd[0].gd.handle_controlevent = CI_DefLCChange;
 	lcgcd[0].creator = GCheckBoxCreate;
 	lchvarray[0][0] = &lcgcd[0];
@@ -4850,14 +4907,14 @@ return;
 	lcgcd[1].gd.label = &lclabel[1];
 	lcgcd[1].gd.flags = gg_enabled|gg_visible;
 	lcgcd[1].gd.cid = CID_LCCountLab;
-	lcgcd[1].gd.popup_msg = _("Ligature caret locations are used by a text editor\nwhen it needs to draw a text edit caret inside a\nligature. This means there should be a caret between\neach ligature component so if there are n components\nthere should be n-1 caret locations.\n  You may adjust the caret locations themselves in the\noutline glyph view (drag them from to origin to the\nappropriate place)." );
+	lcgcd[1].gd.popup_msg = lcgcd[0].gd.popup_msg;
 	lcgcd[1].creator = GLabelCreate;
 	lchvarray[1][0] = &lcgcd[1];
 
 	lcgcd[2].gd.pos.width = 50;
 	lcgcd[2].gd.flags = gg_enabled|gg_visible;
 	lcgcd[2].gd.cid = CID_LCCount;
-	lcgcd[2].gd.popup_msg = _("Ligature caret locations are used by a text editor\nwhen it needs to draw a text edit caret inside a\nligature. This means there should be a caret between\neach ligature component so if there are n components\nthere should be n-1 caret locations.\n  You may adjust the caret locations themselves in the\noutline glyph view (drag them from to origin to the\nappropriate place)." );
+	lcgcd[2].gd.popup_msg = lcgcd[0].gd.popup_msg;
 	lcgcd[2].creator = GNumericFieldCreate;
 	lchvarray[1][1] = &lcgcd[2]; lchvarray[1][2] = GCD_Glue; lchvarray[1][3] = NULL;
 
@@ -4879,7 +4936,10 @@ return;
 	    vargcd[i][0].gd.pos.x = 5; vargcd[i][0].gd.pos.y = 57+4; 
 	    vargcd[i][0].gd.flags = gg_enabled|gg_visible;
 	    vargcd[i][0].creator = GLabelCreate;
-	    vargcd[i][0].gd.popup_msg = _("A list of the names of pre defined glyphs which represent\nbigger versions of the current glyph.");
+	    vargcd[i][0].gd.popup_msg = _(
+		    "A list of the names of predefined glyphs which represent\n"
+		    "bigger versions of the current glyph."
+	    );
 	    varhvarray[i][0][0] = &vargcd[i][0];
 
 	    vargcd[i][1].gd.flags = gg_enabled|gg_visible;
@@ -4893,17 +4953,31 @@ return;
 	    vargcd[i][2].gd.label = &varlabel[i][2];
 	    vargcd[i][2].gd.flags = gg_enabled|gg_visible;
 	    vargcd[i][2].creator = GLabelCreate;
-	    vargcd[i][2].gd.popup_msg = _("A really big version of this glyph may be made up of the\nfollowing component glyphs. They will be stacked either\nhorizontally or vertically. Glyphs marked as Extenders may\nbe removed or repeated (to make shorter or longer versions).\nThe StartLength is the length of the flat section at the\nstart of the glyph which may be overlapped with the previous\nglyph, while the EndLength is the similar region at the end\nof the glyph. The FullLength is the full length of the glyph." );
+	    vargcd[i][2].gd.popup_msg = _(
+		    "A really big version of this glyph may be made up of the\n"
+		    "following component glyphs. They will be stacked either\n"
+		    "horizontally or vertically.\n"
+		    "  ◦ Glyphs marked as Extenders may be removed or repeated\n"
+		    "    (to make shorter or longer versions).\n"
+		    "  ◦ The StartLength is the length of the flat section at\n"
+		    "    the start of the glyph which may be overlapped with\n"
+		    "    the previous glyph\n"
+		    "  ◦ The EndLength is the similar region at the end of the\n"
+		    "    glyph.\n"
+		    "  ◦ The FullLength is the full length of the glyph."
+	    );
 	    varhvarray[i][1][0] = &vargcd[i][2];
 	    varhvarray[i][1][1] = varhvarray[i][1][2] = GCD_ColSpan; varhvarray[i][1][3] = NULL;
 
-/* GT: "Cor" is an abbreviation for correction */
-	    varlabel[i][3].text = (unichar_t *) _("Italic Cor:");
+	    varlabel[i][3].text = (unichar_t *) _("Italic Correction:");
 	    varlabel[i][3].text_is_1byte = true;
 	    vargcd[i][3].gd.label = &varlabel[i][3];
 	    vargcd[i][3].gd.flags = gg_enabled|gg_visible;
 	    vargcd[i][3].creator = GLabelCreate;
-	    vargcd[i][3].gd.popup_msg = _("The italic correction of the composed glyph. Should be independent of glyph size");
+	    vargcd[i][3].gd.popup_msg = _(
+		    "The italic correction of the composed glyph.\n"
+		    "This should be independent of glyph size."
+	    );
 	    varhvarray[i][2][0] = &vargcd[i][3];
 
 	    vargcd[i][4].gd.flags = gg_enabled|gg_visible;
@@ -4942,11 +5016,12 @@ return;
 	i=0;
 	tilelabel[i].text = (unichar_t *) _(
 	    "If this glyph is used as a pattern to tile\n"
-	    "some other glyph then it is useful to specify\n"
-	    "the amount of whitespace surrounding the tile.\n"
+	    "some other glyph, then it is useful to specify\n"
+	    "the amount of whitespace surrounding the tile.\n\n"
 	    "Either specify a margin to extend the bounding\n"
 	    "box of the contents, or specify the bounds\n"
-	    "explicitly.");
+	    "explicitly."
+	);
 	tilelabel[i].text_is_1byte = true;
 	tilelabel[i].text_in_resource = true;
 	tilegcd[i].gd.label = &tilelabel[i];
@@ -5083,6 +5158,7 @@ return;
 	aspects[i].text_is_1byte = true;
 	aspects[i++].gcd = psgcd[5];
 
+/* "Lig." is an abbreviation for Ligature */
 	ci->lc_aspect = i;
 	aspects[i].text = (unichar_t *) _("Lig. Carets");
 	aspects[i].text_is_1byte = true;
@@ -5404,7 +5480,10 @@ return;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+26; 
 	gcd[i].gd.flags = gg_enabled|gg_visible|gg_cb_on;
-	gcd[i].gd.popup_msg = _("Set the selection of the font view to the glyphs\nfound by this search");
+	gcd[i].gd.popup_msg = _(
+		"Set the selection of the font view to the glyphs\n"
+		"found by this search."
+	);
 	gcd[i].gd.cid = CID_SelectResults;
 	gcd[i++].creator = GRadioCreate;
 	varray[j++] = &gcd[i-1]; varray[j++] = NULL;
@@ -5414,7 +5493,10 @@ return;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+15; 
 	gcd[i].gd.flags = gg_enabled|gg_visible;
-	gcd[i].gd.popup_msg = _("Expand the selection of the font view to include\nall the glyphs found by this search");
+	gcd[i].gd.popup_msg = _(
+		"Expand the selection of the font view to include\n"
+		"all the glyphs found by this search."
+	);
 	gcd[i].gd.cid = CID_MergeResults;
 	gcd[i++].creator = GRadioCreate;
 	varray[j++] = &gcd[i-1]; varray[j++] = NULL;
@@ -5424,7 +5506,10 @@ return;
 	gcd[i].gd.label = &label[i];
 	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+15; 
 	gcd[i].gd.flags = gg_enabled|gg_visible;
-	gcd[i].gd.popup_msg = _("Only search the selected glyphs, and unselect\nany characters which do not match this search");
+	gcd[i].gd.popup_msg = _(
+		"Only search the selected glyphs, and unselect\n"
+		"any characters which do not match this search."
+	);
 	gcd[i].gd.cid = CID_RestrictSelection;
 	gcd[i++].creator = GRadioCreate;
 	varray[j++] = &gcd[i-1]; varray[j++] = NULL;
