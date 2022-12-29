@@ -26,39 +26,33 @@
 #include <woff2/encode.h>
 
 extern "C" {
-size_t woff2_max_woff2_compressed_size(const uint8_t *data, size_t length)
-{
-    try {
-        return woff2::MaxWOFF2CompressedSize(data, length);
-    } catch (const std::exception &) {
-        return 0;
-    }
-}
 
-size_t woff2_compute_woff2_final_size(const uint8_t *data, size_t length)
+int woff2_convert_ttf_to_woff2(const uint8_t *data, size_t length, uint8_t **result, size_t *result_length)
 {
     try {
-        return woff2::ComputeWOFF2FinalSize(data, length);
-    } catch (const std::exception &) {
-        return 0;
-    }
-}
-
-int woff2_convert_ttf_to_woff2(const uint8_t *data, size_t length, uint8_t *result, size_t *result_length)
-{
-    try {
-        return woff2::ConvertTTFToWOFF2(data, length, result, result_length);
+        *result_length = woff2::MaxWOFF2CompressedSize(data, length);
+        *result = static_cast<uint8_t*>(calloc(*result_length, 1));
+        if (!*result) {
+            return false;
+        }
+        return woff2::ConvertTTFToWOFF2(data, length, *result, result_length);
     } catch (const std::exception &) {
         return false;
     }
 }
 
-int woff2_convert_woff2_to_ttf(const uint8_t *data, size_t length, uint8_t *result, size_t *result_length)
+int woff2_convert_woff2_to_ttf(const uint8_t *data, size_t length, uint8_t **result, size_t *result_length)
 {
     try {
-        woff2::WOFF2MemoryOut output(result, *result_length);
+        std::string buffer(std::min(woff2::ComputeWOFF2FinalSize(data, length), woff2::kDefaultMaxSize), 0);
+        woff2::WOFF2StringOut output(&buffer);
         bool ret = woff2::ConvertWOFF2ToTTF(data, length, &output);
         if (ret) {
+            *result = static_cast<uint8_t*>(malloc(output.Size()));
+            if (!*result) {
+                return false;
+            }
+            memcpy(*result, buffer.data(), output.Size());
             *result_length = output.Size();
         } else {
             *result_length = 0;
