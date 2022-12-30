@@ -5261,7 +5261,6 @@ static int vwv_e_h(GWindow gw, GEvent *event) {
       case et_expose:
 	if ( vw->recheck==NULL ) {
 	    vw->recheck = GDrawRequestTimer(vw->v,500,500,NULL);
-	    VWCheckup(vw);
 	}
 	VWDrawWindow(gw,vw,event);
       break;
