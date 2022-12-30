@@ -577,7 +577,7 @@ static void RulerLingerPlace(CharView *cv, GEvent *event) {
     GDrawSetVisible(cv->ruler_linger_w,true);
 }
 
-static void RulerLingerMove(CharView *cv) {
+void CVRulerLingerMove(CharView *cv) {
     CharViewTab* tab = CVGetActiveTab(cv);
     if ( cv->ruler_linger_w ) {
 	int x, y;
@@ -1003,6 +1003,5 @@ return;
 	    }
 	    prev_rect = rect;
 	}
-	RulerLingerMove(cv);	/* in case things are moving or scaling */
     }
 }

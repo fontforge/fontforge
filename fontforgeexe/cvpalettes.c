@@ -2376,7 +2376,7 @@ static void CVLRemoveEdit(CharView *cv, int save) {
 	GDrawRequestExpose(cvlayers,NULL,false);
 
 	layerinfo.rename_active = 0;
-	CVInfoDrawText(cv,cv->gw);
+	GDrawRequestExpose(cv->gw, NULL, false);
     }
 }
 
@@ -2857,8 +2857,6 @@ static int CVLScanForItem(int x, int y, int *col) {
 
 /* Called in response to some event where we want to change the current layer. */
 void CVLSelectLayer(CharView *cv, int layer) {
-    enum drawmode dm = cv->b.drawmode;
-
     if ( layer<-1 || layer>=cv->b.sc->layer_cnt )
 	return;
 
@@ -2887,9 +2885,7 @@ void CVLSelectLayer(CharView *cv, int layer) {
     GDrawRequestExpose(cv->v,NULL,false);
     if (cvlayers2) GDrawRequestExpose(cvlayers2,NULL,false);
     if (cvlayers)  GDrawRequestExpose(cvlayers,NULL,false);
-    if ( dm!=cv->b.drawmode )
-        GDrawRequestExpose(cv->gw,NULL,false); /* the logo (where the scrollbars join) shows what layer we are in */
-    CVInfoDrawText(cv,cv->gw);
+    GDrawRequestExpose(cv->gw,NULL,false);
 }
 
 static int cvlayers_e_h(GWindow gw, GEvent *event) {
