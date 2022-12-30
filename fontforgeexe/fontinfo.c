@@ -2876,6 +2876,7 @@ static int CheckActiveStyleTranslation(struct gfi_data *d,
 	else
 	    new = copy(english);
 	for ( i=0; stylelist[i]!=NULL; ++i ) {
+	    other_pos = -1;
 	    for ( j=0; stylelist[i][j].str!=NULL; ++j ) {
 		if ( stylelist[i][j].lang == other_lang ) {
 		    other_pos = j;
