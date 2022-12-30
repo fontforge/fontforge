@@ -3269,6 +3269,7 @@ static void CVNewScale(CharView *cv) {
     if ( cv->showrulers )
 	GDrawRequestExpose(cv->gw,NULL,false);
     GDrawGetPointerPosition(cv->v,&e);
+    CVRulerLingerMove(cv);
     CVUpdateInfo(cv,&e);
 }
 
@@ -6044,6 +6045,7 @@ static void CVHScrollSetPos( CharView *cv, int newpos )
 	cv->back_img_out_of_date = true;
 	GScrollBarSetPos(cv->hsb,-newpos);
 	GDrawScroll(cv->v,NULL,diff,0);
+	CVRulerLingerMove(cv);
 	if (( cv->showhhints && cv->b.sc->hstem!=NULL ) || cv->showblues || cv->showvmetrics ) {
 	    GRect r;
 	    r.y = 0; r.height = cv->height;
@@ -6143,6 +6145,7 @@ static void CVVScroll(CharView *cv, struct sbevent *sb) {
 	cv->back_img_out_of_date = true;
 	GScrollBarSetPos(cv->vsb,newpos-cv->height);
 	GDrawScroll(cv->v,NULL,0,diff);
+	CVRulerLingerMove(cv);
 	if (( cv->showvhints && cv->b.sc->vstem!=NULL) || cv->showhmetrics ) {
 	    GRect r;
 	    RefChar *lock = HasUseMyMetrics(cv->b.sc,CVLayer((CharViewBase *) cv));

@@ -1041,6 +1041,7 @@ extern void CVMouseUpPoint(CharView *cv,GEvent *event);
 extern int  CVMouseMovePointer(CharView *cv, GEvent *event);
 extern void CVMouseDownPointer(CharView *cv, FindSel *fs, GEvent *event);
 extern void CVMouseDownRuler(CharView *cv, GEvent *event);
+extern void CVRulerLingerMove(CharView *cv);
 extern void CVMouseMoveRuler(CharView *cv, GEvent *event);
 extern int CVMouseAtSpline(CharView *cv,GEvent *event);
 extern void CVMouseUpRuler(CharView *cv, GEvent *event);
