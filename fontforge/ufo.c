@@ -1368,6 +1368,7 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer, int
     PListAddString(dictnode,"macintoshFONDName",sf->fondname);
     // If the version is 3 and the grid layer exists, emit a guidelines group.
     if (version > 2) {
+        xmlNewChild(dictnode, NULL, BAD_CAST "key", BAD_CAST "guidelines");
         xmlNodePtr gllistnode = xmlNewChild(dictnode, NULL, BAD_CAST "array", NULL);
         SplineSet *ss = NULL;
         for (ss = sf->grid.splines; ss != NULL; ss = ss->next) {
