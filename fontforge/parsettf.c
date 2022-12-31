@@ -4542,9 +4542,9 @@ return( ret );
    will swap it in. */
 static void addttfencoding(SplineChar *sc, int unc) {
     struct altuni *alt;
-    if ( unc==-1 ) {
+    if ( unc==-1 || sc->unicodeenc==unc ) {
 	return;
-    } else if (sc->unicodeenc==-1 || sc->unicodeenc==unc) {
+    } else if ( sc->unicodeenc==-1 ) {
 	sc->unicodeenc = unc;
 	return;
     } else {
@@ -4826,7 +4826,7 @@ return;
 			    } else {
 				if ( uenc!=-1 && dounicode ) used[uenc] = true;
 				if ( dounicode )
-				    addttfencoding(info->chars[(uint16) (j+delta[i])], uenc);
+				    addttfencoding(info->chars[(uint16_t) (j+delta[i])], uenc);
 			        if ( map!=NULL && lenc<map->enccount )
 				    map->map[lenc] = (uint16_t) (j+delta[i]);
 			    }
