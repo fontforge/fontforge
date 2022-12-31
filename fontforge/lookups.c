@@ -2996,7 +2996,7 @@ static void ApplyAppleStateMachine(OTLookup *otl,struct lookup_data *data) {
 		class = 0;
 	    else {
 		for ( class = sm->class_cnt-1; class>3; --class )
-		    if ( GlyphNameInClass(data->str[i].sc->name,sm->classes[class]) )
+		    if ( GlyphNameInClass(data->str[pos].sc->name,sm->classes[class]) )
 		break;
 		if ( class==3 )
 		    class = 1;		/* Glyph not in any class */;
