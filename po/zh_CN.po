@@ -13,13 +13,17 @@
 # NFSL2001 <https://crowdin.com/profile/nightfurysl2001>
 # hulenkius <https://crowdin.com/profile/hulenkius>
 # EldersJavas <https://crowdin.com/profile/maicarons>
+# liyiyiagzj <https://crowdin.com/profile/liyiyiKFZ>
+# MiaowAh <https://crowdin.com/profile/MiaowAh>
+# rebuild <https://crowdin.com/profile/rebuild>
+# Kaze Mr <https://crowdin.com/profile/ssrkaze>
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-08 09:53+0000\n"
-"PO-Revision-Date: 2022-02-21 08:36\n"
+"POT-Creation-Date: 2022-12-31 02:48+0000\n"
+"PO-Revision-Date: 2022-12-31 03:24\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Language: zh_CN\n"
@@ -87,7 +91,7 @@ msgstr "增加尺寸即为创建之。"
 
 #. GT: This continues a multi-line error message, hence the leading space
 msgid " Bad kerning class table, ignored\n"
-msgstr " 缩合类属表不对，忽略之\n"
+msgstr " 字偶距类表有误，已忽略\n"
 
 msgid " Bad ligature table, ignored\n"
 msgstr " 连写表不对，忽略之\n"
@@ -280,7 +284,7 @@ msgstr "%s 不在 %.100s"
 
 #, c-format
 msgid "%s kerning class %d"
-msgstr "%s 压缩类属 %d"
+msgstr "%s 字偶距类 %d"
 
 #, c-format
 msgid "%s line: %d %s\n"
@@ -345,10 +349,10 @@ msgid "'GDEF' Glyph Definition Table"
 msgstr "'GDEF' 字形定义表"
 
 msgid "'GPOS' Glyph Positioning Table"
-msgstr "'GPOS' 字形定位表"
+msgstr "'GPOS' 字形置位表"
 
 msgid "'GSUB' Glyph Substitution Table"
-msgstr "'GSUB' 字形替代表"
+msgstr "'GSUB' 字形替换表"
 
 msgid "'JSTF' Justification Table"
 msgstr "'JSTF' 对齐表"
@@ -378,7 +382,7 @@ msgid "(faked) MS bitmap only sfnt (ttf)"
 msgstr "(弃用) MS 位图字体 sfnt (ttf)"
 
 msgid "(kerning class)\n"
-msgstr "(压缩类属)\n"
+msgstr "(字偶距类)\n"
 
 msgid "(unspecified) SIL Graphite table"
 msgstr "(未指定) SIL Graphite 规则表"
@@ -508,13 +512,43 @@ msgid "950, Traditional Chinese"
 msgstr "950，繁体中文"
 
 msgid "< _Prev"
-msgstr "<前(_P)"
+msgstr "< 上一个(_P)"
 
 msgid "<Nothing>"
 msgstr "<无>"
 
 msgid "<Temporary kerning>"
 msgstr "<临时压缩>"
+
+msgid "<Unassigned Plane 10>"
+msgstr "<Unassigned Plane 10>"
+
+msgid "<Unassigned Plane 11>"
+msgstr "<Unassigned Plane 11>"
+
+msgid "<Unassigned Plane 12>"
+msgstr "<Unassigned Plane 12>"
+
+msgid "<Unassigned Plane 13>"
+msgstr "<Unassigned Plane 13>"
+
+msgid "<Unassigned Plane 4>"
+msgstr "<Unassigned Plane 4>"
+
+msgid "<Unassigned Plane 5>"
+msgstr "<Unassigned Plane 5>"
+
+msgid "<Unassigned Plane 6>"
+msgstr "<Unassigned Plane 6>"
+
+msgid "<Unassigned Plane 7>"
+msgstr "<Unassigned Plane 7>"
+
+msgid "<Unassigned Plane 8>"
+msgstr "<Unassigned Plane 8>"
+
+msgid "<Unassigned Plane 9>"
+msgstr "<Unassigned Plane 9>"
 
 msgid "<Unknown direction>"
 msgstr "<未知方向>"
@@ -658,19 +692,19 @@ msgid "Access All Alternates"
 msgstr "访问所有替代"
 
 msgid "Active Background"
-msgstr "活动背景色"
+msgstr "已激活背景色"
 
 msgid "Active Border:"
-msgstr "活动边框："
+msgstr "现用边框："
 
 msgid "Active Color"
-msgstr "活动颜色"
+msgstr "已激活颜色"
 
 msgid "Active Hints"
-msgstr "启用消隐"
+msgstr "现用渲调"
 
 msgid "Active Layer Color"
-msgstr "激活层的颜色"
+msgstr "激活层颜色"
 
 msgid "Add"
 msgstr "添加"
@@ -688,7 +722,7 @@ msgid "Add Base Anchor..."
 msgstr "增加基础锚点..."
 
 msgid "Add DHint"
-msgstr "增加对角消隐"
+msgstr "添加对角渲调提示"
 
 msgid "Add E_ncoding Name..."
 msgstr "增加编码名(_N)…"
@@ -737,7 +771,7 @@ msgid "Add Subscripts/Superscripts..."
 msgstr "添加上下标..."
 
 msgid "Add VHi_nt"
-msgstr "增加垂直消隐(_N)"
+msgstr "增加垂直渲调(_N)"
 
 msgid "Add _Lookup"
 msgstr "添加查找(_L)"
@@ -785,7 +819,7 @@ msgid "Add entries for all selected glyphs."
 msgstr "为选中的字形添加入口。"
 
 msgid "Add kerning info between all pairs of selected glyphs"
-msgstr "为选中字形中的各对字形添加缩合信息"
+msgstr "为选中字形中的各对字形添加字偶距信息"
 
 msgid "Adding points at Extrema..."
 msgstr "在极值处增加点..."
@@ -818,6 +852,13 @@ msgstr "Adobe 字形列表"
 msgid "Adobe Standard"
 msgstr "Adobe标准"
 
+msgid ""
+"Adobe's fontname spec (5088.FontNames.pdf) says that fontnames should not be "
+"longer than 29 characters. Do you want to continue anyway?"
+msgstr ""
+"Adobe 的字体规范（5088.FontNames.pdf）中提到字体名称不应超过 29 个字符。您仍"
+"然想要继续吗？"
+
 msgid "Advance To Next Glyph"
 msgstr "到下一字形"
 
@@ -826,7 +867,7 @@ msgstr "前导宽度列"
 
 #, c-format
 msgid "Advance Width Metrics For %.50s"
-msgstr "%.50s 的前导宽度尺寸"
+msgstr "%.50s 的步进宽度度量"
 
 msgid "Advance Width as a Bar"
 msgstr "前导宽度作为条"
@@ -929,7 +970,7 @@ msgstr "几乎水平或垂直的线"
 
 #. GT: The _3 is used to mark an accelerator
 msgid "Almost stem_3 hint"
-msgstr "全部stem_3消隐"
+msgstr "接近 stem_3 渲调"
 
 msgid "Alphabetic"
 msgstr "字母表"
@@ -956,10 +997,10 @@ msgid "Alternate Annotation Forms"
 msgstr "替代注释形式"
 
 msgid "Alternate Substitution"
-msgstr "交换替代"
+msgstr "变体替换"
 
 msgid "Alternate Unicode Encodings / Variation Selectors"
-msgstr "替代统一码 /变形选择"
+msgstr "其他 Unicode 编码/异体字选择器"
 
 msgid "Alternate Vertical Half Metrics"
 msgstr "替代垂直半尺寸"
@@ -1051,6 +1092,9 @@ msgstr "角度："
 msgid "Anti-Alias"
 msgstr "抗锯齿"
 
+msgid "Appearance Editor"
+msgstr "外观选项"
+
 msgid "Append a FONTLOG entry"
 msgstr "添加FONTLOG信息项"
 
@@ -1059,6 +1103,50 @@ msgstr "添加到它"
 
 msgid "Apple Advanced Typography"
 msgstr "Apple高级字体"
+
+msgid ""
+"Apple and MS/Adobe differ about the format of truetype and opentype files.\n"
+"This controls the default setting of the Apple checkbox in the\n"
+"File->Generate Font dialog.\n"
+"The main differences are:\n"
+" Bitmap data are stored in different tables\n"
+" Scaled composite glyphs are treated differently\n"
+" Use of GSUB rather than morx(t)/feat\n"
+" Use of GPOS rather than kern/opbd\n"
+" Use of GDEF rather than lcar/prop\n"
+"If both this and OpenType are set, both formats are generated"
+msgstr ""
+"Apple 和 MS/Adobe 的 truetype 和 opentype 文件格式有差异。\n"
+"这将影响 文件->生成字体 对话框中 Apple 选项的默认设置。\n"
+"主要差异是：\n"
+" 位图数据存储在不同的表中\n"
+" 缩放复合字形处理上的差异\n"
+" 使用 GSUB 而不是 morx(t)/feat\n"
+" 使用 GPOS 而不是 kern/opbd\n"
+" 使用 GDEF 而不是 lcar/prop\n"
+"如果这个选项和 OpenType 选项都选定，两种格式都会生成。"
+
+msgid ""
+"Apple and MS/Adobe differ about the format of truetype and opentype files.\n"
+"This controls the default setting of the OpenType checkbox in the\n"
+"File->Generate Font dialog.\n"
+"The main differences are:\n"
+" Bitmap data are stored in different tables\n"
+" Scaled composite glyphs are treated differently\n"
+" Use of GSUB rather than morx(t)/feat\n"
+" Use of GPOS rather than kern/opbd\n"
+" Use of GDEF rather than lcar/prop\n"
+"If both this and Apple are set, both formats are generated"
+msgstr ""
+"Apple 和 MS/Adobe 的 truetype 和 opentype 文件格式有差异。\n"
+"这将影响 文件->生成字体 对话框中 Opentype 选项的默认设置。\n"
+"主要差异是：\n"
+" 位图数据存储在不同的表中\n"
+" 缩放复合字形处理上的差异\n"
+" 使用 GSUB 而不是 morx(t)/feat\n"
+" 使用 GPOS 而不是 kern/opbd\n"
+" 使用 GDEF 而不是 lcar/prop\n"
+"如果这个选项和 Apple 选项都选定，两种格式都会生成。"
 
 msgid "Apple bitmap only sfnt (dfont)"
 msgstr "Apple 位图字体 sfnt (dfont)"
@@ -1134,6 +1222,9 @@ msgid "Arabic Extended-A"
 msgstr "阿拉伯文扩展 A"
 
 msgid "Arabic Extended-B"
+msgstr "阿拉伯文扩展 B"
+
+msgid "Arabic Extended-C"
 msgstr "阿拉伯文扩展 B"
 
 msgid "Arabic Mathematical Alphabetic Symbols"
@@ -1265,7 +1356,7 @@ msgid "Auto"
 msgstr "自动"
 
 msgid "Auto Hinting Font..."
-msgstr "自动消隐字体…"
+msgstr "自动渲调字体…"
 
 msgid "Auto Instructing Font..."
 msgstr "自动处理字体…"
@@ -1274,13 +1365,13 @@ msgid "Auto Width"
 msgstr "自动宽度"
 
 msgid "Auto _Counter Hint"
-msgstr "自动计数消隐(_C)"
+msgstr "自动渲调字腔(_C)"
 
 msgid "AutoHint"
-msgstr "自动消隐"
+msgstr "自动渲调"
 
 msgid "AutoHint changed glyphs before generating a font"
-msgstr "生成字体之前自动消隐改变字形"
+msgstr "生成字体前自动渲调字形"
 
 msgid "AutoKern All"
 msgstr "自动缩合全部"
@@ -1295,7 +1386,7 @@ msgid "AutoKernDialog"
 msgstr "自动缩合对话框"
 
 msgid "AutoLBearingSync"
-msgstr "自动左边位对正"
+msgstr "自动左边距对正"
 
 #, c-format
 msgid "AutoWidth failure on %s\n"
@@ -1305,7 +1396,7 @@ msgid "AutoWidthSync"
 msgstr "自动宽度对正"
 
 msgid "Auto_Hint"
-msgstr "自动消隐(_H)"
+msgstr "自动渲调(_H)"
 
 msgid "Auto_Instr"
 msgstr "自动指令(_I)"
@@ -1314,7 +1405,7 @@ msgid "Auto_Kern"
 msgstr "自动缩合(_K)"
 
 msgid "Autohinta_ble"
-msgstr "自动消隐表(_B)"
+msgstr "可自动渲调(_B)"
 
 msgid "Autokern new entries"
 msgstr "自动缩合新条目"
@@ -1384,7 +1475,7 @@ msgstr "阿塞拜疆语(罗马字母)"
 
 #. GT: Bottom/Right (side) bearing
 msgid "BBearing:"
-msgstr "底边位:"
+msgstr "底边距:"
 
 msgid "BDF Info..."
 msgstr "BDF信息…"
@@ -1454,7 +1545,7 @@ msgid "Bad BlueFuzz entry."
 msgstr "不良 BlueFuzz 条目."
 
 msgid "Bad BlueScale entry."
-msgstr "不良 BlueScale 条目."
+msgstr "错误的 BlueScale 条目。"
 
 msgid "Bad BlueShift entry."
 msgstr "不良 BlueShift 条目."
@@ -1524,7 +1615,7 @@ msgid "Bad Grid Fitting table"
 msgstr "不良网格填充表"
 
 msgid "Bad Human Fontname"
-msgstr "不当的人读字型名称"
+msgstr "不当的人类可读字体名称"
 
 msgid "Bad IBM Family"
 msgstr "不良IBM字族名"
@@ -1798,7 +1889,7 @@ msgid "Bad sid %d (must be less than %d)\n"
 msgstr "错误的 sid %d (应小于 %d)\n"
 
 msgid "Bad stem add"
-msgstr "不良附加部"
+msgstr "不良附加字干"
 
 msgid "Bad tag"
 msgstr "不良标签"
@@ -1864,7 +1955,7 @@ msgid "Base Y"
 msgstr "基线Y"
 
 msgid "Base:"
-msgstr "基："
+msgstr "基线："
 
 msgid "Baseline"
 msgstr "基线"
@@ -1971,7 +2062,7 @@ msgid "Bits/Pixel:"
 msgstr "位／点："
 
 msgid "Black"
-msgstr "粗"
+msgstr "超粗"
 
 msgid "Blackletter"
 msgstr "黑体字"
@@ -2049,7 +2140,7 @@ msgid "Both points must be specified, or neither"
 msgstr "两点须都指定或都不指定"
 
 msgid "Bottom Hint"
-msgstr "底部消隐"
+msgstr "底部渲调提示"
 
 msgid "Bottom Left"
 msgstr "左下"
@@ -2441,7 +2532,7 @@ msgstr "未能打开临时文件\n"
 
 #, c-format
 msgid "Cannot open feature file %.120s"
-msgstr "无法打开指定的文件：%.120s"
+msgstr "无法打开特性文件：%.120s"
 
 msgid "Cannot open file"
 msgstr "无法打开文件"
@@ -2873,7 +2964,7 @@ msgid "Check Self-Intersection"
 msgstr "检查自身相交"
 
 msgid "Check Unicode/Name mismatch"
-msgstr "检查统一码/名称的不匹配"
+msgstr "检查 Unicode /名称不匹配"
 
 msgid "Check VAdvance:\n"
 msgstr "检查垂直间距:\n"
@@ -2912,7 +3003,7 @@ msgid "Check multiple Names"
 msgstr "检查多重名称"
 
 msgid "Check multiple Unicode"
-msgstr "检查多重统一码"
+msgstr "检查多重 Unicode"
 
 msgid "Check substitutions for empty chars"
 msgstr "查找空字符的替代"
@@ -3064,7 +3155,7 @@ msgid "Clear _Background"
 msgstr "清除背景(_B)"
 
 msgid "Clear _VStem"
-msgstr "清除垂直项(_V)"
+msgstr "清除垂直字干(_V)"
 
 msgid "ClearInstrsBigChanges"
 msgstr "清除大变化指令"
@@ -3119,7 +3210,7 @@ msgid "Color used to draw the kerning line"
 msgstr "选择用于绘制缩合线的颜色"
 
 msgid "Color used to draw the left side bearing"
-msgstr "此颜色用于绘制左边位"
+msgstr "此颜色用于绘制左边距"
 
 msgid "Color used to draw the progress bar"
 msgstr "此颜色用于绘制进度条"
@@ -3208,7 +3299,7 @@ msgid "Compare Glyph _Substitution"
 msgstr "比较字形替代(_S)"
 
 msgid "Compare Hint_Masks"
-msgstr "比较消隐蒙板(_M)"
+msgstr "比较渲调提示蒙板(_M)"
 
 msgid "Compare Layers"
 msgstr "比较层"
@@ -3220,7 +3311,7 @@ msgid "Compare _Bitmaps"
 msgstr "比较位图(_B)"
 
 msgid "Compare _Hints"
-msgstr "比较消隐(_H)"
+msgstr "比较渲调提示(_H)"
 
 msgid "Compare _Names"
 msgstr "比较名称(_N)"
@@ -3229,7 +3320,7 @@ msgid "Compare _Outlines"
 msgstr "比较轮廓(_O)"
 
 msgid "Compare hintmasks"
-msgstr "比较消隐蒙板"
+msgstr "比较渲调提示蒙板"
 
 msgid "Compare two layers"
 msgstr "比较两个层"
@@ -3279,7 +3370,7 @@ msgid "Configure"
 msgstr "配置"
 
 msgid "Conflict Hint Color"
-msgstr "冲突消隐颜色"
+msgstr "冲突渲调提示颜色"
 
 msgid "Connectors"
 msgstr "连接"
@@ -3297,7 +3388,7 @@ msgid "Contextual Chaining Positioning"
 msgstr "关联链定位"
 
 msgid "Contextual Chaining Substitution"
-msgstr "关联链替换"
+msgstr "上下文链式替换"
 
 msgid "Contextual Ligatures"
 msgstr "上下文连字"
@@ -3312,7 +3403,7 @@ msgid "Contextual State Machine"
 msgstr "上下文状态机"
 
 msgid "Contextual Substitution"
-msgstr "关联替代"
+msgstr "上下文替换"
 
 msgid "Contextual Swash"
 msgstr "上下文泼溅"
@@ -3575,28 +3666,28 @@ msgid "Couldn't open font"
 msgstr "未能打开字体"
 
 msgid "Counter Addition"
-msgstr "计数增加"
+msgstr "字腔增加"
 
 msgid "Counter Compression Percent"
-msgstr "计数压缩率"
+msgstr "字腔压缩率"
 
 msgid "Counter Expansion Factor"
-msgstr "计数扩展因子"
+msgstr "字腔扩展因子"
 
 msgid "Counter Size:"
-msgstr "计数:"
+msgstr "字腔大小："
 
 msgid "CounterControl"
-msgstr "计数控制"
+msgstr "字腔控制"
 
 msgid "CounterHint|_New..."
 msgstr "新建(_N)…"
 
 msgid "Counters"
-msgstr "计数"
+msgstr "字腔"
 
 msgid "Counters:"
-msgstr "计数:"
+msgstr "字腔："
 
 msgid "Counting Rod Numerals"
 msgstr "算筹数码"
@@ -3609,22 +3700,22 @@ msgid "Coverage %d: "
 msgstr "范围 %d: "
 
 msgid "Cr_eate"
-msgstr "产生"
+msgstr "新建(_E)"
 
 msgid "Cr_eate VHint..."
-msgstr "创建垂直消隐(_T)…"
+msgstr "创建垂直渲调提示(_T)…"
 
 msgid "Cre_ate Named Glyphs..."
 msgstr "创建命名字形(_A)…"
 
 msgid "Crea_te HHint..."
-msgstr "创建水平消隐(_T)…"
+msgstr "创建水平渲调提示(_T)…"
 
 msgid "Create Hint"
-msgstr "创建消隐"
+msgstr "创建渲染调整"
 
 msgid "Create Horizontal Stem Hint"
-msgstr "创建水平消隐"
+msgstr "创建水平字干渲调"
 
 msgid "Create MM"
 msgstr "创建字体集"
@@ -3636,7 +3727,7 @@ msgid "Create Subscript/Superscript"
 msgstr "创建上下标"
 
 msgid "Create Vertical Stem Hint"
-msgstr "创建垂直消隐"
+msgstr "创建垂直字干渲调"
 
 msgid "Create a new lookup"
 msgstr "新查找"
@@ -3762,6 +3853,9 @@ msgstr "塞浦路斯文字音表"
 
 msgid "Cypriot syllabary"
 msgstr "塞浦路斯音节"
+
+msgid "Cypro-Minoan"
+msgstr "Cypro-Minoan"
 
 msgid "Cyrillic"
 msgstr "西里尔文"
@@ -3963,10 +4057,10 @@ msgid "Design Settings:"
 msgstr "设计设定："
 
 msgid "Designer"
-msgstr "设计者"
+msgstr "设计师"
 
 msgid "Designer URL"
-msgstr "设计者网址"
+msgstr "设计师网址"
 
 msgid "Design|_New..."
 msgstr "新建(_N)…"
@@ -3990,7 +4084,7 @@ msgid "Detaching Anchor Point"
 msgstr "分离锚点"
 
 msgid "DetectDiagonalStems"
-msgstr "侦测对角项"
+msgstr "侦测对角字干"
 
 msgid "Devanagari"
 msgstr "天城文(梵文)"
@@ -4015,7 +4109,7 @@ msgid "Diagonal Fractions"
 msgstr "对角比例"
 
 msgid "Diagonal Hint Color"
-msgstr "对角消隐颜色"
+msgstr "对角渲调提示颜色"
 
 msgid "Dialog Type:"
 msgstr "对话框类型:"
@@ -4074,6 +4168,9 @@ msgstr "禁用的图像"
 
 msgid "Disabled Text Color:"
 msgstr "失效文本颜色："
+
+msgid "Discarding a duplicate kerning pair."
+msgstr "丢弃重复的字偶距对。"
 
 msgid "Discretionary Ligatures"
 msgstr "任意连字"
@@ -4139,13 +4236,13 @@ msgid "Do it"
 msgstr "执行"
 
 msgid "Do you want the font file to contain PostScript flex hints?"
-msgstr "是否包含PostScript Flex信息在字体文件中?"
+msgstr "是否在字体文件中包含 PostScript Flex 渲调提示信息?"
 
 msgid "Do you want the font file to contain PostScript hints?"
-msgstr "是否包含PostScript信息在字体文件中?"
+msgstr "是否在字体文件中包含 PostScript 渲调提示信息?"
 
 msgid "Do you want the font file to do hint substitution?"
-msgstr "是否包含消隐替换信息在字体文件中?"
+msgstr "是否在字体文件中包含替换渲调提示信息?"
 
 msgid "Do you want to round coordinates to integers (this saves space)?"
 msgstr "是否圆整坐标值以节省空间？"
@@ -4163,7 +4260,7 @@ msgid "Domino Tiles"
 msgstr "骨牌牌面"
 
 msgid "Don't Compare HintMasks"
-msgstr "不要比较消隐蒙板"
+msgstr "不要比较渲调提示蒙板"
 
 msgid "Don't Warn Again"
 msgstr "不再警告"
@@ -4296,7 +4393,7 @@ msgid "Edit Contextual Substitution"
 msgstr "编辑上下文替换"
 
 msgid "Edit Counter Mask"
-msgstr "编辑计数蒙版"
+msgstr "编辑字腔蒙版"
 
 msgid "Edit Filter List"
 msgstr "编辑过滤列表"
@@ -4610,12 +4707,52 @@ msgid "Expected '>' in caret on line %d of %s"
 msgstr "期望有'>'  于行%d (%s)"
 
 #, c-format
+msgid "Expected '>' in value record on line %d of %s"
+msgstr "%2$s 的第 %1$d 行的值记录中应为“>”"
+
+#, c-format
 msgid "Expected '[' in glyph class definition on line %d of %s"
 msgstr "在第 %d 行（ %s ）的字图类定义需要有'['"
 
 #, c-format
+msgid "Expected 'anchor' keyword in anchor on line %d of %s"
+msgstr "%2$s 的第 %1$d 行锚点中的预期“锚点”关键字"
+
+#, c-format
+msgid "Expected 'by' keyword in substitution on line %d of %s"
+msgstr "在 %2$s 的第 %1$d 行替换预期的 'by' 关键字"
+
+#, c-format
+msgid "Expected 'by' or 'from' keywords in substitution on line %d of %s"
+msgstr "在 %2$s 的第 %1$d 行替换预期的 'by' 或 'from' 关键字"
+
+#, c-format
+msgid "Expected '{' in feature definition on line %d of %s"
+msgstr "%2$s 的第 %1$d 行的特征定义中应为“{”"
+
+#, c-format
 msgid "Expected '}' on line %d of %s"
 msgstr "期望'}'于行%d (%s)"
+
+#, c-format
+msgid "Expected a single glyph name in reverse substitution on line %d of %s"
+msgstr "在 %2$s 的第 %1$d 行进行反向替换时需要单个字形名称"
+
+#, c-format
+msgid "Expected a valid glyph/CID name on line %d of %s"
+msgstr "在 %2$s 的第 %1$d 行上需要一个有效的字形/CID 名称"
+
+#, c-format
+msgid "Expected an anchor (after base/mark) on line %d of %s"
+msgstr "预期在 %2$s 的第 %1$d 行有一个锚点（在基础/标记之后）"
+
+#, c-format
+msgid "Expected an anchor (after ligature) on line %d of %s"
+msgstr "预期在 %2$s 的第 %1$d 行有一个锚点（连字后）"
+
+#, c-format
+msgid "Expected anchor in mark class definition on line %d of %s"
+msgstr "%2$s 的第 %1$d 行上的标记类定义中的预期锚点"
 
 msgid ""
 "Expected boolean value.\n"
@@ -4640,6 +4777,14 @@ msgstr "期望有设备表中有逗号， 于行%d (%s)"
 msgid ""
 "Expected glyph name, cid, or class in glyph class definition on line %d of %s"
 msgstr "在第%d行(%s) 上的字形类定义中应有字形名称，cid，或类"
+
+#, c-format
+msgid "Expected glyph or glyphclass (after cursive) on line %d of %s"
+msgstr "%2$s 的第 %1$d 行预期的字形或字形类（草书后）"
+
+#, c-format
+msgid "Expected glyph or glyphclass (after ligature) on line %d of %s"
+msgstr "%2$s 的第 %1$d 行预期的字形或字形类（连字后）"
 
 #, c-format
 msgid "Expected integer in anchor on line %d of %s"
@@ -4694,6 +4839,10 @@ msgstr "在第%d行（%s) 的语言系统应有标签"
 #, c-format
 msgid "Expected tag on line %d of %s"
 msgstr "期望标签于行%d (%s)"
+
+#, c-format
+msgid "Expected two anchors (after cursive) on line %d of %s"
+msgstr "预期在 %2$s 的第 %1$d 行有两个锚点（草书后）"
 
 #, c-format
 msgid "Expected unknown token (internal error) on line %d of %s"
@@ -4845,19 +4994,19 @@ msgid "Faroese (Icelandic)"
 msgstr "Faroese(冰岛语)"
 
 msgid "Feature"
-msgstr "特征"
+msgstr "特性"
 
 msgid "Feature Tag:"
 msgstr "特征标签："
 
 msgid "Feature Tags"
-msgstr "功能标签"
+msgstr "特性标签"
 
 msgid "Feature _Id:"
 msgstr "特征标识(_I):"
 
 msgid "Feature file?"
-msgstr "特征文件?"
+msgstr "特性文件？"
 
 msgid "Feature out of bounds in script table.\n"
 msgstr "文字表中特征超出范围.\n"
@@ -4869,7 +5018,7 @@ msgid "Feature tags must be exactly 4 ASCII characters"
 msgstr "特征标签应为4个ASCII字符"
 
 msgid "Feature tags will be removed"
-msgstr "特征标签将被删除"
+msgstr "特性标签将被删除"
 
 msgid "Features"
 msgstr "特征"
@@ -4878,7 +5027,7 @@ msgid "Fi_ll"
 msgstr "填充(_L)"
 
 msgid "Figure out flex hints after every change"
-msgstr "每次修改后指出flex消隐"
+msgstr "每次修改后计算flex渲调提示"
 
 msgid "File Exists"
 msgstr "文件存在"
@@ -4952,7 +5101,7 @@ msgid "Find in %.100s"
 msgstr "在 %.100s 中查找"
 
 msgid "Finding Counter Masks..."
-msgstr "寻找计数标记…"
+msgstr "寻找字腔蒙版…"
 
 msgid "Finding Substitution Points..."
 msgstr "寻找替换点…"
@@ -5007,7 +5156,7 @@ msgid "Flemish (Belgian Dutch)"
 msgstr "弗拉芒语（比利时荷兰）"
 
 msgid "Flex Hints"
-msgstr "Flex信息"
+msgstr "Flex 渲调提示信息"
 
 msgid "Flip"
 msgstr "翻转"
@@ -5126,6 +5275,21 @@ msgstr "FontForge最多支持 %d 层"
 
 msgid "FontForge time stamp table"
 msgstr "FontForge 时间戳表"
+
+#, c-format
+msgid ""
+"FontForge was unable to find a cidmap file for this font. The following path "
+"was searched:\n"
+"   %.80s\n"
+"\n"
+"It is not essential to have one, but some things will work better if you do. "
+"Would you like to search your local disk for an appropriate file?"
+msgstr ""
+"FontForge 无法找到该字体的 cidmap 文件。 搜索了以下路径：\n"
+"   %.80s\n"
+"\n"
+"拥有一个不是必须的，但如果你这样做，有些事情会更好。 您想在本地磁盘中搜索合适"
+"的文件吗？"
 
 msgid ""
 "FontForge was unable to load libspiro, spiros are not available for use."
@@ -5348,7 +5512,7 @@ msgid "Gaudeamus Ligature!"
 msgstr "Gaudeamus 连写!"
 
 msgid "General"
-msgstr "一般"
+msgstr "通用"
 
 msgid "General Punctuation"
 msgstr "常用标点符号"
@@ -5381,7 +5545,7 @@ msgid "Generating bitmap font"
 msgstr "生成位图字体"
 
 msgid "Generic"
-msgstr "一般"
+msgstr "常规"
 
 msgid "Generic change"
 msgstr "一般更改"
@@ -5526,7 +5690,7 @@ msgid "Glyph Set by Selection"
 msgstr "从选中设置字形"
 
 msgid "Glyph Substitution\n"
-msgstr "字形替代\n"
+msgstr "字形替换\n"
 
 msgid "Glyph Valid"
 msgstr "字形有效"
@@ -5599,7 +5763,7 @@ msgstr "字形“%s” 不在 %s 中\n"
 
 #, c-format
 msgid "Glyph, %s, has no hints. FontForge will not produce many instructions."
-msgstr "字形 %s 没有消隐信息. FontForge将不生成更多指令."
+msgstr "字形 %s 没有渲调提示信息。FontForge 将不生成更多指令。"
 
 msgid "Glyph, Point, Size"
 msgstr "字形, 点数, 尺寸"
@@ -5776,7 +5940,7 @@ msgid "Gurmukhi"
 msgstr "古尔木其文"
 
 msgid "HFlex Hint Color"
-msgstr "HFlex消隐颜色"
+msgstr "水平Flex渲调提示颜色"
 
 msgid "HHead Ascent Offset:"
 msgstr "HHead 上高偏移量:"
@@ -5794,19 +5958,19 @@ msgid "HHead Descent:"
 msgstr "HHead 下深:"
 
 msgid "HHead _Line Gap:"
-msgstr "HHead 线距(_L):"
+msgstr "HHead 行距(_L):"
 
 msgid "HHint Active Color"
-msgstr "水平消隐激活时的颜色"
+msgstr "水平渲调提示激活时颜色"
 
 msgid "HStem"
-msgstr "水平项"
+msgstr "水平字干"
 
 msgid "HV Group Box"
 msgstr "HV分组框"
 
 msgid "H_ints"
-msgstr "消隐(_I)"
+msgstr "渲染调整(_I)"
 
 msgid "Half Forms"
 msgstr "半形"
@@ -5869,7 +6033,7 @@ msgid "Hawaiian"
 msgstr "夏威夷语"
 
 msgid "Heavy"
-msgstr "粗"
+msgstr "特粗"
 
 msgid "Hebrew"
 msgstr "希伯来文"
@@ -5881,7 +6045,7 @@ msgid "Height Adjusts"
 msgstr "高度调整"
 
 msgid "Height of Horizontal Stems:"
-msgstr "水平项高度:"
+msgstr "水平字干高度："
 
 msgid "Height of fraction bar above base line"
 msgstr "基线上分数线高度"
@@ -5917,42 +6081,42 @@ msgid "Hindi"
 msgstr "印地语"
 
 msgid "Hint Label Color"
-msgstr "消隐标签的颜色"
+msgstr "渲调提示标签颜色"
 
 msgid "Hint Mask"
-msgstr "消隐蒙版"
+msgstr "渲调蒙版"
 
 msgid "Hint Substitution"
-msgstr "消隐替换"
+msgstr "渲调提示替换"
 
 msgid "Hint _Substitution Pts"
-msgstr "消隐替换点(_S)"
+msgstr "渲调提示替换点(_S)"
 
 msgid "Hint _Width Near¹"
-msgstr "消隐宽度临近¹(_W)"
+msgstr "渲调提示宽度靠近¹(_W)"
 
 #, c-format
 msgid "Hint masks differ in glyph “%s” at (%g,%g)\n"
-msgstr "消隐蒙板不同于字形 “%s” 中的 (%g,%g)\n"
+msgstr "渲调蒙板与字形 “%s” 中的 (%g,%g) 不同\n"
 
 msgid "HintBoundingBoxes"
-msgstr "消隐外框"
+msgstr "渲调边界框"
 
 msgid "HintDiagonalEnds"
-msgstr "消隐对角端部"
+msgstr "渲调对角端"
 
 msgid "HintDiagonalInter"
-msgstr "消隐对角内部"
+msgstr "渲调对角内部"
 
 msgid "HintMasks only if conflicts"
-msgstr "消隐蒙板(仅冲突时)"
+msgstr "仅冲突时使用渲调提示蒙板"
 
 msgid "Hints"
-msgstr "消隐"
+msgstr "渲染调整提示"
 
 #, c-format
 msgid "Hints differ in glyph “%s”\n"
-msgstr "消隐不同于 “%s”\n"
+msgstr "渲调不同于 “%s”\n"
 
 msgid "Hiragana"
 msgstr "日文平假名"
@@ -5994,7 +6158,7 @@ msgid "Hori_zontal Metric Lines"
 msgstr "水平尺寸线(_Z)"
 
 msgid "Horiz. Hint Color"
-msgstr "水平消隐颜色"
+msgstr "水平渲调提示颜色"
 
 #. GT: "Horiz." is an abbreviation for Horizontal
 msgid "Horiz. Variants"
@@ -6007,10 +6171,10 @@ msgid "Horizontal Baselines"
 msgstr "水平基线"
 
 msgid "Horizontal Counter Add"
-msgstr "水平计数增加"
+msgstr "水平字腔增加"
 
 msgid "Horizontal Counter Scale"
-msgstr "水平计数缩放"
+msgstr "水平字腔缩放"
 
 msgid "Horizontal Extension Italic Correction"
 msgstr "水平间距倾斜修正"
@@ -6026,7 +6190,7 @@ msgid "Horizontal Kana Alternatives"
 msgstr "水平假名替代"
 
 msgid "Horizontal Kerning"
-msgstr "水平压缩"
+msgstr "水平字偶距"
 
 msgid "Horizontal Low"
 msgstr "水平方向低"
@@ -6035,10 +6199,10 @@ msgid "Horizontal Medium"
 msgstr "水平方向中"
 
 msgid "Horizontal Stem Height Add"
-msgstr "水平项高度增加"
+msgstr "水平字干高度增加"
 
 msgid "Horizontal Stem Height Scale"
-msgstr "水平项高度比例"
+msgstr "水平字干高度比例"
 
 #, c-format
 msgid "Horizontal: %d baseline"
@@ -6087,10 +6251,10 @@ msgid "ISO (Deprecated)"
 msgstr "ISO (不建议)"
 
 msgid "ISO 10646-1 (Unicode, BMP)"
-msgstr "ISO 10646-1(Unicode，基础平面)"
+msgstr "ISO 10646-1(Unicode，基本平面)"
 
 msgid "ISO 10646-1 (Unicode, Full)"
-msgstr "ISO 10646-1(Unicode, 所有平面)"
+msgstr "ISO 10646-1(Unicode，所有平面)"
 
 msgid "Icelandic"
 msgstr "冰岛语"
@@ -6173,7 +6337,7 @@ msgid "In_line..."
 msgstr "内线(_L)..."
 
 msgid "Inactive Layer Color"
-msgstr "非活动层颜色"
+msgstr "非激活层颜色"
 
 msgid "Include Empty Blocks"
 msgstr "包括空白区"
@@ -6194,13 +6358,13 @@ msgid "Incorrect number of deltas in glyph %d (%s)\n"
 msgstr "不正确的增量于字形 %d (%s)中\n"
 
 msgid "Increment Bearings By:"
-msgstr "边位增幅："
+msgstr "边距增幅："
 
 msgid "Increment LBearing By:"
-msgstr "左边位增幅："
+msgstr "左边距增幅："
 
 msgid "Increment RBearing By:"
-msgstr "右边位增幅："
+msgstr "右边距增幅："
 
 msgid "Increment V. Adv. By:"
 msgstr "垂直前导增幅："
@@ -6330,6 +6494,10 @@ msgstr "创建FNT时发生内部错误。 文件偏移错误\n"
 msgid "Internal error in creating FNT. File offset wrong in bitmap data\n"
 msgstr "创建FNT时发生内部错误。 文件偏移错误于位图数据\n"
 
+#, c-format
+msgid "Internal state messed up on line %d of %s"
+msgstr "%2$s 的第 %1$d 行内部状态混乱"
+
 msgid "Interpo_late Fonts..."
 msgstr "插入字体(_L)…"
 
@@ -6448,7 +6616,7 @@ msgid "Is Offset"
 msgstr "是偏移"
 
 msgid "Is this horizontal or vertical kerning data?"
-msgstr "此为水平抑或垂直压缩信息？"
+msgstr "这是水平还是垂直字偶距信息？"
 
 msgid "Isolated"
 msgstr "分立"
@@ -6606,13 +6774,13 @@ msgid "Kern Offset:"
 msgstr "压缩偏移:"
 
 msgid "Kern Pair Closeup"
-msgstr "压缩对关闭"
+msgstr "字偶距对详细信息"
 
 msgid "Kern Pair Closeup..."
-msgstr "压缩对详览…"
+msgstr "字偶距对详细信息..."
 
 msgid "Kern Pairs"
-msgstr "压缩对"
+msgstr "字偶距对"
 
 msgid "Kern Size"
 msgstr "压缩大小"
@@ -6630,13 +6798,13 @@ msgid "KernClass|_New Lookup..."
 msgstr "新建查找(_N)..."
 
 msgid "Kerning"
-msgstr "压缩"
+msgstr "字偶距"
 
 msgid "Kerning & such"
 msgstr "组合字等"
 
 msgid "Kerning Class"
-msgstr "压缩类属"
+msgstr "字偶距类"
 
 msgid "Kerning State Machine"
 msgstr "压缩状态机"
@@ -6644,10 +6812,10 @@ msgstr "压缩状态机"
 #. GT: The %s is the name of the lookup subtable containing this kerning class
 #, c-format
 msgid "Kerning by Classes: %s"
-msgstr "按类属压缩: %s"
+msgstr "按类调节字偶距: %s"
 
 msgid "Kerning direction"
-msgstr "压缩方向"
+msgstr "字偶距调节方向"
 
 msgid "Kerning format"
 msgstr "压缩格式"
@@ -6695,7 +6863,7 @@ msgid "Kurdish"
 msgstr "库尔德语"
 
 msgid "LBearing:"
-msgstr "左边位："
+msgstr "左边距："
 
 msgid "LSB"
 msgstr "左边位"
@@ -6937,19 +7105,19 @@ msgid "Left Bounds"
 msgstr "左边界"
 
 msgid "Left Side Bearing"
-msgstr "左边位"
+msgstr "左边距"
 
 msgid "Left Side Bearing Add"
-msgstr "左边位增加"
+msgstr "左边距增加"
 
 msgid "Left Side Bearing Scale"
-msgstr "左边位比例"
+msgstr "左边距缩放"
 
 msgid "Left Side Bearing does not change."
-msgstr "左边位不变。"
+msgstr "左边距不变。"
 
 msgid "Left Side Bearing:"
-msgstr "左边位:"
+msgstr "左边距:"
 
 msgid "Lepcha"
 msgstr "雷布查文"
@@ -7019,7 +7187,7 @@ msgid "Ligatures & such"
 msgstr "组合字等"
 
 msgid "Light"
-msgstr "细"
+msgstr "特细"
 
 msgid "Light Angle:"
 msgstr "光线角度："
@@ -7158,7 +7326,7 @@ msgid "Lookahead coverage %d: "
 msgstr "前向范围 %d: "
 
 msgid "Lookup"
-msgstr "查找"
+msgstr "Lookup"
 
 #, c-format
 msgid "Lookup %s is not in %s\n"
@@ -7168,7 +7336,7 @@ msgid "Lookup Differences\n"
 msgstr "查找差异\n"
 
 msgid "Lookup Name:"
-msgstr "查找: "
+msgstr "Lookup 名称： "
 
 msgid "Lookup Names"
 msgstr "查找名称"
@@ -7186,6 +7354,10 @@ msgstr "查找表编辑"
 
 msgid "Lookup Type|Unspecified"
 msgstr "未指定"
+
+#, c-format
+msgid "Lookup information attached to unmarked glyph on line %d of %s"
+msgstr "在 %2$s 的第 %1$d 行附加到未标记字形的查找信息"
 
 msgid "Lookup name already used"
 msgstr "查找已使用"
@@ -7223,6 +7395,14 @@ msgstr "查找限定线"
 #, c-format
 msgid "Lookups in %s but not in %s\n"
 msgstr "查找于 %s 而非 %s\n"
+
+#, c-format
+msgid "Lookups may only be specified after marked glyphs on line %d of %s"
+msgstr "只能在 %2$s 的第 %1$d 行标记字形之后指定查找"
+
+#, c-format
+msgid "Lookups must be defined before being used on line %d of %s"
+msgstr "必须在用于 %2$s 的第 %1$d 行之前定义查找"
 
 #, c-format
 msgid "Lookups subtables in %s but not in %s\n"
@@ -7671,7 +7851,7 @@ msgid "Medial Forms 2"
 msgstr "中等形 2"
 
 msgid "Medium"
-msgstr "一般"
+msgstr "中等"
 
 msgid "Medium (100%)"
 msgstr "正常(100%)"
@@ -7750,7 +7930,7 @@ msgstr "尺寸"
 
 #, c-format
 msgid "Metrics For %.50s"
-msgstr "%.50s 的尺寸"
+msgstr "%.50s 的度量"
 
 msgid "Metrics Label Color"
 msgstr "尺寸标签的颜色"
@@ -8017,7 +8197,7 @@ msgid "Multiple Segment"
 msgstr "多段"
 
 msgid "Multiple Substitution"
-msgstr "多重替代"
+msgstr "多重替换"
 
 #, c-format
 msgid ""
@@ -8086,7 +8266,7 @@ msgid "Name"
 msgstr "名称"
 
 msgid "Name For Human_s:"
-msgstr "人读名称(_S)："
+msgstr "人类可读名称(_S)："
 
 msgid "Name List:"
 msgstr "名称列表:"
@@ -8220,7 +8400,7 @@ msgid "New Contextual Substitution"
 msgstr "新建上下文替换"
 
 msgid "New Counter Mask"
-msgstr "新计数蒙版"
+msgstr "新建字腔蒙版"
 
 msgid "New Font"
 msgstr "新字体"
@@ -8268,7 +8448,7 @@ msgid "New _Bitmap Window"
 msgstr "新位图窗口(_B)"
 
 msgid "New _Metrics Window"
-msgstr "新尺寸窗口(_M)"
+msgstr "打开度量窗口(_M)"
 
 msgid "NewCharset"
 msgstr "新建字体字符集"
@@ -8308,7 +8488,7 @@ msgid "Next CP: (%f,%f)"
 msgstr "下一控制点: (%f,%f)"
 
 msgid "Next Hint."
-msgstr "下一消隐。"
+msgstr "下一个渲染调整。"
 
 msgid "Next On Contour"
 msgstr "轮廓上下一个"
@@ -8393,7 +8573,7 @@ msgid "No Intersections"
 msgstr "无相交路径交点"
 
 msgid "No Kern Pairs"
-msgstr "无压缩对"
+msgstr "无字偶距对"
 
 msgid "No Lookup Type Selected"
 msgstr "未选中查找类型"
@@ -8497,6 +8677,10 @@ msgid "No flags specified in lookupflags on line %d of %s"
 msgstr "第 %d 行（ %s） 的查找标志中没有指定标记"
 
 #, c-format
+msgid "No glyph named %s, used as a pattern in %s\n"
+msgstr "没有名为 %s 的字形，用作 %s 中的模式\n"
+
+#, c-format
 msgid "No glyph named %s."
 msgstr "没有字图名称%s"
 
@@ -8509,11 +8693,11 @@ msgstr "无匹配字形"
 
 #, c-format
 msgid "No kerning pairs found in %.200s"
-msgstr "%.200s中未发现压缩对"
+msgstr "%.200s中未发现字偶距对"
 
 #, c-format
 msgid "No kerning table for %s\n"
-msgstr "无对应 %s的缩合表\n"
+msgstr "无对应 %s的字偶距表\n"
 
 msgid "No languages"
 msgstr "无语言"
@@ -8533,6 +8717,10 @@ msgstr "没有要复制的查找"
 
 msgid "No mark in counttomark\n"
 msgstr "无标记于 counttomark\n"
+
+#, c-format
+msgid "No marked glyphs allowed in replacement on line %d of %s"
+msgstr "%2$s 的第 %1$d 行不允许替换标记的字形"
 
 #, c-format
 msgid "No name for CharStrings dictionary \"%s"
@@ -8997,6 +9185,9 @@ msgstr "旧体衬线(OSS)"
 msgid "Old Turkic"
 msgstr "突厥文"
 
+msgid "Old Uyghur"
+msgstr "回鹘语"
+
 msgid "Old sfd file"
 msgstr "旧SFD文件"
 
@@ -9218,7 +9409,7 @@ msgid "Over/Underbars"
 msgstr "上/下线条"
 
 msgid "Overlapped Hints"
-msgstr "重叠消隐"
+msgstr "重叠渲调提示"
 
 msgid "PCL 5 data table"
 msgstr "PCL 5 数据表"
@@ -9230,7 +9421,7 @@ msgid "PS Glyph Names"
 msgstr "PS字形名称"
 
 msgid "PS Hints"
-msgstr "PS消隐"
+msgstr "PS渲调提示"
 
 msgid "PS Multiple Master(A)"
 msgstr "PS 多母版(A)"
@@ -9239,7 +9430,7 @@ msgid "PS Multiple Master(B)"
 msgstr "PS 多母版(B)"
 
 msgid "PS Names"
-msgstr "PS字形名称"
+msgstr "PS字体名称"
 
 msgid "PS Private"
 msgstr "PS专属"
@@ -9278,13 +9469,13 @@ msgid "Pahawh Hmong"
 msgstr "苗文（帕皓）"
 
 msgid "Pair Position (kerning)"
-msgstr "压缩对位置"
+msgstr "成对位置调整（字偶距）"
 
 msgid "Pairwise Pos"
 msgstr "配对位置"
 
 msgid "Pairwise Positioning (kerning)"
-msgstr "配对定位(压缩)"
+msgstr "成对位置调整（字偶距）"
 
 msgid "Pale_ttes"
 msgstr "工具栏(_T)"
@@ -9580,6 +9771,12 @@ msgstr "上层目录"
 msgid "Parse Error"
 msgstr "解析错误"
 
+#, c-format
+msgid ""
+"ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: "
+"%s\n"
+msgstr "解析字形顺序和别名 DB：索引处无效（非制表符分隔条目） %d: %s\n"
+
 msgid "Parts List"
 msgstr "部件列表"
 
@@ -9694,6 +9891,10 @@ msgstr "像素大小"
 
 msgid "Pixel Sizes:"
 msgstr "像素大小："
+
+#, c-format
+msgid "Pixel size too big in device table on line %d of %s"
+msgstr "设备表中 %2$s 的第 %1$d 行的像素尺寸太大"
 
 msgid "Pixel size:"
 msgstr "像素大小："
@@ -9902,7 +10103,7 @@ msgid "PreferSpacingAccents"
 msgstr "重音符间距"
 
 msgid "Preferences"
-msgstr "选项"
+msgstr "偏好设置"
 
 msgid "Preferred Family"
 msgstr "首选家族名"
@@ -9951,7 +10152,7 @@ msgid "Prev On Contour"
 msgstr "轮廓上上一个"
 
 msgid "Previous Hint."
-msgstr "上一消隐。"
+msgstr "上一个渲染调整。"
 
 msgid "Print"
 msgstr "打印"
@@ -9981,7 +10182,7 @@ msgid "Private Use"
 msgstr "私人应用"
 
 msgid "Private Use Area"
-msgstr "私用区"
+msgstr "私人使用区"
 
 #, c-format
 msgid "Problem decompressing '%c%c%c%c' table."
@@ -10088,7 +10289,7 @@ msgid "Quechua"
 msgstr "盖丘亚语"
 
 msgid "RBearing:"
-msgstr "右边位："
+msgstr "右边距："
 
 msgid "RSB"
 msgstr "右边位"
@@ -10172,7 +10373,7 @@ msgid "Raw"
 msgstr "原始"
 
 msgid "Re_move"
-msgstr "移除"
+msgstr "移除(_M)"
 
 msgid "Read of Uninitialized Store"
 msgstr "读未初始化的堆"
@@ -10241,6 +10442,12 @@ msgid "Reference to a glyph name in a CID-keyed font on line %d of %s"
 msgstr "参照到一个 第 %d 行（ %s）的CID-keyed 字体的字图名称"
 
 #, c-format
+msgid ""
+"Reference to a lookup which is not in the feature file but which is in the "
+"font, %.50s"
+msgstr "对不在功能文件中但在字体 %.50s 中的查找的引用"
+
+#, c-format
 msgid "Reference to a non-existent glyph name on line %d of %s: %s"
 msgstr "指向在第 %d 行（%s）上一个不存在的字图名称：%s"
 
@@ -10283,7 +10490,7 @@ msgid "Regenerate Bitmap Glyphs"
 msgstr "再生位图字形"
 
 msgid "Regenerate Hint Substitution Points"
-msgstr "重新生成消隐替换点"
+msgstr "重新生成渲调替换点"
 
 msgid "Regenerate _Bitmap Glyphs..."
 msgstr "再生位图字形(_B)…"
@@ -10295,7 +10502,7 @@ msgid "Registers (TrueType)"
 msgstr "寄存器(TrueType)"
 
 msgid "Regular"
-msgstr "规则"
+msgstr "标准"
 
 msgid "Rejang"
 msgstr "雷姜文"
@@ -10310,10 +10517,10 @@ msgid "Remove All"
 msgstr "全部移除"
 
 msgid "Remove All Kern _Pairs"
-msgstr "移除所有压缩对(_P)"
+msgstr "移除所有字偶距对(_P)"
 
 msgid "Remove All VKern Pairs"
-msgstr "移除所有垂直压缩对"
+msgstr "移除所有垂直字偶距对"
 
 msgid "Remove Anchor Class?"
 msgstr "移除锚点类属？"
@@ -10337,7 +10544,7 @@ msgid "Remove Instr Tables"
 msgstr "移除Instr表"
 
 msgid "Remove Kern _Pairs"
-msgstr "移除压缩对(_P)"
+msgstr "移除字偶距对(_P)"
 
 msgid "Remove Language from Script..."
 msgstr "从文字中移除语言..."
@@ -10355,7 +10562,7 @@ msgid "Remove This Glyph"
 msgstr "移除字形(_Y)"
 
 msgid "Remove VKern Pairs"
-msgstr "移除垂直压缩对"
+msgstr "移除垂直字偶距对"
 
 msgid "Remove _Unused Slots"
 msgstr "移除未用位(_U)"
@@ -10451,13 +10658,13 @@ msgid "Report as Error"
 msgstr "报告错误"
 
 msgid "Required Feature"
-msgstr "需要的特征"
+msgstr "必须的特性"
 
 msgid "Required Ligatures"
 msgstr "必要连字"
 
 msgid "Required feature"
-msgstr "需要特征"
+msgstr "必须的特性"
 
 msgid "Required feature out of bounds in script table.\n"
 msgstr "文字表中指定特征超出范围.\n"
@@ -10574,6 +10781,9 @@ msgstr "结果Y位置"
 msgid "Retain"
 msgstr "保留"
 
+msgid "Retain current advance width, scale side bearings proportionally"
+msgstr "保留当前的步进宽度，按比例缩放侧边距"
+
 msgid "Revalidate"
 msgstr "再确认"
 
@@ -10587,7 +10797,7 @@ msgid "Reverse Chaining Substitution"
 msgstr "逆向链替换"
 
 msgid "Reverse Contextual Chaining Substitution"
-msgstr "逆向关联链替换"
+msgstr "反向上下文链式替换"
 
 msgid "Reverse Direction"
 msgstr "反向"
@@ -10595,17 +10805,23 @@ msgstr "反向"
 msgid "Reverse chaining subs"
 msgstr "反向链式替代"
 
+#, c-format
+msgid ""
+"Reverse substitute must have exactly one marked glyph and no lookups on line "
+"%d of %s"
+msgstr "反向替换必须只有一个标记的字形，并且在 %2$s 的第 %1$d 行没有查找"
+
 msgid "Revert Gl_yph"
 msgstr "恢复字形(_Y)"
 
 msgid "Revert Kerning"
-msgstr "恢复缩合"
+msgstr "恢复字偶距"
 
 msgid "Revert To _Backup"
 msgstr "从备份恢复字形(_B)"
 
 msgid "Review Hints"
-msgstr "查看消隐"
+msgstr "查看渲调"
 
 msgid "Rig_ht"
 msgstr "右(_H)"
@@ -10614,16 +10830,16 @@ msgid "Right Bounds"
 msgstr "右边界"
 
 msgid "Right Side Bearing"
-msgstr "右边位"
+msgstr "右边距"
 
 msgid "Right Side Bearing Add"
-msgstr "右边位增加"
+msgstr "右边距增加"
 
 msgid "Right Side Bearing Scale"
-msgstr "右边位比例"
+msgstr "右边距缩放"
 
 msgid "Right Side Bearing:"
-msgstr "右边位:"
+msgstr "右边距:"
 
 msgid "Right To Left"
 msgstr "自右至左"
@@ -10968,7 +11184,7 @@ msgid "Sca_le"
 msgstr "缩放(_L)"
 
 msgid "Scale Bearings By:"
-msgstr "边位缩放："
+msgstr "边距缩放："
 
 msgid "Scale By"
 msgstr "缩放至"
@@ -10977,22 +11193,25 @@ msgid "Scale Factor"
 msgstr "缩放比例"
 
 msgid "Scale LBearing By:"
-msgstr "左边位缩放："
+msgstr "左边距缩放："
 
 msgid "Scale RBearing By:"
-msgstr "右边位缩放："
+msgstr "右边距缩放："
 
 msgid "Scale Uniformly..."
 msgstr "等比缩放..."
 
 msgid "Scale VAdvance By:"
-msgstr "垂直前导缩放："
+msgstr "垂直步进缩放："
 
 msgid "Scale Width By:"
 msgstr "宽度缩放："
 
 msgid "Scale X/Y the same"
 msgstr "XY相同比例缩放"
+
+msgid "Scale factors must be between 3 and 1000 percent"
+msgstr "缩放比例必须介于 3% 和 1000% 之间"
 
 msgid "Scale the selection"
 msgstr "缩放选中"
@@ -11406,7 +11625,7 @@ msgid "Select by _Wildcard..."
 msgstr "按通配符选择(_W)…"
 
 msgid "Select hints between which counters are formed"
-msgstr "选择消隐"
+msgstr "选择生成字腔的渲调提示"
 
 msgid "Select lookups from other fonts"
 msgstr "从其他字体选择查找"
@@ -11487,13 +11706,13 @@ msgid "Set All"
 msgstr "设置全部"
 
 msgid "Set Bearings To:"
-msgstr "设置边位为："
+msgstr "设置边距为："
 
 msgid "Set Both Bearings..."
-msgstr "设置两侧边位..."
+msgstr "设置两侧边距..."
 
 msgid "Set Both Side Bearings..."
-msgstr "设置两侧边位..."
+msgstr "设置两侧边距..."
 
 msgid "Set E_xtremum Bound..."
 msgstr "设置极点边界(_X)..."
@@ -11517,10 +11736,10 @@ msgid "Set From Val_ue"
 msgstr "按值(_U)"
 
 msgid "Set LBearing To:"
-msgstr "设置左边位为："
+msgstr "设置左边距为："
 
 msgid "Set LBearing..."
-msgstr "设置左边位..."
+msgstr "设置左边距..."
 
 msgid "Set Name"
 msgstr "集合名称"
@@ -11532,10 +11751,10 @@ msgid "Set Point _Size"
 msgstr "设置点的大小(_S)"
 
 msgid "Set RBearing To:"
-msgstr "设置右边位为："
+msgstr "设置右边距为："
 
 msgid "Set RBearing..."
-msgstr "设置右边位..."
+msgstr "设置右边距..."
 
 msgid "Set Vert. Advance To:"
 msgstr "设置垂直前导为："
@@ -11556,10 +11775,10 @@ msgid "Set _Color"
 msgstr "设置颜色(_C)"
 
 msgid "Set _LBearing..."
-msgstr "设置左边位(_L)…"
+msgstr "设置左边距(_L)…"
 
 msgid "Set _RBearing..."
-msgstr "设置右边位(_R)…"
+msgstr "设置右边距(_R)…"
 
 msgid "Set _Vertical Advance..."
 msgstr "设置垂直间距(_V)…"
@@ -11658,7 +11877,7 @@ msgid "Show ATT"
 msgstr "显示ATT"
 
 msgid "Show Active Border"
-msgstr "显示活动边界"
+msgstr "显示现用边界"
 
 msgid "Show H. Metrics"
 msgstr "显示水平尺寸"
@@ -11667,7 +11886,7 @@ msgid "Show Hidden Files"
 msgstr "显示隐藏文件"
 
 msgid "Show Kerning"
-msgstr "显示压缩"
+msgstr "显示字偶距"
 
 msgid "Show V. Metrics"
 msgstr "显示垂直尺寸"
@@ -11706,16 +11925,16 @@ msgid "Siddham"
 msgstr "悉昙文"
 
 msgid "Side Bearing Addition"
-msgstr "侧边位增加"
+msgstr "侧边距增加"
 
 msgid "Side Bearing Color"
-msgstr "侧边位颜色"
+msgstr "侧边距颜色"
 
 msgid "Side Bearing Expansion Factor"
-msgstr "边位缩放系数"
+msgstr "边距缩放系数"
 
 msgid "Side Bearings:"
-msgstr "侧边位:"
+msgstr "侧边距:"
 
 msgid "Signature Mark"
 msgstr "签名标记"
@@ -11751,7 +11970,7 @@ msgid "Single Positioning"
 msgstr "简单定位"
 
 msgid "Single Substitution"
-msgstr "单一替代"
+msgstr "单一替换"
 
 msgid "Sinhala"
 msgstr "僧伽罗文"
@@ -11772,7 +11991,7 @@ msgid "Size, Glyph, Point"
 msgstr "尺寸, 字形, 点数"
 
 msgid "Size:"
-msgstr "大小:"
+msgstr "大小："
 
 #, c-format
 msgid "Size: %d (%d)"
@@ -11874,6 +12093,13 @@ msgstr "粟特文"
 msgid "Somali"
 msgstr "索马里语"
 
+msgid ""
+"Some versions of Windows will refuse to install postscript fonts if the "
+"fontname is longer than 31 characters. Do you want to continue anyway?"
+msgstr ""
+"某些版本的 Windows 会拒绝安装字体名称超过 31 个字符的 postscript 字体。您仍然"
+"想要继续吗？"
+
 msgid "Something went wrong"
 msgstr "出错了"
 
@@ -11893,7 +12119,7 @@ msgid "Sort this display based on the alphabetic name of the glyph"
 msgstr "字形按名称的字母顺序排列"
 
 msgid "Sort this display based on the unicode code of the glyph"
-msgstr "字形按统一码排序"
+msgstr "字形按 Unicode 排序"
 
 msgid "Sort:"
 msgstr "排序："
@@ -12094,7 +12320,7 @@ msgid "State Machine"
 msgstr "状态机"
 
 msgid "Stems"
-msgstr "水平项"
+msgstr "字干"
 
 msgid "Step into"
 msgstr "进入"
@@ -12382,19 +12608,19 @@ msgid "Supplemental Symbols and Pictographs"
 msgstr "补充符号及象形"
 
 msgid "Supplementary Ideographic Plane"
-msgstr "补充表意字符面"
+msgstr "表意文字补充平面"
 
 msgid "Supplementary Multilingual Plane"
-msgstr "补充多语言字符面"
+msgstr "多文种补充平面"
 
 msgid "Supplementary Private Use Area A/B"
-msgstr "补充私用区 A/B"
+msgstr "补充私人使用区 A/B"
 
 msgid "Supplementary Private Use Area-A"
-msgstr "补充私用区 A"
+msgstr "补充私人使用区 A"
 
 msgid "Supplementary Private Use Area-B"
-msgstr "补充私用区 B"
+msgstr "补充私人使用区 B"
 
 msgid "Supplementary Special-purpose Plane"
 msgstr "特别用途补充平面"
@@ -12488,7 +12714,7 @@ msgstr "叙利亚文补充"
 
 #. GT: Top/Left (side) bearing
 msgid "TBearing:"
-msgstr "上边位:"
+msgstr "顶边距:"
 
 msgid "TS Direct Line"
 msgstr "TS直线体"
@@ -12592,6 +12818,9 @@ msgstr "泰米尔文"
 msgid "Tamil Supplement"
 msgstr "泰米尔文补充"
 
+msgid "Tangsa"
+msgstr "Tangsa"
+
 msgid "Tangut"
 msgstr "西夏文"
 
@@ -12629,7 +12858,7 @@ msgid "Terminal Forms #3"
 msgstr "终端形 #3"
 
 msgid "Tertiary Ideographic Plane"
-msgstr "表意文字第三平面"
+msgstr "第三表意文字补充平面"
 
 msgid "Text Field"
 msgstr "文本框"
@@ -12706,7 +12935,8 @@ msgstr ""
 msgid ""
 "The OpenType Style Set features ('ss01'-'ss20') may\n"
 "be assigned human readable names here."
-msgstr "OpenType Stylistic Set 功能（'ss01'-'ss20'）可以在这里设置人读名称。"
+msgstr ""
+"在此处为 OpenType Stylistic Set 特性（'ss01'-'ss20'）设置人类可读名称。"
 
 #, c-format
 msgid ""
@@ -12733,10 +12963,10 @@ msgid "The color of grid-fit outlines"
 msgstr "网格填充轮廓线的颜色"
 
 msgid "The color of outlines in inactive layers"
-msgstr "非活动层的轮廓线颜色"
+msgstr "非激活层的轮廓线颜色"
 
 msgid "The color of outlines in the active layer"
-msgstr "活动层的轮廓线颜色"
+msgstr "激活层的轮廓线颜色"
 
 msgid "The color of the clip path"
 msgstr "剪切路径的颜色"
@@ -12745,16 +12975,16 @@ msgid "The color of the point which is the start of a contour"
 msgstr "曲线起点的颜色"
 
 msgid "The color used to draw a hint which conflicts with another"
-msgstr "此颜色用于绘制与其他消隐相冲突的消隐"
+msgstr "此颜色用于绘制与其他渲调提示冲突的渲调提示"
 
 msgid "The color used to draw a selected control point of an on-curve point"
 msgstr "此颜色用于绘制曲线上的点的选中控制点"
 
 msgid "The color used to draw diagonal hints"
-msgstr "此颜色用于绘制对角消隐"
+msgstr "此颜色用于绘制对角渲调提示"
 
 msgid "The color used to draw horizontal hints"
-msgstr "此颜色用于绘制水平消隐"
+msgstr "此颜色用于绘制水平渲调提示"
 
 msgid ""
 "The color used to draw markers for splines which are almost, but not quite "
@@ -12762,7 +12992,7 @@ msgid ""
 msgstr "当样条线的端点几乎但又不完全水平或垂直时，用此颜色绘制其标记"
 
 msgid "The color used to draw points of inflection (if that mode is active)"
-msgstr "用于绘制映像点的颜色 (若模式激活时)"
+msgstr "绘制映像点的颜色（若激活模式时）"
 
 msgid "The color used to draw the \"next\" control point of an on-curve point"
 msgstr "此颜色用于绘制曲线上的点的下一个控制点"
@@ -12771,14 +13001,24 @@ msgid ""
 "The color used to draw the \"previous\" control point of an on-curve point"
 msgstr "此颜色用于绘制曲线上的点的上一个控制点"
 
+msgid ""
+"The color used to draw the active horizontal hint which the Review Hints "
+"dialog is examining"
+msgstr "用来绘制在“查看渲调”对话框中的现用水平渲调的颜色"
+
+msgid ""
+"The color used to draw the active vertical hint which the Review Hints "
+"dialog is examining"
+msgstr "用来绘制在“查看渲调”对话框中的现用垂直渲调的颜色"
+
 msgid "The color used to draw the large tick marks in rulers."
 msgstr "此颜色用于绘制标上大格标记线。"
 
 msgid "The color used to draw vertical hints"
-msgstr "此颜色用于绘制垂直消隐"
+msgstr "此颜色用于绘制垂直渲调提示"
 
 msgid "The color used to fill the outline if that mode is active"
-msgstr "此颜色用于填充轮廓"
+msgstr "此颜色用于填充轮廓（若激活模式时）"
 
 msgid ""
 "The current encoding contains glyphs which I cannot map to CIDs.\n"
@@ -12809,6 +13049,12 @@ msgstr ""
 
 #, c-format
 msgid ""
+"The glyph at CID %d is mapped to more than %d encodings. Only the first %d "
+"are handled."
+msgstr "CID %d 处的字形映射到超过 %d 个编码。 仅处理前 %d 个。"
+
+#, c-format
+msgid ""
 "The glyph named %.30s is mapped to U+%04X.\n"
 "But its name indicates it should be mapped to U+%04X.\n"
 msgstr ""
@@ -12825,7 +13071,13 @@ msgstr "字形%.80s未能在此字体文件中找到"
 
 msgid ""
 "The human-readable fontname text (in the Names pane) must be entirely ASCII."
-msgstr "人读字型名称（在名称窗口中）必须完全使用 ASCII 字符。"
+msgstr "人类可读名称（在名称面板中）必须完全使用 ASCII 字符。"
+
+#, c-format
+msgid ""
+"The ignore keyword must be followed by either position or substitute on line "
+"%d of %s"
+msgstr "在 %2$s 的第 %1$d 行，ignore 关键字必须后跟位置或替换"
 
 msgid "The layers do not match"
 msgstr "层不匹配"
@@ -12854,6 +13106,11 @@ msgstr ""
 #, c-format
 msgid "The requested file, %.100s, does not exist"
 msgstr "查询的文件%.100s不存在"
+
+msgid ""
+"The selected glyphs have no hints. FontForge will not produce many "
+"instructions."
+msgstr "已选字形沒有任何渲调。FontForge 将无法生成许多指令。"
 
 msgid "The selected point does not have integral control points"
 msgstr "选择的点没有整数控制点"
@@ -12885,9 +13142,9 @@ msgid ""
 "(named %1$.40s, at local encoding %2$d).\n"
 "Is that what you want?"
 msgstr ""
-"已有相同统一码字形 %1$.40s，\n"
+"已有相同 Unicode 字形 %1$.40s，\n"
 "此处编码为%2$d 。\n"
-"是否所需？"
+"确认？"
 
 msgid ""
 "There is already a glyph with this encoding,\n"
@@ -13044,7 +13301,7 @@ msgstr ""
 "我要使用这个或者你要搜索吗？"
 
 msgid "This glyph can use a stem3 hint"
-msgstr "此字形可用 stem3 消隐"
+msgstr "此字形可以使用 stem3 渲调提示"
 
 msgid "This glyph extends further below the baseline than desired"
 msgstr "字形伸出底线超过预期"
@@ -13055,7 +13312,7 @@ msgstr "字形左边超出预期"
 msgid ""
 "This glyph is mapped to a unicode code point which is different from its "
 "name."
-msgstr "字形映射到与其名称不符的统一码上。"
+msgstr "字形映射到与其名称不符的 Unicode 码上。"
 
 msgid "This glyph is not defined in any of the CID subfonts"
 msgstr "字形未被定义于任何 CID 替代字体"
@@ -13067,7 +13324,7 @@ msgid "This glyph is wider than desired"
 msgstr "字形比预期的宽"
 
 msgid "This hint does not control any points"
-msgstr "此消隐不控制任何点"
+msgstr "此渲调提示不控制任何描点"
 
 msgid "This index is much larger than the closest neighbor"
 msgstr "此索引相比邻近值过大"
@@ -13250,7 +13507,7 @@ msgid "Too Many Glyphs"
 msgstr "过多字形"
 
 msgid "Too Many Hints"
-msgstr "过多消隐"
+msgstr "过多渲调提示"
 
 msgid "Too Many Kerns"
 msgstr "过多缩合"
@@ -13271,7 +13528,7 @@ msgstr "字符字串字典中有过多项 \"%s"
 
 #, c-format
 msgid "Too many features %d\n"
-msgstr "过多特征 %d\n"
+msgstr "过多特性 %d\n"
 
 msgid "Too many glyphs"
 msgstr "过多字形"
@@ -13312,8 +13569,11 @@ msgstr "上重音符号水平位置"
 msgid "Top Accent Pos:"
 msgstr "上升部位置:"
 
+msgid "Top Bearing does not change."
+msgstr "顶边距不变。"
+
 msgid "Top Hint"
-msgstr "顶部消隐"
+msgstr "顶部渲调提示"
 
 msgid "Top Left"
 msgstr "正上"
@@ -13332,6 +13592,9 @@ msgstr "左上"
 
 msgid "TopRight"
 msgstr "右上"
+
+msgid "Toto"
+msgstr "Toto"
 
 msgid "Trace Color"
 msgstr "跟踪轨迹颜色"
@@ -13421,7 +13684,7 @@ msgid "TrueType (Symbol)"
 msgstr "TrueType (符号)"
 
 msgid "TrueType Hints"
-msgstr "TrueType消隐"
+msgstr "TrueType 渲调提示"
 
 #, c-format
 msgid "TrueType Instructions for %.50s"
@@ -13486,7 +13749,7 @@ msgid "Typo Descent:"
 msgstr "字形下深:"
 
 msgid "Typo Line _Gap:"
-msgstr "Typo 线距(_G):"
+msgstr "Typo 行距(_G):"
 
 msgid "U_nlink Reference"
 msgstr "断开参照(_N)"
@@ -13528,7 +13791,7 @@ msgid "Undefined positioning"
 msgstr "未定义位置"
 
 msgid "Undefined substitution"
-msgstr "未定义替换"
+msgstr "未定义的替换"
 
 msgid "Underline _Position:"
 msgstr "下划线位置(_P)："
@@ -13560,6 +13823,10 @@ msgstr "未料到的密度数值"
 msgid "Unexpected encoding format in cff: %d\n"
 msgstr "未预期的编码格式于cff: %d\n"
 
+#, c-format
+msgid "Unexpected end of file in lookup definition on line %d of %s"
+msgstr "%2$s 的第 %1$d 行的查找定义中的文件意外结束"
+
 msgid "Unexpected error"
 msgstr "意外错误"
 
@@ -13573,6 +13840,14 @@ msgstr "在 第%d行（%s）上的字形类范围内有不该存在的字符"
 #, c-format
 msgid "Unexpected token in lookupflags on line %d of %s"
 msgstr "第%d行(%s) 上的查找标记有未预期的字符"
+
+#, c-format
+msgid "Unexpected token in value record on line %d of %s"
+msgstr "%2$s 的第 %1$d 行的值记录中出现意外标记"
+
+#, c-format
+msgid "Unexpected token, %s, in lookup definition on line %d of %s"
+msgstr "在 %3$s 的第 %2$d 行的查找定义中出现意外标记 %1$s"
 
 #, c-format
 msgid "Unexpected token, %s, on line %d of %s"
@@ -13612,13 +13887,13 @@ msgid "Unicode Basic Multilingual Plane"
 msgstr "统一码基础多语言平面"
 
 msgid "Unicode C_har:"
-msgstr "统一码字符(_C):"
+msgstr "Unicode 字符(_C):"
 
 msgid "Unicode Ranges"
-msgstr "统一码范围"
+msgstr "Unicode 范围"
 
 msgid "Unicode Ranges:"
-msgstr "统一码范围:"
+msgstr "Unicode 范围："
 
 msgid "Unicode Supplementary Ideographic Plane"
 msgstr "统一码补充表意字符"
@@ -13630,17 +13905,17 @@ msgid "Unicode Supplementary Special-purpose Plane"
 msgstr "统一码增补特别用途平面"
 
 msgid "Unicode _Value:"
-msgstr "统一码值(_V)："
+msgstr "Unicode 值(_V)："
 
 msgid "Unicode out of range"
-msgstr "统一码超出范围"
+msgstr "Unicode 超出范围"
 
 #, c-format
 msgid "Unicode value (%x) not in font, ignored"
-msgstr "字体中无统一码值 (%x)，忽略之"
+msgstr "字体中无 Unicode 值 (%x)，已忽略"
 
 msgid "Unicode value not in font"
-msgstr "字体中无统一码值"
+msgstr "字体中无 Unicode 值"
 
 msgid "UnicodeGlyphNames"
 msgstr "Unicode 字形名称"
@@ -13720,7 +13995,7 @@ msgid "Unlikely length for table, so I'm ignoring it. %u\n"
 msgstr "不像表的长度,拟忽略之. %u\n"
 
 msgid "Unlikely scale factor"
-msgstr "不像的缩放比例"
+msgstr "不大可能的缩放比例"
 
 msgid "Unlink"
 msgstr "不连接"
@@ -13734,6 +14009,14 @@ msgstr "无命名查找"
 #, c-format
 msgid "Unparseable contextual sequence on line %d of %s"
 msgstr "有不能解析的相关序列于行 %d (%s中)"
+
+#, c-format
+msgid "Unparseable glyph sequence in position on line %d of %s"
+msgstr "无法解析的字形序列在 %2$s 的第 %1$d 行的位置"
+
+#, c-format
+msgid "Unparseable glyph sequence in substitution on line %d of %s"
+msgstr "无法解析的字形序列在 %2$s 的第 %1$d 行替换"
 
 #, c-format
 msgid "Unparseable include on line %d of %s"
@@ -13842,13 +14125,13 @@ msgid "Uzbek (Latin)"
 msgstr "乌孜别克语（拉丁）"
 
 msgid "VFlex Hint Color"
-msgstr "VFlex消隐颜色"
+msgstr "垂直Flex渲调提示颜色"
 
 msgid "VHead _Column Spacing:"
 msgstr "VHead 列宽(_C):"
 
 msgid "VHint Active Color"
-msgstr "垂直消隐激活时的颜色"
+msgstr "垂直渲调提示激活时颜色"
 
 msgid "VKern By Classes"
 msgstr "按类属垂直压缩"
@@ -13863,7 +14146,7 @@ msgid "VKern:"
 msgstr "垂直压缩："
 
 msgid "VStem"
-msgstr "垂直项"
+msgstr "垂直字干"
 
 msgid "VWidth"
 msgstr "垂直宽度"
@@ -13927,7 +14210,7 @@ msgid "Vedic Extensions"
 msgstr "吠陀文扩展"
 
 msgid "Vendor ID:"
-msgstr "供应者标识："
+msgstr "供应商标识："
 
 msgid "Vendor URL"
 msgstr "供应商网址"
@@ -13946,7 +14229,7 @@ msgid "Vert. Construction"
 msgstr "垂直构建"
 
 msgid "Vert. Hint Color"
-msgstr "垂直消隐颜色"
+msgstr "垂直渲调提示颜色"
 
 #. GT: "Vert." is an abbreviation for Vertical
 msgid "Vert. Variants"
@@ -13962,13 +14245,13 @@ msgid "Vertical Baselines"
 msgstr "垂直基线"
 
 msgid "Vertical Counter Add"
-msgstr "垂直计数增加"
+msgstr "垂直字腔增加"
 
 msgid "Vertical Counter Scale"
-msgstr "垂直计数比例"
+msgstr "垂直字腔比例"
 
 msgid "Vertical Counters:"
-msgstr "垂直计数:"
+msgstr "垂直字腔："
 
 msgid "Vertical Extension Italic Correction"
 msgstr "垂直间距倾斜修正"
@@ -13990,7 +14273,7 @@ msgid "Vertical Kana Alternates"
 msgstr "垂直假名替代"
 
 msgid "Vertical Kerning"
-msgstr "垂直压缩"
+msgstr "垂直字偶距"
 
 msgid "Vertical Kerning Class"
 msgstr "垂直压缩类属"
@@ -14014,10 +14297,10 @@ msgid "Vertical Scale:"
 msgstr "垂直缩放："
 
 msgid "Vertical Stem Width Add"
-msgstr "垂直部宽度增加"
+msgstr "垂直字干宽度增加"
 
 msgid "Vertical Stem Width Scale"
-msgstr "垂直部宽度比例"
+msgstr "垂直字干宽度比例"
 
 msgid "Vertical _Metric Lines"
 msgstr "垂直尺寸线(_M)"
@@ -14040,7 +14323,7 @@ msgid "Very High"
 msgstr "很高"
 
 msgid "Very Light"
-msgstr "略细"
+msgstr "超细"
 
 msgid "Very Low"
 msgstr "很低"
@@ -14059,6 +14342,9 @@ msgstr "视图"
 
 msgid "View Point"
 msgstr "视点"
+
+msgid "Vithkuqi"
+msgstr "Vithkuqi"
 
 msgid "WWS Family"
 msgstr "WWS 家族名"
@@ -14099,6 +14385,24 @@ msgstr ""
 msgid "Warning: Font contained no glyphs"
 msgstr "警告：字体中无字形"
 
+#, c-format
+msgid ""
+"Warning: FontForge's implementation of include statements in UFO features."
+"fea files was wrong. Please correct your path `%s` as per the specification "
+"for guaranteed future compatibility. (See GitHub issue №4629 for more info.)"
+msgstr ""
+"警告：FontForge 在 UFO features.fea 文件中的 include 语句实现是错误的。 请根"
+"据规范更正您的路径 `%s` ，以保证未来的兼容性。 （有关更多信息，请参阅 GitHub "
+"问题 №4629。）"
+
+#, c-format
+msgid "Warning: No characters selected in AddDHint(%d,%d %d,%d %d,%d)\n"
+msgstr "警告：AddDHint(%d,%d %d,%d %d,%d) 中未选择任何字符\n"
+
+#, c-format
+msgid "Warning: No characters selected in AddHint(%d,%d,%d)\n"
+msgstr "警告：AddHint(%d,%d,%d) 中未选择任何字符\n"
+
 msgid "Warnings"
 msgstr "警告"
 
@@ -14119,6 +14423,19 @@ msgstr "威尔士语"
 
 msgid "What is the pixel size of the font in this file?"
 msgstr "此文件中字体的像素尺寸是多少?"
+
+#, c-format
+msgid ""
+"When a single substitution is specified by glyph classes, those classes must "
+"be of the same length on line %d of %s"
+msgstr "当字形类指定单个替换时，这些类必须在 %2$s 的第 %1$d 行具有相同的长度"
+
+#, c-format
+msgid ""
+"When a single substitution's replacement is specified by a glyph class, the "
+"thing being replaced must also be a class on line %d of %s"
+msgstr ""
+"当字形类指定单个替换的替换时，被替换的东西也必须是 %2$s 的第 %1$d 行上的类"
 
 msgid ""
 "When copying glyphs from the font view, also copy the\n"
@@ -14425,7 +14742,7 @@ msgid "You must select a glyph before you can import an image into it"
 msgstr "应选择一个字形以便为其载入图形"
 
 msgid "You must select a lookup subtable to contain this kerning pair"
-msgstr "应选择一个包括此压缩对的查找表"
+msgstr "应选择一个包括此字偶距对的 lookup 表"
 
 msgid "You must select at least one language for each script."
 msgstr "为每种文字至少选一种语言"
@@ -14472,6 +14789,9 @@ msgstr "札那巴札尔方字"
 
 msgid "Zapf Dingbats"
 msgstr "花体字"
+
+msgid "Znamenny Musical Notation"
+msgstr "Znamenny 乐谱"
 
 msgid "Zone:"
 msgstr "区域:"
@@ -14537,7 +14857,7 @@ msgid "_Add Encoding Slots..."
 msgstr "增加编码位(_A)…"
 
 msgid "_Add HHint"
-msgstr "增加水平消隐(_A)"
+msgstr "添加水平渲调提示(_A)"
 
 msgid "_Add Selected"
 msgstr "添加选中项(_A)"
@@ -14613,7 +14933,7 @@ msgid "_Base Filename:"
 msgstr "文件名(_B):"
 
 msgid "_Base:"
-msgstr "基点(_B)："
+msgstr "基线(_B)："
 
 msgid "_Bigger Pixel Size"
 msgstr "增大像素大小(_B)"
@@ -14635,7 +14955,7 @@ msgid "_Bottom"
 msgstr "底(_B)"
 
 msgid "_Bottom hint:"
-msgstr "底部消隐(_B):"
+msgstr "底部渲调提示(_B):"
 
 msgid "_Bottom:"
 msgstr "底(_B)："
@@ -14677,10 +14997,10 @@ msgid "_Class"
 msgstr "类属(_C)"
 
 msgid "_Clear HStem"
-msgstr "清除水平项(_C)"
+msgstr "清除水平字干(_C)"
 
 msgid "_Clear Hints"
-msgstr "清除消隐(_C)"
+msgstr "清除渲调提示(_C)"
 
 msgid "_Close"
 msgstr "关闭(_C)"
@@ -14690,6 +15010,9 @@ msgstr "簇(_C)"
 
 msgid "_Compact"
 msgstr "压缩(_C)"
+
+msgid "_Compact (hide unused glyphs)"
+msgstr "紧凑（隐藏未使用的字形） (_C)"
 
 msgid "_Condense/Extend..."
 msgstr "压缩/扩展(_C)..."
@@ -14753,7 +15076,7 @@ msgid "_Detach Glyphs"
 msgstr "分离字形(_D)"
 
 msgid "_Diagonal Hints"
-msgstr "对角消隐(_D)"
+msgstr "对角渲调提示(_D)"
 
 msgid "_Display Compositions..."
 msgstr "显示组成(_D)…"
@@ -14765,7 +15088,7 @@ msgid "_Docked Palettes"
 msgstr "停靠的工具栏(_D)"
 
 msgid "_Don't AutoHint"
-msgstr "不自动消隐(_D)"
+msgstr "不自动渲调(_D)"
 
 msgid "_Don't Expand"
 msgstr "不扩展(_D)"
@@ -14913,7 +15236,7 @@ msgid "_HHead Ascent Offset:"
 msgstr "_HHead 上高偏移量:"
 
 msgid "_HStem"
-msgstr "水平项(_H)"
+msgstr "水平字干(_H)"
 
 msgid "_HVCurve"
 msgstr "水平垂直曲线(_H)"
@@ -14931,10 +15254,10 @@ msgid "_Hide Unused Columns"
 msgstr "隐藏不用的列(_H)"
 
 msgid "_Hinting Needed"
-msgstr "需要消隐(_H)"
+msgstr "所需的渲调(_H)"
 
 msgid "_Hints controlling no points"
-msgstr "消隐无点控制(_H)"
+msgstr "渲调提示没有控制描点(_H)"
 
 msgid "_Histogram"
 msgstr "直方图(_H)"
@@ -14946,7 +15269,7 @@ msgid "_Horizontal Baselines..."
 msgstr "水平基线(_H)..."
 
 msgid "_Horizontal Hints"
-msgstr "水平消隐(_H)"
+msgstr "水平渲调提示(_H)"
 
 msgid "_IBM Family:"
 msgstr "_IBM 字族:"
@@ -14991,7 +15314,7 @@ msgid "_Justification..."
 msgstr "对齐(_J)..."
 
 msgid "_Kern Pairs"
-msgstr "压缩对(_K)"
+msgstr "字偶距对(_K)"
 
 msgid "_Kerning only"
 msgstr "仅缩合(_K)"
@@ -15064,7 +15387,7 @@ msgid "_Merge Fonts..."
 msgstr "合并字体(_M)…"
 
 msgid "_Metrics"
-msgstr "尺寸(_M)"
+msgstr "度量(_M)"
 
 msgid "_Midline"
 msgstr "中线(_M)"
@@ -15085,13 +15408,13 @@ msgid "_Modify Composition..."
 msgstr "修改组成(_M)…"
 
 msgid "_More hints than:"
-msgstr "消隐超过(_M):"
+msgstr "渲调提示数量超过(_M):"
 
 msgid "_More points than:"
 msgstr "点数超过(_M):"
 
 msgid "_Move Points"
-msgstr "移动点"
+msgstr "移动描点(_M)"
 
 msgid "_Multi Size Glyph"
 msgstr "多尺寸字形(_M)"
@@ -15115,7 +15438,7 @@ msgid "_Next"
 msgstr "下一个(_N)"
 
 msgid "_Next >"
-msgstr "后(_N)>"
+msgstr "下一个(_N) >"
 
 msgid "_Next Glyph"
 msgstr "下一字形(_N)"
@@ -15147,6 +15470,9 @@ msgstr "关(_O)"
 msgid "_Open"
 msgstr "打开(_O)"
 
+msgid "_Options"
+msgstr "选项(_O)"
+
 msgid "_Order"
 msgstr "顺序(_O)"
 
@@ -15163,7 +15489,7 @@ msgid "_Outline..."
 msgstr "轮廓(_O)..."
 
 msgid "_Overlapped hints"
-msgstr "重叠消隐(_O)"
+msgstr "渲调提示重叠(_O)"
 
 msgid "_Overview"
 msgstr "概览(_O)"
@@ -15199,7 +15525,7 @@ msgid "_Points"
 msgstr "描点(_P)"
 
 msgid "_Points near¹ hint edges"
-msgstr "点临近¹消隐边(_P)"
+msgstr "描点靠近¹渲调提示边缘(_P)"
 
 msgid "_Points too far"
 msgstr "点太远"
@@ -15283,7 +15609,7 @@ msgid "_Review"
 msgstr "检查(_R)"
 
 msgid "_Review Hints..."
-msgstr "查看消隐(_R)…"
+msgstr "查看渲调(_R)…"
 
 msgid "_Right"
 msgstr "右(_R)"
@@ -15361,7 +15687,7 @@ msgid "_Show Exact *stem3"
 msgstr "显示确切的 *stem3"
 
 msgid "_Side Bearings"
-msgstr "侧边位(_S)"
+msgstr "侧边距(_S)"
 
 msgid "_Simplify"
 msgstr "简化(_S)"
@@ -15427,7 +15753,7 @@ msgid "_Top"
 msgstr "顶(_T)"
 
 msgid "_Top hint:"
-msgstr "顶部消隐(_T):"
+msgstr "顶部渲调提示(_T):"
 
 msgid "_Top:"
 msgstr "顶(_T)："
@@ -15460,7 +15786,7 @@ msgid "_Undo"
 msgstr "撤销(_U)"
 
 msgid "_Unicode"
-msgstr "统一码(_U)"
+msgstr "Unicode (_U)"
 
 msgid "_Unlink"
 msgstr "断开链接(_U)"
@@ -15478,7 +15804,7 @@ msgid "_Use My Metrics"
 msgstr "使用自定义尺寸(_U)"
 
 msgid "_VStem"
-msgstr "垂直项(_V)"
+msgstr "垂直字干(_V)"
 
 msgid "_VWidth"
 msgstr "垂直宽度(_V)"
@@ -15502,7 +15828,7 @@ msgid "_Vertical Baselines..."
 msgstr "垂直基线(_V)…"
 
 msgid "_Vertical Hints"
-msgstr "垂直消隐(_V)"
+msgstr "垂直渲调提示(_V)"
 
 msgid "_View"
 msgstr "查看(_V)"
@@ -15511,7 +15837,7 @@ msgid "_Warn if inexact"
 msgstr "不确切则警告(_W)"
 
 msgid "_Weight"
-msgstr "粗细(_W)"
+msgstr "字重(_W)："
 
 msgid "_Weight Class"
 msgstr "粗细类属(_W)"
@@ -15683,6 +16009,9 @@ msgstr "字体程序表"
 msgid "font variation table"
 msgstr "字体变差表"
 
+msgid "font;fonts;editor;TTF;OTF;typeface;"
+msgstr "字体;字体;编辑器;TTF;OTF;字体;"
+
 msgid "full name"
 msgstr "全称"
 
@@ -15708,7 +16037,7 @@ msgid "glyph reference table"
 msgstr "字形参照表"
 
 msgid "glyph substitution table"
-msgstr "字形替代表"
+msgstr "字形替换表"
 
 msgid "glyph variation table"
 msgstr "字形变体表"
@@ -15754,7 +16083,7 @@ msgid "kern pair"
 msgstr "压缩对"
 
 msgid "kerning table"
-msgstr "缩合表"
+msgstr "字偶距表"
 
 msgid "layout feature table"
 msgstr "布局特征表"
@@ -15790,7 +16119,7 @@ msgid "name table"
 msgstr "名称表"
 
 msgid "nohints"
-msgstr "无消隐"
+msgstr "无渲调提示"
 
 msgid "optical bounds table"
 msgstr "光学边界表"
@@ -15873,7 +16202,7 @@ msgid "sfnt _Revision:"
 msgstr "sfnt 版本(_R):"
 
 msgid "substitution"
-msgstr "替代"
+msgstr "替换"
 
 msgid "subtable"
 msgstr "替代表"
@@ -15964,7 +16293,7 @@ msgid "ΤεΧ Bitmap Fonts"
 msgstr "ΤεΧ 位图字体"
 
 msgid "ΤεΧ General"
-msgstr "ΤεΧ一般"
+msgstr "ΤεΧ 通用"
 
 msgid "ΤεΧ Math Extension"
 msgstr "ΤεΧ 数学扩展"

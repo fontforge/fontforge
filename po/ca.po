@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-08 09:53+0000\n"
-"PO-Revision-Date: 2022-02-21 08:36\n"
+"POT-Creation-Date: 2022-12-31 02:48+0000\n"
+"PO-Revision-Date: 2022-12-31 02:46\n"
 "Last-Translator: \n"
 "Language-Team: Catalan\n"
 "Language: ca_ES\n"
@@ -47,6 +47,13 @@ msgstr "  S'està ignorant «%c%c%c%c» %s\n"
 
 msgid "  Stroke _Width:"
 msgstr "  _Gruix del traç:"
+
+msgid " Bad mark attachment table, ignored\n"
+msgstr " La taula d'adjunts de marques no és correcta i no es té en compte\n"
+
+msgid " Bad simple positioning table, ignored\n"
+msgstr ""
+" La taula de posicionament simple no és correcta i no es té en compte\n"
 
 #, c-format
 msgid " Curvature: %g"
@@ -115,6 +122,12 @@ msgstr "%1$.80s a %2$d de %3$.90s%4$s"
 #, c-format
 msgid "%1$.80s at %2$d size %3$d from %4$.80s"
 msgstr "Glif: %1$.80s - Codi: %2$d - Píxels: %3$d - Tipus: %4$.80s"
+
+#. GT: The user is trying to open a font file which contains multiple fonts and
+#. GT: has asked for a font which is not in that file.
+#, c-format
+msgid "%1$s is not in font file"
+msgstr "No s'ha trobat %1$s al fitxer de la font"
 
 #, c-format
 msgid "%1$s: %2$d. Expected %3$s got %4$s"
@@ -524,6 +537,10 @@ msgid "A match was found after unlinking references in glyph “%s”\n"
 msgstr ""
 "S’ha trobat una correspondència desenllaçant les referències del glif «%s»\n"
 
+#, c-format
+msgid "A point in %s is outside the font bounding box data.\n"
+msgstr "Un punt a %s és fora de la caixa contenidora de dades de la font.\n"
+
 msgid ""
 "A reverse contextual chaining lookup can only match one coverage table "
 "directly"
@@ -549,6 +566,9 @@ msgstr "El valor ha d'estar dins els rangs [-8,-1] o [1,8]"
 
 msgid "A value must be between [0,15]"
 msgstr "El valor ha d'estar dins el rang [0,15]"
+
+msgid "AGL For New Fonts"
+msgstr "AGL per a fonts noves"
 
 msgid "AGL with PUA"
 msgstr "AGL amb àrea d'ús privat"
@@ -705,6 +725,9 @@ msgstr "Afegeix el caràcter"
 
 msgid "Adding points at Extrema..."
 msgstr "S'estan afegint nodes extrems..."
+
+msgid "Adding points of inflection..."
+msgstr "S'estan afegint punts d‘inflexió..."
 
 msgid "Additional arguments for autotrace program:"
 msgstr "Arguments addicionals per al programa de traçat automàtic:"
@@ -922,6 +945,9 @@ msgstr ""
 "de taules força gran, aquest fitxer en té unes 1.000 que, segurament, són "
 "massa.\n"
 
+msgid "An sfnt file must contain SOME tables, but this one does not."
+msgstr "Els fitxers SFNT han de tenir almenys una taula i aquest no en té cap."
+
 msgid "Anatolian Hieroglyphs"
 msgstr "Jeroglífics d'Anatòlia"
 
@@ -1109,6 +1135,9 @@ msgstr "Àrab estès A"
 
 msgid "Arabic Extended-B"
 msgstr "Àrab estès B"
+
+msgid "Arabic Extended-C"
+msgstr "Àrab estès C"
 
 msgid "Arabic Mathematical Alphabetic Symbols"
 msgstr "Símbols alfabètics matemàtics àrabs"
@@ -1525,6 +1554,9 @@ msgstr "La versió és incorrecta"
 msgid "Bad Weight"
 msgstr "El gruix és incorrecte"
 
+msgid "Bad base table.\n"
+msgstr "La taula base no és correcta.\n"
+
 #, c-format
 msgid "Bad bounding box for %s.\n"
 msgstr "La caixa contenidora de %s no és vàlida.\n"
@@ -1601,6 +1633,12 @@ msgstr "L'interlletatge és erroni: els glifs %d i %d haurien de ser < %d\n"
 msgid "Bad language tag"
 msgstr "L'etiqueta de l'idioma és incorrecta"
 
+msgid "Bad ligature anchor count.\n"
+msgstr "El recompte d'àncores de lligadures no és correcte.\n"
+
+msgid "Bad ligature base table.\n"
+msgstr "La taula base de lligadures no és correcta.\n"
+
 msgid "Bad magic number"
 msgstr "Nombre màgic incorrecte"
 
@@ -1665,6 +1703,9 @@ msgstr ""
 
 msgid "Bad xfig file"
 msgstr "El fitxer xfig no és correcte"
+
+msgid "Balancing..."
+msgstr "S'està equilibrant..."
 
 msgid "Balinese"
 msgstr "Balinès"
@@ -2032,6 +2073,9 @@ msgstr "Extensió F dels ideogrames unificats CJK"
 
 msgid "CJK Unified Ideographs Extension G"
 msgstr "Extensió G dels ideogrames unificats CJK"
+
+msgid "CJK Unified Ideographs Extension H"
+msgstr "Extensió H dels ideogrames unificats CJK"
 
 msgid "C_ID Font Info..."
 msgstr "Informació de la font C_ID..."
@@ -3249,6 +3293,9 @@ msgstr "Ciríl·lic estès B"
 msgid "Cyrillic Extended-C"
 msgstr "Ciríl·lic estès C"
 
+msgid "Cyrillic Extended-D"
+msgstr "Ciríl·lic estès D"
+
 msgid "Cyrillic Supplement"
 msgstr "Suplement ciríl·lic"
 
@@ -3429,6 +3476,9 @@ msgstr "Devanagari"
 
 msgid "Devanagari Extended"
 msgstr "Devanagari estès"
+
+msgid "Devanagari Extended-A"
+msgstr "Devanagari estès A"
 
 msgid "Devanagari2"
 msgstr "Devanagari 2"
@@ -5554,6 +5604,9 @@ msgstr "Hanja a Hangul (desfasat)"
 msgid "Hanunoo"
 msgstr "Hanunoo"
 
+msgid "Harmonizing..."
+msgstr "S'està harmonitzant..."
+
 msgid "Has _Vertical Metrics"
 msgstr "Mètrica _vertical"
 
@@ -6485,6 +6538,9 @@ msgstr "katakana"
 
 msgid "Katakana Phonetic Extensions"
 msgstr "Extensions fonètiques katakana"
+
+msgid "Kawi"
+msgstr "Kawi"
 
 msgid "Kayah Li"
 msgstr "Kayah Li"
@@ -7724,6 +7780,14 @@ msgstr ""
 
 msgid ""
 "Minimum gap between bottom of the top\n"
+"element of a stack and the top of the bottom\n"
+"element in display style."
+msgstr ""
+"Espai blanc mínim entre el peu de l'element superior i el cim de l'element "
+"inferior en estil display."
+
+msgid ""
+"Minimum gap between bottom of the top\n"
 "element of a stack, and the top of the bottom element."
 msgstr ""
 "Espai blanc mínim entre el peu de l'element superior i el dalt de l'element "
@@ -8670,6 +8734,9 @@ msgstr "Automàtica"
 
 msgid "OT _Glyph Class:"
 msgstr "Classe de _glif OpenType:"
+
+msgid "OTF 'CFF '"
+msgstr "OTF «CFF»"
 
 msgid "O_verlap"
 msgstr "Superposicions"
@@ -10572,6 +10639,10 @@ msgstr ""
 "amb petits detalls (gràcies), que es poden desviar\n"
 "encara més de la vertical o de la horitzontal."
 
+#, c-format
+msgid "Same table tag, '%c%c%c%c', appears twice in sfnt header"
+msgstr "L'etiqueta «%c%c%c%c» surt dues vegades a la capçalera del fitxer SFNT"
+
 msgid "Sami (Lappish)"
 msgstr "Sami (Lapó)"
 
@@ -12145,6 +12216,15 @@ msgstr ""
 "La longitud de la taula «%c%c%c%c» és incorrecta, ha de ser un valor parell."
 
 #, c-format
+msgid ""
+"Table tags should be in alphabetic order in the font header\n"
+" but '%c%c%c%c', appears after '%c%c%c%c'."
+msgstr ""
+"Les etiquetes de les taules han d'estar en ordre alfabètic a la capçalera de "
+"la font,\n"
+"però, «%c%c%c%c» està després de «%c%c%c%c»."
+
+#, c-format
 msgid "Tables '%c%c%c%c' and '%c%c%c%c' overlap"
 msgstr "Les taules «%c%c%c%c» i «%c%c%c%c» se superposen"
 
@@ -12650,6 +12730,14 @@ msgstr ""
 "haver."
 
 #, c-format
+msgid ""
+"The glyph named %.30s is mapped to U+%04X.\n"
+"But its name indicates it should be mapped to U+%04X.\n"
+msgstr ""
+"El glif anomenat %.30s està assignat a U+%04X, però, el seu nom indica que "
+"hauria d'estar assignat a U+%04X.\n"
+
+#, c-format
 msgid "The glyph, %.80s, already contains an anchor in this class, %.80s."
 msgstr "El glif %.80s ja conté una àncora en aquesta classe %.80s."
 
@@ -12783,6 +12871,15 @@ msgid ""
 msgstr ""
 "El nom %.80s ja s'està fent servir per indentificar una classe d'àncora en "
 "una altra subtaula de consulta (%.80s)."
+
+msgid ""
+"The names 'alefmaksurainitialarabic' and 'alefmaksuramedialarabic' in the "
+"Adobe Glyph List disagree with Unicode.  The use of these glyph names is "
+"therefore discouraged.\n"
+msgstr ""
+"Els noms «alefmaksurainitialarabic» i «alefmaksuramedialarabic» del llistat "
+"de glifs d'Adobe no concorden amb l'Unicode.  Per tant, es desacolsella l'ús "
+"d'aquests noms de glifs.\n"
 
 msgid "The number of em-units by which an arrow key will move a selected point"
 msgstr ""
@@ -13154,6 +13251,15 @@ msgstr ""
 "Aquesta font inclou taules «kern» i «GPOS». La taula «kern» només\n"
 "es tindrà en compte si no existeix la funcionalitat «kern» de la taula "
 "«GPOS».\n"
+
+msgid ""
+"This font contains both a TrueType 'glyf' table and an OpenType 'CFF ' "
+"table. FontForge can only deal with one at a time, please pick which one you "
+"want to use"
+msgstr ""
+"La font inclou una taula «glif» TrueType i una taula «CFF» OpenType a la "
+"vegada. El FontForge només en pot gestionar una de les dues. Trieu quina "
+"voleu utilitzar"
 
 msgid ""
 "This font contains both truetype and PostScript glyph descriptions\n"

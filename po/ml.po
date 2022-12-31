@@ -4,14 +4,15 @@
 #
 # Translators:
 # Hiran, 2008-11-04 14:00+0100
+# Arish Vijayakumar <https://crowdin.com/profile/arishvijayakumar>
 #
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-08 09:53+0000\n"
-"PO-Revision-Date: 2022-02-21 08:36\n"
+"POT-Creation-Date: 2022-12-31 02:48+0000\n"
+"PO-Revision-Date: 2022-12-31 02:46\n"
 "Last-Translator: \n"
 "Language-Team: Malayalam\n"
 "Language: ml_IN\n"
@@ -25,11 +26,82 @@ msgstr ""
 "X-Crowdin-File: FontForge.pot\n"
 "X-Crowdin-File-ID: 2\n"
 
+msgid "An outline font editor"
+msgstr "ഒരു പുറംചട്ട തിരുത്തുകരു"
+
+msgid "Ancient Symbols"
+msgstr "പഴയ അടയാളങ്ങൾ"
+
+msgid "Arabic"
+msgstr "അറബി"
+
+msgid "Arabic Extended-A"
+msgstr "അറബി A-വിപുലീകരണം"
+
+msgid "Arabic Extended-B"
+msgstr "അറബി B-വിപുലീകരണം"
+
+msgid "Arabic Supplement"
+msgstr "അറബി ചേർപ്പ്"
+
+msgid "Armenian"
+msgstr "അർമേനിയൻ"
+
+msgid "Basic Latin"
+msgstr "ലത്തീൻ അടിത്തറ"
+
+msgid "Bengali"
+msgstr "ബംഗാളി"
+
+msgid "Buhid"
+msgstr "ബുഹിദ്"
+
 msgid "C_hop"
 msgstr "വൃത്തിയാക്കുക"
 
+msgid "Cherokee"
+msgstr "ചെറോക്കേ"
+
 msgid "Cu_t"
 msgstr "മുറിക്കുക"
+
+msgid "Cyrillic"
+msgstr "സിറിലിക്ക്"
+
+msgid "Cyrillic Supplement"
+msgstr "സിറിലിക്ക് ചേർപ്പ്"
+
+msgid "Devanagari"
+msgstr "ദേവനാഗരി"
+
+msgid "Ethiopic"
+msgstr "എത്തിയോപ്പിയൻ"
+
+msgid "Ethiopic Supplement"
+msgstr "എത്തിയോപ്പിയൻ ചേർപ്പ്"
+
+msgid "FontForge"
+msgstr "ഫോണ്ട്ഫോർജ്"
+
+msgid ""
+"FontForge is a font editor for outline and bitmap fonts that lets you "
+"create, edit, or convert, a range of fonts, including PostScript, TrueType, "
+"OpenType, cid-keyed, multi-master, cff, SVG and BitMap (bdf, FON, NFNT) "
+"fonts."
+msgstr ""
+"ഫോണ്ട്ഫോർജ് പുറംചട്ടം, ബിറ്റ്മാപ്പ് ഫോണ്ടുകൾക്കായുള്ള ഒരു ഫോണ്ട് തിരുത്തുകരു ആണ്. പോസ്റ്റ് സ്ക്രിപ്റ്റ്, "
+"ട്രൂടൈപ്പ്, ഓപ്പൺടൈപ്പ്, സിഡ്-കീഡ്, മൾട്ടി-മാസ്റ്റർ, സിഎഫ്‌എഫ്, എസ്‌വിജി, ബിറ്റ്‌മാപ്പ് (ബിഡിഎഫ്, "
+"ഫോൺ, എൻഎഫ്എൻറ്റി) എന്നിവയുൾപ്പെടെയുള്ള ഫോണ്ടുകളുടെ ഒരു നിര ഒരുക്കുവാനും തിരുത്തുവാനും അല്ലെങ്കിൽ "
+"മാറ്റങ്ങൾ വരുത്തുവാനും നിങ്ങളെ അനുവദിക്കുന്നു."
+
+msgid ""
+"FontForge is free Open Source Software written to run on various computer "
+"operating systems. You can use FontForge Graphically or as a command-line "
+"tool."
+msgstr ""
+"പല കമ്പ്യൂട്ടർ പ്രവർത്തന ചട്ടക്കൂടുകളിൽ പ്രവർത്തിപ്പിക്കുന്നതിനായി എഴുതിയ തടസ്സമ്മില്ലാത്ത തുറന്ന "
+"ഉറവിടമുള്ള സോഫ്റ്റുവെയർ ആണ് ഫോണ്ട്ഫോർജ്. നിങ്ങൾക്ക് ചിത്രരീതിയാലോ ആജ്ഞാവരി ഉപകരണമാലോ "
+"ഫോണ്ട്ഫോർജ് പ്രവർത്തിപ്പിക്കാവുന്നതാണ്."
 
 msgid "Font|_New"
 msgstr "പുതിയതു്"
@@ -37,8 +109,137 @@ msgstr "പുതിയതു്"
 msgid "Generate Mac _Family..."
 msgstr "മാക്കിനുള്ള ഫോണ്ട് ഉണ്ടാക്കുക"
 
+msgid "Georgian"
+msgstr "ജോർജിയൻ"
+
+msgid "Georgian Supplement"
+msgstr "ജോർജിയൻ ചേർപ്പ്"
+
+msgid "Greek and Coptic"
+msgstr "യവനവും കോപ്റ്റിക്കും"
+
+msgid "Gujarati"
+msgstr "ഗുജറാത്തി"
+
+msgid "Gurmukhi"
+msgstr "ഗുരുമുഖി"
+
+msgid "Hangul Jamo"
+msgstr "ഹങ്കുൾ ജാമോ"
+
+msgid "Hanunoo"
+msgstr "ഹനുവോ"
+
+msgid "Hebrew"
+msgstr "ഹീബ്രു"
+
+msgid "High Private Use Surrogates"
+msgstr "ഉയർന്ന തനതുപയോഗ പകരക്കാർ"
+
+msgid "IPA Extensions"
+msgstr "IPA വിപുലീകരണങ്ങൾ"
+
+msgid "Kannada"
+msgstr "കന്നട"
+
+msgid "Khmer"
+msgstr "ഖമർ"
+
+msgid "Lao"
+msgstr "ലാവോ"
+
+msgid "Latin Extended-A"
+msgstr "ലത്തീൻ A-വിപുലീകരണം"
+
+msgid "Latin Extended-B"
+msgstr "ലത്തീൻ B-വിപുലീകരണം"
+
+msgid "Latin-1 Supplement"
+msgstr "ലത്തീൻ-1 ചേർപ്പ്"
+
+msgid "Low Surrogates"
+msgstr "താഴ്ന്ന പകരക്കാർ"
+
+msgid "Malayalam"
+msgstr "മലയാളം"
+
+msgid "Mandaic"
+msgstr "മണ്ടായിക്ക്"
+
+msgid "Mongolian"
+msgstr "മംഗോളിയൻ"
+
+msgid "Myanmar"
+msgstr "മ്യാന്മർ"
+
+msgid "NKo"
+msgstr "ങ്കൊ"
+
+msgid "Ogham"
+msgstr "ഒഗം"
+
+msgid "Old Persian"
+msgstr "പഴയ ഫാർസി"
+
+msgid "Oriya"
+msgstr "ഒറിയ"
+
+msgid "Private Use Area"
+msgstr "തനതുപയോഗ ഇടം"
+
+msgid "Runic"
+msgstr "റൂണിക്ക്"
+
+msgid "Samaritan"
+msgstr "സമറിത്തൻ"
+
 msgid "Save A_ll"
 msgstr "എല്ലാം സംരക്ഷിക്കുക"
+
+msgid "Sinhala"
+msgstr "സിംഹള"
+
+msgid "Spacing Modifier Letters"
+msgstr "ഇടകലംമാറ്റി എഴുത്തുകൾ"
+
+msgid "Specials"
+msgstr "പ്രത്യേകമുള്ളവ"
+
+msgid "Syriac"
+msgstr "സുറിയാണി"
+
+msgid "Syriac Supplement"
+msgstr "സുറിയാണി ചേർപ്പ്"
+
+msgid "Tagalog"
+msgstr "തഗലോഗ്"
+
+msgid "Tagbanwa"
+msgstr "തഗ്ബൻവ"
+
+msgid "Tamil"
+msgstr "തമിഴ്"
+
+msgid "Telugu"
+msgstr "തെലുങ്ക്"
+
+msgid "Thaana"
+msgstr "താന"
+
+msgid "Thai"
+msgstr "തായി"
+
+msgid "Tibetan"
+msgstr "ടിബറ്റിയൻ"
+
+msgid "Unified Canadian Aboriginal Syllabics"
+msgstr "ഒത്തിണക്കിയ കനേഡിയൻ ആദിമ സിലബിക്കുകൾ"
+
+msgid "Variation Selectors"
+msgstr "മാറ്റം തിരഞ്ഞെടുക്കുന്നവ"
+
+msgid "Vertical Forms"
+msgstr "നെടുങ്ങനെയുള്ള വടിവുകൾ"
 
 msgid "_Close"
 msgstr "അടയ്ക്കുക"

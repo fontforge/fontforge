@@ -14,8 +14,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-08 09:53+0000\n"
-"PO-Revision-Date: 2022-02-21 08:36\n"
+"POT-Creation-Date: 2022-12-31 02:48+0000\n"
+"PO-Revision-Date: 2022-12-31 02:46\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -8856,6 +8856,9 @@ msgstr "Masques de hint si conflit"
 msgid "Hinting Needed Color"
 msgstr "Couleur lorsque le hinting est requis"
 
+msgid "Hints"
+msgstr "Hints"
+
 #, c-format
 msgid "Hints differ in glyph “%s”\n"
 msgstr "Les hints diffèrent dans le glyphe \"%s\"\n"
@@ -15436,6 +15439,9 @@ msgstr "Utiliser le codage PUA"
 
 msgid "Recover old edit"
 msgstr "Récupérer une ancienne session"
+
+msgid "Recovery Complete"
+msgstr "Récupération complétée"
 
 msgid "Recovery Failed"
 msgstr "Échec de la récupération"
@@ -22300,6 +22306,9 @@ msgstr "Outil_s"
 msgid "Tools"
 msgstr "Outils"
 
+msgid "Tools_2"
+msgstr "Outils_2"
+
 msgid "Top Accent"
 msgstr "Accent supérieur"
 
@@ -24758,6 +24767,14 @@ msgstr ""
 "dictionnaire privé, Élement-> Infos fonte... -> Dictionnaire PS privé, pour "
 "la fonte"
 
+#, c-format
+msgid ""
+"Your file %s has been recovered.\n"
+"You must now Save your file to continue working on it."
+msgstr ""
+"Votre fichier %s a été récupéré.\n"
+"Vous devez maintenant l'enregistrer pour continuer de travailler avec."
+
 msgid ""
 "Your font has a 2 byte encoding, but you are attempting to save it in a "
 "format that only supports one byte encodings. This means that you won't be "
@@ -26417,17 +26434,3 @@ msgstr "∆y_cha #1"
 
 msgid "∆y_adv #2"
 msgstr "∆y_cha #2"
-
-#~ msgid "Recovery Complete"
-#~ msgstr "Récupération complétée"
-
-#~ msgid "Tools_2"
-#~ msgstr "Outils_2"
-
-#, c-format
-#~ msgid ""
-#~ "Your file %s has been recovered.\n"
-#~ "You must now Save your file to continue working on it."
-#~ msgstr ""
-#~ "Votre fichier %s a été récupéré.\n"
-#~ "Vous devez maintenant l'enregistrer pour continuer de travailler avec."

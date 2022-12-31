@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-08 09:53+0000\n"
-"PO-Revision-Date: 2022-02-21 08:36\n"
+"POT-Creation-Date: 2022-12-31 02:48+0000\n"
+"PO-Revision-Date: 2022-12-31 02:46\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Language: ja_JP\n"
@@ -13003,6 +13003,9 @@ msgstr "ツール(_S)"
 msgid "Tools"
 msgstr "ツール"
 
+msgid "Tools_2"
+msgstr "ツール_2"
+
 msgid "Top Bearing does not change."
 msgstr "上ベアリングは変更されません."
 
@@ -15473,6 +15476,3 @@ msgstr "{入力の先頭}"
 
 msgid "{Start of Line}"
 msgstr "{行の先頭}"
-
-#~ msgid "Tools_2"
-#~ msgstr "ツール_2"
