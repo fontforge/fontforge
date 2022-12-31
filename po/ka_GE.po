@@ -1,0 +1,6011 @@
+# Georgian User Interface strings for FontForge.
+# This file is distributed under the same license as the FontForge package.
+#
+# Translators:
+# georgianizator <https://crowdin.com/profile/georgianizator>
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: fontforge\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2022-12-31 02:48+0000\n"
+"PO-Revision-Date: 2022-12-31 02:46\n"
+"Last-Translator: \n"
+"Language-Team: Georgian\n"
+"Language: ka_GE\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Crowdin-Project: fontforge\n"
+"X-Crowdin-Project-ID: 368599\n"
+"X-Crowdin-Language: ka\n"
+"X-Crowdin-File: FontForge.pot\n"
+"X-Crowdin-File-ID: 2\n"
+
+#, c-format
+msgid "  Ignoring '%c%c%c%c'\n"
+msgstr "  უგულებელყოფილია „%c%c%c%c“\n"
+
+#, c-format
+msgid "  Ignoring '%c%c%c%c' %s\n"
+msgstr "  უგულებელყოფილია „%c%c%c%c“ %s\n"
+
+msgid " Adding a size will create it by scaling."
+msgstr " ზომის დამატებით შეიქმნება ფარდობით."
+
+msgid " Adding a size will create it."
+msgstr " ზომის დამატებით შეიქმნება."
+
+#. GT: This continues a multi-line error message, hence the leading space
+msgid " Bad kerning class table, ignored\n"
+msgstr " წანაცვლების კლასის გაუმართავი ცხრილი, უგულებელყოფილია\n"
+
+msgid " Bad ligature table, ignored\n"
+msgstr " გადაბმების გაუმართავი ცხრილი, უგულებელყოფილია\n"
+
+#. GT: This continues a multi-line error message, hence the leading space
+msgid " Bad pairwise kerning table, ignored\n"
+msgstr " წანაცვლებული წყვილების გაუმართავი ცხრილი, უგულებელყოფილია\n"
+
+msgid " Removing a size will delete it."
+msgstr " ზომის მოცილების შედეგად წაიშლება."
+
+#. GT: The space in front of "Same" makes things line up better
+msgid " Same as Fontname"
+msgstr " შრიფტის სახელის მსგავსი"
+
+#, c-format
+msgid ""
+"%.100s is not in a known format (or uses features of that format fontforge "
+"does not support, or is so badly corrupted as to be unreadable)"
+msgstr ""
+"%.100s უცნობი სახისაა (ან იმ სახის თვისებებს შეიცავს, რომელთაც FontForge ვერ "
+"აღიქვამს, ანდაც ისეა დაზიანებული, რომ ვერ იკითხება)"
+
+#. GT: This is the title for a window showing an outline character
+#. GT: It will look something like:
+#. GT:  exclam at 33 from Arial
+#. GT: $1 is the name of the glyph
+#. GT: $2 is the glyph's encoding
+#. GT: $3 is the font name
+#. GT: $4 is the changed flag ('*' for the changed items)
+#, c-format
+msgid "%1$.80s at %2$d from %3$.90s%4$s"
+msgstr "%1$.80s უჯრაში %2$d, შრიფტიდან %3$.90s%4$s"
+
+#. GT: The user is trying to open a font file which contains multiple fonts and
+#. GT: has asked for a font which is not in that file.
+#, c-format
+msgid "%1$s is not in font file"
+msgstr "%1$s არაა შრიფტის ფაილი"
+
+#, c-format
+msgid ""
+"%s\n"
+"Proceed anyway?"
+msgstr ""
+"%s\n"
+"განაგრძობთ მაინც?"
+
+#. GT: This string is used to generate a name for each OpenType lookup.
+#. GT: The %s will be filled with the user friendly name of the feature used to invoke the lookup
+#. GT: The second %s (if present) is the script
+#. GT: While the %d is the index into the lookup list and is used to disambiguate it
+#. GT: In case that is needed
+#, c-format
+msgid "%s in %s lookup %d"
+msgstr "%s დამწერლობისთვის %s ცნობარში %d"
+
+#, c-format
+msgid "%s is not in %.100s"
+msgstr "%s ფაილს არ შეიცავს %.100s"
+
+#, c-format
+msgid "%s kerning class %d"
+msgstr "%s წანაცვლების კლასი %d"
+
+#. GT: This string is used to generate a name for an OpenType lookup subtable.
+#. GT:  %s is the lookup name
+#, c-format
+msgid "%s subtable"
+msgstr "%s ქვეცხრილი"
+
+#, c-format
+msgid "%s:%d Unexpected character %c (%d)\n"
+msgstr "%s:%d მოულოდნელი სიმბოლო %c (%d)\n"
+
+#, c-format
+msgid "'%s' is not the name of a currently known plugin"
+msgstr "„%s“ არ ემთხვევა ამჟამად ცნობილი მოდულების სახელებს"
+
+msgid "'kern' Horizontal Kerning Table"
+msgstr "'kern' თარაზული წანაცვლების ცხრილი"
+
+msgid "(Adobe now considers XUID/UniqueID unnecessary)"
+msgstr "(Adobe მიიჩნევს, რომ XUID/UniqueID აღარაა აუცილებელი)"
+
+msgid "(Define \"Almost\")"
+msgstr "(განსაზღვრეთ „თითქმის“)"
+
+msgid "1250, Latin-2 (Eastern Europe)"
+msgstr "1250, ლათინური-2 (აღმოსავლეთ ევროპა)"
+
+msgid "1251, Cyrillic"
+msgstr "1251, კირილიცა"
+
+msgid "1252, Latin-1"
+msgstr "1252, ლათინური-1"
+
+msgid "1253, Greek"
+msgstr "1253, ბერძნული"
+
+msgid "1256, Arabic"
+msgstr "1256, არაბული"
+
+msgid "3"
+msgstr "3"
+
+msgid "32x8 cell window"
+msgstr "32x8 უჯრიანი ფანჯარა"
+
+msgid "3D Buttons"
+msgstr "სივრცული ღილაკები"
+
+msgid "3D Dark Edge Color"
+msgstr "სივრცული კიდის მუქი ფერი"
+
+msgid "3D Light Edge Color"
+msgstr "სივრცული კიდის ღია ფერი"
+
+msgid "3D Look"
+msgstr "სივრცული იერსახე"
+
+msgid "708, Arabic ASMO 708"
+msgstr "708, არაბული (ASMO 708)"
+
+msgid "737, Greek; former 437 G"
+msgstr "737, ბერძნული; ყოფილი 437 G"
+
+msgid "852, Latin 2"
+msgstr "852, ლათინური 2"
+
+msgid "855, IBM Cyrillic; primarily Russian"
+msgstr "855, IBM კირილიცა; ძირითადად რუსული"
+
+msgid "864, Arabic"
+msgstr "864, არაბული"
+
+msgid "869, IBM Greek"
+msgstr "869, IBM-ბერძნული"
+
+msgid "< _Prev"
+msgstr "< _წინ"
+
+msgid "A Font Family name is required"
+msgstr "შრიფტის კრებულის სახელი აუცილებელია"
+
+#, c-format
+msgid ""
+"A glyph name must be ASCII, without spaces and may not contain the "
+"characters \"([{<>}])/%%\", and should contain only alphanumerics, periods "
+"and underscores"
+msgstr ""
+"ასონიშნის დასახელება, უნდა იყოს ASCII, დაშორებებისა და მოცემული სიმბოლოების "
+"გარეშე „([{<>}])/%%“, შეიძლება შეიცავდეს ხაზგასმულ ასო-ციფრებსა და წერტილს."
+
+msgid "A grouping of elements"
+msgstr "დაჯგუფებული ნაწილები"
+
+#, c-format
+msgid ""
+"A language tag on line %d (%s) is too long.  It may be at most 4 letters"
+msgstr "ენის ჭდე ხაზზე %d (%s) ზედმეტად გრძელია.  უნდა იყოს არაუმეტეს 4 ასო"
+
+#, c-format
+msgid "A language tag on line %d (%s) should be in ASCII.\n"
+msgstr "ენის ჭდე ხაზზე %d (%s) უნდა იყოს ASCII.\n"
+
+msgid ""
+"A line is \"almost\" horizontal (or vertical)\n"
+"if the coordinates are within this many em-units"
+msgstr ""
+"ხაზი „თითქმის“ თარაზულია (ან შვეული)\n"
+"თუ მისი კოორდინატები უმეტესად თავსდება ამ ერთეულებში"
+
+msgid "A list of glyphs:"
+msgstr "ასონიშნების სია:"
+
+msgid "A separator line drawn across a dialog or in a menu"
+msgstr "გამყოფი ხაზი ფანჯრებში ან მენიუში"
+
+msgid "A tag must be 4 ASCII characters"
+msgstr "ჭდე უნდა იყოს 4 ASCII სიმბოლოთი"
+
+msgid "AMS Names"
+msgstr "AMS სახელები"
+
+msgid "Active Layer Color"
+msgstr "მოქმედი შრის ფერი"
+
+#, c-format
+msgid "Active Layer: %s (%s)"
+msgstr "მოქმედი შრე: %s (%s)"
+
+msgid "Active Thick Layer Color"
+msgstr "მოქმედი შრის მსხვილი ფერი"
+
+msgid "Active Tool Color"
+msgstr "მოქმედი ხელსაწყოს ფერი"
+
+msgid "Add"
+msgstr "დამატება"
+
+msgid "Add Encoding Name..."
+msgstr "დაშიფვრის სახელის დამატება..."
+
+msgid "Add Encoding Slots..."
+msgstr "დასაშიფრი ადგილების დამატება..."
+
+msgid "Add Language to Script..."
+msgstr "ენის დამატება დამწერლობისთვის..."
+
+msgid "Add Lookup"
+msgstr "ცნობარის დამატება"
+
+msgid "Add Subscripts/Superscripts..."
+msgstr "ხაზზედა/ხაზქვედა ნიშნების დამატება..."
+
+msgid "Add _Small Capitals..."
+msgstr "მ_ცირე მთავრულის დამატება..."
+
+msgid "Add a corner point"
+msgstr "კუთხის წერტილის დამატება"
+
+msgid "Add a curve point"
+msgstr "მრუდის წერტილის დამატება"
+
+msgid "Add a curve point always either horizontal or vertical"
+msgstr "მრუდის წერტილის დამატება მხოლოდ თარაზულად, ან შვეულად"
+
+msgid "Add a left \"tangent\" point"
+msgstr "მარცხენა „მხების“ წერტილის დამატება"
+
+msgid "Add a new layer"
+msgstr "ახალი შრის დამატება"
+
+msgid "Add a point, then drag out its control points"
+msgstr "წერტილის დამატება, გადაადგილება და მართვა"
+
+msgid "Add a right \"tangent\" point"
+msgstr "მარჯვენა „მხების“ წერტილის დამატება"
+
+msgid "Add a subtable to which lookup?"
+msgstr "რომეცლ ცნობარს დაემატოს ქვეცხრილი?"
+
+msgid "Add a tangent point"
+msgstr "მხების წერტილის დამატება"
+
+msgid "Adding points at Extrema..."
+msgstr "ემატება კიდურა წერტილები..."
+
+#. GT: "Adjust" here means Device Table based pixel adjustments, an OpenType
+#. GT: concept which allows small corrections for small pixel sizes where
+#. GT: rounding errors (in kerning for example) may smush too glyphs together
+#. GT: or space them too far apart. Generally not a problem for big pixelsizes
+msgid "Adjust"
+msgstr "გამართვა"
+
+msgid "Adlam"
+msgstr "ადლამი"
+
+msgid "Adobe"
+msgstr "Adobe"
+
+msgid "Adobe Glyph List"
+msgstr "Adobe ასონიშნების სია"
+
+msgid "Adobe Standard"
+msgstr "Adobe-ის სტანდარტი"
+
+msgid ""
+"Adobe's fontname spec (5088.FontNames.pdf) says that fontnames should not be "
+"longer than 29 characters. Do you want to continue anyway?"
+msgstr ""
+"Adobe-ის შრიფტის სახელთა მახასიათებლების (5088.FontNames.pdf) მიხედვით, "
+"დასახელება არ უნდა შედგებოდეს არაუმეტეს 29 სიმბოლოსგან. გსურთ, მაინც "
+"განაგრძოთ?"
+
+msgid "Advance Width Col"
+msgstr "გაფართოებული სიგანის ფერი"
+
+#, c-format
+msgid "Advance Width Metrics For %.50s"
+msgstr "გაფართოებული სიგანის აზომვები – %.50s"
+
+msgid "Advance Width as a Bar"
+msgstr "გაფართ. სიგანე ზოლით"
+
+msgid "Advance Width as a Line"
+msgstr "გაფართ. სიგანე ხაზით"
+
+msgid "Advance Width does not change."
+msgstr "გაფართოებული სიგანე არ შეიცვლება."
+
+#, c-format
+msgid "Advance width of glyph %.30s must be less than 127"
+msgstr "%.30s ასონიშნის გაფართობული სიგანე უნდა იყოს არაუმეტეს 127"
+
+msgid "Afm Save Failed"
+msgstr "Afm ვერ შეინახა"
+
+msgid ""
+"After rotating or skewing a glyph you should probably apply Element->Add "
+"Extrema"
+msgstr ""
+"ასონიშნის მობრუნების ან გადახრის შემდგომ, სასურველია გამოიყენოთ „შემადგენელი "
+"→ კიდურა წერტილის დამატება“"
+
+msgid "Ahead Classes"
+msgstr "მომდევნო კლასები"
+
+msgid "Ahom"
+msgstr "აჰომი"
+
+msgid "All Files"
+msgstr "ყველანაირი ფაილი"
+
+msgid "All Glyphs"
+msgstr "ყველა ასონიშანი"
+
+msgid "All glyphs"
+msgstr "ყველა ასონიშანი"
+
+msgid "Allow _curve smoothing"
+msgstr "_მრუდის დაგლუვების საშუალება"
+
+msgid "Allows you to select optional behavior when generating the font"
+msgstr "დამატებითი მოქმედების მითითების საშუალება, შრიფტის შედგენისას"
+
+msgid "Almost Horizontal/Vertical Curves"
+msgstr "თითქმის თარ./შვეულ. მრუდები"
+
+msgid "Almost Horizontal/Vertical Lines"
+msgstr "თითქმის თარაზული/შვეული ხაზები"
+
+msgid "Alphabetic Presentation Forms"
+msgstr "ანბანურის წარმოსადგენი ჩანაწერები"
+
+msgid "Also enable preview mode when the space bar is pressed."
+msgstr "შეთვალიერების ჩართვა ჰარის ღილაკზე დაჭერისას."
+
+msgid "An SVG font without a familyname value might not be usable."
+msgstr "SVG შრიფტი, კრებულის სახელის მიუთითებლად, გამოუსადეგარი იქნება."
+
+msgid "An outline font editor"
+msgstr "მოხაზული შრიფტების ჩასასწორებელი"
+
+msgid "Anatolian Hieroglyphs"
+msgstr "ანატოლიური იეროგლიფები"
+
+msgid "Ancient Greek Musical Notation"
+msgstr "ძველბერძნული სანოტო დამწერლობა"
+
+msgid "Ancient Greek Numbers"
+msgstr "ძველბერძნული რიცხვები"
+
+msgid "Ancient Ligatures (Obsolete)"
+msgstr "უძველესი გადაბმები (გაუქმებული)"
+
+msgid "Ancient Symbols"
+msgstr "უძველესი ნიშნები"
+
+msgid "Angle:"
+msgstr "კუთხე:"
+
+msgid "Appea_rance Editor..."
+msgstr "იე_რსახის ჩასწორება..."
+
+msgid ""
+"Apple and MS/Adobe differ about the format of truetype and opentype files\n"
+"This allows you to select which standard to follow for your font.\n"
+"The main differences are:\n"
+" The requirements for the 'postscript' name in the name table conflict\n"
+" Bitmap data are stored in different tables\n"
+" Scaled composite characters are treated differently\n"
+" Use of GSUB rather than morx(t)/feat\n"
+" Use of GPOS rather than kern/opbd\n"
+" Use of GDEF rather than lcar/prop"
+msgstr ""
+"Apple და MS/Adobe განსხვავებული სახით ადგენენ TrueType- და OpenType-"
+"ფაილებს.\n"
+"ამით აირჩევთ, რომელ სტანდარტს უნდა დაექვემდებაროს შრიფტი.\n"
+"ძირითადი განსხვავებებია:\n"
+" არათავსებადი მახასიათებლები „PostScript-სახელებისთვის“ სახელთა ცხრილში\n"
+" ბიტური მონაცემები ინახება სხვადასხვა ცხრილში\n"
+" ზომაშეცვლილი შეერთებული ასონიშნები მუშავდება სხვანაირად\n"
+" უპირატესად გამოიყენება GSUB, ვიდრე morx(t)/feat\n"
+" უპირატესად გამოიყენება GPOS, ვიდრე kern/opbd\n"
+" უპირატესად გამოიყენება GDEF, ვიდრე lcar/prop"
+
+msgid ""
+"Apple and MS/Adobe differ about the format of truetype and opentype files\n"
+"This allows you to select which standard to follow for your font.\n"
+"The main differences are:\n"
+" The requirements for the 'postscript' name in the name table conflict\n"
+" Bitmap data are stored in different tables\n"
+" Scaled composite glyphs are treated differently\n"
+" Use of GSUB rather than morx(t)/feat\n"
+" Use of GPOS rather than kern/opbd\n"
+" Use of GDEF rather than lcar/prop"
+msgstr ""
+"Apple და MS/Adobe განსხვავებული სახით ადგენენ TrueType- და OpenType-"
+"ფაილებს.\n"
+"ამით აირჩევთ, რომელ სტანდარტს უნდა დაექვემდებაროს შრიფტი.\n"
+"ძირითადი განსხვავებებია:\n"
+" არათავსებადი მახასიათებლები „PostScript-სახელებისთვის“ სახელთა ცხრილში\n"
+" ბიტური მონაცემები ინახება სხვადასხვა ცხრილში\n"
+" ზომაშეცვლილი შეერთებული სიმბოლოები მუშავდება სხვანაირად\n"
+" უპირატესად გამოიყენება GSUB, ვიდრე morx(t)/feat\n"
+" უპირატესად გამოიყენება GPOS, ვიდრე kern/opbd\n"
+" უპირატესად გამოიყენება GDEF, ვიდრე lcar/prop"
+
+msgid ""
+"Apple and MS/Adobe differ about the format of truetype and opentype files.\n"
+"This controls the default setting of the Apple checkbox in the\n"
+"File->Generate Font dialog.\n"
+"The main differences are:\n"
+" Bitmap data are stored in different tables\n"
+" Scaled composite glyphs are treated differently\n"
+" Use of GSUB rather than morx(t)/feat\n"
+" Use of GPOS rather than kern/opbd\n"
+" Use of GDEF rather than lcar/prop\n"
+"If both this and OpenType are set, both formats are generated"
+msgstr ""
+"Apple და MS/Adobe განსხვავებული სახით ადგენენ TrueType- და OpenType-"
+"ფაილებს.\n"
+"სწორედ ამას განსაზღვრავს Apple-ის მოსანიშნი უჯრა\n"
+"ფაილი->შრიფტების შედგენის სარკმელში.\n"
+"ძირითადი განსხვავებებია:\n"
+" ბიტური მონაცემები ინახება სხვადასხვა ცხრილში\n"
+" ზომაშეცვლილი შეერთებული ასონიშნები მუშავდება სხვანაირად\n"
+" უპირატესად გამოიყენება GSUB, ვიდრე morx(t)/feat\n"
+" უპირატესად გამოიყენება GPOS, ვიდრე kern/opbd\n"
+" უპირატესად გამოიყენება GDEF, ვიდრე lcar/prop\n"
+"თუ ორივე, ეს და OpenType მიეთითება, ორივე სახით შეიქმნება"
+
+msgid ""
+"Apple and MS/Adobe differ about the format of truetype and opentype files.\n"
+"This controls the default setting of the OpenType checkbox in the\n"
+"File->Generate Font dialog.\n"
+"The main differences are:\n"
+" Bitmap data are stored in different tables\n"
+" Scaled composite glyphs are treated differently\n"
+" Use of GSUB rather than morx(t)/feat\n"
+" Use of GPOS rather than kern/opbd\n"
+" Use of GDEF rather than lcar/prop\n"
+"If both this and Apple are set, both formats are generated"
+msgstr ""
+"Apple და MS/Adobe განსხვავებული სახით ადგენენ TrueType- და OpenType-"
+"ფაილებს.\n"
+"სწორედ ამას განსაზღვრავს OpenType-ის მოსანიშნი უჯრა\n"
+"ფაილი->შრიფტების შედგენის სარკმელში.\n"
+"ძირითადი განსხვავებებია:\n"
+" ბიტური მონაცემები ინახება სხვადასხვა ცხრილში\n"
+" ზომაშეცვლილი შეერთებული ასონიშნები მუშავდება სხვანაირად\n"
+" უპირატესად გამოიყენება GSUB, ვიდრე morx(t)/feat\n"
+" უპირატესად გამოიყენება GPOS, ვიდრე kern/opbd\n"
+" უპირატესად გამოიყენება GDEF, ვიდრე lcar/prop\n"
+"თუ ორივე, ეს და Apple მიეთითება, ორივე სახით შეიქმნება"
+
+msgid "Apps"
+msgstr "აპები"
+
+msgid "Arabic"
+msgstr "არაბული"
+
+msgid "Arabic (& Supplement)"
+msgstr "არაბული (დანართიანად)"
+
+msgid "Arabic (Algeria)"
+msgstr "არაბული (ალჟირი)"
+
+msgid "Arabic (Bahrain)"
+msgstr "არაბული (ბაჰრეინი)"
+
+msgid "Arabic (Egypt)"
+msgstr "არაბული (ეგვიპტე)"
+
+msgid "Arabic (Iraq)"
+msgstr "არაბული (ერაყი)"
+
+msgid "Arabic (Jordan)"
+msgstr "არაბული (იორდანია)"
+
+msgid "Arabic (Kuwait)"
+msgstr "არაბული (ქუვეითი)"
+
+msgid "Arabic (Lebanon)"
+msgstr "არაბული (ლიბანი)"
+
+msgid "Arabic (Libya)"
+msgstr "არაბული (ლიბია)"
+
+msgid "Arabic (Morocco)"
+msgstr "არაბული (მაროკო)"
+
+msgid "Arabic (Oman)"
+msgstr "არაბული (ომანი)"
+
+msgid "Arabic (Qatar)"
+msgstr "არაბული (კატარი)"
+
+msgid "Arabic (Saudi Arabia)"
+msgstr "არაბული (საუდის არაბეთი)"
+
+msgid "Arabic (Syria)"
+msgstr "არაბული (სირია)"
+
+msgid "Arabic (Tunisia)"
+msgstr "არაბული (ტუნისი)"
+
+msgid "Arabic (U.A.E.)"
+msgstr "არაბული (გაერთ. საამიროები)"
+
+msgid "Arabic (Yemen)"
+msgstr "არაბული (იემენი)"
+
+msgid "Arabic Extended-A"
+msgstr "არაბული გაფართოებული-A"
+
+msgid "Arabic Extended-B"
+msgstr "არაბული გაფართოებული-B"
+
+msgid "Arabic Mathematical Alphabetic Symbols"
+msgstr "მათემატიკური არაბული ანბანური ნიშნები"
+
+msgid "Arabic Number"
+msgstr "არაბული ციფრი"
+
+msgid "Arabic Presentation Forms-A"
+msgstr "არაბულის წარმოსადგენი ჩანაწერები-A"
+
+msgid "Arabic Presentation Forms-B"
+msgstr "არაბულის წარმოსადგენი ჩანაწერები-B"
+
+msgid "Arabic Right to Left"
+msgstr "არაბული მარჯვნიდან მარცხნივ"
+
+msgid "Arabic Supplement"
+msgstr "არაბული დანართი"
+
+msgid "Archives"
+msgstr "არქივები"
+
+msgid ""
+"Are you sure you wish to remove these glyphs? This operation cannot be "
+"undone."
+msgstr "ნამდვულად გსურთ, წაშალოთ ეს ასონიშნები? ეს ქმედება შეუქცევადია."
+
+msgid "Armenian"
+msgstr "სომხური"
+
+msgid "Arrows"
+msgstr "ისრები"
+
+msgid "Arrows & Sup Arrows A/B & Misc Arrows"
+msgstr "ისრები, დანართი A/B და სხვადასხვა ნიშნები"
+
+msgid "At most 31 glyphs may be specified in an insert list"
+msgstr "არაუმეტეს 31 ასონიშანი შეიძლება მიეთითოს ჩასამატებელ სიაში"
+
+#, c-format
+msgid "Attempt to save a pixel size that has not been created (%d@%d)"
+msgstr "იმ პიქსელის ზომის შენახვის მცდელობა, რომელიც ვერ შეიქმნა (%d@%d)"
+
+msgid "Auto Width"
+msgstr "სიგანის თვითგანსაზღვრა"
+
+msgid "AutoHint"
+msgstr "თვითმინიშნება"
+
+msgid "AutoHint changed glyphs before generating a font"
+msgstr "თვითმინიშნებით შესწორებულია ასონიშნები შრიფტის შედგენამდე"
+
+msgid "AutoKernDialog"
+msgstr "თვითწანაცვლების სარკმელი"
+
+msgid "AutoLBearingSync"
+msgstr "მარცხენა საბჯენის თვითშეწყობა"
+
+#, c-format
+msgid "AutoWidth failure on %s\n"
+msgstr "სიგანე ვერ განისაზღვრა – %s\n"
+
+msgid "AutoWidthSync"
+msgstr "სიგანის თვითშეწყობა"
+
+msgid "Auto_Instr"
+msgstr "თვითმი_თითება"
+
+msgid "Autokern new entries"
+msgstr "ახლადშეყვანილის თვითწანაცვლება"
+
+msgid "Axerbaijani (Arabic)"
+msgstr "აზერბაიჯანული (არაბული)"
+
+msgid "Axerbaijani (Cyrillic)"
+msgstr "აზერბაიჯანი (კირილიცა)"
+
+msgid "Azeri (Cyrillic)"
+msgstr "აზერი (კირილიცა)"
+
+msgid "Azeri (Latin)"
+msgstr "აზერი (ლათინური)"
+
+#. GT: Bottom/Right (side) bearing
+msgid "BBearing:"
+msgstr "ქვედა საბჯენი:"
+
+#. GT: Background, make it short
+msgid "Back"
+msgstr "უკანა"
+
+msgid "Back Classes"
+msgstr "წინა კლასები"
+
+msgid "Bad Apple Kern Class\n"
+msgstr "Apple-ის გაუმართავი წანაცვლების კლასი\n"
+
+msgid "Bad Class"
+msgstr "გაუმართავი კლასი"
+
+msgid "Bad Copyright"
+msgstr "არამართებული საავტორო უფლება"
+
+msgid "Bad Encoding"
+msgstr "გაუმართავი დაშიფვრა"
+
+msgid "Bad Family Name"
+msgstr "კრებულის არამართებული სახელი"
+
+msgid "Bad Family Name, must begin with an alphabetic character."
+msgstr "კრებულის არამართებული სახელი, უნდა იწყებოდეს ანბანის ასოთი."
+
+msgid "Bad Font Family Name"
+msgstr "შრიფტის კრებულის არამართებული სახელი"
+
+msgid "Bad Human Fontname"
+msgstr "არამართებული ადვილად წასაკითხი სახელი"
+
+msgid "Bad IBM Family"
+msgstr "არამართებული IBM-კრებული"
+
+msgid "Bad Language"
+msgstr "არასწორი ენა"
+
+msgid "Bad Mac Family"
+msgstr "არამართებული Mac-კრებული"
+
+msgid "Bad Number"
+msgstr "არასწორი რიცხვი"
+
+msgid "Bad Pattern"
+msgstr "გაუმართავი ნიმუში"
+
+msgid "Bad Pattern Size"
+msgstr "გაუმართავი ზომის ნიმუში"
+
+msgid "Bad Point Numbering"
+msgstr "წერტილთა უმართებულო გადანომვრა"
+
+msgid "Bad Sections"
+msgstr "გაუმართავი არეები"
+
+msgid "Bad Version"
+msgstr "არამართებული ვერსია"
+
+msgid "Bad Weight"
+msgstr "არამართებული სისქე"
+
+msgid "Bad class name"
+msgstr "კლასის გაუმართავი სახელი"
+
+msgid "Bad default baseline"
+msgstr "გაუმართავი საყრდენი ხაზი"
+
+msgid "Bad encoding file format"
+msgstr "გაუმართავი შიფრის მქონე ფაილი"
+
+msgid "Bad feature tag"
+msgstr "თვისების არამართებული ჭდე"
+
+msgid "Bad image file"
+msgstr "გაუმართავი გამოსახულება"
+
+#, c-format
+msgid "Bad image file, not a bitmap: %.100s"
+msgstr "გაუმართავი გამოსახულება, არაა ბიტური რუკა: %.100s"
+
+#, c-format
+msgid "Bad image file: %.100s"
+msgstr "გაუმართავი გამოსახულება: %.100s"
+
+#, c-format
+msgid "Bad kern pair: glyphs %d & %d should have been < %d\n"
+msgstr "გაუმართავი წანაცვლების წყვილი: ასონიშნები %d და %d უნდა იყოს < %d\n"
+
+msgid "Bad language tag"
+msgstr "არამართებული ენის ჭდე"
+
+#, c-format
+msgid "Bad ligature glyph. GID %d not less than %d\n"
+msgstr "გადაბმის გაუმართავი ნიშანი. GID-ნომერი %d უნდა იყოს არანაკლებ %d\n"
+
+msgid "Bad lookup type"
+msgstr "არამართებული ცნობარის სახეობა"
+
+msgid "Bad namelist file"
+msgstr "არასწორ სახელთა სიის ფაილი"
+
+#. GT: NaN is a concept in IEEE floating point which means "Not a Number"
+#. GT: it is used to represent errors like 0/0 or sqrt(-1).
+#, c-format
+msgid "Bad number, infinity or nan: %s\n"
+msgstr "არასწორი რიცხვი, Infinity ან NaN: %s\n"
+
+msgid "Bad rule"
+msgstr "გაუმართავი წესი"
+
+#. GT: The words "true" and "false" should be left untranslated. We are restricted
+#. GT: here by what PostScript understands, and it only understands the English
+#. GT: words. You may, of course, change it to something like ("true" (vrai) ou "false" (faux))
+msgid "Bad type"
+msgstr "არამართებული სახის"
+
+msgid "Bad xfig file"
+msgstr "გაუმართავი xfig-ფაილი"
+
+msgid "Balancing..."
+msgstr "წონასწორდება..."
+
+msgid "Balinese"
+msgstr "ბალიური"
+
+msgid "Bamum"
+msgstr "ბამუმი"
+
+msgid "Bamum Supplement"
+msgstr "ბამუმი, დანართი"
+
+msgid "Bar Width:"
+msgstr "ზოლის სიგანე:"
+
+msgid "Base Ligatures"
+msgstr "ძირითადი გადაბმები"
+
+msgid "Baseline"
+msgstr "საყრდენი ხაზი"
+
+msgid "Baseline used for Latin, Greek, Cyrillic text."
+msgstr "საყრდენი ხაზი ლათინურის, ბერძნულისა და კირილიცისთვის."
+
+msgid "Basic Latin"
+msgstr "ძირითადი ლათინური"
+
+msgid "Basic Multilingual Plane"
+msgstr "ძირითადი მრავალენოვანი სივრცე"
+
+msgid "Bassa Vah"
+msgstr "ბასა-ვაჰი"
+
+msgid "Batak"
+msgstr "ბატაკი"
+
+msgid "Bengali"
+msgstr "ბენგალური"
+
+msgid "Bhaiksuki"
+msgstr "ბჰაიკშუკი"
+
+msgid "Bitmap"
+msgstr "ბიტური"
+
+msgid "Bitmap Fonts"
+msgstr "ცხრილური შრიფტები"
+
+msgid "Bitmap Magnification..."
+msgstr "რასტრული გადიდება..."
+
+msgid "Bitmap _Magnification..."
+msgstr "რასტრული გა_დიდება..."
+
+msgid "Bold font used in the Find/Replace window"
+msgstr "მუქი შრიფტი გამოიყენება პოვნა/ძიების ფანჯარაში"
+
+msgid "Bopomofo"
+msgstr "ბოპომოფო"
+
+msgid "Bopomofo (& Extended)"
+msgstr "ბოპომოფო (გაფართოებიანად)"
+
+msgid "Bopomofo Extended"
+msgstr "ბოპომოფო გაფართოებული"
+
+msgid "Border Width:"
+msgstr "ჩარჩოს სიგანე:"
+
+msgid "Braille Patterns"
+msgstr "ბრაილის ანბანი"
+
+msgid "Buginese"
+msgstr "ბუგინური"
+
+msgid "Buhid"
+msgstr "ბუჰიდური"
+
+msgid "Building small capitals"
+msgstr "იგება მცირე მთავრულები"
+
+msgid "Building sub/superscripts"
+msgstr "ხაზზედა/ქვედა ნიშნები იწყობა"
+
+msgid "By Classes"
+msgstr "კლასებით"
+
+msgid "Byzantine Music"
+msgstr "ბიზანტიური მუსიკა"
+
+msgid "Byzantine Music & Music & Ancient Greek Music"
+msgstr "ბიზანტიური სანოტო, მუსიკალური, ძველბერძნული სანოტო"
+
+msgid "Byzantine Musical Symbols"
+msgstr "ბიზანტიური მუსიკალური ნიშნები"
+
+msgid "CJK Compatibility"
+msgstr "CJK-თავსებადობა"
+
+msgid "CJK Compatibility Ideographs"
+msgstr "CJK, თავსებადი იდეოგრამები"
+
+msgid "CJK Compatibility Ideographs Supplement"
+msgstr "CJK, თავსებადი იდეოგრამების დანართი"
+
+msgid "CJK Ideographic"
+msgstr "CJK იდეოგრამები"
+
+msgid "CJK Symbols and Punctuation"
+msgstr "CJK-სიმბოლოები და სასვენი ნიშნები"
+
+msgid "CJK Unified Ideographs"
+msgstr "CJK, გაერთიანებული იდეოგრამები"
+
+msgid "CJK Unified Ideographs Extension A"
+msgstr "CJK, გაერთიანებული იდეოგრამები, გაფართოებული A"
+
+msgid "CJK Unified Ideographs Extension B"
+msgstr "CJK, გაერთიანებული იდეოგრამები, გაფართოებული B"
+
+msgid "CJK Unified Ideographs Extension C"
+msgstr "CJK, გაერთიანებული იდეოგრამები, გაფართოებული C"
+
+msgid "CJK Unified Ideographs Extension D"
+msgstr "CJK, გაერთიანებული იდეოგრამები, გაფართოებული D"
+
+msgid "CJK Unified Ideographs Extension E"
+msgstr "CJK, გაერთიანებული იდეოგრამები, გაფართოებული E"
+
+msgid "CJK Unified Ideographs Extension F"
+msgstr "CJK, გაერთიანებული იდეოგრამები, გაფართოებული F"
+
+msgid "CJK Unified Ideographs Extension G"
+msgstr "CJK, გაერთიანებული იდეოგრამები, გაფართოებული G"
+
+msgid "C_all..."
+msgstr "გამო_ძახება..."
+
+msgid "C_lear"
+msgstr "გასუ_ფთავება"
+
+msgid "C_orner"
+msgstr "კ_უთხე"
+
+msgid "Call Script"
+msgstr "სკრიპტის გამოძახება"
+
+msgid ""
+"Can this font be embedded in a downloadable (pdf)\n"
+"document, and if so, what behaviors are permitted on\n"
+"both the document and the font."
+msgstr ""
+"შეიძლება ამ შრიფტის დართვა ჩამოსატვირთ (PDF)\n"
+"დოკუმენტში, თუ კი, მაშინ რა მოქმედებებია ნებადართული\n"
+"დოკუმენტისა და შრიფტის შემთხვევაში."
+
+msgid "Can't Find Glyph"
+msgstr "ვერ მოინახა ასონიშანი"
+
+msgid "Can't find the file"
+msgstr "ვერ მოიძებნა ფაილი"
+
+msgid "Can't insert 'cvt'"
+msgstr "ვერ ჩაისმება 'cvt'"
+
+msgid "Can't insert 'fpgm'"
+msgstr "ვერ ჩაისმება 'fpgm'"
+
+msgid "Can't insert 'prep'"
+msgstr "ვერ ჩაისმება 'prep'"
+
+#, c-format
+msgid "Can't open %s"
+msgstr "ვერ იხსნება %s"
+
+#, c-format
+msgid "Can't open %s\n"
+msgstr "ვერ იხსნება %s\n"
+
+msgid "Can't open temporary file for postscript output\n"
+msgstr "ვერ იხსნება დროებითი ფაილი PostScript-გამოტანისთვის\n"
+
+msgid "Can't open temporary file for truetype output.\n"
+msgstr "ვერ იხსნება დროებითი ფაილი Truetype-გამოტანისთვის.\n"
+
+msgid "Cancel"
+msgstr "გაუქმება"
+
+msgid "Cancel Button"
+msgstr "გაუქმების ღილაკი"
+
+msgid "Cancel Buttons"
+msgstr "გაუქმების ღილაკები"
+
+msgid "Cannot Be Undone"
+msgstr "ვერ დაბრუნდება"
+
+msgid "Cannot be Undone"
+msgstr "ვერ დაბრუნდება"
+
+#, c-format
+msgid "Cannot find your hotkey definition file!\n"
+msgstr "ვერ მოიძებნა სწრაფი ღილაკების განსაზღვრის ფაილი!\n"
+
+#, c-format
+msgid "Cannot open %s\n"
+msgstr "ვერ იხსნება %s\n"
+
+#, c-format
+msgid "Cannot open feature file %.120s"
+msgstr "ვერ გაიხსნა მახასიათებლების ფაილი %.120s"
+
+msgid "Cannot open file"
+msgstr "ვერ იხსნება ფაილი"
+
+msgid "Capitals to Small Capitals"
+msgstr "მთავრულიდან მცირე მთავრულში"
+
+msgid "Center Bet_ween Control Points"
+msgstr "შუა არე მართვის წერტილებს შ_ორის"
+
+msgid "Center of Selection"
+msgstr "მონიშნულის შუაწერტილი"
+
+msgid "Change Supplement..."
+msgstr "დანართის შეცვლა..."
+
+msgid "Change Weight"
+msgstr "სისქის შეცვლა"
+
+msgid "Change _Glyph..."
+msgstr "ას_ონიშნის შეცვლა..."
+
+msgid "Change _Weight..."
+msgstr "სის_ქის შეცვლა..."
+
+msgid "Change whether spiro is active or not"
+msgstr "ამოქმედეს თუ არა ხვეული რეჟიმი"
+
+msgid "Changing glyph weights"
+msgstr "იცვლება ასონიშნის სიქეები"
+
+msgid "Character Variants 01"
+msgstr "სიმბოლოს სახესხვაობა 01"
+
+msgid "Character Variants 02"
+msgstr "სიმბოლოს სახესხვაობა 02"
+
+msgid "Character Variants 03"
+msgstr "სიმბოლოს სახესხვაობა 03"
+
+msgid "Character Variants 04"
+msgstr "სიმბოლოს სახესხვაობა 04"
+
+msgid "Character Variants 05"
+msgstr "სიმბოლოს სახესხვაობა 05"
+
+msgid "Character Variants 06"
+msgstr "სიმბოლოს სახესხვაობა 06"
+
+msgid "Character Variants 07"
+msgstr "სიმბოლოს სახესხვაობა 07"
+
+msgid "Character Variants 08"
+msgstr "სიმბოლოს სახესხვაობა 08"
+
+msgid "Character Variants 09"
+msgstr "სიმბოლოს სახესხვაობა 09"
+
+msgid "Character Variants 10"
+msgstr "სიმბოლოს სახესხვაობა 10"
+
+msgid "Character Variants 11"
+msgstr "სიმბოლოს სახესხვაობა 11"
+
+msgid "Character Variants 12"
+msgstr "სიმბოლოს სახესხვაობა 12"
+
+msgid "Character Variants 13"
+msgstr "სიმბოლოს სახესხვაობა 13"
+
+msgid "Character Variants 14"
+msgstr "სიმბოლოს სახესხვაობა 14"
+
+msgid "Character Variants 15"
+msgstr "სიმბოლოს სახესხვაობა 15"
+
+msgid "Character Variants 16"
+msgstr "სიმბოლოს სახესხვაობა 16"
+
+msgid "Character Variants 17"
+msgstr "სიმბოლოს სახესხვაობა 17"
+
+msgid "Character Variants 18"
+msgstr "სიმბოლოს სახესხვაობა 18"
+
+msgid "Character Variants 19"
+msgstr "სიმბოლოს სახესხვაობა 19"
+
+msgid "Character Variants 20"
+msgstr "სიმბოლოს სახესხვაობა 20"
+
+msgid "Character Variants 21"
+msgstr "სიმბოლოს სახესხვაობა 21"
+
+msgid "Character Variants 22"
+msgstr "სიმბოლოს სახესხვაობა 22"
+
+msgid "Character Variants 23"
+msgstr "სიმბოლოს სახესხვაობა 23"
+
+msgid "Character Variants 24"
+msgstr "სიმბოლოს სახესხვაობა 24"
+
+msgid "Character Variants 25"
+msgstr "სიმბოლოს სახესხვაობა 25"
+
+msgid "Character Variants 26"
+msgstr "სიმბოლოს სახესხვაობა 26"
+
+msgid "Character Variants 27"
+msgstr "სიმბოლოს სახესხვაობა 27"
+
+msgid "Character Variants 28"
+msgstr "სიმბოლოს სახესხვაობა 28"
+
+msgid "Character Variants 29"
+msgstr "სიმბოლოს სახესხვაობა 29"
+
+msgid "Character Variants 30"
+msgstr "სიმბოლოს სახესხვაობა 30"
+
+msgid "Character Variants 31"
+msgstr "სიმბოლოს სახესხვაობა 31"
+
+msgid "Character Variants 32"
+msgstr "სიმბოლოს სახესხვაობა 32"
+
+msgid "Character Variants 33"
+msgstr "სიმბოლოს სახესხვაობა 33"
+
+msgid "Character Variants 34"
+msgstr "სიმბოლოს სახესხვაობა 34"
+
+msgid "Character Variants 35"
+msgstr "სიმბოლოს სახესხვაობა 35"
+
+msgid "Character Variants 36"
+msgstr "სიმბოლოს სახესხვაობა 36"
+
+msgid "Character Variants 37"
+msgstr "სიმბოლოს სახესხვაობა 37"
+
+msgid "Character Variants 38"
+msgstr "სიმბოლოს სახესხვაობა 38"
+
+msgid "Character Variants 39"
+msgstr "სიმბოლოს სახესხვაობა 39"
+
+msgid "Character Variants 40"
+msgstr "სიმბოლოს სახესხვაობა 40"
+
+msgid "Character Variants 41"
+msgstr "სიმბოლოს სახესხვაობა 41"
+
+msgid "Character Variants 42"
+msgstr "სიმბოლოს სახესხვაობა 42"
+
+msgid "Character Variants 43"
+msgstr "სიმბოლოს სახესხვაობა 43"
+
+msgid "Character Variants 44"
+msgstr "სიმბოლოს სახესხვაობა 44"
+
+msgid "Character Variants 45"
+msgstr "სიმბოლოს სახესხვაობა 45"
+
+msgid "Character Variants 46"
+msgstr "სიმბოლოს სახესხვაობა 46"
+
+msgid "Character Variants 47"
+msgstr "სიმბოლოს სახესხვაობა 47"
+
+msgid "Character Variants 48"
+msgstr "სიმბოლოს სახესხვაობა 48"
+
+msgid "Character Variants 49"
+msgstr "სიმბოლოს სახესხვაობა 49"
+
+msgid "Character Variants 50"
+msgstr "სიმბოლოს სახესხვაობა 50"
+
+msgid "Character Variants 51"
+msgstr "სიმბოლოს სახესხვაობა 51"
+
+msgid "Character Variants 52"
+msgstr "სიმბოლოს სახესხვაობა 52"
+
+msgid "Character Variants 53"
+msgstr "სიმბოლოს სახესხვაობა 53"
+
+msgid "Character Variants 54"
+msgstr "სიმბოლოს სახესხვაობა 54"
+
+msgid "Character Variants 55"
+msgstr "სიმბოლოს სახესხვაობა 55"
+
+msgid "Character Variants 56"
+msgstr "სიმბოლოს სახესხვაობა 56"
+
+msgid "Character Variants 57"
+msgstr "სიმბოლოს სახესხვაობა 57"
+
+msgid "Character Variants 58"
+msgstr "სიმბოლოს სახესხვაობა 58"
+
+msgid "Character Variants 59"
+msgstr "სიმბოლოს სახესხვაობა 59"
+
+msgid "Character Variants 60"
+msgstr "სიმბოლოს სახესხვაობა 60"
+
+msgid "Character Variants 61"
+msgstr "სიმბოლოს სახესხვაობა 61"
+
+msgid "Character Variants 62"
+msgstr "სიმბოლოს სახესხვაობა 62"
+
+msgid "Character Variants 63"
+msgstr "სიმბოლოს სახესხვაობა 63"
+
+msgid "Character Variants 64"
+msgstr "სიმბოლოს სახესხვაობა 64"
+
+msgid "Character Variants 65"
+msgstr "სიმბოლოს სახესხვაობა 65"
+
+msgid "Character Variants 66"
+msgstr "სიმბოლოს სახესხვაობა 66"
+
+msgid "Character Variants 67"
+msgstr "სიმბოლოს სახესხვაობა 67"
+
+msgid "Character Variants 68"
+msgstr "სიმბოლოს სახესხვაობა 68"
+
+msgid "Character Variants 69"
+msgstr "სიმბოლოს სახესხვაობა 69"
+
+msgid "Character Variants 70"
+msgstr "სიმბოლოს სახესხვაობა 70"
+
+msgid "Character Variants 71"
+msgstr "სიმბოლოს სახესხვაობა 71"
+
+msgid "Character Variants 72"
+msgstr "სიმბოლოს სახესხვაობა 72"
+
+msgid "Character Variants 73"
+msgstr "სიმბოლოს სახესხვაობა 73"
+
+msgid "Character Variants 74"
+msgstr "სიმბოლოს სახესხვაობა 74"
+
+msgid "Character Variants 75"
+msgstr "სიმბოლოს სახესხვაობა 75"
+
+msgid "Character Variants 76"
+msgstr "სიმბოლოს სახესხვაობა 76"
+
+msgid "Character Variants 77"
+msgstr "სიმბოლოს სახესხვაობა 77"
+
+msgid "Character Variants 78"
+msgstr "სიმბოლოს სახესხვაობა 78"
+
+msgid "Character Variants 79"
+msgstr "სიმბოლოს სახესხვაობა 79"
+
+msgid "Character Variants 80"
+msgstr "სიმბოლოს სახესხვაობა 80"
+
+msgid "Character Variants 81"
+msgstr "სიმბოლოს სახესხვაობა 81"
+
+msgid "Character Variants 82"
+msgstr "სიმბოლოს სახესხვაობა 82"
+
+msgid "Character Variants 83"
+msgstr "სიმბოლოს სახესხვაობა 83"
+
+msgid "Character Variants 84"
+msgstr "სიმბოლოს სახესხვაობა 84"
+
+msgid "Character Variants 85"
+msgstr "სიმბოლოს სახესხვაობა 85"
+
+msgid "Character Variants 86"
+msgstr "სიმბოლოს სახესხვაობა 86"
+
+msgid "Character Variants 87"
+msgstr "სიმბოლოს სახესხვაობა 87"
+
+msgid "Character Variants 88"
+msgstr "სიმბოლოს სახესხვაობა 88"
+
+msgid "Character Variants 89"
+msgstr "სიმბოლოს სახესხვაობა 89"
+
+msgid "Character Variants 90"
+msgstr "სიმბოლოს სახესხვაობა 90"
+
+msgid "Character Variants 91"
+msgstr "სიმბოლოს სახესხვაობა 91"
+
+msgid "Character Variants 92"
+msgstr "სიმბოლოს სახესხვაობა 92"
+
+msgid "Character Variants 93"
+msgstr "სიმბოლოს სახესხვაობა 93"
+
+msgid "Character Variants 94"
+msgstr "სიმბოლოს სახესხვაობა 94"
+
+msgid "Character Variants 95"
+msgstr "სიმბოლოს სახესხვაობა 95"
+
+msgid "Character Variants 96"
+msgstr "სიმბოლოს სახესხვაობა 96"
+
+msgid "Character Variants 97"
+msgstr "სიმბოლოს სახესხვაობა 97"
+
+msgid "Character Variants 98"
+msgstr "სიმბოლოს სახესხვაობა 98"
+
+msgid "Character Variants 99"
+msgstr "სიმბოლოს სახესხვაობა 99"
+
+msgid "Charsets"
+msgstr "ასოთა ნაკრები"
+
+msgid "Cherokee"
+msgstr "ჩეროკე"
+
+msgid "Cherokee Supplement"
+msgstr "ჩეროკე დანართი"
+
+msgid "Chinese, Phonetic"
+msgstr "ჩინური, ბგერითი"
+
+msgid "Choose which lookups to copy"
+msgstr "აირციეთ ცნობარი ასლისთვის"
+
+msgid "Class 0"
+msgstr "კლასი 0"
+
+msgid "Class 1: {Everything Else}"
+msgstr "კლასი 1: {სხვა დანარჩენი}"
+
+msgid "Classes"
+msgstr "კლასები"
+
+msgid "Class|Name"
+msgstr "სახელი"
+
+msgid "Clear"
+msgstr "გასუფთავება"
+
+msgid "Clear All"
+msgstr "ყველაფრის გასუფთავება"
+
+msgid "Clear Device Table"
+msgstr "მოწყობილობის ცხრილის გასუფთავება"
+
+msgid "Clear Special Data"
+msgstr "საგანგებო მონაცემების წაშლა"
+
+msgid ""
+"Click on a range to select characters in that range.\n"
+"Double click on a range to see characters that should be\n"
+"in the range but aren't."
+msgstr ""
+"დაწკაპეთ არეს, რომ მონიშნოთ ასონიშნები, რომელთაც მოიცავს.\n"
+"ორმაგი წკაპით არეზე იმ ასონიშნებს იხილავთ, რომლებიც უნდა\n"
+"იყოს ამ არეში, მაგრამ არაა."
+
+msgid "Co_py LBearing"
+msgstr "მარცხენა საბჯენის ას_ლი"
+
+msgid "Color used to draw the advance width line of a glyph"
+msgstr "ასონიშნის გაფართოებული სიგანის აღმნიშვნელი ფერი"
+
+msgid "Color used to draw the kerning line"
+msgstr "წანაცვლების ხაზის აღმნიშვნელი ფერი"
+
+msgid "Color used to draw the left side bearing"
+msgstr "მარცხენა საბჯენის ფერი"
+
+msgid "Color|Choose..."
+msgstr "არჩევა..."
+
+msgid "Color|Default"
+msgstr "ნაგულისხმევი"
+
+msgid "Com_binations"
+msgstr "ურთიერთკა_ვშირები"
+
+msgid "Combining Diacritical Marks"
+msgstr "დასართავი განმასხვავებელი ნიშნები"
+
+msgid "Combining Diacritical Marks (& Supplement)"
+msgstr "დასართავი განმასხვავებელი ნიშნები (დანართიანად)"
+
+msgid "Combining Diacritical Marks Extended"
+msgstr "დასართავი განმასხვავებელი ნიშნები გაფართოებული"
+
+msgid "Combining Diacritical Marks Supplement"
+msgstr "დასართავი განმასხვავებელი ნიშნები დანართი"
+
+msgid "Combining Diacritical Marks for Symbols"
+msgstr "დასართავი განმასხვავებელი ნიშნები პირობითი ნიშნებისთვის"
+
+msgid "Common Indic Number Forms"
+msgstr "გავრცელებული ინდური რიცხვითი ჩანაწერები"
+
+msgid "Compact"
+msgstr "შემჭიდროება"
+
+msgid "CompactOnOpen"
+msgstr "შემჭირდოებული გახსნისას"
+
+msgid "Compacted"
+msgstr "შემჭიდროებული"
+
+msgid "Compare _Outlines"
+msgstr "_მოხაზულობის შედარება"
+
+msgid "Complex"
+msgstr "რთული"
+
+msgid "Config_ure Plugins..."
+msgstr "მოდულების გამარ_თვა..."
+
+msgid "Control Points (Always_)"
+msgstr "მართვის წერტილები (ყოველთვის...)"
+
+msgid "ControlPoint|Default"
+msgstr "ნაგულისხმევი"
+
+msgid "Conve_x (Polygonal)"
+msgstr "ამო_ზნექილი (მრავალკუთხა)"
+
+msgid "Converting PostScript"
+msgstr "PostScript-გარდაქმნა"
+
+msgid "Coptic"
+msgstr "კოპტური"
+
+msgid "Copy Layer To Layer"
+msgstr "ასლი შრიდან შრეზე"
+
+msgid "Copy Layers"
+msgstr "შრეების ასლი"
+
+msgid "Copy RBearin_g"
+msgstr "მარჯვენა სა_ბჯენის ასლი"
+
+msgid "Copy _VWidth"
+msgstr "_შვეული სიგანის ასლი"
+
+msgid "Copy _Width"
+msgstr "სიგა_ნის ასლი"
+
+msgid "Copy one layer to another"
+msgstr "ასლი ერთი შრიდან მეორეზე"
+
+msgid "Copy_right:"
+msgstr "საავ_ტორო უფლება:"
+
+msgid "Copyright"
+msgstr "საავტორო უფლება"
+
+msgid ""
+"Copyright text (in the Names pane) must be entirely ASCII. So, use (c) "
+"instead of ©."
+msgstr ""
+"საავტორო უფლების ტექსტი (სახელთა არეში) მთლიანად უნდა იყოს ASCII. ასე რომ, "
+"გამოიყენეთ (c) და არა – ©."
+
+msgid "Corner"
+msgstr "კუთხე"
+
+msgid "Could not figure out a lookup type"
+msgstr "ვერ დადგინდა ცნობარის სახეობა"
+
+#, c-format
+msgid "Could not find font corresponding to '%s'"
+msgstr "ვერ მოიძებნა შრიფტი, რომელსაც შეესაბამება „%s“"
+
+#, c-format
+msgid "Could not open include file (%s) on line %d of %s"
+msgstr "ვერ იხსნება შემცველი ფაილი (%s) %d ხაზზე %s-იდან"
+
+#, c-format
+msgid "Could not open output file: %s"
+msgstr "ვერ გაიხსნა გამოტანის ფაილი: %s"
+
+msgid "Could not open temporary file."
+msgstr "ვერ გაიხსნა დროებითი ფაილი."
+
+msgid "Could not read (or perhaps find) mf output file"
+msgstr "ვერ იკითხება (ან უფრო იძებნება) mf-გამოტანის ფაილი"
+
+msgid "Couldn't Load"
+msgstr "ვერ ჩაიტვირთა"
+
+msgid "Couldn't Start"
+msgstr "ვერ გაეშვა"
+
+msgid "Couldn't create directory"
+msgstr "ვერ შეიქმნა საქაღალდე"
+
+#, c-format
+msgid "Couldn't create directory: %s"
+msgstr "ვერ შეიქმნა საქაღალდე: %s"
+
+#, c-format
+msgid "Couldn't find a font file named %s\n"
+msgstr "ვერ მოიძებნა შრიფტი სახელით %s\n"
+
+msgid "Couldn't find base point"
+msgstr "ვერ მოინახა საყრდენი წერტილი"
+
+#, c-format
+msgid "Couldn't open cidmap file: %s"
+msgstr "ვერ გაიხსნა cidmap-ფაილი: %s"
+
+#, c-format
+msgid "Couldn't open directory as a font: %s"
+msgstr "ვერ გაიხსნა საქაღალდე შრიფტის სახით: %s"
+
+msgid "Couldn't open file"
+msgstr "ვერ გაიხსნა ფაილი"
+
+#, c-format
+msgid "Couldn't open file %.200s"
+msgstr "ვერ გაიხსნა ფაილი %.200s"
+
+msgid "Couldn't open font"
+msgstr "ვერ გაიხსნა შრიფტი"
+
+msgid "Cre_ate Named Glyphs..."
+msgstr "სახელიანი ასონიშნების შ_ექმნა..."
+
+msgid "Create Small Caps"
+msgstr "მცირე მთავრულის შექმნა"
+
+msgid "Create Subscript/Superscript"
+msgstr "ხაზზედა/ხაზქვედა ნიშნის შექმნა"
+
+msgid "Create small caps variants for symbols as well as letters"
+msgstr "მცირე მთავრულის შექმნა სიმბოლოებისა და ასოებისთვის"
+
+msgid "Creation Date:"
+msgstr "შექმნის თარიღი:"
+
+msgid "Cu_t"
+msgstr "ამო_ჭრა"
+
+msgid "Currency Symbols"
+msgstr "ვალუტის ნიშნები"
+
+msgid "Current Glyph"
+msgstr "მიმდინარე ასონიშანი"
+
+msgid "Currently, FontForge only supports bitmap (not bytemap) type3 output"
+msgstr ""
+"ჯერჯერობით, FontForge-ში მხარდაჭერილია მხოლოდ ბიტური (და არა ბაიტური) სახის "
+"type3-გამოტანა"
+
+msgid "Curve Type"
+msgstr "მრუდის სახეობა"
+
+msgid "Custom"
+msgstr "მორგებული"
+
+msgid "Cut splines in two"
+msgstr "დანაწევრება"
+
+msgid "Cypro-Minoan"
+msgstr "კიპრო-მინოიური"
+
+msgid "Cyrillic"
+msgstr "კირილიცა"
+
+msgid "Cyrillic (& Supplement & Ext A/B)"
+msgstr "კირილიცა (დანართ/გაფართოებიანად A/B)"
+
+msgid "Cyrillic Extended-A"
+msgstr "კირილიცა გაფართოებული-A"
+
+msgid "Cyrillic Extended-B"
+msgstr "კირილიცა გაფართოებული-B"
+
+msgid "Cyrillic Extended-C"
+msgstr "კირილიცა გაფართოებული-C"
+
+msgid "Cyrillic Supplement"
+msgstr "კირილიცა დანართი"
+
+msgid "D_efine Groups..."
+msgstr "განსა_ზღვრა ჯგუფების..."
+
+msgid "Dashes"
+msgstr "წყვეტილი"
+
+msgid "Dates"
+msgstr "თარიღები"
+
+msgid "De_activate Spiro"
+msgstr "ხვეულის გა_უქმება"
+
+msgid "Default Baseline"
+msgstr "საყრდენი ხაზი ნაგულისხმევად"
+
+msgid "Define Groups"
+msgstr "ჯგუფების განსაზღვრა"
+
+msgid "Delete"
+msgstr "წაშლა"
+
+msgid "Delete the current layer"
+msgstr "მიმდინარე შრის წაშლა"
+
+msgid "Deleting a layer cannot be UNDONE!"
+msgstr "შრის წაშლა ᲨᲔᲣᲥᲪᲔᲕᲐᲓᲘᲐ!"
+
+msgid "Deselect VWidth"
+msgstr "შვეული სიგანის მონიშვნის მოხსნა"
+
+msgid "Deselect Width"
+msgstr "სიგანის მონიშვნის მოხსნა"
+
+msgid "Deseret"
+msgstr "დეზერეტული"
+
+msgid "Designer"
+msgstr "მხატვარ-შემდგენი"
+
+msgid "Designer URL"
+msgstr "შემდგენის ბმული"
+
+msgid "Design|_New..."
+msgstr "_ახალი..."
+
+msgid "Detach & Remo_ve Glyphs..."
+msgstr "ასონიშნების ჩახსნა და მო_ცილება..."
+
+msgid "Detach & Remove Glyphs"
+msgstr "ასონიშნების ჩახსნა და მოცილება"
+
+msgid "Devanagari"
+msgstr "დევანაგარი"
+
+msgid "Devanagari Extended"
+msgstr "დევანაგარი გაფართოებული"
+
+msgid "Diameter:"
+msgstr "დიამეტრი:"
+
+msgid "Dingbats"
+msgstr "მოსართავები"
+
+msgid "Directories Amid Files"
+msgstr "საქაღალდები შერეულად"
+
+msgid "Directories First"
+msgstr "საქაღალდეები თავში"
+
+msgid "Directories Separate"
+msgstr "საქაღალდეები გამოყოფილად"
+
+msgid "Directory|_New"
+msgstr "_ახალი"
+
+msgid "Discarding a duplicate kerning pair."
+msgstr "ცილდება ერთნაირი წანაცვლებული წყვილები."
+
+msgid "Display"
+msgstr "ჩვენება"
+
+msgid "Display By Groups"
+msgstr "ჩვენება ჯგუფებად"
+
+msgid "Display By _Groups..."
+msgstr "ჩვენება _ჯგუფებად..."
+
+msgid "Display Size:"
+msgstr "ჩვენების ზომა:"
+
+msgid ""
+"Display the advance width as a bar under the glyph\n"
+"showing the extent of the advance"
+msgstr ""
+"გაფართოებული სიგანის ჩვენება ასონისშნის ქვეშ\n"
+"ნაზრდის აღმნიშვნელი ზოლით"
+
+msgid ""
+"Display the advance width as a line\n"
+"perpendicular to the advance direction"
+msgstr ""
+"გაფართოებული სიგანის ჩვენება მართობი\n"
+"ხაზით მიმართულებისადმი"
+
+msgid ""
+"Displays all the glyphs in the font on a rectangular grid at the given point "
+"size"
+msgstr ""
+"გამოაჩენს ყველა ასონიშანს შრიფტში მართკუთხა ცხრილის სახით, მითითებული ზომით"
+
+msgid "Displays all the selected characters, at several different point sizes"
+msgstr "გამოაჩენს ყველა მონიშნულ სიმბოლოს, რამდენიმე სხვადასხვა ზომით"
+
+msgid ""
+"Displays all the selected characters, each on its own page, at an extremely "
+"large point size"
+msgstr ""
+"გამოაჩენს ყველა მონიშნულ სიმბოლოს, თითოეულს ცალკე გვერდზე, მეტად დიდი ზომით"
+
+msgid "Dives Akuru"
+msgstr "დივეჰი აკურუ"
+
+msgid "Do Nothing"
+msgstr "მოქმედების გარეშე"
+
+msgid ""
+"Do you want to load the bitmap fonts embedded in this true/open type file?\n"
+"(And if so, which)"
+msgstr ""
+"გსურთ ჩაირთვირთოს ბიტური შრიფტები, რომლებიც ჩაშენებულია ამ True/OpenType-"
+"ფაილში?\n"
+"(თუ კი, რომლები)"
+
+msgid "Doesn't look like a valid pdf file, couldn't find xref section"
+msgstr "არ ჰგავს მართებულ PDF-ფაილს, ვერ მოინახა xref-განყოფილება"
+
+msgid "Dogra"
+msgstr "დოგრი"
+
+msgid "Don't smooth lines"
+msgstr "ხაზების დაგლუვების გარეშე"
+
+msgid "Draw a freehand curve"
+msgstr "თავისუფლად მოხაზვა"
+
+msgid "Duplicate Ligature"
+msgstr "გამეორებული გადაბმა"
+
+msgid "Duplicate Name"
+msgstr "სახელი მეორდება"
+
+msgid "Duployan"
+msgstr "დუპლოი"
+
+msgid "E_lement"
+msgstr "შ_ემადგენელი"
+
+msgid "E_ncoding"
+msgstr "დაშიფ_ვრა"
+
+msgid "E_xecute Script..."
+msgstr "სკრიპტის გაშ_ვება..."
+
+msgid ""
+"Each feature is active for a specific set of\n"
+"scripts and languages.\n"
+"Usually only one script is specified, but\n"
+"occasionally more will be.\n"
+"A script is a four letter OpenType script tag\n"
+msgstr ""
+"თითოეული თვისება მოქმედია განსაზღვრული\n"
+"დამწერლობებისა და ენებისთვის.\n"
+"ჩვეულებრივ, მხოლოდ ერთი დამწერლობა ეთითება,\n"
+"მაგრამ ზოგჯერ მეტიც შეიძლება იყოს.\n"
+"დამწერლობა აღინიშნება ოთხასოანი OpenType-ჭდეებით\n"
+
+msgid ""
+"Each lookup may contain many transformations,\n"
+"but each transformation must be of the same type."
+msgstr ""
+"თითოეული ცნობარი შეიძლება შეიცავდეს უამრავ გარდაქმნას,\n"
+"თუმცა ყველა მათგანი ერთი და იმავე სახის უნდა იყოს."
+
+msgid "Edit"
+msgstr "ჩასწორება"
+
+msgid "Edit 'cvt '..."
+msgstr "„cvt“ ჩასწორება..."
+
+msgid "Edit 'fpgm'..."
+msgstr "„fpgm“ ჩასწორება..."
+
+msgid "Edit 'maxp'..."
+msgstr "„maxp“ ჩასწორება..."
+
+msgid "Edit 'prep'..."
+msgstr "„prep“ ჩასწორება..."
+
+msgid "Edit Filter List"
+msgstr "გამოსარჩევი სიის ჩასწორება"
+
+msgid "Edit Font Filters"
+msgstr "შრიფტის გამოსარჩევის ჩასწორება"
+
+msgid "Editing"
+msgstr "ჩასწორება"
+
+msgid "Egyptian Hieroglyphs"
+msgstr "ეგვიპტური იეროგლიფები"
+
+msgid "Ellipse"
+msgstr "ოვალი"
+
+msgid "Enclosed Alphanumeric Supplement"
+msgstr "შემოსაზღვრული ასოციფრული დანართი"
+
+msgid "Enclosed Alphanumerics"
+msgstr "შემოსაზღვრული ასო-ციფრები"
+
+msgid "Enclosed CJK Letters and Months"
+msgstr "შემოსაზღვრული CJK-ასოები და თვეები"
+
+msgid "Enclosed Ideographic Supplement"
+msgstr "შემოსაზღვრული იდეოგრამები, დანართი"
+
+msgid "Encoding Too Large"
+msgstr "დაშიფვრა ზედმეტად დიდია"
+
+msgid "Encoding name"
+msgstr "დაშიფვრის სახელი"
+
+#, c-format
+msgid "Encoding value (%x) not in font, ignored"
+msgstr "დაშიფვრის მნიშვნელობა (%x) არაა შრიფტში, უგულებელყოფილია"
+
+msgid "Encoding value not in font"
+msgstr "დაშიფვრის მნიშვნელობა არაა შრიფტში"
+
+msgid "Encoding|Glyph Order"
+msgstr "ასონიშნების მიმდევრობა"
+
+#, c-format
+msgid "Error reading plugin configuration file '%s': %s\n"
+msgstr "შეცდომა მოდულის გამართვის ფაილის წაკითხვისას „%s“: %s\n"
+
+#, c-format
+msgid "Error saving plugin configuration file '%s': %s\n"
+msgstr "შეცდომა მოდულის გამართვის ფაილის შენახვისას „%s“: %s\n"
+
+msgid "Ethiopic"
+msgstr "ეთიოპიური"
+
+msgid "Ethiopic (& Supplement/Extended)"
+msgstr "ეთიოპური (დანართ/გაფართოებიანად)"
+
+msgid "Ethiopic Extended"
+msgstr "ეთიოპიური გაფართოებული"
+
+msgid "Ethiopic Extended-A"
+msgstr "ეთიოპიური გაფართოებული-A"
+
+msgid "Ethiopic Extended-B"
+msgstr "ეთიოპიური გაფართოებული-B"
+
+msgid "Ethiopic Supplement"
+msgstr "ეთიოპიური დანართი"
+
+msgid "Execute Script"
+msgstr "სკრიპტის გაშვება"
+
+#, c-format
+msgid "Expected '{' in feature definition on line %d of %s"
+msgstr "აკლია „{“ განსაზღვრისას %d ხაზზე %s თვისების"
+
+msgid "Expor_t..."
+msgstr "გა_ტანა..."
+
+msgid "Extended"
+msgstr "გაფართოებული"
+
+msgid "Extended Collection"
+msgstr "გაფართოებული კრებული"
+
+msgid ""
+"Extra white space to be added after each\n"
+"sub/superscript."
+msgstr "ცარიელი სივრცე დაემატება თითოეული ხაზქვედა/ხაზზედა ნიშნის შემდგომ."
+
+msgid "Extract from PDF"
+msgstr "ამოკრეფა PDF-ფაილიდან"
+
+msgid "F_ind / Replace..."
+msgstr "_პოვნა / ჩანაცვლება..."
+
+msgid "Failed to generate postscript font"
+msgstr "ვერ შეიქმნა PostScript-შრიფტი"
+
+#, c-format
+msgid "Failed to generate postscript in file %s"
+msgstr "ვერ შეიქმნა PostScript-შრიფტი ფაილში %s"
+
+#, c-format
+msgid "Failed to open %s for output"
+msgstr "ვერ გაიხსნა %s გამოტანისთვის"
+
+#, c-format
+msgid "Failed to open file %s for output"
+msgstr "ვერ გაიხსნა %s გამოტანისთვის"
+
+msgid "Failed to open temporary output file"
+msgstr "ვერ მოხერხდა დროებითი გამოტანის ფაილის გახსნა"
+
+msgid "Failed to read guideline."
+msgstr "ვერ მოხერხდა მიმმართველის წაკითხვა."
+
+msgid "Family"
+msgstr "კრებული"
+
+msgid "Feature"
+msgstr "თვისება"
+
+msgid "Feature Tags"
+msgstr "თვისების ჭდეები"
+
+msgid "Feature _Id:"
+msgstr "თვისების _ID:"
+
+msgid "Feature file?"
+msgstr "თვისების ფაილი?"
+
+msgid "Feature tags will be removed"
+msgstr "თვისების ჭდეები მოცილდება"
+
+msgid "File Exists"
+msgstr "ფაილი არსებობს"
+
+#, c-format
+msgid "File, %s, exists. Replace it?"
+msgstr "ფაილი %s უკვე არსებობს. ჩანაცვლდეს?"
+
+msgid "Filled Ellipse"
+msgstr "სავსე ოვალი"
+
+msgid "Filter"
+msgstr "გამორჩევა"
+
+msgid "Filter:"
+msgstr "გამორჩევა:"
+
+msgid "Filter|New"
+msgstr "ახალი"
+
+msgid "Find"
+msgstr "ძიება"
+
+msgid "Find All"
+msgstr "ყველას მოძიება"
+
+msgid "Find In Font _View"
+msgstr "მონახვა შრიფტის _ხედში"
+
+msgid "Find Next"
+msgstr "შემდეგის მოძიება"
+
+msgid "Find Pr_oblems..."
+msgstr "ხა_რვეზების პოვნა..."
+
+msgid "Find Proble_ms..."
+msgstr "ხა_რვეზების პოვნა..."
+
+msgid "Find Problems"
+msgstr "ხარვეზების პოვნა"
+
+msgid "Find an adobe CMap file..."
+msgstr "Adobe-ის CMap-ფაილის პოვნა..."
+
+#, c-format
+msgid "Find in %.100s"
+msgstr "ძიება – %.100s"
+
+msgid "First Char"
+msgstr "პირველი სიმბოლო"
+
+msgid "Flip"
+msgstr "გადაკეცვა"
+
+msgid "Flip Horizontally"
+msgstr "თარაზულად შებრუნება"
+
+msgid "Flip Vertically"
+msgstr "შვეულად შებრუნება"
+
+msgid "Flip _Horizontally"
+msgstr "თარა_ზულად შებრუნება"
+
+msgid "Flip _Vertically"
+msgstr "შ_ვეულად შებრუნება"
+
+msgid "Flip the selection"
+msgstr "მონიშნულის სარკისებრი შებრუნება"
+
+msgid "Flip..."
+msgstr "შებრუნება..."
+
+msgid "Fo_ntname:"
+msgstr "შრი_ფტის სახელი:"
+
+#, c-format
+msgid ""
+"Font %1$.40s in file %2$.40s has been changed.\n"
+"Do you want to save it?"
+msgstr ""
+"შრიფტი %1$.40s შეცვლილია ფაილში %2$.40s.\n"
+"გსურთ შეინახოს?"
+
+#, c-format
+msgid ""
+"Font %1$.40s in file %2$.40s has been changed.\n"
+"Reverting the file will lose those changes.\n"
+"Is that what you want?"
+msgstr ""
+"შრიფტი %1$.40s ფაილში %2$.40s შეცვლილია.\n"
+"ფაილის აღდგენისას ეს ცვლილებები დაიკარგება.\n"
+"ნამდვილად გსურთ, განაგრძოთ?"
+
+msgid "Font Info"
+msgstr "შრიფტის შესახებ"
+
+msgid "Font Information Dialog"
+msgstr "შრიფტის მონაცემების ფანჯარა"
+
+#, c-format
+msgid "Font Information for %.90s"
+msgstr "%.90s შრიფტის მონაცემები"
+
+msgid "Font changed"
+msgstr "შრიფტი შეცვლილია"
+
+msgid "Font for Mac Features in Preferences dialog"
+msgstr "შრიფტი Mac-თვისებისთვის პარამეტრების არეში"
+
+msgid "Font used in the Warnings dialog"
+msgstr "შრიფტი გამოყენებული გაფრხილებების ფანჯარაში"
+
+msgid ""
+"FontForge is a font editor for outline and bitmap fonts that lets you "
+"create, edit, or convert, a range of fonts, including PostScript, TrueType, "
+"OpenType, cid-keyed, multi-master, cff, SVG and BitMap (bdf, FON, NFNT) "
+"fonts."
+msgstr ""
+"FontForge არის შრიფტის ჩასასწორებელი საშუალება მოხაზული თუ ბიტური ცხრილისგან "
+"შედგენილი ფაილებისთვის და საშუალებას გაძლევთ შექმნათ, შეასწოროთ, გარდაქმნათ "
+"არაერთი სახეობის შრიფტი, მათ შორის PostScript, TrueType, OpenType, cid, "
+"Multi-Master, cff, SVG და BitMap (bdf, FON, NFNT)."
+
+msgid ""
+"FontForge is free Open Source Software written to run on various computer "
+"operating systems. You can use FontForge Graphically or as a command-line "
+"tool."
+msgstr ""
+"FontForge არის ღია წყაროს პროგრამა, განკუთვნილი სხვადასხვა საოპერაციო "
+"სისტემებზე გასაშვებად. FontForge შეგიძლიათ გამოიყენოთ როგორც გამოსახულებითი "
+"სახით, აგრეთვე ბრძანებათა ველის მეშვეობით."
+
+msgid ""
+"FontForge was unable to load libspiro, spiros are not available for use."
+msgstr ""
+"FontForge ვერ ახერხებს, ჩატვირთოს libspiro, ხვეული რეჟიმი მიუწვდომელი იქნება."
+
+msgid ""
+"FontForge will attempt to adjust the left and right\n"
+"sidebearings of the selected glyphs so that the average\n"
+"separation between glyphs in a script will be the\n"
+"specified amount. You may also specify a minimum and\n"
+"maximum value for each glyph's sidebearings."
+msgstr ""
+"FontForge შეეცდება გაასწოროს მარცხენა და მარჯვენა\n"
+"საბჯენები მითითებული ასონიშნებისთვის ისე, რომ საშუალო\n"
+"დაშორება დამწერლობის ასოებს შორის იყოს განსაზღვრული\n"
+"ოდენობის. აგრეთვე, შეგიძლიათ მიუთითოთ უმცირესი და\n"
+"უდიდესი მნიშვნელობები, თითოეული ნიშნის საბჯენებისთვის."
+
+msgid "FontForge will guess kerning classes for selected glyphs"
+msgstr "FontForge ივარაუდებს წანაცვლების კლასს შერჩეული ასონიშნებისთვის"
+
+msgid ""
+"FontForge will look at the glyphs selected in the font view\n"
+"and will try to find groups of glyphs which are most alike\n"
+"and generate kerning classes based on that information."
+msgstr ""
+"FontForge გადახედავს ასონიშნებს შრიფტის ხედით\n"
+"და შეეცდება იპოვოს მსგავსი ასონიშნები, რომელთა\n"
+"მონაცემებითაც მიხედვითაც შექმნის წანაცვლების კლასებს."
+
+msgid "FontLog Save Failed"
+msgstr "FontLog ვერ შეინახა"
+
+msgid "Font|New"
+msgstr "ახალი"
+
+msgid "Font|_New"
+msgstr "_ახალი"
+
+msgid "Force glyph names to:"
+msgstr "ასონიშნების იძულებით გადარქმევა:"
+
+#. GT: Foreground, make it short
+msgid "Fore"
+msgstr "წინა"
+
+#. GT: This does not mean the program, but freehand drawing
+msgid "Freehand"
+msgstr "თავისუფალი"
+
+msgid "From the _other class"
+msgstr "ს_ხვა კლასიდან"
+
+msgid "Fullname"
+msgstr "სრული სახელი"
+
+#. GT: This is an unusual string. It is used to get around a limitation in
+#. GT: FontForge's widget set. You should put a number here (do NOT translate
+#. GT: "GGadget|ButtonSize|", that's only to provide context. The number should
+#. GT: be the number of points used for a standard sized button. It should be
+#. GT: big enough to contain "OK", "Cancel", "New...", "Edit...", "Delete"
+#. GT: (in their translated forms of course).
+msgid "GGadget|ButtonSize|55"
+msgstr "75"
+
+msgid "Gasp|_Version"
+msgstr "ვე_რსია"
+
+msgid "General Punctuation"
+msgstr "ძირითადი სასვენი ნიშნები"
+
+msgid "General/Supplemental Punctuation"
+msgstr "ძირითადი/დამატებითი სასვენი ნიშნები"
+
+msgid "Generate"
+msgstr "შედგენა"
+
+msgid "Generate Fonts"
+msgstr "შრიფტების შედგენა"
+
+msgid "Generate Mac Family"
+msgstr "შედგენა Mac-კრებულის"
+
+msgid "Generate Mac _Family..."
+msgstr "შედგენა Mac-კ_რებულის..."
+
+msgid "Generate TTC"
+msgstr "შეიქმნას TTC"
+
+msgid "Generate TTC..."
+msgstr "შეიქმნას TTC..."
+
+msgid "Generating PostScript Font"
+msgstr "იქმნება PostScript-შრიფტი"
+
+msgid "Generating bitmap font"
+msgstr "იქმნება ბიტური შრიფტი"
+
+msgid "Generic"
+msgstr "მთავარი"
+
+msgid "Geometric Shapes"
+msgstr "გეომეტრიული ნახაზები"
+
+msgid "Geometric Shapes Extended"
+msgstr "გეომეტრიული ნახაზები გაფართოებული"
+
+msgid "Georgian"
+msgstr "ქართული"
+
+msgid "Georgian (& Supplement)"
+msgstr "ქართული (დანართიანად)"
+
+msgid "Georgian Extended"
+msgstr "ქართული გაფართოებული"
+
+msgid "Georgian Supplement"
+msgstr "ქართული დანართი"
+
+msgid "Gl_yph Name:"
+msgstr "ასო_ნიშნის სახელი:"
+
+msgid "Glagolitic"
+msgstr "გლაგოლიცური"
+
+msgid "Glagolitic Supplement"
+msgstr "გლაგოლიცური დანართი"
+
+msgid "Glyph Insertion"
+msgstr "ასონიშნის ჩამატება"
+
+msgid "Glyph Order"
+msgstr "ასონიშნების მიმდევრება"
+
+msgid "Glyph Origin"
+msgstr "ასონიშნის საწყისი"
+
+msgid "Glyph Set by Selection"
+msgstr "ასონიშნების კრებული მონიშვნით"
+
+msgid "Glyph _Info..."
+msgstr "ასო_ნიშნის შესახებ..."
+
+msgid "Glyph in two classes"
+msgstr "ასონიშანი ორ კლასშია"
+
+msgid ""
+"Glyph names (or unicode code points) may occur at most once in this group "
+"and any of its sub-groups"
+msgstr ""
+"ასონიშნის სახელები (ან უნიკოდში ადგილის ნომრები) შეიძლება გვხვდებოდეს "
+"უმეტესად ერთხელ ამ ჯგუფსა და მის ნებისმიერი ქვეჯგუფში"
+
+msgid "Glyph names are limited to 31 characters"
+msgstr "ასონიშნის დასახელება უნდა იყოს არაუმეტეს 31 სიმბოლო"
+
+msgid "Glyph names must be valid postscript names"
+msgstr "ჯგუფის დასახელებად უნდა იყოს მართებული Postscript-სახელი"
+
+msgid ""
+"Glyph names should be limited to characters in the ASCII character set,\n"
+"but there are names in this namelist which use characters outside\n"
+"that range."
+msgstr ""
+"ასონიშნის სახელში არსებული სიმბოლოები მხოლოდ ASCII-არეს უნდა ეკუთვნოდეს,\n"
+"თუმცა სახელთა ამ სიაში, ზოგიერთი შეიცავს სიმბოლოებს, რომლებიც სცდება ამ არეს."
+
+msgid "GlyphName|New"
+msgstr "ახალი"
+
+msgid "Glyphs in the class"
+msgstr "ასონიშნები ამ კლასში"
+
+msgid "Glyphs in the classes"
+msgstr "ასონიშნები ამ კლასში"
+
+msgid "Glyphs in the coverage tables"
+msgstr "ასონიშნები დაფარვის ცხრილებში"
+
+msgid ""
+"Glyphs may be either identified by name or by unicode code point.\n"
+"Generally you control this by what you type in.\n"
+"Typing \"A\" would identify a glyph by name.\n"
+"Typing \"U+0041\" identifies a glyph by code point.\n"
+"When loading glyphs from the selection you must specify which format is "
+"desired."
+msgstr ""
+"ასონიშნების ამოცნობა შეიძლება უნიკოდში ადგილის ნომრით.\n"
+"ზოგადად, ამას ირჩევთ აკრეფის დროს.\n"
+"თუ აიკრიფება „A“, მაშინ სახელით დაიწყებს ამოცნობას.\n"
+"თუ აიკრიფება „U+0041“, მაშინ ადგილის ნომრით ამოიცნობს.\n"
+"ასონიშნების შერჩევიდან ჩასატვირთად, უნდა მიუთითოთ რომლით გსურთ."
+
+msgid "Glyphs:"
+msgstr "ასონიშნები:"
+
+#. GT: This is the default class name for the class containing any glyphs_simple
+#. GT: which aren't specified in other classes_simple. The class name may NOT
+#. GT: contain spaces. Use an underscore or something similar instead
+msgid "Glyphs|All_Others"
+msgstr "ყველა _დანარჩენი"
+
+msgid "Gothic"
+msgstr "გოტიკური"
+
+msgid "Gradient:"
+msgstr "გარდამავლობა:"
+
+msgid "Greek Extended"
+msgstr "ბერძნული გაფართოებული"
+
+msgid "Greek and Coptic"
+msgstr "ბერძნული და კოპტური"
+
+msgid "Greek small caps"
+msgstr "ბერძნული მცირე მთავრული"
+
+msgid "Grid Color"
+msgstr "ბადის ფერი"
+
+msgid "Group"
+msgid_plural "Groups"
+msgstr[0] "ჯგუფი"
+msgstr[1] "ჯგუფები"
+
+msgid "Group Name:"
+msgstr "ჯგუფის სახელი:"
+
+msgid "Groups"
+msgstr "ჯგუფები"
+
+#. GT: Guide layer, make it short
+msgid "Guide"
+msgstr "მიმმართველი"
+
+msgid "Guide Color"
+msgstr "მიმმართველის ფერი"
+
+msgid "Guide Drag Color"
+msgstr "გადაჩოჩებული მიმმართველის ფერი"
+
+msgid "Guide Layer Color"
+msgstr "მიმმართველი შრის ფერი"
+
+msgid "Guidelines:"
+msgstr "მიმმართველი ხაზები:"
+
+msgid "Gujarati"
+msgstr "გუჯარათი"
+
+msgid "Gunjala Gondi"
+msgstr "გუნჯალა-გონდი"
+
+msgid "Gurmukhi"
+msgstr "გურმუხი"
+
+msgid "HVCurve"
+msgstr "თარ./შვეულ. მრუდი"
+
+msgid "H_ints"
+msgstr "_მიმნიშნებლები"
+
+msgid "Hangul Jamo"
+msgstr "ჰანგილ-ჯამო"
+
+msgid "Hangul Jamo Extended-A"
+msgstr "ჰანგილ-ჯამო გაფართოებული-A"
+
+msgid "Hangul Jamo Extended-B"
+msgstr "ჰანგილ-ჯამო გაფართოებული-B"
+
+msgid "Hanunoo"
+msgstr "ჰანუნო"
+
+msgid "Harmonizing..."
+msgstr "შეეხამება..."
+
+msgid "Hebrew"
+msgstr "ებრაული"
+
+msgid "Height"
+msgstr "სიმაღლე"
+
+msgid "Height/Kern Data"
+msgstr "სიმაღლის/წანაცვლების მონაცემები"
+
+msgid "Hidden"
+msgstr "დამალული"
+
+msgid "Hide when _Moving"
+msgstr "დამალვა მ_ოძრაობისას"
+
+msgid "Hiragana"
+msgstr "ჰირაგანა"
+
+msgid "Hiragana & Katakana"
+msgstr "ჰირაგანა და კატაკანა"
+
+msgid "Historic Ligatures"
+msgstr "ისტორიული გადაბმები"
+
+msgid "Hmong"
+msgstr "მონი"
+
+msgid "Hold [Control] key to restrict"
+msgstr "დააყოვნეთ [Control] ღილაკი შესაზღუდად"
+
+msgid "Hold [Shift] key to merge"
+msgstr "დააყოვნეთ [Shift] ღილაკი შერწყმისთვის"
+
+msgid "Hori_zontal Metric Lines"
+msgstr "თა_რაზული აზომვის ხაზები"
+
+#. GT: "Horiz." is an abbreviation for Horizontal
+msgid "Horiz. Variants"
+msgstr "თარაზ. სახესხვაობები"
+
+msgid "Horizontal"
+msgstr "თარაზული"
+
+msgid "Horizontal Baselines"
+msgstr "თარაზული საყრდენები"
+
+msgid "Horizontal Kerning"
+msgstr "თარაზული წანაცვლება"
+
+#, c-format
+msgid "Horizontal: %d baseline"
+msgid_plural "Horizontal: %d baselines"
+msgstr[0] "თარაზული: %d საყრდენი"
+msgstr[1] "თარაზული: %d საყრდენი"
+
+msgid "How many unencoded glyph slots do you wish to add?"
+msgstr "რამდენი დაუშიფრავი ასონიშნის ადგილის დამატება გსურთ?"
+
+#, c-format
+msgid ""
+"I miscalculated the size of subtable %s, this means the kerning output is "
+"wrong."
+msgstr ""
+"შეცდომა, %s ქვეცხრილის ზომის გამოთვლისას, რაც ნიშნავს, რომ წანაცვლების "
+"გამოტანა არამართებულია."
+
+msgid ""
+"I'm sorry this file is too complex for me to understand (or is erroneous, or "
+"is empty)"
+msgstr ""
+"სამწუხაროდ, ეს ფაილი ზედმეტად რთულია ამოსაკითხად (ან შეცდომებითაა, ან "
+"ცარიელია)"
+
+msgid "IPA Ext & Phonetic Ext (& Supplement)"
+msgstr "IPA გაფართოებული და ბგერითი გაფართოებული (დანართიანად)"
+
+msgid "IPA Extensions"
+msgstr "IPA გაფართოებები"
+
+msgid "ISO 8859-1  (Latin1)"
+msgstr "ISO 8859-1  (ლათინური1)"
+
+msgid "ISO 8859-10  (Latin6)"
+msgstr "ISO 8859-10  (ლათინური6)"
+
+msgid "ISO 8859-13  (Latin7)"
+msgstr "ISO 8859-13  (ლათინური7)"
+
+msgid "ISO 8859-14  (Latin8)"
+msgstr "ISO 8859-14  (ლათინური8)"
+
+msgid "ISO 8859-15  (Latin0)"
+msgstr "ISO 8859-15  (ლათინური0)"
+
+msgid "ISO 8859-16  (Latin10)"
+msgstr "ISO 8859-16  (ლათინური10)"
+
+msgid "ISO 8859-2  (Latin2)"
+msgstr "ISO 8859-2  (ლათინური2)"
+
+msgid "ISO 8859-3  (Latin3)"
+msgstr "ISO 8859-3  (ლათინური3)"
+
+msgid "ISO 8859-4  (Latin4)"
+msgstr "ISO 8859-4  (ლათინური4)"
+
+msgid "ISO 8859-5 (Cyrillic)"
+msgstr "ISO 8859-5 (კირილიცა)"
+
+msgid "ISO 8859-6 (Arabic)"
+msgstr "ISO 8859-6 (არაბული)"
+
+msgid "ISO 8859-7 (Greek)"
+msgstr "ISO 8859-7 (ბერძნული)"
+
+msgid "ISO 8859-9  (Latin5)"
+msgstr "ISO 8859-9  (ლათინური5)"
+
+msgid "Identify by"
+msgstr "ამოსაცნობად გამოიყენოს"
+
+msgid "Ideographic Description Characters"
+msgstr "იდეოგრამების აღმწერი სიმბოლოები"
+
+msgid "Ideographic Symbols and Punctuation"
+msgstr "იდეოგრამული და სასვენი ნიშნები"
+
+msgid "If a line has a bump on it then flatten out that bump"
+msgstr "თუ ხაზზე ამობურცული ადგილებია, გასწორდება"
+
+msgid ""
+"If any of the above baselines are active then you should\n"
+"specify which one is the default baseline for each script\n"
+"in the font, and specify how to position glyphs in this\n"
+"script relative to all active baselines"
+msgstr ""
+"თუ ზემოთ მოცემული საყრდენებიდან რომელიმე მაინც მოქმედია,\n"
+"უნდა მიუთითოთ ნაგულისხმევი თითოეული დამწერლობისთვის\n"
+"ამ შრიფტში და ისიც, თუ როგორ განთავსდება ასონიშნები ყველა\n"
+"მოქმედი საყრდენი ხაზების მიმართ"
+
+msgid ""
+"If the old-style 'kern' table contains unencoded glyphs\n"
+"(or glyphs encoded outside of the BMP), many Windows applications\n"
+"won't have any kerning at all. This option excludes such\n"
+"problematic glyphs from the old-style 'kern' table."
+msgstr ""
+"თუ ძველი სახის „kern“ ცხრილი შეიცავს დაუშიფრავ ასონიშნებს\n"
+"(ან ასოებს BMP-ადგილების მიღმა), ბევრი პროგრამა Windows-ში\n"
+"საერთოდ არ გამოიყენებს წანაცვლებას. ამის მითითებით კი გამოირიცხება\n"
+"ამგვარი ასონიშნებს ძველებური „kern“ ცხრილიდან."
+
+msgid ""
+"If the start point of a contour is not an extremum, find a new start point "
+"(on the contour) which is."
+msgstr ""
+"თუ ნახაზის საწყისი წერტილი არაა უკიდურესი, მონახეთ ახალი საწყისი წერტილი "
+"(ნახაზზე), რომელიც იქნება."
+
+msgid ""
+"If you are running an X11 clipboard manager you might want\n"
+"to turn this off. FF can put things into its internal clipboard\n"
+"which it cannot export to X11 (things like copying more than\n"
+"one glyph in the fontview). If you have a clipboard manager\n"
+"running it will force these to be exported with consequent\n"
+"loss of data."
+msgstr ""
+"თუ იყენებთ X11-ის ასლების მმართველს, შესაძლოა გერჩივნოთ,\n"
+"ამის გამორთვა. FF თავად იღებს ისეთი სახის ასლებს, რომელთაც ვერ\n"
+"აღიქვამს X11 (მაგალითად, ერთზე მეტ ასონიშანს შრიფტის\n"
+"ხედიდან). ასლების მმართველით სარგებლობისას კი იძულებული\n"
+"იქნება მას გადასცეს მონაცემები და შედეგად, დიდი ნაწილი\n"
+"დაიკარგება."
+
+msgid "If you don't specify a suffix, the glyphs don't get renamed."
+msgstr "თუ არ მიუთითებთ ბოლოსართს, ასონიშნებს არ გადაერქმევათ."
+
+msgid ""
+"If you leave this field blank FontForge will use a default based on\n"
+"either the version string above, or one in the 'name' table."
+msgstr ""
+"თუ ცარიელს დატოვებთ, FontForge თავად შეავსებს ან ვერსიი, ან „სახელის“ "
+"ცხრილის მიხედვით."
+
+msgid "Ignore Ligatures"
+msgstr "გადაბმების უგულებელყოფა"
+
+msgid ""
+"In the 'kern' table, a subtable's length does not match the number of "
+"kerning pairs."
+msgstr ""
+"„kern“ ცხრილში, ქვეცხრილების სიგრძე არ ემთხვევა წანაცვლებული წყვილების "
+"რაოდენობას."
+
+msgid ""
+"In the saved font, force all glyph names to match those in the specified "
+"namelist"
+msgstr ""
+"შენახულ შრიფტში ყველა ასონიშნის იძულებით გადარქმევა სახელთა სიის მიხედვით"
+
+msgid "Inactive Layer Color"
+msgstr "უმოქმედო შრის ფერი"
+
+msgid "Inactive Thick Layer Color"
+msgstr "უმოქმედო შრის მსხვილი ფერი"
+
+msgid "Include Empty Blocks"
+msgstr "ცარიელი ურჯების გათვალისწინებით"
+
+msgid "Increment Bearings By:"
+msgstr "საბჯენ არეებს დაემატოს:"
+
+msgid "Increment LBearing By:"
+msgstr "მარცხენა საბჯენს დაემატოს:"
+
+msgid "Increment RBearing By:"
+msgstr "მარჯვენა საბჯენს დაემატოს:"
+
+msgid "Indic (& Tibetan) hanging baseline"
+msgstr "ინდური (და ტიბეტური) კიდული საყრდენით"
+
+msgid "Insert Before Current Glyph"
+msgstr "მიმდინარე ასონიშნის შემდგომ ჩამატება"
+
+msgid "Insert Before Marked Glyph"
+msgstr "მიმდინარე ასონიშნის წინ ჩამატება"
+
+msgid "Insert Glyph _After..."
+msgstr "ასონიშნის _შემდგომ ჩამატება..."
+
+msgid "Insert Glyph _Before..."
+msgstr "ასონიშნის _წინ ჩამატება..."
+
+msgid "Insert Text Outlines"
+msgstr "ტექსტის მოხაზულობის ჩამატება"
+
+msgid "Insert Text Outlines..."
+msgstr "ტექსტის მოხაზულობის ჩამატება..."
+
+msgid "Insert random text in the specified script"
+msgstr "ცალკეული დამწერლობის შემთხვევითი ტექსტის ჩამატება"
+
+msgid "Interface"
+msgstr "გარსი"
+
+msgid "Invalid guideline.\n"
+msgstr "გაუმართავი მიმმართველი ხაზი.\n"
+
+#, c-format
+msgid "Invalid or unsupported format (%d) for subtable of 'kern' table"
+msgstr "არასწორი ან მხარდაუჭერელი სახეობა (%d), შეუთავსებელი „kern“ ცხრილთან"
+
+#, c-format
+msgid "Invalid or unsupported version (0x%x) for 'kern' table"
+msgstr "არასწორი ან მხარდაუჭერელი ვერსია (0x%x) „kern“ ცხრილისთვის"
+
+msgid "Is this horizontal or vertical kerning data?"
+msgstr "ეს თარაზული წანაცვლების მონაცემია თუ შვეულის?"
+
+msgid "KOI8-R (Cyrillic)"
+msgstr "KOI8-R (კირილიცა)"
+
+msgid "Kabardian"
+msgstr "ყაბარდოული"
+
+msgid "Kana Extended-A"
+msgstr "კანა გაფართოებული-A"
+
+msgid "Kana Extended-B"
+msgstr "კანა გაფართოებული-B"
+
+msgid "Kana Supplement"
+msgstr "კანა, დანართი"
+
+msgid "Kanauji"
+msgstr "კანაუჯი"
+
+msgid "Kannada"
+msgstr "კანადა"
+
+msgid "Katakana"
+msgstr "კატაკანა"
+
+msgid "Katakana (& Phonetic Extensions)"
+msgstr "კატაკანა (და ბგერითი გაფართოებები)"
+
+msgid "Katakana Phonetic Extensions"
+msgstr "კატაკანას ბგერითი გაფართოებები"
+
+msgid "Ker_n By Classes..."
+msgstr "წანა_ცვლება კლასებით..."
+
+msgid "Kern"
+msgstr "წანაცვლება"
+
+msgid "Kern Adjusts"
+msgstr "წანაცვლების დაყენება"
+
+msgid "Kern By Classes"
+msgstr "წანაცვლება კლასებით"
+
+msgid "Kern Line Color"
+msgstr "წანაცვლების ხაზის ფერი"
+
+msgid "Kern Pair Closeup"
+msgstr "წანაცვლებული წყვილის გადახედვა"
+
+msgid "Kern Pair Closeup..."
+msgstr "წანაცვლებული წყვილის გადახედვა..."
+
+msgid "Kern Pairs"
+msgstr "Წანაცვლებული წყვილები"
+
+msgid "Kern Values:"
+msgstr "წანაცვლების მნიშვნელობები:"
+
+msgid "Kern:"
+msgstr "წანაცვლება:"
+
+msgid "KernClass|_New Lookup..."
+msgstr "_ახალი ცნობარი..."
+
+msgid "Kerning & such"
+msgstr "წანაცვლება და სხვა დანარჩენი"
+
+msgid "Kerning Class"
+msgstr "წანაცვლების კლასი"
+
+#, c-format
+msgid "Kerning Metrics For %.50s"
+msgstr "წანაცვლების აზომვები – %.50s"
+
+#. GT: The %s is the name of the lookup subtable containing this kerning class
+#, c-format
+msgid "Kerning by Classes: %s"
+msgstr "წანაცვლება კლასებით: %s"
+
+msgid "Kerning direction"
+msgstr "წანაცვლების მიმართულება"
+
+msgid ""
+"Kerning may be specified either by classes of glyphs\n"
+"or by pairwise combinations of individual glyphs.\n"
+"Which do you want for this subtable?"
+msgstr ""
+"წანაცვლები მითითება შეიძლება ან ასონიშნების კლასებით,\n"
+"ან ცალკეული ასონიშნების შეწყვილებით.\n"
+"რომელი გსურთ ამ ქვეცხრილისთვის?"
+
+msgid "Khmer"
+msgstr "ქმერული"
+
+msgid "Khmer Symbols"
+msgstr "ქმერული ნიშნები"
+
+msgid "Khudawadi"
+msgstr "ხუდაბადი"
+
+msgid "Khutsuri Georgian"
+msgstr "ხუცური"
+
+msgid "LBearing:"
+msgstr "მარცხენა საბჯენი:"
+
+msgid "L_oad Namelist..."
+msgstr "სახელთა სიის ჩატვი_რთვა..."
+
+msgid "Label Gl_yph By"
+msgstr "ზ_ედწარწერა"
+
+msgid "Language"
+msgstr "ენა"
+
+msgid "Language List"
+msgstr "ენების სია"
+
+msgid "Language Missing"
+msgstr "ენა აკლია"
+
+msgid "Language Tag:"
+msgstr "ენის ჭდე:"
+
+msgid "Language info"
+msgstr "ენის შესახებ"
+
+msgid "Language(s)"
+msgstr "ენ(ებ)ი"
+
+msgid "Language|New"
+msgstr "ახალი"
+
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "Malayalam", ignore "Lang|"
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "Amharic", ignore "Lang|"
+msgid "Lang|Amharic"
+msgstr "ამჰარული"
+
+msgid "Lang|Arabic"
+msgstr "არაბული"
+
+msgid "Lang|Cherokee"
+msgstr "ჩეროკე"
+
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "Farsi/Persian"), ignore "Lang|"
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "Farsi/Persian", ignore "Lang|"
+msgid "Lang|Farsi/Persian"
+msgstr "ფარსი/სპარსული"
+
+msgid "Lang|Georgian"
+msgstr "ქართული"
+
+msgid "Lang|Greek"
+msgstr "ბერძნული"
+
+msgid "Lang|Latin"
+msgstr "ლათინური"
+
+msgid "Lang|Lisu"
+msgstr "ლისუ"
+
+msgid "Lang|Tamil"
+msgstr "ტამილური"
+
+msgid "Lao"
+msgstr "ლაოსური"
+
+msgid "Latin Extended Additional"
+msgstr "ლათინური გაფართოებული დამატება"
+
+msgid "Latin Extended Additional/C/D"
+msgstr "ლათინური გაფართოებული დამატება/C/D"
+
+msgid "Latin Extended-A"
+msgstr "ლათინური გაფართოებული-A"
+
+msgid "Latin Extended-B"
+msgstr "ლათინური გაფართოებული-B"
+
+msgid "Latin Extended-C"
+msgstr "ლათინური გაფართოებული-C"
+
+msgid "Latin Extended-D"
+msgstr "ლათინური გაფართოებული-D"
+
+msgid "Latin Extended-E"
+msgstr "ლათინური გაფართოებული-E"
+
+msgid "Latin Extended-F"
+msgstr "ლათინური გაფართოებული-F"
+
+msgid "Latin Extended-G"
+msgstr "ლათინური გაფართოებული-G"
+
+msgid "Latin-1 Supplement"
+msgstr "ლათინური-1 დანართი"
+
+msgid "Layer"
+msgstr "შრე"
+
+msgid "Layer Info..."
+msgstr "შრის შესახებ..."
+
+msgid "Left Side Bearing"
+msgstr "მარცხენა საბჯენი"
+
+msgid "Left Side Bearing Add"
+msgstr "მარცხენა საბჯენის გაზრდა"
+
+msgid "Left Side Bearing Scale"
+msgstr "მარცხენა საბჯენის ცვლილება"
+
+msgid "Left Side Bearing does not change."
+msgstr "მარცხენა საბჯენი არ იცვლება."
+
+msgid "Left Side Bearing:"
+msgstr "მარცხენა საბჯენი:"
+
+msgid "Lepcha"
+msgstr "ლეპჩა"
+
+msgid "Letterlike Symbols"
+msgstr "ასონიშნებისმაგვარი სიმბოლოები"
+
+msgid "License"
+msgstr "ლიცენზია"
+
+msgid "License URL"
+msgstr "ლიცენზიის ბმული"
+
+msgid "Ligature"
+msgstr "გადაბმა"
+
+#. GT: Need to split some AnchorClasses into two classes, one for normal
+#. GT:  base letters, and one for ligatures. So create a new AnchorClass
+#. GT:  name for the ligature version
+#, c-format
+msgid "Ligature %s"
+msgstr "გადაბმა %s"
+
+msgid "Ligature Glyph Name"
+msgstr "გადაბმის ნიშნის სახელი"
+
+msgid "Ligatures"
+msgstr "გადაბმები"
+
+msgid "Limbu"
+msgstr "ლიმბუ"
+
+msgid "Line"
+msgstr "ხაზი"
+
+msgid "Linear B Ideograms"
+msgstr "ხაზოვანი B იდეოგრამები"
+
+msgid "List of class names"
+msgstr "კლასის სახელთა სია"
+
+msgid "List of directories to search for images, separated by colons"
+msgstr "სია საქაღალდეეისა, სურათების მოსაძიებლად, მძიმით გამოყოფილი"
+
+msgid "Lisu"
+msgstr "ლისუ"
+
+msgid "Lisu Supplement"
+msgstr "ლისუ, დანართი"
+
+msgid "Load Bitmap Fonts"
+msgstr "ცხრილური შრიფტების ჩატვირთვა"
+
+msgid "Load Encoding"
+msgstr "დაშიფვრის ჩატვირთვა"
+
+msgid "Load Glyph Name List..."
+msgstr "ასონიშნების სახელთა სიის ჩატვირთვა..."
+
+msgid "Load Namelist"
+msgstr "სახელთა სიის ჩატვირთვა"
+
+msgid "Load Word List..."
+msgstr "სიტ_ყვათა სიის ჩატვირთვა..."
+
+msgid "Load _Word List..."
+msgstr "სი_ტყვათა სიის ჩატვირთვა..."
+
+msgid "Load glyph names"
+msgstr "ასონიშნების სახელთა ჩატვირთვა"
+
+#, c-format
+msgid "Loading font from %.100s"
+msgstr "იტვირთება ფონტი წყაროდან %.100s"
+
+msgid "Loading..."
+msgstr "იტვირთება..."
+
+msgid "Lookup Name:"
+msgstr "ცნობარის სახელი:"
+
+#, c-format
+msgid "Lookup Subtable, %s"
+msgstr "ცნობარის ქვეცხრილი, %s"
+
+msgid "Lookup Type|Unspecified"
+msgstr "განუსაზღვრელი"
+
+msgid "LookupName|New"
+msgstr "ახალი"
+
+msgid "LookupType|Unknown"
+msgstr "უცნობი"
+
+msgid "Lookups"
+msgstr "ცნობარები"
+
+msgid "Lookups will be removed"
+msgstr "ცნობარები მოცილდება"
+
+msgid "Lowercase to Small Capitals"
+msgstr "ნუსხურიდან მცირე მთავრულში"
+
+msgid "Ma_ke Arc"
+msgstr "რკალის შე_ქმნა"
+
+msgid "Ma_ke From Font..."
+msgstr "_შედგენა შრიფტიდან..."
+
+msgid "Ma_x:"
+msgstr "უ_დიდესი:"
+
+msgid "Mac"
+msgstr "Mac"
+
+msgid "Mac Bitmap"
+msgstr "Mac-ის ბიტური"
+
+msgid "Mac Features"
+msgstr "Mac-თვისებები"
+
+msgid "MacFeature|Default"
+msgstr "ნაგულისხმევი"
+
+msgid "MacFeature|_New..."
+msgstr "_ახალი..."
+
+msgid "MacMap|_New..."
+msgstr "_ახალი..."
+
+msgid "MacName|_New..."
+msgstr "_ახალი..."
+
+msgid "MacSetting|_New..."
+msgstr "_ახალი..."
+
+msgid "Macintosh Latin"
+msgstr "Macintosh ლათინური"
+
+#. GT: Short for: Magnification
+#. GT: Short for "Magnification"
+msgid "Mag:"
+msgstr "გადიდება:"
+
+msgid "Magnification:"
+msgstr "გადიდება:"
+
+msgid "Magnify (Minify with alt)"
+msgstr "მოახლოება (დაშორებისთვის Alt)"
+
+msgid "Makasar"
+msgstr "მაკასარი"
+
+msgid "Make Arc"
+msgstr "რკალის შექმნა"
+
+msgid "Make Line"
+msgstr "ხაზის შექმნა"
+
+msgid "Make _Line"
+msgstr "ხა_ზის შექმნა"
+
+msgid "Malay (arabic)"
+msgstr "მალაიური (არაბული)"
+
+msgid "Malayalam"
+msgstr "მალაიალამური"
+
+msgid "Mandaic"
+msgstr "მანდეური"
+
+msgid "Manufacturer"
+msgstr "მწარმოებელი"
+
+msgid "Many Windows"
+msgstr "ბევრი ფანჯარა"
+
+msgid ""
+"Many applications still don't support 'GPOS' kerning.\n"
+"If you want to include both 'GPOS' and old-style 'kern'\n"
+"tables set this check box.\n"
+"It may not be set in conjunction with the Apple checkbox.\n"
+"This may confuse other applications though."
+msgstr ""
+"ბევრ პროგრამაში ჯერ კიდევ მხარდაუჭერელია „GPOS“ წანაცვლება.\n"
+"თუ გსურთ დაურთოთ ორივე, „GPOS“ და ძველი სახის „kern“\n"
+"ცხრილები, მიუთითეთ ამ უჯრის მონიშვნით.\n"
+"ჯობია, არ მოინიშნოს Apple-ის უჯრასთან ერთად.\n"
+"გაუგებრობას წარმოქმნის სხვა პროგრამებთან."
+
+msgid "Marchen"
+msgstr "მარჩენი"
+
+msgid "Masaram Gondi"
+msgstr "მასარამ-გონდი"
+
+msgid "Mass Glyph Rename"
+msgstr "ასონიშნების ერთბაშად გადარქმევა"
+
+msgid "Mass Glyph _Rename..."
+msgstr "ასონიშნების ერთბაშად გადარ_ქმევა..."
+
+msgid "Math Kern"
+msgstr "მათემატიკური წანაცვლება"
+
+msgid "Mathematical Alphanumeric Symbols"
+msgstr "მათემატიკური ასოციფრული ნიშნები"
+
+msgid "Mathematical Greek"
+msgstr "ბერძნული მათემატიკისთვის"
+
+msgid "Mathematical Operators"
+msgstr "მათემატიკური მოქმედების ნიშნები"
+
+msgid "Mathematical centerline"
+msgstr "მათემატიკური შუახაზი"
+
+msgid "Max Bearing"
+msgstr "საბჯენი არაუმეტეს"
+
+msgid "Measure distance, angle between points"
+msgstr "წერტილებს შორის დაშორების, კუთხის გაზომვა"
+
+msgid "Mende Kikakui"
+msgstr "მენდე"
+
+msgid "Menu Bar"
+msgstr "მენიუს ზოლი"
+
+msgid "Menu Name"
+msgstr "მენიუს სახელი"
+
+msgid "Metrics"
+msgstr "აზომვები"
+
+msgid "Metrics Baseline Color"
+msgstr "აზომვების საყრდენი ხაზის ფერი"
+
+#, c-format
+msgid "Metrics For %.50s"
+msgstr "აზომვები – %.50s"
+
+msgid "Metrics Label Color"
+msgstr "აზომვების წარწერის ფერი"
+
+msgid "Metrics View"
+msgstr "აზომვების ხედი"
+
+msgid "Min Bearing"
+msgstr "საბჯენი არანაკლებ"
+
+msgid "Miscellaneous Mathematical Symbols-A"
+msgstr "სხვადასხვა მათემატიკური ნიშნები-A"
+
+msgid "Miscellaneous Mathematical Symbols-B"
+msgstr "სხვადასხვა მათემატიკური ნიშნები-B"
+
+msgid "Miscellaneous Symbols"
+msgstr "სხვადასხვა სიმბოლოები"
+
+msgid "Miscellaneous Symbols and Arrows"
+msgstr "სხვადასხვა ნიშნები და ისრები"
+
+msgid "Miscellaneous Symbols and Pictographs"
+msgstr "სხვადასხვა ნიშნები და ხატულები"
+
+msgid "Miscellaneous Technical"
+msgstr "სხვადასხვა ტექნიკური"
+
+msgid "Missing Bitmap"
+msgstr "აკლია ბიტური ცხრილი"
+
+msgid "Missing Bitmap Color"
+msgstr "აკლია ცხრილური ფერი"
+
+msgid "Missing Outline Color"
+msgstr "აკლია მოხაზულობის ფერი"
+
+msgid "Missing glyph"
+msgstr "აკლია ასონიშანი"
+
+msgid "Modification Date:"
+msgstr "ჩასწორების თარიღი:"
+
+msgid "Modifier Letters & Modifier Tone Letters"
+msgstr "გარდამქნელი და ჟღერადობის შემცვლელი ნიშნები"
+
+msgid "Modifier Tone Letters"
+msgstr "ჟღერადობის შემცვლელი ნიშნები"
+
+msgid "Module Name:"
+msgstr "მოდულის სახელი:"
+
+msgid "Mongolian"
+msgstr "მონღოლური"
+
+msgid "Mongolian (Cyrillic)"
+msgstr "მონღოლური (კირილიცა)"
+
+msgid "Mongolian (cyrillic)"
+msgstr "მონღოლური (კირილიცა)"
+
+msgid "Mongolian Supplement"
+msgstr "მონღოლური დანართი"
+
+msgid ""
+"Most lookups will be attached to a feature\n"
+"active in a specific script for certain languages.\n"
+"In some cases lookups will not be attached to any\n"
+"feature, but will be invoked by another lookup,\n"
+"a conditional one. In other cases a lookup might\n"
+"be attached to several features.\n"
+"A feature is either a four letter OpenType feature\n"
+"tag, or a two number mac <feature,setting> combination."
+msgstr ""
+"ცნობარი უმეტესად მიმაგრებულია მოქმედ თვისებაზე\n"
+"ცალკეული დამწერლობისა და ენისთვის.\n"
+"ზოგჯერ არაა მიბმული არცერთ თვისებაზე, მაგრამ\n"
+"გამოიძახება სხვა პირობითი ცნობარით.\n"
+"სხვა შემთხვევებში ცნობარი შეიძლება მიბმული\n"
+"იყოს რამდენიმე თვისებაზე.\n"
+"თვისება აღინიშნება ოთხასოიანი OpenType-ჭდეებით\n"
+"ან ორციფრიანი Mac-წყვილით <თვისება,პარამეტრი>."
+
+msgid "Move by Ruler..."
+msgstr "გადაადგილება სახაზავით..."
+
+msgid "Move..."
+msgstr "გადატანა..."
+
+msgid "Mro"
+msgstr "მრო"
+
+msgid "Multiple names for language"
+msgstr "რამდენიმე სახელი ენისთვის"
+
+msgid "MultipleEncodingIgnored"
+msgstr "რამდენიმე დაშიფვრა უგულებელყოფილია"
+
+msgid "Music"
+msgstr "მუსიკა"
+
+msgid "Musical"
+msgstr "მუსიკალური"
+
+msgid "Musical Symbols"
+msgstr "მუსიკალური ნიშნები"
+
+msgid "Myanmar"
+msgstr "მიანმარული"
+
+msgid "Myanmar Extended-A"
+msgstr "მიანმარული გაფართოებული-A"
+
+msgid "Myanmar Extended-B"
+msgstr "მიანმარული გაფართოებული-B"
+
+msgid "NKo"
+msgstr "ნკო"
+
+msgid "N_umber Points"
+msgstr "წერტილების გადა_ნომვრა"
+
+msgid "Name"
+msgstr "სახელი"
+
+msgid "Name For Human_s:"
+msgstr "ად_ვილად წასაკითხი:"
+
+msgid "Name this guideline or cancel to create it without a name"
+msgstr "დაარქვით რამე მიმმართველ ხაზს ან გააუქმეთ უსახელოდ შექმნისთვის"
+
+msgid ""
+"Name used for Vendor ID field in\n"
+"ttf (OS/2 table) font generation.\n"
+"Must be no more than 4 characters"
+msgstr ""
+"სახელი მწარმოებლის ID-ველისთვის\n"
+"ttf-შრიფტის (OS/2-ცხრილი) შესადგენად.\n"
+"არ უნდა აღემატებოდეს 4 სიმბოლოს"
+
+msgid "Name:"
+msgstr "სახელი:"
+
+msgid "Nandinagari"
+msgstr "ნანდინაგარი"
+
+msgid "Navigation"
+msgstr "გადაადგილება"
+
+msgid "Ne_xt Control Point"
+msgstr "_მომდევნო მართვის წერტილი"
+
+msgid "Needs bitmap font"
+msgstr "საჭიროებს ბიტურ შრიფტს"
+
+msgid "Negative Width"
+msgstr "უარყოფითი სიგანე"
+
+msgid ""
+"Negative character widths are not allowed in TrueType.\n"
+"Do you really want a negative width?"
+msgstr ""
+"უარყოფით სიგანეს სიმბოლოსთვის ვერ გამოიყენებს TrueType.\n"
+"ნამდვილად გსურთ, დარჩეს უარყოფითი?"
+
+msgid "New"
+msgstr "ახალი"
+
+msgid "New Font"
+msgstr "ახალი შრიფტი"
+
+msgid "New Layer"
+msgstr "ახალი შრე"
+
+msgid "New Layer..."
+msgstr "ახალი შრე..."
+
+msgid "New Ligature"
+msgstr "ახალი გადაბმა"
+
+msgid "New Lookup Subtable..."
+msgstr "ახალი ცნობარის ქვეცხრილი..."
+
+msgid "New O_utline Window"
+msgstr "მოხაზული შრიფტის ახალი ფანჯარა"
+
+msgid "New Section"
+msgstr "ახალი განყოფილება"
+
+msgid "New Sub-Group"
+msgstr "ახალი ქვეჯგუფი"
+
+msgid "New Tai Lue"
+msgstr "ახალი ტაის ლი"
+
+msgid "New _Bitmap Window"
+msgstr "ცხრილური შრიფტის ახალი ფანჯარა"
+
+msgid "New _Metrics Window"
+msgstr "_აზომვების ახალი ფანჯარა"
+
+msgid "NewCharset"
+msgstr "ასოთა ახალი ნაკრები"
+
+msgid "Next _Defined Glyph"
+msgstr "მომდევნო _განსაზღვრული ასონიშანი"
+
+msgid "Next _Line in Word List"
+msgstr "მომდევნო ხა_ზი სიტყვათა სიაში"
+
+#, c-format
+msgid "No (useable) bitmap strikes in this TTF font: %s"
+msgstr "არ მოიძებნა (გამოსადეგი) ცხრილური ნაზაზები TTF-შრიფტში: %s"
+
+msgid "No Bitmap Fonts"
+msgstr "ცხრილური შრიფტები არაა"
+
+msgid "No Glyph"
+msgstr "ასონიშანი არაა"
+
+msgid "No Glyph Duplicates"
+msgstr "გამეორებული ასონიშნები არაა"
+
+msgid "No Groups"
+msgstr "ჯგუფები არაა"
+
+msgid "No Kern Pairs"
+msgstr "არაა წანაცვლებული წყვილები"
+
+msgid "No Lookup Type Selected"
+msgstr "არაა შერჩეული ცნობარის სახეობა"
+
+msgid "No Lookups"
+msgstr "ცნობარები არაა"
+
+msgid "No Mac Names"
+msgstr "Mac-სახელების გარეშე"
+
+msgid "No Next Control Point"
+msgstr "არაა მომდევნო მართვის წერტილი"
+
+msgid "No Outline Font"
+msgstr "მოხაზული შრიფტი არაა"
+
+msgid "No Previous Control Point"
+msgstr "არაა წინა მართვის წერტილი"
+
+msgid "No Rename"
+msgstr "გადარქმევის გარეშე"
+
+msgid "No Vertical Metrics"
+msgstr "შვეული აზომვების გარეშე"
+
+msgid "No _to All"
+msgstr "არა ყ_ველას"
+
+#, c-format
+msgid "No kerning pairs found in %.200s"
+msgstr "წანაცვლებულ წყვილებს არ შეიცავს %.200s"
+
+msgid "No languages"
+msgstr "ენები არაა"
+
+msgid "No lookup selected"
+msgstr "ცნობარი არაა მონიშნული"
+
+msgid "No lookups to copy"
+msgstr "ასლისთვის ცნობარები არაა"
+
+msgid "No mark in ] (close array)\n"
+msgstr "არაა ნიშანი ] (მასივის დასასრული)\n"
+
+#, c-format
+msgid "No module name for '%s' in plugin config -- skipping.\n"
+msgstr "მოდული დასახელებით „%s“ ვერ მოინახა -- გამოტოვება.\n"
+
+msgid "No spaces allowed in class names."
+msgstr "ადგილის გამოტოვება დაუშვებელია სახელებში."
+
+msgid "Non uniform scaling for horizontal counters and side bearings"
+msgstr "ზომის არაერთგვაროვანი ცვლა თარაზული არეებისა და გვერდითი საბჯენების"
+
+msgid "Non-Basic Multilingual Plane"
+msgstr "არაძირითადი მრავალენოვანი სივრცე"
+
+msgid "Non-Unicode Glyphs"
+msgstr "უნიკოდს გარეთ ასონიშნები"
+
+msgid ""
+"None of the glyphs in the current font match any names or code points in the "
+"selected groups"
+msgstr ""
+"არცერთი ასონიშნის სახელი ან ადგილის ნომერი ამ შრიფტიდან არ მოიძებნება "
+"მითითებულ ჯგუფებში"
+
+msgid "Normal font used in the Find/Replace window"
+msgstr "ჩვეულებრივი შრიფტი გამოიყენება პოვნა/ძიების ფანჯარაში"
+
+msgid "Not Guides"
+msgstr "მიმმართველის გარეშე"
+
+msgid "Not attached to a feature"
+msgstr "არაა მიბმული თვისებაზე"
+
+msgid "Not in Collection"
+msgstr "არაა კრებულში"
+
+#, c-format
+msgid ""
+"Note: On Windows many apps can have problems with this font's kerning, "
+"because %d of its glyph kern pairs cannot be mapped to unicode-BMP kern "
+"pairs (eg, they have a Unicode value of -1) To avoid this, go to Generate, "
+"Options, and check the \"Windows-compatible 'kern'\" option."
+msgstr ""
+"შენიშვნა: Windows-ზე ბევრი პროგრამა შეიძლება წააწყდეს სიძნელეს შრიფტის "
+"წანაცვლებული წყვილების გამოყენებისას, ვინაიდან მისი წანაცვლებული ასონიშნების "
+"წყვილების %d ვერ აისახება BMP-უნიკოდის წანაცვლების წყვილებზე (მაგ. მათ "
+"ექნებათ უნიკოდის მნიშვნელობად -1) ამის ასარიდებლად, აირჩიეთ „შედგენა“, "
+"„პარამეტრები“ და მონიშნეთ „Windows-სთან თავსებადი „kern“."
+
+msgid "Nothing Loaded"
+msgstr "ვერაფერი ჩაიტვირთა"
+
+msgid "Nothing Selected"
+msgstr "არაფერია შერჩეული"
+
+msgid "Nothing on stack to print\n"
+msgstr "არაფერია მითითებული ამოსაბეჭდად\n"
+
+msgid "Number Forms"
+msgstr "რიცხვითი ჩანაწერები"
+
+msgid "Number of star points/Polygon vertices"
+msgstr "ვარკვლავის წერტილების ან მრავალკუთხედის წვეროების რაოდენობა"
+
+#, c-format
+msgid "Number out of range: %g in type2 output (must be [-65536,65535])\n"
+msgstr "რიცხვი გასცდა არეს: %g Type2-გამოტანისას (უნდა იყოს [-65536,65535])\n"
+
+msgid "Nushu"
+msgstr "ნუშუ"
+
+msgid "OEM Charset"
+msgstr "ასოთა OEM-ნაკრები"
+
+msgid "OS/2 -> Charsets"
+msgstr "OS/2 → ასოთა ნაკრებები"
+
+msgid "OS/2 and Windows specific metrics table"
+msgstr "OS/2 და Windows-ის შესაბამისი აზომვების ცხრილი"
+
+msgid "O_ff"
+msgstr "გამო_რთ."
+
+msgid "O_n"
+msgstr "ჩ_ართ."
+
+msgid "Ofm Save Failed"
+msgstr "Ofm ვერ შეინახა"
+
+msgid "Ogham"
+msgstr "ოღამი"
+
+msgid "Ol Chiki"
+msgstr "ოლ-ჩიკი"
+
+msgid "Old Hungarian"
+msgstr "ძველუნგრული"
+
+msgid "Old Italic"
+msgstr "ძველიტალიური"
+
+msgid "Old Persian"
+msgstr "ძველსპარსული"
+
+msgid "Old Uyghur"
+msgstr "ძველუიღურული"
+
+msgid "Old style 'kern'"
+msgstr "ძველებული „kern“"
+
+msgid ""
+"Once upon a time, Adobe assigned PUA (public use area) encodings\n"
+"for many stylistic variants of characters (small caps, old style\n"
+"numerals, etc.). Adobe no longer believes this to be a good idea,\n"
+"and recommends that these encodings be ignored.\n"
+"\n"
+" The assignments were originally made because most applications\n"
+"could not handle OpenType features for accessing variants. Adobe\n"
+"now believes that all apps that matter can now do so. Applications\n"
+"like Word and OpenOffice still can't handle these features, so\n"
+" fontforge's default behavior is to ignore Adobe's current\n"
+"recommendations.\n"
+"\n"
+"Note: This does not affect figuring out unicode from the font's encoding,\n"
+"it just controls determining unicode from a name."
+msgstr ""
+"ერთ დროს, Adobe-მა გამოყო PUA-დაშიფვრის არეები\n"
+"(public use area – საჯარო გამოყენების) განსხვავებული სახის\n"
+"სიმბოლოებისთვის (მცირე მთავრული, ძველებური ციფრები და სხვა).\n"
+"Adobe აღარ მიიჩნევს ამას მართებულად და არჩევს მის უგულებელყოფას.\n"
+"\n"
+" ამგვარად განსაზღვრის მიზეზი ის იყო, რომ ბევრი პროგრამა\n"
+"ვერ აღიქვამდა OpenType-თვისებებს სახესხვაოების ასარჩევად. Adobe\n"
+"ამტკიცებს, რომ ახლა უკვე ყველა პროგრამა ახერხებს მის გამოყენებას. თუმცა\n"
+"Word და OpenOffice ჯერ კიდევ ვერ აღიქვამს, ამიტომ\n"
+" fontforge ნაგულისხმევად არ ითვალისწინებს Adobe-ის რჩევებს.\n"
+"\n"
+"შენიშვნა: ეს არ მოქმედებს უნიკოდის შრიფტის დაშიფვრის მიხედვით დადგენაზე,\n"
+"მხოლოდ სახელით ამოცნობას განსაზღვრავს."
+
+msgid "Only a single character allowed"
+msgstr "მხოლოდ ერთი სიმბოლოა დაშვებული"
+
+msgid "Only upper case"
+msgstr "მხოლოდ მთავრული"
+
+msgid "Open AutoKern dialog for new kerning subtables"
+msgstr "თვითწანაცვლების არის გახსნა ახალი ქვეცხრილებისთვის"
+
+msgid "Open Font"
+msgstr "შრიფტის გახსნა"
+
+msgid "Open Glyph"
+msgstr "ასონიშნის გახსნა"
+
+msgid "Open _Web Page"
+msgstr "_ვებგვერდის გახსნა"
+
+msgid "OpenType"
+msgstr "OpenType"
+
+msgid "OpenTypeFeature|New"
+msgstr "ახალი"
+
+msgid "OpenType|Lookups"
+msgstr "ცნობარები"
+
+msgid "Optical Character Recognition"
+msgstr "სიმბოლოების ოპტიკური ამოცნობა"
+
+msgid "Origin"
+msgstr "საწყისი"
+
+msgid "Origin:"
+msgstr "საწყისი:"
+
+msgid "Oriya"
+msgstr "ორია"
+
+msgid "Other Info"
+msgstr "სხვა მონაცემები"
+
+msgid "Outline Color"
+msgstr "მოხაზულობის ფერი"
+
+msgid "Outline Fonts"
+msgstr "მოხაზული შრიფტები"
+
+msgid "Outline Glyphs\n"
+msgstr "მოხაზული ასონიშნები\n"
+
+msgid "Outline Inner Border"
+msgstr "მოხაზულობის შიდა ჩარჩო"
+
+msgid "Outline Outer Border"
+msgstr "მოხაზულობის გარე ჩარჩო"
+
+msgid "Outline Tools"
+msgstr "მოხაზულობის ხელსაწყოები"
+
+msgid "Outline Width"
+msgstr "გარემოხაზულობის სიგანე"
+
+msgid "Outline Width:"
+msgstr "გარემოხაზულობის სიგანე:"
+
+msgid "OutlineThickness"
+msgstr "მოხაზულობის სისქე"
+
+msgid "Output AFM"
+msgstr "გამოიტანოს AFM"
+
+msgid "Output FONTLOG.txt"
+msgstr "გამოიტანოს FONTLOG.txt"
+
+msgid "Output Glyph Map"
+msgstr "გამოიტანოს ასონიშნების გეგმა"
+
+msgid "Output OFM & CFG"
+msgstr "გამოიტანოს OFM და CFG"
+
+msgid "Output PFM"
+msgstr "გამოიტანოს PFM"
+
+msgid "Output TFM & ENC"
+msgstr "გამოიტანოს TFM და ENC"
+
+msgid "Output error"
+msgstr "გამოტანის შეცდომა"
+
+msgid "PDF"
+msgstr "PDF"
+
+msgid "PDF page graphics"
+msgstr "PDF-გვერდის გამოსახულება"
+
+msgid "PS Glyph Names"
+msgstr "ასონიშნის PS-სახელი"
+
+msgid "PS Names"
+msgstr "PS-სახელი"
+
+msgid "PSPrivateDictKey|New"
+msgstr "ახალი"
+
+msgid "P_FM Family"
+msgstr "P_FM-კრებული"
+
+msgid "P_rev Control Point"
+msgstr "_წინა მართვის წერტილი"
+
+msgid "Package Name:"
+msgstr "კრებულის სახელი:"
+
+msgid "Page_Size:"
+msgstr "გვერდის _ზომა:"
+
+msgid "Pahawh Hmong"
+msgstr "ფაჰაუ-მონი"
+
+msgid "Pair Position (kerning)"
+msgstr "წყვილთა ურთიერთგანლაგება (წანაცვლება)"
+
+msgid "Pairwise Positioning (kerning)"
+msgstr "წყვილთა ურთიერთგანლაგება (წანაცვლება)"
+
+msgid "PanoseWeight|Any"
+msgstr "ნებისმიერი"
+
+msgid "PanoseWeight|No Fit"
+msgstr "სხვა"
+
+msgid "Panose|_Weight"
+msgstr "სის_ქე"
+
+msgid "Passed Validation"
+msgstr "შემოწმება გავლილია"
+
+msgid "Paste After"
+msgstr "ჩასმა შემდგომ"
+
+msgid "Paste Into"
+msgstr "ჩასმა შიგნით"
+
+msgid "Pattern"
+msgstr "ნიმუში"
+
+msgid "Pattern Size:"
+msgstr "ნიმუშის ზომა:"
+
+msgid "Pau Cin Hau"
+msgstr "პაუ-სინ-ჰაუ"
+
+msgid "Pfm Save Failed"
+msgstr "Pfm ვერ შეინახა"
+
+msgid "Phaistos Disc"
+msgstr "ფესტოსის დისკო"
+
+msgid "Phonetic Extensions"
+msgstr "ბგერითი გაფართოებები"
+
+msgid "Phonetic Extensions Supplement"
+msgstr "ბგერითი გაფართოებების დანართი"
+
+msgid "Pick a color"
+msgstr "ფერის შერჩევა"
+
+msgid "Pick a font, any font..."
+msgstr "შრიფტის არჩევა, რომელიმესი..."
+
+msgid "Pick a page"
+msgstr "გვერდის არჩევა"
+
+msgid "Pixel Sizes:"
+msgstr "პიქსელის ზომები:"
+
+msgid "Please choose File/Generate Fonts to save to other formats."
+msgstr "გთხოვთ, იხილოთ ფაილი/შრიფტების წარმოქმნა, სხვა სახით შენახვისთვის."
+
+msgid "Please draw a convex polygon in the drawing area."
+msgstr "გთხოვთ, დახაზოთ ამოზნექილი მრავალკუთხედი შესაბამის არეში."
+
+#, c-format
+msgid "Please name encoding %d in this file"
+msgstr "დაარქვით სახელი %d დაშიფვრას ამ ფაილში"
+
+msgid "Please name this encoding"
+msgstr "დაარქვით დაშიფვრას სახელი"
+
+msgid "Please specify a bitmap magnification factor."
+msgstr "გთხოვთ, მიუთითოთ რასტრული გადიდების მამრავლი."
+
+#, c-format
+msgid "Please specify a new supplement for %.20s-%.20s"
+msgstr "გთხოვთ, მიუთითოთ ახალი დანართი – %.20s-%.20s"
+
+msgid "Plugin Configuration"
+msgstr "მოდულების გამართვა"
+
+msgid ""
+"Plugins can be Loaded and Configured now.\n"
+"Other changes will take effect at next restart."
+msgstr ""
+"მოდულების ჩატვირთვა და გამართვა აქედან შეიძლება.\n"
+"სხვა ცვლილებები კი აისახება მომდევნო გაშვებისას."
+
+msgid "Point sizes on a 100 dpi screen"
+msgstr "წერტილის ზომა 100 dpi ეკრანზე"
+
+msgid "Point sizes on a 120 dpi screen"
+msgstr "წერტილის ზომა 120 dpi ეკრანზე"
+
+msgid "Point sizes on a 72 dpi screen"
+msgstr "წერტილის ზომა 72 dpi ეკრანზე"
+
+msgid "Point sizes on a 75 dpi screen"
+msgstr "წერტილის ზომა 75 dpi ეკრანზე"
+
+msgid "Point sizes on a 96 dpi screen"
+msgstr "წერტილის ზომა 96 dpi ეკრანზე"
+
+msgid "PointNumbers|_None"
+msgstr "_არცერთი"
+
+msgid "Pointer"
+msgstr "მაჩვენებელი"
+
+msgid "Points:"
+msgstr "წერტილები:"
+
+msgid "Polygon"
+msgstr "მრავალკუთხედი"
+
+msgid "Polygon or Star"
+msgstr "მრავალკუთხედი ან ვარსკვლავი"
+
+msgid "Pr_eferences..."
+msgstr "_პარამეტრები..."
+
+msgid "Preferences"
+msgstr "პარამეტრები"
+
+msgid "Preferred Family"
+msgstr "უპირატესი კრებული"
+
+msgid "Preserve the names of the GPOS/GSUB lookups and subtables"
+msgstr "GPOS/GSUB-ცნობარებისა და ქვეცხრილების სახელების შენარჩუნება"
+
+msgid "Prev Defined Gl_yph"
+msgstr "წინა განსაზღვრული ას_ონიშანი"
+
+msgid "Previe_w"
+msgstr "შეთვა_ლიერება"
+
+msgid "Previous Line in _Word List"
+msgstr "წინა ხაზი სი_ტყვათა სიაში"
+
+msgid "Print"
+msgstr "ამობეჭდვა"
+
+msgid "Print Failed"
+msgstr "ამობეჭდვა ვერ მოხერხდა"
+
+msgid "Print To File..."
+msgstr "ამობეჭდვა ფაილში..."
+
+msgid "Printable Document"
+msgstr "ამოსაბეჭდი დოკუმენტი"
+
+msgid "Printing Font"
+msgstr "შრიფტი იბეჭდება"
+
+msgid "Private Use Area"
+msgstr "კერძო გამოყენების არე"
+
+#. GT: I am told that the use of "|" to provide contextual information in a
+#. GT: gettext string is non-standard. However it is documented in section
+#. GT: 10.2.6 of http://www.gnu.org/software/gettext/manual/html_mono/gettext.html
+#. GT:
+#. GT: Anyway here the word "Property" is used to provide context for "New..." and
+#. GT: the translator should only translate "New...". This is necessary because in
+#. GT: French (or any language where adjectives agree in gender/number with their
+#. GT: nouns) there are several different forms of "New" and the one chose depends
+#. GT: on the noun in question.
+#. GT: A french translation might be either msgstr "Nouveau..." or msgstr "Nouvelle..."
+#. GT:
+#. GT: I expect there are more cases where one english word needs to be translated
+#. GT: by several different words in different languages (in Japanese a different
+#. GT: word is used for the latin script and the latin language) and that you, as
+#. GT: a translator may need to ask me to disambiguate more strings. Please do so:
+#. GT:      <pfaedit@users.sourceforge.net>
+msgid "Property|New..."
+msgstr "ახალი..."
+
+msgid "RBearing:"
+msgstr "მარჯვენა საბჯენი:"
+
+msgid "Re_vert List"
+msgstr "სიის ა_ღდგენა"
+
+msgid "Recalculate Bitmaps"
+msgstr "ბიტური გამოსახულების ახლიდან გამოთვლა"
+
+msgid "Recen_t"
+msgstr "_ბოლოდროინდელი"
+
+msgid "Rectangle"
+msgstr "მართკუთხედი"
+
+msgid "Rectangle or Ellipse"
+msgstr "მართკუთხედი ან ოვალი"
+
+msgid "Refresh File List"
+msgstr "ფაილების სიის განახლება"
+
+msgid "Regenerate _Bitmap Glyphs..."
+msgstr "ახლიდან შეიქმნას _ბიტური ასონიშნები..."
+
+msgid "Remove All Kern _Pairs"
+msgstr "ყველა წანაცვლებული წ_ყვილის მოცილება"
+
+msgid "Remove All VKern Pairs"
+msgstr "ყველა შვეულად წანაცვლებული წ_ყვილის მოცილება"
+
+msgid "Remove Bitmap Glyphs..."
+msgstr "ბიტური ასონიშნების მოცილება..."
+
+msgid "Remove En_coding..."
+msgstr "დაში_ფვრის მოცილება..."
+
+msgid "Remove Encoding"
+msgstr "დაშიფვრის მოცილება"
+
+msgid "Remove Kern _Pairs"
+msgstr "წანაცვლებული წ_ყვილის მოცილება"
+
+msgid "Remove Language from Script..."
+msgstr "ენის მოცილება დამწერლობიდან..."
+
+msgid "Remove Lookup"
+msgstr "ცნობარის მოცილება"
+
+msgid "Remove Overlap"
+msgstr "გადაფარვის მოცილება"
+
+msgid "Remove Overlap:"
+msgstr "გადაფარვის მოცილება:"
+
+msgid "Remove This Glyph"
+msgstr "ამ ასონიშნის მოცილება"
+
+msgid "Remove VKern Pairs"
+msgstr "შვეულად წანაცვლებული წყვილის მოცილება"
+
+msgid "Remove _Unused Slots"
+msgstr "გამოუ_ყენებელი ადგილების მოცილება"
+
+msgid "Removing overlaps..."
+msgstr "ცილდება გადაფარვები..."
+
+msgid "Rename Gl_yphs..."
+msgstr "ას_ონიშნების გადარქმევა..."
+
+msgid "Rename all glyphs in the selection"
+msgstr "ყველა მონიშნული ასონიშნის გადარქმევა"
+
+msgid "Replace Pattern"
+msgstr "ჩანაცვლების ნიმუში"
+
+msgid "Replace Pattern:"
+msgstr "ჩანაცვლების ნიმუში:"
+
+msgid "Replace Å"
+msgstr "ჩანაცვლდეს Å"
+
+msgid "Replacement Glyph Names"
+msgstr "შემცვლელი ასონიშნების სახელები"
+
+msgid "Replacement glyphs"
+msgstr "შემცვლელი ასონიშნები"
+
+msgid "Replacements"
+msgstr "ჩანაცვლებული"
+
+#, c-format
+msgid "Requested bitmap size not available in font. Font supports %s"
+msgstr "მოტხოვნილი ბიტური ზომა მიუწვდომელია შრიფტში. მხარდაჭერილია %s"
+
+msgid "Required Ligatures"
+msgstr "აუცილებელი გადაბმები"
+
+msgid "Retain current advance width, scale side bearings proportionally"
+msgstr ""
+"გაფართოებული სიგანის შენარჩუნება, გვერდითი საბჯენების თანაბარი ცვლილება"
+
+msgid "Revalidate"
+msgstr "გადამოწმება"
+
+msgid "Revalidate All"
+msgstr "ყველას კვლავ გადამოწმება"
+
+msgid "Revert Gl_yph"
+msgstr "ას_ონიშნის აღდგენა"
+
+msgid "Revert Kerning"
+msgstr "დაბრუნება საწყისზე"
+
+msgid "Revert To _Backup"
+msgstr "აღდგენა მა_რქაფიდან"
+
+msgid "Right Side Bearing"
+msgstr "მარჯვენა საბჯენი"
+
+msgid "Right Side Bearing Add"
+msgstr "მარჯვენა საბჯენის გაზრდა"
+
+msgid "Right Side Bearing Scale"
+msgstr "მარჯვენა საბჯენის ცვლილება"
+
+msgid "Right Side Bearing:"
+msgstr "მარჯვენა საბჯენი:"
+
+msgid "Rotate"
+msgstr "მობრუნება"
+
+msgid "Rotate 180°"
+msgstr "შებრუნება 180°"
+
+msgid "Rotate 3D Around..."
+msgstr "სივრცული მობრუნება..."
+
+#. GT: "CW" means Counter-Clockwise
+msgid "Rotate 90° CCW"
+msgstr "შებრუნება 90° საათის საწ."
+
+#. GT: "CW" means Clockwise
+msgid "Rotate 90° CW"
+msgstr "შებრუნება 90° საათის მიმართ."
+
+msgid "Rotate _180°"
+msgstr "შებრუნება _180°"
+
+msgid "Rotate _90° CCW"
+msgstr "შებრუნება _90° საათის საწ."
+
+msgid "Rotate by Ruler..."
+msgstr "მოტრიალება სახაზავით..."
+
+msgid "Rotate the selection"
+msgstr "მონიშნულის მობრუნება"
+
+msgid "Rotate the selection in 3D and project back to plane"
+msgstr "სივრცული მობრუნება და კვლავ სიბრტყეზე განთავსება"
+
+msgid "Rotate..."
+msgstr "მობრუნება..."
+
+msgid "Rotate:"
+msgstr "შებრუნება:"
+
+msgid "Round To _Int"
+msgstr "დამრგვალება მთე_ლამდე"
+
+msgid "Rounding to integer..."
+msgstr "დამრგვალება მთელამდე..."
+
+msgid "Row|New"
+msgstr "ახალი"
+
+msgid "Ruler Options"
+msgstr "სახაზავის პარამეტრები"
+
+msgid "Runic"
+msgstr "რუნული"
+
+msgid "S_ave Feature File..."
+msgstr "თვისებების ფაილად შენა_ხვა..."
+
+msgid "S_ave as..."
+msgstr "შე_ნახვა, როგორც..."
+
+msgid "S_etup"
+msgstr "გა_მართვა"
+
+msgid "S_how H. Metrics..."
+msgstr "გამო_ჩნდეს თარაზ. აზომვები..."
+
+msgid "Samaritan"
+msgstr "სამარიტანული"
+
+msgid "Save A_ll"
+msgstr "_ყველას შენახვა"
+
+msgid "Save As _Image..."
+msgstr "შენახვა ს_ურათად..."
+
+msgid "Save Colors"
+msgstr "ფერების შენახვა"
+
+msgid "Save Comments"
+msgstr "შენიშვნების შენახვა"
+
+msgid "Save Failed"
+msgstr "ვერ შეინახა"
+
+msgid "Save Guides"
+msgstr "მიმმართველების შენახვა"
+
+msgid "Save Image"
+msgstr "გამოსახულების შენახვა"
+
+msgid "Save Layers"
+msgstr "შრეების შენახვა"
+
+msgid "Save Resource file as..."
+msgstr "მასალის შენახვა, როგორც..."
+
+msgid "Save a font based on the specified layer"
+msgstr "შრიფტის შენახვა ცალკეული შრის მიხედვით"
+
+msgid "Save as _Directory"
+msgstr "შენახვა სა_ქაღალდედ"
+
+msgid "Save as..."
+msgstr "შენახვა, როგორც..."
+
+msgid "Save glyph colors in the PfEd table"
+msgstr "ასონიშნის ფერების შენახვა PfEd-ცხრილში"
+
+msgid "Save glyph comments in the PfEd table"
+msgstr "ასონიშნის შენიშვნების შენახვა PfEd-ცხრილში"
+
+msgid "Save in _UCS2"
+msgstr "შენახვა _UCS2-სახით"
+
+msgid "Save the guidelines in the Guide layer."
+msgstr "ხაზების დამახსოვრება მიმმართველის შრეზე."
+
+msgid "Saving Bitmap Font(s)"
+msgstr "ინახება ბიტური შრიფტ(ებ)ი"
+
+msgid "Saving Bitmaps"
+msgstr "ინახება ბიტური"
+
+msgid "Saving OpenType Font"
+msgstr "ინახება OpenType-შრიფტი"
+
+msgid "Saving Outlines"
+msgstr "მოხაზულობა ინახება"
+
+msgid "Saving PostScript Font"
+msgstr "PostScript-შრიფტის შენახვა"
+
+msgid "Scale Bearings By:"
+msgstr "საბჯენები პროცენტულად:"
+
+msgid "Scale LBearing By:"
+msgstr "მარცხენა საბჯენი პროცენტულად:"
+
+msgid "Scale RBearing By:"
+msgstr "მარჯვენა საბჯენი პროცენტულად:"
+
+msgid "Scale Uniformly..."
+msgstr "ზომის ცვლა ერთგვაროვნად..."
+
+msgid "Scale the selection"
+msgstr "მონიშნულის ზომის ცვლა"
+
+msgid "Scale..."
+msgstr "ზომის ცვლა..."
+
+#, c-format
+msgid ""
+"Script '%c%c%c%c' claims baseline '%c%c%c%c' as its default, but that "
+"baseline is not currently active."
+msgstr ""
+"დამწერლობა „%c%c%c%c“ მიუთითებს, რომ ნაგულისხმევი საყრდენია „%c%c%c%c“, "
+"თუმცა ეს ხაზი არაა ამჟამად მოქმედი."
+
+msgid "Script File"
+msgstr "სკრიპტის ფაილი"
+
+msgid "Script Menu"
+msgstr "სკრიპტის მენიუ"
+
+msgid "Script(s) & Language(s)"
+msgstr "დამწერლობ(ებ)ა და ენ(ებ)ი"
+
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "Arabic", ignore "Script|"
+msgid "Script|Arabic"
+msgstr "არაბული"
+
+msgid "Script|Cherokee"
+msgstr "ჩეროკე"
+
+#. GT: Don't ask me what RSymbol means, I don't know either. It's in apple's
+#. GT:  docs though
+msgid "Script|Cyrillic"
+msgstr "კირილიცა"
+
+msgid "Script|Georgian"
+msgstr "ქართული"
+
+msgid "Script|Greek"
+msgstr "ბერძნული"
+
+msgid "Script|Latin"
+msgstr "ლათინური"
+
+msgid "Script|New"
+msgstr "ახალი"
+
+msgid "Script|Tamil"
+msgstr "ტამილური"
+
+msgid "Script|Tamil2"
+msgstr "ტამილური2"
+
+msgid "Scroll Bar"
+msgstr "გადაადგილების რბია"
+
+msgid "Scroll by hand"
+msgstr "ხელით გადაადგილება"
+
+msgid "ScrollBar"
+msgstr "გადაადგილების რბია"
+
+msgid "Search Pattern"
+msgstr "საძიებო ნიმუში"
+
+msgid "Search Pattern:"
+msgstr "საძიებო ნიმუში:"
+
+msgid "Search Radius"
+msgstr "ძიების არე"
+
+msgid "Second Char"
+msgstr "მეორე სიმბოლო"
+
+msgid "Section"
+msgstr "არე"
+
+msgid "Section|Continue"
+msgstr "გაგრძელება"
+
+msgid "Section|Start"
+msgstr "დაწყება"
+
+#. GT: Select the class containing the glyph named in the following text field
+msgid "Select Class Containing:"
+msgstr "შემცველი კლასის მონიშვნა:"
+
+msgid "Select Point(s) at..."
+msgstr "მოინიშნოს წერტილ(ებ)ი..."
+
+msgid "Select _All"
+msgstr "_ყველას მონიშვნა"
+
+msgid "Select a ligature to view"
+msgstr "გადაბმის შეთვალიერება"
+
+msgid ""
+"Select as many languages as needed\n"
+"Hold down the control key when clicking\n"
+"to make disjoint selections."
+msgstr ""
+"აირჩიეთ სასურველი ოდენობის ენები\n"
+"დააწექით Ctrl-ღილაკს დაწკაპებისას,\n"
+"ცალ-ცალკე მონიშვნისთვის."
+
+msgid "Select by Color"
+msgstr "ფერით შერჩევა"
+
+msgid "Select by Name"
+msgstr "მონიშვნა სახელით"
+
+msgid "Select by Script"
+msgstr "მონიშვნა დამწერლობით"
+
+msgid "Select by _Color"
+msgstr "მონიშვნა _ფერით"
+
+msgid "Select by _Script..."
+msgstr "მონიშვნა დამ_წერლობით..."
+
+msgid "Select by _Wildcard..."
+msgstr "მონიშვნა ა_ღნიშვნებით..."
+
+msgid ""
+"Select some text, then use this list to specify\n"
+"the current script & language."
+msgstr ""
+"მონიშნეთ ტექსტი, შემდეგ გამოიყენეთ ეს სია\n"
+"მიმდინარე დამწერლობისა და ენის მისათითებლად."
+
+msgid "Select the class containing the named glyph"
+msgstr "დასახელებული ასონიშნის შემცველი კლასის მონიშვნა"
+
+msgid "Selected Glyphs"
+msgstr "შერჩეული ასონიშნები"
+
+msgid "Selected LBearing Color"
+msgstr "შერჩეული მარცხენა საბჯენის ფერი"
+
+msgid "Selected Region Color"
+msgstr "მონიშნული არეალის ფერი"
+
+msgid "Separation"
+msgstr "განცალკევება"
+
+msgid "Serbian (Cyrillic)"
+msgstr "სერბული (კირილიცა)"
+
+msgid "Serbian (Latin)"
+msgstr "სერბული (ლათინური)"
+
+msgid "Set Bearings To:"
+msgstr "საბჯენად მიეთითოს:"
+
+msgid "Set Both Bearings..."
+msgstr "ორივე საბჯენის მითითება..."
+
+msgid "Set Both Side Bearings..."
+msgstr "ორივე მხარეს საბჯენის მითითება..."
+
+msgid "Set LBearing To:"
+msgstr "მარცხენა საბჯენად მიეთითოს:"
+
+msgid "Set LBearing..."
+msgstr "მარცხენა საბჯენის მითითება..."
+
+msgid "Set Point _Size"
+msgstr "წერტილის _ზომის დაყენება"
+
+msgid "Set RBearing To:"
+msgstr "მარჯვენა საბჯენად მიეთითოს:"
+
+msgid "Set RBearing..."
+msgstr "მარჯვენა საბჯენის მითითება..."
+
+msgid "Set Vertical Width..."
+msgstr "შვეული სიგანის მითითება..."
+
+msgid "Set Width..."
+msgstr "სიგანის მითითება..."
+
+msgid "Set _LBearing..."
+msgstr "მარ_ცხენა საბჯენის მითითება..."
+
+msgid "Set _RBearing..."
+msgstr "მარ_ჯვენა საბჯენის მითითება..."
+
+msgid "Set _Vertical Width..."
+msgstr "_შვეული სიგანის მითითება..."
+
+msgid "Set _Width..."
+msgstr "სი_განის მითითება..."
+
+msgid "Set as Default"
+msgstr "ნაგულისხმევად მითითება"
+
+msgid ""
+"Set the minimum and maximum values by which\n"
+"the glyphs in this script extend below and\n"
+"above the baseline when modified by a feature."
+msgstr ""
+"იმ უკიდურესი მნიშვნელობების მითითება,\n"
+"რომლითაც ამ დამწერლობის ასონიშანი ასცდება და\n"
+"ჩამოსცდება საყრდენ ხაზს გარდაქმნისას."
+
+msgid ""
+"Set the minimum and maximum values by which\n"
+"the glyphs in this script extend below and\n"
+"above the baseline. This may vary by language"
+msgstr ""
+"იმ უკიდურესი მნიშვნელობების მითითება,\n"
+"რომლითაც ამ დამწერლობის ასონიშანი ასცდება და\n"
+"ჩამოსცდება საყრდენ ხაზს. განსხვავდება ენების მიხედვით"
+
+#, c-format
+msgid ""
+"Several language tags, including '%s', are not in the list of known "
+"languages and will be omitted"
+msgstr ""
+"რამდენიმე ენის ჭდე, მათ შორის „%s“ არაა ცნობილი ენების სიაში და გამოტოვებული "
+"იქნება"
+
+msgid "Shape Type"
+msgstr "ნახაზის სახეობა"
+
+msgid "Shavian"
+msgstr "შოუს ანბანი"
+
+msgid "Show ATT"
+msgstr "გამოჩნდეს ATT"
+
+msgid "Show H. Metrics"
+msgstr "გამოჩნდეს თარაზ. აზომვები"
+
+msgid "Show Hidden Files"
+msgstr "დამალული ფაილების გამოჩენა"
+
+msgid "Show Kerning"
+msgstr "წანაცვლების გამოჩენა"
+
+msgid "Show V. Metrics"
+msgstr "გამოჩნდეს შვეული აზომვები"
+
+msgid "Show _Grid"
+msgstr "_ბადის ჩვენება"
+
+msgid "Show _V. Metrics..."
+msgstr "გამოჩნდეს _შვეული აზომვები..."
+
+msgid "ShowControlPointsAlways"
+msgstr "მართვის წერტილის ყოველთვის ჩვენება"
+
+msgid "Side Bearing Addition"
+msgstr "გვერდითი საბჯენის დამატება"
+
+msgid "Side Bearing Color"
+msgstr "გვერდითი საბჯენის ფერი"
+
+msgid "Side Bearing Expansion Factor"
+msgstr "გვერდითი საბჯენის გაშლის მამრავლი"
+
+msgid "Side Bearings:"
+msgstr "გვერდითი საბჯენები:"
+
+msgid "Simple"
+msgstr "მარტივი"
+
+msgid "Simplify"
+msgstr "გამარტივება"
+
+msgid "Simplify More..."
+msgstr "მეტად გამარტივება..."
+
+msgid "Simplifying..."
+msgstr "მარტივდება..."
+
+msgid "Sinhala"
+msgstr "სინჰალური"
+
+msgid "Skew"
+msgstr "გადახრა"
+
+msgid "Skew Angle"
+msgstr "გადახრის კუთხე"
+
+msgid "Skew Ratio"
+msgstr "გადახრის ფარდობა"
+
+msgid "Skew by Ruler..."
+msgstr "გადახრა სახაზავით..."
+
+msgid "Skew the selection"
+msgstr "მონიშნულის გადახრა"
+
+msgid "Skew..."
+msgstr "გადახრა..."
+
+msgid "Skew:"
+msgstr "გადახრა:"
+
+#, c-format
+msgid "Skipping duplicate group %s.\n"
+msgstr "გამეორებული ჯგუფი %s უგულებელყოფილია.\n"
+
+#, c-format
+msgid "Skipping group %s with same name as a glyph.\n"
+msgstr "ჯგუფი %s უგულებელყოფილია იმავე დასახელების ასონიშნიანად.\n"
+
+#, c-format
+msgid "Skipping non-existent glyph %s in group %s.\n"
+msgstr "უგულებელყოფილია არარსებული ასონიშანი %s ჯგუფში %s.\n"
+
+msgid "Small Capitals"
+msgstr "მცირე მთავრული"
+
+msgid "Small Caps"
+msgstr "მცირე მთავრული"
+
+msgid "Small Kana Extension"
+msgstr "მცირე კანა, გაფართოება"
+
+msgid ""
+"Some versions of Windows will refuse to install postscript fonts if the "
+"familyname is longer than 31 characters. Do you want to continue anyway?"
+msgstr ""
+"ზოგიერთი ვერსიის Windows არ იძლევა Postscript-შრიფტების დაყენების "
+"საშუალებას, თუ კრებულის სახლი აღემატება 31 სიმბოლოს. მაინც გსურთ, განაგრძოთ?"
+
+msgid "Sort By:"
+msgstr "დალაგება:"
+
+msgid "Sort this display based on the alphabetic name of the glyph"
+msgstr "ასონიშნების დალაგება სახელის მიხედვით ანბანურად"
+
+msgid "Sort|Alphabetic"
+msgstr "ანბანური"
+
+msgid "Source Glyph Names"
+msgstr "თავდაპირველი ასონიშნების სახელები"
+
+msgid "Soyombo"
+msgstr "სოიომბო"
+
+msgid "Spacing Modifier Letters"
+msgstr "განცალკევებული გარდამქნელი ნიშნები"
+
+msgid "Spanish (Latin America)"
+msgstr "ესპანური (ლათინური ამერიკა)"
+
+msgid "Standard Ligatures"
+msgstr "ჩვეულებრივი გადაბმები"
+
+msgid "Star"
+msgstr "ვარსკვლავი"
+
+msgid "Style Name:"
+msgstr "სტილის სახელი:"
+
+msgid "Styles (SubFamily)"
+msgstr "სტილი (ქვეჯგუფი)"
+
+msgid "Sub/Super"
+msgstr "ხაზზედა/ხაზქვედა"
+
+msgid "Sub/Superscript"
+msgstr "ხაზზედა/ქვედა ნიშანი"
+
+msgid "Subscript"
+msgstr "ხაზქვედა"
+
+msgid "SubscriptSuperUse|Default"
+msgstr "ნაგულისხმევი"
+
+msgid "Subscripts and Superscripts"
+msgstr "ხაზქვედა და ხაზზედა ნიშნები"
+
+msgid "Subscripts/Superscripts"
+msgstr "ხაზზედა/ხაზქვედა ნიშნები"
+
+msgid "Sundanese"
+msgstr "სუნდური"
+
+msgid "Sundanese Supplement"
+msgstr "სუნდური დანართი"
+
+msgid "Super Extended"
+msgstr "ზეგაფართოებული"
+
+msgid "Superscript"
+msgstr "ხაზზედა"
+
+msgid "Superscripts and Subscripts"
+msgstr "ხაზზედა და ხაზქვედა ნიშნები"
+
+msgid "Supplemental Arrows-A"
+msgstr "დამატებითი ისრები-A"
+
+msgid "Supplemental Arrows-B"
+msgstr "დამატებითი ისრები-B"
+
+msgid "Supplemental Arrows-C"
+msgstr "დამატებითი ისრები-C"
+
+msgid "Supplemental Mathematical Operators"
+msgstr "მათემატიკური მოქმედების დამატებითი ნიშნები"
+
+msgid "Supplemental Punctuation"
+msgstr "დამატებითი სასვენი ნიშანები"
+
+msgid "Supplemental Symbols and Pictographs"
+msgstr "დამატებითი ნიშნები და ხატულები"
+
+msgid "Supplementary Ideographic Plane"
+msgstr "დამატებითი იდეოგრამული სივრცე"
+
+msgid "Supplementary Multilingual Plane"
+msgstr "დამატებითი მრავალენოვანი სივრცე"
+
+msgid "Supplementary Private Use Area A/B"
+msgstr "დამატებითი კერძო არე A/B"
+
+msgid "Supplementary Private Use Area-A"
+msgstr "დამატებითი კერძო არე-A"
+
+msgid "Supplementary Private Use Area-B"
+msgstr "დამატებითი კერძო არე-B"
+
+msgid "Supplementary Special-purpose Plane"
+msgstr "დამატებითი საგანგებო დანიშნულების სივრცე"
+
+msgid "Sutton SignWriting"
+msgstr "ჟესტების დამწერლობა"
+
+msgid "Symbol Charset"
+msgstr "ასონიშანთა ნაკრები"
+
+msgid "Symbols and Pictographs Extended-A"
+msgstr "ნიშნები და ხატულები გაფართოებული-A"
+
+msgid "Synchronize"
+msgstr "სინქრონიზაცია"
+
+msgid "Syntax error while parsing pdf graphics"
+msgstr "სინტაქსის შეცდომა PDF-გამოსახულების გარჩევისას"
+
+msgid "Syntax error while parsing pdf graphics: Page with no Contents"
+msgstr ""
+"სინტაქსის შეცდომა PDF-გამოსახულების გარჩევისას. გვერდი შიგთავსის გარეშეა"
+
+#, c-format
+msgid "Syntax error while parsing type3 glyph: %s"
+msgstr "სინტაქსის შეცდომა Type3 ასონიშნის გარჩევისას: %s"
+
+msgid "Syntax errors while parsing ToUnicode CMap"
+msgstr "სინტაქსის შეცდომა ToUnicode CMap-ის გარჩევისას"
+
+msgid "Syntax errors while parsing Type3 font headers"
+msgstr "სინტაქსის შეცდომა Type3 შრიფტის თავსართების გარჩევისას"
+
+msgid "Syriac"
+msgstr "სირიული"
+
+msgid "Syriac Supplement"
+msgstr "სირიული დანართი"
+
+#. GT: Top/Left (side) bearing
+msgid "TBearing:"
+msgstr "ზედა საბჯენი:"
+
+msgid "TT"
+msgstr "TrueType"
+
+msgid "Tag must be 4 characters long"
+msgstr "ჭდე უნდა იყოს 4 სიმბოლოიანი"
+
+msgid "Tag too long"
+msgstr "ჭდე ზედმეტად გრძელია"
+
+msgid "Tagalog"
+msgstr "ტაგალური"
+
+msgid "Tagbanwa"
+msgstr "ტაგბანვა"
+
+msgid "Tai Le"
+msgstr "ტაის ლი"
+
+msgid "Tai Tham"
+msgstr "ლანა"
+
+msgid "Tamazight (Arabic)"
+msgstr "ბერბერო (არაბული)"
+
+msgid "Tamil"
+msgstr "ტამილური"
+
+msgid "Tamil Supplement"
+msgstr "ტამილური დანართი"
+
+msgid "Tangsa"
+msgstr "ტასე-ნაგა"
+
+msgid "TeX Table"
+msgstr "TeX-ცხრილი"
+
+msgid "TeX table"
+msgstr "TeX-ცხრილი"
+
+msgid "Telugu"
+msgstr "ტელუგუ"
+
+msgid "Text Width:    0"
+msgstr "ტექსტის სიგანე:    0"
+
+#, c-format
+msgid "Text Width:%4d"
+msgstr "ტექსტის სიგანე:%4d"
+
+msgid "Tfm Save Failed"
+msgstr "Tfm ვერ შეინახა"
+
+msgid "Thaana"
+msgstr "თაანა"
+
+msgid "Thai"
+msgstr "ტაილანდური"
+
+msgid "The 'kern' table supports at most 10920 kern pairs in a subtable"
+msgstr ""
+"„kern“ ცხრილში მხარდაჭერილია არაუმეტეს 10920 წანაცვლების წყვილი ქვეცხრილში"
+
+msgid ""
+"The Merge operation cannot be reverted.\n"
+"Do it anyway?"
+msgstr ""
+"გაერთიანების გაუქმება ვეღარ მოხერხდება.\n"
+"ნამდვილად გსურთ, განაგრძოთ?"
+
+msgid ""
+"The OFL is a community-approved software license designed for libre/open "
+"font projects. \n"
+"Fonts under the OFL can be used, studied, copied, modified, embedded, merged "
+"and redistributed while giving authors enough control and artistic "
+"integrity. For more details including an FAQ see http://scripts.sil.org/"
+"OFL. \n"
+"\n"
+"This font metadata will help users, designers and distribution channels to "
+"know who you are, how to contact you and what rights you are granting. \n"
+"When releasing modified versions, remember to add your additional notice, "
+"including any extra Reserved Font Name(s). FontForge used to add RFN's by "
+"default, but no longer does, as they are used by a minority of OFL fonts and "
+"FontForge's RFN's were often legally invalid. Please see the official SIL "
+"FAQ and FontForge GitHub issue №4434 for more information. \n"
+"\n"
+"Have fun designing open fonts! 🔣🔧🥳"
+msgstr ""
+"OFL წარმოადგენს ერთობის მიერ დამოწმებულ პროგრამულ ლიცენზიას განკუთვნილს "
+"თავისუფალი/ღია შრიფტების პროექტებისთვის. \n"
+"OFL-ლიცენზიით შესაძლებელია შრიფტების გამოყენება, შესწავლა, გადამრავლება, "
+"გადაკეთება, ჩაშენება, გაერთიანება და გავრცელება შემქმნელისთვის განკარგვის "
+"უფლებისა და მხატვრული ღირებულების შენარჩუნებით. ვრცლად იხილეთ ᲮᲓᲙ ბმულზე "
+"http://scripts.sil.org/OFL. \n"
+"\n"
+"შრიფტზე დართული მონაცემებით მომხმარებლები, მხატვარ-შემმუშავებლები და "
+"გამავრცელებლები შეძლებენ, შეიტყონ, ვინ ხართ, როგორ დაგიკავშირდნენ და რის "
+"უფლებას ანიჭებთ. \n"
+"გადაკეთებული ვარიანტის გამოცემისას არ დაგავიწყდეთ, მიუთითოთ დამატებითი "
+"შენიშვნები, მათ შორის შრიფტის ხელშეუხებელი სახელები (Reserved Font Name). "
+"FontForge ნაგულისხმევად უთითებდა ხოლმე RFN-ს, თუმცა ახლა აღარ, ვინაიდან "
+"მხოლოდ მცირე ოდენობის OFL-შრიფტებში გამოიყენებოდა და FontForge-ის RFN ხშირად "
+"სამართლებრივადაც გაუმართავი იყო. ვრცლად იხილეთ ოფიციალური SIL-ᲮᲓᲙ და "
+"FontForge-ის GitHub-ზე განხილვა №4434. \n"
+"\n"
+"წარმატებას გისურვებთ ღია შრიფტების შემუშავების გზაზე! 🔣🔧🥳"
+
+msgid ""
+"The OpenType Style Set features ('ss01'-'ss20') may\n"
+"be assigned human readable names here."
+msgstr ""
+"OpenType-თვისებებს გაფორმებისთვის ('ss01'-'ss20') შეიძლება\n"
+"აქედან მიენიჭოს ადვილად აღსაქმელი სახელები."
+
+msgid ""
+"The UsePlugins preferences option is currently off.\n"
+"FontForge will not load plugin configuration or\n"
+"attempt discovery unless that option is on."
+msgstr ""
+"მოდულების გამოყენების შესაძლებლობა გამორთულია. მის ჩართვამდე, FontForge არ "
+"ჩატვირთავს გამართული მოდულების მონაცემებს და არ შეეცდება ახლის აღმოჩენას."
+
+#, c-format
+msgid "The code point U+%1$04X occurs in groups %2$.30s and %3$.30s"
+msgstr "ადგილის ნომერი U+%1$04X გვხდება ჯგუფებში %2$.30s და %3$.30s"
+
+msgid "The color of outlines in inactive layers"
+msgstr "გარემოხაზულობის ფერი უქმ შრეზე"
+
+msgid "The color of outlines in the active layer"
+msgstr "გარემოხაზულობის ფერი მოქმედ შრეზე"
+
+msgid "The color of the guide line for the advance width"
+msgstr "მიმმართველი ხაზის ფერი გაფართოებული სიგანისთვის"
+
+msgid "The color of the guide lines for glyph metrics"
+msgstr "მიმმართველი ხაზების ფერი ასონიშნის აზომვისას"
+
+msgid "The color of the guide lines for the bitmap grid"
+msgstr "მიმმართველი ხაზების ფერი ბიტური ბადისთვის"
+
+msgid "The color of the line marking the left bearing when it is selected"
+msgstr "მარცხენა საბჯენის გამოსარჩევი ფერი, როცა მონიშნულია"
+
+msgid "The color of the outline"
+msgstr "ფერი მოხაზულობისთვის"
+
+msgid "The color of the preview for drawing lines, rectangles, and ellipses"
+msgstr "ფერი შესათვალიერებელი ხაზების, მართკუთხედისა და ოვალებისა"
+
+msgid "The color of the selected region"
+msgstr "მონიშნული ნაწილის ფერი"
+
+msgid "The color of thick outlines in inactive layers"
+msgstr "მსხვილი გარემოხაზულობის ფერი უქმ შრეზე"
+
+msgid "The color of thick outlines in the active layer"
+msgstr "მსხვილი გარემოხაზულობის ფერი მოქმედ შრეზე"
+
+msgid "The color used to display a new guide line dragged from the ruler."
+msgstr "სახაზავიდან გადაჩოჩებული ახალი მიმმართველი ხაზის ფერი."
+
+#, c-format
+msgid ""
+"The feature '%c%c%c%c' is named twice in language %s\n"
+"%.80s\n"
+"%.80s"
+msgstr ""
+"თვისება '%c%c%c%c' ორი სახელითაა ენაში %s\n"
+"%.80s\n"
+"%.80s"
+
+#, c-format
+msgid ""
+"The feature tag on line %d (%s) is too long.  It may be at most 4 letters "
+"(or it could be a mac feature setting, two numbers in brokets <3,4>)"
+msgstr ""
+"თვისების ჭდე ხაზზე %d (%s) ზედმეტად დიდია.  უნდა იყოს არაუმეტეს 4 ასო (ან "
+"Mac-თვისების სახით, ორციფრიანი <3,4>)"
+
+#, c-format
+msgid "The feature tag on line %d (%s) should be in ASCII.\n"
+msgstr "თვისების ჭდე ხაზზე %d (%s) უნდა იყოს ASCII.\n"
+
+#, c-format
+msgid "The following error occurred on the selected glyphs: %.100s"
+msgstr "მოცემული შეცდომა წარმოიშვა მონიშნულ ასონიშნებზე: %.100s"
+
+msgid "The following table(s) in the font have been ignored by FontForge\n"
+msgstr "მოცემულ ცხრილ(ებ)ს შრიფტში არ გაითვალისწინებს FontForge\n"
+
+#, c-format
+msgid ""
+"The font %s is one of the standard fonts. It isn't actually in the file."
+msgstr "შრიფტი %s ერთ-ერთია სტანდარტული შრიფტებიდან. უშუალოდ ფაილში არაა."
+
+#, c-format
+msgid "The font does not contain a glyph named %s."
+msgstr "შრიფტი არ შეიცავს ასონიშანს დასახელებით %s."
+
+#, c-format
+msgid ""
+"The glyph %1$.30s has a different numbering of points (and control points) "
+"on its contours than in the various instances of the font"
+msgstr ""
+"ასონიშანს %1$.30s განსხვავებულად გადანომრილი წერტილები (მართვის "
+"წერტილებიანად) აქვს მოხაზულობაზე შრიფტის სხვა ვარიანტებთან შედარებით"
+
+#, c-format
+msgid ""
+"The glyph at encoding %d is named \".notdef\" but contains an outline. "
+"Because it is called \".notdef\" it will not be included in the generated "
+"font. You may give it a new name using Element->Glyph Info. Do you wish to "
+"continue font generation (and omit this character)?"
+msgstr ""
+"ასონიშანს შიფრით %d დასახელებად აქვს „.notdef“, მაგრამ შეიცავს მოხაზულობას. "
+"ვინაიდან ჰქვია „.notdef“, იგი ვერ მოხვდება შექმნილ შრიფტში. ახალი სახელის "
+"მისანიჭებლად იხილეთ „შემადგენელი → ასონიშნის შესახებ“. გსურთ, განაგრძოთ "
+"შრიფტის წარმოქმნა (ამ ასოს გამოკლებით)?"
+
+#, c-format
+msgid "The glyph name \"%1$.30s\" occurs in groups %2$.30s and %3$.30s"
+msgstr "ასონიშანი დასახელებით „%1$.30s“ გვხვდება ჯგუფებში %2$.30s და %3$.30s"
+
+#, c-format
+msgid ""
+"The glyph named %.30s is mapped to U+%04X.\n"
+"But its name indicates it should be mapped to U+%04X.\n"
+msgstr ""
+"ასონიშანი დასახელებით %.30s განთავსებულია U+%04X უჯრაში.\n"
+"თუმცა მისი სახელის მიხედვით განთავსებული უნდა იყოს U+%04X უჯრაში.\n"
+
+#, c-format
+msgid ""
+"The glyph named %s also occurs in the class on row %d which begins with "
+"%.20s...\n"
+"You must remove it from one of them."
+msgstr ""
+"ასონიშანი %s აგრეთვე ჩანს ამ კლასის %d რიგში, რომლის საწყისია %.20s...\n"
+"უნდა მოაცილოთ ერთერთიდან."
+
+msgid ""
+"The human-readable fontname text (in the Names pane) must be entirely ASCII."
+msgstr ""
+"შრიფტის ადვილად წასაკითხი დასახელება (სახელთა არეში) უნდა იყოს სრულად "
+"ლათინური ASCII."
+
+#, c-format
+msgid ""
+"The language, '%s', is not in the list of known languages and will be omitted"
+msgstr "ენა „%s“ არაა ცნობილი ენების სიაში და გამოტოვებული იქნება"
+
+#, c-format
+msgid ""
+"The name of glyph %.40s has changed. This is what I use to find the glyph in "
+"the file, so I cannot revert this glyph.\n"
+"(You will not be warned for subsequent glyphs.)"
+msgstr ""
+"%.40s ასონიშნის სახელი შეცვლილია. მისი მეშვეობით იძებნება ასონიშანი ფაილში, "
+"ასე რომ ეს ასონიშანი ვეღარ დაბრუნდება.\n"
+"(ამ გაფრთხილებას აღარ იხილავთ მომდევნო ასონიშნებზე.)"
+
+msgid "The pattern size (width & height) must be a positive number"
+msgstr "ნიმუშის ზომა (სიგრძე და სიგანე) დადებითი რიცხვი უნდა იყოს"
+
+#, c-format
+msgid "The pixel size on line %d is out of bounds."
+msgstr "პიქსელის ზომა ხაზზე %d საზღვრებს მიღმაა."
+
+#, c-format
+msgid "The requested file, %.100s, does not exist"
+msgstr "ფაილი სახელით %.100s ვერ მოიძებნა"
+
+#, c-format
+msgid "The search pattern was not found again in the font %.100s"
+msgstr "მოსაძიებელი ნიმუში კვლავ ვერ მოინახა შრიფტში %.100s"
+
+#, c-format
+msgid "The search pattern was not found in the font %.100s"
+msgstr "მოსაძიებელი ნიმუში ვერ მოინახა შრიფტში %.100s"
+
+msgid "The version text (in the Names pane) must be entirely ASCII."
+msgstr "ვერსიის დასახელება (სახელთა არეში) უნდა იყოს სრულად ლათინური ASCII."
+
+msgid "The weight text (in the Names pane) must be entirely ASCII."
+msgstr "სისქის დასახელება (სახელთა არეში) უნდა იყოს სრულად ლათინური ASCII."
+
+#, c-format
+msgid "There are %d pages in this file, which do you want?"
+msgstr "ფაილში %d გვერდია, რომელი გნებავთ?"
+
+msgid "There are multiple files in this archive, pick one"
+msgstr "რამდენიმე ფაილია არქივში, მიუთითეთ ერთი"
+
+msgid "There are multiple fonts in this file, pick one"
+msgstr "რამდენიმე შრიფტია ფაილში, მიუთითეთ ერთი"
+
+#, c-format
+msgid "There is no glyph named %s (used in %s)"
+msgstr "ასონიშანი დასახელებით %s არაა (ფონტში %s)"
+
+#, c-format
+msgid "There is no glyph named %s in the font"
+msgstr "ასონიშანი დასახელებით %s არ მოიპოვება ამ შრიფტში"
+
+msgid "This feature code is already used"
+msgstr "ამ თვისების კოდი უკვე გამოყენებულია"
+
+msgid ""
+"This file contains an unnamed encoding, which cannot be named in a script"
+msgstr ""
+"ფაილი შეიცავს უსახელო დაშიფვრას, რომელსაც ვერ დაერქმევა სახელი სკრიპტში"
+
+msgid ""
+"This font contains both a 'kern' table and a 'GPOS' table.\n"
+"  The 'kern' table will only be read if there is no 'kern' feature in "
+"'GPOS'.\n"
+msgstr ""
+"შრიფტს ახლავს ორივე, „kern“ და „GPOS“ ცხრილები.\n"
+"  „kern“ ცხრილი მხოლოდ მაშინ გამოიყენება, როცა „GPOS“ არ შეიცავს „kern“ "
+"თვისებას.\n"
+
+msgid ""
+"This font contains both a TrueType 'glyf' table and an OpenType 'CFF ' "
+"table. FontForge can only deal with one at a time, please pick which one you "
+"want to use"
+msgstr ""
+"ეს შრიფტი შეიცავს ორივეს, TrueType 'glyf' ცხრილსა და OpenType 'CFF ' ცხრილს. "
+"FontForge ერთდროულად მხოლოდ ერთის დამუშავებას მოახერხებს, ამიტომ გთხოვთ "
+"აირჩიოთ, რომელი გამოიყენოს"
+
+msgid ""
+"This font contains no glyphs with unicode encodings.\n"
+"You will probably not be able to use the output."
+msgstr ""
+"ეს შრიფტი არ შეიცავს ასონიშნებს Unicode-დაშიფვრაში.\n"
+"სავარაუდოდ, ვერ შეძლებთ გამოტანილის გამოყენებას."
+
+#, c-format
+msgid "This font does not contain a glyph named \"%.40s\""
+msgstr "შრიფტი არ შეიცავს ასონიშანს დასახელებით „%.40s“"
+
+msgid ""
+"This font does not have vertical metrics enabled.\n"
+"Use Element->Font Info to enable them."
+msgstr ""
+"ამ შრიფტში არაა შვეული აზომვები ჩართული.\n"
+"გამოიყენეთ „შემადგენელი → შრიფტის შესახებ“."
+
+msgid ""
+"This involves opening more than 10 windows.\n"
+"Is that really what you want?"
+msgstr ""
+"შედეგად გაიხსნება 10-ზე მეტი ფანჯარა.\n"
+"ნამდვილად გსურთ, ასე მოხდეს?"
+
+#, c-format
+msgid ""
+"This kerning pair (%.20s and %.20s) is currently part of a kerning class "
+"with a 0 offset for this combination. Would you like to alter this kerning "
+"class entry (or create a kerning pair for just these two glyphs)?"
+msgstr ""
+"წანაცვლებული წყვილი (%.20s და %.20s), ამჟამად კლასის ნაწილია 0 "
+"ურთიერთდაშორებით. გსურთ ამ კლასის ჩანაწერის გადაკეთება (თუ შეიქმნას "
+"წანაცვლების წყვილი მხოლოდ ამ ორი ასონიშნისთვის)?"
+
+msgid ""
+"This must be ASCII, so you may not use the copyright symbol (use (c) "
+"instead)."
+msgstr ""
+"უნდა იყოს ლათინური ASCII, ამიტომ ვერ გამოიყენებთ საავტორო უფლების ნიშანს "
+"(სანაცვლოდ (c) შეიძლება)."
+
+msgid "This operation cannot be undone, do it anyway?"
+msgstr "ეს ქმედება შეუქცევადია, მაინც განაგრძობთ?"
+
+msgid ""
+"This pane is informative only and shows the characters\n"
+"actually in the font. If you wish to set the OS/2 Unicode\n"
+"Range field, change the pane to"
+msgstr ""
+"აქ მხოლოდ მონაცემებია მოცემული, თუ რომელ\n"
+"ასონიშნებს შეიცავს შრიფტი. თუ გსურთ, მიუთითოთ\n"
+"უნიკოდის OS/2-არე, გადადით შესაბამის გვერდზე"
+
+msgid ""
+"This pdf file contains an /Encrypt dictionary, and FontForge does not "
+"currently\n"
+"support pdf encryption"
+msgstr ""
+"ეს PDF შეცავს ლექსიკონს /Encrypt და FontForge\n"
+"ჯერჯერობით ვერ მუშაობს ამ სახეობის დაშიფვრის მქონე PDF-თან"
+
+msgid "This pdf file has no fonts"
+msgstr "ეს PDF არ შეიცავს შრიფტებს"
+
+msgid "This pdf file has no pages"
+msgstr "ეს PDF არ შეიცავს გვერდებს"
+
+msgid ""
+"This version of fontforge was not linked with the spiro library, so you may "
+"not use them."
+msgstr ""
+"ამ ვერსიის FontForge არაა დაკავშირებული ხვეული რეჟიმის ბიბლიოთეკასთან, "
+"ამიტომ ვერ გამოიყენებთ."
+
+msgid "This window displays metrics information about a font"
+msgstr "ფანჯარაში გამოჩნდება აზომვების მონაცემები შრიფტისთვის"
+
+msgid "Tibetan"
+msgstr "ტიბეტური"
+
+msgid "Tifinagh"
+msgstr "ტიფინაღი"
+
+msgid "Time (in milliseconds) before scrolling starts"
+msgstr "დრო (მილიწამებში) გადაადგილების დაწყებამდე"
+
+msgid "Time (in milliseconds) between scroll events"
+msgstr "დრო (მილიწამებში) გადაადგილებებს შორის"
+
+msgid "Tirhuta"
+msgstr "ტირჰუტა"
+
+msgid "To P_DF File"
+msgstr "PDF-ფა_ილში"
+
+msgid "To _File"
+msgstr "ფ_აილში"
+
+msgid "Too Many Kerns"
+msgstr "ზედმეტად ბევრი წანაცვლება"
+
+#, c-format
+msgid "Too many dashes (at most %d allowed)"
+msgstr "ზედმეტად ბევრი ტირე (არაუმეტეს %d მისაღებია)"
+
+#, c-format
+msgid "Too many features %d\n"
+msgstr "ზედმეტად ბევრი თვისება %d\n"
+
+msgid "Too many kern pairs"
+msgstr "ზედმეტად ბევრი წანაცვლებული წყვილი"
+
+#, c-format
+msgid "Too many lookups %d\n"
+msgstr "ზედმეტად ბევრი ცნობარი %d\n"
+
+msgid "Tools"
+msgstr "ხელსაწყოები"
+
+msgid "Top Bearing does not change."
+msgstr "ზედა საბჯენი არ იცვლება."
+
+msgid "Toto"
+msgstr "ტოტო"
+
+msgid "Trademark"
+msgstr "სავაჭრო ნიშანი"
+
+msgid "Transform"
+msgstr "გარდაქმნა"
+
+msgid "Transform Original Color"
+msgstr "საწყისი ფერის გარდაქმნა"
+
+msgid "Transform _All Layers"
+msgstr "გარდაქმნა _ყველა შრეზე"
+
+msgid "Transform _Guide Layer Too"
+msgstr "_მიმმართველ შრესთან ერთად გარდაქმნა"
+
+msgid "Transform _Width Too"
+msgstr "გარდაქმნა სიგა_ნიანად"
+
+msgid "Transform kerning _classes too"
+msgstr "გარდაქმნა _წანაცვლების კლასებიანად"
+
+msgid "Transform:"
+msgstr "გარდაქმნა:"
+
+msgid "Transformed"
+msgstr "გარდაქმნილი"
+
+msgid "Transforming..."
+msgstr "გარდაიქმნება..."
+
+msgid "TrueTypeName|New"
+msgstr "ახალი"
+
+msgid "Type in new layer name"
+msgstr "აკრიფეთ ახალი შრის სახელი"
+
+msgid "Type:"
+msgstr "სახეობა:"
+
+msgid "Ugaritic"
+msgstr "უგარითული"
+
+#, c-format
+msgid "Unable to parse the pdf objects that make up %s"
+msgstr "ვერ ხერხდება იმ PDF-ობიექტების გარჩევა, რომლებითაც შექმნილია %s"
+
+msgid "Undo Fontlevel"
+msgstr "დაბრუნება შრიფტის დონეზე"
+
+msgid "Unicode"
+msgstr "უნიკოდი"
+
+msgid "Unicode C_har:"
+msgstr "_სიმბოლო უნიკოდში:"
+
+msgid "Unicode Ranges"
+msgstr "უნიკოდის ჯგუფები"
+
+msgid "Unicode Ranges:"
+msgstr "უნიკოდის ჯგუფები:"
+
+msgid "Unicode _Value:"
+msgstr "ა_დგილი უნიკოდში:"
+
+msgid "Unified Canadian Aboriginal Syllabics"
+msgstr "კანადის ადგილობრივი სილაბური"
+
+msgid "Unified Canadian Aboriginal Syllabics Extended"
+msgstr "კანადის ადგილობრივი სილაბური გაფართოებული"
+
+msgid "Unified Canadian Aboriginal Syllabics Extended-A"
+msgstr "კანადის ადგილობრივი სილაბური გაფართოებული-A"
+
+msgid "Uniform scaling for horizontal counters and side bearings"
+msgstr "ზომის ერთგვაროვანი ცვლა თარაზული არეებისა და გვერდითი საბჯენების"
+
+msgid "UniqueID"
+msgstr "ამოსაცნობი ID"
+
+msgid "Unknown Language"
+msgstr "უცნობი ენა"
+
+#, c-format
+msgid "Unknown lookup name: %60.60s"
+msgstr "დაუდგენელი ცნობარის სახელი: %60.60s"
+
+#, c-format
+msgid "Unknown subtable '%c%c%c%c' in 'TeX ' table, ignored\n"
+msgstr "უცნობი ქვეცხრილი „%c%c%c%c“ TeX-ცხრილში, უგულებელყოფილია\n"
+
+msgid ""
+"Unlike most commands this one does not work directly on the\n"
+"selected glyphs. Instead, if you select a glyph FontForge will\n"
+"create (or reuse) another glyph named by appending the extension\n"
+"to the original name, and it will copy a modified version of\n"
+"the original glyph into the new one."
+msgstr ""
+"უმეტესი ბრძანებებისგან განსხვავებით, ეს პირდაპირ არ ზემოქმედებს მითითებულ "
+"ასონიშნებზე. სანაცვლოდ, FontForge შექმნის (ან კვლავ გამოიყენებს) ცალკე "
+"ასონიშანს, თავდაპირველის სახელის გაფართოებით და გადაკეთებული ვარიანტის "
+"განათავსებს იქ."
+
+msgid ""
+"Unlike most commands this one does not work directly on the\n"
+"selected glyphs. Instead, if you select an \"A\" (or an \"a\")\n"
+"FontForge will create (or reuse) a glyph named \"a.sc\", and\n"
+"it will copy a modified version of the \"A\" glyph into \"a.sc\"."
+msgstr ""
+"უმეტესი ბრძანებებისგან განსხვავებით, ეს პირდაპირ არ ზემოქმედებს მითითებულ "
+"ასონიშნებზე. სანაცვლოდ, როცა მოინიშნება „A“ (ან „a“), FontForge შექმნის (ან "
+"კვლავ გამოიყენებს) ცალკე ასონიშანს დასახელებით „a.sc“ და გადაკეთებული „A“ "
+"განთავსდება „a.sc“ ადგილას."
+
+msgid "Unlink"
+msgstr "ჩახსნა"
+
+msgid "Unlink All"
+msgstr "ყველას ჩახსნა"
+
+msgid "Unspecified Language"
+msgstr "განუსაზღვრელი ენა"
+
+msgid "UntitledGroup"
+msgstr "უსათაურო ჯგუფი"
+
+msgid "Use FreeType"
+msgstr "გამოიყენოს FreeType"
+
+msgid "Use Kerning Class?"
+msgstr "გამოიყენოს წანაცვლების კლასი?"
+
+msgid "Used for point numbers, hints, etc."
+msgstr "გამოიყენება წერტილთა გადასანომრად, მიმნიშნებლებისთვის და სხვ."
+
+msgid "Uzbek (Cyrillic)"
+msgstr "უზბეკური (კირილიცა)"
+
+msgid "Uzbek (Latin)"
+msgstr "უზბეკური (ლათინური)"
+
+msgid "VKern By Classes"
+msgstr "შვეული წანაცვლება კლასებით"
+
+msgid "VKern By Classes..."
+msgstr "შვეული წანაცვლება კლასებით..."
+
+msgid "VKern From HKern"
+msgstr "შვეული წანაცვლება თარაზულიდან"
+
+msgid "VKern:"
+msgstr "შვეული წანაცვლება:"
+
+msgid "Vai"
+msgstr "ვაი"
+
+msgid "Validate Before Saving"
+msgstr "გადამოწმება შენახვამდე"
+
+msgid "Validating..."
+msgstr "მოწმდება..."
+
+#, c-format
+msgid "Validation of %.100s"
+msgstr "მოწმდება %.100s"
+
+msgid "Vendor ID:"
+msgstr "მწარმოებლის ID"
+
+msgid "Vendor URL"
+msgstr "მწარმოებლის ბმული"
+
+msgid "Version"
+msgstr "ვერსია"
+
+msgid "Vertical"
+msgstr "შვეული"
+
+msgid "Vertical Baselines"
+msgstr "შვეული საყრდენები"
+
+msgid "Vertical Kerning"
+msgstr "შვეული წანაცვლება"
+
+msgid "Vertical Kerning Class"
+msgstr "შვეული წანაცვლების კლასი"
+
+msgid "Vertical Only"
+msgstr "შვეული მხოლოდ"
+
+msgid "Vertical Scale"
+msgstr "შვეული ზომის ცვლა"
+
+msgid "Vertical Scale:"
+msgstr "შვეული ზომის ცვლა:"
+
+msgid "Vertical _Metric Lines"
+msgstr "შვეული _აზომვის ხაზები"
+
+#, c-format
+msgid "Vertical: %d baseline"
+msgid_plural "Vertical: %d baselines"
+msgstr[0] "შვეული: %d საყრდენი"
+msgstr[1] "შვეული: %d საყრდენი"
+
+msgid "Very Extended"
+msgstr "მეტად გაფართოებული"
+
+msgid "Vietnamese"
+msgstr "ვიეტნამური"
+
+msgid "WWS Subfamily"
+msgstr "WWS-ქვეჯგუფი"
+
+msgid "W_ithin Rectangle"
+msgstr "მა_რთკუთხედში"
+
+msgid "Warang Citi"
+msgstr "ვარანგ-კშიტი"
+
+msgid "Warning"
+msgstr "გაფრთხილება"
+
+msgid "Warning: Font contained no glyphs"
+msgstr "გაფრთხილება: შრიფტი არ შეიცავს ასონიშნებს"
+
+#, c-format
+msgid "Warning: Unlikely number of subtables (%d) for 'kern' table"
+msgstr "გაფრთხილება: შეუსაბამო რაოდენობის ქვეცხრილები (%d) „kern“ ცხრილისთვის"
+
+msgid "Warnings"
+msgstr "გაფრთხილებები"
+
+msgid "Warnings.Font"
+msgstr "გაფრთხილებების.შრიფტი"
+
+msgid "When a font is opened, should it be made compact?"
+msgstr "შრიფტის გახსნისას, იყოს თუ არა შემჭიდროებული?"
+
+msgid ""
+"When a new plugin is discovered it is left unrecorded\n"
+"until configured in this dialog."
+msgstr ""
+"ახალი მოდული აღმოჩენის შემდეგ რჩება აღურიცხავი, სანამ აქედან არ გაიმართება."
+
+msgid "When buttons are 3D, the dark edge color"
+msgstr "სივრცული ღილაკების კიდის მუქი ფერი"
+
+msgid "When buttons are 3D, the light edge color"
+msgstr "სივრცული ღილაკების კიდის ღია ფერი"
+
+msgid ""
+"When loading a truetype or opentype font which has both a unicode\n"
+"and a CJK encoding table, use this flag to specify which\n"
+"should be loaded for the font."
+msgstr ""
+"იმ TrueType- ან OpenType-შრიფტის ჩატვირთვისას, რომელსაც ორივე,\n"
+"უნიკოდი და CJK-დაშიფვრის ცხრილი აქვს, ამ მონიშვნის გამოყენებით\n"
+"უნდა მიეთითოს, თუ რომელი გამოჩნდეს."
+
+msgid "Whether the menu is presented with a 3D appearance"
+msgstr "მენიუს წარმოდგენა სივრცული იერსახით"
+
+msgid ""
+"Whether to use mac-like icons to indicate modifiers (for instance ^ for "
+"Control)\n"
+"or to use an abbreviation (for instance \"Cnt-\")"
+msgstr ""
+"გამოიყენოს თუ არა Mac-ის ხატულები შემცვლელი კლავიშის აღსანიშნავად "
+"(მაგალითად, ^ მართვის კლავიშისთვის) ან მხოლოდ შემოკლება (მაგალითად, „Cnt-“)"
+
+msgid "Which archived item should be opened?"
+msgstr "რომელი შეკუმშული ფაილი უნდა გაიხსნას?"
+
+msgid "Whoops, more names than lookups\n"
+msgstr "ვაჰ, სახელები აღემატება ცნობარებს\n"
+
+msgid "Width"
+msgstr "სიგანე"
+
+msgid "Width Guide Color"
+msgstr "სიგანის მიმმართველის ფერი"
+
+msgid "Width:"
+msgstr "სიგანე:"
+
+msgid "Win"
+msgstr "Win"
+
+msgid "Windows Latin (\"ANSI\")"
+msgstr "Windows ლათინური (\"ANSI\")"
+
+msgid "Windows-compatible 'kern'"
+msgstr "Windows-სთან თავსებადი „kern“"
+
+#. GT: X is a coordinate
+msgid "X"
+msgstr "X"
+
+#. GT: Y is a coordinate
+#. GT: Y is a coordinate, the leading spaces help to align it
+msgid "Y"
+msgstr "Y"
+
+msgid "Yes to _All"
+msgstr "დიახ _ყველას"
+
+msgid "Yes, and don't _remind me again"
+msgstr "დიახ, მომავალში _კითხვის გარეშე"
+
+msgid ""
+"You are about to delete a layer.\n"
+"This will lose all contours in that layer.\n"
+"If this is the last quadratic layer it will\n"
+"lose all truetype instructions.\n"
+"\n"
+"Deleting a layer cannot be undone.\n"
+"\n"
+"Is this really your intent?"
+msgstr ""
+"აპირებთ წაშალოთ ერთ-ერთი შრე.\n"
+"ამ შრეზე მოხაზული ყველა წირი დაიკარგება.\n"
+"თუ ბოლო კვადრატული შრეა,\n"
+"დაიკარგება ყველა TrueType-მითითება.\n"
+"\n"
+"შრეების წაშლა შეუქცევადია.\n"
+"\n"
+"ნამდვილად გსურთ ამის გაკეთება?"
+
+msgid "You changed the point numbering"
+msgstr "წერტილთა გადანომვრა შეიცვალა"
+
+#, c-format
+msgid "You have just changed the point numbering of glyph %s.%s%s%s"
+msgstr "ახლახან შეცვალეთ წერტილთა გადანომვრა ასონიშნისთვის %s.%s%s%s"
+
+msgid "You must choose a lookup type"
+msgstr "უნდა მიუთითოთ ცნობარის სახეობა"
+
+msgid "You must draw a line, with at most one additional point"
+msgstr "უნდა მოხაზოთ, ერთი დამატებითი წერტილით მაინც"
+
+msgid "You must select a Lookup Type."
+msgstr "უნდა მიუთითოთ ცნობარის სახეობა."
+
+msgid "You must select at least one language for each script."
+msgstr "ერთი ენა მაინც უნდა აირჩიოთ თითოეული დამწერლობისთვის."
+
+msgid ""
+"You must select at least one language.\n"
+"Use the \"Default\" language if nothing else fits."
+msgstr ""
+"უნდა აირჩიოთ ერთი ენა მაინც.\n"
+"გამოიყენეთ „ნაგულისხმევი“ თუ არცერთი არ ერგება."
+
+msgid "You must specify a pattern"
+msgstr "უნდა მიუთითოთ ნიმუში"
+
+#, c-format
+msgid "You tried to save with the filename %s but it was saved as %s. "
+msgstr "ცდილობდით შეგენახათ დასახელებით %s მაგრამ შენახულია, როგორც %s. "
+
+msgid ""
+"You will get better instructions if you fill in the Private dictionary, "
+"Element->Font Info->Private, for the font"
+msgstr ""
+"უკეთეს მითითებებს მიიღებთ, თუ შეავსებთ პირად ლექსიკონს, შემადგენელი → "
+"შრიფტის შესახებ → პირადი“"
+
+msgid "Z_oom out"
+msgstr "და_შორება"
+
+msgid "Zanabazar Square"
+msgstr "ძანაბაძარის კვადრატული"
+
+msgid "Znamenny Musical Notation"
+msgstr "ზნამენნი, სანოტო დამწერლობა"
+
+msgid "Zoom _in"
+msgstr "მოა_ხლოება"
+
+msgid "_128 pixel outline"
+msgstr "_128 პიქსელიანი მოხაზულობა"
+
+msgid "_16x4 cell window"
+msgstr "_16x4 უჯრიანი ფანჯარა"
+
+msgid "_24 pixel outline"
+msgstr "_24 პიქსელიანი მოხაზულობა"
+
+msgid "_36 pixel outline"
+msgstr "_36 პიქსელიანი მოხაზულობა"
+
+msgid "_3D Rotate"
+msgstr "სივრ_ცული მობრუნება"
+
+msgid "_48 pixel outline"
+msgstr "_48 პიქსელიანი მოხაზულობა"
+
+msgid "_72 pixel outline"
+msgstr "_72 პიქსელიანი მოხაზულობა"
+
+msgid "_8x2  cell window"
+msgstr "_8x2 უჯრიანი ფანჯარა"
+
+msgid "_96 pixel outline"
+msgstr "_96 პიქსელიანი მოხაზულობა"
+
+msgid "_About..."
+msgstr "შ_ესახებ..."
+
+msgid "_Activate Spiro"
+msgstr "ხვეულის _ამოქმედება"
+
+msgid "_Add"
+msgstr "_დამატება"
+
+msgid "_Add 'aalt' features"
+msgstr "'aalt' _თვისებების დამატება"
+
+msgid "_Add Encoding Slots..."
+msgstr "_დასაშიფრი ადგილების დამატება..."
+
+msgid "_Advance Width only"
+msgstr "მხოლოდ გა_ფართოებული სიგანე"
+
+msgid "_Alphabetic"
+msgstr "_ანბანური"
+
+msgid "_Around"
+msgstr "_მიახლოებით"
+
+msgid "_Ask"
+msgstr "კით_ხვა"
+
+msgid "_Auto Width..."
+msgstr "_სიგანის თვითგანსაზღვრა..."
+
+msgid "_Bigger Pixel Size"
+msgstr "მო_ზრდილი ზომა პიქსელის"
+
+msgid "_Bottom"
+msgstr "_ბოლოში"
+
+msgid "_Bottom:"
+msgstr "_ბოლოში:"
+
+msgid "_CJK"
+msgstr "_CJK"
+
+msgid "_Cancel"
+msgstr "გაუ_ქმება"
+
+msgid "_Center in Width"
+msgstr "სიგანის შ_უაში"
+
+msgid "_Change Supplement..."
+msgstr "_დანართის შეცვლა..."
+
+msgid "_Changed Glyphs"
+msgstr "შე_ცვლილი ასონიშნები"
+
+msgid "_Circular (Elliptical)"
+msgstr "_წრიული (ოვალური)"
+
+msgid "_Clear Hints"
+msgstr "მიმნიშნებლების გას_უფთავება"
+
+msgid "_Close"
+msgstr "_დახურვა"
+
+msgid "_Compact (hide unused glyphs)"
+msgstr "_შემჭიდროება (ცარიელის დამალვა)"
+
+msgid "_Configure"
+msgstr "გა_მართვა"
+
+msgid "_Control Point Info"
+msgstr "_მართვის წერტილის შესახებ"
+
+msgid "_Copies:"
+msgstr "ას_ლები:"
+
+msgid "_Copy"
+msgstr "ას_ლი"
+
+msgid "_Curve"
+msgstr "_მრუდი"
+
+msgid "_Default Separation:"
+msgstr "_ნაგულისხმევი გამოცალკევება:"
+
+msgid "_Delete"
+msgstr "_წაშლა"
+
+msgid "_Deselect All"
+msgstr "ყველა მონიშვნის მო_ხსნა"
+
+msgid "_Detach"
+msgstr "_ჩახსნა"
+
+msgid "_Detach Glyphs"
+msgstr "_ჩახსნა ასონიშნების"
+
+msgid "_Disable"
+msgstr "გამ_ორთვა"
+
+msgid "_Don't AutoHint"
+msgstr "თვითმინიშნების _გარეშე"
+
+msgid "_Don't Save"
+msgstr "შენახვის _გარეშე"
+
+msgid "_Done"
+msgstr "მზა_დაა"
+
+msgid "_Down"
+msgstr "ჩა_მოწევა"
+
+msgid "_Edit"
+msgstr "_ჩასწორება"
+
+msgid "_Edit Instructions..."
+msgstr "მითითებების _ჩასწორება..."
+
+msgid "_Edit..."
+msgstr "_ჩასწორება..."
+
+msgid "_Enable"
+msgstr "_ჩართვა"
+
+msgid "_Enabled"
+msgstr "_ჩართულია"
+
+msgid "_Encoding Hex"
+msgstr "ში_ფრი თექვსმეტობითში"
+
+msgid "_Exact"
+msgstr "_ზუსტად"
+
+msgid "_Family Name:"
+msgstr "_კრებულის სახელი:"
+
+msgid "_File"
+msgstr "_ფაილი"
+
+msgid "_Fill"
+msgstr "შევ_სება"
+
+msgid "_Filter"
+msgstr "გამორ_ჩევა"
+
+msgid "_Fit"
+msgstr "მ_ორგება"
+
+msgid "_Flatten bumps on lines"
+msgstr "ბორცვების დაბრტ_ყელება ხაზებზე"
+
+msgid "_Font Info..."
+msgstr "შრიფ_ტის შესახებ..."
+
+msgid "_Force Encoding"
+msgstr "_იძულებით დაშიფვრა"
+
+msgid "_Freehand"
+msgstr "თა_ვისუფალი"
+
+msgid "_Full Font Display"
+msgstr "_სრული შრიფტის გამოჩენა"
+
+msgid "_Generate"
+msgstr "შედ_გენა"
+
+msgid "_Generate Fonts..."
+msgstr "შრიფტების _შედგენა..."
+
+msgid "_Glyph Image"
+msgstr "ას_ონიშნის გამოსახულება"
+
+msgid "_Glyph Info..."
+msgstr "ას_ონიშნის შესახებ..."
+
+msgid "_Glyph Tabs"
+msgstr "ას_ონიშნის ჩანართები"
+
+msgid "_Goto"
+msgstr "გადა_სვლა"
+
+#. GT: Guide layer, make it short
+msgid "_Guide"
+msgstr "_მიმმართველი"
+
+msgid "_HVCurve"
+msgstr "თა_რ/შვეულ. მრუდი"
+
+msgid "_Height:"
+msgstr "სი_მაღლე:"
+
+msgid "_Help"
+msgstr "_დახმარება"
+
+msgid "_Hide"
+msgstr "_დამალვა"
+
+msgid "_Hide Unused Columns"
+msgstr "გამოუყენებელი სვეტების _დამალვა"
+
+msgid "_Horizontal"
+msgstr "თარა_ზული"
+
+msgid "_Horizontal Baselines..."
+msgstr "_თარაზული საყრდენები..."
+
+msgid "_Horizontal Hints"
+msgstr "_თარაზული მიმნიშნებლები"
+
+msgid "_IBM Family:"
+msgstr "_IBM-კრებული:"
+
+msgid "_Import..."
+msgstr "შემ_ოტანა..."
+
+msgid "_Index"
+msgstr "_სარჩევი"
+
+msgid "_Insert"
+msgstr "ჩამა_ტება"
+
+msgid "_Insert Random Text..."
+msgstr "შემთხვევითი ტექსტის ჩამა_ტება..."
+
+msgid "_Invert Selection"
+msgstr "შებრ_უნებული მონიშვნა"
+
+msgid "_Kern Pairs"
+msgstr "_წანაცვლებული წყვილები"
+
+msgid "_Kerning only"
+msgstr "მხოლოდ _წანაცვლება"
+
+msgid "_Knife"
+msgstr "_მოსაჭრელი"
+
+msgid "_Language"
+msgstr "_ენა"
+
+msgid "_Language:"
+msgstr "_ენა:"
+
+msgid "_Layers"
+msgstr "შ_რეები"
+
+msgid "_License..."
+msgstr "_ლიცენზია..."
+
+msgid "_Ligatures"
+msgstr "გადა_ბმები"
+
+msgid "_Load"
+msgstr "_ჩატვირთვა"
+
+msgid "_Load Encoding..."
+msgstr "_დაშიფვრის ჩატვირთვა..."
+
+msgid "_Magnify"
+msgstr "მოა_ხლოება"
+
+msgid "_Maximum distance between points in a region"
+msgstr "უ_დიდესი დაშორება წერტილებს შორის არეში"
+
+msgid "_Merge Feature Info..."
+msgstr "_თვისებების მონაცემთა გაერთიანება..."
+
+msgid "_Metrics"
+msgstr "_აზომვები"
+
+msgid "_Min Kern:"
+msgstr "უ_მცირესი წანაცვლება:"
+
+msgid "_Min:"
+msgstr "უ_მცირესი:"
+
+msgid "_More Info"
+msgstr "ვრ_ცლად"
+
+msgid "_Multi Size Glyph"
+msgstr "_რამდენიმე ზომით"
+
+msgid "_Multi Size Glyphs"
+msgstr "ასონიშნები _რამდენიმე ზომით"
+
+msgid "_Name"
+msgstr "სა_ხელი"
+
+msgid "_Name Contour"
+msgstr "სა_ხელი მოხაზულობისთვის"
+
+msgid "_Name Point"
+msgstr "სა_ხელი წერტილისთვის"
+
+msgid "_Name:"
+msgstr "_სახელი:"
+
+msgid "_Next >"
+msgstr "შ_ემდეგ >"
+
+msgid "_Next Glyph"
+msgstr "_შემდეგი ასონიშანი"
+
+msgid "_No"
+msgstr "_არა"
+
+msgid "_Non Linear Transform..."
+msgstr "არაწრ_ფივი გარდაქმნა..."
+
+msgid "_OK"
+msgstr "_კარგი"
+
+msgid "_OS/2 Version"
+msgstr "_OS/2-ვერსია"
+
+msgid "_Ok"
+msgstr "_კარგი"
+
+msgid "_Open"
+msgstr "_გახსნა"
+
+msgid "_Other"
+msgstr "ს_ხვა"
+
+msgid "_Outline"
+msgstr "_მოხაზული"
+
+msgid "_Outline Font"
+msgstr "_მოხაზული შრიფტი"
+
+msgid "_Outline..."
+msgstr "_მოხაზულობა..."
+
+msgid "_Overview"
+msgstr "_გადახედვა"
+
+msgid "_Partial"
+msgstr "_ნაწილობრივ"
+
+msgid "_Paste"
+msgstr "_ჩასმა"
+
+msgid "_Point"
+msgstr "_წერტილი"
+
+msgid "_Pointer"
+msgstr "_მაჩვენებელი"
+
+msgid "_Points"
+msgstr "_წერტილები"
+
+msgid "_Points too far"
+msgstr "_წერტილები მეტად შორია"
+
+msgid "_Pointsize Y:"
+msgstr "_წერტილის ზომა Y:"
+
+msgid "_Pointsize:"
+msgstr "_წერტილის ზომა:"
+
+msgid "_Prev Glyph"
+msgstr "_წინა ასონიშანი"
+
+msgid "_Print"
+msgstr "ამობე_ჭდვა"
+
+msgid "_Print..."
+msgstr "ამობე_ჭდვა..."
+
+msgid "_Printer:"
+msgstr "_პრინტერი:"
+
+msgid "_Quit"
+msgstr "გას_ვლა"
+
+msgid "_Radius:"
+msgstr "_რადიუსი:"
+
+msgid "_Redo"
+msgstr "_გამეორება"
+
+msgid "_Reencode"
+msgstr "_გადაშიფვრა"
+
+msgid "_Refresh"
+msgstr "გაა_ხლება"
+
+msgid "_Remove"
+msgstr "მო_ცილება"
+
+msgid "_Remove Font"
+msgstr "ფონტის მო_ცილება"
+
+msgid "_Remove Overlap"
+msgstr "გადაფარვის მო_ცილება"
+
+msgid "_Replace"
+msgstr "_ჩანაცვლება"
+
+msgid "_Revert"
+msgstr "ა_ღდგენა"
+
+msgid "_Revert All"
+msgstr "ყველას ა_ღდგენა"
+
+msgid "_Revert File"
+msgstr "ა_ღდგენა"
+
+msgid "_Rotate 90° CW"
+msgstr "_შებრუნება 90° საათის მიმართ."
+
+msgid "_Ruler"
+msgstr "_სახაზავი"
+
+msgid "_Rulers"
+msgstr "_სახაზავები"
+
+msgid "_Save"
+msgstr "_შენახვა"
+
+msgid "_Save As..."
+msgstr "_შენახვა, როგორც..."
+
+msgid "_Save Namelist of Font..."
+msgstr "შრიფტის სახელთა სიის შენა_ხვა..."
+
+msgid "_Save in UTF8"
+msgstr "შენახ_ვა UTF8-სახით"
+
+msgid "_Scroll"
+msgstr "_გადასაადგილებელი"
+
+msgid "_Select"
+msgstr "_მონიშვნა"
+
+msgid "_Separation:"
+msgstr "გან_ცალკევება:"
+
+msgid "_Shades"
+msgstr "_ჩრდილები"
+
+msgid "_Show"
+msgstr "_გამოჩენა"
+
+msgid "_Side Bearings"
+msgstr "_გვერდითი საბჯენები"
+
+msgid "_Simplify"
+msgstr "_გამარტივება"
+
+msgid "_Size:"
+msgstr "_ზომა:"
+
+msgid "_Skew..."
+msgstr "გა_დახრა..."
+
+msgid "_Smaller Pixel Size"
+msgstr "მომ_ცრო ზომა პიქსელის"
+
+msgid "_Tag:"
+msgstr "_ჭდე:"
+
+msgid "_Thirds in Width"
+msgstr "სიგანის მ_ესამედში"
+
+msgid "_Tools"
+msgstr "ხე_ლსაწყოები"
+
+msgid "_Top"
+msgstr "_თავში"
+
+msgid "_Top:"
+msgstr "_თავში:"
+
+msgid "_Transform..."
+msgstr "გა_რდაქმნა..."
+
+msgid "_Transformations"
+msgstr "_გარდაქმნები"
+
+msgid "_Undo"
+msgstr "_დაბრუნება"
+
+msgid "_Unicode"
+msgstr "_უნიკოდი"
+
+msgid "_Unlink All"
+msgstr "_ჩაიხსნას ყველა"
+
+msgid "_Up"
+msgstr "აწ_ევა"
+
+msgid "_Use My Metrics"
+msgstr "_საკუთარი აზომვების გამოყენება"
+
+msgid "_Validate..."
+msgstr "შემო_წმება..."
+
+msgid "_Validation"
+msgstr "შემო_წმება"
+
+msgid "_Version"
+msgstr "ვე_რსია"
+
+msgid "_Version:"
+msgstr "ვე_რსია:"
+
+msgid "_Vertical"
+msgstr "შ_ვეული"
+
+msgid "_Vertical Baselines..."
+msgstr "_შვეული საყრდენები..."
+
+msgid "_Vertical Hints"
+msgstr "_შვეული მიმნიშნებლები"
+
+msgid "_View"
+msgstr "_ხედი"
+
+msgid "_Weight"
+msgstr "სის_ქე"
+
+msgid "_Width:"
+msgstr "სი_განე:"
+
+msgid "_Window"
+msgstr "ფან_ჯარა"
+
+msgid "_Window Type"
+msgstr "_ფანჯრის სახეობა"
+
+msgid "_X:"
+msgstr "_X:"
+
+msgid "_Y:"
+msgstr "_Y:"
+
+msgid "_Yes"
+msgstr "_დიახ"
+
+msgid "color bitmap data table"
+msgstr "ფერის ცხრილურ მონაცემთა ნუსხა"
+
+msgid "color bitmap location table"
+msgstr "ფერის ცხრილურ ადგილთა ნუსხა"
+
+#, c-format
+msgid "couldn't find the character %s"
+msgstr "ვერ მოიძებნა სიმბოლო %s"
+
+msgid "couldn't write encodings file\n"
+msgstr "დაშიფრვის ფაილის ვერ ჩაიწერა\n"
+
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "Script", ignore "cursive|"
+#. GT: English uses "script" to me a general writing style (latin, greek, kanji)
+#. GT: and the cursive handwriting style. Here we mean cursive handwriting.
+msgid "cursive|Latin: Handwritten"
+msgstr "ლათინური: გაკრული"
+
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "Script", ignore "cursive|"
+#. GT: English uses "script" to me a general writing style (latin, greek, kanji)
+#. GT: and the cursive handwriting style. Here we mean cursive handwriting.
+msgid "cursive|Script"
+msgstr "ხელნაწერი"
+
+msgid "digital signature table"
+msgstr "ციფრული ხელმოწერის ცხრილი"
+
+msgid "family name"
+msgstr "კრებულის სახელი"
+
+msgid "gaspTableEntry|New"
+msgstr "ახალი"
+
+msgid "glyph outline table"
+msgstr "ასონიშნის მოხაზულობის ცხრილი"
+
+msgid "if smaller than"
+msgstr "თუ მოკლეა, ვიდრე"
+
+msgid "kern pair"
+msgstr "წანაცვლებული წყვილი"
+
+msgid "kerning table"
+msgstr "წანაცვლების ცხრილი"
+
+msgid "language tag table"
+msgstr "ენის ჭდეების ცხრილი"
+
+msgid "ligature"
+msgstr "გადაბმა"
+
+msgid "longer than"
+msgstr "გრძელი, ვიდრე"
+
+msgid "metrics variations table"
+msgstr "აზომვის გადახრების ცხრილი"
+
+msgid "version"
+msgstr "ვერსია"
+
+msgid "vertical metrics table"
+msgstr "შვეული აზომვების ცხრილი"
+
+msgid "vertical metrics variations table"
+msgstr "შვეული აზომვის გადახრების ცხრილი"
+
+msgid "weight"
+msgstr "სისქე"
+
+#. GT: English uses "script" to mean a general writing system (latin, greek, kanji)
+#. GT: and the cursive handwriting style. Here we mean the general writing system.
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "Script", ignore "writing system|"
+#. GT: English uses "script" to mean a general writing style (latin, greek, kanji)
+#. GT: and the cursive handwriting style. Here we mean the general writing system.
+#. GT: See the long comment at "Property|New"
+#. GT: The msgstr should contain a translation of "Script", ignore "writing system|"
+#. GT: English uses "script" to me a general writing style (latin, greek, kanji)
+#. GT: and the cursive handwriting style. Here we mean the general writing system.
+msgid "writing system|Script"
+msgstr "დამწერლობა"
+
+#. GT: Short form of {Everything Else}, might use universal? U+2200
+msgid "{All}"
+msgstr "{ყველა}"
+
+msgid "{Deleted Glyph}"
+msgstr "{წაშლილი ასონიშანი}"
+
+msgid "{End of Line}"
+msgstr "{ხაზის დასასრული}"
+
+msgid "{End of Text}"
+msgstr "{ტექსტის დასასრული}"
+
+#. GT: The string "{Everything Else}" is used in the context of a list
+#. GT: of classes (a set of kerning classes) where class 0 designates the
+#. GT: default class containing all glyphs not specified in the other classes
+msgid "{Everything Else}"
+msgstr "{სხვა დანარჩენი}"
+
+msgid "{Start of Input}"
+msgstr "{შეტანის დასაწყისი}"
+
+msgid "{Start of Line}"
+msgstr "{ხაზის დასაწყისი}"
+
+msgid "° Clockwise"
+msgstr "° საათის მიმართ."
+
+#. GT: Sometimes spelled Widdershins. An old word which means counter clockwise.
+#. GT: I used it because "counter clockwise" took too much space.
+msgid "° Withershins"
+msgstr "° საათის საწ."
+
+msgid "ΤεΧ Bitmap Fonts"
+msgstr "ბიტური შრიფტები ΤεΧ"
+
+msgid "ΤεΧ Names"
+msgstr "ΤεΧ სახელები"

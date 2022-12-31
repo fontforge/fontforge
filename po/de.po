@@ -18,9 +18,9 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-08 09:53+0000\n"
-"PO-Revision-Date: 2022-01-07 15:14\n"
-"Last-Translator: Linus Romer\n"
+"POT-Creation-Date: 2022-12-31 02:48+0000\n"
+"PO-Revision-Date: 2022-12-31 02:46\n"
+"Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
 "MIME-Version: 1.0\n"
@@ -1751,6 +1751,12 @@ msgstr ""
 "\n"
 "Hinweis: Win Unterlänge ist eine POSITIVE Zahl für Dinge unterhalb der "
 "Grundlinie."
+
+msgid "Appea_rance Editor..."
+msgstr "Da_rstellungseditor..."
+
+msgid "Appearance Editor"
+msgstr "Darstellungseditor"
 
 msgid "Append a FONTLOG entry"
 msgstr "FONTLOG-Eintrag anhängen"
@@ -4225,8 +4231,15 @@ msgstr "Farbe, die zum Zeichnen der Unterschneidungslinie verwendet wird"
 msgid "Color used to draw the left side bearing"
 msgstr "Farbe, die zum Zeichnen der Vorbreite verwendet wird"
 
+msgid "Color used to draw the progress bar"
+msgstr "Farbe zum Zeichnen des Fortschrittsbalkens"
+
 msgid "Color used to mark a changed glyph"
 msgstr "Farbe, die zur Markierung einer veränderten Glyphe verwendet wird"
+
+msgid "Color used to mark glyphs that need hinting"
+msgstr ""
+"Farbe, die verwendet wird, um Glyphen zu markieren, die Hints benötigen"
 
 msgid "Color used to mark the selected glyph"
 msgstr "Farbe, die zur Markierung einer ausgewählten Glyphe verwendet wird"
@@ -4371,6 +4384,9 @@ msgstr "Schmal"
 
 msgid "Condensed (75%)"
 msgstr "Schmal (75%)"
+
+msgid "Config_ure Plugins..."
+msgstr "Pl_ugins konfigurieren..."
 
 msgid "Configure"
 msgstr "Konfigurieren"
@@ -6376,7 +6392,7 @@ msgid "Find a cidmap file..."
 msgstr "Finde eine cidmap Datei …"
 
 msgid "Find an adobe CMap file..."
-msgstr "Finde eine adobe CMap Datei …"
+msgstr "Finde eine Adobe CMap Datei..."
 
 #, c-format
 msgid "Find in %.100s"
@@ -6705,6 +6721,9 @@ msgstr "Glyphennamen erzwingen nach:"
 #. GT: Foreground, make it short
 msgid "Fore"
 msgstr "Vorne"
+
+msgid "Foreground color for warning messages and error conditions"
+msgstr "Vordergrundfarbe für Warnmeldungen und Fehlerzustände"
 
 msgid "Forget _to All"
 msgstr "Für alle _vergessen"
@@ -7113,7 +7132,7 @@ msgid "Glyph Insertion"
 msgstr "Glyphen Einfügen"
 
 msgid "Glyph Name Changed"
-msgstr "Glypenname geändert"
+msgstr "Glyphenname geändert"
 
 msgid "Glyph Names"
 msgstr "Glyphen-Namen"
@@ -7608,6 +7627,12 @@ msgstr "Hinting für diagonales Kreuzen"
 
 msgid "HintMasks only if conflicts"
 msgstr "Hint-Masken nur bei Problemen"
+
+msgid "Hinting Needed Color"
+msgstr "Farbe für „Benötigt Hints“"
+
+msgid "Hints"
+msgstr "Hints"
 
 #, c-format
 msgid "Hints differ in glyph “%s”\n"
@@ -11644,6 +11669,9 @@ msgstr "PS CID"
 
 msgid "PS Glyph Names"
 msgstr "PS Glyphen-Namen"
+
+msgid "PS Hints"
+msgstr "PS Hints"
 
 msgid "PS Multiple Master(A)"
 msgstr "PS Multiple Master(A)"
@@ -16079,8 +16107,34 @@ msgstr "Farbe der dicken Konturen in inaktiven Ebenen"
 msgid "The color of thick outlines in the active layer"
 msgstr "Farbe der dicken Konturen in der aktiven Ebene"
 
+msgid "The color used to draw diagonal hints"
+msgstr "Die Farbe zum Zeichnen von diagonalen Hints"
+
+msgid "The color used to draw horizontal hints"
+msgstr "Die Farbe zum Zeichnen von horizontalen Hints"
+
+msgid "The color used to draw minimum distance hints"
+msgstr "Die Farbe, die verwendet wird, um Mindestabstands-Hints zu zeichnen"
+
 msgid "The color used to draw points at extrema (if that mode is active)"
 msgstr "Farbe zum zeichnen der Extrempunkte (wenn der Modus aktiviert ist)"
+
+msgid ""
+"The color used to draw the active horizontal hint which the Review Hints "
+"dialog is examining"
+msgstr ""
+"Die Farbe, die verwendet wird, um den aktiven horizontalen Hint zu zeichnen, "
+"der im Hinweisdialog geprüft wird"
+
+msgid ""
+"The color used to draw the active vertical hint which the Review Hints "
+"dialog is examining"
+msgstr ""
+"Die Farbe, die verwendet wird, um den aktiven vertikalen Hint zu zeichnen, "
+"der im Hinweisdialog geprüft wird"
+
+msgid "The color used to draw vertical hints"
+msgstr "Die Farbe zum Zeichnen von vertikalen Hints"
 
 #, c-format
 msgid "The context/chaining subtable %s in %s fails to match %s in %s\n"

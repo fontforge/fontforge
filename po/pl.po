@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-08 09:53+0000\n"
-"PO-Revision-Date: 2022-02-21 08:36\n"
+"POT-Creation-Date: 2022-12-31 02:48+0000\n"
+"PO-Revision-Date: 2022-12-31 02:46\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "Language: pl_PL\n"
@@ -15827,6 +15827,9 @@ msgstr "Rozpoznawaj nazwy PUA"
 msgid "Recover old edit"
 msgstr "Odzyskaj starszy"
 
+msgid "Recovery Complete"
+msgstr "Odzyskiwanie zakończone"
+
 msgid "Recovery Failed"
 msgstr "Odzyskiwanie danych nie powiodło się"
 
@@ -22659,6 +22662,9 @@ msgstr "P_rzybornik"
 msgid "Tools"
 msgstr "Narzędzia"
 
+msgid "Tools_2"
+msgstr "Narzędzia_2"
+
 msgid "Top Accent"
 msgstr "Akcenty górne"
 
@@ -25114,6 +25120,14 @@ msgstr ""
 "Wprowadzenie odpowiednich danych w Element -> Właściwości fontu -> PS "
 "prywatne pozwoliłoby otrzymać znacznie lepsze jakościowo instrukcje."
 
+#, c-format
+msgid ""
+"Your file %s has been recovered.\n"
+"You must now Save your file to continue working on it."
+msgstr ""
+"Plik %s został odzyskany.\n"
+"Zachowaj go, zanim rozpoczniesz pracę."
+
 msgid ""
 "Your font has a 2 byte encoding, but you are attempting to save it in a "
 "format that only supports one byte encodings. This means that you won't be "
@@ -26874,17 +26888,3 @@ msgstr "∆wys #1"
 
 msgid "∆y_adv #2"
 msgstr "∆wys #2"
-
-#~ msgid "Recovery Complete"
-#~ msgstr "Odzyskiwanie zakończone"
-
-#~ msgid "Tools_2"
-#~ msgstr "Narzędzia_2"
-
-#, c-format
-#~ msgid ""
-#~ "Your file %s has been recovered.\n"
-#~ "You must now Save your file to continue working on it."
-#~ msgstr ""
-#~ "Plik %s został odzyskany.\n"
-#~ "Zachowaj go, zanim rozpoczniesz pracę."

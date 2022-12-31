@@ -9,13 +9,14 @@
 # Marco ccc (cccmarco20), 2020
 # Diego Avila <https://crowdin.com/profile/ingfrustrado>
 # Joaquin Romero <https://crowdin.com/profile/joromo>
+# Carlos Candray <https://crowdin.com/profile/carlos.candray>
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-08 09:53+0000\n"
-"PO-Revision-Date: 2022-02-21 08:36\n"
+"POT-Creation-Date: 2022-12-31 02:48+0000\n"
+"PO-Revision-Date: 2022-12-31 02:46\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Language: es_ES\n"
@@ -760,6 +761,9 @@ msgstr "Marcas de base"
 msgid "Baseline"
 msgstr "Línea base"
 
+msgid "Basic Latin"
+msgstr "Latín básico"
+
 msgid "Basque"
 msgstr "Basco"
 
@@ -1499,6 +1503,9 @@ msgstr "Silábicos chipriotas"
 
 msgid "Cyrillic"
 msgstr "Cirílico"
+
+msgid "Cyrillic Supplement"
+msgstr "Suplemento cirílico"
 
 msgid "Czech"
 msgstr "Checo"
@@ -2511,7 +2518,7 @@ msgstr "GB 2312 (Chino Simp.)"
 #. GT: big enough to contain "OK", "Cancel", "New...", "Edit...", "Delete"
 #. GT: (in their translated forms of course).
 msgid "GGadget|ButtonSize|55"
-msgstr "GGadget|ButtonSize|55"
+msgstr "70"
 
 #. GT: This is an unusual string. It is used to get around a limitation in
 #. GT: FontForge's widget set. You should put a number here (do NOT translate
@@ -2522,7 +2529,7 @@ msgstr "GGadget|ButtonSize|55"
 #. GT: only 67 pixels to say "Don't Save" in English. Then a value for ScaleFactor
 #. GT: might be 116*100/67 = 173
 msgid "GGadget|ScaleFactor|100"
-msgstr "GGadget|ScaleFactor|100"
+msgstr "120"
 
 msgid "Galician"
 msgstr "Gallego"
@@ -2727,6 +2734,9 @@ msgstr "Griego"
 msgid "Greek (polytonic)"
 msgstr "Griego (politónico)"
 
+msgid "Greek and Coptic"
+msgstr "Griego y copto"
+
 msgid "Grid"
 msgstr "Cuadrícula"
 
@@ -2865,6 +2875,9 @@ msgstr ""
 #. GT: "I." is an abbreviation for "Inherits"
 msgid "I."
 msgstr "I."
+
+msgid "IPA Extensions"
+msgstr "Extensiones IPA"
 
 msgid "ISO 10646-1 (Unicode, Full)"
 msgstr "ISO 10646-1 (Unicode, todos los planos)"
@@ -3227,13 +3240,13 @@ msgid "Language Missing"
 msgstr "Idioma faltante"
 
 msgid "Lang|Armenian"
-msgstr "Lenguaje|Armenio"
+msgstr "Armenio"
 
 msgid "Lang|Greek"
-msgstr "Idioma/Griego"
+msgstr "Griego"
 
 msgid "Lang|Hebrew"
-msgstr "Idioma/Hebreo"
+msgstr "Hebreo"
 
 msgid "Last Anchor Point"
 msgstr "Último punto de anclaje"
@@ -3241,6 +3254,15 @@ msgstr "Último punto de anclaje"
 #. GT: The (x,y) position on the window where the user last pressed a mouse button
 msgid "Last Press"
 msgstr "Última pulsación"
+
+msgid "Latin Extended-A"
+msgstr "Latín extendido-A"
+
+msgid "Latin Extended-B"
+msgstr "Latín extendido-B"
+
+msgid "Latin-1 Supplement"
+msgstr "Latin-1 Suplemento"
 
 msgid "Latvian"
 msgstr "Letón"
@@ -3255,10 +3277,10 @@ msgid "Layer Name"
 msgstr "Nombre de capa"
 
 msgid "Layer|Background"
-msgstr "Capa | Fondo"
+msgstr "Fondo"
 
 msgid "Layer|Foreground"
-msgstr "Capa | Primer plano"
+msgstr "Primer plano"
 
 msgid "Leading Jamo Forms"
 msgstr "Forma coreana básica inicial"
@@ -3348,7 +3370,7 @@ msgid "Lookup subtable %s is not in %s\n"
 msgstr "La subtabla de búsqueda %s no está en %s\n"
 
 msgid "LookupType|Unknown"
-msgstr "Tipo de búsqueda|Desconocido"
+msgstr "Desconocido"
 
 msgid "Lookups"
 msgstr "Búsquedas"
@@ -4758,76 +4780,76 @@ msgid "Script with no associated menu name"
 msgstr "Script sin nombre asociado en el menú"
 
 msgid "Script|Aramaic"
-msgstr "Escritura/Arameo"
+msgstr "Arameo"
 
 msgid "Script|Armenian"
-msgstr "Escritura/Armenio"
+msgstr "Armenio"
 
 msgid "Script|Balinese"
-msgstr "Escritura/Balinés"
+msgstr "Balinés"
 
 msgid "Script|Bengali"
-msgstr "Escritura|Bengalí"
+msgstr "Bengalí"
 
 msgid "Script|Bengali2"
-msgstr "Escritura|Bengalí2"
+msgstr "Bengalí2"
 
 msgid "Script|Georgian"
-msgstr "Escritura|Georgiano"
+msgstr "Georgiano"
 
 msgid "Script|Greek"
-msgstr "Escritura|Griego"
+msgstr "Griego"
 
 msgid "Script|Hebrew"
-msgstr "Escritura|Hebreo"
+msgstr "Hebreo"
 
 msgid "Script|Sinhala"
-msgstr "Escritura|Sinhala"
+msgstr "Sinhala"
 
 msgid "Script|Sumero-Akkadian Cuneiform"
-msgstr "Escritura|Cuneiforme sumero-acadia"
+msgstr "Cuneiforme sumero-acadia"
 
 msgid "Script|Sundanese"
-msgstr "Escritura|Sondanés"
+msgstr "Sondanés"
 
 msgid "Script|Syloti Nagri"
-msgstr "Escritura|Silôṭi Nagri"
+msgstr "Silôṭi Nagri"
 
 msgid "Script|Syriac"
-msgstr "Escritura|Siríaco"
+msgstr "Siríaco"
 
 msgid "Script|Tagalog"
-msgstr "Escritura|Tagalo"
+msgstr "Tagalo"
 
 msgid "Script|Tagbanwa"
-msgstr "Escritura|Tagbanwa"
+msgstr "Tagbanwa"
 
 msgid "Script|Tamil"
-msgstr "Escritura|Tamil"
+msgstr "Tamil"
 
 msgid "Script|Tamil2"
-msgstr "Escritura|Tamil2"
+msgstr "Tamil2"
 
 msgid "Script|Telugu"
-msgstr "Escritura|Telegu"
+msgstr "Telegu"
 
 msgid "Script|Telugu2"
-msgstr "Escritura|Telegu2"
+msgstr "Telegu2"
 
 msgid "Script|Thai"
-msgstr "Escritura|Tamil"
+msgstr "Tailandés"
 
 msgid "Script|Tibetan"
-msgstr "Escritura|Tibetano"
+msgstr "Tibetano"
 
 msgid "Script|Ugaritic"
-msgstr "Escritura|Ugarítico"
+msgstr "Ugarítico"
 
 msgid "Script|Vai"
-msgstr "Escritura|Vai"
+msgstr "Vai"
 
 msgid "Script|Yi"
-msgstr "Escritura|Yi"
+msgstr "Yi"
 
 msgid "Scroll Bitmap"
 msgstr "Navegar por el mapa de bits"

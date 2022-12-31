@@ -11,8 +11,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-08 09:53+0000\n"
-"PO-Revision-Date: 2022-02-21 08:36\n"
+"POT-Creation-Date: 2022-12-31 02:48+0000\n"
+"PO-Revision-Date: 2022-12-31 02:46\n"
 "Last-Translator: \n"
 "Language-Team: Croatian\n"
 "Language: hr_HR\n"
@@ -5160,11 +5160,17 @@ msgid ""
 "Color of frozen (unchangeable) entries in the main section of a matrix edit"
 msgstr "Boja za zamrznute (nepromijenjive) zapise u glavnom odjeljku matrice"
 
+msgid "Color of glyph labels when label is missing"
+msgstr "Boja etiketa grafema kad etiketa nedostaje"
+
 msgid "Color of the active entry in the main section of a matrix edit"
 msgstr "Boja za aktivne zapise u glavnom odjeljku matrice"
 
 msgid "Color of the font used to display glyph information in the fontview"
 msgstr "Boja fonta za prikaz informacija o grafemu u prikazu fonta"
+
+msgid "Color of the line between label and glyph"
+msgstr "Boja linije između etikete i grafema"
 
 msgid "Color used to draw the advance width line of a glyph"
 msgstr "Boja za crtanje linije, koja označuje širinu stošca"
@@ -6095,6 +6101,9 @@ msgstr "Zadaj ovo"
 
 msgid "Default background color for windows"
 msgstr "Zadana stražnja boja za prozore"
+
+msgid "Default color of glyph labels"
+msgstr "Standardna boja etiketa grafema"
 
 msgid ""
 "Default encoding for\n"
@@ -11425,6 +11434,9 @@ msgstr "Učitaj popis na_ziva grafema …"
 msgid "Label"
 msgstr "Etiketa"
 
+msgid "Label Color"
+msgstr "Boja etikete"
+
 msgid "Label Gl_yph By"
 msgstr "Prikaži etikete _grafema kao"
 
@@ -13176,6 +13188,9 @@ msgstr "Nedostajući grafem"
 #. GT: means
 msgid "Missing Glyph..."
 msgstr "Nedostajući grafem …"
+
+msgid "Missing Label Color"
+msgstr "Boja etikete nedostajućih znakova"
 
 #, c-format
 msgid "Missing POST resource %u\n"
@@ -15207,6 +15222,9 @@ msgstr "Unutarnji obrub konture"
 msgid "Outline Outer Border"
 msgstr "Vanjski obrub konture"
 
+msgid "Outline Points"
+msgstr "Točke konture"
+
 msgid "Outline View"
 msgstr "Prikaz konture"
 
@@ -15380,6 +15398,9 @@ msgstr "Pa_lete"
 
 msgid "Palestinian Aramaic"
 msgstr "Palestinski aramejski"
+
+msgid "Palettes"
+msgstr "Palete"
 
 msgid "Pali"
 msgstr "Pali"
@@ -16551,6 +16572,9 @@ msgstr "Prepoznaj PUA nazive"
 
 msgid "Recover old edit"
 msgstr "Obnovi staro uređivanje"
+
+msgid "Recovery Complete"
+msgstr "Obnavljanje završeno"
 
 msgid "Recovery Failed"
 msgstr "Obnavljanje neuspjelo"
@@ -18909,6 +18933,13 @@ msgstr "Sami (južni)"
 
 msgid "Soyombo"
 msgstr "Sojomboško"
+
+msgid ""
+"Space (in points) left between images and text in any labels, buttons, menu "
+"items, etc. that have both"
+msgstr ""
+"Razmak (u točkama) između slika i teksta u etiketama, gumbovima, stavkama "
+"izbornika, itd. koji sadrže i jedno i drugo"
 
 msgid ""
 "Space (in points) left between images and text in labels, buttons, menu "
@@ -23404,6 +23435,9 @@ msgstr "_Alati"
 msgid "Tools"
 msgstr "Alati"
 
+msgid "Tools_2"
+msgstr "Alati_2"
+
 msgid "Top Accent"
 msgstr "Gornji naglasak"
 
@@ -23846,6 +23880,9 @@ msgstr "Broj učitanih poništavanja/ponavljanja"
 
 msgid "UndoRedoLimitToSave"
 msgstr "Broj spremljenih poništavanja/ponavljanja"
+
+msgid "Unencoded Label Color"
+msgstr "Boja etikete nekodiranih znakova"
 
 msgid "Uneven Weighting"
 msgstr "Nejednolikih deljina"
@@ -26055,6 +26092,14 @@ msgstr ""
 "Dobit češ bolje rezultate za font, ako ispuniš polja privatnog rječnika, "
 "„Element -> Informacije o fontu -> Private”"
 
+#, c-format
+msgid ""
+"Your file %s has been recovered.\n"
+"You must now Save your file to continue working on it."
+msgstr ""
+"Tvoja datoteka %s je obnovljena.\n"
+"Za daljnje obrađivanje datoteke, moraš je sad spremiti."
+
 msgid ""
 "Your font has a 2 byte encoding, but you are attempting to save it in a "
 "format that only supports one byte encodings. This means that you won't be "
@@ -26362,6 +26407,9 @@ msgstr "_Kluster"
 
 msgid "_Compact"
 msgstr "_Kompaktno"
+
+msgid "_Compact (hide unused glyphs)"
+msgstr "_Kompaktno (sakrij nekorištene grafeme)"
 
 msgid "_Condense/Extend..."
 msgstr "_Suzi/Proširi …"
@@ -27981,17 +28029,3 @@ msgstr "∆y_vis. br.1"
 
 msgid "∆y_adv #2"
 msgstr "∆y_vis. br.2"
-
-#~ msgid "Recovery Complete"
-#~ msgstr "Obnavljanje završeno"
-
-#~ msgid "Tools_2"
-#~ msgstr "Alati_2"
-
-#, c-format
-#~ msgid ""
-#~ "Your file %s has been recovered.\n"
-#~ "You must now Save your file to continue working on it."
-#~ msgstr ""
-#~ "Tvoja datoteka %s je obnovljena.\n"
-#~ "Za daljnje obrađivanje datoteke, moraš je sad spremiti."

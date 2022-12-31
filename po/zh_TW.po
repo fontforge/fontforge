@@ -13,8 +13,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-03-08 09:53+0000\n"
-"PO-Revision-Date: 2022-02-21 08:36\n"
+"POT-Creation-Date: 2022-12-31 02:48+0000\n"
+"PO-Revision-Date: 2022-12-31 03:27\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Language: zh_TW\n"
@@ -847,7 +847,7 @@ msgid "Active Color"
 msgstr "現用顏色"
 
 msgid "Active Hints"
-msgstr "作用中修飾"
+msgstr "作用中渲調"
 
 msgid "Active Layer Color"
 msgstr "現用圖層顏色"
@@ -868,7 +868,7 @@ msgid "Add Base Anchor..."
 msgstr "加入基底錨點…"
 
 msgid "Add DHint"
-msgstr "加入 DHint"
+msgstr "加入對角渲調提示"
 
 msgid "Add E_ncoding Name..."
 msgstr "加入編碼名稱(_N)…"
@@ -905,7 +905,7 @@ msgstr "加入標記錨點…"
 #. GT: are legal reasons for this.
 #. GT: So "Añadir SIL Open Font License (licencia de fuentes libres)"
 msgid "Add OFL"
-msgstr "添加 OFL"
+msgstr "加入 OFL"
 
 msgid "Add Sub_table"
 msgstr "加入子表格(_T)"
@@ -914,7 +914,7 @@ msgid "Add Subscripts/Superscripts..."
 msgstr "加入下標/上標…"
 
 msgid "Add VHi_nt"
-msgstr "加入 VHint(_N)"
+msgstr "加入垂直渲調(_N)"
 
 msgid "Add _Lookup"
 msgstr "加入查找(_L)"
@@ -1125,7 +1125,7 @@ msgid ""
 "Such names should be for internal use only and\n"
 "should NOT end up in production fonts."
 msgstr ""
-"在字圖名稱中允許全部的萬國碼字元集。\n"
+"在字圖名稱中允許全部的 Unicode 字元集。\n"
 "這不符合 adobe 的字圖名稱標準。\n"
 "此類名稱應該只做為內部使用，並且\n"
 "不應該使用於字型產品之中。"
@@ -1153,7 +1153,7 @@ msgstr "近乎水平/垂直線"
 
 #. GT: The _3 is used to mark an accelerator
 msgid "Almost stem_3 hint"
-msgstr "幾乎是 stem_3 修飾"
+msgstr "幾乎是 stem_3 渲調"
 
 msgid "Alphabetic"
 msgstr "字母順序"
@@ -1183,7 +1183,7 @@ msgid "Alternate Substitution"
 msgstr "另項選擇替代"
 
 msgid "Alternate Unicode Encodings / Variation Selectors"
-msgstr "另項選擇萬國碼編碼/變體選擇符號"
+msgstr "另項選擇 Unicode 編碼/異體字選擇器"
 
 msgid "Alternate Vertical Half Metrics"
 msgstr "另項選擇垂直半字框"
@@ -1688,7 +1688,7 @@ msgid "Auto"
 msgstr "自動"
 
 msgid "Auto Hinting Font..."
-msgstr "自動修飾字型…"
+msgstr "自動渲染調整字型…"
 
 msgid "Auto Instructing Font..."
 msgstr "自動指令字型…"
@@ -1697,10 +1697,10 @@ msgid "Auto Width"
 msgstr "自動寬度"
 
 msgid "Auto _Counter Hint"
-msgstr "自動字腔修飾(_C)"
+msgstr "自動渲調外框(_C)"
 
 msgid "AutoHint changed glyphs before generating a font"
-msgstr "產生字型之前自動修飾變更了字圖"
+msgstr "產生字型之前自動渲調變更了字圖"
 
 msgid "AutoKern All"
 msgstr "所有自動字距微調"
@@ -1716,7 +1716,7 @@ msgid "AutoWidth failure on %s\n"
 msgstr "自動調整寬度於 %s 失敗\n"
 
 msgid "Auto_Hint"
-msgstr "自動修飾(_H)"
+msgstr "自動渲調(_H)"
 
 msgid "Auto_Instr"
 msgstr "自動指令(_I)"
@@ -1725,7 +1725,7 @@ msgid "Auto_Kern"
 msgstr "自動字距微調(_K)"
 
 msgid "Autohinta_ble"
-msgstr "自動修飾表格(_B)"
+msgstr "可自動渲調(_B)"
 
 msgid "Autokern new entries"
 msgstr "新條目自動微調字距"
@@ -2304,7 +2304,7 @@ msgstr "不當的 mort 連體字表格。長度不夠\n"
 
 #, c-format
 msgid "Bad name when parsing %s for unicode %x"
-msgstr "剖析 %s 用於萬國碼 %x 時，出現不當的名稱"
+msgstr "剖析使用 Unicode 値 %2$x 的 %1$s 時，出現不當名稱"
 
 msgid "Bad namelist file"
 msgstr "不當的名稱表列檔案"
@@ -2434,14 +2434,14 @@ msgid "Bad type"
 msgstr "不當的型態"
 
 msgid "Bad unicode value for an alternate unicode / variation selector"
-msgstr "不當的萬國碼值用於替代的萬國碼/變體選擇器"
+msgstr "不當的 Unicode 値用於替代的 Unicode/變體選擇器"
 
 #, c-format
 msgid ""
 "Bad unicode value when parsing %s\n"
 "%s"
 msgstr ""
-"剖析 %s 時有不當的萬國碼值\n"
+"剖析 %s 時有不當的 Unicode 値\n"
 "%s"
 
 msgid "Bad xfig file"
@@ -2735,7 +2735,7 @@ msgid "Both selected references have use-my-metrics set"
 msgstr "已選兩參照都有 use-my-metrics 設定"
 
 msgid "Bottom Hint"
-msgstr "底部修飾"
+msgstr "底部渲調"
 
 msgid "Bottom Right"
 msgstr "右下"
@@ -3341,7 +3341,7 @@ msgid "Check Self-Intersection"
 msgstr "檢查自我交叉"
 
 msgid "Check Unicode/Name mismatch"
-msgstr "檢查萬國碼/名稱不匹配"
+msgstr "檢查 Unicode/名稱不匹配"
 
 msgid "Check VAdvance:\n"
 msgstr "檢查垂直前加：\n"
@@ -3376,7 +3376,7 @@ msgid ""
 "Check for characters whose name maps to a unicode code point\n"
 "which does not map the character's assigned code point."
 msgstr ""
-"檢查看看名稱映射到萬國碼碼點字元\n"
+"檢查看看名稱映射到 Unicode 碼位字元\n"
 "是否未映射到字元指定的碼點。"
 
 msgid ""
@@ -3405,7 +3405,7 @@ msgid "Check multiple Names"
 msgstr "檢查多重名稱"
 
 msgid "Check multiple Unicode"
-msgstr "檢查多重萬國碼"
+msgstr "檢查多重 Unicode 値"
 
 msgid "Check substitutions for empty chars"
 msgstr "檢查空格字元的替代物"
@@ -3611,7 +3611,7 @@ msgid ""
 "Then click on the License field to fill in the placeholders in sync with OFL."
 "txt. \n"
 msgstr ""
-"點擊這裏以在你的字型中的授權與授權網址欄目中添加 OFL 後設資料。\n"
+"點擊這裏以在你的字型中的授權與授權網址欄目中加入 OFL 後設資料。\n"
 "然后點擊授權欄目並填寫與 OFL.txt 一樣的資料。\n"
 
 msgid "Clip Path Color"
@@ -3738,7 +3738,7 @@ msgid "Compare Glyph _Substitution"
 msgstr "比較字圖替代(_S)"
 
 msgid "Compare Hint_Masks"
-msgstr "比較修飾遮罩(_M)"
+msgstr "比較渲調遮罩(_M)"
 
 msgid "Compare Layers"
 msgstr "比較圖層"
@@ -3750,7 +3750,7 @@ msgid "Compare _Bitmaps"
 msgstr "比較點陣字(_B)"
 
 msgid "Compare _Hints"
-msgstr "比較修飾(_H)"
+msgstr "比較渲調(_H)"
 
 msgid "Compare _Names"
 msgstr "比較名稱(_N)"
@@ -3759,10 +3759,10 @@ msgid "Compare _Outlines"
 msgstr "比較描邊(_O)"
 
 msgid "Compare hintmasks"
-msgstr "比較修飾遮罩"
+msgstr "比較渲調遮罩"
 
 msgid "Compare postscript hints and hintmasks and truetype instructions"
-msgstr "比較 postscript 修飾和修飾遮罩和 truetype 指令"
+msgstr "比較 postscript 渲調和渲調遮罩和 truetype 指令"
 
 msgid "Compare two layers"
 msgstr "比較兩圖層"
@@ -3809,7 +3809,7 @@ msgid "Configure"
 msgstr "組配"
 
 msgid "Conflict Hint Color"
-msgstr "衝突修飾顏色"
+msgstr "衝突渲調顏色"
 
 msgid "Conjunct Form After Ro"
 msgstr "Ro 之後的結合形式"
@@ -4150,19 +4150,19 @@ msgid "Cr_eate"
 msgstr "建立(_E)"
 
 msgid "Cr_eate VHint..."
-msgstr "建立 VHint(_E)…"
+msgstr "建立垂直渲調提示(_E)…"
 
 msgid "Cre_ate Named Glyphs..."
 msgstr "建立被命名的字圖(_A)…"
 
 msgid "Crea_te HHint..."
-msgstr "建立 HHint(_T)…"
+msgstr "建立水平渲調提示(_T)…"
 
 msgid "Create Hint"
-msgstr "建立修飾"
+msgstr "建立渲調"
 
 msgid "Create Horizontal Stem Hint"
-msgstr "建立水平字幹修飾"
+msgstr "建立水平字幹渲調"
 
 msgid "Create MM"
 msgstr "建立多重主字型"
@@ -4177,7 +4177,7 @@ msgid "Create Subscript/Superscript"
 msgstr "建立下標/上標"
 
 msgid "Create Vertical Stem Hint"
-msgstr "建立垂直字幹修飾"
+msgstr "建立垂直字幹渲調"
 
 msgid "Create a new lookup"
 msgstr "建立新的查找"
@@ -4579,7 +4579,7 @@ msgid "Diagonal Fractions"
 msgstr "對角分數"
 
 msgid "Diagonal Hint Color"
-msgstr "對角修飾顏色"
+msgstr "對角渲調顏色"
 
 msgid "Diameter:"
 msgstr "直徑："
@@ -4730,10 +4730,10 @@ msgid "Do it"
 msgstr "進行它"
 
 msgid "Do you want the font file to contain PostScript flex hints?"
-msgstr "您想要字型檔案包含 PostScript 屈曲修飾嗎？"
+msgstr "您想要字型檔案包含 PostScript flex 渲調指令嗎？"
 
 msgid "Do you want the font file to contain PostScript hints?"
-msgstr "您想要字型檔案包含 PostScript 修飾嗎？"
+msgstr "您想要字型檔案包含 PostScript 渲調指令嗎？"
 
 msgid ""
 "Do you want the font file to contain the names of each glyph in the font?"
@@ -4744,11 +4744,11 @@ msgid ""
 "generate new instructions, it will just make use of whatever is associated\n"
 "with each character."
 msgstr ""
-"您想要字型檔案包含 truetype 修飾嗎？這將不會\n"
+"您想要字型檔案包含 truetype 渲調指令嗎？這將不會\n"
 "產生新指令，僅僅利用了與每個字元有關聯的東西。"
 
 msgid "Do you want the font file to do hint substitution?"
-msgstr "您想要字型檔案進行修飾替代嗎？"
+msgstr "您想要字型檔案進行渲調替代嗎？"
 
 msgid "Do you want to round coordinates to integers (this saves space)?"
 msgstr "您想要將座標四捨五入到整數(可節省空間)嗎？"
@@ -4766,13 +4766,13 @@ msgid "Domino Tiles"
 msgstr "骨牌"
 
 msgid "Don't Compare HintMasks"
-msgstr "不比較修飾衝突"
+msgstr "不比較渲調衝突"
 
 msgid "Don't Warn Again"
 msgstr "不再次警告"
 
 msgid "Don't compare hintmasks if the glyph has no hint conflicts"
-msgstr "如果字圖沒有任何修飾衝突，就不比較修飾遮罩"
+msgstr "如果字圖沒有任何渲調衝突，就不比較渲調遮罩"
 
 msgid "Don't smooth lines"
 msgstr "不將線平滑化"
@@ -5147,7 +5147,7 @@ msgid ""
 " or a unicode encoding like \"U+0065\"."
 msgstr ""
 "輸入萬用字元胚騰 (以匹配字圖名稱)\n"
-"或者如同 \"U+0065\" 的萬國碼編碼。"
+"或者如同 \"U+0065\" 的 Unicode 編碼。"
 
 msgid "Enter the name of a glyph in the font"
 msgstr "在字型中輸入字圖的名稱"
@@ -5617,7 +5617,7 @@ msgid "Fi_ll"
 msgstr "填充(_L)"
 
 msgid "Figure out flex hints after every change"
-msgstr "算出每次變更之後的屈曲修飾"
+msgstr "算出每次變更之後的flex渲調"
 
 msgid "Fijian"
 msgstr "斐濟語"
@@ -5766,7 +5766,7 @@ msgid "Flemish (Belgian Dutch)"
 msgstr "佛蘭芒(比利時荷蘭語)"
 
 msgid "Flex Hints"
-msgstr "屈曲修飾"
+msgstr "Flex 渲調"
 
 msgid "Flip"
 msgstr "翻轉"
@@ -6221,7 +6221,7 @@ msgid "Generate instructions for ball terminals."
 msgstr "產生用於球狀終端指令。"
 
 msgid "Generate instructions for diagonal stem hints."
-msgstr "產生用於對角的字幹修飾指令。"
+msgstr "產生用於對角字幹渲調指令。"
 
 msgid "Generating PostScript Font"
 msgstr "產生 PostScript 字型"
@@ -6276,7 +6276,7 @@ msgid ""
 "hint exists without any points that lie on it."
 msgstr ""
 "Ghostview (也許是其他解譯器) 會發生問題，\n"
-"當修飾存在卻無任何點依賴於它。"
+"當渲調指令存在卻無任何描點依賴於它。"
 
 msgid "Gl_yph Name:"
 msgstr "字圖名稱(_N)："
@@ -6381,7 +6381,7 @@ msgid "Glyph composed of:"
 msgstr "字圖合成自："
 
 msgid "Glyph contains overlapped hints (in the same hintmask)"
-msgstr "字圖含有重疊的修飾 (在相同的修飾遮罩之中)"
+msgstr "字圖含有重疊的渲調 (在相同的渲調遮罩之中)"
 
 msgid "Glyph in two classes"
 msgstr "字圖在兩個類別中"
@@ -6460,7 +6460,7 @@ msgstr "字圖“%s”缺少自 %s 於 %d@%d\n"
 
 #, c-format
 msgid "Glyph, %s, has no hints. FontForge will not produce many instructions."
-msgstr "字圖，%s，沒有任何修飾。FontForge 將無法產生許多指令。"
+msgstr "字圖，%s，沒有任何渲調指令。FontForge 將無法產生許多指令。"
 
 msgid "Glyph, Point, Size"
 msgstr "字圖、點、尺寸"
@@ -6629,7 +6629,7 @@ msgid "Gurmukhi2"
 msgstr "果魯穆其語2"
 
 msgid "HFlex Hint Color"
-msgstr "水平屈曲修飾顏色"
+msgstr "水平flex渲調顏色"
 
 msgid "HHead Ascent Offset:"
 msgstr "HHead 上緣偏移："
@@ -6650,13 +6650,13 @@ msgid "HHead _Line Gap:"
 msgstr "HHead 列間隙(_L)："
 
 msgid "HHint Active Color"
-msgstr "水平修飾現用顏色"
+msgstr "水平渲調現用顏色"
 
 msgid "HV Group Box"
 msgstr "水平和垂直群組方塊"
 
 msgid "H_ints"
-msgstr "修飾(_I)"
+msgstr "渲染調整(_I)"
 
 msgid "Haitian"
 msgstr "海地語"
@@ -6764,29 +6764,29 @@ msgid "Hindi"
 msgstr "北印度語"
 
 msgid "Hint Label Color"
-msgstr "修飾標籤顏色"
+msgstr "渲調標籤顏色"
 
 msgid "Hint Mask"
-msgstr "修飾遮罩"
+msgstr "渲調遮罩"
 
 msgid "Hint Substitution"
-msgstr "修飾替代"
+msgstr "渲調替代"
 
 msgid "Hint _Substitution Pts"
-msgstr "修飾替代點(_S)"
+msgstr "渲調替代點(_S)"
 
 msgid "Hint _Width Near¹"
-msgstr "修飾寬度接近¹(_W)"
+msgstr "渲調寬度接近¹(_W)"
 
 #, c-format
 msgid "Hint mask (or counter mask) with too many hints in %s\n"
-msgstr "修飾遮罩 (或字腔遮罩) 在 %s 中太多修飾\n"
+msgstr "渲調遮罩 (或字腔遮罩) 在 %s 中有太多渲調指令\n"
 
 msgid "HintMasks only if conflicts"
-msgstr "只當衝突時使用修飾遮罩"
+msgstr "只當衝突時使用渲調遮罩"
 
 msgid "Hints"
-msgstr "修飾"
+msgstr "渲調指令"
 
 msgid "Hiragana"
 msgstr "平假名"
@@ -6840,7 +6840,7 @@ msgid "Hori_zontal Metric Lines"
 msgstr "水平度量線(_Z)"
 
 msgid "Horiz. Hint Color"
-msgstr "水平修飾顏色"
+msgstr "水平渲調顏色"
 
 #. GT: "Horiz." is an abbreviation for Horizontal
 msgid "Horiz. Variants"
@@ -6942,10 +6942,10 @@ msgid "ISO (Deprecated)"
 msgstr "ISO (已過時)"
 
 msgid "ISO 10646-1 (Unicode, BMP)"
-msgstr "ISO 10646-1 (萬國碼，BMP)"
+msgstr "ISO 10646-1 (Unicode，基本平面)"
 
 msgid "ISO 10646-1 (Unicode, Full)"
-msgstr "ISO 10646-1 (萬國碼，全部)"
+msgstr "ISO 10646-1 (Unicode，全部平面)"
 
 msgid "ISO 8859-1  (Latin1)"
 msgstr "ISO 8859-1 (拉丁文1)"
@@ -7069,15 +7069,16 @@ msgid ""
 "numbering actually starts with 0) is for counter hints.\n"
 "The subroutines should not be enclosed in a [ ] pair."
 msgstr ""
-"如果您希望以您自己的陣列，取代 Adobe 的 OtherSubrs 陣列(用於 Type1 字型)，\n"
+"如果您希望以您自己的陣列，取代 Adobe 的 OtherSubrs 陣列（用於 Type1 字"
+"型），\n"
 "就設定它指到包含了最多 14 個 PostScript 副常式\n"
-"表列的檔案。每個副常式必須\n"
-"由以「%%%%」啟始的列為前導(第一列「%%%%」之前\n"
-"的任何文字，將被視為初始的版權備註)。\n"
-"前三個副常式是用於屈曲修飾，再下一個用於修飾\n"
-"替代(這必須要出現)，第 14 個 (或是由於實際從 0\n"
-"開始的編號 13) 是用於字腔修飾。\n"
-"這些副常式不應該被一對 [] 所包圍。"
+"表列的檔案。每個副常式必須由以「%%%%」啟始的列\n"
+"為前導（第一列「%%%%」之前\n"
+"的任何文字，將被視為初始的版權備註）。\n"
+"前三個副常式是用於屈曲修飾，再下一個用於渲調\n"
+"替代（必須要有），第 14 個（或是由於實際從 0\n"
+"開始的編號 13）是用於字腔渲調。\n"
+"這些副常式不應該被一對 [ ] 所包圍。"
 
 msgid "Igbo"
 msgstr "伊布語"
@@ -9026,7 +9027,7 @@ msgstr "缺少名稱於 %2$s 的第 %1$d 列"
 
 #, c-format
 msgid "Missing name when parsing %s for unicode %x"
-msgstr "當剖析 %s 與使用萬國碼 %x 時缺少名稱"
+msgstr "剖析使用 Unicode 値 %2$x 的 %1$s 時，缺少名稱"
 
 #, c-format
 msgid "Missing number on line %d of %s"
@@ -9176,7 +9177,7 @@ msgstr "所選的多重複本應該在路徑上並排"
 msgid ""
 "Multiple glyphs map to the same unicode encoding U+%04X, only one will be "
 "used\n"
-msgstr "多重字圖對映到相同的萬國碼編碼 U+%04X, 只有一個將會使用\n"
+msgstr "多重字圖映射到相同的 Unicode 値 U+%04X，只有一個將會使用\n"
 
 msgid "Multiple master font with more than 16 instances\n"
 msgstr "多重主字型具有超過 16 個實體\n"
@@ -9189,7 +9190,7 @@ msgstr "語言的多重名稱"
 
 #, c-format
 msgid "Multiple names when parsing %s for unicode %x"
-msgstr "剖析 %s 用於萬國碼 %x 時，會遇到多重名稱"
+msgstr "剖析使用 Unicode 値 %2$x 的 %1$s 時，遇到多重名稱"
 
 msgid "Multiple refs with use-my-metrics"
 msgstr "多重具有 use-my-metrics 的參照"
@@ -9453,7 +9454,7 @@ msgid "Next CP: (%f,%f)"
 msgstr "下一個控制點：(%f,%f)"
 
 msgid "Next Hint."
-msgstr "下一個修飾。"
+msgstr "下一個渲調。"
 
 msgid "Next On Contour"
 msgstr "輪廓上的下一個"
@@ -9665,7 +9666,7 @@ msgstr "在查找旗標中無旗標指定於 %2$s 的第 %1$d 列"
 
 #, c-format
 msgid "No glyph with unicode U+%05x in font\n"
-msgstr "在字型中沒有萬國碼為 U+%05x 的字圖\n"
+msgstr "在字型中沒有 Unicode 値為 U+%05x 的字圖\n"
 
 msgid "No glyphs matched"
 msgstr "沒有匹配的字圖"
@@ -9793,7 +9794,7 @@ msgid "Non-Straight Arms/Wedge"
 msgstr "非直臂/楔形加"
 
 msgid "Non-Unicode Glyphs"
-msgstr "非萬國碼字圖"
+msgstr "非 Unicode 字圖"
 
 msgid "Non-_Integral coordinates"
 msgstr "非整數座標(_I)"
@@ -10510,7 +10511,7 @@ msgid "OverbarVerticalGap:"
 msgstr "OverbarVerticalGap："
 
 msgid "Overlapped Hints"
-msgstr "重疊的修飾"
+msgstr "重疊的渲調指令"
 
 msgid "PCF (pmf)"
 msgstr "PCF 點陣字型(pmf)"
@@ -10525,7 +10526,7 @@ msgid "PS Glyph Names"
 msgstr "PS 字圖名稱"
 
 msgid "PS Hints"
-msgstr "PS 修飾"
+msgstr "PS 渲染調整"
 
 msgid "PS Multiple Master(B)"
 msgstr "PS Multiple Master(A)"
@@ -10693,10 +10694,10 @@ msgid "PanoseLining|Any"
 msgstr "任何"
 
 msgid "PanoseLining|Backdrop"
-msgstr "PanoseLining|背景"
+msgstr "背景"
 
 msgid "PanoseLining|Engraved (Multiple Lines)"
-msgstr "PanoseLining|雕刻 (多重線條)"
+msgstr "雕刻 (多重線條)"
 
 msgid "PanoseLining|Inline"
 msgstr "內描邊"
@@ -10711,10 +10712,10 @@ msgid "PanoseLining|Outline"
 msgstr "外描邊"
 
 msgid "PanoseLining|Relief"
-msgstr "PanoseLining|浮出"
+msgstr "浮出"
 
 msgid "PanoseLining|Shadow"
-msgstr "PanoseLining|陰影"
+msgstr "陰影"
 
 msgid "PanoseMidline|Any"
 msgstr "任何"
@@ -11332,7 +11333,7 @@ msgid "Prev On Contour"
 msgstr "輪廓上的上一個"
 
 msgid "Previous Hint."
-msgstr "前一個修飾。"
+msgstr "上一個渲調。"
 
 msgid "Print"
 msgstr "列印"
@@ -11682,7 +11683,7 @@ msgid "Regenerate Bitmap Glyphs"
 msgstr "重新產生點陣字圖"
 
 msgid "Regenerate Hint Substitution Points"
-msgstr "重新產生修飾替代點"
+msgstr "重新產生渲調替換點"
 
 msgid "Regenerate _Bitmap Glyphs..."
 msgstr "重新產生點陣字圖(_B)…"
@@ -12026,7 +12027,7 @@ msgid "Revert To _Backup"
 msgstr "還原成備份(_B)"
 
 msgid "Review Hints"
-msgstr "檢閱修飾"
+msgstr "檢閱渲調"
 
 msgid "Rhaeto-Romanic"
 msgstr "里托羅曼語"
@@ -12893,7 +12894,7 @@ msgstr ""
 "所選的字圖將成為您的字圖類別。"
 
 msgid "Select hints between which counters are formed"
-msgstr "在所形成的字腔之間選取修飾"
+msgstr "在所形成的字腔之間選取渲調"
 
 msgid "Select lookups from other fonts"
 msgstr "自其他字型選取查找"
@@ -13280,7 +13281,7 @@ msgid "Show splash screen on start-up"
 msgstr "顯示軟體資訊畫面於起動時"
 
 msgid "Shows when this character is exactly a stem3 hint"
-msgstr "當這個字元是精確的 stem3 修飾時顯示"
+msgstr "當這個字元是精確的 stem3 渲調時顯示"
 
 msgid "Shrink Lookups Off"
 msgstr "收縮查找關閉"
@@ -13505,7 +13506,7 @@ msgid "Sort this display based on the alphabetic name of the glyph"
 msgstr "排序這個顯示基於字圖名稱的字母順序"
 
 msgid "Sort this display based on the unicode code of the glyph"
-msgstr "排序這個顯示基於字圖的萬國碼碼位"
+msgstr "基於字圖的 Unicode 碼位排序本顯示"
 
 msgid "Sort:"
 msgstr "排序："
@@ -13637,7 +13638,7 @@ msgstr ""
 " pfb -- 是標準 postscript type1\n"
 " ttf -- 是 truetype\n"
 " otf -- 是 opentype\n"
-" nohints -- freetype 點陣化而無修飾\n"
+" nohints -- freetype 點陣化而無渲調\n"
 " bitmap -- 無法傳遞到 freetype 以用於潤算\n"
 "   點陣圖字型必須已被產生\n"
 " FontForge -- 使用 FontForge 本身的點陣化程式，而非\n"
@@ -14672,7 +14673,7 @@ msgid "The color of the point which is the start of a contour"
 msgstr "輪廓起始點的顏色"
 
 msgid "The color used to draw a hint which conflicts with another"
-msgstr "用來繪製與他項衝突的修飾顏色"
+msgstr "用來繪製與他項衝突的渲調顏色"
 
 msgid "The color used to draw a selected control point of an on-curve point"
 msgstr "用來繪製已選曲線上控制點的顏色"
@@ -14682,10 +14683,10 @@ msgid ""
 msgstr "用來繪製點陣圖 (單一位元) 圖像的顏色，該圖像並不指定顏色查找表"
 
 msgid "The color used to draw diagonal hints"
-msgstr "用來繪製對角修飾的顏色"
+msgstr "用來繪製對角渲調的顏色"
 
 msgid "The color used to draw horizontal hints"
-msgstr "用來繪製水平修飾的顏色"
+msgstr "用來繪製水平渲調的顏色"
 
 msgid ""
 "The color used to draw markers for splines which are almost, but not quite "
@@ -14708,18 +14709,18 @@ msgstr "用來繪製「前一個」曲線上控制點的顏色"
 msgid ""
 "The color used to draw the active horizontal hint which the Review Hints "
 "dialog is examining"
-msgstr "用來繪製現用水平修飾的顏色，該項檢閱修飾對話框正在檢查中"
+msgstr "用來繪製在「檢閱渲調」對話框中的現用水平渲調的顏色"
 
 msgid ""
 "The color used to draw the active vertical hint which the Review Hints "
 "dialog is examining"
-msgstr "用來繪製現用垂直修飾的顏色，該項檢閱修飾對話框正在檢查中"
+msgstr "用來繪製在「檢閱渲調」對話框中的現用垂直渲調的顏色"
 
 msgid "The color used to draw the large tick marks in rulers."
 msgstr "用來在尺規中繪製大刻度標記的顏色。"
 
 msgid "The color used to draw vertical hints"
-msgstr "用來繪製垂直修飾的顏色"
+msgstr "用來繪製垂直渲調的顏色"
 
 msgid "The color used to fill the outline if that mode is active"
 msgstr "如果該模式是現用，用來填充描邊的顏色"
@@ -14817,7 +14818,7 @@ msgstr "第 %d 列的校正太大。 它必須介於 -128 和 127"
 
 msgid ""
 "The counters between these hints are not the same size, bad for a stem3 hint"
-msgstr "在這些修飾之間的字腔不是相同尺寸，對於 stem3 修飾而言不適當"
+msgstr "在這些渲調之間的字腔不是相同尺寸，對於 stem3 渲調而言不適當"
 
 msgid "The default size of the Em-Square in a newly created font."
 msgstr "在新建立的字型中預設的 Em-Square 尺寸。"
@@ -15017,13 +15018,13 @@ msgid "The height of the lower case letters with flat tops"
 msgstr "具有扁平頂端的小寫字母高度"
 
 msgid "The hint mask of the selected point contains overlapping hints"
-msgstr "所選點的修飾遮罩含有重疊修飾"
+msgstr "所選點的渲調遮罩含有重疊渲調"
 
 #, c-format
 msgid ""
 "The hint you have just selected overlaps with <%.2f,%.2f>. You should "
 "deselect one of the two."
-msgstr "您剛剛選取的修飾與 <%.2f,%.2f> 重疊。您應該取消選取兩者之一。"
+msgstr "您剛剛選取的渲調指令與 <%.2f,%.2f> 重疊。您應該取消選取兩者之一。"
 
 msgid ""
 "The horizontal and vertical stem add amounts may not differ by more than a "
@@ -15189,7 +15190,7 @@ msgstr "搜尋胚騰在字型 %.100s 之中找不到"
 msgid ""
 "The selected glyphs have no hints. FontForge will not produce many "
 "instructions."
-msgstr "已選字圖沒有任何修飾。FontForge 將無法產生許多指令。"
+msgstr "已選字圖沒有任何渲調指令。FontForge 將無法產生許多指令。"
 
 msgid "The selected line segment is near the italic angle"
 msgstr "已選取的線段接近斜體角度"
@@ -15204,10 +15205,10 @@ msgid "The selected point does not have integral control points"
 msgstr "所選點不具整數控制點"
 
 msgid "The selected point is near a horizontal stem hint"
-msgstr "所選點接近水平字幹修飾"
+msgstr "所選點接近水平字幹渲調"
 
 msgid "The selected point is near a vertical stem hint"
-msgstr "所選點接近垂直字幹修飾"
+msgstr "所選點接近垂直字幹渲調"
 
 msgid "The selected point is not at integral coordinates"
 msgstr "所選點不在整數座標上"
@@ -15320,7 +15321,7 @@ msgid "There are %d pages in this file, which do you want?"
 msgstr "這個檔案有 %d 頁，您想要哪一頁？"
 
 msgid "There are more hints in this glyph than the maximum allowed"
-msgstr "在這個字圖中的修飾數量超過了允許的最大值"
+msgstr "在這個字圖中的渲調數量超過了允許的最大值"
 
 msgid "There are more points in this glyph than the maximum allowed"
 msgstr "在這個字圖中的點數量超過了允許的最大值"
@@ -15335,7 +15336,7 @@ msgid "There are no entries in the Sequence/Lookup List, was this intentional?"
 msgstr "在序列/查找清單之中沒有條目，這是有意要如此做的嗎？"
 
 msgid "There are no hint masks in this layer but there are overlapping hints."
-msgstr "在這個圖層中沒有修飾遮罩但有重疊修飾。"
+msgstr "在這個圖層中沒有渲調遮罩但有重疊渲調。"
 
 msgid ""
 "There are no scripts bound to features bound to this lookup. So nothing "
@@ -15394,8 +15395,8 @@ msgid ""
 "(named %1$.40s, at local encoding %2$d).\n"
 "Is that what you want?"
 msgstr ""
-"已經有與此萬國碼相應的字圖\n"
-"(名為 %1$.40s，位於本地編碼 %2$d)。\n"
+"已經有與此 Unicode 値相應的字圖\n"
+"（名為 %1$.40s，位於本地編碼 %2$d）。\n"
 "那就是您想要的嗎？"
 
 msgid ""
@@ -15416,7 +15417,7 @@ msgid "There is another glyph in the font with this name"
 msgstr "在字型中有另一個字圖以此命名"
 
 msgid "There is another glyph in the font with this unicode code point"
-msgstr "在字型中有另一個字圖具有這個萬國碼碼點"
+msgstr "在字型中有另一個字圖具有這個 Unicode 碼位"
 
 #, c-format
 msgid "There is no anchor for class %1$.30s in subtable %2$.30s"
@@ -15605,14 +15606,14 @@ msgid ""
 "This font contains no glyphs with unicode encodings.\n"
 "Would you like to use a \"Symbol\" encoding instead of Unicode?"
 msgstr ""
-"此字型不含有以萬國碼編碼的字圖。\n"
-"您想要使用「符號」編碼以代替萬國碼？"
+"此字型不含有以 Unicode 編碼的字圖。\n"
+"您想要使用「符號」編碼以代替 Unicode？"
 
 msgid ""
 "This font contains no glyphs with unicode encodings.\n"
 "You will probably not be able to use the output."
 msgstr ""
-"此字型不含有以萬國碼編碼的字圖。\n"
+"此字型不含有以 Unicode 編碼的字圖。\n"
 "您大概將無法使用輸出。"
 
 #, c-format
@@ -15660,21 +15661,21 @@ msgstr ""
 "您有此權限嗎？"
 
 msgid "This glyph can use a stem3 hint"
-msgstr "此字圖可以使用 stem3 修飾"
+msgstr "此字圖可以使用 stem3 渲調"
 
 msgid ""
 "This glyph contains a different number of contours in different instances"
 msgstr "這個字圖在不同的實體中含有不同的輪廓數量"
 
 msgid "This glyph contains a different number of hints in different instances"
-msgstr "這個字圖在不同的實體中含有不同的修飾數量"
+msgstr "這個字圖在不同的實體中含有不同的渲調指令數量"
 
 msgid ""
 "This glyph contains a different number of references in different instances"
 msgstr "這個字圖在不同的實體中含有不同的參照數量"
 
 msgid "This glyph contains a horizontal hint near the specified width"
-msgstr "這個字圖在指定寬度附近含有水平修飾"
+msgstr "這個字圖在指定寬度附近含有水平渲調"
 
 msgid ""
 "This glyph contains a substitution or ligature entry which refers to an "
@@ -15682,7 +15683,7 @@ msgid ""
 msgstr "這個字圖含有參照到空字元的替代或連體字條目"
 
 msgid "This glyph contains a vertical hint near the specified width"
-msgstr "這個字圖在指定寬度附近含有垂直修飾"
+msgstr "這個字圖在指定寬度附近含有垂直渲調"
 
 msgid ""
 "This glyph contains anchor points from some, but not all anchor classes in a "
@@ -15706,7 +15707,7 @@ msgstr "這個字圖向左延展比設想的要多"
 msgid ""
 "This glyph has four hints, but if this one were omitted it would fit a stem3 "
 "hint"
-msgstr "這個字圖有四個修飾，但是如果這一個被省略它就會符合 stem3 修飾"
+msgstr "這個字圖有四個渲調，但是如果這一個被省略它就會符合 stem3 渲調"
 
 msgid ""
 "This glyph has no instructions. Adding instructions (a DELTA) may change its "
@@ -15722,14 +15723,14 @@ msgstr "這個字圖被定義在一個實體字型中而不是在另一個中"
 msgid ""
 "This glyph is mapped to a unicode code point which is different from its "
 "name."
-msgstr "這個字圖被映射到與其名稱不同的萬國碼碼點。"
+msgstr "這個字圖被映射到與其名稱不同的 Unicode 碼位。"
 
 msgid "This glyph is not defined in any of the CID subfonts"
 msgstr "這個字圖未在任何的 CID 子字型中被定義"
 
 msgid ""
 "This glyph is not mapped to any unicode code point, but its name should be."
-msgstr "這個字圖未被映射到任何萬國碼碼點，但是它的名稱看來應該是。"
+msgstr "這個字圖未被映射到任何 Unicode 碼位，但是它的名稱看來應該是。"
 
 msgid "This glyph is taller than desired"
 msgstr "這個字圖比設想的要高"
@@ -15768,10 +15769,10 @@ msgid "This glyph's vertical advance is different from the standard width"
 msgstr "這個字圖垂直前加與標準寬度不同"
 
 msgid "This hint does not control any points"
-msgstr "此修飾不控制任何點"
+msgstr "此渲調指令不控制任何點"
 
 msgid "This hint has the wrong width for a stem3 hint"
-msgstr "這個修飾對於 stem3 修飾而言寬度錯誤"
+msgstr "這個渲調對於 stem3 渲調而言寬度錯誤"
 
 msgid "This index is much larger than the closest neighbor"
 msgstr "此索引比最近的鄰居要大得多"
@@ -16076,7 +16077,7 @@ msgid "Too Many Glyphs"
 msgstr "太多字圖"
 
 msgid "Too Many Hints"
-msgstr "太多修飾"
+msgstr "太多渲調指令"
 
 msgid "Too Many Kerns"
 msgstr "太多字距微調"
@@ -16163,7 +16164,7 @@ msgid "Top Bearing does not change."
 msgstr "頂端留白不變。"
 
 msgid "Top Hint"
-msgstr "頂端修飾"
+msgstr "頂端渲調"
 
 msgid "Top Left"
 msgstr "左上"
@@ -16281,7 +16282,7 @@ msgid "TrueType (Symbol)"
 msgstr "TrueType (符號)"
 
 msgid "TrueType Hints"
-msgstr "TrueType 修飾"
+msgstr "TrueType 渲調"
 
 #, c-format
 msgid "TrueType Instructions for %.50s"
@@ -16356,7 +16357,7 @@ msgid ""
 "Change the encoding to \"Glyph Order\" and use\n"
 "Edit->Select->Wildcard with the following code point"
 msgstr ""
-"兩個字圖共享相同萬國碼碼點。\n"
+"兩個字圖共享相同 Unicode 碼位。\n"
 "變更編碼為「字圖排序」並將\n"
 "編輯→選取→萬用字元與下列碼點一起使用"
 
@@ -16532,31 +16533,31 @@ msgid "Unicase"
 msgstr "無大小寫分別"
 
 msgid "Unicode"
-msgstr "萬國碼"
+msgstr "Unicode"
 
 msgid "Unicode 1.0"
-msgstr "萬國碼 1.0"
+msgstr "Unicode 1.0"
 
 msgid "Unicode 1.1"
-msgstr "萬國碼 1.1"
+msgstr "Unicode 1.1"
 
 msgid "Unicode 2.0+, BMP only"
-msgstr "萬國碼 2.0+，只有 BMP"
+msgstr "Unicode 2.0+，僅基本平面"
 
 msgid "Unicode 2.0+, all planes"
-msgstr "萬國碼 2.0+，所有字面"
+msgstr "Unicode 2.0+，所有字面"
 
 msgid "Unicode Basic Multilingual Plane"
 msgstr "萬國碼基本多語言平面"
 
 msgid "Unicode C_har:"
-msgstr "萬國碼字元(_H)："
+msgstr "Unicode 字元(_H)："
 
 msgid "Unicode Ranges"
-msgstr "萬國碼範圍"
+msgstr "Unicode 範圍"
 
 msgid "Unicode Ranges:"
-msgstr "萬國碼範圍："
+msgstr "Unicode 範圍："
 
 msgid "Unicode Supplementary Ideographic Plane"
 msgstr "萬國碼補充的表意文字平面"
@@ -16568,17 +16569,17 @@ msgid "Unicode Supplementary Special-purpose Plane"
 msgstr "萬國碼補充的特殊用途平面"
 
 msgid "Unicode _Value:"
-msgstr "萬國碼值(_V)："
+msgstr "Unicode 値(_V)："
 
 msgid "Unicode out of range"
-msgstr "萬國碼超出範圍"
+msgstr "Unicode 超出範圍"
 
 #, c-format
 msgid "Unicode value (%x) not in font, ignored"
-msgstr "萬國碼值 (%x) 不在字型中，忽略"
+msgstr "Unicode 値 (%x) 不在字型中，忽略之"
 
 msgid "Unicode value not in font"
-msgstr "萬國碼值不在字型中"
+msgstr "Unicode 値不在字型中"
 
 msgid "Unified Canadian Aboriginal Syllabics"
 msgstr "統一的加拿大非原生音節"
@@ -16809,8 +16810,8 @@ msgid ""
 "building accented glyphs."
 msgstr ""
 "建立重音符號字圖時，\n"
-"使用間隔重音符號 (萬國碼：02C0-02FF)\n"
-"而非合併重音符號 (萬國碼：0300-036F)。"
+"使用間隔重音符號 (Unicode：02C0-02FF)\n"
+"而非合併重音符號 (Unicode：0300-036F)。"
 
 msgid ""
 "Use the FreeType rasterizer (when available)\n"
@@ -16848,13 +16849,13 @@ msgid "V"
 msgstr "見"
 
 msgid "VFlex Hint Color"
-msgstr "垂直屈曲修飾顏色"
+msgstr "垂直flex渲調顏色"
 
 msgid "VHead _Column Spacing:"
 msgstr "VHead 欄間隔(_C)："
 
 msgid "VHint Active Color"
-msgstr "垂直修飾現用顏色"
+msgstr "垂直渲調現用顏色"
 
 msgid "VKern By Classes"
 msgstr "依類別垂直微調字距"
@@ -16957,7 +16958,7 @@ msgid "Vert. Construction"
 msgstr "垂直建構"
 
 msgid "Vert. Hint Color"
-msgstr "垂直修飾顏色"
+msgstr "垂直渲調顏色"
 
 #. GT: "Vert." is an abbreviation for Vertical
 msgid "Vert. Variants"
@@ -17144,11 +17145,11 @@ msgstr ""
 
 #, c-format
 msgid "Warning: No characters selected in AddDHint(%d,%d %d,%d %d,%d)\n"
-msgstr "警告：未選任何字元於 AddDHint (%d,%d %d,%d %d,%d) 之中\n"
+msgstr "警告：AddDHint (%d,%d %d,%d %d,%d) 未選中任何字元\n"
 
 #, c-format
 msgid "Warning: No characters selected in AddHint(%d,%d,%d)\n"
-msgstr "警告：未選任何字元於 AddHint (%d,%d,%d) 之中\n"
+msgstr "警告：AddHint (%d,%d,%d) 未選中任何字元\n"
 
 #, c-format
 msgid "Warning: Unable to parse token %s, some features may be lost\n"
@@ -17164,7 +17165,7 @@ msgstr "警告：不合理的大型曲線。它們將被忽略。\n"
 #, c-format
 msgid ""
 "Warning: could not figure out where the hint (%d,%d %d,%d %d,%d) is valid\n"
-msgstr "警告：無法算出修飾 (%d,%d %d,%d %d,%d) 何處有效\n"
+msgstr "警告：無法算出渲調 (%d,%d %d,%d %d,%d) 何處有效\n"
 
 msgid "Warnings"
 msgstr "警告"
@@ -17804,7 +17805,7 @@ msgid "_Add Encoding Slots..."
 msgstr "加入編碼插件(_A)…"
 
 msgid "_Add HHint"
-msgstr "加入 HHint(_A)"
+msgstr "加入水平渲調提示(_A)"
 
 msgid "_Add Selected"
 msgstr "加入已選(_A)"
@@ -17898,7 +17899,7 @@ msgid "_Bottom"
 msgstr "底部(_B)"
 
 msgid "_Bottom hint:"
-msgstr "底部修飾(_B)："
+msgstr "底部渲調(_B)："
 
 msgid "_Bottom:"
 msgstr "底部(_B)："
@@ -17937,7 +17938,7 @@ msgid "_Clear HStem"
 msgstr "清除 HStem(_C)"
 
 msgid "_Clear Hints"
-msgstr "清除修飾(_C)"
+msgstr "清除渲調(_C)"
 
 msgid "_Close"
 msgstr "關閉(_C)"
@@ -17947,6 +17948,9 @@ msgstr "叢集(_C)"
 
 msgid "_Compact"
 msgstr "壓縮(_C)"
+
+msgid "_Compact (hide unused glyphs)"
+msgstr "緊湊（隱藏未使用的字形） (_C)"
 
 msgid "_Condense/Extend..."
 msgstr "緊縮/延展(_C)…"
@@ -18013,7 +18017,7 @@ msgid "_Detach Glyphs"
 msgstr "卸離字圖(_D)"
 
 msgid "_Diagonal Hints"
-msgstr "對角修飾(_D)"
+msgstr "對角渲調(_D)"
 
 msgid "_Display Compositions..."
 msgstr "顯示布局(_D)…"
@@ -18025,7 +18029,7 @@ msgid "_Docked Palettes"
 msgstr "停駐的調色板(_D)"
 
 msgid "_Don't AutoHint"
-msgstr "不自動修飾(_D)"
+msgstr "不自動渲調(_D)"
 
 msgid "_Don't Expand"
 msgstr "不展開(_D)"
@@ -18188,10 +18192,10 @@ msgid "_Hide Unused Columns"
 msgstr "隱藏未使用的欄位(_H)"
 
 msgid "_Hinting Needed"
-msgstr "所需的修飾(_H)"
+msgstr "所需的渲調(_H)"
 
 msgid "_Hints controlling no points"
-msgstr "修飾沒有控制任何點(_H)"
+msgstr "渲調沒有控制任何點(_H)"
 
 msgid "_Histogram"
 msgstr "長條圖"
@@ -18203,7 +18207,7 @@ msgid "_Horizontal Baselines..."
 msgstr "水平基線(_H)…"
 
 msgid "_Horizontal Hints"
-msgstr "水平修飾(_H)"
+msgstr "水平渲調(_H)"
 
 msgid "_IBM Family:"
 msgstr "_IBM 字族："
@@ -18345,7 +18349,7 @@ msgid "_Mono"
 msgstr "定寬(_M)"
 
 msgid "_More hints than:"
-msgstr "更多修飾於(_M)："
+msgstr "渲調多於(_M)："
 
 msgid "_More points than:"
 msgstr "更多點於(_M)："
@@ -18423,7 +18427,7 @@ msgid "_Outline..."
 msgstr "描邊(_O)…"
 
 msgid "_Overlapped hints"
-msgstr "重疊的修飾(_O)"
+msgstr "重疊渲調(_O)"
 
 msgid "_Overview"
 msgstr "概觀(_O)"
@@ -18459,7 +18463,7 @@ msgid "_Points"
 msgstr "點(_P)"
 
 msgid "_Points near¹ hint edges"
-msgstr "點接近¹ 修飾邊緣(_P)"
+msgstr "描點接近¹ 渲調邊緣(_P)"
 
 msgid "_Points too far"
 msgstr "點與點太遠(_P)"
@@ -18543,7 +18547,7 @@ msgid "_Review"
 msgstr "檢閱(_R)"
 
 msgid "_Review Hints..."
-msgstr "檢閱修飾(_R)…"
+msgstr "檢閱渲調(_R)…"
 
 msgid "_Right"
 msgstr "右(_R)"
@@ -18687,7 +18691,7 @@ msgid "_Top"
 msgstr "頂端(_T)"
 
 msgid "_Top hint:"
-msgstr "頂端修飾(_T)："
+msgstr "頂端渲調(_T)："
 
 msgid "_Top:"
 msgstr "頂端(_T)："
@@ -18723,7 +18727,7 @@ msgid "_Undo"
 msgstr "復原(_U)"
 
 msgid "_Unicode"
-msgstr "萬國碼(_U)"
+msgstr "Unicode (_U)"
 
 msgid "_UniqueID:"
 msgstr "_UniqueID："
@@ -18765,7 +18769,7 @@ msgid "_Vertical Baselines..."
 msgstr "垂直基線(_V)…"
 
 msgid "_Vertical Hints"
-msgstr "垂直修飾(_V)"
+msgstr "垂直渲調(_V)"
 
 msgid "_View"
 msgstr "檢視(_V)"
@@ -19084,7 +19088,7 @@ msgid "name table"
 msgstr "名稱表格"
 
 msgid "nohints"
-msgstr "無修飾"
+msgstr "無渲調"
 
 msgid "optical bounds table"
 msgstr "視覺邊界表格"
