@@ -2030,7 +2030,7 @@ static void dumpGSUBsimplesubs(FILE *gsub,SplineFont *sf,struct lookup_subtable 
 	putshort(gsub,1);	/* delta format */
 	coverage_pos = ftell(gsub);
 	putshort(gsub,0);		/* offset to coverage table */
-	putshort(gsub,diff);
+	putshort(gsub,diff & 0xFFFF);
     } else {
 	putshort(gsub,2);		/* glyph list format */
 	coverage_pos = ftell(gsub);
