@@ -831,11 +831,6 @@ static void GQtDrawMove(GWindow w, int32_t x, int32_t y) {
     GQtW(w)->Widget()->move(x, y);
 }
 
-static void GQtDrawTrueMove(GWindow w, int32_t x, int32_t y) {
-    Log(LOGDEBUG, " ");
-    GQtW(w)->Widget()->move(x, y);
-}
-
 static void GQtDrawResize(GWindow w, int32_t width, int32_t height) {
     Log(LOGDEBUG, "%p:%s, %d %d", w, GQtW(w)->Title(), width, height);
     GQtW(w)->Widget()->resize(width, height);
@@ -2343,7 +2338,7 @@ static struct displayfuncs gqtfuncs = {
 
     GQtDrawSetVisible,
     GQtDrawMove,
-    GQtDrawTrueMove,
+    GQtDrawMove, // TrueMove -> Move
     GQtDrawResize,
     GQtDrawMoveResize,
     GQtDrawRaise,
