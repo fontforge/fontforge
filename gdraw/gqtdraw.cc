@@ -28,6 +28,7 @@
 
 #include "gqtdrawP.h"
 #include "ustring.h"
+#include "utype.h"
 
 #include <array>
 #include <assert.h>
@@ -362,14 +363,20 @@ void GQtWidget::keyEvent(QKeyEvent *event, event_type et) {
         gevent.u.chr.keysym = event->key();
         QString text = event->text();
         const QChar* uni = text.unicode();
-        for (size_t i = 0, j = 0; i < text.size() && j< (_GD_EVT_CHRLEN-1); ++i) {
+        size_t unilen = 0;
+        for (size_t i = 0; i < text.size() && unilen < (_GD_EVT_CHRLEN-1); ++i) {
             if (uni[i].isHighSurrogate() && (i+1) < text.size() &&
                 uni[i+1].isLowSurrogate()) {
-                gevent.u.chr.chars[j++] = QChar::surrogateToUcs4(uni[i], uni[i+1]);
+                gevent.u.chr.chars[unilen++] = QChar::surrogateToUcs4(uni[i], uni[i+1]);
                 ++i;
             } else {
-                gevent.u.chr.chars[j++] = uni[i].unicode();
+                gevent.u.chr.chars[unilen++] = uni[i].unicode();
             }
+        }
+
+        // Qt does not distinguish between upper/lower case
+        if (unilen == 1 && tolower(gevent.u.chr.chars[0]) == tolower(gevent.u.chr.keysym)) {
+            gevent.u.chr.keysym = gevent.u.chr.chars[0];
         }
     }
     DispatchEvent(gevent, event);
