@@ -1412,9 +1412,7 @@ static GMenu *_GMenu_Create( GMenuBar* toplevel,
 	else
 	    pos.x = 0;
     }
-    GDrawResize(m->w,pos.width,pos.height);
-    GDrawMove(m->w,pos.x,pos.y);
-
+    GDrawMoveResize(m->w, pos.x, pos.y, pos.width, pos.height);
     GDrawSetVisible(m->w,true);
     if ( menu_grabs )
 	GDrawPointerGrab(m->w);

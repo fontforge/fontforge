@@ -435,8 +435,9 @@ void GQtWidget::mouseEvent(QMouseEvent* event, event_type et) {
 
     gevent.u.mouse.clicks = gdisp->bs.cur_click;
 
+    Log(LOGWARN, "[%p] [%s] Button %7s: [%f %f]",
+        Base(), Title(), gevent.type == et_mousedown ? "press" : "release", (double)gevent.u.mouse.x, (double)gevent.u.mouse.y);
     DispatchEvent(gevent, event);
-    // Log(LOGDEBUG, "Button %7s: [%f %f]", evt->type == GDK_BUTTON_PRESS ? "press" : "release", evt->x, evt->y);
 }
 
 void GQtWidget::wheelEvent(QWheelEvent *event) {
@@ -573,10 +574,9 @@ void GQtWidget::focusEvent(QFocusEvent* event, bool focusIn) {
     DispatchEvent(gevent, event);
 }
 
-void GQtWidget::crossingEvent(QEvent* event, bool enter) {
+void GQtWidget::crossingEvent(QEvent* event, bool enter, const QPoint& pos) {
     // Why QEvent?!?
     GEvent gevent = InitEvent(et_crossing, event);
-    QPoint pos = mapFromGlobal(QCursor::pos());
     GQtDisplay *gdisp = GQtD(gevent.w);
     gevent.u.crossing.x = pos.x();
     gevent.u.crossing.y = pos.y();
@@ -586,6 +586,18 @@ void GQtWidget::crossingEvent(QEvent* event, bool enter) {
     gevent.u.crossing.time = gdisp->last_event_time;
     // Always set to false when crossing boundary...
     gdisp->is_space_pressed = false;
+
+    // For some reason when the window is created wayland sends a cross-in
+    // to the new window, which messes up menu handling
+    // Luckily we can detect this as the coordinates will be outside the window
+    if (gdisp->is_wayland && gevent.u.crossing.x < 0 || gevent.u.crossing.y < 0) {
+        Log(LOGDEBUG, "[%p] [%s] IGNORE crossing @ <%d, %d> [%s]",
+            Base(), Title(), gevent.u.crossing.x, gevent.u.crossing.y, enter ? "IN" : "OUT");
+        return;
+    }
+
+    Log(LOGDEBUG, "[%p] [%s] Crossing @ <%d, %d> [%s]",
+        Base(), Title(), gevent.u.crossing.x, gevent.u.crossing.y, enter ? "IN" : "OUT");
     DispatchEvent(gevent, event);
 }
 
@@ -821,10 +833,10 @@ static int GQtDrawSetDither(GDisplay *UNUSED(gdisp), int UNUSED(set)) {
 
 static void GQtDrawSetVisible(GWindow w, int show) {
     Log(LOGDEBUG, "0x%p %d", w, show);
-    GQtW(w)->Widget()->setVisible((bool)show);
     if (show && w->restrict_input_to_me && GQtW(w)->Widget()->parentWidget() == nullptr) {
         GQtDrawSetTransientFor(w, (GWindow) - 1);
     }
+    GQtW(w)->Widget()->setVisible((bool)show);
 }
 
 static void GQtDrawMove(GWindow w, int32_t x, int32_t y) {
@@ -2445,6 +2457,7 @@ extern "C" GDisplay *_GQtDraw_CreateDisplay(char *displayname, int *argc, char *
     gdisp->groot_base.reset(new GQtWidget(nullptr, Qt::Widget));
     gdisp->groot_base->setAttribute(Qt::WA_QuitOnClose, false);
     gdisp->groot_base->SetTitle("GROOT");
+    gdisp->is_wayland = gdisp->app->platformName() == QStringLiteral("wayland");
 
     for (int i = 0; i < (int)sn_max; ++i) {
         gdisp->selinfo[i].reset(new GQtSelectionInfo());

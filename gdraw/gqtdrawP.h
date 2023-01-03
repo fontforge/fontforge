@@ -236,11 +236,11 @@ public:
     void inputMethodEvent(QInputMethodEvent *event) override;
     QVariant inputMethodQuery(Qt::InputMethodQuery query) const override;
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    void enterEvent(QEnterEvent *event) override { crossingEvent(event, true); }
+    void enterEvent(QEnterEvent *event) override { crossingEvent(event, true, event->position().toPoint()); }
 #else
-    void enterEvent(QEvent *event) override { crossingEvent(event, true); }
+    void enterEvent(QEvent *event) override { crossingEvent(event, true, static_cast<QEnterEvent*>(event)->pos()); }
 #endif
-    void leaveEvent(QEvent *event) override { crossingEvent(event, false); }
+    void leaveEvent(QEvent *event) override { crossingEvent(event, false, mapFromGlobal(QCursor::pos())); }
     void closeEvent(QCloseEvent *event) override;
 
     void keyEvent(QKeyEvent *event, event_type et);
@@ -248,7 +248,7 @@ public:
     void configureEvent(QEvent* event);
     void mapEvent(QEvent* event, bool visible);
     void focusEvent(QFocusEvent* event, bool focusIn);
-    void crossingEvent(QEvent* event, bool enter);
+    void crossingEvent(QEvent* event, bool enter, const QPoint& pos);
 
     void SetICPos(int x, int y);
     GQtWidget* Widget() override { return this; }
@@ -308,6 +308,7 @@ struct GQtDisplay
     std::vector<QCursor> custom_cursors;
     GQtWindow *default_icon = nullptr;
 
+    bool is_wayland = false; // sigh
     bool is_space_pressed = false; // Used for GGDKDrawKeyState. We cheat!
 
     int top_window_count = 0; // The number of toplevel, non-dialogue windows. When this drops to 0, the event loop stops
