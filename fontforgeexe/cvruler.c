@@ -457,12 +457,13 @@ static void RulerPlace(CharView *cv, GEvent *event) {
 
     if ( cv->ruler_w==NULL ) {
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_positioned|wam_nodecor|wam_backcol|wam_bordwidth;
+	wattrs.mask = wam_events|wam_cursor|wam_positioned|wam_nodecor|wam_backcol|wam_bordwidth|wam_transient;
 	wattrs.event_masks = (1<<et_expose)|(1<<et_resize)|(1<<et_mousedown);
 	wattrs.cursor = ct_mypointer;
 	wattrs.background_color = measuretoolwindowbackgroundcol;
 	wattrs.nodecoration = 1;
 	wattrs.border_width = 1;
+	wattrs.transient = cv->gw;
 	pos.x = pos.y = 0; pos.width=pos.height = 20;
 	cv->ruler_w = GWidgetCreateTopWindow(NULL,&pos,ruler_e_h,cv,&wattrs);
 
@@ -530,12 +531,13 @@ static void RulerLingerPlace(CharView *cv, GEvent *event) {
 
     if ( cv->ruler_linger_w==NULL ) {
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_positioned|wam_nodecor|wam_backcol|wam_bordwidth;
+	wattrs.mask = wam_events|wam_cursor|wam_positioned|wam_nodecor|wam_backcol|wam_bordwidth|wam_transient;
 	wattrs.event_masks = (1<<et_expose)|(1<<et_resize)|(1<<et_mousedown);
 	wattrs.cursor = ct_mypointer;
 	wattrs.background_color = measuretoolwindowbackgroundcol;
 	wattrs.nodecoration = 1;
 	wattrs.border_width = 1;
+	wattrs.transient = cv->gw;
 	pos.x = pos.y = 0; pos.width=pos.height = 20;
 	cv->ruler_linger_w = GWidgetCreateTopWindow(NULL,&pos,ruler_linger_e_h,cv,&wattrs);
 
@@ -811,12 +813,13 @@ static void CpInfoPlace(CharView *cv, GEvent *event) {
 
     if ( cv->ruler_w==NULL ) {
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_positioned|wam_nodecor|wam_backcol|wam_bordwidth;
+	wattrs.mask = wam_events|wam_cursor|wam_positioned|wam_nodecor|wam_backcol|wam_bordwidth|wam_transient;
 	wattrs.event_masks = (1<<et_expose)|(1<<et_resize)|(1<<et_mousedown);
 	wattrs.cursor = ct_mypointer;
 	wattrs.background_color = measuretoolwindowbackgroundcol;
 	wattrs.nodecoration = 1;
 	wattrs.border_width = 1;
+	wattrs.transient = cv->gw;
 	pos.x = pos.y = 0; pos.width=pos.height = 20;
 	cv->ruler_w = GWidgetCreateTopWindow(NULL,&pos,cpinfo_e_h,cv,&wattrs);
 
