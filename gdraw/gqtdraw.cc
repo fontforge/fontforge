@@ -2246,10 +2246,10 @@ static void GQtDrawLayoutIndexToPos(GWindow w, int index, GRect *pos) {
 
     auto x1 = line.cursorToX(upos, QTextLine::Leading);
     auto x2 = line.cursorToX(upos+1, QTextLine::Leading);
-    pos->x = x1;
-    pos->width = x2 - x1;
-    pos->y = line.y();
-    pos->height = line.height();
+    pos->x = x1 + 0.5;
+    pos->width = x2 - x1 + 0.5;
+    pos->y = line.y() + 0.5;
+    pos->height = line.height() + 0.5;
 
     Log(LOGDEBUG, "HMM idx=%d pos=%d x=%d y=%d w=%d h=%d",
         index, upos, pos->x, pos->y, pos->width, pos->height);
