@@ -848,7 +848,9 @@ int fontforge_main( int argc, char **argv ) {
     InitImageCache(); // This is in gtextinfo.c. It zeroes imagecache for us.
     atexit(&ClearImageCache); // We register the destructor, which is also in gtextinfo.c.
     GDrawCreateDisplays(display, &argc, &argv);
+#ifndef FONTFORGE_CAN_USE_QT
     atexit(&GDrawDestroyDisplays); // We register the destructor so that it runs even if we call exit without finishing this function.
+#endif
     default_background = GDrawGetDefaultBackground(screen_display);
     InitToolIconClut(default_background);
     InitToolIcons();
