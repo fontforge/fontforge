@@ -48,6 +48,7 @@ static const QMetaEnum sEventType = QMetaEnum::fromType<QEvent::Type>();
 static const QString sUtf8String(QStringLiteral("UTF8_STRING"));
 static const QString sString(QStringLiteral("STRING"));
 static const QString sTextPlain(QStringLiteral("text/plain"));
+static const QString sTextPlainUtf8(QStringLiteral("text/plain;charset=UTF-8"));
 
 // Forward declarations
 static void GQtDrawCancelTimer(GTimer *timer);
@@ -1155,7 +1156,11 @@ static void *GQtDrawRequestSelection(GWindow w, enum selnames sn, char *type_nam
         return nullptr;
     }
 
-    QByteArray arr = data->data(QLatin1String(type_name));
+    QString typestr{QLatin1String(type_name)};
+    if (typestr == sTextPlainUtf8) {
+        typestr = sTextPlain;
+    }
+    QByteArray arr = data->data(typestr);
     if (arr.isEmpty()) {
         return nullptr;
     }
@@ -1179,7 +1184,11 @@ static int GQtDrawSelectionHasType(GWindow w, enum selnames sn, char *type_name)
     QClipboard::Mode mode = (QClipboard::Mode)(1 - (int)sn);
     QClipboard *cb = gdisp->app->clipboard();
     const QMimeData *data = cb->mimeData(mode);
-    return data && data->hasFormat(QLatin1String(type_name));
+    QString typestr{QLatin1String(type_name)};
+    if (typestr == sTextPlainUtf8) {
+        typestr = sTextPlain;
+    }
+    return data && data->hasFormat(typestr);
 }
 
 static void GQtDrawBindSelection(GDisplay *disp, enum selnames sn, char *atomname) {
