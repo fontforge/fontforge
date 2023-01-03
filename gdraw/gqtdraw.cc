@@ -61,6 +61,23 @@ static void GQtDrawSetWindowBackground(GWindow w, Color gcol);
 static void GQtDrawSetWindowTitles8(GWindow w, const char *title, const char *UNUSED(icontitle));
 static QFont GQtDrawGetFont(GDisplay *gdisp, GFont *font);
 
+// Until the most recent version of wayland, it is literally impossible to
+// move an already existing popup (see also: xdg_popup::reposition)
+// From what I gather, positioning is done here in Qt:
+// https://github.com/qt/qtwayland/blob/f8c8a06f08583a48e953fc989241b94325760618/src/plugins/shellintegration/xdg-shell/qwaylandxdgshell.cpp#L457
+// Maybe in the future this can be done otherwise but for now the only way
+// to move a popup is to recreate it.
+template<typename T>
+static inline void WaylandPopupMoveFixup(GWindow w, T&& f)
+{
+    f();
+    if (w->is_popup && GQtD(w)->is_wayland && GQtW(w)->Widget()->isVisible()) {
+        GQtW(w)->Widget()->setVisible(false);
+        GQtW(w)->Widget()->setVisible(true);
+    }
+}
+
+
 static QColor ToQColor(Color col) {
     if (COLOR_ALPHA(col) == 0) {
         col |= 0xff000000;
@@ -841,7 +858,7 @@ static void GQtDrawSetVisible(GWindow w, int show) {
 
 static void GQtDrawMove(GWindow w, int32_t x, int32_t y) {
     Log(LOGDEBUG, "%p:%s, %d %d", w, GQtW(w)->Title(), x, y);
-    GQtW(w)->Widget()->move(x, y);
+    WaylandPopupMoveFixup(w, [&]{GQtW(w)->Widget()->move(x, y);});
 }
 
 static void GQtDrawResize(GWindow w, int32_t width, int32_t height) {
@@ -851,7 +868,7 @@ static void GQtDrawResize(GWindow w, int32_t width, int32_t height) {
 
 static void GQtDrawMoveResize(GWindow w, int32_t x, int32_t y, int32_t width, int32_t height) {
     Log(LOGDEBUG, "%p:%s, %d %d %d %d", w, GQtW(w)->Title(), x, y, width, height);
-    GQtW(w)->Widget()->setGeometry(x, y, width, height);
+    WaylandPopupMoveFixup(w, [&]{GQtW(w)->Widget()->setGeometry(x, y, width, height);});
 }
 
 static void GQtDrawRaise(GWindow w) {
