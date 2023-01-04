@@ -405,8 +405,9 @@ void GQtWidget::mouseEvent(QMouseEvent* event, event_type et) {
     GEvent gevent = InitEvent(et, event);
     gevent.u.mouse.state = _GQtDraw_QtModifierToKsm(event->modifiers());
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    gevent.u.mouse.x = event->position().x();
-    gevent.u.mouse.y = event->position().y();
+    auto pos = event->position().toPoint();
+    gevent.u.mouse.x = pos.x();
+    gevent.u.mouse.y = pos.y();
 #else
     gevent.u.mouse.x = event->x();
     gevent.u.mouse.y = event->y();
@@ -463,8 +464,9 @@ void GQtWidget::wheelEvent(QWheelEvent *event) {
 
     gevent.u.mouse.state = _GQtDraw_QtModifierToKsm(event->modifiers());
 #if QT_VERSION >= QT_VERSION_CHECK(5, 14, 0)
-    gevent.u.mouse.x = event->position().x();
-    gevent.u.mouse.y = event->position().y();
+    auto pos = event->position().toPoint();
+    gevent.u.mouse.x = pos.x();
+    gevent.u.mouse.y = pos.y();
 #else
     gevent.u.mouse.x = event->x();
     gevent.u.mouse.y = event->y();
@@ -487,8 +489,9 @@ void GQtWidget::mouseMoveEvent(QMouseEvent *event) {
     GEvent gevent = InitEvent(et_mousemove, event);
     gevent.u.mouse.state = _GQtDraw_QtModifierToKsm(event->modifiers());
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    gevent.u.mouse.x = event->position().x();
-    gevent.u.mouse.y = event->position().y();
+    auto pos = event->position().toPoint();
+    gevent.u.mouse.x = pos.x();
+    gevent.u.mouse.y = pos.y();
 #else
     gevent.u.mouse.x = event->x();
     gevent.u.mouse.y = event->y();
@@ -2507,6 +2510,8 @@ extern "C" GDisplay *_GQtDraw_CreateDisplay(char *displayname, int *argc, char *
     ret->groot->pos.height = screenGeom.height();
     ret->groot->is_toplevel = true;
     ret->groot->is_visible = true;
+
+    gdisp->app->setDesktopFileName(QStringLiteral("org.fontforge.FontForge.desktop"));
 
     _GDraw_InitError(ret);
     return ret;
