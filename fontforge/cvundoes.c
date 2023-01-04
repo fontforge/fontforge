@@ -2119,6 +2119,9 @@ static const char* SCGetPasteableClipboardType(int* type) {
         "image/png",
 #endif
         "image/bmp",
+#ifdef FONTFORGE_CAN_USE_QT
+        "application/x-qt-image",
+#endif
         NULL
     };
 
@@ -2155,6 +2158,18 @@ static void SCCheckXClipboard(SplineChar *sc,int layer,int doclear) {
     paste = ClipboardRequest(mime, &len);
     if ( paste==NULL )
 return;
+
+#ifdef FONTFORGE_CAN_USE_QT
+#ifndef _NO_LIBPNG
+    if (type == 8) {
+#else
+    if (type == 7) {
+#endif
+    image = (GImage*)paste;
+    SCAddScaleImage(sc,image,doclear,layer,ImportParamsState());
+    return;
+}
+#endif
 
     temp = GFileTmpfile();
     if ( temp!=NULL ) {

@@ -1,4 +1,4 @@
-/* Copyright (C) 2016-2022 by Jeremy Tan */
+/* Copyright (C) 2016-2023 by Jeremy Tan */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -49,6 +49,7 @@ static const QString sUtf8String(QStringLiteral("UTF8_STRING"));
 static const QString sString(QStringLiteral("STRING"));
 static const QString sTextPlain(QStringLiteral("text/plain"));
 static const QString sTextPlainUtf8(QStringLiteral("text/plain;charset=UTF-8"));
+static const QString sImage(QStringLiteral("application/x-qt-image"));
 
 // Forward declarations
 static void GQtDrawCancelTimer(GTimer *timer);
@@ -60,6 +61,7 @@ static void GQtDrawSetTransientFor(GWindow transient, GWindow owner);
 static void GQtDrawSetWindowBackground(GWindow w, Color gcol);
 static void GQtDrawSetWindowTitles8(GWindow w, const char *title, const char *UNUSED(icontitle));
 static QFont GQtDrawGetFont(GDisplay *gdisp, GFont *font);
+static GImage* _GQtDraw_QImage2GImage(QImage image);
 
 // Until the most recent version of wayland, it is literally impossible to
 // move an already existing popup (see also: xdg_popup::reposition)
@@ -894,8 +896,10 @@ static char *GQtDrawGetWindowTitle8(GWindow w) {
 
 static void GQtDrawSetTransientFor(GWindow transient, GWindow owner) {
     Log(LOGDEBUG, "transient=%p, owner=%p", transient, owner);
-    if (owner == (GWindow)-1) {
-        auto* aw = dynamic_cast<GQtWidget*>(GQtD(transient)->app->activeWindow());
+    if (owner == (GWindow)-1 || (owner && !owner->is_toplevel)) {
+        auto* aw = (owner == (GWindow)-1) ?
+            dynamic_cast<GQtWidget*>(GQtD(transient)->app->activeWindow()) :
+            GQtW(owner)->Widget();
         while (aw && (!aw->Base()->is_toplevel || aw->Base()->istransient)) {
             aw = dynamic_cast<GQtWidget*>(aw->parentWidget());
         }
@@ -1191,6 +1195,15 @@ static void *GQtDrawRequestSelection(GWindow w, enum selnames sn, char *type_nam
     QString typestr{QLatin1String(type_name)};
     if (typestr == sTextPlainUtf8) {
         typestr = sTextPlain;
+    } else if (typestr == sImage) {
+        if (!data->hasImage()) {
+            return nullptr;
+        }
+        GImage* ret = _GQtDraw_QImage2GImage(qvariant_cast<QImage>(data->imageData()));
+        if (len != nullptr) {
+            *len = sizeof(GImage);
+        }
+        return ret;
     }
     QByteArray arr = data->data(typestr);
     if (arr.isEmpty()) {
@@ -1466,6 +1479,23 @@ static QBrush GQtDraw_StippleMePink(int ts, Color fg) {
     QBrush brush((ts == 2) ? Qt::Dense5Pattern : Qt::Dense4Pattern);
     brush.setColor(fg);
     return brush;
+}
+
+static GImage* _GQtDraw_QImage2GImage(QImage image) {
+    image = image.convertToFormat(QImage::Format_ARGB32);
+
+    GImage* ret = (GImage*)calloc(1, sizeof(GImage));
+    struct _GImage* base = (struct _GImage*)calloc(1, sizeof(struct _GImage));
+
+    ret->u.image = base;
+    base->image_type = it_rgba;
+    base->width = image.width();
+    base->height = image.height();
+    base->bytes_per_line = image.bytesPerLine();
+    base->data = (uint8_t*)malloc(base->height * base->bytes_per_line);
+    memcpy(base->data, image.constBits(), base->height * base->bytes_per_line);
+
+    return ret;
 }
 
 static QImage _GQtDraw_GImage2QImage(GImage *image, GRect *src) {

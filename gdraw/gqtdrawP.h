@@ -1,4 +1,4 @@
-/* Copyright (C) 2022 by Jeremy Tan */
+/* Copyright (C) 2022-2023 by Jeremy Tan */
 /*
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
