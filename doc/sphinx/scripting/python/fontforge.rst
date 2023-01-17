@@ -454,7 +454,7 @@ example they might want to ask more than one question in a dialog, and I don't
 support that).
 
 When FontForge starts (if it's a FontForge with python) it will look at the
-directories ``$(PREFIX)/share/fontforge/python`` and ``~/.FontForge/python``
+directories ``$(PREFIX)/share/fontforge/python`` and ``~/.config/fontforge/python``
 and attempt to run all files in those directories which end in ``".py"``.
 Presumably these files will allow people to customize the user interface to
 suit their needs.
