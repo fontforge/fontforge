@@ -20709,7 +20709,6 @@ static struct psaltnames psaltnames[] = {
 	{ "circlecopyrt", 0xa9, 0 },
 	{ "smile", 0x263a, 0 },
 	{ "Ifractur", 0x2111, 0 },
-	{ "Rfractur", 0x211C, 0 },
 	{ "Omegainv", 0x2127, 0 },
 	{ "mho", 0x2127, 0 },
 	{ "alephmath", 0x2135, 0 },
