@@ -16808,6 +16808,7 @@ static PyObject *PyFFFont_GenerateTTC(PyFF_Font *self, PyObject *args, PyObject 
     if ( CheckIfFontClosed(self) )
 return(NULL);
     fv = self->fv;
+    layer = fv->active_layer;
 
     if ( !PyArg_ParseTupleAndKeywords(args, keywds, "sO|sOOsi", (char **)genttc_keywords,
 	    &filename, &others, &bitmaptype, &flags, &ttcflags,
