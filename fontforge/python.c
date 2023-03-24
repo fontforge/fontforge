@@ -12968,7 +12968,7 @@ static int PyFF_Font_set_os2codepages(PyFF_Font *self,PyObject *value, void *UNU
     if ( CheckIfFontClosed(self) )
 return (-1);
     sf = self->fv->sf;
-    if ( value == NULL ) {
+    if ( value == Py_None ) {
         sf->pfminfo.hascodepages = false;
 return( 0 );
     }
@@ -12999,7 +12999,7 @@ static int PyFF_Font_set_os2unicoderanges(PyFF_Font *self,PyObject *value, void 
     if ( CheckIfFontClosed(self) )
 return (-1);
     sf = self->fv->sf;
-    if ( value == NULL ) {
+    if ( value == Py_None ) {
         sf->pfminfo.hasunicoderanges = false;
 return( 0 );
     }
