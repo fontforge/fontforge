@@ -2348,7 +2348,7 @@ static FOND *BuildFondList(FILE *f,long rlistpos,int subcnt,long rdata_pos,
 		cur->stylewidths[j].style = getushort(f);
 		cur->stylewidths[j].widthtab = malloc((cur->last-cur->first+3)*sizeof(short));
 		for ( k=cur->first; k<=cur->last+2; ++k )
-		    cur->stylewidths[j].widthtab[k] = getushort(f);
+		    cur->stylewidths[j].widthtab[k-cur->first] = getushort(f);
 	    }
 	}
 	if ( kernoff!=0 && (flags&ttf_onlykerns) ) {
