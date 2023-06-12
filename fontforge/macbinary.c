@@ -2395,13 +2395,13 @@ static FOND *BuildFondList(FILE *f,long rlistpos,int subcnt,long rdata_pos,
 	    continue;		/* this style doesn't exist */
 		format = stringoffsets[j]-1;
 		stringlen = strings[0][0];
-		if ( format!=0 )
+		if ( format>0 )
 		    for ( k=0; k<strings[format][0]; ++k )
 			stringlen += strings[ strings[format][k+1]-1 ][0];
 		pt = cur->psnames[j] = malloc(stringlen+1);
 		strcpy(pt,strings[ 0 ]+1);
 		pt += strings[ 0 ][0];
-		if ( format!=0 )
+		if ( format>0 )
 		    for ( k=0; k<strings[format][0]; ++k ) {
 			strcpy(pt,strings[ strings[format][k+1]-1 ]+1);
 			pt += strings[ strings[format][k+1]-1 ][0];
