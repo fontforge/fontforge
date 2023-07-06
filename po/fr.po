@@ -291,7 +291,7 @@ msgstr "chaîne %1$.30s pour %2$.30s"
 #. GT: $4 is the changed flag ('*' for the changed items)
 #, c-format
 msgid "%1$.80s at %2$d from %3$.90s%4$s"
-msgstr "%1$.80s à %2$d de %3$.90hs%4$s"
+msgstr "%1$.80s à %2$d de %3$.90s%4$s"
 
 #. GT: This is the title for a window showing a bitmap character
 #. GT: It will look something like:
@@ -302,7 +302,7 @@ msgstr "%1$.80s à %2$d de %3$.90hs%4$s"
 #. GT: $4 is the font name
 #, c-format
 msgid "%1$.80s at %2$d size %3$d from %4$.80s"
-msgstr "%1$.80s (%2$d) taille %3$d de %4$.80hs"
+msgstr "%1$.80s (%2$d) taille %3$d de %4$.80s"
 
 #, c-format
 msgid "%1$s from lookup subtable %2$.50s"
@@ -7433,7 +7433,7 @@ msgid ""
 "Reverting the file will lose those changes.\n"
 "Is that what you want?"
 msgstr ""
-"La fonte %1$.40s dans le fichier %2$.40hs a été modifiée.\n"
+"La fonte %1$.40s dans le fichier %2$.40s a été modifiée.\n"
 "Revenir vous fera perdre toutes les modifications.\n"
 "Voulez vous vraiment revenir ?"
 
@@ -19925,7 +19925,7 @@ msgid ""
 "The fonts %1$.30s and %2$.30s have a different number of glyphs or different "
 "encodings"
 msgstr ""
-"Les fontes %1$.30s et %2$.30hs n'ont pas le même nombre de glyphes ou des "
+"Les fontes %1$.30s et %2$.30s n'ont pas le même nombre de glyphes ou des "
 "codages différents"
 
 #, c-format
@@ -19933,7 +19933,7 @@ msgid ""
 "The fonts %1$.30s and %2$.30s use different types of splines (one quadratic, "
 "one cubic)"
 msgstr ""
-"Les fontes %1$.30s et %2$.30hs utilisent des courbes de Bézier d'ordres "
+"Les fontes %1$.30s et %2$.30s utilisent des courbes de Bézier d'ordres "
 "différents (quadratique et cubique)"
 
 msgid "The generated font won't work with ATM"
@@ -19968,8 +19968,8 @@ msgid ""
 "The glyph %1$.30s in font %2$.30s has a different hint mask on its contours "
 "than in %3$.30s"
 msgstr ""
-"Le glyphe %1$.30s dans la police %2$.30hs a un masque de hints différent que "
-"dans %3$.30hs"
+"Le glyphe %1$.30s dans la police %2$.30s a un masque de hints différent que "
+"dans %3$.30s"
 
 #, c-format
 msgid ""
@@ -19984,8 +19984,8 @@ msgid ""
 "The glyph %1$.30s in font %2$.30s has a different number of references than "
 "in %3$.30s"
 msgstr ""
-"Le glyphe %1$.30s de la fonte %2$.30hs a un nombre de références différent "
-"dans %3$.30hs"
+"Le glyphe %1$.30s de la fonte %2$.30s a un nombre de références différent "
+"dans %3$.30s"
 
 #, c-format
 msgid ""
@@ -20457,7 +20457,7 @@ msgstr ""
 #, c-format
 msgid "The outlines of glyph %2$.30s were not found in the font %1$.60s"
 msgstr ""
-"Le contours du glyphe %2$.30s n'ont pas été trouvés dans la police %1$.60hs"
+"Le contours du glyphe %2$.30s n'ont pas été trouvés dans la police %1$.60s"
 
 msgid "The paths that make up this glyph intersect one another"
 msgstr "Les chemins qui composent ce glyphe se coupent les uns les autres"
@@ -21042,7 +21042,7 @@ msgstr "Il y a déjà une sous-table avec ce nom, changez de nom SVP"
 
 #, c-format
 msgid "There is already an anchor point named %1$.40s in %2$.40s."
-msgstr "Il y a déjà une ancre appelée %1$.40s dans %2$.40hs."
+msgstr "Il y a déjà une ancre appelée %1$.40s dans %2$.40s."
 
 msgid "There is another glyph in the font with this name"
 msgstr "Il y a un autre glyphe dans la fonte avec ce nom"
@@ -21441,8 +21441,8 @@ msgid ""
 "been able to find is %1$.20s-%2$.20s-%4$d.\n"
 "Shall I use that or let you search?"
 msgstr ""
-"Cette fonte est basée sur le jeu de caractères %1$.20s-%2$.20hs-%3$d, mais "
-"ce que j'ai trouvé de mieux c'est %1$.20hs-%2$.20hs-%4$d.\n"
+"Cette fonte est basée sur le jeu de caractères %1$.20s-%2$.20s-%3$d, mais "
+"ce que j'ai trouvé de mieux c'est %1$.20s-%2$.20s-%4$d.\n"
 "Devrais-je utiliser cette valeur ou préférez vous chercher ?"
 
 msgid ""
@@ -21770,7 +21770,7 @@ msgid ""
 "with a 0 offset for this combination. Would you like to alter this kerning "
 "class entry (or create a kerning pair for just these two glyphs)?"
 msgstr ""
-"Cette paire de crénage (%.20s et %.20hs) est dans une classe de crénage\n"
+"Cette paire de crénage (%.20s et %.20s) est dans une classe de crénage\n"
 "avec un déplacement de 0 pour cette combinaison. Voulez-vous modifier cette "
 "partie\n"
 "de la classe de crénage (ou créer une nouvelle paire rien que pour ces 2 "
@@ -24551,8 +24551,8 @@ msgid ""
 "referred to.\n"
 "It will not be copied."
 msgstr ""
-"Vous essayer de coller une référence vers %1$s dans %2$hs.\n"
-"Mais %1$hs n'existe pas dans cette fonte, et FontForge ne trouve pas le "
+"Vous essayer de coller une référence vers %1$s dans %2$s.\n"
+"Mais %1$s n'existe pas dans cette fonte, et FontForge ne trouve pas le "
 "glyphe auquel il se référait.\n"
 "Le glyphe ne sera pas copié."
 
@@ -24562,8 +24562,8 @@ msgid ""
 "But %1$s does not exist in this font.\n"
 "Would you like to copy the original splines (or delete the reference)?"
 msgstr ""
-"Vous essayer de coller une référence vers %1$s dans %2$hs.\n"
-"Mais %1$hs n'existe pas dans cette fonte.\n"
+"Vous essayer de coller une référence vers %1$s dans %2$s.\n"
+"Mais %1$s n'existe pas dans cette fonte.\n"
 "Voulez vous copier le contour d'origine (ou supprimer la référence)?"
 
 msgid ""
