@@ -3011,9 +3011,9 @@ void SplinePointHarmonize(SplinePoint *sp) {
 			n = fabs(BPCross(tangentunit,BPSub(sp->next->to->me,sp->me)));
 		else
 			n = fabs(BPCross(tangentunit,BPSub(sp->next->to->prevcp,sp->me)));
-		if ( p == n ) sp->me = BPAvg(sp->nextcp,sp->prevcp);
-		else {
-			bigreal t = (p-sqrt(p*n))/(p-n);
+		if ( p!=0 && n!=0 ) { /* avoid zero handles and also div/0 */
+			p = sqrt(p);
+			bigreal t = p/(p+sqrt(n));
 			sp->me = BPAdd(BPScale(sp->prevcp,1-t),BPScale(sp->nextcp,t));
 		}
 		SplineRefigure(sp->prev);
