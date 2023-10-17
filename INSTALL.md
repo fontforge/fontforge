@@ -17,7 +17,7 @@ mkdir build
 cd build
 cmake -GNinja ..
 ninja
-ninja install
+sudo ninja install
 ```
 
 For even more details on the build system itself, see [this wiki page](https://github.com/fontforge/fontforge/wiki/CMake-guide-for-FontForge).
@@ -54,7 +54,7 @@ If your system comes with a package manager, use it.
 It makes installing these libraries easier.
 
 Most of these are not required for the proper compilation/execution of FontForge, if the libraries are not present they will not be used.
-(If the machine on which your executable was build didn't have them, then you must not only install the libraries, but also **rebuild FontForge from source**. 
+(If the machine on which your executable was built didn't have them, then you must not only install the libraries, but also **rebuild FontForge from source**. 
 If your machine doesn't have them and you want them they are available from:
 
 -   Image Libraries (to allow FontForge to import images in those
@@ -74,10 +74,10 @@ If your machine doesn't have them and you want them they are available from:
     It used to be disabled by default because of some [patents granted to Apple](http://freetype.org/patents.html).
     Now that they have expired, you no longer need to worry about this, unless your setup happens to use an old library version.
     Then you may enable the interpreter by setting the appropriate macro in `*.../include/freetype/config/ftoption.h*` before you build the library (see the README.UNX file on the top level of the freetype distribution).
-    To enable the truetype debugger, FontForge needs to have the freetype source directories available when it is built (there are some include files there which it depends on.)
--   libintl Is standard on most unixes. It is part of the fink package on the mac. Handles UI localization.
+    To enable the truetype debugger, FontForge needs to have the freetype source directories available when it is built (there are some included files there which it depends on).
+-   libintl Is standard on most Unixes. It is part of the fink package on the Mac. Handles UI localization.
 -   [libpython](http://www.python.org/) If present when FontForge is compiled, allows the user to execute python scripts within FontForge (and you can configure FontForge so that FontForge's functionality can be imported into python -- that is FontForge both *extends* and *embeds* python)
 -   [libX](http://x.org/) Normally FontForge depends on the X11 windowing system, but if you are just interested in the scripting engines (with no user interface), it may be built on systems without X (the configure script should figure this out).
--   [libcairo](http://www.cairographics.org/) Cairo handles drawing anti-aliased splines in the outline glyph view. It is dependent on libfontconfig, libXft and perhaps other libraries.
+-   [libcairo](http://www.cairographics.org/) Cairo handles drawing anti-aliased splines in the outline glyph view. It is dependent on libfontconfig, libXft, and perhaps other libraries.
 -   [libpango](http://www.pango.org/) Pango draws text for complex scripts. It depends on glib-2.0, libfontconfig, libfreetype, libXft, and perhaps other libraries.
 -   [Unifont](http://savannah.gnu.org/projects/unifont) includes glyphs for all Unicode codepoints, and FontForge will use it if it is installed.
