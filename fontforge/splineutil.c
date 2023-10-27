@@ -3014,7 +3014,7 @@ SplineFont *SplineFontFromPSFont(FontDict *fd) {
 	SplineFontMetaData(sf,fd);
 	if ( fd->wascff ) {
 	    SplineFontFree(sf);
-	    sf = fd->sf;
+return ( NULL );
 	} else if ( fd->fdcnt!=0 )
 	    sf = SplineFontFromCIDType1(sf,fd,&pscontext);
 	else if ( fd->weightvector!=NULL )
