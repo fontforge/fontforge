@@ -40,6 +40,7 @@
 
 #include <assert.h>
 #include <math.h>
+#include <gtk/gtk.h>
 
 // HACK HACK HACK
 #ifdef GDK_WINDOWING_WIN32
@@ -895,6 +896,11 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
         return;
     } else if ((gw = g_object_get_data(G_OBJECT(w), "GGDKWindow")) == NULL) {
         //Log(LOGDEBUG, "MISSING GW!");
+
+        // TODO: rework this hack to integrate better into event loop
+        //  (atm GTK is just snuffling up any events ignored by gdraw)
+        gtk_main_do_event(event);
+
         return;
     } else if (_GGDKDraw_WindowOrParentsDying(gw) || gdk_window_is_destroyed(w)) {
         Log(LOGDEBUG, "DYING! %p", w);
