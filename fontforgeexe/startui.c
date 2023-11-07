@@ -51,6 +51,8 @@
 #include <time.h>
 #include <unistd.h>
 
+void gtk_init(int* argc, char*** argv);
+
 #if defined(__MINGW32__)
 #include <windows.h>
 #define sleep(n) Sleep(1000 * (n))
@@ -818,7 +820,7 @@ int fontforge_main( int argc, char **argv ) {
     }
 #ifdef FONTFORGE_CAN_USE_GDK
     gdk_set_allowed_backends("win32,quartz,x11");
-    gdk_init(&argc, &argv);
+    gtk_init(&argc, &argv);
 #endif
     ensureDotFontForgeIsSetup();
 #if defined(__MINGW32__) && !defined(_NO_LIBCAIRO)
