@@ -949,7 +949,7 @@ extern void PI_ShowHints(SplineChar *sc, GGadget *list, int set);
 extern GTextInfo *SCHintList(SplineChar *sc,HintMask *);
 extern void CVResize(CharView *cv );
 extern CharView *CharViewCreate(SplineChar *sc,FontView *fv,int enc);
-extern void CharViewFinishNonStatic();
+extern void CharViewFinishNonStatic(void);
 
 /**
  * Extended version of CharViewCreate() which allows a window to be created but
@@ -1075,7 +1075,7 @@ extern int GotoChar(SplineFont *sf,EncMap *map, int *merge_with_selection);
 
 extern void CVShowPoint(CharView *cv, BasePoint *me);
 
-extern void BitmapViewFinishNonStatic();
+extern void BitmapViewFinishNonStatic(void);
 extern BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv,int enc);
 extern BitmapView *BitmapViewCreatePick(int enc, FontView *fv);
 extern void BitmapViewFree(BitmapView *bv);
@@ -1091,7 +1091,7 @@ extern void MVSetSCs(MetricsView *mv, SplineChar **scs);
 extern void MVRefreshChar(MetricsView *mv, SplineChar *sc);
 extern void MVRegenChar(MetricsView *mv, SplineChar *sc);
 extern void MVReKern(MetricsView *mv);
-extern void MetricsViewFinishNonStatic();
+extern void MetricsViewFinishNonStatic(void);
 extern MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf);
 extern void MetricsViewFree(MetricsView *mv);
 extern void MVRefreshAll(MetricsView *mv);
@@ -1313,7 +1313,7 @@ extern void CVColInit( void );
 extern void BVColInit( void );
 
 extern void FontViewRemove(FontView *fv);
-extern void FontViewFinishNonStatic();
+extern void FontViewFinishNonStatic(void);
 extern void FVChar(FontView *fv,GEvent *event);
 extern void FVDrawInfo(FontView *fv,GWindow pixmap,GEvent *event);
 extern void FVRedrawAllCharViews(FontView *fv);
