@@ -311,10 +311,12 @@ static int run_pyhook_systest(ArgData *args, gchar **argv) {
 #ifdef G_OS_WIN32
     char *path = g_strconcat(args->exedir, G_SEARCHPATH_SEPARATOR_S, g_getenv("PATH"), NULL);
     g_setenv("PATH", path, TRUE);
+    printf("Pyhook PATH %s\n", path);
     g_free(path);
 #endif
 
     g_setenv("PYTHONPATH", args->libdir, TRUE);
+    printf("Pyhook PYTHONPATH %s\n", args->libdir);
 
     g_ptr_array_add(test_args, args->binary);
     g_ptr_array_add(test_args, "-Ss");
