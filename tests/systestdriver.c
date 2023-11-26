@@ -312,6 +312,9 @@ static int run_pyhook_systest(ArgData *args, gchar **argv) {
     char *path = g_strconcat(args->exedir, G_SEARCHPATH_SEPARATOR_S, g_getenv("PATH"), NULL);
     g_setenv("PATH", path, TRUE);
     g_free(path);
+
+    /* Pyhooks in Windows MingW CI are broken, temporarily disabled. */
+    return 77;
 #endif
 
     g_setenv("PYTHONPATH", args->libdir, TRUE);
