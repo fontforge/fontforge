@@ -284,7 +284,7 @@ msgstr "chaîne %1$.30s pour %2$.30s"
 
 #. GT: This is the title for a window showing an outline character
 #. GT: It will look something like:
-#. GT:  exclam at 33 from Arial
+#. GT:   exclam at 33 from Arial
 #. GT: $1 is the name of the glyph
 #. GT: $2 is the glyph's encoding
 #. GT: $3 is the font name
