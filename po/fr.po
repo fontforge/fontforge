@@ -284,7 +284,7 @@ msgstr "chaîne %1$.30s pour %2$.30s"
 
 #. GT: This is the title for a window showing an outline character
 #. GT: It will look something like:
-#. GT:   exclam at 33 from Arial
+#. GT:  exclam at 33 from Arial
 #. GT: $1 is the name of the glyph
 #. GT: $2 is the glyph's encoding
 #. GT: $3 is the font name
@@ -19933,7 +19933,7 @@ msgid ""
 "The fonts %1$.30s and %2$.30s use different types of splines (one quadratic, "
 "one cubic)"
 msgstr ""
-"Les fontes %1$.30s et %2$.30hs utilisent des courbes de Bézier d'ordres "
+"Les fontes %1$.30s et %2$.30s utilisent des courbes de Bézier d'ordres "
 "différents (quadratique et cubique)"
 
 msgid "The generated font won't work with ATM"
@@ -19968,8 +19968,8 @@ msgid ""
 "The glyph %1$.30s in font %2$.30s has a different hint mask on its contours "
 "than in %3$.30s"
 msgstr ""
-"Le glyphe %1$.30s dans la police %2$.30hs a un masque de hints différent que "
-"dans %3$.30hs"
+"Le glyphe %1$.30s dans la police %2$.30s a un masque de hints différent que "
+"dans %3$.30s"
 
 #, c-format
 msgid ""
@@ -19984,8 +19984,8 @@ msgid ""
 "The glyph %1$.30s in font %2$.30s has a different number of references than "
 "in %3$.30s"
 msgstr ""
-"Le glyphe %1$.30s de la fonte %2$.30hs a un nombre de références différent "
-"dans %3$.30hs"
+"Le glyphe %1$.30s de la fonte %2$.30s a un nombre de références différent "
+"dans %3$.30s"
 
 #, c-format
 msgid ""
