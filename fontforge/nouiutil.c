@@ -42,10 +42,14 @@ static void NOUI_IError(const char *format,...) {
     fprintf(stderr, "Internal Error: " );
     vsnprintf(buffer,sizeof(buffer),format,ap);
     str = utf82def_copy(buffer);
-    fprintf(stderr,"%s",str);
-    if ( str[strlen(str)-1]!='\n' )
-	putc('\n',stderr);
-    free(str);
+    if (NULL != str) {
+        fprintf(stderr,"%s",str);
+        if ( str[strlen(str)-1]!='\n' )
+        putc('\n',stderr);
+        free(str);
+    } else {
+        fprintf(stderr, "utf82def_copy failure!\n");
+    }
     va_end(ap);
 }
 
@@ -53,10 +57,14 @@ static void NOUI__LogError(const char *format,va_list ap) {
     char buffer[400], *str;
     vsnprintf(buffer,sizeof(buffer),format,ap);
     str = utf82def_copy(buffer);
-    fprintf(stderr,"%s",str);
-    if ( str[strlen(str)-1]!='\n' )
-	putc('\n',stderr);
-    free(str);
+    if (NULL != str) {
+        fprintf(stderr,"%s",str);
+        if ( str[strlen(str)-1]!='\n' )
+        putc('\n',stderr);
+        free(str);
+    } else {
+        fprintf(stderr, "utf82def_copy failure!\n");
+    }
 }
 
 static void NOUI_LogError(const char *format,...) {
