@@ -45,6 +45,6 @@ export PATH=$(readlink -f ./squashfs-root/usr/bin):$PATH
 rm $APPDIR/AppRun
 install -m 755 $SCRIPT_BASE/../../../Packaging/AppDir/AppRun $APPDIR/AppRun # custom AppRun
 ARCH=x86_64 ./squashfs-root/usr/bin/appimagetool -g $APPDIR/
-find $APPDIR -executable -type f -exec ldd {} \; | grep " => /usr" | cut -d " " -f 2-3 | sort | uniq
+find $APPDIR -executable -type f -exec ldd {} \; | grep " => /lib" | cut -d " " -f 2-3 | sort | uniq
 
 mv FontForge*.AppImage FontForge-$(date +%Y-%m-%d)-$VERSION-x86_64.AppImage
