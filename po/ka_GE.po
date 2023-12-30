@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-12-30 03:08-0800\n"
-"PO-Revision-Date: 2023-12-30 08:15\n"
+"PO-Revision-Date: 2023-12-30 11:56\n"
 "Last-Translator: \n"
 "Language-Team: Georgian\n"
 "Language: ka_GE\n"
@@ -1622,7 +1622,7 @@ msgstr "კუთხოვანი"
 
 #, c-format
 msgid "Could not create plugin directory '%s'\n"
-msgstr "ვერ შეიქმნა მოდულის საქაღალდე: „%s“"
+msgstr "ვერ შეიქმნა მოდულის საქაღალდე: „%s“\n"
 
 msgid "Could not figure out a lookup type"
 msgstr "ვერ დადგინდა ცნობარის სახეობა"

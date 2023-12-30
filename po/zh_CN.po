@@ -23,7 +23,7 @@ msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-12-30 03:08-0800\n"
-"PO-Revision-Date: 2023-12-30 08:15\n"
+"PO-Revision-Date: 2023-12-30 11:56\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Language: zh_CN\n"
@@ -4263,7 +4263,7 @@ msgstr "不同字体"
 
 #, c-format
 msgid "Different fill patterns in layer %d of %s\n"
-msgstr "%s 的 %d 层中的不同填充图案"
+msgstr "%s 的 %d 层中的不同填充图案\n"
 
 #, c-format
 msgid "Different number of contours in glyph “%s”\n"
@@ -4271,34 +4271,34 @@ msgstr "字形“%s”中有不同数量的轮廓线\n"
 
 #, c-format
 msgid "Different settings on whether to fill in layer %d of %s\n"
-msgstr "是否在 %s 的 %d 层中填充的不同设置"
+msgstr "是否在 %s 的 %d 层中填充的不同设置\n"
 
 #, c-format
 msgid "Different settings on whether to inherit fill color in layer %d of %s\n"
-msgstr "是否在 %s 的 %d 层中继承填充颜色的不同设置"
+msgstr "是否在 %s 的 %d 层中继承填充颜色的不同设置\n"
 
 #, c-format
 msgid ""
 "Different settings on whether to inherit fill opacity in layer %d of %s\n"
-msgstr "是否在 %s 的 %d 层中继承填充不透明度的不同设置"
+msgstr "是否在 %s 的 %d 层中继承填充不透明度的不同设置\n"
 
 #, c-format
 msgid ""
 "Different settings on whether to inherit stroke opacity in layer %d of %s\n"
-msgstr "是否在 %s 的 %d 层中继承笔划不透明度的不同设置"
+msgstr "是否在 %s 的 %d 层中继承笔划不透明度的不同设置\n"
 
 #, c-format
 msgid ""
 "Different settings on whether to inherit stroke width in layer %d of %s\n"
-msgstr "是否在 %s 的 %d 层中继承笔划宽度的不同设置"
+msgstr "是否在 %s 的 %d 层中继承笔划宽度的不同设置\n"
 
 #, c-format
 msgid "Different settings on whether to stroke in layer %d of %s\n"
-msgstr "是否在 %s 的 %d 层中描边的不同设置"
+msgstr "是否在 %s 的 %d 层中描边的不同设置\n"
 
 #, c-format
 msgid "Different stroke patterns in layer %d of %s\n"
-msgstr "%s 的 %d 层中的不同笔划图案"
+msgstr "%s 的 %d 层中的不同笔划图案\n"
 
 msgid "Dingbats"
 msgstr "装饰符号"
@@ -6534,7 +6534,7 @@ msgstr "匈牙利语"
 msgid ""
 "I can't even imagine how to attempt to interpolate gradients in layer %d of "
 "%s\n"
-msgstr "我甚至无法想象如何尝试在 %s 的 %d 层中插入渐变"
+msgstr "我甚至无法想象如何尝试在 %s 的 %d 层中插入渐变\n"
 
 #, c-format
 msgid "I can't figure out how to compare the subtable, %s, in %s to %s in %s\n"
@@ -6652,7 +6652,7 @@ msgstr "TTF/OTF"
 
 #, c-format
 msgid "In character %s, could not find reference to %s\n"
-msgstr "在字符 %s 中，找不到对 %s 的引用"
+msgstr "在字符 %s 中，找不到对 %s 的引用\n"
 
 #, c-format
 msgid "In character %s, there are too few points on a path in the base\n"
