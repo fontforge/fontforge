@@ -11,16 +11,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-31 02:48+0000\n"
-"PO-Revision-Date: 2022-12-31 02:46\n"
+"POT-Creation-Date: 2023-12-30 03:08-0800\n"
+"PO-Revision-Date: 2023-12-30 08:15\n"
 "Last-Translator: \n"
 "Language-Team: Croatian\n"
 "Language: hr_HR\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
-"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
 "X-Crowdin-Project: fontforge\n"
 "X-Crowdin-Project-ID: 368599\n"
 "X-Crowdin-Language: hr\n"
@@ -237,8 +237,8 @@ msgid ""
 "!!!!! Bad Base Coord format (%d) for '%c%c%c%c' in '%c%c%c%c' script in "
 "'BASE' table\n"
 msgstr ""
-"!!!!! Neispravni format koordinata osnove (%d) za '%c%c%c%c' u pismu '%c%c%c"
-"%c' u 'BASE' tablici\n"
+"!!!!! Neispravni format koordinata osnove (%d) za '%c%c%c%c' u pismu "
+"'%c%c%c%c' u 'BASE' tablici\n"
 
 #, c-format
 msgid ""
@@ -694,6 +694,15 @@ msgstr "300 Svijetli"
 
 msgid "32x8 cell window"
 msgstr "Prozor: 32 × 8 polja"
+
+msgid "3D Buttons"
+msgstr "3D gumbovi"
+
+msgid "3D Dark Edge Color"
+msgstr "3D tamna boja ruba"
+
+msgid "3D Light Edge Color"
+msgstr "3D svijetla boja ruba"
 
 msgid "4"
 msgstr "4"
@@ -1484,6 +1493,9 @@ msgstr ""
 msgid "Adding points at Extrema..."
 msgstr "Dodavanje točaka ektrema …"
 
+msgid "Adding points of inflection..."
+msgstr "Dodavanje točkaka infleksije …"
+
 msgid "Additional arguments for autotrace program:"
 msgstr "Dodatni argumenti za program za automatsko precrtavanje:"
 
@@ -2065,6 +2077,9 @@ msgstr ""
 "NAPOMENA: 'WinDescent' je POZITIVNI broj, a odnosi se na sve\n"
 "što se nalazi ispod osnovne pismovne linije."
 
+msgid "Appea_rance Editor..."
+msgstr "U_ređivač prikaza …"
+
 msgid "Append a FONTLOG entry"
 msgstr "Dodaj FONTLOG zapis"
 
@@ -2244,6 +2259,9 @@ msgstr "Arapsko, prošireno A"
 msgid "Arabic Extended-B"
 msgstr "Arapsko, prošireno B"
 
+msgid "Arabic Extended-C"
+msgstr "Arapsko prošireno-C"
+
 msgid "Arabic Mathematical Alphabetic Symbols"
 msgstr "Arapski matematički alfanumerički simboli"
 
@@ -2372,6 +2390,9 @@ msgid "Ascent and Descent must be positive and their sum less than 16384"
 msgstr ""
 "Uzlazni i silazni potezi moraju imati pozitivne vrijednosti, a njihov zbroj "
 "manji od 16384"
+
+msgid "Ascent/Descent Color"
+msgstr "Boja uzlaznog/silaznog poteza"
 
 msgid "Ask"
 msgstr "Pitaj"
@@ -3291,16 +3312,16 @@ msgstr "Neispravni grafem ligature. ID-oznaka grafema %d ne manja od %d\n"
 
 #, c-format
 msgid ""
-"Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font="
-"%d\n"
+"Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in "
+"font=%d\n"
 msgstr ""
 "Neispravna tablica definicija: format=2 (%d/%d), prvi=%d zadnji=%d ukupno "
 "grafema u fontu=%d\n"
 
 #, c-format
 msgid ""
-"Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font="
-"%d\n"
+"Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in "
+"font=%d\n"
 msgstr ""
 "Neispravna tablica definicija: format=4 (%d/%d), prvi=%d zadnji=%d ukupno "
 "grafema u fontu=%d\n"
@@ -3797,6 +3818,9 @@ msgstr "Debeli"
 msgid "Bold Italic"
 msgstr "Debeli Kurziv"
 
+msgid "Bold font used in the Tile Path dialog"
+msgstr "Podebljani font za dijalog staza pločica"
+
 msgid "Bone"
 msgstr "Kosturni"
 
@@ -4110,6 +4134,9 @@ msgstr "KJK sjedinjeni ideogrami, proširenje F"
 
 msgid "CJK Unified Ideographs Extension G"
 msgstr "KJK sjedinjeni ideogrami, proširenje G"
+
+msgid "CJK Unified Ideographs Extension H"
+msgstr "KJK sjedinjeni ideogrami, proširenje H"
 
 msgid "CS Clarendon"
 msgstr "4.1 – Clarendon"
@@ -5166,11 +5193,23 @@ msgstr "Boja etiketa grafema kad etiketa nedostaje"
 msgid "Color of the active entry in the main section of a matrix edit"
 msgstr "Boja za aktivne zapise u glavnom odjeljku matrice"
 
+msgid "Color of the ascent and descent lines"
+msgstr "Boja za crte veličina uzlaznih i silaznih poteza"
+
 msgid "Color of the font used to display glyph information in the fontview"
 msgstr "Boja fonta za prikaz informacija o grafemu u prikazu fonta"
 
 msgid "Color of the line between label and glyph"
 msgstr "Boja linije između etikete i grafema"
+
+msgid "Color of the x=0 and y=0 lines"
+msgstr "Boja x=0 i y=0 linija"
+
+msgid "Color used for (some) glyph names in Show ATT dialog"
+msgstr "Boja za (neka) imena grafema u dijalogu Prikaži ATT"
+
+msgid "Color used for currently selected entry in Show ATT dialog"
+msgstr "Boja za trenutačno odabrani unos u dijalogu Prikaži ATT"
 
 msgid "Color used to draw the advance width line of a glyph"
 msgstr "Boja za crtanje linije, koja označuje širinu stošca"
@@ -5207,6 +5246,18 @@ msgstr "Boja za onačavanje odabranih grafema"
 
 msgid "Color:"
 msgstr "Boja:"
+
+msgid "Colors of lines and fills in outline window"
+msgstr "Boje linija i ispuna u prozoru kontura"
+
+msgid "Colors related to CFF/PostScript hints"
+msgstr "Boje CFF/PostScript kontrola"
+
+msgid "Colors, etc of points in glyph outline window"
+msgstr "Boje itd. točaka u prozoru kontura grafema"
+
+msgid "Colors, etc. related to tool use in outline window"
+msgstr "Boje itd. koje se odnose na korištenje alata u prozoru kontura"
 
 msgid "Color|Background"
 msgstr "Stražnja boja"
@@ -5984,6 +6035,9 @@ msgstr "Ćirilica prošireno-B"
 msgid "Cyrillic Extended-C"
 msgstr "Ćirilica prošireno-C"
 
+msgid "Cyrillic Extended-D"
+msgstr "Ćirilica prošireno-D"
+
 msgid "Cyrillic Supplement"
 msgstr "Ćirilica, dopuna"
 
@@ -6120,6 +6174,9 @@ msgstr "Zadana debljina crte iznad i za nadcrte"
 
 msgid "Default:"
 msgstr "Zadano:"
+
+msgid "DefaultFont"
+msgstr "Standardni font"
 
 msgid "Define \"Almost Horizontal\""
 msgstr "Definiraj „Zamalo vodoravno”"
@@ -6261,6 +6318,9 @@ msgstr "Devanagari"
 
 msgid "Devanagari Extended"
 msgstr "Devanagari prošireno"
+
+msgid "Devanagari Extended-A"
+msgstr "Devanagari prošireno-A"
 
 msgid "Devanagari2"
 msgstr "Devanagari2"
@@ -8098,6 +8158,9 @@ msgstr "Font promijenjen"
 msgid "Font file has bad glyph count field. maxp says: %d sizeof(loca)=>%d"
 msgstr "Font sadrži neipravno polje brojanja. 'maxp' kaže: %d sizeof(loca)=>%d"
 
+msgid "Font for Mac Features in Preferences dialog"
+msgstr "Font za Mac funkcije u dijalogu potavki"
+
 #, c-format
 msgid "Font to compare with %.20s"
 msgstr "Uspoređivanje fonta s %.20s"
@@ -8105,6 +8168,9 @@ msgstr "Uspoređivanje fonta s %.20s"
 #, c-format
 msgid "Font to merge into %.20s"
 msgstr "Font za sjedinjavanje u %.20s"
+
+msgid "Font used in the Glyph Info dialog"
+msgstr "Korišteni font u dijalogu informacija o grafemu"
 
 msgid "Font used to draw titles of a matrix edit"
 msgstr "Font za naslove matrice"
@@ -8908,6 +8974,9 @@ msgstr "Granični okvir grafema uži od"
 
 msgid "Glyph BB Right Of"
 msgstr "Granični okvir grafema širi od"
+
+msgid "Glyph Color"
+msgstr "Boja grafema"
 
 msgid "Glyph Composition/Decomposition"
 msgstr "Sastavljanje/Rastavljanje grafema"
@@ -10225,6 +10294,9 @@ msgstr "Zanemari spojne dijakritičke znakove"
 msgid "Ignore Ligatures"
 msgstr "Zanemari ligature"
 
+msgid "Ignore invalid substitutions"
+msgstr "Zanemari nevažeće zamjene"
+
 msgid "Ignore this problem in the future"
 msgstr "Ubuduće zanemari ovaj problem"
 
@@ -10308,6 +10380,9 @@ msgstr "Uvezi tablicu definicija"
 
 msgid "Import Parameters"
 msgstr "Uvezi parametre"
+
+msgid "Import feature file"
+msgstr "Uvezi datoteku funkcija"
 
 msgid "Imports a lookup (and all its subtables) from another font."
 msgstr "Uvozi tablicu definicija (i sve pod-tablice) iz jednog drugog fonta."
@@ -12737,6 +12812,9 @@ msgstr "Matematički operatori"
 msgid "Mathematical centerline"
 msgstr "Matematička srednja linija"
 
+msgid "Mathematical text layout"
+msgstr "Raspored matematičkog teksta"
+
 msgid "Matrix Edit"
 msgstr "Matrica za uređivanje"
 
@@ -14332,6 +14410,9 @@ msgstr "Normalni bezserifni"
 msgid "Normal Text Color:"
 msgstr "Boja za obični tekst:"
 
+msgid "Normal font used in the Tile Path dialog"
+msgstr "Normalni font za dijalog staza pločica"
+
 msgid "Normal/Boxed"
 msgstr "Normalno/Kutijasto"
 
@@ -15216,14 +15297,23 @@ msgstr "Konturni fontovi"
 msgid "Outline Glyphs\n"
 msgstr "Konturni grafemi\n"
 
+msgid "Outline Hints"
+msgstr "Kontrole kontura"
+
 msgid "Outline Inner Border"
 msgstr "Unutarnji obrub konture"
+
+msgid "Outline Lines/Fills"
+msgstr "Linije/Ispune konture"
 
 msgid "Outline Outer Border"
 msgstr "Vanjski obrub konture"
 
 msgid "Outline Points"
 msgstr "Točke konture"
+
+msgid "Outline Tools"
+msgstr "Alati za konture"
 
 msgid "Outline View"
 msgstr "Prikaz konture"
@@ -15398,6 +15488,12 @@ msgstr "Pa_lete"
 
 msgid "Palestinian Aramaic"
 msgstr "Palestinski aramejski"
+
+msgid "Palette Background Color"
+msgstr "Paleta boje pozadine"
+
+msgid "Palette Foreground Color"
+msgstr "Paleta prednje boje"
 
 msgid "Palettes"
 msgstr "Palete"
@@ -17247,6 +17343,9 @@ msgstr "Boja za razdvojne crte"
 msgid "Ruler Big Tick Color"
 msgstr "Boja za velike oznake ravnala"
 
+msgid "Ruler Font"
+msgstr "Font ravnala"
+
 msgid "Ruler Options"
 msgstr "Opcije ravnala"
 
@@ -18235,6 +18334,9 @@ msgstr "'Fuzz' visina serifa"
 msgid "Serif height:"
 msgstr "Visina serifa:"
 
+msgid "SerifFont"
+msgstr "Serifni font"
+
 msgid "SerifSlopeError"
 msgstr "Greška nagiba serifa"
 
@@ -18808,8 +18910,8 @@ msgid "SnapToInt"
 msgstr "Privlači na cjelobrojne vrijednosti"
 
 msgid ""
-"So if you type \"A\" here the first selected glyph would be named \"A.suffix"
-"\".\n"
+"So if you type \"A\" here the first selected glyph would be named \"A."
+"suffix\".\n"
 "The second \"B.suffix\", and so on."
 msgstr ""
 "Prema tome, ako ovdje utipkaš 'A', onda će se prvi odabrani grafem\n"
@@ -20085,6 +20187,9 @@ msgstr "Temne"
 msgid "Template Color"
 msgstr "Boja za predložak"
 
+msgid "Template Outline Color"
+msgstr "Boja konture predloška"
+
 msgid "Terminal Forms"
 msgstr "Završni oblici"
 
@@ -20154,7 +20259,6 @@ msgstr ""
 "'%1$s' kontrole u grafemu \"%2$.30s\" u fontu %3$.30s se ne poklapaju s "
 "onima u %4$.30s (različiti broj ili različiti kriteriji preklapanja)"
 
-#, c-format
 msgid ""
 "The %1$s in the search dialog contains a reference to %2$.20hs which does "
 "not exist in the new font.\n"
@@ -21344,9 +21448,9 @@ msgid ""
 "\n"
 "Would you like to add this script to one of those features?"
 msgstr ""
-"Tablica definicija %.30s je aktivan za grafem %.30s koji ima pismo '%c%c%c"
-"%c', međutim tog pisma čini se nema u niti jednoj funkciji koja primijenjuje "
-"tablicu definicija.\n"
+"Tablica definicija %.30s je aktivan za grafem %.30s koji ima pismo "
+"'%c%c%c%c', međutim tog pisma čini se nema u niti jednoj funkciji koja "
+"primijenjuje tablicu definicija.\n"
 "\n"
 "Želiš li dodati ovo pismo u jednu od tih funkcija?"
 
@@ -21960,8 +22064,8 @@ msgstr "Širina linije koja se koristi za crtanje odabranih točaka"
 #, c-format
 msgid ""
 "The width, height, depth or italic correction of %s is too big. Tfm files "
-"may not contain values bigger than 16 times the em-size of the font. Width="
-"%g, height=%g, depth=%g, italic correction=%g"
+"may not contain values bigger than 16 times the em-size of the font. "
+"Width=%g, height=%g, depth=%g, italic correction=%g"
 msgstr ""
 "Širina, visina, dubina ili ispravljanje kurziva od %s su preveliki. Tfm "
 "datoteke ne smiju sadržati vrijednosti veće od 16 puta veličine četverca "
@@ -24507,6 +24611,12 @@ msgstr "Koristi novo indijsko pismo"
 msgid "UsePlugins"
 msgstr "Koristi dodatke"
 
+msgid "Used for point numbers, hints, etc."
+msgstr "Koristi se za brojeve točaka, kontrole itd."
+
+msgid "Used for ruler numbers and other ruler notations."
+msgstr "Koristi se za brojeve i druge oznake ravnala."
+
 msgid "User controls the emboldening with the next two fields"
 msgstr "Korisnik kontrolira podebljavanje pomoću sljedeća dva polja"
 
@@ -24874,7 +24984,6 @@ msgstr ""
 "Upozorenje: 'cvar' sadrži međupodatke n-torke.\n"
 " FontForge to ne podržava.\n"
 
-#, c-format
 msgid "Warning: Accuracy target %lf less than minimum %lf, using %lf instead\n"
 msgstr ""
 "Upozorenje: Ciljana točnost %lf manja je od minimalne %lf, umjesto toga se "
@@ -24893,7 +25002,6 @@ msgstr "Upozorenje: Kraj konture se nije zatvorio\n"
 msgid "Warning: Contour start did not close\n"
 msgstr "Upozorenje: Početak konture se nije zatvorio\n"
 
-#, c-format
 msgid "Warning: Coordinate diff %lf greater than margin %lf\n"
 msgstr "Upozorenje: Razlika koordinate %lf veća je od margine %lf\n"
 
@@ -27962,16 +28070,16 @@ msgstr ""
 
 #, c-format
 msgid ""
-"“%s” in %s did not contain a pairwise positioning lookup ∆x=%d ∆y=%d ∆x_adv="
-"%d ∆y_adv=%d to %s ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"
+"“%s” in %s did not contain a pairwise positioning lookup ∆x=%d ∆y=%d "
+"∆x_adv=%d ∆y_adv=%d to %s ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"
 msgstr ""
 "„%s” u %s ne sadrži tablicu definicija pozicioniranja parova ∆x=%d ∆y=%d "
 "∆x_adv=%d ∆y_adv=%d s %s ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"
 
 #, c-format
 msgid ""
-"“%s” in %s did not contain a positioning lookup ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv="
-"%d\n"
+"“%s” in %s did not contain a positioning lookup ∆x=%d ∆y=%d ∆x_adv=%d "
+"∆y_adv=%d\n"
 msgstr ""
 "„%s” u %s ne sadrži tablicu definicija pozicioniranja ∆x=%d ∆y=%d ∆x_adv=%d "
 "∆y_adv=%d\n"
