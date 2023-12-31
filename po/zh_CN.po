@@ -23,7 +23,7 @@ msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2023-12-30 03:08-0800\n"
-"PO-Revision-Date: 2023-12-30 11:56\n"
+"PO-Revision-Date: 2023-12-31 08:24\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Language: zh_CN\n"
@@ -991,7 +991,7 @@ msgstr "取值字符均应为ASCII码"
 
 #, c-format
 msgid "All entries in a lookup must have the same type on line %d of %s"
-msgstr "查找中的所有条目在 %s 的第 %d 行中必须具有相同的类型"
+msgstr "查找中的所有条目在 %2$s 的第 %1$d 行中必须具有相同的类型"
 
 msgid "All glyphs"
 msgstr "所有字形"
@@ -4263,7 +4263,7 @@ msgstr "不同字体"
 
 #, c-format
 msgid "Different fill patterns in layer %d of %s\n"
-msgstr "%s 的 %d 层中的不同填充图案\n"
+msgstr "%2$s 的 %1$d 层中的不同填充图案\n"
 
 #, c-format
 msgid "Different number of contours in glyph “%s”\n"
@@ -4271,34 +4271,34 @@ msgstr "字形“%s”中有不同数量的轮廓线\n"
 
 #, c-format
 msgid "Different settings on whether to fill in layer %d of %s\n"
-msgstr "是否在 %s 的 %d 层中填充的不同设置\n"
+msgstr "是否在 %2$s 的 %1$d 层中填充的不同设置\n"
 
 #, c-format
 msgid "Different settings on whether to inherit fill color in layer %d of %s\n"
-msgstr "是否在 %s 的 %d 层中继承填充颜色的不同设置\n"
+msgstr "是否在 %2$s 的 %1$d 层中继承填充颜色的不同设置\n"
 
 #, c-format
 msgid ""
 "Different settings on whether to inherit fill opacity in layer %d of %s\n"
-msgstr "是否在 %s 的 %d 层中继承填充不透明度的不同设置\n"
+msgstr "是否在 %2$s 的 %1$d 层中继承填充不透明度的不同设置\n"
 
 #, c-format
 msgid ""
 "Different settings on whether to inherit stroke opacity in layer %d of %s\n"
-msgstr "是否在 %s 的 %d 层中继承笔划不透明度的不同设置\n"
+msgstr "是否在 %2$s 的 %1$d 层中继承笔划不透明度的不同设置\n"
 
 #, c-format
 msgid ""
 "Different settings on whether to inherit stroke width in layer %d of %s\n"
-msgstr "是否在 %s 的 %d 层中继承笔划宽度的不同设置\n"
+msgstr "是否在 %2$s 的 %1$d 层中继承笔划宽度的不同设置\n"
 
 #, c-format
 msgid "Different settings on whether to stroke in layer %d of %s\n"
-msgstr "是否在 %s 的 %d 层中描边的不同设置\n"
+msgstr "是否在 %2$s 的 %1$d 层中描边的不同设置\n"
 
 #, c-format
 msgid "Different stroke patterns in layer %d of %s\n"
-msgstr "%s 的 %d 层中的不同笔划图案\n"
+msgstr "%2$s 的 %1$d 层中的不同笔划图案\n"
 
 msgid "Dingbats"
 msgstr "装饰符号"
@@ -4679,7 +4679,7 @@ msgstr "JSTF表中找到文件结束符号。\n"
 
 #, c-format
 msgid "End of file found in string on line %d of %s"
-msgstr "在 %s 的第 %d 行的字符串中找到文件结尾"
+msgstr "在 %2$s 的第 %1$d 行的字符串中找到文件结尾"
 
 #, c-format
 msgid "End of file in %s table"
@@ -4850,11 +4850,11 @@ msgstr "加宽至125%"
 
 #, c-format
 msgid "Expected %s in lookup definition on line %d of %s"
-msgstr "在 %s 的第 %d 行的查找定义中需要 %s"
+msgstr "在 %3$s 的第 %2$d 行的查找定义中需要 %1$s"
 
 #, c-format
 msgid "Expected '%c%c%c%c' in lookup definition on line %d of %s"
-msgstr "在 %s 的第 %d 行的查找定义中需要“%c%c%c%c”"
+msgstr "在 %6$s 的第 %5$d 行的查找定义中需要“%1$c%2$c%3$c%4$c”"
 
 #, c-format
 msgid "Expected '%c' on line %d of %s"
@@ -4866,11 +4866,11 @@ msgstr "需要'%s' 于行 %d (%s中)"
 
 #, c-format
 msgid "Expected ';' at statement end on line %d of %s"
-msgstr "预期的 ';' 在 %s 的第 %d 行语句结束"
+msgstr "预期的 ';' 在 %2$s 的第 %1$d 行语句结束"
 
 #, c-format
 msgid "Expected ';' in lookupflags on line %d of %s"
-msgstr "预期的 ';' 在 %s 的第 %d 行的 lookupflags 中"
+msgstr "预期的 ';' 在 %2$s 的第 %1$d 行的 lookupflags 中"
 
 #, c-format
 msgid "Expected ';' on line %d of %s"
@@ -4882,11 +4882,11 @@ msgstr "在第 %d 行（ %s ）的字图类定义需要有'['"
 
 #, c-format
 msgid "Expected '>' in anchor on line %d of %s"
-msgstr "在 %s 的第 %d 行的锚点中需要“>”"
+msgstr "在 %2$s 的第 %1$d 行的锚点中需要“>”"
 
 #, c-format
 msgid "Expected '>' in caret on line %d of %s"
-msgstr "在 %s 的第 %d 行的插入符号中应为“>”"
+msgstr "在 %2$s 的第 %1$d 行的插入符号中应为“>”"
 
 #, c-format
 msgid "Expected '>' in value record on line %d of %s"
@@ -4914,11 +4914,11 @@ msgstr "%2$s 的第 %1$d 行的特征定义中应为“{”"
 
 #, c-format
 msgid "Expected '}' on line %d of %s"
-msgstr "%s 的第 %d 行应为“}”"
+msgstr "%2$s 的第 %1$d 行应为“}”"
 
 #, c-format
 msgid "Expected Attach or LigatureCaret or GlyphClassDef on line %d of %s"
-msgstr "%s 的第 %d 行需要 Attach 或 LigatureCaret 或 GlyphClassDef"
+msgstr "%2$s 的第 %1$d 行需要 Attach 或 LigatureCaret 或 GlyphClassDef"
 
 #, c-format
 msgid "Expected a single glyph name in reverse substitution on line %d of %s"
@@ -4948,7 +4948,7 @@ msgstr "%2$s 的第 %1$d 行上的标记类定义中的预期锚点"
 
 #, c-format
 msgid "Expected baseline tag in BASE table on line %d of %s"
-msgstr "%s 行 %d 上的 BASE 表中的预期基线标记"
+msgstr "%2$s 行 %1$d 上的 BASE 表中的预期基线标记"
 
 msgid ""
 "Expected boolean value.\n"
@@ -4959,32 +4959,32 @@ msgstr ""
 
 #, c-format
 msgid "Expected class name in mark class definition on line %d of %s"
-msgstr "%s 的第 %d 行标记类定义中的预期类名"
+msgstr "%2$s 的第 %1$d 行标记类定义中的预期类名"
 
 #, c-format
 msgid "Expected class on line %d of %s"
-msgstr "%s 行 %d 上应为类"
+msgstr "%2$s 行 %1$d 上应为类"
 
 #, c-format
 msgid "Expected closing curly brace on line %d of %s"
-msgstr "%s 的第 %d 行需要右大括号"
+msgstr "%2$s 的第 %1$d 行需要右大括号"
 
 #, c-format
 msgid "Expected comma in device table on line %d of %s"
-msgstr "%s 的第 %d 行设备表中应有逗号"
+msgstr "%2$s 的第 %1$d 行设备表中应有逗号"
 
 #, c-format
 msgid "Expected comma or semicolon in BASE table on line %d of %s"
-msgstr "%s 的第 %d 行的 BASE 表中需要逗号或分号"
+msgstr "%2$s 的第 %1$d 行的 BASE 表中需要逗号或分号"
 
 #, c-format
 msgid "Expected comma or semicolon on line %d of %s"
-msgstr "%s 的第 %d 行需要逗号或分号"
+msgstr "%2$s 的第 %1$d 行需要逗号或分号"
 
 #, c-format
 msgid ""
 "Expected either \"HorizAxis\" or \"VertAxis\" in BASE table on line %d of %s"
-msgstr "在 %s 的第 %d 行的 BASE 表中应为“HorizAxis”或“VertAxis”"
+msgstr "在 %2$s 的第 %1$d 行的 BASE 表中应为“HorizAxis”或“VertAxis”"
 
 #, c-format
 msgid ""
@@ -5005,7 +5005,7 @@ msgstr "在第 %d 行( %s)中的锚点需要有整数"
 
 #, c-format
 msgid "Expected integer in caret on line %d of %s"
-msgstr "%s 的第 %d 行插入符号中的预期整数"
+msgstr "%2$s 的第 %1$d 行插入符号中的预期整数"
 
 #, c-format
 msgid "Expected integer in device table on line %d of %s"
@@ -5013,7 +5013,7 @@ msgstr "在第行%d (%s) 上的设备表中应该有整数"
 
 #, c-format
 msgid "Expected integer on line %d of %s"
-msgstr "%s 行 %d 上的预期整数"
+msgstr "%2$s 行 %1$d 上的预期整数"
 
 #, c-format
 msgid "Expected integer or list of integers after %s on line %d of %s"
@@ -5025,19 +5025,19 @@ msgstr "表中第 %d 行（共 %s）的预期匹配标记"
 
 #, c-format
 msgid "Expected name in anchor definition on line %d of %s"
-msgstr "%s 的第 %d 行锚点定义中的预期名称"
+msgstr "%2$s 的第 %1$d 行锚点定义中的预期名称"
 
 #, c-format
 msgid "Expected name in lookup on line %d of %s"
-msgstr "在 %s 的第 %d 行查找中需要名称"
+msgstr "在 %2$s 的第 %1$d 行查找中需要名称"
 
 #, c-format
 msgid "Expected name in value record definition on line %d of %s"
-msgstr "%s 的第 %d 行值记录定义中的预期名称"
+msgstr "%2$s 的第 %1$d 行值记录定义中的预期名称"
 
 #, c-format
 msgid "Expected name or class on line %d of %s"
-msgstr "%s 的第 %d 行需要名称或类"
+msgstr "%2$s 的第 %1$d 行需要名称或类"
 
 msgid "Expected number."
 msgstr "需要数字。"
@@ -5047,19 +5047,19 @@ msgstr "需要属性列表文件"
 
 #, c-format
 msgid "Expected semicolon in BASE table on line %d of %s"
-msgstr "%s 的第 %d 行的 BASE 表中需要分号"
+msgstr "%2$s 的第 %1$d 行的 BASE 表中需要分号"
 
 #, c-format
 msgid "Expected semicolon on line %d of %s"
-msgstr "%s 的第 %d 行需要分号"
+msgstr "%2$s 的第 %1$d 行需要分号"
 
 #, c-format
 msgid "Expected string on line %d of %s"
-msgstr "%s 的第 %d 行需要字符串"
+msgstr "%2$s 的第 %1$d 行需要字符串"
 
 #, c-format
 msgid "Expected tag in feature on line %d of %s"
-msgstr "%s 的第 %d 行功能中的预期标记"
+msgstr "%2$s 的第 %1$d 行功能中的预期标记"
 
 #, c-format
 msgid "Expected tag in languagesystem on line %d of %s"
@@ -5071,7 +5071,7 @@ msgstr "表中第 %d 行（共 %s）的预期标记"
 
 #, c-format
 msgid "Expected tag on line %d of %s"
-msgstr "%s 行 %d 上的预期标记"
+msgstr "%2$s 行 %1$d 上的预期标记"
 
 #, c-format
 msgid "Expected two anchors (after cursive) on line %d of %s"
@@ -5266,7 +5266,7 @@ msgstr "特征"
 msgid ""
 "Features inside of other features are only permitted for 'aalt' features on "
 "line %d of %s"
-msgstr "其他功能中的功能仅允许用于 %s 的第 %d 行的“aalt”功能"
+msgstr "其他功能中的功能仅允许用于 %2$s 的第 %1$d 行的“aalt”功能"
 
 msgid "Fi_ll"
 msgstr "填充(_L)"
@@ -6534,7 +6534,7 @@ msgstr "匈牙利语"
 msgid ""
 "I can't even imagine how to attempt to interpolate gradients in layer %d of "
 "%s\n"
-msgstr "我甚至无法想象如何尝试在 %s 的 %d 层中插入渐变\n"
+msgstr "我甚至无法想象如何尝试在 %2$s 的 %1$d 层中插入渐变\n"
 
 #, c-format
 msgid "I can't figure out how to compare the subtable, %s, in %s to %s in %s\n"
@@ -13886,7 +13886,7 @@ msgstr "此查找不含数据"
 
 #, c-format
 msgid "This lookup has no effect, I can't figure out its type on line %d of %s"
-msgstr "此查找无效，我无法在 %s 的第 %d 行找出它的类型"
+msgstr "此查找无效，我无法在 %2$s 的第 %1$d 行找出它的类型"
 
 msgid "This may take a while. Please be patient..."
 msgstr "这需要一点时间。请稍候..."
@@ -14388,7 +14388,7 @@ msgstr "未预期的编码格式于cff: %d\n"
 
 #, c-format
 msgid "Unexpected end of file in feature definition on line %d of %s"
-msgstr "%s 的第 %d 行的功能定义中出现意外的文件结尾"
+msgstr "%2$s 的第 %1$d 行的功能定义中出现意外的文件结尾"
 
 #, c-format
 msgid "Unexpected end of file in lookup definition on line %d of %s"
@@ -14427,7 +14427,7 @@ msgstr "%2$s 的第 %1$d 行的值记录中出现意外标记"
 
 #, c-format
 msgid "Unexpected token, %s, in BASE table on line %d of %s"
-msgstr "BASE 表中的意外标记 %s，位于 %s 的第 %d 行"
+msgstr "BASE 表中的意外标记 %1$s，位于 %3$s 的第 %2$d 行"
 
 #, c-format
 msgid "Unexpected token, %s, in feature definition on line %d of %s"
