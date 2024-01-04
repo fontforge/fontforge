@@ -608,8 +608,8 @@ GGadget *CreateGadgets(struct gwindow *base, GGadgetCreateData *gcd);
 
 GTextInfo **GTextInfoArrayFromList(GTextInfo *ti, uint16_t *cnt);
 
-void InitImageCache();
-void ClearImageCache();
+void InitImageCache(void);
+void ClearImageCache(void);
 void GGadgetSetImageDir(const char *dir);
 void GGadgetSetImagePath(const char *path);
 GImage *GGadgetImageCache(const char *filename);

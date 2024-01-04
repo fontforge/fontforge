@@ -279,7 +279,7 @@ extern int _GDraw_res_synchronize;
 extern unichar_t *GDrawKeysyms[];
 extern GDisplay *screen_display;
 
-extern void GDrawResourceFind();
+extern void GDrawResourceFind(void);
 
 extern void GDrawDestroyDisplays(void);
 extern void GDrawCreateDisplays(char *displayname,char *programname);

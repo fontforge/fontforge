@@ -10,7 +10,7 @@ struct glif_name {
   char * glif_name;
 };
 
-struct glif_name_index * glif_name_index_new();
+struct glif_name_index * glif_name_index_new(void);
 void glif_name_index_destroy(struct glif_name_index * hash);
 
 void glif_name_track_new(struct glif_name_index * hash, long int gid, const char * glif_name);
