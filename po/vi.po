@@ -1,18 +1,10 @@
-# Vietnamese translation for FontForge.
-# Copyright (C) 2000-2010 by George Williams
-# Clytie Siddall <clytie@riverland.net.au>, 2007, 2008, 2009, 2010.
-#
-# Translators:
-# Clytie Siddall <clytie@riverland.net.au>, 2007, 2008, 2009, 2010.
-# Clytie Siddall <clytie@riverland.net.au>, 2010-03-15 20:46+0930
-#
-#
+
 msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-31 02:48+0000\n"
-"PO-Revision-Date: 2022-12-31 02:46\n"
+"POT-Creation-Date: 2023-12-30 03:08-0800\n"
+"PO-Revision-Date: 2023-12-30 08:15\n"
 "Last-Translator: \n"
 "Language-Team: Vietnamese\n"
 "Language: vi_VN\n"
@@ -611,14 +603,6 @@ msgid "A canvas (sub-window) wrapped up in a gadget, for drawing"
 msgstr "Một vùng vẽ (cửa sổ phụ) được bao bọc trong một ô điều khiển, để vẽ"
 
 msgid ""
-"A comma separated list of font family names used to display small example "
-"images of glyphs over the user designed glyphs"
-msgstr ""
-"Danh sách định giới bằng dấu phẩy mà chứa các tên nhóm phông chữ dùng để "
-"hiển thị ảnh thí dụ nhỏ của hình tượng ở trên hình tượng được người dùng "
-"thiết kế"
-
-msgid ""
 "A contour in this glyph contains a different number of points in different "
 "instances"
 msgstr ""
@@ -1170,9 +1154,6 @@ msgstr "Bề rộng tiến tới của hình tượng %.30s phải nhỏ hơn 12
 msgid "Adyghe"
 msgstr "TIếng A-di-ghe"
 
-msgid "Aegean scripts"
-msgstr "Chữ viết Ægean"
-
 msgid "Afar"
 msgstr "TIếng A-pha"
 
@@ -1367,20 +1348,8 @@ msgstr "Đường gần nằm ngang/dọc"
 msgid "Almost stem_3 hint"
 msgstr "Gần là lời gợi ý stem_3"
 
-msgid "Alphabetic"
-msgstr "Chữ cái"
-
-msgid "Alphabetic Extended"
-msgstr "Chữ cái đã mở rộng"
-
 msgid "Alphabetic Presentation Forms"
 msgstr "Hình đại diện chữ cái"
-
-msgid "Alphabetic and syllabic LTR scripts"
-msgstr "Chữ viết bên trái-qua-phải kiểu chữ cái và âm tiết"
-
-msgid "Alphabetic and syllabic RTL scripts"
-msgstr "Chữ viết bên phải-qua-trái kiểu chữ cái và âm tiết"
 
 msgid "Alsatian"
 msgstr "Tiếng An-xa-ti"
@@ -1752,9 +1721,6 @@ msgstr "Bên Phải qua Trái ngôn ngữ A Rập"
 msgid "Arabic Supplement"
 msgstr "Phần bổ sung tiếng A Rập"
 
-msgid "Arakanese"
-msgstr "Tiếng A-ra-ka-ni"
-
 msgid "Archives"
 msgstr "Kho"
 
@@ -1815,9 +1781,6 @@ msgstr ""
 
 msgid "Armenian"
 msgstr "Tiếng Ác-mê-ni"
-
-msgid "Armenian Ligatures"
-msgstr "Chữ ghép tiếng Ác-mê-ni"
 
 msgid "ArrowAccelFactor"
 msgstr "Tăng Tốc Mũi Tên"
@@ -1901,9 +1864,6 @@ msgstr ""
 "có thể gặp lỗi làm tròn rất xấu.\n"
 "Bảng thiết bị cho phép bạn ghi rõ giá trị\n"
 "điều chỉnh cho mỗi kích cỡ theo điểm ảnh."
-
-msgid "Athapaskan"
-msgstr "Tiếng A-ta-pa-x-ca"
 
 #, c-format
 msgid ""
@@ -2119,9 +2079,6 @@ msgstr "Tiếng Ay-ma-ra"
 
 msgid "Azebaijani (roman)"
 msgstr "Tiếng A-xơ-bai-gianh (La-tinh)"
-
-msgid "Azeri"
-msgstr "Tiếng A-de-ri"
 
 msgid "Azeri (Cyrillic)"
 msgstr "Tiếng A-xê-ri (Ki-rin)"
@@ -2498,9 +2455,6 @@ msgstr "Có hàm phụ flex sai trong %s\n"
 msgid "Bad font"
 msgstr "Phông sai"
 
-msgid "Bad font specification"
-msgstr "Đặc tả phông sai"
-
 msgid "Bad font, offset out of bounds.\n"
 msgstr "Phông sai : giá trị bù ở ngoại phạm vi.\n"
 
@@ -2598,8 +2552,8 @@ msgstr "Hình tượng chữ ghép sai : GID %d không phải nhỏ hơn %d\n"
 
 #, c-format
 msgid ""
-"Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font="
-"%d\n"
+"Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in "
+"font=%d\n"
 msgstr ""
 "Bảng tra tìm sai:\n"
 " • định dạng=2 (%d/%d)\n"
@@ -2609,8 +2563,8 @@ msgstr ""
 
 #, c-format
 msgid ""
-"Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font="
-"%d\n"
+"Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in "
+"font=%d\n"
 msgstr ""
 "Bảng tra tìm sai:\n"
 " • định dạng=4 (%d/%d)\n"
@@ -2815,9 +2769,6 @@ msgstr "Tiếng Ba-li"
 msgid "Balkar"
 msgstr "Tiếng Ban-khă"
 
-msgid "Balochi"
-msgstr "Tiếng Ba-lô-khi"
-
 msgid "Balti"
 msgstr "Tiếng Ban-thi"
 
@@ -2886,9 +2837,6 @@ msgstr "Mặt Phẳng Đa Ngôn Ngữ Cơ Bản"
 
 msgid "Basque"
 msgstr "Tiếng Bax-quợ"
-
-msgid "Baule"
-msgstr "Tiếng Bau-le"
 
 msgid "Be_vel"
 msgstr "Cạnh _xiên"
@@ -3215,20 +3163,11 @@ msgstr "Bạn có muốn làm phông xiên theo góc nào?"
 msgid "Byelorussian"
 msgstr "Tiếng Bie-lo-ru-xi"
 
-msgid "Byte Order Mark"
-msgstr "Dấu thứ tự byte"
-
 msgid "Byzantine Music"
 msgstr "Âm nhạc La Mã phương Đông"
 
 msgid "Byzantine Musical Symbols"
 msgstr "Ký hiệu âm nhạc La Mã phương Đông"
-
-msgid "C0 Control Character"
-msgstr "Ký tự điều khiển C0"
-
-msgid "C1 Control Character"
-msgstr "Ký tự điều khiển C1"
 
 msgid ""
 "CALL function\n"
@@ -3282,14 +3221,8 @@ msgstr "Chữ viết ghi ý tương thích với tiếng Trung/Nhật/Hàn"
 msgid "CJK Compatibility Ideographs Supplement"
 msgstr "Phần bổ sung Chữ viết Ghi ý Tương thích tiếng Trung/Nhật/Hàn"
 
-msgid "CJK Enclosed Letters and Months"
-msgstr "Chữ và tháng đã bao bọc tiếng Trung/Nhật/Hàn"
-
 msgid "CJK Ideographic"
 msgstr "Chữ viết ghi ý tiếng Trung/Nhật/Hàn"
-
-msgid "CJK Phonetics and Symbols"
-msgstr "Ngữ âm và ký hiệu tiếng Trung/Nhật/Hàn"
 
 msgid "CJK Strokes"
 msgstr "Nét tiếng Trung/Nhật/Hàn"
@@ -3803,18 +3736,6 @@ msgstr "Tiếng Hoa (Xin-ga-po)"
 msgid "Chinese (Taiwan)"
 msgstr "Tiếng Trung (Đài-loan)"
 
-msgid "Chinese Hong Kong"
-msgstr "Tiếng Trung (Hông Kồng))"
-
-msgid "Chinese Phonetic"
-msgstr "Tiếng Trung ngữ âm"
-
-msgid "Chinese Simplified"
-msgstr "Tiếng Trung phổ thông"
-
-msgid "Chinese Traditional"
-msgstr "Tiếng Trung truyền thống"
-
 msgid "Chipewyan"
 msgstr "Tiếng Chi-pe-ouianh"
 
@@ -4273,9 +4194,6 @@ msgstr "Sửa:"
 msgid "Corner"
 msgstr "Đỉnh"
 
-msgid "Corporate Use"
-msgstr "Dùng bởi công ty"
-
 msgid "Correct Direction"
 msgstr "Sửa hướng"
 
@@ -4347,10 +4265,6 @@ msgstr "Không thể mở"
 msgid "Could not open %.100s"
 msgstr "Không thể mở %.100s"
 
-#, c-format
-msgid "Could not open %s"
-msgstr "Không thể mở %s"
-
 msgid "Could not open file"
 msgstr "Không thể mở tập tin"
 
@@ -4393,16 +4307,6 @@ msgstr "Không thể ghi %s."
 
 msgid "Couldn't create directory"
 msgstr "Không thể tạo thư mục"
-
-#, c-format
-msgid ""
-"Couldn't create directory: %1$s\n"
-"%2$s\n"
-"%3$s"
-msgstr ""
-"Không thể tạo thư mục: %1$s\n"
-"%2$s\n"
-"%3$s"
 
 #, c-format
 msgid "Couldn't create directory: %s"
@@ -4541,9 +4445,6 @@ msgstr "Lập phương"
 
 msgid "Cuneiform"
 msgstr "Chữ hình nêm"
-
-msgid "Cuneiform Numbers"
-msgstr "Chữ số hình nêm"
 
 msgid "Currency Symbols"
 msgstr "Ký hiệu tiền tệ"
@@ -4867,9 +4768,6 @@ msgstr "Khoảng thời gian (theo mili-giây) trước khi cửa sổ tự mở
 msgid "Delete"
 msgstr "Xoá"
 
-msgid "Delete Character"
-msgstr "Xoá ký tự"
-
 msgid ""
 "Deletes any selected lookups and their subtables, or deletes any selected "
 "subtables.\n"
@@ -4987,12 +4885,6 @@ msgstr "Tiếng Đe-va-na-ga-ri 2"
 
 msgid "Device Table Adjustments"
 msgstr "Điều chỉnh bảng thiết bị"
-
-msgid "Dhivehi"
-msgstr "Tiếng Đi-ve-hi"
-
-msgid "Dhivehi (Obsolete)"
-msgstr "Đi-vê-hi (Cũ)"
 
 msgid "Diagonal Fractions"
 msgstr "Phân số chéo"
@@ -5159,9 +5051,6 @@ msgstr "Khoảng cách tới mặt phẳng hiện hình:"
 msgid "Divehi"
 msgstr "Tiếng Đi-ve-hi"
 
-msgid "Djerma"
-msgstr "Tiếng Chơ-ma"
-
 msgid "Do Nothing"
 msgstr "Đừng làm gì"
 
@@ -5224,9 +5113,6 @@ msgstr "Không kế thừa từ gì"
 
 msgid "Doesn't look like a valid pdf file, couldn't find xref section"
 msgstr "Không hình như một tập tin PDF hợp lệ vì không tìm thấy phần xref"
-
-msgid "Dogri"
-msgstr "Tiếng Đo-gợ-ri"
 
 msgid "Domino Tiles"
 msgstr "Ngói đôminô"
@@ -6522,18 +6408,12 @@ msgstr ""
 msgid "Font Compare"
 msgstr "So sánh phông"
 
-msgid "Font Family"
-msgstr "Nhóm phông"
-
 msgid "Font Info"
 msgstr "Thông tin phông"
 
 #, c-format
 msgid "Font Information for %.90s"
 msgstr "Thông tin phông về %.90s"
-
-msgid "Font Size"
-msgstr "Cỡ phông chữ"
 
 msgid "Font Type:"
 msgstr "Kiểu phông:"
@@ -6656,27 +6536,6 @@ msgstr ""
 msgid "FontForge time stamp table"
 msgstr "bảng nhãn thời gian FontForge"
 
-#, c-format
-msgid ""
-"FontForge was unable to find a cidmap file for this font. It is not "
-"essential to have one, but some things will work better if you do. If you "
-"have not done so you might want to download the cidmaps from:\n"
-"   http://FontForge.sourceforge.net/cidmaps.tgz\n"
-"and then gunzip and untar them and move them to:\n"
-"  %.80s\n"
-"\n"
-"Would you like to search your local disk for an appropriate file?"
-msgstr ""
-"Trình FontForge không tìm thấy tập tin sơ đồ CID thích hợp với phông này.\n"
-"Không ép buộc phải dùng tập tin kiểu này, nhưng một số thứ sẽ hoạt động\n"
-"tốt hơn với nó. Nếu bạn chưa tài về các tập tin sơ đồ CID, vẫn có thể tải "
-"xuống:\n"
-"   http://FontForge.sourceforge.net/cidmaps.tgz\n"
-"rồi giải nén và di chuyển vào\n"
-"  %.80s\n"
-"\n"
-"Bạn có muốn tìm kiếm một tập tin thích hợp trên đĩa cục bộ không?"
-
 msgid ""
 "FontForge was unable to load libspiro, spiros are not available for use."
 msgstr ""
@@ -6747,9 +6606,6 @@ msgstr "Buộc tên hình tượng thành:"
 #. GT: Foreground, make it short
 msgid "Fore"
 msgstr "Gần"
-
-msgid "Forest Nenets"
-msgstr "Tiếng Ne-net-x rừng"
 
 msgid "Forget _to All"
 msgstr "Quên _tất cả"
@@ -6899,9 +6755,6 @@ msgstr "Từ :"
 
 msgid "Frozen Color"
 msgstr "Màu đông cứng"
-
-msgid "Fulani"
-msgstr "Tiếng Phu-la-ni"
 
 msgid "Fulfulde"
 msgstr "Tiếng Phun-phun-đe"
@@ -7367,8 +7220,8 @@ msgstr "Hình tượng « %s » có chiều rộng sớm %d trong %s còn là %d
 #, c-format
 msgid "Glyph “%s” has advance width %d in %s but %d in %s at %d@%d\n"
 msgstr ""
-"Hình tượng « %s » có chiều rộng sớm %d trong %s còn là %d trong %s tại %d@"
-"%d\n"
+"Hình tượng « %s » có chiều rộng sớm %d trong %s còn là %d trong %s tại "
+"%d@%d\n"
 
 #, c-format
 msgid "Glyph “%s” has different truetype instructions\n"
@@ -7518,9 +7371,6 @@ msgstr ""
 "Lớn hơn hay bằng (GTEQ)\n"
 "Bỏ hai giá trị, đẩy (0/1) nếu cái dưới ≥ cái trên"
 
-msgid "Greek"
-msgstr "Tiếng Hy Lạp"
-
 msgid "Greek (polytonic)"
 msgstr "Tiếng Hy Lạp (đa giọng)"
 
@@ -7660,9 +7510,6 @@ msgstr "Nửa hình"
 msgid "Half Widths"
 msgstr "Nửa rộng"
 
-msgid "Half and Full Width Forms"
-msgstr "Hình nửa và toàn rộng"
-
 msgid "Halfwidth and Fullwidth Forms"
 msgstr "Hình nửa/toàn rộng"
 
@@ -7671,9 +7518,6 @@ msgstr "Tiếng Ha-mơ-Ba-na"
 
 msgid "Hangul Compatibility Jamo"
 msgstr "Hangul tương thích với Jamo"
-
-msgid "Hangul Jamo Half Width Forms"
-msgstr "Hình nửa rộng Hangul Jamo"
 
 msgid "Hangul Syllables"
 msgstr "Âm tiết Hangul"
@@ -7698,9 +7542,6 @@ msgstr "Nặng"
 
 msgid "Hebrew"
 msgstr "Tiếng Do Thái"
-
-msgid "Hebrew Ligatures/Pointed Letters"
-msgstr "Chữ ghép/chữ nhọn tiếng Do Thái"
 
 msgid "Height"
 msgstr "Cao"
@@ -7736,9 +7577,6 @@ msgstr "Ẩn khi di chu_yển"
 
 msgid "High Mari"
 msgstr "Tiếng Ma-ri cao"
-
-msgid "High Surrogate"
-msgstr "Thay thế cao"
 
 msgid "High-Density Font"
 msgstr "Phông mật độ cao"
@@ -8259,9 +8097,6 @@ msgstr "Đang bỏ qua mục nhập /CharStrings (chuỗi ký tự) trùng\n"
 msgid "Ignoring duplicate /Subrs entry\n"
 msgstr "Đang bỏ qua mục nhập /Subrs trùng\n"
 
-msgid "Ijo"
-msgstr "Tiếng I-chô"
-
 msgid "Ilokano"
 msgstr "Tiếng I-lô-ca-nô"
 
@@ -8293,10 +8128,6 @@ msgstr "Ảnh dùng cho dấu liệt kê đã bật (ghi đè lên hộp)"
 
 msgid "Image used instead of the Check Box Off Mark"
 msgstr "Ảnh dùng thay cho Dấu Hộp Chọn bị Tắt"
-
-msgid ""
-"Image used instead of the Check Box Off Mark (when the radio is disabled)"
-msgstr "Ảnh dùng thay cho Dấu Hộp Chọn bị Tắt (khi nút chọn một bị tắt)"
 
 msgid "Image used instead of the Radio Off Mark"
 msgstr "Ảnh dùng thay cho Dấu Hộp Chọn Một bị Tắt"
@@ -8632,29 +8463,6 @@ msgstr ""
 msgid "Instruction Gloss (TrueType)"
 msgstr "Chú giải chỉ dẫn (TrueType)"
 
-msgid ""
-"Instructions in a TrueType font refer to\n"
-"points by number, so if you edit a glyph\n"
-"in such a way that some points have different\n"
-"numbers (add points, remove them, etc.) then\n"
-"the instructions will be applied to the wrong\n"
-"points with disasterous results.\n"
-"  Normally FontForge will remove the instructions\n"
-"if it detects that the points have been renumbered\n"
-"in order to avoid the above problem. You may turn\n"
-"this behavior off -- but be careful!"
-msgstr ""
-"Chỉ dẫn trong phông TrueType tham chiếu\n"
-"đến mỗi điểm theo con số. Vậy nếu bạn chỉnh\n"
-"sửa hình tượng bằng cách mà các điểm có số bị đổi\n"
-"(thêm/bỏ điểm v.v.) thì các chỉ dẫn sẽ được\n"
-"áp dụng cho điểm không đúng, làm kết quả rất xấu.\n"
-"\n"
-"Bình thường, trình FontForge sẽ gỡ bỏ các chỉ dẫn\n"
-"nếu nó phát hiện rằng các điểm đã được đánh số lại,\n"
-"để tránh vấn đề trên. Bạn vẫn có khả năng tắt\n"
-"ưng xử này, nhưng hãy rất cẩn thận."
-
 msgid "Instructions out of date"
 msgstr "Chỉ dẫn quá cũ"
 
@@ -8953,9 +8761,6 @@ msgid ""
 msgstr ""
 "JuMP Relative\n"
 "Bỏ hiệu (theo byte) để di chuyển con trỏ chỉ lệnh"
-
-msgid "Judezmo"
-msgstr "Tiếng Giu-đex-mô"
 
 msgid "Jula"
 msgstr "Tiếng Giu-la"
@@ -9459,12 +9264,6 @@ msgstr "La-tinh đã mở rộng C"
 msgid "Latin Extended-D"
 msgstr "La-tinh đã mở rộng D"
 
-msgid "Latin Full Width Forms"
-msgstr "Hình toàn rộng La-tinh"
-
-msgid "Latin Ligatures"
-msgstr "Chữ ghép La-tinh"
-
 msgid "Latin-1 Supplement"
 msgstr "Phần bổ sung Latin-1"
 
@@ -9937,12 +9736,6 @@ msgstr "Chữ thường sang chữ hoa rất nhỏ"
 msgid "Lowercase to Small Capitals"
 msgstr "Chữ thường sang chữ hoa nhỏ"
 
-msgid "Luganda"
-msgstr "Tiếng Lu-gan-đa"
-
-msgid "Luhya"
-msgstr "Tiếng Lu-hia"
-
 msgid "Lule Sami"
 msgstr "Tiếng Lu-le Xa-mi"
 
@@ -10169,9 +9962,6 @@ msgstr ""
 
 msgid "Make the counters narrower"
 msgstr "Làm cho bộ đếm hẹp hơn"
-
-msgid "Makua"
-msgstr "Tiếng Ma-khua"
 
 msgid "Malagasy"
 msgstr "Tiếng Ma-la-ga-xi"
@@ -10544,9 +10334,6 @@ msgstr "Tên trình đơn"
 msgid "Menu name with no associated script"
 msgstr "Tên trình đơn không có văn lệnh tương ứng"
 
-msgid "Merge Feature Info"
-msgstr "Trộn thông tin tính năng"
-
 msgid "Merge Fonts"
 msgstr "Trộn phông"
 
@@ -10591,9 +10378,6 @@ msgstr "Đơn vị đo %.50s"
 
 msgid "Metrics Label Color"
 msgstr "Màu nhãn đơn vị đo"
-
-msgid "MetricsView"
-msgstr "ÔXemĐơnVịĐo"
 
 msgid "MfArgs"
 msgstr "Đối Số MF"
@@ -10745,20 +10529,11 @@ msgstr "Trục _phụ :"
 msgid "Misc."
 msgstr "Linh tinh"
 
-msgid "Miscellaneous Math Symbols-A"
-msgstr "Ký hiệu Toán học Linh tinh (A)"
-
-msgid "Miscellaneous Math Symbols-B"
-msgstr "Ký hiệu Toán học Linh tinh (B)"
-
 msgid "Miscellaneous Symbols"
 msgstr "Ký hiệu lặt vặt"
 
 msgid "Miscellaneous Technical"
 msgstr "Kỹ thuật linh tinh"
-
-msgid "Miscellaneous Technical Symbols"
-msgstr "Ký hiệu Kỹ thuật Linh tinh"
 
 msgid "Mismatch lookup types inside a parsed lookup"
 msgstr "Sai khớp kiểu sự tra tìm bên trong sự tra tìm đã phân tích"
@@ -11233,9 +11008,6 @@ msgstr "NFNT (MacBinary)"
 msgid "NFNT (Resource)"
 msgstr "NFNT (tài nguyên)"
 
-msgid "NUL, Default Character"
-msgstr "Ký tự mặc định NUL"
-
 msgid "N_ever Interpolate"
 msgstr "Không _bao giờ nội suy"
 
@@ -11517,9 +11289,6 @@ msgstr "Tiếng Ni-xi"
 
 msgid "Niuean"
 msgstr "Tiếng Ni-u-e"
-
-msgid "Nkole"
-msgstr "Tiếng N-cô-le"
 
 #, c-format
 msgid "No (useable) bitmap strikes in this TTF font: %s"
@@ -12009,9 +11778,6 @@ msgstr "Không phải là định dạng CID"
 msgid "Not a CID-keyed font"
 msgstr "Không phải là phông đã khoá CID"
 
-msgid "Not a Unicode Character"
-msgstr "Không phải ký tự Unicode"
-
 msgid "Not a bdf file"
 msgstr "Không phải là tập tin bdf."
 
@@ -12138,9 +11904,6 @@ msgstr "Dạng số"
 
 msgid "Nyanja/Chewa"
 msgstr "Tiếng Nai-an-gia"
-
-msgid "Nynorsk"
-msgstr "Tiếng Ny-noa-x-kh"
 
 msgid "O Black Letter"
 msgstr "TH Chữ đen"
@@ -12539,9 +12302,6 @@ msgstr "Gốc"
 msgid "Origin:"
 msgstr "Gốc:"
 
-msgid "Original Color"
-msgstr "Màu gốc"
-
 msgid "Original Y Position"
 msgstr "Vị trí Y gốc"
 
@@ -12604,12 +12364,6 @@ msgstr "Viền bên trong nét ngoài"
 
 msgid "Outline Outer Border"
 msgstr "Viền bên ngoài nét ngoài"
-
-msgid "Outline View"
-msgstr "Ô xem nét ngoài"
-
-msgid "Outline View 2"
-msgstr "Ô xem nét ngoài 2"
 
 msgid "Outline Width"
 msgstr "Bề rộng nét ngoài"
@@ -13021,26 +12775,6 @@ msgstr "Phần mở rộng ngữ âm"
 msgid "Phonetic Extensions Supplement"
 msgstr "Phần bổ sung phần mở rộng ngữ âm"
 
-msgid ""
-"Physical screen width, measured in centimeters\n"
-"For this to take effect you must save the resource data (press the [Save] "
-"button)\n"
-"and restart fontforge"
-msgstr ""
-"Chiều rộng vật lý của màn hình, đo theo xen-ti-mét\n"
-"Để thiết lập này có tác động thì bạn cần phải lưu dữ liệu tài nguyên\n"
-"(bấm nút [Lưu]), sau đó khởi chạy lại FontForge."
-
-msgid ""
-"Physical screen width, measured in inches\n"
-"For this to take effect you must save the resource data (press the [Save] "
-"button)\n"
-"and restart fontforge"
-msgstr ""
-"Chiều rộng vật lý của màn hình, đo theo insơ\n"
-"Để thiết lập này có tác động thì bạn cần phải lưu dữ liệu tài nguyên\n"
-"(bấm nút [Lưu]), sau đó khởi chạy lại FontForge."
-
 msgid "Pick a CMap subtable"
 msgstr "Chọn một bảng phụ CMap"
 
@@ -13055,9 +12789,6 @@ msgstr "Chọn một trang"
 
 msgid "Pick a substitution to display in the window."
 msgstr "Chọn một sự thay thế cần hiển thị trong cửa sổ."
-
-msgid "Pilipino (Filipino)"
-msgstr "Tiếng Phi-li-pi-nô"
 
 msgid "Pixel List"
 msgstr "Danh sách điểm ảnh"
@@ -13224,9 +12955,6 @@ msgstr "Hình đa g_iác"
 
 msgid "Polish"
 msgstr "Tiếng Ba Lan"
-
-msgid "Pollard Phonetic"
-msgstr "Ngữ âm Po-lat"
 
 msgid "Polygon"
 msgstr "Đa giác"
@@ -13438,9 +13166,6 @@ msgstr "Ưu tiên: %d"
 msgid "Private Dictionary"
 msgstr "Từ điển Riêng"
 
-msgid "Private Use"
-msgstr "Dùng riêng"
-
 msgid "Private Use Area"
 msgstr "Vùng dùng riêng"
 
@@ -13486,9 +13211,6 @@ msgstr "Chữ số tỷ lệ"
 
 msgid "Proportional Width"
 msgstr "Bề rộng tỷ lệ"
-
-msgid "Provencal"
-msgstr "Tiếng Pợ-ro-ven-xan"
 
 msgid "Provide a glyph name"
 msgstr "Cung cấp tên hình tượng"
@@ -14321,9 +14043,6 @@ msgstr "Đang làm tròn thành số nguyên..."
 msgid "Row|New"
 msgstr "Mới"
 
-msgid "Ruanda"
-msgstr "Tiếng Ru-oanh-đa"
-
 msgid "Ruby Notational Forms"
 msgstr "Hình phụ chú Ruby"
 
@@ -14762,12 +14481,6 @@ msgstr "Ký hiệu khoa học in thấp"
 
 msgid "Scottish Gaelic"
 msgstr "Tiếng Xen-tơ (Ê-cốt)"
-
-msgid "Screen Width in Centimeters"
-msgstr "Độ rộng màn hình (theo xen-ti-mét)"
-
-msgid "Screen Width in Inches"
-msgstr "Độ rộng màn hình (theo insơ)"
 
 #, c-format
 msgid "Script '%c%c%c%c' "
@@ -15769,9 +15482,6 @@ msgstr "Hệ số mở rộng vị trí phương hướng bên"
 msgid "Side Bearings:"
 msgstr "Vị trí phương hướng bên:"
 
-msgid "Signature Mark"
-msgstr "Dấu chữ ký"
-
 msgid "Silte Gurage"
 msgstr "Tiếng Gu-ra-ge Xin-te"
 
@@ -15955,8 +15665,8 @@ msgid "SnapToInt"
 msgstr "Đính Số Nguyên"
 
 msgid ""
-"So if you type \"A\" here the first selected glyph would be named \"A.suffix"
-"\".\n"
+"So if you type \"A\" here the first selected glyph would be named \"A."
+"suffix\".\n"
 "The second \"B.suffix\", and so on."
 msgstr ""
 "Vì vậy, nếu bạn gõ vào đây chữ « A », hình tượng đã chọn đầu tiên\n"
@@ -16058,13 +15768,6 @@ msgstr "Tiếng Nam Xla-vê"
 
 msgid "Southern Sami"
 msgstr "Tiếng Nam Xă-mi"
-
-msgid ""
-"Space (in points) left between images and text in labels, buttons, menu "
-"items, etc. which have both"
-msgstr ""
-"Khoảng cách (theo điểm) nên còn lại giửa ảnh và chuỗi chữ trong nhãn, nút, "
-"mục trình đơn v.v. chứa cả hai"
 
 msgid "Space Regions"
 msgstr "Vùng khoảng cách"
@@ -16758,9 +16461,6 @@ msgstr ""
 "Super ROUND\n"
 "Quá phức tạp. Hãy tra tìm"
 
-msgid "Super and Sub scripts"
-msgstr "Chữ in cao/thấp"
-
 msgid "Superscript"
 msgstr "Chữ cao"
 
@@ -16785,14 +16485,8 @@ msgstr "Mũi tên bổ sung A"
 msgid "Supplemental Arrows-B"
 msgstr "Mũi tên bổ sung B"
 
-msgid "Supplemental Math Operators"
-msgstr "Toán từ Toán học Bổ sung"
-
 msgid "Supplemental Punctuation"
 msgstr "Dấu chấm câu bổ sung"
-
-msgid "Supplemental Symbols and Arrows"
-msgstr "Ký hiệu và Mũi tên Bổ sung"
 
 msgid "Supplementary Ideographic Plane"
 msgstr "Mặt phẳng Chữ viết Ghi ý Bổ sung"
@@ -16812,15 +16506,6 @@ msgstr "Mặt phẳng Mục đích Đặc biệt Bổ sung"
 msgid "Suri"
 msgstr "Tiếng Xu-ri"
 
-msgid "Surrogate High"
-msgstr "Thay thế cao"
-
-msgid "Surrogate High, Non Private Use"
-msgstr "Thay thế cao, không dùng riêng"
-
-msgid "Surrogate High, Private Use"
-msgstr "Thay thế cao, dùng riêng"
-
 msgid "Sutu"
 msgstr "Tiếng Xu-tu"
 
@@ -16838,9 +16523,6 @@ msgstr "Tiếng Xouă-hi-li (Ken-ya)"
 
 msgid "Swash"
 msgstr "Đuôi tu từ"
-
-msgid "Swazi"
-msgstr "Tiếng Xouă-xi"
 
 msgid "Swedish"
 msgstr "Tiếng Thuỵ Điển"
@@ -16874,9 +16556,6 @@ msgstr "Bộ ký tự ký hiệu"
 
 msgid "Symbolic"
 msgstr "Tượng Trưng"
-
-msgid "Symbols"
-msgstr "Ký hiệu"
 
 msgid "Symbols:"
 msgstr "Ký hiệu:"
@@ -17044,9 +16723,6 @@ msgstr "Tiếng Te-lu-gu"
 msgid "Temne"
 msgstr "Tiếng Tem-ne"
 
-msgid "Template Color"
-msgstr "Màu mẫu"
-
 msgid "Terminal Forms"
 msgstr "Hình cuối"
 
@@ -17107,7 +16783,6 @@ msgstr ""
 "Những lời gợi ý %1$s trong hình tượng « %2$.30s » trong phông %3$.30s không "
 "tương ứng với những lời trong %4$.30s (số khác hay tiêu chuẩn chồng lấp khác)"
 
-#, c-format
 msgid ""
 "The %1$s in the search dialog contains a reference to %2$.20hs which does "
 "not exist in the new font.\n"
@@ -18515,8 +18190,8 @@ msgstr "Chiều rộng của đường được dùng để vẽ các điểm đ
 #, c-format
 msgid ""
 "The width, height, depth or italic correction of %s is too big. Tfm files "
-"may not contain values bigger than 16 times the em-size of the font. Width="
-"%g, height=%g, depth=%g, italic correction=%g"
+"may not contain values bigger than 16 times the em-size of the font. "
+"Width=%g, height=%g, depth=%g, italic correction=%g"
 msgstr ""
 "%s có bề rộng, bề cao, bề sâu hay hệ số sửa in nghiêng mà quá lớn.\n"
 "Tập tin TFM không thể chứa giá trị lớn hơn 16× kích cỡ em của phông.\n"
@@ -19235,16 +18910,6 @@ msgstr ""
 "Có hợp với ý muốn không?"
 
 msgid ""
-"This is an abstract class which defines common features of the\n"
-"FontView, CharView, BitmapView and MetricsView"
-msgstr ""
-"Đây là một hạng trừu tượng mà xác định các tính năng chung của:\n"
-" • FontView — khung xem phông chữ\n"
-" • CharView — khung xem ký tự\n"
-" • BitmapView — khung xem ảnh mảng\n"
-" • MetricsView — khung xem đơn vị đo"
-
-msgid ""
 "This is an identifying number shared by all members of\n"
 "this font family with the same style (I.e. 10pt Bold and\n"
 "24pt Bold would have the same id, but 10pt Italic would not"
@@ -19565,12 +19230,6 @@ msgid ""
 msgstr ""
 "Phiên bản Fontforge này đã không liên kết với thư viện spiro, do đó không "
 "dùng được."
-
-msgid "This window displays a single outline glyph"
-msgstr " Cửa sổ này hiển thị một hình tượng nét ngoài riêng lẻ"
-
-msgid "This window displays a single outline glyph (more data)"
-msgstr " Cửa sổ này hiển thị một hình tượng nét ngoài riêng lẻ (dữ liệu thêm)"
 
 msgid "This window displays metrics information about a font"
 msgstr "Cửa sổ này hiển thị thông tin đơn vị đo về một phông chữ nào đó"
@@ -20009,9 +19668,6 @@ msgstr "Tiếng T-xouă-na"
 msgid "Tulu"
 msgstr "Tiếng Tu-lu"
 
-msgid "Tundra Nenets"
-msgstr "Tiếng Ne-net-x lãnh nguyên"
-
 msgid "Turkish"
 msgstr "Tiếng Thổ Nhĩ Kỳ"
 
@@ -20332,9 +19988,6 @@ msgstr "Unicode 2.0+, chỉ BMP"
 msgid "Unicode 2.0+, all planes"
 msgstr "Unicode 2.0+, mọi mặt phẳng"
 
-msgid "Unicode Basic Multilingual Plane"
-msgstr "Mặt Phẳng Đa Ngôn Ngữ Cơ Bản Unicode"
-
 msgid "Unicode C_har:"
 msgstr "_Ký tự Unicode:"
 
@@ -20343,15 +19996,6 @@ msgstr "Phạm vi Unicode"
 
 msgid "Unicode Ranges:"
 msgstr "Phạm vi Unicode:"
-
-msgid "Unicode Supplementary Ideographic Plane"
-msgstr "Mặt phẳng Chữ viết Ghi ý Bổ sung Unicode"
-
-msgid "Unicode Supplementary Multilingual Plane"
-msgstr "Mặt phẳng Đa ngôn ngữ Bổ sung Unicode"
-
-msgid "Unicode Supplementary Special-purpose Plane"
-msgstr "Mặt phẳng Mục đích Đặc biệt Bổ sung Unicode"
 
 msgid "Unicode _Value:"
 msgstr "_Giá trị Unicode:"
@@ -20792,9 +20436,6 @@ msgstr "Dấu chọn biến đổi (hay 0)"
 
 msgid "Variation Selectors"
 msgstr "Dấu chọn biến đổi"
-
-msgid "Variation Selectors B"
-msgstr "Dấu chọn biến đổi B"
 
 #, c-format
 msgid ""
@@ -21383,15 +21024,6 @@ msgid "When serifs are removed (as first two in \"m\"), replace with:"
 msgstr "Khi bỏ chân (như hai chân thứ nhất của « m ») thì thay thế bằng:"
 
 msgid ""
-"When the hint's position is changed\n"
-"adjust the postion of any points\n"
-"which lie on that hint"
-msgstr ""
-"Khi vị trí lời gợi ý đã thay đổi,\n"
-"điều chỉnh vị trí của điểm nào\n"
-"nằm trên lời gợi ý đó."
-
-msgid ""
 "When the mouse pointer is within this many pixels\n"
 "of one of the various interesting features (baseline,\n"
 "width, grid splines, etc.) the pointer will snap\n"
@@ -21579,9 +21211,6 @@ msgstr "Dời X"
 msgid "X Repeat Count"
 msgstr "Số đếm X đã lặp lại"
 
-msgid "X Resource Editor"
-msgstr "Trình sửa tài nguyên X"
-
 msgid "X Scale Factor"
 msgstr "Hệ số co giãn X"
 
@@ -21622,17 +21251,11 @@ msgstr "Y gần¹ bề c_ao chuẩn"
 msgid "Y-Cree"
 msgstr "Tiếng Cợ-ri Y"
 
-msgid "Yakut"
-msgstr "Tiếng Ya-kut"
-
 msgid "Yes"
 msgstr "Có"
 
 msgid "Yes to _All"
 msgstr "Đồng ý _với tất cả"
-
-msgid "Yi"
-msgstr "Tiếng Yi"
 
 msgid "Yi Classic"
 msgstr "Tiếng Yi cổ điển"
@@ -21892,10 +21515,6 @@ msgstr "Bạn cần phải ghi rõ một đá lát ở giữa"
 msgid "You must specify a pattern"
 msgstr "Phải ghi rõ một mẫu"
 
-#, c-format
-msgid "You must specify a replacement glyph for %s"
-msgstr "Bạn phải xác định một hình tượng thay thế cho %s"
-
 msgid "You must specify a standard type1 extension (.pfb or .pfa)"
 msgstr "Phải xác định một phần mở rộng kiểu 1 tiêu chuẩn (.pfb hay .pfa)."
 
@@ -21967,9 +21586,6 @@ msgstr "Th_u nhỏ"
 
 msgid "Zande"
 msgstr "Tiếng Xan-đe"
-
-msgid "Zapf Dingbats"
-msgstr "Ký tự trang trí Zapf"
 
 msgid "Zone:"
 msgstr "Vùng:"
@@ -22170,9 +21786,6 @@ msgstr "Đón_g"
 
 msgid "_Cluster"
 msgstr "_Chùm"
-
-msgid "_Compact"
-msgstr "Nén _chặt"
 
 msgid "_Condense/Extend..."
 msgstr "_Co lại/Dãn ra..."
@@ -22984,9 +22597,6 @@ msgstr "_Lưới thép"
 msgid "_Wireframe..."
 msgstr "_Lưới thép..."
 
-msgid "_X Resource Editor..."
-msgstr "Trình sửa tài nguyên _X..."
-
 msgid "_X near¹"
 msgstr "_X gần¹"
 
@@ -23441,19 +23051,19 @@ msgstr "Phông mảng ảnh ΤεΧ"
 
 #, c-format
 msgid ""
-"“%s” in %s did not contain a pairwise positioning lookup ∆x=%d ∆y=%d ∆x_adv="
-"%d ∆y_adv=%d to %s ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"
+"“%s” in %s did not contain a pairwise positioning lookup ∆x=%d ∆y=%d "
+"∆x_adv=%d ∆y_adv=%d to %s ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"
 msgstr ""
 "Trong %s, « %s » không chứa sự tra tìm định vị theo hướng cặp ∆x=%d ∆y=%d "
 "∆x_adv=%d ∆y_adv=%d to %s ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"
 
 #, c-format
 msgid ""
-"“%s” in %s did not contain a positioning lookup ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv="
-"%d\n"
+"“%s” in %s did not contain a positioning lookup ∆x=%d ∆y=%d ∆x_adv=%d "
+"∆y_adv=%d\n"
 msgstr ""
-"Trong %s, « %s » không chứa sự tra tìm định vị ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv="
-"%d\n"
+"Trong %s, « %s » không chứa sự tra tìm định vị ∆x=%d ∆y=%d ∆x_adv=%d "
+"∆y_adv=%d\n"
 
 #, c-format
 msgid "“%s” in %s did not contain a substitution lookup to %s\n"

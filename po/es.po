@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-31 02:48+0000\n"
-"PO-Revision-Date: 2022-12-31 02:46\n"
+"POT-Creation-Date: 2023-12-30 03:08-0800\n"
+"PO-Revision-Date: 2023-12-30 08:15\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Language: es_ES\n"
@@ -452,6 +452,9 @@ msgstr "Argumento"
 
 msgid "Arabic"
 msgstr "Árabe"
+
+msgid "Arabic Supplement"
+msgstr "Árabe, suplemento"
 
 msgid "Arakanese"
 msgstr "Arakanés"
@@ -1223,6 +1226,9 @@ msgstr ""
 "Verificar si una substitución, una clase de interletraje, etc. utiliza un "
 "nombre de glifo que no existe en la fuente"
 
+msgid "Cherokee"
+msgstr "Cheroqui"
+
 msgid "Chinese (Hong Kong)"
 msgstr "Chino (Hong Kong) zh_CN"
 
@@ -1282,6 +1288,9 @@ msgstr "Co_piar margen izquierdo"
 
 msgid "Com_binations"
 msgstr "Com_binaciones"
+
+msgid "Combining Diacritical Marks"
+msgstr "Marcas diacríticas combinables"
 
 msgid "Comment"
 msgstr "Comentario"
@@ -1458,6 +1467,9 @@ msgstr "Cor_tar"
 
 msgid "Cubic"
 msgstr "Cúbico"
+
+msgid "Cuneiform"
+msgstr "Cuneiforme"
 
 msgid "Current"
 msgstr "Actual"
@@ -2538,6 +2550,9 @@ msgstr "Gallego"
 msgid "Gaudeamus Ligature!"
 msgstr "¡Alabemos la ligadura!"
 
+msgid "General Punctuation"
+msgstr "Puntuación general"
+
 msgid "Generate Mac _Family..."
 msgstr "Generar _familia para Mac..."
 
@@ -3517,6 +3532,9 @@ msgstr "Diseños maestros"
 msgid "Mathematical Greek"
 msgstr "Griego para matemáticas"
 
+msgid "Mayan Numerals"
+msgstr "Cifras mayas"
+
 msgid "Measure distance, angle between points"
 msgstr "Medir distancia, ángulo entre puntos"
 
@@ -4099,6 +4117,9 @@ msgstr "Abrir referencia"
 msgid "Open failed"
 msgstr "Error al abrir"
 
+msgid "Optical Character Recognition"
+msgstr "Reconocimiento óptico de caracteres"
+
 msgid "Options"
 msgstr "Opciones"
 
@@ -4668,6 +4689,9 @@ msgstr "Ajustar a la horizo_ntal/vertical"
 msgid "Sa_me Glyph As"
 msgstr "Igual carácter que(_M)"
 
+msgid "Samaritan"
+msgstr "Samaritano"
+
 msgid "Same as PostScript Names"
 msgstr "Igual que los nombres de PostScript"
 
@@ -5117,6 +5141,9 @@ msgstr "Espacia_r regiones..."
 msgid "Space:"
 msgstr "Espaciado:"
 
+msgid "Spacing Modifier Letters"
+msgstr "Letras modificadoras con espaciado"
+
 msgid "Spanish"
 msgstr "Español"
 
@@ -5239,6 +5266,33 @@ msgstr "Trazado..."
 msgid "Style Set 1"
 msgstr "Estilo 1"
 
+msgid "Style Set 10"
+msgstr "Conjunto estilístico 10"
+
+msgid "Style Set 11"
+msgstr "Conjunto estilístico 11"
+
+msgid "Style Set 12"
+msgstr "Conjunto estilístico 12"
+
+msgid "Style Set 13"
+msgstr "Conjunto estilístico 13"
+
+msgid "Style Set 14"
+msgstr "Conjunto estilístico 14"
+
+msgid "Style Set 15"
+msgstr "Conjunto estilístico 15"
+
+msgid "Style Set 16"
+msgstr "Conjunto estilístico 16"
+
+msgid "Style Set 17"
+msgstr "Conjunto estilístico 17"
+
+msgid "Style Set 18"
+msgstr "Conjunto estilístico 18"
+
 msgid "Style Set 2"
 msgstr "Estilo 2"
 
@@ -5250,6 +5304,18 @@ msgstr "Estilo 4"
 
 msgid "Style Set 5"
 msgstr "Estilo 5"
+
+msgid "Style Set 6"
+msgstr "Conjunto estilístico 6"
+
+msgid "Style Set 7"
+msgstr "Conjunto estilístico 7"
+
+msgid "Style Set 8"
+msgstr "Conjunto estilístico 8"
+
+msgid "Style Set 9"
+msgstr "Conjunto estilístico 9"
 
 msgid "Style _ID:"
 msgstr "Estilo _ID:"
@@ -5268,6 +5334,9 @@ msgstr "Sundanese (romano)"
 
 msgid "Superscript"
 msgstr "Supraíndice"
+
+msgid "Superscripts and Subscripts"
+msgstr "Superíndices y subíndices"
 
 msgid "Swadaya Aramaic"
 msgstr "Arameo swadaya"
@@ -5308,6 +5377,9 @@ msgstr "La etiqueta debe constar de 4 caracteres"
 
 msgid "Tag too long"
 msgstr "Etiqueta demasiado larga"
+
+msgid "Tags"
+msgstr "Etiquetas"
 
 msgid "Tahitian"
 msgstr "Tahitiano"
