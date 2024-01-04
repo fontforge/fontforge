@@ -45,7 +45,7 @@ static void NOUI_IError(const char *format,...) {
     if (NULL != str) {
         fprintf(stderr,"%s",str);
         if ( str[strlen(str)-1]!='\n' )
-        putc('\n',stderr);
+            putc('\n',stderr);
         free(str);
     } else {
         fprintf(stderr, "utf82def_copy failure!\n");
@@ -60,7 +60,7 @@ static void NOUI__LogError(const char *format,va_list ap) {
     if (NULL != str) {
         fprintf(stderr,"%s",str);
         if ( str[strlen(str)-1]!='\n' )
-        putc('\n',stderr);
+            putc('\n',stderr);
         free(str);
     } else {
         fprintf(stderr, "utf82def_copy failure!\n");
