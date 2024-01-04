@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-31 02:48+0000\n"
-"PO-Revision-Date: 2022-12-31 02:46\n"
+"POT-Creation-Date: 2023-12-30 03:08-0800\n"
+"PO-Revision-Date: 2023-12-30 08:15\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Language: uk_UA\n"
@@ -3150,16 +3150,16 @@ msgstr "Помилковий гліф лігатури. GID %d не менше �
 
 #, c-format
 msgid ""
-"Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font="
-"%d\n"
+"Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in "
+"font=%d\n"
 msgstr ""
 "Помилкова таблиця фільтрування: формат=2 (%d/%d), перший=%d останній=%d "
 "загалом гліфів у шрифті=%d\n"
 
 #, c-format
 msgid ""
-"Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font="
-"%d\n"
+"Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in "
+"font=%d\n"
 msgstr ""
 "Помилкова таблиця фільтрування: формат=4 (%d/%d), перший=%d останній=%d "
 "загалом гліфів у шрифті=%d\n"
@@ -3167,8 +3167,8 @@ msgstr ""
 #, c-format
 msgid "Bad lookup table: format=6, first=%d total glyphs in font=%d\n"
 msgstr ""
-"Помилкова таблиця фільтрування: формат=6, перший=%d загалом гліфів у шрифті="
-"%d\n"
+"Помилкова таблиця фільтрування: формат=6, перший=%d загалом гліфів у "
+"шрифті=%d\n"
 
 #, c-format
 msgid "Bad lookup table: format=8, first=%d cnt=%d total glyphs in font=%d\n"
@@ -8621,8 +8621,8 @@ msgstr ""
 #, c-format
 msgid "Glyph “%s” has vertical advance width %d in %s but %d in %s at %d@%d\n"
 msgstr ""
-"Гліф «%s» має значення вертикальної додаткової ширини %d у %s і %d у %s, %d@"
-"%d\n"
+"Гліф «%s» має значення вертикальної додаткової ширини %d у %s і %d у %s, "
+"%d@%d\n"
 
 #, c-format
 msgid "Glyph “%s” in %s has no truetype instructions\n"
@@ -18580,8 +18580,8 @@ msgid "SnapToInt"
 msgstr "Округляти до цілого"
 
 msgid ""
-"So if you type \"A\" here the first selected glyph would be named \"A.suffix"
-"\".\n"
+"So if you type \"A\" here the first selected glyph would be named \"A."
+"suffix\".\n"
 "The second \"B.suffix\", and so on."
 msgstr ""
 "Отже, якщо ви введете тут «A», перший позначений гліф буде названо «A."
@@ -19858,7 +19858,6 @@ msgstr ""
 "Гінти %1$s у гліфі «%2$.30s» у шрифті %3$.30s не відповідають гінтам у "
 "%4$.30s (інша кількість або інші критерії перекриття)"
 
-#, c-format
 msgid ""
 "The %1$s in the search dialog contains a reference to %2$.20hs which does "
 "not exist in the new font.\n"
@@ -21581,8 +21580,8 @@ msgstr "Ширина лінії, яку буде використано для �
 #, c-format
 msgid ""
 "The width, height, depth or italic correction of %s is too big. Tfm files "
-"may not contain values bigger than 16 times the em-size of the font. Width="
-"%g, height=%g, depth=%g, italic correction=%g"
+"may not contain values bigger than 16 times the em-size of the font. "
+"Width=%g, height=%g, depth=%g, italic correction=%g"
 msgstr ""
 "Велична ширини, висоти, глибини або виправлення курсиву %s є надто великою. "
 "У файлах tfm не можна використовувати значення, що перевищують em більше ніж "
@@ -27293,19 +27292,19 @@ msgstr ""
 
 #, c-format
 msgid ""
-"“%s” in %s did not contain a pairwise positioning lookup ∆x=%d ∆y=%d ∆x_adv="
-"%d ∆y_adv=%d to %s ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"
+"“%s” in %s did not contain a pairwise positioning lookup ∆x=%d ∆y=%d "
+"∆x_adv=%d ∆y_adv=%d to %s ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"
 msgstr ""
 "«%s» у %s не містив попарного фільтрування розташувань ∆x=%d ∆y=%d ∆x_дод=%d "
 "∆y_дод=%d до %s ∆x=%d ∆y=%d ∆x_дод=%d ∆y_дод=%d\n"
 
 #, c-format
 msgid ""
-"“%s” in %s did not contain a positioning lookup ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv="
-"%d\n"
+"“%s” in %s did not contain a positioning lookup ∆x=%d ∆y=%d ∆x_adv=%d "
+"∆y_adv=%d\n"
 msgstr ""
-"«%s» у %s не містила фільтрування розташування ∆x=%d ∆y=%d ∆x_дод=%d ∆y_дод="
-"%d\n"
+"«%s» у %s не містила фільтрування розташування ∆x=%d ∆y=%d ∆x_дод=%d "
+"∆y_дод=%d\n"
 
 #, c-format
 msgid "“%s” in %s did not contain a substitution lookup to %s\n"

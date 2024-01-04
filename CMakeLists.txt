@@ -185,6 +185,12 @@ endif()
 add_subdirectory(contrib)
 if(ENABLE_PYTHON_SCRIPTING_RESULT)
   add_subdirectory(pycontrib)
+  # External tests must be executed with the same version of Python. It's not
+  # possible to export environmet variable to the parent scope, so we dump it
+  # into a file as a workaround.
+  if(APPLE)
+    file(WRITE "${PROJECT_BINARY_DIR}/CMake_Python3_EXECUTABLE" "${Python3_EXECUTABLE}")
+  endif()
 endif()
 if(BUILD_TESTING)
   add_subdirectory(tests)
