@@ -112,7 +112,7 @@ function(_get_git_version)
     if(Git_FOUND)
       execute_process(
         COMMAND
-          "${GIT_EXECUTABLE}" "log" "--pretty=format:%H" "-n" "1"
+          "${GIT_EXECUTABLE}" "log" "--no-show-signature" "--pretty=format:%H" "-n" "1"
         WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
         RESULT_VARIABLE GIT_RETVAL
         OUTPUT_VARIABLE GIT_OUTPUT
