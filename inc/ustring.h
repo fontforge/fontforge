@@ -142,6 +142,7 @@ extern long utf82u_strlen(const char *utf8_str); /* Count how many shorts needed
 extern void utf8_strncpy(register char *to, const char *from, int len); /* copy n characters NOT bytes */
 extern char *def2utf8_copy(const char *from);
 extern char *utf82def_copy(const char *ufrom);
+extern char *utf82def_copy_safe(const char *ufrom);
 extern char *utf8_strchr(const char *utf8_str, int search_char);
 
 extern unichar_t *utf82u_strncpy(unichar_t *ubuf,const char *utf8buf,int len);

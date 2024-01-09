@@ -461,7 +461,7 @@ static void PrintVal(Val *val) {
 
     if ( val->type==v_str ) {
 	char *t1 = script2utf8_copy(val->u.sval);
-	char *loc = utf82def_copy(t1);
+	char *loc = utf82def_copy_safe(t1);
 	printf( "%s", loc );
 	free(loc);
     free(t1);
@@ -520,7 +520,7 @@ static void bPostNotice(Context *c) {
     } else
     {
 	t1 = script2utf8_copy(loc);
-	loc = utf82def_copy(t1);
+	loc = utf82def_copy_safe(t1);
 	fprintf(stderr,"%s\n", loc );
 	free(loc); free(t1);
     }
@@ -543,7 +543,7 @@ static void bAskUser(Context *c) {
     if ( no_windowing_ui ) {
 	char buffer[300];
 	char *t1 = script2utf8_copy(quest);
-	char *loc = utf82def_copy(t1);
+	char *loc = utf82def_copy_safe(t1);
 	printf( "%s", loc );
 	free(t1); free(loc);
 	buffer[0] = '\0';
