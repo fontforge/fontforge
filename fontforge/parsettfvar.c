@@ -579,7 +579,7 @@ return;
     v->tuples = calloc(globaltc,sizeof(struct tuples));
     fseek(ttf,tupoff,SEEK_SET);
     for ( i=0; i<globaltc; ++i ) {
-	v->tuples[i].coords = malloc(axiscount*sizeof(float));
+	v->tuples[i].coords = malloc(axiscount*sizeof(real));
 	for ( j=0; j<axiscount; ++j )
 	    v->tuples[i].coords[j] = ((short) getushort(ttf))/16384.0;
 	v->tuples[i].chars = InfoCopyGlyphs(info);
