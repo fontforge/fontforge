@@ -12003,7 +12003,8 @@ return(-1);
 return( -1 );
     sizes = malloc((cnt+1)*sizeof(int));
     for ( i=0; i<cnt; ++i ) {
-	if ( !PyArg_ParseTuple(PyTuple_GetItem(value,i),"i", &sizes[i])) {
+	sizes[i] = PyLong_AsLong(PyTuple_GetItem(value,i));
+	if (PyErr_Occurred() && !PyArg_ParseTuple(PyTuple_GetItem(value,i),"i", &sizes[i])) {
 	    free(sizes);
 return( -1 );
 	}
