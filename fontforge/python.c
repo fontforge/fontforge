@@ -7041,12 +7041,12 @@ return( Py_BuildValue("d", b.minx ));
 }
 
 static int PyFF_Glyph_set_lsb(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
-    int val;
+    real val;
     real trans[6];
     DBounds b;
     SplineChar *sc = self->sc;
 
-    val = PyLong_AsLong(value);
+    val = PyFloat_AsDouble(value);
     if ( PyErr_Occurred()!=NULL )
 return( -1 );
     SplineCharFindBounds(sc,&b);
@@ -7068,10 +7068,10 @@ return( Py_BuildValue("d", self->sc->width - b.maxx ));
 }
 
 static int PyFF_Glyph_set_rsb(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
-    int val;
+    real val;
     DBounds b;
 
-    val = PyLong_AsLong(value);
+    val = PyFloat_AsDouble(value);
     if ( PyErr_Occurred()!=NULL )
 return( -1 );
 
