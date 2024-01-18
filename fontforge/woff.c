@@ -635,8 +635,9 @@ int _WriteWOFF2Font(FILE *fp, SplineFont *sf, enum fontformat format, int32_t *b
     }
     /* WOFF2 internal format can be either TTF or OTF. We select it
        automatically to preserve maximum font data. */
-    enum fontformat internal_format = (sf->layers[ly_fore].order2) ? ff_ttf : ff_otf;
-    int ret = _WriteTTFFont(tmp, sf, internal_format, bsizes, bf, flags, enc, layer);
+    format = sf->subfonts!=NULL ? ff_otfcid :
+		sf->layers[layer].order2 ? ff_ttf : ff_otf;
+    int ret = _WriteTTFFont(tmp, sf, format, bsizes, bf, flags, enc, layer);
     if (!ret) {
         fclose(tmp);
         return 0;
