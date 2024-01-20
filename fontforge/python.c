@@ -480,6 +480,78 @@ static PyObject *TagToPythonString(uint32_t tag,int ismac) {
 return( PyUnicode_FromString(foo));
 }
 
+static PyObject *DeviceTableToPythonTuple(DeviceTable **devtab) {
+    int cnt, px, cor, low, high;
+    
+    if ( *devtab==NULL || (*devtab)->corrections==NULL ) {
+        return( PyTuple_New(0) );
+    }
+
+    low = (*devtab)->first_pixel_size;
+    high = (*devtab)->last_pixel_size;
+    cnt = 0;
+    for ( px=low; px<=high; ++px ) {
+        if ( (*devtab)->corrections[px-low]!=0 )
+            cnt++;
+    }
+    PyObject *py_devtab = PyTuple_New(cnt);
+
+    cnt = 0;
+    for ( px=low; px<=high; ++px ) {
+        if ( (*devtab)->corrections[px-low]!=0 ) {
+            cor = (*devtab)->corrections[px-low];
+            PyObject *t = PyTuple_Pack(2, Py_BuildValue("i", px), Py_BuildValue("i", cor));
+            PyTuple_SetItem(py_devtab, cnt, t);
+            cnt++;
+        }
+    }
+    return( py_devtab );
+}
+
+/* returns -1 if there was an error, 0 otherwise*/
+static int PythonTupleToDeviceTable(DeviceTable **devtab, PyObject *value) {
+    int cnt, i, low = -1, high = -1, pixel, cor;
+    DeviceTable *dv = NULL;
+
+    DeviceTableFree(*devtab);
+
+    PyObject *seq = PySequence_Fast(value, "Must be a tuple or a list");
+    cnt = PySequence_Fast_GET_SIZE(seq);
+    if ( cnt == 0 ) {
+        *devtab = NULL;
+        return ( 0 );
+    }
+    
+    for ( i=0; i<cnt; ++i ) {
+        PyObject *adj_tuple = PySequence_Fast_GET_ITEM(seq, i);
+        if ( !PyTuple_Check(adj_tuple) || PyTuple_Size(adj_tuple) != 2 ) {
+            PyErr_Format(PyExc_TypeError, "Device Table elements must be tuples of length 2");
+            return( -1 );
+        }
+        PyArg_ParseTuple(adj_tuple, "ii", &pixel, &cor);
+        if ( low==-1 )
+            low = high = pixel;
+        else if ( pixel<low )
+            low = pixel;
+        else if ( pixel>high ) 
+            high = pixel;
+    }
+
+    dv = chunkalloc(sizeof(DeviceTable));
+    dv->first_pixel_size = low;
+    dv->last_pixel_size = high;
+    dv->corrections = calloc(high-low+1,1);
+    
+    for ( i=0; i<cnt; ++i ) {
+        PyObject *adj_tuple = PySequence_Fast_GET_ITEM(seq, i);
+        PyArg_ParseTuple(adj_tuple, "ii", &pixel, &cor);
+        dv->corrections[pixel-low] = cor;
+    }
+
+    *devtab = dv;
+    return( 0 );
+}
+
 /* ************************************************************************** */
 /* Methods of module FontForge                                                */
 /* ************************************************************************** */
@@ -11086,6 +11158,13 @@ static PyObject *PyFFMath_get(PyFF_Math *self, void *closure) {
 return( Py_BuildValue("i", *(int16_t *) (((char *) math) + offset) ));
 }
 
+static PyObject *PyFFMathDevTab_get(PyFF_Math *self, void *closure) {
+    int devtab_offset = (int) (intptr_t) closure;
+    struct MATH *math = SFGetMathTable(self->sf);
+    DeviceTable **devtab = ((DeviceTable **) (((char *) (math)) + devtab_offset ));
+    return( DeviceTableToPythonTuple(devtab) );
+}
+
 static int PyFFMath_set(PyFF_Math *self, PyObject *value, void *closure) {
     int offset = (int) (intptr_t) closure;
     struct MATH *math;
@@ -11101,6 +11180,13 @@ return( -1 );
     }
     *(int16_t *) (((char *) math) + offset) = val;
 return( 0 );
+}
+
+static int PyFFMathDevTab_set(PyFF_Math *self, PyObject *value, void *closure) {
+    int devtab_offset = (int) (intptr_t) closure;
+    struct MATH *math = SFGetMathTable(self->sf);
+    DeviceTable **devtab = (DeviceTable **) (((char *) (math)) + devtab_offset );
+    return ( PythonTupleToDeviceTable(devtab, value) );
 }
 
 static PyObject *PyFFMath_clear(PyFF_Math *self, PyObject *UNUSED(args)) {
@@ -11184,18 +11270,34 @@ static PyTypeObject PyFF_MathType = {
 
 /* Build a get/set table for the math type based on the math_constants_descriptor */
 static int setup_math_type(PyTypeObject* mathtype) {
-    int cnt;
+    int cnt, cnt_dt;
     PyGetSetDef *getset;
 
-    for ( cnt=0; math_constants_descriptor[cnt].script_name!=NULL; ++cnt );
-
-    getset = calloc(cnt+1,sizeof(PyGetSetDef));
+    cnt_dt = 0;
     for ( cnt=0; math_constants_descriptor[cnt].script_name!=NULL; ++cnt ) {
-	getset[cnt].name = math_constants_descriptor[cnt].script_name;
-	getset[cnt].get = (getter) PyFFMath_get;
-	getset[cnt].set = (setter) PyFFMath_set;
-	getset[cnt].doc = math_constants_descriptor[cnt].message;
-	getset[cnt].closure = (void *) (intptr_t) math_constants_descriptor[cnt].offset;
+        if (math_constants_descriptor[cnt].devtab_offset >= 0)
+            ++cnt_dt;
+    }
+
+    getset = calloc(cnt+cnt_dt+1,sizeof(PyGetSetDef));
+    cnt_dt = 0;
+    for ( cnt=0; math_constants_descriptor[cnt].script_name!=NULL; ++cnt ) {
+    getset[cnt+cnt_dt].name = math_constants_descriptor[cnt].script_name;
+    getset[cnt+cnt_dt].get = (getter) PyFFMath_get;
+    getset[cnt+cnt_dt].set = (setter) PyFFMath_set;
+    getset[cnt+cnt_dt].doc = math_constants_descriptor[cnt].message;
+    getset[cnt+cnt_dt].closure = (void *) (intptr_t) math_constants_descriptor[cnt].offset;
+    if ( math_constants_descriptor[cnt].devtab_offset >= 0 ) {
+        ++cnt_dt;
+        char *name = malloc(strlen(math_constants_descriptor[cnt].script_name) + 11 + 1);
+        strcpy(name, math_constants_descriptor[cnt].script_name);
+        strcat(name, "DeviceTable");
+        getset[cnt+cnt_dt].name = name;
+        getset[cnt+cnt_dt].get = (getter) PyFFMathDevTab_get;
+        getset[cnt+cnt_dt].set = (setter) PyFFMathDevTab_set;
+        getset[cnt+cnt_dt].doc = math_constants_descriptor[cnt].message;
+        getset[cnt+cnt_dt].closure = (void *) (intptr_t) math_constants_descriptor[cnt].devtab_offset;
+    }
     }
     mathtype->tp_getset = getset;
     return 0;
