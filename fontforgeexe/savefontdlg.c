@@ -1400,7 +1400,8 @@ return;
     }
 
     if ( likecff || oldformatstate<=ff_cffcid ||
-	    (oldformatstate>=ff_otf && oldformatstate<=ff_otfciddfont)) {
+	     (oldformatstate>=ff_otf && oldformatstate<=ff_otfciddfont) ||
+        oldformatstate==ff_woff_otf || oldformatstate==ff_woff2_otf) {
 	if ( d->sf->ascent+d->sf->descent!=1000 && !psscalewarned ) {
 	    if ( gwwv_ask(_("Non-standard Em-Size"),(const char **) buts,0,1,_("The convention is that PostScript fonts should have an Em-Size of 1000. But this font has a size of %d. This is not an error, but you might consider altering the Em-Size with the Element->Font Info->General dialog.\nDo you wish to continue to generate your font in spite of this?"),
 		    d->sf->ascent+d->sf->descent)==1 )
