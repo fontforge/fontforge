@@ -424,10 +424,10 @@ int _WriteWOFFFont(FILE *woff,SplineFont *sf, enum fontformat format,
 	}
     }
 
-    format = sf->subfonts!=NULL ? ff_otfcid :
-		sf->layers[layer].order2 ? ff_ttf : ff_otf;
+    enum fontformat inner_format = (format == ff_woff_ttf) ? ff_ttf :
+                                   (sf->subfonts!=NULL) ? ff_otfcid : ff_otf;
     sfnt = GFileTmpfile();
-    ret = _WriteTTFFont(sfnt,sf,format,bsizes,bf,flags,enc,layer);
+    ret = _WriteTTFFont(sfnt,sf,inner_format,bsizes,bf,flags,enc,layer);
     if ( !ret ) {
 	fclose(sfnt);
 return( ret );
@@ -633,11 +633,9 @@ int _WriteWOFF2Font(FILE *fp, SplineFont *sf, enum fontformat format, int32_t *b
     if (!tmp) {
         return 0;
     }
-    /* WOFF2 internal format can be either TTF or OTF. We select it
-       automatically to preserve maximum font data. */
-    format = sf->subfonts!=NULL ? ff_otfcid :
-		sf->layers[layer].order2 ? ff_ttf : ff_otf;
-    int ret = _WriteTTFFont(tmp, sf, format, bsizes, bf, flags, enc, layer);
+    enum fontformat inner_format = (format == ff_woff2_ttf) ? ff_ttf :
+                                   (sf->subfonts!=NULL) ? ff_otfcid : ff_otf;
+    int ret = _WriteTTFFont(tmp, sf, inner_format, bsizes, bf, flags, enc, layer);
     if (!ret) {
         fclose(tmp);
         return 0;
