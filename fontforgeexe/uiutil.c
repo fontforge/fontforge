@@ -495,7 +495,7 @@ static void _LogError(const char *format,va_list ap) {
     *npt='\0';
 
     if ( no_windowing_ui || screen_display==NULL ) {
-	str = utf82def_copy(nbuffer);
+	str = utf82def_copy_safe(nbuffer);
 	fprintf(stderr,"%s",str);
 	if ( str[strlen(str)-1]!='\n' )
 	    putc('\n',stderr);

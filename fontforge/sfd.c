@@ -1837,8 +1837,8 @@ static void appendnames(char *dest,char *dir,const char *dir_char,char *name,con
 	} else if ( name[0]=='u' && ishexdigit(name[1]) && ishexdigit(name[2]) &&
 		ishexdigit(name[3]) && ishexdigit(name[4]) &&
 		ishexdigit(name[5]) ) {
-	    strncpy(dest,name,5);
-	    dest += 5; name += 5;
+	    strncpy(dest,name,6);
+	    dest += 6; name += 6;
 	} else
     break;
 	if ( *name!='_' )

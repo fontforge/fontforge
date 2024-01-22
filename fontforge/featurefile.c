@@ -3219,7 +3219,6 @@ static void fea_ParseLookupFlags(struct parseState *tok) {
 		fea_skip_to_semi(tok);
 	break;
 	    }
-	    fea_ParseTok(tok);
 	}
 	if ( tok->type != tk_char || tok->tokbuf[0]!=';' ) {
 	    LogError(_("Unexpected token in lookupflags on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );

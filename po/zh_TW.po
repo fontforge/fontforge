@@ -13,8 +13,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-31 02:48+0000\n"
-"PO-Revision-Date: 2022-12-31 03:27\n"
+"POT-Creation-Date: 2023-12-30 03:08-0800\n"
+"PO-Revision-Date: 2023-12-30 08:15\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Language: zh_TW\n"
@@ -2271,15 +2271,15 @@ msgstr "不當的連體字字圖。GID %d 未少於 %d\n"
 
 #, c-format
 msgid ""
-"Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font="
-"%d\n"
+"Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in "
+"font=%d\n"
 msgstr ""
 "不當的查找表格：格式=2 (%d/%d), 第一筆=%d 最末筆=%d 總計在字型=%d 中的字圖\n"
 
 #, c-format
 msgid ""
-"Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font="
-"%d\n"
+"Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in "
+"font=%d\n"
 msgstr "不當的查找表：格式=4 (%d/%d)，首筆=%d 末筆=%d 字型中字圖總計=%d\n"
 
 #, c-format
@@ -19269,16 +19269,16 @@ msgstr "ΤεΧ 名稱"
 
 #, c-format
 msgid ""
-"“%s” in %s did not contain a pairwise positioning lookup ∆x=%d ∆y=%d ∆x_adv="
-"%d ∆y_adv=%d to %s ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"
+"“%s” in %s did not contain a pairwise positioning lookup ∆x=%d ∆y=%d "
+"∆x_adv=%d ∆y_adv=%d to %s ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"
 msgstr ""
-"“%s” 於 %s 中並未包含成對定位查找 ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d to %s ∆x="
-"%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"
+"“%s” 於 %s 中並未包含成對定位查找 ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d to %s "
+"∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"
 
 #, c-format
 msgid ""
-"“%s” in %s did not contain a positioning lookup ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv="
-"%d\n"
+"“%s” in %s did not contain a positioning lookup ∆x=%d ∆y=%d ∆x_adv=%d "
+"∆y_adv=%d\n"
 msgstr "“%s” 於 %s 中並未包含定位查找 ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"
 
 #, c-format

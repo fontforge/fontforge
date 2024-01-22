@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-31 02:48+0000\n"
-"PO-Revision-Date: 2022-12-31 02:46\n"
+"POT-Creation-Date: 2023-12-30 03:08-0800\n"
+"PO-Revision-Date: 2023-12-30 08:15\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Language: ja_JP\n"
@@ -387,6 +387,36 @@ msgstr "< 前(_P)"
 
 msgid "<Nothing>"
 msgstr "<何もしない>"
+
+msgid "<Unassigned Plane 10>"
+msgstr "〈保留未使用面10〉"
+
+msgid "<Unassigned Plane 11>"
+msgstr "〈保留未使用面11〉"
+
+msgid "<Unassigned Plane 12>"
+msgstr "〈保留未使用面12〉"
+
+msgid "<Unassigned Plane 13>"
+msgstr "〈保留未使用面13〉"
+
+msgid "<Unassigned Plane 4>"
+msgstr "〈保留未使用面4〉"
+
+msgid "<Unassigned Plane 5>"
+msgstr "〈保留未使用面5〉"
+
+msgid "<Unassigned Plane 6>"
+msgstr "〈保留未使用面6〉"
+
+msgid "<Unassigned Plane 7>"
+msgstr "〈保留未使用面7〉"
+
+msgid "<Unassigned Plane 8>"
+msgstr "〈保留未使用面8〉"
+
+msgid "<Unassigned Plane 9>"
+msgstr "〈保留未使用面9〉"
 
 msgid "<Unknown direction>"
 msgstr "<方向不明>"
@@ -961,7 +991,7 @@ msgstr ""
 "わずかに拡大/縮小します."
 
 msgid "An outline font editor"
-msgstr "アウトラインフォントエディタ"
+msgstr "アウトラインフォントエディター"
 
 msgid "Anchor Control"
 msgstr "アンカーの制御"
@@ -1022,6 +1052,15 @@ msgstr ""
 "チェックされているなら,入力した値は常に,フォントの上下端に\n"
 "追加されます. ほとんどの場合,このフィールドを0にして\n"
 "\"[*]オフセットを指定\"にチェックを入れるべきでしょう."
+
+msgid "Appea_rance Editor..."
+msgstr "外観エディター(_R)..."
+
+msgid "Appearance Editor"
+msgstr "外観エディター"
+
+msgid "Apple"
+msgstr "アップル社"
 
 msgid "Apple Advanced Typography"
 msgstr "Apple 高度組版機能"
@@ -1769,16 +1808,16 @@ msgstr "合字グリフが不正です. GID %d が %d 未満ではありませ�
 
 #, c-format
 msgid ""
-"Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font="
-"%d\n"
+"Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in "
+"font=%d\n"
 msgstr ""
 "フォーマット 2 (%d/%d) の照合テーブルが壊れています.最初=%d 最後=%d フォント"
 "内の全グリフ数=%d\n"
 
 #, c-format
 msgid ""
-"Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font="
-"%d\n"
+"Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in "
+"font=%d\n"
 msgstr ""
 "フォーマット 4 (%d/%d) の照合テーブルが壊れています.最初=%d 最後=%d フォント"
 "内の全グリフ数=%d\n"
@@ -1786,8 +1825,8 @@ msgstr ""
 #, c-format
 msgid "Bad lookup table: format=6, first=%d total glyphs in font=%d\n"
 msgstr ""
-"フォーマット 6 の照合テーブルが壊れています.最初=%d フォント内の全グリフ数="
-"%d\n"
+"フォーマット 6 の照合テーブルが壊れています.最初=%d フォント内の全グリフ数"
+"=%d\n"
 
 #, c-format
 msgid "Bad lookup table: format=8, first=%d cnt=%d total glyphs in font=%d\n"
@@ -2260,6 +2299,9 @@ msgstr "(裸の) CFF CID"
 msgid "CFF version mismatch\n"
 msgstr "CFF のバージョンが合っていません\n"
 
+msgid "CID"
+msgstr "CID"
+
 msgid "CID findfont Name"
 msgstr "CID findfont名"
 
@@ -2554,7 +2596,10 @@ msgid "Change _Weight..."
 msgstr "ウェイトを変更(_W)..."
 
 msgid "Change _X-Height..."
-msgstr "_Xハイトを変更..."
+msgstr "Xハイトを変更(_X)..."
+
+msgid "Change whether spiro is active or not"
+msgstr "螺旋描画モード切り替え"
 
 msgid ""
 "Changing the left side bearing\n"
@@ -2970,6 +3015,9 @@ msgstr "AFMで合成グリフを使用"
 msgid "Condensed"
 msgstr "コンデンス"
 
+msgid "Config_ure Plugins..."
+msgstr "プラグインの設定(_U)..."
+
 msgid "Contextual Alternates"
 msgstr "文脈依存の異体字"
 
@@ -3023,7 +3071,7 @@ msgstr ""
 "役に立たない場合,無意味なものとされます"
 
 msgid "Convert By C_Map"
-msgstr "C_Mapを指定して変換"
+msgstr "CMapを指定して変換(_M)"
 
 msgid "Convert Design Vector Function:"
 msgstr "デザインベクトル関数を変換:"
@@ -3790,16 +3838,16 @@ msgid "Edges near horizontal/vertical/italic"
 msgstr "水平/垂直/イタリック角に近い辺"
 
 msgid "Edit 'cvt '..."
-msgstr "'cvt 'テーブルを編集..."
+msgstr "'cvt' テーブルを編集..."
 
 msgid "Edit 'fpgm'..."
-msgstr "'fpgm'テーブルを編集..."
+msgstr "'fpgm' テーブルを編集..."
 
 msgid "Edit 'maxp'..."
-msgstr "'maxp'テーブルを編集..."
+msgstr "'maxp' テーブルを編集..."
 
 msgid "Edit 'prep'..."
-msgstr "'prep'テーブルを編集..."
+msgstr "'prep' テーブルを編集..."
 
 msgid "Edit Chaining Position"
 msgstr "文脈連鎖依存の位置指定を編集"
@@ -4359,7 +4407,7 @@ msgid "Fixing up References"
 msgstr "リソースの修復中"
 
 msgid "Fl_attenByCMap"
-msgstr "指定したCM_apで単一化"
+msgstr "指定したCMapで単一化(_A)"
 
 msgid "Flared"
 msgstr "フレア"
@@ -4378,6 +4426,9 @@ msgstr "フラマン語(ベルギーのオランダ語)"
 
 msgid "Flex Hints"
 msgstr "Flexヒント"
+
+msgid "Flip"
+msgstr "反転"
 
 msgid "Flip Horizontally"
 msgstr "水平方向に反転"
@@ -4494,10 +4545,19 @@ msgid ""
 "OpenType, cid-keyed, multi-master, cff, SVG and BitMap (bdf, FON, NFNT) "
 "fonts."
 msgstr ""
-"FontForge はアウトラインおよびビットマップフォントのフォントエディタです。"
-"フォントの作成、編集、変換を行うことができます。 PostScript, TrueType, "
-"OpenType, Cid-keyed, multi-master, cff, SVG, BitMap (bdf, FON, NFNT) フォント"
-"を扱えます。"
+"FontForge は、アウトラインフォントおよびビットマップフォントの作成、編集、変"
+"換を行うことができるフォントエディターです。扱える形式は PostScript、"
+"TrueType、OpenType、CID-Keyed、Multiple Master、CFF、SVG、ビットマップ (BDF、"
+"FON、NFNT) などです。"
+
+msgid ""
+"FontForge is free Open Source Software written to run on various computer "
+"operating systems. You can use FontForge Graphically or as a command-line "
+"tool."
+msgstr ""
+"FontForge は、さまざまなコンピュータのオペレーティングシステム上で動作するよ"
+"うに書かれた無料のオープンソースソフトウェアです。FontForge は GUI を用いて、"
+"またはコマンドラインツールとして使用できます。"
 
 msgid ""
 "FontForge loads large images into the background of each glyph\n"
@@ -5379,6 +5439,9 @@ msgstr "ISO 10646-1 (Unicode, 基本多言語面)"
 
 msgid "ISO 10646-1 (Unicode, Full)"
 msgstr "ISO 10646-1 (Unicode, 完全)"
+
+msgid "ISO 10646:1993"
+msgstr "ISO 10646:1993"
 
 msgid "ISO 8859-1  (Latin1)"
 msgstr "ISO 8859-1  (ラテン1/西欧)"
@@ -6842,6 +6905,9 @@ msgstr "マジャン語"
 msgid "Make Background"
 msgstr "背景として使用"
 
+msgid "Make Foreground"
+msgstr "前面として使用"
+
 msgid "Make Namelist"
 msgstr "名前リストを作成"
 
@@ -7140,6 +7206,9 @@ msgstr "MFの背景をクリア"
 
 msgid "MfShowErr"
 msgstr "MFエラーを表示"
+
+msgid "MicroSoft"
+msgstr "マイクロソフト社"
 
 msgid "Min"
 msgstr "最小"
@@ -7898,8 +7967,8 @@ msgstr ""
 #, c-format
 msgid "Nonsensical class assigned to a glyph-- class=%d is too big. Glyph=%d\n"
 msgstr ""
-"無意味なクラスがグリフに割り当てられています―クラス=%dは大きすぎます. グリフ="
-"%d\n"
+"無意味なクラスがグリフに割り当てられています―クラス=%dは大きすぎます. グリフ"
+"=%d\n"
 
 msgid "Normal"
 msgstr "通常"
@@ -8095,6 +8164,9 @@ msgstr "O/3次元的"
 msgid "OEM Charset"
 msgstr "OEM 文字セット"
 
+msgid "OK"
+msgstr "OK"
+
 msgid "OS2Version|Automatic"
 msgstr "自動"
 
@@ -8127,6 +8199,12 @@ msgstr "OSS/ベネチアン"
 
 msgid "OT _Glyph Class:"
 msgstr "OTFグリフクラス(_G):"
+
+msgid "O_ff"
+msgstr "オフ(_F)"
+
+msgid "O_n"
+msgstr "オン(_N)"
 
 msgid "O_pen Paths"
 msgstr "開いたパス(_P)"
@@ -8369,6 +8447,9 @@ msgstr "フォントを開く"
 
 msgid "Open Reference"
 msgstr "参照情報を開く"
+
+msgid "Open _Web Page"
+msgstr "Webページへ(_W)"
 
 msgid "OpenType"
 msgstr "OpenTypeの仕様"
@@ -8940,6 +9021,9 @@ msgstr "\"軸の種類\"フィールドを設定してください"
 msgid "Please specify a new supplement for %.20s-%.20s"
 msgstr "%.20s-%.20sの補遺番号を指定し直してください."
 
+msgid "Plugin Configuration"
+msgstr "プラグインの設定"
+
 msgid "Poin_ts too close"
 msgstr "近すぎる点(_T)"
 
@@ -9259,6 +9343,9 @@ msgstr "無変換"
 
 msgid "Re_move"
 msgstr "削除(_M)"
+
+msgid "Re_vert List"
+msgstr "リストを反転(_V)"
 
 msgid "Reached end of file when reading composite glyph\n"
 msgstr "合成グリフの読み込み中にファイルの終端に到達しました\n"
@@ -9632,6 +9719,9 @@ msgstr "ルーマニア語(モルドバ)"
 
 msgid "Romany"
 msgstr "ロマーニー語"
+
+msgid "Rotate"
+msgstr "回転"
 
 msgid "Rotate 180°"
 msgstr "180°回転"
@@ -10232,6 +10322,9 @@ msgstr "常に2番目を選択(_T)"
 msgid "Second glyph of %s"
 msgstr "%sの2つめのグリフ"
 
+msgid "SeekCharacter"
+msgstr "検索文字"
+
 msgid "Segment Separator"
 msgstr "セグメント区切り"
 
@@ -10575,7 +10668,7 @@ msgid "Size of comb delimiters in non-display styles"
 msgstr "非ディスプレイ数式の comb の区切り文字"
 
 msgid "Skew"
-msgstr "傾き"
+msgstr "傾斜"
 
 msgid "Skew Angle"
 msgstr "傾き角"
@@ -11456,7 +11549,6 @@ msgstr ""
 "フォント%3$.30sのグリフ\"%2$.30s\"に含まれるヒント%1$sは,%4$.30sに含まれるも"
 "のと一致しません(個数または重なり合い方の特徴が異なります)"
 
-#, c-format
 msgid ""
 "The %1$s in the search dialog contains a reference to %2$.20hs which does "
 "not exist in the new font.\n"
@@ -12403,8 +12495,8 @@ msgid ""
 "This font contains a \"UniqueId\" variable, but the correct name for it is\n"
 "\t\"UniqueID\" (postscript is case concious)\n"
 msgstr ""
-"このフォントには \"UniqueId\" という名の変数がありますが, 正しくは\t"
-"\"UniqueID\" です (PostScriptでは大文字と小文字は区別されます)\n"
+"このフォントには \"UniqueId\" という名の変数がありますが, 正しくは"
+"\t\"UniqueID\" です (PostScriptでは大文字と小文字は区別されます)\n"
 
 msgid ""
 "This font contains at least one translucent layer, but type3 does not "
@@ -13308,6 +13400,15 @@ msgstr "辞書 %d に不正な値が含まれています\n"
 msgid "Unicase"
 msgstr "大小文字混在形"
 
+msgid "Unicode"
+msgstr "Unicode"
+
+msgid "Unicode 1.0"
+msgstr "Unicode 1.0"
+
+msgid "Unicode 1.1"
+msgstr "Unicode 1.1"
+
 msgid "Unicode 2.0+, BMP only"
 msgstr "Unicode 2.0 以降, BMP のみ"
 
@@ -14129,7 +14230,7 @@ msgid "X11 bitmap only sfnt (otb)"
 msgstr "X11 ビットマップのみの sfnt (otb)"
 
 msgid "XHeight:"
-msgstr "xハイト:"
+msgstr "Xハイト:"
 
 msgid "XUID-Base"
 msgstr "XUIDの基底"
@@ -14395,32 +14496,38 @@ msgstr "拡大(_I)"
 msgid "Zulu"
 msgstr "ズールー語"
 
+msgid "_128 pixel outline"
+msgstr "マスの大きさ: 128ピクセル(_1)"
+
 msgid "_16x4 cell window"
-msgstr "_16×4マス表示"
+msgstr "16×4マス表示(_1)"
 
 msgid "_24 pixel outline"
-msgstr "_24 ピクセル アウトライン"
+msgstr "マスの大きさ: 24ピクセル(_2)"
 
 msgid "_36 pixel outline"
-msgstr "_36 ピクセル アウトライン"
+msgstr "マスの大きさ: 36ピクセル(_3)"
+
+msgid "_3D Rotate"
+msgstr "3D 回転"
 
 msgid "_48 pixel outline"
-msgstr "_48 ピクセル アウトライン"
+msgstr "マスの大きさ: 48ピクセル(_4)"
 
 msgid "_72 pixel outline"
-msgstr "_72 ピクセル アウトライン"
+msgstr "マスの大きさ: 72ピクセル(_7)"
 
 msgid "_8x2  cell window"
-msgstr " _8×2マス表示"
+msgstr "8×2マス表示(_8)"
 
 msgid "_96 pixel outline"
-msgstr "_96 ピクセル アウトライン"
+msgstr "マスの大きさ: 96ピクセル(_9)"
 
 msgid "_AA"
 msgstr "階調表示(_A)"
 
 msgid "_About..."
-msgstr "…について(_A)..."
+msgstr "このソフトウェアについて(_A)..."
 
 msgid "_Accept inexact"
 msgstr "不正確な一致を許容(_A)"
@@ -14479,6 +14586,9 @@ msgstr "周辺も(_A)"
 msgid "_Ascent:"
 msgstr "高さ(_A):"
 
+msgid "_Ask"
+msgstr "尋ねる(_A)"
+
 msgid "_Aspect"
 msgstr "様相(_A)"
 
@@ -14521,7 +14631,7 @@ msgid "_Both"
 msgstr "両方(_B)"
 
 msgid "_Bottom"
-msgstr "最後(_B)"
+msgstr "末尾へ(_B)"
 
 msgid "_Bottom:"
 msgstr "下限(_B):"
@@ -14534,6 +14644,9 @@ msgstr "アクセントつきグリフを構築(_B)"
 
 msgid "_Build Syllables"
 msgstr "音節を構築する(_B)"
+
+msgid "_CID"
+msgstr "CID(_C)"
 
 msgid "_Cancel"
 msgstr "キャンセル(_C)"
@@ -14568,6 +14681,9 @@ msgstr "定義済みのグリフのみ表示(_C)"
 msgid "_Condense/Extend..."
 msgstr "幅(_C)..."
 
+msgid "_Configure"
+msgstr "設定(_C)"
+
 msgid "_Contrast"
 msgstr "コントラスト(_C)"
 
@@ -14578,7 +14694,7 @@ msgid "_Control Points near horizontal/vertical"
 msgstr "水平/垂直に近い制御点(_C)"
 
 msgid "_Convert to CID"
-msgstr "_CIDに変換"
+msgstr "CIDに変換(_C)"
 
 msgid "_Copies:"
 msgstr "部数(_C):"
@@ -14613,6 +14729,9 @@ msgstr "グリフの切り離し(_D)"
 
 msgid "_Diagonal Hints"
 msgstr "斜めのヒント(_D)"
+
+msgid "_Disable"
+msgstr "無効化(_D)"
 
 msgid "_Display Compositions..."
 msgstr "組合せを表示(_D)..."
@@ -14659,6 +14778,9 @@ msgstr "EMの大きさ(_E):"
 msgid "_Embeddable"
 msgstr "埋め込み可能(_E)"
 
+msgid "_Enable"
+msgstr "有効化(_E)"
+
 msgid "_Enabled"
 msgstr "有効(_E)"
 
@@ -14682,6 +14804,9 @@ msgstr "極大点を表示(_E)"
 
 msgid "_FDEF"
 msgstr "_FDEF:"
+
+msgid "_FF"
+msgstr "FF(_F)"
 
 msgid "_Family Name:"
 msgstr "ファミリー名(_F):"
@@ -14870,6 +14995,9 @@ msgstr "合字(_L)"
 msgid "_Lining"
 msgstr "線描き(_L)"
 
+msgid "_Load"
+msgstr "読み込み(_L)"
+
 msgid "_Load Encoding..."
 msgstr "エンコーディングを読み込み(_L)..."
 
@@ -14906,6 +15034,9 @@ msgstr "組合せを修正(_M)..."
 
 msgid "_Mono"
 msgstr "白黒(_M)"
+
+msgid "_More Info"
+msgstr "詳細情報(_M)"
 
 msgid "_More hints than:"
 msgstr "ヒントの個数の上限(_M):"
@@ -14957,6 +15088,9 @@ msgstr "なし(_N)"
 
 msgid "_Normal"
 msgstr "通常(_N)"
+
+msgid "_OK"
+msgstr "OK(_O)"
 
 msgid "_OS/2 Version"
 msgstr "_OS/2バージョン"
@@ -15029,6 +15163,9 @@ msgstr "プリンタ(_P):"
 
 msgid "_Proportion"
 msgstr "幅の比率(_P)"
+
+msgid "_Python"
+msgstr "Python(_P)"
 
 msgid "_Quit"
 msgstr "終了(_Q)"
@@ -15184,7 +15321,7 @@ msgid "_Tools"
 msgstr "ツール(_T)"
 
 msgid "_Top"
-msgstr "最初(_T)"
+msgstr "先頭へ(_T)"
 
 msgid "_Top:"
 msgstr "上限(_T):"
@@ -15202,7 +15339,7 @@ msgid "_Transformations"
 msgstr "変形(_T)"
 
 msgid "_TrueType Instructions"
-msgstr "_TrueType命令"
+msgstr "TrueType命令(_T)"
 
 msgid "_Twilight Pnt Cnt:"
 msgstr "トワイライトポイントの個数(_T):"
@@ -15289,7 +15426,7 @@ msgid "_X-Ascent"
 msgstr "_xの高さ"
 
 msgid "_X-Height"
-msgstr "_Xハイト"
+msgstr "Xハイト(_X)"
 
 msgid "_Yes"
 msgstr "はい(_Y)"
