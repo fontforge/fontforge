@@ -971,7 +971,7 @@ void PrepareUnlinkRmOvrlp(SplineFont *sf,const char *filename,int layer) {
     int old_nwui = no_windowing_ui, old_maxundoes = maxundoes;
 
 #if !defined(_NO_PYTHON)
-    PyFF_CallDictFunc(sf->python_temporary,"generateFontPostHook","fs",sf->fv,filename);
+    PyFF_CallDictFunc(sf->python_temporary,"generateFontPreHook","fs",sf->fv,filename);
 #endif
 
     if ( maxundoes==0 ) maxundoes = 1;		/* Force undoes */
