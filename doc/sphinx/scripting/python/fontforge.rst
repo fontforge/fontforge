@@ -2859,7 +2859,7 @@ Any of the math constant names may be used as member names.
 
 These all take (16 bit) integer values.
 
-I do not currently provide python access to any associated device tables.
+Each ``DeviceTable`` property takes a tuple of two-element tuples, each representing a font size in pixels and the corresponding adjustment, e.g. ``((9, -1), (10, -1), (12, -1))``.
 
 
 .. attribute:: math.ScriptPercentScaleDown
@@ -2879,235 +2879,286 @@ I do not currently provide python access to any associated device tables.
    Minimum height of n-ary operators (integration, summation, etc.)
 
 .. attribute:: math.MathLeading
+.. attribute:: math.MathLeadingDeviceTable
 
    White space to be left between math formulae to ensure proper line spacing.
 
 .. attribute:: math.AxisHeight
+.. attribute:: math.AxisHeightDeviceTable
 
    Axis height of the font
 
 .. attribute:: math.AccentBaseHeight
+.. attribute:: math.AccentBaseHeightDeviceTable
 
    Maximum (ink) height of accent base that does not require raising the accents.
 
 .. attribute:: math.FlattenedAccentBaseHeight
+.. attribute:: math.FlattenedAccentBaseHeightDeviceTable
 
    Maximum (ink) height of accent base that does not require flattening the accents.
 
 .. attribute:: math.SubscriptShiftDown
+.. attribute:: math.SubscriptShiftDownDeviceTable
 
    The standard shift down applied to subscript elements. Positive for
    moving downward.
 
 .. attribute:: math.SubscriptTopMax
+.. attribute:: math.SubscriptTopMaxDeviceTable
 
    Maximum height of the (ink) top of subscripts that does not require moving
    subscripts further down.
 
 .. attribute:: math.SubscriptBaselineDropMin
+.. attribute:: math.SubscriptBaselineDropMinDeviceTable
 
    Maximum allowed drop of the baseline of subscripts relative to the bottom of
    the base. Used for bases that are treated as a box or extended shape.
    Positive for subscript baseline dropped below base bottom.
 
 .. attribute:: math.SuperscriptShiftUp
+.. attribute:: math.SuperscriptShiftUpDeviceTable
 
    Standard shift up applied to superscript elements.
 
 .. attribute:: math.SuperscriptShiftUpCramped
+.. attribute:: math.SuperscriptShiftUpCrampedDeviceTable
 
    Standard shift of superscript relative to base in cramped mode.
 
 .. attribute:: math.SuperscriptBottomMin
+.. attribute:: math.SuperscriptBottomMinDeviceTable
 
    Minimum allowed height of the bottom of superscripts that does not require
    moving them further up.
 
 .. attribute:: math.SuperscriptBaselineDropMax
+.. attribute:: math.SuperscriptBaselineDropMaxDeviceTable
 
    Maximum allowed drop of the baseline of superscripts relative to the top of
    the base. Used for bases that are treated as a box or extended shape.
    Positive for superscript baseline below base top.
 
 .. attribute:: math.SubSuperscriptGapMin
+.. attribute:: math.SubSuperscriptGapMinDeviceTable
 
    Minimum gap between the superscript and subscript ink.
 
 .. attribute:: math.SuperscriptBottomMaxWithSubscript
+.. attribute:: math.SuperscriptBottomMaxWithSubscriptDeviceTable
 
    The maximum level to which the (ink) bottom of superscript can be pushed to
    increase the gap between superscript and subscript, before subscript starts
    being moved down.
 
 .. attribute:: math.SpaceAfterScript
+.. attribute:: math.SpaceAfterScriptDeviceTable
 
    Extra white space to be added after each sub/superscript.
 
 .. attribute:: math.UpperLimitGapMin
+.. attribute:: math.UpperLimitGapMinDeviceTable
 
    Minimum gap between the bottom of the upper limit, and the top of the base
    operator.
 
 .. attribute:: math.UpperLimitBaselineRiseMin
+.. attribute:: math.UpperLimitBaselineRiseMinDeviceTable
 
    Minimum distance between the baseline of an upper limit and the bottom of
    the base operator.
 
 .. attribute:: math.LowerLimitGapMin
+.. attribute:: math.LowerLimitGapMinDeviceTable
 
    Minimum gap between (ink) top of the lower limit, and (ink) bottom of the
    base operator.
 
 .. attribute:: math.LowerLimitBaselineDropMin
+.. attribute:: math.LowerLimitBaselineDropMinDeviceTable
 
    Minimum distance between the baseline of the lower limit and bottom of the
    base operator.
 
 .. attribute:: math.StackTopShiftUp
+.. attribute:: math.StackTopShiftUpDeviceTable
 
    Standard shift up applied to the top element of a stack.
 
 .. attribute:: math.StackTopDisplayStyleShiftUp
+.. attribute:: math.StackTopDisplayStyleShiftUpDeviceTable
 
    Standard shift up applied to the top element of a stack in display style.
 
 .. attribute:: math.StackBottomShiftDown
+.. attribute:: math.StackBottomShiftDownDeviceTable
 
    Standard shift down applied to the bottom element of a stack. Positive
    values indicate downward motion.
 
 .. attribute:: math.StackBottomDisplayStyleShiftDown
+.. attribute:: math.StackBottomDisplayStyleShiftDownDeviceTable
 
    Standard shift down applied to the bottom element of a stack in display
    style. Positive values indicate downward motion.
 
 .. attribute:: math.StackGapMin
+.. attribute:: math.StackGapMinDeviceTable
 
    Minimum gap between bottom of the top element of a stack, and the top of
    the bottom element.
 
 .. attribute:: math.StackDisplayStyleGapMin
+.. attribute:: math.StackDisplayStyleGapMinDeviceTable
 
    Minimum gap between bottom of the top element of a stack and the top of the
    bottom element in display style.
 
 .. attribute:: math.StretchStackTopShiftUp
+.. attribute:: math.StretchStackTopShiftUpDeviceTable
 
    Standard shift up applied to the top element of the stretch stack.
 
 .. attribute:: math.StretchStackBottomShiftDown
+.. attribute:: math.StretchStackBottomShiftDownDeviceTable
 
    Standard shift down applied to the bottom element of the stretch stack.
    Positive values indicate
    downward motion.
 
 .. attribute:: math.StretchStackGapAboveMin
+.. attribute:: math.StretchStackGapAboveMinDeviceTable
 
    Minimum gap between the ink of the stretched element and the ink bottom of
    the element above.
 
 .. attribute:: math.StretchStackGapBelowMin
+.. attribute:: math.StretchStackGapBelowMinDeviceTable
 
    Minimum gap between the ink of the stretched element and the ink top of
    the element below.
 
 .. attribute:: math.FractionNumeratorShiftUp
+.. attribute:: math.FractionNumeratorShiftUpDeviceTable
 
    Standard shift up applied to the numerator.
 
 .. attribute:: math.FractionNumeratorDisplayStyleShiftUp
+.. attribute:: math.FractionNumeratorDisplayStyleShiftUpDeviceTable
 
    Standard shift up applied to the numerator in display style.
 
 .. attribute:: math.FractionDenominatorShiftDown
+.. attribute:: math.FractionDenominatorShiftDownDeviceTable
 
    Standard shift down applied to the denominator. Positive values indicate
    downward motion.
 
 .. attribute:: math.FractionDenominatorDisplayStyleShiftDown
+.. attribute:: math.FractionDenominatorDisplayStyleShiftDownDeviceTable
 
    Standard shift down applied to the denominator in display style. Positive
    values indicate downward motion.
 
 .. attribute:: math.FractionNumeratorGapMin
+.. attribute:: math.FractionNumeratorGapMinDeviceTable
 
    Minimum tolerated gap between the ink bottom of the numerator and the ink of
    the fraction bar.
 
 .. attribute:: math.FractionNumeratorDisplayStyleGapMin
+.. attribute:: math.FractionNumeratorDisplayStyleGapMinDeviceTable
 
    Minimum tolerated gap between the ink bottom of the numerator and the ink of
    the fraction bar in display style.
 
 .. attribute:: math.FractionRuleThickness
+.. attribute:: math.FractionRuleThicknessDeviceTable
 
    Thickness of the fraction bar.
 
 .. attribute:: math.FractionDenominatorGapMin
+.. attribute:: math.FractionDenominatorGapMinDeviceTable
 
    Minimum tolerated gap between the ink top of the denominator and the ink of
    the fraction bar.
 
 .. attribute:: math.FractionDenominatorDisplayStyleGapMin
+.. attribute:: math.FractionDenominatorDisplayStyleGapMinDeviceTable
 
    Minimum tolerated gap between the ink top of the denominator and the ink of
    the fraction bar in display style.
 
 .. attribute:: math.SkewedFractionHorizontalGap
+.. attribute:: math.SkewedFractionHorizontalGapDeviceTable
 
    Horizontal distance between the top and bottom elements of a skewed fraction.
 
 .. attribute:: math.SkewedFractionVerticalGap
+.. attribute:: math.SkewedFractionVerticalGapDeviceTable
 
    Vertical distance between the ink of the top and bottom elements of a skewed
    fraction.
 
 .. attribute:: math.OverbarVerticalGap
+.. attribute:: math.OverbarVerticalGapDeviceTable
 
    Distance between the overbar and the ink top of the base.
 
 .. attribute:: math.OverbarRuleThickness
+.. attribute:: math.OverbarRuleThicknessDeviceTable
 
    Thickness of the overbar.
 
 .. attribute:: math.OverbarExtraAscender
+.. attribute:: math.OverbarExtraAscenderDeviceTable
 
    Extra white space reserved above the overbar.
 
 .. attribute:: math.UnderbarVerticalGap
+.. attribute:: math.UnderbarVerticalGapDeviceTable
 
    Distance between underbar and the (ink) bottom of the base.
 
 .. attribute:: math.UnderbarRuleThickness
+.. attribute:: math.UnderbarRuleThicknessDeviceTable
 
    Thickness of the underbar.
 
 .. attribute:: math.UnderbarExtraDescender
+.. attribute:: math.UnderbarExtraDescenderDeviceTable
 
    Extra white space reserved below the underbar.
 
 .. attribute:: math.RadicalVerticalGap
+.. attribute:: math.RadicalVerticalGapDeviceTable
 
    Space between the ink to of the expression and the bar over it.
 
 .. attribute:: math.RadicalDisplayStyleVerticalGap
+.. attribute:: math.RadicalDisplayStyleVerticalGapDeviceTable
 
    Space between the ink top of the expression and the bar over it in display
    style.
 
 .. attribute:: math.RadicalRuleThickness
+.. attribute:: math.RadicalRuleThicknessDeviceTable
 
    Thickness of the radical rule in designed or constructed radical signs.
 
 .. attribute:: math.RadicalExtraAscender
+.. attribute:: math.RadicalExtraAscenderDeviceTable
 
    Extra white space reserved above the radical.
 
 .. attribute:: math.RadicalKernBeforeDegree
+.. attribute:: math.RadicalKernBeforeDegreeDeviceTable
 
    Extra horizontal kern before the degree of a radical if such be present.
 
 .. attribute:: math.RadicalKernAfterDegree
+.. attribute:: math.RadicalKernAfterDegreeDeviceTable
 
    Negative horizontal kern after the degree of a radical if such be present.
 
