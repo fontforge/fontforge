@@ -2852,6 +2852,10 @@ static int PyFFContour_SubAssign( PyObject *self, PyObject *key, PyObject *val )
     if ( PyLong_Check(key)) {
         return PyFFContour_IndexAssign(self, PyNumber_AsSsize_t(key, PyExc_IndexError), val);
     }
+    if ( val==NULL ) {
+        PyErr_Format(PyExc_TypeError, "Deleting multiple points is not supported.");
+        return( -1 );
+    }
     rpl = PyFFPointList_Parse(val);
     if ( rpl==NULL ) {
 	PyErr_Format(PyExc_TypeError, "Replacement must encode a point list");
