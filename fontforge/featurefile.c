@@ -2927,7 +2927,7 @@ return( NULL );
 return( copy( sc->name ));
 }
 
-static SplineChar *fea_glyphname_get(struct parseState *tok,char *name) {
+static SplineChar *fea_glyphname_get_silent(struct parseState *tok,char *name) {
     SplineFont *sf = tok->sf;
     EncMap *map = sf->fv==NULL ? sf->map : sf->fv->map;
     SplineChar *sc = SFGetChar(sf,-1,name);
@@ -2976,9 +2976,19 @@ return( sc );
     }
 return( sc );
 #else
-    LogError(_("Reference to a non-existent glyph name on line %d of %s: %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth], name);
     return NULL;
 #endif // 0
+}
+
+static SplineChar *fea_glyphname_get(struct parseState *tok,char *name) {
+    SplineChar *sc = fea_glyphname_get_silent(tok, name);
+
+    if (sc == NULL) {
+        LogError(_("Reference to a non-existent glyph name on line %d of %s: %s"),
+                 tok->line[tok->inc_depth], tok->filename[tok->inc_depth], name);
+    }
+
+    return sc;
 }
 
 static char *fea_glyphname_validate(struct parseState *tok,char *name) {
