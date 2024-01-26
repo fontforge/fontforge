@@ -47,6 +47,7 @@
 #include "ustring.h"
 #include "utype.h"
 
+#include <assert.h>
 #include <locale.h>
 #include <math.h>
 #include <stddef.h>
@@ -3000,98 +3001,97 @@ return( NULL );
 return( copy( sc->name ));
 }
 
-static char* fea_AddGlyphRange(struct parseState *tok, char* last_glyph, int last_val, char** _glyphs, int* _max, int* _cnt) {
+static char* fea_AddGlyphCIDRange(struct parseState* tok, int last_val, char** _glyphs, int* _max, int* _cnt) {
     char* contents = NULL;
-    int range_type, range_len;
+
+    assert(tok->type == tk_cid);
+    if (last_val >= tok->value) {
+        LogError(_("Invalid CID range in glyph class on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth]);
+        ++tok->err_count;
+    }
+    /* Last val has already been added to the class */
+    /* and we'll add the current value later */
+    for (++last_val; last_val < tok->value; ++last_val) {
+        contents = fea_cid_validate(tok, last_val);
+        if (contents != NULL) {
+            *_cnt = fea_AddGlyphs(_glyphs, _max, *_cnt, contents);
+            contents = NULL;
+        }
+    }
+    contents = fea_cid_validate(tok, tok->value);
+    return contents;
+}
+
+static char* fea_AddGlyphNameRange(struct parseState* tok, char* last_glyph, char** _glyphs, int* _max, int* _cnt) {
+    char* contents = NULL;
+    int range_type = 0, range_len;
     char* pt1, * start1, * pt2, * start2;
     int v1, v2;
 
-    if (last_val != -1 && tok->type == tk_cid) {
-        if (last_val >= tok->value) {
-            LogError(_("Invalid CID range in glyph class on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth]);
-            ++tok->err_count;
+    assert(tok->type == tk_name);
+    if (strlen(last_glyph) == strlen(tok->tokbuf) &&
+        strcmp(last_glyph, tok->tokbuf) < 0) {
+        start1 = NULL;
+        for (pt1 = last_glyph, pt2 = tok->tokbuf;
+            *pt1 != '\0'; ++pt1, ++pt2) {
+            if (*pt1 != *pt2) {
+                if (start1 != NULL) {
+                    range_type = 0;
+                    break;
+                }
+                start1 = pt1;
+                start2 = pt2;
+                if (!isdigit(*pt1) || !isdigit(*pt2))
+                    range_type = 1;
+                else {
+                    for (range_len = 0; range_len < 3 && isdigit(*pt1) && isdigit(*pt2);
+                        ++range_len, ++pt1, ++pt2)
+                        ;
+                    range_type = 2;
+                    --pt1;
+                    --pt2;
+                }
+            }
         }
-        /* Last val has already been added to the class */
-        /* and we'll add the current value later */
-        for (++last_val; last_val < tok->value; ++last_val) {
-            contents = fea_cid_validate(tok, last_val);
+    }
+    if (range_type == 0) {
+        LogError(_("Invalid glyph name range in glyph class on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth]);
+        ++tok->err_count;
+    }
+    else if (range_type == 1 || range_len == 1) {
+        /* Single letter changes */
+        v1 = *start1;
+        v2 = *start2;
+        for (++v1; v1 <= v2; ++v1) {
+            sprintf(last_glyph, "%.*s%c%s", (int)(start2 - tok->tokbuf),
+                tok->tokbuf, v1, start2 + 1);
+            contents = fea_glyphname_validate(tok, last_glyph);
+            if (v1 == v2)
+                break;
             if (contents != NULL) {
                 *_cnt = fea_AddGlyphs(_glyphs, _max, *_cnt, contents);
                 contents = NULL;
             }
         }
-        contents = fea_cid_validate(tok, tok->value);
-    }
-    else if (last_glyph[0] != '\0' && tok->type == tk_name) {
-        range_type = 0;
-        if (strlen(last_glyph) == strlen(tok->tokbuf) &&
-            strcmp(last_glyph, tok->tokbuf) < 0) {
-            start1 = NULL;
-            for (pt1 = last_glyph, pt2 = tok->tokbuf;
-                *pt1 != '\0'; ++pt1, ++pt2) {
-                if (*pt1 != *pt2) {
-                    if (start1 != NULL) {
-                        range_type = 0;
-                        break;
-                    }
-                    start1 = pt1;
-                    start2 = pt2;
-                    if (!isdigit(*pt1) || !isdigit(*pt2))
-                        range_type = 1;
-                    else {
-                        for (range_len = 0; range_len < 3 && isdigit(*pt1) && isdigit(*pt2);
-                            ++range_len, ++pt1, ++pt2)
-                            ;
-                        range_type = 2;
-                        --pt1;
-                        --pt2;
-                    }
-                }
-            }
-        }
-        if (range_type == 0) {
-            LogError(_("Invalid glyph name range in glyph class on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth]);
-            ++tok->err_count;
-        }
-        else if (range_type == 1 || range_len == 1) {
-            /* Single letter changes */
-            v1 = *start1;
-            v2 = *start2;
-            for (++v1; v1 <= v2; ++v1) {
-                sprintf(last_glyph, "%.*s%c%s", (int)(start2 - tok->tokbuf),
-                    tok->tokbuf, v1, start2 + 1);
-                contents = fea_glyphname_validate(tok, last_glyph);
-                if (v1 == v2)
-                    break;
-                if (contents != NULL) {
-                    *_cnt = fea_AddGlyphs(_glyphs, _max, *_cnt, contents);
-                    contents = NULL;
-                }
-            }
-        }
-        else {
-            v1 = strtol(start1, NULL, 10);
-            v2 = strtol(start2, NULL, 10);
-            for (++v1; v1 <= v2; ++v1) {
-                if (range_len == 2)
-                    sprintf(last_glyph, "%.*s%02d%s", (int)(start2 - tok->tokbuf),
-                        tok->tokbuf, v1, start2 + 2);
-                else
-                    sprintf(last_glyph, "%.*s%03d%s", (int)(start2 - tok->tokbuf),
-                        tok->tokbuf, v1, start2 + 3);
-                contents = fea_glyphname_validate(tok, last_glyph);
-                if (v1 == v2)
-                    break;
-                if (contents != NULL) {
-                    *_cnt = fea_AddGlyphs(_glyphs, _max, *_cnt, contents);
-                    contents = NULL;
-                }
-            }
-        }
     }
     else {
-        LogError(_("Unexpected token in glyph class range on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth]);
-        ++tok->err_count;
+        v1 = strtol(start1, NULL, 10);
+        v2 = strtol(start2, NULL, 10);
+        for (++v1; v1 <= v2; ++v1) {
+            if (range_len == 2)
+                sprintf(last_glyph, "%.*s%02d%s", (int)(start2 - tok->tokbuf),
+                    tok->tokbuf, v1, start2 + 2);
+            else
+                sprintf(last_glyph, "%.*s%03d%s", (int)(start2 - tok->tokbuf),
+                    tok->tokbuf, v1, start2 + 3);
+            contents = fea_glyphname_validate(tok, last_glyph);
+            if (v1 == v2)
+                break;
+            if (contents != NULL) {
+                *_cnt = fea_AddGlyphs(_glyphs, _max, *_cnt, contents);
+                contents = NULL;
+            }
+        }
     }
     return contents;
 }
@@ -3132,9 +3132,16 @@ return( NULL );
 	    } else if ( tok->type==tk_char && tok->tokbuf[0]=='-' ) {
 		// It's a range extending from the previous token.
 		fea_ParseTok(tok);
-                if (tok->type == tk_char && tok->tokbuf[0] == ']')
-                    break;
-                contents = fea_AddGlyphRange(tok, last_glyph, last_val, &glyphs, &max, &cnt);
+		if ( last_val!=-1 && tok->type==tk_cid ) {
+                    contents = fea_AddGlyphCIDRange(tok, last_val, &glyphs, &max, &cnt);
+		} else if ( last_glyph[0]!='\0' && tok->type==tk_name ) {
+                    contents = fea_AddGlyphNameRange(tok, last_glyph, &glyphs, &max, &cnt);
+		} else {
+		    LogError(_("Unexpected token in glyph class range on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+		    ++tok->err_count;
+		    if ( tok->type==tk_char && tok->tokbuf[0]==']' )
+	break;
+		}
 		last_val=-1; last_glyph[0] = '\0';
 	    } else if ( tok->type == tk_NULL ) {
 		contents = copy("NULL");
