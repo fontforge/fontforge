@@ -2582,7 +2582,8 @@ return;
 	    ch = getc(in);
 	    check_keywords = false;
 	}
-	while ( isalnum(ch) || ch=='_' || ch=='.' || (ch=='-' && tok->type==tk_class) ) {
+        /* *+-:^|~ are allowed in names per OpenType Feature File Specification 2.f.i. */
+	while ( isalnum(ch) || strchr("_.*+-:^|~", ch) ) {
 	    if ( pt<tok->tokbuf+MAXT )
 		*pt++ = ch;
 	    ch = getc(in);
@@ -3022,17 +3023,18 @@ static char* fea_AddGlyphCIDRange(struct parseState* tok, int last_val, char** _
     return contents;
 }
 
-static char* fea_AddGlyphNameRange(struct parseState* tok, char* last_glyph, char** _glyphs, int* _max, int* _cnt) {
+static char* fea_AddGlyphNameRange(struct parseState* tok, char* glyph_from, char* glyph_to,
+                                   char** _glyphs, int* _max, int* _cnt) {
     char* contents = NULL;
     int range_type = 0, range_len;
     char* pt1, * start1, * pt2, * start2;
     int v1, v2;
 
     assert(tok->type == tk_name);
-    if (strlen(last_glyph) == strlen(tok->tokbuf) &&
-        strcmp(last_glyph, tok->tokbuf) < 0) {
+    if (strlen(glyph_from) == strlen(glyph_to) &&
+        strcmp(glyph_from, glyph_to) < 0) {
         start1 = NULL;
-        for (pt1 = last_glyph, pt2 = tok->tokbuf;
+        for (pt1 = glyph_from, pt2 = glyph_to;
             *pt1 != '\0'; ++pt1, ++pt2) {
             if (*pt1 != *pt2) {
                 if (start1 != NULL) {
@@ -3063,9 +3065,9 @@ static char* fea_AddGlyphNameRange(struct parseState* tok, char* last_glyph, cha
         v1 = *start1;
         v2 = *start2;
         for (++v1; v1 <= v2; ++v1) {
-            sprintf(last_glyph, "%.*s%c%s", (int)(start2 - tok->tokbuf),
-                tok->tokbuf, v1, start2 + 1);
-            contents = fea_glyphname_validate(tok, last_glyph);
+            sprintf(glyph_from, "%.*s%c%s", (int)(start2 - glyph_to),
+                glyph_to, v1, start2 + 1);
+            contents = fea_glyphname_validate(tok, glyph_from);
             if (v1 == v2)
                 break;
             if (contents != NULL) {
@@ -3079,12 +3081,12 @@ static char* fea_AddGlyphNameRange(struct parseState* tok, char* last_glyph, cha
         v2 = strtol(start2, NULL, 10);
         for (++v1; v1 <= v2; ++v1) {
             if (range_len == 2)
-                sprintf(last_glyph, "%.*s%02d%s", (int)(start2 - tok->tokbuf),
-                    tok->tokbuf, v1, start2 + 2);
+                sprintf(glyph_from, "%.*s%02d%s", (int)(start2 - glyph_to),
+                    glyph_to, v1, start2 + 2);
             else
-                sprintf(last_glyph, "%.*s%03d%s", (int)(start2 - tok->tokbuf),
-                    tok->tokbuf, v1, start2 + 3);
-            contents = fea_glyphname_validate(tok, last_glyph);
+                sprintf(glyph_from, "%.*s%03d%s", (int)(start2 - glyph_to),
+                    glyph_to, v1, start2 + 3);
+            contents = fea_glyphname_validate(tok, glyph_from);
             if (v1 == v2)
                 break;
             if (contents != NULL) {
@@ -3127,15 +3129,39 @@ return( NULL );
 		last_val = tok->value; last_glyph[0] = '\0';
 		contents = fea_cid_validate(tok,tok->value);
 	    } else if ( tok->type==tk_name ) {
-		strcpy(last_glyph,tok->tokbuf); last_val = -1;
-		contents = fea_glyphname_validate(tok,tok->tokbuf);
+                char* p_hyphen = NULL;
+                last_val = -1;
+                p_hyphen = strchr(tok->tokbuf, '-');
+                /* According to OpenType Feature File Specification 2.f.i. the
+                hyphen should first be assumed as a part of glyph name. Only if
+                there is no such glyph, we shall proceed to the range interpretation. */
+                if ( p_hyphen &&
+                     p_hyphen - tok->tokbuf > 0 &&
+                     p_hyphen - tok->tokbuf < strlen(tok->tokbuf) - 1 ) {
+                    /* Check glyph name without raising error. */
+                    SplineChar *sc = fea_glyphname_get_silent(tok, tok->tokbuf);
+                    if (sc != NULL) {
+                        contents = copy(sc->name);
+                    }
+                    else {
+                        // It's a range extending from the previous token.
+                        char glyph_from[MAXT+1] = "\0", glyph_to[MAXT+1] = "\0";
+                        strncat(glyph_from, tok->tokbuf, p_hyphen - tok->tokbuf);
+                        strcat(glyph_to, p_hyphen + 1);
+                        contents = fea_AddGlyphNameRange(tok, glyph_from, glyph_to, &glyphs, &max, &cnt);
+                        last_val=-1; last_glyph[0] = '\0';
+                    }
+                } else {
+		    strcpy(last_glyph,tok->tokbuf); last_val = -1;
+                    contents = fea_glyphname_validate(tok,tok->tokbuf);
+                }
 	    } else if ( tok->type==tk_char && tok->tokbuf[0]=='-' ) {
 		// It's a range extending from the previous token.
 		fea_ParseTok(tok);
 		if ( last_val!=-1 && tok->type==tk_cid ) {
                     contents = fea_AddGlyphCIDRange(tok, last_val, &glyphs, &max, &cnt);
 		} else if ( last_glyph[0]!='\0' && tok->type==tk_name ) {
-                    contents = fea_AddGlyphNameRange(tok, last_glyph, &glyphs, &max, &cnt);
+                    contents = fea_AddGlyphNameRange(tok, last_glyph, tok->tokbuf, &glyphs, &max, &cnt);
 		} else {
 		    LogError(_("Unexpected token in glyph class range on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 		    ++tok->err_count;
@@ -3148,7 +3174,7 @@ return( NULL );
 	    } else {
 		LogError(_("Expected glyph name, cid, or class in glyph class definition on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 		++tok->err_count;
-	break;
+	        break;
 	    }
 	    if ( contents!=NULL ) {
 		cnt = fea_AddGlyphs(&glyphs,&max,cnt,contents); contents = NULL;
