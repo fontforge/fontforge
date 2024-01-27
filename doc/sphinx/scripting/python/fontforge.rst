@@ -3879,6 +3879,10 @@ This type may not be pickled.
 
    the stroke width of a stroked font
 
+.. attribute:: font.style_set_names
+
+   A tuple, each entry of which is a 3-element tuple containing the language name (e.g. ``"English (US)"``), the style set tag (e.g. ``"ss01"``) and the style set name.
+
 .. attribute:: font.temporary
 
    Whatever you want -- though I recommend you store a dict here (these data
