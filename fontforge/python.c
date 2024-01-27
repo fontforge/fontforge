@@ -14074,6 +14074,9 @@ static PyObject *PyFF_Font_get_style_set_names(PyFF_Font *self, void *UNUSED(clo
     PyObject *ss_names_tuple, *ss_name_spec;
     char *lang_str, tag_str[5];
 
+    if ( CheckIfFontClosed(self) )
+        return( NULL );
+
     for ( cnt=0, fn=sf->feat_names; fn!=NULL; fn=fn->next )
         for ( on=fn->names; on!=NULL; on=on->next, ++cnt );
     if ( cnt==0 )
@@ -14094,46 +14097,51 @@ static PyObject *PyFF_Font_get_style_set_names(PyFF_Font *self, void *UNUSED(clo
 
 static int PyFF_Font_set_style_set_names(PyFF_Font *self, PyObject *value, void *UNUSED(closure)) {
     int i, j, rows, is_valid;
-    PyObject *ss_names_tuple;
-    char *lang_str, *tag_str, *name_str;
+    PyObject *ss_names_tuple, *lang_py;
+    char *tag_str, *name_str;
     uint32_t tag, lang;
     SplineFont *sf = self->fv->sf;
     struct otffeatname *fn;
     struct otfname *on;
 
+    if ( CheckIfFontClosed(self) )
+        return( -1 );
+
     if ( !PyTuple_Check(value) ) {
-        PyErr_Format(PyExc_TypeError, "Style set names must be set as a tuple." );
+        PyErr_Format(PyExc_TypeError, "Style set names must be set as a tuple.");
         return( -1 );
     }
     rows = PyTuple_Size(value);
     for ( i=0; i<rows; ++i ) {
         ss_names_tuple = PyTuple_GetItem(value, i);
         if ( !PyTuple_Check(ss_names_tuple) ) {
-            PyErr_Format(PyExc_TypeError, "Style set name specification must be a tuple." );
+            PyErr_Format(PyExc_TypeError, "Style set name specification must be a tuple.");
             return( -1 );
         }
         if ( PyTuple_Size(ss_names_tuple)!=3 ) {
-            PyErr_Format(PyExc_TypeError, "Style set name specification must have 3 elements (language, style set and name)." );
+            PyErr_Format(PyExc_TypeError, "Style set name specification must have 3 elements (language, style set and name).");
             return( -1 );
         }
 
-        PyObject *lang_str_py = PyTuple_GetItem(ss_names_tuple, 0);
-        if ( !PyUnicode_Check(lang_str_py) ) {
-            PyErr_Format(PyExc_TypeError, "The first element of a style set specification must be a string." );
-            return( -1 );
-        }
-        lang_str = copy(PyUnicode_AsUTF8(lang_str_py));
-        is_valid = 0;
-        for ( j=0; sfnt_name_mslangs[j].name!=NULL
-            && !(is_valid=strcmp(sfnt_name_mslangs[j].name, lang_str)==0); j++ );
-        if ( !is_valid ) {
-            PyErr_Format(PyExc_TypeError, "The first element of a style set specification must be a valid language name." );
+        PyObject *lang_py = PyTuple_GetItem(ss_names_tuple, 0);
+        if ( PyUnicode_Check(lang_py) ) {
+            if ( FindFlagByName(sfnt_name_mslangs, PyUnicode_AsUTF8(lang_py))==FLAG_UNKNOWN  ) {
+                PyErr_Format(PyExc_TypeError, "The first element of a style set name specification must be a valid language name if it is a string.");
+                return( -1 );
+            }
+        } else if ( PyLong_Check(lang_py) ) {
+            if ( strcmp(NOUI_MSLangString(PyLong_AsLong(lang_py)), _("Unknown"))==0 ) {
+                PyErr_Format(PyExc_TypeError, "The first element of a style set name specification must be a valid language id if it is an integer.");
+                return( -1 );
+            }
+        } else {
+            PyErr_Format(PyExc_TypeError, "The first element of a style set name specification must be a string or an integer.");
             return( -1 );
         }
 
         PyObject *tag_str_py = PyTuple_GetItem(ss_names_tuple, 1);
-        if ( !PyUnicode_Check(lang_str_py) ) {
-            PyErr_Format(PyExc_TypeError, "The second element of a style set specification must be a string." );
+        if ( !PyUnicode_Check(tag_str_py) ) {
+            PyErr_Format(PyExc_TypeError, "The second element of a style set name specification must be a string.");
             return( -1 );
         }
         tag_str = copy(PyUnicode_AsUTF8(tag_str_py));
@@ -14145,12 +14153,12 @@ static int PyFF_Font_set_style_set_names(PyFF_Font *self, PyObject *value, void 
             is_valid = 1 <= ss_num && ss_num <= 20;
         }
         if ( !is_valid ) {
-            PyErr_Format(PyExc_TypeError, "The second element of a style set specification must be a valid style set name." );
+            PyErr_Format(PyExc_TypeError, "The second element of a style set name specification must be a valid style set tag.");
             return( -1 );
         }
 
         if ( !PyUnicode_Check(PyTuple_GetItem(ss_names_tuple, 2)) ) {
-            PyErr_Format(PyExc_TypeError, "The third element of a style set specification must be a string." );
+            PyErr_Format(PyExc_TypeError, "The third element of a style set name specification must be a string.");
             return( -1 );
         }
     }
@@ -14177,14 +14185,18 @@ static int PyFF_Font_set_style_set_names(PyFF_Font *self, PyObject *value, void 
     sf->feat_names = NULL;
     for ( i=rows-1; i>=0; --i ) {
         ss_names_tuple = PyTuple_GetItem(value, i);
-        lang_str = copy(PyUnicode_AsUTF8(PyTuple_GetItem(ss_names_tuple, 0)));
-        tag_str = copy(PyUnicode_AsUTF8(PyTuple_GetItem(ss_names_tuple, 1)));
-        name_str = copy(PyUnicode_AsUTF8(PyTuple_GetItem(ss_names_tuple, 2)));
 
-        for ( j=0; sfnt_name_mslangs[j].name!=NULL
-            && strcmp(sfnt_name_mslangs[j].name, lang_str)!=0; j++ );
-        lang = sfnt_name_mslangs[j].flag;
+        lang_py = PyTuple_GetItem(ss_names_tuple, 0);
+        if ( PyUnicode_Check(lang_py) ) {
+            lang = FindFlagByName(sfnt_name_mslangs, PyUnicode_AsUTF8(lang_py));
+        } else {
+            lang = PyLong_AsLong(lang_py);
+        }
+
+        tag_str = copy(PyUnicode_AsUTF8(PyTuple_GetItem(ss_names_tuple, 1)));
         tag = ((tag_str[0])<<24)|((tag_str[1])<<16)|((tag_str[2])<<8)|(tag_str[3]);
+
+        name_str = copy(PyUnicode_AsUTF8(PyTuple_GetItem(ss_names_tuple, 2)));
 
         for ( fn=sf->feat_names; fn!=NULL && fn->tag!=tag; fn=fn->next );
         if ( fn==NULL ) {
