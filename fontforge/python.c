@@ -14138,7 +14138,9 @@ static int PyFF_Font_set_style_set_names(PyFF_Font *self, PyObject *value, void 
         }
         tag_str = copy(PyUnicode_AsUTF8(tag_str_py));
         is_valid = 0;
-        if ( strlen(tag_str)== 4 && tag_str[0]=='s' && tag_str[1]=='s' ) {
+        if ( strlen(tag_str)== 4 && tag_str[0]=='s' && tag_str[1]=='s'
+            && '0'<=tag_str[2] && tag_str[2]<='9' && '0'<=tag_str[3] && tag_str[3]<='9'
+        ) {
             int ss_num = 10*(tag_str[2]-'0') + tag_str[3]-'0';
             is_valid = 1 <= ss_num && ss_num <= 20;
         }
