@@ -1970,8 +1970,10 @@ return( vs_maskttf );
 return( vs_maskps );
     else if ( format==ff_svg )
 return( vs_maskttf );
-    else if ( format==ff_woff2 )
+    else if ( format==ff_woff_ttf || format==ff_woff2_ttf )
 return( vs_maskttf );
+    else if ( format==ff_woff_otf || format==ff_woff2_otf )
+return( vs_maskps );
     else
 return( sf->subfontcnt!=0 || sf->cidmaster!=NULL ? vs_maskcid :
 	sf->layers[layer].order2 ? vs_maskttf : vs_maskps );
