@@ -834,6 +834,7 @@ return;
 	}
     }
 
+
     hashead = hashhea = hasmaxp = masos2 = haspost = hasname = hasos2 = false;
     hasloca = hascff = hasglyf = false;
     for ( i=0; i<info->numtables-1; ++i ) {
