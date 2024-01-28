@@ -3570,6 +3570,9 @@ This type may not be pickled.
 
    A flag indicating that this font only contains bitmaps. No outlines.
 
+.. attribute:: font.os2_capheight
+
+
 .. attribute:: font.os2_codepages
 
    A 2 element tuple containing the OS/2 Codepages field
@@ -3580,10 +3583,6 @@ This type may not be pickled.
 .. attribute:: font.os2_fstype
 
 
-.. attribute:: font.os2_stylemap
-
-   Write access to fsSelection, keep in sync with :attr:`font.macstyle`
-
 .. attribute:: font.os2_panose
 
 
@@ -3592,6 +3591,10 @@ This type may not be pickled.
 
 .. attribute:: font.os2_strikeysize
 
+
+.. attribute:: font.os2_stylemap
+
+   Write access to fsSelection, keep in sync with :attr:`font.macstyle`
 
 .. attribute:: font.os2_subxoff
 
@@ -3632,12 +3635,12 @@ This type may not be pickled.
 .. attribute:: font.os2_typolinegap
 
 
-.. attribute:: font.os2_use_typo_metrics
-
-
 .. attribute:: font.os2_unicoderanges
 
    A 4 element tuple containing the OS/2 Unicode Ranges field
+
+.. attribute:: font.os2_use_typo_metrics
+
 
 .. attribute:: font.os2_vendor
 
@@ -3664,6 +3667,9 @@ This type may not be pickled.
 
 
 .. attribute:: font.os2_windescent_add
+
+
+.. attribute:: font.os2_xheight
 
 
 .. attribute:: font.path
@@ -4770,6 +4776,11 @@ This type may not be pickled.
    a reasonable language tag. If the language is not specified, one will be
    chosen at random. If ff has no frequency information for the script/language
    specified it will use the letters in the script with equal frequencies.
+
+.. method:: font.reencode(encoding[, force])
+
+   Reencodes the current font into the given encoding. Optionally force
+   reencoding.
 
 .. method:: font.regenBitmaps(tuple_of_sizes)
 
