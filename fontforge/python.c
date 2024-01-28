@@ -14085,10 +14085,7 @@ static PyObject *PyFF_Font_get_style_set_names(PyFF_Font *self, void *UNUSED(clo
     for ( cnt=0, fn=sf->feat_names; fn!=NULL; fn=fn->next ) {
         for ( on=fn->names; on!=NULL; on=on->next, ++cnt ) {
             lang_str = copy(NOUI_MSLangString(on->lang));
-            for ( i=0; i<4; i++ )
-                tag_str[i] = (fn->tag>>(24-8*i)) & 0xFF;
-            tag_str[4] = '\0';
-            ss_name_spec = PyTuple_Pack(3, PyUnicode_FromString(lang_str), PyUnicode_FromString(tag_str), PyUnicode_FromString(on->name));
+            ss_name_spec = PyTuple_Pack(3, PyUnicode_FromString(lang_str), TagToPythonString(fn->tag, false), PyUnicode_FromString(on->name));
             PyTuple_SetItem(ss_names_tuple, cnt, ss_name_spec);
         }
     }
@@ -14193,8 +14190,7 @@ static int PyFF_Font_set_style_set_names(PyFF_Font *self, PyObject *value, void 
             lang = PyLong_AsLong(lang_py);
         }
 
-        tag_str = copy(PyUnicode_AsUTF8(PyTuple_GetItem(ss_names_tuple, 1)));
-        tag = ((tag_str[0])<<24)|((tag_str[1])<<16)|((tag_str[2])<<8)|(tag_str[3]);
+        tag = StrObjToTag(PyTuple_GetItem(ss_names_tuple, 1), false);
 
         name_str = copy(PyUnicode_AsUTF8(PyTuple_GetItem(ss_names_tuple, 2)));
 
