@@ -3509,8 +3509,6 @@ docs are wrong.
         os2->capHeight = (caph >= 0.0 ? caph : 0);
     }
 	os2->defChar = 0;
-	if ( format==ff_otf || format==ff_otfcid )
-	    os2->defChar = ' ';
 	os2->breakChar = ' ';
 	os2->maxContext = 1;	/* Kerning will set this to 2, ligature to whatever */
     }
