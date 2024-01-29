@@ -3144,7 +3144,7 @@ return( NULL );
                         contents = copy(sc->name);
                     }
                     else {
-                        // It's a range extending from the previous token.
+                        /* Interpret this token as a range. */
                         char glyph_from[MAXT+1] = "\0", glyph_to[MAXT+1] = "\0";
                         strncat(glyph_from, tok->tokbuf, p_hyphen - tok->tokbuf);
                         strcat(glyph_to, p_hyphen + 1);
@@ -3152,6 +3152,7 @@ return( NULL );
                         last_val=-1; last_glyph[0] = '\0';
                     }
                 } else {
+                    /* Name token without hyphen */
 		    strcpy(last_glyph,tok->tokbuf); last_val = -1;
                     contents = fea_glyphname_validate(tok,tok->tokbuf);
                 }
