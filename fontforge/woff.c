@@ -387,6 +387,22 @@ compareOffsets(const void * lhs, const void * rhs)
            0;
 }
 
+static FILE* WriteSfnt(SplineFont *sf, enum fontformat format,
+	int32_t *bsizes, enum bitmapformat bf,int flags,EncMap *enc,int layer) {
+    FILE *sfnt = GFileTmpfile();
+    if (!sfnt) {
+        return NULL;
+    }
+    enum fontformat inner_format = (isttflike_ff(format)) ? ff_ttf :
+                                   (sf->subfonts!=NULL) ? ff_otfcid : ff_otf;
+    bool ret = _WriteTTFFont(sfnt, sf, inner_format, bsizes, bf, flags, enc, layer);
+    if (!ret) {
+        fclose(sfnt);
+        return NULL;
+    }
+    return sfnt;
+}
+
 int _WriteWOFFFont(FILE *woff,SplineFont *sf, enum fontformat format,
 	int32_t *bsizes, enum bitmapformat bf,int flags,EncMap *enc,int layer) {
     int ret;
@@ -424,13 +440,9 @@ int _WriteWOFFFont(FILE *woff,SplineFont *sf, enum fontformat format,
 	}
     }
 
-    format = sf->subfonts!=NULL ? ff_otfcid :
-		sf->layers[layer].order2 ? ff_ttf : ff_otf;
-    sfnt = GFileTmpfile();
-    ret = _WriteTTFFont(sfnt,sf,format,bsizes,bf,flags,enc,layer);
-    if ( !ret ) {
-	fclose(sfnt);
-return( ret );
+    sfnt = WriteSfnt(sf,format,bsizes,bf,flags,enc,layer);
+    if ( !sfnt ) {
+        return false ;
     }
 
     fseek(sfnt,0,SEEK_END);
@@ -629,25 +641,20 @@ int WriteWOFF2Font(char *fontname, SplineFont *sf, enum fontformat format, int32
 
 int _WriteWOFF2Font(FILE *fp, SplineFont *sf, enum fontformat format, int32_t *bsizes, enum bitmapformat bf, int flags, EncMap *enc, int layer)
 {
-    FILE *tmp = GFileTmpfile();
-    if (!tmp) {
-        return 0;
-    }
-    int ret = _WriteTTFFont(tmp, sf, format, bsizes, bf, flags, enc, layer);
-    if (!ret) {
-        fclose(tmp);
-        return 0;
+    FILE* sfnt = WriteSfnt(sf,format,bsizes,bf,flags,enc,layer);
+    if ( !sfnt ) {
+        return false ;
     }
 
     size_t raw_input_length = 0, comp_size;
-    uint8_t *raw_input = ReadFileToBuffer(tmp, &raw_input_length);
-    fclose(tmp);
+    uint8_t *raw_input = ReadFileToBuffer(sfnt, &raw_input_length);
+    fclose(sfnt);
     if (!raw_input) {
         return 0;
     }
 
     uint8_t *comp_buffer;
-    ret = woff2_convert_ttf_to_woff2(raw_input, raw_input_length, &comp_buffer, &comp_size);
+    int ret = woff2_convert_ttf_to_woff2(raw_input, raw_input_length, &comp_buffer, &comp_size);
     free(raw_input);
     if (!ret) {
         free(comp_buffer);

@@ -2852,14 +2852,18 @@ static int PyFFContour_SubAssign( PyObject *self, PyObject *key, PyObject *val )
     if ( PyLong_Check(key)) {
         return PyFFContour_IndexAssign(self, PyNumber_AsSsize_t(key, PyExc_IndexError), val);
     }
+    if ( val==NULL ) {
+        /* deleting (del c[i:j]) is equivalent to setting to empty array (c[i:j] = [])*/
+        val = PyList_New(0);
+    }
     rpl = PyFFPointList_Parse(val);
     if ( rpl==NULL ) {
 	PyErr_Format(PyExc_TypeError, "Replacement must encode a point list");
 	return( -1 );
     }
     if ( !PySlice_Check(key) ) {
-	PyErr_Format(PyExc_IndexError, "Contour indexed by integer only");
-	return( -1 );
+        PyErr_Format(PyExc_IndexError, "Contour indexed by integer or slice only");
+        return( -1 );
     }
 #if PY_VERSION_HEX > 0x03060100
     if (PySlice_Unpack(key, &start, &end, &step) < 0) {
