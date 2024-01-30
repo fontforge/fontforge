@@ -14226,7 +14226,8 @@ static int PyFF_Font_set_style_set_names(PyFF_Font *self, PyObject *value, void 
             on->lang = lang;
             on->next = fn->names;
             fn->names = on;
-        }
+        } else
+            free(on->name);
         on->name = copy(name_str);
     }
     return( 0 );
