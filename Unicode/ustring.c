@@ -871,6 +871,29 @@ void utf8_strncpy(register char *to, const char *from, int len) {
     to[old-from] = 0;
 }
 
+unichar_t *u2utf16_strncpy(unichar_t *utf16buf,const unichar_t *ubuf,int len) {
+/* Copy unichar string 'ubuf' into utf16 buffer string 'utf16buf' */
+/* Technically, uint16_t is sufficient for utf-16 encoding, feel free to replace. */
+    unichar_t *pt = utf16buf;
+    unichar_t ch;
+
+    if (utf16buf == NULL || ubuf == NULL)
+        return NULL;
+
+    while ( *ubuf && (len-- != 0) ) {
+        ch = *ubuf++;
+        if (ch <= 0xFFFF)
+            *pt++ = ch;
+        else {
+            /* Encode with surrogate pair */
+            *pt++ = ((ch - 0x10000)>>10) + 0xD800;    /* high surrogate */
+            *pt++ = ((ch - 0x10000)&0x3FF) + 0xDC00;  /* low surrogate */
+        }
+    }
+    *pt = '\0';
+    return( utf16buf );
+}
+
 char *StripToASCII(const char *utf8_str) {
     /* Remove any non-ascii characters: Special case, convert the copyright symbol to (c) */
     char *newcr, *pt, *end;
