@@ -405,7 +405,6 @@ static FILE* WriteSfnt(SplineFont *sf, enum fontformat format,
 
 int _WriteWOFFFont(FILE *woff,SplineFont *sf, enum fontformat format,
 	int32_t *bsizes, enum bitmapformat bf,int flags,EncMap *enc,int layer) {
-    int ret;
     FILE *sfnt;
     int major=sf->woffMajor, minor=sf->woffMinor;
     int flavour, num_tabs;
