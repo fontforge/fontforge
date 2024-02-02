@@ -894,6 +894,33 @@ unichar_t *u2utf16_strncpy(unichar_t *utf16buf,const unichar_t *ubuf,int len) {
     return( utf16buf );
 }
 
+extern unichar_t *utf162u_strcpy(unichar_t*ubuf, const unichar_t *utf16buf) {
+    uint32_t uch = 0x0, uch2 = 0x0;
+    unichar_t *pt = ubuf;
+
+    if (utf16buf == NULL || ubuf == NULL)
+        return NULL;
+
+    while ( *utf16buf ) {
+        uch = *utf16buf++;
+	if ( uch>=0xd800 && uch<0xdc00 ) {
+	    /* Is this a possible utf16 high surrogate value? */
+	    uch2 = *utf16buf++;
+	    if ( uch2>=0xdc00 && uch2<0xe000 ) /* low surrogate */
+		uch = ((uch-0xd800)<<10 | (uch2&0x3ff)) + 0x10000;
+	    else {
+		*pt++ = uch;
+                if (uch2==0)
+                    break;
+		uch = uch2;
+	    }
+	}
+        *pt++ = uch;
+    }
+    *pt = '\0';
+    return( ubuf );
+}
+
 char *StripToASCII(const char *utf8_str) {
     /* Remove any non-ascii characters: Special case, convert the copyright symbol to (c) */
     char *newcr, *pt, *end;

@@ -160,6 +160,7 @@ extern unichar_t *def2u_copy(const char *from);
 extern char *u2def_copy(const unichar_t *ufrom);
 
 extern unichar_t *u2utf16_strncpy(unichar_t *utf16buf,const unichar_t *ubuf,int len);
+extern unichar_t *utf162u_strcpy(unichar_t*ubuf, const unichar_t *utf16buf);
 
 extern int uAllAscii(const unichar_t *str);
 extern int AllAscii(const char *);
