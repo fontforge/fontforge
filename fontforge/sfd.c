@@ -38,6 +38,7 @@
 #include "ffglib.h"
 #include "fontforge.h"
 #include "fvfonts.h"
+#include "getline.h"
 #include "gfile.h"
 #include "gutils.h"
 #include "gwidget.h"
@@ -69,7 +70,6 @@
 #include <stdio.h>
 
 #ifdef _WIN32
-#define _GNU_SOURCE /* for getdelim() with MinGW compiler */
 #include <windows.h>
 #endif
 
