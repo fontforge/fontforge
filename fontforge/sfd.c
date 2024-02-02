@@ -351,7 +351,7 @@ char *SFDReadUTF7Str(FILE *sfd) {
     if ( ch!='"' )
         return( NULL );
 
-    n_chars = getdelim(&utf7_buf, &buf_size, '"', sfd);
+    n_chars = getdelim_(&utf7_buf, &buf_size, '"', sfd);
     if (n_chars > 0) {
         if (utf7_buf[n_chars-1] == '"')
             /* Remove the trailing doublequote if present */

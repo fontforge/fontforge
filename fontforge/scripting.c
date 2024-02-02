@@ -8727,7 +8727,7 @@ static int _buffered_cgetc(Context *c) {
 #ifdef _NO_LIBREADLINE
 	    static char *linebuf = NULL;
 	    static size_t lbsize = 0;
-	    if (getline(&linebuf, &lbsize, stdin) > 0) {
+	    if (getline_(&linebuf, &lbsize, stdin) > 0) {
 		ch = AddScriptLine(c->script, linebuf);
 	    } else {
 		if (linebuf) {

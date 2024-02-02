@@ -1,4 +1,3 @@
-#ifdef _WIN32
 /* https://stackoverflow.com/questions/735126/are-there-alternate-implementations-of-gnu-getline-interface/735472#735472 */
 
 /* The original code is public domain -- Will Hartung 4/9/09 */
@@ -10,7 +9,7 @@
 // if typedef doesn't exist (msvc, blah)
 typedef intptr_t ssize_t;
 
-ssize_t getdelim(char **lineptr, size_t *n, int delimiter, FILE *stream) {
+ssize_t getdelim_(char **lineptr, size_t *n, int delimiter, FILE *stream) {
     size_t pos;
     int c;
 
@@ -58,8 +57,6 @@ ssize_t getdelim(char **lineptr, size_t *n, int delimiter, FILE *stream) {
     return pos;
 }
 
-ssize_t getline(char **lineptr, size_t *n, FILE *stream) {
-    return getdelim(lineptr, n, '\n', stream);
+ssize_t getline_(char **lineptr, size_t *n, FILE *stream) {
+    return getdelim_(lineptr, n, '\n', stream);
 }
-
-#endif /* #ifdef _WIN32 */
