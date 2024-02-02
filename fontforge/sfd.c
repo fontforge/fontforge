@@ -69,6 +69,7 @@
 #include <stdio.h>
 
 #ifdef _WIN32
+#define _GNU_SOURCE /* for getdelim() with MinGW compiler */
 #include <windows.h>
 #endif
 
