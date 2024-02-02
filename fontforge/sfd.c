@@ -219,7 +219,7 @@ char *utf8toutf7_copy(const char *_str) {
 
     ucs2_str = utf82u_copy(_str); /* Convert from utf8 to ucs2 */
     utf16buf = (unichar_t *) malloc(2*(u_strlen(ucs2_str)+1)*sizeof(unichar_t));
-    u2utf16_strncpy(utf16buf, ucs2_str, u_strlen(ucs2_str));
+    u2utf16_strcpy(utf16buf, ucs2_str);
     free(ucs2_str);
 
     for ( i=0; i<2; ++i ) {
