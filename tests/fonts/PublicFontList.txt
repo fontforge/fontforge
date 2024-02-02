@@ -1,3 +1,15 @@
+http://svn.savannah.gnu.org/viewvc/*checkout*/freefont/trunk/freefont/sfd/FreeMono.sfd
+http://svn.savannah.gnu.org/viewvc/*checkout*/freefont/trunk/freefont/sfd/FreeMonoBold.sfd
+http://svn.savannah.gnu.org/viewvc/*checkout*/freefont/trunk/freefont/sfd/FreeMonoBoldOblique.sfd
+http://svn.savannah.gnu.org/viewvc/*checkout*/freefont/trunk/freefont/sfd/FreeMonoOblique.sfd
+http://svn.savannah.gnu.org/viewvc/*checkout*/freefont/trunk/freefont/sfd/FreeSans.sfd
+http://svn.savannah.gnu.org/viewvc/*checkout*/freefont/trunk/freefont/sfd/FreeSansBold.sfd
+http://svn.savannah.gnu.org/viewvc/*checkout*/freefont/trunk/freefont/sfd/FreeSansBoldOblique.sfd
+http://svn.savannah.gnu.org/viewvc/*checkout*/freefont/trunk/freefont/sfd/FreeSansOblique.sfd
+http://svn.savannah.gnu.org/viewvc/*checkout*/freefont/trunk/freefont/sfd/FreeSerif.sfd
+http://svn.savannah.gnu.org/viewvc/*checkout*/freefont/trunk/freefont/sfd/FreeSerifBold.sfd
+http://svn.savannah.gnu.org/viewvc/*checkout*/freefont/trunk/freefont/sfd/FreeSerifBoldItalic.sfd
+http://svn.savannah.gnu.org/viewvc/*checkout*/freefont/trunk/freefont/sfd/FreeSerifItalic.sfd
 https://github.com/dummy_path/missing.sfd
 https://github.com/marutan/riscos-free-fonts/raw/main/Fonts/Corpus.Bold.Oblique.sfd
 https://github.com/marutan/riscos-free-fonts/raw/main/Fonts/Corpus.Bold.sfd
