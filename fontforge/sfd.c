@@ -38,6 +38,7 @@
 #include "ffglib.h"
 #include "fontforge.h"
 #include "fvfonts.h"
+#include "getline.h"
 #include "gfile.h"
 #include "gutils.h"
 #include "gwidget.h"
@@ -187,14 +188,6 @@ static int PeekMatch(FILE *stream, const char * target) {
   return (target[pos1] == '\0');
 }
 
-static void utf7_encode(FILE *sfd,long ch) {
-
-    putc(base64[(ch>>18)&0x3f],sfd);
-    putc(base64[(ch>>12)&0x3f],sfd);
-    putc(base64[(ch>>6)&0x3f],sfd);
-    putc(base64[ch&0x3f],sfd);
-}
-
 static char *base64_encode(char *ostr, long ch) {
 
     *ostr++ = base64[(ch>>18)&0x3f];
@@ -204,107 +197,36 @@ static char *base64_encode(char *ostr, long ch) {
 return( ostr );
 }
 
-void SFDDumpUTF7Str(FILE *sfd, const char *_str) {
-    int ch, prev_cnt=0, prev=0, in=0;
-    const unsigned char *str = (const unsigned char *) _str;
-
+void SFDDumpUTF7Str(FILE *sfd, const char *str) {
     putc('"',sfd);
-    if ( str!=NULL ) while ( (ch = *str++)!='\0' ) {
-	/* Convert from utf8 to ucs4 */
-	if ( ch<=127 )
-	    /* Done */;
-	else if ( ch<=0xdf && *str!='\0' ) {
-	    ch = ((ch&0x1f)<<6) | (*str++&0x3f);
-	} else if ( ch<=0xef && *str!='\0' && str[1]!='\0' ) {
-	    ch = ((ch&0xf)<<12) | ((str[0]&0x3f)<<6) | (str[1]&0x3f);
-	    str += 2;
-	} else if ( *str!='\0' && str[1]!='\0' && str[2]!='\0' ) {
-	    int w = ( ((ch&0x7)<<2) | ((str[0]&0x30)>>4) )-1;
-	    int s1, s2;
-	    s1 = (w<<6) | ((str[0]&0xf)<<2) | ((str[1]&0x30)>>4);
-	    s2 = ((str[1]&0xf)<<6) | (str[2]&0x3f);
-	    ch = (s1*0x400)+s2 + 0x10000;
-	    str += 3;
-	} else {
-	    /* illegal */
-	}
-	if ( ch<127 && ch!='\n' && ch!='\r' && ch!='\\' && ch!='~' &&
-		ch!='+' && ch!='=' && ch!='"' ) {
-	    if ( prev_cnt!=0 ) {
-		prev<<= (prev_cnt==1?16:8);
-		utf7_encode(sfd,prev);
-		prev_cnt=prev=0;
-	    }
-	    if ( in ) {
-		if ( inbase64[ch]!=-1 || ch=='-' )
-		    putc('-',sfd);
-		in = 0;
-	    }
-	    putc(ch,sfd);
-	} else if ( ch=='+' && !in ) {
-	    putc('+',sfd);
-	    putc('-',sfd);
-	} else if ( prev_cnt== 0 ) {
-	    if ( !in ) {
-		putc('+',sfd);
-		in = 1;
-	    }
-	    prev = ch;
-	    prev_cnt = 2;		/* 2 bytes */
-	} else if ( prev_cnt==2 ) {
-	    prev<<=8;
-	    prev += (ch>>8)&0xff;
-	    utf7_encode(sfd,prev);
-	    prev = (ch&0xff);
-	    prev_cnt=1;
-	} else {
-	    prev<<=16;
-	    prev |= ch;
-	    utf7_encode(sfd,prev);
-	    prev_cnt = prev = 0;
-	}
-    }
-    if ( prev_cnt==2 ) {
-	prev<<=8;
-	utf7_encode(sfd,prev);
-    } else if ( prev_cnt==1 ) {
-	prev<<=16;
-	utf7_encode(sfd,prev);
+    if ( str!=NULL ) {
+        char *utf7_str = utf8toutf7_copy(str);
+        fprintf(sfd, "%s", utf7_str);
+        free(utf7_str);
     }
     putc('"',sfd);
 }
 
 
 char *utf8toutf7_copy(const char *_str) {
-    int ch, prev_cnt=0, prev=0, in=0;
-    const unsigned char *str = (const unsigned char *) _str;
+    unichar_t ch;
+    int prev_cnt=0, prev=0, in=0;
     int i, len;
     char *ret=NULL, *ostr=NULL;
+    unichar_t *ucs2_str, *utf16buf, *pt;
 
-    if ( str==NULL )
-return( NULL );
+    if ( _str==NULL )
+        return( NULL );
+
+    ucs2_str = utf82u_copy(_str); /* Convert from utf8 to ucs2 */
+    utf16buf = (unichar_t *) malloc(2*(u_strlen(ucs2_str)+1)*sizeof(unichar_t));
+    u2utf16_strcpy(utf16buf, ucs2_str);
+    free(ucs2_str);
+
     for ( i=0; i<2; ++i ) {
-	str = (const unsigned char *) _str;
+        pt = utf16buf;
 	len= prev_cnt= prev= in=0;
-	while ( (ch = *str++)!='\0' ) {
-	    /* Convert from utf8 to ucs2 */
-	    if ( ch<=127 )
-		/* Done */;
-	    else if ( ch<=0xdf && *str!='\0' ) {
-		ch = ((ch&0x1f)<<6) | (*str++&0x3f);
-	    } else if ( ch<=0xef && *str!='\0' && str[1]!='\0' ) {
-		ch = ((ch&0xf)<<12) | ((str[0]&0x3f)<<6) | (str[1]&0x3f);
-		str += 2;
-	    } else if ( *str!='\0' && str[1]!='\0' && str[2]!='\0' ) {
-		int w = ( ((ch&0x7)<<2) | ((str[0]&0x30)>>4) )-1;
-		int s1, s2;
-		s1 = (w<<6) | ((str[0]&0xf)<<2) | ((str[1]&0x30)>>4);
-		s2 = ((str[1]&0xf)<<6) | (str[2]&0x3f);
-		ch = (s1*0x400)+s2 + 0x10000;
-		str += 3;
-	    } else {
-		/* illegal */
-	    }
+	while ( (ch = *pt++)!='\0' ) {
 	    if ( ch<127 && ch!='\n' && ch!='\r' && ch!='\\' && ch!='~' &&
 		    ch!='+' && ch!='=' && ch!='"' ) {
 		if ( prev_cnt!=0 ) {
@@ -365,6 +287,12 @@ return( NULL );
 		prev_cnt = prev = 0;
 	    }
 	}
+        /* Finalize the UTF-7 string with trailing zero bit padding.
+           Here we apparently break the UTF-7 standard, as we should have 
+           added just the necessary amount of padding (2 zero bits for
+           16 unconverted data bits or 4 zero bits for 8 unconverted data
+           bits) or at least pad with '='. Instead we pad to 24 bits and
+           output 4 chars. */
 	if ( prev_cnt==2 ) {
 	    prev<<=8;
 	    if ( i ) {
@@ -390,6 +318,7 @@ return( NULL );
 	    ostr = ret = malloc(len+1);
     }
     *ostr = '\0';
+    free(utf16buf);
 return( ret );
 }
 
@@ -411,112 +340,41 @@ return( ch );
 }
 
 char *SFDReadUTF7Str(FILE *sfd) {
-    char *buffer = NULL, *pt, *end = NULL;
-    int ch1, ch2, ch3, ch4, done, c;
-    int prev_cnt=0, prev=0, in=0;
+    int ch;
+    char *utf7_buf = NULL, *utf8_buf = NULL;
+    ssize_t n_chars;
+    size_t buf_size = 0;
 
-    ch1 = nlgetc(sfd);
-    while ( isspace(ch1) && ch1!='\n' && ch1!='\r') ch1 = nlgetc(sfd);
-    if ( ch1=='\n' || ch1=='\r' )
-	ungetc(ch1,sfd);
-    if ( ch1!='"' )
-return( NULL );
-    pt = 0;
-    while ( (ch1=nlgetc(sfd))!=EOF && ch1!='"' ) {
-	done = 0;
-	if ( !done && !in ) {
-	    if ( ch1=='+' ) {
-		ch1 = nlgetc(sfd);
-		if ( ch1=='-' ) {
-		    ch1 = '+';
-		    done = true;
-		} else {
-		    in = true;
-		    prev_cnt = 0;
-		}
-	    } else
-		done = true;
-	}
-	if ( !done ) {
-	    if ( ch1=='-' ) {
-		in = false;
-	    } else if ( inbase64[ch1]==-1 ) {
-		in = false;
-		done = true;
-	    } else {
-		ch1 = inbase64[ch1];
-		ch2 = inbase64[c = nlgetc(sfd)];
-		if ( ch2==-1 ) {
-		    ungetc(c, sfd);
-		    ch2 = ch3 = ch4 = 0;
-		} else {
-		    ch3 = inbase64[c = nlgetc(sfd)];
-		    if ( ch3==-1 ) {
-			ungetc(c, sfd);
-			ch3 = ch4 = 0;
-		    } else {
-			ch4 = inbase64[c = nlgetc(sfd)];
-			if ( ch4==-1 ) {
-			    ungetc(c, sfd);
-			    ch4 = 0;
-			}
-		    }
-		}
-		ch1 = (ch1<<18) | (ch2<<12) | (ch3<<6) | ch4;
-		if ( prev_cnt==0 ) {
-		    prev = ch1&0xff;
-		    ch1 >>= 8;
-		    prev_cnt = 1;
-		} else /* if ( prev_cnt == 1 ) */ {
-		    ch1 |= (prev<<24);
-		    prev = (ch1&0xffff);
-		    ch1 = (ch1>>16)&0xffff;
-		    prev_cnt = 2;
-		}
-		done = true;
-	    }
-	}
-	if ( pt+10>=end ) {
-	    if ( buffer==NULL ) {
-		pt = buffer = malloc(400);
-		end = buffer+400;
-	    } else if (pt) {
-		char *temp = realloc(buffer,end-buffer+400);
-		pt = temp+(pt-buffer);
-		end = temp+(end-buffer+400);
-		buffer = temp;
-	    }
-	}
-	if ( pt && done )
-	    pt = utf8_idpb(pt,ch1,0);
-	if ( prev_cnt==2 ) {
-	    prev_cnt = 0;
-	    if ( pt && prev!=0 )
-		pt = utf8_idpb(pt,prev,0);
-	}
-	if ( pt==0 ) {
-	    free(buffer);
-	    return( NULL );
-	}
+    do { ch = nlgetc(sfd); } while ( isspace(ch) && ch!='\n' && ch!='\r');
+    if ( ch=='\n' || ch=='\r' )
+	ungetc(ch,sfd);
+    if ( ch!='"' )
+        return( NULL );
+
+    n_chars = getdelim_(&utf7_buf, &buf_size, '"', sfd);
+    if (n_chars > 0) {
+        if (utf7_buf[n_chars-1] == '"')
+            /* Remove the trailing doublequote if present */
+            utf7_buf[n_chars-1] = '\0';
+        utf8_buf = utf7toutf8_copy(utf7_buf);
     }
-    if ( buffer==NULL )
-return( NULL );
-    *pt = '\0';
-    pt = copy(buffer);
-    free(buffer );
-return( pt );
+    free(utf7_buf);
+
+    return utf8_buf;
 }
 
 char *utf7toutf8_copy(const char *_str) {
-    char *buffer = NULL, *pt, *end = NULL;
+    unichar_t *utf16buf = NULL, *pt;
     int ch1, ch2, ch3, ch4, done;
     int prev_cnt=0, prev=0, in=0;
     const char *str = _str;
+    char *utf8_buf;
+    unichar_t *ucs2_str = NULL;
 
     if ( str==NULL )
 return( NULL );
-    buffer = pt = malloc(400);
-    end = pt+400;
+
+    pt = utf16buf = (unichar_t *) malloc((strlen(_str)+1)*sizeof(unichar_t));
     while ( (ch1=*str++)!='\0' ) {
 	done = 0;
 	if ( !done && !in ) {
@@ -571,28 +429,27 @@ return( NULL );
 		done = true;
 	    }
 	}
-	if ( pt+10>=end ) {
-	    char *temp = realloc(buffer,end-buffer+400);
-	    pt = temp+(pt-buffer);
-	    end = temp+(end-buffer+400);
-	    buffer = temp;
-	}
 	if ( pt && done )
-	    pt = utf8_idpb(pt,ch1,0);
+            *pt++ = ch1;
 	if ( prev_cnt==2 ) {
 	    prev_cnt = 0;
 	    if ( pt && prev!=0 )
-		pt = utf8_idpb(pt,prev,0);
-	}
-	if ( pt==0 ) {
-	    free(buffer);
-	    return( NULL );
+                *pt++ = prev;
 	}
     }
     *pt = '\0';
-    pt = copy(buffer);
-    free(buffer );
-return( pt );
+    if (pt == utf16buf) {
+        /* Failed to decode any character */
+        free(utf16buf);
+        return NULL;
+    }
+
+    ucs2_str = (unichar_t *) malloc((u_strlen(utf16buf)+1)*sizeof(unichar_t));
+    utf162u_strcpy(ucs2_str, utf16buf);
+    utf8_buf = u2utf8_copy(ucs2_str); /* Convert from ucs2 to utf8 */
+    free(ucs2_str);
+
+    return( utf8_buf );
 }
 
 struct enc85 {

@@ -51,6 +51,7 @@
 #include "fvfonts.h"
 #include "fvimportbdf.h"
 #include "fvmetrics.h"
+#include "getline.h"
 #include "gfile.h"
 #include "gutils.h"
 #include "lookups.h"
@@ -8718,22 +8719,6 @@ static int AddScriptLine(FILE *script, const char *line)
     return getc(script);
 }
 
-#if defined(__MINGW32__) && defined(_NO_LIBREADLINE)
-
-static ssize_t getline(char **lineptr, size_t *n, FILE *stream)
-{
-	if (!*lineptr || !*n) {
-		*n = 1024;
-		*lineptr = calloc(*n+1, sizeof(char));
-	}
-	if (!fgets(*lineptr, *n, stream)) {
-		return -1;
-	}
-    return 1; // good enough
-}
-
-#endif
-
 static int _buffered_cgetc(Context *c) {
     if (c->interactive) {
 	int ch;
@@ -8742,7 +8727,7 @@ static int _buffered_cgetc(Context *c) {
 #ifdef _NO_LIBREADLINE
 	    static char *linebuf = NULL;
 	    static size_t lbsize = 0;
-	    if (getline(&linebuf, &lbsize, stdin) > 0) {
+	    if (getline_(&linebuf, &lbsize, stdin) > 0) {
 		ch = AddScriptLine(c->script, linebuf);
 	    } else {
 		if (linebuf) {

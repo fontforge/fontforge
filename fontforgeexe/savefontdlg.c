@@ -163,8 +163,10 @@ static GTextInfo formattypes[] = {
     { (unichar_t *) N_("Unified Font Object (UFO3)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) N_("Unified Font Object 2"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) N_("Unified Font Object 3"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
-    { (unichar_t *) N_("Web Open Font (WOFF)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
-    { (unichar_t *) N_("Web Open Font (WOFF2)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Web Open Font (WOFF TTF)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Web Open Font (WOFF OTF)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Web Open Font (WOFF2 TTF)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
+    { (unichar_t *) N_("Web Open Font (WOFF2 OTF)"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     { (unichar_t *) N_("No Outline Font"), NULL, 0, 0, NULL, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0' },
     GTEXTINFO_EMPTY
 };
@@ -1398,7 +1400,8 @@ return;
     }
 
     if ( likecff || oldformatstate<=ff_cffcid ||
-	    (oldformatstate>=ff_otf && oldformatstate<=ff_otfciddfont)) {
+	     (oldformatstate>=ff_otf && oldformatstate<=ff_otfciddfont) ||
+        oldformatstate==ff_woff_otf || oldformatstate==ff_woff2_otf) {
 	if ( d->sf->ascent+d->sf->descent!=1000 && !psscalewarned ) {
 	    if ( gwwv_ask(_("Non-standard Em-Size"),(const char **) buts,0,1,_("The convention is that PostScript fonts should have an Em-Size of 1000. But this font has a size of %d. This is not an error, but you might consider altering the Em-Size with the Element->Font Info->General dialog.\nDo you wish to continue to generate your font in spite of this?"),
 		    d->sf->ascent+d->sf->descent)==1 )
@@ -1655,14 +1658,12 @@ static void GFD_FigureWhich(struct gfc_data *d) {
 	which = 1;		/* truetype options */ /* type42 also */
     else
 	which = 2;		/* opentype options */
-    if ( fs==ff_woff || fs==ff_woff2 ) {
-	SplineFont *sf = d->sf;
-	int layer = d->layer;
-	if ( sf->layers[layer].order2 )
+
+    if ( fs==ff_woff_ttf || fs==ff_woff2_ttf )
 	    which = 1;			/* truetype */
-	else
+	else if ( fs==ff_woff_otf || fs==ff_woff2_otf )
 	    which = 2;			/* opentype */
-    }
+       
     if ( bf == bf_otb && which==0 )
 	which = 3;		/* postscript options with opentype bitmap options */
     d->sod_which = which;
@@ -2317,7 +2318,8 @@ return( 0 );
 	ofs = ff_ttc;
     }
 #ifndef FONTFORGE_CAN_USE_WOFF2
-	formattypes[ff_woff2].disabled = true;
+	formattypes[ff_woff2_ttf].disabled = true;
+	formattypes[ff_woff2_otf].disabled = true;
 #endif
 
     for ( i=0; i<sizeof(formattypes)/sizeof(formattypes[0]); ++i )
