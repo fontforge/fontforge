@@ -74,7 +74,7 @@ If your machine doesn't have them and you want them they are available from:
     It used to be disabled by default because of some [patents granted to Apple](http://freetype.org/patents.html).
     Now that they have expired, you no longer need to worry about this, unless your setup happens to use an old library version.
     Then you may enable the interpreter by setting the appropriate macro in `*.../include/freetype/config/ftoption.h*` before you build the library (see the README.UNX file on the top level of the freetype distribution).
-    To enable the truetype debugger, FontForge needs to have the freetype source directories available when it is built (there are some included files there which it depends on).
+    To enable the truetype debugger, FontForge needs to have the freetype source directories available when it is built (there are some '#include' files there which it depends on).
 -   libintl Is standard on most Unixes. It is part of the fink package on the Mac. Handles UI localization.
 -   [libpython](http://www.python.org/) If present when FontForge is compiled, allows the user to execute python scripts within FontForge (and you can configure FontForge so that FontForge's functionality can be imported into python -- that is FontForge both *extends* and *embeds* python)
 -   [libX](http://x.org/) Normally FontForge depends on the X11 windowing system, but if you are just interested in the scripting engines (with no user interface), it may be built on systems without X (the configure script should figure this out).
