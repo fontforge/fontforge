@@ -308,12 +308,16 @@ char *utf8toutf7_copy(const char *_str) {
 	    } else
 		len += 4;
 	}
+        /* Base64 block can optionally end with a hyphen '-'. We omit it at the
+           end of the encoded string to preserve the existing SFD convention. */
+        /*
 	if ( in ) {
 	    if ( i )
 		*ostr++ = '-';
 	    else
 		++len;
 	}
+        */
 	if ( i==0 )
 	    ostr = ret = malloc(len+1);
     }
