@@ -403,7 +403,7 @@ return( NULL );
 	    } else {
 		ch1 = inbase64[ch1];
 		ch2 = inbase64[(unsigned char) *str++];
-		if ( ch2==1 ) {
+		if ( ch2==-1 ) {
 		    --str;
 		    ch2 = ch3 = ch4 = 0;
 		} else {
