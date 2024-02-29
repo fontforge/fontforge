@@ -62,6 +62,8 @@
 #include "ustring.h"
 #include "utype.h"
 
+#include "gtk/dialogs.hpp"
+
 #include <math.h>
 #include <unistd.h>
 
@@ -4950,21 +4952,12 @@ static void FVEncodingMenuBuild(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED
 }
 
 static void FVMenuAddUnencoded(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    char *ret, *end;
-    int cnt;
-
-    ret = gwwv_ask_string(_("Add Encoding Slots..."),"1",fv->b.cidmaster?_("How many CID slots do you wish to add?"):_("How many unencoded glyph slots do you wish to add?"));
-    if ( ret==NULL )
-return;
-    cnt = strtol(ret,&end,10);
-    if ( *end!='\0' || cnt<=0 ) {
-	free(ret);
-	ff_post_error( _("Bad Number"),_("Bad Number") );
-return;
-    }
-    free(ret);
-    FVAddUnencoded((FontViewBase *) fv, cnt);
+   int i = add_encoding_slots_dialog();
+   if(i < 0) {
+      return ff_post_error(_("Add Unencoded"), _("Error occurred while adding unencoded slots"));
+   }
+   FontView *fv = (FontView *) GDrawGetUserData(gw);
+   FVAddUnencoded((FontViewBase *) fv, i);
 }
 
 static void FVMenuRemoveUnused(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
