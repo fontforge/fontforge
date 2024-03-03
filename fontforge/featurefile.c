@@ -457,7 +457,7 @@ static OTLookup *lookup_in_rule(struct fpst_rule *r,int seq,int *index, int *pos
     /*  feature file. It doesn't seem likely to be used so I ignore it */
 
     for ( i=0; i<r->lookup_cnt && seq>r->lookups[i].seq; ++i );
-    if ( i > 0 && seq != r->lookups[i].seq )
+    if (i == r->lookup_cnt || (i > 0 && seq < r->lookups[i].seq))
         --i;
     *index = i;
     *pos = seq-r->lookups[i].seq;
