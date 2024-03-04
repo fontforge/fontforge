@@ -6363,6 +6363,8 @@ static int glyphmatches(SplineChar *sc,SplineChar *sc2,int layer) {
 
     if ( sc->width!=sc2->width )
 return( false );
+    if ( sc->vwidth!=sc2->vwidth )
+return( false );
     if ( sc->ttf_instrs_len != sc2->ttf_instrs_len )
 return( false );
     if ( sc->ttf_instrs_len!=0 && memcmp(sc->ttf_instrs,sc2->ttf_instrs,sc->ttf_instrs_len)!=0 )
