@@ -1110,7 +1110,7 @@ return( false );
 		} else if ( !mm->apple && !KernsMatch(sf->glyphs[i],mm->instances[j]->glyphs[i])) {
 		    if ( complain ) {
 			FVChangeGID( sf->fv,i);
-			ff_post_error(_("Bad Multiple Master Font"),_("The glyph vertical in font %2$.30s has a different set of kern pairs than in %3$.30s"),
+			ff_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s in font %2$.30s has a different set of kern pairs than in %3$.30s"),
 				sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
 		    }
 return( false );
