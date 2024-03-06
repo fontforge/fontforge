@@ -1111,7 +1111,7 @@ return( false );
 		    if ( complain ) {
 			FVChangeGID( sf->fv,i);
 			ff_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s in font %2$.30s has a different set of kern pairs than in %3$.30s"),
-				"vertical", sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
+				_("vertical"), sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
 		    }
 return( false );
 		}
