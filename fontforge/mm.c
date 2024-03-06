@@ -1130,14 +1130,14 @@ return( false );
 			if ( complain ) {
 			    FVChangeGID( sf->fv,i);
 			    ff_post_error(_("Bad Multiple Master Font"),_("The %1$s hints in glyph \"%2$.30s\" in font %3$.30s do not match those in %4$.30s (different number or different overlap criteria)"),
-				    "horizontal", sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
+				    _("horizontal"), sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
 			}
 return( false );
 		    } else if ( !HintsMatch(sf->glyphs[i]->vstem,mm->instances[j]->glyphs[i]->vstem)) {
 			if ( complain ) {
 			    FVChangeGID( sf->fv,i);
 			    ff_post_error(_("Bad Multiple Master Font"),_("The %1$s hints in glyph \"%2$.30s\" in font %3$.30s do not match those in %4$.30s (different number or different overlap criteria)"),
-				    "vertical", sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
+				    _("vertical"), sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
 			}
 return( false );
 		    }
