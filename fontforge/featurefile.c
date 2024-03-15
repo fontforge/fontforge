@@ -1746,12 +1746,16 @@ static void dump_header_languagesystem(FILE *out, SplineFont *sf) {
     struct scriptlanglist *sl;
     int has_DFLT = 0;
 
+    uint32_t *scripts = SFScriptsInLookups(sf);
+    if (scripts == NULL) {
+        return;
+    }
+
     GTree* ht = g_tree_new_full( tree_strcasecmp, 0, free, NULL );
 
     for ( isgpos=0; isgpos<2; ++isgpos ) {
 	uint32_t *feats = SFFeaturesInScriptLang(sf,isgpos,0xffffffff,0xffffffff);
 	if ( feats[0]!=0 ) {
-	    uint32_t *scripts = SFScriptsInLookups(sf);
 	    note_nested_lookups_used_twice(isgpos ? sf->gpos_lookups : sf->gsub_lookups);
 	    for ( i=0; feats[i]!=0; ++i ) {
 
@@ -1783,7 +1787,6 @@ static void dump_header_languagesystem(FILE *out, SplineFont *sf) {
                     free(langs);
 		}
 	    }
-            free(scripts);
 	}
         free(feats);
     }
