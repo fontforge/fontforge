@@ -1751,7 +1751,7 @@ static void dump_header_languagesystem(FILE *out, SplineFont *sf) {
     for ( isgpos=0; isgpos<2; ++isgpos ) {
 	uint32_t *feats = SFFeaturesInScriptLang(sf,isgpos,0xffffffff,0xffffffff);
 	if ( feats[0]!=0 ) {
-	    uint32_t *scripts = SFScriptsInLookups(sf,isgpos);
+	    uint32_t *scripts = SFScriptsInLookups(sf);
 	    note_nested_lookups_used_twice(isgpos ? sf->gpos_lookups : sf->gsub_lookups);
 	    for ( i=0; feats[i]!=0; ++i ) {
 
@@ -1804,7 +1804,7 @@ static void dump_gsubgpos(FILE *out, SplineFont *sf) {
     for ( isgpos=0; isgpos<2; ++isgpos ) {
 	uint32_t *feats = SFFeaturesInScriptLang(sf,isgpos,0xffffffff,0xffffffff);
 	if ( feats[0]!=0 ) {
-	    uint32_t *scripts = SFScriptsInLookups(sf,isgpos);
+	    uint32_t *scripts = SFScriptsInLookups(sf);
 	    fprintf( out, "\n# %s \n\n", isgpos ? "GPOS" : "GSUB" );
 	    note_nested_lookups_used_twice(isgpos ? sf->gpos_lookups : sf->gsub_lookups);
 	    for ( otl= isgpos ? sf->gpos_lookups : sf->gsub_lookups; otl!=NULL; otl=otl->next )
