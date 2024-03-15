@@ -6749,7 +6749,7 @@ static void fea_ApplyLookupListPair(struct parseState *tok,
 		      PSTFree(pst);
 		    } else {
 		      LogError(_("Discarding a duplicate kerning pair."));
-		      SplineCharFree(sc); sc = NULL;
+		      sc = NULL;
 		      free(kp); kp = NULL;
 		    }
 		} else {
