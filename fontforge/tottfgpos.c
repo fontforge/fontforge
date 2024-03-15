@@ -3044,7 +3044,7 @@ static void FindFeatures(SplineFont *sf,int is_gpos,struct ginfo *ginfo) {
 
     memset(ginfo,0,sizeof(struct ginfo));
 
-    scripts = SFScriptsInLookups(sf,is_gpos);
+    scripts = SFScriptsInLookups(sf);
     if ( scripts==NULL )	/* All lookups unused */
 return;
     for ( sc=0; scripts[sc]!=0; ++sc );
