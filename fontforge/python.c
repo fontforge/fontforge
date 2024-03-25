@@ -480,42 +480,39 @@ static PyObject *TagToPythonString(uint32_t tag,int ismac) {
 return( PyUnicode_FromString(foo));
 }
 
-static PyObject *DeviceTableToPythonTuple(DeviceTable **devtab) {
-    int cnt, px, cor, low, high;
+static PyObject *DeviceTableToPythonDict(DeviceTable **devtab) {
+    int px, cor, low, high;
     
     if ( *devtab==NULL || (*devtab)->corrections==NULL ) {
-        return( PyTuple_New(0) );
+        return( PyDict_New() );
     }
 
     low = (*devtab)->first_pixel_size;
     high = (*devtab)->last_pixel_size;
-    cnt = 0;
-    for ( px=low; px<=high; ++px ) {
-        if ( (*devtab)->corrections[px-low]!=0 )
-            cnt++;
-    }
-    PyObject *py_devtab = PyTuple_New(cnt);
 
-    cnt = 0;
+    PyObject *py_devtab = PyDict_New();
+
     for ( px=low; px<=high; ++px ) {
         if ( (*devtab)->corrections[px-low]!=0 ) {
             cor = (*devtab)->corrections[px-low];
-            PyObject *t = PyTuple_Pack(2, Py_BuildValue("i", px), Py_BuildValue("i", cor));
-            PyTuple_SetItem(py_devtab, cnt, t);
-            cnt++;
+            PyDict_SetItem(py_devtab, Py_BuildValue("i", px), Py_BuildValue("i", cor));
         }
     }
     return( py_devtab );
 }
 
 /* returns -1 if there was an error, 0 otherwise*/
-static int PythonTupleToDeviceTable(DeviceTable **devtab, PyObject *value) {
+static int PythonDictToDeviceTable(DeviceTable **devtab, PyObject *value) {
     int cnt, i, low = -1, high = -1, pixel, cor;
     DeviceTable *dv = NULL;
 
     DeviceTableFree(*devtab);
 
-    PyObject *seq = PySequence_Fast(value, "Must be a tuple or a list");
+    if ( !PyDict_Check(value) ) {
+        PyErr_Format(PyExc_TypeError, "Device Table must be a dictionary");
+        return( -1 );
+    }
+    PyObject *seq = PyDict_Items(value);
     cnt = PySequence_Fast_GET_SIZE(seq);
     if ( cnt == 0 ) {
         *devtab = NULL;
@@ -11162,7 +11159,7 @@ static PyObject *PyFFMathDevTab_get(PyFF_Math *self, void *closure) {
     int devtab_offset = (int) (intptr_t) closure;
     struct MATH *math = SFGetMathTable(self->sf);
     DeviceTable **devtab = ((DeviceTable **) (((char *) (math)) + devtab_offset ));
-    return( DeviceTableToPythonTuple(devtab) );
+    return( DeviceTableToPythonDict(devtab) );
 }
 
 static int PyFFMath_set(PyFF_Math *self, PyObject *value, void *closure) {
@@ -11186,7 +11183,7 @@ static int PyFFMathDevTab_set(PyFF_Math *self, PyObject *value, void *closure) {
     int devtab_offset = (int) (intptr_t) closure;
     struct MATH *math = SFGetMathTable(self->sf);
     DeviceTable **devtab = (DeviceTable **) (((char *) (math)) + devtab_offset );
-    return ( PythonTupleToDeviceTable(devtab, value) );
+    return ( PythonDictToDeviceTable(devtab, value) );
 }
 
 static PyObject *PyFFMath_clear(PyFF_Math *self, PyObject *UNUSED(args)) {
