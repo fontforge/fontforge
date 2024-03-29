@@ -98,6 +98,8 @@
 extern int old_sfnt_flags;
 extern int prefRevisionsToRetain;
 
+extern int DeviceTableFind(DeviceTable *adjust,int pixelsize);
+
 /* ========== MODULE DEFINITIONS ========== */
 /* The following types are used to define Python Modules.  For every
  * module, you must create a 'module_definition' structure describing
@@ -478,75 +480,6 @@ static PyObject *TagToPythonString(uint32_t tag,int ismac) {
 	foo[4] = '\0';
     }
 return( PyUnicode_FromString(foo));
-}
-
-static PyObject *DeviceTableToPythonDict(DeviceTable **devtab) {
-    int px, cor, low, high;
-    
-    if ( *devtab==NULL || (*devtab)->corrections==NULL ) {
-        return( PyDict_New() );
-    }
-
-    low = (*devtab)->first_pixel_size;
-    high = (*devtab)->last_pixel_size;
-
-    PyObject *py_devtab = PyDict_New();
-
-    for ( px=low; px<=high; ++px ) {
-        if ( (*devtab)->corrections[px-low]!=0 ) {
-            cor = (*devtab)->corrections[px-low];
-            PyDict_SetItem(py_devtab, Py_BuildValue("i", px), Py_BuildValue("i", cor));
-        }
-    }
-    return( py_devtab );
-}
-
-/* returns -1 if there was an error, 0 otherwise*/
-static int PythonDictToDeviceTable(DeviceTable **devtab, PyObject *value) {
-    int cnt, i, low = -1, high = -1, pixel, cor;
-    DeviceTable *dv = NULL;
-
-    DeviceTableFree(*devtab);
-
-    if ( !PyDict_Check(value) ) {
-        PyErr_Format(PyExc_TypeError, "Device Table must be a dictionary");
-        return( -1 );
-    }
-    PyObject *seq = PyDict_Items(value);
-    cnt = PySequence_Fast_GET_SIZE(seq);
-    if ( cnt == 0 ) {
-        *devtab = NULL;
-        return ( 0 );
-    }
-    
-    for ( i=0; i<cnt; ++i ) {
-        PyObject *adj_tuple = PySequence_Fast_GET_ITEM(seq, i);
-        if ( !PyTuple_Check(adj_tuple) || PyTuple_Size(adj_tuple) != 2 ) {
-            PyErr_Format(PyExc_TypeError, "Device Table elements must be tuples of length 2");
-            return( -1 );
-        }
-        PyArg_ParseTuple(adj_tuple, "ii", &pixel, &cor);
-        if ( low==-1 )
-            low = high = pixel;
-        else if ( pixel<low )
-            low = pixel;
-        else if ( pixel>high ) 
-            high = pixel;
-    }
-
-    dv = chunkalloc(sizeof(DeviceTable));
-    dv->first_pixel_size = low;
-    dv->last_pixel_size = high;
-    dv->corrections = calloc(high-low+1,1);
-    
-    for ( i=0; i<cnt; ++i ) {
-        PyObject *adj_tuple = PySequence_Fast_GET_ITEM(seq, i);
-        PyArg_ParseTuple(adj_tuple, "ii", &pixel, &cor);
-        dv->corrections[pixel-low] = cor;
-    }
-
-    *devtab = dv;
-    return( 0 );
 }
 
 /* ************************************************************************** */
@@ -11127,12 +11060,8 @@ static PyTypeObject PyFF_LayerInfoArrayType = {
 };
 
 /* ************************************************************************** */
-/* Font math constants type */
+/* Font math constants device table type */
 /* ************************************************************************** */
-
-static void PyFFMath_dealloc(PyFF_Math *self) {
-    Py_TYPE(self)->tp_free((PyObject*)self);
-}
 
 static PyObject *PyFFMath_Str(PyFF_Math *self) {
 return( PyUnicode_FromFormat( "<math table for font %s>", self->sf->fontname ));
@@ -11146,6 +11075,181 @@ static struct MATH *SFGetMathTable(SplineFont *sf) {
 return(sf->MATH);
 }
 
+static void PyFFMathDeviceTable_dealloc(PyFF_MathDeviceTable *self) {
+    self->sf = NULL;
+    PyObject_Del(self);
+}
+
+static Py_ssize_t PyFF_MathDeviceLength( PyFF_MathDeviceTable *self ) {
+    struct MATH *math = SFGetMathTable(self->sf);
+    DeviceTable *devtab = *((DeviceTable **) (((char *) (math)) + self->devtab_offset ));
+    uint16_t px, low, high;
+    int count = 0;
+
+    if ( devtab==NULL ) return count;
+
+    low = devtab->first_pixel_size;
+    high = devtab->last_pixel_size;
+
+    for ( px=low; px<=high; ++px ) {
+        if ( devtab->corrections[px-low]!=0 ) {
+            count++;
+        }
+    }
+
+    return count;
+}
+
+static PyObject *PyFF_MathDeviceIndex( PyFF_MathDeviceTable *self, PyObject *index ) {
+    struct MATH *math = SFGetMathTable(self->sf);
+    DeviceTable *devtab = *((DeviceTable **) (((char *) (math)) + self->devtab_offset ));
+    uint16_t px, low, high;
+    int8_t correction;
+
+    if ( PyLong_Check(index)) {
+	px = PyLong_AsLong(index);
+    } else {
+	PyErr_Format(PyExc_TypeError, "Pixel size must be an integer" );
+        return( NULL );
+    }
+
+    correction = DeviceTableFind(devtab, px);
+    return Py_BuildValue("i", correction);
+}
+
+static int PyFF_MathDeviceIndexAssign( PyFF_MathDeviceTable *self, PyObject *index, PyObject *value ) {
+    struct MATH *math = SFGetMathTable(self->sf);
+    DeviceTable **devtab = (DeviceTable **) (((char *) (math)) + self->devtab_offset );
+    uint16_t px;
+    int8_t correction;
+
+    if ( PyLong_Check(index)) {
+	px = PyLong_AsLong(index);
+    } else {
+	PyErr_Format(PyExc_TypeError, "Pixel size must be an integer" );
+        return -1; /* Failure */
+    }
+
+    if (value==NULL) {
+        correction = 0;
+    } else if ( PyLong_Check(value)) {
+	correction = PyLong_AsLong(value);
+    } else {
+	PyErr_Format(PyExc_TypeError, "Device correction value must be an integer or None" );
+        return -1; /* Failure */
+    }
+
+    if (*devtab==NULL) {
+        *devtab = chunkalloc(sizeof(DeviceTable));
+    }
+    DeviceTableSet(*devtab, px, correction);
+    return 0;
+}
+
+/* Compare with dictionary for testing purposes */
+PyObject *PyFF_MathDeviceTableCompare(PyFF_MathDeviceTable *self, PyObject *other, int op){
+    struct MATH *math = SFGetMathTable(self->sf);
+    DeviceTable *devtab = *((DeviceTable **) (((char *) (math)) + self->devtab_offset ));
+    bool is_equal = TRUE;
+    PyObject *result = NULL;
+
+    if ((op != Py_EQ) && (op != Py_NE)) {
+        PyErr_Format(PyExc_TypeError, "Device Table relations unsupported");
+        return NULL;
+    }
+
+    if ( !PyDict_Check(other) ) {
+        PyErr_Format(PyExc_TypeError, "Device Table must be compared to a dictionary");
+        return NULL;
+    }
+
+    /* Compare length */
+    if (PyFF_MathDeviceLength(self) != PyDict_Size(other)) {
+        is_equal = FALSE;
+    } else {
+        /* Compare elements */
+        PyObject *key, *value;
+        Py_ssize_t pos = 0;
+
+        while (is_equal && PyDict_Next(other, &pos, &key, &value)) {
+            if (PyLong_Check(key) && PyLong_Check(value)) {
+	        is_equal = (PyLong_AsLong(value) == DeviceTableFind(devtab, PyLong_AsLong(key)));
+            } else {
+                PyErr_Format(PyExc_TypeError, "Bad dictionary values for comparison" );
+                is_equal = FALSE; /* Failure */
+            }
+        }
+    }
+
+    result = (is_equal != (op==Py_NE)) ? Py_True : Py_False;
+    Py_INCREF( result );
+    return( result );
+}
+
+static PyMappingMethods PyFF_MathDeviceTableMapping = {
+    PyFF_MathDeviceLength,	/* length */
+    PyFF_MathDeviceIndex,	/* subscript */
+    PyFF_MathDeviceIndexAssign	/* subscript assign */
+};
+
+static PyTypeObject PyFF_MathDeviceTableType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    "fontforge.math.device_table", /* tp_name */
+    sizeof(PyFF_MathDeviceTable), /* tp_basicsize */
+    0,                         /* tp_itemsize */
+    (destructor)PyFFMathDeviceTable_dealloc, /*tp_dealloc */
+    0,                         /* tp_vectorcall_offset */
+    NULL,                      /* tp_getattr */
+    NULL,                      /* tp_setattr */
+    NULL,                      /* tp_compare */
+    NULL,                      /* tp_repr */
+    NULL,                      /* tp_as_number */
+    NULL,                      /* tp_as_sequence */
+    &PyFF_MathDeviceTableMapping, /*tp_as_mapping*/
+    NULL,                      /* tp_hash */
+    NULL,                      /* tp_call */
+    (reprfunc) PyFFMath_Str,   /* tp_str */
+    NULL,                      /* tp_getattro */
+    NULL,                      /* tp_setattro */
+    NULL,                      /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,        /* tp_flags */
+    "fontforge device table for math constants",  /* tp_doc */
+    NULL,                      /* tp_traverse */
+    NULL,                      /* tp_clear */
+    (richcmpfunc) PyFF_MathDeviceTableCompare, /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
+    NULL,                      /* tp_iter */
+    NULL,                      /* tp_iternext */
+    NULL,                      /* tp_methods */
+    NULL,                      /* tp_members */
+    NULL,                      /* tp_getset */
+    NULL,                      /* tp_base */
+    NULL,                      /* tp_dict */
+    NULL,                      /* tp_descr_get */
+    NULL,                      /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    NULL,                      /* tp_init */
+    NULL,                      /* tp_alloc */
+    NULL,                      /* tp_new */
+    NULL,                      /* tp_free */
+    NULL,                      /* tp_is_gc */
+    NULL,                      /* tp_bases */
+    NULL,                      /* tp_mro */
+    NULL,                      /* tp_cache */
+    NULL,                      /* tp_subclasses */
+    NULL,                      /* tp_weaklist */
+    NULL,                      /* tp_del */
+    0,                         /* tp_version_tag */
+};
+
+/* ************************************************************************** */
+/* Font math constants type */
+/* ************************************************************************** */
+
+static void PyFFMath_dealloc(PyFF_Math *self) {
+    Py_TYPE(self)->tp_free((PyObject*)self);
+}
+
 static PyObject *PyFFMath_get(PyFF_Math *self, void *closure) {
     int offset = (int) (intptr_t) closure;
     struct MATH *math;
@@ -11157,9 +11261,13 @@ return( Py_BuildValue("i", *(int16_t *) (((char *) math) + offset) ));
 
 static PyObject *PyFFMathDevTab_get(PyFF_Math *self, void *closure) {
     int devtab_offset = (int) (intptr_t) closure;
-    struct MATH *math = SFGetMathTable(self->sf);
-    DeviceTable **devtab = ((DeviceTable **) (((char *) (math)) + devtab_offset ));
-    return( DeviceTableToPythonDict(devtab) );
+
+    PyFF_MathDeviceTable *py_devtab =
+        (PyFF_MathDeviceTable *) PyObject_New(PyFF_MathDeviceTable, &PyFF_MathDeviceTableType);
+    py_devtab->sf = self->sf;
+    py_devtab->devtab_offset = devtab_offset;
+
+    return (PyObject*)py_devtab;
 }
 
 static int PyFFMath_set(PyFF_Math *self, PyObject *value, void *closure) {
@@ -11179,11 +11287,74 @@ return( -1 );
 return( 0 );
 }
 
+/* returns -1 if there was an error, 0 otherwise*/
+static int PythonObjToDeviceTable(DeviceTable **target_devtab, PyObject *value) {
+    int cnt, i, low = -1, high = -1, pixel, cor;
+    DeviceTable *dv = NULL;
+
+    if (value == NULL) {
+        DeviceTableFree(*target_devtab);
+        return 0;
+    }
+
+    if ( PyType_IsSubtype(&PyFF_MathDeviceTableType, Py_TYPE(value)) ) {
+        PyFF_MathDeviceTable *source_py_devtab = (PyFF_MathDeviceTable*) value;
+        struct MATH *math = SFGetMathTable(source_py_devtab->sf);
+        DeviceTable *source_devtab = *((DeviceTable **) (((char *) (math)) + source_py_devtab->devtab_offset ));
+
+        /* Assigning a device table to itself is a NOOP */
+        if (source_devtab != *target_devtab) {
+            *target_devtab = DeviceTableCopy(source_devtab);
+        }
+        return 0;
+    } else if ( !PyDict_Check(value) ) {
+        PyErr_Format(PyExc_TypeError, "Device Table must be a dictionary");
+        return( -1 );
+    }
+
+    /* Set device table from Python dictionary */
+    PyObject *seq = PyDict_Items(value);
+    cnt = PySequence_Fast_GET_SIZE(seq);
+    if ( cnt == 0 ) {
+        *target_devtab = NULL;
+        return ( 0 );
+    }
+    
+    for ( i=0; i<cnt; ++i ) {
+        PyObject *adj_tuple = PySequence_Fast_GET_ITEM(seq, i);
+        if ( !PyTuple_Check(adj_tuple) || PyTuple_Size(adj_tuple) != 2 ) {
+            PyErr_Format(PyExc_TypeError, "Device Table elements must be tuples of length 2");
+            return( -1 );
+        }
+        PyArg_ParseTuple(adj_tuple, "ii", &pixel, &cor);
+        if ( low==-1 )
+            low = high = pixel;
+        else if ( pixel<low )
+            low = pixel;
+        else if ( pixel>high ) 
+            high = pixel;
+    }
+
+    dv = chunkalloc(sizeof(DeviceTable));
+    dv->first_pixel_size = low;
+    dv->last_pixel_size = high;
+    dv->corrections = calloc(high-low+1,1);
+    
+    for ( i=0; i<cnt; ++i ) {
+        PyObject *adj_tuple = PySequence_Fast_GET_ITEM(seq, i);
+        PyArg_ParseTuple(adj_tuple, "ii", &pixel, &cor);
+        dv->corrections[pixel-low] = cor;
+    }
+
+    *target_devtab = dv;
+    return( 0 );
+}
+
 static int PyFFMathDevTab_set(PyFF_Math *self, PyObject *value, void *closure) {
-    int devtab_offset = (int) (intptr_t) closure;
+    int target_devtab_offset = (int) (intptr_t) closure; /* Might differ from offset in value */
     struct MATH *math = SFGetMathTable(self->sf);
-    DeviceTable **devtab = (DeviceTable **) (((char *) (math)) + devtab_offset );
-    return ( PythonDictToDeviceTable(devtab, value) );
+    DeviceTable **target_devtab = (DeviceTable **) (((char *) (math)) + target_devtab_offset );
+    return ( PythonObjToDeviceTable(target_devtab, value) );
 }
 
 static PyObject *PyFFMath_clear(PyFF_Math *self, PyObject *UNUSED(args)) {
