@@ -414,7 +414,7 @@ return( e );
 static char *_readencstring(FILE *ttf,int offset,int len,
 	int platform,int specific,int language) {
     long pos = ftell(ttf);
-    unichar_t *str, *pt;
+    unichar_t *ustr, *str, *pt;
     char *ret;
     int i, ch;
     Encoding *enc;
@@ -466,7 +466,11 @@ static char *_readencstring(FILE *ttf,int offset,int len,
 	} else {
 	    str = uc_copy("");
 	}
-	ret = u2utf8_copy(str);
+        ustr = (unichar_t *) malloc((u_strlen(str)+1)*sizeof(unichar_t));
+        utf162u_strcpy(ustr, str);
+        ret = u2utf8_copy(ustr); /* Convert from ucs2 to utf8 */
+
+        free(ustr);
 	free(str);
     }
     fseek(ttf,pos,SEEK_SET);

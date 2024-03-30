@@ -3732,12 +3732,19 @@ static void dumpstr(FILE *file,char *str) {
 }
 
 static void dumpustr(FILE *file,char *utf8_str) {
-    unichar_t *ustr = utf82u_copy(utf8_str), *pt=ustr;
+    unichar_t *ustr = utf82u_copy(utf8_str);
+    unichar_t *utf16buf = (unichar_t *) malloc(2*(u_strlen(ustr)+1)*sizeof(unichar_t));
+    unichar_t *pt;
+    
+    u2utf16_strcpy(utf16buf, ustr);
+    free(ustr);
+
+    pt=utf16buf;
     do {
 	putc(*pt>>8,file);
 	putc(*pt&0xff,file);
     } while ( *pt++!='\0' );
-    free(ustr);
+    free(utf16buf);
 }
 
 static void dumppstr(FILE *file,const char *str) {
@@ -3834,6 +3841,7 @@ static void AddEncodedName(NamTab *nt,char *utf8name,uint16_t lang,uint16_t stri
     NameEntry *ne;
     int maclang, macenc= -1, specific;
     char *macname = NULL;
+    uint16_t new_offset;
 
     if ( strid==ttf_postscriptname && lang!=0x409 )
 return;		/* Should not happen, but it did */
@@ -3854,6 +3862,8 @@ return;		/* Should not happen, but it did */
     ne->offset   = ftell(nt->strings);
     ne->len      = 2*utf82u_strlen(utf8name);
     dumpustr(nt->strings,utf8name);
+    new_offset = ftell(nt->strings);
+    printf("Len %d vs offset diff %d\n", ne->len, new_offset-ne->offset);
     ++ne;
 
     if ( nt->format==ff_ttfsym ) {
