@@ -3841,7 +3841,6 @@ static void AddEncodedName(NamTab *nt,char *utf8name,uint16_t lang,uint16_t stri
     NameEntry *ne;
     int maclang, macenc= -1, specific;
     char *macname = NULL;
-    uint16_t new_offset;
 
     if ( strid==ttf_postscriptname && lang!=0x409 )
 return;		/* Should not happen, but it did */
@@ -3862,8 +3861,6 @@ return;		/* Should not happen, but it did */
     ne->offset   = ftell(nt->strings);
     ne->len      = 2*utf82u_strlen(utf8name);
     dumpustr(nt->strings,utf8name);
-    new_offset = ftell(nt->strings);
-    printf("Len %d vs offset diff %d\n", ne->len, new_offset-ne->offset);
     ++ne;
 
     if ( nt->format==ff_ttfsym ) {
