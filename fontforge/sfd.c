@@ -209,23 +209,19 @@ void SFDDumpUTF7Str(FILE *sfd, const char *str) {
 
 
 char *utf8toutf7_copy(const char *_str) {
-    unichar_t ch;
+    uint16_t ch;
     int prev_cnt=0, prev=0, in=0;
     int i, len;
     char *ret=NULL, *ostr=NULL;
-    unichar_t *ucs2_str;
-    uint16_t *utf16buf, *pt;
+    uint16_t *utf16_str, *pt;
 
     if ( _str==NULL )
         return( NULL );
 
-    ucs2_str = utf82u_copy(_str); /* Convert from utf8 to ucs2 */
-    utf16buf = (uint16_t *) malloc(2*(u_strlen(ucs2_str)+1)*sizeof(uint16_t));
-    u2utf16_strcpy(utf16buf, ucs2_str);
-    free(ucs2_str);
+    utf16_str = utf82utf16_copy(_str);
 
     for ( i=0; i<2; ++i ) {
-        pt = utf16buf;
+        pt = utf16_str;
 	len= prev_cnt= prev= in=0;
 	while ( (ch = *pt++)!='\0' ) {
 	    if ( ch<127 && ch!='\n' && ch!='\r' && ch!='\\' && ch!='~' &&
@@ -323,7 +319,7 @@ char *utf8toutf7_copy(const char *_str) {
 	    ostr = ret = malloc(len+1);
     }
     *ostr = '\0';
-    free(utf16buf);
+    free(utf16_str);
 return( ret );
 }
 

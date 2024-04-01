@@ -920,6 +920,15 @@ extern unichar_t *utf162u_strcpy(unichar_t*ubuf, const uint16_t *utf16buf) {
     return( ubuf );
 }
 
+uint16_t *utf82utf16_copy(const char* utf8buf) {
+    unichar_t *utf32_str = utf82u_copy(utf8buf); /* Convert from utf8 to utf32 */
+    uint16_t *utf16buf = (uint16_t *) malloc(2*(u_strlen(utf32_str)+1)*sizeof(uint16_t));
+    u2utf16_strcpy(utf16buf, utf32_str);
+    free(utf32_str);
+
+    return utf16buf;
+}
+
 char *StripToASCII(const char *utf8_str) {
     /* Remove any non-ascii characters: Special case, convert the copyright symbol to (c) */
     char *newcr, *pt, *end;

@@ -3732,19 +3732,14 @@ static void dumpstr(FILE *file,char *str) {
 }
 
 static void dumpustr(FILE *file,char *utf8_str) {
-    unichar_t *ustr = utf82u_copy(utf8_str);
-    uint16_t *utf16buf = (uint16_t *) malloc(2*(u_strlen(ustr)+1)*sizeof(uint16_t));
-    uint16_t *pt;
+    uint16_t *utf16_str = utf82utf16_copy(utf8_str);
+    uint16_t *pt = utf16_str;
     
-    u2utf16_strcpy(utf16buf, ustr);
-    free(ustr);
-
-    pt=utf16buf;
     do {
 	putc(*pt>>8,file);
 	putc(*pt&0xff,file);
     } while ( *pt++!='\0' );
-    free(utf16buf);
+    free(utf16_str);
 }
 
 static void dumppstr(FILE *file,const char *str) {
