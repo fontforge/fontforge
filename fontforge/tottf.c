@@ -3733,8 +3733,8 @@ static void dumpstr(FILE *file,char *str) {
 
 static void dumpustr(FILE *file,char *utf8_str) {
     unichar_t *ustr = utf82u_copy(utf8_str);
-    unichar_t *utf16buf = (unichar_t *) malloc(2*(u_strlen(ustr)+1)*sizeof(unichar_t));
-    unichar_t *pt;
+    uint16_t *utf16buf = (uint16_t *) malloc(2*(u_strlen(ustr)+1)*sizeof(uint16_t));
+    uint16_t *pt;
     
     u2utf16_strcpy(utf16buf, ustr);
     free(ustr);

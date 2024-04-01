@@ -213,13 +213,14 @@ char *utf8toutf7_copy(const char *_str) {
     int prev_cnt=0, prev=0, in=0;
     int i, len;
     char *ret=NULL, *ostr=NULL;
-    unichar_t *ucs2_str, *utf16buf, *pt;
+    unichar_t *ucs2_str;
+    uint16_t *utf16buf, *pt;
 
     if ( _str==NULL )
         return( NULL );
 
     ucs2_str = utf82u_copy(_str); /* Convert from utf8 to ucs2 */
-    utf16buf = (unichar_t *) malloc(2*(u_strlen(ucs2_str)+1)*sizeof(unichar_t));
+    utf16buf = (uint16_t *) malloc(2*(u_strlen(ucs2_str)+1)*sizeof(uint16_t));
     u2utf16_strcpy(utf16buf, ucs2_str);
     free(ucs2_str);
 
@@ -368,7 +369,7 @@ char *SFDReadUTF7Str(FILE *sfd) {
 }
 
 char *utf7toutf8_copy(const char *_str) {
-    unichar_t *utf16buf = NULL, *pt;
+    uint16_t *utf16buf = NULL, *pt;
     int ch1, ch2, ch3, ch4, done;
     int prev_cnt=0, prev=0, in=0;
     const char *str = _str;
@@ -378,7 +379,7 @@ char *utf7toutf8_copy(const char *_str) {
     if ( str==NULL )
 return( NULL );
 
-    pt = utf16buf = (unichar_t *) malloc((strlen(_str)+1)*sizeof(unichar_t));
+    pt = utf16buf = (uint16_t *) malloc((strlen(_str)+1)*sizeof(uint16_t));
     while ( (ch1=*str++)!='\0' ) {
 	done = 0;
 	if ( !done && !in ) {
@@ -419,6 +420,7 @@ return( NULL );
 			}
 		    }
 		}
+                /* Fill ch1 up to at most 24 bits */
 		ch1 = (ch1<<18) | (ch2<<12) | (ch3<<6) | ch4;
 		if ( prev_cnt==0 ) {
 		    prev = ch1&0xff;
@@ -430,6 +432,7 @@ return( NULL );
 		    ch1 = (ch1>>16)&0xffff;
 		    prev_cnt = 2;
 		}
+                /* ch1 is guaranteed to have at most 16 significant bits at this point */
 		done = true;
 	    }
 	}
@@ -448,7 +451,7 @@ return( NULL );
         return NULL;
     }
 
-    ucs2_str = (unichar_t *) malloc((u_strlen(utf16buf)+1)*sizeof(unichar_t));
+    ucs2_str = (unichar_t *) malloc((strlen(_str)+1)*sizeof(unichar_t));
     utf162u_strcpy(ucs2_str, utf16buf);
     utf8_buf = u2utf8_copy(ucs2_str); /* Convert from ucs2 to utf8 */
     free(ucs2_str);
