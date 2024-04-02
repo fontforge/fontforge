@@ -416,7 +416,7 @@ static char *_readencstring(FILE *ttf,int offset,int len,
     long pos = ftell(ttf);
     unichar_t *str, *pt;
     char *ret;
-    int i, ch;
+    int i;
     Encoding *enc;
 
     fseek(ttf,offset,SEEK_SET);
@@ -439,14 +439,14 @@ static char *_readencstring(FILE *ttf,int offset,int len,
 	  return( NULL );
 	}
 	if ( enc->is_unicodebmp ) {
-            uint16_t *utf16_str, *utf16_pt;
+            uint16_t *utf16_str, *utf16_pt, ch;
 
 	    utf16_str = utf16_pt = malloc((len+1)*sizeof(utf16_str));
 	    for ( i=0; i<len/2; ++i ) {
 		ch = getc(ttf)<<8;
-		*pt++ = ch | getc(ttf);
+		*utf16_pt++ = ch | getc(ttf);
 	    }
-	    *pt = 0;
+	    *utf16_pt = 0;
 
             str = (unichar_t *) malloc((len+1)*sizeof(unichar_t));
             utf162u_strcpy(str, utf16_str); /* Convert from ucs2 to unicode */
