@@ -23,6 +23,11 @@ for adjustments in [
     # Filter out zero entries, they are not stored
     non_zero_adjustments = {k:v for (k,v) in adjustments.items() if v != 0}
     assert font.math.MathLeadingDeviceTable == non_zero_adjustments
+    assert len(font.math.MathLeadingDeviceTable) == len(non_zero_adjustments)
+
+# Set table to None
+font.math.AxisHeightDeviceTable = None
+assert font.math.AxisHeightDeviceTable == {}
 
 # Directly assign value to a table entry
 font.math.MathLeadingDeviceTable[9] = -1
@@ -31,6 +36,7 @@ font.math.MathLeadingDeviceTable[12] = 2
 
 # Verify all non-zero values were assigned
 assert font.math.MathLeadingDeviceTable == {9: -1, 12: 2}
+assert len(font.math.MathLeadingDeviceTable) == 2
 
 # Verify access by pixel size
 assert font.math.MathLeadingDeviceTable[3] == 0

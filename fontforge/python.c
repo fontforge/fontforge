@@ -11063,8 +11063,8 @@ static PyTypeObject PyFF_LayerInfoArrayType = {
 /* Font math constants device table type */
 /* ************************************************************************** */
 
-static PyObject *PyFFMath_Str(PyFF_Math *self) {
-return( PyUnicode_FromFormat( "<math table for font %s>", self->sf->fontname ));
+static PyObject *PyFFMathDeviceTable_Str(PyFF_MathDeviceTable *self) {
+return( PyUnicode_FromFormat( "<math device table for font %s>", self->sf->fontname ));
 }
 
 static struct MATH *SFGetMathTable(SplineFont *sf) {
@@ -11103,14 +11103,14 @@ static Py_ssize_t PyFF_MathDeviceLength( PyFF_MathDeviceTable *self ) {
 static PyObject *PyFF_MathDeviceIndex( PyFF_MathDeviceTable *self, PyObject *index ) {
     struct MATH *math = SFGetMathTable(self->sf);
     DeviceTable *devtab = *((DeviceTable **) (((char *) (math)) + self->devtab_offset ));
-    uint16_t px, low, high;
+    uint16_t px;
     int8_t correction;
 
     if ( PyLong_Check(index)) {
 	px = PyLong_AsLong(index);
     } else {
 	PyErr_Format(PyExc_TypeError, "Pixel size must be an integer" );
-        return( NULL );
+	return( NULL );
     }
 
     correction = DeviceTableFind(devtab, px);
@@ -11187,9 +11187,9 @@ PyObject *PyFF_MathDeviceTableCompare(PyFF_MathDeviceTable *self, PyObject *othe
 }
 
 static PyMappingMethods PyFF_MathDeviceTableMapping = {
-    PyFF_MathDeviceLength,	/* length */
-    PyFF_MathDeviceIndex,	/* subscript */
-    PyFF_MathDeviceIndexAssign	/* subscript assign */
+    (lenfunc) PyFF_MathDeviceLength,	/* length */
+    (binaryfunc) PyFF_MathDeviceIndex,	/* subscript */
+    (objobjargproc) PyFF_MathDeviceIndexAssign	/* subscript assign */
 };
 
 static PyTypeObject PyFF_MathDeviceTableType = {
@@ -11208,7 +11208,7 @@ static PyTypeObject PyFF_MathDeviceTableType = {
     &PyFF_MathDeviceTableMapping, /*tp_as_mapping*/
     NULL,                      /* tp_hash */
     NULL,                      /* tp_call */
-    (reprfunc) PyFFMath_Str,   /* tp_str */
+    (reprfunc) PyFFMathDeviceTable_Str,   /* tp_str */
     NULL,                      /* tp_getattro */
     NULL,                      /* tp_setattro */
     NULL,                      /* tp_as_buffer */
@@ -11245,6 +11245,10 @@ static PyTypeObject PyFF_MathDeviceTableType = {
 /* ************************************************************************** */
 /* Font math constants type */
 /* ************************************************************************** */
+
+static PyObject *PyFFMath_Str(PyFF_Math *self) {
+return( PyUnicode_FromFormat( "<math table for font %s>", self->sf->fontname ));
+}
 
 static void PyFFMath_dealloc(PyFF_Math *self) {
     Py_TYPE(self)->tp_free((PyObject*)self);
@@ -11292,7 +11296,7 @@ static int PythonObjToDeviceTable(DeviceTable **target_devtab, PyObject *value) 
     int cnt, i, low = -1, high = -1, pixel, cor;
     DeviceTable *dv = NULL;
 
-    if (value == NULL) {
+    if (value == NULL || value == Py_None) {
         DeviceTableFree(*target_devtab);
         return 0;
     }
