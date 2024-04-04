@@ -365,7 +365,7 @@ char *SFDReadUTF7Str(FILE *sfd) {
 }
 
 char *utf7toutf8_copy(const char *_str) {
-    uint16_t *utf16buf = NULL, *pt;
+    uint16_t *pt, *utf16buf = NULL;
     int ch1, ch2, ch3, ch4, done;
     int prev_cnt=0, prev=0, in=0;
     const char *str = _str;

@@ -894,7 +894,7 @@ uint16_t *u2utf16_strcpy(uint16_t *utf16buf,const unichar_t *ubuf) {
 }
 
 extern unichar_t *utf162u_strcpy(unichar_t*ubuf, const uint16_t *utf16buf) {
-    uint16_t uch = 0x0, uch2 = 0x0;
+    unichar_t uch = 0x0, uch2 = 0x0;
     unichar_t *pt = ubuf;
 
     if (utf16buf == NULL || ubuf == NULL)
