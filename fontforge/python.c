@@ -11130,7 +11130,7 @@ static int PyFF_MathDeviceIndexAssign( PyFF_MathDeviceTable *self, PyObject *ind
         return -1; /* Failure */
     }
 
-    if (value==NULL) {
+    if (value==NULL || value == Py_None) {
         correction = 0;
     } else if ( PyLong_Check(value)) {
 	correction = PyLong_AsLong(value);
@@ -11298,6 +11298,7 @@ static int PythonObjToDeviceTable(DeviceTable **target_devtab, PyObject *value) 
 
     if (value == NULL || value == Py_None) {
         DeviceTableFree(*target_devtab);
+	*target_devtab = NULL;
         return 0;
     }
 
@@ -11320,6 +11321,7 @@ static int PythonObjToDeviceTable(DeviceTable **target_devtab, PyObject *value) 
     PyObject *seq = PyDict_Items(value);
     cnt = PySequence_Fast_GET_SIZE(seq);
     if ( cnt == 0 ) {
+        DeviceTableFree(*target_devtab);
         *target_devtab = NULL;
         return ( 0 );
     }

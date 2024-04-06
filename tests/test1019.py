@@ -26,8 +26,16 @@ for adjustments in [
     assert len(font.math.MathLeadingDeviceTable) == len(non_zero_adjustments)
 
 # Set table to None
+font.math.AxisHeightDeviceTable = {10: -1}
+# Check that None assignment removes all data from table
 font.math.AxisHeightDeviceTable = None
 assert font.math.AxisHeightDeviceTable == {}
+
+# Set element to None
+font.math.AxisHeightDeviceTable = {10: 3, 11:-1}
+assert font.math.AxisHeightDeviceTable[11] == -1
+font.math.AxisHeightDeviceTable[11] = None
+assert font.math.AxisHeightDeviceTable[11] == 0
 
 # Directly assign value to a table entry
 font.math.MathLeadingDeviceTable[9] = -1
