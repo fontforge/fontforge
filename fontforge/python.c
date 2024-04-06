@@ -1711,7 +1711,7 @@ static int multiDlgDecodeCategory(MultiDlgCategory *category, PyObject *spec, Py
 }
 
 PyObject *multiDlgExtractAnswers(MultiDlgSpec *dspec) {
-    PyObject *r = PyDict_New(), *k, *v, *vtuple;
+    PyObject *r = PyDict_New(), *k=NULL, *v=NULL, *vtuple=NULL;
     int c, q, a, ai;
 
     for ( c=0; c<dspec->len; ++c ) {
@@ -6863,7 +6863,7 @@ return( ret );
 
 static int PyFF_Glyph_set_altuni(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
     int cnt, i;
-    struct altuni *head, *last=NULL, *cur;
+    struct altuni *head=NULL, *last=NULL, *cur;
     int uni, vs, fid;
     PyObject *obj;
     FontViewBase *fvs;
@@ -9015,7 +9015,7 @@ static PyObject *PyFFGlyph_getPosSub(PyObject *self, PyObject *args) {
     SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     SplineFont *sf = sc->parent, *sf_sl = sf;
     int i, j, cnt;
-    PyObject *ret, *temp;
+    PyObject *ret=NULL, *temp;
     PST *pst;
     KernPair *kp;
     struct lookup_subtable *sub;
@@ -9641,7 +9641,7 @@ static PyObject* PyFF_Glyph_BoundsAt(PyCFunction bounds_func, PyFF_Glyph *self, 
     double nmin = 0, nmax = 0;
     double tnmin = 0, tnmax = 0;
     bool set = false;
-    int layeri;
+    int layeri = ly_none;
 
     PyFF_Contour* tempc = NULL;
 
@@ -13658,7 +13658,7 @@ return( -1 );
 return( -1 );
     }
     SFDefaultOS2(sf);
-    strncpy(sf->pfminfo.os2_vendor, newv, 4);
+    memcpy(sf->pfminfo.os2_vendor, newv, 4);
     sf->pfminfo.panose_set = true;
 return( 0 );
 }
@@ -15444,7 +15444,7 @@ return (NULL);
     PyObject *class1s=NULL, *class2s=NULL, *offsets=NULL, *list1=NULL, *list2=NULL;
     PyObject *arg3, *arg4, *arg5;
     char **class1_strs, **class2_strs;
-    int cnt1, cnt2, acnt;
+    int cnt1=0, cnt2=0, acnt;
     int16_t *offs=NULL;
     int separation= -1, touch=0, do_autokern=false, only_closer=0, autokern=true;
     double class_error_distance = -1;
@@ -15978,7 +15978,7 @@ return( flags );
 #define BAD_FEATURE_LIST ((FeatureScriptLangList*)-1)
 
 static FeatureScriptLangList *PyParseFeatureList(PyObject *tuple) {
-    FeatureScriptLangList *flhead=NULL, *fltail, *fl;
+    FeatureScriptLangList *flhead=NULL, *fltail=NULL, *fl;
     struct scriptlanglist *sltail, *sl;
     int f,s,l, cnt;
     int wasmac;
