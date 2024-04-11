@@ -311,7 +311,7 @@ static AnchorPoint *AnchorPointsDuplicate(AnchorPoint *base,SplineChar *sc) {
     AnchorPoint *head=NULL, *last=NULL, *cur;
     AnchorClass *ac;
 
-    for ( ; base!=NULL; base = base->next ) {
+    for ( ; base!=NULL && sc->parent!=NULL; base = base->next ) {
 	cur = chunkalloc(sizeof(AnchorPoint));
 	*cur = *base;
 	cur->next = NULL;
