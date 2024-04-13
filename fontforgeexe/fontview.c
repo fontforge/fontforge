@@ -6042,39 +6042,9 @@ void FVChar(FontView *fv, GEvent *event) {
     int i,pos, cnt, gid;
     extern int navigation_mask;
 
-#if MyMemory
-    if ( event->u.chr.keysym == GK_F2 ) {
-	fprintf( stderr, "Malloc debug on\n" );
-	__malloc_debug(5);
-    } else if ( event->u.chr.keysym == GK_F3 ) {
-	fprintf( stderr, "Malloc debug off\n" );
-	__malloc_debug(0);
-    }
-#endif
 
-    if ( event->u.chr.keysym=='s' &&
-	    (event->u.chr.state&ksm_control) &&
-	    (event->u.chr.state&ksm_meta) )
-	MenuSaveAll(NULL,NULL,NULL);
-    else if ( event->u.chr.keysym=='q' &&
-	    (event->u.chr.state&ksm_control) &&
-	    (event->u.chr.state&ksm_meta) )
-	MenuExit(NULL,NULL,NULL);
-    else if ( event->u.chr.keysym=='I' &&
-	    (event->u.chr.state&ksm_shift) &&
-	    (event->u.chr.state&ksm_meta) )
-	FVMenuCharInfo(fv,0);
-    else if ( (event->u.chr.keysym=='[' || event->u.chr.keysym==']') &&
-	    (event->u.chr.state&ksm_control) ) {
-	FVMenuChangeChar(fv,event->u.chr.keysym=='['?MID_Prev:MID_Next);
-    } else if ( (event->u.chr.keysym=='{' || event->u.chr.keysym=='}') &&
-	    (event->u.chr.state&ksm_control) ) {
-	FVMenuChangeChar(fv,event->u.chr.keysym=='{'?MID_PrevDef:MID_NextDef);
-    } else if ( event->u.chr.keysym=='\\' && (event->u.chr.state&ksm_control) ) {
-	/* European keyboards need a funky modifier to get \ */
-	FVDoTransform(fv);
 #if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)
-    } else if ( isdigit(event->u.chr.keysym) && (event->u.chr.state&ksm_control) &&
+    if ( isdigit(event->u.chr.keysym) && (event->u.chr.state&ksm_control) &&
 	    (event->u.chr.state&ksm_meta) ) {
 	/* The Script menu isn't always up to date, so we might get one of */
 	/*  the shortcuts here */
@@ -6082,8 +6052,9 @@ void FVChar(FontView *fv, GEvent *event) {
 	if ( index<0 ) index = 9;
 	if ( script_filenames[index]!=NULL )
 	    ExecuteScriptFile((FontViewBase *) fv,NULL,script_filenames[index]);
+    } else
 #endif
-    } else if ( event->u.chr.keysym == GK_Left ||
+    if ( event->u.chr.keysym == GK_Left ||
 	    event->u.chr.keysym == GK_Tab ||
 	    event->u.chr.keysym == GK_BackTab ||
 	    event->u.chr.keysym == GK_Up ||
