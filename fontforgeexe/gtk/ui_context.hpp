@@ -49,6 +49,8 @@ class UiContext {
     virtual ActivateCB get_activate_cb(int mid) const = 0;
     virtual EnabledCB get_enabled_cb(int mid) const = 0;
     virtual CheckedCB get_checked_cb(int mid) const = 0;
+
+    virtual Glib::RefPtr<Gtk::AccelGroup> get_accel_group() const = 0;
 };
 
 }  // namespace ff::views

@@ -211,6 +211,13 @@ Gtk::MenuItem* menu_item_factory(const MenuInfo& item, const UiContext& context,
         menu_item = new Gtk::ImageMenuItem(*img, item.label.text, true);
     }
 
+    if (!item.label.accelerator.empty()) {
+        Gtk::AccelKey key(item.label.accelerator);
+        menu_item->add_accelerator("activate", context.get_accel_group(),
+                                   key.get_key(), key.get_mod(),
+                                   Gtk::ACCEL_VISIBLE);
+    }
+
     if (!item.sub_menu.empty()) {
         Gtk::Menu* sub_menu = Gtk::manage(build_menu(item.sub_menu, context));
         menu_item->set_submenu(*sub_menu);

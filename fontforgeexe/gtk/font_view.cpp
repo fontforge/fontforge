@@ -33,6 +33,11 @@
 
 namespace ff::views {
 
+FontViewUiContext::FontViewUiContext(std::shared_ptr<FVContext> fv_context)
+    : legacy_context(fv_context) {
+    accel_group = Gtk::AccelGroup::create();
+}
+
 // Find the C callback set
 FVMenuAction* find_legacy_callback_set(int mid, FVMenuAction* actions) {
     int i = 0;
@@ -133,6 +138,8 @@ FontView::FontView(std::shared_ptr<FVContext> fv_context, int width, int height)
     // before this function is called. A mere traverasal of widget tree should
     // theoretically have no side efects, but it does.
     gtk_find_child(&window, "");
+
+    window.add_accel_group(context.get_accel_group());
 }
 
 /////////////////  EVENTS  ////////////////////
