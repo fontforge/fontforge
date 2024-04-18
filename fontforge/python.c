@@ -19541,7 +19541,6 @@ static void RegisterAllPyModules(void);
 static void CreateAllPyModules(void);
 
 static PyObject * CreatePyModule( module_definition *moddef );
-static void SetPythonProgramName( const char *progname /* in ASCII */ );
 static void SetPythonModuleMetadata( PyObject *module );
 static int FinalizePythonTypes( python_type_info* typelist );
 static int AddPythonTypesToModule( PyObject *module, python_type_info* typelist );
@@ -19744,9 +19743,24 @@ void FontForge_InitializeEmbeddedPython(void) {
     if ( python_initialized )
 	return;
 
-    SetPythonProgramName("fontforge");
+    PyConfig config;
+    PyStatus status;
+    PyConfig_InitPythonConfig(&config);
+
+    status = PyConfig_SetBytesString(&config, &config.program_name,
+                                     "fontforge");
+    if (PyStatus_Exception(status)) {
+        fprintf(stderr, "Failed to set the Python program name: %s\n",
+		status.err_msg);
+    }
+
     RegisterAllPyModules();
-    Py_Initialize();
+    status = Py_InitializeFromConfig(&config);
+    if (PyStatus_Exception(status)) {
+        fprintf(stderr, "Python initialization failed: %s\n",
+		status.err_msg);
+        exit(1);
+    }
     python_initialized = 1;
 
     /* The embedded python interpreter is now functionally
@@ -19798,14 +19812,6 @@ _Noreturn void PyFF_Main(int argc,char **argv,int start, int do_inits,
 /* ************************************************************************** */
 /* PYTHON INITIALIZATION */
 /* ************************************************************************** */
-
-static void SetPythonProgramName(const char *progname) {
-    static wchar_t *saved_progname=NULL;
-    if ( saved_progname )
-	free(saved_progname);
-    saved_progname = copy_to_wide_string(progname);
-    Py_SetProgramName(saved_progname);
-}
 
 static wchar_t ** copy_argv(char *arg0, int argc ,char **argv) {
     int i;
