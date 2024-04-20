@@ -42,6 +42,8 @@
 #include "ttf.h"
 #include "ustring.h"
 
+#include "gtk/font_view_shim.hpp"
+
 #include <dirent.h>
 #include <errno.h>
 #include <fcntl.h>
@@ -129,7 +131,6 @@ struct py_menu_item {
 typedef void (*ff_menu_callback)(GWindow gw, struct gmenuitem *mi, GEvent *e);
 
 enum py_menu_type { pmt_font=0, pmt_char=1, pmt_size=2 };
-enum py_menu_flag { pmf_font=1, pmf_char=2 };
 
 static struct py_menu_data {
     struct py_menu_item *items;
@@ -358,19 +359,6 @@ static struct flaglist menuviews[] = {
     { "Glyph", pmf_char },
     { "Char", pmf_char },
     FLAGLIST_EMPTY
-};
-
-struct py_menu_text {
-    const char *localized;
-    const char *untranslated;
-    const char *identifier;
-};
-
-struct py_menu_spec {
-    int depth, divider;
-    struct py_menu_text *levels;
-    const char *shortcut_str;
-    PyObject *func, *check, *data;
 };
 
 static int MenuDataAdd(struct py_menu_spec *spec, struct py_menu_data *pmd) {
@@ -666,6 +654,7 @@ static PyObject *PyFF_registerMenuItem(PyObject *self, PyObject *args, PyObject 
 	InsertSubMenus(&spec, py_menus + pmt_font);
     if ( flags&pmf_char )
 	InsertSubMenus(&spec, py_menus + pmt_char);
+    register_py_menu_item_in_gtk(&spec, flags);
 
     Py_RETURN_NONE;
 }

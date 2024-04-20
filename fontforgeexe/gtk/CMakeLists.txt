@@ -8,6 +8,8 @@ add_library(ffgtk OBJECT
   c_context.h
   char_grid.hpp
   char_grid.cpp
+  common_menus.hpp
+  common_menus.cpp
   dialog.hpp
   dialog.cpp
   font_view.hpp

@@ -29,6 +29,7 @@
 
 #include "application.hpp"
 #include "c_context.h"
+#include "common_menus.hpp"
 #include "font_view.hpp"
 #include "kerning_format.hpp"
 #include "select_glyphs.hpp"
@@ -148,4 +149,8 @@ bool run_kerning_format_dlg(void** kf_opaque, KFDlgData* kf_data) {
     *kf_opaque = NULL;
 
     return (response == Gtk::RESPONSE_OK);
+}
+
+void register_py_menu_item_in_gtk(const PyMenuSpec* spec, int flags) {
+    ff::views::register_py_menu_item(spec, flags);
 }
