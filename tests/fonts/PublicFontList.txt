@@ -119,7 +119,6 @@ https://gitlab.com/ameliedumont/fonts/-/raw/master/Ductus/regular/source/DuctusR
 https://gitlab.com/ameliedumont/fonts/-/raw/master/Ductus/regular/source/DuctusGeometric.sfd
 https://gitlab.com/ameliedumont/fonts/-/raw/master/Ductus/regular/source/DuctusCalligraphic.sfd
 https://gitlab.com/ameliedumont/fonts/-/raw/master/Ductus/regular/DuctusGeometric.sfd
-https://gitlab.com/ekaunt/ran-soushotai/-/raw/master/extra-fonts/ran-soushotai-complete.sfd
 https://gitlab.com/kreativekorp/bitsnpicas/-/raw/master/fonts/sfsu/tos/ibm8.sfd
 https://gitlab.com/kreativekorp/bitsnpicas/-/raw/master/fonts/sfsu/tos/rgb.sfd
 https://gitlab.com/kreativekorp/bitsnpicas/-/raw/master/fonts/sfsu/tos/tosx.sfd

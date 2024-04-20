@@ -3732,12 +3732,14 @@ static void dumpstr(FILE *file,char *str) {
 }
 
 static void dumpustr(FILE *file,char *utf8_str) {
-    unichar_t *ustr = utf82u_copy(utf8_str), *pt=ustr;
+    uint16_t *utf16_str = utf82utf16_copy(utf8_str);
+    uint16_t *pt = utf16_str;
+    
     do {
 	putc(*pt>>8,file);
 	putc(*pt&0xff,file);
     } while ( *pt++!='\0' );
-    free(ustr);
+    free(utf16_str);
 }
 
 static void dumppstr(FILE *file,const char *str) {
