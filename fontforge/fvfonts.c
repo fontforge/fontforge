@@ -539,7 +539,7 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into,struct sfmergecontext
 	nsc->countermasks = malloc(sc->countermask_cnt*sizeof(HintMask));
 	memcpy(nsc->countermasks,sc->countermasks,sc->countermask_cnt*sizeof(HintMask));
     }
-    nsc->anchor = AnchorPointsDuplicate(nsc->anchor,nsc);
+    nsc->anchor = into==NULL?NULL:AnchorPointsDuplicate(nsc->anchor,nsc);
     nsc->changed = true;
     /* Fix up dependents later when we know more */
     nsc->dependents = NULL;
