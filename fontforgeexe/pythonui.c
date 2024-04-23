@@ -216,9 +216,34 @@ static unichar_t *SetMnemonicSuffix(const unichar_t *menu_string, unichar_t e, u
     return r;
 }
 
-static void py_tllistcheck(struct gmenuitem *mi, PyObject *owner, struct py_menu_data *pmd) {
+static bool py_check(PyObject *owner, unichar_t *label, PyObject *check, PyObject *data) {
     PyObject *arglist, *result;
+    bool disabled = true;
 
+    arglist = PyTuple_New(2);
+    Py_XINCREF(data);
+    Py_XINCREF(owner);
+    PyTuple_SetItem(arglist,0,data);
+    PyTuple_SetItem(arglist,1,owner);
+    result = PyObject_CallObject(check, arglist);
+    Py_DECREF(arglist);
+    if ( result==NULL )
+	/* Oh. An error. How fun. See below */;
+    else if ( !PyLong_Check(result)) {
+	char *menu_item_name = u2utf8_copy(label);
+	LogError(_("Return from enabling function for menu item %s must be boolean"), menu_item_name );
+	free( menu_item_name );
+	disabled = true;
+    } else
+	disabled = PyLong_AsLong(result)==0;
+    Py_XDECREF(result);
+    if ( PyErr_Occurred()!=NULL )
+	PyErr_Print();
+
+    return disabled;
+}
+
+static void py_tllistcheck(struct gmenuitem *mi, PyObject *owner, struct py_menu_data *pmd) {
     if ( mi == NULL )
 	return;
 
@@ -234,31 +259,26 @@ static void py_tllistcheck(struct gmenuitem *mi, PyObject *owner, struct py_menu
 	    mi->ti.disabled = false;
 	    continue;
 	}
-	arglist = PyTuple_New(2);
-	Py_XINCREF(pmd->items[mi->mid].data);
-	Py_XINCREF(owner);
-	PyTuple_SetItem(arglist,0,pmd->items[mi->mid].data);
-	PyTuple_SetItem(arglist,1,owner);
-	result = PyObject_CallObject(pmd->items[mi->mid].check, arglist);
-	Py_DECREF(arglist);
-	if ( result==NULL )
-	    /* Oh. An error. How fun. See below */;
-	else if ( !PyLong_Check(result)) {
-	    char *menu_item_name = u2utf8_copy(mi->ti.text);
-	    LogError(_("Return from enabling function for menu item %s must be boolean"), menu_item_name );
-	    free( menu_item_name );
-	    mi->ti.disabled = true;
-	} else
-	    mi->ti.disabled = PyLong_AsLong(result)==0;
-	Py_XDECREF(result);
-	if ( PyErr_Occurred()!=NULL )
-	    PyErr_Print();
+	mi->ti.disabled = py_check(owner, mi->ti.text, pmd->items[mi->mid].check, pmd->items[mi->mid].data);
     }
 }
 
-static void py_menuactivate(struct gmenuitem *mi, PyObject *owner, struct py_menu_data *pmd) {
+static void py_activate(PyObject *owner, PyObject *func, PyObject *data) {
     PyObject *arglist, *result;
 
+    arglist = PyTuple_New(2);
+    Py_XINCREF(data);
+    Py_XINCREF(owner);
+    PyTuple_SetItem(arglist,0,data);
+    PyTuple_SetItem(arglist,1,owner);
+    result = PyObject_CallObject(func, arglist);
+    Py_DECREF(arglist);
+    Py_XDECREF(result);
+    if ( PyErr_Occurred()!=NULL )
+	PyErr_Print();
+}
+
+static void py_menuactivate(struct gmenuitem *mi, PyObject *owner, struct py_menu_data *pmd) {
     if ( mi->mid==-1 )		/* Submenu */
 	return;
 
@@ -271,16 +291,7 @@ static void py_menuactivate(struct gmenuitem *mi, PyObject *owner, struct py_men
     if ( pmd->items[mi->mid].func==NULL ) {
 	return;
     }
-    arglist = PyTuple_New(2);
-    Py_XINCREF(pmd->items[mi->mid].data);
-    Py_XINCREF(owner);
-    PyTuple_SetItem(arglist,0,pmd->items[mi->mid].data);
-    PyTuple_SetItem(arglist,1,owner);
-    result = PyObject_CallObject(pmd->items[mi->mid].func, arglist);
-    Py_DECREF(arglist);
-    Py_XDECREF(result);
-    if ( PyErr_Occurred()!=NULL )
-	PyErr_Print();
+    py_activate(owner, pmd->items[mi->mid].func, pmd->items[mi->mid].data);
 }
 
 void cvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
