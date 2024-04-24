@@ -216,7 +216,7 @@ static unichar_t *SetMnemonicSuffix(const unichar_t *menu_string, unichar_t e, u
     return r;
 }
 
-static bool py_check(PyObject *owner, unichar_t *label, PyObject *check, PyObject *data) {
+static bool py_check(PyObject *owner, const unichar_t *label, PyObject *check, PyObject *data) {
     PyObject *arglist, *result;
     bool disabled = true;
 
@@ -318,6 +318,21 @@ static void cvpy_menuactivate(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     layer_active_in_ui = ly_fore;
 }
 
+bool fvpy_check(FontView *fv, const char *label, PyObject *check, PyObject *data) {
+    FontViewBase* fv_base = (FontViewBase*)fv;
+    PyObject *pyfv = PyFF_FontForFV(fv_base);
+    unichar_t *uni_label = utf82u_copy(label);
+    bool disabled;
+
+    fv_active_in_ui = fv_base;
+    layer_active_in_ui = fv_base->active_layer;
+    disabled = py_check(pyfv, uni_label, check, data);
+    fv_active_in_ui = NULL;
+    free(uni_label);
+
+    return disabled;
+}
+
 void fvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     FontViewBase *fv = (FontViewBase *) GDrawGetUserData(gw);
     PyObject *pyfv = PyFF_FontForFV(fv);
@@ -325,6 +340,16 @@ void fvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     fv_active_in_ui = fv;
     layer_active_in_ui = fv->active_layer;
     py_tllistcheck(mi,pyfv,py_menus + pmt_font);
+    fv_active_in_ui = NULL;
+}
+
+void fvpy_activate(FontView *fv, PyObject *func, PyObject *data) {
+    FontViewBase* fv_base = (FontViewBase*)fv;
+    PyObject *pyfv = PyFF_FontForFV(fv_base);
+
+    fv_active_in_ui = fv_base;
+    layer_active_in_ui = fv_base->active_layer;
+    py_activate(pyfv, func, data);
     fv_active_in_ui = NULL;
 }
 

@@ -30,6 +30,12 @@
 
 #include <fontforge-config.h>
 
+/* forward declare PyObject
+   per http://mail.python.org/pipermail/python-dev/2003-August/037601.html */
+#ifndef PyObject_HEAD
+typedef struct _object PyObject;
+#endif
+
 #include "ttfinstrs.h"
 
 #include "baseviews.h"
@@ -1269,6 +1275,9 @@ extern void fvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern GMenuItem2 *cv_menu, *fv_menu;
 extern void cv_tl2listcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void fv_tl2listcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);
+
+extern void fvpy_activate(FontView *fv, PyObject *func, PyObject *data);
+extern bool fvpy_check(FontView *fv, const char *label, PyObject *check, PyObject *data);
 
 extern void SFValidationWindow(SplineFont *sf,int layer, enum fontformat format);
 extern void ValidationDestroy(SplineFont *sf);

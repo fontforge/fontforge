@@ -145,6 +145,11 @@ typedef struct fontview_context {
     unsigned int (*collect_encoding_data)(
         FontView* fv, EncodingMenuData** encoding_data_array);
 
+    // Python callbacks for menu activation or checking if disabled
+    void (*py_activate)(FontView* fv, PyObject* func, PyObject* data);
+    bool (*py_check)(FontView* fv, const char* label, PyObject* check,
+                     PyObject* data);
+
     // Menu actions per menu ID
     FVMenuAction* actions;
 } FVContext;

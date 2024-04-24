@@ -31,6 +31,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <glib/gi18n.h>
 #include <gtkmm.h>
 
+#include "common_menus.hpp"
 #include "font_view.hpp"
 #include "menu_builder.hpp"
 #include "menu_ids.h"
@@ -207,6 +208,10 @@ std::vector<MenuInfo> popup_menu = {
     { { N_("Set _Vertical Advance..."), "metricssetvwidth", "" }, {}, LegacyCallbacks, MID_SetVWidth },
 };
 
+std::vector<MenuInfo> tools_menu = {
+    MenuInfo::CustomBlock(python_tools),
+};
+
 std::vector<MenuInfo> histograms_menu = {
     { { N_("_HStem"), NoDecoration, "" }, {}, LegacyCallbacks, MID_HStemHist },
     { { N_("_VStem"), NoDecoration, "" }, {}, LegacyCallbacks, MID_VStemHist },
@@ -327,7 +332,7 @@ std::vector<MenuInfo> top_menu = {
     { { N_("_Edit") }, {}, SubMenuCallbacks, -1 },
     { { N_("E_lement") }, {}, SubMenuCallbacks, -1 },
 #ifndef _NO_PYTHON
-    { { N_("_Tools") }, {}, SubMenuCallbacks, -1 },
+    { { N_("_Tools") }, tools_menu, SubMenuCallbacks, -1 },
 #endif
     { { N_("H_ints") }, hints_menu, SubMenuCallbacks, -1 },
     { { N_("E_ncoding") }, encoding_menu, SubMenuCallbacks, -1 },
