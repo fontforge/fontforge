@@ -33,8 +33,9 @@
 
 namespace ff::views {
 
-FontViewUiContext::FontViewUiContext(std::shared_ptr<FVContext> fv_context)
-    : legacy_context(fv_context) {
+FontViewUiContext::FontViewUiContext(Gtk::Window& window,
+                                     std::shared_ptr<FVContext> fv_context)
+    : UiContext(window), legacy_context(fv_context) {
     accel_group = Gtk::AccelGroup::create();
 }
 
@@ -98,8 +99,8 @@ bool on_button_press_event(GdkEventButton* event, Gtk::Menu& pop_up);
 bool on_font_view_event(GdkEvent* event);
 
 FontView::FontView(std::shared_ptr<FVContext> fv_context, int width, int height)
-    : context(fv_context), char_grid(fv_context) {
-    ff::app::add_top_view(window, context);
+    : context(window, fv_context), char_grid(fv_context) {
+    ff::app::add_top_view(context);
 
     window.signal_delete_event().connect([this](GdkEventAny*) {
         ff::app::remove_top_view(window);

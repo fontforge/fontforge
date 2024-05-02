@@ -39,7 +39,7 @@ Glib::RefPtr<Gtk::Application> GtkApp() {
     return app;
 }
 
-void add_top_view(Gtk::Window& window, views::UiContext& context) {
+void add_top_view(views::UiContext& context) {
     static bool initialized = false;
 
     if (!initialized) {
@@ -52,7 +52,7 @@ void add_top_view(Gtk::Window& window, views::UiContext& context) {
         initialized = true;
     }
 
-    GtkApp()->add_window(window);
+    GtkApp()->add_window(context.window_);
 }
 
 void remove_top_view(Gtk::Window& window) {

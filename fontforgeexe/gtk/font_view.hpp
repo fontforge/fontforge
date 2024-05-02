@@ -39,7 +39,8 @@ namespace ff::views {
 
 class FontViewUiContext : public UiContext {
  public:
-    FontViewUiContext(std::shared_ptr<FVContext> fv_context);
+    FontViewUiContext(Gtk::Window& window,
+                      std::shared_ptr<FVContext> fv_context);
 
     std::string get_pixmap_dir() const override {
         return legacy_context->get_pixmap_dir();

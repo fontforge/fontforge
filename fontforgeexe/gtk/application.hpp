@@ -34,7 +34,7 @@ namespace ff::app {
 
 Glib::RefPtr<Gtk::Application> GtkApp();
 
-void add_top_view(Gtk::Window& window, views::UiContext& context);
+void add_top_view(views::UiContext& context);
 
 void remove_top_view(Gtk::Window& window);
 
