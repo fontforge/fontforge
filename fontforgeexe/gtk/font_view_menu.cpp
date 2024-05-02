@@ -227,11 +227,18 @@ std::vector<MenuInfo> popup_menu = {
 
 //////////////////////////////// ELEMENT MENUS ////////////////////////////////////////
 
+std::vector<MenuInfo> validation_menu = {
+    { { N_("Find Pr_oblems..."), "elementfindprobs", "<control>E" }, {}, LegacyCallbacks, MID_FindProblems },
+    { { N_("_Validate..."), "elementvalidate", "" }, {}, LegacyCallbacks, MID_Validate },
+    kMenuSeparator,
+    { { N_("Set E_xtremum Bound..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_SetExtremumBound },
+};
+
 std::vector<MenuInfo> element_menu = {
     { { N_("_Font Info..."), "elementfontinfo", "<control><shift>F" }, {}, LegacyCallbacks, MID_FontInfo },
     { { N_("Glyph _Info..."), "elementglyphinfo", "<control>i" }, {}, LegacyCallbacks, MID_CharInfo },
     { { N_("Other Info"), "elementotherinfo", "" }, {} /*&other_info_menu*/, SubMenuCallbacks, 0 },
-    { { N_("_Validation"), "elementvalidate", "" }, {} /*&validation_menu*/, SubMenuCallbacks, 0 },
+    { { N_("_Validation"), "elementvalidate", "" }, validation_menu, SubMenuCallbacks, 0 },
     kMenuSeparator,
     { { N_("Bitm_ap Strikes Available..."), "elementbitmapsavail", "<control><shift>B" }, {}, LegacyCallbacks, MID_AvailBitmaps },
     { { N_("Regenerate _Bitmap Glyphs..."), "elementregenbitmaps", "<control>B" }, {}, LegacyCallbacks, MID_RegenBitmaps },

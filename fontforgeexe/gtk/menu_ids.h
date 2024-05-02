@@ -46,9 +46,12 @@
 #define MID_Round 2213
 #define MID_MergeFonts 2214
 #define MID_InterpolateFonts 2215
+#define MID_FindProblems 2216
 #define MID_AddExtrema 2224
 #define MID_FontCompare 2239
 #define MID_RemoveBitmaps 2244
+#define MID_Validate 2245
+#define MID_SetExtremumBound 2253
 #define MID_AddInflections 2256
 #define MID_Balance 2257
 #define MID_Harmonize 2258
