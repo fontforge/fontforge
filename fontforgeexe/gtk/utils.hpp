@@ -57,3 +57,10 @@ double ui_font_em_size();
 double ui_font_eX_size();
 
 Glib::RefPtr<Gdk::Pixbuf> load_icon(const Glib::ustring& icon_name, int size);
+
+Gdk::ModifierType gtk_get_keyboard_state();
+
+Glib::RefPtr<Gdk::Cursor> set_cursor(Gtk::Widget* widget,
+                                     const Glib::ustring& name);
+
+void unset_cursor(Gtk::Widget* widget, Glib::RefPtr<Gdk::Cursor> old_cursor);

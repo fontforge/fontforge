@@ -138,3 +138,37 @@ Glib::RefPtr<Gdk::Pixbuf> load_icon(const Glib::ustring& icon_name, int size) {
 
     return fallback_icon;
 }
+
+Gdk::ModifierType gtk_get_keyboard_state() {
+    Glib::RefPtr<Gdk::Display> display = Gdk::Display::get_default();
+    GdkKeymap* keymap = display->get_keymap();
+    Gdk::ModifierType state =
+        (Gdk::ModifierType)gdk_keymap_get_modifier_state(keymap);
+
+    return state;
+
+    // The code below should work in GTK4.
+#if 0
+   Glib::RefPtr<Gdk::Seat> seat = display->get_default_seat();
+   Glib::RefPtr<Gdk::Device> keyboard = seat->get_keyboard();
+   return keyboard->get_modifier_state();
+#endif
+}
+
+Glib::RefPtr<Gdk::Cursor> set_cursor(Gtk::Widget* widget,
+                                     const Glib::ustring& name) {
+    Glib::RefPtr<Gdk::Window> gdk_window = widget->get_window();
+    auto old_cursor = gdk_window->get_cursor();
+
+    Glib::RefPtr<Gdk::Cursor> new_cursor =
+        Gdk::Cursor::create(gdk_window->get_display(), name);
+    gdk_window->set_cursor(new_cursor);
+
+    return old_cursor;
+}
+
+void unset_cursor(Gtk::Widget* widget, Glib::RefPtr<Gdk::Cursor> old_cursor) {
+    Glib::RefPtr<Gdk::Window> gdk_window = widget->get_window();
+    // old_cursor is allowed to be NULL
+    gdk_window->set_cursor(old_cursor);
+}
