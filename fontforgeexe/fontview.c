@@ -1427,8 +1427,7 @@ return;
     FontMenuFontInfo(fv);
 }
 
-static void FVMenuMATHInfo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuMATHInfo(FontView *fv, int UNUSED(mid)) {
     SFMathDlg(fv->b.sf,fv->b.active_layer);
 }
 
@@ -1523,17 +1522,14 @@ static void FVMenuCondense(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNU
 #define MID_DefaultATT	2235
 #define MID_POV		2236
 #define MID_BuildDuplicates	2237
-#define MID_StrikeInfo	2238
 #define MID_CanonicalStart	2242
 #define MID_CanonicalContours	2243
 #define MID_Validate		2245
-#define MID_MassRename		2246
 #define MID_Italic		2247
 #define MID_SmallCaps		2248
 #define MID_SubSup		2249
 #define MID_ChangeXHeight	2250
 #define MID_ChangeGlyph	2251
-#define MID_SetColor	2252
 #define MID_SetExtremumBound	2253
 #define MID_Thirds	2601
 #define MID_SetLBearing	2603
@@ -2564,8 +2560,7 @@ return;
     SCCharInfo(SFMakeChar(fv->b.sf,fv->b.map,pos),fv->b.active_layer,fv->b.map,pos);
 }
 
-static void FVMenuBDFInfo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuBDFInfo(FontView *fv, int UNUSED(mid)) {
     if ( fv->b.sf->bitmaps==NULL )
 return;
     if ( fv->show!=fv->filled )
@@ -2574,28 +2569,24 @@ return;
 	SFBdfProperties(fv->b.sf,fv->b.map,NULL);
 }
 
-static void FVMenuBaseHoriz(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuBaseHoriz(FontView *fv, int UNUSED(mid)) {
     SplineFont *sf = fv->b.cidmaster == NULL ? fv->b.sf : fv->b.cidmaster;
     sf->horiz_base = SFBaselines(sf,sf->horiz_base,false);
     SFBaseSort(sf);
 }
 
-static void FVMenuBaseVert(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuBaseVert(FontView *fv, int UNUSED(mid)) {
     SplineFont *sf = fv->b.cidmaster == NULL ? fv->b.sf : fv->b.cidmaster;
     sf->vert_base = SFBaselines(sf,sf->vert_base,true);
     SFBaseSort(sf);
 }
 
-static void FVMenuJustify(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuJustify(FontView *fv, int UNUSED(mid)) {
     SplineFont *sf = fv->b.cidmaster == NULL ? fv->b.sf : fv->b.cidmaster;
     JustifyDlg(sf);
 }
 
-static void FVMenuMassRename(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuMassRename(FontView *fv, int UNUSED(mid)) {
     FVMassGlyphRename(fv);
 }
 
@@ -4394,23 +4385,22 @@ static void delistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     }
 }
 
-static void infolistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static bool infolistcheck(FontView *fv, int mid) {
     int anychars = FVAnyCharSelected(fv);
+    bool disabled = false;
 
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
-	switch ( mi->mid ) {
+	switch ( mid ) {
 	  case MID_StrikeInfo:
-	    mi->ti.disabled = fv->b.sf->bitmaps==NULL;
+	    disabled = fv->b.sf->bitmaps==NULL;
 	  break;
 	  case MID_MassRename:
-	    mi->ti.disabled = anychars==-1;
+	    disabled = anychars==-1;
 	  break;
 	  case MID_SetColor:
-	    mi->ti.disabled = anychars==-1;
+	    disabled = anychars==-1;
 	  break;
 	}
-    }
+    return disabled;
 }
 
 static GMenuItem2 dummyitem[] = {
@@ -4611,18 +4601,6 @@ static GMenuItem2 scollist[] = {
     { { NULL, &yellow_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xffff00, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, NULL, NULL, NULL, FVMenuSetColor, 0 },
     { { NULL, &cyan_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0x00ffff, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, NULL, NULL, NULL, FVMenuSetColor, 0 },
     { { NULL, &magenta_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xff00ff, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, NULL, NULL, NULL, FVMenuSetColor, 0 },
-    GMENUITEM2_EMPTY
-};
-
-static GMenuItem2 infolist[] = {
-    { { (unichar_t *) N_("_MATH Info..."), (GImage *) "elementmathinfo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("MATH Info...|No Shortcut"), NULL, NULL, FVMenuMATHInfo, 0 },
-    { { (unichar_t *) N_("_BDF Info..."), (GImage *) "elementbdfinfo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("BDF Info...|No Shortcut"), NULL, NULL, FVMenuBDFInfo, MID_StrikeInfo },
-    { { (unichar_t *) N_("_Horizontal Baselines..."), (GImage *) "elementhbaselines.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Horizontal Baselines...|No Shortcut"), NULL, NULL, FVMenuBaseHoriz, 0 },
-    { { (unichar_t *) N_("_Vertical Baselines..."), (GImage *) "elementvbaselines.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Vertical Baselines...|No Shortcut"), NULL, NULL, FVMenuBaseVert, 0 },
-    { { (unichar_t *) N_("_Justification..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Justification...|No Shortcut"), NULL, NULL, FVMenuJustify, 0 },
-    { { (unichar_t *) N_("Show _Dependent"), (GImage *) "elementshowdep.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Show Dependent|No Shortcut"), delist, delistcheck, NULL, 0 },
-    { { (unichar_t *) N_("Mass Glyph _Rename..."), (GImage *) "elementrenameglyph.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Mass Glyph Rename...|No Shortcut"), NULL, NULL, FVMenuMassRename, MID_MassRename },
-    { { (unichar_t *) N_("Set _Color"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Set Color|No Shortcut"), scollist, NULL, NULL, MID_SetColor },
     GMENUITEM2_EMPTY
 };
 
@@ -5371,6 +5349,15 @@ FVMenuAction fvpopupactions[] = {
     { MID_InterpolateFonts, ellistcheck, NULL, FVMenuInterpFonts },
     { MID_FontCompare, ellistcheck, NULL, FVMenuCompareFonts },
     { MID_LayersCompare, ellistcheck, NULL, FVMenuCompareL2L },
+
+    /* Element->Other Info menu */
+    { MID_MathInfo, NULL, NULL, FVMenuMATHInfo },
+    { MID_StrikeInfo, infolistcheck, NULL, FVMenuBDFInfo },
+    { MID_HorBaselines, NULL, NULL, FVMenuBaseHoriz },
+    { MID_VertBaselines, NULL, NULL, FVMenuBaseVert },
+    { MID_Justification, NULL, NULL, FVMenuJustify },
+    { MID_MassRename, infolistcheck, NULL, FVMenuMassRename },
+    { MID_SetColor, infolistcheck, NULL, NULL },
 
     /* Element->Validation menu */
     { MID_FindProblems, validlistcheck, NULL, FVMenuFindProblems },

@@ -227,6 +227,17 @@ std::vector<MenuInfo> popup_menu = {
 
 //////////////////////////////// ELEMENT MENUS ////////////////////////////////////////
 
+std::vector<MenuInfo> other_info_menu = {
+    { { N_("_MATH Info..."), "elementmathinfo", "" }, {}, LegacyCallbacks, MID_MathInfo },
+    { { N_("_BDF Info..."), "elementbdfinfo", "" }, {}, LegacyCallbacks, MID_StrikeInfo },
+    { { N_("_Horizontal Baselines..."), "elementhbaselines", "" }, {}, LegacyCallbacks, MID_HorBaselines },
+    { { N_("_Vertical Baselines..."), "elementvbaselines", "" }, {}, LegacyCallbacks, MID_VertBaselines },
+    { { N_("_Justification..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_Justification },
+    { { N_("Show _Dependent"), "elementshowdep", "" }, {}/*&show_dependent_menu*/, SubMenuCallbacks, 0 },
+    { { N_("Mass Glyph _Rename..."), "elementrenameglyph", "" }, {}, LegacyCallbacks, MID_MassRename },
+    { { N_("Set _Color"), NoDecoration, "" }, {}/*&set_color_menu*/, { NoAction, LegacyEnabled, NotCheckable }, MID_SetColor },
+};
+
 std::vector<MenuInfo> validation_menu = {
     { { N_("Find Pr_oblems..."), "elementfindprobs", "<control>E" }, {}, LegacyCallbacks, MID_FindProblems },
     { { N_("_Validate..."), "elementvalidate", "" }, {}, LegacyCallbacks, MID_Validate },
@@ -237,7 +248,7 @@ std::vector<MenuInfo> validation_menu = {
 std::vector<MenuInfo> element_menu = {
     { { N_("_Font Info..."), "elementfontinfo", "<control><shift>F" }, {}, LegacyCallbacks, MID_FontInfo },
     { { N_("Glyph _Info..."), "elementglyphinfo", "<control>i" }, {}, LegacyCallbacks, MID_CharInfo },
-    { { N_("Other Info"), "elementotherinfo", "" }, {} /*&other_info_menu*/, SubMenuCallbacks, 0 },
+    { { N_("Other Info"), "elementotherinfo", "" }, other_info_menu, SubMenuCallbacks, 0 },
     { { N_("_Validation"), "elementvalidate", "" }, validation_menu, SubMenuCallbacks, 0 },
     kMenuSeparator,
     { { N_("Bitm_ap Strikes Available..."), "elementbitmapsavail", "<control><shift>B" }, {}, LegacyCallbacks, MID_AvailBitmaps },
