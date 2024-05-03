@@ -282,6 +282,12 @@ std::vector<MenuInfo> simplify_menu = {
     { { N_("Canonical _Contours"), NoDecoration, "" }, {}, LegacyCallbacks, MID_CanonicalContours },
 };
 
+std::vector<MenuInfo> round_menu = {
+    { { N_("To _Int"), "elementround", "<control><shift>underscore" }, {}, LegacyCallbacks, MID_Round },
+    { { N_("To _Hundredths"), NoDecoration, "" }, {}, LegacyCallbacks, MID_Hundredths },
+    { { N_("_Cluster"), NoDecoration, "" }, {}, LegacyCallbacks, MID_Cluster },
+};
+
 std::vector<MenuInfo> element_menu = {
     { { N_("_Font Info..."), "elementfontinfo", "<control><shift>F" }, {}, LegacyCallbacks, MID_FontInfo },
     { { N_("Glyph _Info..."), "elementglyphinfo", "<control>i" }, {}, LegacyCallbacks, MID_CharInfo },
@@ -305,7 +311,7 @@ std::vector<MenuInfo> element_menu = {
     { { N_("Add Points Of I_nflection"), "elementaddinflections", "<control><shift>Y" }, {}, LegacyCallbacks, MID_AddInflections },
     { { N_("_Balance"), "elementbalance", "<control><shift>P" }, {}, LegacyCallbacks, MID_Balance },
     { { N_("Harmoni_ze"), "elementharmonize", "<control><shift>Z" }, {}, LegacyCallbacks, MID_Harmonize },
-    { { N_("Roun_d"), "elementround", "" }, {} /*&round_menu*/, SubMenuCallbacks, 0 },
+    { { N_("Roun_d"), "elementround", "" }, round_menu, SubMenuCallbacks, 0 },
     { { N_("Autot_race"), "elementautotrace", "<control><shift>T" }, {}, { run_autotrace, LegacyEnabled, NotCheckable }, MID_Autotrace },
     kMenuSeparator,
     { { N_("_Correct Direction"), "elementcorrectdir", "<control><shift>D" }, {}, LegacyCallbacks, MID_Correct },

@@ -2773,12 +2773,12 @@ static void FVMenuRound2Int(FontView *fv, int UNUSED(mid)) {
     FVRound2Int( (FontViewBase *) fv, 1.0 );
 }
 
-static void FVMenuRound2Hundredths(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FVRound2Int( (FontViewBase *) GDrawGetUserData(gw),100.0 );
+static void FVMenuRound2Hundredths(FontView *fv, int UNUSED(mid)) {
+    FVRound2Int( (FontViewBase *) fv, 100.0 );
 }
 
-static void FVMenuCluster(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FVCluster( (FontViewBase *) GDrawGetUserData(gw));
+static void FVMenuCluster(FontView *fv, int UNUSED(mid)) {
+    FVCluster( (FontViewBase *) fv);
 }
 
 static void FVMenuBuildAccent(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
@@ -4507,12 +4507,6 @@ static GMenuItem2 delist[] = {
     GMENUITEM2_EMPTY
 };
 
-static GMenuItem2 rndlist[] = {
-    { { (unichar_t *) N_("To _Hundredths"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("To Hundredths|No Shortcut"), NULL, NULL, FVMenuRound2Hundredths, 0 },
-    { { (unichar_t *) N_("_Cluster"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Cluster|No Shortcut"), NULL, NULL, FVMenuCluster, 0 },
-    GMENUITEM2_EMPTY
-};
-
 static GMenuItem2 scollist[] = {
     { { (unichar_t *) N_("Color|Choose..."), (GImage *)"colorwheel.png", COLOR_DEFAULT, COLOR_DEFAULT, (void *) -10, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Choose...|No Shortcut"), NULL, NULL, FVMenuSetColor, 0 },
     { { (unichar_t *)  N_("Color|Default"), &def_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) COLOR_DEFAULT, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Default|No Shortcut"), NULL, NULL, FVMenuSetColor, 0 },
@@ -5244,7 +5238,6 @@ FVMenuAction fvpopupactions[] = {
     { MID_Clear, NULL, NULL, FVMenuClear },
     { MID_CopyFgToBg, NULL, NULL, FVMenuCopyFgBg },
     { MID_UnlinkRef, NULL, NULL, FVMenuUnlinkRef },
-    { MID_Round, NULL, NULL, FVMenuRound2Int },
     { MID_Center, NULL, NULL, FVMenuCenter },
     { MID_SetWidth, NULL, NULL, FVMenuSetWidth },
     { MID_SetVWidth, NULL, NULL, FVMenuSetWidth },
@@ -5315,6 +5308,11 @@ FVMenuAction fvpopupactions[] = {
     { MID_CleanupGlyph, NULL, NULL, FVMenuCleanup },
     { MID_CanonicalStart, NULL, NULL, FVMenuCanonicalStart },
     { MID_CanonicalContours, NULL, NULL, FVMenuCanonicalContours },
+
+    /* Element->Round menu */
+    { MID_Round, NULL, NULL, FVMenuRound2Int },
+    { MID_Hundredths, NULL, NULL, FVMenuRound2Hundredths },
+    { MID_Cluster, NULL, NULL, FVMenuCluster },
 
     /* Hints menu */
     { MID_AutoHint, htlistcheck, NULL, FVMenuAutoHint },

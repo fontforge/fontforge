@@ -85,6 +85,8 @@
 #define MID_Outline 2266
 #define MID_Shadow 2267
 #define MID_Wireframe 2268
+#define MID_Hundredths 2269
+#define MID_Cluster 2270
 
 #define MID_AutoHint 2501
 #define MID_ClearHints 2502
