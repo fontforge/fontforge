@@ -1495,20 +1495,15 @@ static void FVMenuCondense(FontView *fv, int UNUSED(mid)) {
 }
 
 #define MID_Layers	2029
-#define MID_Simplify	2205
 #define MID_BuildAccent	2208
 #define MID_FindProblems 2216
 #define MID_ShowDependentRefs	2222
-#define MID_CleanupGlyph	2225
 #define MID_TilePath	2226
 #define MID_BuildComposite	2227
 #define MID_Styles	2231
-#define MID_SimplifyMore	2233
 #define MID_ShowDependentSubs	2234
 #define MID_DefaultATT	2235
 #define MID_BuildDuplicates	2237
-#define MID_CanonicalStart	2242
-#define MID_CanonicalContours	2243
 #define MID_Validate		2245
 #define MID_SetExtremumBound	2253
 #define MID_Thirds	2601
@@ -2734,24 +2729,24 @@ return;
     _FVSimplify((FontViewBase *) fv,smpl);
 }
 
-static void FVMenuSimplify(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FVSimplify( (FontView *) GDrawGetUserData(gw),false );
+static void FVMenuSimplify(FontView *fv, int UNUSED(mid)) {
+    FVSimplify( fv,false );
 }
 
-static void FVMenuSimplifyMore(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FVSimplify( (FontView *) GDrawGetUserData(gw),true );
+static void FVMenuSimplifyMore(FontView *fv, int UNUSED(mid)) {
+    FVSimplify( fv,true );
 }
 
-static void FVMenuCleanup(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FVSimplify( (FontView *) GDrawGetUserData(gw),-1 );
+static void FVMenuCleanup(FontView *fv, int UNUSED(mid)) {
+    FVSimplify( fv,-1 );
 }
 
-static void FVMenuCanonicalStart(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FVCanonicalStart( (FontViewBase *) GDrawGetUserData(gw) );
+static void FVMenuCanonicalStart(FontView *fv, int UNUSED(mid)) {
+    FVCanonicalStart( (FontViewBase *) fv );
 }
 
-static void FVMenuCanonicalContours(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FVCanonicalContours( (FontViewBase *) GDrawGetUserData(gw) );
+static void FVMenuCanonicalContours(FontView *fv, int UNUSED(mid)) {
+    FVCanonicalContours( (FontViewBase *) fv );
 }
 
 static void FVMenuAddExtrema(FontView *fv, int UNUSED(mid)) {
@@ -4495,15 +4490,6 @@ static GMenuItem2 edlist[] = {
     GMENUITEM2_EMPTY
 };
 
-static GMenuItem2 smlist[] = {
-    { { (unichar_t *) N_("_Simplify"), (GImage *) "elementsimplify.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Simplify|No Shortcut"), NULL, NULL, FVMenuSimplify, MID_Simplify },
-    { { (unichar_t *) N_("Simplify More..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Simplify More...|No Shortcut"), NULL, NULL, FVMenuSimplifyMore, MID_SimplifyMore },
-    { { (unichar_t *) N_("Clea_nup Glyph"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'n' }, H_("Cleanup Glyph|No Shortcut"), NULL, NULL, FVMenuCleanup, MID_CleanupGlyph },
-    { { (unichar_t *) N_("Canonical Start _Point"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'n' }, H_("Canonical Start Point|No Shortcut"), NULL, NULL, FVMenuCanonicalStart, MID_CanonicalStart },
-    { { (unichar_t *) N_("Canonical _Contours"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'n' }, H_("Canonical Contours|No Shortcut"), NULL, NULL, FVMenuCanonicalContours, MID_CanonicalContours },
-    GMENUITEM2_EMPTY
-};
-
 static GMenuItem2 balist[] = {
     { { (unichar_t *) N_("_Build Accented Glyph"), (GImage *) "elementbuildaccent.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Build Accented Glyph|No Shortcut"), NULL, NULL, FVMenuBuildAccent, MID_BuildAccent },
     { { (unichar_t *) N_("Build _Composite Glyph"), (GImage *) "elementbuildcomposite.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Build Composite Glyph|No Shortcut"), NULL, NULL, FVMenuBuildComposite, MID_BuildComposite },
@@ -5322,6 +5308,13 @@ FVMenuAction fvpopupactions[] = {
     { MID_RmOverlap, NULL, NULL, FVMenuOverlap },
     { MID_Intersection, NULL, NULL, FVMenuOverlap },
     { MID_FindInter, NULL, NULL, FVMenuOverlap },
+
+    /* Element->Simplify menu */
+    { MID_Simplify, NULL, NULL, FVMenuSimplify },
+    { MID_SimplifyMore, NULL, NULL, FVMenuSimplifyMore },
+    { MID_CleanupGlyph, NULL, NULL, FVMenuCleanup },
+    { MID_CanonicalStart, NULL, NULL, FVMenuCanonicalStart },
+    { MID_CanonicalContours, NULL, NULL, FVMenuCanonicalContours },
 
     /* Hints menu */
     { MID_AutoHint, htlistcheck, NULL, FVMenuAutoHint },

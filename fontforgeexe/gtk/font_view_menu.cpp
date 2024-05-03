@@ -274,6 +274,14 @@ std::vector<MenuInfo> overlap_menu = {
     { { N_("_Find Intersections"), "overlapfindinter", "" }, {}, LegacyCallbacks, MID_FindInter },
 };
 
+std::vector<MenuInfo> simplify_menu = {
+    { { N_("_Simplify"), "elementsimplify", "<control><shift>M" }, {}, LegacyCallbacks, MID_Simplify },
+    { { N_("Simplify More..."), NoDecoration, "<alt><control><shift>M" }, {}, LegacyCallbacks, MID_SimplifyMore },
+    { { N_("Clea_nup Glyph"), NoDecoration, "" }, {}, LegacyCallbacks, MID_CleanupGlyph },
+    { { N_("Canonical Start _Point"), NoDecoration, "" }, {}, LegacyCallbacks, MID_CanonicalStart },
+    { { N_("Canonical _Contours"), NoDecoration, "" }, {}, LegacyCallbacks, MID_CanonicalContours },
+};
+
 std::vector<MenuInfo> element_menu = {
     { { N_("_Font Info..."), "elementfontinfo", "<control><shift>F" }, {}, LegacyCallbacks, MID_FontInfo },
     { { N_("Glyph _Info..."), "elementglyphinfo", "<control>i" }, {}, LegacyCallbacks, MID_CharInfo },
@@ -292,7 +300,7 @@ std::vector<MenuInfo> element_menu = {
     { { N_("Tile Pattern..."), "elementtilepattern", "" }, {}, LegacyCallbacks, MID_TilePattern },
 #endif
     { { N_("O_verlap"), "overlaprm", "" }, overlap_menu, SubMenuCallbacks, 0 },
-    { { N_("_Simplify"), "elementsimplify", "" }, {} /*&simplify_menu*/, SubMenuCallbacks, 0 },
+    { { N_("_Simplify"), "elementsimplify", "" }, simplify_menu, SubMenuCallbacks, 0 },
     { { N_("Add E_xtrema"), "elementaddextrema", "<control><shift>X" }, {}, LegacyCallbacks, MID_AddExtrema },
     { { N_("Add Points Of I_nflection"), "elementaddinflections", "<control><shift>Y" }, {}, LegacyCallbacks, MID_AddInflections },
     { { N_("_Balance"), "elementbalance", "<control><shift>P" }, {}, LegacyCallbacks, MID_Balance },
