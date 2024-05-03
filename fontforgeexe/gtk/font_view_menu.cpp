@@ -245,6 +245,23 @@ std::vector<MenuInfo> validation_menu = {
     { { N_("Set E_xtremum Bound..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_SetExtremumBound },
 };
 
+std::vector<MenuInfo> style_menu = {
+    { { N_("Change _Weight..."), "styleschangeweight", "<control><shift>exclam" }, {}, LegacyCallbacks, MID_Embolden },
+    { { N_("_Italic..."), "stylesitalic", "" }, {}, LegacyCallbacks, MID_Italic },
+    { { N_("Obli_que..."), "stylesoblique", "" }, {}, LegacyCallbacks, MID_Oblique },
+    { { N_("_Condense/Extend..."), "stylesextendcondense", "" }, {}, LegacyCallbacks, MID_Condense },
+    { { N_("Change _X-Height..."), "styleschangexheight", "" }, {}, LegacyCallbacks, MID_ChangeXHeight },
+    { { N_("Change _Glyph..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_ChangeGlyph },
+    kMenuSeparator,
+    { { N_("Add _Small Capitals..."), "stylessmallcaps", "" }, {}, LegacyCallbacks, MID_SmallCaps },
+    { { N_("Add Subscripts/Superscripts..."), "stylessubsuper", "" }, {}, LegacyCallbacks, MID_SubSup },
+    kMenuSeparator,
+    { { N_("In_line..."), "stylesinline", "" }, {}, LegacyCallbacks, MID_Inline },
+    { { N_("_Outline..."), "stylesoutline", "" }, {}, LegacyCallbacks, MID_Outline },
+    { { N_("S_hadow..."), "stylesshadow", "" }, {}, LegacyCallbacks, MID_Shadow },
+    { { N_("_Wireframe..."), "styleswireframe", "" }, {}, LegacyCallbacks, MID_Wireframe },
+};
+
 std::vector<MenuInfo> element_menu = {
     { { N_("_Font Info..."), "elementfontinfo", "<control><shift>F" }, {}, LegacyCallbacks, MID_FontInfo },
     { { N_("Glyph _Info..."), "elementglyphinfo", "<control>i" }, {}, LegacyCallbacks, MID_CharInfo },
@@ -255,7 +272,7 @@ std::vector<MenuInfo> element_menu = {
     { { N_("Regenerate _Bitmap Glyphs..."), "elementregenbitmaps", "<control>B" }, {}, LegacyCallbacks, MID_RegenBitmaps },
     { { N_("Remove Bitmap Glyphs..."), "elementremovebitmaps", "" }, {}, LegacyCallbacks, MID_RemoveBitmaps },
     kMenuSeparator,
-    { { N_("St_yle"), "elementstyles", "" }, {} /*&style_menu*/, SubMenuCallbacks, 0 },
+    { { N_("St_yle"), "elementstyles", "" }, style_menu, SubMenuCallbacks, 0 },
     { { N_("_Transformations"), "elementtransform", "" }, {} /*&transformations_menu*/, SubMenuCallbacks, 0 },
     { { N_("_Expand Stroke..."), "elementexpandstroke", "<control><shift>E" }, {}, LegacyCallbacks, MID_Stroke },
 #ifdef FONTFORGE_CONFIG_TILEPATH

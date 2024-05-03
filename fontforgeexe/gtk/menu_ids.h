@@ -47,12 +47,19 @@
 #define MID_MergeFonts 2214
 #define MID_InterpolateFonts 2215
 #define MID_FindProblems 2216
+#define MID_Embolden 2217
+#define MID_Condense 2218
 #define MID_AddExtrema 2224
 #define MID_StrikeInfo 2238
 #define MID_FontCompare 2239
 #define MID_RemoveBitmaps 2244
 #define MID_Validate 2245
 #define MID_MassRename 2246
+#define MID_Italic 2247
+#define MID_SmallCaps 2248
+#define MID_SubSup 2249
+#define MID_ChangeXHeight 2250
+#define MID_ChangeGlyph 2251
 #define MID_SetColor 2252
 #define MID_SetExtremumBound 2253
 #define MID_AddInflections 2256
@@ -63,6 +70,11 @@
 #define MID_HorBaselines 2261
 #define MID_VertBaselines 2262
 #define MID_Justification 2263
+#define MID_Oblique 2264
+#define MID_Inline 2265
+#define MID_Outline 2266
+#define MID_Shadow 2267
+#define MID_Wireframe 2268
 
 #define MID_AutoHint 2501
 #define MID_ClearHints 2502
