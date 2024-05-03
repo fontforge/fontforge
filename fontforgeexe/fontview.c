@@ -1503,14 +1503,12 @@ static void FVMenuCondense(FontView *fv, int UNUSED(mid)) {
 #define MID_CleanupGlyph	2225
 #define MID_TilePath	2226
 #define MID_BuildComposite	2227
-#define MID_NLTransform	2228
 #define MID_Intersection	2229
 #define MID_FindInter	2230
 #define MID_Styles	2231
 #define MID_SimplifyMore	2233
 #define MID_ShowDependentSubs	2234
 #define MID_DefaultATT	2235
-#define MID_POV		2236
 #define MID_BuildDuplicates	2237
 #define MID_CanonicalStart	2242
 #define MID_CanonicalContours	2243
@@ -2656,8 +2654,7 @@ static void FVMenuTransform(FontView *fv, int UNUSED(mid)) {
     FVDoTransform(fv);
 }
 
-static void FVMenuPOV(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuPOV(FontView *fv, int UNUSED(mid)) {
     struct pov_data pov_data;
     if ( FVAnyCharSelected(fv)==-1 || fv->b.sf->onlybitmaps )
 return;
@@ -2666,8 +2663,7 @@ return;
     FVPointOfView((FontViewBase *) fv,&pov_data);
 }
 
-static void FVMenuNLTransform(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuNLTransform(FontView *fv, int UNUSED(mid)) {
     if ( FVAnyCharSelected(fv)==-1 )
 return;
     NonLinearDlg(fv,NULL);
@@ -4150,20 +4146,19 @@ static void edlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     }
 }
 
-static void trlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static bool trlistcheck(FontView *fv, int mid) {
     int anychars = FVAnyCharSelected(fv);
+    bool disabled = false;
 
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
-	switch ( mi->mid ) {
+	switch ( mid ) {
 	  case MID_Transform:
-	    mi->ti.disabled = anychars==-1;
+	    disabled = anychars==-1;
 	  break;
 	  case MID_NLTransform: case MID_POV:
-	    mi->ti.disabled = anychars==-1 || fv->b.sf->onlybitmaps;
+	    disabled = anychars==-1 || fv->b.sf->onlybitmaps;
 	  break;
 	}
-    }
+    return disabled;
 }
 
 static bool validlistcheck(FontView *fv, int mid) {
@@ -4535,12 +4530,6 @@ static GMenuItem2 balist[] = {
 static GMenuItem2 delist[] = {
     { { (unichar_t *) N_("_References..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'u' }, H_("References...|No Shortcut"), NULL, NULL, FVMenuShowDependentRefs, MID_ShowDependentRefs },
     { { (unichar_t *) N_("_Substitutions..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Substitutions...|No Shortcut"), NULL, NULL, FVMenuShowDependentSubs, MID_ShowDependentSubs },
-    GMENUITEM2_EMPTY
-};
-
-static GMenuItem2 trlist[] = {
-    { { (unichar_t *) N_("_Point of View Projection..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Point of View Projection...|No Shortcut"), NULL, NULL, FVMenuPOV, MID_POV },
-    { { (unichar_t *) N_("_Non Linear Transform..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'T' }, H_("Non Linear Transform...|No Shortcut"), NULL, NULL, FVMenuNLTransform, MID_NLTransform },
     GMENUITEM2_EMPTY
 };
 
@@ -5281,7 +5270,6 @@ FVMenuAction fvpopupactions[] = {
     { MID_Clear, NULL, NULL, FVMenuClear },
     { MID_CopyFgToBg, NULL, NULL, FVMenuCopyFgBg },
     { MID_UnlinkRef, NULL, NULL, FVMenuUnlinkRef },
-    { MID_Transform, NULL, NULL, FVMenuTransform },
     { MID_Round, NULL, NULL, FVMenuRound2Int },
     { MID_Center, NULL, NULL, FVMenuCenter },
     { MID_SetWidth, NULL, NULL, FVMenuSetWidth },
@@ -5336,6 +5324,11 @@ FVMenuAction fvpopupactions[] = {
     { MID_Outline, NULL, NULL, FVMenuOutline },
     { MID_Shadow, NULL, NULL, FVMenuShadow },
     { MID_Wireframe, NULL, NULL, FVMenuWireframe },
+
+    /* Element->Transformations menu */
+    { MID_Transform, trlistcheck, NULL, FVMenuTransform },
+    { MID_POV, trlistcheck, NULL, FVMenuPOV },
+    { MID_NLTransform, trlistcheck, NULL, FVMenuNLTransform },
 
     /* Hints menu */
     { MID_AutoHint, htlistcheck, NULL, FVMenuAutoHint },

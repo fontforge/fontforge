@@ -50,6 +50,8 @@
 #define MID_Embolden 2217
 #define MID_Condense 2218
 #define MID_AddExtrema 2224
+#define MID_NLTransform 2228
+#define MID_POV 2236
 #define MID_StrikeInfo 2238
 #define MID_FontCompare 2239
 #define MID_RemoveBitmaps 2244

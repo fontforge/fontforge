@@ -262,6 +262,12 @@ std::vector<MenuInfo> style_menu = {
     { { N_("_Wireframe..."), "styleswireframe", "" }, {}, LegacyCallbacks, MID_Wireframe },
 };
 
+std::vector<MenuInfo> transformations_menu = {
+    { { N_("_Transform..."), "elementtransform", "<control>backslash" }, {}, LegacyCallbacks, MID_Transform },
+    { { N_("_Point of View Projection..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_POV },
+    { { N_("_Non Linear Transform..."), NoDecoration, "<control><shift>colon" }, {}, LegacyCallbacks, MID_NLTransform },
+};
+
 std::vector<MenuInfo> element_menu = {
     { { N_("_Font Info..."), "elementfontinfo", "<control><shift>F" }, {}, LegacyCallbacks, MID_FontInfo },
     { { N_("Glyph _Info..."), "elementglyphinfo", "<control>i" }, {}, LegacyCallbacks, MID_CharInfo },
@@ -273,7 +279,7 @@ std::vector<MenuInfo> element_menu = {
     { { N_("Remove Bitmap Glyphs..."), "elementremovebitmaps", "" }, {}, LegacyCallbacks, MID_RemoveBitmaps },
     kMenuSeparator,
     { { N_("St_yle"), "elementstyles", "" }, style_menu, SubMenuCallbacks, 0 },
-    { { N_("_Transformations"), "elementtransform", "" }, {} /*&transformations_menu*/, SubMenuCallbacks, 0 },
+    { { N_("_Transformations"), "elementtransform", "" }, transformations_menu, SubMenuCallbacks, 0 },
     { { N_("_Expand Stroke..."), "elementexpandstroke", "<control><shift>E" }, {}, LegacyCallbacks, MID_Stroke },
 #ifdef FONTFORGE_CONFIG_TILEPATH
     { { N_("Tile _Path..."), "elementtilepath", "" }, {}, LegacyCallbacks, MID_TilePath },
