@@ -42,6 +42,7 @@
 #define MID_RmOverlap 2204
 #define MID_Simplify 2205
 #define MID_Correct 2206
+#define MID_BuildAccent 2208
 #define MID_AvailBitmaps 2210
 #define MID_RegenBitmaps 2211
 #define MID_Autotrace 2212
@@ -53,11 +54,13 @@
 #define MID_Condense 2218
 #define MID_AddExtrema 2224
 #define MID_CleanupGlyph 2225
+#define MID_BuildComposite 2227
 #define MID_NLTransform 2228
 #define MID_Intersection 2229
 #define MID_FindInter 2230
 #define MID_SimplifyMore 2233
 #define MID_POV 2236
+#define MID_BuildDuplicates 2237
 #define MID_StrikeInfo 2238
 #define MID_FontCompare 2239
 #define MID_CanonicalStart 2242

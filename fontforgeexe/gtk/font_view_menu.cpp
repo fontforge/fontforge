@@ -288,6 +288,12 @@ std::vector<MenuInfo> round_menu = {
     { { N_("_Cluster"), NoDecoration, "" }, {}, LegacyCallbacks, MID_Cluster },
 };
 
+std::vector<MenuInfo> elem_build_menu = {
+    { { N_("_Build Accented Glyph"), "elementbuildaccent", "<control><shift>A" }, {}, LegacyCallbacks, MID_BuildAccent },
+    { { N_("Build _Composite Glyph"), "elementbuildcomposite", "" }, {}, LegacyCallbacks, MID_BuildComposite },
+    { { N_("Buil_d Duplicate Glyph"), NoDecoration, "" }, {}, LegacyCallbacks, MID_BuildDuplicates },
+};
+
 std::vector<MenuInfo> element_menu = {
     { { N_("_Font Info..."), "elementfontinfo", "<control><shift>F" }, {}, LegacyCallbacks, MID_FontInfo },
     { { N_("Glyph _Info..."), "elementglyphinfo", "<control>i" }, {}, LegacyCallbacks, MID_CharInfo },
@@ -316,7 +322,7 @@ std::vector<MenuInfo> element_menu = {
     kMenuSeparator,
     { { N_("_Correct Direction"), "elementcorrectdir", "<control><shift>D" }, {}, LegacyCallbacks, MID_Correct },
     kMenuSeparator,
-    { { N_("B_uild"), "elementbuildaccent", "" }, {} /*&build_menu*/, SubMenuCallbacks, 0 },
+    { { N_("B_uild"), "elementbuildaccent", "" }, elem_build_menu, SubMenuCallbacks, 0 },
     kMenuSeparator,
     { { N_("_Merge Fonts..."), "elementmergefonts", "" }, {}, LegacyCallbacks, MID_MergeFonts },
     { { N_("Interpo_late Fonts..."), "elementinterpolatefonts", "" }, {}, LegacyCallbacks, MID_InterpolateFonts },
