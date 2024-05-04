@@ -52,6 +52,7 @@
 #define MID_FindProblems 2216
 #define MID_Embolden 2217
 #define MID_Condense 2218
+#define MID_ShowDependentRefs 2222
 #define MID_AddExtrema 2224
 #define MID_CleanupGlyph 2225
 #define MID_BuildComposite 2227
@@ -59,6 +60,7 @@
 #define MID_Intersection 2229
 #define MID_FindInter 2230
 #define MID_SimplifyMore 2233
+#define MID_ShowDependentSubs 2234
 #define MID_POV 2236
 #define MID_BuildDuplicates 2237
 #define MID_StrikeInfo 2238

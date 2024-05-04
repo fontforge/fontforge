@@ -1496,10 +1496,8 @@ static void FVMenuCondense(FontView *fv, int UNUSED(mid)) {
 
 #define MID_Layers	2029
 #define MID_FindProblems 2216
-#define MID_ShowDependentRefs	2222
 #define MID_TilePath	2226
 #define MID_Styles	2231
-#define MID_ShowDependentSubs	2234
 #define MID_DefaultATT	2235
 #define MID_Validate		2245
 #define MID_SetExtremumBound	2253
@@ -2587,8 +2585,7 @@ return;
     FVSetColor(fv,col);
 }
 
-static void FVMenuShowDependentRefs(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuShowDependentRefs(FontView *fv, int UNUSED(mid)) {
     int pos = FVAnyCharSelected(fv);
     SplineChar *sc;
 
@@ -2600,8 +2597,7 @@ return;
     SCRefBy(sc);
 }
 
-static void FVMenuShowDependentSubs(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuShowDependentSubs(FontView *fv, int UNUSED(mid)) {
     int pos = FVAnyCharSelected(fv);
     SplineChar *sc;
 
@@ -4318,23 +4314,22 @@ static bool balistcheck(FontView *fv, int mid) {
     return disabled;
 }
 
-static void delistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static bool delistcheck(FontView *fv, int mid) {
     int i = FVAnyCharSelected(fv);
     int gid = i<0 ? -1 : fv->b.map->map[i];
+    bool disabled = false;
 
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
-	switch ( mi->mid ) {
+	switch ( mid ) {
 	  case MID_ShowDependentRefs:
-	    mi->ti.disabled = gid<0 || fv->b.sf->glyphs[gid]==NULL ||
+	    disabled = gid<0 || fv->b.sf->glyphs[gid]==NULL ||
 		    fv->b.sf->glyphs[gid]->dependents == NULL;
 	  break;
 	  case MID_ShowDependentSubs:
-	    mi->ti.disabled = gid<0 || fv->b.sf->glyphs[gid]==NULL ||
+	    disabled = gid<0 || fv->b.sf->glyphs[gid]==NULL ||
 		    !SCUsedBySubs(fv->b.sf->glyphs[gid]);
 	  break;
 	}
-    }
+    return disabled;
 }
 
 static bool infolistcheck(FontView *fv, int mid) {
@@ -4477,12 +4472,6 @@ static GMenuItem2 edlist[] = {
     { { (unichar_t *) N_("Copy _From"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Copy From|No Shortcut"), cflist, cflistcheck, NULL, 0 },
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Remo_ve Undoes"), (GImage *) "editrmundoes.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("Remove Undoes|No Shortcut"), NULL, NULL, FVMenuRemoveUndoes, MID_RemoveUndoes },
-    GMENUITEM2_EMPTY
-};
-
-static GMenuItem2 delist[] = {
-    { { (unichar_t *) N_("_References..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'u' }, H_("References...|No Shortcut"), NULL, NULL, FVMenuShowDependentRefs, MID_ShowDependentRefs },
-    { { (unichar_t *) N_("_Substitutions..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Substitutions...|No Shortcut"), NULL, NULL, FVMenuShowDependentSubs, MID_ShowDependentSubs },
     GMENUITEM2_EMPTY
 };
 
@@ -5251,6 +5240,10 @@ FVMenuAction fvpopupactions[] = {
     { MID_Justification, NULL, NULL, FVMenuJustify },
     { MID_MassRename, infolistcheck, NULL, FVMenuMassRename },
     { MID_SetColor, infolistcheck, NULL, NULL },
+
+    /* Element->Other Info->Show Dependent menu */
+    { MID_ShowDependentRefs, delistcheck, NULL, FVMenuShowDependentRefs },
+    { MID_ShowDependentSubs, delistcheck, NULL, FVMenuShowDependentSubs },
 
     /* Element->Validation menu */
     { MID_FindProblems, validlistcheck, NULL, FVMenuFindProblems },
