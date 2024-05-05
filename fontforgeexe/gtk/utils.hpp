@@ -64,3 +64,7 @@ Glib::RefPtr<Gdk::Cursor> set_cursor(Gtk::Widget* widget,
                                      const Glib::ustring& name);
 
 void unset_cursor(Gtk::Widget* widget, Glib::RefPtr<Gdk::Cursor> old_cursor);
+
+guint32 color_from_gdk_rgba(const Gdk::RGBA& rgba);
+
+Glib::RefPtr<Gdk::Pixbuf> build_color_icon(const Gdk::RGBA& color, gint size);

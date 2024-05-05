@@ -62,6 +62,7 @@ class LabelDecoration {
     LabelDecoration(DecorType s = NoDecoration) : d_(s) {}
     LabelDecoration(const char* image_file) : d_(image_file) {}
     LabelDecoration(RadioGroup g) : d_(g) {}
+    LabelDecoration(Gdk::RGBA c) : d_(c) {}
 
     bool empty() const {
         return std::holds_alternative<DecorType>(d_) &&
@@ -82,9 +83,10 @@ class LabelDecoration {
 
     bool has_group() const { return std::holds_alternative<RadioGroup>(d_); }
     RadioGroup group() const { return std::get<RadioGroup>(d_); }
+    Gdk::RGBA color() const { return std::get<Gdk::RGBA>(d_); }
 
  private:
-    std::variant<DecorType, std::string, RadioGroup> d_;
+    std::variant<DecorType, std::string, RadioGroup, Gdk::RGBA> d_;
 };
 
 struct LabelInfo {

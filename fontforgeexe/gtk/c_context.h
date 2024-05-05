@@ -45,6 +45,8 @@ typedef struct anchorclass AnchorClass;
 
 enum glyphlabel { gl_glyph, gl_name, gl_unicode, gl_encoding };
 
+typedef uint32_t Color;
+
 typedef struct fv_menu_action {
     int mid;
     bool (*is_disabled)(FontView* fv, int mid); /* called before showing */
@@ -152,6 +154,10 @@ typedef struct fontview_context {
 
     // Invoke external autotrace / potrace command
     void (*run_autotrace)(FontView* fv, bool ask_user_for_arguments);
+
+    // Set glyph color (legacy format 0xaarrggbb or -10/0xfffffff6 for color
+    // chooser)
+    void (*set_color)(FontView* fv, Color legacy_color);
 
     // Menu actions per menu ID
     FVMenuAction* actions;

@@ -204,10 +204,15 @@ Gtk::MenuItem* menu_item_factory(const MenuInfo& item, const UiContext& context,
         menu_item = new Gtk::RadioMenuItem(grouper, item.label.text, true);
     } else if (item.label.decoration.checkable()) {
         menu_item = new Gtk::CheckMenuItem(item.label.text, true);
-    } else {
+    } else if (item.label.decoration.named_icon()) {
         Glib::RefPtr<Gdk::Pixbuf> pixbuf =
             load_icon(item.label.decoration.image_file(), icon_height);
         Gtk::Image* img = Gtk::make_managed<Gtk::Image>(pixbuf);
+        menu_item = new Gtk::ImageMenuItem(*img, item.label.text, true);
+    } else {
+        Glib::RefPtr<Gdk::Pixbuf> pixbuf =
+            build_color_icon(item.label.decoration.color(), icon_height);
+        Gtk::Image* img = new Gtk::Image(pixbuf);
         menu_item = new Gtk::ImageMenuItem(*img, item.label.text, true);
     }
 

@@ -199,6 +199,18 @@ void run_autotrace(const UiContext& ui_context) {
     unset_cursor(drawing_area, old_cursor_da);
 }
 
+static const Color COLOR_DEFAULT = 0xfffffffe;
+static const Color COLOR_CHOOSE = (Color)-10;
+
+template <Color C>
+void set_color(const UiContext& ui_context) {
+    const FontViewUiContext& fv_ui_context =
+        static_cast<const FontViewUiContext&>(ui_context);
+    auto fv_context = fv_ui_context.legacy();
+
+    fv_context->set_color(fv_context->fv, C);
+}
+
 // clang-format off
 std::vector<MenuInfo> popup_menu = {
     { { N_("New O_utline Window"), NoDecoration, "" }, {}, LegacyCallbacks, MID_OpenOutline },
@@ -232,6 +244,18 @@ std::vector<MenuInfo> show_dependent_menu = {
     { { N_("_Substitutions..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_ShowDependentSubs },
 };
 
+std::vector<MenuInfo> set_color_menu = {
+    { { N_("Color|Choose..."), "colorwheel", "" }, {}, { set_color<COLOR_CHOOSE> }, 0 },
+    { { N_("Color|Default"), Gdk::RGBA("00000000"), "" }, {}, { set_color<COLOR_DEFAULT> }, 0 },
+    { { "White", Gdk::RGBA("white"), "" }, {}, { set_color<0xffffff> }, 0 },
+    { { "Red", Gdk::RGBA("red"), "" }, {}, { set_color<0xff0000> }, 0 },
+    { { "Green", Gdk::RGBA("green"), "" }, {}, { set_color<0x00ff00> }, 0 },
+    { { "Blue", Gdk::RGBA("blue"), "" }, {}, { set_color<0x0000ff> }, 0 },
+    { { "Yellow", Gdk::RGBA("yellow"), "" }, {}, { set_color<0xffff00> }, 0 },
+    { { "Cyan", Gdk::RGBA("cyan"), "" }, {}, { set_color<0x00ffff> }, 0 },
+    { { "Magenta", Gdk::RGBA("magenta"), "" }, {}, { set_color<0xff00ff> }, 0 },
+};
+
 std::vector<MenuInfo> other_info_menu = {
     { { N_("_MATH Info..."), "elementmathinfo", "" }, {}, LegacyCallbacks, MID_MathInfo },
     { { N_("_BDF Info..."), "elementbdfinfo", "" }, {}, LegacyCallbacks, MID_StrikeInfo },
@@ -240,7 +264,7 @@ std::vector<MenuInfo> other_info_menu = {
     { { N_("_Justification..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_Justification },
     { { N_("Show _Dependent"), "elementshowdep", "" }, show_dependent_menu, SubMenuCallbacks, 0 },
     { { N_("Mass Glyph _Rename..."), "elementrenameglyph", "" }, {}, LegacyCallbacks, MID_MassRename },
-    { { N_("Set _Color"), NoDecoration, "" }, {}/*&set_color_menu*/, { NoAction, LegacyEnabled, NotCheckable }, MID_SetColor },
+    { { N_("Set _Color"), NoDecoration, "" }, set_color_menu, { NoAction, LegacyEnabled, NotCheckable }, MID_SetColor },
 };
 
 std::vector<MenuInfo> validation_menu = {
