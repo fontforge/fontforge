@@ -264,7 +264,7 @@ std::vector<MenuInfo> other_info_menu = {
     { { N_("_Justification..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_Justification },
     { { N_("Show _Dependent"), "elementshowdep", "" }, show_dependent_menu, SubMenuCallbacks, 0 },
     { { N_("Mass Glyph _Rename..."), "elementrenameglyph", "" }, {}, LegacyCallbacks, MID_MassRename },
-    { { N_("Set _Color"), NoDecoration, "" }, set_color_menu, { NoAction, LegacyEnabled, NotCheckable }, MID_SetColor },
+    { { N_("Set _Color"), NoDecoration, "" }, set_color_menu, LegacySubMenuCallbacks, MID_SetColor },
 };
 
 std::vector<MenuInfo> validation_menu = {
@@ -333,20 +333,20 @@ std::vector<MenuInfo> element_menu = {
     { { N_("Regenerate _Bitmap Glyphs..."), "elementregenbitmaps", "<control>B" }, {}, LegacyCallbacks, MID_RegenBitmaps },
     { { N_("Remove Bitmap Glyphs..."), "elementremovebitmaps", "" }, {}, LegacyCallbacks, MID_RemoveBitmaps },
     kMenuSeparator,
-    { { N_("St_yle"), "elementstyles", "" }, style_menu, SubMenuCallbacks, 0 },
-    { { N_("_Transformations"), "elementtransform", "" }, transformations_menu, SubMenuCallbacks, 0 },
+    { { N_("St_yle"), "elementstyles", "" }, style_menu, LegacySubMenuCallbacks, MID_Styles },
+    { { N_("_Transformations"), "elementtransform", "" }, transformations_menu, LegacySubMenuCallbacks, MID_Transform },
     { { N_("_Expand Stroke..."), "elementexpandstroke", "<control><shift>E" }, {}, LegacyCallbacks, MID_Stroke },
 #ifdef FONTFORGE_CONFIG_TILEPATH
     { { N_("Tile _Path..."), "elementtilepath", "" }, {}, LegacyCallbacks, MID_TilePath },
     { { N_("Tile Pattern..."), "elementtilepattern", "" }, {}, LegacyCallbacks, MID_TilePattern },
 #endif
-    { { N_("O_verlap"), "overlaprm", "" }, overlap_menu, SubMenuCallbacks, 0 },
-    { { N_("_Simplify"), "elementsimplify", "" }, simplify_menu, SubMenuCallbacks, 0 },
+    { { N_("O_verlap"), "overlaprm", "" }, overlap_menu, LegacySubMenuCallbacks, MID_RmOverlap },
+    { { N_("_Simplify"), "elementsimplify", "" }, simplify_menu, LegacySubMenuCallbacks, MID_Simplify },
     { { N_("Add E_xtrema"), "elementaddextrema", "<control><shift>X" }, {}, LegacyCallbacks, MID_AddExtrema },
     { { N_("Add Points Of I_nflection"), "elementaddinflections", "<control><shift>Y" }, {}, LegacyCallbacks, MID_AddInflections },
     { { N_("_Balance"), "elementbalance", "<control><shift>P" }, {}, LegacyCallbacks, MID_Balance },
     { { N_("Harmoni_ze"), "elementharmonize", "<control><shift>Z" }, {}, LegacyCallbacks, MID_Harmonize },
-    { { N_("Roun_d"), "elementround", "" }, round_menu, SubMenuCallbacks, 0 },
+    { { N_("Roun_d"), "elementround", "" }, round_menu, LegacySubMenuCallbacks, MID_Round },
     { { N_("Autot_race"), "elementautotrace", "<control><shift>T" }, {}, { run_autotrace, LegacyEnabled, NotCheckable }, MID_Autotrace },
     kMenuSeparator,
     { { N_("_Correct Direction"), "elementcorrectdir", "<control><shift>D" }, {}, LegacyCallbacks, MID_Correct },

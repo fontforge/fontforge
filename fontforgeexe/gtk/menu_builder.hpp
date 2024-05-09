@@ -116,6 +116,7 @@ struct MenuCallbacks {
 
 static const MenuCallbacks LegacyCallbacks = {LegacyAction, LegacyEnabled,
                                               LegacyChecked};
+static const MenuCallbacks LegacySubMenuCallbacks = {NoAction, LegacyEnabled};
 static const MenuCallbacks SubMenuCallbacks = {NoAction};
 
 struct MenuInfo {
