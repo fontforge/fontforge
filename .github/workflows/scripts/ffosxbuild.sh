@@ -32,6 +32,12 @@ fi
 # Now we bundle the Python libraries
 echo "Bundling Python libraries..."
 
+# MacOS runner has way too much preinstalled Python versions. We must
+# use the exact one discovered by CMake.
+# The CMake_Python3_EXECUTABLE file resides in build/CMake_Python3_EXECUTABLE
+PYTHON_EXE=`cat ../CMake_Python3_EXECUTABLE`
+PY_DLLS_PATH=`$PYTHON_EXE -c "import sysconfig as sc; print(sc.get_path('platlib', sc.get_preferred_scheme('user'), vars={'userbase': '.'}))"`
+
 PYLIB=$(otool -L $APPDIR/Contents/Resources/opt/local/bin/fontforge | grep -i python | sed -e 's/ \(.*\)//')
 PYVER=$(echo $PYLIB | rev | cut -d/ -f2 | rev)
 PYTHON=python$PYVER
@@ -42,10 +48,10 @@ mkdir -p $APPDIR/Contents/Frameworks
 cp -a $pycruft/Python.framework $APPDIR/Contents/Frameworks
 pushd $APPDIR/Contents/Frameworks/Python.framework/Versions/$PYVER/lib/$PYTHON/
 rm site-packages || rm -rf site-packages
-ln -s ../../../../../../Resources/opt/local/lib/$PYTHON/site-packages
+ln -s ../../../../../../Resources/opt/local/$PY_DLLS_PATH
 popd
 
-pushd $APPDIR/Contents/Resources/opt/local/lib/$PYTHON/site-packages
+pushd $APPDIR/Contents/Resources/opt/local/$PY_DLLS_PATH
 cp -Rn "$pycruft/Python.framework/Versions/$PYVER/lib/$PYTHON/site-packages/" .
 popd
 
