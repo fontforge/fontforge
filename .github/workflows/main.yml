@@ -130,7 +130,8 @@ jobs:
       - name: Checkout FontForgeBuilds
         uses: actions/checkout@v3
         with:
-          repository: fontforge/fontforgebuilds
+          repository: iorsh/fontforgebuilds
+          ref: py_sysconfig
           path: fontforgebuilds
       - name: Setup MSYS2
         uses: msys2/setup-msys2@v2
