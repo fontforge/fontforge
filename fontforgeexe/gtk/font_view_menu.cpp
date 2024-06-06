@@ -480,6 +480,28 @@ std::vector<MenuInfo> view_menu = {
     MenuInfo::CustomBlock(view_menu_bitmaps),
 };
 
+std::vector<MenuInfo> metrics_menu = {
+    { { N_("New _Metrics Window"), NoDecoration, "" }, {}, LegacyCallbacks, MID_OpenMetrics },
+    kMenuSeparator,
+    { { N_("_Center in Width"), "metricscenter", "" }, {}, LegacyCallbacks, MID_Center },
+    { { N_("_Thirds in Width"), NoDecoration, "" }, {}, LegacyCallbacks, MID_Thirds },
+    { { N_("Set _Width..."), "metricssetwidth", "<control><shift>L" }, {}, LegacyCallbacks, MID_SetWidth },
+    { { N_("Set _LBearing..."), "metricssetlbearing", "<control>L" }, {}, LegacyCallbacks, MID_SetLBearing },
+    { { N_("Set _RBearing..."), "metricssetrbearing", "<control>R" }, {}, LegacyCallbacks, MID_SetRBearing },
+    { { N_("Set Both Bearings..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_SetBearings },
+    kMenuSeparator,
+    { { N_("Set _Vertical Advance..."), "metricssetvwidth", "" }, {}, LegacyCallbacks, MID_SetVWidth },
+    kMenuSeparator,
+    { { N_("_Auto Width..."), NoDecoration, "<control><shift>W" }, {}, LegacyCallbacks, MID_AutoWidth },
+    { { N_("Ker_n By Classes..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_KernByClasses },
+    { { N_("Remove All Kern _Pairs"), NoDecoration, "" }, {}, LegacyCallbacks, MID_RmHKern },
+    { { N_("Kern Pair Closeup..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_KernCloseup },
+    kMenuSeparator,
+    { { N_("VKern By Classes..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_VKernByClass },
+    { { N_("VKern From HKern"), NoDecoration, "" }, {}, LegacyCallbacks, MID_VKernFromH },
+    { { N_("Remove All VKern Pairs"), NoDecoration, "" }, {}, LegacyCallbacks, MID_RmVKern },
+};
+
 std::vector<MenuInfo> top_menu = {
     { { N_("_File") }, {}, SubMenuCallbacks, -1 },
     { { N_("_Edit") }, {}, SubMenuCallbacks, -1 },
@@ -490,7 +512,7 @@ std::vector<MenuInfo> top_menu = {
     { { N_("H_ints") }, hints_menu, SubMenuCallbacks, -1 },
     { { N_("E_ncoding") }, encoding_menu, SubMenuCallbacks, -1 },
     { { N_("_View") }, view_menu, SubMenuCallbacks, -1 },
-    { { N_("_Metrics") }, {}, SubMenuCallbacks, -1 },
+    { { N_("_Metrics") }, metrics_menu, SubMenuCallbacks, -1 },
     { { N_("_CID") }, {}, SubMenuCallbacks, -1 },
 /* GT: Here (and following) MM means "MultiMaster" */
     { { N_("MM") }, {}, SubMenuCallbacks, -1 },
