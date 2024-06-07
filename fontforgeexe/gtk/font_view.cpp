@@ -82,6 +82,36 @@ CheckedCB FontViewUiContext::get_checked_cb(int mid) const {
     }
 }
 
+// Decide selection merge type from keyboard state
+static enum merge_type SelMergeType() {
+    bool shift_pressed =
+        gtk_get_keyboard_state() & Gdk::ModifierType::SHIFT_MASK;
+    bool ctrl_pressed =
+        gtk_get_keyboard_state() & Gdk::ModifierType::CONTROL_MASK;
+
+    if (!shift_pressed && !ctrl_pressed) {
+        return mt_set;
+    }
+
+    return (enum merge_type)((shift_pressed ? mt_merge : mt_set) |
+                             (ctrl_pressed ? mt_restrict : mt_set));
+}
+
+ActivateCB FontViewUiContext::get_activate_select_cb(int mid) const {
+    FVSelectMenuAction* callback_set =
+        find_legacy_callback_set(mid, legacy_context->select_actions);
+
+    enum merge_type merge = SelMergeType();
+
+    if (callback_set != NULL && callback_set->action != NULL) {
+        void (*action)(::FontView*, enum merge_type) = callback_set->action;
+        ::FontView* fv = legacy_context->fv;
+        return [action, fv, merge](const UiContext&) { action(fv, merge); };
+    } else {
+        return NoAction;
+    }
+}
+
 bool on_button_press_event(GdkEventButton* event, Gtk::Menu& pop_up);
 bool on_font_view_event(GdkEvent* event);
 

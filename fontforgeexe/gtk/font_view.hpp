@@ -48,6 +48,7 @@ class FontViewUiContext : public UiContext {
     ActivateCB get_activate_cb(int mid) const override;
     EnabledCB get_enabled_cb(int mid) const override;
     CheckedCB get_checked_cb(int mid) const override;
+    ActivateCB get_activate_select_cb(int mid) const;
 
     Glib::RefPtr<Gtk::AccelGroup> get_accel_group() const override {
         return accel_group;

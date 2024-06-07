@@ -211,6 +211,15 @@ void set_color(const UiContext& ui_context) {
     fv_context->set_color(fv_context->fv, C);
 }
 
+template <int MID>
+void legacy_select_action(const UiContext& ui_context) {
+    const FontViewUiContext& fv_ui_context =
+        static_cast<const FontViewUiContext&>(ui_context);
+    ActivateCB select_action = fv_ui_context.get_activate_select_cb(MID);
+
+    select_action(ui_context);
+}
+
 // clang-format off
 std::vector<MenuInfo> popup_menu = {
     { { N_("New O_utline Window"), NoDecoration, "" }, {}, LegacyCallbacks, MID_OpenOutline },
@@ -238,6 +247,30 @@ std::vector<MenuInfo> popup_menu = {
 };
 
 ////////////////////////////////// EDIT MENUS /////////////////////////////////////////
+
+std::vector<MenuInfo> select_menu = {
+    { { N_("Select _All"), NoDecoration, "<control>A" }, {}, { legacy_select_action<MID_SelectAll> }, 0 },
+    { { N_("_Invert Selection"), NoDecoration, "<control>Escape" }, {}, { legacy_select_action<MID_SelectInvert> }, 0 },
+    { { N_("_Deselect All"), NoDecoration, "Escape" }, {}, { legacy_select_action<MID_DeselectAll> }, 0 },
+    kMenuSeparator,
+    { { N_("Select by _Color"), NoDecoration, "" }, {}, SubMenuCallbacks, 0 },
+    { { N_("Select by _Wildcard..."), NoDecoration, "" }, {}, { legacy_select_action<MID_SelectByName> }, 0 },
+    { { N_("Select by _Script..."), NoDecoration, "" }, {}, { legacy_select_action<MID_SelectByScript> }, 0 },
+    kMenuSeparator,
+    { { N_("_Glyphs Worth Outputting"), NoDecoration, "" }, {}, { legacy_select_action<MID_SelectWorth> }, 0 },
+    { { N_("Glyphs with only _References"), NoDecoration, "" }, {}, { legacy_select_action<MID_SelectGlyphsRefs> }, 0 },
+    { { N_("Glyphs with only S_plines"), NoDecoration, "" }, {}, { legacy_select_action<MID_SelectGlyphsSplines> }, 0 },
+    { { N_("Glyphs with both"), NoDecoration, "" }, {}, { legacy_select_action<MID_SelectGlyphsBoth> }, 0 },
+    { { N_("W_hitespace Glyphs"), NoDecoration, "" }, {}, { legacy_select_action<MID_SelectGlyphsWhite> }, 0 },
+    { { N_("_Changed Glyphs"), NoDecoration, "" }, {}, { legacy_select_action<MID_SelectChanged> }, 0 },
+    { { N_("_Hinting Needed"), NoDecoration, "" }, {}, { legacy_select_action<MID_SelectHintingNeeded> }, 0 },
+    { { N_("Autohinta_ble"), NoDecoration, "" }, {}, { legacy_select_action<MID_SelectAutohintable> }, 0 },
+    kMenuSeparator,
+    { { N_("Hold [Shift] key to merge"), NoDecoration, "" }, {}, { NoAction }, 0 },
+    { { N_("Hold [Control] key to restrict"), NoDecoration, "" }, {}, { NoAction }, 0 },
+    kMenuSeparator,
+    { { N_("Selec_t By Lookup Subtable..."), NoDecoration, "" }, {}, { legacy_select_action<MID_SelectByPST> }, 0 },
+};
 
 std::vector<MenuInfo> copy_menu = {
     { { N_("_All Fonts"), CopyFrom, "" }, {}, LegacyCallbacks, MID_AllFonts },
@@ -271,7 +304,7 @@ std::vector<MenuInfo> edit_menu = {
     { { N_("Copy Layer To Layer"), "editcopylayer2layer", "" }, {}, LegacyCallbacks, MID_CopyL2L },
     { { N_("_Join"), "editjoin", "<control><shift>J" }, {}, LegacyCallbacks, MID_Join },
     kMenuSeparator,
-    { { N_("_Select"), "editselect", "" }, {}, SubMenuCallbacks, 0 },
+    { { N_("_Select"), "editselect", "" }, select_menu, SubMenuCallbacks, 0 },
     { { N_("F_ind / Replace..."), "editfind", "<alt><control>F" }, {}, LegacyCallbacks, MID_FindReplace },
     { { N_("Replace with Reference"), "editrplref", "<alt><control><shift>F" }, {}, LegacyCallbacks, MID_RplRef },
     { { N_("Correct References"), NoDecoration, "" }, {}, LegacyCallbacks, MID_CorrectRefs },

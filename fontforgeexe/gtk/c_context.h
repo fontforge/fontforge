@@ -47,6 +47,14 @@ enum glyphlabel { gl_glyph, gl_name, gl_unicode, gl_encoding };
 
 typedef uint32_t Color;
 
+enum merge_type {
+    mt_set = 0,
+    mt_merge = 4,
+    mt_or = mt_merge,
+    mt_restrict = 8,
+    mt_and = 12
+};
+
 typedef struct fv_menu_action {
     int mid;
     bool (*is_disabled)(FontView* fv, int mid); /* called before showing */
@@ -56,6 +64,15 @@ typedef struct fv_menu_action {
 
 #define MENUACTION_LAST \
     { 0, NULL, NULL, NULL }
+
+typedef struct fv_select_menu_action {
+    int mid;
+    void (*action)(FontView* fv,
+                   enum merge_type merge); /* called on mouse release */
+} FVSelectMenuAction;
+
+#define MENU_SELACTION_LAST \
+    { 0, NULL }
 
 typedef struct bitmap_menu_data {
     BDFFont* bdf;
@@ -161,6 +178,7 @@ typedef struct fontview_context {
 
     // Menu actions per menu ID
     FVMenuAction* actions;
+    FVSelectMenuAction* select_actions;
 } FVContext;
 
 typedef struct kerning_format_data {
