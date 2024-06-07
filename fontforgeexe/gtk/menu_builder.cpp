@@ -198,6 +198,15 @@ Gtk::MenuItem* menu_item_factory(const MenuInfo& item, const UiContext& context,
         menu_item = new Gtk::SeparatorMenuItem();
     } else if (item.label.decoration.empty()) {
         menu_item = new Gtk::MenuItem(item.label.text, true);
+    } else if (item.label.decoration.comment()) {
+        menu_item = new Gtk::MenuItem(item.label.text);
+
+        // Italic text
+        Gtk::Label* menu_label =
+            dynamic_cast<Gtk::Label*>(menu_item->get_child());
+        Glib::ustring text =
+            Glib::ustring::compose("<i>%1</i>", item.label.text);
+        menu_label->set_markup(text);
     } else if (item.label.decoration.has_group()) {
         RadioGroup group = item.label.decoration.group();
         Gtk::RadioButtonGroup& grouper = get_grouper(group);
@@ -270,7 +279,8 @@ Gtk::Menu* build_menu(const std::vector<MenuInfo>& info,
                                 ? item.callbacks.handler
                                 : context.get_activate_cb(item.mid);
 
-        EnabledCB enabled_check = item.callbacks.enabled
+        EnabledCB enabled_check = item.label.decoration.comment() ? NeverEnabled
+                                  : item.callbacks.enabled
                                       ? item.callbacks.enabled
                                       : context.get_enabled_cb(item.mid);
 

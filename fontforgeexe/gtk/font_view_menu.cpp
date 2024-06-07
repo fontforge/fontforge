@@ -266,8 +266,8 @@ std::vector<MenuInfo> select_menu = {
     { { N_("_Hinting Needed"), NoDecoration, "" }, {}, { legacy_select_action<MID_SelectHintingNeeded> }, 0 },
     { { N_("Autohinta_ble"), NoDecoration, "" }, {}, { legacy_select_action<MID_SelectAutohintable> }, 0 },
     kMenuSeparator,
-    { { N_("Hold [Shift] key to merge"), NoDecoration, "" }, {}, { NoAction }, 0 },
-    { { N_("Hold [Control] key to restrict"), NoDecoration, "" }, {}, { NoAction }, 0 },
+    { { N_("Hold [Shift] key to merge"), Comment, "" }, {}, { NoAction }, 0 },
+    { { N_("Hold [Control] key to restrict"), Comment, "" }, {}, { NoAction }, 0 },
     kMenuSeparator,
     { { N_("Selec_t By Lookup Subtable..."), NoDecoration, "" }, {}, { legacy_select_action<MID_SelectByPST> }, 0 },
 };

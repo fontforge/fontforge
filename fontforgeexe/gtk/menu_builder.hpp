@@ -42,6 +42,7 @@ namespace ff::views {
 enum DecorType {
     NoDecoration,
     Checkable,
+    Comment,
 };
 
 enum RadioGroup {
@@ -73,6 +74,11 @@ class LabelDecoration {
     bool checkable() const {
         return std::holds_alternative<DecorType>(d_) &&
                std::get<DecorType>(d_) == Checkable;
+    }
+
+    bool comment() const {
+        return std::holds_alternative<DecorType>(d_) &&
+               std::get<DecorType>(d_) == Comment;
     }
 
     bool named_icon() const { return std::holds_alternative<std::string>(d_); }
