@@ -39,19 +39,6 @@ FontViewUiContext::FontViewUiContext(Gtk::Window& window,
     accel_group = Gtk::AccelGroup::create();
 }
 
-// Find the C callback set
-FVMenuAction* find_legacy_callback_set(int mid, FVMenuAction* actions) {
-    int i = 0;
-    while (actions[i].mid != 0) {
-        if (actions[i].mid == mid) {
-            return actions + i;
-        }
-        i++;
-    }
-
-    return NULL;
-}
-
 ActivateCB FontViewUiContext::get_activate_cb(int mid) const {
     FVMenuAction* callback_set =
         find_legacy_callback_set(mid, legacy_context->actions);
