@@ -1608,8 +1608,7 @@ return;
     FVCopy((FontViewBase *) fv,ct_fullcopy);
 }
 
-static void FVMenuCopyLookupData(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuCopyLookupData(FontView *fv, int UNUSED(mid)) {
     if ( FVAnyCharSelected(fv)==-1 )
 return;
     FVCopy((FontViewBase *) fv,ct_lookups);
@@ -1639,23 +1638,20 @@ return;
     PasteIntoFV((FontViewBase *) fv,false,NULL);
 }
 
-static void FVMenuPasteInto(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuPasteInto(FontView *fv, int UNUSED(mid)) {
     if ( FVAnyCharSelected(fv)==-1 )
 return;
     PasteIntoFV((FontViewBase *) fv,true,NULL);
 }
 
-static void FVMenuPasteAfter(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuPasteAfter(FontView *fv, int UNUSED(mid)) {
     int pos = FVAnyCharSelected(fv);
     if ( pos<0 )
 return;
     PasteIntoFV(&fv->b,2,NULL);
 }
 
-static void FVMenuSameGlyphAs(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuSameGlyphAs(FontView *fv, int UNUSED(mid)) {
     FVSameGlyphAs((FontViewBase *) fv);
     GDrawRequestExpose(fv->v,NULL,false);
 }
@@ -1664,8 +1660,7 @@ static void FVMenuCopyFgBg(FontView *fv, int UNUSED(mid)) {
     FVCopyFgtoBg( (FontViewBase *) fv );
 }
 
-static void FVMenuCopyL2L(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuCopyL2L(FontView *fv, int UNUSED(mid)) {
     FVCopyLayerToLayer( fv );
 }
 
@@ -1677,13 +1672,11 @@ static void FVMenuClear(FontView *fv, int UNUSED(mid)) {
     FVClear( (FontViewBase *) fv );
 }
 
-static void FVMenuClearBackground(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuClearBackground(FontView *fv, int UNUSED(mid)) {
     FVClearBackground( (FontViewBase *) fv );
 }
 
-static void FVMenuJoin(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuJoin(FontView *fv, int UNUSED(mid)) {
     FVJoin( (FontViewBase *) fv );
 }
 
@@ -1691,23 +1684,19 @@ static void FVMenuUnlinkRef(FontView *fv, int UNUSED(mid)) {
     FVUnlinkRef( (FontViewBase *) fv );
 }
 
-static void FVMenuRemoveUndoes(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuRemoveUndoes(FontView *fv, int UNUSED(mid)) {
     SFRemoveUndoes(fv->b.sf,fv->b.selected,fv->b.map);
 }
 
-static void FVMenuUndo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuUndo(FontView *fv, int UNUSED(mid)) {
     FVUndo((FontViewBase *) fv);
 }
 
-static void FVMenuRedo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuRedo(FontView *fv, int UNUSED(mid)) {
     FVRedo((FontViewBase *) fv);
 }
 
-static void FVMenuUndoFontLevel(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuUndoFontLevel(FontView *fv, int UNUSED(mid)) {
     FontViewBase * fvb = (FontViewBase *) fv;
     SplineFont *sf = fvb->sf;
 
@@ -2501,22 +2490,16 @@ static void FVMenuSelectByPST(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
     FVSelectByPST(fv);
 }
 
-static void FVMenuFindRpl(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
+static void FVMenuFindRpl(FontView *fv, int UNUSED(mid)) {
     SVCreate(fv);
 }
 
-static void FVMenuReplaceWithRef(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
+static void FVMenuReplaceWithRef(FontView *fv, int UNUSED(mid)) {
     FVReplaceOutlineWithReference(fv,.001);
 }
 
-static void FVMenuCorrectRefs(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontViewBase *fv = (FontViewBase *) GDrawGetUserData(gw);
-
-    FVCorrectReferences(fv);
+static void FVMenuCorrectRefs(FontView *fv, int UNUSED(mid)) {
+    FVCorrectReferences((FontViewBase *)fv);
 }
 
 static void FVMenuCharInfo(FontView *fv, int UNUSED(mid)) {
@@ -4034,25 +4017,23 @@ static void fllistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     }
 }
 
-static void edlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static bool edlistcheck(FontView *fv, int mid) {
     int pos = FVAnyCharSelected(fv), i, gid;
     int not_pasteable = pos==-1 ||
 		    (!CopyContainsSomething() && !SCClipboardHasPasteableContents());
     RefChar *base = CopyContainsRef(fv->b.sf);
     int base_enc = base!=NULL ? fv->b.map->backmap[base->orig_pos] : -1;
+    bool disabled = false;
 
-
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
-	switch ( mi->mid ) {
+	switch ( mid ) {
 	  case MID_Paste: case MID_PasteInto:
-	    mi->ti.disabled = not_pasteable;
+	    disabled = not_pasteable;
 	  break;
 	  case MID_PasteAfter:
-	    mi->ti.disabled = not_pasteable || pos<0;
+	    disabled = not_pasteable || pos<0;
 	  break;
 	  case MID_SameGlyphAs:
-	    mi->ti.disabled = not_pasteable || base==NULL || fv->b.cidmaster!=NULL ||
+	    disabled = not_pasteable || base==NULL || fv->b.cidmaster!=NULL ||
 		    base_enc==-1 ||
 		    fv->b.selected[base_enc];	/* Can't be self-referential */
 	  break;
@@ -4061,27 +4042,27 @@ static void edlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	  case MID_CopyWidth: case MID_CopyLBearing: case MID_CopyRBearing:
 	  case MID_CopyRef: case MID_UnlinkRef:
 	  case MID_RemoveUndoes: case MID_CopyFgToBg: case MID_CopyL2L:
-	    mi->ti.disabled = pos==-1;
+	    disabled = pos==-1;
 	  break;
 	  case MID_RplRef:
 	  case MID_CorrectRefs:
-	    mi->ti.disabled = pos==-1 || fv->b.cidmaster!=NULL || fv->b.sf->multilayer;
+	    disabled = pos==-1 || fv->b.cidmaster!=NULL || fv->b.sf->multilayer;
 	  break;
 	  case MID_CopyLookupData:
-	    mi->ti.disabled = pos==-1 || (fv->b.sf->gpos_lookups==NULL && fv->b.sf->gsub_lookups==NULL);
+	    disabled = pos==-1 || (fv->b.sf->gpos_lookups==NULL && fv->b.sf->gsub_lookups==NULL);
 	  break;
 	  case MID_CopyVWidth:
-	    mi->ti.disabled = pos==-1 || !fv->b.sf->hasvmetrics;
+	    disabled = pos==-1 || !fv->b.sf->hasvmetrics;
 	  break;
 	  case MID_ClearBackground:
-	    mi->ti.disabled = true;
+	    disabled = true;
 	    if ( pos!=-1 && !( onlycopydisplayed && fv->filled!=fv->show )) {
 		for ( i=0; i<fv->b.map->enccount; ++i )
 		    if ( fv->b.selected[i] && (gid = fv->b.map->map[i])!=-1 &&
 			    fv->b.sf->glyphs[gid]!=NULL )
 			if ( fv->b.sf->glyphs[gid]->layers[ly_back].images!=NULL ||
 				fv->b.sf->glyphs[gid]->layers[ly_back].splines!=NULL ) {
-			    mi->ti.disabled = false;
+			    disabled = false;
 		break;
 			}
 	    }
@@ -4092,7 +4073,7 @@ static void edlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 			fv->b.sf->glyphs[gid]!=NULL )
 		    if ( fv->b.sf->glyphs[gid]->layers[fv->b.active_layer].undoes!=NULL )
 	    break;
-	    mi->ti.disabled = i==fv->b.map->enccount;
+	    disabled = i==fv->b.map->enccount;
 	  break;
 	  case MID_Redo:
 	    for ( i=0; i<fv->b.map->enccount; ++i )
@@ -4100,13 +4081,13 @@ static void edlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 			fv->b.sf->glyphs[gid]!=NULL )
 		    if ( fv->b.sf->glyphs[gid]->layers[fv->b.active_layer].redoes!=NULL )
 	    break;
-	    mi->ti.disabled = i==fv->b.map->enccount;
+	    disabled = i==fv->b.map->enccount;
 	  break;
 	case MID_UndoFontLevel:
-	    mi->ti.disabled = dlist_isempty( (struct dlistnode **)&fv->b.sf->undoes );
+	    disabled = dlist_isempty( (struct dlistnode **)&fv->b.sf->undoes );
 	    break;
 	}
-    }
+    return disabled;
 }
 
 static bool trlistcheck(FontView *fv, int mid) {
@@ -4436,27 +4417,8 @@ static GMenuItem2 sllist[] = {
 };
 
 static GMenuItem2 edlist[] = {
-    { { (unichar_t *) N_("_Undo"), (GImage *) "editundo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'U' }, H_("Undo|No Shortcut"), NULL, NULL, FVMenuUndo, MID_Undo },
-    { { (unichar_t *) N_("_Redo"), (GImage *) "editredo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Redo|No Shortcut"), NULL, NULL, FVMenuRedo, MID_Redo},
-    { { (unichar_t *) N_("Undo Fontlevel"), (GImage *) "editundo.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'U' }, H_("Undo Fontlevel|No Shortcut"), NULL, NULL, FVMenuUndoFontLevel, MID_UndoFontLevel },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("Copy _Lookup Data"), (GImage *) "editcopylookupdata.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Copy Lookup Data|No Shortcut"), NULL, NULL, FVMenuCopyLookupData, MID_CopyLookupData },
-    { { (unichar_t *) N_("Paste Into"), (GImage *) "editpasteinto.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Paste Into|No Shortcut"), NULL, NULL, FVMenuPasteInto, MID_PasteInto },
-    { { (unichar_t *) N_("Paste After"), (GImage *) "editpasteafter.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Paste After|No Shortcut"), NULL, NULL, FVMenuPasteAfter, MID_PasteAfter },
-    { { (unichar_t *) N_("Sa_me Glyph As"), (GImage *) "editsameas.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'm' }, H_("Same Glyph As|No Shortcut"), NULL, NULL, FVMenuSameGlyphAs, MID_SameGlyphAs },
-    { { (unichar_t *) N_("Clear _Background"), (GImage *) "editclearback.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Clear Background|No Shortcut"), NULL, NULL, FVMenuClearBackground, MID_ClearBackground },
-    { { (unichar_t *) N_("Copy Layer To Layer"), (GImage *) "editcopylayer2layer.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Copy Layer To Layer|No Shortcut"), NULL, NULL, FVMenuCopyL2L, MID_CopyL2L },
-    { { (unichar_t *) N_("_Join"), (GImage *) "editjoin.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'J' }, H_("Join|No Shortcut"), NULL, NULL, FVMenuJoin, MID_Join },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("_Select"), (GImage *) "editselect.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Select|No Shortcut"), sllist, sllistcheck, NULL, 0 },
-    { { (unichar_t *) N_("F_ind / Replace..."), (GImage *) "editfind.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'i' }, H_("Find / Replace...|No Shortcut"), NULL, NULL, FVMenuFindRpl, 0 },
-    { { (unichar_t *) N_("Replace with Reference"), (GImage *) "editrplref.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'i' }, H_("Replace with Reference|No Shortcut"), NULL, NULL, FVMenuReplaceWithRef, MID_RplRef },
-    { { (unichar_t *) N_("Correct References"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'i' }, H_("Correct References|No Shortcut"), NULL, NULL, FVMenuCorrectRefs, MID_CorrectRefs },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("Copy _From"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Copy From|No Shortcut"), cflist, cflistcheck, NULL, 0 },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("Remo_ve Undoes"), (GImage *) "editrmundoes.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("Remove Undoes|No Shortcut"), NULL, NULL, FVMenuRemoveUndoes, MID_RemoveUndoes },
     GMENUITEM2_EMPTY
 };
 
@@ -5154,14 +5116,6 @@ GMenuItem2 helplist[] = {
 
 FVMenuAction fvpopupactions[] = {
     { MID_OpenOutline, NULL, NULL, FVMenuOpenOutline },
-    { MID_Cut, NULL, NULL, FVMenuCut },
-    { MID_Copy, NULL, NULL, FVMenuCopy },
-    { MID_CopyRef, NULL, NULL, FVMenuCopyRef },
-    { MID_CopyWidth, NULL, NULL, FVMenuCopyWidth },
-    { MID_Paste, NULL, NULL, FVMenuPaste },
-    { MID_Clear, NULL, NULL, FVMenuClear },
-    { MID_CopyFgToBg, NULL, NULL, FVMenuCopyFgBg },
-    { MID_UnlinkRef, NULL, NULL, FVMenuUnlinkRef },
 
     /* Element menu */
     { MID_FontInfo, ellistcheck, NULL, FVMenuFontInfo },
@@ -5337,12 +5291,38 @@ FVMenuAction fvpopupactions[] = {
     { MID_VKernFromH, mtlistcheck, NULL, FVMenuVKernFromHKern },
     { MID_RmVKern, mtlistcheck, NULL, FVMenuRemoveVKern },
 
+    /* Edit menu */
+    { MID_Undo, edlistcheck, NULL, FVMenuUndo },
+    { MID_Redo, edlistcheck, NULL, FVMenuRedo },
+    { MID_UndoFontLevel, edlistcheck, NULL, FVMenuUndoFontLevel },
+    { MID_Cut, edlistcheck, NULL, FVMenuCut },
+    { MID_Copy, edlistcheck, NULL, FVMenuCopy },
+    { MID_CopyRef, edlistcheck, NULL, FVMenuCopyRef },
+    { MID_CopyLookupData, edlistcheck, NULL, FVMenuCopyLookupData },
+    { MID_CopyWidth, edlistcheck, NULL, FVMenuCopyWidth },
+    { MID_CopyVWidth, edlistcheck, NULL, FVMenuCopyWidth },
+    { MID_CopyLBearing, edlistcheck, NULL, FVMenuCopyWidth },
+    { MID_CopyRBearing, edlistcheck, NULL, FVMenuCopyWidth },
+    { MID_Paste, edlistcheck, NULL, FVMenuPaste },
+    { MID_PasteInto, edlistcheck, NULL, FVMenuPasteInto },
+    { MID_PasteAfter, edlistcheck, NULL, FVMenuPasteAfter },
+    { MID_SameGlyphAs, edlistcheck, NULL, FVMenuSameGlyphAs },
+    { MID_Clear, edlistcheck, NULL, FVMenuClear },
+    { MID_ClearBackground, edlistcheck, NULL, FVMenuClearBackground },
+    { MID_CopyFgToBg, edlistcheck, NULL, FVMenuCopyFgBg },
+    { MID_CopyL2L, edlistcheck, NULL, FVMenuCopyL2L },
+    { MID_Join, edlistcheck, NULL, FVMenuJoin },
+    { MID_FindReplace, edlistcheck, NULL, FVMenuFindRpl },
+    { MID_RplRef, edlistcheck, NULL, FVMenuReplaceWithRef },
+    { MID_CorrectRefs, edlistcheck, NULL, FVMenuCorrectRefs },
+    { MID_UnlinkRef, edlistcheck, NULL, FVMenuUnlinkRef },
+    { MID_RemoveUndoes, edlistcheck, NULL, FVMenuRemoveUndoes },
+
     MENUACTION_LAST
 };
 
 static GMenuItem2 mblist[] = {
     { { (unichar_t *) N_("_File"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("File|No Shortcut"), fllist, fllistcheck, NULL, 0 },
-    { { (unichar_t *) N_("_Edit"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'E' }, H_("Edit|No Shortcut"), edlist, edlistcheck, NULL, 0 },
     { { (unichar_t *) N_("_CID"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("CID|No Shortcut"), cdlist, cdlistcheck, NULL, 0 },
 /* GT: Here (and following) MM means "MultiMaster" */
     { { (unichar_t *) N_("MM"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("MM|No Shortcut"), mmlist, mmlistcheck, NULL, 0 },

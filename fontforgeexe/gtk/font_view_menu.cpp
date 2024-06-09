@@ -237,6 +237,43 @@ std::vector<MenuInfo> popup_menu = {
     { { N_("Set _Vertical Advance..."), "metricssetvwidth", "" }, {}, LegacyCallbacks, MID_SetVWidth },
 };
 
+////////////////////////////////// EDIT MENUS /////////////////////////////////////////
+
+std::vector<MenuInfo> edit_menu = {
+    { { N_("_Undo"), "editundo", "<control>Z" }, {}, LegacyCallbacks, MID_Undo },
+    { { N_("_Redo"), "editredo", "<control>Y" }, {}, LegacyCallbacks, MID_Redo},
+    { { N_("Undo Fontlevel"), "editundo", "" }, {}, LegacyCallbacks, MID_UndoFontLevel },
+    kMenuSeparator,
+    { { N_("Cu_t"), "editcut", "<control>X" }, {}, LegacyCallbacks, MID_Cut },
+    { { N_("_Copy"), "editcopy", "<control>C" }, {}, LegacyCallbacks, MID_Copy },
+    { { N_("C_opy Reference"), "editcopyref", "<control>G" }, {}, LegacyCallbacks, MID_CopyRef },
+    { { N_("Copy _Lookup Data"), "editcopylookupdata", "<alt><control>C" }, {}, LegacyCallbacks, MID_CopyLookupData },
+    { { N_("Copy _Width"), "editcopywidth", "" }, {}, LegacyCallbacks, MID_CopyWidth },
+    { { N_("Copy _VWidth"), "editcopyvwidth", "" }, {}, LegacyCallbacks, MID_CopyVWidth },
+    { { N_("Co_py LBearing"), "editcopylbearing", "" }, {}, LegacyCallbacks, MID_CopyLBearing },
+    { { N_("Copy RBearin_g"), "editcopyrbearing", "" }, {}, LegacyCallbacks, MID_CopyRBearing },
+    { { N_("_Paste"), "editpaste", "<control>V" }, {}, LegacyCallbacks, MID_Paste },
+    { { N_("Paste Into"), "editpasteinto", "<control><shift>V" }, {}, LegacyCallbacks, MID_PasteInto },
+    { { N_("Paste After"), "editpasteafter", "<alt><control><shift>V" }, {}, LegacyCallbacks, MID_PasteAfter },
+    { { N_("Sa_me Glyph As"), "editsameas", "" }, {}, LegacyCallbacks, MID_SameGlyphAs },
+    { { N_("C_lear"), "editclear", "" }, {}, LegacyCallbacks, MID_Clear },
+    { { N_("Clear _Background"), "editclearback", "" }, {}, LegacyCallbacks, MID_ClearBackground },
+    { { N_("Copy _Fg To Bg"), "editcopyfg2bg", "<control><shift>C" }, {}, LegacyCallbacks, MID_CopyFgToBg },
+    { { N_("Copy Layer To Layer"), "editcopylayer2layer", "" }, {}, LegacyCallbacks, MID_CopyL2L },
+    { { N_("_Join"), "editjoin", "<control><shift>J" }, {}, LegacyCallbacks, MID_Join },
+    kMenuSeparator,
+    { { N_("_Select"), "editselect", "" }, {}, SubMenuCallbacks, 0 },
+    { { N_("F_ind / Replace..."), "editfind", "<alt><control>F" }, {}, LegacyCallbacks, MID_FindReplace },
+    { { N_("Replace with Reference"), "editrplref", "<alt><control><shift>F" }, {}, LegacyCallbacks, MID_RplRef },
+    { { N_("Correct References"), NoDecoration, "" }, {}, LegacyCallbacks, MID_CorrectRefs },
+    kMenuSeparator,
+    { { N_("U_nlink Reference"), "editunlink", "<control>U" }, {}, LegacyCallbacks, MID_UnlinkRef },
+    kMenuSeparator,
+    { { N_("Copy _From"), NoDecoration, "" }, {}, SubMenuCallbacks, 0 },
+    kMenuSeparator,
+    { { N_("Remo_ve Undoes"), "editrmundoes", "" }, {}, LegacyCallbacks, MID_RemoveUndoes },
+};
+
 //////////////////////////////// ELEMENT MENUS ////////////////////////////////////////
 
 std::vector<MenuInfo> show_dependent_menu = {
@@ -504,7 +541,7 @@ std::vector<MenuInfo> metrics_menu = {
 
 std::vector<MenuInfo> top_menu = {
     { { N_("_File") }, {}, SubMenuCallbacks, -1 },
-    { { N_("_Edit") }, {}, SubMenuCallbacks, -1 },
+    { { N_("_Edit") }, edit_menu, SubMenuCallbacks, -1 },
     { { N_("E_lement") }, element_menu, SubMenuCallbacks, -1 },
 #ifndef _NO_PYTHON
     { { N_("_Tools") }, tools_menu, SubMenuCallbacks, -1 },
