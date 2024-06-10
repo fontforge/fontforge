@@ -211,6 +211,18 @@ void set_color(const UiContext& ui_context) {
     fv_context->set_color(fv_context->fv, C);
 }
 
+template <Color C>
+void select_color(const UiContext& ui_context) {
+    const FontViewUiContext& fv_ui_context =
+        static_cast<const FontViewUiContext&>(ui_context);
+    auto fv_context = fv_ui_context.legacy();
+
+    // Decide selection merge type from keyboard state
+    enum merge_type merge = SelMergeType();
+
+    fv_context->select_color(fv_context->fv, C, merge);
+}
+
 template <int MID>
 void legacy_select_action(const UiContext& ui_context) {
     const FontViewUiContext& fv_ui_context =
@@ -248,12 +260,24 @@ std::vector<MenuInfo> popup_menu = {
 
 ////////////////////////////////// EDIT MENUS /////////////////////////////////////////
 
+std::vector<MenuInfo> select_color_menu = {
+    { { N_("Color|Choose..."), "colorwheel", "" }, {}, { select_color<COLOR_CHOOSE> }, 0 },
+    { { N_("Color|Default"), Gdk::RGBA("00000000"), "" }, {}, { select_color<COLOR_DEFAULT> }, 0 },
+    { { "White", Gdk::RGBA("white"), "" }, {}, { select_color<0xffffff> }, 0 },
+    { { "Red", Gdk::RGBA("red"), "" }, {}, { select_color<0xff0000> }, 0 },
+    { { "Green", Gdk::RGBA("green"), "" }, {}, { select_color<0x00ff00> }, 0 },
+    { { "Blue", Gdk::RGBA("blue"), "" }, {}, { select_color<0x0000ff> }, 0 },
+    { { "Yellow", Gdk::RGBA("yellow"), "" }, {}, { select_color<0xffff00> }, 0 },
+    { { "Cyan", Gdk::RGBA("cyan"), "" }, {}, { select_color<0x00ffff> }, 0 },
+    { { "Magenta", Gdk::RGBA("magenta"), "" }, {}, { select_color<0xff00ff> }, 0 },
+};
+
 std::vector<MenuInfo> select_menu = {
     { { N_("Select _All"), NoDecoration, "<control>A" }, {}, { legacy_select_action<MID_SelectAll> }, 0 },
     { { N_("_Invert Selection"), NoDecoration, "<control>Escape" }, {}, { legacy_select_action<MID_SelectInvert> }, 0 },
     { { N_("_Deselect All"), NoDecoration, "Escape" }, {}, { legacy_select_action<MID_DeselectAll> }, 0 },
     kMenuSeparator,
-    { { N_("Select by _Color"), NoDecoration, "" }, {}, SubMenuCallbacks, 0 },
+    { { N_("Select by _Color"), NoDecoration, "" }, select_color_menu, SubMenuCallbacks, 0 },
     { { N_("Select by _Wildcard..."), NoDecoration, "" }, {}, { legacy_select_action<MID_SelectByName> }, 0 },
     { { N_("Select by _Script..."), NoDecoration, "" }, {}, { legacy_select_action<MID_SelectByScript> }, 0 },
     kMenuSeparator,

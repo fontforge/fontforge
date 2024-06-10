@@ -83,7 +83,7 @@ CheckedCB FontViewUiContext::get_checked_cb(int mid) const {
 }
 
 // Decide selection merge type from keyboard state
-static enum merge_type SelMergeType() {
+enum merge_type SelMergeType() {
     bool shift_pressed =
         gtk_get_keyboard_state() & Gdk::ModifierType::SHIFT_MASK;
     bool ctrl_pressed =

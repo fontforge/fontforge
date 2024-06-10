@@ -88,4 +88,6 @@ class FontView : public ICharGridContainter {
 extern std::vector<MenuInfo> top_menu;
 extern std::vector<MenuInfo> popup_menu;
 
+enum merge_type SelMergeType();
+
 }  // namespace ff::views

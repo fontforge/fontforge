@@ -1740,14 +1740,6 @@ const uint8_t mergefunc[] = {
 	0, 1,
 };
 
-static enum merge_type SelMergeType(GEvent *e) {
-    if ( e==NULL || e->type!=et_mouseup )
-return( mt_set );
-
-return( ((e->u.mouse.state&ksm_shift)?mt_merge:0) |
-	((e->u.mouse.state&ksm_control)?mt_restrict:0) );
-}
-
 static char *SubMatch(char *pattern, char *eop, char *name,int ignorecase) {
     char ch, *ppt, *npt, *ept, *eon;
 
@@ -2123,9 +2115,9 @@ static void FVMenuSelectByScript(FontView *fv, enum merge_type merge) {
     FVSelectByScript(fv, merge);
 }
 
-static void FVSelectColor(FontView *fv, uint32_t col, int merge) {
+static void FVSelectColor(FontView *fv, Color col, int merge) {
     int i, doit;
-    uint32_t sccol;
+    Color sccol;
     SplineChar **glyphs = fv->b.sf->glyphs;
 
     for ( i=0; i<fv->b.map->enccount; ++i ) {
@@ -2137,10 +2129,9 @@ static void FVSelectColor(FontView *fv, uint32_t col, int merge) {
     GDrawRequestExpose(fv->v,NULL,false);
 }
 
-static void FVMenuSelectColor(GWindow gw, struct gmenuitem *mi, GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    Color col = (Color) (intptr_t) (mi->ti.userdata);
-    if ( (intptr_t) mi->ti.userdata == (intptr_t) -10 ) {
+static void FVMenuSelectColor(FontView *fv, Color extended_col, enum merge_type merge) {
+    Color col = extended_col;
+    if ( extended_col == (Color) -10 ) {
 	struct hslrgb retcol, font_cols[6];
 	retcol = GWidgetColor(_("Pick a color"),NULL,SFFontCols(fv->b.sf,font_cols));
 	if ( !retcol.rgb )
@@ -2149,7 +2140,7 @@ return;
 		    (((int) rint(255.*retcol.g))<<8 ) |
 		    (((int) rint(255.*retcol.b)) );
     }
-    FVSelectColor(fv,col,SelMergeType(e));
+    FVSelectColor(fv,col,merge);
 }
 
 static int FVSelectByName(FontView *fv, char *ret, int merge) {
@@ -4330,19 +4321,6 @@ static GMenuItem2 fllist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("_Quit"), (GImage *) "filequit.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'Q' }, H_("Quit|Ctl+Q"), /* WARNING: THIS BINDING TO PROPERLY INITIALIZE KEYBOARD INPUT */
       NULL, NULL, FVMenuExit, 0 },
-    GMENUITEM2_EMPTY
-};
-
-static GMenuItem2 sclist[] = {
-    { { (unichar_t *) N_("Color|Choose..."), (GImage *)"colorwheel.png", COLOR_DEFAULT, COLOR_DEFAULT, (void *) -10, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Choose...|No Shortcut"), NULL, NULL, FVMenuSelectColor, 0 },
-    { { (unichar_t *)  N_("Color|Default"), &def_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) COLOR_DEFAULT, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Default|No Shortcut"), NULL, NULL, FVMenuSelectColor, 0 },
-    { { NULL, &white_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xffffff, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, NULL, NULL, NULL, FVMenuSelectColor, 0 },
-    { { NULL, &red_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xff0000, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, NULL, NULL, NULL, FVMenuSelectColor, 0 },
-    { { NULL, &green_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0x00ff00, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, NULL, NULL, NULL, FVMenuSelectColor, 0 },
-    { { NULL, &blue_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0x0000ff, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, NULL, NULL, NULL, FVMenuSelectColor, 0 },
-    { { NULL, &yellow_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xffff00, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, NULL, NULL, NULL, FVMenuSelectColor, 0 },
-    { { NULL, &cyan_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0x00ffff, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, NULL, NULL, NULL, FVMenuSelectColor, 0 },
-    { { NULL, &magenta_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) 0xff00ff, NULL, 0, 1, 0, 0, 0, 0, 0, 0, 0, '\0' }, NULL, NULL, NULL, FVMenuSelectColor, 0 },
     GMENUITEM2_EMPTY
 };
 
@@ -6813,6 +6791,7 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     fv_context->py_check = fvpy_check;
     fv_context->run_autotrace = (void (*)(FontView*, bool))FVAutoTrace;
     fv_context->set_color = FVMenuSetColor;
+    fv_context->select_color = FVMenuSelectColor;
     fv_context->actions = fvpopupactions;
     fv_context->select_actions = fv_selmenu_actions;
     cg_dlg = create_font_view(&fv_context, pos.width, pos.height);

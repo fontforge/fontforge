@@ -176,6 +176,11 @@ typedef struct fontview_context {
     // chooser)
     void (*set_color)(FontView* fv, Color legacy_color);
 
+    // Select glyph by color (legacy format 0xaarrggbb or -10/0xfffffff6 for
+    // color chooser)
+    void (*select_color)(FontView* fv, Color legacy_color,
+                         enum merge_type merge);
+
     // Menu actions per menu ID
     FVMenuAction* actions;
     FVSelectMenuAction* select_actions;
