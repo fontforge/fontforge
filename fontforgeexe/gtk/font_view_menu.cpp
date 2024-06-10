@@ -239,6 +239,15 @@ std::vector<MenuInfo> popup_menu = {
 
 ////////////////////////////////// EDIT MENUS /////////////////////////////////////////
 
+std::vector<MenuInfo> copy_menu = {
+    { { N_("_All Fonts"), CopyFrom, "" }, {}, LegacyCallbacks, MID_AllFonts },
+    { { N_("_Displayed Font"), CopyFrom, "" }, {}, LegacyCallbacks, MID_DisplayedFont },
+    kMenuSeparator,
+    { { N_("Glyph _Metadata"), Checkable, "" }, {}, LegacyCallbacks, MID_CharName },
+    kMenuSeparator,
+    { { N_("_TrueType Instructions"), Checkable, "" }, {}, LegacyCallbacks, MID_TTFInstr },
+};
+
 std::vector<MenuInfo> edit_menu = {
     { { N_("_Undo"), "editundo", "<control>Z" }, {}, LegacyCallbacks, MID_Undo },
     { { N_("_Redo"), "editredo", "<control>Y" }, {}, LegacyCallbacks, MID_Redo},
@@ -269,7 +278,7 @@ std::vector<MenuInfo> edit_menu = {
     kMenuSeparator,
     { { N_("U_nlink Reference"), "editunlink", "<control>U" }, {}, LegacyCallbacks, MID_UnlinkRef },
     kMenuSeparator,
-    { { N_("Copy _From"), NoDecoration, "" }, {}, SubMenuCallbacks, 0 },
+    { { N_("Copy _From"), NoDecoration, "" }, copy_menu, SubMenuCallbacks, 0 },
     kMenuSeparator,
     { { N_("Remo_ve Undoes"), "editrmundoes", "" }, {}, LegacyCallbacks, MID_RemoveUndoes },
 };

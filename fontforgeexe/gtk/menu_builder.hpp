@@ -52,6 +52,7 @@ enum RadioGroup {
     GlyphLabel,
     Encoding,
     ForcedEncoding,
+    CopyFrom,
 };
 
 // Lazily initialized collection of GTK groupers for radio buttons

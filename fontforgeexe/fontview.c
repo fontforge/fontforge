@@ -1590,15 +1590,13 @@ return( false );
 return( any );
 }
 
-static void FVMenuCopyFrom(GWindow UNUSED(gw), struct gmenuitem *mi, GEvent *UNUSED(e)) {
-    /*FontView *fv = (FontView *) GDrawGetUserData(gw);*/
-
-    if ( mi->mid==MID_CharName )
+static void FVMenuCopyFrom(FontView *UNUSED(fv), int mid) {
+    if ( mid==MID_CharName )
 	copymetadata = !copymetadata;
-    else if ( mi->mid==MID_TTFInstr )
+    else if ( mid==MID_TTFInstr )
 	copyttfinstr = !copyttfinstr;
     else
-	onlycopydisplayed = (mi->mid==MID_DisplayedFont);
+	onlycopydisplayed = (mid==MID_DisplayedFont);
     SavePrefs(true);
 }
 
@@ -3906,25 +3904,24 @@ return;
     MMChangeBlend(mm,fv,true);
 }
 
-static void cflistcheck(GWindow UNUSED(gw), struct gmenuitem *mi, GEvent *UNUSED(e)) {
-    /*FontView *fv = (FontView *) GDrawGetUserData(gw);*/
+static bool cflistcheck(FontView *UNUSED(fv), int mid) {
+    bool checked = true;
 
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
-	switch ( mi->mid ) {
+	switch ( mid ) {
 	  case MID_AllFonts:
-	    mi->ti.checked = !onlycopydisplayed;
+	    checked = !onlycopydisplayed;
 	  break;
 	  case MID_DisplayedFont:
-	    mi->ti.checked = onlycopydisplayed;
+	    checked = onlycopydisplayed;
 	  break;
 	  case MID_CharName:
-	    mi->ti.checked = copymetadata;
+	    checked = copymetadata;
 	  break;
 	  case MID_TTFInstr:
-	    mi->ti.checked = copyttfinstr;
+	    checked = copyttfinstr;
 	  break;
 	}
-    }
+    return checked;
 }
 
 static void sllistcheck(GWindow UNUSED(gw), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
@@ -4368,16 +4365,6 @@ static GMenuItem2 fllist[] = {
     GMENUITEM2_EMPTY
 };
 
-static GMenuItem2 cflist[] = {
-    { { (unichar_t *) N_("_All Fonts"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'A' }, H_("All Fonts|No Shortcut"), NULL, NULL, FVMenuCopyFrom, MID_AllFonts },
-    { { (unichar_t *) N_("_Displayed Font"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'D' }, H_("Displayed Font|No Shortcut"), NULL, NULL, FVMenuCopyFrom, MID_DisplayedFont },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("Glyph _Metadata"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'N' }, H_("Glyph Metadata|No Shortcut"), NULL, NULL, FVMenuCopyFrom, MID_CharName },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("_TrueType Instructions"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'N' }, H_("TrueType Instructions|No Shortcut"), NULL, NULL, FVMenuCopyFrom, MID_TTFInstr },
-    GMENUITEM2_EMPTY
-};
-
 static GMenuItem2 sclist[] = {
     { { (unichar_t *) N_("Color|Choose..."), (GImage *)"colorwheel.png", COLOR_DEFAULT, COLOR_DEFAULT, (void *) -10, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Choose...|No Shortcut"), NULL, NULL, FVMenuSelectColor, 0 },
     { { (unichar_t *)  N_("Color|Default"), &def_image, COLOR_DEFAULT, COLOR_DEFAULT, (void *) COLOR_DEFAULT, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("Default|No Shortcut"), NULL, NULL, FVMenuSelectColor, 0 },
@@ -4418,7 +4405,6 @@ static GMenuItem2 sllist[] = {
 
 static GMenuItem2 edlist[] = {
     { { (unichar_t *) N_("_Select"), (GImage *) "editselect.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Select|No Shortcut"), sllist, sllistcheck, NULL, 0 },
-    { { (unichar_t *) N_("Copy _From"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Copy From|No Shortcut"), cflist, cflistcheck, NULL, 0 },
     GMENUITEM2_EMPTY
 };
 
@@ -5317,6 +5303,12 @@ FVMenuAction fvpopupactions[] = {
     { MID_CorrectRefs, edlistcheck, NULL, FVMenuCorrectRefs },
     { MID_UnlinkRef, edlistcheck, NULL, FVMenuUnlinkRef },
     { MID_RemoveUndoes, edlistcheck, NULL, FVMenuRemoveUndoes },
+
+    /* Edit->CopyFrom menu */
+    { MID_AllFonts, NULL, cflistcheck, FVMenuCopyFrom },
+    { MID_DisplayedFont, NULL, cflistcheck, FVMenuCopyFrom },
+    { MID_CharName, NULL, cflistcheck, FVMenuCopyFrom },
+    { MID_TTFInstr, NULL, cflistcheck, FVMenuCopyFrom },
 
     MENUACTION_LAST
 };
