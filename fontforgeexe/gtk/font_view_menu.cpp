@@ -258,6 +258,53 @@ std::vector<MenuInfo> popup_menu = {
     { { N_("Set _Vertical Advance..."), "metricssetvwidth", "" }, {}, LegacyCallbacks, MID_SetVWidth },
 };
 
+////////////////////////////////// FILE MENUS /////////////////////////////////////////
+
+std::vector<MenuInfo> file_menu = {
+    { { N_("Font|_New"), "filenew", "<control>N" }, {}, LegacyCallbacks, MID_New },
+#if HANYANG
+    { { N_("_Hangul"), NoDecoration, "" }, {}, SubMenuCallbacks, 0 },
+#endif
+    { { N_("_Open"), "fileopen", "<control>O" }, {}, LegacyCallbacks, MID_Open },
+    { { N_("Recen_t"), "filerecent", "" }, {}, LegacyCallbacks, MID_Recent },
+    { { N_("_Close"), "fileclose", "<control>W" }, {}, LegacyCallbacks, MID_Close },
+    kMenuSeparator,
+    { { N_("_Save"), "filesave", "<control>S" }, {}, LegacyCallbacks, MID_Save },
+    { { N_("S_ave as..."), "filesaveas", "<shift><control>S" }, {}, LegacyCallbacks, MID_SaveAs },
+    { { N_("Save A_ll"), "filesaveall", "<control><alt>S" }, {}, LegacyCallbacks, MID_SaveAll },
+    { { N_("_Generate Fonts..."), "filegenerate", "<shift><control>G" }, {}, LegacyCallbacks, MID_Generate },
+    { { N_("Generate Mac _Family..."), "filegeneratefamily", "<control><alt>G" }, {}, LegacyCallbacks, MID_GenerateMac },
+    { { N_("Generate TTC..."), "filegeneratefamily", "" }, {}, LegacyCallbacks, MID_GenerateTTC },
+    kMenuSeparator,
+    { { N_("_Import..."), "fileimport", "<shift><control>I" }, {}, LegacyCallbacks, MID_Import },
+    { { N_("_Merge Feature Info..."), "filemergefeature", "" }, {}, LegacyCallbacks, MID_MergeFeature },
+    { { N_("_Revert File"), "filerevert", "<shift><control>R" }, {}, LegacyCallbacks, MID_Revert },
+    { { N_("Revert To _Backup"), "filerevertbackup", "" }, {}, LegacyCallbacks, MID_RevertToBackup },
+    { { N_("Revert Gl_yph"), "filerevertglyph", "<control><alt>R" }, {}, LegacyCallbacks, MID_RevertGlyph },
+    { { N_("Clear Special Data"), NoDecoration, "" }, {}, LegacyCallbacks, MID_ClearSpecialData },
+    kMenuSeparator,
+    { { N_("_Print..."), "fileprint", "<control>P" }, {}, LegacyCallbacks, MID_Print },
+    kMenuSeparator,
+#if !defined(_NO_PYTHON)
+    { { N_("E_xecute Script..."), "python", "<control>period" }, {}, LegacyCallbacks, MID_Execute },
+#elif !defined(_NO_FFSCRIPT)
+    { { N_("E_xecute Script..."), NoDecoration, "<control>period" }, {}, LegacyCallbacks, MID_Execute },
+#endif
+#if !defined(_NO_FFSCRIPT)
+    { { N_("Script Menu"), "fileexecute", "" }, {}, LegacyCallbacks, MID_ScriptMenu },
+#endif
+#if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)
+    kMenuSeparator,
+#endif
+    { { N_("Pr_eferences..."), "fileprefs", "" }, {}, LegacyCallbacks, MID_Preferences },
+    { { N_("Appea_rance Editor..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_Appearance },
+#ifndef _NO_PYTHON
+    { { N_("Config_ure Plugins..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_ConfigPlugins },
+#endif
+    kMenuSeparator,
+    { { N_("_Quit"), "filequit", "<control>Q" }, {}, LegacyCallbacks, MID_Quit },
+};
+
 ////////////////////////////////// EDIT MENUS /////////////////////////////////////////
 
 std::vector<MenuInfo> select_color_menu = {
@@ -606,7 +653,7 @@ std::vector<MenuInfo> metrics_menu = {
 };
 
 std::vector<MenuInfo> top_menu = {
-    { { N_("_File") }, {}, SubMenuCallbacks, -1 },
+    { { N_("_File") }, file_menu, SubMenuCallbacks, -1 },
     { { N_("_Edit") }, edit_menu, SubMenuCallbacks, -1 },
     { { N_("E_lement") }, element_menu, SubMenuCallbacks, -1 },
 #ifndef _NO_PYTHON

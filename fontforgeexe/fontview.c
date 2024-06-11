@@ -587,21 +587,15 @@ int _FVMenuGenerate(FontView *fv,int family) {
 return( SFGenerateFont(fv->b.sf,fv->b.active_layer,family,fv->b.normal==NULL?fv->b.map:fv->b.normal) );
 }
 
-static void FVMenuGenerate(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
+static void FVMenuGenerate(FontView *fv, int UNUSED(mid)) {
     _FVMenuGenerate(fv,gf_none);
 }
 
-static void FVMenuGenerateFamily(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
+static void FVMenuGenerateFamily(FontView *fv, int UNUSED(mid)) {
     _FVMenuGenerate(fv,gf_macfamily);
 }
 
-static void FVMenuGenerateTTC(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
+static void FVMenuGenerateTTC(FontView *fv, int UNUSED(mid)) {
     _FVMenuGenerate(fv,gf_ttc);
 }
 
@@ -762,9 +756,7 @@ return( 0 );
 return( ok );
 }
 
-static void FVMenuSaveAs(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
+static void FVMenuSaveAs(FontView *fv, int UNUSED(mid)) {
     _FVMenuSaveAs(fv);
 }
 
@@ -795,8 +787,7 @@ int _FVMenuSave(FontView *fv) {
 return( ret );
 }
 
-static void FVMenuSave(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuSave(FontView *fv, int UNUSED(mid)) {
     _FVMenuSave(fv);
 }
 
@@ -929,9 +920,11 @@ void MenuNew(GWindow UNUSED(gw), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)
     FontNew();
 }
 
-static void FVMenuClose(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+void FVMenuNew(FontView *UNUSED(fv), int UNUSED(mid)) {
+    FontNew();
+}
 
+static void FVMenuClose(FontView *fv, int UNUSED(mid)) {
     if ( fv->b.container )
 	(fv->b.container->funcs->doClose)(fv->b.container);
     else
@@ -972,23 +965,19 @@ static void FV_ReattachCVs(SplineFont *old,SplineFont *new) {
     }
 }
 
-static void FVMenuRevert(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontViewBase *fv = (FontViewBase *) GDrawGetUserData(gw);
-    FVRevert(fv);
+static void FVMenuRevert(FontView *fv, int UNUSED(mid)) {
+    FVRevert((FontViewBase *) fv);
 }
 
-static void FVMenuRevertBackup(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontViewBase *fv = (FontViewBase *) GDrawGetUserData(gw);
-    FVRevertBackup(fv);
+static void FVMenuRevertBackup(FontView *fv, int UNUSED(mid)) {
+    FVRevertBackup((FontViewBase *) fv);
 }
 
-static void FVMenuRevertGlyph(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuRevertGlyph(FontView *fv, int UNUSED(mid)) {
     FVRevertGlyph((FontViewBase *) fv);
 }
 
-static void FVMenuClearSpecialData(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuClearSpecialData(FontView *fv, int UNUSED(mid)) {
     FVClearSpecialData((FontViewBase *) fv);
 }
 
@@ -996,8 +985,20 @@ void MenuPrefs(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNUSE
     DoPrefs();
 }
 
+void FVMenuPrefs(FontView *UNUSED(fv), int UNUSED(mid)) {
+    DoPrefs();
+}
+
 void MenuXRes(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     DoXRes();
+}
+
+void FVMenuXRes(FontView *UNUSED(fv), int UNUSED(mid)) {
+    DoXRes();
+}
+
+static void FVMenuPlug(FontView *UNUSED(fv), int UNUSED(mid)) {
+    MenuPlug(NULL, NULL, NULL);
 }
 
 void MenuSaveAll(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
@@ -1007,6 +1008,10 @@ void MenuSaveAll(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNU
 	if ( SFAnyChanged(fv->b.sf) && !_FVMenuSave(fv))
 return;
     }
+}
+
+void FVMenuSaveAll(FontView *UNUSED(fv), int UNUSED(mid)) {
+    MenuSaveAll(NULL, NULL, NULL);
 }
 
 static void _MenuExit(void *UNUSED(junk)) {
@@ -1034,7 +1039,7 @@ static void _MenuExit(void *UNUSED(junk)) {
     exit(0);
 }
 
-static void FVMenuExit(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+static void FVMenuExit(FontView *UNUSED(fv), int UNUSED(mid)) {
     _MenuExit(NULL);
 }
 
@@ -1235,8 +1240,7 @@ void MergeKernInfo(SplineFont *sf,EncMap *map) {
 
 }
 
-static void FVMenuMergeKern(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuMergeKern(FontView *fv, int UNUSED(mid)) {
     MergeKernInfo(fv->b.sf,fv->b.map);
 }
 
@@ -1307,8 +1311,7 @@ void _FVMenuOpen(FontView *fv) {
     }
 }
 
-static void FVMenuOpen(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView*) GDrawGetUserData(gw);
+static void FVMenuOpen(FontView *fv, int UNUSED(mid)) {
     _FVMenuOpen(fv);
 }
 
@@ -1332,8 +1335,7 @@ void MenuAbout(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNUSE
     ShowAboutScreen();
 }
 
-static void FVMenuImport(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuImport(FontView *fv, int UNUSED(mid)) {
     int empty = fv->b.sf->onlybitmaps && fv->b.sf->bitmaps==NULL;
     BDFFont *bdf;
     FVImport(fv);
@@ -1404,18 +1406,14 @@ return;
     MetricsViewCreate(fv,NULL,fv->filled==fv->show?NULL:fv->show);
 }
 
-static void FVMenuPrint(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
+static void FVMenuPrint(FontView *fv, int UNUSED(mid)) {
     if ( fv->b.container!=NULL && fv->b.container->funcs->is_modal )
 return;
     PrintFFDlg(fv,NULL,NULL);
 }
 
 #if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)
-static void FVMenuExecute(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
+static void FVMenuExecute(FontView *fv, int UNUSED(mid)) {
     ScriptDlg(fv,NULL);
 }
 #endif
@@ -3919,27 +3917,26 @@ static bool htlistcheck(FontView *fv, int mid) {
     return disabled;
 }
 
-static void fllistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static bool fllistcheck(FontView *fv, int mid) {
     int anychars = FVAnyCharSelected(fv);
     FontView *fvs;
     int in_modal = (fv->b.container!=NULL && fv->b.container->funcs->is_modal);
+    bool disabled = false;
 
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
-	switch ( mi->mid ) {
+	switch ( mid ) {
 	  case MID_GenerateTTC:
 	    for ( fvs=fv_list; fvs!=NULL; fvs=(FontView *) (fvs->b.next) ) {
 		if ( fvs!=fv )
 	    break;
 	    }
-	    mi->ti.disabled = fvs==NULL;
+	    disabled = fvs==NULL;
 	  break;
 	  case MID_Revert:
-	    mi->ti.disabled = fv->b.sf->origname==NULL || fv->b.sf->new;
+	    disabled = fv->b.sf->origname==NULL || fv->b.sf->new;
 	  break;
 	  case MID_RevertToBackup:
 	    /* We really do want to use filename here and origname above */
-	    mi->ti.disabled = true;
+	    disabled = true;
 	    if ( fv->b.sf->filename!=NULL ) {
 		if ( fv->b.sf->backedup == bs_dontknow ) {
 		    char *buf = malloc(strlen(fv->b.sf->filename)+20);
@@ -3954,23 +3951,23 @@ static void fllistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 		    free(buf);
 		}
 		if ( fv->b.sf->backedup == bs_backedup )
-		    mi->ti.disabled = false;
+		    disabled = false;
 	    }
 	  break;
 	  case MID_RevertGlyph:
-	    mi->ti.disabled = fv->b.sf->origname==NULL || fv->b.sf->sfd_version<2 || anychars==-1 || fv->b.sf->compression!=0;
+	    disabled = fv->b.sf->origname==NULL || fv->b.sf->sfd_version<2 || anychars==-1 || fv->b.sf->compression!=0;
 	  break;
 	  case MID_Recent:
-	    mi->ti.disabled = !RecentFilesAny();
+	    disabled = !RecentFilesAny();
 	  break;
 	  case MID_ScriptMenu:
-	    mi->ti.disabled = script_menu_names[0]==NULL;
+	    disabled = script_menu_names[0]==NULL;
 	  break;
 	  case MID_Print:
-	    mi->ti.disabled = fv->b.sf->onlybitmaps || in_modal;
+	    disabled = fv->b.sf->onlybitmaps || in_modal;
 	  break;
 	}
-    }
+    return disabled;
 }
 
 static bool edlistcheck(FontView *fv, int mid) {
@@ -4271,58 +4268,6 @@ static bool infolistcheck(FontView *fv, int mid) {
 	}
     return disabled;
 }
-
-static GMenuItem2 dummyitem[] = {
-    { { (unichar_t *) N_("Font|_New"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'N' }, NULL, NULL, NULL, NULL, 0 },
-    GMENUITEM2_EMPTY
-};
-
-static GMenuItem2 fllist[] = {
-    { { (unichar_t *) N_("Font|_New"), (GImage *) "filenew.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'N' }, H_("New|No Shortcut"), NULL, NULL, MenuNew, 0 },
-#if HANYANG
-    { { (unichar_t *) N_("_Hangul"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Hangul|No Shortcut"), hglist, hglistcheck, NULL, 0 },
-#endif
-    { { (unichar_t *) N_("_Open"), (GImage *) "fileopen.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'O' }, H_("Open|No Shortcut"), NULL, NULL, FVMenuOpen, 0 },
-    { { (unichar_t *) N_("Recen_t"), (GImage *) "filerecent.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 't' }, H_("Recent|No Shortcut"), dummyitem, MenuRecentBuild, NULL, MID_Recent },
-    { { (unichar_t *) N_("_Close"), (GImage *) "fileclose.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Close|No Shortcut"), NULL, NULL, FVMenuClose, 0 },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("_Save"), (GImage *) "filesave.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'S' }, H_("Save|No Shortcut"), NULL, NULL, FVMenuSave, 0 },
-    { { (unichar_t *) N_("S_ave as..."), (GImage *) "filesaveas.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'a' }, H_("Save as...|No Shortcut"), NULL, NULL, FVMenuSaveAs, 0 },
-    { { (unichar_t *) N_("Save A_ll"), (GImage *) "filesaveall.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Save All|No Shortcut"), NULL, NULL, MenuSaveAll, 0 },
-    { { (unichar_t *) N_("_Generate Fonts..."), (GImage *) "filegenerate.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'G' }, H_("Generate Fonts...|No Shortcut"), NULL, NULL, FVMenuGenerate, 0 },
-    { { (unichar_t *) N_("Generate Mac _Family..."), (GImage *) "filegeneratefamily.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Generate Mac Family...|No Shortcut"), NULL, NULL, FVMenuGenerateFamily, 0 },
-    { { (unichar_t *) N_("Generate TTC..."), (GImage *) "filegeneratefamily.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Generate TTC...|No Shortcut"), NULL, NULL, FVMenuGenerateTTC, MID_GenerateTTC },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("_Import..."), (GImage *) "fileimport.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Import...|No Shortcut"), NULL, NULL, FVMenuImport, 0 },
-    { { (unichar_t *) N_("_Merge Feature Info..."), (GImage *) "filemergefeature.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Merge Feature Info...|No Shortcut"), NULL, NULL, FVMenuMergeKern, 0 },
-    { { (unichar_t *) N_("_Revert File"), (GImage *) "filerevert.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Revert File|No Shortcut"), NULL, NULL, FVMenuRevert, MID_Revert },
-    { { (unichar_t *) N_("Revert To _Backup"), (GImage *) "filerevertbackup.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Revert To Backup|No Shortcut"), NULL, NULL, FVMenuRevertBackup, MID_RevertToBackup },
-    { { (unichar_t *) N_("Revert Gl_yph"), (GImage *) "filerevertglyph.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Revert Glyph|No Shortcut"), NULL, NULL, FVMenuRevertGlyph, MID_RevertGlyph },
-    { { (unichar_t *) N_("Clear Special Data"), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Clear Special Data|No Shortcut"), NULL, NULL, FVMenuClearSpecialData, MID_ClearSpecialData },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("_Print..."), (GImage *) "fileprint.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'P' }, H_("Print...|No Shortcut"), NULL, NULL, FVMenuPrint, MID_Print },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-#if !defined(_NO_PYTHON)
-    { { (unichar_t *) N_("E_xecute Script..."), (GImage *) "python.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Execute Script...|No Shortcut"), NULL, NULL, FVMenuExecute, 0 },
-#elif !defined(_NO_FFSCRIPT)
-    { { (unichar_t *) N_("E_xecute Script..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'x' }, H_("Execute Script...|No Shortcut"), NULL, NULL, FVMenuExecute, 0 },
-#endif
-#if !defined(_NO_FFSCRIPT)
-    { { (unichar_t *) N_("Script Menu"), (GImage *) "fileexecute.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'r' }, H_("Script Menu|No Shortcut"), dummyitem, MenuScriptsBuild, NULL, MID_ScriptMenu },
-#endif
-#if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-#endif
-    { { (unichar_t *) N_("Pr_eferences..."), (GImage *) "fileprefs.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("Preferences...|No Shortcut"), NULL, NULL, MenuPrefs, 0 },
-    { { (unichar_t *) N_("Appea_rance Editor..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'e' }, H_("Appearance Editor...|No Shortcut"), NULL, NULL, MenuXRes, 0 },
-#ifndef _NO_PYTHON
-    { { (unichar_t *) N_("Config_ure Plugins..."), (GImage *) "menuempty.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'u' }, H_("Configure Plugins...|No Shortcut"), NULL, NULL, MenuPlug, 0 },
-#endif
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("_Quit"), (GImage *) "filequit.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'Q' }, H_("Quit|Ctl+Q"), /* WARNING: THIS BINDING TO PROPERLY INITIALIZE KEYBOARD INPUT */
-      NULL, NULL, FVMenuExit, 0 },
-    GMENUITEM2_EMPTY
-};
 
 static bool cblistcheck(FontView *fv, int mid) {
     SplineFont *sf = fv->b.sf;
@@ -5226,6 +5171,41 @@ FVMenuAction fvpopupactions[] = {
     { MID_CharName, NULL, cflistcheck, FVMenuCopyFrom },
     { MID_TTFInstr, NULL, cflistcheck, FVMenuCopyFrom },
 
+    /* File menu */
+    { MID_New, NULL, NULL, FVMenuNew },
+    { MID_Open, NULL, NULL, FVMenuOpen },
+    { MID_Recent, fllistcheck, NULL, NULL },
+    { MID_Close, NULL, NULL, FVMenuClose },
+    { MID_Save, NULL, NULL, FVMenuSave },
+    { MID_SaveAs, NULL, NULL, FVMenuSaveAs },
+    { MID_SaveAll, NULL, NULL, FVMenuSaveAll },
+    { MID_Generate, NULL, NULL, FVMenuGenerate },
+    { MID_GenerateMac, NULL, NULL, FVMenuGenerateFamily },
+    { MID_GenerateTTC, fllistcheck, NULL, FVMenuGenerateTTC },
+    { MID_Import, NULL, NULL, FVMenuImport },
+    { MID_MergeFeature, NULL, NULL, FVMenuMergeKern },
+    { MID_Revert, fllistcheck, NULL, FVMenuRevert },
+    { MID_RevertToBackup, fllistcheck, NULL, FVMenuRevertBackup },
+    { MID_RevertGlyph, fllistcheck, NULL, FVMenuRevertGlyph },
+    { MID_ClearSpecialData, NULL, NULL, FVMenuClearSpecialData },
+    { MID_Print, fllistcheck, NULL, FVMenuPrint },
+#if !defined(_NO_PYTHON)
+    { MID_Execute, NULL, NULL, FVMenuExecute },
+#elif !defined(_NO_FFSCRIPT)
+    { MID_Execute, NULL, NULL, FVMenuExecute },
+#endif
+#if !defined(_NO_FFSCRIPT)
+    { MID_ScriptMenu, fllistcheck, NULL, NULL },
+#endif
+#if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)
+#endif
+    { MID_Preferences, NULL, NULL, FVMenuPrefs },
+    { MID_Appearance, NULL, NULL, FVMenuXRes },
+#ifndef _NO_PYTHON
+    { MID_ConfigPlugins, NULL, NULL, FVMenuPlug },
+#endif
+    { MID_Quit, NULL, NULL, FVMenuExit },
+
     MENUACTION_LAST
 };
 
@@ -5250,7 +5230,6 @@ FVSelectMenuAction fv_selmenu_actions[] = {
 };
 
 static GMenuItem2 mblist[] = {
-    { { (unichar_t *) N_("_File"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("File|No Shortcut"), fllist, fllistcheck, NULL, 0 },
     { { (unichar_t *) N_("_CID"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("CID|No Shortcut"), cdlist, cdlistcheck, NULL, 0 },
 /* GT: Here (and following) MM means "MultiMaster" */
     { { (unichar_t *) N_("MM"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("MM|No Shortcut"), mmlist, mmlistcheck, NULL, 0 },
@@ -6393,7 +6372,7 @@ static int fv_e_h(GWindow gw, GEvent *event) {
 	    (fv->b.container->funcs->activateMe)(fv->b.container,&fv->b);
       break;
       case et_close:
-	FVMenuClose(gw,NULL,NULL);
+	FVMenuClose(fv,0);
       break;
       case et_create:
 	fv->b.next = (FontViewBase *) fv_list;
