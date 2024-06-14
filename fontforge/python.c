@@ -19804,7 +19804,10 @@ static void SetPythonProgramName(const char *progname) {
     if ( saved_progname )
 	free(saved_progname);
     saved_progname = copy_to_wide_string(progname);
-    Py_SetProgramName(saved_progname);
+    PyStatus status;
+    PyConfig config;
+    PyConfig_InitPythonConfig(&config);
+    status = PyConfig_SetString(&config, &config.program_name, saved_progname);
 }
 
 static wchar_t ** copy_argv(char *arg0, int argc ,char **argv) {
