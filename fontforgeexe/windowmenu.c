@@ -127,8 +127,8 @@ static void RecentSelect(GWindow base,struct gmenuitem *mi,GEvent *e) {
 
 /* Builds up a menu containing the titles of all the unused recent files */
 void MenuRecentBuild(GWindow base,struct gmenuitem *mi,GEvent *e) {
-    int i, cnt, cnt1;
-    FontViewBase *fv;
+    char** recent_files_array = NULL;
+    int i, n_recent = collect_recent_files(&recent_files_array);
     GMenuItem *sub;
 
     if ( mi->sub!=NULL ) {
@@ -136,35 +136,45 @@ void MenuRecentBuild(GWindow base,struct gmenuitem *mi,GEvent *e) {
 	mi->sub = NULL;
     }
 
-    cnt = 0;
+    sub = calloc(n_recent+1,sizeof(GMenuItem));
+    for ( i=0; i<n_recent; ++i ) {
+	GMenuItem *mi = &sub[i];
+	mi->ti.userdata = recent_files_array[i];
+	mi->ti.bg = mi->ti.fg = COLOR_DEFAULT;
+	mi->invoke = RecentSelect;
+	mi->ti.text = def2u_copy(GFileNameTail(recent_files_array[i]));
+    }
+
+    mi->sub = sub;
+}
+
+unsigned int collect_recent_files(char*** recent_files_array) {
+    int i, n_recent, cnt1;
+    FontViewBase *fv;
+
+    n_recent = 0;
     for ( i=0; i<RECENT_MAX && RecentFiles[i]!=NULL; ++i ) {
 	for ( fv=(FontViewBase *) fv_list; fv!=NULL; fv=fv->next )
 	    if ( fv->sf->filename!=NULL && strcmp(fv->sf->filename,RecentFiles[i])==0 )
 	break;
 	if ( fv==NULL )
-	    ++cnt;
+	    ++n_recent;
     }
-    if ( cnt==0 ) {
-	/* This can't happen */
-return;
-    }
-    sub = calloc(cnt+1,sizeof(GMenuItem));
+
+    *recent_files_array = calloc(n_recent,sizeof(char*));
     cnt1 = 0;
     for ( i=0; i<RECENT_MAX && RecentFiles[i]!=NULL; ++i ) {
 	for ( fv=(FontViewBase *) fv_list; fv!=NULL; fv=fv->next )
 	    if ( fv->sf->filename!=NULL && strcmp(fv->sf->filename,RecentFiles[i])==0 )
 	break;
 	if ( fv==NULL ) {
-	    GMenuItem *mi = &sub[cnt1++];
-	    mi->ti.userdata = RecentFiles[i];
-	    mi->ti.bg = mi->ti.fg = COLOR_DEFAULT;
-	    mi->invoke = RecentSelect;
-	    mi->ti.text = def2u_copy(GFileNameTail(RecentFiles[i]));
+	    (*recent_files_array)[cnt1++] = RecentFiles[i];
 	}
     }
-    if ( cnt!=cnt1 )
+    if ( n_recent!=cnt1 )
 	IError( "Bad counts in MenuRecentBuild");
-    mi->sub = sub;
+
+    return n_recent;
 }
 
 int RecentFilesAny(void) {

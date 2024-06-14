@@ -6771,6 +6771,8 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     fv_context->run_autotrace = (void (*)(FontView*, bool))FVAutoTrace;
     fv_context->set_color = FVMenuSetColor;
     fv_context->select_color = FVMenuSelectColor;
+    fv_context->collect_recent_files = collect_recent_files;
+    fv_context->show_font = ViewPostScriptFont;
     fv_context->actions = fvpopupactions;
     fv_context->select_actions = fv_selmenu_actions;
     cg_dlg = create_font_view(&fv_context, pos.width, pos.height);

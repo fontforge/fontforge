@@ -30,6 +30,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "common_menus.hpp"
 
+#include <filesystem>
 #include <glib/gi18n.h>
 
 #include "font_view.hpp"
@@ -140,6 +141,31 @@ std::vector<MenuInfo> python_tools(const UiContext& ui_context) {
     }
 
     return tools_menu;
+}
+
+std::vector<MenuInfo> recent_files(const UiContext& ui_context) {
+    const FontViewUiContext& fv_ui_context =
+        static_cast<const FontViewUiContext&>(ui_context);
+    auto fv_context = fv_ui_context.legacy();
+    std::vector<std::string> recent_files_vec =
+        StringsWrapper(fv_context->collect_recent_files);
+    std::vector<MenuInfo> info_arr;
+
+    for (const std::string& file_path : recent_files_vec) {
+        ActivateCB action = [show_font = fv_context->show_font,
+                             file_path](const UiContext&) {
+            show_font(file_path.c_str(), 0);
+        };
+        std::string label =
+            std::filesystem::path(file_path).filename().string();
+
+        MenuInfo info{{label.c_str(), NoDecoration, ""},
+                      {},
+                      {action, AlwaysEnabled, NotCheckable},
+                      0};
+        info_arr.push_back(info);
+    }
+    return info_arr;
 }
 
 }  // namespace ff::views

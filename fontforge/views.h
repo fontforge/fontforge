@@ -821,6 +821,7 @@ extern void MenuLicense(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuNew(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void WindowMenuBuild(GWindow base,struct gmenuitem *mi,GEvent *);
 extern void MenuRecentBuild(GWindow base,struct gmenuitem *mi,GEvent *);
+extern unsigned int collect_recent_files(char*** recent_files_array);
 extern void MenuScriptsBuild(GWindow base,struct gmenuitem *mi,GEvent *);
 extern void mb2FreeGetText(GMenuItem2 *mb);
 extern void mb2DoGetText(GMenuItem2 *mb);

@@ -40,6 +40,7 @@ typedef struct _object PyObject;
 
 // C structures and callbacks for interacting with legacy code
 typedef struct fontview FontView;
+typedef struct fontviewbase FontViewBase;
 typedef struct bdffont BDFFont;
 typedef struct anchorclass AnchorClass;
 
@@ -181,6 +182,12 @@ typedef struct fontview_context {
     void (*select_color)(FontView* fv, Color legacy_color,
                          enum merge_type merge);
 
+    // Collect recent files
+    unsigned int (*collect_recent_files)(char*** recent_files_array);
+
+    // Show font
+    FontViewBase* (*show_font)(const char* filename, int openflags);
+
     // Menu actions per menu ID
     FVMenuAction* actions;
     FVSelectMenuAction* select_actions;
@@ -237,6 +244,31 @@ std::vector<ELEM> VectorWrapper(C_OBJ* obj, unsigned int(f(C_OBJ*, ELEM**))) {
     free(data_array);
 
     return data_vec;
+}
+
+// A wrapper executes C-style callback which returns C-style dynamically
+// allocated array of null-terminated strings and converts its output to C++
+// std::vector<std::string>.
+//
+// Sample usage: for C-style callback
+//	unsigned int get_strings(char*** array)
+// the wrapper should used as follows:
+// 	std::vector<std::string> string_vector = StringsWrapper(get_strings);
+inline std::vector<std::string> StringsWrapper(unsigned int(f(char***)),
+                                               bool release_strings = false) {
+    char** string_array = nullptr;
+    unsigned int n_elems = f(&string_array);
+
+    // Create a std::vector from the existing array
+    std::vector<std::string> string_vec(string_array, string_array + n_elems);
+    if (release_strings) {
+        for (unsigned int i = 0; i < n_elems; ++i) {
+            free(string_array[i]);
+        }
+    }
+    free(string_array);
+
+    return string_vec;
 }
 
 #endif

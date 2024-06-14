@@ -260,13 +260,17 @@ std::vector<MenuInfo> popup_menu = {
 
 ////////////////////////////////// FILE MENUS /////////////////////////////////////////
 
+std::vector<MenuInfo> recent_files_menu = {
+    MenuInfo::CustomBlock(recent_files),
+};
+
 std::vector<MenuInfo> file_menu = {
     { { N_("Font|_New"), "filenew", "<control>N" }, {}, LegacyCallbacks, MID_New },
 #if HANYANG
     { { N_("_Hangul"), NoDecoration, "" }, {}, SubMenuCallbacks, 0 },
 #endif
     { { N_("_Open"), "fileopen", "<control>O" }, {}, LegacyCallbacks, MID_Open },
-    { { N_("Recen_t"), "filerecent", "" }, {}, LegacyCallbacks, MID_Recent },
+    { { N_("Recen_t"), "filerecent", "" }, recent_files_menu, LegacySubMenuCallbacks, MID_Recent },
     { { N_("_Close"), "fileclose", "<control>W" }, {}, LegacyCallbacks, MID_Close },
     kMenuSeparator,
     { { N_("_Save"), "filesave", "<control>S" }, {}, LegacyCallbacks, MID_Save },
