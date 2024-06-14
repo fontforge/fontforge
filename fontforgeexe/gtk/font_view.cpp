@@ -115,16 +115,14 @@ ActivateCB FontViewUiContext::get_activate_select_cb(int mid) const {
 
 bool on_button_press_event(GdkEventButton* event, Gtk::Menu& pop_up);
 bool on_font_view_event(GdkEvent* event);
+bool on_signal_delete_event(UiContext& context, Gtk::Window& window);
 
 FontView::FontView(std::shared_ptr<FVContext> fv_context, int width, int height)
     : context(window, fv_context), char_grid(fv_context) {
     ff::app::add_top_view(context);
 
     window.signal_delete_event().connect([this](GdkEventAny*) {
-        auto legacy_close_cb = context.get_activate_cb(MID_Close);
-        legacy_close_cb(context);
-        ff::app::remove_top_view(window);
-        return false;
+        return on_signal_delete_event(context, window);
     });
 
     // dialog.resize() doesn't work until after the realization, i.e. after
@@ -209,6 +207,16 @@ bool on_font_view_event(GdkEvent* event) {
     }
 
     return false;
+}
+
+bool on_signal_delete_event(UiContext& context, Gtk::Window& window) {
+    auto legacy_close_cb = context.get_checked_cb(MID_Close);
+    bool do_close = legacy_close_cb(context);
+    if (do_close) {
+        ff::app::remove_top_view(window);
+    }
+    // Abort or continue closing action according to do_close value
+    return !do_close;
 }
 
 }  // namespace ff::views
