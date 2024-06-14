@@ -29,6 +29,7 @@
 
 #include "application.hpp"
 #include "menu_builder.hpp"
+#include "menu_ids.h"
 #include "utils.hpp"
 
 namespace ff::views {
@@ -120,6 +121,8 @@ FontView::FontView(std::shared_ptr<FVContext> fv_context, int width, int height)
     ff::app::add_top_view(context);
 
     window.signal_delete_event().connect([this](GdkEventAny*) {
+        auto legacy_close_cb = context.get_activate_cb(MID_Close);
+        legacy_close_cb(context);
         ff::app::remove_top_view(window);
         return false;
     });

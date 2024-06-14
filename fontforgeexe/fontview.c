@@ -912,7 +912,13 @@ return(false);
 	RecentFilesRemember(sf->filename);
     else if ( sf->origname!=NULL )
 	RecentFilesRemember(sf->origname);
-    GDrawDestroyWindow(fv->gw);
+
+    if ( fv->qg!=NULL )
+	QGRmFontView(fv->qg,fv);
+
+    GDrawDestroyWindow(fv->v);
+    FontViewRemove(fv);
+
 return( true );
 }
 
@@ -1490,76 +1496,6 @@ static void FVMenuOblique(FontView *fv, int UNUSED(mid)) {
 static void FVMenuCondense(FontView *fv, int UNUSED(mid)) {
     CondenseExtendDlg(fv,NULL);
 }
-
-#define MID_Layers	2029
-#define MID_FindProblems 2216
-#define MID_TilePath	2226
-#define MID_Styles	2231
-#define MID_DefaultATT	2235
-#define MID_Validate		2245
-#define MID_SetExtremumBound	2253
-#define MID_Thirds	2601
-#define MID_SetLBearing	2603
-#define MID_SetRBearing	2604
-#define MID_RmHKern	2606
-#define MID_RmVKern	2607
-#define MID_VKernByClass	2608
-#define MID_VKernFromH	2609
-#define MID_SetBearings	2610
-#define MID_ClearWidthMD	2503
-#define MID_OpenBitmap	2700
-#define MID_Revert	2702
-#define MID_Recent	2703
-#define MID_Print	2704
-#define MID_ScriptMenu	2705
-#define MID_RevertGlyph	2707
-#define MID_RevertToBackup 2708
-#define MID_GenerateTTC 2709
-#define MID_OpenMetrics	2710
-#define MID_ClearSpecialData 2711
-#define MID_Paste	2103
-#define MID_Clear	2104
-#define MID_SelAll	2106
-#define MID_Undo	2109
-#define MID_Redo	2110
-#define MID_UndoFontLevel	2112
-#define MID_AllFonts		2122
-#define MID_DisplayedFont	2123
-#define	MID_CharName		2124
-#define MID_RemoveUndoes	2114
-#define MID_ClearBackground	2116
-#define MID_CopyLBearing	2125
-#define MID_CopyRBearing	2126
-#define MID_CopyVWidth	2127
-#define MID_Join	2128
-#define MID_PasteInto	2129
-#define MID_SameGlyphAs	2130
-#define MID_RplRef	2131
-#define MID_PasteAfter	2132
-#define	MID_TTFInstr	2134
-#define	MID_CopyLookupData	2135
-#define MID_CopyL2L	2136
-#define MID_CorrectRefs	2137
-#define MID_Convert2CID	2800
-#define MID_Flatten	2801
-#define MID_InsertFont	2802
-#define MID_InsertBlank	2803
-#define MID_CIDFontInfo	2804
-#define MID_RemoveFromCID 2805
-#define MID_ConvertByCMap	2806
-#define MID_FlattenByCMap	2807
-#define MID_ChangeSupplement	2808
-#define MID_CreateMM	2900
-#define MID_MMInfo	2901
-#define MID_MMValid	2902
-#define MID_ChangeMMBlend	2903
-#define MID_BlendToNew	2904
-#define MID_ModifyComposition	20902
-#define MID_BuildSyllables	20903
-
-
-#define MID_Warnings	3000
-
 
 /* returns -1 if nothing selected, if exactly one char return it, -2 if more than one */
 static int FVAnyCharSelected(FontView *fv) {
@@ -3477,7 +3413,7 @@ static void FontViewSetTitle(FontView *fv) {
     char *enc;
     int len;
 
-    if ( fv->gw==NULL )		/* In scripting */
+    if ( fv->cg_widget==NULL )		/* In scripting */
 return;
 
     enc = SFEncodingName(fv->b.sf,fv->b.normal?fv->b.normal:fv->b.map);
@@ -3506,7 +3442,6 @@ return;
     strcat(title, ")" );
     free(enc);
 
-    GDrawSetWindowTitles8(fv->gw,title,fv->b.sf->fontname);
     cg_set_dlg_title(fv->cg_widget, title, fv->b.sf->fontname);
     free(title);
 }
@@ -3625,8 +3560,8 @@ return;
     if ( new->fv == &fv->b )		/* Already part of us */
 return;
     if ( new->fv != NULL ) {
-	if ( ((FontView *) (new->fv))->gw!=NULL )
-	    GDrawRaise( ((FontView *) (new->fv))->gw);
+	if ( ((FontView *) (new->fv))->cg_widget!=NULL )
+	    cg_raise_window( ((FontView *) (new->fv))->cg_widget);
 	ff_post_error(_("Please close font"),_("Please close %s before inserting it into a CID font"),new->origname);
 return;
     }
@@ -6230,6 +6165,13 @@ static int v_e_h(GWindow gw, GEvent *event) {
 	if ( event->u.focus.gained_focus )
 	    GDrawSetGIC(gw,fv->gic,0,20);
       break;
+      case et_create:
+	// This is called upon creation of Gtk::DrawingArea object for character grid
+	if (!fv->b.container) {
+	  fv->b.next = (FontViewBase *) fv_list;
+	  fv_list = fv;
+	}
+      break;
       default: break;
     }
 return( true );
@@ -6322,67 +6264,6 @@ void FontViewRemove(FontView *fv) {
  */
 extern int osx_fontview_copy_cut_counter;
 #endif
-
-static FontView* ActiveFontView = 0;
-
-static int fv_e_h(GWindow gw, GEvent *event) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
-    switch ( event->type ) {
-      case et_focus:
-	  if ( event->u.focus.gained_focus )
-	  {
-	      ActiveFontView = fv;
-	  }
-	  else
-	  {
-	  }
-	  break;
-      case et_selclear:
-#if defined(__Mac) && !defined(FONTFORGE_CAN_USE_GDK)
-	  // For some reason command + c and command + x wants
-	  // to send a clear to us, even if that key was pressed
-	  // on a charview.
-	  if( osx_fontview_copy_cut_counter )
-	  {
-	     osx_fontview_copy_cut_counter--;
-	     break;
-          }
-//	  printf("fontview et_selclear\n");
-#endif
-	ClipboardClear();
-      break;
-      case et_expose:
-	GDrawSetLineWidth(gw,0);
-      break;
-      case et_char:
-	if ( fv->b.container!=NULL )
-	    (fv->b.container->funcs->charEvent)(fv->b.container,event);
-	else
-	    FVChar(fv,event);
-      break;
-      case et_mousedown:
-	GDrawSetGIC(gw,fv->gwgic,0,20);
-	if ( fv->notactive )
-	    (fv->b.container->funcs->activateMe)(fv->b.container,&fv->b);
-      break;
-      case et_close:
-	FVMenuClose(fv,0);
-      break;
-      case et_create:
-	fv->b.next = (FontViewBase *) fv_list;
-	fv_list = fv;
-      break;
-      case et_destroy:
-	if ( fv->qg!=NULL )
-	    QGRmFontView(fv->qg,fv);
-	GDrawDestroyWindow(fv->v);
-	FontViewRemove(fv);
-      break;
-      default: break;
-    }
-return( true );
-}
 
 static void FontViewOpenKids(FontView *fv) {
     int k, i;
@@ -6678,10 +6559,6 @@ static void FVCreateInnards(FontView *fv,GRect *pos) {
 
     fv->gic   = GDrawCreateInputContext(fv->v,gic_root|gic_orlesser);
     GDrawSetGIC(fv->v,fv->gic,0,20);
-    if (fv->gw != NULL) {
-	fv->gwgic = GDrawCreateInputContext(fv->gw,gic_root|gic_orlesser);
-	GDrawSetGIC(fv->gw,fv->gic,0,20);
-    }
 
     fv->fontset = calloc(_uni_fontmax,sizeof(GFont *));
     fv->fontset[0] = fv_font.fi;
@@ -6710,10 +6587,7 @@ static void FVCreateInnards(FontView *fv,GRect *pos) {
 static FontView *FontView_Create(SplineFont *sf, int hide) {
     FontView *fv = (FontView *) __FontViewCreate(sf);
     GRect pos;
-    GWindow gw;
     GWindowAttrs wattrs;
-    GGadgetData gd;
-    GRect gsize;
     static GWindow icon = NULL;
     static int nexty=0;
     GRect size;
@@ -6743,7 +6617,6 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     nexty += 2*fv->cbh+50;
     if ( nexty+pos.height > size.height )
 	nexty = 0;
-    fv->gw = gw = GDrawCreateTopWindow(NULL,&pos,fv_e_h,fv,&wattrs);
 
     fv_context->fv = fv;
     fv_context->scroll_fontview_to_position_cb = FVScrollToPos;
@@ -6775,21 +6648,12 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     fv->cg_widget = get_char_grid_widget(cg_dlg, 0);
 
     FontViewSetTitle(fv);
-    GDrawSetWindowTypeName(fv->gw, "FontView");
 
     if ( !fv_fs_init ) {
 	GResEditDoInit(&fontview_ri);
 	GResEditDoInit(&view_ri);
 	fv_fs_init = true;
     }
-
-    memset(&gd,0,sizeof(gd));
-    gd.flags = gg_visible | gg_enabled;
-    helplist[0].invoke = FVMenuContextualHelp;
-    gd.u.menu2 = mblist;
-    fv->mb = GMenu2BarCreate( gw, &gd, NULL);
-    GGadgetGetSize(fv->mb,&gsize);
-    fv->mbh = gsize.height;
 
     // Reset this static here in case fv_font has changed
     FontRequest rq;
@@ -6802,7 +6666,6 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     FVCreateInnards(fv,&pos);
 
     if ( !hide ) {
-	GDrawSetVisible(gw,true);
 	FontViewOpenKids(fv);
     }
 return( fv );

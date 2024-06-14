@@ -232,6 +232,8 @@ void legacy_select_action(const UiContext& ui_context) {
     select_action(ui_context);
 }
 
+void close_window(const UiContext& ui_context) { ui_context.window_.close(); }
+
 // clang-format off
 std::vector<MenuInfo> popup_menu = {
     { { N_("New O_utline Window"), NoDecoration, "" }, {}, LegacyCallbacks, MID_OpenOutline },
@@ -284,7 +286,7 @@ std::vector<MenuInfo> file_menu = {
 #endif
     { { N_("_Open"), "fileopen", "<control>O" }, {}, LegacyCallbacks, MID_Open },
     { { N_("Recen_t"), "filerecent", "" }, recent_files_menu, LegacySubMenuCallbacks, MID_Recent },
-    { { N_("_Close"), "fileclose", "<control>W" }, {}, LegacyCallbacks, MID_Close },
+    { { N_("_Close"), "fileclose", "<control>W" }, {}, { close_window }, MID_Close },
     kMenuSeparator,
     { { N_("_Save"), "filesave", "<control>S" }, {}, LegacyCallbacks, MID_Save },
     { { N_("S_ave as..."), "filesaveas", "<shift><control>S" }, {}, LegacyCallbacks, MID_SaveAs },
