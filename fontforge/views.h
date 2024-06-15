@@ -1130,7 +1130,7 @@ extern void CVMakeParallel(CharView *cv);
 extern void ScriptDlg(FontView *fv,CharView *cv);
 
 # if HANYANG
-extern void MenuNewComposition(GWindow gw, struct gmenuitem *, GEvent *);
+extern void MenuNewComposition(FontView *fv, int mid);
 extern void CVDisplayCompositions(GWindow gw, struct gmenuitem *, GEvent *);
 extern void Disp_DoFinish(struct jamodisplay *d, int cancel);
 extern void Disp_RefreshChar(SplineFont *sf,SplineChar *sc);

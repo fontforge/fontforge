@@ -2727,14 +2727,12 @@ static void FVMenuBuildDuplicate(FontView *fv, int mid) {
 }
 
 #if HANYANG
-static void FVMenuModifyComposition(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuModifyComposition(FontView *fv, int UNUSED(mid)) {
     if ( fv->b.sf->rules!=NULL )
 	SFModifyComposition(fv->b.sf);
 }
 
-static void FVMenuBuildSyllables(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuBuildSyllables(FontView *fv, int UNUSED(mid)) {
     if ( fv->b.sf->rules!=NULL )
 	SFBuildSyllables(fv->b.sf);
 }
@@ -4177,22 +4175,14 @@ static bool mtlistcheck(FontView *fv, int mid) {
 }
 
 #if HANYANG
-static void hglistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static bool hglistcheck(FontView *fv, int mid) {
+    bool disabled = false;
 
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
-        if ( mi->mid==MID_BuildSyllables || mi->mid==MID_ModifyComposition )
-	    mi->ti.disabled = fv->b.sf->rules==NULL;
-    }
+    if ( mid==MID_BuildSyllables || mid==MID_ModifyComposition )
+	disabled = fv->b.sf->rules==NULL;
+
+    return disabled;
 }
-
-static GMenuItem2 hglist[] = {
-    { { (unichar_t *) N_("_New Composition..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'N' }, H_("New Composition...|No Shortcut"), NULL, NULL, MenuNewComposition },
-    { { (unichar_t *) N_("_Modify Composition..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Modify Composition...|No Shortcut"), NULL, NULL, FVMenuModifyComposition, MID_ModifyComposition },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, }},
-    { { (unichar_t *) N_("_Build Syllables"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Build Syllables|No Shortcut"), NULL, NULL, FVMenuBuildSyllables, MID_BuildSyllables },
-    { NULL }
-};
 #endif
 
 static bool balistcheck(FontView *fv, int mid) {
@@ -5205,6 +5195,11 @@ FVMenuAction fvpopupactions[] = {
     { MID_ConfigPlugins, NULL, NULL, FVMenuPlug },
 #endif
     { MID_Quit, NULL, NULL, FVMenuExit },
+#ifdef HANYANG
+    { MID_NewComposition, NULL, NULL, MenuNewComposition },
+    { MID_ModifyComposition, hglistcheck, NULL, FVMenuModifyComposition },
+    { MID_BuildSyllables, hglistcheck, NULL, FVMenuBuildSyllables },
+#endif
 
     MENUACTION_LAST
 };

@@ -268,10 +268,19 @@ std::vector<MenuInfo> legacy_scripts_menu = {
     MenuInfo::CustomBlock(legacy_scripts),
 };
 
+#if HANYANG
+std::vector<MenuInfo> hangul_menu = {
+    { { N_("_New Composition..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_NewComposition },
+    { { N_("_Modify Composition..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_ModifyComposition },
+    kMenuSeparator,
+    { { N_("_Build Syllables"), NoDecoration, "" }, {}, LegacyCallbacks, MID_BuildSyllables },
+};
+#endif
+
 std::vector<MenuInfo> file_menu = {
     { { N_("Font|_New"), "filenew", "<control>N" }, {}, LegacyCallbacks, MID_New },
 #if HANYANG
-    { { N_("_Hangul"), NoDecoration, "" }, {}, SubMenuCallbacks, 0 },
+    { { N_("_Hangul"), NoDecoration, "" }, hangul_menu, SubMenuCallbacks, 0 },
 #endif
     { { N_("_Open"), "fileopen", "<control>O" }, {}, LegacyCallbacks, MID_Open },
     { { N_("Recen_t"), "filerecent", "" }, recent_files_menu, LegacySubMenuCallbacks, MID_Recent },

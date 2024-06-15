@@ -952,7 +952,7 @@ exit( 0 );
 	    any = 1;
 #  if HANYANG
 	} else if ( strcmp(pt,"-newkorean")==0 ) {
-	    MenuNewComposition(NULL,NULL,NULL);
+	    MenuNewComposition(NULL,0);
 	    any = 1;
 #  endif
 	} else if ( strcmp(pt,"-SkipPythonInitFiles")==0 ||
