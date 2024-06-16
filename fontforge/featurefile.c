@@ -634,10 +634,10 @@ static void dump_contextpstglyphs(FILE *out,SplineFont *sf,
 		    *last_end = ch2;
 		} else {
 		    char *next_start, *next_end;
-			*pt = ch;
+		    *pt = ch;
 		    next_start = pt;
 		    while ( *next_start==' ' ) ++next_start;
-			*pt = '\0';
+		    *pt = '\0';
 		    if ( *next_start!='\0' ) {
 			for ( next_end=next_start; *next_end!=' ' && *next_end!='\0'; ++next_end );
 			ch2 = *next_end; *next_end = '\0';
