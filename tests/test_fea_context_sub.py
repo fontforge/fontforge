@@ -3,6 +3,7 @@
 import sys, fontforge
 import tempfile
 import os
+import re
 
 font = fontforge.open(sys.argv[1])
 
@@ -27,7 +28,7 @@ with tempfile.TemporaryDirectory() as tmpdirname:
 
         with open(fea_full_name) as fea_file:
                 rules = [line for line in fea_file
-                         if r"sub \A'lookup Single1  \C'lookup Single2" in line]
+                        if re.search(r"sub \\A *' *lookup +Single1 +\\C *' *lookup +Single2", line)]
 
                 # Expect to find the rule inside the feature file
                 assert rules
