@@ -1385,8 +1385,7 @@ return;
 	}
 }
 
-static void FVMenuOpenBitmap(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuOpenBitmap(FontView *fv, int UNUSED(mid)) {
     int i;
     SplineChar *sc;
 
@@ -1405,6 +1404,10 @@ return;
 }
 
 void _MenuWarnings(GWindow UNUSED(gw), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+    ShowErrorWindow();
+}
+
+static void FVMenuWarnings(FontView *fv, int UNUSED(mid)) {
     ShowErrorWindow();
 }
 
@@ -4846,37 +4849,26 @@ static void mmlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     }
 }
 
-static GMenuItem2 wnmenu[] = {
-    { { (unichar_t *) N_("New _Bitmap Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("New Bitmap Window|No Shortcut"), NULL, NULL, FVMenuOpenBitmap, MID_OpenBitmap },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("Warnings"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Warnings|No Shortcut"), NULL, NULL, _MenuWarnings, MID_Warnings },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    GMENUITEM2_EMPTY
-};
-
-static void FVWindowMenuBuild(GWindow gw, struct gmenuitem *mi, GEvent *e) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static bool windowcheck(FontView *fv, int mid) {
     int anychars = FVAnyCharSelected(fv);
-    struct gmenuitem *wmi;
     int in_modal = (fv->b.container!=NULL && fv->b.container->funcs->is_modal);
+    bool disabled = false;
 
-    WindowMenuBuild(gw,mi,e);
-    for ( wmi = mi->sub; wmi->ti.text!=NULL || wmi->ti.line ; ++wmi ) {
-	switch ( wmi->mid ) {
+	switch ( mid ) {
 	  case MID_OpenOutline:
-	    wmi->ti.disabled = anychars==-1 || in_modal;
+	    disabled = anychars==-1 || in_modal;
 	  break;
 	  case MID_OpenBitmap:
-	    wmi->ti.disabled = anychars==-1 || fv->b.sf->bitmaps==NULL || in_modal;
+	    disabled = anychars==-1 || fv->b.sf->bitmaps==NULL || in_modal;
 	  break;
 	  case MID_OpenMetrics:
-	    wmi->ti.disabled = in_modal;
+	    disabled = in_modal;
 	  break;
 	  case MID_Warnings:
-	    wmi->ti.disabled = ErrorWindowExists();
+	    disabled = ErrorWindowExists();
 	  break;
 	}
-    }
+    return disabled;
 }
 
 GMenuItem2 helplist[] = {
@@ -4889,8 +4881,6 @@ GMenuItem2 helplist[] = {
 };
 
 FVMenuAction fvpopupactions[] = {
-    { MID_OpenOutline, NULL, NULL, FVMenuOpenOutline },
-
     /* Element menu */
     { MID_FontInfo, ellistcheck, NULL, FVMenuFontInfo },
     { MID_CharInfo, ellistcheck, NULL, FVMenuCharInfo },
@@ -5139,6 +5129,12 @@ FVMenuAction fvpopupactions[] = {
     { MID_BuildSyllables, hglistcheck, NULL, FVMenuBuildSyllables },
 #endif
 
+    /* Window Menu */
+    { MID_OpenOutline, windowcheck, NULL, FVMenuOpenOutline },
+    { MID_OpenBitmap, windowcheck, NULL, FVMenuOpenBitmap },
+    { MID_OpenMetrics, windowcheck, NULL, FVMenuOpenMetrics },
+    { MID_Warnings, windowcheck, NULL, FVMenuWarnings },
+
     MENUACTION_LAST
 };
 
@@ -5166,7 +5162,6 @@ static GMenuItem2 mblist[] = {
     { { (unichar_t *) N_("_CID"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("CID|No Shortcut"), cdlist, cdlistcheck, NULL, 0 },
 /* GT: Here (and following) MM means "MultiMaster" */
     { { (unichar_t *) N_("MM"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("MM|No Shortcut"), mmlist, mmlistcheck, NULL, 0 },
-    { { (unichar_t *) N_("_Window"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'W' }, H_("Window|No Shortcut"), wnmenu, FVWindowMenuBuild, NULL, 0 },
     { { (unichar_t *) N_("_Help"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Help|No Shortcut"), helplist, NULL, NULL, 0 },
     GMENUITEM2_EMPTY
 };

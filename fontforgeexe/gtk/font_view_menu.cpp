@@ -671,6 +671,15 @@ std::vector<MenuInfo> metrics_menu = {
     { { N_("Remove All VKern Pairs"), NoDecoration, "" }, {}, LegacyCallbacks, MID_RmVKern },
 };
 
+std::vector<MenuInfo> window_menu = {
+    { { N_("New O_utline Window"), NoDecoration, "<control>H" }, {}, LegacyCallbacks, MID_OpenOutline },
+    { { N_("New _Bitmap Window"), NoDecoration, "<control>J" }, {}, LegacyCallbacks, MID_OpenBitmap },
+    { { N_("New _Metrics Window"), NoDecoration, "<control>K" }, {}, LegacyCallbacks, MID_OpenMetrics },
+    kMenuSeparator,
+    { { N_("Warnings"), NoDecoration, "" }, {}, LegacyCallbacks, MID_Warnings },
+    kMenuSeparator,
+};
+
 std::vector<MenuInfo> top_menu = {
     { { N_("_File") }, file_menu, SubMenuCallbacks, -1 },
     { { N_("_Edit") }, edit_menu, SubMenuCallbacks, -1 },
@@ -685,7 +694,7 @@ std::vector<MenuInfo> top_menu = {
     { { N_("_CID") }, {}, SubMenuCallbacks, -1 },
 /* GT: Here (and following) MM means "MultiMaster" */
     { { N_("MM") }, {}, SubMenuCallbacks, -1 },
-    { { N_("_Window") }, {}, SubMenuCallbacks, -1 },
+    { { N_("_Window") }, window_menu, SubMenuCallbacks, -1 },
     { { N_("_Help") }, {}, SubMenuCallbacks, -1 },
 };
 // clang-format on
