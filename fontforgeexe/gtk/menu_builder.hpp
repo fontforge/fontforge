@@ -54,6 +54,7 @@ enum RadioGroup {
     Encoding,
     ForcedEncoding,
     CopyFrom,
+    MultipleMaster,
 };
 
 // Lazily initialized collection of GTK groupers for radio buttons

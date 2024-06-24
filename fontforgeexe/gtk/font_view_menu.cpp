@@ -182,6 +182,33 @@ std::vector<MenuInfo> view_menu_anchors(const UiContext& ui_context) {
     return info_arr;
 }
 
+std::vector<MenuInfo> mm_instances(const UiContext& ui_context) {
+    const FontViewUiContext& fv_ui_context =
+        static_cast<const FontViewUiContext&>(ui_context);
+    auto fv_context = fv_ui_context.legacy();
+
+    std::vector<SubInstance> instance_vec =
+        VectorWrapper(fv_context->fv, fv_context->collect_mm_instances);
+    std::vector<MenuInfo> info_arr;
+
+    for (const auto& instance_data : instance_vec) {
+        ActivateCB action = [fv_context,
+                             sub = instance_data.sub](const UiContext&) {
+            fv_context->show_mm_instance(fv_context->fv, sub);
+        };
+        CheckedCB checker = [fv_context,
+                             sub = instance_data.sub](const UiContext&) {
+            return fv_context->mm_selected(fv_context->fv, sub);
+        };
+        MenuInfo info{{instance_data.fontname, MultipleMaster, ""},
+                      {},
+                      {action, AlwaysEnabled, checker},
+                      0};
+        info_arr.push_back(info);
+    }
+    return info_arr;
+}
+
 void run_autotrace(const UiContext& ui_context) {
     const FontViewUiContext& fv_ui_context =
         static_cast<const FontViewUiContext&>(ui_context);
@@ -671,6 +698,17 @@ std::vector<MenuInfo> metrics_menu = {
     { { N_("Remove All VKern Pairs"), NoDecoration, "" }, {}, LegacyCallbacks, MID_RmVKern },
 };
 
+std::vector<MenuInfo> mm_menu = {
+    /* GT: Here (and following) MM means "MultiMaster" */
+    { { N_("_Create MM..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_CreateMM },
+    { { N_("MM _Validity Check"), NoDecoration, "" }, {}, LegacyCallbacks, MID_MMValid },
+    { { N_("MM _Info..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_MMInfo },
+    { { N_("_Blend to New Font..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_BlendToNew },
+    { { N_("MM Change Default _Weights..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_ChangeMMBlend },
+    kMenuSeparator,
+    MenuInfo::CustomBlock(mm_instances),
+};
+
 std::vector<MenuInfo> window_menu = {
     { { N_("New O_utline Window"), NoDecoration, "<control>H" }, {}, LegacyCallbacks, MID_OpenOutline },
     { { N_("New _Bitmap Window"), NoDecoration, "<control>J" }, {}, LegacyCallbacks, MID_OpenBitmap },
@@ -694,7 +732,7 @@ std::vector<MenuInfo> top_menu = {
     { { N_("_Metrics") }, metrics_menu, SubMenuCallbacks, -1 },
     { { N_("_CID") }, {}, SubMenuCallbacks, -1 },
 /* GT: Here (and following) MM means "MultiMaster" */
-    { { N_("MM") }, {}, SubMenuCallbacks, -1 },
+    { { N_("MM") }, mm_menu, SubMenuCallbacks, -1 },
     { { N_("_Window") }, window_menu, SubMenuCallbacks, -1 },
     { { N_("_Help") }, {}, SubMenuCallbacks, -1 },
 };

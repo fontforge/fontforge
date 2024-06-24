@@ -3762,8 +3762,7 @@ static void FVMenuDefineGroups(FontView *fv, int UNUSED(mid)) {
     DefineGroups(fv);
 }
 
-static void FVMenuMMValid(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuMMValid(FontView *fv, int UNUSED(mid)) {
     MMSet *mm = fv->b.sf->mm;
 
     if ( mm==NULL )
@@ -3771,12 +3770,11 @@ return;
     MMValid(mm,true);
 }
 
-static void FVMenuCreateMM(GWindow UNUSED(gw), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+static void FVMenuCreateMM(FontView *UNUSED(fv), int UNUSED(mid)) {
     MMWizard(NULL);
 }
 
-static void FVMenuMMInfo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuMMInfo(FontView *fv, int UNUSED(mid)) {
     MMSet *mm = fv->b.sf->mm;
 
     if ( mm==NULL )
@@ -3784,8 +3782,7 @@ return;
     MMWizard(mm);
 }
 
-static void FVMenuChangeMMBlend(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuChangeMMBlend(FontView *fv, int UNUSED(mid)) {
     MMSet *mm = fv->b.sf->mm;
 
     if ( mm==NULL || mm->apple )
@@ -3793,8 +3790,7 @@ return;
     MMChangeBlend(mm,fv,false);
 }
 
-static void FVMenuBlendToNew(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuBlendToNew(FontView *fv, int UNUSED(mid)) {
     MMSet *mm = fv->b.sf->mm;
 
     if ( mm==NULL )
@@ -4787,66 +4783,47 @@ static void cdlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     }
 }
 
-static GMenuItem2 mmlist[] = {
-/* GT: Here (and following) MM means "MultiMaster" */
-    { { (unichar_t *) N_("_Create MM..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Create MM...|No Shortcut"), NULL, NULL, FVMenuCreateMM, MID_CreateMM },
-    { { (unichar_t *) N_("MM _Validity Check"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("MM Validity Check|No Shortcut"), NULL, NULL, FVMenuMMValid, MID_MMValid },
-    { { (unichar_t *) N_("MM _Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("MM Info...|No Shortcut"), NULL, NULL, FVMenuMMInfo, MID_MMInfo },
-    { { (unichar_t *) N_("_Blend to New Font..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Blend to New Font...|No Shortcut"), NULL, NULL, FVMenuBlendToNew, MID_BlendToNew },
-    { { (unichar_t *) N_("MM Change Default _Weights..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("MM Change Default Weights...|No Shortcut"), NULL, NULL, FVMenuChangeMMBlend, MID_ChangeMMBlend },
-    GMENUITEM2_EMPTY,				/* Extra room to show sub-font names */
-};
-
-static void mmlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    int i, base, j;
+static unsigned int collect_mm_instances(FontView *fv, SubInstance** instance_array) {
+    unsigned int i, n_instances = 0;
     MMSet *mm = fv->b.sf->mm;
     SplineFont *sub;
-    GMenuItem2 *mml;
 
-    for ( i=0; mmlist[i].mid!=MID_ChangeMMBlend; ++i );
-    base = i+2;
-    if ( mm==NULL )
-	mml = mmlist;
-    else {
-	mml = calloc(base+mm->instance_count+2,sizeof(GMenuItem2));
-	memcpy(mml,mmlist,sizeof(mmlist));
-	mml[base-1].ti.fg = mml[base-1].ti.bg = COLOR_DEFAULT;
-	mml[base-1].ti.line = true;
-	for ( j = 0, i=base; j<mm->instance_count+1; ++i, ++j ) {
-	    if ( j==0 )
-		sub = mm->normal;
-	    else
-		sub = mm->instances[j-1];
-	    mml[i].ti.text = uc_copy(sub->fontname);
-	    mml[i].ti.checkable = true;
-	    mml[i].ti.checked = sub==fv->b.sf;
-	    mml[i].ti.userdata = sub;
-	    mml[i].invoke = FVMenuShowSubFont;
-	    mml[i].ti.fg = mml[i].ti.bg = COLOR_DEFAULT;
-	}
-    }
-    GMenuItemArrayFree(mi->sub);
-    mi->sub = GMenuItem2ArrayCopy(mml,NULL);
-    if ( mml!=mmlist ) {
-	for ( i=base; mml[i].ti.text!=NULL; ++i )
-	    free( mml[i].ti.text);
-	free(mml);
+    if (mm == NULL) {
+	return 0;
     }
 
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
-	switch ( mi->mid ) {
+    n_instances = mm->instance_count + 1;
+    *instance_array = calloc(n_instances, sizeof(SubInstance));
+
+    for ( i = 0; i < n_instances; ++i ) {
+	sub = (i == 0) ? mm->normal : mm->instances[i-1];
+        (*instance_array)[i].fontname = strdup(sub->fontname);
+	(*instance_array)[i].sub = sub;
+    }
+
+    return n_instances;
+}
+
+static bool sub_instance_selected(FontView *fv,SplineFont *sub) {
+    return sub==fv->b.sf;
+}
+
+static bool mmlistcheck(FontView *fv, int mid) {
+    MMSet *mm = fv->b.sf->mm;
+    bool disabled = false;
+
+	switch ( mid ) {
 	  case MID_CreateMM:
-	    mi->ti.disabled = false;
+	    disabled = false;
 	  break;
 	  case MID_MMInfo: case MID_MMValid: case MID_BlendToNew:
-	    mi->ti.disabled = mm==NULL;
+	    disabled = mm==NULL;
 	  break;
 	  case MID_ChangeMMBlend:
-	    mi->ti.disabled = mm==NULL || mm->apple;
+	    disabled = mm==NULL || mm->apple;
 	  break;
 	}
-    }
+    return disabled;
 }
 
 static bool windowcheck(FontView *fv, int mid) {
@@ -5135,6 +5112,13 @@ FVMenuAction fvpopupactions[] = {
     { MID_OpenMetrics, windowcheck, NULL, FVMenuOpenMetrics },
     { MID_Warnings, windowcheck, NULL, FVMenuWarnings },
 
+    /* MultiMaster Menu */
+    { MID_CreateMM, mmlistcheck, NULL, FVMenuCreateMM },
+    { MID_MMValid, mmlistcheck, NULL, FVMenuMMValid },
+    { MID_MMInfo, mmlistcheck, NULL, FVMenuMMInfo },
+    { MID_BlendToNew, mmlistcheck, NULL, FVMenuBlendToNew },
+    { MID_ChangeMMBlend, mmlistcheck, NULL, FVMenuChangeMMBlend },
+
     MENUACTION_LAST
 };
 
@@ -5160,8 +5144,6 @@ FVSelectMenuAction fv_selmenu_actions[] = {
 
 static GMenuItem2 mblist[] = {
     { { (unichar_t *) N_("_CID"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("CID|No Shortcut"), cdlist, cdlistcheck, NULL, 0 },
-/* GT: Here (and following) MM means "MultiMaster" */
-    { { (unichar_t *) N_("MM"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, '\0' }, H_("MM|No Shortcut"), mmlist, mmlistcheck, NULL, 0 },
     { { (unichar_t *) N_("_Help"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Help|No Shortcut"), helplist, NULL, NULL, 0 },
     GMENUITEM2_EMPTY
 };
@@ -6643,6 +6625,9 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     fv_context->collect_windows = collect_windows;
     fv_context->get_window_title = GDrawGetWindowTitle8;
     fv_context->raise_window = GDrawRaise;
+    fv_context->collect_mm_instances = collect_mm_instances;
+    fv_context->show_mm_instance = FVShowSubFont;
+    fv_context->mm_selected = sub_instance_selected;
     fv_context->actions = fvpopupactions;
     fv_context->select_actions = fv_selmenu_actions;
     cg_dlg = create_font_view(&fv_context, pos.width, pos.height);
