@@ -223,6 +223,16 @@ typedef struct fontview_context {
     // Check if the Multiple Master instance is currently selected
     bool (*mm_selected)(FontView* fv, SplineFont* sub);
 
+    // Collect CID instances
+    unsigned int (*collect_cid_instances)(FontView* fv,
+                                          SubInstance** instance_array);
+
+    // Show CID instance
+    void (*show_cid_instance)(FontView* fv, SplineFont* sub);
+
+    // Check if the CID instance is currently selected
+    bool (*cid_selected)(FontView* fv, SplineFont* sub);
+
     // Menu actions per menu ID
     FVMenuAction* actions;
     FVSelectMenuAction* select_actions;

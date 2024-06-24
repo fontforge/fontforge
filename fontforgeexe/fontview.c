@@ -3463,14 +3463,7 @@ static void FontViewSetTitles(SplineFont *sf) {
 	FontViewSetTitle(fv);
 }
 
-static void FVMenuShowSubFont(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    SplineFont *new = mi->ti.userdata;
-    FVShowSubFont(fv,new);
-}
-
-static void FVMenuConvert2CID(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuConvert2CID(FontView *fv, int UNUSED(mid)) {
     SplineFont *cidmaster = fv->b.cidmaster;
     struct cidmap *cidmap;
 
@@ -3505,8 +3498,7 @@ static enum fchooserret CMapFilter(GGadget *g,const struct gdirentry *ent,
 return( ret );
 }
 
-static void FVMenuConvertByCMap(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuConvertByCMap(FontView *fv, int UNUSED(mid)) {
     SplineFont *cidmaster = fv->b.cidmaster;
     char *cmapfilename;
 
@@ -3519,8 +3511,7 @@ return;
     free(cmapfilename);
 }
 
-static void FVMenuFlatten(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuFlatten(FontView *fv, int UNUSED(mid)) {
     SplineFont *cidmaster = fv->b.cidmaster;
 
     if ( cidmaster==NULL )
@@ -3528,8 +3519,7 @@ return;
     SFFlatten(&cidmaster);
 }
 
-static void FVMenuFlattenByCMap(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuFlattenByCMap(FontView *fv, int UNUSED(mid)) {
     SplineFont *cidmaster = fv->b.cidmaster;
     char *cmapname;
 
@@ -3544,8 +3534,7 @@ return;
     free(cmapname);
 }
 
-static void FVMenuInsertFont(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuInsertFont(FontView *fv, int UNUSED(mid)) {
     SplineFont *cidmaster = fv->b.cidmaster;
     SplineFont *new;
     struct cidmap *map;
@@ -3585,8 +3574,7 @@ return;
     CIDMasterAsDes(new);
 }
 
-static void FVMenuInsertBlank(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuInsertBlank(FontView *fv, int UNUSED(mid)) {
     SplineFont *cidmaster = fv->b.cidmaster, *sf;
     struct cidmap *map;
 
@@ -3604,8 +3592,7 @@ return;
     FVInsertInCID((FontViewBase *) fv,sf);
 }
 
-static void FVMenuRemoveFontFromCID(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuRemoveFontFromCID(FontView *fv, int UNUSED(mid)) {
     char *buts[3];
     SplineFont *cidmaster = fv->b.cidmaster, *sf = fv->b.sf, *replace;
     int i;
@@ -3655,8 +3642,7 @@ return;
     SplineFontFree(sf);
 }
 
-static void FVMenuCIDFontInfo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuCIDFontInfo(FontView *fv, int UNUSED(mid)) {
     SplineFont *cidmaster = fv->b.cidmaster;
 
     if ( cidmaster==NULL )
@@ -3664,8 +3650,7 @@ return;
     FontInfo(cidmaster,fv->b.active_layer,-1,false);
 }
 
-static void FVMenuChangeSupplement(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuChangeSupplement(FontView *fv, int UNUSED(mid)) {
     SplineFont *cidmaster = fv->b.cidmaster;
     char buffer[20];
     char *ret, *end;
@@ -4682,105 +4667,47 @@ static bool vwlistchecked(FontView *fv, int mid) {
     return checked;
 }
 
-static GMenuItem2 cdlist[] = {
-    { { (unichar_t *) N_("_Convert to CID"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Convert to CID|No Shortcut"), NULL, NULL, FVMenuConvert2CID, MID_Convert2CID },
-    { { (unichar_t *) N_("Convert By C_Map"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Convert By CMap|No Shortcut"), NULL, NULL, FVMenuConvertByCMap, MID_ConvertByCMap },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("_Flatten"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("Flatten|No Shortcut"), NULL, NULL, FVMenuFlatten, MID_Flatten },
-    { { (unichar_t *) N_("Fl_attenByCMap"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'F' }, H_("FlattenByCMap|No Shortcut"), NULL, NULL, FVMenuFlattenByCMap, MID_FlattenByCMap },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("Insert F_ont..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'o' }, H_("Insert Font...|No Shortcut"), NULL, NULL, FVMenuInsertFont, MID_InsertFont },
-    { { (unichar_t *) N_("Insert _Blank"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'B' }, H_("Insert Blank|No Shortcut"), NULL, NULL, FVMenuInsertBlank, MID_InsertBlank },
-    { { (unichar_t *) N_("_Remove Font"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'R' }, H_("Remove Font|No Shortcut"), NULL, NULL, FVMenuRemoveFontFromCID, MID_RemoveFromCID },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("_Change Supplement..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("Change Supplement...|No Shortcut"), NULL, NULL, FVMenuChangeSupplement, MID_ChangeSupplement },
-    { { (unichar_t *) N_("C_ID Font Info..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'I' }, H_("CID Font Info...|No Shortcut"), NULL, NULL, FVMenuCIDFontInfo, MID_CIDFontInfo },
-    GMENUITEM2_EMPTY,				/* Extra room to show sub-font names */
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY
-};
-
-static void cdlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    int i, base, j;
+static unsigned int collect_cid_instances(FontView *fv, SubInstance** instance_array) {
+    unsigned int i, n_instances = 0;
     SplineFont *sub, *cidmaster = fv->b.cidmaster;
 
-    for ( i=0; cdlist[i].mid!=MID_CIDFontInfo; ++i );
-    base = i+2;
-    for ( i=base; cdlist[i].ti.text!=NULL; ++i ) {
-	free( cdlist[i].ti.text);
-	cdlist[i].ti.text = NULL;
+    if (cidmaster == NULL) {
+	return 0;
     }
 
-    cdlist[base-1].ti.fg = cdlist[base-1].ti.bg = COLOR_DEFAULT;
-    if ( cidmaster==NULL ) {
-	cdlist[base-1].ti.line = false;
-    } else {
-	cdlist[base-1].ti.line = true;
-	for ( j = 0, i=base;
-		i<sizeof(cdlist)/sizeof(cdlist[0])-1 && j<cidmaster->subfontcnt;
-		++i, ++j ) {
-	    sub = cidmaster->subfonts[j];
-	    cdlist[i].ti.text = uc_copy(sub->fontname);
-	    cdlist[i].ti.checkable = true;
-	    cdlist[i].ti.checked = sub==fv->b.sf;
-	    cdlist[i].ti.userdata = sub;
-	    cdlist[i].invoke = FVMenuShowSubFont;
-	    cdlist[i].ti.fg = cdlist[i].ti.bg = COLOR_DEFAULT;
-	}
-    }
-    GMenuItemArrayFree(mi->sub);
-    mi->sub = GMenuItem2ArrayCopy(cdlist,NULL);
+    n_instances = cidmaster->subfontcnt;
+    *instance_array = calloc(n_instances, sizeof(SubInstance));
 
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
-	switch ( mi->mid ) {
+    for ( i = 0; i < n_instances; ++i ) {
+	sub = cidmaster->subfonts[i];
+        (*instance_array)[i].fontname = strdup(sub->fontname);
+	(*instance_array)[i].sub = sub;
+    }
+
+    return n_instances;
+}
+
+static bool cdlistcheck(FontView *fv, int mid) {
+    SplineFont *cidmaster = fv->b.cidmaster;
+    bool disabled = false;
+
+	switch ( mid ) {
 	  case MID_Convert2CID: case MID_ConvertByCMap:
-	    mi->ti.disabled = cidmaster!=NULL || fv->b.sf->mm!=NULL;
+	    disabled = cidmaster!=NULL || fv->b.sf->mm!=NULL;
 	  break;
 	  case MID_InsertFont: case MID_InsertBlank:
 	    /* OpenType allows at most 255 subfonts (PS allows more, but why go to the effort to make safe font check that? */
-	    mi->ti.disabled = cidmaster==NULL || cidmaster->subfontcnt>=255;
+	    disabled = cidmaster==NULL || cidmaster->subfontcnt>=255;
 	  break;
 	  case MID_RemoveFromCID:
-	    mi->ti.disabled = cidmaster==NULL || cidmaster->subfontcnt<=1;
+	    disabled = cidmaster==NULL || cidmaster->subfontcnt<=1;
 	  break;
 	  case MID_Flatten: case MID_FlattenByCMap: case MID_CIDFontInfo:
 	  case MID_ChangeSupplement:
-	    mi->ti.disabled = cidmaster==NULL;
+	    disabled = cidmaster==NULL;
 	  break;
 	}
-    }
+    return disabled;
 }
 
 static unsigned int collect_mm_instances(FontView *fv, SubInstance** instance_array) {
@@ -5119,6 +5046,17 @@ FVMenuAction fvpopupactions[] = {
     { MID_BlendToNew, mmlistcheck, NULL, FVMenuBlendToNew },
     { MID_ChangeMMBlend, mmlistcheck, NULL, FVMenuChangeMMBlend },
 
+    /* CID Menu */
+    { MID_Convert2CID, cdlistcheck, NULL, FVMenuConvert2CID },
+    { MID_ConvertByCMap, cdlistcheck, NULL, FVMenuConvertByCMap },
+    { MID_Flatten, cdlistcheck, NULL, FVMenuFlatten },
+    { MID_FlattenByCMap, cdlistcheck, NULL, FVMenuFlattenByCMap },
+    { MID_InsertFont, cdlistcheck, NULL, FVMenuInsertFont },
+    { MID_InsertBlank, cdlistcheck, NULL, FVMenuInsertBlank },
+    { MID_RemoveFromCID, cdlistcheck, NULL, FVMenuRemoveFontFromCID },
+    { MID_ChangeSupplement, cdlistcheck, NULL, FVMenuChangeSupplement },
+    { MID_CIDFontInfo, cdlistcheck, NULL, FVMenuCIDFontInfo },
+
     MENUACTION_LAST
 };
 
@@ -5143,7 +5081,6 @@ FVSelectMenuAction fv_selmenu_actions[] = {
 };
 
 static GMenuItem2 mblist[] = {
-    { { (unichar_t *) N_("_CID"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("CID|No Shortcut"), cdlist, cdlistcheck, NULL, 0 },
     { { (unichar_t *) N_("_Help"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Help|No Shortcut"), helplist, NULL, NULL, 0 },
     GMENUITEM2_EMPTY
 };
@@ -6628,6 +6565,9 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     fv_context->collect_mm_instances = collect_mm_instances;
     fv_context->show_mm_instance = FVShowSubFont;
     fv_context->mm_selected = sub_instance_selected;
+    fv_context->collect_cid_instances = collect_cid_instances;
+    fv_context->show_cid_instance = FVShowSubFont;
+    fv_context->cid_selected = sub_instance_selected;
     fv_context->actions = fvpopupactions;
     fv_context->select_actions = fv_selmenu_actions;
     cg_dlg = create_font_view(&fv_context, pos.width, pos.height);
