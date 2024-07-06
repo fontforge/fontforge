@@ -77,6 +77,7 @@ build_option(SPHINX_USE_VENV BOOL OFF "If building documentation and Sphinx\
 
 build_option(REAL_TYPE ENUM "double" "Sets the floating point type used." "double" "float")
 build_option(THEME     ENUM "tango"  "Sets the GUI theme." "tango" "2012")
+add_definitions( -DTHEME="${THEME}" )
 
 build_option(FONT_FAMILIES_SERIF     STRING "default"  "Serif font family names to use in the UI separated by commas")
 build_option(FONT_FAMILIES_UI        STRING "default"  "Font family names to use in the UI separated by commas (typically sans-serif)")
