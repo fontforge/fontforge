@@ -11060,12 +11060,15 @@ static PyTypeObject PyFF_LayerInfoArrayType = {
 };
 
 /* ************************************************************************** */
-/* Font math constants device table type */
+/* Font math constants device table iterator type */
 /* ************************************************************************** */
 
-static PyObject *PyFFMathDeviceTable_Str(PyFF_MathDeviceTable *self) {
-return( PyUnicode_FromFormat( "<math device table for font %s>", self->sf->fontname ));
-}
+typedef struct {
+    PyObject_HEAD
+    int px; /* -1 for end iterator */
+    PyFF_MathDeviceTable *py_devtab;
+} devicetable_iter_object;
+static PyTypeObject PyFF_MathDevTabIterType;
 
 static struct MATH *SFGetMathTable(SplineFont *sf) {
     if ( sf->cidmaster!=NULL )
@@ -11073,6 +11076,121 @@ static struct MATH *SFGetMathTable(SplineFont *sf) {
     if ( sf->MATH==NULL )
 	sf->MATH = MathTableNew(sf);
 return(sf->MATH);
+}
+
+static int devtab_iter_incr(devicetable_iter_object *devtab_iter) {
+    int current_px = devtab_iter->px;
+    struct MATH *math = SFGetMathTable(devtab_iter->py_devtab->sf);
+    DeviceTable *devtab = *((DeviceTable **) (((char *) (math)) + devtab_iter->py_devtab->devtab_offset ));
+    uint16_t low = devtab->first_pixel_size;
+    uint16_t high = devtab->last_pixel_size;
+    int px = MAX(current_px + 1, devtab->first_pixel_size);
+
+    /* Advance the px to the next valid value */
+    for ( ; px<=high; ++px ) {
+	if ( devtab->corrections[px-low]!=0 ) {
+	    break;
+	}
+    }
+    if (px > high) {
+	/* Iterating is done */
+	px = -1;
+    }
+    devtab_iter->px = px;
+
+    return current_px;
+}
+
+static PyObject *devtab_iter_new(PyObject *py_devtab) {
+    devicetable_iter_object *devtab_iter;
+    devtab_iter = PyObject_New(devicetable_iter_object, &PyFF_MathDevTabIterType);
+    if (devtab_iter == NULL)
+        return NULL;
+
+    devtab_iter->py_devtab = ((PyFF_MathDeviceTable *) py_devtab);
+    Py_INCREF(py_devtab);
+
+    // Increment to the first valid value
+    devtab_iter->px = 0;
+    devtab_iter_incr(devtab_iter);
+
+    return (PyObject *)devtab_iter;
+}
+
+static void devtab_iter_dealloc(devicetable_iter_object *devtab_iter) {
+    Py_XDECREF(devtab_iter->py_devtab);
+    PyObject_Del(devtab_iter);
+}
+
+static PyObject *devtab_iter_iternext(devicetable_iter_object *devtab_iter) {
+    PyFF_MathDeviceTable *py_devtab = devtab_iter->py_devtab;
+    int px;
+
+    if ( py_devtab == NULL || py_devtab->sf==NULL || devtab_iter->px == -1)
+        return NULL;
+	
+    /* Dictionary-like objects should return keys when iterated */
+    px = devtab_iter_incr(devtab_iter);
+    return Py_BuildValue("i", px);
+}
+
+static PyTypeObject PyFF_MathDevTabIterType = {
+    PyVarObject_HEAD_INIT(NULL, 0)
+    "fontforge.math.device_table_iterator",  /* tp_name */
+    sizeof(devicetable_iter_object),     /* tp_basicsize */
+    0,                         /* tp_itemsize */
+    /* methods */
+    (destructor)devtab_iter_dealloc, /* tp_dealloc */
+    0,                         /* tp_vectorcall_offset */
+    NULL,                      /* tp_getattr */
+    NULL,                      /* tp_setattr */
+    NULL,                      /* tp_compare */
+    NULL,                      /* tp_repr */
+    NULL,                      /* tp_as_number */
+    NULL,                      /* tp_as_sequence */
+    NULL,                      /* tp_as_mapping */
+    NULL,                      /* tp_hash */
+    NULL,                      /* tp_call */
+    NULL,                      /* tp_str */
+    NULL,                      /* tp_getattro */
+    NULL,                      /* tp_setattro */
+    NULL,                      /* tp_as_buffer */
+    Py_TPFLAGS_DEFAULT,        /* tp_flags */
+    NULL,                      /* tp_doc */
+    NULL,                      /* tp_traverse */
+    NULL,                      /* tp_clear */
+    NULL,                      /* tp_richcompare */
+    0,                         /* tp_weaklistoffset */
+    PyObject_SelfIter,         /* tp_iter */
+    (iternextfunc)devtab_iter_iternext, /* tp_iternext */
+    NULL,                      /* tp_methods */
+    NULL,                      /* tp_members */
+    NULL,                      /* tp_getset */
+    NULL,                      /* tp_base */
+    NULL,                      /* tp_dict */
+    NULL,                      /* tp_descr_get */
+    NULL,                      /* tp_descr_set */
+    0,                         /* tp_dictoffset */
+    NULL,                      /* tp_init */
+    NULL,                      /* tp_alloc */
+    NULL,                      /* tp_new */
+    NULL,                      /* tp_free */
+    NULL,                      /* tp_is_gc */
+    NULL,                      /* tp_bases */
+    NULL,                      /* tp_mro */
+    NULL,                      /* tp_cache */
+    NULL,                      /* tp_subclasses */
+    NULL,                      /* tp_weaklist */
+    NULL,                      /* tp_del */
+    0,                         /* tp_version_tag */
+};
+
+/* ************************************************************************** */
+/* Font math constants device table type */
+/* ************************************************************************** */
+
+static PyObject *PyFFMathDeviceTable_Str(PyFF_MathDeviceTable *self) {
+return( PyUnicode_FromFormat( "<math device table for font %s>", self->sf->fontname ));
 }
 
 static void PyFFMathDeviceTable_dealloc(PyFF_MathDeviceTable *self) {
@@ -11218,7 +11336,7 @@ static PyTypeObject PyFF_MathDeviceTableType = {
     NULL,                      /* tp_clear */
     (richcmpfunc) PyFF_MathDeviceTableCompare, /* tp_richcompare */
     0,                         /* tp_weaklistoffset */
-    NULL,                      /* tp_iter */
+    devtab_iter_new,           /* tp_iter */
     NULL,                      /* tp_iternext */
     NULL,                      /* tp_methods */
     NULL,                      /* tp_members */

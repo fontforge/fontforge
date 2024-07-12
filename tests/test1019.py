@@ -61,3 +61,12 @@ assert font.math.SpaceAfterScriptDeviceTable == {9: -1, 12: 2}
 # Check comparison
 assert not font.math.SpaceAfterScriptDeviceTable == {12: 2}
 assert font.math.SpaceAfterScriptDeviceTable != {12: 2}
+
+# Iterate device table
+tbl = font.math.MathLeadingDeviceTable
+output = []
+for px in tbl:
+    output.append(px)
+    assert tbl[px] != 0
+
+assert len(output) == len(tbl)
