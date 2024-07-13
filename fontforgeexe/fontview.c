@@ -1343,6 +1343,10 @@ void MenuAbout(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNUSE
     ShowAboutScreen();
 }
 
+static void FVMenuAbout(FontView *UNUSED(fv), int UNUSED(mid)) {
+    ShowAboutScreen();
+}
+
 static void FVMenuImport(FontView *fv, int UNUSED(mid)) {
     int empty = fv->b.sf->onlybitmaps && fv->b.sf->bitmaps==NULL;
     BDFFont *bdf;
@@ -5057,6 +5061,9 @@ FVMenuAction fvpopupactions[] = {
     { MID_ChangeSupplement, cdlistcheck, NULL, FVMenuChangeSupplement },
     { MID_CIDFontInfo, cdlistcheck, NULL, FVMenuCIDFontInfo },
 
+    /* Help Menu */
+    { MID_About, NULL, NULL, FVMenuAbout },
+
     MENUACTION_LAST
 };
 
@@ -5081,7 +5088,6 @@ FVSelectMenuAction fv_selmenu_actions[] = {
 };
 
 static GMenuItem2 mblist[] = {
-    { { (unichar_t *) N_("_Help"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'H' }, H_("Help|No Shortcut"), helplist, NULL, NULL, 0 },
     GMENUITEM2_EMPTY
 };
 
@@ -6568,6 +6574,7 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     fv_context->collect_cid_instances = collect_cid_instances;
     fv_context->show_cid_instance = FVShowSubFont;
     fv_context->cid_selected = sub_instance_selected;
+    fv_context->help = help;
     fv_context->actions = fvpopupactions;
     fv_context->select_actions = fv_selmenu_actions;
     cg_dlg = create_font_view(&fv_context, pos.width, pos.height);

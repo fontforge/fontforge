@@ -233,6 +233,9 @@ typedef struct fontview_context {
     // Check if the CID instance is currently selected
     bool (*cid_selected)(FontView* fv, SplineFont* sub);
 
+    // Launch documentation
+    void (*help)(const char* file, const char* section);
+
     // Menu actions per menu ID
     FVMenuAction* actions;
     FVSelectMenuAction* select_actions;
