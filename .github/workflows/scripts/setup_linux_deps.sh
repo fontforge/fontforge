@@ -7,11 +7,9 @@ sudo add-apt-repository -y ppa:deadsnakes/ppa && sudo apt-get update -y
 sudo apt-get install -y autoconf automake libtool gcc g++ gettext \
     libjpeg-dev libtiff5-dev libpng-dev libfreetype6-dev libgif-dev \
     libx11-dev libgtk-3-dev libxml2-dev libpango1.0-dev libcairo2-dev \
-    libbrotli-dev libwoff-dev ninja-build cmake lcov $PYTHON-dev $PYTHON-venv \
-    openjdk-17-jre-headless
+    libbrotli-dev libwoff-dev ninja-build cmake lcov $PYTHON-dev $PYTHON-venv
 curl https://bootstrap.pypa.io/get-pip.py | sudo $PYTHON
 
-sudo  update-java-alternatives --list
 java --version && exit 1
 
 PREFIX=$GITHUB_WORKSPACE/target
