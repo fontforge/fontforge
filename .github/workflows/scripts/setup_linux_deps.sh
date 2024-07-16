@@ -10,8 +10,6 @@ sudo apt-get install -y autoconf automake libtool gcc g++ gettext \
     libbrotli-dev libwoff-dev ninja-build cmake lcov $PYTHON-dev $PYTHON-venv
 curl https://bootstrap.pypa.io/get-pip.py | sudo $PYTHON
 
-java --version && exit 1
-
 PREFIX=$GITHUB_WORKSPACE/target
 DEPSPREFIX=$GITHUB_WORKSPACE/deps/install
 echo "PREFIX=$PREFIX" >> $GITHUB_ENV
