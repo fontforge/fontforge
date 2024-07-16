@@ -76,7 +76,7 @@ jobs:
         working-directory: repo
         env:
           CROWDIN_API_KEY: ${{ secrets.CROWDIN_API_KEY }}
-        run: java -jar $DEPSPREFIX/crowdin-cli.jar -c .crowdin.yml upload
+        run: java -jar $DEPSPREFIX/crowdin-cli.jar upload -c .crowdin.yml
   mac:
     runs-on: macos-11
     steps:
