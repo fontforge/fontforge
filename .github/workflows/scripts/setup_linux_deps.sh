@@ -11,6 +11,7 @@ sudo apt-get install -y autoconf automake libtool gcc g++ gettext \
     openjdk-17-jre-headless
 curl https://bootstrap.pypa.io/get-pip.py | sudo $PYTHON
 
+sudo  update-java-alternatives --list
 java --version && exit 1
 
 PREFIX=$GITHUB_WORKSPACE/target
