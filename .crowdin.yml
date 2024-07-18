@@ -1,5 +1,5 @@
-project_identifier: fontforge
-api_key_env: CROWDIN_API_KEY
+project_id: 368599
+api_token_env: CROWDIN_API_KEY
 base_path: .
 preserve_hierarchy: false
 
