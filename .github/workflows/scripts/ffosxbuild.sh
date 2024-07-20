@@ -36,7 +36,7 @@ echo "Bundling Python libraries..."
 # use the exact one discovered by CMake.
 # The CMake_Python3_EXECUTABLE file resides in build/CMake_Python3_EXECUTABLE
 PYTHON_EXE=`cat ../CMake_Python3_EXECUTABLE`
-PY_DLLS_PATH=`$PYTHON_EXE -c "import sysconfig as sc; print(sc.get_path('platlib', sc.get_preferred_scheme('user'), vars={'userbase': '.'}))"`
+PY_DLLS_PATH=`$PYTHON_EXE -c "import sysconfig as sc; print(sc.get_path('platlib', vars={'platbase': '.'}))"`
 
 PYLIB=$(otool -L $APPDIR/Contents/Resources/opt/local/bin/fontforge | grep -i python | sed -e 's/ \(.*\)//')
 PYVER=$(echo $PYLIB | rev | cut -d/ -f2 | rev)
