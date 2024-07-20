@@ -195,6 +195,19 @@ bool on_font_view_event(GdkEvent* event) {
         dismiss_menus(event);
     }
 
+    // For some strange reason GTK fires two events after the window started
+    // destroying, and they cause unsightly critical warnings. Let's just
+    // block them.
+    //
+    // This could be due to some GDraw/GTK interaction, so this hack should
+    // go another day. The signals don't seem to be in use. This hack can also
+    // be removed without visible consequences except for the warnings
+    // themselves.
+
+    if (event->type == GDK_FOCUS_CHANGE || event->type == GDK_WINDOW_STATE) {
+        return true;
+    }
+
     return false;
 }
 
