@@ -20,8 +20,11 @@ target_link_libraries(psMat_pyhook PRIVATE Python3::Module)
 # FindPython3 provides Python3_SITEARCH, but this is an absolute path
 # So do it ourselves, getting the prefix-relative path instead
 if(NOT DEFINED PYHOOK_INSTALL_DIR)
+  if(APPLE)
+    set(_PYHOOK_SYSCONFIG_PREFIX " 'posix_prefix',")
+  endif()
   execute_process(
-    COMMAND "${Python3_EXECUTABLE}" -c "import distutils.sysconfig as sc; print(sc.get_python_lib(prefix='', plat_specific=True,standard_lib=False))"
+    COMMAND "${Python3_EXECUTABLE}" -c "import sysconfig as sc; print(sc.get_path('platlib',${_PYHOOK_SYSCONFIG_PREFIX} vars={'platbase': '.'}))"
     RESULT_VARIABLE _pyhook_install_dir_result
     OUTPUT_VARIABLE PYHOOK_INSTALL_DIR
     OUTPUT_STRIP_TRAILING_WHITESPACE)
