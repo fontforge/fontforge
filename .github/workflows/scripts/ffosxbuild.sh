@@ -6,6 +6,7 @@ INVOKE_BASE="$(pwd)"
 
 APPDIR=$(realpath $1)
 HASH=${2:0:7}
+PYTHON="$3"
 
 if [ -z "$APPDIR" ]; then
     echo "Usage: `basename $0` appdir hash"
@@ -32,11 +33,7 @@ fi
 # Now we bundle the Python libraries
 echo "Bundling Python libraries..."
 
-# MacOS runner has way too much preinstalled Python versions. We must
-# use the exact one discovered by CMake.
-# The CMake_Python3_EXECUTABLE file resides in build/CMake_Python3_EXECUTABLE
-PYTHON_EXE=`cat ../CMake_Python3_EXECUTABLE`
-PY_DLLS_PATH=`$PYTHON_EXE -c "import sysconfig as sc; print(sc.get_path('platlib', vars={'platbase': '.'}))"`
+PY_DLLS_PATH=`$PYTHON -c "import sysconfig as sc; print(sc.get_path('platlib', 'posix_prefix', vars={'platbase': '.'}))"`
 
 PYLIB=$(otool -L $APPDIR/Contents/Resources/opt/local/bin/fontforge | grep -i python | sed -e 's/ \(.*\)//')
 PYVER=$(echo $PYLIB | rev | cut -d/ -f2 | rev)
