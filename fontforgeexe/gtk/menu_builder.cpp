@@ -331,6 +331,13 @@ Gtk::Menu* build_menu(const std::vector<MenuInfo>& info,
     };
     menu->signal_show().connect(on_menu_show);
 
+    // Enable all menu items when the menu is hidden, to ensure that keyboard
+    // shortcuts can be always activated.
+    auto on_menu_hide = [menu]() {
+        menu->foreach ([](Gtk::Widget& w) { w.set_sensitive(true); });
+    };
+    menu->signal_hide().connect(on_menu_hide);
+
     return menu;
 }
 
