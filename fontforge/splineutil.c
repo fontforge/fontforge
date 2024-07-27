@@ -5468,6 +5468,14 @@ return( NULL );
 return( new );
 }
 
+int DeviceTableFind(DeviceTable *adjust,int pixelsize) {
+    if ( adjust==NULL || adjust->corrections==NULL ||
+	    pixelsize<adjust->first_pixel_size ||
+	    pixelsize>adjust->last_pixel_size )
+        return( 0 );
+    return( adjust->corrections[pixelsize-adjust->first_pixel_size]);
+}
+
 void DeviceTableSet(DeviceTable *adjust, int size, int correction) {
     int len, i, j;
 
