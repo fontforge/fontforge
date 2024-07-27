@@ -85,6 +85,7 @@ set(FONTFORGE_INST_HEADERS
   fontforge.h
   fontforgevw.h
   fvmetrics.h
+  getline.h
   glif_name_hash.h
   glyphcomp.h
   groups.h
@@ -145,6 +146,7 @@ add_library(fontforge
   fvfonts.c
   fvimportbdf.c
   fvmetrics.c
+  getline.c
   glif_name_hash.c
   glyphcomp.c
   groups.c

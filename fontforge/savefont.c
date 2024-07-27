@@ -66,9 +66,9 @@ const char *savefont_extensions[] = { ".pfa", ".pfb", ".res", "%s.pfb", ".pfa", 
 	".cid", ".cff", ".cid.cff",
 	".t42", ".t11",
 	".ttf", ".ttf", ".suit", ".ttc", ".dfont", ".otf", ".otf.dfont", ".otf",
-	".otf.dfont", ".svg", ".ufo", ".ufo2", ".ufo3", ".woff",
+	".otf.dfont", ".svg", ".ufo", ".ufo2", ".ufo3", ".woff", ".woff",
 #ifdef FONTFORGE_CAN_USE_WOFF2
-	".woff2",
+	".woff2", ".woff2",
 #else
         NULL,
 #endif
@@ -84,9 +84,9 @@ const char *savefont_extensions[] = { ".pfa", ".pfb", ".bin", "%s.pfb", ".pfa", 
 	".ufo",
 	".ufo2",
 	".ufo3",
-	".woff",
+	".woff", ".woff",
 #ifdef FONTFORGE_CAN_USE_WOFF2
-	".woff2",
+	".woff2", ".woff2",
 #else
         NULL,
 #endif
@@ -843,12 +843,12 @@ return( true );
 	    oerr = !WriteTTFFont(newname,sf,oldformatstate,sizes,bmap,
 		flags,map,layer);
 	  break;
-	  case ff_woff:
+	  case ff_woff_ttf: case ff_woff_otf:
 	    oerr = !WriteWOFFFont(newname,sf,oldformatstate,sizes,bmap,
 		flags,map,layer);
 	  break;
 #ifdef FONTFORGE_CAN_USE_WOFF2
-	  case ff_woff2:
+	  case ff_woff2_ttf: case ff_woff2_otf:
 	    oerr = !WriteWOFF2Font(newname,sf,oldformatstate,sizes,bmap,
 		flags,map,layer);
 	  break;
@@ -971,7 +971,7 @@ void PrepareUnlinkRmOvrlp(SplineFont *sf,const char *filename,int layer) {
     int old_nwui = no_windowing_ui, old_maxundoes = maxundoes;
 
 #if !defined(_NO_PYTHON)
-    PyFF_CallDictFunc(sf->python_temporary,"generateFontPostHook","fs",sf->fv,filename);
+    PyFF_CallDictFunc(sf->python_temporary,"generateFontPreHook","fs",sf->fv,filename);
 #endif
 
     if ( maxundoes==0 ) maxundoes = 1;		/* Force undoes */

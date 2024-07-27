@@ -2854,14 +2854,18 @@ static int PyFFContour_SubAssign( PyObject *self, PyObject *key, PyObject *val )
     if ( PyLong_Check(key)) {
         return PyFFContour_IndexAssign(self, PyNumber_AsSsize_t(key, PyExc_IndexError), val);
     }
+    if ( val==NULL ) {
+        /* deleting (del c[i:j]) is equivalent to setting to empty array (c[i:j] = [])*/
+        val = PyList_New(0);
+    }
     rpl = PyFFPointList_Parse(val);
     if ( rpl==NULL ) {
 	PyErr_Format(PyExc_TypeError, "Replacement must encode a point list");
 	return( -1 );
     }
     if ( !PySlice_Check(key) ) {
-	PyErr_Format(PyExc_IndexError, "Contour indexed by integer only");
-	return( -1 );
+        PyErr_Format(PyExc_IndexError, "Contour indexed by integer or slice only");
+        return( -1 );
     }
 #if PY_VERSION_HEX > 0x03060100
     if (PySlice_Unpack(key, &start, &end, &step) < 0) {
@@ -14460,6 +14464,169 @@ return (NULL);
 return( Py_BuildValue("d",val));
 }
 
+static PyObject *PyFF_Font_get_style_set_names(PyFF_Font *self, void *UNUSED(closure)) {
+    int cnt;
+    SplineFont *sf;
+    struct otffeatname *fn;
+    struct otfname *on;
+    PyObject *ss_names_tuple, *ss_name_spec;
+    const char *lang_str;
+
+    if ( CheckIfFontClosed(self) )
+        return( NULL );
+
+    sf = self->fv->sf;
+    cnt = 0;
+    for ( fn=sf->feat_names; fn!=NULL; fn=fn->next )
+        for ( on=fn->names; on!=NULL; on=on->next, ++cnt );
+    if ( cnt==0 )
+        return( PyTuple_New(0) );
+    ss_names_tuple = PyTuple_New(cnt);
+    for ( cnt=0, fn=sf->feat_names; fn!=NULL; fn=fn->next ) {
+        for ( on=fn->names; on!=NULL; on=on->next, ++cnt ) {
+            lang_str = NOUI_MSLangString(on->lang);
+            ss_name_spec = PyTuple_Pack(3, PyUnicode_FromString(lang_str), TagToPythonString(fn->tag, false), PyUnicode_FromString(on->name));
+            PyTuple_SetItem(ss_names_tuple, cnt, ss_name_spec);
+        }
+    }
+    return( ss_names_tuple );
+}
+
+static int PyFF_Font_set_style_set_names(PyFF_Font *self, PyObject *value, void *UNUSED(closure)) {
+    int i, j, rows, is_valid;
+    PyObject *ss_names_tuple, *lang_py, *lang_py_i, *lang_py_j;
+    const char *tag_str, *name_str;
+    uint32_t tag, lang, lang_i, lang_j;
+    SplineFont *sf;
+    struct otffeatname *fn;
+    struct otfname *on;
+
+    if ( CheckIfFontClosed(self) )
+        return( -1 );
+
+    if ( !PyTuple_Check(value) ) {
+        PyErr_Format(PyExc_TypeError, "Style set names must be set as a tuple.");
+        return( -1 );
+    }
+    rows = PyTuple_Size(value);
+    for ( i=0; i<rows; ++i ) {
+        ss_names_tuple = PyTuple_GetItem(value, i);
+        if ( !PyTuple_Check(ss_names_tuple) ) {
+            PyErr_Format(PyExc_TypeError, "Style set name specification must be a tuple.");
+            return( -1 );
+        }
+        if ( PyTuple_Size(ss_names_tuple)!=3 ) {
+            PyErr_Format(PyExc_ValueError, "Style set name specification must have 3 elements (language, style set and name).");
+            return( -1 );
+        }
+
+        PyObject *lang_py = PyTuple_GetItem(ss_names_tuple, 0);
+        if ( PyUnicode_Check(lang_py) ) {
+            if ( FindFlagByName(sfnt_name_mslangs, PyUnicode_AsUTF8(lang_py))==FLAG_UNKNOWN  ) {
+                PyErr_Format(PyExc_ValueError, "The first element of a style set name specification must be a valid language name if it is a string.");
+                return( -1 );
+            }
+        } else if ( PyLong_Check(lang_py) ) {
+            if ( strcmp(NOUI_MSLangString(PyLong_AsLong(lang_py)), _("Unknown"))==0 ) {
+                PyErr_Format(PyExc_ValueError, "The first element of a style set name specification must be a valid language id if it is an integer.");
+                return( -1 );
+            }
+        } else {
+            PyErr_Format(PyExc_TypeError, "The first element of a style set name specification must be a string or an integer.");
+            return( -1 );
+        }
+
+        PyObject *tag_str_py = PyTuple_GetItem(ss_names_tuple, 1);
+        if ( !PyUnicode_Check(tag_str_py) ) {
+            PyErr_Format(PyExc_TypeError, "The second element of a style set name specification must be a string.");
+            return( -1 );
+        }
+        tag_str = PyUnicode_AsUTF8(tag_str_py);
+        is_valid = 0;
+        if ( strlen(tag_str)== 4 && tag_str[0]=='s' && tag_str[1]=='s'
+            && '0'<=tag_str[2] && tag_str[2]<='9' && '0'<=tag_str[3] && tag_str[3]<='9'
+        ) {
+            int ss_num = 10*(tag_str[2]-'0') + tag_str[3]-'0';
+            is_valid = 1 <= ss_num && ss_num <= 20;
+        }
+        if ( !is_valid ) {
+            PyErr_Format(PyExc_ValueError, "The second element of a style set name specification must be a valid style set tag.");
+            return( -1 );
+        }
+
+        if ( !PyUnicode_Check(PyTuple_GetItem(ss_names_tuple, 2)) ) {
+            PyErr_Format(PyExc_TypeError, "The third element of a style set name specification must be a string.");
+            return( -1 );
+        }
+    }
+
+    /* check for duplicates */
+    for ( i=0; i<rows; ++i ) {
+        for ( j=i+1; j<rows; ++j ) {
+            lang_py_i = PyTuple_GetItem(PyTuple_GetItem(value, i), 0);
+            if ( PyUnicode_Check(lang_py_i) )
+                lang_i = FindFlagByName(sfnt_name_mslangs, PyUnicode_AsUTF8(lang_py_i));
+            else
+                lang_i = PyLong_AsLong(lang_py_i);
+
+            lang_py_j = PyTuple_GetItem(PyTuple_GetItem(value, j), 0);
+            if ( PyUnicode_Check(lang_py_j) )
+                lang_j = FindFlagByName(sfnt_name_mslangs, PyUnicode_AsUTF8(lang_py_j));
+            else
+                lang_j = PyLong_AsLong(lang_py_j);
+
+            if (
+                lang_i == lang_j &&
+                PyObject_RichCompareBool(PyTuple_GetItem(PyTuple_GetItem(value, i), 1), PyTuple_GetItem(PyTuple_GetItem(value, j), 1), Py_EQ)
+            ) {
+                PyErr_Format(PyExc_ValueError, "The feature %s is named twice in language %s:\n  %.80s\n  %.80s",
+                    PyUnicode_AsUTF8(PyTuple_GetItem(PyTuple_GetItem(value, i), 1)),
+                    NOUI_MSLangString(lang_i),
+                    PyUnicode_AsUTF8(PyTuple_GetItem(PyTuple_GetItem(value, i), 2)),
+                    PyUnicode_AsUTF8(PyTuple_GetItem(PyTuple_GetItem(value, j), 2))
+                    );
+                return( -1 );
+            }
+        }
+    }
+
+    /* ok, this is valid input */
+    sf = self->fv->sf;
+    OtfFeatNameListFree(sf->feat_names);
+    sf->feat_names = NULL;
+    for ( i=rows-1; i>=0; --i ) {
+        ss_names_tuple = PyTuple_GetItem(value, i);
+
+        lang_py = PyTuple_GetItem(ss_names_tuple, 0);
+        if ( PyUnicode_Check(lang_py) )
+            lang = FindFlagByName(sfnt_name_mslangs, PyUnicode_AsUTF8(lang_py));
+        else
+            lang = PyLong_AsLong(lang_py);
+
+        tag = StrObjToTag(PyTuple_GetItem(ss_names_tuple, 1), false);
+
+        name_str = PyUnicode_AsUTF8(PyTuple_GetItem(ss_names_tuple, 2));
+
+        for ( fn=sf->feat_names; fn!=NULL && fn->tag!=tag; fn=fn->next );
+        if ( fn==NULL ) {
+            fn = chunkalloc(sizeof(*fn));
+            fn->tag = tag;
+            fn->next = sf->feat_names;
+            sf->feat_names = fn;
+        }
+        for ( on=fn->names; on!=NULL && on->lang!=lang; on=on->next );
+        if ( on==NULL ) {
+            on = chunkalloc(sizeof(*on));
+            on->lang = lang;
+            on->next = fn->names;
+            fn->names = on;
+        } else
+            free(on->name);
+        on->name = copy(name_str);
+    }
+    return( 0 );
+}
+
 static PyGetSetDef PyFF_Font_getset[] = {
     {(char *)"userdata",
      (getter)PyFF_Font_get_temporary, (setter)PyFF_Font_set_temporary,
@@ -14833,6 +15000,9 @@ static PyGetSetDef PyFF_Font_getset[] = {
     {(char *)"markClasses",
      (getter)PyFF_Font_get_mark_classes, (setter)PyFF_Font_set_mark_classes,
      (char *)"A tuple each entry of which is itself a tuple containing a mark-class-name and a tuple of glyph-names", NULL},
+    {(char *)"style_set_names",
+     (getter)PyFF_Font_get_style_set_names, (setter)PyFF_Font_set_style_set_names,
+     (char *)"A tuple, each entry of which is a 3-element tuple containing the language name (e.g. \"English (US)\"), the style set tag (e.g. \"ss01\") and the style set name.", NULL},
     PYGETSETDEF_EMPTY  /* Sentinel */
 };
 
@@ -20436,6 +20606,7 @@ static struct flaglist sfnt_name_str_ids[] = {
 static struct flaglist sfnt_name_mslangs[] = {
     { "Afrikaans", 0x436},
     { "Albanian", 0x41c},
+    { "Alsatian", 0x484},
     { "Amharic", 0x45e},
     { "Arabic (Saudi Arabia)", 0x401},
     { "Arabic (Iraq)", 0x801},
@@ -20457,10 +20628,14 @@ static struct flaglist sfnt_name_mslangs[] = {
     { "Assamese", 0x44d},
     { "Azeri (Latin)", 0x42c},
     { "Azeri (Cyrillic)", 0x82c},
+    { "Bashkir", 0x46d},
     { "Basque", 0x42d},
     { "Byelorussian", 0x423},
     { "Bengali", 0x445},
     { "Bengali Bangladesh", 0x845},
+    { "Bosnian (Cyrillic)", 0x201a},
+    { "Bosnian (Latin)", 0x141a},
+    { "Breton", 0x47e},
     { "Bulgarian", 0x402},
     { "Burmese", 0x455},
     { "Catalan", 0x403},
@@ -20471,10 +20646,12 @@ static struct flaglist sfnt_name_mslangs[] = {
     { "Chinese (Hong Kong)", 0xc04},
     { "Chinese (Singapore)", 0x1004},
     { "Chinese (Macau)", 0x1404},
+    { "Corsican", 0x483},
     { "Croatian", 0x41a},
     { "Croatian Bosnia/Herzegovina", 0x101a},
     { "Czech", 0x405},
     { "Danish", 0x406},
+    { "Dari", 0x48c},
     { "Divehi", 0x465},
     { "Dutch", 0x413},
     { "Flemish (Belgian Dutch)", 0x813},
@@ -20496,6 +20673,7 @@ static struct flaglist sfnt_name_mslangs[] = {
     { "English (Hong Kong)", 0x3c09},
     { "English (India)", 0x4009},
     { "English (Malaysia)", 0x4409},
+    { "English (Singapore)", 0x4809},
     { "Estonian", 0x425},
     { "Faeroese", 0x438},
     { "Farsi", 0x429},
@@ -20521,7 +20699,7 @@ static struct flaglist sfnt_name_mslangs[] = {
     { "Fulfulde", 0x467},
     { "Gaelic (Scottish)", 0x43c},
     { "Gaelic (Irish)", 0x83c},
-    { "Galician", 0x467},
+    { "Galician", 0x456},
     { "Georgian", 0x437},
     { "German German", 0x407},
     { "German Swiss", 0x807},
@@ -20530,6 +20708,7 @@ static struct flaglist sfnt_name_mslangs[] = {
     { "German Liechtenstein", 0x1407},
     { "Greek", 0x408},
     { "Guarani", 0x474},
+    { "Greenlandic", 0x46f},
     { "Gujarati", 0x447},
     { "Hausa", 0x468},
     { "Hawaiian", 0x475},
@@ -20541,6 +20720,7 @@ static struct flaglist sfnt_name_mslangs[] = {
     { "Igbo", 0x470},
     { "Indonesian", 0x421},
     { "Inuktitut", 0x45d},
+    { "Inuktitut (Latin)", 0x85d},
     { "Italian", 0x410},
     { "Italian Swiss", 0x810},
     { "Japanese", 0x411},
@@ -20549,15 +20729,19 @@ static struct flaglist sfnt_name_mslangs[] = {
     { "Kashmiri (India)", 0x860},
     { "Kazakh", 0x43f},
     { "Khmer", 0x453},
+    { "Kinyarwanda", 0x487},
     { "Kirghiz", 0x440},
     { "Konkani", 0x457},
     { "Korean", 0x412},
     { "Korean (Johab)", 0x812},
+    { "K’iche", 0x486},
     { "Lao", 0x454},
     { "Latvian", 0x426},
     { "Latin", 0x476},
     { "Lithuanian", 0x427},
     { "Lithuanian (Classic)", 0x827},
+    { "Lower Sorbian", 0x82e},
+    { "Luxembourgish", 0x46e},
     { "Macedonian", 0x42f},
     { "Malay", 0x43e},
     { "Malay (Brunei)", 0x83e},
@@ -20565,20 +20749,23 @@ static struct flaglist sfnt_name_mslangs[] = {
     { "Maltese", 0x43a},
     { "Manipuri", 0x458},
     { "Maori", 0x481},
+    { "Mapudungun", 0x47a},
     { "Marathi", 0x44e},
+    { "Mohawk", 0x47c},
     { "Mongolian (Cyrillic)", 0x450},
     { "Mongolian (Mongolian)", 0x850},
     { "Nepali", 0x461},
     { "Nepali (India)", 0x861},
     { "Norwegian (Bokmal)", 0x414},
     { "Norwegian (Nynorsk)", 0x814},
+    { "Occitan", 0x482},
     { "Oriya", 0x448},
     { "Oromo", 0x472},
     { "Papiamentu", 0x479},
     { "Pashto", 0x463},
     { "Polish", 0x415},
-    { "Portuguese (Portugal)", 0x416},
-    { "Portuguese (Brasil)", 0x816},
+    { "Portuguese (Brasil)", 0x416},
+    { "Portuguese (Portugal)", 0x816},
     { "Punjabi (India)", 0x446},
     { "Punjabi (Pakistan)", 0x846},
     { "Quecha (Bolivia)", 0x46b},
@@ -20589,11 +20776,22 @@ static struct flaglist sfnt_name_mslangs[] = {
     { "Romanian (Moldova)", 0x818},
     { "Russian", 0x419},
     { "Russian (Moldova)", 0x819},
+    { "Sakha", 0x485},
     { "Sami (Lappish)", 0x43b},
+    { "Sami (Inari)", 0x243b},
+    { "Sami (Lule) (Norway)", 0x103b},
+    { "Sami (Lule) (Sweden)", 0x143b},
+    { "Sami (Northern) (Finland)", 0xc3b},
+    { "Sami (Northern) (Sweden)", 0x83b},
+    { "Sami (Skolt)", 0x203b},
+    { "Sami (Southern) (Norway)", 0x183b},
+    { "Sami (Southern) (Sweden)", 0x1c3b},
     { "Sanskrit", 0x44f},
     { "Sepedi", 0x46c},
     { "Serbian (Cyrillic)", 0xc1a},
     { "Serbian (Latin)", 0x81a},
+    { "Serbian (Cyrillic) (Bosnia and Herzegovina)", 0x1c1a},
+    { "Serbian (Latin) (Bosnia and Herzegovina)", 0x181a},
     { "Sindhi India", 0x459},
     { "Sindhi Pakistan", 0x859},
     { "Sinhalese", 0x45b},
@@ -20652,6 +20850,7 @@ static struct flaglist sfnt_name_mslangs[] = {
     { "Venda", 0x433},
     { "Vietnamese", 0x42a},
     { "Welsh", 0x452},
+    { "Wolof", 0x488},
     { "Xhosa", 0x434},
     { "Yi", 0x478},
     { "Yiddish", 0x43d},

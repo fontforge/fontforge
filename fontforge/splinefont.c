@@ -788,11 +788,14 @@ return( name );
 
 char *Unarchive(char *name, char **_archivedir) {
     char *dir = getenv("TMPDIR");
-    char *pt, *archivedir, *listfile, *listcommand, *unarchivecmd, *desiredfile;
+    char *pt, *archivedir, *listfile, *desiredfile;
     char *finalfile;
     int i;
     int doall=false;
     static int cnt=0;
+    gchar *command[5];
+    gchar *stdoutresponse = NULL;
+    gchar *stderrresponse = NULL;
 
     *_archivedir = NULL;
 
@@ -827,18 +830,30 @@ return( NULL );
     listfile = malloc(strlen(archivedir)+strlen("/" TOC_NAME)+1);
     sprintf( listfile, "%s/" TOC_NAME, archivedir );
 
-    listcommand = malloc( strlen(archivers[i].unarchive) + 1 +
-			strlen( archivers[i].listargs) + 1 +
-			strlen( name ) + 3 +
-			strlen( listfile ) +4 );
-    sprintf( listcommand, "%s %s %s > %s", archivers[i].unarchive,
-	    archivers[i].listargs, name, listfile );
-    if ( system(listcommand)!=0 ) {
-	free(listcommand); free(listfile);
-	ArchiveCleanup(archivedir);
-return( NULL );
+    command[0] = archivers[i].unarchive;
+    command[1] = archivers[i].listargs;
+    command[2] = name;
+    command[3] = NULL; // command args need to be NULL-terminated
+
+    if ( g_spawn_sync(
+                      NULL,
+                      command,
+                      NULL,
+                      G_SPAWN_SEARCH_PATH, 
+                      NULL, 
+                      NULL, 
+                      &stdoutresponse, 
+                      &stderrresponse, 
+                      NULL, 
+                      NULL
+                      ) == FALSE) { // did not successfully execute
+      ArchiveCleanup(archivedir);
+      return( NULL );
     }
-    free(listcommand);
+    // Write out the listfile to be read in later
+    FILE *fp = fopen(listfile, "wb");
+    fwrite(stdoutresponse, strlen(stdoutresponse), 1, fp);
+    fclose(fp);
 
     desiredfile = ArchiveParseTOC(listfile, archivers[i].ars, &doall);
     free(listfile);
@@ -847,22 +862,28 @@ return( NULL );
 return( NULL );
     }
 
-    /* I tried sending everything to stdout, but that doesn't work if the */
-    /*  output is a directory file (ufo, sfdir) */
-    unarchivecmd = malloc( strlen(archivers[i].unarchive) + 1 +
-			strlen( archivers[i].listargs) + 1 +
-			strlen( name ) + 1 +
-			strlen( desiredfile ) + 3 +
-			strlen( archivedir ) + 30 );
-    sprintf( unarchivecmd, "( cd %s ; %s %s %s %s ) > /dev/null", archivedir,
-	    archivers[i].unarchive,
-	    archivers[i].extractargs, name, doall ? "" : desiredfile );
-    if ( system(unarchivecmd)!=0 ) {
-	free(unarchivecmd); free(desiredfile);
-	ArchiveCleanup(archivedir);
-return( NULL );
+    command[0] = archivers[i].unarchive;
+    command[1] = archivers[i].extractargs;
+    command[2] = name;
+    command[3] = doall ? "" : desiredfile;
+    command[4] = NULL;
+
+    if ( g_spawn_sync(
+                      (gchar*)archivedir,
+                      command,
+                      NULL,
+                      G_SPAWN_SEARCH_PATH, 
+                      NULL, 
+                      NULL, 
+                      &stdoutresponse, 
+                      &stderrresponse, 
+                      NULL, 
+                      NULL
+                      ) == FALSE) { // did not successfully execute
+      free(desiredfile);
+      ArchiveCleanup(archivedir);
+      return( NULL );
     }
-    free(unarchivecmd);
 
     finalfile = malloc( strlen(archivedir) + 1 + strlen(desiredfile) + 1);
     sprintf( finalfile, "%s/%s", archivedir, desiredfile );
@@ -885,20 +906,54 @@ struct compressors compressors[] = {
 
 char *Decompress(char *name, int compression) {
     char *dir = getenv("TMPDIR");
-    char buf[1500];
     char *tmpfn;
-
+    gchar *command[4];
+    gint stdout_pipe;
+    gchar buffer[4096];
+    gssize bytes_read;
+    GByteArray *binary_data = g_byte_array_new();
+    
     if ( dir==NULL ) dir = P_tmpdir;
     tmpfn = malloc(strlen(dir)+strlen(GFileNameTail(name))+2);
     strcpy(tmpfn,dir);
     strcat(tmpfn,"/");
     strcat(tmpfn,GFileNameTail(name));
     *strrchr(tmpfn,'.') = '\0';
-    snprintf( buf, sizeof(buf), "%s < %s > %s", compressors[compression].decomp, name, tmpfn );
-    if ( system(buf)==0 )
-return( tmpfn );
-    free(tmpfn);
-return( NULL );
+
+    command[0] = compressors[compression].decomp;
+    command[1] = "-c";
+    command[2] = name;
+    command[3] = NULL;
+
+    // Have to use async because g_spawn_sync doesn't handle nul-bytes in the output (which happens with binary data)
+    if (g_spawn_async_with_pipes(
+      NULL, 
+      command, 
+      NULL, 
+      G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_SEARCH_PATH,
+      NULL, 
+      NULL,  
+      NULL,
+      NULL, 
+      &stdout_pipe, 
+      NULL, 
+      NULL) == FALSE) {
+      //command has failed
+      return( NULL );
+    }
+
+    // Read binary data from pipe and output to file
+    while ((bytes_read = read(stdout_pipe, buffer, sizeof(buffer))) > 0) {
+        g_byte_array_append(binary_data, (guint8 *)buffer, bytes_read);
+    }
+    close(stdout_pipe);
+
+    FILE *fp = fopen(tmpfn, "wb");
+    fwrite(binary_data->data, sizeof(gchar), binary_data->len, fp);
+    fclose(fp);
+    g_byte_array_free(binary_data, TRUE);
+
+		return(tmpfn);
 }
 
 static char *ForceFileToHaveName(FILE *file, char *exten) {

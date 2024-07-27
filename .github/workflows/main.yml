@@ -22,6 +22,10 @@ jobs:
       - uses: actions/checkout@v3
         with:
           path: repo
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
       - name: Restore cached custom dependencies
         id: cache-dependencies
         uses: actions/cache@v3
@@ -55,12 +59,6 @@ jobs:
         run: |
           DESTDIR=appdir cmake -DCMAKE_INSTALL_PREFIX=/usr -P cmake_install.cmake
           ../.github/workflows/scripts/ffappimagebuild.sh appdir $GITHUB_SHA
-      - name: Update Potfile for Crowdin
-        if: matrix.target == 'Release' && github.ref == 'refs/heads/master' && github.repository == 'fontforge/fontforge' && github.event_name == 'push'
-        working-directory: repo
-        env:
-          CROWDIN_API_KEY: ${{ secrets.CROWDIN_API_KEY }}
-        run: java -jar $DEPSPREFIX/crowdin-cli.jar -c .crowdin.yml upload
       - name: Dist archive artifact
         uses: actions/upload-artifact@v3
         if: matrix.target == 'NoUI'
@@ -73,6 +71,12 @@ jobs:
         with:
           name: appimage
           path: repo/build/FontForge-*-x86_64.AppImage
+      - name: Update Potfile for Crowdin
+        if: matrix.target == 'Release' && github.ref == 'refs/heads/master' && github.repository == 'fontforge/fontforge' && github.event_name == 'push'
+        working-directory: repo
+        env:
+          CROWDIN_API_KEY: ${{ secrets.CROWDIN_API_KEY }}
+        run: java -jar $DEPSPREFIX/crowdin-cli.jar upload -c .crowdin.yml
   mac:
     runs-on: macos-11
     steps:

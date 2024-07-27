@@ -3509,8 +3509,6 @@ docs are wrong.
         os2->capHeight = (caph >= 0.0 ? caph : 0);
     }
 	os2->defChar = 0;
-	if ( format==ff_otf || format==ff_otfcid )
-	    os2->defChar = ' ';
 	os2->breakChar = ' ';
 	os2->maxContext = 1;	/* Kerning will set this to 2, ligature to whatever */
     }
@@ -3734,12 +3732,14 @@ static void dumpstr(FILE *file,char *str) {
 }
 
 static void dumpustr(FILE *file,char *utf8_str) {
-    unichar_t *ustr = utf82u_copy(utf8_str), *pt=ustr;
+    uint16_t *utf16_str = utf82utf16_copy(utf8_str);
+    uint16_t *pt = utf16_str;
+    
     do {
 	putc(*pt>>8,file);
 	putc(*pt&0xff,file);
     } while ( *pt++!='\0' );
-    free(ustr);
+    free(utf16_str);
 }
 
 static void dumppstr(FILE *file,const char *str) {
@@ -6364,6 +6364,8 @@ static int glyphmatches(SplineChar *sc,SplineChar *sc2,int layer) {
     SplinePoint *sp, *sp2;
 
     if ( sc->width!=sc2->width )
+return( false );
+    if ( sc->vwidth!=sc2->vwidth )
 return( false );
     if ( sc->ttf_instrs_len != sc2->ttf_instrs_len )
 return( false );

@@ -507,8 +507,7 @@ static void InsertSubMenus(struct py_menu_spec *spec, struct py_menu_data *pmd) 
 static int DecodeMenuLevel(struct py_menu_text *text, PyObject *args) {
     if ( PyUnicode_Check(args) ) {
 	text->localized = text->untranslated = PyUnicode_AsUTF8(args);
-    } else {
-	assert( PyTuple_Check(args) );
+    } else if ( PyTuple_Check(args) ) {
 	for ( int i=0; i<PyTuple_Size(args); ++i ) {
 	    if ( !PyUnicode_Check(PyTuple_GetItem(args, i)) ) {
 		PyErr_Format(PyExc_ValueError, "All elements of a `name` or `submenu` tuple must be strings" );
@@ -526,6 +525,9 @@ static int DecodeMenuLevel(struct py_menu_text *text, PyObject *args) {
 	    PyErr_Format(PyExc_ValueError, "A `name` or `submenu` tuple must have either 2 or 3 elements" );
 	    return false;
 	}
+    } else {
+	PyErr_Format(PyExc_ValueError, "A `name` or `submenu` object must be either string or tuple" );
+	return false;
     }
     return true;
 }
