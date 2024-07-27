@@ -2859,8 +2859,14 @@ Any of the math constant names may be used as member names.
 
 These all take (16 bit) integer values.
 
-Each ``DeviceTable`` property takes a tuple of two-element tuples, each representing a font size in pixels and the corresponding adjustment, e.g. ``((9, -1), (10, -1), (12, -1))``.
+Each ``DeviceTable`` property takes a dictionary with keys representing a font size
+in pixels and values representing the corresponding adjustment, e.g. ``{9: -1, 10: -1, 12: -1}``.
+Setting ``DeviceTable`` property to ``None`` will delete it.
 
+Device table entries can also be queried and assigned by font size ::
+
+   font.math.MathLeadingDeviceTable[12] = 2
+   adj = font.math.MathLeadingDeviceTable[12]
 
 .. attribute:: math.ScriptPercentScaleDown
 
