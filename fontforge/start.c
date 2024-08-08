@@ -77,7 +77,8 @@ void InitSimpleStuff(void) {
     initrand();
     initadobeenc();
 
-    setlocale(LC_ALL,"");
+    setlocale(LC_ALL,"C");   // this fixes a CRASH on macOS, file, open, svg (inkscape) for own font design
+    //setlocale(LC_ALL,"");  // why? file, open, own svg font file, waits for ever, svg parser will crash
     localeinfo = *localeconv();
     coord_sep = ",";
     if ( *localeinfo.decimal_point=='.' ) coord_sep=",";
