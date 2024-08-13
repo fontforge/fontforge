@@ -8592,44 +8592,44 @@ static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args,
 	    ip.correct_direction = true;
     }
     if ( PyUnicode_Check(file) ){
-    const char* filename = PyUnicode_AsUTF8(file);
-    if ( filename==NULL )
-    return NULL;
+        const char* filename = PyUnicode_AsUTF8(file);
+        if ( filename==NULL )
+        return NULL;
 
-    locfilename = utf82def_copy(filename);
+        locfilename = utf82def_copy(filename);
 
-    /* Check if the file exists and is readable */
-    if ( access(locfilename, R_OK)!=0 ) {
-    PyErr_SetFromErrnoWithFilename(PyExc_IOError,locfilename);
-    free(locfilename);
-    return NULL;
-    }
+        /* Check if the file exists and is readable */
+        if ( access(locfilename, R_OK)!=0 ) {
+            PyErr_SetFromErrnoWithFilename(PyExc_IOError,locfilename);
+            free(locfilename);
+            return NULL;
+        }
     }
     else if (PyObject_HasAttrString(file, "read")) {
-    PyObject *read_method = PyObject_GetAttrString(file, "read");
-    if ( !read_method || !PyCallable_Check(read_method) )
-    return NULL;
+        PyObject *read_method = PyObject_GetAttrString(file, "read");
+        if ( !read_method || !PyCallable_Check(read_method) )
+        return NULL;
 
-    PyObject *file_content = PyObject_CallObject(read_method, NULL);
-    Py_XDECREF(read_method);
-    if ( !file_content || !PyBytes_Check(file_content) ) {
-    Py_XDECREF(file_content);
-    PyErr_SetString(PyExc_ValueError, "Failed to read file content or invalid format.");
-    return NULL;
-    }
+        PyObject *file_content = PyObject_CallObject(read_method, NULL);
+        Py_XDECREF(read_method);
+        if ( !file_content || !PyBytes_Check(file_content) ) {
+            Py_XDECREF(file_content);
+            PyErr_SetString(PyExc_ValueError, "Failed to read file content or invalid format.");
+            return NULL;
+        }
 
-    filebuffer = PyBytes_AsString(file_content);
-    filebuffersize = PyBytes_Size(file_content);
-    if ( filebuffer==NULL ) {
-    PyErr_SetString(PyExc_ValueError, "Failed to extract bytes content");
-    return NULL;
-    }
+        filebuffer = PyBytes_AsString(file_content);
+        filebuffersize = PyBytes_Size(file_content);
+        if ( filebuffer==NULL ) {
+            PyErr_SetString(PyExc_ValueError, "Failed to extract bytes content");
+            return NULL;
+        }
 
-    Py_DECREF(file_content);
+        Py_DECREF(file_content);
     }
     else {
-    PyErr_SetString(PyExc_TypeError, "Expected a string or file-like object");
-    return NULL;
+        PyErr_SetString(PyExc_TypeError, "Expected a string or file-like object");
+        return NULL;
     }
 
     if ( use_system || ask_system ) {
@@ -8640,62 +8640,110 @@ static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args,
 	ipp = &ip;
 
     if ( filetype==NULL ){
-    if ( locfilename==NULL ){
-    PyErr_SetString(PyExc_TypeError, "Expected a filetype or filename");
-    return NULL;
-    }
-    filetype = strrchr(locfilename, '.');
-    if ( filetype==NULL )
-    filetype=locfilename;
-    else
-    filetype += 1;
+        if ( locfilename==NULL ){
+            PyErr_SetString(PyExc_TypeError, "Expected a filetype or filename");
+            return NULL;
+        }
+        filetype = strrchr(locfilename, '.');
+        if ( filetype==NULL )
+        filetype=locfilename;
+        else
+        filetype += 1;
 
-    char *lastcharacter = locfilename + strlen(locfilename) - 1;
-    if ( filetype >= lastcharacter)
-    return NULL;
+        char *lastcharacter = locfilename + strlen(locfilename) - 1;
+        if ( filetype >= lastcharacter)
+        return NULL;
     }
+
 
     if ( strcasecmp(filetype,"eps")==0 || strcasecmp(filetype,"ps")==0 || strcasecmp(filetype,"art")==0 ) {
-	SCImportPS(sc,((PyFF_Glyph *) self)->layer,locfilename,false,ipp);
+        if ( locfilename==NULL ){
+            FILE *psfile = fmemopen(filebuffer, filebuffersize, "r");
+            if (psfile == NULL) {
+                PyErr_SetString(PyExc_TypeError, "Could not load file stream");
+                return NULL;
+            }
+            SCImportPSFile(sc, ((PyFF_Glyph *) self)->layer, psfile, false, ipp);
+            fclose(psfile);
+        }
+        else
+            SCImportPS(sc,((PyFF_Glyph *) self)->layer,locfilename,false,ipp);
     }
     else if ( strcasecmp(filetype,"svg")==0 ) {
-    if ( locfilename==NULL )
-        SCImportSVG(sc, ((PyFF_Glyph *) self)->layer, NULL, filebuffer, filebuffersize, false, ipp);
-    else
-        SCImportSVG(sc, ((PyFF_Glyph *) self)->layer, locfilename, NULL, 0, false, ipp);
+        if ( locfilename==NULL )
+            SCImportSVG(sc, ((PyFF_Glyph *) self)->layer, NULL, filebuffer, filebuffersize, false, ipp);
+        else
+            SCImportSVG(sc, ((PyFF_Glyph *) self)->layer, locfilename, NULL, 0, false, ipp);
     }
     else if ( strcasecmp(filetype,"glif")==0 ) {
-	SCImportGlif(sc,((PyFF_Glyph *) self)->layer,locfilename,NULL,0,false,ipp);
+        if ( locfilename==NULL )
+            SCImportGlif(sc,((PyFF_Glyph *) self)->layer,NULL,filebuffer,filebuffersize,false,ipp);
+        else
+            SCImportGlif(sc,((PyFF_Glyph *) self)->layer,locfilename,NULL,0,false,ipp);
     }
     else if ( strcasecmp(filetype,"plate")==0 ) {
-	FILE *plate = fopen(locfilename,"r");
-	if ( plate==NULL ) {
-	    PyErr_SetFromErrnoWithFilename(PyExc_IOError,locfilename);
-	    free(locfilename);
-return( NULL );
-	}
-	else {
-	    SCImportPlateFile(sc,((PyFF_Glyph *) self)->layer,plate,false,ipp);
-	    fclose(plate);
-	}
+        FILE *plate = NULL;
+
+        if ( locfilename==NULL )
+
+            plate = fmemopen(filebuffer, filebuffersize, "r");
+        else
+            plate = fopen(locfilename,"r");
+
+        if ( plate==NULL ) {
+            if ( locfilename != NULL ){
+                PyErr_SetFromErrnoWithFilename(PyExc_IOError,locfilename);
+                free( locfilename );
+            }
+            if ( filebuffer != NULL ){
+                PyErr_SetString(PyExc_TypeError, "Could not load file stream");
+                Py_DECREF( filebuffer );
+            }
+            return( NULL );
+        }
+
+        SCImportPlateFile(sc,((PyFF_Glyph *) self)->layer,plate,false,ipp);
+        fclose(plate);
     } /* else if ( strcasecmp(filetype,"fig")==0 )*/
     else {
-	GImage *image = GImageRead(locfilename);
-	int ly = ((PyFF_Glyph *) self)->layer;
-	if ( image==NULL ) {
-	    PyErr_Format(PyExc_EnvironmentError, "Could not load image file \"%s\"", locfilename );
-	    free(locfilename);
-return(NULL);
-	}
-	if ( !sc->layers[ly].background )
-	    ly = ly_back;
-	SCAddScaleImage(sc,image,false,ly,ipp);
+        GImage *image = NULL;
+
+        if ( locfilename != NULL ){
+            image = GImageRead(locfilename);
+        } else {
+            if (( strcasecmp(filetype, "tiff")==0 || strcasecmp(filetype, "gif")==0 )){
+                char error[256];
+                sprintf(error, "\"%s\" files cannot be passed through a stream.\n\
+                            If you are using a linux system try writing the file into \"/dev/shm\"\
+                            and then passing that filename to fontforge.", filetype);
+                PyErr_SetString(PyExc_IOError, error);
+                Py_DECREF( filebuffer );
+                return NULL;
+            }
+
+            image = GImageReadBuf(filebuffer, filebuffersize, filetype);
+        }
+
+        int ly = ((PyFF_Glyph *) self)->layer;
+        if ( image==NULL ) {
+            PyErr_Format(PyExc_EnvironmentError, "Could not load image file" );
+            if ( locfilename != NULL )
+            free( locfilename );
+            if ( filebuffer != NULL )
+            Py_DECREF( filebuffer );
+            return(NULL);
+        }
+        if ( !sc->layers[ly].background )
+            ly = ly_back;
+        SCAddScaleImage(sc,image,false,ly,ipp);
+        GImageDestroy(image);
     }
     if ( locfilename != NULL )
     free( locfilename );
     if ( filebuffer != NULL )
     Py_DECREF( filebuffer );
-Py_RETURN( self );
+
+    Py_RETURN( self );
 }
 
 static char *glyph_export_keywords[] = { "filename", "layer", "pixelsize",

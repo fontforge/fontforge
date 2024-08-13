@@ -77,6 +77,7 @@ extern int GFileMkDir(const char *name, int mode);
 extern int GFileRmDir(const char *name);
 extern int GFileUnlink(const char *name);
 extern char* GFileMimeType(const char *path);
+extern const char** GFileMimeTypeMatching(char* ext);
 extern unichar_t *u_GFileBuildName(unichar_t *dir,unichar_t *fname,unichar_t *buffer,int size);
 extern unichar_t *u_GFileReplaceName(unichar_t *oldname,unichar_t *fname,unichar_t *buffer,int size);
 extern unichar_t *u_GFileNameTail(const unichar_t *oldname);

@@ -5,6 +5,7 @@ from io import BytesIO
 import os
 import unittest
 
+
 def export_outlines_value(output_path, character):
     character.export(output_path)
     file_content: str = ""
@@ -16,6 +17,20 @@ def export_outlines_value(output_path, character):
     assert "svg" in file_content
     assert "path" in file_content
     assert "d" in file_content
+
+# NOTE: I just dumped test files into my '/tmp' directory
+def generic_file_stream_testing(file_type:str, character):
+    IMAGE = '/tmp/test.' + file_type
+    OUT = '/tmp/img.' + file_type
+    bytes = None
+    with open(IMAGE, "rb") as file:
+        bytes = BytesIO(file.read())
+    character.importOutlines(bytes, type=file_type)
+    character.export(OUT)
+    with open(OUT, "rb") as file:
+        assert len(file.read()) > 0
+    os.remove(OUT)
+
 
 class TestFontForgeImportOutlines(unittest.TestCase):
     def setUp(self):
@@ -62,13 +77,57 @@ class TestFontForgeImportOutlines(unittest.TestCase):
 
     # This is the Happy Path
     def test_import_outlines_from_stream_with_type(self):
-        self.char.importOutlines(BytesIO(bytes(self.svg_string, 'utf-8')), type='svg')
+        self.char.importOutlines(
+            BytesIO(bytes(self.svg_string, 'utf-8')), type='svg')
 
         export_outlines_value(self.OUTPUT, self.char)
 
     def test_import_outlines_missing_type(self):
         with self.assertRaises(TypeError):
             self.char.importOutlines(BytesIO(bytes(self.svg_string, 'utf-8')))
+
+    def test_import_png_outlines(self):
+        PNG_IMAGE = '../doc/sphinx/images/allgreek.png'
+        OUT_PNG = '/tmp/img.png'
+        self.char.importOutlines(PNG_IMAGE)
+        self.char.export(OUT_PNG)
+        with open(OUT_PNG, "rb") as file:
+            assert len(file.read()) > 0
+        os.remove(OUT_PNG)
+
+
+    def test_import_png_outlines_from_stream_with_type(self):
+        PNG_IMAGE = '../doc/sphinx/images/allgreek.png'
+        OUT_PNG = '/tmp/img.png'
+        png_bytes = None
+        with open(PNG_IMAGE, "rb") as file:
+            png_bytes = BytesIO(file.read())
+        self.char.importOutlines(png_bytes, type='png')
+        self.char.export(OUT_PNG)
+        with open(OUT_PNG, "rb") as file:
+            assert len(file.read()) > 0
+        os.remove(OUT_PNG)
+
+    def test_import_jpeg_outlines_from_stream_with_type(self):
+        generic_file_stream_testing('jpeg')
+
+    def test_import_eps_outlines_from_stream_with_type(self):
+        generic_file_stream_testing('eps')
+
+    def test_import_glif_outlines_from_stream_with_type(self):
+        generic_file_stream_testing('glif')
+
+    def test_import_tiff_outlines_from_stream_with_type(self):
+        generic_file_stream_testing('tiff')
+
+    def test_import_gif_outlines_from_stream_with_type(self):
+        generic_file_stream_testing('gif')
+
+    def test_import_xbm_outlines_from_stream_with_type(self):
+        generic_file_stream_testing('xbm')
+
+    def test_import_xpm_outlines_from_stream_with_type(self):
+        generic_file_stream_testing('xpm')
 
 if __name__ == '__main__':
     unittest.main()

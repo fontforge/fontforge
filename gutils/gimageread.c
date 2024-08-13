@@ -81,3 +81,82 @@ GImage *GImageRead(char * filename) {
 
     return( NULL );
 }
+
+GImage *GImageReadBuf(char *buffer, int size, char* ext) {
+    if ( buffer==NULL || size == 0 ){
+        return NULL;
+    }
+
+    FILE *file = fmemopen(buffer, size, "rb");
+    GImage *ret;
+
+    if (file == NULL) {
+        fprintf(stderr, "Can't open file buffer\n");
+        return (NULL);
+    }
+
+    const char** elem = GFileMimeTypeMatching(ext);
+    char *mime = copy(elem ? elem[1] : "application/octet-stream");
+
+    if ( strcasecmp(mime,"image/bmp")==0 ) {
+        free(mime);
+        ret = GImageRead_Bmp(file);
+        fclose(file);
+        return( ret );
+    } else if ( strcasecmp(mime,"image/x-xbitmap")==0 ) {
+        free(mime);
+        ret = GImageRead_Xbm(file);
+        fclose(file);
+        return( ret );
+    } else if ( strcasecmp(mime,"image/x-xpixmap")==0 ) {
+        free(mime);
+        ret = GImageRead_Xpm(file);
+        fclose(file);
+        return( ret );
+    #ifndef _NO_LIBTIFF
+    } else if ( strcasecmp(mime,"image/tiff")==0 ) {
+        free(mime);
+        fclose(file);
+        /* libtiff does not support assigning TIFF type using buffer */
+        return( NULL );
+    #endif
+    #ifndef _NO_LIBJPEG
+    } else if ( strcasecmp(mime,"image/jpeg")==0 ) {
+        free(mime);
+        ret = GImageRead_Jpeg(file);
+        fclose(file);
+        return( ret );
+    #endif
+    #ifndef _NO_LIBPNG
+    } else if ( strcasecmp(mime,"image/png")==0 ) {
+        free(mime);
+        ret = GImageReadPngBuf(buffer, size);
+        fclose(file);
+        return( ret );
+    #endif
+    #ifndef _NO_LIBUNGIF
+    } else if ( strcasecmp(mime,"image/gif")==0 ) {
+        free(mime);
+        fclose(file);
+        /* giflib does not support assigning GifFileType type using buffer */
+        return( NULL );
+    #endif
+    } else if ( strcasecmp(mime,"image/x-cmu-raster")==0 || \
+              strcasecmp(mime,"image/x-sun-raster")==0 ) {
+        free(mime);
+        ret = GImageRead_Ras(file);		/* Sun raster */
+        fclose(file);
+        return( ret );
+    } else if ( strcasecmp(mime,"image/x-rgb")==0 || \
+              strcasecmp(mime,"image/x-sgi")==0 ) {
+        free(mime);
+        ret = GImageRead_Rgb(file);		/* SGI format */
+        fclose(file);
+        return( ret );
+    }
+
+    free(mime);
+    fclose(file);
+
+    return( NULL );
+}

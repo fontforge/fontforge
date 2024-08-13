@@ -1018,6 +1018,67 @@ static int mime_comp(const void *k, const void *v) {
     return strmatch((const char*)k, ((const char**)v)[0]);
 }
 
+const char **GFileMimeTypeMatching(char *ext){
+    // array MUST be sorted by extension
+    static const char* ext_mimes[][2] = {
+            {"bdf",   "application/x-font-bdf"},
+            {"bin",   "application/x-macbinary"},
+            {"bz2",   "application/x-compressed"},
+            {"c",     "text/c"},
+            {"cff",   "application/x-font-type1"},
+            {"cid",   "application/x-font-cid"},
+            {"css",   "text/css"},
+            {"dfont", "application/x-mac-dfont"},
+            {"eps",   "text/ps"},
+            {"gai",   "font/otf"},
+            {"gif",   "image/gif"},
+            {"gz",    "application/x-compressed"},
+            {"h",     "text/h"},
+            {"hqx",   "application/x-mac-binhex40"},
+            {"html",  "text/html"},
+            {"jpeg",  "image/jpeg"},
+            {"jpg",   "image/jpeg"},
+            {"mov",   "video/quicktime"},
+            {"o",     "application/x-object"},
+            {"obj",   "application/x-object"},
+            {"otb",   "font/otf"},
+            {"otf",   "font/otf"},
+            {"pcf",   "application/x-font-pcf"},
+            {"pdf",   "application/pdf"},
+            {"pfa",   "application/x-font-type1"},
+            {"pfb",   "application/x-font-type1"},
+            {"png",   "image/png"},
+            {"ps",    "text/ps"},
+            {"pt3",   "application/x-font-type1"},
+            {"ras",   "image/x-cmu-raster"},
+            {"rgb",   "image/x-rgb"},
+            {"rpm",   "application/x-compressed"},
+            {"sfd",   "application/vnd.font-fontforge-sfd"},
+            {"sgi",   "image/x-sgi"},
+            {"snf",   "application/x-font-snf"},
+            {"svg",   "image/svg+xml"},
+            {"tar",   "application/x-tar"},
+            {"tbz",   "application/x-compressed"},
+            {"text",  "text/plain"},
+            {"tgz",   "application/x-compressed"},
+            {"ttf",   "font/ttf"},
+            {"txt",   "text/plain"},
+            {"wav",   "audio/wave"},
+            {"woff",  "font/woff"},
+            {"woff2", "font/woff2"},
+            {"xbm",   "image/x-xbitmap"},
+            {"xml",   "text/xml"},
+            {"xpm",   "image/x-xpixmap"},
+            {"z",     "application/x-compressed"},
+            {"zip",   "application/x-compressed"},
+    };
+
+    const char** elem = bsearch(ext, ext_mimes,
+                                sizeof(ext_mimes)/sizeof(ext_mimes[0]), sizeof(ext_mimes[0]),
+                                mime_comp);
+    return elem;
+}
+
 char* GFileMimeType(const char *path) {
     char* ret, *pt;
     gboolean uncertain = false;
@@ -1042,64 +1103,7 @@ char* GFileMimeType(const char *path) {
             if (len && pt[len - 1] == '~') {
                 pt[len - 1] = '\0';
             }
-
-            // array MUST be sorted by extension
-            static const char* ext_mimes[][2] = {
-                {"bdf",   "application/x-font-bdf"},
-                {"bin",   "application/x-macbinary"},
-                {"bz2",   "application/x-compressed"},
-                {"c",     "text/c"},
-                {"cff",   "application/x-font-type1"},
-                {"cid",   "application/x-font-cid"},
-                {"css",   "text/css"},
-                {"dfont", "application/x-mac-dfont"},
-                {"eps",   "text/ps"},
-                {"gai",   "font/otf"},
-                {"gif",   "image/gif"},
-                {"gz",    "application/x-compressed"},
-                {"h",     "text/h"},
-                {"hqx",   "application/x-mac-binhex40"},
-                {"html",  "text/html"},
-                {"jpeg",  "image/jpeg"},
-                {"jpg",   "image/jpeg"},
-                {"mov",   "video/quicktime"},
-                {"o",     "application/x-object"},
-                {"obj",   "application/x-object"},
-                {"otb",   "font/otf"},
-                {"otf",   "font/otf"},
-                {"pcf",   "application/x-font-pcf"},
-                {"pdf",   "application/pdf"},
-                {"pfa",   "application/x-font-type1"},
-                {"pfb",   "application/x-font-type1"},
-                {"png",   "image/png"},
-                {"ps",    "text/ps"},
-                {"pt3",   "application/x-font-type1"},
-                {"ras",   "image/x-cmu-raster"},
-                {"rgb",   "image/x-rgb"},
-                {"rpm",   "application/x-compressed"},
-                {"sfd",   "application/vnd.font-fontforge-sfd"},
-                {"sgi",   "image/x-sgi"},
-                {"snf",   "application/x-font-snf"},
-                {"svg",   "image/svg+xml"},
-                {"tar",   "application/x-tar"},
-                {"tbz",   "application/x-compressed"},
-                {"text",  "text/plain"},
-                {"tgz",   "application/x-compressed"},
-                {"ttf",   "font/ttf"},
-                {"txt",   "text/plain"},
-                {"wav",   "audio/wave"},
-                {"woff",  "font/woff"},
-                {"woff2", "font/woff2"},
-                {"xbm",   "image/x-xbitmap"},
-                {"xml",   "text/xml"},
-                {"xpm",   "image/x-xpixmap"},
-                {"z",     "application/x-compressed"},
-                {"zip",   "application/x-compressed"},
-            };
-
-            const char** elem = bsearch(pt, ext_mimes,
-                sizeof(ext_mimes)/sizeof(ext_mimes[0]), sizeof(ext_mimes[0]),
-                mime_comp);
+            const char** elem = GFileMimeTypeMatching(pt);
             ret = copy(elem ? elem[1] : "application/octet-stream");
             free(pt);
         }

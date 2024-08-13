@@ -159,8 +159,10 @@ extern GImage *GImageRead_Bmp(FILE *file);
 extern GImage *GImageReadBmp(char *filename);
 extern int GImageWriteXbm(GImage *gi, char *filename);
 extern GImage *GImageReadXbm(char *filename);
+extern GImage *GImageRead_Xbm(FILE *fp);
 extern int GImageWriteXpm(GImage *gi, char *filename);
 extern GImage *GImageReadXpm(char *filename);
+extern GImage *GImageRead_Xpm(FILE *fp);
 extern GImage *GImageReadTiff(char *filename);
 extern GImage *GImageReadJpeg(char *filename);
 extern GImage *GImageRead_Jpeg(FILE *fp);
@@ -175,8 +177,11 @@ extern int GImageWritePngBuf(GImage *gi, char** buf, size_t* sz, int compression
 extern GImage *GImageReadGif(char *filename);
 extern int GImageWriteGif(GImage *gi,char *filename,int progressive);
 extern GImage *GImageReadRas(char *filename);		/* Sun Raster */
+extern GImage *GImageRead_Ras(FILE *fp);
 extern GImage *GImageReadRgb(char *filename);		/* SGI */
+extern GImage *GImageRead_Rgb(FILE *fp);
 extern GImage *GImageRead(char *filename);
+extern GImage *GImageReadBuf(char *buffer, int size, char* ext);
 
 extern void GImageDrawRect(GImage *img,GRect *r,Color col);
 extern void GImageDrawImage(GImage *dest,GImage *src,GRect *junk,int x, int y);
