@@ -8713,9 +8713,9 @@ static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args,
         } else {
             if (( strcasecmp(filetype, "tiff")==0 || strcasecmp(filetype, "gif")==0 )){
                 char error[256];
-                sprintf(error, "\"%s\" files cannot be passed through a stream.\n\
-                            If you are using a linux system try writing the file into \"/dev/shm\"\
-                            and then passing that filename to fontforge.", filetype);
+                sprintf(error, "\"%s\" files cannot be passed through a stream.\n"
+                            "\tIf you are using a linux system try writing the file into \"/dev/shm\"\n"
+                            "\tand then passing that filename to fontforge.", filetype);
                 PyErr_SetString(PyExc_IOError, error);
                 Py_DECREF( filebuffer );
                 return NULL;

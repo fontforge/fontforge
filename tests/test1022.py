@@ -22,10 +22,10 @@ def export_outlines_value(output_path, character):
 def generic_file_stream_testing(file_type:str, character):
     IMAGE = '/tmp/test.' + file_type
     OUT = '/tmp/img.' + file_type
-    bytes = None
+    file_bytes = None
     with open(IMAGE, "rb") as file:
-        bytes = BytesIO(file.read())
-    character.importOutlines(bytes, type=file_type)
+        file_bytes = BytesIO(file.read())
+    character.importOutlines(file_bytes, type=file_type)
     character.export(OUT)
     with open(OUT, "rb") as file:
         assert len(file.read()) > 0
@@ -97,7 +97,7 @@ class TestFontForgeImportOutlines(unittest.TestCase):
 
 
     def test_import_png_outlines_from_stream_with_type(self):
-        PNG_IMAGE = '../doc/sphinx/images/allgreek.png'
+        PNG_IMAGE = '../doc/sphinx/images/a_dieresis_macron.png'
         OUT_PNG = '/tmp/img.png'
         png_bytes = None
         with open(PNG_IMAGE, "rb") as file:
@@ -109,25 +109,25 @@ class TestFontForgeImportOutlines(unittest.TestCase):
         os.remove(OUT_PNG)
 
     def test_import_jpeg_outlines_from_stream_with_type(self):
-        generic_file_stream_testing('jpeg')
+        generic_file_stream_testing('jpeg', self.char)
 
     def test_import_eps_outlines_from_stream_with_type(self):
-        generic_file_stream_testing('eps')
+        generic_file_stream_testing('eps', self.char)
 
     def test_import_glif_outlines_from_stream_with_type(self):
-        generic_file_stream_testing('glif')
+        generic_file_stream_testing('glif', self.char)
 
     def test_import_tiff_outlines_from_stream_with_type(self):
-        generic_file_stream_testing('tiff')
+        generic_file_stream_testing('tiff', self.char)
 
     def test_import_gif_outlines_from_stream_with_type(self):
-        generic_file_stream_testing('gif')
+        generic_file_stream_testing('gif', self.char)
 
     def test_import_xbm_outlines_from_stream_with_type(self):
-        generic_file_stream_testing('xbm')
+        generic_file_stream_testing('xbm', self.char)
 
     def test_import_xpm_outlines_from_stream_with_type(self):
-        generic_file_stream_testing('xpm')
+        generic_file_stream_testing('xpm', self.char)
 
 if __name__ == '__main__':
     unittest.main()
