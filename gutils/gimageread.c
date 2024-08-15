@@ -94,6 +94,7 @@ GImage *GImageReadBuf(char *buffer, int size, char* ext) {
     file = tmpfile();
     if ( file==NULL ) {
         fprintf(stderr, "Failed to create temporary file");
+        return NULL;
     }
     fwrite(buffer, size, 1, file);
     #endif
