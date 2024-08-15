@@ -48,6 +48,7 @@
 #include "fvcomposite.h"
 #include "fvfonts.h"
 #include "fvimportbdf.h"
+#include "gfile.h"
 #include "glyphcomp.h"
 #include "langfreq.h"
 #include "lookups.h"
@@ -8669,16 +8670,7 @@ static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args,
     if ( strcasecmp(filetype,"eps")==0 || strcasecmp(filetype,"ps")==0 || strcasecmp(filetype,"art")==0 ) {
         if ( locfilename==NULL ){
             FILE *psfile = NULL;
-            #ifdef __unix__
-            psfile = fmemopen(filebuffer, filebuffersize, "r");
-            #else
-            psfile = tmpfile();
-            if ( psfile==NULL ) {
-                PyErr_SetString(PyExc_IOError, "Failed to create temporary file");
-                return NULL;
-            }
-            fwrite(filebuffer, filebuffersize, 1, psfile);
-            #endif
+            psfile = fmemoryopen(filebuffer, filebuffersize, "r");
             if ( psfile==NULL ) {
                 PyErr_SetString(PyExc_TypeError, "Could not load file stream");
                 return NULL;
@@ -8703,19 +8695,8 @@ static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args,
     }
     else if ( strcasecmp(filetype,"plate")==0 ) {
         FILE *plate = NULL;
-
-        if ( locfilename==NULL ){
-            #ifdef __unix__
-            plate = fmemopen(filebuffer, filebuffersize, "r");
-            #else
-            plate = tmpfile();
-            if ( plate==NULL ) {
-                PyErr_SetString(PyExc_IOError, "Failed to create temporary file");
-                return NULL;
-            }
-            fwrite(filebuffer, filebuffersize, 1, plate);
-            #endif
-        }
+        if ( locfilename==NULL )
+            plate = fmemoryopen(filebuffer, filebuffersize, "r");
         else
             plate = fopen(locfilename,"r");
 

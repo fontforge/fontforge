@@ -1018,6 +1018,22 @@ static int mime_comp(const void *k, const void *v) {
     return strmatch((const char*)k, ((const char**)v)[0]);
 }
 
+FILE *fmemoryopen(void* buffer, size_t size, const char* mode){
+    FILE *file = NULL;
+    #ifdef __unix__
+    file = fmemopen(buffer, size, mode);
+    #else
+    file = tmpfile();
+    if ( file==NULL ) {
+        fprintf(stderr, "Failed to create temporary file");
+        return NULL;
+    }
+    fwrite(buffer, size, 1, file);
+    #endif
+
+    return file;
+}
+
 const char **GFileMimeTypeMatching(char *ext){
     // array MUST be sorted by extension
     static const char* ext_mimes[][2] = {
