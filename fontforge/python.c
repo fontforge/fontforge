@@ -8547,7 +8547,7 @@ return(NULL);
 Py_RETURN( self );
 }
 
-static char *glyph_import_keywords[] = { "file", "correctdir",
+static char *glyph_import_keywords[] = { "file", "filename", "correctdir",
     "simplify", "handle_clip", "handle_eraser", "scale", "accuracy",
     "default_joinlimit", "usesystem", "asksystem", "type", "dimensions", NULL };
 
@@ -8567,7 +8567,7 @@ static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args,
     PyObject *file = NULL;
     char *filetype = NULL, *filebuffer = NULL;
     Py_ssize_t filebuffersize = 0;
-    char *locfilename = NULL;
+    char *locfilename = NULL, *filename = NULL;
     PyObject *flags=NULL;
     int psflags, use_system = false, ask_system = false;
     bigreal jl_tmp = -1;
@@ -8575,7 +8575,7 @@ static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args,
     InitImportParams(&ip);
 
     if ( !PyArg_ParseTupleAndKeywords(args, keywds,
-                "O|$pppppddppsp", glyph_import_keywords, &file,
+                "|O$spppppddppsp", glyph_import_keywords, &file, &filename,
                 &ip.correct_direction, &ip.simplify, &ip.clip, &ip.erasers,
                 &ip.scale, &ip.accuracy_target, &jl_tmp, &use_system,
 		&ask_system, &filetype, &ip.dimensions) ) {
@@ -8591,12 +8591,22 @@ static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args,
 	if ( psflags & 2 )
 	    ip.correct_direction = true;
     }
-    if ( PyUnicode_Check(file) ){
-        const char* filename = PyUnicode_AsUTF8(file);
-        if ( filename==NULL )
+    if ( filename!=NULL ) {
+        locfilename = utf82def_copy(filename);
+
+        /* Check if the file exists and is readable */
+        if ( access(locfilename, R_OK)!=0 ) {
+            PyErr_SetFromErrnoWithFilename(PyExc_IOError,locfilename);
+            free(locfilename);
+            return NULL;
+        }
+    }
+    else if ( PyUnicode_Check(file) ){
+        const char* object_filename = PyUnicode_AsUTF8(file);
+        if ( object_filename==NULL )
         return NULL;
 
-        locfilename = utf82def_copy(filename);
+        locfilename = utf82def_copy(object_filename);
 
         /* Check if the file exists and is readable */
         if ( access(locfilename, R_OK)!=0 ) {
@@ -8658,8 +8668,18 @@ static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args,
 
     if ( strcasecmp(filetype,"eps")==0 || strcasecmp(filetype,"ps")==0 || strcasecmp(filetype,"art")==0 ) {
         if ( locfilename==NULL ){
-            FILE *psfile = fmemopen(filebuffer, filebuffersize, "r");
-            if (psfile == NULL) {
+            FILE *psfile = NULL;
+            #ifdef __unix__
+            psfile = fmemopen(filebuffer, filebuffersize, "r");
+            #else
+            psfile = tmpfile();
+            if ( psfile==NULL ) {
+                PyErr_SetString(PyExc_IOError, "Failed to create temporary file");
+                return NULL;
+            }
+            fwrite(filebuffer, filebuffersize, 1, psfile);
+            #endif
+            if ( psfile==NULL ) {
                 PyErr_SetString(PyExc_TypeError, "Could not load file stream");
                 return NULL;
             }
@@ -8684,9 +8704,18 @@ static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args,
     else if ( strcasecmp(filetype,"plate")==0 ) {
         FILE *plate = NULL;
 
-        if ( locfilename==NULL )
-
+        if ( locfilename==NULL ){
+            #ifdef __unix__
             plate = fmemopen(filebuffer, filebuffersize, "r");
+            #else
+            plate = tmpfile();
+            if ( plate==NULL ) {
+                PyErr_SetString(PyExc_IOError, "Failed to create temporary file");
+                return NULL;
+            }
+            fwrite(filebuffer, filebuffersize, 1, plate);
+            #endif
+        }
         else
             plate = fopen(locfilename,"r");
 

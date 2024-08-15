@@ -87,7 +87,17 @@ GImage *GImageReadBuf(char *buffer, int size, char* ext) {
         return NULL;
     }
 
-    FILE *file = fmemopen(buffer, size, "rb");
+    FILE *file = NULL;
+    #ifdef __unix__
+    file = fmemopen(buffer, size, "rb");
+    #else
+    file = tmpfile();
+    if ( file==NULL ) {
+        fprintf(stderr, "Failed to create temporary file");
+    }
+    fwrite(buffer, size, 1, file);
+    #endif
+
     GImage *ret;
 
     if (file == NULL) {

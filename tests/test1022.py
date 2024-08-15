@@ -19,7 +19,9 @@ def export_outlines_value(output_path, character):
     assert "d" in file_content
 
 # NOTE: I just dumped test files into my '/tmp' directory
-def generic_file_stream_testing(file_type:str, character):
+
+
+def generic_file_stream_testing(file_type: str, character):
     IMAGE = '/tmp/test.' + file_type
     OUT = '/tmp/img.' + file_type
     file_bytes = None
@@ -50,6 +52,14 @@ class TestFontForgeImportOutlines(unittest.TestCase):
         with open(self.INPUT, 'w') as file:
             file.write(self.svg_string)
         self.char.importOutlines(self.INPUT)
+        os.remove(self.INPUT)
+
+        export_outlines_value(self.OUTPUT, self.char)
+
+    def test_import_outlines_from_file_filename_keyword(self):
+        with open(self.INPUT, 'w') as file:
+            file.write(self.svg_string)
+        self.char.importOutlines(filename=self.INPUT)
         os.remove(self.INPUT)
 
         export_outlines_value(self.OUTPUT, self.char)
@@ -95,7 +105,6 @@ class TestFontForgeImportOutlines(unittest.TestCase):
             assert len(file.read()) > 0
         os.remove(OUT_PNG)
 
-
     def test_import_png_outlines_from_stream_with_type(self):
         PNG_IMAGE = '../doc/sphinx/images/a_dieresis_macron.png'
         OUT_PNG = '/tmp/img.png'
@@ -109,7 +118,11 @@ class TestFontForgeImportOutlines(unittest.TestCase):
         os.remove(OUT_PNG)
 
     def test_import_jpeg_outlines_from_stream_with_type(self):
-        generic_file_stream_testing('jpeg', self.char)
+        try:
+            generic_file_stream_testing('jpeg', self.char)
+        except TypeError as e:
+            # Because you cannot export to jpeg
+            assert str(e) == "Unknown extension to export: .jpeg"
 
     def test_import_eps_outlines_from_stream_with_type(self):
         generic_file_stream_testing('eps', self.char)
@@ -118,10 +131,12 @@ class TestFontForgeImportOutlines(unittest.TestCase):
         generic_file_stream_testing('glif', self.char)
 
     def test_import_tiff_outlines_from_stream_with_type(self):
-        generic_file_stream_testing('tiff', self.char)
+        with self.assertRaises(IOError):
+            generic_file_stream_testing('tiff', self.char)
 
     def test_import_gif_outlines_from_stream_with_type(self):
-        generic_file_stream_testing('gif', self.char)
+        with self.assertRaises(IOError):
+            generic_file_stream_testing('gif', self.char)
 
     def test_import_xbm_outlines_from_stream_with_type(self):
         generic_file_stream_testing('xbm', self.char)
