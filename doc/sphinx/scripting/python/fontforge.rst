@@ -2330,6 +2330,11 @@ must be created through the font.
    Imports image descriptions (bmp, png, xbm, etc.) into the background layer.
    The following optional keywords modify the import process for various formats:
 
+   .. object:: filename (string, default=False)
+
+      This keyword adds the ability to specify the filename
+      if the file argument is not given a filename.
+
    .. object:: scale (boolean, default=True)
 
       Scale imported images and SVGs to ascender height
