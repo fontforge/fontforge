@@ -375,6 +375,12 @@ Gtk::MenuBar build_menu_bar(const std::vector<MenuInfo>& info,
             Gtk::make_managed<Gtk::MenuItem>(item.label.text, true);
         menu_bar.append(*menu_item);
 
+        // Set enabled / disabled state from callback result
+        EnabledCB enabled_check = item.callbacks.enabled
+                                      ? item.callbacks.enabled
+                                      : context.get_enabled_cb(item.mid);
+        menu_item->set_sensitive(enabled_check(context));
+
         if (!item.sub_menu.empty()) {
             Gtk::Menu* sub_menu =
                 Gtk::manage(build_menu(item.sub_menu, context));

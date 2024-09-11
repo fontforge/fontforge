@@ -60,6 +60,7 @@ void register_py_menu_item(const PyMenuSpec* spec, const std::string& accel,
                            int flags);
 
 std::vector<MenuInfo> python_tools(const UiContext& ui_context);
+bool python_tools_enabled(const UiContext& ui_context);
 
 std::vector<MenuInfo> recent_files(const UiContext& ui_context);
 

@@ -145,6 +145,10 @@ std::vector<MenuInfo> python_tools(const UiContext& ui_context) {
     return tools_menu;
 }
 
+bool python_tools_enabled(const UiContext& ui_context) {
+    return !python_menu_items.empty();
+}
+
 std::vector<MenuInfo> recent_files(const UiContext& ui_context) {
     const FontViewUiContext& fv_ui_context =
         static_cast<const FontViewUiContext&>(ui_context);

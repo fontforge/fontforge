@@ -789,7 +789,7 @@ std::vector<MenuInfo> top_menu = {
     { { N_("_Edit") }, edit_menu, SubMenuCallbacks, -1 },
     { { N_("E_lement") }, element_menu, SubMenuCallbacks, -1 },
 #ifndef _NO_PYTHON
-    { { N_("_Tools") }, tools_menu, SubMenuCallbacks, -1 },
+    { { N_("_Tools") }, tools_menu, { NoAction, python_tools_enabled }, -1 },
 #endif
     { { N_("H_ints") }, hints_menu, SubMenuCallbacks, -1 },
     { { N_("E_ncoding") }, encoding_menu, SubMenuCallbacks, -1 },
