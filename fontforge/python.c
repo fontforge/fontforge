@@ -11870,11 +11870,6 @@ return( 1 );
 	Py_XDECREF(val);
 return( 0 );
     }
-    if ( lang==0x409 && english!=NULL && english->names[strid]!=NULL &&
-         strcmp(string,english->names[strid])==0 ) {
-	Py_DECREF(val);
-return( 1 );	/* If they set it to the default, there's nothing to do */
-    }
 
     if ( names==NULL ) {
 	names = chunkalloc(sizeof( struct ttflangname ));
