@@ -40,7 +40,6 @@
 
 #include <assert.h>
 #include <math.h>
-#include <gtk/gtk.h>
 
 // HACK HACK HACK
 #ifdef GDK_WINDOWING_WIN32
@@ -50,6 +49,8 @@
 #endif
 
 // Forward declarations
+void gtk_main_do_event (GdkEvent* event);
+
 static void GGDKDrawCancelTimer(GTimer *timer);
 static void GGDKDrawDestroyWindow(GWindow w);
 static void GGDKDrawPostEvent(GEvent *e);
