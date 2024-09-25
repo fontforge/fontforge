@@ -36,8 +36,11 @@
 #define GTimer GTimer_GTK
 #define GList  GList_Glib
 #define GMenuItem GMenuItem_GIO
+#define GMenu GMenu_GIO
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
+#include <gtk/gtk.h>
+#undef GMenu
 #undef GMenuItem
 #undef GList
 #undef GTimer

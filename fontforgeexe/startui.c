@@ -51,8 +51,6 @@
 #include <time.h>
 #include <unistd.h>
 
-void gtk_init(int* argc, char*** argv);
-
 #if defined(__MINGW32__)
 #include <windows.h>
 #define sleep(n) Sleep(1000 * (n))
