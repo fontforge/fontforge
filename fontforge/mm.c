@@ -1111,7 +1111,7 @@ return( false );
 		    if ( complain ) {
 			FVChangeGID( sf->fv,i);
 			ff_post_error(_("Bad Multiple Master Font"),_("The glyph %1$.30s in font %2$.30s has a different set of kern pairs than in %3$.30s"),
-				"vertical", sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
+				sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
 		    }
 return( false );
 		}
@@ -1129,15 +1129,15 @@ return( false );
 		    if ( !HintsMatch(sf->glyphs[i]->hstem,mm->instances[j]->glyphs[i]->hstem)) {
 			if ( complain ) {
 			    FVChangeGID( sf->fv,i);
-			    ff_post_error(_("Bad Multiple Master Font"),_("The %1$s hints in glyph \"%2$.30s\" in font %3$.30s do not match those in %4$.30s (different number or different overlap criteria)"),
-				    "horizontal", sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
+			    ff_post_error(_("Bad Multiple Master Font"),_("The horizontal hints in glyph \"%1$.30s\" in font %2$.30s do not match those in %3$.30s (different number or different overlap criteria)"),
+				    sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
 			}
 return( false );
 		    } else if ( !HintsMatch(sf->glyphs[i]->vstem,mm->instances[j]->glyphs[i]->vstem)) {
 			if ( complain ) {
 			    FVChangeGID( sf->fv,i);
-			    ff_post_error(_("Bad Multiple Master Font"),_("The %1$s hints in glyph \"%2$.30s\" in font %3$.30s do not match those in %4$.30s (different number or different overlap criteria)"),
-				    "vertical", sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
+			    ff_post_error(_("Bad Multiple Master Font"),_("The vertical hints in glyph \"%1$.30s\" in font %2$.30s do not match those in %3$.30s (different number or different overlap criteria)"),
+				    sf->glyphs[i]->name,sf->fontname, mm->instances[j]->fontname);
 			}
 return( false );
 		    }
