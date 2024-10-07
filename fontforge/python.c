@@ -19751,16 +19751,18 @@ void FontForge_InitializeEmbeddedPython(void) {
                                      "fontforge");
     if (PyStatus_Exception(status)) {
         fprintf(stderr, "Failed to set the Python program name: %s\n",
-		status.err_msg);
+                status.err_msg);
     }
 
     RegisterAllPyModules();
     status = Py_InitializeFromConfig(&config);
     if (PyStatus_Exception(status)) {
+        PyConfig_Clear(&config);
         fprintf(stderr, "Python initialization failed: %s\n",
-		status.err_msg);
+                status.err_msg);
         exit(1);
     }
+    PyConfig_Clear(&config);
     python_initialized = 1;
 
     /* The embedded python interpreter is now functionally
