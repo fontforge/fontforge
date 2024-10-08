@@ -18,11 +18,11 @@ if(${CMAKE_VERSION} VERSION_LESS "3.15.7")
 endif()
 
 # Include any required modules
+include(GNUInstallDirs)
 include(BuildUtils)
 include(CheckIncludeFile)
 include(CPackSetup)
 include(CTest)
-include(GNUInstallDirs)
 include(PackageUtils)
 include(TargetUtils)
 
