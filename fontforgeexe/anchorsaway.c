@@ -106,6 +106,8 @@ typedef struct anchord {
     int layer;
 } AnchorDlg;
 
+extern int DeviceTableFind(DeviceTable *adjust,int pixelsize);
+
 #define CID_X		1001
 #define CID_Y		1002
 #define CID_XCor	1003
@@ -440,14 +442,6 @@ static void AnchorD_ChangeSize(AnchorDlg *a) {
     GDrawSetCursor(a->gw,ct_pointer);
 }
 
-static int DevTabFind(DeviceTable *adjust,int pixelsize) {
-    if ( adjust==NULL || adjust->corrections==NULL ||
-	    pixelsize<adjust->first_pixel_size ||
-	    pixelsize>adjust->last_pixel_size )
-return( 0 );
-return( adjust->corrections[pixelsize-adjust->first_pixel_size]);
-}
-
 static void AnchorD_Expose(AnchorDlg *a,GWindow pixmap,GEvent *event) {
     GRect *area = &event->u.expose.rect;
     GRect clip, old1, old2;
@@ -510,17 +504,17 @@ return;
 		x = a->apmatch[i].xstart+a->char_off*factor - a->xoff;
 		KCD_DrawGlyph(pixmap,x,y,a->bdfc,factor);
 		x += ((int) rint((-a->apmatch[i].ap->me.x + a->apos.x)*a->scale) +
-			xcor - DevTabFind(&a->apmatch[i].ap->xadjust,a->pixelsize))*factor;
+			xcor - DeviceTableFind(&a->apmatch[i].ap->xadjust,a->pixelsize))*factor;
 		y += ((int) rint((a->apmatch[i].ap->me.y - a->apos.y)*a->scale) +
-			-ycor + DevTabFind(&a->apmatch[i].ap->yadjust,a->pixelsize))*factor;
+			-ycor + DeviceTableFind(&a->apmatch[i].ap->yadjust,a->pixelsize))*factor;
 		KCD_DrawGlyph(pixmap,x,y,a->apmatch[i].bdfc,factor);
 	    } else {
 		x = a->apmatch[i].xstart+a->apmatch[i].off*factor - a->xoff;
 		KCD_DrawGlyph(pixmap,x,y,a->apmatch[i].bdfc,factor);
 		x += ((int) rint((a->apmatch[i].ap->me.x - a->apos.x)*a->scale) +
-			DevTabFind(&a->apmatch[i].ap->xadjust,a->pixelsize)-xcor)*factor;
+			DeviceTableFind(&a->apmatch[i].ap->xadjust,a->pixelsize)-xcor)*factor;
 		y += ((int) rint((-a->apmatch[i].ap->me.y + a->apos.y)*a->scale) +
-			-DevTabFind(&a->apmatch[i].ap->yadjust,a->pixelsize)+ycor)*factor;
+			-DeviceTableFind(&a->apmatch[i].ap->yadjust,a->pixelsize)+ycor)*factor;
 		KCD_DrawGlyph(pixmap,x,y,a->bdfc,factor);
 	    }
 	}
