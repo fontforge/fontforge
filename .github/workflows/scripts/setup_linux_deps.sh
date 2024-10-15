@@ -31,7 +31,7 @@ if [ ! -d deps/install ]; then
     git clone --depth 1 --branch v1.0.2 https://github.com/google/woff2
     wget --tries 1 "http://download.savannah.gnu.org/releases/freetype/freetype-$FTVER.tar.gz" || \
         wget "https://sourceforge.net/projects/freetype/files/freetype2/$SFFTVER/freetype-$FTVER.tar.gz"
-    wget https://downloads.crowdin.com/cli/v2/crowdin-cli.zip
+    wget https://github.com/crowdin/crowdin-cli/releases/latest/download/crowdin-cli.zip
 
     pushd libspiro && autoreconf -fiv && ./configure --prefix=$DEPSPREFIX && make -j4 && make install && popd
     pushd libuninameslist && autoreconf -fiv && ./configure --enable-pscript --prefix=$DEPSPREFIX && make -j4 && make install && popd

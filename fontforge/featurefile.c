@@ -457,20 +457,21 @@ static OTLookup *lookup_in_rule(struct fpst_rule *r,int seq,int *index, int *pos
     /* That's legal in otf, but I don't think it can be specified in the */
     /*  feature file. It doesn't seem likely to be used so I ignore it */
 
-    for ( i=0; i<r->lookup_cnt && seq<r->lookups[i].seq; ++i );
-    if ( i>=r->lookup_cnt )
-return( NULL );
+    for ( i=0; i<r->lookup_cnt && seq>r->lookups[i].seq; ++i );
+    if (i == r->lookup_cnt || (i > 0 && seq < r->lookups[i].seq))
+        --i;
     *index = i;
     *pos = seq-r->lookups[i].seq;
     otl = r->lookups[i].lookup;
     if ( seq==r->lookups[i].seq )
-return( otl );
-    if ( otl->lookup_type == gsub_ligature )
-return( otl );
+        return( otl );
+    /* This does not seem to be needed, and it is better if not used at all */
+    //if ( otl->lookup_type == gsub_ligature )
+    //    return( otl );
     else if ( otl->lookup_type == gpos_pair && *pos==1 )
-return( otl );
+        return( otl );
 
-return( NULL );
+    return( NULL );
 }
 
 static PST *pst_from_single_lookup(SplineFont *sf, OTLookup *otl, char *name ) {
@@ -634,8 +635,10 @@ static void dump_contextpstglyphs(FILE *out,SplineFont *sf,
 		    *last_end = ch2;
 		} else {
 		    char *next_start, *next_end;
+		    *pt = ch;
 		    next_start = pt;
 		    while ( *next_start==' ' ) ++next_start;
+		    *pt = '\0';
 		    if ( *next_start!='\0' ) {
 			for ( next_end=next_start; *next_end!=' ' && *next_end!='\0'; ++next_end );
 			ch2 = *next_end; *next_end = '\0';
