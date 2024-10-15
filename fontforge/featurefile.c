@@ -2910,7 +2910,7 @@ return(NULL);
     for ( i=0; i<tok->sf->subfontcnt; ++i ) {
 	SplineFont *sub = tok->sf->subfonts[i];
 	if ( cid<sub->glyphcnt && sub->glyphs[cid]!=NULL )
-return( sub->glyphs[cid]->name );
+return( copy( sub->glyphs[cid]->name ));
 	if ( sub->glyphcnt>max ) {
 	    max = sub->glyphcnt;
 	    maxsf = sub;
