@@ -6415,7 +6415,7 @@ return( true );
 }
 
 static GTextInfo *ScriptListOfFont(SplineFont *sf) {
-    uint32_t *ourscripts = SFScriptsInLookups(sf,-1);
+    uint32_t *ourscripts = SFScriptsInLookups(sf);
     int i,j;
     GTextInfo *ti;
     char tag[8];
