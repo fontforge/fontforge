@@ -249,17 +249,11 @@ errorReadRle8Bit:
     return( NULL );
 }
 
-GImage *GImageReadRas(char *filename) {
+GImage *GImageRead_Ras(FILE *fp, int* success) {
 /* Import a *.ras image (or *.im{1,8,24,32}), else return NULL if error	*/
-    FILE *fp;			/* source file */
     struct _SunRaster header;
     GImage *ret = NULL;
     struct _GImage *base;
-
-    if ( (fp=fopen(filename,"rb"))==NULL ) {
-	fprintf(stderr,"Can't open \"%s\"\n", filename);
-	return( NULL );
-    }
 
     if ( getrasheader(&header,fp) )
 	goto errorGImageReadRas;
@@ -269,7 +263,7 @@ GImage *GImageReadRas(char *filename) {
 	  (ret=GImageCreate(it_bitmap,header.Width,header.Height))==NULL) || \
 	  (header.Depth!=1 && \
 	  (ret=GImageCreate(header.Depth==24?it_true:it_index,header.Width,header.Height))==NULL) ) {
-	fclose(fp);
+	*success = 0;
 	return( NULL );
     }
 
@@ -328,13 +322,17 @@ GImage *GImageReadRas(char *filename) {
 	}
     if ( ret!=NULL ) {
 	    /* All okay if reached here, return converted image */
-	    fclose(fp);
+	    *success = 1;
 	    return( ret );
     }
 
 errorGImageReadRas:
-    fprintf(stderr,"Bad input file \"%s\"\n",filename );
+    *success = 0;
+    fprintf(stderr,"Bad input file\n");
     GImageDestroy(ret);
-    fclose(fp);
     return( NULL );
+}
+
+GImage *GImageReadRas(char *filename) {
+    return GImageRead_Wrapper(filename, &GImageRead_Ras);
 }

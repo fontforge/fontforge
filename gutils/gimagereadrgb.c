@@ -180,8 +180,7 @@ static void freeptrtab(unsigned char **ptrtab,long tot) {
 	    }
 }
 
-GImage *GImageReadRgb(char *filename) {
-    FILE *fp;			/* source file */
+GImage *GImageRead_Rgb(FILE *fp, int* sucess) {
     struct sgiheader header;
     int i,j,k;
     unsigned char *pt, *end;
@@ -193,18 +192,13 @@ GImage *GImageReadRgb(char *filename) {
     GImage *ret = NULL;
     struct _GImage *base;
 
-    if ( (fp=fopen(filename,"rb"))==NULL ) {
-	fprintf(stderr,"Can't open \"%s\"\n", filename);
-	return( NULL );
-    }
-
     /* Check, and Get, Header information */
     if ( getsgiheader(&header,fp) )
 	goto errorGImageReadRgbFile;
 
     /* Create memory to hold image, exit with NULL if not enough memory */
     if ( (ret=GImageCreate(header.dim==3?it_true:it_index,header.width,header.height))==NULL ) {
-	fclose(fp);
+	*success = 0;
 	return( NULL );
     }
     base = ret->u.image;
@@ -315,16 +309,19 @@ GImage *GImageReadRgb(char *filename) {
 	    free(r); free(g); free(b); free(a);
 	}
     }
-    fclose(fp);
+    *success = 1;
     return( ret );
 
 errorGImageReadRgbFile:
-    fprintf(stderr,"Bad input file \"%s\"\n",filename );
+    fprintf(stderr,"Bad input file\n");
 errorGImageReadRgbMem:
     freeptrtab(ptrtab,tablen);
     free(ptrtab); free(starttab); /*free(lengthtab);*/
     free(r); free(g); free(b); free(a);
     GImageDestroy(ret);
-    fclose(fp);
     return( NULL );
+}
+
+GImage *GImageReadRgb(char *filename) {
+    return GImageRead_Wrapper(filename, &GImageRead_Rgb);
 }

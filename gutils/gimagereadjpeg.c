@@ -89,7 +89,7 @@ static void transferBufferToImage(struct jpegState *js,int ypos) {
     }
 }
 
-GImage *GImageRead_Jpeg(FILE *infile) {
+GImage *GImageRead_Jpeg(FILE *infile, int* success) {
     GImage *ret;
     struct _GImage *base;
     struct jpeg_decompress_struct cinfo;
@@ -103,6 +103,7 @@ GImage *GImageRead_Jpeg(FILE *infile) {
   jerr.pub.error_exit = my_error_exit;
   if (setjmp(jerr.setjmp_buffer)) {
     jpeg_destroy_decompress(&cinfo);
+    *success = 0;
 return( NULL );
   }
 
@@ -115,6 +116,7 @@ return( NULL );
     ret = GImageCreate(it_true,cinfo.image_width, cinfo.image_height);
     if ( ret==NULL ) {
 	jpeg_destroy_decompress(&cinfo);
+	*success = 0;
 return( NULL );
     }
     base = ret->u.image;
@@ -132,21 +134,11 @@ return( NULL );
   jpeg_destroy_decompress(&cinfo);
   free(rows[0]);
 
+    *success = 1;
 return( ret );
 }
 
 GImage *GImageReadJpeg(char *filename) {
-/* Import a jpeg image, else return NULL if error  */
-    GImage *ret;
-    FILE * infile;		/* source file */
-
-    if ((infile = fopen(filename, "rb")) == NULL) {
-	fprintf(stderr,"Can't open \"%s\"\n", filename);
-	return( NULL );
-    }
-
-    ret = GImageRead_Jpeg(infile);
-    fclose(infile);
-    return( ret );
+    return GImageRead_Wrapper(filename, &GImageRead_Jpeg);
 }
 #endif
