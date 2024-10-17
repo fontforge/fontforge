@@ -953,32 +953,43 @@ return( binstr );
 }
 
 static PyObject *PyFF_UnParseTTFInstrs(PyObject *UNUSED(self), PyObject *args) {
-    PyObject *tuple, *ret;
+    PyObject *seq_any, *ret;
     int icnt, i;
     uint8_t *instrs;
     char *as_str;
 
-    if ( !PyArg_ParseTuple(args,"O",&tuple) )
+    if ( !PyArg_ParseTuple(args,"O",&seq_any) )
 return( NULL );
-    if ( !PySequence_Check(tuple)) {
+    if ( !PySequence_Check(seq_any)) {
 	PyErr_Format(PyExc_TypeError, "Argument must be a sequence" );
 return( NULL );
     }
-    if ( PyBytes_Check(tuple)) {
+
+    if ( PyBytes_Check(seq_any)) {
 	char *space; Py_ssize_t len;
-	PyBytes_AsStringAndSize(tuple,&space,&len);
+	PyBytes_AsStringAndSize(seq_any,&space,&len);
 	instrs = calloc(len,sizeof(uint8_t));
 	icnt = len;
 	memcpy(instrs,space,len);
     } else {
-	icnt = PySequence_Size(tuple);
+	PyObject *seq_fast = PySequence_Fast(seq_any,__func__);
+	if (seq_fast == NULL) {
+return( NULL );
+	}
+	icnt = PySequence_Fast_GET_SIZE(seq_fast);
 	instrs = malloc(icnt);
 	for ( i=0; i<icnt; ++i ) {
-	    instrs[i] = PyLong_AsLong(PySequence_GetItem(tuple,i));
-	    if ( PyErr_Occurred()) {
-		free(instrs);
-return( NULL );
+	    long val = PyLong_AsLong(PySequence_Fast_GET_ITEM(seq_fast,i));
+	    if (val==-1 && PyErr_Occurred()) {
+	    break;
 	    }
+	    instrs[i] = val;
+	    }
+	Py_DECREF(seq_fast);
+
+	if (i!=icnt) {
+	    free(instrs);
+return( NULL );
 	}
     }
     as_str = _IVUnParseInstrs(instrs,icnt);
@@ -19652,7 +19663,6 @@ static void RegisterAllPyModules(void);
 static void CreateAllPyModules(void);
 
 static PyObject * CreatePyModule( module_definition *moddef );
-static void SetPythonProgramName( const char *progname /* in ASCII */ );
 static void SetPythonModuleMetadata( PyObject *module );
 static int FinalizePythonTypes( python_type_info* typelist );
 static int AddPythonTypesToModule( PyObject *module, python_type_info* typelist );
@@ -19855,9 +19865,26 @@ void FontForge_InitializeEmbeddedPython(void) {
     if ( python_initialized )
 	return;
 
-    SetPythonProgramName("fontforge");
+    PyConfig config;
+    PyStatus status;
+    PyConfig_InitPythonConfig(&config);
+
+    status = PyConfig_SetBytesString(&config, &config.program_name,
+                                     "fontforge");
+    if (PyStatus_Exception(status)) {
+        fprintf(stderr, "Failed to set the Python program name: %s\n",
+                status.err_msg);
+    }
+
     RegisterAllPyModules();
-    Py_Initialize();
+    status = Py_InitializeFromConfig(&config);
+    if (PyStatus_Exception(status)) {
+        PyConfig_Clear(&config);
+        fprintf(stderr, "Python initialization failed: %s\n",
+                status.err_msg);
+        exit(1);
+    }
+    PyConfig_Clear(&config);
     python_initialized = 1;
 
     /* The embedded python interpreter is now functionally
@@ -19909,14 +19936,6 @@ _Noreturn void PyFF_Main(int argc,char **argv,int start, int do_inits,
 /* ************************************************************************** */
 /* PYTHON INITIALIZATION */
 /* ************************************************************************** */
-
-static void SetPythonProgramName(const char *progname) {
-    static wchar_t *saved_progname=NULL;
-    if ( saved_progname )
-	free(saved_progname);
-    saved_progname = copy_to_wide_string(progname);
-    Py_SetProgramName(saved_progname);
-}
 
 static wchar_t ** copy_argv(char *arg0, int argc ,char **argv) {
     int i;
