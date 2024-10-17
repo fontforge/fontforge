@@ -39,7 +39,7 @@ static int ConvertXbmByte(int pixels) {
     return( val^0xff );	/* I default black the other way */
 }
 
-GImage *GImageRead_Xbm(FILE *file) {
+GImage *GImageRead_Xbm(FILE *file, int* success) {
 /* Import an *.xbm image, else return NULL if error */
     int width, height;
     GImage *gi=NULL;
@@ -115,25 +115,17 @@ GImage *GImageRead_Xbm(FILE *file) {
 	    fscanf(file,",");
 	}
     }
+    *success = 1;
     return( gi );
 
 errorGImageReadXbm:
     fprintf(stderr,"Bad input file\n" );
 errorGImageReadXbmMem:
     GImageDestroy(gi);
+    *success = 0;
     return( NULL );
 }
 
-GImage *GImageReadXbm(char *filename){
-    FILE *file;
-    GImage *ret;
-
-    if ( (file=fopen(filename,"r"))==NULL ) {
-        fprintf(stderr,"Can't open \"%s\"\n", filename);
-        return( NULL );
-    }
-
-    ret = GImageRead_Xbm(file);
-    fclose(file);
-    return( ret );
+GImage *GImageReadXbm(char *filename) {
+    return GImageRead_Wrapper(filename, &GImageRead_Xbm);
 }

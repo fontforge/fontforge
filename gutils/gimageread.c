@@ -162,3 +162,23 @@ GImage *GImageReadBuf(char *buffer, int size, char* ext) {
 
     return( NULL );
 }
+
+
+typedef GImageReadFunc = GImage *(*GImageReadFunc)(File *, int *);
+GImage *GImageRead_Wrapper(char *filename, GImageReadFunc *func) {
+    FILE *file;
+    GImage *ret;
+    int success;
+
+    if ( (file=fopen(filename,"rb"))==NULL ) {
+        fprintf(stderr,"\"%s\" is a Bad input file\n", filename);
+        return( NULL );
+    }
+
+    ret = GImageReadFunc(file, &success);
+    if ( success!=1 ) {
+        fprintf(stderr,"can't  \"%s\"\n", filename);
+    }
+    fclose(file);
+    return( ret );
+}

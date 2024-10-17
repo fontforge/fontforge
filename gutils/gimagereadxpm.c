@@ -276,7 +276,7 @@ static union hash *parse_colors(FILE *fp,unsigned char *line, int lsiz, int ncol
     return( tab );
 }
 
-GImage *GImageRead_Xpm(FILE *fp) {
+GImage *GImageRead_Xpm(FILE *fp, int* success) {
 /* Import an *.xpm image, else cleanup and return NULL if error */
 /* TODO: There is an XPM3 library that takes care of all cases. */
    GImage *ret=NULL;
@@ -355,6 +355,7 @@ GImage *GImageRead_Xpm(FILE *fp) {
     }
     free(line);
     freetab(tab,nchar);
+    *success = 1;
     return( ret );
 
 errorGImageReadXpm:
@@ -362,19 +363,10 @@ errorGImageReadXpm:
 errorGImageReadXpmMem:
     GImageDestroy(ret);
     free(line); freetab(tab,nchar);
+    *success = 0;
     return( NULL );
 }
 
-GImage *GImageReadXpm(char *filename){
-    FILE *file;
-    GImage *ret;
-
-    if ( (file=fopen(filename,"r"))==NULL ) {
-        fprintf(stderr,"Can't open \"%s\"\n", filename);
-        return( NULL );
-    }
-
-    ret = GImageRead_Xpm(file);
-    fclose(file);
-    return( ret );
+GImage *GImageReadXpm(char *filename) {
+    return GImageRead_Wrapper(filename, &GImageRead_Xpm);
 }

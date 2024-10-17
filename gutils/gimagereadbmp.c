@@ -334,7 +334,7 @@ static int readpixels(FILE *file,struct bmpheader *head) {
 return( 1 );
 }
 
-GImage *GImageRead_Bmp(FILE *file) {
+GImage *GImageRead_Bmp(FILE *file, int* success) {
 /* Import a BMP image (based on file handle), cleanup & return NULL if error */
     struct bmpheader bmp;
     int i,l;
@@ -356,6 +356,7 @@ GImage *GImageRead_Bmp(FILE *file) {
 	 (bmp.byte_pixels=(unsigned char *)(malloc(bmp.height*((bmp.width+7)/8)*sizeof(unsigned char))))==NULL) || \
 	 (bmp.byte_pixels=(unsigned char *)(malloc(bmp.height*bmp.width*sizeof(unsigned char))))==NULL ) {
 	NoMoreMemMessage();
+	*success = 0;
 	return( NULL );
     }
 
@@ -422,6 +423,7 @@ GImage *GImageRead_Bmp(FILE *file) {
 	memcpy(ret->u.image->clut->clut,bmp.clut,bmp.colorsused*sizeof(Color));
 	ret->u.image->clut->trans_index = COLOR_UNKNOWN;
     }
+    *success = 1;
     return( ret );
 
 errorGImageReadBmp:
@@ -430,20 +432,10 @@ errorGImageMemBmp:
     GImageDestroy(ret);
     if ( bmp.bitsperpixel>=16 ) free(bmp.int32_pixels);
     else free(bmp.byte_pixels);
+    *success = 0;
     return( NULL );
 }
 
 GImage *GImageReadBmp(char *filename) {
-/* Import a BMP image, else cleanup and return NULL if error found */
-    FILE *file;			/* source file */
-    GImage *ret;
-
-    if ( (file=fopen(filename,"rb"))==NULL ) {
-	fprintf(stderr,"Can't open \"%s\"\n", filename);
-	return( NULL );
-    }
-
-    ret = GImageRead_Bmp(file);
-    fclose(file);
-    return( ret );
+    return GImageRead_Wrapper(filename, &GImageRead_Bmp);
 }

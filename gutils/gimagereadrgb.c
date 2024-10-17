@@ -180,7 +180,7 @@ static void freeptrtab(unsigned char **ptrtab,long tot) {
 	    }
 }
 
-GImage *GImageRead_Rgb(FILE *fp) {
+GImage *GImageRead_Rgb(FILE *fp, int* sucess) {
     struct sgiheader header;
     int i,j,k;
     unsigned char *pt, *end;
@@ -198,6 +198,7 @@ GImage *GImageRead_Rgb(FILE *fp) {
 
     /* Create memory to hold image, exit with NULL if not enough memory */
     if ( (ret=GImageCreate(header.dim==3?it_true:it_index,header.width,header.height))==NULL ) {
+	*success = 0;
 	return( NULL );
     }
     base = ret->u.image;
@@ -299,7 +300,8 @@ GImage *GImageRead_Rgb(FILE *fp) {
 		    fread(a,header.width,1,fp);
 		    fread(a,header.width,1,fp);
 		}
-		ipt = (unsigned long *) (base->data + (header.height-1-i)*base->bytes_per_line); rpt = r; gpt = g; bpt = b;
+		ipt = (unsigned long *) (base->data + (header.height-1-i)*base->bytes_per_line);
+		rpt = r; gpt = g; bpt = b;
 		for ( iend=ipt+header.width; ipt<iend; )
 		    *ipt++ = COLOR_CREATE(*rpt++,*gpt++,*bpt++);
 	    }
@@ -307,6 +309,7 @@ GImage *GImageRead_Rgb(FILE *fp) {
 	    free(r); free(g); free(b); free(a);
 	}
     }
+    *success = 1;
     return( ret );
 
 errorGImageReadRgbFile:
@@ -320,15 +323,5 @@ errorGImageReadRgbMem:
 }
 
 GImage *GImageReadRgb(char *filename) {
-    FILE *file;
-    GImage *ret;
-
-    if ( (file=fopen(filename,"rb"))==NULL ) {
-        fprintf(stderr,"Can't open \"%s\"\n", filename);
-        return( NULL );
-    }
-
-    ret = GImageRead_Rgb(file);
-    fclose(file);
-    return( ret );
+    return GImageRead_Wrapper(filename, &GImageRead_Rgb);
 }
