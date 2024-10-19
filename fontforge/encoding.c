@@ -241,6 +241,10 @@ static int TryEscape( Encoding *enc, const char *escape_sequence ) {
 return( enc->has_2byte );
 }
 
+int IsUnicodeEncoding(Encoding *enc, int bmp_compatible) {
+    return enc == &unicodefull || (bmp_compatible && enc == &unicodebmp );
+}
+
 Encoding *_FindOrMakeEncoding(const char *name,int make_it) {
     Encoding *enc;
     char buffer[20];

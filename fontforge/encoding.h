@@ -81,5 +81,6 @@ extern void SFEncodeToMap(SplineFont *sf, struct cidmap *map);
 extern void SFExpandGlyphCount(SplineFont *sf, int newcnt);
 extern void SFMatchGlyphs(SplineFont *sf, SplineFont *target, int addempties);
 extern void SFRemoveGlyph(SplineFont *sf, SplineChar *sc);
+extern int IsUnicodeEncoding(Encoding *, int bmp_compatible);
 
 #endif /* FONTFORGE_ENCODING_H */

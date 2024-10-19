@@ -30,6 +30,7 @@
 
 #include "autowidth2.h"
 #include "cvundoes.h"
+#include "encoding.h"
 #include "fontforgeui.h"
 #include "fvcomposite.h"
 #include "fvfonts.h"
@@ -1150,7 +1151,7 @@ static void CI_ParseAltUnis(CharInfo *ci) {
     GGadget *au = GWidgetGetControl(ci->gw,CID_AltUni);
     int rows, cols = GMatrixEditGetColCnt(au);
     struct matrix_data *stuff = GMatrixEditGet(au,&rows);
-    int i;
+    int i, bmp_compat=true;
     struct altuni *altuni, *last = NULL;
     SplineChar *sc = ci->cachedsc;
     int deenc = false;
@@ -1178,17 +1179,13 @@ static void CI_ParseAltUnis(CharInfo *ci) {
     break;
 	}
     }
-    if ( oldcnt!=newcnt || deenc ) {
-	for ( fvs=(FontView *) sc->parent->fv; fvs!=NULL; fvs=(FontView *) fvs->b.nextsame ) {
-	    fvs->b.map->enc = &custom;
-	    FVSetTitle((FontViewBase *) fvs);
-	}
-    }
     AltUniFree(sc->altuni); sc->altuni = NULL;
     for ( i=0; i<rows; ++i ) {
 	int uni = stuff[i*cols+0].u.md_ival, vs = stuff[i*cols+1].u.md_ival;
 	altuni = chunkalloc(sizeof(struct altuni));
 	altuni->unienc = uni;
+	if ( uni > 0xFFFF )
+	    bmp_compat = false;
 	altuni->vs = vs==0 ? -1 : vs;
 	altuni->fid = 0;
 	if ( last == NULL )
@@ -1196,6 +1193,14 @@ static void CI_ParseAltUnis(CharInfo *ci) {
 	else
 	    last->next = altuni;
 	last = altuni;
+    }
+    if ( oldcnt!=newcnt || deenc ) {
+	for ( fvs=(FontView *) sc->parent->fv; fvs!=NULL; fvs=(FontView *) fvs->b.nextsame ) {
+	    if ( !IsUnicodeEncoding(fvs->b.map->enc, bmp_compat) ) {
+		fvs->b.map->enc = &custom;
+		FVSetTitle((FontViewBase *) fvs);
+	    } // XXX else rebuild map?
+	}
     }
 }
 
