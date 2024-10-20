@@ -19940,8 +19940,10 @@ void PyFF_ScriptString(FontViewBase *fv,SplineChar *sc, int layer, char *str) {
 
 void PyFF_FreeFV(FontViewBase *fv) {
     if ( fv->python_fv_object!=NULL ) {
-	((PyFF_Font *) (fv->python_fv_object))->fv = NULL;
-	Py_DECREF( (PyObject *) (fv->python_fv_object));
+	PyFF_Font *font = (PyFF_Font *) (fv->python_fv_object);
+	font->fv = NULL;
+	fv->python_fv_object = NULL;
+	Py_DECREF(font);
     }
 }
 
@@ -19952,13 +19954,11 @@ void PyFF_FreeSF(SplineFont *sf) {
 
 void PyFF_FreeSC(SplineChar *sc) {
     if ( sc->python_sc_object!=NULL ) {
-	((PyFF_Glyph *) (sc->python_sc_object))->sc = NULL;
-	Py_DECREF( (PyObject *) (sc->python_sc_object));
+	PyFF_Glyph *glyph = (PyFF_Glyph *) (sc->python_sc_object);
+	glyph->sc = NULL;
+	sc->python_sc_object = NULL;
+	Py_DECREF(glyph);
     }
-#if 0
-    // This is now layer-specific.
-    Py_XDECREF( (PyObject *) (sc->python_persistent));
-#endif // 0
     Py_XDECREF( (PyObject *) (sc->python_temporary));
 }
 
