@@ -6145,7 +6145,11 @@ static PyObject *layersiter_iternextkey(layersiterobject *di) {
 
     if (d == NULL )
 return NULL;
-    sf = d->sc->parent;
+    SplineChar *sc = PyFF_Glyph_GetSC(d->glyph);
+    if (sc == NULL) {
+	return NULL;
+    }
+    sf = sc->parent;
 
     if ( di->pos<sf->layer_cnt )
 return( Py_BuildValue("s",sf->layers[di->pos++].name) );
@@ -6209,16 +6213,26 @@ static PyTypeObject PyFF_LayerArrayIterType = {
 /* ************************************************************************** */
 
 static void PyFF_LayerArray_dealloc(PyFF_LayerArray *self) {
-    self->sc = NULL;
+    PyFF_Glyph *glyph = self->glyph;
+    self->glyph = NULL;
+    Py_DECREF(glyph);
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyObject *PyFFLayerArray_Str(PyFF_LayerArray *self) {
-return( PyUnicode_FromFormat( "<Layers Array for %s>", self->sc->name ));
+    SplineChar *sc = PyFF_Glyph_GetSC(self->glyph);
+    if (sc == NULL) {
+	return NULL;
+    }
+    return( PyUnicode_FromFormat( "<Layers Array for %s>", sc->name ));
 }
 
 static PyObject *PyFF_LayerArray_get_font(PyFF_LayerArray *self, void *UNUSED(closure)) {
-    PyFF_Font *font = PyFF_FontForSC( self->sc );
+    SplineChar *sc = PyFF_Glyph_GetSC(self->glyph);
+    if (sc == NULL) {
+	return NULL;
+    }
+    PyFF_Font *font = PyFF_FontForSC( sc );
     if ( font==NULL )
 Py_RETURN_NONE;
     Py_INCREF(font);
@@ -6226,7 +6240,7 @@ Py_RETURN_NONE;
 }
 
 static PyObject *PyFF_LayerArray_get_glyph(PyFF_LayerArray *self, void *UNUSED(closure)) {
-    PyFF_Glyph *glyph = PyFF_GlyphForSC( self->sc );
+    PyFF_Glyph *glyph = self->glyph;
     if ( glyph==NULL )
 Py_RETURN_NONE;
     Py_INCREF(glyph);
@@ -6238,11 +6252,11 @@ Py_RETURN_NONE;
 /* ************************************************************************** */
 
 static Py_ssize_t PyFF_LayerArrayLength( PyObject *self ) {
-    SplineChar *sc = ((PyFF_LayerArray *) self)->sc;
-    if ( sc==NULL )
-return( 0 );
-    else
-return( sc->layer_cnt );
+    SplineChar *sc = PyFF_Glyph_GetSC(((PyFF_LayerArray *) self)->glyph);
+    if (sc == NULL) {
+	return 0;
+    }
+    return( sc->layer_cnt );
 }
 
 static PyObject *LayerFromLayerIndex( SplineChar *sc, PyObject *index ) {
@@ -6266,13 +6280,19 @@ return( PyFF_Glyph_get_a_layer((PyFF_Glyph *) PySC_From_SC(sc),(void *)(size_t)l
 }
 
 static PyObject *PyFF_LayerArrayIndex( PyObject *self, PyObject *index ) {
-    SplineChar *sc = ((PyFF_LayerArray *) self)->sc;
+    SplineChar *sc = PyFF_Glyph_GetSC(((PyFF_LayerArray *) self)->glyph);
+    if (sc == NULL) {
+	return NULL;
+    }
     return LayerFromLayerIndex(sc, index);
 }
 
 static int PyFF_LayerArrayIndexAssign( PyObject *self, PyObject *index, PyObject *value ) {
-    SplineChar *sc = ((PyFF_LayerArray *) self)->sc;
     int layer;
+    SplineChar *sc = PyFF_Glyph_GetSC(((PyFF_LayerArray *) self)->glyph);
+    if (sc == NULL) {
+	return -1;
+    }
 
     if ( PyUnicode_Check(index)) {
 	const char *name = PyUnicode_AsUTF8(index);
@@ -7341,7 +7361,8 @@ Py_RETURN( self->layers );
     layers = (PyFF_LayerArray *) PyObject_New(PyFF_LayerArray, &PyFF_LayerArrayType);
     if (layers == NULL)
 return NULL;
-    layers->sc = self->sc;
+    layers->glyph = self;
+    Py_INCREF(layers->glyph);
     self->layers = layers;
 Py_RETURN( self->layers );
 }

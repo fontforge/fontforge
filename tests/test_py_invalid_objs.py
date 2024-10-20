@@ -19,3 +19,19 @@ except ValueError:
     exception_occured = True
 
 assert(exception_occured)
+
+#### Invalid Layer Array ####
+font2=fontforge.open(sys.argv[1])
+layers = font2["B"].layers 
+font2.close()
+
+# Try to access object after the font was deleted
+exception_occured = False
+try:
+    new_l = layers[0].dup()
+    # The execution shall not reach this line
+    assert(False)
+except ValueError:
+    exception_occured = True
+
+assert(exception_occured)
