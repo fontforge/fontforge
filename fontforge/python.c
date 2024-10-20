@@ -6400,17 +6400,17 @@ static PyObject *PyFFReferences_Str(PyFF_RefArray *self) {
 /* ****************************** References Array ****************************** */
 /* ************************************************************************** */
 
-static Py_ssize_t PyFF_RefArrayLength( PyObject *self ) {
-    SplineChar *sc = PyFF_Glyph_GetSC(((PyFF_RefArray *) self)->glyph);
+static Py_ssize_t PyFF_RefArrayLength( PyFF_RefArray *self ) {
+    SplineChar *sc = PyFF_Glyph_GetSC(self->glyph);
     if (sc == NULL) {
 	return 0;
     }
     return( sc->layer_cnt );
 }
 
-static PyObject *PyFF_RefArrayIndex( PyObject *self, PyObject *index ) {
+static PyObject *PyFF_RefArrayIndex( PyFF_RefArray *self, PyObject *index ) {
     int layer;
-    SplineChar *sc = PyFF_Glyph_GetSC(((PyFF_RefArray *) self)->glyph);
+    SplineChar *sc = PyFF_Glyph_GetSC(self->glyph);
     if (sc == NULL) {
 	return 0;
     }
@@ -6429,12 +6429,12 @@ return( NULL );
 	PyErr_Format(PyExc_TypeError, "Index must be a layer name or index" );
 return( NULL );
     }
-return( PyFF_Glyph_get_layer_references(((PyFF_RefArray *) self)->glyph,layer));
+return( PyFF_Glyph_get_layer_references(self->glyph,layer));
 }
 
-static int PyFF_RefArrayIndexAssign( PyObject *self, PyObject *index, PyObject *value ) {
+static int PyFF_RefArrayIndexAssign( PyFF_RefArray *self, PyObject *index, PyObject *value ) {
     int layer;
-    SplineChar *sc = PyFF_Glyph_GetSC(((PyFF_RefArray *) self)->glyph);
+    SplineChar *sc = PyFF_Glyph_GetSC(self->glyph);
     if (sc == NULL) {
 	return 0;
     }
@@ -6453,13 +6453,13 @@ return( -1 );
 	PyErr_Format(PyExc_TypeError, "Index must be a layer name or index" );
 return( -1 );
     }
-return( PyFF_Glyph_set_layer_references(((PyFF_RefArray *) self)->glyph,value,layer));
+return( PyFF_Glyph_set_layer_references(self->glyph,value,layer));
 }
 
 static PyMappingMethods PyFF_RefArrayMapping = {
-    PyFF_RefArrayLength,		/* length */
-    PyFF_RefArrayIndex,		/* subscript */
-    PyFF_RefArrayIndexAssign	/* subscript assign */
+    (lenfunc)PyFF_RefArrayLength,		/* length */
+    (binaryfunc)PyFF_RefArrayIndex,		/* subscript */
+    (objobjargproc)PyFF_RefArrayIndexAssign	/* subscript assign */
 };
 
 /* ************************************************************************** */
