@@ -236,11 +236,6 @@ static PyFF_Font* PyFF_FontForSC( SplineChar *sc ) {
 	return NULL;
     return PyFF_FontForSF( sc->parent );
 }
-static PyFF_Glyph* PyFF_GlyphForSC( SplineChar *sc ) {
-    if ( sc==NULL )
-	return NULL;
-    return sc->python_sc_object;
-}
 
 /* ************************************************************************** */
 /* Checks for closed fonts */
