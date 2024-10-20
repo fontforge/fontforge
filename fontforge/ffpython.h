@@ -82,6 +82,8 @@ extern void PyFF_Glyph_Set_Layer(SplineChar *sc,int layer);
 #define PYMETHODDEF_EMPTY  { NULL, NULL, 0, NULL }
 #define PYGETSETDEF_EMPTY { NULL, NULL, NULL, NULL, NULL }
 
+typedef struct ff_glyph PyFF_Glyph;
+
 typedef struct ff_point {
     PyObject_HEAD
     /* Type-specific fields go here. */
@@ -117,7 +119,7 @@ extern PyTypeObject PyFF_LayerType;
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
-    SplineChar *sc;
+    PyFF_Glyph *glyph;
     uint8_t replace;
     uint8_t ended;
     uint8_t changed;
@@ -141,7 +143,7 @@ typedef struct glyphmathkernobject {
     SplineChar *sc;
 } PyFF_MathKern;
 
-typedef struct {
+typedef struct ff_glyph {
     PyObject_HEAD
     /* Type-specific fields go here. */
     SplineChar *sc;

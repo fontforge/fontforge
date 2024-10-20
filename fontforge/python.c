@@ -480,6 +480,20 @@ static PyObject *TagToPythonString(uint32_t tag,int ismac) {
 return( PyUnicode_FromString(foo));
 }
 
+static SplineChar* PyFF_Glyph_GetSC(PyFF_Glyph *glyph) {
+    if (!glyph) {
+	return NULL;
+    }
+
+    // Underlying C object is dead, must throw exception.
+    if (glyph->sc == NULL) {
+        PyErr_SetString(PyExc_ValueError, "Glyph object is not valid");
+	return NULL;
+    }
+
+    return glyph->sc;
+}
+
 /* ************************************************************************** */
 /* Methods of module FontForge                                                */
 /* ************************************************************************** */
@@ -5588,30 +5602,42 @@ return( layer );
 static PyTypeObject PyFF_GlyphPenType;
 
 static void PyFF_GlyphPen_dealloc(PyFF_GlyphPen *self) {
-    if ( self->sc!=NULL ) {
+    SplineChar *sc = PyFF_Glyph_GetSC(self->glyph);
+    if ( sc!=NULL ) {
 	if ( self->changed )
-	    SCCharChangedUpdate(self->sc,self->layer);
-	self->sc = NULL;
+	    SCCharChangedUpdate(sc,self->layer);
     }
+    Py_XDECREF(self->glyph);
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyObject *PyFFGlyphPen_Str(PyFF_GlyphPen *self) {
-return( PyUnicode_FromFormat( "<GlyphPen for %s>", self->sc->name ));
+    SplineChar *sc = PyFF_Glyph_GetSC(self->glyph);
+    if (sc != NULL) {
+	return( PyUnicode_FromFormat( "<GlyphPen for %s>", sc->name ));
+    } else {
+	return Py_None;
+    }
 }
 
 /* ************************************************************************** */
 /*  GlyphPen Methods  */
 /* ************************************************************************** */
 static void GlyphClear(PyObject *self) {
-    SplineChar *sc = ((PyFF_GlyphPen *) self)->sc;
+    SplineChar *sc = PyFF_Glyph_GetSC(((PyFF_GlyphPen *) self)->glyph);
+    if (sc == NULL) {
+	return;
+    }
     int layer = ((PyFF_GlyphPen *) self)->layer;
     SCClearContents(sc,layer);
     ((PyFF_GlyphPen *) self)->replace = false;
 }
 
 static PyObject *PyFFGlyphPen_moveTo(PyObject *self, PyObject *args) {
-    SplineChar *sc = ((PyFF_GlyphPen *) self)->sc;
+    SplineChar *sc = PyFF_Glyph_GetSC(((PyFF_GlyphPen *) self)->glyph);
+    if (sc == NULL) {
+	return NULL;
+    }
     int layer = ((PyFF_GlyphPen *) self)->layer;
     SplineSet *ss;
     double x,y;
@@ -5639,7 +5665,10 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFGlyphPen_lineTo(PyObject *self, PyObject *args) {
-    SplineChar *sc = ((PyFF_GlyphPen *) self)->sc;
+    SplineChar *sc = PyFF_Glyph_GetSC(((PyFF_GlyphPen *) self)->glyph);
+    if (sc == NULL) {
+	return NULL;
+    }
     int layer = ((PyFF_GlyphPen *) self)->layer;
     SplinePoint *sp;
     SplineSet *ss;
@@ -5663,7 +5692,10 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFGlyphPen_curveTo(PyObject *self, PyObject *args) {
-    SplineChar *sc = ((PyFF_GlyphPen *) self)->sc;
+    SplineChar *sc = PyFF_Glyph_GetSC(((PyFF_GlyphPen *) self)->glyph);
+    if (sc == NULL) {
+	return NULL;
+    }
     int layer = ((PyFF_GlyphPen *) self)->layer;
     SplinePoint *sp;
     SplineSet *ss;
@@ -5698,7 +5730,10 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFGlyphPen_qCurveTo(PyObject *self, PyObject *args) {
-    SplineChar *sc = ((PyFF_GlyphPen *) self)->sc;
+    SplineChar *sc = PyFF_Glyph_GetSC(((PyFF_GlyphPen *) self)->glyph);
+    if (sc == NULL) {
+	return NULL;
+    }
     int layer = ((PyFF_GlyphPen *) self)->layer;
     SplinePoint *sp;
     SplineSet *ss;
@@ -5797,7 +5832,10 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFGlyphPen_closePath(PyObject *self, PyObject *UNUSED(args)) {
-    SplineChar *sc = ((PyFF_GlyphPen *) self)->sc;
+    SplineChar *sc = PyFF_Glyph_GetSC(((PyFF_GlyphPen *) self)->glyph);
+    if (sc == NULL) {
+	return NULL;
+    }
     int layer = ((PyFF_GlyphPen *) self)->layer;
     SplineSet *ss;
 
@@ -5835,7 +5873,10 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFGlyphPen_addComponent(PyObject *self, PyObject *args) {
-    SplineChar *sc = ((PyFF_GlyphPen *) self)->sc;
+    SplineChar *sc = PyFF_Glyph_GetSC(((PyFF_GlyphPen *) self)->glyph);
+    if (sc == NULL) {
+	return NULL;
+    }
     int layer = ((PyFF_GlyphPen *) self)->layer;
     real transform[6];
     SplineChar *rsc;
@@ -8430,7 +8471,8 @@ static PyObject *PyFFGlyph_GlyphPen(PyObject *self, PyObject *args, PyObject *ke
 	    &replace ))
 return( NULL );
     gp = PyFF_GlyphPenType.tp_alloc(&PyFF_GlyphPenType,0);
-    ((PyFF_GlyphPen *) gp)->sc = ((PyFF_Glyph *) self)->sc;
+    ((PyFF_GlyphPen *) gp)->glyph = (PyFF_Glyph *) self;
+    Py_INCREF(self);
     ((PyFF_GlyphPen *) gp)->layer = ((PyFF_Glyph *) self)->layer;
     ((PyFF_GlyphPen *) gp)->replace = replace;
     ((PyFF_GlyphPen *) gp)->ended = true;
