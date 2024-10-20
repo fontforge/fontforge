@@ -5623,26 +5623,25 @@ static PyObject *PyFFGlyphPen_Str(PyFF_GlyphPen *self) {
 /* ************************************************************************** */
 /*  GlyphPen Methods  */
 /* ************************************************************************** */
-static void GlyphClear(PyObject *self) {
-    SplineChar *sc = PyFF_Glyph_GetSC(((PyFF_GlyphPen *) self)->glyph);
+static void GlyphClear(PyFF_GlyphPen *self) {
+    SplineChar *sc = PyFF_Glyph_GetSC(self->glyph);
     if (sc == NULL) {
 	return;
     }
-    int layer = ((PyFF_GlyphPen *) self)->layer;
-    SCClearContents(sc,layer);
-    ((PyFF_GlyphPen *) self)->replace = false;
+    SCClearContents(sc,self->layer);
+    self->replace = false;
 }
 
-static PyObject *PyFFGlyphPen_moveTo(PyObject *self, PyObject *args) {
-    SplineChar *sc = PyFF_Glyph_GetSC(((PyFF_GlyphPen *) self)->glyph);
+static PyObject *PyFFGlyphPen_moveTo(PyFF_GlyphPen *self, PyObject *args) {
+    SplineChar *sc = PyFF_Glyph_GetSC(self->glyph);
     if (sc == NULL) {
 	return NULL;
     }
-    int layer = ((PyFF_GlyphPen *) self)->layer;
+    int layer = self->layer;
     SplineSet *ss;
     double x,y;
 
-    if ( !((PyFF_GlyphPen *) self)->ended ) {
+    if ( !self->ended ) {
 	PyErr_Format(PyExc_EnvironmentError, "The moveTo operator may not be called while drawing a contour");
 return( NULL );
     }
@@ -5651,7 +5650,7 @@ return( NULL );
 	if ( !PyArg_ParseTuple( args, "dd", &x, &y ))
 return( NULL );
     }
-    if ( ((PyFF_GlyphPen *) self)->replace )
+    if ( self->replace )
 	GlyphClear(self);
     ss = chunkalloc(sizeof(SplineSet));
     ss->next = sc->layers[layer].splines;
@@ -5659,22 +5658,22 @@ return( NULL );
     ss->first = ss->last = SplinePointCreate(x,y);
     ss->start_offset = 0;
 
-    ((PyFF_GlyphPen *) self)->ended = false;
-    ((PyFF_GlyphPen *) self)->changed = true;
+    self->ended = false;
+    self->changed = true;
 Py_RETURN( self );
 }
 
-static PyObject *PyFFGlyphPen_lineTo(PyObject *self, PyObject *args) {
-    SplineChar *sc = PyFF_Glyph_GetSC(((PyFF_GlyphPen *) self)->glyph);
+static PyObject *PyFFGlyphPen_lineTo(PyFF_GlyphPen *self, PyObject *args) {
+    SplineChar *sc = PyFF_Glyph_GetSC(self->glyph);
     if (sc == NULL) {
 	return NULL;
     }
-    int layer = ((PyFF_GlyphPen *) self)->layer;
+    int layer = self->layer;
     SplinePoint *sp;
     SplineSet *ss;
     double x,y;
 
-    if ( ((PyFF_GlyphPen *) self)->ended ) {
+    if ( self->ended ) {
 	PyErr_Format(PyExc_EnvironmentError, "The lineTo operator must be preceded by a moveTo operator" );
 return( NULL );
     }
@@ -5691,17 +5690,17 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFGlyphPen_curveTo(PyObject *self, PyObject *args) {
-    SplineChar *sc = PyFF_Glyph_GetSC(((PyFF_GlyphPen *) self)->glyph);
+static PyObject *PyFFGlyphPen_curveTo(PyFF_GlyphPen *self, PyObject *args) {
+    SplineChar *sc = PyFF_Glyph_GetSC(self->glyph);
     if (sc == NULL) {
 	return NULL;
     }
-    int layer = ((PyFF_GlyphPen *) self)->layer;
+    int layer = self->layer;
     SplinePoint *sp;
     SplineSet *ss;
     double x[3],y[3];
 
-    if ( ((PyFF_GlyphPen *) self)->ended ) {
+    if ( self->ended ) {
 	PyErr_Format(PyExc_EnvironmentError, "The curveTo operator must be preceded by a moveTo operator" );
 return( NULL );
     }
@@ -5729,12 +5728,12 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFGlyphPen_qCurveTo(PyObject *self, PyObject *args) {
-    SplineChar *sc = PyFF_Glyph_GetSC(((PyFF_GlyphPen *) self)->glyph);
+static PyObject *PyFFGlyphPen_qCurveTo(PyFF_GlyphPen *self, PyObject *args) {
+    SplineChar *sc = PyFF_Glyph_GetSC(self->glyph);
     if (sc == NULL) {
 	return NULL;
     }
-    int layer = ((PyFF_GlyphPen *) self)->layer;
+    int layer = self->layer;
     SplinePoint *sp;
     SplineSet *ss;
     double x0,y0, x1,y1, x2,y2;
@@ -5753,7 +5752,7 @@ return( NULL );
     }
     else if ( PySequence_GetItem(args,len-1)== Py_None ) {
 	--len;
-	if ( !((PyFF_GlyphPen *) self)->ended ) {
+	if ( !self->ended ) {
 	    PyErr_Format(PyExc_EnvironmentError, "qCurveTo must describe an entire contour if its last argument is None");
 return( NULL );
 	} else if ( len<2 ) {
@@ -5793,10 +5792,10 @@ return( NULL );
 	SplineMake2(sp,ss->first);
 	ss->last = ss->first;
 
-	/*((PyFF_GlyphPen *) self)->ended = true;*/
-	((PyFF_GlyphPen *) self)->changed = true;
+	/*self->ended = true;*/
+	self->changed = true;
     } else {
-	if ( ((PyFF_GlyphPen *) self)->ended ) {
+	if ( self->ended ) {
 	    PyErr_Format(PyExc_EnvironmentError, "The qCurveTo operator must be preceded by a moveTo operator" );
 return( NULL );
 	} else if ( len<2 ) {
@@ -5831,15 +5830,15 @@ return( NULL );
 Py_RETURN( self );
 }
 
-static PyObject *PyFFGlyphPen_closePath(PyObject *self, PyObject *UNUSED(args)) {
-    SplineChar *sc = PyFF_Glyph_GetSC(((PyFF_GlyphPen *) self)->glyph);
+static PyObject *PyFFGlyphPen_closePath(PyFF_GlyphPen *self, PyObject *UNUSED(args)) {
+    SplineChar *sc = PyFF_Glyph_GetSC(self->glyph);
     if (sc == NULL) {
 	return NULL;
     }
-    int layer = ((PyFF_GlyphPen *) self)->layer;
+    int layer = self->layer;
     SplineSet *ss;
 
-    if ( ((PyFF_GlyphPen *) self)->ended ) {
+    if ( self->ended ) {
 	PyErr_Format(PyExc_EnvironmentError, "The closePath operator requires and open path to close" );
 return( NULL );
     }
@@ -5857,38 +5856,38 @@ return( NULL );
     }
     ss->last = ss->first;
 
-    ((PyFF_GlyphPen *) self)->ended = true;
+    self->ended = true;
 Py_RETURN( self );
 }
 
-static PyObject *PyFFGlyphPen_endPath(PyObject *self, PyObject *UNUSED(args)) {
+static PyObject *PyFFGlyphPen_endPath(PyFF_GlyphPen *self, PyObject *UNUSED(args)) {
 
-    if ( ((PyFF_GlyphPen *) self)->ended ) {
+    if ( self->ended ) {
 	PyErr_Format(PyExc_EnvironmentError, "The endPath operator must be preceded path operations" );
 return( NULL );
     }
 
-    ((PyFF_GlyphPen *) self)->ended = true;
+    self->ended = true;
 Py_RETURN( self );
 }
 
-static PyObject *PyFFGlyphPen_addComponent(PyObject *self, PyObject *args) {
-    SplineChar *sc = PyFF_Glyph_GetSC(((PyFF_GlyphPen *) self)->glyph);
+static PyObject *PyFFGlyphPen_addComponent(PyFF_GlyphPen *self, PyObject *args) {
+    SplineChar *sc = PyFF_Glyph_GetSC(self->glyph);
     if (sc == NULL) {
 	return NULL;
     }
-    int layer = ((PyFF_GlyphPen *) self)->layer;
+    int layer = self->layer;
     real transform[6];
     SplineChar *rsc;
     double m[6] = {1.0,0.0,0.0,1.0,0.0,0.0};
     char *str;
     int j, selected=false;
 
-    if ( !((PyFF_GlyphPen *) self)->ended ) {
+    if ( !self->ended ) {
 	PyErr_Format(PyExc_EnvironmentError, "The addComponent operator may not be called while drawing a contour");
 return( NULL );
     }
-    if ( ((PyFF_GlyphPen *) self)->replace )
+    if ( self->replace )
 	GlyphClear(self);
 
     if ( !PyArg_ParseTuple(args,"s|(dddddd)p",&str,
@@ -5908,13 +5907,13 @@ Py_RETURN( self );
 }
 
 static PyMethodDef PyFF_GlyphPen_methods[] = {
-    { "moveTo", PyFFGlyphPen_moveTo, METH_VARARGS, "Start a new contour at a point (a two element tuple)" },
-    { "lineTo", PyFFGlyphPen_lineTo, METH_VARARGS, "Draws a line from the current point to the argument (a two element tuple)" },
-    { "curveTo", PyFFGlyphPen_curveTo, METH_VARARGS, "Draws a cubic or quadratic bezier curve from the current point to the last arg" },
-    { "qCurveTo", PyFFGlyphPen_qCurveTo, METH_VARARGS, "Draws a series of quadratic bezier curves" },
-    { "closePath", PyFFGlyphPen_closePath, METH_VARARGS, "Closes the current contour (and ends it)" },
-    { "endPath", PyFFGlyphPen_endPath, METH_VARARGS, "Ends the current contour (without closing it)" },
-    { "addComponent", PyFFGlyphPen_addComponent, METH_VARARGS, "Adds a reference into the glyph" },
+    { "moveTo", (PyCFunction) PyFFGlyphPen_moveTo, METH_VARARGS, "Start a new contour at a point (a two element tuple)" },
+    { "lineTo", (PyCFunction) PyFFGlyphPen_lineTo, METH_VARARGS, "Draws a line from the current point to the argument (a two element tuple)" },
+    { "curveTo", (PyCFunction) PyFFGlyphPen_curveTo, METH_VARARGS, "Draws a cubic or quadratic bezier curve from the current point to the last arg" },
+    { "qCurveTo", (PyCFunction) PyFFGlyphPen_qCurveTo, METH_VARARGS, "Draws a series of quadratic bezier curves" },
+    { "closePath", (PyCFunction) PyFFGlyphPen_closePath, METH_VARARGS, "Closes the current contour (and ends it)" },
+    { "endPath", (PyCFunction) PyFFGlyphPen_endPath, METH_VARARGS, "Ends the current contour (without closing it)" },
+    { "addComponent", (PyCFunction) PyFFGlyphPen_addComponent, METH_VARARGS, "Adds a reference into the glyph" },
     PYMETHODDEF_EMPTY /* Sentinel */
 };
 /* ************************************************************************** */
