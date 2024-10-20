@@ -35,3 +35,19 @@ except ValueError:
     exception_occured = True
 
 assert(exception_occured)
+
+#### Invalid Layer References Dictionary ####
+font2=fontforge.open(sys.argv[1])
+l_refs = font2["B"].layerrefs
+font2.close()
+
+# Try to access object after the font was deleted
+exception_occured = False
+try:
+    refs = l_refs["Fore"]
+    # The execution shall not reach this line
+    assert(False)
+except ValueError:
+    exception_occured = True
+
+assert(exception_occured)

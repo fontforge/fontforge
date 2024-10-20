@@ -6382,12 +6382,18 @@ static PyTypeObject PyFF_LayerArrayType = {
 
 static PyTypeObject PyFF_RefArrayType;
 static void PyFF_RefArray_dealloc(PyFF_RefArray *self) {
-    self->sc = NULL;
+    PyFF_Glyph *glyph = self->glyph;
+    self->glyph = NULL;
+    Py_DECREF(glyph);
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyObject *PyFFReferences_Str(PyFF_RefArray *self) {
-return( PyUnicode_FromFormat( "<Layer References Array for %s>", self->sc->name ));
+    SplineChar *sc = PyFF_Glyph_GetSC(self->glyph);
+    if (sc == NULL) {
+	return 0;
+    }
+    return( PyUnicode_FromFormat( "<Layer References Array for %s>", sc->name ));
 }
 
 /* ************************************************************************** */
@@ -6395,16 +6401,19 @@ return( PyUnicode_FromFormat( "<Layer References Array for %s>", self->sc->name 
 /* ************************************************************************** */
 
 static Py_ssize_t PyFF_RefArrayLength( PyObject *self ) {
-    SplineChar *sc = ((PyFF_RefArray *) self)->sc;
-    if ( sc==NULL )
-return( 0 );
-    else
-return( sc->layer_cnt );
+    SplineChar *sc = PyFF_Glyph_GetSC(((PyFF_RefArray *) self)->glyph);
+    if (sc == NULL) {
+	return 0;
+    }
+    return( sc->layer_cnt );
 }
 
 static PyObject *PyFF_RefArrayIndex( PyObject *self, PyObject *index ) {
-    SplineChar *sc = ((PyFF_RefArray *) self)->sc;
     int layer;
+    SplineChar *sc = PyFF_Glyph_GetSC(((PyFF_RefArray *) self)->glyph);
+    if (sc == NULL) {
+	return 0;
+    }
 
     if ( PyUnicode_Check(index)) {
 	const char *name = PyUnicode_AsUTF8(index);
@@ -6420,12 +6429,15 @@ return( NULL );
 	PyErr_Format(PyExc_TypeError, "Index must be a layer name or index" );
 return( NULL );
     }
-return( PyFF_Glyph_get_layer_references((PyFF_Glyph *) PySC_From_SC(sc),layer));
+return( PyFF_Glyph_get_layer_references(((PyFF_RefArray *) self)->glyph,layer));
 }
 
 static int PyFF_RefArrayIndexAssign( PyObject *self, PyObject *index, PyObject *value ) {
-    SplineChar *sc = ((PyFF_RefArray *) self)->sc;
     int layer;
+    SplineChar *sc = PyFF_Glyph_GetSC(((PyFF_RefArray *) self)->glyph);
+    if (sc == NULL) {
+	return 0;
+    }
 
     if ( PyUnicode_Check(index)) {
 	const char *name = PyUnicode_AsUTF8(index);
@@ -6441,7 +6453,7 @@ return( -1 );
 	PyErr_Format(PyExc_TypeError, "Index must be a layer name or index" );
 return( -1 );
     }
-return( PyFF_Glyph_set_layer_references((PyFF_Glyph *) PySC_From_SC(sc),value,layer));
+return( PyFF_Glyph_set_layer_references(((PyFF_RefArray *) self)->glyph,value,layer));
 }
 
 static PyMappingMethods PyFF_RefArrayMapping = {
@@ -7275,7 +7287,8 @@ Py_RETURN( self->refs );
     layerrefs = (PyFF_RefArray *) PyObject_New(PyFF_RefArray, &PyFF_RefArrayType);
     if (layerrefs == NULL)
 return NULL;
-    layerrefs->sc = self->sc;
+    layerrefs->glyph = self;
+    Py_INCREF(layerrefs->glyph);
     self->refs = layerrefs;
 Py_RETURN( self->refs );
 }

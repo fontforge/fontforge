@@ -135,7 +135,7 @@ typedef struct {
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
-    SplineChar *sc;
+    PyFF_Glyph *glyph;
 } PyFF_RefArray;
 
 typedef struct glyphmathkernobject {
