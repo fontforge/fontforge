@@ -140,7 +140,7 @@ typedef struct {
 
 typedef struct glyphmathkernobject {
     PyObject_HEAD
-    SplineChar *sc;
+    PyFF_Glyph *glyph;
 } PyFF_MathKern;
 
 typedef struct ff_glyph {

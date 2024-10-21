@@ -37,14 +37,30 @@ except ValueError:
 assert(exception_occured)
 
 #### Invalid Layer References Dictionary ####
-font2=fontforge.open(sys.argv[1])
-l_refs = font2["B"].layerrefs
-font2.close()
+font3 = fontforge.open(sys.argv[1])
+l_refs = font3["C"].layerrefs
+font3.close()
 
 # Try to access object after the font was deleted
 exception_occured = False
 try:
     refs = l_refs["Fore"]
+    # The execution shall not reach this line
+    assert(False)
+except ValueError:
+    exception_occured = True
+
+assert(exception_occured)
+
+#### Invalid Math Kerning Data ####
+font4 = fontforge.open(sys.argv[1])
+mk_data = font4["D"].mathKern
+font4.close()
+
+# Try to access object after the font was deleted
+exception_occured = False
+try:
+    bl = mk_data.bottomLeft
     # The execution shall not reach this line
     assert(False)
 except ValueError:

@@ -6521,28 +6521,39 @@ static PyTypeObject PyFF_RefArrayType = {
 /* ************************************************************************** */
 
 static void PyFFMathKern_dealloc(PyFF_MathKern *self) {
+    PyFF_Glyph *glyph = self->glyph;
+    self->glyph = NULL;
+    Py_DECREF(glyph);
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 static PyObject *PyFFMathKern_Str(PyFF_MathKern *self) {
-return( PyUnicode_FromFormat( "<math kerning table for glyph %s>", self->sc->name ));
+    SplineChar *sc = PyFF_Glyph_GetSC(self->glyph);
+    if (sc == NULL) {
+	return NULL;
+    }
+    return( PyUnicode_FromFormat( "<math kerning table for glyph %s>", sc->name ));
 }
 
 static PyObject *PyFF_MathKern_get_kerns(PyFF_MathKern *self, void *closure) {
     struct mathkernvertex *mkv;
     PyObject *tuple;
     int i;
+    SplineChar *sc = PyFF_Glyph_GetSC(self->glyph);
+    if (sc == NULL) {
+	return NULL;
+    }
 
-    if ( self->sc->mathkern==NULL )
+    if ( sc->mathkern==NULL )
 Py_RETURN_NONE;
-    mkv = &self->sc->mathkern->top_right + (int) (intptr_t) closure;
+    mkv = &sc->mathkern->top_right + (int) (intptr_t) closure;
     if ( mkv->cnt==0 )
 Py_RETURN_NONE;
 
     tuple = PyTuple_New(mkv->cnt);
     for ( i=0; i<mkv->cnt; ++i ) {
 	if ( i==mkv->cnt-1 )
-	    PyTuple_SetItem(tuple,i,Py_BuildValue( "(ii)", mkv->mkd[i].kern,self->sc->parent->ascent));
+	    PyTuple_SetItem(tuple,i,Py_BuildValue( "(ii)", mkv->mkd[i].kern,sc->parent->ascent));
 	else
 	    PyTuple_SetItem(tuple,i,Py_BuildValue( "(ii)", mkv->mkd[i].kern,mkv->mkd[i].height));
     }
@@ -6553,13 +6564,17 @@ static int PyFF_MathKern_set_kerns(PyFF_MathKern *self, PyObject *value, void *c
     struct mathkernvertex *mkv;
     struct mathkerndata *mkd;
     int i, cnt;
+    SplineChar *sc = PyFF_Glyph_GetSC(self->glyph);
+    if (sc == NULL) {
+	return 0;
+    }
 
-    if ( self->sc->mathkern==NULL ) {
+    if ( sc->mathkern==NULL ) {
 	if ( value==Py_None )
 return( 0 );
-	self->sc->mathkern = chunkalloc(sizeof(struct mathkern));
+	sc->mathkern = chunkalloc(sizeof(struct mathkern));
     }
-    mkv = &self->sc->mathkern->top_right + (int) (intptr_t) closure;
+    mkv = &sc->mathkern->top_right + (int) (intptr_t) closure;
     if ( value==Py_None ) {
 	MathKernVContentsFree(mkv);
 	mkv->cnt = 0;
@@ -8060,7 +8075,8 @@ Py_RETURN( self->mk );
     mk = (PyFF_MathKern *) PyObject_New(PyFF_MathKern, &PyFF_MathKernType);
     if (mk == NULL)
 return NULL;
-    mk->sc = self->sc;
+    mk->glyph = self;
+    Py_INCREF(mk->glyph);
     self->mk = mk;
 Py_RETURN( self->mk );
 }
