@@ -142,4 +142,6 @@ else()
 endif()
 install(FILES fontforge.1 sfddiff.1 fontlint.1 fontimage.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
 
-add_subdirectory(pixmaps)
+if(ENABLE_GUI)
+  add_subdirectory(pixmaps)
+endif()
