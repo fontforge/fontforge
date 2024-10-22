@@ -6025,8 +6025,7 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_a_layer(PyFF_Glyph *self,void *vli) {
-    SplineChar *sc = self->sc;
+static PyObject *PyFF_Glyph_get_a_layer(PyFF_Glyph *self, SplineChar *sc, void *vli) {
     Layer *layer;
     PyFF_Layer *ly;
     int layeri = (int)(size_t)vli;
@@ -6042,8 +6041,7 @@ return( NULL );
 return( (PyObject * ) ly );
 }
 
-static int PyFF_Glyph_CSetLayer(PyFF_Glyph *self, PyObject *value, int layeri, int flags) {
-    SplineChar *sc = self->sc;
+static int PyFF_Glyph_CSetLayer(PyFF_Glyph *self, SplineChar *sc, PyObject *value, int layeri, int flags) {
     Layer *layer;
     SplineSet *ss = NULL, *newss;
     int isquad;
@@ -6085,8 +6083,8 @@ static int PyFF_Glyph_CSetLayer(PyFF_Glyph *self, PyObject *value, int layeri, i
 return( 0 );
 }
 
-static int PyFF_Glyph_set_a_layer(PyFF_Glyph *self,PyObject *value, void *vli) {
-	return PyFF_Glyph_CSetLayer(self, value, (int)(size_t)vli, pconvert_flag_all|pconvert_flag_by_geom);
+static int PyFF_Glyph_set_a_layer(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *vli) {
+	return PyFF_Glyph_CSetLayer(self, sc, value, (int)(size_t)vli, pconvert_flag_all|pconvert_flag_by_geom);
 }
 
 static int SFFindLayerIndexByName(SplineFont *sf,const char *name) {
@@ -6271,7 +6269,7 @@ return( NULL );
 	PyErr_Format(PyExc_TypeError, "Index must be a layer name or index" );
 return( NULL );
     }
-return( PyFF_Glyph_get_a_layer((PyFF_Glyph *) PySC_From_SC(sc),(void *)(size_t)layer));
+return( PyFF_Glyph_get_a_layer((PyFF_Glyph *) PySC_From_SC(sc), sc, (void *)(size_t)layer));
 }
 
 static PyObject *PyFF_LayerArrayIndex( PyObject *self, PyObject *index ) {
@@ -6303,7 +6301,7 @@ return( -1 );
 	PyErr_Format(PyExc_TypeError, "Index must be a layer name or index" );
 return( -1 );
     }
-return( PyFF_Glyph_CSetLayer((PyFF_Glyph *) PySC_From_SC(sc),value,layer,pconvert_flag_all|pconvert_flag_by_geom));
+return( PyFF_Glyph_CSetLayer((PyFF_Glyph *) PySC_From_SC(sc), sc, value,layer,pconvert_flag_all|pconvert_flag_by_geom));
 }
 
 static PyGetSetDef PyFF_LayerArray_getset[] = {
@@ -6803,15 +6801,15 @@ static PyObject *PyFFGlyph_richcompare(PyObject *a, PyObject *b, int op) {
 /* Glyph getters/setters */
 /* ************************************************************************** */
 
-static PyObject *PyFF_Glyph_get_temporary(PyFF_Glyph *self, void *UNUSED(closure)) {
-    if ( self->sc->python_temporary==NULL )
+static PyObject *PyFF_Glyph_get_temporary(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    if ( sc->python_temporary==NULL )
 Py_RETURN_NONE;
-    Py_INCREF( (PyObject *) (self->sc->python_temporary) );
-return( self->sc->python_temporary );
+    Py_INCREF( (PyObject *) (sc->python_temporary) );
+return( sc->python_temporary );
 }
 
-static int PyFF_Glyph_set_temporary(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
-    PyObject *old = self->sc->python_temporary;
+static int PyFF_Glyph_set_temporary(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
+    PyObject *old = sc->python_temporary;
 
     /* I'd rather not store None, because C routines don't understand it */
     /*  and they occasionally need to know whether there is something real */
@@ -6819,21 +6817,21 @@ static int PyFF_Glyph_set_temporary(PyFF_Glyph *self,PyObject *value, void *UNUS
     if ( value==Py_None )
 	value = NULL;
     Py_XINCREF(value);
-    self->sc->python_temporary = value;
+    sc->python_temporary = value;
     Py_XDECREF(old);
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_persistent(PyFF_Glyph *self, void *UNUSED(closure)) {
-    if ( self->sc->layer_cnt <= ly_fore || self->sc->layers[ly_fore].python_persistent==NULL )
+static PyObject *PyFF_Glyph_get_persistent(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    if ( sc->layer_cnt <= ly_fore || sc->layers[ly_fore].python_persistent==NULL )
 Py_RETURN_NONE;
-    Py_INCREF( (PyObject *) (self->sc->layers[ly_fore].python_persistent) );
-return( self->sc->layers[ly_fore].python_persistent );
+    Py_INCREF( (PyObject *) (sc->layers[ly_fore].python_persistent) );
+return( sc->layers[ly_fore].python_persistent );
 }
 
-static int PyFF_Glyph_set_persistent(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
-    if ( self->sc->layer_cnt <= ly_fore ) return -1;
-    PyObject *old = self->sc->layers[ly_fore].python_persistent;
+static int PyFF_Glyph_set_persistent(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
+    if ( sc->layer_cnt <= ly_fore ) return -1;
+    PyObject *old = sc->layers[ly_fore].python_persistent;
 
     /* I'd rather not store None, because C routines don't understand it */
     /*  and they occasionally need to know whether there is something real */
@@ -6841,16 +6839,16 @@ static int PyFF_Glyph_set_persistent(PyFF_Glyph *self,PyObject *value, void *UNU
     if ( value==Py_None )
 	value = NULL;
     Py_XINCREF(value);
-    self->sc->layers[ly_fore].python_persistent = value;
+    sc->layers[ly_fore].python_persistent = value;
     Py_XDECREF(old);
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_activeLayer(PyFF_Glyph *self, void *UNUSED(closure)) {
-return( Py_BuildValue("i", self->layer ));
+static PyObject *PyFF_Glyph_get_activeLayer(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    return( Py_BuildValue("i", self->layer ));
 }
 
-static int PyFF_Glyph_set_activeLayer(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
+static int PyFF_Glyph_set_activeLayer(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
     int layer;
 
     if ( PyLong_Check(value) )
@@ -6860,13 +6858,13 @@ static int PyFF_Glyph_set_activeLayer(PyFF_Glyph *self,PyObject *value, void *UN
 	if (name == NULL) {
 	    return -1;
 	}
-	layer = SFFindLayerIndexByName(self->sc->parent,name);
+	layer = SFFindLayerIndexByName(sc->parent,name);
 	if ( layer<0 )
 return( -1 );
     } else {
         return -1;
     }
-    if ( layer<0 || layer>=self->sc->layer_cnt ) {
+    if ( layer<0 || layer>=sc->layer_cnt ) {
 	PyErr_Format(PyExc_ValueError, "Layer is out of range" );
 return( -1 );
     }
@@ -6874,25 +6872,24 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_glyphname(PyFF_Glyph *self, void *UNUSED(closure)) {
-
-return( Py_BuildValue("s", self->sc->name ));
+static PyObject *PyFF_Glyph_get_glyphname(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    return( Py_BuildValue("s", sc->name ));
 }
 
-static int PyFF_Glyph_set_glyphname(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
+static int PyFF_Glyph_set_glyphname(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
     FontViewBase *fvs;
     const char *str = PyUnicode_AsUTF8(value);
     if (str == NULL) {
         return -1;
     }
 
-    SFGlyphRenameFixup(self->sc->parent,self->sc->name,str,false);
-    self->sc->namechanged = self->sc->changed = true;
-    free( self->sc->name );
-    self->sc->name = copy(str);
-    GlyphHashFree(self->sc->parent);
-    SCRefreshTitles(self->sc);
-    for ( fvs=self->sc->parent->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+    SFGlyphRenameFixup(sc->parent,sc->name,str,false);
+    sc->namechanged = sc->changed = true;
+    free( sc->name );
+    sc->name = copy(str);
+    GlyphHashFree(sc->parent);
+    SCRefreshTitles(sc);
+    for ( fvs=sc->parent->fv; fvs!=NULL; fvs=fvs->nextsame ) {
 	/* Postscript encodings are by name, others are by codepoint */
 	if ( fvs->map->enc->psnames!=NULL && fvs->map->enc!=&custom ) {
 	    fvs->map->enc = &custom;
@@ -6902,34 +6899,32 @@ static int PyFF_Glyph_set_glyphname(PyFF_Glyph *self,PyObject *value, void *UNUS
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_encoding(PyFF_Glyph *self, void *UNUSED(closure)) {
-    SplineChar *sc = self->sc;
+static PyObject *PyFF_Glyph_get_encoding(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
     EncMap *map = sc->parent->fv->map;
 
 return( Py_BuildValue("i", map->backmap[sc->orig_pos] ));
 }
 
-static PyObject *PyFF_Glyph_get_codepoint(PyFF_Glyph *self, void *UNUSED(closure)) {
-    if ( self->sc==NULL || self->sc->unicodeenc < 0 )
+static PyObject *PyFF_Glyph_get_codepoint(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    if ( sc==NULL || sc->unicodeenc < 0 )
 Py_RETURN_NONE;
-    return PyUnicode_FromFormat("U+%04X", self->sc->unicodeenc);
+    return PyUnicode_FromFormat("U+%04X", sc->unicodeenc);
 }
 
-static PyObject *PyFF_Glyph_get_unicode(PyFF_Glyph *self, void *UNUSED(closure)) {
-
-return( Py_BuildValue("i", self->sc->unicodeenc ));
+static PyObject *PyFF_Glyph_get_unicode(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    return( Py_BuildValue("i", sc->unicodeenc ));
 }
 
-static int PyFF_Glyph_set_unicode(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
+static int PyFF_Glyph_set_unicode(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
     FontViewBase *fvs;
     int uenc;
 
     uenc = PyLong_AsLong(value);
     if ( PyErr_Occurred()!=NULL )
 return( -1 );
-    self->sc->unicodeenc = uenc;
-    SCRefreshTitles(self->sc);
-    for ( fvs=self->sc->parent->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+    sc->unicodeenc = uenc;
+    SCRefreshTitles(sc);
+    for ( fvs=sc->parent->fv; fvs!=NULL; fvs=fvs->nextsame ) {
 	/* Postscript encodings are by name, others are by codepoint */
 	if ( fvs->map->enc->psnames==NULL && fvs->map->enc!=&custom ) {
 	    fvs->map->enc = &custom;
@@ -6939,24 +6934,24 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_altuni(PyFF_Glyph *self, void *UNUSED(closure)) {
+static PyObject *PyFF_Glyph_get_altuni(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
     int cnt;
     struct altuni *au;
     PyObject *ret;
 
-    for ( cnt=0, au = self->sc->altuni; au!=NULL; au=au->next, ++cnt );
+    for ( cnt=0, au = sc->altuni; au!=NULL; au=au->next, ++cnt );
     if ( cnt==0 )
 Py_RETURN_NONE;
 
     ret = PyTuple_New(cnt);
-    for ( cnt=0, au = self->sc->altuni; au!=NULL; au=au->next, ++cnt ) {
+    for ( cnt=0, au = sc->altuni; au!=NULL; au=au->next, ++cnt ) {
 	PyTuple_SET_ITEM(ret,cnt,Py_BuildValue("(iii)", au->unienc,
 		au->vs, au->fid));
     }
 return( ret );
 }
 
-static int PyFF_Glyph_set_altuni(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
+static int PyFF_Glyph_set_altuni(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
     int cnt, i;
     struct altuni *head, *last=NULL, *cur;
     int uni, vs, fid;
@@ -6988,10 +6983,10 @@ return( -1 );
 	}
     }
 
-    AltUniFree(self->sc->altuni);
-    self->sc->altuni = head;
+    AltUniFree(sc->altuni);
+    sc->altuni = head;
 
-    for ( fvs=self->sc->parent->fv; fvs!=NULL; fvs=fvs->nextsame ) {
+    for ( fvs=sc->parent->fv; fvs!=NULL; fvs=fvs->nextsame ) {
 	fvs->map->enc = &custom;
 	FVSetTitle(fvs);
     }
@@ -6999,149 +6994,140 @@ return( -1 );
     return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_changed(PyFF_Glyph *self, void *UNUSED(closure)) {
-
-return( Py_BuildValue("i", self->sc->changed ));
+static PyObject *PyFF_Glyph_get_changed(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    return( Py_BuildValue("i", sc->changed ));
 }
 
-static int PyFF_Glyph_set_changed(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
+static int PyFF_Glyph_set_changed(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
     int uenc;
 
     uenc = PyLong_AsLong(value);
     if ( PyErr_Occurred()!=NULL )
 return( -1 );
-    self->sc->changed = uenc;
+    sc->changed = uenc;
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_texheight(PyFF_Glyph *self, void *UNUSED(closure)) {
-
-return( Py_BuildValue("i", self->sc->tex_height ));
+static PyObject *PyFF_Glyph_get_texheight(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    return( Py_BuildValue("i", sc->tex_height ));
 }
 
-static int PyFF_Glyph_set_texheight(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
+static int PyFF_Glyph_set_texheight(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
     int val;
 
     val = PyLong_AsLong(value);
     if ( PyErr_Occurred()!=NULL )
 return( -1 );
-    self->sc->tex_height = val;
+    sc->tex_height = val;
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_texdepth(PyFF_Glyph *self, void *UNUSED(closure)) {
-
-return( Py_BuildValue("i", self->sc->tex_depth ));
+static PyObject *PyFF_Glyph_get_texdepth(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    return( Py_BuildValue("i", sc->tex_depth ));
 }
 
-static int PyFF_Glyph_set_texdepth(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
+static int PyFF_Glyph_set_texdepth(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
     int val;
 
     val = PyLong_AsLong(value);
     if ( PyErr_Occurred()!=NULL )
 return( -1 );
-    self->sc->tex_depth = val;
+    sc->tex_depth = val;
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_italiccorrection(PyFF_Glyph *self, void *UNUSED(closure)) {
-
-return( Py_BuildValue("i", self->sc->italic_correction ));
+static PyObject *PyFF_Glyph_get_italiccorrection(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    return( Py_BuildValue("i", sc->italic_correction ));
 }
 
-static int PyFF_Glyph_set_italiccorrection(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
+static int PyFF_Glyph_set_italiccorrection(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
     int val;
 
     val = PyLong_AsLong(value);
     if ( PyErr_Occurred()!=NULL )
 return( -1 );
-    self->sc->italic_correction = val;
+    sc->italic_correction = val;
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_topaccent(PyFF_Glyph *self, void *UNUSED(closure)) {
-
-return( Py_BuildValue("i", self->sc->top_accent_horiz ));
+static PyObject *PyFF_Glyph_get_topaccent(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    return( Py_BuildValue("i", sc->top_accent_horiz ));
 }
 
-static int PyFF_Glyph_set_topaccent(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
+static int PyFF_Glyph_set_topaccent(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
     int val;
 
     val = PyLong_AsLong(value);
     if ( PyErr_Occurred()!=NULL )
 return( -1 );
-    self->sc->top_accent_horiz = val;
+    sc->top_accent_horiz = val;
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_isextendedshape(PyFF_Glyph *self, void *UNUSED(closure)) {
+static PyObject *PyFF_Glyph_get_isextendedshape(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
     PyObject *ret;
 
-    ret = self->sc->is_extended_shape ? Py_True : Py_False;
+    ret = sc->is_extended_shape ? Py_True : Py_False;
     Py_INCREF( ret );
 return( ret );
 }
 
-static int PyFF_Glyph_set_isextendedshape(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
+static int PyFF_Glyph_set_isextendedshape(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
     int val;
 
     val = PyLong_AsLong(value);
     if ( PyErr_Occurred()!=NULL )
 return( -1 );
-    self->sc->is_extended_shape = val!=0;
+    sc->is_extended_shape = val!=0;
 return( 0 );
 }
 
 
-static PyObject *PyFF_Glyph_get_unlinkRmOvrlpSave(PyFF_Glyph *self, void *UNUSED(closure)) {
-
-return( Py_BuildValue("i", self->sc->unlink_rm_ovrlp_save_undo ));
+static PyObject *PyFF_Glyph_get_unlinkRmOvrlpSave(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    return( Py_BuildValue("i", sc->unlink_rm_ovrlp_save_undo ));
 }
 
-static int PyFF_Glyph_set_unlinkRmOvrlpSave(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
+static int PyFF_Glyph_set_unlinkRmOvrlpSave(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
     int val;
 
     val = PyLong_AsLong(value);
     if ( PyErr_Occurred()!=NULL )
 return( -1 );
-    self->sc->unlink_rm_ovrlp_save_undo = val;
+    sc->unlink_rm_ovrlp_save_undo = val;
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_originalgid(PyFF_Glyph *self, void *UNUSED(closure)) {
-
-return( Py_BuildValue("i", self->sc->orig_pos ));
+static PyObject *PyFF_Glyph_get_originalgid(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    return( Py_BuildValue("i", sc->orig_pos ));
 }
 
-static PyObject *PyFF_Glyph_get_width(PyFF_Glyph *self, void *UNUSED(closure)) {
-
-return( Py_BuildValue("i", self->sc->width ));
+static PyObject *PyFF_Glyph_get_width(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    return( Py_BuildValue("i", sc->width ));
 }
 
-static int PyFF_Glyph_set_width(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
+static int PyFF_Glyph_set_width(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
     int val;
 
     val = PyLong_AsLong(value);
     if ( PyErr_Occurred()!=NULL )
 return( -1 );
-    SCSynchronizeWidth(self->sc,val,self->sc->width,NULL);
-    SCCharChangedUpdate(self->sc,ly_none);
+    SCSynchronizeWidth(sc,val,sc->width,NULL);
+    SCCharChangedUpdate(sc,ly_none);
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_lsb(PyFF_Glyph *self, void *UNUSED(closure)) {
+static PyObject *PyFF_Glyph_get_lsb(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
     DBounds b;
 
-    SplineCharFindBounds(self->sc,&b);
+    SplineCharFindBounds(sc,&b);
 
 return( Py_BuildValue("d", b.minx ));
 }
 
-static int PyFF_Glyph_set_lsb(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
+static int PyFF_Glyph_set_lsb(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
     int val;
     real trans[6];
     DBounds b;
-    SplineChar *sc = self->sc;
 
     val = PyLong_AsLong(value);
     if ( PyErr_Occurred()!=NULL )
@@ -7156,15 +7142,15 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_rsb(PyFF_Glyph *self, void *UNUSED(closure)) {
+static PyObject *PyFF_Glyph_get_rsb(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
     DBounds b;
 
-    SplineCharFindBounds(self->sc,&b);
+    SplineCharFindBounds(sc,&b);
 
-return( Py_BuildValue("d", self->sc->width - b.maxx ));
+return( Py_BuildValue("d", sc->width - b.maxx ));
 }
 
-static int PyFF_Glyph_set_rsb(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
+static int PyFF_Glyph_set_rsb(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
     int val;
     DBounds b;
 
@@ -7172,34 +7158,31 @@ static int PyFF_Glyph_set_rsb(PyFF_Glyph *self,PyObject *value, void *UNUSED(clo
     if ( PyErr_Occurred()!=NULL )
 return( -1 );
 
-    SplineCharFindBounds(self->sc,&b);
-    SCSynchronizeWidth(self->sc,rint( val+b.maxx ),self->sc->width,NULL);
-    SCCharChangedUpdate(self->sc,ly_none);
+    SplineCharFindBounds(sc,&b);
+    SCSynchronizeWidth(sc,rint( val+b.maxx ),sc->width,NULL);
+    SCCharChangedUpdate(sc,ly_none);
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_vwidth(PyFF_Glyph *self, void *UNUSED(closure)) {
-
-return( Py_BuildValue("i", self->sc->vwidth ));
+static PyObject *PyFF_Glyph_get_vwidth(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    return( Py_BuildValue("i", sc->vwidth ));
 }
 
-static int PyFF_Glyph_set_vwidth(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
+static int PyFF_Glyph_set_vwidth(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
     int val;
 
     val = PyLong_AsLong(value);
     if ( PyErr_Occurred()!=NULL )
 return( -1 );
-    self->sc->vwidth = val;
+    sc->vwidth = val;
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_manualhints(PyFF_Glyph *self, void *UNUSED(closure)) {
-
-return( Py_BuildValue("i", self->sc->manualhints ));
+static PyObject *PyFF_Glyph_get_manualhints(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    return( Py_BuildValue("i", sc->manualhints ));
 }
 
-static PyObject *PyFF_Glyph_get_lcarets(PyFF_Glyph *self, void *UNUSED(closure)) {
-    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
+static PyObject *PyFF_Glyph_get_lcarets(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
     int cnt=0, i;
     PST *pst, *lcar = NULL;
     PyObject *tuple;
@@ -7221,8 +7204,7 @@ static PyObject *PyFF_Glyph_get_lcarets(PyFF_Glyph *self, void *UNUSED(closure))
 return( tuple );
 }
 
-static int PyFF_Glyph_set_lcarets(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
-    SplineChar *sc = self->sc;
+static int PyFF_Glyph_set_lcarets(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
     int i, cnt, lig_comp_max = 0, lc;
     char *pt;
     int16_t *carets;
@@ -7268,33 +7250,33 @@ return( -1 );
 return( 0 );
 }
 
-static int PyFF_Glyph_set_manualhints(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
+static int PyFF_Glyph_set_manualhints(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
     int val;
 
     val = PyLong_AsLong(value);
     if ( PyErr_Occurred()!=NULL )
 return( -1 );
-    self->sc->manualhints = (val!=0);
+    sc->manualhints = (val!=0);
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_font(PyFF_Glyph *self, void *UNUSED(closure)) {
-    PyFF_Font *font = PyFF_FontForSC(self->sc);
+static PyObject *PyFF_Glyph_get_font(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    PyFF_Font *font = PyFF_FontForSC(sc);
     if ( font==NULL )
 Py_RETURN_NONE;
     Py_INCREF(font);
     return (PyObject*)font;
 }
 
-static PyObject *PyFF_Glyph_get_references(PyFF_Glyph *self, void *closure) {
-return( PyFF_Glyph_get_layer_references(self,self->layer));
+static PyObject *PyFF_Glyph_get_references(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    return( PyFF_Glyph_get_layer_references(self,self->layer));
 }
 
-static int PyFF_Glyph_set_references(PyFF_Glyph *self,PyObject *value, void *closure) {
-return( PyFF_Glyph_set_layer_references(self,value,self->layer));
+static int PyFF_Glyph_set_references(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
+    return( PyFF_Glyph_set_layer_references(self,value,self->layer));
 }
 
-static PyObject *PyFF_Glyph_get_layerrefs(PyFF_Glyph *self, void *UNUSED(closure)) {
+static PyObject *PyFF_Glyph_get_layerrefs(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
     PyFF_RefArray *layerrefs;
 
     if ( self->refs!=NULL )
@@ -7308,17 +7290,15 @@ return NULL;
 Py_RETURN( self->refs );
 }
 
-static PyObject *PyFF_Glyph_get_ttfinstrs(PyFF_Glyph *self, void *UNUSED(closure)) {
-    SplineChar *sc = self->sc;
+static PyObject *PyFF_Glyph_get_ttfinstrs(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
     PyObject *binstr;
 
     binstr = PyBytes_FromStringAndSize((char *) sc->ttf_instrs,sc->ttf_instrs_len);
 return( binstr );
 }
 
-static int PyFF_Glyph_set_ttfinstrs(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
+static int PyFF_Glyph_set_ttfinstrs(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
     int i, cnt;
-    SplineChar *sc = self->sc;
 
     if ( !PySequence_Check(value)) {
 	PyErr_Format(PyExc_TypeError, "Value must be a sequence of integers");
@@ -7358,11 +7338,11 @@ struct flaglist glyphclasses[] = {
     FLAGLIST_EMPTY /* Sentinel */
 };
 
-static PyObject *PyFF_Glyph_get_glyphclass(PyFF_Glyph *self, void *UNUSED(closure)) {
-return( Py_BuildValue("s", glyphclasses[self->sc->glyph_class].name ));
+static PyObject *PyFF_Glyph_get_glyphclass(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+return( Py_BuildValue("s", glyphclasses[sc->glyph_class].name ));
 }
 
-static int PyFF_Glyph_set_glyphclass(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
+static int PyFF_Glyph_set_glyphclass(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
     int gc;
     const char *glyphclassname = PyUnicode_AsUTF8(value);
 
@@ -7372,11 +7352,11 @@ static int PyFF_Glyph_set_glyphclass(PyFF_Glyph *self,PyObject *value, void *UNU
     gc = FlagsFromString(glyphclassname,glyphclasses,"glyph class");
     if ( gc==FLAG_UNKNOWN )
         return( -1 );
-    self->sc->glyph_class = gc;
+    sc->glyph_class = gc;
     return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_layers(PyFF_Glyph *self, void *UNUSED(closure)) {
+static PyObject *PyFF_Glyph_get_layers(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
     PyFF_LayerArray *layers;
 
     if ( self->layers!=NULL )
@@ -7390,9 +7370,8 @@ return NULL;
 Py_RETURN( self->layers );
 }
 
-static PyObject *PyFF_Glyph_get_layer_cnt(PyFF_Glyph *self, void *UNUSED(closure)) {
-
-return( Py_BuildValue("i", self->sc->layer_cnt ));
+static PyObject *PyFF_Glyph_get_layer_cnt(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    return( Py_BuildValue("i", sc->layer_cnt ));
 }
 
 static PyObject *PyFF_Glyph_get_hints(StemInfo *head) {
@@ -7415,8 +7394,7 @@ static PyObject *PyFF_Glyph_get_hints(StemInfo *head) {
 return( tuple );
 }
 
-static int PyFF_Glyph_set_hints(PyFF_Glyph *self,int is_v,PyObject *value) {
-    SplineChar *sc = self->sc;
+static int PyFF_Glyph_set_hints(SplineChar *sc,int is_v,PyObject *value) {
     StemInfo *head=NULL, *tail=NULL, *cur;
     int i, cnt;
     double start, width;
@@ -7451,11 +7429,11 @@ return( -1 );
     *_head = HintCleanup(head,true,1);
     if ( is_v ) {
         sc->vstem = head;
-        SCGuessHintInstancesList( sc,self->layer,NULL,sc->vstem,NULL,false,false );
+        SCGuessHintInstancesList( sc,layer,NULL,sc->vstem,NULL,false,false );
 	sc->vconflicts = StemListAnyConflicts(sc->vstem);
     } else {
         sc->hstem = head;
-        SCGuessHintInstancesList( sc,self->layer,sc->hstem,NULL,NULL,false,false );
+        SCGuessHintInstancesList( sc,layer,sc->hstem,NULL,NULL,false,false );
 	sc->hconflicts = StemListAnyConflicts(sc->hstem);
     }
 
@@ -7463,12 +7441,12 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_dhints(PyFF_Glyph *self, void *UNUSED(closure)) {
+static PyObject *PyFF_Glyph_get_dhints(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
     DStemInfo *ds, *dn;
     int cnt;
     PyObject *tuple;
 
-    ds = self->sc->dstem;
+    ds = sc->dstem;
     for ( dn=ds, cnt=0; dn!=NULL; dn=dn->next, ++cnt );
     tuple = PyTuple_New(cnt);
     for ( dn=ds, cnt=0; dn!=NULL; dn=dn->next, ++cnt ) {
@@ -7482,8 +7460,7 @@ static PyObject *PyFF_Glyph_get_dhints(PyFF_Glyph *self, void *UNUSED(closure)) 
 return( tuple );
 }
 
-static int PyFF_Glyph_set_dhints(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
-    SplineChar *sc = self->sc;
+static int PyFF_Glyph_set_dhints(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
     DStemInfo *head=NULL, *cur;
     int i, cnt;
     double len, width;
@@ -7533,43 +7510,43 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_hhints(PyFF_Glyph *self, void *UNUSED(closure)) {
-return( PyFF_Glyph_get_hints(self->sc->hstem));
+static PyObject *PyFF_Glyph_get_hhints(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    return( PyFF_Glyph_get_hints(sc->hstem));
 }
 
-static int PyFF_Glyph_set_hhints(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
-return( PyFF_Glyph_set_hints(self,false,value));
+static int PyFF_Glyph_set_hhints(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
+    return( PyFF_Glyph_set_hints(sc,false,value));
 }
 
-static PyObject *PyFF_Glyph_get_vhints(PyFF_Glyph *self, void *UNUSED(closure)) {
-return( PyFF_Glyph_get_hints(self->sc->vstem));
+static PyObject *PyFF_Glyph_get_vhints(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    return( PyFF_Glyph_get_hints(sc->vstem));
 }
 
-static int PyFF_Glyph_set_vhints(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
-return( PyFF_Glyph_set_hints(self,true,value));
+static int PyFF_Glyph_set_vhints(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
+    return( PyFF_Glyph_set_hints(sc,true,value));
 }
 
-static PyObject *PyFF_Glyph_get_user_decomp(PyFF_Glyph *self, void *UNUSED(closure)) {
+static PyObject *PyFF_Glyph_get_user_decomp(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
     PyObject *ret;
 
-    if ( self->sc->user_decomp==NULL ) {
+    if ( sc->user_decomp==NULL ) {
         return( Py_BuildValue("s", "" ));
     }
     else {
-        char* out = u2utf8_copy(self->sc->user_decomp);
+        char* out = u2utf8_copy(sc->user_decomp);
         ret = PyUnicode_DecodeUTF8(out, strlen(out), NULL);
         free(out);
         return ret;
     }
 }
 
-static int PyFF_Glyph_set_user_decomp(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
+static int PyFF_Glyph_set_user_decomp(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
     const char *temp;
     unichar_t *udbuf;
 
     if (value == Py_None) {
-        if (self->sc->user_decomp != NULL) { free(self->sc->user_decomp); }
-        self->sc->user_decomp = NULL;
+        if (sc->user_decomp != NULL) { free(sc->user_decomp); }
+        sc->user_decomp = NULL;
         return 0;
     } else if ((temp = PyUnicode_AsUTF8(value)) == NULL) {
         return -1;
@@ -7580,30 +7557,30 @@ static int PyFF_Glyph_set_user_decomp(PyFF_Glyph *self,PyObject *value, void *UN
     if ( udbuf==NULL ) return -1;
 
     if (udbuf[0] == '\0') {
-        if (self->sc->user_decomp != NULL) { free(self->sc->user_decomp); }
-        self->sc->user_decomp = NULL;
+        if (sc->user_decomp != NULL) { free(sc->user_decomp); }
+        sc->user_decomp = NULL;
         return 0;
     }
 
-    if (self->sc->user_decomp != NULL) { free(self->sc->user_decomp); }
-    self->sc->user_decomp = udbuf;
+    if (sc->user_decomp != NULL) { free(sc->user_decomp); }
+    sc->user_decomp = udbuf;
 
     return 0;
 }
 
-static PyObject *PyFF_Glyph_get_comment(PyFF_Glyph *self, void *UNUSED(closure)) {
-    if ( self->sc->comment==NULL )
+static PyObject *PyFF_Glyph_get_comment(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    if ( sc->comment==NULL )
 return( Py_BuildValue("s", "" ));
     else
-return( PyUnicode_DecodeUTF8(self->sc->comment,strlen(self->sc->comment),NULL));
+return( PyUnicode_DecodeUTF8(sc->comment,strlen(sc->comment),NULL));
 }
 
-static int PyFF_Glyph_set_comment(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
+static int PyFF_Glyph_set_comment(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
     char *newv = copy(PyUnicode_AsUTF8(value));
     if ( newv==NULL )
 return( -1 );
-    free(self->sc->comment);
-    self->sc->comment = newv;
+    free(sc->comment);
+    sc->comment = newv;
 return( 0 );
 }
 
@@ -7619,8 +7596,7 @@ static struct flaglist ap_types[] = {
     FLAGLIST_EMPTY /* Sentinel */
 };
 
-static PyObject *_PyFF_Glyph_get_anchorPoints(PyFF_Glyph *self,int withsel) {
-    SplineChar *sc = self->sc;
+static PyObject *_PyFF_Glyph_get_anchorPoints(SplineChar *sc,int withsel) {
     AnchorPoint *ap;
     int cnt;
     PyObject *tuple;
@@ -7650,12 +7626,12 @@ static PyObject *_PyFF_Glyph_get_anchorPoints(PyFF_Glyph *self,int withsel) {
 return( tuple );
 }
 
-static PyObject *PyFF_Glyph_get_anchorPoints(PyFF_Glyph *self, void *UNUSED(closure)) {
-return( _PyFF_Glyph_get_anchorPoints(self,false));
+static PyObject *PyFF_Glyph_get_anchorPoints(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    return( _PyFF_Glyph_get_anchorPoints(sc,false));
 }
 
-static PyObject *PyFF_Glyph_get_anchorPointsWithSel(PyFF_Glyph *self, void *UNUSED(closure)) {
-return( _PyFF_Glyph_get_anchorPoints(self,true));
+static PyObject *PyFF_Glyph_get_anchorPointsWithSel(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    return( _PyFF_Glyph_get_anchorPoints(sc,true));
 }
 
 static AnchorPoint *APFromTuple(SplineChar *sc,PyObject *tuple) {
@@ -7746,10 +7722,9 @@ return( NULL );
 return( ap );
 }
 
-static int PyFF_Glyph_set_anchorPoints(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
+static int PyFF_Glyph_set_anchorPoints(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
     AnchorPoint *aphead=NULL, *aplast = NULL, *ap;
     int i;
-    SplineChar *sc = self->sc;
 
     if ( !PySequence_Check(value)) {
 	PyErr_Format(PyExc_TypeError, "Expected a tuple of anchor points" );
@@ -7772,13 +7747,12 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_color(PyFF_Glyph *self, void *UNUSED(closure)) {
-return( Py_BuildValue("i", self->sc->color ));
+static PyObject *PyFF_Glyph_get_color(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    return( Py_BuildValue("i", sc->color ));
 }
 
-static int PyFF_Glyph_set_color(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
+static int PyFF_Glyph_set_color(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
     int val;
-    SplineChar *sc = self->sc;
 
     val = PyLong_AsLong(value);
     if ( PyErr_Occurred()!=NULL )
@@ -7788,14 +7762,14 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_script(PyFF_Glyph *self, void *UNUSED(closure)) {
-    uint32_t script = SCScriptFromUnicode(self->sc);
+static PyObject *PyFF_Glyph_get_script(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    uint32_t script = SCScriptFromUnicode(sc);
 
 return( TagToPythonString(script, false ));
 }
 
-static PyObject *PyFF_Glyph_get_validation_state(PyFF_Glyph *self, void *UNUSED(closure)) {
-return( Py_BuildValue("i", self->sc->layers[self->layer].validation_state ));
+static PyObject *PyFF_Glyph_get_validation_state(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    return( Py_BuildValue("i", sc->layers[self->layer].validation_state ));
 }
 
 static char *GlyphListToStr(PyObject *value) {
@@ -7925,149 +7899,149 @@ return( NULL );
 return( parts );
 }
 
-static PyObject *PyFF_Glyph_get_horizontalCIC(PyFF_Glyph *self, void *UNUSED(closure)) {
-    if ( self->sc->horiz_variants==NULL )
+static PyObject *PyFF_Glyph_get_horizontalCIC(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    if ( sc->horiz_variants==NULL )
 return( Py_BuildValue("i", 0));
 
-return( Py_BuildValue("i", self->sc->horiz_variants->italic_correction ));
+return( Py_BuildValue("i", sc->horiz_variants->italic_correction ));
 }
 
-static int PyFF_Glyph_set_horizontalCIC(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
+static int PyFF_Glyph_set_horizontalCIC(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
     int val;
 
     val = PyLong_AsLong(value);
     if ( PyErr_Occurred()!=NULL )
 return( -1 );
-    if ( self->sc->horiz_variants == NULL )
-	self->sc->horiz_variants = chunkalloc(sizeof(struct glyphvariants));
-    self->sc->horiz_variants->italic_correction = val;
+    if ( sc->horiz_variants == NULL )
+	sc->horiz_variants = chunkalloc(sizeof(struct glyphvariants));
+    sc->horiz_variants->italic_correction = val;
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_verticalCIC(PyFF_Glyph *self, void *UNUSED(closure)) {
-    if ( self->sc->vert_variants==NULL )
+static PyObject *PyFF_Glyph_get_verticalCIC(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    if ( sc->vert_variants==NULL )
 return( Py_BuildValue("i", 0));
 
-return( Py_BuildValue("i", self->sc->vert_variants->italic_correction ));
+return( Py_BuildValue("i", sc->vert_variants->italic_correction ));
 }
 
-static int PyFF_Glyph_set_verticalCIC(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
+static int PyFF_Glyph_set_verticalCIC(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
     int val;
 
     val = PyLong_AsLong(value);
     if ( PyErr_Occurred()!=NULL )
 return( -1 );
-    if ( self->sc->vert_variants == NULL )
-	self->sc->vert_variants = chunkalloc(sizeof(struct glyphvariants));
-    self->sc->vert_variants->italic_correction = val;
+    if ( sc->vert_variants == NULL )
+	sc->vert_variants = chunkalloc(sizeof(struct glyphvariants));
+    sc->vert_variants->italic_correction = val;
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_verticalVariants(PyFF_Glyph *self, void *UNUSED(closure)) {
-    if ( self->sc->vert_variants==NULL || self->sc->vert_variants->variants==NULL )
+static PyObject *PyFF_Glyph_get_verticalVariants(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    if ( sc->vert_variants==NULL || sc->vert_variants->variants==NULL )
 Py_RETURN_NONE;
 
-return( Py_BuildValue("s", self->sc->vert_variants->variants ));
+return( Py_BuildValue("s", sc->vert_variants->variants ));
 }
 
-static int PyFF_Glyph_set_verticalVariants(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
+static int PyFF_Glyph_set_verticalVariants(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
     if ( value == Py_None ) {
-	if ( self->sc->vert_variants!=NULL ) {
-	    free(self->sc->vert_variants->variants);
-	    self->sc->vert_variants->variants=NULL;
+	if ( sc->vert_variants!=NULL ) {
+	    free(sc->vert_variants->variants);
+	    sc->vert_variants->variants=NULL;
 	}
     } else {
 	char *str = GlyphListToStr(value);
 	if ( str==NULL )
 return( -1 );
-	if ( self->sc->vert_variants == NULL )
-	    self->sc->vert_variants = chunkalloc(sizeof(struct glyphvariants));
-	self->sc->vert_variants->variants = str;
+	if ( sc->vert_variants == NULL )
+	    sc->vert_variants = chunkalloc(sizeof(struct glyphvariants));
+	sc->vert_variants->variants = str;
     }
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_horizontalVariants(PyFF_Glyph *self, void *UNUSED(closure)) {
-    if ( self->sc->horiz_variants==NULL || self->sc->horiz_variants->variants==NULL )
+static PyObject *PyFF_Glyph_get_horizontalVariants(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    if ( sc->horiz_variants==NULL || sc->horiz_variants->variants==NULL )
 Py_RETURN_NONE;
 
-return( Py_BuildValue("s", self->sc->horiz_variants->variants ));
+return( Py_BuildValue("s", sc->horiz_variants->variants ));
 }
 
-static int PyFF_Glyph_set_horizontalVariants(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
+static int PyFF_Glyph_set_horizontalVariants(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
     if ( value == Py_None ) {
-	if ( self->sc->horiz_variants!=NULL ) {
-	    free(self->sc->horiz_variants->variants);
-	    self->sc->horiz_variants->variants=NULL;
+	if ( sc->horiz_variants!=NULL ) {
+	    free(sc->horiz_variants->variants);
+	    sc->horiz_variants->variants=NULL;
 	}
     } else {
 	char *str = GlyphListToStr(value);
 	if ( str==NULL )
 return( -1 );
-	if ( self->sc->horiz_variants == NULL )
-	    self->sc->horiz_variants = chunkalloc(sizeof(struct glyphvariants));
-	self->sc->horiz_variants->variants = str;
+	if ( sc->horiz_variants == NULL )
+	    sc->horiz_variants = chunkalloc(sizeof(struct glyphvariants));
+	sc->horiz_variants->variants = str;
     }
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_horizontalComponents(PyFF_Glyph *self, void *UNUSED(closure)) {
-    if ( self->sc->horiz_variants==0 || self->sc->horiz_variants->part_cnt==0 )
+static PyObject *PyFF_Glyph_get_horizontalComponents(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    if ( sc->horiz_variants==0 || sc->horiz_variants->part_cnt==0 )
 Py_RETURN_NONE;
 
-return( BuildComponentTuple(self->sc->horiz_variants ));
+return( BuildComponentTuple(sc->horiz_variants ));
 }
 
-static int PyFF_Glyph_set_horizontalComponents(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
+static int PyFF_Glyph_set_horizontalComponents(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
     int cnt;
     struct gv_part *parts;
 
     if ( value == Py_None ) {
-	if ( self->sc->horiz_variants!=NULL ) {
-	    FreeGVParts(self->sc->horiz_variants);
+	if ( sc->horiz_variants!=NULL ) {
+	    FreeGVParts(sc->horiz_variants);
 	}
     } else {
 	parts = ParseComponentTuple(value,&cnt);
 	if ( parts==NULL )
 return( -1 );
-	FreeGVParts(self->sc->horiz_variants);
-	if ( self->sc->horiz_variants == NULL )
-	    self->sc->horiz_variants = chunkalloc(sizeof(struct glyphvariants));
-	self->sc->horiz_variants->part_cnt = cnt;
-	self->sc->horiz_variants->parts = parts;
+	FreeGVParts(sc->horiz_variants);
+	if ( sc->horiz_variants == NULL )
+	    sc->horiz_variants = chunkalloc(sizeof(struct glyphvariants));
+	sc->horiz_variants->part_cnt = cnt;
+	sc->horiz_variants->parts = parts;
     }
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_verticalComponents(PyFF_Glyph *self, void *UNUSED(closure)) {
-    if ( self->sc->vert_variants==0 || self->sc->vert_variants->part_cnt==0 )
+static PyObject *PyFF_Glyph_get_verticalComponents(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    if ( sc->vert_variants==0 || sc->vert_variants->part_cnt==0 )
 Py_RETURN_NONE;
 
-return( BuildComponentTuple(self->sc->vert_variants ));
+return( BuildComponentTuple(sc->vert_variants ));
 }
 
-static int PyFF_Glyph_set_verticalComponents(PyFF_Glyph *self,PyObject *value, void *UNUSED(closure)) {
+static int PyFF_Glyph_set_verticalComponents(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
     int cnt;
     struct gv_part *parts;
 
     if ( value == Py_None ) {
-	if ( self->sc->vert_variants!=NULL ) {
-	    FreeGVParts(self->sc->vert_variants);
+	if ( sc->vert_variants!=NULL ) {
+	    FreeGVParts(sc->vert_variants);
 	}
     } else {
 	parts = ParseComponentTuple(value,&cnt);
 	if ( parts==NULL )
 return( -1 );
-	FreeGVParts(self->sc->vert_variants);
-	if ( self->sc->vert_variants == NULL )
-	    self->sc->vert_variants = chunkalloc(sizeof(struct glyphvariants));
-	self->sc->vert_variants->part_cnt = cnt;
-	self->sc->vert_variants->parts = parts;
+	FreeGVParts(sc->vert_variants);
+	if ( sc->vert_variants == NULL )
+	    sc->vert_variants = chunkalloc(sizeof(struct glyphvariants));
+	sc->vert_variants->part_cnt = cnt;
+	sc->vert_variants->parts = parts;
     }
 return( 0 );
 }
 
-static PyObject *PyFF_Glyph_get_mathKern(PyFF_Glyph *self, void *UNUSED(closure)) {
+static PyObject *PyFF_Glyph_get_mathKern(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
     PyFF_MathKern *mk;
 
     if ( self->mk!=NULL )
@@ -8081,159 +8055,167 @@ return NULL;
 Py_RETURN( self->mk );
 }
 
-static PyGetSetDef PyFF_Glyph_getset[] = {
-    {(char *)"userdata",
-     (getter)PyFF_Glyph_get_temporary, (setter)PyFF_Glyph_set_temporary,
-     (char *)"arbitrary (non persistent) user data (deprecated name for temporary)", NULL},
-    {(char *)"temporary",
-     (getter)PyFF_Glyph_get_temporary, (setter)PyFF_Glyph_set_temporary,
-     (char *)"arbitrary (non persistent) user data", NULL},
-    {(char *)"persistant",		/* I documented this member with the wrong spelling... so support it */
-     (getter)PyFF_Glyph_get_persistent, (setter)PyFF_Glyph_set_persistent,
-     (char *)"arbitrary persistent user data", NULL},
-    {(char *)"persistent",
-     (getter)PyFF_Glyph_get_persistent, (setter)PyFF_Glyph_set_persistent,
-     (char *)"arbitrary persistent user data", NULL},
-    {(char *)"activeLayer",
-     (getter)PyFF_Glyph_get_activeLayer, (setter)PyFF_Glyph_set_activeLayer,
-     (char *)"The layer in the glyph which is currently active", NULL},
-    {(char *)"anchorPoints",
-     (getter)PyFF_Glyph_get_anchorPoints, (setter)PyFF_Glyph_set_anchorPoints,
-     (char *)"a tuple of all anchor points in the glyph", NULL},
+typedef struct glyph_accessors_ {
+    const char* name;
+    /* SlpineChar* argument is guaranteed non-NULL */
+    PyObject* (*getter)(PyFF_Glyph *self, SplineChar *sc, void *closure);
+    int (*setter)(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *closure);
+    const char* doc;
+    void* closure;
+} glyph_accessors;
+
+static glyph_accessors PyFF_Glyph_raw_getset[] = {
+    {"userdata",
+     PyFF_Glyph_get_temporary, PyFF_Glyph_set_temporary,
+     "arbitrary (non persistent) user data (deprecated name for temporary)", NULL},
+    {"temporary",
+     PyFF_Glyph_get_temporary, PyFF_Glyph_set_temporary,
+     "arbitrary (non persistent) user data", NULL},
+    {"persistant",		/* I documented this member with the wrong spelling... so support it */
+     PyFF_Glyph_get_persistent, PyFF_Glyph_set_persistent,
+     "arbitrary persistent user data", NULL},
+    {"persistent",
+     PyFF_Glyph_get_persistent, PyFF_Glyph_set_persistent,
+     "arbitrary persistent user data", NULL},
+    {"activeLayer",
+     PyFF_Glyph_get_activeLayer, PyFF_Glyph_set_activeLayer,
+     "The layer in the glyph which is currently active", NULL},
+    {"anchorPoints",
+     PyFF_Glyph_get_anchorPoints, PyFF_Glyph_set_anchorPoints,
+     "a tuple of all anchor points in the glyph", NULL},
 /* There is no set_anchorPointsWithSel because we don't need it. We set the selection if we find it */
-    {(char *)"anchorPointsWithSel",
-     (getter)PyFF_Glyph_get_anchorPointsWithSel, (setter)PyFF_Glyph_set_anchorPoints,
-     (char *)"a tuple of all anchor points in the glyph (with selection indication)", NULL},
-    {(char *)"glyphname",
-     (getter)PyFF_Glyph_get_glyphname, (setter)PyFF_Glyph_set_glyphname,
-     (char *)"glyph name", NULL},
-    {(char *)"codepoint",
-     (getter)PyFF_Glyph_get_codepoint, NULL,
-     (char *)"Unicode code point for this glyph in U+XXXX format, or None (readonly)", NULL},
-    {(char *)"unicode",
-     (getter)PyFF_Glyph_get_unicode, (setter)PyFF_Glyph_set_unicode,
-     (char *)"Unicode code point for this glyph, or -1", NULL},
-    {(char *)"altuni",
-     (getter)PyFF_Glyph_get_altuni, (setter)PyFF_Glyph_set_altuni,
-     (char *)"Alternate unicode encodings (and variation selectors) for this glyph", NULL},
-    {(char *)"encoding",
-     (getter)PyFF_Glyph_get_encoding, NULL,
-     (char *)"Returns the glyph's encoding in the current font (readonly)", NULL},
-    {(char *)"foreground",
-     (getter)PyFF_Glyph_get_a_layer, (setter)PyFF_Glyph_set_a_layer,
-     (char *)"Returns the foreground layer of the glyph", (void *)ly_fore},
-    {(char *)"background",
-     (getter)PyFF_Glyph_get_a_layer, (setter)PyFF_Glyph_set_a_layer,
-     (char *)"Returns the background layer of the glyph", (void *)ly_back},
-    {(char *)"layers",
-     (getter)PyFF_Glyph_get_layers, NULL,
-     (char *)"Returns an array of layers", NULL},
-    {(char *)"references",
-     (getter)PyFF_Glyph_get_references, (setter)PyFF_Glyph_set_references,
-     (char *)"A tuple of all references in the glyph", NULL},
-    {(char *)"layerrefs",
-     (getter)PyFF_Glyph_get_layerrefs, NULL,
-     (char *)"Returns an array of layer references", NULL},
-    {(char *)"layer_cnt",
-     (getter)PyFF_Glyph_get_layer_cnt, NULL,
-     (char *)"Returns the number of layers in the glyph", NULL},
-    {(char *)"color",
-     (getter)PyFF_Glyph_get_color, (setter)PyFF_Glyph_set_color,
-     (char *)"Glyph color", NULL},
-    {(char *)"comment",
-     (getter)PyFF_Glyph_get_comment, (setter)PyFF_Glyph_set_comment,
-     (char *)"Glyph comment", NULL},
-    {(char *)"user_decomp",
-     (getter)PyFF_Glyph_get_user_decomp, (setter)PyFF_Glyph_set_user_decomp,
-     (char *)"Glyph user decompositon", NULL},
-    {(char *)"glyphclass",
-     (getter)PyFF_Glyph_get_glyphclass, (setter)PyFF_Glyph_set_glyphclass,
-     (char *)"glyph class", NULL},
-    {(char *)"italicCorrection",
-     (getter)PyFF_Glyph_get_italiccorrection, (setter)PyFF_Glyph_set_italiccorrection,
-     (char *)"Math & TeX italic correction", NULL},
-    {(char *)"isExtendedShape",
-     (getter)PyFF_Glyph_get_isextendedshape, (setter)PyFF_Glyph_set_isextendedshape,
-     (char *)"Math \"is extended shape\" field", NULL},
-    {(char *)"script",
-     (getter)PyFF_Glyph_get_script, NULL,
-     (char *)"The OpenType script containing this glyph (readonly)", NULL},
-    {(char *)"texheight",
-     (getter)PyFF_Glyph_get_texheight, (setter)PyFF_Glyph_set_texheight,
-     (char *)"TeX glyph height", NULL},
-    {(char *)"texdepth",
-     (getter)PyFF_Glyph_get_texdepth, (setter)PyFF_Glyph_set_texdepth,
-     (char *)"TeX glyph depth", NULL},
-    {(char *)"topaccent",
-     (getter)PyFF_Glyph_get_topaccent, (setter)PyFF_Glyph_set_topaccent,
-     (char *)"Math top accent horizontal position", NULL},
-    {(char *)"ttinstrs",
-     (getter)PyFF_Glyph_get_ttfinstrs, (setter)PyFF_Glyph_set_ttfinstrs,
-     (char *)"TrueType Instructions for this glyph", NULL},
-    {(char *)"unlinkRmOvrlpSave",
-     (getter)PyFF_Glyph_get_unlinkRmOvrlpSave, (setter)PyFF_Glyph_set_unlinkRmOvrlpSave,
-     (char *)"A flag which indicates that before the glyph is saved ff should unlink its references and run remove overlap on it.", NULL},
-    {(char *)"changed",
-     (getter)PyFF_Glyph_get_changed, (setter)PyFF_Glyph_set_changed,
-     (char *)"Flag indicating whether this glyph has changed", NULL},
-    {(char *)"originalgid",
-     (getter)PyFF_Glyph_get_originalgid, NULL,
-     (char *)"Original GID (readonly)", NULL},
-    {(char *)"width",
-     (getter)PyFF_Glyph_get_width, (setter)PyFF_Glyph_set_width,
-     (char *)"Glyph's advance width", NULL},
-    {(char *)"left_side_bearing",
-     (getter)PyFF_Glyph_get_lsb, (setter)PyFF_Glyph_set_lsb,
-     (char *)"Glyph's left side bearing", NULL},
-    {(char *)"right_side_bearing",
-     (getter)PyFF_Glyph_get_rsb, (setter)PyFF_Glyph_set_rsb,
-     (char *)"Glyph's right side bearing", NULL},
-    {(char *)"vwidth",
-     (getter)PyFF_Glyph_get_vwidth, (setter)PyFF_Glyph_set_vwidth,
-     (char *)"Glyph's vertical advance width", NULL},
-    {(char *)"font",
-     (getter)PyFF_Glyph_get_font, NULL,
-     (char *)"Font containing the glyph (readonly)", NULL},
-    {(char *)"hhints",
-     (getter)PyFF_Glyph_get_hhints, (setter)PyFF_Glyph_set_hhints,
-     (char *)"The horizontal hints of the glyph as a tuple, one entry per hint. Each hint is itself a tuple containing the start location and width of the hint", NULL},
-    {(char *)"vhints",
-     (getter)PyFF_Glyph_get_vhints, (setter)PyFF_Glyph_set_vhints,
-     (char *)"The vertical hints of the glyph as a tuple, one entry per hint. Each hint is itself a tuple containing the start location and width of the hint", NULL},
-    {(char *)"dhints",
-     (getter)PyFF_Glyph_get_dhints, (setter)PyFF_Glyph_set_dhints,
-     (char *)"The diagonal hints of the glyph as a tuple, one entry per hint. Each hint is itself a tuple containing three pairs of coordinates, specifying a point on the left edge, a point on the right edge and a unit vector for this hint.", NULL},
-    {(char *)"manualHints",
-     (getter)PyFF_Glyph_get_manualhints, (setter)PyFF_Glyph_set_manualhints,
-     (char *)"The hints have been set manually, and the glyph should not be autohinted by default", NULL },
-    {(char *)"lcarets",
-     (getter)PyFF_Glyph_get_lcarets, (setter)PyFF_Glyph_set_lcarets,
-     (char *)"The ligature caret locations, defined for this glyph, as a tuple.", NULL},
-    {(char *)"validation_state",
-     (getter)PyFF_Glyph_get_validation_state, NULL,
-     (char *)"glyph's validation state (readonly)", NULL},
-    {(char *)"horizontalVariants",
-     (getter)PyFF_Glyph_get_horizontalVariants, (setter)PyFF_Glyph_set_horizontalVariants,
-     (char *)"glyph's horizontal variants (for math typesetting) as a string of glyph names", NULL},
-    {(char *)"verticalVariants",
-     (getter)PyFF_Glyph_get_verticalVariants, (setter)PyFF_Glyph_set_verticalVariants,
-     (char *)"glyph's vertical variants (for math typesetting) as a string of glyph names", NULL},
-    {(char *)"horizontalComponents",
-     (getter)PyFF_Glyph_get_horizontalComponents, (setter)PyFF_Glyph_set_horizontalComponents,
-     (char *)"A way of build very large versions of the glyph (for math typesetting) out of lots of smaller glyphs.", NULL},
-    {(char *)"verticalComponents",
-     (getter)PyFF_Glyph_get_verticalComponents, (setter)PyFF_Glyph_set_verticalComponents,
-     (char *)"A way of build very large versions of the glyph (for math typesetting) out of lots of smaller glyphs.", NULL},
-    {(char *)"horizontalComponentItalicCorrection",
-     (getter)PyFF_Glyph_get_horizontalCIC, (setter)PyFF_Glyph_set_horizontalCIC,
-     (char *)"The italic correction for any composite glyph made with the horizontalComponents.", NULL},
-    {(char *)"verticalComponentItalicCorrection",
-     (getter)PyFF_Glyph_get_verticalCIC, (setter)PyFF_Glyph_set_verticalCIC,
-     (char *)"The italic correction for any composite glyph made with the verticalComponents.", NULL},
-    {(char *)"mathKern",
-     (getter)PyFF_Glyph_get_mathKern, NULL,
-     (char *)"math kerning information for the glyph.", NULL},
-    PYGETSETDEF_EMPTY  /* Sentinel */
+    {"anchorPointsWithSel",
+     PyFF_Glyph_get_anchorPointsWithSel, PyFF_Glyph_set_anchorPoints,
+     "a tuple of all anchor points in the glyph (with selection indication)", NULL},
+    {"glyphname",
+     PyFF_Glyph_get_glyphname, PyFF_Glyph_set_glyphname,
+     "glyph name", NULL},
+    {"codepoint",
+     PyFF_Glyph_get_codepoint, NULL,
+     "Unicode code point for this glyph in U+XXXX format, or None (readonly)", NULL},
+    {"unicode",
+     PyFF_Glyph_get_unicode, PyFF_Glyph_set_unicode,
+     "Unicode code point for this glyph, or -1", NULL},
+    {"altuni",
+     PyFF_Glyph_get_altuni, PyFF_Glyph_set_altuni,
+     "Alternate unicode encodings (and variation selectors) for this glyph", NULL},
+    {"encoding",
+     PyFF_Glyph_get_encoding, NULL,
+     "Returns the glyph's encoding in the current font (readonly)", NULL},
+    {"foreground",
+     PyFF_Glyph_get_a_layer, PyFF_Glyph_set_a_layer,
+     "Returns the foreground layer of the glyph", (void *)ly_fore},
+    {"background",
+     PyFF_Glyph_get_a_layer, PyFF_Glyph_set_a_layer,
+     "Returns the background layer of the glyph", (void *)ly_back},
+    {"layers",
+     PyFF_Glyph_get_layers, NULL,
+     "Returns an array of layers", NULL},
+    {"references",
+     PyFF_Glyph_get_references, PyFF_Glyph_set_references,
+     "A tuple of all references in the glyph", NULL},
+    {"layerrefs",
+     PyFF_Glyph_get_layerrefs, NULL,
+     "Returns an array of layer references", NULL},
+    {"layer_cnt",
+     PyFF_Glyph_get_layer_cnt, NULL,
+     "Returns the number of layers in the glyph", NULL},
+    {"color",
+     PyFF_Glyph_get_color, PyFF_Glyph_set_color,
+     "Glyph color", NULL},
+    {"comment",
+     PyFF_Glyph_get_comment, PyFF_Glyph_set_comment,
+     "Glyph comment", NULL},
+    {"user_decomp",
+     PyFF_Glyph_get_user_decomp, PyFF_Glyph_set_user_decomp,
+     "Glyph user decompositon", NULL},
+    {"glyphclass",
+     PyFF_Glyph_get_glyphclass, PyFF_Glyph_set_glyphclass,
+     "glyph class", NULL},
+    {"italicCorrection",
+     PyFF_Glyph_get_italiccorrection, PyFF_Glyph_set_italiccorrection,
+     "Math & TeX italic correction", NULL},
+    {"isExtendedShape",
+     PyFF_Glyph_get_isextendedshape, PyFF_Glyph_set_isextendedshape,
+     "Math \"is extended shape\" field", NULL},
+    {"script",
+     PyFF_Glyph_get_script, NULL,
+     "The OpenType script containing this glyph (readonly)", NULL},
+    {"texheight",
+     PyFF_Glyph_get_texheight, PyFF_Glyph_set_texheight,
+     "TeX glyph height", NULL},
+    {"texdepth",
+     PyFF_Glyph_get_texdepth, PyFF_Glyph_set_texdepth,
+     "TeX glyph depth", NULL},
+    {"topaccent",
+     PyFF_Glyph_get_topaccent, PyFF_Glyph_set_topaccent,
+     "Math top accent horizontal position", NULL},
+    {"ttinstrs",
+     PyFF_Glyph_get_ttfinstrs, PyFF_Glyph_set_ttfinstrs,
+     "TrueType Instructions for this glyph", NULL},
+    {"unlinkRmOvrlpSave",
+     PyFF_Glyph_get_unlinkRmOvrlpSave, PyFF_Glyph_set_unlinkRmOvrlpSave,
+     "A flag which indicates that before the glyph is saved ff should unlink its references and run remove overlap on it.", NULL},
+    {"changed",
+     PyFF_Glyph_get_changed, PyFF_Glyph_set_changed,
+     "Flag indicating whether this glyph has changed", NULL},
+    {"originalgid",
+     PyFF_Glyph_get_originalgid, NULL,
+     "Original GID (readonly)", NULL},
+    {"width",
+     PyFF_Glyph_get_width, PyFF_Glyph_set_width,
+     "Glyph's advance width", NULL},
+    {"left_side_bearing",
+     PyFF_Glyph_get_lsb, PyFF_Glyph_set_lsb,
+     "Glyph's left side bearing", NULL},
+    {"right_side_bearing",
+     PyFF_Glyph_get_rsb, PyFF_Glyph_set_rsb,
+     "Glyph's right side bearing", NULL},
+    {"vwidth",
+     PyFF_Glyph_get_vwidth, PyFF_Glyph_set_vwidth,
+     "Glyph's vertical advance width", NULL},
+    {"font",
+     PyFF_Glyph_get_font, NULL,
+     "Font containing the glyph (readonly)", NULL},
+    {"hhints",
+     PyFF_Glyph_get_hhints, PyFF_Glyph_set_hhints,
+     "The horizontal hints of the glyph as a tuple, one entry per hint. Each hint is itself a tuple containing the start location and width of the hint", NULL},
+    {"vhints",
+     PyFF_Glyph_get_vhints, PyFF_Glyph_set_vhints,
+     "The vertical hints of the glyph as a tuple, one entry per hint. Each hint is itself a tuple containing the start location and width of the hint", NULL},
+    {"dhints",
+     PyFF_Glyph_get_dhints, PyFF_Glyph_set_dhints,
+     "The diagonal hints of the glyph as a tuple, one entry per hint. Each hint is itself a tuple containing three pairs of coordinates, specifying a point on the left edge, a point on the right edge and a unit vector for this hint.", NULL},
+    {"manualHints",
+     PyFF_Glyph_get_manualhints, PyFF_Glyph_set_manualhints,
+     "The hints have been set manually, and the glyph should not be autohinted by default", NULL },
+    {"lcarets",
+     PyFF_Glyph_get_lcarets, PyFF_Glyph_set_lcarets,
+     "The ligature caret locations, defined for this glyph, as a tuple.", NULL},
+    {"validation_state",
+     PyFF_Glyph_get_validation_state, NULL,
+     "glyph's validation state (readonly)", NULL},
+    {"horizontalVariants",
+     PyFF_Glyph_get_horizontalVariants, PyFF_Glyph_set_horizontalVariants,
+     "glyph's horizontal variants (for math typesetting) as a string of glyph names", NULL},
+    {"verticalVariants",
+     PyFF_Glyph_get_verticalVariants, PyFF_Glyph_set_verticalVariants,
+     "glyph's vertical variants (for math typesetting) as a string of glyph names", NULL},
+    {"horizontalComponents",
+     PyFF_Glyph_get_horizontalComponents, PyFF_Glyph_set_horizontalComponents,
+     "A way of build very large versions of the glyph (for math typesetting) out of lots of smaller glyphs.", NULL},
+    {"verticalComponents",
+     PyFF_Glyph_get_verticalComponents, PyFF_Glyph_set_verticalComponents,
+     "A way of build very large versions of the glyph (for math typesetting) out of lots of smaller glyphs.", NULL},
+    {"horizontalComponentItalicCorrection",
+     PyFF_Glyph_get_horizontalCIC, PyFF_Glyph_set_horizontalCIC,
+     "The italic correction for any composite glyph made with the horizontalComponents.", NULL},
+    {"verticalComponentItalicCorrection",
+     PyFF_Glyph_get_verticalCIC, PyFF_Glyph_set_verticalCIC,
+     "The italic correction for any composite glyph made with the verticalComponents.", NULL},
+    {"mathKern",
+     PyFF_Glyph_get_mathKern, NULL,
+     "math kerning information for the glyph.", NULL},
 };
 
 /* ************************************************************************** */
@@ -8533,7 +8515,7 @@ static PyObject *PyFFGlyph_draw(PyObject *self, PyObject *args) {
     if ( !PyArg_ParseTuple(args,"O", &pen ) )
 return( NULL );
 
-    layer = PyFF_Glyph_get_a_layer((PyFF_Glyph *) self,(void *)(size_t)((PyFF_Glyph *) self)->layer);
+    layer = PyFF_Glyph_get_a_layer((PyFF_Glyph *) self, ((PyFF_Glyph *) self)->sc, (void *)(size_t)((PyFF_Glyph *) self)->layer);
     result = PyFFLayer_draw( (PyFF_Layer *) layer,args);
     Py_XDECREF(layer);
 
@@ -9865,7 +9847,7 @@ static PyObject *PyFFGlyph_setLayer(PyFF_Glyph *self, PyObject *args) {
 	if ( flags < 0 )
 		return NULL;
 
-	if ( PyFF_Glyph_CSetLayer(self,layer,layeri,flags) == 0 )
+	if ( PyFF_Glyph_CSetLayer(self, self->sc, layer,layeri,flags) == 0 )
 		Py_RETURN (self);
 
 	return NULL;
@@ -9955,7 +9937,7 @@ static PyTypeObject PyFF_GlyphType = {
     NULL,                      /* tp_iternext */
     PyFF_Glyph_methods,        /* tp_methods */
     NULL,                      /* tp_members */
-    PyFF_Glyph_getset,         /* tp_getset */
+    NULL,                      /* tp_getset */
     NULL,                      /* tp_base */
     NULL,                      /* tp_dict */
     NULL,                      /* tp_descr_get */
@@ -9974,6 +9956,38 @@ static PyTypeObject PyFF_GlyphType = {
     NULL,                      /* tp_del */
     0,                         /* tp_version_tag */
 };
+
+PyObject *PyFF_Glyph_get_wrapper(PyFF_Glyph* self, glyph_accessors* raw_getset) {
+    SplineChar *sc = PyFF_Glyph_GetSC(self);
+    if (sc == NULL) {
+	return NULL;
+    }
+    return (raw_getset->getter)(self, sc, raw_getset->closure);
+}
+
+int PyFF_Glyph_set_wrapper(PyFF_Glyph* self, PyObject* value, glyph_accessors* raw_getset) {
+    SplineChar *sc = PyFF_Glyph_GetSC(self);
+    if (sc == NULL) {
+	return -1;
+    }
+    return (raw_getset->setter)(self, sc, value, raw_getset->closure);
+}
+
+/* Build a get/set table for the glyph type based on the raw accessors */
+static int setup_glyph_type(PyTypeObject* glyphtype) {
+    int i, n_accessors = sizeof(PyFF_Glyph_raw_getset) / sizeof(PyFF_Glyph_raw_getset[0]);
+    PyGetSetDef *getset = calloc(n_accessors + 1, sizeof(PyGetSetDef));
+
+    for (i = 0; i < n_accessors; ++i) {
+	getset[i].name = PyFF_Glyph_raw_getset[i].name;
+	getset[i].get = (getter) PyFF_Glyph_get_wrapper;
+	getset[i].set = PyFF_Glyph_raw_getset[i].setter ? (setter) PyFF_Glyph_set_wrapper : NULL;
+	getset[i].doc = PyFF_Glyph_raw_getset[i].doc;
+	getset[i].closure = PyFF_Glyph_raw_getset + i;
+    }
+    glyphtype->tp_getset = getset;
+    return 0;
+}
 
 /* ************************************************************************** */
 /* Cvt iterator type */
@@ -10048,7 +10062,7 @@ static PyTypeObject PyFF_CvtIterType = {
     (iternextfunc)cvtiter_iternext, /* tp_iternext */
     NULL,                      /* tp_methods */
     NULL,                      /* tp_members */
-    PyFF_Glyph_getset,         /* tp_getset */
+    NULL,                      /* tp_getset */
     NULL,                      /* tp_base */
     NULL,                      /* tp_dict */
     NULL,                      /* tp_descr_get */
@@ -11651,10 +11665,10 @@ static PyObject *fontiter_iternextkey(fontiterobject *di) {
 	    PyObject *matched;
 	    glyph = PySC_From_SC_I( sc );
 	    /* Fill matched result into the glyph.temporary attribute. */
-	    tempdict = PyFF_Glyph_get_temporary((PyFF_Glyph *)glyph, NULL);
+	    tempdict = PyFF_Glyph_get_temporary((PyFF_Glyph *)glyph, sc, NULL);
 	    if (tempdict == NULL || !PyDict_Check(tempdict)) {
 		tempdict = PyDict_New();
-		PyFF_Glyph_set_temporary((PyFF_Glyph *)glyph, tempdict,  NULL);
+		PyFF_Glyph_set_temporary((PyFF_Glyph *)glyph, sc, tempdict, NULL);
 	    }
 
 	    matched = Py_BuildValue((char *) dictfmt,
@@ -19304,7 +19318,7 @@ static python_type_info module_fontforge_types[] = {
     {&PyFF_FontIterType,	0, NULL},
     {&PyFF_FontType,		1, NULL},
     {&PyFF_GlyphPenType,	1, NULL},
-    {&PyFF_GlyphType,		1, NULL},
+    {&PyFF_GlyphType,		1, setup_glyph_type},
     {&PyFF_LayerArrayIterType,	0, NULL},
     {&PyFF_LayerArrayType,	1, NULL},
     {&PyFF_LayerInfoArrayIterType,	0, NULL},

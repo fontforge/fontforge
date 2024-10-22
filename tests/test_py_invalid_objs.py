@@ -67,3 +67,19 @@ except ValueError:
     exception_occured = True
 
 assert(exception_occured)
+
+#### Invalid Glyph Object ####
+font5 = fontforge.open(sys.argv[1])
+glyph_E = font5["E"]
+font5.close()
+
+# Try to access object getter after the font was deleted
+exception_occured = False
+try:
+    tti = glyph_E.ttinstrs
+    # The execution shall not reach this line
+    assert(False)
+except ValueError:
+    exception_occured = True
+
+assert(exception_occured)
