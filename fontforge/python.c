@@ -482,7 +482,7 @@ static SplineChar* PyFF_Glyph_GetSC(PyFF_Glyph *glyph) {
 
     // Underlying C object is dead, must throw exception.
     if (glyph->sc == NULL) {
-        PyErr_SetString(PyExc_ValueError, "Glyph object is not valid");
+        PyErr_SetString(PyExc_RuntimeError, "Glyph object is not valid");
 	return NULL;
     }
 

@@ -15,7 +15,7 @@ try:
     pen = None
     # The execution shall not reach this line
     assert(False)
-except ValueError:
+except RuntimeError:
     exception_occured = True
 
 assert(exception_occured)
@@ -31,7 +31,7 @@ try:
     new_l = layers[0].dup()
     # The execution shall not reach this line
     assert(False)
-except ValueError:
+except RuntimeError:
     exception_occured = True
 
 assert(exception_occured)
@@ -47,7 +47,7 @@ try:
     refs = l_refs["Fore"]
     # The execution shall not reach this line
     assert(False)
-except ValueError:
+except RuntimeError:
     exception_occured = True
 
 assert(exception_occured)
@@ -63,7 +63,7 @@ try:
     bl = mk_data.bottomLeft
     # The execution shall not reach this line
     assert(False)
-except ValueError:
+except RuntimeError:
     exception_occured = True
 
 assert(exception_occured)
@@ -79,7 +79,7 @@ try:
     tti = glyph_E.ttinstrs
     # The execution shall not reach this line
     assert(False)
-except ValueError:
+except RuntimeError:
     exception_occured = True
 
 assert(exception_occured)
