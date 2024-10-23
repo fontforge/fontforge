@@ -104,7 +104,23 @@ font6.close()
 # Try to access object getter after the font was deleted
 exception_occured = False
 try:
-    layers.add("new-layer", False);
+    layers.add("new-layer", False)
+    # The execution shall not reach this line
+    assert(False)
+except RuntimeError:
+    exception_occured = True
+
+assert(exception_occured)
+
+#### Invalid Layer Info ####
+font7 = fontforge.open(sys.argv[1])
+fore_info = font7.layers["Fore"]
+font7.close()
+
+# Try to access object getter after the font was deleted
+exception_occured = False
+try:
+    is_q = fore_info.is_quadratic
     # The execution shall not reach this line
     assert(False)
 except RuntimeError:

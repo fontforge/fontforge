@@ -11041,26 +11041,33 @@ static PyTypeObject PyFF_LayerInfoArrayIterType = {
 /* ************************************************************************** */
 
 static void PyFF_LayerInfo_dealloc(PyFF_LayerInfo *self) {
-    self->sf = NULL;
+    PyFF_Font *font = self->font;
+    self->font = NULL;
+    Py_DECREF(font);
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyObject *PyFFLayerInfo_Str(PyFF_LayerInfo *self) {
+    if ( CheckIfFontClosed(self->font) )
+	return( NULL );
+
 return( PyUnicode_FromFormat( "<LayerInfo %s,%d>",
-	self->sf->layers[self->layer].name,
-	self->sf->layers[self->layer].order2));
+	self->font->fv->sf->layers[self->layer].name,
+	self->font->fv->sf->layers[self->layer].order2));
 }
 
 static PyObject *PyFF_LayerInfo_get_font(PyFF_LayerInfo *self, void *UNUSED(closure)) {
-    PyFF_Font *font = PyFF_FontForSF( self->sf );
-    if ( font==NULL )
-Py_RETURN_NONE;
+    PyFF_Font *font = self->font;
+    if ( IsFontClosed(font) )
+	Py_RETURN_NONE;
     Py_INCREF(font);
     return (PyObject*)font;
 }
 
 static PyObject *PyFF_LayerInfo_get_name(PyFF_LayerInfo *self, void *UNUSED(closure)) {
-return( Py_BuildValue("s",self->sf->layers[self->layer].name));
+    if ( CheckIfFontClosed(self->font) )
+	return( NULL );
+    return( Py_BuildValue("s",self->font->fv->sf->layers[self->layer].name));
 }
 
 static int PyFF_LayerInfo_set_name(PyFF_LayerInfo *self,PyObject *value, void *UNUSED(closure)) {
@@ -11069,25 +11076,31 @@ static int PyFF_LayerInfo_set_name(PyFF_LayerInfo *self,PyObject *value, void *U
         PyErr_Format(PyExc_TypeError,"Expected layer name");
         return -1;
     }
-    free(self->sf->layers[self->layer].name);
-    self->sf->layers[self->layer].name = name;
+    if ( CheckIfFontClosed(self->font) )
+	return( -1 );
+    free(self->font->fv->sf->layers[self->layer].name);
+    self->font->fv->sf->layers[self->layer].name = name;
     return 0;
 }
 
 static PyObject *PyFF_LayerInfo_get_order2(PyFF_LayerInfo *self, void *UNUSED(closure)) {
-return( Py_BuildValue("i",self->sf->layers[self->layer].order2));
+    if ( CheckIfFontClosed(self->font) )
+	return( NULL );
+    return( Py_BuildValue("i",self->font->fv->sf->layers[self->layer].order2));
 }
 
 static int PyFF_LayerInfo_set_order2(PyFF_LayerInfo *self,PyObject *value, void *UNUSED(closure)) {
     if ( PyLong_Check(value)) {
 	int val = PyLong_AsLong(value)!=0;
-	SplineFont *sf = self->sf;
+	PyFF_Font *font = self->font;
 	int layer = self->layer;
-	if ( sf->layers[layer].order2!=val ) {
+	if ( CheckIfFontClosed(font) )
+	    return( -1 );
+	if ( font->fv->sf->layers[layer].order2!=val ) {
 	    if ( val )
-		SFConvertLayerToOrder2(sf,layer);
+		SFConvertLayerToOrder2(font->fv->sf,layer);
 	    else
-		SFConvertLayerToOrder3(sf,layer);
+		SFConvertLayerToOrder3(font->fv->sf,layer);
 	}
 return(0);
     }
@@ -11096,16 +11109,20 @@ return( -1 );
 }
 
 static PyObject *PyFF_LayerInfo_get_background(PyFF_LayerInfo *self, void *UNUSED(closure)) {
-return( Py_BuildValue("i",self->sf->layers[self->layer].background));
+    if ( CheckIfFontClosed(self->font) )
+	return( NULL );
+    return( Py_BuildValue("i",self->font->fv->sf->layers[self->layer].background));
 }
 
 static int PyFF_LayerInfo_set_background(PyFF_LayerInfo *self,PyObject *value, void *UNUSED(closure)) {
     if ( PyLong_Check(value)) {
 	int val = PyLong_AsLong(value)!=0;
-	SplineFont *sf = self->sf;
+	PyFF_Font *font = self->font;
 	int layer = self->layer;
-	if ( val!=sf->layers[layer].background )
-	    SFLayerSetBackground(sf,layer,val);
+	if ( CheckIfFontClosed(font) )
+	    return( -1 );
+	if ( val!=font->fv->sf->layers[layer].background )
+	    SFLayerSetBackground(font->fv->sf,layer,val);
 return(0);
     }
     PyErr_Format(PyExc_TypeError,"Expected boolean value");
@@ -11239,7 +11256,7 @@ return( NULL );
 return( NULL );
     }
     li = PyObject_New(PyFF_LayerInfo, &PyFF_LayerInfoType);
-    li->sf = self->font->fv->sf;
+    li->font = self->font;
     li->layer = layer;
 return( (PyObject *) li );
 }

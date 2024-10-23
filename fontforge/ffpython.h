@@ -157,7 +157,7 @@ typedef struct ff_glyph {
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
-    SplineFont *sf;
+    PyFF_Font *font;
     int layer;
 } PyFF_LayerInfo;
 
