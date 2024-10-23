@@ -170,8 +170,7 @@ typedef struct {
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
-    SplineFont *sf;
-    FontViewBase *fv;
+    PyFF_Font *font;
 } PyFF_Private;
 
 typedef struct {

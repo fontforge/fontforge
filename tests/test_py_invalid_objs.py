@@ -127,3 +127,19 @@ except RuntimeError:
     exception_occured = True
 
 assert(exception_occured)
+
+#### Invalid Private Dictionary ####
+font8 = fontforge.open(sys.argv[1])
+private = font8.private
+font8.close()
+
+# Try to access object getter after the font was deleted
+exception_occured = False
+try:
+    private["BlueValues"] = None
+    # The execution shall not reach this line
+    assert(False)
+except RuntimeError:
+    exception_occured = True
+
+assert(exception_occured)

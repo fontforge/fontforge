@@ -11568,11 +11568,11 @@ static void privateiter_dealloc(privateiterobject *di) {
 static PyObject *privateiter_iternextkey(privateiterobject *di) {
     PyFF_Private *d = di->private;
 
-    if (d == NULL || d->sf->private==NULL )
-return NULL;
+    if (d == NULL || CheckIfFontClosed(d->font) || d->font->fv->sf->private==NULL )
+	return NULL;
 
-    if ( di->pos<d->sf->private->next )
-return( Py_BuildValue("s",d->sf->private->keys[di->pos++]) );
+    if ( di->pos<d->font->fv->sf->private->next )
+return( Py_BuildValue("s",d->font->fv->sf->private->keys[di->pos++]) );
 
 return NULL;
 }
@@ -11633,12 +11633,16 @@ static PyTypeObject PyFF_PrivateIterType = {
 /* ************************************************************************** */
 
 static void PyFF_Private_dealloc(PyFF_Private *self) {
-    self->sf = NULL;
+    PyFF_Font *font = self->font;
+    self->font = NULL;
+    Py_DECREF(font);
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyObject *PyFFPrivate_Str(PyFF_Private *self) {
-return( PyUnicode_FromFormat( "<Private Dictionary for %s>", self->sf->fontname ));
+    if ( CheckIfFontClosed(self->font) )
+	return( NULL );
+    return( PyUnicode_FromFormat( "<Private Dictionary for %s>", self->font->fv->sf->fontname ));
 }
 
 /* ************************************************************************** */
@@ -11646,7 +11650,10 @@ return( PyUnicode_FromFormat( "<Private Dictionary for %s>", self->sf->fontname 
 /* ************************************************************************** */
 
 static Py_ssize_t PyFF_PrivateLength( PyObject *self ) {
-    struct psdict *private = ((PyFF_Private *) self)->sf->private;
+    struct psdict *private;
+    if ( CheckIfFontClosed(((PyFF_Private *) self)->font) )
+	return( 0 );
+    private = ((PyFF_Private *) self)->font->fv->sf->private;
     if ( private==NULL )
 return( 0 );
     else
@@ -11654,12 +11661,14 @@ return( private->next );
 }
 
 static PyObject *PyFF_PrivateIndex( PyObject *self, PyObject *index ) {
-    SplineFont *sf = ((PyFF_Private *) self)->sf;
-    struct psdict *private = sf->private;
+    struct psdict *private;
     char *value=NULL;
     char *pt, *end;
     double temp;
     PyObject *tuple;
+    if ( CheckIfFontClosed(((PyFF_Private *) self)->font) )
+	return NULL;
+    private = ((PyFF_Private *) self)->font->fv->sf->private;
 
     if ( PyUnicode_Check(index)) {
 	const char *name = PyUnicode_AsUTF8(index);
@@ -11709,11 +11718,13 @@ return( Py_BuildValue("s",value));
 }
 
 static int PyFF_PrivateIndexAssign( PyObject *self, PyObject *index, PyObject *value ) {
-    SplineFont *sf = ((PyFF_Private *) self)->sf;
-    struct psdict *private = sf->private;
+    struct psdict *private;
     const char *string, *name;
     char *freeme = NULL;
     char buffer[40];
+    if ( CheckIfFontClosed(((PyFF_Private *) self)->font) )
+	return -1;
+    private = ((PyFF_Private *) self)->font->fv->sf->private;
 
     if ( PyUnicode_Check(value)) {
         string = PyUnicode_AsUTF8(value);
@@ -11751,7 +11762,7 @@ static int PyFF_PrivateIndexAssign( PyObject *self, PyObject *index, PyObject *v
         free(freeme);
         return -1;
     } else if (private == NULL) {
-        sf->private = private = calloc(1,sizeof(struct psdict));
+        ((PyFF_Private *) self)->font->fv->sf->private = private = calloc(1,sizeof(struct psdict));
     }
 
     PSDictChangeEntry(private,name,string);
@@ -11766,15 +11777,18 @@ static PyMappingMethods PyFF_PrivateMapping = {
 };
 
 static PyObject *PyFFPrivate_Guess(PyFF_Private *self, PyObject *args) {
-    SplineFont *sf = self->sf;
+    SplineFont *sf;
     char *name;
+    if ( CheckIfFontClosed(self->font) )
+	return NULL;
+    sf = self->font->fv->sf;
 
     if ( !PyArg_ParseTuple(args,"s", &name) )
 return( NULL );
     if ( sf->private==NULL )
 	sf->private = calloc(1,sizeof(struct psdict));
 
-    SFPrivateGuess(sf,self->fv->active_layer,sf->private,name,true);
+    SFPrivateGuess(sf,self->font->fv->active_layer,sf->private,name,true);
 Py_RETURN( self );
 }
 
@@ -12058,11 +12072,6 @@ return( NULL );
 
     if ( self->math!=NULL && self->math->sf == fv->sf )
 	self->math->sf = NULL;
-
-    if ( self->private!=NULL && self->private->fv == fv ) {
-	self->private->fv = NULL;
-	self->private->sf = NULL;
-    }
 
     if ( self->selection!=NULL && self->selection->fv == fv )
 	self->selection->fv = NULL;
@@ -12490,8 +12499,7 @@ Py_RETURN( self->private );
     private = (PyFF_Private *) PyObject_New(PyFF_Private, &PyFF_PrivateType);
     if (private == NULL)
 return NULL;
-    private->sf = self->fv->sf;
-    private->fv = self->fv;
+    private->font = self;
     self->private = private;
 Py_RETURN( self->private );
 }
