@@ -146,7 +146,7 @@ typedef struct glyphmathkernobject {
 typedef struct ff_glyph {
     PyObject_HEAD
     /* Type-specific fields go here. */
-    SplineChar *sc;
+    void *sc_opaque; // Use PyFF_Glyph_GetSC() to access this pointer, never use it directly
     PyFF_LayerArray *layers;
     PyFF_RefArray *refs;
     PyFF_MathKern *mk;

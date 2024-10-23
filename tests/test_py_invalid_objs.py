@@ -71,12 +71,24 @@ assert(exception_occured)
 #### Invalid Glyph Object ####
 font5 = fontforge.open(sys.argv[1])
 glyph_E = font5["E"]
+glyph_F = font5["F"]
 font5.close()
 
 # Try to access object getter after the font was deleted
 exception_occured = False
 try:
     tti = glyph_E.ttinstrs
+    # The execution shall not reach this line
+    assert(False)
+except RuntimeError:
+    exception_occured = True
+
+assert(exception_occured)
+
+# Try to access object function after the font was deleted
+exception_occured = False
+try:
+    glyph_F.correctDirection()
     # The execution shall not reach this line
     assert(False)
 except RuntimeError:

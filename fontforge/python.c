@@ -396,12 +396,13 @@ return( NULL );
 
 PyObject *PySC_From_SC(SplineChar *sc) {
     if ( sc->python_sc_object==NULL ) {
-	sc->python_sc_object = PyFF_GlyphType.tp_alloc(&PyFF_GlyphType,0);
-	((PyFF_Glyph *) (sc->python_sc_object))->sc = sc;
-	((PyFF_Glyph *) (sc->python_sc_object))->layer = ly_fore;
-	Py_INCREF( (PyObject *) (sc->python_sc_object) );	/* for the pointer in my fv */
+	PyFF_Glyph *glyph = (PyFF_Glyph *)PyFF_GlyphType.tp_alloc(&PyFF_GlyphType,0);
+	sc->python_sc_object = glyph;
+	glyph->sc_opaque = sc;
+	glyph->layer = ly_fore;
+	Py_INCREF( (PyObject *) glyph );	/* for the pointer in my fv */
     }
-return( sc->python_sc_object );
+    return sc->python_sc_object;
 }
 
 static PyObject *PySC_From_SC_I(SplineChar *sc) {
@@ -481,12 +482,12 @@ static SplineChar* PyFF_Glyph_GetSC(PyFF_Glyph *glyph) {
     }
 
     // Underlying C object is dead, must throw exception.
-    if (glyph->sc == NULL) {
-        PyErr_SetString(PyExc_RuntimeError, "Glyph object is not valid");
+    if (glyph->sc_opaque == NULL) {
+	PyErr_SetString(PyExc_RuntimeError, "Glyph object is not valid, the font may have been closed" );
 	return NULL;
     }
 
-    return glyph->sc;
+    return glyph->sc_opaque;
 }
 
 /* ************************************************************************** */
@@ -5972,8 +5973,11 @@ static PyTypeObject PyFF_GlyphPenType = {
 static PyObject *PyFF_Glyph_get_layer_references(PyFF_Glyph *self, int layer) {
     RefChar *ref;
     int cnt;
-    SplineChar *sc = self->sc;
     PyObject *tuple;
+    SplineChar *sc = PyFF_Glyph_GetSC(self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     for ( ref=sc->layers[layer].refs, cnt=0; ref!=NULL; ++cnt, ref=ref->next );
     tuple = PyTuple_New(cnt);
@@ -5991,7 +5995,10 @@ static int PyFF_Glyph_set_layer_references(PyFF_Glyph *self,PyObject *value,
     double m[6];
     real transform[6];
     char *str;
-    SplineChar *sc = self->sc, *rsc;
+    SplineChar *sc = PyFF_Glyph_GetSC(self), *rsc;
+    if (sc == NULL) {
+	return -1;
+    }
     SplineFont *sf = sc->parent;
     RefChar *refs, *next;
 
@@ -6675,10 +6682,13 @@ static PyTypeObject PyFF_MathKernType = {
 /* ************************************************************************** */
 
 static void PyFF_Glyph_dealloc(PyFF_Glyph *self) {
-    if ( self->sc!=NULL ) {
-	if ( self->sc->python_sc_object == self )
-	    self->sc->python_sc_object = NULL;
-	self->sc = NULL;
+    SplineChar *sc = PyFF_Glyph_GetSC(self);
+    if (sc != NULL) {
+	/* This case should not be possible, since PyFF_Glyph is refcounted as
+	   long as it is referenced by SplineChar, and should not be deallocated. */
+	if ( sc->python_sc_object == self )
+	    sc->python_sc_object = NULL;
+	self->sc_opaque = NULL;
     }
     Py_XDECREF(self->layers);
     Py_XDECREF(self->refs);
@@ -6693,15 +6703,19 @@ static PyObject *PyFFGlyph_Repr(PyFF_Glyph *self) {
     size_t space_needed;
     int at;
     const struct altuni *alt;
+    SplineChar *sc = PyFF_Glyph_GetSC(self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     /* Get space to hold string. For efficiency try to avoid malloc
      * except for rare cases where more is needed.
      */
     space_needed = 64;
-    if ( self->sc!=NULL ) {
-	space_needed += strlen(self->sc->name);
+    if ( sc!=NULL ) {
+	space_needed += strlen(sc->name);
 	/* Count the number of altuni where vs==-1, so we only get true alternates. */
-	for ( alt=self->sc->altuni; alt!=NULL; alt=alt->next )
+	for ( alt=sc->altuni; alt!=NULL; alt=alt->next )
 	    if ( alt->vs==-1 && alt->unienc>=0 )
 		space_needed += 9;
     }
@@ -6710,22 +6724,22 @@ static PyObject *PyFFGlyph_Repr(PyFF_Glyph *self) {
 
 #ifdef DEBUG
     at = sprintf(repr, "<%s at 0x%p sc=0x%p",
-		 Py_TYPENAME(self), self, self->sc);
+		 Py_TYPENAME(self), self, sc);
 #else
     at = sprintf(repr, "<%s at 0x%p", Py_TYPENAME(self), self);
 #endif
-    if ( self->sc==NULL ) {
+    if ( sc==NULL ) {
 	strcpy( &repr[at], " CLOSED>" );
     }
     else {
-	if ( self->sc->unicodeenc >= 0 )
-	    at += sprintf( &repr[at], " U+%04X", self->sc->unicodeenc);
+	if ( sc->unicodeenc >= 0 )
+	    at += sprintf( &repr[at], " U+%04X", sc->unicodeenc);
 
-	for ( alt=self->sc->altuni; alt!=NULL; alt=alt->next )
+	for ( alt=sc->altuni; alt!=NULL; alt=alt->next )
 	    if ( alt->vs==-1 && alt->unienc>=0 )
 		at += sprintf( &repr[at], " U+%04X", alt->unienc );
 
-	at += sprintf( &repr[at], " \"%s\">", self->sc->name);
+	at += sprintf( &repr[at], " \"%s\">", sc->name);
     }
     ret = PyUnicode_FromString(repr);
     if ( repr != buf )
@@ -6734,23 +6748,27 @@ static PyObject *PyFFGlyph_Repr(PyFF_Glyph *self) {
 }
 
 static PyObject *PyFFGlyph_Str(PyFF_Glyph *self) {
-    if ( self->sc==NULL || self->sc->parent==NULL )
-return( PyUnicode_FromString("<Glyph from closed font>") );
-return( PyUnicode_FromFormat( "<Glyph %s in font %s>", self->sc->name, self->sc->parent->fontname ));
+    SplineChar *sc = PyFF_Glyph_GetSC(self);
+    if (sc == NULL) {
+	return PyUnicode_FromString("<Glyph from closed font>");
+    }
+    return( PyUnicode_FromFormat( "<Glyph %s in font %s>", sc->name, sc->parent->fontname ));
 }
 
-static int PyFFGlyph_docompare(PyFF_Glyph *self,PyObject *other,
+static int PyFFGlyph_docompare(PyFF_Glyph *self, SplineChar *sc, PyObject *other,
 	double pt_err, double spline_err) {
     SplineSet *ss2;
     int ret;
     SplinePoint *badpoint;
 
     if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(other)) ) {
-	SplineChar *sc = self->sc;
-	SplineChar *sc2 = ((PyFF_Glyph *) other)->sc;
 	int olayer = ((PyFF_Glyph *) other)->layer;
 	int ret;
 	SplinePoint *dummy;
+        SplineChar *sc2 = PyFF_Glyph_GetSC((PyFF_Glyph *) other);
+        if (sc2 == NULL) {	
+	    return -1;
+        }
 
 	ret = CompareLayer(NULL,
 		sc->layers[self->layer].splines,sc2->layers[olayer].splines,
@@ -6768,9 +6786,9 @@ return( -1 );
     if ( PyErr_Occurred() != NULL ) {
 	return( -1 );
     }
-    if ( self->sc->layers[self->layer].refs!=NULL )
+    if ( sc->layers[self->layer].refs!=NULL )
 return( SS_NoMatch | SS_RefMismatch );
-    ret = SSsCompare(self->sc->layers[self->layer].splines,ss2,pt_err,spline_err,&badpoint);
+    ret = SSsCompare(sc->layers[self->layer].splines,ss2,pt_err,spline_err,&badpoint);
     SplinePointListsFree(ss2);
 return(ret);
 }
@@ -6778,9 +6796,13 @@ return(ret);
 static int PyFFGlyph_compare(PyFF_Glyph *self,PyObject *other) {
     const double pt_err = .5, spline_err = 1;
     int ret;
-    SplineChar *sc1, *sc2;
+    SplineChar *sc1 = PyFF_Glyph_GetSC(self);
+    SplineChar *sc2 = PyFF_Glyph_GetSC((PyFF_Glyph*)other);
+    if (sc1 == NULL || sc2 == NULL) {	
+        return -1;
+    }
 
-    ret = PyFFGlyph_docompare(self,other,pt_err,spline_err);
+    ret = PyFFGlyph_docompare(self,sc1,other,pt_err,spline_err);
     if ( !(ret&SS_NoMatch) )
 return( 0 );
 
@@ -6789,7 +6811,6 @@ return( 0 );
     if ( !PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(other)) )
 return( -1 );
     /* Ok, both are glyphs */
-    sc1 = self->sc; sc2 = ((PyFF_Glyph *) other)->sc;
 return( sc1<sc2 ? -1 : 1 );
 }
 
@@ -7788,8 +7809,11 @@ return( NULL );
 	for ( i=0; i<cnt; ++i ) {
 	    PyObject *obj = PySequence_GetItem(value,i);
 	    if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(obj)) ) {
-		PyFF_Glyph *g = (PyFF_Glyph *) obj;
-		len += strlen(g->sc->name) + 1;
+		SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) obj);
+		if (sc == NULL) {
+		    return NULL;
+		}
+		len += strlen(sc->name) + 1;
 	    } else {
 		Py_XDECREF(obj);
 		PyErr_Format(PyExc_TypeError, "Must be a sequence of glyphs" );
@@ -7800,9 +7824,12 @@ return( NULL );
 	pt = str = malloc(len+1);
 	for ( i=0; i<cnt; ++i ) {
 	    PyObject *obj = PySequence_GetItem(value,i);
-	    PyFF_Glyph *g = (PyFF_Glyph *) obj;
-	    strcpy(pt,g->sc->name);
-	    pt += strlen(g->sc->name);
+	    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) obj);
+	    if (sc == NULL) {
+		return NULL;
+	    }
+	    strcpy(pt,sc->name);
+	    pt += strlen(sc->name);
 	    strcpy(pt," ");
 	    pt += 1;
 	    Py_DECREF(obj);
@@ -7864,7 +7891,11 @@ static struct gv_part *ParseComponentTuple(PyObject *tuple,int *_cnt) {
 	int extender=0, start=0, end=0, full=0;
 	char *glyphName;
 	if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(obj)) ) {
-	    parts[i].component = copy( ((PyFF_Glyph *) obj)->sc->name );
+	    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) obj);
+	    if (sc == NULL) {
+		return NULL;
+	    }
+	    parts[i].component = copy( sc->name );
 	} else if ( PyUnicode_Check(obj) ) {
 	    char* temp = copy(PyUnicode_AsUTF8(obj));
 	    if (temp == NULL) {
@@ -7881,7 +7912,11 @@ static struct gv_part *ParseComponentTuple(PyObject *tuple,int *_cnt) {
 		FreeGVPartsList(parts, i);
 return( NULL );
 	    }
-	    parts[i].component = copy(((PyFF_Glyph *) g)->sc->name);
+	    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) g);
+	    if (sc == NULL) {
+		return NULL;
+	    }
+	    parts[i].component = copy(sc->name);
 	} else if ( PyArg_ParseTuple(obj,"s|iiii", &glyphName,
 		&extender, &start, &end, &full )) {
 	    parts[i].component = copy(glyphName);
@@ -8223,10 +8258,13 @@ static glyph_accessors PyFF_Glyph_raw_getset[] = {
 /* ************************************************************************** */
 
 static PyObject *PyFFGlyph_Build(PyObject *self, PyObject *args) {
-    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     int layer = ((PyFF_Glyph *) self)->layer;
     int accent_hint = false;
     PyObject *accent_hint_pyo = NULL;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     if ( PyArg_ParseTuple(args, "|O", &accent_hint_pyo) ) {
         if (accent_hint_pyo == Py_True) {
@@ -8243,12 +8281,15 @@ Py_RETURN( self );
 static const char *appendaccent_keywords[] = { "name", "unicode", "pos", NULL };
 
 static PyObject *PyFFGlyph_appendAccent(PyObject *self, PyObject *args, PyObject *keywds) {
-    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     int layer = ((PyFF_Glyph *) self)->layer;
     int pos = FF_UNICODE_NOPOSDATAGIVEN; /* unicode char pos info, see #define for (uint32_t)(utype2[]) */
     int uni=-1;				/* unicode char value */
     char *name = NULL;			/* unicode char name */
     int ret;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     if ( !PyArg_ParseTupleAndKeywords(args,keywds,"|sii",(char **)appendaccent_keywords,
 	    &name, &uni, &pos))
@@ -8271,11 +8312,14 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFGlyph_useRefsMetrics(PyObject *self, PyObject *args) {
-    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     int layer = ((PyFF_Glyph *) self)->layer;
     RefChar *ref, *itwilldo;
     char *name=NULL;
     int setting=true;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     if ( !PyArg_ParseTuple(args,"s|i", &name, &setting ))
 return( NULL );
@@ -8306,7 +8350,10 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFGlyph_canonicalContours(PyObject *self, PyObject *UNUSED(args)) {
-    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     CanonicalContours(sc,((PyFF_Glyph *) self)->layer);
 
@@ -8314,7 +8361,10 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFGlyph_canonicalStart(PyObject *self, PyObject *UNUSED(args)) {
-    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     SPLsStartToLeftmost(sc,((PyFF_Glyph *) self)->layer);
 
@@ -8385,9 +8435,12 @@ return( type );
 }
 
 static PyObject *PyFFGlyph_changeWeight(PyObject *self, PyObject *args) {
-    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     enum embolden_type type;
     struct lcg_zones zones;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     type = CW_ParseArgs(sc->parent,&zones,args);
     if ( type == embolden_error )
@@ -8398,8 +8451,11 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFGlyph_condenseExtend(PyObject *self, PyObject *args) {
-    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     struct counterinfo ci;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     memset(&ci,0,sizeof(ci));
     ci.sb_factor = ci.sb_add = -10000;
@@ -8424,9 +8480,14 @@ static PyObject *PyFFGlyph_AddReference(PyObject *self, PyObject *args) {
     double m[6] = {1.0,0.0,0.0,1.0,0.0,0.0};
     real transform[6];
     char *str;
-    SplineChar *sc = ((PyFF_Glyph *) self)->sc, *rsc;
-    SplineFont *sf = sc->parent;
+    SplineChar *sc, *rsc;
+    SplineFont *sf;
     int j, selected=false;
+    sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
+    sf = sc->parent;
 
     if ( !PyArg_ParseTuple(args,"s|(dddddd)p",&str,
 	    &m[0], &m[1], &m[2], &m[3], &m[4], &m[5], &selected) )
@@ -8445,9 +8506,13 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFGlyph_addAnchorPoint(PyObject *self, PyObject *args) {
-    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
-    AnchorPoint *ap = APFromTuple(sc,args), *ap2;
+    AnchorPoint *ap, *ap2;
     int done = false;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
+    ap = APFromTuple(sc,args);
 
     if ( ap==NULL )
 return( NULL );
@@ -8511,15 +8576,19 @@ static PyObject *PyFFGlyph_draw(PyObject *self, PyObject *args) {
     PyObject *layer, *result, *pen;
     RefChar *ref;
     PyObject *tuple;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     if ( !PyArg_ParseTuple(args,"O", &pen ) )
 return( NULL );
 
-    layer = PyFF_Glyph_get_a_layer((PyFF_Glyph *) self, ((PyFF_Glyph *) self)->sc, (void *)(size_t)((PyFF_Glyph *) self)->layer);
+    layer = PyFF_Glyph_get_a_layer((PyFF_Glyph *) self, sc, (void *)(size_t)((PyFF_Glyph *) self)->layer);
     result = PyFFLayer_draw( (PyFF_Layer *) layer,args);
     Py_XDECREF(layer);
 
-    for ( ref = ((PyFF_Glyph *) self)->sc->layers[((PyFF_Glyph *) self)->layer].refs; ref!=NULL; ref=ref->next ) {
+    for ( ref = sc->layers[((PyFF_Glyph *) self)->layer].refs; ref!=NULL; ref=ref->next ) {
 	tuple = Py_BuildValue("s(dddddd)", ref->sc->name,
 		ref->transform[0], ref->transform[1], ref->transform[2],
 		ref->transform[3], ref->transform[4], ref->transform[5]);
@@ -8533,9 +8602,12 @@ static bool PyFFParse_genericGlyphChange(PyObject *args, PyObject *keywds,
 
 static PyObject *PyFFGlyph_genericGlyphChange(PyFF_Glyph *self, PyObject *args,
                                               PyObject *keywds) {
-    SplineChar *sc = self->sc;
     struct genericchange genchange;
     struct smallcaps small;
+    SplineChar *sc = PyFF_Glyph_GetSC(self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     if ( self->layer < 0 )
 	Py_RETURN( self );
@@ -8561,11 +8633,14 @@ static PyObject *PyFFGlyph_genericGlyphChange(PyFF_Glyph *self, PyObject *args,
 }
 
 static PyObject *PyFFGlyph_addHint(PyObject *self, PyObject *args) {
-    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     int layer = ((PyFF_Glyph *) self)->layer;
     int is_v;
     double start, width;
     StemInfo *h;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     if ( !PyArg_ParseTuple(args,"idd", &is_v, &start, &width ) )
 return( NULL );
@@ -8594,8 +8669,11 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFGlyph_autoHint(PyObject *self, PyObject *UNUSED(args)) {
-    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     int layer = ((PyFF_Glyph *) self)->layer;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     SplineCharAutoHint(sc,layer,NULL);
     SCUpdateAll(sc);
@@ -8603,7 +8681,10 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFGlyph_autoInstr(PyObject *self, PyObject *UNUSED(args)) {
-    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     GlobalInstrCt gic;
     InitGlobalInstrCt(&gic,sc->parent,((PyFF_Glyph *) self)->layer,NULL);
@@ -8613,9 +8694,12 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFGlyph_autoTrace(PyObject *self, PyObject *UNUSED(args)) {
-    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     int layer = ((PyFF_Glyph *) self)->layer;
     char **at_args;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     at_args = AutoTraceArgs(false);
     if ( at_args==(char **) -1 ) {
@@ -8641,13 +8725,16 @@ static struct flaglist import_ps_flags[] = {
 
 static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args,
                                   PyObject *keywds) {
-    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     ImportParams ip, *ipp;
     char *filename;
     char *locfilename = NULL, *pt;
     PyObject *flags=NULL;
     int psflags, use_system = false, ask_system = false;
     bigreal jl_tmp = -1;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     InitImportParams(&ip);
 
@@ -8729,7 +8816,6 @@ static char *glyph_export_keywords[] = { "filename", "layer", "pixelsize",
 
 static PyObject *PyFFGlyph_export(PyObject *self, PyObject *args,
                                   PyObject *keywds) {
-    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     char *filename;
     char *locfilename = NULL;
     char *pt;
@@ -8739,6 +8825,10 @@ static PyObject *PyFFGlyph_export(PyObject *self, PyObject *args,
     int layer = ((PyFF_Glyph *) self)->layer;
     PyObject *layerobj = NULL, *obj1=NULL, *obj2=NULL;
     ExportParams ep, *epp;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     InitExportParams(&ep);
 
@@ -8842,11 +8932,14 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFGlyph_unlinkRef(PyObject *self, PyObject *args) {
-    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     int layer = ((PyFF_Glyph *) self)->layer;
     char *refname=NULL;
     RefChar *ref;
     int any = false;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     if ( !PyArg_ParseTuple(args,"|s",&refname) )
 return( NULL );
@@ -8867,8 +8960,11 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFGlyph_unlinkThisGlyph(PyObject *self, PyObject *UNUSED(args)) {
-    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     int layer = ((PyFF_Glyph *) self)->layer;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     UnlinkThisReference(NULL,sc,layer);
 Py_RETURN( self );
@@ -8931,7 +9027,10 @@ static char *GlyphNamesFromTuple(PyObject *glyphs) {
     for ( i=0; i<cnt; ++i ) {
 	PyObject *aglyph = PySequence_GetItem(glyphs,i);
 	if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(aglyph)) ) {
-	    SplineChar *sc = ((PyFF_Glyph *) aglyph)->sc;
+	    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) aglyph);
+	    if (sc == NULL) {
+		return NULL;
+	    }
 	    deltalen = strlen(sc->name);
             Py_DECREF(aglyph);
 	} else if ( PyUnicode_Check(aglyph)) {
@@ -8958,7 +9057,10 @@ static char *GlyphNamesFromTuple(PyObject *glyphs) {
     for ( i=0; i<cnt; ++i ) {
 	PyObject *aglyph = PySequence_GetItem(glyphs,i);
 	if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(aglyph)) ) {
-	    SplineChar *sc = ((PyFF_Glyph *) aglyph)->sc;
+	    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) aglyph);
+	    if (sc == NULL) {
+		return NULL;
+	    }
 	    str = sc->name;
 	} else {
         str = PyUnicode_AsUTF8(aglyph);
@@ -8993,7 +9095,10 @@ return(NULL );
     for ( i=0; i<cnt; ++i ) {
 	PyObject *aglyph = PySequence_GetItem(glyphs,i);
 	if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(aglyph)) ) {
-	    SplineChar *sc = ((PyFF_Glyph *) aglyph)->sc;
+	    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) aglyph);
+	    if (sc == NULL) {
+		return NULL;
+	    }
 	    str = sc->name;
 	} else
 	    str = PyBytes_AsString(aglyph);
@@ -9067,7 +9172,10 @@ return(NULL );
     for ( i=0; i<cnt; ++i ) {
 	PyObject *aglyph = PySequence_GetItem(glyphs,i);
 	if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(aglyph)) ) {
-	    ret[i] = ((PyFF_Glyph *) aglyph)->sc;
+	    ret[i] = PyFF_Glyph_GetSC((PyFF_Glyph *) aglyph);
+	    if (ret[i] == NULL) {
+		return NULL;
+	    }
 	    if ( ret[i]->parent!=sf ) {
 		PyErr_Format(PyExc_TypeError,"Glyph object, %s, must belong to the expected font.", ret[i]->name);
                 free(ret);
@@ -9093,14 +9201,18 @@ return( ret );
 }
 
 static PyObject *PyFFGlyph_getPosSub(PyObject *self, PyObject *args) {
-    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
-    SplineFont *sf = sc->parent, *sf_sl = sf;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    SplineFont *sf, *sf_sl;
     int i, j, cnt;
     PyObject *ret, *temp;
     PST *pst;
     KernPair *kp;
     struct lookup_subtable *sub;
     char *subname;
+    if (sc == NULL) {
+	return NULL;
+    }
+    sf = sc->parent, sf_sl = sf;
 
     if ( sf_sl->cidmaster!=NULL ) sf_sl = sf_sl->cidmaster;
     else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
@@ -9195,13 +9307,17 @@ return( ret );
 }
 
 static PyObject *PyFFGlyph_removePosSub(PyObject *self, PyObject *args) {
-    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
-    SplineFont *sf = sc->parent, *sf_sl = sf;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    SplineFont *sf, *sf_sl;
     int is_v;
     PST *pst, *next, *prev;
     KernPair *kp, *kpnext, *kpprev;
     struct lookup_subtable *sub;
     char *subname;
+    if (sc == NULL) {
+	return NULL;
+    }
+    sf = sc->parent, sf_sl = sf;
 
     if ( sf_sl->cidmaster!=NULL ) sf_sl = sf_sl->cidmaster;
     else if ( sf_sl->mm!=NULL ) sf_sl = sf_sl->mm->normal;
@@ -9255,13 +9371,17 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFGlyph_addPosSub(PyObject *self, PyObject *args) {
-    SplineChar *sc = ((PyFF_Glyph *) self)->sc, *osc;
-    SplineFont *sf = sc->parent, *sf_sl = sf;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self), *osc;
+    SplineFont *sf, *sf_sl;
     PST temp, *pst, *old=NULL, *prev=NULL;
     struct lookup_subtable *sub;
     const char *subname, *other;
     KernPair *kp, *kpold=NULL, *kpprev=NULL;
     PyObject *others;
+    if (sc == NULL) {
+	return NULL;
+    }
+    sf = sc->parent, sf_sl = sf;
 
     memset(&temp,0,sizeof(temp));
 
@@ -9417,11 +9537,14 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFGlyph_selfIntersects(PyObject *self, PyObject *UNUSED(args)) {
-    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     int layer = ((PyFF_Glyph *) self)->layer;
     Spline *s, *s2;
     PyObject *ret;
     SplineSet *ss;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     ss = LayerAllSplines(&sc->layers[layer]);
     ret = SplineSetIntersect(ss,&s,&s2) ? Py_True : Py_False;
@@ -9431,9 +9554,12 @@ return( ret );
 }
 
 static PyObject *PyFFGlyph_validate(PyObject *self, PyObject *args) {
-    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     int force=false;
     int layer = ((PyFF_Glyph *) self)->layer;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     if ( !PyArg_ParseTuple(args,"|i",&force) )
 return( NULL );
@@ -9448,12 +9574,15 @@ static struct flaglist g_trans_flags[] = {
 };
 
 static PyObject *PyFFGlyph_Transform(PyObject *self, PyObject *args) {
-    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     int i;
     double m[6];
     real t[6];
     int flags;
     PyObject *flagO=NULL;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     if ( !PyArg_ParseTuple(args,"(dddddd)|O",&m[0], &m[1], &m[2], &m[3], &m[4], &m[5],
 	    &flagO) )
@@ -9469,8 +9598,11 @@ Py_RETURN( self );
 }
 
 static PyObject *PyFFGlyph_NLTransform(PyObject *self, PyObject *args) {
-    SplineChar *sc = ((PyFF_Glyph *) self)->sc;
     char *xexpr, *yexpr;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     if ( !PyArg_ParseTuple(args,"ss", &xexpr, &yexpr ) )
 return( NULL );
@@ -9483,7 +9615,10 @@ Py_RETURN( self );
 
 static PyObject *PyFFGlyph_Simplify(PyFF_Glyph *self, PyObject *args) {
     static struct simplifyinfo smpl = { sf_normal, 0.75, 0.2, 10, 0, 0, 0 };
-    SplineChar *sc = self->sc;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
     SplineFont *sf = sc->parent;
     int em = sf->ascent+sf->descent;
 
@@ -9504,28 +9639,36 @@ static PyObject *PyFFGlyph_Simplify(PyFF_Glyph *self, PyObject *args) {
     if ( PyErr_Occurred() )
 return( NULL );
     sc->layers[self->layer].splines = SplineCharSimplify(sc,sc->layers[self->layer].splines,&smpl);
-    SCCharChangedUpdate(self->sc,self->layer);
+    SCCharChangedUpdate(sc,self->layer);
 Py_RETURN( self );
 }
 
 static PyObject *PyFFGlyph_Round(PyFF_Glyph *self, PyObject *args) {
     double factor=1;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     if ( !PyArg_ParseTuple(args,"|d",&factor ) )
 return( NULL );
-    SCRound2Int( self->sc,self->layer,factor);
-    SCCharChangedUpdate(self->sc,self->layer);
+    SCRound2Int( sc,self->layer,factor);
+    SCCharChangedUpdate(sc,self->layer);
 Py_RETURN( self );
 }
 
 static PyObject *PyFFGlyph_Cluster(PyFF_Glyph *self, PyObject *args) {
     double within = .1, max = .5;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     if ( !PyArg_ParseTuple(args,"|dd", &within, &max ) )
 return( NULL );
 
-    SCRoundToCluster( self->sc,self->layer,false,within,max);
-    SCCharChangedUpdate(self->sc,self->layer);
+    SCRoundToCluster( sc,self->layer,false,within,max);
+    SCCharChangedUpdate(sc,self->layer);
 Py_RETURN( self );
 }
 
@@ -9533,7 +9676,10 @@ static PyObject *PyFFGlyph_AddExtrema(PyFF_Glyph *self, PyObject *args) {
     int emsize = 1000;
     char *flag = NULL;
     int ae = ae_only_good;
-    SplineChar *sc = self->sc;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
     SplineFont *sf = sc->parent;
 
     if ( !PyArg_ParseTuple(args,"|si", &flag, &emsize ) )
@@ -9549,7 +9695,10 @@ Py_RETURN( self );
 }
 
 static PyObject *_PyFFGlyph_Action(PyFF_Glyph *self, void (*func)(SplineChar*, SplineSet*, int)) { 
-    SplineChar *sc = self->sc;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
     func(sc,sc->layers[self->layer].splines,false);
     SCCharChangedUpdate(sc,self->layer);
 Py_RETURN( self );
@@ -9570,45 +9719,65 @@ static PyObject *PyFFGlyph_Harmonize(PyFF_Glyph *self) {
 static PyObject *PyFFGlyph_Stroke(PyFF_Glyph *self, PyObject *args, PyObject *keywds) {
     StrokeInfo si;
     SplineSet *newss;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     if ( Stroke_Parse(&si, args, keywds)==-1 )
 	return( NULL );
 
-    newss = SplineSetStroke(self->sc->layers[self->layer].splines,&si,
-	    self->sc->layers[self->layer].order2);
-    SplinePointListFree(self->sc->layers[self->layer].splines);
-    self->sc->layers[self->layer].splines = newss;
-    SCCharChangedUpdate(self->sc,self->layer);
+    newss = SplineSetStroke(sc->layers[self->layer].splines,&si,
+	    sc->layers[self->layer].order2);
+    SplinePointListFree(sc->layers[self->layer].splines);
+    sc->layers[self->layer].splines = newss;
+    SCCharChangedUpdate(sc,self->layer);
     SplinePointListsFree(si.nib); si.nib = NULL;
 Py_RETURN( self );
 }
 
 static PyObject *PyFFGlyph_Correct(PyFF_Glyph *self, PyObject *UNUSED(args)) {
     int changed = false;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
-    self->sc->layers[self->layer].splines = SplineSetsCorrect(self->sc->layers[self->layer].splines,&changed);
+    sc->layers[self->layer].splines = SplineSetsCorrect(sc->layers[self->layer].splines,&changed);
     if ( changed )
-	SCCharChangedUpdate(self->sc,self->layer);
+	SCCharChangedUpdate(sc,self->layer);
 Py_RETURN( self );
 }
 
 static PyObject *PyFFGlyph_RemoveOverlap(PyFF_Glyph *self, PyObject *UNUSED(args)) {
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
-    self->sc->layers[self->layer].splines = SplineSetRemoveOverlap(self->sc,self->sc->layers[self->layer].splines,over_remove);
-    SCCharChangedUpdate(self->sc,self->layer);
+    sc->layers[self->layer].splines = SplineSetRemoveOverlap(sc,sc->layers[self->layer].splines,over_remove);
+    SCCharChangedUpdate(sc,self->layer);
 Py_RETURN( self );
 }
 
 static PyObject *PyFFGlyph_Intersect(PyFF_Glyph *self, PyObject *UNUSED(args)) {
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
-    self->sc->layers[self->layer].splines = SplineSetRemoveOverlap(self->sc,self->sc->layers[self->layer].splines,over_intersect);
-    SCCharChangedUpdate(self->sc,self->layer);
+    sc->layers[self->layer].splines = SplineSetRemoveOverlap(sc,sc->layers[self->layer].splines,over_intersect);
+    SCCharChangedUpdate(sc,self->layer);
 Py_RETURN( self );
 }
 
 static PyObject *PyFFGlyph_Exclude(PyFF_Glyph *self, PyObject *args) {
     SplineSet *ss, *excludes = NULL, *tail;
     PyObject *obj;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     if ( !PyArg_ParseTuple(args,"O", &obj ) )
 return( NULL );
@@ -9621,23 +9790,26 @@ return( NULL );
     if ( PyErr_Occurred() != NULL ) {
 	return( NULL );
     }
-    ss = self->sc->layers[self->layer].splines;
+    ss = sc->layers[self->layer].splines;
     for ( tail=ss; tail->next!=NULL; tail=tail->next );
     tail->next = excludes;
     while ( excludes!=NULL ) {
 	excludes->first->selected = true;
 	excludes = excludes->next;
     }
-    self->sc->layers[self->layer].splines = SplineSetRemoveOverlap(NULL,ss,over_exclude);
+    sc->layers[self->layer].splines = SplineSetRemoveOverlap(NULL,ss,over_exclude);
     /* Frees the old splinesets */
-    SCCharChangedUpdate(self->sc,self->layer);
+    SCCharChangedUpdate(sc,self->layer);
 Py_RETURN( self );
 }
 
 static PyObject *PyFFGlyph_preserveLayer(PyFF_Glyph *self, PyObject *args) {
     int layer = self->layer, dohints=false;
     PyObject *layerObj=NULL;
-    SplineChar *sc = self->sc;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     if ( !PyArg_ParseTuple(args,"|Op", &layerObj, &dohints ) )
         return( NULL );
@@ -9657,7 +9829,10 @@ static PyObject *PyFFGlyph_preserveLayer(PyFF_Glyph *self, PyObject *args) {
 static PyObject *PyFFGlyph_doUndo(PyFF_Glyph *self, PyObject *args) {
     int layer = self->layer, redo=false;
     PyObject *layerObj=NULL;
-    SplineChar *sc = self->sc;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     if ( !PyArg_ParseTuple(args,"|Op", &layerObj, &redo ) )
         return( NULL );
@@ -9702,16 +9877,20 @@ static int LayerArgToLayer(SplineFont *sf, PyObject* layerp) {
 static PyObject *PyFFGlyph_boundingBox(PyFF_Glyph *self, PyObject *UNUSED(args), PyObject *keywds) {
     DBounds bb;
     int layeri;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     PyObject* layerp = NULL;
     if (keywds != NULL) layerp = PyDict_GetItemString(keywds, "layer");
 
     if (layerp != NULL) {
-        layeri = LayerArgToLayer(self->sc->parent, layerp);
+        layeri = LayerArgToLayer(sc->parent, layerp);
         if (layeri == ly_none) return NULL;
-        SplineCharLayerFindBounds(self->sc, layeri, &bb);
+        SplineCharLayerFindBounds(sc, layeri, &bb);
     } else {
-        SplineCharFindBounds(self->sc, &bb);
+        SplineCharFindBounds(sc, &bb);
     }
 
     return( Py_BuildValue("(dddd)", bb.minx,bb.miny, bb.maxx,bb.maxy ));
@@ -9723,6 +9902,10 @@ static PyObject* PyFF_Glyph_BoundsAt(PyCFunction bounds_func, PyFF_Glyph *self, 
     double tnmin = 0, tnmax = 0;
     bool set = false;
     int layeri;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     PyFF_Contour* tempc = NULL;
 
@@ -9730,14 +9913,14 @@ static PyObject* PyFF_Glyph_BoundsAt(PyCFunction bounds_func, PyFF_Glyph *self, 
     if (keywds != NULL) layerp = PyDict_GetItemString(keywds, "layer");
 
     if (layerp != NULL) {
-        layeri = LayerArgToLayer(self->sc->parent, layerp);
+        layeri = LayerArgToLayer(sc->parent, layerp);
         if (layeri == ly_none) return NULL;
     }
 
-    int layer_cnt = self->sc->layer_cnt;
+    int layer_cnt = sc->layer_cnt;
     for (int i = 0; i < layer_cnt; i++) {
         if (layerp != NULL && layeri != i) continue;
-        SplineSet* ss = LayerAllSplines(&self->sc->layers[i]);
+        SplineSet* ss = LayerAllSplines(&sc->layers[i]);
         while (ss != NULL) {
             tempc = ContourFromSS(ss, NULL);
             temp = bounds_func((PyObject*)tempc, args);
@@ -9758,7 +9941,7 @@ static PyObject* PyFF_Glyph_BoundsAt(PyCFunction bounds_func, PyFF_Glyph *self, 
             if (tnmax > nmax || !set) nmax = tnmax;
             set = true;
         }
-        LayerUnAllSplines(&self->sc->layers[i]);
+        LayerUnAllSplines(&sc->layers[i]);
     }
 
     if (set) {
@@ -9780,36 +9963,44 @@ static PyObject *PyFFGlyph_yBoundsAtX(PyFF_Glyph *self, PyObject *args, PyObject
 static PyObject *PyFFGlyph_clear(PyFF_Glyph *self, PyObject *args) {
 	int arglen = PySequence_Size(args);
     int layeri = self->layer;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
     if (arglen <= 0) {
-        SCClearContents(self->sc,layeri);
+        SCClearContents(sc,layeri);
     } else if (arglen > 1) {
         PyErr_Format(PyExc_TypeError, "Too many arguments, only a layer index is allowed");
         return NULL;
     } else { /* arglen == 1 */
         PyObject *layerp = PySequence_GetItem(args,0);
-        int layeri = LayerArgToLayer(self->sc->parent, layerp);
+        int layeri = LayerArgToLayer(sc->parent, layerp);
         if (layeri == ly_none) return NULL;
 
         // ly_grid not clearable with this function. In any event, it makes no
         // sense to put it here; clearing ly_grid should quite rightly go at
         // the font level since ly_grid is per-font not per-glyph so this is
         // not a bug
-        if ( layeri<ly_back || layeri>=self->sc->layer_cnt ) {
+        if ( layeri<ly_back || layeri>=sc->layer_cnt ) {
             PyErr_Format(PyExc_ValueError, "Layer is out of range");
             return NULL;
         }
-        SCClearLayer(self->sc, layeri);
+        SCClearLayer(sc, layeri);
     }
 
-    SCCharChangedUpdate(self->sc,layeri);
+    SCCharChangedUpdate(sc,layeri);
     Py_RETURN(self);
 }
 
 static PyObject *PyFFGlyph_isWorthOutputting(PyFF_Glyph *self, PyObject *UNUSED(args)) {
     PyObject *ret;
+    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+    if (sc == NULL) {
+	return NULL;
+    }
 
-    ret = SCWorthOutputting(self->sc) ? Py_True : Py_False;
+    ret = SCWorthOutputting(sc) ? Py_True : Py_False;
     Py_INCREF( ret );
 return( ret );
 }
@@ -9817,6 +10008,10 @@ return( ret );
 static PyObject *PyFFGlyph_setLayer(PyFF_Glyph *self, PyObject *args) {
 	PyObject *layer, *index, *flagsobj = NULL;
 	int layeri, flags = 0;
+	SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) self);
+	if (sc == NULL) {
+		return NULL;
+	}
 
 	if (!PyArg_ParseTuple(args, "OO|O", &layer, &index, &flagsobj)) {
 		PyErr_Format(PyExc_ValueError, "Must be called with a layer, a layer identifier, and an optional flags tuple" );
@@ -9829,7 +10024,7 @@ static PyObject *PyFFGlyph_setLayer(PyFF_Glyph *self, PyObject *args) {
 		if (name == NULL) {
 			return NULL;
 		}
-		layeri = SFFindLayerIndexByName(self->sc->parent,name);
+		layeri = SFFindLayerIndexByName(sc->parent,name);
 		if ( layeri<0 ) {
 			PyErr_Format(PyExc_ValueError, "Layer '%s' not found", name);
 			return NULL;
@@ -9847,7 +10042,7 @@ static PyObject *PyFFGlyph_setLayer(PyFF_Glyph *self, PyObject *args) {
 	if ( flags < 0 )
 		return NULL;
 
-	if ( PyFF_Glyph_CSetLayer(self, self->sc, layer,layeri,flags) == 0 )
+	if ( PyFF_Glyph_CSetLayer(self, sc, layer,layeri,flags) == 0 )
 		Py_RETURN (self);
 
 	return NULL;
@@ -10531,7 +10726,10 @@ static int SelIndex(PyObject *arg, FontViewBase *fv, int ints_as_unicode) {
 	if ( ints_as_unicode )
 	    enc = SFFindSlot(fv->sf, fv->map, enc, NULL );
     } else if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(arg)) ) {
-	SplineChar *sc = ((PyFF_Glyph *) arg)->sc;
+	SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) arg);
+	if (sc == NULL) {
+		return -1;
+	}
 	if ( sc->parent == fv->sf )
 	    enc = fv->map->backmap[sc->orig_pos];
 	else
@@ -17388,7 +17586,7 @@ static PyObject *PyFFFont_CreateInterpolatedGlyph(PyFF_Font *self, PyObject *arg
     SplineFont *sf;
     PyObject *from, *to;
     double by;
-    SplineChar *sc;
+    SplineChar *sc, *sc_from, *sc_to;
     int baseenc;
 
     if ( CheckIfFontClosed(self) )
@@ -17402,12 +17600,18 @@ return( NULL );
 	PyErr_Format(PyExc_TypeError, "Expected glyph objects");
 return( NULL );
     }
-    if ( SFGetChar(fv->sf,((PyFF_Glyph *) from)->sc->unicodeenc,((PyFF_Glyph *) from)->sc->name)!=NULL ) {
+    sc_from = PyFF_Glyph_GetSC((PyFF_Glyph *) from);
+    sc_to = PyFF_Glyph_GetSC((PyFF_Glyph *) to);
+    if (sc_from == NULL || sc_to == NULL) {
+	return NULL;
+    }
+
+    if ( SFGetChar(fv->sf,sc_from->unicodeenc,sc_from->name)!=NULL ) {
 	PyErr_Format(PyExc_EnvironmentError, "This glyph already exists in the font");
 return( NULL );
     }
 
-    sc = SplineCharInterpolate(((PyFF_Glyph *) from)->sc,((PyFF_Glyph *) to)->sc,by, sf);
+    sc = SplineCharInterpolate(sc_from,sc_to,by, sf);
     if ( sc==NULL ) {
 	PyErr_Format(PyExc_EnvironmentError, "Interpolation failed");
 return( NULL );
@@ -17452,7 +17656,10 @@ static PyObject *PyFFFont_removeGlyph(PyFF_Font *self, PyObject *args) {
 return (NULL);
     fv = self->fv;
     if ( PyTuple_Size(args)==1 && PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(PyTuple_GetItem(args,0))) ) {
-	sc = ((PyFF_Glyph *) PyTuple_GetItem(args,0))->sc;
+	sc = PyFF_Glyph_GetSC((PyFF_Glyph *) PyTuple_GetItem(args,0));
+	if (sc == NULL) {
+		return NULL;
+	}
 	if ( sc->parent!=fv->sf ) {
 	    PyErr_Format(PyExc_ValueError, "This glyph is not in the font");
 return( NULL );
@@ -20055,7 +20262,7 @@ void PyFF_FreeSF(SplineFont *sf) {
 void PyFF_FreeSC(SplineChar *sc) {
     if ( sc->python_sc_object!=NULL ) {
 	PyFF_Glyph *glyph = (PyFF_Glyph *) (sc->python_sc_object);
-	glyph->sc = NULL;
+	glyph->sc_opaque = NULL;
 	sc->python_sc_object = NULL;
 	Py_DECREF(glyph);
     }
