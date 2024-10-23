@@ -83,6 +83,7 @@ extern void PyFF_Glyph_Set_Layer(SplineChar *sc,int layer);
 #define PYGETSETDEF_EMPTY { NULL, NULL, NULL, NULL, NULL }
 
 typedef struct ff_glyph PyFF_Glyph;
+typedef struct ff_font PyFF_Font;
 
 typedef struct ff_point {
     PyObject_HEAD
@@ -163,7 +164,7 @@ typedef struct {
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
-    SplineFont *sf;
+    PyFF_Font *font;
 } PyFF_LayerInfoArray;
 
 typedef struct {
@@ -192,7 +193,7 @@ typedef struct fontmathobject {
     SplineFont *sf;
 } PyFF_Math;
 
-typedef struct {
+typedef struct ff_font {
     PyObject_HEAD
     /* Type-specific fields go here. */
     FontViewBase *fv;

@@ -10976,14 +10976,11 @@ static void layerinfoiter_dealloc(layerinfoiterobject *di) {
 
 static PyObject *layerinfoiter_iternextkey(layerinfoiterobject *di) {
     PyFF_LayerInfoArray *d = di->layers;
-    SplineFont *sf;
+    if (d == NULL || CheckIfFontClosed(d->font))
+	return NULL;
 
-    if (d == NULL )
-return NULL;
-    sf = d->sf;
-
-    if ( di->pos<sf->layer_cnt )
-return( Py_BuildValue("s",sf->layers[di->pos++].name) );
+    if ( di->pos<d->font->fv->sf->layer_cnt )
+return( Py_BuildValue("s",d->font->fv->sf->layers[di->pos++].name) );
 
 return NULL;
 }
@@ -11186,16 +11183,20 @@ static PyTypeObject PyFF_LayerInfoType = {
 /* ************************************************************************** */
 
 static void PyFF_LayerInfoArray_dealloc(PyFF_LayerInfoArray *self) {
-    self->sf = NULL;
+    PyFF_Font *font = self->font;
+    self->font = NULL;
+    Py_DECREF(font);
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
 static PyObject *PyFFLayerInfoArray_Str(PyFF_LayerInfoArray *self) {
-return( PyUnicode_FromFormat( "<Layer Info Array for %s>", self->sf->fontname ));
+    if ( CheckIfFontClosed(self->font) )
+	return( NULL );
+    return( PyUnicode_FromFormat( "<Layer Info Array for %s>", self->font->fv->sf->fontname ));
 }
 
 static PyObject *PyFFLayerInfoArray_get_font(PyFF_LayerInfoArray *self, void *UNUSED(closure)) {
-    PyFF_Font *font = PyFF_FontForSF( self->sf );
+    PyFF_Font *font = self->font;
     if ( font==NULL )
 Py_RETURN_NONE;
     Py_INCREF(font);
@@ -11206,25 +11207,25 @@ Py_RETURN_NONE;
 /* ****************************** Layers Array ****************************** */
 /* ************************************************************************** */
 
-static Py_ssize_t PyFF_LayerInfoArrayLength( PyObject *self ) {
-    SplineFont *sf = ((PyFF_LayerInfoArray *) self)->sf;
-    if ( sf==NULL )
-return( 0 );
+static Py_ssize_t PyFF_LayerInfoArrayLength( PyFF_LayerInfoArray *self ) {
+    if ( CheckIfFontClosed(self->font) )
+	return( 0 );
     else
-return( sf->layer_cnt );
+	return( self->font->fv->sf->layer_cnt );
 }
 
-static PyObject *PyFF_LayerInfoArrayIndex( PyObject *self, PyObject *index ) {
-    SplineFont *sf = ((PyFF_LayerInfoArray *) self)->sf;
+static PyObject *PyFF_LayerInfoArrayIndex( PyFF_LayerInfoArray *self, PyObject *index ) {
     int layer;
     PyFF_LayerInfo *li;
+    if ( CheckIfFontClosed(self->font) )
+	return NULL;
 
     if ( PyUnicode_Check(index)) {
 	const char *name = PyUnicode_AsUTF8(index);
 	if (name == NULL) {
 	    return NULL;
 	}
-	layer = SFFindLayerIndexByName(sf,name);
+	layer = SFFindLayerIndexByName(self->font->fv->sf,name);
 	if ( layer<0 )
 return( NULL );
     } else if ( PyLong_Check(index)) {
@@ -11233,20 +11234,23 @@ return( NULL );
 	PyErr_Format(PyExc_TypeError, "Index must be a layer name or index" );
 return( NULL );
     }
-    if ( layer<0 || layer>=sf->layer_cnt ) {
+    if ( layer<0 || layer>=self->font->fv->sf->layer_cnt ) {
 	PyErr_Format(PyExc_ValueError, "Layer is out of range" );
 return( NULL );
     }
     li = PyObject_New(PyFF_LayerInfo, &PyFF_LayerInfoType);
-    li->sf = sf;
+    li->sf = self->font->fv->sf;
     li->layer = layer;
 return( (PyObject *) li );
 }
 
-static int PyFF_LayerInfoArrayIndexAssign( PyObject *self, PyObject *index, PyObject *value ) {
-    SplineFont *sf = ((PyFF_LayerInfoArray *) self)->sf;
+static int PyFF_LayerInfoArrayIndexAssign( PyFF_LayerInfoArray *self, PyObject *index, PyObject *value ) {
+    SplineFont *sf;
     int layer, order2;
     char *name;
+    if ( CheckIfFontClosed(self->font) )
+	return -1;
+    sf = self->font->fv->sf;
 
     if ( PyUnicode_Check(index)) {
 	const char *name = PyUnicode_AsUTF8(index);
@@ -11291,15 +11295,18 @@ return( 0 );
 }
 
 static PyMappingMethods PyFF_LayerInfoArrayMapping = {
-    PyFF_LayerInfoArrayLength,		/* length */
-    PyFF_LayerInfoArrayIndex,		/* subscript */
-    PyFF_LayerInfoArrayIndexAssign	/* subscript assign */
+    (lenfunc) PyFF_LayerInfoArrayLength,		/* length */
+    (binaryfunc) PyFF_LayerInfoArrayIndex,		/* subscript */
+    (objobjargproc) PyFF_LayerInfoArrayIndexAssign	/* subscript assign */
 };
 
 static PyObject *PyFF_LayerInfoArray_add(PyObject *self, PyObject *args) {
-    SplineFont *sf = ((PyFF_LayerInfoArray *) self)->sf;
+    SplineFont *sf;
     int order2, background=0;
     char *name;
+    if ( CheckIfFontClosed(((PyFF_LayerInfoArray *) self)->font) )
+	return NULL;
+    sf = ((PyFF_LayerInfoArray *) self)->font->fv->sf;
 
     if ( !PyArg_ParseTuple(args,"si|i", &name, &order2, &background ) )
 return( NULL );
@@ -12040,9 +12047,6 @@ return( NULL );
 	self->private->sf = NULL;
     }
 
-    if ( self->layers!=NULL && self->layers->sf == fv->sf )
-	self->layers->sf = NULL;
-
     if ( self->selection!=NULL && self->selection->fv == fv )
 	self->selection->fv = NULL;
 
@@ -12487,7 +12491,7 @@ Py_RETURN( self->layers );
     layers = (PyFF_LayerInfoArray *) PyObject_New(PyFF_LayerInfoArray, &PyFF_LayerInfoArrayType);
     if (layers == NULL)
 return NULL;
-    layers->sf = self->fv->sf;
+    layers->font = self;
     self->layers = layers;
 Py_RETURN( self->layers );
 }

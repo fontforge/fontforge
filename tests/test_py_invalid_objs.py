@@ -95,3 +95,19 @@ except RuntimeError:
     exception_occured = True
 
 assert(exception_occured)
+
+#### Invalid Layer Info Array ####
+font6 = fontforge.open(sys.argv[1])
+layers = font6.layers
+font6.close()
+
+# Try to access object getter after the font was deleted
+exception_occured = False
+try:
+    layers.add("new-layer", False);
+    # The execution shall not reach this line
+    assert(False)
+except RuntimeError:
+    exception_occured = True
+
+assert(exception_occured)
