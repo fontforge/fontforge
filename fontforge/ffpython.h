@@ -176,7 +176,7 @@ typedef struct {
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
-    FontViewBase *fv;
+    PyFF_Font *font;
     int by_glyphs;
 } PyFF_Selection;
 

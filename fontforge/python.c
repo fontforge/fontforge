@@ -10616,6 +10616,9 @@ static PyTypeObject PyFF_CvtType = {
 static PyTypeObject PyFF_SelectionType;
 
 static void PyFFSelection_dealloc(PyFF_Selection *self) {
+    PyFF_Font *font = self->font;
+    self->font = NULL;
+    Py_DECREF(font);
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
 
@@ -10629,30 +10632,32 @@ return(NULL);
 Py_RETURN( owner->selection );
 
     self = PyObject_New(PyFF_Selection, &PyFF_SelectionType);
-    self->fv = owner->fv;
+    self->font = owner;
     owner->selection = self;
     self->by_glyphs = 0;
 Py_RETURN( self );
 }
 
 static PyObject *PyFFSelection_Str(PyFF_Selection *self) {
-return( PyUnicode_FromFormat( "<Selection for %s>", self->fv->sf->fontname ));
+    if ( CheckIfFontClosed(self->font) )
+	return (NULL);
+    return( PyUnicode_FromFormat( "<Selection for %s>", self->font->fv->sf->fontname ));
 }
 
 static PyObject *PyFFSelection_get_font(PyFF_Selection *self, void *UNUSED(closure)) {
-    PyObject* font = PyFF_FontForFV_I( self->fv );
-    if ( font==NULL )
-Py_RETURN_NONE;
-    return font;
+    if ( CheckIfFontClosed(self->font) )
+	Py_RETURN_NONE;
+    Py_RETURN(self->font);
 }
 
 static PyObject *PyFFSelection_ByGlyphs(PyFF_Selection *real_selection, void *UNUSED(closure)) {
     PyFF_Selection *self;
 
     self = PyObject_New(PyFF_Selection, &PyFF_SelectionType);
-    self->fv = real_selection->fv;
+    self->font = real_selection->font;
+    Py_INCREF(self->font);
     self->by_glyphs=1;
-Py_RETURN( self );
+    Py_RETURN( self );
 }
 
 /* ************************************************************************** */
@@ -10673,8 +10678,11 @@ struct flaglist select_flags[] = {
 };
 
 static PyObject *PyFFSelection_All(PyObject *self, PyObject *UNUSED(args)) {
-    FontViewBase *fv = ((PyFF_Selection *) self)->fv;
+    FontViewBase *fv;
     int i;
+    if ( CheckIfFontClosed(((PyFF_Selection *) self)->font) )
+	return NULL;
+    fv = ((PyFF_Selection *) self)->font->fv;
 
     for ( i=0; i<fv->map->enccount; ++i )
 	fv->selected[i] = true;
@@ -10682,8 +10690,11 @@ Py_RETURN(self);
 }
 
 static PyObject *PyFFSelection_None(PyObject *self, PyObject *UNUSED(args)) {
-    FontViewBase *fv = ((PyFF_Selection *) self)->fv;
+    FontViewBase *fv;
     int i;
+    if ( CheckIfFontClosed(((PyFF_Selection *) self)->font) )
+	return NULL;
+    fv = ((PyFF_Selection *) self)->font->fv;
 
     for ( i=0; i<fv->map->enccount; ++i )
 	fv->selected[i] = false;
@@ -10691,8 +10702,11 @@ Py_RETURN(self);
 }
 
 static PyObject *PyFFSelection_Changed(PyObject *self, PyObject *UNUSED(args)) {
-    FontViewBase *fv = ((PyFF_Selection *) self)->fv;
+    FontViewBase *fv;
     int i, gid;
+    if ( CheckIfFontClosed(((PyFF_Selection *) self)->font) )
+	return NULL;
+    fv = ((PyFF_Selection *) self)->font->fv;
 
     for ( i=0; i<fv->map->enccount; ++i ) {
 	if ( (gid=fv->map->map[i])!=-1 && fv->sf->glyphs[gid]!=NULL )
@@ -10704,8 +10718,11 @@ Py_RETURN(self);
 }
 
 static PyObject *PyFFSelection_Invert(PyObject *self, PyObject *UNUSED(args)) {
-    FontViewBase *fv = ((PyFF_Selection *) self)->fv;
+    FontViewBase *fv;
     int i;
+    if ( CheckIfFontClosed(((PyFF_Selection *) self)->font) )
+	return NULL;
+    fv = ((PyFF_Selection *) self)->font->fv;
 
     for ( i=0; i<fv->map->enccount; ++i )
 	fv->selected[i] = !fv->selected[i];
@@ -10750,11 +10767,14 @@ static void FVBDeselectAll(FontViewBase *fv) {
 }
 
 static PyObject *PyFFSelection_select(PyObject *self, PyObject *args) {
-    FontViewBase *fv = ((PyFF_Selection *) self)->fv;
     int flags = sel_encoding|sel_singletons;
     int i, j, cnt = PyTuple_Size(args);
     int range_started = false, range_first = -1;
     int enc;
+    FontViewBase *fv;
+    if ( CheckIfFontClosed(((PyFF_Selection *) self)->font) )
+	return NULL;
+    fv = ((PyFF_Selection *) self)->font->fv;
 
     for ( i=0; i<cnt; ++i ) {
 	PyObject *arg = PyTuple_GetItem(args,i);
@@ -10806,7 +10826,7 @@ static PyObject *fontiter_New(PyFF_Font *font, int bysel, struct searchdata *sv)
 
 static PyObject *PySelection_iter(PyObject *object) {
     PyFF_Selection* self = (PyFF_Selection*)object;
-    PyFF_Font* font = (PyFF_Font*)PyFF_FontForFV(self->fv);
+    PyFF_Font* font = self->font;
 
     if ( CheckIfFontClosed(font) )
 return (NULL);
@@ -10838,28 +10858,34 @@ static PyGetSetDef PyFFSelection_getset[] = {
 /* Selection mapping */
 /* ************************************************************************** */
 
-static Py_ssize_t PyFFSelection_Length( PyObject *self ) {
-return( ((PyFF_Selection *) self)->fv->map->enccount );
+static Py_ssize_t PyFFSelection_Length( PyFF_Selection *self ) {
+    if ( CheckIfFontClosed(self->font) )
+	return (0);
+    return( self->font->fv->map->enccount );
 }
 
-static PyObject *PyFFSelection_Index( PyObject *self, PyObject *index ) {
-    PyFF_Selection *c = (PyFF_Selection *) self;
+static PyObject *PyFFSelection_Index( PyFF_Selection *self, PyObject *index ) {
     PyObject *ret;
     int pos;
 
-    pos = SelIndex(index,c->fv,false);
+    if ( CheckIfFontClosed(self->font) )
+	return NULL;
+
+    pos = SelIndex(index,self->font->fv,false);
     if ( pos==-1 )
 return( NULL );
 
-    ret = c->fv->selected[pos] ? Py_True : Py_False;
+    ret = self->font->fv->selected[pos] ? Py_True : Py_False;
     Py_INCREF( ret );
 return( ret );
 }
 
-static int PyFFSelection_IndexAssign( PyObject *self, PyObject *index, PyObject *value ) {
-    PyFF_Selection *c = (PyFF_Selection *) self;
+static int PyFFSelection_IndexAssign( PyFF_Selection *self, PyObject *index, PyObject *value ) {
     int val;
     int pos, cnt;
+
+    if ( CheckIfFontClosed(self->font) )
+	return -1;
 
     if ( PySequence_Check(index)) {
 	cnt = PySequence_Size(index);
@@ -10870,7 +10896,7 @@ return( -1 );
 return( 0 );
     }
 
-    pos = SelIndex(index,c->fv,false);
+    pos = SelIndex(index,self->font->fv,false);
     if ( pos==-1 )
 return( -1 );
 
@@ -10883,14 +10909,14 @@ return( -1 );
 	if ( PyErr_Occurred())
 return( -1 );
     }
-    c->fv->selected[pos] = val;
+    self->font->fv->selected[pos] = val;
 return( 0 );
 }
 
 static PyMappingMethods PyFFSelection_Mapping = {
-    PyFFSelection_Length,		/* length */
-    PyFFSelection_Index,		/* subscript */
-    PyFFSelection_IndexAssign		/* subscript assign */
+    (lenfunc) PyFFSelection_Length,		/* length */
+    (binaryfunc) PyFFSelection_Index,		/* subscript */
+    (objobjargproc) PyFFSelection_IndexAssign	/* subscript assign */
 };
 
 static PyTypeObject PyFF_SelectionType = {
@@ -12073,9 +12099,6 @@ return( NULL );
     if ( self->math!=NULL && self->math->sf == fv->sf )
 	self->math->sf = NULL;
 
-    if ( self->selection!=NULL && self->selection->fv == fv )
-	self->selection->fv = NULL;
-
     if ( self->cvt!=NULL && self->cvt->sf == fv->sf ) {
 	self->cvt->sf = NULL;
 	self->cvt->cvt = NULL;
@@ -12575,7 +12598,7 @@ return(-1);
 
     fv = self->fv;
     if ( PyType_IsSubtype(&PyFF_SelectionType, Py_TYPE(value)) ) {
-	len2 = PyFFSelection_Length(value);
+	len2 = PyFFSelection_Length(sel);
 	is_sel = true;
     } else if ( PySequence_Check(value)) {
 	is_sel = false;
@@ -12590,8 +12613,11 @@ return( -1 );
 return( -1 );
     }
     if ( is_sel ) {
-	if ( len2!=0 )
-	    memcpy(fv->selected,sel->fv->selected,len2 );
+	if ( len2!=0 ) {
+	    if ( CheckIfFontClosed(sel->font) )
+		return -1;
+	    memcpy(fv->selected,sel->font->fv->selected,len2 );
+	}
     } else {
 	for( i=0; i<len2; ++i ) {
 	    int val;

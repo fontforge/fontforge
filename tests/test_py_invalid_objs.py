@@ -143,3 +143,19 @@ except RuntimeError:
     exception_occured = True
 
 assert(exception_occured)
+
+#### Invalid Selection ####
+font9 = fontforge.open(sys.argv[1])
+sel_ref = font9.selection
+font9.close()
+
+# Try to access object getter after the font was deleted
+exception_occured = False
+try:
+    sel_ref.select("A", "C", "Z")
+    # The execution shall not reach this line
+    assert(False)
+except RuntimeError:
+    exception_occured = True
+
+assert(exception_occured)
