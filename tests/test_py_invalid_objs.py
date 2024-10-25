@@ -159,3 +159,19 @@ except RuntimeError:
     exception_occured = True
 
 assert(exception_occured)
+
+#### Invalid Cvt table ####
+font10 = fontforge.open(sys.argv[1])
+cvt = font10.cvt
+font10.close()
+
+# Try to access object after the font was deleted
+exception_occured = False
+try:
+    cvt += [10, 12]
+    # The execution shall not reach this line
+    assert(False)
+except RuntimeError:
+    exception_occured = True
+
+assert(exception_occured)

@@ -183,7 +183,7 @@ typedef struct {
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
-    SplineFont *sf;
+    PyFF_Font *font;
     struct ttf_table *cvt;
 } PyFF_Cvt;
 

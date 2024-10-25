@@ -10284,6 +10284,9 @@ static PyTypeObject PyFF_CvtIterType = {
 static PyTypeObject PyFF_CvtType;
 
 static void PyFFCvt_dealloc(PyFF_Cvt *self) {
+    PyFF_Font *font = self->font;
+    self->font = NULL;
+    Py_DECREF(font);
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
@@ -10291,24 +10294,26 @@ static PyObject *PyFFCvt_new(PyFF_Font *owner) {
     PyFF_Cvt *self;
 
     if ( CheckIfFontClosed(owner) )
-return( NULL );
+	return( NULL );
 
     if ( owner->cvt!=NULL )
 Py_RETURN( owner->cvt );
     self = PyObject_New(PyFF_Cvt, &PyFF_CvtType);
-    ((PyFF_Cvt *) self)->sf = owner->fv->sf;
-    ((PyFF_Cvt *) self)->cvt = SFFindTable(self->sf,CHR('c','v','t',' '));
+    ((PyFF_Cvt *) self)->font = owner;
+    ((PyFF_Cvt *) self)->cvt = SFFindTable(self->font->fv->sf,CHR('c','v','t',' '));
     owner->cvt = self;
 Py_RETURN( self );
 }
 
 static PyObject *PyFFCvt_Str(PyFF_Cvt *self) {
-return( PyUnicode_FromFormat( "<cvt table for font %s>", self->sf->fontname ));
+    if ( CheckIfFontClosed(self->font) )
+	return( NULL );
+    return( PyUnicode_FromFormat( "<cvt table for font %s>", self->font->fv->sf->fontname ));
 }
 
 
 static PyObject *PyFFCvt_get_font(PyFF_Cvt *self, void *UNUSED(closure)) {
-    PyFF_Font *font = PyFF_FontForSF( self->sf );
+    PyFF_Font *font = self->font;
     if ( font==NULL )
 Py_RETURN_NONE;
     Py_INCREF(font);
@@ -10377,6 +10382,8 @@ static PyObject *PyFFCvt_InPlaceConcat( PyObject *_self, PyObject *_c2 ) {
     int is_cvt2;
     Py_ssize_t len1, len2;
     struct ttf_table *cvt;
+    if ( CheckIfFontClosed(self->font) )
+	return( NULL );
 
     len1 = PyFFCvt_Length(_self);
     if ( PyType_IsSubtype(&PyFF_CvtType, Py_TYPE(c2)) ) {
@@ -10391,12 +10398,14 @@ return( NULL );
     }
 
     if ( self->cvt==NULL )
-	self->cvt = BuildCvt(self->sf,(len1+len2)*2);
+	self->cvt = BuildCvt(self->font->fv->sf,(len1+len2)*2);
     cvt = self->cvt;
     if ( (len1+len2)*2 >= cvt->maxlen )
 	cvt->data = realloc(cvt->data,cvt->maxlen = 2*(len1+len2)+10 );
     if ( is_cvt2 ) {
 	if ( len2!=0 )
+	    if ( CheckIfFontClosed(c2->font) )
+		return( NULL );
 	    memcpy(cvt->data+len1*sizeof(uint16_t),c2->cvt->data, 2*len2);
     } else {
 	for ( i=0; i<len2; ++i ) {
@@ -10412,6 +10421,8 @@ Py_RETURN( self );
 
 static PyObject *PyFFCvt_Index( PyObject *self, Py_ssize_t pos ) {
     PyFF_Cvt *c = (PyFF_Cvt *) self;
+    if ( CheckIfFontClosed(c->font) )
+	return( NULL );
 
     if ( c->cvt==NULL || pos<0 || pos>=c->cvt->len/2) {
 	PyErr_Format(PyExc_TypeError, "Index out of bounds");
@@ -10424,12 +10435,14 @@ static int PyFFCvt_IndexAssign( PyObject *self, Py_ssize_t pos, PyObject *value 
     PyFF_Cvt *c = (PyFF_Cvt *) self;
     struct ttf_table *cvt;
     int val;
+    if ( CheckIfFontClosed(c->font) )
+	return( -1 );
 
     val = PyLong_AsLong(value);
     if ( PyErr_Occurred())
 return( -1 );
     if ( c->cvt==NULL )
-	c->cvt = BuildCvt(c->sf,2);
+	c->cvt = BuildCvt(c->font->fv->sf,2);
     cvt = c->cvt;
     if ( cvt==NULL || pos<0 || pos>cvt->len/2) {
 	PyErr_Format(PyExc_TypeError, "Index out of bounds");
@@ -10448,6 +10461,8 @@ static PyObject *PyFFCvt_Slice( PyObject *self, Py_ssize_t start, Py_ssize_t end
     struct ttf_table *cvt;
     int len, i;
     PyObject *ret;
+    if ( CheckIfFontClosed(c->font) )
+	return( NULL );
 
     cvt = c->cvt;
     if ( cvt==NULL || end<start || end <0 || 2*start>=cvt->len ) {
@@ -10468,6 +10483,8 @@ static int PyFFCvt_SliceAssign( PyObject *_self, Py_ssize_t start, Py_ssize_t en
     PyFF_Cvt *c = (PyFF_Cvt *) _self;
     struct ttf_table *cvt;
     int len, i;
+    if ( CheckIfFontClosed(c->font) )
+	return( -1 );
 
     cvt = c->cvt;
     if ( cvt==NULL || end<start || end <0 || 2*start>=cvt->len ) {
@@ -10496,6 +10513,8 @@ static int PyFFCvt_Contains(PyObject *_self, PyObject *_val) {
     struct ttf_table *cvt;
     size_t i;
     int val;
+    if ( CheckIfFontClosed(c->font) )
+	return( -1 );
 
     val = PyLong_AsLong(_val);
     if ( PyErr_Occurred())
@@ -10530,6 +10549,8 @@ static PyObject *PyFFCvt_find(PyObject *self, PyObject *args) {
     struct ttf_table *cvt = c->cvt;
     int val, low=0;
     size_t high, i;
+    if ( CheckIfFontClosed(c->font) )
+	return( NULL );
 
     if ( cvt==NULL )
 return( Py_BuildValue("i", -1 ));
@@ -12099,11 +12120,6 @@ return( NULL );
     if ( self->math!=NULL && self->math->sf == fv->sf )
 	self->math->sf = NULL;
 
-    if ( self->cvt!=NULL && self->cvt->sf == fv->sf ) {
-	self->cvt->sf = NULL;
-	self->cvt->cvt = NULL;
-    }
-
     fv->python_fv_object = NULL;
     FontViewClose(fv);
     self->fv = NULL;
@@ -12669,8 +12685,11 @@ return( -1 );
     if ( len2*2>=cvt->maxlen )
 	cvt->data = realloc(cvt->data,cvt->maxlen = sizeof(uint16_t)*len2+10 );
     if ( is_cvt2 ) {
-	if ( len2!=0 )
+	if ( len2!=0 ) {
+	    if ( CheckIfFontClosed(c2->font) )
+		return( -1 );
 	    memcpy(cvt->data,c2->cvt->data,2*len2 );
+	}
     } else {
 	for( i=0; i<len2; ++i ) {
 	    memputshort(cvt->data,2*i,PyLong_AsLong(PySequence_GetItem(value,i)));
