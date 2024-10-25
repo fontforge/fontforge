@@ -175,3 +175,19 @@ except RuntimeError:
     exception_occured = True
 
 assert(exception_occured)
+
+#### Invalid Math table ####
+font11 = fontforge.open(sys.argv[1])
+math = font11.math
+font11.close()
+
+# Try to access object after the font was deleted
+exception_occured = False
+try:
+    has = math.exists()
+    # The execution shall not reach this line
+    assert(False)
+except RuntimeError:
+    exception_occured = True
+
+assert(exception_occured)

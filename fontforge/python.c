@@ -11446,11 +11446,16 @@ static PyTypeObject PyFF_LayerInfoArrayType = {
 /* ************************************************************************** */
 
 static void PyFFMath_dealloc(PyFF_Math *self) {
+    PyFF_Font *font = self->font;
+    self->font = NULL;
+    Py_DECREF(font);
     Py_TYPE(self)->tp_free((PyObject*)self);
 }
 
 static PyObject *PyFFMath_Str(PyFF_Math *self) {
-return( PyUnicode_FromFormat( "<math table for font %s>", self->sf->fontname ));
+    if ( CheckIfFontClosed(self->font) )
+	return( NULL );
+    return( PyUnicode_FromFormat( "<math table for font %s>", self->font->fv->sf->fontname ));
 }
 
 static struct MATH *SFGetMathTable(SplineFont *sf) {
@@ -11464,8 +11469,12 @@ return(sf->MATH);
 static PyObject *PyFFMath_get(PyFF_Math *self, void *closure) {
     int offset = (int) (intptr_t) closure;
     struct MATH *math;
+    SplineFont *sf;
+    if ( CheckIfFontClosed(self->font) )
+	return NULL;
+    sf = self->font->fv->sf;
 
-    math = SFGetMathTable(self->sf);
+    math = SFGetMathTable(sf);
 	/* some entries are unsigned, but I don't know which here */
 return( Py_BuildValue("i", *(int16_t *) (((char *) math) + offset) ));
 }
@@ -11474,8 +11483,12 @@ static int PyFFMath_set(PyFF_Math *self, PyObject *value, void *closure) {
     int offset = (int) (intptr_t) closure;
     struct MATH *math;
     long val;
+    SplineFont *sf;
+    if ( CheckIfFontClosed(self->font) )
+	return -1;
+    sf = self->font->fv->sf;
 
-    math = SFGetMathTable(self->sf);
+    math = SFGetMathTable(sf);
     val = PyLong_AsLong(value);
     if ( val==-1 && PyErr_Occurred())
 return( -1 );
@@ -11488,7 +11501,11 @@ return( 0 );
 }
 
 static PyObject *PyFFMath_clear(PyFF_Math *self, PyObject *UNUSED(args)) {
-    SplineFont *sf = self->sf;
+    SplineFont *sf;
+    if ( CheckIfFontClosed(self->font) )
+	return NULL;
+    sf = self->font->fv->sf;
+
     if ( sf->cidmaster!=NULL )
 	sf = sf->cidmaster;
     if ( sf->MATH!=NULL ) {
@@ -11500,10 +11517,14 @@ Py_RETURN( self );
 
 static PyObject *PyFFMath_exists(PyFF_Math *self, PyObject *UNUSED(args)) {
     PyObject *ret;
-    SplineFont *sf = self->sf;
+    SplineFont *sf;
+    if ( CheckIfFontClosed(self->font) )
+	return NULL;
+    sf = self->font->fv->sf;
+
     if ( sf->cidmaster!=NULL )
 	sf = sf->cidmaster;
-    ret = self->sf->MATH!=NULL ? Py_True : Py_False;
+    ret = sf->MATH!=NULL ? Py_True : Py_False;
     Py_INCREF( ret );
 return( ret );
 }
@@ -12117,9 +12138,6 @@ static PyObject *PyFFFont_close(PyFF_Font *self, PyObject *UNUSED(args)) {
 return( NULL );
     fv = self->fv;
 
-    if ( self->math!=NULL && self->math->sf == fv->sf )
-	self->math->sf = NULL;
-
     fv->python_fv_object = NULL;
     FontViewClose(fv);
     self->fv = NULL;
@@ -12522,7 +12540,8 @@ Py_RETURN( self->math );
     math = (PyFF_Math *) PyObject_New(PyFF_Math, &PyFF_MathType);
     if (math == NULL)
 return NULL;
-    math->sf = self->fv->sf;
+    math->font = self;
+    Py_INCREF(self);
     self->math = math;
 Py_RETURN( self->math );
 }

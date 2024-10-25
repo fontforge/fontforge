@@ -189,7 +189,7 @@ typedef struct {
 
 typedef struct fontmathobject {
     PyObject_HEAD
-    SplineFont *sf;
+    PyFF_Font *font;
 } PyFF_Math;
 
 typedef struct ff_font {
