@@ -101,7 +101,7 @@ font6 = fontforge.open(sys.argv[1])
 layers = font6.layers
 font6.close()
 
-# Try to access object getter after the font was deleted
+# Try to access object after the font was deleted
 exception_occured = False
 try:
     layers.add("new-layer", False)
@@ -117,7 +117,7 @@ font7 = fontforge.open(sys.argv[1])
 fore_info = font7.layers["Fore"]
 font7.close()
 
-# Try to access object getter after the font was deleted
+# Try to access object after the font was deleted
 exception_occured = False
 try:
     is_q = fore_info.is_quadratic
@@ -133,7 +133,7 @@ font8 = fontforge.open(sys.argv[1])
 private = font8.private
 font8.close()
 
-# Try to access object getter after the font was deleted
+# Try to access object after the font was deleted
 exception_occured = False
 try:
     private["BlueValues"] = None
@@ -149,7 +149,7 @@ font9 = fontforge.open(sys.argv[1])
 sel_ref = font9.selection
 font9.close()
 
-# Try to access object getter after the font was deleted
+# Try to access object after the font was deleted
 exception_occured = False
 try:
     sel_ref.select("A", "C", "Z")
