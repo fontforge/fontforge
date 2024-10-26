@@ -192,6 +192,15 @@ typedef struct fontmathobject {
     PyFF_Font *font;
 } PyFF_Math;
 
+/* This Python object is a view into SplineFont::MATH DeviceTable objects.
+   It can't exist separately and will probably crash if accessed after the
+   font has been closed or deleted. */
+typedef struct fontmathdevicetableobject {
+    PyObject_HEAD
+    SplineFont *sf;
+    int devtab_offset;
+} PyFF_MathDeviceTable;
+
 typedef struct ff_font {
     PyObject_HEAD
     /* Type-specific fields go here. */
