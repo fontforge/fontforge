@@ -191,3 +191,19 @@ except RuntimeError:
     exception_occured = True
 
 assert(exception_occured)
+
+#### Invalid Math Device table ####
+font12 = fontforge.open(sys.argv[1])
+devtable = font12.math.AxisHeightDeviceTable
+font12.close()
+
+# Try to access object after the font was deleted
+exception_occured = False
+try:
+    devtable[10] = 2
+    # The execution shall not reach this line
+    assert(False)
+except RuntimeError:
+    exception_occured = True
+
+assert(exception_occured)

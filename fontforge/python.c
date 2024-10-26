@@ -11454,17 +11454,23 @@ typedef struct {
 } devicetable_iter_object;
 static PyTypeObject PyFF_MathDevTabIterType;
 
-static struct MATH *SFGetMathTable(SplineFont *sf) {
+static struct MATH *SFGetMathTable(PyFF_Font *font) {
+    if ( CheckIfFontClosed(font) )
+	return NULL;
+    SplineFont *sf = font->fv->sf;
     if ( sf->cidmaster!=NULL )
 	sf = sf->cidmaster;
     if ( sf->MATH==NULL )
 	sf->MATH = MathTableNew(sf);
-return(sf->MATH);
+    /* Never returns NULL here */
+    return(sf->MATH);
 }
 
 static int devtab_iter_incr(devicetable_iter_object *devtab_iter) {
     int current_px = devtab_iter->px;
-    struct MATH *math = SFGetMathTable(devtab_iter->py_devtab->sf);
+    struct MATH *math = SFGetMathTable(devtab_iter->py_devtab->font);
+    if (math == NULL)
+        return -1;
     DeviceTable *devtab = *((DeviceTable **) (((char *) (math)) + devtab_iter->py_devtab->devtab_offset ));
     uint16_t low = devtab->first_pixel_size;
     uint16_t high = devtab->last_pixel_size;
@@ -11485,13 +11491,13 @@ static int devtab_iter_incr(devicetable_iter_object *devtab_iter) {
     return current_px;
 }
 
-static PyObject *devtab_iter_new(PyObject *py_devtab) {
+static PyObject *devtab_iter_new(PyFF_MathDeviceTable *py_devtab) {
     devicetable_iter_object *devtab_iter;
     devtab_iter = PyObject_New(devicetable_iter_object, &PyFF_MathDevTabIterType);
     if (devtab_iter == NULL)
         return NULL;
 
-    devtab_iter->py_devtab = ((PyFF_MathDeviceTable *) py_devtab);
+    devtab_iter->py_devtab = py_devtab;
     Py_INCREF(py_devtab);
 
     // Increment to the first valid value
@@ -11510,7 +11516,7 @@ static PyObject *devtab_iter_iternext(devicetable_iter_object *devtab_iter) {
     PyFF_MathDeviceTable *py_devtab = devtab_iter->py_devtab;
     int px;
 
-    if ( py_devtab == NULL || py_devtab->sf==NULL || devtab_iter->px == -1)
+    if ( py_devtab == NULL || devtab_iter->px == -1)
         return NULL;
 	
     /* Dictionary-like objects should return keys when iterated */
@@ -11574,16 +11580,22 @@ static PyTypeObject PyFF_MathDevTabIterType = {
 /* ************************************************************************** */
 
 static PyObject *PyFFMathDeviceTable_Str(PyFF_MathDeviceTable *self) {
-return( PyUnicode_FromFormat( "<math device table for font %s>", self->sf->fontname ));
+    if ( CheckIfFontClosed(self->font) )
+	return NULL;
+    return( PyUnicode_FromFormat( "<math device table for font %s>", self->font->fv->sf->fontname ));
 }
 
 static void PyFFMathDeviceTable_dealloc(PyFF_MathDeviceTable *self) {
-    self->sf = NULL;
+    PyFF_Font *font = self->font;
+    self->font = NULL;
+    Py_DECREF(font);
     PyObject_Del(self);
 }
 
 static Py_ssize_t PyFF_MathDeviceLength( PyFF_MathDeviceTable *self ) {
-    struct MATH *math = SFGetMathTable(self->sf);
+    struct MATH *math = SFGetMathTable(self->font);
+    if (math == NULL)
+        return 0;
     DeviceTable *devtab = *((DeviceTable **) (((char *) (math)) + self->devtab_offset ));
     uint16_t px, low, high;
     int count = 0;
@@ -11603,7 +11615,9 @@ static Py_ssize_t PyFF_MathDeviceLength( PyFF_MathDeviceTable *self ) {
 }
 
 static PyObject *PyFF_MathDeviceIndex( PyFF_MathDeviceTable *self, PyObject *index ) {
-    struct MATH *math = SFGetMathTable(self->sf);
+    struct MATH *math = SFGetMathTable(self->font);
+    if (math == NULL)
+        return NULL;
     DeviceTable *devtab = *((DeviceTable **) (((char *) (math)) + self->devtab_offset ));
     uint16_t px;
     int8_t correction;
@@ -11620,7 +11634,9 @@ static PyObject *PyFF_MathDeviceIndex( PyFF_MathDeviceTable *self, PyObject *ind
 }
 
 static int PyFF_MathDeviceIndexAssign( PyFF_MathDeviceTable *self, PyObject *index, PyObject *value ) {
-    struct MATH *math = SFGetMathTable(self->sf);
+    struct MATH *math = SFGetMathTable(self->font);
+    if (math == NULL)
+        return -1;
     DeviceTable **devtab = (DeviceTable **) (((char *) (math)) + self->devtab_offset );
     uint16_t px;
     int8_t correction;
@@ -11650,7 +11666,9 @@ static int PyFF_MathDeviceIndexAssign( PyFF_MathDeviceTable *self, PyObject *ind
 
 /* Compare with dictionary for testing purposes */
 PyObject *PyFF_MathDeviceTableCompare(PyFF_MathDeviceTable *self, PyObject *other, int op){
-    struct MATH *math = SFGetMathTable(self->sf);
+    struct MATH *math = SFGetMathTable(self->font);
+    if (math == NULL)
+        return NULL;
     DeviceTable *devtab = *((DeviceTable **) (((char *) (math)) + self->devtab_offset ));
     bool is_equal = TRUE;
     PyObject *result = NULL;
@@ -11720,7 +11738,7 @@ static PyTypeObject PyFF_MathDeviceTableType = {
     NULL,                      /* tp_clear */
     (richcmpfunc) PyFF_MathDeviceTableCompare, /* tp_richcompare */
     0,                         /* tp_weaklistoffset */
-    devtab_iter_new,           /* tp_iter */
+    (getiterfunc) devtab_iter_new, /* tp_iter */
     NULL,                      /* tp_iternext */
     NULL,                      /* tp_methods */
     NULL,                      /* tp_members */
@@ -11763,13 +11781,10 @@ static PyObject *PyFFMath_Str(PyFF_Math *self) {
 
 static PyObject *PyFFMath_get(PyFF_Math *self, void *closure) {
     int offset = (int) (intptr_t) closure;
-    struct MATH *math;
-    SplineFont *sf;
-    if ( CheckIfFontClosed(self->font) )
-	return NULL;
-    sf = self->font->fv->sf;
+    struct MATH *math = SFGetMathTable(self->font);
+    if (math == NULL)
+        return NULL;
 
-    math = SFGetMathTable(sf);
 	/* some entries are unsigned, but I don't know which here */
 return( Py_BuildValue("i", *(int16_t *) (((char *) math) + offset) ));
 }
@@ -11781,7 +11796,8 @@ static PyObject *PyFFMathDevTab_get(PyFF_Math *self, void *closure) {
 
     PyFF_MathDeviceTable *py_devtab =
         (PyFF_MathDeviceTable *) PyObject_New(PyFF_MathDeviceTable, &PyFF_MathDeviceTableType);
-    py_devtab->sf = self->font->fv->sf;
+    py_devtab->font = self->font;
+    Py_INCREF(py_devtab->font);
     py_devtab->devtab_offset = devtab_offset;
 
     return (PyObject*)py_devtab;
@@ -11789,14 +11805,11 @@ static PyObject *PyFFMathDevTab_get(PyFF_Math *self, void *closure) {
 
 static int PyFFMath_set(PyFF_Math *self, PyObject *value, void *closure) {
     int offset = (int) (intptr_t) closure;
-    struct MATH *math;
     long val;
-    SplineFont *sf;
-    if ( CheckIfFontClosed(self->font) )
-	return -1;
-    sf = self->font->fv->sf;
+    struct MATH *math = SFGetMathTable(self->font);
+    if (math == NULL)
+        return -1;
 
-    math = SFGetMathTable(sf);
     val = PyLong_AsLong(value);
     if ( val==-1 && PyErr_Occurred())
 return( -1 );
@@ -11821,7 +11834,9 @@ static int PythonObjToDeviceTable(DeviceTable **target_devtab, PyObject *value) 
 
     if ( PyType_IsSubtype(&PyFF_MathDeviceTableType, Py_TYPE(value)) ) {
         PyFF_MathDeviceTable *source_py_devtab = (PyFF_MathDeviceTable*) value;
-        struct MATH *math = SFGetMathTable(source_py_devtab->sf);
+	struct MATH *math = SFGetMathTable(source_py_devtab->font);
+	if (math == NULL)
+	    return -1;
         DeviceTable *source_devtab = *((DeviceTable **) (((char *) (math)) + source_py_devtab->devtab_offset ));
 
         /* Assigning a device table to itself is a NOOP */
@@ -11875,10 +11890,10 @@ static int PythonObjToDeviceTable(DeviceTable **target_devtab, PyObject *value) 
 
 static int PyFFMathDevTab_set(PyFF_Math *self, PyObject *value, void *closure) {
     int target_devtab_offset = (int) (intptr_t) closure; /* Might differ from offset in value */
-    if ( CheckIfFontClosed(self->font) )
-	return -1;
+    struct MATH *math = SFGetMathTable(self->font);
+    if (math == NULL)
+        return -1;
 
-    struct MATH *math = SFGetMathTable(self->font->fv->sf);
     DeviceTable **target_devtab = (DeviceTable **) (((char *) (math)) + target_devtab_offset );
     return ( PythonObjToDeviceTable(target_devtab, value) );
 }

@@ -197,7 +197,7 @@ typedef struct fontmathobject {
    font has been closed or deleted. */
 typedef struct fontmathdevicetableobject {
     PyObject_HEAD
-    SplineFont *sf;
+    PyFF_Font *font;
     int devtab_offset;
 } PyFF_MathDeviceTable;
 
