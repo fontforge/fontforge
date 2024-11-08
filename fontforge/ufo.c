@@ -3465,7 +3465,6 @@ return;
 	    // We prepare to populate it. We will match to native glyphs first (in order to validate) and then convert back to strings later.
 	    RefChar *members_native = NULL;
 	    RefChar *member_native_current = NULL;
-	    int member_count = 0;
 	    int member_list_length = 0; // This makes it easy to allocate a string at the end.
 	    // We fetch the contents now. They are in an array, but we do not verify that.
 	    keys = value;
@@ -3474,7 +3473,7 @@ return;
 		    keyname = (char *) xmlNodeListGetString(doc,subkeys->children,true); // Get the member name.
 		    SplineChar *ssc = SFGetChar(sf,-1,keyname); // Try to match an existing glyph.
 		    if ( ssc==NULL ) { LogError(_("Skipping non-existent glyph %s in group %s.\n"), keyname, current_group->classname); free(keyname); keyname = NULL; continue; }
-		    member_list_length += strlen(keyname) + 1; member_count++; // Make space for its name.
+		    member_list_length += strlen(keyname) + 1; // Make space for its name.
 		    free(keyname); // Free the name for now. (We get it directly from the SplineChar later.)
 		    RefChar *member_native_temp = calloc(1, sizeof(RefChar)); // Make an entry in the list for the native reference.
 		    member_native_temp->sc = ssc; ssc = NULL;
