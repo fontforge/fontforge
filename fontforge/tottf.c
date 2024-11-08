@@ -3734,7 +3734,7 @@ static void dumpstr(FILE *file,char *str) {
 static void dumpustr(FILE *file,char *utf8_str) {
     uint16_t *utf16_str = utf82utf16_copy(utf8_str);
     uint16_t *pt = utf16_str;
-    
+
     do {
 	putc(*pt>>8,file);
 	putc(*pt&0xff,file);
@@ -4504,7 +4504,7 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map,int issymbol
     /* But if it's symbol, only include encodings 0xff20 - 0xffff */
     int32_t *avail = malloc(65536*sizeof(int32_t));
     int i,j, first_delta=0, last_delta, slen;
-    int curseg=0, segcnt, segmax=SEGMAXINC, cnt=0, mapcnt=0;
+    int curseg=0, segcnt, segmax=SEGMAXINC, mapcnt=0;
     SplineChar *sc;
     FILE *format4 = NULL;
     /* the cmapseg elements are written as shorts. We keep them
@@ -4520,7 +4520,6 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map,int issymbol
     if ( map->enc->is_unicodebmp || map->enc->is_unicodefull ) { int gid;
 	for ( i=0; i<65536 && i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && sf->glyphs[gid]->ttf_glyph!=-1 ) {
 	    avail[i] = sf->glyphs[gid]->ttf_glyph;
-	    ++cnt;
 	}
     } else {
 	struct altuni *altuni;
@@ -4528,12 +4527,10 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map,int issymbol
 	    if ( (sc=sf->glyphs[i])!=NULL && sc->ttf_glyph!=-1 ) {
 		if ( sc->unicodeenc>=0 && sc->unicodeenc<=0xffff ) {
 		    avail[sc->unicodeenc] = sc->ttf_glyph;
-		    ++cnt;
 		}
 		for ( altuni=sc->altuni; altuni!=NULL; altuni = altuni->next ) {
 		    if ( altuni->unienc<=0xffff && altuni->vs==-1 && altuni->fid==0 ) {
 			avail[altuni->unienc] = sc->ttf_glyph;
-			++cnt;
 		    }
 		}
 	    }
@@ -4701,12 +4698,10 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map,int issymbol
 	    putshort(format4,0);
 	else
 	    putshort(format4,(cmapseg[i].mapoff+(segcnt-i))*sizeof(int16_t));
-    int chk=0;
     for ( i=0; i<segcnt; ++i ) {
 	if ( cmapseg[i].use_delta )
 	    continue;
 	for ( j=cmapseg[i].start; j<=cmapseg[i].end; ++j ) {
-	    chk++;
 	    if ( avail[j]==-1 )
 		putshort(format4,0);
 	    else
