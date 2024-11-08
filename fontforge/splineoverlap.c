@@ -2939,7 +2939,6 @@ static void TestForBadDirections(Intersection *ilist) {
     /*  this. */
     /* I think it happens if all exits from an intersection are needed */
     MList *ml, *ml2;
-    int ncnt;
     Intersection *il;
 
     /* If we have two splines one going from a->b and the other from b->a */
@@ -2963,13 +2962,6 @@ static void TestForBadDirections(Intersection *ilist) {
 		}
 	    }
 	}
-    }
-
-    while ( ilist!=NULL ) {
-	for ( ml = ilist->monos; ml!=NULL; ml=ml->next ) {
-	    if ( ml->m->isneeded ) ++ncnt;
-	}
-	ilist = ilist->next;
     }
 }
 
