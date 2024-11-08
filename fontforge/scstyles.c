@@ -5380,11 +5380,10 @@ return;
 static void DeSerifDescender(SplineChar *sc,int layer,ItalicInfo *ii) {
     /* sc should only have one descender. Find it */
     StemInfo *h;
-    int i;
     HintInstance *hi;
     StemInfo *smallest=NULL;
 
-    for ( i=0, h=sc->vstem; h!=NULL; ++i, h=h->next ) {
+    for ( h=sc->vstem; h!=NULL; h=h->next ) {
 	for ( hi=h->where; hi!=NULL; hi=hi->next )
 	    if ( hi->begin<0 || hi->end<0 ) {
 		if ( smallest==NULL || h->width<smallest->width ) {
