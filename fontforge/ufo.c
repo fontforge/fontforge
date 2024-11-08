@@ -355,7 +355,7 @@ xmlDocPtr PlistInit() {
     // Some of this code is pasted from libxml2 samples.
     xmlDocPtr doc = NULL;
     xmlNodePtr root_node = NULL;
-    
+
 
     LIBXML_TEST_VERSION;
 
@@ -575,7 +575,7 @@ xmlNodePtr PythonLibToXML(void *python_persistent, const SplineChar *sc, int has
     xmlNodePtr retval = NULL, dictnode = NULL;
     // retval = xmlNewNode(NULL, BAD_CAST "lib"); //     "<lib>"
     dictnode = xmlNewNode(NULL, BAD_CAST "dict"); //     "  <dict>"
-    if ( has_hints 
+    if ( has_hints
 #ifndef _NO_PYTHON
          || (python_persistent!=NULL && PyMapping_Check((PyObject *)python_persistent))
 #endif
@@ -834,7 +834,7 @@ xmlNodePtr _GlifToXML(const SplineChar *sc, int layer, int version) {
           xmlSetPropPrintf(unicodexml, BAD_CAST "hex", "%04X", altuni->unienc);
         }
         // "<unicode hex=\"%04X\"/>" altuni->unienc
-    
+
 	if (version >= 3) {
 		// Handle the guidelines.
 		GuidelineSet *gl;
@@ -859,7 +859,7 @@ xmlNodePtr _GlifToXML(const SplineChar *sc, int layer, int version) {
 		    if (gl->identifier != NULL)
 		        xmlSetPropPrintf(guidelinexml, BAD_CAST "identifier", "%s", gl->identifier);
 		    // "<guideline/>\n"
-		    
+
 		}
 		// Handle the anchors. Put global anchors only in the foreground layer.
 		if (layer == ly_fore)
@@ -1978,7 +1978,7 @@ int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff, in
 	numberedname = NULL;
     }
     glif_name_index_destroy(glif_name_hash); // Close the hash table.
-    
+
     struct glif_name_index * layer_name_hash = glif_name_index_new(); // Open the hash table.
     struct glif_name_index * layer_path_hash = glif_name_index_new(); // Open the hash table.
 
@@ -2228,7 +2228,7 @@ return( Py_BuildValue("d",val));
 	free(contents);
 return( ret );
       }
-      
+
       free( contents );
     }
     if (has_lists) {
@@ -2463,7 +2463,7 @@ static void *UFOLoadGuideline(SplineFont *sf, SplineChar *sc, int layer, xmlDocP
 		what_is_defined |= 0x20;
 		gl->flags |= 0x20;
 		int colori;
-		off_t colorp, colorps;
+		off_t colorp = 0, colorps;
 		double colorv;
 		for (colori = 0; colori < 4; colori++) {
 			while (colors[colorp] == ' ' || colors[colorp] == ',') colorp++;
@@ -2596,7 +2596,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
     } else if ( name==NULL )
 		name = copy("nameless");
 	// We assign a placeholder name if no name exists.
-	// We create a new SplineChar 
+	// We create a new SplineChar
 	if (existingglyph != NULL) {
 		sc = existingglyph;
 		free(name); name = NULL;
