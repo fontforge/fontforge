@@ -572,26 +572,12 @@ return;
 	}
 	/* Now output the corresponding deltas for those points */
 	for ( j=0; j<pcnt; ) {
-	    if ( deltas[i][j]>0x7f || deltas[i][j]<0x80 ) {
 		for ( rj=j+1; rj<j+0x40 && rj<pcnt; ++rj ) {
-		    if ( deltas[i][pts[rj]]>0x7f || deltas[i][pts[rj]]<0x80 ||
-			    (rj+1<j+0x40 && rj+1<pcnt && (deltas[i][pts[rj+1]]>0x7f || deltas[i][pts[rj+1]]<0x80)) )
-			/* Keep going with a big run */;
-		    else
-		break;
+		    ;
 		}
 		putc( (rj-j-1)|0x40,at->cvar );
 		for ( ; j<rj ; ++j )
 		    putshort( at->cvar, deltas[i][pts[j]] );
-	    } else {
-		for ( rj=j+1; rj<j+0x40 && rj<pcnt; ++rj ) {
-		    if ( deltas[i][pts[rj]]>0x7f || deltas[i][pts[rj]]<0x80 )
-		break;
-		}
-		putc( rj-j-1,at->cvar );
-		for ( ; j<rj ; ++j )
-		    putc( deltas[i][pts[j]], at->cvar );
-	    }
 	}
 	free(pts);
 	end = ftell(at->cvar);
@@ -622,28 +608,12 @@ static void dumpdeltas(struct alltabs *at,int16_t *deltas,int ptcnt) {
 	    j = rj;
     continue;
 	}
-	if ( deltas[j]>0x7f || deltas[j]<0x80 ) {
 	    for ( rj=j+1; rj<j+0x40 && rj<ptcnt; ++rj ) {
-		if ( deltas[rj]>0x7f || deltas[rj]<0x80 ||
-			(rj+1<j+0x40 && rj+1<ptcnt && (deltas[rj+1]>0x7f || deltas[rj+1]<0x80)) )
-		    /* Keep going with a big run */;
-		else
-	    break;
+		;
 	    }
 	    putc( (rj-j-1)|0x40,at->gvar );
 	    for ( ; j<rj ; ++j )
 		putshort( at->gvar, deltas[j] );
-	} else {
-	    for ( rj=j+1; rj<j+0x40 && rj<ptcnt; ++rj ) {
-		if ( deltas[rj]>0x7f || deltas[rj]<0x80 ||
-			(deltas[rj]==0 && rj+1<j+0x40 && rj+1<ptcnt &&
-			    deltas[rj+1]<=0x7f && deltas[rj+1]>=0x80 && deltas[rj+1]!=0 ))
-	    break;
-	    }
-	    putc( rj-j-1,at->gvar );
-	    for ( ; j<rj ; ++j )
-		putc( deltas[j], at->gvar );
-	}
     }
 }
 
