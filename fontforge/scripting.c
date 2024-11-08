@@ -2341,7 +2341,7 @@ static void bExport(Context *c) {
 
     InitExportParams(&ep);
 
-    if ( c->a.argc<2 && c->a.argc>4 ) {
+    if ( c->a.argc<2 || c->a.argc>4 ) {
 	c->error = ce_wrongnumarg;
 	return;
     }
@@ -5008,7 +5008,7 @@ static void bNonLinearTransform(Context *c) {
 }
 
 static const int nibmap[] = { si_round, si_calligraphic, si_nib };
-static const int joinmap[] = { lj_miter, lj_round, lj_bevel, lj_nib, 
+static const int joinmap[] = { lj_miter, lj_round, lj_bevel, lj_nib,
                                lj_miterclip, lj_arcs, lj_inherited };
 static const int capmap[] = { lc_butt, lc_round, lc_square, lc_nib,
                               lc_inherited };
@@ -5068,7 +5068,7 @@ static void bExpandStroke(Context *c) {
 	6 => stroke width, line cap, line join, 0, flags
 	7 => stroke width, calligraphic angle, thickness-numerator, thickness-denom, 0, flags
 	11 => nib type, width, height, calligraphic angle, line cap, line join, join limit, extend cap, accuracy target, flags
-    */ 
+    */
 
     if ( c->a.argc<2 || (c->a.argc>7 && c->a.argc!=11) ) {
 	c->error = ce_wrongnumarg;
@@ -5119,13 +5119,13 @@ static void bExpandStroke(Context *c) {
 	i = c->a.vals[1].u.ival;
 	if ( i >= 0 && i<=2 )
 	    si.stroke_type = nibmap[i];
-	else 
+	else
 	    ScriptError(c,"Unrecognized stroke type");
 	if ( si.stroke_type == si_nib ) {
 	    if ( c->a.vals[2].type!=v_int )
 		ScriptError(c,"Bad argument type");
 	    si.nib = StrokeGetConvex(c->a.vals[2].u.ival, false);
-	    if ( si.nib==NULL ) 
+	    if ( si.nib==NULL )
 		ScriptError(c,"Convex nib unknown or not defined");
 	} else
 	    si.height = args[3];
