@@ -4184,9 +4184,7 @@ static void cflistcheck(GWindow UNUSED(gw), struct gmenuitem *mi, GEvent *UNUSED
     }
 }
 
-static void sllistcheck(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    fv = fv;
+static void sllistcheck(GWindow UNUSED(gw), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
 }
 
 static void htlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
