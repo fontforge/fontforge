@@ -135,6 +135,8 @@ if(ENABLE_GUI)
   else()
     find_package(GDK3 3.10 REQUIRED)
   endif()
+  find_package(PkgConfig)
+  pkg_check_modules(HarfBuzz REQUIRED IMPORTED_TARGET harfbuzz)
 endif()
 
 if(ENABLE_FREETYPE_DEBUGGER)
