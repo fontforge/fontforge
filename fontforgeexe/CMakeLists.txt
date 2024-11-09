@@ -101,10 +101,11 @@ if(ENABLE_GUI)
     target_link_libraries(fontforgeexe PRIVATE Threads::Threads)
   endif()
 
-  target_link_libraries(fontforgeexe PRIVATE
-    gdraw
-    PkgConfig::HarfBuzz
-  )
+  target_link_libraries(fontforgeexe PRIVATE gdraw)
+
+  if(ENABLE_HARFBUZZ)
+    target_link_libraries(fontforgeexe PRIVATE PkgConfig::HarfBuzz)
+  endif()
 else()
   target_sources(fontforgeexe PRIVATE startnoui.c)
 endif()
