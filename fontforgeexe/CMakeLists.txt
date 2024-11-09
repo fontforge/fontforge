@@ -89,6 +89,8 @@ if(ENABLE_GUI)
     wordlistparser.h
   )
 
+  add_subdirectory(shapers)
+
   if(APPLE)
     target_sources(fontforgeexe PRIVATE macobjective.m)
     target_link_libraries(fontforgeexe
@@ -101,11 +103,10 @@ if(ENABLE_GUI)
     target_link_libraries(fontforgeexe PRIVATE Threads::Threads)
   endif()
 
-  target_link_libraries(fontforgeexe PRIVATE gdraw)
-
-  if(ENABLE_HARFBUZZ)
-    target_link_libraries(fontforgeexe PRIVATE PkgConfig::HarfBuzz)
-  endif()
+  target_link_libraries(fontforgeexe PRIVATE
+    gdraw
+    shapers
+  )
 else()
   target_sources(fontforgeexe PRIVATE startnoui.c)
 endif()

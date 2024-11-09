@@ -49,6 +49,7 @@
 #include "ustring.h"
 #include "utype.h"
 #include "wordlistparser.h"
+#include "shapers/shaper_shim.hpp"
 
 #include <math.h>
 
@@ -1008,6 +1009,7 @@ static void MVRemetric(MetricsView *mv) {
     sf = mv->sf;
     if ( sf->cidmaster ) sf = sf->cidmaster;
     mv->glyphs = ApplyTickedFeatures(sf,feats,script, lang, mv->pixelsize, mv->chars);
+    LogError("HarfBuzz version: %s", get_hb_version());
     free(feats);
     if ( goodsc!=NULL )
 	mv->right_to_left = SCRightToLeft(goodsc)?1:0;
