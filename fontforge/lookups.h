@@ -79,7 +79,7 @@ extern struct scriptlanglist *SListCopy(struct scriptlanglist *sl);
 extern struct sllk *AddOTLToSllks(OTLookup *otl, struct sllk *sllk, int *_sllk_cnt, int *_sllk_max);
 extern uint32_t *SFFeaturesInScriptLang(SplineFont *sf, int gpos, uint32_t script, uint32_t lang);
 extern uint32_t *SFLangsInScript(SplineFont *sf, int gpos, uint32_t script);
-extern uint32_t *SFScriptsInLookups(SplineFont *sf, int gpos);
+extern uint32_t *SFScriptsInLookups(SplineFont *sf);
 extern void AddNewAALTFeatures(SplineFont *sf);
 extern void FF_SetFIInterface(struct fi_interface *fii);
 extern void FListAppendScriptLang(FeatureScriptLangList *fl, uint32_t script_tag, uint32_t lang_tag);

@@ -1854,11 +1854,10 @@ static void BuildTable(struct node *node,struct att_dlg *att) {
     uint32_t *scriptlist;
     struct node *scriptnodes;
     extern GTextInfo scripts[];
-    int isgsub = node->tag==CHR('G','S','U','B');
     char buf[120];
 
     /* Build the list of scripts that are mentioned in the font */
-    scriptlist = SFScriptsInLookups(_sf,!isgsub);
+    scriptlist = SFScriptsInLookups(_sf);
     if ( scriptlist==NULL )
 return;
     for ( i=0; scriptlist[i]!=0; ++i );
