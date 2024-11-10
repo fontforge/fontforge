@@ -6006,6 +6006,9 @@ void SplineCharFree(SplineChar *sc) {
     if ( sc==NULL )
 return;
     SplineCharFreeContents(sc);
+#if !defined(_NO_PYTHON)
+    PyFF_FreeSC(sc);
+#endif
     chunkfree(sc,sizeof(SplineChar));
 }
 

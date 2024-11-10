@@ -82,6 +82,9 @@ extern void PyFF_Glyph_Set_Layer(SplineChar *sc,int layer);
 #define PYMETHODDEF_EMPTY  { NULL, NULL, 0, NULL }
 #define PYGETSETDEF_EMPTY { NULL, NULL, NULL, NULL, NULL }
 
+typedef struct ff_glyph PyFF_Glyph;
+typedef struct ff_font PyFF_Font;
+
 typedef struct ff_point {
     PyObject_HEAD
     /* Type-specific fields go here. */
@@ -117,7 +120,7 @@ extern PyTypeObject PyFF_LayerType;
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
-    SplineChar *sc;
+    PyFF_Glyph *glyph;
     uint8_t replace;
     uint8_t ended;
     uint8_t changed;
@@ -127,24 +130,24 @@ typedef struct {
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
-    SplineChar *sc;
+    PyFF_Glyph *glyph;
 } PyFF_LayerArray;
 
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
-    SplineChar *sc;
+    PyFF_Glyph *glyph;
 } PyFF_RefArray;
 
 typedef struct glyphmathkernobject {
     PyObject_HEAD
-    SplineChar *sc;
+    PyFF_Glyph *glyph;
 } PyFF_MathKern;
 
-typedef struct {
+typedef struct ff_glyph {
     PyObject_HEAD
     /* Type-specific fields go here. */
-    SplineChar *sc;
+    void *sc_opaque; // Use PyFF_Glyph_GetSC() to access this pointer, never use it directly
     PyFF_LayerArray *layers;
     PyFF_RefArray *refs;
     PyFF_MathKern *mk;
@@ -154,40 +157,39 @@ typedef struct {
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
-    SplineFont *sf;
+    PyFF_Font *font;
     int layer;
 } PyFF_LayerInfo;
 
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
-    SplineFont *sf;
+    PyFF_Font *font;
 } PyFF_LayerInfoArray;
 
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
-    SplineFont *sf;
-    FontViewBase *fv;
+    PyFF_Font *font;
 } PyFF_Private;
 
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
-    FontViewBase *fv;
+    PyFF_Font *font;
     int by_glyphs;
 } PyFF_Selection;
 
 typedef struct {
     PyObject_HEAD
     /* Type-specific fields go here. */
-    SplineFont *sf;
+    PyFF_Font *font;
     struct ttf_table *cvt;
 } PyFF_Cvt;
 
 typedef struct fontmathobject {
     PyObject_HEAD
-    SplineFont *sf;
+    PyFF_Font *font;
 } PyFF_Math;
 
 /* This Python object is a view into SplineFont::MATH DeviceTable objects.
@@ -195,11 +197,11 @@ typedef struct fontmathobject {
    font has been closed or deleted. */
 typedef struct fontmathdevicetableobject {
     PyObject_HEAD
-    SplineFont *sf;
+    PyFF_Font *font;
     int devtab_offset;
 } PyFF_MathDeviceTable;
 
-typedef struct {
+typedef struct ff_font {
     PyObject_HEAD
     /* Type-specific fields go here. */
     FontViewBase *fv;
