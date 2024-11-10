@@ -12277,8 +12277,13 @@ return( 0 );
     }
     if ( lang==0x409 && english!=NULL && english->names[strid]!=NULL &&
          strcmp(string,english->names[strid])==0 ) {
+	if ( names!=NULL ) {
+	    /* If they set it to the default, delete whatever there is. */
+	    free( names->names[strid] );
+	    names->names[strid] = NULL;
+	}
 	Py_DECREF(val);
-return( 1 );	/* If they set it to the default, there's nothing to do */
+	return( 1 );
     }
 
     if ( names==NULL ) {
