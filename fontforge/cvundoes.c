@@ -2167,10 +2167,10 @@ return;
 	} else {
 #ifndef _NO_LIBPNG
 	    if ( type==6 )
-		image = GImageRead_Png(temp);
+		image = GImageRead_Png(temp, NULL);
 	    else
 #endif
-		image = GImageRead_Bmp(temp);
+		image = GImageRead_Bmp(temp, NULL);
 	    SCAddScaleImage(sc,image,doclear,layer,ImportParamsState());
 	}
 	fclose(temp);

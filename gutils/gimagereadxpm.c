@@ -355,18 +355,17 @@ GImage *GImageRead_Xpm(FILE *fp, int* success) {
     }
     free(line);
     freetab(tab,nchar);
-    *success = 1;
+    if (success)
+        *success = 1;
     return( ret );
 
 errorGImageReadXpm:
-    fprintf(stderr,"Bad input file\n" );
+    if (!success)
+        fprintf(stderr,"Bad input file\n" );
 errorGImageReadXpmMem:
     GImageDestroy(ret);
     free(line); freetab(tab,nchar);
-    *success = 0;
+    if (success)
+        *success = 0;
     return( NULL );
-}
-
-GImage *GImageReadXpm(char *filename) {
-    return GImageRead_Wrapper(filename, &GImageRead_Xpm);
 }

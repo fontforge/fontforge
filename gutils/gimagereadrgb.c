@@ -180,7 +180,7 @@ static void freeptrtab(unsigned char **ptrtab,long tot) {
 	    }
 }
 
-GImage *GImageRead_Rgb(FILE *fp, int* sucess) {
+GImage *GImageRead_Rgb(FILE *fp, int* success) {
     struct sgiheader header;
     int i,j,k;
     unsigned char *pt, *end;
@@ -198,7 +198,8 @@ GImage *GImageRead_Rgb(FILE *fp, int* sucess) {
 
     /* Create memory to hold image, exit with NULL if not enough memory */
     if ( (ret=GImageCreate(header.dim==3?it_true:it_index,header.width,header.height))==NULL ) {
-	*success = 0;
+        if (success)
+	        *success = 0;
 	return( NULL );
     }
     base = ret->u.image;
@@ -309,19 +310,19 @@ GImage *GImageRead_Rgb(FILE *fp, int* sucess) {
 	    free(r); free(g); free(b); free(a);
 	}
     }
-    *success = 1;
+    if (success)
+        *success = 1;
     return( ret );
 
 errorGImageReadRgbFile:
-    fprintf(stderr,"Bad input file\n");
+    if (!success)
+        fprintf(stderr,"Bad input file\n");
 errorGImageReadRgbMem:
     freeptrtab(ptrtab,tablen);
     free(ptrtab); free(starttab); /*free(lengthtab);*/
     free(r); free(g); free(b); free(a);
     GImageDestroy(ret);
+    if (success)
+        success = 0;
     return( NULL );
-}
-
-GImage *GImageReadRgb(char *filename) {
-    return GImageRead_Wrapper(filename, &GImageRead_Rgb);
 }

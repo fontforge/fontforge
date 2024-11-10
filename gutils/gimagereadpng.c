@@ -86,14 +86,16 @@ static GImage *GImageReadPngFull(void *io, int in_memory, int* success) {
       (void *)NULL, user_error_fn, user_warning_fn);
 
    if (!png_ptr){
-      *success = 0;
+      if (success)
+          *success = 0;
 return( NULL );
     }
 
     info_ptr = png_create_info_struct(png_ptr);
     if (!info_ptr) {
       png_destroy_read_struct(&png_ptr,  (png_infopp)NULL, (png_infopp)NULL);
-      *success = 0;
+      if (success)
+          *success = 0;
 return( NULL );
     }
 
@@ -110,7 +112,8 @@ return( NULL );
 	  free(row_pointers);
       }
       /* If we get here, we had a problem reading the file */
-      *success = 0;
+      if (success)
+          *success = 0;
 return( NULL );
     }
 
@@ -201,7 +204,8 @@ return( NULL );
     png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
     free(row_pointers);
     /* Note png b&w images come out as indexed */
-    *success = 1;
+    if (success)
+        *success = 1;
 return( ret );
 }
 
@@ -209,7 +213,7 @@ GImage *GImageReadPngBuf(char* buf, size_t sz) {
     struct mem_buffer membuf = {buf, sz, 0};
     int success;
 
-    GImage gimage = GImageReadPngFull(&membuf, true, &success); 
+    GImage *gimage = GImageReadPngFull(&membuf, true, &success); 
     if ( success!=1 ) {
         fprintf(stderr, "Png could not be opened\n");
     }
@@ -217,10 +221,6 @@ GImage *GImageReadPngBuf(char* buf, size_t sz) {
 }
 
 GImage *GImageRead_Png(FILE *fp, int* success) {
-    return GImageReadPngFull(fp, false);
-}
-
-GImage *GImageReadPng(char *filename) {
-    return GImageRead_Wrapper(filename, &GImageRead_Png);
+    return GImageReadPngFull(fp, false, success);
 }
 #endif

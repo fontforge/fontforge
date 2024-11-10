@@ -32,54 +32,76 @@
 
 #include "gfile.h"
 
+typedef GImage *(*GImageReadFunc)(FILE *, int *);
+
 GImage *GImageRead(char * filename) {
 /* Go read an input image file. Return NULL if cannot guess file type */
-/* First try filename dot3 extension then try sniffing if can't guess */
-    char *mime;
+    FILE *file;
+    GImage *ret = NULL;
+    int success = 0;
+    char *mime = NULL;
+    GImageReadFunc reader = NULL;
 
-    if ( filename!=NULL && GFileExists(filename) && (mime=GFileMimeType(filename))) {
+    if ( filename == NULL || !GFileExists(filename) )
+        return NULL;
+
+    mime = GFileMimeType(filename);
+    if ( mime == NULL )
+        return NULL;
+
 	if ( strcasecmp(mime,"image/bmp")==0 ) {
-	    free(mime);
-	    return( GImageReadBmp(filename) );
+        reader = GImageRead_Bmp;
 	} else if ( strcasecmp(mime,"image/x-xbitmap")==0 ) {
-	    free(mime);
-	    return( GImageReadXbm(filename) );
+        reader = GImageRead_Xbm;
 	} else if ( strcasecmp(mime,"image/x-xpixmap")==0 ) {
-	    free(mime);
-	    return( GImageReadXpm(filename) );
+        reader = GImageRead_Xpm;
 #ifndef _NO_LIBTIFF
 	} else if ( strcasecmp(mime,"image/tiff")==0 ) {
-	    free(mime);
-	    return( GImageReadTiff(filename) );
+        free(mime);
+        // Different pattern, just call directly
+        return GImageReadTiff(filename);
 #endif
 #ifndef _NO_LIBJPEG
 	} else if ( strcasecmp(mime,"image/jpeg")==0 ) {
-	    free(mime);
-	    return( GImageReadJpeg(filename) );
+        reader = GImageRead_Jpeg;
 #endif
 #ifndef _NO_LIBPNG
 	} else if ( strcasecmp(mime,"image/png")==0 ) {
-	    free(mime);
-	    return( GImageReadPng(filename) );
+        reader = GImageRead_Png;
 #endif
 #ifndef _NO_LIBUNGIF
 	} else if ( strcasecmp(mime,"image/gif")==0 ) {
-	    free(mime);
-	    return( GImageReadGif(filename) );
+        free(mime);
+        // Different pattern, just call directly
+        return GImageReadGif(filename);
 #endif
 	} else if ( strcasecmp(mime,"image/x-cmu-raster")==0 || \
 		  strcasecmp(mime,"image/x-sun-raster")==0 ) {
-	    free(mime);
-	    return( GImageReadRas(filename) );		/* Sun raster */
+        reader = GImageRead_Ras;
 	} else if ( strcasecmp(mime,"image/x-rgb")==0 || \
 		  strcasecmp(mime,"image/x-sgi")==0 ) {
-	    free(mime);
-	    return( GImageReadRgb(filename) );		/* SGI format */
+        reader = GImageRead_Rgb;
 	}
-	free(mime);
+
+    free(mime);
+
+    if ( (file=fopen(filename,"rb"))==NULL ) {
+        fprintf(stderr,"\"%s\" is a Bad input file\n", filename);
+        return( NULL );
     }
 
-    return( NULL );
+    if (reader == NULL) {
+        fprintf(stderr,"Not recognized file type for \"%s\"\n", filename);
+    } else {
+        ret = (*reader)(file, &success);
+
+        if ( success!=1 ) {
+            fprintf(stderr,"Failure reading file \"%s\"\n", filename);
+            ret = NULL;
+        }
+    }
+    fclose(file);
+    return( ret );
 }
 
 GImage *GImageReadBuf(char *buffer, int size, char* ext) {
@@ -102,17 +124,17 @@ GImage *GImageReadBuf(char *buffer, int size, char* ext) {
 
     if ( strcasecmp(mime,"image/bmp")==0 ) {
         free(mime);
-        ret = GImageRead_Bmp(file);
+        ret = GImageRead_Bmp(file, NULL);
         fclose(file);
         return( ret );
     } else if ( strcasecmp(mime,"image/x-xbitmap")==0 ) {
         free(mime);
-        ret = GImageRead_Xbm(file);
+        ret = GImageRead_Xbm(file, NULL);
         fclose(file);
         return( ret );
     } else if ( strcasecmp(mime,"image/x-xpixmap")==0 ) {
         free(mime);
-        ret = GImageRead_Xpm(file);
+        ret = GImageRead_Xpm(file, NULL);
         fclose(file);
         return( ret );
     #ifndef _NO_LIBTIFF
@@ -125,7 +147,7 @@ GImage *GImageReadBuf(char *buffer, int size, char* ext) {
     #ifndef _NO_LIBJPEG
     } else if ( strcasecmp(mime,"image/jpeg")==0 ) {
         free(mime);
-        ret = GImageRead_Jpeg(file);
+        ret = GImageRead_Jpeg(file, NULL);
         fclose(file);
         return( ret );
     #endif
@@ -146,13 +168,13 @@ GImage *GImageReadBuf(char *buffer, int size, char* ext) {
     } else if ( strcasecmp(mime,"image/x-cmu-raster")==0 || \
               strcasecmp(mime,"image/x-sun-raster")==0 ) {
         free(mime);
-        ret = GImageRead_Ras(file);		/* Sun raster */
+        ret = GImageRead_Ras(file, NULL);		/* Sun raster */
         fclose(file);
         return( ret );
     } else if ( strcasecmp(mime,"image/x-rgb")==0 || \
               strcasecmp(mime,"image/x-sgi")==0 ) {
         free(mime);
-        ret = GImageRead_Rgb(file);		/* SGI format */
+        ret = GImageRead_Rgb(file, NULL);		/* SGI format */
         fclose(file);
         return( ret );
     }
@@ -161,24 +183,4 @@ GImage *GImageReadBuf(char *buffer, int size, char* ext) {
     fclose(file);
 
     return( NULL );
-}
-
-
-typedef GImageReadFunc = GImage *(*GImageReadFunc)(File *, int *);
-GImage *GImageRead_Wrapper(char *filename, GImageReadFunc *func) {
-    FILE *file;
-    GImage *ret;
-    int success;
-
-    if ( (file=fopen(filename,"rb"))==NULL ) {
-        fprintf(stderr,"\"%s\" is a Bad input file\n", filename);
-        return( NULL );
-    }
-
-    ret = GImageReadFunc(file, &success);
-    if ( success!=1 ) {
-        fprintf(stderr,"can't  \"%s\"\n", filename);
-    }
-    fclose(file);
-    return( ret );
 }

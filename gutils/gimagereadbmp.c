@@ -356,7 +356,8 @@ GImage *GImageRead_Bmp(FILE *file, int* success) {
 	 (bmp.byte_pixels=(unsigned char *)(malloc(bmp.height*((bmp.width+7)/8)*sizeof(unsigned char))))==NULL) || \
 	 (bmp.byte_pixels=(unsigned char *)(malloc(bmp.height*bmp.width*sizeof(unsigned char))))==NULL ) {
 	NoMoreMemMessage();
-	*success = 0;
+    if (success)
+	    *success = 0;
 	return( NULL );
     }
 
@@ -423,19 +424,18 @@ GImage *GImageRead_Bmp(FILE *file, int* success) {
 	memcpy(ret->u.image->clut->clut,bmp.clut,bmp.colorsused*sizeof(Color));
 	ret->u.image->clut->trans_index = COLOR_UNKNOWN;
     }
-    *success = 1;
+    if (success)
+        *success = 1;
     return( ret );
 
 errorGImageReadBmp:
-    fprintf(stderr,"Bad input file\n");
+    if (!success)
+        fprintf(stderr,"Bad input file\n");
 errorGImageMemBmp:
     GImageDestroy(ret);
     if ( bmp.bitsperpixel>=16 ) free(bmp.int32_pixels);
     else free(bmp.byte_pixels);
-    *success = 0;
+    if (success)
+        *success = 0;
     return( NULL );
-}
-
-GImage *GImageReadBmp(char *filename) {
-    return GImageRead_Wrapper(filename, &GImageRead_Bmp);
 }

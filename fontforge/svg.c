@@ -2387,16 +2387,16 @@ return( NULL );
     rewind(tmp);
 #ifndef _NO_LIBPNG
     if ( strcmp(mimetype,"image/png")==0 )
-	img = GImageRead_Png(tmp);
+	img = GImageRead_Png(tmp, NULL);
     else
 #endif
 #ifndef _NO_LIBJPEG
     if ( strcmp(mimetype,"image/jpeg")==0 )
-	img = GImageRead_Jpeg(tmp);
+	img = GImageRead_Jpeg(tmp, NULL);
     else
 #endif
     if ( strcmp(mimetype,"image/bmp")==0 )
-	img = GImageRead_Bmp(tmp);
+	img = GImageRead_Bmp(tmp, NULL);
     else
 	img = NULL;
     fclose(tmp);

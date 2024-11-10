@@ -263,7 +263,8 @@ GImage *GImageRead_Ras(FILE *fp, int* success) {
 	  (ret=GImageCreate(it_bitmap,header.Width,header.Height))==NULL) || \
 	  (header.Depth!=1 && \
 	  (ret=GImageCreate(header.Depth==24?it_true:it_index,header.Width,header.Height))==NULL) ) {
-	*success = 0;
+	if (success)
+	    *success = 0;
 	return( NULL );
     }
 
@@ -311,28 +312,29 @@ GImage *GImageRead_Ras(FILE *fp, int* success) {
 	    else {
 	        /* Don't bother with most rle formats */
 	        /* TODO: if someone wants to do this - accept more formats */
-	        fprintf(stderr,"Unsupported input file type\n");
+            if (!success)
+	            fprintf(stderr,"Unsupported input file type\n");
 	        goto errorGImageReadRas;
 	    }
     } else {
 	    /* Don't bother with other formats */
 	    /* TODO: if someone wants to do this - accept more formats */
-        fprintf(stderr,"Unsupported input file type\n");
+        if (!success)
+            fprintf(stderr,"Unsupported input file type\n");
 	    goto errorGImageReadRas;
 	}
     if ( ret!=NULL ) {
 	    /* All okay if reached here, return converted image */
-	    *success = 1;
+	    if (success)
+        *success = 1;
 	    return( ret );
     }
 
 errorGImageReadRas:
-    *success = 0;
-    fprintf(stderr,"Bad input file\n");
+    if (!success)
+        fprintf(stderr,"Bad input file\n");
+    else
+        *success = 0;
     GImageDestroy(ret);
     return( NULL );
-}
-
-GImage *GImageReadRas(char *filename) {
-    return GImageRead_Wrapper(filename, &GImageRead_Ras);
 }

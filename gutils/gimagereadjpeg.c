@@ -103,7 +103,8 @@ GImage *GImageRead_Jpeg(FILE *infile, int* success) {
   jerr.pub.error_exit = my_error_exit;
   if (setjmp(jerr.setjmp_buffer)) {
     jpeg_destroy_decompress(&cinfo);
-    *success = 0;
+    if (success)
+       *success = 0;
 return( NULL );
   }
 
@@ -116,7 +117,8 @@ return( NULL );
     ret = GImageCreate(it_true,cinfo.image_width, cinfo.image_height);
     if ( ret==NULL ) {
 	jpeg_destroy_decompress(&cinfo);
-	*success = 0;
+    if (success)
+	    *success = 0;
 return( NULL );
     }
     base = ret->u.image;
@@ -133,12 +135,8 @@ return( NULL );
   (void) jpeg_finish_decompress(&cinfo);
   jpeg_destroy_decompress(&cinfo);
   free(rows[0]);
-
+  if (success)
     *success = 1;
 return( ret );
-}
-
-GImage *GImageReadJpeg(char *filename) {
-    return GImageRead_Wrapper(filename, &GImageRead_Jpeg);
 }
 #endif
