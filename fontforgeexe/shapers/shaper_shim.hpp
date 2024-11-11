@@ -26,7 +26,15 @@
 extern "C" {
 #endif
 
-const char *get_hb_version();
+typedef struct shaper_def {
+    /* Internal shaper name */
+    const char* name;
+
+    /* Shaper label, as shown to the user */
+    const char* label;
+} ShaperDef;
+
+const ShaperDef* get_shaper_defs();
 
 #ifdef __cplusplus
 }

@@ -20,12 +20,18 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
 #include "shaper_shim.hpp"
 
+#include <stddef.h>
+
+#include "intl.h"
+
+const ShaperDef* get_shaper_defs() {
+    static ShaperDef shaper_defs[] = {{"builtin", N_("Built-in shaper")},
 #ifdef ENABLE_HARFBUZZ
-#include <hb.h>
-const char *get_hb_version() { return hb_version_string(); }
-#else
-const char *get_hb_version() { return "None"; }
+                                      {"harfbuzz", N_("HarfBuzz")},
 #endif
+                                      {NULL, NULL}};
+
+    return shaper_defs;
+}
