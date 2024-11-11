@@ -3774,11 +3774,11 @@ static GMenuItem2 vwlist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("_Outline"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'O' }, H_("Outline|No Shortcut"), NULL, NULL, MVMenuShowBitmap, MID_Outline },
     GMENUITEM2_EMPTY,
-    /* Some extra room to show bitmaps */
+    /* Some extra room to show bitmaps and shapers */
     GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
     GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
     GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY
+    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY
 };
 
 static void MVMenuContextualHelp(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
@@ -3972,6 +3972,9 @@ static void vwlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     int i, j, base, aselection;
     BDFFont *bdf;
     char buffer[60];
+    int n_shapers = 0;
+    const ShaperDef *sh_def, *shaper_defs = get_shaper_defs();
+    const char* default_shaper = get_default_shaper();
 
     aselection = false;
     for ( j=0; j<mv->glyphcnt; ++j )
@@ -4022,10 +4025,13 @@ static void vwlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	}
     vwlist[i].ti.checked = mv->bdf==NULL;
     base = i+1;
-    for ( i=base; vwlist[i].ti.text!=NULL || vwlist[i].ti.line; ++i ) {
+    /* Reset dynamic menu items */
+    for ( i=base; i<sizeof(vwlist)/sizeof(vwlist[0]); ++i ) {
 	free( vwlist[i].ti.text);
 	vwlist[i].ti.text = NULL;
+	vwlist[i].ti.line = false;
     }
+    i = base;
 
     if ( mv->sf->bitmaps!=NULL ) {
 	for ( bdf = mv->sf->bitmaps, i=base;
@@ -4042,6 +4048,25 @@ static void vwlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	    vwlist[i].ti.userdata = bdf;
 	    vwlist[i].invoke = MVMenuShowBitmap;
 	    vwlist[i].ti.fg = vwlist[i].ti.bg = COLOR_DEFAULT;
+	}
+    }
+
+    /* Count shapers */
+    for (sh_def = shaper_defs; sh_def->name != NULL; ++sh_def) ++n_shapers;
+    printf("shapers %d %d\n", i, n_shapers);
+
+    /* List shapers when there is a choice */
+    if (n_shapers > 1) {
+	vwlist[i++].ti.line = true; /* separator */
+	for (sh_def = shaper_defs;
+	     i<sizeof(vwlist)/sizeof(vwlist[0])-1 && sh_def->name != NULL; ++sh_def) {
+	    vwlist[i].ti.text = utf82u_copy(sh_def->label);
+	    vwlist[i].ti.checkable = true;
+	    vwlist[i].ti.checked = (strcmp(default_shaper, sh_def->name)==0);
+	    vwlist[i].ti.userdata = (void*) sh_def->name;
+	    vwlist[i].invoke = NULL;
+	    vwlist[i].ti.fg = vwlist[i].ti.bg = COLOR_DEFAULT;
+	    i++;
 	}
     }
     GMenuItemArrayFree(mi->sub);
