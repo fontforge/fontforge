@@ -35,3 +35,10 @@ const ShaperDef* get_shaper_defs() {
 
     return shaper_defs;
 }
+
+const char* get_default_shaper() {
+#ifdef ENABLE_HARFBUZZ
+    return "harfbuzz";
+#endif
+    return "builtin";
+}

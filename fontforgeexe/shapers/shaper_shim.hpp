@@ -36,6 +36,9 @@ typedef struct shaper_def {
 
 const ShaperDef* get_shaper_defs();
 
+/* The internal name of the default shaper */
+const char* get_default_shaper();
+
 #ifdef __cplusplus
 }
 #endif
