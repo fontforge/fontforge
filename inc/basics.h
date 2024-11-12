@@ -60,7 +60,7 @@ typedef uint32_t unichar_t;
 #ifndef NDEBUG
 #define TRACE(...) fprintf(stderr, __VA_ARGS__)
 #else
-#define TRACE(...) while(0)
+#define TRACE(...) do {} while(0)
 #endif
 
 /* assert() with an otherwise unused variable
@@ -104,7 +104,7 @@ static inline int imax(int a, int b)
  * example:
  * MyListObjectType* newfoolast = 0;
  * MyListObjectType* newfoolist = 0;
- * 
+ *
  * for( ... iterate a source collection of foos ... )
  * {
  *    MyListObjectType* foocopy = CopyIt( foo );

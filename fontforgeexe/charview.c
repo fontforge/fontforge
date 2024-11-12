@@ -367,7 +367,7 @@ int CVInSpiro( CharView *cv )
 {
     int inspiro = 0;
     int canspiro = hasspiro();
-    if( cv ) 
+    if( cv )
 	inspiro = canspiro && cv->b.sc->inspiro;
     return inspiro;
 }
@@ -820,7 +820,7 @@ static int FmtReal(char *buf, int buflen, real r)
 
 	if ((ct = snprintf(buf, buflen, "%.3f", r)) >= buflen)
 	    ct = buflen-1;
-    
+
 	if (strchr(buf, '.')) {
 	    while (buf[ct-1] == '0') {
 		--ct;
@@ -833,13 +833,13 @@ static int FmtReal(char *buf, int buflen, real r)
 	return ct;
     }
     return -1;
-}	    
-	
+}
+
 /*
  * Write the given spline point's coordinates in the form (xxx,yyy)
  * into the buffer provided, rounding fractions to the nearest .001
  * and discarding trailing zeroes.
- */ 
+ */
 static int SplinePointCoords(char *buf, int buflen, SplinePoint *sp)
 {
     if (buf && buflen > 0) {
@@ -1498,7 +1498,6 @@ void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *set,
 				Color fg, int dopoints, DRect *clip, enum outlinesfm_flags strokeFillMode ) {
     SplinePointList *spl;
-    int currentSplineCounter = 0;
     int activelayer = CVLayer(&cv->b);
     CharViewTab* tab = CVGetActiveTab(cv);
 
@@ -1537,7 +1536,6 @@ void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *s
 	    x = rpt(cv,  tab->xoff + spl->first->me.x*tab->scale);
 	    y = rpt(cv, -tab->yoff + cv->height - spl->first->me.y*tab->scale);
 	    GDrawPathMoveTo(pixmap,x+.5,y+.5);
-	    currentSplineCounter++;
 	    for ( spline=spl->first->next, first=NULL; spline!=first && spline!=NULL; spline=spline->to->next ) {
 		x = rpt(cv,  tab->xoff + spline->to->me.x*tab->scale);
 		y = rpt(cv, -tab->yoff + cv->height - spline->to->me.y*tab->scale);
@@ -1731,11 +1729,11 @@ static void CVDrawLayerSplineSet(CharView *cv, GWindow pixmap, Layer *layer,
 
     if ( ml && !active && layer!=&cv->b.sc->layers[ly_back] )
 	GDrawSetDashedLine(pixmap,5,5,tab->xoff+cv->height-tab->yoff);
-    
+
     CVDrawSplineSetSpecialized( cv, pixmap, layer->splines,
 				fg, dopoints && active, clip,
 				strokeFillMode, 0 );
-    
+
     if ( ml && !active && layer!=&cv->b.sc->layers[ly_back] )
 	GDrawSetDashedLine(pixmap,0,0,0);
 }
@@ -2754,7 +2752,7 @@ static int CVExposeGlyphFill(CharView *cv, GWindow pixmap, GEvent *event, DRect*
 	    filled = 1;
 	}
     } else {
-	if (( cv->showfore || cv->b.drawmode==dm_fore ) && cv->showfilled && 
+	if (( cv->showfore || cv->b.drawmode==dm_fore ) && cv->showfilled &&
 	    cv->filled!=NULL ) {
 	    GDrawDrawImage(pixmap, &cv->gi, NULL,
 			   tab->xoff + cv->filled->xmin,
@@ -2769,7 +2767,7 @@ static void CVExposeReferences( CharView *cv, GWindow pixmap, SplineChar* sc, in
 {
     RefChar *rf = 0;
     int rlayer = 0;
-    
+
     for ( rf = sc->layers[layer].refs; rf!=NULL; rf = rf->next )
     {
 	if ( cv->showrefnames )
@@ -2980,7 +2978,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    CVDrawLayerSplineSet( cv,pixmap,&cv->b.sc->layers[layer],foreoutlinecol,
 	    			  cv->showpoints ,&clip, strokeFillMode );
 
-	    
+
 	    int showpoints = 0;
 	    enum outlinesfm_flags sm = sfm_stroke;
 	    if( cv->inPreviewMode ) {
@@ -3011,13 +3009,13 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    }
 
 
-	    
+
 	    if( cv->additionalCharsToShowActiveIndex > 0 )
 	    {
 		int i = 1;
 		int originalxoff = tab->xoff;
 		int offset = 0;
-		    
+
 		for( i=cv->additionalCharsToShowActiveIndex-1; i >= 0; i-- )
 		{
 //		    TRACE("expose(left) loop:%d\n", i );
@@ -3033,7 +3031,7 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		}
 		tab->xoff = originalxoff;
 	    }
-		
+
 //	    TRACE("expose(e) ridx:%d\n", ridx );
 
 	}
@@ -3576,7 +3574,7 @@ static void CVSetCharSelectorValueFromSC( CharView *cv, SplineChar *sc )
     const char* title = Wordlist_getSCName( sc );
     GGadgetSetTitle8(cv->charselector, title);
 }
-	    
+
 // See comment in gtabset.c (fn GTabSetRemoveTabByPos)
 static void CVMenuCloseTab(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e));
 static void CVTabSetRemoveSync(GWindow gw, int pos) {
@@ -3620,7 +3618,7 @@ void CVChangeSC( CharView *cv, SplineChar *sc )
     memset( cv->additionalCharsToShow, 0, sizeof(SplineChar*) * additionalCharsToShowLimit );
     cv->additionalCharsToShowActiveIndex = 0;
     cv->additionalCharsToShow[0] = sc;
-    
+
     CVDebugFree(cv->dv);
 
     if ( cv->expandedge != ee_none ) {
@@ -3714,7 +3712,7 @@ void CVChangeSC( CharView *cv, SplineChar *sc )
                     GTabSetChangeTabName(cv->tabs, t->charselected, i);
                 }
             }
-            
+
 	    GTabSetRemetric(cv->tabs);
 	    GTabSetSetSel(cv->tabs,0);	/* This does a redraw */
 	    if ( !GGadgetIsVisible(cv->tabs) && cv->showtabs )
@@ -3881,7 +3879,7 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
 	CVInfoDraw(cv,cv->gw);
     }
 
-    
+
 
 //    TRACE("CVCharUp() ag:%d key:%d\n", cv_auto_goto, event->u.chr.keysym );
     if( !cv_auto_goto )
@@ -3939,7 +3937,7 @@ static void CVCharUp(CharView *cv, GEvent *event ) {
 	    GWidgetIndicateFocusGadget( cv->charselector );
 	}
     }
-    
+
 
 #if _ModKeysAutoRepeat
     /* Under cygwin these keys auto repeat, they don't under normal X */
@@ -4050,8 +4048,8 @@ void CVInfoDrawText(CharView *cv, GWindow pixmap ) {
 	    strcat( buffer, "Interpolate" );
 	GDrawDrawText8(pixmap,FLAGS_DATA,ybase,buffer,-1,fg);
     }
-    
-    
+
+
     if ( cv->coderange!=cr_none ) {
 	GDrawDrawText8(pixmap,CODERANGE_DATA,ybase,
 		cv->coderange==cr_fpgm ? _("'fpgm'") :
@@ -4361,7 +4359,7 @@ static int16_t MouseToCX( CharView *cv, int16_t mx )
     return( mx - tab->xoff ) / tab->scale;
 }
 
-    
+
 static void SetFS( FindSel *fs, PressedOn *p, CharView *cv, GEvent *event) {
     CharViewTab* tab = CVGetActiveTab(cv);
     extern int snaptoint;
@@ -4638,7 +4636,7 @@ static void CVSwitchActiveSC( CharView *cv, SplineChar* sc, int idx )
 		return;
 	}
     }
-    
+
     cv->changedActiveGlyph = 1;
     TRACE("CVSwitchActiveSC(b) activeidx:%d newidx:%d\n", cv->additionalCharsToShowActiveIndex, idx );
     for( i=0; i < additionalCharsToShowLimit; i++ )
@@ -4676,11 +4674,11 @@ static void CVSwitchActiveSC( CharView *cv, SplineChar* sc, int idx )
 		scroll_offset -= xc->width;
 	}
     }
-    
-    
 
 
-    
+
+
+
     CVUnlinkView( cv );
     cv->b.sc = sc;
     cv->b.next = sc->views;
@@ -4697,7 +4695,7 @@ static void CVSwitchActiveSC( CharView *cv, SplineChar* sc, int idx )
     CVInfoDraw(cv,cv->gw);
     free(title);
     _CVPaletteActivate(cv,true,false);
-    
+
     TRACE("CVSwitchActiveSC() idx:%d\n", idx );
 
     cv->additionalCharsToShowActiveIndex = idx;
@@ -4711,7 +4709,7 @@ static void CVSwitchActiveSC( CharView *cv, SplineChar* sc, int idx )
 	int endsWithSlash = u_endswith( srctxt, c_to_u("/"));
 
 	unichar_t* p = 0;
-	p = Wordlist_selectionClear( sf, map, srctxt );	
+	p = Wordlist_selectionClear( sf, map, srctxt );
 	p = Wordlist_selectionAdd(   sf, map, p, idx );
 	if( endsWithSlash )
 	    uc_strcat( p, "/" );
@@ -4724,8 +4722,8 @@ static void CVSwitchActiveSC( CharView *cv, SplineChar* sc, int idx )
 	    GGadgetSetTitle( cv->charselector, p );
 	}
     }
-    
-    
+
+
     cv->b.next = sc->views;
     sc->views = &cv->b;
 
@@ -4733,10 +4731,10 @@ static void CVSwitchActiveSC( CharView *cv, SplineChar* sc, int idx )
     // box has moved rather than all the characters.
     if( scroll_offset )
 	CVHScrollSetPos( cv, tab->xoff + scroll_offset * tab->scale );
-    
+
 //    if ( CVClearSel(cv))
 //	SCUpdateAll(cv->b.sc);
-    
+
 }
 
 static void CVMouseDown(CharView *cv, GEvent *event ) {
@@ -4781,7 +4779,7 @@ return;		/* I treat this more like a modifier key change than a button press */
 	if( found && !cv->p.sp )
 	    override_showing_tool = cvt_curve;
     }
-    
+
     if( cv->charselector && cv->charselector == GWindowGetFocusGadgetOfWindow(cv->gw))
 	GWindowClearFocusGadgetOfWindow(cv->gw);
 
@@ -4794,7 +4792,7 @@ return;		/* I treat this more like a modifier key change than a button press */
     cv->needsrasterize = false;
     cv->recentchange = false;
 
-    
+
     SetFS(&fs,&cv->p,cv,event);
     if ( event->u.mouse.state&ksm_shift )
 	event = CVConstrainedMouseDown(cv,event,&fake);
@@ -4819,7 +4817,7 @@ return;		/* I treat this more like a modifier key change than a button press */
 
 //	TRACE("cvmousedown tab->xoff:%d\n", tab->xoff );
 //	TRACE("cvmousedown x:%d y:%d\n",   event->u.mouse.x, event->u.mouse.y );
-	    
+
 	if( !cv->p.anysel && cv->b.drawmode != dm_grid )
 	{
 	    // If we are in left-right arrow cursor mode to move
@@ -4837,7 +4835,7 @@ return;		/* I treat this more like a modifier key change than a button press */
 		SplineChar* xc = 0;
 		int xcidx = -1;
 		int borderFudge = 20;
-	    
+
 		{
 		    int offset = cv->b.sc->width;
 		    int cumulativeLeftSideBearing = 0;
@@ -4855,7 +4853,7 @@ return;		/* I treat this more like a modifier key change than a button press */
 			{
 			    OffsetForDoingCharNextToActive = borderFudge;
 			}
-		    
+
 
 			cumulativeLeftSideBearing += offset;
 			/* TRACE("1 adj. x:%f %f\n",fsadjusted.xl,fsadjusted.xh); */
@@ -4882,7 +4880,7 @@ return;		/* I treat this more like a modifier key change than a button press */
 			if( found )
 			{
 			    TRACE("FOUND FOUND FOUND FOUND FOUND FOUND FOUND \n");
-			
+
 			    xcidx = i;
 //		    CVChangeSC(cv,xc);
 			    break;
@@ -4938,7 +4936,7 @@ return;		/* I treat this more like a modifier key change than a button press */
 			    cumulativeLeftSideBearing,
 			    fsadjusted.p->cx,
 			    cumulativeLeftSideBearing + xc->width - OffsetForDoingCharNextToActive );
-		    
+
 			TRACE("cvmousedown i:%d found:%d\n", i, found );
 			if( found )
 			{
@@ -4960,8 +4958,8 @@ return;		/* I treat this more like a modifier key change than a button press */
 		}
 	    }
 	}
-	    
-	    
+
+
 
     } else if ( cv->active_tool == cvt_curve || cv->active_tool == cvt_corner ||
 	    cv->active_tool == cvt_tangent || cv->active_tool == cvt_hvcurve ||
@@ -5011,7 +5009,7 @@ return;		/* I treat this more like a modifier key change than a button press */
       break;
       case cvt_magnify: case cvt_minify:
           //When scroll zooming, the old showing tool is the normal pointer.
-          old_showing_tool = cv->active_tool;    
+          old_showing_tool = cv->active_tool;
       break;
       case cvt_hand:
 	CVMouseDownHand(cv);
@@ -5535,8 +5533,8 @@ static void CVMouseUp(CharView *cv, GEvent *event ) {
 	/* _CVTestSelectFromEvent(cv,&fs); */
 	/* fs.p = &cv->p; */
     }
-    
-    
+
+
     switch ( cv->active_tool ) {
       case cvt_pointer:
 	CVMouseUpPointer(cv);
@@ -7501,7 +7499,7 @@ return;
     }
 
     int curenc = CVCurEnc(cv);
-    
+
     if( cv->charselector )
     {
         char* txt = GGadgetGetTitle8( cv->charselector );
@@ -7527,7 +7525,7 @@ return;
             return;
         }
     }
-    
+
     if ( mid == MID_Next ) {
 	pos = curenc+1;
     } else if ( mid == MID_Prev ) {
@@ -7749,7 +7747,7 @@ void FE_adjustBCPByDeltaWhilePreservingBCPAngle( void* key,
 		if( m < 0 )
 		    datadx *= -1;
 	    }
-	    
+
 	    real dx = near->x - far->x;
 	    real m = (near->y - far->y) / dx;
 	    to.x = which->x + datadx;
@@ -7887,7 +7885,7 @@ void CVFindAndVisitSelectedControlPoints( CharView *cv, bool preserveState,
     GHashTable* col = getSelectedControlPoints( cv, &cv->p );
     if(!col)
 	return;
-    
+
     if( g_hash_table_size( col ) )
     {
 	if( preserveState )
@@ -7958,7 +7956,7 @@ void CVChar(CharView *cv, GEvent *event ) {
 
     /* TRACE("GK_Control_L:%d\n", ( event->u.chr.keysym == GK_Control_L )); */
     /* TRACE("GK_Meta_L:%d\n", ( event->u.chr.keysym == GK_Meta_L )); */
-    
+
     int oldactiveModifierControl = cv->activeModifierControl;
     int oldactiveModifierAlt = cv->activeModifierAlt;
     cv->activeModifierControl |= ( event->u.chr.keysym == GK_Control_L || event->u.chr.keysym == GK_Control_R
@@ -7971,8 +7969,8 @@ void CVChar(CharView *cv, GEvent *event ) {
     {
 	CVInfoDraw(cv,cv->gw);
     }
-    
-    
+
+
 #if _ModKeysAutoRepeat
 	/* Under cygwin these keys auto repeat, they don't under normal X */
 	if ( cv->autorpt!=NULL ) {
@@ -8002,7 +8000,7 @@ return;
     CVPaletteActivate(cv);
     CVToolsSetCursor(cv,TrueCharState(event),NULL);
 
-    
+
 	/* The window check is to prevent infinite loops since DVChar can */
 	/*  call CVChar too */
     if ( cv->dv!=NULL && (event->w==cv->gw || event->w==cv->v) && DVChar(cv->dv,event))
@@ -8066,7 +8064,7 @@ return;
 	    event->u.chr.keysym == GK_KP_Down )
     {
 	TRACE("key left/right/up/down...\n");
-	
+
 	GGadget *active = GWindowGetFocusGadgetOfWindow(cv->gw);
 	if( active == cv->charselector )
 	{
@@ -8079,8 +8077,8 @@ return;
 
 	    return;
 	}
-	
-	
+
+
 	real dx=0, dy=0; int anya;
 	switch ( event->u.chr.keysym ) {
 	  case GK_Left: case GK_KP_Left:
@@ -12753,7 +12751,7 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 		return 0;
 	    }
 	}
-	
+
 	cv->charselectoridx = pos;
 	char* txt = GGadgetGetTitle8( cv->charselector );
 	TRACE("char selector @%d changed to:%s\n", pos, txt );
@@ -12766,7 +12764,7 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 	    GTabSetRemetric(cv->tabs);
 	    GTabSetSetSel(cv->tabs,tabnum);	/* This does a redraw */
 	}
-	
+
 	memset( cv->additionalCharsToShow, 0, sizeof(SplineChar*) * additionalCharsToShowLimit );
 	cv->additionalCharsToShowActiveIndex = 0;
 	cv->additionalCharsToShow[0] = cv->b.sc;
@@ -12793,7 +12791,7 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 		    i++;
 		    continue;
 		}
-		
+
 		cv->additionalCharsToShow[i] = tpt->sc;
 
 		i++;
@@ -12823,7 +12821,7 @@ static int CV_OnCharSelectorTextChanged( GGadget *g, GEvent *e )
 			    CVHScrollSetPos( cv, xoff );
 			    hadSelection = 1;
 			}
-			
+
 		    }
 		}
 	    }
@@ -12961,7 +12959,7 @@ CharView *CharViewCreateExtended(SplineChar *sc, FontView *fv,int enc, int show 
         label[0].text_is_1byte = true;
         cv->charselectorNext = GButtonCreate(cv->gw,&xgd,cv);
     }
-    
+
 
     memset(aspects,0,sizeof(aspects));
     aspects[0].text = (unichar_t *) sc->name;
@@ -13645,7 +13643,7 @@ bool CVShouldInterpolateCPsOnMotion( CharView* cv )
 
     if( cv->activeModifierControl && cv->activeModifierAlt )
 	ret = !ret;
-    
+
     return ret;
 }
 

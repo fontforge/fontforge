@@ -3876,11 +3876,10 @@ static struct markedglyphs *fea_parseBaseMarkSequence(struct parseState *tok,
 	    contents = fea_glyphname_validate(tok,tok->tokbuf);
 	else
 	    contents = fea_cid_validate(tok,tok->value);
-	if ( contents!=NULL ) {
-	    cur = chunkalloc(sizeof(struct markedglyphs));
-	    cur->is_name = true;
-	    cur->name_or_class = contents;
-	}
+
+	cur = chunkalloc(sizeof(struct markedglyphs));
+	cur->is_name = true;
+	cur->name_or_class = contents;
     } else if ( tok->type == tk_class || (tok->type==tk_char && tok->tokbuf[0]=='[')) {
 	cur = chunkalloc(sizeof(struct markedglyphs));
 	cur->is_name = false;
@@ -3940,11 +3939,10 @@ static struct markedglyphs *fea_parseLigatureSequence(struct parseState *tok,
 	    contents = fea_glyphname_validate(tok,tok->tokbuf);
 	else
 	    contents = fea_cid_validate(tok,tok->value);
-	if ( contents!=NULL ) {
-	    cur = chunkalloc(sizeof(struct markedglyphs));
-	    cur->is_name = true;
-	    cur->name_or_class = contents;
-	}
+
+	cur = chunkalloc(sizeof(struct markedglyphs));
+	cur->is_name = true;
+	cur->name_or_class = contents;
     } else if ( tok->type == tk_class || (tok->type==tk_char && tok->tokbuf[0]=='[')) {
 	cur = chunkalloc(sizeof(struct markedglyphs));
 	cur->is_name = false;
