@@ -245,7 +245,71 @@ extern BDFFont *FVSplineFontPieceMeal(SplineFont *sf, int layer, int ptsize, int
     return new;
 }
 
-static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int request_expose ) {
+void FVDrawOutlineOnly(GWindow pixmap, SplinePointList *set,
+                       Color fg, enum outlinesfm_flags strokeFillMode, float xoff, float yoff, double scale) {
+	if (!set) {
+		return;
+	}
+	for (SplinePointList *spl = set; spl != NULL; spl = spl->next) {
+		Color fc = fg;
+		Spline *first, *spline;
+		double x, y, cx1, cy1, cx2, cy2, dx, dy;
+		GDrawPathStartSubNew(pixmap);
+		x = xoff + spl->first->me.x * scale;
+		y = yoff - spl->first->me.y * scale;
+		GDrawPathMoveTo(pixmap, x + .5, y + .5);
+		for (spline = spl->first->next, first = NULL; spline != first && spline != NULL; spline = spline->to->next) {
+			x = xoff + spline->to->me.x * scale;
+			y = yoff - spline->to->me.y * scale;
+			if (spline->knownlinear)
+				GDrawPathLineTo(pixmap, x + .5, y + .5);
+			else if (spline->order2) {
+				dx = spline->from->me.x * scale - spline->from->me.x * scale;
+				dy = spline->from->me.y * scale - spline->from->me.y * scale;
+				cx1 = spline->from->me.x + spline->splines[0].c / 3;
+				cy1 = spline->from->me.y + spline->splines[1].c / 3;
+				cx2 = cx1 + (spline->splines[0].b + spline->splines[0].c) / 3;
+				cy2 = cy1 + (spline->splines[1].b + spline->splines[1].c) / 3;
+				cx1 = xoff + cx1 * scale + dx;
+				cy1 = yoff - cy1 * scale - dy;
+				dx = spline->to->me.x * scale - spline->to->me.x * scale;
+				dy = spline->to->me.y * scale - spline->to->me.y * scale;
+				cx2 = xoff + cx2 * scale + dx;
+				cy2 = yoff - cy2 * scale - dy;
+				GDrawPathCurveTo(pixmap, cx1 + .5, cy1 + .5, cx2 + .5, cy2 + .5, x + .5, y + .5);
+			} else {
+				dx = spline->from->me.x * scale - spline->from->me.x * scale;
+				dy = spline->from->me.y * scale - spline->from->me.y * scale;
+				cx1 = xoff + spline->from->nextcp.x * scale + dx;
+				cy1 = yoff - spline->from->nextcp.y * scale - dy;
+				dx = spline->to->me.x * scale - spline->to->me.x * scale;
+				dy = spline->to->me.y * scale - spline->to->me.y * scale;
+				cx2 = xoff + spline->to->prevcp.x * scale + dx;
+				cy2 = yoff - spline->to->prevcp.y * scale - dy;
+				GDrawPathCurveTo(pixmap, cx1 + .5, cy1 + .5, cx2 + .5, cy2 + .5, x + .5, y + .5);
+			}
+			if (first == NULL)
+				first = spline;
+		}
+		if (spline != NULL)
+			GDrawPathClose(pixmap);
+
+		switch (strokeFillMode) {
+			case sfm_stroke_trans:
+				GDrawPathStroke(pixmap, fc);
+				break;
+			case sfm_stroke:
+				GDrawPathStroke(pixmap, fc | 0xff000000);
+				break;
+			case sfm_clip:
+			case sfm_fill:
+			case sfm_nothing:
+				break;
+		}
+	}
+}
+
+static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int request_expose) {
     GRect box, old2;
     int feat_gid;
     SplineChar *sc;
@@ -397,6 +461,12 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int request_exp
 		if ( fv->showhmetrics&fvm_advanceto )
 		    GDrawDrawLine(pixmap,x0,(i+1)*fv->cbh-2,x1,
 			    (i+1)*fv->cbh-2,fvmetadvancetocol);
+		if (fv->showhmetrics & fvm_contour) {
+		    int x0 = j * fv->cbw + (fv->cbw - 1 - fv->magnify * xwidth) / 2 - bdfc->xmin * fv->magnify;
+		    int y0 = i * fv->cbh + fv->lab_height + fv->magnify * fv->show->ascent + 1;
+		    FVDrawOutlineOnly(pixmap, sc->layers[1].splines, fvmetadvancetocol, sfm_stroke, x0, y0,
+		    					  (double) (box.width - 1) / sc->vwidth);
+		}
 	    }
 	    if ( fv->showvmetrics ) {
 		int x0 = j*fv->cbw+(fv->cbw-1-fv->magnify*xwidth)/2- bdfc->xmin*fv->magnify
@@ -3326,7 +3396,7 @@ static int md_e_h(GWindow gw, GEvent *e) {
 	d->done = true;
     } else if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct md_data *d = GDrawGetUserData(gw);
-	static int masks[] = { fvm_baseline, fvm_origin, fvm_advanceat, fvm_advanceto, -1 };
+	static int masks[] = { fvm_baseline, fvm_origin, fvm_advanceat, fvm_advanceto, fvm_contour, -1 };
 	int i, metrics;
 	if ( GGadgetGetCid(e->u.control.g)==10 ) {
 	    metrics = 0;
@@ -3351,8 +3421,8 @@ static void FVMenuShowMetrics(GWindow fvgw,struct gmenuitem *mi, GEvent *UNUSED(
     GWindow gw;
     GWindowAttrs wattrs;
     struct md_data d;
-    GGadgetCreateData gcd[7];
-    GTextInfo label[6];
+    GGadgetCreateData gcd[8];
+    GTextInfo label[7];
     int metrics = mi->mid==MID_ShowHMetrics ? fv->showhmetrics : fv->showvmetrics;
 
     d.fv = fv;
@@ -3408,24 +3478,33 @@ static void FVMenuShowMetrics(GWindow fvgw,struct gmenuitem *mi, GEvent *UNUSED(
     gcd[3].gd.popup_msg = _("Display the advance width as a bar under the glyph\nshowing the extent of the advance");
     gcd[3].creator = GCheckBoxCreate;
 
-    label[4].text = (unichar_t *) _("_OK");
+    label[4].text = (unichar_t *) _("Draw a glyph contour");
     label[4].text_is_1byte = true;
-    label[4].text_in_resource = true;
     gcd[4].gd.label = &label[4];
-    gcd[4].gd.pos.x = 20-3; gcd[4].gd.pos.y = GDrawPixelsToPoints(NULL,pos.height)-35-3;
-    gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
-    gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    gcd[4].gd.cid = 10;
-    gcd[4].creator = GButtonCreate;
+    gcd[4].gd.pos.x = 8; gcd[4].gd.pos.y = gcd[3].gd.pos.y+16;
+    gcd[4].gd.flags = gg_enabled|gg_visible|(metrics&fvm_contour?gg_cb_on:0);
+    gcd[4].gd.cid = fvm_contour;
+    gcd[4].gd.popup_msg = _("Display a glyph contour");
+    gcd[4].creator = GCheckBoxCreate;
 
-    label[5].text = (unichar_t *) _("_Cancel");
+    label[5].text = (unichar_t *) _("_OK");
     label[5].text_is_1byte = true;
     label[5].text_in_resource = true;
     gcd[5].gd.label = &label[5];
-    gcd[5].gd.pos.x = -20; gcd[5].gd.pos.y = gcd[4].gd.pos.y+3;
+    gcd[5].gd.pos.x = 20-3; gcd[5].gd.pos.y = GDrawPixelsToPoints(NULL,pos.height)-35-3;
     gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
-    gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    gcd[5].gd.cid = 10;
     gcd[5].creator = GButtonCreate;
+
+    label[6].text = (unichar_t *) _("_Cancel");
+    label[6].text_is_1byte = true;
+    label[6].text_in_resource = true;
+    gcd[6].gd.label = &label[6];
+    gcd[6].gd.pos.x = -20; gcd[6].gd.pos.y = gcd[5].gd.pos.y+3;
+    gcd[6].gd.pos.width = -1; gcd[6].gd.pos.height = 0;
+    gcd[6].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    gcd[6].creator = GButtonCreate;
 
     GGadgetsCreate(gw,gcd);
 

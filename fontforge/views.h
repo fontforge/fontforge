@@ -432,7 +432,7 @@ typedef struct metricsview {
     int oldscript, oldlang;
 } MetricsView;
 
-enum fv_metrics { fvm_baseline=1, fvm_origin=2, fvm_advanceat=4, fvm_advanceto=8 };
+enum fv_metrics { fvm_baseline=1, fvm_origin=2, fvm_advanceat=4, fvm_advanceto=8, fvm_contour=16  };
 typedef struct fontview {
     FontViewBase b;
     BDFFont *show, *filled;
@@ -456,7 +456,7 @@ typedef struct fontview {
     unsigned int wasonlybitmaps:1;
     /*unsigned int refstate: 3;*/	/* 0x1 => paste orig of all non exist refs, 0x2=>don't, 0x3 => don't warn about non-exist refs with no source font */
     unsigned int touched: 1;
-    unsigned int showhmetrics: 4;
+    unsigned int showhmetrics: 5;
     unsigned int showvmetrics: 4;
     unsigned int drag_and_drop: 1;
     unsigned int has_dd_no_cursor: 1;
