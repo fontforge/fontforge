@@ -33,7 +33,6 @@
 #include "autowidth2.h"
 #include "bitmapchar.h"
 #include "bvedit.h"
-#include "charview_private.h"
 #include "cvundoes.h"
 #include "dumppfa.h"
 #include "encoding.h"
@@ -62,6 +61,7 @@
 #include "tottfgpos.h"
 #include "ustring.h"
 #include "utype.h"
+#include "views.h"
 
 #include <math.h>
 #include <unistd.h>
