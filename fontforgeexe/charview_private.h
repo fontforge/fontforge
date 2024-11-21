@@ -254,6 +254,8 @@ extern void CVMenuPointType(GWindow gw, struct gmenuitem *mi, GEvent *e);
 extern void CVMerge(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void CVMergeToLine(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void CVLSelectLayer(CharView *cv, int layer);
+extern void CVDrawSplinePointList(CharView *cv, GWindow pixmap, SplinePointList *set, Color fg,
+                           enum outlinesfm_flags strokeFillMode, float xoff, float yoff, real scale);
 
 
 #endif /* FONTFORGE_CHARVIEW_PRIVATE_H */

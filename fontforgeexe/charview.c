@@ -408,7 +408,7 @@ int CVCountSelectedPoints(CharView *cv) {
  * shapes not to cross axes multiple times while scaling.
  */
 static double rpt(CharView *cv, double pt) {
-    return cv->snapoutlines ? rint(pt) : pt;
+    return cv && cv->snapoutlines ? rint(pt) : pt;
 }
 
 static int shouldShowFilledUsingCairo(CharView *cv) {
@@ -1495,102 +1495,121 @@ void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 }
 
 
-void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *set,
-				Color fg, int dopoints, DRect *clip, enum outlinesfm_flags strokeFillMode ) {
+void CVDrawSplinePointList(CharView *cv, GWindow pixmap, SplinePointList *set, Color fg,
+                         enum outlinesfm_flags strokeFillMode, float xoff, float yoff, real scale)
+{
     SplinePointList *spl;
-    int activelayer = CVLayer(&cv->b);
+    int height = 0;
+    for (spl = set; spl != NULL; spl = spl->next)
+    {
+        Color fc = spl->is_clip_path ? clippathcol : fg;
+        /**
+         * Only make the outline red if this is not a grid layer
+         * and we want to highlight open paths
+         * and the activelayer is sane
+         * and the activelayer contains the given splinepointlist
+         * and the path is open
+         */
+        if (cv)
+        {
+            int activelayer = CVLayer(&cv->b);
+            height = cv->height;
+            if (cv->b.drawmode != dm_grid && DrawOpenPathsWithHighlight &&
+                activelayer < cv->b.sc->layer_cnt && activelayer >= 0 &&
+                SplinePointListContains(cv->b.sc->layers[activelayer].splines, spl) && spl->first &&
+                spl->first->prev == NULL)
+            {
+                if (GDrawGetLineWidth(pixmap) <= 1)
+                    fc = openpathcol | 0xff000000;
+                else
+                    fc = openpathcol;
+            }
+        }
+
+        if (GDrawHasCairo(pixmap) & gc_buildpath)
+        {
+            Spline *first, *spline;
+            double x, y, cx1, cy1, cx2, cy2, dx, dy;
+            GDrawPathStartSubNew(pixmap);
+            x = rpt(cv, xoff + spl->first->me.x * scale);
+            y = rpt(cv, yoff + height - spl->first->me.y * scale);
+            GDrawPathMoveTo(pixmap, x + .5, y + .5);
+            for (spline = spl->first->next, first = NULL; spline != first && spline != NULL;
+                 spline = spline->to->next)
+            {
+                x = rpt(cv, xoff + spline->to->me.x * scale);
+                y = rpt(cv, yoff + height - spline->to->me.y * scale);
+                if (spline->knownlinear)
+                    GDrawPathLineTo(pixmap, x + .5, y + .5);
+                else if (spline->order2)
+                {
+                    dx = rint(spline->from->me.x * scale) - spline->from->me.x * scale;
+                    dy = rint(spline->from->me.y * scale) - spline->from->me.y * scale;
+                    cx1 = spline->from->me.x + spline->splines[0].c / 3;
+                    cy1 = spline->from->me.y + spline->splines[1].c / 3;
+                    cx2 = cx1 + (spline->splines[0].b + spline->splines[0].c) / 3;
+                    cy2 = cy1 + (spline->splines[1].b + spline->splines[1].c) / 3;
+                    cx1 = xoff + cx1 * scale + dx;
+                    cy1 = yoff + height - cy1 * scale - dy;
+                    dx = rint(spline->to->me.x * scale) - spline->to->me.x * scale;
+                    dy = rint(spline->to->me.y * scale) - spline->to->me.y * scale;
+                    cx2 = xoff + cx2 * scale + dx;
+                    cy2 = yoff + height - cy2 * scale - dy;
+                    GDrawPathCurveTo(pixmap, cx1 + .5, cy1 + .5, cx2 + .5, cy2 + .5, x + .5,
+                                     y + .5);
+                }
+                else
+                {
+                    dx = rint(spline->from->me.x * scale) - spline->from->me.x * scale;
+                    dy = rint(spline->from->me.y * scale) - spline->from->me.y * scale;
+                    cx1 = xoff + spline->from->nextcp.x * scale + dx;
+                    cy1 = yoff + height - spline->from->nextcp.y * scale - dy;
+                    dx = rint(spline->to->me.x * scale) - spline->to->me.x * scale;
+                    dy = rint(spline->to->me.y * scale) - spline->to->me.y * scale;
+                    cx2 = xoff + spline->to->prevcp.x * scale + dx;
+                    cy2 = yoff + height - spline->to->prevcp.y * scale - dy;
+                    GDrawPathCurveTo(pixmap, cx1 + .5, cy1 + .5, cx2 + .5, cy2 + .5, x + .5,
+                                     y + .5);
+                }
+                if (first == NULL)
+                    first = spline;
+            }
+            if (spline != NULL)
+                GDrawPathClose(pixmap);
+
+            switch (strokeFillMode)
+            {
+            case sfm_stroke_trans:
+                GDrawPathStroke(pixmap, fc);
+                break;
+            case sfm_stroke:
+                GDrawPathStroke(pixmap, fc | 0xff000000);
+                break;
+            case sfm_clip:
+            case sfm_fill:
+            case sfm_nothing:
+                break;
+            }
+        }
+        else if (cv && (strokeFillMode != sfm_clip))
+        {
+            GPointList *gpl = MakePoly(cv, spl), *cur;
+            for (cur = gpl; cur != NULL; cur = cur->next)
+                GDrawDrawPoly(pixmap, cur->gp, cur->cnt, fc);
+            GPLFree(gpl);
+        }
+    }
+}
+
+void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *set,
+                                Color fg, int dopoints, DRect *clip, enum outlinesfm_flags strokeFillMode ) {
     CharViewTab* tab = CVGetActiveTab(cv);
 
     if( strokeFillMode == sfm_fill ) {
     	GDrawFillRuleSetWinding(pixmap);
     }
 
-    for ( spl = set; spl!=NULL; spl = spl->next ) {
-
-	Color fc  = spl->is_clip_path ? clippathcol : fg;
-	/**
-	 * Only make the outline red if this is not a grid layer
-	 * and we want to highlight open paths
-	 * and the activelayer is sane
-	 * and the activelayer contains the given splinepointlist
-	 * and the path is open
-	 */
-	if ( cv->b.drawmode!=dm_grid
-	     && DrawOpenPathsWithHighlight
-	     && activelayer < cv->b.sc->layer_cnt
-	     && activelayer >= 0
-	     && SplinePointListContains( cv->b.sc->layers[activelayer].splines, spl )
-	     && spl->first
-	     && spl->first->prev==NULL )
-	{
-            if ( GDrawGetLineWidth( pixmap ) <= 1 )
-		fc = openpathcol | 0xff000000;
-	    else
-		fc = openpathcol;
-	}
-
-	if ( GDrawHasCairo(pixmap)&gc_buildpath ) {
-	    Spline *first, *spline;
-	    double x,y, cx1, cy1, cx2, cy2, dx,dy;
-	    GDrawPathStartSubNew(pixmap);
-	    x = rpt(cv,  tab->xoff + spl->first->me.x*tab->scale);
-	    y = rpt(cv, -tab->yoff + cv->height - spl->first->me.y*tab->scale);
-	    GDrawPathMoveTo(pixmap,x+.5,y+.5);
-	    for ( spline=spl->first->next, first=NULL; spline!=first && spline!=NULL; spline=spline->to->next ) {
-		x = rpt(cv,  tab->xoff + spline->to->me.x*tab->scale);
-		y = rpt(cv, -tab->yoff + cv->height - spline->to->me.y*tab->scale);
-		if ( spline->knownlinear )
-		    GDrawPathLineTo(pixmap,x+.5,y+.5);
-		else if ( spline->order2 ) {
-		    dx = rint(spline->from->me.x*tab->scale) - spline->from->me.x*tab->scale;
-		    dy = rint(spline->from->me.y*tab->scale) - spline->from->me.y*tab->scale;
-		    cx1 = spline->from->me.x + spline->splines[0].c/3;
-		    cy1 = spline->from->me.y + spline->splines[1].c/3;
-		    cx2 = cx1 + (spline->splines[0].b+spline->splines[0].c)/3;
-		    cy2 = cy1 + (spline->splines[1].b+spline->splines[1].c)/3;
-		    cx1 = tab->xoff + cx1*tab->scale + dx;
-		    cy1 = -tab->yoff + cv->height - cy1*tab->scale - dy;
-		    dx = rint(spline->to->me.x*tab->scale) - spline->to->me.x*tab->scale;
-		    dy = rint(spline->to->me.y*tab->scale) - spline->to->me.y*tab->scale;
-		    cx2 = tab->xoff + cx2*tab->scale + dx;
-		    cy2 = -tab->yoff + cv->height - cy2*tab->scale - dy;
-		    GDrawPathCurveTo(pixmap,cx1+.5,cy1+.5,cx2+.5,cy2+.5,x+.5,y+.5);
-		} else {
-		    dx = rint(spline->from->me.x*tab->scale) - spline->from->me.x*tab->scale;
-		    dy = rint(spline->from->me.y*tab->scale) - spline->from->me.y*tab->scale;
-		    cx1 = tab->xoff + spline->from->nextcp.x*tab->scale + dx;
-		    cy1 = -tab->yoff + cv->height - spline->from->nextcp.y*tab->scale - dy;
-		    dx = rint(spline->to->me.x*tab->scale) - spline->to->me.x*tab->scale;
-		    dy = rint(spline->to->me.y*tab->scale) - spline->to->me.y*tab->scale;
-		    cx2 = tab->xoff + spline->to->prevcp.x*tab->scale + dx;
-		    cy2 = -tab->yoff + cv->height - spline->to->prevcp.y*tab->scale - dy;
-		    GDrawPathCurveTo(pixmap,cx1+.5,cy1+.5,cx2+.5,cy2+.5,x+.5,y+.5);
-		}
-		if ( first==NULL )
-		    first = spline;
-	    }
-	    if ( spline!=NULL )
-		GDrawPathClose(pixmap);
-
-	    switch( strokeFillMode ) {
-            case sfm_stroke_trans:
-                GDrawPathStroke( pixmap, fc );
-                break;
-            case sfm_stroke:
-                GDrawPathStroke( pixmap, fc | 0xff000000 );
-                break;
-            case sfm_clip:
-            case sfm_fill:
-            case sfm_nothing:
-                break;
-	    }
-	} else if (strokeFillMode != sfm_clip) {
-	    GPointList *gpl = MakePoly(cv,spl), *cur;
-	    for ( cur=gpl; cur!=NULL; cur=cur->next )
-		GDrawDrawPoly(pixmap,cur->gp,cur->cnt,fc);
-	    GPLFree(gpl);
-	}
-    }
+    CVDrawSplinePointList(cv, pixmap, set, fg, strokeFillMode, tab->xoff, -tab->yoff, tab->scale);
 
     if (strokeFillMode == sfm_clip && (GDrawHasCairo(pixmap) & gc_buildpath)) {
         // Really only cairo_clip needs to be called

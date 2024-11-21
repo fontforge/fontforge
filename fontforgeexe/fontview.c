@@ -33,6 +33,7 @@
 #include "autowidth2.h"
 #include "bitmapchar.h"
 #include "bvedit.h"
+#include "charview_private.h"
 #include "cvundoes.h"
 #include "dumppfa.h"
 #include "encoding.h"
@@ -245,70 +246,6 @@ extern BDFFont *FVSplineFontPieceMeal(SplineFont *sf, int layer, int ptsize, int
     return new;
 }
 
-void FVDrawOutlineOnly(GWindow pixmap, SplinePointList *set,
-                       Color fg, enum outlinesfm_flags strokeFillMode, float xoff, float yoff, double scale) {
-	if (!set) {
-		return;
-	}
-	for (SplinePointList *spl = set; spl != NULL; spl = spl->next) {
-		Color fc = fg;
-		Spline *first, *spline;
-		double x, y, cx1, cy1, cx2, cy2, dx, dy;
-		GDrawPathStartSubNew(pixmap);
-		x = xoff + spl->first->me.x * scale;
-		y = yoff - spl->first->me.y * scale;
-		GDrawPathMoveTo(pixmap, x + .5, y + .5);
-		for (spline = spl->first->next, first = NULL; spline != first && spline != NULL; spline = spline->to->next) {
-			x = xoff + spline->to->me.x * scale;
-			y = yoff - spline->to->me.y * scale;
-			if (spline->knownlinear)
-				GDrawPathLineTo(pixmap, x + .5, y + .5);
-			else if (spline->order2) {
-				dx = spline->from->me.x * scale - spline->from->me.x * scale;
-				dy = spline->from->me.y * scale - spline->from->me.y * scale;
-				cx1 = spline->from->me.x + spline->splines[0].c / 3;
-				cy1 = spline->from->me.y + spline->splines[1].c / 3;
-				cx2 = cx1 + (spline->splines[0].b + spline->splines[0].c) / 3;
-				cy2 = cy1 + (spline->splines[1].b + spline->splines[1].c) / 3;
-				cx1 = xoff + cx1 * scale + dx;
-				cy1 = yoff - cy1 * scale - dy;
-				dx = spline->to->me.x * scale - spline->to->me.x * scale;
-				dy = spline->to->me.y * scale - spline->to->me.y * scale;
-				cx2 = xoff + cx2 * scale + dx;
-				cy2 = yoff - cy2 * scale - dy;
-				GDrawPathCurveTo(pixmap, cx1 + .5, cy1 + .5, cx2 + .5, cy2 + .5, x + .5, y + .5);
-			} else {
-				dx = spline->from->me.x * scale - spline->from->me.x * scale;
-				dy = spline->from->me.y * scale - spline->from->me.y * scale;
-				cx1 = xoff + spline->from->nextcp.x * scale + dx;
-				cy1 = yoff - spline->from->nextcp.y * scale - dy;
-				dx = spline->to->me.x * scale - spline->to->me.x * scale;
-				dy = spline->to->me.y * scale - spline->to->me.y * scale;
-				cx2 = xoff + spline->to->prevcp.x * scale + dx;
-				cy2 = yoff - spline->to->prevcp.y * scale - dy;
-				GDrawPathCurveTo(pixmap, cx1 + .5, cy1 + .5, cx2 + .5, cy2 + .5, x + .5, y + .5);
-			}
-			if (first == NULL)
-				first = spline;
-		}
-		if (spline != NULL)
-			GDrawPathClose(pixmap);
-
-		switch (strokeFillMode) {
-			case sfm_stroke_trans:
-				GDrawPathStroke(pixmap, fc);
-				break;
-			case sfm_stroke:
-				GDrawPathStroke(pixmap, fc | 0xff000000);
-				break;
-			case sfm_clip:
-			case sfm_fill:
-			case sfm_nothing:
-				break;
-		}
-	}
-}
-
 static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int request_expose) {
     GRect box, old2;
     int feat_gid;
@@ -464,8 +401,8 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int request_exp
 		if (fv->showhmetrics & fvm_contour) {
 		    int x0 = j * fv->cbw + (fv->cbw - 1 - fv->magnify * xwidth) / 2 - bdfc->xmin * fv->magnify;
 		    int y0 = i * fv->cbh + fv->lab_height + fv->magnify * fv->show->ascent + 1;
-		    FVDrawOutlineOnly(pixmap, sc->layers[1].splines, fvmetadvancetocol, sfm_stroke, x0, y0,
-		    					  (double) (box.width - 1) / sc->vwidth);
+		    CVDrawSplinePointList(NULL, pixmap, sc->layers[1].splines, fvmetadvancetocol,
+		        sfm_stroke, x0, y0, (double) (box.width - 1) / sc->vwidth);
 		}
 	    }
 	    if ( fv->showvmetrics ) {
