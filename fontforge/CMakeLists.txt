@@ -227,7 +227,7 @@ if(BUILD_SHARED_LIBS)
     # Both fontforge.exe and *.pyd Python modules look for libfontforge.dll in
     # their directory, so we need to produce a second copy.
     add_custom_command(TARGET fontforge POST_BUILD
-      COMMAND cp $<TARGET_FILE:fontforge> ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+            COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:fontforge> ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
     )
     target_link_options(fontforge PRIVATE -Wl,--export-all-symbols) # FIXME
   endif()
