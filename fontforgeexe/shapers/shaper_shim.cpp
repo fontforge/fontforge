@@ -23,8 +23,11 @@
 #include "shaper_shim.hpp"
 
 #include <stddef.h>
+#include <string.h>
 
 #include "intl.h"
+#include "builtin.hpp"
+#include "harfbuzz.hpp"
 
 const ShaperDef* get_shaper_defs() {
     static ShaperDef shaper_defs[] = {{"builtin", N_("Built-in shaper")},
@@ -41,4 +44,38 @@ const char* get_default_shaper() {
     return "harfbuzz";
 #endif
     return "builtin";
+}
+
+void* shaper_factory(const char* name) {
+#ifdef ENABLE_HARFBUZZ
+    if (strcmp(name, "harfbuzz") == 0) {
+        return new ff::shapers::HarfBuzzShaper();
+    }
+#endif
+    if (strcmp(name, "builtin") == 0) {
+        return new ff::shapers::BuiltInShaper();
+    } else {
+        return nullptr;
+    }
+}
+
+void shaper_free(void** p_shaper) {
+    if (p_shaper == nullptr) {
+        return;
+    }
+
+    ff::shapers::IShaper* shaper =
+        static_cast<ff::shapers::IShaper*>(*p_shaper);
+    delete shaper;
+    *p_shaper = nullptr;
+}
+
+const char* shaper_name(void* shaper) {
+    ff::shapers::IShaper* ishaper = static_cast<ff::shapers::IShaper*>(shaper);
+
+    if (shaper) {
+        return ishaper->name();
+    } else {
+        return "";
+    }
 }

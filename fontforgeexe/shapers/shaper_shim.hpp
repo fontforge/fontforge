@@ -39,6 +39,15 @@ const ShaperDef* get_shaper_defs();
 /* The internal name of the default shaper */
 const char* get_default_shaper();
 
+/* Create a new shaper object */
+void* shaper_factory(const char* name);
+
+/* Release the shaper object and nullify the pointer */
+void shaper_free(void** p_shaper);
+
+/* Get the internal name of the shaper */
+const char* shaper_name(void* shaper);
+
 #ifdef __cplusplus
 }
 #endif
