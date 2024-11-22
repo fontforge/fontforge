@@ -430,6 +430,7 @@ typedef struct metricsview {
     int ptsize, dpi;
     int ybaseline;
     int oldscript, oldlang;
+    void* shaper;
 } MetricsView;
 
 enum fv_metrics { fvm_baseline=1, fvm_origin=2, fvm_advanceat=4, fvm_advanceto=8 };
