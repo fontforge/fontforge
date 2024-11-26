@@ -26,6 +26,12 @@
 extern "C" {
 #endif
 
+typedef struct splinefont SplineFont;
+
+typedef struct shaper_context {
+    SplineFont* sf;
+} ShaperContext;
+
 typedef struct shaper_def {
     /* Internal shaper name */
     const char* name;
@@ -40,7 +46,7 @@ const ShaperDef* get_shaper_defs();
 const char* get_default_shaper();
 
 /* Create a new shaper object */
-void* shaper_factory(const char* name);
+void* shaper_factory(const char* name, ShaperContext* r_context);
 
 /* Release the shaper object and nullify the pointer */
 void shaper_free(void** p_shaper);

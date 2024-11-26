@@ -22,15 +22,21 @@
  */
 #pragma once
 
+#include <memory>
+
 #include "i_shaper.hpp"
+#include "shaper_shim.hpp"
 
 namespace ff::shapers {
 
 class BuiltInShaper : public IShaper {
  public:
-    BuiltInShaper() {}
+    BuiltInShaper(std::shared_ptr<ShaperContext> context) : context_(context) {}
 
     const char* name() const override { return "builtin"; }
+
+ private:
+    std::shared_ptr<ShaperContext> context_;
 };
 
 }  // namespace ff::shapers

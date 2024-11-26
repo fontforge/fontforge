@@ -22,6 +22,7 @@
  */
 #include "shaper_shim.hpp"
 
+#include <memory>
 #include <stddef.h>
 #include <string.h>
 
@@ -46,14 +47,17 @@ const char* get_default_shaper() {
     return "builtin";
 }
 
-void* shaper_factory(const char* name) {
+void* shaper_factory(const char* name, ShaperContext* r_context) {
+    // Take ownership of r_context
+    std::shared_ptr<ShaperContext> context(r_context);
+
 #ifdef ENABLE_HARFBUZZ
     if (strcmp(name, "harfbuzz") == 0) {
-        return new ff::shapers::HarfBuzzShaper();
+        return new ff::shapers::HarfBuzzShaper(context);
     }
 #endif
     if (strcmp(name, "builtin") == 0) {
-        return new ff::shapers::BuiltInShaper();
+        return new ff::shapers::BuiltInShaper(context);
     } else {
         return nullptr;
     }

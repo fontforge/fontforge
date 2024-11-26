@@ -3967,6 +3967,13 @@ static void ellistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     }
 }
 
+static ShaperContext* MVMakeShaperContext(MetricsView *mv) {
+    ShaperContext *context = calloc(1,sizeof(ShaperContext));
+    context->sf = mv->sf;
+
+    return context;
+}
+
 static void MVSetShaper(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     const char* new_shaper_name = mi->ti.userdata;
@@ -3977,7 +3984,7 @@ static void MVSetShaper(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     }
 
     shaper_free(&(mv->shaper));
-    mv->shaper = shaper_factory(new_shaper_name);
+    mv->shaper = shaper_factory(new_shaper_name, MVMakeShaperContext(mv));
 }
 
 static void vwlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
@@ -5254,7 +5261,7 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     mv->type = mv_type;
     mv->pixelsize_set_by_window = true;
     mv->dpi = 72;
-    mv->shaper = shaper_factory(get_default_shaper());
+    mv->shaper = shaper_factory(get_default_shaper(), MVMakeShaperContext(mv));
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_icon;
