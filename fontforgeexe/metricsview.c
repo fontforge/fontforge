@@ -3985,6 +3985,7 @@ static void MVSetShaper(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 
     shaper_free(&(mv->shaper));
     mv->shaper = shaper_factory(new_shaper_name, MVMakeShaperContext(mv));
+    MVRefreshAll(mv);
 }
 
 static void vwlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
