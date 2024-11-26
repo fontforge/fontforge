@@ -30,6 +30,8 @@
 #include "builtin.hpp"
 #include "harfbuzz.hpp"
 
+using ff::Tag;
+
 const ShaperDef* get_shaper_defs() {
     static ShaperDef shaper_defs[] = {{"builtin", N_("Built-in shaper")},
 #ifdef ENABLE_HARFBUZZ
@@ -81,5 +83,22 @@ const char* shaper_name(void* shaper) {
         return ishaper->name();
     } else {
         return "";
+    }
+}
+
+struct opentype_str* shaper_apply_features(void* shaper, SplineChar** glyphs,
+                                           uint32_t* flist, uint32_t script,
+                                           uint32_t lang, int pixelsize) {
+    ff::shapers::IShaper* ishaper = static_cast<ff::shapers::IShaper*>(shaper);
+    std::vector<Tag> feature_list;
+    for (int i = 0; flist[i] != 0; ++i) {
+        feature_list.emplace_back(flist[i]);
+    }
+
+    if (shaper) {
+        return ishaper->apply_features(glyphs, feature_list, Tag(script),
+                                       Tag(lang), pixelsize);
+    } else {
+        return nullptr;
     }
 }

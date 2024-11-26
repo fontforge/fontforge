@@ -20,30 +20,14 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#pragma once
-
-#include <vector>
-
-#include "tag.hpp"
-
-typedef struct splinechar SplineChar;
-struct opentype_str;
+#include "harfbuzz.hpp"
 
 namespace ff::shapers {
 
-class IShaper {
- public:
-    // The internal shaper name is non-localizable and serves to identify the
-    // shaper in the system.
-    virtual const char* name() const = 0;
-
-    // glyphs - a sequence of glyphs to be shaped
-    // NOTE: the glyph sequence can't be passed as a Unicode string, since some
-    // glyphs don't have encoding at all, and the shaper should still be able to
-    // apply features which involve these glyphs.
-    virtual struct opentype_str* apply_features(
-        SplineChar** glyphs, const std::vector<Tag>& feature_list, Tag script,
-        Tag lang, int pixelsize) const = 0;
-};
+struct opentype_str* HarfBuzzShaper::apply_features(
+    SplineChar** glyphs, const std::vector<Tag>& feature_list, Tag script,
+    Tag lang, int pixelsize) const {
+    return nullptr;
+}
 
 }  // namespace ff::shapers

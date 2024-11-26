@@ -26,10 +26,21 @@
 extern "C" {
 #endif
 
+#include <stdint.h>
+
+typedef struct splinechar SplineChar;
 typedef struct splinefont SplineFont;
 
 typedef struct shaper_context {
     SplineFont* sf;
+
+    // Set character grid to the desired position according to the scrollbar
+    struct opentype_str* (*apply_ticked_features)(SplineFont* sf,
+                                                  uint32_t* flist,
+                                                  uint32_t script,
+                                                  uint32_t lang, int pixelsize,
+                                                  SplineChar** glyphs);
+
 } ShaperContext;
 
 typedef struct shaper_def {
@@ -53,6 +64,16 @@ void shaper_free(void** p_shaper);
 
 /* Get the internal name of the shaper */
 const char* shaper_name(void* shaper);
+
+/* Perform shaping: apply font features to the input string and compute position
+ * of each glyph.
+ *
+ * Arguments:
+ *     flist - zero-terminated list of OpenType features
+ */
+struct opentype_str* shaper_apply_features(void* shaper, SplineChar** glyphs,
+                                           uint32_t* flist, uint32_t script,
+                                           uint32_t lang, int pixelsize);
 
 #ifdef __cplusplus
 }

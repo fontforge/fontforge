@@ -20,30 +20,22 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#pragma once
-
-#include <vector>
-
-#include "tag.hpp"
-
-typedef struct splinechar SplineChar;
-struct opentype_str;
+#include "builtin.hpp"
 
 namespace ff::shapers {
 
-class IShaper {
- public:
-    // The internal shaper name is non-localizable and serves to identify the
-    // shaper in the system.
-    virtual const char* name() const = 0;
+struct opentype_str* BuiltInShaper::apply_features(
+    SplineChar** glyphs, const std::vector<Tag>& feature_list, Tag script,
+    Tag lang, int pixelsize) const {
+    // Zero-terminated list of features
+    std::vector<uint32_t> flist(feature_list.size() + 1, 0);
+    for (int i = 0; i < feature_list.size(); ++i) {
+        flist[i] = (uint32_t)feature_list[i];
+    }
 
-    // glyphs - a sequence of glyphs to be shaped
-    // NOTE: the glyph sequence can't be passed as a Unicode string, since some
-    // glyphs don't have encoding at all, and the shaper should still be able to
-    // apply features which involve these glyphs.
-    virtual struct opentype_str* apply_features(
-        SplineChar** glyphs, const std::vector<Tag>& feature_list, Tag script,
-        Tag lang, int pixelsize) const = 0;
-};
+    return context_->apply_ticked_features(context_->sf, flist.data(),
+                                           (uint32_t)script, (uint32_t)lang,
+                                           pixelsize, glyphs);
+}
 
 }  // namespace ff::shapers

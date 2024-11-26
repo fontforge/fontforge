@@ -1008,7 +1008,11 @@ static void MVRemetric(MetricsView *mv) {
     free(mv->glyphs); mv->glyphs = NULL;
     sf = mv->sf;
     if ( sf->cidmaster ) sf = sf->cidmaster;
-    mv->glyphs = ApplyTickedFeatures(sf,feats,script, lang, mv->pixelsize, mv->chars);
+    mv->glyphs = shaper_apply_features(mv->shaper, mv->chars, feats,
+                            		script, lang, mv->pixelsize);
+    if (mv->glyphs == NULL) {
+	mv->glyphs = calloc(1, sizeof(struct opentype_str));
+    }
     free(feats);
     if ( goodsc!=NULL )
 	mv->right_to_left = SCRightToLeft(goodsc)?1:0;
@@ -3970,6 +3974,7 @@ static void ellistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 static ShaperContext* MVMakeShaperContext(MetricsView *mv) {
     ShaperContext *context = calloc(1,sizeof(ShaperContext));
     context->sf = mv->sf;
+    context->apply_ticked_features = ApplyTickedFeatures;
 
     return context;
 }

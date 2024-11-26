@@ -1,6 +1,10 @@
 # Distributed under the original FontForge BSD 3-clause license
 
 add_library(shapers OBJECT
+  builtin.hpp
+  builtin.cpp
+  harfbuzz.hpp
+  harfbuzz.cpp
   shaper_shim.hpp
   shaper_shim.cpp
 )

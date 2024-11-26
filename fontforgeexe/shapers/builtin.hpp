@@ -35,6 +35,11 @@ class BuiltInShaper : public IShaper {
 
     const char* name() const override { return "builtin"; }
 
+    struct opentype_str* apply_features(SplineChar** glyphs,
+                                        const std::vector<Tag>& feature_list,
+                                        Tag script, Tag lang,
+                                        int pixelsize) const override;
+
  private:
     std::shared_ptr<ShaperContext> context_;
 };
