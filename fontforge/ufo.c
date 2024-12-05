@@ -35,6 +35,7 @@
 #include "gfile.h"
 #include "glif_name_hash.h"
 #include "lookups.h"
+#include "splinesave.h"
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "splineutil2.h"
@@ -1350,6 +1351,7 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer, int
     /* UniqueID is obsolete */
     PListAddInteger(dictnode,"postscriptUnderlineThickness",sf->uwidth);
     PListAddInteger(dictnode,"postscriptUnderlinePosition",sf->upos);
+    PListAddBoolean(dictnode,"postscriptIsFixedPitch", SFIsFixedWidth(sf));
     if ( sf->private!=NULL ) {
 	char *pt;
 	PListAddPrivateArray(dictnode, "BlueValues", sf->private);
