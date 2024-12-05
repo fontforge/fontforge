@@ -1796,48 +1796,86 @@ static void SplineFont2FullSubrs1(int flags,GlyphInfo *gi) {
 #endif	/* FONTFORGE_CONFIG_PS_REFS_GET_SUBRS */
 }
 
-int SFOneWidth(SplineFont *sf) {
-    int width, i;
+typedef enum font_pitch { pitch_unknown, pitch_variable, pitch_fixed, pitch_dual } FontPitch;
 
-    width = -2;
-    for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sf->glyphs[i]) &&
-	    (strcmp(sf->glyphs[i]->name,".notdef")!=0 || sf->glyphs[i]->layers[ly_fore].splines!=NULL)) {
+static FontPitch SFComputePitch(SplineFont *sf, int *p_width) {
+    FontPitch pitch = pitch_unknown;
+    int width = -1;
+
+    for ( int i=0; i<sf->glyphcnt; ++i) {
 	/* Only trust the width of notdef if it's got some content */
 	/* (at least as far as fixed pitch determination goes) */
-	if ( width==-2 ) width = sf->glyphs[i]->width;
-	else if ( width!=sf->glyphs[i]->width ) {
-	    width = -1;
-    break;
-	}
-    }
-return(width);
-}
+    	if ( SCWorthOutputting(sf->glyphs[i]) &&
+	     strcmp(sf->glyphs[i]->name,".null")!=0 &&
+	     strcmp(sf->glyphs[i]->name,"nonmarkingreturn")!=0 &&
+	     (strcmp(sf->glyphs[i]->name,".notdef")!=0 || sf->glyphs[i]->layers[ly_fore].splines!=NULL))
+	{
+	    int16_t this_width = sf->glyphs[i]->width;
+	    if (this_width == 0) {
+		/* Zero-width glyphs, such as control characters or diacritical marks
+		   don't affect the state. */
+		continue;
+	    }
 
-int CIDOneWidth(SplineFont *_sf) {
-    int width, i;
-    int k;
-    SplineFont *sf;
-
-    if ( _sf->cidmaster!=NULL ) _sf = _sf->cidmaster;
-    width = -2;
-    k=0;
-    do {
-	sf = _sf->subfonts==NULL? _sf : _sf->subfonts[k];
-	for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sf->glyphs[i]) &&
-		strcmp(sf->glyphs[i]->name,".null")!=0 &&
-		strcmp(sf->glyphs[i]->name,"nonmarkingreturn")!=0 &&
-		(strcmp(sf->glyphs[i]->name,".notdef")!=0 || sf->glyphs[i]->layers[ly_fore].splines!=NULL)) {
-	    /* Only trust the width of notdef if it's got some content */
-	    /* (at least as far as fixed pitch determination goes) */
-	    if ( width==-2 ) width = sf->glyphs[i]->width;
-	    else if ( width!=sf->glyphs[i]->width ) {
+	    if (pitch == pitch_unknown) {
+		width = this_width;
+		pitch = pitch_fixed;
+	    } else if (pitch == pitch_fixed) {
+	    	if (this_width == 2*width) {
+		    pitch = pitch_dual;
+		} else if (2*this_width == width) {
+		    width = this_width;
+		    pitch = pitch_dual;
+		} else if (this_width != width){
+		    width = -1;
+		    pitch = pitch_variable;
+		    break; /* no further check necessary */
+		}
+	    } else if (pitch == pitch_dual && (this_width != width && this_width != 2*width)) {
 		width = -1;
-	break;
+		pitch = pitch_variable;
+		break; /* no further check necessary */
 	    }
 	}
+    }
+
+    if (p_width) *p_width = width;
+    return pitch;
+}
+
+bool SFIsFixedWidth(SplineFont *sf) {
+    FontPitch pitch = SFComputePitch(sf, NULL);
+    return (pitch == pitch_fixed || pitch == pitch_dual);
+}
+
+/* Return value:
+	-2: unknown pitch
+	-1: variable or dual pitch
+	width>0: fixed pitch with given character width
+*/
+int CIDOneWidth(SplineFont *_sf) {
+    int width, total_width = -2;
+    int k = 0;
+    SplineFont *sf;
+    FontPitch pitch = pitch_unknown;
+
+    if ( _sf->cidmaster!=NULL ) _sf = _sf->cidmaster;
+    do {
+	sf = _sf->subfonts==NULL? _sf : _sf->subfonts[k];
+	pitch = SFComputePitch(sf, &width);
+	if (pitch == pitch_unknown) {
+	    continue;
+	}
+
+	if (pitch == pitch_dual || pitch == pitch_variable ||
+	    (pitch == pitch_fixed && total_width != -2 && width != total_width)) {
+	    total_width = -1;
+	    break;
+	}
+	total_width = width;
 	++k;
     } while ( k<_sf->subfontcnt );
-return(width);
+    return total_width;
 }
 
 int SFOneHeight(SplineFont *sf) {
@@ -2032,13 +2070,13 @@ struct pschars *SplineFont2ChrsSubrs(SplineFont *sf, int iscjk,
 	fixed = 0;
 	for ( i=0; i<instance_count; ++i ) {
 	    MarkTranslationRefs(mm->instances[i],layer);
-	    fixed = SFOneWidth(mm->instances[i]);
+	    fixed = CIDOneWidth(mm->instances[i]);
 	    if ( fixed==-1 )
 	break;
 	}
     } else {
 	MarkTranslationRefs(sf,layer);
-	fixed = SFOneWidth(sf);
+	fixed = CIDOneWidth(sf);
 	instance_count = 1;
     }
 
@@ -2074,7 +2112,7 @@ struct pschars *SplineFont2ChrsSubrs(SplineFont *sf, int iscjk,
 	dummynotdef.parent = sf;
 	dummynotdef.layer_cnt = sf->layer_cnt;
 	dummynotdef.layers = calloc(sf->layer_cnt,sizeof(Layer));
-	dummynotdef.width = SFOneWidth(sf);
+	dummynotdef.width = CIDOneWidth(sf);
 	if ( dummynotdef.width==-1 )
 	    dummynotdef.width = (sf->ascent+sf->descent)/2;
 	gi.gb[0].sc = &dummynotdef;
@@ -2150,7 +2188,7 @@ struct pschars *CID2ChrsSubrs(SplineFont *cidmaster,struct cidbytes *cidbytes,in
 	dummynotdef.parent = cidmaster->subfonts[0];
 	dummynotdef.layer_cnt = layer+1;
 	dummynotdef.layers = calloc(layer+1,sizeof(Layer));
-	dummynotdef.width = SFOneWidth(dummynotdef.parent);
+	dummynotdef.width = CIDOneWidth(dummynotdef.parent);
 	if ( dummynotdef.width==-1 )
 	    dummynotdef.width = (dummynotdef.parent->ascent+dummynotdef.parent->descent);
     }
@@ -3228,7 +3266,7 @@ struct pschars *SplineFont2ChrsSubrs2(SplineFont *sf, int nomwid, int defwid,
 	    dummynotdef.parent = sf;
 	    dummynotdef.layer_cnt = sf->layer_cnt;
 	    dummynotdef.layers = calloc(sf->layer_cnt,sizeof(Layer));
-	    dummynotdef.width = SFOneWidth(sf);
+	    dummynotdef.width = CIDOneWidth(sf);
 	    if ( dummynotdef.width==-1 )
 		dummynotdef.width = (sf->ascent+sf->descent)/2;
 	    Type2NotDefSplines(sf,&dummynotdef,layer);
@@ -3458,7 +3496,7 @@ struct pschars *CID2ChrsSubrs2(SplineFont *cidmaster,struct fd2data *fds,
 	    dummynotdef.parent = sf;
 	    dummynotdef.layer_cnt = layer+1;
 	    dummynotdef.layers = calloc(layer+1,sizeof(Layer));
-	    dummynotdef.width = SFOneWidth(sf);
+	    dummynotdef.width = CIDOneWidth(sf);
 	    if ( dummynotdef.width==-1 )
 		dummynotdef.width = (sf->ascent+sf->descent);
 	    Type2NotDefSplines(sf,&dummynotdef,layer);
