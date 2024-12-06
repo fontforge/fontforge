@@ -1008,6 +1008,7 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
         case GDK_BUTTON_RELEASE: {
             if ((g_object_get_data(G_OBJECT(w), "GtkWidget")) != NULL) {
                // Propagate event to GTK to allow grabbing focus for char grid
+               // and opening / closing of drop-down menus
                gtk_main_do_event(event);
             }
             GdkEventButton *evt = (GdkEventButton *)event;

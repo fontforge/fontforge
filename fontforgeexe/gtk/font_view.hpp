@@ -51,6 +51,7 @@ class FontView : public ICharGridContainter {
 
     Gtk::Window window;
     CharGrid char_grid;
+    Gtk::Menu pop_up;
 };
 
 }  // namespace ff::views

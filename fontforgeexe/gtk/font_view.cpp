@@ -32,6 +32,8 @@
 
 namespace ff::views {
 
+bool on_button_press_event(GdkEventButton* event, Gtk::Menu& pop_up);
+
 FontView::FontView(std::shared_ptr<FVContext> context, int width, int height)
     : fv_context(context), char_grid(context) {
     ff::app::add_top_view(window);
@@ -53,11 +55,31 @@ FontView::FontView(std::shared_ptr<FVContext> context, int width, int height)
     window.add(char_grid.get_top_widget());
     window.show_all();
 
+    Gtk::MenuItem* menu1 = Gtk::make_managed<Gtk::MenuItem>("Menu 1");
+    Gtk::MenuItem* menu2 = Gtk::make_managed<Gtk::MenuItem>("Menu 2");
+    pop_up.append(*menu1);
+    pop_up.append(*menu2);
+    char_grid.get_top_widget().signal_button_press_event().connect(
+        [this](GdkEventButton* event) {
+            return on_button_press_event(event, pop_up);
+        });
+
     // TODO(iorsh): review this very stragne hack.
     // For reasons beyond my comprehension, DrawingArea fails to catch events
     // before this function is called. A mere traverasal of widget tree should
     // theoretically have no side efects, but it does.
     gtk_find_child(&window, "");
+}
+
+/////////////////  EVENTS  ////////////////////
+
+bool on_button_press_event(GdkEventButton* event, Gtk::Menu& pop_up) {
+    if (event->button == GDK_BUTTON_SECONDARY) {
+        pop_up.show_all();
+        pop_up.popup(event->button, event->time);
+        return true;
+    }
+    return false;
 }
 
 }  // namespace ff::views
