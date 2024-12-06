@@ -39,7 +39,7 @@ class SelectGlyphs : public Dialog, public views::ICharGridContainter {
  public:
     SelectGlyphs(std::shared_ptr<FVContext> context, int width, int height);
 
-    views::CharGrid& get_char_grid() override { return char_grid; }
+    views::CharGrid& get_char_grid(bool = false) override { return char_grid; }
 
  private:
     std::shared_ptr<FVContext> fv_context;

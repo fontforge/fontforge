@@ -44,7 +44,7 @@ class FontView : public ICharGridContainter {
         window.set_title(window_title);
     }
 
-    CharGrid& get_char_grid() override { return char_grid; }
+    CharGrid& get_char_grid(bool = false) override { return char_grid; }
 
  private:
     std::shared_ptr<FVContext> fv_context;

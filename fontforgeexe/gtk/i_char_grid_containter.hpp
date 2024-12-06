@@ -32,7 +32,7 @@ class CharGrid;
 
 class ICharGridContainter {
  public:
-    virtual CharGrid& get_char_grid() = 0;
+    virtual CharGrid& get_char_grid(bool second = false) = 0;
 };
 
 }  // namespace ff::views
