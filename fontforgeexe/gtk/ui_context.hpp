@@ -34,10 +34,12 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ff::views {
 
 class UiContext;
+struct MenuInfo;
 
 using ActivateCB = std::function<void(const UiContext&)>;
 using EnabledCB = std::function<bool(const UiContext&)>;
 using CheckedCB = std::function<bool(const UiContext&)>;
+using MenuBlockCB = std::function<std::vector<MenuInfo>(const UiContext&)>;
 
 class UiContext {
  public:

@@ -34,6 +34,10 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ff::views {
 
 static const char kSignalActivateConn[] = "signal_activate_conn";
+static const char kDynamicMenuItemData[] = "dynamic_menu_item";
+
+Gtk::MenuItem* menu_item_factory(const MenuInfo& item, const UiContext& context,
+                                 int icon_height);
 
 // TODO: get grouper by group id and window id. Current implementation
 // might break if there is more than one window.
@@ -103,6 +107,90 @@ void check_menuitem_set_visual_state(Gtk::CheckMenuItem* check_menu_item,
     check_menu_item->set_data(kSignalActivateConn, conn);
 }
 
+void clean_dynamic_items(Gtk::Menu* menu) {
+    // Clear existing dynamic menu items
+    menu->foreach ([menu](Gtk::Widget& w) {
+        if (w.get_data(kDynamicMenuItemData)) {
+            menu->remove(w);
+        }
+    });
+}
+
+class BlockBuilder {
+ public:
+    BlockBuilder(Gtk::Menu* menu, int stable_position,
+                 MenuBlockCB block_provider, const UiContext& context,
+                 int icon_height)
+        : menu_(menu),
+          position_(stable_position),
+          block_provider_(block_provider),
+          context_(context),
+          icon_height_(icon_height) {}
+
+    int get_real_position() const {
+        auto widgets = menu_->get_children();
+        int i = 0, stable_count = 0;
+        for (; i < widgets.size(); ++i) {
+            if (stable_count == position_) {
+                break;
+            }
+            if (!widgets[i]->get_data(kDynamicMenuItemData)) {
+                ++stable_count;
+            }
+        }
+        return i;
+    }
+
+    void operator()() {
+        std::vector<MenuInfo> info = block_provider_(context_);
+        int position = get_real_position();
+
+        for (const auto& item : info) {
+            Gtk::MenuItem* menu_item =
+                menu_item_factory(item, context_, icon_height_);
+
+            ActivateCB handler = item.callbacks.handler
+                                     ? item.callbacks.handler
+                                     : context_.get_activate_cb(item.mid);
+            std::function<void(void)> action =
+                build_action(menu_item, handler, context_);
+            menu_item->signal_activate().connect(action);
+
+            EnabledCB enabled_check = item.callbacks.enabled
+                                          ? item.callbacks.enabled
+                                          : context_.get_enabled_cb(item.mid);
+            menu_item->set_sensitive(enabled_check(context_));
+
+            Gtk::CheckMenuItem* check_menu_item =
+                dynamic_cast<Gtk::CheckMenuItem*>(menu_item);
+            if (check_menu_item) {
+                CheckedCB checked_cb = item.callbacks.checked
+                                           ? item.callbacks.checked
+                                           : context_.get_checked_cb(item.mid);
+
+                // Gtk::Widget::set_state_flags() allows us to set visual
+                // item state without triggering its action.
+                check_menu_item->set_state_flags(checked_cb(context_)
+                                                     ? Gtk::STATE_FLAG_CHECKED
+                                                     : Gtk::STATE_FLAG_NORMAL);
+            }
+
+            menu_item->set_data(kDynamicMenuItemData, (void*)1);
+            menu_item->show_all();
+
+            menu_->insert(*menu_item, position++);
+        }
+    }
+
+ private:
+    Gtk::Menu* menu_;
+    // Number of *static* menu items before the dynamic block
+    int position_;
+    MenuBlockCB block_provider_;
+    const UiContext& context_;
+    int icon_height_;
+};
+
 Gtk::MenuItem* menu_item_factory(const MenuInfo& item, const UiContext& context,
                                  int icon_height) {
     Gtk::MenuItem* menu_item = nullptr;
@@ -136,18 +224,27 @@ Gtk::Menu* build_menu(const std::vector<MenuInfo>& info,
     Gtk::Menu* menu = new Gtk::Menu();
     Glib::RefPtr<Gtk::IconTheme> theme = Gtk::IconTheme::get_default();
     int icon_height = std::max(16, (int)(2 * ui_font_eX_size()));
+    int stable_position = 0;
 
     // GTK doesn't have any signal that would be fired before the specific
     // subitem is shown. We collect enabled state checks for all subitems and
     // call them one by one from menu's show event.
     std::vector<std::function<void(void)>> enablers;
     std::vector<std::function<void(void)>> checkers;
+    std::vector<std::function<void(void)>> block_builders;
 
     // Collect group identifiers for this submenu, so that we can later access
     // their dummy items.
     std::set<RadioGroup> radio_info;
 
     for (const auto& item : info) {
+        if (item.is_custom_block()) {
+            block_builders.push_back(BlockBuilder(menu, stable_position,
+                                                  item.callbacks.custom_block,
+                                                  context, icon_height));
+            continue;
+        }
+
         Gtk::MenuItem* menu_item =
             Gtk::manage(menu_item_factory(item, context, icon_height));
 
@@ -191,6 +288,7 @@ Gtk::Menu* build_menu(const std::vector<MenuInfo>& info,
         }
 
         menu->append(*menu_item);
+        ++stable_position;
     }
 
     // Activate all dummy radio items for this submenu first. If an actual radio
@@ -203,7 +301,8 @@ Gtk::Menu* build_menu(const std::vector<MenuInfo>& info,
     }
 
     // Just call all the collected menuitem enablers and checkers
-    auto on_menu_show = [enablers, dummy_radio_checkers, checkers]() {
+    auto on_menu_show = [menu, enablers, dummy_radio_checkers, checkers,
+                         block_builders]() {
         for (auto e : enablers) {
             e();
         }
@@ -212,6 +311,10 @@ Gtk::Menu* build_menu(const std::vector<MenuInfo>& info,
         }
         for (auto c : checkers) {
             c();
+        }
+        clean_dynamic_items(menu);
+        for (auto b : block_builders) {
+            b();
         }
     };
     menu->signal_show().connect(on_menu_show);

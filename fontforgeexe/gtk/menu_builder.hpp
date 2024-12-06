@@ -103,6 +103,9 @@ struct MenuCallbacks {
     ActivateCB handler; /* called on mouse release */
     EnabledCB enabled = AlwaysEnabled;
     CheckedCB checked = NotCheckable;
+
+    // Callback for custom block of menu items
+    MenuBlockCB custom_block;
 };
 
 static const MenuCallbacks LegacyCallbacks = {LegacyAction, LegacyEnabled,
@@ -118,6 +121,13 @@ struct MenuInfo {
     int mid;
 
     bool is_separator() const { return label.text == Glib::ustring(); }
+    bool is_custom_block() const { return (bool)callbacks.custom_block; }
+
+    static MenuInfo CustomBlock(MenuBlockCB cb) {
+        return MenuInfo{
+            .label = {""},
+            .callbacks = {NoAction, LegacyEnabled, LegacyChecked, cb}};
+    }
 };
 
 static const MenuInfo kMenuSeparator = {{""}};
