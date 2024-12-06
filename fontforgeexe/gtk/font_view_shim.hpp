@@ -57,6 +57,8 @@ void fv_resize_window(void* fv_opaque, int width, int height);
 
 void* create_select_glyphs_dlg(FVContext** p_fv_context, int width, int height);
 
+bool run_select_glyphs_dlg(void** sg_opaque);
+
 #ifdef __cplusplus
 }
 #endif

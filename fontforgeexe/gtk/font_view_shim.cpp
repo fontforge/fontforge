@@ -95,3 +95,17 @@ void* create_select_glyphs_dlg(FVContext** p_fv_context, int width,
     // casting should occur only to/from ICharGridContainter*
     return dynamic_cast<ICharGridContainter*>(sel_glyphs_dlg);
 }
+
+bool run_select_glyphs_dlg(void** sg_opaque) {
+    // To prevent issues with multiple inheritance, the final static void*
+    // casting should occur only to/from ICharGridContainter*
+    auto sel_glyphs_dlg = dynamic_cast<SelectGlyphs*>(
+        static_cast<ICharGridContainter*>(*sg_opaque));
+    Gtk::ResponseType response = sel_glyphs_dlg->run();
+
+    // Destroy dialog and reset pointer
+    delete sel_glyphs_dlg;
+    *sg_opaque = NULL;
+
+    return (response == Gtk::RESPONSE_OK);
+}

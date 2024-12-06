@@ -8018,11 +8018,14 @@ char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current) {
 
     GHVBoxFitWindow(boxes[0].ret);
     GDrawSetVisible(gs.gw,true);
-    while ( !gs.done )
-	GDrawProcessOneEvent(NULL);
+
+    bool result_ok = run_select_glyphs_dlg(&(gs.fv->gtk_window));
+
+//     while ( !gs.done )
+// 	GDrawProcessOneEvent(NULL);
 
     ret = rpt = NULL;
-    if ( gs.good ) {
+    if ( result_ok ) {
 	for ( k=0; k<2; ++k ) {
 	    len = 0;
 	    for ( enc=0; enc<gs.fv->b.map->enccount; ++enc ) {
