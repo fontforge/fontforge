@@ -29,26 +29,17 @@
 #include <string>
 #include <gtkmm.h>
 
-#include "char_grid.hpp"
-
 namespace ff::views {
 
-class FontView {
+class CharGrid {
  public:
-    FontView(int width, int height);
+    CharGrid();
 
-    void set_title(const std::string& window_title,
-                   const std::string& taskbar_title) {
-        window.set_title(window_title);
-    }
-
-    GtkWidget* get_drawing_widget_c() {
-        return char_grid.get_drawing_widget_c();
-    }
+    Gtk::Widget& get_top_widget();
+    GtkWidget* get_drawing_widget_c();
 
  private:
-    Gtk::Window window;
-    CharGrid char_grid;
+    Gtk::DrawingArea drawing_area;
 };
 
 }  // namespace ff::views
