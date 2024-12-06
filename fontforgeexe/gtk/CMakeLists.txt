@@ -10,6 +10,7 @@ add_library(ffgtk OBJECT
   font_view.cpp
   font_view_shim.hpp
   font_view_shim.cpp
+  i_char_grid_containter.hpp
   utils.hpp
   utils.cpp
 )

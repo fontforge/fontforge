@@ -33,6 +33,8 @@
 
 #include <gtkmm.h>
 
+using ff::views::ICharGridContainter;
+
 void* create_font_view(FVContext** p_fv_context, int width, int height) {
     // TODO(myoresh): move to main() once it becomes GTK-aware.
     ff::app::GtkApp();
@@ -55,32 +57,27 @@ void gtk_set_title(void* fv_opaque, char* window_title, char* taskbar_title) {
 }
 
 GtkWidget* get_drawing_widget_c(void* fv_opaque) {
-    ff::views::FontView* font_view =
-        static_cast<ff::views::FontView*>(fv_opaque);
-    return font_view->get_drawing_widget_c();
+    auto font_view = static_cast<ICharGridContainter*>(fv_opaque);
+    return font_view->get_char_grid().get_drawing_widget_c();
 }
 
 void fv_set_scroller_position(void* fv_opaque, int32_t position) {
-    ff::views::FontView* font_view =
-        static_cast<ff::views::FontView*>(fv_opaque);
-    font_view->set_scroller_position(position);
+    auto font_view = static_cast<ICharGridContainter*>(fv_opaque);
+    font_view->get_char_grid().set_scroller_position(position);
 }
 
 void fv_set_scroller_bounds(void* fv_opaque, int32_t sb_min, int32_t sb_max,
                             int32_t sb_pagesize) {
-    ff::views::FontView* font_view =
-        static_cast<ff::views::FontView*>(fv_opaque);
-    font_view->set_scroller_bounds(sb_min, sb_max, sb_pagesize);
+    auto font_view = static_cast<ICharGridContainter*>(fv_opaque);
+    font_view->get_char_grid().set_scroller_bounds(sb_min, sb_max, sb_pagesize);
 }
 
 void fv_set_character_info(void* fv_opaque, char* info) {
-    ff::views::FontView* font_view =
-        static_cast<ff::views::FontView*>(fv_opaque);
-    font_view->set_character_info(info);
+    auto font_view = static_cast<ICharGridContainter*>(fv_opaque);
+    font_view->get_char_grid().set_character_info(info);
 }
 
 void fv_resize_window(void* fv_opaque, int width, int height) {
-    ff::views::FontView* font_view =
-        static_cast<ff::views::FontView*>(fv_opaque);
-    font_view->resize_drawing_area(width, height);
+    auto font_view = static_cast<ICharGridContainter*>(fv_opaque);
+    font_view->get_char_grid().resize_drawing_area(width, height);
 }
