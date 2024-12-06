@@ -7324,6 +7324,7 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     fv_context->fv = fv;
     fv_context->scroll_fontview_to_position_cb = FVScrollToPos;
     fv_context->tooltip_message_cb = FVTooltipMessage;
+    fv_context->get_pixmap_dir = getPixmapDir;
     cg_dlg = create_font_view(&fv_context, pos.width, pos.height);
     fv->cg_widget = get_char_grid_widget(cg_dlg, 0);
 

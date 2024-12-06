@@ -36,7 +36,7 @@ bool on_button_press_event(GdkEventButton* event, Gtk::Menu& pop_up);
 
 FontView::FontView(std::shared_ptr<FVContext> fv_context, int width, int height)
     : context(fv_context), char_grid(fv_context) {
-    ff::app::add_top_view(window);
+    ff::app::add_top_view(window, context);
 
     window.signal_delete_event().connect([this](GdkEventAny*) {
         ff::app::remove_top_view(window);

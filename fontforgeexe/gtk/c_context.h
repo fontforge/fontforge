@@ -41,6 +41,9 @@ typedef struct fontview_context {
 
     // Tooltip message to display for particular character
     char* (*tooltip_message_cb)(FontView* fv, int x, int y);
+
+    // Get pixmap resource directory
+    const char* (*get_pixmap_dir)();
 } FVContext;
 
 typedef struct kerning_format_data {

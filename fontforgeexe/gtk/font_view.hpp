@@ -41,6 +41,9 @@ class FontViewUiContext : public UiContext {
     FontViewUiContext(std::shared_ptr<FVContext> fv_context)
         : legacy_context(fv_context) {}
 
+    std::string get_pixmap_dir() const override {
+        return legacy_context->get_pixmap_dir();
+    }
     std::shared_ptr<FVContext> legacy() const { return legacy_context; }
 
  private:

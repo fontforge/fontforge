@@ -39,11 +39,15 @@ Glib::RefPtr<Gtk::Application> GtkApp() {
     return app;
 }
 
-void add_top_view(Gtk::Window& window) {
+void add_top_view(Gtk::Window& window, views::UiContext& context) {
     static bool initialized = false;
 
     if (!initialized) {
         GtkApp()->register_application();
+
+        auto theme = Gtk::IconTheme::get_default();
+        std::string pixmap_dir = context.get_pixmap_dir();
+        theme->prepend_search_path(pixmap_dir);
 
         initialized = true;
     }

@@ -36,6 +36,8 @@ namespace ff::views {
 class UiContext {
  public:
     UiContext() {}
+
+    virtual std::string get_pixmap_dir() const = 0;
 };
 
 }  // namespace ff::views
