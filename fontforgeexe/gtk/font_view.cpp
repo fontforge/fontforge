@@ -26,23 +26,50 @@
  */
 
 #include "font_view.hpp"
+#include "utils.hpp"
 
 namespace ff::views {
 
+bool on_drawing_area_event(GdkEvent* event);
+
 FontView::FontView(int width, int height) {
     static auto app = Gtk::Application::create("org.fontforge");
-    window.set_default_size(width, height);
 
     // Fontforge drawing area processes events in the legacy code
     // expose, keypresses, mouse etc.
+    drawing_area.signal_event().connect(&on_drawing_area_event);
     drawing_area.set_events(Gdk::ALL_EVENTS_MASK);
     window.add(drawing_area);
 
     window.show_all();
+    window.resize(width, height);
+
+    // TODO(iorsh): review this very stragne hack.
+    // For reasons beyond my comprehension, DrawingArea fails to catch events
+    // before this function is called. A mere traverasal of widget tree should
+    // theoretically have no side efects, but it does.
+    gtk_find_child(&window, "");
 }
 
 GtkWidget* FontView::get_drawing_widget_c() {
     return (GtkWidget*)drawing_area.gobj();
+}
+
+/////////////////  EVENTS  ////////////////////
+
+bool on_drawing_area_event(GdkEvent* event) {
+    // Normally events automatically get to the main loop and picked from there
+    // by the legacy GDraw handler. The DrawingArea::resize signal doesn't go
+    // there for some reason. My best guess is that this signal is not emitted,
+    // but the framework just invokes the handler directly. Here we catch it and
+    // place into the main loop, so that it can reach the GDraw handler.
+    if (event->type == GDK_CONFIGURE) {
+        gdk_event_put(event);
+        return true;
+    }
+
+    // Return false to allow further propagation of unhandled events
+    return false;
 }
 
 }  // namespace ff::views

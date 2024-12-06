@@ -84,6 +84,7 @@ int navigation_mask = 0;		/* Initialized in startui.c */
 static int fv_fontpx;
 static GResFont fv_font = GRESFONT_INIT("400 12pt " SANS_UI_FAMILIES);
 extern void python_call_onClosingFunctions();
+static void gs_sizeSet(FontView *fv, GWindow dw);
 
 extern GResInfo fontview_ri, view_ri;
 
@@ -6741,82 +6742,6 @@ return;
 	SVAttachFV(fv,2);
 }
 
-static void FVResize(FontView *fv, GEvent *event) {
-    extern int default_fv_row_count, default_fv_col_count;
-    GRect pos,screensize;
-    int topchar;
-
-    if ( fv->colcnt!=0 )
-	topchar = fv->rowoff*fv->colcnt;
-    else if ( fv->b.sf->top_enc!=-1 && fv->b.sf->top_enc<fv->b.map->enccount )
-	topchar = fv->b.sf->top_enc;
-    else {
-	/* Position on 'A' (or whatever they ask for) if it exists */
-	topchar = SFFindSlot(fv->b.sf,fv->b.map,home_char,NULL);
-	if ( topchar==-1 ) {
-	    for ( topchar=0; topchar<fv->b.map->enccount; ++topchar )
-		if ( fv->b.map->map[topchar]!=-1 && fv->b.sf->glyphs[fv->b.map->map[topchar]]!=NULL )
-	    break;
-	    if ( topchar==fv->b.map->enccount )
-		topchar = 0;
-	}
-    }
-    if ( !event->u.resize.sized )
-	/* WM isn't responding to my resize requests, so no point in trying */;
-    else if ( (event->u.resize.size.width-
-		GDrawPointsToPixels(fv->gw,_GScrollBar_Width)-1)%fv->cbw!=0 ||
-	    (event->u.resize.size.height-fv->mbh-fv->infoh-1)%fv->cbh!=0 ) {
-	int cc = (event->u.resize.size.width+fv->cbw/2-
-		GDrawPointsToPixels(fv->gw,_GScrollBar_Width)-1)/fv->cbw;
-	int rc = (event->u.resize.size.height-fv->mbh-fv->infoh-1)/fv->cbh;
-	if ( cc<=0 ) cc = 1;
-	if ( rc<=0 ) rc = 1;
-	GDrawGetSize(GDrawGetRoot(NULL),&screensize);
-	if ( cc*fv->cbw+GDrawPointsToPixels(fv->gw,_GScrollBar_Width)>screensize.width )
-	    --cc;
-	if ( rc*fv->cbh+fv->mbh+fv->infoh+10>screensize.height )
-	    --rc;
-	GDrawResize(fv->gw,
-		cc*fv->cbw+1+GDrawPointsToPixels(fv->gw,_GScrollBar_Width),
-		rc*fv->cbh+1+fv->mbh+fv->infoh);
-	/* somehow KDE loses this event of mine so to get even the vague effect */
-	/*  we can't just return */
-/*return;*/
-    }
-
-    pos.width = GDrawPointsToPixels(fv->gw,_GScrollBar_Width);
-    pos.height = event->u.resize.size.height-fv->mbh-fv->infoh;
-    pos.x = event->u.resize.size.width-pos.width; pos.y = fv->mbh+fv->infoh;
-    GGadgetResize(fv->vsb,pos.width,pos.height);
-    GGadgetMove(fv->vsb,pos.x,pos.y);
-    pos.width = pos.x; pos.x = 0;
-    GDrawResize(fv->v,pos.width,pos.height);
-
-    fv->width = pos.width; fv->height = pos.height;
-    fv->colcnt = (fv->width-1)/fv->cbw;
-    if ( fv->colcnt<1 ) fv->colcnt = 1;
-    fv->rowcnt = (fv->height-1)/fv->cbh;
-    if ( fv->rowcnt<1 ) fv->rowcnt = 1;
-    fv->rowltot = (fv->b.map->enccount+fv->colcnt-1)/fv->colcnt;
-
-    GScrollBarSetBounds(fv->vsb,0,fv->rowltot,fv->rowcnt);
-    fv->rowoff = topchar/fv->colcnt;
-    if ( fv->rowoff>=fv->rowltot-fv->rowcnt )
-        fv->rowoff = fv->rowltot-fv->rowcnt;
-    if ( fv->rowoff<0 ) fv->rowoff =0;
-    GScrollBarSetPos(fv->vsb,fv->rowoff);
-    GDrawRequestExpose(fv->gw,NULL,true);
-    GDrawRequestExpose(fv->v,NULL,true);
-
-    if ( fv->rowcnt!=fv->b.sf->desired_row_cnt || fv->colcnt!=fv->b.sf->desired_col_cnt ) {
-	default_fv_row_count = fv->rowcnt;
-	default_fv_col_count = fv->colcnt;
-	fv->b.sf->desired_row_cnt = fv->rowcnt;
-	fv->b.sf->desired_col_cnt = fv->colcnt;
-	SavePrefs(true);
-    }
-}
-
 static void FVTimer(FontView *fv, GEvent *event) {
 
     if ( event->u.timer.timer==fv->pressed ) {
@@ -6901,6 +6826,10 @@ return( GGadgetDispatchEvent(fv->vsb,event));
 
     GGadgetPopupExternalEvent(event);
     switch ( event->type ) {
+      case et_resize:
+      case et_map:
+        gs_sizeSet(fv,gw);
+      break;
       case et_expose:
 	GDrawSetLineWidth(gw,0);
 	FVExpose(fv,gw,event);
@@ -7056,9 +6985,6 @@ return( GGadgetDispatchEvent(fv->vsb,event));
       case et_expose:
 	GDrawSetLineWidth(gw,0);
 	FVDrawInfo(fv,gw,event);
-      break;
-      case et_resize:
-        FVResize(fv,event);
       break;
       case et_char:
 	if ( fv->b.container!=NULL )
@@ -7898,22 +7824,39 @@ static int GS_Cancel(GGadget *g, GEvent *e) {
 return( true );
 }
 
-static void gs_sizeSet(struct gsd *gs,GWindow dw) {
+static void gs_sizeSet(FontView *fv, GWindow dw) {
+    extern int default_fv_row_count, default_fv_col_count;
     GRect size, gsize;
     int width, height, y;
     int cc, rc, topchar;
     GRect subsize;
-    FontView *fv = gs->fv;
 
-    if ( gs->fv->vsb==NULL )
+    if ( fv->vsb==NULL )
 return;
 
-    GDrawGetSize(dw,&size);
-    GGadgetGetSize(gs->fv->vsb,&gsize);
-    width = size.width - gsize.width;
-    height = size.height - gs->fv->mbh - gs->fv->infoh;
+    /* TODO(GTK): verify behavior of home_char preference */
+    if ( fv->colcnt!=0 )
+	topchar = fv->rowoff*fv->colcnt;
+    else if ( fv->b.sf->top_enc!=-1 && fv->b.sf->top_enc<fv->b.map->enccount )
+	topchar = fv->b.sf->top_enc;
+    else {
+	/* Position on 'A' (or whatever they ask for) if it exists */
+	topchar = SFFindSlot(fv->b.sf,fv->b.map,home_char,NULL);
+	if ( topchar==-1 ) {
+	    for ( topchar=0; topchar<fv->b.map->enccount; ++topchar )
+		if ( fv->b.map->map[topchar]!=-1 && fv->b.sf->glyphs[fv->b.map->map[topchar]]!=NULL )
+	    break;
+	    if ( topchar==fv->b.map->enccount )
+		topchar = 0;
+	}
+    }
 
-    y = gs->fv->mbh + gs->fv->infoh;
+    GDrawGetSize(dw,&size);
+    GGadgetGetSize(fv->vsb,&gsize);
+    width = size.width - gsize.width;
+    height = size.height - fv->mbh - fv->infoh;
+
+    y = fv->mbh + fv->infoh;
 
     topchar = fv->rowoff*fv->colcnt;
     cc = (width-1) / fv->cbw;
@@ -7923,8 +7866,6 @@ return;
     subsize.x = 0; subsize.y = 0;
     subsize.width = cc*fv->cbw + 1;
     subsize.height = rc*fv->cbh + 1;
-    GDrawResize(fv->v,subsize.width,subsize.height);
-    GDrawMove(fv->v,0,y);
     GGadgetMove(fv->vsb,subsize.width,y);
     GGadgetResize(fv->vsb,gsize.width,subsize.height);
 
@@ -7939,6 +7880,13 @@ return;
     GScrollBarSetPos(fv->vsb,fv->rowoff);
 
     GDrawRequestExpose(fv->v,NULL,true);
+
+    /* TODO(GTK): verify behavior of default_fv_row_count/default_fv_col_count preference */
+    default_fv_row_count = fv->rowcnt;
+    default_fv_col_count = fv->colcnt;
+    fv->b.sf->desired_row_cnt = fv->rowcnt;
+    fv->b.sf->desired_col_cnt = fv->colcnt;
+    SavePrefs(true);
 }
 
 static int gs_sub_e_h(GWindow pixmap, GEvent *event) {
@@ -7970,7 +7918,7 @@ return(false);
       case et_mouseup: case et_mousemove:
 return(false);
       case et_resize:
-        gs_sizeSet(gs,pixmap);
+        gs_sizeSet(gs->fv, pixmap);
       break;
       default: break;
     }
