@@ -33,6 +33,22 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace ff::views {
 
+Gtk::RadioButtonGroup& get_grouper(RadioGroup g) {
+    static std::map<RadioGroup, Gtk::RadioButtonGroup> grouper_map;
+    static std::map<RadioGroup, Gtk::RadioMenuItem> dummy_item_map;
+
+    auto& grouper = grouper_map[g];
+
+    // Sometimes none of the radio group items should be checked. GTK doesn't
+    // have this capability, so we create a predefined dummy item which absorbs
+    // the checked state when no other real item wants to be checked.
+    if (!dummy_item_map.count(g)) {
+        dummy_item_map[g] = Gtk::RadioMenuItem(grouper, "dummy", false);
+    }
+
+    return grouper;
+}
+
 Gtk::Menu* build_menu(const std::vector<MenuInfo>& info,
                       const UiContext& context) {
     Gtk::Menu* menu = new Gtk::Menu();
@@ -48,12 +64,20 @@ Gtk::Menu* build_menu(const std::vector<MenuInfo>& info,
         Gtk::MenuItem* menu_item = nullptr;
         if (item.is_separator()) {
             menu_item = Gtk::make_managed<Gtk::SeparatorMenuItem>();
-        } else if (item.label.decoration.image_file().empty()) {
+        } else if (item.label.decoration.empty()) {
             menu_item = Gtk::make_managed<Gtk::MenuItem>(item.label.text, true);
+        } else if (item.label.decoration.has_group()) {
+            RadioGroup group = item.label.decoration.group();
+            Gtk::RadioButtonGroup& grouper = get_grouper(group);
+            menu_item = Gtk::make_managed<Gtk::RadioMenuItem>(
+                grouper, item.label.text, true);
+        } else if (item.label.decoration.checkable()) {
+            menu_item =
+                Gtk::make_managed<Gtk::CheckMenuItem>(item.label.text, true);
         } else {
             Glib::RefPtr<Gdk::Pixbuf> pixbuf =
                 load_icon(item.label.decoration.image_file(), icon_height);
-            Gtk::Image* img = new Gtk::Image(pixbuf);
+            Gtk::Image* img = Gtk::make_managed<Gtk::Image>(pixbuf);
             menu_item = Gtk::make_managed<Gtk::ImageMenuItem>(
                 *img, item.label.text, true);
         }

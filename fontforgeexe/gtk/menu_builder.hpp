@@ -44,10 +44,20 @@ enum DecorType {
     Checkable,
 };
 
+enum RadioGroup {
+    NoGroup,
+    CellWindowSize,
+    CellPixelView,
+};
+
+// Lazily initialized collection of GTK groupers for radio buttons
+Gtk::RadioButtonGroup& get_grouper(RadioGroup g);
+
 class LabelDecoration {
  public:
     LabelDecoration(DecorType s = NoDecoration) : d_(s) {}
     LabelDecoration(const char* image_file) : d_(image_file) {}
+    LabelDecoration(RadioGroup g) : d_(g) {}
 
     bool empty() const {
         return std::holds_alternative<DecorType>(d_) &&
@@ -66,8 +76,11 @@ class LabelDecoration {
                    : "";
     }
 
+    bool has_group() const { return std::holds_alternative<RadioGroup>(d_); }
+    RadioGroup group() const { return std::get<RadioGroup>(d_); }
+
  private:
-    std::variant<DecorType, std::string> d_;
+    std::variant<DecorType, std::string, RadioGroup> d_;
 };
 
 struct LabelInfo {
