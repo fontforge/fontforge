@@ -19,6 +19,7 @@ add_library(ffgtk OBJECT
   kerning_format.cpp
   select_glyphs.hpp
   select_glyphs.cpp
+  ui_context.hpp
   utils.hpp
   utils.cpp
 )
