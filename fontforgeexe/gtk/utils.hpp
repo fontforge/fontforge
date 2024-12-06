@@ -54,3 +54,5 @@ Glib::RefPtr<Gdk::Window> gtk_get_topmost_window();
 int label_offset(Gtk::Widget* w);
 
 double ui_font_em_size();
+
+Glib::RefPtr<Gdk::Pixbuf> load_icon(const Glib::ustring& icon_name, int size);

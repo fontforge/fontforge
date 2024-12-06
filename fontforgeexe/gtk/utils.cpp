@@ -105,3 +105,27 @@ double ui_font_em_size() {
 
     return extents.x_advance;
 }
+
+Glib::RefPtr<Gdk::Pixbuf> load_icon(const Glib::ustring& icon_name, int size) {
+    Glib::RefPtr<Gtk::IconTheme> theme = Gtk::IconTheme::get_default();
+
+    // Load icon by name from the theme
+    Glib::RefPtr<Gdk::Pixbuf> pixbuf;
+    if (theme->lookup_icon(icon_name, size)) {
+        return theme->load_icon(icon_name, size, Gtk::ICON_LOOKUP_FORCE_SIZE);
+    }
+
+    // Use generic sad face for missing icons
+    if (theme->lookup_icon("computer-fail-symbolic", size)) {
+        return theme->load_icon("computer-fail-symbolic", size,
+                                Gtk::ICON_LOOKUP_FORCE_SIZE);
+    }
+
+    // Fallback to black square
+    static const std::vector<guint8> sq(size * size, 0);
+    static Glib::RefPtr<Gdk::Pixbuf> fallback_icon =
+        Gdk::Pixbuf::create_from_data(sq.data(), Gdk::COLORSPACE_RGB, false, 8,
+                                      size, size, 0);
+
+    return fallback_icon;
+}
