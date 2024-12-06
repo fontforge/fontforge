@@ -55,6 +55,14 @@ CharGrid::CharGrid(std::shared_ptr<FVContext> context) {
     // expose, keypresses, mouse etc.
     drawing_area.signal_event().connect(&on_drawing_area_event);
 
+    // Keep the drawing area focused after mouse click, so that it can further
+    // expand selection with arrow keys.
+    drawing_area.signal_button_press_event().connect(
+        [this](GdkEventButton* event) {
+            drawing_area.grab_focus();
+            return false;
+        });
+
     // Drawing area is responsible to dispatch keypress events. Most go to the
     // legacy code.
     drawing_area.signal_key_press_event().connect([this](GdkEventKey* event) {
