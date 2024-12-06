@@ -43,6 +43,7 @@ class CharGrid {
     void set_scroller_bounds(int32_t sb_min, int32_t sb_max,
                              int32_t sb_pagesize);
     void set_character_info(const std::string& info);
+    void resize_drawing_area(int width, int height);
 
  private:
     Gtk::Grid char_grid_box;

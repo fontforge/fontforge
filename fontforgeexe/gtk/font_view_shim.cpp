@@ -78,3 +78,9 @@ void fv_set_character_info(void* fv_opaque, char* info) {
         static_cast<ff::views::FontView*>(fv_opaque);
     font_view->set_character_info(info);
 }
+
+void fv_resize_window(void* fv_opaque, int width, int height) {
+    ff::views::FontView* font_view =
+        static_cast<ff::views::FontView*>(fv_opaque);
+    font_view->resize_drawing_area(width, height);
+}

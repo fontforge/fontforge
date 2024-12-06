@@ -41,9 +41,17 @@ FontView::FontView(std::shared_ptr<FVContext> context, int width, int height)
         return false;
     });
 
+    // dialog.resize() doesn't work until after the realization, i.e. after
+    // dialog.show_all(). Use the realize event to ensure reliable resizing.
+    //
+    // Also, the signal itself must be connected before dialog.show_all(),
+    // otherwise it wouldn't work for some reason...
+    window.signal_realize().connect([this, width, height]() {
+        char_grid.resize_drawing_area(width, height);
+    });
+
     window.add(char_grid.get_top_widget());
     window.show_all();
-    window.resize(width, height);
 
     // TODO(iorsh): review this very stragne hack.
     // For reasons beyond my comprehension, DrawingArea fails to catch events

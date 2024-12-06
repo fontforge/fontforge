@@ -52,6 +52,9 @@ void fv_set_scroller_bounds(void* fv_opaque, int32_t sb_min, int32_t sb_max,
 
 void fv_set_character_info(void* fv_opaque, char* info);
 
+// Resize font view window to accomodate the new drawing area size
+void fv_resize_window(void* fv_opaque, int width, int height);
+
 #ifdef __cplusplus
 }
 #endif

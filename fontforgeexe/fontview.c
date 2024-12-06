@@ -3313,9 +3313,7 @@ return;
 		    ccnt*fv->cbw+1,
 		    rcnt*fv->cbh+1+fv->mbh);
 	} else {
-	    GDrawResize(fv->gw,
-		    ccnt*fv->cbw+1,
-		    rcnt*fv->cbh+1+fv->mbh);
+            fv_resize_window(fv->gtk_window, ccnt*fv->cbw+1, rcnt*fv->cbh+1);
 	}
     }
 }
@@ -3590,9 +3588,7 @@ static void FVMenuWSize(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     } else {
 	h = 8; v=2;
     }
-    GDrawResize(fv->gw,
-	    h*fv->cbw+1,
-	    v*fv->cbh+1+fv->mbh);
+    fv_resize_window(fv->gtk_window, h*fv->cbw+1, v*fv->cbh+1);
     fv->b.sf->desired_col_cnt = default_fv_col_count = h;
     fv->b.sf->desired_row_cnt = default_fv_row_count = v;
 

@@ -118,6 +118,21 @@ void CharGrid::set_character_info(const std::string& info) {
     character_info.set_markup(markup);
 }
 
+void CharGrid::resize_drawing_area(int width, int height) {
+    Gtk::Window* window =
+        dynamic_cast<Gtk::Window*>(drawing_area.get_toplevel());
+
+    // The target size is for DrawingArea, but we can resize only the top
+    // window. Compute size deltas to correctly transform between drawing area
+    // size and top window size.
+    int delta_width =
+        window->get_allocated_width() - drawing_area.get_allocated_width();
+    int delta_height =
+        window->get_allocated_height() - drawing_area.get_allocated_height();
+
+    window->resize(width + delta_width, height + delta_height);
+}
+
 // Create info label at the top of the Font View, which shows name and
 // properties of the most recently selected character
 void CharGrid::make_character_info_label() {

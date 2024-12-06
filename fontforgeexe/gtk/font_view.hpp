@@ -60,6 +60,10 @@ class FontView {
         char_grid.set_character_info(info);
     }
 
+    void resize_drawing_area(int width, int height) {
+        char_grid.resize_drawing_area(width, height);
+    }
+
  private:
     std::shared_ptr<FVContext> fv_context;
 
