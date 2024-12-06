@@ -32,12 +32,24 @@
 #include "c_context.h"
 #include "char_grid.hpp"
 #include "i_char_grid_containter.hpp"
+#include "ui_context.hpp"
 
 namespace ff::views {
 
+class FontViewUiContext : public UiContext {
+ public:
+    FontViewUiContext(std::shared_ptr<FVContext> fv_context)
+        : legacy_context(fv_context) {}
+
+    std::shared_ptr<FVContext> legacy() const { return legacy_context; }
+
+ private:
+    std::shared_ptr<FVContext> legacy_context;
+};
+
 class FontView : public ICharGridContainter {
  public:
-    FontView(std::shared_ptr<FVContext> context, int width, int height);
+    FontView(std::shared_ptr<FVContext> fv_context, int width, int height);
 
     void set_title(const std::string& window_title,
                    const std::string& taskbar_title) {
@@ -47,7 +59,7 @@ class FontView : public ICharGridContainter {
     CharGrid& get_char_grid(bool = false) override { return char_grid; }
 
  private:
-    std::shared_ptr<FVContext> fv_context;
+    FontViewUiContext context;
 
     Gtk::Window window;
     CharGrid char_grid;
