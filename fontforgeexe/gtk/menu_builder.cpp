@@ -39,6 +39,11 @@ Gtk::Menu* build_menu(const std::vector<MenuInfo>& info,
     Glib::RefPtr<Gtk::IconTheme> theme = Gtk::IconTheme::get_default();
     int icon_height = std::max(16, (int)(2 * ui_font_eX_size()));
 
+    // GTK doesn't have any signal that would be fired before the specific
+    // subitem is shown. We collect enabled state checks for all subitems and
+    // call them one by one from menu's show event.
+    std::vector<std::function<void(void)>> enablers;
+
     for (const auto& item : info) {
         Gtk::MenuItem* menu_item = nullptr;
         if (item.is_separator()) {
@@ -53,13 +58,33 @@ Gtk::Menu* build_menu(const std::vector<MenuInfo>& info,
                 *img, item.label.text, true);
         }
 
-        ActivateCB action =
-            item.handler ? item.handler : context.get_activate_cb(item.mid);
+        ActivateCB action = item.callbacks.handler
+                                ? item.callbacks.handler
+                                : context.get_activate_cb(item.mid);
         menu_item->signal_activate().connect(
             [action, &context]() { action(context); });
 
+        EnabledCB enabled_check = item.callbacks.enabled
+                                      ? item.callbacks.enabled
+                                      : context.get_enabled_cb(item.mid);
+
+        // Wrap the check into an action which will be called when menuitem
+        // becomes visible as a part of its containing menu.
+        auto enabler = [menu_item, enabled_check, &context]() {
+            menu_item->set_sensitive(enabled_check(context));
+        };
+        enablers.push_back(enabler);
+
         menu->append(*menu_item);
     }
+
+    // Just call all the collected menuitem enablers
+    auto on_menu_show = [enablers]() {
+        for (auto e : enablers) {
+            e();
+        }
+    };
+    menu->signal_show().connect(on_menu_show);
 
     return menu;
 }
@@ -74,8 +99,8 @@ Gtk::MenuBar build_menu_bar(const std::vector<MenuInfo>& info,
         menu_bar.append(*menu_item);
 
         if (!item.sub_menu.empty()) {
-            Gtk::Menu* sub_menu = Gtk::make_managed<Gtk::Menu>(
-                build_menu(item.sub_menu, context));
+            Gtk::Menu* sub_menu =
+                Gtk::manage(build_menu(item.sub_menu, context));
             menu_item->set_submenu(*sub_menu);
         }
     }

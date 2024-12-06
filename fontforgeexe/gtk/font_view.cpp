@@ -59,6 +59,21 @@ ActivateCB FontViewUiContext::get_activate_cb(int mid) const {
     }
 }
 
+EnabledCB FontViewUiContext::get_enabled_cb(int mid) const {
+    FVMenuAction* callback_set =
+        find_legacy_callback_set(mid, legacy_context->actions);
+
+    if (callback_set != NULL && callback_set->is_disabled != NULL) {
+        bool (*disabled_cb)(::FontView*, int) = callback_set->is_disabled;
+        ::FontView* fv = legacy_context->fv;
+        return [disabled_cb, fv, mid](const UiContext&) {
+            return !disabled_cb(fv, mid);
+        };
+    } else {
+        return AlwaysEnabled;
+    }
+}
+
 bool on_button_press_event(GdkEventButton* event, Gtk::Menu& pop_up);
 bool on_font_view_event(GdkEvent* event);
 

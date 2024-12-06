@@ -46,6 +46,7 @@ class FontViewUiContext : public UiContext {
         return legacy_context->get_pixmap_dir();
     }
     ActivateCB get_activate_cb(int mid) const override;
+    EnabledCB get_enabled_cb(int mid) const override;
 
     std::shared_ptr<FVContext> legacy() const { return legacy_context; }
 
