@@ -5984,7 +5984,7 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 	GDrawDrawLine(pixmap,0,i*fv->cbh+fv->lab_height,fv->width,i*fv->cbh+fv->lab_height,fvslotdivcol);
     }
     for ( i=0; i<=fv->colcnt; ++i )
-	GDrawDrawLine(pixmap,i*fv->cbw,0,i*fv->cbw,fv->height,fvslotcol);
+	GDrawDrawLine(pixmap,i*fv->cbw,0,i*fv->cbw,(fv->rowcnt+1)*fv->cbh,fvslotcol);
     for ( i=event->u.expose.rect.y/fv->cbh; i<=fv->rowcnt &&
 	    i<(event->u.expose.rect.y+event->u.expose.rect.height+fv->cbh-1)/fv->cbh; ++i )
     for ( j=event->u.expose.rect.x/fv->cbw; j<fv->colcnt &&
@@ -7854,9 +7854,8 @@ return;
     GDrawGetSize(dw,&size);
     GGadgetGetSize(fv->vsb,&gsize);
     width = size.width - gsize.width;
-    height = size.height - fv->mbh - fv->infoh;
-
-    y = fv->mbh + fv->infoh;
+    height = size.height;
+    y = 0;
 
     topchar = fv->rowoff*fv->colcnt;
     cc = (width-1) / fv->cbw;
