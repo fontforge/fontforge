@@ -64,4 +64,23 @@ Gtk::Menu* build_menu(const std::vector<MenuInfo>& info,
     return menu;
 }
 
+Gtk::MenuBar build_menu_bar(const std::vector<MenuInfo>& info,
+                            const UiContext& context) {
+    Gtk::MenuBar menu_bar;
+
+    for (const auto& item : info) {
+        Gtk::MenuItem* menu_item =
+            Gtk::make_managed<Gtk::MenuItem>(item.label.text, true);
+        menu_bar.append(*menu_item);
+
+        if (!item.sub_menu.empty()) {
+            Gtk::Menu* sub_menu = Gtk::make_managed<Gtk::Menu>(
+                build_menu(item.sub_menu, context));
+            menu_item->set_submenu(*sub_menu);
+        }
+    }
+
+    return menu_bar;
+}
+
 }  // namespace ff::views

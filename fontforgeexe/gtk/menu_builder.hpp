@@ -74,4 +74,7 @@ static const MenuInfo kMenuSeparator = {{""}};
 Gtk::Menu* build_menu(const std::vector<MenuInfo>& info,
                       const UiContext& context);
 
+Gtk::MenuBar build_menu_bar(const std::vector<MenuInfo>& info,
+                            const UiContext& context);
+
 }  // namespace ff::views
