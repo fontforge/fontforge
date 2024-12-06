@@ -27,12 +27,16 @@
 
 #include "font_view_shim.hpp"
 
+#include "application.hpp"
 #include "c_context.h"
 #include "font_view.hpp"
 
 #include <gtkmm.h>
 
 void* create_font_view(FVContext** p_fv_context, int width, int height) {
+    // TODO(myoresh): move to main() once it becomes GTK-aware.
+    ff::app::GtkApp();
+
     // Take ownership of *p_fv_context
     std::shared_ptr<FVContext> context(*p_fv_context, &free);
     ff::views::FontView* font_view =

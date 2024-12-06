@@ -29,23 +29,31 @@
 
 namespace ff::app {
 
-static auto app = Gtk::Application::create("org.fontforge");
+Glib::RefPtr<Gtk::Application> GtkApp() {
+    // Unique instance mode doesn't work well as long as the startup sequence is
+    // handled in the legacy code. It would be possible to enable it once the
+    // application main loop is started with Gtk::Application::run().
+    Gio::ApplicationFlags app_flags = Gio::APPLICATION_NON_UNIQUE;
+
+    static auto app = Gtk::Application::create("org.fontforge", app_flags);
+    return app;
+}
 
 void add_top_view(Gtk::Window& window) {
     static bool initialized = false;
 
     if (!initialized) {
-        app->register_application();
+        GtkApp()->register_application();
 
         initialized = true;
     }
 
-    app->add_window(window);
+    GtkApp()->add_window(window);
 }
 
 void remove_top_view(Gtk::Window& window) {
-    app->remove_window(window);
-    app->quit();
+    GtkApp()->remove_window(window);
+    GtkApp()->quit();
 }
 
 }  // namespace ff::app
