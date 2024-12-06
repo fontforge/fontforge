@@ -1,4 +1,4 @@
-/* Copyright 2024 Maxim Iorsh <iorsh@users.sourceforge.net>
+/* Copyright 2023 Maxim Iorsh <iorsh@users.sourceforge.net>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -24,32 +24,14 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#pragma once
 
-#include "font_view.hpp"
+#include <gtkmm.h>
 
-#include "application.hpp"
-#include "utils.hpp"
+namespace ff::app {
 
-namespace ff::views {
+void add_top_view(Gtk::Window& window);
 
-FontView::FontView(std::shared_ptr<FVContext> context, int width, int height)
-    : fv_context(context), char_grid(context) {
-    ff::app::add_top_view(window);
+void remove_top_view(Gtk::Window& window);
 
-    window.signal_delete_event().connect([this](GdkEventAny*) {
-        ff::app::remove_top_view(window);
-        return false;
-    });
-
-    window.add(char_grid.get_top_widget());
-    window.show_all();
-    window.resize(width, height);
-
-    // TODO(iorsh): review this very stragne hack.
-    // For reasons beyond my comprehension, DrawingArea fails to catch events
-    // before this function is called. A mere traverasal of widget tree should
-    // theoretically have no side efects, but it does.
-    gtk_find_child(&window, "");
-}
-
-}  // namespace ff::views
+}  // namespace ff::app

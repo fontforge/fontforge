@@ -33,8 +33,6 @@
 #include <gtkmm.h>
 
 void* create_font_view(FVContext** p_fv_context, int width, int height) {
-    static auto app = Gtk::Application::create("org.fontforge");
-
     // Take ownership of *p_fv_context
     std::shared_ptr<FVContext> context(*p_fv_context, &free);
     ff::views::FontView* font_view =
