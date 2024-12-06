@@ -50,6 +50,8 @@ enum RadioGroup {
     CellPixelView,
     ActiveLayer,
     GlyphLabel,
+    Encoding,
+    ForcedEncoding,
 };
 
 // Lazily initialized collection of GTK groupers for radio buttons

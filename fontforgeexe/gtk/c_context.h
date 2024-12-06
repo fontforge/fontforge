@@ -63,6 +63,11 @@ typedef struct anchor_menu_data {
     AnchorClass* ac;
 } AnchorMenuData;
 
+typedef struct encoding_menu_data {
+    char* label;
+    char* enc_name;
+} EncodingMenuData;
+
 // C structure and callback for interacting with legacy code
 typedef struct fontview_context {
     FontView* fv;
@@ -102,6 +107,20 @@ typedef struct fontview_context {
     // Collect layers data for menu display
     unsigned int (*collect_anchor_data)(FontView* fv,
                                         AnchorMenuData** anchor_data_array);
+
+    // Reencode to new encoding
+    void (*change_encoding)(FontView* fv, const char* enc_name);
+
+    // Force new encoding
+    void (*force_encoding)(FontView* fv, const char* enc_name);
+
+    // Check if "enc" is the current encoding
+    bool (*current_encoding)(FontView* fv, const char* enc_name);
+
+    // Collect standard and user encodings. NULL entries may exist to designate
+    // separators.
+    unsigned int (*collect_encoding_data)(
+        FontView* fv, EncodingMenuData** encoding_data_array);
 
     // Menu actions per menu ID
     FVMenuAction* actions;

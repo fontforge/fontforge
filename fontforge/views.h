@@ -45,6 +45,7 @@ struct gfi_data;
 struct contextchaindlg;
 struct statemachinedlg;
 struct anchor_menu_data;
+struct encoding_menu_data;
 
 extern struct cvshows {
     int showfore, showback, showgrids, showhhints, showvhints, showdhints;
@@ -1207,8 +1208,8 @@ extern void DVCreateGloss(DebugView *dv);
 extern void DVMarkPts(DebugView *dv,SplineSet *ss);
 extern int CVXPos(DebugView *dv,int offset,int width);
 
-extern GMenuItem *GetEncodingMenu(void (*func)(GWindow,GMenuItem *,GEvent *),
-	Encoding *current);
+extern bool IsCurrentEncoding(Encoding *current, const char *enc_name);
+extern unsigned int collect_encoding_data(FontView *fv, struct encoding_menu_data** encoding_data_array);
 
 extern GTextInfo *TIFromName(const char *name);
 

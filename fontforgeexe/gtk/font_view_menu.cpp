@@ -37,6 +37,54 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace ff::views {
 
+std::vector<MenuInfo> encodings(std::shared_ptr<FVContext> fv_context,
+                                void (*encoding_action)(::FontView*,
+                                                        const char*),
+                                RadioGroup group) {
+    std::vector<EncodingMenuData> encoding_data_vec =
+        VectorWrapper(fv_context->fv, fv_context->collect_encoding_data);
+    std::vector<MenuInfo> info_arr;
+
+    for (const EncodingMenuData& encoding_data : encoding_data_vec) {
+        if (encoding_data.enc_name == nullptr) {
+            info_arr.push_back(kMenuSeparator);
+            continue;
+        }
+
+        ActivateCB action = [encoding_action, fv = fv_context->fv,
+                             enc_name =
+                                 encoding_data.enc_name](const UiContext&) {
+            encoding_action(fv, enc_name);
+        };
+        CheckedCB checker = [cb = fv_context->current_encoding,
+                             fv = fv_context->fv,
+                             enc_name = encoding_data.enc_name](
+                                const UiContext&) { return cb(fv, enc_name); };
+        MenuInfo info{{encoding_data.label, group, ""},
+                      {},
+                      {action, AlwaysEnabled, checker},
+                      0};
+        info_arr.push_back(info);
+    }
+    return info_arr;
+}
+
+std::vector<MenuInfo> encoding_reencode(const UiContext& ui_context) {
+    const FontViewUiContext& fv_ui_context =
+        static_cast<const FontViewUiContext&>(ui_context);
+    auto fv_context = fv_ui_context.legacy();
+
+    return encodings(fv_context, fv_context->change_encoding, Encoding);
+}
+
+std::vector<MenuInfo> encoding_force_encoding(const UiContext& ui_context) {
+    const FontViewUiContext& fv_ui_context =
+        static_cast<const FontViewUiContext&>(ui_context);
+    auto fv_context = fv_ui_context.legacy();
+
+    return encodings(fv_context, fv_context->force_encoding, ForcedEncoding);
+}
+
 std::vector<MenuInfo> view_menu_bitmaps(const UiContext& ui_context) {
     const FontViewUiContext& fv_ui_context =
         static_cast<const FontViewUiContext&>(ui_context);
@@ -187,11 +235,11 @@ std::vector<MenuInfo> hints_menu = {
 };
 
 std::vector<MenuInfo> reencode_menu = {
-    { { N_("TODO REENCODE"), NoDecoration, "" }, {}, SubMenuCallbacks, 0 },
+    MenuInfo::CustomBlock(encoding_reencode),
 };
 
 std::vector<MenuInfo> force_encoding_menu = {
-    { { N_("TODO FORCE ENCODING"), NoDecoration, "" }, {}, SubMenuCallbacks, 0 },
+    MenuInfo::CustomBlock(encoding_force_encoding),
 };
 
 std::vector<MenuInfo> encoding_menu = {
