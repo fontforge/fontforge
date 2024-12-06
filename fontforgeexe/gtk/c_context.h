@@ -1,4 +1,4 @@
-/* Copyright 2024 Maxim Iorsh <iorsh@users.sourceforge.net>
+/* Copyright 2023 Maxim Iorsh <iorsh@users.sourceforge.net>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -26,41 +26,17 @@
  */
 #pragma once
 
-#include <string>
-#include <gtkmm.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-#include "c_context.h"
-#include "char_grid.hpp"
+typedef struct fontview FontView;
 
-namespace ff::views {
+// C structure and callback for interacting with legacy code
+typedef struct fontview_context {
+    FontView* fv;
+} FVContext;
 
-class FontView {
- public:
-    FontView(std::shared_ptr<FVContext> context, int width, int height);
-
-    void set_title(const std::string& window_title,
-                   const std::string& taskbar_title) {
-        window.set_title(window_title);
-    }
-
-    GtkWidget* get_drawing_widget_c() {
-        return char_grid.get_drawing_widget_c();
-    }
-
-    void set_scroller_position(int32_t position) {
-        char_grid.set_scroller_position(position);
-    }
-
-    void set_scroller_bounds(int32_t sb_min, int32_t sb_max,
-                             int32_t sb_pagesize) {
-        char_grid.set_scroller_bounds(sb_min, sb_max, sb_pagesize);
-    }
-
- private:
-    std::shared_ptr<FVContext> fv_context;
-
-    Gtk::Window window;
-    CharGrid char_grid;
-};
-
-}  // namespace ff::views
+#ifdef __cplusplus
+}
+#endif

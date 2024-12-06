@@ -61,6 +61,7 @@
 #include "tottfgpos.h"
 #include "ustring.h"
 #include "utype.h"
+#include "gtk/c_context.h"
 #include "gtk/font_view_shim.hpp"
 
 #include <math.h>
@@ -7318,6 +7319,8 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     static GWindow icon = NULL;
     static int nexty=0;
     GRect size;
+    // Memory ownership handed over to GTK UI code
+    FVContext *fv_context = calloc(1, sizeof(FVContext));
 
     FontViewInit();
     if ( icon==NULL ) {
@@ -7342,7 +7345,10 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     if ( nexty+pos.height > size.height )
 	nexty = 0;
     fv->gw = gw = GDrawCreateTopWindow(NULL,&pos,fv_e_h,fv,&wattrs);
-    fv->gtk_window = create_font_view(pos.width, pos.height);
+
+    fv_context->fv = fv;
+    fv->gtk_window = create_font_view(&fv_context, pos.width, pos.height);
+
     FontViewSetTitle(fv);
     GDrawSetWindowTypeName(fv->gw, "FontView");
 

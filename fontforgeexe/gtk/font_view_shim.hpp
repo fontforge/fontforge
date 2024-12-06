@@ -29,6 +29,7 @@
 #include <stdint.h>
 
 typedef struct _GtkWidget GtkWidget;
+typedef struct fontview_context FVContext;
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,7 +38,7 @@ extern "C" {
 // Create GTK Font View window.
 // Return value:
 //    pointer to ff::views::FontView object, opaque to C code
-void* create_font_view(int width, int height);
+void* create_font_view(FVContext** p_fv_context, int width, int height);
 
 // Set views::FontView title and taskbar title [unsupported]
 void gtk_set_title(void* fv_opaque, char* window_title, char* taskbar_title);
