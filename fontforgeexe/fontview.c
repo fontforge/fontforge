@@ -3279,7 +3279,6 @@ return;
 	    samesize = true;
 	fv->cbw = (bdf->pixelsize*fv->magnify)+1;
 	fv->cbh = (bdf->pixelsize*fv->magnify)+1+fv->lab_height+1;
-	fv->resize_expected = !samesize;
 	ccnt = fv->b.sf->desired_col_cnt;
 	rcnt = fv->b.sf->desired_row_cnt;
 	if ((( bdf->pixelsize<=fv->b.sf->display_size || bdf->pixelsize<=-fv->b.sf->display_size ) &&
@@ -6839,10 +6838,6 @@ static void FVTimer(FontView *fv, GEvent *event) {
 		GDrawScroll(fv->v,NULL,0,dy*fv->cbh);
 	    }
 	}
-    } else if ( event->u.timer.timer==fv->resize ) {
-	/* It's a delayed resize event (for kde which sends continuous resizes) */
-	fv->resize = NULL;
-	FVResize(fv,(GEvent *) (event->u.timer.userdata));
     } else if ( event->u.timer.userdata!=NULL ) {
 	/* It's a delayed function call */
 	void (*func)(FontView *) = (void (*)(FontView *)) (event->u.timer.userdata);
@@ -7063,16 +7058,7 @@ return( GGadgetDispatchEvent(fv->vsb,event));
 	FVDrawInfo(fv,gw,event);
       break;
       case et_resize:
-	/* KDE sends a continuous stream of resize events, and gets very */
-	/*  confused if I start resizing the window myself, try to wait for */
-	/*  the user to finish before responding to resizes */
-	if ( event->u.resize.sized || fv->resize_expected ) {
-	    if ( fv->resize )
-		GDrawCancelTimer(fv->resize);
-	    fv->resize_event = *event;
-	    fv->resize = GDrawRequestTimer(fv->v,300,0,(void *) &fv->resize_event);
-	    fv->resize_expected = false;
-	}
+        FVResize(fv,event);
       break;
       case et_char:
 	if ( fv->b.container!=NULL )

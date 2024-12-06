@@ -441,8 +441,6 @@ typedef struct fontview {
     GFont **fontset;
     GGadget *vsb, *mb;
     GTimer *pressed;
-    GTimer *resize;
-    GEvent resize_event;
     GIC *gic;
     GIC *gwgic;
     int width, height;		/* of v */
@@ -462,11 +460,6 @@ typedef struct fontview {
     unsigned int drag_and_drop: 1;
     unsigned int has_dd_no_cursor: 1;
     unsigned int any_dd_events_sent: 1;
-    unsigned int resize_expected: 1;
-	/* Some window managers do not honour my resize requests (if window is*/
-	/*  maximized for example), but we depend on the resize request to    */
-	/*  fix up the window. We do get a configure notify, but the window   */
-	/*  stays the same size, so kludge things */
     unsigned int glyphlabel: 2;
     unsigned int notactive:1;			/* When embedded in a dlg */
     int16_t magnify;
