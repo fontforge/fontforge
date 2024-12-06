@@ -31,10 +31,48 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <glib/gi18n.h>
 #include <gtkmm.h>
 
+#include "font_view.hpp"
 #include "menu_builder.hpp"
 #include "menu_ids.h"
 
 namespace ff::views {
+
+std::vector<MenuInfo> view_menu_bitmaps(const UiContext& ui_context) {
+    const FontViewUiContext& fv_ui_context =
+        static_cast<const FontViewUiContext&>(ui_context);
+    auto fv_context = fv_ui_context.legacy();
+
+    BitmapMenuData* bitmap_data_array = nullptr;
+    int n_bitmaps =
+        fv_context->collect_bitmap_data(fv_context->fv, &bitmap_data_array);
+    std::vector<MenuInfo> info_arr;
+
+    for (int i = 0; i < n_bitmaps; ++i) {
+        const BitmapMenuData& bitmap_data = bitmap_data_array[i];
+        char buffer[50];
+
+        if (bitmap_data.depth == 1)
+            sprintf(buffer, _("%d pixel bitmap"), bitmap_data.pixelsize);
+        else
+            sprintf(buffer, _("%d@%d pixel bitmap"), bitmap_data.pixelsize,
+                    bitmap_data.depth);
+
+        ActivateCB action =
+            [cb = fv_context->change_display_bitmap, fv = fv_context->fv,
+             bdf = bitmap_data.bdf](const UiContext&) { cb(fv, bdf); };
+        CheckedCB checker =
+            [cb = fv_context->current_display_bitmap, fv = fv_context->fv,
+             bdf = bitmap_data.bdf](const UiContext&) { return cb(fv, bdf); };
+        MenuInfo info{{buffer, CellPixelView, ""},
+                      {},
+                      {action, AlwaysEnabled, checker},
+                      0};
+        info_arr.push_back(info);
+    }
+
+    free(bitmap_data_array);
+    return info_arr;
+}
 
 // clang-format off
 std::vector<MenuInfo> popup_menu = {
@@ -121,6 +159,7 @@ std::vector<MenuInfo> view_menu = {
     { { N_("_Fit to font bounding box"), Checkable, "<control>6" }, {}, LegacyCallbacks, MID_FitToBbox },
     kMenuSeparator,
     { { N_("Bitmap _Magnification..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_BitmapMag },
+    MenuInfo::CustomBlock(view_menu_bitmaps),
 };
 
 std::vector<MenuInfo> top_menu = {

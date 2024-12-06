@@ -3528,15 +3528,6 @@ static void FVMenuGlyphLabel(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)
     SavePrefs(true);
 }
 
-#if 0
-static void FVMenuShowBitmap(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    BDFFont *bdf = mi->ti.userdata;
-
-    FV_ChangeDisplayBitmap(fv,bdf);		/* Let's not change any of the others */
-}
-#endif
-
 static void FV_ShowFilled(FontView *fv) {
 
     fv->magnify = 1;
@@ -5238,38 +5229,6 @@ static bool vwlistdisabled(FontView *fv, int mid) {
     EncMap *map = fv->b.map;
     OTLookup *otl;
     bool disabled = false;
-
-#if 0 /* Temporarily keep for reference */
-    for ( i=0; vwlist[i].ti.text==NULL || strcmp((char *) vwlist[i].ti.text, _("Bitmap _Magnification..."))!=0; ++i );
-    base = i+1;
-    for ( i=base; vwlist[i].ti.text!=NULL; ++i ) {
-	free( vwlist[i].ti.text);
-	vwlist[i].ti.text = NULL;
-    }
-
-    vwlist[base-1].ti.disabled = true;
-    if ( master->bitmaps!=NULL ) {
-	for ( bdf = master->bitmaps, i=base;
-		i<sizeof(vwlist)/sizeof(vwlist[0])-1 && bdf!=NULL;
-		++i, bdf = bdf->next ) {
-	    if ( BDFDepth(bdf)==1 )
-		sprintf( buffer, _("%d pixel bitmap"), bdf->pixelsize );
-	    else
-		sprintf( buffer, _("%d@%d pixel bitmap"),
-			bdf->pixelsize, BDFDepth(bdf) );
-	    vwlist[i].ti.text = (unichar_t *) utf82u_copy(buffer);
-	    vwlist[i].ti.checkable = true;
-	    vwlist[i].ti.checked = bdf==fv->show;
-	    vwlist[i].ti.userdata = bdf;
-	    vwlist[i].invoke = FVMenuShowBitmap;
-	    vwlist[i].ti.fg = vwlist[i].ti.bg = COLOR_DEFAULT;
-	    if ( bdf==fv->show )
-		vwlist[base-1].ti.disabled = false;
-	}
-    }
-    GMenuItemArrayFree(mi->sub);
-    mi->sub = GMenuItem2ArrayCopy(vwlist,NULL);
-#endif
 
 	switch ( mid ) {
 	  case MID_Next: case MID_Prev:
