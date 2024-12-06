@@ -44,6 +44,8 @@
 #include "ttf.h"
 #include "ustring.h"
 #include "utype.h"
+#include "gtk/c_context.h"
+#include "gtk/font_view_shim.hpp"
 
 #include <locale.h>
 #include <math.h>
@@ -5838,6 +5840,8 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
     int i,j, guts_row;
     /* Returns are 0=>Pairs, 1=>Classes, 2=>Cancel */
     int as, ds, ld;
+    void* cg_dlg;
+    KFDlgData kf_data;
 
     if ( sub->separation==0 && !sub->kerning_by_touch ) {
 	sub->separation = sf->width_separation;
@@ -5851,6 +5855,7 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
     memset(&boxes,0,sizeof(boxes));
     memset(&label,0,sizeof(label));
     memset(&kf,0,sizeof(kf));
+    memset(&kf_data,0,sizeof(kf_data));
 
     kf.base.funcs = &kernformat_funcs;
     kf.sub = sub;
@@ -6109,13 +6114,22 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
     GHVBoxSetExpandableCol(boxes[6].ret,gb_expandgluesame);
 
     kf.topbox = boxes[0].ret;
-    KFFontViewInits(&kf, GWidgetGetControl(kf.gw,CID_Guts));
+    cg_dlg = KFFontViewInits(&kf, GWidgetGetControl(kf.gw,CID_Guts));
     kf_activateMe((struct fvcontainer *) &kf,(struct fontviewbase *) kf.first_fv);
 
     GHVBoxFitWindow(boxes[0].ret);
     GDrawSetVisible(kf.gw,true);
-    while ( !kf.done )
-	GDrawProcessOneEvent(NULL);
+
+    kf_data.use_individual_pairs = true;
+    kf_data.guess_kerning_classes = true;
+    kf_data.intra_class_dist = (sf->ascent+sf->descent)/100.;
+    kf_data.default_separation = sub->separation;
+    kf_data.min_kern = sub->minkern;
+    kf_data.touching = sub->kerning_by_touch;
+    kf_data.kern_closer = true;
+    kf_data.autokern_new = !sub->dontautokern;
+
+    bool result_ok = run_kerning_format_dlg(&cg_dlg, &kf_data); 
 
     GDrawDestroyWindow(kf.second_fv->v);
     FontViewFree(&kf.second_fv->b);

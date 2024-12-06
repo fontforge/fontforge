@@ -7657,7 +7657,7 @@ static void FVCopyInnards(FontView *fv,GRect *pos,
     fv->rowoff = (fvorig->rowoff*fvorig->colcnt)/fv->colcnt;
 }
 
-void KFFontViewInits(struct kf_dlg *kf,GGadget *drawable) {
+void* KFFontViewInits(struct kf_dlg *kf,GGadget *drawable) {
     GGadgetData gd;
     GRect pos, gsize;
     GWindow dw = GDrawableGetWindow(drawable);
@@ -7716,6 +7716,8 @@ void KFFontViewInits(struct kf_dlg *kf,GGadget *drawable) {
     gsize.width = pos.width;
     gsize.height = pos.y+pos.height;
     GGadgetSetDesiredSize(drawable,NULL,&gsize);
+
+    return cg_dlg;
 }
 /* ************************************************************************** */
 /* ************************** Glyph Set from Selection ********************** */

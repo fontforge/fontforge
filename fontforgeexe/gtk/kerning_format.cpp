@@ -62,7 +62,6 @@ KerningFormat::KerningFormat(std::shared_ptr<FVContext> context1,
         _("FontForge will look at the glyphs selected in the font view\n"
           "and will try to find groups of glyphs which are most alike\n"
           "and generate kerning classes based on that information."));
-    guess_classes.set_active();
 
     intra_class_dist_entry =
         widgets::NumericalEntry(_("Intra Class Distance:"));
@@ -158,6 +157,33 @@ KerningFormat::KerningFormat(std::shared_ptr<FVContext> context1,
     // classes" check button.
     class_options_grid.set_margin_start(class_options_grid.get_margin_start() +
                                         label_offset(&matrix_of_classes));
+}
+
+Gtk::ResponseType KerningFormat::run(KFDlgData* kf_data) {
+    // Initialize dialog values
+    kf_data->use_individual_pairs ? individual_pairs.set_active()
+                                  : matrix_of_classes.set_active();
+    guess_classes.set_active(kf_data->guess_kerning_classes);
+    intra_class_dist_entry.set_value(kf_data->intra_class_dist);
+    default_separation.set_value(kf_data->default_separation);
+    min_kern.set_value(kf_data->min_kern);
+    touching.set_active(kf_data->touching);
+    kern_closer.set_active(kf_data->kern_closer);
+    autokern_new.set_active(kf_data->autokern_new);
+
+    Gtk::ResponseType result = Dialog::run();
+
+    // Read updated dialog values
+    kf_data->use_individual_pairs = individual_pairs.get_active();
+    kf_data->guess_kerning_classes = guess_classes.get_active();
+    kf_data->intra_class_dist = intra_class_dist_entry.get_value();
+    kf_data->default_separation = default_separation.get_value();
+    kf_data->min_kern = min_kern.get_value();
+    kf_data->touching = touching.get_active();
+    kf_data->kern_closer = kern_closer.get_active();
+    kf_data->autokern_new = autokern_new.get_active();
+
+    return result;
 }
 
 }  // namespace ff::dlg

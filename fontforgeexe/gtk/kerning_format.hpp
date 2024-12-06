@@ -45,6 +45,8 @@ class KerningFormat : public Dialog, public views::ICharGridContainter {
         return second ? char_grid2 : char_grid1;
     }
 
+    Gtk::ResponseType run(KFDlgData* kf_data);
+
  private:
     Gtk::RadioButton individual_pairs;
 

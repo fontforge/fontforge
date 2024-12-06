@@ -43,6 +43,17 @@ typedef struct fontview_context {
     char* (*tooltip_message_cb)(FontView* fv, int x, int y);
 } FVContext;
 
+typedef struct kerning_format_data {
+    bool use_individual_pairs;
+    bool guess_kerning_classes;
+    double intra_class_dist;
+    double default_separation;
+    double min_kern;
+    bool touching;
+    bool kern_closer;
+    bool autokern_new;
+} KFDlgData;
+
 #ifdef __cplusplus
 }
 

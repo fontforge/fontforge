@@ -135,3 +135,17 @@ void* create_kerning_format_dlg(FVContext** p_fv_context1,
     // casting should occur only to/from ICharGridContainter*
     return dynamic_cast<ICharGridContainter*>(kern_fmt_dlg);
 }
+
+bool run_kerning_format_dlg(void** kf_opaque, KFDlgData* kf_data) {
+    // To prevent issues with multiple inheritance, the final static void*
+    // casting should occur only to/from ICharGridContainter*
+    auto kerning_format_dlg = dynamic_cast<KerningFormat*>(
+        static_cast<ICharGridContainter*>(*kf_opaque));
+    Gtk::ResponseType response = kerning_format_dlg->run(kf_data);
+
+    // Destroy dialog and reset pointer
+    delete kerning_format_dlg;
+    *kf_opaque = NULL;
+
+    return (response == Gtk::RESPONSE_OK);
+}
