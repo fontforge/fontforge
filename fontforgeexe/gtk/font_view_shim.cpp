@@ -49,3 +49,16 @@ GtkWidget* get_drawing_widget_c(void* fv_opaque) {
         static_cast<ff::views::FontView*>(fv_opaque);
     return font_view->get_drawing_widget_c();
 }
+
+void fv_set_scroller_position(void* fv_opaque, int32_t position) {
+    ff::views::FontView* font_view =
+        static_cast<ff::views::FontView*>(fv_opaque);
+    font_view->set_scroller_position(position);
+}
+
+void fv_set_scroller_bounds(void* fv_opaque, int32_t sb_min, int32_t sb_max,
+                            int32_t sb_pagesize) {
+    ff::views::FontView* font_view =
+        static_cast<ff::views::FontView*>(fv_opaque);
+    font_view->set_scroller_bounds(sb_min, sb_max, sb_pagesize);
+}

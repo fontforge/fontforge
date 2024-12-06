@@ -46,6 +46,15 @@ class FontView {
         return char_grid.get_drawing_widget_c();
     }
 
+    void set_scroller_position(int32_t position) {
+        char_grid.set_scroller_position(position);
+    }
+
+    void set_scroller_bounds(int32_t sb_min, int32_t sb_max,
+                             int32_t sb_pagesize) {
+        char_grid.set_scroller_bounds(sb_min, sb_max, sb_pagesize);
+    }
+
  private:
     Gtk::Window window;
     CharGrid char_grid;

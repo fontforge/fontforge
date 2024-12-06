@@ -34,6 +34,9 @@ bool on_drawing_area_event(GdkEvent* event);
 bool on_drawing_area_key(GdkEventKey* event, Gtk::DrawingArea& drawing_area);
 
 CharGrid::CharGrid() {
+    drawing_area.set_vexpand(true);
+    drawing_area.set_hexpand(true);
+
     // Fontforge drawing area processes events in the legacy code
     // expose, keypresses, mouse etc.
     drawing_area.signal_event().connect(&on_drawing_area_event);
@@ -46,12 +49,30 @@ CharGrid::CharGrid() {
 
     drawing_area.set_events(Gdk::ALL_EVENTS_MASK);
     drawing_area.set_can_focus(true);
+
+    char_grid_box.attach(drawing_area, 0, 0);
+    char_grid_box.attach(scroller, 1, 0);
 }
 
-Gtk::Widget& CharGrid::get_top_widget() { return drawing_area; }
+Gtk::Widget& CharGrid::get_top_widget() { return char_grid_box; }
 
 GtkWidget* CharGrid::get_drawing_widget_c() {
     return (GtkWidget*)drawing_area.gobj();
+}
+
+void CharGrid::set_scroller_position(int32_t position) {
+    if (!scroller.has_grab()) {
+        // Set the scroller only if its slider is not currently grabbed with the
+        // mouse.
+        scroller.get_adjustment()->set_value(position);
+    }
+}
+
+void CharGrid::set_scroller_bounds(int32_t sb_min, int32_t sb_max,
+                                   int32_t sb_pagesize) {
+    Glib::RefPtr<Gtk::Adjustment> adjustment = scroller.get_adjustment();
+    adjustment->configure(adjustment->get_value(), sb_min, sb_max, 1,
+                          sb_pagesize - 1, sb_pagesize);
 }
 
 /////////////////  EVENTS  ////////////////////

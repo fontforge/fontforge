@@ -26,6 +26,8 @@
  */
 #pragma once
 
+#include <stdint.h>
+
 typedef struct _GtkWidget GtkWidget;
 
 #ifdef __cplusplus
@@ -40,7 +42,12 @@ void* create_font_view(int width, int height);
 // Set views::FontView title and taskbar title [unsupported]
 void gtk_set_title(void* fv_opaque, char* window_title, char* taskbar_title);
 
-GtkWidget* get_drawing_widget_c(void* window);
+GtkWidget* get_drawing_widget_c(void* fv_opaque);
+
+void fv_set_scroller_position(void* fv_opaque, int32_t position);
+
+void fv_set_scroller_bounds(void* fv_opaque, int32_t sb_min, int32_t sb_max,
+                            int32_t sb_pagesize);
 
 #ifdef __cplusplus
 }
