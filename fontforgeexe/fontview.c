@@ -7095,6 +7095,7 @@ return( GGadgetDispatchEvent(fv->vsb,event));
       case et_destroy:
 	if ( fv->qg!=NULL )
 	    QGRmFontView(fv->qg,fv);
+	GDrawDestroyWindow(fv->v);
 	FontViewRemove(fv);
       break;
       default: break;
@@ -7407,7 +7408,7 @@ static void FVCreateInnards(FontView *fv,GRect *pos) {
     wattrs.cursor = ct_pointer;
     wattrs.background_color = view_bgcol;
     wattrs.gtk_widget = get_drawing_widget_c(fv->gtk_window);
-    fv->v = GWidgetCreateSubWindow(gw,pos,v_e_h,fv,&wattrs);
+    fv->v = GWidgetCreateTopWindow(NULL,pos,v_e_h,fv,&wattrs);
     GDrawSetVisible(fv->v,true);
     GDrawSetWindowTypeName(fv->v, "FontView");
 
