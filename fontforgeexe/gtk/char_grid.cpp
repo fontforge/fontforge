@@ -26,6 +26,9 @@
  */
 
 #include "char_grid.hpp"
+
+#include <atomic>
+
 #include "utils.hpp"
 
 namespace ff::views {
@@ -34,6 +37,12 @@ bool on_drawing_area_event(GdkEvent* event);
 bool on_drawing_area_key(GdkEventKey* event, Gtk::DrawingArea& drawing_area);
 void on_scrollbar_value_changed(std::shared_ptr<FVContext> fv_context,
                                 Gtk::VScrollbar& scroller);
+bool on_query_tooltip(int x, int y, bool keyboard_tooltip,
+                      const Glib::RefPtr<Gtk::Tooltip>& tooltip);
+bool on_mouse_move(Gtk::DrawingArea& drawing_area);
+
+// A hack to transfer motion event to tooltip query
+static std::atomic<bool> mouse_moved(false);
 
 CharGrid::CharGrid(std::shared_ptr<FVContext> context) {
     scroller.signal_value_changed().connect(
@@ -61,6 +70,13 @@ CharGrid::CharGrid(std::shared_ptr<FVContext> context) {
 
     drawing_area.set_events(Gdk::ALL_EVENTS_MASK);
     drawing_area.set_can_focus(true);
+
+    // When the pointer is over character cell, display tooltip with this
+    // character's Unicode info; dismissed on mouse movement.
+    drawing_area.set_has_tooltip();
+    drawing_area.signal_query_tooltip().connect(&on_query_tooltip);
+    drawing_area.signal_motion_notify_event().connect(
+        [this](GdkEventMotion*) { return on_mouse_move(drawing_area); });
 
     make_character_info_label();
 
@@ -168,6 +184,28 @@ void on_scrollbar_value_changed(std::shared_ptr<FVContext> fv_context,
                                 Gtk::VScrollbar& scroller) {
     double new_position = scroller.get_value();
     fv_context->scroll_fontview_to_position_cb(fv_context->fv, new_position);
+}
+
+bool on_query_tooltip(int x, int y, bool keyboard_tooltip,
+                      const Glib::RefPtr<Gtk::Tooltip>& tooltip) {
+    Glib::ustring text =
+        Glib::ustring::compose("<small>x %1, y %2</small>", x, y);
+    tooltip->set_markup(text);
+    if (mouse_moved) {
+        // Mouse motion occured, dismiss the tooltip
+        mouse_moved = false;
+        return false;
+    } else {
+        return true;
+    }
+}
+
+bool on_mouse_move(Gtk::DrawingArea& drawing_area) {
+    if (!mouse_moved) {
+        mouse_moved = true;
+        drawing_area.trigger_tooltip_query();
+    }
+    return true;
 }
 
 }  // namespace ff::views

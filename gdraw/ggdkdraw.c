@@ -956,6 +956,10 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
         }
         break;
         case GDK_MOTION_NOTIFY: {
+            if ((g_object_get_data(G_OBJECT(w), "GtkWidget")) != NULL) {
+               // Send motion event to GTK wrapper to dismiss tooltip
+               gtk_main_do_event(event);
+            }
             GdkEventMotion *evt = (GdkEventMotion *)event;
             gevent.type = et_mousemove;
             gevent.u.mouse.state = _GGDKDraw_GdkModifierToKsm(evt->state);
