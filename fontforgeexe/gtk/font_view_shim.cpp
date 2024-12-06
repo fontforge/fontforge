@@ -30,9 +30,11 @@
 #include "application.hpp"
 #include "c_context.h"
 #include "font_view.hpp"
+#include "select_glyphs.hpp"
 
 #include <gtkmm.h>
 
+using ff::dlg::SelectGlyphs;
 using ff::views::ICharGridContainter;
 
 void* create_font_view(FVContext** p_fv_context, int width, int height) {
@@ -44,7 +46,7 @@ void* create_font_view(FVContext** p_fv_context, int width, int height) {
     ff::views::FontView* font_view =
         new ff::views::FontView(context, width, height);
     *p_fv_context = NULL;
-    return font_view;
+    return dynamic_cast<ICharGridContainter*>(font_view);
 }
 
 void gtk_set_title(void* fv_opaque, char* window_title, char* taskbar_title) {
@@ -80,4 +82,16 @@ void fv_set_character_info(void* fv_opaque, char* info) {
 void fv_resize_window(void* fv_opaque, int width, int height) {
     auto font_view = static_cast<ICharGridContainter*>(fv_opaque);
     font_view->get_char_grid().resize_drawing_area(width, height);
+}
+
+void* create_select_glyphs_dlg(FVContext** p_fv_context, int width,
+                               int height) {
+    // Take ownership of *p_fv_context
+    std::shared_ptr<FVContext> context(*p_fv_context, &free);
+    SelectGlyphs* sel_glyphs_dlg = new SelectGlyphs(context, width, height);
+    *p_fv_context = NULL;
+
+    // To prevent issues with multiple inheritance, the final static void*
+    // casting should occur only to/from ICharGridContainter*
+    return dynamic_cast<ICharGridContainter*>(sel_glyphs_dlg);
 }

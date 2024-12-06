@@ -1,4 +1,4 @@
-/* Copyright 2023 Maxim Iorsh <iorsh@users.sourceforge.net>
+/* Copyright 2024 Maxim Iorsh <iorsh@users.sourceforge.net>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -26,37 +26,26 @@
  */
 #pragma once
 
-#include <stdint.h>
+#include <gtkmm.h>
 
-typedef struct _GtkWidget GtkWidget;
-typedef struct fontview_context FVContext;
+#include "c_context.h"
+#include "char_grid.hpp"
+#include "dialog.hpp"
+#include "i_char_grid_containter.hpp"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace ff::dlg {
 
-// Create GTK Font View window.
-// Return value:
-//    pointer to ff::views::FontView object, opaque to C code
-void* create_font_view(FVContext** p_fv_context, int width, int height);
+class SelectGlyphs : public Dialog, public views::ICharGridContainter {
+ public:
+    SelectGlyphs(std::shared_ptr<FVContext> context, int width, int height);
 
-// Set views::FontView title and taskbar title [unsupported]
-void gtk_set_title(void* fv_opaque, char* window_title, char* taskbar_title);
+    views::CharGrid& get_char_grid() override { return char_grid; }
 
-GtkWidget* get_drawing_widget_c(void* fv_opaque);
+ private:
+    std::shared_ptr<FVContext> fv_context;
 
-void fv_set_scroller_position(void* fv_opaque, int32_t position);
+    Gtk::Label explanation;
+    views::CharGrid char_grid;
+};
 
-void fv_set_scroller_bounds(void* fv_opaque, int32_t sb_min, int32_t sb_max,
-                            int32_t sb_pagesize);
-
-void fv_set_character_info(void* fv_opaque, char* info);
-
-// Resize font view window to accomodate the new drawing area size
-void fv_resize_window(void* fv_opaque, int width, int height);
-
-void* create_select_glyphs_dlg(FVContext** p_fv_context, int width, int height);
-
-#ifdef __cplusplus
-}
-#endif
+}  // namespace ff::dlg

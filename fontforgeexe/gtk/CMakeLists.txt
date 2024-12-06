@@ -13,6 +13,8 @@ add_library(ffgtk OBJECT
   font_view_shim.hpp
   font_view_shim.cpp
   i_char_grid_containter.hpp
+  select_glyphs.hpp
+  select_glyphs.cpp
   utils.hpp
   utils.cpp
 )

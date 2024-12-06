@@ -1,4 +1,4 @@
-/* Copyright 2023 Maxim Iorsh <iorsh@users.sourceforge.net>
+/* Copyright 2024 Maxim Iorsh <iorsh@users.sourceforge.net>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -24,39 +24,32 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#pragma once
 
-#include <stdint.h>
+#include "select_glyphs.hpp"
 
-typedef struct _GtkWidget GtkWidget;
-typedef struct fontview_context FVContext;
+#include "intl.h"
+#include "utils.hpp"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace ff::dlg {
 
-// Create GTK Font View window.
-// Return value:
-//    pointer to ff::views::FontView object, opaque to C code
-void* create_font_view(FVContext** p_fv_context, int width, int height);
+SelectGlyphs::SelectGlyphs(std::shared_ptr<FVContext> context, int width,
+                           int height)
+    : Dialog(), fv_context(context), char_grid(context) {
+    dialog.set_title(_("Glyph Set by Selection"));
 
-// Set views::FontView title and taskbar title [unsupported]
-void gtk_set_title(void* fv_opaque, char* window_title, char* taskbar_title);
+    explanation.set_text(
+        _("Select glyphs in the font view above.\nThe selected glyphs "
+          "become your glyph class."));
+    explanation.set_halign(Gtk::ALIGN_START);
 
-GtkWidget* get_drawing_widget_c(void* fv_opaque);
+    dialog.get_content_area()->pack_start(char_grid.get_top_widget());
+    dialog.get_content_area()->pack_end(explanation, Gtk::PACK_SHRINK);
 
-void fv_set_scroller_position(void* fv_opaque, int32_t position);
+    dialog.add_button(_("_OK"), Gtk::RESPONSE_OK);
+    dialog.add_button(_("_Cancel"), Gtk::RESPONSE_CANCEL);
 
-void fv_set_scroller_bounds(void* fv_opaque, int32_t sb_min, int32_t sb_max,
-                            int32_t sb_pagesize);
-
-void fv_set_character_info(void* fv_opaque, char* info);
-
-// Resize font view window to accomodate the new drawing area size
-void fv_resize_window(void* fv_opaque, int width, int height);
-
-void* create_select_glyphs_dlg(FVContext** p_fv_context, int width, int height);
-
-#ifdef __cplusplus
+    dialog.show_all();
+    dialog.resize(width, height);
 }
-#endif
+
+}  // namespace ff::dlg
