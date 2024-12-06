@@ -2992,8 +2992,6 @@ static void FVMenuInterpFonts(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
     FVInterpolateFonts(fv);
 }
 
-static void FVShowInfo(FontView *fv);
-
 void FVChangeChar(FontView *fv,int i) {
 
     if ( i!=-1 ) {
@@ -6291,36 +6289,7 @@ GString* FVGetInfo(FontView *fv) {
    return output;
 }
 
-void FVDrawInfo(FontView *fv,GWindow pixmap, GEvent *event) {
-    GRect old, r;
-    Color bg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(pixmap));
-    Color fg = fvglyphinfocol;
-    GString *output;
-
-    if ( event->u.expose.rect.y+event->u.expose.rect.height<=fv->mbh ) {
-        return;
-    }
-
-    GDrawSetFont(pixmap,fv->fontset[0]);
-    GDrawPushClip(pixmap,&event->u.expose.rect,&old);
-
-    r.x = 0; r.width = fv->width; r.y = fv->mbh; r.height = fv->infoh;
-    GDrawFillRect(pixmap,&r,bg);
-
-    output = FVGetInfo(fv);
-    if (output == NULL) {
-        g_string_free( output, TRUE ); output = NULL;
-        GDrawPopClip(pixmap,&old);
-        return;
-    }
-
-    GDrawDrawText8( pixmap, 10, fv->mbh+fv->lab_as, output->str, -1, fg );
-    g_string_free( output, TRUE ); output = NULL;
-    GDrawPopClip( pixmap, &old );
-    return;
-}
-
-static void FVShowInfo(FontView *fv) {
+void FVShowInfo(FontView *fv) {
     GString* info = FVGetInfo(fv);
     fv_set_character_info(fv->gtk_window, info->str);
     g_string_free(info, TRUE); info = NULL;
@@ -7861,9 +7830,6 @@ return( true );
     gs = (struct gsd *) (active_fv->b.container);
 
     switch ( event->type ) {
-      case et_expose:
-	FVDrawInfo(active_fv,pixmap,event);
-      break;
       case et_char:
 	gs_charEvent(&gs->base,event);
       break;

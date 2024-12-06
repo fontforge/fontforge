@@ -731,6 +731,7 @@ extern void FVDeselectAll(FontView *fv);
 extern void FVAutoWidth2(FontView *fv);
 /*extern void FVAutoKern(FontView *fv);*/
 /*extern void FVAutoWidth(FontView *fv);*/
+extern void FVShowInfo(FontView *fv);
 
 extern void SC_MarkInstrDlgAsChanged(SplineChar *sc);
 
@@ -1311,7 +1312,6 @@ extern void BVColInit( void );
 extern void FontViewRemove(FontView *fv);
 extern void FontViewFinishNonStatic(void);
 extern void FVChar(FontView *fv,GEvent *event);
-extern void FVDrawInfo(FontView *fv,GWindow pixmap,GEvent *event);
 extern void FVRedrawAllCharViews(FontView *fv);
 extern void KFFontViewInits(struct kf_dlg *kf,GGadget *drawable);
 extern char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current);

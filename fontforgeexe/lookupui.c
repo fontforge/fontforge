@@ -5646,7 +5646,6 @@ return( true );
     Color fg = GDrawGetDefaultForeground(NULL);
     switch ( event->type ) {
       case et_expose:
-	FVDrawInfo(active_fv,pixmap,event);
 	GDrawSetFont(pixmap, kf->first_fv->notactive? kf->plain : kf->bold );
 	GDrawDrawText8(pixmap,10,kf->mbh+kf->first_fv->infoh+kf->as,
 		_("Select glyphs for the first part of the kern pair"),-1,fg);
