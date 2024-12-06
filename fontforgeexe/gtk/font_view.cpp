@@ -74,6 +74,21 @@ EnabledCB FontViewUiContext::get_enabled_cb(int mid) const {
     }
 }
 
+CheckedCB FontViewUiContext::get_checked_cb(int mid) const {
+    FVMenuAction* callback_set =
+        find_legacy_callback_set(mid, legacy_context->actions);
+
+    if (callback_set != NULL && callback_set->is_checked != NULL) {
+        bool (*checked_cb)(::FontView*, int) = callback_set->is_checked;
+        ::FontView* fv = legacy_context->fv;
+        return [checked_cb, fv, mid](const UiContext&) {
+            return checked_cb(fv, mid);
+        };
+    } else {
+        return NotCheckable;
+    }
+}
+
 bool on_button_press_event(GdkEventButton* event, Gtk::Menu& pop_up);
 bool on_font_view_event(GdkEvent* event);
 

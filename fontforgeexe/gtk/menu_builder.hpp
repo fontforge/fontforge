@@ -96,13 +96,17 @@ static const ActivateCB NoAction = [](const UiContext&) {};
 static const EnabledCB LegacyEnabled;
 static const EnabledCB AlwaysEnabled = [](const UiContext&) { return true; };
 static const EnabledCB NeverEnabled = [](const UiContext&) { return false; };
+static const CheckedCB LegacyChecked;
+static const CheckedCB NotCheckable = [](const UiContext&) { return true; };
 
 struct MenuCallbacks {
     ActivateCB handler; /* called on mouse release */
     EnabledCB enabled = AlwaysEnabled;
+    CheckedCB checked = NotCheckable;
 };
 
-static const MenuCallbacks LegacyCallbacks = {LegacyAction, LegacyEnabled};
+static const MenuCallbacks LegacyCallbacks = {LegacyAction, LegacyEnabled,
+                                              LegacyChecked};
 static const MenuCallbacks SubMenuCallbacks = {NoAction};
 
 struct MenuInfo {
