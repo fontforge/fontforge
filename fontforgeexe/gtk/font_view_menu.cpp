@@ -62,6 +62,33 @@ std::vector<MenuInfo> popup_menu = {
     { { N_("Set _Vertical Advance..."), "metricssetvwidth", "" }, {}, LegacyCallbacks, MID_SetVWidth },
 };
 
+std::vector<MenuInfo> histograms_menu = {
+    { { N_("_HStem"), "", "" }, {}, LegacyCallbacks, MID_HStemHist },
+    { { N_("_VStem"), "", "" }, {}, LegacyCallbacks, MID_VStemHist },
+    { { N_("BlueValues"), "", "" }, {}, LegacyCallbacks, MID_BlueValuesHist },
+};
+
+std::vector<MenuInfo> hints_menu = {
+    { { N_("Auto_Hint"), "hintsautohint", "<control><shift>H" }, {}, LegacyCallbacks, MID_AutoHint },
+    { { N_("Hint _Substitution Pts"), "", "" }, {}, LegacyCallbacks, MID_HintSubsPt },
+    { { N_("Auto _Counter Hint"), "", "" }, {}, LegacyCallbacks, MID_AutoCounter },
+    { { N_("_Don't AutoHint"), "hintsdontautohint", "" }, {}, LegacyCallbacks, MID_DontAutoHint },
+    kMenuSeparator,
+    { { N_("Auto_Instr"), "", "<control>T" }, {}, LegacyCallbacks, MID_AutoInstr },
+    { { N_("_Edit Instructions..."), "", "" }, {}, LegacyCallbacks, MID_EditInstructions },
+    { { N_("Edit 'fpgm'..."), "", "" }, {}, LegacyCallbacks, MID_Editfpgm },
+    { { N_("Edit 'prep'..."), "", "" }, {}, LegacyCallbacks, MID_Editprep },
+    { { N_("Edit 'maxp'..."), "", "" }, {}, LegacyCallbacks, MID_Editmaxp },
+    { { N_("Edit 'cvt '..."), "", "" }, {}, LegacyCallbacks, MID_Editcvt },
+    { { N_("Remove Instr Tables"), "", "" }, {}, LegacyCallbacks, MID_RmInstrTables },
+    { { N_("S_uggest Deltas..."), "", "" }, {}, LegacyCallbacks, MID_Deltas },
+    kMenuSeparator,
+    { { N_("_Clear Hints"), "hintsclearvstems", "" }, {}, LegacyCallbacks, MID_ClearHints },
+    { { N_("Clear Instructions"), "", "" }, {}, LegacyCallbacks, MID_ClearInstrs },
+    kMenuSeparator,
+    { { N_("Histograms"), "", "" }, histograms_menu, SubMenuCallbacks, 0 },
+};
+
 std::vector<MenuInfo> top_menu = {
     { { N_("_File") }, {}, SubMenuCallbacks, -1 },
     { { N_("_Edit") }, {}, SubMenuCallbacks, -1 },
@@ -69,7 +96,7 @@ std::vector<MenuInfo> top_menu = {
 #ifndef _NO_PYTHON
     { { N_("_Tools") }, {}, SubMenuCallbacks, -1 },
 #endif
-    { { N_("H_ints") }, {}, SubMenuCallbacks, -1 },
+    { { N_("H_ints") }, hints_menu, SubMenuCallbacks, -1 },
     { { N_("E_ncoding") }, {}, SubMenuCallbacks, -1 },
     { { N_("_View") }, {}, SubMenuCallbacks, -1 },
     { { N_("_Metrics") }, {}, SubMenuCallbacks, -1 },
