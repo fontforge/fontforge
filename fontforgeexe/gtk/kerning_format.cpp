@@ -150,12 +150,27 @@ KerningFormat::KerningFormat(std::shared_ptr<FVContext> context1,
         char_grid1.resize_drawing_area(width, height);
     });
 
+    dialog.signal_set_focus().connect(
+        [this](Gtk::Widget* w) { on_set_focus(w); });
+
     dialog.show_all();
 
     // Indent kerning class options to relate them visually to the "matrix of
     // classes" check button.
     class_options_grid.set_margin_start(class_options_grid.get_margin_start() +
                                         label_offset(&matrix_of_classes));
+}
+
+void KerningFormat::highlight_char_grid_frame(Gtk::Frame& frame,
+                                              bool highlight) {
+    Gtk::Label* label = static_cast<Gtk::Label*>(frame.get_label_widget());
+    if (highlight) {
+        // Set frame label to bold font
+        label->set_markup("<b>" + label->get_text() + "</b>");
+    } else {
+        // Set frame label to normal font
+        label->set_markup(label->get_text());
+    }
 }
 
 Gtk::ResponseType KerningFormat::run(KFDlgData* kf_data) {
@@ -202,6 +217,17 @@ void KerningFormat::on_classes_toggle() {
         min_kern_classes = min_kern.get_value();
         min_kern.set_value(min_kern_individual);
     }
+}
+
+void KerningFormat::on_set_focus(Gtk::Widget* w) {
+    if (!w) {
+        return;
+    }
+
+    // When clicking on a character grid, highlight its containing frame and
+    // unhighligh the other.
+    highlight_char_grid_frame(frame1, w->is_ancestor(frame1));
+    highlight_char_grid_frame(frame2, w->is_ancestor(frame2));
 }
 
 }  // namespace ff::dlg

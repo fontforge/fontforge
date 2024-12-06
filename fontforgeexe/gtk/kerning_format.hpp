@@ -69,8 +69,11 @@ class KerningFormat : public Dialog, public views::ICharGridContainter {
     int min_kern_individual = 0;
     int min_kern_classes = 0;
 
+    void highlight_char_grid_frame(Gtk::Frame& frame, bool highlight);
+
     //// Events
     void on_classes_toggle();
+    void on_set_focus(Gtk::Widget* w);
 };
 
 }  // namespace ff::dlg
