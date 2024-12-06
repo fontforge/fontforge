@@ -7663,6 +7663,7 @@ void KFFontViewInits(struct kf_dlg *kf,GGadget *drawable) {
     GWindow dw = GDrawableGetWindow(drawable);
     int ps;
     FontView *fvorig = (FontView *) kf->sf->fv;
+    void* cg_dlg;
 
     FontViewInit();
 
@@ -7685,6 +7686,14 @@ void KFFontViewInits(struct kf_dlg *kf,GGadget *drawable) {
     pos.x = 0; pos.y = kf->mbh+kf->fh+4;
     pos.width = 16*kf->first_fv->cbw+1;
     pos.height = 4*kf->first_fv->cbh+1;
+
+    FVContext *fv_context = calloc(1, sizeof(FVContext));
+    fv_context->fv = kf->first_fv;
+    fv_context->scroll_fontview_to_position_cb = FVScrollToPos;
+    fv_context->tooltip_message_cb = FVTooltipMessage;
+    cg_dlg = create_kerning_format_dlg(&fv_context, pos.width, pos.height);
+    kf->first_fv->cg_widget = get_char_grid_widget(cg_dlg, 0);
+    kf->second_fv->cg_widget = get_char_grid_widget(cg_dlg, 1);
 
     GDrawSetUserData(dw,kf->first_fv);
     FVCopyInnards(kf->first_fv,&pos,fvorig,dw,kf->def_layer,(struct fvcontainer *) kf);

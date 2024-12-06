@@ -1,4 +1,4 @@
-/* Copyright 2023 Maxim Iorsh <iorsh@users.sourceforge.net>
+/* Copyright 2024 Maxim Iorsh <iorsh@users.sourceforge.net>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -26,44 +26,44 @@
  */
 #pragma once
 
-#include <stdint.h>
+#include <gtkmm.h>
 
-typedef struct _GtkWidget GtkWidget;
-typedef struct fontview_context FVContext;
+#include "c_context.h"
+#include "char_grid.hpp"
+#include "dialog.hpp"
+#include "i_char_grid_containter.hpp"
+#include "widgets/num_entry.hpp"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace ff::dlg {
 
-// Create GTK Font View window.
-// Return value:
-//    pointer to ff::views::FontView object, opaque to C code
-void* create_font_view(FVContext** p_fv_context, int width, int height);
+class KerningFormat : public Dialog, public views::ICharGridContainter {
+ public:
+    KerningFormat(std::shared_ptr<FVContext> context, int width, int height);
 
-void* get_char_grid_widget(void* cg_dlg, int char_grid_index);
+    views::CharGrid& get_char_grid(bool second = false) override {
+        return second ? char_grid2 : char_grid1;
+    }
 
-// Set views::FontView title and taskbar title [unsupported]
-void cg_set_dlg_title(void* cg_opaque, char* window_title, char* taskbar_title);
+ private:
+    std::shared_ptr<FVContext> fv_context;
 
-GtkWidget* cg_get_drawing_widget_c(void* cg_opaque);
+    Gtk::RadioButton individual_pairs;
 
-void cg_set_scroller_position(void* cg_opaque, int32_t position);
+    Gtk::RadioButton matrix_of_classes;
+    Gtk::Grid class_options_grid;
+    Gtk::CheckButton guess_classes;
+    widgets::NumericalEntry intra_class_dist_entry;
 
-void cg_set_scroller_bounds(void* cg_opaque, int32_t sb_min, int32_t sb_max,
-                            int32_t sb_pagesize);
+    Gtk::Grid general_options_grid;
+    widgets::NumericalEntry default_separation;
+    widgets::NumericalEntry min_kern;
+    Gtk::CheckButton touching;
+    Gtk::CheckButton kern_closer;
+    Gtk::CheckButton autokern_new;
 
-void cg_set_character_info(void* cg_opaque, char* info);
+    Gtk::Frame frame1, frame2;
+    views::CharGrid char_grid1;
+    views::CharGrid char_grid2;
+};
 
-// Resize font view window to accomodate the new drawing area size
-void cg_resize_window(void* cg_opaque, int width, int height);
-
-void* create_select_glyphs_dlg(FVContext** p_fv_context, int width, int height);
-
-bool run_select_glyphs_dlg(void** sg_opaque);
-
-void* create_kerning_format_dlg(FVContext** p_fv_context, int width,
-                                int height);
-
-#ifdef __cplusplus
-}
-#endif
+}  // namespace ff::dlg

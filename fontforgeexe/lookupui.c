@@ -5859,7 +5859,7 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
     kf.def_layer = def_layer;
     results->asked = 2;			/* Cancel */
 
-    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor;
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.restrict_input_to_me = true;
     wattrs.undercursor = 1;
@@ -6116,7 +6116,10 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
     GDrawSetVisible(kf.gw,true);
     while ( !kf.done )
 	GDrawProcessOneEvent(NULL);
+
+    GDrawDestroyWindow(kf.second_fv->v);
     FontViewFree(&kf.second_fv->b);
+    GDrawDestroyWindow(kf.first_fv->v);
     FontViewFree(&kf.first_fv->b);
     GDrawSetUserData(kf.gw,NULL);
     GDrawDestroyWindow(kf.gw);
