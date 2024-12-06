@@ -58,6 +58,12 @@ Gtk::Menu* build_menu(const std::vector<MenuInfo>& info,
                 *img, item.label.text, true);
         }
 
+        if (!item.sub_menu.empty()) {
+            Gtk::Menu* sub_menu =
+                Gtk::manage(build_menu(item.sub_menu, context));
+            menu_item->set_submenu(*sub_menu);
+        }
+
         ActivateCB action = item.callbacks.handler
                                 ? item.callbacks.handler
                                 : context.get_activate_cb(item.mid);
