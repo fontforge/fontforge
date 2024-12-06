@@ -50,6 +50,11 @@ typedef struct bitmap_menu_data {
     bool current;
 } BitmapMenuData;
 
+typedef struct layer_menu_data {
+    char* label;
+    int index;
+} LayerMenuData;
+
 // C structure and callback for interacting with legacy code
 typedef struct fontview_context {
     FontView* fv;
@@ -72,6 +77,16 @@ typedef struct fontview_context {
     // Collect bitmap fonts data for menu display
     unsigned int (*collect_bitmap_data)(FontView* fv,
                                         BitmapMenuData** bitmap_data_array);
+
+    // Set view to layer id
+    void (*change_display_layer)(FontView* fv, int ly);
+
+    // Check if the current view is set to the layer id
+    bool (*current_display_layer)(FontView* fv, int ly);
+
+    // Collect layers data for menu display
+    unsigned int (*collect_layer_data)(FontView* fv,
+                                       LayerMenuData** layer_data_array);
 
     // Menu actions per menu ID
     FVMenuAction* actions;

@@ -3470,14 +3470,6 @@ static void FV_LayerChanged( FontView *fv ) {
     BDFFontFree(old);
 }
 
-static void FVMenuChangeLayer(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
-    fv->b.active_layer = mi->mid;
-    fv->b.sf->display_layer = mi->mid;
-    FV_LayerChanged(fv);
-}
-
 static void FVMenuMagnify(FontView *fv,int UNUSED(mid)) {
     int magnify = fv->user_requested_magnify!=-1 ? fv->user_requested_magnify : fv->magnify;
     char def[20], *end, *ret;
@@ -5173,28 +5165,28 @@ static void enlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     }
 }
 
-static GMenuItem2 lylist[] = {
-    { { (unichar_t *) N_("Layer|Foreground"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 1, 1, 0, 0, 1, 1, 0, '\0' }, NULL, NULL, NULL, FVMenuChangeLayer, ly_fore },
-    GMENUITEM2_EMPTY
-};
+void change_display_layer(FontView *fv, int ly) {
+    fv->b.active_layer = ly;
+    fv->b.sf->display_layer = ly;
+    FV_LayerChanged(fv);
+}
 
-static void lylistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+bool current_display_layer(FontView *fv, int ly) {
+    return ly == fv->b.active_layer;
+}
+
+unsigned int collect_layer_data(FontView *fv, LayerMenuData** layer_data_array) {
+    unsigned int ly, n_layers = 0;
     SplineFont *sf = fv->b.sf;
-    int ly;
-    GMenuItem *sub;
 
-    sub = calloc(sf->layer_cnt+1,sizeof(GMenuItem));
+    n_layers = sf->layer_cnt - 1;
+    *layer_data_array = calloc(n_layers, sizeof(LayerMenuData));
     for ( ly=ly_fore; ly<sf->layer_cnt; ++ly ) {
-	sub[ly-1].ti.text = utf82u_copy(sf->layers[ly].name);
-	sub[ly-1].ti.checkable = true;
-	sub[ly-1].ti.checked = ly == fv->b.active_layer;
-	sub[ly-1].invoke = FVMenuChangeLayer;
-	sub[ly-1].mid = ly;
-	sub[ly-1].ti.fg = sub[ly-1].ti.bg = COLOR_DEFAULT;
+        (*layer_data_array)[ly-1].label = sf->layers[ly].name;
+        (*layer_data_array)[ly-1].index = ly;
     }
-    GMenuItemArrayFree(mi->sub);
-    mi->sub = sub;
+
+    return n_layers;
 }
 
 unsigned int collect_bitmap_data(FontView *fv, BitmapMenuData** bitmap_data_array) {
@@ -7176,6 +7168,9 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     fv_context->change_display_bitmap = FV_ChangeDisplayBitmap;
     fv_context->current_display_bitmap = FV_CurrentDisplayBitmap;
     fv_context->collect_bitmap_data = collect_bitmap_data;
+    fv_context->change_display_layer = change_display_layer;
+    fv_context->current_display_layer = current_display_layer;
+    fv_context->collect_layer_data = collect_layer_data;
     fv_context->actions = fvpopupactions;
     cg_dlg = create_font_view(&fv_context, pos.width, pos.height);
     fv->cg_widget = get_char_grid_widget(cg_dlg, 0);

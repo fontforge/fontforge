@@ -72,6 +72,33 @@ std::vector<MenuInfo> view_menu_bitmaps(const UiContext& ui_context) {
     return info_arr;
 }
 
+std::vector<MenuInfo> view_menu_layers(const UiContext& ui_context) {
+    const FontViewUiContext& fv_ui_context =
+        static_cast<const FontViewUiContext&>(ui_context);
+    auto fv_context = fv_ui_context.legacy();
+
+    std::vector<LayerMenuData> layer_data_array =
+        VectorWrapper(fv_context->fv, fv_context->collect_layer_data);
+    std::vector<MenuInfo> info_arr;
+
+    for (const LayerMenuData& layer_data : layer_data_array) {
+        ActivateCB action = [fv_context,
+                             ly = layer_data.index](const UiContext&) {
+            fv_context->change_display_layer(fv_context->fv, ly);
+        };
+        CheckedCB checker = [fv_context,
+                             ly = layer_data.index](const UiContext&) {
+            return fv_context->current_display_layer(fv_context->fv, ly);
+        };
+        MenuInfo info{{layer_data.label, ActiveLayer, ""},
+                      {},
+                      {action, AlwaysEnabled, checker},
+                      0};
+        info_arr.push_back(info);
+    }
+    return info_arr;
+}
+
 // clang-format off
 std::vector<MenuInfo> popup_menu = {
     { { N_("New O_utline Window"), NoDecoration, "" }, {}, LegacyCallbacks, MID_OpenOutline },
@@ -125,6 +152,10 @@ std::vector<MenuInfo> hints_menu = {
     { { N_("Histograms"), NoDecoration, "" }, histograms_menu, SubMenuCallbacks, 0 },
 };
 
+std::vector<MenuInfo> layers_menu = {
+    MenuInfo::CustomBlock(view_menu_layers),
+};
+
 std::vector<MenuInfo> view_menu = {
     { { N_("_Next Glyph"), "viewnext", "<control>bracketright" }, {}, LegacyCallbacks, MID_Next },
     { { N_("_Prev Glyph"), "viewprev", "<control>bracketleft" }, {}, LegacyCallbacks, MID_Prev },
@@ -132,7 +163,7 @@ std::vector<MenuInfo> view_menu = {
     { { N_("Prev Defined Gl_yph"), "viewprevdef", "<alt><control>bracketleft" }, {}, LegacyCallbacks, MID_PrevDef },
     { { N_("_Goto"), "viewgoto", "<control><shift>greater" }, {}, LegacyCallbacks, MID_GotoChar },
     kMenuSeparator,
-    { { N_("_Layers"), "viewlayers", "" }, {}, SubMenuCallbacks, 0 },
+    { { N_("_Layers"), "viewlayers", "" }, layers_menu, SubMenuCallbacks, 0 },
     kMenuSeparator,
     { { N_("_Show ATT"), NoDecoration, "" }, {}, LegacyCallbacks, MID_Show_ATT },
     { { N_("Display S_ubstitutions..."), Checkable, "" }, {}, LegacyCallbacks, MID_DisplaySubs },
