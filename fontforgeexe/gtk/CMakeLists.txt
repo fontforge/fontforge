@@ -1,5 +1,7 @@
 # Distributed under the original FontForge BSD 3-clause license
 
+add_subdirectory(widgets)
+
 add_library(ffgtk OBJECT
   application.hpp
   application.cpp
@@ -21,5 +23,6 @@ add_library(ffgtk OBJECT
 
 target_link_libraries(ffgtk PRIVATE
   fontforge_common_headers
+  ffgtk_widgets
   PkgConfig::GTKMM
 )
