@@ -1,4 +1,4 @@
-/* Copyright 2023 Maxim Iorsh <iorsh@users.sourceforge.net>
+/* Copyright 2024 Maxim Iorsh <iorsh@users.sourceforge.net>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -26,22 +26,25 @@
  */
 #pragma once
 
-typedef struct _GtkWidget GtkWidget;
+#include <string>
+#include <gtkmm.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace ff::views {
 
-// Create GTK Font View window.
-// Return value:
-//    pointer to ff::views::FontView object, opaque to C code
-void* create_font_view(int width, int height);
+class FontView {
+ public:
+    FontView(int width, int height);
 
-// Set views::FontView title and taskbar title [unsupported]
-void gtk_set_title(void* fv_opaque, char* window_title, char* taskbar_title);
+    void set_title(const std::string& window_title,
+                   const std::string& taskbar_title) {
+        window.set_title(window_title);
+    }
 
-GtkWidget* get_drawing_widget_c(void* window);
+    GtkWidget* get_drawing_widget_c();
 
-#ifdef __cplusplus
-}
-#endif
+ private:
+    Gtk::Window window;
+    Gtk::DrawingArea drawing_area;
+};
+
+}  // namespace ff::views

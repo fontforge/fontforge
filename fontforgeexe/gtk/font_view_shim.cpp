@@ -24,36 +24,28 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+
 #include "font_view_shim.hpp"
-#include "utils.hpp"
+#include "font_view.hpp"
 
 #include <gtkmm.h>
 
 void* create_font_view(int width, int height) {
-    static auto app = Gtk::Application::create("org.fontforge");
-    Gtk::Window* font_view_window = new Gtk::Window();
-    font_view_window->set_default_size(width, height);
-
-    Gtk::DrawingArea* drawing_area = new Gtk::DrawingArea();
-    drawing_area->set_name("CharGrid");
-    font_view_window->add(*drawing_area);
-
-    font_view_window->show_all();
-
-    return font_view_window;
+    ff::views::FontView* font_view = new ff::views::FontView(width, height);
+    return font_view;
 }
 
-void gtk_set_title(void* window, char* window_title, char* taskbar_title) {
-    Gtk::Window* gtk_window = static_cast<Gtk::Window*>(window);
+void gtk_set_title(void* fv_opaque, char* window_title, char* taskbar_title) {
+    ff::views::FontView* font_view =
+        static_cast<ff::views::FontView*>(fv_opaque);
 
-    if (gtk_window != nullptr) {
-        gtk_window->set_title(window_title);
+    if (font_view != nullptr) {
+        font_view->set_title(window_title, taskbar_title);
     }
 }
 
-GtkWidget* get_drawing_widget_c(void* window) {
-    Gtk::Window* font_view_window = static_cast<Gtk::Window*>(window);
-    Gtk::Widget* drawing_area = gtk_find_child(font_view_window, "CharGrid");
-
-    return (GtkWidget*)drawing_area->gobj();
+GtkWidget* get_drawing_widget_c(void* fv_opaque) {
+    ff::views::FontView* font_view =
+        static_cast<ff::views::FontView*>(fv_opaque);
+    return font_view->get_drawing_widget_c();
 }

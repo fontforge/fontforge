@@ -1,4 +1,4 @@
-/* Copyright 2023 Maxim Iorsh <iorsh@users.sourceforge.net>
+/* Copyright 2024 Maxim Iorsh <iorsh@users.sourceforge.net>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -24,24 +24,23 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#pragma once
 
-typedef struct _GtkWidget GtkWidget;
+#include "font_view.hpp"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+namespace ff::views {
 
-// Create GTK Font View window.
-// Return value:
-//    pointer to ff::views::FontView object, opaque to C code
-void* create_font_view(int width, int height);
+FontView::FontView(int width, int height) {
+    static auto app = Gtk::Application::create("org.fontforge");
+    window.set_default_size(width, height);
 
-// Set views::FontView title and taskbar title [unsupported]
-void gtk_set_title(void* fv_opaque, char* window_title, char* taskbar_title);
+    drawing_area.set_name("CharGrid");
+    window.add(drawing_area);
 
-GtkWidget* get_drawing_widget_c(void* window);
-
-#ifdef __cplusplus
+    window.show_all();
 }
-#endif
+
+GtkWidget* FontView::get_drawing_widget_c() {
+    return (GtkWidget*)drawing_area.gobj();
+}
+
+}  // namespace ff::views
