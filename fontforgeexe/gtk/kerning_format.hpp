@@ -65,6 +65,12 @@ class KerningFormat : public Dialog, public views::ICharGridContainter {
     Gtk::Frame frame1, frame2;
     views::CharGrid char_grid1;
     views::CharGrid char_grid2;
+
+    int min_kern_individual = 0;
+    int min_kern_classes = 0;
+
+    //// Events
+    void on_classes_toggle();
 };
 
 }  // namespace ff::dlg

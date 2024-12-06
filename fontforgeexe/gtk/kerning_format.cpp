@@ -52,9 +52,8 @@ KerningFormat::KerningFormat(std::shared_ptr<FVContext> context1,
         _("In this format you define a series of glyph classes and\n"
           "specify a matrix showing how each class interacts with all\n"
           "the others."));
-    matrix_of_classes.signal_toggled().connect([this]() {
-        class_options_grid.set_sensitive(matrix_of_classes.get_active());
-    });
+    matrix_of_classes.signal_toggled().connect(
+        [this]() { on_classes_toggle(); });
 
     guess_classes = Gtk::CheckButton(
         _("FontForge will guess kerning classes for selected glyphs"));
@@ -171,6 +170,9 @@ Gtk::ResponseType KerningFormat::run(KFDlgData* kf_data) {
     kern_closer.set_active(kf_data->kern_closer);
     autokern_new.set_active(kf_data->autokern_new);
 
+    min_kern_individual = kf_data->min_kern;
+    min_kern_classes = 0;
+
     Gtk::ResponseType result = Dialog::run();
 
     // Read updated dialog values
@@ -184,6 +186,22 @@ Gtk::ResponseType KerningFormat::run(KFDlgData* kf_data) {
     kf_data->autokern_new = autokern_new.get_active();
 
     return result;
+}
+
+/////////////////  EVENTS  ////////////////////
+
+void KerningFormat::on_classes_toggle() {
+    // "Min Kern" value is maintained separately for classes and for
+    // individual pairs.
+    if (matrix_of_classes.get_active()) {
+        class_options_grid.set_sensitive(true);
+        min_kern_individual = min_kern.get_value();
+        min_kern.set_value(min_kern_classes);
+    } else {
+        class_options_grid.set_sensitive(false);
+        min_kern_classes = min_kern.get_value();
+        min_kern.set_value(min_kern_individual);
+    }
 }
 
 }  // namespace ff::dlg
