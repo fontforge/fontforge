@@ -162,6 +162,13 @@ std::vector<MenuInfo> combinations_menu = {
     { { N_("_Ligatures"), NoDecoration, "" }, {}, LegacyCallbacks, MID_Ligatures },
 };
 
+std::vector<MenuInfo> label_glyph_menu = {
+    { { N_("_Glyph Image"), GlyphLabel, "" }, {}, LegacyCallbacks, MIDSERIES_LabelGlyph + gl_glyph },
+    { { N_("_Name"), GlyphLabel, "" }, {}, LegacyCallbacks, MIDSERIES_LabelGlyph + gl_name },
+    { { N_("_Unicode"), GlyphLabel, "" }, {}, LegacyCallbacks, MIDSERIES_LabelGlyph + gl_unicode },
+    { { N_("_Encoding Hex"), GlyphLabel, "" }, {}, LegacyCallbacks, MIDSERIES_LabelGlyph + gl_encoding },
+};
+
 std::vector<MenuInfo> view_menu = {
     { { N_("_Next Glyph"), "viewnext", "<control>bracketright" }, {}, LegacyCallbacks, MID_Next },
     { { N_("_Prev Glyph"), "viewprev", "<control>bracketleft" }, {}, LegacyCallbacks, MID_Prev },
@@ -175,7 +182,7 @@ std::vector<MenuInfo> view_menu = {
     { { N_("Display S_ubstitutions..."), Checkable, "" }, {}, LegacyCallbacks, MID_DisplaySubs },
     { { N_("Com_binations"), NoDecoration, "" }, combinations_menu, SubMenuCallbacks, 0 },
     kMenuSeparator,
-    { { N_("Label Gl_yph By"), NoDecoration, "" }, {}, SubMenuCallbacks, 0 },
+    { { N_("Label Gl_yph By"), NoDecoration, "" }, label_glyph_menu, SubMenuCallbacks, 0 },
     kMenuSeparator,
     { { N_("S_how H. Metrics..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_ShowHMetrics },
     { { N_("Show _V. Metrics..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_ShowVMetrics },

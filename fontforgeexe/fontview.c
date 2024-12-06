@@ -136,7 +136,6 @@ static Color fvmetadvancetocol = 0x008000;
 static Color fvmissingbitmapcol = 0xff0000;
 static Color fvmissingoutlinecol = 0x008000;
 
-enum glyphlable { gl_glyph, gl_name, gl_unicode, gl_encoding };
 int default_fv_showhmetrics=false, default_fv_showvmetrics=false,
 	default_fv_glyphlabel = gl_glyph;
 FontView *fv_list=NULL;
@@ -3505,10 +3504,10 @@ static void FVMenuWSize(FontView *fv,int mid) {
     SavePrefs(true);
 }
 
-static void FVMenuGlyphLabel(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuGlyphLabel(FontView *fv, int mid) {
+    enum glyphlabel gl = mid - MIDSERIES_LabelGlyph;
 
-    default_fv_glyphlabel = fv->glyphlabel = mi->mid;
+    default_fv_glyphlabel = fv->glyphlabel = gl;
 
     GDrawRequestExpose(fv->v,NULL,false);
 
@@ -4782,21 +4781,11 @@ static bool cblistcheck(FontView *fv, int mid) {
     return disabled;
 }
 
+static bool gllistcheck(FontView *fv, int mid) {
+    enum glyphlabel gl = mid - MIDSERIES_LabelGlyph;
 
-static GMenuItem2 gllist[] = {
-    { { (unichar_t *) N_("_Glyph Image"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'K' }, H_("Glyph Image|No Shortcut"), NULL, NULL, FVMenuGlyphLabel, gl_glyph },
-    { { (unichar_t *) N_("_Name"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'K' }, H_("Name|No Shortcut"), NULL, NULL, FVMenuGlyphLabel, gl_name },
-    { { (unichar_t *) N_("_Unicode"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'L' }, H_("Unicode|No Shortcut"), NULL, NULL, FVMenuGlyphLabel, gl_unicode },
-    { { (unichar_t *) N_("_Encoding Hex"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'L' }, H_("Encoding Hex|No Shortcut"), NULL, NULL, FVMenuGlyphLabel, gl_encoding },
-    GMENUITEM2_EMPTY
-};
-
-static void gllistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
-	mi->ti.checked = fv->glyphlabel == mi->mid;
-    }
+    bool checked = (fv->glyphlabel == gl);
+    return checked;
 }
 
 static GMenuItem2 emptymenu[] = {
@@ -5591,6 +5580,11 @@ FVMenuAction fvpopupactions[] = {
     { MID_KernPairs, cblistcheck, NULL, FVMenuKernPairs },
     { MID_AnchorPairs, cblistcheck, NULL, NULL },
     { MID_Ligatures, cblistcheck, NULL, FVMenuLigatures },
+
+    { MIDSERIES_LabelGlyph + gl_glyph, NULL, gllistcheck, FVMenuGlyphLabel },
+    { MIDSERIES_LabelGlyph + gl_name, NULL, gllistcheck, FVMenuGlyphLabel },
+    { MIDSERIES_LabelGlyph + gl_unicode, NULL, gllistcheck, FVMenuGlyphLabel },
+    { MIDSERIES_LabelGlyph + gl_encoding, NULL, gllistcheck, FVMenuGlyphLabel },
 
     MENUACTION_LAST
 };

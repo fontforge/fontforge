@@ -61,3 +61,5 @@
 #define MID_Center 2600
 #define MID_SetWidth 2602
 #define MID_SetVWidth 2605
+
+#define MIDSERIES_LabelGlyph 10000
