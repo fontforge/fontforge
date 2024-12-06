@@ -35,6 +35,7 @@
 #include <gtkmm.h>
 
 using ff::dlg::SelectGlyphs;
+using ff::views::CharGrid;
 using ff::views::ICharGridContainter;
 
 void* create_font_view(FVContext** p_fv_context, int width, int height) {
@@ -49,39 +50,46 @@ void* create_font_view(FVContext** p_fv_context, int width, int height) {
     return dynamic_cast<ICharGridContainter*>(font_view);
 }
 
-void gtk_set_title(void* fv_opaque, char* window_title, char* taskbar_title) {
-    ff::views::FontView* font_view =
-        static_cast<ff::views::FontView*>(fv_opaque);
+void* get_char_grid_widget(void* cg_dlg, int char_grid_index) {
+    auto cg_container_dlg = static_cast<ICharGridContainter*>(cg_dlg);
+    return &(cg_container_dlg->get_char_grid(char_grid_index != 0));
+}
 
-    if (font_view != nullptr) {
-        font_view->set_title(window_title, taskbar_title);
+void cg_set_dlg_title(void* cg_opaque, char* window_title,
+                      char* taskbar_title) {
+    auto char_grid = static_cast<CharGrid*>(cg_opaque);
+    Gtk::Widget& widget = char_grid->get_top_widget();
+    Glib::RefPtr<Gdk::Window> window = widget.get_window();
+
+    if (window) {
+        window->set_title(window_title);
     }
 }
 
-GtkWidget* get_drawing_widget_c(void* fv_opaque) {
-    auto font_view = static_cast<ICharGridContainter*>(fv_opaque);
-    return font_view->get_char_grid().get_drawing_widget_c();
+GtkWidget* cg_get_drawing_widget_c(void* cg_opaque) {
+    auto char_grid = static_cast<CharGrid*>(cg_opaque);
+    return char_grid->get_drawing_widget_c();
 }
 
-void fv_set_scroller_position(void* fv_opaque, int32_t position) {
-    auto font_view = static_cast<ICharGridContainter*>(fv_opaque);
-    font_view->get_char_grid().set_scroller_position(position);
+void cg_set_scroller_position(void* cg_opaque, int32_t position) {
+    auto char_grid = static_cast<CharGrid*>(cg_opaque);
+    char_grid->set_scroller_position(position);
 }
 
-void fv_set_scroller_bounds(void* fv_opaque, int32_t sb_min, int32_t sb_max,
+void cg_set_scroller_bounds(void* cg_opaque, int32_t sb_min, int32_t sb_max,
                             int32_t sb_pagesize) {
-    auto font_view = static_cast<ICharGridContainter*>(fv_opaque);
-    font_view->get_char_grid().set_scroller_bounds(sb_min, sb_max, sb_pagesize);
+    auto char_grid = static_cast<CharGrid*>(cg_opaque);
+    char_grid->set_scroller_bounds(sb_min, sb_max, sb_pagesize);
 }
 
-void fv_set_character_info(void* fv_opaque, char* info) {
-    auto font_view = static_cast<ICharGridContainter*>(fv_opaque);
-    font_view->get_char_grid().set_character_info(info);
+void cg_set_character_info(void* cg_opaque, char* info) {
+    auto char_grid = static_cast<CharGrid*>(cg_opaque);
+    char_grid->set_character_info(info);
 }
 
-void fv_resize_window(void* fv_opaque, int width, int height) {
-    auto font_view = static_cast<ICharGridContainter*>(fv_opaque);
-    font_view->get_char_grid().resize_drawing_area(width, height);
+void cg_resize_window(void* cg_opaque, int width, int height) {
+    auto char_grid = static_cast<CharGrid*>(cg_opaque);
+    char_grid->resize_drawing_area(width, height);
 }
 
 void* create_select_glyphs_dlg(FVContext** p_fv_context, int width,

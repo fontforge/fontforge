@@ -3006,11 +3006,11 @@ void FVChangeChar(FontView *fv,int i) {
 }
 
 void FVScrollBarSetPos(FontView *fv, int32_t pos) {
-   fv_set_scroller_position(fv->gtk_window, pos);
+   cg_set_scroller_position(fv->cg_widget, pos);
 }
 
 void FVScrollBarSetBounds(FontView *fv, int32_t sb_min, int32_t sb_max, int32_t sb_pagesize) {
-   fv_set_scroller_bounds(fv->gtk_window, sb_min, sb_max, sb_pagesize);
+   cg_set_scroller_bounds(fv->cg_widget, sb_min, sb_max, sb_pagesize);
 }
 
 void FVScrollToChar(FontView *fv,int i) {
@@ -3313,7 +3313,7 @@ return;
 		    ccnt*fv->cbw+1,
 		    rcnt*fv->cbh+1+fv->mbh);
 	} else {
-            fv_resize_window(fv->gtk_window, ccnt*fv->cbw+1, rcnt*fv->cbh+1);
+            cg_resize_window(fv->cg_widget, ccnt*fv->cbw+1, rcnt*fv->cbh+1);
 	}
     }
 }
@@ -3588,7 +3588,7 @@ static void FVMenuWSize(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     } else {
 	h = 8; v=2;
     }
-    fv_resize_window(fv->gtk_window, h*fv->cbw+1, v*fv->cbh+1);
+    cg_resize_window(fv->cg_widget, h*fv->cbw+1, v*fv->cbh+1);
     fv->b.sf->desired_col_cnt = default_fv_col_count = h;
     fv->b.sf->desired_row_cnt = default_fv_row_count = v;
 
@@ -3809,7 +3809,7 @@ return;
     free(enc);
 
     GDrawSetWindowTitles8(fv->gw,title,fv->b.sf->fontname);
-    gtk_set_title(fv->gtk_window, title, fv->b.sf->fontname);
+    cg_set_dlg_title(fv->cg_widget, title, fv->b.sf->fontname);
     free(title);
 }
 
@@ -6287,7 +6287,7 @@ GString* FVGetInfo(FontView *fv) {
 
 void FVShowInfo(FontView *fv) {
     GString* info = FVGetInfo(fv);
-    fv_set_character_info(fv->gtk_window, info->str);
+    cg_set_character_info(fv->cg_widget, info->str);
     g_string_free(info, TRUE); info = NULL;
 }
 
@@ -7262,7 +7262,7 @@ static void FVCreateInnards(FontView *fv,GRect *pos) {
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.cursor = ct_pointer;
     wattrs.background_color = view_bgcol;
-    wattrs.gtk_widget = get_drawing_widget_c(fv->gtk_window);
+    wattrs.gtk_widget = cg_get_drawing_widget_c(fv->cg_widget);
     fv->v = GWidgetCreateTopWindow(NULL,pos,v_e_h,fv,&wattrs);
     GDrawSetVisible(fv->v,true);
     GDrawSetWindowTypeName(fv->v, "FontView");
@@ -7310,6 +7310,7 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     GRect size;
     // Memory ownership handed over to GTK UI code
     FVContext *fv_context = calloc(1, sizeof(FVContext));
+    void* cg_dlg;
 
     FontViewInit();
     if ( icon==NULL ) {
@@ -7338,7 +7339,8 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     fv_context->fv = fv;
     fv_context->scroll_fontview_to_position_cb = FVScrollToPos;
     fv_context->tooltip_message_cb = FVTooltipMessage;
-    fv->gtk_window = create_font_view(&fv_context, pos.width, pos.height);
+    cg_dlg = create_font_view(&fv_context, pos.width, pos.height);
+    fv->cg_widget = get_char_grid_widget(cg_dlg, 0);
 
     FontViewSetTitle(fv);
     GDrawSetWindowTypeName(fv->gw, "FontView");
@@ -7809,6 +7811,7 @@ char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current) {
     int ps;
     FontView *fvorig = (FontView *) sf->fv;
     char *start, *pt; int ch;
+    void* cg_dlg;
 
     FontViewInit();
 
@@ -7828,11 +7831,12 @@ char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current) {
     fv_context->fv = gs.fv;
     fv_context->scroll_fontview_to_position_cb = FVScrollToPos;
     fv_context->tooltip_message_cb = FVTooltipMessage;
-    gs.fv->gtk_window = create_select_glyphs_dlg(&fv_context, pos.width, pos.height);
+    cg_dlg = create_select_glyphs_dlg(&fv_context, pos.width, pos.height);
+    gs.fv->cg_widget = get_char_grid_widget(cg_dlg, 0);
     
     FVCopyInnards(gs.fv,&pos,fvorig,dw,def_layer,(struct fvcontainer *) &gs);
     pos.height = 4*gs.fv->cbh+1;	/* We don't know the real fv->cbh until after creating the innards. The size of the last window is probably wrong, we'll fix later */
-    fv_resize_window(gs.fv->gtk_window, pos.width, pos.height);
+    cg_resize_window(gs.fv->cg_widget, pos.width, pos.height);
     memset(gs.fv->b.selected,0,gs.fv->b.map->enccount);
     if ( current!=NULL && strcmp(current,_("{Everything Else}"))!=0 ) {
 	int first = true;
@@ -7855,7 +7859,7 @@ char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current) {
     }
     sf->display_size = ps;
 
-    bool result_ok = run_select_glyphs_dlg(&(gs.fv->gtk_window));
+    bool result_ok = run_select_glyphs_dlg(&cg_dlg);
 
     ret = rpt = NULL;
     if ( result_ok ) {

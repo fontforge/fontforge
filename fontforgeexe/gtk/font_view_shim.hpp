@@ -40,20 +40,22 @@ extern "C" {
 //    pointer to ff::views::FontView object, opaque to C code
 void* create_font_view(FVContext** p_fv_context, int width, int height);
 
+void* get_char_grid_widget(void* cg_dlg, int char_grid_index);
+
 // Set views::FontView title and taskbar title [unsupported]
-void gtk_set_title(void* fv_opaque, char* window_title, char* taskbar_title);
+void cg_set_dlg_title(void* cg_opaque, char* window_title, char* taskbar_title);
 
-GtkWidget* get_drawing_widget_c(void* fv_opaque);
+GtkWidget* cg_get_drawing_widget_c(void* cg_opaque);
 
-void fv_set_scroller_position(void* fv_opaque, int32_t position);
+void cg_set_scroller_position(void* cg_opaque, int32_t position);
 
-void fv_set_scroller_bounds(void* fv_opaque, int32_t sb_min, int32_t sb_max,
+void cg_set_scroller_bounds(void* cg_opaque, int32_t sb_min, int32_t sb_max,
                             int32_t sb_pagesize);
 
-void fv_set_character_info(void* fv_opaque, char* info);
+void cg_set_character_info(void* cg_opaque, char* info);
 
 // Resize font view window to accomodate the new drawing area size
-void fv_resize_window(void* fv_opaque, int width, int height);
+void cg_resize_window(void* cg_opaque, int width, int height);
 
 void* create_select_glyphs_dlg(FVContext** p_fv_context, int width, int height);
 
