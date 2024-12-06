@@ -42,13 +42,12 @@ std::vector<MenuInfo> view_menu_bitmaps(const UiContext& ui_context) {
         static_cast<const FontViewUiContext&>(ui_context);
     auto fv_context = fv_ui_context.legacy();
 
-    BitmapMenuData* bitmap_data_array = nullptr;
-    int n_bitmaps =
-        fv_context->collect_bitmap_data(fv_context->fv, &bitmap_data_array);
+    std::vector<BitmapMenuData> bitmap_data_array =
+        VectorWrapper(fv_context->fv, fv_context->collect_bitmap_data);
+
     std::vector<MenuInfo> info_arr;
 
-    for (int i = 0; i < n_bitmaps; ++i) {
-        const BitmapMenuData& bitmap_data = bitmap_data_array[i];
+    for (const BitmapMenuData& bitmap_data : bitmap_data_array) {
         char buffer[50];
 
         if (bitmap_data.depth == 1)
@@ -70,7 +69,6 @@ std::vector<MenuInfo> view_menu_bitmaps(const UiContext& ui_context) {
         info_arr.push_back(info);
     }
 
-    free(bitmap_data_array);
     return info_arr;
 }
 

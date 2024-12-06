@@ -110,4 +110,23 @@ auto StringWrapper(char(*f(ARGS... args))) {
     };
 }
 
+// A wrapper executes C-style callback which returns C-style dynamically
+// allocated array and converts its output to C++ std::vector.
+//
+// Sample usage: for C-style callback
+//	unsigned int get_data(FontView* fv, Data** array)
+// the wrapper should used as follows:
+// 	std::vector<Data> data_vector = VectorWrapper(fv, get_data);
+template <typename ELEM, typename C_OBJ>
+std::vector<ELEM> VectorWrapper(C_OBJ* obj, unsigned int(f(C_OBJ*, ELEM**))) {
+    ELEM* data_array = nullptr;
+    unsigned int n_elems = f(obj, &data_array);
+
+    // Create a std::vector from the existing array
+    std::vector<ELEM> data_vec(data_array, data_array + n_elems);
+    free(data_array);
+
+    return data_vec;
+}
+
 #endif
