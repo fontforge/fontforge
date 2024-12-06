@@ -89,6 +89,40 @@ std::vector<MenuInfo> hints_menu = {
     { { N_("Histograms"), NoDecoration, "" }, histograms_menu, SubMenuCallbacks, 0 },
 };
 
+std::vector<MenuInfo> view_menu = {
+    { { N_("_Next Glyph"), "viewnext", "<control>bracketright" }, {}, LegacyCallbacks, MID_Next },
+    { { N_("_Prev Glyph"), "viewprev", "<control>bracketleft" }, {}, LegacyCallbacks, MID_Prev },
+    { { N_("Next _Defined Glyph"), "viewnextdef", "<alt><control>bracketright" }, {}, LegacyCallbacks, MID_NextDef },
+    { { N_("Prev Defined Gl_yph"), "viewprevdef", "<alt><control>bracketleft" }, {}, LegacyCallbacks, MID_PrevDef },
+    { { N_("_Goto"), "viewgoto", "<control><shift>greater" }, {}, LegacyCallbacks, MID_GotoChar },
+    kMenuSeparator,
+    { { N_("_Layers"), "viewlayers", "" }, {}, SubMenuCallbacks, 0 },
+    kMenuSeparator,
+    { { N_("_Show ATT"), NoDecoration, "" }, {}, LegacyCallbacks, MID_Show_ATT },
+    { { N_("Display S_ubstitutions..."), Checkable, "" }, {}, LegacyCallbacks, MID_DisplaySubs },
+    { { N_("Com_binations"), NoDecoration, "" }, {}, SubMenuCallbacks, 0 },
+    kMenuSeparator,
+    { { N_("Label Gl_yph By"), NoDecoration, "" }, {}, SubMenuCallbacks, 0 },
+    kMenuSeparator,
+    { { N_("S_how H. Metrics..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_ShowHMetrics },
+    { { N_("Show _V. Metrics..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_ShowVMetrics },
+    kMenuSeparator,
+    { { N_("32x8 cell window"), CellWindowSize, "<control><shift>percent" }, {}, LegacyCallbacks, MID_32x8 },
+    { { N_("_16x4 cell window"), CellWindowSize, "<control><shift>asciicircum" }, {}, LegacyCallbacks, MID_16x4 },
+    { { N_("_8x2  cell window"), CellWindowSize, "<control><shift>asterisk" }, {}, LegacyCallbacks, MID_8x2 },
+    kMenuSeparator,
+    { { N_("_24 pixel outline"), CellPixelView, "<control>2" }, {}, LegacyCallbacks, MID_24 },
+    { { N_("_36 pixel outline"), CellPixelView, "<control>3" }, {}, LegacyCallbacks, MID_36 },
+    { { N_("_48 pixel outline"), CellPixelView, "<control>4" }, {}, LegacyCallbacks, MID_48 },
+    { { N_("_72 pixel outline"), CellPixelView, "<control>7" }, {}, LegacyCallbacks, MID_72 },
+    { { N_("_96 pixel outline"), CellPixelView, "<control>9" }, {}, LegacyCallbacks, MID_96 },
+    { { N_("_128 pixel outline"), CellPixelView, "<control>1" }, {}, LegacyCallbacks, MID_128 },
+    { { N_("_Anti Alias"), Checkable, "<control>5" }, {}, LegacyCallbacks, MID_AntiAlias },
+    { { N_("_Fit to font bounding box"), Checkable, "<control>6" }, {}, LegacyCallbacks, MID_FitToBbox },
+    kMenuSeparator,
+    { { N_("Bitmap _Magnification..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_BitmapMag },
+};
+
 std::vector<MenuInfo> top_menu = {
     { { N_("_File") }, {}, SubMenuCallbacks, -1 },
     { { N_("_Edit") }, {}, SubMenuCallbacks, -1 },
@@ -98,7 +132,7 @@ std::vector<MenuInfo> top_menu = {
 #endif
     { { N_("H_ints") }, hints_menu, SubMenuCallbacks, -1 },
     { { N_("E_ncoding") }, {}, SubMenuCallbacks, -1 },
-    { { N_("_View") }, {}, SubMenuCallbacks, -1 },
+    { { N_("_View") }, view_menu, SubMenuCallbacks, -1 },
     { { N_("_Metrics") }, {}, SubMenuCallbacks, -1 },
     { { N_("_CID") }, {}, SubMenuCallbacks, -1 },
 /* GT: Here (and following) MM means "MultiMaster" */

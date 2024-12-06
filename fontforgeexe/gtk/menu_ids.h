@@ -1,5 +1,27 @@
 #pragma once
 
+#define MID_24 2001
+#define MID_36 2002
+#define MID_48 2004
+#define MID_72 2014
+#define MID_96 2015
+#define MID_128 2018
+#define MID_AntiAlias 2005
+#define MID_Next 2006
+#define MID_Prev 2007
+#define MID_NextDef 2012
+#define MID_PrevDef 2013
+#define MID_ShowHMetrics 2016
+#define MID_ShowVMetrics 2017
+#define MID_FitToBbox 2023
+#define MID_DisplaySubs 2024
+#define MID_32x8 2025
+#define MID_16x4 2026
+#define MID_8x2 2027
+#define MID_BitmapMag 2028
+#define MID_GotoChar 2030
+#define MID_Show_ATT 2031
+
 #define MID_Cut 2101
 #define MID_OpenOutline 2701
 #define MID_Copy 2102
