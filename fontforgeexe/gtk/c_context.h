@@ -32,6 +32,7 @@ extern "C" {
 
 typedef struct fontview FontView;
 typedef struct bdffont BDFFont;
+typedef struct anchorclass AnchorClass;
 
 enum glyphlabel { gl_glyph, gl_name, gl_unicode, gl_encoding };
 
@@ -56,6 +57,11 @@ typedef struct layer_menu_data {
     char* label;
     int index;
 } LayerMenuData;
+
+typedef struct anchor_menu_data {
+    char* label;
+    AnchorClass* ac;
+} AnchorMenuData;
 
 // C structure and callback for interacting with legacy code
 typedef struct fontview_context {
@@ -89,6 +95,13 @@ typedef struct fontview_context {
     // Collect layers data for menu display
     unsigned int (*collect_layer_data)(FontView* fv,
                                        LayerMenuData** layer_data_array);
+
+    // Open anchor pair dialog
+    void (*show_anchor_pair)(FontView* fv, AnchorClass* ac);
+
+    // Collect layers data for menu display
+    unsigned int (*collect_anchor_data)(FontView* fv,
+                                        AnchorMenuData** anchor_data_array);
 
     // Menu actions per menu ID
     FVMenuAction* actions;

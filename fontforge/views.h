@@ -44,7 +44,7 @@
 struct gfi_data;
 struct contextchaindlg;
 struct statemachinedlg;
-
+struct anchor_menu_data;
 
 extern struct cvshows {
     int showfore, showback, showgrids, showhhints, showvhints, showdhints;
@@ -822,6 +822,7 @@ extern void mbDoGetText(GMenuItem *mb);
 extern int RecentFilesAny(void);
 extern void _aplistbuild(struct gmenuitem *mi,SplineFont *sf,
 	void (*func)(GWindow,struct gmenuitem *,GEvent *));
+extern unsigned int collect_anchor_data(FontView *fv, struct anchor_menu_data** anchor_data_array);
 extern GTextInfo *AddMacFeatures(GTextInfo *opentype,enum possub_type type,SplineFont *sf);
 extern unichar_t *AskNameTag(char *title,unichar_t *def,uint32_t def_tag,uint16_t flags,
 	int script_lang_index, enum possub_type type, SplineFont *sf, SplineChar *default_script,

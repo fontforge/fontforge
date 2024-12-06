@@ -34,6 +34,8 @@
 #include "splinefont.h"
 #include "ustring.h"
 
+#include "gtk/c_context.h"
+
 static void WindowSelect(GWindow base,struct gmenuitem *mi,GEvent *e) {
     GDrawRaise(mi->ti.userdata);
 }
@@ -260,6 +262,23 @@ void _aplistbuild(struct gmenuitem *top,SplineFont *sf,
 	mi->ti.text = utf82u_copy(ac->name);
     }
     top->sub = sub;
+}
+
+unsigned int collect_anchor_data(FontView *fv, AnchorMenuData** anchor_data_array) {
+    unsigned int i, n_anchors = 0;
+    SplineFont *sf = fv->b.sf;
+    AnchorClass *ac;
+
+    /* Cound the available anchors */
+    for ( ac = sf->anchor; ac!=NULL; ++n_anchors, ac=ac->next );
+        
+    *anchor_data_array = calloc(n_anchors, sizeof(AnchorMenuData));
+    for ( ac = sf->anchor, i = 0; ac!=NULL; ++i, ac=ac->next ) {
+        (*anchor_data_array)[i].label = ac->name;
+        (*anchor_data_array)[i].ac = ac;
+    }
+
+    return n_anchors;
 }
 
 void mbFreeGetText(GMenuItem *mb) {

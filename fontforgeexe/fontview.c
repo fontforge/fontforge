@@ -3119,9 +3119,8 @@ static void FVMenuKernPairs(FontView *fv, int UNUSED(mid)) {
     SFKernCleanup(fv->b.sf,false);
 }
 
-static void FVMenuAnchorPairs(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    SFShowKernPairs(fv->b.sf,NULL,mi->ti.userdata,fv->b.active_layer);
+static void FVMenuAnchorPairs(FontView *fv, AnchorClass *ac) {
+    SFShowKernPairs(fv->b.sf,NULL,ac,fv->b.active_layer);
 }
 
 static void FVMenuShowAtt(FontView *fv,int UNUSED(mid)) {
@@ -4729,21 +4728,6 @@ static GMenuItem2 ellist[] = {
     { { (unichar_t *) N_("Compare Layers..."), (GImage *) "elementcomparelayers.png", COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'p' }, H_("Compare Layers...|No Shortcut"), NULL, NULL, FVMenuCompareL2L, 0 },
     GMENUITEM2_EMPTY
 };
-
-static GMenuItem2 dummyall[] = {
-    { { (unichar_t *) N_("All"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 0, 0, 0, 0, 0, 1, 1, 0, 'K' }, H_("All|No Shortcut"), NULL, NULL, NULL, 0 },
-    GMENUITEM2_EMPTY
-};
-
-/* Builds up a menu containing all the anchor classes */
-static void aplistbuild(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
-    GMenuItemArrayFree(mi->sub);
-    mi->sub = NULL;
-
-    _aplistbuild(mi,fv->b.sf,FVMenuAnchorPairs);
-}
 
 static bool cblistcheck(FontView *fv, int mid) {
     SplineFont *sf = fv->b.sf;
@@ -7157,6 +7141,8 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     fv_context->change_display_layer = change_display_layer;
     fv_context->current_display_layer = current_display_layer;
     fv_context->collect_layer_data = collect_layer_data;
+    fv_context->show_anchor_pair = FVMenuAnchorPairs;
+    fv_context->collect_anchor_data = collect_anchor_data;
     fv_context->actions = fvpopupactions;
     cg_dlg = create_font_view(&fv_context, pos.width, pos.height);
     fv->cg_widget = get_char_grid_widget(cg_dlg, 0);

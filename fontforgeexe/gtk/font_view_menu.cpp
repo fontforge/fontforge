@@ -99,6 +99,40 @@ std::vector<MenuInfo> view_menu_layers(const UiContext& ui_context) {
     return info_arr;
 }
 
+std::vector<MenuInfo> view_menu_anchors(const UiContext& ui_context) {
+    const FontViewUiContext& fv_ui_context =
+        static_cast<const FontViewUiContext&>(ui_context);
+    auto fv_context = fv_ui_context.legacy();
+
+    std::vector<AnchorMenuData> anchor_data_array =
+        VectorWrapper(fv_context->fv, fv_context->collect_anchor_data);
+
+    std::vector<MenuInfo> info_arr;
+
+    // Special item for all anchors
+    ActivateCB action_all = [cb = fv_context->show_anchor_pair,
+                             fv = fv_context->fv](const UiContext&) {
+        cb(fv, (AnchorClass*)-1);
+    };
+    info_arr.push_back({{N_("All"), NoDecoration, ""},
+                        {},
+                        {action_all, AlwaysEnabled, NotCheckable},
+                        0});
+    info_arr.push_back(kMenuSeparator);
+
+    for (const AnchorMenuData& anchor_data : anchor_data_array) {
+        ActivateCB action =
+            [cb = fv_context->show_anchor_pair, fv = fv_context->fv,
+             ac = anchor_data.ac](const UiContext&) { cb(fv, ac); };
+        MenuInfo info{{anchor_data.label, NoDecoration, ""},
+                      {},
+                      {action, AlwaysEnabled, NotCheckable},
+                      0};
+        info_arr.push_back(info);
+    }
+    return info_arr;
+}
+
 // clang-format off
 std::vector<MenuInfo> popup_menu = {
     { { N_("New O_utline Window"), NoDecoration, "" }, {}, LegacyCallbacks, MID_OpenOutline },
@@ -156,9 +190,13 @@ std::vector<MenuInfo> layers_menu = {
     MenuInfo::CustomBlock(view_menu_layers),
 };
 
+std::vector<MenuInfo> anchor_pairs_menu = {
+    MenuInfo::CustomBlock(view_menu_anchors),
+};
+
 std::vector<MenuInfo> combinations_menu = {
     { { N_("_Kern Pairs"), NoDecoration, "" }, {}, LegacyCallbacks, MID_KernPairs },
-    { { N_("_Anchored Pairs"), NoDecoration, "" }, {}, SubMenuCallbacks, MID_AnchorPairs },
+    { { N_("_Anchored Pairs"), NoDecoration, "" }, anchor_pairs_menu, SubMenuCallbacks, MID_AnchorPairs },
     { { N_("_Ligatures"), NoDecoration, "" }, {}, LegacyCallbacks, MID_Ligatures },
 };
 
