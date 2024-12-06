@@ -35,20 +35,48 @@ namespace ff::views {
 
 static const char kSignalActivateConn[] = "signal_activate_conn";
 
+// TODO: get grouper by group id and window id. Current implementation
+// might break if there is more than one window.
 Gtk::RadioButtonGroup& get_grouper(RadioGroup g) {
     static std::map<RadioGroup, Gtk::RadioButtonGroup> grouper_map;
+
+    return grouper_map[g];
+}
+
+// Sometimes none of the radio group items should be checked. GTK doesn't
+// have this capability, so we create a predefined dummy item which absorbs
+// the checked state when no other real item wants to be checked.
+Gtk::RadioMenuItem& get_dummy_radio_item(RadioGroup g) {
     static std::map<RadioGroup, Gtk::RadioMenuItem> dummy_item_map;
 
-    auto& grouper = grouper_map[g];
-
-    // Sometimes none of the radio group items should be checked. GTK doesn't
-    // have this capability, so we create a predefined dummy item which absorbs
-    // the checked state when no other real item wants to be checked.
     if (!dummy_item_map.count(g)) {
+        Gtk::RadioButtonGroup& grouper = get_grouper(g);
         dummy_item_map[g] = Gtk::RadioMenuItem(grouper, "dummy", false);
     }
 
-    return grouper;
+    return dummy_item_map[g];
+}
+
+std::function<void(void)> build_action(Gtk::MenuItem* menu_item,
+                                       ActivateCB handler,
+                                       const UiContext& context) {
+    Gtk::RadioMenuItem* radio_menu_item =
+        dynamic_cast<Gtk::RadioMenuItem*>(menu_item);
+    std::function<void(void)> action;
+    if (radio_menu_item) {
+        // All check items are activated when they become either checked or
+        // unchecked. Radio items should be activated only when they become
+        // selected, not when they lose selection.
+        action = [radio_menu_item, handler, &context]() {
+            if (radio_menu_item->get_active()) {
+                handler(context);
+            }
+        };
+    } else {
+        action = [handler, &context]() { handler(context); };
+    }
+
+    return action;
 }
 
 void check_menuitem_set_visual_state(Gtk::CheckMenuItem* check_menu_item,
@@ -68,8 +96,10 @@ void check_menuitem_set_visual_state(Gtk::CheckMenuItem* check_menu_item,
     check_menu_item->set_active(is_checked);
 
     // Reconnect the activation signal
-    conn = new sigc::connection(check_menu_item->signal_activate().connect(
-        [handler, &context]() { handler(context); }));
+    std::function<void(void)> action =
+        build_action(check_menu_item, handler, context);
+    conn = new sigc::connection(
+        check_menu_item->signal_activate().connect(action));
     check_menu_item->set_data(kSignalActivateConn, conn);
 }
 
@@ -85,6 +115,10 @@ Gtk::Menu* build_menu(const std::vector<MenuInfo>& info,
     std::vector<std::function<void(void)>> enablers;
     std::vector<std::function<void(void)>> checkers;
 
+    // Collect group identifiers for this submenu, so that we can later access
+    // their dummy items.
+    std::set<RadioGroup> radio_info;
+
     for (const auto& item : info) {
         Gtk::MenuItem* menu_item = nullptr;
         if (item.is_separator()) {
@@ -96,6 +130,7 @@ Gtk::Menu* build_menu(const std::vector<MenuInfo>& info,
             Gtk::RadioButtonGroup& grouper = get_grouper(group);
             menu_item = Gtk::make_managed<Gtk::RadioMenuItem>(
                 grouper, item.label.text, true);
+            radio_info.insert(group);
         } else if (item.label.decoration.checkable()) {
             menu_item =
                 Gtk::make_managed<Gtk::CheckMenuItem>(item.label.text, true);
@@ -151,10 +186,22 @@ Gtk::Menu* build_menu(const std::vector<MenuInfo>& info,
         menu->append(*menu_item);
     }
 
+    // Activate all dummy radio items for this submenu first. If an actual radio
+    // item wants to be active, it would be activated by one of the checkers.
+    // Note that checkers must be called after radio_chekers.
+    std::vector<std::function<void(void)>> dummy_radio_checkers;
+    for (RadioGroup group : radio_info) {
+        dummy_radio_checkers.push_back(
+            [group]() { get_dummy_radio_item(group).set_active(); });
+    }
+
     // Just call all the collected menuitem enablers and checkers
-    auto on_menu_show = [enablers, checkers]() {
+    auto on_menu_show = [enablers, dummy_radio_checkers, checkers]() {
         for (auto e : enablers) {
             e();
+        }
+        for (auto r : dummy_radio_checkers) {
+            r();
         }
         for (auto c : checkers) {
             c();
