@@ -28,6 +28,7 @@ OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
 IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+#include <iostream>
 #include "menu_builder.hpp"
 
 namespace ff::views {
@@ -36,6 +37,7 @@ Gtk::Menu* build_menu(const std::vector<MenuInfo>& info,
                       const FVContext& context) {
     Gtk::Menu* menu = new Gtk::Menu();
     Glib::RefPtr<Gtk::IconTheme> theme = Gtk::IconTheme::get_default();
+    int icon_height = std::max(16, (int)(2 * ui_font_eX_size()));
 
     for (const auto& item : info) {
         Gtk::MenuItem* menu_item = nullptr;
@@ -43,7 +45,7 @@ Gtk::Menu* build_menu(const std::vector<MenuInfo>& info,
             menu_item = Gtk::make_managed<Gtk::MenuItem>(item.label.text, true);
         } else {
             Glib::RefPtr<Gdk::Pixbuf> pixbuf =
-                load_icon(item.label.decoration.image_file(), 16);
+                load_icon(item.label.decoration.image_file(), icon_height);
             Gtk::Image* img = new Gtk::Image(pixbuf);
             menu_item = Gtk::make_managed<Gtk::ImageMenuItem>(
                 *img, item.label.text, true);
