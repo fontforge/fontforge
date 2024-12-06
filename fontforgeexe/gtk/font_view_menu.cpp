@@ -38,9 +38,9 @@ namespace ff::views {
 
 // clang-format off
 std::vector<MenuInfo> popup_menu = {
-    { { N_("New O_utline Window"), "", "<control>u" }, {}, NoAction, MID_OpenOutline },
+    { { N_("New O_utline Window"), "", "<control>u" }, {}, LegacyAction, MID_OpenOutline },
     kMenuSeparator,
-    { { N_("Cu_t"), "editcut", "<control>t" }, {}, NoAction, MID_Cut },
+    { { N_("Cu_t"), "editcut", "<control>t" }, {}, LegacyAction, MID_Cut },
 };
 // clang-format on
 

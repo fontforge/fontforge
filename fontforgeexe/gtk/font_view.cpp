@@ -33,6 +33,32 @@
 
 namespace ff::views {
 
+// Find the C callback set
+FVMenuAction* find_legacy_callback_set(int mid, FVMenuAction* actions) {
+    int i = 0;
+    while (actions[i].mid != 0) {
+        if (actions[i].mid == mid) {
+            return actions + i;
+        }
+        i++;
+    }
+
+    return NULL;
+}
+
+ActivateCB FontViewUiContext::get_activate_cb(int mid) const {
+    FVMenuAction* callback_set =
+        find_legacy_callback_set(mid, legacy_context->actions);
+
+    if (callback_set != NULL && callback_set->action != NULL) {
+        void (*action)(::FontView*, int) = callback_set->action;
+        ::FontView* fv = legacy_context->fv;
+        return [action, fv, mid](const UiContext&) { action(fv, mid); };
+    } else {
+        return NoAction;
+    }
+}
+
 bool on_button_press_event(GdkEventButton* event, Gtk::Menu& pop_up);
 
 FontView::FontView(std::shared_ptr<FVContext> fv_context, int width, int height)
@@ -56,7 +82,7 @@ FontView::FontView(std::shared_ptr<FVContext> fv_context, int width, int height)
     window.add(char_grid.get_top_widget());
     window.show_all();
 
-    pop_up = std::move(*build_menu(popup_menu, *fv_context));
+    pop_up = std::move(*build_menu(popup_menu, context));
 
     char_grid.get_top_widget().signal_button_press_event().connect(
         [this](GdkEventButton* event) {

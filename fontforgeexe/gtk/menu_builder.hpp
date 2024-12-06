@@ -32,9 +32,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <gtkmm.h>
 
+#include "ui_context.hpp"
 #include "utils.hpp"
-
-typedef struct fontview_context FVContext;
 
 namespace ff::views {
 
@@ -55,10 +54,9 @@ struct LabelInfo {
         accelerator;  // See the Gtk::AccelKey constructor for the format
 };
 
-using ActivateCB = std::function<void(const FVContext&)>;
-
-static const ActivateCB NoAction = [](const FVContext&) {
-};  // NOOP callable action
+static const ActivateCB LegacyAction;
+// NOOP callable action
+static const ActivateCB NoAction = [](const UiContext&) {};
 
 struct MenuInfo {
     LabelInfo label;
@@ -74,6 +72,6 @@ struct MenuInfo {
 static const MenuInfo kMenuSeparator = {{""}};
 
 Gtk::Menu* build_menu(const std::vector<MenuInfo>& info,
-                      const FVContext& context);
+                      const UiContext& context);
 
 }  // namespace ff::views

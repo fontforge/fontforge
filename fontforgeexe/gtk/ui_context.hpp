@@ -33,11 +33,16 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace ff::views {
 
+class UiContext;
+
+using ActivateCB = std::function<void(const UiContext&)>;
+
 class UiContext {
  public:
     UiContext() {}
 
     virtual std::string get_pixmap_dir() const = 0;
+    virtual ActivateCB get_activate_cb(int mid) const = 0;
 };
 
 }  // namespace ff::views

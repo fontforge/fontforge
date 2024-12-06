@@ -34,7 +34,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace ff::views {
 
 Gtk::Menu* build_menu(const std::vector<MenuInfo>& info,
-                      const FVContext& context) {
+                      const UiContext& context) {
     Gtk::Menu* menu = new Gtk::Menu();
     Glib::RefPtr<Gtk::IconTheme> theme = Gtk::IconTheme::get_default();
     int icon_height = std::max(16, (int)(2 * ui_font_eX_size()));
@@ -52,6 +52,12 @@ Gtk::Menu* build_menu(const std::vector<MenuInfo>& info,
             menu_item = Gtk::make_managed<Gtk::ImageMenuItem>(
                 *img, item.label.text, true);
         }
+
+        ActivateCB action =
+            item.handler ? item.handler : context.get_activate_cb(item.mid);
+        menu_item->signal_activate().connect(
+            [action, &context]() { action(context); });
+
         menu->append(*menu_item);
     }
 
