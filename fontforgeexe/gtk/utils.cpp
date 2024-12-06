@@ -69,3 +69,23 @@ Glib::RefPtr<Gdk::Window> gtk_get_topmost_window() {
 
     return topmost_window;
 }
+
+double ui_font_em_size() {
+    Cairo::RefPtr<Cairo::ImageSurface> srf =
+        Cairo::ImageSurface::create(Cairo::Format::FORMAT_RGB24, 100, 100);
+    Cairo::RefPtr<Cairo::Context> cairo_context = Cairo::Context::create(srf);
+    Glib::RefPtr<Gtk::StyleContext> style_context = Gtk::StyleContext::create();
+
+    Pango::FontDescription font = style_context->get_font();
+    cairo_context->select_font_face(font.get_family(),
+                                    Cairo::FontSlant::FONT_SLANT_NORMAL,
+                                    Cairo::FontWeight::FONT_WEIGHT_NORMAL);
+    cairo_context->set_font_size(font.get_size() / PANGO_SCALE *
+                                 Gdk::Screen::get_default()->get_resolution() /
+                                 96);
+
+    Cairo::TextExtents extents;
+    cairo_context->get_text_extents("m", extents);
+
+    return extents.x_advance;
+}
