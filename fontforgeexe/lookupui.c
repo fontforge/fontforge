@@ -59,8 +59,6 @@ void SFUntickAllPSTandKern(SplineFont *sf);
 int kernsLength( KernPair *kp );
 
 static int DEBUG = 1;
-GResFont kernformat_font = GRESFONT_INIT("400 12pt " SANS_UI_FAMILIES);
-GResFont kernformat_boldfont = GRESFONT_INIT("700 12pt " SANS_UI_FAMILIES);
 Color fi_originlinescol = 0x808080;
 
 /* ************************************************************************** */
@@ -5533,165 +5531,6 @@ return( NULL );
 return( NewSubtable(found,isgpos,sf,sd,def_layer));
 }
 
-static void kf_activateMe(struct fvcontainer *fvc,FontViewBase *fvb) {
-    struct kf_dlg *kf = (struct kf_dlg *) fvc;
-    FontView *fv = (FontView *) fvb;
-
-    if ( !fv->notactive )
-return;
-
-    kf->first_fv->notactive = true;
-    kf->second_fv->notactive = true;
-    fv->notactive = false;
-    kf->active = fv;
-    GDrawSetUserData(kf->dw,fv);
-    GDrawRequestExpose(kf->dw,NULL,false);
-}
-
-static void kf_charEvent(struct fvcontainer *fvc,void *event) {
-    struct kf_dlg *kf = (struct kf_dlg *) fvc;
-    FVChar(kf->active,event);
-}
-
-static void kf_doClose(struct fvcontainer *fvc) {
-    struct kf_dlg *kf = (struct kf_dlg *) fvc;
-    kf->done = true;
-}
-
-static void kf_doResize(struct fvcontainer *fvc,FontViewBase *fvb,
-	int width, int height) {
-    struct kf_dlg *kf = (struct kf_dlg *) fvc;
-    FontView *fv = (FontView *) fvb;
-    FontView *otherfv = fv==kf->first_fv ? kf->second_fv : kf->first_fv;
-    static int nested=0;
-    GRect size;
-
-    if ( fv->filled==NULL || otherfv->filled == NULL )
-return;		/* Not initialized yet */
-    if ( nested )
-return;
-    nested = 1;
-    FVSetUIToMatch(otherfv,fv);
-    nested = 0;
-
-    memset(&size,0,sizeof(size));
-    size.height = fv->mbh + kf->fh+4 + 2*(height-fv->mbh) + kf->fh + 2;
-    size.width = width;
-    GGadgetSetDesiredSize(kf->guts,NULL, &size);
-    GHVBoxFitWindow(kf->topbox);
-}
-
-static struct fvcontainer_funcs kernformat_funcs = {
-    fvc_kernformat,
-    true,			/* Modal dialog. No charviews, etc. */
-    kf_activateMe,
-    kf_charEvent,
-    kf_doClose,
-    kf_doResize
-};
-
-static void kf_FVSetSize(struct kf_dlg *kf,FontView *fv,int width, int height, int y) {
-    int cc, rc, topchar;
-    GRect subsize;
-
-    topchar = fv->rowoff*fv->colcnt;
-    cc = (width-1) / fv->cbw;
-    if ( cc<1 ) cc=1;
-    rc = (height-1)/ fv->cbh;
-    if ( rc<1 ) rc = 1;
-    subsize.x = 0; subsize.y = 0;
-    subsize.width = cc*fv->cbw + 1;
-    subsize.height = rc*fv->cbh + 1;
-    GDrawResize(fv->v,subsize.width,subsize.height);
-    GDrawMove(fv->v,0,y);
-
-    fv->colcnt = cc; fv->rowcnt = rc;
-    fv->width = subsize.width; fv->height = subsize.height;
-    fv->rowltot = (fv->b.map->enccount+fv->colcnt-1)/fv->colcnt;
-    FVScrollBarSetBounds(fv,0,fv->rowltot,fv->rowcnt);
-    fv->rowoff = topchar/fv->colcnt;
-    if ( fv->rowoff>=fv->rowltot-fv->rowcnt )
-        fv->rowoff = fv->rowltot-fv->rowcnt;
-    if ( fv->rowoff<0 ) fv->rowoff =0;
-    FVScrollBarSetPos(fv,fv->rowoff);
-
-    GDrawRequestExpose(fv->v,NULL,true);
-}
-
-static void kf_sizeSet(struct kf_dlg *kf,GWindow dw) {
-    GRect size;
-    int width, height, y;
-
-    GDrawGetSize(dw,&size);
-    width = size.width;
-    height = size.height - kf->mbh - 2*(kf->fh+4);
-    height /= 2;
-
-    y = kf->mbh + (kf->fh + 4);
-    kf_FVSetSize(kf,kf->first_fv,width,height,y);
-
-    kf->label2_y = y + height+2;
-    y = kf->label2_y + kf->fh + 2;
-    kf_FVSetSize(kf,kf->second_fv,width,height,y);
-}
-
-static int kf_sub_e_h(GWindow pixmap, GEvent *event) {
-    FontView *active_fv;
-    struct kf_dlg *kf;
-
-    if ( event->type==et_destroy )
-return( true );
-
-    active_fv = (FontView *) GDrawGetUserData(pixmap);
-    kf = (struct kf_dlg *) (active_fv->b.container);
-
-    Color fg = GDrawGetDefaultForeground(NULL);
-    switch ( event->type ) {
-      case et_expose:
-	GDrawSetFont(pixmap, kf->first_fv->notactive? kf->plain : kf->bold );
-	GDrawDrawText8(pixmap,10,kf->mbh+kf->as,
-		_("Select glyphs for the first part of the kern pair"),-1,fg);
-	GDrawSetFont(pixmap, kf->second_fv->notactive? kf->plain : kf->bold );
-	GDrawDrawText8(pixmap,10,kf->label2_y+kf->as,
-		_("Select glyphs for the second part of the kern pair"),-1,fg);
-      break;
-      case et_char:
-	kf_charEvent(&kf->base,event);
-      break;
-      case et_mousedown:
-	if ( event->u.mouse.y<kf->mbh )
-return(false);
-	kf_activateMe(&kf->base,(struct fontviewbase *)
-		(( event->u.mouse.y > kf->label2_y ) ?
-			kf->second_fv : kf->first_fv) );
-return(false);
-      break;
-      case et_mouseup: case et_mousemove:
-return(false);
-      case et_resize:
-        kf_sizeSet(kf,pixmap);
-      break;
-      default: break;
-    }
-return( true );
-}
-
-#undef CID_Separation
-#undef CID_MinKern
-#undef CID_Touched
-#undef CID_OnlyCloser
-#undef CID_Autokern
-#define CID_KPairs	1000
-#define CID_KClasses	1001
-#define CID_KCBuild	1002
-#define CID_Separation	1003
-#define CID_MinKern	1004
-#define CID_Touched	1005
-#define CID_ClassDistance	1006
-#define CID_Guts	1008
-#define CID_OnlyCloser	1009
-#define CID_Autokern	1010
-
 struct kf_results {
     int asked;
     int autokern;
@@ -5700,24 +5539,6 @@ struct kf_results {
     SplineChar **firstglyphs;
     SplineChar **secondglyphs;
 };
-
-static int KF_FormatChange(GGadget *g, GEvent *e) {
-    struct kf_dlg *kf;
-    char mkbuf[10];
-
-    if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
-	kf = GDrawGetUserData(GGadgetGetWindow(g));
-	if ( GGadgetIsChecked(GWidgetGetControl(kf->gw,CID_KPairs)) ) {
-	    GGadgetSetEnabled(GWidgetGetControl(kf->gw,CID_KCBuild),0);
-	    sprintf(mkbuf,"%d",15*(kf->sf->ascent+kf->sf->descent)/1000 );
-	    GGadgetSetTitle8(GWidgetGetControl(kf->gw,CID_MinKern),mkbuf);
-	} else {
-	    GGadgetSetEnabled(GWidgetGetControl(kf->gw,CID_KCBuild),1);
-	    GGadgetSetTitle8(GWidgetGetControl(kf->gw,CID_MinKern),"0");
-	}
-    }
-return( true );
-}
 
 static SplineChar **SelectedGlyphs(FontView *_fv) {
     FontViewBase *fv = (FontViewBase *) _fv;
@@ -5753,12 +5574,11 @@ return( glyphlist );
 
 static void KF_process_OK(struct kf_dlg *kf, KFDlgData *kf_ui_data) {
 
-	int touch, separation, minkern, err, onlyCloser, autokern;
+	int touch, separation, minkern, onlyCloser, autokern;
 	real good_enough=0;
 	int isclass, autobuild=0;
 	struct kf_results *results = kf->results;
 
-	err = false;
 	touch = kf_ui_data->touching;
 	separation = kf_ui_data->default_separation;
 	minkern = kf_ui_data->min_kern;
@@ -5795,43 +5615,11 @@ static void KF_process_OK(struct kf_dlg *kf, KFDlgData *kf_ui_data) {
 	kf->done = true;
 }
 
-static int KF_Cancel(GGadget *g, GEvent *e) {
-    struct kf_dlg *kf;
-
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	kf = GDrawGetUserData(GGadgetGetWindow(g));
-	kf->done = true;
-    }
-return( true );
-}
-
-static int kf_e_h(GWindow gw, GEvent *event) {
-    struct kf_dlg *kf = GDrawGetUserData(gw);
-
-    switch ( event->type ) {
-      case et_close:
-	kf->done = true;
-      break;
-      case et_char:
-return( false );
-      break;
-      default: break;
-    }
-return( true );
-}
-
+/* Returns are 0=>Pairs, 1=>Classes, 2=>Cancel */
 static int kern_format_dlg( SplineFont *sf, int def_layer,
 	struct lookup_subtable *sub, struct kf_results *results ) {
     GRect pos;
-    GWindowAttrs wattrs;
-    GGadgetCreateData gcd[16], boxes[7], hbox;
-    GGadgetCreateData *varray[21], *h2array[6], *h3array[6], *h4array[8], *buttonarray[8], *h5array[4];
-    GTextInfo label[15];
-    char sepbuf[40], mkbuf[40], distancebuf[40];
     struct kf_dlg kf;
-    int i,j, guts_row;
-    /* Returns are 0=>Pairs, 1=>Classes, 2=>Cancel */
-    int as, ds, ld;
     void* cg_dlg;
     KFDlgData kf_data;
 
@@ -5842,275 +5630,20 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
 	sub->minkern = sub->separation/10;
     }
 
-    memset(&wattrs,0,sizeof(wattrs));
-    memset(&gcd,0,sizeof(gcd));
-    memset(&boxes,0,sizeof(boxes));
-    memset(&label,0,sizeof(label));
     memset(&kf,0,sizeof(kf));
     memset(&kf_data,0,sizeof(kf_data));
 
-    kf.base.funcs = &kernformat_funcs;
     kf.sub = sub;
     kf.results = results;
     kf.sf = sf;
     kf.def_layer = def_layer;
     results->asked = 2;			/* Cancel */
 
-    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor;
-    wattrs.event_masks = ~(1<<et_charup);
-    wattrs.restrict_input_to_me = true;
-    wattrs.undercursor = 1;
-    wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("Kerning format") ;
-    wattrs.is_dlg = true;
     pos.x = pos.y = 0;
     pos.width = 100;
     pos.height = 100;
-    kf.gw = GDrawCreateTopWindow(NULL,&pos,kf_e_h,&kf,&wattrs);
 
-    kf.plain = kernformat_font.fi;
-    kf.bold = kernformat_boldfont.fi;
-    GDrawWindowFontMetrics(kf.gw,kf.plain,&as,&ds,&ld);
-    kf.fh = as+ds; kf.as = as;
-
-    i = j = 0;
-
-    label[i].text = (unichar_t *) _("Use individual kerning pairs");
-    label[i].text_is_1byte = true;
-    label[i].text_in_resource = true;
-    gcd[i].gd.label = &label[i];
-    gcd[i].gd.flags = gg_enabled|gg_visible|gg_cb_on;
-    gcd[i].gd.popup_msg = _(
-	"In this format you specify every kerning pair in which\n"
-	"you are interested in." );
-    gcd[i].gd.cid = CID_KPairs;
-    gcd[i].gd.handle_controlevent = KF_FormatChange;
-    gcd[i].creator = GRadioCreate;
-    varray[j++] = &gcd[i++]; varray[j++] = NULL;
-
-    label[i].text = (unichar_t *) _("Use a matrix of kerning classes");
-    label[i].text_is_1byte = true;
-    label[i].text_in_resource = true;
-    gcd[i].gd.label = &label[i];
-    gcd[i].gd.flags = gg_enabled|gg_visible|gg_rad_continueold;
-    gcd[i].gd.popup_msg = _(
-	"In this format you define a series of glyph classes and\n"
-	"specify a matrix showing how each class interacts with all\n"
-	"the others.");
-    gcd[i].gd.cid = CID_KClasses;
-    gcd[i].gd.handle_controlevent = KF_FormatChange;
-    gcd[i].creator = GRadioCreate;
-    varray[j++] = &gcd[i++]; varray[j++] = NULL;
-
-    label[i].text = (unichar_t *) _("FontForge will guess kerning classes for selected glyphs");
-    label[i].text_is_1byte = true;
-    label[i].text_in_resource = true;
-    gcd[i].gd.label = &label[i];
-    gcd[i].gd.flags = gg_visible|gg_cb_on;
-    gcd[i].gd.popup_msg = _(
-	"FontForge will look at the glyphs selected in the font view\n"
-	"and will try to find groups of glyphs which are most alike\n"
-	"and generate kerning classes based on that information." );
-    gcd[i].gd.cid = CID_KCBuild;
-    gcd[i].creator = GCheckBoxCreate;
-    h2array[0] = GCD_HPad10; h2array[1] = &gcd[i++]; h2array[2] = GCD_Glue; h2array[3] = NULL;
-    boxes[3].gd.flags = gg_enabled|gg_visible;
-    boxes[3].gd.u.boxelements = h2array;
-    boxes[3].creator = GHBoxCreate;
-    varray[j++] = &boxes[3]; varray[j++] = NULL;
-
-    label[i].text = (unichar_t *) _("Intra Class Distance:");
-    label[i].text_is_1byte = true;
-    label[i].text_in_resource = true;
-    gcd[i].gd.label = &label[i];
-    gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
-    gcd[i].gd.flags = gg_enabled|gg_visible;
-    gcd[i].gd.popup_msg = _(
-	"This is roughly (very roughly) the number off em-units\n"
-	"of error that two glyphs may have to belong in the same\n"
-	"class. This error is taken by comparing the two glyphs\n"
-	"to all other glyphs and summing the differences.\n"
-	"A small number here (like 2) means lots of small classes,\n"
-	"while a larger number (like 20) will mean fewer classes,\n"
-	"each with more glyphs." );
-    gcd[i].creator = GLabelCreate;
-    h3array[0] = GCD_HPad10; h3array[1] = &gcd[i++];
-
-    sprintf( distancebuf, "%g", (sf->ascent+sf->descent)/100. );
-    label[i].text = (unichar_t *) distancebuf;
-    label[i].text_is_1byte = true;
-    label[i].text_in_resource = true;
-    gcd[i].gd.label = &label[i];
-    gcd[i].gd.pos.width = 50;
-    gcd[i].gd.flags = gg_enabled|gg_visible;
-    gcd[i].gd.popup_msg = gcd[i-1].gd.popup_msg;
-    gcd[i].gd.cid = CID_ClassDistance;
-    gcd[i].creator = GTextFieldCreate;
-    h3array[2] = &gcd[i++]; h3array[3] = GCD_Glue; h3array[4] = NULL;
-
-    boxes[5].gd.flags = gg_enabled|gg_visible;
-    boxes[5].gd.u.boxelements = h3array;
-    boxes[5].creator = GHBoxCreate;
-    varray[j++] = &boxes[5]; varray[j++] = NULL;
-    varray[j++] = GCD_Glue; varray[j++] = NULL;
-
-	label[i].text = (unichar_t *) _("_Default Separation:");
-	label[i].text_is_1byte = true;
-	label[i].text_in_resource = true;
-	gcd[i].gd.label = &label[i];
-	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
-	gcd[i].gd.flags = gg_enabled|gg_visible;
-	gcd[i].gd.popup_msg = _(
-	    "Add entries to the lookup trying to make the optical\n"
-	    "separation between all pairs of glyphs equal to this\n"
-	    "value." );
-	gcd[i].creator = GLabelCreate;
-	h4array[0] = &gcd[i++];
-
-	sprintf( sepbuf, "%d", sub->separation );
-	label[i].text = (unichar_t *) sepbuf;
-	label[i].text_is_1byte = true;
-	label[i].text_in_resource = true;
-	gcd[i].gd.label = &label[i];
-	gcd[i].gd.pos.width = 50;
-	gcd[i].gd.flags = gg_enabled|gg_visible;
-	gcd[i].gd.popup_msg = gcd[i-1].gd.popup_msg;
-	gcd[i].gd.cid = CID_Separation;
-	gcd[i].creator = GTextFieldCreate;
-	h4array[1] = &gcd[i++]; h4array[2] = GCD_Glue;
-
-	label[i].text = (unichar_t *) _("_Min Kern:");
-	label[i].text_is_1byte = true;
-	label[i].text_in_resource = true;
-	gcd[i].gd.label = &label[i];
-	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
-	gcd[i].gd.flags = gg_enabled|gg_visible;
-	gcd[i].gd.popup_msg = _(
-	    "Any computed kerning change whose absolute value is less\n"
-	    "that this will be ignored.\n" );
-	gcd[i].creator = GLabelCreate;
-	h4array[3] = &gcd[i++];
-
-	sprintf( mkbuf, "%d", sub->minkern );
-	label[i].text = (unichar_t *) mkbuf;
-	label[i].text_is_1byte = true;
-	label[i].text_in_resource = true;
-	gcd[i].gd.label = &label[i];
-	gcd[i].gd.pos.width = 50;
-	gcd[i].gd.flags = gg_enabled|gg_visible;
-	gcd[i].gd.popup_msg = gcd[i-1].gd.popup_msg;
-	gcd[i].gd.cid = CID_MinKern;
-	gcd[i].creator = GTextFieldCreate;
-	h4array[4] = &gcd[i++];
-
-	label[i].text = (unichar_t *) _("_Touching");
-	label[i].text_is_1byte = true;
-	label[i].text_in_resource = true;
-	gcd[i].gd.label = &label[i];
-	gcd[i].gd.pos.x = 5; gcd[i].gd.pos.y = 5+4;
-	gcd[i].gd.flags = gg_enabled|gg_visible;
-	if ( sub->kerning_by_touch )
-	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_cb_on;
-	gcd[i].gd.popup_msg = _(
-	    "Normally kerning is based on achieving a constant (optical)\n"
-	    "separation between glyphs, but occasionally it is desirable\n"
-	    "to have a kerning table where the kerning is based on the\n"
-	    "closest approach between two glyphs (So if the desired separ-\n"
-	    "ation is 0 then the glyphs will actually be touching.");
-	gcd[i].gd.cid = CID_Touched;
-	gcd[i].creator = GCheckBoxCreate;
-	h4array[5] = &gcd[i++];
-
-	h4array[6] = GCD_Glue; h4array[7] = NULL;
-
-	boxes[4].gd.flags = gg_enabled|gg_visible;
-	boxes[4].gd.u.boxelements = h4array;
-	boxes[4].creator = GHBoxCreate;
-	varray[j++] = &boxes[4]; varray[j++] = NULL;
-
-	label[i].text = (unichar_t *) _("Only kern glyphs closer");
-	label[i].text_is_1byte = true;
-	label[i].text_in_resource = true;
-	gcd[i].gd.label = &label[i];
-	gcd[i].gd.flags = gg_enabled|gg_visible|gg_cb_on;
-	if ( sub->onlyCloser )
-	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_cb_on;
-	gcd[i].gd.popup_msg = _(
-	    "When doing autokerning, only move glyphs closer together,\n"
-	    "so the kerning offset will be negative.");
-	gcd[i].gd.cid = CID_OnlyCloser;
-	gcd[i].creator = GCheckBoxCreate;
-	h5array[0] = &gcd[i++];
-
-	label[i].text = (unichar_t *) _("Autokern new entries");
-	label[i].text_is_1byte = true;
-	label[i].text_in_resource = true;
-	gcd[i].gd.label = &label[i];
-	gcd[i].gd.flags = gg_enabled|gg_visible;
-	if ( !sub->dontautokern )
-	    gcd[i].gd.flags = gg_enabled|gg_visible|gg_cb_on;
-	gcd[i].gd.popup_msg = _(
-	    "When adding new entries provide default kerning values.");
-	gcd[i].gd.cid = CID_Autokern;
-	gcd[i].creator = GCheckBoxCreate;
-	h5array[1] = &gcd[i++]; h5array[2] = NULL;
-
-	memset(&hbox,0,sizeof(hbox));
-	hbox.gd.flags = gg_enabled|gg_visible;
-	hbox.gd.u.boxelements = h5array;
-	hbox.creator = GHBoxCreate;
-	varray[j++] = &hbox; varray[j++] = NULL;
-
-    guts_row = j/2;
-    gcd[i].gd.flags = gg_enabled|gg_visible;
-    gcd[i].gd.cid = CID_Guts;
-    gcd[i].gd.u.drawable_e_h = kf_sub_e_h;
-    gcd[i].creator = GDrawableCreate;
-    varray[j++] = &gcd[i++]; varray[j++] = NULL;
-
-    gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[i].text = (unichar_t *) _("_OK");
-    label[i].text_is_1byte = true;
-    label[i].text_in_resource = true;
-    gcd[i].gd.label = &label[i];
-    gcd[i].gd.handle_controlevent = NULL;
-    gcd[i++].creator = GButtonCreate;
-
-    gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[i].text = (unichar_t *) _("_Cancel");
-    label[i].text_is_1byte = true;
-    label[i].text_in_resource = true;
-    gcd[i].gd.label = &label[i];
-    gcd[i].gd.handle_controlevent = KF_Cancel;
-    gcd[i++].creator = GButtonCreate;
-
-    buttonarray[0] = GCD_Glue; buttonarray[1] = &gcd[i-2]; buttonarray[2] = GCD_Glue;
-    buttonarray[3] = GCD_Glue; buttonarray[4] = &gcd[i-1]; buttonarray[5] = GCD_Glue;
-    buttonarray[6] = NULL;
-    boxes[6].gd.flags = gg_enabled|gg_visible;
-    boxes[6].gd.u.boxelements = buttonarray;
-    boxes[6].creator = GHBoxCreate;
-    varray[j++] = &boxes[6]; varray[j++] = NULL; varray[j++] = NULL;
-
-    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
-    boxes[0].gd.flags = gg_enabled|gg_visible;
-    boxes[0].gd.u.boxelements = varray;
-    boxes[0].creator = GHVGroupCreate;
-
-    GGadgetsCreate(kf.gw,boxes);
-
-    GHVBoxSetExpandableRow(boxes[0].ret,guts_row);
-    GHVBoxSetExpandableCol(boxes[3].ret,gb_expandglue);
-    GHVBoxSetExpandableCol(boxes[4].ret,gb_expandglue);
-    GHVBoxSetExpandableCol(boxes[5].ret,gb_expandglue);
-    GHVBoxSetExpandableCol(boxes[6].ret,gb_expandgluesame);
-
-    kf.topbox = boxes[0].ret;
-    cg_dlg = KFFontViewInits(&kf, GWidgetGetControl(kf.gw,CID_Guts));
-    kf_activateMe((struct fvcontainer *) &kf,(struct fontviewbase *) kf.first_fv);
-
-    GHVBoxFitWindow(boxes[0].ret);
-    GDrawSetVisible(kf.gw,true);
+    cg_dlg = KFFontViewInits(&kf);
 
     kf_data.use_individual_pairs = true;
     kf_data.guess_kerning_classes = true;
@@ -6130,9 +5663,7 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
     FontViewFree(&kf.second_fv->b);
     GDrawDestroyWindow(kf.first_fv->v);
     FontViewFree(&kf.first_fv->b);
-    GDrawSetUserData(kf.gw,NULL);
-    GDrawDestroyWindow(kf.gw);
-return( results->asked );
+    return( results->asked );
 }
 
 void _LookupSubtableContents(SplineFont *sf, struct lookup_subtable *sub,

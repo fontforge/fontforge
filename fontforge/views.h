@@ -691,18 +691,13 @@ struct gfi_data {		/* FontInfo */
 struct kf_dlg /* : fvcontainer */ {
     struct fvcontainer base;
     struct lookup_subtable *sub;
-    GWindow gw, dw;
-    GFont *plain, *bold;
-    int fh, as;
-    GGadget *mb, *guts, *topbox;
-    int mbh, label2_y;
+    GWindow dw;
 
     SplineFont *sf;
     int def_layer;
     struct kf_results *results;
     int done;
 
-    FontView *active;
     FontView *first_fv;
     FontView *second_fv;
 };
@@ -1313,7 +1308,7 @@ extern void FontViewRemove(FontView *fv);
 extern void FontViewFinishNonStatic(void);
 extern void FVChar(FontView *fv,GEvent *event);
 extern void FVRedrawAllCharViews(FontView *fv);
-extern void *KFFontViewInits(struct kf_dlg *kf,GGadget *drawable);
+extern void *KFFontViewInits(struct kf_dlg *kf);
 extern char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current);
 extern void ME_ListCheck(GGadget *g,int r, int c, SplineFont *sf);
 extern void ME_SetCheckUnique(GGadget *g,int r, int c, SplineFont *sf);

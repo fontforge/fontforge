@@ -3308,10 +3308,6 @@ return;
 	}
 	if ( samesize ) {
 	    GDrawRequestExpose(fv->v,NULL,false);
-	} else if ( fv->b.container!=NULL && fv->b.container->funcs->doResize!=NULL ) {
-	    (fv->b.container->funcs->doResize)(fv->b.container,&fv->b,
-		    ccnt*fv->cbw+1,
-		    rcnt*fv->cbh+1+fv->mbh);
 	} else {
             cg_resize_window(fv->cg_widget, ccnt*fv->cbw+1, rcnt*fv->cbh+1);
 	}
@@ -6795,16 +6791,11 @@ static int v_e_h(GWindow gw, GEvent *event) {
 	FVExpose(fv,gw,event);
       break;
       case et_char:
-	if ( fv->b.container!=NULL )
-	    (fv->b.container->funcs->charEvent)(fv->b.container,event);
-	else
-	    FVChar(fv,event);
+	FVChar(fv,event);
       break;
       case et_mousemove: case et_mousedown: case et_mouseup:
 	if ( event->type==et_mousedown )
 	    GDrawSetGIC(gw,fv->gic,0,20);
-	if ( fv->notactive && event->type==et_mousedown )
-	    (fv->b.container->funcs->activateMe)(fv->b.container,&fv->b);
 	FVMouse(fv,event);
       break;
       case et_timer:
@@ -7171,8 +7162,6 @@ extern Color histogram_graphcol;
 extern GResFont histogram_font;
 extern GResFont kernclass_font;
 extern Color kernclass_classfgcol;
-extern GResFont kernformat_font;
-extern GResFont kernformat_boldfont;
 extern GResFont math_font;
 extern GResFont math_boldfont;
 extern GResFont prefs_monofont;
@@ -7213,8 +7202,6 @@ static struct resed miscwin_re[] = {
     {N_("Histogram.Font"), "Histogram.Font", rt_font, &histogram_font, N_("Font used in the Histogram dialog"), NULL, { 0 }, 0, 0 },
     {N_("Kern Class Text Color"), "KernClass.TextColor", rt_color, &kernclass_classfgcol, N_("Color for kerning class names"), NULL, { 0 }, 0, 0 },
     {N_("KernClass.Font"), "KernClass.Font", rt_font, &kernclass_font, N_("Font used in the Kerning Classes dialog"), NULL, { 0 }, 0, 0 },
-    {N_("KernFormat.Font"), "KernFormat.Font", rt_font, &kernformat_font, N_("Normal font used in the Kerning Format dialog"), NULL, { 0 }, 0, 0 },
-    {N_("KernFormat.BoldFont"), "KernFormat.BoldFont", rt_font, &kernformat_boldfont, N_("Bold font used in the Kerning Format dialog"), NULL, { 0 }, 0, 0 },
     {N_("Math.Font"), "Math.Font", rt_font, &math_font, N_("Normal font used in the Math dialog"), NULL, { 0 }, 0, 0 },
     {N_("Math.BoldFont"), "Math.BoldFont", rt_font, &math_boldfont, N_("Bold font used in the Math dialog"), NULL, { 0 }, 0, 0 },
     RESED_EMPTY
@@ -7657,33 +7644,21 @@ static void FVCopyInnards(FontView *fv,GRect *pos,
     fv->rowoff = (fvorig->rowoff*fvorig->colcnt)/fv->colcnt;
 }
 
-void* KFFontViewInits(struct kf_dlg *kf,GGadget *drawable) {
-    GGadgetData gd;
+void* KFFontViewInits(struct kf_dlg *kf) {
     GRect pos, gsize;
-    GWindow dw = GDrawableGetWindow(drawable);
     int ps;
     FontView *fvorig = (FontView *) kf->sf->fv;
     void* cg_dlg;
 
     FontViewInit();
 
-    kf->dw = dw;
-
-    memset(&gd,0,sizeof(gd));
-    gd.flags = gg_visible | gg_enabled;
-    helplist[0].invoke = FVMenuContextualHelp;
-    gd.u.menu2 = mblist;
-    kf->mb = GMenu2BarCreate( dw, &gd, NULL);
-    GGadgetGetSize(kf->mb,&gsize);
-    kf->mbh = gsize.height;
-    kf->guts = drawable;
+    kf->dw = NULL;
 
     ps = kf->sf->display_size; kf->sf->display_size = -24;
     kf->first_fv = __FontViewCreate(kf->sf); kf->first_fv->b.container = (struct fvcontainer *) kf;
     kf->second_fv = __FontViewCreate(kf->sf); kf->second_fv->b.container = (struct fvcontainer *) kf;
 
-    kf->first_fv->mbh = kf->mbh;
-    pos.x = 0; pos.y = kf->mbh+kf->fh+4;
+    pos.x = 0; pos.y = 0;
     pos.width = 16*kf->first_fv->cbw+1;
     pos.height = 4*kf->first_fv->cbh+1;
 
@@ -7701,21 +7676,17 @@ void* KFFontViewInits(struct kf_dlg *kf,GGadget *drawable) {
     kf->first_fv->cg_widget = get_char_grid_widget(cg_dlg, 0);
     kf->second_fv->cg_widget = get_char_grid_widget(cg_dlg, 1);
 
-    GDrawSetUserData(dw,kf->first_fv);
-    FVCopyInnards(kf->first_fv,&pos,fvorig,dw,kf->def_layer,(struct fvcontainer *) kf);
+    FVCopyInnards(kf->first_fv,&pos,fvorig,NULL,kf->def_layer,(struct fvcontainer *) kf);
     pos.height = 4*kf->first_fv->cbh+1;		/* We don't know the real fv->cbh until after creating the innards. The size of the last window is probably wrong, we'll fix later */
-    kf->second_fv->mbh = kf->mbh;
-    kf->label2_y = pos.y + pos.height+2;
-    pos.y = kf->label2_y + kf->fh + 2;
-    GDrawSetUserData(dw,kf->second_fv);
-    FVCopyInnards(kf->second_fv,&pos,fvorig,dw,kf->def_layer,(struct fvcontainer *) kf);
+    kf->second_fv->mbh = 0;
+    pos.y = 0;
+    FVCopyInnards(kf->second_fv,&pos,fvorig,NULL,kf->def_layer,(struct fvcontainer *) kf);
 
     kf->sf->display_size = ps;
 
     gsize.x = gsize.y = 0;
     gsize.width = pos.width;
     gsize.height = pos.y+pos.height;
-    GGadgetSetDesiredSize(drawable,NULL,&gsize);
 
     return cg_dlg;
 }
