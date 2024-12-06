@@ -33,6 +33,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace ff::views {
 
+static const char kSignalActivateConn[] = "signal_activate_conn";
+
 Gtk::RadioButtonGroup& get_grouper(RadioGroup g) {
     static std::map<RadioGroup, Gtk::RadioButtonGroup> grouper_map;
     static std::map<RadioGroup, Gtk::RadioMenuItem> dummy_item_map;
@@ -49,6 +51,28 @@ Gtk::RadioButtonGroup& get_grouper(RadioGroup g) {
     return grouper;
 }
 
+void check_menuitem_set_visual_state(Gtk::CheckMenuItem* check_menu_item,
+                                     ActivateCB handler, CheckedCB checked_cb,
+                                     const UiContext& context) {
+    // Disconnect the activation signal before setting visual state
+    sigc::connection* conn =
+        (sigc::connection*)check_menu_item->get_data(kSignalActivateConn);
+    if (conn) {
+        conn->disconnect();
+        delete conn;
+        conn = NULL;
+    }
+
+    // Change the state of the CheckMenuItem
+    bool is_checked = checked_cb(context);
+    check_menu_item->set_active(is_checked);
+
+    // Reconnect the activation signal
+    conn = new sigc::connection(check_menu_item->signal_activate().connect(
+        [handler, &context]() { handler(context); }));
+    check_menu_item->set_data(kSignalActivateConn, conn);
+}
+
 Gtk::Menu* build_menu(const std::vector<MenuInfo>& info,
                       const UiContext& context) {
     Gtk::Menu* menu = new Gtk::Menu();
@@ -59,6 +83,7 @@ Gtk::Menu* build_menu(const std::vector<MenuInfo>& info,
     // subitem is shown. We collect enabled state checks for all subitems and
     // call them one by one from menu's show event.
     std::vector<std::function<void(void)>> enablers;
+    std::vector<std::function<void(void)>> checkers;
 
     for (const auto& item : info) {
         Gtk::MenuItem* menu_item = nullptr;
@@ -91,8 +116,6 @@ Gtk::Menu* build_menu(const std::vector<MenuInfo>& info,
         ActivateCB action = item.callbacks.handler
                                 ? item.callbacks.handler
                                 : context.get_activate_cb(item.mid);
-        menu_item->signal_activate().connect(
-            [action, &context]() { action(context); });
 
         EnabledCB enabled_check = item.callbacks.enabled
                                       ? item.callbacks.enabled
@@ -105,13 +128,36 @@ Gtk::Menu* build_menu(const std::vector<MenuInfo>& info,
         };
         enablers.push_back(enabler);
 
+        Gtk::CheckMenuItem* check_menu_item =
+            dynamic_cast<Gtk::CheckMenuItem*>(menu_item);
+        if (check_menu_item) {
+            CheckedCB checked_cb = item.callbacks.checked
+                                       ? item.callbacks.checked
+                                       : context.get_checked_cb(item.mid);
+
+            // Set the state of checkable menu item. This action will be called
+            // when the menu item becomes visible as a part of its containing
+            // menu.
+            auto checker = [check_menu_item, action, checked_cb, &context]() {
+                check_menuitem_set_visual_state(check_menu_item, action,
+                                                checked_cb, context);
+            };
+            checkers.push_back(checker);
+        } else {
+            menu_item->signal_activate().connect(
+                [action, &context]() { action(context); });
+        }
+
         menu->append(*menu_item);
     }
 
-    // Just call all the collected menuitem enablers
-    auto on_menu_show = [enablers]() {
+    // Just call all the collected menuitem enablers and checkers
+    auto on_menu_show = [enablers, checkers]() {
         for (auto e : enablers) {
             e();
+        }
+        for (auto c : checkers) {
+            c();
         }
     };
     menu->signal_show().connect(on_menu_show);
