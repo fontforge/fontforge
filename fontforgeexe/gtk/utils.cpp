@@ -70,6 +70,22 @@ Glib::RefPtr<Gdk::Window> gtk_get_topmost_window() {
     return topmost_window;
 }
 
+int label_offset(Gtk::Widget* w) {
+    Gtk::Container* c = dynamic_cast<Gtk::Container*>(w);
+    if (c) {
+        std::vector<Gtk::Widget*> children = c->get_children();
+        if (!children.empty()) {
+            Gtk::Widget* label = children[0];
+            int x, y;
+            if (label->translate_coordinates(*w, 0, 0, x, y)) {
+                return x;
+            }
+        }
+    }
+
+    return 0;
+}
+
 double ui_font_em_size() {
     Cairo::RefPtr<Cairo::ImageSurface> srf =
         Cairo::ImageSurface::create(Cairo::Format::FORMAT_RGB24, 100, 100);
