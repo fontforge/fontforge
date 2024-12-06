@@ -60,6 +60,7 @@ ActivateCB FontViewUiContext::get_activate_cb(int mid) const {
 }
 
 bool on_button_press_event(GdkEventButton* event, Gtk::Menu& pop_up);
+bool on_font_view_event(GdkEvent* event);
 
 FontView::FontView(std::shared_ptr<FVContext> fv_context, int width, int height)
     : context(fv_context), char_grid(fv_context) {
@@ -78,6 +79,8 @@ FontView::FontView(std::shared_ptr<FVContext> fv_context, int width, int height)
     window.signal_realize().connect([this, width, height]() {
         char_grid.resize_drawing_area(width, height);
     });
+
+    window.signal_event().connect(&on_font_view_event);
 
     window.add(char_grid.get_top_widget());
     window.show_all();
@@ -104,6 +107,30 @@ bool on_button_press_event(GdkEventButton* event, Gtk::Menu& pop_up) {
         pop_up.popup(event->button, event->time);
         return true;
     }
+    return false;
+}
+
+static void dismiss_menus(GdkEvent* event) {
+    Gtk::Widget* grabber = Gtk::Widget::get_current_modal_grab();
+    while (grabber) {
+        Gtk::Menu* menu = dynamic_cast<Gtk::Menu*>(grabber);
+        if (menu) {
+            grabber = menu->get_parent_shell();
+            menu->get_parent()->hide();
+        } else {
+            grabber = nullptr;
+        }
+    }
+}
+
+bool on_font_view_event(GdkEvent* event) {
+    // Wayland fails to dismiss open menus when the user moves the window or
+    // changes the focus to another application. This hack dismisses the menus
+    // manually, but it would be nice if someday Wayland does it itself.
+    if (event->type == GDK_WINDOW_STATE || event->type == GDK_CONFIGURE) {
+        dismiss_menus(event);
+    }
+
     return false;
 }
 
