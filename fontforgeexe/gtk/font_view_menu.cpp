@@ -38,9 +38,28 @@ namespace ff::views {
 
 // clang-format off
 std::vector<MenuInfo> popup_menu = {
-    { { N_("New O_utline Window"), "", "<control>u" }, {}, LegacyAction, MID_OpenOutline },
+    { { N_("New O_utline Window"), "", "" }, {}, LegacyAction, MID_OpenOutline },
     kMenuSeparator,
-    { { N_("Cu_t"), "editcut", "<control>t" }, {}, LegacyAction, MID_Cut },
+    { { N_("Cu_t"), "editcut", "" }, {}, LegacyAction, MID_Cut },
+    { { N_("_Copy"), "editcopy", "" }, {}, LegacyAction, MID_Copy },
+    { { N_("C_opy Reference"), "editcopyref", "" }, {}, LegacyAction, MID_CopyRef },
+    { { N_("Copy _Width"), "editcopywidth", "" }, {}, LegacyAction, MID_CopyWidth },
+    { { N_("_Paste"), "editpaste", "" }, {}, LegacyAction, MID_Paste },
+    { { N_("C_lear"), "editclear", "" }, {}, LegacyAction, MID_Clear },
+    { { N_("Copy _Fg To Bg"), "editcopyfg2bg", "" }, {}, LegacyAction, MID_CopyFgToBg },
+    { { N_("U_nlink Reference"), "editunlink", "" }, {}, LegacyAction, MID_UnlinkRef },
+    kMenuSeparator,
+    { { N_("Glyph _Info..."), "elementglyphinfo", "" }, {}, LegacyAction, MID_CharInfo },
+    { { N_("_Transform..."), "elementtransform", "" }, {}, LegacyAction, MID_Transform },
+    { { N_("_Expand Stroke..."), "elementexpandstroke", "" }, {}, LegacyAction, MID_Stroke },
+    { { N_("To _Int"), "elementround", "" }, {}, LegacyAction, MID_Round },
+    { { N_("_Correct Direction"), "elementcorrectdir", "" }, {}, LegacyAction, MID_Correct },
+    kMenuSeparator,
+    { { N_("Auto_Hint"), "hintsautohint", "" }, {}, LegacyAction, MID_AutoHint },
+    kMenuSeparator,
+    { { N_("_Center in Width"), "metricscenter", "" }, {}, LegacyAction, MID_Center },
+    { { N_("Set _Width..."), "metricssetwidth", "" }, {}, LegacyAction, MID_SetWidth },
+    { { N_("Set _Vertical Advance..."), "metricssetvwidth", "" }, {}, LegacyAction, MID_SetVWidth },
 };
 // clang-format on
 
