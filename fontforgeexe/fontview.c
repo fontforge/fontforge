@@ -7268,9 +7268,11 @@ static void FVCreateInnards(FontView *fv,GRect *pos) {
     GDrawSetWindowTypeName(fv->v, "FontView");
 
     fv->gic   = GDrawCreateInputContext(fv->v,gic_root|gic_orlesser);
-    fv->gwgic = GDrawCreateInputContext(fv->gw,gic_root|gic_orlesser);
     GDrawSetGIC(fv->v,fv->gic,0,20);
-    GDrawSetGIC(fv->gw,fv->gic,0,20);
+    if (fv->gw != NULL) {
+	fv->gwgic = GDrawCreateInputContext(fv->gw,gic_root|gic_orlesser);
+	GDrawSetGIC(fv->gw,fv->gic,0,20);
+    }
 
     fv->fontset = calloc(_uni_fontmax,sizeof(GFont *));
     fv->fontset[0] = fv_font.fi;
@@ -7729,15 +7731,6 @@ static void gs_doClose(struct fvcontainer *fvc) {
 
 static void gs_doResize(struct fvcontainer *fvc, FontViewBase *UNUSED(fvb),
 	int width, int height) {
-    struct gsd *gs = (struct gsd *) fvc;
-    /*FontView *fv = (FontView *) fvb;*/
-    GRect size;
-
-    memset(&size,0,sizeof(size));
-    size.width = width; size.height = height;
-    GGadgetSetDesiredSize(GWidgetGetControl(gs->gw,CID_Guts),
-	    NULL,&size);
-    GHVBoxFitWindow(GWidgetGetControl(gs->gw,CID_TopBox));
 }
 
 static struct fvcontainer_funcs glyphset_funcs = {
@@ -7748,26 +7741,6 @@ static struct fvcontainer_funcs glyphset_funcs = {
     gs_doClose,
     gs_doResize
 };
-
-static int GS_OK(GGadget *g, GEvent *e) {
-
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	struct gsd *gs = GDrawGetUserData(GGadgetGetWindow(g));
-	gs->done = true;
-	gs->good = true;
-    }
-return( true );
-}
-
-static int GS_Cancel(GGadget *g, GEvent *e) {
-    struct gsd *gs;
-
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	gs = GDrawGetUserData(GGadgetGetWindow(g));
-	gs->done = true;
-    }
-return( true );
-}
 
 static void gs_sizeSet(FontView *fv, GWindow dw) {
     extern int default_fv_row_count, default_fv_col_count;
@@ -7826,157 +7799,28 @@ static void gs_sizeSet(FontView *fv, GWindow dw) {
     SavePrefs(true);
 }
 
-static int gs_sub_e_h(GWindow pixmap, GEvent *event) {
-    FontView *active_fv;
-    struct gsd *gs;
-
-    if ( event->type==et_destroy )
-return( true );
-
-    active_fv = (FontView *) GDrawGetUserData(pixmap);
-    gs = (struct gsd *) (active_fv->b.container);
-
-    switch ( event->type ) {
-      case et_char:
-	gs_charEvent(&gs->base,event);
-      break;
-      case et_mousedown:
-return(false);
-      break;
-      case et_mouseup: case et_mousemove:
-return(false);
-      case et_resize:
-        gs_sizeSet(gs->fv, pixmap);
-      break;
-      default: break;
-    }
-return( true );
-}
-
-static int gs_e_h(GWindow gw, GEvent *event) {
-    struct gsd *gs = GDrawGetUserData(gw);
-
-    switch ( event->type ) {
-      case et_close:
-	gs->done = true;
-      break;
-      case et_char:
-	FVChar(gs->fv,event);
-      break;
-      default: break;
-    }
-return( true );
-}
-
 char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current) {
     struct gsd gs;
     GRect pos;
-    GWindowAttrs wattrs;
-    GGadgetCreateData gcd[5], boxes[3];
-    GGadgetCreateData *varray[21], *buttonarray[8];
-    GTextInfo label[5];
-    int i,j,k,guts_row,gid,enc,len;
+    int k,gid,enc,len;
     char *ret, *rpt;
     SplineChar *sc;
-    GGadget *drawable;
-    GWindow dw;
-    GGadgetData gd;
-    GRect gsize;
-    int mbh;
+    GWindow dw = NULL;
     int ps;
     FontView *fvorig = (FontView *) sf->fv;
-    GGadget *mb;
     char *start, *pt; int ch;
 
     FontViewInit();
 
-    memset(&wattrs,0,sizeof(wattrs));
-    memset(&gcd,0,sizeof(gcd));
-    memset(&boxes,0,sizeof(boxes));
-    memset(&label,0,sizeof(label));
     memset(&gs,0,sizeof(gs));
 
     gs.base.funcs = &glyphset_funcs;
 
-    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor;
-    wattrs.event_masks = ~(1<<et_charup);
-    wattrs.restrict_input_to_me = true;
-    wattrs.undercursor = 1;
-    wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("Glyph Set by Selection") ;
-    wattrs.is_dlg = true;
-    pos.x = pos.y = 0;
-    pos.width = 100;
-    pos.height = 100;
-    gs.gw = GDrawCreateTopWindow(NULL,&pos,gs_e_h,&gs,&wattrs);
-
-    i = j = 0;
-
-    guts_row = j/2;
-    gcd[i].gd.flags = gg_enabled|gg_visible;
-    gcd[i].gd.cid = CID_Guts;
-    gcd[i].gd.u.drawable_e_h = gs_sub_e_h;
-    gcd[i].creator = GDrawableCreate;
-    varray[j++] = &gcd[i++]; varray[j++] = NULL;
-
-    label[i].text = (unichar_t *) _("Select glyphs in the font view above.\nThe selected glyphs become your glyph class.");
-    label[i].text_is_1byte = true;
-    gcd[i].gd.label = &label[i];
-    gcd[i].gd.flags = gg_enabled|gg_visible;
-    gcd[i].creator = GLabelCreate;
-    varray[j++] = &gcd[i++]; varray[j++] = NULL;
-
-    gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    label[i].text = (unichar_t *) _("_OK");
-    label[i].text_is_1byte = true;
-    label[i].text_in_resource = true;
-    gcd[i].gd.label = &label[i];
-    gcd[i].gd.handle_controlevent = GS_OK;
-    gcd[i++].creator = GButtonCreate;
-
-    gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-    label[i].text = (unichar_t *) _("_Cancel");
-    label[i].text_is_1byte = true;
-    label[i].text_in_resource = true;
-    gcd[i].gd.label = &label[i];
-    gcd[i].gd.handle_controlevent = GS_Cancel;
-    gcd[i++].creator = GButtonCreate;
-
-    buttonarray[0] = GCD_Glue; buttonarray[1] = &gcd[i-2]; buttonarray[2] = GCD_Glue;
-    buttonarray[3] = GCD_Glue; buttonarray[4] = &gcd[i-1]; buttonarray[5] = GCD_Glue;
-    buttonarray[6] = NULL;
-    boxes[2].gd.flags = gg_enabled|gg_visible;
-    boxes[2].gd.u.boxelements = buttonarray;
-    boxes[2].creator = GHBoxCreate;
-    varray[j++] = &boxes[2]; varray[j++] = NULL; varray[j++] = NULL;
-
-    boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
-    boxes[0].gd.flags = gg_enabled|gg_visible;
-    boxes[0].gd.u.boxelements = varray;
-    boxes[0].gd.cid = CID_TopBox;
-    boxes[0].creator = GHVGroupCreate;
-
-    GGadgetsCreate(gs.gw,boxes);
-
-    GHVBoxSetExpandableRow(boxes[0].ret,guts_row);
-    GHVBoxSetExpandableCol(boxes[2].ret,gb_expandgluesame);
-
-    drawable = GWidgetGetControl(gs.gw,CID_Guts);
-    dw = GDrawableGetWindow(drawable);
-
-    memset(&gd,0,sizeof(gd));
-    gd.flags = gg_visible | gg_enabled;
-    helplist[0].invoke = FVMenuContextualHelp;
-    gd.u.menu2 = mblist;
-    mb = GMenu2BarCreate( dw, &gd, NULL);
-    GGadgetGetSize(mb,&gsize);
-    mbh = gsize.height;
-
     ps = sf->display_size; sf->display_size = -24;
     gs.fv = __FontViewCreate(sf);
 
-    gs.fv->mbh = mbh;
-    pos.x = 0; pos.y = mbh;
+    gs.fv->mbh = 0;
+    pos.x = 0; pos.y = 0;
     pos.width = 16*gs.fv->cbw+1;
     pos.height = 4*gs.fv->cbh+1;
 
@@ -7986,7 +7830,6 @@ char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current) {
     fv_context->tooltip_message_cb = FVTooltipMessage;
     gs.fv->gtk_window = create_select_glyphs_dlg(&fv_context, pos.width, pos.height);
     
-    GDrawSetUserData(dw,gs.fv);
     FVCopyInnards(gs.fv,&pos,fvorig,dw,def_layer,(struct fvcontainer *) &gs);
     pos.height = 4*gs.fv->cbh+1;	/* We don't know the real fv->cbh until after creating the innards. The size of the last window is probably wrong, we'll fix later */
     memset(gs.fv->b.selected,0,gs.fv->b.map->enccount);
@@ -8011,18 +7854,7 @@ char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current) {
     }
     sf->display_size = ps;
 
-    gsize.x = gsize.y = 0;
-    gsize.width = pos.width;
-    gsize.height = pos.y+pos.height;
-    GGadgetSetDesiredSize(drawable,NULL,&gsize);
-
-    GHVBoxFitWindow(boxes[0].ret);
-    GDrawSetVisible(gs.gw,true);
-
     bool result_ok = run_select_glyphs_dlg(&(gs.fv->gtk_window));
-
-//     while ( !gs.done )
-// 	GDrawProcessOneEvent(NULL);
 
     ret = rpt = NULL;
     if ( result_ok ) {
@@ -8053,9 +7885,6 @@ char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current) {
     }
     GDrawDestroyWindow(gs.fv->v);
     FontViewFree(&gs.fv->b);
-    GDrawSetUserData(gs.gw,NULL);
-    GDrawSetUserData(dw,NULL);
-    GDrawDestroyWindow(gs.gw);
 return( ret );
 }
 
