@@ -198,14 +198,14 @@ bool on_query_tooltip(std::shared_ptr<FVContext> fv_context, int x, int y,
         return false;
     }
 
-    char* tooltip_msg = fv_context->tooltip_message_cb(fv_context->fv, x, y);
-    if (!tooltip_msg) {
+    std::string tooltip_msg =
+        StringWrapper(fv_context->tooltip_message_cb)(fv_context->fv, x, y);
+    if (tooltip_msg.empty()) {
         return false;
     }
 
     Glib::ustring text = Glib::Markup::escape_text(tooltip_msg);
     text = Glib::ustring::compose("<small>%1</small>", text);
-    free(tooltip_msg);
     tooltip->set_markup(text);
 
     return true;
