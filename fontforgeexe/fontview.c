@@ -6783,6 +6783,7 @@ void FVDelay(FontView *fv,void (*func)(FontView *)) {
     GDrawRequestTimer(fv->v,100,0,(void *) func);
 }
 
+/* Update fv->rowoff from GTK scrollbar */
 static void FVScrollToPos(FontView* fv, int32_t position) {
     int newpos = position;
 
@@ -6790,10 +6791,8 @@ static void FVScrollToPos(FontView* fv, int32_t position) {
         newpos = fv->rowltot-fv->rowcnt;
     if ( newpos<0 ) newpos =0;
     if ( newpos!=fv->rowoff ) {
-        int diff = newpos-fv->rowoff;
         fv->rowoff = newpos;
-        FVScrollBarSetPos(fv,fv->rowoff);
-        GDrawScroll(fv->v,NULL,0,diff*fv->cbh);
+        GDrawRequestExpose(fv->v, NULL, false);
     }
 }
 

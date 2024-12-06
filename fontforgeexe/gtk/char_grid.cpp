@@ -52,6 +52,13 @@ CharGrid::CharGrid(std::shared_ptr<FVContext> context) {
         return on_drawing_area_key(event, drawing_area);
     });
 
+    // Redirect mouse scrolling events from the drawing area to the scrollbar
+    auto on_drawing_area_scroll = [this](GdkEventScroll* event) {
+        scroller.event((GdkEvent*)event);
+        return true;
+    };
+    drawing_area.signal_scroll_event().connect(on_drawing_area_scroll);
+
     drawing_area.set_events(Gdk::ALL_EVENTS_MASK);
     drawing_area.set_can_focus(true);
 
@@ -76,8 +83,11 @@ void CharGrid::set_scroller_position(int32_t position) {
 void CharGrid::set_scroller_bounds(int32_t sb_min, int32_t sb_max,
                                    int32_t sb_pagesize) {
     Glib::RefPtr<Gtk::Adjustment> adjustment = scroller.get_adjustment();
-    adjustment->configure(adjustment->get_value(), sb_min, sb_max, 1,
-                          sb_pagesize - 1, sb_pagesize);
+    // VScrollbar seems to ignore step and page increments and behaves
+    // incoherently to the extent that a single click on a stepper button yields
+    // a different delta each time. The values of 3, 3 are somehow okeyish.
+    adjustment->configure(adjustment->get_value(), sb_min, sb_max, 3, 3,
+                          sb_pagesize);
 }
 
 /////////////////  EVENTS  ////////////////////
