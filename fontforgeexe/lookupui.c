@@ -5751,39 +5751,33 @@ return(NULL);
 return( glyphlist );
 }
 
-static int KF_OK(GGadget *g, GEvent *e) {
+static void KF_process_OK(struct kf_dlg *kf, KFDlgData *kf_ui_data) {
 
-    if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	struct kf_dlg *kf = GDrawGetUserData(GGadgetGetWindow(g));
 	int touch, separation, minkern, err, onlyCloser, autokern;
 	real good_enough=0;
 	int isclass, autobuild=0;
 	struct kf_results *results = kf->results;
 
 	err = false;
-	touch = GGadgetIsChecked(GWidgetGetControl(kf->gw,CID_Touched));
-	separation = GetInt8(kf->gw,CID_Separation,_("Separation"),&err);
-	minkern = GetInt8(kf->gw,CID_MinKern,_("Min Kern"),&err);
-	onlyCloser = GGadgetIsChecked(GWidgetGetControl(kf->gw,CID_OnlyCloser));
-	autokern = GGadgetIsChecked(GWidgetGetControl(kf->gw,CID_Autokern));
-	if ( err )
-return( true );
+	touch = kf_ui_data->touching;
+	separation = kf_ui_data->default_separation;
+	minkern = kf_ui_data->min_kern;
+	onlyCloser = kf_ui_data->kern_closer;
+	autokern = kf_ui_data->autokern_new;
 
-	isclass = GGadgetIsChecked(GWidgetGetControl(kf->gw,CID_KClasses));
+	isclass = !kf_ui_data->use_individual_pairs;
 	if ( isclass ) {
-	    autobuild = GGadgetIsChecked(GWidgetGetControl(kf->gw,CID_KCBuild));
-	    good_enough = GetReal8(kf->gw,CID_ClassDistance,_("Intra Class Distance"),&err);
-	    if ( err )
-return( true );
+	    autobuild = kf_ui_data->guess_kerning_classes;
+	    good_enough = kf_ui_data->intra_class_dist;
 	}
 	if ( autobuild || autokern ) {
 	    results->firstglyphs = SelectedGlyphs(kf->first_fv);
 	    if ( results->firstglyphs == NULL )
-return( true );
+		return;
 	    results->secondglyphs = SelectedGlyphs(kf->second_fv);
 	    if ( results->secondglyphs == NULL ) {
 		free(results->firstglyphs); results->firstglyphs=NULL;
-return( true );
+		return;
 	    }
 	}
 	kf->sub->separation = separation;
@@ -5799,8 +5793,6 @@ return( true );
 	results->autobuild = autobuild;
 	results->autokern = autokern;
 	kf->done = true;
-    }
-return( true );
 }
 
 static int KF_Cancel(GGadget *g, GEvent *e) {
@@ -6081,7 +6073,7 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
     label[i].text_is_1byte = true;
     label[i].text_in_resource = true;
     gcd[i].gd.label = &label[i];
-    gcd[i].gd.handle_controlevent = KF_OK;
+    gcd[i].gd.handle_controlevent = NULL;
     gcd[i++].creator = GButtonCreate;
 
     gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
@@ -6130,6 +6122,9 @@ static int kern_format_dlg( SplineFont *sf, int def_layer,
     kf_data.autokern_new = !sub->dontautokern;
 
     bool result_ok = run_kerning_format_dlg(&cg_dlg, &kf_data); 
+    if (result_ok) {
+	KF_process_OK(&kf, &kf_data);
+    }
 
     GDrawDestroyWindow(kf.second_fv->v);
     FontViewFree(&kf.second_fv->b);
