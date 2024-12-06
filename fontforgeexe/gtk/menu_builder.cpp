@@ -35,10 +35,19 @@ namespace ff::views {
 Gtk::Menu* build_menu(const std::vector<MenuInfo>& info,
                       const FVContext& context) {
     Gtk::Menu* menu = new Gtk::Menu();
+    Glib::RefPtr<Gtk::IconTheme> theme = Gtk::IconTheme::get_default();
 
     for (const auto& item : info) {
-        Gtk::MenuItem* menu_item =
-            Gtk::make_managed<Gtk::MenuItem>(item.label.text, true);
+        Gtk::MenuItem* menu_item = nullptr;
+        if (item.label.decoration.image_file().empty()) {
+            menu_item = Gtk::make_managed<Gtk::MenuItem>(item.label.text, true);
+        } else {
+            Glib::RefPtr<Gdk::Pixbuf> pixbuf =
+                load_icon(item.label.decoration.image_file(), 16);
+            Gtk::Image* img = new Gtk::Image(pixbuf);
+            menu_item = Gtk::make_managed<Gtk::ImageMenuItem>(
+                *img, item.label.text, true);
+        }
         menu->append(*menu_item);
     }
 
