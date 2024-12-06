@@ -86,7 +86,7 @@ int label_offset(Gtk::Widget* w) {
     return 0;
 }
 
-double ui_font_em_size() {
+static Cairo::TextExtents ui_font_extents(const std::string& sample_text) {
     Cairo::RefPtr<Cairo::ImageSurface> srf =
         Cairo::ImageSurface::create(Cairo::Format::FORMAT_RGB24, 100, 100);
     Cairo::RefPtr<Cairo::Context> cairo_context = Cairo::Context::create(srf);
@@ -102,8 +102,17 @@ double ui_font_em_size() {
 
     Cairo::TextExtents extents;
     cairo_context->get_text_extents("m", extents);
+    return extents;
+}
 
+double ui_font_em_size() {
+    Cairo::TextExtents extents = ui_font_extents("m");
     return extents.x_advance;
+}
+
+double ui_font_eX_size() {
+    Cairo::TextExtents extents = ui_font_extents("X");
+    return extents.height;
 }
 
 Glib::RefPtr<Gdk::Pixbuf> load_icon(const Glib::ustring& icon_name, int size) {
