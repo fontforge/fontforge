@@ -13,6 +13,9 @@
 #define MID_PrevDef 2013
 #define MID_ShowHMetrics 2016
 #define MID_ShowVMetrics 2017
+#define MID_Ligatures 2020
+#define MID_KernPairs 2021
+#define MID_AnchorPairs 2022
 #define MID_FitToBbox 2023
 #define MID_DisplaySubs 2024
 #define MID_32x8 2025

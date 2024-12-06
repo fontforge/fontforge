@@ -156,6 +156,12 @@ std::vector<MenuInfo> layers_menu = {
     MenuInfo::CustomBlock(view_menu_layers),
 };
 
+std::vector<MenuInfo> combinations_menu = {
+    { { N_("_Kern Pairs"), NoDecoration, "" }, {}, LegacyCallbacks, MID_KernPairs },
+    { { N_("_Anchored Pairs"), NoDecoration, "" }, {}, SubMenuCallbacks, MID_AnchorPairs },
+    { { N_("_Ligatures"), NoDecoration, "" }, {}, LegacyCallbacks, MID_Ligatures },
+};
+
 std::vector<MenuInfo> view_menu = {
     { { N_("_Next Glyph"), "viewnext", "<control>bracketright" }, {}, LegacyCallbacks, MID_Next },
     { { N_("_Prev Glyph"), "viewprev", "<control>bracketleft" }, {}, LegacyCallbacks, MID_Prev },
@@ -167,7 +173,7 @@ std::vector<MenuInfo> view_menu = {
     kMenuSeparator,
     { { N_("_Show ATT"), NoDecoration, "" }, {}, LegacyCallbacks, MID_Show_ATT },
     { { N_("Display S_ubstitutions..."), Checkable, "" }, {}, LegacyCallbacks, MID_DisplaySubs },
-    { { N_("Com_binations"), NoDecoration, "" }, {}, SubMenuCallbacks, 0 },
+    { { N_("Com_binations"), NoDecoration, "" }, combinations_menu, SubMenuCallbacks, 0 },
     kMenuSeparator,
     { { N_("Label Gl_yph By"), NoDecoration, "" }, {}, SubMenuCallbacks, 0 },
     kMenuSeparator,

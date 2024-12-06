@@ -1508,9 +1508,6 @@ static void FVMenuCondense(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNU
     CondenseExtendDlg(fv,NULL);
 }
 
-#define MID_Ligatures	2020
-#define MID_KernPairs	2021
-#define MID_AnchorPairs	2022
 #define MID_Layers	2029
 #define MID_FontInfo	2200
 #define MID_RmOverlap	2204
@@ -3113,13 +3110,11 @@ static void FVMenuGotoChar(FontView *fv,int UNUSED(mid)) {
     }
 }
 
-static void FVMenuLigatures(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuLigatures(FontView *fv, int UNUSED(mid)) {
     SFShowLigatures(fv->b.sf,NULL);
 }
 
-static void FVMenuKernPairs(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuKernPairs(FontView *fv, int UNUSED(mid)) {
     SFKernClassTempDecompose(fv->b.sf,false);
     SFShowKernPairs(fv->b.sf,NULL,NULL,fv->b.active_layer);
     SFKernCleanup(fv->b.sf,false);
@@ -4751,15 +4746,7 @@ static void aplistbuild(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     _aplistbuild(mi,fv->b.sf,FVMenuAnchorPairs);
 }
 
-static GMenuItem2 cblist[] = {
-    { { (unichar_t *) N_("_Kern Pairs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'K' }, H_("Kern Pairs|No Shortcut"), NULL, NULL, FVMenuKernPairs, MID_KernPairs },
-    { { (unichar_t *) N_("_Anchored Pairs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'K' }, H_("Anchored Pairs|No Shortcut"), dummyall, aplistbuild, NULL, MID_AnchorPairs },
-    { { (unichar_t *) N_("_Ligatures"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'L' }, H_("Ligatures|No Shortcut"), NULL, NULL, FVMenuLigatures, MID_Ligatures },
-    GMENUITEM2_EMPTY
-};
-
-static void cblistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static bool cblistcheck(FontView *fv, int mid) {
     SplineFont *sf = fv->b.sf;
     int i, anyligs=0, anykerns=0, gid;
     PST *pst;
@@ -4780,19 +4767,19 @@ static void cblistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	}
     }
 
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
-	switch ( mi->mid ) {
+    bool disabled = false;
+	switch ( mid ) {
 	  case MID_Ligatures:
-	    mi->ti.disabled = !anyligs;
+	    disabled = !anyligs;
 	  break;
 	  case MID_KernPairs:
-	    mi->ti.disabled = !anykerns;
+	    disabled = !anykerns;
 	  break;
 	  case MID_AnchorPairs:
-	    mi->ti.disabled = sf->anchor==NULL;
+	    disabled = sf->anchor==NULL;
 	  break;
 	}
-    }
+    return disabled;
 }
 
 
@@ -5599,6 +5586,11 @@ FVMenuAction fvpopupactions[] = {
     { MID_BitmapMag, vwlistdisabled, NULL, FVMenuMagnify },
     { MID_GotoChar, vwlistdisabled, NULL, FVMenuGotoChar },
     { MID_Show_ATT, vwlistdisabled, NULL, FVMenuShowAtt },
+
+    /* View->Combinations menu */
+    { MID_KernPairs, cblistcheck, NULL, FVMenuKernPairs },
+    { MID_AnchorPairs, cblistcheck, NULL, NULL },
+    { MID_Ligatures, cblistcheck, NULL, FVMenuLigatures },
 
     MENUACTION_LAST
 };
