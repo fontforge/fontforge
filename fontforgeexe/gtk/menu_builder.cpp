@@ -103,6 +103,34 @@ void check_menuitem_set_visual_state(Gtk::CheckMenuItem* check_menu_item,
     check_menu_item->set_data(kSignalActivateConn, conn);
 }
 
+Gtk::MenuItem* menu_item_factory(const MenuInfo& item, const UiContext& context,
+                                 int icon_height) {
+    Gtk::MenuItem* menu_item = nullptr;
+    if (item.is_separator()) {
+        menu_item = new Gtk::SeparatorMenuItem();
+    } else if (item.label.decoration.empty()) {
+        menu_item = new Gtk::MenuItem(item.label.text, true);
+    } else if (item.label.decoration.has_group()) {
+        RadioGroup group = item.label.decoration.group();
+        Gtk::RadioButtonGroup& grouper = get_grouper(group);
+        menu_item = new Gtk::RadioMenuItem(grouper, item.label.text, true);
+    } else if (item.label.decoration.checkable()) {
+        menu_item = new Gtk::CheckMenuItem(item.label.text, true);
+    } else {
+        Glib::RefPtr<Gdk::Pixbuf> pixbuf =
+            load_icon(item.label.decoration.image_file(), icon_height);
+        Gtk::Image* img = Gtk::make_managed<Gtk::Image>(pixbuf);
+        menu_item = new Gtk::ImageMenuItem(*img, item.label.text, true);
+    }
+
+    if (!item.sub_menu.empty()) {
+        Gtk::Menu* sub_menu = Gtk::manage(build_menu(item.sub_menu, context));
+        menu_item->set_submenu(*sub_menu);
+    }
+
+    return menu_item;
+}
+
 Gtk::Menu* build_menu(const std::vector<MenuInfo>& info,
                       const UiContext& context) {
     Gtk::Menu* menu = new Gtk::Menu();
@@ -120,33 +148,8 @@ Gtk::Menu* build_menu(const std::vector<MenuInfo>& info,
     std::set<RadioGroup> radio_info;
 
     for (const auto& item : info) {
-        Gtk::MenuItem* menu_item = nullptr;
-        if (item.is_separator()) {
-            menu_item = Gtk::make_managed<Gtk::SeparatorMenuItem>();
-        } else if (item.label.decoration.empty()) {
-            menu_item = Gtk::make_managed<Gtk::MenuItem>(item.label.text, true);
-        } else if (item.label.decoration.has_group()) {
-            RadioGroup group = item.label.decoration.group();
-            Gtk::RadioButtonGroup& grouper = get_grouper(group);
-            menu_item = Gtk::make_managed<Gtk::RadioMenuItem>(
-                grouper, item.label.text, true);
-            radio_info.insert(group);
-        } else if (item.label.decoration.checkable()) {
-            menu_item =
-                Gtk::make_managed<Gtk::CheckMenuItem>(item.label.text, true);
-        } else {
-            Glib::RefPtr<Gdk::Pixbuf> pixbuf =
-                load_icon(item.label.decoration.image_file(), icon_height);
-            Gtk::Image* img = Gtk::make_managed<Gtk::Image>(pixbuf);
-            menu_item = Gtk::make_managed<Gtk::ImageMenuItem>(
-                *img, item.label.text, true);
-        }
-
-        if (!item.sub_menu.empty()) {
-            Gtk::Menu* sub_menu =
-                Gtk::manage(build_menu(item.sub_menu, context));
-            menu_item->set_submenu(*sub_menu);
-        }
+        Gtk::MenuItem* menu_item =
+            Gtk::manage(menu_item_factory(item, context, icon_height));
 
         ActivateCB action = item.callbacks.handler
                                 ? item.callbacks.handler
@@ -181,6 +184,10 @@ Gtk::Menu* build_menu(const std::vector<MenuInfo>& info,
         } else {
             menu_item->signal_activate().connect(
                 [action, &context]() { action(context); });
+        }
+
+        if (item.label.decoration.has_group()) {
+            radio_info.insert(item.label.decoration.group());
         }
 
         menu->append(*menu_item);
