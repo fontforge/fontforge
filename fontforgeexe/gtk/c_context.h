@@ -38,6 +38,9 @@ typedef struct fontview_context {
 
     // Set character grid to the desired position according to the scrollbar
     void (*scroll_fontview_to_position_cb)(FontView* fv, int32_t position);
+
+    // Tooltip message to display for particular character
+    char* (*tooltip_message_cb)(FontView* fv, int x, int y);
 } FVContext;
 
 #ifdef __cplusplus

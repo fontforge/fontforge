@@ -6480,7 +6480,7 @@ return;
     }
 }
 
-void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
+char* PopupMsg(SplineChar *sc,struct remap *remap, int localenc,
 	int actualuni) {
 /* This is for the popup which appears when you hover mouse over a character on main window */
     int upos=-1;
@@ -6543,6 +6543,12 @@ void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
         free(msg_old);
     }
 
+    return msg;
+}
+
+void SCPreparePopup(GWindow gw,SplineChar *sc,struct remap *remap, int localenc,
+	int actualuni) {
+    char *msg = PopupMsg(sc, remap, localenc, actualuni);
     GGadgetPreparePopup8( gw, msg );
     free(msg);
 }
@@ -6724,6 +6730,22 @@ return;
 	SCPreparePopup(fv->v,sc,fv->b.map->remap,pos,sc==&dummy?dummy.unicodeenc: UniFromEnc(pos,fv->b.map->enc));
     if ( event->type==et_mouseup )
 	SVAttachFV(fv,2);
+}
+
+static char* FVTooltipMessage(FontView *fv, int x, int y) {
+    int pos = (y/fv->cbh + fv->rowoff)*fv->colcnt + x/fv->cbw;
+    int gid;
+    SplineChar *sc, dummy;
+
+    if (( pos<0 ) || ( pos>=fv->b.map->enccount )) {
+        return NULL;
+    }
+
+    sc = (gid=fv->b.map->map[pos])!=-1 ? fv->b.sf->glyphs[gid] : NULL;
+    if ( sc==NULL )
+	sc = SCBuildDummy(&dummy,fv->b.sf,fv->b.map,pos);
+
+    return PopupMsg(sc,fv->b.map->remap,pos,sc==&dummy?dummy.unicodeenc: UniFromEnc(pos,fv->b.map->enc));
 }
 
 static void FVTimer(FontView *fv, GEvent *event) {
@@ -7325,6 +7347,7 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
 
     fv_context->fv = fv;
     fv_context->scroll_fontview_to_position_cb = FVScrollToPos;
+    fv_context->tooltip_message_cb = FVTooltipMessage;
     fv->gtk_window = create_font_view(&fv_context, pos.width, pos.height);
 
     FontViewSetTitle(fv);
