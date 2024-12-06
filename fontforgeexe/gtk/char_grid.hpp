@@ -42,11 +42,17 @@ class CharGrid {
     void set_scroller_position(int32_t position);
     void set_scroller_bounds(int32_t sb_min, int32_t sb_max,
                              int32_t sb_pagesize);
+    void set_character_info(const std::string& info) {
+        character_info.set_text(info);
+    }
 
  private:
     Gtk::Grid char_grid_box;
+    Gtk::Label character_info;
     Gtk::DrawingArea drawing_area;
     Gtk::VScrollbar scroller;
+
+    void make_character_info_label();
 };
 
 }  // namespace ff::views

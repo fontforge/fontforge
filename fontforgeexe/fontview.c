@@ -6219,10 +6219,7 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
     GDrawSetDither(NULL, true);
 }
 
-void FVDrawInfo(FontView *fv,GWindow pixmap, GEvent *event) {
-    GRect old, r;
-    Color bg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(pixmap));
-    Color fg = fvglyphinfocol;
+GString* FVGetInfo(FontView *fv) {
     SplineChar *sc, dummy;
     SplineFont *sf = fv->b.sf;
     EncMap *map = fv->b.map;
@@ -6230,23 +6227,12 @@ void FVDrawInfo(FontView *fv,GWindow pixmap, GEvent *event) {
     GString *output = g_string_new( "" );
     char *uniname = NULL;
 
-    if ( event->u.expose.rect.y+event->u.expose.rect.height<=fv->mbh ) {
-        g_string_free( output, TRUE ); output = NULL;
-	return;
-    }
-
-    GDrawSetFont(pixmap,fv->fontset[0]);
-    GDrawPushClip(pixmap,&event->u.expose.rect,&old);
-
-    r.x = 0; r.width = fv->width; r.y = fv->mbh; r.height = fv->infoh;
-    GDrawFillRect(pixmap,&r,bg);
     if ( fv->end_pos>=map->enccount || fv->pressed_pos>=map->enccount ||
 	    fv->end_pos<0 || fv->pressed_pos<0 )
 	fv->end_pos = fv->pressed_pos = -1;	/* Can happen after reencoding */
     if ( fv->end_pos == -1 ) {
         g_string_free( output, TRUE ); output = NULL;
-	GDrawPopClip(pixmap,&old);
-	return;
+	return NULL;
     }
 
     localenc = fv->end_pos;
@@ -6302,6 +6288,32 @@ void FVDrawInfo(FontView *fv,GWindow pixmap, GEvent *event) {
 	free( uniname );
     }
 
+   return output;
+}
+
+void FVDrawInfo(FontView *fv,GWindow pixmap, GEvent *event) {
+    GRect old, r;
+    Color bg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(pixmap));
+    Color fg = fvglyphinfocol;
+    GString *output;
+
+    if ( event->u.expose.rect.y+event->u.expose.rect.height<=fv->mbh ) {
+        return;
+    }
+
+    GDrawSetFont(pixmap,fv->fontset[0]);
+    GDrawPushClip(pixmap,&event->u.expose.rect,&old);
+
+    r.x = 0; r.width = fv->width; r.y = fv->mbh; r.height = fv->infoh;
+    GDrawFillRect(pixmap,&r,bg);
+
+    output = FVGetInfo(fv);
+    if (output == NULL) {
+        g_string_free( output, TRUE ); output = NULL;
+        GDrawPopClip(pixmap,&old);
+        return;
+    }
+
     GDrawDrawText8( pixmap, 10, fv->mbh+fv->lab_as, output->str, -1, fg );
     g_string_free( output, TRUE ); output = NULL;
     GDrawPopClip( pixmap, &old );
@@ -6309,13 +6321,9 @@ void FVDrawInfo(FontView *fv,GWindow pixmap, GEvent *event) {
 }
 
 static void FVShowInfo(FontView *fv) {
-    GRect r;
-
-    if ( fv->v==NULL )			/* Can happen in scripts */
-return;
-
-    r.x = 0; r.width = fv->width; r.y = fv->mbh; r.height = fv->infoh;
-    GDrawRequestExpose(fv->gw,&r,false);
+    GString* info = FVGetInfo(fv);
+    fv_set_character_info(fv->gtk_window, info->str);
+    g_string_free(info, TRUE); info = NULL;
 }
 
 void FVChar(FontView *fv, GEvent *event) {
@@ -6952,7 +6960,6 @@ static int fv_e_h(GWindow gw, GEvent *event) {
       break;
       case et_expose:
 	GDrawSetLineWidth(gw,0);
-	FVDrawInfo(fv,gw,event);
       break;
       case et_char:
 	if ( fv->b.container!=NULL )

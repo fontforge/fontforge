@@ -56,6 +56,10 @@ class FontView {
         char_grid.set_scroller_bounds(sb_min, sb_max, sb_pagesize);
     }
 
+    void set_character_info(const std::string& info) {
+        char_grid.set_character_info(info);
+    }
+
  private:
     std::shared_ptr<FVContext> fv_context;
 

@@ -32,8 +32,6 @@ namespace ff::views {
 
 FontView::FontView(std::shared_ptr<FVContext> context, int width, int height)
     : fv_context(context), char_grid(context) {
-    static auto app = Gtk::Application::create("org.fontforge");
-
     window.add(char_grid.get_top_widget());
 
     window.show_all();

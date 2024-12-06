@@ -62,8 +62,11 @@ CharGrid::CharGrid(std::shared_ptr<FVContext> context) {
     drawing_area.set_events(Gdk::ALL_EVENTS_MASK);
     drawing_area.set_can_focus(true);
 
-    char_grid_box.attach(drawing_area, 0, 0);
-    char_grid_box.attach(scroller, 1, 0);
+    make_character_info_label();
+
+    char_grid_box.attach(character_info, 0, 0, 2, 1);
+    char_grid_box.attach(drawing_area, 0, 1);
+    char_grid_box.attach(scroller, 1, 1);
 }
 
 Gtk::Widget& CharGrid::get_top_widget() { return char_grid_box; }
@@ -88,6 +91,28 @@ void CharGrid::set_scroller_bounds(int32_t sb_min, int32_t sb_max,
     // a different delta each time. The values of 3, 3 are somehow okeyish.
     adjustment->configure(adjustment->get_value(), sb_min, sb_max, 3, 3,
                           sb_pagesize);
+}
+
+// Create info label at the top of the Font View, which shows name and
+// properties of the most recently selected character
+void CharGrid::make_character_info_label() {
+    character_info.set_name("CharInfo");
+    character_info.property_margin().set_value(2);
+    character_info.set_margin_left(10);
+    character_info.set_hexpand(true);
+    character_info.set_xalign(0);  // Flush left
+
+    // Long info string will not allow us to shrink the main window, so we
+    // let it be truncated dynamically with ellipsis.
+    character_info.set_ellipsize(Pango::ELLIPSIZE_END);
+
+    // We want the info to stand out, but can't hardcode a color
+    // due to the use of color themes (light, dark or even something custom)
+    // We use link color to make the label sufficiently distinctive.
+    Glib::RefPtr<Gtk::StyleContext> context =
+        character_info.get_style_context();
+    Gdk::RGBA link_color = context->get_color(Gtk::STATE_FLAG_LINK);
+    character_info.override_color(link_color);
 }
 
 /////////////////  EVENTS  ////////////////////

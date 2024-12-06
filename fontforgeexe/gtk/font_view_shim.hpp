@@ -50,6 +50,8 @@ void fv_set_scroller_position(void* fv_opaque, int32_t position);
 void fv_set_scroller_bounds(void* fv_opaque, int32_t sb_min, int32_t sb_max,
                             int32_t sb_pagesize);
 
+void fv_set_character_info(void* fv_opaque, char* info);
+
 #ifdef __cplusplus
 }
 #endif
