@@ -1602,21 +1602,6 @@ static void FVMenuCondense(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNU
 #define MID_ConvertByCMap	2806
 #define MID_FlattenByCMap	2807
 #define MID_ChangeSupplement	2808
-#define MID_Reencode		2830
-#define MID_ForceReencode	2831
-#define MID_AddUnencoded	2832
-#define MID_RemoveUnused	2833
-#define MID_DetachGlyphs	2834
-#define MID_DetachAndRemoveGlyphs	2835
-#define MID_LoadEncoding	2836
-#define MID_MakeFromFont	2837
-#define MID_RemoveEncoding	2838
-#define MID_DisplayByGroups	2839
-#define MID_Compact	2840
-#define MID_SaveNamelist	2841
-#define MID_RenameGlyphs	2842
-#define MID_NameGlyphs		2843
-#define MID_HideNoGlyphSlots	2844
 #define MID_CreateMM	2900
 #define MID_MMInfo	2901
 #define MID_MMValid	2902
@@ -3999,15 +3984,11 @@ return;
     FontViewReformatOne(&fv->b);
 }
 
-static void FVMenuDisplayByGroups(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
+static void FVMenuDisplayByGroups(FontView *fv, int UNUSED(mid)) {
     DisplayGroups(fv);
 }
 
-static void FVMenuDefineGroups(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-
+static void FVMenuDefineGroups(FontView *fv, int UNUSED(mid)) {
     DefineGroups(fv);
 }
 
@@ -4772,11 +4753,6 @@ static bool gllistcheck(FontView *fv, int mid) {
     return checked;
 }
 
-static GMenuItem2 emptymenu[] = {
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0},
-    GMENUITEM2_EMPTY
-};
-
 static void FVEncodingMenuBuild(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
@@ -4787,8 +4763,7 @@ static void FVEncodingMenuBuild(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED
     mi->sub = GetEncodingMenu(FVMenuReencode,fv->b.map->enc);
 }
 
-static void FVMenuAddUnencoded(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuAddUnencoded(FontView *fv, int UNUSED(mid)) {
     char *ret, *end;
     int cnt;
 
@@ -4805,13 +4780,11 @@ return;
     FVAddUnencoded((FontViewBase *) fv, cnt);
 }
 
-static void FVMenuRemoveUnused(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuRemoveUnused(FontView *fv, int UNUSED(mid)) {
     FVRemoveUnused((FontViewBase *) fv);
 }
 
-static void FVMenuCompact(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuCompact(FontView *fv, int UNUSED(mid)) {
     SplineChar *sc;
 
     sc = FVFindACharInDisplay(fv);
@@ -4823,13 +4796,11 @@ static void FVMenuCompact(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUS
     }
 }
 
-static void FVMenuDetachGlyphs(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuDetachGlyphs(FontView *fv, int UNUSED(mid)) {
     FVDetachGlyphs((FontViewBase *) fv);
 }
 
-static void FVMenuDetachAndRemoveGlyphs(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuDetachAndRemoveGlyphs(FontView *fv, int UNUSED(mid)) {
     char *buts[3];
 
     buts[0] = _("_Remove");
@@ -4852,7 +4823,7 @@ static void FVForceEncodingMenuBuild(GWindow gw, struct gmenuitem *mi, GEvent *U
     mi->sub = GetEncodingMenu(FVMenuForceEncode,fv->b.map->enc);
 }
 
-static void FVMenuAddEncodingName(GWindow UNUSED(gw), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+static void FVMenuAddEncodingName(FontView *fv, int UNUSED(mid)) {
     char *ret;
     Encoding *enc;
 
@@ -4866,21 +4837,19 @@ return;
     free(ret);
 }
 
-static void FVMenuLoadEncoding(GWindow UNUSED(gw), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+static void FVMenuLoadEncoding(FontView *fv, int UNUSED(mid)) {
     LoadEncodingFile();
 }
 
-static void FVMenuMakeFromFont(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuMakeFromFont(FontView *fv, int UNUSED(mid)) {
     (void) MakeEncoding(fv->b.sf,fv->b.map);
 }
 
-static void FVMenuRemoveEncoding(GWindow UNUSED(gw), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+static void FVMenuRemoveEncoding(FontView *fv, int UNUSED(mid)) {
     RemoveEncoding();
 }
 
-static void FVMenuMakeNamelist(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuMakeNamelist(FontView *fv, int UNUSED(mid)) {
     char buffer[1025];
     char *filename, *temp;
     FILE *file;
@@ -4903,7 +4872,7 @@ return;
     fclose(file);
 }
 
-static void FVMenuLoadNamelist(GWindow UNUSED(gw), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
+static void FVMenuLoadNamelist(FontView *fv, int UNUSED(mid)) {
     /* Read in a name list and copy it into the prefs dir so that we'll find */
     /*  it in the future */
     /* Be prepared to update what we've already got if names match */
@@ -4970,8 +4939,7 @@ return;
     fclose(new);
 }
 
-static void FVMenuRenameByNamelist(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuRenameByNamelist(FontView *fv, int UNUSED(mid)) {
     char **namelists = AllNamelistNames();
     int i;
     int ret;
@@ -4994,8 +4962,7 @@ return;
     GDrawRequestExpose(fv->v,NULL,false);
 }
 
-static void FVMenuNameGlyphs(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static void FVMenuNameGlyphs(FontView *fv, int UNUSED(mid)) {
     /* Read a file containing a list of names, and add an unencoded glyph for */
     /*  each name */
     char buffer[33];
@@ -5054,75 +5021,47 @@ return;
     FontViewReformatAll(fv->b.sf);
 }
 
-static GMenuItem2 enlist[] = {
-    { { (unichar_t *) N_("_Reencode"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'E' }, H_("Reencode|No Shortcut"), emptymenu, FVEncodingMenuBuild, NULL, MID_Reencode },
-    { { (unichar_t *) N_("_Compact (hide unused glyphs)"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'C' }, H_("Compact (hide unused glyphs)|No Shortcut"), NULL, NULL, FVMenuCompact, MID_Compact },
-    { { (unichar_t *) N_("_Force Encoding"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Force Encoding|No Shortcut"), emptymenu, FVForceEncodingMenuBuild, NULL, MID_ForceReencode },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("_Add Encoding Slots..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Add Encoding Slots...|No Shortcut"), NULL, NULL, FVMenuAddUnencoded, MID_AddUnencoded },
-    { { (unichar_t *) N_("Remove _Unused Slots"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Remove Unused Slots|No Shortcut"), NULL, NULL, FVMenuRemoveUnused, MID_RemoveUnused },
-    { { (unichar_t *) N_("_Detach Glyphs"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Detach Glyphs|No Shortcut"), NULL, NULL, FVMenuDetachGlyphs, MID_DetachGlyphs },
-    { { (unichar_t *) N_("Detach & Remo_ve Glyphs..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Detach & Remove Glyphs...|No Shortcut"), NULL, NULL, FVMenuDetachAndRemoveGlyphs, MID_DetachAndRemoveGlyphs },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("Add E_ncoding Name..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Add Encoding Name...|No Shortcut"), NULL, NULL, FVMenuAddEncodingName, 0 },
-    { { (unichar_t *) N_("_Load Encoding..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Load Encoding...|No Shortcut"), NULL, NULL, FVMenuLoadEncoding, MID_LoadEncoding },
-    { { (unichar_t *) N_("Ma_ke From Font..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Make From Font...|No Shortcut"), NULL, NULL, FVMenuMakeFromFont, MID_MakeFromFont },
-    { { (unichar_t *) N_("Remove En_coding..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Remove Encoding...|No Shortcut"), NULL, NULL, FVMenuRemoveEncoding, MID_RemoveEncoding },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("Display By _Groups..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Display By Groups...|No Shortcut"), NULL, NULL, FVMenuDisplayByGroups, MID_DisplayByGroups },
-    { { (unichar_t *) N_("D_efine Groups..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Define Groups...|No Shortcut"), NULL, NULL, FVMenuDefineGroups, 0 },
-    { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
-    { { (unichar_t *) N_("_Save Namelist of Font..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Save Namelist of Font...|No Shortcut"), NULL, NULL, FVMenuMakeNamelist, MID_SaveNamelist },
-    { { (unichar_t *) N_("L_oad Namelist..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Load Namelist...|No Shortcut"), NULL, NULL, FVMenuLoadNamelist, 0 },
-    { { (unichar_t *) N_("Rename Gl_yphs..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Rename Glyphs...|No Shortcut"), NULL, NULL, FVMenuRenameByNamelist, MID_RenameGlyphs },
-    { { (unichar_t *) N_("Cre_ate Named Glyphs..."), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("Create Named Glyphs...|No Shortcut"), NULL, NULL, FVMenuNameGlyphs, MID_NameGlyphs },
-    GMENUITEM2_EMPTY
-};
+static bool compact_encoding_checked(FontView *fv, int mid) {
+    bool checked = fv->b.normal!=NULL;
+    return checked;
+}
 
-static void enlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
+static bool enlistcheck(FontView *fv, int mid) {
     int i, gid;
     SplineFont *sf = fv->b.sf;
     EncMap *map = fv->b.map;
     int anyglyphs = false;
+    bool disabled = false;
 
     for ( i=map->enccount-1; i>=0 ; --i )
 	if ( fv->b.selected[i] && (gid=map->map[i])!=-1 )
 	    anyglyphs = true;
 
-    for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
-	switch ( mi->mid ) {
-	  case MID_Compact:
-	    mi->ti.checked = fv->b.normal!=NULL;
-	  break;
-	case MID_HideNoGlyphSlots:
-	    break;
+	switch ( mid ) {
 	  case MID_Reencode: case MID_ForceReencode:
-	    mi->ti.disabled = fv->b.cidmaster!=NULL;
+	    disabled = fv->b.cidmaster!=NULL;
 	  break;
 	  case MID_DetachGlyphs: case MID_DetachAndRemoveGlyphs:
-	    mi->ti.disabled = !anyglyphs;
+	    disabled = !anyglyphs;
 	  break;
 	  case MID_RemoveUnused:
 	    gid = map->enccount>0 ? map->map[map->enccount-1] : -1;
-	    mi->ti.disabled = gid!=-1 && SCWorthOutputting(sf->glyphs[gid]);
+	    disabled = gid!=-1 && SCWorthOutputting(sf->glyphs[gid]);
 	  break;
 	  case MID_MakeFromFont:
-	    mi->ti.disabled = fv->b.cidmaster!=NULL || map->enccount>1024 || map->enc!=&custom;
-	  break;
-	  case MID_RemoveEncoding:
+	    disabled = fv->b.cidmaster!=NULL || map->enccount>1024 || map->enc!=&custom;
 	  break;
 	  case MID_DisplayByGroups:
-	    mi->ti.disabled = fv->b.cidmaster!=NULL || group_root==NULL;
+	    disabled = fv->b.cidmaster!=NULL || group_root==NULL;
 	  break;
 	  case MID_NameGlyphs:
-	    mi->ti.disabled = fv->b.normal!=NULL || fv->b.cidmaster!=NULL;
+	    disabled = fv->b.normal!=NULL || fv->b.cidmaster!=NULL;
 	  break;
 	  case MID_RenameGlyphs: case MID_SaveNamelist:
-	    mi->ti.disabled = fv->b.cidmaster!=NULL;
+	    disabled = fv->b.cidmaster!=NULL;
 	  break;
 	}
-    }
+    return disabled;
 }
 
 void change_display_layer(FontView *fv, int ly) {
@@ -5537,6 +5476,25 @@ FVMenuAction fvpopupactions[] = {
     { MID_VStemHist, htlistcheck, NULL, FVMenuHistograms },
     { MID_BlueValuesHist, htlistcheck, NULL, FVMenuHistograms },
 
+    /* Encoding menu */
+    { MID_Reencode, enlistcheck, NULL, NULL },
+    { MID_Compact, NULL, compact_encoding_checked, FVMenuCompact },
+    { MID_ForceReencode, enlistcheck, NULL, NULL },
+    { MID_AddUnencoded, NULL, NULL, FVMenuAddUnencoded },
+    { MID_RemoveUnused, enlistcheck, NULL, FVMenuRemoveUnused },
+    { MID_DetachGlyphs, enlistcheck, NULL, FVMenuDetachGlyphs },
+    { MID_DetachAndRemoveGlyphs, enlistcheck, NULL, FVMenuDetachAndRemoveGlyphs },
+    { MID_AddEncoding, NULL, NULL, FVMenuAddEncodingName },
+    { MID_LoadEncoding, NULL, NULL, FVMenuLoadEncoding },
+    { MID_MakeFromFont, enlistcheck, NULL, FVMenuMakeFromFont },
+    { MID_RemoveEncoding, NULL, NULL, FVMenuRemoveEncoding },
+    { MID_DisplayByGroups, enlistcheck, NULL, FVMenuDisplayByGroups },
+    { MID_DefineGroups, NULL, NULL, FVMenuDefineGroups },
+    { MID_SaveNamelist, enlistcheck, NULL, FVMenuMakeNamelist },
+    { MID_LoadNameList, NULL, NULL, FVMenuLoadNamelist },
+    { MID_RenameGlyphs, enlistcheck, NULL, FVMenuRenameByNamelist },
+    { MID_NameGlyphs, enlistcheck, NULL, FVMenuNameGlyphs },
+
     /* View menu */
     { MID_24, vwlistdisabled, vwlistchecked, FVMenuSize },
     { MID_36, vwlistdisabled, vwlistchecked, FVMenuSize },
@@ -5580,7 +5538,6 @@ static GMenuItem2 mblist[] = {
 #ifndef _NO_PYTHON
     { { (unichar_t *) N_("_Tools"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 1, 1, 0, 0, 0, 0, 1, 1, 0, 'l' }, H_("Tools|No Shortcut"), NULL, fvpy_tllistcheck, NULL, 0 },
 #endif
-    { { (unichar_t *) N_("E_ncoding"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'V' }, H_("Encoding|No Shortcut"), enlist, enlistcheck, NULL, 0 },
     { { (unichar_t *) N_("_Metrics"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'M' }, H_("Metrics|No Shortcut"), mtlist, mtlistcheck, NULL, 0 },
     { { (unichar_t *) N_("_CID"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 0, 1, 1, 0, 'C' }, H_("CID|No Shortcut"), cdlist, cdlistcheck, NULL, 0 },
 /* GT: Here (and following) MM means "MultiMaster" */

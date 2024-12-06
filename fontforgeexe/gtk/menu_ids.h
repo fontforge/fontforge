@@ -62,4 +62,22 @@
 #define MID_SetWidth 2602
 #define MID_SetVWidth 2605
 
+#define MID_Reencode 2830
+#define MID_ForceReencode 2831
+#define MID_AddUnencoded 2832
+#define MID_RemoveUnused 2833
+#define MID_DetachGlyphs 2834
+#define MID_DetachAndRemoveGlyphs 2835
+#define MID_LoadEncoding 2836
+#define MID_MakeFromFont 2837
+#define MID_RemoveEncoding 2838
+#define MID_DisplayByGroups 2839
+#define MID_Compact 2840
+#define MID_SaveNamelist 2841
+#define MID_RenameGlyphs 2842
+#define MID_NameGlyphs 2843
+#define MID_AddEncoding 2850
+#define MID_DefineGroups 2851
+#define MID_LoadNameList 2852
+
 #define MIDSERIES_LabelGlyph 10000

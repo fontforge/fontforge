@@ -186,6 +186,38 @@ std::vector<MenuInfo> hints_menu = {
     { { N_("Histograms"), NoDecoration, "" }, histograms_menu, SubMenuCallbacks, 0 },
 };
 
+std::vector<MenuInfo> reencode_menu = {
+    { { N_("TODO REENCODE"), NoDecoration, "" }, {}, SubMenuCallbacks, 0 },
+};
+
+std::vector<MenuInfo> force_encoding_menu = {
+    { { N_("TODO FORCE ENCODING"), NoDecoration, "" }, {}, SubMenuCallbacks, 0 },
+};
+
+std::vector<MenuInfo> encoding_menu = {
+    { { N_("_Reencode"), NoDecoration, "" }, reencode_menu, LegacyCallbacks, MID_Reencode },
+    { { N_("_Compact (hide unused glyphs)"), Checkable, "" }, {}, LegacyCallbacks, MID_Compact },
+    { { N_("_Force Encoding"), NoDecoration, "" }, force_encoding_menu, LegacyCallbacks, MID_ForceReencode },
+    kMenuSeparator,
+    { { N_("_Add Encoding Slots..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_AddUnencoded },
+    { { N_("Remove _Unused Slots"), NoDecoration, "" }, {}, LegacyCallbacks, MID_RemoveUnused },
+    { { N_("_Detach Glyphs"), NoDecoration, "" }, {}, LegacyCallbacks, MID_DetachGlyphs },
+    { { N_("Detach & Remo_ve Glyphs..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_DetachAndRemoveGlyphs },
+    kMenuSeparator,
+    { { N_("Add E_ncoding Name..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_AddEncoding },
+    { { N_("_Load Encoding..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_LoadEncoding },
+    { { N_("Ma_ke From Font..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_MakeFromFont },
+    { { N_("Remove En_coding..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_RemoveEncoding },
+    kMenuSeparator,
+    { { N_("Display By _Groups..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_DisplayByGroups },
+    { { N_("D_efine Groups..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_DefineGroups },
+    kMenuSeparator,
+    { { N_("_Save Namelist of Font..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_SaveNamelist },
+    { { N_("L_oad Namelist..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_LoadNameList },
+    { { N_("Rename Gl_yphs..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_RenameGlyphs },
+    { { N_("Cre_ate Named Glyphs..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_NameGlyphs },
+};
+
 std::vector<MenuInfo> layers_menu = {
     MenuInfo::CustomBlock(view_menu_layers),
 };
@@ -250,7 +282,7 @@ std::vector<MenuInfo> top_menu = {
     { { N_("_Tools") }, {}, SubMenuCallbacks, -1 },
 #endif
     { { N_("H_ints") }, hints_menu, SubMenuCallbacks, -1 },
-    { { N_("E_ncoding") }, {}, SubMenuCallbacks, -1 },
+    { { N_("E_ncoding") }, encoding_menu, SubMenuCallbacks, -1 },
     { { N_("_View") }, view_menu, SubMenuCallbacks, -1 },
     { { N_("_Metrics") }, {}, SubMenuCallbacks, -1 },
     { { N_("_CID") }, {}, SubMenuCallbacks, -1 },
