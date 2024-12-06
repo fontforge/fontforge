@@ -3311,11 +3311,11 @@ return;
 	} else if ( fv->b.container!=NULL && fv->b.container->funcs->doResize!=NULL ) {
 	    (fv->b.container->funcs->doResize)(fv->b.container,&fv->b,
 		    ccnt*fv->cbw+1,
-		    rcnt*fv->cbh+1+fv->mbh+fv->infoh);
+		    rcnt*fv->cbh+1+fv->mbh);
 	} else {
 	    GDrawResize(fv->gw,
 		    ccnt*fv->cbw+1,
-		    rcnt*fv->cbh+1+fv->mbh+fv->infoh);
+		    rcnt*fv->cbh+1+fv->mbh);
 	}
     }
 }
@@ -3592,7 +3592,7 @@ static void FVMenuWSize(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     }
     GDrawResize(fv->gw,
 	    h*fv->cbw+1,
-	    v*fv->cbh+1+fv->mbh+fv->infoh);
+	    v*fv->cbh+1+fv->mbh);
     fv->b.sf->desired_col_cnt = default_fv_col_count = h;
     fv->b.sf->desired_row_cnt = default_fv_row_count = v;
 
@@ -7350,9 +7350,8 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     fv_fontpx = -rq.point_size; // positive means points, negative means pixels
     if ( fv_fontpx < 0 )
 	fv_fontpx = GDrawPointsToPixels(NULL, -fv_fontpx);
-    fv->infoh = 1+fv_fontpx;
 
-    pos.x = 0; pos.y = fv->mbh+fv->infoh;
+    pos.x = 0; pos.y = fv->mbh;
     FVCreateInnards(fv,&pos);
 
     if ( !hide ) {
@@ -7630,12 +7629,11 @@ void MiscWinInit(void) {
 /* ***************************** Embedded FontViews ************************* */
 /* ************************************************************************** */
 
-static void FVCopyInnards(FontView *fv,GRect *pos,int infoh,
+static void FVCopyInnards(FontView *fv,GRect *pos,
 	FontView *fvorig,GWindow dw, int def_layer, struct fvcontainer *kf) {
 
     fv->notactive = true;
     fv->gw = dw;
-    fv->infoh = infoh;
     fv->b.container = kf;
     fv->rowcnt = 4; fv->colcnt = 16;
     fv->b.active_layer = def_layer;
@@ -7648,7 +7646,6 @@ void KFFontViewInits(struct kf_dlg *kf,GGadget *drawable) {
     GGadgetData gd;
     GRect pos, gsize;
     GWindow dw = GDrawableGetWindow(drawable);
-    int infoh;
     int ps;
     FontView *fvorig = (FontView *) kf->sf->fv;
 
@@ -7669,20 +7666,19 @@ void KFFontViewInits(struct kf_dlg *kf,GGadget *drawable) {
     kf->first_fv = __FontViewCreate(kf->sf); kf->first_fv->b.container = (struct fvcontainer *) kf;
     kf->second_fv = __FontViewCreate(kf->sf); kf->second_fv->b.container = (struct fvcontainer *) kf;
 
-    kf->infoh = infoh = 1+fv_fontpx;
     kf->first_fv->mbh = kf->mbh;
-    pos.x = 0; pos.y = kf->mbh+infoh+kf->fh+4;
+    pos.x = 0; pos.y = kf->mbh+kf->fh+4;
     pos.width = 16*kf->first_fv->cbw+1;
     pos.height = 4*kf->first_fv->cbh+1;
 
     GDrawSetUserData(dw,kf->first_fv);
-    FVCopyInnards(kf->first_fv,&pos,infoh,fvorig,dw,kf->def_layer,(struct fvcontainer *) kf);
+    FVCopyInnards(kf->first_fv,&pos,fvorig,dw,kf->def_layer,(struct fvcontainer *) kf);
     pos.height = 4*kf->first_fv->cbh+1;		/* We don't know the real fv->cbh until after creating the innards. The size of the last window is probably wrong, we'll fix later */
     kf->second_fv->mbh = kf->mbh;
     kf->label2_y = pos.y + pos.height+2;
     pos.y = kf->label2_y + kf->fh + 2;
     GDrawSetUserData(dw,kf->second_fv);
-    FVCopyInnards(kf->second_fv,&pos,infoh,fvorig,dw,kf->def_layer,(struct fvcontainer *) kf);
+    FVCopyInnards(kf->second_fv,&pos,fvorig,dw,kf->def_layer,(struct fvcontainer *) kf);
 
     kf->sf->display_size = ps;
 
@@ -7875,7 +7871,7 @@ char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current) {
     GWindow dw;
     GGadgetData gd;
     GRect gsize;
-    int infoh, mbh;
+    int mbh;
     int ps;
     FontView *fvorig = (FontView *) sf->fv;
     GGadget *mb;
@@ -7968,14 +7964,13 @@ char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current) {
     ps = sf->display_size; sf->display_size = -24;
     gs.fv = __FontViewCreate(sf);
 
-    infoh = 1+fv_fontpx;
     gs.fv->mbh = mbh;
-    pos.x = 0; pos.y = mbh+infoh;
+    pos.x = 0; pos.y = mbh;
     pos.width = 16*gs.fv->cbw+1;
     pos.height = 4*gs.fv->cbh+1;
 
     GDrawSetUserData(dw,gs.fv);
-    FVCopyInnards(gs.fv,&pos,infoh,fvorig,dw,def_layer,(struct fvcontainer *) &gs);
+    FVCopyInnards(gs.fv,&pos,fvorig,dw,def_layer,(struct fvcontainer *) &gs);
     pos.height = 4*gs.fv->cbh+1;	/* We don't know the real fv->cbh until after creating the innards. The size of the last window is probably wrong, we'll fix later */
     memset(gs.fv->b.selected,0,gs.fv->b.map->enccount);
     if ( current!=NULL && strcmp(current,_("{Everything Else}"))!=0 ) {

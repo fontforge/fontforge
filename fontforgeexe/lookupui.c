@@ -5573,7 +5573,7 @@ return;
     nested = 0;
 
     memset(&size,0,sizeof(size));
-    size.height = fv->mbh + kf->infoh + kf->fh+4 + 2*(height-fv->mbh) + kf->fh + 2;
+    size.height = fv->mbh + kf->fh+4 + 2*(height-fv->mbh) + kf->fh + 2;
     size.width = width;
     GGadgetSetDesiredSize(kf->guts,NULL, &size);
     GHVBoxFitWindow(kf->topbox);
@@ -5622,10 +5622,10 @@ static void kf_sizeSet(struct kf_dlg *kf,GWindow dw) {
 
     GDrawGetSize(dw,&size);
     width = size.width;
-    height = size.height - kf->mbh - kf->first_fv->infoh - 2*(kf->fh+4);
+    height = size.height - kf->mbh - 2*(kf->fh+4);
     height /= 2;
 
-    y = kf->mbh + kf->first_fv->infoh + (kf->fh + 4);
+    y = kf->mbh + (kf->fh + 4);
     kf_FVSetSize(kf,kf->first_fv,width,height,y);
 
     kf->label2_y = y + height+2;
@@ -5647,7 +5647,7 @@ return( true );
     switch ( event->type ) {
       case et_expose:
 	GDrawSetFont(pixmap, kf->first_fv->notactive? kf->plain : kf->bold );
-	GDrawDrawText8(pixmap,10,kf->mbh+kf->first_fv->infoh+kf->as,
+	GDrawDrawText8(pixmap,10,kf->mbh+kf->as,
 		_("Select glyphs for the first part of the kern pair"),-1,fg);
 	GDrawSetFont(pixmap, kf->second_fv->notactive? kf->plain : kf->bold );
 	GDrawDrawText8(pixmap,10,kf->label2_y+kf->as,
