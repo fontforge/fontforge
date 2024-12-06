@@ -28,6 +28,7 @@
 #include "font_view.hpp"
 
 #include "application.hpp"
+#include "menu_builder.hpp"
 #include "utils.hpp"
 
 namespace ff::views {
@@ -55,10 +56,8 @@ FontView::FontView(std::shared_ptr<FVContext> fv_context, int width, int height)
     window.add(char_grid.get_top_widget());
     window.show_all();
 
-    Gtk::MenuItem* menu1 = Gtk::make_managed<Gtk::MenuItem>("Menu 1");
-    Gtk::MenuItem* menu2 = Gtk::make_managed<Gtk::MenuItem>("Menu 2");
-    pop_up.append(*menu1);
-    pop_up.append(*menu2);
+    pop_up = std::move(*build_menu(popup_menu, *fv_context));
+
     char_grid.get_top_widget().signal_button_press_event().connect(
         [this](GdkEventButton* event) {
             return on_button_press_event(event, pop_up);

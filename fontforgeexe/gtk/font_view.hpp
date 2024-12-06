@@ -32,6 +32,7 @@
 #include "c_context.h"
 #include "char_grid.hpp"
 #include "i_char_grid_containter.hpp"
+#include "menu_builder.hpp"
 #include "ui_context.hpp"
 
 namespace ff::views {
@@ -68,5 +69,7 @@ class FontView : public ICharGridContainter {
     CharGrid char_grid;
     Gtk::Menu pop_up;
 };
+
+extern std::vector<MenuInfo> popup_menu;
 
 }  // namespace ff::views

@@ -12,11 +12,15 @@ add_library(ffgtk OBJECT
   dialog.cpp
   font_view.hpp
   font_view.cpp
+  font_view_menu.cpp
   font_view_shim.hpp
   font_view_shim.cpp
   i_char_grid_containter.hpp
   kerning_format.hpp
   kerning_format.cpp
+  menu_builder.hpp
+  menu_builder.cpp
+  menu_ids.h
   select_glyphs.hpp
   select_glyphs.cpp
   ui_context.hpp
