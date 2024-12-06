@@ -38,15 +38,14 @@ namespace ff::dlg {
 
 class KerningFormat : public Dialog, public views::ICharGridContainter {
  public:
-    KerningFormat(std::shared_ptr<FVContext> context, int width, int height);
+    KerningFormat(std::shared_ptr<FVContext> context1,
+                  std::shared_ptr<FVContext> context2, int width, int height);
 
     views::CharGrid& get_char_grid(bool second = false) override {
         return second ? char_grid2 : char_grid1;
     }
 
  private:
-    std::shared_ptr<FVContext> fv_context;
-
     Gtk::RadioButton individual_pairs;
 
     Gtk::RadioButton matrix_of_classes;

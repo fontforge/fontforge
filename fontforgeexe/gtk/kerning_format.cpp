@@ -34,9 +34,10 @@
 
 namespace ff::dlg {
 
-KerningFormat::KerningFormat(std::shared_ptr<FVContext> context, int width,
+KerningFormat::KerningFormat(std::shared_ptr<FVContext> context1,
+                             std::shared_ptr<FVContext> context2, int width,
                              int height)
-    : Dialog(), fv_context(context), char_grid1(context), char_grid2(context) {
+    : Dialog(), char_grid1(context1), char_grid2(context2) {
     dialog.set_title(_("Kerning format"));
 
     individual_pairs = Gtk::RadioButton(_("Use individual kerning pairs"));

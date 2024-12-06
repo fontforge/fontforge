@@ -61,7 +61,8 @@ void* create_select_glyphs_dlg(FVContext** p_fv_context, int width, int height);
 
 bool run_select_glyphs_dlg(void** sg_opaque);
 
-void* create_kerning_format_dlg(FVContext** p_fv_context, int width,
+void* create_kerning_format_dlg(FVContext** p_fv_context1,
+                                FVContext** p_fv_context2, int width,
                                 int height);
 
 #ifdef __cplusplus
