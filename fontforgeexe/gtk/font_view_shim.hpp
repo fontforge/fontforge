@@ -12,25 +12,24 @@
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
+#pragma once
 
-#include "utils.hpp"
+typedef struct _GtkWidget GtkWidget;
 
-#include <string>
-#include <vector>
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-Gtk::Widget* gtk_find_child(Gtk::Widget* w, const std::string& name) {
-    if (w->get_name() == name) {
-        return w;
-    }
+// Create GTK Font View window.
+// Return value:
+//    pointer to Gtk::Window object, opaque to C code
+void* create_font_view(int width, int height);
 
-    Gtk::Widget* res = nullptr;
-    Gtk::Container* c = dynamic_cast<Gtk::Container*>(w);
+// Set Gtk::Window title and taskbar title [unsupported]
+void gtk_set_title(void* window, char* window_title, char* taskbar_title);
 
-    if (c) {
-        std::vector<Gtk::Widget*> children = c->get_children();
-        for (size_t i = 0; res == nullptr && i < children.size(); ++i) {
-            res = gtk_find_child(children[i], name);
-        }
-    }
-    return res;
+GtkWidget* get_drawing_widget_c(void* window);
+
+#ifdef __cplusplus
 }
+#endif

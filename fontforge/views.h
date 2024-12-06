@@ -436,6 +436,7 @@ enum fv_metrics { fvm_baseline=1, fvm_origin=2, fvm_advanceat=4, fvm_advanceto=8
 typedef struct fontview {
     FontViewBase b;
     BDFFont *show, *filled;
+    void* gtk_window; /* pointer to opaque Gtk::Window object */
     GWindow gw, v;
     GFont **fontset;
     GGadget *vsb, *mb;

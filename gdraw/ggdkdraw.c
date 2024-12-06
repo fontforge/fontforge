@@ -525,7 +525,11 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     attribs.wmclass_class = GResourceProgramName;
     attribs_mask |= GDK_WA_WMCLASS;
 
-    nw->w = gdk_window_new(gw->w, &attribs, attribs_mask);
+    if (wattrs->mask & wam_gtk_wrapper) {
+      nw->w = gtk_widget_get_window(wattrs->gtk_widget);
+    } else {
+      nw->w = gdk_window_new(gw->w, &attribs, attribs_mask);
+    }
     if (nw->w == NULL) {
         Log(LOGDEBUG, "GGDKDraw: Failed to create window!");
         free(nw->window_title);
