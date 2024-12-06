@@ -61,6 +61,24 @@ std::vector<MenuInfo> popup_menu = {
     { { N_("Set _Width..."), "metricssetwidth", "" }, {}, LegacyAction, MID_SetWidth },
     { { N_("Set _Vertical Advance..."), "metricssetvwidth", "" }, {}, LegacyAction, MID_SetVWidth },
 };
+
+std::vector<MenuInfo> top_menu = {
+    { { N_("_File") }, {}, NoAction, -1 },
+    { { N_("_Edit") }, {}, NoAction, -1 },
+    { { N_("E_lement") }, {}, NoAction, -1 },
+#ifndef _NO_PYTHON
+    { { N_("_Tools") }, {}, NoAction, -1 },
+#endif
+    { { N_("H_ints") }, {}, NoAction, -1 },
+    { { N_("E_ncoding") }, {}, NoAction, -1 },
+    { { N_("_View") }, {}, NoAction, -1 },
+    { { N_("_Metrics") }, {}, NoAction, -1 },
+    { { N_("_CID") }, {}, NoAction, -1 },
+/* GT: Here (and following) MM means "MultiMaster" */
+    { { N_("MM") }, {}, NoAction, -1 },
+    { { N_("_Window") }, {}, NoAction, -1 },
+    { { N_("_Help") }, {}, NoAction, -1 },
+};
 // clang-format on
 
 }  // namespace ff::views

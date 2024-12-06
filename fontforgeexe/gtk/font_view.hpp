@@ -77,6 +77,7 @@ class FontView : public ICharGridContainter {
     Gtk::Menu pop_up;
 };
 
+extern std::vector<MenuInfo> top_menu;
 extern std::vector<MenuInfo> popup_menu;
 
 }  // namespace ff::views
