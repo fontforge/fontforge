@@ -277,7 +277,7 @@ void SFRestoreNearTop(SplineFont *sf) {
 	int enc = fv->b.map->backmap[fv->sc_near_top->orig_pos];
 	if ( enc!=-1 ) {
 	    fv->rowoff = enc/fv->colcnt;
-	    GScrollBarSetPos(fv->vsb,fv->rowoff);
+	    FVScrollBarSetPos(fv,fv->rowoff);
 	    /* Don't ask for an expose event yet. We'll get one soon enough */
 	}
     }

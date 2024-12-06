@@ -439,7 +439,7 @@ typedef struct fontview {
     void* gtk_window; /* pointer to opaque Gtk::Window object */
     GWindow gw, v;
     GFont **fontset;
-    GGadget *vsb, *mb;
+    GGadget *mb;
     GTimer *pressed;
     GIC *gic;
     GIC *gwgic;
@@ -800,6 +800,8 @@ extern PST *AddSubs(PST *last,uint32_t tag,char *name,uint16_t flags,
 
 
 extern void FVSetUIToMatch(FontView *destfv,FontView *srcfv);
+extern void FVScrollBarSetPos(FontView *fv, int32_t pos);
+extern void FVScrollBarSetBounds(FontView *fv, int32_t sb_min, int32_t sb_max, int32_t sb_pagesize);
 extern void FVScrollToChar(FontView *fv,int i);
 extern void FVRegenChar(FontView *fv,SplineChar *sc);
 extern FontView *FontNew(void);

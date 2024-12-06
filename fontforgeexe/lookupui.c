@@ -5588,8 +5588,7 @@ static struct fvcontainer_funcs kernformat_funcs = {
     kf_doResize
 };
 
-static void kf_FVSetSize(struct kf_dlg *kf,FontView *fv,int width, int height,
-	int y, int sbsize) {
+static void kf_FVSetSize(struct kf_dlg *kf,FontView *fv,int width, int height, int y) {
     int cc, rc, topchar;
     GRect subsize;
 
@@ -5603,38 +5602,35 @@ static void kf_FVSetSize(struct kf_dlg *kf,FontView *fv,int width, int height,
     subsize.height = rc*fv->cbh + 1;
     GDrawResize(fv->v,subsize.width,subsize.height);
     GDrawMove(fv->v,0,y);
-    GGadgetMove(fv->vsb,subsize.width,y);
-    GGadgetResize(fv->vsb,sbsize,subsize.height);
 
     fv->colcnt = cc; fv->rowcnt = rc;
     fv->width = subsize.width; fv->height = subsize.height;
     fv->rowltot = (fv->b.map->enccount+fv->colcnt-1)/fv->colcnt;
-    GScrollBarSetBounds(fv->vsb,0,fv->rowltot,fv->rowcnt);
+    FVScrollBarSetBounds(fv,0,fv->rowltot,fv->rowcnt);
     fv->rowoff = topchar/fv->colcnt;
     if ( fv->rowoff>=fv->rowltot-fv->rowcnt )
         fv->rowoff = fv->rowltot-fv->rowcnt;
     if ( fv->rowoff<0 ) fv->rowoff =0;
-    GScrollBarSetPos(fv->vsb,fv->rowoff);
+    FVScrollBarSetPos(fv,fv->rowoff);
 
     GDrawRequestExpose(fv->v,NULL,true);
 }
 
 static void kf_sizeSet(struct kf_dlg *kf,GWindow dw) {
-    GRect size, gsize;
+    GRect size;
     int width, height, y;
 
     GDrawGetSize(dw,&size);
-    GGadgetGetSize(kf->first_fv->vsb,&gsize);
-    width = size.width - gsize.width;
+    width = size.width;
     height = size.height - kf->mbh - kf->first_fv->infoh - 2*(kf->fh+4);
     height /= 2;
 
     y = kf->mbh + kf->first_fv->infoh + (kf->fh + 4);
-    kf_FVSetSize(kf,kf->first_fv,width,height,y,gsize.width);
+    kf_FVSetSize(kf,kf->first_fv,width,height,y);
 
     kf->label2_y = y + height+2;
     y = kf->label2_y + kf->fh + 2;
-    kf_FVSetSize(kf,kf->second_fv,width,height,y,gsize.width);
+    kf_FVSetSize(kf,kf->second_fv,width,height,y);
 }
 
 static int kf_sub_e_h(GWindow pixmap, GEvent *event) {
@@ -5646,11 +5642,6 @@ return( true );
 
     active_fv = (FontView *) GDrawGetUserData(pixmap);
     kf = (struct kf_dlg *) (active_fv->b.container);
-
-    if (( event->type==et_mouseup || event->type==et_mousedown ) &&
-	    (event->u.mouse.button>=4 && event->u.mouse.button<=7) ) {
-return( GGadgetDispatchEvent(active_fv->vsb,event));
-    }
 
     Color fg = GDrawGetDefaultForeground(NULL);
     switch ( event->type ) {
