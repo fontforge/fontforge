@@ -68,7 +68,12 @@ class FontView : public ICharGridContainter {
     FontViewUiContext context;
 
     Gtk::Window window;
+
+    Gtk::Grid font_view_grid;
+    Gtk::MenuBar top_bar;
+    Gtk::HSeparator h_sep;
     CharGrid char_grid;
+
     Gtk::Menu pop_up;
 };
 

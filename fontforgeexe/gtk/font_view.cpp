@@ -82,7 +82,14 @@ FontView::FontView(std::shared_ptr<FVContext> fv_context, int width, int height)
 
     window.signal_event().connect(&on_font_view_event);
 
-    window.add(char_grid.get_top_widget());
+    Gtk::MenuItem* item_file = Gtk::make_managed<Gtk::MenuItem>("_File", true);
+    top_bar.append(*item_file);
+
+    font_view_grid.attach(top_bar, 0, 0);
+    font_view_grid.attach(h_sep, 0, 1);
+    font_view_grid.attach(char_grid.get_top_widget(), 0, 2);
+
+    window.add(font_view_grid);
     window.show_all();
 
     pop_up = std::move(*build_menu(popup_menu, context));
