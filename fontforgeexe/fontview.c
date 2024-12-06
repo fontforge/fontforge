@@ -7645,7 +7645,7 @@ static void FVCopyInnards(FontView *fv,GRect *pos,
 }
 
 void* KFFontViewInits(struct kf_dlg *kf) {
-    GRect pos, gsize;
+    GRect pos;
     int ps;
     FontView *fvorig = (FontView *) kf->sf->fv;
     void* cg_dlg;
@@ -7660,7 +7660,7 @@ void* KFFontViewInits(struct kf_dlg *kf) {
 
     pos.x = 0; pos.y = 0;
     pos.width = 16*kf->first_fv->cbw+1;
-    pos.height = 4*kf->first_fv->cbh+1;
+    pos.height = 8*kf->first_fv->cbh+1;
 
     FVContext *fv_context1 = calloc(1, sizeof(FVContext));
     fv_context1->fv = kf->first_fv;
@@ -7677,16 +7677,15 @@ void* KFFontViewInits(struct kf_dlg *kf) {
     kf->second_fv->cg_widget = get_char_grid_widget(cg_dlg, 1);
 
     FVCopyInnards(kf->first_fv,&pos,fvorig,NULL,kf->def_layer,(struct fvcontainer *) kf);
-    pos.height = 4*kf->first_fv->cbh+1;		/* We don't know the real fv->cbh until after creating the innards. The size of the last window is probably wrong, we'll fix later */
+    pos.height = 8*kf->first_fv->cbh+1;		/* We don't know the real fv->cbh until after creating the innards. The size of the last window is probably wrong, we'll fix later */
     kf->second_fv->mbh = 0;
-    pos.y = 0;
     FVCopyInnards(kf->second_fv,&pos,fvorig,NULL,kf->def_layer,(struct fvcontainer *) kf);
 
-    kf->sf->display_size = ps;
+    // The specified height is implicitly divided equally between the two character grids.
+    // Each grid would be approximately 4 rows high.
+    cg_resize_window(kf->first_fv->cg_widget, pos.width, pos.height);
 
-    gsize.x = gsize.y = 0;
-    gsize.width = pos.width;
-    gsize.height = pos.y+pos.height;
+    kf->sf->display_size = ps;
 
     return cg_dlg;
 }
