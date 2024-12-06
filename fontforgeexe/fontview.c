@@ -6783,6 +6783,20 @@ void FVDelay(FontView *fv,void (*func)(FontView *)) {
     GDrawRequestTimer(fv->v,100,0,(void *) func);
 }
 
+static void FVScrollToPos(FontView* fv, int32_t position) {
+    int newpos = position;
+
+    if ( newpos>fv->rowltot-fv->rowcnt )
+        newpos = fv->rowltot-fv->rowcnt;
+    if ( newpos<0 ) newpos =0;
+    if ( newpos!=fv->rowoff ) {
+        int diff = newpos-fv->rowoff;
+        fv->rowoff = newpos;
+        FVScrollBarSetPos(fv,fv->rowoff);
+        GDrawScroll(fv->v,NULL,0,diff*fv->cbh);
+    }
+}
+
 static int v_e_h(GWindow gw, GEvent *event) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
 
@@ -7347,6 +7361,7 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     fv->gw = gw = GDrawCreateTopWindow(NULL,&pos,fv_e_h,fv,&wattrs);
 
     fv_context->fv = fv;
+    fv_context->scroll_fontview_to_position_cb = FVScrollToPos;
     fv->gtk_window = create_font_view(&fv_context, pos.width, pos.height);
 
     FontViewSetTitle(fv);

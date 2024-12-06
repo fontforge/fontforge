@@ -527,6 +527,7 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
 
     if (wattrs->mask & wam_gtk_wrapper) {
       nw->w = gtk_widget_get_window(wattrs->gtk_widget);
+      g_object_set_data(G_OBJECT(nw->w), "GtkWidget", wattrs->gtk_widget);
     } else {
       nw->w = gdk_window_new(gw->w, &attribs, attribs_mask);
     }
@@ -964,6 +965,11 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
         }
         break;
         case GDK_SCROLL: { //Synthesize a button press
+            if ((g_object_get_data(G_OBJECT(w), "GtkWidget")) != NULL) {
+               // GTK wrappers don't manage scrolling
+               gtk_main_do_event(event);
+               return;
+            }
             GdkEventScroll *evt = (GdkEventScroll *)event;
             gevent.u.mouse.state = _GGDKDraw_GdkModifierToKsm(evt->state);
             gevent.u.mouse.x = evt->x;

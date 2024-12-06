@@ -29,11 +29,13 @@
 #include <string>
 #include <gtkmm.h>
 
+#include "c_context.h"
+
 namespace ff::views {
 
 class CharGrid {
  public:
-    CharGrid();
+    CharGrid(std::shared_ptr<FVContext> context);
 
     Gtk::Widget& get_top_widget();
     GtkWidget* get_drawing_widget_c();

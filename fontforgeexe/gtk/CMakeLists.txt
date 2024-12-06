@@ -1,6 +1,7 @@
 # Distributed under the original FontForge BSD 3-clause license
 
 add_library(ffgtk OBJECT
+  c_context.h
   char_grid.hpp
   char_grid.cpp
   font_view.hpp

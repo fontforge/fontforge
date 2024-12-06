@@ -35,6 +35,9 @@ typedef struct fontview FontView;
 // C structure and callback for interacting with legacy code
 typedef struct fontview_context {
     FontView* fv;
+
+    // Set character grid to the desired position according to the scrollbar
+    void (*scroll_fontview_to_position_cb)(FontView* fv, int32_t position);
 } FVContext;
 
 #ifdef __cplusplus

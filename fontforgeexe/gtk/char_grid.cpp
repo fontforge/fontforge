@@ -25,15 +25,20 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "font_view.hpp"
+#include "char_grid.hpp"
 #include "utils.hpp"
 
 namespace ff::views {
 
 bool on_drawing_area_event(GdkEvent* event);
 bool on_drawing_area_key(GdkEventKey* event, Gtk::DrawingArea& drawing_area);
+void on_scrollbar_value_changed(std::shared_ptr<FVContext> fv_context,
+                                Gtk::VScrollbar& scroller);
 
-CharGrid::CharGrid() {
+CharGrid::CharGrid(std::shared_ptr<FVContext> context) {
+    scroller.signal_value_changed().connect(
+        [this, context]() { on_scrollbar_value_changed(context, scroller); });
+
     drawing_area.set_vexpand(true);
     drawing_area.set_hexpand(true);
 
@@ -116,6 +121,12 @@ bool on_drawing_area_key(GdkEventKey* event, Gtk::DrawingArea& drawing_area) {
 
     // Don't handle this event any further.
     return true;
+}
+
+void on_scrollbar_value_changed(std::shared_ptr<FVContext> fv_context,
+                                Gtk::VScrollbar& scroller) {
+    double new_position = scroller.get_value();
+    fv_context->scroll_fontview_to_position_cb(fv_context->fv, new_position);
 }
 
 }  // namespace ff::views
