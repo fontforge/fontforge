@@ -93,6 +93,11 @@ void CharGrid::set_scroller_bounds(int32_t sb_min, int32_t sb_max,
                           sb_pagesize);
 }
 
+void CharGrid::set_character_info(const std::string& info) {
+    Glib::ustring markup = "<big>" + info + "</big>";
+    character_info.set_markup(markup);
+}
+
 // Create info label at the top of the Font View, which shows name and
 // properties of the most recently selected character
 void CharGrid::make_character_info_label() {
@@ -100,7 +105,8 @@ void CharGrid::make_character_info_label() {
     character_info.property_margin().set_value(2);
     character_info.set_margin_left(10);
     character_info.set_hexpand(true);
-    character_info.set_xalign(0);  // Flush left
+    character_info.set_xalign(0);               // Flush left
+    character_info.set_markup("<big> </big>");  // Set height
 
     // Long info string will not allow us to shrink the main window, so we
     // let it be truncated dynamically with ellipsis.
