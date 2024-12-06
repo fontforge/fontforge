@@ -38,7 +38,7 @@ namespace ff::views {
 
 // clang-format off
 std::vector<MenuInfo> popup_menu = {
-    { { N_("New O_utline Window"), "", "" }, {}, LegacyCallbacks, MID_OpenOutline },
+    { { N_("New O_utline Window"), NoDecoration, "" }, {}, LegacyCallbacks, MID_OpenOutline },
     kMenuSeparator,
     { { N_("Cu_t"), "editcut", "" }, {}, LegacyCallbacks, MID_Cut },
     { { N_("_Copy"), "editcopy", "" }, {}, LegacyCallbacks, MID_Copy },
@@ -63,30 +63,30 @@ std::vector<MenuInfo> popup_menu = {
 };
 
 std::vector<MenuInfo> histograms_menu = {
-    { { N_("_HStem"), "", "" }, {}, LegacyCallbacks, MID_HStemHist },
-    { { N_("_VStem"), "", "" }, {}, LegacyCallbacks, MID_VStemHist },
-    { { N_("BlueValues"), "", "" }, {}, LegacyCallbacks, MID_BlueValuesHist },
+    { { N_("_HStem"), NoDecoration, "" }, {}, LegacyCallbacks, MID_HStemHist },
+    { { N_("_VStem"), NoDecoration, "" }, {}, LegacyCallbacks, MID_VStemHist },
+    { { N_("BlueValues"), NoDecoration, "" }, {}, LegacyCallbacks, MID_BlueValuesHist },
 };
 
 std::vector<MenuInfo> hints_menu = {
     { { N_("Auto_Hint"), "hintsautohint", "<control><shift>H" }, {}, LegacyCallbacks, MID_AutoHint },
-    { { N_("Hint _Substitution Pts"), "", "" }, {}, LegacyCallbacks, MID_HintSubsPt },
-    { { N_("Auto _Counter Hint"), "", "" }, {}, LegacyCallbacks, MID_AutoCounter },
+    { { N_("Hint _Substitution Pts"), NoDecoration, "" }, {}, LegacyCallbacks, MID_HintSubsPt },
+    { { N_("Auto _Counter Hint"), NoDecoration, "" }, {}, LegacyCallbacks, MID_AutoCounter },
     { { N_("_Don't AutoHint"), "hintsdontautohint", "" }, {}, LegacyCallbacks, MID_DontAutoHint },
     kMenuSeparator,
-    { { N_("Auto_Instr"), "", "<control>T" }, {}, LegacyCallbacks, MID_AutoInstr },
-    { { N_("_Edit Instructions..."), "", "" }, {}, LegacyCallbacks, MID_EditInstructions },
-    { { N_("Edit 'fpgm'..."), "", "" }, {}, LegacyCallbacks, MID_Editfpgm },
-    { { N_("Edit 'prep'..."), "", "" }, {}, LegacyCallbacks, MID_Editprep },
-    { { N_("Edit 'maxp'..."), "", "" }, {}, LegacyCallbacks, MID_Editmaxp },
-    { { N_("Edit 'cvt '..."), "", "" }, {}, LegacyCallbacks, MID_Editcvt },
-    { { N_("Remove Instr Tables"), "", "" }, {}, LegacyCallbacks, MID_RmInstrTables },
-    { { N_("S_uggest Deltas..."), "", "" }, {}, LegacyCallbacks, MID_Deltas },
+    { { N_("Auto_Instr"), NoDecoration, "<control>T" }, {}, LegacyCallbacks, MID_AutoInstr },
+    { { N_("_Edit Instructions..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_EditInstructions },
+    { { N_("Edit 'fpgm'..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_Editfpgm },
+    { { N_("Edit 'prep'..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_Editprep },
+    { { N_("Edit 'maxp'..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_Editmaxp },
+    { { N_("Edit 'cvt '..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_Editcvt },
+    { { N_("Remove Instr Tables"), NoDecoration, "" }, {}, LegacyCallbacks, MID_RmInstrTables },
+    { { N_("S_uggest Deltas..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_Deltas },
     kMenuSeparator,
     { { N_("_Clear Hints"), "hintsclearvstems", "" }, {}, LegacyCallbacks, MID_ClearHints },
-    { { N_("Clear Instructions"), "", "" }, {}, LegacyCallbacks, MID_ClearInstrs },
+    { { N_("Clear Instructions"), NoDecoration, "" }, {}, LegacyCallbacks, MID_ClearInstrs },
     kMenuSeparator,
-    { { N_("Histograms"), "", "" }, histograms_menu, SubMenuCallbacks, 0 },
+    { { N_("Histograms"), NoDecoration, "" }, histograms_menu, SubMenuCallbacks, 0 },
 };
 
 std::vector<MenuInfo> top_menu = {

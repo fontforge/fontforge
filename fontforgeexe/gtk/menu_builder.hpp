@@ -30,6 +30,8 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #pragma once
 
+#include <variant>
+
 #include <gtkmm.h>
 
 #include "ui_context.hpp"
@@ -37,14 +39,35 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 namespace ff::views {
 
+enum DecorType {
+    NoDecoration,
+    Checkable,
+};
+
 class LabelDecoration {
  public:
-    LabelDecoration(const char* image_file = "") : image_file_(image_file) {}
+    LabelDecoration(DecorType s = NoDecoration) : d_(s) {}
+    LabelDecoration(const char* image_file) : d_(image_file) {}
 
-    std::string image_file() const { return image_file_; }
+    bool empty() const {
+        return std::holds_alternative<DecorType>(d_) &&
+               std::get<DecorType>(d_) == NoDecoration;
+    }
+
+    bool checkable() const {
+        return std::holds_alternative<DecorType>(d_) &&
+               std::get<DecorType>(d_) == Checkable;
+    }
+
+    bool named_icon() const { return std::holds_alternative<std::string>(d_); }
+    std::string image_file() const {
+        return std::holds_alternative<std::string>(d_)
+                   ? std::get<std::string>(d_)
+                   : "";
+    }
 
  private:
-    std::string image_file_;
+    std::variant<DecorType, std::string> d_;
 };
 
 struct LabelInfo {
