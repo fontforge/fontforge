@@ -67,6 +67,8 @@ struct MenuInfo {
     ActivateCB handler; /* called on mouse release */
 
     int mid;
+
+    bool is_separator() const { return label.text == Glib::ustring(); }
 };
 
 static const MenuInfo kMenuSeparator = {{""}};
