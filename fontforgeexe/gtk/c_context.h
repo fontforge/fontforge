@@ -31,6 +31,7 @@ extern "C" {
 #endif
 
 typedef struct fontview FontView;
+typedef struct bdffont BDFFont;
 
 typedef struct fv_menu_action {
     int mid;
@@ -41,6 +42,13 @@ typedef struct fv_menu_action {
 
 #define MENUACTION_LAST \
     { 0, NULL, NULL, NULL }
+
+typedef struct bitmap_menu_data {
+    BDFFont* bdf;
+    int16_t pixelsize;
+    int depth;
+    bool current;
+} BitmapMenuData;
 
 // C structure and callback for interacting with legacy code
 typedef struct fontview_context {
@@ -54,6 +62,16 @@ typedef struct fontview_context {
 
     // Get pixmap resource directory
     const char* (*get_pixmap_dir)();
+
+    // Set view to bitmap font
+    void (*change_display_bitmap)(FontView* fv, BDFFont* bdf);
+
+    // Check if the current view is set to the bitmap font
+    bool (*current_display_bitmap)(FontView* fv, BDFFont* bdf);
+
+    // Collect bitmap fonts data for menu display
+    unsigned int (*collect_bitmap_data)(FontView* fv,
+                                        BitmapMenuData** bitmap_data_array);
 
     // Menu actions per menu ID
     FVMenuAction* actions;

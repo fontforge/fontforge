@@ -3373,6 +3373,10 @@ static void FV_ChangeDisplayBitmap(FontView *fv,BDFFont *bdf) {
     }
 }
 
+static bool FV_CurrentDisplayBitmap(FontView *fv,BDFFont *bdf) {
+    return bdf == fv->show;
+}
+
 static void FVMenuSize(FontView *fv, int mid) {
     int dspsize = fv->filled->pixelsize;
     int changedmodifier = false;
@@ -5200,6 +5204,31 @@ static void lylistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     }
     GMenuItemArrayFree(mi->sub);
     mi->sub = sub;
+}
+
+unsigned int collect_bitmap_data(FontView *fv, BitmapMenuData** bitmap_data_array) {
+    unsigned int i, n_bitmaps = 0;
+    SplineFont *sf = fv->b.sf;
+    SplineFont *master = sf->cidmaster ? sf->cidmaster : sf;
+    BDFFont *bdf;
+
+    if ( master->bitmaps == NULL ) {
+        *bitmap_data_array = NULL;
+        return 0;
+    }
+
+    /* Cound the available bitmaps */
+    for ( bdf = master->bitmaps; bdf!=NULL; ++n_bitmaps, bdf = bdf->next );
+        
+    *bitmap_data_array = calloc(n_bitmaps, sizeof(BitmapMenuData));
+    for ( bdf = master->bitmaps, i = 0; bdf!=NULL; ++i, bdf = bdf->next ) {
+        (*bitmap_data_array)[i].bdf = bdf;
+        (*bitmap_data_array)[i].pixelsize = bdf->pixelsize;
+        (*bitmap_data_array)[i].depth = BDFDepth(bdf);
+        (*bitmap_data_array)[i].current = bdf==fv->show;
+    }
+
+    return n_bitmaps;
 }
 
 static bool vwlistdisabled(FontView *fv, int mid) {
@@ -7185,6 +7214,9 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     fv_context->scroll_fontview_to_position_cb = FVScrollToPos;
     fv_context->tooltip_message_cb = FVTooltipMessage;
     fv_context->get_pixmap_dir = getPixmapDir;
+    fv_context->change_display_bitmap = FV_ChangeDisplayBitmap;
+    fv_context->current_display_bitmap = FV_CurrentDisplayBitmap;
+    fv_context->collect_bitmap_data = collect_bitmap_data;
     fv_context->actions = fvpopupactions;
     cg_dlg = create_font_view(&fv_context, pos.width, pos.height);
     fv->cg_widget = get_char_grid_widget(cg_dlg, 0);
