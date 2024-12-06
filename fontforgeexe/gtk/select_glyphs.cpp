@@ -48,8 +48,16 @@ SelectGlyphs::SelectGlyphs(std::shared_ptr<FVContext> context, int width,
     dialog.add_button(_("_OK"), Gtk::RESPONSE_OK);
     dialog.add_button(_("_Cancel"), Gtk::RESPONSE_CANCEL);
 
+    // dialog.resize() doesn't work until after the realization, i.e. after
+    // dialog.show_all(). Use the realize event to ensure reliable resizing.
+    //
+    // Also, the signal itself must be connected before dialog.show_all(),
+    // otherwise it wouldn't work for some reason...
+    dialog.signal_realize().connect([this, width, height]() {
+        char_grid.resize_drawing_area(width, height);
+    });
+
     dialog.show_all();
-    dialog.resize(width, height);
 }
 
 }  // namespace ff::dlg

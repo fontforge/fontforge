@@ -7832,6 +7832,7 @@ char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current) {
     
     FVCopyInnards(gs.fv,&pos,fvorig,dw,def_layer,(struct fvcontainer *) &gs);
     pos.height = 4*gs.fv->cbh+1;	/* We don't know the real fv->cbh until after creating the innards. The size of the last window is probably wrong, we'll fix later */
+    fv_resize_window(gs.fv->gtk_window, pos.width, pos.height);
     memset(gs.fv->b.selected,0,gs.fv->b.map->enccount);
     if ( current!=NULL && strcmp(current,_("{Everything Else}"))!=0 ) {
 	int first = true;
