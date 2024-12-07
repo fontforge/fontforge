@@ -151,6 +151,7 @@ bool run_kerning_format_dlg(void** kf_opaque, KFDlgData* kf_data) {
     return (response == Gtk::RESPONSE_OK);
 }
 
-void register_py_menu_item_in_gtk(const PyMenuSpec* spec, int flags) {
-    ff::views::register_py_menu_item(spec, flags);
+void register_py_menu_item_in_gtk(const PyMenuSpec* spec, const char* gtk_accel,
+                                  int flags) {
+    ff::views::register_py_menu_item(spec, gtk_accel, flags);
 }

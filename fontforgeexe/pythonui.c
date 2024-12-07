@@ -27,6 +27,7 @@
 /*			   Python Interface to FontForge		      */
 
 #include <fontforge-config.h>
+#include "ffgdk.h"
 
 #ifndef _NO_PYTHON
 
@@ -563,8 +564,10 @@ static PyObject *PyFF_registerMenuItem(PyObject *self, PyObject *args, PyObject 
     int i, flags, by_keyword = false, keyword_only = false;
     struct py_menu_spec spec;
     PyObject *context = Py_None, *name = Py_None, *submenu = Py_None;
+    Hotkey hk;
 
     memset(&spec, 0, sizeof(spec));
+    memset(&hk,0,sizeof(hk));
 
     spec.func = spec.check = spec.data = Py_None;
 
@@ -678,7 +681,7 @@ static PyObject *PyFF_registerMenuItem(PyObject *self, PyObject *args, PyObject 
 	return NULL;
     }
 
-    if (spec.shortcut_str!=NULL && !HotkeyParse(NULL, spec.shortcut_str)) {
+    if (spec.shortcut_str!=NULL && !HotkeyParse(&hk, spec.shortcut_str)) {
 	PyErr_Format(PyExc_ValueError, "Cannot parse shortcut string" );
 	free(spec.levels);
 	return NULL;
@@ -690,7 +693,17 @@ static PyObject *PyFF_registerMenuItem(PyObject *self, PyObject *args, PyObject 
 	InsertSubMenus(&spec, py_menus + pmt_font);
     if ( flags&pmf_char )
 	InsertSubMenus(&spec, py_menus + pmt_char);
-    register_py_menu_item_in_gtk(&spec, flags);
+
+    /* For now, interpret GDraw key modifier conventions here and convert them to GTK codes */
+    char gtk_accel_str[200] = "\0";
+    if (hk.state & ksm_shift) strcat(gtk_accel_str, "<shift>");
+    if (hk.state & ksm_control) strcat(gtk_accel_str, "<control>");
+    if (hk.state & ksm_meta) strcat(gtk_accel_str, "<alt>");
+    if (hk.state & ksm_super) strcat(gtk_accel_str, "<super>");
+    if (hk.state & ksm_hyper) strcat(gtk_accel_str, "<hyper>");
+    const char* keyval_name = gdk_keyval_name(hk.keysym);
+    if (keyval_name) strcat(gtk_accel_str, keyval_name);
+    register_py_menu_item_in_gtk(&spec, gtk_accel_str, flags);
 
     Py_RETURN_NONE;
 }

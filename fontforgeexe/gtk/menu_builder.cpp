@@ -246,9 +246,15 @@ Gtk::Menu* build_menu(const std::vector<MenuInfo>& info,
 
     for (const auto& item : info) {
         if (item.is_custom_block()) {
-            block_builders.push_back(BlockBuilder(menu, stable_position,
-                                                  item.callbacks.custom_block,
-                                                  context, icon_height));
+            BlockBuilder block_builder(menu, stable_position,
+                                       item.callbacks.custom_block, context,
+                                       icon_height);
+            block_builders.push_back(block_builder);
+
+            // Build custom menu items now to register accelerators, so that
+            // they would be available to the user even before the user opens
+            // the menu for the first time.
+            block_builder();
             continue;
         }
 

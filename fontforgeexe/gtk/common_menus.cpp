@@ -38,12 +38,13 @@ namespace ff::views {
 
 std::vector<PythonMenuItem> python_menu_items;
 
-void register_py_menu_item(const PyMenuSpec* spec, int flags) {
+void register_py_menu_item(const PyMenuSpec* spec, const std::string& accel,
+                           int flags) {
     PythonMenuItem py_menu_item;
 
     py_menu_item.flags = flags;
     py_menu_item.divider = spec->divider;
-    py_menu_item.shortcut = spec->shortcut_str ? spec->shortcut_str : "";
+    py_menu_item.accelerator = accel;
     py_menu_item.func = spec->func;
     py_menu_item.check = spec->check;
     py_menu_item.data = spec->data;
@@ -63,7 +64,8 @@ void register_py_menu_item(const PyMenuSpec* spec, int flags) {
 }
 
 static std::vector<MenuInfo>::iterator add_or_update_item(
-    std::vector<MenuInfo>& menu, const std::string& label) {
+    std::vector<MenuInfo>& menu, const std::string& label,
+    const std::string& accelerator = "") {
     // Try to find an existing menu item by the localized label.
     auto iter =
         std::find_if(menu.begin(), menu.end(), [label](const MenuInfo& mi) {
@@ -72,8 +74,10 @@ static std::vector<MenuInfo>::iterator add_or_update_item(
 
     if (iter == menu.end()) {
         // Label not found, create an empty item for it
-        MenuInfo new_item{
-            {label.c_str(), NoDecoration, ""}, {}, SubMenuCallbacks, 0};
+        MenuInfo new_item{{label.c_str(), NoDecoration, accelerator},
+                          {},
+                          SubMenuCallbacks,
+                          0};
         menu.push_back(new_item);
         iter = std::prev(menu.end());
     }
@@ -85,7 +89,6 @@ static std::vector<MenuInfo>::iterator add_or_update_item(
 // omissions:
 //
 // * Mnemonics are ignored - GTK should take care of them.
-// * Custom hotkeys are currently not supported.
 std::vector<MenuInfo> python_tools(const UiContext& ui_context) {
     const FontViewUiContext& fv_ui_context =
         static_cast<const FontViewUiContext&>(ui_context);
@@ -109,7 +112,8 @@ std::vector<MenuInfo> python_tools(const UiContext& ui_context) {
             menu_ptr->push_back(kMenuSeparator);
         } else {
             auto menu_iter =
-                add_or_update_item(*menu_ptr, py_item.levels.back().localized);
+                add_or_update_item(*menu_ptr, py_item.levels.back().localized,
+                                   py_item.accelerator);
 
             // Define the new menu item. If it was already present, it will be
             // redefined.

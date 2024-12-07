@@ -48,7 +48,7 @@ struct PythonMenuItem {
     int flags = 0;
     bool divider = false;
     std::vector<PythonMenuText> levels;
-    std::string shortcut;  // menu accelerator in FontForge format
+    std::string accelerator;
     PyObject *func, *check, *data;
 };
 
@@ -56,7 +56,8 @@ struct PythonMenuItem {
 // registerMenuItem(), in the order of registration.
 extern std::vector<PythonMenuItem> python_menu_items;
 
-void register_py_menu_item(const PyMenuSpec* spec, int flags);
+void register_py_menu_item(const PyMenuSpec* spec, const std::string& accel,
+                           int flags);
 
 std::vector<MenuInfo> python_tools(const UiContext& ui_context);
 

@@ -68,7 +68,8 @@ void* create_kerning_format_dlg(FVContext** p_fv_context1,
 
 bool run_kerning_format_dlg(void** kf_opaque, KFDlgData* kf_data);
 
-void register_py_menu_item_in_gtk(const PyMenuSpec* spec, int flags);
+void register_py_menu_item_in_gtk(const PyMenuSpec* spec, const char* gtk_accel,
+                                  int flags);
 
 #ifdef __cplusplus
 }
