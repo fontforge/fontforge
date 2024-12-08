@@ -22,12 +22,108 @@
  */
 #include "harfbuzz.hpp"
 
+#include <fstream>
+
+extern "C" {
+#include "splinechar.h"
+}
+
 namespace ff::shapers {
+
+HarfBuzzShaper::HarfBuzzShaper(std::shared_ptr<ShaperContext> context)
+    : context_(context) {
+    char temporary_ttf[200] = "\0";
+    tmpnam(temporary_ttf);
+
+    WriteTTFFont(temporary_ttf, context_->sf, 13 /* ff_ttf */, NULL,
+                 1 /*bf_ttf*/, 4 | 32 | (1 << 29) /*flags*/,
+                 context_->get_enc_map(context_->sf), 1 /*ly_fore*/);
+
+    // Read file contents into memory
+    std::ifstream ttf_stream(temporary_ttf);
+    std::istreambuf_iterator<char> ttf_stream_it{ttf_stream}, end;
+    std::vector<char> ttf_blob{ttf_stream_it, end};
+
+    hb_ttf_blob = hb_blob_create(ttf_blob.data(), ttf_blob.size(),
+                                 HB_MEMORY_MODE_DUPLICATE, NULL, NULL);
+
+    hb_ttf_face = hb_face_create(hb_ttf_blob, 0);
+
+    hb_ttf_font = hb_font_create(hb_ttf_face);
+}
+
+HarfBuzzShaper::~HarfBuzzShaper() {
+    hb_font_destroy(hb_ttf_font);
+    hb_face_destroy(hb_ttf_face);
+    hb_blob_destroy(hb_ttf_blob);
+}
 
 struct opentype_str* HarfBuzzShaper::apply_features(
     SplineChar** glyphs, const std::vector<Tag>& feature_list, Tag script,
     Tag lang, int pixelsize) const {
-    return nullptr;
+    std::vector<unichar_t> u_vec;
+    for (size_t len = 0; glyphs[len] != NULL; ++len) {
+        u_vec.push_back(
+            (glyphs[len]->unicodeenc > 0)
+                ? glyphs[len]->unicodeenc
+                : context_->fake_unicode(context_->mv, glyphs[len]));
+    }
+    u_vec.push_back(0);
+
+    char* utf8_str = u2utf8_copy(u_vec.data());
+
+    hb_buffer_t* hb_buffer = hb_buffer_create();
+    hb_buffer_add_utf8(hb_buffer, utf8_str, -1, 0, -1);
+
+    // Set script and language
+    hb_script_t hb_script = hb_script_from_iso15924_tag((uint32_t)script);
+    hb_buffer_set_script(hb_buffer, hb_script);
+    hb_language_t hb_lang = hb_language_from_string((const char*)lang, -1);
+    hb_buffer_set_language(hb_buffer, hb_lang);
+
+    // Perhaps counterintuitively, when setting RTL direction for RTL languages,
+    // HarfBuzz would reverse the glyph order in the output buffer. We don't
+    // want that, so we are always setting LTR direction.
+    hb_buffer_set_direction(hb_buffer, HB_DIRECTION_LTR);
+
+    // Shape the text
+    hb_shape(hb_ttf_font, hb_buffer, NULL, 0);
+
+    // Retrieve the results
+    unsigned int glyph_count;
+    hb_glyph_info_t* glyph_info_arr =
+        hb_buffer_get_glyph_infos(hb_buffer, &glyph_count);
+    hb_glyph_position_t* glyph_pos_arr =
+        hb_buffer_get_glyph_positions(hb_buffer, &glyph_count);
+
+    // Return metrics data as a raw C-style array
+    struct opentype_str* metrics_data = (struct opentype_str*)calloc(
+        glyph_count + 1, sizeof(struct opentype_str));
+
+    // Process the glyphs and positions
+    for (int i = 0; i < glyph_count; ++i) {
+        char glyph_name[64];
+        hb_glyph_info_t& glyph_info = glyph_info_arr[i];
+        hb_glyph_position_t& glyph_pos = glyph_pos_arr[i];
+        struct opentype_str& metrics = metrics_data[i];
+
+        // Warning: after the shaping glyph_info->codepoint is not a Unicode
+        // point, but rather an internal glyph index. We can't use it in our
+        // functions.
+        hb_bool_t found =
+            hb_font_get_glyph_name(hb_ttf_font, glyph_info.codepoint,
+                                   glyph_name, sizeof(glyph_name) - 1);
+        SplineChar* glyph_out =
+            context_->get_glyph_by_name(context_->sf, -1, glyph_name);
+
+        metrics.sc = glyph_out;
+    }
+
+    // Cleanup
+    hb_buffer_destroy(hb_buffer);
+    free(utf8_str);
+
+    return metrics_data;
 }
 
 }  // namespace ff::shapers

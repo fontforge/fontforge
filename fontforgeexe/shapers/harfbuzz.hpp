@@ -23,6 +23,7 @@
 #pragma once
 
 #include <memory>
+#include <hb.h>
 
 #include "i_shaper.hpp"
 #include "shaper_shim.hpp"
@@ -31,8 +32,8 @@ namespace ff::shapers {
 
 class HarfBuzzShaper : public IShaper {
  public:
-    HarfBuzzShaper(std::shared_ptr<ShaperContext> context)
-        : context_(context) {}
+    HarfBuzzShaper(std::shared_ptr<ShaperContext> context);
+    ~HarfBuzzShaper();
 
     const char* name() const override { return "harfbuzz"; }
 
@@ -43,6 +44,10 @@ class HarfBuzzShaper : public IShaper {
 
  private:
     std::shared_ptr<ShaperContext> context_;
+
+    hb_blob_t* hb_ttf_blob = nullptr;
+    hb_face_t* hb_ttf_face = nullptr;
+    hb_font_t* hb_ttf_font = nullptr;
 };
 
 }  // namespace ff::shapers

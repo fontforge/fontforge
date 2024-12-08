@@ -621,3 +621,29 @@ typedef struct splinechar {
     char * glif_name; // This stores the base name of the glyph when saved to U. F. O..
     unichar_t* user_decomp; // User decomposition for building this character
 } SplineChar;
+
+struct vr {
+    int16_t xoff, yoff, h_adv_off, v_adv_off;
+    struct valdev *adjust;
+};
+
+struct opentype_str {
+    struct splinechar *sc;
+    struct vr vr;		/* Scaled and rounded gpos modifications (device table info included in xoff, etc. not in adjusts) */
+    struct kernpair *kp;
+    struct kernclass *kc;
+    unsigned int prev_kc0: 1;
+    unsigned int next_kc0: 1;
+    int16_t advance_width;	/* Basic advance, modifications in vr, scaled and rounded */
+	/* Er... not actually set by ApplyLookups, but somewhere the caller */
+	/*  can stash info. (Extract width from hinted bdf if possible, tt */
+	/*  instructions can change it from the expected value) */
+    int16_t kc_index;
+    int16_t lig_pos;		/* when skipping marks to form a ligature keep track of what ligature element a mark was attached to */
+    int16_t context_pos;		/* When doing a contextual match remember which glyphs are used, and where in the match they occur. Skipped glyphs have -1 */
+    int32_t orig_index;
+    void *fl;
+    unsigned int line_break_after: 1;
+    unsigned int r2l: 1;
+    int16_t bsln_off;
+};

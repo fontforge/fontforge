@@ -496,11 +496,6 @@ typedef struct kernclass {
     int feature; // This indicates whether the kerning class came from a feature file. This is important during export.
 } KernClass;
 
-struct vr {
-    int16_t xoff, yoff, h_adv_off, v_adv_off;
-    ValDevTab *adjust;
-};
-
 typedef struct generic_pst {
     unsigned int ticked: 1;
     unsigned int temporary: 1;		/* Used in afm ligature closure */
@@ -653,27 +648,6 @@ typedef struct jstf_script {
     char *extenders;		/* list of glyph names */
     struct jstf_lang *langs;
 } Justify;
-
-struct opentype_str {
-    struct splinechar *sc;
-    struct vr vr;		/* Scaled and rounded gpos modifications (device table info included in xoff, etc. not in adjusts) */
-    struct kernpair *kp;
-    struct kernclass *kc;
-    unsigned int prev_kc0: 1;
-    unsigned int next_kc0: 1;
-    int16_t advance_width;	/* Basic advance, modifications in vr, scaled and rounded */
-	/* Er... not actually set by ApplyLookups, but somewhere the caller */
-	/*  can stash info. (Extract width from hinted bdf if possible, tt */
-	/*  instructions can change it from the expected value) */
-    int16_t kc_index;
-    int16_t lig_pos;		/* when skipping marks to form a ligature keep track of what ligature element a mark was attached to */
-    int16_t context_pos;		/* When doing a contextual match remember which glyphs are used, and where in the match they occur. Skipped glyphs have -1 */
-    int32_t orig_index;
-    void *fl;
-    unsigned int line_break_after: 1;
-    unsigned int r2l: 1;
-    int16_t bsln_off;
-};
 
 struct macname {
     struct macname *next;
@@ -1544,6 +1518,7 @@ extern const unichar_t *_uGetModifiers(const unichar_t *fontname, const unichar_
 	const unichar_t *weight);
 extern void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32_t *sizes);
 extern void SplineFontSetUnChanged(SplineFont *sf);
+extern EncMap* SFGetMap(SplineFont *sf);
 
 extern bool RealNear(real a,real b);
 

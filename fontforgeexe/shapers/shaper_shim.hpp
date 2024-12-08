@@ -28,11 +28,21 @@ extern "C" {
 
 #include <stdint.h>
 
+#include "basics.h"
+
 typedef struct splinechar SplineChar;
 typedef struct splinefont SplineFont;
+typedef struct metricsview MetricsView;
+typedef struct encmap EncMap;
+
+char* u2utf8_copy(const unichar_t* ubuf);
+int WriteTTFFont(char* fontname, SplineFont* sf, int /*enum fontformat*/ format,
+                 int32_t* bsizes, int /*enum bitmapformat*/ bf, int flags,
+                 EncMap* enc, int layer);
 
 typedef struct shaper_context {
     SplineFont* sf;
+    MetricsView* mv;
 
     // Set character grid to the desired position according to the scrollbar
     struct opentype_str* (*apply_ticked_features)(SplineFont* sf,
@@ -40,6 +50,16 @@ typedef struct shaper_context {
                                                   uint32_t script,
                                                   uint32_t lang, int pixelsize,
                                                   SplineChar** glyphs);
+
+    // Map glyphs without unicode value to a private area
+    int (*fake_unicode)(MetricsView* mv, SplineChar* sc);
+
+    // Get encoding map
+    EncMap* (*get_enc_map)(SplineFont* sf);
+
+    // Get glyph from font by name
+    SplineChar* (*get_glyph_by_name)(SplineFont* sf, int unienc,
+                                     const char* name);
 
 } ShaperContext;
 

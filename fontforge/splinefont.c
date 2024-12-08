@@ -390,6 +390,10 @@ void SplineFontSetUnChanged(SplineFont *sf) {
 	    _SplineFontSetUnChanged(sf->mm->instances[i]);
 }
 
+EncMap* SFGetMap(SplineFont *sf) {
+    return sf->map;
+}
+
 static char *scaleString(char *string, double scale) {
     char *result;
     char *pt;

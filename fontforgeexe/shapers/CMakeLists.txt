@@ -11,6 +11,8 @@ add_library(shapers OBJECT
 
 target_link_libraries(shapers PRIVATE
   fontforge_common_headers
+  fontforge
+  gunicode
 )
 
 if(ENABLE_HARFBUZZ)

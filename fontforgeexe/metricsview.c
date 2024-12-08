@@ -3975,6 +3975,9 @@ static ShaperContext* MVMakeShaperContext(MetricsView *mv) {
     ShaperContext *context = calloc(1,sizeof(ShaperContext));
     context->sf = mv->sf;
     context->apply_ticked_features = ApplyTickedFeatures;
+    context->fake_unicode = MVFakeUnicodeOfSc;
+    context->get_enc_map = SFGetMap;
+    context->get_glyph_by_name = SFGetChar;
 
     return context;
 }
