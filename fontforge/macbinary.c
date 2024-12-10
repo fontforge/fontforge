@@ -508,7 +508,7 @@ static uint32_t DummyNFNT(FILE *res, BDFFont *bdf, EncMap *map) {
     if ( descentMax>bdf->descent ) descentMax = bdf->descent;
 
     putlong(res,26);		/* Length */
-    putshort(res,SFOneWidth(bdf->sf)!=-1?0xf000:0xd000);	/* fontType */
+    putshort(res,SFIsFixedWidth(bdf->sf)?0xf000:0xd000);	/* fontType */
     putshort(res,0);
     putshort(res,255);
     putshort(res,widMax);
