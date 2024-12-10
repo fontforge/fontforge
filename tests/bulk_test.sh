@@ -35,7 +35,9 @@ while read font_url; do
         $FF_BIN_PROJECT -c "$FF_PY_SCRIPT_LINE" $SFD_FILE $FF_OUTPUT_FILE >/dev/null 2>&1
         popd > /dev/null
 
-        if (cmp --quiet $TMP_DIR_SYS/$FF_OUTPUT_FILE $TMP_DIR_PROJ/$FF_OUTPUT_FILE); then
+        if [ ! -f $TMP_DIR_SYS/$FF_OUTPUT_FILE ] && [ ! -f $TMP_DIR_PROJ/$FF_OUTPUT_FILE ]; then
+            echo "NO OUTPUT: $font_url"
+        elif (cmp --quiet $TMP_DIR_SYS/$FF_OUTPUT_FILE $TMP_DIR_PROJ/$FF_OUTPUT_FILE); then
             echo "PASS: $font_url"
         else
             echo -e "\e[0;31mFAIL\e[0m: $font_url"

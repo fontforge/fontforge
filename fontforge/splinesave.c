@@ -2908,7 +2908,7 @@ static void RSC2PS2(GrowBuf *gb, SplineChar *base,SplineChar *rsc,
     BasePoint subtrans;
     int stationary = trans->x==0 && trans->y==0;
     RefChar *r, *unsafe=NULL;
-    int unsafecnt=0, allwithouthints=true;
+    int allwithouthints=true;
     int round = (flags&ps_flag_round)? true : false;
     StemInfo *oldh, *oldv;
     int hc, vc;
@@ -2929,7 +2929,6 @@ static void RSC2PS2(GrowBuf *gb, SplineChar *base,SplineChar *rsc,
 	    if ( !r->justtranslated )
 	continue;
 	    if ( r->sc->hconflicts || r->sc->vconflicts ) {
-		++unsafecnt;
 		unsafe = r;
 	    } else if ( r->sc->hstem!=NULL || r->sc->vstem!=NULL )
 		allwithouthints = false;

@@ -17,7 +17,7 @@ echo "DEPSPREFIX=$DEPSPREFIX" >> $GITHUB_ENV
 echo "PATH=$PATH:$DEPSPREFIX/bin:$PREFIX/bin:~/.local/bin" >> $GITHUB_ENV
 echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$DEPSPREFIX/lib:$PREFIX/lib" >> $GITHUB_ENV
 echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$DEPSPREFIX/lib/pkgconfig" >> $GITHUB_ENV
-echo "PYTHONPATH=$PYTHONPATH:$PREFIX/$($PYTHON -c "import distutils.sysconfig as sc; print(sc.get_python_lib(prefix='', plat_specific=True,standard_lib=False))")" >> $GITHUB_ENV
+echo "PYTHONPATH=$PYTHONPATH:$PREFIX/$($PYTHON -c "import sysconfig as sc; print(sc.get_path('platlib', vars={'platbase': '.'}))")" >> $GITHUB_ENV
 
 if [ ! -d deps/install ]; then
     echo "Custom dependencies not present - will build them"
@@ -31,7 +31,7 @@ if [ ! -d deps/install ]; then
     git clone --depth 1 --branch v1.0.2 https://github.com/google/woff2
     wget --tries 1 "http://download.savannah.gnu.org/releases/freetype/freetype-$FTVER.tar.gz" || \
         wget "https://sourceforge.net/projects/freetype/files/freetype2/$SFFTVER/freetype-$FTVER.tar.gz"
-    wget https://downloads.crowdin.com/cli/v2/crowdin-cli.zip
+    wget https://github.com/crowdin/crowdin-cli/releases/latest/download/crowdin-cli.zip
 
     pushd libspiro && autoreconf -fiv && ./configure --prefix=$DEPSPREFIX && make -j4 && make install && popd
     pushd libuninameslist && autoreconf -fiv && ./configure --enable-pscript --prefix=$DEPSPREFIX && make -j4 && make install && popd

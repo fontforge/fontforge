@@ -871,10 +871,9 @@ void utf8_strncpy(register char *to, const char *from, int len) {
     to[old-from] = 0;
 }
 
-unichar_t *u2utf16_strcpy(unichar_t *utf16buf,const unichar_t *ubuf) {
+uint16_t *u2utf16_strcpy(uint16_t *utf16buf,const unichar_t *ubuf) {
 /* Copy unichar string 'ubuf' into utf16 buffer string 'utf16buf' */
-/* Technically, uint16_t is sufficient for utf-16 encoding, feel free to replace. */
-    unichar_t *pt = utf16buf;
+    uint16_t *pt = utf16buf;
     unichar_t ch;
 
     if (utf16buf == NULL || ubuf == NULL)
@@ -894,8 +893,8 @@ unichar_t *u2utf16_strcpy(unichar_t *utf16buf,const unichar_t *ubuf) {
     return( utf16buf );
 }
 
-extern unichar_t *utf162u_strcpy(unichar_t*ubuf, const unichar_t *utf16buf) {
-    uint32_t uch = 0x0, uch2 = 0x0;
+extern unichar_t *utf162u_strcpy(unichar_t*ubuf, const uint16_t *utf16buf) {
+    unichar_t uch = 0x0, uch2 = 0x0;
     unichar_t *pt = ubuf;
 
     if (utf16buf == NULL || ubuf == NULL)
@@ -919,6 +918,15 @@ extern unichar_t *utf162u_strcpy(unichar_t*ubuf, const unichar_t *utf16buf) {
     }
     *pt = '\0';
     return( ubuf );
+}
+
+uint16_t *utf82utf16_copy(const char* utf8buf) {
+    unichar_t *utf32_str = utf82u_copy(utf8buf); /* Convert from utf8 to utf32 */
+    uint16_t *utf16buf = (uint16_t *) malloc(2*(u_strlen(utf32_str)+1)*sizeof(uint16_t));
+    u2utf16_strcpy(utf16buf, utf32_str);
+    free(utf32_str);
+
+    return utf16buf;
 }
 
 char *StripToASCII(const char *utf8_str) {

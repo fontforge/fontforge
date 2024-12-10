@@ -502,8 +502,8 @@ return( true );
 #ifdef _WIN32
     local_toFree = u_GFileNormalizePath(u_copy(spt));
     pt = spt = local_toFree;
-#endif    
-    
+#endif
+
     if ( pt==NULL )
 return( true );
     gfc = (GFileChooser *) GGadgetGetUserData(t);
@@ -544,7 +544,7 @@ return( true );
     free(gfc->lastname); gfc->lastname = NULL;
     if(pt_toFree)
 	free(pt_toFree);
-    
+
     if (local_toFree)
         free(local_toFree);
 
@@ -609,16 +609,15 @@ static unichar_t *GFileChooserGetCurDir(GFileChooser *gfc,int dirindex) {
     ti = GGadgetGetList(&gfc->directories->g,&len);
     if ( dirindex==-1 )
         dirindex = 0;
-    dirindex = dirindex;
 
     for ( j=len-1,cnt=0; j>=dirindex; --j ) {
-        if (ti[j]->userdata != NULL) 
+        if (ti[j]->userdata != NULL)
             continue;
         cnt += u_strlen(ti[j]->text)+1;
     }
     pt = dir = malloc((cnt+1)*sizeof(unichar_t));
     for ( j=len-1; j>=dirindex; --j ) {
-        if (ti[j]->userdata != NULL) 
+        if (ti[j]->userdata != NULL)
             continue;
         u_strcpy(pt,ti[j]->text);
         pt += u_strlen(pt);

@@ -416,7 +416,7 @@ static char *_readencstring(FILE *ttf,int offset,int len,
     long pos = ftell(ttf);
     unichar_t *str, *pt;
     char *ret;
-    int i, ch;
+    int i;
     Encoding *enc;
 
     fseek(ttf,offset,SEEK_SET);
@@ -439,12 +439,18 @@ static char *_readencstring(FILE *ttf,int offset,int len,
 	  return( NULL );
 	}
 	if ( enc->is_unicodebmp ) {
-	    str = pt = malloc((sizeof(unichar_t)/2)*len+sizeof(unichar_t));
+            uint16_t *utf16_str, *utf16_pt, ch;
+
+	    utf16_str = utf16_pt = malloc((len+1)*sizeof(utf16_str));
 	    for ( i=0; i<len/2; ++i ) {
 		ch = getc(ttf)<<8;
-		*pt++ = ch | getc(ttf);
+		*utf16_pt++ = ch | getc(ttf);
 	    }
-	    *pt = 0;
+	    *utf16_pt = 0;
+
+            str = (unichar_t *) malloc((len+1)*sizeof(unichar_t));
+            utf162u_strcpy(str, utf16_str); /* Convert from ucs2 to unicode */
+            free(utf16_str);
 	} else if ( enc->unicode!=NULL ) {
 	    str = pt = malloc(sizeof(unichar_t)*len+sizeof(unichar_t));
 	    for ( i=0; i<len; ++i )
@@ -624,7 +630,7 @@ static int PickTTFFont(FILE *ttf, struct ttfinfo *info) {
     names = malloc(cnt*sizeof(char *));
     for ( i=0; i<cnt; ++i ) {
 	names[i] = TTFGetFontName(ttf,offsets[i],0);
-        if ( names[i]==NULL ) 
+        if ( names[i]==NULL )
             names[i] = smprintf("<Unknown font name %d>", i+1);
     }
     if ( info->chosenname!=NULL ) {
@@ -914,7 +920,7 @@ return;
     free(tabs);
     fseek(ttf,restore_this_pos,SEEK_SET);
 }
-	    
+
 static struct tablenames { uint32_t tag; const char *name; } stdtables[] = {
     { CHR('a','c','n','t'), N_("accent attachment table") },
     { CHR('a','n','k','r'), N_("anchor point table") },
@@ -1269,12 +1275,12 @@ static void readdate(FILE *ttf,struct ttfinfo *info,int ismod) {
     /* These timestamps are in "number of seconds since 00:00 1904-01-01",  */
     /* noted some places as a Mac OS epoch time value.  We use Unix epoch   */
     /* timestamps which are "number of seconds since 00:00 1970-01-01".     */
-    /* The difference between these two epoch values is a constant number   */ 
+    /* The difference between these two epoch values is a constant number   */
     /* of seconds, and so we convert from Mac to Unix time by simple        */
     /* subtraction of that constant difference.                             */
 
     /*      (31781 * 65536) + 45184 = 2082844800 secs is 24107 days */
-    int date1970[4] = {45184, 31781, 0, 0}; 
+    int date1970[4] = {45184, 31781, 0, 0};
 
     /* As there was not (nor still is?) a portable way to do 64-bit math aka*/
     /* "long long" the code below works on 16-bit slices of the full value. */
@@ -1669,7 +1675,7 @@ static char *FindLangEntry(struct ttfinfo *info, int id ) {
 	for ( cur=info->names; cur!=NULL && cur->names[id]==NULL; cur=cur->next );
     if ( cur==NULL )
 return( NULL );
-    ret = copy(cur->names[id]);	
+    ret = copy(cur->names[id]);
 return( ret );
 }
 
@@ -1744,7 +1750,7 @@ static void readttfcopyrights(FILE *ttf,struct ttfinfo *info) {
 	    name = getushort(ttf);
 	    str_len = getushort(ttf);
 	    stroff = getushort(ttf);
-    
+
 	    TTFAddLangStr(ttf,info,name,str_len,tableoff+stroff,
 		    platform,specific,language);
 	}
@@ -4040,7 +4046,7 @@ static int readtyp1glyphs(FILE *ttf,struct ttfinfo *info) {
 	    i = 0;
 	fseek(ttf,info->typ1_start+i,SEEK_SET);
     }
-    
+
     tmp = GFileTmpfile();
     for ( i=0; i<info->typ1_length; ++i )
 	putc(getc(ttf),tmp);
@@ -4132,7 +4138,7 @@ static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
 	LogError( _("Invalid ttf hmtx table (or hhea), numOfLongMetrics is 0\n") );
 	info->bad_metrics = true;
     }
-	
+
     for ( j=i; j<info->glyph_cnt; ++j ) {
 	if ( (sc = info->chars[j])!=NULL ) {	/* In a ttc file we may skip some */
 	    sc->width = lastwidth;
@@ -4924,7 +4930,7 @@ return;
 	} else if ( format==2 ) {
 	    int max_sub_head_key = 0, cnt, max_pos= -1;
 	    struct subhead *subheads;
-	    
+
 	    for ( i=0; i<256; ++i ) {
 		table[i] = getushort(ttf)/8;	/* Sub-header keys */
 		if ( table[i]>max_sub_head_key ) {
@@ -5180,7 +5186,7 @@ static void readttfos2metrics(FILE *ttf,struct ttfinfo *info) {
 
 static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
     int i,j;
-    int format, len, gc, gcbig, val;
+    int format, len, gc, val;
     uint32_t bounds;
     const char *name;
     char buffer[30];
@@ -5226,19 +5232,16 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
 	    gc = getushort(ttf);
 	    indexes = calloc(65536,sizeof(uint16_t));
 	    /* the index table is backwards from the way I want to use it */
-	    gcbig = 0;
 	    for ( i=0; i<gc; ++i ) {
 		val = getushort(ttf);
 		if ( val<0 )		/* Don't crash on EOF */
 	    break;
 		indexes[val] = i;
-		if ( val>=258 ) ++gcbig;
 	    }
 
 	    /* if we are only loading bitmaps, we can get holes in our data */
 	    for ( i=0; i<258; ++i ) if ( indexes[i]!=0 || i==0 ) if ( indexes[i]<info->glyph_cnt && info->chars[indexes[i]]!=NULL )
 		info->chars[indexes[i]]->name = copy(ttfstandardnames[i]); /* Too many fonts have badly named glyphs to deduce encoding from name */
-	    gcbig += 258;
 	    i = 258;
 	    /* Read the pascal strings. There can be more strings than the
 	     * glyph count, so we read tell the end of the table */
@@ -6231,7 +6234,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 	sf->layers = info->layers;
 	sf->layer_cnt = info->layer_cnt;
     }
-	
+
 
     for ( i=0; i<info->glyph_cnt; ++i ) if ( info->chars[i]!=NULL ) {
 	SCOrderAP(info->chars[i]);
@@ -6252,7 +6255,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     ASCIIcheck(&sf->familyname);
     ASCIIcheck(&sf->weight);
     ASCIIcheck(&sf->version);
-    
+
     TTF_PSDupsDefault(sf);
 
     /* I thought the languages were supposed to be ordered, but it seems */
@@ -6337,7 +6340,7 @@ SplineFont *_SFReadTTF(FILE *ttf, int flags,enum openflags openflags, char *file
     info.fd = fd;
     /* Pass the subfont name (if present) via info->chosenname. This may
      * be free()d and replaced so make a copy */
-    if ( chosenname!=NULL) 
+    if ( chosenname!=NULL)
 	info.chosenname = copy(chosenname);
     ret = readttf(ttf,&info,filename);
     if ( !ret )

@@ -159,8 +159,10 @@ extern char *u2def_strncpy(char *to, const unichar_t *ufrom, size_t n);
 extern unichar_t *def2u_copy(const char *from);
 extern char *u2def_copy(const unichar_t *ufrom);
 
-extern unichar_t *u2utf16_strcpy(unichar_t *utf16buf,const unichar_t *ubuf);
-extern unichar_t *utf162u_strcpy(unichar_t*ubuf, const unichar_t *utf16buf);
+extern uint16_t *u2utf16_strcpy(uint16_t *utf16buf,const unichar_t *ubuf);
+extern unichar_t *utf162u_strcpy(unichar_t*ubuf, const uint16_t *utf16buf);
+
+extern uint16_t *utf82utf16_copy(const char* utf8buf);
 
 extern int uAllAscii(const unichar_t *str);
 extern int AllAscii(const char *);

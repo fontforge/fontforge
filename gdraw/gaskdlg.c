@@ -209,12 +209,13 @@ static GWindow DlgCreate8(const char *title,const char *question,va_list ap,
     extern GBox _GGadget_defaultbutton_box;
 
     if ( d!=NULL )
-	memset(d,0,sizeof(*d));
+        memset(d,0,sizeof(*d));
     buf = vsmprintf(question, ap);
     if ( screen_display==NULL ) {
-	fprintf(stderr, "%s\n", buf );
-	if ( d!=NULL ) d->done = true;
-return( NULL );
+        fprintf(stderr, "%s\n", buf);
+        if ( d!=NULL ) d->done = true;
+        free(buf);
+        return( NULL );
     }
     ubuf = utf82u_copy(buf);
     free(buf);

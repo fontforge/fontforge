@@ -19,12 +19,16 @@ jobs:
           - os: ubuntu-20.04
             target: Release
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: repo
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
       - name: Restore cached custom dependencies
         id: cache-dependencies
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: deps/install
           key: ${{ matrix.os }}-deps-${{ hashFiles('repo/.github/workflows/scripts/setup_linux_deps.sh') }}
@@ -55,28 +59,28 @@ jobs:
         run: |
           DESTDIR=appdir cmake -DCMAKE_INSTALL_PREFIX=/usr -P cmake_install.cmake
           ../.github/workflows/scripts/ffappimagebuild.sh appdir $GITHUB_SHA
-      - name: Update Potfile for Crowdin
-        if: matrix.target == 'Release' && github.ref == 'refs/heads/master' && github.repository == 'fontforge/fontforge' && github.event_name == 'push'
-        working-directory: repo
-        env:
-          CROWDIN_API_KEY: ${{ secrets.CROWDIN_API_KEY }}
-        run: java -jar $DEPSPREFIX/crowdin-cli.jar -c .crowdin.yml upload
       - name: Dist archive artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: matrix.target == 'NoUI'
         with:
           name: dist-archive
           path: repo/build/fontforge-*.tar.xz
       - name: AppImage artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: matrix.target == 'Release'
         with:
           name: appimage
           path: repo/build/FontForge-*-x86_64.AppImage
+      - name: Update Potfile for Crowdin
+        if: matrix.target == 'Release' && github.ref == 'refs/heads/master' && github.repository == 'fontforge/fontforge' && github.event_name == 'push'
+        working-directory: repo
+        env:
+          CROWDIN_API_KEY: ${{ secrets.CROWDIN_API_KEY }}
+        run: java -jar $DEPSPREFIX/crowdin-cli.jar upload -c .crowdin.yml
   mac:
-    runs-on: macos-11
+    runs-on: macos-13
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: repo
       - name: Install dependencies
@@ -105,14 +109,14 @@ jobs:
         run: |
           # MacOS runner has way too much preinstalled Python versions. We must
           # use the exact one discovered by CMake.
-          PYTHON=`cat build/CMake_Python3_EXECUTABLE`
-          PYTHONPATH=$PYTHONPATH:$PREFIX/$($PYTHON -c "import distutils.sysconfig as sc; print(sc.get_python_lib(prefix='', plat_specific=True,standard_lib=False))")
+          PYTHON=`grep -m1 'Python3_EXECUTABLE.*=' build/CMakeCache.txt | cut -d= -f2`
+          PYTHONPATH=$PYTHONPATH:$PREFIX/$($PYTHON -c "import sysconfig as sc; print(sc.get_path('platlib', 'posix_prefix', vars={'platbase': '.'}))")
           $PYTHON tests/pyhook_smoketest.py
       - name: Build App Bundle
         working-directory: repo/build
         run: ninja macbundle
       - name: App Bundle artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: appbundle
           path: repo/build/osx/FontForge-*.dmg
@@ -124,11 +128,11 @@ jobs:
       matrix:
         arch: ["MINGW32", "MINGW64"]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           path: repo
       - name: Checkout FontForgeBuilds
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: fontforge/fontforgebuilds
           path: fontforgebuilds
@@ -153,7 +157,7 @@ jobs:
         working-directory: fontforgebuilds/fontforge-setup
         run: iscc -Qp fontforgesetup.iss -DMSYSTEM=${{ matrix.arch }}
       - name: Build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.arch }}
           path: |

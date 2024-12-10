@@ -6,6 +6,7 @@ INVOKE_BASE="$(pwd)"
 
 APPDIR=$(realpath $1)
 HASH=${2:0:7}
+PYTHON="$3"
 
 if [ -z "$APPDIR" ]; then
     echo "Usage: `basename $0` appdir hash"
@@ -32,6 +33,8 @@ fi
 # Now we bundle the Python libraries
 echo "Bundling Python libraries..."
 
+PY_DLLS_PATH=`$PYTHON -c "import sysconfig as sc; print(sc.get_path('platlib', 'posix_prefix', vars={'platbase': '.'}))"`
+
 PYLIB=$(otool -L $APPDIR/Contents/Resources/opt/local/bin/fontforge | grep -i python | sed -e 's/ \(.*\)//')
 PYVER=$(echo $PYLIB | rev | cut -d/ -f2 | rev)
 PYTHON=python$PYVER
@@ -42,10 +45,10 @@ mkdir -p $APPDIR/Contents/Frameworks
 cp -a $pycruft/Python.framework $APPDIR/Contents/Frameworks
 pushd $APPDIR/Contents/Frameworks/Python.framework/Versions/$PYVER/lib/$PYTHON/
 rm site-packages || rm -rf site-packages
-ln -s ../../../../../../Resources/opt/local/lib/$PYTHON/site-packages
+ln -s ../../../../../../Resources/opt/local/$PY_DLLS_PATH
 popd
 
-pushd $APPDIR/Contents/Resources/opt/local/lib/$PYTHON/site-packages
+pushd $APPDIR/Contents/Resources/opt/local/$PY_DLLS_PATH
 cp -Rn "$pycruft/Python.framework/Versions/$PYVER/lib/$PYTHON/site-packages/" .
 popd
 
