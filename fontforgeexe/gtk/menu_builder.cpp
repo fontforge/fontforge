@@ -277,6 +277,11 @@ Gtk::Menu* build_menu(const std::vector<MenuInfo>& info,
                                        ? item.callbacks.checked
                                        : context.get_checked_cb(item.mid);
 
+            // Initially connect action to checkable state to support keyboard
+            // accelerators.
+            check_menuitem_set_visual_state(check_menu_item, action, checked_cb,
+                                            context);
+
             // Set the state of checkable menu item. This action will be called
             // when the menu item becomes visible as a part of its containing
             // menu.
