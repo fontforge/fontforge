@@ -19,7 +19,7 @@ extern int ttf_bdf_dump(SplineFont *sf, struct alltabs *at,int32_t *sizes);
 extern void ttf_bdf_read(FILE *ttf, struct ttfinfo *info);
 
 /* The FFTM table, to some timestamps I'd like */
-extern int ttf_fftm_dump(SplineFont *sf, struct alltabs *at);
+extern void ttf_fftm_dump(SplineFont *sf, struct alltabs *at);
 
 /* Known font parameters for 'TeX ' table (fontdims, spacing params, whatever you want to call them) */
 

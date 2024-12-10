@@ -5385,7 +5385,7 @@ return( NULL );
 }
 
 static void buildtablestructures(struct alltabs *at, SplineFont *sf,
-	enum fontformat format) {
+	enum fontformat format, int flags) {
     int i;
     int ebdtpos, eblcpos;
     struct ttf_table *tab;
@@ -5453,7 +5453,7 @@ static void buildtablestructures(struct alltabs *at, SplineFont *sf,
 	at->tabdir.tabs[i++].length = at->ebsclen;
     }
 
-    if ( at->fftmf!=NULL ) {
+    if ( at->fftmf!=NULL && !(flags&ttf_flag_noFFTMtable)) {
 	at->tabdir.tabs[i].tag = CHR('F','F','T','M');
 	at->tabdir.tabs[i].data = at->fftmf;
 	at->tabdir.tabs[i++].length = at->fftmlen;
@@ -5723,7 +5723,7 @@ static void buildtablestructures(struct alltabs *at, SplineFont *sf,
     at->tabdir.rangeShift = at->tabdir.numtab*16-at->tabdir.searchRange;
 }
 
-static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
+static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format, int flags,
 	int32_t *bsizes, enum bitmapformat bf) {
     int i, j, aborted, offset;
     BDFFont *bdf;
@@ -5823,7 +5823,9 @@ return( false );
     if ( sf->hasvmetrics ) {
 	redohhead(at,true);
     }
-    ttf_fftm_dump(sf,at);
+
+    if (!(flags&ttf_flag_noFFTMtable))
+	    ttf_fftm_dump(sf,at);
 
     if ( format!=ff_type42 && format!=ff_type42cid && !sf->internal_temp ) {
 	initATTables(at, sf, format);
@@ -5853,7 +5855,7 @@ return( false );
     free( at->gi.bygid );
     at->gi.gcnt = 0;
 
-    buildtablestructures(at,sf,format);
+    buildtablestructures(at,sf,format,flags);
     for ( i=0; i<at->tabdir.numtab; ++i ) {
 	struct taboff *tab = &at->tabdir.tabs[i];
 	at->tabdir.ordered[i] = tab;
@@ -6177,7 +6179,7 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
     if ( format==ff_cff || format==ff_cffcid ) {
 	dumpcff(&at,sf,format,ttf);
     } else {
-	if ( initTables(&at,sf,format,bsizes,bf))
+	if ( initTables(&at,sf,format,flags,bsizes,bf))
 	    dumpttf(ttf,&at);
     }
     switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
@@ -6322,7 +6324,7 @@ int _WriteType42SFNTS(FILE *type42,SplineFont *sf,enum fontformat format,
     at.applemode = false;
     at.opentypemode = false;
 
-    if ( initTables(&at,sf,format,NULL,bf_none))
+    if ( initTables(&at,sf,format,flags,NULL,bf_none))
 	dumptype42(type42,&at,format);
     free(at.gi.loca);
 
@@ -6638,7 +6640,9 @@ return( NULL );
     redohhead(&ret[fcnt],false);
     if ( dummysf->hasvmetrics )
 	redohhead(&ret[fcnt],true);
-    ttf_fftm_dump(dummysf,&ret[fcnt]);
+
+    if (!(flags&ttf_flag_noFFTMtable))
+    	ttf_fftm_dump(dummysf,&ret[fcnt]);
 
 return( ret );
 }
@@ -6664,7 +6668,7 @@ return( dumpstoredtable(sf,tag,len));
 }
 
 static void ttc_perfonttables(struct alltabs *all, int me, int mainpos,
-	enum fontformat format ) {
+	enum fontformat format, int flags ) {
     struct alltabs *at = &all[me];
     struct alltabs *maintab = &all[mainpos];
     SplineFont *sf = at->sf;
@@ -6721,7 +6725,8 @@ static void ttc_perfonttables(struct alltabs *all, int me, int mainpos,
     } else {
 	at->cfff = (void *) (intptr_t) -1; at->cfflen = mainpos;
     }
-    at->fftmf = (void *) (intptr_t) -1; at->fftmlen = mainpos;
+    if (!(flags&ttf_flag_noFFTMtable))
+    	at->fftmf = (void *) (intptr_t) -1; at->fftmlen = mainpos;
     at->hheadf = (void *) (intptr_t) -1; at->hheadlen = mainpos;
     at->gi.hmtx = (void *) (intptr_t) -1; at->gi.hmtxlen = mainpos;
     at->maxpf = (void *) (intptr_t) -1; at->maxplen = mainpos;
@@ -6801,7 +6806,7 @@ static void ttc_dump(FILE *ttc,struct alltabs *all, enum fontformat format,
 	putc('\0', ttc);
 
     /* Build, but don't output. This is so we can lookup tables by tag later */
-    buildtablestructures(&all[cnt],all[cnt].sf,format);
+    buildtablestructures(&all[cnt],all[cnt].sf,format,flags);
 
     /* Output some of the smaller tables now, near the head of the file */
     /* I have my doubts about this being a significant savings... but */
@@ -6822,16 +6827,19 @@ static void ttc_dump(FILE *ttc,struct alltabs *all, enum fontformat format,
     tab->offset = ftell(ttc);
     for ( i=0; i<64; ++i )		/* maxp table is 64 bytes, fill in later */
 	putc('\0', ttc);
-    tab = findtabindir(&all[cnt].tabdir,CHR('F','F','T','M'));
-    tab->offset = ftell(ttc);
-    tab->checksum = filechecksum(tab->data);
-    if ( !ttfcopyfile(ttc,tab->data, tab->offset,Tag2String(tab->tag)))
-	all[cnt].error = true;
+    if (!(flags&ttf_flag_noFFTMtable)) {
+		tab = findtabindir(&all[cnt].tabdir,CHR('F','F','T','M'));
+		tab->offset = ftell(ttc);
+		tab->checksum = filechecksum(tab->data);
+		if ( !ttfcopyfile(ttc,tab->data, tab->offset,Tag2String(tab->tag))){
+		all[cnt].error = true;
+	}
+}
 
     for ( i=0; i<cnt; ++i ) {
 	/* Now generate all tables unique to this font */
-	ttc_perfonttables(all, i, cnt, format );
-	buildtablestructures(&all[i],all[i].sf,format);
+	ttc_perfonttables(all, i, cnt, format, flags );
+	buildtablestructures(&all[i],all[i].sf,format,flags);
 	/* Check for any tables which match those of a previous font */
 	for ( j=0 ; j<all[i].tabdir.numtab; ++j ) {
 	    if ( all[i].tabdir.tabs[j].data!=(void *) (intptr_t) -1 &&
