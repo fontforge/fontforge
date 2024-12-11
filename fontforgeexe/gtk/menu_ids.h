@@ -34,11 +34,25 @@
 #define MID_UnlinkRef 2108
 #define MID_CopyWidth 2111
 #define MID_CopyFgToBg 2115
+
+#define MID_FontInfo 2200
 #define MID_CharInfo 2201
 #define MID_Transform 2202
 #define MID_Stroke 2203
 #define MID_Correct 2206
+#define MID_AvailBitmaps 2210
+#define MID_RegenBitmaps 2211
+#define MID_Autotrace 2212
 #define MID_Round 2213
+#define MID_MergeFonts 2214
+#define MID_InterpolateFonts 2215
+#define MID_AddExtrema 2224
+#define MID_FontCompare 2239
+#define MID_RemoveBitmaps 2244
+#define MID_AddInflections 2256
+#define MID_Balance 2257
+#define MID_Harmonize 2258
+#define MID_LayersCompare 2259
 
 #define MID_AutoHint 2501
 #define MID_ClearHints 2502

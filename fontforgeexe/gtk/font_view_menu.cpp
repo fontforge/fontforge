@@ -182,6 +182,23 @@ std::vector<MenuInfo> view_menu_anchors(const UiContext& ui_context) {
     return info_arr;
 }
 
+void run_autotrace(const UiContext& ui_context) {
+    const FontViewUiContext& fv_ui_context =
+        static_cast<const FontViewUiContext&>(ui_context);
+    auto fv_context = fv_ui_context.legacy();
+    Gtk::Widget* drawing_area = gtk_find_child(&ui_context.window_, "CharGrid");
+
+    auto old_cursor = set_cursor(&fv_ui_context.window_, "wait");
+    auto old_cursor_da = set_cursor(drawing_area, "wait");
+
+    bool shift_pressed =
+        gtk_get_keyboard_state() & Gdk::ModifierType::SHIFT_MASK;
+    fv_context->run_autotrace(fv_context->fv, shift_pressed);
+
+    unset_cursor(&fv_ui_context.window_, old_cursor);
+    unset_cursor(drawing_area, old_cursor_da);
+}
+
 // clang-format off
 std::vector<MenuInfo> popup_menu = {
     { { N_("New O_utline Window"), NoDecoration, "" }, {}, LegacyCallbacks, MID_OpenOutline },
@@ -207,6 +224,46 @@ std::vector<MenuInfo> popup_menu = {
     { { N_("Set _Width..."), "metricssetwidth", "" }, {}, LegacyCallbacks, MID_SetWidth },
     { { N_("Set _Vertical Advance..."), "metricssetvwidth", "" }, {}, LegacyCallbacks, MID_SetVWidth },
 };
+
+//////////////////////////////// ELEMENT MENUS ////////////////////////////////////////
+
+std::vector<MenuInfo> element_menu = {
+    { { N_("_Font Info..."), "elementfontinfo", "<control><shift>F" }, {}, LegacyCallbacks, MID_FontInfo },
+    { { N_("Glyph _Info..."), "elementglyphinfo", "<control>i" }, {}, LegacyCallbacks, MID_CharInfo },
+    { { N_("Other Info"), "elementotherinfo", "" }, {} /*&other_info_menu*/, SubMenuCallbacks, 0 },
+    { { N_("_Validation"), "elementvalidate", "" }, {} /*&validation_menu*/, SubMenuCallbacks, 0 },
+    kMenuSeparator,
+    { { N_("Bitm_ap Strikes Available..."), "elementbitmapsavail", "<control><shift>B" }, {}, LegacyCallbacks, MID_AvailBitmaps },
+    { { N_("Regenerate _Bitmap Glyphs..."), "elementregenbitmaps", "<control>B" }, {}, LegacyCallbacks, MID_RegenBitmaps },
+    { { N_("Remove Bitmap Glyphs..."), "elementremovebitmaps", "" }, {}, LegacyCallbacks, MID_RemoveBitmaps },
+    kMenuSeparator,
+    { { N_("St_yle"), "elementstyles", "" }, {} /*&style_menu*/, SubMenuCallbacks, 0 },
+    { { N_("_Transformations"), "elementtransform", "" }, {} /*&transformations_menu*/, SubMenuCallbacks, 0 },
+    { { N_("_Expand Stroke..."), "elementexpandstroke", "<control><shift>E" }, {}, LegacyCallbacks, MID_Stroke },
+#ifdef FONTFORGE_CONFIG_TILEPATH
+    { { N_("Tile _Path..."), "elementtilepath", "" }, {}, LegacyCallbacks, MID_TilePath },
+    { { N_("Tile Pattern..."), "elementtilepattern", "" }, {}, LegacyCallbacks, MID_TilePattern },
+#endif
+    { { N_("O_verlap"), "overlaprm", "" }, {} /*&overlap_menu*/, SubMenuCallbacks, 0 },
+    { { N_("_Simplify"), "elementsimplify", "" }, {} /*&simplify_menu*/, SubMenuCallbacks, 0 },
+    { { N_("Add E_xtrema"), "elementaddextrema", "<control><shift>X" }, {}, LegacyCallbacks, MID_AddExtrema },
+    { { N_("Add Points Of I_nflection"), "elementaddinflections", "<control><shift>Y" }, {}, LegacyCallbacks, MID_AddInflections },
+    { { N_("_Balance"), "elementbalance", "<control><shift>P" }, {}, LegacyCallbacks, MID_Balance },
+    { { N_("Harmoni_ze"), "elementharmonize", "<control><shift>Z" }, {}, LegacyCallbacks, MID_Harmonize },
+    { { N_("Roun_d"), "elementround", "" }, {} /*&round_menu*/, SubMenuCallbacks, 0 },
+    { { N_("Autot_race"), "elementautotrace", "<control><shift>T" }, {}, { run_autotrace, LegacyEnabled, NotCheckable }, MID_Autotrace },
+    kMenuSeparator,
+    { { N_("_Correct Direction"), "elementcorrectdir", "<control><shift>D" }, {}, LegacyCallbacks, MID_Correct },
+    kMenuSeparator,
+    { { N_("B_uild"), "elementbuildaccent", "" }, {} /*&build_menu*/, SubMenuCallbacks, 0 },
+    kMenuSeparator,
+    { { N_("_Merge Fonts..."), "elementmergefonts", "" }, {}, LegacyCallbacks, MID_MergeFonts },
+    { { N_("Interpo_late Fonts..."), "elementinterpolatefonts", "" }, {}, LegacyCallbacks, MID_InterpolateFonts },
+    { { N_("Compare Fonts..."), "elementcomparefonts", "" }, {}, LegacyCallbacks, MID_FontCompare },
+    { { N_("Compare Layers..."), "elementcomparelayers", "" }, {}, LegacyCallbacks, MID_LayersCompare },
+};
+
+/////////////////////////////////// TOOLS MENU ////////////////////////////////////////
 
 std::vector<MenuInfo> tools_menu = {
     MenuInfo::CustomBlock(python_tools),
@@ -330,7 +387,7 @@ std::vector<MenuInfo> view_menu = {
 std::vector<MenuInfo> top_menu = {
     { { N_("_File") }, {}, SubMenuCallbacks, -1 },
     { { N_("_Edit") }, {}, SubMenuCallbacks, -1 },
-    { { N_("E_lement") }, {}, SubMenuCallbacks, -1 },
+    { { N_("E_lement") }, element_menu, SubMenuCallbacks, -1 },
 #ifndef _NO_PYTHON
     { { N_("_Tools") }, tools_menu, SubMenuCallbacks, -1 },
 #endif

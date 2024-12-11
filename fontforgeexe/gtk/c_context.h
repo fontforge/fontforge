@@ -150,6 +150,9 @@ typedef struct fontview_context {
     bool (*py_check)(FontView* fv, const char* label, PyObject* check,
                      PyObject* data);
 
+    // Invoke external autotrace / potrace command
+    void (*run_autotrace)(FontView* fv, bool ask_user_for_arguments);
+
     // Menu actions per menu ID
     FVMenuAction* actions;
 } FVContext;

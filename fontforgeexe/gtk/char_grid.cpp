@@ -48,6 +48,7 @@ CharGrid::CharGrid(std::shared_ptr<FVContext> context) {
     scroller.signal_value_changed().connect(
         [this, context]() { on_scrollbar_value_changed(context, scroller); });
 
+    drawing_area.set_name("CharGrid");
     drawing_area.set_vexpand(true);
     drawing_area.set_hexpand(true);
 
