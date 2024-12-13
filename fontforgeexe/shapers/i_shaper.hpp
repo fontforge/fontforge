@@ -24,6 +24,7 @@
 
 #include <vector>
 
+#include "metrics.h"
 #include "tag.hpp"
 
 typedef struct splinechar SplineChar;
@@ -43,7 +44,11 @@ class IShaper {
     // apply features which involve these glyphs.
     virtual struct opentype_str* apply_features(
         SplineChar** glyphs, const std::vector<Tag>& feature_list, Tag script,
-        Tag lang, int pixelsize) const = 0;
+        Tag lang, int pixelsize) = 0;
+
+ public:
+    // Array of glyph metrics
+    std::vector<ShapeMetrics> metrics;
 };
 
 }  // namespace ff::shapers

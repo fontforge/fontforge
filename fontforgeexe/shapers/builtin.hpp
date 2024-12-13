@@ -38,7 +38,7 @@ class BuiltInShaper : public IShaper {
     struct opentype_str* apply_features(SplineChar** glyphs,
                                         const std::vector<Tag>& feature_list,
                                         Tag script, Tag lang,
-                                        int pixelsize) const override;
+                                        int pixelsize) override;
 
  private:
     std::shared_ptr<ShaperContext> context_;

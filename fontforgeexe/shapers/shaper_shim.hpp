@@ -29,6 +29,7 @@ extern "C" {
 #include <stdint.h>
 
 #include "basics.h"
+#include "metrics.h"
 
 typedef struct splinechar SplineChar;
 typedef struct splinefont SplineFont;
@@ -94,6 +95,8 @@ const char* shaper_name(void* shaper);
 struct opentype_str* shaper_apply_features(void* shaper, SplineChar** glyphs,
                                            uint32_t* flist, uint32_t script,
                                            uint32_t lang, int pixelsize);
+
+const ShapeMetrics* shaper_metrics(void* shaper);
 
 #ifdef __cplusplus
 }

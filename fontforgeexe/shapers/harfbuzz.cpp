@@ -60,7 +60,7 @@ HarfBuzzShaper::~HarfBuzzShaper() {
 
 struct opentype_str* HarfBuzzShaper::apply_features(
     SplineChar** glyphs, const std::vector<Tag>& feature_list, Tag script,
-    Tag lang, int pixelsize) const {
+    Tag lang, int pixelsize) {
     std::vector<unichar_t> u_vec;
     for (size_t len = 0; glyphs[len] != NULL; ++len) {
         u_vec.push_back(
@@ -122,6 +122,9 @@ struct opentype_str* HarfBuzzShaper::apply_features(
     // Cleanup
     hb_buffer_destroy(hb_buffer);
     free(utf8_str);
+
+    // Adjust metrics buffer for caller's use
+    metrics.resize(glyph_count);
 
     return metrics_data;
 }

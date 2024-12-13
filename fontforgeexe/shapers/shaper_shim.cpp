@@ -102,3 +102,8 @@ struct opentype_str* shaper_apply_features(void* shaper, SplineChar** glyphs,
         return nullptr;
     }
 }
+
+const ShapeMetrics* shaper_metrics(void* shaper) {
+    ff::shapers::IShaper* ishaper = static_cast<ff::shapers::IShaper*>(shaper);
+    return ishaper->metrics.data();
+}

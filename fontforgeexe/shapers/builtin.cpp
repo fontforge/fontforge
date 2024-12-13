@@ -22,20 +22,33 @@
  */
 #include "builtin.hpp"
 
+extern "C" {
+#include "splinechar.h"
+}
+
 namespace ff::shapers {
 
 struct opentype_str* BuiltInShaper::apply_features(
     SplineChar** glyphs, const std::vector<Tag>& feature_list, Tag script,
-    Tag lang, int pixelsize) const {
+    Tag lang, int pixelsize) {
     // Zero-terminated list of features
     std::vector<uint32_t> flist(feature_list.size() + 1, 0);
     for (int i = 0; i < feature_list.size(); ++i) {
         flist[i] = (uint32_t)feature_list[i];
     }
 
-    return context_->apply_ticked_features(context_->sf, flist.data(),
-                                           (uint32_t)script, (uint32_t)lang,
-                                           pixelsize, glyphs);
+    struct opentype_str* ots_arr = context_->apply_ticked_features(
+        context_->sf, flist.data(), (uint32_t)script, (uint32_t)lang, pixelsize,
+        glyphs);
+
+    // Count output glyphs
+    int cnt;
+    for (cnt = 0; ots_arr[cnt].sc != NULL; ++cnt)
+        ;
+
+    metrics.resize(cnt);
+
+    return ots_arr;
 }
 
 }  // namespace ff::shapers
