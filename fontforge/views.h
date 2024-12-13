@@ -39,7 +39,7 @@
 #include "ggadget.h"
 #include "multidialog.h"
 #include "search.h"
-
+#include "metrics.h"
 
 struct gfi_data;
 struct contextchaindlg;
@@ -364,13 +364,6 @@ struct aplist { AnchorPoint *ap; int connected_to, selected; struct aplist *next
 
 enum mv_grids { mv_hidegrid, mv_showgrid, mv_partialgrid, mv_hidemovinggrid };
 enum mv_type { mv_kernonly, mv_widthonly, mv_kernwidth };
-
-typedef struct shape_metrics {
-    int16_t dx, dwidth;	/* position and width of the displayed char */
-    int16_t dy, dheight;	/*  displayed info for vertical metrics */
-    int xoff, yoff;
-    int16_t kernafter;
-} ShapeMetrics;
 
 struct metricchar {
     unsigned int selected: 1;
