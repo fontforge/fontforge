@@ -913,6 +913,11 @@ static void MVCreateFields(MetricsView *mv,int i) {
 static void MVSetSb(MetricsView *mv);
 static int MVSetVSb(MetricsView *mv);
 
+int16_t MVCharWidth(MetricsView *mv, SplineChar *sc) {
+    BDFChar * bdfc = mv->bdf!=NULL ? mv->bdf->glyphs[sc->orig_pos] : BDFPieceMealCheck(mv->show,sc->orig_pos);
+    return bdfc->width;
+}
+
 void MVRefreshMetric(MetricsView *mv) {
     double iscale = mv->pixelsize_set_by_window ? 1.0 : mv_scales[mv->scale_index];
     double scale = iscale*mv->pixelsize/(double) (mv->sf->ascent+mv->sf->descent);
@@ -924,8 +929,7 @@ void MVRefreshMetric(MetricsView *mv) {
     for ( int i=0; i<cnt; ++i ) {
 	MVRefreshValues(mv,i);
 	SplineChar * sc = mv->glyphs[i].sc;
-	BDFChar * bdfc = mv->bdf!=NULL ? mv->bdf->glyphs[sc->orig_pos] : BDFPieceMealCheck(mv->show,sc->orig_pos);
-	mv->metrics[i].dwidth = rint(iscale * bdfc->width);
+	mv->metrics[i].dwidth = rint(iscale * MVCharWidth(mv, sc));
 	mv->metrics[i].dx = x;
 	mv->metrics[i].xoff = rint(iscale * mv->glyphs[i].vr.xoff);
 	mv->metrics[i].yoff = rint(iscale * mv->glyphs[i].vr.yoff);
