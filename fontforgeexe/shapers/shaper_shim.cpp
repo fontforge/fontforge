@@ -107,3 +107,9 @@ const ShapeMetrics* shaper_metrics(void* shaper) {
     ff::shapers::IShaper* ishaper = static_cast<ff::shapers::IShaper*>(shaper);
     return ishaper->metrics.data();
 }
+
+void shaper_scale_metrics(void* shaper, MetricsView* mv, double iscale,
+                          double scale, bool vertical) {
+    ff::shapers::IShaper* ishaper = static_cast<ff::shapers::IShaper*>(shaper);
+    ishaper->scale_metrics(mv, iscale, scale, vertical);
+}

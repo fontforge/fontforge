@@ -62,6 +62,9 @@ typedef struct shaper_context {
     SplineChar* (*get_glyph_by_name)(SplineFont* sf, int unienc,
                                      const char* name);
 
+    // Case-specific glyph width computation, not to be used in general case.
+    int16_t (*get_char_width)(MetricsView* mv, SplineChar* sc);
+
 } ShaperContext;
 
 typedef struct shaper_def {
@@ -97,6 +100,9 @@ struct opentype_str* shaper_apply_features(void* shaper, SplineChar** glyphs,
                                            uint32_t lang, int pixelsize);
 
 const ShapeMetrics* shaper_metrics(void* shaper);
+
+void shaper_scale_metrics(void* shaper, MetricsView* mv, double iscale,
+                          double scale, bool vertical);
 
 #ifdef __cplusplus
 }

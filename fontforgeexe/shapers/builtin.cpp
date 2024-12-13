@@ -22,6 +22,9 @@
  */
 #include "builtin.hpp"
 
+#include <assert.h>
+#include <math.h>
+
 extern "C" {
 #include "splinechar.h"
 }
@@ -37,18 +40,46 @@ struct opentype_str* BuiltInShaper::apply_features(
         flist[i] = (uint32_t)feature_list[i];
     }
 
-    struct opentype_str* ots_arr = context_->apply_ticked_features(
-        context_->sf, flist.data(), (uint32_t)script, (uint32_t)lang, pixelsize,
-        glyphs);
+    ots_arr_ = context_->apply_ticked_features(context_->sf, flist.data(),
+                                               (uint32_t)script, (uint32_t)lang,
+                                               pixelsize, glyphs);
 
     // Count output glyphs
     int cnt;
-    for (cnt = 0; ots_arr[cnt].sc != NULL; ++cnt)
+    for (cnt = 0; ots_arr_[cnt].sc != NULL; ++cnt)
         ;
 
     metrics.resize(cnt);
+    for (auto& m : metrics) {
+        m.scaled = false;
+    }
 
-    return ots_arr;
+    return ots_arr_;
+}
+
+void BuiltInShaper::scale_metrics(MetricsView* mv, double iscale, double scale,
+                                  bool vertical) {
+    // Calculate positions.
+    int x = 10;
+    int y = 10;
+    for (int i = 0; i < metrics.size(); ++i) {
+        assert(!metrics[i].scaled);
+        SplineChar* sc = ots_arr_[i].sc;
+        metrics[i].dwidth = rint(iscale * context_->get_char_width(mv, sc));
+        metrics[i].dx = x;
+        metrics[i].xoff = rint(iscale * ots_arr_[i].vr.xoff);
+        metrics[i].yoff = rint(iscale * ots_arr_[i].vr.yoff);
+        metrics[i].kernafter = rint(iscale * ots_arr_[i].vr.h_adv_off);
+        x += metrics[i].dwidth + metrics[i].kernafter;
+
+        metrics[i].dheight = rint(sc->vwidth * scale);
+        metrics[i].dy = y;
+        if (vertical) {
+            metrics[i].kernafter = rint(iscale * ots_arr_[i].vr.v_adv_off);
+            y += metrics[i].dheight + metrics[i].kernafter;
+        }
+        metrics[i].scaled = true;
+    }
 }
 
 }  // namespace ff::shapers

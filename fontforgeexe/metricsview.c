@@ -923,26 +923,10 @@ void MVRefreshMetric(MetricsView *mv) {
     double scale = iscale*mv->pixelsize/(double) (mv->sf->ascent+mv->sf->descent);
     int cnt;
     // Count the valid glyphs and segfault if there is no null splinechar terminator.
-    for ( cnt=0; mv->glyphs[cnt].sc!=NULL; ++cnt );
-    // Calculate positions.
-    int x = 10; int y = 10;
-    for ( int i=0; i<cnt; ++i ) {
-	MVRefreshValues(mv,i);
-	SplineChar * sc = mv->glyphs[i].sc;
-	mv->metrics[i].dwidth = rint(iscale * MVCharWidth(mv, sc));
-	mv->metrics[i].dx = x;
-	mv->metrics[i].xoff = rint(iscale * mv->glyphs[i].vr.xoff);
-	mv->metrics[i].yoff = rint(iscale * mv->glyphs[i].vr.yoff);
-	mv->metrics[i].kernafter = rint(iscale * mv->glyphs[i].vr.h_adv_off);
-	x += mv->metrics[i].dwidth + mv->metrics[i].kernafter;
-
-	mv->metrics[i].dheight = rint(sc->vwidth*scale);
-	mv->metrics[i].dy = y;
-	if ( mv->vertical ) {
-	    mv->metrics[i].kernafter = rint( iscale * mv->glyphs[i].vr.v_adv_off);
-	    y += mv->metrics[i].dheight + mv->metrics[i].kernafter;
-	}
+    for ( cnt=0; mv->glyphs[cnt].sc!=NULL; ++cnt ) {
+	MVRefreshValues(mv,cnt);
     }
+    shaper_scale_metrics(mv->shaper, mv, iscale, scale, mv->vertical);
     MVSetVSb(mv);
     MVSetSb(mv);
 }
@@ -3983,6 +3967,7 @@ static ShaperContext* MVMakeShaperContext(MetricsView *mv) {
     context->fake_unicode = MVFakeUnicodeOfSc;
     context->get_enc_map = SFGetMap;
     context->get_glyph_by_name = SFGetChar;
+    context->get_char_width = MVCharWidth;
 
     return context;
 }
