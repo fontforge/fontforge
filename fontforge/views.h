@@ -365,13 +365,16 @@ struct aplist { AnchorPoint *ap; int connected_to, selected; struct aplist *next
 enum mv_grids { mv_hidegrid, mv_showgrid, mv_partialgrid, mv_hidemovinggrid };
 enum mv_type { mv_kernonly, mv_widthonly, mv_kernwidth };
 
-struct metricchar {
+typedef struct shape_metrics {
     int16_t dx, dwidth;	/* position and width of the displayed char */
     int16_t dy, dheight;	/*  displayed info for vertical metrics */
     int xoff, yoff;
-    int16_t mx, mwidth;	/* position and width of the text underneath */
     int16_t kernafter;
+} ShapeMetrics;
+
+struct metricchar {
     unsigned int selected: 1;
+    int16_t mx, mwidth;	/* position and width of the text underneath */
     GGadget *width, *lbearing, *rbearing, *kern, *name;
     GGadget* updownkparray[10]; /* Cherry picked elements from width...kern allowing up/down key navigation */
 };
@@ -399,6 +402,7 @@ typedef struct metricsview {
     int16_t cmax, clen;
     SplineChar **chars;		/* Character input stream */
     struct opentype_str *glyphs;/* after going through the various gsub/gpos transformations */
+    ShapeMetrics *metrics;      /* One for each glyph above */
     struct metricchar *perchar;	/* One for each glyph above */
     SplineChar **sstr;		/* Character input stream */
     int16_t mwidth, mbase;

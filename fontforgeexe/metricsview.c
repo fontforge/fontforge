@@ -253,22 +253,22 @@ static void MVSubVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
 	GDrawDrawLine(pixmap,xbase,0,xbase,mv->vheight,widthcol);
 
     if ( mv->bdf==NULL && MVShowGrid(mv) ) {
-	y = mv->perchar[0].dy-mv->yoff;
+	y = mv->metrics[0].dy-mv->yoff;
 	MVDrawLine(mv,pixmap,0,y,mv->vwidth,y,widthcol);
     }
 
     si = -1;
     for ( i=0; i<mv->glyphcnt; ++i ) {
 	if ( mv->perchar[i].selected ) si = i;
-	y = mv->perchar[i].dy-mv->yoff;
+	y = mv->metrics[i].dy-mv->yoff;
 	if ( mv->bdf==NULL &&  MVShowGrid(mv)) {
-	    int yp = y+mv->perchar[i].dheight+mv->perchar[i].kernafter;
+	    int yp = y+mv->metrics[i].dheight+mv->metrics[i].kernafter;
 	    MVDrawLine(mv,pixmap,0, yp,mv->vwidth,yp,
 		    mv->type==mv_kernonly  && i!=mv->glyphcnt-1 ?kernlinecol :
 		    mv->type==mv_widthonly                      ?rbearinglinecol :
 			widthcol);
 	}
-	y += mv->perchar[i].yoff;
+	y += mv->metrics[i].yoff;
 	bdfc = mv->bdf==NULL ?	BDFPieceMealCheck(mv->show,mv->glyphs[i].sc->orig_pos) :
 				BDFGetMergedChar( mv->bdf->glyphs[mv->glyphs[i].sc->orig_pos]);
 	if ( bdfc==NULL )
@@ -276,7 +276,7 @@ static void MVSubVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
 	y += as-rint(iscale * bdfc->ymax);
 	if ( mv->perchar[i].selected )
 	    y += mv->activeoff;
-	x = xbase - rint(iscale * (mv->pixelsize/2 + bdfc->xmin) - mv->perchar[i].xoff);
+	x = xbase - rint(iscale * (mv->pixelsize/2 + bdfc->xmin) - mv->metrics[i].xoff);
 	width = bdfc->xmax-bdfc->xmin+1; height = bdfc->ymax-bdfc->ymin+1;
 	if ( clip->y+clip->height<y )
     break;
@@ -323,10 +323,10 @@ static void MVSubVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
 	if ( mv->bdf!=NULL ) BDFCharFree( bdfc );
     }
     if ( si!=-1 && mv->bdf==NULL &&  MVShowGrid(mv) && mv->type==mv_kernwidth ) {
-	y = mv->perchar[si].dy-mv->yoff;
+	y = mv->metrics[si].dy-mv->yoff;
 	if ( si!=0 )
 	    MVDrawLine(mv,pixmap,0,y,mv->vwidth,y,kernlinecol);
-	y += mv->perchar[si].dheight+mv->perchar[si].kernafter;
+	y += mv->metrics[si].dheight+mv->metrics[si].kernafter;
 	MVDrawLine(mv,pixmap,0,y,mv->vwidth,y,rbearinglinecol);
     }
 }
@@ -359,9 +359,9 @@ return;
 	GDrawDrawLine(pixmap,0,ybase,mv->dwidth,ybase,widthcol);
 
     if ( mv->bdf==NULL && MVShowGrid(mv) ) {
-	x = mv->perchar[0].dx-mv->xoff;
+	x = mv->metrics[0].dx-mv->xoff;
 	if ( mv->right_to_left )
-	    x = mv->vwidth - x - mv->perchar[0].dwidth - mv->perchar[0].kernafter;
+	    x = mv->vwidth - x - mv->metrics[0].dwidth - mv->metrics[0].kernafter;
 	MVDrawLine(mv,pixmap,x,0,x,mv->vheight,widthcol);
 	x_iaoffh = rint(ybase*s), x_iaoffl = rint((mv->vheight-ybase)*s);
 	if ( ItalicConstrained && x_iaoffh!=0 ) {
@@ -371,11 +371,11 @@ return;
     si = -1;
     for ( i=0; i<mv->glyphcnt; ++i ) {
 	if ( mv->perchar[i].selected ) si = i;
-	x = mv->perchar[i].dx-mv->xoff;
+	x = mv->metrics[i].dx-mv->xoff;
 	if ( mv->right_to_left )
-	    x = mv->vwidth - x - mv->perchar[i].dwidth - mv->perchar[i].kernafter;
+	    x = mv->vwidth - x - mv->metrics[i].dwidth - mv->metrics[i].kernafter;
 	if ( mv->bdf==NULL && MVShowGrid(mv) ) {
-	    int xp = x+mv->perchar[i].dwidth+mv->perchar[i].kernafter;
+	    int xp = x+mv->metrics[i].dwidth+mv->metrics[i].kernafter;
 	    MVDrawLine(mv,pixmap,xp, 0,xp,mv->vheight,
 		    mv->type==mv_kernonly  && i!=mv->glyphcnt-1 ?kernlinecol :
 		    mv->type==mv_widthonly                      ?rbearinglinecol :
@@ -385,9 +385,9 @@ return;
 	    }
 	}
 	if ( mv->right_to_left )
-	    x += mv->perchar[i].kernafter-mv->perchar[i].xoff;
+	    x += mv->metrics[i].kernafter-mv->metrics[i].xoff;
 	else
-	    x += mv->perchar[i].xoff;
+	    x += mv->metrics[i].xoff;
 	bdfc = mv->bdf==NULL ?	BDFPieceMealCheck(mv->show,mv->glyphs[i].sc->orig_pos) :
 				BDFGetMergedChar( mv->bdf->glyphs[mv->glyphs[i].sc->orig_pos]);
 	if ( bdfc==NULL )
@@ -395,7 +395,7 @@ return;
 	x += rint( iscale * bdfc->xmin );
 	if ( mv->perchar[i].selected )
 	    x += mv->activeoff;
-	y = ybase - rint( iscale * bdfc->ymax ) - (iscale-1) - mv->perchar[i].yoff;
+	y = ybase - rint( iscale * bdfc->ymax ) - (iscale-1) - mv->metrics[i].yoff;
 	width = bdfc->xmax-bdfc->xmin+1; height = bdfc->ymax-bdfc->ymin+1;
 	if ( !mv->right_to_left && clip->x+clip->width<x )
     break;
@@ -444,15 +444,15 @@ return;
 	if ( mv->bdf!=NULL ) BDFCharFree( bdfc );
     }
     if ( si!=-1 && mv->bdf==NULL && MVShowGrid(mv) && mv->type==mv_kernwidth ) {
-	x = mv->perchar[si].dx-mv->xoff;
+	x = mv->metrics[si].dx-mv->xoff;
 	if ( mv->right_to_left )
 	    x = mv->vwidth - x;
 	if ( si!=0 )
 	    MVDrawLine(mv,pixmap,x,0,x,mv->vheight,kernlinecol);
 	if ( mv->right_to_left )
-	    x -= mv->perchar[si].dwidth+mv->perchar[si].kernafter;
+	    x -= mv->metrics[si].dwidth+mv->metrics[si].kernafter;
 	else
-	    x += mv->perchar[si].dwidth+mv->perchar[si].kernafter;
+	    x += mv->metrics[si].dwidth+mv->metrics[si].kernafter;
 	 MVDrawLine(mv,pixmap,x, 0,x,mv->vheight,rbearinglinecol);
     }
     GDrawPopClip(pixmap,&old);
@@ -625,14 +625,14 @@ return;
     if ( mv->perchar[i].selected )
 	off = mv->activeoff;
     r.y = 0; r.height = mv->vheight;
-    r.x = mv->perchar[i].dx-mv->xoff; r.width = mv->perchar[i].dwidth;
-    if ( mv->perchar[i].kernafter>0 )
-	r.width += mv->perchar[i].kernafter;
-    if ( mv->perchar[i].xoff<0 ) {
-	r.x += mv->perchar[i].xoff;
-	r.width -= mv->perchar[i].xoff;
+    r.x = mv->metrics[i].dx-mv->xoff; r.width = mv->metrics[i].dwidth;
+    if ( mv->metrics[i].kernafter>0 )
+	r.width += mv->metrics[i].kernafter;
+    if ( mv->metrics[i].xoff<0 ) {
+	r.x += mv->metrics[i].xoff;
+	r.width -= mv->metrics[i].xoff;
     } else
-	r.width += mv->perchar[i].xoff;
+	r.width += mv->metrics[i].xoff;
     bdfc = mv->bdf==NULL ?  BDFPieceMealCheck(mv->show,mv->glyphs[i].sc->orig_pos) :
 			    mv->bdf->glyphs[mv->glyphs[i].sc->orig_pos];
     if ( bdfc==NULL )
@@ -902,7 +902,7 @@ static void MVCreateFields(MetricsView *mv,int i) {
 
 	if ( i>=mv->glyphcnt ) {
 	    for ( j=mv->glyphcnt+1; j<=i ; ++ j )
-		mv->perchar[j].dx = mv->perchar[j-1].dx;
+		mv->metrics[j].dx = mv->metrics[j-1].dx;
 	    mv->glyphcnt = i+1;
 	}
     }
@@ -925,18 +925,18 @@ void MVRefreshMetric(MetricsView *mv) {
 	MVRefreshValues(mv,i);
 	SplineChar * sc = mv->glyphs[i].sc;
 	BDFChar * bdfc = mv->bdf!=NULL ? mv->bdf->glyphs[sc->orig_pos] : BDFPieceMealCheck(mv->show,sc->orig_pos);
-	mv->perchar[i].dwidth = rint(iscale * bdfc->width);
-	mv->perchar[i].dx = x;
-	mv->perchar[i].xoff = rint(iscale * mv->glyphs[i].vr.xoff);
-	mv->perchar[i].yoff = rint(iscale * mv->glyphs[i].vr.yoff);
-	mv->perchar[i].kernafter = rint(iscale * mv->glyphs[i].vr.h_adv_off);
-	x += mv->perchar[i].dwidth + mv->perchar[i].kernafter;
+	mv->metrics[i].dwidth = rint(iscale * bdfc->width);
+	mv->metrics[i].dx = x;
+	mv->metrics[i].xoff = rint(iscale * mv->glyphs[i].vr.xoff);
+	mv->metrics[i].yoff = rint(iscale * mv->glyphs[i].vr.yoff);
+	mv->metrics[i].kernafter = rint(iscale * mv->glyphs[i].vr.h_adv_off);
+	x += mv->metrics[i].dwidth + mv->metrics[i].kernafter;
 
-	mv->perchar[i].dheight = rint(sc->vwidth*scale);
-	mv->perchar[i].dy = y;
+	mv->metrics[i].dheight = rint(sc->vwidth*scale);
+	mv->metrics[i].dy = y;
 	if ( mv->vertical ) {
-	    mv->perchar[i].kernafter = rint( iscale * mv->glyphs[i].vr.v_adv_off);
-	    y += mv->perchar[i].dheight + mv->perchar[i].kernafter;
+	    mv->metrics[i].kernafter = rint( iscale * mv->glyphs[i].vr.v_adv_off);
+	    y += mv->metrics[i].dheight + mv->metrics[i].kernafter;
 	}
     }
     MVSetVSb(mv);
@@ -1023,6 +1023,8 @@ static void MVRemetric(MetricsView *mv) {
     if ( cnt>=mv->max ) {
 	int oldmax=mv->max;
 	mv->max = cnt+10;
+	mv->metrics = realloc(mv->metrics,mv->max*sizeof(ShapeMetrics));
+	memset(mv->metrics+oldmax,'\0',(mv->max-oldmax)*sizeof(ShapeMetrics));
 	mv->perchar = realloc(mv->perchar,mv->max*sizeof(struct metricchar));
 	memset(mv->perchar+oldmax,'\0',(mv->max-oldmax)*sizeof(struct metricchar));
     }
@@ -1406,17 +1408,17 @@ return( false );
     }
     int16_t newkernafter = iscale * (offset*mv->pixelsize)/
 	(mv->sf->ascent+mv->sf->descent);
-    mv->perchar[which-1].kernafter = newkernafter;
+    mv->metrics[which-1].kernafter = newkernafter;
 
     if ( mv->vertical ) {
 	for ( i=which; i<mv->glyphcnt; ++i ) {
-	    mv->perchar[i].dy = mv->perchar[i-1].dy+mv->perchar[i-1].dheight +
-		    mv->perchar[i-1].kernafter ;
+	    mv->metrics[i].dy = mv->metrics[i-1].dy+mv->metrics[i-1].dheight +
+		    mv->metrics[i-1].kernafter ;
 	}
     } else {
 	for ( i=which; i<mv->glyphcnt; ++i ) {
-	    mv->perchar[i].dx = mv->perchar[i-1].dx + mv->perchar[i-1].dwidth +
-		    mv->perchar[i-1].kernafter;
+	    mv->metrics[i].dx = mv->metrics[i-1].dx + mv->metrics[i-1].dwidth +
+		    mv->metrics[i-1].kernafter;
 	}
     }
 
@@ -1478,11 +1480,11 @@ return( false );
 			// all the glyphs on the right over or back a bit so that things
 			// still all fit as expected.
 			//
-			mv->perchar[i-1].kernafter = newkernafter;
+			mv->metrics[i-1].kernafter = newkernafter;
 			int j;
 			for ( j=i; j<mv->glyphcnt; ++j ) {
-			    mv->perchar[j].dx = mv->perchar[j-1].dx + mv->perchar[j-1].dwidth +
-				mv->perchar[j-1].kernafter;
+			    mv->metrics[j].dx = mv->metrics[j-1].dx + mv->metrics[j-1].dwidth +
+				mv->metrics[j-1].kernafter;
 			}
 		    }
 		}
@@ -1642,7 +1644,7 @@ static int MVDisplayedCnt(MetricsView *mv) {
     int i, wid = mv->mbase;
 
     for ( i=mv->coff; i<mv->glyphcnt; ++i ) {
-	wid += mv->perchar[i].dwidth;
+	wid += mv->metrics[i].dwidth;
 	if ( wid>mv->dwidth )
 return( i-mv->coff );
     }
@@ -1670,7 +1672,7 @@ return(0);		/* Setting the scroll bar is premature */
     if ( mv->vertical ) {
 	min = max = 0;
 	if ( mv->glyphcnt!=0 )
-	    max = mv->perchar[mv->glyphcnt-1].dy + mv->perchar[mv->glyphcnt-1].dheight;
+	    max = mv->metrics[mv->glyphcnt-1].dy + mv->metrics[mv->glyphcnt-1].dheight;
 	fudge = 10;
     } else {
 	SplineFont *sf = mv->sf;
@@ -1734,7 +1736,7 @@ static void MVHScroll(MetricsView *mv,struct sbevent *sb) {
     if ( newpos!=mv->coff ) {
 	int old = mv->coff;
 	int diff = newpos-mv->coff;
-	int charsize = mv->perchar[newpos].dx-mv->perchar[old].dx;
+	int charsize = mv->metrics[newpos].dx-mv->metrics[old].dx;
 	GRect fieldrect, charrect;
 
 	mv->coff = newpos;
@@ -1746,7 +1748,7 @@ static void MVHScroll(MetricsView *mv,struct sbevent *sb) {
 	GScrollBarSetPos(mv->hsb,mv->coff);
 	MVMoveFieldsBy(mv,newpos*mv->mwidth);
 	GDrawScroll(mv->gw,&fieldrect,-diff*mv->mwidth,0);
-	mv->xoff = mv->perchar[newpos].dx-mv->perchar[0].dx;
+	mv->xoff = mv->metrics[newpos].dx-mv->metrics[0].dx;
 	if ( mv->right_to_left ) {
 	    charsize = -charsize;
 	}
@@ -4350,8 +4352,8 @@ static void _MVSubVMouse(MetricsView *mv,GEvent *event) {
     xbase = mv->vwidth/2;
     within = -1;
     for ( i=0; i<mv->glyphcnt; ++i ) {
-	y = mv->perchar[i].dy + mv->perchar[i].yoff;
-	x = xbase - mv->pixelsize*iscale/2 - mv->perchar[i].xoff;
+	y = mv->metrics[i].dy + mv->metrics[i].yoff;
+	x = xbase - mv->pixelsize*iscale/2 - mv->metrics[i].xoff;
 	if ( mv->bdf==NULL ) {
 	    BDFChar *bdfc = BDFPieceMealCheck(mv->show,mv->glyphs[i].sc->orig_pos);
 	    if ( event->u.mouse.x >= x+bdfc->xmin &&
@@ -4362,8 +4364,8 @@ static void _MVSubVMouse(MetricsView *mv,GEvent *event) {
 			rint(iscale*(event->u.mouse.y-(y+as-bdfc->ymax)))) )
     break;
 	}
-	y += -mv->perchar[i].yoff;
-	if ( event->u.mouse.y >= y && event->u.mouse.y < y+mv->perchar[i].dheight+ mv->perchar[i].kernafter )
+	y += -mv->metrics[i].yoff;
+	if ( event->u.mouse.y >= y && event->u.mouse.y < y+mv->metrics[i].dheight+ mv->metrics[i].kernafter )
 	    within = i;
     }
     if ( i==mv->glyphcnt )
@@ -4376,34 +4378,34 @@ static void _MVSubVMouse(MetricsView *mv,GEvent *event) {
     if ( sc==NULL ) {
 	if ( mv->type == mv_kernonly ) {
 	    if ( within!=-1 && within+1<mv->glyphcnt &&
-		    event->u.mouse.y>mv->perchar[within+1].dy-3 ) {
+		    event->u.mouse.y>mv->metrics[within+1].dy-3 ) {
 		onkern = true;			/* subsequent char */
 		++within;
 	    } else if ( within>0 &&
-		    event->u.mouse.y<mv->perchar[within].dy+3 )
+		    event->u.mouse.y<mv->metrics[within].dy+3 )
 		onkern = true;
 	} else if ( mv->type == mv_widthonly ) {
 	    if ( within!=-1 && within+1<mv->glyphcnt &&
-		    event->u.mouse.y>mv->perchar[within+1].dy-3 )
+		    event->u.mouse.y>mv->metrics[within+1].dy-3 )
 		onwidth = true;			/* subsequent char */
 	    else if ( within>=0 &&
-		    event->u.mouse.y>mv->perchar[within].dy+mv->perchar[within].dheight+mv->perchar[within].kernafter-3 ) {
+		    event->u.mouse.y>mv->metrics[within].dy+mv->metrics[within].dheight+mv->metrics[within].kernafter-3 ) {
 		onwidth = true;
 	    }
 	} else {
 	    if ( within>0 && mv->perchar[within-1].selected &&
-		    event->u.mouse.y<mv->perchar[within].dy+3 )
+		    event->u.mouse.y<mv->metrics[within].dy+3 )
 		onwidth = true;		/* previous char */
 	    else if ( within!=-1 && within+1<mv->glyphcnt &&
 		    mv->perchar[within+1].selected &&
-		    event->u.mouse.y>mv->perchar[within+1].dy-3 ) {
+		    event->u.mouse.y>mv->metrics[within+1].dy-3 ) {
 		onkern = true;			/* subsequent char */
 		++within;
 	    } else if ( within>0 && mv->perchar[within].selected &&
-		    event->u.mouse.y<mv->perchar[within].dy+3 )
+		    event->u.mouse.y<mv->metrics[within].dy+3 )
 		onkern = true;
 	    else if ( within>=0 &&
-		    event->u.mouse.y>mv->perchar[within].dy+mv->perchar[within].dheight+mv->perchar[within].kernafter-3 ) {
+		    event->u.mouse.y>mv->metrics[within].dy+mv->metrics[within].dheight+mv->metrics[within].kernafter-3 ) {
 		onwidth = true;
 	    }
 	}
@@ -4464,16 +4466,16 @@ static void _MVSubVMouse(MetricsView *mv,GEvent *event) {
     } else if ( event->type == et_mousemove && mv->pressed ) {
 	for ( i=0; i<mv->glyphcnt && !mv->perchar[i].selected; ++i );
 	if ( mv->pressedwidth ) {
-	    int ow = mv->perchar[i].dwidth;
-	    mv->perchar[i].dwidth = rint(mv->glyphs[i].sc->vwidth*scale) + diff;
-	    if ( ow!=mv->perchar[i].dwidth ) {
+	    int ow = mv->metrics[i].dwidth;
+	    mv->metrics[i].dwidth = rint(mv->glyphs[i].sc->vwidth*scale) + diff;
+	    if ( ow!=mv->metrics[i].dwidth ) {
 		for ( j=i+1; j<mv->glyphcnt; ++j )
-		    mv->perchar[j].dy = mv->perchar[j-1].dy+mv->perchar[j-1].dheight+
-			    mv->perchar[j-1].kernafter;
+		    mv->metrics[j].dy = mv->metrics[j-1].dy+mv->metrics[j-1].dheight+
+			    mv->metrics[j-1].kernafter;
 		GDrawRequestExpose(mv->v,NULL,false);
 	    }
 	} else if ( mv->pressedkern ) {
-	    int ow = mv->perchar[i-1].kernafter;
+	    int ow = mv->metrics[i-1].kernafter;
 	    KernPair *kp;
 	    int kpoff;
 	    KernClass *kc;
@@ -4486,11 +4488,11 @@ static void _MVSubVMouse(MetricsView *mv,GEvent *event) {
 		kpoff = 0;
 	    kpoff = kpoff * mv->pixelsize*iscale /
 			(mv->sf->descent+mv->sf->ascent);
-	    mv->perchar[i-1].kernafter = kpoff + diff;
-	    if ( ow!=mv->perchar[i-1].kernafter ) {
+	    mv->metrics[i-1].kernafter = kpoff + diff;
+	    if ( ow!=mv->metrics[i-1].kernafter ) {
 		for ( j=i; j<mv->glyphcnt; ++j )
-		    mv->perchar[j].dy = mv->perchar[j-1].dy+mv->perchar[j-1].dheight+
-			    mv->perchar[j-1].kernafter;
+		    mv->metrics[j].dy = mv->metrics[j-1].dy+mv->metrics[j-1].dheight+
+			    mv->metrics[j-1].kernafter;
 		GDrawRequestExpose(mv->v,NULL,false);
 	    }
 	} else if ( mv->type!=mv_kernonly ) {
@@ -4523,8 +4525,8 @@ static void _MVSubVMouse(MetricsView *mv,GEvent *event) {
 		sc->vwidth += diff;
 		SCCharChangedUpdate(sc,ly_none);
 		for ( ; i<mv->glyphcnt; ++i )
-		    mv->perchar[i].dy = mv->perchar[i-1].dy+mv->perchar[i-1].dheight +
-			    mv->perchar[i-1].kernafter ;
+		    mv->metrics[i].dy = mv->metrics[i-1].dy+mv->metrics[i-1].dheight +
+			    mv->metrics[i-1].kernafter ;
 		GDrawRequestExpose(mv->v,NULL,false);
 	    } else if ( mv->showgrid==mv_hidemovinggrid )
 		GDrawRequestExpose(mv->v,NULL,false);
@@ -4586,10 +4588,10 @@ return;
     ybase = mv->ybaseline - mv->yoff;
     within = -1;
     for ( i=0; i<mv->glyphcnt; ++i ) {
-	x = mv->perchar[i].dx + mv->perchar[i].xoff;
+	x = mv->metrics[i].dx + mv->metrics[i].xoff;
 	if ( mv->right_to_left )
-	    x = mv->vwidth - x - mv->perchar[i].dwidth - mv->perchar[i].kernafter;
-	y = ybase - mv->perchar[i].yoff;
+	    x = mv->vwidth - x - mv->metrics[i].dwidth - mv->metrics[i].kernafter;
+	y = ybase - mv->metrics[i].yoff;
 	if ( mv->bdf==NULL ) {
 	    bdfc = BDFPieceMealCheck(mv->show,mv->glyphs[i].sc->orig_pos);
 	    if ( event->u.mouse.x >= x+bdfc->xmin &&
@@ -4600,8 +4602,8 @@ return;
 			rint(iscale*(bdfc->ymax-(y-event->u.mouse.y)))) )
     break;
 	}
-	x += mv->right_to_left ? mv->perchar[i].xoff : -mv->perchar[i].xoff;
-	if ( event->u.mouse.x >= x && event->u.mouse.x < x+mv->perchar[i].dwidth+ mv->perchar[i].kernafter )
+	x += mv->right_to_left ? mv->metrics[i].xoff : -mv->metrics[i].xoff;
+	if ( event->u.mouse.x >= x && event->u.mouse.x < x+mv->metrics[i].dwidth+ mv->metrics[i].kernafter )
 	    within = i;
     }
     if ( i==mv->glyphcnt )
@@ -4616,68 +4618,68 @@ return;
 	if ( !mv->right_to_left ) {
 	    if ( mv->type == mv_kernonly ) {
 		if ( within>=0 && within+1<mv->glyphcnt &&
-			event->u.mouse.x>mv->perchar[within+1].dx-3 ) {
+			event->u.mouse.x>mv->metrics[within+1].dx-3 ) {
 		    onkern = true;			/* subsequent char */
 		    ++within;
 		} else if ( within>0 &&
-			event->u.mouse.x<mv->perchar[within].dx+3 )
+			event->u.mouse.x<mv->metrics[within].dx+3 )
 		    onkern = true;
 	    } else if ( mv->type == mv_widthonly ) {
 		if ( within>=0 && within+1<mv->glyphcnt &&
-			event->u.mouse.x>mv->perchar[within+1].dx-3 )
+			event->u.mouse.x>mv->metrics[within+1].dx-3 )
 		    onwidth = true;			/* subsequent char */
 		else if ( within>=0 &&
-			event->u.mouse.x>mv->perchar[within].dx+mv->perchar[within].dwidth+mv->perchar[within].kernafter-3 ) {
+			event->u.mouse.x>mv->metrics[within].dx+mv->metrics[within].dwidth+mv->metrics[within].kernafter-3 ) {
 		    onwidth = true;
 		}
 	    } else {
 		if ( within>0 && mv->perchar[within-1].selected &&
-			event->u.mouse.x<mv->perchar[within].dx+3 )
+			event->u.mouse.x<mv->metrics[within].dx+3 )
 		    onwidth = true;		/* previous char */
 		else if ( within!=-1 && within+1<mv->glyphcnt &&
 			mv->perchar[within+1].selected &&
-			event->u.mouse.x>mv->perchar[within+1].dx-3 ) {
+			event->u.mouse.x>mv->metrics[within+1].dx-3 ) {
 		    onkern = true;			/* subsequent char */
 		    ++within;
 		} else if ( within>0 && mv->perchar[within].selected &&
-			event->u.mouse.x<mv->perchar[within].dx+3 )
+			event->u.mouse.x<mv->metrics[within].dx+3 )
 		    onkern = true;
 		else if ( within>=0 &&
-			event->u.mouse.x>mv->perchar[within].dx+mv->perchar[within].dwidth+mv->perchar[within].kernafter-3 ) {
+			event->u.mouse.x>mv->metrics[within].dx+mv->metrics[within].dwidth+mv->metrics[within].kernafter-3 ) {
 		    onwidth = true;
 		}
 	    }
 	} else {
 	    if ( mv->type == mv_kernonly ) {
 		if ( within>=0 && within+1<mv->glyphcnt &&
-			event->u.mouse.x<mv->dwidth-(mv->perchar[within+1].dx-3) ) {
+			event->u.mouse.x<mv->dwidth-(mv->metrics[within+1].dx-3) ) {
 		    onkern = true;			/* subsequent char */
 		    ++within;
 		} else if ( within>0 &&
-			event->u.mouse.x>mv->dwidth-(mv->perchar[within].dx+3) )
+			event->u.mouse.x>mv->dwidth-(mv->metrics[within].dx+3) )
 		    onkern = true;
 	    } else if ( mv->type == mv_widthonly ) {
 		if ( within>=0 && within+1<mv->glyphcnt &&
-			event->u.mouse.x<mv->dwidth-(mv->perchar[within+1].dx-3) )
+			event->u.mouse.x<mv->dwidth-(mv->metrics[within+1].dx-3) )
 		    onwidth = true;			/* subsequent char */
 		else if ( within>=0 &&
-			event->u.mouse.x<mv->dwidth-(mv->perchar[within].dx+mv->perchar[within].dwidth+mv->perchar[within].kernafter-3) ) {
+			event->u.mouse.x<mv->dwidth-(mv->metrics[within].dx+mv->metrics[within].dwidth+mv->metrics[within].kernafter-3) ) {
 		    onwidth = true;
 		}
 	    } else {
 		if ( within>0 && mv->perchar[within-1].selected &&
-			event->u.mouse.x>mv->dwidth-(mv->perchar[within].dx+3) )
+			event->u.mouse.x>mv->dwidth-(mv->metrics[within].dx+3) )
 		    onwidth = true;		/* previous char */
 		else if ( within!=-1 && within+1<mv->glyphcnt &&
 			mv->perchar[within+1].selected &&
-			event->u.mouse.x<mv->dwidth-(mv->perchar[within+1].dx-3) ) {
+			event->u.mouse.x<mv->dwidth-(mv->metrics[within+1].dx-3) ) {
 		    onkern = true;			/* subsequent char */
 		    ++within;
 		} else if ( within>0 && mv->perchar[within].selected &&
-			event->u.mouse.x>mv->dwidth-(mv->perchar[within].dx+3) )
+			event->u.mouse.x>mv->dwidth-(mv->metrics[within].dx+3) )
 		    onkern = true;
 		else if ( within>=0 &&
-			event->u.mouse.x<mv->dwidth-(mv->perchar[within].dx+mv->perchar[within].dwidth+mv->perchar[within].kernafter-3) ) {
+			event->u.mouse.x<mv->dwidth-(mv->metrics[within].dx+mv->metrics[within].dwidth+mv->metrics[within].kernafter-3) ) {
 		    onwidth = true;
 		}
 	    }
@@ -4745,17 +4747,17 @@ return;
 	}
 
 	if ( mv->pressedwidth ) {
-	    int ow = mv->perchar[i].dwidth;
+	    int ow = mv->metrics[i].dwidth;
 	    if ( mv->right_to_left ) diff = -diff;
 	    bdfc = BDFPieceMealCheck(mv->show,mv->glyphs[i].sc->orig_pos);
-	    mv->perchar[i].dwidth = bdfc->width + diff;
-	    if ( ow!=mv->perchar[i].dwidth ) {
+	    mv->metrics[i].dwidth = bdfc->width + diff;
+	    if ( ow!=mv->metrics[i].dwidth ) {
 		for ( j=i+1; j<mv->glyphcnt; ++j )
-		    mv->perchar[j].dx = mv->perchar[j-1].dx+mv->perchar[j-1].dwidth+ mv->perchar[j-1].kernafter;
+		    mv->metrics[j].dx = mv->metrics[j-1].dx+mv->metrics[j-1].dwidth+ mv->metrics[j-1].kernafter;
 		GDrawRequestExpose(mv->v,NULL,false);
 	    }
 	} else if ( mv->pressedkern ) {
-	    int ow = mv->perchar[i-1].kernafter;
+	    int ow = mv->metrics[i-1].kernafter;
 	    KernPair *kp;
 	    int kpoff;
 	    KernClass *kc;
@@ -4770,10 +4772,10 @@ return;
 	    kpoff = kpoff * mv->pixelsize*iscale /
 			(mv->sf->descent+mv->sf->ascent);
 	    if ( mv->right_to_left ) diff = -diff;
-	    mv->perchar[i-1].kernafter = kpoff + diff;
-	    if ( ow!=mv->perchar[i-1].kernafter ) {
+	    mv->metrics[i-1].kernafter = kpoff + diff;
+	    if ( ow!=mv->metrics[i-1].kernafter ) {
 		for ( j=i; j<mv->glyphcnt; ++j )
-		    mv->perchar[j].dx = mv->perchar[j-1].dx+mv->perchar[j-1].dwidth+ mv->perchar[j-1].kernafter;
+		    mv->metrics[j].dx = mv->metrics[j-1].dx+mv->metrics[j-1].dwidth+ mv->metrics[j-1].kernafter;
 		GDrawRequestExpose(mv->v,NULL,false);
 	    }
 	} else if ( mv->type!=mv_kernonly ) {
@@ -4893,19 +4895,19 @@ return;
     within = mv->glyphcnt;
     if ( !mv->vertical ) {
 	for ( i=0; i<mv->glyphcnt; ++i ) {
-	    x = mv->perchar[i].dx;
+	    x = mv->metrics[i].dx;
 	    if ( mv->right_to_left )
-		x = mv->dwidth - x - mv->perchar[i].dwidth - mv->perchar[i].kernafter ;
-	    if ( ex >= x && ex < x+mv->perchar[i].dwidth+ mv->perchar[i].kernafter ) {
+		x = mv->dwidth - x - mv->metrics[i].dwidth - mv->metrics[i].kernafter ;
+	    if ( ex >= x && ex < x+mv->metrics[i].dwidth+ mv->metrics[i].kernafter ) {
 		within = i;
 	break;
 	    }
 	}
     } else {
 	for ( i=0; i<mv->glyphcnt; ++i ) {
-	    y = mv->perchar[i].dy;
-	    if ( ey >= y && ey < y+mv->perchar[i].dheight+
-		    mv->perchar[i].kernafter ) {
+	    y = mv->metrics[i].dy;
+	    if ( ey >= y && ey < y+mv->metrics[i].dheight+
+		    mv->metrics[i].kernafter ) {
 		within = i;
 	break;
 	    }
@@ -5447,6 +5449,7 @@ void MetricsViewFree(MetricsView *mv) {
     /* the fields will free themselves */
     free(mv->chars);
     free(mv->glyphs);
+    free(mv->metrics);
     free(mv->perchar);
     shaper_free(&(mv->shaper));
     free(mv);
