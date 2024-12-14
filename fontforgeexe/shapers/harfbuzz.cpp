@@ -97,7 +97,7 @@ struct opentype_str* HarfBuzzShaper::apply_features(
         hb_buffer_get_glyph_positions(hb_buffer, &glyph_count);
 
     // Return metrics data as a raw C-style array
-    struct opentype_str* metrics_data = (struct opentype_str*)calloc(
+    struct opentype_str* ots_arr = (struct opentype_str*)calloc(
         glyph_count + 1, sizeof(struct opentype_str));
 
     // Process the glyphs and positions
@@ -105,7 +105,7 @@ struct opentype_str* HarfBuzzShaper::apply_features(
         char glyph_name[64];
         hb_glyph_info_t& glyph_info = glyph_info_arr[i];
         hb_glyph_position_t& glyph_pos = glyph_pos_arr[i];
-        struct opentype_str& metrics = metrics_data[i];
+        struct opentype_str& ots = ots_arr[i];
 
         // Warning: after the shaping glyph_info->codepoint is not a Unicode
         // point, but rather an internal glyph index. We can't use it in our
@@ -116,7 +116,7 @@ struct opentype_str* HarfBuzzShaper::apply_features(
         SplineChar* glyph_out =
             context_->get_glyph_by_name(context_->sf, -1, glyph_name);
 
-        metrics.sc = glyph_out;
+        ots.sc = glyph_out;
     }
 
     // Cleanup
@@ -126,7 +126,7 @@ struct opentype_str* HarfBuzzShaper::apply_features(
     // Adjust metrics buffer for caller's use
     metrics.resize(glyph_count);
 
-    return metrics_data;
+    return ots_arr;
 }
 
 }  // namespace ff::shapers
