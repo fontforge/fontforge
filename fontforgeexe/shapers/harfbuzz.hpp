@@ -43,7 +43,7 @@ class HarfBuzzShaper : public IShaper {
                                         int pixelsize) override;
 
     void scale_metrics(MetricsView* mv, double iscale, double scale,
-                       bool vertical) override {}
+                       bool vertical) override;
 
  private:
     std::shared_ptr<ShaperContext> context_;

@@ -22,6 +22,7 @@
  */
 #include "harfbuzz.hpp"
 
+#include <cassert>
 #include <fstream>
 
 extern "C" {
@@ -96,11 +97,15 @@ struct opentype_str* HarfBuzzShaper::apply_features(
     hb_glyph_position_t* glyph_pos_arr =
         hb_buffer_get_glyph_positions(hb_buffer, &glyph_count);
 
-    // Return metrics data as a raw C-style array
+    // Return data as a raw C-style array
     struct opentype_str* ots_arr = (struct opentype_str*)calloc(
         glyph_count + 1, sizeof(struct opentype_str));
 
+    // Adjust metrics buffer size
+    metrics.resize(glyph_count);
+
     // Process the glyphs and positions
+    int total_x_advance = 0, total_y_advance = 0;
     for (int i = 0; i < glyph_count; ++i) {
         char glyph_name[64];
         hb_glyph_info_t& glyph_info = glyph_info_arr[i];
@@ -117,16 +122,52 @@ struct opentype_str* HarfBuzzShaper::apply_features(
             context_->get_glyph_by_name(context_->sf, -1, glyph_name);
 
         ots.sc = glyph_out;
+
+        // Fill unscaled metrics in font units
+        hb_position_t h_advance =
+            hb_font_get_glyph_h_advance(hb_ttf_font, glyph_info.codepoint);
+
+        hb_glyph_extents_t extents;
+        hb_bool_t res = hb_font_get_glyph_extents(
+            hb_ttf_font, glyph_info.codepoint, &extents);
+        assert(res);
+
+        metrics[i].dwidth = h_advance;
+        metrics[i].dheight = -extents.height;
+
+        metrics[i].xoff = glyph_pos.x_offset;
+        metrics[i].yoff = glyph_pos.y_offset;
+
+        metrics[i].dx = total_x_advance;
+        metrics[i].dy = total_y_advance;
+
+        total_x_advance += glyph_pos.x_advance;
+        total_y_advance += glyph_pos.y_advance;
+
+        metrics[i].kernafter = 0;
+        metrics[i].scaled = false;
     }
 
     // Cleanup
     hb_buffer_destroy(hb_buffer);
     free(utf8_str);
 
-    // Adjust metrics buffer for caller's use
-    metrics.resize(glyph_count);
-
     return ots_arr;
+}
+
+void HarfBuzzShaper::scale_metrics(MetricsView* mv, double iscale, double scale,
+                                   bool vertical) {
+    int x0 = 10, y0 = 10;
+    for (auto& m : metrics) {
+        assert(!m.scaled);
+        m.dx = x0 + m.dx * scale;
+        m.dy = y0 + m.dy * scale;
+        m.dwidth *= scale;
+        m.dheight *= scale;
+        m.xoff *= scale;
+        m.yoff *= scale;
+        m.scaled = true;
+    }
 }
 
 }  // namespace ff::shapers

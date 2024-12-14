@@ -47,6 +47,7 @@ class IShaper {
         SplineChar** glyphs, const std::vector<Tag>& feature_list, Tag script,
         Tag lang, int pixelsize) = 0;
 
+    // Scale glyph sequence metrics from font units to pixels
     virtual void scale_metrics(MetricsView* mv, double iscale, double scale,
                                bool vertical) = 0;
 
