@@ -36,9 +36,10 @@ HarfBuzzShaper::HarfBuzzShaper(std::shared_ptr<ShaperContext> context)
     char temporary_ttf[200] = "\0";
     tmpnam(temporary_ttf);
 
-    WriteTTFFont(temporary_ttf, context_->sf, 13 /* ff_ttf */, NULL,
-                 1 /*bf_ttf*/, 4 | 32 | (1 << 29) /*flags*/,
-                 context_->get_enc_map(context_->sf), 1 /*ly_fore*/);
+    WriteTTFFont(
+        temporary_ttf, context_->sf, 13 /* ff_ttf */, NULL, 1 /*bf_ttf*/,
+        32 | (1 << 29) /* ttf_flag_otmode | ttf_flag_oldkernmappedonly */,
+        context_->get_enc_map(context_->sf), 1 /*ly_fore*/);
 
     // Read file contents into memory
     std::ifstream ttf_stream(temporary_ttf);
