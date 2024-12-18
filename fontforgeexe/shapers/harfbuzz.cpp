@@ -102,7 +102,7 @@ struct opentype_str* HarfBuzzShaper::apply_features(
         glyph_count + 1, sizeof(struct opentype_str));
 
     // Adjust metrics buffer size
-    metrics.resize(glyph_count);
+    metrics.resize(glyph_count + 1);
 
     // Process the glyphs and positions
     int total_x_advance = 0, total_y_advance = 0;
