@@ -143,7 +143,7 @@ std::vector<ShapeMetrics> HarfBuzzShaper::reverse_rtl_metrics(
         fixed_metrics[i].dheight = reverse_metrics[rev_idx].dheight;
 
         fixed_metrics[i].xoff = -reverse_metrics[rev_idx].xoff;
-        fixed_metrics[i].yoff = -reverse_metrics[rev_idx].yoff;
+        fixed_metrics[i].yoff = reverse_metrics[rev_idx].yoff;
 
         fixed_metrics[i].dx = total_x_advance - reverse_metrics[rev_idx].dx -
                               reverse_metrics[rev_idx].dwidth;
