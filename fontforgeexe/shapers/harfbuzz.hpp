@@ -54,6 +54,11 @@ class HarfBuzzShaper : public IShaper {
 
     // Retrieve data from shaped buffer and fill metrics.
     struct opentype_str* extract_shaped_data(hb_buffer_t* hb_buffer);
+
+    // RTL HarfBuzz shaping returns metrics end-to-start. This method reverses
+    // them.
+    std::vector<ShapeMetrics> reverse_rtl_metrics(
+        const std::vector<ShapeMetrics>& reverse_metrics) const;
 };
 
 }  // namespace ff::shapers

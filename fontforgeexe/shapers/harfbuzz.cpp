@@ -128,6 +128,31 @@ struct opentype_str* HarfBuzzShaper::extract_shaped_data(
     return ots_arr;
 }
 
+std::vector<ShapeMetrics> HarfBuzzShaper::reverse_rtl_metrics(
+    const std::vector<ShapeMetrics>& reverse_metrics) const {
+    std::vector<ShapeMetrics> fixed_metrics(reverse_metrics.size());
+
+    // Note: metrics contain a trailing element for C compatibility
+    int glyph_count = reverse_metrics.size() - 1;
+    int16_t total_x_advance = reverse_metrics.back().dx;
+    int16_t total_y_advance = reverse_metrics.back().dy;
+
+    for (int i = 0; i < glyph_count; ++i) {
+        int rev_idx = glyph_count - i - 1;
+        fixed_metrics[i].dwidth = reverse_metrics[rev_idx].dwidth;
+        fixed_metrics[i].dheight = reverse_metrics[rev_idx].dheight;
+
+        fixed_metrics[i].xoff = -reverse_metrics[rev_idx].xoff;
+        fixed_metrics[i].yoff = -reverse_metrics[rev_idx].yoff;
+
+        fixed_metrics[i].dx = total_x_advance - reverse_metrics[rev_idx].dx -
+                              reverse_metrics[rev_idx].dwidth;
+        fixed_metrics[i].dy = total_y_advance - reverse_metrics[rev_idx].dy;
+    }
+
+    return fixed_metrics;
+}
+
 struct opentype_str* HarfBuzzShaper::apply_features(
     SplineChar** glyphs, const std::vector<Tag>& feature_list, Tag script,
     Tag lang, int pixelsize) {
@@ -165,25 +190,9 @@ struct opentype_str* HarfBuzzShaper::apply_features(
     // languages, HarfBuzz would reverse the glyph order in the output
     // buffer. We therefore need to recompute metrics in reverse direction
     if (rtl) {
-        std::vector<ShapeMetrics> reverse_metrics = metrics;
+        metrics = reverse_rtl_metrics(metrics);
 
-        // Note: metrics contain a trailing element for C compatibility
         int glyph_count = metrics.size() - 1;
-        int16_t total_x_advance = metrics.back().dx;
-        int16_t total_y_advance = metrics.back().dy;
-
-        for (int i = 0; i < glyph_count; ++i) {
-            int rev_idx = glyph_count - i - 1;
-            metrics[i].dwidth = reverse_metrics[rev_idx].dwidth;
-            metrics[i].dheight = reverse_metrics[rev_idx].dheight;
-
-            metrics[i].xoff = -reverse_metrics[rev_idx].xoff;
-            metrics[i].yoff = -reverse_metrics[rev_idx].yoff;
-
-            metrics[i].dx = total_x_advance - reverse_metrics[rev_idx].dx -
-                            reverse_metrics[rev_idx].dwidth;
-            metrics[i].dy = total_y_advance - reverse_metrics[rev_idx].dy;
-        }
         for (int i = 0; i < glyph_count / 2; ++i) {
             std::swap(ots_arr[i].sc, ots_arr[glyph_count - i - 1].sc);
         }
