@@ -61,37 +61,8 @@ HarfBuzzShaper::~HarfBuzzShaper() {
     hb_blob_destroy(hb_ttf_blob);
 }
 
-struct opentype_str* HarfBuzzShaper::apply_features(
-    SplineChar** glyphs, const std::vector<Tag>& feature_list, Tag script,
-    Tag lang, int pixelsize) {
-    std::vector<unichar_t> u_vec;
-    for (size_t len = 0; glyphs[len] != NULL; ++len) {
-        u_vec.push_back(
-            (glyphs[len]->unicodeenc > 0)
-                ? glyphs[len]->unicodeenc
-                : context_->fake_unicode(context_->mv, glyphs[len]));
-    }
-    u_vec.push_back(0);
-
-    char* utf8_str = u2utf8_copy(u_vec.data());
-
-    hb_buffer_t* hb_buffer = hb_buffer_create();
-    hb_buffer_add_utf8(hb_buffer, utf8_str, -1, 0, -1);
-
-    // Set script and language
-    hb_script_t hb_script = hb_script_from_iso15924_tag((uint32_t)script);
-    hb_buffer_set_script(hb_buffer, hb_script);
-    hb_language_t hb_lang = hb_language_from_string((const char*)lang, -1);
-    hb_buffer_set_language(hb_buffer, hb_lang);
-
-    bool rtl = !u_vec.empty() && isrighttoleft(u_vec[0]);
-    hb_buffer_set_direction(hb_buffer,
-                            rtl ? HB_DIRECTION_RTL : HB_DIRECTION_LTR);
-
-    // Shape the text
-    hb_shape(hb_ttf_font, hb_buffer, NULL, 0);
-
-    // Retrieve the results
+struct opentype_str* HarfBuzzShaper::extract_shaped_data(
+    hb_buffer_t* hb_buffer) {
     unsigned int glyph_count;
     hb_glyph_info_t* glyph_info_arr =
         hb_buffer_get_glyph_infos(hb_buffer, &glyph_count);
@@ -104,7 +75,6 @@ struct opentype_str* HarfBuzzShaper::apply_features(
 
     // Adjust metrics buffer size
     metrics.resize(glyph_count + 1);
-    metrics.back().scaled = false;
 
     // Process the glyphs and positions
     int total_x_advance = 0, total_y_advance = 0;
@@ -150,11 +120,58 @@ struct opentype_str* HarfBuzzShaper::apply_features(
         metrics[i].scaled = false;
     }
 
+    // Fill the trailing empty object with auxiliaty data
+    metrics.back().dx = total_x_advance;
+    metrics.back().dy = total_y_advance;
+    metrics.back().scaled = false;
+
+    return ots_arr;
+}
+
+struct opentype_str* HarfBuzzShaper::apply_features(
+    SplineChar** glyphs, const std::vector<Tag>& feature_list, Tag script,
+    Tag lang, int pixelsize) {
+    std::vector<unichar_t> u_vec;
+    for (size_t len = 0; glyphs[len] != NULL; ++len) {
+        u_vec.push_back(
+            (glyphs[len]->unicodeenc > 0)
+                ? glyphs[len]->unicodeenc
+                : context_->fake_unicode(context_->mv, glyphs[len]));
+    }
+    u_vec.push_back(0);
+
+    char* utf8_str = u2utf8_copy(u_vec.data());
+
+    hb_buffer_t* hb_buffer = hb_buffer_create();
+    hb_buffer_add_utf8(hb_buffer, utf8_str, -1, 0, -1);
+
+    // Set script and language
+    hb_script_t hb_script = hb_script_from_iso15924_tag((uint32_t)script);
+    hb_buffer_set_script(hb_buffer, hb_script);
+    hb_language_t hb_lang = hb_language_from_string((const char*)lang, -1);
+    hb_buffer_set_language(hb_buffer, hb_lang);
+
+    bool rtl = !u_vec.empty() && isrighttoleft(u_vec[0]);
+    hb_buffer_set_direction(hb_buffer,
+                            rtl ? HB_DIRECTION_RTL : HB_DIRECTION_LTR);
+
+    // Shape the text
+    hb_shape(hb_ttf_font, hb_buffer, NULL, 0);
+
+    // Retrieve the results
+    struct opentype_str* ots_arr = extract_shaped_data(hb_buffer);
+
     // Perhaps counterintuitively, when setting RTL direction for RTL
     // languages, HarfBuzz would reverse the glyph order in the output
     // buffer. We therefore need to recompute metrics in reverse direction
     if (rtl) {
         std::vector<ShapeMetrics> reverse_metrics = metrics;
+
+        // Note: metrics contain a trailing element for C compatibility
+        int glyph_count = metrics.size() - 1;
+        int16_t total_x_advance = metrics.back().dx;
+        int16_t total_y_advance = metrics.back().dy;
+
         for (int i = 0; i < glyph_count; ++i) {
             int rev_idx = glyph_count - i - 1;
             metrics[i].dwidth = reverse_metrics[rev_idx].dwidth;

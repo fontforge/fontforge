@@ -51,6 +51,9 @@ class HarfBuzzShaper : public IShaper {
     hb_blob_t* hb_ttf_blob = nullptr;
     hb_face_t* hb_ttf_face = nullptr;
     hb_font_t* hb_ttf_font = nullptr;
+
+    // Retrieve data from shaped buffer and fill metrics.
+    struct opentype_str* extract_shaped_data(hb_buffer_t* hb_buffer);
 };
 
 }  // namespace ff::shapers
