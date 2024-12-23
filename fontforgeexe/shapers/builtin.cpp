@@ -35,10 +35,8 @@ struct opentype_str* BuiltInShaper::apply_features(
     SplineChar** glyphs, const std::vector<Tag>& feature_list, Tag script,
     Tag lang, int pixelsize) {
     // Zero-terminated list of features
-    std::vector<uint32_t> flist(feature_list.size() + 1, 0);
-    for (int i = 0; i < feature_list.size(); ++i) {
-        flist[i] = (uint32_t)feature_list[i];
-    }
+    std::vector<uint32_t> flist(feature_list.begin(), feature_list.end());
+    flist.push_back(0);
 
     ots_arr_ = context_->apply_ticked_features(context_->sf, flist.data(),
                                                (uint32_t)script, (uint32_t)lang,
