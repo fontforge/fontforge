@@ -61,17 +61,16 @@ HarfBuzzShaper::~HarfBuzzShaper() {
     hb_blob_destroy(hb_ttf_blob);
 }
 
-struct opentype_str* HarfBuzzShaper::extract_shaped_data(
-    hb_buffer_t* hb_buffer) {
+SplineChar** HarfBuzzShaper::extract_shaped_data(hb_buffer_t* hb_buffer) {
     unsigned int glyph_count;
     hb_glyph_info_t* glyph_info_arr =
         hb_buffer_get_glyph_infos(hb_buffer, &glyph_count);
     hb_glyph_position_t* glyph_pos_arr =
         hb_buffer_get_glyph_positions(hb_buffer, &glyph_count);
 
-    // Return data as a raw C-style array
-    struct opentype_str* ots_arr = (struct opentype_str*)calloc(
-        glyph_count + 1, sizeof(struct opentype_str));
+    // Return NULL-terminated raw C-style array of pointers
+    SplineChar** glyphs_after_gpos =
+        (SplineChar**)calloc(glyph_count + 1, sizeof(SplineChar*));
 
     // Adjust metrics buffer size
     metrics.resize(glyph_count + 1);
@@ -82,7 +81,6 @@ struct opentype_str* HarfBuzzShaper::extract_shaped_data(
         char glyph_name[64];
         hb_glyph_info_t& glyph_info = glyph_info_arr[i];
         hb_glyph_position_t& glyph_pos = glyph_pos_arr[i];
-        struct opentype_str& ots = ots_arr[i];
 
         // Warning: after the shaping glyph_info->codepoint is not a Unicode
         // point, but rather an internal glyph index. We can't use it in our
@@ -93,7 +91,7 @@ struct opentype_str* HarfBuzzShaper::extract_shaped_data(
         SplineChar* glyph_out =
             context_->get_glyph_by_name(context_->sf, -1, glyph_name);
 
-        ots.sc = glyph_out;
+        glyphs_after_gpos[i] = glyph_out;
 
         // Fill unscaled metrics in font units
         hb_position_t h_advance =
@@ -125,7 +123,7 @@ struct opentype_str* HarfBuzzShaper::extract_shaped_data(
     metrics.back().dy = total_y_advance;
     metrics.back().scaled = false;
 
-    return ots_arr;
+    return glyphs_after_gpos;
 }
 
 std::vector<ShapeMetrics> HarfBuzzShaper::reverse_rtl_metrics(
@@ -184,7 +182,17 @@ struct opentype_str* HarfBuzzShaper::apply_features(
     hb_shape(hb_ttf_font, hb_buffer, NULL, 0);
 
     // Retrieve the results
-    struct opentype_str* ots_arr = extract_shaped_data(hb_buffer);
+    SplineChar** glyphs_after_gpos = extract_shaped_data(hb_buffer);
+
+    // Zero-terminated list of features
+    std::vector<uint32_t> flist(feature_list.begin(), feature_list.end());
+    flist.push_back(0);
+
+    // Apply legacy shaper for GPOS to retrieve kerning pair references. Metrics
+    // calculated by the legacy shaper are ignored.
+    struct opentype_str* ots_arr = context_->apply_ticked_features(
+        context_->sf, flist.data(), (uint32_t)script, (uint32_t)lang, true,
+        pixelsize, glyphs_after_gpos);
 
     // Perhaps counterintuitively, when setting RTL direction for RTL
     // languages, HarfBuzz would reverse the glyph order in the output

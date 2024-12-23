@@ -53,7 +53,7 @@ class HarfBuzzShaper : public IShaper {
     hb_font_t* hb_ttf_font = nullptr;
 
     // Retrieve data from shaped buffer and fill metrics.
-    struct opentype_str* extract_shaped_data(hb_buffer_t* hb_buffer);
+    SplineChar** extract_shaped_data(hb_buffer_t* hb_buffer);
 
     // RTL HarfBuzz shaping returns metrics end-to-start. This method reverses
     // them.
