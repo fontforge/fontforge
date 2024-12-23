@@ -72,7 +72,7 @@ extern SplineChar **SFGlyphsWithPSTinSubtable(SplineFont *sf, struct lookup_subt
 extern struct lookup_subtable *SFFindLookupSubtableAndFreeName(SplineFont *sf, char *name);
 extern struct lookup_subtable *SFSubTableFindOrMake(SplineFont *sf, uint32_t tag, uint32_t script, int lookup_type);
 extern struct lookup_subtable *SFSubTableMake(SplineFont *sf, uint32_t tag, uint32_t script, int lookup_type);
-extern struct opentype_str *ApplyTickedFeatures(SplineFont *sf, uint32_t *flist, uint32_t script, uint32_t lang, int pixelsize, SplineChar **glyphs);
+extern struct opentype_str *ApplyTickedFeatures(SplineFont *sf, uint32_t *flist, uint32_t script, uint32_t lang, bool gpos_only, int pixelsize, SplineChar **glyphs);
 extern struct scriptlanglist *DefaultLangTagInScriptList(struct scriptlanglist *sl, int DFLT_ok);
 extern struct scriptlanglist *SLCopy(struct scriptlanglist *sl);
 extern struct scriptlanglist *SListCopy(struct scriptlanglist *sl);

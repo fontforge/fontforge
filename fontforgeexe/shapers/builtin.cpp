@@ -42,7 +42,7 @@ struct opentype_str* BuiltInShaper::apply_features(
 
     ots_arr_ = context_->apply_ticked_features(context_->sf, flist.data(),
                                                (uint32_t)script, (uint32_t)lang,
-                                               pixelsize, glyphs);
+                                               false, pixelsize, glyphs);
 
     // Count output glyphs
     int cnt;
