@@ -47,7 +47,8 @@ struct opentype_str* BuiltInShaper::apply_features(
     for (cnt = 0; ots_arr_[cnt].sc != NULL; ++cnt)
         ;
 
-    metrics.resize(cnt);
+    // Make metrics C-style zero-terminated array to support legacy code
+    metrics.resize(cnt + 1);
     for (auto& m : metrics) {
         m.scaled = false;
     }
@@ -60,7 +61,7 @@ void BuiltInShaper::scale_metrics(MetricsView* mv, double iscale, double scale,
     // Calculate positions.
     int x = 10;
     int y = 10;
-    for (int i = 0; i < metrics.size(); ++i) {
+    for (int i = 0; i < metrics.size() - 1; ++i) {
         assert(!metrics[i].scaled);
         SplineChar* sc = ots_arr_[i].sc;
         metrics[i].dwidth = rint(iscale * context_->get_char_width(mv, sc));
