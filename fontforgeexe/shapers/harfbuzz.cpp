@@ -22,6 +22,7 @@
  */
 #include "harfbuzz.hpp"
 
+#include <algorithm>
 #include <cassert>
 #include <fstream>
 
@@ -183,6 +184,11 @@ struct opentype_str* HarfBuzzShaper::apply_features(
 
     // Retrieve the results
     SplineChar** glyphs_after_gpos = extract_shaped_data(hb_buffer);
+    int glyph_count = metrics.size() - 1;
+    if (rtl) {
+        // HarfBuzz reverses the order of an RTL output buffer
+        std::reverse(glyphs_after_gpos, glyphs_after_gpos + glyph_count);
+    }
 
     // Zero-terminated list of features
     std::vector<uint32_t> flist(feature_list.begin(), feature_list.end());
@@ -199,11 +205,6 @@ struct opentype_str* HarfBuzzShaper::apply_features(
     // buffer. We therefore need to recompute metrics in reverse direction
     if (rtl) {
         metrics = reverse_rtl_metrics(metrics);
-
-        int glyph_count = metrics.size() - 1;
-        for (int i = 0; i < glyph_count / 2; ++i) {
-            std::swap(ots_arr[i].sc, ots_arr[glyph_count - i - 1].sc);
-        }
     }
 
     // Cleanup
