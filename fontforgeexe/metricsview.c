@@ -77,6 +77,7 @@ static GResFont mv_font = GRESFONT_INIT("400 12px " SANS_UI_FAMILIES);
 
 int pref_mv_shift_and_arrow_skip = 10;
 int pref_mv_control_shift_and_arrow_skip = 5;
+static int INVALID_KERN_OFFSET = 0x7ffffff;
 
 static void MVSelectChar(MetricsView *mv, int i);
 static void MVSelectSetForAll(MetricsView *mv, int selected );
@@ -757,6 +758,17 @@ void MVRefreshChar(MetricsView *mv, SplineChar *sc) {
 	MVRedrawI(mv,i,0,0);
 }
 
+static int MVGetKernOffset(struct opentype_str* glyph) {
+    int kern_offset = INVALID_KERN_OFFSET;
+
+    if (glyph->kp != NULL)
+	kern_offset = glyph->kp->off;
+    else if (glyph->kc != NULL)
+	kern_offset = glyph->kc->offsets[glyph->kc_index];
+
+    return kern_offset;
+}
+
 static void MVRefreshValues(MetricsView *mv, int i) {
     char buf[40];
     DBounds bb;
@@ -798,15 +810,11 @@ return;
     }
     GGadgetSetTitle8(mv->perchar[i].rbearing,buf);
 
-    kern_offset = 0x7ffffff;
-    if ( mv->glyphs[i].kp!=NULL )
-	kern_offset = mv->glyphs[i].kp->off;
-    else if ( mv->glyphs[i].kc!=NULL )
-	kern_offset = mv->glyphs[i].kc->offsets[ mv->glyphs[i].kc_index ];
-if( !mv->perchar[i+1].kern )
-  return;
+    kern_offset = MVGetKernOffset(mv->glyphs + i);
+    if( !mv->perchar[i+1].kern )
+	return;
 
-    if ( kern_offset!=0x7ffffff && i!=mv->glyphcnt-1 ) {
+    if ( kern_offset!=INVALID_KERN_OFFSET && i!=mv->glyphcnt-1 ) {
 	sprintf(buf,"%d",kern_offset);
 	GGadgetSetTitle8(mv->perchar[i+1].kern,buf);
     } else if ( i!=mv->glyphcnt-1 )
