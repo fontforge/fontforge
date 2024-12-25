@@ -20155,7 +20155,7 @@ void FontForge_InitializeEmbeddedPython(void) {
 
     PyConfig config;
     PyStatus status;
-    PyConfig_InitPythonConfig(&config);
+    PyConfig_InitIsolatedConfig(&config);
 
     status = PyConfig_SetBytesString(&config, &config.program_name,
                                      "fontforge");
