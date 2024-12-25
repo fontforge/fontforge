@@ -572,6 +572,29 @@ static void MVSetFeatures(MetricsView *mv) {
     /* Never returns NULL */
     for ( cnt=0; tags[cnt]!=0; ++cnt );
 
+    /* The feature of the active kerning lookup should always be included. */
+    /* TODO(iorsh): Sometimes the desired lookup is marked is unused and skipped 
+       in SFFeaturesInScriptLang(). This might better be handled there. */
+    if ( mv->cur_subtable != NULL &&
+         mv->cur_subtable->lookup != NULL &&
+	 mv->cur_subtable->lookup->features != NULL) {
+	FeatureScriptLangList *active_features = mv->cur_subtable->lookup->features;
+	uint32_t active_feat = active_features[0].featuretag;
+
+	for ( i=0; i<cnt; ++i ) {
+	    if (tags[i] == active_feat)
+	    	break;
+	}
+
+	if (i == cnt) {
+	    /* Active feature tag not found in the list, add it now. */
+	    ++cnt;
+	    tags = realloc(tags,(cnt+1)*sizeof(uint32_t));
+	    tags[cnt-1] = active_feat;
+	    tags[cnt] = 0;
+	}
+    }
+
     /*qsort(tags,cnt,sizeof(uint32_t),tag_comp);*/ /* The glist will do this for us */
 
     ti = malloc((cnt+2)*sizeof(GTextInfo *));
