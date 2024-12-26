@@ -22,6 +22,7 @@
  */
 #pragma once
 
+#include <map>
 #include <memory>
 #include <hb.h>
 
@@ -52,6 +53,17 @@ class HarfBuzzShaper : public IShaper {
     hb_face_t* hb_ttf_face = nullptr;
     hb_font_t* hb_ttf_font = nullptr;
 
+    // Initial kerning state at font generation. For a pair of (left_glyph,
+    // right_glyph) the shaper manually applies the difference between initial
+    // and latest value to avoid regenerating the font at each change.
+    //
+    // NOTE: For completeness, this cache should have been keeping initial
+    // kerning for each combination of features, but this would lead to
+    // exponential storage, so we limit ourselves to the current combination, in
+    // hope that it would be the same for all the other feature combinations.
+    std::map<std::pair<hb_codepoint_t, hb_codepoint_t>, hb_position_t>
+        initial_kerning_;
+
     // Retrieve data from shaped buffer and fill metrics.
     SplineChar** extract_shaped_data(hb_buffer_t* hb_buffer);
 
@@ -59,6 +71,11 @@ class HarfBuzzShaper : public IShaper {
     // them.
     std::vector<ShapeMetrics> reverse_rtl_metrics(
         const std::vector<ShapeMetrics>& reverse_metrics) const;
+
+    // Compute changes in kerning due to user's input after the font was
+    // generated.
+    std::vector<int> compute_kerning_deltas(hb_buffer_t* hb_buffer,
+                                            struct opentype_str* ots_arr);
 };
 
 }  // namespace ff::shapers

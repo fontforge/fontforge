@@ -36,6 +36,8 @@ typedef struct splinefont SplineFont;
 typedef struct metricsview MetricsView;
 typedef struct encmap EncMap;
 
+static int INVALID_KERN_OFFSET = 0x7ffffff;
+
 char* u2utf8_copy(const unichar_t* ubuf);
 int WriteTTFFont(char* fontname, SplineFont* sf, int /*enum fontformat*/ format,
                  int32_t* bsizes, int /*enum bitmapformat*/ bf, int flags,
@@ -62,6 +64,9 @@ typedef struct shaper_context {
 
     // Case-specific glyph width computation, not to be used in general case.
     int16_t (*get_char_width)(MetricsView* mv, SplineChar* sc);
+
+    // Retrieve current kerning value from glyph data
+    int (*get_kern_offset)(struct opentype_str* glyph);
 
 } ShaperContext;
 

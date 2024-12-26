@@ -77,7 +77,6 @@ static GResFont mv_font = GRESFONT_INIT("400 12px " SANS_UI_FAMILIES);
 
 int pref_mv_shift_and_arrow_skip = 10;
 int pref_mv_control_shift_and_arrow_skip = 5;
-static int INVALID_KERN_OFFSET = 0x7ffffff;
 
 static void MVSelectChar(MetricsView *mv, int i);
 static void MVSelectSetForAll(MetricsView *mv, int selected );
@@ -3999,6 +3998,7 @@ static ShaperContext* MVMakeShaperContext(MetricsView *mv) {
     context->get_enc_map = SFGetMap;
     context->get_glyph_by_name = SFGetChar;
     context->get_char_width = MVCharWidth;
+    context->get_kern_offset = MVGetKernOffset;
 
     return context;
 }

@@ -25,6 +25,7 @@
 #include <algorithm>
 #include <cassert>
 #include <fstream>
+#include <numeric>
 
 extern "C" {
 #include "splinechar.h"
@@ -152,6 +153,37 @@ std::vector<ShapeMetrics> HarfBuzzShaper::reverse_rtl_metrics(
     return fixed_metrics;
 }
 
+std::vector<int> HarfBuzzShaper::compute_kerning_deltas(
+    hb_buffer_t* hb_buffer, struct opentype_str* ots_arr) {
+    unsigned int glyph_count;
+    hb_glyph_info_t* glyph_info_arr =
+        hb_buffer_get_glyph_infos(hb_buffer, &glyph_count);
+
+    // Retrieve the current kerning offsets and apply them manually if they
+    // differ from their initial value. The initial value doesn't need
+    // adjustment, since it is hopefully present in the generated font, so that
+    // HarfBuzz takes it into account automatically.
+    std::vector<int> kerning_deltas;
+    for (int i = 0; i + 1 < glyph_count; ++i) {
+        int kerning_offset = context_->get_kern_offset(ots_arr + i);
+        if (kerning_offset == INVALID_KERN_OFFSET) {
+            kerning_offset = 0;
+        }
+
+        // Keep initial kerning offsets when they are first encountered
+        auto key = std::make_pair(glyph_info_arr[i].codepoint,
+                                  glyph_info_arr[i + 1].codepoint);
+        // Insert only if absent
+        initial_kerning_.insert({key, kerning_offset});
+
+        // Compute kerning deltas. Any existing kerning which was not manually
+        // changed by the user should give zero delta.
+        kerning_deltas.push_back(kerning_offset - initial_kerning_[key]);
+    }
+
+    return kerning_deltas;
+}
+
 struct opentype_str* HarfBuzzShaper::apply_features(
     SplineChar** glyphs, const std::vector<Tag>& feature_list, Tag script,
     Tag lang, int pixelsize) {
@@ -195,16 +227,30 @@ struct opentype_str* HarfBuzzShaper::apply_features(
     flist.push_back(0);
 
     // Apply legacy shaper for GPOS to retrieve kerning pair references. Metrics
-    // calculated by the legacy shaper are ignored.
+    // calculated by the legacy shaper are ignored, except for kerning deltas.
     struct opentype_str* ots_arr = context_->apply_ticked_features(
         context_->sf, flist.data(), (uint32_t)script, (uint32_t)lang, true,
         pixelsize, glyphs_after_gpos);
+
+    std::vector<int> kerning_deltas =
+        compute_kerning_deltas(hb_buffer, ots_arr);
 
     // Perhaps counterintuitively, when setting RTL direction for RTL
     // languages, HarfBuzz would reverse the glyph order in the output
     // buffer. We therefore need to recompute metrics in reverse direction
     if (rtl) {
         metrics = reverse_rtl_metrics(metrics);
+    }
+
+    // Compute the accumulated shifts for each glyph as partial sums of kerning
+    // deltas
+    kerning_deltas.push_back(0);
+    std::vector<int> accumulated_shifts;
+    std::exclusive_scan(kerning_deltas.begin(), kerning_deltas.end(),
+                        std::back_inserter(accumulated_shifts), 0);
+
+    for (int i = 0; i < glyph_count; ++i) {
+        metrics[i].dx += accumulated_shifts[i];
     }
 
     // Cleanup
