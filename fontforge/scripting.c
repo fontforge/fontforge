@@ -4821,6 +4821,7 @@ static void bSmallCaps(Context *c) {
 	.hcounter_scale = 0.66, .lsb_scale = 0.66, .rsb_scale = 0.66,
 	.v_scale = 0.675,
 	.gc = gc_smallcaps,
+        .do_smallcap_symbols = 1,
 	.extension_for_letters = "sc",
 	.extension_for_symbols = "taboldstyle",
 	.use_vert_mapping = 1,
