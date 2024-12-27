@@ -1044,7 +1044,10 @@ static void MVRemetric(MetricsView *mv) {
 	mv->perchar = realloc(mv->perchar,mv->max*sizeof(struct metricchar));
 	memset(mv->perchar+oldmax,'\0',(mv->max-oldmax)*sizeof(struct metricchar));
     }
-    mv->metrics = shaper_metrics(mv->shaper);
+
+    // TODO: Move metrics calculations completely into shapers, and make MetricsView::metric const.
+    mv->metrics = (ShapeMetrics*)shaper_metrics(mv->shaper);
+
     // Null names of controls in rows to be abandoned, starting at the last valid glyph and continuing to the end of mv->glyphs.
     // This may segfault here if mv->max is less than mv->glyphcnt, thus if cnt was 10 less than mv->glyphcnt.
     // It may segfault in GGadgetSetTitle if the gadgets do not exist.
