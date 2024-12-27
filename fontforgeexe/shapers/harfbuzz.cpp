@@ -184,6 +184,30 @@ std::vector<int> HarfBuzzShaper::compute_kerning_deltas(
     return kerning_deltas;
 }
 
+std::vector<int> HarfBuzzShaper::compute_width_deltas(hb_buffer_t* hb_buffer,
+                                                      SplineChar** glyphs) {
+    unsigned int glyph_count;
+    hb_glyph_info_t* glyph_info_arr =
+        hb_buffer_get_glyph_infos(hb_buffer, &glyph_count);
+
+    // Compute width deltas for glyphs which might have changed.
+    std::vector<int> width_deltas;
+    for (int i = 0; i < glyph_count; ++i) {
+        int16_t width = glyphs[i]->width;
+
+        // Keep initial widths when they are first encountered
+        auto key = glyph_info_arr[i].codepoint;
+        // Insert only if absent
+        initial_width_.insert({key, width});
+
+        // Compute kerning deltas. Any existing kerning which was not manually
+        // changed by the user should give zero delta.
+        width_deltas.push_back(width - initial_width_[key]);
+    }
+
+    return width_deltas;
+}
+
 struct opentype_str* HarfBuzzShaper::apply_features(
     SplineChar** glyphs, const std::vector<Tag>& feature_list, Tag script,
     Tag lang, int pixelsize) {
@@ -217,9 +241,14 @@ struct opentype_str* HarfBuzzShaper::apply_features(
     // Retrieve the results
     SplineChar** glyphs_after_gpos = extract_shaped_data(hb_buffer);
     int glyph_count = metrics.size() - 1;
+
+    std::vector<int> width_deltas =
+        compute_width_deltas(hb_buffer, glyphs_after_gpos);
+
     if (rtl) {
         // HarfBuzz reverses the order of an RTL output buffer
         std::reverse(glyphs_after_gpos, glyphs_after_gpos + glyph_count);
+        std::reverse(width_deltas.begin(), width_deltas.end());
     }
 
     // Zero-terminated list of features
@@ -242,15 +271,15 @@ struct opentype_str* HarfBuzzShaper::apply_features(
         metrics = reverse_rtl_metrics(metrics);
     }
 
-    // Compute the accumulated shifts for each glyph as partial sums of kerning
-    // deltas
-    kerning_deltas.push_back(0);
-    std::vector<int> accumulated_shifts;
-    std::exclusive_scan(kerning_deltas.begin(), kerning_deltas.end(),
-                        std::back_inserter(accumulated_shifts), 0);
-
+    // Compute the accumulated shifts dx for each glyph as partial sums of
+    // kerning and width deltas. Adjust glyph widths as appropriate.
+    int shift = 0;
     for (int i = 0; i < glyph_count; ++i) {
-        metrics[i].dx += accumulated_shifts[i];
+        if (i > 0) {
+            shift += (kerning_deltas[i - 1] + width_deltas[i - 1]);
+        }
+        metrics[i].dx += shift;
+        metrics[i].dwidth += width_deltas[i];
     }
 
     // Cleanup

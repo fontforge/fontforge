@@ -64,6 +64,14 @@ class HarfBuzzShaper : public IShaper {
     std::map<std::pair<hb_codepoint_t, hb_codepoint_t>, hb_position_t>
         initial_kerning_;
 
+    // Initial width at font generation. The difference is applied similarly to
+    // kerning deltas.
+    //
+    // NOTE: There is no need to keep glyph bearings, since HarfBuzz is not
+    // responsible for glyph drawing, and the relative position of glyphs is
+    // only affected by widths.
+    std::map<hb_codepoint_t, hb_position_t> initial_width_;
+
     // Retrieve data from shaped buffer and fill metrics.
     SplineChar** extract_shaped_data(hb_buffer_t* hb_buffer);
 
@@ -76,6 +84,11 @@ class HarfBuzzShaper : public IShaper {
     // generated.
     std::vector<int> compute_kerning_deltas(hb_buffer_t* hb_buffer,
                                             struct opentype_str* ots_arr);
+
+    // Compute changes in glyph width due to user's input after the font was
+    // generated.
+    std::vector<int> compute_width_deltas(hb_buffer_t* hb_buffer,
+                                          SplineChar** glyphs);
 };
 
 }  // namespace ff::shapers
