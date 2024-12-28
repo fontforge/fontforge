@@ -3996,6 +3996,7 @@ static void ellistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 static ShaperContext* MVMakeShaperContext(MetricsView *mv) {
     ShaperContext *context = calloc(1,sizeof(ShaperContext));
     context->sf = mv->sf;
+    context->mv = mv;
     context->apply_ticked_features = ApplyTickedFeatures;
     context->fake_unicode = MVFakeUnicodeOfSc;
     context->get_enc_map = SFGetMap;
