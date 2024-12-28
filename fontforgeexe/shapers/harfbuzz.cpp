@@ -24,10 +24,9 @@
 
 #include <algorithm>
 #include <cassert>
-#include <fstream>
-#include <numeric>
 
 extern "C" {
+#include "gfile.h"
 #include "splinechar.h"
 #include "utype.h"
 }
@@ -36,31 +35,37 @@ namespace ff::shapers {
 
 HarfBuzzShaper::HarfBuzzShaper(std::shared_ptr<ShaperContext> context)
     : context_(context) {
-    char temporary_ttf[200] = "\0";
-    tmpnam(temporary_ttf);
+    FILE* ttf_file = GFileTmpfile();
 
-    WriteTTFFont(
-        temporary_ttf, context_->sf, 13 /* ff_ttf */, NULL, 1 /*bf_ttf*/,
+    _WriteTTFFont(
+        ttf_file, context_->sf, 13 /* ff_ttf */, NULL, 1 /*bf_ttf*/,
         32 | (1 << 29) /* ttf_flag_otmode | ttf_flag_oldkernmappedonly */,
         context_->get_enc_map(context_->sf), 1 /*ly_fore*/);
 
-    // Read file contents into memory
-    std::ifstream ttf_stream(temporary_ttf);
-    std::istreambuf_iterator<char> ttf_stream_it{ttf_stream}, end;
-    std::vector<char> ttf_blob{ttf_stream_it, end};
+    // Calculate file length
+    fseek(ttf_file, 0L, SEEK_END);
+    long bufsize = ftell(ttf_file);
+    fseek(ttf_file, 0L, SEEK_SET);
 
-    hb_ttf_blob = hb_blob_create(ttf_blob.data(), ttf_blob.size(),
-                                 HB_MEMORY_MODE_DUPLICATE, NULL, NULL);
+    // Read the entire file into memory
+    blob = (char*)malloc(sizeof(char) * (bufsize + 1));
+    size_t blob_size = fread(blob, sizeof(char), bufsize, ttf_file);
+
+    hb_ttf_blob =
+        hb_blob_create(blob, blob_size, HB_MEMORY_MODE_WRITABLE, NULL, NULL);
 
     hb_ttf_face = hb_face_create(hb_ttf_blob, 0);
 
     hb_ttf_font = hb_font_create(hb_ttf_face);
+
+    fclose(ttf_file);
 }
 
 HarfBuzzShaper::~HarfBuzzShaper() {
     hb_font_destroy(hb_ttf_font);
     hb_face_destroy(hb_ttf_face);
     hb_blob_destroy(hb_ttf_blob);
+    free(blob);
 }
 
 SplineChar** HarfBuzzShaper::extract_shaped_data(hb_buffer_t* hb_buffer) {

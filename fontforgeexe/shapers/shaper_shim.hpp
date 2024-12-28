@@ -39,9 +39,9 @@ typedef struct encmap EncMap;
 static int INVALID_KERN_OFFSET = 0x7ffffff;
 
 char* u2utf8_copy(const unichar_t* ubuf);
-int WriteTTFFont(char* fontname, SplineFont* sf, int /*enum fontformat*/ format,
-                 int32_t* bsizes, int /*enum bitmapformat*/ bf, int flags,
-                 EncMap* enc, int layer);
+int _WriteTTFFont(FILE* ttf, SplineFont* sf, int /*enum fontformat*/ format,
+                  int32_t* bsizes, int /*enum bitmapformat*/ bf, int flags,
+                  EncMap* enc, int layer);
 
 typedef struct shaper_context {
     SplineFont* sf;

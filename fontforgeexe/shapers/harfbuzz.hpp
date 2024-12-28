@@ -49,6 +49,7 @@ class HarfBuzzShaper : public IShaper {
  private:
     std::shared_ptr<ShaperContext> context_;
 
+    char* blob = nullptr;
     hb_blob_t* hb_ttf_blob = nullptr;
     hb_face_t* hb_ttf_face = nullptr;
     hb_font_t* hb_ttf_font = nullptr;
