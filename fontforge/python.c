@@ -18194,6 +18194,7 @@ static PyObject *PyFFFont_addSmallCaps(PyFF_Font *self, PyObject *args, PyObject
     struct genericchange genchange;
     double lc_width=0, uc_width=0, vstem_factor=0, hscale=0, vscale=0, scheight=0, capheight=0;
     int dosymbols=0;
+    struct position_maps maps[2] = {{.cur_width = -1}, {.cur_width = 1}};
 
     if ( CheckIfFontClosed(self) )
 return (NULL);
@@ -18204,6 +18205,13 @@ return (NULL);
     genchange.gc = gc_smallcaps;
     genchange.extension_for_letters = "sc";
     genchange.extension_for_symbols = "taboldstyle";
+    genchange.hcounter_scale = 0.66;
+    genchange.v_scale = 0.675;
+    genchange.use_vert_mapping = 1;
+    genchange.dstem_control = 1;
+    genchange.m.cnt = 2;
+    genchange.m.maps = maps;
+
     if ( !PyArg_ParseTupleAndKeywords(args,keywds,"|ddddissddd",(char **)smallcaps_keywords,
 	    &scheight,&capheight,&lc_width,&uc_width,
 	    &dosymbols, &genchange.extension_for_letters,
@@ -18216,9 +18224,9 @@ return( NULL );
 	    small.lc_stem_width = lc_width;
 	if ( uc_width!=0 )
 	    small.uc_stem_width = uc_width;
-	genchange.stem_width_scale = genchange.stem_height_scale =
-		small.lc_stem_width / small.uc_stem_width;
     }
+    genchange.stem_width_scale = genchange.stem_height_scale =
+        small.lc_stem_width / small.uc_stem_width;
     genchange.do_smallcap_symbols = dosymbols;
     if ( vstem_factor!=0 )
 	genchange.stem_height_scale = vstem_factor;
