@@ -1827,54 +1827,7 @@ static int MVFakeUnicodeOfSc(MetricsView *mv, SplineChar *sc) {
 return( sc->unicodeenc );
 
     if ( mv->fake_unicode_base==0 ) {		/* Not set */
-	/* If they have nothing in Supplementary Private Use Area-A use it */
-	/* If they have nothing in Supplementary Private Use Area-B use it */
-	/* else just use 0xfffd */
-	int a, al, ah, b, bl, bh;
-	int gid,k,max;
-	SplineChar *test;
-	SplineFont *_sf, *sf;
-	sf = mv->sf;
-	if ( sf->cidmaster ) sf = sf->cidmaster;
-	k=0;
-	a = al = ah = b = bl = bh = 0;
-	max = 0;
-	do {
-	    _sf =  ( sf->subfontcnt==0 ) ? sf : sf->subfonts[k];
-	    for ( gid=0; gid<_sf->glyphcnt; ++gid ) if ( (test=_sf->glyphs[gid])!=NULL ) {
-		if ( test->unicodeenc>=0xf0000 && test->unicodeenc<=0xfffff ) {
-		    a = true;
-		    if ( test->unicodeenc<0xf8000 )
-			al = true;
-		    else
-			ah = true;
-		} else if ( test->unicodeenc>=0x100000 && test->unicodeenc<=0x10ffff ) {
-		    b = true;
-		    if ( test->unicodeenc<0x108000 )
-			bl = true;
-		    else
-			bh = true;
-		}
-	    }
-	    if ( gid>max ) max = gid;
-	    ++k;
-	} while ( k<sf->subfontcnt );
-	if ( !a )		/* Nothing in SPUA-A */
-	    mv->fake_unicode_base = 0xf0000;
-	else if ( !b )
-	    mv->fake_unicode_base = 0x100000;
-	else if ( max<0x8000 ) {
-	    if ( !al )
-		mv->fake_unicode_base = 0xf0000;
-	    else if ( !ah )
-		mv->fake_unicode_base = 0xf8000;
-	    else if ( !bl )
-		mv->fake_unicode_base = 0x100000;
-	    else if ( !bh )
-		mv->fake_unicode_base = 0x108000;
-	}
-	if ( mv->fake_unicode_base==0 )
-	    mv->fake_unicode_base = -1;
+    	mv->fake_unicode_base = SFFakeUnicodeBase(mv->sf);
     }
 
     if ( mv->fake_unicode_base==-1 )
