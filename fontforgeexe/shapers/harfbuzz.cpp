@@ -38,9 +38,10 @@ HarfBuzzShaper::HarfBuzzShaper(std::shared_ptr<ShaperContext> context)
     : context_(context) {
     FILE* ttf_file = GFileTmpfile();
 
-    _WriteTTFFont(ttf_file, context_->sf, ff_ttf, NULL, bf_ttf,
-                  ttf_flag_otmode | ttf_flag_oldkernmappedonly,
-                  context_->get_enc_map(context_->sf), ly_fore);
+    _WriteTTFFont(
+        ttf_file, context_->sf, ff_ttf, NULL, bf_ttf,
+        ttf_flag_otmode | ttf_flag_oldkernmappedonly | ttf_flag_fake_map,
+        context_->get_enc_map(context_->sf), ly_fore);
 
     // Calculate file length
     fseek(ttf_file, 0L, SEEK_END);

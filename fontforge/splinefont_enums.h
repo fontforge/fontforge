@@ -63,6 +63,7 @@ enum ttf_flags {
     ttf_flag_symbol            = 1 << 14,
     ttf_flag_dummyDSIG         = 1 << 15,
     ttf_native_kern            = 1 << 16, // This applies mostly to U. F. O. right now.
+    ttf_flag_fake_map          = 1 << 17, // Set fake unicode mappings for unmapped glyphs
     ttf_flag_oldkernmappedonly = 1 << 29, // Allow only mapped glyphs in the old-style "kern" table, required for Windows compatibility
     ttf_flag_nomacnames        = 1 << 30  // Don't autogenerate mac name entries
 };
