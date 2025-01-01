@@ -8,7 +8,7 @@
  */
 extern bool equalWithTolerence(real a, real b, real tolerence);
 
-extern int CIDOneWidth(SplineFont *_sf);
+extern int SFOneWidth(SplineFont *_sf);
 extern int CvtPsStem3(GrowBuf *gb, SplineChar *scs[MmMax], int instance_count, int ishstem, int round);
 extern int SFIsCJK(SplineFont *sf, EncMap *map);
 extern int SFOneHeight(SplineFont *sf);

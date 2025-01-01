@@ -1853,7 +1853,7 @@ bool SFIsFixedWidth(SplineFont *sf) {
 	-1: variable or dual pitch
 	width>0: fixed pitch with given character width
 */
-int CIDOneWidth(SplineFont *_sf) {
+int SFOneWidth(SplineFont *_sf) {
     int width, total_width = -2;
     int k = 0;
     SplineFont *sf;
@@ -2070,13 +2070,13 @@ struct pschars *SplineFont2ChrsSubrs(SplineFont *sf, int iscjk,
 	fixed = 0;
 	for ( i=0; i<instance_count; ++i ) {
 	    MarkTranslationRefs(mm->instances[i],layer);
-	    fixed = CIDOneWidth(mm->instances[i]);
+	    fixed = SFOneWidth(mm->instances[i]);
 	    if ( fixed==-1 )
 	break;
 	}
     } else {
 	MarkTranslationRefs(sf,layer);
-	fixed = CIDOneWidth(sf);
+	fixed = SFOneWidth(sf);
 	instance_count = 1;
     }
 
@@ -2112,7 +2112,7 @@ struct pschars *SplineFont2ChrsSubrs(SplineFont *sf, int iscjk,
 	dummynotdef.parent = sf;
 	dummynotdef.layer_cnt = sf->layer_cnt;
 	dummynotdef.layers = calloc(sf->layer_cnt,sizeof(Layer));
-	dummynotdef.width = CIDOneWidth(sf);
+	dummynotdef.width = SFOneWidth(sf);
 	if ( dummynotdef.width==-1 )
 	    dummynotdef.width = (sf->ascent+sf->descent)/2;
 	gi.gb[0].sc = &dummynotdef;
@@ -2188,7 +2188,7 @@ struct pschars *CID2ChrsSubrs(SplineFont *cidmaster,struct cidbytes *cidbytes,in
 	dummynotdef.parent = cidmaster->subfonts[0];
 	dummynotdef.layer_cnt = layer+1;
 	dummynotdef.layers = calloc(layer+1,sizeof(Layer));
-	dummynotdef.width = CIDOneWidth(dummynotdef.parent);
+	dummynotdef.width = SFOneWidth(dummynotdef.parent);
 	if ( dummynotdef.width==-1 )
 	    dummynotdef.width = (dummynotdef.parent->ascent+dummynotdef.parent->descent);
     }
@@ -3266,7 +3266,7 @@ struct pschars *SplineFont2ChrsSubrs2(SplineFont *sf, int nomwid, int defwid,
 	    dummynotdef.parent = sf;
 	    dummynotdef.layer_cnt = sf->layer_cnt;
 	    dummynotdef.layers = calloc(sf->layer_cnt,sizeof(Layer));
-	    dummynotdef.width = CIDOneWidth(sf);
+	    dummynotdef.width = SFOneWidth(sf);
 	    if ( dummynotdef.width==-1 )
 		dummynotdef.width = (sf->ascent+sf->descent)/2;
 	    Type2NotDefSplines(sf,&dummynotdef,layer);
@@ -3496,7 +3496,7 @@ struct pschars *CID2ChrsSubrs2(SplineFont *cidmaster,struct fd2data *fds,
 	    dummynotdef.parent = sf;
 	    dummynotdef.layer_cnt = layer+1;
 	    dummynotdef.layers = calloc(layer+1,sizeof(Layer));
-	    dummynotdef.width = CIDOneWidth(sf);
+	    dummynotdef.width = SFOneWidth(sf);
 	    if ( dummynotdef.width==-1 )
 		dummynotdef.width = (sf->ascent+sf->descent);
 	    Type2NotDefSplines(sf,&dummynotdef,layer);
