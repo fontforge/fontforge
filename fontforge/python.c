@@ -8094,7 +8094,7 @@ Py_RETURN( self->mk );
 
 typedef struct glyph_accessors_ {
     const char* name;
-    /* SlpineChar* argument is guaranteed non-NULL */
+    /* SplineChar* argument is guaranteed non-NULL */
     PyObject* (*getter)(PyFF_Glyph *self, SplineChar *sc, void *closure);
     int (*setter)(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *closure);
     const char* doc;
