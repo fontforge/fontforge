@@ -3006,7 +3006,7 @@ void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname) {
 	    hold.hheadset = hold.vheadset = false;
 	memset(pfminfo,'\0',sizeof(*pfminfo));
 	SFDefaultOS2Simple(pfminfo,sf);
-	samewid = CIDOneWidth(sf);
+	samewid = SFOneWidth(sf);
 
 	pfminfo->pfmfamily = 0x10;
 	if ( samewid>0 ) {
@@ -6113,7 +6113,7 @@ static void ATinit(struct alltabs *at,SplineFont *sf,EncMap *map,int flags, int 
     if ( bsizes!=NULL && !at->applebitmaps && !at->otbbitmaps && !at->msbitmaps )
 	at->msbitmaps = true;		/* They asked for bitmaps, but no bitmap type selected */
     at->gi.bsizes = bsizes;
-    at->gi.fixed_width = CIDOneWidth(sf);
+    at->gi.fixed_width = SFOneWidth(sf);
     at->isotf = format==ff_otf || format==ff_otfcid;
     at->format = format;
     at->next_strid = 256;
@@ -6613,7 +6613,7 @@ return( NULL );
 return( NULL );
     }
 
-    ret[fcnt].gi.fixed_width = CIDOneWidth(sf);
+    ret[fcnt].gi.fixed_width = SFOneWidth(sf);
     ret[fcnt].gi.bygid = bygid;
     ret[fcnt].gi.gcnt = ret[fcnt].maxp.numGlyphs = dummysf->glyphcnt;
     if ( format==ff_ttf )
