@@ -708,7 +708,6 @@ static void dumpcoveragetable(FILE *gpos,SplineChar **glyphs) {
 
 	// We will not emit glyphs with -1 identifiers.
 	// We count the valid glyphs and the ranges.
-	int glyph_cnt = 0;
 	for (i=0; glyphs[i]!=NULL; i++) {
 		if (i > 0 && glyphs[i]->ttf_glyph <= glyphs[i-1]->ttf_glyph) {
 			LogError(_("Glyphs must be ordered when creating coverage table"));
@@ -716,7 +715,6 @@ static void dumpcoveragetable(FILE *gpos,SplineChar **glyphs) {
 		if (glyphs[i]->ttf_glyph < 0) {
 			LogError(_("-1 glyph index in dumpcoveragetable.\n"));
 		} else {
-			glyph_cnt++;
 			// On the first validly TrueType-indexed glyph or at the start of any discontinuity, start a new range.
 			if (range_cnt == 0 || glyphs[i]->ttf_glyph > last + 1)
 				range_cnt++;
@@ -3044,7 +3042,7 @@ static void FindFeatures(SplineFont *sf,int is_gpos,struct ginfo *ginfo) {
 
     memset(ginfo,0,sizeof(struct ginfo));
 
-    scripts = SFScriptsInLookups(sf,is_gpos);
+    scripts = SFScriptsInLookups(sf);
     if ( scripts==NULL )	/* All lookups unused */
 return;
     for ( sc=0; scripts[sc]!=0; ++sc );

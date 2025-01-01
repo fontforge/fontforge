@@ -135,7 +135,7 @@ static void ValidateMListTs(struct mlist * input) {
 #ifdef FF_OVERLAP_VERBOSE
 #define ValidateMListTs_IF_VERBOSE(input) ValidateMListTs(input);
 #else
-#define ValidateMListTs_IF_VERBOSE(input) 
+#define ValidateMListTs_IF_VERBOSE(input)
 #endif
 
 static extended evalSpline(Spline *s, extended t, int dim) {
@@ -194,7 +194,7 @@ static void Validate(Monotonic *ms, Intersection *ilist) {
 	    SOError( "Mismatched intersection.\n (%g,%g)->(%g,%g) ends at (%g,%g) while (%g,%g)->(%g,%g) starts at (%g,%g)\n",
 		(double) ms->prev->s->from->me.x,(double) ms->prev->s->from->me.y,
 		(double) ms->prev->s->to->me.x,(double) ms->prev->s->to->me.y,
-		(double) (ms->prev->end!=NULL?ms->prev->end->inter.x:-999999), (double) (ms->prev->end!=NULL?ms->prev->end->inter.y:-999999), 
+		(double) (ms->prev->end!=NULL?ms->prev->end->inter.x:-999999), (double) (ms->prev->end!=NULL?ms->prev->end->inter.y:-999999),
 		(double) ms->s->from->me.x,(double) ms->s->from->me.y,
 		(double) ms->s->to->me.x,(double) ms->s->to->me.y,
 		(double) (ms->start!=NULL?ms->start->inter.x:-999999), (double) (ms->start!=NULL?ms->start->inter.y:-999999) );
@@ -423,7 +423,7 @@ ValidateMListTs_IF_VERBOSE(il->monos)
     // Add the new item to the monotonic list for the input intersection.
     ml->next = il->monos;
     il->monos = ml;
-    
+
     ml->s = m->s; // Set the spline.
     ml->m = m;			/* This may change. We'll fix it up later */
     ml->t = t;
@@ -504,7 +504,7 @@ static extended FixMonotonicT(struct monotonic * input_mono, extended startt, ex
 static int MonotonicCheckZeroLength(struct monotonic * input1) {
   if (input1->start == input1->end) return 1;
   if (input1->tstart == input1->tend) return 1;
-  if (input1->start != NULL && input1->end != NULL && 
+  if (input1->start != NULL && input1->end != NULL &&
     input1->start->inter.x == input1->end->inter.x && input1->start->inter.y == input1->end->inter.y) {
     SOError("Zero-length monotonic between unlike points.\n"); return 1;
   }
@@ -776,7 +776,7 @@ return;
 	m->start = il;
 	_AddSpline(il,m,m->tstart,false);
 	if (m->prev != NULL) _AddSpline(il,m->prev,m->prev->tend,true);
-    } else if ((t-m->tstart > m->tend-t) && ((m->tend == t) || 
+    } else if ((t-m->tstart > m->tend-t) && ((m->tend == t) ||
            (Within4RoundingErrors(m->tend,t) && ( m->end==NULL || (
            Within16RoundingErrors(m->end->inter.x,il->inter.x) &&
            Within16RoundingErrors(m->end->inter.y,il->inter.y)))))) {
@@ -1280,7 +1280,7 @@ return( true );
 	    }
 	    if ( t1p==t1 && t2p==t2 )
 	break;
-    
+
 	    x1p = ((s1->splines[0].a*t1p + s1->splines[0].b)*t1p + s1->splines[0].c)*t1p + s1->splines[0].d;
 	    x2p = ((s2->splines[0].a*t2p + s2->splines[0].b)*t2p + s2->splines[0].c)*t2p + s2->splines[0].d;
 	    y1p = ((s1->splines[1].a*t1p + s1->splines[1].b)*t1p + s1->splines[1].c)*t1p + s1->splines[1].d;
@@ -2092,7 +2092,7 @@ return( true );
 #define FF_DUMP_MONOTONIC_IF_VERBOSE(m) DumpMonotonic(m);
 static void DumpMonotonic(Monotonic *input) {
   fprintf(stderr, "Monotonic: %p\n", input);
-  fprintf(stderr, "  spline: %p; tstart: %f; tstop: %f; next: %p; prev: %p; start: %p; end: %p;\n", 
+  fprintf(stderr, "  spline: %p; tstart: %f; tstop: %f; next: %p; prev: %p; start: %p; end: %p;\n",
     input->s, input->tstart, input->tend, input->next, input->prev, input->start, input->end);
   fprintf(stderr, "  ");
   if (input->start != NULL) fprintf(stderr, "start: (%f, %f) ", input->start->inter.x, input->start->inter.y);
@@ -2102,7 +2102,7 @@ static void DumpMonotonic(Monotonic *input) {
   fprintf(stderr, "\n");
 }
 #else
-#define FF_DUMP_MONOTONIC_IF_VERBOSE(m) 
+#define FF_DUMP_MONOTONIC_IF_VERBOSE(m)
 #endif
 
 static Monotonic *FindMonoContaining(Monotonic *base, bigreal t) {
@@ -2415,7 +2415,7 @@ int CheckMonotonicClosed(struct monotonic *ms) {
   if (ms == NULL) return 0;
   current = ms->next;
   while (current != ms && current != NULL) {
-    current = current->next;    
+    current = current->next;
   }
   if (current == NULL) return 0;
   return 1;
@@ -2939,7 +2939,6 @@ static void TestForBadDirections(Intersection *ilist) {
     /*  this. */
     /* I think it happens if all exits from an intersection are needed */
     MList *ml, *ml2;
-    int cnt, ncnt;
     Intersection *il;
 
     /* If we have two splines one going from a->b and the other from b->a */
@@ -2963,15 +2962,6 @@ static void TestForBadDirections(Intersection *ilist) {
 		}
 	    }
 	}
-    }
-
-    while ( ilist!=NULL ) {
-	cnt = ncnt = 0;
-	for ( ml = ilist->monos; ml!=NULL; ml=ml->next ) {
-	    ++cnt;
-	    if ( ml->m->isneeded ) ++ncnt;
-	}
-	ilist = ilist->next;
     }
 }
 
@@ -3204,7 +3194,7 @@ static SplineSet *JoinAContour(Intersection *startil,MList *ml) {
 	    if ( ml==NULL )
 		for ( ml=curil->monos; ml!=NULL && !ml->m->isneeded; ml=ml->next );
 	} else {
-	    
+
 	    int k; MList *bestml; bigreal bestdot;
 	    for ( k=0; k<2; ++k ) {
 		bestml = NULL; bestdot = -2;
@@ -3771,7 +3761,7 @@ return( -1 );
     }
 return( t1 );
 }
-	
+
 void SSRemoveBacktracks(SplineSet *ss) {
     SplinePoint *sp;
 
@@ -3861,7 +3851,7 @@ static int BetweenForCollinearPoints( SplinePoint* a, SplinePoint* middle, Splin
     if( a->me.x <= middle->me.x && middle->me.x <= b->me.x )
 	if( a->me.y <= middle->me.y && middle->me.y <= b->me.y )
 	    return 1;
-    
+
     return ret;
 }
 
@@ -3902,7 +3892,7 @@ static SplineSet *SSRemoveReversals(SplineSet *base) {
 		    SplinePoint *nsp = sp->next->to;
 		    SplinePoint *psp = sp->prev->from;
 		    SplinePoint *isp = 0;
-		    
+
 		    if ( psp->me.x==nsp->me.x && psp->me.y==nsp->me.y &&
 			    psp->nextcp.x==nsp->prevcp.x && psp->nextcp.y==nsp->prevcp.y )
 		    {

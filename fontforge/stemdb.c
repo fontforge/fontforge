@@ -2363,7 +2363,7 @@ return( 0 );
     /* But do that only for colinear spline segments and ensure that there are  */
     /* no bends between two splines. */
     if ( !tp && ( !fp || t > 0.5 ) &&
-	topd->colinear && &other->to->next != NULL ) {
+	topd->colinear && topt->next != NULL ) {
 	testpt = topt->next->to; 
 	testpd = &gd->points[testpt->ptindex];
 	BasePoint *initdir = &topd->prevunit;
@@ -2379,7 +2379,7 @@ return( 0 );
 	if ( tp ) t_needs_recalc = true;
     }
     if ( !fp && ( !fp || t < 0.5 ) &&
-	frompd->colinear && &other->from->prev != NULL ) {
+	frompd->colinear && frompt->prev != NULL ) {
 	testpt = frompt->prev->from; 
 	testpd = &gd->points[testpt->ptindex];
 	BasePoint *initdir = &frompd->prevunit;
