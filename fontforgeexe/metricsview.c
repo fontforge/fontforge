@@ -876,7 +876,6 @@ static void MVCreateFields(MetricsView *mv,int i) {
     GGadgetData gd;
     GTextInfo label;
     static unichar_t nullstr[1] = { 0 };
-    int j;
     extern GBox _GGadget_gtextfield_box;
     int udaidx = 1; // we leave element zero to be NULL to allow bounds checking.
 
@@ -929,12 +928,6 @@ static void MVCreateFields(MetricsView *mv,int i) {
 	    mv->perchar[i-1].updownkparray[udaidx] = mv->perchar[i].kern;
 	}
 	mv->perchar[i].updownkparray[udaidx++] = mv->perchar[i].kern;
-
-	if ( i>=mv->glyphcnt ) {
-	    for ( j=mv->glyphcnt+1; j<=i ; ++ j )
-		mv->metrics[j].dx = mv->metrics[j-1].dx;
-	    mv->glyphcnt = i+1;
-	}
     }
 
     GWidgetIndicateFocusGadget(mv->text);
