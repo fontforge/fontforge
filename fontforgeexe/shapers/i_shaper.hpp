@@ -45,7 +45,7 @@ class IShaper {
     // apply features which involve these glyphs.
     virtual struct opentype_str* apply_features(
         SplineChar** glyphs, const std::vector<Tag>& feature_list, Tag script,
-        Tag lang, int pixelsize) = 0;
+        Tag lang, int pixelsize, bool vertical) = 0;
 
     // Scale glyph sequence metrics from font units to pixels
     virtual void scale_metrics(MetricsView* mv, double iscale, double scale,

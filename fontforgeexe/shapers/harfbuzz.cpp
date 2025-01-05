@@ -159,6 +159,34 @@ std::vector<ShapeMetrics> HarfBuzzShaper::reverse_rtl_metrics(
     return fixed_metrics;
 }
 
+std::vector<ShapeMetrics> HarfBuzzShaper::reverse_ttb_metrics(
+    const std::vector<ShapeMetrics>& bottom_up_metrics) const {
+    // Duplicate metrics
+    std::vector<ShapeMetrics> fixed_metrics(bottom_up_metrics);
+
+    hb_font_extents_t font_extents;
+    hb_font_get_h_extents(hb_ttf_font, &font_extents);
+
+    // Harfbuzz centers vertically one under another, but the legacy display
+    // aligns them to the left. We apply uniform shift to keep the glyph
+    // alignment and still place them roughly in the viewport.
+    // NOTE: X offsets are normally negative.
+    hb_position_t max_xoff =
+        -std::min_element(bottom_up_metrics.begin(), bottom_up_metrics.end(),
+                          [](const ShapeMetrics& a, const ShapeMetrics& b) {
+                              return a.xoff < b.xoff;
+                          })
+             ->xoff;
+
+    for (auto& m : fixed_metrics) {
+        m.xoff = m.xoff + max_xoff;
+        m.yoff = -m.yoff - font_extents.ascender;
+        m.dy = -m.dy;
+    }
+
+    return fixed_metrics;
+}
+
 std::vector<int> HarfBuzzShaper::compute_kerning_deltas(
     hb_buffer_t* hb_buffer, struct opentype_str* ots_arr) {
     unsigned int glyph_count;
@@ -216,7 +244,7 @@ std::vector<int> HarfBuzzShaper::compute_width_deltas(hb_buffer_t* hb_buffer,
 
 struct opentype_str* HarfBuzzShaper::apply_features(
     SplineChar** glyphs, const std::vector<Tag>& feature_list, Tag script,
-    Tag lang, int pixelsize) {
+    Tag lang, int pixelsize, bool vertical) {
     std::vector<unichar_t> u_vec;
     for (size_t len = 0; glyphs[len] != NULL; ++len) {
         u_vec.push_back(
@@ -238,8 +266,10 @@ struct opentype_str* HarfBuzzShaper::apply_features(
     hb_buffer_set_language(hb_buffer, hb_lang);
 
     bool rtl = !u_vec.empty() && isrighttoleft(u_vec[0]);
-    hb_buffer_set_direction(hb_buffer,
-                            rtl ? HB_DIRECTION_RTL : HB_DIRECTION_LTR);
+    hb_direction_t hb_dir = vertical ? HB_DIRECTION_TTB
+                            : rtl    ? HB_DIRECTION_RTL
+                                     : HB_DIRECTION_LTR;
+    hb_buffer_set_direction(hb_buffer, hb_dir);
 
     // Shape the text
     hb_shape(hb_ttf_font, hb_buffer, NULL, 0);
@@ -275,6 +305,12 @@ struct opentype_str* HarfBuzzShaper::apply_features(
     // buffer. We therefore need to recompute metrics in reverse direction
     if (rtl) {
         metrics = reverse_rtl_metrics(metrics);
+    }
+
+    // Reverse vertical metrics from bottom-up direction (HarfBuzz convention)
+    // to top-down (MetricsView convention)
+    if (vertical) {
+        metrics = reverse_ttb_metrics(metrics);
     }
 
     // Compute the accumulated shifts dx for each glyph as partial sums of

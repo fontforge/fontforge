@@ -1020,7 +1020,7 @@ static void MVRemetric(MetricsView *mv) {
     sf = mv->sf;
     if ( sf->cidmaster ) sf = sf->cidmaster;
     mv->glyphs = shaper_apply_features(mv->shaper, mv->chars, feats,
-                            		script, lang, mv->pixelsize);
+        				script, lang, mv->pixelsize, mv->vertical);
     if (mv->glyphs == NULL) {
 	mv->glyphs = calloc(1, sizeof(struct opentype_str));
     }
@@ -1608,9 +1608,9 @@ static void MVToggleVertical(MetricsView *mv) {
 		mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->pixelsize,72,
 					       MVGetSplineFontPieceMealFlags( mv ), NULL );
 	    }
-	    MVRemetric(mv);
 	}
     }
+    MVRemetric(mv);
 }
 
 static SplineChar *MVSCFromUnicode(MetricsView *mv, SplineFont *sf, EncMap *map, int ch,BDFFont *bdf) {

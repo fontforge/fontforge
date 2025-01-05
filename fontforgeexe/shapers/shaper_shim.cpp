@@ -88,7 +88,8 @@ const char* shaper_name(void* shaper) {
 
 struct opentype_str* shaper_apply_features(void* shaper, SplineChar** glyphs,
                                            uint32_t* flist, uint32_t script,
-                                           uint32_t lang, int pixelsize) {
+                                           uint32_t lang, int pixelsize,
+                                           bool vertical) {
     ff::shapers::IShaper* ishaper = static_cast<ff::shapers::IShaper*>(shaper);
     std::vector<Tag> feature_list;
     for (int i = 0; flist[i] != 0; ++i) {
@@ -97,7 +98,7 @@ struct opentype_str* shaper_apply_features(void* shaper, SplineChar** glyphs,
 
     if (shaper) {
         return ishaper->apply_features(glyphs, feature_list, Tag(script),
-                                       Tag(lang), pixelsize);
+                                       Tag(lang), pixelsize, vertical);
     } else {
         return nullptr;
     }

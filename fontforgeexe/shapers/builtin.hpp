@@ -37,8 +37,8 @@ class BuiltInShaper : public IShaper {
 
     struct opentype_str* apply_features(SplineChar** glyphs,
                                         const std::vector<Tag>& feature_list,
-                                        Tag script, Tag lang,
-                                        int pixelsize) override;
+                                        Tag script, Tag lang, int pixelsize,
+                                        bool vertical) override;
 
     void scale_metrics(MetricsView* mv, double iscale, double scale,
                        bool vertical) override;

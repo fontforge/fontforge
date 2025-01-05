@@ -33,7 +33,7 @@ namespace ff::shapers {
 
 struct opentype_str* BuiltInShaper::apply_features(
     SplineChar** glyphs, const std::vector<Tag>& feature_list, Tag script,
-    Tag lang, int pixelsize) {
+    Tag lang, int pixelsize, bool vertical) {
     // Zero-terminated list of features
     std::vector<uint32_t> flist(feature_list.begin(), feature_list.end());
     flist.push_back(0);

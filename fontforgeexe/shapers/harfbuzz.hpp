@@ -40,8 +40,8 @@ class HarfBuzzShaper : public IShaper {
 
     struct opentype_str* apply_features(SplineChar** glyphs,
                                         const std::vector<Tag>& feature_list,
-                                        Tag script, Tag lang,
-                                        int pixelsize) override;
+                                        Tag script, Tag lang, int pixelsize,
+                                        bool vertical) override;
 
     void scale_metrics(MetricsView* mv, double iscale, double scale,
                        bool vertical) override;
@@ -80,6 +80,9 @@ class HarfBuzzShaper : public IShaper {
     // them.
     std::vector<ShapeMetrics> reverse_rtl_metrics(
         const std::vector<ShapeMetrics>& reverse_metrics) const;
+
+    std::vector<ShapeMetrics> reverse_ttb_metrics(
+        const std::vector<ShapeMetrics>& bottom_up_metrics) const;
 
     // Compute changes in kerning due to user's input after the font was
     // generated.
