@@ -573,7 +573,7 @@ static void MVSetFeatures(MetricsView *mv) {
     for ( cnt=0; tags[cnt]!=0; ++cnt );
 
     /* The feature of the active kerning lookup should always be included. */
-    /* TODO(iorsh): Sometimes the desired lookup is marked is unused and skipped 
+    /* TODO(iorsh): Sometimes the desired lookup is marked as unused and skipped 
        in SFFeaturesInScriptLang(). This might better be handled there. */
     if ( mv->cur_subtable != NULL &&
          mv->cur_subtable->lookup != NULL &&
