@@ -2225,11 +2225,8 @@ return;
 /*  date of fontforge sources */
 /*  date of font's (not file's) creation */
 /*  date of font's modification */
-int ttf_fftm_dump(SplineFont *sf,struct alltabs *at) {
+void ttf_fftm_dump(SplineFont *sf,struct alltabs *at) {
     int32_t results[2];
-
-    if ( at->gi.flags & ttf_flag_noFFTMtable )
-	return false;
 
     at->fftmf = GFileTmpfile();
 
@@ -2253,5 +2250,4 @@ int ttf_fftm_dump(SplineFont *sf,struct alltabs *at) {
 	putc(0,at->fftmf);
     if ( ((at->fftmlen+1)&2)!=0 )
 	putshort(at->fftmf,0);
-return( true );
 }

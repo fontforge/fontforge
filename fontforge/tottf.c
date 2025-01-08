@@ -3006,7 +3006,7 @@ void SFDefaultOS2Info(struct pfminfo *pfminfo,SplineFont *sf,char *fontname) {
 	    hold.hheadset = hold.vheadset = false;
 	memset(pfminfo,'\0',sizeof(*pfminfo));
 	SFDefaultOS2Simple(pfminfo,sf);
-	samewid = CIDOneWidth(sf);
+	samewid = SFOneWidth(sf);
 
 	pfminfo->pfmfamily = 0x10;
 	if ( samewid>0 ) {
@@ -3734,7 +3734,7 @@ static void dumpstr(FILE *file,char *str) {
 static void dumpustr(FILE *file,char *utf8_str) {
     uint16_t *utf16_str = utf82utf16_copy(utf8_str);
     uint16_t *pt = utf16_str;
-    
+
     do {
 	putc(*pt>>8,file);
 	putc(*pt&0xff,file);
@@ -4504,7 +4504,7 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map,int issymbol
     /* But if it's symbol, only include encodings 0xff20 - 0xffff */
     int32_t *avail = malloc(65536*sizeof(int32_t));
     int i,j, first_delta=0, last_delta, slen;
-    int curseg=0, segcnt, segmax=SEGMAXINC, cnt=0, mapcnt=0;
+    int curseg=0, segcnt, segmax=SEGMAXINC, mapcnt=0;
     SplineChar *sc;
     FILE *format4 = NULL;
     /* the cmapseg elements are written as shorts. We keep them
@@ -4520,7 +4520,6 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map,int issymbol
     if ( map->enc->is_unicodebmp || map->enc->is_unicodefull ) { int gid;
 	for ( i=0; i<65536 && i<map->enccount; ++i ) if ( (gid=map->map[i])!=-1 && sf->glyphs[gid]!=NULL && sf->glyphs[gid]->ttf_glyph!=-1 ) {
 	    avail[i] = sf->glyphs[gid]->ttf_glyph;
-	    ++cnt;
 	}
     } else {
 	struct altuni *altuni;
@@ -4528,12 +4527,10 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map,int issymbol
 	    if ( (sc=sf->glyphs[i])!=NULL && sc->ttf_glyph!=-1 ) {
 		if ( sc->unicodeenc>=0 && sc->unicodeenc<=0xffff ) {
 		    avail[sc->unicodeenc] = sc->ttf_glyph;
-		    ++cnt;
 		}
 		for ( altuni=sc->altuni; altuni!=NULL; altuni = altuni->next ) {
 		    if ( altuni->unienc<=0xffff && altuni->vs==-1 && altuni->fid==0 ) {
 			avail[altuni->unienc] = sc->ttf_glyph;
-			++cnt;
 		    }
 		}
 	    }
@@ -4701,12 +4698,10 @@ static FILE *NeedsUCS2Table(SplineFont *sf,int *ucs2len,EncMap *map,int issymbol
 	    putshort(format4,0);
 	else
 	    putshort(format4,(cmapseg[i].mapoff+(segcnt-i))*sizeof(int16_t));
-    int chk=0;
     for ( i=0; i<segcnt; ++i ) {
 	if ( cmapseg[i].use_delta )
 	    continue;
 	for ( j=cmapseg[i].start; j<=cmapseg[i].end; ++j ) {
-	    chk++;
 	    if ( avail[j]==-1 )
 		putshort(format4,0);
 	    else
@@ -5390,7 +5385,7 @@ return( NULL );
 }
 
 static void buildtablestructures(struct alltabs *at, SplineFont *sf,
-	enum fontformat format) {
+	enum fontformat format, int flags) {
     int i;
     int ebdtpos, eblcpos;
     struct ttf_table *tab;
@@ -5458,7 +5453,7 @@ static void buildtablestructures(struct alltabs *at, SplineFont *sf,
 	at->tabdir.tabs[i++].length = at->ebsclen;
     }
 
-    if ( at->fftmf!=NULL ) {
+    if ( at->fftmf!=NULL && !(flags&ttf_flag_noFFTMtable)) {
 	at->tabdir.tabs[i].tag = CHR('F','F','T','M');
 	at->tabdir.tabs[i].data = at->fftmf;
 	at->tabdir.tabs[i++].length = at->fftmlen;
@@ -5728,7 +5723,7 @@ static void buildtablestructures(struct alltabs *at, SplineFont *sf,
     at->tabdir.rangeShift = at->tabdir.numtab*16-at->tabdir.searchRange;
 }
 
-static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format,
+static int initTables(struct alltabs *at, SplineFont *sf,enum fontformat format, int flags,
 	int32_t *bsizes, enum bitmapformat bf) {
     int i, j, aborted, offset;
     BDFFont *bdf;
@@ -5828,7 +5823,9 @@ return( false );
     if ( sf->hasvmetrics ) {
 	redohhead(at,true);
     }
-    ttf_fftm_dump(sf,at);
+
+    if (!(flags&ttf_flag_noFFTMtable))
+	    ttf_fftm_dump(sf,at);
 
     if ( format!=ff_type42 && format!=ff_type42cid && !sf->internal_temp ) {
 	initATTables(at, sf, format);
@@ -5858,7 +5855,7 @@ return( false );
     free( at->gi.bygid );
     at->gi.gcnt = 0;
 
-    buildtablestructures(at,sf,format);
+    buildtablestructures(at,sf,format,flags);
     for ( i=0; i<at->tabdir.numtab; ++i ) {
 	struct taboff *tab = &at->tabdir.tabs[i];
 	at->tabdir.ordered[i] = tab;
@@ -6116,7 +6113,7 @@ static void ATinit(struct alltabs *at,SplineFont *sf,EncMap *map,int flags, int 
     if ( bsizes!=NULL && !at->applebitmaps && !at->otbbitmaps && !at->msbitmaps )
 	at->msbitmaps = true;		/* They asked for bitmaps, but no bitmap type selected */
     at->gi.bsizes = bsizes;
-    at->gi.fixed_width = CIDOneWidth(sf);
+    at->gi.fixed_width = SFOneWidth(sf);
     at->isotf = format==ff_otf || format==ff_otfcid;
     at->format = format;
     at->next_strid = 256;
@@ -6198,7 +6195,7 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
     if ( format==ff_cff || format==ff_cffcid ) {
 	dumpcff(&at,sf,format,ttf);
     } else {
-	if ( initTables(&at,sf,format,bsizes,bf))
+	if ( initTables(&at,sf,format,flags,bsizes,bf))
 	    dumpttf(ttf,&at);
     }
 
@@ -6353,7 +6350,7 @@ int _WriteType42SFNTS(FILE *type42,SplineFont *sf,enum fontformat format,
     at.applemode = false;
     at.opentypemode = false;
 
-    if ( initTables(&at,sf,format,NULL,bf_none))
+    if ( initTables(&at,sf,format,flags,NULL,bf_none))
 	dumptype42(type42,&at,format);
     free(at.gi.loca);
 
@@ -6642,7 +6639,7 @@ return( NULL );
 return( NULL );
     }
 
-    ret[fcnt].gi.fixed_width = CIDOneWidth(sf);
+    ret[fcnt].gi.fixed_width = SFOneWidth(sf);
     ret[fcnt].gi.bygid = bygid;
     ret[fcnt].gi.gcnt = ret[fcnt].maxp.numGlyphs = dummysf->glyphcnt;
     if ( format==ff_ttf )
@@ -6669,7 +6666,9 @@ return( NULL );
     redohhead(&ret[fcnt],false);
     if ( dummysf->hasvmetrics )
 	redohhead(&ret[fcnt],true);
-    ttf_fftm_dump(dummysf,&ret[fcnt]);
+
+    if (!(flags&ttf_flag_noFFTMtable))
+    	ttf_fftm_dump(dummysf,&ret[fcnt]);
 
 return( ret );
 }
@@ -6695,7 +6694,7 @@ return( dumpstoredtable(sf,tag,len));
 }
 
 static void ttc_perfonttables(struct alltabs *all, int me, int mainpos,
-	enum fontformat format ) {
+	enum fontformat format, int flags ) {
     struct alltabs *at = &all[me];
     struct alltabs *maintab = &all[mainpos];
     SplineFont *sf = at->sf;
@@ -6752,7 +6751,8 @@ static void ttc_perfonttables(struct alltabs *all, int me, int mainpos,
     } else {
 	at->cfff = (void *) (intptr_t) -1; at->cfflen = mainpos;
     }
-    at->fftmf = (void *) (intptr_t) -1; at->fftmlen = mainpos;
+    if (!(flags&ttf_flag_noFFTMtable))
+    	at->fftmf = (void *) (intptr_t) -1; at->fftmlen = mainpos;
     at->hheadf = (void *) (intptr_t) -1; at->hheadlen = mainpos;
     at->gi.hmtx = (void *) (intptr_t) -1; at->gi.hmtxlen = mainpos;
     at->maxpf = (void *) (intptr_t) -1; at->maxplen = mainpos;
@@ -6832,7 +6832,7 @@ static void ttc_dump(FILE *ttc,struct alltabs *all, enum fontformat format,
 	putc('\0', ttc);
 
     /* Build, but don't output. This is so we can lookup tables by tag later */
-    buildtablestructures(&all[cnt],all[cnt].sf,format);
+    buildtablestructures(&all[cnt],all[cnt].sf,format,flags);
 
     /* Output some of the smaller tables now, near the head of the file */
     /* I have my doubts about this being a significant savings... but */
@@ -6853,16 +6853,19 @@ static void ttc_dump(FILE *ttc,struct alltabs *all, enum fontformat format,
     tab->offset = ftell(ttc);
     for ( i=0; i<64; ++i )		/* maxp table is 64 bytes, fill in later */
 	putc('\0', ttc);
-    tab = findtabindir(&all[cnt].tabdir,CHR('F','F','T','M'));
-    tab->offset = ftell(ttc);
-    tab->checksum = filechecksum(tab->data);
-    if ( !ttfcopyfile(ttc,tab->data, tab->offset,Tag2String(tab->tag)))
-	all[cnt].error = true;
+    if (!(flags&ttf_flag_noFFTMtable)) {
+		tab = findtabindir(&all[cnt].tabdir,CHR('F','F','T','M'));
+		tab->offset = ftell(ttc);
+		tab->checksum = filechecksum(tab->data);
+		if ( !ttfcopyfile(ttc,tab->data, tab->offset,Tag2String(tab->tag))){
+		all[cnt].error = true;
+	}
+}
 
     for ( i=0; i<cnt; ++i ) {
 	/* Now generate all tables unique to this font */
-	ttc_perfonttables(all, i, cnt, format );
-	buildtablestructures(&all[i],all[i].sf,format);
+	ttc_perfonttables(all, i, cnt, format, flags );
+	buildtablestructures(&all[i],all[i].sf,format,flags);
 	/* Check for any tables which match those of a previous font */
 	for ( j=0 ; j<all[i].tabdir.numtab; ++j ) {
 	    if ( all[i].tabdir.tabs[j].data!=(void *) (intptr_t) -1 &&

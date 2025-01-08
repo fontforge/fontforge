@@ -394,7 +394,7 @@ return( sl );
 return( NULL );
 }
 
-uint32_t *SFScriptsInLookups(SplineFont *sf,int gpos) {
+uint32_t *SFScriptsInLookups(SplineFont *sf) {
     /* Presumes that either SFFindUnusedLookups or SFFindClearUnusedLookupBits */
     /*  has been called first */
     /* Since MS will sometimes ignore a script if it isn't found in both */
@@ -429,7 +429,7 @@ better make sure that both tables have the same script set.
 (Sergey says we could optimize a little: A Latin GSUB table will run without
 a GPOS, but he says the GPOS won't work without a GSUB.)
 */
-    int cnt=0, tot=0, i;
+    int gpos, cnt=0, tot=0, i;
     uint32_t *scripts = NULL;
     OTLookup *test;
     FeatureScriptLangList *fl;

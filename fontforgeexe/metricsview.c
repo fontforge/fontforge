@@ -5123,7 +5123,7 @@ GTextInfo *SLOfFont(SplineFont *sf) {
     char sbuf[8], lbuf[8];
 
     LookupUIInit();
-    scripttags = SFScriptsInLookups(sf,-1);
+    scripttags = SFScriptsInLookups(sf);
     if ( scripttags==NULL )
 return( NULL );
 
