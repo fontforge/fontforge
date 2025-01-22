@@ -9,8 +9,6 @@ on:
 jobs:
   linux:
     runs-on: ${{ matrix.os }}
-    env:
-      PYTHON: python3.10
     strategy:
       matrix:
         os: ["ubuntu-latest"]

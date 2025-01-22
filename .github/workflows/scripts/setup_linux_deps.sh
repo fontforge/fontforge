@@ -2,6 +2,8 @@
 
 set -eo pipefail
 
+PYTHON=python3
+
 sudo apt-get remove python3-pip
 sudo add-apt-repository -y ppa:deadsnakes/ppa && sudo apt-get update -y
 sudo apt-get install -y autoconf automake libtool gcc g++ gettext \
