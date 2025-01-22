@@ -21,6 +21,10 @@ echo "Starting appimage build, folder is $APPDIR with version $VERSION"
 PYVER=$(ldd $APPDIR/usr/bin/fontforge | grep -Eom1 'python[0-9\.]+[0-9]+' | head -1 | cut -c 7-)
 echo "FontForge built against Python $PYVER"
 
+# In Ubuntu 20-22 the libpython3-minimal is not automatically included with the default Python installation.
+# In Ubuntu 24.04 this doesn't seem to be necessary anymore.
+sudo apt-get install -y libpython${PYVER}-minimal
+
 ( cd $APPDIR ; dpkg -x /var/cache/apt/archives/libpython${PYVER}-minimal*.deb . )
 ( cd $APPDIR ; dpkg -x /var/cache/apt/archives/libpython${PYVER}-stdlib*.deb . )
 "python${PYVER}" -m pip install -I --target "$APPDIR/usr/lib/python${PYVER}/dist-packages" setuptools
