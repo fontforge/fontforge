@@ -249,10 +249,8 @@ struct opentype_str* HarfBuzzShaper::apply_features(
     }
     u_vec.push_back(0);
 
-    char* utf8_str = u2utf8_copy(u_vec.data());
-
     hb_buffer_t* hb_buffer = hb_buffer_create();
-    hb_buffer_add_utf8(hb_buffer, utf8_str, -1, 0, -1);
+    hb_buffer_add_utf32(hb_buffer, u_vec.data(), -1, 0, -1);
 
     // Set script and language
     hb_script_t hb_script = hb_script_from_iso15924_tag((uint32_t)script);
@@ -321,7 +319,6 @@ struct opentype_str* HarfBuzzShaper::apply_features(
 
     // Cleanup
     hb_buffer_destroy(hb_buffer);
-    free(utf8_str);
 
     return ots_arr;
 }
