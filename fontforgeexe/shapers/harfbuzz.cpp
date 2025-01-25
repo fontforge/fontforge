@@ -113,10 +113,7 @@ SplineChar** HarfBuzzShaper::extract_shaped_data(hb_buffer_t* hb_buffer) {
         glyphs_after_gpos[i] = glyph_out;
 
         // Fill unscaled metrics in font units
-        hb_position_t h_advance =
-            hb_font_get_glyph_h_advance(hb_ttf_font, glyph_info.codepoint);
-
-        metrics[i].dwidth = h_advance;
+        metrics[i].dwidth = glyph_out->width;
         metrics[i].dheight = glyph_out->vwidth;
 
         metrics[i].xoff = glyph_pos.x_offset;
