@@ -73,6 +73,10 @@ class HarfBuzzShaper : public IShaper {
     // only affected by widths.
     std::map<hb_codepoint_t, hb_position_t> initial_width_;
 
+    // Convert feature tags to HarfBuzz feature structures
+    std::vector<hb_feature_t> hb_features(
+        const std::vector<Tag>& feature_list) const;
+
     // Retrieve data from shaped buffer and fill metrics.
     SplineChar** extract_shaped_data(hb_buffer_t* hb_buffer);
 

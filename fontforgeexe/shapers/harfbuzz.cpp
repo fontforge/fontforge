@@ -69,6 +69,17 @@ HarfBuzzShaper::~HarfBuzzShaper() {
     free(blob);
 }
 
+std::vector<hb_feature_t> HarfBuzzShaper::hb_features(
+    const std::vector<Tag>& feature_list) const {
+    std::vector<hb_feature_t> hb_feature_vec;
+    for (const Tag& feature_tag : feature_list) {
+        hb_feature_t hb_feat{feature_tag, 1, HB_FEATURE_GLOBAL_START,
+                             HB_FEATURE_GLOBAL_END};
+        hb_feature_vec.push_back(hb_feat);
+    }
+    return hb_feature_vec;
+}
+
 SplineChar** HarfBuzzShaper::extract_shaped_data(hb_buffer_t* hb_buffer) {
     unsigned int glyph_count;
     hb_glyph_info_t* glyph_info_arr =
@@ -263,9 +274,11 @@ struct opentype_str* HarfBuzzShaper::apply_features(
                             : rtl    ? HB_DIRECTION_RTL
                                      : HB_DIRECTION_LTR;
     hb_buffer_set_direction(hb_buffer, hb_dir);
+    auto hb_feature_vec = hb_features(feature_list);
 
     // Shape the text
-    hb_shape(hb_ttf_font, hb_buffer, NULL, 0);
+    hb_shape(hb_ttf_font, hb_buffer, hb_feature_vec.data(),
+             hb_feature_vec.size());
 
     // Retrieve the results
     SplineChar** glyphs_after_gpos = extract_shaped_data(hb_buffer);
