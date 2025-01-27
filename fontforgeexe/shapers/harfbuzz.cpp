@@ -348,4 +348,111 @@ void HarfBuzzShaper::scale_metrics(MetricsView* mv, double iscale, double scale,
     }
 }
 
+// List of features copied from HarfBuzz src/hb-subset-input.cc
+// hb_tag_t default_layout_features[]
+const std::set<Tag> HarfBuzzShaper::default_features_ = {
+    // default shaper
+    // common
+    "rvrn",
+    "ccmp",
+    "liga",
+    "locl",
+    "mark",
+    "mkmk",
+    "rlig",
+
+    // fractions
+    "frac",
+    "numr",
+    "dnom",
+
+    // horizontal
+    "calt",
+    "clig",
+    "curs",
+    "kern",
+    "rclt",
+
+    // vertical
+    "valt",
+    "vert",
+    "vkrn",
+    "vpal",
+    "vrt2",
+
+    // ltr
+    "ltra",
+    "ltrm",
+
+    // rtl
+    "rtla",
+    "rtlm",
+
+    // random
+    "rand",
+
+    // justify
+    "jalt",  // HarfBuzz doesn't use; others might
+
+    // East Asian spacing
+    "chws",
+    "vchw",
+    "halt",
+    "vhal",
+
+    // private
+    "Harf",
+    "HARF",
+    "Buzz",
+    "BUZZ",
+
+    // shapers
+
+    // arabic
+    "init",
+    "medi",
+    "fina",
+    "isol",
+    "med2",
+    "fin2",
+    "fin3",
+    "cswh",
+    "mset",
+    "stch",
+
+    // hangul
+    "ljmo",
+    "vjmo",
+    "tjmo",
+
+    // tibetan
+    "abvs",
+    "blws",
+    "abvm",
+    "blwm",
+
+    // indic
+    "nukt",
+    "akhn",
+    "rphf",
+    "rkrf",
+    "pref",
+    "blwf",
+    "half",
+    "abvf",
+    "pstf",
+    "cfar",
+    "vatu",
+    "cjct",
+    "init",
+    "pres",
+    "abvs",
+    "blws",
+    "psts",
+    "haln",
+    "dist",
+    "abvm",
+    "blwm",
+};
+
 }  // namespace ff::shapers

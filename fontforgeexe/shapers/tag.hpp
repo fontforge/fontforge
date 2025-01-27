@@ -35,7 +35,7 @@ class Tag {
 
     Tag(const char* val) : arr{val[0], val[1], val[2], val[3], '\0'} {}
 
-    operator const char*() const { return arr.data(); }
+    explicit operator const char*() const { return arr.data(); }
     operator uint32_t() const {
         return (arr[0] << 24) | (arr[1] << 16) | (arr[2] << 8) | arr[3];
     }

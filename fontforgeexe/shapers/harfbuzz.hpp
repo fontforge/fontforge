@@ -24,6 +24,7 @@
 
 #include <map>
 #include <memory>
+#include <set>
 #include <hb.h>
 
 #include "i_shaper.hpp"
@@ -48,6 +49,9 @@ class HarfBuzzShaper : public IShaper {
 
  private:
     std::shared_ptr<ShaperContext> context_;
+
+    // OpenType features enabled in HarfBuzz by default
+    static const std::set<Tag> default_features_;
 
     char* blob = nullptr;
     hb_blob_t* hb_ttf_blob = nullptr;
