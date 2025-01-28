@@ -29,7 +29,6 @@ extern "C" {
 #include "gfile.h"
 #include "splinechar.h"
 #include "splinefont_enums.h"
-#include "utype.h"
 }
 
 namespace ff::shapers {
@@ -280,11 +279,15 @@ struct opentype_str* HarfBuzzShaper::apply_features(
     hb_language_t hb_lang = hb_language_from_string((const char*)lang, -1);
     hb_buffer_set_language(hb_buffer, hb_lang);
 
-    bool rtl = !u_vec.empty() && isrighttoleft(u_vec[0]);
-    hb_direction_t hb_dir = vertical ? HB_DIRECTION_TTB
-                            : rtl    ? HB_DIRECTION_RTL
-                                     : HB_DIRECTION_LTR;
-    hb_buffer_set_direction(hb_buffer, hb_dir);
+    bool rtl = false;
+    if (vertical) {
+        hb_buffer_set_direction(hb_buffer, HB_DIRECTION_TTB);
+    } else {
+        // Script and language are set from UI, just guess the direction
+        hb_buffer_guess_segment_properties(hb_buffer);
+        rtl = (hb_buffer_get_direction(hb_buffer) == HB_DIRECTION_RTL);
+    }
+
     auto hb_feature_vec = hb_features(feature_map);
 
     // Shape the text
