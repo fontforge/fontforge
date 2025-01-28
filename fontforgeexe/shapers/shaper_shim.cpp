@@ -87,17 +87,17 @@ const char* shaper_name(void* shaper) {
 }
 
 struct opentype_str* shaper_apply_features(void* shaper, SplineChar** glyphs,
-                                           uint32_t* flist, uint32_t script,
-                                           uint32_t lang, int pixelsize,
-                                           bool vertical) {
+                                           FeatureMap* feat_map,
+                                           uint32_t script, uint32_t lang,
+                                           int pixelsize, bool vertical) {
     ff::shapers::IShaper* ishaper = static_cast<ff::shapers::IShaper*>(shaper);
-    std::vector<Tag> feature_list;
-    for (int i = 0; flist[i] != 0; ++i) {
-        feature_list.emplace_back(flist[i]);
+    std::map<Tag, bool> feature_map;
+    for (int i = 0; feat_map[i].feature_tag != 0; ++i) {
+        feature_map[feat_map[i].feature_tag] = feat_map[i].enabled;
     }
 
     if (shaper) {
-        return ishaper->apply_features(glyphs, feature_list, Tag(script),
+        return ishaper->apply_features(glyphs, feature_map, Tag(script),
                                        Tag(lang), pixelsize, vertical);
     } else {
         return nullptr;

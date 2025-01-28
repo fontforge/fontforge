@@ -958,7 +958,8 @@ static void MVRemetric(MetricsView *mv) {
     SplineChar *anysc, *goodsc;
     int i, cnt;
     const unichar_t *_script = _GGadgetGetTitle(mv->script);
-    uint32_t script, lang, *feats;
+    uint32_t script, lang;
+    FeatureMap *feats;
     char buf[20];
     int32_t len;
     GTextInfo **ti;
@@ -1008,12 +1009,9 @@ static void MVRemetric(MetricsView *mv) {
 
     // Parse the current list of features into feats.
     ti = GGadgetGetList(mv->features,&len);
-    for ( i=cnt=0; i<len; ++i )
-	if ( ti[i]->selected ) ++cnt;
-    feats = calloc(cnt+1,sizeof(uint32_t));
-    for ( i=cnt=0; i<len; ++i )
-	if ( ti[i]->selected )
-	    feats[cnt++] = (intptr_t) ti[i]->userdata;
+    feats = calloc(len+1,sizeof(FeatureMap));
+    for ( i=0; i<len; ++i )
+	feats[i] = (FeatureMap){ (intptr_t) ti[i]->userdata, ti[i]->selected };
 
     // Regenerate glyphs for the selected characters according to features, script, and resolution.
     free(mv->glyphs); mv->glyphs = NULL;

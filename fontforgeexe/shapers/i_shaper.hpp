@@ -22,6 +22,7 @@
  */
 #pragma once
 
+#include <map>
 #include <vector>
 
 #include "metrics.h"
@@ -44,7 +45,7 @@ class IShaper {
     // glyphs don't have encoding at all, and the shaper should still be able to
     // apply features which involve these glyphs.
     virtual struct opentype_str* apply_features(
-        SplineChar** glyphs, const std::vector<Tag>& feature_list, Tag script,
+        SplineChar** glyphs, const std::map<Tag, bool>& feature_map, Tag script,
         Tag lang, int pixelsize, bool vertical) = 0;
 
     // Scale glyph sequence metrics from font units to pixels

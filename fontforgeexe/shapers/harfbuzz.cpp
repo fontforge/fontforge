@@ -70,13 +70,27 @@ HarfBuzzShaper::~HarfBuzzShaper() {
 }
 
 std::vector<hb_feature_t> HarfBuzzShaper::hb_features(
-    const std::vector<Tag>& feature_list) const {
+    const std::map<Tag, bool>& feature_map) const {
     std::vector<hb_feature_t> hb_feature_vec;
-    for (const Tag& feature_tag : feature_list) {
-        hb_feature_t hb_feat{feature_tag, 1, HB_FEATURE_GLOBAL_START,
-                             HB_FEATURE_GLOBAL_END};
-        hb_feature_vec.push_back(hb_feat);
+
+    for (const auto& [feature_tag, enabled] : feature_map) {
+        // [khaledhosny] Some OpenType features like init, medi, etc. are
+        // enabled by default and HarfBuzz applies them selectively based on
+        // text analysis, but when enabled manually they will be applied
+        // unconditionally which will break their intended use.
+        //
+        // If a default feature is selected in the UI, it should not be in the
+        // features list, but if it is unselected it should be in the features
+        // list with value set to 0 (disable).
+        bool include_feature =
+            !default_features_.count(feature_tag) || !enabled;
+        if (include_feature) {
+            hb_feature_t hb_feat{feature_tag, enabled, HB_FEATURE_GLOBAL_START,
+                                 HB_FEATURE_GLOBAL_END};
+            hb_feature_vec.push_back(hb_feat);
+        }
     }
+
     return hb_feature_vec;
 }
 
@@ -246,7 +260,7 @@ std::vector<int> HarfBuzzShaper::compute_width_deltas(hb_buffer_t* hb_buffer,
 }
 
 struct opentype_str* HarfBuzzShaper::apply_features(
-    SplineChar** glyphs, const std::vector<Tag>& feature_list, Tag script,
+    SplineChar** glyphs, const std::map<Tag, bool>& feature_map, Tag script,
     Tag lang, int pixelsize, bool vertical) {
     std::vector<unichar_t> u_vec;
     for (size_t len = 0; glyphs[len] != NULL; ++len) {
@@ -271,7 +285,7 @@ struct opentype_str* HarfBuzzShaper::apply_features(
                             : rtl    ? HB_DIRECTION_RTL
                                      : HB_DIRECTION_LTR;
     hb_buffer_set_direction(hb_buffer, hb_dir);
-    auto hb_feature_vec = hb_features(feature_list);
+    auto hb_feature_vec = hb_features(feature_map);
 
     // Shape the text
     hb_shape(hb_ttf_font, hb_buffer, hb_feature_vec.data(),
@@ -291,7 +305,12 @@ struct opentype_str* HarfBuzzShaper::apply_features(
     }
 
     // Zero-terminated list of features
-    std::vector<uint32_t> flist(feature_list.begin(), feature_list.end());
+    std::vector<uint32_t> flist;
+    for (const auto& [feature, enabled] : feature_map) {
+        if (enabled) {
+            flist.push_back(feature);
+        }
+    }
     flist.push_back(0);
 
     // Apply legacy shaper for GPOS to retrieve kerning pair references. Metrics

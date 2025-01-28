@@ -40,7 +40,7 @@ class HarfBuzzShaper : public IShaper {
     const char* name() const override { return "harfbuzz"; }
 
     struct opentype_str* apply_features(SplineChar** glyphs,
-                                        const std::vector<Tag>& feature_list,
+                                        const std::map<Tag, bool>& feature_map,
                                         Tag script, Tag lang, int pixelsize,
                                         bool vertical) override;
 
@@ -79,7 +79,7 @@ class HarfBuzzShaper : public IShaper {
 
     // Convert feature tags to HarfBuzz feature structures
     std::vector<hb_feature_t> hb_features(
-        const std::vector<Tag>& feature_list) const;
+        const std::map<Tag, bool>& feature_map) const;
 
     // Retrieve data from shaped buffer and fill metrics.
     SplineChar** extract_shaped_data(hb_buffer_t* hb_buffer);

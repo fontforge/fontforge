@@ -78,6 +78,11 @@ typedef struct shaper_def {
     const char* label;
 } ShaperDef;
 
+typedef struct feature_map {
+    uint32_t feature_tag;
+    bool enabled;
+} FeatureMap;
+
 const ShaperDef* get_shaper_defs();
 
 /* The internal name of the default shaper */
@@ -99,9 +104,9 @@ const char* shaper_name(void* shaper);
  *     flist - zero-terminated list of OpenType features
  */
 struct opentype_str* shaper_apply_features(void* shaper, SplineChar** glyphs,
-                                           uint32_t* flist, uint32_t script,
-                                           uint32_t lang, int pixelsize,
-                                           bool vertical);
+                                           FeatureMap* feat_map,
+                                           uint32_t script, uint32_t lang,
+                                           int pixelsize, bool vertical);
 
 const ShapeMetrics* shaper_metrics(void* shaper);
 

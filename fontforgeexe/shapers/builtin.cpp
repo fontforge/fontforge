@@ -32,10 +32,15 @@ extern "C" {
 namespace ff::shapers {
 
 struct opentype_str* BuiltInShaper::apply_features(
-    SplineChar** glyphs, const std::vector<Tag>& feature_list, Tag script,
+    SplineChar** glyphs, const std::map<Tag, bool>& feature_map, Tag script,
     Tag lang, int pixelsize, bool vertical) {
-    // Zero-terminated list of features
-    std::vector<uint32_t> flist(feature_list.begin(), feature_list.end());
+    // Zero-terminated list of enabled features
+    std::vector<uint32_t> flist;
+    for (const auto& [feature, enabled] : feature_map) {
+        if (enabled) {
+            flist.push_back(feature);
+        }
+    }
     flist.push_back(0);
 
     ots_arr_ = context_->apply_ticked_features(context_->sf, flist.data(),
