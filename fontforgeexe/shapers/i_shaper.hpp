@@ -23,6 +23,7 @@
 #pragma once
 
 #include <map>
+#include <set>
 #include <vector>
 
 #include "metrics.h"
@@ -53,6 +54,9 @@ class IShaper {
     // Scale glyph sequence metrics from font units to pixels
     virtual void scale_metrics(MetricsView* mv, double iscale, double scale,
                                bool vertical) = 0;
+
+    // OpenType features enabled by default
+    virtual const std::set<Tag>& default_features(Tag script) const = 0;
 
  public:
     // Array of glyph metrics

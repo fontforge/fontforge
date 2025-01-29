@@ -86,4 +86,25 @@ void BuiltInShaper::scale_metrics(MetricsView* mv, double iscale, double scale,
     }
 }
 
+const std::set<Tag>& BuiltInShaper::default_features(Tag script) const {
+    static const std::set<Tag> simple_stdfeatures = {
+        "ccmp", "loca", "kern", "liga", "calt", "mark", "mkmk"};
+    static const std::set<Tag> arabic_stdfeatures = {
+        "ccmp", "loca", "isol", "init", "medi", "fina", "rlig",
+        "liga", "calt", "kern", "curs", "mark", "mkmk"};
+    static const std::set<Tag> hebrew_stdfeatures = {
+        "ccmp", "loca", "liga", "calt", "kern", "mark", "mkmk"};
+
+    static const std::map<Tag, std::set<Tag>> script_2_std = {
+        {"latn", simple_stdfeatures}, {"DFLT", simple_stdfeatures},
+        {"cyrl", simple_stdfeatures}, {"grek", simple_stdfeatures},
+        {"arab", arabic_stdfeatures}, {"hebr", hebrew_stdfeatures}};
+
+    if (script_2_std.count(script)) {
+        return script_2_std.at(script);
+    } else {
+        return simple_stdfeatures;
+    }
+}
+
 }  // namespace ff::shapers
