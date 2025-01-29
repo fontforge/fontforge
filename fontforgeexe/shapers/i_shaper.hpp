@@ -36,6 +36,8 @@ namespace ff::shapers {
 
 class IShaper {
  public:
+    virtual ~IShaper() = default;
+
     // The internal shaper name is non-localizable and serves to identify the
     // shaper in the system.
     virtual const char* name() const = 0;
