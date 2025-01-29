@@ -113,6 +113,8 @@ const ShapeMetrics* shaper_metrics(void* shaper);
 void shaper_scale_metrics(void* shaper, MetricsView* mv, double iscale,
                           double scale, bool vertical);
 
+uint32_t* shaper_default_features(void* shaper, uint32_t script);
+
 #ifdef __cplusplus
 }
 #endif

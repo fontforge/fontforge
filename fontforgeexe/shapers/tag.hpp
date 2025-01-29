@@ -46,4 +46,6 @@ class Tag {
     std::array<char, 5> arr;
 };
 
+const Tag REQUIRED_FEATURE = Tag(" RQD");
+
 }  // namespace ff

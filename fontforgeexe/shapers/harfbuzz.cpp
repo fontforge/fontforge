@@ -47,7 +47,7 @@ HarfBuzzShaper::HarfBuzzShaper(std::shared_ptr<ShaperContext> context)
     fseek(ttf_file, 0L, SEEK_SET);
 
     // Read the entire file into memory
-    blob = (char*)malloc(sizeof(char) * (bufsize + 1));
+    blob = new char[bufsize + 1];
     size_t blob_size = fread(blob, sizeof(char), bufsize, ttf_file);
 
     hb_ttf_blob =

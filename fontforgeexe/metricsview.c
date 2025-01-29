@@ -558,7 +558,7 @@ static void MVSetFeatures(MetricsView *mv) {
     if ( pt[4]=='{' && u_strlen(pt)>=9 )
 	lang = (pt[5]<<24) | (pt[6]<<16) | (pt[7]<<8) | pt[8];
     if ( (uint32_t)mv->oldscript!=script || (uint32_t)mv->oldlang!=lang )
-	stds = StdFeaturesOfScript(script);
+	stds = shaper_default_features(mv->shaper, script);
     else {		/* features list may have changed, but retain those set */
 	int32_t len, sc;
 	ti = GGadgetGetList(mv->features,&len);
@@ -618,6 +618,8 @@ static void MVSetFeatures(MetricsView *mv) {
     ti[i] = calloc(1,sizeof(GTextInfo));
     GGadgetSetList(mv->features,ti,false);
     mv->oldscript = script; mv->oldlang = lang;
+
+    free(stds);
 }
 
 static void MVSelectSubtable(MetricsView *mv, struct lookup_subtable *sub) {
@@ -3962,6 +3964,7 @@ static void MVSetShaper(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 
     shaper_free(&(mv->shaper));
     mv->shaper = shaper_factory(new_shaper_name, MVMakeShaperContext(mv));
+    MVSetFeatures(mv);
     MVRefreshAll(mv);
 }
 

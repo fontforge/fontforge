@@ -114,3 +114,20 @@ void shaper_scale_metrics(void* shaper, MetricsView* mv, double iscale,
     ff::shapers::IShaper* ishaper = static_cast<ff::shapers::IShaper*>(shaper);
     ishaper->scale_metrics(mv, iscale, scale, vertical);
 }
+
+uint32_t* shaper_default_features(void* shaper, uint32_t script) {
+    ff::shapers::IShaper* ishaper = static_cast<ff::shapers::IShaper*>(shaper);
+
+    const std::set<Tag>& default_feats = ishaper->default_features(script);
+
+    size_t n_feats = default_feats.size();
+    uint32_t* stds = new uint32_t[n_feats + 2];
+    std::copy(default_feats.begin(), default_feats.end(), stds);
+
+    // By legacy FontForge convention the list of default features is terminated
+    // by " RQD" and zero.
+    stds[n_feats] = ff::REQUIRED_FEATURE;
+    stds[n_feats + 1] = 0;
+
+    return stds;
+}
