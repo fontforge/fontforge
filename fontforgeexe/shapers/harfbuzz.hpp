@@ -61,6 +61,9 @@ class HarfBuzzShaper : public IShaper {
     hb_face_t* hb_ttf_face = nullptr;
     hb_font_t* hb_ttf_font = nullptr;
 
+    // Map glyph indexes in TTF file to SplineChar objects
+    std::map<int, SplineChar*> ttf_map_;
+
     // Initial kerning state at font generation. For a pair of (left_glyph,
     // right_glyph) the shaper manually applies the difference between initial
     // and latest value to avoid regenerating the font at each change.

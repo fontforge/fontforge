@@ -32,6 +32,7 @@ extern "C" {
 #include "metrics.h"
 
 typedef struct splinechar SplineChar;
+typedef struct splinechar_ttf_map SplineCharTTFMap;
 typedef struct splinefont SplineFont;
 typedef struct metricsview MetricsView;
 typedef struct encmap EncMap;
@@ -42,6 +43,7 @@ char* u2utf8_copy(const unichar_t* ubuf);
 int _WriteTTFFont(FILE* ttf, SplineFont* sf, int /*enum fontformat*/ format,
                   int32_t* bsizes, int /*enum bitmapformat*/ bf, int flags,
                   EncMap* enc, int layer);
+extern SplineCharTTFMap* MakeGlyphTTFMap(SplineFont* sf);
 
 typedef struct shaper_context {
     SplineFont* sf;
@@ -57,10 +59,6 @@ typedef struct shaper_context {
 
     // Get encoding map
     EncMap* (*get_enc_map)(SplineFont* sf);
-
-    // Get glyph from font by name
-    SplineChar* (*get_glyph_by_name)(SplineFont* sf, int unienc,
-                                     const char* name);
 
     // Case-specific glyph width computation, not to be used in general case.
     int16_t (*get_char_width)(MetricsView* mv, SplineChar* sc);

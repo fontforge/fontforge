@@ -47,6 +47,12 @@ HarfBuzzShaper::HarfBuzzShaper(std::shared_ptr<ShaperContext> context)
                   ttf_flag_otmode | ttf_flag_fake_map,
                   context_->get_enc_map(context_->sf), ly_fore);
 
+    // Build map of TTF codepoints
+    SplineCharTTFMap* ttf_map = MakeGlyphTTFMap(context_->sf);
+    for (SplineCharTTFMap* entry = ttf_map; entry->glyph != NULL; ++entry) {
+        ttf_map_[entry->ttf_glyph] = entry->glyph;
+    }
+
     // Calculate file length
     fseek(ttf_file, 0L, SEEK_END);
     long bufsize = ftell(ttf_file);
@@ -115,18 +121,13 @@ SplineChar** HarfBuzzShaper::extract_shaped_data(hb_buffer_t* hb_buffer) {
     // Process the glyphs and positions
     int total_x_advance = 0, total_y_advance = 0;
     for (int i = 0; i < glyph_count; ++i) {
-        char glyph_name[64];
         hb_glyph_info_t& glyph_info = glyph_info_arr[i];
         hb_glyph_position_t& glyph_pos = glyph_pos_arr[i];
 
         // Warning: after the shaping glyph_info->codepoint is not a Unicode
         // point, but rather an internal glyph index. We can't use it in our
         // functions.
-        hb_bool_t found =
-            hb_font_get_glyph_name(hb_ttf_font, glyph_info.codepoint,
-                                   glyph_name, sizeof(glyph_name) - 1);
-        SplineChar* glyph_out =
-            context_->get_glyph_by_name(context_->sf, -1, glyph_name);
+        SplineChar* glyph_out = ttf_map_[glyph_info.codepoint];
 
         glyphs_after_gpos[i] = glyph_out;
 
