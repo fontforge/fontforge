@@ -647,3 +647,8 @@ struct opentype_str {
     unsigned int r2l: 1;
     int16_t bsln_off;
 };
+
+typedef struct splinechar_ttf_map {
+    SplineChar* glyph;
+    int ttf_glyph;
+} SplineCharTTFMap;

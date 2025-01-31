@@ -6000,12 +6000,45 @@ static void dumpttf(FILE *ttf,struct alltabs *at) {
     /* ttfcopyfile closed all the files (except ttf) */
 }
 
+SplineCharTTFMap* MakeGlyphTTFMap(SplineFont *sf) {
+    int i,k,max, map_idx;
+    SplineChar *sc;
+    SplineCharTTFMap *map = NULL;
+
+    if ( sf->subfontcnt==0 )
+	max = sf->glyphcnt;
+    else {
+	for ( k=max=0; k<sf->subfontcnt; ++k )
+	    if ( sf->subfonts[k]->glyphcnt > max )
+		max = sf->subfonts[k]->glyphcnt;
+    }
+
+    map = (SplineCharTTFMap*) calloc(max+1, sizeof(SplineCharTTFMap));
+    map_idx = 0;
+
+    for ( i=0; i<max; ++i ) {
+	sc = NULL;
+	if ( sf->subfontcnt==0 )
+	    sc = sf->glyphs[i];
+	else {
+	    for ( k=0; k<sf->subfontcnt; ++k ) if ( i<sf->subfonts[k]->glyphcnt )
+		if ( (sc=sf->subfonts[k]->glyphs[i])!=NULL )
+	    break;
+	}
+	if ( sc!=NULL && sc->ttf_glyph!=-1 ) {
+	    map[map_idx].glyph = sc;
+	    map[map_idx++].ttf_glyph = sc->ttf_glyph;
+	}
+    }
+
+    return map;
+}
+
 static void DumpGlyphToNameMap(char *fontname,SplineFont *sf) {
     char *d, *e;
     char *newname = malloc(strlen(fontname)+10);
     FILE *file;
-    int i,k,max;
-    SplineChar *sc;
+    SplineCharTTFMap *map = NULL, *entry = NULL;
 
     strcpy(newname,fontname);
     d = strrchr(newname,'/');
@@ -6021,29 +6054,14 @@ static void DumpGlyphToNameMap(char *fontname,SplineFont *sf) {
 return;
     }
 
-    if ( sf->subfontcnt==0 )
-	max = sf->glyphcnt;
-    else {
-	for ( k=max=0; k<sf->subfontcnt; ++k )
-	    if ( sf->subfonts[k]->glyphcnt > max )
-		max = sf->subfonts[k]->glyphcnt;
+    map = MakeGlyphTTFMap(sf);
+    for ( entry = map; entry->glyph != NULL; ++entry ) {
+	fprintf( file, "GLYPHID %d\tPSNAME %s", entry->ttf_glyph, entry->glyph->name );
+	if ( entry->glyph->unicodeenc!=-1 )
+	    fprintf( file, "\tUNICODE %04X", entry->glyph->unicodeenc );
+	putc('\n',file);
     }
-    for ( i=0; i<max; ++i ) {
-	sc = NULL;
-	if ( sf->subfontcnt==0 )
-	    sc = sf->glyphs[i];
-	else {
-	    for ( k=0; k<sf->subfontcnt; ++k ) if ( i<sf->subfonts[k]->glyphcnt )
-		if ( (sc=sf->subfonts[k]->glyphs[i])!=NULL )
-	    break;
-	}
-	if ( sc!=NULL && sc->ttf_glyph!=-1 ) {
-	    fprintf( file, "GLYPHID %d\tPSNAME %s", sc->ttf_glyph, sc->name );
-	    if ( sc->unicodeenc!=-1 )
-		fprintf( file, "\tUNICODE %04X", sc->unicodeenc );
-	    putc('\n',file);
-	}
-    }
+    free(map);
     fclose(file);
     free(newname);
 }
