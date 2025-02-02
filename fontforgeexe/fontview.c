@@ -130,6 +130,7 @@ static Color fvchangedcol = 0x000060;
 static Color fvhintingneededcol = 0x0000ff;
 static Color fvmetbaselinecol = 0x0000c0;
 static Color fvmetorigincol = 0xc00000;
+static Color fvmetglyphcontourcol = 0x3030c0;
 static Color fvmetadvanceatcol = 0x008000;
 static Color fvmetadvancetocol = 0x008000;
 static Color fvmissingbitmapcol = 0xff0000;
@@ -401,7 +402,7 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int request_exp
 		if (fv->showhmetrics & fvm_contour) {
 		    int x0 = j * fv->cbw + (fv->cbw - 1 - fv->magnify * xwidth) / 2 - bdfc->xmin * fv->magnify;
 		    int y0 = i * fv->cbh + fv->lab_height + fv->magnify * fv->show->ascent + 1;
-		    CVDrawSplinePointList(NULL, pixmap, sc->layers[1].splines, fvmetadvancetocol,
+		    CVDrawSplinePointList(NULL, pixmap, sc->layers[1].splines, fvmetglyphcontourcol,
 		        sfm_stroke, x0, y0, (double) (box.width - 1) / sc->vwidth);
 		}
 	    }
@@ -7299,6 +7300,7 @@ static struct resed fontview_re[] = {
     {N_("Metrics Advance To Color"), "MetricsAdvanceToColor", rt_color, &fvmetadvancetocol, N_("Color used to draw the (horizontal or) vertical line from the origin to the advance when that metric is selected in View"), NULL, { 0 }, 0, 0 },
     {N_("Metrics Baseline Color"), "MetricsBaselineColor", rt_color, &fvmetbaselinecol, N_("Color used to draw the (vertical or) horizontal baseline when that metric is selected in View"), NULL, { 0 }, 0, 0 },
     {N_("Metrics Origin Color"), "MetricsOriginColor", rt_color, &fvmetorigincol, N_("Color used to draw the (vertical or) horizontal origin tick when that metric is selected in View"), NULL, { 0 }, 0, 0 },
+    {N_("Metrics Glyph Contour Color"), "MetricsGlyphContourColor", rt_color, &fvmetglyphcontourcol, N_("Color used to draw glyph contour when that metric is selected in View"), NULL, { 0 }, 0, 0 },
     {N_("Font"), "Font", rt_font, &fv_font, N_("Font used to display small example images of glyphs over the user designed glyphs"), NULL, { 0 }, 0, 0 },
     RESED_EMPTY
 };
