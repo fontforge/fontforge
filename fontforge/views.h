@@ -823,6 +823,8 @@ extern void WindowMenuBuild(GWindow base,struct gmenuitem *mi,GEvent *);
 extern void MenuRecentBuild(GWindow base,struct gmenuitem *mi,GEvent *);
 extern unsigned int collect_recent_files(char*** recent_files_array);
 extern void MenuScriptsBuild(GWindow base,struct gmenuitem *mi,GEvent *);
+extern void script_run(FontView *fv, int index);
+extern unsigned int collect_script_names(char*** script_names_array);
 extern void mb2FreeGetText(GMenuItem2 *mb);
 extern void mb2DoGetText(GMenuItem2 *mb);
 extern void mbFreeGetText(GMenuItem *mb);

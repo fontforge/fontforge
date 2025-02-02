@@ -204,6 +204,15 @@ return;
     ExecuteScriptFile((FontViewBase *) fv,NULL,script_filenames[index]);
 }
 
+void script_run(FontView *fv, int index) {
+    /* the menu is not always up to date. If user changed prefs and then used */
+    /*  Alt|Ctl|Digit s/he would not get a new menu built and the old one might*/
+    /*  refer to something out of bounds. Hence the check */
+    if ( index<0 || script_filenames[index]==NULL )
+return;
+    ExecuteScriptFile((FontViewBase *) fv,NULL,script_filenames[index]);
+}
+
 /* Builds up a menu containing any user defined scripts */
 void MenuScriptsBuild(GWindow base,struct gmenuitem *mi,GEvent *e) {
     int i;
@@ -230,6 +239,20 @@ return;
 	mi->ti.text = u_copy(script_menu_names[i]);
     }
     mi->sub = sub;
+}
+
+unsigned int collect_script_names(char*** script_names_array) {
+    int i, n_scripts;
+
+    for ( i=0; i<SCRIPT_MENU_MAX && script_menu_names[i]!=NULL; ++i );
+    n_scripts = i;
+
+    *script_names_array = calloc(n_scripts,sizeof(char*));
+    for ( i=0; i<n_scripts; ++i ) {
+	(*script_names_array)[i] = u2utf8_copy(script_menu_names[i]);
+    }
+
+    return n_scripts;
 }
 #endif
 

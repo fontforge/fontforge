@@ -264,6 +264,10 @@ std::vector<MenuInfo> recent_files_menu = {
     MenuInfo::CustomBlock(recent_files),
 };
 
+std::vector<MenuInfo> legacy_scripts_menu = {
+    MenuInfo::CustomBlock(legacy_scripts),
+};
+
 std::vector<MenuInfo> file_menu = {
     { { N_("Font|_New"), "filenew", "<control>N" }, {}, LegacyCallbacks, MID_New },
 #if HANYANG
@@ -295,7 +299,7 @@ std::vector<MenuInfo> file_menu = {
     { { N_("E_xecute Script..."), NoDecoration, "<control>period" }, {}, LegacyCallbacks, MID_Execute },
 #endif
 #if !defined(_NO_FFSCRIPT)
-    { { N_("Script Menu"), "fileexecute", "" }, {}, LegacyCallbacks, MID_ScriptMenu },
+    { { N_("Script Menu"), "fileexecute", "" }, legacy_scripts_menu, LegacySubMenuCallbacks, MID_ScriptMenu },
 #endif
 #if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)
     kMenuSeparator,

@@ -188,6 +188,9 @@ typedef struct fontview_context {
     // Show font
     FontViewBase* (*show_font)(const char* filename, int openflags);
 
+    // Collect legacy PE script names
+    unsigned int (*collect_script_names)(char*** collect_script_names);
+
     // Menu actions per menu ID
     FVMenuAction* actions;
     FVSelectMenuAction* select_actions;

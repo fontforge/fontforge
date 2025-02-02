@@ -34,6 +34,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <glib/gi18n.h>
 
 #include "font_view.hpp"
+#include "menu_ids.h"
 
 namespace ff::views {
 
@@ -163,6 +164,34 @@ std::vector<MenuInfo> recent_files(const UiContext& ui_context) {
                       {},
                       {action, AlwaysEnabled, NotCheckable},
                       0};
+        info_arr.push_back(info);
+    }
+    return info_arr;
+}
+
+std::vector<MenuInfo> legacy_scripts(const UiContext& ui_context) {
+    const FontViewUiContext& fv_ui_context =
+        static_cast<const FontViewUiContext&>(ui_context);
+    auto fv_context = fv_ui_context.legacy();
+    std::vector<std::string> script_names_vec =
+        StringsWrapper(fv_context->collect_script_names, true);
+    std::vector<MenuInfo> info_arr;
+
+    FVMenuAction* callback_set =
+        find_legacy_callback_set(MID_ScriptMenu, fv_context->actions);
+    void (*c_action)(::FontView*, int) = callback_set->action;
+    ::FontView* fv = fv_context->fv;
+
+    for (int i = 0; i < script_names_vec.size(); ++i) {
+        ActivateCB action = [c_action, fv, i](const UiContext&) {
+            c_action(fv, i);
+        };
+        Glib::ustring accel = "<alt><control>" + std::to_string((i + 1) % 10);
+
+        MenuInfo info{{script_names_vec[i].c_str(), NoDecoration, accel},
+                      {},
+                      {action, AlwaysEnabled, NotCheckable},
+                      i};
         info_arr.push_back(info);
     }
     return info_arr;
