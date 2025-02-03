@@ -1167,7 +1167,6 @@ static void MMUsurpNew(SplineFont *sf) {
 	    fv->b.nextsame = NULL;
 	    _FVCloseWindows(fv);
 	    fv->b.sf = NULL;
-	    GDrawDestroyWindow(fv->gw);
 	}
 	sf->fv = NULL;
 	SFClearAutoSave(sf);

@@ -444,7 +444,7 @@ typedef struct fontview {
     FontViewBase b;
     BDFFont *show, *filled;
     void* cg_widget; /* pointer to opaque ff::views::CharGrid* object */
-    GWindow gw, v;
+    GWindow v;
     GFont **fontset;
     GGadget *mb;
     GTimer *pressed;

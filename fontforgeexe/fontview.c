@@ -6039,7 +6039,7 @@ return;
     } else if ( fv->drag_and_drop ) {
 	GWindow othergw = GDrawGetPointerWindow(fv->v);
 
-	if ( othergw==fv->v || othergw==fv->gw || othergw==NULL ) {
+	if ( othergw==fv->v || othergw==NULL ) {
 	    if ( !fv->has_dd_no_cursor ) {
 		fv->has_dd_no_cursor = true;
 		GDrawSetCursor(fv->v,ct_prohibition);
@@ -6793,10 +6793,7 @@ static void FV_BiggerGlyphCache(FontView *fv, int gidcnt) {
 }
 
 static void FontView_Close(FontView *fv) {
-    if ( fv->gw!=NULL )
-	GDrawDestroyWindow(fv->gw);
-    else
-	FontViewRemove(fv);
+    FontViewRemove(fv);
 }
 
 
@@ -6940,10 +6937,9 @@ void MiscWinInit(void) {
 /* ************************************************************************** */
 
 static void FVCopyInnards(FontView *fv,GRect *pos,
-	FontView *fvorig,GWindow dw, int def_layer, struct fvcontainer *kf) {
+	FontView *fvorig, int def_layer, struct fvcontainer *kf) {
 
     fv->notactive = true;
-    fv->gw = dw;
     fv->b.container = kf;
     fv->rowcnt = 4; fv->colcnt = 16;
     fv->b.active_layer = def_layer;
@@ -6984,10 +6980,10 @@ void* KFFontViewInits(struct kf_dlg *kf) {
     kf->first_fv->cg_widget = get_char_grid_widget(cg_dlg, 0);
     kf->second_fv->cg_widget = get_char_grid_widget(cg_dlg, 1);
 
-    FVCopyInnards(kf->first_fv,&pos,fvorig,NULL,kf->def_layer,(struct fvcontainer *) kf);
+    FVCopyInnards(kf->first_fv,&pos,fvorig,kf->def_layer,(struct fvcontainer *) kf);
     pos.height = 8*kf->first_fv->cbh+1;		/* We don't know the real fv->cbh until after creating the innards. The size of the last window is probably wrong, we'll fix later */
     kf->second_fv->mbh = 0;
-    FVCopyInnards(kf->second_fv,&pos,fvorig,NULL,kf->def_layer,(struct fvcontainer *) kf);
+    FVCopyInnards(kf->second_fv,&pos,fvorig,kf->def_layer,(struct fvcontainer *) kf);
 
     // The specified height is implicitly divided equally between the two character grids.
     // Each grid would be approximately 4 rows high.
@@ -7102,7 +7098,6 @@ char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current) {
     int k,gid,enc,len;
     char *ret, *rpt;
     SplineChar *sc;
-    GWindow dw = NULL;
     int ps;
     FontView *fvorig = (FontView *) sf->fv;
     char *start, *pt; int ch;
@@ -7129,7 +7124,7 @@ char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current) {
     cg_dlg = create_select_glyphs_dlg(&fv_context, pos.width, pos.height);
     gs.fv->cg_widget = get_char_grid_widget(cg_dlg, 0);
     
-    FVCopyInnards(gs.fv,&pos,fvorig,dw,def_layer,(struct fvcontainer *) &gs);
+    FVCopyInnards(gs.fv,&pos,fvorig,def_layer,(struct fvcontainer *) &gs);
     pos.height = 4*gs.fv->cbh+1;	/* We don't know the real fv->cbh until after creating the innards. The size of the last window is probably wrong, we'll fix later */
     cg_resize_window(gs.fv->cg_widget, pos.width, pos.height);
     memset(gs.fv->b.selected,0,gs.fv->b.map->enccount);
