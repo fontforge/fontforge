@@ -35,9 +35,14 @@
 #include "ustring.h"
 
 #include "gtk/c_context.h"
+#include "gtk/font_view_shim.hpp"
 
 static void WindowSelect(GWindow base,struct gmenuitem *mi,GEvent *e) {
     GDrawRaise(mi->ti.userdata);
+}
+
+static void FontviewSelectGTK(GWindow base,struct gmenuitem *mi,GEvent *e) {
+    cg_raise_window(mi->ti.userdata);
 }
 
 static void AddMI(GMenuItem *mi,GWindow gw,int changed, int top) {
@@ -51,6 +56,18 @@ static void AddMI(GMenuItem *mi,GWindow gw,int changed, int top) {
     if ( u_strlen( mi->ti.text ) > 35 )
 	mi->ti.text[35] = '\0';
     free(title);
+}
+
+static void AddMI_GTK(GMenuItem *mi,FontViewBase *fv,int changed, int top) {
+    char* title = fv->sf->fontname;
+    mi->ti.userdata = ((FontView *) fv)->cg_widget;
+    mi->ti.bg = COLOR_DEFAULT;
+    mi->invoke = FontviewSelectGTK;
+    mi->ti.text = utf82u_copy(title);
+    if(mi->ti.text == NULL)
+	mi->ti.text = utf82u_copy("(null)");
+    if ( u_strlen( mi->ti.text ) > 35 )
+	mi->ti.text[35] = '\0';
 }
 
 /* Builds up a menu containing the titles of all the major windows */
@@ -101,11 +118,11 @@ return;
     }
     cnt = precnt;
     for ( fv = (FontViewBase *) fv_list; fv!=NULL; fv = fv->next ) {
-	if( !((FontView *) fv)->gw ) {
+	if( !((FontView *) fv)->cg_widget ) {
 	    continue;
 	}
 	
-	AddMI(&sub[cnt++],((FontView *) fv)->gw,fv->sf->changed,true);
+	AddMI_GTK(&sub[cnt++],fv,fv->sf->changed,true);
 	for ( i=0; i<fv->sf->glyphcnt; ++i ) if ( fv->sf->glyphs[i]!=NULL ) {
 	    for ( cv = fv->sf->glyphs[i]->views; cv!=NULL; cv=cv->next )
 		AddMI(&sub[cnt++],((CharView *) cv)->gw,cv->sc->changed,false);

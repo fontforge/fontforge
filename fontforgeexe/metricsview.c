@@ -49,6 +49,7 @@
 #include "ustring.h"
 #include "utype.h"
 #include "wordlistparser.h"
+#include "gtk/font_view_shim.hpp"
 
 #include <math.h>
 
@@ -3058,8 +3059,7 @@ static void MVMenuFindInFontView(GWindow gw, struct gmenuitem *UNUSED(mi), GEven
     for ( i=0; i<mv->glyphcnt; ++i ) {
         if ( mv->perchar[i].selected ) {
             FVChangeChar(mv->fv, mv->fv->b.map->backmap[mv->glyphs[i].sc->orig_pos]);
-            GDrawSetVisible(mv->fv->gw, true);
-            GDrawRaise(mv->fv->gw);
+	    cg_raise_window(mv->fv->cg_widget);
     break;
         }
     }

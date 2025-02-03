@@ -95,6 +95,11 @@ void cg_resize_window(void* cg_opaque, int width, int height) {
     char_grid->resize_drawing_area(width, height);
 }
 
+void cg_raise_window(void* cg_opaque) {
+    auto char_grid = static_cast<CharGrid*>(cg_opaque);
+    char_grid->raise_window();
+}
+
 void* create_select_glyphs_dlg(FVContext** p_fv_context, int width,
                                int height) {
     // Take ownership of *p_fv_context

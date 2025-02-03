@@ -58,6 +58,9 @@ void cg_set_character_info(void* cg_opaque, char* info);
 // Resize font view window to accomodate the new drawing area size
 void cg_resize_window(void* cg_opaque, int width, int height);
 
+// Raise font view to the top and unminimize it if necessary
+void cg_raise_window(void* cg_opaque);
+
 void* create_select_glyphs_dlg(FVContext** p_fv_context, int width, int height);
 
 bool run_select_glyphs_dlg(void** sg_opaque);

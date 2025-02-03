@@ -44,6 +44,7 @@ class CharGrid {
                              int32_t sb_pagesize);
     void set_character_info(const std::string& info);
     void resize_drawing_area(int width, int height);
+    void raise_window();
 
  private:
     Gtk::Grid char_grid_box;

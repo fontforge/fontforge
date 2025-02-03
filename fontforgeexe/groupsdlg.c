@@ -36,6 +36,7 @@
 #include "splineutil.h"
 #include "ustring.h"
 #include "utype.h"
+#include "gtk/font_view_shim.hpp"
 
 #include <math.h>
 #include <unistd.h>
@@ -862,8 +863,7 @@ static int Group_ToSelection(GGadget *g, GEvent *e) {
 	int pos, found=-1;
 	char *nm;
 
-	GDrawSetVisible(fv->gw,true);
-	GDrawRaise(fv->gw);
+	cg_raise_window(fv->cg_widget);
 	memset(fv->b.selected,0,fv->b.map->enccount);
 	while ( *ret ) {
 	    end = u_strchr(ret,' ');
