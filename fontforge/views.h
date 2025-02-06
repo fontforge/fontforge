@@ -446,12 +446,9 @@ typedef struct fontview {
     void* cg_widget; /* pointer to opaque ff::views::CharGrid* object */
     GWindow v;
     GFont **fontset;
-    GGadget *mb;
     GTimer *pressed;
     GIC *gic;
-    GIC *gwgic;
     int width, height;		/* of v */
-    int16_t mbh;
     int16_t lab_height, lab_as;
     int16_t colcnt, rowcnt;		/* of display window */
     int32_t rowoff, rowltot;		/* Can be really big in full unicode */
