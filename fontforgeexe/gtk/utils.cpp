@@ -70,6 +70,12 @@ Glib::RefPtr<Gdk::Window> gtk_get_topmost_window() {
     return topmost_window;
 }
 
+Gtk::Window* gtk_get_window(Gtk::Widget& w) {
+    Gtk::Container* top_containter = w.get_toplevel();
+    Gtk::Window* window = dynamic_cast<Gtk::Window*>(top_containter);
+    return window;
+}
+
 int label_offset(Gtk::Widget* w) {
     Gtk::Container* c = dynamic_cast<Gtk::Container*>(w);
     if (c) {

@@ -51,6 +51,8 @@ Gtk::Widget* gtk_find_child(Gtk::Widget* w, const std::string& name);
 // Get the current topmost window
 Glib::RefPtr<Gdk::Window> gtk_get_topmost_window();
 
+Gtk::Window* gtk_get_window(Gtk::Widget& w);
+
 int label_offset(Gtk::Widget* w);
 
 double ui_font_em_size();
