@@ -65,4 +65,6 @@ std::vector<MenuInfo> recent_files(const UiContext& ui_context);
 
 std::vector<MenuInfo> legacy_scripts(const UiContext& ui_context);
 
+std::vector<MenuInfo> top_windows_list(const UiContext& ui_context);
+
 }  // namespace ff::views

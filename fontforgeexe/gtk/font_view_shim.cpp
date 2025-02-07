@@ -61,12 +61,13 @@ void* get_char_grid_widget(void* cg_dlg, int char_grid_index) {
 void cg_set_dlg_title(void* cg_opaque, char* window_title,
                       char* taskbar_title) {
     auto char_grid = static_cast<CharGrid*>(cg_opaque);
-    Gtk::Widget& widget = char_grid->get_top_widget();
-    Glib::RefPtr<Gdk::Window> window = widget.get_window();
+    char_grid->set_window_title(window_title);
+}
 
-    if (window) {
-        window->set_title(window_title);
-    }
+char* cg_get_dlg_title(void* cg_opaque) {
+    auto char_grid = static_cast<CharGrid*>(cg_opaque);
+    std::string title = char_grid->get_window_title();
+    return strdup(title.c_str());
 }
 
 GtkWidget* cg_get_drawing_widget_c(void* cg_opaque) {

@@ -678,6 +678,7 @@ std::vector<MenuInfo> window_menu = {
     kMenuSeparator,
     { { N_("Warnings"), NoDecoration, "" }, {}, LegacyCallbacks, MID_Warnings },
     kMenuSeparator,
+    MenuInfo::CustomBlock(top_windows_list),
 };
 
 std::vector<MenuInfo> top_menu = {

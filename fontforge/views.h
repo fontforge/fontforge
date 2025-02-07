@@ -52,6 +52,7 @@ struct contextchaindlg;
 struct statemachinedlg;
 struct anchor_menu_data;
 struct encoding_menu_data;
+struct top_level_window;
 
 extern struct cvshows {
     int showfore, showback, showgrids, showhhints, showvhints, showdhints;
@@ -817,6 +818,7 @@ extern void MenuAbout(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuLicense(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuNew(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void WindowMenuBuild(GWindow base,struct gmenuitem *mi,GEvent *);
+extern unsigned int collect_windows(void *UNUSED(dummy), struct top_level_window** windows_array);
 extern void MenuRecentBuild(GWindow base,struct gmenuitem *mi,GEvent *);
 extern unsigned int collect_recent_files(char*** recent_files_array);
 extern void MenuScriptsBuild(GWindow base,struct gmenuitem *mi,GEvent *);

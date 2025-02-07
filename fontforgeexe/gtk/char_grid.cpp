@@ -148,6 +148,18 @@ void CharGrid::raise_window() {
     }
 }
 
+void CharGrid::set_window_title(const std::string& title) {
+    Gtk::Window* window = gtk_get_window(char_grid_box);
+    if (window) {
+        window->set_title(title);
+    }
+}
+
+std::string CharGrid::get_window_title() {
+    Gtk::Window* window = gtk_get_window(char_grid_box);
+    return window ? window->get_title() : "Null title";
+}
+
 // Create info label at the top of the Font View, which shows name and
 // properties of the most recently selected character
 void CharGrid::make_character_info_label() {

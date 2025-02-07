@@ -6640,6 +6640,9 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     fv_context->collect_recent_files = collect_recent_files;
     fv_context->show_font = ViewPostScriptFont;
     fv_context->collect_script_names = collect_script_names;
+    fv_context->collect_windows = collect_windows;
+    fv_context->get_window_title = GDrawGetWindowTitle8;
+    fv_context->raise_window = GDrawRaise;
     fv_context->actions = fvpopupactions;
     fv_context->select_actions = fv_selmenu_actions;
     cg_dlg = create_font_view(&fv_context, pos.width, pos.height);

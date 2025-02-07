@@ -46,6 +46,9 @@ class CharGrid {
     void resize_drawing_area(int width, int height);
     void raise_window();
 
+    void set_window_title(const std::string& title);
+    std::string get_window_title();
+
  private:
     Gtk::Grid char_grid_box;
     Gtk::Label character_info;

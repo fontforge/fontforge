@@ -46,6 +46,9 @@ void* get_char_grid_widget(void* cg_dlg, int char_grid_index);
 // Set views::FontView title and taskbar title [unsupported]
 void cg_set_dlg_title(void* cg_opaque, char* window_title, char* taskbar_title);
 
+// Get copy of Gtk::Window title
+char* cg_get_dlg_title(void* cg_opaque);
+
 GtkWidget* cg_get_drawing_widget_c(void* cg_opaque);
 
 void cg_set_scroller_position(void* cg_opaque, int32_t position);

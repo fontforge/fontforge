@@ -34,6 +34,7 @@ IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <glib/gi18n.h>
 
 #include "font_view.hpp"
+#include "font_view_shim.hpp"
 #include "menu_ids.h"
 
 namespace ff::views {
@@ -192,6 +193,46 @@ std::vector<MenuInfo> legacy_scripts(const UiContext& ui_context) {
                       {},
                       {action, AlwaysEnabled, NotCheckable},
                       i};
+        info_arr.push_back(info);
+    }
+    return info_arr;
+}
+
+static Glib::ustring get_window_title(std::shared_ptr<FVContext> context,
+                                      const TopLevelWindow& top_win) {
+    char* title = top_win.is_gtk
+                      ? cg_get_dlg_title(top_win.window)
+                      : context->get_window_title((GWindow)(top_win.window));
+    Glib::ustring title_ustring(title);
+    free(title);
+    return title_ustring;
+}
+
+static void raise_window(std::shared_ptr<FVContext> context,
+                         const TopLevelWindow& top_win) {
+    top_win.is_gtk ? cg_raise_window(top_win.window)
+                   : context->raise_window((GWindow)(top_win.window));
+}
+
+std::vector<MenuInfo> top_windows_list(const UiContext& ui_context) {
+    const FontViewUiContext& fv_ui_context =
+        static_cast<const FontViewUiContext&>(ui_context);
+    auto fv_context = fv_ui_context.legacy();
+    std::vector<TopLevelWindow> top_level_windows =
+        VectorWrapper<TopLevelWindow, void>(nullptr,
+                                            fv_context->collect_windows);
+    std::vector<MenuInfo> info_arr;
+
+    for (const auto& top_win : top_level_windows) {
+        ActivateCB action = [fv_context, top_win](const UiContext&) {
+            raise_window(fv_context, top_win);
+        };
+        Glib::ustring title = get_window_title(fv_context, top_win);
+
+        MenuInfo info{{title.c_str(), NoDecoration, ""},
+                      {},
+                      {action, AlwaysEnabled, NotCheckable},
+                      0};
         info_arr.push_back(info);
     }
     return info_arr;
