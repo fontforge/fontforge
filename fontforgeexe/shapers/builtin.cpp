@@ -86,7 +86,8 @@ void BuiltInShaper::scale_metrics(MetricsView* mv, double iscale, double scale,
     }
 }
 
-const std::set<Tag>& BuiltInShaper::default_features(Tag script) const {
+std::set<Tag> BuiltInShaper::default_features(Tag script,
+                                              bool /*vertical*/) const {
     static const std::set<Tag> simple_stdfeatures = {
         "ccmp", "loca", "kern", "liga", "calt", "mark", "mkmk"};
     static const std::set<Tag> arabic_stdfeatures = {

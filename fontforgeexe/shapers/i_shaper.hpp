@@ -56,7 +56,7 @@ class IShaper {
                                bool vertical) = 0;
 
     // OpenType features enabled by default
-    virtual const std::set<Tag>& default_features(Tag script) const = 0;
+    virtual std::set<Tag> default_features(Tag script, bool vertical) const = 0;
 
  public:
     // Array of glyph metrics

@@ -24,6 +24,7 @@
 
 #include <array>
 #include <cstdint>
+#include <cstring>
 
 namespace ff {
 
@@ -47,5 +48,9 @@ class Tag {
 };
 
 const Tag REQUIRED_FEATURE = Tag(" RQD");
+
+inline bool operator==(const Tag& tag1, const char tag2[5]) {
+    return std::memcmp((const char*)tag1, tag2, 4) == 0;
+}
 
 }  // namespace ff

@@ -43,7 +43,7 @@ class BuiltInShaper : public IShaper {
     void scale_metrics(MetricsView* mv, double iscale, double scale,
                        bool vertical) override;
 
-    const std::set<Tag>& default_features(Tag script) const override;
+    std::set<Tag> default_features(Tag script, bool vertical) const override;
 
  private:
     std::shared_ptr<ShaperContext> context_;

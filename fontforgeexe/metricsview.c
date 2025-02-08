@@ -558,7 +558,7 @@ static void MVSetFeatures(MetricsView *mv) {
     if ( pt[4]=='{' && u_strlen(pt)>=9 )
 	lang = (pt[5]<<24) | (pt[6]<<16) | (pt[7]<<8) | pt[8];
     if ( (uint32_t)mv->oldscript!=script || (uint32_t)mv->oldlang!=lang )
-	stds = shaper_default_features(mv->shaper, script);
+	stds = shaper_default_features(mv->shaper, script, mv->vertical);
     else {		/* features list may have changed, but retain those set */
 	int32_t len, sc;
 	ti = GGadgetGetList(mv->features,&len);

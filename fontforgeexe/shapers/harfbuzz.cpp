@@ -80,7 +80,7 @@ HarfBuzzShaper::~HarfBuzzShaper() {
 }
 
 std::vector<hb_feature_t> HarfBuzzShaper::hb_features(
-    const std::map<Tag, bool>& feature_map) const {
+    Tag script, bool vertical, const std::map<Tag, bool>& feature_map) const {
     std::vector<hb_feature_t> hb_feature_vec;
 
     for (const auto& [feature_tag, enabled] : feature_map) {
@@ -92,8 +92,8 @@ std::vector<hb_feature_t> HarfBuzzShaper::hb_features(
         // If a default feature is selected in the UI, it should not be in the
         // features list, but if it is unselected it should be in the features
         // list with value set to 0 (disable).
-        bool include_feature =
-            !default_features_.count(feature_tag) || !enabled;
+        const std::set<Tag> default_feats = default_features(script, vertical);
+        bool include_feature = !default_feats.count(feature_tag) || !enabled;
         if (include_feature) {
             hb_feature_t hb_feat{feature_tag, enabled, HB_FEATURE_GLOBAL_START,
                                  HB_FEATURE_GLOBAL_END};
@@ -294,7 +294,7 @@ struct opentype_str* HarfBuzzShaper::apply_features(
         rtl = (hb_buffer_get_direction(hb_buffer) == HB_DIRECTION_RTL);
     }
 
-    auto hb_feature_vec = hb_features(feature_map);
+    auto hb_feature_vec = hb_features(script, vertical, feature_map);
 
     // Shape the text
     hb_shape(hb_ttf_font, hb_buffer, hb_feature_vec.data(),
@@ -376,111 +376,122 @@ void HarfBuzzShaper::scale_metrics(MetricsView* mv, double iscale, double scale,
     }
 }
 
-// List of features copied from HarfBuzz src/hb-subset-input.cc
-// hb_tag_t default_layout_features[]
-const std::set<Tag> HarfBuzzShaper::default_features_ = {
-    // default shaper
-    // common
-    "rvrn",
-    "ccmp",
-    "liga",
-    "locl",
-    "mark",
-    "mkmk",
-    "rlig",
+// From HarfBuzz hb_ot_shape_collect_features(), simplified and arranged by
+// direction
+const std::set<Tag>& HarfBuzzShaper::default_features_by_direction(
+    hb_direction_t dir) const {
+    static const std::set<Tag> features_ltr = {
+        // basic
+        "rvrn", "frac", "numr", "dnom", "rand", "trak",
+        // ltr
+        "ltra", "ltrm",
+        // common_features[]
+        "abvm", "blwm", "ccmp", "locl", "mark", "mkmk", "rlig",
+        // horizontal_features[]
+        "calt", "clig", "curs", "dist", "kern", "liga", "rclt"};
 
-    // fractions
-    "frac",
-    "numr",
-    "dnom",
+    static const std::set<Tag> features_rtl = {
+        // basic
+        "rvrn", "frac", "numr", "dnom", "rand", "trak",
+        // rtl
+        "rtla", "rtlm",
+        // common_features[]
+        "abvm", "blwm", "ccmp", "locl", "mark", "mkmk", "rlig",
+        // horizontal_features[]
+        "calt", "clig", "curs", "dist", "kern", "liga", "rclt"};
 
-    // horizontal
-    "calt",
-    "clig",
-    "curs",
-    "kern",
-    "rclt",
+    static const std::set<Tag> features_ttb = {
+        // basic
+        "rvrn", "frac", "numr", "dnom", "rand", "trak",
+        // common_features[]
+        "abvm", "blwm", "ccmp", "locl", "mark", "mkmk", "rlig",
+        // vertical
+        "vert"};
 
-    // vertical
-    "valt",
-    "vert",
-    "vkrn",
-    "vpal",
-    "vrt2",
+    static const std::set<Tag> features_fallback = {
+        // basic
+        "rvrn", "frac", "numr", "dnom", "rand", "trak",
+        // common_features[]
+        "abvm", "blwm", "ccmp", "locl", "mark", "mkmk", "rlig"};
 
-    // ltr
-    "ltra",
-    "ltrm",
+    switch (dir) {
+        case HB_DIRECTION_LTR:
+            return features_ltr;
+        case HB_DIRECTION_RTL:
+            return features_rtl;
+        case HB_DIRECTION_TTB:
+            return features_ttb;
+        default:
+            return features_fallback;
+    }
+}
 
-    // rtl
-    "rtla",
-    "rtlm",
+const std::set<Tag>& HarfBuzzShaper::default_features_by_script(
+    Tag script) const {
+    // From HarfBuzz collect_features_arabic(), simplified:
+    static const std::set<Tag> features_arabic = {
+        "stch", "ccmp", "locl", "isol", "fina", "fin2", "fin3", "medi",
+        "med2", "init", "rlig", "calt", "liga", "clig", "mset",
+    };
 
-    // random
-    "rand",
+    // From HarfBuzz collect_features_hangul(), simplified:
+    static const std::set<Tag> features_hangul = {"ljmo", "vjmo", "tjmo"};
 
-    // justify
-    "jalt",  // HarfBuzz doesn't use; others might
+    // From HarfBuzz collect_features_use(), simplified:
+    static const std::set<Tag> features_use = {
+        "locl", "ccmp", "nukt", "akhn", "rphf", "pref", "rkrf", "abvf",
+        "blwf", "half", "pstf", "vatu", "cjct", "isol", "init", "medi",
+        "fina", "abvs", "blws", "haln", "pres", "psts",
+    };
 
-    // East Asian spacing
-    "chws",
-    "vchw",
-    "halt",
-    "vhal",
+    // From HarfBuzz collect_features_indic(), simplified:
+    static const std::set<Tag> features_indic = {
+        "locl", "ccmp", "nukt", "akhn", "rphf", "rkrf", "pref",
+        "blwf", "abvf", "half", "pstf", "vatu", "cjct", "init",
+        "pres", "abvs", "blws", "psts", "haln",
+    };
 
-    // private
-    "Harf",
-    "HARF",
-    "Buzz",
-    "BUZZ",
+    // From HarfBuzz collect_features_khmer(), simplified:
+    static const std::set<Tag> features_khmer = {
+        "locl", "ccmp", "pref", "blwf", "abvf", "pstf",
+        "cfar", "pres", "abvs", "blws", "psts",
+    };
 
-    // shapers
+    // From HarfBuzz collect_features_myanmar(), simplified:
+    static const std::set<Tag> features_myanmar = {
+        "locl", "ccmp", "rphf", "pref", "blwf",
+        "pstf", "pres", "abvs", "blws", "psts",
+    };
 
-    // arabic
-    "init",
-    "medi",
-    "fina",
-    "isol",
-    "med2",
-    "fin2",
-    "fin3",
-    "cswh",
-    "mset",
-    "stch",
+    if (script == "Arab" || script == "Syrc") {
+        return features_arabic;
+    } else if (script == "Hang") {
+        return features_hangul;
+    } else if (script == "Beng" || script == "Deva" || script == "Gujr" ||
+               script == "Guru" || script == "Knda" || script == "Mlym" ||
+               script == "Orya" || script == "Taml" || script == "Telu") {
+        return features_indic;
+    } else if (script == "Khmr") {
+        return features_khmer;
+    } else if (script == "Mymr") {
+        return features_khmer;
+    } else {
+        return features_use;
+    }
+}
 
-    // hangul
-    "ljmo",
-    "vjmo",
-    "tjmo",
+std::set<Tag> HarfBuzzShaper::default_features(Tag script,
+                                               bool vertical) const {
+    hb_script_t hb_script = hb_script_from_iso15924_tag(script);
+    hb_direction_t dir = vertical
+                             ? HB_DIRECTION_TTB
+                             : hb_script_get_horizontal_direction(hb_script);
+    std::set<Tag> features = default_features_by_direction(dir);
+    const std::set<Tag>& features_by_script =
+        default_features_by_script(script);
 
-    // tibetan
-    "abvs",
-    "blws",
-    "abvm",
-    "blwm",
-
-    // indic
-    "nukt",
-    "akhn",
-    "rphf",
-    "rkrf",
-    "pref",
-    "blwf",
-    "half",
-    "abvf",
-    "pstf",
-    "cfar",
-    "vatu",
-    "cjct",
-    "init",
-    "pres",
-    "abvs",
-    "blws",
-    "psts",
-    "haln",
-    "dist",
-    "abvm",
-    "blwm",
-};
+    features.insert(features_by_script.begin(), features_by_script.end());
+    return features;
+}
 
 }  // namespace ff::shapers

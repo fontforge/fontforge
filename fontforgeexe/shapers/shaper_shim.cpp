@@ -115,10 +115,12 @@ void shaper_scale_metrics(void* shaper, MetricsView* mv, double iscale,
     ishaper->scale_metrics(mv, iscale, scale, vertical);
 }
 
-uint32_t* shaper_default_features(void* shaper, uint32_t script) {
+uint32_t* shaper_default_features(void* shaper, uint32_t script,
+                                  bool vertical) {
     ff::shapers::IShaper* ishaper = static_cast<ff::shapers::IShaper*>(shaper);
 
-    const std::set<Tag>& default_feats = ishaper->default_features(script);
+    const std::set<Tag> default_feats =
+        ishaper->default_features(script, vertical);
 
     size_t n_feats = default_feats.size();
     uint32_t* stds = new uint32_t[n_feats + 2];

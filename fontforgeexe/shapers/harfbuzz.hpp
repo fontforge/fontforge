@@ -46,15 +46,10 @@ class HarfBuzzShaper : public IShaper {
     void scale_metrics(MetricsView* mv, double iscale, double scale,
                        bool vertical) override;
 
-    const std::set<Tag>& default_features(Tag script) const override {
-        return default_features_;
-    }
+    std::set<Tag> default_features(Tag script, bool vertical) const override;
 
  private:
     std::shared_ptr<ShaperContext> context_;
-
-    // OpenType features enabled in HarfBuzz by default
-    static const std::set<Tag> default_features_;
 
     char* blob = nullptr;
     hb_blob_t* hb_ttf_blob = nullptr;
@@ -85,6 +80,7 @@ class HarfBuzzShaper : public IShaper {
 
     // Convert feature tags to HarfBuzz feature structures
     std::vector<hb_feature_t> hb_features(
+        Tag script, bool vertical,
         const std::map<Tag, bool>& feature_map) const;
 
     // Retrieve data from shaped buffer and fill metrics.
@@ -107,6 +103,11 @@ class HarfBuzzShaper : public IShaper {
     // generated.
     std::vector<int> compute_width_deltas(hb_buffer_t* hb_buffer,
                                           SplineChar** glyphs);
+
+    const std::set<Tag>& default_features_by_direction(
+        hb_direction_t dir) const;
+
+    const std::set<Tag>& default_features_by_script(Tag script) const;
 };
 
 }  // namespace ff::shapers
