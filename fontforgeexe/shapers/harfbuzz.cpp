@@ -491,6 +491,14 @@ std::set<Tag> HarfBuzzShaper::default_features(Tag script,
         default_features_by_script(script);
 
     features.insert(features_by_script.begin(), features_by_script.end());
+
+    // Disable specific features according to HarfBuzz override_features_*
+    if (script == "Hang") {
+        features.erase("calt");
+    } else if (script == "Khmr") {
+        features.erase("liga");
+    }
+
     return features;
 }
 
