@@ -23,10 +23,8 @@ echo "FontForge built against Python $PYVER"
 
 # In Ubuntu 20-22 the libpython3-minimal is not automatically included with the default Python installation.
 # In Ubuntu 24.04 this doesn't seem to be necessary anymore.
-sudo apt-get install -y libpython${PYVER}-minimal
-
-( cd $APPDIR ; dpkg -x /var/cache/apt/archives/libpython${PYVER}-minimal*.deb . )
-( cd $APPDIR ; dpkg -x /var/cache/apt/archives/libpython${PYVER}-stdlib*.deb . )
+( cd $APPDIR ; apt-get download -y libpython${PYVER}-minimal ; dpkg -x libpython${PYVER}-minimal*.deb . )
+( cd $APPDIR ; apt-get download -y libpython${PYVER}-stdlib ; dpkg -x libpython${PYVER}-stdlib*.deb . )
 "python${PYVER}" -m pip install -I --target "$APPDIR/usr/lib/python${PYVER}/dist-packages" setuptools
 
 if [ ! -f linuxdeployqt.AppImage ]; then
