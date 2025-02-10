@@ -334,16 +334,6 @@ bool fvpy_check(FontView *fv, const char *label, PyObject *check, PyObject *data
     return disabled;
 }
 
-void fvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontViewBase *fv = (FontViewBase *) GDrawGetUserData(gw);
-    PyObject *pyfv = PyFF_FontForFV(fv);
-
-    fv_active_in_ui = fv;
-    layer_active_in_ui = fv->active_layer;
-    py_tllistcheck(mi,pyfv,py_menus + pmt_font);
-    fv_active_in_ui = NULL;
-}
-
 void fvpy_activate(FontView *fv, PyObject *func, PyObject *data) {
     FontViewBase* fv_base = (FontViewBase*)fv;
     PyObject *pyfv = PyFF_FontForFV(fv_base);
@@ -351,16 +341,6 @@ void fvpy_activate(FontView *fv, PyObject *func, PyObject *data) {
     fv_active_in_ui = fv_base;
     layer_active_in_ui = fv_base->active_layer;
     py_activate(pyfv, func, data);
-    fv_active_in_ui = NULL;
-}
-
-static void fvpy_menuactivate(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontViewBase *fv = (FontViewBase *) GDrawGetUserData(gw);
-    PyObject *pyfv = PyFF_FontForFV(fv);
-
-    fv_active_in_ui = fv;
-    layer_active_in_ui = fv->active_layer;
-    py_menuactivate(mi,pyfv,py_menus + pmt_font);
     fv_active_in_ui = NULL;
 }
 
@@ -379,11 +359,6 @@ static void PyMenuInit() {
 	for ( cp = mn_string; *cp!=0; ++cp )
 	    g_hash_table_add(py_menus[t].mn_avail, GUINT_TO_POINTER(*cp));
     }
-
-    py_menus[pmt_font].hotkey_prefix = "FontView.Menu.Tools.";
-    py_menus[pmt_font].moveto = fvpy_tllistcheck;
-    py_menus[pmt_font].invoke = fvpy_menuactivate;
-    py_menus[pmt_font].setmenu = FVSetToolsSubmenu;
 
     py_menus[pmt_char].hotkey_prefix = "CharView.Menu.Tools.";
     py_menus[pmt_char].moveto = cvpy_tllistcheck;
@@ -689,8 +664,6 @@ static PyObject *PyFF_registerMenuItem(PyObject *self, PyObject *args, PyObject 
 
     PyMenuInit();
 
-    if ( flags&pmf_font )
-	InsertSubMenus(&spec, py_menus + pmt_font);
     if ( flags&pmf_char )
 	InsertSubMenus(&spec, py_menus + pmt_char);
 

@@ -1267,9 +1267,7 @@ extern void FVCompareLayerToLayer(FontView *fv);
 extern void MathInit(void);
 extern void SFMathDlg(SplineFont *sf,int def_layer);
 
-extern GMenuItem2 *cvpy_menu, *fvpy_menu;
 extern void cvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);
-extern void fvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);
 
 extern GMenuItem2 *cv_menu, *fv_menu;
 extern void cv_tl2listcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);
@@ -1315,7 +1313,6 @@ extern void CVColInit( void );
 extern void BVColInit( void );
 
 extern void FontViewRemove(FontView *fv);
-extern void FontViewFinishNonStatic(void);
 extern void FVChar(FontView *fv,GEvent *event);
 extern void FVRedrawAllCharViews(FontView *fv);
 extern void *KFFontViewInits(struct kf_dlg *kf);
@@ -1342,7 +1339,6 @@ extern void SPSelectPrevPoint( SplinePoint *sp, int state );
 
 #ifndef _NO_PYTHON
 extern void CVSetToolsSubmenu(GMenuItem2 *py_menu);
-extern void FVSetToolsSubmenu(GMenuItem2 *py_menu);
 #endif
 
 /**

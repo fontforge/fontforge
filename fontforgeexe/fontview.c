@@ -5087,10 +5087,6 @@ FVSelectMenuAction fv_selmenu_actions[] = {
     MENU_SELACTION_LAST
 };
 
-static GMenuItem2 mblist[] = {
-    GMENUITEM2_EMPTY
-};
-
 void FVRefreshChar(FontView *fv,int gid) {
     BDFChar *bdfc;
     int i, enc;
@@ -6292,50 +6288,6 @@ static FontView *__FontViewCreate(SplineFont *sf) {
 return( fv );
 }
 
-static int fontview_ready = false;
-
-static void FontViewFinish() {
-    if (!fontview_ready) return;
-    mb2FreeGetText(mblist);
-}
-
-void FontViewFinishNonStatic() {
-    FontViewFinish();
-}
-
-#ifndef _NO_PYTHON
-void FVSetToolsSubmenu(GMenuItem2 *py_menu) {
-    mblist[3].ti.disabled = (py_menu == NULL);
-    mblist[3].sub = py_menu;
-}
-
-static GMenuItem2 *FVGetToolsSubmenu(void) {
-    return mblist[3].sub;
-}
-#endif
-
-static void FontViewInit(void) {
-    // static int done = false; // superseded by fontview_ready.
-
-    if ( fontview_ready )
-return;
-
-    fontview_ready = true;
-
-// The tools menu handles its own translation. I would rather do this by testing
-// whether ti.text_untranslated is already null but there are hundreds of missing
-// initializers for that field in the menu layout code.
-#ifndef _NO_PYTHON
-    GMenuItem2 *t = FVGetToolsSubmenu();
-    FVSetToolsSubmenu(NULL);
-#endif
-    mb2DoGetText(mblist);
-#ifndef _NO_PYTHON
-    FVSetToolsSubmenu(t);
-#endif
-    atexit(&FontViewFinishNonStatic);
-}
-
 // These aren't used but exist to make the resource system work.
 static GResFont ui_viewfont = GRESFONT_INIT("400 12pt " SANS_UI_FAMILIES);
 static GResFont label_viewfont = GRESFONT_INIT("400 12pt " LABEL_UI_FAMILIES);
@@ -6518,7 +6470,6 @@ static FontView *FontView_Create(SplineFont *sf, int hide) {
     FVContext *fv_context = calloc(1, sizeof(FVContext));
     void* cg_dlg;
 
-    FontViewInit();
     if ( icon==NULL ) {
 #ifdef BIGICONS
 	icon = GDrawCreateBitmap(NULL,fontview_width,fontview_height,fontview_bits);
@@ -6887,8 +6838,6 @@ void* KFFontViewInits(struct kf_dlg *kf) {
     FontView *fvorig = (FontView *) kf->sf->fv;
     void* cg_dlg;
 
-    FontViewInit();
-
     kf->dw = NULL;
 
     ps = kf->sf->display_size; kf->sf->display_size = -24;
@@ -7034,8 +6983,6 @@ char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current) {
     FontView *fvorig = (FontView *) sf->fv;
     char *start, *pt; int ch;
     void* cg_dlg;
-
-    FontViewInit();
 
     memset(&gs,0,sizeof(gs));
 
