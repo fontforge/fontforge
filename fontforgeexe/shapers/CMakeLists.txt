@@ -20,4 +20,8 @@ if(ENABLE_HARFBUZZ)
     PkgConfig::HarfBuzz
   )
   add_definitions(-DENABLE_HARFBUZZ)
+
+  if(HarfBuzz_VERSION VERSION_GREATER "10.2.0")
+    add_definitions(-DHB_OT_SHAPE_PLAN_GET_FEATURE_TAGS)
+  endif()
 endif()

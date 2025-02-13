@@ -25,6 +25,8 @@
 #include <algorithm>
 #include <cassert>
 
+#include <hb-ot.h>
+
 extern "C" {
 #include "gfile.h"
 #include "splinechar.h"
@@ -463,7 +465,12 @@ const std::set<Tag>& HarfBuzzShaper::default_features_by_script(
         "pstf", "pres", "abvs", "blws", "psts",
     };
 
-    if (script == "Arab" || script == "Syrc") {
+    static const std::set<Tag> empty;
+
+    if (script == "DFLT" || script == "Latn") {
+        // No script-specific features
+        return empty;
+    } else if (script == "Arab" || script == "Syrc") {
         return features_arabic;
     } else if (script == "Hang") {
         return features_hangul;
@@ -480,12 +487,8 @@ const std::set<Tag>& HarfBuzzShaper::default_features_by_script(
     }
 }
 
-std::set<Tag> HarfBuzzShaper::default_features(Tag script,
-                                               bool vertical) const {
-    hb_script_t hb_script = hb_script_from_iso15924_tag(script);
-    hb_direction_t dir = vertical
-                             ? HB_DIRECTION_TTB
-                             : hb_script_get_horizontal_direction(hb_script);
+std::set<Tag> HarfBuzzShaper::default_features_collect(
+    Tag script, hb_direction_t dir) const {
     std::set<Tag> features = default_features_by_direction(dir);
     const std::set<Tag>& features_by_script =
         default_features_by_script(script);
@@ -500,6 +503,50 @@ std::set<Tag> HarfBuzzShaper::default_features(Tag script,
     }
 
     return features;
+}
+
+#ifdef HB_OT_SHAPE_PLAN_GET_FEATURE_TAGS
+// Code adapted from HarfBuzz test/api/test-shape-plan.c
+std::set<Tag> HarfBuzzShaper::default_features_from_plan(
+    hb_script_t hb_script, hb_direction_t dir) const {
+    hb_segment_properties_t props = HB_SEGMENT_PROPERTIES_DEFAULT;
+    props.script = hb_script;
+    props.direction = dir;
+
+    hb_buffer_t* buffer = hb_buffer_create();
+    hb_buffer_set_segment_properties(buffer, &props);
+    hb_buffer_add_utf8(buffer, u8" ", -1, 0, -1);
+
+    hb_shape_plan_t* shape_plan =
+        hb_shape_plan_create(hb_ttf_face, &props, NULL, 0, NULL);
+    hb_bool_t ret =
+        hb_shape_plan_execute(shape_plan, hb_ttf_font, buffer, NULL, 0);
+
+    // dummy call to check the total projected number of tags
+    unsigned int zero = 0;
+    unsigned int count =
+        hb_ot_shape_plan_get_feature_tags(shape_plan, 0, &zero, nullptr);
+
+    // actually retrieve the tags
+    std::vector<hb_tag_t> features(count);
+    hb_ot_shape_plan_get_feature_tags(shape_plan, 0, &count, features.data());
+
+    return std::set<Tag>(features.begin(), features.end());
+}
+#endif
+
+std::set<Tag> HarfBuzzShaper::default_features(Tag script,
+                                               bool vertical) const {
+    hb_script_t hb_script = hb_script_from_iso15924_tag(script);
+    hb_direction_t dir = vertical
+                             ? HB_DIRECTION_TTB
+                             : hb_script_get_horizontal_direction(hb_script);
+
+#ifdef HB_OT_SHAPE_PLAN_GET_FEATURE_TAGS
+    return default_features_from_plan(hb_script, dir);
+#else
+    return default_features_collect(script, dir);
+#endif
 }
 
 }  // namespace ff::shapers

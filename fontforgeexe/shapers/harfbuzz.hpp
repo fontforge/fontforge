@@ -108,6 +108,14 @@ class HarfBuzzShaper : public IShaper {
         hb_direction_t dir) const;
 
     const std::set<Tag>& default_features_by_script(Tag script) const;
+
+    std::set<Tag> default_features_collect(Tag script,
+                                           hb_direction_t dir) const;
+
+#ifdef HB_OT_SHAPE_PLAN_GET_FEATURE_TAGS
+    std::set<Tag> default_features_from_plan(hb_script_t hb_script,
+                                             hb_direction_t dir) const;
+#endif
 };
 
 }  // namespace ff::shapers
