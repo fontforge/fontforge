@@ -29,8 +29,6 @@
 #include "i_shaper.hpp"
 #include "shaper_shim.hpp"
 
-#define HB_OT_SHAPE_PLAN_GET_FEATURE_TAGS
-
 namespace ff::shapers {
 
 class HarfBuzzShaper : public IShaper {

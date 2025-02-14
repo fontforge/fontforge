@@ -541,7 +541,7 @@ std::set<Tag> HarfBuzzShaper::default_features_from_plan(
 std::set<Tag> HarfBuzzShaper::default_features(Tag script, Tag lang,
                                                bool vertical) const {
     hb_script_t hb_script = hb_script_from_iso15924_tag(script);
-    hb_language_t hb_lang = hb_language_from_string((const char*)lang, -1);
+    hb_language_t hb_lang = hb_ot_tag_to_language(lang);
     hb_direction_t dir = vertical
                              ? HB_DIRECTION_TTB
                              : hb_script_get_horizontal_direction(hb_script);
