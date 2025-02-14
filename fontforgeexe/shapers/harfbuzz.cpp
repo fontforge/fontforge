@@ -526,9 +526,8 @@ std::set<Tag> HarfBuzzShaper::default_features_from_plan(
         hb_shape_plan_execute(shape_plan, hb_ttf_font, buffer, NULL, 0);
 
     // dummy call to check the total projected number of tags
-    unsigned int zero = 0;
     unsigned int count =
-        hb_ot_shape_plan_get_feature_tags(shape_plan, 0, &zero, nullptr);
+        hb_ot_shape_plan_get_feature_tags(shape_plan, 0, nullptr, nullptr);
 
     // actually retrieve the tags
     std::vector<hb_tag_t> features(count);
