@@ -82,7 +82,8 @@ HarfBuzzShaper::~HarfBuzzShaper() {
 }
 
 std::vector<hb_feature_t> HarfBuzzShaper::hb_features(
-    Tag script, bool vertical, const std::map<Tag, bool>& feature_map) const {
+    Tag script, Tag lang, bool vertical,
+    const std::map<Tag, bool>& feature_map) const {
     std::vector<hb_feature_t> hb_feature_vec;
 
     for (const auto& [feature_tag, enabled] : feature_map) {
@@ -94,7 +95,8 @@ std::vector<hb_feature_t> HarfBuzzShaper::hb_features(
         // If a default feature is selected in the UI, it should not be in the
         // features list, but if it is unselected it should be in the features
         // list with value set to 0 (disable).
-        const std::set<Tag> default_feats = default_features(script, vertical);
+        const std::set<Tag> default_feats =
+            default_features(script, lang, vertical);
         bool include_feature = !default_feats.count(feature_tag) || !enabled;
         if (include_feature) {
             hb_feature_t hb_feat{feature_tag, enabled, HB_FEATURE_GLOBAL_START,
@@ -296,7 +298,7 @@ struct opentype_str* HarfBuzzShaper::apply_features(
         rtl = (hb_buffer_get_direction(hb_buffer) == HB_DIRECTION_RTL);
     }
 
-    auto hb_feature_vec = hb_features(script, vertical, feature_map);
+    auto hb_feature_vec = hb_features(script, lang, vertical, feature_map);
 
     // Shape the text
     hb_shape(hb_ttf_font, hb_buffer, hb_feature_vec.data(),
@@ -508,10 +510,11 @@ std::set<Tag> HarfBuzzShaper::default_features_collect(
 #ifdef HB_OT_SHAPE_PLAN_GET_FEATURE_TAGS
 // Code adapted from HarfBuzz test/api/test-shape-plan.c
 std::set<Tag> HarfBuzzShaper::default_features_from_plan(
-    hb_script_t hb_script, hb_direction_t dir) const {
+    hb_script_t hb_script, hb_language_t hb_lang, hb_direction_t dir) const {
     hb_segment_properties_t props = HB_SEGMENT_PROPERTIES_DEFAULT;
-    props.script = hb_script;
     props.direction = dir;
+    props.script = hb_script;
+    props.language = hb_lang;
 
     hb_buffer_t* buffer = hb_buffer_create();
     hb_buffer_set_segment_properties(buffer, &props);
@@ -535,15 +538,16 @@ std::set<Tag> HarfBuzzShaper::default_features_from_plan(
 }
 #endif
 
-std::set<Tag> HarfBuzzShaper::default_features(Tag script,
+std::set<Tag> HarfBuzzShaper::default_features(Tag script, Tag lang,
                                                bool vertical) const {
     hb_script_t hb_script = hb_script_from_iso15924_tag(script);
+    hb_language_t hb_lang = hb_language_from_string((const char*)lang, -1);
     hb_direction_t dir = vertical
                              ? HB_DIRECTION_TTB
                              : hb_script_get_horizontal_direction(hb_script);
 
 #ifdef HB_OT_SHAPE_PLAN_GET_FEATURE_TAGS
-    return default_features_from_plan(hb_script, dir);
+    return default_features_from_plan(hb_script, hb_lang, dir);
 #else
     return default_features_collect(script, dir);
 #endif

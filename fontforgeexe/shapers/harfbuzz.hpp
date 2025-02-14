@@ -29,6 +29,8 @@
 #include "i_shaper.hpp"
 #include "shaper_shim.hpp"
 
+#define HB_OT_SHAPE_PLAN_GET_FEATURE_TAGS
+
 namespace ff::shapers {
 
 class HarfBuzzShaper : public IShaper {
@@ -46,7 +48,8 @@ class HarfBuzzShaper : public IShaper {
     void scale_metrics(MetricsView* mv, double iscale, double scale,
                        bool vertical) override;
 
-    std::set<Tag> default_features(Tag script, bool vertical) const override;
+    std::set<Tag> default_features(Tag script, Tag lang,
+                                   bool vertical) const override;
 
  private:
     std::shared_ptr<ShaperContext> context_;
@@ -80,7 +83,7 @@ class HarfBuzzShaper : public IShaper {
 
     // Convert feature tags to HarfBuzz feature structures
     std::vector<hb_feature_t> hb_features(
-        Tag script, bool vertical,
+        Tag script, Tag lang, bool vertical,
         const std::map<Tag, bool>& feature_map) const;
 
     // Retrieve data from shaped buffer and fill metrics.
@@ -114,6 +117,7 @@ class HarfBuzzShaper : public IShaper {
 
 #ifdef HB_OT_SHAPE_PLAN_GET_FEATURE_TAGS
     std::set<Tag> default_features_from_plan(hb_script_t hb_script,
+                                             hb_language_t hb_lang,
                                              hb_direction_t dir) const;
 #endif
 };
