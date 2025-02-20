@@ -46,7 +46,7 @@ HarfBuzzShaper::HarfBuzzShaper(std::shared_ptr<ShaperContext> context)
     // see flag ttf_flag_fake_map), and that we have means to map each
     // SplineChar to its assigned Unicode value.
     _WriteTTFFont(ttf_file, context_->sf, ff_ttf, NULL, bf_ttf,
-                  ttf_flag_otmode | ttf_flag_fake_map,
+                  ttf_flag_otmode | ttf_flag_fake_map | ttf_flag_no_outlines,
                   context_->get_enc_map(context_->sf), ly_fore);
 
     // Build map of TTF codepoints
