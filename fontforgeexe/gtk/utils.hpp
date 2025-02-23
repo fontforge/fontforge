@@ -28,3 +28,6 @@
 #include <gtkmm.h>
 
 Gtk::Widget* gtk_find_child(Gtk::Widget* w, const std::string& name);
+
+// Get the current topmost window
+Glib::RefPtr<Gdk::Window> gtk_get_topmost_window();

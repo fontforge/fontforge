@@ -46,3 +46,26 @@ Gtk::Widget* gtk_find_child(Gtk::Widget* w, const std::string& name) {
     }
     return res;
 }
+
+Glib::RefPtr<Gdk::Window> gtk_get_topmost_window() {
+    Glib::RefPtr<Gdk::Screen> screen = Gdk::Screen::get_default();
+
+    Glib::RefPtr<Gdk::Window> topmost_window = screen->get_active_window();
+    if (topmost_window) {
+        return topmost_window;
+    }
+
+    // Gdk::Screen::get_active_window() is not always reliable, e.g when the
+    // active window was just closed, and its parent hasn't been activated back
+    // yet.
+    std::vector<Glib::RefPtr<Gdk::Window>> stack = screen->get_window_stack();
+    for (auto rit = stack.rbegin(); rit != stack.rend(); ++rit) {
+        if ((*rit)->get_window_type() == Gdk::WINDOW_TOPLEVEL &&
+            (*rit)->is_visible()) {
+            topmost_window = *rit;
+            break;
+        }
+    }
+
+    return topmost_window;
+}
