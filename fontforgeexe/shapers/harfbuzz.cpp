@@ -332,6 +332,11 @@ struct opentype_str* HarfBuzzShaper::apply_features(
         context_->sf, flist.data(), (uint32_t)script, (uint32_t)lang, true,
         pixelsize, glyphs_after_gpos);
 
+    // For simplicity, all characters are marked with the same direction.
+    for (int i = 0; i < glyph_count; ++i) {
+        ots_arr[i].r2l = rtl;
+    }
+
     std::vector<int> kerning_deltas =
         compute_kerning_deltas(hb_buffer, ots_arr);
 

@@ -1027,6 +1027,8 @@ static void MVRemetric(MetricsView *mv) {
     free(feats);
     if ( goodsc!=NULL )
 	mv->right_to_left = SCRightToLeft(goodsc)?1:0;
+    else
+	mv->right_to_left = mv->glyphs[0].r2l;
 
     // Count the valid glyphs and segfault if there is no null splinechar terminator.
     for ( cnt=0; mv->glyphs[cnt].sc!=NULL; ++cnt );
@@ -3948,6 +3950,7 @@ static ShaperContext* MVMakeShaperContext(MetricsView *mv) {
     context->get_enc_map = SFGetMap;
     context->get_char_width = MVCharWidth;
     context->get_kern_offset = MVGetKernOffset;
+    context->script_is_rtl = ScriptIsRightToLeft;
 
     return context;
 }

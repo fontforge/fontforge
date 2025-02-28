@@ -43,14 +43,17 @@ struct opentype_str* BuiltInShaper::apply_features(
     }
     flist.push_back(0);
 
+    bool rtl = context_->script_is_rtl((uint32_t)script);
+
     ots_arr_ = context_->apply_ticked_features(context_->sf, flist.data(),
                                                (uint32_t)script, (uint32_t)lang,
                                                false, pixelsize, glyphs);
 
-    // Count output glyphs
+    // Count output glyphs and assign direction
     int cnt;
-    for (cnt = 0; ots_arr_[cnt].sc != NULL; ++cnt)
-        ;
+    for (cnt = 0; ots_arr_[cnt].sc != NULL; ++cnt) {
+        ots_arr_[cnt].r2l = rtl;
+    }
 
     // Make metrics C-style zero-terminated array to support legacy code
     metrics.resize(cnt + 1);

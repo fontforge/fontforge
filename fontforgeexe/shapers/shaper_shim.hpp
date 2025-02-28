@@ -66,6 +66,9 @@ typedef struct shaper_context {
     // Retrieve current kerning value from glyph data
     int (*get_kern_offset)(struct opentype_str* glyph);
 
+    // Legacy check of RTL script tag
+    int (*script_is_rtl)(uint32_t script);
+
 } ShaperContext;
 
 typedef struct shaper_def {
