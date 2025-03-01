@@ -54,6 +54,7 @@ HarfBuzzShaper::HarfBuzzShaper(std::shared_ptr<ShaperContext> context)
     for (SplineCharTTFMap* entry = ttf_map; entry->glyph != NULL; ++entry) {
         ttf_map_[entry->ttf_glyph] = entry->glyph;
     }
+    free(ttf_map);
 
     // Calculate file length
     fseek(ttf_file, 0L, SEEK_END);
@@ -78,7 +79,7 @@ HarfBuzzShaper::~HarfBuzzShaper() {
     hb_font_destroy(hb_ttf_font);
     hb_face_destroy(hb_ttf_face);
     hb_blob_destroy(hb_ttf_blob);
-    free(blob);
+    delete[] blob;
 }
 
 std::vector<hb_feature_t> HarfBuzzShaper::hb_features(

@@ -51,7 +51,7 @@ const char* get_default_shaper() {
 
 void* shaper_factory(const char* name, ShaperContext* r_context) {
     // Take ownership of r_context
-    std::shared_ptr<ShaperContext> context(r_context);
+    std::shared_ptr<ShaperContext> context(r_context, &free);
 
 #ifdef ENABLE_HARFBUZZ
     if (strcmp(name, "harfbuzz") == 0) {
@@ -123,7 +123,7 @@ uint32_t* shaper_default_features(void* shaper, uint32_t script, uint32_t lang,
         ishaper->default_features(script, lang, vertical);
 
     size_t n_feats = default_feats.size();
-    uint32_t* stds = new uint32_t[n_feats + 2];
+    uint32_t* stds = (uint32_t*)calloc(n_feats + 2, sizeof(uint32_t));
     std::copy(default_feats.begin(), default_feats.end(), stds);
 
     // By legacy FontForge convention the list of default features is terminated
