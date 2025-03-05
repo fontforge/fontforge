@@ -3951,6 +3951,7 @@ static ShaperContext* MVMakeShaperContext(MetricsView *mv) {
     context->get_char_width = MVCharWidth;
     context->get_kern_offset = MVGetKernOffset;
     context->script_is_rtl = ScriptIsRightToLeft;
+    context->get_or_make_char = SFGetOrMakeChar;
 
     return context;
 }
@@ -3966,6 +3967,16 @@ static void MVSetShaper(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 
     shaper_free(&(mv->shaper));
     mv->shaper = shaper_factory(new_shaper_name, MVMakeShaperContext(mv));
+    MVSetFeatures(mv);
+    MVRefreshAll(mv);
+}
+
+static void MVRefreshShaper(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    const char* current_shaper_name = shaper_name(mv->shaper);
+
+    shaper_free(&(mv->shaper));
+    mv->shaper = shaper_factory(current_shaper_name, MVMakeShaperContext(mv));
     MVSetFeatures(mv);
     MVRefreshAll(mv);
 }
@@ -4069,6 +4080,11 @@ static void vwlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	    vwlist[i].ti.fg = vwlist[i].ti.bg = COLOR_DEFAULT;
 	    i++;
 	}
+
+	vwlist[i].ti.text = utf82u_copy(_("Refresh Shaper"));
+	vwlist[i].ti.checkable = false;
+	vwlist[i].invoke = MVRefreshShaper;
+	vwlist[i].ti.fg = vwlist[i].ti.bg = COLOR_DEFAULT;
     }
     GMenuItemArrayFree(mi->sub);
     mi->sub = GMenuItem2ArrayCopy(vwlist,NULL);
