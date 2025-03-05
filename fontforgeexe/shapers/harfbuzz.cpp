@@ -24,6 +24,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <string>
 
 #include <hb-ot.h>
 
@@ -132,7 +133,10 @@ SplineChar** HarfBuzzShaper::extract_shaped_data(hb_buffer_t* hb_buffer) {
         // Warning: after the shaping glyph_info->codepoint is not a Unicode
         // point, but rather an internal glyph index. We can't use it in our
         // functions.
-        SplineChar* glyph_out = ttf_map_[glyph_info.codepoint];
+        auto ttf_map_it = ttf_map_.find(glyph_info.codepoint);
+        SplineChar* glyph_out = (ttf_map_it != ttf_map_.end())
+                                    ? ttf_map_it->second
+                                    : get_notdef_glyph();
 
         glyphs_after_gpos[i] = glyph_out;
 
@@ -556,6 +560,32 @@ std::set<Tag> HarfBuzzShaper::default_features(Tag script, Tag lang,
 #else
     return default_features_collect(script, dir);
 #endif
+}
+
+SplineChar* HarfBuzzShaper::get_notdef_glyph() {
+    if (notdef_glyph_ != nullptr) {
+        return notdef_glyph_;
+    }
+
+    // .notdef glyph should normally be at index 0. If the font doesn't contain
+    // zero index, look for alternative options.
+    //
+    // Look for special glyph names, as appear in AssignNotdefNull().
+    static const std::vector<std::string> notdef_names = {
+        ".notdef", ".null",  "uni0000", "nonmarkingreturn",
+        "uni000D", "glyph1", "glyph2"};
+    for (const std::string& name : notdef_names) {
+        for (const auto& [idx, sc] : ttf_map_) {
+            if (name == sc->name) {
+                notdef_glyph_ = sc;
+                return notdef_glyph_;
+            }
+        }
+    }
+
+    // No special glyph found, create it.
+    notdef_glyph_ = context_->get_or_make_char(context_->sf, -1, ".notdef");
+    return notdef_glyph_;
 }
 
 }  // namespace ff::shapers

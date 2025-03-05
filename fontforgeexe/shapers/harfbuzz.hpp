@@ -60,6 +60,13 @@ class HarfBuzzShaper : public IShaper {
     // Map glyph indexes in TTF file to SplineChar objects
     std::map<int, SplineChar*> ttf_map_;
 
+    // Glyph used for missing characters.
+    //
+    // NOTE: normally HarfBuzz uses codepoint 0 ".notdef" for missing glyphs,
+    // but its availability can't be guaranteed. Don't access this member
+    // directly, use get_notdef_glyph() instead.
+    SplineChar* notdef_glyph_ = nullptr;
+
     // Initial kerning state at font generation. For a pair of (left_glyph,
     // right_glyph) the shaper manually applies the difference between initial
     // and latest value to avoid regenerating the font at each change.
@@ -118,6 +125,8 @@ class HarfBuzzShaper : public IShaper {
                                              hb_language_t hb_lang,
                                              hb_direction_t dir) const;
 #endif
+
+    SplineChar* get_notdef_glyph();
 };
 
 }  // namespace ff::shapers

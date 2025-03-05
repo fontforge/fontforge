@@ -69,6 +69,11 @@ typedef struct shaper_context {
     // Legacy check of RTL script tag
     int (*script_is_rtl)(uint32_t script);
 
+    // Make glyph - should be used only to create ".notdef" glyph, if it's
+    // absent and necessary
+    SplineChar* (*get_or_make_char)(SplineFont* sf, int unienc,
+                                    const char* name);
+
 } ShaperContext;
 
 typedef struct shaper_def {
