@@ -49,35 +49,42 @@ const char* get_default_shaper() {
     return "builtin";
 }
 
-void* shaper_factory(const char* name, ShaperContext* r_context) {
+inline ff::shapers::IShaper* toCPP(cpp_IShaper* p) {
+    return reinterpret_cast<ff::shapers::IShaper*>(p);
+}
+
+inline cpp_IShaper* toC(ff::shapers::IShaper* p) {
+    return reinterpret_cast<cpp_IShaper*>(p);
+}
+
+cpp_IShaper* shaper_factory(const char* name, ShaperContext* r_context) {
     // Take ownership of r_context
     std::shared_ptr<ShaperContext> context(r_context, &free);
 
 #ifdef ENABLE_HARFBUZZ
     if (strcmp(name, "harfbuzz") == 0) {
-        return new ff::shapers::HarfBuzzShaper(context);
+        return toC(new ff::shapers::HarfBuzzShaper(context));
     }
 #endif
     if (strcmp(name, "builtin") == 0) {
-        return new ff::shapers::BuiltInShaper(context);
+        return toC(new ff::shapers::BuiltInShaper(context));
     } else {
         return nullptr;
     }
 }
 
-void shaper_free(void** p_shaper) {
+void shaper_free(cpp_IShaper** p_shaper) {
     if (p_shaper == nullptr) {
         return;
     }
 
-    ff::shapers::IShaper* shaper =
-        static_cast<ff::shapers::IShaper*>(*p_shaper);
+    ff::shapers::IShaper* shaper = toCPP(*p_shaper);
     delete shaper;
     *p_shaper = nullptr;
 }
 
-const char* shaper_name(void* shaper) {
-    ff::shapers::IShaper* ishaper = static_cast<ff::shapers::IShaper*>(shaper);
+const char* shaper_name(cpp_IShaper* shaper) {
+    ff::shapers::IShaper* ishaper = toCPP(shaper);
 
     if (shaper) {
         return ishaper->name();
@@ -86,11 +93,12 @@ const char* shaper_name(void* shaper) {
     }
 }
 
-struct opentype_str* shaper_apply_features(void* shaper, SplineChar** glyphs,
+struct opentype_str* shaper_apply_features(cpp_IShaper* shaper,
+                                           SplineChar** glyphs,
                                            FeatureMap* feat_map,
                                            uint32_t script, uint32_t lang,
                                            int pixelsize, bool vertical) {
-    ff::shapers::IShaper* ishaper = static_cast<ff::shapers::IShaper*>(shaper);
+    ff::shapers::IShaper* ishaper = toCPP(shaper);
     std::map<Tag, bool> feature_map;
     for (int i = 0; feat_map[i].feature_tag != 0; ++i) {
         feature_map[feat_map[i].feature_tag] = feat_map[i].enabled;
@@ -104,20 +112,20 @@ struct opentype_str* shaper_apply_features(void* shaper, SplineChar** glyphs,
     }
 }
 
-const ShapeMetrics* shaper_metrics(void* shaper) {
-    ff::shapers::IShaper* ishaper = static_cast<ff::shapers::IShaper*>(shaper);
+const ShapeMetrics* shaper_metrics(cpp_IShaper* shaper) {
+    ff::shapers::IShaper* ishaper = toCPP(shaper);
     return ishaper->metrics.data();
 }
 
-void shaper_scale_metrics(void* shaper, MetricsView* mv, double iscale,
+void shaper_scale_metrics(cpp_IShaper* shaper, MetricsView* mv, double iscale,
                           double scale, bool vertical) {
-    ff::shapers::IShaper* ishaper = static_cast<ff::shapers::IShaper*>(shaper);
+    ff::shapers::IShaper* ishaper = toCPP(shaper);
     ishaper->scale_metrics(mv, iscale, scale, vertical);
 }
 
-uint32_t* shaper_default_features(void* shaper, uint32_t script, uint32_t lang,
-                                  bool vertical) {
-    ff::shapers::IShaper* ishaper = static_cast<ff::shapers::IShaper*>(shaper);
+uint32_t* shaper_default_features(cpp_IShaper* shaper, uint32_t script,
+                                  uint32_t lang, bool vertical) {
+    ff::shapers::IShaper* ishaper = toCPP(shaper);
 
     const std::set<Tag> default_feats =
         ishaper->default_features(script, lang, vertical);

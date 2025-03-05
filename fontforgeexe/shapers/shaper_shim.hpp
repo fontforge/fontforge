@@ -45,6 +45,9 @@ int _WriteTTFFont(FILE* ttf, SplineFont* sf, int /*enum fontformat*/ format,
                   EncMap* enc, int layer);
 extern SplineCharTTFMap* MakeGlyphTTFMap(SplineFont* sf);
 
+/* Dummy incomplete type which can be casted to C++ type ff::shapers::IShaper */
+typedef struct cpp_IShaper cpp_IShaper;
+
 typedef struct shaper_context {
     SplineFont* sf;
     MetricsView* mv;
@@ -95,13 +98,13 @@ const ShaperDef* get_shaper_defs();
 const char* get_default_shaper();
 
 /* Create a new shaper object */
-void* shaper_factory(const char* name, ShaperContext* r_context);
+cpp_IShaper* shaper_factory(const char* name, ShaperContext* r_context);
 
 /* Release the shaper object and nullify the pointer */
-void shaper_free(void** p_shaper);
+void shaper_free(cpp_IShaper** p_shaper);
 
 /* Get the internal name of the shaper */
-const char* shaper_name(void* shaper);
+const char* shaper_name(cpp_IShaper* shaper);
 
 /* Perform shaping: apply font features to the input string and compute position
  * of each glyph.
@@ -109,18 +112,19 @@ const char* shaper_name(void* shaper);
  * Arguments:
  *     flist - zero-terminated list of OpenType features
  */
-struct opentype_str* shaper_apply_features(void* shaper, SplineChar** glyphs,
+struct opentype_str* shaper_apply_features(cpp_IShaper* shaper,
+                                           SplineChar** glyphs,
                                            FeatureMap* feat_map,
                                            uint32_t script, uint32_t lang,
                                            int pixelsize, bool vertical);
 
-const ShapeMetrics* shaper_metrics(void* shaper);
+const ShapeMetrics* shaper_metrics(cpp_IShaper* shaper);
 
-void shaper_scale_metrics(void* shaper, MetricsView* mv, double iscale,
+void shaper_scale_metrics(cpp_IShaper* shaper, MetricsView* mv, double iscale,
                           double scale, bool vertical);
 
-uint32_t* shaper_default_features(void* shaper, uint32_t script, uint32_t lang,
-                                  bool vertical);
+uint32_t* shaper_default_features(cpp_IShaper* shaper, uint32_t script,
+                                  uint32_t lang, bool vertical);
 
 #ifdef __cplusplus
 }

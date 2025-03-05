@@ -45,6 +45,8 @@ struct gfi_data;
 struct contextchaindlg;
 struct statemachinedlg;
 
+/* Dummy incomplete type which can be casted to C++ type ff::shapers::IShaper */
+typedef struct cpp_IShaper cpp_IShaper;
 
 extern struct cvshows {
     int showfore, showback, showgrids, showhhints, showvhints, showdhints;
@@ -427,7 +429,7 @@ typedef struct metricsview {
     int ptsize, dpi;
     int ybaseline;
     int oldscript, oldlang;
-    void* shaper;
+    cpp_IShaper* shaper;
 } MetricsView;
 
 enum fv_metrics { fvm_baseline=1, fvm_origin=2, fvm_advanceat=4, fvm_advanceto=8 };
