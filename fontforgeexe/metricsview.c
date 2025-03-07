@@ -3956,6 +3956,27 @@ static ShaperContext* MVMakeShaperContext(MetricsView *mv) {
     return context;
 }
 
+static void SetShaper(MetricsView *mv, const char* shaper_name) {
+    GCursor ct = GDrawGetCursor(mv->gw);
+
+    /* On window load, show the contents */
+    GDrawProcessPendingEvents(NULL);
+
+    /* The shaper initialization can be lengthy, give the user waiting indication */
+    GDrawSetCursor(mv->gw,ct_watch);
+
+    /* Make sure the cursor change is reflected immediately,
+       before the heavy load starts. */
+    GDrawSync(NULL);
+
+    shaper_free(&(mv->shaper));
+    mv->shaper = shaper_factory(shaper_name, MVMakeShaperContext(mv));
+    MVSetFeatures(mv);
+    MVRefreshAll(mv);
+
+    GDrawSetCursor(mv->gw,ct);
+}
+
 static void MVSetShaper(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     const char* new_shaper_name = mi->ti.userdata;
@@ -3965,20 +3986,14 @@ static void MVSetShaper(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	return;
     }
 
-    shaper_free(&(mv->shaper));
-    mv->shaper = shaper_factory(new_shaper_name, MVMakeShaperContext(mv));
-    MVSetFeatures(mv);
-    MVRefreshAll(mv);
+    SetShaper(mv, new_shaper_name);
 }
 
 static void MVRefreshShaper(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     const char* current_shaper_name = shaper_name(mv->shaper);
 
-    shaper_free(&(mv->shaper));
-    mv->shaper = shaper_factory(current_shaper_name, MVMakeShaperContext(mv));
-    MVSetFeatures(mv);
-    MVRefreshAll(mv);
+    SetShaper(mv, current_shaper_name);
 }
 
 static void vwlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
@@ -5110,6 +5125,11 @@ return( true );
 	  default: break;
 	}
       break;
+      case et_map:
+        if (event->u.map.is_visible) {
+	  SetShaper(mv, get_default_shaper());
+	}
+      break;
       case et_close:
 	MVMenuClose(gw,NULL,NULL);
       break;
@@ -5260,7 +5280,10 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     mv->type = mv_type;
     mv->pixelsize_set_by_window = true;
     mv->dpi = 72;
-    mv->shaper = shaper_factory(get_default_shaper(), MVMakeShaperContext(mv));
+
+    /* Start with fast internal shaper for initial presentation, defer the 
+       full-blown shaper until the Metrics window has been mapped. */
+    mv->shaper = shaper_factory("builtin", MVMakeShaperContext(mv));
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_icon;
