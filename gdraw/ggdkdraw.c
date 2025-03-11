@@ -923,6 +923,10 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
     switch (event->type) {
         case GDK_KEY_PRESS:
         case GDK_KEY_RELEASE: {
+            if ((g_object_get_data(G_OBJECT(w), "GtkWidget")) != NULL) {
+               // Sometimes the CharView hijacks key events which belong to shortcuts. Send them to GTK.
+               gtk_main_do_event(event);
+            }
             GdkEventKey *key = (GdkEventKey *)event;
             gevent.type = event->type == GDK_KEY_PRESS ? et_char : et_charup;
             gevent.u.chr.state = _GGDKDraw_GdkModifierToKsm(((GdkEventKey *)event)->state);

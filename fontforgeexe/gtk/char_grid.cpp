@@ -187,6 +187,14 @@ bool on_drawing_area_key(GdkEventKey* event, Gtk::DrawingArea& drawing_area) {
     // must be replaced, because legacy GDraw handler picks only events which
     // belong to the drawing area window.
 
+    // If the event already belongs to the drawing area window, and marked as
+    // created in the legacy code, it should have already been processed in the
+    // legacy GDraw handler. We just let it continue with the normal GTK event
+    // processing.
+    if (g_object_get_data(G_OBJECT(event->window), "GGDKWindow")) {
+        return false;
+    }
+
     GdkWindow* drawing_win =
         gtk_widget_get_window((GtkWidget*)(drawing_area.gobj()));
 
