@@ -4952,11 +4952,11 @@ static void FVEncodingMenuBuild(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED
 }
 
 static void FVMenuAddUnencoded(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-   int i = add_encoding_slots_dialog();
+   FontView *fv = (FontView *) GDrawGetUserData(gw);
+   int i = add_encoding_slots_dialog(fv->b.cidmaster);
    if(i < 0) {
       return ff_post_error(_("Add Unencoded"), _("Error occurred while adding unencoded slots"));
    }
-   FontView *fv = (FontView *) GDrawGetUserData(gw);
    FVAddUnencoded((FontViewBase *) fv, i);
 }
 

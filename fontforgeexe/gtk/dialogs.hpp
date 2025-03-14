@@ -18,7 +18,7 @@
 extern "C" {
 #endif
 
-int add_encoding_slots_dialog();
+int add_encoding_slots_dialog(bool cid);
 
 #ifdef __cplusplus
 }
