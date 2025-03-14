@@ -66,5 +66,8 @@ class AddEncodingSlotsDialog final : public Gtk::Dialog {
 
 // Shim for the C code to call the dialog
 int add_encoding_slots_dialog() {
+   // TODO[iorsh]: Move app initialization to a dedicated class
+   static auto app = Gtk::Application::create("org.fontforge");
+   
    return AddEncodingSlotsDialog::show();
 }
