@@ -25,12 +25,17 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <gtkmm.h>
-
 #include "dialogs.hpp"
 
-// Shim for the C code to call the dialog
+#include <gtkmm.h>
+
+#include "application.hpp"
+
 void print_dialog() {
+    // To avoid instability, the GTK application is lazily initialized only when
+    // a GTK window is invoked.
+    ff::app::GtkApp();
+    
     Gtk::MessageDialog dialog("Dummy Message");
     dialog.run();
 }
