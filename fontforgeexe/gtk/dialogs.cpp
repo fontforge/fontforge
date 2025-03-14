@@ -13,9 +13,10 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <gtkmm.h>
-#include <iostream>
 #include "dialogs.hpp"
+
+#include <gtkmm.h>
+
 #include "intl.h"
 
 // A simple dialog to query the user for a number of new encoding slots to add.

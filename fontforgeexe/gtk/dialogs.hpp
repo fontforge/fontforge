@@ -12,16 +12,14 @@
  * OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
  * PERFORMANCE OF THIS SOFTWARE.
  */
-
-#ifndef FONTFORGE_DIALOGS_HPP
-#define FONTFORGE_DIALOGS_HPP
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 int add_encoding_slots_dialog();
+
 #ifdef __cplusplus
 }
 #endif
-
-#endif  // FONTFORGE_DIALOGS_HPP
