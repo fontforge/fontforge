@@ -80,9 +80,12 @@ std::map<std::string, std::string> collect_css_properties(
             std::to_string(box_resource.border_width) + "pt";
     }
 
-    if (box_resource.border_type == bt_box) {
-        collection["border-style"] = "solid";
-    }
+    static const std::map<enum border_type, std::string> border_type_map = {
+        {bt_none, "none"},     {bt_box, "solid"},       {bt_raised, "outset"},
+        {bt_lowered, "inset"}, {bt_engraved, "groove"}, {bt_embossed, "ridge"},
+        {bt_double, "double"}};
+    collection["border-style"] = border_type_map.at(
+        static_cast<enum border_type>(box_resource.border_type));
 
     if (box_resource.border_shape == bs_roundrect) {
         if (box_resource.rr_radius < 1) {
