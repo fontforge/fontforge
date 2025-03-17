@@ -142,9 +142,28 @@ std::string build_style(const std::string& selector,
     return selector + " {\n" + property_list + "}\n";
 }
 
+std::string build_unset_style(
+    const std::string& selector,
+    const std::map<std::string, std::string>& properties) {
+    std::string property_list;
+    for (auto& [property, value] : properties) {
+        property_list += "    " + property + ": unset;\n";
+    }
+
+    return selector + " {\n" + property_list + "}\n";
+}
+
 std::string build_styles(const GResInfo* gdraw_ri) {
-    static const std::map<std::string, std::string> css_selector_map = {
-        {"GLabel", "label"}};
+    struct Selector {
+        std::string node_name;
+
+        // Exclude this selector when appears in the following containers, e.g.
+        // "label" should not be modified when appears inside "button".
+        std::vector<std::string> excluded_containers;
+    };
+
+    static const std::map<std::string, Selector> css_selector_map = {
+        {"GLabel", {"label", {"button"}}}};
 
     std::string styles;
 
@@ -153,12 +172,23 @@ std::string build_styles(const GResInfo* gdraw_ri) {
             continue;
         }
 
+        const Selector& selector = css_selector_map.at(ri->resname);
+
         auto props = collect_css_properties(*(ri->boxdata));
-        styles += build_style(css_selector_map.at(ri->resname), props);
+        styles += build_style(selector.node_name, props);
 
         auto props_disabled = collect_css_properties_disabled(*(ri->boxdata));
-        styles += build_style(css_selector_map.at(ri->resname) + ":disabled",
-                              props_disabled);
+        styles += build_style(selector.node_name + ":disabled", props_disabled);
+
+        // When the node is inside predefined containers, we shall unset the
+        // affected properties
+        for (const std::string& container : selector.excluded_containers) {
+            styles +=
+                build_unset_style(container + " " + selector.node_name, props);
+            styles += build_unset_style(
+                container + " " + selector.node_name + ":disabled",
+                props_disabled);
+        }
     }
 
     return styles;
