@@ -30,10 +30,14 @@
 #include <map>
 #include <vector>
 
-static std::string css_color(Color col) {
+static std::string css_color(Color col, bool enabled = true) {
     // There is no convenient hex formatting in C++17...
     char value_string[250] = "";
-    sprintf(value_string, "#%06x", col);
+
+    // Build semitransparent color expression for disabled elements
+    const char* format = enabled ? "#%06x" : "alpha(#%06x, 0.5)";
+
+    sprintf(value_string, format, col);
     return value_string;
 }
 
@@ -98,13 +102,13 @@ std::map<std::string, std::string> collect_css_properties_disabled(
     std::map<std::string, std::string> collection;
 
     for (const auto& [gbox_field, css_property_name] : css_property_map) {
-        collection[css_property_name] = css_color(box_resource.*gbox_field);
+        collection[css_property_name] =
+            css_color(box_resource.*gbox_field, false);
     }
     for (const auto& [gbox_field, css_property_name] :
          css_border_property_map) {
-        // Make semitransparent border for disabled elements
         collection[css_property_name] =
-            "alpha(" + css_color(box_resource.*gbox_field) + ", 0.5)";
+            css_color(box_resource.*gbox_field, false);
     }
 
     return collection;
