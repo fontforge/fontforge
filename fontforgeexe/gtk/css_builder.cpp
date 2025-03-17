@@ -41,6 +41,20 @@ static std::string css_color(Color col, bool enabled = true) {
     return value_string;
 }
 
+static std::string box_shadow_value(const GBox& box_resource, bool enabled) {
+    return "0px 0px 0px 1px " + css_color(box_resource.border_outer, enabled) +
+           ", inset 0px 0px 0px 1px " +
+           css_color(box_resource.border_inner, enabled);
+}
+
+static std::string gradient_value(const GBox& box_resource, bool enabled) {
+    Color gradient_bg_start = enabled ? box_resource.main_background
+                                      : box_resource.disabled_background;
+    return "linear-gradient(to bottom, " +
+           css_color(gradient_bg_start, enabled) + ", " +
+           css_color(box_resource.gradient_bg_end, enabled) + ")";
+}
+
 std::map<std::string, std::string> collect_css_properties(
     const GBox& box_resource) {
     static const std::vector<std::pair<Color GBox::*, std::string>>
@@ -58,6 +72,8 @@ std::map<std::string, std::string> collect_css_properties(
     for (const auto& [gbox_field, css_property_name] : css_property_map) {
         collection[css_property_name] = css_color(box_resource.*gbox_field);
     }
+    collection["box-shadow"] = box_shadow_value(box_resource, true);
+    collection["background-image"] = gradient_value(box_resource, true);
 
     if (box_resource.border_type != bt_none) {
         collection["border-width"] =
@@ -110,6 +126,8 @@ std::map<std::string, std::string> collect_css_properties_disabled(
         collection[css_property_name] =
             css_color(box_resource.*gbox_field, false);
     }
+    collection["box-shadow"] = box_shadow_value(box_resource, false);
+    collection["background-image"] = gradient_value(box_resource, false);
 
     return collection;
 }
