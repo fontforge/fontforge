@@ -18,7 +18,9 @@
 extern "C" {
 #endif
 
-int add_encoding_slots_dialog(bool cid);
+#include "gresource.h"
+
+int add_encoding_slots_dialog(bool cid, GResInfo* ri);
 
 #ifdef __cplusplus
 }

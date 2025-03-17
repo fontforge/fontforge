@@ -19,6 +19,7 @@
 #include <gtkmm.h>
 
 #include "intl.h"
+#include "css_builder.hpp"
 
 // A simple dialog to query the user for a number of new encoding slots to add.
 class NumericalInputDialog final : public Gtk::Dialog {
@@ -69,10 +70,25 @@ class NumericalInputDialog final : public Gtk::Dialog {
     }
 };
 
+void add_css(const std::string& style) {
+    Glib::RefPtr<Gtk::CssProvider> css_provider = Gtk::CssProvider::create();
+
+    // Load CSS styles
+    css_provider->load_from_data(style);
+
+    // Add CSS provider to window's screen
+    auto screen = Gdk::Screen::get_default();
+    Gtk::StyleContext::add_provider_for_screen(
+        screen, css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+}
+
 // Shim for the C code to call the dialog
-int add_encoding_slots_dialog(bool cid) {
+int add_encoding_slots_dialog(bool cid, GResInfo* ri) {
     // TODO[iorsh]: Move app initialization to a dedicated class
     static auto app = Gtk::Application::create("org.fontforge");
+
+    std::string styles = build_styles(ri);
+    add_css(styles);
 
     return NumericalInputDialog::show(
         _("Add Encoding Slots..."),
