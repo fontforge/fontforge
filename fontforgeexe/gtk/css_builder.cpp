@@ -27,8 +27,12 @@
 
 #include "css_builder.hpp"
 
+#include <functional>
 #include <map>
 #include <vector>
+
+using CssPropertyEvalCB =
+    std::function<std::string(const GBox& box_resource, bool enabled)>;
 
 static std::string css_color(Color col, bool enabled = true) {
     // There is no convenient hex formatting in C++17...
@@ -39,6 +43,11 @@ static std::string css_color(Color col, bool enabled = true) {
 
     sprintf(value_string, format, col);
     return value_string;
+}
+
+template <auto GBox::*PROP>
+std::string color_property(const GBox& box_resource, bool enabled) {
+    return css_color(box_resource.*PROP, enabled);
 }
 
 static std::string box_shadow_value(const GBox& box_resource, bool enabled) {
@@ -55,49 +64,63 @@ static std::string gradient_value(const GBox& box_resource, bool enabled) {
            css_color(box_resource.gradient_bg_end, enabled) + ")";
 }
 
-std::map<std::string, std::string> collect_css_properties(
-    const GBox& box_resource) {
-    static const std::vector<std::pair<Color GBox::*, std::string>>
-        css_property_map = {
-            {&GBox::main_foreground, "color"},
-            {&GBox::main_background, "background-color"},
-            {&GBox::border_brightest, "border-left-color"},
-            {&GBox::border_brighter, "border-top-color"},
-            {&GBox::border_darker, "border-bottom-color"},
-            {&GBox::border_darkest, "border-right-color"},
-        };
-
-    std::map<std::string, std::string> collection;
-
-    for (const auto& [gbox_field, css_property_name] : css_property_map) {
-        collection[css_property_name] = css_color(box_resource.*gbox_field);
-    }
-    collection["box-shadow"] = box_shadow_value(box_resource, true);
-    collection["background-image"] = gradient_value(box_resource, true);
-
+static std::string border_width(const GBox& box_resource, bool enabled) {
     if (box_resource.border_type != bt_none) {
-        collection["border-width"] =
-            std::to_string(box_resource.border_width) + "pt";
+        return std::to_string(box_resource.border_width) + "pt";
+    } else {
+        return "";
     }
+}
 
+static std::string border_style(const GBox& box_resource, bool enabled) {
     static const std::map<enum border_type, std::string> border_type_map = {
         {bt_none, "none"},     {bt_box, "solid"},       {bt_raised, "outset"},
         {bt_lowered, "inset"}, {bt_engraved, "groove"}, {bt_embossed, "ridge"},
         {bt_double, "double"}};
-    collection["border-style"] = border_type_map.at(
+    return border_type_map.at(
         static_cast<enum border_type>(box_resource.border_type));
+}
 
+static std::string border_radius(const GBox& box_resource, bool enabled) {
     if (box_resource.border_shape == bs_roundrect) {
         if (box_resource.rr_radius < 1) {
             // Set the radius to arbitrarily huge value, the CSS renderer will
             // decrease it to half-height as necessary
-            collection["border-radius"] = "1000pt";
+            return "1000pt";
         } else {
-            collection["border-radius"] =
-                std::to_string(box_resource.rr_radius) + "pt";
+            return std::to_string(box_resource.rr_radius) + "pt";
         }
     } else if (box_resource.border_shape == bs_elipse) {
-        collection["border-radius"] = "50%";
+        return "50%";
+    }
+
+    return "";
+}
+
+std::map<std::string, std::string> collect_css_properties(
+    const GBox& box_resource) {
+    static const std::vector<std::pair<std::string, CssPropertyEvalCB>>
+        css_property_map = {
+            {"color", color_property<&GBox::main_foreground>},
+            {"background-color", color_property<&GBox::main_background>},
+            {"border-left-color", color_property<&GBox::border_brightest>},
+            {"border-top-color", color_property<&GBox::border_brighter>},
+            {"border-bottom-color", color_property<&GBox::border_darker>},
+            {"border-right-color", color_property<&GBox::border_darkest>},
+            {"box-shadow", box_shadow_value},
+            {"background-image", gradient_value},
+            {"border-width", border_width},
+            {"border-style", border_style},
+            {"border-radius", border_radius},
+        };
+
+    std::map<std::string, std::string> collection;
+
+    for (const auto& [css_property_name, eval] : css_property_map) {
+        std::string css_value = eval(box_resource, true);
+        if (!css_value.empty()) {
+            collection[css_property_name] = css_value;
+        }
     }
 
     return collection;
@@ -105,32 +128,26 @@ std::map<std::string, std::string> collect_css_properties(
 
 std::map<std::string, std::string> collect_css_properties_disabled(
     const GBox& box_resource) {
-    static const std::vector<std::pair<Color GBox::*, std::string>>
+    static const std::vector<std::pair<std::string, CssPropertyEvalCB>>
         css_property_map = {
-            {&GBox::disabled_foreground, "color"},
-            {&GBox::disabled_background, "background-color"},
-        };
-    static const std::vector<std::pair<Color GBox::*, std::string>>
-        css_border_property_map = {
-            {&GBox::border_brightest, "border-left-color"},
-            {&GBox::border_brighter, "border-top-color"},
-            {&GBox::border_darker, "border-bottom-color"},
-            {&GBox::border_darkest, "border-right-color"},
+            {"color", color_property<&GBox::disabled_foreground>},
+            {"background-color", color_property<&GBox::disabled_background>},
+            {"border-left-color", color_property<&GBox::border_brightest>},
+            {"border-top-color", color_property<&GBox::border_brighter>},
+            {"border-bottom-color", color_property<&GBox::border_darker>},
+            {"border-right-color", color_property<&GBox::border_darkest>},
+            {"box-shadow", box_shadow_value},
+            {"background-image", gradient_value},
         };
 
     std::map<std::string, std::string> collection;
 
-    for (const auto& [gbox_field, css_property_name] : css_property_map) {
-        collection[css_property_name] =
-            css_color(box_resource.*gbox_field, false);
+    for (const auto& [css_property_name, eval] : css_property_map) {
+        std::string css_value = eval(box_resource, false);
+        if (!css_value.empty()) {
+            collection[css_property_name] = css_value;
+        }
     }
-    for (const auto& [gbox_field, css_property_name] :
-         css_border_property_map) {
-        collection[css_property_name] =
-            css_color(box_resource.*gbox_field, false);
-    }
-    collection["box-shadow"] = box_shadow_value(box_resource, false);
-    collection["background-image"] = gradient_value(box_resource, false);
 
     return collection;
 }
