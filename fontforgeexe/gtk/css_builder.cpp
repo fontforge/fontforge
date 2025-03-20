@@ -36,7 +36,7 @@ using CssPropertyEvalCB =
 
 static std::string css_color(Color col, bool enabled = true) {
     // There is no convenient hex formatting in C++17...
-    char value_string[250] = "";
+    char value_string[250] = "\0";
 
     // Build semitransparent color expression for disabled elements
     const char* format = enabled ? "#%06x" : "alpha(#%06x, 0.5)";
@@ -51,12 +51,29 @@ std::string color_property(const GBox& box_resource, bool enabled) {
 }
 
 static std::string box_shadow_value(const GBox& box_resource, bool enabled) {
-    return "0px 0px 0px 1px " + css_color(box_resource.border_outer, enabled) +
-           ", inset 0px 0px 0px 1px " +
-           css_color(box_resource.border_inner, enabled);
+    std::string inner_shadow =
+        (box_resource.flags & box_foreground_border_inner)
+            ? "inset 0px 0px 0px 1px " +
+                  css_color(box_resource.border_inner, enabled)
+            : "";
+    std::string outer_shadow =
+        (box_resource.flags & box_foreground_border_outer)
+            ? "0px 0px 0px 1px " + css_color(box_resource.border_outer, enabled)
+            : "";
+
+    if (inner_shadow.empty()) {
+        return outer_shadow.empty() ? "none" : outer_shadow;
+    } else {
+        return outer_shadow.empty() ? inner_shadow
+                                    : inner_shadow + "," + outer_shadow;
+    }
 }
 
 static std::string gradient_value(const GBox& box_resource, bool enabled) {
+    if (!(box_resource.flags & box_gradient_bg)) {
+        return "none";
+    }
+
     Color gradient_bg_start = enabled ? box_resource.main_background
                                       : box_resource.disabled_background;
     return "linear-gradient(to bottom, " +
@@ -68,7 +85,7 @@ static std::string border_width(const GBox& box_resource, bool enabled) {
     if (box_resource.border_type != bt_none) {
         return std::to_string(box_resource.border_width) + "pt";
     } else {
-        return "";
+        return "0";
     }
 }
 
@@ -94,7 +111,7 @@ static std::string border_radius(const GBox& box_resource, bool enabled) {
         return "50%";
     }
 
-    return "";
+    return "0";
 }
 
 std::map<std::string, std::string> collect_css_properties(
