@@ -40,6 +40,16 @@ class NumericalInputDialog final : public Gtk::Dialog {
         this->add_button(_("_OK"), Gtk::RESPONSE_OK);
         this->add_button(_("_Cancel"), Gtk::RESPONSE_CANCEL);
 
+        Gtk::Widget* ok_button = get_widget_for_response(Gtk::RESPONSE_OK);
+        if (ok_button) {
+            ok_button->set_name("ok");
+        }
+        Gtk::Widget* cancel_button =
+            get_widget_for_response(Gtk::RESPONSE_CANCEL);
+        if (cancel_button) {
+            cancel_button->set_name("cancel");
+        }
+
         get_content_area()->show_all();
     }
 
