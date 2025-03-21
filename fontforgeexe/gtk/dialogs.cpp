@@ -86,10 +86,14 @@ void add_css(const std::string& style) {
     // Load CSS styles
     css_provider->load_from_data(style);
 
-    // Add CSS provider to window's screen
+    // Add CSS provider to the screen, so that it applies to all windows.
     auto screen = Gdk::Screen::get_default();
+
+    // User-defined CSS should usually go with USER priority, but we reduce it
+    // by 1 so that GTK inspector which also applies USER, would get priority
+    // over it.
     Gtk::StyleContext::add_provider_for_screen(
-        screen, css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER);
+        screen, css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER - 1);
 }
 
 // Shim for the C code to call the dialog

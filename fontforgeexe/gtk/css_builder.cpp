@@ -83,7 +83,11 @@ static std::string gradient_value(const GBox& box_resource, bool enabled) {
 
 static std::string border_width(const GBox& box_resource, bool enabled) {
     if (box_resource.border_type != bt_none) {
-        return std::to_string(box_resource.border_width) + "pt";
+        // GDraw converts points to pixels with integer rounding. It usually
+        // doesn't matter, except for 1pt, which we shall round to 1px for
+        // sharpness.
+        std::string unit = (box_resource.border_width == 1) ? "px" : "pt";
+        return std::to_string(box_resource.border_width) + unit;
     } else {
         return "0";
     }
@@ -127,6 +131,9 @@ std::map<std::string, std::string> collect_css_properties(
             {"box-shadow", box_shadow_value},
             {"background-image", gradient_value},
             {"border-width", border_width},
+            // The "padding" property mimics the specifics of GDraw border width
+            // application
+            {"padding", border_width},
             {"border-style", border_style},
             {"border-radius", border_radius},
         };
@@ -205,7 +212,7 @@ std::string build_styles(const GResInfo* gdraw_ri) {
         {"GDefaultButton", {"button#ok", {}}},
         {"GCancelButton", {"button#cancel", {}}},
         {"GNumericField", {"spinbutton", {}}},
-        {"GNumericFieldSpinner", {"spinbutton.button", {}}},
+        {"GNumericFieldSpinner", {"spinbutton button", {}}},
     };
 
     std::string styles;
