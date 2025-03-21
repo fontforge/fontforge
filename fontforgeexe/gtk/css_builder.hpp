@@ -30,4 +30,8 @@
 
 #include "gresource.h"
 
+namespace ff::app {
+
 std::string build_styles(const GResInfo* gdraw_ri);
+
+}

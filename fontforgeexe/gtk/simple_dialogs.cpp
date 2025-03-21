@@ -20,7 +20,6 @@
 
 #include "intl.h"
 #include "application.hpp"
-#include "css_builder.hpp"
 #include "dialog.hpp"
 
 namespace ff::dlg {
@@ -73,35 +72,18 @@ class NumericalInputDialog final : public ff::dlg::Dialog {
     }
 };
 
-void add_css(const std::string& style) {
-    Glib::RefPtr<Gtk::CssProvider> css_provider = Gtk::CssProvider::create();
-
-    // Load CSS styles
-    css_provider->load_from_data(style);
-
-    // Add CSS provider to the screen, so that it applies to all windows.
-    auto screen = Gdk::Screen::get_default();
-
-    // User-defined CSS should usually go with USER priority, but we reduce it
-    // by 1 so that GTK inspector which also applies USER, would get priority
-    // over it.
-    Gtk::StyleContext::add_provider_for_screen(
-        screen, css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER - 1);
-}
-
 }  // namespace ff::dlg
 
 // Shim for the C code to call the dialog
-int add_encoding_slots_dialog(bool cid, GResInfo* ri) {
+int add_encoding_slots_dialog(bool cid) {
     // To avoid instability, the GTK application is lazily initialized only when
     // a GTK window is invoked.
     ff::app::GtkApp();
-
-    std::string styles = build_styles(ri);
-    ff::dlg::add_css(styles);
 
     return ff::dlg::NumericalInputDialog::show(
         _("Add Encoding Slots..."),
         cid ? _("How many CID slots do you wish to add?")
             : _("How many unencoded glyph slots do you wish to add?"));
 }
+
+void update_appearance() { ff::app::load_legacy_style(); }

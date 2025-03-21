@@ -31,6 +31,8 @@
 #include <map>
 #include <vector>
 
+namespace ff::app {
+
 using CssPropertyEvalCB =
     std::function<std::string(const GBox& box_resource, bool enabled)>;
 
@@ -250,3 +252,5 @@ std::string build_styles(const GResInfo* gdraw_ri) {
 
     return styles;
 }
+
+}  // namespace ff::app

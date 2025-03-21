@@ -20,7 +20,9 @@ extern "C" {
 
 #include "gresource.h"
 
-int add_encoding_slots_dialog(bool cid, GResInfo* ri);
+int add_encoding_slots_dialog(bool cid);
+
+void update_appearance();
 
 #ifdef __cplusplus
 }

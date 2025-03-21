@@ -27,6 +27,11 @@
 
 #include "application.hpp"
 
+#include "gresource.h"
+#include "css_builder.hpp"
+
+extern GResInfo gdraw_ri;
+
 namespace ff::app {
 
 Glib::RefPtr<Gtk::Application> GtkApp() {
@@ -40,11 +45,36 @@ Glib::RefPtr<Gtk::Application> GtkApp() {
 
     if (!initialized) {
         app->register_application();
+        load_legacy_style();
 
         initialized = true;
     }
 
     return app;
+}
+
+void load_legacy_style() {
+    static Glib::RefPtr<Gtk::CssProvider> css_provider =
+        Gtk::CssProvider::create();
+    static bool initialized = false;
+
+    if (!initialized) {
+        // Add CSS provider to the screen, so that it applies to all windows.
+        auto screen = Gdk::Screen::get_default();
+
+        // User-defined CSS should usually go with USER priority, but we reduce
+        // it by 1 so that GTK inspector which also applies USER, would get
+        // priority over it.
+        Gtk::StyleContext::add_provider_for_screen(
+            screen, css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER - 1);
+
+        initialized = true;
+    }
+
+    std::string style = build_styles(&gdraw_ri);
+
+    // Load CSS styles
+    css_provider->load_from_data(style);
 }
 
 }  // namespace ff::app

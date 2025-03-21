@@ -32,4 +32,6 @@ namespace ff::app {
 
 Glib::RefPtr<Gtk::Application> GtkApp();
 
+void load_legacy_style();
+
 }  // namespace ff::app
