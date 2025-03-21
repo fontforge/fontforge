@@ -119,7 +119,7 @@ static std::string border_radius(const GBox& box_resource, bool enabled) {
 }
 
 std::map<std::string, std::string> collect_css_properties(
-    const GBox& box_resource) {
+    const GBox& box_resource, const GResFont* font) {
     static const std::vector<std::pair<std::string, CssPropertyEvalCB>>
         css_property_map = {
             {"color", color_property<&GBox::main_foreground>},
@@ -145,6 +145,12 @@ std::map<std::string, std::string> collect_css_properties(
         if (!css_value.empty()) {
             collection[css_property_name] = css_value;
         }
+    }
+
+    if (font && font->fi) {
+        collection["font-family"] = font->fi->rq.utf8_family_name;
+        collection["font-size"] =
+            std::to_string(font->fi->rq.point_size) + "pt";
     }
 
     return collection;
@@ -224,7 +230,8 @@ std::string build_styles(const GResInfo* gdraw_ri) {
 
         const Selector& selector = css_selector_map.at(ri->resname);
 
-        auto props = collect_css_properties(*(ri->boxdata));
+        auto props = collect_css_properties(*(ri->boxdata), ri->font);
+
         styles += build_style(selector.node_name, props);
 
         auto props_disabled = collect_css_properties_disabled(*(ri->boxdata));
