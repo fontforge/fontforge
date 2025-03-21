@@ -118,6 +118,21 @@ static std::string border_radius(const GBox& box_resource, bool enabled) {
     return "0";
 }
 
+std::map<std::string, std::string> evaluate_css_properties(
+    const std::vector<std::pair<std::string, CssPropertyEvalCB>>& property_map,
+    const GBox& box_resource, bool enabled) {
+    std::map<std::string, std::string> collection;
+
+    for (const auto& [css_property_name, eval] : property_map) {
+        std::string css_value = eval(box_resource, enabled);
+        if (!css_value.empty()) {
+            collection[css_property_name] = css_value;
+        }
+    }
+
+    return collection;
+}
+
 std::map<std::string, std::string> collect_css_properties(
     const GBox& box_resource, const GResFont* font) {
     static const std::vector<std::pair<std::string, CssPropertyEvalCB>>
@@ -138,14 +153,8 @@ std::map<std::string, std::string> collect_css_properties(
             {"border-radius", border_radius},
         };
 
-    std::map<std::string, std::string> collection;
-
-    for (const auto& [css_property_name, eval] : css_property_map) {
-        std::string css_value = eval(box_resource, true);
-        if (!css_value.empty()) {
-            collection[css_property_name] = css_value;
-        }
-    }
+    std::map<std::string, std::string> collection =
+        evaluate_css_properties(css_property_map, box_resource, true);
 
     if (font && font->fi) {
         collection["font-family"] = font->fi->rq.utf8_family_name;
@@ -170,16 +179,7 @@ std::map<std::string, std::string> collect_css_properties_disabled(
             {"background-image", gradient_value},
         };
 
-    std::map<std::string, std::string> collection;
-
-    for (const auto& [css_property_name, eval] : css_property_map) {
-        std::string css_value = eval(box_resource, false);
-        if (!css_value.empty()) {
-            collection[css_property_name] = css_value;
-        }
-    }
-
-    return collection;
+    return evaluate_css_properties(css_property_map, box_resource, false);
 }
 
 std::string build_style(const std::string& selector,
