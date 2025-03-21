@@ -33,7 +33,7 @@
 #include <iconv.h>
 
 typedef struct ggadgetcreatedata GGadgetCreateData;
-typedef struct font_instance FontInstance, GFont;
+typedef struct _PangoFontDescription PangoFontDescription;
 
 enum border_type { bt_none, bt_box, bt_raised, bt_lowered, bt_engraved,
 	    bt_embossed, bt_double };
@@ -82,6 +82,14 @@ typedef struct {
     int16_t weight;
     enum font_style style;
 } FontRequest;
+
+typedef struct font_instance {
+    FontRequest rq;		/* identification of this instance */
+    PangoFontDescription *pango_fd;
+#ifndef _NO_LIBCAIRO
+    PangoFontDescription *pangoc_fd;
+#endif
+} FontInstance, GFont;
 
 enum res_type { rt_int, rt_double, rt_bool/* int */, rt_color, rt_string, rt_image, rt_font, rt_stringlong, rt_coloralpha };
 
