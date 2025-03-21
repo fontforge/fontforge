@@ -1,6 +1,8 @@
 # Distributed under the original FontForge BSD 3-clause license
 
 add_library(ffgtk OBJECT
+  application.hpp
+  application.cpp
   css_builder.hpp
   css_builder.cpp
   dialog.hpp

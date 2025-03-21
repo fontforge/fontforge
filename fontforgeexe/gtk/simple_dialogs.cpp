@@ -19,6 +19,7 @@
 #include <gtkmm.h>
 
 #include "intl.h"
+#include "application.hpp"
 #include "css_builder.hpp"
 #include "dialog.hpp"
 
@@ -92,8 +93,9 @@ void add_css(const std::string& style) {
 
 // Shim for the C code to call the dialog
 int add_encoding_slots_dialog(bool cid, GResInfo* ri) {
-    // TODO[iorsh]: Move app initialization to a dedicated class
-    static auto app = Gtk::Application::create("org.fontforge");
+    // To avoid instability, the GTK application is lazily initialized only when
+    // a GTK window is invoked.
+    ff::app::GtkApp();
 
     std::string styles = build_styles(ri);
     ff::dlg::add_css(styles);
