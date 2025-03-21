@@ -1,7 +1,7 @@
 /* Copyright 2023 Joey Sabey <github.com/Omnikron13>
  *
  * Permission to use, copy, modify, and/or distribute this software for any
- * purpose with     • or without fee is hereby granted, provided that the above
+ * purpose with or without fee is hereby granted, provided that the above
  * copyright notice and this permission notice appear in all copies.
  *
  * THE SOFTWARE IS PROVIDED “AS IS” AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
@@ -20,10 +20,11 @@
 
 #include "intl.h"
 #include "css_builder.hpp"
+#include "dialog.hpp"
 
 // A simple dialog to query the user for a number of new encoding slots to add.
-class NumericalInputDialog final : public Gtk::Dialog {
- public:
+class NumericalInputDialog final : public ff::dlg::Dialog {
+ private:
     Gtk::SpinButton* input;
 
     NumericalInputDialog(const std::string& title, const std::string& label) {
@@ -35,26 +36,15 @@ class NumericalInputDialog final : public Gtk::Dialog {
         input = Gtk::make_managed<Gtk::SpinButton>();
         input->set_numeric(true);
         input->set_adjustment(Gtk::Adjustment::create(1, 1, 65535, 1, 5, 0));
+        input->set_activates_default();
         get_content_area()->pack_start(*input);
 
-        this->add_button(_("_OK"), Gtk::RESPONSE_OK);
-        this->add_button(_("_Cancel"), Gtk::RESPONSE_CANCEL);
-
-        Gtk::Widget* ok_button = get_widget_for_response(Gtk::RESPONSE_OK);
-        if (ok_button) {
-            ok_button->set_name("ok");
-        }
-        Gtk::Widget* cancel_button =
-            get_widget_for_response(Gtk::RESPONSE_CANCEL);
-        if (cancel_button) {
-            cancel_button->set_name("cancel");
-        }
-
-        get_content_area()->show_all();
+        show_all();
     }
 
     int get_value() const { return input->get_value_as_int(); }
 
+ public:
     // Show the dialog and return either the entered integer, 0 if the dialog
     // was cancelled/closed, or -1 if something strange happened
     static int show(const std::string& title, const std::string& label) {
