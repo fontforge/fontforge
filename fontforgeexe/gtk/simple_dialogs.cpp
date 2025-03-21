@@ -13,7 +13,7 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include "dialogs.hpp"
+#include "simple_dialogs.hpp"
 
 #include <string>
 #include <gtkmm.h>
@@ -21,6 +21,8 @@
 #include "intl.h"
 #include "css_builder.hpp"
 #include "dialog.hpp"
+
+namespace ff::dlg {
 
 // A simple dialog to query the user for a number of new encoding slots to add.
 class NumericalInputDialog final : public ff::dlg::Dialog {
@@ -86,15 +88,17 @@ void add_css(const std::string& style) {
         screen, css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER - 1);
 }
 
+}  // namespace ff::dlg
+
 // Shim for the C code to call the dialog
 int add_encoding_slots_dialog(bool cid, GResInfo* ri) {
     // TODO[iorsh]: Move app initialization to a dedicated class
     static auto app = Gtk::Application::create("org.fontforge");
 
     std::string styles = build_styles(ri);
-    add_css(styles);
+    ff::dlg::add_css(styles);
 
-    return NumericalInputDialog::show(
+    return ff::dlg::NumericalInputDialog::show(
         _("Add Encoding Slots..."),
         cid ? _("How many CID slots do you wish to add?")
             : _("How many unencoded glyph slots do you wish to add?"));

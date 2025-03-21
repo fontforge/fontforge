@@ -62,7 +62,7 @@
 #include "ustring.h"
 #include "utype.h"
 
-#include "gtk/dialogs.hpp"
+#include "gtk/simple_dialogs.hpp"
 
 #include <math.h>
 #include <unistd.h>
