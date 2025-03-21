@@ -5,6 +5,8 @@ add_library(ffgtk OBJECT
   css_builder.cpp
   dialogs.hpp
   dialogs.cpp
+  utils.hpp
+  utils.cpp
 )
 
 target_link_libraries(ffgtk PRIVATE
