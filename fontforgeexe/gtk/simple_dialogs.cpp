@@ -31,6 +31,7 @@ class NumericalInputDialog final : public ff::dlg::Dialog {
 
     NumericalInputDialog(const std::string& title, const std::string& label) {
         set_title(title);
+	set_resizable(false);
 
         auto label_widget = Gtk::make_managed<Gtk::Label>(label);
         get_content_area()->pack_start(*label_widget);
