@@ -910,6 +910,9 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
         Log(LOGDEBUG, "Discarding event - has modals!");
         return;
     }
+    // TODO(iorsh): Discard GDraw window mouse events when blocked by modal GTK window.
+    // GDK doesn't manage internally modal relations, so we need to keep track ourselves.
+    // This is too dangerous to implement at the inital GTK introduction.
 
     gevent.w = (GWindow)gw;
     gevent.native_window = (void *)gw->w;
