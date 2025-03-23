@@ -95,6 +95,19 @@ static std::string border_width(const GBox& box_resource, bool enabled) {
     }
 }
 
+static std::string padding(const GBox& box_resource, bool enabled) {
+    // The "padding" property mimics the specifics of GDraw border width
+    // application
+    return std::to_string(box_resource.padding +
+                          box_resource.border_width / 2) +
+           "pt";
+}
+
+static std::string margin(const GBox& box_resource, bool enabled) {
+    // From GBoxExtraSpace()
+    return "2pt";
+}
+
 static std::string border_style(const GBox& box_resource, bool enabled) {
     static const std::map<enum border_type, std::string> border_type_map = {
         {bt_none, "none"},     {bt_box, "solid"},       {bt_raised, "outset"},
@@ -148,9 +161,8 @@ std::map<std::string, std::string> collect_css_properties(
             {"box-shadow", box_shadow_value},
             {"background-image", gradient_value},
             {"border-width", border_width},
-            // The "padding" property mimics the specifics of GDraw border width
-            // application
-            {"padding", border_width},
+            {"padding", padding},
+            {"margin", margin},
             {"border-style", border_style},
             {"border-radius", border_radius},
         };
