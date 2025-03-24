@@ -27,6 +27,7 @@
 
 #include "application.hpp"
 
+#include <iostream>
 #include "gresource.h"
 #include "css_builder.hpp"
 
@@ -74,7 +75,14 @@ void load_legacy_style() {
     std::string style = build_styles(&gdraw_ri);
 
     // Load CSS styles
-    css_provider->load_from_data(style);
+    try {
+        css_provider->load_from_data(style);
+    } catch (const Glib::Error& ex) {
+        std::cerr << "Failed CSS data: " << std::endl << style << std::endl;
+        std::cerr << "Error loading CSS: " << ex.what() << std::endl;
+    } catch (...) {
+        std::cerr << "Unknown error occurred while loading CSS." << std::endl;
+    }
 }
 
 }  // namespace ff::app
