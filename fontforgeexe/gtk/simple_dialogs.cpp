@@ -87,4 +87,7 @@ int add_encoding_slots_dialog(bool cid) {
             : _("How many unencoded glyph slots do you wish to add?"));
 }
 
-void update_appearance() { ff::app::load_legacy_style(); }
+void update_appearance() {
+    ff::app::GtkApp();
+    ff::app::load_legacy_style();
+}
