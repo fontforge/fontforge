@@ -27,6 +27,7 @@
 
 #include "css_builder.hpp"
 
+#include <cstring>
 #include <functional>
 #include <map>
 #include <vector>
@@ -196,6 +197,19 @@ std::map<std::string, std::string> collect_css_properties_disabled(
     return evaluate_css_properties(css_property_map, box_resource, false);
 }
 
+std::map<std::string, std::string> collect_css_properties_main(
+    const struct resed* ri_extras) {
+    std::map<std::string, std::string> collection;
+
+    for (const struct resed* rec = ri_extras; rec && rec->resname; ++rec) {
+        if (std::strcmp(rec->resname, "Background") == 0) {
+            collection["background-color"] = css_color(*(Color*)(rec->val));
+        }
+    }
+
+    return collection;
+}
+
 std::string build_style(const std::string& selector,
                         const std::map<std::string, std::string>& properties) {
     std::string property_list;
@@ -227,6 +241,7 @@ std::string build_styles(const GResInfo* gdraw_ri) {
     };
 
     static const std::map<std::string, Selector> css_selector_map = {
+        {"", {"box", {}}},
         {"GLabel", {"label", {"button"}}},
         {"GButton", {"button", {"spinbutton"}}},
         {"GDefaultButton", {"button#ok", {}}},
@@ -238,14 +253,24 @@ std::string build_styles(const GResInfo* gdraw_ri) {
     std::string styles;
 
     for (const GResInfo* ri = gdraw_ri; ri->next != NULL; ri = ri->next) {
-        if (!ri->boxdata || !css_selector_map.count(ri->resname)) {
+        auto sel_it = css_selector_map.find(ri->resname);
+        if (sel_it == css_selector_map.end()) {
+            continue;
+        }
+        const Selector& selector = sel_it->second;
+
+        if ((std::strcmp(ri->resname, "") == 0) && ri->extras) {
+            // Collect some default properties from the base class.
+            auto props_main = collect_css_properties_main(ri->extras);
+            styles += build_style(selector.node_name, props_main);
             continue;
         }
 
-        const Selector& selector = css_selector_map.at(ri->resname);
+        if (!ri->boxdata) {
+            continue;
+        }
 
         auto props = collect_css_properties(*(ri->boxdata), ri->font);
-
         styles += build_style(selector.node_name, props);
 
         auto props_disabled = collect_css_properties_disabled(*(ri->boxdata));
