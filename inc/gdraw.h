@@ -29,16 +29,7 @@
 #define FONTFORGE_GDRAW_H
 
 #include "gimage.h"
-
-enum font_style { fs_none, fs_italic=1, fs_smallcaps=2, fs_condensed=4, fs_extended=8, fs_vertical=16 };
-enum font_type { ft_unknown, ft_serif, ft_sans, ft_mono, ft_cursive, ft_max };
-
-typedef struct {
-    const char *utf8_family_name;	/* may be more than one */
-    int16_t point_size;			/* negative values are in pixels */
-    int16_t weight;
-    enum font_style style;
-} FontRequest;
+#include "gresource.h"
 
 typedef struct font_instance FontInstance, GFont;
 enum gic_style { gic_overspot=2, gic_root=1, gic_hidden=0, gic_orlesser=4, gic_type=3 };
