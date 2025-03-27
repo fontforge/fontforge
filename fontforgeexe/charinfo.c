@@ -1651,7 +1651,7 @@ static void CI_ApplyAll(CharInfo *ci) {
     }
     if ( refresh_fvdi ) {
 	for ( fvs=(FontView *) sf->fv; fvs!=NULL; fvs=(FontView *) fvs->b.nextsame ) {
-	    GDrawRequestExpose(fvs->gw,NULL,false);	/* Redraw info area just in case this char is selected */
+	    FVShowInfo(fvs);				/* Redraw info area just in case this char is selected */
 	    GDrawRequestExpose(fvs->v,NULL,false);	/* Redraw character area in case this char is on screen */
 	}
     }

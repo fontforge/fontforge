@@ -1,5 +1,5 @@
-/* Copyright (C) 2016 by Jeremy Tan */
-/*
+/* Copyright 2024 Maxim Iorsh <iorsh@users.sourceforge.net>
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
 
@@ -24,27 +24,28 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#pragma once
 
-#ifndef FONTFORGE_FFGDK_H
-#define FONTFORGE_FFGDK_H
+#include <gtkmm.h>
 
-#include <fontforge-config.h>
+namespace ff::dlg {
 
-#ifdef FONTFORGE_CAN_USE_GDK
+class Dialog {
+ public:
+    Dialog(Gtk::Window& parent) : dialog("", parent, true) {}
 
-// As gdk #includes glib, we must apply the same name mangling here.
-#define GTimer GTimer_GTK
-#define GList  GList_Glib
-#define GMenuItem GMenuItem_GIO
-#define GMenu GMenu_GIO
-#include <gdk/gdk.h>
-#include <gdk/gdkkeysyms.h>
-#include <gtk/gtk.h>
-#undef GMenu
-#undef GMenuItem
-#undef GList
-#undef GTimer
+    // This use is discouraged. GDraw is using internal window registration
+    // mechanism to determine the parent window (see GGDKDrawSetTransientFor()),
+    // but in GTK it is preferrable to specify the parent window explicitly.
+    Dialog();
 
-#endif // FONTFORGE_CAN_USE_GDK
+    Gtk::ResponseType run();
 
-#endif /* FONTFORGE_FFGDK_H */
+ protected:
+    Gtk::Dialog dialog;
+
+ private:
+    Glib::RefPtr<Gdk::Window> parent_window;
+};
+
+}  // namespace ff::dlg

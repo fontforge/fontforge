@@ -1,5 +1,5 @@
-/* Copyright (C) 2016 by Jeremy Tan */
-/*
+/* Copyright 2024 Maxim Iorsh <iorsh@users.sourceforge.net>
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
 
@@ -24,27 +24,38 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#pragma once
 
-#ifndef FONTFORGE_FFGDK_H
-#define FONTFORGE_FFGDK_H
+#include <string>
+#include <gtkmm.h>
 
-#include <fontforge-config.h>
+#include "c_context.h"
 
-#ifdef FONTFORGE_CAN_USE_GDK
+namespace ff::views {
 
-// As gdk #includes glib, we must apply the same name mangling here.
-#define GTimer GTimer_GTK
-#define GList  GList_Glib
-#define GMenuItem GMenuItem_GIO
-#define GMenu GMenu_GIO
-#include <gdk/gdk.h>
-#include <gdk/gdkkeysyms.h>
-#include <gtk/gtk.h>
-#undef GMenu
-#undef GMenuItem
-#undef GList
-#undef GTimer
+class CharGrid {
+ public:
+    CharGrid(std::shared_ptr<FVContext> context);
 
-#endif // FONTFORGE_CAN_USE_GDK
+    Gtk::Widget& get_top_widget();
+    GtkWidget* get_drawing_widget_c();
+    void set_scroller_position(int32_t position);
+    void set_scroller_bounds(int32_t sb_min, int32_t sb_max,
+                             int32_t sb_pagesize);
+    void set_character_info(const std::string& info);
+    void resize_drawing_area(int width, int height);
+    void raise_window();
 
-#endif /* FONTFORGE_FFGDK_H */
+    void set_window_title(const std::string& title);
+    std::string get_window_title();
+
+ private:
+    Gtk::Grid char_grid_box;
+    Gtk::Label character_info;
+    Gtk::DrawingArea drawing_area;
+    Gtk::VScrollbar scroller;
+
+    void make_character_info_label();
+};
+
+}  // namespace ff::views

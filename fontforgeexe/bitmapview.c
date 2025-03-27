@@ -40,6 +40,7 @@
 #include "splinesaveafm.h"
 #include "ustring.h"
 #include "utype.h"
+#include "gtk/font_view_shim.hpp"
 
 #include <locale.h>
 #include <math.h>
@@ -1743,9 +1744,8 @@ static void BVMenuGotoChar(GWindow gw,struct gmenuitem *mi,GEvent *g) {
 static void BVMenuFindInFontView(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
 
-    FVChangeChar(bv->fv,bv->bc->sc->orig_pos);
-    GDrawSetVisible(bv->fv->gw,true);
-    GDrawRaise(bv->fv->gw);
+    FVChangeChar(bv->fv,BVCurEnc(bv));
+    cg_raise_window(bv->fv->cg_widget);
 }
 
 static void BVMenuPalettesDock(GWindow gw,struct gmenuitem *mi,GEvent *e) {

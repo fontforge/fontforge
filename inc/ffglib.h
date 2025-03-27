@@ -24,6 +24,7 @@
 
 #define GList  GList_Glib
 #define GMenuItem GMenuItem_GIO
+#define GMenu GMenu_GIO
 #define GTimer GTimer_GTK
 
 #ifdef __GNU__

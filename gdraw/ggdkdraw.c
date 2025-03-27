@@ -49,6 +49,8 @@
 #endif
 
 // Forward declarations
+void gtk_main_do_event (GdkEvent* event);
+
 static void GGDKDrawCancelTimer(GTimer *timer);
 static void GGDKDrawDestroyWindow(GWindow w);
 static void GGDKDrawPostEvent(GEvent *e);
@@ -523,7 +525,12 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
     attribs.wmclass_class = GResourceProgramName;
     attribs_mask |= GDK_WA_WMCLASS;
 
-    nw->w = gdk_window_new(gw->w, &attribs, attribs_mask);
+    if (wattrs->mask & wam_gtk_wrapper) {
+      nw->w = gtk_widget_get_window(wattrs->gtk_widget);
+      g_object_set_data(G_OBJECT(nw->w), "GtkWidget", wattrs->gtk_widget);
+    } else {
+      nw->w = gdk_window_new(gw->w, &attribs, attribs_mask);
+    }
     if (nw->w == NULL) {
         Log(LOGDEBUG, "GGDKDraw: Failed to create window!");
         free(nw->window_title);
@@ -895,6 +902,11 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
         return;
     } else if ((gw = g_object_get_data(G_OBJECT(w), "GGDKWindow")) == NULL) {
         //Log(LOGDEBUG, "MISSING GW!");
+
+        // TODO: rework this hack to integrate better into event loop
+        //  (atm GTK is just snuffling up any events ignored by gdraw)
+        gtk_main_do_event(event);
+
         return;
     } else if (_GGDKDraw_WindowOrParentsDying(gw) || gdk_window_is_destroyed(w)) {
         Log(LOGDEBUG, "DYING! %p", w);
@@ -911,6 +923,10 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
     switch (event->type) {
         case GDK_KEY_PRESS:
         case GDK_KEY_RELEASE: {
+            if ((g_object_get_data(G_OBJECT(w), "GtkWidget")) != NULL) {
+               // Sometimes the CharView hijacks key events which belong to shortcuts. Send them to GTK.
+               gtk_main_do_event(event);
+            }
             GdkEventKey *key = (GdkEventKey *)event;
             gevent.type = event->type == GDK_KEY_PRESS ? et_char : et_charup;
             gevent.u.chr.state = _GGDKDraw_GdkModifierToKsm(((GdkEventKey *)event)->state);
@@ -944,6 +960,10 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
         }
         break;
         case GDK_MOTION_NOTIFY: {
+            if ((g_object_get_data(G_OBJECT(w), "GtkWidget")) != NULL) {
+               // Send motion event to GTK wrapper to dismiss tooltip
+               gtk_main_do_event(event);
+            }
             GdkEventMotion *evt = (GdkEventMotion *)event;
             gevent.type = et_mousemove;
             gevent.u.mouse.state = _GGDKDraw_GdkModifierToKsm(evt->state);
@@ -953,6 +973,11 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
         }
         break;
         case GDK_SCROLL: { //Synthesize a button press
+            if ((g_object_get_data(G_OBJECT(w), "GtkWidget")) != NULL) {
+               // GTK wrappers don't manage scrolling
+               gtk_main_do_event(event);
+               return;
+            }
             GdkEventScroll *evt = (GdkEventScroll *)event;
             gevent.u.mouse.state = _GGDKDraw_GdkModifierToKsm(evt->state);
             gevent.u.mouse.x = evt->x;
@@ -985,6 +1010,11 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
         break;
         case GDK_BUTTON_PRESS:
         case GDK_BUTTON_RELEASE: {
+            if ((g_object_get_data(G_OBJECT(w), "GtkWidget")) != NULL) {
+               // Propagate event to GTK to allow grabbing focus for char grid
+               // and opening / closing of drop-down menus
+               gtk_main_do_event(event);
+            }
             GdkEventButton *evt = (GdkEventButton *)event;
             gevent.u.mouse.state = _GGDKDraw_GdkModifierToKsm(evt->state);
             gevent.u.mouse.x = evt->x;

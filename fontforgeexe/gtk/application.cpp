@@ -1,5 +1,5 @@
-/* Copyright (C) 2016 by Jeremy Tan */
-/*
+/* Copyright 2023 Maxim Iorsh <iorsh@users.sourceforge.net>
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
 
@@ -25,26 +25,39 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FONTFORGE_FFGDK_H
-#define FONTFORGE_FFGDK_H
+#include "application.hpp"
 
-#include <fontforge-config.h>
+namespace ff::app {
 
-#ifdef FONTFORGE_CAN_USE_GDK
+Glib::RefPtr<Gtk::Application> GtkApp() {
+    // Unique instance mode doesn't work well as long as the startup sequence is
+    // handled in the legacy code. It would be possible to enable it once the
+    // application main loop is started with Gtk::Application::run().
+    Gio::ApplicationFlags app_flags = Gio::APPLICATION_NON_UNIQUE;
 
-// As gdk #includes glib, we must apply the same name mangling here.
-#define GTimer GTimer_GTK
-#define GList  GList_Glib
-#define GMenuItem GMenuItem_GIO
-#define GMenu GMenu_GIO
-#include <gdk/gdk.h>
-#include <gdk/gdkkeysyms.h>
-#include <gtk/gtk.h>
-#undef GMenu
-#undef GMenuItem
-#undef GList
-#undef GTimer
+    static auto app = Gtk::Application::create("org.fontforge", app_flags);
+    return app;
+}
 
-#endif // FONTFORGE_CAN_USE_GDK
+void add_top_view(views::UiContext& context) {
+    static bool initialized = false;
 
-#endif /* FONTFORGE_FFGDK_H */
+    if (!initialized) {
+        GtkApp()->register_application();
+
+        auto theme = Gtk::IconTheme::get_default();
+        std::string pixmap_dir = context.get_pixmap_dir();
+        theme->prepend_search_path(pixmap_dir);
+
+        initialized = true;
+    }
+
+    GtkApp()->add_window(context.window_);
+}
+
+void remove_top_view(Gtk::Window& window) {
+    GtkApp()->remove_window(window);
+    GtkApp()->quit();
+}
+
+}  // namespace ff::app

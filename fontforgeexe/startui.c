@@ -818,7 +818,7 @@ int fontforge_main( int argc, char **argv ) {
     }
 #ifdef FONTFORGE_CAN_USE_GDK
     gdk_set_allowed_backends("win32,quartz,x11");
-    gdk_init(&argc, &argv);
+    gtk_init(&argc, &argv);
 #endif
     ensureDotFontForgeIsSetup();
 #if defined(__MINGW32__) && !defined(_NO_LIBCAIRO)
@@ -952,7 +952,7 @@ exit( 0 );
 	    any = 1;
 #  if HANYANG
 	} else if ( strcmp(pt,"-newkorean")==0 ) {
-	    MenuNewComposition(NULL,NULL,NULL);
+	    MenuNewComposition(NULL,0);
 	    any = 1;
 #  endif
 	} else if ( strcmp(pt,"-SkipPythonInitFiles")==0 ||
@@ -1042,7 +1042,6 @@ exit( 0 );
     BitmapViewFinishNonStatic();
     MetricsViewFinishNonStatic();
     CharViewFinishNonStatic();
-    FontViewFinishNonStatic();
 
     ClearImageCache(); // This frees the contents of imagecache.
     // hotkeysSave();

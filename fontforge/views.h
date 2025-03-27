@@ -30,6 +30,12 @@
 
 #include <fontforge-config.h>
 
+/* forward declare PyObject
+   per http://mail.python.org/pipermail/python-dev/2003-August/037601.html */
+#ifndef PyObject_HEAD
+typedef struct _object PyObject;
+#endif
+
 #include "ttfinstrs.h"
 
 #include "baseviews.h"
@@ -44,7 +50,9 @@
 struct gfi_data;
 struct contextchaindlg;
 struct statemachinedlg;
-
+struct anchor_menu_data;
+struct encoding_menu_data;
+struct top_level_window;
 
 extern struct cvshows {
     int showfore, showback, showgrids, showhhints, showvhints, showdhints;
@@ -436,16 +444,12 @@ enum fv_metrics { fvm_baseline=1, fvm_origin=2, fvm_advanceat=4, fvm_advanceto=8
 typedef struct fontview {
     FontViewBase b;
     BDFFont *show, *filled;
-    GWindow gw, v;
+    void* cg_widget; /* pointer to opaque ff::views::CharGrid* object */
+    GWindow v;
     GFont **fontset;
-    GGadget *vsb, *mb;
     GTimer *pressed;
-    GTimer *resize;
-    GEvent resize_event;
     GIC *gic;
-    GIC *gwgic;
     int width, height;		/* of v */
-    int16_t infoh,mbh;
     int16_t lab_height, lab_as;
     int16_t colcnt, rowcnt;		/* of display window */
     int32_t rowoff, rowltot;		/* Can be really big in full unicode */
@@ -461,11 +465,6 @@ typedef struct fontview {
     unsigned int drag_and_drop: 1;
     unsigned int has_dd_no_cursor: 1;
     unsigned int any_dd_events_sent: 1;
-    unsigned int resize_expected: 1;
-	/* Some window managers do not honour my resize requests (if window is*/
-	/*  maximized for example), but we depend on the resize request to    */
-	/*  fix up the window. We do get a configure notify, but the window   */
-	/*  stays the same size, so kludge things */
     unsigned int glyphlabel: 2;
     unsigned int notactive:1;			/* When embedded in a dlg */
     int16_t magnify;
@@ -697,18 +696,13 @@ struct gfi_data {		/* FontInfo */
 struct kf_dlg /* : fvcontainer */ {
     struct fvcontainer base;
     struct lookup_subtable *sub;
-    GWindow gw, dw;
-    GFont *plain, *bold;
-    int fh, as;
-    GGadget *mb, *guts, *topbox;
-    int mbh, label2_y, infoh;
+    GWindow dw;
 
     SplineFont *sf;
     int def_layer;
     struct kf_results *results;
     int done;
 
-    FontView *active;
     FontView *first_fv;
     FontView *second_fv;
 };
@@ -737,6 +731,7 @@ extern void FVDeselectAll(FontView *fv);
 extern void FVAutoWidth2(FontView *fv);
 /*extern void FVAutoKern(FontView *fv);*/
 /*extern void FVAutoWidth(FontView *fv);*/
+extern void FVShowInfo(FontView *fv);
 
 extern void SC_MarkInstrDlgAsChanged(SplineChar *sc);
 
@@ -806,6 +801,8 @@ extern PST *AddSubs(PST *last,uint32_t tag,char *name,uint16_t flags,
 
 
 extern void FVSetUIToMatch(FontView *destfv,FontView *srcfv);
+extern void FVScrollBarSetPos(FontView *fv, int32_t pos);
+extern void FVScrollBarSetBounds(FontView *fv, int32_t sb_min, int32_t sb_max, int32_t sb_pagesize);
 extern void FVScrollToChar(FontView *fv,int i);
 extern void FVRegenChar(FontView *fv,SplineChar *sc);
 extern FontView *FontNew(void);
@@ -816,13 +813,14 @@ extern void MenuPlug(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuSaveAll(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuExit(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuHelp(GWindow base,struct gmenuitem *mi,GEvent *e);
-extern void MenuIndex(GWindow base,struct gmenuitem *mi,GEvent *e);
-extern void MenuAbout(GWindow base,struct gmenuitem *mi,GEvent *e);
-extern void MenuLicense(GWindow base,struct gmenuitem *mi,GEvent *e);
 extern void MenuNew(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void WindowMenuBuild(GWindow base,struct gmenuitem *mi,GEvent *);
+extern unsigned int collect_windows(void *UNUSED(dummy), struct top_level_window** windows_array);
 extern void MenuRecentBuild(GWindow base,struct gmenuitem *mi,GEvent *);
+extern unsigned int collect_recent_files(char*** recent_files_array);
 extern void MenuScriptsBuild(GWindow base,struct gmenuitem *mi,GEvent *);
+extern void script_run(FontView *fv, int index);
+extern unsigned int collect_script_names(char*** script_names_array);
 extern void mb2FreeGetText(GMenuItem2 *mb);
 extern void mb2DoGetText(GMenuItem2 *mb);
 extern void mbFreeGetText(GMenuItem *mb);
@@ -830,6 +828,7 @@ extern void mbDoGetText(GMenuItem *mb);
 extern int RecentFilesAny(void);
 extern void _aplistbuild(struct gmenuitem *mi,SplineFont *sf,
 	void (*func)(GWindow,struct gmenuitem *,GEvent *));
+extern unsigned int collect_anchor_data(FontView *fv, struct anchor_menu_data** anchor_data_array);
 extern GTextInfo *AddMacFeatures(GTextInfo *opentype,enum possub_type type,SplineFont *sf);
 extern unichar_t *AskNameTag(char *title,unichar_t *def,uint32_t def_tag,uint16_t flags,
 	int script_lang_index, enum possub_type type, SplineFont *sf, SplineChar *default_script,
@@ -1127,7 +1126,7 @@ extern void CVMakeParallel(CharView *cv);
 extern void ScriptDlg(FontView *fv,CharView *cv);
 
 # if HANYANG
-extern void MenuNewComposition(GWindow gw, struct gmenuitem *, GEvent *);
+extern void MenuNewComposition(FontView *fv, int mid);
 extern void CVDisplayCompositions(GWindow gw, struct gmenuitem *, GEvent *);
 extern void Disp_DoFinish(struct jamodisplay *d, int cancel);
 extern void Disp_RefreshChar(SplineFont *sf,SplineChar *sc);
@@ -1214,8 +1213,8 @@ extern void DVCreateGloss(DebugView *dv);
 extern void DVMarkPts(DebugView *dv,SplineSet *ss);
 extern int CVXPos(DebugView *dv,int offset,int width);
 
-extern GMenuItem *GetEncodingMenu(void (*func)(GWindow,GMenuItem *,GEvent *),
-	Encoding *current);
+extern bool IsCurrentEncoding(Encoding *current, const char *enc_name);
+extern unsigned int collect_encoding_data(FontView *fv, struct encoding_menu_data** encoding_data_array);
 
 extern GTextInfo *TIFromName(const char *name);
 
@@ -1268,13 +1267,14 @@ extern void FVCompareLayerToLayer(FontView *fv);
 extern void MathInit(void);
 extern void SFMathDlg(SplineFont *sf,int def_layer);
 
-extern GMenuItem2 *cvpy_menu, *fvpy_menu;
 extern void cvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);
-extern void fvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);
 
 extern GMenuItem2 *cv_menu, *fv_menu;
 extern void cv_tl2listcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void fv_tl2listcheck(GWindow gw,struct gmenuitem *mi,GEvent *e);
+
+extern void fvpy_activate(FontView *fv, PyObject *func, PyObject *data);
+extern bool fvpy_check(FontView *fv, const char *label, PyObject *check, PyObject *data);
 
 extern void SFValidationWindow(SplineFont *sf,int layer, enum fontformat format);
 extern void ValidationDestroy(SplineFont *sf);
@@ -1313,11 +1313,9 @@ extern void CVColInit( void );
 extern void BVColInit( void );
 
 extern void FontViewRemove(FontView *fv);
-extern void FontViewFinishNonStatic(void);
 extern void FVChar(FontView *fv,GEvent *event);
-extern void FVDrawInfo(FontView *fv,GWindow pixmap,GEvent *event);
 extern void FVRedrawAllCharViews(FontView *fv);
-extern void KFFontViewInits(struct kf_dlg *kf,GGadget *drawable);
+extern void *KFFontViewInits(struct kf_dlg *kf);
 extern char *GlyphSetFromSelection(SplineFont *sf,int def_layer,char *current);
 extern void ME_ListCheck(GGadget *g,int r, int c, SplineFont *sf);
 extern void ME_SetCheckUnique(GGadget *g,int r, int c, SplineFont *sf);
@@ -1341,7 +1339,6 @@ extern void SPSelectPrevPoint( SplinePoint *sp, int state );
 
 #ifndef _NO_PYTHON
 extern void CVSetToolsSubmenu(GMenuItem2 *py_menu);
-extern void FVSetToolsSubmenu(GMenuItem2 *py_menu);
 #endif
 
 /**

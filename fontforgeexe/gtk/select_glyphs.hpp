@@ -1,5 +1,5 @@
-/* Copyright (C) 2016 by Jeremy Tan */
-/*
+/* Copyright 2024 Maxim Iorsh <iorsh@users.sourceforge.net>
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
 
@@ -24,27 +24,28 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#pragma once
 
-#ifndef FONTFORGE_FFGDK_H
-#define FONTFORGE_FFGDK_H
+#include <gtkmm.h>
 
-#include <fontforge-config.h>
+#include "c_context.h"
+#include "char_grid.hpp"
+#include "dialog.hpp"
+#include "i_char_grid_containter.hpp"
 
-#ifdef FONTFORGE_CAN_USE_GDK
+namespace ff::dlg {
 
-// As gdk #includes glib, we must apply the same name mangling here.
-#define GTimer GTimer_GTK
-#define GList  GList_Glib
-#define GMenuItem GMenuItem_GIO
-#define GMenu GMenu_GIO
-#include <gdk/gdk.h>
-#include <gdk/gdkkeysyms.h>
-#include <gtk/gtk.h>
-#undef GMenu
-#undef GMenuItem
-#undef GList
-#undef GTimer
+class SelectGlyphs : public Dialog, public views::ICharGridContainter {
+ public:
+    SelectGlyphs(std::shared_ptr<FVContext> context, int width, int height);
 
-#endif // FONTFORGE_CAN_USE_GDK
+    views::CharGrid& get_char_grid(bool = false) override { return char_grid; }
 
-#endif /* FONTFORGE_FFGDK_H */
+ private:
+    std::shared_ptr<FVContext> fv_context;
+
+    Gtk::Label explanation;
+    views::CharGrid char_grid;
+};
+
+}  // namespace ff::dlg

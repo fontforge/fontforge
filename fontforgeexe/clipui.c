@@ -36,24 +36,24 @@
 /*  currently has things. This makes my clipboard interface much simpler */
 
 static void ClipBoard_Grab(void) {
-    GDrawGrabSelection(((FontView *) FontViewFirst())->gw,sn_clipboard);
+    GDrawGrabSelection(((FontView *) FontViewFirst())->v,sn_clipboard);
 }
 
 static void ClipBoard_AddDataType(const char *mimetype, void *data, int cnt, int size,
 	void *(*gendata)(void *,int32_t *len), void (*freedata)(void *)) {
-    GDrawAddSelectionType(((FontView *) FontViewFirst())->gw,sn_clipboard,
+    GDrawAddSelectionType(((FontView *) FontViewFirst())->v,sn_clipboard,
 	    (char *) mimetype, data, cnt, size,
 	    gendata,freedata);
 }
 
 /* Asks for the clip and waits for the response. */
 static void *ClipBoard_Request(const char *mimetype,int *len) {
-return( GDrawRequestSelection(((FontView *) FontViewFirst())->gw,sn_clipboard,
+return( GDrawRequestSelection(((FontView *) FontViewFirst())->v,sn_clipboard,
 	    (char *) mimetype,len));
 }
 
 static int ClipBoard_HasType(const char *mimetype) {
-return( GDrawSelectionHasType(((FontView *) FontViewFirst())->gw,sn_clipboard,
+return( GDrawSelectionHasType(((FontView *) FontViewFirst())->v,sn_clipboard,
 	    (char *) mimetype));
 }
 
