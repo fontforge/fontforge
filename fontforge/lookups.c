@@ -3840,7 +3840,7 @@ return( 0 );
 /*  a transformed string with substitutions applied and containing positioning */
 /*  info */
 struct opentype_str *ApplyTickedFeatures(SplineFont *sf,uint32_t *flist, uint32_t script, uint32_t lang,
-	int pixelsize, SplineChar **glyphs) {
+	bool gpos_only, int pixelsize, SplineChar **glyphs) {
     int isgpos, cnt;
     OTLookup *otl;
     struct lookup_data data;
@@ -3861,8 +3861,8 @@ struct opentype_str *ApplyTickedFeatures(SplineFont *sf,uint32_t *flist, uint32_
     data.pixelsize = pixelsize;
     data.scale = pixelsize/(double) (sf->ascent+sf->descent);
 
-    /* Indic glyph reordering???? */
-    for ( isgpos=0; isgpos<2; ++isgpos ) {
+    isgpos = gpos_only ? 1 : 0;
+    for ( ; isgpos<2; ++isgpos ) {
 	/* Check that this table has an entry for this language */
 	/*  if it doesn't use the default language */
 	/* GPOS/GSUB may have different language sets, so we must be prepared */
