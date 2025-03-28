@@ -802,8 +802,8 @@ return( NULL );
 return( glyphs );
 }
 
-static SplineChar **SFOrderedGlyphsWithPSTinSubtable(SplineFont *sf,struct lookup_subtable *sub) {
-    SplineChar **glyphs = SFGlyphsWithPSTinSubtable(sf,sub);
+static SplineChar **SFOrderedGlyphsWithPSTinSubtable(SplineFont *sf,struct lookup_subtable *sub,cpp_SubtableMap *map) {
+    SplineChar **glyphs = SFGlyphsWithPSTinSubtable(sf,sub,map);
     return SFOrderedGlyphs(glyphs);
 }
 
@@ -1098,14 +1098,14 @@ return( DevTabsSame(&vdt1->xadjust,&vdt2->xadjust) &&
 	DevTabsSame(&vdt1->yadv,&vdt2->yadv) );
 }
 
-static void dumpGPOSsimplepos(FILE *gpos,SplineFont *sf,struct lookup_subtable *sub ) {
+static void dumpGPOSsimplepos(FILE *gpos,SplineFont *sf,struct lookup_subtable *sub, struct alltabs *at ) {
     int cnt, cnt2;
     int32_t coverage_pos, end;
     PST *pst, *first=NULL;
     int bits = 0, same=true;
     SplineChar **glyphs;
 
-    glyphs = SFOrderedGlyphsWithPSTinSubtable(sf,sub);
+    glyphs = SFOrderedGlyphsWithPSTinSubtable(sf,sub,at->subtable_map);
     for ( cnt=cnt2=0; glyphs[cnt]!=NULL; ++cnt) {
 	for ( pst=glyphs[cnt]->possub; pst!=NULL; pst=pst->next ) {
 	    if ( pst->subtable==sub && pst->type==pst_position ) {
@@ -1225,7 +1225,7 @@ static int cmp_gid( const void *_s1, const void *_s2 ) {
 return( ((int) s1->other_gid) - ((int) s2->other_gid) );
 }
 
-static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *sub) {
+static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *sub, struct alltabs *at) {
     int cnt;
     int32_t coverage_pos, offset_pos, end, start, pos;
     PST *pst;
@@ -1240,7 +1240,7 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
 
     /* Figure out all the data we need. First the glyphs with kerning info */
     /*  then the glyphs to which they kern, and by how much */
-    glyphs = SFOrderedGlyphsWithPSTinSubtable(sf,sub);
+    glyphs = SFOrderedGlyphsWithPSTinSubtable(sf,sub,at->subtable_map);
     for ( cnt=0; glyphs[cnt]!=NULL; ++cnt);
     seconds = malloc(cnt*sizeof(struct sckppst *));
     for ( cnt=0; glyphs[cnt]!=NULL; ++cnt) {
@@ -2012,12 +2012,12 @@ static void dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
     fseek(gpos,0,SEEK_END);
 }
 
-static void dumpGSUBsimplesubs(FILE *gsub,SplineFont *sf,struct lookup_subtable *sub) {
+static void dumpGSUBsimplesubs(FILE *gsub,SplineFont *sf,struct lookup_subtable *sub, struct alltabs *at) {
     int cnt, diff, ok = true;
     int32_t coverage_pos, end;
     SplineChar **glyphs, ***maps;
 
-    glyphs = SFOrderedGlyphsWithPSTinSubtable(sf,sub);
+    glyphs = SFOrderedGlyphsWithPSTinSubtable(sf,sub,at->subtable_map);
     maps = generateMapList(glyphs,sub);
 
     diff = (*maps[0])->ttf_glyph - glyphs[0]->ttf_glyph;
@@ -2047,13 +2047,13 @@ static void dumpGSUBsimplesubs(FILE *gsub,SplineFont *sf,struct lookup_subtable 
     GlyphMapFree(maps);
 }
 
-static void dumpGSUBmultiplesubs(FILE *gsub,SplineFont *sf,struct lookup_subtable *sub) {
+static void dumpGSUBmultiplesubs(FILE *gsub,SplineFont *sf,struct lookup_subtable *sub, struct alltabs *at) {
     int cnt, offset;
     int32_t coverage_pos, end;
     int gc;
     SplineChar **glyphs, ***maps;
 
-    glyphs = SFOrderedGlyphsWithPSTinSubtable(sf,sub);
+    glyphs = SFOrderedGlyphsWithPSTinSubtable(sf,sub,at->subtable_map);
     maps = generateMapList(glyphs,sub);
     for ( cnt=0; glyphs[cnt]!=NULL; ++cnt);
 
@@ -2112,7 +2112,7 @@ static void dumpGSUBligdata(FILE *gsub,SplineFont *sf,
     LigList *ll;
     struct splinecharlist *scl;
 
-    glyphs = SFOrderedGlyphsWithPSTinSubtable(sf,sub);
+    glyphs = SFOrderedGlyphsWithPSTinSubtable(sf,sub,at->subtable_map);
     cnt=0;
     if ( glyphs!=NULL ) for ( ; glyphs[cnt]!=NULL; ++cnt );
 
@@ -2792,7 +2792,7 @@ static void otf_dumpALookup(FILE *lfile, OTLookup *otl, SplineFont *sf,
 	    switch ( otl->lookup_type ) {
 	    /* GPOS lookup types */
 	      case gpos_single:
-		dumpGPOSsimplepos(lfile,sf,sub);
+		dumpGPOSsimplepos(lfile,sf,sub,at);
 	      break;
 
 	      case gpos_pair:
@@ -2801,7 +2801,7 @@ static void otf_dumpALookup(FILE *lfile, OTLookup *otl, SplineFont *sf,
 		if ( sub->kc!=NULL )
 		    dumpgposkernclass(lfile,sf,sub,at);
 		else
-		    dumpGPOSpairpos(lfile,sf,sub);
+		    dumpGPOSpairpos(lfile,sf,sub,at);
 	      break;
 
 	      case gpos_cursive:
@@ -2821,12 +2821,12 @@ static void otf_dumpALookup(FILE *lfile, OTLookup *otl, SplineFont *sf,
 
 	    /* GSUB lookup types */
 	      case gsub_single:
-		dumpGSUBsimplesubs(lfile,sf,sub);
+		dumpGSUBsimplesubs(lfile,sf,sub,at);
 	      break;
 
 	      case gsub_multiple:
 	      case gsub_alternate:
-		dumpGSUBmultiplesubs(lfile,sf,sub);
+		dumpGSUBmultiplesubs(lfile,sf,sub,at);
 	      break;
 
 	      case gsub_ligature:

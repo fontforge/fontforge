@@ -709,44 +709,51 @@ return( false );
 return( true );
 }
 
-SplineChar **SFGlyphsWithPSTinSubtable(SplineFont *sf,struct lookup_subtable *subtable) {
-    uint8_t *used = calloc(sf->glyphcnt,sizeof(uint8_t));
-    SplineChar **glyphs, *sc;
-    int i, k, gid, cnt;
+void SFCollectSubtableMap(SplineFont *sf,cpp_SubtableMap* map) {
+    SplineChar *sc;
+    int i, k;
     KernPair *kp;
     PST *pst;
-    int ispair = subtable->lookup->lookup_type == gpos_pair;
-    int isliga = subtable->lookup->lookup_type == gsub_ligature;
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc = sf->glyphs[i]) ) {
-	if ( ispair ) {
-	    for ( k=0; k<2; ++k ) {
-		for ( kp= k ? sc->kerns : sc->vkerns; kp!=NULL ; kp=kp->next ) {
-		    if ( !SCWorthOutputting(kp->sc))
-		continue;
-		    if ( kp->subtable == subtable ) {
-			used[i] = true;
-    goto continue_;
-		    }
-		}
+	for ( k=0; k<2; ++k ) {
+	    for ( kp= k ? sc->kerns : sc->vkerns; kp!=NULL ; kp=kp->next ) {
+		if ( !SCWorthOutputting(kp->sc))
+		    continue;
+		SubtableMap_add_kp(map, kp->subtable, i, kp);
 	    }
 	}
 	for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
-	    if ( pst->subtable == subtable && PSTValid(sf,pst)) {
-		if ( !isliga ) {
-		    used[i] = true;
-    goto continue_;
-		} else {
-		    gid = LigaturesFirstComponentGID(sf,pst->u.lig.components);
-		    pst->u.lig.lig = sc;
-		    if ( gid!=-1 )
-			used[gid] = true;
-		    /* can't continue here. ffi might be "f+f+i" and "ff+i" */
-		    /*  and we need to mark both "f" and "ff" as used */
-		}
+	    if (PSTValid(sf,pst)) {
+		SubtableMap_add_pst(map, pst->subtable, i, pst);
 	    }
 	}
-    continue_: ;
+    }
+}
+
+SplineChar **SFGlyphsWithPSTinSubtable(SplineFont *sf,struct lookup_subtable *subtable, cpp_SubtableMap* map) {
+    uint8_t *used = calloc(sf->glyphcnt,sizeof(uint8_t));
+    SplineChar **glyphs;
+    int i, gid, cnt;
+    int isliga = subtable->lookup->lookup_type == gsub_ligature;
+    struct kp_list* kp_it, *kps = SubtableMap_get_kp_list(map, subtable);
+    struct pst_list* pst_it, *psts = SubtableMap_get_pst_list(map, subtable);
+
+    for (kp_it = kps; kp_it && kp_it->kp; ++kp_it) {
+	used[kp_it->gid] = true;
+    }
+
+    for (pst_it = psts; pst_it && pst_it->pst; ++pst_it) {
+	if ( !isliga ) {
+	    used[pst_it->gid] = true;
+	} else {
+	    gid = LigaturesFirstComponentGID(sf,pst_it->pst->u.lig.components);
+	    pst_it->pst->u.lig.lig = sf->glyphs[pst_it->gid];
+	    if ( gid!=-1 )
+		used[gid] = true;
+	    /* can't continue here. ffi might be "f+f+i" and "ff+i" */
+	    /*  and we need to mark both "f" and "ff" as used */
+	}
     }
 
     for ( i=cnt=0 ; i<sf->glyphcnt; ++i )
