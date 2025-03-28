@@ -28,7 +28,7 @@
 #ifndef FONTFORGE_NAMEHASH_H
 #define FONTFORGE_NAMEHASH_H
 
-#define GN_HSIZE	257
+#define GN_HSIZE	65530
 
 struct glyphnamebucket {
     SplineChar *sc;
