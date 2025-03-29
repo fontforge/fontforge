@@ -54,6 +54,17 @@ void SubtableMap_add_pst(cpp_SubtableMap* map, struct lookup_subtable* subtable,
     st_map[subtable].second.push_back({gid, pst});
 }
 
+int SubtableMap_get_size(cpp_SubtableMap* map,
+                                        struct lookup_subtable* subtable) {
+    SubtableMap& st_map = *reinterpret_cast<SubtableMap*>(map);
+    auto map_it = st_map.find(subtable);
+    if (map_it == st_map.end()) {
+        return 0;
+    } else {
+	return map_it->second.first.size() + map_it->second.second.size();
+    }
+}
+
 struct kp_list* SubtableMap_get_kp_list(cpp_SubtableMap* map,
                                         struct lookup_subtable* subtable) {
     SubtableMap& st_map = *reinterpret_cast<SubtableMap*>(map);

@@ -1230,7 +1230,7 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
     int32_t coverage_pos, offset_pos, end, start, pos;
     PST *pst;
     KernPair *kp;
-    int vf1 = 0, vf2=0, i, j, k, tot, bit_cnt, v;
+    int vf1 = 0, vf2=0, i, j, tot, bit_cnt, v;
     int start_cnt, end_cnt;
     int chunk_cnt, chunk_max;
     SplineChar *sc, **glyphs, *gtemp;
@@ -1241,52 +1241,48 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
     /* Figure out all the data we need. First the glyphs with kerning info */
     /*  then the glyphs to which they kern, and by how much */
     glyphs = SFOrderedGlyphsWithPSTinSubtable(sf,sub,at->subtable_map);
+    int max_entries = SubtableMap_get_size(at->subtable_map, sub);
+    struct sckppst *tmp_seconds = calloc(max_entries+1,sizeof(struct sckppst));
+
     for ( cnt=0; glyphs[cnt]!=NULL; ++cnt);
     seconds = malloc(cnt*sizeof(struct sckppst *));
     for ( cnt=0; glyphs[cnt]!=NULL; ++cnt) {
-	for ( k=0; k<2; ++k ) {
-	    devtablen = 0;
-	    tot = 0;
-	    for ( pst=glyphs[cnt]->possub; pst!=NULL; pst=pst->next ) {
-		if ( pst->subtable==sub && pst->type==pst_pair &&
-			(sc = SFGetChar(sf,-1,pst->u.pair.paired))!=NULL &&
-			sc->ttf_glyph!=-1 ) {
-		    if ( k ) {
-			seconds[cnt][tot].sc = sc;
-			seconds[cnt][tot].other_gid = sc->ttf_glyph;
-			seconds[cnt][tot].pst = pst;
-			devtablen += ValDevTabLen(pst->u.pair.vr[0].adjust) +
-				 ValDevTabLen(pst->u.pair.vr[1].adjust);
-
-		    }
+	devtablen = 0;
+	tot = 0;
+	for ( pst=glyphs[cnt]->possub; pst!=NULL; pst=pst->next ) {
+	    if ( pst->subtable==sub && pst->type==pst_pair &&
+		 (sc = SFGetChar(sf,-1,pst->u.pair.paired))!=NULL &&
+		 sc->ttf_glyph!=-1 ) {
+		tmp_seconds[tot].sc = sc;
+		tmp_seconds[tot].other_gid = sc->ttf_glyph;
+		tmp_seconds[tot].pst = pst;
+		devtablen += ValDevTabLen(pst->u.pair.vr[0].adjust) +
+			     ValDevTabLen(pst->u.pair.vr[1].adjust);
+		++tot;
+	    }
+	}
+	for ( v=0; v<2; ++v ) {
+	    for ( kp = v ? glyphs[cnt]->vkerns : glyphs[cnt]->kerns; kp!=NULL; kp=kp->next ) {
+		if( kp->subtable!=sub ) continue; // process only glyphs from the current subtable
+		if ( kp->sc->ttf_glyph!=-1 ) {
+		    tmp_seconds[tot].other_gid = kp->sc->ttf_glyph;
+		    tmp_seconds[tot].sc = kp->sc;
+		    tmp_seconds[tot].kp = kp;
+		    tmp_seconds[tot].isv = v;
+		    devtablen += DevTabLen(kp->adjust);
 		    ++tot;
 		}
 	    }
-	    for ( v=0; v<2; ++v ) {
-		for ( kp = v ? glyphs[cnt]->vkerns : glyphs[cnt]->kerns; kp!=NULL; kp=kp->next ) {
-		    if( kp->subtable!=sub ) continue; // process only glyphs from the current subtable
-		    if ( kp->sc->ttf_glyph!=-1 ) {
-			if ( k ) {
-			    seconds[cnt][tot].other_gid = kp->sc->ttf_glyph;
-			    seconds[cnt][tot].sc = kp->sc;
-			    seconds[cnt][tot].kp = kp;
-			    seconds[cnt][tot].isv = v;
-			    devtablen += DevTabLen(kp->adjust);
-			}
-			++tot;
-		    }
-		}
-	    }
-	    if ( k==0 ) {
-		seconds[cnt] = calloc(tot+1,sizeof(struct sckppst));
-	    } else {
-		qsort(seconds[cnt],tot,sizeof(struct sckppst),cmp_gid);
-		seconds[cnt][0].tot = tot;
-		/* Devtablen is 0 unless we are configured for device tables */
-		seconds[cnt][0].devtablen = devtablen;
-		seconds[cnt][0].samewas = 0xffff;
-	    }
 	}
+	qsort(tmp_seconds,tot,sizeof(struct sckppst),cmp_gid);
+	tmp_seconds[0].tot = tot;
+	/* Devtablen is 0 unless we are configured for device tables */
+	tmp_seconds[0].devtablen = devtablen;
+	tmp_seconds[0].samewas = 0xffff;
+
+	seconds[cnt] = calloc(tot+1,sizeof(struct sckppst));
+	memcpy(seconds[cnt], tmp_seconds, (tot+1)*sizeof(struct sckppst));
+	memset(tmp_seconds, 0, (tot+1)*sizeof(struct sckppst));
     }
 
     /* Some fonts do a primitive form of class based kerning, several glyphs */
@@ -1500,6 +1496,7 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
     for ( i=0; i<cnt; ++i )
 	free(seconds[i]);
     free(seconds);
+    free(tmp_seconds);
     free(glyphs);
 }
 

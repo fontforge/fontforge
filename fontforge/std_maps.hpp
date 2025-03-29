@@ -56,6 +56,9 @@ void SubtableMap_add_kp(cpp_SubtableMap* map, struct lookup_subtable* subtable,
 void SubtableMap_add_pst(cpp_SubtableMap* map, struct lookup_subtable* subtable,
                          int gid, PST* pst);
 
+int SubtableMap_get_size(cpp_SubtableMap* map,
+                                        struct lookup_subtable* subtable);
+
 struct kp_list* SubtableMap_get_kp_list(cpp_SubtableMap* map,
                                         struct lookup_subtable* subtable);
 
