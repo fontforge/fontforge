@@ -1,5 +1,5 @@
-/* Copyright (C) 2016 by Jeremy Tan */
-/*
+/* Copyright 2024 Maxim Iorsh <iorsh@users.sourceforge.net>
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
 
@@ -25,26 +25,36 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FONTFORGE_FFGDK_H
-#define FONTFORGE_FFGDK_H
+#include "num_entry.hpp"
+#include "../utils.hpp"
 
-#include <fontforge-config.h>
+namespace ff::widgets {
 
-#ifdef FONTFORGE_CAN_USE_GDK
+NumericalEntry::NumericalEntry(const Glib::ustring& label_, bool mnemonic)
+    : label(label_, mnemonic) {
+    // 1em offset between label and entry widget
+    label.set_margin_end(ui_font_em_size());
+    if (mnemonic) {
+        label.set_mnemonic_widget(entry);
+    }
 
-// As gdk #includes glib, we must apply the same name mangling here.
-#define GTimer GTimer_GTK
-#define GList  GList_Glib
-#define GMenuItem GMenuItem_GIO
-#define GMenu GMenu_GIO
-#include <gdk/gdk.h>
-#include <gdk/gdkkeysyms.h>
-#include <gtk/gtk.h>
-#undef GMenu
-#undef GMenuItem
-#undef GList
-#undef GTimer
+    entry.set_input_purpose(Gtk::INPUT_PURPOSE_NUMBER);
+    entry.set_width_chars(5);
 
-#endif // FONTFORGE_CAN_USE_GDK
+    pack_start(label, Gtk::PACK_SHRINK);
+    pack_start(entry);
+}
 
-#endif /* FONTFORGE_FFGDK_H */
+void NumericalEntry::set_value(double value) {
+    std::string str = std::to_string(value);
+    // Strip trailing zeros and dot
+    str.erase(str.find_last_not_of('0') + 1, std::string::npos);
+    str.erase(str.find_last_not_of('.') + 1, std::string::npos);
+    entry.set_text(str);
+}
+
+double NumericalEntry::get_value() {
+    return strtod(entry.get_text().c_str(), nullptr);
+}
+
+}  // namespace ff::widgets

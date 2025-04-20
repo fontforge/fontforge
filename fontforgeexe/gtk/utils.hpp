@@ -1,5 +1,5 @@
-/* Copyright (C) 2016 by Jeremy Tan */
-/*
+/* Copyright 2023 Maxim Iorsh <iorsh@users.sourceforge.net>
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
 
@@ -24,27 +24,49 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#pragma once
 
-#ifndef FONTFORGE_FFGDK_H
-#define FONTFORGE_FFGDK_H
+#include <libintl.h>
+#include <gtkmm.h>
 
-#include <fontforge-config.h>
+// Seamlessly localize a string using implicit constructor and conversion.
+class L10nText {
+ public:
+    L10nText(const char* text) : text_(text) {}
 
-#ifdef FONTFORGE_CAN_USE_GDK
+    operator Glib::ustring() const {
+        if (!text_.empty() && l10n_text_.empty()) {
+            l10n_text_ = gettext(text_.c_str());
+        }
+        return l10n_text_;
+    }
 
-// As gdk #includes glib, we must apply the same name mangling here.
-#define GTimer GTimer_GTK
-#define GList  GList_Glib
-#define GMenuItem GMenuItem_GIO
-#define GMenu GMenu_GIO
-#include <gdk/gdk.h>
-#include <gdk/gdkkeysyms.h>
-#include <gtk/gtk.h>
-#undef GMenu
-#undef GMenuItem
-#undef GList
-#undef GTimer
+ private:
+    Glib::ustring text_;
+    mutable Glib::ustring l10n_text_;
+};
 
-#endif // FONTFORGE_CAN_USE_GDK
+Gtk::Widget* gtk_find_child(Gtk::Widget* w, const std::string& name);
 
-#endif /* FONTFORGE_FFGDK_H */
+// Get the current topmost window
+Glib::RefPtr<Gdk::Window> gtk_get_topmost_window();
+
+Gtk::Window* gtk_get_window(Gtk::Widget& w);
+
+int label_offset(Gtk::Widget* w);
+
+double ui_font_em_size();
+double ui_font_eX_size();
+
+Glib::RefPtr<Gdk::Pixbuf> load_icon(const Glib::ustring& icon_name, int size);
+
+Gdk::ModifierType gtk_get_keyboard_state();
+
+Glib::RefPtr<Gdk::Cursor> set_cursor(Gtk::Widget* widget,
+                                     const Glib::ustring& name);
+
+void unset_cursor(Gtk::Widget* widget, Glib::RefPtr<Gdk::Cursor> old_cursor);
+
+guint32 color_from_gdk_rgba(const Gdk::RGBA& rgba);
+
+Glib::RefPtr<Gdk::Pixbuf> build_color_icon(const Gdk::RGBA& color, gint size);

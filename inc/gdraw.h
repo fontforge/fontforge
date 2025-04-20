@@ -30,6 +30,8 @@
 
 #include "gimage.h"
 
+typedef struct _GtkWidget GtkWidget;
+
 enum font_style { fs_none, fs_italic=1, fs_smallcaps=2, fs_condensed=4, fs_extended=8, fs_vertical=16 };
 enum font_type { ft_unknown, ft_serif, ft_sans, ft_mono, ft_cursive, ft_max };
 
@@ -226,7 +228,8 @@ enum window_attr_mask { wam_events=0x2, wam_bordwidth=0x4,
 			wam_isdlg=0x10000, wam_notrestricted=0x20000,
 			wam_transient=0x40000,
 			wam_utf8_wtitle=0x80000, wam_utf8_ititle=0x100000,
-			wam_nocairo=0x200000, wam_verytransient=0x400000, wam_palette=0x800000 };
+			wam_nocairo=0x200000, wam_verytransient=0x400000, wam_palette=0x800000,
+			wam_gtk_wrapper=0x1000000 };
 
 typedef struct gwindow_attrs {
     enum window_attr_mask mask;
@@ -252,6 +255,7 @@ typedef struct gwindow_attrs {
     GWindow transient;			/* the Transient_FOR hint */
     const char *utf8_window_title;
     const char *utf8_icon_title;
+    GtkWidget* gtk_widget;
 } GWindowAttrs;
 
 #define GWINDOWATTRS_EMPTY { 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, 0, 0, 0, 0, 0, 0, 0, 0, 0, NULL, NULL, NULL, NULL }

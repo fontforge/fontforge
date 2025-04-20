@@ -4,9 +4,9 @@ set -ex -o pipefail
 SCRIPT_BASE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 APPDIR=$1
-export VERSION=${2:0:7} # linuxdeployqt uses this for naming the file
+export LINUXDEPLOY_OUTPUT_VERSION=${2:0:7} # linuxdeploy uses this for naming the file
 
-if [ -z "$APPDIR" ] || [ -z "$VERSION" ]; then
+if [ -z "$APPDIR" ] || [ -z "$LINUXDEPLOY_OUTPUT_VERSION" ]; then
     echo "Usage: `basename $0` appdir version"
     echo "  appdir is the location to the dumped location that cmake generated"
     echo "  version is the version hash of this build"
@@ -15,7 +15,7 @@ if [ -z "$APPDIR" ] || [ -z "$VERSION" ]; then
     exit 1
 fi
 
-echo "Starting appimage build, folder is $APPDIR with version $VERSION"
+echo "Starting appimage build, folder is $APPDIR with version $LINUXDEPLOY_OUTPUT_VERSION"
 
 # AppImage still needs libfuse2. See https://github.com/AppImage/AppImageKit/issues/1235.
 sudo apt-get install -y libfuse2
@@ -30,9 +30,14 @@ echo "FontForge built against Python $PYVER"
 ( cd $APPDIR ; apt-get download -y libpython${PYVER}-stdlib ; dpkg -x libpython${PYVER}-stdlib*.deb . )
 "python${PYVER}" -m pip install -I --target "$APPDIR/usr/lib/python${PYVER}/dist-packages" setuptools
 
-if [ ! -f linuxdeployqt.AppImage ]; then
-    curl -Lo linuxdeployqt.AppImage "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
-    chmod +x linuxdeployqt.AppImage
+if [ ! -f linuxdeploy.AppImage ]; then
+    curl -Lo linuxdeploy.AppImage "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
+    chmod +x linuxdeploy.AppImage
+fi
+
+if [ ! -f linuxdeploy-plugin-gtk.sh ]; then
+    curl -Lo linuxdeploy-plugin-gtk.sh "https://raw.githubusercontent.com/linuxdeploy/linuxdeploy-plugin-gtk/master/linuxdeploy-plugin-gtk.sh"
+    chmod +x linuxdeploy-plugin-gtk.sh
 fi
 
 if [ ! -f appstream-util.AppImage ]; then
@@ -42,14 +47,16 @@ fi
 
 ./appstream-util.AppImage validate-strict $APPDIR/usr/share/metainfo/org.fontforge.FontForge.appdata.xml
 
-./linuxdeployqt.AppImage $APPDIR/usr/share/applications/*.desktop -bundle-non-qt-libs #-unsupported-allow-new-glibc
+export DEPLOY_GTK_VERSION=3
+
+./linuxdeploy.AppImage --appdir $APPDIR --plugin gtk --output appimage -i ../desktop/tango/scalable/org.fontforge.FontForge.svg -d ../desktop/org.fontforge.FontForge.desktop
 # Manually invoke appimagetool so that the custom AppRun stays intact
-./linuxdeployqt.AppImage --appimage-extract
+./linuxdeploy.AppImage --appimage-extract
 
 export PATH=$(readlink -f ./squashfs-root/usr/bin):$PATH
 rm $APPDIR/AppRun
 install -m 755 $SCRIPT_BASE/../../../Packaging/AppDir/AppRun $APPDIR/AppRun # custom AppRun
-ARCH=x86_64 ./squashfs-root/usr/bin/appimagetool -g $APPDIR/
+# ARCH=x86_64 ./squashfs-root/usr/bin/appimagetool -g $APPDIR/
 find $APPDIR -executable -type f -exec ldd {} \; | grep " => /lib" | cut -d " " -f 2-3 | sort | uniq
 
-mv FontForge*.AppImage FontForge-$(date +%Y-%m-%d)-$VERSION-x86_64.AppImage
+mv FontForge*.AppImage FontForge-$(date +%Y-%m-%d)-$LINUXDEPLOY_OUTPUT_VERSION-x86_64.AppImage

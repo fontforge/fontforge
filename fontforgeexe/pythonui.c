@@ -27,6 +27,7 @@
 /*			   Python Interface to FontForge		      */
 
 #include <fontforge-config.h>
+#include "ffgdk.h"
 
 #ifndef _NO_PYTHON
 
@@ -41,6 +42,8 @@
 #include "splineutil.h"
 #include "ttf.h"
 #include "ustring.h"
+
+#include "gtk/font_view_shim.hpp"
 
 #include <dirent.h>
 #include <errno.h>
@@ -129,7 +132,6 @@ struct py_menu_item {
 typedef void (*ff_menu_callback)(GWindow gw, struct gmenuitem *mi, GEvent *e);
 
 enum py_menu_type { pmt_font=0, pmt_char=1, pmt_size=2 };
-enum py_menu_flag { pmf_font=1, pmf_char=2 };
 
 static struct py_menu_data {
     struct py_menu_item *items;
@@ -215,9 +217,34 @@ static unichar_t *SetMnemonicSuffix(const unichar_t *menu_string, unichar_t e, u
     return r;
 }
 
-static void py_tllistcheck(struct gmenuitem *mi, PyObject *owner, struct py_menu_data *pmd) {
+static bool py_check(PyObject *owner, const unichar_t *label, PyObject *check, PyObject *data) {
     PyObject *arglist, *result;
+    bool disabled = true;
 
+    arglist = PyTuple_New(2);
+    Py_XINCREF(data);
+    Py_XINCREF(owner);
+    PyTuple_SetItem(arglist,0,data);
+    PyTuple_SetItem(arglist,1,owner);
+    result = PyObject_CallObject(check, arglist);
+    Py_DECREF(arglist);
+    if ( result==NULL )
+	/* Oh. An error. How fun. See below */;
+    else if ( !PyLong_Check(result)) {
+	char *menu_item_name = u2utf8_copy(label);
+	LogError(_("Return from enabling function for menu item %s must be boolean"), menu_item_name );
+	free( menu_item_name );
+	disabled = true;
+    } else
+	disabled = PyLong_AsLong(result)==0;
+    Py_XDECREF(result);
+    if ( PyErr_Occurred()!=NULL )
+	PyErr_Print();
+
+    return disabled;
+}
+
+static void py_tllistcheck(struct gmenuitem *mi, PyObject *owner, struct py_menu_data *pmd) {
     if ( mi == NULL )
 	return;
 
@@ -233,31 +260,26 @@ static void py_tllistcheck(struct gmenuitem *mi, PyObject *owner, struct py_menu
 	    mi->ti.disabled = false;
 	    continue;
 	}
-	arglist = PyTuple_New(2);
-	Py_XINCREF(pmd->items[mi->mid].data);
-	Py_XINCREF(owner);
-	PyTuple_SetItem(arglist,0,pmd->items[mi->mid].data);
-	PyTuple_SetItem(arglist,1,owner);
-	result = PyObject_CallObject(pmd->items[mi->mid].check, arglist);
-	Py_DECREF(arglist);
-	if ( result==NULL )
-	    /* Oh. An error. How fun. See below */;
-	else if ( !PyLong_Check(result)) {
-	    char *menu_item_name = u2utf8_copy(mi->ti.text);
-	    LogError(_("Return from enabling function for menu item %s must be boolean"), menu_item_name );
-	    free( menu_item_name );
-	    mi->ti.disabled = true;
-	} else
-	    mi->ti.disabled = PyLong_AsLong(result)==0;
-	Py_XDECREF(result);
-	if ( PyErr_Occurred()!=NULL )
-	    PyErr_Print();
+	mi->ti.disabled = py_check(owner, mi->ti.text, pmd->items[mi->mid].check, pmd->items[mi->mid].data);
     }
 }
 
-static void py_menuactivate(struct gmenuitem *mi, PyObject *owner, struct py_menu_data *pmd) {
+static void py_activate(PyObject *owner, PyObject *func, PyObject *data) {
     PyObject *arglist, *result;
 
+    arglist = PyTuple_New(2);
+    Py_XINCREF(data);
+    Py_XINCREF(owner);
+    PyTuple_SetItem(arglist,0,data);
+    PyTuple_SetItem(arglist,1,owner);
+    result = PyObject_CallObject(func, arglist);
+    Py_DECREF(arglist);
+    Py_XDECREF(result);
+    if ( PyErr_Occurred()!=NULL )
+	PyErr_Print();
+}
+
+static void py_menuactivate(struct gmenuitem *mi, PyObject *owner, struct py_menu_data *pmd) {
     if ( mi->mid==-1 )		/* Submenu */
 	return;
 
@@ -270,16 +292,7 @@ static void py_menuactivate(struct gmenuitem *mi, PyObject *owner, struct py_men
     if ( pmd->items[mi->mid].func==NULL ) {
 	return;
     }
-    arglist = PyTuple_New(2);
-    Py_XINCREF(pmd->items[mi->mid].data);
-    Py_XINCREF(owner);
-    PyTuple_SetItem(arglist,0,pmd->items[mi->mid].data);
-    PyTuple_SetItem(arglist,1,owner);
-    result = PyObject_CallObject(pmd->items[mi->mid].func, arglist);
-    Py_DECREF(arglist);
-    Py_XDECREF(result);
-    if ( PyErr_Occurred()!=NULL )
-	PyErr_Print();
+    py_activate(owner, pmd->items[mi->mid].func, pmd->items[mi->mid].data);
 }
 
 void cvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
@@ -306,23 +319,28 @@ static void cvpy_menuactivate(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     layer_active_in_ui = ly_fore;
 }
 
-void fvpy_tllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontViewBase *fv = (FontViewBase *) GDrawGetUserData(gw);
-    PyObject *pyfv = PyFF_FontForFV(fv);
+bool fvpy_check(FontView *fv, const char *label, PyObject *check, PyObject *data) {
+    FontViewBase* fv_base = (FontViewBase*)fv;
+    PyObject *pyfv = PyFF_FontForFV(fv_base);
+    unichar_t *uni_label = utf82u_copy(label);
+    bool disabled;
 
-    fv_active_in_ui = fv;
-    layer_active_in_ui = fv->active_layer;
-    py_tllistcheck(mi,pyfv,py_menus + pmt_font);
+    fv_active_in_ui = fv_base;
+    layer_active_in_ui = fv_base->active_layer;
+    disabled = py_check(pyfv, uni_label, check, data);
     fv_active_in_ui = NULL;
+    free(uni_label);
+
+    return disabled;
 }
 
-static void fvpy_menuactivate(GWindow gw,struct gmenuitem *mi,GEvent *e) {
-    FontViewBase *fv = (FontViewBase *) GDrawGetUserData(gw);
-    PyObject *pyfv = PyFF_FontForFV(fv);
+void fvpy_activate(FontView *fv, PyObject *func, PyObject *data) {
+    FontViewBase* fv_base = (FontViewBase*)fv;
+    PyObject *pyfv = PyFF_FontForFV(fv_base);
 
-    fv_active_in_ui = fv;
-    layer_active_in_ui = fv->active_layer;
-    py_menuactivate(mi,pyfv,py_menus + pmt_font);
+    fv_active_in_ui = fv_base;
+    layer_active_in_ui = fv_base->active_layer;
+    py_activate(pyfv, func, data);
     fv_active_in_ui = NULL;
 }
 
@@ -342,11 +360,6 @@ static void PyMenuInit() {
 	    g_hash_table_add(py_menus[t].mn_avail, GUINT_TO_POINTER(*cp));
     }
 
-    py_menus[pmt_font].hotkey_prefix = "FontView.Menu.Tools.";
-    py_menus[pmt_font].moveto = fvpy_tllistcheck;
-    py_menus[pmt_font].invoke = fvpy_menuactivate;
-    py_menus[pmt_font].setmenu = FVSetToolsSubmenu;
-
     py_menus[pmt_char].hotkey_prefix = "CharView.Menu.Tools.";
     py_menus[pmt_char].moveto = cvpy_tllistcheck;
     py_menus[pmt_char].invoke = cvpy_menuactivate;
@@ -358,19 +371,6 @@ static struct flaglist menuviews[] = {
     { "Glyph", pmf_char },
     { "Char", pmf_char },
     FLAGLIST_EMPTY
-};
-
-struct py_menu_text {
-    const char *localized;
-    const char *untranslated;
-    const char *identifier;
-};
-
-struct py_menu_spec {
-    int depth, divider;
-    struct py_menu_text *levels;
-    const char *shortcut_str;
-    PyObject *func, *check, *data;
 };
 
 static int MenuDataAdd(struct py_menu_spec *spec, struct py_menu_data *pmd) {
@@ -539,8 +539,10 @@ static PyObject *PyFF_registerMenuItem(PyObject *self, PyObject *args, PyObject 
     int i, flags, by_keyword = false, keyword_only = false;
     struct py_menu_spec spec;
     PyObject *context = Py_None, *name = Py_None, *submenu = Py_None;
+    Hotkey hk;
 
     memset(&spec, 0, sizeof(spec));
+    memset(&hk,0,sizeof(hk));
 
     spec.func = spec.check = spec.data = Py_None;
 
@@ -654,7 +656,7 @@ static PyObject *PyFF_registerMenuItem(PyObject *self, PyObject *args, PyObject 
 	return NULL;
     }
 
-    if (spec.shortcut_str!=NULL && !HotkeyParse(NULL, spec.shortcut_str)) {
+    if (spec.shortcut_str!=NULL && !HotkeyParse(&hk, spec.shortcut_str)) {
 	PyErr_Format(PyExc_ValueError, "Cannot parse shortcut string" );
 	free(spec.levels);
 	return NULL;
@@ -662,10 +664,19 @@ static PyObject *PyFF_registerMenuItem(PyObject *self, PyObject *args, PyObject 
 
     PyMenuInit();
 
-    if ( flags&pmf_font )
-	InsertSubMenus(&spec, py_menus + pmt_font);
     if ( flags&pmf_char )
 	InsertSubMenus(&spec, py_menus + pmt_char);
+
+    /* For now, interpret GDraw key modifier conventions here and convert them to GTK codes */
+    char gtk_accel_str[200] = "\0";
+    if (hk.state & ksm_shift) strcat(gtk_accel_str, "<shift>");
+    if (hk.state & ksm_control) strcat(gtk_accel_str, "<control>");
+    if (hk.state & ksm_meta) strcat(gtk_accel_str, "<alt>");
+    if (hk.state & ksm_super) strcat(gtk_accel_str, "<super>");
+    if (hk.state & ksm_hyper) strcat(gtk_accel_str, "<hyper>");
+    const char* keyval_name = gdk_keyval_name(hk.keysym);
+    if (keyval_name) strcat(gtk_accel_str, keyval_name);
+    register_py_menu_item_in_gtk(&spec, gtk_accel_str, flags);
 
     Py_RETURN_NONE;
 }

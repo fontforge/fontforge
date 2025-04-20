@@ -35,6 +35,8 @@
 #include "ustring.h"
 #include "utype.h"
 
+#include "gtk/c_context.h"
+
 #include <dirent.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -277,7 +279,7 @@ void SFRestoreNearTop(SplineFont *sf) {
 	int enc = fv->b.map->backmap[fv->sc_near_top->orig_pos];
 	if ( enc!=-1 ) {
 	    fv->rowoff = enc/fv->colcnt;
-	    GScrollBarSetPos(fv->vsb,fv->rowoff);
+	    FVScrollBarSetPos(fv,fv->rowoff);
 	    /* Don't ask for an expose event yet. We'll get one soon enough */
 	}
     }
@@ -489,49 +491,53 @@ return;
     }
 }
 
-GMenuItem *GetEncodingMenu(void (*func)(GWindow,GMenuItem *,GEvent *),
-	Encoding *current) {
-    GMenuItem *mi;
-    int i, cnt;
+bool IsCurrentEncoding(Encoding *current, const char *enc_name) {
+    return (strmatch(enc_name,current->enc_name)==0 ||
+	    (current->iconv_name!=NULL && strmatch(enc_name,current->iconv_name)==0));
+}
+
+unsigned int collect_encoding_data(FontView *fv, EncodingMenuData** encoding_data_array) {
+    unsigned int n_standard_encodings = sizeof(encodingtypes)/sizeof(encodingtypes[0]);
+    unsigned int i, n_encodings, n_user_encodings = 0;
     Encoding *item;
 
     EncodingInit();
 
-    cnt = 0;
+    n_user_encodings = 0;
     for ( item=enclist; item!=NULL ; item=item->next )
 	if ( !item->hidden )
-	    ++cnt;
-    i = cnt+1;
-    i += sizeof(encodingtypes)/sizeof(encodingtypes[0]);
-    mi = calloc(i+1,sizeof(GMenuItem));
-    for ( i=0; i<sizeof(encodingtypes)/sizeof(encodingtypes[0])-1; ++i ) {
-	mi[i].ti = encodingtypes[i];
-	if ( !mi[i].ti.line ) {
-	    mi[i].ti.text = utf82u_copy((char *) (mi[i].ti.text));
-	    mi[i].ti.checkable = true;
-	    if ( strmatch(mi[i].ti.userdata,current->enc_name)==0 ||
-		    (current->iconv_name!=NULL && strmatch(mi[i].ti.userdata,current->iconv_name)==0))
-		mi[i].ti.checked = true;
-	}
-	mi[i].ti.text_is_1byte = false;
-	mi[i].ti.fg = mi[i].ti.bg = COLOR_DEFAULT;
-	mi[i].invoke = func;
+	    ++n_user_encodings;
+
+    /* Add separator between encoding sources */
+    n_encodings = (n_user_encodings == 0) ? n_standard_encodings
+                                          : n_standard_encodings + n_user_encodings + 1;
+
+    *encoding_data_array = calloc(n_encodings, sizeof(EncodingMenuData));
+    for ( i = 0; i < n_standard_encodings; ++i ) {
+        if (encodingtypes[i].line) {
+            /* separator */
+            (*encoding_data_array)[i].label = NULL;
+            (*encoding_data_array)[i].enc_name = NULL;
+        } else {
+	    /* Using GTextInfo::text to hold char* is an abuse. */
+            (*encoding_data_array)[i].label = (char*)encodingtypes[i].text;
+            (*encoding_data_array)[i].enc_name = encodingtypes[i].userdata;
+        }
     }
-    if ( cnt!=0 ) {
-	mi[i].ti.fg = mi[i].ti.bg = COLOR_DEFAULT;
-	mi[i++].ti.line = true;
-	for ( item=enclist; item!=NULL ; item=item->next )
-	    if ( !item->hidden ) {
-		mi[i].ti.text = utf82u_copy(item->enc_name);
-		mi[i].ti.userdata = (void *) item->enc_name;
-		mi[i].ti.fg = mi[i].ti.bg = COLOR_DEFAULT;
-		mi[i].ti.checkable = true;
-		if ( item==current )
-		    mi[i].ti.checked = true;
-		mi[i++].invoke = func;
-	    }
+
+    if (n_user_encodings > 0) {
+        /* Add separator before user encodings */
+        (*encoding_data_array)[i].label = NULL;
+        (*encoding_data_array)[i].enc_name = NULL;
+        ++i;
+
+	for ( item=enclist; item!=NULL; ++i, item=item->next ) {
+            (*encoding_data_array)[i].label = item->enc_name;
+            (*encoding_data_array)[i].enc_name = item->enc_name;
+        }
     }
-return( mi );
+
+    return n_encodings;
 }
 
 GTextInfo *GetEncodingTypes(void) {

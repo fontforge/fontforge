@@ -1,0 +1,806 @@
+/* Copyright 2024 Maxim Iorsh <iorsh@users.sourceforge.net>
+
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+Redistributions of source code must retain the above copyright
+notice, this list of conditions and the following disclaimer.
+
+Redistributions in binary form must reproduce the above copyright
+notice, this list of conditions and the following disclaimer in the
+documentation and/or other materials provided with the distribution.
+
+The name of the author may not be used to endorse or promote
+products derived from this software without specific prior written
+permission.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS
+OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE
+GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER
+IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+#include <glib/gi18n.h>
+#include <gtkmm.h>
+
+#include "common_menus.hpp"
+#include "font_view.hpp"
+#include "menu_builder.hpp"
+#include "menu_ids.h"
+
+namespace ff::views {
+
+std::vector<MenuInfo> encodings(std::shared_ptr<FVContext> fv_context,
+                                void (*encoding_action)(::FontView*,
+                                                        const char*),
+                                RadioGroup group) {
+    std::vector<EncodingMenuData> encoding_data_vec =
+        VectorWrapper(fv_context->fv, fv_context->collect_encoding_data);
+    std::vector<MenuInfo> info_arr;
+
+    for (const EncodingMenuData& encoding_data : encoding_data_vec) {
+        if (encoding_data.enc_name == nullptr) {
+            info_arr.push_back(kMenuSeparator);
+            continue;
+        }
+
+        ActivateCB action = [encoding_action, fv = fv_context->fv,
+                             enc_name =
+                                 encoding_data.enc_name](const UiContext&) {
+            encoding_action(fv, enc_name);
+        };
+        CheckedCB checker = [cb = fv_context->current_encoding,
+                             fv = fv_context->fv,
+                             enc_name = encoding_data.enc_name](
+                                const UiContext&) { return cb(fv, enc_name); };
+        MenuInfo info{{encoding_data.label, group, ""},
+                      {},
+                      {action, AlwaysEnabled, checker},
+                      0};
+        info_arr.push_back(info);
+    }
+    return info_arr;
+}
+
+std::vector<MenuInfo> encoding_reencode(const UiContext& ui_context) {
+    const FontViewUiContext& fv_ui_context =
+        static_cast<const FontViewUiContext&>(ui_context);
+    auto fv_context = fv_ui_context.legacy();
+
+    return encodings(fv_context, fv_context->change_encoding, Encoding);
+}
+
+std::vector<MenuInfo> encoding_force_encoding(const UiContext& ui_context) {
+    const FontViewUiContext& fv_ui_context =
+        static_cast<const FontViewUiContext&>(ui_context);
+    auto fv_context = fv_ui_context.legacy();
+
+    return encodings(fv_context, fv_context->force_encoding, ForcedEncoding);
+}
+
+std::vector<MenuInfo> view_menu_bitmaps(const UiContext& ui_context) {
+    const FontViewUiContext& fv_ui_context =
+        static_cast<const FontViewUiContext&>(ui_context);
+    auto fv_context = fv_ui_context.legacy();
+
+    std::vector<BitmapMenuData> bitmap_data_array =
+        VectorWrapper(fv_context->fv, fv_context->collect_bitmap_data);
+
+    std::vector<MenuInfo> info_arr;
+
+    for (const BitmapMenuData& bitmap_data : bitmap_data_array) {
+        char buffer[50];
+
+        if (bitmap_data.depth == 1)
+            sprintf(buffer, _("%d pixel bitmap"), bitmap_data.pixelsize);
+        else
+            sprintf(buffer, _("%d@%d pixel bitmap"), bitmap_data.pixelsize,
+                    bitmap_data.depth);
+
+        ActivateCB action =
+            [cb = fv_context->change_display_bitmap, fv = fv_context->fv,
+             bdf = bitmap_data.bdf](const UiContext&) { cb(fv, bdf); };
+        CheckedCB checker =
+            [cb = fv_context->current_display_bitmap, fv = fv_context->fv,
+             bdf = bitmap_data.bdf](const UiContext&) { return cb(fv, bdf); };
+        MenuInfo info{{buffer, CellPixelView, ""},
+                      {},
+                      {action, AlwaysEnabled, checker},
+                      0};
+        info_arr.push_back(info);
+    }
+
+    return info_arr;
+}
+
+std::vector<MenuInfo> view_menu_layers(const UiContext& ui_context) {
+    const FontViewUiContext& fv_ui_context =
+        static_cast<const FontViewUiContext&>(ui_context);
+    auto fv_context = fv_ui_context.legacy();
+
+    std::vector<LayerMenuData> layer_data_array =
+        VectorWrapper(fv_context->fv, fv_context->collect_layer_data);
+    std::vector<MenuInfo> info_arr;
+
+    for (const LayerMenuData& layer_data : layer_data_array) {
+        ActivateCB action = [fv_context,
+                             ly = layer_data.index](const UiContext&) {
+            fv_context->change_display_layer(fv_context->fv, ly);
+        };
+        CheckedCB checker = [fv_context,
+                             ly = layer_data.index](const UiContext&) {
+            return fv_context->current_display_layer(fv_context->fv, ly);
+        };
+        MenuInfo info{{layer_data.label, ActiveLayer, ""},
+                      {},
+                      {action, AlwaysEnabled, checker},
+                      0};
+        info_arr.push_back(info);
+    }
+    return info_arr;
+}
+
+std::vector<MenuInfo> view_menu_anchors(const UiContext& ui_context) {
+    const FontViewUiContext& fv_ui_context =
+        static_cast<const FontViewUiContext&>(ui_context);
+    auto fv_context = fv_ui_context.legacy();
+
+    std::vector<AnchorMenuData> anchor_data_array =
+        VectorWrapper(fv_context->fv, fv_context->collect_anchor_data);
+
+    std::vector<MenuInfo> info_arr;
+
+    // Special item for all anchors
+    ActivateCB action_all = [cb = fv_context->show_anchor_pair,
+                             fv = fv_context->fv](const UiContext&) {
+        cb(fv, (AnchorClass*)-1);
+    };
+    info_arr.push_back({{N_("All"), NoDecoration, ""},
+                        {},
+                        {action_all, AlwaysEnabled, NotCheckable},
+                        0});
+    info_arr.push_back(kMenuSeparator);
+
+    for (const AnchorMenuData& anchor_data : anchor_data_array) {
+        ActivateCB action =
+            [cb = fv_context->show_anchor_pair, fv = fv_context->fv,
+             ac = anchor_data.ac](const UiContext&) { cb(fv, ac); };
+        MenuInfo info{{anchor_data.label, NoDecoration, ""},
+                      {},
+                      {action, AlwaysEnabled, NotCheckable},
+                      0};
+        info_arr.push_back(info);
+    }
+    return info_arr;
+}
+
+std::vector<MenuInfo> mm_instances(const UiContext& ui_context) {
+    const FontViewUiContext& fv_ui_context =
+        static_cast<const FontViewUiContext&>(ui_context);
+    auto fv_context = fv_ui_context.legacy();
+
+    std::vector<SubInstance> instance_vec =
+        VectorWrapper(fv_context->fv, fv_context->collect_mm_instances);
+    std::vector<MenuInfo> info_arr;
+
+    for (const auto& instance_data : instance_vec) {
+        ActivateCB action = [fv_context,
+                             sub = instance_data.sub](const UiContext&) {
+            fv_context->show_mm_instance(fv_context->fv, sub);
+        };
+        CheckedCB checker = [fv_context,
+                             sub = instance_data.sub](const UiContext&) {
+            return fv_context->mm_selected(fv_context->fv, sub);
+        };
+        MenuInfo info{{instance_data.fontname, MultipleMaster, ""},
+                      {},
+                      {action, AlwaysEnabled, checker},
+                      0};
+        info_arr.push_back(info);
+    }
+    return info_arr;
+}
+
+std::vector<MenuInfo> cid_instances(const UiContext& ui_context) {
+    const FontViewUiContext& fv_ui_context =
+        static_cast<const FontViewUiContext&>(ui_context);
+    auto fv_context = fv_ui_context.legacy();
+
+    std::vector<SubInstance> instance_vec =
+        VectorWrapper(fv_context->fv, fv_context->collect_cid_instances);
+    std::vector<MenuInfo> info_arr;
+
+    for (const auto& instance_data : instance_vec) {
+        ActivateCB action = [fv_context,
+                             sub = instance_data.sub](const UiContext&) {
+            fv_context->show_cid_instance(fv_context->fv, sub);
+        };
+        CheckedCB checker = [fv_context,
+                             sub = instance_data.sub](const UiContext&) {
+            return fv_context->cid_selected(fv_context->fv, sub);
+        };
+        MenuInfo info{{instance_data.fontname, CIDInstance, ""},
+                      {},
+                      {action, AlwaysEnabled, checker},
+                      0};
+        info_arr.push_back(info);
+    }
+    return info_arr;
+}
+
+void run_autotrace(const UiContext& ui_context) {
+    const FontViewUiContext& fv_ui_context =
+        static_cast<const FontViewUiContext&>(ui_context);
+    auto fv_context = fv_ui_context.legacy();
+    Gtk::Widget* drawing_area = gtk_find_child(&ui_context.window_, "CharGrid");
+
+    auto old_cursor = set_cursor(&fv_ui_context.window_, "wait");
+    auto old_cursor_da = set_cursor(drawing_area, "wait");
+
+    bool shift_pressed =
+        gtk_get_keyboard_state() & Gdk::ModifierType::SHIFT_MASK;
+    fv_context->run_autotrace(fv_context->fv, shift_pressed);
+
+    unset_cursor(&fv_ui_context.window_, old_cursor);
+    unset_cursor(drawing_area, old_cursor_da);
+}
+
+static const Color COLOR_DEFAULT = 0xfffffffe;
+static const Color COLOR_CHOOSE = (Color)-10;
+
+template <Color C>
+void set_color(const UiContext& ui_context) {
+    const FontViewUiContext& fv_ui_context =
+        static_cast<const FontViewUiContext&>(ui_context);
+    auto fv_context = fv_ui_context.legacy();
+
+    fv_context->set_color(fv_context->fv, C);
+}
+
+template <Color C>
+void select_color(const UiContext& ui_context) {
+    const FontViewUiContext& fv_ui_context =
+        static_cast<const FontViewUiContext&>(ui_context);
+    auto fv_context = fv_ui_context.legacy();
+
+    // Decide selection merge type from keyboard state
+    enum merge_type merge = SelMergeType();
+
+    fv_context->select_color(fv_context->fv, C, merge);
+}
+
+template <int MID>
+void legacy_select_action(const UiContext& ui_context) {
+    const FontViewUiContext& fv_ui_context =
+        static_cast<const FontViewUiContext&>(ui_context);
+    ActivateCB select_action = fv_ui_context.get_activate_select_cb(MID);
+
+    select_action(ui_context);
+}
+
+void close_window(const UiContext& ui_context) { ui_context.window_.close(); }
+
+class LaunchHelp {
+ public:
+    LaunchHelp(const char* url) : url_(url) {}
+    void operator()(const UiContext& ui_context) {
+        const FontViewUiContext& fv_ui_context =
+            static_cast<const FontViewUiContext&>(ui_context);
+        fv_ui_context.legacy()->help(url_, nullptr);
+    }
+
+ private:
+    const char* url_;
+};
+
+// clang-format off
+std::vector<MenuInfo> popup_menu = {
+    { { N_("New O_utline Window"), NoDecoration, "" }, {}, LegacyCallbacks, MID_OpenOutline },
+    kMenuSeparator,
+    { { N_("Cu_t"), "editcut", "" }, {}, LegacyCallbacks, MID_Cut },
+    { { N_("_Copy"), "editcopy", "" }, {}, LegacyCallbacks, MID_Copy },
+    { { N_("C_opy Reference"), "editcopyref", "" }, {}, LegacyCallbacks, MID_CopyRef },
+    { { N_("Copy _Width"), "editcopywidth", "" }, {}, LegacyCallbacks, MID_CopyWidth },
+    { { N_("_Paste"), "editpaste", "" }, {}, LegacyCallbacks, MID_Paste },
+    { { N_("C_lear"), "editclear", "" }, {}, LegacyCallbacks, MID_Clear },
+    { { N_("Copy _Fg To Bg"), "editcopyfg2bg", "" }, {}, LegacyCallbacks, MID_CopyFgToBg },
+    { { N_("U_nlink Reference"), "editunlink", "" }, {}, LegacyCallbacks, MID_UnlinkRef },
+    kMenuSeparator,
+    { { N_("Glyph _Info..."), "elementglyphinfo", "" }, {}, LegacyCallbacks, MID_CharInfo },
+    { { N_("_Transform..."), "elementtransform", "" }, {}, LegacyCallbacks, MID_Transform },
+    { { N_("_Expand Stroke..."), "elementexpandstroke", "" }, {}, LegacyCallbacks, MID_Stroke },
+    { { N_("To _Int"), "elementround", "" }, {}, LegacyCallbacks, MID_Round },
+    { { N_("_Correct Direction"), "elementcorrectdir", "" }, {}, LegacyCallbacks, MID_Correct },
+    kMenuSeparator,
+    { { N_("Auto_Hint"), "hintsautohint", "" }, {}, LegacyCallbacks, MID_AutoHint },
+    kMenuSeparator,
+    { { N_("_Center in Width"), "metricscenter", "" }, {}, LegacyCallbacks, MID_Center },
+    { { N_("Set _Width..."), "metricssetwidth", "" }, {}, LegacyCallbacks, MID_SetWidth },
+    { { N_("Set _Vertical Advance..."), "metricssetvwidth", "" }, {}, LegacyCallbacks, MID_SetVWidth },
+};
+
+////////////////////////////////// FILE MENUS /////////////////////////////////////////
+
+std::vector<MenuInfo> recent_files_menu = {
+    MenuInfo::CustomBlock(recent_files),
+};
+
+std::vector<MenuInfo> legacy_scripts_menu = {
+    MenuInfo::CustomBlock(legacy_scripts),
+};
+
+#if HANYANG
+std::vector<MenuInfo> hangul_menu = {
+    { { N_("_New Composition..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_NewComposition },
+    { { N_("_Modify Composition..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_ModifyComposition },
+    kMenuSeparator,
+    { { N_("_Build Syllables"), NoDecoration, "" }, {}, LegacyCallbacks, MID_BuildSyllables },
+};
+#endif
+
+std::vector<MenuInfo> file_menu = {
+    { { N_("Font|_New"), "filenew", "<control>N" }, {}, LegacyCallbacks, MID_New },
+#if HANYANG
+    { { N_("_Hangul"), NoDecoration, "" }, hangul_menu, SubMenuCallbacks, 0 },
+#endif
+    { { N_("_Open"), "fileopen", "<control>O" }, {}, LegacyCallbacks, MID_Open },
+    { { N_("Recen_t"), "filerecent", "" }, recent_files_menu, LegacySubMenuCallbacks, MID_Recent },
+    { { N_("_Close"), "fileclose", "<control>W" }, {}, { close_window }, MID_Close },
+    kMenuSeparator,
+    { { N_("_Save"), "filesave", "<control>S" }, {}, LegacyCallbacks, MID_Save },
+    { { N_("S_ave as..."), "filesaveas", "<shift><control>S" }, {}, LegacyCallbacks, MID_SaveAs },
+    { { N_("Save A_ll"), "filesaveall", "<control><alt>S" }, {}, LegacyCallbacks, MID_SaveAll },
+    { { N_("_Generate Fonts..."), "filegenerate", "<shift><control>G" }, {}, LegacyCallbacks, MID_Generate },
+    { { N_("Generate Mac _Family..."), "filegeneratefamily", "<control><alt>G" }, {}, LegacyCallbacks, MID_GenerateMac },
+    { { N_("Generate TTC..."), "filegeneratefamily", "" }, {}, LegacyCallbacks, MID_GenerateTTC },
+    kMenuSeparator,
+    { { N_("_Import..."), "fileimport", "<shift><control>I" }, {}, LegacyCallbacks, MID_Import },
+    { { N_("_Merge Feature Info..."), "filemergefeature", "" }, {}, LegacyCallbacks, MID_MergeFeature },
+    { { N_("_Revert File"), "filerevert", "<shift><control>R" }, {}, LegacyCallbacks, MID_Revert },
+    { { N_("Revert To _Backup"), "filerevertbackup", "" }, {}, LegacyCallbacks, MID_RevertToBackup },
+    { { N_("Revert Gl_yph"), "filerevertglyph", "<control><alt>R" }, {}, LegacyCallbacks, MID_RevertGlyph },
+    { { N_("Clear Special Data"), NoDecoration, "" }, {}, LegacyCallbacks, MID_ClearSpecialData },
+    kMenuSeparator,
+    { { N_("_Print..."), "fileprint", "<control>P" }, {}, LegacyCallbacks, MID_Print },
+    kMenuSeparator,
+#if !defined(_NO_PYTHON)
+    { { N_("E_xecute Script..."), "python", "<control>period" }, {}, LegacyCallbacks, MID_Execute },
+#elif !defined(_NO_FFSCRIPT)
+    { { N_("E_xecute Script..."), NoDecoration, "<control>period" }, {}, LegacyCallbacks, MID_Execute },
+#endif
+#if !defined(_NO_FFSCRIPT)
+    { { N_("Script Menu"), "fileexecute", "" }, legacy_scripts_menu, LegacySubMenuCallbacks, MID_ScriptMenu },
+#endif
+#if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)
+    kMenuSeparator,
+#endif
+    { { N_("Pr_eferences..."), "fileprefs", "" }, {}, LegacyCallbacks, MID_Preferences },
+    { { N_("Appea_rance Editor..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_Appearance },
+#ifndef _NO_PYTHON
+    { { N_("Config_ure Plugins..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_ConfigPlugins },
+#endif
+    kMenuSeparator,
+    { { N_("_Quit"), "filequit", "<control>Q" }, {}, LegacyCallbacks, MID_Quit },
+};
+
+////////////////////////////////// EDIT MENUS /////////////////////////////////////////
+
+std::vector<MenuInfo> select_color_menu = {
+    { { N_("Color|Choose..."), "colorwheel", "" }, {}, { select_color<COLOR_CHOOSE> }, 0 },
+    { { N_("Color|Default"), Gdk::RGBA("00000000"), "" }, {}, { select_color<COLOR_DEFAULT> }, 0 },
+    { { "White", Gdk::RGBA("white"), "" }, {}, { select_color<0xffffff> }, 0 },
+    { { "Red", Gdk::RGBA("red"), "" }, {}, { select_color<0xff0000> }, 0 },
+    { { "Green", Gdk::RGBA("green"), "" }, {}, { select_color<0x00ff00> }, 0 },
+    { { "Blue", Gdk::RGBA("blue"), "" }, {}, { select_color<0x0000ff> }, 0 },
+    { { "Yellow", Gdk::RGBA("yellow"), "" }, {}, { select_color<0xffff00> }, 0 },
+    { { "Cyan", Gdk::RGBA("cyan"), "" }, {}, { select_color<0x00ffff> }, 0 },
+    { { "Magenta", Gdk::RGBA("magenta"), "" }, {}, { select_color<0xff00ff> }, 0 },
+};
+
+std::vector<MenuInfo> select_menu = {
+    { { N_("Select _All"), NoDecoration, "<control>A" }, {}, { legacy_select_action<MID_SelectAll> }, 0 },
+    { { N_("_Invert Selection"), NoDecoration, "<control>Escape" }, {}, { legacy_select_action<MID_SelectInvert> }, 0 },
+    { { N_("_Deselect All"), NoDecoration, "Escape" }, {}, { legacy_select_action<MID_DeselectAll> }, 0 },
+    kMenuSeparator,
+    { { N_("Select by _Color"), NoDecoration, "" }, select_color_menu, SubMenuCallbacks, 0 },
+    { { N_("Select by _Wildcard..."), NoDecoration, "" }, {}, { legacy_select_action<MID_SelectByName> }, 0 },
+    { { N_("Select by _Script..."), NoDecoration, "" }, {}, { legacy_select_action<MID_SelectByScript> }, 0 },
+    kMenuSeparator,
+    { { N_("_Glyphs Worth Outputting"), NoDecoration, "" }, {}, { legacy_select_action<MID_SelectWorth> }, 0 },
+    { { N_("Glyphs with only _References"), NoDecoration, "" }, {}, { legacy_select_action<MID_SelectGlyphsRefs> }, 0 },
+    { { N_("Glyphs with only S_plines"), NoDecoration, "" }, {}, { legacy_select_action<MID_SelectGlyphsSplines> }, 0 },
+    { { N_("Glyphs with both"), NoDecoration, "" }, {}, { legacy_select_action<MID_SelectGlyphsBoth> }, 0 },
+    { { N_("W_hitespace Glyphs"), NoDecoration, "" }, {}, { legacy_select_action<MID_SelectGlyphsWhite> }, 0 },
+    { { N_("_Changed Glyphs"), NoDecoration, "" }, {}, { legacy_select_action<MID_SelectChanged> }, 0 },
+    { { N_("_Hinting Needed"), NoDecoration, "" }, {}, { legacy_select_action<MID_SelectHintingNeeded> }, 0 },
+    { { N_("Autohinta_ble"), NoDecoration, "" }, {}, { legacy_select_action<MID_SelectAutohintable> }, 0 },
+    kMenuSeparator,
+    { { N_("Hold [Shift] key to merge"), Comment, "" }, {}, { NoAction }, 0 },
+    { { N_("Hold [Control] key to restrict"), Comment, "" }, {}, { NoAction }, 0 },
+    kMenuSeparator,
+    { { N_("Selec_t By Lookup Subtable..."), NoDecoration, "" }, {}, { legacy_select_action<MID_SelectByPST> }, 0 },
+};
+
+std::vector<MenuInfo> copy_menu = {
+    { { N_("_All Fonts"), CopyFrom, "" }, {}, LegacyCallbacks, MID_AllFonts },
+    { { N_("_Displayed Font"), CopyFrom, "" }, {}, LegacyCallbacks, MID_DisplayedFont },
+    kMenuSeparator,
+    { { N_("Glyph _Metadata"), Checkable, "" }, {}, LegacyCallbacks, MID_CharName },
+    kMenuSeparator,
+    { { N_("_TrueType Instructions"), Checkable, "" }, {}, LegacyCallbacks, MID_TTFInstr },
+};
+
+std::vector<MenuInfo> edit_menu = {
+    { { N_("_Undo"), "editundo", "<control>Z" }, {}, LegacyCallbacks, MID_Undo },
+    { { N_("_Redo"), "editredo", "<control>Y" }, {}, LegacyCallbacks, MID_Redo},
+    { { N_("Undo Fontlevel"), "editundo", "" }, {}, LegacyCallbacks, MID_UndoFontLevel },
+    kMenuSeparator,
+    { { N_("Cu_t"), "editcut", "<control>X" }, {}, LegacyCallbacks, MID_Cut },
+    { { N_("_Copy"), "editcopy", "<control>C" }, {}, LegacyCallbacks, MID_Copy },
+    { { N_("C_opy Reference"), "editcopyref", "<control>G" }, {}, LegacyCallbacks, MID_CopyRef },
+    { { N_("Copy _Lookup Data"), "editcopylookupdata", "<alt><control>C" }, {}, LegacyCallbacks, MID_CopyLookupData },
+    { { N_("Copy _Width"), "editcopywidth", "" }, {}, LegacyCallbacks, MID_CopyWidth },
+    { { N_("Copy _VWidth"), "editcopyvwidth", "" }, {}, LegacyCallbacks, MID_CopyVWidth },
+    { { N_("Co_py LBearing"), "editcopylbearing", "" }, {}, LegacyCallbacks, MID_CopyLBearing },
+    { { N_("Copy RBearin_g"), "editcopyrbearing", "" }, {}, LegacyCallbacks, MID_CopyRBearing },
+    { { N_("_Paste"), "editpaste", "<control>V" }, {}, LegacyCallbacks, MID_Paste },
+    { { N_("Paste Into"), "editpasteinto", "<control><shift>V" }, {}, LegacyCallbacks, MID_PasteInto },
+    { { N_("Paste After"), "editpasteafter", "<alt><control><shift>V" }, {}, LegacyCallbacks, MID_PasteAfter },
+    { { N_("Sa_me Glyph As"), "editsameas", "" }, {}, LegacyCallbacks, MID_SameGlyphAs },
+    { { N_("C_lear"), "editclear", "" }, {}, LegacyCallbacks, MID_Clear },
+    { { N_("Clear _Background"), "editclearback", "" }, {}, LegacyCallbacks, MID_ClearBackground },
+    { { N_("Copy _Fg To Bg"), "editcopyfg2bg", "<control><shift>C" }, {}, LegacyCallbacks, MID_CopyFgToBg },
+    { { N_("Copy Layer To Layer"), "editcopylayer2layer", "" }, {}, LegacyCallbacks, MID_CopyL2L },
+    { { N_("_Join"), "editjoin", "<control><shift>J" }, {}, LegacyCallbacks, MID_Join },
+    kMenuSeparator,
+    { { N_("_Select"), "editselect", "" }, select_menu, SubMenuCallbacks, 0 },
+    { { N_("F_ind / Replace..."), "editfind", "<alt><control>F" }, {}, LegacyCallbacks, MID_FindReplace },
+    { { N_("Replace with Reference"), "editrplref", "<alt><control><shift>F" }, {}, LegacyCallbacks, MID_RplRef },
+    { { N_("Correct References"), NoDecoration, "" }, {}, LegacyCallbacks, MID_CorrectRefs },
+    kMenuSeparator,
+    { { N_("U_nlink Reference"), "editunlink", "<control>U" }, {}, LegacyCallbacks, MID_UnlinkRef },
+    kMenuSeparator,
+    { { N_("Copy _From"), NoDecoration, "" }, copy_menu, SubMenuCallbacks, 0 },
+    kMenuSeparator,
+    { { N_("Remo_ve Undoes"), "editrmundoes", "" }, {}, LegacyCallbacks, MID_RemoveUndoes },
+};
+
+//////////////////////////////// ELEMENT MENUS ////////////////////////////////////////
+
+std::vector<MenuInfo> show_dependent_menu = {
+    { { N_("_References..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_ShowDependentRefs },
+    { { N_("_Substitutions..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_ShowDependentSubs },
+};
+
+std::vector<MenuInfo> set_color_menu = {
+    { { N_("Color|Choose..."), "colorwheel", "" }, {}, { set_color<COLOR_CHOOSE> }, 0 },
+    { { N_("Color|Default"), Gdk::RGBA("00000000"), "" }, {}, { set_color<COLOR_DEFAULT> }, 0 },
+    { { "White", Gdk::RGBA("white"), "" }, {}, { set_color<0xffffff> }, 0 },
+    { { "Red", Gdk::RGBA("red"), "" }, {}, { set_color<0xff0000> }, 0 },
+    { { "Green", Gdk::RGBA("green"), "" }, {}, { set_color<0x00ff00> }, 0 },
+    { { "Blue", Gdk::RGBA("blue"), "" }, {}, { set_color<0x0000ff> }, 0 },
+    { { "Yellow", Gdk::RGBA("yellow"), "" }, {}, { set_color<0xffff00> }, 0 },
+    { { "Cyan", Gdk::RGBA("cyan"), "" }, {}, { set_color<0x00ffff> }, 0 },
+    { { "Magenta", Gdk::RGBA("magenta"), "" }, {}, { set_color<0xff00ff> }, 0 },
+};
+
+std::vector<MenuInfo> other_info_menu = {
+    { { N_("_MATH Info..."), "elementmathinfo", "" }, {}, LegacyCallbacks, MID_MathInfo },
+    { { N_("_BDF Info..."), "elementbdfinfo", "" }, {}, LegacyCallbacks, MID_StrikeInfo },
+    { { N_("_Horizontal Baselines..."), "elementhbaselines", "" }, {}, LegacyCallbacks, MID_HorBaselines },
+    { { N_("_Vertical Baselines..."), "elementvbaselines", "" }, {}, LegacyCallbacks, MID_VertBaselines },
+    { { N_("_Justification..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_Justification },
+    { { N_("Show _Dependent"), "elementshowdep", "" }, show_dependent_menu, SubMenuCallbacks, 0 },
+    { { N_("Mass Glyph _Rename..."), "elementrenameglyph", "" }, {}, LegacyCallbacks, MID_MassRename },
+    { { N_("Set _Color"), NoDecoration, "" }, set_color_menu, LegacySubMenuCallbacks, MID_SetColor },
+};
+
+std::vector<MenuInfo> validation_menu = {
+    { { N_("Find Pr_oblems..."), "elementfindprobs", "<control>E" }, {}, LegacyCallbacks, MID_FindProblems },
+    { { N_("_Validate..."), "elementvalidate", "" }, {}, LegacyCallbacks, MID_Validate },
+    kMenuSeparator,
+    { { N_("Set E_xtremum Bound..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_SetExtremumBound },
+};
+
+std::vector<MenuInfo> style_menu = {
+    { { N_("Change _Weight..."), "styleschangeweight", "<control><shift>exclam" }, {}, LegacyCallbacks, MID_Embolden },
+    { { N_("_Italic..."), "stylesitalic", "" }, {}, LegacyCallbacks, MID_Italic },
+    { { N_("Obli_que..."), "stylesoblique", "" }, {}, LegacyCallbacks, MID_Oblique },
+    { { N_("_Condense/Extend..."), "stylesextendcondense", "" }, {}, LegacyCallbacks, MID_Condense },
+    { { N_("Change _X-Height..."), "styleschangexheight", "" }, {}, LegacyCallbacks, MID_ChangeXHeight },
+    { { N_("Change _Glyph..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_ChangeGlyph },
+    kMenuSeparator,
+    { { N_("Add _Small Capitals..."), "stylessmallcaps", "" }, {}, LegacyCallbacks, MID_SmallCaps },
+    { { N_("Add Subscripts/Superscripts..."), "stylessubsuper", "" }, {}, LegacyCallbacks, MID_SubSup },
+    kMenuSeparator,
+    { { N_("In_line..."), "stylesinline", "" }, {}, LegacyCallbacks, MID_Inline },
+    { { N_("_Outline..."), "stylesoutline", "" }, {}, LegacyCallbacks, MID_Outline },
+    { { N_("S_hadow..."), "stylesshadow", "" }, {}, LegacyCallbacks, MID_Shadow },
+    { { N_("_Wireframe..."), "styleswireframe", "" }, {}, LegacyCallbacks, MID_Wireframe },
+};
+
+std::vector<MenuInfo> transformations_menu = {
+    { { N_("_Transform..."), "elementtransform", "<control>backslash" }, {}, LegacyCallbacks, MID_Transform },
+    { { N_("_Point of View Projection..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_POV },
+    { { N_("_Non Linear Transform..."), NoDecoration, "<control><shift>colon" }, {}, LegacyCallbacks, MID_NLTransform },
+};
+
+std::vector<MenuInfo> overlap_menu = {
+    { { N_("_Remove Overlap"), "overlaprm", "<control><shift>O" }, {}, LegacyCallbacks, MID_RmOverlap },
+    { { N_("_Intersect"), "overlapintersection", "" }, {}, LegacyCallbacks, MID_Intersection },
+    { { N_("_Find Intersections"), "overlapfindinter", "" }, {}, LegacyCallbacks, MID_FindInter },
+};
+
+std::vector<MenuInfo> simplify_menu = {
+    { { N_("_Simplify"), "elementsimplify", "<control><shift>M" }, {}, LegacyCallbacks, MID_Simplify },
+    { { N_("Simplify More..."), NoDecoration, "<alt><control><shift>M" }, {}, LegacyCallbacks, MID_SimplifyMore },
+    { { N_("Clea_nup Glyph"), NoDecoration, "" }, {}, LegacyCallbacks, MID_CleanupGlyph },
+    { { N_("Canonical Start _Point"), NoDecoration, "" }, {}, LegacyCallbacks, MID_CanonicalStart },
+    { { N_("Canonical _Contours"), NoDecoration, "" }, {}, LegacyCallbacks, MID_CanonicalContours },
+};
+
+std::vector<MenuInfo> round_menu = {
+    { { N_("To _Int"), "elementround", "<control><shift>underscore" }, {}, LegacyCallbacks, MID_Round },
+    { { N_("To _Hundredths"), NoDecoration, "" }, {}, LegacyCallbacks, MID_Hundredths },
+    { { N_("_Cluster"), NoDecoration, "" }, {}, LegacyCallbacks, MID_Cluster },
+};
+
+std::vector<MenuInfo> elem_build_menu = {
+    { { N_("_Build Accented Glyph"), "elementbuildaccent", "<control><shift>A" }, {}, LegacyCallbacks, MID_BuildAccent },
+    { { N_("Build _Composite Glyph"), "elementbuildcomposite", "" }, {}, LegacyCallbacks, MID_BuildComposite },
+    { { N_("Buil_d Duplicate Glyph"), NoDecoration, "" }, {}, LegacyCallbacks, MID_BuildDuplicates },
+};
+
+std::vector<MenuInfo> element_menu = {
+    { { N_("_Font Info..."), "elementfontinfo", "<control><shift>F" }, {}, LegacyCallbacks, MID_FontInfo },
+    { { N_("Glyph _Info..."), "elementglyphinfo", "<control>i" }, {}, LegacyCallbacks, MID_CharInfo },
+    { { N_("Other Info"), "elementotherinfo", "" }, other_info_menu, SubMenuCallbacks, 0 },
+    { { N_("_Validation"), "elementvalidate", "" }, validation_menu, SubMenuCallbacks, 0 },
+    kMenuSeparator,
+    { { N_("Bitm_ap Strikes Available..."), "elementbitmapsavail", "<control><shift>B" }, {}, LegacyCallbacks, MID_AvailBitmaps },
+    { { N_("Regenerate _Bitmap Glyphs..."), "elementregenbitmaps", "<control>B" }, {}, LegacyCallbacks, MID_RegenBitmaps },
+    { { N_("Remove Bitmap Glyphs..."), "elementremovebitmaps", "" }, {}, LegacyCallbacks, MID_RemoveBitmaps },
+    kMenuSeparator,
+    { { N_("St_yle"), "elementstyles", "" }, style_menu, LegacySubMenuCallbacks, MID_Styles },
+    { { N_("_Transformations"), "elementtransform", "" }, transformations_menu, LegacySubMenuCallbacks, MID_Transform },
+    { { N_("_Expand Stroke..."), "elementexpandstroke", "<control><shift>E" }, {}, LegacyCallbacks, MID_Stroke },
+#ifdef FONTFORGE_CONFIG_TILEPATH
+    { { N_("Tile _Path..."), "elementtilepath", "" }, {}, LegacyCallbacks, MID_TilePath },
+    { { N_("Tile Pattern..."), "elementtilepattern", "" }, {}, LegacyCallbacks, MID_TilePattern },
+#endif
+    { { N_("O_verlap"), "overlaprm", "" }, overlap_menu, LegacySubMenuCallbacks, MID_RmOverlap },
+    { { N_("_Simplify"), "elementsimplify", "" }, simplify_menu, LegacySubMenuCallbacks, MID_Simplify },
+    { { N_("Add E_xtrema"), "elementaddextrema", "<control><shift>X" }, {}, LegacyCallbacks, MID_AddExtrema },
+    { { N_("Add Points Of I_nflection"), "elementaddinflections", "<control><shift>Y" }, {}, LegacyCallbacks, MID_AddInflections },
+    { { N_("_Balance"), "elementbalance", "<control><shift>P" }, {}, LegacyCallbacks, MID_Balance },
+    { { N_("Harmoni_ze"), "elementharmonize", "<control><shift>Z" }, {}, LegacyCallbacks, MID_Harmonize },
+    { { N_("Roun_d"), "elementround", "" }, round_menu, LegacySubMenuCallbacks, MID_Round },
+    { { N_("Autot_race"), "elementautotrace", "<control><shift>T" }, {}, { run_autotrace, LegacyEnabled, NotCheckable }, MID_Autotrace },
+    kMenuSeparator,
+    { { N_("_Correct Direction"), "elementcorrectdir", "<control><shift>D" }, {}, LegacyCallbacks, MID_Correct },
+    kMenuSeparator,
+    { { N_("B_uild"), "elementbuildaccent", "" }, elem_build_menu, SubMenuCallbacks, 0 },
+    kMenuSeparator,
+    { { N_("_Merge Fonts..."), "elementmergefonts", "" }, {}, LegacyCallbacks, MID_MergeFonts },
+    { { N_("Interpo_late Fonts..."), "elementinterpolatefonts", "" }, {}, LegacyCallbacks, MID_InterpolateFonts },
+    { { N_("Compare Fonts..."), "elementcomparefonts", "" }, {}, LegacyCallbacks, MID_FontCompare },
+    { { N_("Compare Layers..."), "elementcomparelayers", "" }, {}, LegacyCallbacks, MID_LayersCompare },
+};
+
+/////////////////////////////////// TOOLS MENU ////////////////////////////////////////
+
+std::vector<MenuInfo> tools_menu = {
+    MenuInfo::CustomBlock(python_tools),
+};
+
+std::vector<MenuInfo> histograms_menu = {
+    { { N_("_HStem"), NoDecoration, "" }, {}, LegacyCallbacks, MID_HStemHist },
+    { { N_("_VStem"), NoDecoration, "" }, {}, LegacyCallbacks, MID_VStemHist },
+    { { N_("BlueValues"), NoDecoration, "" }, {}, LegacyCallbacks, MID_BlueValuesHist },
+};
+
+std::vector<MenuInfo> hints_menu = {
+    { { N_("Auto_Hint"), "hintsautohint", "<control><shift>H" }, {}, LegacyCallbacks, MID_AutoHint },
+    { { N_("Hint _Substitution Pts"), NoDecoration, "" }, {}, LegacyCallbacks, MID_HintSubsPt },
+    { { N_("Auto _Counter Hint"), NoDecoration, "" }, {}, LegacyCallbacks, MID_AutoCounter },
+    { { N_("_Don't AutoHint"), "hintsdontautohint", "" }, {}, LegacyCallbacks, MID_DontAutoHint },
+    kMenuSeparator,
+    { { N_("Auto_Instr"), NoDecoration, "<control>T" }, {}, LegacyCallbacks, MID_AutoInstr },
+    { { N_("_Edit Instructions..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_EditInstructions },
+    { { N_("Edit 'fpgm'..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_Editfpgm },
+    { { N_("Edit 'prep'..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_Editprep },
+    { { N_("Edit 'maxp'..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_Editmaxp },
+    { { N_("Edit 'cvt '..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_Editcvt },
+    { { N_("Remove Instr Tables"), NoDecoration, "" }, {}, LegacyCallbacks, MID_RmInstrTables },
+    { { N_("S_uggest Deltas..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_Deltas },
+    kMenuSeparator,
+    { { N_("_Clear Hints"), "hintsclearvstems", "" }, {}, LegacyCallbacks, MID_ClearHints },
+    { { N_("Clear Instructions"), NoDecoration, "" }, {}, LegacyCallbacks, MID_ClearInstrs },
+    kMenuSeparator,
+    { { N_("Histograms"), NoDecoration, "" }, histograms_menu, SubMenuCallbacks, 0 },
+};
+
+std::vector<MenuInfo> reencode_menu = {
+    MenuInfo::CustomBlock(encoding_reencode),
+};
+
+std::vector<MenuInfo> force_encoding_menu = {
+    MenuInfo::CustomBlock(encoding_force_encoding),
+};
+
+std::vector<MenuInfo> encoding_menu = {
+    { { N_("_Reencode"), NoDecoration, "" }, reencode_menu, LegacyCallbacks, MID_Reencode },
+    { { N_("_Compact (hide unused glyphs)"), Checkable, "" }, {}, LegacyCallbacks, MID_Compact },
+    { { N_("_Force Encoding"), NoDecoration, "" }, force_encoding_menu, LegacyCallbacks, MID_ForceReencode },
+    kMenuSeparator,
+    { { N_("_Add Encoding Slots..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_AddUnencoded },
+    { { N_("Remove _Unused Slots"), NoDecoration, "" }, {}, LegacyCallbacks, MID_RemoveUnused },
+    { { N_("_Detach Glyphs"), NoDecoration, "" }, {}, LegacyCallbacks, MID_DetachGlyphs },
+    { { N_("Detach & Remo_ve Glyphs..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_DetachAndRemoveGlyphs },
+    kMenuSeparator,
+    { { N_("Add E_ncoding Name..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_AddEncoding },
+    { { N_("_Load Encoding..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_LoadEncoding },
+    { { N_("Ma_ke From Font..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_MakeFromFont },
+    { { N_("Remove En_coding..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_RemoveEncoding },
+    kMenuSeparator,
+    { { N_("Display By _Groups..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_DisplayByGroups },
+    { { N_("D_efine Groups..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_DefineGroups },
+    kMenuSeparator,
+    { { N_("_Save Namelist of Font..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_SaveNamelist },
+    { { N_("L_oad Namelist..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_LoadNameList },
+    { { N_("Rename Gl_yphs..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_RenameGlyphs },
+    { { N_("Cre_ate Named Glyphs..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_NameGlyphs },
+};
+
+std::vector<MenuInfo> layers_menu = {
+    MenuInfo::CustomBlock(view_menu_layers),
+};
+
+std::vector<MenuInfo> anchor_pairs_menu = {
+    MenuInfo::CustomBlock(view_menu_anchors),
+};
+
+std::vector<MenuInfo> combinations_menu = {
+    { { N_("_Kern Pairs"), NoDecoration, "" }, {}, LegacyCallbacks, MID_KernPairs },
+    { { N_("_Anchored Pairs"), NoDecoration, "" }, anchor_pairs_menu, SubMenuCallbacks, MID_AnchorPairs },
+    { { N_("_Ligatures"), NoDecoration, "" }, {}, LegacyCallbacks, MID_Ligatures },
+};
+
+std::vector<MenuInfo> label_glyph_menu = {
+    { { N_("_Glyph Image"), GlyphLabel, "" }, {}, LegacyCallbacks, MIDSERIES_LabelGlyph + gl_glyph },
+    { { N_("_Name"), GlyphLabel, "" }, {}, LegacyCallbacks, MIDSERIES_LabelGlyph + gl_name },
+    { { N_("_Unicode"), GlyphLabel, "" }, {}, LegacyCallbacks, MIDSERIES_LabelGlyph + gl_unicode },
+    { { N_("_Encoding Hex"), GlyphLabel, "" }, {}, LegacyCallbacks, MIDSERIES_LabelGlyph + gl_encoding },
+};
+
+std::vector<MenuInfo> view_menu = {
+    { { N_("_Next Glyph"), "viewnext", "<control>bracketright" }, {}, LegacyCallbacks, MID_Next },
+    { { N_("_Prev Glyph"), "viewprev", "<control>bracketleft" }, {}, LegacyCallbacks, MID_Prev },
+    { { N_("Next _Defined Glyph"), "viewnextdef", "<alt><control>bracketright" }, {}, LegacyCallbacks, MID_NextDef },
+    { { N_("Prev Defined Gl_yph"), "viewprevdef", "<alt><control>bracketleft" }, {}, LegacyCallbacks, MID_PrevDef },
+    { { N_("_Goto"), "viewgoto", "<control><shift>greater" }, {}, LegacyCallbacks, MID_GotoChar },
+    kMenuSeparator,
+    { { N_("_Layers"), "viewlayers", "" }, layers_menu, SubMenuCallbacks, 0 },
+    kMenuSeparator,
+    { { N_("_Show ATT"), NoDecoration, "" }, {}, LegacyCallbacks, MID_Show_ATT },
+    { { N_("Display S_ubstitutions..."), Checkable, "" }, {}, LegacyCallbacks, MID_DisplaySubs },
+    { { N_("Com_binations"), NoDecoration, "" }, combinations_menu, SubMenuCallbacks, 0 },
+    kMenuSeparator,
+    { { N_("Label Gl_yph By"), NoDecoration, "" }, label_glyph_menu, SubMenuCallbacks, 0 },
+    kMenuSeparator,
+    { { N_("S_how H. Metrics..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_ShowHMetrics },
+    { { N_("Show _V. Metrics..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_ShowVMetrics },
+    kMenuSeparator,
+    { { N_("32x8 cell window"), CellWindowSize, "<control><shift>percent" }, {}, LegacyCallbacks, MID_32x8 },
+    { { N_("_16x4 cell window"), CellWindowSize, "<control><shift>asciicircum" }, {}, LegacyCallbacks, MID_16x4 },
+    { { N_("_8x2  cell window"), CellWindowSize, "<control><shift>asterisk" }, {}, LegacyCallbacks, MID_8x2 },
+    kMenuSeparator,
+    { { N_("_24 pixel outline"), CellPixelView, "<control>2" }, {}, LegacyCallbacks, MID_24 },
+    { { N_("_36 pixel outline"), CellPixelView, "<control>3" }, {}, LegacyCallbacks, MID_36 },
+    { { N_("_48 pixel outline"), CellPixelView, "<control>4" }, {}, LegacyCallbacks, MID_48 },
+    { { N_("_72 pixel outline"), CellPixelView, "<control>7" }, {}, LegacyCallbacks, MID_72 },
+    { { N_("_96 pixel outline"), CellPixelView, "<control>9" }, {}, LegacyCallbacks, MID_96 },
+    { { N_("_128 pixel outline"), CellPixelView, "<control>1" }, {}, LegacyCallbacks, MID_128 },
+    { { N_("_Anti Alias"), Checkable, "<control>5" }, {}, LegacyCallbacks, MID_AntiAlias },
+    { { N_("_Fit to font bounding box"), Checkable, "<control>6" }, {}, LegacyCallbacks, MID_FitToBbox },
+    kMenuSeparator,
+    { { N_("Bitmap _Magnification..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_BitmapMag },
+    MenuInfo::CustomBlock(view_menu_bitmaps),
+};
+
+std::vector<MenuInfo> metrics_menu = {
+    { { N_("New _Metrics Window"), NoDecoration, "" }, {}, LegacyCallbacks, MID_OpenMetrics },
+    kMenuSeparator,
+    { { N_("_Center in Width"), "metricscenter", "" }, {}, LegacyCallbacks, MID_Center },
+    { { N_("_Thirds in Width"), NoDecoration, "" }, {}, LegacyCallbacks, MID_Thirds },
+    { { N_("Set _Width..."), "metricssetwidth", "<control><shift>L" }, {}, LegacyCallbacks, MID_SetWidth },
+    { { N_("Set _LBearing..."), "metricssetlbearing", "<control>L" }, {}, LegacyCallbacks, MID_SetLBearing },
+    { { N_("Set _RBearing..."), "metricssetrbearing", "<control>R" }, {}, LegacyCallbacks, MID_SetRBearing },
+    { { N_("Set Both Bearings..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_SetBearings },
+    kMenuSeparator,
+    { { N_("Set _Vertical Advance..."), "metricssetvwidth", "" }, {}, LegacyCallbacks, MID_SetVWidth },
+    kMenuSeparator,
+    { { N_("_Auto Width..."), NoDecoration, "<control><shift>W" }, {}, LegacyCallbacks, MID_AutoWidth },
+    { { N_("Ker_n By Classes..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_KernByClasses },
+    { { N_("Remove All Kern _Pairs"), NoDecoration, "" }, {}, LegacyCallbacks, MID_RmHKern },
+    { { N_("Kern Pair Closeup..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_KernCloseup },
+    kMenuSeparator,
+    { { N_("VKern By Classes..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_VKernByClass },
+    { { N_("VKern From HKern"), NoDecoration, "" }, {}, LegacyCallbacks, MID_VKernFromH },
+    { { N_("Remove All VKern Pairs"), NoDecoration, "" }, {}, LegacyCallbacks, MID_RmVKern },
+};
+
+std::vector<MenuInfo> cid_menu = {
+    { { N_("_Convert to CID"), NoDecoration, "" }, {}, LegacyCallbacks, MID_Convert2CID },
+    { { N_("Convert By C_Map"), NoDecoration, "" }, {}, LegacyCallbacks, MID_ConvertByCMap },
+    kMenuSeparator,
+    { { N_("_Flatten"), NoDecoration, "" }, {}, LegacyCallbacks, MID_Flatten },
+    { { N_("Fl_attenByCMap"), NoDecoration, "" }, {}, LegacyCallbacks, MID_FlattenByCMap },
+    kMenuSeparator,
+    { { N_("Insert F_ont..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_InsertFont },
+    { { N_("Insert _Blank"), NoDecoration, "" }, {}, LegacyCallbacks, MID_InsertBlank },
+    { { N_("_Remove Font"), NoDecoration, "" }, {}, LegacyCallbacks, MID_RemoveFromCID },
+    kMenuSeparator,
+    { { N_("_Change Supplement..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_ChangeSupplement },
+    { { N_("C_ID Font Info..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_CIDFontInfo },
+    kMenuSeparator,
+    MenuInfo::CustomBlock(cid_instances),
+};
+
+std::vector<MenuInfo> mm_menu = {
+    /* GT: Here (and following) MM means "MultiMaster" */
+    { { N_("_Create MM..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_CreateMM },
+    { { N_("MM _Validity Check"), NoDecoration, "" }, {}, LegacyCallbacks, MID_MMValid },
+    { { N_("MM _Info..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_MMInfo },
+    { { N_("_Blend to New Font..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_BlendToNew },
+    { { N_("MM Change Default _Weights..."), NoDecoration, "" }, {}, LegacyCallbacks, MID_ChangeMMBlend },
+    kMenuSeparator,
+    MenuInfo::CustomBlock(mm_instances),
+};
+
+std::vector<MenuInfo> window_menu = {
+    { { N_("New O_utline Window"), NoDecoration, "<control>H" }, {}, LegacyCallbacks, MID_OpenOutline },
+    { { N_("New _Bitmap Window"), NoDecoration, "<control>J" }, {}, LegacyCallbacks, MID_OpenBitmap },
+    { { N_("New _Metrics Window"), NoDecoration, "<control>K" }, {}, LegacyCallbacks, MID_OpenMetrics },
+    kMenuSeparator,
+    { { N_("Warnings"), NoDecoration, "" }, {}, LegacyCallbacks, MID_Warnings },
+    kMenuSeparator,
+    MenuInfo::CustomBlock(top_windows_list),
+};
+
+std::vector<MenuInfo> help_menu = {
+    { { N_("_Help"), "helphelp", "F1" }, {}, { LaunchHelp("ui/mainviews/fontview.html") }, 0 },
+    { { N_("_Overview"), NoDecoration, "<shift>F1" }, {}, { LaunchHelp("index.html") }, 0 },
+    { { N_("_Index"), "helpindex", "<control>F1" }, {}, { LaunchHelp("index.html") }, 0 },
+    { { N_("_About..."), "helpabout", "" }, {}, LegacyCallbacks, MID_About },
+    { { N_("_License..."), NoDecoration, "" }, {}, { LaunchHelp("https://github.com/fontforge/fontforge/blob/master/LICENSE") }, 0 },
+};
+
+std::vector<MenuInfo> top_menu = {
+    { { N_("_File") }, file_menu, SubMenuCallbacks, -1 },
+    { { N_("_Edit") }, edit_menu, SubMenuCallbacks, -1 },
+    { { N_("E_lement") }, element_menu, SubMenuCallbacks, -1 },
+#ifndef _NO_PYTHON
+    { { N_("_Tools") }, tools_menu, { NoAction, python_tools_enabled }, -1 },
+#endif
+    { { N_("H_ints") }, hints_menu, SubMenuCallbacks, -1 },
+    { { N_("E_ncoding") }, encoding_menu, SubMenuCallbacks, -1 },
+    { { N_("_View") }, view_menu, SubMenuCallbacks, -1 },
+    { { N_("_Metrics") }, metrics_menu, SubMenuCallbacks, -1 },
+    { { N_("_CID") }, cid_menu, SubMenuCallbacks, -1 },
+/* GT: Here (and following) MM means "MultiMaster" */
+    { { N_("MM") }, mm_menu, SubMenuCallbacks, -1 },
+    { { N_("_Window") }, window_menu, SubMenuCallbacks, -1 },
+    { { N_("_Help") }, help_menu, SubMenuCallbacks, -1 },
+};
+// clang-format on
+
+}  // namespace ff::views

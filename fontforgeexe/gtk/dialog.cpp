@@ -1,5 +1,5 @@
-/* Copyright (C) 2016 by Jeremy Tan */
-/*
+/* Copyright 2024 Maxim Iorsh <iorsh@users.sourceforge.net>
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
 
@@ -25,26 +25,21 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FONTFORGE_FFGDK_H
-#define FONTFORGE_FFGDK_H
+#include "dialog.hpp"
 
-#include <fontforge-config.h>
+#include "utils.hpp"
 
-#ifdef FONTFORGE_CAN_USE_GDK
+namespace ff::dlg {
 
-// As gdk #includes glib, we must apply the same name mangling here.
-#define GTimer GTimer_GTK
-#define GList  GList_Glib
-#define GMenuItem GMenuItem_GIO
-#define GMenu GMenu_GIO
-#include <gdk/gdk.h>
-#include <gdk/gdkkeysyms.h>
-#include <gtk/gtk.h>
-#undef GMenu
-#undef GMenuItem
-#undef GList
-#undef GTimer
+Dialog::Dialog() { parent_window = gtk_get_topmost_window(); }
 
-#endif // FONTFORGE_CAN_USE_GDK
+Gtk::ResponseType Dialog::run() {
+    if (parent_window) {
+        Glib::RefPtr<Gdk::Window> win = dialog.get_window();
+        win->set_transient_for(parent_window);
+    }
 
-#endif /* FONTFORGE_FFGDK_H */
+    return (Gtk::ResponseType)dialog.run();
+}
+
+}  // namespace ff::dlg

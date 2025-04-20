@@ -1,5 +1,5 @@
-/* Copyright (C) 2016 by Jeremy Tan */
-/*
+/* Copyright 2024 Maxim Iorsh <iorsh@users.sourceforge.net>
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
 
@@ -25,26 +25,39 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FONTFORGE_FFGDK_H
-#define FONTFORGE_FFGDK_H
+#include "select_glyphs.hpp"
 
-#include <fontforge-config.h>
+#include "intl.h"
+#include "utils.hpp"
 
-#ifdef FONTFORGE_CAN_USE_GDK
+namespace ff::dlg {
 
-// As gdk #includes glib, we must apply the same name mangling here.
-#define GTimer GTimer_GTK
-#define GList  GList_Glib
-#define GMenuItem GMenuItem_GIO
-#define GMenu GMenu_GIO
-#include <gdk/gdk.h>
-#include <gdk/gdkkeysyms.h>
-#include <gtk/gtk.h>
-#undef GMenu
-#undef GMenuItem
-#undef GList
-#undef GTimer
+SelectGlyphs::SelectGlyphs(std::shared_ptr<FVContext> context, int width,
+                           int height)
+    : Dialog(), fv_context(context), char_grid(context) {
+    dialog.set_title(_("Glyph Set by Selection"));
 
-#endif // FONTFORGE_CAN_USE_GDK
+    explanation.set_text(
+        _("Select glyphs in the font view above.\nThe selected glyphs "
+          "become your glyph class."));
+    explanation.set_halign(Gtk::ALIGN_START);
 
-#endif /* FONTFORGE_FFGDK_H */
+    dialog.get_content_area()->pack_start(char_grid.get_top_widget());
+    dialog.get_content_area()->pack_end(explanation, Gtk::PACK_SHRINK);
+
+    dialog.add_button(_("_OK"), Gtk::RESPONSE_OK);
+    dialog.add_button(_("_Cancel"), Gtk::RESPONSE_CANCEL);
+
+    // dialog.resize() doesn't work until after the realization, i.e. after
+    // dialog.show_all(). Use the realize event to ensure reliable resizing.
+    //
+    // Also, the signal itself must be connected before dialog.show_all(),
+    // otherwise it wouldn't work for some reason...
+    dialog.signal_realize().connect([this, width, height]() {
+        char_grid.resize_drawing_area(width, height);
+    });
+
+    dialog.show_all();
+}
+
+}  // namespace ff::dlg

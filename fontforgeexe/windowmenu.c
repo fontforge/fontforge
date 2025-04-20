@@ -34,8 +34,15 @@
 #include "splinefont.h"
 #include "ustring.h"
 
+#include "gtk/c_context.h"
+#include "gtk/font_view_shim.hpp"
+
 static void WindowSelect(GWindow base,struct gmenuitem *mi,GEvent *e) {
     GDrawRaise(mi->ti.userdata);
+}
+
+static void FontviewSelectGTK(GWindow base,struct gmenuitem *mi,GEvent *e) {
+    cg_raise_window(mi->ti.userdata);
 }
 
 static void AddMI(GMenuItem *mi,GWindow gw,int changed, int top) {
@@ -43,6 +50,19 @@ static void AddMI(GMenuItem *mi,GWindow gw,int changed, int top) {
     mi->ti.userdata = gw;
     mi->ti.bg = GDrawGetDefaultBackground(GDrawGetDisplayOfWindow(gw));
     mi->invoke = WindowSelect;
+    mi->ti.text = utf82u_copy(title);
+    if(mi->ti.text == NULL)
+	mi->ti.text = utf82u_copy("(null)");
+    if ( u_strlen( mi->ti.text ) > 35 )
+	mi->ti.text[35] = '\0';
+    free(title);
+}
+
+static void AddMI_GTK(GMenuItem *mi,FontViewBase *fv,int changed, int top) {
+    char* title = cg_get_dlg_title(((FontView *) fv)->cg_widget);
+    mi->ti.userdata = ((FontView *) fv)->cg_widget;
+    mi->ti.bg = COLOR_DEFAULT;
+    mi->invoke = FontviewSelectGTK;
     mi->ti.text = utf82u_copy(title);
     if(mi->ti.text == NULL)
 	mi->ti.text = utf82u_copy("(null)");
@@ -99,11 +119,11 @@ return;
     }
     cnt = precnt;
     for ( fv = (FontViewBase *) fv_list; fv!=NULL; fv = fv->next ) {
-	if( !((FontView *) fv)->gw ) {
+	if( !((FontView *) fv)->cg_widget ) {
 	    continue;
 	}
 	
-	AddMI(&sub[cnt++],((FontView *) fv)->gw,fv->sf->changed,true);
+	AddMI_GTK(&sub[cnt++],fv,fv->sf->changed,true);
 	for ( i=0; i<fv->sf->glyphcnt; ++i ) if ( fv->sf->glyphs[i]!=NULL ) {
 	    for ( cv = fv->sf->glyphs[i]->views; cv!=NULL; cv=cv->next )
 		AddMI(&sub[cnt++],((CharView *) cv)->gw,cv->sc->changed,false);
@@ -119,14 +139,81 @@ return;
     }
 }
 
+/* Builds up a menu containing the titles of all the major windows */
+unsigned int collect_windows(void *UNUSED(dummy), TopLevelWindow** windows_array) {
+    int i, n_windows = 0;
+    FontViewBase *fv;
+    CharViewBase *cv;
+    MetricsView *mv;
+    BitmapView *bv;
+    BDFFont *bdf;
+
+    for ( fv = (FontViewBase *) fv_list; fv!=NULL; fv = fv->next ) {
+	++n_windows;		/* for the font */
+	for ( i=0; i<fv->sf->glyphcnt; ++i ) if ( fv->sf->glyphs[i]!=NULL ) {
+	    for ( cv = fv->sf->glyphs[i]->views; cv!=NULL; cv=cv->next )
+		++n_windows;		/* for each char view in the font */
+	}
+	for ( bdf= fv->sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
+	    for ( i=0; i<bdf->glyphcnt; ++i ) if ( bdf->glyphs[i]!=NULL ) {
+		for ( bv = bdf->glyphs[i]->views; bv!=NULL; bv=bv->next )
+		    ++n_windows;
+	    }
+	}
+	for ( mv=fv->sf->metrics; mv!=NULL; mv=mv->next )
+	    ++n_windows;
+    }
+    if ( n_windows==0 ) {
+	/* This can't happen */
+return 0;
+    }
+
+    *windows_array = calloc(n_windows,sizeof(TopLevelWindow));
+    n_windows = 0;
+
+    for ( fv = (FontViewBase *) fv_list; fv!=NULL; fv = fv->next ) {
+	if( !((FontView *) fv)->cg_widget ) {
+	    continue;
+	}
+
+	// Add GTK window for font view
+	(*windows_array)[n_windows].is_gtk = true;
+	(*windows_array)[n_windows++].window = ((FontView *) fv)->cg_widget;
+
+	for ( i=0; i<fv->sf->glyphcnt; ++i ) if ( fv->sf->glyphs[i]!=NULL ) {
+	    for ( cv = fv->sf->glyphs[i]->views; cv!=NULL; cv=cv->next ) {
+		// Add legacy GDraw window for Outline view
+		(*windows_array)[n_windows].is_gtk = false;
+		(*windows_array)[n_windows++].window = ((CharView *) cv)->gw;
+	    }
+	}
+	for ( bdf= fv->sf->bitmaps; bdf!=NULL; bdf = bdf->next ) {
+	    for ( i=0; i<bdf->glyphcnt; ++i ) if ( bdf->glyphs[i]!=NULL ) {
+		for ( bv = bdf->glyphs[i]->views; bv!=NULL; bv=bv->next ) {
+		    // Add legacy GDraw window for Bitmap view
+		    (*windows_array)[n_windows].is_gtk = false;
+		    (*windows_array)[n_windows++].window = bv->gw;
+		}
+	    }
+	}
+	for ( mv=fv->sf->metrics; mv!=NULL; mv=mv->next ) {
+	    // Add legacy GDraw window for Metrics view
+	    (*windows_array)[n_windows].is_gtk = false;
+	    (*windows_array)[n_windows++].window = mv->gw;
+        }
+    }
+
+    return n_windows;
+}
+
 static void RecentSelect(GWindow base,struct gmenuitem *mi,GEvent *e) {
     ViewPostScriptFont((char *) (mi->ti.userdata),0);
 }
 
 /* Builds up a menu containing the titles of all the unused recent files */
 void MenuRecentBuild(GWindow base,struct gmenuitem *mi,GEvent *e) {
-    int i, cnt, cnt1;
-    FontViewBase *fv;
+    char** recent_files_array = NULL;
+    int i, n_recent = collect_recent_files(&recent_files_array);
     GMenuItem *sub;
 
     if ( mi->sub!=NULL ) {
@@ -134,35 +221,45 @@ void MenuRecentBuild(GWindow base,struct gmenuitem *mi,GEvent *e) {
 	mi->sub = NULL;
     }
 
-    cnt = 0;
+    sub = calloc(n_recent+1,sizeof(GMenuItem));
+    for ( i=0; i<n_recent; ++i ) {
+	GMenuItem *mi = &sub[i];
+	mi->ti.userdata = recent_files_array[i];
+	mi->ti.bg = mi->ti.fg = COLOR_DEFAULT;
+	mi->invoke = RecentSelect;
+	mi->ti.text = def2u_copy(GFileNameTail(recent_files_array[i]));
+    }
+
+    mi->sub = sub;
+}
+
+unsigned int collect_recent_files(char*** recent_files_array) {
+    int i, n_recent, cnt1;
+    FontViewBase *fv;
+
+    n_recent = 0;
     for ( i=0; i<RECENT_MAX && RecentFiles[i]!=NULL; ++i ) {
 	for ( fv=(FontViewBase *) fv_list; fv!=NULL; fv=fv->next )
 	    if ( fv->sf->filename!=NULL && strcmp(fv->sf->filename,RecentFiles[i])==0 )
 	break;
 	if ( fv==NULL )
-	    ++cnt;
+	    ++n_recent;
     }
-    if ( cnt==0 ) {
-	/* This can't happen */
-return;
-    }
-    sub = calloc(cnt+1,sizeof(GMenuItem));
+
+    *recent_files_array = calloc(n_recent,sizeof(char*));
     cnt1 = 0;
     for ( i=0; i<RECENT_MAX && RecentFiles[i]!=NULL; ++i ) {
 	for ( fv=(FontViewBase *) fv_list; fv!=NULL; fv=fv->next )
 	    if ( fv->sf->filename!=NULL && strcmp(fv->sf->filename,RecentFiles[i])==0 )
 	break;
 	if ( fv==NULL ) {
-	    GMenuItem *mi = &sub[cnt1++];
-	    mi->ti.userdata = RecentFiles[i];
-	    mi->ti.bg = mi->ti.fg = COLOR_DEFAULT;
-	    mi->invoke = RecentSelect;
-	    mi->ti.text = def2u_copy(GFileNameTail(RecentFiles[i]));
+	    (*recent_files_array)[cnt1++] = RecentFiles[i];
 	}
     }
-    if ( cnt!=cnt1 )
+    if ( n_recent!=cnt1 )
 	IError( "Bad counts in MenuRecentBuild");
-    mi->sub = sub;
+
+    return n_recent;
 }
 
 int RecentFilesAny(void) {
@@ -184,6 +281,15 @@ static void ScriptSelect(GWindow base,struct gmenuitem *mi,GEvent *e) {
     int index = (intptr_t) (mi->ti.userdata);
     FontView *fv = (FontView *) GDrawGetUserData(base);
 
+    /* the menu is not always up to date. If user changed prefs and then used */
+    /*  Alt|Ctl|Digit s/he would not get a new menu built and the old one might*/
+    /*  refer to something out of bounds. Hence the check */
+    if ( index<0 || script_filenames[index]==NULL )
+return;
+    ExecuteScriptFile((FontViewBase *) fv,NULL,script_filenames[index]);
+}
+
+void script_run(FontView *fv, int index) {
     /* the menu is not always up to date. If user changed prefs and then used */
     /*  Alt|Ctl|Digit s/he would not get a new menu built and the old one might*/
     /*  refer to something out of bounds. Hence the check */
@@ -218,6 +324,20 @@ return;
 	mi->ti.text = u_copy(script_menu_names[i]);
     }
     mi->sub = sub;
+}
+
+unsigned int collect_script_names(char*** script_names_array) {
+    int i, n_scripts;
+
+    for ( i=0; i<SCRIPT_MENU_MAX && script_menu_names[i]!=NULL; ++i );
+    n_scripts = i;
+
+    *script_names_array = calloc(n_scripts,sizeof(char*));
+    for ( i=0; i<n_scripts; ++i ) {
+	(*script_names_array)[i] = u2utf8_copy(script_menu_names[i]);
+    }
+
+    return n_scripts;
 }
 #endif
 
@@ -260,6 +380,23 @@ void _aplistbuild(struct gmenuitem *top,SplineFont *sf,
 	mi->ti.text = utf82u_copy(ac->name);
     }
     top->sub = sub;
+}
+
+unsigned int collect_anchor_data(FontView *fv, AnchorMenuData** anchor_data_array) {
+    unsigned int i, n_anchors = 0;
+    SplineFont *sf = fv->b.sf;
+    AnchorClass *ac;
+
+    /* Cound the available anchors */
+    for ( ac = sf->anchor; ac!=NULL; ++n_anchors, ac=ac->next );
+        
+    *anchor_data_array = calloc(n_anchors, sizeof(AnchorMenuData));
+    for ( ac = sf->anchor, i = 0; ac!=NULL; ++i, ac=ac->next ) {
+        (*anchor_data_array)[i].label = ac->name;
+        (*anchor_data_array)[i].ac = ac;
+    }
+
+    return n_anchors;
 }
 
 void mbFreeGetText(GMenuItem *mb) {
