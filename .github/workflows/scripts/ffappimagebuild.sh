@@ -17,6 +17,9 @@ fi
 
 echo "Starting appimage build, folder is $APPDIR with version $VERSION"
 
+# AppImage still needs libfuse2. See https://github.com/AppImage/AppImageKit/issues/1235.
+sudo apt-get install -y libfuse2
+
 # TODO: AppStream metainfo
 PYVER=$(ldd $APPDIR/usr/bin/fontforge | grep -Eom1 'python[0-9\.]+[0-9]+' | head -1 | cut -c 7-)
 echo "FontForge built against Python $PYVER"
