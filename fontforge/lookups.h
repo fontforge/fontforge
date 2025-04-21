@@ -4,6 +4,8 @@
 #include "splinefont.h"
 #include "uiinterface.h"
 
+typedef struct cpp_SubtableMap cpp_SubtableMap;
+
 struct sllk {
 	uint32_t script;
 	int cnt;
@@ -68,7 +70,8 @@ extern OTLookup *OTLookupCopyInto(SplineFont *into_sf, SplineFont *from_sf, OTLo
 extern OTLookup *SFFindLookup(SplineFont *sf, const char *name);
 extern OTLookup **SFLookupsInScriptLangFeature(SplineFont *sf, int gpos, uint32_t script, uint32_t lang, uint32_t feature);
 extern SplineChar **SFGlyphsWithLigatureinLookup(SplineFont *sf, struct lookup_subtable *subtable);
-extern SplineChar **SFGlyphsWithPSTinSubtable(SplineFont *sf, struct lookup_subtable *subtable);
+extern void SFCollectSubtableMap(SplineFont *sf, cpp_SubtableMap *map);
+extern SplineChar **SFGlyphsWithPSTinSubtable(SplineFont *sf, struct lookup_subtable *subtable, cpp_SubtableMap *map);
 extern struct lookup_subtable *SFFindLookupSubtableAndFreeName(SplineFont *sf, char *name);
 extern struct lookup_subtable *SFSubTableFindOrMake(SplineFont *sf, uint32_t tag, uint32_t script, int lookup_type);
 extern struct lookup_subtable *SFSubTableMake(SplineFont *sf, uint32_t tag, uint32_t script, int lookup_type);

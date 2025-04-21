@@ -57,6 +57,7 @@ set(FONTFORGE_NOINST_HEADERS
   splineutil.h
   splineutil2.h
   start.h
+  std_maps.hpp
   svg.h
   tottf.h
   tottfaat.h
@@ -199,6 +200,7 @@ add_library(fontforge
   splineutil2.c
   start.c
   stemdb.c
+  std_maps.cpp
   svg.c
   tottf.c
   tottfaat.c
