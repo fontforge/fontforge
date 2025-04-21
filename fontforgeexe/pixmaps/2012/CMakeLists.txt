@@ -74,7 +74,7 @@ install(FILES
   radio_off.png radio_off_disabled.png radio_on.png radio_on_disabled.png
   downarrow.png downarrow_disabled.png
 
-  charviewicon.xbm fontview2.xbm logo.xbm
+  charviewicon.xbm logo.xbm
 
   ../tango/Cantarell-BoldOblique.ttf ../tango/Cantarell-Bold.ttf
   ../tango/Cantarell-Oblique.ttf ../tango/Cantarell-Regular.ttf

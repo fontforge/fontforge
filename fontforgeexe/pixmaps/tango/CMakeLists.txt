@@ -84,7 +84,7 @@ install(FILES
   viewpalettes.png viewprevdef.png viewprev.png viewreplace.png viewsmallersize.png viewzoomin.png
   viewzoomout.png wireframe.png
 
-  charviewicon.xbm fontview2.xbm logo.xbm
+  charviewicon.xbm logo.xbm
 
   splash2019.png splash2020.png
 
