@@ -21,6 +21,7 @@ fontforge.FontView.HintingNeededColor: #598ec6
 fontforge.FontView.MetricsAdvanceAtColor: #008000
 fontforge.FontView.MetricsAdvanceToColor: #008000
 fontforge.FontView.MetricsBaselineColor: #0000c0
+fontforge.FontView.MetricsGlyphContourColor: #a45a38
 fontforge.FontView.MetricsOriginColor: #c00000
 fontforge.FontView.Font: ^View.LabelFont
 
