@@ -8,6 +8,8 @@ install(FILES
 )
 
 install(FILES
+  fontview.svg
+
   changeweight.png check_off_disabled.png check_off.png check_on_disabled.png check_on.png
   chooseraudio.png chooserback.png chooserbookmark.png choosercid.png choosercompressed.png
   chooserconfigtool.png choosercore.png chooserdir.png chooserforward.png chooserhomefolder.png

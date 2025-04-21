@@ -125,6 +125,9 @@ FontView::FontView(std::shared_ptr<FVContext> fv_context, int width, int height)
         return on_signal_delete_event(context, window);
     });
 
+    Glib::RefPtr<Gdk::Pixbuf> fv_icon = load_icon("fontview", 128);
+    window.set_icon(fv_icon);
+
     // dialog.resize() doesn't work until after the realization, i.e. after
     // dialog.show_all(). Use the realize event to ensure reliable resizing.
     //
