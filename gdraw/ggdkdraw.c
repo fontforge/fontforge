@@ -566,11 +566,13 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
             icon = (GGDKWindow) wattrs->icon;
         }
         if (icon != NULL) {
-            GdkPixbuf *pb = gdk_pixbuf_get_from_surface(icon->cs, 0, 0, icon->pos.width, icon->pos.height);
-            if (pb != NULL) {
-                GList_Glib ent = {.data = pb};
-                gdk_window_set_icon_list(nw->w, &ent);
-                g_object_unref(pb);
+            if (!(wattrs->mask & wam_gtk_wrapper)) {
+                GdkPixbuf *pb = gdk_pixbuf_get_from_surface(icon->cs, 0, 0, icon->pos.width, icon->pos.height);
+                if (pb != NULL) {
+                    GList_Glib ent = {.data = pb};
+                    gdk_window_set_icon_list(nw->w, &ent);
+                    g_object_unref(pb);
+                }
             }
         } else {
             gdk_window_set_decorations(nw->w, GDK_DECOR_ALL | GDK_DECOR_MENU);
