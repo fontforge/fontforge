@@ -93,6 +93,11 @@ return( NULL );
 	free(new->layers);
 	*new = *crefs;
 	new->layers = calloc(new->layer_cnt,sizeof(struct reflayer));
+	for ( layer=0; layer<new->layer_cnt; ++layer ) {
+	    new->layers[layer] = crefs->layers[layer];
+	    new->layers[layer].splines = SplinePointListCopy(crefs->layers[layer].splines);
+	    new->layers[layer].images = NULL;
+	}
 	new->next = NULL;
 	if ( last==NULL )
 	    head = last = new;
@@ -1086,6 +1091,7 @@ void _CVRestoreTOriginalState(CharViewBase *cv,PressedOn *p) {
 		    SplinePointListFree(cv->layerheads[cv->drawmode]->splines);
 		    cv->layerheads[cv->drawmode]->splines = SplinePointListCopy(undo->u.state.splines);
 		    memcpy(&ref->transform,&uref->transform,sizeof(ref->transform));
+		    ref->layers[j].splines = SplinePointListCopy(uref->layers[j].splines);
 		}
     }
     for ( img=cv->layerheads[cv->drawmode]->images, uimg=undo->u.state.images; uimg!=NULL;
