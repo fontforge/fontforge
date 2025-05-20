@@ -2689,8 +2689,13 @@ the fourth argument you must specify the second and third arguments too.
 
 .. function:: SmallCaps([v-scale[,h-scale[,stemw-scale[,stemh-scale]]]])
 
-   Create small capitals from the selected glyphs. The following optional
-   arguments are accepted:
+   Create small capitals from the selected glyphs.  When the function
+   generates a new glyph from an (uppercase) letter it names it like
+   the lowercase letter and appends ".sc", e.g., "A" becomes "a.sc".
+   Anything not a letter, i.e., digits and symbols, gets the extension
+   ".taboldstyle".
+
+   The following optional arguments are accepted:
 
    .. object:: v-scale
 

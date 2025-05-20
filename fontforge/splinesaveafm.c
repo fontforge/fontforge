@@ -1219,7 +1219,7 @@ static void AfmSplineFontHeader(FILE *afm, SplineFont *sf, int formattype,
 	fprintf( afm, "IsCIDFont true\n" );
     }
     fprintf( afm, "ItalicAngle %g\n", (double) sf->italicangle );
-    width = CIDOneWidth(sf);
+    width = SFOneWidth(sf);
     fprintf( afm, "IsFixedPitch %s\n", width==-1?"false":"true" );
     fprintf( afm, "UnderlinePosition %g\n", (double) sf->upos );
     fprintf( afm, "UnderlineThickness %g\n", (double) sf->uwidth );

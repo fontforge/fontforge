@@ -2800,7 +2800,7 @@ void SCDimensionFromSVG(xmlNodePtr svg, SplineChar *sc, bool vert) {
 
 void SCDimensionFromSVGFile(const char *path, SplineChar *sc, bool vert) {
     xmlDocPtr doc;
-    xmlNodePtr svg;
+    xmlNodePtr svg = NULL;
     doc = xmlParseFile(path);
     if (doc != NULL)
 	svg = xmlDocGetRootElement(doc);

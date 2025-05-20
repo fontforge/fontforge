@@ -413,7 +413,7 @@ static struct prefs_list {
 #endif
 
 	{ N_("GenerateHintWidthEqualityTolerance"), pr_real, &GenerateHintWidthEqualityTolerance, NULL, NULL, '\0', NULL, 0, N_( "When generating a font, ignore slight rounding errors for hints that should be at the top or bottom of the glyph. For example, you might like to set this to 0.02 so that 19.999 will be considered 20. But only for the hint width value.") },
-	
+
 	PREFS_LIST_EMPTY
 },
  hints_list[] = {
@@ -2551,7 +2551,7 @@ static void PrefsSubSetDlg(CharView *cv,char* windowTitle,struct prefs_list* pli
     GTabInfo aspects[TOPICS+5], subaspects[3];
     GGadgetCreateData **hvarray, boxes[2*TOPICS];
     struct pref_data p;
-    int line = 0,line_max = 3;
+    int line_max = 3;
     int i = 0, gc = 0, ii, y=0, si=0, k=0;
     char buf[20];
     char *tempstr;
@@ -2765,7 +2765,6 @@ static void PrefsSubSetDlg(CharView *cv,char* windowTitle,struct prefs_list* pli
 		y += 26;
 	      break;
 	    }
-	    ++line;
 	    hvarray[si++] = NULL;
 
     }

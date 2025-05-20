@@ -449,6 +449,7 @@ return( NULL );
 
     ucs2_str = (unichar_t *) malloc((strlen(_str)+1)*sizeof(unichar_t));
     utf162u_strcpy(ucs2_str, utf16buf);
+    free(utf16buf);
     utf8_buf = u2utf8_copy(ucs2_str); /* Convert from ucs2 to utf8 */
     free(ucs2_str);
 

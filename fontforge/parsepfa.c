@@ -1260,7 +1260,7 @@ static void findstring(struct fontparse *fp,struct pschars *subrs,int index,char
 	}
 	decodestr((unsigned char *) buffer,bpt-buffer);
 	bs = buffer + fp->fd->private->leniv;
-	if ( bpt<bs ) bs=bpt;		/* garbage */ 
+	if ( bpt<bs ) bs=bpt;		/* garbage */
 	subrs->lens[index] = bpt-bs;
 	subrs->keys[index] = copy(nametok);
 	subrs->values[index] = malloc(bpt-bs);
@@ -1874,7 +1874,7 @@ return;
 	    ContinueValue(fp,NULL,line);
 return;
 	}
-	
+
 	if ( endtok==NULL ) {
 	    if ( fp->skipping_mbf )
 		;
@@ -2634,7 +2634,7 @@ FontDict *_ReadPSFont(FILE *in) {
     temp = GFileTmpfile();
     if ( temp==NULL ) {
 	LogError( _("Cannot open a temporary file\n") );
-	fclose(in); 
+	fclose(in);
 return(NULL);
     }
 
@@ -2722,9 +2722,8 @@ static void FontInfoFree(struct fontinfo *fi) {
 void PSFontFree(FontDict *fd) {
     int i;
 
-    if ( fd->encoding!=NULL )
-	for ( i=0; i<256; ++i )
-	    free( fd->encoding[i]);
+    for ( i=0; i<256; ++i )
+        free( fd->encoding[i]);
     free(fd->fontname);
     free(fd->cidfontname);
     free(fd->registry);
@@ -2758,7 +2757,7 @@ void PSFontFree(FontDict *fd) {
 
     PSDictFree(fd->blendprivate);
     PSDictFree(fd->blendfontinfo);
-    
+
     free(fd);
 }
 

@@ -61,6 +61,7 @@
 #include "tottfgpos.h"
 #include "ustring.h"
 #include "utype.h"
+#include "views.h"
 
 #include <math.h>
 #include <unistd.h>
@@ -129,6 +130,7 @@ static Color fvchangedcol = 0x000060;
 static Color fvhintingneededcol = 0x0000ff;
 static Color fvmetbaselinecol = 0x0000c0;
 static Color fvmetorigincol = 0xc00000;
+static Color fvmetglyphcontourcol = 0xa45a38;
 static Color fvmetadvanceatcol = 0x008000;
 static Color fvmetadvancetocol = 0x008000;
 static Color fvmissingbitmapcol = 0xff0000;
@@ -245,7 +247,7 @@ extern BDFFont *FVSplineFontPieceMeal(SplineFont *sf, int layer, int ptsize, int
     return new;
 }
 
-static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int request_expose ) {
+static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int request_expose) {
     GRect box, old2;
     int feat_gid;
     SplineChar *sc;
@@ -397,6 +399,12 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int request_exp
 		if ( fv->showhmetrics&fvm_advanceto )
 		    GDrawDrawLine(pixmap,x0,(i+1)*fv->cbh-2,x1,
 			    (i+1)*fv->cbh-2,fvmetadvancetocol);
+		if (fv->showhmetrics & fvm_contour) {
+		    int x0 = j * fv->cbw + (fv->cbw - 1 - fv->magnify * xwidth) / 2 - bdfc->xmin * fv->magnify;
+		    int y0 = i * fv->cbh + fv->lab_height + fv->magnify * fv->show->ascent + 1;
+		    CVDrawSplinePointList(NULL, pixmap, sc->layers[1].splines, fvmetglyphcontourcol,
+		        sfm_stroke, x0, y0, (double) (box.width - 1) / sc->vwidth);
+		}
 	    }
 	    if ( fv->showvmetrics ) {
 		int x0 = j*fv->cbw+(fv->cbw-1-fv->magnify*xwidth)/2- bdfc->xmin*fv->magnify
@@ -3326,7 +3334,7 @@ static int md_e_h(GWindow gw, GEvent *e) {
 	d->done = true;
     } else if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
 	struct md_data *d = GDrawGetUserData(gw);
-	static int masks[] = { fvm_baseline, fvm_origin, fvm_advanceat, fvm_advanceto, -1 };
+	static int masks[] = { fvm_baseline, fvm_origin, fvm_advanceat, fvm_advanceto, fvm_contour, -1 };
 	int i, metrics;
 	if ( GGadgetGetCid(e->u.control.g)==10 ) {
 	    metrics = 0;
@@ -3351,8 +3359,8 @@ static void FVMenuShowMetrics(GWindow fvgw,struct gmenuitem *mi, GEvent *UNUSED(
     GWindow gw;
     GWindowAttrs wattrs;
     struct md_data d;
-    GGadgetCreateData gcd[7];
-    GTextInfo label[6];
+    GGadgetCreateData gcd[8];
+    GTextInfo label[7];
     int metrics = mi->mid==MID_ShowHMetrics ? fv->showhmetrics : fv->showvmetrics;
 
     d.fv = fv;
@@ -3408,24 +3416,33 @@ static void FVMenuShowMetrics(GWindow fvgw,struct gmenuitem *mi, GEvent *UNUSED(
     gcd[3].gd.popup_msg = _("Display the advance width as a bar under the glyph\nshowing the extent of the advance");
     gcd[3].creator = GCheckBoxCreate;
 
-    label[4].text = (unichar_t *) _("_OK");
+    label[4].text = (unichar_t *) _("Draw a glyph contour");
     label[4].text_is_1byte = true;
-    label[4].text_in_resource = true;
     gcd[4].gd.label = &label[4];
-    gcd[4].gd.pos.x = 20-3; gcd[4].gd.pos.y = GDrawPixelsToPoints(NULL,pos.height)-35-3;
-    gcd[4].gd.pos.width = -1; gcd[4].gd.pos.height = 0;
-    gcd[4].gd.flags = gg_visible | gg_enabled | gg_but_default;
-    gcd[4].gd.cid = 10;
-    gcd[4].creator = GButtonCreate;
+    gcd[4].gd.pos.x = 8; gcd[4].gd.pos.y = gcd[3].gd.pos.y+16;
+    gcd[4].gd.flags = gg_enabled|gg_visible|(metrics&fvm_contour?gg_cb_on:0);
+    gcd[4].gd.cid = fvm_contour;
+    gcd[4].gd.popup_msg = _("Display a glyph contour");
+    gcd[4].creator = GCheckBoxCreate;
 
-    label[5].text = (unichar_t *) _("_Cancel");
+    label[5].text = (unichar_t *) _("_OK");
     label[5].text_is_1byte = true;
     label[5].text_in_resource = true;
     gcd[5].gd.label = &label[5];
-    gcd[5].gd.pos.x = -20; gcd[5].gd.pos.y = gcd[4].gd.pos.y+3;
+    gcd[5].gd.pos.x = 20-3; gcd[5].gd.pos.y = GDrawPixelsToPoints(NULL,pos.height)-35-3;
     gcd[5].gd.pos.width = -1; gcd[5].gd.pos.height = 0;
-    gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    gcd[5].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    gcd[5].gd.cid = 10;
     gcd[5].creator = GButtonCreate;
+
+    label[6].text = (unichar_t *) _("_Cancel");
+    label[6].text_is_1byte = true;
+    label[6].text_in_resource = true;
+    gcd[6].gd.label = &label[6];
+    gcd[6].gd.pos.x = -20; gcd[6].gd.pos.y = gcd[5].gd.pos.y+3;
+    gcd[6].gd.pos.width = -1; gcd[6].gd.pos.height = 0;
+    gcd[6].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    gcd[6].creator = GButtonCreate;
 
     GGadgetsCreate(gw,gcd);
 
@@ -4184,9 +4201,7 @@ static void cflistcheck(GWindow UNUSED(gw), struct gmenuitem *mi, GEvent *UNUSED
     }
 }
 
-static void sllistcheck(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
-    FontView *fv = (FontView *) GDrawGetUserData(gw);
-    fv = fv;
+static void sllistcheck(GWindow UNUSED(gw), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
 }
 
 static void htlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
@@ -7285,6 +7300,7 @@ static struct resed fontview_re[] = {
     {N_("Metrics Advance To Color"), "MetricsAdvanceToColor", rt_color, &fvmetadvancetocol, N_("Color used to draw the (horizontal or) vertical line from the origin to the advance when that metric is selected in View"), NULL, { 0 }, 0, 0 },
     {N_("Metrics Baseline Color"), "MetricsBaselineColor", rt_color, &fvmetbaselinecol, N_("Color used to draw the (vertical or) horizontal baseline when that metric is selected in View"), NULL, { 0 }, 0, 0 },
     {N_("Metrics Origin Color"), "MetricsOriginColor", rt_color, &fvmetorigincol, N_("Color used to draw the (vertical or) horizontal origin tick when that metric is selected in View"), NULL, { 0 }, 0, 0 },
+    {N_("Metrics Glyph Contour Color"), "MetricsGlyphContourColor", rt_color, &fvmetglyphcontourcol, N_("Color used to draw glyph contour when that metric is selected in View"), NULL, { 0 }, 0, 0 },
     {N_("Font"), "Font", rt_font, &fv_font, N_("Font used to display small example images of glyphs over the user designed glyphs"), NULL, { 0 }, 0, 0 },
     RESED_EMPTY
 };

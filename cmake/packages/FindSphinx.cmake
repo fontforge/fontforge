@@ -59,7 +59,7 @@ function(_sphinx_from_venv)
     return()
   endif()
 
-  execute_process(COMMAND "${_venv_bin}" -m pip install sphinx typing RESULT_VARIABLE _pip_result)
+  execute_process(COMMAND "${_venv_bin}" -m pip install sphinx RESULT_VARIABLE _pip_result)
   if(_pip_result)
     message(WARNING "could not install sphinx")
     return()
