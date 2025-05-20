@@ -155,18 +155,20 @@ extern Color GDrawColorBrighten(Color col, int by);
 extern int GImageWriteGImage(GImage *gi, char *filename);
 extern int GImageWrite_Bmp(GImage *gi, FILE *fp);
 extern int GImageWriteBmp(GImage *gi, char *filename);
-extern GImage *GImageRead_Bmp(FILE *file);
+extern GImage *GImageRead_Bmp(FILE *file, int *success);
 extern GImage *GImageReadBmp(char *filename);
 extern int GImageWriteXbm(GImage *gi, char *filename);
 extern GImage *GImageReadXbm(char *filename);
+extern GImage *GImageRead_Xbm(FILE *fp, int *success);
 extern int GImageWriteXpm(GImage *gi, char *filename);
 extern GImage *GImageReadXpm(char *filename);
+extern GImage *GImageRead_Xpm(FILE *fp, int *success);
 extern GImage *GImageReadTiff(char *filename);
 extern GImage *GImageReadJpeg(char *filename);
-extern GImage *GImageRead_Jpeg(FILE *fp);
+extern GImage *GImageRead_Jpeg(FILE *fp, int *success);
 extern int GImageWrite_Jpeg(GImage *gi, FILE *outfile, int quality, int progressive);
 extern int GImageWriteJpeg(GImage *gi, char *filename, int quality, int progressive);
-extern GImage *GImageRead_Png(FILE *fp);
+extern GImage *GImageRead_Png(FILE *fp, int *success);
 extern GImage *GImageReadPng(char *filename);
 extern GImage *GImageReadPngBuf(char* buf, size_t sz);
 extern int GImageWrite_Png(GImage *gi, FILE *fp, int progressive);
@@ -175,8 +177,11 @@ extern int GImageWritePngBuf(GImage *gi, char** buf, size_t* sz, int compression
 extern GImage *GImageReadGif(char *filename);
 extern int GImageWriteGif(GImage *gi,char *filename,int progressive);
 extern GImage *GImageReadRas(char *filename);		/* Sun Raster */
+extern GImage *GImageRead_Ras(FILE *fp, int *success);
 extern GImage *GImageReadRgb(char *filename);		/* SGI */
+extern GImage *GImageRead_Rgb(FILE *fp, int *success);
 extern GImage *GImageRead(char *filename);
+extern GImage *GImageReadBuf(char *buffer, int size, char* ext);
 
 extern void GImageDrawRect(GImage *img,GRect *r,Color col);
 extern void GImageDrawImage(GImage *dest,GImage *src,GRect *junk,int x, int y);
