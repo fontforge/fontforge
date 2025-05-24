@@ -6304,9 +6304,13 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 			LogError(_("A point in %s is outside the font bounding box data.\n"), sc->name );
 			info->bad_cff = true;
 		    }
-		    if ( info->isFixedPitch && i>2 && sc->width!=info->advanceWidthMax )
-			LogError(_("The advance width of %s (%d) does not match the font's advanceWidthMax (%d) and this is a fixed pitch font\n"),
+		    if ( info->isFixedPitch ) {
+			bool valid = (sc->width==0 || sc->width==info->advanceWidthMax || sc->width==info->advanceWidthMax / 2);
+			if (!valid) {
+			    LogError(_("The advance width of %s (%d) does not match the font's advanceWidthMax (%d) and this is a fixed pitch font\n"),
 				sc->name, sc->width, info->advanceWidthMax );
+			}
+		    }
 		}
 	    }
 	    ++k;
