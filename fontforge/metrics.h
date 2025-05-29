@@ -31,10 +31,10 @@
 typedef struct shape_metrics {
     /* The shaper fills values in font units (scaled=false), and they are later
        rescaled to UI pixel units (scaled=true). */
-    bool scaled;        
+    bool scaled;
 
-    int16_t dx, dwidth;	/* position and width of the displayed char */
-    int16_t dy, dheight;	/*  displayed info for vertical metrics */
+    int16_t dx, dwidth;  /* position and width of the displayed char */
+    int16_t dy, dheight; /*  displayed info for vertical metrics */
     int xoff, yoff;
     int16_t kernafter;
 } ShapeMetrics;
