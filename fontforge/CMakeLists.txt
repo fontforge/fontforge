@@ -91,6 +91,7 @@ set(FONTFORGE_INST_HEADERS
   groups.h
   lookups.h
   mem.h
+  metrics.h
   mm.h
   namehash.h
   nonlineartrans.h
