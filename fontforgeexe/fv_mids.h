@@ -233,6 +233,7 @@
 #define FV_MID_ScriptMenu       1308
 #define FV_MID_GenerateTTC      1309
 #define FV_MID_ClearSpecialData 1310
+#define FV_MID_GtkPrint         1311
 
 /* ===== CID Menu (1350-1399) ===== */
 

@@ -17,6 +17,8 @@ add_library(ffgtk OBJECT
   language_list.cpp
   show_histogram.hpp
   show_histogram.cpp
+  dialogs.hpp
+  dialogs.cpp
   simple_dialogs.hpp
   simple_dialogs.cpp
   utils.hpp
