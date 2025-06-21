@@ -1,4 +1,4 @@
-/* Copyright 2025 Maxim Iorsh <iorsh@users.sourceforge.net>
+/* Copyright 2024 Maxim Iorsh <iorsh@users.sourceforge.net>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -25,30 +25,31 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "dialogs.hpp"
-
-#include <gtkmm.h>
-
-#include "application.hpp"
 #include "print_preview.hpp"
 
-void print_dialog() {
-    // To avoid instability, the GTK application is lazily initialized only when
-    // a GTK window is invoked.
-    ff::app::GtkApp();
+#include "intl.h"
 
-    Glib::RefPtr<Gtk::PrintOperation> print_operation =
-        Gtk::PrintOperation::create();
+namespace ff::dlg {
 
-    ff::dlg::PrintPreviewWidget* ff_preview_widget =
-        Gtk::make_managed<ff::dlg::PrintPreviewWidget>();
+PrintPreviewWidget::PrintPreviewWidget() { add_label("Dummy label"); }
 
-    print_operation->set_n_pages(1);
-    print_operation->signal_draw_page().connect(
-        &ff_preview_widget->draw_page_cb);
-    print_operation->set_custom_tab_label(ff_preview_widget->label());
-    print_operation->signal_create_custom_widget().connect(
-        [ff_preview_widget]() { return ff_preview_widget; });
+Glib::ustring PrintPreviewWidget::label() { return _("Preview"); }
 
-    print_operation->run(Gtk::PRINT_OPERATION_ACTION_PRINT_DIALOG);
+void PrintPreviewWidget::draw_page_cb(
+    const Glib::RefPtr<Gtk::PrintContext>& context, int page_nr) {
+    Cairo::RefPtr<Cairo::Context> cr = context->get_cairo_context();
+
+    // White background
+    cr->set_source_rgb(1, 1, 1);
+    cr->paint();
+
+    // Print sample text in black
+    cr->select_font_face("Sans", Cairo::FontSlant::FONT_SLANT_NORMAL,
+                         Cairo::FontWeight::FONT_WEIGHT_NORMAL);
+    cr->set_font_size(24.0);
+    cr->move_to(100.0, 100.0);
+    cr->set_source_rgb(0, 0, 0);
+    cr->show_text("Hello World");
 }
+
+}  // namespace ff::dlg

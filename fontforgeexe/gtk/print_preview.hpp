@@ -1,4 +1,4 @@
-/* Copyright 2025 Maxim Iorsh <iorsh@users.sourceforge.net>
+/* Copyright 2024 Maxim Iorsh <iorsh@users.sourceforge.net>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -24,31 +24,19 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-
-#include "dialogs.hpp"
+#pragma once
 
 #include <gtkmm.h>
 
-#include "application.hpp"
-#include "print_preview.hpp"
+namespace ff::dlg {
 
-void print_dialog() {
-    // To avoid instability, the GTK application is lazily initialized only when
-    // a GTK window is invoked.
-    ff::app::GtkApp();
+class PrintPreviewWidget : public Gtk::Bin {
+ public:
+    PrintPreviewWidget();
 
-    Glib::RefPtr<Gtk::PrintOperation> print_operation =
-        Gtk::PrintOperation::create();
+    static Glib::ustring label();
+    static void draw_page_cb(const Glib::RefPtr<Gtk::PrintContext>& context,
+                             int page_nr);
+};
 
-    ff::dlg::PrintPreviewWidget* ff_preview_widget =
-        Gtk::make_managed<ff::dlg::PrintPreviewWidget>();
-
-    print_operation->set_n_pages(1);
-    print_operation->signal_draw_page().connect(
-        &ff_preview_widget->draw_page_cb);
-    print_operation->set_custom_tab_label(ff_preview_widget->label());
-    print_operation->signal_create_custom_widget().connect(
-        [ff_preview_widget]() { return ff_preview_widget; });
-
-    print_operation->run(Gtk::PRINT_OPERATION_ACTION_PRINT_DIALOG);
-}
+}  // namespace ff::dlg
