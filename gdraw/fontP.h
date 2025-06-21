@@ -39,14 +39,6 @@
 
 #define em_uplane0     (em_max+1)
 
-struct font_instance {
-    FontRequest rq;		/* identification of this instance */
-    PangoFontDescription *pango_fd;
-#ifndef _NO_LIBCAIRO
-    PangoFontDescription *pangoc_fd;
-#endif
-};
-
 typedef struct font_state {
     int res;
     struct font_name *font_names[26];

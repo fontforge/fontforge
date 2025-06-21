@@ -9,6 +9,7 @@ sudo add-apt-repository -y ppa:deadsnakes/ppa && sudo apt-get update -y
 sudo apt-get install -y autoconf automake libtool gcc g++ gettext \
     libjpeg-dev libtiff5-dev libpng-dev libfreetype-dev libgif-dev \
     libx11-dev libgtk-3-dev libxml2-dev libpango1.0-dev libcairo2-dev \
+    libgtkmm-3.0-dev \
     libbrotli-dev libwoff-dev ninja-build cmake lcov $PYTHON-dev $PYTHON-venv
 curl https://bootstrap.pypa.io/get-pip.py | sudo $PYTHON
 
