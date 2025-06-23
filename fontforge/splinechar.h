@@ -515,8 +515,9 @@ typedef struct hintinstance {
 
 enum hinttypes { ht_unspecified = 0, ht_h, ht_v, ht_d };
 
-#define MmMax 16 /* PS says at most this many instances for type1/2 mm fonts \
-                  */
+#define MmMax                                                      \
+    16 /* PS says at most this many instances for type1/2 mm fonts \
+        */
 #define AppleMmMax \
     26 /* Apple sort of has a limit of 4095, but we only support this many */
 typedef real _MMArray[2][MmMax];
@@ -690,9 +691,9 @@ typedef struct splinechar {
     void *python_persistent;		/* If python this will hold a python object, if not python this will hold a string containing a pickled object. We do nothing with it (if not python) except save it back out unchanged */
     int python_persistent_has_lists;
 #endif  // 0
-        /* If the glyph is used as a tile pattern, then the next two values */
-        /*  determine the amount of white space around the tile. If extra is*/
-        /*  non-zero then we add it to the max components of the bbox and   */
+    /* If the glyph is used as a tile pattern, then the next two values */
+    /*  determine the amount of white space around the tile. If extra is*/
+    /*  non-zero then we add it to the max components of the bbox and   */
     /*  subtract it from the min components. If extra is 0 then tile_bounds*/
     /*  will be used. If tile_bounds is all zeros then the glyph's bbox */
     /*  will be used. */

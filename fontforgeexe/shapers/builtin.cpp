@@ -89,6 +89,7 @@ void BuiltInShaper::scale_metrics(MetricsView* mv, double iscale, double scale,
     }
 }
 
+// Duplicates StdFeaturesOfScript()
 std::set<Tag> BuiltInShaper::default_features(Tag script, Tag /*lang*/,
                                               bool /*vertical*/) const {
     static const std::set<Tag> simple_stdfeatures = {

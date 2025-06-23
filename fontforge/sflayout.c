@@ -108,6 +108,7 @@ static int IsBreakBetweenOk(unichar_t ch1, unichar_t ch2) {
     );
 }
 
+/* TODO(iorsh): Deprecate in favour of BuiltInShaper::default_features() */
 uint32_t *StdFeaturesOfScript(uint32_t script) {
     int i;
 
