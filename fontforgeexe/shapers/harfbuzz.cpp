@@ -88,6 +88,9 @@ std::vector<hb_feature_t> HarfBuzzShaper::hb_features(
     const std::map<Tag, bool>& feature_map) const {
     std::vector<hb_feature_t> hb_feature_vec;
 
+    const std::set<Tag> default_feats =
+        default_features(script, lang, vertical);
+
     for (const auto& [feature_tag, enabled] : feature_map) {
         // [khaledhosny] Some OpenType features like init, medi, etc. are
         // enabled by default and HarfBuzz applies them selectively based on
@@ -97,8 +100,6 @@ std::vector<hb_feature_t> HarfBuzzShaper::hb_features(
         // If a default feature is selected in the UI, it should not be in the
         // features list, but if it is unselected it should be in the features
         // list with value set to 0 (disable).
-        const std::set<Tag> default_feats =
-            default_features(script, lang, vertical);
         bool include_feature = !default_feats.count(feature_tag) || !enabled;
         if (include_feature) {
             hb_feature_t hb_feat{feature_tag, enabled, HB_FEATURE_GLOBAL_START,
