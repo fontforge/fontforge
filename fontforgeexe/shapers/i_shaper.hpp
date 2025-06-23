@@ -61,7 +61,7 @@ class IShaper {
 
  public:
     // Array of glyph metrics
-    std::vector<ShapeMetrics> metrics;
+    std::vector<MetricsCore> metrics;
 };
 
 }  // namespace ff::shapers

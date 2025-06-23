@@ -28,7 +28,7 @@
 
 #include <stdint.h>
 
-typedef struct shape_metrics {
+typedef struct metrics_core {
     /* The shaper fills values in font units (scaled=false), and they are later
        rescaled to UI pixel units (scaled=true). */
     bool scaled;
@@ -37,4 +37,4 @@ typedef struct shape_metrics {
     int16_t dy, dheight; /*  displayed info for vertical metrics */
     int xoff, yoff;
     int16_t kernafter;
-} ShapeMetrics;
+} MetricsCore;

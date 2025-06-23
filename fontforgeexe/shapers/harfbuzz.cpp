@@ -165,9 +165,9 @@ SplineChar** HarfBuzzShaper::extract_shaped_data(hb_buffer_t* hb_buffer) {
     return glyphs_after_gpos;
 }
 
-std::vector<ShapeMetrics> HarfBuzzShaper::reverse_rtl_metrics(
-    const std::vector<ShapeMetrics>& reverse_metrics) const {
-    std::vector<ShapeMetrics> fixed_metrics(reverse_metrics.size());
+std::vector<MetricsCore> HarfBuzzShaper::reverse_rtl_metrics(
+    const std::vector<MetricsCore>& reverse_metrics) const {
+    std::vector<MetricsCore> fixed_metrics(reverse_metrics.size());
 
     // Note: metrics contain a trailing element for C compatibility
     int glyph_count = reverse_metrics.size() - 1;
@@ -190,10 +190,10 @@ std::vector<ShapeMetrics> HarfBuzzShaper::reverse_rtl_metrics(
     return fixed_metrics;
 }
 
-std::vector<ShapeMetrics> HarfBuzzShaper::reverse_ttb_metrics(
-    const std::vector<ShapeMetrics>& bottom_up_metrics) const {
+std::vector<MetricsCore> HarfBuzzShaper::reverse_ttb_metrics(
+    const std::vector<MetricsCore>& bottom_up_metrics) const {
     // Duplicate metrics
-    std::vector<ShapeMetrics> fixed_metrics(bottom_up_metrics);
+    std::vector<MetricsCore> fixed_metrics(bottom_up_metrics);
 
     hb_font_extents_t font_extents;
     hb_font_get_h_extents(hb_ttf_font, &font_extents);
@@ -204,7 +204,7 @@ std::vector<ShapeMetrics> HarfBuzzShaper::reverse_ttb_metrics(
     // NOTE: X offsets are normally negative.
     hb_position_t max_xoff =
         -std::min_element(bottom_up_metrics.begin(), bottom_up_metrics.end(),
-                          [](const ShapeMetrics& a, const ShapeMetrics& b) {
+                          [](const MetricsCore& a, const MetricsCore& b) {
                               return a.xoff < b.xoff;
                           })
              ->xoff;

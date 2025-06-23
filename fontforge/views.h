@@ -367,7 +367,7 @@ struct aplist { AnchorPoint *ap; int connected_to, selected; struct aplist *next
 enum mv_grids { mv_hidegrid, mv_showgrid, mv_partialgrid, mv_hidemovinggrid };
 enum mv_type { mv_kernonly, mv_widthonly, mv_kernwidth };
 
-struct metricchar {
+struct metrics_ui {
     unsigned int selected: 1;
     int16_t mx, mwidth;	/* position and width of the text underneath */
     GGadget *width, *lbearing, *rbearing, *kern, *name;
@@ -397,8 +397,8 @@ typedef struct metricsview {
     int16_t cmax, clen;
     SplineChar **chars;		/* Character input stream */
     struct opentype_str *glyphs;/* after going through the various gsub/gpos transformations */
-    ShapeMetrics *metrics;      /* One for each glyph above */
-    struct metricchar *perchar;	/* One for each glyph above */
+    struct metrics_core *metrics; /* Position and advance values, one for each glyph above */
+    struct metrics_ui *perchar;	/* UI widgets and state, one for each glyph above */
     SplineChar **sstr;		/* Character input stream */
     int16_t mwidth, mbase;
     int16_t glyphcnt, max;

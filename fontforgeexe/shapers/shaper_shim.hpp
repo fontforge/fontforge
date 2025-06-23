@@ -118,7 +118,7 @@ struct opentype_str* shaper_apply_features(cpp_IShaper* shaper,
                                            uint32_t script, uint32_t lang,
                                            int pixelsize, bool vertical);
 
-const ShapeMetrics* shaper_metrics(cpp_IShaper* shaper);
+const MetricsCore* shaper_metrics(cpp_IShaper* shaper);
 
 void shaper_scale_metrics(cpp_IShaper* shaper, MetricsView* mv, double iscale,
                           double scale, bool vertical);

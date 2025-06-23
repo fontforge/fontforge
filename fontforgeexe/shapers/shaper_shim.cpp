@@ -112,7 +112,7 @@ struct opentype_str* shaper_apply_features(cpp_IShaper* shaper,
     }
 }
 
-const ShapeMetrics* shaper_metrics(cpp_IShaper* shaper) {
+const MetricsCore* shaper_metrics(cpp_IShaper* shaper) {
     ff::shapers::IShaper* ishaper = toCPP(shaper);
     return ishaper->metrics.data();
 }

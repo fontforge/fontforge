@@ -96,11 +96,11 @@ class HarfBuzzShaper : public IShaper {
 
     // RTL HarfBuzz shaping returns metrics end-to-start. This method reverses
     // them.
-    std::vector<ShapeMetrics> reverse_rtl_metrics(
-        const std::vector<ShapeMetrics>& reverse_metrics) const;
+    std::vector<MetricsCore> reverse_rtl_metrics(
+        const std::vector<MetricsCore>& reverse_metrics) const;
 
-    std::vector<ShapeMetrics> reverse_ttb_metrics(
-        const std::vector<ShapeMetrics>& bottom_up_metrics) const;
+    std::vector<MetricsCore> reverse_ttb_metrics(
+        const std::vector<MetricsCore>& bottom_up_metrics) const;
 
     // Compute changes in kerning due to user's input after the font was
     // generated.
