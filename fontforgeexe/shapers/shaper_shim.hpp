@@ -52,7 +52,7 @@ typedef struct shaper_context {
     SplineFont* sf;
     MetricsView* mv;
 
-    // Set character grid to the desired position according to the scrollbar
+    // Apply OpenType lookups and compute positional info
     struct opentype_str* (*apply_ticked_features)(
         SplineFont* sf, uint32_t* flist, uint32_t script, uint32_t lang,
         bool gpos_only, int pixelsize, SplineChar** glyphs);
