@@ -1575,12 +1575,6 @@ return( true );
 	MVSelectChar(mv,which);
     }
 
-    if( haveClassBasedKerningInView(mv) )
-    {
-	MVRefreshMetric(mv);
-	GDrawRequestExpose(mv->v,NULL,false);
-    }
-
 return( true );
 }
 
