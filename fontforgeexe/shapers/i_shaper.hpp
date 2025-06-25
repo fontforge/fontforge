@@ -35,6 +35,8 @@ struct opentype_str;
 
 namespace ff::shapers {
 
+using ShaperOutput = std::pair<struct opentype_str*, std::vector<MetricsCore>>;
+
 class IShaper {
  public:
     virtual ~IShaper() = default;
@@ -47,9 +49,10 @@ class IShaper {
     // NOTE: the glyph sequence can't be passed as a Unicode string, since some
     // glyphs don't have encoding at all, and the shaper should still be able to
     // apply features which involve these glyphs.
-    virtual struct opentype_str* apply_features(
-        SplineChar** glyphs, const std::map<Tag, bool>& feature_map, Tag script,
-        Tag lang, int pixelsize, bool vertical) = 0;
+    virtual ShaperOutput apply_features(SplineChar** glyphs,
+                                        const std::map<Tag, bool>& feature_map,
+                                        Tag script, Tag lang, int pixelsize,
+                                        bool vertical) = 0;
 
     // Scale glyph sequence metrics from font units to pixels
     virtual void scale_metrics(MetricsView* mv, double iscale, double scale,
@@ -58,10 +61,6 @@ class IShaper {
     // OpenType features enabled by default
     virtual std::set<Tag> default_features(Tag script, Tag lang,
                                            bool vertical) const = 0;
-
- public:
-    // Array of glyph metrics
-    std::vector<MetricsCore> metrics;
 };
 
 }  // namespace ff::shapers

@@ -111,7 +111,8 @@ std::vector<hb_feature_t> HarfBuzzShaper::hb_features(
     return hb_feature_vec;
 }
 
-SplineChar** HarfBuzzShaper::extract_shaped_data(hb_buffer_t* hb_buffer) {
+std::pair<SplineChar**, std::vector<MetricsCore>>
+HarfBuzzShaper::extract_shaped_data(hb_buffer_t* hb_buffer) {
     unsigned int glyph_count;
     hb_glyph_info_t* glyph_info_arr =
         hb_buffer_get_glyph_infos(hb_buffer, &glyph_count);
@@ -122,8 +123,7 @@ SplineChar** HarfBuzzShaper::extract_shaped_data(hb_buffer_t* hb_buffer) {
     SplineChar** glyphs_after_gpos =
         (SplineChar**)calloc(glyph_count + 1, sizeof(SplineChar*));
 
-    // Adjust metrics buffer size
-    metrics.resize(glyph_count + 1);
+    std::vector<MetricsCore> metrics(glyph_count + 1);
 
     // Process the glyphs and positions
     int total_x_advance = 0, total_y_advance = 0;
@@ -163,7 +163,7 @@ SplineChar** HarfBuzzShaper::extract_shaped_data(hb_buffer_t* hb_buffer) {
     metrics.back().dy = total_y_advance;
     metrics.back().scaled = false;
 
-    return glyphs_after_gpos;
+    return {glyphs_after_gpos, metrics};
 }
 
 std::vector<MetricsCore> HarfBuzzShaper::reverse_rtl_metrics(
@@ -274,7 +274,7 @@ std::vector<int> HarfBuzzShaper::compute_width_deltas(hb_buffer_t* hb_buffer,
     return width_deltas;
 }
 
-struct opentype_str* HarfBuzzShaper::apply_features(
+ShaperOutput HarfBuzzShaper::apply_features(
     SplineChar** glyphs, const std::map<Tag, bool>& feature_map, Tag script,
     Tag lang, int pixelsize, bool vertical) {
     std::vector<unichar_t> u_vec;
@@ -311,7 +311,7 @@ struct opentype_str* HarfBuzzShaper::apply_features(
              hb_feature_vec.size());
 
     // Retrieve the results
-    SplineChar** glyphs_after_gpos = extract_shaped_data(hb_buffer);
+    auto [glyphs_after_gpos, metrics] = extract_shaped_data(hb_buffer);
     int glyph_count = metrics.size() - 1;
 
     std::vector<int> width_deltas =
@@ -373,13 +373,16 @@ struct opentype_str* HarfBuzzShaper::apply_features(
     // Cleanup
     hb_buffer_destroy(hb_buffer);
 
-    return ots_arr;
+    return {ots_arr, metrics};
 }
 
 void HarfBuzzShaper::scale_metrics(MetricsView* mv, double iscale, double scale,
                                    bool vertical) {
+    int glyphcnt = 0;
+    MetricsCore* metrics = context_->get_metrics(mv, &glyphcnt);
     int x0 = 10, y0 = 10;
-    for (auto& m : metrics) {
+    for (int i = 0; i < glyphcnt; ++i) {
+        MetricsCore& m = metrics[i];
         assert(!m.scaled);
         m.dx = x0 + m.dx * scale;
         m.dy = y0 + m.dy * scale;

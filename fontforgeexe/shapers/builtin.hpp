@@ -35,10 +35,10 @@ class BuiltInShaper : public IShaper {
 
     const char* name() const override { return "builtin"; }
 
-    struct opentype_str* apply_features(SplineChar** glyphs,
-                                        const std::map<Tag, bool>& feature_map,
-                                        Tag script, Tag lang, int pixelsize,
-                                        bool vertical) override;
+    ShaperOutput apply_features(SplineChar** glyphs,
+                                const std::map<Tag, bool>& feature_map,
+                                Tag script, Tag lang, int pixelsize,
+                                bool vertical) override;
 
     void scale_metrics(MetricsView* mv, double iscale, double scale,
                        bool vertical) override;

@@ -38,10 +38,10 @@ class HarfBuzzShaper : public IShaper {
 
     const char* name() const override { return "harfbuzz"; }
 
-    struct opentype_str* apply_features(SplineChar** glyphs,
-                                        const std::map<Tag, bool>& feature_map,
-                                        Tag script, Tag lang, int pixelsize,
-                                        bool vertical) override;
+    ShaperOutput apply_features(SplineChar** glyphs,
+                                const std::map<Tag, bool>& feature_map,
+                                Tag script, Tag lang, int pixelsize,
+                                bool vertical) override;
 
     void scale_metrics(MetricsView* mv, double iscale, double scale,
                        bool vertical) override;
@@ -92,7 +92,8 @@ class HarfBuzzShaper : public IShaper {
         const std::map<Tag, bool>& feature_map) const;
 
     // Retrieve data from shaped buffer and fill metrics.
-    SplineChar** extract_shaped_data(hb_buffer_t* hb_buffer);
+    std::pair<SplineChar**, std::vector<MetricsCore>> extract_shaped_data(
+        hb_buffer_t* hb_buffer);
 
     // RTL HarfBuzz shaping returns metrics end-to-start. This method reverses
     // them.

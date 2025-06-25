@@ -31,7 +31,7 @@ extern "C" {
 
 namespace ff::shapers {
 
-struct opentype_str* BuiltInShaper::apply_features(
+ShaperOutput BuiltInShaper::apply_features(
     SplineChar** glyphs, const std::map<Tag, bool>& feature_map, Tag script,
     Tag lang, int pixelsize, bool vertical) {
     // Zero-terminated list of enabled features
@@ -56,20 +56,21 @@ struct opentype_str* BuiltInShaper::apply_features(
     }
 
     // Make metrics C-style zero-terminated array to support legacy code
-    metrics.resize(cnt + 1);
+    std::vector<MetricsCore> metrics(cnt + 1);
     for (auto& m : metrics) {
         m.scaled = false;
     }
 
-    return ots_arr_;
+    return {ots_arr_, metrics};
 }
 
 void BuiltInShaper::scale_metrics(MetricsView* mv, double iscale, double scale,
                                   bool vertical) {
+    MetricsCore* metrics = context_->get_metrics(mv, NULL);
     // Calculate positions.
     int x = 10;
     int y = 10;
-    for (int i = 0; i < metrics.size() - 1; ++i) {
+    for (int i = 0; ots_arr_[i].sc != NULL; ++i) {
         assert(!metrics[i].scaled);
         SplineChar* sc = ots_arr_[i].sc;
         metrics[i].dwidth = rint(iscale * context_->get_char_width(mv, sc));

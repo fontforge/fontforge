@@ -938,9 +938,16 @@ static void MVCreateFields(MetricsView *mv,int i) {
 static void MVSetSb(MetricsView *mv);
 static int MVSetVSb(MetricsView *mv);
 
-int16_t MVCharWidth(MetricsView *mv, SplineChar *sc) {
+static int16_t MVCharWidth(MetricsView *mv, SplineChar *sc) {
     BDFChar * bdfc = mv->bdf!=NULL ? mv->bdf->glyphs[sc->orig_pos] : BDFPieceMealCheck(mv->show,sc->orig_pos);
     return bdfc->width;
+}
+
+static MetricsCore* MVGetMetrics(MetricsView *mv, int* p_glyphcnt) {
+    if (p_glyphcnt) {
+	*p_glyphcnt = mv->glyphcnt;
+    }
+    return mv->metrics;
 }
 
 void MVRefreshMetric(MetricsView *mv) {
@@ -966,6 +973,7 @@ static void MVRemetric(MetricsView *mv) {
     int32_t len;
     GTextInfo **ti;
     SplineFont *sf;
+    struct shaper_out applied_feats = {0, 0};
 
     anysc = goodsc = NULL;
     // We recurse through all of the characters in the metrics view.
@@ -1017,10 +1025,14 @@ static void MVRemetric(MetricsView *mv) {
 
     // Regenerate glyphs for the selected characters according to features, script, and resolution.
     free(mv->glyphs); mv->glyphs = NULL;
+    free(mv->metrics); mv->metrics = NULL;
     sf = mv->sf;
     if ( sf->cidmaster ) sf = sf->cidmaster;
-    mv->glyphs = shaper_apply_features(mv->shaper, mv->chars, feats,
+    applied_feats = shaper_apply_features(mv->shaper, mv->chars, feats,
         				script, lang, mv->pixelsize, mv->vertical);
+    mv->glyphs = applied_feats.glyphs;
+    mv->metrics = applied_feats.metrics;
+
     if (mv->glyphs == NULL) {
 	mv->glyphs = calloc(1, sizeof(struct opentype_str));
     }
@@ -1039,9 +1051,6 @@ static void MVRemetric(MetricsView *mv) {
 	mv->perchar = realloc(mv->perchar,mv->max*sizeof(struct metrics_ui));
 	memset(mv->perchar+oldmax,'\0',(mv->max-oldmax)*sizeof(struct metrics_ui));
     }
-
-    // TODO: Move metrics calculations completely into shapers, and make MetricsView::metric const.
-    mv->metrics = (MetricsCore*)shaper_metrics(mv->shaper);
 
     // Null names of controls in rows to be abandoned, starting at the last valid glyph and continuing to the end of mv->glyphs.
     // This may segfault here if mv->max is less than mv->glyphcnt, thus if cnt was 10 less than mv->glyphcnt.
@@ -3943,6 +3952,7 @@ static ShaperContext* MVMakeShaperContext(MetricsView *mv) {
     context->fake_unicode = MVFakeUnicodeOfSc;
     context->get_enc_map = SFGetMap;
     context->get_char_width = MVCharWidth;
+    context->get_metrics = MVGetMetrics;
     context->get_kern_offset = MVGetKernOffset;
     context->script_is_rtl = ScriptIsRightToLeft;
     context->get_or_make_char = SFGetOrMakeChar;
@@ -5454,7 +5464,7 @@ void MetricsViewFree(MetricsView *mv) {
     /* the fields will free themselves */
     free(mv->chars);
     free(mv->glyphs);
-    mv->metrics = NULL; /* Managed by mv->shaper */
+    free(mv->metrics);
     free(mv->perchar);
     shaper_free(&(mv->shaper));
     free(mv);

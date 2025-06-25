@@ -93,11 +93,11 @@ const char* shaper_name(cpp_IShaper* shaper) {
     }
 }
 
-struct opentype_str* shaper_apply_features(cpp_IShaper* shaper,
-                                           SplineChar** glyphs,
-                                           FeatureMap* feat_map,
-                                           uint32_t script, uint32_t lang,
-                                           int pixelsize, bool vertical) {
+struct shaper_out shaper_apply_features(cpp_IShaper* shaper,
+                                        SplineChar** glyphs,
+                                        FeatureMap* feat_map, uint32_t script,
+                                        uint32_t lang, int pixelsize,
+                                        bool vertical) {
     ff::shapers::IShaper* ishaper = toCPP(shaper);
     std::map<Tag, bool> feature_map;
     for (int i = 0; feat_map[i].feature_tag != 0; ++i) {
@@ -105,16 +105,16 @@ struct opentype_str* shaper_apply_features(cpp_IShaper* shaper,
     }
 
     if (shaper) {
-        return ishaper->apply_features(glyphs, feature_map, Tag(script),
-                                       Tag(lang), pixelsize, vertical);
+        auto output = ishaper->apply_features(glyphs, feature_map, Tag(script),
+                                              Tag(lang), pixelsize, vertical);
+        MetricsCore* metrics =
+            (MetricsCore*)calloc(output.second.size() + 1, sizeof(MetricsCore));
+        memcpy(metrics, output.second.data(),
+               output.second.size() * sizeof(MetricsCore));
+        return {output.first, metrics};
     } else {
-        return nullptr;
+        return {0, 0};
     }
-}
-
-const MetricsCore* shaper_metrics(cpp_IShaper* shaper) {
-    ff::shapers::IShaper* ishaper = toCPP(shaper);
-    return ishaper->metrics.data();
 }
 
 void shaper_scale_metrics(cpp_IShaper* shaper, MetricsView* mv, double iscale,
