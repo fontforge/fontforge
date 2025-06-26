@@ -62,8 +62,7 @@ NameList *namelist_for_new_fonts = &agl_nf;
 /* 0xf6be is named dotlessj, 0x237 should be */
 
 static int psnamesinited=false;
-#define HASH_SIZE	257
-struct psbucket { const char *name; int uni; struct psbucket *prev; } *psbuckets[HASH_SIZE];
+struct psbucket { const char *name; int uni; struct psbucket *prev; } *psbuckets[GN_HSIZE];
 
 static void psaddbucket(const char *name, int uni) {
     unsigned int hash = hashname(name);
@@ -110,7 +109,7 @@ static void psreinitnames(void) {
     int i;
     NameList *nl;
 
-    for ( i=0; i<HASH_SIZE; ++i ) {
+    for ( i=0; i<GN_HSIZE; ++i ) {
 	struct psbucket *cur, *prev;
 	for ( cur = psbuckets[i]; cur!=NULL; cur=prev ) {
 	    prev = cur->prev;
