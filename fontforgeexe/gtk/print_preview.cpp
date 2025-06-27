@@ -31,7 +31,25 @@
 
 namespace ff::dlg {
 
-PrintPreviewWidget::PrintPreviewWidget() { add_label("Dummy label"); }
+static bool draw_preview_area(const Cairo::RefPtr<Cairo::Context>& cr) {
+    // Dummy red coloring
+    cr->set_source_rgb(1.0, 0.0, 0.0);
+    cr->paint();
+
+    return true;
+}
+
+PrintPreviewWidget::PrintPreviewWidget() {
+    dummy_label = Gtk::Label("Dummy label");
+
+    preview_area.set_hexpand(true);
+    preview_area.set_vexpand(true);
+    preview_area.signal_draw().connect(&draw_preview_area);
+
+    attach(preview_area, 0, 0);
+    attach(dummy_label, 1, 0);
+    show_all();
+}
 
 Glib::ustring PrintPreviewWidget::label() { return _("Preview"); }
 

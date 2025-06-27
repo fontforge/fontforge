@@ -30,13 +30,17 @@
 
 namespace ff::dlg {
 
-class PrintPreviewWidget : public Gtk::Bin {
+class PrintPreviewWidget : public Gtk::Grid {
  public:
     PrintPreviewWidget();
 
     static Glib::ustring label();
     static void draw_page_cb(const Glib::RefPtr<Gtk::PrintContext>& context,
                              int page_nr);
+
+ private:
+    Gtk::DrawingArea preview_area;
+    Gtk::Label dummy_label;
 };
 
 }  // namespace ff::dlg
