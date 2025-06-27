@@ -25,6 +25,7 @@ add_library(ffgtk OBJECT
   simple_dialogs.cpp
   utils.hpp
   utils.cpp
+  widgets.hpp
 )
 
 target_link_libraries(ffgtk PUBLIC
