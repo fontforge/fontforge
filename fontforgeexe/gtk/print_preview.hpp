@@ -28,6 +28,8 @@
 
 #include <gtkmm.h>
 
+#include "widgets.hpp"
+
 namespace ff::dlg {
 
 class PrintPreviewWidget : public Gtk::Grid {
@@ -39,7 +41,15 @@ class PrintPreviewWidget : public Gtk::Grid {
                              int page_nr);
 
  private:
+    // Build and initialize the preview area widgets
+    void build_compound_preview_area();
+
+    // Containers for compound preview area
+    widget::FixedWithBackground fixed_wrapper;
+    Gtk::Box box_wrapper;
+    Gtk::Overlay overlay;
     Gtk::DrawingArea preview_area;
+
     Gtk::Label dummy_label;
 };
 

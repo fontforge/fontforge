@@ -28,6 +28,7 @@
 #include "print_preview.hpp"
 
 #include "intl.h"
+#include "utils.hpp"
 
 namespace ff::dlg {
 
@@ -39,14 +40,11 @@ static bool draw_preview_area(const Cairo::RefPtr<Cairo::Context>& cr) {
     return true;
 }
 
-PrintPreviewWidget::PrintPreviewWidget() {
+PrintPreviewWidget::PrintPreviewWidget() : fixed_wrapper(0.5, 0.5, 0.5) {
+    build_compound_preview_area();
     dummy_label = Gtk::Label("Dummy label");
 
-    preview_area.set_hexpand(true);
-    preview_area.set_vexpand(true);
-    preview_area.signal_draw().connect(&draw_preview_area);
-
-    attach(preview_area, 0, 0);
+    attach(fixed_wrapper, 0, 0);
     attach(dummy_label, 1, 0);
     show_all();
 }
@@ -68,6 +66,35 @@ void PrintPreviewWidget::draw_page_cb(
     cr->move_to(100.0, 100.0);
     cr->set_source_rgb(0, 0, 0);
     cr->show_text("Hello World");
+}
+
+void PrintPreviewWidget::build_compound_preview_area() {
+    // The preview area contains a page preview with a 3D shadow on a grey
+    // background, in a Firefox style. Unfortunately, 3D shadow is difficult to
+    // draw manually in Cairo, so we implement it using CSS. This requires a
+    // Gtk::Fixed container, on which the preview widget can be placed in a free
+    // manner. To support CSS styling, the preview widget is wrapped with
+    // Gtk::Box, which provides a CSS node.
+    ui_utils::apply_css(box_wrapper, "box { box-shadow: 3pt 3pt 3pt black;}");
+
+    fixed_wrapper.set_hexpand(true);
+    fixed_wrapper.set_vexpand(true);
+    preview_area.signal_draw().connect(&draw_preview_area);
+
+    // Localize the page-sized preview area inside the allowed space.
+    fixed_wrapper.signal_size_allocate().connect([this](Gtk::Allocation& a) {
+        preview_area.set_size_request(a.get_width() / 2, a.get_height() / 2);
+
+        // queue_resize() will not work right inside the slot. We need to defer
+        // it as a separate subsequent event.
+        Glib::signal_idle().connect_once([this]() {
+            preview_area.queue_resize();
+            preview_area.queue_draw();
+        });
+    });
+
+    fixed_wrapper.put(box_wrapper, 50, 50);
+    box_wrapper.pack_start(preview_area, true, true);
 }
 
 }  // namespace ff::dlg
