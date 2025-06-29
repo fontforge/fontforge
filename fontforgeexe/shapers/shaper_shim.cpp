@@ -32,17 +32,40 @@
 
 using ff::Tag;
 
+// Default shaper, managed in preferences. Must point to one of strings in
+// static get_shaper_defs::shaper_defs[].
+const char* default_shaper = NULL;
+
 const ShaperDef* get_shaper_defs() {
-    static ShaperDef shaper_defs[] = {{"builtin", N_("Built-in shaper")},
+    static ShaperDef shaper_defs[] = {{"builtin", _("Built-in shaper")},
 #ifdef ENABLE_HARFBUZZ
-                                      {"harfbuzz", N_("HarfBuzz")},
+                                      {"harfbuzz", _("HarfBuzz")},
 #endif
                                       {NULL, NULL}};
 
     return shaper_defs;
 }
 
+void set_default_shaper(const char* name) {
+    // The desired shaper must be in the list of available shapers, otherwise it
+    // is ignored
+    const ShaperDef *sh_def, *shaper_defs = get_shaper_defs();
+    for (sh_def = shaper_defs; sh_def->name != NULL; ++sh_def) {
+        if (strcmp(name, sh_def->name) == 0) {
+            break;
+        }
+    }
+
+    if (sh_def->name != NULL) {
+        default_shaper = sh_def->name;
+    }
+}
+
 const char* get_default_shaper() {
+    if (default_shaper) {
+        return default_shaper;
+    }
+
 #ifdef ENABLE_HARFBUZZ
     return "harfbuzz";
 #endif

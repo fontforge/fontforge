@@ -1096,6 +1096,7 @@ extern MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf);
 extern void MetricsViewFree(MetricsView *mv);
 extern void MVRefreshAll(MetricsView *mv);
 extern void MV_FriendlyFeatures(GGadget *g, int pos);
+extern GTextInfo *GetShaperList(int* p_default);
 extern GTextInfo *SLOfFont(SplineFont *sf);
 
 extern void DoPrefs(void);

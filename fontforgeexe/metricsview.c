@@ -4109,6 +4109,30 @@ static void vwlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     mi->sub = GMenuItem2ArrayCopy(vwlist,NULL);
 }
 
+GTextInfo *GetShaperList(int* p_default) {
+    GTextInfo *ti;
+    int i, cnt;
+    const ShaperDef *sh_def, *shaper_defs = get_shaper_defs();
+    const char* default_shaper = get_default_shaper();
+
+    if (p_default) *p_default = 0;
+
+    cnt = 0;
+    for ( sh_def=shaper_defs; sh_def->name!=NULL ; ++sh_def )
+	++cnt;
+
+    ti = calloc(cnt+1,sizeof(GTextInfo));
+    for ( i=0; i<cnt; ++i ) {
+	ti[i].text = uc_copy(shaper_defs[i].label);
+	ti[i].selected = (strcmp(shaper_defs[i].name, default_shaper) == 0);
+	if (ti[i].selected && p_default) {
+	    *p_default = i;
+	}
+	ti[i].userdata = (void *) shaper_defs[i].name;
+    }
+    return( ti );
+}
+
 static void mtlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     SplineChar* sc = getSelectedChar(mv);

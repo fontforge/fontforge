@@ -104,6 +104,7 @@ struct shaper_out {
 const ShaperDef* get_shaper_defs();
 
 /* The internal name of the default shaper */
+void set_default_shaper(const char* name);
 const char* get_default_shaper();
 
 /* Create a new shaper object */
