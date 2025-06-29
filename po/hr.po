@@ -11,8 +11,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-30 03:08-0800\n"
-"PO-Revision-Date: 2023-12-30 08:15\n"
+"POT-Creation-Date: 2025-06-29 12:53-0700\n"
+"PO-Revision-Date: 2025-06-29 19:58\n"
 "Last-Translator: \n"
 "Language-Team: Croatian\n"
 "Language: hr_HR\n"
@@ -704,6 +704,9 @@ msgstr "3D tamna boja ruba"
 msgid "3D Light Edge Color"
 msgstr "3D svijetla boja ruba"
 
+msgid "3D Look"
+msgstr "3D izgled"
+
 msgid "4"
 msgstr "4"
 
@@ -985,6 +988,13 @@ msgstr ""
 "uklanjanje njihovih preklapanja, dok će istovremeno\n"
 "zadržati reference u SFD datoteci.."
 
+msgid ""
+"A font for displaying unicode characters, normally used for FontView glyph "
+"labels."
+msgstr ""
+"Font za prikaz unicode znakova, koji se obično koristi za oznake grafema u "
+"prikazu fontova."
+
 #. GT: These strings are for fun. If they are offensive or incomprehensible
 #. GT: simply translate them as something dull like: "FontForge"
 #. GT: This is a spoof of political slogans, designed to point out how foolish they are
@@ -1079,6 +1089,9 @@ msgstr ""
 msgid "A match was found after unlinking references in glyph “%s”\n"
 msgstr ""
 "Jedno podudaranje je nađeno nakon odspajanja referenci u grafemu „%s”\n"
+
+msgid "A monospace font family at the same size as DefaultFont"
+msgstr "Obitelj jednometričnih fontova iste veličine kao zadani font"
 
 msgid "A name list with this name already exists. Replace it?"
 msgstr "Popis naziva s istim nazivom već postoji. Zamijeniti?"
@@ -1358,9 +1371,6 @@ msgstr "Dodaj _ekstreme"
 
 msgid "Add Encoding Name..."
 msgstr "Dodaj naziv kodiranja …"
-
-msgid "Add Encoding Slots..."
-msgstr "Dodaj kodno polje …"
 
 msgid "Add Entry Anchor..."
 msgstr "Dodaj sidro ulaza …"
@@ -2079,6 +2089,9 @@ msgstr ""
 
 msgid "Appea_rance Editor..."
 msgstr "U_ređivač prikaza …"
+
+msgid "Appearance Editor"
+msgstr "Uređivač prikaza"
 
 msgid "Append a FONTLOG entry"
 msgstr "Dodaj FONTLOG zapis"
@@ -3122,8 +3135,8 @@ msgstr "Neispravna tablica pokrivenosti. Grafem %d je izvan raspona [0,%d)\n"
 #, c-format
 msgid "Bad coverage table. Glyph range %d-%d out of range [0,%d)\n"
 msgstr ""
-"Neispravna tablica pokrivenosti. Raspon grafema %d – %d je izvan raspona [0,"
-"%d)\n"
+"Neispravna tablica pokrivenosti. Raspon grafema %d – %d je izvan raspona "
+"[0,%d)\n"
 
 msgid "Bad dash list"
 msgstr "Neispravni popis crtica"
@@ -3859,6 +3872,12 @@ msgstr "Ukrasne linije"
 
 msgid "Bosnian"
 msgstr "Bosanski"
+
+msgid "Bosnian (Cyrillic)"
+msgstr "Bosanski (ćirilica)"
+
+msgid "Bosnian (Latin)"
+msgstr "Bosanski (latinica)"
 
 msgid "Both"
 msgstr "Oboje"
@@ -5135,8 +5154,8 @@ msgstr ""
 msgid ""
 "Click here to add the OFL metadata to your own font in the License and "
 "License URL fields. \n"
-"Then click on the License field to fill in the placeholders in sync with OFL."
-"txt. \n"
+"Then click on the License field to fill in the placeholders in sync with "
+"OFL.txt. \n"
 msgstr ""
 "Klikni ovdje za dodavanje OFL metapodataka tvom fontu u poljima za licencu i "
 "URL licence. \n"
@@ -5158,6 +5177,9 @@ msgstr "Boja za staze isječka"
 msgid "Cloc_kwise"
 msgstr "Na_desno"
 
+msgid "Close Color"
+msgstr "Boja zatvaranja"
+
 msgid "Close Open Contours"
 msgstr "Zatvori otvorene konture"
 
@@ -5177,6 +5199,9 @@ msgstr "Gumb za boje"
 msgid "Color Source with id %s had an unexpected type %s."
 msgstr "'Color Source' (izvor boje) s ID-oznakom %s ima neočekivanu vrstu %s."
 
+msgid "Color of close icon in tab"
+msgstr "Boja ikone zatvaranja u kartici"
+
 msgid "Color of column dividers in the main section of a matrix edit"
 msgstr "Boja za razdvojne crte stupaca u glavnom odjeljku matrice"
 
@@ -5186,6 +5211,9 @@ msgstr "Boja za razdvojne crte stupaca u naslovnom odjeljku matrice"
 msgid ""
 "Color of frozen (unchangeable) entries in the main section of a matrix edit"
 msgstr "Boja za zamrznute (nepromijenjive) zapise u glavnom odjeljku matrice"
+
+msgid "Color of glyph labels when glyph is not encoded"
+msgstr "Boja etikete grafema kada grafem nije kodiran"
 
 msgid "Color of glyph labels when label is missing"
 msgstr "Boja etiketa grafema kad etiketa nedostaje"
@@ -7176,6 +7204,9 @@ msgstr "Engleski (Novo Zelandski)"
 msgid "English (Philippines)"
 msgstr "Engleski (Filipini)"
 
+msgid "English (Singapore)"
+msgstr "Engleski (Singapur)"
+
 msgid "English (South Africa)"
 msgstr "Engleski (Južnoafrički)"
 
@@ -8108,6 +8139,9 @@ msgstr "PS naziv _fonta:"
 msgid "Fon"
 msgstr "Fon"
 
+msgid "Font"
+msgstr "Font"
+
 #, c-format
 msgid ""
 "Font %1$.40s in file %2$.40s has been changed.\n"
@@ -8150,6 +8184,9 @@ msgstr "Veličina fonta"
 
 msgid "Font Type:"
 msgstr "Vrsta fonta:"
+
+msgid "Font View"
+msgstr "Prikaz fonta"
 
 msgid "Font changed"
 msgstr "Font promijenjen"
@@ -8495,6 +8532,12 @@ msgstr "Prisili nazive grafema na:"
 #. GT: Foreground, make it short
 msgid "Fore"
 msgstr "Prednji"
+
+msgid "Foreground color for warning messages and error conditions"
+msgstr "Boja prednjeg plana za poruke upozorenja i uvjete grešaka"
+
+msgid "Foreground color of glyph area"
+msgstr "Prednja boja područja grafema"
 
 msgid "Forest Nenets"
 msgstr "Forest Nenets"
@@ -8998,6 +9041,9 @@ msgstr "Grafemski sufiks:"
 
 msgid "Glyph Extensions"
 msgstr "Grafemski sufiksi"
+
+msgid "Glyph FG Color"
+msgstr "Prednja boja grafema"
 
 msgid "Glyph Info"
 msgstr "Informacije o grafemu"
@@ -9554,6 +9600,12 @@ msgstr "Harari"
 msgid "Harauti"
 msgstr "Harauti"
 
+msgid "Harmoni_ze"
+msgstr "_Uskladi"
+
+msgid "Harmonizing..."
+msgstr "Usklađivanje …"
+
 msgid "Has _Vertical Metrics"
 msgstr "Font sadrži _uspravnu metriku"
 
@@ -9865,17 +9917,11 @@ msgstr[2] "Vodoravno: %d osnovnih pismovnih linija"
 msgid "Horseshoe E and A"
 msgstr "Slova E i A u obliku potkovice"
 
-msgid "How many CID slots do you wish to add?"
-msgstr "Koliko CID polja želiš dodati?"
-
 msgid "How many entries should there be in the cvt table?"
 msgstr "Koliko zapisa treba 'cvt' tablica sadržati?"
 
 msgid "How many most-recent Undos should be kept?"
 msgstr "Koliko poništavanja želiš zadržati?"
-
-msgid "How many unencoded glyph slots do you wish to add?"
-msgstr "Koliko nekodiranih polja želiš dodati?"
 
 msgid "How to align these points?"
 msgstr "Kako poravnati ove točke?"
@@ -10916,6 +10962,9 @@ msgstr "Uvod"
 msgid "Inuktitut"
 msgstr "Inuktitut"
 
+msgid "Inuktitut (Latin)"
+msgstr "Inuktitut (latinica)"
+
 #, c-format
 msgid "Invalid CID range in glyph class on line %d of %s"
 msgstr "Neispravni CID raspon u klasi grafema u %d. retku od %s"
@@ -11769,6 +11818,9 @@ msgstr "Lijeve granice"
 
 msgid "Left Constraint"
 msgstr "Lijevo ograničenje"
+
+msgid "Left Margin"
+msgstr "Lijeva margina"
 
 msgid "Left Side Bearing"
 msgstr "Lijevi bočni odmak"
@@ -12893,6 +12945,13 @@ msgstr ""
 "Maksimalna visina vrha indeksa, koja ne\n"
 "zahtijeva daljnje pomicanje prema dolje."
 
+msgid ""
+"Maximum time (in ms) between clicks to be considered a double (triple, etc.) "
+"click"
+msgstr ""
+"Maksimalno vrijeme (u ms) između pritisaka gumba miša koji se smatraju "
+"dvostrukim (trostrukim, itd.) pritiscima"
+
 msgid "Mayan Numerals"
 msgstr "Majanske brojke"
 
@@ -13041,6 +13100,9 @@ msgstr "Metrika za %.50s"
 
 msgid "Metrics Label Color"
 msgstr "Boja za etikete metrike"
+
+msgid "Metrics View"
+msgstr "Prikaz metrike"
 
 msgid "MetricsControlShiftSkip"
 msgstr "Promjena metrike, Ctrl + Shift"
@@ -13428,6 +13490,13 @@ msgstr "Mongolski, dopuna"
 
 msgid "Monospace"
 msgstr "Jednometrični"
+
+msgid "Monospace font used in the About dialog"
+msgstr "Jednometrični font koji se koristi u dijalogu informacija o programu"
+
+msgid "Monospace font used in the Advanced Typographic Tables dialog"
+msgstr ""
+"Jednometrični font koji se koristi u dijalogu „Napredne tipografske tablice”"
 
 msgid "Monospaced"
 msgstr "Jednometrični"
@@ -16921,6 +16990,9 @@ msgstr "Ponovi"
 msgid "Repeat Counts:"
 msgstr "Broj ponavljanja:"
 
+msgid "Repeat Time"
+msgstr "Vrijeme ponavljanja"
+
 msgid "Reph Form"
 msgstr "Reph oblici"
 
@@ -17740,6 +17812,9 @@ msgstr "Znanstveni indeksi"
 msgid "Scottish Gaelic"
 msgstr "Škotski keltski"
 
+msgid "Screen Resolution"
+msgstr "Rezolucija ekrana"
+
 msgid "Screen Width in Centimeters"
 msgstr "Širina ekrana u centimetrima"
 
@@ -18316,8 +18391,14 @@ msgstr "Srpski"
 msgid "Serbian (Cyrillic)"
 msgstr "Srpski (ćirilica)"
 
+msgid "Serbian (Cyrillic) (Bosnia and Herzegovina)"
+msgstr "Srpski (ćirilica) (Bosna i Hercegovina)"
+
 msgid "Serbian (Latin)"
 msgstr "Srpski (latinica)"
+
+msgid "Serbian (Latin) (Bosnia and Herzegovina)"
+msgstr "Srpski (latinica) (Bosna i Hercegovina)"
 
 msgid "Serer"
 msgstr "Serer"
@@ -18910,8 +18991,8 @@ msgid "SnapToInt"
 msgstr "Privlači na cjelobrojne vrijednosti"
 
 msgid ""
-"So if you type \"A\" here the first selected glyph would be named \"A."
-"suffix\".\n"
+"So if you type \"A\" here the first selected glyph would be named "
+"\"A.suffix\".\n"
 "The second \"B.suffix\", and so on."
 msgstr ""
 "Prema tome, ako ovdje utipkaš 'A', onda će se prvi odabrani grafem\n"
@@ -19434,6 +19515,9 @@ msgstr "Greška standardnog nagiba"
 
 msgid "Star"
 msgstr "Zvijezda"
+
+msgid "Start Time"
+msgstr "Vrijeme početka"
 
 msgid "Start contours at e_xtrema"
 msgstr "Započni s konturama pri točkama ekstrema"
@@ -21024,6 +21108,9 @@ msgid ""
 "The default font does not have a 'cvt ' table, but the instance %.30s does"
 msgstr "Zadani font nema 'cvt ' tablicu, ali instanca %.30s je ima"
 
+msgid "The default left margin (in points)"
+msgstr "Standardna lijeva margina (u točkama)"
+
 msgid "The default size of the Em-Square in a newly created font."
 msgstr "Zadana veličina četverca u novo stvorenom fontu."
 
@@ -21722,6 +21809,13 @@ msgstr ""
 "Točke u %s nisu ispravno pobrojene. To znači, da će instrukcije vjerojatno "
 "premještati krive točke i činiti krive stavri.\n"
 "Želiš li da se instrukcije uklone?"
+
+msgid ""
+"The primary display font family (normally sans-serif) at the normal size for "
+"menus, dialogs, etc."
+msgstr ""
+"Primarna obitelj fontova za prikaz (obično bez serifa) u normalnoj veličini "
+"za izbornike, dijaloge itd."
 
 msgid ""
 "The range of sizes (in points) to which this face applies.\n"
@@ -25020,9 +25114,10 @@ msgstr "Upozorenje: Font nije sadržao nijedan grafem"
 
 #, c-format
 msgid ""
-"Warning: FontForge's implementation of include statements in UFO features."
-"fea files was wrong. Please correct your path `%s` as per the specification "
-"for guaranteed future compatibility. (See GitHub issue №4629 for more info.)"
+"Warning: FontForge's implementation of include statements in UFO "
+"features.fea files was wrong. Please correct your path `%s` as per the "
+"specification for guaranteed future compatibility. (See GitHub issue №4629 "
+"for more info.)"
 msgstr ""
 "Upozorenje: FontForge implementacija uključivanja izjava u UFO features.fea "
 "datotekama je bila pogrešna. Ispravi putanju `%s` prema specifikaciji za "
@@ -25209,8 +25304,20 @@ msgstr "Ne možemo imati ulazne točke za otvorenu krivulju.\n"
 msgid "We don't understand this font\n"
 msgstr "Font se ne da razumjeti\n"
 
+msgid "Web Open Font (WOFF OTF)"
+msgstr "Web Open Font (WOFF OTF)"
+
+msgid "Web Open Font (WOFF TTF)"
+msgstr "Web Open Font (WOFF TTF)"
+
 msgid "Web Open Font (WOFF)"
 msgstr "Web Open Font (WOFF)"
+
+msgid "Web Open Font (WOFF2 OTF)"
+msgstr "Web Open Font (WOFF2 OTF)"
+
+msgid "Web Open Font (WOFF2 TTF)"
+msgstr "Web Open Font (WOFF2 TTF)"
 
 msgid "Web Open Font (WOFF2)"
 msgstr "Web Open Font (WOFF2)"
@@ -25277,8 +25384,8 @@ msgid ""
 "will be the last saved file, file.sfd-02 will be the file saved before that, "
 "and so on. If you set this to 0 then no revisions will be retained."
 msgstr ""
-"Prilikom spremanja, zadrži ovoliko prethodnih verzija datoteke. „Datoteka."
-"sfd-01” će biti zadnja\n"
+"Prilikom spremanja, zadrži ovoliko prethodnih verzija datoteke. "
+"„Datoteka.sfd-01” će biti zadnja\n"
 "spremljena datoteka, „Datoteka.sfd-02” će biti datoteka spremljena prije "
 "nje, itd.\n"
 "Ako ovo postaviš na 0, podverzije se neće spremati."
@@ -25631,6 +25738,9 @@ msgid ""
 "Script» dialog."
 msgstr ""
 "Da li upozoravati o nespremljenim skriptima u dijalogu „Izvrši skriptu”."
+
+msgid "Whether the menu is presented with a 3D appearance"
+msgstr "Da li izbornik prikazati u 3D izgledu"
 
 msgid ""
 "Whether to use mac-like icons to indicate modifiers (for instance ^ for "
@@ -28137,3 +28247,12 @@ msgstr "∆y_vis. br.1"
 
 msgid "∆y_adv #2"
 msgstr "∆y_vis. br.2"
+
+#~ msgid "Add Encoding Slots..."
+#~ msgstr "Dodaj kodno polje …"
+
+#~ msgid "How many CID slots do you wish to add?"
+#~ msgstr "Koliko CID polja želiš dodati?"
+
+#~ msgid "How many unencoded glyph slots do you wish to add?"
+#~ msgstr "Koliko nekodiranih polja želiš dodati?"

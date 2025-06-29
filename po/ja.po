@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-30 03:08-0800\n"
-"PO-Revision-Date: 2023-12-30 08:15\n"
+"POT-Creation-Date: 2025-06-29 12:53-0700\n"
+"PO-Revision-Date: 2025-06-29 19:58\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Language: ja_JP\n"
@@ -255,6 +255,9 @@ msgstr "'GPOS' グリフ位置指定テーブル"
 msgid "'GSUB' Glyph Substitution Table"
 msgstr "'GSUB' グリフ置換テーブル"
 
+msgid "'JSTF' Justification Table"
+msgstr "「JSTF」行端揃えテーブル"
+
 msgid "'kern' Horizontal Kerning Table"
 msgstr "'kern' 横書きカーニングテーブル"
 
@@ -321,6 +324,9 @@ msgstr "32×8マス表示"
 
 msgid "437, US"
 msgstr "437, 米国"
+
+msgid "500 Medium"
+msgstr "500 中字体"
 
 msgid "708, Arabic ASMO 708"
 msgstr "708, アラビア語 ASMO 708"
@@ -495,6 +501,13 @@ msgstr ""
 "グリフ名には英数字,ピリオドと下線のみを用いるべきです.\n"
 "それでもこの名前を使いますか?"
 
+msgid ""
+"A line is \"almost\" horizontal (or vertical)\n"
+"if the coordinates are within this many em-units"
+msgstr ""
+"座標がここで指定する「em 単位」以内にある場合に、「ほとんど」水平または垂直で"
+"あると見做します。"
+
 msgid "A list of coverage tables:"
 msgstr "範囲テーブルのリスト:"
 
@@ -624,6 +637,12 @@ msgstr "許容する極大点(_E)"
 msgid "Access All Alternates"
 msgstr "すべての異体字へのアクセス"
 
+msgid "Accuracy Target:"
+msgstr "精度目標(_T):"
+
+msgid "Accuracy _Target:"
+msgstr "精度目標(_T):"
+
 msgid "Active Hints"
 msgstr "有効なヒント"
 
@@ -648,14 +667,14 @@ msgstr "極大点を追加(_X)"
 msgid "Add Encoding Name..."
 msgstr "エンコーディングの名前を追加..."
 
-msgid "Add Encoding Slots..."
-msgstr "エンコーディングスロットを追加..."
-
 msgid "Add Entry Anchor..."
 msgstr "始点アンカーを追加"
 
 msgid "Add Exit Anchor..."
 msgstr "終点アンカーを追加"
+
+msgid "Add Lookup"
+msgstr "「検索」を追加"
 
 msgid "Add Mark Anchor..."
 msgstr "マークアンカーを追加"
@@ -665,6 +684,9 @@ msgstr "下付き/上付き文字を追加..."
 
 msgid "Add VHi_nt"
 msgstr "垂直ヒントを追加(_N)"
+
+msgid "Add _Lookup"
+msgstr "検索を追加(_L)"
 
 msgid "Add _Missing Glyphs"
 msgstr "存在しないグリフを追加(_M)"
@@ -684,11 +706,17 @@ msgstr "曲線上の点を追加"
 msgid "Add a left \"tangent\" point"
 msgstr "曲線と直線の接点を追加"
 
+msgid "Add a new layer"
+msgstr "新しいレイヤーを追加..."
+
 msgid "Add a point, then drag out its control points"
 msgstr "点を追加した後に制御点を引き出す"
 
 msgid "Add a right \"tangent\" point"
 msgstr "曲線と直線の接点を追加"
+
+msgid "Add a subtable to which lookup?"
+msgstr "どの検索にサブテーブルを追加しますか？"
 
 msgid "Add a tangent point"
 msgstr "曲線と直線の接点を追加"
@@ -696,14 +724,38 @@ msgstr "曲線と直線の接点を追加"
 msgid "Adding points at Extrema..."
 msgstr "極値にある点を追加中..."
 
+msgid "Adding points of inflection..."
+msgstr "変曲点を追加しています..."
+
 msgid "Additional arguments for autotrace program:"
 msgstr "autotraceプログラムへの追加の引数:"
+
+msgid ""
+"Adds a new lookup subtable after the selected subtable\n"
+"or at the start of the lookup if nothing is selected."
+msgstr ""
+"選択されたサブテーブルの後ろに、何も選択されていない場合は検索の冒頭に、新し"
+"い検索サブテーブルを追加します。"
+
+msgid "Adlam"
+msgstr "アドラム文字"
 
 msgid "Adobe Glyph List"
 msgstr "Adobeグリフリスト(AGL)"
 
 msgid "Adobe Standard"
 msgstr "Adobe標準"
+
+msgid ""
+"Adobe says that \"big\" splines should not have extrema.\n"
+"But they don't define what big means.\n"
+"If the distance between the spline's end-points is bigger than this value, "
+"then the spline is \"big\" to fontforge."
+msgstr ""
+"Adobe 社は「大きな」スプライン曲線は極値を含めるべきではないと述べています。"
+"しかし、どの程度であれば「大きい」と判定するのを定義していません。Fontforge "
+"では、スプライン曲線の両端点の間の距離が、以下に設定された値よりも大きい場"
+"合、そのスプライン曲線は 「大きな」スプライン曲線であるとみなします。"
 
 msgid ""
 "Adobe's fontname spec (5088.FontNames.pdf) says that fontnames should not be "
@@ -735,6 +787,9 @@ msgstr "グリフ%.30sの送り幅は127未満でなければなりません"
 msgid "Adyghe"
 msgstr "アディゲ語"
 
+msgid "Aegean Numbers"
+msgstr "エーゲ数字"
+
 msgid "Aegean scripts"
 msgstr "エーゲ文明の文字"
 
@@ -758,7 +813,10 @@ msgid "Agaw"
 msgstr "アガウ緒語"
 
 msgid "Ahead Classes"
-msgstr "前方クラス"
+msgstr "前方（先読み）クラス"
+
+msgid "Ahom"
+msgstr "アーホム文字"
 
 msgid "Albanian"
 msgstr "アルバニア語"
@@ -993,6 +1051,12 @@ msgstr ""
 msgid "An outline font editor"
 msgstr "アウトラインフォントエディター"
 
+msgid "Anatolian Hieroglyphs"
+msgstr "アナトリア象形文字（ヒエログリフ）"
+
+msgid "Anchor Class Name"
+msgstr "アンカークラス名"
+
 msgid "Anchor Control"
 msgstr "アンカーの制御"
 
@@ -1058,6 +1122,12 @@ msgstr "外観エディター(_R)..."
 
 msgid "Appearance Editor"
 msgstr "外観エディター"
+
+msgid "Append a FONTLOG entry"
+msgstr "「フォント履歴」への記録を追加"
+
+msgid "Append to it"
+msgstr "接尾辞を追加する"
 
 msgid "Apple"
 msgstr "アップル社"
@@ -1170,6 +1240,18 @@ msgstr "アラビア語(アラブ首長国連邦)"
 msgid "Arabic (Yemen)"
 msgstr "アラビア語(イエメン)"
 
+msgid "Arabic Extended-A"
+msgstr "アラビア文字拡張A"
+
+msgid "Arabic Extended-B"
+msgstr "アラビア文字拡張B"
+
+msgid "Arabic Extended-C"
+msgstr "アラビア文字拡張C"
+
+msgid "Arabic Mathematical Alphabetic Symbols"
+msgstr "アラビア数学用文字記号"
+
 msgid "Arabic Number"
 msgstr "アラビア数字"
 
@@ -1187,6 +1269,9 @@ msgstr "アラビア文字補助"
 
 msgid "Arakanese"
 msgstr "(ビルマ語)アラカン方言"
+
+msgid "Arcs Clip:"
+msgstr "円弧の切り抜き"
 
 msgid ""
 "Are there any outline characters which don't have a bitmap version in one of "
@@ -1512,11 +1597,14 @@ msgid "Back"
 msgstr "背面"
 
 msgid "Back Classes"
-msgstr "試行クラス"
+msgstr "遡行（後戻り）クラス"
 
 #, c-format
 msgid "Back coverage %d: "
 msgstr "逆引き範囲 %d:"
+
+msgid "Background Image Color"
+msgstr "背景画像の色"
 
 msgid "Backtrack"
 msgstr "バックトラック"
@@ -1526,7 +1614,7 @@ msgstr "バックトラック一致: "
 
 #, c-format
 msgid "Backtrack class %d: "
-msgstr "バックトラッククラス %d: "
+msgstr "後戻り検索クラス %d: "
 
 msgid "Backup SFD"
 msgstr "バックアップSFD"
@@ -1588,6 +1676,9 @@ msgstr "フォント名が不正です."
 
 msgid "Bad Glyph Count"
 msgstr "グリフの個数が不正です"
+
+msgid "Bad Glyph Name"
+msgstr "不正なグリフ名"
 
 msgid "Bad IBM Family"
 msgstr "IBMファミリー分類が不正です"
@@ -1685,6 +1776,9 @@ msgstr "クラス定義テーブルが不正です. 先頭=%d, 個数=%d, 最大
 
 msgid "Bad class in state machine.\n"
 msgstr "状態機械に不正なクラスが含まれています.\n"
+
+msgid "Bad class name"
+msgstr "クラス名が不正です"
 
 #, c-format
 msgid "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)\n"
@@ -1989,6 +2083,9 @@ msgstr "基底"
 msgid "Base Glyph"
 msgstr "基底グリフ"
 
+msgid "Base Glyph Name"
+msgstr "基底グリフ名"
+
 msgid "Base Glyphs"
 msgstr "基底グリフ"
 
@@ -2031,6 +2128,9 @@ msgstr "基本多言語面"
 msgid "Basque"
 msgstr "バスク語"
 
+msgid "Bassa Vah"
+msgstr "バサ文字"
+
 msgid "Batak"
 msgstr "バタク文字"
 
@@ -2066,6 +2166,9 @@ msgstr "ベンガル語(バングラデシュ)"
 
 msgid "Beti"
 msgstr "ベテ語"
+
+msgid "Bhaiksuki"
+msgstr "バイスキ文字"
 
 msgid "Bhili"
 msgstr "ビーリー語"
@@ -2122,6 +2225,9 @@ msgstr "ビットマップ貼りつけ"
 
 msgid "Bitmap Strikes\n"
 msgstr "ビットマップストライク\n"
+
+msgid "Bitmap View"
+msgstr "ビットマップビュー"
 
 msgid "Bitmap _Magnification..."
 msgstr "ビットマップの拡大(_M)..."
@@ -2268,6 +2374,9 @@ msgstr "範囲で指定"
 msgid "By Glyphs"
 msgstr "グリフで指定"
 
+msgid "By appending the suffix:"
+msgstr "次の接尾辞を追加する"
+
 msgid "Byelorussian"
 msgstr "ベラルーシ語"
 
@@ -2356,6 +2465,18 @@ msgstr "CJK統合漢字拡張C"
 
 msgid "CJK Unified Ideographs Extension D"
 msgstr "CJK統合漢字拡張D"
+
+msgid "CJK Unified Ideographs Extension E"
+msgstr "CJK統合漢字拡張E"
+
+msgid "CJK Unified Ideographs Extension F"
+msgstr "CJK統合漢字拡張F"
+
+msgid "CJK Unified Ideographs Extension G"
+msgstr "CJK統合漢字拡張G"
+
+msgid "CJK Unified Ideographs Extension H"
+msgstr "CJK統合漢字拡張H"
 
 msgid "CS Clarendon"
 msgstr "CS/クラレンドン"
@@ -2547,6 +2668,9 @@ msgstr "大文字組み用に調整した字形"
 msgid "Catalan"
 msgstr "カタルーニャ語"
 
+msgid "Caucasian Albanian"
+msgstr "カフカス・アルバニア語（白人アルバニア語）"
+
 msgid "Cebuano"
 msgstr "セブアノ語"
 
@@ -2573,6 +2697,9 @@ msgstr "文脈連鎖依存の位置指定"
 
 msgid "Chaining substitution"
 msgstr "文脈連鎖依存の置換"
+
+msgid "Chakma"
+msgstr "チャクマ文字"
 
 msgid "Cham"
 msgstr "チャム文字"
@@ -2656,6 +2783,270 @@ msgstr "異体字09"
 
 msgid "Character Variants 10"
 msgstr "異体字10"
+
+msgid "Character Variants 11"
+msgstr "異体字11"
+
+msgid "Character Variants 12"
+msgstr "異体字12"
+
+msgid "Character Variants 13"
+msgstr "異体字13"
+
+msgid "Character Variants 14"
+msgstr "異体字14"
+
+msgid "Character Variants 15"
+msgstr "異体字15"
+
+msgid "Character Variants 16"
+msgstr "異体字16"
+
+msgid "Character Variants 17"
+msgstr "異体字17"
+
+msgid "Character Variants 18"
+msgstr "異体字18"
+
+msgid "Character Variants 19"
+msgstr "異体字19"
+
+msgid "Character Variants 20"
+msgstr "異体字20"
+
+msgid "Character Variants 21"
+msgstr "異体字21"
+
+msgid "Character Variants 22"
+msgstr "異体字22"
+
+msgid "Character Variants 23"
+msgstr "異体字23"
+
+msgid "Character Variants 24"
+msgstr "異体字24"
+
+msgid "Character Variants 25"
+msgstr "異体字25"
+
+msgid "Character Variants 26"
+msgstr "異体字26"
+
+msgid "Character Variants 27"
+msgstr "異体字27"
+
+msgid "Character Variants 28"
+msgstr "異体字28"
+
+msgid "Character Variants 29"
+msgstr "異体字29"
+
+msgid "Character Variants 30"
+msgstr "異体字30"
+
+msgid "Character Variants 31"
+msgstr "異体字31"
+
+msgid "Character Variants 32"
+msgstr "異体字32"
+
+msgid "Character Variants 33"
+msgstr "異体字33"
+
+msgid "Character Variants 34"
+msgstr "異体字34"
+
+msgid "Character Variants 35"
+msgstr "異体字35"
+
+msgid "Character Variants 36"
+msgstr "異体字36"
+
+msgid "Character Variants 37"
+msgstr "異体字37"
+
+msgid "Character Variants 38"
+msgstr "異体字38"
+
+msgid "Character Variants 39"
+msgstr "異体字39"
+
+msgid "Character Variants 40"
+msgstr "異体字40"
+
+msgid "Character Variants 41"
+msgstr "異体字41"
+
+msgid "Character Variants 42"
+msgstr "異体字42"
+
+msgid "Character Variants 43"
+msgstr "異体字43"
+
+msgid "Character Variants 44"
+msgstr "異体字44"
+
+msgid "Character Variants 45"
+msgstr "異体字45"
+
+msgid "Character Variants 46"
+msgstr "異体字46"
+
+msgid "Character Variants 47"
+msgstr "異体字47"
+
+msgid "Character Variants 48"
+msgstr "異体字48"
+
+msgid "Character Variants 49"
+msgstr "異体字49"
+
+msgid "Character Variants 50"
+msgstr "異体字50"
+
+msgid "Character Variants 51"
+msgstr "異体字51"
+
+msgid "Character Variants 52"
+msgstr "異体字52"
+
+msgid "Character Variants 53"
+msgstr "異体字53"
+
+msgid "Character Variants 54"
+msgstr "異体字54"
+
+msgid "Character Variants 55"
+msgstr "異体字55"
+
+msgid "Character Variants 56"
+msgstr "異体字56"
+
+msgid "Character Variants 57"
+msgstr "異体字57"
+
+msgid "Character Variants 58"
+msgstr "異体字58"
+
+msgid "Character Variants 59"
+msgstr "異体字59"
+
+msgid "Character Variants 60"
+msgstr "異体字60"
+
+msgid "Character Variants 61"
+msgstr "異体字61"
+
+msgid "Character Variants 62"
+msgstr "異体字62"
+
+msgid "Character Variants 63"
+msgstr "異体字63"
+
+msgid "Character Variants 64"
+msgstr "異体字64"
+
+msgid "Character Variants 65"
+msgstr "異体字65"
+
+msgid "Character Variants 66"
+msgstr "異体字66"
+
+msgid "Character Variants 67"
+msgstr "異体字67"
+
+msgid "Character Variants 68"
+msgstr "異体字68"
+
+msgid "Character Variants 69"
+msgstr "異体字69"
+
+msgid "Character Variants 70"
+msgstr "異体字70"
+
+msgid "Character Variants 71"
+msgstr "異体字71"
+
+msgid "Character Variants 72"
+msgstr "異体字72"
+
+msgid "Character Variants 73"
+msgstr "異体字73"
+
+msgid "Character Variants 74"
+msgstr "異体字74"
+
+msgid "Character Variants 75"
+msgstr "異体字75"
+
+msgid "Character Variants 76"
+msgstr "異体字76"
+
+msgid "Character Variants 77"
+msgstr "異体字77"
+
+msgid "Character Variants 78"
+msgstr "異体字78"
+
+msgid "Character Variants 79"
+msgstr "異体字79"
+
+msgid "Character Variants 80"
+msgstr "異体字80"
+
+msgid "Character Variants 81"
+msgstr "異体字81"
+
+msgid "Character Variants 82"
+msgstr "異体字82"
+
+msgid "Character Variants 83"
+msgstr "異体字83"
+
+msgid "Character Variants 84"
+msgstr "異体字84"
+
+msgid "Character Variants 85"
+msgstr "異体字85"
+
+msgid "Character Variants 86"
+msgstr "異体字86"
+
+msgid "Character Variants 87"
+msgstr "異体字87"
+
+msgid "Character Variants 88"
+msgstr "異体字88"
+
+msgid "Character Variants 89"
+msgstr "異体字89"
+
+msgid "Character Variants 90"
+msgstr "異体字90"
+
+msgid "Character Variants 91"
+msgstr "異体字91"
+
+msgid "Character Variants 92"
+msgstr "異体字92"
+
+msgid "Character Variants 93"
+msgstr "異体字93"
+
+msgid "Character Variants 94"
+msgstr "異体字94"
+
+msgid "Character Variants 95"
+msgstr "異体字95"
+
+msgid "Character Variants 96"
+msgstr "異体字96"
+
+msgid "Character Variants 97"
+msgstr "異体字97"
+
+msgid "Character Variants 98"
+msgstr "異体字98"
 
 msgid "Character Variants 99"
 msgstr "異体字99"
@@ -2755,6 +3146,12 @@ msgstr ""
 msgid "Cherokee"
 msgstr "チェロキー文字"
 
+msgid "Cherokee Supplement"
+msgstr "チェロキー文字補遺（アメリカ・インディアンの部族）"
+
+msgid "Chess Symbols"
+msgstr "チェス記号"
+
 msgid "Chichewa"
 msgstr "チェワ語"
 
@@ -2796,6 +3193,9 @@ msgstr "ファイルフォーマットを選択してください..."
 
 msgid "Choose which lookups to copy"
 msgstr "コピーするルックアップを選択"
+
+msgid "Chorasmian"
+msgstr "ホラズム文字"
 
 msgid "Chukchi"
 msgstr "チュクチ語"
@@ -2876,6 +3276,9 @@ msgstr "不要な曲線を除去(_N)"
 msgid "Cleanup Self Intersect"
 msgstr "自己交差を除去する"
 
+msgid "Clear"
+msgstr "データ消去"
+
 msgid "Clear All"
 msgstr "すべてクリア"
 
@@ -2885,14 +3288,23 @@ msgstr "斜行ステムヒントを削除"
 msgid "Clear Instructions"
 msgstr "ヒント命令を削除"
 
+msgid "Clear Special Data"
+msgstr "特殊データを消去"
+
 msgid "Clear _Background"
 msgstr "背景をクリア(_B)"
 
 msgid "Clear _VStem"
 msgstr "垂直ステムヒントを削除(_V)"
 
+msgid "Clear destination layer before copy"
+msgstr "コピー前にコピー先レイヤーをクリア"
+
 msgid "ClearInstrsBigChanges"
 msgstr "大変更時に命令を消去"
+
+msgid "Clip Path Color"
+msgstr "クリップパス（切り抜きパス）の色"
 
 msgid "Cloc_kwise"
 msgstr "時計回り(_K)"
@@ -2917,6 +3329,9 @@ msgstr "複合グリフを表示(_B)"
 
 msgid "Combining Diacritical Marks"
 msgstr "結合可能ダイアクリティカルマーク"
+
+msgid "Combining Diacritical Marks Extended"
+msgstr "組み合わせ用発音区別符号拡張"
 
 msgid "Combining Diacritical Marks Supplement"
 msgstr "結合可能ダイアクリティカルマーク補助"
@@ -3018,11 +3433,20 @@ msgstr "コンデンス"
 msgid "Config_ure Plugins..."
 msgstr "プラグインの設定(_U)..."
 
+msgid "Conjunct Form After Ro"
+msgstr "Ro の後の結合形"
+
+msgid "Conjunct Forms"
+msgstr "結合形"
+
 msgid "Contextual Alternates"
 msgstr "文脈依存の異体字"
 
 msgid "Contextual Chaining Substitution"
 msgstr "文脈連鎖依存の置換"
+
+msgid "Contextual Half-width Spacing"
+msgstr "文脈に応じた半角スペース"
 
 msgid "Contextual Ligatures"
 msgstr "文脈依存の合字"
@@ -3057,6 +3481,9 @@ msgstr "各マスターデザインの寄与分"
 msgid "Control Pictures"
 msgstr "制御文字の図示"
 
+msgid "Control Points (Always_)"
+msgstr "制御点を表示（常時）"
+
 msgid "Control Points _beyond spline"
 msgstr "端点の外にはみ出す制御点(_B)"
 
@@ -3088,11 +3515,17 @@ msgstr "別のレイヤーにコピー(_Y)..."
 msgid "Coptic"
 msgstr "コプト文字"
 
+msgid "Coptic Epact Numbers"
+msgstr "コプト・エパクト数字"
+
 msgid "Copy Gri_d Fit"
 msgstr "グリッド合わせをコピー(_D)"
 
 msgid "Copy Layer To Layer"
 msgstr "レイヤーからレイヤーにコピー"
+
+msgid "Copy Layers"
+msgstr "レイヤーをコピー"
 
 msgid "Copy Loo_kup Data"
 msgstr "機能をコピー(_K)"
@@ -3114,6 +3547,9 @@ msgstr "高さをコピー(_V)"
 
 msgid "Copy _Width"
 msgstr "幅をコピー(_W)"
+
+msgid "Copy one layer to another"
+msgstr "レイヤーを別レイヤーにコピー"
 
 msgid "CopyMetaData"
 msgstr "メタデータをコピー"
@@ -3158,6 +3594,10 @@ msgstr "ビットマップフォントが %s から見つかりませんでし�
 
 msgid "Could not find any valid encoding tables"
 msgstr "有効なエンコードテーブルが見つかりませんでした"
+
+#, c-format
+msgid "Could not find clippath named %s."
+msgstr "%s という名前のクリップパス（切り抜きパス）が見つかりませんでした。"
 
 msgid "Could not find original glyph"
 msgstr "グリフを見つけることができません"
@@ -3286,11 +3726,17 @@ msgstr "水平ステムヒントを作成します."
 msgid "Create MM"
 msgstr "MMを作成"
 
+msgid "Create Rasterized Strikes (Not empty ones)"
+msgstr "ラスタライズされたストライクを作成する（空ではない）"
+
 msgid "Create Small Caps"
 msgstr "小型小文字を作成"
 
 msgid "Create Vertical Stem Hint"
 msgstr "垂直ステムヒントを作成します."
+
+msgid "Create a new lookup"
+msgstr "新しい検索を作成"
 
 msgid "Create directory"
 msgstr "ディレクトリを作成"
@@ -3324,6 +3770,9 @@ msgstr "楔形文字"
 
 msgid "Cuneiform Numbers"
 msgstr "楔形文字の数字"
+
+msgid "Cuneiform Numbers and Punctuation"
+msgstr "楔形文字の数字および句読点"
 
 msgid "Currency Symbols"
 msgstr "通貨記号"
@@ -3418,6 +3867,9 @@ msgstr "キュプロス音節文字"
 msgid "Cypriot syllabary"
 msgstr "キュプロス音節文字"
 
+msgid "Cypro-Minoan"
+msgstr "キュプロ・ミノア文字"
+
 msgid "Cyrillic"
 msgstr "キリル文字"
 
@@ -3426,6 +3878,12 @@ msgstr "キリル文字拡張A"
 
 msgid "Cyrillic Extended-B"
 msgstr "キリル文字拡張B"
+
+msgid "Cyrillic Extended-C"
+msgstr "キリル文字拡張C"
+
+msgid "Cyrillic Extended-D"
+msgstr "キリル文字拡張D"
 
 msgid "Cyrillic Supplement"
 msgstr "キリル文字補助"
@@ -3480,8 +3938,14 @@ msgstr "デフォルト"
 msgid "Default All"
 msgstr "すべてデフォルトに"
 
+msgid "Default Join Limit (PS/EPS/SVG):"
+msgstr "既定の結合限界値（PS/EPS/SVG）"
+
 msgid "Default This"
 msgstr "この項目をデフォルトに"
+
+msgid "Default color of glyph labels"
+msgstr "グリフラベルの既定の色"
 
 msgid ""
 "Default encoding for\n"
@@ -3495,6 +3959,9 @@ msgstr "over と overline の横棒のデフォルトの太さ"
 
 msgid "Default:"
 msgstr "デフォルト:"
+
+msgid "DefaultFont"
+msgstr "既定のフォント"
 
 msgid "Define \"Almost Horizontal\""
 msgstr "\"ほとんど水平\"を定義"
@@ -3510,6 +3977,9 @@ msgstr "削除"
 
 msgid "Delete Character"
 msgstr "消去文字"
+
+msgid "Delete the current layer"
+msgstr "現在のレイヤーを削除"
 
 msgid "Delim1:"
 msgstr "区切り1:"
@@ -3592,6 +4062,9 @@ msgstr "デーヴァナーガリー文字"
 msgid "Devanagari Extended"
 msgstr "デーヴァナーガリー拡張"
 
+msgid "Devanagari Extended-A"
+msgstr "デーヴァナーガリー文字拡張A"
+
 msgid "Devanagari2"
 msgstr "デーヴァナーガリー文字2"
 
@@ -3626,6 +4099,9 @@ msgstr "装飾記号"
 
 msgid "Dinka"
 msgstr "ディンカ語"
+
+msgid "Diphthongs (Obsolete)"
+msgstr "二重音字（廃止）"
 
 msgid "Direction of gaze:"
 msgstr "視線の方向:"
@@ -3703,6 +4179,9 @@ msgstr "多様なアーム"
 msgid "Diverse Forms"
 msgstr "多様な形状"
 
+msgid "Dives Akuru"
+msgstr "ディヴェ文字"
+
 msgid "Divide by zero in postscript code.\n"
 msgstr "PostScript コードの中で 0 による除算を行いました.\n"
 
@@ -3748,6 +4227,9 @@ msgstr "座標値の整数への丸め(サイズの節約になる)を行うか�
 msgid "Doesn't look like a valid pdf file, couldn't find xref section"
 msgstr "正しいPDFファイルに見えません. xref セクションが見つかりません"
 
+msgid "Dogra"
+msgstr "ドーグリー文字（ドーグラー文字）"
+
 msgid "Dogri"
 msgstr "ドグラ語"
 
@@ -3778,6 +4260,9 @@ msgstr "フリーハンド曲線を描画"
 msgid "Drawing plane tilt:"
 msgstr "描画面の傾き:"
 
+msgid "Drop Caps (Obsolete)"
+msgstr "ドロップキャップ（廃止）"
+
 msgid "Dummy 'DSIG'"
 msgstr "ダミーの'DSIG'テーブル"
 
@@ -3797,6 +4282,9 @@ msgstr "名前の重複"
 msgid "Duplicate definition of subroutine %d\n"
 msgstr "サブルーチン %d が重複定義されています\n"
 
+msgid "Duplicate name"
+msgstr "名前の重複"
+
 msgid "Duplicate pixelsize"
 msgstr "ピクセルサイズが重複しています."
 
@@ -3804,11 +4292,17 @@ msgstr "ピクセルサイズが重複しています."
 msgid "Duplicate repeat row count in char %d of pk file\n"
 msgstr "PKファイルの文字 %d で, 繰返し列番号が重複しています\n"
 
+msgid "Duployan"
+msgstr "デュプロワイエ式速記文字"
+
 msgid "Dutch"
 msgstr "オランダ語"
 
 msgid "Dzongkha"
 msgstr "ゾンカ語"
+
+msgid "EPS"
+msgstr "EPS（カプセル化 PostScript ファイル）"
 
 msgid "EPS Template"
 msgstr "EPSテンプレート"
@@ -3827,6 +4321,9 @@ msgstr "スクリプトを実行(_X)..."
 
 msgid "E_xport..."
 msgstr "書き出し(_X)..."
+
+msgid "Early Dynastic Cuneiform"
+msgstr "早期王朝楔形文字"
 
 msgid "Eastern Cree"
 msgstr "東クリー語"
@@ -3897,6 +4394,12 @@ msgstr "効果"
 msgid "Efik"
 msgstr "エフィック語"
 
+msgid "Egyptian Hieroglyph Format Controls"
+msgstr "エジプト・ヒエログリフ書式制御記号"
+
+msgid "Egyptian Hieroglyphs"
+msgstr "エジプト聖刻文字（ヒエログリフ）"
+
 msgid ""
 "Either:\n"
 "The amount of extra space to be added after a sentence\n"
@@ -3906,8 +4409,14 @@ msgstr ""
 "文末に付け加えられるスペースの追加量\n"
 "数式内で用いられるスペース"
 
+msgid "Elbasan"
+msgstr "エルバサン文字"
+
 msgid "Ellipse"
 msgstr "楕円"
+
+msgid "Elymaic"
+msgstr "エリマイス文字"
 
 msgid "Em Units"
 msgstr "EMあたりユニット数"
@@ -3982,6 +4491,9 @@ msgstr "feat テーブルの途中でファイルが切れています.\n"
 
 msgid "End:"
 msgstr "終了:"
+
+msgid "Endpoints specify minimum length and direction only"
+msgstr "終端点で最小の長さと方向のみを指定"
 
 msgid "English"
 msgstr "英語"
@@ -4088,6 +4600,9 @@ msgstr "エチオピア文字拡張"
 msgid "Ethiopic Extended-A"
 msgstr "エチオピア文字拡張A"
 
+msgid "Ethiopic Extended-B"
+msgstr "エチオピア文字拡張B"
+
 msgid "Ethiopic Supplement"
 msgstr "エチオピア文字補助"
 
@@ -4171,6 +4686,9 @@ msgstr "書き出し(_T)..."
 msgid "Export"
 msgstr "書き出し"
 
+msgid "ExportClipboard"
+msgstr "クリップボードをエクスポート"
+
 msgid "Extended"
 msgstr "エクステンド"
 
@@ -4193,8 +4711,20 @@ msgstr ""
 msgid "Extraneous glyphs"
 msgstr "余ったグリフを付加"
 
+msgid "Extrema Point Color"
+msgstr "極値点の色"
+
+msgid "Extremum bound..."
+msgstr "極値の境界"
+
+msgid "FG Color"
+msgstr "前景色"
+
 msgid "FOND Name:"
 msgstr "FOND名:"
+
+msgid "FONTLOG"
+msgstr "フォント履歴"
 
 msgid "FS Miscellaneous"
 msgstr "FS/その他"
@@ -4317,6 +4847,9 @@ msgstr "ファイル '%s' は既に存在します. 上書きしますか?"
 msgid "Filipino"
 msgstr "フィリピノ語"
 
+msgid "Fill Color"
+msgstr "塗りつぶし色"
+
 msgid "Filled Ellipse"
 msgstr "楕円(塗りつぶし)"
 
@@ -4342,7 +4875,7 @@ msgid "Find All"
 msgstr "すべて検索"
 
 msgid "Find In Font _View"
-msgstr "フォント表示から探す(_V)"
+msgstr "フォントビューを検索(_V)"
 
 msgid "Find Next"
 msgstr "次を検索"
@@ -4391,8 +4924,14 @@ msgstr "最初のグリフ"
 msgid "First Class %d\n"
 msgstr "1番目のクラス %d\n"
 
+msgid "First Glyph Name"
+msgstr "最初のグリフ名"
+
 msgid "First P_oint, Next Contour"
 msgstr "次の輪郭の最初の点(_O)"
+
+msgid "First Point Color"
+msgstr "最初の点の色"
 
 msgid "First and second arguments of imagemask must be integers.\n"
 msgstr "imagemask の最初の 2 個の引数は整数でなければなりません.\n"
@@ -4460,6 +4999,9 @@ msgstr "フォント名(_N):"
 msgid "Fon"
 msgstr "フォン語"
 
+msgid "Font"
+msgstr "フォント"
+
 #, c-format
 msgid ""
 "Font %1$.40s in file %2$.40s has been changed.\n"
@@ -4493,6 +5035,9 @@ msgstr "フォント情報 %.90s"
 
 msgid "Font Type:"
 msgstr "種類:"
+
+msgid "Font View"
+msgstr "フォントビュー"
 
 msgid "Font changed"
 msgstr "フォントが変更されています."
@@ -4538,6 +5083,9 @@ msgid ""
 msgstr ""
 "FontForge は CFF DICT INDEXに埋め込まれた Type2 プログラムはサポートしていま"
 "せん\n"
+
+msgid "FontForge font debugging table"
+msgstr "FontForge フォントデバッグテーブル"
 
 msgid ""
 "FontForge is a font editor for outline and bitmap fonts that lets you "
@@ -4606,6 +5154,17 @@ msgstr ""
 "適切なファイルをローカルディスク内で探しますか?"
 
 msgid ""
+"FontForge will attempt to adjust the left and right\n"
+"sidebearings of the selected glyphs so that the average\n"
+"separation between glyphs in a script will be the\n"
+"specified amount. You may also specify a minimum and\n"
+"maximum value for each glyph's sidebearings."
+msgstr ""
+"FontForge は選択されたグリフの左右のサイドベアリングを調整し、用字系でのグリ"
+"フ間の平均的な間隔が指定された値になるようにします。両サイドベアリング値に対"
+"して、最小値と最大値をしていすることもできます。"
+
+msgid ""
 "FontForge will use this namelist when assigning\n"
 "glyph names to code points in a new font."
 msgstr ""
@@ -4617,7 +5176,10 @@ msgid "FontForge's SFD"
 msgstr "FontForge SFD"
 
 msgid "FontLog Save Failed"
-msgstr "フォントログの保存に失敗しました."
+msgstr "「フォント履歴」の保存に失敗しました."
+
+msgid "Fontforge showing a glyph being edited"
+msgstr "Fontforge による編集中のグリフ表示"
 
 msgid "Font|_New"
 msgstr "新規(_N)"
@@ -4661,6 +5223,9 @@ msgstr "FreeTypeが使えません"
 
 msgid "FreeType unavailable."
 msgstr "FreeTypeは使用できません."
+
+msgid "FreeTypeAAFillInOutlineView"
+msgstr "アウトラインウィンドウで FreeType アンチエイリアス塗り潰し処理を行なう"
 
 msgid "FreeTypeInFontView"
 msgstr "FreeTypeでフォント表示"
@@ -4734,6 +5299,9 @@ msgstr "フリジア語"
 
 msgid "Friulian"
 msgstr "フリウリ語"
+
+msgid "From:"
+msgstr "コピー元："
 
 msgid "Fulani"
 msgstr "フラニ語"
@@ -4829,8 +5397,14 @@ msgstr "一般"
 msgid "Geometric Shapes"
 msgstr "幾何学記号"
 
+msgid "Geometric Shapes Extended"
+msgstr "幾何学模様拡張"
+
 msgid "Georgian"
 msgstr "グルジア文字"
+
+msgid "Georgian Extended"
+msgstr "グルジア文字拡張"
 
 msgid "Georgian Supplement"
 msgstr "グルジア文字補助"
@@ -4872,6 +5446,9 @@ msgstr "ギリヤーク語"
 
 msgid "Glagolitic"
 msgstr "グラゴル文字"
+
+msgid "Glagolitic Supplement"
+msgstr "グラゴル文字補遺"
 
 msgid "Glif Template"
 msgstr "Glifテンプレート"
@@ -5071,6 +5648,9 @@ msgstr "低速/中間"
 msgid "Gradual/Vertical"
 msgstr "低速/垂直"
 
+msgid "Grantha"
+msgstr "グランタ文字"
+
 msgid "Greek"
 msgstr "ギリシャ文字"
 
@@ -5137,6 +5717,9 @@ msgstr "グジャラート文字"
 msgid "Gumuz"
 msgstr "グムズ語"
 
+msgid "Gunjala Gondi"
+msgstr "グンジャラ・ゴーンディー文字"
+
 msgid "Gurmukhi"
 msgstr "グルムキー文字"
 
@@ -5200,6 +5783,9 @@ msgstr "ハングル字母"
 msgid "Hangul Jamo Extended-A"
 msgstr "ハングル字母拡張A"
 
+msgid "Hangul Jamo Extended-B"
+msgstr "ハングル字母拡張B"
+
 msgid "Hangul Jamo Half Width Forms"
 msgstr "ハングル字母半角形"
 
@@ -5215,6 +5801,12 @@ msgstr "ハングル字母, 中声"
 msgid "Hangul Syllables"
 msgstr "ハングル音節"
 
+msgid "Hanifi Rohingya"
+msgstr "ハニーフィー・ロヒンギャ文字"
+
+msgid "Hanunoo"
+msgstr "ハヌノオ文字（フィリピン・ミンドロ島）"
+
 msgid "Harari"
 msgstr "ハラル語"
 
@@ -5223,6 +5815,9 @@ msgstr "ハランチュー語"
 
 msgid "Has _Vertical Metrics"
 msgstr "縦書きメトリックが存在(_V)"
+
+msgid "Hatran"
+msgstr "ハトラ文字（アラム語系古代文字のひとつ）"
 
 msgid "Hausa"
 msgstr "ハウサ語"
@@ -5254,8 +5849,14 @@ msgstr "高"
 msgid "High Mari"
 msgstr "山地マリ語"
 
+msgid "High Private Use Surrogates"
+msgstr "上位私用領域サロゲート"
+
 msgid "High Surrogate"
 msgstr "上位代用対"
+
+msgid "High Surrogates"
+msgstr "上位サロゲート（コード ポイント）"
 
 msgid "High-Density Font"
 msgstr "高密度フォント"
@@ -5268,6 +5869,9 @@ msgstr "ヒンディー語"
 
 msgid "Hindko"
 msgstr "ヒンドゥコ語"
+
+msgid "Hint Label Color"
+msgstr "ヒントラベルの色"
 
 msgid "Hint Mask"
 msgstr "ヒントマスク"
@@ -5404,14 +6008,8 @@ msgstr "横方向に中"
 msgid "Horseshoe E and A"
 msgstr "蹄鉄型のEとA"
 
-msgid "How many CID slots do you wish to add?"
-msgstr "CIDスロットをいくつ追加しますか?"
-
 msgid "How many entries should there be in the cvt table?"
 msgstr "cvtテーブルに含まれる項目数をいくつにしますか?"
-
-msgid "How many unencoded glyph slots do you wish to add?"
-msgstr "文字符号が割り当てられていないグリフスロットをいくつ追加しますか?"
 
 msgid "Hungarian"
 msgstr "ハンガリー語"
@@ -5491,6 +6089,9 @@ msgstr "イビビオ語"
 msgid "Icelandic"
 msgstr "アイスランド語"
 
+msgid "IconFont"
+msgstr "アイコンフォント"
+
 msgid "Icons"
 msgstr "アイコン"
 
@@ -5499,6 +6100,9 @@ msgstr "識別基準"
 
 msgid "Ideographic Description Characters"
 msgstr "漢字構成記述文字"
+
+msgid "Ideographic Symbols and Punctuation"
+msgstr "表意文字と句読点"
 
 msgid ""
 "If a glyph has been edited so that it has a different\n"
@@ -5521,6 +6125,9 @@ msgstr ""
 
 msgid "If a line has a bump on it then flatten out that bump"
 msgstr "輪郭線に凹凸がある場合,それを平滑化します"
+
+msgid "If one of those glyphs already has a suffix"
+msgstr "すでにグリフに接尾辞が付いている場合は"
 
 msgid ""
 "If set then the entire font must be\n"
@@ -5643,6 +6250,13 @@ msgstr "暗示的な様態"
 
 msgid "Import"
 msgstr "取り込み"
+
+msgid "Import Parameters"
+msgstr "取り込みパラメータの設定"
+
+msgid "Imports a lookup (and all its subtables) from another font."
+msgstr ""
+"別のフォントから「検索」 (およびそのすべてのサブテーブル) を取り込みます。"
 
 #, c-format
 msgid ""
@@ -5801,6 +6415,9 @@ msgstr "インド(およびチベット)のぶら下げるベースライン"
 msgid "Indic Reordering"
 msgstr "インド系文字の再配置"
 
+msgid "Indic Siyaq Numbers"
+msgstr "インド・シヤク数字"
+
 msgid "Indic State Machine"
 msgstr "インド系文字の状態機械"
 
@@ -5809,6 +6426,9 @@ msgstr "インド系文字の再配置"
 
 msgid "Indonesian"
 msgstr "インドネシア語"
+
+msgid "Infer glyph width (Misc)"
+msgstr "グリフの幅を推測します (すべての形式)"
 
 msgid "Ingush"
 msgstr "イングーシ語"
@@ -6094,7 +6714,7 @@ msgid "Jula"
 msgstr "ジュラ語"
 
 msgid "Justification Alternatives"
-msgstr "行揃え用異体"
+msgstr "行端揃え用異字体"
 
 msgid "KOI8-R (Cyrillic)"
 msgstr "KOI8-R (キリル文字)"
@@ -6111,6 +6731,9 @@ msgstr "カッチ語"
 msgid "Kaithi"
 msgstr "カイティー文字"
 
+msgid "Kaktovik Numerals"
+msgstr "カクトビック数字"
+
 msgid "Kalenjin"
 msgstr "カレンジン語"
 
@@ -6120,11 +6743,20 @@ msgstr "カルムイク語"
 msgid "Kamba"
 msgstr "カンバ語"
 
+msgid "Kana Extended-A"
+msgstr "かな拡張A"
+
+msgid "Kana Extended-B"
+msgstr "かな拡張B"
+
 msgid "Kana Supplement"
 msgstr "仮名補助"
 
 msgid "Kanbun"
 msgstr "漢文"
+
+msgid "Kangxi Radicals"
+msgstr "康煕部首"
 
 msgid "Kannada"
 msgstr "カンナダ文字"
@@ -6158,6 +6790,9 @@ msgstr "片仮名"
 
 msgid "Katakana Phonetic Extensions"
 msgstr "片仮名音声拡張"
+
+msgid "Kawi"
+msgstr "カウィ文字"
 
 msgid "Kayah Li"
 msgstr "カヤー・リ文字"
@@ -6216,6 +6851,9 @@ msgstr "状態機械によるカーニング"
 msgid "Kerning by Classes: %s"
 msgstr "クラス毎のカーニング: %s"
 
+msgid "Kerning direction"
+msgstr "カーニング方向"
+
 #, c-format
 msgid "Kerning subtable 3 says the glyph count is %d, but maxp says %d\n"
 msgstr ""
@@ -6251,14 +6889,23 @@ msgstr "カローシュティー文字"
 msgid "Khasi"
 msgstr "カシ語"
 
+msgid "Khitan Small Script"
+msgstr "契丹小文字"
+
 msgid "Khmer"
 msgstr "クメール文字"
 
 msgid "Khmer Symbols"
 msgstr "クメール記号"
 
+msgid "Khojki"
+msgstr "ホジャ文字"
+
 msgid "Khowar"
 msgstr "コワール語"
+
+msgid "Khudawadi"
+msgstr "フダーワーディー文字"
 
 msgid "Khutsuri Georgian"
 msgstr "教会グルジア語"
@@ -6356,8 +7003,14 @@ msgstr "後に(_A)"
 msgid "L_oad Namelist..."
 msgstr "名前リストを読み込み(_O)..."
 
+msgid "Label Color"
+msgstr "ラベルの色"
+
 msgid "Label Gl_yph By"
 msgstr "グリフへのラベルづけ(_Y)"
+
+msgid "LabelFont"
+msgstr "ラベルフォント"
 
 msgid "Ladakhi"
 msgstr "ラダキ語"
@@ -6524,6 +7177,15 @@ msgstr "ラテン文字拡張C"
 msgid "Latin Extended-D"
 msgstr "ラテン文字拡張D"
 
+msgid "Latin Extended-E"
+msgstr "ラテン文字拡張E"
+
+msgid "Latin Extended-F"
+msgstr "ラテン文字拡張F"
+
+msgid "Latin Extended-G"
+msgstr "ラテン文字拡張G"
+
 msgid "Latin Full Width Forms"
 msgstr "全角英数"
 
@@ -6614,6 +7276,9 @@ msgstr "合字 %s"
 msgid "Ligature Caret Sub-Table"
 msgstr "合字キャレットサブテーブル"
 
+msgid "Ligature Glyph Name"
+msgstr "合字グリフ名"
+
 msgid "Ligature Substitution"
 msgstr "合字への置換"
 
@@ -6672,6 +7337,9 @@ msgstr "クラス名のリスト"
 
 msgid "Lisu"
 msgstr "リス文字"
+
+msgid "Lisu Supplement"
+msgstr "リス文字補遺"
 
 msgid "Literals"
 msgstr "文字のみ"
@@ -6736,11 +7404,14 @@ msgstr "前方参照一致: "
 
 #, c-format
 msgid "Lookahead class %d: "
-msgstr "前方参照クラス %d: "
+msgstr "先読みクラス %d: "
 
 #, c-format
 msgid "Lookahead coverage %d: "
 msgstr "前方参照型範囲指定 %d: "
+
+msgid "Lookup"
+msgstr "検索"
 
 #, c-format
 msgid "Lookup %s is not in %s\n"
@@ -6748,6 +7419,18 @@ msgstr "機能%sは%sにはありません\n"
 
 msgid "Lookup Differences\n"
 msgstr "グリフの相違点\n"
+
+msgid "Lookup Name:"
+msgstr "検索名："
+
+msgid "Lookup Names"
+msgstr "検索名"
+
+msgid "Lookup Table Edit"
+msgstr "参照テーブル編集"
+
+msgid "Lookup name already used"
+msgstr "その検索名は既に使用されています"
 
 msgid "Lookup out of bounds in feature table.\n"
 msgstr "機能テーブルの境界を跨いだ照合があります.\n"
@@ -6893,6 +7576,9 @@ msgstr "拡大率:"
 msgid "Magnify (Minify with alt)"
 msgstr "拡大 (altキーと併用すると縮小)"
 
+msgid "Mahajani"
+msgstr "マハージャニー文字"
+
 msgid "Mahjong Tiles"
 msgstr "麻雀牌"
 
@@ -6902,11 +7588,29 @@ msgstr "マイティリー語"
 msgid "Majang"
 msgstr "マジャン語"
 
+msgid "Makasar"
+msgstr "マカサール文字"
+
+msgid "Make Arc"
+msgstr "円弧を描く"
+
 msgid "Make Background"
 msgstr "背景として使用"
 
+msgid "Make Clip Path"
+msgstr "パスの切り抜き（クリップパス）"
+
+msgid "Make Clip _Path"
+msgstr "パスの切り抜き（クリップパス）"
+
+msgid "Make Cubic"
+msgstr "三次曲線フォントを作成"
+
 msgid "Make Foreground"
 msgstr "前面として使用"
+
+msgid "Make Line"
+msgstr "直線を引く"
 
 msgid "Make Namelist"
 msgstr "名前リストを作成"
@@ -6962,6 +7666,9 @@ msgstr "マンダ文字"
 msgid "Mandinka"
 msgstr "マンディンカ語"
 
+msgid "Manichaean"
+msgstr "マニ文字"
+
 msgid "Maninka"
 msgstr "マニンカ語"
 
@@ -7007,6 +7714,9 @@ msgstr "マプチェ語"
 msgid "Marathi"
 msgstr "マラーティー語"
 
+msgid "Marchen"
+msgstr "メルヘン文字"
+
 msgid "Mark"
 msgstr "マーク"
 
@@ -7047,6 +7757,9 @@ msgstr "マークセットは既に使われています"
 msgid "Mark Subs:"
 msgstr "印を置換:"
 
+msgid "Mark to Base Position"
+msgstr "基底部に合わせる"
+
 msgid "Mark to Mark"
 msgstr "マーク相対のマーク"
 
@@ -7067,8 +7780,14 @@ msgstr ""
 msgid "Marwari"
 msgstr "マルワリ語"
 
+msgid "Masaram Gondi"
+msgstr "マサラム・ゴーンディー文字"
+
 msgid "Mass Glyph Rename"
 msgstr "グリフ名をまとめて変更する"
+
+msgid "Mass Glyph _Rename..."
+msgstr "グリフ名をまとめて変更..."
 
 msgid "Master Designs"
 msgstr "マスターデザイン"
@@ -7084,6 +7803,9 @@ msgstr "一致"
 
 msgid "Matching TTF Point:"
 msgstr "重なり合うTTF点:"
+
+msgid "Math Kerning"
+msgstr "数学カーニング"
 
 msgid "Math Misc. Symbols-A"
 msgstr "その他の数学記号A"
@@ -7121,6 +7843,9 @@ msgstr "スタックの最大深さ"
 msgid "Max _Stack Depth:"
 msgstr "スタックの最大深さ(_S):"
 
+msgid "Mayan Numerals"
+msgstr "マヤ数字"
+
 msgid "Mbundu"
 msgstr "ンブンダ語"
 
@@ -7129,6 +7854,9 @@ msgstr "メ・エン語"
 
 msgid "Measure distance, angle between points"
 msgstr "点と点の間の距離・角度を計る"
+
+msgid "Medefaidrin"
+msgstr "メデファイドリン文字"
 
 msgid "Medial"
 msgstr "語中形"
@@ -7151,8 +7879,14 @@ msgstr "中低"
 msgid "Meetei Mayek"
 msgstr "マニプリ文字"
 
+msgid "Meetei Mayek Extensions"
+msgstr "マニプリ文字拡張"
+
 msgid "Mende"
 msgstr "メンデ語"
+
+msgid "Mende Kikakui"
+msgstr "メンデ文字"
 
 msgid "Menu Name"
 msgstr "メニュー名"
@@ -7171,6 +7905,12 @@ msgstr "合併処理中に問題発生"
 
 msgid "Merging a font with itself achieves nothing"
 msgstr "フォントを自分自身と合併しても何も起こりません."
+
+msgid "Meroitic Cursive"
+msgstr "メロエ文字草書体"
+
+msgid "Meroitic Hieroglyphs"
+msgstr "メロエ文字記念碑書体（ヒエログリフ）"
 
 msgid ""
 "MetaFont (mf) generates lots of verbiage to stdout.\n"
@@ -7195,6 +7935,12 @@ msgstr "メトリック"
 msgid "Metrics For %.50s"
 msgstr "%.50sのメトリック"
 
+msgid "Metrics Label Color"
+msgstr "メトリックラベルの色"
+
+msgid "Metrics View"
+msgstr "メトリックビュー"
+
 msgid "MfArgs"
 msgstr "MFの引数"
 
@@ -7206,6 +7952,9 @@ msgstr "MFの背景をクリア"
 
 msgid "MfShowErr"
 msgstr "MFエラーを表示"
+
+msgid "Miao"
+msgstr "ミャオ文字（ポラード文字）"
 
 msgid "MicroSoft"
 msgstr "マイクロソフト社"
@@ -7228,8 +7977,20 @@ msgstr "その他の数学記号A"
 msgid "Miscellaneous Math Symbols-B"
 msgstr "その他の数学記号B"
 
+msgid "Miscellaneous Mathematical Symbols-A"
+msgstr "その他の数学記号A"
+
+msgid "Miscellaneous Mathematical Symbols-B"
+msgstr "その他の数学記号B"
+
 msgid "Miscellaneous Symbols"
 msgstr "その他の記号"
+
+msgid "Miscellaneous Symbols and Arrows"
+msgstr "その他の記号と矢印"
+
+msgid "Miscellaneous Symbols and Pictographs"
+msgstr "その他の記号及び絵記号"
 
 msgid "Miscellaneous Technical"
 msgstr "その他の技術用記号"
@@ -7262,6 +8023,12 @@ msgstr "存在しないビットマップストライク"
 
 msgid "Missing cidmap file"
 msgstr "cidmapファイルがありません"
+
+msgid "Missing glyph"
+msgstr "グリフがありません"
+
+msgid "Missing glyph name"
+msgstr "グリフ名がありません"
 
 msgid "Missing left parenthesis in command to get a cvt index"
 msgstr "cvtインデックスを得るためのコマンドに左括弧がありません."
@@ -7323,6 +8090,9 @@ msgstr "モダン"
 msgid "Modern Serifs"
 msgstr "モダンセリフ(MS)"
 
+msgid "Modi"
+msgstr "モーディー文字"
+
 msgid "Modifier Tone Letters"
 msgstr "声調文字"
 
@@ -7349,6 +8119,12 @@ msgstr "モンゴル語(モンゴル文字)"
 
 msgid "Mongolian (cyrillic)"
 msgstr "モンゴル語(キリル文字)"
+
+msgid "Mongolian Supplement"
+msgstr "モンゴル文字補遺"
+
+msgid "MonoFont"
+msgstr "等幅フォント"
 
 msgid "Monospace"
 msgstr "等幅"
@@ -7388,8 +8164,14 @@ msgstr "ものさしを使って移動..."
 msgid "Move..."
 msgstr "移動..."
 
+msgid "Mro"
+msgstr "ムロ文字"
+
 msgid "Mult Subs"
 msgstr "複数の置換先"
+
+msgid "Multani"
+msgstr "ムルターニー文字"
 
 msgid "Multi-line edit"
 msgstr "複数行編集"
@@ -7464,6 +8246,9 @@ msgstr "ビルマ文字"
 msgid "Myanmar Extended-A"
 msgstr "ビルマ文字拡張A"
 
+msgid "Myanmar Extended-B"
+msgstr "ビルマ文字拡張B"
+
 msgid "N'Ko"
 msgstr "ン・コー文字"
 
@@ -7472,6 +8257,9 @@ msgstr "N-クリー語"
 
 msgid "NFNT (Resource)"
 msgstr "NFNT (リソース)"
+
+msgid "NKo"
+msgstr "ンコ文字（西アフリカ・マンデ語）"
 
 msgid "NLC Kanji Forms"
 msgstr "NLC漢字形"
@@ -7485,6 +8273,12 @@ msgstr "決して補間しない(_E)"
 msgid "N_umber Points"
 msgstr "点番号を表示(_U)"
 
+msgid "Nabataean"
+msgstr "ナバテア文字（古代アラビア文字のひとつ）"
+
+msgid "Nag Mundari"
+msgstr "ナーグ・ムンダーリー文字"
+
 msgid "Naga-Assamese"
 msgstr "ナガ・アッサム語"
 
@@ -7496,6 +8290,18 @@ msgstr "表示用の名前(_S):"
 
 msgid "Name List:"
 msgstr "名前リスト:"
+
+msgid "Name Point"
+msgstr "点に名前をつける"
+
+msgid "Name Point..."
+msgstr "点に名前を付ける"
+
+msgid "Name this contour"
+msgstr "この輪郭に名前を付ける"
+
+msgid "Name this point"
+msgstr "この点に名前を付ける"
 
 msgid ""
 "Name used for Vendor ID field in\n"
@@ -7532,6 +8338,9 @@ msgstr "親名前リストが見つかりません"
 msgid "NameList based twice"
 msgstr "名前リストの親が2つあります"
 
+msgid "NameList duplicated"
+msgstr "名前リストが重複"
+
 msgid "NameList parsing error"
 msgstr "NameListの構文解析エラー"
 
@@ -7546,6 +8355,9 @@ msgstr "名前リストの作成に失敗しました"
 
 msgid "Nanai"
 msgstr "ナーナイ語"
+
+msgid "Nandinagari"
+msgstr "ナンディナーガリー文字"
 
 msgid "Narrow"
 msgstr "狭い"
@@ -7597,6 +8409,9 @@ msgstr "中立"
 msgid "Never Embed/No Editing"
 msgstr "埋め込み禁止/編集不可"
 
+msgid "New"
+msgstr "新規"
+
 msgid "New Alternate List"
 msgstr "新しい代替リスト"
 
@@ -7623,6 +8438,9 @@ msgstr "新規フォント"
 
 msgid "New Indic Rearrangement"
 msgstr "インド系文字の再配置を新規定義"
+
+msgid "New Layer"
+msgstr "新しいレイヤー"
 
 msgid "New Layer..."
 msgstr "新しいレイヤー..."
@@ -7668,6 +8486,9 @@ msgstr "新規フォントの名前リスト"
 
 msgid "NewFontsQuadratic"
 msgstr "2次曲線フォントを作成"
+
+msgid "Newa"
+msgstr "ネワール語"
 
 msgid "Newari"
 msgstr "ネワーリー語"
@@ -7764,6 +8585,12 @@ msgstr "グリッド合わせをしない"
 
 msgid "No Kern Pairs"
 msgstr "カーニングペアがありません."
+
+msgid "No Lookup Type Selected"
+msgstr "検索タイプが選択されていません"
+
+msgid "No Lookups"
+msgstr "「検索」がありません"
 
 msgid "No Lower Case"
 msgstr "小文字なし"
@@ -8140,8 +8967,14 @@ msgstr "分子"
 msgid "Numeric Forms"
 msgstr "数字の形"
 
+msgid "Nushu"
+msgstr "女書文字"
+
 msgid "Nyanja/Chewa"
 msgstr "ニャンジャ語/チェワ語"
+
+msgid "Nyiakeng Puachue Hmong"
+msgstr "ニヤケン゠プアチュ゠フモン文字"
 
 msgid "Nynorsk"
 msgstr "ノルウェー語(ニーノシュク)"
@@ -8291,17 +9124,29 @@ msgstr "オジブエ語"
 msgid "Ol Chiki"
 msgstr "オル・チキ文字"
 
+msgid "Old Hungarian"
+msgstr "ロヴァーシュ文字（古代ハンガリー文字）"
+
 msgid "Old Italic"
 msgstr "古代イタリア文字"
 
 msgid "Old Italic (Etruscan, Oscan, etc.)"
 msgstr "イタリア古代(エトルリア,オスク等)文字"
 
+msgid "Old North Arabian"
+msgstr "古代北アラビア文字"
+
+msgid "Old Permic"
+msgstr "古ペルム文字"
+
 msgid "Old Persian"
 msgstr "古代ペルシャ楔形文字"
 
 msgid "Old Persian cuneiform"
 msgstr "古代ペルシャ楔形文字"
+
+msgid "Old Sogdian"
+msgstr "古ソグド文字"
 
 msgid "Old South Arabian"
 msgstr "古代南アラビア文字"
@@ -8314,6 +9159,9 @@ msgstr "オールドスタイルのセリフ体(OSS)"
 
 msgid "Old Turkic"
 msgstr "突厥文字"
+
+msgid "Old Uyghur"
+msgstr "古ウイグル文字"
 
 msgid "Old sfd file"
 msgstr "古いsfdファイル"
@@ -8473,6 +9321,9 @@ msgstr "OCR記号"
 msgid "Optimized For ClearType"
 msgstr "ClearType向けに最適化済"
 
+msgid "Optionally, add this mapping to the lookup subtable:"
+msgstr "必要に応じて、このマッピングを検索サブテーブルに追加します:"
+
 msgid "Options"
 msgstr "オプション"
 
@@ -8485,6 +9336,9 @@ msgstr "原点"
 msgid "Oriya"
 msgstr "オリヤ文字"
 
+msgid "Ornamental Dingbats"
+msgstr "装飾用絵記号"
+
 msgid "Ornamentals"
 msgstr "装飾的書体(O)"
 
@@ -8496,6 +9350,9 @@ msgstr "花形"
 
 msgid "Oromo"
 msgstr "オロモ語"
+
+msgid "Osage"
+msgstr "オーセージ文字（アメリカ合衆国オクラホマ州オーセージ族の言語）"
 
 msgid "Osmanya"
 msgstr "オスマニャ文字"
@@ -8512,6 +9369,9 @@ msgstr "その他の情報"
 msgid "OtherSubrsFile"
 msgstr "OtherSubrsファイル"
 
+msgid "Ottoman Siyaq Numbers"
+msgstr "オスマン・シヤク数字"
+
 msgid "Out Of Order"
 msgstr "順序が違います."
 
@@ -8523,6 +9383,9 @@ msgstr "メモリ不足です\n"
 
 msgid "Outline"
 msgstr "アウトライン"
+
+msgid "Outline Color"
+msgstr "アウトラインの色"
 
 msgid "Outline Fonts"
 msgstr "アウトラインフォント"
@@ -8538,6 +9401,9 @@ msgstr "縁どり文字"
 
 msgid "Output AFM"
 msgstr "AFMを出力"
+
+msgid "Output FONTLOG.txt"
+msgstr "FONTLOG.txtの出力"
 
 msgid "Output Glyph Map"
 msgstr "グリフマップを出力"
@@ -8556,6 +9422,9 @@ msgstr "楕円"
 
 msgid "Overlapped Hints"
 msgstr "ヒントが重なり合っています"
+
+msgid "PCL 5 data table"
+msgstr "PCL 5 データテーブル"
 
 msgid "PS Glyph Names"
 msgstr "PostScriptグリフ名"
@@ -8596,6 +9465,9 @@ msgstr "P_FMファミリー"
 msgid "P_rev Control Point"
 msgstr "前の制御点(_R)"
 
+msgid "Package Name:"
+msgstr "パッケージ名:"
+
 msgid "Page Setup"
 msgstr "ページ設定"
 
@@ -8604,6 +9476,9 @@ msgstr "用紙サイズ(_S):"
 
 msgid "Pahawh Hmong"
 msgstr "パハウ・フモン文字"
+
+msgid "Pair Position (kerning)"
+msgstr "ペア位置（カーニング）"
 
 msgid "Pairwise Pos"
 msgstr "ペア単位の位置指定"
@@ -8617,11 +9492,20 @@ msgstr "パレット(_T)"
 msgid "Palestinian Aramaic"
 msgstr "パレスチナ・アラム語"
 
+msgid "Palette Background Color"
+msgstr "パレットの背景色"
+
+msgid "Palettes"
+msgstr "パレット"
+
 msgid "Pali"
 msgstr "パーリ語"
 
 msgid "Palm OS Bitmap"
 msgstr "Palm OSのビットマップ"
+
+msgid "Palmyrene"
+msgstr "パルミラ文字（シリア東部の古代文字）"
 
 msgid "Palpa"
 msgstr "パルパ語"
@@ -8911,6 +9795,9 @@ msgstr "解析エラー"
 msgid "Pashto"
 msgstr "パシュトー語"
 
+msgid "Passed Validation"
+msgstr "検証に合格"
+
 msgid "Paste After"
 msgstr "隣に貼り付け"
 
@@ -8928,6 +9815,9 @@ msgstr "パターン塗り"
 
 msgid "Patterns"
 msgstr "パターン"
+
+msgid "Pau Cin Hau"
+msgstr "パウ・チン・ハウ文字"
 
 msgid "Pen _Angle:"
 msgstr "ペンの角度:(_A)"
@@ -8997,12 +9887,30 @@ msgstr "CIDフォントに %s を挿入する前に, それを閉じてくださ
 msgid "Please close font"
 msgstr "フォントを閉じてください."
 
+msgid "Please enter the name of a Anchor point class to create"
+msgstr "作成するアンカーポイントクラスの名前を入力してください。"
+
+msgid ""
+"Please identify a glyph by name, and FontForge will add an anchor to that "
+"glyph."
+msgstr ""
+"グリフを名前で指定してください。そうすればグリフにアンカーを追加できます。"
+
 #, c-format
 msgid "Please name encoding %d in this file"
 msgstr "エンコーディング %d に名前を付けてください"
 
+msgid "Please name this contour"
+msgstr "この輪郭に名前を付けてください。"
+
 msgid "Please name this encoding"
 msgstr "このエンコーディングに名前をつけてください."
+
+msgid "Please name this point"
+msgstr "この操作点に名前を付けてください。"
+
+msgid "Please name this subtable"
+msgstr "このサブテーブルに名前を付けてください。"
 
 msgid ""
 "Please provide the name of an encoding in the iconv database which you want "
@@ -9017,12 +9925,22 @@ msgstr "CIDフォントのグリフ集合名 (ordering) を指定してくださ
 msgid "Please set the Axis Type field"
 msgstr "\"軸の種類\"フィールドを設定してください"
 
+msgid "Please specify a name for this mark class or set"
+msgstr "このマークのクラスまたはセット名を指定してください。"
+
 #, c-format
 msgid "Please specify a new supplement for %.20s-%.20s"
 msgstr "%.20s-%.20sの補遺番号を指定し直してください."
 
 msgid "Plugin Configuration"
 msgstr "プラグインの設定"
+
+msgid ""
+"Plugins can be Loaded and Configured now.\n"
+"Other changes will take effect at next restart."
+msgstr ""
+"プラグインを読み込んで設定できます。\n"
+"他の変更は次の再起動時に有効になります。"
 
 msgid "Poin_ts too close"
 msgstr "近すぎる点(_T)"
@@ -9033,6 +9951,9 @@ msgstr "点 %d が直前の命令によって移動しました"
 
 msgid "Point A_t"
 msgstr "位置を指定して選択(_T)"
+
+msgid "Point Color"
+msgstr "点の色"
 
 msgid "Point Info"
 msgstr "点の情報"
@@ -9077,7 +9998,7 @@ msgid "Points of _Inflection"
 msgstr "変曲点を表示(_I)"
 
 msgid "Points on Selected _Contours"
-msgstr "選択中の輪郭全体(_C)"
+msgstr "選択された輪郭上の点(_C)"
 
 msgid "Points:"
 msgstr "ポイント数:"
@@ -9164,6 +10085,9 @@ msgstr "優先ファミリー名"
 
 msgid "Preferred Styles"
 msgstr "優先スタイル名"
+
+msgid "Prepend timestamp"
+msgstr "タイムスタンプの追加"
 
 msgid "PreserveTables"
 msgstr "保持するテーブル"
@@ -9271,6 +10195,9 @@ msgstr "プロバンス語"
 
 msgid "Provide a glyph name"
 msgstr "グリフ名を読み込み"
+
+msgid "Psalter Pahlavi"
+msgstr "詩編用（聖詠）パフラヴィー文字"
 
 msgid "Punctuation Supplement"
 msgstr "句読点補助"
@@ -9466,6 +10393,9 @@ msgstr "カーニングをすべて削除(_P)"
 msgid "Remove All VKern Pairs"
 msgstr "縦書きカーニングをすべて削除"
 
+msgid "Remove Bitmap Glyphs"
+msgstr "ビットマップグリフを除去"
+
 msgid "Remove Bitmap Glyphs..."
 msgstr "ビットマップを除去..."
 
@@ -9477,6 +10407,9 @@ msgstr "エンコーディングを削除"
 
 msgid "Remove Kern _Pairs"
 msgstr "カーニングペアを削除(_P)"
+
+msgid "Remove This Glyph"
+msgstr "このグリフを除去"
 
 msgid "Remove VKern Pairs"
 msgstr "縦書きカーニングペアを削除"
@@ -9492,6 +10425,9 @@ msgstr "重なりの除去中..."
 
 msgid "Rename Gl_yphs..."
 msgstr "グリフ名を変更(_Y)..."
+
+msgid "Rename all glyphs in the selection"
+msgstr "選択中のすべてのグリフ名を変更します"
 
 msgid "Rename by NameList"
 msgstr "名前リストによる改名"
@@ -9526,6 +10462,12 @@ msgstr "参照に置換"
 
 msgid "Replace Å"
 msgstr "Åを置き換える"
+
+msgid "Replacement Glyph Name"
+msgstr "置換グリフ名"
+
+msgid "Replacement Glyph Names"
+msgstr "置換グリフ名"
 
 msgid "Replacement mismatch"
 msgstr "置換グリフが一致しません"
@@ -9843,6 +10785,9 @@ msgstr "S/アンシャル"
 msgid "SJIS (Kanji)"
 msgstr "シフトJIS (漢字)"
 
+msgid "SVG"
+msgstr "SVG（スケーラブル・ベクター形式・画像）"
+
 msgid "SVG Template"
 msgstr "SVGテンプレート"
 
@@ -9957,6 +10902,12 @@ msgstr "コメントを保存"
 msgid "Save Failed"
 msgstr "保存に失敗しました."
 
+msgid "Save Guides"
+msgstr "ガイドを保存"
+
+msgid "Save Layers"
+msgstr "すべてのレイヤーを保存"
+
 msgid "Save as _Directory"
 msgstr "ディレクトリとして保存(_D)"
 
@@ -10052,6 +11003,9 @@ msgstr "グリフ幅の拡大率:"
 
 msgid "Scale the selection"
 msgstr "選択範囲を拡大/縮小"
+
+msgid "Scale to fit (Misc)"
+msgstr "画面に合わせて拡大縮小する（すべての形式）"
 
 msgid "Scale..."
 msgstr "拡大・縮小..."
@@ -10379,6 +11333,12 @@ msgstr "名前で指定したグリフを含むクラスを選択"
 msgid "Selected Glyphs"
 msgstr "選択されたグリフ"
 
+msgid "Selected Point Color"
+msgstr "選択された点の色"
+
+msgid "Selected Point Width"
+msgstr "選択した点の幅"
+
 msgid "Self-referential character"
 msgstr "グリフが自己参照しています."
 
@@ -10425,6 +11385,9 @@ msgstr "セレル語"
 msgid "Serif"
 msgstr "セリフ"
 
+msgid "SerifFont"
+msgstr "セリフフォント"
+
 msgid "Set All"
 msgstr "すべてセット"
 
@@ -10445,6 +11408,12 @@ msgstr "左サイドベアリングの設定値:"
 
 msgid "Set LBearing..."
 msgstr "左サイドベアリングを設定..."
+
+msgid "Set Point Size"
+msgstr "ポイントサイズを設定"
+
+msgid "Set Point _Size"
+msgstr "ポイントサイズを設定"
 
 msgid "Set RBearing To:"
 msgstr "右サイドベアリングの設定値:"
@@ -10557,6 +11526,9 @@ msgstr "形による塗り"
 msgid "Shapes"
 msgstr "形"
 
+msgid "Sharada"
+msgstr "シャーラダー文字"
+
 msgid "Shavian"
 msgstr "ショー文字"
 
@@ -10565,6 +11537,9 @@ msgstr "ビットマップ全体をシフト"
 
 msgid "Sho_w"
 msgstr "表示(_W)"
+
+msgid "Shorthand Format Controls"
+msgstr "速記書式制御記号"
 
 #, c-format
 msgid "Shouldn't be in addinfo \"%s"
@@ -10579,8 +11554,14 @@ msgstr "ATTを表示"
 msgid "Show Kerning"
 msgstr "カーニング"
 
+msgid "Show _Dependent"
+msgstr "依存関係を表示(_D)"
+
 msgid "Show _Grid"
 msgstr "グリッドを表示(_G)"
+
+msgid "Show _Grid Fit (Live Update)..."
+msgstr "グリッド合わせを表示（自動更新）"
 
 msgid "Show _Grid Fit..."
 msgstr "グリッド合わせを表示(_G)..."
@@ -10599,6 +11580,9 @@ msgstr "シベ語"
 
 msgid "Sidamo"
 msgstr "シダモ語"
+
+msgid "Siddham"
+msgstr "悉曇文字（しったんもじ）"
 
 msgid "Signature Mark"
 msgstr "シグネチャーマーク"
@@ -10623,6 +11607,9 @@ msgstr "単純化"
 
 msgid "Simplify More..."
 msgstr "さらに単純化"
+
+msgid "Simplify Stroke (SVG/PS/EPS)"
+msgstr "ストロークを簡素化(SVG/PS/EPS)"
 
 msgid ""
 "Simplify will examine corner points whose control points are almost\n"
@@ -10654,6 +11641,9 @@ msgstr "単独フォントと複数密度フォント"
 
 msgid "Sinhala"
 msgstr "シンハラ文字"
+
+msgid "Sinhala Archaic Numbers"
+msgstr "シンハラ古体数字"
 
 msgid "Size"
 msgstr "サイズ"
@@ -10733,14 +11723,23 @@ msgstr "小型大文字"
 msgid "Small Form Variants"
 msgstr "小字形"
 
+msgid "Small Kana Extension"
+msgstr "小書き仮名拡張"
+
 msgid "Snap Outlines to Pi_xel Grid"
 msgstr "アウトラインをグリッドに合わせる(_X)"
 
 msgid "SnapDistance"
 msgstr "スナップ距離"
 
+msgid "SnapToInt"
+msgstr "整数座標に吸着"
+
 msgid "Sodo Gurage"
 msgstr "ソド・グラゲ語"
+
+msgid "Sogdian"
+msgstr "ソグド文字"
 
 msgid "Somali"
 msgstr "ソマリ語"
@@ -10762,6 +11761,9 @@ msgstr ""
 msgid "Soninke"
 msgstr "ソニンケ語"
 
+msgid "Sora Sompeng"
+msgstr "ソラング・ソンペング文字"
+
 msgid "Sorbian"
 msgstr "ソルブ語"
 
@@ -10779,6 +11781,9 @@ msgstr "南スラビ語"
 
 msgid "Southern Sami"
 msgstr "南サーミ語"
+
+msgid "Soyombo"
+msgstr "ソヨンボ文字"
 
 msgid "Space _Regions..."
 msgstr "グループ間を均等に(_R)..."
@@ -10863,6 +11868,9 @@ msgstr "特殊文字"
 
 msgid "Specify bitmap sizes to be regenerated"
 msgstr "再生成するビットマップのサイズを指定してください"
+
+msgid "SplashScreen"
+msgstr "スプラッシュ画面（起動時表示画面）"
 
 msgid "Square"
 msgstr "四角い"
@@ -11230,6 +12238,9 @@ msgstr "スンダ文字"
 msgid "Sundanese (roman)"
 msgstr "スンダ語(ローマ字)"
 
+msgid "Sundanese Supplement"
+msgstr "スンダ文字補助（インドネシア）"
+
 msgid "Sup1:"
 msgstr "上付き1:"
 
@@ -11257,20 +12268,32 @@ msgstr "上付き・下付き文字"
 msgid "Superscript"
 msgstr "上つき文字"
 
+msgid "Superscripts and Subscripts"
+msgstr "上付き文字と下付き文字"
+
 msgid "Supplemental Arrows-A"
 msgstr "矢印補助A"
 
 msgid "Supplemental Arrows-B"
 msgstr "矢印補助B"
 
+msgid "Supplemental Arrows-C"
+msgstr "補助矢印C"
+
 msgid "Supplemental Math Operators"
 msgstr "数学の演算子補助"
+
+msgid "Supplemental Mathematical Operators"
+msgstr "数学演算子補助"
 
 msgid "Supplemental Punctuation"
 msgstr "句読点補助"
 
 msgid "Supplemental Symbols and Arrows"
 msgstr "記号および矢印補助"
+
+msgid "Supplemental Symbols and Pictographs"
+msgstr "補助記号及び絵文字"
 
 msgid "Supplementary Ideographic Plane"
 msgstr "追加漢字面"
@@ -11298,6 +12321,9 @@ msgstr "上位代用対, 非私用面"
 
 msgid "Surrogate High, Private Use"
 msgstr "上位代用対, 私用面"
+
+msgid "Sutton SignWriting"
+msgstr "サットン手話表記法"
 
 msgid "Sutu"
 msgstr "スツ語"
@@ -11365,6 +12391,12 @@ msgstr "その他の記号"
 msgid "Symbols and Arrows Supplement"
 msgstr "記号および矢印補助"
 
+msgid "Symbols and Pictographs Extended-A"
+msgstr "記号及び絵文字拡張A"
+
+msgid "Symbols for Legacy Computing"
+msgstr "旧式コンピューター用記号"
+
 msgid "Synchronize"
 msgstr "同期"
 
@@ -11377,6 +12409,9 @@ msgstr "Type3フォトのヘッダを解析中に構文エラーが発生"
 
 msgid "Syriac"
 msgstr "シリア文字"
+
+msgid "Syriac Supplement"
+msgstr "シリア文字補助"
 
 #. GT: Top/Left (side) bearing
 msgid "TBearing:"
@@ -11493,6 +12528,9 @@ msgstr "タジク語"
 msgid "Tajiki"
 msgstr "タジク語"
 
+msgid "Takri"
+msgstr "タークリー文字"
+
 msgid "Tamazight (Arabic)"
 msgstr "タマズイフト語(アラビア文字)"
 
@@ -11502,6 +12540,21 @@ msgstr "タマズイフト語(ラテン文字)"
 msgid "Tamil"
 msgstr "タミル文字"
 
+msgid "Tamil Supplement"
+msgstr "タミル文字補遺"
+
+msgid "Tangsa"
+msgstr "タングサ文字"
+
+msgid "Tangut"
+msgstr "西夏文字"
+
+msgid "Tangut Components"
+msgstr "西夏文字構成要素"
+
+msgid "Tangut Supplement"
+msgstr "西夏文字補遺"
+
 msgid "Tatar"
 msgstr "タタール語"
 
@@ -11510,6 +12563,9 @@ msgstr "タタール語(タタールスタン)"
 
 msgid "TeX Table"
 msgstr "TeXテーブル"
+
+msgid "TeX table"
+msgstr "TeX テーブル"
 
 msgid "Technical Symbols Misc."
 msgstr "その他の技術用記号"
@@ -11528,6 +12584,9 @@ msgstr "語尾形2"
 
 msgid "Terminal Forms #3"
 msgstr "語尾形3"
+
+msgid "Tertiary Ideographic Plane"
+msgstr "第三漢字面"
 
 msgid "Text and Background"
 msgstr "テキストと背景"
@@ -11628,6 +12687,37 @@ msgstr ""
 "編集(E)→線の接合(J) コマンドは,線端同士の距離が\n"
 "この値より近くにあるときに端点を統合します. 値が\n"
 "0の時は,点同士が重なりあっている必要があります"
+
+msgid "The FONTLOG allows you to keep a log of changes made to your font."
+msgstr ""
+"「フォント履歴」には、フォントに対して行なわれた変更内容の記録を保存できま"
+"す。"
+
+msgid ""
+"The FONTLOG contains some description of the \n"
+" font project, a detailed changelog, and a list of contributors"
+msgstr ""
+"「フォント履歴」には、フォント・プロジェクト、詳細な変更履歴、協力者の一覧な"
+"どの記載が含まれています。"
+
+msgid ""
+"The FONTLOG is a text file containing relevant information\n"
+"about the font including such things as its changelog.\n"
+"(A general template is available in the OFL FAQ on http://scripts.sil.org/"
+"OFL-FAQ_web)\n"
+"Usage within an open font project is highly recommended but not required.\n"
+"If your font already contains a fontlog table (see the Element->Font Info)\n"
+"and you check this box, then the internal fontlog information will be\n"
+"appended to the file \"FONTLOG.txt\" in the same directory\n"
+"as the font itself."
+msgstr ""
+"「フォント履歴」は、変更履歴のような項目を含むフォントに関連する情報のテキス"
+"ト・ファイルです。基本テンプレートは、OFL FAQ （http://scripts.sil.org/OFL-"
+"FAQ_web）から入手できます。公開されているフォントのプロジェクトでは利用が強く"
+"推奨されていますが、必須ではありません。ご自分のフォントに既にフォント履歴の"
+"テーブルが含まれていて（「エレメント」⇒「フォント情報」で確認できます）、本項"
+"目にチェックを入れているのであれば、フォント自体と同じディレクトリーの"
+"「FONTLOG.txt」ファイルに、内部フォント履歴情報が追加されます。"
 
 msgid ""
 "The Merge operation cannot be reverted.\n"
@@ -11730,6 +12820,21 @@ msgstr "このフォントを使用したときの, 単語間スペースの縮�
 msgid "The code point U+%1$04X occurs in groups %2$.30s and %3$.30s"
 msgstr ""
 "コードポイントU+%1$04Xが%2$.30sと%3$.30sの2つのグループに含まれています."
+
+msgid "The color of a selected point"
+msgstr "選択された点の色"
+
+msgid "The color of an on-curve point"
+msgstr "曲線上の点の色"
+
+msgid "The color of the clip path"
+msgstr "クリップパス（切り抜きパス）の色"
+
+msgid "The color of the outline"
+msgstr "アウトラインの色"
+
+msgid "The color of the point which is the start of a contour"
+msgstr "輪郭の始点である点の色"
 
 #, c-format
 msgid "The context/chaining subtable %s in %s fails to match %s in %s\n"
@@ -11861,6 +12966,13 @@ msgstr "ディスプレイ数式の上限・下限の上下に追加されるグ
 #, c-format
 msgid "The following error occurred on the selected glyphs: %.100s"
 msgstr "選択中のグリフで以下のエラーが発生しました: %.100s"
+
+msgid ""
+"The following options influence how files are imported.\n"
+"Most are specific to one or more formats."
+msgstr ""
+"以下のオプションは、ファイルの「取り込み」方法に影響します。\n"
+"ほとんどは対象となるフォーマットが決まっています。"
 
 #, c-format
 msgid ""
@@ -12027,10 +13139,10 @@ msgid ""
 "font. You may give it a new name using Element->Glyph Info. Do you wish to "
 "continue font generation (and omit this character)?"
 msgstr ""
-"エンコーディング%dのグリフは\".notdef\"という名前がついています. 名前が\"."
-"notdef\"になっているために,生成されたフォントにはこのグリフは含まれません. エ"
-"レメント(L)→グリフ情報(I) で新しい名前をつけることができます. (このグリフを飛"
-"ばして)フォントの生成を続けますか?"
+"エンコーディング%dのグリフは\".notdef\"という名前がついています. 名前が"
+"\".notdef\"になっているために,生成されたフォントにはこのグリフは含まれませ"
+"ん. エレメント(L)→グリフ情報(I) で新しい名前をつけることができます. (このグリ"
+"フを飛ばして)フォントの生成を続けますか?"
 
 #, c-format
 msgid "The glyph name \"%1$.30s\" occurs in groups %2$.30s and %3$.30s"
@@ -12400,6 +13512,9 @@ msgstr ""
 "この名前を持つグリフが既にあります.\n"
 "名前を交換しますか?"
 
+msgid "There is already a subtable with that name, please pick another."
+msgstr "その名前のサブテーブルがすでにあります。別の名前を選択してください。"
+
 #, c-format
 msgid "There is already an anchor point named %1$.40s in %2$.40s."
 msgstr "%1$.40sという名前のアンカーポイントは既に%2$.40sにあります."
@@ -12411,6 +13526,10 @@ msgid ""
 msgstr ""
 "重みづけされたフォントに項目ForceBoldThresholdは存在しないにもかかわらず,フォ"
 "ント%30sにはForceBoldエントリーが存在します"
+
+#, c-format
+msgid "There is no glyph named %s in the font"
+msgstr "フォント内に %s という名前のグリフはありません"
 
 msgid "There must be at least one match coverage table"
 msgstr "最低1個の一致範囲テーブルが必要です"
@@ -12695,6 +13814,17 @@ msgstr ""
 "本当に行ってよろしいですか?"
 
 msgid ""
+"This is an abstract class which defines common features of the\n"
+"FontView, CharView, BitmapView and MetricsView.\n"
+"\n"
+"Press the help key or F1 to open a web page about this tool.\n"
+msgstr ""
+"この項目は、「フォントビュー」、「キャラクタービュー」、「ビットマップ"
+"ビュー」、「メトリックビュー」 の共通機能を定義する抽象クラスです。\n"
+"\n"
+"ヘルプ キーまたは F1 を押すと、このツールに関する Web ページが開きます。\n"
+
+msgid ""
 "This is an identifying number shared by all members of\n"
 "this font family with the same style (I.e. 10pt Bold and\n"
 "24pt Bold would have the same id, but 10pt Italic would not"
@@ -12791,6 +13921,13 @@ msgstr ""
 "すが, %3$d軸のフォントには最低でも%2$d個のインスタンスフォントが必要です. "
 "FontForgeはこのフォントを正しく編集できません"
 
+msgid ""
+"This name has already been used for another lookup.\n"
+"Lookup names must be unique."
+msgstr ""
+"この検索名は既に別の検索で使用されています。\n"
+"検索名は一意でなければなりません。"
+
 #, c-format
 msgid "This namelist contains at least one non-ASCII glyph name, namely: %s"
 msgstr ""
@@ -12802,6 +13939,13 @@ msgstr "この名前リストは,非ASCIIのグリフ名を含む名前リスト
 
 msgid "This operation cannot be undone, do it anyway?"
 msgstr "この操作は取り消し不能です. それでも実行しますか?"
+
+msgid ""
+"This option prepends a timestamp in the format YYMMDDHHMM to the filename "
+"and font-family name metadata."
+msgstr ""
+"このオプションでは、ファイル名とフォントファミリー名のメタデータの先頭に"
+"YYMMDDHHMM形式のタイムスタンプを追加します。"
 
 msgid "This outline glyph is missing a bitmap version"
 msgstr "このアウトライングリフにはビットマップ版がありません."
@@ -12933,6 +14077,9 @@ msgstr "パスのタイル敷き(_P)..."
 msgid "Tiny Selection"
 msgstr "選択グリフが少なすぎます"
 
+msgid "Tirhuta"
+msgstr "ティルフター文字（マイティリー文字）"
+
 msgid "Titling"
 msgstr "タイトル用字形"
 
@@ -12996,8 +14143,14 @@ msgstr ""
 "(Normal,Regular等)で,同じファミリー名をもつフォントを開いている必要がありま"
 "す."
 
+msgid "To the glyph names starting at:"
+msgstr "以下で始まるグリフ名へ:"
+
+msgid "To their own names"
+msgstr "グリフの名前に"
+
 msgid "To:"
-msgstr "指定値:"
+msgstr "コピー先:"
 
 msgid "Todo"
 msgstr "トド語"
@@ -13101,6 +14254,9 @@ msgstr "ツール_2"
 msgid "Top Bearing does not change."
 msgstr "上ベアリングは変更されません."
 
+msgid "Toto"
+msgstr "トト文字"
+
 msgid "Trademark"
 msgstr "商標"
 
@@ -13151,6 +14307,9 @@ msgstr "変形中..."
 
 msgid "Transitional Serifs"
 msgstr "トランジショナルセリフ(TS)"
+
+msgid "Transport and Map Symbols"
+msgstr "交通及び地図記号"
 
 msgid "Triangle"
 msgstr "三角型セリフ"
@@ -13237,6 +14396,9 @@ msgstr "トゥイ語"
 
 msgid "Twilight Zone Point Count"
 msgstr "トワイライトゾーンの点の個数"
+
+msgid "Type in new layer name"
+msgstr "新しいレイヤー名を入力"
 
 msgid "Type of distortable font:"
 msgstr "変形可能フォントの種類:"
@@ -13455,6 +14617,9 @@ msgstr "統合カナダ先住民音節"
 msgid "Unified Canadian Aboriginal Syllabics Extended"
 msgstr "統合カナダ先住民音節拡張"
 
+msgid "Unified Canadian Aboriginal Syllabics Extended-A"
+msgstr "統合カナダ先住民音節拡張A"
+
 #, c-format
 msgid "Uninterpreted code in gf: %d\n"
 msgstr "GFファイルの位置 %d に予想外のコードがありました\n"
@@ -13533,6 +14698,9 @@ msgstr "リンクを解除"
 msgid "Unlink All"
 msgstr "リンクをすべて解除"
 
+msgid "Unnamed lookup"
+msgstr "検索名不明"
+
 #, c-format
 msgid ""
 "Unparsed characters found after end of groups file (last line parsed was "
@@ -13578,6 +14746,9 @@ msgstr "ウルドゥー語(パキスタン)"
 msgid "Use CID Map"
 msgstr "CID Mapを使用"
 
+msgid "Use Clip-paths (SVG)"
+msgstr "クリップパス（パスの切り抜き）を使用する (SVG)"
+
 msgid "Use FreeType"
 msgstr "FreeTypeを使う"
 
@@ -13596,6 +14767,9 @@ msgstr "最初を使う(_F)"
 msgid "Use _Second"
 msgstr "2番目を使う(_S)"
 
+msgid "Use a matrix of kerning classes"
+msgstr "カーニングクラスの組み合わせを使用"
+
 msgid ""
 "Use cubic (that is postscript) splines to hold the outlines of all\n"
 "layers of this font. Cubic splines are generally easier to edit\n"
@@ -13605,6 +14779,9 @@ msgstr ""
 "す.\n"
 "3次スプラインは一般的に2次スプラインよりも編集が容易です.\n"
 "(3次スプラインのままでもtruetypeフォントを生成することができます)"
+
+msgid "Use individual kerning pairs"
+msgstr "個々のカーニングペアを使用"
 
 #. GT: This is part of the PostScript language. "exit" should not be translated
 #. GT: as it is a PostScript keyword. (FF contains a small PostScript interpreter
@@ -13652,6 +14829,12 @@ msgstr ""
 "グリフのラスタライズに使用します. 一般に,\n"
 "より良い表示品質が得られます."
 
+msgid "UseCairoDrawing"
+msgstr "「Cairo」描画ライブラリを使用する"
+
+msgid "UsePlugins"
+msgstr "プラグインを使用"
+
 msgid "Uyghur"
 msgstr "ウイグル語"
 
@@ -13692,8 +14875,15 @@ msgstr "高さ"
 msgid "Vai"
 msgstr "ヴァイ文字"
 
+msgid "Validate Before Saving"
+msgstr "保存前に検証"
+
 msgid "Validating..."
 msgstr "検証中..."
+
+#, c-format
+msgid "Validation of %.100s"
+msgstr "%.100s の検証"
 
 msgid "Value"
 msgstr "値"
@@ -13713,12 +14903,18 @@ msgstr "異体字セレクタ"
 msgid "Variation Selectors B"
 msgstr "異体字セレクタB"
 
+msgid "Variation Selectors Supplement"
+msgstr "字形選択子補助"
+
 msgid "Various errors occurred at the selected glyphs"
 msgstr "選択中のグリフでさまざまなエラーが発生しました"
 
 #, c-format
 msgid "Various specifications of PIXEL_SIZE do not match in %s"
 msgstr "%sで,いくつかのPIXEL_SIZEの指定が一致しません"
+
+msgid "Vedic Extensions"
+msgstr "ベーダ文字拡張（初期サンスクリット文字）"
 
 msgid "Venda"
 msgstr "ヴェンダ語"
@@ -13798,6 +14994,9 @@ msgstr "表示"
 msgid "View Point"
 msgstr "視点"
 
+msgid "Vithkuqi"
+msgstr "ビタクチェ文字"
+
 msgid "Vowel Jamo Forms"
 msgstr "ハングル字母母音形"
 
@@ -13819,8 +15018,14 @@ msgstr "ワ語"
 msgid "Wagdi"
 msgstr "ワーグリー語"
 
+msgid "Wancho"
+msgstr "ワンチョ文字"
+
 msgid "Wansung (Korean)"
 msgstr "Wansung (韓国語)"
+
+msgid "Warang Citi"
+msgstr "ワラング・クシティ文字（ワラン・チティ文字）"
 
 msgid "Warn if _unlinked references"
 msgstr "参照リンクの解除時に警告(_U)"
@@ -13974,6 +15179,29 @@ msgstr "このファイル内のフォントのピクセル数は幾つですか
 
 msgid "What type(s) of palm font records do you want?"
 msgstr "どの種類のPalmフォントレコードが必要か?"
+
+msgid ""
+"When \"Endpoints specify minimum length and direction only\" is checked, the "
+"replace pattern must be a single open contour with at least 3 points on it."
+msgstr ""
+"チェックボックス「終端点で最小の長さと方向のみを指定」が選択されている場合、"
+"検索パターンは1つの開いたな輪郭でなければなりません。"
+
+msgid ""
+"When \"Endpoints specify minimum length and direction only\" is checked, the "
+"search pattern must be a single open contour with at least 3 points on it "
+"(otherwise there is nothing to match)."
+msgstr ""
+"チェックボックス「終端点で最小の長さと方向のみを指定」を選択すると、 検索パ"
+"ターンは、パス上に少なくとも3点を持つひとつの開いた輪郭でなければなりません"
+"（そうでなければ一致するものはありません）。"
+
+msgid ""
+"When \"Endpoints specify minimum length and direction only\" is checked, the "
+"search pattern must be a single open contour."
+msgstr ""
+"チェックボックス「終端点で最小の長さと方向のみを指定」が選択されている場合、"
+"検索パターンは1つのオープンな輪郭でなければなりません。"
 
 msgid ""
 "When FontForge detects that an expanded stroke will self-intersect,\n"
@@ -14260,6 +15488,9 @@ msgstr "はい"
 msgid "Yes to _All"
 msgstr "全部はい(_A)"
 
+msgid "Yezidi"
+msgstr "ヤジディ教"
+
 msgid "Yi"
 msgstr "彝文字"
 
@@ -14400,6 +15631,9 @@ msgstr ""
 "できます. \"...\"というラベルがついたボタンを押すと,\n"
 "スクリプトファイルを見ることができます."
 
+msgid "You may not paste a reference into this window"
+msgstr "このウィンドウに参照を貼り付けることはできません"
+
 #. GT: The following strings should be concatenated together, the result
 #. GT: translated, and then broken into lines by hand. I'm sure it would
 #. GT: be better to specify this all as one string, but my widgets won't support
@@ -14407,8 +15641,14 @@ msgstr ""
 msgid "You may specify the new instance of this font"
 msgstr "このフォントの新しいインスタンスを指定する必要があります"
 
+msgid "You must name the lookup."
+msgstr "検索に名前を付ける必要があります。"
+
 msgid "You must provide at least one name here"
 msgstr "少なくとも1個の値を指定する必要があります"
+
+msgid "You must select a Lookup Type."
+msgstr "検索タイプを選択してください。"
 
 msgid "You must select a glyph before you can import an image into it"
 msgstr ""
@@ -14424,6 +15664,10 @@ msgstr ""
 "少なくとも1個の言語を選択する必要があります.\n"
 "他の選択肢の中に適切な言語名がない場合は\n"
 "言語名として\"デフォルト\"を選んでください."
+
+#, c-format
+msgid "You must specify a glyph name for subtable %s"
+msgstr "サブテーブル %sにはグリフ名を指定する必要があります"
 
 msgid "You must specify a standard type1 extension (.pfb or .pfa)"
 msgstr "標準のType1拡張子(.pfbか.pfa)を指定しなければなりません"
@@ -14478,11 +15722,17 @@ msgstr ""
 msgid "Z_oom out"
 msgstr "縮小(_O)"
 
+msgid "Zanabazar Square"
+msgstr "ザナバザル方形文字"
+
 msgid "Zande"
 msgstr "ザンデ語"
 
 msgid "Zapf Dingbats"
 msgstr "装飾記号"
+
+msgid "Znamenny Musical Notation"
+msgstr "ズナメニ聖歌記譜記号"
 
 msgid "Zone:"
 msgstr "ゾーン:"
@@ -14550,8 +15800,15 @@ msgstr "水平ヒントを追加(_A)"
 msgid "_Advance Width only"
 msgstr "送り幅のみ(_A)"
 
+#. GT: Align these points to their average position
+msgid "_Align Points"
+msgstr "点を揃える(_A)"
+
 msgid "_All Fonts"
 msgstr "すべてのフォント(_A)"
+
+msgid "_Always raise this dialog when importing"
+msgstr "「取り込み」時に常にこのダイアログを表示します(_A)"
 
 msgid "_Anchor Control..."
 msgstr "アンカーの制御(_A)..."
@@ -14705,6 +15962,9 @@ msgstr "コピー(_C)"
 msgid "_Correct Direction"
 msgstr "アウトラインの向きを修正(_C)"
 
+msgid "_Correct Direction (PS/EPS)"
+msgstr "描画方向を修正する (PS/EPS)"
+
 #. GT: Here (and following) MM means "MultiMaster"
 msgid "_Create MM..."
 msgstr "MMを作成(_C)..."
@@ -14714,6 +15974,9 @@ msgstr "曲線上の点(_C)"
 
 msgid "_Debug..."
 msgstr "デバッグ(_D)..."
+
+msgid "_Default Using Suffix:"
+msgstr "デフォルト ― 接尾辞を使用"
 
 msgid "_Delete"
 msgstr "削除(_D)"
@@ -14830,7 +16093,7 @@ msgid "_First"
 msgstr "最初(_F)"
 
 msgid "_First Point"
-msgstr "最初の端点(_F)"
+msgstr "最初の点(_F)"
 
 msgid "_Fit"
 msgstr "枠に揃える(_F)"
@@ -14959,6 +16222,9 @@ msgstr "イタリック(_I)..."
 msgid "_Join"
 msgstr "線の接合(_J)"
 
+msgid "_Justification..."
+msgstr "行端揃え情報"
+
 msgid "_Kern Pairs"
 msgstr "カーニングペア(_K)"
 
@@ -15000,6 +16266,9 @@ msgstr "読み込み(_L)"
 
 msgid "_Load Encoding..."
 msgstr "エンコーディングを読み込み(_L)..."
+
+msgid "_MATH Info..."
+msgstr "数式情報"
 
 #. GT: Make this (selected) point the first point in the glyph
 msgid "_Make First"
@@ -15059,6 +16328,9 @@ msgstr "名前による(_N)"
 msgid "_Name Contour"
 msgstr "輪郭に名前を付ける(_N)"
 
+msgid "_Name Point"
+msgstr "点に名前をつける"
+
 msgid "_Name:"
 msgstr "名前(_N):"
 
@@ -15075,7 +16347,7 @@ msgid "_Next Glyph"
 msgstr "次のグリフ(_N)"
 
 msgid "_Next Point"
-msgstr "次の端点(_N)"
+msgstr "次の点(_N)"
 
 msgid "_No"
 msgstr "いいえ(_N)"
@@ -15150,7 +16422,7 @@ msgid "_Prev Glyph"
 msgstr "前のグリフ(_P)"
 
 msgid "_Prev Point"
-msgstr "前の端点(_P)"
+msgstr "前の点(_P)"
 
 msgid "_Print"
 msgstr "印刷(_P)"
@@ -15238,6 +16510,9 @@ msgstr "検索(_S)"
 
 msgid "_Select"
 msgstr "選択(_S)"
+
+msgid "_Separation:"
+msgstr "グリフ間距離："
 
 msgid "_Serif Variant"
 msgstr "セリフの種類(_S)"
@@ -15377,6 +16652,9 @@ msgstr "垂直ステム(_V)"
 msgid "_VWidth"
 msgstr "高さ(_V)"
 
+msgid "_Validation"
+msgstr "検証(_V)"
+
 msgid "_Version"
 msgstr "バージョン(_V)"
 
@@ -15413,6 +16691,9 @@ msgstr "幅(_W):"
 msgid "_Window"
 msgstr "ウィンドウ(_W)"
 
+msgid "_Window Type"
+msgstr "ウィンドウ・タイプ"
+
 msgid "_Wireframe"
 msgstr "縁どり立体化(_W)"
 
@@ -15439,6 +16720,9 @@ msgstr "ゾーン(_Z):"
 
 msgid "alternate subs"
 msgstr "選択型置換"
+
+msgid "anchor point table"
+msgstr "アンカーポイントテーブル"
 
 #. GT: The dialog looks like:
 #. GT:   Interpolating between <fontname> and:
@@ -15502,6 +16786,9 @@ msgstr "ファミリー名"
 msgid "font name"
 msgstr "フォント名"
 
+msgid "font;fonts;editor;TTF;OTF;typeface;"
+msgstr "フォント;フォント;エディター;TTF;OTF;書体;"
+
 msgid "full name"
 msgstr "フルネーム"
 
@@ -15515,8 +16802,17 @@ msgstr "これより小さい場合"
 msgid "if tan less than"
 msgstr "よりも傾きが小さい場合"
 
+msgid "justification table (AAT version)"
+msgstr "行端揃え情報テーブル (AATバージョン)"
+
+msgid "justification table (OT version)"
+msgstr "行端揃え情報テーブル (OT バージョン)"
+
 msgid "kern pair"
 msgstr "カーニングペア"
+
+msgid "kerning table"
+msgstr "カーニングテーブル"
 
 msgid "ligature"
 msgstr "合字"
@@ -15527,8 +16823,14 @@ msgstr "長さは少なくとも"
 msgid "mark"
 msgstr "マーク"
 
+msgid "metadata table"
+msgstr "メタデータテーブル"
+
 msgid "multiple subs"
 msgstr "複数の置換先"
+
+msgid "name table"
+msgstr "テーブル名"
 
 msgid "of each master design, or by entering the design"
 msgstr "フォントのデフォルトインスタンスを変更する"
@@ -15570,6 +16872,9 @@ msgstr "置換"
 
 msgid "subtable"
 msgstr "サブテーブル"
+
+msgid "tracking table"
+msgstr "トラッキングテーブル"
 
 msgid "values for each axis"
 msgstr "ことができます"
@@ -15613,3 +16918,12 @@ msgstr "{入力の先頭}"
 
 msgid "{Start of Line}"
 msgstr "{行の先頭}"
+
+#~ msgid "Add Encoding Slots..."
+#~ msgstr "エンコーディングスロットを追加..."
+
+#~ msgid "How many CID slots do you wish to add?"
+#~ msgstr "CIDスロットをいくつ追加しますか?"
+
+#~ msgid "How many unencoded glyph slots do you wish to add?"
+#~ msgstr "文字符号が割り当てられていないグリフスロットをいくつ追加しますか?"

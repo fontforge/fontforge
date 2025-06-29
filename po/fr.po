@@ -14,8 +14,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-30 03:08-0800\n"
-"PO-Revision-Date: 2023-12-30 08:15\n"
+"POT-Creation-Date: 2025-06-29 12:53-0700\n"
+"PO-Revision-Date: 2025-06-29 19:58\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -128,8 +128,8 @@ msgstr ""
 
 msgid " Bad contextual chaining table, ignored\n"
 msgstr ""
-"Sous-table d'enchainement contextuel incorrecte. Glyphe %d hors limite [0,"
-"%d]\n"
+"Sous-table d'enchainement contextuel incorrecte. Glyphe %d hors limite "
+"[0,%d]\n"
 
 #. GT: This continues a multi-line error message, hence the leading space
 msgid " Bad contextual substitution table, ignored\n"
@@ -1221,9 +1221,6 @@ msgstr "Ajouter des e_xtréma"
 msgid "Add Encoding Name..."
 msgstr "Ajouter un nom de codage"
 
-msgid "Add Encoding Slots..."
-msgstr "Ajout de cases de codage"
-
 msgid "Add Entry Anchor..."
 msgstr "Ajouter ancre d'entrée"
 
@@ -2110,6 +2107,9 @@ msgstr "Arabe étendu (A)"
 
 msgid "Arabic Extended-B"
 msgstr "Arabe étendu — B"
+
+msgid "Arabic Extended-C"
+msgstr "Arabe étendu-C"
 
 msgid "Arabic Mathematical Alphabetic Symbols"
 msgstr "Symboles mathématiques alphabétiques Arable"
@@ -3572,6 +3572,9 @@ msgstr "Ajouter un signet à cet emplacement"
 msgid "Bookmarks"
 msgstr "Signets"
 
+msgid "Bopomofo"
+msgstr "Bopomofo"
+
 msgid "Bopomofo Extended"
 msgstr "Bopomofo étendu"
 
@@ -3839,6 +3842,15 @@ msgstr "Supplément D aux idéogrammes unifiés CJC"
 
 msgid "CJK Unified Ideographs Extension E"
 msgstr "Supplément E aux idéogrammes unifiés CJC"
+
+msgid "CJK Unified Ideographs Extension F"
+msgstr "Extension F des idéogrammes unifiés CJK"
+
+msgid "CJK Unified Ideographs Extension G"
+msgstr "Extension G des idéogrammes unifiés CJK"
+
+msgid "CJK Unified Ideographs Extension H"
+msgstr "Extension H des idéogrammes unifiés CJK"
 
 msgid ""
 "CLEAR\n"
@@ -4330,8 +4342,14 @@ msgstr ""
 "Vérifie si une substitution, une classe de crénage, etc.,\n"
 "utilise un nom de glyphe qui n'existe pas dans la fonte"
 
+msgid "Cherokee"
+msgstr "Cherokee"
+
 msgid "Cherokee Supplement"
 msgstr "Cherokee supplémentaire"
+
+msgid "Chess Symbols"
+msgstr "Symboles d'échecs"
 
 msgid "Chinese (Hong Kong)"
 msgstr "Chinois de Hong-Kong zh_HK"
@@ -4497,8 +4515,8 @@ msgstr ""
 msgid ""
 "Click here to add the OFL metadata to your own font in the License and "
 "License URL fields. \n"
-"Then click on the License field to fill in the placeholders in sync with OFL."
-"txt. \n"
+"Then click on the License field to fill in the placeholders in sync with "
+"OFL.txt. \n"
 msgstr ""
 "Cliquez ici pour ajouter les métadonnées OFL à votre propre fonte dans les "
 "champs Licence et URL de la licence.\n"
@@ -5220,6 +5238,9 @@ msgstr "Cunéiforme"
 msgid "Cuneiform Numbers"
 msgstr "Nombres cunéiformes"
 
+msgid "Cuneiform Numbers and Punctuation"
+msgstr "Nombres et ponctuation cunéiforme"
+
 msgid "Currency Symbols"
 msgstr "Monnaies"
 
@@ -5342,6 +5363,9 @@ msgstr "Cyrillique étendu (B)"
 
 msgid "Cyrillic Extended-C"
 msgstr "Cyrillique étendu (C)"
+
+msgid "Cyrillic Extended-D"
+msgstr "Cyrillique étendu-D"
 
 msgid "Cyrillic Supplement"
 msgstr "supplément cyrillique"
@@ -6258,6 +6282,9 @@ msgstr "Édite les transformations dans une sous-table de lookup"
 msgid "Effects"
 msgstr "Effets"
 
+msgid "Egyptian Hieroglyphs"
+msgstr "Hiéroglyphes égyptiens"
+
 msgid ""
 "Either a glyph should have no overlapping hints,\n"
 "or a glyph with hint masks should have no overlapping\n"
@@ -6582,6 +6609,9 @@ msgstr "Éthiopien étendu"
 
 msgid "Ethiopic Extended-A"
 msgstr "Éthiopien étendu (A)"
+
+msgid "Ethiopic Extended-B"
+msgstr "Éthiopien étendu-B"
 
 msgid "Ethiopic Supplement"
 msgstr "Éthiopien supplémentaire"
@@ -8076,6 +8106,9 @@ msgstr "Formes géométriques étendu"
 msgid "Georgian"
 msgstr "Géorgien"
 
+msgid "Georgian Extended"
+msgstr "Géorgien étendu"
+
 msgid "Georgian Supplement"
 msgstr "Nouskhouri, liturgique géorgien"
 
@@ -8146,6 +8179,9 @@ msgstr "Nom du gl_yphe:"
 
 msgid "Glagolitic"
 msgstr "Glagolitique"
+
+msgid "Glagolitic Supplement"
+msgstr "Supplément Glagolitique"
 
 msgid "Glif Template"
 msgstr "Modèle Glif"
@@ -8812,8 +8848,14 @@ msgstr "Élevé"
 msgid "High Mari"
 msgstr "Haut-mari"
 
+msgid "High Private Use Surrogates"
+msgstr "Caractères de substitution hauts à usage privé"
+
 msgid "High Surrogate"
 msgstr "Indirection Haute"
+
+msgid "High Surrogates"
+msgstr "Caractères de substitution hauts"
 
 msgid "High-Density Font"
 msgstr "Police haute densité"
@@ -8862,6 +8904,9 @@ msgstr "Hints"
 #, c-format
 msgid "Hints differ in glyph “%s”\n"
 msgstr "Les hints diffèrent dans le glyphe \"%s\"\n"
+
+msgid "Hiragana"
+msgstr "Hiragana"
 
 msgid "Hiragana & Katakana"
 msgstr "Hiragana & katakana"
@@ -9032,17 +9077,11 @@ msgstr[1] "Horizontal: lignes de base %d"
 msgid "Horseshoe E and A"
 msgstr "E et A en fer à cheval"
 
-msgid "How many CID slots do you wish to add?"
-msgstr "Combien de cases CID voulez vous ajouter?"
-
 msgid "How many entries should there be in the cvt table?"
 msgstr "De combien d'entrées la table CVT doit-elle disposer ?"
 
 msgid "How many most-recent Undos should be kept?"
 msgstr "Combien d'annulations doivent être conservées ?"
-
-msgid "How many unencoded glyph slots do you wish to add?"
-msgstr "Combien de cases pour glyphes non codés voulez vous ajouter?"
 
 msgid "How to align these points?"
 msgstr "Comment aligner ces points?"
@@ -10382,6 +10421,9 @@ msgstr "Carélien"
 msgid "Kashmiri (India)"
 msgstr "Kashmiri"
 
+msgid "Katakana"
+msgstr "Katakana"
+
 msgid "Katakana Phonetic Extensions"
 msgstr "Katakana phonétique étendu"
 
@@ -10738,6 +10780,9 @@ msgstr "latin étendu D"
 
 msgid "Latin Extended-E"
 msgstr "Latin étendu E"
+
+msgid "Latin Extended-F"
+msgstr "Latin étendu-F"
 
 msgid "Latin Full Width Forms"
 msgstr "Latin pleine chasse"
@@ -12120,8 +12165,20 @@ msgstr "Symboles mathématiques A"
 msgid "Miscellaneous Math Symbols-B"
 msgstr "Divers symboles mathématiques - B"
 
+msgid "Miscellaneous Mathematical Symbols-A"
+msgstr "Symboles Mathématiques Divers-A"
+
+msgid "Miscellaneous Mathematical Symbols-B"
+msgstr "Symboles Mathématiques Divers-B"
+
 msgid "Miscellaneous Symbols"
 msgstr "Symboles divers"
+
+msgid "Miscellaneous Symbols and Arrows"
+msgstr "Symboles et Flèches Additionnelles"
+
+msgid "Miscellaneous Symbols and Pictographs"
+msgstr "Divers Symboles et Pictogrammes"
 
 msgid "Miscellaneous Technical"
 msgstr "Symboles techniques divers"
@@ -12618,6 +12675,9 @@ msgstr "Jamais interpoler"
 
 msgid "N_umber Points"
 msgstr "_Numéroter les points"
+
+msgid "Nabataean"
+msgstr "Nabatéen"
 
 msgid "Naga-Assamese"
 msgstr "Assamais naga"
@@ -17879,8 +17939,8 @@ msgid "SnapToInt"
 msgstr "Magnétisme aux entiers"
 
 msgid ""
-"So if you type \"A\" here the first selected glyph would be named \"A."
-"suffix\".\n"
+"So if you type \"A\" here the first selected glyph would be named "
+"\"A.suffix\".\n"
 "The second \"B.suffix\", and so on."
 msgstr ""
 "Donc, si vous tapiez \"A\" ici, le premier glyphe sélectionné serait nommé "
@@ -18654,6 +18714,9 @@ msgstr "Sondanais"
 msgid "Sundanese (roman)"
 msgstr "Sondanais (latin)"
 
+msgid "Sundanese Supplement"
+msgstr "Soudanais Additionnel"
+
 msgid "Sup1:"
 msgstr "Sup1 :"
 
@@ -18695,6 +18758,9 @@ msgstr "Indices & Exposants"
 msgid "Superscript"
 msgstr "Exposant"
 
+msgid "Superscripts and Subscripts"
+msgstr "Indices et Exposants"
+
 msgid "Supplemental Arrows-A"
 msgstr "Flèches supplémentaires A"
 
@@ -18706,6 +18772,9 @@ msgstr "Flèches supplémentaires C"
 
 msgid "Supplemental Math Operators"
 msgstr "Opérateurs mathématiques supplémentaires"
+
+msgid "Supplemental Mathematical Operators"
+msgstr "Opérateurs Mathématiques Additionnels"
 
 msgid "Supplemental Punctuation"
 msgstr "Ponctuation complémentaire"
@@ -18793,6 +18862,12 @@ msgstr "Symboles divers"
 
 msgid "Symbols and Arrows Supplement"
 msgstr "Supplément de symboles et flèches"
+
+msgid "Symbols and Pictographs Extended-A"
+msgstr "Symboles et Pictogrammes étendus-A"
+
+msgid "Symbols for Legacy Computing"
+msgstr "Symboles pour l'informatique héritée"
 
 msgid "Symbols:"
 msgstr "Symboles :"
@@ -18935,6 +19010,9 @@ msgstr "Le tag doit comporter 4 caractères"
 msgid "Tag too long"
 msgstr "Tag trop long"
 
+msgid "Tagalog"
+msgstr "Tagalog"
+
 msgid "Tags"
 msgstr "Balises"
 
@@ -19015,6 +19093,9 @@ msgstr "Formes finales 2 (ARA)"
 
 msgid "Terminal Forms #3"
 msgstr "Formes finales 3 (ARA)"
+
+msgid "Tertiary Ideographic Plane"
+msgstr "Plan idéographique tertiaire"
 
 msgid "Text Field"
 msgstr "Zone de texte"
@@ -19656,6 +19737,12 @@ msgid "The context/chaining subtable %s in %s fails to match %s in %s\n"
 msgstr ""
 "La sous-table de contexte/enchaînement %s dans %s ne correspond pas à %s "
 "dans %s\n"
+
+msgid "The contour is open; a nib must be closed."
+msgstr "Le contour est ouvert, un contour de plume doit être fermé."
+
+msgid "The contour is quadratic; a nib must be a cubic contour."
+msgstr "Le contour est quadratique, une plume doit être un contour cubique."
 
 msgid "The control point above the selected point is near the italic angle"
 msgstr ""
@@ -20582,6 +20669,13 @@ msgstr "Le point sélectionné est proche d'un hint de transverse"
 msgid "The selected point is not at integral coordinates"
 msgstr "Le point sélectionné n'est pas à des coordonnées entières"
 
+msgid ""
+"The selected point is the start of a 'tiny' spline; splines that small may "
+"cause inaccurate calculations."
+msgstr ""
+"Le point sélectionné est le début d'une courbe \"minuscule\"; des contours "
+"si petits qu'ils risquent de provoquer des erreurs de calcul"
+
 msgid "The selected point is too far from the origin"
 msgstr "Le point sélectionné est trop éloigné de l'origine"
 
@@ -20808,8 +20902,8 @@ msgid ""
 "Width=%g, height=%g, depth=%g, italic correction=%g"
 msgstr ""
 "La largeur, hauteur, profondeur ou correction italique de %s est trop "
-"grande. En TFM, on ne peut pas dépasser 16 fois le EM de la fonte."
-"Largeur=%g, hauteur=%g, profondeur=%g, correction italique=%g"
+"grande. En TFM, on ne peut pas dépasser 16 fois le EM de la "
+"fonte.Largeur=%g, hauteur=%g, profondeur=%g, correction italique=%g"
 
 msgid "The x coord of the selected point is near the specified value"
 msgstr "La'abscisse du point sélectionné est proche de la valeur de consigne"
@@ -22434,6 +22528,9 @@ msgstr "Déplacement en X"
 msgid "Translation in Y"
 msgstr "Déplacement en Y"
 
+msgid "Transport and Map Symbols"
+msgstr "Symboles de transport et de carte"
+
 msgid "Triangle"
 msgstr "Triangulaire"
 
@@ -23416,6 +23513,9 @@ msgstr "Sélecteurs de variante"
 
 msgid "Variation Selectors B"
 msgstr "Sélecteurs de variante (B)"
+
+msgid "Variation Selectors Supplement"
+msgstr "Supplément aux sélecteurs de variation"
 
 #, c-format
 msgid ""
@@ -26433,3 +26533,12 @@ msgstr "∆y_cha #1"
 
 msgid "∆y_adv #2"
 msgstr "∆y_cha #2"
+
+#~ msgid "Add Encoding Slots..."
+#~ msgstr "Ajout de cases de codage"
+
+#~ msgid "How many CID slots do you wish to add?"
+#~ msgstr "Combien de cases CID voulez vous ajouter?"
+
+#~ msgid "How many unencoded glyph slots do you wish to add?"
+#~ msgstr "Combien de cases pour glyphes non codés voulez vous ajouter?"
