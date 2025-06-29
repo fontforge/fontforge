@@ -14,8 +14,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-30 03:08-0800\n"
-"PO-Revision-Date: 2023-12-30 08:15\n"
+"POT-Creation-Date: 2025-06-29 12:53-0700\n"
+"PO-Revision-Date: 2025-06-29 19:58\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese\n"
 "Language: pt_PT\n"
@@ -140,11 +140,17 @@ msgstr "Modelo ruim, formato não reconhecido"
 msgid "Bad xfig file"
 msgstr "Arquivo xfig inválido"
 
+msgid "Balinese"
+msgstr "Balinês"
+
 msgid "Baseline used for Latin, Greek, Cyrillic text."
 msgstr "Linha de base utilizada para o texto Latim, Grego, Cirílico."
 
 msgid "Basic Latin"
 msgstr "Latim básico"
+
+msgid "Batak"
+msgstr "Batak"
 
 msgid "Bengali"
 msgstr "Bengali"
@@ -154,6 +160,9 @@ msgstr "Bopomofo"
 
 msgid "Breton"
 msgstr "Bretão"
+
+msgid "Buginese"
+msgstr "Buginês"
 
 msgid "Buhid"
 msgstr "Buhid"
@@ -207,6 +216,10 @@ msgstr ""
 msgid "Can't find the file"
 msgstr "Não foi possível encontrar o arquivo"
 
+#, c-format
+msgid "Can't open %s\n"
+msgstr "Não é possível abrir %s\n"
+
 msgid "Can't run mf"
 msgstr "Não é possível executar programa mf"
 
@@ -218,6 +231,12 @@ msgstr "Cheroqui"
 
 msgid "Combining Diacritical Marks"
 msgstr "Marcas diacríticas para combinar"
+
+msgid "Combining Diacritical Marks Extended"
+msgstr "Marcas diacríticas estendidas para combinar"
+
+msgid "Combining Diacritical Marks Supplement"
+msgstr "Suplemento de marcas diacríticas para combinar"
 
 msgid "Coordinate along which to space"
 msgstr "Coordenar ao longo da qual o espaço"
@@ -253,6 +272,9 @@ msgstr "Cirílico"
 msgid "Cyrillic Extended-A"
 msgstr "Cirílico Alargado-A"
 
+msgid "Cyrillic Extended-C"
+msgstr "Cirílico Alargado-C"
+
 msgid "Cyrillic Supplement"
 msgstr "Suplemento Cirílico"
 
@@ -279,6 +301,9 @@ msgstr "Fontes diferentes"
 
 msgid "Distance"
 msgstr "Distância"
+
+msgid "Duplicate Anchor"
+msgstr "Âncora Duplicada"
 
 msgid "Duplicate Anchor Class"
 msgstr "Classe âncora Duplicado"
@@ -321,6 +346,9 @@ msgstr "Procurar um arquivo cidmap..."
 
 msgid "Finnish"
 msgstr "Finlandês"
+
+msgid "Font Editor"
+msgstr "Editor de Fontes"
 
 msgid "FontForge"
 msgstr "FontForge"
@@ -395,6 +423,9 @@ msgstr "Galego"
 
 msgid "Georgian"
 msgstr "Georgiano"
+
+msgid "Georgian Extended"
+msgstr "Georgiano Estendido"
 
 msgid "German"
 msgstr "Alemão"
@@ -515,11 +546,17 @@ msgstr "Kannada"
 msgid "Katakana"
 msgstr "Katakana"
 
+msgid "Katakana Phonetic Extensions"
+msgstr "Extensões Phonetic Katakana"
+
 msgid "Kazakh"
 msgstr "Cazaque"
 
 msgid "Khmer"
 msgstr "Cambojano"
+
+msgid "Khmer Symbols"
+msgstr "Símbolos de Khmer"
 
 msgid "Korean"
 msgstr "Coreano"
@@ -543,11 +580,17 @@ msgstr "Farsi/Persa"
 msgid "Lao"
 msgstr "Lao"
 
+msgid "Latin Extended Additional"
+msgstr "Adição latina extendida"
+
 msgid "Latin Extended-A"
 msgstr "Latim Alargado-A"
 
 msgid "Latin Extended-B"
 msgstr "Latim Alargado-B"
+
+msgid "Latin Extended-C"
+msgstr "Latino Estendido -C"
 
 msgid "Latin-1 Supplement"
 msgstr "Suplemento Latim-1"
@@ -560,6 +603,12 @@ msgstr ""
 "Aprender a usar FontForge é fácil, e existem vários tutoriais disponíveis "
 "que começam com o básico até os recursos mais avançados, como criar e usar "
 "scripts."
+
+msgid "Lepcha"
+msgstr "Lepcha"
+
+msgid "Limbu"
+msgstr "Limbu"
 
 msgid "Lithuanian"
 msgstr "Lituano"
@@ -633,6 +682,9 @@ msgstr "NKo"
 msgid "Nepali"
 msgstr "Nepalês"
 
+msgid "New Tai Lue"
+msgstr "Novo Tai Lue"
+
 #, c-format
 msgid "No CID named %s"
 msgstr "Nenhum CID chamado %s"
@@ -642,6 +694,9 @@ msgstr "Não há alteração"
 
 msgid "No Kern Pairs"
 msgstr "Bem Pares de Kerning"
+
+msgid "No _to All"
+msgstr "Não _para todos"
 
 msgid "No cidmap file..."
 msgstr "Nenhum arquivo cidmap..."
@@ -653,6 +708,9 @@ msgstr "Nenhum glifo chamado %s."
 #, c-format
 msgid "No kerning pairs found in %.200s"
 msgstr "Não pares de kerning encontrado em %.200s"
+
+msgid "No selection\n"
+msgstr "Sem seleção\n"
 
 msgid "Non-existant glyph"
 msgstr "Glifo não existe"
@@ -678,11 +736,29 @@ msgstr "Nada Gravado"
 msgid "Ogham"
 msgstr "Ogam"
 
+msgid "Ol Chiki"
+msgstr "Ol Chiki"
+
+msgid "Optical Character Recognition"
+msgstr "Reconhecimento de caractere óptico"
+
 msgid "Oriya"
 msgstr "Óriya"
 
 msgid "Out of Range"
 msgstr "Fora da Faixa"
+
+msgid "Pasting..."
+msgstr "Colando..."
+
+msgid "Phonetic Extensions"
+msgstr "Extensões fonéticas"
+
+msgid "Phonetic Extensions Supplement"
+msgstr "Supplemento de extensões fonéticas"
+
+msgid "Please don't do that"
+msgstr "Por favor, não faça isso"
 
 msgid ""
 "Please identify a glyph by name, and FontForge will add an anchor to that "
@@ -757,6 +833,9 @@ msgstr ""
 "'%c%c%c%c' script afirma linha de base '%c%c%c%c' como ruim, mas essa linha "
 "de base não está ativo no momento."
 
+msgid "Self-referential glyph"
+msgstr "Glifo auto-referencial"
+
 msgid "Separation"
 msgstr "Espaço"
 
@@ -819,6 +898,12 @@ msgstr "Spiros não convergem"
 msgid "Strike Information for %.90s"
 msgstr "Informação Para Apagar %.90s"
 
+msgid "Sundanese"
+msgstr "Sundanês"
+
+msgid "Sundanese Supplement"
+msgstr "Supplemento Sundanês"
+
 msgid "Supplemental Punctuation"
 msgstr "Pontuação suplementar"
 
@@ -836,6 +921,12 @@ msgstr "Tagálogo"
 
 msgid "Tagbanwa"
 msgstr "Tagsbanwa"
+
+msgid "Tai Le"
+msgstr "Tai Le"
+
+msgid "Tai Tham"
+msgstr "Tai Tham"
 
 msgid "Tamil"
 msgstr "Tâmil"
@@ -981,6 +1072,9 @@ msgstr "Caractere inesperado (0x%02X) na linha %d de %s"
 msgid "Unified Canadian Aboriginal Syllabics"
 msgstr "Silábicos aborígenes unificados do Canadá"
 
+msgid "Unified Canadian Aboriginal Syllabics Extended"
+msgstr "Silábicos aborígenes unificados estendidos do Canadá"
+
 msgid "Unknown Language"
 msgstr "Idioma desconhecido"
 
@@ -993,6 +1087,9 @@ msgstr "Utilizar mapa CID"
 msgid "Uzbek"
 msgstr "Usbeque"
 
+msgid "Vedic Extensions"
+msgstr "Extensões Vedic"
+
 msgid "Vertical Baselines"
 msgstr "Linhas de Base Verticais"
 
@@ -1002,6 +1099,9 @@ msgstr "Extensões Verticais para %c%c%c%c"
 
 msgid "Welsh"
 msgstr "Galês"
+
+msgid "Yes to _All"
+msgstr "Sim para _Todos"
 
 #, c-format
 msgid ""
@@ -1056,6 +1156,9 @@ msgstr "_distância _Máxima entre os pontos em uma região"
 msgid "_Min:"
 msgstr "_Mín:"
 
+msgid "_No"
+msgstr "_Não"
+
 msgid "_OK"
 msgstr "_OK"
 
@@ -1064,6 +1167,9 @@ msgstr "E_spaço:"
 
 msgid "_Size:"
 msgstr "_Tamanho:"
+
+msgid "_Yes"
+msgstr "_Sim"
 
 msgid "cursive entry"
 msgstr "início cursiva"

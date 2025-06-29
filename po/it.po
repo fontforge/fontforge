@@ -13,8 +13,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-30 03:08-0800\n"
-"PO-Revision-Date: 2023-12-31 08:24\n"
+"POT-Creation-Date: 2025-06-29 12:53-0700\n"
+"PO-Revision-Date: 2025-06-29 19:58\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
 "Language: it_IT\n"
@@ -307,9 +307,6 @@ msgstr "Aggiungi gli estremi(_X)"
 
 msgid "Add Encoding Name..."
 msgstr "Aggiungi il nome della codifica..."
-
-msgid "Add Encoding Slots..."
-msgstr "Aggiungi slot di codifica..."
 
 msgid "Add Language to Script..."
 msgstr "Aggiungi lingua allo script..."
@@ -2812,12 +2809,6 @@ msgid "Horizontal: %d baseline"
 msgid_plural "Horizontal: %d baselines"
 msgstr[0] "Orizzontale: base %d"
 msgstr[1] "Orizzontale: basi %d"
-
-msgid "How many CID slots do you wish to add?"
-msgstr "Quanti slot CID vuoi aggiungere?"
-
-msgid "How many unencoded glyph slots do you wish to add?"
-msgstr "Quanti slot di glifi non codificati vuoi aggiungere"
 
 msgid "Hungarian"
 msgstr "Ungherese"
@@ -7859,3 +7850,12 @@ msgstr "ΤεΧ Generale"
 
 msgid "↓_Down"
 msgstr "↓_Giù"
+
+#~ msgid "Add Encoding Slots..."
+#~ msgstr "Aggiungi slot di codifica..."
+
+#~ msgid "How many CID slots do you wish to add?"
+#~ msgstr "Quanti slot CID vuoi aggiungere?"
+
+#~ msgid "How many unencoded glyph slots do you wish to add?"
+#~ msgstr "Quanti slot di glifi non codificati vuoi aggiungere"
