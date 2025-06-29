@@ -5421,7 +5421,7 @@ static void buildtablestructures(struct alltabs *at, SplineFont *sf,
 	at->tabdir.tabs[i++].length = at->bdflen;
     }
 
-    if ( format==ff_otf || format==ff_otfcid ) {
+    if ( (format==ff_otf || format==ff_otfcid) && !(flags&ttf_flag_no_outlines) ) {
 	at->tabdir.tabs[i].tag = CHR('C','F','F',' ');
 	at->tabdir.tabs[i].length = at->cfflen;
 	at->tabdir.tabs[i++].data = at->cfff;
@@ -5583,7 +5583,7 @@ static void buildtablestructures(struct alltabs *at, SplineFont *sf,
 	at->tabdir.tabs[i++].length = at->gasplen;
     }
 
-    if ( at->gi.glyphs!=NULL ) {
+    if ( at->gi.glyphs!=NULL && !(flags&ttf_flag_no_outlines) ) {
 	at->tabdir.tabs[i].tag = CHR('g','l','y','f');
 	at->tabdir.tabs[i].data = at->gi.glyphs;
 	at->tabdir.tabs[i++].length = at->gi.glyph_len;
@@ -6001,12 +6001,45 @@ static void dumpttf(FILE *ttf,struct alltabs *at) {
     /* ttfcopyfile closed all the files (except ttf) */
 }
 
+SplineCharTTFMap* MakeGlyphTTFMap(SplineFont *sf) {
+    int i,k,max, map_idx;
+    SplineChar *sc;
+    SplineCharTTFMap *map = NULL;
+
+    if ( sf->subfontcnt==0 )
+	max = sf->glyphcnt;
+    else {
+	for ( k=max=0; k<sf->subfontcnt; ++k )
+	    if ( sf->subfonts[k]->glyphcnt > max )
+		max = sf->subfonts[k]->glyphcnt;
+    }
+
+    map = (SplineCharTTFMap*) calloc(max+1, sizeof(SplineCharTTFMap));
+    map_idx = 0;
+
+    for ( i=0; i<max; ++i ) {
+	sc = NULL;
+	if ( sf->subfontcnt==0 )
+	    sc = sf->glyphs[i];
+	else {
+	    for ( k=0; k<sf->subfontcnt; ++k ) if ( i<sf->subfonts[k]->glyphcnt )
+		if ( (sc=sf->subfonts[k]->glyphs[i])!=NULL )
+	    break;
+	}
+	if ( sc!=NULL && sc->ttf_glyph!=-1 ) {
+	    map[map_idx].glyph = sc;
+	    map[map_idx++].ttf_glyph = sc->ttf_glyph;
+	}
+    }
+
+    return map;
+}
+
 static void DumpGlyphToNameMap(char *fontname,SplineFont *sf) {
     char *d, *e;
     char *newname = malloc(strlen(fontname)+10);
     FILE *file;
-    int i,k,max;
-    SplineChar *sc;
+    SplineCharTTFMap *map = NULL, *entry = NULL;
 
     strcpy(newname,fontname);
     d = strrchr(newname,'/');
@@ -6022,29 +6055,14 @@ static void DumpGlyphToNameMap(char *fontname,SplineFont *sf) {
 return;
     }
 
-    if ( sf->subfontcnt==0 )
-	max = sf->glyphcnt;
-    else {
-	for ( k=max=0; k<sf->subfontcnt; ++k )
-	    if ( sf->subfonts[k]->glyphcnt > max )
-		max = sf->subfonts[k]->glyphcnt;
+    map = MakeGlyphTTFMap(sf);
+    for ( entry = map; entry->glyph != NULL; ++entry ) {
+	fprintf( file, "GLYPHID %d\tPSNAME %s", entry->ttf_glyph, entry->glyph->name );
+	if ( entry->glyph->unicodeenc!=-1 )
+	    fprintf( file, "\tUNICODE %04X", entry->glyph->unicodeenc );
+	putc('\n',file);
     }
-    for ( i=0; i<max; ++i ) {
-	sc = NULL;
-	if ( sf->subfontcnt==0 )
-	    sc = sf->glyphs[i];
-	else {
-	    for ( k=0; k<sf->subfontcnt; ++k ) if ( i<sf->subfonts[k]->glyphcnt )
-		if ( (sc=sf->subfonts[k]->glyphs[i])!=NULL )
-	    break;
-	}
-	if ( sc!=NULL && sc->ttf_glyph!=-1 ) {
-	    fprintf( file, "GLYPHID %d\tPSNAME %s", sc->ttf_glyph, sc->name );
-	    if ( sc->unicodeenc!=-1 )
-		fprintf( file, "\tUNICODE %04X", sc->unicodeenc );
-	    putc('\n',file);
-	}
-    }
+    free(map);
     fclose(file);
     free(newname);
 }
@@ -6135,6 +6153,7 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
 	int32_t *bsizes, enum bitmapformat bf,int flags,EncMap *map, int layer) {
     struct alltabs at;
     int i, anyglyphs;
+    bool *fake_mappings = NULL;
 
     short_too_long_warned = 0; // This is a static variable defined for putshort.
     /* TrueType probably doesn't need this, but OpenType does for floats in dictionaries */
@@ -6145,6 +6164,21 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
 	if ( sf->cidmaster ) sf = sf->cidmaster;
     } else {
 	if ( sf->subfontcnt!=0 ) sf = sf->subfonts[0];
+    }
+
+    // Temporarily assign a fake Private Area unicode point to all unmapped glyphs
+    if (flags & ttf_flag_fake_map) {
+	int fake_unicode_base = SFFakeUnicodeBase(sf);
+	if (fake_unicode_base == -1)
+	    fake_unicode_base = 0xfffd;
+
+	fake_mappings = calloc(sf->glyphcnt,sizeof(bool));
+	for (i = 0; i < sf->glyphcnt; ++i) {
+	    if (sf->glyphs[i]->unicodeenc == -1) {
+		sf->glyphs[i]->unicodeenc = fake_unicode_base + sf->glyphs[i]->orig_pos;
+		fake_mappings[i] = true;
+	    }
+	}
     }
 
     if ( sf->subfontcnt==0 ) {
@@ -6184,6 +6218,16 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
 	if ( initTables(&at,sf,format,flags,bsizes,bf))
 	    dumpttf(ttf,&at);
     }
+
+    // Remove temporarily assigned fake Private Area unicode point from all unmapped glyphs
+    if (flags & ttf_flag_fake_map) {
+	for (i = 0; i < sf->glyphcnt; ++i) {
+	    if (fake_mappings[i])
+		sf->glyphs[i]->unicodeenc = -1;
+	}
+	free(fake_mappings);
+    }
+
     switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
     SubtableMap_delete(&at.subtable_map);
     if ( at.error || ferror(ttf))
