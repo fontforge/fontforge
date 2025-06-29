@@ -5344,6 +5344,7 @@ static void ATmaxpInit(struct alltabs *at,SplineFont *sf, enum fontformat format
 static void initATTables(struct alltabs *at, SplineFont *sf, enum fontformat format) {
     setos2(&at->os2,at,sf,format);	/* should precede kern/ligature output */
     if ( at->opentypemode ) {
+	SFCollectSubtableMap(sf, at->subtable_map);
 	SFFindUnusedLookups(sf);
 	otf_dumpgpos(at,sf);
 	otf_dumpgsub(at,sf);
@@ -6145,6 +6146,7 @@ static void ATinit(struct alltabs *at,SplineFont *sf,EncMap *map,int flags, int 
     }
     at->sf = sf;
     at->map = map;
+    at->subtable_map = SubtableMap_new();
 }
 
 int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
@@ -6227,6 +6229,7 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
     }
 
     switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
+    SubtableMap_delete(&at.subtable_map);
     if ( at.error || ferror(ttf))
 return( 0 );
 

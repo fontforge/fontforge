@@ -90,6 +90,7 @@ if(ENABLE_GUI)
   )
 
   add_subdirectory(shapers)
+  add_subdirectory(gtk)
 
   if(APPLE)
     target_sources(fontforgeexe PRIVATE macobjective.m)
@@ -106,6 +107,7 @@ if(ENABLE_GUI)
   target_link_libraries(fontforgeexe PRIVATE
     gdraw
     shapers
+    ffgtk
   )
 else()
   target_sources(fontforgeexe PRIVATE startnoui.c)

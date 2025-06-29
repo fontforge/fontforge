@@ -45,6 +45,7 @@
 #include "splineutil.h"
 #include "ttf.h"
 #include "ustring.h"
+#include "gtk/simple_dialogs.hpp"
 #include "shapers/shaper_shim.hpp"
 
 #include <assert.h>
@@ -2482,6 +2483,9 @@ void DoXRes(void) {
     CVColInit();
     BVColInit();
     GResEdit(&view_ri,xdefs_filename,change_res_filename);
+
+    // Trigger GTK StyleProvider update
+    update_appearance();
 }
 
 struct prefs_list pointer_dialog_list[] = {

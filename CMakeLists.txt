@@ -27,7 +27,7 @@ include(PackageUtils)
 include(TargetUtils)
 
 # Set any global defines
-set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED TRUE)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
@@ -78,6 +78,7 @@ build_option(SPHINX_USE_VENV BOOL OFF "If building documentation and Sphinx\
 
 build_option(REAL_TYPE ENUM "double" "Sets the floating point type used." "double" "float")
 build_option(THEME     ENUM "tango"  "Sets the GUI theme." "tango" "2012")
+add_definitions( -DTHEME="${THEME}" )
 
 build_option(FONT_FAMILIES_SERIF     STRING "default"  "Serif font family names to use in the UI separated by commas")
 build_option(FONT_FAMILIES_UI        STRING "default"  "Font family names to use in the UI separated by commas (typically sans-serif)")
@@ -135,6 +136,9 @@ if(ENABLE_GUI)
     find_package(X11 REQUIRED)
   else()
     find_package(GDK3 3.10 REQUIRED)
+    find_package(PkgConfig)
+    pkg_check_modules(GTK3 REQUIRED IMPORTED_TARGET gtk+-3.0)
+    pkg_check_modules(GTKMM REQUIRED IMPORTED_TARGET  gtkmm-3.0)
   endif()
   find_package(PkgConfig)
   if (ENABLE_HARFBUZZ)
