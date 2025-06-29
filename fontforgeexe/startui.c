@@ -818,7 +818,7 @@ int fontforge_main( int argc, char **argv ) {
     }
 #ifdef FONTFORGE_CAN_USE_GDK
     gdk_set_allowed_backends("win32,quartz,x11");
-    gdk_init(&argc, &argv);
+    gtk_init(&argc, &argv);
 #endif
     ensureDotFontForgeIsSetup();
 #if defined(__MINGW32__) && !defined(_NO_LIBCAIRO)

@@ -140,46 +140,6 @@ typedef struct tabinfo {
 
 #define GTABINFO_EMPTY { NULL, NULL, 0, 0, 0, 0, 0 }
 
-
-enum border_type { bt_none, bt_box, bt_raised, bt_lowered, bt_engraved,
-	    bt_embossed, bt_double };
-enum border_shape { bs_rect, bs_roundrect, bs_elipse, bs_diamond };
-enum box_flags {
-    box_foreground_border_inner = 1,	/* 1 point line */
-    box_foreground_border_outer = 2,	/* 1 point line */
-    box_active_border_inner = 4,		/* 1 point line */
-    box_foreground_shadow_outer = 8,	/* 1 point line, bottom&right */
-    box_do_depressed_background = 0x10,
-    box_draw_default = 0x20,	/* if a default button draw a depressed rect around button */
-    box_generate_colors = 0x40,	/* use border_brightest to compute other border cols */
-    box_gradient_bg = 0x80,
-    box_flag_mask = 0xFF
-    };
-typedef struct gbox {
-    unsigned char border_type;	
-    unsigned char border_shape;	
-    unsigned char border_width;	/* In points */
-    unsigned char padding;	/* In points */
-    unsigned char rr_radius;	/* In points */
-    unsigned char flags;
-    Color border_brightest;		/* used for left upper part of elipse */
-    Color border_brighter;
-    Color border_darkest;		/* used for right lower part of elipse */
-    Color border_darker;
-    Color main_background;
-    Color main_foreground;
-    Color disabled_background;
-    Color disabled_foreground;
-    Color active_border;
-    Color depressed_background;
-    Color gradient_bg_end;
-    Color border_inner;
-    Color border_outer;
-} GBox;
-
-#define GBOX_EMPTY { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 ,0 ,0 ,0 ,0 }
-
-
 typedef struct ggadget GGadget;
 typedef struct ggadget *GGadgetSet;
 

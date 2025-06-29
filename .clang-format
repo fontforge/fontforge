@@ -1,0 +1,10 @@
+---
+BasedOnStyle: Google
+---
+Language:                               Cpp
+Standard:                               c++17
+AccessModifierOffset: -3
+IndentWidth: 4
+SpacesBeforeTrailingComments: 2
+SortIncludes: false
+IndentAccessModifiers: false
