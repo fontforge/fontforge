@@ -30,7 +30,7 @@ clone_depth: 10
 #cache:
 #  - 'C:\msys64\var\cache\pacman\pkg'
 install:
-  - git clone --depth=1 --branch=gtk_win https://github.com/iorsh/fontforgebuilds.git
+  - git clone --depth=1 --branch=master-local https://github.com/fontforge/fontforgebuilds.git
   - >-
     move C:\msys64 C:\msys64_old &&
     curl -kLo msys2.tar.xz https://github.com/msys2/msys2-installer/releases/download/nightly-x86_64/msys2-base-x86_64-latest.tar.xz &&

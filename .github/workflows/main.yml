@@ -136,8 +136,8 @@ jobs:
       - name: Checkout FontForgeBuilds
         uses: actions/checkout@v4
         with:
-          repository: iorsh/fontforgebuilds
-          ref: gtk_win
+          repository: fontforge/fontforgebuilds
+          ref: master-local
           path: fontforgebuilds
       - name: Setup MSYS2
         uses: msys2/setup-msys2@v2
