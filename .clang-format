@@ -8,3 +8,7 @@ IndentWidth: 4
 SpacesBeforeTrailingComments: 2
 SortIncludes: false
 IndentAccessModifiers: false
+
+# Force pointers to the type
+DerivePointerAlignment: false
+PointerAlignment: Left

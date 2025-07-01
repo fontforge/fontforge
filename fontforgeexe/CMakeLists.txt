@@ -89,6 +89,7 @@ if(ENABLE_GUI)
     wordlistparser.h
   )
 
+  add_subdirectory(shapers)
   add_subdirectory(gtk)
 
   if(APPLE)
@@ -105,6 +106,7 @@ if(ENABLE_GUI)
 
   target_link_libraries(fontforgeexe PRIVATE
     gdraw
+    shapers
     ffgtk
   )
 else()

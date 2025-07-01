@@ -39,12 +39,14 @@
 #include "ggadget.h"
 #include "multidialog.h"
 #include "search.h"
-
+#include "metrics.h"
 
 struct gfi_data;
 struct contextchaindlg;
 struct statemachinedlg;
 
+/* Dummy incomplete type which can be casted to C++ type ff::shapers::IShaper */
+typedef struct cpp_IShaper cpp_IShaper;
 
 extern struct cvshows {
     int showfore, showback, showgrids, showhhints, showvhints, showdhints;
@@ -365,13 +367,9 @@ struct aplist { AnchorPoint *ap; int connected_to, selected; struct aplist *next
 enum mv_grids { mv_hidegrid, mv_showgrid, mv_partialgrid, mv_hidemovinggrid };
 enum mv_type { mv_kernonly, mv_widthonly, mv_kernwidth };
 
-struct metricchar {
-    int16_t dx, dwidth;	/* position and width of the displayed char */
-    int16_t dy, dheight;	/*  displayed info for vertical metrics */
-    int xoff, yoff;
-    int16_t mx, mwidth;	/* position and width of the text underneath */
-    int16_t kernafter;
+struct metrics_ui {
     unsigned int selected: 1;
+    int16_t mx, mwidth;	/* position and width of the text underneath */
     GGadget *width, *lbearing, *rbearing, *kern, *name;
     GGadget* updownkparray[10]; /* Cherry picked elements from width...kern allowing up/down key navigation */
 };
@@ -399,7 +397,8 @@ typedef struct metricsview {
     int16_t cmax, clen;
     SplineChar **chars;		/* Character input stream */
     struct opentype_str *glyphs;/* after going through the various gsub/gpos transformations */
-    struct metricchar *perchar;	/* One for each glyph above */
+    struct metrics_core *metrics; /* Position and advance values, one for each glyph above */
+    struct metrics_ui *perchar;	/* UI widgets and state, one for each glyph above */
     SplineChar **sstr;		/* Character input stream */
     int16_t mwidth, mbase;
     int16_t glyphcnt, max;
@@ -430,6 +429,7 @@ typedef struct metricsview {
     int ptsize, dpi;
     int ybaseline;
     int oldscript, oldlang;
+    cpp_IShaper* shaper;
 } MetricsView;
 
 enum fv_metrics { fvm_baseline=1, fvm_origin=2, fvm_advanceat=4, fvm_advanceto=8, fvm_contour=16  };
@@ -1098,6 +1098,7 @@ extern MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf);
 extern void MetricsViewFree(MetricsView *mv);
 extern void MVRefreshAll(MetricsView *mv);
 extern void MV_FriendlyFeatures(GGadget *g, int pos);
+extern GTextInfo *GetShaperList(int* p_default);
 extern GTextInfo *SLOfFont(SplineFont *sf);
 
 extern void DoPrefs(void);
