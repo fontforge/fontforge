@@ -30,7 +30,8 @@
 bool is_win32_display() {
     Glib::RefPtr<Gdk::Display> display = Gdk::Display::get_default();
     if (display) {
-        return (strcmp(G_OBJECT_TYPE_NAME(display->gobj()), "GdkWin32Display") == 0);
+        return (strcmp(G_OBJECT_TYPE_NAME(display->gobj()),
+                       "GdkWin32Display") == 0);
     }
     return false;
 }
@@ -40,14 +41,16 @@ Gdk::Rectangle get_win32_print_preview_size() {
 
     Glib::RefPtr<Gdk::Display> display = Gdk::Display::get_default();
     if (display) {
-        Glib::RefPtr<const Gdk::Monitor> monitor = display->get_primary_monitor();
+        Glib::RefPtr<const Gdk::Monitor> monitor =
+            display->get_primary_monitor();
         if (monitor) {
             Gdk::Rectangle workarea;
             monitor->get_workarea(workarea);
 
             // Calculate a rather big roughly centered area of 2/3 screen.
-            preview_rectangle = Gdk::Rectangle(workarea.get_width() / 6, workarea.get_height() / 6,
-             2 * workarea.get_width() / 3, 2 * workarea.get_height() / 3);
+            preview_rectangle = Gdk::Rectangle(
+                workarea.get_width() / 6, workarea.get_height() / 6,
+                2 * workarea.get_width() / 3, 2 * workarea.get_height() / 3);
             return preview_rectangle;
         }
     }
