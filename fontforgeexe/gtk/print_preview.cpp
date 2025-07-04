@@ -29,6 +29,7 @@
 
 #include "intl.h"
 #include "utils.hpp"
+#include "win32_utils.hpp"
 
 namespace ff::dlg {
 
@@ -38,9 +39,15 @@ static bool draw_preview_area(const Cairo::RefPtr<Cairo::Context>& cr) {
     cr->paint();
 
     return true;
-}
+    }
 
 PrintPreviewWidget::PrintPreviewWidget() : fixed_wrapper(0.5, 0.5, 0.5) {
+    if (is_win32_display()) {
+        // In Windows the GTK preview tab is embedded in the native Print Dialog. The native dialog is not resizable, and its size can't be queried. We must decide on a reasonable size for print preview widget, and request the allocation in advance.
+        Gdk::Rectangle preview_rectangle = get_win32_print_preview_size();
+        set_size_request(preview_rectangle.get_width(), preview_rectangle.get_height());
+    }
+
     build_compound_preview_area();
     dummy_label = Gtk::Label("Dummy label");
 
@@ -89,7 +96,7 @@ void PrintPreviewWidget::build_compound_preview_area() {
         // it as a separate subsequent event.
         Glib::signal_idle().connect_once([this]() {
             preview_area.queue_resize();
-            preview_area.queue_draw();
+            queue_draw();
         });
     });
 
