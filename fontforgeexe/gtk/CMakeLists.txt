@@ -26,6 +26,8 @@ add_library(ffgtk OBJECT
   utils.hpp
   utils.cpp
   widgets.hpp
+  win32_utils.hpp
+  win32_utils.cpp
 )
 
 target_link_libraries(ffgtk PUBLIC
