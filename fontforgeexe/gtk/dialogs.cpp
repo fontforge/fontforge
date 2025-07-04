@@ -54,5 +54,17 @@ void print_dialog() {
     print_operation->signal_create_custom_widget().connect(
         [ff_preview_widget]() { return ff_preview_widget; });
 
+    ff_preview_widget->update(print_operation->get_default_page_setup(),
+                              print_operation->get_print_settings());
+    print_operation->signal_update_custom_widget().connect(
+        [](Gtk::Widget* widget, const Glib::RefPtr<Gtk::PageSetup>& setup,
+           const Glib::RefPtr<Gtk::PrintSettings>& settings) {
+            ff::dlg::PrintPreviewWidget* preview =
+                dynamic_cast<ff::dlg::PrintPreviewWidget*>(widget);
+            if (preview) {
+                preview->update(setup, settings);
+            };
+        });
+
     print_operation->run(Gtk::PRINT_OPERATION_ACTION_PRINT_DIALOG);
 }

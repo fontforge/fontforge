@@ -33,6 +33,13 @@
 
 namespace ff::dlg {
 
+static const std::string preview_area_css(
+    "box { box-shadow: 3pt 3pt 3pt black;}");
+
+// Margin around the page preview area in pixels. Must be lerge enough to
+// accomodate the CSS box-shadow.
+static const int wrapper_margin = 20;
+
 static bool draw_preview_area(const Cairo::RefPtr<Cairo::Context>& cr) {
     // Dummy red coloring
     cr->set_source_rgb(1.0, 0.0, 0.0);
@@ -79,6 +86,13 @@ void PrintPreviewWidget::draw_page_cb(
     cr->show_text("Hello World");
 }
 
+void PrintPreviewWidget::update(
+    const Glib::RefPtr<Gtk::PageSetup>& setup,
+    const Glib::RefPtr<Gtk::PrintSettings>& settings) {
+    current_setup_ = setup;
+    resize_preview_area(setup, fixed_wrapper.get_allocation());
+}
+
 void PrintPreviewWidget::build_compound_preview_area() {
     // The preview area contains a page preview with a 3D shadow on a grey
     // background, in a Firefox style. Unfortunately, 3D shadow is difficult to
@@ -86,26 +100,81 @@ void PrintPreviewWidget::build_compound_preview_area() {
     // Gtk::Fixed container, on which the preview widget can be placed in a free
     // manner. To support CSS styling, the preview widget is wrapped with
     // Gtk::Box, which provides a CSS node.
-    ui_utils::apply_css(box_wrapper, "box { box-shadow: 3pt 3pt 3pt black;}");
+    ui_utils::apply_css(box_wrapper, preview_area_css);
 
     fixed_wrapper.set_hexpand(true);
     fixed_wrapper.set_vexpand(true);
     preview_area.signal_draw().connect(&draw_preview_area);
 
     // Localize the page-sized preview area inside the allowed space.
-    fixed_wrapper.signal_size_allocate().connect([this](Gtk::Allocation& a) {
-        preview_area.set_size_request(a.get_width() / 2, a.get_height() / 2);
+    fixed_wrapper.signal_size_allocate().connect(
+        [this](Gtk::Allocation& a) { resize_preview_area(current_setup_, a); });
 
-        // queue_resize() will not work right inside the slot. We need to defer
-        // it as a separate subsequent event.
-        Glib::signal_idle().connect_once([this]() {
-            preview_area.queue_resize();
-            queue_draw();
-        });
-    });
-
-    fixed_wrapper.put(box_wrapper, 50, 50);
+    fixed_wrapper.put(box_wrapper, 0, 0);
     box_wrapper.pack_start(preview_area, true, true);
+}
+
+double PrintPreviewWidget::calculate_page_ratio(
+    const Glib::RefPtr<Gtk::PageSetup>& setup) {
+    // See gtkprintunixdialog.c:draw_page() for default behaviour
+    double page_ratio = G_SQRT2;
+
+    if (setup) {
+        page_ratio = setup->get_paper_height(Gtk::UNIT_MM) /
+                     setup->get_paper_width(Gtk::UNIT_MM);
+    }
+
+    return page_ratio;
+}
+
+Gtk::Allocation PrintPreviewWidget::calculate_preview_allocation(
+    double page_ratio, const Gtk::Allocation& wrapper_size) {
+    int available_width = wrapper_size.get_width() - 2 * wrapper_margin;
+    int available_height = wrapper_size.get_height() - 2 * wrapper_margin;
+    Gtk::Allocation page_rectangle;
+
+    if (available_width < 0 || available_height < 0) {
+        return page_rectangle;
+    }
+
+    double wrapper_ratio = available_height / (double)available_width;
+    if (wrapper_ratio > page_ratio) {
+        // total area too high, leaving space above and below the page preview
+        // area
+        int space_above = (available_height - available_width * page_ratio) / 2;
+        page_rectangle =
+            Gtk::Allocation(wrapper_margin, wrapper_margin + space_above,
+                            available_width, available_width * page_ratio);
+    } else {
+        // total area too wide, leaving space at the left and at the right of
+        // the page preview area
+        int space_left = (available_width - available_height / page_ratio) / 2;
+        page_rectangle =
+            Gtk::Allocation(wrapper_margin + space_left, wrapper_margin,
+                            available_height / page_ratio, available_height);
+    }
+
+    return page_rectangle;
+}
+
+void PrintPreviewWidget::resize_preview_area(
+    const Glib::RefPtr<Gtk::PageSetup>& setup,
+    const Gtk::Allocation& wrapper_size) {
+    double page_ratio = calculate_page_ratio(setup);
+    Gtk::Allocation page_rectangle =
+        calculate_preview_allocation(page_ratio, wrapper_size);
+
+    preview_area.set_size_request(page_rectangle.get_width(),
+                                  page_rectangle.get_height());
+    fixed_wrapper.move(box_wrapper, page_rectangle.get_x(),
+                       page_rectangle.get_y());
+
+    // queue_resize() will not work right inside the slot. We need to defer
+    // it as a separate subsequent event.
+    Glib::signal_idle().connect_once([this]() {
+        preview_area.queue_resize();
+        queue_draw();
+    });
 }
 
 }  // namespace ff::dlg
