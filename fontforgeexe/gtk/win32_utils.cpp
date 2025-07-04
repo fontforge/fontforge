@@ -27,6 +27,14 @@
 
 #include "win32_utils.hpp"
 
+bool is_win32_display() {
+    Glib::RefPtr<Gdk::Display> display = Gdk::Display::get_default();
+    if (display) {
+        return (strcmp(G_OBJECT_TYPE_NAME(display->gobj()), "GdkWin32Display") == 0);
+    }
+    return false;
+}
+
 Gdk::Rectangle get_win32_print_preview_size() {
     Gdk::Rectangle preview_rectangle;
 

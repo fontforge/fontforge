@@ -28,5 +28,8 @@
 
 #include <gtkmm.h>
 
+// Check GDK backend for Win32-specific capabilities
+bool is_win32_display();
+
 // Get preferrable size for Win32 legacy print preview
 Gdk::Rectangle get_win32_print_preview_size();
