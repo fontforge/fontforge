@@ -43,10 +43,15 @@ static const int wrapper_margin = 20;
 Glib::RefPtr<Gtk::PageSetup> PrintPreviewWidget::default_setup_ =
     PrintPreviewWidget::create_default_setup();
 
-static bool draw_preview_area(const Cairo::RefPtr<Cairo::Context>& cr) {
-    // Dummy red coloring
-    cr->set_source_rgb(1.0, 0.0, 0.0);
-    cr->paint();
+bool PrintPreviewWidget::draw_preview_area(
+    const Cairo::RefPtr<Cairo::Context>& cr) {
+    // Number of preview area pixels in a paper millimeter
+    double scale = preview_area.get_allocated_width() /
+                   current_setup_->get_paper_width(Gtk::UNIT_MM);
+    Cairo::Rectangle printable_area =
+        calculate_printable_area(scale, current_setup_, Gtk::UNIT_MM);
+
+    draw_page(cr, printable_area, 0);
 
     return true;
 }
@@ -76,18 +81,12 @@ Glib::ustring PrintPreviewWidget::label() { return _("Preview"); }
 void PrintPreviewWidget::draw_page_cb(
     const Glib::RefPtr<Gtk::PrintContext>& context, int page_nr) {
     Cairo::RefPtr<Cairo::Context> cr = context->get_cairo_context();
+    Glib::RefPtr<Gtk::PageSetup> setup = context->get_page_setup();
 
-    // White background
-    cr->set_source_rgb(1, 1, 1);
-    cr->paint();
+    Cairo::Rectangle printable_area =
+        calculate_printable_area(1.0, setup, Gtk::UNIT_POINTS);
 
-    // Print sample text in black
-    cr->select_font_face("Sans", Cairo::FontSlant::FONT_SLANT_NORMAL,
-                         Cairo::FontWeight::FONT_WEIGHT_NORMAL);
-    cr->set_font_size(24.0);
-    cr->move_to(100.0, 100.0);
-    cr->set_source_rgb(0, 0, 0);
-    cr->show_text("Hello World");
+    draw_page(cr, printable_area, page_nr);
 }
 
 void PrintPreviewWidget::update(
@@ -125,8 +124,8 @@ void PrintPreviewWidget::build_compound_preview_area() {
 
     fixed_wrapper.set_hexpand(true);
     fixed_wrapper.set_vexpand(true);
-    preview_area.signal_draw().connect(&draw_preview_area);
-
+    preview_area.signal_draw().connect(
+        sigc::mem_fun(*this, &PrintPreviewWidget::draw_preview_area));
     // Localize the page-sized preview area inside the allowed space.
     fixed_wrapper.signal_size_allocate().connect(
         [this](Gtk::Allocation& a) { resize_preview_area(a); });
@@ -195,6 +194,58 @@ void PrintPreviewWidget::resize_preview_area(
         preview_area.queue_resize();
         queue_draw();
     });
+}
+
+Cairo::Rectangle PrintPreviewWidget::calculate_printable_area(
+    double scale, const Glib::RefPtr<Gtk::PageSetup>& setup, Gtk::Unit unit) {
+    Cairo::Rectangle printable_area;
+
+    printable_area.x = scale * setup->get_left_margin(unit);
+    printable_area.y = scale * setup->get_top_margin(unit);
+    printable_area.width =
+        scale * (setup->get_paper_width(unit) - setup->get_left_margin(unit) -
+                 setup->get_right_margin(unit));
+    printable_area.height =
+        scale * (setup->get_paper_height(unit) - setup->get_top_margin(unit) -
+                 setup->get_bottom_margin(unit));
+
+    return printable_area;
+}
+
+void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
+                                   const Cairo::Rectangle& printable_area,
+                                   int page_nr) {
+    cr->translate(printable_area.x, printable_area.y);
+    cr->scale(printable_area.width / 100, printable_area.width / 100);
+
+    // White background
+    cr->set_source_rgb(1, 1, 1);
+    cr->paint();
+
+    // Print sample text in black
+    cr->select_font_face("Sans", Cairo::FontSlant::FONT_SLANT_NORMAL,
+                         Cairo::FontWeight::FONT_WEIGHT_NORMAL);
+    cr->set_font_size(24.0);
+    cr->move_to(50.0, 50.0);
+    cr->set_source_rgb(0, 0, 0);
+    cr->show_text("Hello World");
+
+    // Print horizontal reference mark in yellow
+    cr->set_source_rgb(1.0, 1.0, 0.0);
+    cr->rectangle(0, 0, 100, 10);
+    cr->fill();
+    cr->set_source_rgb(0.0, 0.0, 0.0);
+    cr->rectangle(99, 0, 1, 10);
+    cr->fill();
+
+    // Print vertical reference mark in red
+    cr->set_source_rgb(1.0, 0.0, 0.0);
+    cr->rectangle(0, 0, 10, 100 * printable_area.height / printable_area.width);
+    cr->fill();
+    cr->set_source_rgb(0.0, 0.0, 0.0);
+    cr->rectangle(0, 100 * printable_area.height / printable_area.width - 1, 10,
+                  1);
+    cr->fill();
 }
 
 }  // namespace ff::dlg

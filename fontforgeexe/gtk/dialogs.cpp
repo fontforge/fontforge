@@ -47,6 +47,8 @@ void print_dialog() {
     // particularly important for printing to PDF.
     print_operation->set_embed_page_setup(true);
 
+    print_operation->set_use_full_page(true);
+
     print_operation->set_n_pages(1);
     print_operation->signal_draw_page().connect(
         &ff_preview_widget->draw_page_cb);

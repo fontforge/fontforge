@@ -37,6 +37,8 @@ class PrintPreviewWidget : public Gtk::Grid {
     PrintPreviewWidget();
 
     static Glib::ustring label();
+
+    // This slot is provided to Gtk::PrintOperation
     static void draw_page_cb(const Glib::RefPtr<Gtk::PrintContext>& context,
                              int page_nr);
 
@@ -57,6 +59,19 @@ class PrintPreviewWidget : public Gtk::Grid {
     // Resize and relocate the preview area inside the wrapper. This function
     // should be called from event handlers.
     void resize_preview_area(const Gtk::Allocation& wrapper_size);
+
+    // Calculate printable area: (x, y) are positive left/top margin offsets
+    // from the upper left corner of the actual canvas - either paper or
+    // preview_area. The prinable area is located within the page margins.
+    static Cairo::Rectangle calculate_printable_area(
+        double scale, const Glib::RefPtr<Gtk::PageSetup>& setup,
+        Gtk::Unit unit);
+
+    // Draw the entire printable page.
+    static void draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
+                          const Cairo::Rectangle& printable_area, int page_nr);
+
+    bool draw_preview_area(const Cairo::RefPtr<Cairo::Context>& cr);
 
     // Containers for compound preview area
     widget::FixedWithBackground fixed_wrapper;
