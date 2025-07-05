@@ -164,6 +164,16 @@ void PrintPreviewWidget::resize_preview_area(
     Gtk::Allocation page_rectangle =
         calculate_preview_allocation(page_ratio, wrapper_size);
 
+    // Check if the new size is actually needed. Without this check there would
+    // be an inifinite cascade of size requests, as preview_area resizing
+    // triggers fixed_wrapper resizing, and vice versa.
+    int old_width, old_height;
+    preview_area.get_size_request(old_width, old_height);
+    if (page_rectangle.get_width() == old_width &&
+        page_rectangle.get_height() == old_height) {
+        return;
+    }
+
     preview_area.set_size_request(page_rectangle.get_width(),
                                   page_rectangle.get_height());
     fixed_wrapper.move(box_wrapper, page_rectangle.get_x(),
