@@ -23,7 +23,7 @@ msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-05 21:28+0300\n"
-"PO-Revision-Date: 2025-07-05 18:26\n"
+"PO-Revision-Date: 2025-07-05 19:44\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Language: zh_CN\n"
@@ -10362,9 +10362,6 @@ msgstr "创建FNT时发生内部错误。 文件偏移错误⬤"
 
 msgid "Internal error in creating FNT. File offset wrong\n"
 msgstr "创建FNT时发生内部错误。 文件偏移错误\n"
-
-msgid "Internal error in creating FNT. File offset wrong in bitmap data"
-msgstr "创建FNT时发生内部错误。 文件偏移错误于位图数据⬤"
 
 msgid "Internal error in creating FNT. File offset wrong in bitmap data\n"
 msgstr "创建FNT时发生内部错误。 文件偏移错误于位图数据\n"
@@ -23907,14 +23904,8 @@ msgstr "朝鲜谚文元音形式"
 msgid "WOFF"
 msgstr "WOFF"
 
-msgid "WOFF compressed metadata section too large."
-msgstr "WOFF 压缩元数据部分太大。"
-
 msgid "WOFF compressed metadata section too large.\n"
 msgstr "WOFF 压缩元数据部分太大。"
-
-msgid "WOFF uncompressed metadata section too large."
-msgstr "WOFF 未压缩的元数据部分太大。"
 
 msgid "WOFF uncompressed metadata section too large.\n"
 msgstr "WOFF 未压缩的元数据部分太大。"
@@ -26974,3 +26965,12 @@ msgstr "∆y_adv #1"
 
 msgid "∆y_adv #2"
 msgstr "∆y_adv #2"
+
+#~ msgid "Internal error in creating FNT. File offset wrong in bitmap data"
+#~ msgstr "创建FNT时发生内部错误。 文件偏移错误于位图数据"
+
+#~ msgid "WOFF compressed metadata section too large."
+#~ msgstr "WOFF 压缩元数据部分太大。"
+
+#~ msgid "WOFF uncompressed metadata section too large."
+#~ msgstr "WOFF 未压缩的元数据部分太大。"

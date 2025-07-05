@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-05 21:28+0300\n"
-"PO-Revision-Date: 2025-07-05 18:26\n"
+"PO-Revision-Date: 2025-07-05 19:44\n"
 "Last-Translator: \n"
 "Language-Team: Vietnamese\n"
 "Language: vi_VN\n"
@@ -8122,9 +8122,6 @@ msgstr "Gặp lỗi nội bộ khi tạo FNT. Sai bù tập tin⬤"
 
 msgid "Internal error in creating FNT. File offset wrong\n"
 msgstr "Gặp lỗi nội bộ khi tạo FNT. Sai bù tập tin\n"
-
-msgid "Internal error in creating FNT. File offset wrong in bitmap data"
-msgstr "Gặp lỗi nội bộ khi tạo FNT. Sai bu tập tin trong dữ liệu mảng ảnh⬤"
 
 msgid "Internal error in creating FNT. File offset wrong in bitmap data\n"
 msgstr "Gặp lỗi nội bộ khi tạo FNT. Sai bu tập tin trong dữ liệu mảng ảnh\n"
@@ -22032,3 +22029,6 @@ msgstr "↓_Xuống"
 #, c-format
 msgid "∆Curvature: %g"
 msgstr "Độ cong ∆: %g"
+
+#~ msgid "Internal error in creating FNT. File offset wrong in bitmap data"
+#~ msgstr "Gặp lỗi nội bộ khi tạo FNT. Sai bu tập tin trong dữ liệu mảng ảnh"

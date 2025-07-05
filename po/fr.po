@@ -15,7 +15,7 @@ msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-05 21:28+0300\n"
-"PO-Revision-Date: 2025-07-05 18:26\n"
+"PO-Revision-Date: 2025-07-05 19:44\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -9346,9 +9346,6 @@ msgstr "Erreur interne en créant le FNT. Offset faux dans le fichier⬤"
 
 msgid "Internal error in creating FNT. File offset wrong\n"
 msgstr "Erreur interne en créant le FNT. Offset faux dans le fichier\n"
-
-msgid "Internal error in creating FNT. File offset wrong in bitmap data"
-msgstr "Erreur interne en créant le FNT. Offset faux dans les données bitmap⬤"
 
 msgid "Internal error in creating FNT. File offset wrong in bitmap data\n"
 msgstr "Erreur interne en créant le FNT. Offset faux dans les données bitmap\n"
@@ -21965,14 +21962,8 @@ msgstr "Forme coréenne basique voyelle (CJC)"
 msgid "WOFF"
 msgstr "Web Open Font Format (WOFF)"
 
-msgid "WOFF compressed metadata section too large."
-msgstr "Section WOFF des métadonnées comprimées trop grande.⬤"
-
 msgid "WOFF compressed metadata section too large.\n"
 msgstr "Section WOFF des métadonnées comprimées trop grande.\n"
-
-msgid "WOFF uncompressed metadata section too large."
-msgstr "Section WOFF des métadonnées non comprimées trop grande.⬤"
 
 msgid "WOFF uncompressed metadata section too large.\n"
 msgstr "Section WOFF des métadonnées non comprimées trop grande.\n"
@@ -24636,3 +24627,12 @@ msgstr "∆y_cha #1"
 
 msgid "∆y_adv #2"
 msgstr "∆y_cha #2"
+
+#~ msgid "Internal error in creating FNT. File offset wrong in bitmap data"
+#~ msgstr "Erreur interne en créant le FNT. Offset faux dans les données bitmap"
+
+#~ msgid "WOFF compressed metadata section too large."
+#~ msgstr "Section WOFF des métadonnées comprimées trop grande."
+
+#~ msgid "WOFF uncompressed metadata section too large."
+#~ msgstr "Section WOFF des métadonnées non comprimées trop grande."

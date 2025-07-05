@@ -20,7 +20,7 @@ msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-05 21:28+0300\n"
-"PO-Revision-Date: 2025-07-05 18:08\n"
+"PO-Revision-Date: 2025-07-05 19:44\n"
 "Last-Translator: \n"
 "Language-Team: Korean\n"
 "Language: ko_KR\n"
@@ -10444,9 +10444,6 @@ msgstr "FMT 생성시에 내부에러 발생. 파일오프셋이 올바르지 �
 
 msgid "Internal error in creating FNT. File offset wrong\n"
 msgstr "FMT 생성시에 내부에러 발생. 파일오프셋이 올바르지 않습니다\n"
-
-msgid "Internal error in creating FNT. File offset wrong in bitmap data"
-msgstr "FNT를 만드는 중 내부 오류 발생. 비트맵 데이터의 파일 오프셋이 잘못됨⬤"
 
 msgid "Internal error in creating FNT. File offset wrong in bitmap data\n"
 msgstr "FNT를 만드는 중 내부 오류 발생. 비트맵 데이터의 파일 오프셋이 잘못됨\n"
@@ -24169,14 +24166,8 @@ msgstr "한글 자모모음형"
 msgid "WOFF"
 msgstr "웹 오픈 글꼴 형식"
 
-msgid "WOFF compressed metadata section too large."
-msgstr "WOFF 압축 메타데이터 섹션이 너무 크다.⬤"
-
 msgid "WOFF compressed metadata section too large.\n"
 msgstr "WOFF 압축 메타데이터 섹션이 너무 크다.\n"
-
-msgid "WOFF uncompressed metadata section too large."
-msgstr "WOFF 압축되지 않은 메타데이터 섹션이 너무 크다.⬤"
 
 msgid "WOFF uncompressed metadata section too large.\n"
 msgstr "WOFF 압축되지 않은 메타데이터 섹션이 너무 크다.\n"
@@ -27236,3 +27227,12 @@ msgstr "∆y_adv #1"
 
 msgid "∆y_adv #2"
 msgstr "∆y_adv #2"
+
+#~ msgid "Internal error in creating FNT. File offset wrong in bitmap data"
+#~ msgstr "FNT를 만드는 중 내부 오류 발생. 비트맵 데이터의 파일 오프셋이 잘못됨\n"
+
+#~ msgid "WOFF compressed metadata section too large."
+#~ msgstr "WOFF 압축 메타데이터 섹션이 너무 크다.\n"
+
+#~ msgid "WOFF uncompressed metadata section too large."
+#~ msgstr "WOFF 압축되지 않은 메타데이터 섹션이 너무 크다.\n"

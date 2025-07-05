@@ -16,7 +16,7 @@ msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-05 21:28+0300\n"
-"PO-Revision-Date: 2025-07-05 18:26\n"
+"PO-Revision-Date: 2025-07-05 19:44\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Language: ja_JP\n"
@@ -6300,9 +6300,6 @@ msgstr "FMT 作成時に内部エラーが発生しました. ファイルオフ
 
 msgid "Internal error in creating FNT. File offset wrong\n"
 msgstr "FMT 作成時に内部エラーが発生しました. ファイルオフセットが誤っています\n"
-
-msgid "Internal error in creating FNT. File offset wrong in bitmap data"
-msgstr "FMT 作成時に内部エラーが発生しました. ビットマップデータ内のファイルオフセットが誤っています\n"
 
 msgid "Internal error in creating FNT. File offset wrong in bitmap data\n"
 msgstr "FMT 作成時に内部エラーが発生しました. ビットマップデータ内のファイルオフセットが誤っています\n"
@@ -16227,3 +16224,6 @@ msgstr "{入力の先頭}"
 
 msgid "{Start of Line}"
 msgstr "{行の先頭}"
+
+#~ msgid "Internal error in creating FNT. File offset wrong in bitmap data"
+#~ msgstr "FMT 作成時に内部エラーが発生しました. ビットマップデータ内のファイルオフセットが誤っています"

@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-05 21:28+0300\n"
-"PO-Revision-Date: 2025-07-05 18:26\n"
+"PO-Revision-Date: 2025-07-05 19:44\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Language: uk_UA\n"
@@ -9622,9 +9622,6 @@ msgstr "Внутрішня помилка під час створення FNT. 
 
 msgid "Internal error in creating FNT. File offset wrong\n"
 msgstr "Внутрішня помилка під час створення FNT. Помилковий відступ у файлі\n"
-
-msgid "Internal error in creating FNT. File offset wrong in bitmap data"
-msgstr "Внутрішня помилка під час створення FNT. Помилковий відступ у файлі для растрових даних\n"
 
 msgid "Internal error in creating FNT. File offset wrong in bitmap data\n"
 msgstr "Внутрішня помилка під час створення FNT. Помилковий відступ у файлі для растрових даних\n"
@@ -22775,14 +22772,8 @@ msgstr "Точка спостереження"
 msgid "Vowel Jamo Forms"
 msgstr "Форми голосних джамо"
 
-msgid "WOFF compressed metadata section too large."
-msgstr "Розділ стиснених метаданих WOFF є надто великим.⬤"
-
 msgid "WOFF compressed metadata section too large.\n"
 msgstr "Розділ стиснених метаданих WOFF є надто великим.\n"
-
-msgid "WOFF uncompressed metadata section too large."
-msgstr "Розділ нестиснених метаданих WOFF є надто великим.⬤"
 
 msgid "WOFF uncompressed metadata section too large.\n"
 msgstr "Розділ нестиснених метаданих WOFF є надто великим.\n"
@@ -25570,3 +25561,12 @@ msgstr "∆y_дод №1"
 
 msgid "∆y_adv #2"
 msgstr "∆y_дод №2"
+
+#~ msgid "Internal error in creating FNT. File offset wrong in bitmap data"
+#~ msgstr "Внутрішня помилка під час створення FNT. Помилковий відступ у файлі для растрових даних"
+
+#~ msgid "WOFF compressed metadata section too large."
+#~ msgstr "Розділ стиснених метаданих WOFF є надто великим."
+
+#~ msgid "WOFF uncompressed metadata section too large."
+#~ msgstr "Розділ нестиснених метаданих WOFF є надто великим."
