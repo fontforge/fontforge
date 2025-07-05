@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-29 12:53-0700\n"
-"PO-Revision-Date: 2025-06-29 19:58\n"
+"POT-Creation-Date: 2025-07-05 21:28+0300\n"
+"PO-Revision-Date: 2025-07-05 18:26\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Language: ja_JP\n"
@@ -666,6 +666,9 @@ msgstr "極大点を追加(_X)"
 
 msgid "Add Encoding Name..."
 msgstr "エンコーディングの名前を追加..."
+
+msgid "Add Encoding Slots..."
+msgstr "エンコーディングスロットを追加..."
 
 msgid "Add Entry Anchor..."
 msgstr "始点アンカーを追加"
@@ -6008,8 +6011,14 @@ msgstr "横方向に中"
 msgid "Horseshoe E and A"
 msgstr "蹄鉄型のEとA"
 
+msgid "How many CID slots do you wish to add?"
+msgstr "CIDスロットをいくつ追加しますか?"
+
 msgid "How many entries should there be in the cvt table?"
 msgstr "cvtテーブルに含まれる項目数をいくつにしますか?"
+
+msgid "How many unencoded glyph slots do you wish to add?"
+msgstr "文字符号が割り当てられていないグリフスロットをいくつ追加しますか?"
 
 msgid "Hungarian"
 msgstr "ハンガリー語"
@@ -12608,6 +12617,7 @@ msgstr ""
 "フォント%3$.30sのグリフ\"%2$.30s\"に含まれるヒント%1$sは,%4$.30sに含まれるも"
 "のと一致しません(個数または重なり合い方の特徴が異なります)"
 
+#, c-format
 msgid ""
 "The %1$s in the search dialog contains a reference to %2$.20hs which does "
 "not exist in the new font.\n"
@@ -13139,10 +13149,10 @@ msgid ""
 "font. You may give it a new name using Element->Glyph Info. Do you wish to "
 "continue font generation (and omit this character)?"
 msgstr ""
-"エンコーディング%dのグリフは\".notdef\"という名前がついています. 名前が"
-"\".notdef\"になっているために,生成されたフォントにはこのグリフは含まれませ"
-"ん. エレメント(L)→グリフ情報(I) で新しい名前をつけることができます. (このグリ"
-"フを飛ばして)フォントの生成を続けますか?"
+"エンコーディング%dのグリフは\".notdef\"という名前がついています. 名前が\"."
+"notdef\"になっているために,生成されたフォントにはこのグリフは含まれません. エ"
+"レメント(L)→グリフ情報(I) で新しい名前をつけることができます. (このグリフを飛"
+"ばして)フォントの生成を続けますか?"
 
 #, c-format
 msgid "The glyph name \"%1$.30s\" occurs in groups %2$.30s and %3$.30s"
@@ -16918,12 +16928,3 @@ msgstr "{入力の先頭}"
 
 msgid "{Start of Line}"
 msgstr "{行の先頭}"
-
-#~ msgid "Add Encoding Slots..."
-#~ msgstr "エンコーディングスロットを追加..."
-
-#~ msgid "How many CID slots do you wish to add?"
-#~ msgstr "CIDスロットをいくつ追加しますか?"
-
-#~ msgid "How many unencoded glyph slots do you wish to add?"
-#~ msgstr "文字符号が割り当てられていないグリフスロットをいくつ追加しますか?"

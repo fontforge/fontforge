@@ -22,8 +22,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-29 12:53-0700\n"
-"PO-Revision-Date: 2025-06-29 19:58\n"
+"POT-Creation-Date: 2025-07-05 21:28+0300\n"
+"PO-Revision-Date: 2025-07-05 18:26\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Language: zh_CN\n"
@@ -1371,6 +1371,9 @@ msgstr "添加极值(_X)"
 msgid "Add Encoding Name..."
 msgstr "增加编码…"
 
+msgid "Add Encoding Slots..."
+msgstr "增加编码位…"
+
 msgid "Add Entry Anchor..."
 msgstr "增加入口锚点..."
 
@@ -1407,6 +1410,9 @@ msgstr "添加子表(_T)"
 
 msgid "Add Subscripts/Superscripts..."
 msgstr "添加上下标..."
+
+msgid "Add Unencoded"
+msgstr "添加未编码"
 
 msgid "Add VHi_nt"
 msgstr "增加垂直渲调(_N)"
@@ -2650,6 +2656,12 @@ msgstr "艾马拉语"
 
 msgid "Azebaijani (roman)"
 msgstr "阿塞拜疆语(罗马字母)"
+
+msgid "Azeri (Cyrillic)"
+msgstr "阿塞拜疆文（西里尔文）"
+
+msgid "Azeri (Latin)"
+msgstr "阿塞拜疆文（拉丁文）"
 
 msgid "BB"
 msgstr "边框"
@@ -4931,8 +4943,8 @@ msgstr ""
 msgid ""
 "Click here to add the OFL metadata to your own font in the License and "
 "License URL fields. \n"
-"Then click on the License field to fill in the placeholders in sync with "
-"OFL.txt. \n"
+"Then click on the License field to fill in the placeholders in sync with OFL."
+"txt. \n"
 msgstr ""
 "点击这里以在你的字体文件中的许可与许可网址栏目中添加 OFL 元数据。\n"
 "然后点击许可栏目并填写与 OFL.txt 一样的资料。\n"
@@ -5031,6 +5043,9 @@ msgstr "字偶距调整对话框中基线和 x=0 线使用的颜色"
 
 msgid "Color used for the hint histogram graphs"
 msgstr "渲染调整直方图所用的颜色"
+
+msgid "Color used to draw glyph contour when that metric is selected in View"
+msgstr "在视图中选择该度量时用于绘制字形轮廓线的颜色"
 
 msgid ""
 "Color used to draw the (horizontal or) vertical line from the origin to the "
@@ -6438,6 +6453,9 @@ msgstr "显示尺寸:"
 msgid "Display Substitution..."
 msgstr "显示替换…"
 
+msgid "Display a glyph contour"
+msgstr "显示字形轮廓线"
+
 msgid "Display files of this type"
 msgstr "显示此类文件"
 
@@ -6638,6 +6656,9 @@ msgstr "画线"
 
 msgid "Draw a freehand curve"
 msgstr "手绘曲线"
+
+msgid "Draw a glyph contour"
+msgstr "绘制字形轮廓线"
 
 msgid "DrawOpenPathsWithHighlight"
 msgstr "DrawOpenPathsWithHighlight"
@@ -7144,6 +7165,9 @@ msgstr "清除 %s 时出错。"
 
 msgid "Error in WriteUFOLayer."
 msgstr "写入 UFO 层时出错。"
+
+msgid "Error occurred while adding unencoded slots"
+msgstr "添加未编码位时出错"
 
 msgid "Error parsing color component."
 msgstr "解析颜色组件时出错。"
@@ -8184,6 +8208,9 @@ msgstr ""
 "  * 合并的字形表包含超过 65534 个字形\n"
 "\n"
 "（合并将花费更长时间）"
+
+msgid "FontForge developers"
+msgstr "FontForge 开发团队"
 
 #, c-format
 msgid "FontForge does not currently parse pattern Color Sources (%s)."
@@ -9772,11 +9799,17 @@ msgstr[0] "水平: %d 基线"
 msgid "Horseshoe E and A"
 msgstr "马蹄形 E 和 A"
 
+msgid "How many CID slots do you wish to add?"
+msgstr "你想增加多少CID位？"
+
 msgid "How many entries should there be in the cvt table?"
 msgstr "应该有多少个条目出现在cvt 表中？"
 
 msgid "How many most-recent Undos should be kept?"
 msgstr "应该保留多少个最近的撤消？"
+
+msgid "How many unencoded glyph slots do you wish to add?"
+msgstr "你想增加多少未编码的字形位？"
 
 msgid "How to align these points?"
 msgstr "如何对齐这些点？"
@@ -12821,6 +12854,9 @@ msgstr "度量基线颜色"
 msgid "Metrics For %.50s"
 msgstr "%.50s 的度量"
 
+msgid "Metrics Glyph Contour Color"
+msgstr "度量字形轮廓线颜色"
+
 msgid "Metrics Label Color"
 msgstr "尺寸标签的颜色"
 
@@ -13195,7 +13231,7 @@ msgid "Mongolian"
 msgstr "蒙文"
 
 msgid "Mongolian (Cyrillic)"
-msgstr "蒙古语 (斯拉夫文)"
+msgstr "蒙古语（西里尔文）"
 
 msgid "Mongolian (Mongolian)"
 msgstr "蒙古语（蒙古文）"
@@ -13264,8 +13300,8 @@ msgstr ""
 "大多数查找将附加到特定语言的特定脚本中激活的功能。\n"
 "在某些情况下，查找不会附加到任何功能，但将由另一个查找（条件查找）调用。在其"
 "他情况下，查找可能附加到多个功能。\n"
-"功能可以是四个字母的 OpenType 功能标签，也可以是两个数字的 mac "
-"<feature,setting> 组合。"
+"功能可以是四个字母的 OpenType 功能标签，也可以是两个数字的 mac <feature,"
+"setting> 组合。"
 
 msgid ""
 "Move Direct Absolute Point[a]\n"
@@ -15391,6 +15427,9 @@ msgstr "成对位置调整（字偶距）"
 
 msgid "Pale_ttes"
 msgstr "工具栏(_T)"
+
+msgid "Palestinian Aramaic"
+msgstr "巴勒斯坦阿拉姆语"
 
 msgid "Palette Background Color"
 msgstr "调色板背景颜色"
@@ -17777,6 +17816,12 @@ msgstr "脚本 '%c%c%c%c' "
 msgid "Script '%c%c%c%c' on %c%c%c%c "
 msgstr "文字 '%c%c%c%c' 于 %c%c%c%c "
 
+#, c-format
+msgid ""
+"Script '%s' claims baseline '%c%c%c%c' as its default, but that baseline is "
+"not currently active."
+msgstr "文字“%s”声明基线“%c%c%c%c”为其默认值，但该基线当前不活动。"
+
 msgid "Script File"
 msgstr "脚本文件"
 
@@ -19129,8 +19174,8 @@ msgid "SnapToInt"
 msgstr "捕捉到整点"
 
 msgid ""
-"So if you type \"A\" here the first selected glyph would be named "
-"\"A.suffix\".\n"
+"So if you type \"A\" here the first selected glyph would be named \"A."
+"suffix\".\n"
 "The second \"B.suffix\", and so on."
 msgstr ""
 "因此，如果您在此处输入“A”，则第一个选定的字形将被命名为“A.suffix”。\n"
@@ -19568,6 +19613,9 @@ msgstr "标准"
 
 msgid "Standard Ligatures"
 msgstr "标准连字"
+
+msgid "Standard Moroccan Tamazight"
+msgstr "标准摩洛哥塔马齐特语"
 
 msgid "Standard Solid Fill"
 msgstr "标准实心填充"
@@ -20451,6 +20499,7 @@ msgstr "\"DPI\"字段取值应介于10和5000之间。"
 msgid "The \"Proximity\" field must be more than 0 and less than a half."
 msgstr "“接近度”字段必须大于 0 且小于一半。"
 
+#, c-format
 msgid ""
 "The %1$s in the search dialog contains a reference to %2$.20hs which does "
 "not exist in the new font.\n"
@@ -24161,9 +24210,10 @@ msgid ""
 msgstr ""
 "Unix 样式的通配符规则如下：大多数字符匹配自身，一个 \"?\" 匹配任何单个字符，"
 "一个 \"*\" 匹配任意数量的字符（包括零个字符），方括号中的 \"[abd]\" 字符集匹"
-"配任何（单个）字符，花括号中的 \"{scmp,c2sc}\" 字符串集匹配任何字符串。例如，"
-"\"a.*\" 会匹配 \"a.\"、\"a.sc\" 或 \"a.swash\"，而 \"a.{scmp,c2sc}\" 会匹配 "
-"\"a.scmp\" 或 \"a.c2sc\"，并且 \"a.[abd]\" 会匹配 \"a.a\"、\"a.b\" 或 \"a.d\""
+"配任何（单个）字符，花括号中的 \"{scmp,c2sc}\" 字符串集匹配任何字符串。例"
+"如，\"a.*\" 会匹配 \"a.\"、\"a.sc\" 或 \"a.swash\"，而 \"a.{scmp,c2sc}\" 会匹"
+"配 \"a.scmp\" 或 \"a.c2sc\"，并且 \"a.[abd]\" 会匹配 \"a.a\"、\"a.b\" 或 \"a."
+"d\""
 
 msgid "Unknown"
 msgstr "未知"
@@ -24917,6 +24967,7 @@ msgstr ""
 "警告：“cvar”包含中间元组数据。\n"
 "FontForge 不支持。"
 
+#, c-format
 msgid "Warning: Accuracy target %lf less than minimum %lf, using %lf instead\n"
 msgstr "警告：精确度目标 %lf 小于最小值 %lf，请改用 %lf"
 
@@ -24935,6 +24986,7 @@ msgstr "警告：轮廓线末端未闭合\n"
 msgid "Warning: Contour start did not close\n"
 msgstr "警告：轮廓线开头未闭合\n"
 
+#, c-format
 msgid "Warning: Coordinate diff %lf greater than margin %lf\n"
 msgstr "警告：坐标差异 %lf 大于边距 %lf"
 
@@ -24959,10 +25011,9 @@ msgstr "警告：字体中无字形"
 
 #, c-format
 msgid ""
-"Warning: FontForge's implementation of include statements in UFO "
-"features.fea files was wrong. Please correct your path `%s` as per the "
-"specification for guaranteed future compatibility. (See GitHub issue №4629 "
-"for more info.)"
+"Warning: FontForge's implementation of include statements in UFO features."
+"fea files was wrong. Please correct your path `%s` as per the specification "
+"for guaranteed future compatibility. (See GitHub issue №4629 for more info.)"
 msgstr ""
 "警告：FontForge 在 UFO features.fea 文件中的 include 语句实现有误。请根据规范"
 "更正路径“%s”，以保证将来的兼容性。（有关更多信息，请参阅 GitHub 问题 "
@@ -25202,9 +25253,9 @@ msgid ""
 "will be the last saved file, file.sfd-02 will be the file saved before that, "
 "and so on. If you set this to 0 then no revisions will be retained."
 msgstr ""
-"保存时，保留此数量的文件先前版本。file.sfd-01 将是最后保存的文件，"
-"file.sfd-02 将是在此之前保存的文件，依此类推。如果将其设置为 0，则不会保留任"
-"何修订。"
+"保存时，保留此数量的文件先前版本。file.sfd-01 将是最后保存的文件，file."
+"sfd-02 将是在此之前保存的文件，依此类推。如果将其设置为 0，则不会保留任何修"
+"订。"
 
 msgid ""
 "When a curve passes very close to the center of a\n"
@@ -25393,8 +25444,8 @@ msgid ""
 "produce a file (with extension .g2n) containing those data."
 msgstr ""
 "生成 TrueType 或 opentype 字体时，有时了解 TrueType 字形 ID 和字形名称之间的"
-"映射很有用。设置此选项将导致 FontForge 生成一个包含这些数据的文件（扩展名"
-"为 .g2n）。"
+"映射很有用。设置此选项将导致 FontForge 生成一个包含这些数据的文件（扩展名为 ."
+"g2n）。"
 
 msgid ""
 "When importing an OpenType font, for the purposes of hinting spline points "
@@ -26159,6 +26210,9 @@ msgstr "缩小(_O)"
 
 msgid "Zanabazar Square"
 msgstr "札那巴札尔方字"
+
+msgid "Zande"
+msgstr "赞德语"
 
 msgid "Zapf Dingbats"
 msgstr "花体字"
@@ -28063,12 +28117,3 @@ msgstr "∆y_adv #1"
 
 msgid "∆y_adv #2"
 msgstr "∆y_adv #2"
-
-#~ msgid "Add Encoding Slots..."
-#~ msgstr "增加编码位…"
-
-#~ msgid "How many CID slots do you wish to add?"
-#~ msgstr "你想增加多少CID位？"
-
-#~ msgid "How many unencoded glyph slots do you wish to add?"
-#~ msgstr "你想增加多少未编码的字形位？"

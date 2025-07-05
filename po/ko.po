@@ -19,8 +19,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-29 12:53-0700\n"
-"PO-Revision-Date: 2025-06-29 19:58\n"
+"POT-Creation-Date: 2025-07-05 21:28+0300\n"
+"PO-Revision-Date: 2025-07-05 18:08\n"
 "Last-Translator: \n"
 "Language-Team: Korean\n"
 "Language: ko_KR\n"
@@ -1386,6 +1386,9 @@ msgstr "극대점을 추가(_X)"
 
 msgid "Add Encoding Name..."
 msgstr "인코딩명을 추가..."
+
+msgid "Add Encoding Slots..."
+msgstr "인코딩슬롯을 추가..."
 
 msgid "Add Entry Anchor..."
 msgstr "엔트리 앵커 추가..."
@@ -5108,8 +5111,8 @@ msgstr ""
 msgid ""
 "Click here to add the OFL metadata to your own font in the License and "
 "License URL fields. \n"
-"Then click on the License field to fill in the placeholders in sync with "
-"OFL.txt. \n"
+"Then click on the License field to fill in the placeholders in sync with OFL."
+"txt. \n"
 msgstr ""
 "라이센스 및 라이센스 URL 필드의 사용자 글꼴에 OFL 메타데이터를 추가하려면 여"
 "기를 클릭하십시오. \n"
@@ -9937,11 +9940,17 @@ msgstr[0] "%d 기준 수평선"
 msgid "Horseshoe E and A"
 msgstr "E와 A 편자"
 
+msgid "How many CID slots do you wish to add?"
+msgstr "CID슬롯을 몇개 추가하시겠습니까?"
+
 msgid "How many entries should there be in the cvt table?"
 msgstr "cvt테이블에 포함되는 항목의 개수를 몇개로 하시겠습니까?"
 
 msgid "How many most-recent Undos should be kept?"
 msgstr "최신의 취소를 몇 유지해야합니까?"
+
+msgid "How many unencoded glyph slots do you wish to add?"
+msgstr "자부호가 분배되어있지 않은 글리프슬롯을 몇개 추가하시겠습니까?"
 
 msgid "How to align these points?"
 msgstr "이 점들을 어떻게 조정하시겠습니까?"
@@ -19563,8 +19572,8 @@ msgid "SnapToInt"
 msgstr "정수로 스냅"
 
 msgid ""
-"So if you type \"A\" here the first selected glyph would be named "
-"\"A.suffix\".\n"
+"So if you type \"A\" here the first selected glyph would be named \"A."
+"suffix\".\n"
 "The second \"B.suffix\", and so on."
 msgstr ""
 "그래서 여기서 \"A\"를 입력하면 첫 번째로 선택된 글리프 이름이 \"A.suffix\"가 "
@@ -20909,6 +20918,7 @@ msgstr ""
 "폰트%3$.30s 글리프\"%2$.30s\"에 포함되는 힌트%1$s는, %4$.30s에 포함되는 것과 "
 "일치하지 않습니다(개수 또는 겹치기 특징이 다릅니다)"
 
+#, c-format
 msgid ""
 "The %1$s in the search dialog contains a reference to %2$.20hs which does "
 "not exist in the new font.\n"
@@ -25541,6 +25551,7 @@ msgstr ""
 "경고: 'cvar' 에 중간tuple데이터가 포함되어 있습니다.\n"
 "  FontForge는 이것을 지원하지 않습니다\n"
 
+#, c-format
 msgid "Warning: Accuracy target %lf less than minimum %lf, using %lf instead\n"
 msgstr "경고: 정확도 목표 %lf는 최소 %lf 미만입니다. 대신 %lf를 사용합니다\n"
 
@@ -25559,6 +25570,7 @@ msgstr "경고 : 등고선 엔드가 닫히지 않았습니다\n"
 msgid "Warning: Contour start did not close\n"
 msgstr "경고 : 등고선 시작이 닫 없습니다\n"
 
+#, c-format
 msgid "Warning: Coordinate diff %lf greater than margin %lf\n"
 msgstr "경고: 좌표 차이 %lf이 여백 %lf를 초과합니다\n"
 
@@ -28699,12 +28711,3 @@ msgstr "∆y_adv #1"
 
 msgid "∆y_adv #2"
 msgstr "∆y_adv #2"
-
-#~ msgid "Add Encoding Slots..."
-#~ msgstr "인코딩슬롯을 추가..."
-
-#~ msgid "How many CID slots do you wish to add?"
-#~ msgstr "CID슬롯을 몇개 추가하시겠습니까?"
-
-#~ msgid "How many unencoded glyph slots do you wish to add?"
-#~ msgstr "자부호가 분배되어있지 않은 글리프슬롯을 몇개 추가하시겠습니까?"

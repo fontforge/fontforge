@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-29 12:53-0700\n"
-"PO-Revision-Date: 2025-06-29 19:58\n"
+"POT-Creation-Date: 2025-07-05 21:28+0300\n"
+"PO-Revision-Date: 2025-07-05 18:26\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Language: ru_RU\n"
@@ -1379,6 +1379,9 @@ msgstr "Добавить _экстремумы"
 
 msgid "Add Encoding Name..."
 msgstr "Добавить имя кодировки…"
+
+msgid "Add Encoding Slots..."
+msgstr "Добавка слотов кодировки"
 
 msgid "Add Entry Anchor..."
 msgstr "Добавить опорную точку входа…"
@@ -5251,8 +5254,8 @@ msgstr ""
 msgid ""
 "Click here to add the OFL metadata to your own font in the License and "
 "License URL fields. \n"
-"Then click on the License field to fill in the placeholders in sync with "
-"OFL.txt. \n"
+"Then click on the License field to fill in the placeholders in sync with OFL."
+"txt. \n"
 msgstr ""
 "Щёлкните здесь для добавления метаданных OFL в собственный шрифт в поля "
 "«Лицензия» и «URL-адрес лицензии». \n"
@@ -10378,6 +10381,9 @@ msgstr "Сколько элементов должно быть в таблиц�
 
 msgid "How many most-recent Undos should be kept?"
 msgstr "Сколько последних действий сохранять для отмены?"
+
+msgid "How many unencoded glyph slots do you wish to add?"
+msgstr "Сколько некодированных слотов глифов добавить?"
 
 msgid "How to align these points?"
 msgstr "Как выровнять эти точки?"
@@ -20521,12 +20527,12 @@ msgid "SnapToInt"
 msgstr "Привязка к целым"
 
 msgid ""
-"So if you type \"A\" here the first selected glyph would be named "
-"\"A.suffix\".\n"
+"So if you type \"A\" here the first selected glyph would be named \"A."
+"suffix\".\n"
 "The second \"B.suffix\", and so on."
 msgstr ""
-"Поэтому, если ввести здесь «A», первый выделенный глиф получит имя "
-"«A.suffix».\n"
+"Поэтому, если ввести здесь «A», первый выделенный глиф получит имя «A."
+"suffix».\n"
 "Следующий — «B.suffix» и так далее."
 
 msgid "Sodo Gurage"
@@ -21847,6 +21853,7 @@ msgstr "Значение dpi должно быть между 10 и 5000."
 msgid "The \"Proximity\" field must be more than 0 and less than a half."
 msgstr "Значение близости должно быть больше нуля и меньше половины."
 
+#, c-format
 msgid ""
 "The %1$s in the search dialog contains a reference to %2$.20hs which does "
 "not exist in the new font.\n"
@@ -26706,6 +26713,7 @@ msgstr ""
 "Предупреждение: 'cvar' содержит промежуточные данные кортежа.\n"
 " FontForge это не поддерживает.\n"
 
+#, c-format
 msgid "Warning: Accuracy target %lf less than minimum %lf, using %lf instead\n"
 msgstr ""
 "Предупреждение: Целевой показатель точности %lf меньше минимального "
@@ -26729,6 +26737,7 @@ msgstr "Предупреждение: Конец контура не закры�
 msgid "Warning: Contour start did not close\n"
 msgstr "Предупреждение: Начало контура не закрыто\n"
 
+#, c-format
 msgid "Warning: Coordinate diff %lf greater than margin %lf\n"
 msgstr "Предупреждение: Разность координат %lf больше поля %lf\n"
 
@@ -26754,10 +26763,9 @@ msgstr "Предупреждение: Шрифт не содержит глиф�
 
 #, c-format
 msgid ""
-"Warning: FontForge's implementation of include statements in UFO "
-"features.fea files was wrong. Please correct your path `%s` as per the "
-"specification for guaranteed future compatibility. (See GitHub issue №4629 "
-"for more info.)"
+"Warning: FontForge's implementation of include statements in UFO features."
+"fea files was wrong. Please correct your path `%s` as per the specification "
+"for guaranteed future compatibility. (See GitHub issue №4629 for more info.)"
 msgstr ""
 "Предупреждение: Неверное использование директив «include» приложением "
 "FontForge в конфигурационном файле UFO features.fea. Исправьте путь «%s» в "
@@ -29825,9 +29833,3 @@ msgstr "↓В_низ"
 #, c-format
 msgid "∆Curvature: %g"
 msgstr "∆ кривизны: %g"
-
-#~ msgid "Add Encoding Slots..."
-#~ msgstr "Добавка слотов кодировки"
-
-#~ msgid "How many unencoded glyph slots do you wish to add?"
-#~ msgstr "Сколько некодированных слотов глифов добавить?"
