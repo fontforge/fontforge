@@ -85,6 +85,11 @@ class PrintPreviewWidget : public Gtk::Grid {
 
     // This setup should never be nullptr, all drawing functions rely on it.
     Glib::RefPtr<Gtk::PageSetup> current_setup_;
+
+    // Keep the most recent preview pane requested position, to avoid excessive
+    // resizes.
+    Gtk::Allocation last_preview_allocation_;
+
     Gtk::Label dummy_label;
 };
 

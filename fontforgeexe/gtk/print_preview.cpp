@@ -176,13 +176,11 @@ void PrintPreviewWidget::resize_preview_area(
     // Check if the new size is actually needed. Without this check there would
     // be an inifinite cascade of size requests, as preview_area resizing
     // triggers fixed_wrapper resizing, and vice versa.
-    int old_width, old_height;
-    preview_area.get_size_request(old_width, old_height);
-    if (page_rectangle.get_width() == old_width &&
-        page_rectangle.get_height() == old_height) {
+    if (page_rectangle == last_preview_allocation_) {
         return;
     }
 
+    last_preview_allocation_ = page_rectangle;
     preview_area.set_size_request(page_rectangle.get_width(),
                                   page_rectangle.get_height());
     fixed_wrapper.move(box_wrapper, page_rectangle.get_x(),
