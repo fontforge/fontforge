@@ -44,12 +44,11 @@ class PrintPreviewWidget : public Gtk::Grid {
                 const Glib::RefPtr<Gtk::PrintSettings>& settings);
 
  private:
+    // Create the default A4-based page setup
+    static Glib::RefPtr<Gtk::PageSetup> create_default_setup();
+
     // Build and initialize the preview area widgets
     void build_compound_preview_area();
-
-    // Calculate page ratio, setup can be nullptr
-    static double calculate_page_ratio(
-        const Glib::RefPtr<Gtk::PageSetup>& setup);
 
     // Calculate page preview area placement inside the wrapper
     Gtk::Allocation calculate_preview_allocation(
@@ -57,8 +56,7 @@ class PrintPreviewWidget : public Gtk::Grid {
 
     // Resize and relocate the preview area inside the wrapper. This function
     // should be called from event handlers.
-    void resize_preview_area(const Glib::RefPtr<Gtk::PageSetup>& setup,
-                             const Gtk::Allocation& wrapper_size);
+    void resize_preview_area(const Gtk::Allocation& wrapper_size);
 
     // Containers for compound preview area
     widget::FixedWithBackground fixed_wrapper;
@@ -66,6 +64,11 @@ class PrintPreviewWidget : public Gtk::Grid {
     Gtk::Overlay overlay;
     Gtk::DrawingArea preview_area;
 
+    // The default A4-based setup is used for preview when no printer has been
+    // selected yet.
+    static Glib::RefPtr<Gtk::PageSetup> default_setup_;
+
+    // This setup should never be nullptr, all drawing functions rely on it.
     Glib::RefPtr<Gtk::PageSetup> current_setup_;
     Gtk::Label dummy_label;
 };

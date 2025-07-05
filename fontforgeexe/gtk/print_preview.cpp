@@ -40,6 +40,9 @@ static const std::string preview_area_css(
 // accomodate the CSS box-shadow.
 static const int wrapper_margin = 20;
 
+Glib::RefPtr<Gtk::PageSetup> PrintPreviewWidget::default_setup_ =
+    PrintPreviewWidget::create_default_setup();
+
 static bool draw_preview_area(const Cairo::RefPtr<Cairo::Context>& cr) {
     // Dummy red coloring
     cr->set_source_rgb(1.0, 0.0, 0.0);
@@ -48,7 +51,8 @@ static bool draw_preview_area(const Cairo::RefPtr<Cairo::Context>& cr) {
     return true;
 }
 
-PrintPreviewWidget::PrintPreviewWidget() : fixed_wrapper(0.5, 0.5, 0.5) {
+PrintPreviewWidget::PrintPreviewWidget()
+    : fixed_wrapper(0.5, 0.5, 0.5), current_setup_(default_setup_) {
     if (is_win32_display()) {
         // In Windows the GTK preview tab is embedded in the native Print
         // Dialog. The native dialog is not resizable, and its size can't be
@@ -89,8 +93,25 @@ void PrintPreviewWidget::draw_page_cb(
 void PrintPreviewWidget::update(
     const Glib::RefPtr<Gtk::PageSetup>& setup,
     const Glib::RefPtr<Gtk::PrintSettings>& settings) {
-    current_setup_ = setup;
-    resize_preview_area(setup, fixed_wrapper.get_allocation());
+    current_setup_ = setup ? setup : default_setup_;
+    resize_preview_area(fixed_wrapper.get_allocation());
+}
+
+Glib::RefPtr<Gtk::PageSetup> PrintPreviewWidget::create_default_setup() {
+    Glib::RefPtr<Gtk::PageSetup> A4_setup = Gtk::PageSetup::create();
+
+    static const double A4_width = 210.0;   // mm
+    static const double A4_height = 297.0;  // mm
+    static const double A4_margin = 6.0;    // mm
+    Gtk::PaperSize A4_size("A4", "A4", A4_width, A4_height, Gtk::UNIT_MM);
+
+    A4_setup->set_paper_size(A4_size);
+    A4_setup->set_top_margin(A4_margin, Gtk::UNIT_MM);
+    A4_setup->set_bottom_margin(A4_margin, Gtk::UNIT_MM);
+    A4_setup->set_left_margin(A4_margin, Gtk::UNIT_MM);
+    A4_setup->set_right_margin(A4_margin, Gtk::UNIT_MM);
+
+    return A4_setup;
 }
 
 void PrintPreviewWidget::build_compound_preview_area() {
@@ -108,23 +129,10 @@ void PrintPreviewWidget::build_compound_preview_area() {
 
     // Localize the page-sized preview area inside the allowed space.
     fixed_wrapper.signal_size_allocate().connect(
-        [this](Gtk::Allocation& a) { resize_preview_area(current_setup_, a); });
+        [this](Gtk::Allocation& a) { resize_preview_area(a); });
 
     fixed_wrapper.put(box_wrapper, 0, 0);
     box_wrapper.pack_start(preview_area, true, true);
-}
-
-double PrintPreviewWidget::calculate_page_ratio(
-    const Glib::RefPtr<Gtk::PageSetup>& setup) {
-    // See gtkprintunixdialog.c:draw_page() for default behaviour
-    double page_ratio = G_SQRT2;
-
-    if (setup) {
-        page_ratio = setup->get_paper_height(Gtk::UNIT_MM) /
-                     setup->get_paper_width(Gtk::UNIT_MM);
-    }
-
-    return page_ratio;
 }
 
 Gtk::Allocation PrintPreviewWidget::calculate_preview_allocation(
@@ -158,9 +166,11 @@ Gtk::Allocation PrintPreviewWidget::calculate_preview_allocation(
 }
 
 void PrintPreviewWidget::resize_preview_area(
-    const Glib::RefPtr<Gtk::PageSetup>& setup,
     const Gtk::Allocation& wrapper_size) {
-    double page_ratio = calculate_page_ratio(setup);
+    double page_ratio = page_ratio =
+        current_setup_->get_paper_height(Gtk::UNIT_MM) /
+        current_setup_->get_paper_width(Gtk::UNIT_MM);
+
     Gtk::Allocation page_rectangle =
         calculate_preview_allocation(page_ratio, wrapper_size);
 
