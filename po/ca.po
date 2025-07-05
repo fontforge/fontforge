@@ -5005,8 +5005,8 @@ msgstr "Usa el FreeType"
 msgid "Freehand"
 msgstr "Mà alçada"
 
-msgid "Freetype rasterization failed.\n"
-msgstr "L'escombratge del FreeType ha fallat.\n"
+msgid "Freetype rasterization failed."
+msgstr "L'escombratge del FreeType ha fallat."
 
 msgid "French"
 msgstr "Francès"

@@ -5237,8 +5237,8 @@ msgstr "自由なセリフ書体(FS)"
 msgid "Freehand"
 msgstr "フリーハンド"
 
-msgid "Freetype rasterization failed.\n"
-msgstr "FreeTypeでのラスタライズに失敗しました.\n"
+msgid "Freetype rasterization failed."
+msgstr "FreeTypeでのラスタライズに失敗しました."
 
 msgid "French"
 msgstr "フランス語"
@@ -15064,8 +15064,8 @@ msgid "Warning: Both extended and condensed. That's impossible.\n"
 msgstr ""
 "警告: エクステンディドとコンデンストを同時指定しています. それは不可能です.\n"
 
-msgid "Warning: Byte swapped font mark in palm font.\n"
-msgstr "警告: Palmフォントのフォントマークのバイト順が反転しています.\n"
+msgid "Warning: Byte swapped font mark in palm font."
+msgstr "警告: Palmフォントのフォントマークのバイト順が反転しています."
 
 #, c-format
 msgid ""
@@ -15077,8 +15077,8 @@ msgstr ""
 "(%s@0x%02xと%s@0x%02x)に対応づけられています.\n"
 "ここでは,どちらか片方のみが使用されます.\n"
 
-msgid "Warning: Font Bucket version 4 treated as 0.\n"
-msgstr "警告: Font Bucket Version の 4 は 0 として扱います.\n"
+msgid "Warning: Font Bucket version 4 treated as 0."
+msgstr "警告: Font Bucket Version の 4 は 0 として扱います."
 
 msgid "Warning: Font contained no glyphs"
 msgstr "警告: フォント内にグリフがありません."

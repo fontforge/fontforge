@@ -8009,8 +8009,8 @@ msgstr "Freeform з засічками"
 msgid "Freehand"
 msgstr "Довільне малювання"
 
-msgid "Freetype rasterization failed.\n"
-msgstr "Спроба растеризації Freetype зазнала невдачі.\n"
+msgid "Freetype rasterization failed."
+msgstr "Спроба растеризації Freetype зазнала невдачі."
 
 msgid "French"
 msgstr "Французька"
@@ -24455,8 +24455,8 @@ msgstr ""
 "Попередження: належність одразу до розширених та стиснутих. Така належність "
 "є некоректною.\n"
 
-msgid "Warning: Byte swapped font mark in palm font.\n"
-msgstr "Попередження: позначка зміни порядку байтів у шрифті palm.\n"
+msgid "Warning: Byte swapped font mark in palm font."
+msgstr "Попередження: позначка зміни порядку байтів у шрифті palm."
 
 #, c-format
 msgid ""
@@ -24468,8 +24468,8 @@ msgstr ""
 "(%s@0x%02x і %s@0x%02x)\n"
 " Тут буде використано лише одну з цих адрес.\n"
 
-msgid "Warning: Font Bucket version 4 treated as 0.\n"
-msgstr "Попередження: версія 4 Font Bucket вважатиметься версією 0.\n"
+msgid "Warning: Font Bucket version 4 treated as 0."
+msgstr "Попередження: версія 4 Font Bucket вважатиметься версією 0."
 
 msgid "Warning: Font contained no glyphs"
 msgstr "Попередження: у шрифті немає жодного гліфа"

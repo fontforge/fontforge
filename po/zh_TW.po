@@ -6241,8 +6241,8 @@ msgstr "自由形式襯線(FS)"
 msgid "Freehand"
 msgstr "徒手畫"
 
-msgid "Freetype rasterization failed.\n"
-msgstr "Freetype 點陣化失敗。\n"
+msgid "Freetype rasterization failed."
+msgstr "Freetype 點陣化失敗。"
 
 msgid "French"
 msgstr "法語"
@@ -17649,8 +17649,8 @@ msgstr "警告：%s(%s) 將同時被延展和緊縮。這是不可能的。\n"
 msgid "Warning: Both extended and condensed. That's impossible.\n"
 msgstr "警告：同時延展和緊縮是不可能的。\n"
 
-msgid "Warning: Byte swapped font mark in palm font.\n"
-msgstr "警告：在 palm 字型中有位元組置換的字型標記。\n"
+msgid "Warning: Byte swapped font mark in palm font."
+msgstr "警告：在 palm 字型中有位元組置換的字型標記。"
 
 #, c-format
 msgid ""
@@ -17661,8 +17661,8 @@ msgstr ""
 "警告：編碼 %d (0x%x) 被映射到至少兩個位置 (%s@0x%02x 和 %s@0x%02x)\n"
 "只有一個將在這裡使用。\n"
 
-msgid "Warning: Font Bucket version 4 treated as 0.\n"
-msgstr "警告：字型儲存區版本 4 被視為 0。\n"
+msgid "Warning: Font Bucket version 4 treated as 0."
+msgstr "警告：字型儲存區版本 4 被視為 0。"
 
 msgid "Warning: Font contained no glyphs"
 msgstr "警告：字型沒有包含字圖"

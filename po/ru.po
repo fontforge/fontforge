@@ -7580,8 +7580,8 @@ msgstr "Ошибка очистки %s."
 msgid "Error in WriteUFOLayer."
 msgstr "Ошибка в WriteUFOLayer."
 
-msgid "Error parsing color component.\n"
-msgstr "Ошибка обработки цветового компонента.\n"
+msgid "Error parsing color component."
+msgstr "Ошибка обработки цветового компонента."
 
 #, c-format
 msgid "Error reading plugin configuration file '%s': %s\n"
@@ -9012,8 +9012,8 @@ msgstr "Шрифты с засечками произвольной формы (
 msgid "Freehand"
 msgstr "От руки"
 
-msgid "Freetype rasterization failed.\n"
-msgstr "Сбой растеризации Freetype.\n"
+msgid "Freetype rasterization failed."
+msgstr "Сбой растеризации Freetype."
 
 msgid "French"
 msgstr "Французский"
@@ -14229,8 +14229,8 @@ msgstr "Отсутствует файл cidmap"
 msgid "Missing close parenthesis in include on line %d of %s"
 msgstr "Не хватает закрывающей скобки во включении в строке %d у %s"
 
-msgid "Missing color component.\n"
-msgstr "Отсутствие цветового компонента.\n"
+msgid "Missing color component."
+msgstr "Отсутствие цветового компонента."
 
 msgid "Missing extension"
 msgstr "Отсутствует расширение"
@@ -26715,8 +26715,8 @@ msgid "Warning: Both extended and condensed. That's impossible.\n"
 msgstr ""
 "Предупреждение: Одновременно является и узким, и широким. Это невозможно.\n"
 
-msgid "Warning: Byte swapped font mark in palm font.\n"
-msgstr "Предупреждение: Метка шрифта с заменой байта в шрифте palm.\n"
+msgid "Warning: Byte swapped font mark in palm font."
+msgstr "Предупреждение: Метка шрифта с заменой байта в шрифте palm."
 
 msgid "Warning: Can't identify contour direction, assuming clockwise\n"
 msgstr ""
@@ -26746,8 +26746,8 @@ msgstr ""
 "расположениям (%s@0x%02x и %s@0x%02x)\n"
 " Здесь будет использоваться только одно из них.\n"
 
-msgid "Warning: Font Bucket version 4 treated as 0.\n"
-msgstr "Предупреждение: Версия 4 шрифта Bucket используется как 0.\n"
+msgid "Warning: Font Bucket version 4 treated as 0."
+msgstr "Предупреждение: Версия 4 шрифта Bucket используется как 0."
 
 msgid "Warning: Font contained no glyphs"
 msgstr "Предупреждение: Шрифт не содержит глифов"

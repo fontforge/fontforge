@@ -7265,8 +7265,8 @@ msgstr "%s를 지우는 도중 오류"
 msgid "Error in WriteUFOLayer."
 msgstr "UFO 레이어를 쓰는 중 오류 발생"
 
-msgid "Error parsing color component.\n"
-msgstr "색상 구성 요소를 구문 분석하는 중 오류 발생.\n"
+msgid "Error parsing color component."
+msgstr "색상 구성 요소를 구문 분석하는 중 오류 발생."
 
 #, c-format
 msgid "Error reading plugin configuration file '%s': %s\n"
@@ -8605,8 +8605,8 @@ msgstr "자유로운 세리프서체(FS)"
 msgid "Freehand"
 msgstr "프리핸드"
 
-msgid "Freetype rasterization failed.\n"
-msgstr "FreeType에서의 라스터라이징에 실패\n"
+msgid "Freetype rasterization failed."
+msgstr "FreeType에서의 라스터라이징에 실패"
 
 msgid "French"
 msgstr "프랑스어"
@@ -13428,8 +13428,8 @@ msgstr "cidmap 파일이 없습니다"
 msgid "Missing close parenthesis in include on line %d of %s"
 msgstr "%2$s의 %1$d 행에 포함된 닫는 괄호가 없다."
 
-msgid "Missing color component.\n"
-msgstr "색상 구성 요소 누락\n"
+msgid "Missing color component."
+msgstr "색상 구성 요소 누락"
 
 msgid "Missing extension"
 msgstr "누락된 확장자"
@@ -25547,8 +25547,8 @@ msgstr "경고: 정확도 목표 %lf는 최소 %lf 미만입니다. 대신 %lf�
 msgid "Warning: Both extended and condensed. That's impossible.\n"
 msgstr "경고: 확장 또는 압축을 동시 지정하고 있습니다. 그것은 불가능합니다.\n"
 
-msgid "Warning: Byte swapped font mark in palm font.\n"
-msgstr "경고: Palm폰트의 폰트마크 바이트순서가 반전\n"
+msgid "Warning: Byte swapped font mark in palm font."
+msgstr "경고: Palm폰트의 폰트마크 바이트순서가 반전"
 
 msgid "Warning: Can't identify contour direction, assuming clockwise\n"
 msgstr "경고 : 시계 방향을 가정하면 윤곽의 방향을 확인할 수 없습니다\n"
@@ -25576,8 +25576,8 @@ msgstr ""
 "되어 있습니다\n"
 " 여기에 하나만 사용됩니다.\n"
 
-msgid "Warning: Font Bucket version 4 treated as 0.\n"
-msgstr "경고: Font Bucket Version 의 4 는 0 로 처리.\n"
+msgid "Warning: Font Bucket version 4 treated as 0."
+msgstr "경고: Font Bucket Version 의 4 는 0 로 처리."
 
 msgid "Warning: Font contained no glyphs"
 msgstr "경고: 폰트 내에 글리프가 없습니다."

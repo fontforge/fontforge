@@ -7145,7 +7145,7 @@ msgstr "清除 %s 时出错。"
 msgid "Error in WriteUFOLayer."
 msgstr "写入 UFO 层时出错。"
 
-msgid "Error parsing color component.\n"
+msgid "Error parsing color component."
 msgstr "解析颜色组件时出错。"
 
 #, c-format
@@ -8512,8 +8512,8 @@ msgstr "自由形衬线体(FS)"
 msgid "Freehand"
 msgstr "手绘"
 
-msgid "Freetype rasterization failed.\n"
-msgstr "Freetype 光栅化失败。\n"
+msgid "Freetype rasterization failed."
+msgstr "Freetype 光栅化失败。"
 
 msgid "French"
 msgstr "法语"
@@ -13074,7 +13074,7 @@ msgstr "缺失cidmap文件"
 msgid "Missing close parenthesis in include on line %d of %s"
 msgstr "第 %d 行（共 %s 行）包含部分缺少右括号"
 
-msgid "Missing color component.\n"
+msgid "Missing color component."
 msgstr "缺少颜色组件。"
 
 msgid "Missing extension"
@@ -24923,7 +24923,7 @@ msgstr "警告：精确度目标 %lf 小于最小值 %lf，请改用 %lf"
 msgid "Warning: Both extended and condensed. That's impossible.\n"
 msgstr "警告：既是加宽的又是压缩的。这不可能。"
 
-msgid "Warning: Byte swapped font mark in palm font.\n"
+msgid "Warning: Byte swapped font mark in palm font."
 msgstr "警告：Palm 字体中的字节交换字体标记。"
 
 msgid "Warning: Can't identify contour direction, assuming clockwise\n"
@@ -24951,7 +24951,7 @@ msgstr ""
 "警告: 编码 %d (0x%x) 映射到至少两个位置 (%s@0x%02x 和 %s@0x%02x)\n"
 " 这里只用一个。\n"
 
-msgid "Warning: Font Bucket version 4 treated as 0.\n"
+msgid "Warning: Font Bucket version 4 treated as 0."
 msgstr "警告：字体存储桶版本 4 被视为 0。"
 
 msgid "Warning: Font contained no glyphs"

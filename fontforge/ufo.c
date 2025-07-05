@@ -2475,10 +2475,10 @@ static void *UFOLoadGuideline(SplineFont *sf, SplineChar *sc, int layer, xmlDocP
 				char *after_color = NULL;
 				colorv = strtod(colors + colorps, &after_color);
 				if (after_color != colors + colorp)
-					LogError(_("Error parsing color component.\n"));
+					LogError(_("Error parsing color component."));
 				gl->color |= (((uint32_t)(colorv * 255.0)) << (8 * (4 - colori)));
 			} else {
-				LogError(_("Missing color component.\n"));
+				LogError(_("Missing color component."));
 			}
 		}
 		xmlFree(colors);

@@ -6677,8 +6677,8 @@ msgstr "Chân Dạng tự do"
 msgid "Freehand"
 msgstr "Bằng tay"
 
-msgid "Freetype rasterization failed.\n"
-msgstr "Lỗi làm mành Freetype.\n"
+msgid "Freetype rasterization failed."
+msgstr "Lỗi làm mành Freetype."
 
 msgid "French"
 msgstr "Tiếng Pháp"
@@ -20645,8 +20645,8 @@ msgid "Warning: Both extended and condensed. That's impossible.\n"
 msgstr ""
 "Cảnh báo : cả hai đã được dãn ra còn cũng được co lại. Không thể làm được.\n"
 
-msgid "Warning: Byte swapped font mark in palm font.\n"
-msgstr "Cảnh báo : gặp dấu phông đã trao đổi byte trong phông Palm.\n"
+msgid "Warning: Byte swapped font mark in palm font."
+msgstr "Cảnh báo : gặp dấu phông đã trao đổi byte trong phông Palm."
 
 #, c-format
 msgid ""
@@ -20658,8 +20658,8 @@ msgstr ""
 "(%s@0x%02x và %s@0x%02x).\n"
 "Ở đây sẽ chỉ dùng một cái.\n"
 
-msgid "Warning: Font Bucket version 4 treated as 0.\n"
-msgstr "Cảnh báo : Font Bucket phiên bản 4 được xử lý như là phiên bản 0.\n"
+msgid "Warning: Font Bucket version 4 treated as 0."
+msgstr "Cảnh báo : Font Bucket phiên bản 4 được xử lý như là phiên bản 0."
 
 msgid "Warning: Font contained no glyphs"
 msgstr "Cảnh báo : phông không chứa hình tượng"

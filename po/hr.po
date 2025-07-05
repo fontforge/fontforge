@@ -7265,8 +7265,8 @@ msgstr "Greška u brisanju %s."
 msgid "Error in WriteUFOLayer."
 msgstr "Greška u pisanju UFO sloja."
 
-msgid "Error parsing color component.\n"
-msgstr "Greška tijekom obrade komponente boje.\n"
+msgid "Error parsing color component."
+msgstr "Greška tijekom obrade komponente boje."
 
 #, c-format
 msgid "Error: %s\n"
@@ -8622,8 +8622,8 @@ msgstr "7 – Serifni slobodnih oblika"
 msgid "Freehand"
 msgstr "Prostoručna"
 
-msgid "Freetype rasterization failed.\n"
-msgstr "Freetype rasterizacija neuspjela.\n"
+msgid "Freetype rasterization failed."
+msgstr "Freetype rasterizacija neuspjela."
 
 msgid "French"
 msgstr "Francuski"
@@ -13355,8 +13355,8 @@ msgstr "Nedostaje cidmap datoteka"
 msgid "Missing close parenthesis in include on line %d of %s"
 msgstr "Nedostajuća zatvarajuća zagrada u 'include' u %d. retku od %s"
 
-msgid "Missing color component.\n"
-msgstr "Nedostaje komponenta boje.\n"
+msgid "Missing color component."
+msgstr "Nedostaje komponenta boje."
 
 msgid "Missing extension"
 msgstr "Nedostaje sufiks"

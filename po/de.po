@@ -5853,8 +5853,8 @@ msgstr "Anfang (%d,%d)"
 msgid "Error Bound"
 msgstr "Fehler in der Begrenzung"
 
-msgid "Error parsing color component.\n"
-msgstr "Fehler beim Parsen der Farbkomponente.\n"
+msgid "Error parsing color component."
+msgstr "Fehler beim Parsen der Farbkomponente."
 
 #, c-format
 msgid "Error: %s\n"
@@ -6787,8 +6787,8 @@ msgstr "7 – Serifen mit freien Formen"
 msgid "Freehand"
 msgstr "Freihand"
 
-msgid "Freetype rasterization failed.\n"
-msgstr "Freetype-Rasterisierung fehlgeschlagen.\n"
+msgid "Freetype rasterization failed."
+msgstr "Freetype-Rasterisierung fehlgeschlagen."
 
 msgid "French"
 msgstr "Französisch"
@@ -10023,8 +10023,8 @@ msgstr "Fehlende cidmap-Datei"
 msgid "Missing close parenthesis in include on line %d of %s"
 msgstr "Fehlende schliessende Klammer beim Einfügen in Zeile %d von %s"
 
-msgid "Missing color component.\n"
-msgstr "Fehlende Farbkomponente.\n"
+msgid "Missing color component."
+msgstr "Fehlende Farbkomponente."
 
 msgid "Missing extension"
 msgstr "Fehlende Erweiterung"

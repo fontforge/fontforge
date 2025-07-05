@@ -7840,8 +7840,8 @@ msgstr "7. Empattements libres"
 msgid "Freehand"
 msgstr "À main levée"
 
-msgid "Freetype rasterization failed.\n"
-msgstr "Échec du rendu Freetype.\n"
+msgid "Freetype rasterization failed."
+msgstr "Échec du rendu Freetype."
 
 msgid "French"
 msgstr "Français"
@@ -23747,8 +23747,8 @@ msgstr ""
 msgid "Warning: Both extended and condensed. That's impossible.\n"
 msgstr "Attention : À la fois condensée et étendue. C'est impossible.\n"
 
-msgid "Warning: Byte swapped font mark in palm font.\n"
-msgstr "Attention : Signe avec permutation d'octet dans la fonte Palm.\n"
+msgid "Warning: Byte swapped font mark in palm font."
+msgstr "Attention : Signe avec permutation d'octet dans la fonte Palm."
 
 #, c-format
 msgid ""
@@ -23760,8 +23760,8 @@ msgstr ""
 "(%s@0x%02x et %s@0x%02x)\n"
 " Un seul sera utilisé ici.\n"
 
-msgid "Warning: Font Bucket version 4 treated as 0.\n"
-msgstr "Attention : Version 4 de Font Bucket traité comme 0.\n"
+msgid "Warning: Font Bucket version 4 treated as 0."
+msgstr "Attention : Version 4 de Font Bucket traité comme 0."
 
 msgid "Warning: Font contained no glyphs"
 msgstr "Attention : la police ne contient aucun glyphe"

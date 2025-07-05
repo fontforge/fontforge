@@ -7834,8 +7834,8 @@ msgstr "Error al eliminar %s."
 msgid "Error in WriteUFOLayer."
 msgstr "Error en WriteUFOLayer."
 
-msgid "Error parsing color component.\n"
-msgstr "Error al analizar el componente de color.\n"
+msgid "Error parsing color component."
+msgstr "Error al analizar el componente de color."
 
 #, c-format
 msgid "Error reading plugin configuration file '%s': %s\n"
@@ -9352,8 +9352,8 @@ msgstr "Serifas de forma libre"
 msgid "Freehand"
 msgstr "A mano alzada"
 
-msgid "Freetype rasterization failed.\n"
-msgstr "Error en la rasterización FreeType.\n"
+msgid "Freetype rasterization failed."
+msgstr "Error en la rasterización FreeType."
 
 msgid "French"
 msgstr "Francés"
@@ -14646,8 +14646,8 @@ msgstr "Falta el archivo cidmap"
 msgid "Missing close parenthesis in include on line %d of %s"
 msgstr "Falta un paréntesis de cierre en la línea %d de %s"
 
-msgid "Missing color component.\n"
-msgstr "Falta el componente de color.\n"
+msgid "Missing color component."
+msgstr "Falta el componente de color."
 
 msgid "Missing extension"
 msgstr "Falta la extensión"
@@ -27717,7 +27717,7 @@ msgid "Warning: Both extended and condensed. That's impossible.\n"
 msgstr ""
 "Advertencia: Extendido y condensado al mismo tiempo. Eso es imposible.\n"
 
-msgid "Warning: Byte swapped font mark in palm font.\n"
+msgid "Warning: Byte swapped font mark in palm font."
 msgstr ""
 "Advertencia: Marca de fuente intercambiada por byte en la fuente de palma."
 
@@ -27750,7 +27750,7 @@ msgstr ""
 "(%s@0x%02x y %s@0x%02x).\n"
 " Solo se usará una aquí."
 
-msgid "Warning: Font Bucket version 4 treated as 0.\n"
+msgid "Warning: Font Bucket version 4 treated as 0."
 msgstr "Advertencia: Versión 4 de Font Bucket tratada como 0."
 
 msgid "Warning: Font contained no glyphs"

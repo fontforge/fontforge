@@ -7885,8 +7885,8 @@ msgstr "Dowolne szeryfowe"
 msgid "Freehand"
 msgstr "Krzywa swobodna"
 
-msgid "Freetype rasterization failed.\n"
-msgstr "Rasteryzacja z użyciem FreeType nie powiodła się.\n"
+msgid "Freetype rasterization failed."
+msgstr "Rasteryzacja z użyciem FreeType nie powiodła się."
 
 msgid "French"
 msgstr "francuski"
@@ -24020,8 +24020,8 @@ msgid "Warning: Both extended and condensed. That's impossible.\n"
 msgstr ""
 "Ostrzeżenie: pismo jest jednocześnie szerokie i wąskie, co jest niemożliwe.\n"
 
-msgid "Warning: Byte swapped font mark in palm font.\n"
-msgstr "Ostrzeżenie: font zawiera informacje o odwróconym porządku bajtów.\n"
+msgid "Warning: Byte swapped font mark in palm font."
+msgstr "Ostrzeżenie: font zawiera informacje o odwróconym porządku bajtów."
 
 #, c-format
 msgid ""
@@ -24032,8 +24032,8 @@ msgstr ""
 "Ostrzeżenie: Numer kodowy %d (0x%x) jest przypisany do co najmniej dwóch "
 "glifów(%s@0x%02x i %s@0x%02x). Zostanie użyty tylko jeden.\n"
 
-msgid "Warning: Font Bucket version 4 treated as 0.\n"
-msgstr "Ostrzerzenie: wersję 4 Font Bucket potraktowano jako wersję 0.\n"
+msgid "Warning: Font Bucket version 4 treated as 0."
+msgstr "Ostrzerzenie: wersję 4 Font Bucket potraktowano jako wersję 0."
 
 msgid "Warning: Font contained no glyphs"
 msgstr "Uwaga: font nie zawiera żadnych glifów"
