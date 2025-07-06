@@ -2229,7 +2229,7 @@ msgid "Bad kern pair: glyphs %d & %d must be less than %d\n"
 msgstr "不當的字距微調對：字圖 %d & %d 必須少於 %d\n"
 
 #, c-format
-msgid "Bad kern pair: glyphs %d & %d should have been < %d\n"
+msgid "Bad kern pair: glyphs %d & %d should have been < %d"
 msgstr "不當的字距微調配對：字圖 %d & %d 應該已經 < %d\n"
 
 msgid "Bad language tag"
@@ -2313,7 +2313,7 @@ msgid "Bad opacity on line %d, must be between 0.0 and 1.0."
 msgstr "不當的濁度於第 %d 條線，必須在 0.0 和 1.0 之間。"
 
 #, c-format
-msgid "Bad pair position: glyphs %d & %d should have been < %d\n"
+msgid "Bad pair position: glyphs %d & %d should have been < %d"
 msgstr "不當的配對位置：字圖 %d & %d 應該已經 < %d\n"
 
 #, c-format

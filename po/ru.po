@@ -3083,7 +3083,7 @@ msgid "Bad kern pair: glyphs %d & %d mustn't be negative\n"
 msgstr "Неверная кернинговая пара: глифы %d и %d не должны быть отрицательными\n"
 
 #, c-format
-msgid "Bad kern pair: glyphs %d & %d should have been < %d\n"
+msgid "Bad kern pair: glyphs %d & %d should have been < %d"
 msgstr "Неверная кернинговая пара: глифы %d & %d должны быть < %d\n"
 
 #, c-format
@@ -3178,7 +3178,7 @@ msgid "Bad or incomplete font specification '%s'"
 msgstr "Неверная или неполная спецификация шрифта «%s»"
 
 #, c-format
-msgid "Bad pair position: glyphs %d & %d should have been < %d\n"
+msgid "Bad pair position: glyphs %d & %d should have been < %d"
 msgstr "Неверное расположение пары: глифы %d и %d должны быть < %d\n"
 
 #, c-format

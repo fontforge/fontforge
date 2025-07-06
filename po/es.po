@@ -3203,7 +3203,7 @@ msgid "Bad kern pair: glyphs %d & %d mustn't be negative\n"
 msgstr "Par de interletraje incorrecto: Los glifos %d y %d no deben ser negativos\n"
 
 #, c-format
-msgid "Bad kern pair: glyphs %d & %d should have been < %d\n"
+msgid "Bad kern pair: glyphs %d & %d should have been < %d"
 msgstr "Par de interletraje incorrecto: los glifos %d y %d deberían haber sido < %d\n"
 
 #, c-format
@@ -3298,7 +3298,7 @@ msgid "Bad or incomplete font specification '%s'"
 msgstr "Especificación de fuente incorrecta o incompleta '%s'"
 
 #, c-format
-msgid "Bad pair position: glyphs %d & %d should have been < %d\n"
+msgid "Bad pair position: glyphs %d & %d should have been < %d"
 msgstr "Posición de par incorrecta: los glifos %d y %d deberían haber sido < %d\n"
 
 #, c-format

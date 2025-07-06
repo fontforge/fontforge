@@ -3071,7 +3071,7 @@ msgid "Bad kern pair: glyphs %d & %d mustn't be negative\n"
 msgstr "잘못된 케른 쌍: 글리프 %d 및 %d 은 (는) 음수가 아니어야합니다.\n"
 
 #, c-format
-msgid "Bad kern pair: glyphs %d & %d should have been < %d\n"
+msgid "Bad kern pair: glyphs %d & %d should have been < %d"
 msgstr "커닝 짝이 부적절합니다: 글리프 %d 과  %d 는 %d 미만이어야 합니다\n"
 
 #, c-format
@@ -3162,7 +3162,7 @@ msgid "Bad openTypeOS2type key: all bits are set. It will be ignored"
 msgstr "잘못된 openTypeOS2type 키: 모든 비트가 셋입니다. 무시됩니다."
 
 #, c-format
-msgid "Bad pair position: glyphs %d & %d should have been < %d\n"
+msgid "Bad pair position: glyphs %d & %d should have been < %d"
 msgstr " 짝위치지정이 부적절합니다: 글리프 %d 과  %d 는 %d 미만이어야 합니다\n"
 
 #, c-format

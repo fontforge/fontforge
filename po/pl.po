@@ -2849,7 +2849,7 @@ msgid "Bad kern pair: glyphs %d & %d mustn't be negative\n"
 msgstr "Błędna para kerningu: numery glifów %d i %d nie mogą być ujemne\n"
 
 #, c-format
-msgid "Bad kern pair: glyphs %d & %d should have been < %d\n"
+msgid "Bad kern pair: glyphs %d & %d should have been < %d"
 msgstr "Błędna para kerningowa: numery glifów %d i %d powinny być mniejsze niż %d\n"
 
 #, c-format
@@ -2942,7 +2942,7 @@ msgid "Bad openTypeOS2type key: all bits are set. It will be ignored"
 msgstr "Błędny klucz openTypeOS2type: wszystkie bity ustawione. Zostanie zignorowany"
 
 #, c-format
-msgid "Bad pair position: glyphs %d & %d should have been < %d\n"
+msgid "Bad pair position: glyphs %d & %d should have been < %d"
 msgstr "Błędne pozycjonowanie pary: numery glifów %d i %d powinny być mniejsze niż %d\n"
 
 #, c-format

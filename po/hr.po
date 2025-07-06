@@ -3048,7 +3048,7 @@ msgid "Bad kern pair: glyphs %d & %d mustn't be negative\n"
 msgstr "Neispravno podrezani par: grafem %d i %d ne smije biti negativno\n"
 
 #, c-format
-msgid "Bad kern pair: glyphs %d & %d should have been < %d\n"
+msgid "Bad kern pair: glyphs %d & %d should have been < %d"
 msgstr "Neispravno podrezani par: grafem %d i %d trebalo je biti manje od %d\n"
 
 #, c-format
@@ -3139,7 +3139,7 @@ msgid "Bad openTypeOS2type key: all bits are set. It will be ignored"
 msgstr "Neispravni „openTypeOS2type” ključ: postavljeni su svi bitovi. Zanemarit će se"
 
 #, c-format
-msgid "Bad pair position: glyphs %d & %d should have been < %d\n"
+msgid "Bad pair position: glyphs %d & %d should have been < %d"
 msgstr "Neispravno pozicioniranje para: grafemi %d i %d bi trebali biti manji od %d\n"
 
 #, c-format

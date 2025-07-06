@@ -3059,7 +3059,7 @@ msgid "Bad kern pair: glyphs %d & %d mustn't be negative\n"
 msgstr "错误的字偶对：字形 %d 和 %d 不能为负\n"
 
 #, c-format
-msgid "Bad kern pair: glyphs %d & %d should have been < %d\n"
+msgid "Bad kern pair: glyphs %d & %d should have been < %d"
 msgstr "错误的字偶对：字形 %d 和 %d 应该是 < %d\n"
 
 #, c-format
@@ -3154,7 +3154,7 @@ msgid "Bad or incomplete font specification '%s'"
 msgstr "字体规范“%s”不正确或不完整"
 
 #, c-format
-msgid "Bad pair position: glyphs %d & %d should have been < %d\n"
+msgid "Bad pair position: glyphs %d & %d should have been < %d"
 msgstr "错误对位置：字形 %d & %d 应该小于 %d"
 
 #, c-format

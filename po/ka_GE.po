@@ -870,7 +870,7 @@ msgid "Bad image file: %.100s"
 msgstr "გაუმართავი გამოსახულება: %.100s"
 
 #, c-format
-msgid "Bad kern pair: glyphs %d & %d should have been < %d\n"
+msgid "Bad kern pair: glyphs %d & %d should have been < %d"
 msgstr "შემოკვეცის უმართებულო წყვილი: ასონიშნები %d და %d უნდა იყოს < %d\n"
 
 msgid "Bad language tag"

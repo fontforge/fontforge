@@ -2394,7 +2394,7 @@ msgid "Bad kern pair: glyphs %d & %d must be less than %d\n"
 msgstr "Cặp định chỗ sai : hình tượng %d và %d phải < %d\n"
 
 #, c-format
-msgid "Bad kern pair: glyphs %d & %d should have been < %d\n"
+msgid "Bad kern pair: glyphs %d & %d should have been < %d"
 msgstr "Cặp định chỗ sai : hình tượng %d và %d nên < %d\n"
 
 msgid "Bad language tag"
@@ -2499,7 +2499,7 @@ msgid "Bad opacity on line %d, must be between 0.0 and 1.0."
 msgstr "Sai đặt độ đục trên dòng %d, phải nằm giữa 0.0 và 1.0."
 
 #, c-format
-msgid "Bad pair position: glyphs %d & %d should have been < %d\n"
+msgid "Bad pair position: glyphs %d & %d should have been < %d"
 msgstr "Vị trí cặp sai : hình tượng %d và %d nên < %d\n"
 
 #, c-format

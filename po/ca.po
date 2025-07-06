@@ -1537,7 +1537,7 @@ msgid "Bad image file: %.100s"
 msgstr "El fitxer d'imatge no és correcte: %.100s"
 
 #, c-format
-msgid "Bad kern pair: glyphs %d & %d should have been < %d\n"
+msgid "Bad kern pair: glyphs %d & %d should have been < %d"
 msgstr "L'interlletatge és erroni: els glifs %d i %d haurien de ser < %d\n"
 
 msgid "Bad language tag"

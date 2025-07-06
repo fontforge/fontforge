@@ -1770,7 +1770,7 @@ msgid "Bad kern pair: glyphs %d & %d must be less than %d\n"
 msgstr "カーニングペアグリフ %d と %d が不正です. これらは %d未満でなければなりません\n"
 
 #, c-format
-msgid "Bad kern pair: glyphs %d & %d should have been < %d\n"
+msgid "Bad kern pair: glyphs %d & %d should have been < %d"
 msgstr "カーニングペアが不正です: グリフ %d と %d は %d 未満でなければなりません\n"
 
 msgid "Bad ligature anchor count.\n"
@@ -1822,7 +1822,7 @@ msgid "Bad number, infinity or nan: %s\n"
 msgstr "%sは不正な数値(無限大または非数)です\n"
 
 #, c-format
-msgid "Bad pair position: glyphs %d & %d should have been < %d\n"
+msgid "Bad pair position: glyphs %d & %d should have been < %d"
 msgstr "ペア位置指定が不正です: グリフ %d と %d は %d 未満でなければなりません\n"
 
 msgid "Bad replace pattern"

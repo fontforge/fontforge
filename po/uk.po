@@ -2848,7 +2848,7 @@ msgid "Bad kern pair: glyphs %d & %d mustn't be negative\n"
 msgstr "Помилкова пара кернінґу: гліфи %d і %d не повинні бути від’ємними\n"
 
 #, c-format
-msgid "Bad kern pair: glyphs %d & %d should have been < %d\n"
+msgid "Bad kern pair: glyphs %d & %d should have been < %d"
 msgstr "Помилкова пара кернінґу: гліфи %d і %d мають бути < %d\n"
 
 #, c-format
@@ -2939,7 +2939,7 @@ msgid "Bad openTypeOS2type key: all bits are set. It will be ignored"
 msgstr "Помилковий ключ openTypeOS2type: встановлено всі біти. Ключ буде проігноровано."
 
 #, c-format
-msgid "Bad pair position: glyphs %d & %d should have been < %d\n"
+msgid "Bad pair position: glyphs %d & %d should have been < %d"
 msgstr "Помилкове розташування пари: гліфи %d і %d мають бути < %d\n"
 
 #, c-format
