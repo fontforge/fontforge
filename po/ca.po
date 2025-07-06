@@ -48,11 +48,11 @@ msgstr "  S'està ignorant «%c%c%c%c» %s\n"
 msgid "  Stroke _Width:"
 msgstr "  _Gruix del traç:"
 
-msgid " Bad mark attachment table, ignored\n"
-msgstr " La taula d'adjunts de marques no és correcta i no es té en compte\n"
+msgid " Bad mark attachment table, ignored"
+msgstr " La taula d'adjunts de marques no és correcta i no es té en compte"
 
-msgid " Bad simple positioning table, ignored\n"
-msgstr " La taula de posicionament simple no és correcta i no es té en compte\n"
+msgid " Bad simple positioning table, ignored"
+msgstr " La taula de posicionament simple no és correcta i no es té en compte"
 
 #, c-format
 msgid " Curvature: %g"
@@ -1353,8 +1353,8 @@ msgstr "Anteriors"
 msgid "Backup SFD"
 msgstr "Còpia de seguretat d'un SFD"
 
-msgid "Bad Apple Kern Class\n"
-msgstr "La classe d'interlletratge d'Apple és incorrecta\n"
+msgid "Bad Apple Kern Class"
+msgstr "La classe d'interlletratge d'Apple és incorrecta"
 
 msgid "Bad Axis"
 msgstr "L'eix és incorrecte"
@@ -1468,8 +1468,8 @@ msgstr "La versió és incorrecta"
 msgid "Bad Weight"
 msgstr "El gruix és incorrecte"
 
-msgid "Bad base table.\n"
-msgstr "La taula base no és correcta.\n"
+msgid "Bad base table."
+msgstr "La taula base no és correcta."
 
 #, c-format
 msgid "Bad bounding box for %s.\n"
@@ -1538,16 +1538,16 @@ msgstr "El fitxer d'imatge no és correcte: %.100s"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d should have been < %d"
-msgstr "L'interlletatge és erroni: els glifs %d i %d haurien de ser < %d\n"
+msgstr "L'interlletatge és erroni: els glifs %d i %d haurien de ser < %d"
 
 msgid "Bad language tag"
 msgstr "L'etiqueta de l'idioma és incorrecta"
 
-msgid "Bad ligature anchor count.\n"
-msgstr "El recompte d'àncores de lligadures no és correcte.\n"
+msgid "Bad ligature anchor count."
+msgstr "El recompte d'àncores de lligadures no és correcte."
 
-msgid "Bad ligature base table.\n"
-msgstr "La taula base de lligadures no és correcta.\n"
+msgid "Bad ligature base table."
+msgstr "La taula base de lligadures no és correcta."
 
 msgid "Bad magic number"
 msgstr "Nombre màgic incorrecte"

@@ -52,15 +52,15 @@ msgid " Adding a size will create it."
 msgstr " ზომის დამატებით შეიქმნება."
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad kerning class table, ignored\n"
-msgstr " შემოკვეცის კლასის უმართებულო ცხრილი, უგულებელყოფილია\n"
+msgid " Bad kerning class table, ignored"
+msgstr " შემოკვეცის კლასის უმართებულო ცხრილი, უგულებელყოფილია"
 
 msgid " Bad ligature table, ignored\n"
 msgstr " გადაბმების გაუმართავი ცხრილი, უგულებელყოფილია\n"
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad pairwise kerning table, ignored\n"
-msgstr " შემოკვეცილი წყვილების უმართებულო ცხრილი, უგულებელყოფილია\n"
+msgid " Bad pairwise kerning table, ignored"
+msgstr " შემოკვეცილი წყვილების უმართებულო ცხრილი, უგულებელყოფილია"
 
 #, c-format
 msgid " Curvature: %g"
@@ -789,8 +789,8 @@ msgstr "უკანა"
 msgid "Back Classes"
 msgstr "წინა კლასები"
 
-msgid "Bad Apple Kern Class\n"
-msgstr "Apple-ის უმართებულო კლასი შემოკვეცისთვის\n"
+msgid "Bad Apple Kern Class"
+msgstr "Apple-ის უმართებულო კლასი შემოკვეცისთვის"
 
 msgid "Bad Class"
 msgstr "გაუმართავი კლასი"
@@ -871,7 +871,7 @@ msgstr "გაუმართავი გამოსახულება: %.1
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d should have been < %d"
-msgstr "შემოკვეცის უმართებულო წყვილი: ასონიშნები %d და %d უნდა იყოს < %d\n"
+msgstr "შემოკვეცის უმართებულო წყვილი: ასონიშნები %d და %d უნდა იყოს < %d"
 
 msgid "Bad language tag"
 msgstr "არამართებული ენის ჭდე"
@@ -5216,16 +5216,16 @@ msgid "Skip"
 msgstr "გამოტოვება"
 
 #, c-format
-msgid "Skipping duplicate group %s.\n"
-msgstr "გამეორებული ჯგუფი %s უგულებელყოფილია.\n"
+msgid "Skipping duplicate group %s."
+msgstr "გამეორებული ჯგუფი %s უგულებელყოფილია."
 
 #, c-format
-msgid "Skipping group %s with same name as a glyph.\n"
-msgstr "ჯგუფი %s უგულებელყოფილია იმავე დასახელების ასონიშნიანად.\n"
+msgid "Skipping group %s with same name as a glyph."
+msgstr "ჯგუფი %s უგულებელყოფილია იმავე დასახელების ასონიშნიანად."
 
 #, c-format
-msgid "Skipping non-existent glyph %s in group %s.\n"
-msgstr "უგულებელყოფილია არარსებული ასონიშანი %s ჯგუფში %s.\n"
+msgid "Skipping non-existent glyph %s in group %s."
+msgstr "უგულებელყოფილია არარსებული ასონიშანი %s ჯგუფში %s."
 
 msgid "Small Capitals"
 msgstr "მცირე მთავრული"
@@ -6248,8 +6248,8 @@ msgstr ""
 "უნდა მიეთითოს, თუ რომელი გამოჩნდეს."
 
 #, c-format
-msgid "When loading tt instrs from sfd: %s\n"
-msgstr "როცა იტვირთება tt-მითითებები sfd-იდან: %s\n"
+msgid "When loading tt instrs from sfd: %s"
+msgstr "როცა იტვირთება tt-მითითებები sfd-იდან: %s"
 
 msgid "Whether the menu is presented with a 3D appearance"
 msgstr "მენიუს წარმოდგენა სივრცული იერსახით"

@@ -130,28 +130,28 @@ msgid " Bad contextual table, ignored\n"
 msgstr " Table contextuelle incorrecte ignorée\n"
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad cursive alignment table, ignored\n"
-msgstr "Table d'alignement de cursive incorrecte ignorée\n"
+msgid " Bad cursive alignment table, ignored"
+msgstr "Table d'alignement de cursive incorrecte ignorée"
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad kerning class table, ignored\n"
-msgstr "T able de crénage invalide ignorée.\n"
+msgid " Bad kerning class table, ignored"
+msgstr "T able de crénage invalide ignorée."
 
 msgid " Bad ligature table, ignored\n"
 msgstr "Table de ligature incorrecte, ignorée\n"
 
-msgid " Bad mark attachment table, ignored\n"
-msgstr "Table de signes incorrecte ignorée\n"
+msgid " Bad mark attachment table, ignored"
+msgstr "Table de signes incorrecte ignorée"
 
 msgid " Bad multiple substitution table, ignored\n"
 msgstr "Table de substitution multiple incorrected ignorée\n"
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad pairwise kerning table, ignored\n"
-msgstr "Table de crénage par paire incorrecte ignorée\n"
+msgid " Bad pairwise kerning table, ignored"
+msgstr "Table de crénage par paire incorrecte ignorée"
 
-msgid " Bad simple positioning table, ignored\n"
-msgstr "Table de positionnement simple incorrecte ignorée\n"
+msgid " Bad simple positioning table, ignored"
+msgstr "Table de positionnement simple incorrecte ignorée"
 
 msgid " Bad simple substitution table, ignored\n"
 msgstr " Table de substitution unique incorrecte ignorée\n"
@@ -2357,8 +2357,8 @@ msgstr "Sauvegarder SFD"
 msgid "Bad Anchor Point: %s"
 msgstr "Ancre invalide : %s"
 
-msgid "Bad Apple Kern Class\n"
-msgstr "Classe de crénage Apple incorrecte\n"
+msgid "Bad Apple Kern Class"
+msgstr "Classe de crénage Apple incorrecte"
 
 msgid "Bad Ascent/Descent"
 msgstr "Ascent/Descent incorrect"
@@ -2524,12 +2524,12 @@ msgstr "Intervalle incorrecte, le début (%1$04X) est plus grand que la fin (%2$
 msgid "Bad Reference"
 msgstr "Référence incorrecte"
 
-msgid "Bad SFD file, missing subtable in kernclass defn.\n"
-msgstr "Fichier SFD incorrect, sous-table manquante dans la définition de kernclass.\n"
+msgid "Bad SFD file, missing subtable in kernclass defn."
+msgstr "Fichier SFD incorrect, sous-table manquante dans la définition de kernclass."
 
 #, c-format
-msgid "Bad SFD file, two kerning classes assigned to the same subtable: %s\n"
-msgstr "Fichier SFD incorrect, deux classes d'ancre assignées à la même sous-table: %s\n"
+msgid "Bad SFD file, two kerning classes assigned to the same subtable: %s"
+msgstr "Fichier SFD incorrect, deux classes d'ancre assignées à la même sous-table: %s"
 
 msgid "Bad Script"
 msgstr "Systéme d'écriture incorrect"
@@ -2592,8 +2592,8 @@ msgstr "Entête WOFF incorrecte, un champ qui doit être 0 ne l'est pas."
 msgid "Bad Weight"
 msgstr "Graisse incorrecte"
 
-msgid "Bad base table.\n"
-msgstr "Table de base incorrecte.\n"
+msgid "Bad base table."
+msgstr "Table de base incorrecte."
 
 #, c-format
 msgid "Bad bounding box for %s.\n"
@@ -2639,8 +2639,8 @@ msgstr "Compte incorrect dans la sous-table d'enchaînement contextuel.\n"
 msgid "Bad count in contextual chaining sub-table.\n"
 msgstr "Compte incorrect dans la sous-table d'enchaînement contextuel.\n"
 
-msgid "Bad count.\n"
-msgstr "Compte incorrect.\n"
+msgid "Bad count."
+msgstr "Compte incorrect."
 
 #, c-format
 msgid "Bad coverage table. Glyph %d out of range [0,%d)\n"
@@ -2714,8 +2714,8 @@ msgid "Bad font: Encoding data out of range.\n"
 msgstr "Fonte incorrecte : valeur de codage hors bornes\n"
 
 #, c-format
-msgid "Bad format for coverage table %d\n"
-msgstr "Format de la table de couverture %d incorrect\n"
+msgid "Bad format for coverage table %d"
+msgstr "Format de la table de couverture %d incorrect"
 
 #, c-format
 msgid "Bad format of subtable %d (of %d) in bloc/EBLC of strike with pixelsize=%d. First=%d, last=%d.\n"
@@ -2791,7 +2791,7 @@ msgstr "Paire de crénage incorrecte : les glyphes %d & %d ne doivent pas être 
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d should have been < %d"
-msgstr "Paire de crénage incorrecte: les glyphes %d & %d devraient avoir été  < %d\n"
+msgstr "Paire de crénage incorrecte: les glyphes %d & %d devraient avoir été  < %d"
 
 #, c-format
 msgid "Bad kern pair: glyphs at %d & %d are null\n"
@@ -2800,11 +2800,11 @@ msgstr "Paire de crénage incorrecte : les glyphes à %d & %d sont nuls\n"
 msgid "Bad language tag"
 msgstr "Balise de langue incorrecte"
 
-msgid "Bad ligature anchor count.\n"
-msgstr "Compte d'ancres sur ligature incorrect.\n"
+msgid "Bad ligature anchor count."
+msgstr "Compte d'ancres sur ligature incorrect."
 
-msgid "Bad ligature base table.\n"
-msgstr "Table de ligature de base incorrecte.\n"
+msgid "Bad ligature base table."
+msgstr "Table de ligature de base incorrecte."
 
 #, c-format
 msgid "Bad ligature component glyph. GID %d not less than %d (in ligature %d)\n"
@@ -2836,8 +2836,8 @@ msgstr "Type de lookup incorrect"
 msgid "Bad magic number"
 msgstr "Constante (valeur magique) incorrecte"
 
-msgid "Bad mark table.\n"
-msgstr "Table de signes incorrecte.\n"
+msgid "Bad mark table."
+msgstr "Table de signes incorrecte."
 
 msgid "Bad mort ligature table. Not long enough\n"
 msgstr "Table de ligature 'mort' incorrecte.  Elle n'est pas assez longue\n"
@@ -2882,7 +2882,7 @@ msgstr "Clé openTypeOS2type incorrecte: tous les octets sont utilisés.  Elle s
 
 #, c-format
 msgid "Bad pair position: glyphs %d & %d should have been < %d"
-msgstr "Paire de position incorrecte: les glyphes %d & %d devraient avoir été  < %d\n"
+msgstr "Paire de position incorrecte: les glyphes %d & %d devraient avoir été  < %d"
 
 #, c-format
 msgid "Bad parts list for glyph %s in %s"
@@ -4029,21 +4029,19 @@ msgstr "Nom de classe"
 msgid "Class already used"
 msgstr "Classe déjà utilisée"
 
-msgid "Class definition sub-table extends beyond end of table\n"
-msgstr "La sous-table de définition de classe s'étend au-delà de la fin de table\n"
+msgid "Class definition sub-table extends beyond end of table"
+msgstr "La sous-table de définition de classe s'étend au-delà de la fin de table"
 
 #, c-format
-msgid "Class index out of range %d (must be <%d)\n"
-msgstr "Index de classe hors limites %d (doit être <%d)\n"
+msgid "Class index out of range %d (must be <%d)"
+msgstr "Index de classe hors limites %d (doit être <%d)"
 
-msgid "Class out of bounds in GPOS mark sub-table\n"
-msgstr "Classe hors limites dans la sous-table de signes GPOS\n"
+msgid "Class out of bounds in GPOS mark sub-table"
+msgstr "Classe hors limites dans la sous-table de signes GPOS"
 
 #, c-format
-msgid "Class out of bounds in GPOS mark sub-table for mark %.30s\n"
-msgstr ""
-"Classe hors limites dans la sous-table de signes GPOS pour la marque %.30s\n"
-"\n"
+msgid "Class out of bounds in GPOS mark sub-table for mark %.30s"
+msgstr "Classe hors limites dans la sous-table de signes GPOS pour la marque %.30s"
 
 msgid "Class10"
 msgstr "Classe10"
@@ -5629,8 +5627,8 @@ msgstr "données dupliquées"
 msgid "Duplicate definition of subroutine %d\n"
 msgstr "Sous-routine %d définie en double\n"
 
-msgid "Duplicate lib data.\n"
-msgstr "Données de librairie en double\n"
+msgid "Duplicate lib data."
+msgstr "Données de librairie en double"
 
 msgid "Duplicate name"
 msgstr "Nom déjà existant"
@@ -5919,8 +5917,8 @@ msgstr ""
 msgid "End of file found in JSTF table.\n"
 msgstr "Fin de fichier atteinte dans la table JSTF.\n"
 
-msgid "End of file found in coverage table.\n"
-msgstr "Fin de fichier atteinte dans la table de couverture.\n"
+msgid "End of file found in coverage table."
+msgstr "Fin de fichier atteinte dans la table de couverture."
 
 #, c-format
 msgid "End of file found in string on line %d of %s"
@@ -7170,8 +7168,8 @@ msgstr "Glyphe _antérieur"
 msgid "Found %1$.4g, expected %2$.4g"
 msgstr "Trouvé %1$.4g, attendu %2$.4g"
 
-msgid "Found an new style kerning pair inside a version 1 (or lower) sfd file.\n"
-msgstr "Paire de crénage de nouveau style trouvé à l'intérieur du fichier sfd de version 1 (ou antérieure).\n"
+msgid "Found an new style kerning pair inside a version 1 (or lower) sfd file."
+msgstr "Paire de crénage de nouveau style trouvé à l'intérieur du fichier sfd de version 1 (ou antérieure)."
 
 msgid "FoundryName"
 msgstr "Fondeur"
@@ -7317,8 +7315,8 @@ msgstr "127"
 msgid "GID out of range (%d) in format 14 'cmap' subtable\n"
 msgstr "GID hors intervalle (%d) dans la sous-table 'cmap' de format 14\n"
 
-msgid "GID out of range.\n"
-msgstr "Valeur GID hors limites.\n"
+msgid "GID out of range."
+msgstr "Valeur GID hors limites."
 
 msgid "Gaelic (Irish)"
 msgstr "Gaëlique d'Irlande"
@@ -9199,8 +9197,8 @@ msgstr "Position cursive invalide à la ligne %d de %s"
 msgid "Invalid font count in TTC %s."
 msgstr "Compte de fonte invalide dans le TTC %s."
 
-msgid "Invalid glif name.\n"
-msgstr "Nom glif invalid.\n"
+msgid "Invalid glif name."
+msgstr "Nom glif invalid."
 
 #, c-format
 msgid "Invalid glyph for %s when fixing up references."
@@ -9512,8 +9510,8 @@ msgstr "Crénage:"
 msgid "KernClass|_New Lookup..."
 msgstr "_Ajouter..."
 
-msgid "KernPair with no subtable name.\n"
-msgstr "KernPair sans nom de sous-table.\n"
+msgid "KernPair with no subtable name."
+msgstr "KernPair sans nom de sous-table."
 
 msgid "Kerning"
 msgstr "Crénage"
@@ -12320,8 +12318,8 @@ msgid "None/Open Loops"
 msgstr "Aucun/Boucles ouvertes"
 
 #, c-format
-msgid "Nonsensical class assigned to a glyph-- class=%d is too big. Glyph=%d\n"
-msgstr "Classe absurde assignée au glyphe-- class=%d est trop grand. Glyph=%d\n"
+msgid "Nonsensical class assigned to a glyph-- class=%d is too big. Glyph=%d"
+msgstr "Classe absurde assignée au glyphe-- class=%d est trop grand. Glyph=%d"
 
 msgid "Normal Background:"
 msgstr "Arrière-plan normal"
@@ -16558,16 +16556,16 @@ msgid "Skip"
 msgstr "Sauter"
 
 #, c-format
-msgid "Skipping duplicate group %s.\n"
-msgstr "Groupe %s en double ignoré.\n"
+msgid "Skipping duplicate group %s."
+msgstr "Groupe %s en double ignoré."
 
 #, c-format
-msgid "Skipping group %s with same name as a glyph.\n"
-msgstr "Groupe %s avec même nom que le glyphe ignoré.\n"
+msgid "Skipping group %s with same name as a glyph."
+msgstr "Groupe %s avec même nom que le glyphe ignoré."
 
 #, c-format
-msgid "Skipping non-existent glyph %s in group %s.\n"
-msgstr "Glyphe %s non-existant dans le groupe %s ignoré.\n"
+msgid "Skipping non-existent glyph %s in group %s."
+msgstr "Glyphe %s non-existant dans le groupe %s ignoré."
 
 msgid "Skolt Sami"
 msgstr "Sami skolt"
@@ -18687,8 +18685,8 @@ msgstr "L'espacement minimale de la colle au-dessus d'un grand opérateur"
 msgid "The minimum glue space below a large displayed operator"
 msgstr "L'espacement minimale de la colle au-dessous d'un grand opérateur"
 
-msgid "The move point must be at the beginning of the contour.\n"
-msgstr "Le point de déplacement doit être au début du contour.\n"
+msgid "The move point must be at the beginning of the contour."
+msgstr "Le point de déplacement doit être au début du contour."
 
 #, c-format
 msgid "The name FontForge would like to assign to this glyph, %.30s, is already used by a different glyph."
@@ -20011,8 +20009,8 @@ msgstr ""
 "En général, vous devriez laisser ce champ à 0 et cocher  \"[*] Utiliser commes Offset\".\n"
 "NOTE: hhead Descent est NEGATIF pour tout ce qui est sous la ligne de base"
 
-msgid "This spline set has no points.\n"
-msgstr "Cet ensemble de courbes n'a pas de points.\n"
+msgid "This spline set has no points."
+msgstr "Cet ensemble de courbes n'a pas de points."
 
 msgid "This version of FontForge expects freetype 2.3.7 or more."
 msgstr "Cette version de FontForge s'attend à freetype 2.3.7 ou plus."
@@ -20865,8 +20863,8 @@ msgid "Unknown character after backslash in literal string.\n"
 msgstr "Caractère inconnu après \"\\\" dans une chaîne littérale.\n"
 
 #, c-format
-msgid "Unknown class table format: %d\n"
-msgstr "Format de table de classe inconnu : %d\n"
+msgid "Unknown class table format: %d"
+msgstr "Format de table de classe inconnu : %d"
 
 #, c-format
 msgid "Unknown field %s on line %d of %s"
@@ -21661,8 +21659,8 @@ msgstr "Modification Cvt observée"
 msgid "Watched Store Change"
 msgstr "Modification de mémoire observée"
 
-msgid "We cannot have lead-in points for an open curve.\n"
-msgstr "On ne peut avoir de points d'entrée pour une courbe ouverte.\n"
+msgid "We cannot have lead-in points for an open curve."
+msgstr "On ne peut avoir de points d'entrée pour une courbe ouverte."
 
 msgid "We don't understand this font\n"
 msgstr "Fonte incompréhensible\n"
@@ -21902,8 +21900,8 @@ msgstr ""
 "quel codage charger."
 
 #, c-format
-msgid "When loading tt instrs from sfd: %s\n"
-msgstr "En chargeant les instructions tt de sfd : %s\n"
+msgid "When loading tt instrs from sfd: %s"
+msgstr "En chargeant les instructions tt de sfd : %s"
 
 msgid "When merging two CID keyed fonts, they must have the same Registry and Ordering, and the font being merged into (the mergee) must have a supplement which is at least as recent as the other's. Furthermore the mergee must have at least as many subfonts as the merger."
 msgstr "Lors de la fusion de deux fontes CID, celles-ci doivent avoir les mêmes 'Registry' et 'Ordering', et la fonte d'arrivée doit avoir un 'Supplement' au moins aussi récent que les autres. De plus, cette dernière doit avoir au moins autant de sous-fontes que les autres."
@@ -23623,8 +23621,8 @@ msgstr "Impossible d'écrire le fichier de codage\n"
 msgid "coverage"
 msgstr "Couverture"
 
-msgid "coverage table extends beyond end of table\n"
-msgstr "La table de couverture s'étend au-delà de la fin de table\n"
+msgid "coverage table extends beyond end of table"
+msgstr "La table de couverture s'étend au-delà de la fin de table"
 
 msgid "cursive entry"
 msgstr "entrée cursive"

@@ -130,28 +130,28 @@ msgid " Bad contextual table, ignored\n"
 msgstr " Ungültige kontextuelle Tabelle, ignoriert\n"
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad cursive alignment table, ignored\n"
-msgstr " Ungültige Tabelle der Kursiv-Ausrichtung, ignoriert\n"
+msgid " Bad cursive alignment table, ignored"
+msgstr " Ungültige Tabelle der Kursiv-Ausrichtung, ignoriert"
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad kerning class table, ignored\n"
-msgstr " Ungültige Tabelle der Unterschneidungs-Klassen, ignoriert\n"
+msgid " Bad kerning class table, ignored"
+msgstr " Ungültige Tabelle der Unterschneidungs-Klassen, ignoriert"
 
 msgid " Bad ligature table, ignored\n"
 msgstr " Ungültige Tabelle der Ligaturen, ignoriert\n"
 
-msgid " Bad mark attachment table, ignored\n"
-msgstr " Ungültige Tabelle der Akzent-Verbindung, ignoriert\n"
+msgid " Bad mark attachment table, ignored"
+msgstr " Ungültige Tabelle der Akzent-Verbindung, ignoriert"
 
 msgid " Bad multiple substitution table, ignored\n"
 msgstr " Ungültige Tabelle der mehrfachen Substitution, ignoriert\n"
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad pairwise kerning table, ignored\n"
-msgstr " Ungültige Tabelle der paarweisen Unterschneidung, ignoriert\n"
+msgid " Bad pairwise kerning table, ignored"
+msgstr " Ungültige Tabelle der paarweisen Unterschneidung, ignoriert"
 
-msgid " Bad simple positioning table, ignored\n"
-msgstr " Ungültige Tabelle der einfachen Positionierung, ignoriert\n"
+msgid " Bad simple positioning table, ignored"
+msgstr " Ungültige Tabelle der einfachen Positionierung, ignoriert"
 
 msgid " Bad simple substitution table, ignored\n"
 msgstr " Ungültige Tabelle der einfachen Substitution, ignoriert\n"
@@ -2175,8 +2175,8 @@ msgstr "SFD Sicherheitskopie"
 msgid "Bad Anchor Point: %s"
 msgstr "Ungültiger Ankerpunkt: %s"
 
-msgid "Bad Apple Kern Class\n"
-msgstr "Ungültige Apple Unterschneidungs-Klasse\n"
+msgid "Bad Apple Kern Class"
+msgstr "Ungültige Apple Unterschneidungs-Klasse"
 
 msgid "Bad Ascent/Descent"
 msgstr "Ungültige Ober-/Unterlänge"
@@ -2377,8 +2377,8 @@ msgstr "Ungültige Version"
 msgid "Bad Weight"
 msgstr "Ungültige Strichstärke"
 
-msgid "Bad base table.\n"
-msgstr "Ungültige Tabelle der Grundzeichen.\n"
+msgid "Bad base table."
+msgstr "Ungültige Tabelle der Grundzeichen."
 
 #, c-format
 msgid "Bad bounding box for %s.\n"
@@ -2413,8 +2413,8 @@ msgstr "Ungültige Anzahl in Subtabelle der kontekstuellen Kettung.\n"
 msgid "Bad count in contextual chaining sub-table.\n"
 msgstr "Ungültige Anzahl in Subtabelle der kontextuellen Kette.\n"
 
-msgid "Bad count.\n"
-msgstr "Ungültige Anzahl.\n"
+msgid "Bad count."
+msgstr "Ungültige Anzahl."
 
 #, c-format
 msgid "Bad coverage table. Glyph %d out of range [0,%d)\n"
@@ -2456,8 +2456,8 @@ msgid "Bad font: Encoding data out of range.\n"
 msgstr "Ungültige Schrift: Kodierungs-Daten ausserhalb des Bereichs.\n"
 
 #, c-format
-msgid "Bad format for coverage table %d\n"
-msgstr "Ungültiges Format für Abdeckungstabelle %d\n"
+msgid "Bad format for coverage table %d"
+msgstr "Ungültiges Format für Abdeckungstabelle %d"
 
 #, c-format
 msgid "Bad glif file %s"
@@ -2507,7 +2507,7 @@ msgstr "Ungültiges Unterschneidungpaar: Glyphen %d und %d sollten nicht negativ
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d should have been < %d"
-msgstr "Ungültiges Unterschneidungpaar: Glyphen %d und %d sollten kleiner sein als %d\n"
+msgstr "Ungültiges Unterschneidungpaar: Glyphen %d und %d sollten kleiner sein als %d"
 
 #, c-format
 msgid "Bad kern pair: glyphs at %d & %d are null\n"
@@ -2516,11 +2516,11 @@ msgstr "Ungültiges Unterschneidungpaar: Glyphen bei %d und %d sind Null\n"
 msgid "Bad language tag"
 msgstr "Ungültiges Markierungselement der Sprache"
 
-msgid "Bad ligature anchor count.\n"
-msgstr "Ungültige Anzahl Ligaturen-Anker.\n"
+msgid "Bad ligature anchor count."
+msgstr "Ungültige Anzahl Ligaturen-Anker."
 
-msgid "Bad ligature base table.\n"
-msgstr "Ungültige Tabelle der Grundzeichen von Ligaturen.\n"
+msgid "Bad ligature base table."
+msgstr "Ungültige Tabelle der Grundzeichen von Ligaturen."
 
 #, c-format
 msgid "Bad ligature component glyph. GID %d not less than %d (in ligature %d)\n"
@@ -2536,8 +2536,8 @@ msgstr "Ungültige Nachschlagetabellen-Art"
 msgid "Bad magic number"
 msgstr "Ungültige magische Nummer"
 
-msgid "Bad mark table.\n"
-msgstr "Ungültige Akzent-Tabelle.\n"
+msgid "Bad mark table."
+msgstr "Ungültige Akzent-Tabelle."
 
 msgid "Bad mort ligature table. Not long enough\n"
 msgstr "Ungültige mort Ligaturen-Tabelle. Nicht lang genug\n"
@@ -2574,7 +2574,7 @@ msgstr "Ungültige openTypeOS2type Schlüssel: alle Bits sind gesetzt. Wird igno
 
 #, c-format
 msgid "Bad pair position: glyphs %d & %d should have been < %d"
-msgstr "Ungültige Paar-Position: Glyphen %d und %d hätten < %d sein sollen\n"
+msgstr "Ungültige Paar-Position: Glyphen %d und %d hätten < %d sein sollen"
 
 #, c-format
 msgid "Bad parts list for glyph %s in %s"
@@ -3811,15 +3811,15 @@ msgid "Class already used"
 msgstr "Klasse bereits verwendet"
 
 #, c-format
-msgid "Class index out of range %d (must be <%d)\n"
-msgstr "Klassen-Index außerhalb des Bereichs %d (muss <%d sein)\n"
+msgid "Class index out of range %d (must be <%d)"
+msgstr "Klassen-Index außerhalb des Bereichs %d (muss <%d sein)"
 
-msgid "Class out of bounds in GPOS mark sub-table\n"
-msgstr "Klasse außerhalb der Grenzen in GPOS Akzent-Subtabelle\n"
+msgid "Class out of bounds in GPOS mark sub-table"
+msgstr "Klasse außerhalb der Grenzen in GPOS Akzent-Subtabelle"
 
 #, c-format
-msgid "Class out of bounds in GPOS mark sub-table for mark %.30s\n"
-msgstr "Klasse außerhalb der Grenzen in GPOS Akzent-Subtabelle für Akzent %.30s\n"
+msgid "Class out of bounds in GPOS mark sub-table for mark %.30s"
+msgstr "Klasse außerhalb der Grenzen in GPOS Akzent-Subtabelle für Akzent %.30s"
 
 msgid "Class10"
 msgstr "Klasse10"
@@ -5365,8 +5365,8 @@ msgstr "Glyphen-Reihenfolge"
 msgid "End of file found in JSTF table.\n"
 msgstr "Ende der Datei in der JSTF-Tabelle gefunden.\n"
 
-msgid "End of file found in coverage table.\n"
-msgstr "Ende der Datei in Abdeckungstabelle gefunden.\n"
+msgid "End of file found in coverage table."
+msgstr "Ende der Datei in Abdeckungstabelle gefunden."
 
 #, c-format
 msgid "End of file found in string on line %d of %s"
@@ -6432,8 +6432,8 @@ msgstr "140"
 msgid "GID out of range (%d) in format 14 'cmap' subtable\n"
 msgstr "GID außerhalb des Bereichs (%d) in format 14 'cmap' Subtabelle\n"
 
-msgid "GID out of range.\n"
-msgstr "GID ausserhalb des Bereichs.\n"
+msgid "GID out of range."
+msgstr "GID ausserhalb des Bereichs."
 
 msgid "G_2"
 msgstr "G_2"
@@ -7776,8 +7776,8 @@ msgstr "Ungültige Kursiv-Position in Zeile %d von %s"
 msgid "Invalid font count in TTC %s."
 msgstr "Ungültige Schriftanzahl in TTC %s."
 
-msgid "Invalid glif name.\n"
-msgstr "Ungültiger glif Name.\n"
+msgid "Invalid glif name."
+msgstr "Ungültiger glif Name."
 
 #, c-format
 msgid "Invalid glyph name range in glyph class on line %d of %s"
@@ -13784,16 +13784,16 @@ msgid "Skip"
 msgstr "Überspringen"
 
 #, c-format
-msgid "Skipping duplicate group %s.\n"
-msgstr "Überspringen von doppelten Gruppen %s.\n"
+msgid "Skipping duplicate group %s."
+msgstr "Überspringen von doppelten Gruppen %s."
 
 #, c-format
-msgid "Skipping group %s with same name as a glyph.\n"
-msgstr "Überspringen der Gruppe %s mit dem selben Namen wie eine Glyphe.\n"
+msgid "Skipping group %s with same name as a glyph."
+msgstr "Überspringen der Gruppe %s mit dem selben Namen wie eine Glyphe."
 
 #, c-format
-msgid "Skipping non-existent glyph %s in group %s.\n"
-msgstr "Überspringen nicht-vorhandener Glyphe %s in Gruppe %s.\n"
+msgid "Skipping non-existent glyph %s in group %s."
+msgstr "Überspringen nicht-vorhandener Glyphe %s in Gruppe %s."
 
 msgid "Slab Serifs"
 msgstr "5 – Serifenbetont"
@@ -16972,8 +16972,8 @@ msgid "Unknown Language"
 msgstr "Unbekannte Sprache"
 
 #, c-format
-msgid "Unknown class table format: %d\n"
-msgstr "Unbekanntes Format der Klassen-Tabelle: %d\n"
+msgid "Unknown class table format: %d"
+msgstr "Unbekanntes Format der Klassen-Tabelle: %d"
 
 #, c-format
 msgid "Unknown field %s on line %d of %s"
@@ -17757,8 +17757,8 @@ msgstr ""
 "dieser Option an, welche für die Schrift geladen werden soll."
 
 #, c-format
-msgid "When loading tt instrs from sfd: %s\n"
-msgstr "Beim Laden der tt-Instruktionen aus sfd: %s\n"
+msgid "When loading tt instrs from sfd: %s"
+msgstr "Beim Laden der tt-Instruktionen aus sfd: %s"
 
 msgid ""
 "When placing grave and acute accents above letters, should\n"

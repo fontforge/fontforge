@@ -669,8 +669,8 @@ msgstr "Colore di sfondo per l'area di disegno in tutte le visualizzazioni"
 msgid "Bad Anchor Point: %s"
 msgstr "Errore punto di ancoraggio: %s"
 
-msgid "Bad Apple Kern Class\n"
-msgstr "Classe di crenatura Apple errata\n"
+msgid "Bad Apple Kern Class"
+msgstr "Classe di crenatura Apple errata"
 
 msgid "Bad Ascent/Descent"
 msgstr "Errore nell'ascendente/discendente"
@@ -2363,8 +2363,8 @@ msgstr "70"
 msgid "GGadget|ScaleFactor|100"
 msgstr "120"
 
-msgid "GID out of range.\n"
-msgstr "GID fuori dai limiti\n"
+msgid "GID out of range."
+msgstr "GID fuori dai limiti"
 
 msgid "General"
 msgstr "Generale"
@@ -2938,8 +2938,8 @@ msgstr "Ammontare della crenatura"
 msgid "Kern:"
 msgstr "Crenatura:"
 
-msgid "KernPair with no subtable name.\n"
-msgstr "Coppia di crenature senza nome di sottotabella.\n"
+msgid "KernPair with no subtable name."
+msgstr "Coppia di crenature senza nome di sottotabella."
 
 msgid "Kerning"
 msgstr "Crenatura"

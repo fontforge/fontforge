@@ -136,28 +136,28 @@ msgid " Bad contextual table, ignored\n"
 msgstr " Neispravna kontekstna tablica, znemaruje se\n"
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad cursive alignment table, ignored\n"
-msgstr " Neispravna tablica poravnanja kurziva, zanemaruje se\n"
+msgid " Bad cursive alignment table, ignored"
+msgstr " Neispravna tablica poravnanja kurziva, zanemaruje se"
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad kerning class table, ignored\n"
-msgstr " Neispravna tablica klasa podrezivanja, zanemaruje se\n"
+msgid " Bad kerning class table, ignored"
+msgstr " Neispravna tablica klasa podrezivanja, zanemaruje se"
 
 msgid " Bad ligature table, ignored\n"
 msgstr " Neispravna tablica ligatura, zanemaruje se\n"
 
-msgid " Bad mark attachment table, ignored\n"
-msgstr " Neispravna tablica povezivanja dijakritičkih znakova, zanemaruje se\n"
+msgid " Bad mark attachment table, ignored"
+msgstr " Neispravna tablica povezivanja dijakritičkih znakova, zanemaruje se"
 
 msgid " Bad multiple substitution table, ignored\n"
 msgstr " Neispravna tablica višestruke zamjene, zanemaruje se\n"
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad pairwise kerning table, ignored\n"
-msgstr " Neispravna tablica podrezivanja parova, zanemaruje se\n"
+msgid " Bad pairwise kerning table, ignored"
+msgstr " Neispravna tablica podrezivanja parova, zanemaruje se"
 
-msgid " Bad simple positioning table, ignored\n"
-msgstr " Neispravna tablica jednostavnog pozicioniranja, zanemaruje se\n"
+msgid " Bad simple positioning table, ignored"
+msgstr " Neispravna tablica jednostavnog pozicioniranja, zanemaruje se"
 
 msgid " Bad simple substitution table, ignored\n"
 msgstr " Neispravna tablica jednostavne zamjene, zanemaruje se\n"
@@ -2615,8 +2615,8 @@ msgstr "Sigurnosna kopija za SFD"
 msgid "Bad Anchor Point: %s"
 msgstr "Neispravna točka sidra: %s"
 
-msgid "Bad Apple Kern Class\n"
-msgstr "Neispravna Apple klasa podrezivanja\n"
+msgid "Bad Apple Kern Class"
+msgstr "Neispravna Apple klasa podrezivanja"
 
 msgid "Bad Ascent/Descent"
 msgstr "Neispravan uzlazni/silazni potez"
@@ -2782,12 +2782,12 @@ msgstr "Neipravni raspon, početak (%1$04X) je veći od kraja (%2$04X)"
 msgid "Bad Reference"
 msgstr "Neipravna referenca"
 
-msgid "Bad SFD file, missing subtable in kernclass defn.\n"
-msgstr "Neispravna SFD datoteka, nedostaje pod-tablica u definiciji klase podrezivanja.\n"
+msgid "Bad SFD file, missing subtable in kernclass defn."
+msgstr "Neispravna SFD datoteka, nedostaje pod-tablica u definiciji klase podrezivanja."
 
 #, c-format
-msgid "Bad SFD file, two kerning classes assigned to the same subtable: %s\n"
-msgstr "Neispravna SFD datoteka, istoj pod-tablici su dodijeljene dvije klase podrezivanja: %s\n"
+msgid "Bad SFD file, two kerning classes assigned to the same subtable: %s"
+msgstr "Neispravna SFD datoteka, istoj pod-tablici su dodijeljene dvije klase podrezivanja: %s"
 
 msgid "Bad Script"
 msgstr "Neispravno pismo"
@@ -2850,8 +2850,8 @@ msgstr "Neispravno WOFF zaglavlje, polje koje mora biti nula, to nije."
 msgid "Bad Weight"
 msgstr "Neispravna debljina"
 
-msgid "Bad base table.\n"
-msgstr "Neispravna tablica osnovnih znakova.\n"
+msgid "Bad base table."
+msgstr "Neispravna tablica osnovnih znakova."
 
 #, c-format
 msgid "Bad bounding box for %s.\n"
@@ -2897,8 +2897,8 @@ msgstr "Neispravni broj u pod-tablici kontekstnog niza.\n"
 msgid "Bad count in contextual chaining sub-table.\n"
 msgstr "Neispravni broj u pod-tablici kontekstnog niza.\n"
 
-msgid "Bad count.\n"
-msgstr "Neispravni zbroj.\n"
+msgid "Bad count."
+msgstr "Neispravni zbroj."
 
 #, c-format
 msgid "Bad coverage table. Glyph %d out of range [0,%d)\n"
@@ -2972,8 +2972,8 @@ msgid "Bad font: Encoding data out of range.\n"
 msgstr "Neispravni font: Podaci o kodiranju su izvan raspona.\n"
 
 #, c-format
-msgid "Bad format for coverage table %d\n"
-msgstr "Neispravni format tablice pokrivenosti %d\n"
+msgid "Bad format for coverage table %d"
+msgstr "Neispravni format tablice pokrivenosti %d"
 
 #, c-format
 msgid "Bad format of subtable %d (of %d) in bloc/EBLC of strike with pixelsize=%d. First=%d, last=%d.\n"
@@ -3049,7 +3049,7 @@ msgstr "Neispravno podrezani par: grafem %d i %d ne smije biti negativno\n"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d should have been < %d"
-msgstr "Neispravno podrezani par: grafem %d i %d trebalo je biti manje od %d\n"
+msgstr "Neispravno podrezani par: grafem %d i %d trebalo je biti manje od %d"
 
 #, c-format
 msgid "Bad kern pair: glyphs at %d & %d are null\n"
@@ -3058,11 +3058,11 @@ msgstr "Neispravno podrezani par: grafem %d i %d su nula\n"
 msgid "Bad language tag"
 msgstr "Neispravna oznaka jezika"
 
-msgid "Bad ligature anchor count.\n"
-msgstr "Neispravni broj sidara u ligaturama.\n"
+msgid "Bad ligature anchor count."
+msgstr "Neispravni broj sidara u ligaturama."
 
-msgid "Bad ligature base table.\n"
-msgstr "Neispravna tablica osnovnih znakova ligatura.\n"
+msgid "Bad ligature base table."
+msgstr "Neispravna tablica osnovnih znakova ligatura."
 
 #, c-format
 msgid "Bad ligature component glyph. GID %d not less than %d (in ligature %d)\n"
@@ -3094,8 +3094,8 @@ msgstr "Neispravna vrsta tablice definicija"
 msgid "Bad magic number"
 msgstr "Neispravan magični broj"
 
-msgid "Bad mark table.\n"
-msgstr "Neispravna tablica dijakritičkih znakova.\n"
+msgid "Bad mark table."
+msgstr "Neispravna tablica dijakritičkih znakova."
 
 msgid "Bad mort ligature table. Not long enough\n"
 msgstr "Neispravna 'mort' tablica ligatura. Prekratka\n"
@@ -3140,7 +3140,7 @@ msgstr "Neispravni „openTypeOS2type” ključ: postavljeni su svi bitovi. Zane
 
 #, c-format
 msgid "Bad pair position: glyphs %d & %d should have been < %d"
-msgstr "Neispravno pozicioniranje para: grafemi %d i %d bi trebali biti manji od %d\n"
+msgstr "Neispravno pozicioniranje para: grafemi %d i %d bi trebali biti manji od %d"
 
 #, c-format
 msgid "Bad parts list for glyph %s in %s"
@@ -4726,18 +4726,18 @@ msgstr "Naziv klase"
 msgid "Class already used"
 msgstr "Klasa se već koristi"
 
-msgid "Class definition sub-table extends beyond end of table\n"
-msgstr "Pod-tablica definicije klasa se proteže izvan kraja tablice\n"
+msgid "Class definition sub-table extends beyond end of table"
+msgstr "Pod-tablica definicije klasa se proteže izvan kraja tablice"
 
 #, c-format
-msgid "Class index out of range %d (must be <%d)\n"
-msgstr "Indeks klase izvan raspon %d (mora biti <%d)\n"
+msgid "Class index out of range %d (must be <%d)"
+msgstr "Indeks klase izvan raspon %d (mora biti <%d)"
 
-msgid "Class out of bounds in GPOS mark sub-table\n"
-msgstr "Klasa je izvan granica u 'GPOS' pod-tablici dijakritičkih znakova\n"
+msgid "Class out of bounds in GPOS mark sub-table"
+msgstr "Klasa je izvan granica u 'GPOS' pod-tablici dijakritičkih znakova"
 
 #, c-format
-msgid "Class out of bounds in GPOS mark sub-table for mark %.30s\n"
+msgid "Class out of bounds in GPOS mark sub-table for mark %.30s"
 msgstr ""
 "Klasa je izvan granica u 'GPOS' pod-tablici dijakritičkih znakova za dijakritički znak %.30s\n"
 "\n"
@@ -6383,8 +6383,8 @@ msgstr "Duplicirani podaci"
 msgid "Duplicate definition of subroutine %d\n"
 msgstr "Dupla definicija podrutine %d\n"
 
-msgid "Duplicate lib data.\n"
-msgstr "Dupli podaci biblioteke.\n"
+msgid "Duplicate lib data."
+msgstr "Dupli podaci biblioteke."
 
 msgid "Duplicate name"
 msgstr "Duplikat naziva"
@@ -6683,8 +6683,8 @@ msgstr ""
 msgid "End of file found in JSTF table.\n"
 msgstr "U JSTF tablici je nađen 'eof' (kraj datoteke).\n"
 
-msgid "End of file found in coverage table.\n"
-msgstr "Kraj datoteke nađen u tablici pokrivenosti.\n"
+msgid "End of file found in coverage table."
+msgstr "Kraj datoteke nađen u tablici pokrivenosti."
 
 #, c-format
 msgid "End of file found in string on line %d of %s"
@@ -8014,8 +8014,8 @@ msgstr "Format:"
 msgid "Found %1$.4g, expected %2$.4g"
 msgstr "Nađeno %1$.4g, očekivano %2$.4g"
 
-msgid "Found an new style kerning pair inside a version 1 (or lower) sfd file.\n"
-msgstr "Nađen je par podrezivanja zapisan novim stilom u sfd datoteci verzije 1 (ili ranije).\n"
+msgid "Found an new style kerning pair inside a version 1 (or lower) sfd file."
+msgstr "Nađen je par podrezivanja zapisan novim stilom u sfd datoteci verzije 1 (ili ranije)."
 
 msgid "FoundryName"
 msgstr "Naziv proizvođača"
@@ -8190,8 +8190,8 @@ msgstr "140"
 msgid "GID out of range (%d) in format 14 'cmap' subtable\n"
 msgstr "ID-oznaka grafema izvan raspona (%d) u formatu 14 'cmap' pod-tablice (mapiranje znakova)\n"
 
-msgid "GID out of range.\n"
-msgstr "ID-oznaka grafema izvan raspona.\n"
+msgid "GID out of range."
+msgstr "ID-oznaka grafema izvan raspona."
 
 msgid "G_2"
 msgstr "G_2"
@@ -10152,8 +10152,8 @@ msgstr "Neispravno pozicioniranje kurziva u %d. retku od %s"
 msgid "Invalid font count in TTC %s."
 msgstr "Neispravan broj fontova u TTC %s."
 
-msgid "Invalid glif name.\n"
-msgstr "Neispravni naziv 'glif'-a.\n"
+msgid "Invalid glif name."
+msgstr "Neispravni naziv 'glif'-a."
 
 #, c-format
 msgid "Invalid glyph for %s when fixing up references."
@@ -10496,8 +10496,8 @@ msgstr "Podrezivanje:"
 msgid "KernClass|_New Lookup..."
 msgstr "_Nova tablica definicija …"
 
-msgid "KernPair with no subtable name.\n"
-msgstr "Podrezivanje parova bez naziva pod-talblice.\n"
+msgid "KernPair with no subtable name."
+msgstr "Podrezivanje parova bez naziva pod-talblice."
 
 msgid "Kerning"
 msgstr "Podrezivanje"
@@ -13472,8 +13472,8 @@ msgid "None/Open Loops"
 msgstr "Ništa/Otvorenih petlja"
 
 #, c-format
-msgid "Nonsensical class assigned to a glyph-- class=%d is too big. Glyph=%d\n"
-msgstr "Besmislena klasa dodijeljena grafemu – klasa=%d je prevelika. Grafem=%d\n"
+msgid "Nonsensical class assigned to a glyph-- class=%d is too big. Glyph=%d"
+msgstr "Besmislena klasa dodijeljena grafemu – klasa=%d je prevelika. Grafem=%d"
 
 msgid "Normal"
 msgstr "Normalno"
@@ -17720,16 +17720,16 @@ msgid "Skip"
 msgstr "Preskoči"
 
 #, c-format
-msgid "Skipping duplicate group %s.\n"
-msgstr "Preskakanje duple grupe %s.\n"
+msgid "Skipping duplicate group %s."
+msgstr "Preskakanje duple grupe %s."
 
 #, c-format
-msgid "Skipping group %s with same name as a glyph.\n"
-msgstr "Preskakanje grupe %s s istim nazivom kao grafem.\n"
+msgid "Skipping group %s with same name as a glyph."
+msgstr "Preskakanje grupe %s s istim nazivom kao grafem."
 
 #, c-format
-msgid "Skipping non-existent glyph %s in group %s.\n"
-msgstr "Preskakanje nepostojećeg grafema %s u grupi %s.\n"
+msgid "Skipping non-existent glyph %s in group %s."
+msgstr "Preskakanje nepostojećeg grafema %s u grupi %s."
 
 msgid "Skolt Sami"
 msgstr "Skolt Sami"
@@ -20079,8 +20079,8 @@ msgstr "Minimalni prostor iznad operatora većeg oblika"
 msgid "The minimum glue space below a large displayed operator"
 msgstr "Minimalni prostor ispod operatora većeg oblika"
 
-msgid "The move point must be at the beginning of the contour.\n"
-msgstr "Točka za micanje se mora nalaziti na početku konture.\n"
+msgid "The move point must be at the beginning of the contour."
+msgstr "Točka za micanje se mora nalaziti na početku konture."
 
 #, c-format
 msgid "The name FontForge would like to assign to this glyph, %.30s, is already used by a different glyph."
@@ -21421,8 +21421,8 @@ msgstr ""
 "NAPOMENA: 'hhea Descent' je NEGATIVNI broj, a odnosi se na\n"
 "sve što se nalazi ispod osnovne pismovne linije."
 
-msgid "This spline set has no points.\n"
-msgstr "Krivulja nema točaka.\n"
+msgid "This spline set has no points."
+msgstr "Krivulja nema točaka."
 
 msgid "This version of FontForge expects freetype 2.3.7 or more."
 msgstr "Ova FontForge verzija očekuje freetype 2.3.7 ili noviji."
@@ -22335,8 +22335,8 @@ msgid "Unknown character after backslash in literal string.\n"
 msgstr "Nepoznati znak nakon obrnute kose crte u doslovnom znakovnom nizu.\n"
 
 #, c-format
-msgid "Unknown class table format: %d\n"
-msgstr "Nepoznati format tablice klasa: %d\n"
+msgid "Unknown class table format: %d"
+msgstr "Nepoznati format tablice klasa: %d"
 
 #, c-format
 msgid "Unknown field %s on line %d of %s"
@@ -23244,8 +23244,8 @@ msgstr "Promjena Cvt vrijednosti"
 msgid "Watched Store Change"
 msgstr "Promjena spremišta"
 
-msgid "We cannot have lead-in points for an open curve.\n"
-msgstr "Ne možemo imati ulazne točke za otvorenu krivulju.\n"
+msgid "We cannot have lead-in points for an open curve."
+msgstr "Ne možemo imati ulazne točke za otvorenu krivulju."
 
 msgid "We don't understand this font\n"
 msgstr "Font se ne da razumjeti\n"
@@ -23503,8 +23503,8 @@ msgstr ""
 "koje će se učitati."
 
 #, c-format
-msgid "When loading tt instrs from sfd: %s\n"
-msgstr "Tijekom učitavanja TT instrukcija iz SFD-a: %s\n"
+msgid "When loading tt instrs from sfd: %s"
+msgstr "Tijekom učitavanja TT instrukcija iz SFD-a: %s"
 
 msgid "When merging two CID keyed fonts, they must have the same Registry and Ordering, and the font being merged into (the mergee) must have a supplement which is at least as recent as the other's. Furthermore the mergee must have at least as many subfonts as the merger."
 msgstr "Prilikom sjedinjavanja dvaju CID fonta, fontovi moraju imati isti registar i redoslijed, a font u koji se sjedinjuje, mora imati dodatak koji je nov, barem kao u drugom. Nadalje, font u koji se sjedinjuje mora imati najmanje onoliko podfontova koliko ih ima font koji se sjedinjuje."
@@ -25460,8 +25460,8 @@ msgstr "nije bilo moguće zapisati datoteku kodiranja\n"
 msgid "coverage"
 msgstr "pokrivenosti"
 
-msgid "coverage table extends beyond end of table\n"
-msgstr "tablica pokrivenosti prekoračuje kraj tablice\n"
+msgid "coverage table extends beyond end of table"
+msgstr "tablica pokrivenosti prekoračuje kraj tablice"
 
 msgid "cursive entry"
 msgstr "kurzivni ulaz"

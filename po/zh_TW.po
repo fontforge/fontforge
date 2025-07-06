@@ -1856,8 +1856,8 @@ msgstr "備份 SFD"
 msgid "Bad Anchor Point: %s"
 msgstr "壞錨點：%s"
 
-msgid "Bad Apple Kern Class\n"
-msgstr "不當的 Apple 字距微調類別\n"
+msgid "Bad Apple Kern Class"
+msgstr "不當的 Apple 字距微調類別"
 
 msgid "Bad Ascent/Descent"
 msgstr "不當的上緣值/下緣值"
@@ -2072,8 +2072,8 @@ msgstr "不當的 WOFF 頁首，某欄位必須是 0 卻不是。"
 msgid "Bad Weight"
 msgstr "不當的字重"
 
-msgid "Bad base table.\n"
-msgstr "不當的基底表格。\n"
+msgid "Bad base table."
+msgstr "不當的基底表格。"
 
 #, c-format
 msgid "Bad bounding box for %s.\n"
@@ -2113,8 +2113,8 @@ msgstr "在狀態組合鏈接子表格中不當的計數。\n"
 msgid "Bad count in contextual chaining sub-table.\n"
 msgstr "在上下文鏈接子表格中不當的計數。\n"
 
-msgid "Bad count.\n"
-msgstr "不當的計數。\n"
+msgid "Bad count."
+msgstr "不當的計數。"
 
 #, c-format
 msgid "Bad coverage table. Glyph %d out of range [0,%d)\n"
@@ -2175,8 +2175,8 @@ msgid "Bad font: Encoding data out of range.\n"
 msgstr "不當的字型：編碼資料超出範圍。\n"
 
 #, c-format
-msgid "Bad format for coverage table %d\n"
-msgstr "不當的格式用於覆蓋的表格 %d\n"
+msgid "Bad format for coverage table %d"
+msgstr "不當的格式用於覆蓋的表格 %d"
 
 #, c-format
 msgid "Bad glyph (%d), its data length is negative\n"
@@ -2230,16 +2230,16 @@ msgstr "不當的字距微調對：字圖 %d & %d 必須少於 %d\n"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d should have been < %d"
-msgstr "不當的字距微調配對：字圖 %d & %d 應該已經 < %d\n"
+msgstr "不當的字距微調配對：字圖 %d & %d 應該已經 < %d"
 
 msgid "Bad language tag"
 msgstr "不當的語言標記"
 
-msgid "Bad ligature anchor count.\n"
-msgstr "不當的連體字錨點計數。\n"
+msgid "Bad ligature anchor count."
+msgstr "不當的連體字錨點計數。"
 
-msgid "Bad ligature base table.\n"
-msgstr "不當的連體字基底表格。\n"
+msgid "Bad ligature base table."
+msgstr "不當的連體字基底表格。"
 
 #, c-format
 msgid "Bad ligature component glyph. GID %d not less than %d (in ligature %d)\n"
@@ -2271,8 +2271,8 @@ msgstr "不當的查找型態"
 msgid "Bad magic number"
 msgstr "不當的魔術字碼"
 
-msgid "Bad mark table.\n"
-msgstr "不當的標記表格。\n"
+msgid "Bad mark table."
+msgstr "不當的標記表格。"
 
 msgid "Bad mort ligature table. Not long enough\n"
 msgstr "不當的 mort 連體字表格。長度不夠\n"
@@ -2314,7 +2314,7 @@ msgstr "不當的濁度於第 %d 條線，必須在 0.0 和 1.0 之間。"
 
 #, c-format
 msgid "Bad pair position: glyphs %d & %d should have been < %d"
-msgstr "不當的配對位置：字圖 %d & %d 應該已經 < %d\n"
+msgstr "不當的配對位置：字圖 %d & %d 應該已經 < %d"
 
 #, c-format
 msgid "Bad parts list for glyph %s in %s"
@@ -3486,19 +3486,19 @@ msgstr "類別名稱"
 msgid "Class already used"
 msgstr "類別已被使用"
 
-msgid "Class definition sub-table extends beyond end of table\n"
-msgstr "類別定義子表格延展至表格末端之後\n"
+msgid "Class definition sub-table extends beyond end of table"
+msgstr "類別定義子表格延展至表格末端之後"
 
 #, c-format
-msgid "Class index out of range %d (must be <%d)\n"
-msgstr "類別索引超出範圍 %d (必須 <%d)\n"
+msgid "Class index out of range %d (must be <%d)"
+msgstr "類別索引超出範圍 %d (必須 <%d)"
 
-msgid "Class out of bounds in GPOS mark sub-table\n"
-msgstr "類別超出GPOS 標記子表格邊界\n"
+msgid "Class out of bounds in GPOS mark sub-table"
+msgstr "類別超出GPOS 標記子表格邊界"
 
 #, c-format
-msgid "Class out of bounds in GPOS mark sub-table for mark %.30s\n"
-msgstr "類別超出 GPOS 標記子表格邊界用於標記 %.30s\n"
+msgid "Class out of bounds in GPOS mark sub-table for mark %.30s"
+msgstr "類別超出 GPOS 標記子表格邊界用於標記 %.30s"
 
 msgid "Class10"
 msgstr "類別10"
@@ -5003,8 +5003,8 @@ msgstr "字圖排序"
 msgid "End of file found in JSTF table.\n"
 msgstr "在 JSTF 表格中找到檔案結尾。\n"
 
-msgid "End of file found in coverage table.\n"
-msgstr "在覆蓋表格中找到檔案結尾。\n"
+msgid "End of file found in coverage table."
+msgstr "在覆蓋表格中找到檔案結尾。"
 
 #, c-format
 msgid "End of file in %s table"
@@ -6111,8 +6111,8 @@ msgstr "100"
 msgid "GID out of range (%d) in format 14 'cmap' subtable\n"
 msgstr "在格式 14「cmap」子表格中 GID 超出範圍 (%d)\n"
 
-msgid "GID out of range.\n"
-msgstr "GID 超出範圍。\n"
+msgid "GID out of range."
+msgstr "GID 超出範圍。"
 
 msgid "Ga"
 msgstr "格語"
@@ -16382,8 +16382,8 @@ msgid "Unknown character after backslash in literal string.\n"
 msgstr "在實文字串中反斜線之後出現不明字元。\n"
 
 #, c-format
-msgid "Unknown class table format: %d\n"
-msgstr "不明的類別表格格式：%d\n"
+msgid "Unknown class table format: %d"
+msgstr "不明的類別表格格式：%d"
 
 #, c-format
 msgid "Unknown field %s on line %d of %s"
@@ -18674,8 +18674,8 @@ msgstr "無法寫入編碼檔案\n"
 msgid "coverage"
 msgstr "覆蓋"
 
-msgid "coverage table extends beyond end of table\n"
-msgstr "覆蓋表格延展至表格末端之後\n"
+msgid "coverage table extends beyond end of table"
+msgstr "覆蓋表格延展至表格末端之後"
 
 msgid "cursive entry"
 msgstr "手寫條目"

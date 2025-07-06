@@ -88,8 +88,8 @@ msgid " Bad contextual substitution table, ignored\n"
 msgstr "文脈依存置換テーブルが不正です. 無視されました\n"
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad kerning class table, ignored\n"
-msgstr "カーニングクラステーブルが不正です. 無視されました\n"
+msgid " Bad kerning class table, ignored"
+msgstr "カーニングクラステーブルが不正です. 無視されました"
 
 msgid " Bad ligature table, ignored\n"
 msgstr "合字テーブルが不正です. 無視されました\n"
@@ -98,8 +98,8 @@ msgid " Bad multiple substitution table, ignored\n"
 msgstr "複数置換テーブルが不正です. 無視されました\n"
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad pairwise kerning table, ignored\n"
-msgstr "カーニングテーブルが不正です. 無視されました\n"
+msgid " Bad pairwise kerning table, ignored"
+msgstr "カーニングテーブルが不正です. 無視されました"
 
 msgid " Instructions in this glyph (or one that refers to it) are now out of date."
 msgstr " このグリフ(及び,それを参照するグリフ)に含まれる命令情報は現状に合っていません."
@@ -1517,8 +1517,8 @@ msgstr "後戻り検索クラス %d: "
 msgid "Backup SFD"
 msgstr "バックアップSFD"
 
-msgid "Bad Apple Kern Class\n"
-msgstr "Apple カーニングクラスが不正です\n"
+msgid "Bad Apple Kern Class"
+msgstr "Apple カーニングクラスが不正です"
 
 msgid "Bad Ascent/Descent"
 msgstr "不正な高さ/深さ"
@@ -1650,8 +1650,8 @@ msgstr "変換行列が不正です"
 msgid "Bad Value"
 msgstr "不正な値です"
 
-msgid "Bad base table.\n"
-msgstr "baseテーブルが不正です\n"
+msgid "Bad base table."
+msgstr "baseテーブルが不正です"
 
 #, c-format
 msgid "Bad bounding box for %s.\n"
@@ -1687,8 +1687,8 @@ msgstr "文脈連鎖サブテーブル内の個数が間違っています.\n"
 msgid "Bad count in contextual chaining sub-table.\n"
 msgstr "文脈連鎖サブテーブル内の個数が間違っています.\n"
 
-msgid "Bad count.\n"
-msgstr "個数が間違っています.\n"
+msgid "Bad count."
+msgstr "個数が間違っています."
 
 #, c-format
 msgid "Bad coverage table. Glyph %d out of range [0,%d)\n"
@@ -1729,8 +1729,8 @@ msgid "Bad font: Encoding data out of range.\n"
 msgstr "不正なフォント: エンコーディングデータが範囲外です.\n"
 
 #, c-format
-msgid "Bad format for coverage table %d\n"
-msgstr "範囲テーブルのフォーマットが %d という不正な値です\n"
+msgid "Bad format for coverage table %d"
+msgstr "範囲テーブルのフォーマットが %d という不正な値です"
 
 #, c-format
 msgid "Bad glyph (%d), disordered 'loca' table (start comes after end)\n"
@@ -1771,13 +1771,13 @@ msgstr "カーニングペアグリフ %d と %d が不正です. これらは %
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d should have been < %d"
-msgstr "カーニングペアが不正です: グリフ %d と %d は %d 未満でなければなりません\n"
+msgstr "カーニングペアが不正です: グリフ %d と %d は %d 未満でなければなりません"
 
-msgid "Bad ligature anchor count.\n"
-msgstr "合字アンカーの個数が不正です.\n"
+msgid "Bad ligature anchor count."
+msgstr "合字アンカーの個数が不正です."
 
-msgid "Bad ligature base table.\n"
-msgstr "合字baseテーブルが不正です.\n"
+msgid "Bad ligature base table."
+msgstr "合字baseテーブルが不正です."
 
 #, c-format
 msgid "Bad ligature glyph. GID %d not less than %d\n"
@@ -1802,8 +1802,8 @@ msgstr "フォーマット 8 の照合テーブルが壊れています.最初=%
 msgid "Bad magic number"
 msgstr "数値が間違っています."
 
-msgid "Bad mark table.\n"
-msgstr "マークテーブルが不正です.\n"
+msgid "Bad mark table."
+msgstr "マークテーブルが不正です."
 
 msgid "Bad mort ligature table. Not long enough\n"
 msgstr "mort 合字テーブルが不正です. 長さが足りません\n"
@@ -1823,7 +1823,7 @@ msgstr "%sは不正な数値(無限大または非数)です\n"
 
 #, c-format
 msgid "Bad pair position: glyphs %d & %d should have been < %d"
-msgstr "ペア位置指定が不正です: グリフ %d と %d は %d 未満でなければなりません\n"
+msgstr "ペア位置指定が不正です: グリフ %d と %d は %d 未満でなければなりません"
 
 msgid "Bad replace pattern"
 msgstr "置換パターンが不正です"
@@ -3048,19 +3048,19 @@ msgstr "クラス名"
 msgid "Class already used"
 msgstr "クラスが既に使われています."
 
-msgid "Class definition sub-table extends beyond end of table\n"
-msgstr "クラス定義テーブルが親テーブルの末尾を超えています\n"
+msgid "Class definition sub-table extends beyond end of table"
+msgstr "クラス定義テーブルが親テーブルの末尾を超えています"
 
 #, c-format
-msgid "Class index out of range %d (must be <%d)\n"
-msgstr "クラスインデックスが範囲外の %d にあります (%d 未満でなければなりません)\n"
+msgid "Class index out of range %d (must be <%d)"
+msgstr "クラスインデックスが範囲外の %d にあります (%d 未満でなければなりません)"
 
-msgid "Class out of bounds in GPOS mark sub-table\n"
-msgstr "GPOS マークサブテーブル内のクラスが範囲外です\n"
+msgid "Class out of bounds in GPOS mark sub-table"
+msgstr "GPOS マークサブテーブル内のクラスが範囲外です"
 
 #, c-format
-msgid "Class out of bounds in GPOS mark sub-table for mark %.30s\n"
-msgstr "マーク %.30s の GPOS マークサブテーブル内のクラスが範囲外です\n"
+msgid "Class out of bounds in GPOS mark sub-table for mark %.30s"
+msgstr "マーク %.30s の GPOS マークサブテーブル内のクラスが範囲外です"
 
 msgid "Class10"
 msgstr "クラス10"
@@ -4248,8 +4248,8 @@ msgstr "グリフ順"
 msgid "End of file found in JSTF table.\n"
 msgstr "JSTFテーブルの途中でファイルが終わっていまます\n"
 
-msgid "End of file found in coverage table.\n"
-msgstr "範囲テーブルの途中でファイルが終わっていまます\n"
+msgid "End of file found in coverage table."
+msgstr "範囲テーブルの途中でファイルが終わっていまます"
 
 msgid "End of file in context chaining sub-table.\n"
 msgstr "文脈連鎖サブテーブルの途中でファイルが終わっています.\n"
@@ -5004,8 +5004,8 @@ msgstr "フータ語"
 msgid "GB 2312 (Simp. Chinese)"
 msgstr "GB 2312 (簡体字中国語)"
 
-msgid "GID out of range.\n"
-msgstr "GIDが範囲外です.\n"
+msgid "GID out of range."
+msgstr "GIDが範囲外です."
 
 msgid "Ga"
 msgstr "ガー語"
@@ -8257,8 +8257,8 @@ msgid "None of the glyphs in the current font match any names or code points in 
 msgstr "現在編集中のフォントには,選択中のグループに含まれる名前またはコードポイントに一致するグリフがありません."
 
 #, c-format
-msgid "Nonsensical class assigned to a glyph-- class=%d is too big. Glyph=%d\n"
-msgstr "無意味なクラスがグリフに割り当てられています―クラス=%dは大きすぎます. グリフ=%d\n"
+msgid "Nonsensical class assigned to a glyph-- class=%d is too big. Glyph=%d"
+msgstr "無意味なクラスがグリフに割り当てられています―クラス=%dは大きすぎます. グリフ=%d"
 
 msgid "Normal"
 msgstr "通常"
@@ -13618,8 +13618,8 @@ msgid "Unknown character after backslash in literal string.\n"
 msgstr "文字列リテラル内で, バックスラッシュの後に不明な文字が含まれています.\n"
 
 #, c-format
-msgid "Unknown class table format: %d\n"
-msgstr "クラステーブルフォーマット %d には見覚えがありません\n"
+msgid "Unknown class table format: %d"
+msgstr "クラステーブルフォーマット %d には見覚えがありません"
 
 #, c-format
 msgid "Unknown operator in %s: %x\n"
@@ -15628,8 +15628,8 @@ msgstr "エンコーディングファイルに書き出せませんでした\n"
 msgid "coverage"
 msgstr "範囲"
 
-msgid "coverage table extends beyond end of table\n"
-msgstr "範囲テーブルが親テーブルの末尾をはみ出しています\n"
+msgid "coverage table extends beyond end of table"
+msgstr "範囲テーブルが親テーブルの末尾をはみ出しています"
 
 msgid "cursive entry"
 msgstr "筆記体の始点"

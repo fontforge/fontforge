@@ -143,27 +143,27 @@ msgid " Bad contextual table, ignored\n"
 msgstr " 错误的上下文表，已忽略\n"
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad cursive alignment table, ignored\n"
+msgid " Bad cursive alignment table, ignored"
 msgstr " 错误的草书对齐表，已忽略"
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad kerning class table, ignored\n"
-msgstr " 字偶距类表有误，已忽略\n"
+msgid " Bad kerning class table, ignored"
+msgstr " 字偶距类表有误，已忽略"
 
 msgid " Bad ligature table, ignored\n"
 msgstr " 连字表不正确，已忽略\n"
 
-msgid " Bad mark attachment table, ignored\n"
-msgstr " 标记附件表不对，忽略之\n"
+msgid " Bad mark attachment table, ignored"
+msgstr " 标记附件表不对，忽略之"
 
 msgid " Bad multiple substitution table, ignored\n"
 msgstr " 错误的多重替换表，已忽略\n"
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad pairwise kerning table, ignored\n"
-msgstr " 错误的成对字偶距表，已忽略\n"
+msgid " Bad pairwise kerning table, ignored"
+msgstr " 错误的成对字偶距表，已忽略"
 
-msgid " Bad simple positioning table, ignored\n"
+msgid " Bad simple positioning table, ignored"
 msgstr " 错误的简单定位表，忽略"
 
 msgid " Bad simple substitution table, ignored\n"
@@ -2626,7 +2626,7 @@ msgstr "备份SFD"
 msgid "Bad Anchor Point: %s"
 msgstr "错误的锚点：%s"
 
-msgid "Bad Apple Kern Class\n"
+msgid "Bad Apple Kern Class"
 msgstr "错误的 Apple 字偶距类"
 
 msgid "Bad Ascent/Descent"
@@ -2793,11 +2793,11 @@ msgstr "错误范围，开始 (%1$04X) 大于结束 (%2$04X)"
 msgid "Bad Reference"
 msgstr "错误的引用"
 
-msgid "Bad SFD file, missing subtable in kernclass defn.\n"
+msgid "Bad SFD file, missing subtable in kernclass defn."
 msgstr "不当的 SFD 文件，内核类 defn 中缺少子表。"
 
 #, c-format
-msgid "Bad SFD file, two kerning classes assigned to the same subtable: %s\n"
+msgid "Bad SFD file, two kerning classes assigned to the same subtable: %s"
 msgstr "不当的 SFD 文件，两个字偶距类分配给了同一个子表：%s"
 
 msgid "Bad Script"
@@ -2861,8 +2861,8 @@ msgstr "错误的 WOFF 标头，必须为 0 的字段不为 0。"
 msgid "Bad Weight"
 msgstr "粗细不当"
 
-msgid "Bad base table.\n"
-msgstr "不当基础表。\n"
+msgid "Bad base table."
+msgstr "不当基础表。"
 
 #, c-format
 msgid "Bad bounding box for %s.\n"
@@ -2908,8 +2908,8 @@ msgstr "上下文链式子表中的计数错误。"
 msgid "Bad count in contextual chaining sub-table.\n"
 msgstr "上下文链式子表中的计数错误。"
 
-msgid "Bad count.\n"
-msgstr "错误计数。\n"
+msgid "Bad count."
+msgstr "错误计数。"
 
 #, c-format
 msgid "Bad coverage table. Glyph %d out of range [0,%d)\n"
@@ -2983,7 +2983,7 @@ msgid "Bad font: Encoding data out of range.\n"
 msgstr "错误字体：编码数据超出范围。"
 
 #, c-format
-msgid "Bad format for coverage table %d\n"
+msgid "Bad format for coverage table %d"
 msgstr "覆盖表 %d 的格式错误"
 
 #, c-format
@@ -3060,7 +3060,7 @@ msgstr "错误的字偶对：字形 %d 和 %d 不能为负\n"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d should have been < %d"
-msgstr "错误的字偶对：字形 %d 和 %d 应该是 < %d\n"
+msgstr "错误的字偶对：字形 %d 和 %d 应该是 < %d"
 
 #, c-format
 msgid "Bad kern pair: glyphs at %d & %d are null\n"
@@ -3069,10 +3069,10 @@ msgstr "错误的字偶对：%d 和 %d 处的字形为空\n"
 msgid "Bad language tag"
 msgstr "不良语言标签"
 
-msgid "Bad ligature anchor count.\n"
+msgid "Bad ligature anchor count."
 msgstr "连字锚点计数错误。"
 
-msgid "Bad ligature base table.\n"
+msgid "Bad ligature base table."
 msgstr "连字基表不正确。"
 
 #, c-format
@@ -3105,8 +3105,8 @@ msgstr "错误的查找类型"
 msgid "Bad magic number"
 msgstr "错误魔法数字"
 
-msgid "Bad mark table.\n"
-msgstr "不当标记表。\n"
+msgid "Bad mark table."
+msgstr "不当标记表。"
 
 msgid "Bad mort ligature table. Not long enough\n"
 msgstr "MORT 连字表错误。 不够长"
@@ -4663,18 +4663,18 @@ msgstr "类属名称"
 msgid "Class already used"
 msgstr "类属已使用"
 
-msgid "Class definition sub-table extends beyond end of table\n"
-msgstr "类定义子表超出表末尾\n"
+msgid "Class definition sub-table extends beyond end of table"
+msgstr "类定义子表超出表末尾"
 
 #, c-format
-msgid "Class index out of range %d (must be <%d)\n"
-msgstr "类别索引超出范围 %d（必须小于 %d）\n"
+msgid "Class index out of range %d (must be <%d)"
+msgstr "类别索引超出范围 %d（必须小于 %d）"
 
-msgid "Class out of bounds in GPOS mark sub-table\n"
+msgid "Class out of bounds in GPOS mark sub-table"
 msgstr "GPOS 标记子表中的类超出范围"
 
 #, c-format
-msgid "Class out of bounds in GPOS mark sub-table for mark %.30s\n"
+msgid "Class out of bounds in GPOS mark sub-table for mark %.30s"
 msgstr "GPOS 标记子表中的标记 %.30s 类超出范围"
 
 msgid "Class10"
@@ -6458,7 +6458,7 @@ msgstr "复制数据"
 msgid "Duplicate definition of subroutine %d\n"
 msgstr "子例程 %d 的定义重复\n"
 
-msgid "Duplicate lib data.\n"
+msgid "Duplicate lib data."
 msgstr "重复lib数据。"
 
 msgid "Duplicate name"
@@ -6764,7 +6764,7 @@ msgstr ""
 msgid "End of file found in JSTF table.\n"
 msgstr "JSTF表中找到文件结束符号。\n"
 
-msgid "End of file found in coverage table.\n"
+msgid "End of file found in coverage table."
 msgstr "在覆盖表中发现文件终止。"
 
 #, c-format
@@ -8154,8 +8154,8 @@ msgstr "格式："
 msgid "Found %1$.4g, expected %2$.4g"
 msgstr "已找到 %1$.4g，预期为 %2$.4g"
 
-msgid "Found an new style kerning pair inside a version 1 (or lower) sfd file.\n"
-msgstr "在版本 1（或更低）的 sfd 文件中发现了新样式的字偶距对。\n"
+msgid "Found an new style kerning pair inside a version 1 (or lower) sfd file."
+msgstr "在版本 1（或更低）的 sfd 文件中发现了新样式的字偶距对。"
 
 msgid "FoundryName"
 msgstr "制作工具"
@@ -8341,8 +8341,8 @@ msgstr "100"
 msgid "GID out of range (%d) in format 14 'cmap' subtable\n"
 msgstr "格式 14‘cmap’子表中的 GID 超出范围（％d）"
 
-msgid "GID out of range.\n"
-msgstr "GID 超出范围.\n"
+msgid "GID out of range."
+msgstr "GID 超出范围."
 
 #, c-format
 msgid "GPOS lookup referred to in this GSUB contextual lookup: %s"
@@ -10323,7 +10323,7 @@ msgstr "无效位置于行%d （ %s）"
 msgid "Invalid font count in TTC %s."
 msgstr "TTC %s 中的字体数量无效。"
 
-msgid "Invalid glif name.\n"
+msgid "Invalid glif name."
 msgstr "glif 名称无效。"
 
 #, c-format
@@ -10671,7 +10671,7 @@ msgstr "KernFormat.BoldFont"
 msgid "KernFormat.Font"
 msgstr "KernFormat.Font"
 
-msgid "KernPair with no subtable name.\n"
+msgid "KernPair with no subtable name."
 msgstr "没有子表名称的 KernPair。"
 
 msgid "Kerning"
@@ -13721,8 +13721,8 @@ msgid "None/Open Loops"
 msgstr "无/开放环形"
 
 #, c-format
-msgid "Nonsensical class assigned to a glyph-- class=%d is too big. Glyph=%d\n"
-msgstr "为字形分配了无意义的类—— class=%d 太大。字形=%d\n"
+msgid "Nonsensical class assigned to a glyph-- class=%d is too big. Glyph=%d"
+msgstr "为字形分配了无意义的类—— class=%d 太大。字形=%d"
 
 msgid "Normal"
 msgstr "正常"
@@ -18341,16 +18341,16 @@ msgid "Skip"
 msgstr "跳过"
 
 #, c-format
-msgid "Skipping duplicate group %s.\n"
-msgstr "跳过重复的组 %s。\n"
+msgid "Skipping duplicate group %s."
+msgstr "跳过重复的组 %s。"
 
 #, c-format
-msgid "Skipping group %s with same name as a glyph.\n"
-msgstr "跳过与字形同名的组 %s。\n"
+msgid "Skipping group %s with same name as a glyph."
+msgstr "跳过与字形同名的组 %s。"
 
 #, c-format
-msgid "Skipping non-existent glyph %s in group %s.\n"
-msgstr "跳过组 %2$s 中不存在的字形 %1$s。\n"
+msgid "Skipping non-existent glyph %s in group %s."
+msgstr "跳过组 %2$s 中不存在的字形 %1$s。"
 
 #, c-format
 msgid "Skipping plugin %s: module '%s': Could not load.\n"
@@ -20698,8 +20698,8 @@ msgstr "大型显示操作符上方的最小黏合空间"
 msgid "The minimum glue space below a large displayed operator"
 msgstr "大型显示操作符下方的最小黏合空间"
 
-msgid "The move point must be at the beginning of the contour.\n"
-msgstr "移动点必须位于轮廓的起点。\n"
+msgid "The move point must be at the beginning of the contour."
+msgstr "移动点必须位于轮廓的起点。"
 
 #, c-format
 msgid "The name FontForge would like to assign to this glyph, %.30s, is already used by a different glyph."
@@ -21994,8 +21994,8 @@ msgstr ""
 "\n"
 "注意：对于基线以下的内容，hhea 下降量为负值"
 
-msgid "This spline set has no points.\n"
-msgstr "该样条线集没有点。\n"
+msgid "This spline set has no points."
+msgstr "该样条线集没有点。"
 
 msgid "This version of FontForge expects freetype 2.3.7 or more."
 msgstr "此版本的 FontForge 需要 freetype 2.3.7 或更高版本。"
@@ -22938,8 +22938,8 @@ msgid "Unknown character after backslash in literal string.\n"
 msgstr "文字字符串中反斜杠后的未知字符。"
 
 #, c-format
-msgid "Unknown class table format: %d\n"
-msgstr "未知类属表格式: %d\n"
+msgid "Unknown class table format: %d"
+msgstr "未知类属表格式: %d"
 
 #, c-format
 msgid "Unknown field %s on line %d of %s"
@@ -23835,7 +23835,7 @@ msgstr "观察的Cvt有变化"
 msgid "Watched Store Change"
 msgstr "观察的堆有变化"
 
-msgid "We cannot have lead-in points for an open curve.\n"
+msgid "We cannot have lead-in points for an open curve."
 msgstr "不能为开放曲线设置引入点。"
 
 msgid "We don't understand this font\n"
@@ -24068,7 +24068,7 @@ msgstr ""
 "和 CJK 码表，使用此标志来指明使用哪个码表来加载该字体。"
 
 #, c-format
-msgid "When loading tt instrs from sfd: %s\n"
+msgid "When loading tt instrs from sfd: %s"
 msgstr "从 sfd 加载 tt 命令时：%s"
 
 msgid "When merging two CID keyed fonts, they must have the same Registry and Ordering, and the font being merged into (the mergee) must have a supplement which is at least as recent as the other's. Furthermore the mergee must have at least as many subfonts as the merger."
@@ -26052,7 +26052,7 @@ msgstr "不能写入编码文件\n"
 msgid "coverage"
 msgstr "范围"
 
-msgid "coverage table extends beyond end of table\n"
+msgid "coverage table extends beyond end of table"
 msgstr "覆盖表超出了表格末尾"
 
 msgid "cursive entry"

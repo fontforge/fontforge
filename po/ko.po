@@ -144,28 +144,28 @@ msgid " Bad contextual table, ignored\n"
 msgstr "잘못된 컨텍스트 테이블 무시되었습니다\n"
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad cursive alignment table, ignored\n"
-msgstr "나쁜 필기체 정렬 테이블 무시되었습니다\n"
+msgid " Bad cursive alignment table, ignored"
+msgstr "나쁜 필기체 정렬 테이블 무시되었습니다"
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad kerning class table, ignored\n"
-msgstr "커닝 클래스 테이블이 잘못되었습니다. 무시되었습니다\n"
+msgid " Bad kerning class table, ignored"
+msgstr "커닝 클래스 테이블이 잘못되었습니다. 무시되었습니다"
 
 msgid " Bad ligature table, ignored\n"
 msgstr "잘못된 합자 표 무시되었습니다\n"
 
-msgid " Bad mark attachment table, ignored\n"
-msgstr "잘못된 마크 첨부 테이블 무시되었습니다\n"
+msgid " Bad mark attachment table, ignored"
+msgstr "잘못된 마크 첨부 테이블 무시되었습니다"
 
 msgid " Bad multiple substitution table, ignored\n"
 msgstr "무단 여러 대체 테이블 무시되었습니다\n"
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad pairwise kerning table, ignored\n"
-msgstr "잘못된 페어 와이즈 커닝 테이블 무시되었습니다\n"
+msgid " Bad pairwise kerning table, ignored"
+msgstr "잘못된 페어 와이즈 커닝 테이블 무시되었습니다"
 
-msgid " Bad simple positioning table, ignored\n"
-msgstr "무단 간단한 위치 결정 테이블 무시\n"
+msgid " Bad simple positioning table, ignored"
+msgstr "무단 간단한 위치 결정 테이블 무시"
 
 msgid " Bad simple substitution table, ignored\n"
 msgstr "잘못된 단순 치환 테이블 무시되었습니다\n"
@@ -2638,8 +2638,8 @@ msgstr "SFD 백업"
 msgid "Bad Anchor Point: %s"
 msgstr "잘못된 앵커: %s"
 
-msgid "Bad Apple Kern Class\n"
-msgstr "Apple 커닝클래스가 부적절합니다\n"
+msgid "Bad Apple Kern Class"
+msgstr "Apple 커닝클래스가 부적절합니다"
 
 msgid "Bad Ascent/Descent"
 msgstr "올바르지 않은 높이/깊이"
@@ -2805,12 +2805,12 @@ msgstr "범위가 부적절합니다. 선두(%1$04X)가 말미(%2$04X)보다 큽
 msgid "Bad Reference"
 msgstr "참조가 부적절합니다."
 
-msgid "Bad SFD file, missing subtable in kernclass defn.\n"
-msgstr "잘못된 SFD 파일 kernclass defn에 하위 테이블이 없습니다.\n"
+msgid "Bad SFD file, missing subtable in kernclass defn."
+msgstr "잘못된 SFD 파일 kernclass defn에 하위 테이블이 없습니다."
 
 #, c-format
-msgid "Bad SFD file, two kerning classes assigned to the same subtable: %s\n"
-msgstr "잘못된 SFD 파일 같은 서브 테이블에 할당 된 2 개의 커닝 클래스: %s\n"
+msgid "Bad SFD file, two kerning classes assigned to the same subtable: %s"
+msgstr "잘못된 SFD 파일 같은 서브 테이블에 할당 된 2 개의 커닝 클래스: %s"
 
 msgid "Bad Script"
 msgstr "잘못된 스크립트"
@@ -2873,8 +2873,8 @@ msgstr "잘못된 WOFF 헤더, 0이어야 하는 필드가 0이 아니다"
 msgid "Bad Weight"
 msgstr "가중치가 적합하지 않음"
 
-msgid "Bad base table.\n"
-msgstr "base테이블이 부적절합니다\n"
+msgid "Bad base table."
+msgstr "base테이블이 부적절합니다"
 
 #, c-format
 msgid "Bad bounding box for %s.\n"
@@ -2920,8 +2920,8 @@ msgstr "문맥연쇄 서브테이블 내의 개수가 올바르지 않습니다.
 msgid "Bad count in contextual chaining sub-table.\n"
 msgstr "문맥연쇄 서브테이블 내의 개수가 올바르지 않습니다.\n"
 
-msgid "Bad count.\n"
-msgstr "개수가 올바르지 않습니다.\n"
+msgid "Bad count."
+msgstr "개수가 올바르지 않습니다."
 
 #, c-format
 msgid "Bad coverage table. Glyph %d out of range [0,%d)\n"
@@ -2995,8 +2995,8 @@ msgid "Bad font: Encoding data out of range.\n"
 msgstr "올바르지 않은 폰트: 인코딩데이터가 범위 밖입니다.\n"
 
 #, c-format
-msgid "Bad format for coverage table %d\n"
-msgstr "범위테이블의 포맷이 %d 라는 올바르지 않은 값을 가지고 있습니다\n"
+msgid "Bad format for coverage table %d"
+msgstr "범위테이블의 포맷이 %d 라는 올바르지 않은 값을 가지고 있습니다"
 
 #, c-format
 msgid "Bad format of subtable %d (of %d) in bloc/EBLC of strike with pixelsize=%d. First=%d, last=%d.\n"
@@ -3072,7 +3072,7 @@ msgstr "잘못된 케른 쌍: 글리프 %d 및 %d 은 (는) 음수가 아니어�
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d should have been < %d"
-msgstr "커닝 짝이 부적절합니다: 글리프 %d 과  %d 는 %d 미만이어야 합니다\n"
+msgstr "커닝 짝이 부적절합니다: 글리프 %d 과  %d 는 %d 미만이어야 합니다"
 
 #, c-format
 msgid "Bad kern pair: glyphs at %d & %d are null\n"
@@ -3081,11 +3081,11 @@ msgstr "커닝 쌍이 잘못되었습니다: %d 와 %d 의 그래프가 null입�
 msgid "Bad language tag"
 msgstr "언어 태그가 적합하지 않습니다"
 
-msgid "Bad ligature anchor count.\n"
-msgstr "합음자고정점의 개수이 부적절합니다.\n"
+msgid "Bad ligature anchor count."
+msgstr "합음자고정점의 개수이 부적절합니다."
 
-msgid "Bad ligature base table.\n"
-msgstr "합음자base테이블이 부적절합니다.\n"
+msgid "Bad ligature base table."
+msgstr "합음자base테이블이 부적절합니다."
 
 #, c-format
 msgid "Bad ligature component glyph. GID %d not less than %d (in ligature %d)\n"
@@ -3117,8 +3117,8 @@ msgstr "잘못된 조회 유형"
 msgid "Bad magic number"
 msgstr "잘못된 magic 번호입니다."
 
-msgid "Bad mark table.\n"
-msgstr "마크테이블이 부적절합니다.\n"
+msgid "Bad mark table."
+msgstr "마크테이블이 부적절합니다."
 
 msgid "Bad mort ligature table. Not long enough\n"
 msgstr "mort 합음자테이블이 부적절합니다. 길이가 부족\n"
@@ -3163,7 +3163,7 @@ msgstr "잘못된 openTypeOS2type 키: 모든 비트가 셋입니다. 무시됩�
 
 #, c-format
 msgid "Bad pair position: glyphs %d & %d should have been < %d"
-msgstr " 짝위치지정이 부적절합니다: 글리프 %d 과  %d 는 %d 미만이어야 합니다\n"
+msgstr " 짝위치지정이 부적절합니다: 글리프 %d 과  %d 는 %d 미만이어야 합니다"
 
 #, c-format
 msgid "Bad parts list for glyph %s in %s"
@@ -4735,19 +4735,19 @@ msgstr "클래스명"
 msgid "Class already used"
 msgstr "클래스는 이미 사용중입니다."
 
-msgid "Class definition sub-table extends beyond end of table\n"
-msgstr "클래스 정의 서브 테이블이 테이블의 끝을 초과합니다\n"
+msgid "Class definition sub-table extends beyond end of table"
+msgstr "클래스 정의 서브 테이블이 테이블의 끝을 초과합니다"
 
 #, c-format
-msgid "Class index out of range %d (must be <%d)\n"
-msgstr "클래스인덱스가 범위 밖의 %d 에 있습니다 (%d 미만이어야 합니다)\n"
+msgid "Class index out of range %d (must be <%d)"
+msgstr "클래스인덱스가 범위 밖의 %d 에 있습니다 (%d 미만이어야 합니다)"
 
-msgid "Class out of bounds in GPOS mark sub-table\n"
-msgstr "GPOS 마크서브 테이블내의 클래스가 범위 밖입니다\n"
+msgid "Class out of bounds in GPOS mark sub-table"
+msgstr "GPOS 마크서브 테이블내의 클래스가 범위 밖입니다"
 
 #, c-format
-msgid "Class out of bounds in GPOS mark sub-table for mark %.30s\n"
-msgstr "마크 % .30s의 GPOS 마크 서브 테이블의 범위 외의 클래스\n"
+msgid "Class out of bounds in GPOS mark sub-table for mark %.30s"
+msgstr "마크 % .30s의 GPOS 마크 서브 테이블의 범위 외의 클래스"
 
 msgid "Class10"
 msgstr "Class10"
@@ -6425,8 +6425,8 @@ msgstr "중복 데이터"
 msgid "Duplicate definition of subroutine %d\n"
 msgstr "서브루틴 %d 이 중복정의되어 있습니다\n"
 
-msgid "Duplicate lib data.\n"
-msgstr "중복된 lib 데이터.\n"
+msgid "Duplicate lib data."
+msgstr "중복된 lib 데이터."
 
 msgid "Duplicate name"
 msgstr "중복된 이름"
@@ -6744,8 +6744,8 @@ msgstr ""
 msgid "End of file found in JSTF table.\n"
 msgstr "JSTF 테이블에서 파일의 끝이 발견되었습니다.\n"
 
-msgid "End of file found in coverage table.\n"
-msgstr "범위테이블의 도중에 파일이 끝나있습니다\n"
+msgid "End of file found in coverage table."
+msgstr "범위테이블의 도중에 파일이 끝나있습니다"
 
 #, c-format
 msgid "End of file found in string on line %d of %s"
@@ -8074,8 +8074,8 @@ msgstr "포맷:"
 msgid "Found %1$.4g, expected %2$.4g"
 msgstr "실제의 값은 %1$.4g입니다만,%2$.4g이지 않습니까?"
 
-msgid "Found an new style kerning pair inside a version 1 (or lower) sfd file.\n"
-msgstr "버전 1 (또는 이전)의 sfd 파일에 새로운 스타일의 커닝 쌍을 발견했다.\n"
+msgid "Found an new style kerning pair inside a version 1 (or lower) sfd file."
+msgstr "버전 1 (또는 이전)의 sfd 파일에 새로운 스타일의 커닝 쌍을 발견했다."
 
 msgid "FoundryName"
 msgstr "foundry명"
@@ -8264,8 +8264,8 @@ msgstr "115"
 msgid "GID out of range (%d) in format 14 'cmap' subtable\n"
 msgstr "포맷 14 'cmap'서브 테이블의 GID가 범위 외 (%d)\n"
 
-msgid "GID out of range.\n"
-msgstr "GID가 범위를 벗어났습니다\n"
+msgid "GID out of range."
+msgstr "GID가 범위를 벗어났습니다"
 
 msgid "G_2"
 msgstr "G_2"
@@ -10277,8 +10277,8 @@ msgstr "%2$s의 %1$d행에 있는 유효하지 않은 필기체 위치"
 msgid "Invalid font count in TTC %s."
 msgstr "TTC %s의 글꼴이 유효하지 않습니다."
 
-msgid "Invalid glif name.\n"
-msgstr "잘못된 GLIF 이름.\n"
+msgid "Invalid glif name."
+msgstr "잘못된 GLIF 이름."
 
 #, c-format
 msgid "Invalid glyph for %s when fixing up references."
@@ -10649,8 +10649,8 @@ msgstr "커닝:"
 msgid "KernClass|_New Lookup..."
 msgstr "새로운 Lookup...(_N)"
 
-msgid "KernPair with no subtable name.\n"
-msgstr "서브 테이블 이름없는 KernPair.\n"
+msgid "KernPair with no subtable name."
+msgstr "서브 테이블 이름없는 KernPair."
 
 msgid "Kerning"
 msgstr "커닝"
@@ -13801,8 +13801,8 @@ msgid "None/Open Loops"
 msgstr "없음/열림 루프"
 
 #, c-format
-msgid "Nonsensical class assigned to a glyph-- class=%d is too big. Glyph=%d\n"
-msgstr "무의미한 클래스가 글리프에 부여되어 있습니다―클래스=%d는 너무 큽니다. 글리프=%d\n"
+msgid "Nonsensical class assigned to a glyph-- class=%d is too big. Glyph=%d"
+msgstr "무의미한 클래스가 글리프에 부여되어 있습니다―클래스=%d는 너무 큽니다. 글리프=%d"
 
 msgid "Normal"
 msgstr "보통"
@@ -18370,16 +18370,16 @@ msgid "Skip"
 msgstr "스킵"
 
 #, c-format
-msgid "Skipping duplicate group %s.\n"
-msgstr "중복 그룹 %s를 생략합니다.\n"
+msgid "Skipping duplicate group %s."
+msgstr "중복 그룹 %s를 생략합니다."
 
 #, c-format
-msgid "Skipping group %s with same name as a glyph.\n"
-msgstr "그래프와 같은 이름의 그룹 %s를 생략합니다.\n"
+msgid "Skipping group %s with same name as a glyph."
+msgstr "그래프와 같은 이름의 그룹 %s를 생략합니다."
 
 #, c-format
-msgid "Skipping non-existent glyph %s in group %s.\n"
-msgstr "그룹 %2$s에 존재하지 않는 문양 %1$s를 생략합니다.\n"
+msgid "Skipping non-existent glyph %s in group %s."
+msgstr "그룹 %2$s에 존재하지 않는 문양 %1$s를 생략합니다."
 
 #, c-format
 msgid "Skipping plugin %s: module '%s': Could not load.\n"
@@ -20731,8 +20731,8 @@ msgstr "표시되는 수식의 대형연산자 위에 높여지는 취소 붙임
 msgid "The minimum glue space below a large displayed operator"
 msgstr "표시되는 수식의 대형연산자 아래에 높여지는 취소 붙임공간"
 
-msgid "The move point must be at the beginning of the contour.\n"
-msgstr "이동 점은 윤곽의 시작점해야합니다.\n"
+msgid "The move point must be at the beginning of the contour."
+msgstr "이동 점은 윤곽의 시작점해야합니다."
 
 #, c-format
 msgid "The name FontForge would like to assign to this glyph, %.30s, is already used by a different glyph."
@@ -22031,8 +22031,8 @@ msgstr ""
 "참고: Hhea Descent는 사물의 음수 값이다.\n"
 "기준 이하의"
 
-msgid "This spline set has no points.\n"
-msgstr "이 스플라인 세트에는 포인트가 없습니다.\n"
+msgid "This spline set has no points."
+msgstr "이 스플라인 세트에는 포인트가 없습니다."
 
 msgid "This version of FontForge expects freetype 2.3.7 or more."
 msgstr "이 FontForge의 버전은 freetype 2.3.7 이상을 요구합니다."
@@ -22968,8 +22968,8 @@ msgid "Unknown character after backslash in literal string.\n"
 msgstr "문자열 literal 내에, 백슬래쉬 뒤에 불명확한 글자가 포함되어 있습니다.\n"
 
 #, c-format
-msgid "Unknown class table format: %d\n"
-msgstr "클래스테이블포맷 %d 에서 본 적이 없습니다\n"
+msgid "Unknown class table format: %d"
+msgstr "클래스테이블포맷 %d 에서 본 적이 없습니다"
 
 #, c-format
 msgid "Unknown field %s on line %d of %s"
@@ -23863,8 +23863,8 @@ msgstr "Cvt 변화 확인"
 msgid "Watched Store Change"
 msgstr "저장소 변화 확인"
 
-msgid "We cannot have lead-in points for an open curve.\n"
-msgstr "열린 곡선에 도입 점을 설정할 수 없습니다.\n"
+msgid "We cannot have lead-in points for an open curve."
+msgstr "열린 곡선에 도입 점을 설정할 수 없습니다."
 
 msgid "We don't understand this font\n"
 msgstr "이 폰트를 해석 할 수 없습니다\n"
@@ -24091,8 +24091,8 @@ msgstr ""
 "사용하는지, 이 플래그로 지정합니다."
 
 #, c-format
-msgid "When loading tt instrs from sfd: %s\n"
-msgstr "sfd에서 tt instrs를 로딩하는 경우: %s\n"
+msgid "When loading tt instrs from sfd: %s"
+msgstr "sfd에서 tt instrs를 로딩하는 경우: %s"
 
 msgid "When merging two CID keyed fonts, they must have the same Registry and Ordering, and the font being merged into (the mergee) must have a supplement which is at least as recent as the other's. Furthermore the mergee must have at least as many subfonts as the merger."
 msgstr "CID폰트를 합치기 시,레지스트리과 글리프집합 이름이 같고,글리프가 추가되는 쪽의 하위항목이 다른쪽과 같아야 할 필요가 있습니다. 게다가, 추가되는 쪽은 추가부분과 같거나 더 많은 수의 서브폰트를 가지고 있어야합니다"
@@ -26047,8 +26047,8 @@ msgstr "인코딩파일에 출력할수 없었습니다\n"
 msgid "coverage"
 msgstr "범위"
 
-msgid "coverage table extends beyond end of table\n"
-msgstr "범위테이블이 테이블 말미를 넘어섭니다\n"
+msgid "coverage table extends beyond end of table"
+msgstr "범위테이블이 테이블 말미를 넘어섭니다"
 
 msgid "cursive entry"
 msgstr "필기체 입력"

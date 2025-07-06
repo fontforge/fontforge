@@ -116,28 +116,28 @@ msgid " Bad contextual table, ignored\n"
 msgstr " Помилкова таблиця контекстів, пропускаємо.\n"
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad cursive alignment table, ignored\n"
-msgstr " Помилкова таблиця вирівнювання курсиву, пропускаємо.\n"
+msgid " Bad cursive alignment table, ignored"
+msgstr " Помилкова таблиця вирівнювання курсиву, пропускаємо."
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad kerning class table, ignored\n"
-msgstr " Помилкова таблиця класів кернінґу, пропускаємо.\n"
+msgid " Bad kerning class table, ignored"
+msgstr " Помилкова таблиця класів кернінґу, пропускаємо."
 
 msgid " Bad ligature table, ignored\n"
 msgstr " Помилкова таблиця лігатур, пропускаємо.\n"
 
-msgid " Bad mark attachment table, ignored\n"
-msgstr " Помилкова таблиця долучень позначок, пропускаємо.\n"
+msgid " Bad mark attachment table, ignored"
+msgstr " Помилкова таблиця долучень позначок, пропускаємо."
 
 msgid " Bad multiple substitution table, ignored\n"
 msgstr " Помилкова таблиця кратних підстановок, пропускаємо.\n"
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad pairwise kerning table, ignored\n"
-msgstr " Помилкова таблиця пар кернінґу, пропускаємо.\n"
+msgid " Bad pairwise kerning table, ignored"
+msgstr " Помилкова таблиця пар кернінґу, пропускаємо."
 
-msgid " Bad simple positioning table, ignored\n"
-msgstr " Помилкова таблиця простого розташування, пропускаємо.\n"
+msgid " Bad simple positioning table, ignored"
+msgstr " Помилкова таблиця простого розташування, пропускаємо."
 
 msgid " Bad simple substitution table, ignored\n"
 msgstr " Помилкова таблиця простих підстановок, пропускаємо.\n"
@@ -2415,8 +2415,8 @@ msgstr "Резервний SFD"
 msgid "Bad Anchor Point: %s"
 msgstr "Помилкова точка прив’язки: %s"
 
-msgid "Bad Apple Kern Class\n"
-msgstr "Помилковий клас кернінґу Apple\n"
+msgid "Bad Apple Kern Class"
+msgstr "Помилковий клас кернінґу Apple"
 
 msgid "Bad Ascent/Descent"
 msgstr "Помилковий верхній/нижній акцент"
@@ -2582,12 +2582,12 @@ msgstr "Помилковий діапазон, початок (%1$04X) розт�
 msgid "Bad Reference"
 msgstr "Помилкове посилання"
 
-msgid "Bad SFD file, missing subtable in kernclass defn.\n"
-msgstr "Помилковий файл SFD, не вистачає підтаблиці у визначенні класів кернінґу.\n"
+msgid "Bad SFD file, missing subtable in kernclass defn."
+msgstr "Помилковий файл SFD, не вистачає підтаблиці у визначенні класів кернінґу."
 
 #, c-format
-msgid "Bad SFD file, two kerning classes assigned to the same subtable: %s\n"
-msgstr "Помилковий файл SFD file, two kerning classes assigned to the same subtable: %s\n"
+msgid "Bad SFD file, two kerning classes assigned to the same subtable: %s"
+msgstr "Помилковий файл SFD file, two kerning classes assigned to the same subtable: %s"
 
 msgid "Bad Script"
 msgstr "Помилкова писемність"
@@ -2650,8 +2650,8 @@ msgstr "Помилковий заголовок WOFF, значенням пол�
 msgid "Bad Weight"
 msgstr "Помилкова вага"
 
-msgid "Bad base table.\n"
-msgstr "Помилкова основна таблиця.\n"
+msgid "Bad base table."
+msgstr "Помилкова основна таблиця."
 
 #, c-format
 msgid "Bad bounding box for %s.\n"
@@ -2697,8 +2697,8 @@ msgstr "Помилкова кількість у контекстуальній 
 msgid "Bad count in contextual chaining sub-table.\n"
 msgstr "Помилкова кількість у контекстуальній ланцюговій підтаблиці.\n"
 
-msgid "Bad count.\n"
-msgstr "Помилкова кількість.\n"
+msgid "Bad count."
+msgstr "Помилкова кількість."
 
 #, c-format
 msgid "Bad coverage table. Glyph %d out of range [0,%d)\n"
@@ -2772,8 +2772,8 @@ msgid "Bad font: Encoding data out of range.\n"
 msgstr "Помилка у шрифті: дані кодування поза межами діапазону.\n"
 
 #, c-format
-msgid "Bad format for coverage table %d\n"
-msgstr "Помилковий формат таблиці покриття %d\n"
+msgid "Bad format for coverage table %d"
+msgstr "Помилковий формат таблиці покриття %d"
 
 #, c-format
 msgid "Bad format of subtable %d (of %d) in bloc/EBLC of strike with pixelsize=%d. First=%d, last=%d.\n"
@@ -2849,7 +2849,7 @@ msgstr "Помилкова пара кернінґу: гліфи %d і %d не �
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d should have been < %d"
-msgstr "Помилкова пара кернінґу: гліфи %d і %d мають бути < %d\n"
+msgstr "Помилкова пара кернінґу: гліфи %d і %d мають бути < %d"
 
 #, c-format
 msgid "Bad kern pair: glyphs at %d & %d are null\n"
@@ -2858,11 +2858,11 @@ msgstr "Помилкова пара кернінґу: гліфи %d і %d є п�
 msgid "Bad language tag"
 msgstr "Помилкова мітка мови"
 
-msgid "Bad ligature anchor count.\n"
-msgstr "Помилкова кількість прив’язок лігатур.\n"
+msgid "Bad ligature anchor count."
+msgstr "Помилкова кількість прив’язок лігатур."
 
-msgid "Bad ligature base table.\n"
-msgstr "Помилкова основна таблиця лігатур.\n"
+msgid "Bad ligature base table."
+msgstr "Помилкова основна таблиця лігатур."
 
 #, c-format
 msgid "Bad ligature component glyph. GID %d not less than %d (in ligature %d)\n"
@@ -2894,8 +2894,8 @@ msgstr "Помилковий тип фільтрування"
 msgid "Bad magic number"
 msgstr "Помилкове магічне число"
 
-msgid "Bad mark table.\n"
-msgstr "Помилкова таблиця позначок.\n"
+msgid "Bad mark table."
+msgstr "Помилкова таблиця позначок."
 
 msgid "Bad mort ligature table. Not long enough\n"
 msgstr "Помилкова таблиця лігатур mort. Недостатня довжина.\n"
@@ -2940,7 +2940,7 @@ msgstr "Помилковий ключ openTypeOS2type: встановлено в
 
 #, c-format
 msgid "Bad pair position: glyphs %d & %d should have been < %d"
-msgstr "Помилкове розташування пари: гліфи %d і %d мають бути < %d\n"
+msgstr "Помилкове розташування пари: гліфи %d і %d мають бути < %d"
 
 #, c-format
 msgid "Bad parts list for glyph %s in %s"
@@ -4178,19 +4178,19 @@ msgstr "Назва класу"
 msgid "Class already used"
 msgstr "Клас вже використано"
 
-msgid "Class definition sub-table extends beyond end of table\n"
-msgstr "Підтаблиця визначення класів продовжується за межами таблиці\n"
+msgid "Class definition sub-table extends beyond end of table"
+msgstr "Підтаблиця визначення класів продовжується за межами таблиці"
 
 #, c-format
-msgid "Class index out of range %d (must be <%d)\n"
-msgstr "Індекс класу поза межами діапазону %d (має бути <%d)\n"
+msgid "Class index out of range %d (must be <%d)"
+msgstr "Індекс класу поза межами діапазону %d (має бути <%d)"
 
-msgid "Class out of bounds in GPOS mark sub-table\n"
-msgstr "Клас поза межами діапазону у підтаблиці позначок GPOS\n"
+msgid "Class out of bounds in GPOS mark sub-table"
+msgstr "Клас поза межами діапазону у підтаблиці позначок GPOS"
 
 #, c-format
-msgid "Class out of bounds in GPOS mark sub-table for mark %.30s\n"
-msgstr "Клас поза межами діапазону у підтаблиці позначок GPOS для позначки %.30s\n"
+msgid "Class out of bounds in GPOS mark sub-table for mark %.30s"
+msgstr "Клас поза межами діапазону у підтаблиці позначок GPOS для позначки %.30s"
 
 msgid "Class10"
 msgstr "Клас10"
@@ -5806,8 +5806,8 @@ msgstr "Дублювання даних"
 msgid "Duplicate definition of subroutine %d\n"
 msgstr "Дублювати визначення підпрограми %d\n"
 
-msgid "Duplicate lib data.\n"
-msgstr "Дублювання бібліотечних даних.\n"
+msgid "Duplicate lib data."
+msgstr "Дублювання бібліотечних даних."
 
 msgid "Duplicate name"
 msgstr "Дублювати назву"
@@ -6107,8 +6107,8 @@ msgstr ""
 msgid "End of file found in JSTF table.\n"
 msgstr "У таблиці JSTF виявлено символ кінця файла.\n"
 
-msgid "End of file found in coverage table.\n"
-msgstr "Виявлено символ кінця файла у таблиці покриття.\n"
+msgid "End of file found in coverage table."
+msgstr "Виявлено символ кінця файла у таблиці покриття."
 
 #, c-format
 msgid "End of file found in string on line %d of %s"
@@ -7369,8 +7369,8 @@ msgstr "Формат:"
 msgid "Found %1$.4g, expected %2$.4g"
 msgstr "Знайдено %1$.4g, мало бути %2$.4g"
 
-msgid "Found an new style kerning pair inside a version 1 (or lower) sfd file.\n"
-msgstr "Знайдено пару кернінґу у новому стилі в межах даних файла SFD версії 1 (або старішої).\n"
+msgid "Found an new style kerning pair inside a version 1 (or lower) sfd file."
+msgstr "Знайдено пару кернінґу у новому стилі в межах даних файла SFD версії 1 (або старішої)."
 
 msgid "FoundryName"
 msgstr "Назва ливарні"
@@ -7549,8 +7549,8 @@ msgstr "100"
 msgid "GID out of range (%d) in format 14 'cmap' subtable\n"
 msgstr "GID поза межами діапазону (%d) у форматі 14 підтаблиці «cmap»\n"
 
-msgid "GID out of range.\n"
-msgstr "GID поза межами припустимого діапазону.\n"
+msgid "GID out of range."
+msgstr "GID поза межами припустимого діапазону."
 
 msgid "Ga"
 msgstr "Га"
@@ -9467,8 +9467,8 @@ msgstr "Некоректна позиція курсиву, рядок %d %s"
 msgid "Invalid font count in TTC %s."
 msgstr "Некоректний лічильник шрифту у TTC %s."
 
-msgid "Invalid glif name.\n"
-msgstr "Некоректна назва гліфа.\n"
+msgid "Invalid glif name."
+msgstr "Некоректна назва гліфа."
 
 #, c-format
 msgid "Invalid glyph for %s when fixing up references."
@@ -9827,8 +9827,8 @@ msgstr "Керн:"
 msgid "KernClass|_New Lookup..."
 msgstr "С_творити фільтрування…"
 
-msgid "KernPair with no subtable name.\n"
-msgstr "KernPair без назви підтаблиці.\n"
+msgid "KernPair with no subtable name."
+msgstr "KernPair без назви підтаблиці."
 
 msgid "Kerning"
 msgstr "Кернінґ"
@@ -12828,8 +12828,8 @@ msgid "None of the glyphs in the current font match any names or code points in 
 msgstr "Жоден з гліфів у поточному шрифті не відповідає назвам або позиціям у кодовій таблиці вибраних груп."
 
 #, c-format
-msgid "Nonsensical class assigned to a glyph-- class=%d is too big. Glyph=%d\n"
-msgstr "З гліфом пов’язано беззмістовний клас — клас=%d є занадто великим значенням. Гліф=%d\n"
+msgid "Nonsensical class assigned to a glyph-- class=%d is too big. Glyph=%d"
+msgstr "З гліфом пов’язано беззмістовний клас — клас=%d є занадто великим значенням. Гліф=%d"
 
 msgid "Normal"
 msgstr "Звичайні"
@@ -17237,16 +17237,16 @@ msgid "Skip"
 msgstr "Пропустити"
 
 #, c-format
-msgid "Skipping duplicate group %s.\n"
-msgstr "Пропускаємо дублікат групи %s.\n"
+msgid "Skipping duplicate group %s."
+msgstr "Пропускаємо дублікат групи %s."
 
 #, c-format
-msgid "Skipping group %s with same name as a glyph.\n"
-msgstr "Пропускаємо групу %s із тією ж назвою, що і гліф.\n"
+msgid "Skipping group %s with same name as a glyph."
+msgstr "Пропускаємо групу %s із тією ж назвою, що і гліф."
 
 #, c-format
-msgid "Skipping non-existent glyph %s in group %s.\n"
-msgstr "Пропускаємо гліф %s у групі %s, якого не існує.\n"
+msgid "Skipping non-existent glyph %s in group %s."
+msgstr "Пропускаємо гліф %s у групі %s, якого не існує."
 
 msgid "Skolt Sami"
 msgstr "Скольтсаамська"
@@ -19424,8 +19424,8 @@ msgstr "Мінімальний прості для склеювання над �
 msgid "The minimum glue space below a large displayed operator"
 msgstr "Мінімальний прості для склеювання під великим показаним оператором"
 
-msgid "The move point must be at the beginning of the contour.\n"
-msgstr "Точка пересування має перебувати на початку контуру.\n"
+msgid "The move point must be at the beginning of the contour."
+msgstr "Точка пересування має перебувати на початку контуру."
 
 #, c-format
 msgid "The name FontForge would like to assign to this glyph, %.30s, is already used by a different glyph."
@@ -20744,8 +20744,8 @@ msgstr ""
 "Зауваження: нижній акцент hhea є ВІД’ЄМНИМ значенням\n"
 "для елементів під лінією шрифту."
 
-msgid "This spline set has no points.\n"
-msgstr "У цьому наборі сплайнів не має точок.\n"
+msgid "This spline set has no points."
+msgstr "У цьому наборі сплайнів не має точок."
 
 msgid "This version of FontForge expects freetype 2.3.7 or more."
 msgstr "Для роботи у цій версії FontForge слід встановити freetype 2.3.7 або новішу версію."
@@ -21621,8 +21621,8 @@ msgid "Unknown character after backslash in literal string.\n"
 msgstr "Невідомий символ після зворотної риски у рядку-літералі.\n"
 
 #, c-format
-msgid "Unknown class table format: %d\n"
-msgstr "Невідомий формат таблиці класів: %d\n"
+msgid "Unknown class table format: %d"
+msgstr "Невідомий формат таблиці класів: %d"
 
 #, c-format
 msgid "Unknown field %s on line %d of %s"
@@ -22444,8 +22444,8 @@ msgstr "Переглянута зміна ТКЗ"
 msgid "Watched Store Change"
 msgstr "Зміна у даних, за якими ведеться спостереження"
 
-msgid "We cannot have lead-in points for an open curve.\n"
-msgstr "На незамкненій кривій не може бути вхідних точок.\n"
+msgid "We cannot have lead-in points for an open curve."
+msgstr "На незамкненій кривій не може бути вхідних точок."
 
 msgid "We don't understand this font\n"
 msgstr "Програмі не вдалося обробити цей шрифт\n"
@@ -22683,8 +22683,8 @@ msgstr ""
 "щоб вказати, яку з них слід завантажувати для шрифту."
 
 #, c-format
-msgid "When loading tt instrs from sfd: %s\n"
-msgstr "Під час завантаження інструкцій tt з sfd: %s\n"
+msgid "When loading tt instrs from sfd: %s"
+msgstr "Під час завантаження інструкцій tt з sfd: %s"
 
 msgid "When merging two CID keyed fonts, they must have the same Registry and Ordering, and the font being merged into (the mergee) must have a supplement which is at least as recent as the other's. Furthermore the mergee must have at least as many subfonts as the merger."
 msgstr "Щоб стало можливим об’єднання двох шрифтів з позначками CID, ці шрифти повинні мати однаковий реєстр і впорядкування. Крім того, шрифт, до якого виконується об’єднання (основний) повинен мати додаток, версія якого є принаймні тією ж, що і версія іншого шрифту. Також основний шрифт повинен мати принаймні стільки ж підшрифтів, що і шрифт, який з ним зливається."
@@ -24486,8 +24486,8 @@ msgstr "не вдалося записати файл кодувань\n"
 msgid "coverage"
 msgstr "покриття"
 
-msgid "coverage table extends beyond end of table\n"
-msgstr "таблиця покриття продовжується за межами таблиці\n"
+msgid "coverage table extends beyond end of table"
+msgstr "таблиця покриття продовжується за межами таблиці"
 
 msgid "cursive entry"
 msgstr "вхід курсиву"

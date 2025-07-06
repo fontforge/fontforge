@@ -2028,8 +2028,8 @@ msgstr[0] "Hạng rút lui : "
 msgid "Backup SFD"
 msgstr "SDF sao lưu"
 
-msgid "Bad Apple Kern Class\n"
-msgstr "Hạng định chỗ Apple sai\n"
+msgid "Bad Apple Kern Class"
+msgstr "Hạng định chỗ Apple sai"
 
 msgid "Bad Ascent/Descent"
 msgstr "Lên/Xuống sai"
@@ -2229,8 +2229,8 @@ msgstr "Danh sách biến thể sai"
 msgid "Bad Variants list for glyph %s in %s"
 msgstr "Danh sách biến thể sai cho hình tượng %s trong %s"
 
-msgid "Bad base table.\n"
-msgstr "Bảng cơ sở sai.\n"
+msgid "Bad base table."
+msgstr "Bảng cơ sở sai."
 
 #, c-format
 msgid "Bad bounding box for %s.\n"
@@ -2270,8 +2270,8 @@ msgstr "Số đếm sai trong bảng phụ tạo dãy ngữ cảnh.\n"
 msgid "Bad count in contextual chaining sub-table.\n"
 msgstr "Số đếm sai trong bảng phụ tạo dãy ngữ cảnh.\n"
 
-msgid "Bad count.\n"
-msgstr "Số đếm sai\n"
+msgid "Bad count."
+msgstr "Số đếm sai"
 
 #, c-format
 msgid "Bad coverage table. Glyph %d out of range [0,%d)\n"
@@ -2336,8 +2336,8 @@ msgid "Bad font: Encoding data out of range.\n"
 msgstr "Phông sai : dữ liệu mã hoá ở ngoại phạm vi.\n"
 
 #, c-format
-msgid "Bad format for coverage table %d\n"
-msgstr "Định dạng sai cho bảng bao quát %d.\n"
+msgid "Bad format for coverage table %d"
+msgstr "Định dạng sai cho bảng bao quát %d."
 
 #, c-format
 msgid "Bad glyph (%d), disordered 'loca' table (start comes after end)\n"
@@ -2395,16 +2395,16 @@ msgstr "Cặp định chỗ sai : hình tượng %d và %d phải < %d\n"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d should have been < %d"
-msgstr "Cặp định chỗ sai : hình tượng %d và %d nên < %d\n"
+msgstr "Cặp định chỗ sai : hình tượng %d và %d nên < %d"
 
 msgid "Bad language tag"
 msgstr "Thẻ ngôn ngữ sai"
 
-msgid "Bad ligature anchor count.\n"
-msgstr "Số đếm neo chữ ghép sai.\n"
+msgid "Bad ligature anchor count."
+msgstr "Số đếm neo chữ ghép sai."
 
-msgid "Bad ligature base table.\n"
-msgstr "Bảng cơ sở chữ chép sai.\n"
+msgid "Bad ligature base table."
+msgstr "Bảng cơ sở chữ chép sai."
 
 #, c-format
 msgid "Bad ligature component glyph. GID %d not less than %d (in ligature %d)\n"
@@ -2457,8 +2457,8 @@ msgstr "Sai kiểu sự tra tìm"
 msgid "Bad magic number"
 msgstr "Số ma thuật sai"
 
-msgid "Bad mark table.\n"
-msgstr "Bảng dấu sai.\n"
+msgid "Bad mark table."
+msgstr "Bảng dấu sai."
 
 msgid "Bad mort ligature table. Not long enough\n"
 msgstr "Bảng chữ ghép 'mort' sai : không đủ dài\n"
@@ -2500,7 +2500,7 @@ msgstr "Sai đặt độ đục trên dòng %d, phải nằm giữa 0.0 và 1.0.
 
 #, c-format
 msgid "Bad pair position: glyphs %d & %d should have been < %d"
-msgstr "Vị trí cặp sai : hình tượng %d và %d nên < %d\n"
+msgstr "Vị trí cặp sai : hình tượng %d và %d nên < %d"
 
 #, c-format
 msgid "Bad parts list for glyph %s in %s"
@@ -3618,19 +3618,19 @@ msgstr "Hạng 1: (các gì khác)"
 msgid "Class already used"
 msgstr "Hạng đã được đóng"
 
-msgid "Class definition sub-table extends beyond end of table\n"
-msgstr "Bảng phụ xác định hạng vượt quá kết thúc của bảng\n"
+msgid "Class definition sub-table extends beyond end of table"
+msgstr "Bảng phụ xác định hạng vượt quá kết thúc của bảng"
 
 #, c-format
-msgid "Class index out of range %d (must be <%d)\n"
-msgstr "Chỉ số hạng ở ngoại phạm vi %d (phải < %d)\n"
+msgid "Class index out of range %d (must be <%d)"
+msgstr "Chỉ số hạng ở ngoại phạm vi %d (phải < %d)"
 
-msgid "Class out of bounds in GPOS mark sub-table\n"
-msgstr "Hạng ở ngoại phạm vi trong bảng phụ dấu GPOS\n"
+msgid "Class out of bounds in GPOS mark sub-table"
+msgstr "Hạng ở ngoại phạm vi trong bảng phụ dấu GPOS"
 
 #, c-format
-msgid "Class out of bounds in GPOS mark sub-table for mark %.30s\n"
-msgstr "Hạng ở ngoại phạm vi trong bảng phụ dấu GPOS cho dấu %.30s\n"
+msgid "Class out of bounds in GPOS mark sub-table for mark %.30s"
+msgstr "Hạng ở ngoại phạm vi trong bảng phụ dấu GPOS cho dấu %.30s"
 
 msgid "Classes"
 msgstr "Hạng"
@@ -5293,8 +5293,8 @@ msgstr ""
 msgid "End of file found in JSTF table.\n"
 msgstr "Gặp kết thúc của tập tin trong bảng JSTF.\n"
 
-msgid "End of file found in coverage table.\n"
-msgstr "Gặp kết thúc của tập tin trong bảng bao quát.\n"
+msgid "End of file found in coverage table."
+msgstr "Gặp kết thúc của tập tin trong bảng bao quát."
 
 #, c-format
 msgid "End of file found in string on line %d of %s"
@@ -11182,8 +11182,8 @@ msgid "None of the glyphs in the current font match any names or code points in 
 msgstr "Không có hình tượng trong phông hiện thời mà tương ứng với tên hay điểm mã trong những nhóm đã chọn."
 
 #, c-format
-msgid "Nonsensical class assigned to a glyph-- class=%d is too big. Glyph=%d\n"
-msgstr "Hạng vô ích được gán cho hình tượng: hạng=%d quá lớn. Hình tượng=%d\n"
+msgid "Nonsensical class assigned to a glyph-- class=%d is too big. Glyph=%d"
+msgstr "Hạng vô ích được gán cho hình tượng: hạng=%d quá lớn. Hình tượng=%d"
 
 msgid "Normal"
 msgstr "Chuẩn"
@@ -19028,8 +19028,8 @@ msgid "Unknown character after backslash in literal string.\n"
 msgstr "Gặp ký tự lạ phía sau dấu xuyệc ngược trong chuỗi nghĩa chữ.\n"
 
 #, c-format
-msgid "Unknown class table format: %d\n"
-msgstr "Không rõ định dạng bảng hạng: %d\n"
+msgid "Unknown class table format: %d"
+msgstr "Không rõ định dạng bảng hạng: %d"
 
 #, c-format
 msgid "Unknown field %s on line %d of %s"
@@ -21526,8 +21526,8 @@ msgstr "không thể ghi tâp tin bảng mã\n"
 msgid "coverage"
 msgstr "bao quát"
 
-msgid "coverage table extends beyond end of table\n"
-msgstr "bảng bao quát vượt quá kết thúc của bảng\n"
+msgid "coverage table extends beyond end of table"
+msgstr "bảng bao quát vượt quá kết thúc của bảng"
 
 msgid "cursive entry"
 msgstr "vào chữ thảo"
