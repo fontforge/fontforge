@@ -61,7 +61,7 @@ static uint16_t *getAppleClassTable(FILE *ttf, int classdef_offset, int cnt, int
     first = getushort(ttf);
     n = getushort(ttf);
     if ( first+n-1>=cnt ) {
-	LogError( _("Bad Apple Kern Class\n") );
+	LogError( _("Bad Apple Kern Class") );
 	info->bad_gx = true;
     }
     for ( i=0; i<n && i+first<cnt; ++i )
@@ -86,7 +86,7 @@ static char **ClassToNames(struct ttfinfo *info,int class_cnt,uint16_t *class,in
 	    lens[class[i]] += strlen(info->chars[i]->name)+1;
 	    ret[class[i]][lens[class[i]]-1] = ' ';
 	} else {
-	    LogError( _("Class index out of range %d (must be <%d)\n"),class[i], class_cnt );
+	    LogError( _("Class index out of range %d (must be <%d)"),class[i], class_cnt );
 	    info->bad_ot = true;
 	}
     }
@@ -181,7 +181,7 @@ return( copy(""));
     for ( i=len=0 ; glyphs[i]!=0xffff; ++i ) {
 	if ( glyphs[i]>=info->glyph_cnt ) {
 	    if ( !info->bad_ot ) {
-		LogError( _("GID out of range.\n") );
+		LogError( _("GID out of range.") );
 		info->bad_ot = true;
 	    }
 return( copy(""));
@@ -241,7 +241,7 @@ static uint16_t *getCoverageTable(FILE *ttf, int coverage_offset, struct ttfinfo
 	cnt = getushort(ttf);
 	glyphs = malloc((cnt+1)*sizeof(uint16_t));
 	if ( ftell(ttf)+2*cnt > info->g_bounds ) {
-	    LogError( _("coverage table extends beyond end of table\n") );
+	    LogError( _("coverage table extends beyond end of table") );
 	    info->bad_ot = true;
 	    if ( ftell(ttf)>info->g_bounds ) {
             free(glyphs);
@@ -251,12 +251,12 @@ return( NULL );
 	}
 	for ( i=0; i<cnt; ++i ) {
 	    if ( cnt&0xffff0000 ) {
-		LogError( _("Bad count.\n"));
+		LogError( _("Bad count."));
 		info->bad_ot = true;
 	    }
 	    glyphs[i] = getushort(ttf);
 	    if ( feof(ttf) ) {
-		LogError( _("End of file found in coverage table.\n") );
+		LogError( _("End of file found in coverage table.") );
 		info->bad_ot = true;
 		free(glyphs);
 return( NULL );
@@ -271,7 +271,7 @@ return( NULL );
 	glyphs = calloc((max=256),sizeof(uint16_t));
 	rcnt = getushort(ttf); cnt = 0;
 	if ( ftell(ttf)+6*rcnt > info->g_bounds ) {
-	    LogError( _("coverage table extends beyond end of table\n") );
+	    LogError( _("coverage table extends beyond end of table") );
 	    info->bad_ot = true;
 	    rcnt = (info->g_bounds-ftell(ttf))/6;
 	}
@@ -281,7 +281,7 @@ return( NULL );
 	    end = getushort(ttf);
 	    ind = getushort(ttf);
 	    if ( feof(ttf) ) {
-		LogError( _("End of file found in coverage table.\n") );
+		LogError( _("End of file found in coverage table.") );
 		info->bad_ot = true;
 		free(glyphs);
 return( NULL );
@@ -306,7 +306,7 @@ return( NULL );
 		cnt = ind+end-start+1;
 	}
     } else {
-	LogError( _("Bad format for coverage table %d\n"), format );
+	LogError( _("Bad format for coverage table %d"), format );
 	info->bad_ot = true;
 return( NULL );
     }
@@ -337,7 +337,7 @@ static uint16_t *getClassDefTable(FILE *ttf, int classdef_offset, struct ttfinfo
 	start = getushort(ttf);
 	glyphcnt = getushort(ttf);
 	if ( ftell(ttf)+2*glyphcnt > g_bounds ) {
-	    LogError( _("Class definition sub-table extends beyond end of table\n") );
+	    LogError( _("Class definition sub-table extends beyond end of table") );
 	    info->bad_ot = true;
 	    glyphcnt = (g_bounds-ftell(ttf))/2;
 	}
@@ -351,7 +351,7 @@ static uint16_t *getClassDefTable(FILE *ttf, int classdef_offset, struct ttfinfo
     } else if ( format==2 ) {
 	rangecnt = getushort(ttf);
 	if ( ftell(ttf)+6*rangecnt > g_bounds ) {
-	    LogError( _("Class definition sub-table extends beyond end of table\n") );
+	    LogError( _("Class definition sub-table extends beyond end of table") );
 	    info->bad_ot = true;
 	    rangecnt = (g_bounds-ftell(ttf))/6;
 	}
@@ -367,7 +367,7 @@ static uint16_t *getClassDefTable(FILE *ttf, int classdef_offset, struct ttfinfo
 		glist[j] = class;
 	}
     } else {
-	LogError( _("Unknown class table format: %d\n"), format );
+	LogError( _("Unknown class table format: %d"), format );
 	info->bad_ot = true;
 	/* Put everything in class 0 and return that */
     }
@@ -376,7 +376,7 @@ static uint16_t *getClassDefTable(FILE *ttf, int classdef_offset, struct ttfinfo
     for ( i=0; i<cnt; ++i ) {
 	if ( glist[i]>=cnt+1 ) {
 	    if ( !warned ) {
-		LogError( _("Nonsensical class assigned to a glyph-- class=%d is too big. Glyph=%d\n"),
+		LogError( _("Nonsensical class assigned to a glyph-- class=%d is too big. Glyph=%d"),
 			glist[i], i );
 		info->bad_ot = true;
 		warned = true;
@@ -491,7 +491,7 @@ static void addPairPos(struct ttfinfo *info, int glyph1, int glyph2,
 	pos->u.pair.vr[0].adjust = readValDevTab(ttf,vr1,base,info);
 	pos->u.pair.vr[1].adjust = readValDevTab(ttf,vr2,base,info);
     } else {
-	LogError( _("Bad pair position: glyphs %d & %d should have been < %d\n"),
+	LogError( _("Bad pair position: glyphs %d & %d should have been < %d"),
 		glyph1, glyph2, info->glyph_cnt );
 	info->bad_ot = true;
     }
@@ -528,7 +528,7 @@ static int addKernPair(struct ttfinfo *info, int glyph1, int glyph2,
 return( true );
     } else if ( glyph1>=info->glyph_cnt || glyph2>=info->glyph_cnt ) {
 	/* Might be NULL in a ttc file where we omit glyphs */
-	LogError( _("Bad kern pair: glyphs %d & %d should have been < %d\n"),
+	LogError( _("Bad kern pair: glyphs %d & %d should have been < %d"),
 		glyph1, glyph2, info->glyph_cnt );
 	info->bad_ot = true;
     }
@@ -569,7 +569,7 @@ return;
 	glyphs = getCoverageTable(ttf,stoffset+coverage,info);
 	if ( glyphs==NULL ) {
 /* GT: This continues a multi-line error message, hence the leading space */
-	    LogError( _(" Bad pairwise kerning table, ignored\n") );
+	    LogError( _(" Bad pairwise kerning table, ignored") );
 	    free(ps_offsets);
 return;
 	}
@@ -608,7 +608,7 @@ return;
 	glyphs = getCoverageTable(ttf,stoffset+coverage,info);
 	if ( glyphs==NULL ) {
 /* GT: This continues a multi-line error message, hence the leading space */
-	    LogError( _(" Bad kerning class table, ignored\n") );
+	    LogError( _(" Bad kerning class table, ignored") );
         free(class1);
         free(class2);
 return;
@@ -737,7 +737,7 @@ return;
     glyphs = getCoverageTable(ttf,stoffset+coverage,info);
     if ( glyphs==NULL ) {
 /* GT: This continues a multi-line error message, hence the leading space */
-	LogError( _(" Bad cursive alignment table, ignored\n") );
+	LogError( _(" Bad cursive alignment table, ignored") );
 	free(offsets);
 return;
     }
@@ -782,7 +782,7 @@ static AnchorClass **MarkGlyphsProcessMarks(FILE *ttf,int markoffset,
     fseek(ttf,markoffset,SEEK_SET);
     cnt = getushort(ttf);
     if ( feof(ttf) ) {
-	LogError( _("Bad mark table.\n") );
+	LogError( _("Bad mark table.") );
 	info->bad_ot = true;
         free(classes);
 return( NULL );
@@ -812,9 +812,9 @@ return( NULL );
 	if ( at_offsets[i].class>=classcnt ) {
 	    at_offsets[i].class = 0;
 	    if ( markglyphs[i]>=info->glyph_cnt )
-		LogError( _("Class out of bounds in GPOS mark sub-table\n") );
+		LogError( _("Class out of bounds in GPOS mark sub-table") );
 	    else
-		LogError( _("Class out of bounds in GPOS mark sub-table for mark %.30s\n"), info->chars[markglyphs[i]]->name);
+		LogError( _("Class out of bounds in GPOS mark sub-table for mark %.30s"), info->chars[markglyphs[i]]->name);
 	    info->bad_ot = true;
 	}
     }
@@ -841,7 +841,7 @@ static void MarkGlyphsProcessBases(FILE *ttf,int baseoffset,
     fseek(ttf,baseoffset,SEEK_SET);
     basecnt = getushort(ttf);
     if ( feof(ttf) ) {
-	LogError( _("Bad base table.\n") );
+	LogError( _("Bad base table.") );
 	info->bad_ot = true;
 return;
     }
@@ -872,7 +872,7 @@ static void MarkGlyphsProcessLigs(FILE *ttf,int baseoffset,
     fseek(ttf,baseoffset,SEEK_SET);
     basecnt = getushort(ttf);
     if ( feof(ttf) ) {
-	LogError( _("Bad ligature base table.\n") );
+	LogError( _("Bad ligature base table.") );
 	info->bad_ot = true;
 return;
     }
@@ -886,7 +886,7 @@ return;
 	fseek(ttf,baseoffset+loffsets[i],SEEK_SET);
 	compcnt = getushort(ttf);
 	if ( feof(ttf)) {
-	    LogError(_("Bad ligature anchor count.\n"));
+	    LogError(_("Bad ligature anchor count."));
 	    info->bad_ot = true;
     continue;
 	}
@@ -922,7 +922,7 @@ static void gposMarkSubTable(FILE *ttf, uint32_t stoffset,
     baseglyphs = getCoverageTable(ttf,stoffset+basecoverage,info);
     if ( baseglyphs==NULL || markglyphs==NULL ) {
 	free(baseglyphs); free(markglyphs);
-	LogError( _(" Bad mark attachment table, ignored\n") );
+	LogError( _(" Bad mark attachment table, ignored") );
 return;
     }
 	/* as is the (first) mark table */
@@ -978,7 +978,7 @@ return;
     glyphs = getCoverageTable(ttf,stoffset+coverage,info);
     if ( glyphs==NULL ) {
 	free(vr);
-	LogError( _(" Bad simple positioning table, ignored\n") );
+	LogError( _(" Bad simple positioning table, ignored") );
 return;
     }
     for ( i=0; glyphs[i]!=0xffff; ++i ) if ( glyphs[i]<info->glyph_cnt && info->chars[glyphs[i]]!=NULL ) {

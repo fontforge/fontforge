@@ -3689,7 +3689,7 @@ static void SFDGetTtfInstrs(FILE *sfd, SplineChar *sc) {
 }
 
 static void tterr(void *UNUSED(rubbish), char *message, int UNUSED(pos)) {
-    LogError(_("When loading tt instrs from sfd: %s\n"), message );
+    LogError(_("When loading tt instrs from sfd: %s"), message );
 }
 
 static void SFDGetTtInstrs(FILE *sfd, SplineChar *sc) {
@@ -4879,11 +4879,11 @@ void SFDGetKerns( FILE *sfd, SplineChar *sc, char* ttok ) {
 	    struct lookup_subtable *sub;
 	    int kernCount = 0;
 	    if ( sf->sfd_version<2 )
-		LogError(_("Found an new style kerning pair inside a version 1 (or lower) sfd file.\n") );
+		LogError(_("Found an new style kerning pair inside a version 1 (or lower) sfd file.") );
 	    while ( fscanf(sfd,"%d %d", &index, &off )==2 ) {
 		sub = SFFindLookupSubtableAndFreeName(sf,SFDReadUTF7Str(sfd));
 		if ( sub==NULL ) {
-		    LogError(_("KernPair with no subtable name.\n"));
+		    LogError(_("KernPair with no subtable name."));
 	    	    break;
 		}
 		kernCount++;
@@ -5263,13 +5263,13 @@ return( NULL );
             ungetc(ch,sfd);
             if ( ch!='"' ) {
               if ( getname(sfd,tok)!=1 ) {
-                LogError(_("Invalid glif name.\n"));
+                LogError(_("Invalid glif name."));
               }
 	      sc->glif_name = copy(tok);
             } else {
 	      sc->glif_name = SFDReadUTF7Str(sfd);
 	      if ( sc->glif_name==NULL ) {
-                LogError(_("Invalid glif name.\n"));
+                LogError(_("Invalid glif name."));
 	      }
             }
 	} else if ( strmatch(tok,"Width:")==0 ) {
@@ -5634,11 +5634,11 @@ return( NULL );
 	    struct lookup_subtable *sub;
 
 	    if ( sf->sfd_version<2 )
-		LogError(_("Found an new style kerning pair inside a version 1 (or lower) sfd file.\n") );
+		LogError(_("Found an new style kerning pair inside a version 1 (or lower) sfd file.") );
 	    while ( fscanf(sfd,"%d %d", &index, &off )==2 ) {
 		sub = SFFindLookupSubtableAndFreeName(sf,SFDReadUTF7Str(sfd));
 		if ( sub==NULL ) {
-		    LogError(_("KernPair with no subtable name.\n"));
+		    LogError(_("KernPair with no subtable name."));
 	    break;
 		}
 		kp = chunkalloc(sizeof(KernPair1));
@@ -8121,9 +8121,9 @@ bool SFD_GetFontMetaData( FILE *sfd,
 		kc->subtable->kc = kc;
 	    else {
 		if ( kc->subtable==NULL )
-		    LogError(_("Bad SFD file, missing subtable in kernclass defn.\n") );
+		    LogError(_("Bad SFD file, missing subtable in kernclass defn.") );
 		else
-		    LogError(_("Bad SFD file, two kerning classes assigned to the same subtable: %s\n"), kc->subtable->subtable_name );
+		    LogError(_("Bad SFD file, two kerning classes assigned to the same subtable: %s"), kc->subtable->subtable_name );
 		kc->subtable = NULL;
 	    }
 	}
