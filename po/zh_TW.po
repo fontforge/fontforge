@@ -13,8 +13,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-05 21:28+0300\n"
-"PO-Revision-Date: 2025-07-05 19:44\n"
+"POT-Creation-Date: 2025-07-06 00:16+0300\n"
+"PO-Revision-Date: 2025-07-05 22:20\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Language: zh_TW\n"
@@ -80,10 +80,13 @@ msgstr " 加入尺寸將會依縮放建立它。"
 msgid " Adding a size will create it."
 msgstr " 加入尺寸將會建立它。"
 
-msgid " At least one anchor point used point matching. It may be out of date now."
+msgid ""
+" At least one anchor point used point matching. It may be out of date now."
 msgstr " 至少一個錨點使用點的匹配。它現在也許逾期。"
 
-msgid " At least one reference to this glyph used point matching. That match is now out of date."
+msgid ""
+" At least one reference to this glyph used point matching. That match is now "
+"out of date."
 msgstr " 至少一個對此字圖的參照是使用點的匹配。該匹配現在逾期。"
 
 #, c-format
@@ -94,7 +97,8 @@ msgstr "曲率：%g"
 msgid " Curvature: %g  Radius: %g"
 msgstr "曲率：%g 半徑：%g"
 
-msgid " Instructions in this glyph (or one that refers to it) are now out of date."
+msgid ""
+" Instructions in this glyph (or one that refers to it) are now out of date."
 msgstr " 此字圖中的指令(或是參照它的某一個) 目前逾期。"
 
 msgid " Instructions in this glyph (or one that refers to it) have been lost."
@@ -152,12 +156,19 @@ msgid "\"Symbol\""
 msgstr "「符號」"
 
 #, c-format
-msgid "%.100s is not in a known format (or uses features of that format fontforge does not support, or is so badly corrupted as to be unreadable)"
-msgstr "%.100s 不在已知格式中 (或是使用了 fontforge 不支援的格式特徵，或是因為損壞地如此嚴重而不可讀取)"
+msgid ""
+"%.100s is not in a known format (or uses features of that format fontforge "
+"does not support, or is so badly corrupted as to be unreadable)"
+msgstr ""
+"%.100s 不在已知格式中 (或是使用了 fontforge 不支援的格式特徵，或是因為損壞地"
+"如此嚴重而不可讀取)"
 
 #, c-format
-msgid "%.50s contains a flipped reference. This cannot be corrected as is. Would you like me to unlink it and then correct it?"
-msgstr "%.50s 含有不穩定的參照。這無法修正回原樣。您想要我去取消它的連結然後修正它？"
+msgid ""
+"%.50s contains a flipped reference. This cannot be corrected as is. Would "
+"you like me to unlink it and then correct it?"
+msgstr ""
+"%.50s 含有不穩定的參照。這無法修正回原樣。您想要我去取消它的連結然後修正它？"
 
 #, c-format
 msgid "%1$.30s string for %2$.30s"
@@ -251,7 +262,8 @@ msgid "%s exit"
 msgstr "%s 離開"
 
 #, c-format
-msgid "%s has a bounding box which is too big for this algorithm to work. Ignored."
+msgid ""
+"%s has a bounding box which is too big for this algorithm to work. Ignored."
 msgstr "%s 具有邊界框，該項太大而無法使這個演算法有作用。忽略。"
 
 #. GT: This string is used to generate a name for each OpenType lookup.
@@ -264,7 +276,8 @@ msgid "%s in %s lookup %d"
 msgstr "%s 於 %s 中查找 %d"
 
 #, c-format
-msgid "%s is a mac resource file but contains no postscript or truetype fonts\n"
+msgid ""
+"%s is a mac resource file but contains no postscript or truetype fonts\n"
 msgstr "%s 是 mac 資源檔案但是不含任何 postscript 或 truetype 字型\n"
 
 #, c-format
@@ -635,10 +648,14 @@ msgstr "繪製於其他應用區塊周圍的框"
 msgid "A canvas (sub-window) wrapped up in a gadget, for drawing"
 msgstr "覆在應用區塊之上的畫布 (子視窗)，用於繪圖"
 
-msgid "A comma separated list of font family names used to display small example images of glyphs over the user designed glyphs"
+msgid ""
+"A comma separated list of font family names used to display small example "
+"images of glyphs over the user designed glyphs"
 msgstr "逗號分隔的字族名稱用來顯示字圖的縮影，位於使用者設計的字圖之上"
 
-msgid "A contour in this glyph contains a different number of points in different instances"
+msgid ""
+"A contour in this glyph contains a different number of points in different "
+"instances"
 msgstr "這個字圖中的輪廓在不同的實體中含有不同的點數量"
 
 msgid ""
@@ -680,8 +697,13 @@ msgid "A glyph name may not start with a digit nor a full stop (period)"
 msgstr "字圖名稱不能以數字或句點起始"
 
 #, c-format
-msgid "A glyph name must be ASCII, without spaces and may not contain the characters \"([{<>}])/%%\", and should contain only alphanumerics, periods and underscores"
-msgstr "字圖名稱必須是 ASCII、排除空格、不可以包含字元「([{<>}])/%%」，而且應該只包含文數字、句點和底線"
+msgid ""
+"A glyph name must be ASCII, without spaces and may not contain the "
+"characters \"([{<>}])/%%\", and should contain only alphanumerics, periods "
+"and underscores"
+msgstr ""
+"字圖名稱必須是 ASCII、排除空格、不可以包含字元「([{<>}])/%%」，而且應該只包含"
+"文數字、句點和底線"
 
 msgid ""
 "A glyph name should contain only alphanumerics, periods and underscores\n"
@@ -691,7 +713,8 @@ msgstr ""
 "儘管如此，您還要使用此名稱嗎？"
 
 #, c-format
-msgid "A language tag on line %d (%s) is too long.  It may be at most 4 letters"
+msgid ""
+"A language tag on line %d (%s) is too long.  It may be at most 4 letters"
 msgstr "語言標記於第 %d 列 (%s) 太長。 它最多可以有 4 個字母"
 
 #, c-format
@@ -741,7 +764,9 @@ msgstr "%s 中的一點位於字型邊界框資料之外。\n"
 msgid "A point in GID %d is outside the glyph bounding box\n"
 msgstr "在 GID %d 中的點超出字圖邊界框\n"
 
-msgid "A reference in this glyph refers to a different encoding in different instances"
+msgid ""
+"A reference in this glyph refers to a different encoding in different "
+"instances"
 msgstr "這個字圖中的參照在不同的實體中會參照不同的編碼"
 
 #, c-format
@@ -973,7 +998,9 @@ msgstr "加入條目於所有已選字圖。"
 msgid "Add kerning info between all pairs of selected glyphs"
 msgstr "加入字距微調資訊在所有已選字圖對之間"
 
-msgid "Adding new glyphs and referring to them when a glyph contains a bad truetype reference"
+msgid ""
+"Adding new glyphs and referring to them when a glyph contains a bad truetype "
+"reference"
 msgstr "字圖含有不當的 truetype 參照時，將新字圖和參照加入它們"
 
 msgid "Adding points at Extrema..."
@@ -1007,8 +1034,12 @@ msgstr "Adobe 字圖表列"
 msgid "Adobe Standard"
 msgstr "Adobe 標準"
 
-msgid "Adobe's fontname spec (5088.FontNames.pdf) says that fontnames should not be longer than 29 characters. Do you want to continue anyway?"
-msgstr "依照 Adobe 字型名稱規格書 (5088.FontNames.pdf)，字型名稱必須不長於 29 個字元。您無論如何還要繼續嗎？"
+msgid ""
+"Adobe's fontname spec (5088.FontNames.pdf) says that fontnames should not be "
+"longer than 29 characters. Do you want to continue anyway?"
+msgstr ""
+"依照 Adobe 字型名稱規格書 (5088.FontNames.pdf)，字型名稱必須不長於 29 個字"
+"元。您無論如何還要繼續嗎？"
 
 msgid "Advance To Next Glyph"
 msgstr "前加空間到下一個字圖"
@@ -1054,7 +1085,9 @@ msgstr "Afm 儲存失敗"
 msgid "Afrikaans"
 msgstr "南非語"
 
-msgid "After rotating or skewing a glyph you should probably apply Element->Add Extrema"
+msgid ""
+"After rotating or skewing a glyph you should probably apply Element->Add "
+"Extrema"
 msgstr "旋轉或歪斜一個字圖之後，您大概需要套用「元件→加入末端」"
 
 msgid "Ahead Classes"
@@ -1069,11 +1102,16 @@ msgstr "鍊金術符號"
 msgid "Align:"
 msgstr "對齊："
 
-msgid "Alignment zone height in BlueValues/OtherBlues array is too big for BlueScale."
+msgid ""
+"Alignment zone height in BlueValues/OtherBlues array is too big for "
+"BlueScale."
 msgstr "在 BlueValues/OtherBlues 陣列中對齊區高度對於 BlueScale 而言太大。"
 
-msgid "Alignment zone height in FamilyBlues/FamilyOtherBlues array is too big for BlueScale."
-msgstr "在 FamilyBlues/FamilyOtherBlues 陣列中對齊區高度對於 BlueScale 而言太大。"
+msgid ""
+"Alignment zone height in FamilyBlues/FamilyOtherBlues array is too big for "
+"BlueScale."
+msgstr ""
+"在 FamilyBlues/FamilyOtherBlues 陣列中對齊區高度對於 BlueScale 而言太大。"
 
 msgid "All"
 msgstr "所有"
@@ -1513,10 +1551,12 @@ msgstr "是否有任何字圖的邊界框延展出這個數字之上？"
 msgid "Are there any glyph's whose bounding boxes extend below this number?"
 msgstr "是否有任何字圖的邊界框延展出這個數字之下？"
 
-msgid "Are there any glyph's whose bounding boxes extend to the left of this number?"
+msgid ""
+"Are there any glyph's whose bounding boxes extend to the left of this number?"
 msgstr "是否有任何字圖的邊界框延展出這個數字之左？"
 
-msgid "Are there any glyphs whose bounding boxes extend to the right of this number?"
+msgid ""
+"Are there any glyphs whose bounding boxes extend to the right of this number?"
 msgstr "是否有任何字圖的邊界框延展出這個數字之右？"
 
 msgid "Are you sure you don't want to use the cidmap I found?"
@@ -1530,10 +1570,13 @@ msgstr ""
 "圓環將無法與 A 結合。"
 
 #, c-format
-msgid "Are you sure you wish to remove sub-font %1$.40s from the CID font %2$.40s"
+msgid ""
+"Are you sure you wish to remove sub-font %1$.40s from the CID font %2$.40s"
 msgstr "確定希望從 CID 字型 %2$.40s 移除子字型 %1$.40s"
 
-msgid "Are you sure you wish to remove these glyphs? This operation cannot be undone."
+msgid ""
+"Are you sure you wish to remove these glyphs? This operation cannot be "
+"undone."
 msgstr "確定希望移除這些字圖？此作業將無法復原。"
 
 msgid "Armenian"
@@ -1551,8 +1594,12 @@ msgstr "與背景相同"
 msgid "As CFF fonts"
 msgstr "成為 CFF 字型"
 
-msgid "As the selected glyphs are also source glyphs, they will be renamed, so they can't act as source glyphs for a lookup."
-msgstr "由於已選字圖也是來源字圖，它們將被重新命名，好讓它們無法當作來源字圖用於查找。"
+msgid ""
+"As the selected glyphs are also source glyphs, they will be renamed, so they "
+"can't act as source glyphs for a lookup."
+msgstr ""
+"由於已選字圖也是來源字圖，它們將被重新命名，好讓它們無法當作來源字圖用於查"
+"找。"
 
 msgid "Ascent and Descent must be positive and their sum less than 16384"
 msgstr "上緣值和下緣值必須是正數，而它們的和要小於 16384"
@@ -1578,7 +1625,9 @@ msgstr "結尾"
 msgid "At Start"
 msgstr "起始"
 
-msgid "At least one anchor point was lost when pasting from one font to another because no matching anchor class could be found in the new font."
+msgid ""
+"At least one anchor point was lost when pasting from one font to another "
+"because no matching anchor class could be found in the new font."
 msgstr "最少一個錨點被丟去，因為新字體中沒有匹配的錨定類。"
 
 msgid "At most 31 glyphs may be specified in an insert list"
@@ -1588,7 +1637,9 @@ msgid "At most 8 kerning values may be specified here"
 msgstr "在此可以指定最多 8 個字距微調值"
 
 #, c-format
-msgid "At pixelsize %d the character %s either starts before the origin or extends beyond the advance width."
+msgid ""
+"At pixelsize %d the character %s either starts before the origin or extends "
+"beyond the advance width."
 msgstr "像素尺寸為 %d 時，字元 %s 若非開始於原點之前，或是延展於前加寬度之後。"
 
 msgid "Athapaskan"
@@ -1643,7 +1694,9 @@ msgid "Attempt to make a ligature for glyph %d out of "
 msgstr "試圖製作連體字用於字圖 %d 出自 "
 
 #, c-format
-msgid "Attempt to output %d into a 16-bit field. It will be truncated and the file may not be useful."
+msgid ""
+"Attempt to output %d into a 16-bit field. It will be truncated and the file "
+"may not be useful."
 msgstr "試圖將 %d 輸出進入 16-位元欄位。它將會被截斷而檔案可能無法使用。"
 
 #, c-format
@@ -1865,7 +1918,8 @@ msgstr "用於所有檢視繪圖區的背景顏色"
 msgid "Background color of column headers at the top of a matrix edit"
 msgstr "資料欄標題的背景顏色位於矩陣編輯的頂端"
 
-msgid "Background color of the active entry in the main section of a matrix edit"
+msgid ""
+"Background color of the active entry in the main section of a matrix edit"
 msgstr "在矩陣編輯主要區段之中現用條目的背景顏色"
 
 msgid "Backtrack"
@@ -2219,11 +2273,13 @@ msgid "Bad glyph (%d), its data length is negative\n"
 msgstr "不當的字圖 (%d)，它的資料長度是負值\n"
 
 #, c-format
-msgid "Bad glyph (%d), its definition extends beyond the end of the glyf table\n"
+msgid ""
+"Bad glyph (%d), its definition extends beyond the end of the glyf table\n"
 msgstr "不當的字圖 (%d)，它的定義延展於 glyf 表格結束之後\n"
 
 #, c-format
-msgid "Bad glyph (%d), its definition extends beyond the space allowed for it\n"
+msgid ""
+"Bad glyph (%d), its definition extends beyond the space allowed for it\n"
 msgstr "不當的字圖 (%d)，它的定義延展於它所允許的空間之後\n"
 
 msgid "Bad glyph count in mort table.\n"
@@ -2278,7 +2334,8 @@ msgid "Bad ligature base table.\n"
 msgstr "不當的連體字基底表格。\n"
 
 #, c-format
-msgid "Bad ligature component glyph. GID %d not less than %d (in ligature %d)\n"
+msgid ""
+"Bad ligature component glyph. GID %d not less than %d (in ligature %d)\n"
 msgstr "不當的連體字成份字圖。GID %d 未少於 %d (在連體字 %d 中)\n"
 
 #, c-format
@@ -2286,11 +2343,16 @@ msgid "Bad ligature glyph. GID %d not less than %d\n"
 msgstr "不當的連體字字圖。GID %d 未少於 %d\n"
 
 #, c-format
-msgid "Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
-msgstr "不當的查找表格：格式=2 (%d/%d), 第一筆=%d 最末筆=%d 總計在字型=%d 中的字圖\n"
+msgid ""
+"Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in "
+"font=%d\n"
+msgstr ""
+"不當的查找表格：格式=2 (%d/%d), 第一筆=%d 最末筆=%d 總計在字型=%d 中的字圖\n"
 
 #, c-format
-msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
+msgid ""
+"Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in "
+"font=%d\n"
 msgstr "不當的查找表：格式=4 (%d/%d)，首筆=%d 末筆=%d 字型中字圖總計=%d\n"
 
 #, c-format
@@ -2363,7 +2425,8 @@ msgid "Bad replace pattern"
 msgstr "不當的置換胚騰"
 
 #, c-format
-msgid "Bad reverse contextual chaining substitution glyph: %d is not less than %d\n"
+msgid ""
+"Bad reverse contextual chaining substitution glyph: %d is not less than %d\n"
 msgstr "不當的反向上下文鏈接替代字圖：%d 未少於 %d\n"
 
 msgid "Bad script tag"
@@ -2929,7 +2992,9 @@ msgid "CID keyed fonts may not be a master design of a multiple master font"
 msgstr "CID 鍵的字型不可以是多重主字型的主設計"
 
 msgid "CJK (& Ext A/B) & CJK Radicals Sup & Kangxi & IDC & Kanbun"
-msgstr "中日韓表意文字基本區 (& 擴展 A/B) & 中日韓部首補充 & 康熙部首 & 表意文字描述符 & 漢文訓讀"
+msgstr ""
+"中日韓表意文字基本區 (& 擴展 A/B) & 中日韓部首補充 & 康熙部首 & 表意文字描述"
+"符 & 漢文訓讀"
 
 msgid "CJK Compatibility"
 msgstr "中日韓相容字符"
@@ -3093,7 +3158,8 @@ msgid "Can't find autotrace"
 msgstr "找不到自動追蹤"
 
 msgid ""
-"Can't find autotrace program (set AUTOTRACE environment variable) or download from:\n"
+"Can't find autotrace program (set AUTOTRACE environment variable) or "
+"download from:\n"
 "  http://sf.net/projects/autotrace/"
 msgstr ""
 "找不到自動追蹤程式(設定 AUTOTRACE 環境變數) 或是下載自：\n"
@@ -3103,7 +3169,8 @@ msgid "Can't find mf"
 msgstr "找不到 mf"
 
 msgid ""
-"Can't find mf program -- metafont (set MF environment variable) or download from:\n"
+"Can't find mf program -- metafont (set MF environment variable) or download "
+"from:\n"
 "  http://www.tug.org/\n"
 "  http://www.ctan.org/\n"
 "It's part of the TeX distribution"
@@ -3398,7 +3465,9 @@ msgstr "查出不重要的控制點(_I)"
 msgid "Check for _undefined CIDs"
 msgstr "檢查看看未定義的 CIDs(_U)"
 
-msgid "Check for characters which contain 'GSUB' entries which refer to empty characters"
+msgid ""
+"Check for characters which contain 'GSUB' entries which refer to empty "
+"characters"
 msgstr "檢查看看包含參照空字元「GSUB」條目的字元"
 
 msgid "Check for characters whose advance width is not the displayed value."
@@ -3411,7 +3480,8 @@ msgstr ""
 "檢查看看名稱映射到 Unicode 碼位字元\n"
 "是否未映射到字元指定的碼點。"
 
-msgid "Check for characters whose vertical advance width is not the displayed value."
+msgid ""
+"Check for characters whose vertical advance width is not the displayed value."
 msgstr "查字元的垂直前加寬度是否為不可顯示值。"
 
 msgid "Check for incomplete mark to base subtables"
@@ -3454,8 +3524,11 @@ msgstr "檢查是否 CID 在超過一個子字型中被定義"
 msgid "Check whether a CID is undefined in all sub-fonts"
 msgstr "檢查是否 CID 在所有子字型中未被定義"
 
-msgid "Check whether a substitution, kerning class, etc. uses a glyph name which does not match any glyph in the font"
-msgstr "檢查是否替代、字距微調類別等項目，使用了在字型中不匹配任何字圖的字圖名稱"
+msgid ""
+"Check whether a substitution, kerning class, etc. uses a glyph name which "
+"does not match any glyph in the font"
+msgstr ""
+"檢查是否替代、字距微調類別等項目，使用了在字型中不匹配任何字圖的字圖名稱"
 
 msgid "Cherokee"
 msgstr "卻洛奇語"
@@ -3640,8 +3713,10 @@ msgstr ""
 "以及其常見問題目錄（FAQ）。\n"
 
 msgid ""
-"Click here to add the OFL metadata to your own font in the License and License URL fields. \n"
-"Then click on the License field to fill in the placeholders in sync with OFL.txt. \n"
+"Click here to add the OFL metadata to your own font in the License and "
+"License URL fields. \n"
+"Then click on the License field to fill in the placeholders in sync with OFL."
+"txt. \n"
 msgstr ""
 "點擊這裏以在你的字型中的授權與授權網址欄目中加入 OFL 後設資料。\n"
 "然后點擊授權欄目並填寫與 OFL.txt 一樣的資料。\n"
@@ -3673,7 +3748,8 @@ msgstr "在矩陣編輯主要區段之中欄分隔的顏色"
 msgid "Color of column dividers in the title section of a matrix edit"
 msgstr "在矩陣編輯標題區段之中欄分隔的顏色"
 
-msgid "Color of frozen (unchangeable) entries in the main section of a matrix edit"
+msgid ""
+"Color of frozen (unchangeable) entries in the main section of a matrix edit"
 msgstr "在矩陣編輯主要區段之中現用條目的凍結(不可變更的)顏色"
 
 msgid "Color of the active entry in the main section of a matrix edit"
@@ -3742,7 +3818,8 @@ msgstr "組合音標附加標記"
 msgid "Combining Half Marks"
 msgstr "合併半標記"
 
-msgid "Commands to pass to mf (metafont) program, the filename will follow these"
+msgid ""
+"Commands to pass to mf (metafont) program, the filename will follow these"
 msgstr "傳遞給 mf(metafont) 程式的命令，這些之後將跟隨著檔案名稱"
 
 msgid "Comment"
@@ -3985,8 +4062,11 @@ msgstr "著作權(_R)："
 msgid "Copyright"
 msgstr "版權"
 
-msgid "Copyright text (in the Names pane) must be entirely ASCII. So, use (c) instead of ©."
-msgstr "著作權文字 (在名稱窗格中) 必須完全是 ASCII 編碼。因此使用 (c) 以代替 ©。"
+msgid ""
+"Copyright text (in the Names pane) must be entirely ASCII. So, use (c) "
+"instead of ©."
+msgstr ""
+"著作權文字 (在名稱窗格中) 必須完全是 ASCII 編碼。因此使用 (c) 以代替 ©。"
 
 #. GT: Short for Correction
 msgid "Cor:"
@@ -4046,7 +4126,8 @@ msgid "Could not find the glyph: %.70s"
 msgstr "找不到字圖：%.70s"
 
 #, c-format
-msgid "Could not match points in composite glyph (%d to %d) when adding %s to %s\n"
+msgid ""
+"Could not match points in composite glyph (%d to %d) when adding %s to %s\n"
 msgstr "當加入 %3$s 到 %4$s 之中時，無法匹配在組合字圖 (%1$d 到 %2$d) 中的點\n"
 
 msgid "Could not open"
@@ -4179,7 +4260,9 @@ msgstr "拱形"
 msgid "Coverage %d: "
 msgstr "覆蓋 %d： "
 
-msgid "Coverage table specifies a different number of glyphs than the sub-table expects.\n"
+msgid ""
+"Coverage table specifies a different number of glyphs than the sub-table "
+"expects.\n"
 msgstr "覆蓋的表格指定了一個與子表格預期不同的字圖數量。\n"
 
 msgid "Cr_eate"
@@ -4332,7 +4415,8 @@ msgid "Cut splines in two"
 msgstr "剪下曲線為兩份"
 
 #, c-format
-msgid "Cvt %d was changed from %d (%.2f) to %d (%.2f) by the previous instruction"
+msgid ""
+"Cvt %d was changed from %d (%.2f) to %d (%.2f) by the previous instruction"
 msgstr "Cvt %d 被前一個指令從 %d (%.2f) 變更為 %d (%.2f) "
 
 msgid "Cypriot Syllabary"
@@ -4724,13 +4808,17 @@ msgstr ""
 msgid "DisplayOperatorMinHeight:"
 msgstr "DisplayOperatorMinHeight："
 
-msgid "Displays all the glyphs in the font on a rectangular grid at the given point size"
+msgid ""
+"Displays all the glyphs in the font on a rectangular grid at the given point "
+"size"
 msgstr "以給定的點尺寸在四方形格線中，顯示字型中所有字圖"
 
 msgid "Displays all the selected characters, at several different point sizes"
 msgstr "以多個不同的點尺寸，顯示所有已選取的字元"
 
-msgid "Displays all the selected characters, each on its own page, at an extremely large point size"
+msgid ""
+"Displays all the selected characters, each on its own page, at an extremely "
+"large point size"
 msgstr "每個於它自己的頁面，以非常大的點尺寸，顯示所有已選取的字元"
 
 msgid "Dist"
@@ -4775,7 +4863,8 @@ msgstr "您想要字型檔案包含 PostScript flex 渲調指令嗎？"
 msgid "Do you want the font file to contain PostScript hints?"
 msgstr "您想要字型檔案包含 PostScript 渲調指令嗎？"
 
-msgid "Do you want the font file to contain the names of each glyph in the font?"
+msgid ""
+"Do you want the font file to contain the names of each glyph in the font?"
 msgstr "您想要檔案在字型中包含每個字圖的名稱嗎？"
 
 msgid ""
@@ -5010,7 +5099,8 @@ msgstr "在 BlueValues/OtherBlues 陣列中的元件排序錯誤。"
 msgid "Elements in BlueValues/OtherBlues array are not integers."
 msgstr "在 BlueValues/OtherBlues 陣列中元件不是整數。"
 
-msgid "Elements in BlueValues/OtherBlues array are too close (Change BlueFuzz)."
+msgid ""
+"Elements in BlueValues/OtherBlues array are too close (Change BlueFuzz)."
 msgstr "在 BlueValues/OtherBlues 陣列中元件太緊密 (變更 BlueFuzz)。"
 
 msgid "Elements in FamilyBlues/FamilyOtherBlues array are disordered."
@@ -5019,7 +5109,9 @@ msgstr "在 FamilyBlues/FamilyOtherBlues 陣列中元件的排列錯誤。"
 msgid "Elements in FamilyBlues/FamilyOtherBlues array are not integers."
 msgstr "在 FamilyBlues/FamilyOtherBlues 陣列中元件不是整數。"
 
-msgid "Elements in FamilyBlues/FamilyOtherBlues array are too close (Change BlueFuzz)."
+msgid ""
+"Elements in FamilyBlues/FamilyOtherBlues array are too close (Change "
+"BlueFuzz)."
 msgstr "在 FamilyBlues/FamilyOtherBlues 陣列中元件太緊密 (變更 BlueFuzz)。"
 
 msgid "Ellipse"
@@ -5081,11 +5173,14 @@ msgstr ""
 "有不受支援的格式 %d。\n"
 
 #, c-format
-msgid "Encoding subtable for platform=%d, specific=%d has a 0 length subtable.\n"
+msgid ""
+"Encoding subtable for platform=%d, specific=%d has a 0 length subtable.\n"
 msgstr "用於平臺=%d，規格=%d 的編碼子表格有 0 長度的子表格。\n"
 
 #, c-format
-msgid "Encoding subtable for platform=%d, specific=%d has an unsupported format %d.\n"
+msgid ""
+"Encoding subtable for platform=%d, specific=%d has an unsupported format "
+"%d.\n"
 msgstr "用於平臺=%d，規格=%d 的編碼子表格有不受支援的格式 %d。\n"
 
 #, c-format
@@ -5434,7 +5529,8 @@ msgid "Expected comma in device table on line %d of %s"
 msgstr "在裝置表格中預期逗號於 %2$s 的第 %1$d 列"
 
 #, c-format
-msgid "Expected glyph name, cid, or class in glyph class definition on line %d of %s"
+msgid ""
+"Expected glyph name, cid, or class in glyph class definition on line %d of %s"
 msgstr "在字圖類別定義中預期字圖名稱、cid，或類別於 %2$s 的第 %1$d 列"
 
 #, c-format
@@ -5710,7 +5806,9 @@ msgstr "檔案存在"
 msgid "File checksum is incorrect."
 msgstr "檔案總和檢查碼不正確。"
 
-msgid "File length as specified in the WOFF header does not match the actual file length."
+msgid ""
+"File length as specified in the WOFF header does not match the actual file "
+"length."
 msgstr "如在 WOFF 頁首中所指定的檔案長度，並不匹配實際的檔案長度。"
 
 #, c-format
@@ -5969,7 +6067,8 @@ msgid "FontForge does not support type2 multiple master fonts\n"
 msgstr "FontForge 不支援 type2 多重主字型\n"
 
 #. GT: DICT is a magic term inside CFF fonts, as is INDEX, and I guess CFF and type2
-msgid "FontForge does not support type2 programs embedded in CFF DICT INDICES.\n"
+msgid ""
+"FontForge does not support type2 programs embedded in CFF DICT INDICES.\n"
 msgstr "FontForge 不支援嵌入在 CFF DICT INDICES 中的 type2 程式。\n"
 
 msgid ""
@@ -5982,11 +6081,23 @@ msgstr ""
 msgid "FontForge font debugging table"
 msgstr "FontForge 字型偵錯表格"
 
-msgid "FontForge is a font editor for outline and bitmap fonts that lets you create, edit, or convert, a range of fonts, including PostScript, TrueType, OpenType, cid-keyed, multi-master, cff, SVG and BitMap (bdf, FON, NFNT) fonts."
-msgstr "FontForge是一個字體編輯器，用於輪廓字體以及點陣圖字體。你可創作、編輯或轉換一系列的字體，包括PostScript、TrueType、OpenType、cid、multi-master、cff、SVG以及點陣圖（bdf、FON、NFNT）字體。"
+msgid ""
+"FontForge is a font editor for outline and bitmap fonts that lets you "
+"create, edit, or convert, a range of fonts, including PostScript, TrueType, "
+"OpenType, cid-keyed, multi-master, cff, SVG and BitMap (bdf, FON, NFNT) "
+"fonts."
+msgstr ""
+"FontForge是一個字體編輯器，用於輪廓字體以及點陣圖字體。你可創作、編輯或轉換一"
+"系列的字體，包括PostScript、TrueType、OpenType、cid、multi-master、cff、SVG以"
+"及點陣圖（bdf、FON、NFNT）字體。"
 
-msgid "FontForge is free Open Source Software written to run on various computer operating systems. You can use FontForge Graphically or as a command-line tool."
-msgstr "FontForge是自由的開源軟件，可在不同類型的電腦系統上運行。你可以圖形方式使用FontForge，亦可以作為命令行工具使用。"
+msgid ""
+"FontForge is free Open Source Software written to run on various computer "
+"operating systems. You can use FontForge Graphically or as a command-line "
+"tool."
+msgstr ""
+"FontForge是自由的開源軟件，可在不同類型的電腦系統上運行。你可以圖形方式使用"
+"FontForge，亦可以作為命令行工具使用。"
 
 msgid ""
 "FontForge loads large images into the background of each glyph\n"
@@ -6019,16 +6130,20 @@ msgstr "FontForge 時間戳記表格"
 
 #, c-format
 msgid ""
-"FontForge was unable to find a cidmap file for this font. The following path was searched:\n"
+"FontForge was unable to find a cidmap file for this font. The following path "
+"was searched:\n"
 "   %.80s\n"
 "\n"
-"It is not essential to have one, but some things will work better if you do. Would you like to search your local disk for an appropriate file?"
+"It is not essential to have one, but some things will work better if you do. "
+"Would you like to search your local disk for an appropriate file?"
 msgstr ""
 "FontForge未能為此字體尋找一個cidmap檔案。以下為尋找的路徑：%.80s\n"
 "\n"
-"這檔案是不完全需要，但是有的話，有些事情會更好。你想在本機磁碟中找合適的檔案嗎？"
+"這檔案是不完全需要，但是有的話，有些事情會更好。你想在本機磁碟中找合適的檔案"
+"嗎？"
 
-msgid "FontForge was unable to load libspiro, spiros are not available for use."
+msgid ""
+"FontForge was unable to load libspiro, spiros are not available for use."
 msgstr "FontForge 無法載入 libspiro，旋點不可使用。"
 
 msgid "FontForge will guess kerning classes for selected glyphs"
@@ -6078,7 +6193,8 @@ msgstr "找到 %1$.4g, 但是預期 %2$.4g"
 msgid "FoundryName"
 msgstr "廠商名稱"
 
-msgid "Fourth argument of imagemask must be a 6-element transformation matrix.\n"
+msgid ""
+"Fourth argument of imagemask must be a 6-element transformation matrix.\n"
 msgstr "圖像遮罩的第四個引數必須是六元變換矩陣。\n"
 
 msgid "FractionDenominatorDisplayStyleGapMin:"
@@ -6514,8 +6630,12 @@ msgstr ""
 "但是在這個名稱表列中的某些名稱，使用了範圍\n"
 "以外的字元。"
 
-msgid "Glyph names should be limited to characters in the ASCII character set, but there are names in this namelist which use characters outside that range."
-msgstr "字圖名稱應該被限制於 ASCII 字元集中的字元，但是在這個名稱表列中的某些名稱使用了超出範圍的字元。"
+msgid ""
+"Glyph names should be limited to characters in the ASCII character set, but "
+"there are names in this namelist which use characters outside that range."
+msgstr ""
+"字圖名稱應該被限制於 ASCII 字元集中的字元，但是在這個名稱表列中的某些名稱使用"
+"了超出範圍的字元。"
 
 msgid "Glyph not in font"
 msgstr "字圖不在字型中"
@@ -7043,21 +7163,29 @@ msgid "Hungarian"
 msgstr "匈牙利語"
 
 #, c-format
-msgid "I can't even imagine how to attempt to interpolate gradients in layer %d of %s\n"
+msgid ""
+"I can't even imagine how to attempt to interpolate gradients in layer %d of "
+"%s\n"
 msgstr "我根本想像不到如何在%s的%d層中插入梯度\n"
 
 #, c-format
-msgid "I can't even imagine how to attempt to interpolate images in layer %d of %s\n"
+msgid ""
+"I can't even imagine how to attempt to interpolate images in layer %d of %s\n"
 msgstr "我根本想像不到如何在%s的%d層中插入圖像\n"
 
 #, c-format
-msgid "I miscalculated the size of subtable %s, this means the kerning output is wrong."
+msgid ""
+"I miscalculated the size of subtable %s, this means the kerning output is "
+"wrong."
 msgstr "我計算子表格 %s 大小時發生錯誤，這表示字距微調輸出也錯誤。"
 
-msgid "I'm sorry this file is too complex for me to understand (or is erroneous)"
+msgid ""
+"I'm sorry this file is too complex for me to understand (or is erroneous)"
 msgstr "抱歉，這個檔案對我來說太複雜而難以了解(或是錯誤的)"
 
-msgid "I'm sorry this file is too complex for me to understand (or is erroneous, or is empty)"
+msgid ""
+"I'm sorry this file is too complex for me to understand (or is erroneous, or "
+"is empty)"
 msgstr "抱歉，這個檔案對我來說太複雜而難以了解（或為錯誤的、空的）"
 
 #. GT: "I." is an abbreviation for "Inherits"
@@ -7208,7 +7336,8 @@ msgid ""
 "numbering actually starts with 0) is for counter hints.\n"
 "The subroutines should not be enclosed in a [ ] pair."
 msgstr ""
-"如果您希望以您自己的陣列，取代 Adobe 的 OtherSubrs 陣列（用於 Type1 字型），\n"
+"如果您希望以您自己的陣列，取代 Adobe 的 OtherSubrs 陣列（用於 Type1 字"
+"型），\n"
 "就設定它指到包含了最多 14 個 PostScript 副常式\n"
 "表列的檔案。每個副常式必須由以「%%%%」啟始的列\n"
 "為前導（第一列「%%%%」之前\n"
@@ -7271,7 +7400,8 @@ msgstr "使用圖像做為啟用時清單標記 (覆蓋方塊)"
 msgid "Image used instead of the Check Box Off Mark"
 msgstr "使用圖像以代替核取方塊關閉標記"
 
-msgid "Image used instead of the Check Box Off Mark (when the radio is disabled)"
+msgid ""
+"Image used instead of the Check Box Off Mark (when the radio is disabled)"
 msgstr "使用圖像以代替核取方塊關閉標記 (取消單選按鈕時)"
 
 msgid "Image used instead of the Radio Off Mark"
@@ -7312,40 +7442,62 @@ msgid "In character %s, could not find reference to %s\n"
 msgstr "在字元 %s 中，找不到到 %s 的參照\n"
 
 #, c-format
-msgid "In font %1$d the advance width of glyph %2$.30s does not scale the base advance width properly, it shall be forced to the proper value"
-msgstr "字型 %1$d 中字圖 %2$.30s 的前加寬度並未比例伸縮基底前加寬度，它應該強制被設定為適當值"
-
-#, c-format
-msgid "In font %1$d the glyph %2$.30s either starts before 0, or extends after the advance width or is above the ascent or below the descent"
-msgstr "字型 %1$d 中的字圖 %2$.30s 若非於 0 之前起始、於前加寬度之後延展，就是位於上緣之上或是下緣之下"
+msgid ""
+"In font %1$d the advance width of glyph %2$.30s does not scale the base "
+"advance width properly, it shall be forced to the proper value"
+msgstr ""
+"字型 %1$d 中字圖 %2$.30s 的前加寬度並未比例伸縮基底前加寬度，它應該強制被設定"
+"為適當值"
 
 #, c-format
 msgid ""
-"In glyph %s the reference to %s is positioned by point matching, and the point numbers may no longer reflect the original intent.\n"
+"In font %1$d the glyph %2$.30s either starts before 0, or extends after the "
+"advance width or is above the ascent or below the descent"
+msgstr ""
+"字型 %1$d 中的字圖 %2$.30s 若非於 0 之前起始、於前加寬度之後延展，就是位於上"
+"緣之上或是下緣之下"
+
+#, c-format
+msgid ""
+"In glyph %s the reference to %s is positioned by point matching, and the "
+"point numbers may no longer reflect the original intent.\n"
 "Do you want to proceed anyway?"
 msgstr ""
-"在字圖 %s 中到 %s 的參照是由點的匹配所定位，而點的編號也許不再反映原來的含義。\n"
+"在字圖 %s 中到 %s 的參照是由點的匹配所定位，而點的編號也許不再反映原來的含"
+"義。\n"
 "無論如何您都要繼續嗎？"
 
 #, c-format
-msgid "In lookup subtable %.30s you refer to a glyph named %.80s, which is not in the font yet. Was this intentional?"
-msgstr "在查找子表格 %.30s 中您參照了名為 %.80s 的字圖, 而該項並不在字型之中。這是有意要如此做的嗎？"
+msgid ""
+"In lookup subtable %.30s you refer to a glyph named %.80s, which is not in "
+"the font yet. Was this intentional?"
+msgstr ""
+"在查找子表格 %.30s 中您參照了名為 %.80s 的字圖, 而該項並不在字型之中。這是有"
+"意要如此做的嗎？"
 
 #, c-format
-msgid "In lookup subtable %.30s you replace a glyph with itself. Was this intentional?"
+msgid ""
+"In lookup subtable %.30s you replace a glyph with itself. Was this "
+"intentional?"
 msgstr "在查找子表格 %.30s 中您以其本身置換了字圖。這是有意要如此做的嗎？"
 
-msgid "In the 'kern' table, a subtable's length does not match the number of kerning pairs."
+msgid ""
+"In the 'kern' table, a subtable's length does not match the number of "
+"kerning pairs."
 msgstr "在「字距微調」表格之中，子表格長度不匹配字距微調對數量。"
 
-msgid "In the Outline View, the Shift key constrains motion to be parallel to the ItalicAngle rather than constraining it to be vertical."
+msgid ""
+"In the Outline View, the Shift key constrains motion to be parallel to the "
+"ItalicAngle rather than constraining it to be vertical."
 msgstr "在描邊檢視中，位移鍵的等比例移動是平行於 ItalicAngle，而非垂直。"
 
 #. GT: Spoof on the bible
 msgid "In the beginning was the letter..."
 msgstr "開頭是字母…"
 
-msgid "In the saved font, force all glyph names to match those in the specified namelist"
+msgid ""
+"In the saved font, force all glyph names to match those in the specified "
+"namelist"
 msgstr "在已儲存的字型中，強制所有字圖名稱去匹配那些位於指定名稱表列中的字型"
 
 msgid "In_line..."
@@ -8161,8 +8313,13 @@ msgstr "前景"
 msgid "Leading Jamo Forms"
 msgstr "韓文字母前導形式"
 
-msgid "Learning to use FontForge is easy, and there are various tutorials available beginning with the basics up to more advanced features such as making and using scripts."
-msgstr "學習使用FontForge很簡單，也有很多教學，從基本知識到較複雜的項目，例如創作和利用腳本。"
+msgid ""
+"Learning to use FontForge is easy, and there are various tutorials available "
+"beginning with the basics up to more advanced features such as making and "
+"using scripts."
+msgstr ""
+"學習使用FontForge很簡單，也有很多教學，從基本知識到較複雜的項目，例如創作和利"
+"用腳本。"
 
 msgid "Lef_t"
 msgstr "左(_T)"
@@ -8268,7 +8425,8 @@ msgid "Limbu"
 msgstr "印度-林布"
 
 msgid ""
-"Limit the font so that only the glyphs referenced in the first 256 encodings\n"
+"Limit the font so that only the glyphs referenced in the first 256 "
+"encodings\n"
 "will be included in the file"
 msgstr ""
 "限制字型好讓只有參照到第一組 256 編碼的字圖\n"
@@ -9363,7 +9521,9 @@ msgid "Multiple copies of the selection should be tiled onto the path"
 msgstr "所選的多重複本應該在路徑上並排"
 
 #, c-format
-msgid "Multiple glyphs map to the same unicode encoding U+%04X, only one will be used\n"
+msgid ""
+"Multiple glyphs map to the same unicode encoding U+%04X, only one will be "
+"used\n"
 msgstr "多重字圖映射到相同的 Unicode 値 U+%04X，只有一個將會使用\n"
 
 msgid "Multiple master font with more than 16 instances\n"
@@ -10077,7 +10237,8 @@ msgstr "正規化設計向量函式："
 msgid "Normalized Settings:"
 msgstr "正規化的設定值："
 
-msgid "Normally simplify will not change the slope of the contour at the points."
+msgid ""
+"Normally simplify will not change the slope of the contour at the points."
 msgstr "通常簡化將無法變更點上輪廓的斜率。"
 
 msgid "Northern Sami"
@@ -10414,7 +10575,8 @@ msgid "Offset text from path by:"
 msgstr "自路徑偏移文字依："
 
 #, c-format
-msgid "Offsets from def. baseline:  romn: %d  idcn: %d  ideo: %d  hang: %d  math: %d"
+msgid ""
+"Offsets from def. baseline:  romn: %d  idcn: %d  ideo: %d  hang: %d  math: %d"
 msgstr "預設基線的偏移： romn：%d  idcn：%d  ideo：%d  hang：%d  math：%d"
 
 msgid "Ofm Save Failed"
@@ -10481,8 +10643,11 @@ msgid "On"
 msgstr "開"
 
 #, c-format
-msgid "One of the bitmap fonts specified, %1$d, is not an integral scale up of the smallest font, %2$d (or is too large a factor)"
-msgstr "指定的點陣圖字型之一，%1$d, 並非最小字型的整數伸展，%2$d (或是因子過大)"
+msgid ""
+"One of the bitmap fonts specified, %1$d, is not an integral scale up of the "
+"smallest font, %2$d (or is too large a factor)"
+msgstr ""
+"指定的點陣圖字型之一，%1$d, 並非最小字型的整數伸展，%2$d (或是因子過大)"
 
 #, c-format
 msgid "One of the fonts %1$d,%2$d is missing glyph %3$d"
@@ -11233,7 +11398,8 @@ msgstr "注音符號擴充補充"
 
 msgid ""
 "Physical screen width, measured in centimeters\n"
-"For this to take effect you must save the resource data (press the [Save] button)\n"
+"For this to take effect you must save the resource data (press the [Save] "
+"button)\n"
 "and restart fontforge"
 msgstr ""
 "實體螢幕寬度，量測以公分為單位\n"
@@ -11242,7 +11408,8 @@ msgstr ""
 
 msgid ""
 "Physical screen width, measured in inches\n"
-"For this to take effect you must save the resource data (press the [Save] button)\n"
+"For this to take effect you must save the resource data (press the [Save] "
+"button)\n"
 "and restart fontforge"
 msgstr ""
 "實體螢幕寬度，量測以英吋為單位\n"
@@ -11311,7 +11478,9 @@ msgstr "請不要那樣做"
 msgid "Please draw a convex polygon in the drawing area."
 msgstr "請在繪圖區中繪製凸面多邊形。"
 
-msgid "Please identify a glyph by name, and FontForge will add an anchor to that glyph."
+msgid ""
+"Please identify a glyph by name, and FontForge will add an anchor to that "
+"glyph."
 msgstr "請依名稱識別字圖，而 FontForge 將加入錨點到該字圖。"
 
 #, c-format
@@ -11327,13 +11496,17 @@ msgstr "請命名此編碼"
 msgid "Please name this subtable"
 msgstr "請命名此子表格"
 
-msgid "Please provide the name of an encoding in the iconv database which you want in the menu."
+msgid ""
+"Please provide the name of an encoding in the iconv database which you want "
+"in the menu."
 msgstr "請提供您所想要的編碼名稱，它位於選單上的 iconv 資料庫中。"
 
 msgid "Please select a CID ordering"
 msgstr "請選取 CID 定序"
 
-msgid "Please select some glyphs in the font views at the bottom of the dialog for FontForge to put into classes."
+msgid ""
+"Please select some glyphs in the font views at the bottom of the dialog for "
+"FontForge to put into classes."
 msgstr "請於 FontForge 對話框的底部字型檢視之中選取某些字圖以放進類別。"
 
 msgid "Please set the Axis Type field"
@@ -11345,7 +11518,8 @@ msgstr "請指定 4 個字母的 opentype 文字標記"
 msgid "Please specify a bitmap magnification factor."
 msgstr "請指定點陣圖放大因子。"
 
-msgid "Please specify a comma separated list of 4 letter opentype language tags"
+msgid ""
+"Please specify a comma separated list of 4 letter opentype language tags"
 msgstr "請指定以逗號分隔的 4 字母 opentype 語言標記清單"
 
 msgid "Please specify a name for this mark class or set"
@@ -11891,7 +12065,9 @@ msgid "Reference to a glyph name in a CID-keyed font on line %d of %s"
 msgstr "在 CID-keyed 字型中參照到字圖名稱於 %2$s 的第 %1$d 列"
 
 #, c-format
-msgid "Reference to a lookup which is not in the feature file but which is in the font, %.50s"
+msgid ""
+"Reference to a lookup which is not in the feature file but which is in the "
+"font, %.50s"
 msgstr "查找的參照並非在特徵檔案之中，而是在字型之中，%.50s"
 
 #, c-format
@@ -11902,7 +12078,8 @@ msgstr "%s的第%d行中有不存在的字形名稱：%s"
 msgid "Reference to character %1$.20s at %2$d"
 msgstr "參照到位於 %2$d 的字元 %1$.20s"
 
-msgid "References are nested more deeply in this glyph than the maximum allowed"
+msgid ""
+"References are nested more deeply in this glyph than the maximum allowed"
 msgstr "在這個字圖中的參照巢狀深度超過了允許的最大值"
 
 msgid "References may not be dragged into the guidelines layer"
@@ -12059,7 +12236,8 @@ msgstr "重新命名所有在選擇中的字圖"
 msgid "Rename by NameList"
 msgstr "依名稱表列重新命名"
 
-msgid "Rename the glyphs in this font to the names found in the selected namelist"
+msgid ""
+"Rename the glyphs in this font to the names found in the selected namelist"
 msgstr "重新命名這個字型中的字圖為在已選名稱表列中所找到的名稱"
 
 msgid "Repeat"
@@ -12231,7 +12409,9 @@ msgstr "保留位元 9"
 msgid "Reset"
 msgstr "重置"
 
-msgid "Resets the kerning offset and device table corrections to what they were originally"
+msgid ""
+"Resets the kerning offset and device table corrections to what they were "
+"originally"
 msgstr "重置字距微調偏移和裝置表格校正為它們原本的值"
 
 msgid "Restrict Selection"
@@ -12776,8 +12956,11 @@ msgid "Script '%c%c%c%c' "
 msgstr "文字「%c%c%c%c」"
 
 #, c-format
-msgid "Script '%c%c%c%c' claims baseline '%c%c%c%c' as its default, but that baseline is not currently active."
-msgstr "文字「%c%c%c%c」宣稱以基線「%c%c%c%c」做為它的預設，但是該基線並非目前現用。"
+msgid ""
+"Script '%c%c%c%c' claims baseline '%c%c%c%c' as its default, but that "
+"baseline is not currently active."
+msgstr ""
+"文字「%c%c%c%c」宣稱以基線「%c%c%c%c」做為它的預設，但是該基線並非目前現用。"
 
 #, c-format
 msgid "Script '%c%c%c%c' on %c%c%c%c "
@@ -13269,11 +13452,15 @@ msgid "Sepedi"
 msgstr "北方索托語"
 
 #, c-format
-msgid "Sequence number out of bounds, must be less than %d (number of classes in list above)"
+msgid ""
+"Sequence number out of bounds, must be less than %d (number of classes in "
+"list above)"
 msgstr "序號超出邊界，必須少於 %d (在以上清單中的類別數量)"
 
 #, c-format
-msgid "Sequence number out of bounds, must be less than %d (number of glyphs, classes or coverage tables)"
+msgid ""
+"Sequence number out of bounds, must be less than %d (number of glyphs, "
+"classes or coverage tables)"
 msgstr "序號超出邊界，必須少於 %d (字圖、類別或覆蓋表格的數量)"
 
 msgid "Serbian"
@@ -13396,10 +13583,12 @@ msgstr "設定字型檢視的選擇為此處命名的字圖"
 msgid "Set the selection of the font view to all glyphs in the script."
 msgstr "設定字型檢視的選取為所有在文字中的字圖。"
 
-msgid "Set the selection of the font view to any lower case glyphs in the script."
+msgid ""
+"Set the selection of the font view to any lower case glyphs in the script."
 msgstr "設定字型檢視的選取為所有在文字中的小寫字圖。"
 
-msgid "Set the selection of the font view to any upper case glyphs in the script."
+msgid ""
+"Set the selection of the font view to any upper case glyphs in the script."
 msgstr "設定字型檢視的選取為所有在文字中的大寫字圖。"
 
 msgid ""
@@ -13456,7 +13645,9 @@ msgid "Settings"
 msgstr "設定值"
 
 #, c-format
-msgid "Several language tags, including '%s', are not in the list of known languages and will be omitted"
+msgid ""
+"Several language tags, including '%s', are not in the list of known "
+"languages and will be omitted"
 msgstr "多個語言標記，包含 '%s'，並不在已知語言集清單之中而將被省略"
 
 msgid "Shades"
@@ -13734,11 +13925,19 @@ msgstr "粟特字母"
 msgid "Somali"
 msgstr "索馬利亞語"
 
-msgid "Some versions of Windows will refuse to install postscript fonts if the familyname is longer than 31 characters. Do you want to continue anyway?"
-msgstr "如果字族名稱長度超過 31 個字元，某些版本的 Windows 會拒絕安裝 postscript 字型。您無論如何還要繼續嗎？"
+msgid ""
+"Some versions of Windows will refuse to install postscript fonts if the "
+"familyname is longer than 31 characters. Do you want to continue anyway?"
+msgstr ""
+"如果字族名稱長度超過 31 個字元，某些版本的 Windows 會拒絕安裝 postscript 字"
+"型。您無論如何還要繼續嗎？"
 
-msgid "Some versions of Windows will refuse to install postscript fonts if the fontname is longer than 31 characters. Do you want to continue anyway?"
-msgstr "如果字型名稱長度超過 31 個字元，某些版本的 Windows 會拒絕安裝 postscript 字型。您無論如何還要繼續嗎？"
+msgid ""
+"Some versions of Windows will refuse to install postscript fonts if the "
+"fontname is longer than 31 characters. Do you want to continue anyway?"
+msgstr ""
+"如果字型名稱長度超過 31 個字元，某些版本的 Windows 會拒絕安裝 postscript 字"
+"型。您無論如何還要繼續嗎？"
 
 msgid "Something went wrong"
 msgstr "有些東西發生了錯誤"
@@ -13779,8 +13978,12 @@ msgstr "來源是從該項設計被做出的地方"
 msgid "Southern Sami"
 msgstr "南部薩摩斯語"
 
-msgid "Space (in points) left between images and text in labels, buttons, menu items, etc. which have both"
-msgstr "在標籤、按鈕、功能表…等項目中位於圖像和文字之間留下的空間 (以點為單位)兩者皆有"
+msgid ""
+"Space (in points) left between images and text in labels, buttons, menu "
+"items, etc. which have both"
+msgstr ""
+"在標籤、按鈕、功能表…等項目中位於圖像和文字之間留下的空間 (以點為單位)兩者皆"
+"有"
 
 msgid "Space Regions"
 msgstr "空間區域"
@@ -14121,11 +14324,14 @@ msgid "Storage"
 msgstr "儲存體"
 
 #, c-format
-msgid "Storage %d has not been initialized, yet the previous instruction read it"
+msgid ""
+"Storage %d has not been initialized, yet the previous instruction read it"
 msgstr "儲存體 %d 尚未被初始化，但前一個指令已讀取它"
 
 #, c-format
-msgid "Storage %d was changed from %d (%.2f) to %d (%.2f) by the previous instruction"
+msgid ""
+"Storage %d was changed from %d (%.2f) to %d (%.2f) by the previous "
+"instruction"
 msgstr "儲存體 %d 被前一個指令從 %d (%.2f) 變更為 %d (%.2f) "
 
 msgid "Storage (TrueType)"
@@ -14773,8 +14979,12 @@ msgstr "%s 不同。在 %s 中它是 ("
 msgid "The %s list is not ordered"
 msgstr "%s 表列並未排序"
 
-msgid "The 'NFNT' bitmap format is not used under OS/X (though you still need to create a (useless) bitmap font if you are saving a type1 PostScript resource)"
-msgstr "「NFNT」點陣字格式並未在 OS/X 中使用(雖然如果要儲存 type1 PostScript 資源，您仍需建立一個(沒有用處)點陣字型)"
+msgid ""
+"The 'NFNT' bitmap format is not used under OS/X (though you still need to "
+"create a (useless) bitmap font if you are saving a type1 PostScript resource)"
+msgstr ""
+"「NFNT」點陣字格式並未在 OS/X 中使用(雖然如果要儲存 type1 PostScript 資源，您"
+"仍需建立一個(沒有用處)點陣字型)"
 
 msgid "The 'NFNT' bitmap format is obsolete"
 msgstr "「NFNT」點陣字格式已停用"
@@ -14789,14 +14999,22 @@ msgid "The 'kern' table supports at most 10920 kern pairs in a subtable"
 msgstr "「字距微調」表格支援在子表格中最多有 10920 對字距微調"
 
 #, c-format
-msgid "The 'sfnt' format is currently limited to 65535 glyphs, and your font has %d of them."
+msgid ""
+"The 'sfnt' format is currently limited to 65535 glyphs, and your font has %d "
+"of them."
 msgstr "「sfnt」格式目前限制為 65535 個字圖，而您的字型有 %d 個。"
 
-msgid "The 'size' feature of this font conforms to Adobe's early misinterpretation of the otf standard.\n"
+msgid ""
+"The 'size' feature of this font conforms to Adobe's early misinterpretation "
+"of the otf standard.\n"
 msgstr "這個字型的「尺寸」特徵符合 Adobe 早期錯誤解讀的 otf 標準。\n"
 
-msgid "The AFM file contains metrics information that many word-processors will read when using a PostScript® font."
-msgstr "AFM 檔案含有字框，這是許多文書處理程式使用 PostScript® 字型時，將會讀取的資訊。"
+msgid ""
+"The AFM file contains metrics information that many word-processors will "
+"read when using a PostScript® font."
+msgstr ""
+"AFM 檔案含有字框，這是許多文書處理程式使用 PostScript® 字型時，將會讀取的資"
+"訊。"
 
 msgid ""
 "The AFM format allows some information about composites\n"
@@ -14831,7 +15049,9 @@ msgid ""
 "be assigned human readable names here."
 msgstr "OpenType Stylistic Set 功能（'ss01'-'ss20'）可以在這裏設置人讀名称。"
 
-msgid "The PFM file contains information Windows needs to install a PostScript® font."
+msgid ""
+"The PFM file contains information Windows needs to install a PostScript® "
+"font."
 msgstr "PFM 檔案含有 Windows 安裝 PostScript® 字型所需要的資訊。"
 
 msgid ""
@@ -14875,8 +15095,12 @@ msgid "The Y coordinate of the anchor point in this glyph"
 msgstr "在這個字圖中錨點的 Y 座標"
 
 #, c-format
-msgid "The advance width of %s (%d) does not match the font's advanceWidthMax (%d) and this is a fixed pitch font\n"
-msgstr "%s 的前加寬度 (%d) 不匹配字型的 advanceWidthMax (%d)，而這是個固定間距的字型\n"
+msgid ""
+"The advance width of %s (%d) does not match the font's advanceWidthMax (%d) "
+"and this is a fixed pitch font\n"
+msgstr ""
+"%s 的前加寬度 (%d) 不匹配字型的 advanceWidthMax (%d)，而這是個固定間距的字"
+"型\n"
 
 msgid "The amount of space between words when using this font"
 msgstr "使用此字型時在字詞之間的空間數量"
@@ -14939,7 +15163,8 @@ msgstr "用來繪製與他項衝突的渲調顏色"
 msgid "The color used to draw a selected control point of an on-curve point"
 msgstr "用來繪製已選曲線上控制點的顏色"
 
-msgid "The color used to draw bitmap (single bit) images which do not specify a clut"
+msgid ""
+"The color used to draw bitmap (single bit) images which do not specify a clut"
 msgstr "用來繪製點陣圖 (單一位元) 圖像的顏色，該圖像並不指定顏色查找表"
 
 msgid "The color used to draw diagonal hints"
@@ -14948,7 +15173,9 @@ msgstr "用來繪製對角渲調的顏色"
 msgid "The color used to draw horizontal hints"
 msgstr "用來繪製水平渲調的顏色"
 
-msgid "The color used to draw markers for splines which are almost, but not quite horizontal or vertical at their end-points"
+msgid ""
+"The color used to draw markers for splines which are almost, but not quite "
+"horizontal or vertical at their end-points"
 msgstr "用來繪製標誌的顏色，用於其端點近乎但並不完全水平或垂直的雲形曲線"
 
 msgid "The color used to draw points at extrema (if that mode is active)"
@@ -14960,13 +15187,18 @@ msgstr "用來繪製彎折點的顏色 (如果啟用該模式)"
 msgid "The color used to draw the \"next\" control point of an on-curve point"
 msgstr "用來繪製「下一個」曲線上控制點的顏色"
 
-msgid "The color used to draw the \"previous\" control point of an on-curve point"
+msgid ""
+"The color used to draw the \"previous\" control point of an on-curve point"
 msgstr "用來繪製「前一個」曲線上控制點的顏色"
 
-msgid "The color used to draw the active horizontal hint which the Review Hints dialog is examining"
+msgid ""
+"The color used to draw the active horizontal hint which the Review Hints "
+"dialog is examining"
 msgstr "用來繪製在「檢閱渲調」對話框中的現用水平渲調的顏色"
 
-msgid "The color used to draw the active vertical hint which the Review Hints dialog is examining"
+msgid ""
+"The color used to draw the active vertical hint which the Review Hints "
+"dialog is examining"
 msgstr "用來繪製在「檢閱渲調」對話框中的現用垂直渲調的顏色"
 
 msgid "The color used to draw the large tick marks in rulers."
@@ -14978,10 +15210,14 @@ msgstr "用來繪製垂直渲調的顏色"
 msgid "The color used to fill the outline if that mode is active"
 msgstr "如果該模式是現用，用來填充描邊的顏色"
 
-msgid "The color used to mark blue zones in the blue values entry of the private dictionary"
+msgid ""
+"The color used to mark blue zones in the blue values entry of the private "
+"dictionary"
 msgstr "在私有字典的 blue values 條目中，用來標記藍色區域的顏色"
 
-msgid "The color used to mark blue zones in the family blues entry of the private dictionary"
+msgid ""
+"The color used to mark blue zones in the family blues entry of the private "
+"dictionary"
 msgstr "在私有字典的 family blues 條目中，用來標記藍色區域的顏色"
 
 msgid "The control point above the selected point is near the italic angle"
@@ -14993,7 +15229,8 @@ msgstr "所選點之上的控制點接近水平"
 msgid "The control point above the selected point is nearly vertical"
 msgstr "所選點之上的控制點接近垂直"
 
-msgid "The control point above the selected point is outside the spline segment"
+msgid ""
+"The control point above the selected point is outside the spline segment"
 msgstr "所選點之上的控制點超出雲形曲線段之外"
 
 msgid "The control point below the selected point is near the italic angle"
@@ -15005,7 +15242,8 @@ msgstr "所選點之下的控制點接近水平"
 msgid "The control point below the selected point is nearly vertical"
 msgstr "所選點之下的控制點接近垂直"
 
-msgid "The control point below the selected point is outside the spline segment"
+msgid ""
+"The control point below the selected point is outside the spline segment"
 msgstr "所選點之下的控制點超出雲形曲線段之外"
 
 msgid "The control point left of the selected point is near the italic angle"
@@ -15017,7 +15255,8 @@ msgstr "所選點左側的控制點接近水平"
 msgid "The control point left of the selected point is nearly vertical"
 msgstr "所選點左側的控制點接近垂直"
 
-msgid "The control point left of the selected point is outside the spline segment"
+msgid ""
+"The control point left of the selected point is outside the spline segment"
 msgstr "所選點左側的控制點超出雲形曲線段之外"
 
 msgid "The control point right of the selected point is near the italic angle"
@@ -15029,30 +15268,41 @@ msgstr "所選點右側的控制點接近水平"
 msgid "The control point right of the selected point is nearly vertical"
 msgstr "所選點右側的控制點接近垂直"
 
-msgid "The control point right of the selected point is outside the spline segment"
+msgid ""
+"The control point right of the selected point is outside the spline segment"
 msgstr "所選點右側的控制點超出雲形曲線段之外"
 
 #, c-format
 msgid ""
-"The convention is that PostScript fonts should have an Em-Size of 1000. But this font has a size of %d. This is not an error, but you might consider altering the Em-Size with the Element->Font Info->General dialog.\n"
+"The convention is that PostScript fonts should have an Em-Size of 1000. But "
+"this font has a size of %d. This is not an error, but you might consider "
+"altering the Em-Size with the Element->Font Info->General dialog.\n"
 "Do you wish to continue to generate your font in spite of this?"
 msgstr ""
-"依照慣例，PostScript 字型的 Em-Size 應該是 1000。但是此字型具有的尺寸卻為 %d。這並非錯誤，但是您也許要考慮利用「元件→字型資訊→一般」對話框來改變 Em-Size。\n"
+"依照慣例，PostScript 字型的 Em-Size 應該是 1000。但是此字型具有的尺寸卻為 "
+"%d。這並非錯誤，但是您也許要考慮利用「元件→字型資訊→一般」對話框來改變 Em-"
+"Size。\n"
 "儘管如此，您仍然希望繼續產生您的字型嗎？"
 
 #, c-format
 msgid ""
-"The convention is that TrueType fonts should have an Em-Size which is a power of 2. But this font has a size of %d. This is not an error, but you might consider altering the Em-Size with the Element->Font Info->General dialog.\n"
+"The convention is that TrueType fonts should have an Em-Size which is a "
+"power of 2. But this font has a size of %d. This is not an error, but you "
+"might consider altering the Em-Size with the Element->Font Info->General "
+"dialog.\n"
 "Do you wish to continue to generate your font in spite of this?"
 msgstr ""
-"依照慣例，TrueType 字型的 Em-Size 應該是 2 的乘冪。但是此字型具有的尺寸卻為 %d。這並非錯誤，但是您也許要考慮利用「元件→字型資訊→一般」對話框來改變 Em-Size。\n"
+"依照慣例，TrueType 字型的 Em-Size 應該是 2 的乘冪。但是此字型具有的尺寸卻為 "
+"%d。這並非錯誤，但是您也許要考慮利用「元件→字型資訊→一般」對話框來改變 Em-"
+"Size。\n"
 "儘管如此，您仍然希望繼續產生您的字型嗎？"
 
 #, c-format
 msgid "The correction on line %d is too big.  It must be between -128 and 127"
 msgstr "第 %d 列的校正太大。 它必須介於 -128 和 127"
 
-msgid "The counters between these hints are not the same size, bad for a stem3 hint"
+msgid ""
+"The counters between these hints are not the same size, bad for a stem3 hint"
 msgstr "在這些渲調之間的字腔不是相同尺寸，對於 stem3 渲調而言不適當"
 
 msgid "The default size of the Em-Square in a newly created font."
@@ -15090,7 +15340,8 @@ msgid "The following table(s) in the font have been ignored by FontForge\n"
 msgstr "在字型中的下列表格已被 FontForge 忽略\n"
 
 #, c-format
-msgid "The font %s is one of the standard fonts. It isn't actually in the file."
+msgid ""
+"The font %s is one of the standard fonts. It isn't actually in the file."
 msgstr "字型 %s 為標準字型之一。它並未實際位於檔案之中。"
 
 msgid "The font comment can contain whatever you feel it should"
@@ -15123,27 +15374,41 @@ msgid "The font does not contain a glyph named %s."
 msgstr "字型不包含名為 %s 的字圖。"
 
 #, c-format
-msgid "The fontname begins with the utf8 byte order sequence. This is illegal. %s"
+msgid ""
+"The fontname begins with the utf8 byte order sequence. This is illegal. %s"
 msgstr "字型名稱 utf8 位元組序列開始。這是不合法的。%s"
 
 #, c-format
-msgid "The fonts %1$.30s and %2$.30s have a different number of glyphs or different encodings"
+msgid ""
+"The fonts %1$.30s and %2$.30s have a different number of glyphs or different "
+"encodings"
 msgstr "字型 %1$.30s 和 %2$.30s 有不同的字圖數量或不同的編碼"
 
 #, c-format
-msgid "The fonts %1$.30s and %2$.30s use different types of splines (one quadratic, one cubic)"
+msgid ""
+"The fonts %1$.30s and %2$.30s use different types of splines (one quadratic, "
+"one cubic)"
 msgstr "字型 %1$.30s 和 %2$.30s 使用不同類型的曲線(一個二次，一個三次)"
 
 msgid "The generated font won't work with ATM"
 msgstr "產生的字型將無法適用於 ATM"
 
 #, c-format
-msgid "The glyph at CID %d is mapped to more than %d encodings. Only the first %d are handled."
+msgid ""
+"The glyph at CID %d is mapped to more than %d encodings. Only the first %d "
+"are handled."
 msgstr "位於 CID %d 的字圖被映射到超過 %d 編碼上。只有前面 %d 個會被處理。"
 
 #, c-format
-msgid "The glyph at encoding %d is named \".notdef\" but contains an outline. Because it is called \".notdef\" it will not be included in the generated font. You may give it a new name using Element->Glyph Info. Do you wish to continue font generation (and omit this character)?"
-msgstr "編碼 %d 的字圖被命名為「.notdef」但是含有描邊。因為它被稱為「.notdef」，它將無法包含在產生的字型之中。您可以使用「元件→字圖資訊」給它新的名稱。您希望字型產生(並省略此字元)能繼續嗎？"
+msgid ""
+"The glyph at encoding %d is named \".notdef\" but contains an outline. "
+"Because it is called \".notdef\" it will not be included in the generated "
+"font. You may give it a new name using Element->Glyph Info. Do you wish to "
+"continue font generation (and omit this character)?"
+msgstr ""
+"編碼 %d 的字圖被命名為「.notdef」但是含有描邊。因為它被稱為「.notdef」，它將"
+"無法包含在產生的字型之中。您可以使用「元件→字圖資訊」給它新的名稱。您希望字型"
+"產生(並省略此字元)能繼續嗎？"
 
 #, c-format
 msgid "The glyph name \"%1$.30s\" occurs in groups %2$.30s and %3$.30s"
@@ -15159,7 +15424,8 @@ msgstr ""
 
 #, c-format
 msgid ""
-"The glyph named %s also occurs in the class on row %d which begins with %.20s...\n"
+"The glyph named %s also occurs in the class on row %d which begins with "
+"%.20s...\n"
 "You must remove it from one of them."
 msgstr ""
 "名為 %s 的字圖也出現在類別中於第 %d 列，該項是以 %.20s 起始…\n"
@@ -15240,30 +15506,41 @@ msgid "The hint mask of the selected point contains overlapping hints"
 msgstr "所選點的渲調遮罩含有重疊渲調"
 
 #, c-format
-msgid "The hint you have just selected overlaps with <%.2f,%.2f>. You should deselect one of the two."
+msgid ""
+"The hint you have just selected overlaps with <%.2f,%.2f>. You should "
+"deselect one of the two."
 msgstr "您剛剛選取的渲調指令與 <%.2f,%.2f> 重疊。您應該取消選取兩者之一。"
 
-msgid "The horizontal and vertical stem add amounts may not differ by more than a factor of 4"
+msgid ""
+"The horizontal and vertical stem add amounts may not differ by more than a "
+"factor of 4"
 msgstr "水平和垂直字幹附加數目的差異不可以超過因子 4"
 
-msgid "The horizontal and vertical stem add amounts must either both be zero, or neither may be 0"
+msgid ""
+"The horizontal and vertical stem add amounts must either both be zero, or "
+"neither may be 0"
 msgstr "水平和垂直字幹附加數目必須兩者都是零，或者兩者都不可為 0"
 
-msgid "The human-readable fontname text (in the Names pane) must be entirely ASCII."
+msgid ""
+"The human-readable fontname text (in the Names pane) must be entirely ASCII."
 msgstr "人讀字型名稱（在名稱窗格中）必須完全使用 ASCII 字符。"
 
 #, c-format
-msgid "The instructions for %.80s have changed. Do you want to lose those changes?"
+msgid ""
+"The instructions for %.80s have changed. Do you want to lose those changes?"
 msgstr "用於 %.80s 的指令已變更。您要丟棄那些變更嗎？"
 
-msgid "The italic correction of the composed glyph. Should be independent of glyph size"
+msgid ""
+"The italic correction of the composed glyph. Should be independent of glyph "
+"size"
 msgstr "組合字圖的斜體校正。應該是獨立於字圖尺寸"
 
 msgid "The kerning values for class 0 (\"Everything Else\") should always be 0"
 msgstr "字距微調值用於類別 0 (\"所有其他東西\") 應該自動為 0"
 
 #, c-format
-msgid "The language, '%s', is not in the list of known languages and will be omitted"
+msgid ""
+"The language, '%s', is not in the list of known languages and will be omitted"
 msgstr "語言，'%s'，並不在已知語言集清單之中而將被省略"
 
 msgid "The layers do not match"
@@ -15308,21 +15585,28 @@ msgid "The minimum glue space below a large displayed operator"
 msgstr "大型顯示操作元之下的最小黏合空間"
 
 #, c-format
-msgid "The name FontForge would like to assign to this glyph, %.30s, is already used by a different glyph."
+msgid ""
+"The name FontForge would like to assign to this glyph, %.30s, is already "
+"used by a different glyph."
 msgstr "FontForge 想要指派到這個字圖 %.30s 的名稱, 已被不同的字圖所使用。"
 
 #, c-format
-msgid "The name parameter of the '%c%c%c%c' feature does not contain a valid name id.\n"
+msgid ""
+"The name parameter of the '%c%c%c%c' feature does not contain a valid name "
+"id.\n"
 msgstr "「%c%c%c%c」特徵的名稱參數不包含有效名稱識別號。\n"
 
 #, c-format
-msgid "The name parameter of the '%c%c%c%c' feature has an unlikely version number %d.\n"
+msgid ""
+"The name parameter of the '%c%c%c%c' feature has an unlikely version number "
+"%d.\n"
 msgstr "「%c%c%c%c」特徵的名稱參數具有不太可能的版本編號 %d。\n"
 
 msgid "The number of em-units by which an arrow key will move a selected point"
 msgstr "方向鍵將會移動已選取點的 em-units 數量"
 
-msgid "The ofm and cfg files contain information Omega needs to process a font."
+msgid ""
+"The ofm and cfg files contain information Omega needs to process a font."
 msgstr "ofm 和 cfg 檔案包含 Omega 處理字型所需要的資訊。"
 
 msgid "The only valid values for bits/pixel are 1, 2, 4 or 8"
@@ -15345,7 +15629,9 @@ msgstr ""
 msgid "The pattern size (width & height) must be a positive number"
 msgstr "胚騰尺寸 (寬度 & 高度) 必須是正數"
 
-msgid "The percentage of an em by which an accent is offset from its base glyph in Build Accent"
+msgid ""
+"The percentage of an em by which an accent is offset from its base glyph in "
+"Build Accent"
 msgstr "在組建重音符號時 em 的百分比，藉此重音符號將從它的基底字圖產生偏移"
 
 #, c-format
@@ -15370,7 +15656,8 @@ msgid "The requested file, %.100s, does not exist"
 msgstr "要求的檔案 %.100s 不存在"
 
 #, c-format
-msgid "The script tag on line %d (%s) is too long.  It may be at most 4 letters"
+msgid ""
+"The script tag on line %d (%s) is too long.  It may be at most 4 letters"
 msgstr "文字標記於第 %d 列 (%s) 太長。 它最多可以有 4 個字母"
 
 #, c-format
@@ -15385,7 +15672,9 @@ msgstr "搜尋胚騰在字型 %.100s 之中找不到"
 msgid "The search pattern was not found in the font %.100s"
 msgstr "搜尋胚騰在字型 %.100s 之中找不到"
 
-msgid "The selected glyphs have no hints. FontForge will not produce many instructions."
+msgid ""
+"The selected glyphs have no hints. FontForge will not produce many "
+"instructions."
 msgstr "已選字圖沒有任何渲調指令。FontForge 將無法產生許多指令。"
 
 msgid "The selected line segment is near the italic angle"
@@ -15412,13 +15701,15 @@ msgstr "所選點不在整數座標上"
 msgid "The selected point is too far from the origin"
 msgstr "所選點距離原點太遠"
 
-msgid "The selected points (or the intermediate control points) are too far apart"
+msgid ""
+"The selected points (or the intermediate control points) are too far apart"
 msgstr "所選點 (或中間控制點) 分隔太遠"
 
 msgid "The selected points are too close to each other"
 msgstr "所選點相對於其他各點太近"
 
-msgid "The selected spline attains its extrema somewhere other than its endpoints"
+msgid ""
+"The selected spline attains its extrema somewhere other than its endpoints"
 msgstr "所選雲形曲線在不同於其終點的某處到達它的末端"
 
 msgid "The selection should be scaled so that it will cover the path's length"
@@ -15434,7 +15725,9 @@ msgstr "雲形曲線無法逹到 %g"
 msgid "The text will wrap to a new line after this many em-units"
 msgstr "文字將於這麼多 em-units 之後換到新列"
 
-msgid "The tfm and enc files contain information TeX needs to install a PostScript® font."
+msgid ""
+"The tfm and enc files contain information TeX needs to install a PostScript® "
+"font."
 msgstr "tfm 和 enc 檔案包含 TeX 安裝 PostScript® 字型所需要的資訊。"
 
 msgid "The tiles should be centered on the path"
@@ -15454,8 +15747,12 @@ msgstr ""
 "y(新) = tm[1,2]*x + tm[2,2]*y + tm[3,2]"
 
 #, c-format
-msgid "The truetype encoding specified by platform=%d specific=%d (which we map to %s) is not supported by your version of iconv(3).\n"
-msgstr "由平臺=%d 規格=%d (我們將其映射到 %s) 指定的 truetype 編碼，未被您的 iconv(3) 版本所支援。\n"
+msgid ""
+"The truetype encoding specified by platform=%d specific=%d (which we map to "
+"%s) is not supported by your version of iconv(3).\n"
+msgstr ""
+"由平臺=%d 規格=%d (我們將其映射到 %s) 指定的 truetype 編碼，未被您的 "
+"iconv(3) 版本所支援。\n"
 
 #, c-format
 msgid ""
@@ -15526,7 +15823,9 @@ msgstr "在序列/查找清單之中沒有條目，這是有意要如此做的�
 msgid "There are no hint masks in this layer but there are overlapping hints."
 msgstr "在這個圖層中沒有渲調遮罩但有重疊渲調。"
 
-msgid "There are no scripts bound to features bound to this lookup. So nothing happens."
+msgid ""
+"There are no scripts bound to features bound to this lookup. So nothing "
+"happens."
 msgstr "沒有繫結到特徵的文字被繫結到這個查找。因而沒有任何事情發生。"
 
 #, c-format
@@ -15538,18 +15837,27 @@ msgid "There are two entries for the same glyph set (%.80s and %.80s)"
 msgstr "有兩個條目用於相同字圖集合 (%.80s 和 %.80s)"
 
 #, c-format
-msgid "There are two kerning entries for the same glyph (%.80s) in the same lookup subtable (%.30s)"
-msgstr "有些兩個字距微調條目作用相同字圖 (%.80s) 於相同的查找子表格 (%.30s) 之中"
+msgid ""
+"There are two kerning entries for the same glyph (%.80s) in the same lookup "
+"subtable (%.30s)"
+msgstr ""
+"有些兩個字距微調條目作用相同字圖 (%.80s) 於相同的查找子表格 (%.30s) 之中"
 
 #, c-format
-msgid "There are two ligature entries with the same components (%.80s) in the same lookup subtable (%.30s)"
+msgid ""
+"There are two ligature entries with the same components (%.80s) in the same "
+"lookup subtable (%.30s)"
 msgstr "有些兩個連體字條目具備相同成份 (%.80s) 於相同的查找子表格 (%.30s) 之中"
 
 #, c-format
-msgid "There are two open fonts with the current family name and the same style. %.30s and %.30s"
+msgid ""
+"There are two open fonts with the current family name and the same style. "
+"%.30s and %.30s"
 msgstr "有兩個開放字型與目前字族名稱和樣式相同。%.30s 和 %.30s"
 
-msgid "There aren't enough glyphs in the encoding to name all the selected characters"
+msgid ""
+"There aren't enough glyphs in the encoding to name all the selected "
+"characters"
 msgstr "編碼中的字圖不足以命名所有已選字元"
 
 #, c-format
@@ -15561,7 +15869,9 @@ msgid "There is a character (%d) which is not normally in the encoding"
 msgstr "某個字元 (%d) 並未正常地位於編碼之中"
 
 #, c-format
-msgid "There is a single byte character (%d) using one of the slots needed for double byte characters"
+msgid ""
+"There is a single byte character (%d) using one of the slots needed for "
+"double byte characters"
 msgstr "某個單一位元組字元 (%d) 正在使用雙位元組字元所需的插件之一"
 
 #, c-format
@@ -15616,13 +15926,16 @@ msgid "There must be at least one match coverage table"
 msgstr "必須有至少一個匹配的覆蓋表格"
 
 msgid ""
-"These expressions may contain the operators +,-,*,/,%,^ (which means raise to the power of here), and ?: It may also contain a few standard functions. Basic terms are real numbers, x and y.\n"
+"These expressions may contain the operators +,-,*,/,%,^ (which means raise "
+"to the power of here), and ?: It may also contain a few standard functions. "
+"Basic terms are real numbers, x and y.\n"
 "Examples:\n"
 " x^3+2.5*x^2+5\n"
 " (x-300)*(y-200)/100\n"
 " y+sin(100*x)"
 msgstr ""
-"這些運算式也許包含運算子 +,-,*,/,%,^ (此處表示次方) 和 ?:它可能也包含幾個標準函式。基本的項目是實數 x 和 y。\n"
+"這些運算式也許包含運算子 +,-,*,/,%,^ (此處表示次方) 和 ?:它可能也包含幾個標準"
+"函式。基本的項目是實數 x 和 y。\n"
 "範例：\n"
 "x^3+2.5*x^2+5\n"
 "(x-300)*(y-200)/100\n"
@@ -15659,8 +15972,11 @@ msgid "This anchor class already is associated with a point in this character"
 msgstr "此錨點類別已經與此字元中的點相關聯"
 
 #, c-format
-msgid "This anchor was attached to point %d, but that's not a point I can move. I'm detaching the anchor from the point."
-msgstr "這個錨點被附加到點 %d，但是那不是我可以移動的點。我正在從該點卸離錨點。"
+msgid ""
+"This anchor was attached to point %d, but that's not a point I can move. I'm "
+"detaching the anchor from the point."
+msgstr ""
+"這個錨點被附加到點 %d，但是那不是我可以移動的點。我正在從該點卸離錨點。"
 
 msgid "This blank outline glyph has an unexpected bitmap version"
 msgstr "此空白描邊字圖有未預期的點陣字版本"
@@ -15712,13 +16028,16 @@ msgstr ""
 "此特徵，設定組合已經使用\n"
 "您真的希望重覆使用它嗎？"
 
-msgid "This file contains an unnamed encoding, which cannot be named in a script"
+msgid ""
+"This file contains an unnamed encoding, which cannot be named in a script"
 msgstr "這個檔案含有未命名編碼，無法在命令稿中被命名"
 
 msgid "This file contains no SVG fonts.\n"
 msgstr "這個檔案不含 SVG 字型。\n"
 
-msgid "This font comes from an old format sfd file. Not all aspects of it can be reverted successfully."
+msgid ""
+"This font comes from an old format sfd file. Not all aspects of it can be "
+"reverted successfully."
 msgstr "這個字型來自舊的 sfd 格式檔案。並非它的所有比例都可以成功回復。"
 
 msgid ""
@@ -15728,8 +16047,13 @@ msgstr ""
 "這個字型含有「UniqueId」變數，但是它的正確名稱是\n"
 "\t\"UniqueID\" (postscript 是大小寫有分的)\n"
 
-msgid "This font contains at least one translucent layer, but type3 does not support that (anything translucent or transparent is treated as opaque). Do you want to proceed anyway?"
-msgstr "此字型至少含有一個清澈的圖層，但是 type3 不支援它(任何清澈或透明的全被視為不透明)。無論如何您都要繼續嗎？"
+msgid ""
+"This font contains at least one translucent layer, but type3 does not "
+"support that (anything translucent or transparent is treated as opaque). Do "
+"you want to proceed anyway?"
+msgstr ""
+"此字型至少含有一個清澈的圖層，但是 type3 不支援它(任何清澈或透明的全被視為不"
+"透明)。無論如何您都要繼續嗎？"
 
 msgid ""
 "This font contains both a 'BASE' table and a 'bsln' table.\n"
@@ -15738,8 +16062,13 @@ msgstr ""
 "這個字型同時含有「基底」表格和「bsln」表格。\n"
 " FontForge 將只讀取它們之一 ('BASE')。\n"
 
-msgid "This font contains both a TrueType 'glyf' table and an OpenType 'CFF ' table. FontForge can only deal with one at a time, please pick which one you want to use"
-msgstr "這個字型同時含有 TrueType「glyf」表格和 OpenType「CFF 」表格。FontForge 一次只能處理一個，請揀取一個您要使用的那項"
+msgid ""
+"This font contains both a TrueType 'glyf' table and an OpenType 'CFF ' "
+"table. FontForge can only deal with one at a time, please pick which one you "
+"want to use"
+msgstr ""
+"這個字型同時含有 TrueType「glyf」表格和 OpenType「CFF 」表格。FontForge 一次"
+"只能處理一個，請揀取一個您要使用的那項"
 
 msgid ""
 "This font contains both truetype and PostScript glyph descriptions\n"
@@ -15791,7 +16120,8 @@ msgstr "此字型不指定 units-per-em\n"
 
 #, c-format
 msgid ""
-"This font is based on the charset %1$.20s-%2$.20s-%3$d, but the best I've been able to find is %1$.20s-%2$.20s-%4$d.\n"
+"This font is based on the charset %1$.20s-%2$.20s-%3$d, but the best I've "
+"been able to find is %1$.20s-%2$.20s-%4$d.\n"
 "Shall I use that or let you search?"
 msgstr ""
 "本字體使用字元集%1$.20s-%2$.20s-%3$d，但只能找到%1$.20s-%2$.20s-%4$d。\n"
@@ -15827,28 +16157,36 @@ msgstr ""
 msgid "This glyph can use a stem3 hint"
 msgstr "此字圖可以使用 stem3 渲調"
 
-msgid "This glyph contains a different number of contours in different instances"
+msgid ""
+"This glyph contains a different number of contours in different instances"
 msgstr "這個字圖在不同的實體中含有不同的輪廓數量"
 
 msgid "This glyph contains a different number of hints in different instances"
 msgstr "這個字圖在不同的實體中含有不同的渲調指令數量"
 
-msgid "This glyph contains a different number of references in different instances"
+msgid ""
+"This glyph contains a different number of references in different instances"
 msgstr "這個字圖在不同的實體中含有不同的參照數量"
 
 msgid "This glyph contains a horizontal hint near the specified width"
 msgstr "這個字圖在指定寬度附近含有水平渲調"
 
-msgid "This glyph contains a substitution or ligature entry which refers to an empty char"
+msgid ""
+"This glyph contains a substitution or ligature entry which refers to an "
+"empty char"
 msgstr "這個字圖含有參照到空字元的替代或連體字條目"
 
 msgid "This glyph contains a vertical hint near the specified width"
 msgstr "這個字圖在指定寬度附近含有垂直渲調"
 
-msgid "This glyph contains anchor points from some, but not all anchor classes in a subtable"
+msgid ""
+"This glyph contains anchor points from some, but not all anchor classes in a "
+"subtable"
 msgstr "這個字圖在子表格中含有來自某些但不是所有錨點類別的錨點"
 
-msgid "This glyph contains control points which are probably too close to the main points to alter the look of the spline"
+msgid ""
+"This glyph contains control points which are probably too close to the main "
+"points to alter the look of the spline"
 msgstr "這個字圖含有控制點，該點大概太靠近主要點而無法改變雲形曲線的外觀"
 
 msgid "This glyph contains different kerning pairs in different instances"
@@ -15860,10 +16198,14 @@ msgstr "這個字圖於基線之下的延展比設想的要多"
 msgid "This glyph extends left further than desired"
 msgstr "這個字圖向左延展比設想的要多"
 
-msgid "This glyph has four hints, but if this one were omitted it would fit a stem3 hint"
+msgid ""
+"This glyph has four hints, but if this one were omitted it would fit a stem3 "
+"hint"
 msgstr "這個字圖有四個渲調，但是如果這一個被省略它就會符合 stem3 渲調"
 
-msgid "This glyph has no instructions. Adding instructions (a DELTA) may change its rasterization significantly."
+msgid ""
+"This glyph has no instructions. Adding instructions (a DELTA) may change its "
+"rasterization significantly."
 msgstr "這個字圖沒有任何指令。加入指令 (一個 DELTA) 也許會顯著變更它的點陣化。"
 
 msgid "This glyph is defined in more than one of the CID subfonts"
@@ -15872,13 +16214,16 @@ msgstr "這個字圖在一個以上的 CID 子字型中被定義"
 msgid "This glyph is defined in one instance font but not in another"
 msgstr "這個字圖被定義在一個實體字型中而不是在另一個中"
 
-msgid "This glyph is mapped to a unicode code point which is different from its name."
+msgid ""
+"This glyph is mapped to a unicode code point which is different from its "
+"name."
 msgstr "這個字圖被映射到與其名稱不同的 Unicode 碼位。"
 
 msgid "This glyph is not defined in any of the CID subfonts"
 msgstr "這個字圖未在任何的 CID 子字型中被定義"
 
-msgid "This glyph is not mapped to any unicode code point, but its name should be."
+msgid ""
+"This glyph is not mapped to any unicode code point, but its name should be."
 msgstr "這個字圖未被映射到任何 Unicode 碼位，但是它的名稱看來應該是。"
 
 msgid "This glyph is taller than desired"
@@ -15890,14 +16235,26 @@ msgstr "這個字圖比設想的要寬"
 msgid "This glyph self-intersects"
 msgstr "這個字圖自我交叉"
 
-msgid "This glyph self-intersects. Checking for correct direction is meaningless until that is fixed"
+msgid ""
+"This glyph self-intersects. Checking for correct direction is meaningless "
+"until that is fixed"
 msgstr "這個字圖自我交叉。問題修復之前檢查修正方向是無意義的"
 
-msgid "This glyph should display spiro points, but unfortunately FontForge was unable to load libspiro, spiros are not available for use, and normal bezier points will be displayed instead."
-msgstr "這個字圖應該顯示旋點，但是不幸 FontForge 無法載入 libspiro，旋點無法使用，而一般貝茲控制點將被顯示以做為替代。"
+msgid ""
+"This glyph should display spiro points, but unfortunately FontForge was "
+"unable to load libspiro, spiros are not available for use, and normal bezier "
+"points will be displayed instead."
+msgstr ""
+"這個字圖應該顯示旋點，但是不幸 FontForge 無法載入 libspiro，旋點無法使用，而"
+"一般貝茲控制點將被顯示以做為替代。"
 
-msgid "This glyph should display spiro points, but unfortunately this version of fontforge was not linked with the spiro library, so only normal bezier points will be displayed."
-msgstr "這個字圖應該顯示旋點，但是不幸這個版本的 fontforge 未與 spiro 函式庫鏈結，因而只有一般貝茲控制點將被顯示。"
+msgid ""
+"This glyph should display spiro points, but unfortunately this version of "
+"fontforge was not linked with the spiro library, so only normal bezier "
+"points will be displayed."
+msgstr ""
+"這個字圖應該顯示旋點，但是不幸這個版本的 fontforge 未與 spiro 函式庫鏈結，因"
+"而只有一般貝茲控制點將被顯示。"
 
 msgid "This glyph's advance width is different from the standard width"
 msgstr "這個字圖的前加寬度與標準寬度不同"
@@ -15957,8 +16314,12 @@ msgstr ""
 msgid "This ligature index is already in use"
 msgstr "此連體字索引已在使用中"
 
-msgid "This looks like a level1 (or level2) ofm. FontForge only supports level0 files, and can't read a real level1 file."
-msgstr "外觀如同 level1(或 level2) ofm。FontForge 只支援 level0 檔案，而無法讀取真正的 level1 檔案。"
+msgid ""
+"This looks like a level1 (or level2) ofm. FontForge only supports level0 "
+"files, and can't read a real level1 file."
+msgstr ""
+"外觀如同 level1(或 level2) ofm。FontForge 只支援 level0 檔案，而無法讀取真正"
+"的 level1 檔案。"
 
 msgid ""
 "This looks like one of FontForge's SplineFont DataBase files.\n"
@@ -15983,8 +16344,11 @@ msgstr "這個標記集合 (%s) 曾經在查找 %s 中用過"
 msgid "This may take a while. Please be patient..."
 msgstr "這也許會花費一點時間。請耐心等候…"
 
-msgid "This must be ASCII, so you may not use the copyright symbol (use (c) instead)."
-msgstr "這個必須是 ASCII 編碼，因此您不可以使用著作權符號 (使用 (c) 做為替代)。"
+msgid ""
+"This must be ASCII, so you may not use the copyright symbol (use (c) "
+"instead)."
+msgstr ""
+"這個必須是 ASCII 編碼，因此您不可以使用著作權符號 (使用 (c) 做為替代)。"
 
 msgid "This must be a truetype layer."
 msgstr "這必須是 truetype 圖層。"
@@ -16004,7 +16368,8 @@ msgstr "這個名稱之前是用來識別標記類別/集合 #%d。"
 msgid "This namelist contains at least one non-ASCII glyph name, namely: %s"
 msgstr "這個名稱表列含有至少一個非 ASCII 字圖名稱：%s"
 
-msgid "This namelist is based on a namelist which contains non-ASCII glyph names"
+msgid ""
+"This namelist is based on a namelist which contains non-ASCII glyph names"
 msgstr "這個名稱表列是基於含有非 ASCII 字圖名稱的名稱表列"
 
 msgid "This operation cannot be undone, do it anyway?"
@@ -16013,7 +16378,8 @@ msgstr "此作業無法復原，無論如何都要做？"
 msgid "This outline glyph is missing a bitmap version"
 msgstr "這個描邊字圖缺少點陣圖版本"
 
-msgid "This outline glyph's advance width is different from that of the bitmap's"
+msgid ""
+"This outline glyph's advance width is different from that of the bitmap's"
 msgstr "這個描邊字圖的前加寬度與來自點陣圖的不同"
 
 msgid "This path should have been drawn in a clockwise direction"
@@ -16023,7 +16389,8 @@ msgid "This path should have been drawn in a counter-clockwise direction"
 msgstr "這個路徑應該已被逆時針方向繪製"
 
 msgid ""
-"This pdf file contains an /Encrypt dictionary, and FontForge does not currently\n"
+"This pdf file contains an /Encrypt dictionary, and FontForge does not "
+"currently\n"
 "support pdf encryption"
 msgstr ""
 "這個 pdf 檔案含有/加密字典，而 FontForge 目前\n"
@@ -16052,7 +16419,9 @@ msgstr "這個參照已被翻轉，因而其中的路徑是向後繪製"
 msgid "This setting is already used"
 msgstr "此設定已經使用"
 
-msgid "This version of fontforge was not linked with the spiro library, so you may not use them."
+msgid ""
+"This version of fontforge was not linked with the spiro library, so you may "
+"not use them."
 msgstr "這個版本的 fontforge 未與旋點函式庫鏈結，因而您不可以使用它們。"
 
 msgid "This window displays a single outline glyph"
@@ -16166,8 +16535,13 @@ msgstr "取到百分之一(_H)"
 msgid "To _Int"
 msgstr "取整數(_I)"
 
-msgid "To generate a Mac family file, the current font must have plain (Normal, Regular, etc.) style, and there must be other open fonts with the same family name."
-msgstr "要產生 Mac 字族檔案，目前的字型必須具有普通(一般、標準…等等)樣式，還必須存在其他具有相同字族名稱的開放字型。"
+msgid ""
+"To generate a Mac family file, the current font must have plain (Normal, "
+"Regular, etc.) style, and there must be other open fonts with the same "
+"family name."
+msgstr ""
+"要產生 Mac 字族檔案，目前的字型必須具有普通(一般、標準…等等)樣式，還必須存在"
+"其他具有相同字族名稱的開放字型。"
 
 msgid "To the glyph names starting at:"
 msgstr "到字圖名稱其始於："
@@ -16499,7 +16873,9 @@ msgstr "Type2 字型不支援 Type1 setcurrentpoint 運算子"
 msgid "Type:"
 msgstr "型態："
 
-msgid "Typing a normal character in the glyph view window changes the window to look at that character"
+msgid ""
+"Typing a normal character in the glyph view window changes the window to "
+"look at that character"
 msgstr "在字圖檢視視窗中鍵入某個一般字元，會轉變其為查看該字元的視窗"
 
 msgid "Typo Ascent Offset:"
@@ -16822,7 +17198,9 @@ msgid "Unparseable include on line %d of %s"
 msgstr "包含檔無法解析於 %2$s 的第 %1$d 列"
 
 #, c-format
-msgid "Unparsed characters found after end of groups file (last line parsed was %d).\n"
+msgid ""
+"Unparsed characters found after end of groups file (last line parsed was "
+"%d).\n"
 msgstr "群組檔案結束之後找到未被剖析的字元 (被剖析的最後一列是 %d)。\n"
 
 msgid "Unreasonable DPI"
@@ -17252,8 +17630,11 @@ msgstr "完整式（韓文Wansung）"
 msgid "Warn if _unlinked references"
 msgstr "如果取消連結參照就警告(_U)"
 
-msgid "Warn if one glyph contains an outline while the other contains a reference (but the reference describes the same outline)"
-msgstr "如果一個字圖含有描邊同時其他字圖含有該參照就警告 (但是參照描述相同的描邊)"
+msgid ""
+"Warn if one glyph contains an outline while the other contains a reference "
+"(but the reference describes the same outline)"
+msgstr ""
+"如果一個字圖含有描邊同時其他字圖含有該參照就警告 (但是參照描述相同的描邊)"
 
 msgid "Warn if the outlines are close but not exactly the same"
 msgstr "如果描邊為關閉但並非完全相同就警告"
@@ -17281,7 +17662,8 @@ msgstr "警告：在 palm 字型中有位元組置換的字型標記。"
 
 #, c-format
 msgid ""
-"Warning: Encoding %d (0x%x) is mapped to at least two locations (%s@0x%02x and %s@0x%02x)\n"
+"Warning: Encoding %d (0x%x) is mapped to at least two locations (%s@0x%02x "
+"and %s@0x%02x)\n"
 " Only one will be used here.\n"
 msgstr ""
 "警告：編碼 %d (0x%x) 被映射到至少兩個位置 (%s@0x%02x 和 %s@0x%02x)\n"
@@ -17294,8 +17676,13 @@ msgid "Warning: Font contained no glyphs"
 msgstr "警告：字型沒有包含字圖"
 
 #, c-format
-msgid "Warning: FontForge's implementation of include statements in UFO features.fea files was wrong. Please correct your path `%s` as per the specification for guaranteed future compatibility. (See GitHub issue №4629 for more info.)"
-msgstr "警告：FontForge在UFO features.fea檔案中實施include語句的方法有誤。請更改路徑`%s`以保證未來的相容性。（請查看GitHub問題№4629以了解更多信息。）"
+msgid ""
+"Warning: FontForge's implementation of include statements in UFO features."
+"fea files was wrong. Please correct your path `%s` as per the specification "
+"for guaranteed future compatibility. (See GitHub issue №4629 for more info.)"
+msgstr ""
+"警告：FontForge在UFO features.fea檔案中實施include語句的方法有誤。請更改路徑"
+"`%s`以保證未來的相容性。（請查看GitHub問題№4629以了解更多信息。）"
 
 #, c-format
 msgid ""
@@ -17325,7 +17712,8 @@ msgid "Warning: Unreasonably big splines. They will be ignored.\n"
 msgstr "警告：不合理的大型曲線。它們將被忽略。\n"
 
 #, c-format
-msgid "Warning: could not figure out where the hint (%d,%d %d,%d %d,%d) is valid\n"
+msgid ""
+"Warning: could not figure out where the hint (%d,%d %d,%d %d,%d) is valid\n"
 msgstr "警告：無法算出渲調 (%d,%d %d,%d %d,%d) 何處有效\n"
 
 msgid "Warnings"
@@ -17366,7 +17754,9 @@ msgid "When a font is opened, should it be made compact?"
 msgstr "當字型開啟，它就應該被壓縮？"
 
 #, c-format
-msgid "When a single substitution is specified by glyph classes, those classes must be of the same length on line %d of %s"
+msgid ""
+"When a single substitution is specified by glyph classes, those classes must "
+"be of the same length on line %d of %s"
 msgstr "當字形定類指定單一替換時，這些類別在%s的第%d行上必須具有相同的長度"
 
 msgid "When adding new entries provide default kerning values."
@@ -17379,7 +17769,9 @@ msgstr ""
 "加入新條目時，給予它們與位於首列\n"
 "者相同的差異值。"
 
-msgid "When building an Apple distortable font, you must specify at least one name for the axis"
+msgid ""
+"When building an Apple distortable font, you must specify at least one name "
+"for the axis"
 msgstr "建立 Apple distortable 字型時，對於軸線您必須指定至少一個名稱"
 
 msgid ""
@@ -17418,8 +17810,15 @@ msgstr ""
 "選擇點 (如果使用者已釋放滑鼠按鈕)。\n"
 "如果您的手指有一點擺動的傾向的話，如此將會很好用。"
 
-msgid "When generating a Mac Type1 resource font, you MUST generate at least one NFNT bitmap font to go with it. If you have not created any bitmaps for this font, cancel this dlg and use the Element->Bitmaps Available command to create one"
-msgstr "產生 Mac Type1 資源字型時，您必須隨之產生至少一個 NFNT 點陣字型。如果您沒有建立任何用於此字型的點陣字，就取消此對話框並使用「元件→可用點陣字」命令來建立一個"
+msgid ""
+"When generating a Mac Type1 resource font, you MUST generate at least one "
+"NFNT bitmap font to go with it. If you have not created any bitmaps for this "
+"font, cancel this dlg and use the Element->Bitmaps Available command to "
+"create one"
+msgstr ""
+"產生 Mac Type1 資源字型時，您必須隨之產生至少一個 NFNT 點陣字型。如果您沒有建"
+"立任何用於此字型的點陣字，就取消此對話框並使用「元件→可用點陣字」命令來建立一"
+"個"
 
 msgid ""
 "When placing grave and acute accents above letters, should\n"
@@ -17445,7 +17844,9 @@ msgstr ""
 "寬度、曲線格線…等等)，指標將會抓附\n"
 "於該特徵。"
 
-msgid "When the search path is a single open contour, the replace pattern must also be."
+msgid ""
+"When the search path is a single open contour, the replace pattern must also "
+"be."
 msgstr "搜尋路徑是單一開放輪廓時，置換胚騰必須也是。"
 
 msgid ""
@@ -17467,7 +17868,8 @@ msgstr ""
 "或立方形(postscript & opentype)。"
 
 msgid ""
-"Whether to use mac-like icons to indicate modifiers (for instance ^ for Control)\n"
+"Whether to use mac-like icons to indicate modifiers (for instance ^ for "
+"Control)\n"
 "or to use an abbreviation (for instance \"Cnt-\")"
 msgstr ""
 "是否要使用類似 mac 的圖示以指出修飾鍵 (舉例來說 ^ 表示 Control 鍵)\n"
@@ -17711,7 +18113,8 @@ msgstr ""
 #, c-format
 msgid ""
 "You are attempting to paste a reference to %1$s into %2$s.\n"
-"But %1$s does not exist in this font, nor can I find the original character referred to.\n"
+"But %1$s does not exist in this font, nor can I find the original character "
+"referred to.\n"
 "It will not be copied."
 msgstr ""
 "你正嘗試把參考從%1$s貼上到%2$s。\n"
@@ -17729,17 +18132,22 @@ msgstr ""
 "你想複製原本的樣條線，還是刪除此參考？"
 
 msgid ""
-"You are attempting to paste glyph instructions from one font to another. Generally this will not work unless the 'prep', 'fpgm' and 'cvt ' tables are the same.\n"
+"You are attempting to paste glyph instructions from one font to another. "
+"Generally this will not work unless the 'prep', 'fpgm' and 'cvt ' tables are "
+"the same.\n"
 "Do you want to continue anyway?"
 msgstr ""
-"你正嘗試把字形指示從一個字體複製到另一個字體。一般來説，除非「prep」、「fpgm」以及「cvt」表相同，否則這不會行得通。\n"
+"你正嘗試把字形指示從一個字體複製到另一個字體。一般來説，除非「prep」、"
+"「fpgm」以及「cvt」表相同，否則這不會行得通。\n"
 "您還想繼續嗎？"
 
 msgid ""
-"You are attempting to save a CID font in a non-CID format. This is ok, but it means that only the current sub-font will be saved.\n"
+"You are attempting to save a CID font in a non-CID format. This is ok, but "
+"it means that only the current sub-font will be saved.\n"
 "Is that what you want?"
 msgstr ""
-"您正試圖以 非-CID 格式儲存 CID 字型。這沒問題，但是這意味著只有目前的子字型才會被儲存。\n"
+"您正試圖以 非-CID 格式儲存 CID 字型。這沒問題，但是這意味著只有目前的子字型才"
+"會被儲存。\n"
 "這就是您想要的嗎？"
 
 msgid ""
@@ -17756,7 +18164,9 @@ msgstr "您變更了點的編號"
 msgid "You do not have permission to read %.100s"
 msgstr "您沒有權限去讀取 %.100s"
 
-msgid "You have changed the transformation matrix, do you wish to use the new version?"
+msgid ""
+"You have changed the transformation matrix, do you wish to use the new "
+"version?"
 msgstr "您已變更了變換矩陣，您希望使用新的版本？"
 
 msgid ""
@@ -17778,7 +18188,9 @@ msgstr "您可以變更此字型的預設實體"
 msgid "You may not paste a reference into this window"
 msgstr "您不可以將參照貼入這個視窗"
 
-msgid "You may not rename any of the base glyphs, but your selection overlaps the set of base glyphs."
+msgid ""
+"You may not rename any of the base glyphs, but your selection overlaps the "
+"set of base glyphs."
 msgstr "您不可以重新命名任何基底字圖，您的選擇卻重疊了基底字圖集合。"
 
 msgid "You may not select both variants of 'f'"
@@ -17860,15 +18272,23 @@ msgstr "您必須指定標準 type1 擴充檔名 (.pfb 或.pfa)"
 msgid "You must specify an isolated (or medial) tile"
 msgstr "您必須指定隔離 (或普通的) 並排"
 
-msgid "You should only specify the TrueType Unique Font Identification string in one language. This font has more. Do you want to continue anyway?"
-msgstr "您應該只以一種語言來指定 TrueType 的唯一字型識別字串，但此字型卻有更多。您無論如何還要繼續嗎？"
+msgid ""
+"You should only specify the TrueType Unique Font Identification string in "
+"one language. This font has more. Do you want to continue anyway?"
+msgstr ""
+"您應該只以一種語言來指定 TrueType 的唯一字型識別字串，但此字型卻有更多。您無"
+"論如何還要繼續嗎？"
 
 msgid ""
-"Your font has a 2 byte encoding, but you are attempting to save it in a format that only supports one byte encodings. This means that you won't be able to access anything after the first 256 characters without reencoding the font.\n"
+"Your font has a 2 byte encoding, but you are attempting to save it in a "
+"format that only supports one byte encodings. This means that you won't be "
+"able to access anything after the first 256 characters without reencoding "
+"the font.\n"
 "\n"
 "Do you want to proceed anyway?"
 msgstr ""
-"您的字型是 2 位元組編碼，但是您試圖在只有支援一個位元組編碼的格式中去儲存它。這表示您將不能存取第一組 256 個字元之後的任何東西，除非重新將字型編碼。\n"
+"您的字型是 2 位元組編碼，但是您試圖在只有支援一個位元組編碼的格式中去儲存它。"
+"這表示您將不能存取第一組 256 個字元之後的任何東西，除非重新將字型編碼。\n"
 "\n"
 "無論如何您都要繼續嗎？"
 
@@ -17896,7 +18316,9 @@ msgstr ""
 "並且不宜使用無點 j 字圖，\n"
 "請加入前項並重新製作您的音調記號字圖"
 
-msgid "Your version of the freetype library does not contain the bytecode interpreter."
+msgid ""
+"Your version of the freetype library does not contain the bytecode "
+"interpreter."
 msgstr "您的 freetype 函式庫版本不包含位元碼解譯器。"
 
 msgid "Z_oom out"
@@ -19442,11 +19864,17 @@ msgid "ΤεΧ Names"
 msgstr "ΤεΧ 名稱"
 
 #, c-format
-msgid "“%s” in %s did not contain a pairwise positioning lookup ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d to %s ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"
-msgstr "“%s” 於 %s 中並未包含成對定位查找 ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d to %s ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"
+msgid ""
+"“%s” in %s did not contain a pairwise positioning lookup ∆x=%d ∆y=%d "
+"∆x_adv=%d ∆y_adv=%d to %s ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"
+msgstr ""
+"“%s” 於 %s 中並未包含成對定位查找 ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d to %s "
+"∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"
 
 #, c-format
-msgid "“%s” in %s did not contain a positioning lookup ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"
+msgid ""
+"“%s” in %s did not contain a positioning lookup ∆x=%d ∆y=%d ∆x_adv=%d "
+"∆y_adv=%d\n"
 msgstr "“%s” 於 %s 中並未包含定位查找 ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"
 
 #, c-format
