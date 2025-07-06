@@ -2110,8 +2110,8 @@ msgid "At most 8 kerning values may be specified here"
 msgstr "Тут можна вказати не більше 8 значень кернінґу"
 
 #, c-format
-msgid "At pixelsize %d the character %s either starts before the origin or extends beyond the advance width.\n"
-msgstr "За розміру у пікселях %d символ %s або розпочинається до початку координат або поширюється за додаткову ширину.\n"
+msgid "At pixelsize %d the character %s either starts before the origin or extends beyond the advance width."
+msgstr "За розміру у пікселях %d символ %s або розпочинається до початку координат або поширюється за додаткову ширину."
 
 msgid ""
 "At small pixel sizes (screen font sizes)\n"
@@ -9618,13 +9618,10 @@ msgid "Internal Err: Unable to put data back into file"
 msgstr "Внутрішня помилка: не вдалося записати дані назад до файла"
 
 msgid "Internal error in creating FNT. File offset wrong"
-msgstr "Внутрішня помилка під час створення FNT. Помилковий відступ у файлі⬤"
+msgstr "Внутрішня помилка під час створення FNT. Помилковий відступ у файлі"
 
-msgid "Internal error in creating FNT. File offset wrong\n"
-msgstr "Внутрішня помилка під час створення FNT. Помилковий відступ у файлі\n"
-
-msgid "Internal error in creating FNT. File offset wrong in bitmap data\n"
-msgstr "Внутрішня помилка під час створення FNT. Помилковий відступ у файлі для растрових даних\n"
+msgid "Internal error in creating FNT. File offset wrong in bitmap data"
+msgstr "Внутрішня помилка під час створення FNT. Помилковий відступ у файлі для растрових даних"
 
 #, c-format
 msgid "Internal state messed up on line %d of %s"
@@ -22772,11 +22769,11 @@ msgstr "Точка спостереження"
 msgid "Vowel Jamo Forms"
 msgstr "Форми голосних джамо"
 
-msgid "WOFF compressed metadata section too large.\n"
-msgstr "Розділ стиснених метаданих WOFF є надто великим.\n"
+msgid "WOFF compressed metadata section too large."
+msgstr "Розділ стиснених метаданих WOFF є надто великим."
 
-msgid "WOFF uncompressed metadata section too large.\n"
-msgstr "Розділ нестиснених метаданих WOFF є надто великим.\n"
+msgid "WOFF uncompressed metadata section too large."
+msgstr "Розділ нестиснених метаданих WOFF є надто великим."
 
 msgid "WWS Family"
 msgstr "Гарнітура WWS"
@@ -25561,12 +25558,3 @@ msgstr "∆y_дод №1"
 
 msgid "∆y_adv #2"
 msgstr "∆y_дод №2"
-
-#~ msgid "Internal error in creating FNT. File offset wrong in bitmap data"
-#~ msgstr "Внутрішня помилка під час створення FNT. Помилковий відступ у файлі для растрових даних"
-
-#~ msgid "WOFF compressed metadata section too large."
-#~ msgstr "Розділ стиснених метаданих WOFF є надто великим."
-
-#~ msgid "WOFF uncompressed metadata section too large."
-#~ msgstr "Розділ нестиснених метаданих WOFF є надто великим."

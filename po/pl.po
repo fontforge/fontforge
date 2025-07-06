@@ -2102,8 +2102,8 @@ msgid "At most 8 kerning values may be specified here"
 msgstr "Na liście mieści się najwyżej 8 wartości kerningu"
 
 #, c-format
-msgid "At pixelsize %d the character %s either starts before the origin or extends beyond the advance width.\n"
-msgstr "W rozmiarze %d pikseli znak %s wystaje poza odsadki boczne.\n"
+msgid "At pixelsize %d the character %s either starts before the origin or extends beyond the advance width."
+msgstr "W rozmiarze %d pikseli znak %s wystaje poza odsadki boczne."
 
 msgid ""
 "At small pixel sizes (screen font sizes)\n"
@@ -9555,13 +9555,10 @@ msgid "Internal Err: Unable to put data back into file"
 msgstr "Błąd wewnętrzny: nie udało się zapisać danych z powrotem w pliku."
 
 msgid "Internal error in creating FNT. File offset wrong"
-msgstr "Błąd wewnętrzny przy tworzeniu FNT. Błędny offset w pliku.⬤"
+msgstr "Błąd wewnętrzny przy tworzeniu FNT. Błędny offset w pliku."
 
-msgid "Internal error in creating FNT. File offset wrong\n"
-msgstr "Błąd wewnętrzny przy tworzeniu FNT. Błędny offset w pliku.\n"
-
-msgid "Internal error in creating FNT. File offset wrong in bitmap data\n"
-msgstr "Błąd wewnętrzny przy tworzeniu FNT. Błędny offset w pliku w bitmapie.\n"
+msgid "Internal error in creating FNT. File offset wrong in bitmap data"
+msgstr "Błąd wewnętrzny przy tworzeniu FNT. Błędny offset w pliku w bitmapie."
 
 #, c-format
 msgid "Internal state messed up on line %d of %s"
@@ -25293,6 +25290,3 @@ msgstr "∆wys #1"
 
 msgid "∆y_adv #2"
 msgstr "∆wys #2"
-
-#~ msgid "Internal error in creating FNT. File offset wrong in bitmap data"
-#~ msgstr "Błąd wewnętrzny przy tworzeniu FNT. Błędny offset w pliku w bitmapie."

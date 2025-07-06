@@ -6178,11 +6178,11 @@ msgstr "ვორო"
 msgid "WOFF"
 msgstr "WOFF"
 
-msgid "WOFF compressed metadata section too large.\n"
-msgstr "WOFF-ს დართული შეკუმშული მონაცემები ზედმეტად დიდია.\n"
+msgid "WOFF compressed metadata section too large."
+msgstr "WOFF-ს დართული შეკუმშული მონაცემები ზედმეტად დიდია."
 
-msgid "WOFF uncompressed metadata section too large.\n"
-msgstr "WOFF-ს დართული შეუკუმშავი მონაცემები ზედმეტად დიდია.\n"
+msgid "WOFF uncompressed metadata section too large."
+msgstr "WOFF-ს დართული შეუკუმშავი მონაცემები ზედმეტად დიდია."
 
 msgid "WWS Subfamily"
 msgstr "WWS-ქვეჯგუფი"
@@ -7357,9 +7357,3 @@ msgstr "∆y #1"
 
 msgid "∆y #2"
 msgstr "∆y #2"
-
-#~ msgid "WOFF compressed metadata section too large."
-#~ msgstr "WOFF-ს დართული შეკუმშული მონაცემები ზედმეტად დიდია."
-
-#~ msgid "WOFF uncompressed metadata section too large."
-#~ msgstr "WOFF-ს დართული შეუკუმშავი მონაცემები ზედმეტად დიდია."

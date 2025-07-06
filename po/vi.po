@@ -1,4 +1,3 @@
-
 msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
@@ -1734,8 +1733,8 @@ msgid "At most 8 kerning values may be specified here"
 msgstr "Ở đây có thể xác định nhiều nhất 8 giá trị định chỗ"
 
 #, c-format
-msgid "At pixelsize %d the character %s either starts before the origin or extends beyond the advance width.\n"
-msgstr "Tại kích cỡ %d, ký tự %s hoặc bắt đầu trước gốc hoặc kéo dài qua bề rộng tiến tới.\n"
+msgid "At pixelsize %d the character %s either starts before the origin or extends beyond the advance width."
+msgstr "Tại kích cỡ %d, ký tự %s hoặc bắt đầu trước gốc hoặc kéo dài qua bề rộng tiến tới."
 
 msgid ""
 "At small pixel sizes (screen font sizes)\n"
@@ -8118,13 +8117,10 @@ msgid "Intermediate Points:"
 msgstr "Điểm trung gian:"
 
 msgid "Internal error in creating FNT. File offset wrong"
-msgstr "Gặp lỗi nội bộ khi tạo FNT. Sai bù tập tin⬤"
+msgstr "Gặp lỗi nội bộ khi tạo FNT. Sai bù tập tin"
 
-msgid "Internal error in creating FNT. File offset wrong\n"
-msgstr "Gặp lỗi nội bộ khi tạo FNT. Sai bù tập tin\n"
-
-msgid "Internal error in creating FNT. File offset wrong in bitmap data\n"
-msgstr "Gặp lỗi nội bộ khi tạo FNT. Sai bu tập tin trong dữ liệu mảng ảnh\n"
+msgid "Internal error in creating FNT. File offset wrong in bitmap data"
+msgstr "Gặp lỗi nội bộ khi tạo FNT. Sai bu tập tin trong dữ liệu mảng ảnh"
 
 #, c-format
 msgid "Internal state messed up on line %d of %s"
@@ -22029,6 +22025,3 @@ msgstr "↓_Xuống"
 #, c-format
 msgid "∆Curvature: %g"
 msgstr "Độ cong ∆: %g"
-
-#~ msgid "Internal error in creating FNT. File offset wrong in bitmap data"
-#~ msgstr "Gặp lỗi nội bộ khi tạo FNT. Sai bu tập tin trong dữ liệu mảng ảnh"

@@ -1301,8 +1301,8 @@ msgid "At most 8 kerning values may be specified here"
 msgstr "ここではカーニング値は最大8個までしか指定できません"
 
 #, c-format
-msgid "At pixelsize %d the character %s either starts before the origin or extends beyond the advance width.\n"
-msgstr "ピクセルサイズ %d で, 文字 %s が原点より前から始まっているか, 送り幅の外に飛び出ています.\n"
+msgid "At pixelsize %d the character %s either starts before the origin or extends beyond the advance width."
+msgstr "ピクセルサイズ %d で, 文字 %s が原点より前から始まっているか, 送り幅の外に飛び出ています."
 
 msgid "Athapaskan"
 msgstr "アサパスカ語族"
@@ -6296,13 +6296,10 @@ msgid "Intermediate Points:"
 msgstr "中間の点:"
 
 msgid "Internal error in creating FNT. File offset wrong"
-msgstr "FMT 作成時に内部エラーが発生しました. ファイルオフセットが誤っています\n"
+msgstr "FMT 作成時に内部エラーが発生しました. ファイルオフセットが誤っています"
 
-msgid "Internal error in creating FNT. File offset wrong\n"
-msgstr "FMT 作成時に内部エラーが発生しました. ファイルオフセットが誤っています\n"
-
-msgid "Internal error in creating FNT. File offset wrong in bitmap data\n"
-msgstr "FMT 作成時に内部エラーが発生しました. ビットマップデータ内のファイルオフセットが誤っています\n"
+msgid "Internal error in creating FNT. File offset wrong in bitmap data"
+msgstr "FMT 作成時に内部エラーが発生しました. ビットマップデータ内のファイルオフセットが誤っています"
 
 msgid "Interpo_late Fonts..."
 msgstr "フォントの補間(_L)..."
@@ -16224,6 +16221,3 @@ msgstr "{入力の先頭}"
 
 msgid "{Start of Line}"
 msgstr "{行の先頭}"
-
-#~ msgid "Internal error in creating FNT. File offset wrong in bitmap data"
-#~ msgstr "FMT 作成時に内部エラーが発生しました. ビットマップデータ内のファイルオフセットが誤っています"

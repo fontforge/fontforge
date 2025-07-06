@@ -1588,8 +1588,8 @@ msgid "At most 8 kerning values may be specified here"
 msgstr "在此可以指定最多 8 個字距微調值"
 
 #, c-format
-msgid "At pixelsize %d the character %s either starts before the origin or extends beyond the advance width.\n"
-msgstr "像素尺寸為 %d 時，字元 %s 若非開始於原點之前，或是延展於前加寬度之後。\n"
+msgid "At pixelsize %d the character %s either starts before the origin or extends beyond the advance width."
+msgstr "像素尺寸為 %d 時，字元 %s 若非開始於原點之前，或是延展於前加寬度之後。"
 
 msgid "Athapaskan"
 msgstr "阿撒巴斯卡語"
@@ -7513,13 +7513,10 @@ msgid "Intermediate Points:"
 msgstr "中間點："
 
 msgid "Internal error in creating FNT. File offset wrong"
-msgstr "建立 FNT 時產生內部錯誤。檔案偏移錯誤⬤"
+msgstr "建立 FNT 時產生內部錯誤。檔案偏移錯誤"
 
-msgid "Internal error in creating FNT. File offset wrong\n"
-msgstr "建立 FNT 時產生內部錯誤。檔案偏移錯誤\n"
-
-msgid "Internal error in creating FNT. File offset wrong in bitmap data\n"
-msgstr "內部錯誤在…中產生 FNT。檔案偏移錯誤在…中點陣字資料\n"
+msgid "Internal error in creating FNT. File offset wrong in bitmap data"
+msgstr "內部錯誤在…中產生 FNT。檔案偏移錯誤在…中點陣字資料"
 
 #, c-format
 msgid "Internal state messed up on line %d of %s"
@@ -19469,6 +19466,3 @@ msgstr "↓下(_D)"
 #, c-format
 msgid "∆Curvature: %g"
 msgstr "∆曲率：%g"
-
-#~ msgid "Internal error in creating FNT. File offset wrong in bitmap data"
-#~ msgstr "內部錯誤在…中產生 FNT。檔案偏移錯誤在…中點陣字資料"

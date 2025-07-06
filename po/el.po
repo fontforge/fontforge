@@ -92,8 +92,8 @@ msgstr ""
 "Το δακτυλίδι δεν θα ενώνεται με το A."
 
 #, c-format
-msgid "At pixelsize %d the character %s either starts before the origin or extends beyond the advance width.\n"
-msgstr "Όταν το μέγεθος εικονοστοιχείου είναι %d ο χαρακτήρας %s είτε ξεκινάει πριν την αρχή αξόνων ή εκτίνεται πέραν του πλάτους advance.\n"
+msgid "At pixelsize %d the character %s either starts before the origin or extends beyond the advance width."
+msgstr "Όταν το μέγεθος εικονοστοιχείου είναι %d ο χαρακτήρας %s είτε ξεκινάει πριν την αρχή αξόνων ή εκτίνεται πέραν του πλάτους advance."
 
 #, c-format
 msgid "Attempt to regenerate a pixel size that has not been created (%d@%d)"

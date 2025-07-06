@@ -2304,8 +2304,8 @@ msgid "At most 8 kerning values may be specified here"
 msgstr "Здесь может быть указано максимум 8 значений кернинга"
 
 #, c-format
-msgid "At pixelsize %d the character %s either starts before the origin or extends beyond the advance width.\n"
-msgstr "При размере пиксела %d символ %s начинается до исходной точки или превышает установленную ширину.\n"
+msgid "At pixelsize %d the character %s either starts before the origin or extends beyond the advance width."
+msgstr "При размере пиксела %d символ %s начинается до исходной точки или превышает установленную ширину."
 
 msgid ""
 "At small pixel sizes (screen font sizes)\n"
@@ -10731,13 +10731,10 @@ msgid "Internal Only"
 msgstr "Только внутренние"
 
 msgid "Internal error in creating FNT. File offset wrong"
-msgstr "Внутренняя ошибка создания FNT. Неверное смещение файла⬤"
+msgstr "Внутренняя ошибка создания FNT. Неверное смещение файла"
 
-msgid "Internal error in creating FNT. File offset wrong\n"
-msgstr "Внутренняя ошибка создания FNT. Неверное смещение файла\n"
-
-msgid "Internal error in creating FNT. File offset wrong in bitmap data\n"
-msgstr "Внутренняя ошибка создания файла FNT. Неверное смещение файла в данных растра\n"
+msgid "Internal error in creating FNT. File offset wrong in bitmap data"
+msgstr "Внутренняя ошибка создания файла FNT. Неверное смещение файла в данных растра"
 
 #, c-format
 msgid "Internal state messed up on line %d of %s"
@@ -24924,11 +24921,11 @@ msgstr "Срединные формы хангыля"
 msgid "Võro"
 msgstr "Выруский"
 
-msgid "WOFF compressed metadata section too large.\n"
-msgstr "Слишком большой раздел метаданных сжатого файла WOFF.\n"
+msgid "WOFF compressed metadata section too large."
+msgstr "Слишком большой раздел метаданных сжатого файла WOFF."
 
-msgid "WOFF uncompressed metadata section too large.\n"
-msgstr "Слишком большой раздел метаданных разархивированного файла WOFF.\n"
+msgid "WOFF uncompressed metadata section too large."
+msgstr "Слишком большой раздел метаданных разархивированного файла WOFF."
 
 msgid "WWS Family"
 msgstr "Семейство WWS"
@@ -27896,12 +27893,3 @@ msgstr "↓В_низ"
 #, c-format
 msgid "∆Curvature: %g"
 msgstr "∆ кривизны: %g"
-
-#~ msgid "Internal error in creating FNT. File offset wrong in bitmap data"
-#~ msgstr "Внутренняя ошибка создания файла FNT. Неверное смещение файла в данных растра"
-
-#~ msgid "WOFF compressed metadata section too large."
-#~ msgstr "Слишком большой раздел метаданных сжатого файла WOFF."
-
-#~ msgid "WOFF uncompressed metadata section too large."
-#~ msgstr "Слишком большой раздел метаданных разархивированного файла WOFF."
