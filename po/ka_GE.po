@@ -1139,10 +1139,6 @@ msgstr "ვერ ჩაისმება „prep“"
 msgid "Can't open %s"
 msgstr "ვერ იხსნება %s"
 
-#, c-format
-msgid "Can't open %s"
-msgstr "ვერ იხსნება %s"
-
 msgid "Can't open temporary file for postscript output"
 msgstr "ვერ იხსნება დროებითი ფაილი PostScript-გამოტანისთვის"
 

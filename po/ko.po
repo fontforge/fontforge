@@ -4046,10 +4046,6 @@ msgstr "본 글리프에 명령을 추가할 수 없습니다"
 msgid "Can't open %s"
 msgstr "%s을 열 수 없습니다"
 
-#, c-format
-msgid "Can't open %s"
-msgstr "%s를 열 수 없습니다."
-
 msgid "Can't open temporary file for postscript output"
 msgstr "포스트 스크립트 출력을 위해 임시 파일을 열 수 없다."
 
@@ -4087,10 +4083,6 @@ msgstr "hotkey 정의 파일을 찾을 수 없음!\n"
 #, c-format
 msgid "Cannot open %s"
 msgstr "%s을(를) 열 수 없음"
-
-#, c-format
-msgid "Cannot open %s"
-msgstr "%s를 열 수 없습니다"
 
 msgid "Cannot open a temporary file"
 msgstr "임시파일을 열 수 없습니다"
@@ -13714,9 +13706,6 @@ msgstr "스크립트가 없습니다"
 
 msgid "No selection"
 msgstr "선택되지 않음"
-
-msgid "No selection"
-msgstr "선택되지 않음."
 
 msgid "No significant differences found"
 msgstr "유의한 차이를 찾을 수 없음"

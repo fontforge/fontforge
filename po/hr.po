@@ -4022,10 +4022,6 @@ msgstr "Nije moguće zadati instrukcije ovom grafemu"
 msgid "Can't open %s"
 msgstr "Nije moguće otvoriti %s"
 
-#, c-format
-msgid "Can't open %s"
-msgstr "Nije moguće otvoriti %s"
-
 msgid "Can't open temporary file for postscript output"
 msgstr "Nije moguće otvoriti privremenu datoteku za izlazni postscript"
 
@@ -4059,10 +4055,6 @@ msgstr "Nije moguće poništiti"
 #, c-format
 msgid "Cannot find your hotkey definition file!\n"
 msgstr "Nije moguće naći datoteku tipkovnih prečaca!\n"
-
-#, c-format
-msgid "Cannot open %s"
-msgstr "Nije moguće otvoriti %s"
 
 #, c-format
 msgid "Cannot open %s"
@@ -13380,9 +13372,6 @@ msgstr "Popisi zamjena ne smiju biti određeni u kontekstnoj tablici definicija,
 
 msgid "No scripts"
 msgstr "Bez pisama"
-
-msgid "No selection"
-msgstr "Ništa nije odabrano"
 
 msgid "No selection"
 msgstr "Ništa nije odabrano"

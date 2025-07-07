@@ -3218,10 +3218,6 @@ msgstr "Dieser Glyphe können keine Instruktionen vergeben werden"
 msgid "Can't open %s"
 msgstr "Kann %s nicht öffnen"
 
-#, c-format
-msgid "Can't open %s"
-msgstr "Kann %s nicht öffnen"
-
 msgid "Can't open temporary file for postscript output"
 msgstr "Kann temporäre Datei für die PostScript-Ausgabe nicht öffnen"
 
@@ -3251,10 +3247,6 @@ msgstr "Kann nicht rückgängig gemacht werden"
 
 msgid "Cannot be Undone"
 msgstr "Kann nicht rückgängig gemacht werden"
-
-#, c-format
-msgid "Cannot open %s"
-msgstr "Kann %s nicht öffnen"
 
 #, c-format
 msgid "Cannot open %s"
@@ -10045,9 +10037,6 @@ msgstr "In dieser kontextuellen Nachschlagetabelle dürfen keine Ersatzlisten an
 
 msgid "No scripts"
 msgstr "Kein Schriftsysteme"
-
-msgid "No selection"
-msgstr "Keine Auswahl"
 
 msgid "No selection"
 msgstr "Keine Auswahl"

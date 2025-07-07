@@ -3997,10 +3997,6 @@ msgstr "不能构建此字形"
 msgid "Can't open %s"
 msgstr "无法打开 %s"
 
-#, c-format
-msgid "Can't open %s"
-msgstr "不能打开 %s"
-
 msgid "Can't open temporary file for postscript output"
 msgstr "不能打开临时文件以供postscript输出"
 
@@ -4038,10 +4034,6 @@ msgstr "找不到您的热键定义文件！\n"
 #, c-format
 msgid "Cannot open %s"
 msgstr "无法打开 %s"
-
-#, c-format
-msgid "Cannot open %s"
-msgstr "未能打开 %s"
 
 msgid "Cannot open a temporary file"
 msgstr "未能打开临时文件"
@@ -13631,9 +13623,6 @@ msgstr "在此上下文查找中不能指定替换列表，请改用嵌套查找
 
 msgid "No scripts"
 msgstr "无文字"
-
-msgid "No selection"
-msgstr "无选中"
 
 msgid "No selection"
 msgstr "无选中"

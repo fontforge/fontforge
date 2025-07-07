@@ -3081,10 +3081,6 @@ msgstr "無法指揮這個字圖"
 msgid "Can't open %s"
 msgstr "無法開啟 %s"
 
-#, c-format
-msgid "Can't open %s"
-msgstr "無法開啟 %s"
-
 msgid "Can't open temporary file for postscript output"
 msgstr "無法開啟暫存檔用於 postscript 輸出"
 
@@ -3114,10 +3110,6 @@ msgstr "無法復原"
 
 msgid "Cannot be Undone"
 msgstr "無法復原"
-
-#, c-format
-msgid "Cannot open %s"
-msgstr "無法開啟 %s"
 
 #, c-format
 msgid "Cannot open %s"
@@ -9742,9 +9734,6 @@ msgstr "沒有文字"
 
 msgid "No selection"
 msgstr "沒有選擇"
-
-msgid "No selection"
-msgstr "無選取"
 
 msgid "No significant differences found"
 msgstr "找不到任何顯著的差異"

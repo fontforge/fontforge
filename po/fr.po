@@ -3646,10 +3646,6 @@ msgstr "Impossible d'ajouter des instructions à ce glyphe"
 msgid "Can't open %s"
 msgstr "Impossible d'ouvrir %s"
 
-#, c-format
-msgid "Can't open %s"
-msgstr "Impossible d'ouvrir %s"
-
 msgid "Can't open temporary file for postscript output"
 msgstr "Impossible d'ouvrir le fichier temporaire pour la sortie PostScript"
 
@@ -3683,10 +3679,6 @@ msgstr "Irréversible"
 #, c-format
 msgid "Cannot find your hotkey definition file!\n"
 msgstr "Impossible de trouver votre fichier de raccourcis clavier !\n"
-
-#, c-format
-msgid "Cannot open %s"
-msgstr "Impossible d'ouvir %s"
 
 #, c-format
 msgid "Cannot open %s"
@@ -12228,9 +12220,6 @@ msgstr "Aucune liste de remplacement ne peut être spécifiée dans un lookup co
 
 msgid "No scripts"
 msgstr "Aucun système d'écriture"
-
-msgid "No selection"
-msgstr "Pas de sélection"
 
 msgid "No selection"
 msgstr "Pas de sélection"

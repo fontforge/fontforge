@@ -1074,10 +1074,6 @@ msgstr "Impossibile istruire questo glifo"
 msgid "Can't open %s"
 msgstr "Impossibile aprire %s"
 
-#, c-format
-msgid "Can't open %s"
-msgstr "Impossibile aprire %s"
-
 msgid "Can't open temporary file for postscript output"
 msgstr "Impossibile aprire un file temporaneo per l'output postscript"
 
@@ -3724,9 +3720,6 @@ msgstr "Nessun problema identificato"
 
 msgid "No scripts"
 msgstr "Niente script"
-
-msgid "No selection"
-msgstr "Nessuna selezione"
 
 msgid "No selection"
 msgstr "Nessuna selezione"

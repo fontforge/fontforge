@@ -1,4 +1,3 @@
-
 msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
@@ -3266,10 +3265,6 @@ msgstr "Không thể hủy bước"
 
 msgid "Cannot be Undone"
 msgstr "Không thể hủy bước"
-
-#, c-format
-msgid "Cannot open %s"
-msgstr "Không thể mở %s"
 
 #, c-format
 msgid "Cannot open %s"

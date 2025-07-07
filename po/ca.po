@@ -7941,9 +7941,6 @@ msgstr "No hi ha cap alfabet"
 msgid "No selection"
 msgstr "Sense selecció"
 
-msgid "No selection"
-msgstr "No hi ha res seleccionat"
-
 msgid "No significant differences found"
 msgstr "No s'han trobat diferències significatives"
 

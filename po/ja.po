@@ -2446,10 +2446,6 @@ msgstr "このグリフに命令が追加できません"
 msgid "Can't open %s"
 msgstr "%sを開けません"
 
-#, c-format
-msgid "Can't open %s"
-msgstr "%sを開くことができません."
-
 msgid "Can't open temporary file for truetype output."
 msgstr "TrueType出力のための一時ファイルを開けません"
 

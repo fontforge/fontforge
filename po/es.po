@@ -4285,10 +4285,6 @@ msgstr "No se puede dar instrucciones a este glifo"
 msgid "Can't open %s"
 msgstr "No se puede abrir %s"
 
-#, c-format
-msgid "Can't open %s"
-msgstr "No se puede abrir %s"
-
 msgid "Can't open temporary file for postscript output"
 msgstr "No se puede abrir el archivo temporal para la salida de PostScript"
 
@@ -4322,10 +4318,6 @@ msgstr "No se puede deshacer"
 #, c-format
 msgid "Cannot find your hotkey definition file!\n"
 msgstr "¡No se puede encontrar el archivo de definición de teclas acceso rápido!\n"
-
-#, c-format
-msgid "Cannot open %s"
-msgstr "No se puede abrir %s"
 
 #, c-format
 msgid "Cannot open %s"
@@ -14934,9 +14926,6 @@ msgstr "No se puede especificar ninguna lista de sustitución en esta búsqueda 
 
 msgid "No scripts"
 msgstr "Sin scripts"
-
-msgid "No selection"
-msgstr "Sin selección"
 
 msgid "No selection"
 msgstr "Sin selección"
