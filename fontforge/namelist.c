@@ -204,7 +204,7 @@ const char *StdGlyphName(char *buffer, int uni,enum uni_interp interp,NameList *
 	    break;
 	}
     } else {
-	LogError( _("Warning: StdGlyphName returning name for value %d outside of Unicode range\n"), uni );
+	LogError( _("Warning: StdGlyphName returning name for value %d outside of Unicode range"), uni );
     }
     if ( name==NULL ) {
 	if ( uni>=0x10000 || uni < 0 )

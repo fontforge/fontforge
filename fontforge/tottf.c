@@ -6017,7 +6017,7 @@ static void DumpGlyphToNameMap(char *fontname,SplineFont *sf) {
 
     file = fopen(newname,"wb");
     if ( file==NULL ) {
-	LogError( _("Failed to open glyph to name map file for writing: %s\n"), newname );
+	LogError( _("Failed to open glyph to name map file for writing: %s"), newname );
 	free(newname);
 return;
     }
@@ -6231,7 +6231,7 @@ static void dumphex(struct hexout *hexout,FILE *temp,int length) {
     int i, ch, ch1;
 
     if ( length&1 )
-	LogError( _("Table length should not be odd\n") );
+	LogError( _("Table length should not be odd") );
 
     while ( length>65534 ) {
 	dumphex(hexout,temp,65534);

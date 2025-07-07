@@ -524,7 +524,7 @@ static void svg_dumppattern(FILE *file,struct pattern *pattern,
 	patsubname = strconcat3(scname,"-",pattern->pattern);
 	svg_dumpscdefs(file,pattern_sc,patsubname,false);
     } else
-	LogError(_("No glyph named %s, used as a pattern in %s\n"), pattern->pattern, scname);
+	LogError(_("No glyph named %s, used as a pattern in %s"), pattern->pattern, scname);
 
     fprintf( file, "    <pattern " );
     if ( nested==NULL )
@@ -1560,7 +1560,7 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 		    SVGTraceArc(cur,&current,x,y,rx,ry,axisrot,large_arc,sweep);
 	      break;
 	      default:
-		LogError( _("Unknown type '%c' found in path specification\n"), type );
+		LogError( _("Unknown type '%c' found in path specification"), type );
 	      break;
 	    }
 	}
@@ -2262,7 +2262,7 @@ static int xmlParseColor(xmlChar *name,uint32_t *color, char **url,struct svg_st
 	else if ( name[0]=='#' ) {
 	    unsigned int temp=0;
 	    if ( sscanf( (char *) name, "#%x", &temp )!=1 )
-		LogError( _("Bad hex color spec: %s\n"), (char *) name );
+		LogError( _("Bad hex color spec: %s"), (char *) name );
 	    if ( strlen( (char *) name)==4 ) {
 		*color = (((temp&0xf00)*0x11)<<8) |
 			 (((temp&0x0f0)*0x11)<<4) |
@@ -2274,7 +2274,7 @@ static int xmlParseColor(xmlChar *name,uint32_t *color, char **url,struct svg_st
 	} else if ( strncmp( (char *) name, "rgb(",4)==0 ) {
 	    float r=0,g=0,b=0;
 	    if ( sscanf((char *)name + 4, "%g,%g,%g", &r, &g, &b )!=3 )
-		LogError( _("Bad RGB color spec: %s\n"), (char *) name );
+		LogError( _("Bad RGB color spec: %s"), (char *) name );
 	    if ( strchr((char *) name,'.')!=NULL ) {
 		if ( r>=1 ) r = 1; else if ( r<0 ) r=0;
 		if ( g>=1 ) g = 1; else if ( g<0 ) g=0;
@@ -2294,7 +2294,7 @@ static int xmlParseColor(xmlChar *name,uint32_t *color, char **url,struct svg_st
 	    *url = copy( (char *) name);
 	    *color = COLOR_INHERITED;
 	} else {
-	    LogError( _("Failed to parse color %s\n"), (char *) name );
+	    LogError( _("Failed to parse color %s"), (char *) name );
 	    *color = COLOR_INHERITED;
 	}
     }
@@ -2372,7 +2372,7 @@ return( NULL );
 	    strcmp(mimetype,"image/bmp")==0 )
 	/* These we support (if we've got the libraries) */;
     else {
-	LogError(_("Unsupported mime type in data URI: %s\n"), mimetype );
+	LogError(_("Unsupported mime type in data URI: %s"), mimetype );
 return( NULL );
     }
     tmp = GFileTmpfile();
@@ -2436,7 +2436,7 @@ static Entity *SVGParseImage(xmlNodePtr svg) {
     if ( val==NULL )
 return( NULL );
     if ( strncmp((char *) val,"data:",5)!=0 ) {
-	LogError(_("FontForge only supports embedded images in data: URIs\n"));
+	LogError(_("FontForge only supports embedded images in data: URIs"));
 	free(val);
 return( NULL );		/* I can only handle data URIs */
     }
@@ -3256,7 +3256,7 @@ static SplineFont *SVGParseFont(xmlNodePtr font) {
 		if ( defh==0 ) defh = val;
 		SFDefaultOS2Simple(&sf->pfminfo,sf);
 	    } else {
-		LogError( _("This font does not specify units-per-em\n") );
+		LogError( _("This font does not specify units-per-em") );
 		SplineFontFree(sf);
 		ip->default_joinlimit = tmpjl;
 return( NULL );
@@ -3392,7 +3392,7 @@ return( NULL );
 	    ++cnt;
     }
     if ( !has_font_face ) {
-	LogError( _("This font does not specify font-face\n") );
+	LogError( _("This font does not specify font-face") );
 	SplineFontFree(sf);
 	ip->default_joinlimit = tmpjl;
 return( NULL );
@@ -3597,7 +3597,7 @@ static SplineFont *_SFReadSVG(xmlDocPtr doc, char *filename) {
 
     fonts = FindSVGFontNodes(doc);
     if ( fonts==NULL || fonts[0]==NULL ) {
-	LogError( _("This file contains no SVG fonts.\n") );
+	LogError( _("This file contains no SVG fonts.") );
 	xmlFreeDoc(doc);
 return( NULL );
     }
@@ -3721,7 +3721,7 @@ return( NULL );
 
     top = xmlDocGetRootElement(doc);
     if ( xmlStrcmp(top->name,(xmlChar *) "svg")!=0 ) {
-	LogError( _("%s does not contain an <svg> element at the top\n"), filename);
+	LogError( _("%s does not contain an <svg> element at the top"), filename);
 	xmlFreeDoc(doc);
 return( NULL );
     }

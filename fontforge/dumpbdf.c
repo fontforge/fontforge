@@ -452,7 +452,7 @@ int BDFFontDump(char *filename,BDFFont *font, EncMap *map, int res) {
 	}
 	fprintf( file, "ENDFONT\n" );
 	if ( ferror(file))
-	    LogError( _("Failed to write %s\n"), filename );
+	    LogError( _("Failed to write %s"), filename );
 	else
 	    ret = 1;
 	fclose(file);

@@ -4332,7 +4332,7 @@ int SplinePointListIsClockwise(const SplineSet *spl) {
 	++depth;
     }
     mag /= 3;
-    LogError( _("Warning: SplinePointListIsClockwise found no usable line even at %dx magnification.\n"), mag );
+    LogError( _("Warning: SplinePointListIsClockwise found no usable line even at %dx magnification."), mag );
     return -1;
 }
 

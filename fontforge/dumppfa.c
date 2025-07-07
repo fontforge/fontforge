@@ -613,7 +613,7 @@ static void dumpPattern(void (*dumpchar)(int ch,void *data), void *data,
 	/*  and can't live in the content stream, so they are done elsewhere */
     } else {
 	if ( pattern_sc==NULL )
-	    LogError(_("No glyph named %s, used as a pattern in %s\n"), pat->pattern, sc->name);
+	    LogError(_("No glyph named %s, used as a pattern in %s"), pat->pattern, sc->name);
 	PatternSCBounds(pattern_sc,&b);
 
 	dumpf(dumpchar,data, "<<\n" );

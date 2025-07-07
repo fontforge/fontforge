@@ -576,7 +576,7 @@ static Encoding *ParseGlyphOrderAndAliasDB(FILE *file) {
         char *split = strchr(buffer, '\t'), *split2, *enc_name = NULL;
         if (split == NULL) {
             // Skip entries that do not contain at least two (tab separated) values
-            LogError(_("ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s\n"), enc_arr->len, g_strstrip(buffer));
+            LogError(_("ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s"), enc_arr->len, g_strstrip(buffer));
             //enc = -1;
             //g_array_append_val(enc_arr, enc);
             //g_array_append_val(names_arr, enc_name);
@@ -766,7 +766,7 @@ return;
 
     file = fopen( getPfaEditEncodings(), "w");
     if ( file==NULL ) {
-	LogError( _("couldn't write encodings file\n") );
+	LogError( _("couldn't write encodings file") );
 return;
     }
 

@@ -87,7 +87,7 @@ static char *GetPluginDirName() {
     free(dir);
     if (access(buf, F_OK) == -1)
         if (GFileMkDir(buf, 0755) == -1) {
-            LogError(_("Could not create plugin directory '%s'\n"), buf);
+            LogError(_("Could not create plugin directory '%s'"), buf);
             return (NULL);
         }
     return buf;
@@ -169,7 +169,7 @@ void SavePluginConfig() {
         GError *gerror = NULL;
         int ok = g_key_file_save_to_file(conf, fname, &gerror);
         if (!ok && gerror != NULL) {
-            LogError(_("Error saving plugin configuration file '%s': %s\n"), fname, gerror->message);
+            LogError(_("Error saving plugin configuration file '%s': %s"), fname, gerror->message);
             g_error_free(gerror);
         }
         free(fname);
@@ -190,7 +190,7 @@ static void LoadPluginConfig() {
         g_key_file_load_from_file(conf, fname, G_KEY_FILE_NONE, &gerror);
         if (gerror != NULL) {
             if (!g_error_matches(gerror, G_FILE_ERROR, G_FILE_ERROR_NOENT)) {
-                LogError(_("Error reading plugin configuration file '%s': %s\n"), fname, gerror->message);
+                LogError(_("Error reading plugin configuration file '%s': %s"), fname, gerror->message);
             }
             g_error_free(gerror);
             gerror = NULL;
@@ -199,7 +199,7 @@ static void LoadPluginConfig() {
             for (int i = 0; i < glen; ++i) {
                 char *modname = g_key_file_get_string(conf, groups[i], "Module name", NULL);
                 if (modname == NULL) {
-                    LogError(_("No module name for '%s' in plugin config -- skipping.\n"), groups[i]);
+                    LogError(_("No module name for '%s' in plugin config -- skipping."), groups[i]);
                     continue;
                 }
                 char *pkgname = g_key_file_get_string(conf, groups[i], "Package name", NULL);
@@ -239,7 +239,7 @@ void LoadPlugin(PluginEntry *pe) {
             PyDict_SetItemString(kwargs, "preferences_path", dstr);
             tmp2 = PyObject_Call(tmp, args, kwargs);
             if (tmp2 == NULL) {
-                LogError(_("Skipping plugin %s: module '%s': Error calling 'fontforge_plugin_init' function\n"), pe->name, pe->module_name);
+                LogError(_("Skipping plugin %s: module '%s': Error calling 'fontforge_plugin_init' function"), pe->name, pe->module_name);
                 PyErr_Print();
             } else {
                 pe->is_well_formed = true;
@@ -250,7 +250,7 @@ void LoadPlugin(PluginEntry *pe) {
             Py_DECREF(args);
             Py_DECREF(tmp);
         } else {
-            LogError(_("Skipping plugin %s: module '%s': Lacks 'fontforge_plugin_init' function\n"), pe->name, pe->module_name);
+            LogError(_("Skipping plugin %s: module '%s': Lacks 'fontforge_plugin_init' function"), pe->name, pe->module_name);
             if (tmp != NULL) {
                 Py_DECREF(tmp);
             } else {
@@ -265,7 +265,7 @@ void LoadPlugin(PluginEntry *pe) {
             PyErr_Clear();
         }
     } else {
-        LogError(_("Skipping plugin %s: module '%s': Could not load.\n"), pe->name, pe->module_name);
+        LogError(_("Skipping plugin %s: module '%s': Could not load."), pe->name, pe->module_name);
         PyErr_Print();
     }
     Py_DECREF(pe->entrypoint);
@@ -292,7 +292,7 @@ static bool DiscoverPlugins(int do_import) {
     PyObject *str, *str2, *iter, *tmp, *tmp2, *entrypoint;
     PyObject *pkgres = PyImport_ImportModule("pkg_resources");
     if (pkgres == NULL || !PyObject_HasAttrString(pkgres, "iter_entry_points")) {
-        LogError(_("Core python package 'pkg_resources' not found: Cannot discover plugins\n"));
+        LogError(_("Core python package 'pkg_resources' not found: Cannot discover plugins"));
 	PyErr_Clear();
         return false;
     }
@@ -300,7 +300,7 @@ static bool DiscoverPlugins(int do_import) {
     str2 = PyUnicode_FromString("fontforge_plugin");
     iter = PyObject_CallMethodObjArgs(pkgres, str, str2, NULL);
     if (!PyIter_Check(iter)) {
-        LogError(_("Could not iterate 'fontforge_plugin' entry points.\n"));
+        LogError(_("Could not iterate 'fontforge_plugin' entry points."));
         return false;
     }
     Py_DECREF(str);
@@ -399,7 +399,7 @@ static bool DiscoverPlugins(int do_import) {
     for (i = plugin_data; i != NULL; i = i->next) {
         pe = (PluginEntry *)i->data;
         if (!pe->is_present && pe->startup_mode == sm_on) {
-            LogError(_("Warning: Enabled Plugin '%s' was not discovered\n"), pe->name);
+            LogError(_("Warning: Enabled Plugin '%s' was not discovered"), pe->name);
         }
     }
     Py_DECREF(iter);

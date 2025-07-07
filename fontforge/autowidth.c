@@ -151,14 +151,14 @@ static void CheckOutOfBounds(WidthInfo *wi) {
 
     for ( i=0; i<wi->real_rcnt; ++i ) {
 	if ( wi->right[i]->newl<-wi->spacing || wi->right[i]->newl>wi->spacing )
-	    LogError( _("AutoWidth failure on %s\n"), wi->right[i]->sc->name );
+	    LogError( _("AutoWidth failure on %s"), wi->right[i]->sc->name );
 	if ( wi->right[i]->newl<-minsp )
 	    wi->right[i]->newl = -rint(minsp);
     }
     for ( i=0; i<wi->real_lcnt; ++i ) {
 	if ( wi->left[i]->newr<-wi->spacing-wi->seriflength ||
 		wi->left[i]->newr>wi->spacing+wi->seriflength ) {
-	    LogError( _("AutoWidth failure on %s\n"), wi->right[i]->sc->name );
+	    LogError( _("AutoWidth failure on %s"), wi->right[i]->sc->name );
 	    if ( wi->left[i]->newr>wi->spacing )
 		wi->left[i]->newr = wi->spacing;
 	}

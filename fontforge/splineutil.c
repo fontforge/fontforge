@@ -2699,7 +2699,7 @@ return( NULL );
     break;
 	++(pscontext->instance_count);
 	if ( pscontext->instance_count>=sizeof(pscontext->blend_values)/sizeof(pscontext->blend_values[0])) {
-	    LogError( _("Multiple master font with more than 16 instances\n") );
+	    LogError( _("Multiple master font with more than 16 instances") );
     break;
 	}
 	for ( pt = end; *pt==' '; ++pt );
@@ -2724,7 +2724,7 @@ return( NULL );
 	if ( pt==end )
     break;
 	if ( mm->axis_count>=sizeof(mm->axes)/sizeof(mm->axes[0])) {
-	    LogError( _("Multiple master font with more than 4 axes\n") );
+	    LogError( _("Multiple master font with more than 4 axes") );
     break;
 	}
 	mm->axes[ mm->axis_count++ ] = copyn( pt,end-pt );
@@ -2918,7 +2918,7 @@ static SplineFont *SplineFontFromCIDType1(SplineFont *sf, FontDict *fd,
 	if ( fd->fds[i]->fonttype!=1 && fd->fds[i]->fonttype!=2 )
 	    bad = fd->fds[i]->fonttype;
     if ( bad!=0x80000000 || fd->cidfonttype!=0 ) {
-	LogError( _("Could not parse a CID font, %sCIDFontType %d, %sfonttype %d\n"),
+	LogError( _("Could not parse a CID font, %sCIDFontType %d, %sfonttype %d"),
 		( fd->cidfonttype!=0 ) ? "unexpected " : "",
 		( bad!=0x80000000 ) ? "unexpected " : "",
 		fd->cidfonttype, bad );
@@ -2926,7 +2926,7 @@ static SplineFont *SplineFontFromCIDType1(SplineFont *sf, FontDict *fd,
 return( NULL );
     }
     if ( fd->cidstrs==NULL || fd->cidcnt==0 ) {
-	LogError( _("CID format doesn't contain what we expected it to.\n") );
+	LogError( _("CID format doesn't contain what we expected it to.") );
 	SplineFontFree(sf);
 return( NULL );
     }
