@@ -11,8 +11,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-06 23:41+0300\n"
-"PO-Revision-Date: 2025-07-05 22:20\n"
+"POT-Creation-Date: 2025-07-07 00:36+0300\n"
+"PO-Revision-Date: 2025-07-07 14:24\n"
 "Last-Translator: \n"
 "Language-Team: Croatian\n"
 "Language: hr_HR\n"
@@ -4738,9 +4738,7 @@ msgstr "Klasa je izvan granica u 'GPOS' pod-tablici dijakritičkih znakova"
 
 #, c-format
 msgid "Class out of bounds in GPOS mark sub-table for mark %.30s"
-msgstr ""
-"Klasa je izvan granica u 'GPOS' pod-tablici dijakritičkih znakova za dijakritički znak %.30s\n"
-"\n"
+msgstr "Klasa je izvan granica u 'GPOS' pod-tablici dijakritičkih znakova za dijakritički znak %.30s"
 
 msgid "Class10"
 msgstr "Klasa10"
@@ -7109,7 +7107,7 @@ msgstr "Očekivani zarez ili točka-zarez u %d. retku od %s"
 
 #, c-format
 msgid "Expected either \"HorizAxis\" or \"VertAxis\" in BASE table on line %d of %s"
-msgstr "Očekivane \"HorizAxis\" (vod. os) ili \"VertAxis\" (uspr. os) u BASE tablici u %d. retku od %s"
+msgstr "Očekivane „HorizAxis” (vod. os) ili „VertAxis” (uspr. os) u BASE tablici u %d. retku od %s"
 
 msgid "Expected glyph file with format==1 or 2"
 msgstr "Očekivana datoteka grafema s formatom==1 ili 2"
@@ -14829,7 +14827,7 @@ msgstr "Greška prilikom obrade"
 
 #, c-format
 msgid "ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s\n"
-msgstr "Baza podataka za obradu redoslijeda grafema i aliasa (unos nerazdvojen tabulatorima) pri indeksu %d: %s\n"
+msgstr "Baza podataka za obradu redoslijeda grafema i aliasa (unos ne-razdvojen tabulatorima) pri indeksu %d: %s\n"
 
 msgid "Parts List"
 msgstr "Popis dijelova"
@@ -15682,7 +15680,9 @@ msgstr "Referenca na naziv grafema u CID-kodiranom fontu u %d. retku od %s"
 
 #, c-format
 msgid "Reference to a lookup which is not in the feature file but which is in the font, %.50s"
-msgstr "Referenca na tablicu definicija koja se ne nalazi u datoteci funkcija, ali se nalazi u fontu, %.50s"
+msgstr ""
+"Referenca na tablicu definicija koja se ne nalazi u datoteci funkcija,\n"
+"ali se nalazi u fontu %.50s"
 
 #, c-format
 msgid "Reference to a non-existent glyph name on line %d of %s: %s"
@@ -20943,7 +20943,7 @@ msgid ""
 "Use Element->Font Info to enable them."
 msgstr ""
 "Ovaj font nema aktiviranu uspravnu metriku.\n"
-"Aktiviraj je putem „Element -> Informacije o fontu”."
+"Aktiviraj je putem „Element → Informacije o fontu”."
 
 msgid "This font does not specify font-face\n"
 msgstr "Ovom fontu nije određen pismovni rez\n"
@@ -20960,7 +20960,7 @@ msgid ""
 "Shall I use that or let you search?"
 msgstr ""
 "Ovaj se font zasniva na skupu znakova %1$.20s-%2$.20s-%3$d. Tome najbliže je nađen %1$.20s-%2$.20s-%4$d.\n"
-"Želiš li, da se koristi taj skup ili želiš tražiti?"
+"Želiš li da se koristi taj skup ili želiš tražiti?"
 
 msgid ""
 "This font is erroneous: it has a GPOS extension subtable that points to\n"
@@ -24101,7 +24101,7 @@ msgid "You tried to save with the filename %s but it was saved as %s. "
 msgstr "Pokušavaš spremiti kao „%s”, ali je spremljeno kao „%s”. "
 
 msgid "You will get better instructions if you fill in the Private dictionary, Element->Font Info->Private, for the font"
-msgstr "Dobit češ bolje rezultate za font, ako ispuniš polja privatnog rječnika, „Element -> Informacije o fontu -> Private”"
+msgstr "Dobit češ bolje rezultate za font, ako ispuniš polja privatnog rječnika, „Element → Informacije o fontu → Private”"
 
 msgid ""
 "Your font has a 2 byte encoding, but you are attempting to save it in a format that only supports one byte encodings. This means that you won't be able to access anything after the first 256 characters without reencoding the font.\n"
