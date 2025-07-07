@@ -2239,8 +2239,8 @@ msgstr "Hộp giới hạn sai cho %s.\n"
 msgid "Bad cidmap file"
 msgstr "Tập tin sơ đồ CID sai"
 
-msgid "Bad class count in contextual chaining sub-table.\n"
-msgstr "Số đếm hạng sai trong bảng phụ tạo dãy ngữ cảnh.\n"
+msgid "Bad class count in contextual chaining sub-table."
+msgstr "Số đếm hạng sai trong bảng phụ tạo dãy ngữ cảnh."
 
 #, c-format
 msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)\n"
@@ -2264,11 +2264,11 @@ msgstr "Bảng phụ sai kiểu ngữ cảnh hay tạo dãy. Hình tượng %d �
 msgid "Bad correction"
 msgstr "Sai điều chỉnh"
 
-msgid "Bad count in context chaining sub-table.\n"
-msgstr "Số đếm sai trong bảng phụ tạo dãy ngữ cảnh.\n"
+msgid "Bad count in context chaining sub-table."
+msgstr "Số đếm sai trong bảng phụ tạo dãy ngữ cảnh."
 
-msgid "Bad count in contextual chaining sub-table.\n"
-msgstr "Số đếm sai trong bảng phụ tạo dãy ngữ cảnh.\n"
+msgid "Bad count in contextual chaining sub-table."
+msgstr "Số đếm sai trong bảng phụ tạo dãy ngữ cảnh."
 
 msgid "Bad count."
 msgstr "Số đếm sai"
@@ -2355,8 +2355,8 @@ msgstr "Hình tượng sai (%d): lời xác định nó kéo dài qua kết thú
 msgid "Bad glyph (%d), its definition extends beyond the space allowed for it\n"
 msgstr "Hình tượng sai (%d): lời xác định nó kéo dài qua khoảng cách đã cấp phát\n"
 
-msgid "Bad glyph count in mort table.\n"
-msgstr "Số đếm hình tượng sai trong bảng 'mort'.\n"
+msgid "Bad glyph count in mort table."
+msgstr "Số đếm hình tượng sai trong bảng 'mort'."
 
 msgid "Bad glyph range specified in color subtable of PfEd table\n"
 msgstr "Xác định phạm vi hình tượng sai trong bảng phụ màu sắc của bảng PfEd\n"
@@ -2364,8 +2364,8 @@ msgstr "Xác định phạm vi hình tượng sai trong bảng phụ màu sắc 
 msgid "Bad glyph range specified in glyph comment subtable of PfEd table\n"
 msgstr "Xác định phạm vi hình tượng sai trong bảng phụ ghi chú hình tượng của bảng PfEd\n"
 
-msgid "Bad glyph variant subtable of MATH table.\n"
-msgstr "Bảng MATH (toán học) có bảng phụ biến thế hình tượng sai.\n"
+msgid "Bad glyph variant subtable of MATH table."
+msgstr "Bảng MATH (toán học) có bảng phụ biến thế hình tượng sai."
 
 #, c-format
 msgid "Bad hex color spec: %s\n"
@@ -2407,14 +2407,14 @@ msgid "Bad ligature base table."
 msgstr "Bảng cơ sở chữ chép sai."
 
 #, c-format
-msgid "Bad ligature component glyph. GID %d not less than %d (in ligature %d)\n"
+msgid "Bad ligature component glyph. GID %d not less than %d (in ligature %d)"
 msgstr ""
 "Hình tượng thành phần chữ ghép sai : GID %d không phải nhỏ hơn %d\n"
 "(trong chữ ghép %d).\n"
 
 #, c-format
-msgid "Bad ligature glyph. GID %d not less than %d\n"
-msgstr "Hình tượng chữ ghép sai : GID %d không phải nhỏ hơn %d\n"
+msgid "Bad ligature glyph. GID %d not less than %d"
+msgstr "Hình tượng chữ ghép sai : GID %d không phải nhỏ hơn %d"
 
 #, c-format
 msgid "Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
@@ -2435,7 +2435,7 @@ msgstr ""
 " • tổng hình tượng trong phông=%d\n"
 
 #, c-format
-msgid "Bad lookup table: format=6, first=%d total glyphs in font=%d\n"
+msgid "Bad lookup table: format=6, first=%d total glyphs in font=%d"
 msgstr ""
 "Bảng tra tìm sai:\n"
 " • định dạng=6\n"
@@ -2443,7 +2443,7 @@ msgstr ""
 " • tổng hình tượng trong phông=%d\n"
 
 #, c-format
-msgid "Bad lookup table: format=8, first=%d cnt=%d total glyphs in font=%d\n"
+msgid "Bad lookup table: format=8, first=%d cnt=%d total glyphs in font=%d"
 msgstr ""
 "Bảng tra tìm sai:\n"
 " • định dạng=8\n"
@@ -2460,8 +2460,8 @@ msgstr "Số ma thuật sai"
 msgid "Bad mark table."
 msgstr "Bảng dấu sai."
 
-msgid "Bad mort ligature table. Not long enough\n"
-msgstr "Bảng chữ ghép 'mort' sai : không đủ dài\n"
+msgid "Bad mort ligature table. Not long enough"
+msgstr "Bảng chữ ghép 'mort' sai : không đủ dài"
 
 #, c-format
 msgid "Bad name when parsing %s for unicode %x"
@@ -2513,8 +2513,8 @@ msgid "Bad replace pattern"
 msgstr "Mẫu thay thế sai"
 
 #, c-format
-msgid "Bad reverse contextual chaining substitution glyph: %d is not less than %d\n"
-msgstr "Hình tượng thay thế tạo dãy ngữ cảnh ngược sai : %d không phải nhỏ hơn %d.\n"
+msgid "Bad reverse contextual chaining substitution glyph: %d is not less than %d"
+msgstr "Hình tượng thay thế tạo dãy ngữ cảnh ngược sai : %d không phải nhỏ hơn %d."
 
 msgid "Bad script tag"
 msgstr "Thẻ chữ viết sai"
@@ -2539,8 +2539,8 @@ msgid "Bad subroutine INDEX in cff font.\n"
 msgstr "INDEX (chỉ số) hàm con sai trong phông CFF.\n"
 
 #, c-format
-msgid "Bad substitution glyph: GID %d not less than %d\n"
-msgstr "Hình tượng thay thế sai : GID %d không phải nhỏ hơn %d\n"
+msgid "Bad substitution glyph: GID %d not less than %d"
+msgstr "Hình tượng thay thế sai : GID %d không phải nhỏ hơn %d"
 
 msgid "Bad tag"
 msgstr "Thẻ sai"
@@ -5290,8 +5290,8 @@ msgstr ""
 "End IF\n"
 "Kết thúc một dãy IF (nếu) hay IF-ELSE (nếu, không thì)"
 
-msgid "End of file found in JSTF table.\n"
-msgstr "Gặp kết thúc của tập tin trong bảng JSTF.\n"
+msgid "End of file found in JSTF table."
+msgstr "Gặp kết thúc của tập tin trong bảng JSTF."
 
 msgid "End of file found in coverage table."
 msgstr "Gặp kết thúc của tập tin trong bảng bao quát."
@@ -5304,14 +5304,14 @@ msgstr "Gặp kết thúc tập tin trong chuỗi trên dòng %d của %s"
 msgid "End of file in %s table"
 msgstr "Gặp kết thúc tập tin trong bảng %s"
 
-msgid "End of file in context chaining sub-table.\n"
-msgstr "Gặp kết thúc tập tin trong bảng phụ tạo dãy ngữ cảnh.\n"
+msgid "End of file in context chaining sub-table."
+msgstr "Gặp kết thúc tập tin trong bảng phụ tạo dãy ngữ cảnh."
 
-msgid "End of file in context chaining subtable.\n"
-msgstr "Gặp kết thúc tập tin trong bảng phụ tạo dãy ngữ cảnh.\n"
+msgid "End of file in context chaining subtable."
+msgstr "Gặp kết thúc tập tin trong bảng phụ tạo dãy ngữ cảnh."
 
-msgid "End of file in feat table.\n"
-msgstr "Gặp kết thúc tập tin trong bảng 'feat'.\n"
+msgid "End of file in feat table."
+msgstr "Gặp kết thúc tập tin trong bảng 'feat'."
 
 #, c-format
 msgid "End of file in include on line %d of %s"
@@ -5942,8 +5942,8 @@ msgstr "_Mã số tính năng:"
 msgid "Feature file?"
 msgstr "Tập tin tính năng ?"
 
-msgid "Feature out of bounds in script table.\n"
-msgstr "Tính năng ở ngoại phạm vi trong bảng chữ viết.\n"
+msgid "Feature out of bounds in script table."
+msgstr "Tính năng ở ngoại phạm vi trong bảng chữ viết."
 
 msgid "Feature tags are limited to 4 letters"
 msgstr "Thẻ tính năng có chiều dài tối đa 4 ký tự"
@@ -6840,20 +6840,20 @@ msgid "Glyph not in font"
 msgstr "Hình tượng không có trong phông"
 
 #, c-format
-msgid "Glyph out of bounds in 'lcar' table %d\n"
-msgstr "Hình tượng ở ngoại phạm vi trong bảng 'lcar' %d\n"
+msgid "Glyph out of bounds in 'lcar' table %d"
+msgstr "Hình tượng ở ngoại phạm vi trong bảng 'lcar' %d"
 
 #, c-format
 msgid "Glyph out of bounds in 'mort'/'morx' table %d\n"
 msgstr "Hình tượng ở ngoại phạm vi trong bảng 'mort/morx' %d\n"
 
 #, c-format
-msgid "Glyph out of bounds in 'opbd' table %d\n"
-msgstr "Hình tượng ở ngoại phạm vi trong bảng 'opbd' %d\n"
+msgid "Glyph out of bounds in 'opbd' table %d"
+msgstr "Hình tượng ở ngoại phạm vi trong bảng 'opbd' %d"
 
 #, c-format
-msgid "Glyph out of bounds in 'prop' table %d\n"
-msgstr "Hình tượng ở ngoại phạm vi trong bảng 'prop' %d\n"
+msgid "Glyph out of bounds in 'prop' table %d"
+msgstr "Hình tượng ở ngoại phạm vi trong bảng 'prop' %d"
 
 #, c-format
 msgid "Glyph “%s” contains a reference to %s in %s\n"
@@ -8322,8 +8322,8 @@ msgstr "Tối đa mở rộng JSTF ở mức ưu tiên %d #%d cho %c%c%c%c trong
 msgid "JSTF shrinkage max at priority %d #%d for %c%c%c%c in %c%c%c%c"
 msgstr "Tối đa co lại JSTF ở mức ưu tiên %d #%d cho %c%c%c%c trong %c%c%c%c"
 
-msgid "JSTF table is too long.\n"
-msgstr "Bảng JFST quá dài.\n"
+msgid "JSTF table is too long."
+msgstr "Bảng JFST quá dài."
 
 msgid "Japanese"
 msgstr "Tiếng Nhật"
@@ -8520,7 +8520,7 @@ msgstr ""
 "Đối với bảng phụ này, bạn có muốn làm gì?"
 
 #, c-format
-msgid "Kerning subtable 3 says the glyph count is %d, but maxp says %d\n"
+msgid "Kerning subtable 3 says the glyph count is %d, but maxp says %d"
 msgstr ""
 "Bảng phụ định chỗ 3 hiển thị số đếm hình tượng %d,\n"
 "còn 'maxp' nói %d.\n"
@@ -9158,12 +9158,12 @@ msgid "Lookup Type|Unspecified"
 msgstr "Chưa xác định"
 
 #, c-format
-msgid "Lookup index (%d) out of bounds in GPOS from JSTF table.\n"
-msgstr "Chỉ mục tra tìm (%d) ở ngoại phạm vi trong GPOS từ bảng JFST.\n"
+msgid "Lookup index (%d) out of bounds in GPOS from JSTF table."
+msgstr "Chỉ mục tra tìm (%d) ở ngoại phạm vi trong GPOS từ bảng JFST."
 
 #, c-format
-msgid "Lookup index (%d) out of bounds in GSUB from JSTF table.\n"
-msgstr "Chỉ mục tra tìm (%d) ở ngoại phạm vi trong GSUB từ bảng JFST.\n"
+msgid "Lookup index (%d) out of bounds in GSUB from JSTF table."
+msgstr "Chỉ mục tra tìm (%d) ở ngoại phạm vi trong GSUB từ bảng JFST."
 
 #, c-format
 msgid "Lookup information attached to unmarked glyph on line %d of %s"
@@ -9172,8 +9172,8 @@ msgstr "Thông tin tra tìm được đính theo hình tượng không dấu tr�
 msgid "Lookup name already used"
 msgstr "Tên sự tra tìm đã dùng"
 
-msgid "Lookup out of bounds in feature table.\n"
-msgstr "Sự tra tìm ở ngoại phạm vi trong bảng tính năng.\n"
+msgid "Lookup out of bounds in feature table."
+msgstr "Sự tra tìm ở ngoại phạm vi trong bảng tính năng."
 
 #, c-format
 msgid "Lookup subtable %s (matched with %s)\n"
@@ -13211,8 +13211,8 @@ msgstr "Chữ ghép cần thiết"
 msgid "Required feature"
 msgstr "Tính năng cần thiết"
 
-msgid "Required feature out of bounds in script table.\n"
-msgstr "Tính năng cần thiết ở ngoại phạm vi trong bảng chữ viết.\n"
+msgid "Required feature out of bounds in script table."
+msgstr "Tính năng cần thiết ở ngoại phạm vi trong bảng chữ viết."
 
 msgid "Reserved Bit 10"
 msgstr "Bit dàng riêng 10"
@@ -15861,11 +15861,11 @@ msgstr "Bảng phụ"
 msgid "Subtable %.60s in glyph %.60s"
 msgstr "Bảng phụ %.60s trong hình tượng %.60s"
 
-msgid "Subtable extends beyond end of GPOS table\n"
-msgstr "Bảng phụ kéo dài qua kết thúc của bảng GPOS\n"
+msgid "Subtable extends beyond end of GPOS table"
+msgstr "Bảng phụ kéo dài qua kết thúc của bảng GPOS"
 
-msgid "Subtable extends beyond end of GSUB table\n"
-msgstr "Bảng phụ kéo dài qua kết thúc của bảng GSUB\n"
+msgid "Subtable extends beyond end of GSUB table"
+msgstr "Bảng phụ kéo dài qua kết thúc của bảng GSUB"
 
 msgid "Sum Around:"
 msgstr "Tổng quanh:"
@@ -16305,7 +16305,7 @@ msgstr ""
 "của Adobe về tiêu chuẩn. Vì vậy chương trình này\n"
 "không thể phân tích nó.\n"
 
-msgid "The 'size' feature of this font conforms to Adobe's early misinterpretation of the otf standard.\n"
+msgid "The 'size' feature of this font conforms to Adobe's early misinterpretation of the otf standard."
 msgstr ""
 "Tính năng « size » (kích cỡ) của phông này tùy theo\n"
 "lời giải thích sai sớm của Adobe về tiêu chuẩn OTF.\n"
@@ -17037,12 +17037,12 @@ msgstr ""
 "(Bạn sẽ không nhận cảnh báo về hình tượng sau đó.)"
 
 #, c-format
-msgid "The name parameter of the '%c%c%c%c' feature does not contain a valid name id.\n"
-msgstr "Tham số tên của tính năng « %c%c%c%c » không chứa một mã số tên đúng.\n"
+msgid "The name parameter of the '%c%c%c%c' feature does not contain a valid name id."
+msgstr "Tham số tên của tính năng « %c%c%c%c » không chứa một mã số tên đúng."
 
 #, c-format
-msgid "The name parameter of the '%c%c%c%c' feature has an unlikely version number %d.\n"
-msgstr "Tham số tên của tính năng « %c%c%c%c » có một số thứ tự phiên bản không chắc: %d.\n"
+msgid "The name parameter of the '%c%c%c%c' feature has an unlikely version number %d."
+msgstr "Tham số tên của tính năng « %c%c%c%c » có một số thứ tự phiên bản không chắc: %d."
 
 #, c-format
 msgid ""
@@ -17827,7 +17827,7 @@ msgstr ""
 "Người sở hữu phông này đã cấp bạn quyền sửa đổi không?"
 
 #, c-format
-msgid "This font, %s, has multiple GPOS 'size' features. I'm not sure how to interpret that. I shall pick one arbitrarily.\n"
+msgid "This font, %s, has multiple GPOS 'size' features. I'm not sure how to interpret that. I shall pick one arbitrarily."
 msgstr ""
 "Phông này, %s, có nhiều tính năng 'size' (kích cỡ) kiểu GPOS.\n"
 "Trình này không có thủ tục xử lý trường hợp này nên\n"
@@ -18389,8 +18389,8 @@ msgid "Too many entries in CharStrings dictionary \"%s"
 msgstr "Quá nhiều mục nhập trong từ điển Chuỗi Ký Tự \\%s"
 
 #, c-format
-msgid "Too many features %d\n"
-msgstr "Quá nhiều tính năng %d\n"
+msgid "Too many features %d"
+msgstr "Quá nhiều tính năng %d"
 
 msgid "Too many glyphs"
 msgstr "Quá nhiều hình tượng"
@@ -18402,16 +18402,16 @@ msgid "Too many layers"
 msgstr "Quá nhiều lớp"
 
 #, c-format
-msgid "Too many lookups %d\n"
-msgstr "Quá nhiều sự tra tìm %d\n"
+msgid "Too many lookups %d"
+msgstr "Quá nhiều sự tra tìm %d"
 
 #, c-format
 msgid "Too many mapping data points specified in /BlendDesignMap for axis %s.\n"
 msgstr "Quá nhiều điểm ánh xạ dữ liệu được xác định trong /BlendDesignMap (pha trộn sơ đồ thiết kế) đối với trục %s.\n"
 
 #, c-format
-msgid "Too many scripts %d\n"
-msgstr "Quá nhiều chữ viết %d\n"
+msgid "Too many scripts %d"
+msgstr "Quá nhiều chữ viết %d"
 
 #, c-format
 msgid "Too many subroutine calls in %s\n"
@@ -18833,17 +18833,17 @@ msgstr "Mật độ bất thường"
 msgid "Unexpected encoding format in cff: %d\n"
 msgstr "Gặp định dạng bảng mã bất thường trong CFF: %d\n"
 
-msgid "Unexpected end of file found in morx chain.\n"
-msgstr "Gặp kết thúc tập tin bất thường trong dãy 'morx'.\n"
+msgid "Unexpected end of file found in morx chain."
+msgstr "Gặp kết thúc tập tin bất thường trong dãy 'morx'."
 
 msgid "Unexpected end of file in GSUB ligature sub-table.\n"
 msgstr "Gặp kết thúc tập tin bất thường trong bảng phụ chữ ghép GSUB.\n"
 
-msgid "Unexpected end of file in GSUB sub-table.\n"
-msgstr "Gặp kết thúc tập tin bất thường trong bảng phụ GSUB.\n"
+msgid "Unexpected end of file in GSUB sub-table."
+msgstr "Gặp kết thúc tập tin bất thường trong bảng phụ GSUB."
 
-msgid "Unexpected end of file in contextual chaining subtable.\n"
-msgstr "Gặp kết thúc tập tin bất thường nằm trong bảng phụ tạo dãy ngữ cảnh.\n"
+msgid "Unexpected end of file in contextual chaining subtable."
+msgstr "Gặp kết thúc tập tin bất thường nằm trong bảng phụ tạo dãy ngữ cảnh."
 
 #, c-format
 msgid "Unexpected end of file in feature definition on line %d of %s"
@@ -19014,12 +19014,12 @@ msgid "Unknown"
 msgstr "Không rõ"
 
 #, c-format
-msgid "Unknown GPOS sub-table type: %d\n"
-msgstr "Không rõ kiểu bảng phụ GPOS: %d\n"
+msgid "Unknown GPOS sub-table type: %d"
+msgstr "Không rõ kiểu bảng phụ GPOS: %d"
 
 #, c-format
-msgid "Unknown GSUB sub-table type: %d\n"
-msgstr "Không rõ kiểu bảng phụ GSUB: %d\n"
+msgid "Unknown GSUB sub-table type: %d"
+msgstr "Không rõ kiểu bảng phụ GSUB: %d"
 
 msgid "Unknown Language"
 msgstr "Ngôn ngữ không rõ"

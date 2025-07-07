@@ -121,19 +121,19 @@ msgid " At least one reference to this glyph used point matching. That match is 
 msgstr " Barem jedna točka sidra je koristila poklapanje točaka. To je poklapanje sada zastarjelo."
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad contextual chaining substitution table, ignored\n"
-msgstr " Neispravna tablica kontekstne zamjene niza, zanemaruje se\n"
+msgid " Bad contextual chaining substitution table, ignored"
+msgstr " Neispravna tablica kontekstne zamjene niza, zanemaruje se"
 
-msgid " Bad contextual chaining table, ignored\n"
-msgstr " Neispravna tablica kontekstnog niza, zanemaruje se\n"
-
-#. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad contextual substitution table, ignored\n"
-msgstr " Neispravna tablica kontekstne zamjene, zanemaruje se\n"
+msgid " Bad contextual chaining table, ignored"
+msgstr " Neispravna tablica kontekstnog niza, zanemaruje se"
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad contextual table, ignored\n"
-msgstr " Neispravna kontekstna tablica, znemaruje se\n"
+msgid " Bad contextual substitution table, ignored"
+msgstr " Neispravna tablica kontekstne zamjene, zanemaruje se"
+
+#. GT: This continues a multi-line error message, hence the leading space
+msgid " Bad contextual table, ignored"
+msgstr " Neispravna kontekstna tablica, znemaruje se"
 
 #. GT: This continues a multi-line error message, hence the leading space
 msgid " Bad cursive alignment table, ignored"
@@ -143,14 +143,14 @@ msgstr " Neispravna tablica poravnanja kurziva, zanemaruje se"
 msgid " Bad kerning class table, ignored"
 msgstr " Neispravna tablica klasa podrezivanja, zanemaruje se"
 
-msgid " Bad ligature table, ignored\n"
-msgstr " Neispravna tablica ligatura, zanemaruje se\n"
+msgid " Bad ligature table, ignored"
+msgstr " Neispravna tablica ligatura, zanemaruje se"
 
 msgid " Bad mark attachment table, ignored"
 msgstr " Neispravna tablica povezivanja dijakritičkih znakova, zanemaruje se"
 
-msgid " Bad multiple substitution table, ignored\n"
-msgstr " Neispravna tablica višestruke zamjene, zanemaruje se\n"
+msgid " Bad multiple substitution table, ignored"
+msgstr " Neispravna tablica višestruke zamjene, zanemaruje se"
 
 #. GT: This continues a multi-line error message, hence the leading space
 msgid " Bad pairwise kerning table, ignored"
@@ -159,8 +159,8 @@ msgstr " Neispravna tablica podrezivanja parova, zanemaruje se"
 msgid " Bad simple positioning table, ignored"
 msgstr " Neispravna tablica jednostavnog pozicioniranja, zanemaruje se"
 
-msgid " Bad simple substitution table, ignored\n"
-msgstr " Neispravna tablica jednostavne zamjene, zanemaruje se\n"
+msgid " Bad simple substitution table, ignored"
+msgstr " Neispravna tablica jednostavne zamjene, zanemaruje se"
 
 #, c-format
 msgid " Curvature: %g"
@@ -2691,8 +2691,8 @@ msgstr "Neispravni naziv obitelji fontova"
 msgid "Bad Font Name"
 msgstr "Neispravni naziv fonta"
 
-msgid "Bad GID in JSTF extenser table.\n"
-msgstr "Neispravna ID-oznaka grafema u JSTF tablici za širenje.\n"
+msgid "Bad GID in JSTF extenser table."
+msgstr "Neispravna ID-oznaka grafema u JSTF tablici za širenje."
 
 msgid "Bad Glyph Count"
 msgstr "Neispravni broj grafema"
@@ -2860,8 +2860,8 @@ msgstr "Neispravan granični okvir za %s.\n"
 msgid "Bad cidmap file"
 msgstr "Neispravna cidmap datoteka"
 
-msgid "Bad class count in contextual chaining sub-table.\n"
-msgstr "Neispravni broj klasa u pod-tablici kontekstnog niza.\n"
+msgid "Bad class count in contextual chaining sub-table."
+msgstr "Neispravni broj klasa u pod-tablici kontekstnog niza."
 
 #, c-format
 msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)\n"
@@ -2891,11 +2891,11 @@ msgstr "Neispravna kontekstna tablica ili tablica niza. Grafem %d je izvan raspo
 msgid "Bad correction"
 msgstr "Neispravni ispravak"
 
-msgid "Bad count in context chaining sub-table.\n"
-msgstr "Neispravni broj u pod-tablici kontekstnog niza.\n"
+msgid "Bad count in context chaining sub-table."
+msgstr "Neispravni broj u pod-tablici kontekstnog niza."
 
-msgid "Bad count in contextual chaining sub-table.\n"
-msgstr "Neispravni broj u pod-tablici kontekstnog niza.\n"
+msgid "Bad count in contextual chaining sub-table."
+msgstr "Neispravni broj u pod-tablici kontekstnog niza."
 
 msgid "Bad count."
 msgstr "Neispravni zbroj."
@@ -2999,8 +2999,8 @@ msgstr "Neispravni grafem (%d), njegova definicija prelazi kraj tablice grafema\
 msgid "Bad glyph (%d), its definition extends beyond the space allowed for it\n"
 msgstr "Neispravni grafem (%d), njegova definicija prelazi dozvoljni prostor\n"
 
-msgid "Bad glyph count in mort table.\n"
-msgstr "Neispravni broj grafema u 'mort' tablici.\n"
+msgid "Bad glyph count in mort table."
+msgstr "Neispravni broj grafema u 'mort' tablici."
 
 msgid "Bad glyph name."
 msgstr "Neispravni naziv grafema."
@@ -3014,8 +3014,8 @@ msgstr "Neispravno određeni raspon grafema u pod-tablici za komentare grafema '
 msgid "Bad glyph reference in layer info.\n"
 msgstr "Neispravna referenca grafema u informacijama sloja.\n"
 
-msgid "Bad glyph variant subtable of MATH table.\n"
-msgstr "Neispravna pod-tablica varijanti grafema 'MATH' tablice.\n"
+msgid "Bad glyph variant subtable of MATH table."
+msgstr "Neispravna pod-tablica varijanti grafema 'MATH' tablice."
 
 #, c-format
 msgid "Bad hex color spec: %s\n"
@@ -3065,12 +3065,12 @@ msgid "Bad ligature base table."
 msgstr "Neispravna tablica osnovnih znakova ligatura."
 
 #, c-format
-msgid "Bad ligature component glyph. GID %d not less than %d (in ligature %d)\n"
-msgstr "Neispravni grafem komponente ligature. ID-oznaka grafema %d ne manja od %d (u ligaturi %d)\n"
+msgid "Bad ligature component glyph. GID %d not less than %d (in ligature %d)"
+msgstr "Neispravni grafem komponente ligature. ID-oznaka grafema %d ne manja od %d (u ligaturi %d)"
 
 #, c-format
-msgid "Bad ligature glyph. GID %d not less than %d\n"
-msgstr "Neispravni grafem ligature. ID-oznaka grafema %d ne manja od %d\n"
+msgid "Bad ligature glyph. GID %d not less than %d"
+msgstr "Neispravni grafem ligature. ID-oznaka grafema %d ne manja od %d"
 
 #, c-format
 msgid "Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
@@ -3081,12 +3081,12 @@ msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font
 msgstr "Neispravna tablica definicija: format=4 (%d/%d), prvi=%d zadnji=%d ukupno grafema u fontu=%d\n"
 
 #, c-format
-msgid "Bad lookup table: format=6, first=%d total glyphs in font=%d\n"
-msgstr "Neispravna tablica definicija: format=6, prvi=%d ukupno grafema u fontu=%d\n"
+msgid "Bad lookup table: format=6, first=%d total glyphs in font=%d"
+msgstr "Neispravna tablica definicija: format=6, prvi=%d ukupno grafema u fontu=%d"
 
 #, c-format
-msgid "Bad lookup table: format=8, first=%d cnt=%d total glyphs in font=%d\n"
-msgstr "Neispravna tablica definicija: format=8, prvi=%d zbroj=%d ukupno grafema u fontu=%d\n"
+msgid "Bad lookup table: format=8, first=%d cnt=%d total glyphs in font=%d"
+msgstr "Neispravna tablica definicija: format=8, prvi=%d zbroj=%d ukupno grafema u fontu=%d"
 
 msgid "Bad lookup type"
 msgstr "Neispravna vrsta tablice definicija"
@@ -3097,8 +3097,8 @@ msgstr "Neispravan magični broj"
 msgid "Bad mark table."
 msgstr "Neispravna tablica dijakritičkih znakova."
 
-msgid "Bad mort ligature table. Not long enough\n"
-msgstr "Neispravna 'mort' tablica ligatura. Prekratka\n"
+msgid "Bad mort ligature table. Not long enough"
+msgstr "Neispravna 'mort' tablica ligatura. Prekratka"
 
 #, c-format
 msgid "Bad name when parsing %s for unicode %x"
@@ -3153,8 +3153,8 @@ msgid "Bad replace pattern"
 msgstr "Neispravni zamjenski uzorak"
 
 #, c-format
-msgid "Bad reverse contextual chaining substitution glyph: %d is not less than %d\n"
-msgstr "Neispravni grafem obrnute kontekstne zamjene niza: %d nije manje od %d\n"
+msgid "Bad reverse contextual chaining substitution glyph: %d is not less than %d"
+msgstr "Neispravni grafem obrnute kontekstne zamjene niza: %d nije manje od %d"
 
 msgid "Bad rule"
 msgstr "Neispravno pravilo"
@@ -3197,8 +3197,8 @@ msgid "Bad subroutine INDEX in cff font.\n"
 msgstr "Neispravna pod-rutina INDEX u cff fontu.\n"
 
 #, c-format
-msgid "Bad substitution glyph: GID %d not less than %d\n"
-msgstr "Neispravni zamjenski grafem. ID-oznaka grafema %d ne manja od %d\n"
+msgid "Bad substitution glyph: GID %d not less than %d"
+msgstr "Neispravni zamjenski grafem. ID-oznaka grafema %d ne manja od %d"
 
 msgid "Bad tag"
 msgstr "Neispravna oznaka"
@@ -6678,8 +6678,8 @@ msgstr ""
 "Završni IF\n"
 "Završava IF ili IF-ELSE sekvencu"
 
-msgid "End of file found in JSTF table.\n"
-msgstr "U JSTF tablici je nađen 'eof' (kraj datoteke).\n"
+msgid "End of file found in JSTF table."
+msgstr "U JSTF tablici je nađen 'eof' (kraj datoteke)."
 
 msgid "End of file found in coverage table."
 msgstr "Kraj datoteke nađen u tablici pokrivenosti."
@@ -6695,14 +6695,14 @@ msgstr "Kraj datoteke nađen prilikom čitanja 'private' rječnika.\n"
 msgid "End of file in %s table"
 msgstr "Kraj datoteke u %s tablici"
 
-msgid "End of file in context chaining sub-table.\n"
-msgstr "Kraj datoteke u pod-tablici lančanja konteksta.\n"
+msgid "End of file in context chaining sub-table."
+msgstr "Kraj datoteke u pod-tablici lančanja konteksta."
 
-msgid "End of file in context chaining subtable.\n"
-msgstr "Kraj datoteke u pod-tablici lančanja konteksta.\n"
+msgid "End of file in context chaining subtable."
+msgstr "Kraj datoteke u pod-tablici lančanja konteksta."
 
-msgid "End of file in feat table.\n"
-msgstr "Kraj datoteke u tablici funkcija.\n"
+msgid "End of file in feat table."
+msgstr "Kraj datoteke u tablici funkcija."
 
 #, c-format
 msgid "End of file in include on line %d of %s"
@@ -7455,8 +7455,8 @@ msgstr "_ID font-funkcije:"
 msgid "Feature file?"
 msgstr "Datoteka font-funkcija?"
 
-msgid "Feature out of bounds in script table.\n"
-msgstr "Font-funkcija izvan granica u tablici pisama.\n"
+msgid "Feature out of bounds in script table."
+msgstr "Font-funkcija izvan granica u tablici pisama."
 
 msgid "Feature tags are limited to 4 letters"
 msgstr "Oznake font-funkcija su ograničena na četiri znaka"
@@ -8530,20 +8530,20 @@ msgid "Glyph not in font"
 msgstr "Grafem ne postoji u fontu"
 
 #, c-format
-msgid "Glyph out of bounds in 'lcar' table %d\n"
-msgstr "Grafem izvan granica u 'lcar' tablici %d\n"
+msgid "Glyph out of bounds in 'lcar' table %d"
+msgstr "Grafem izvan granica u 'lcar' tablici %d"
 
 #, c-format
 msgid "Glyph out of bounds in 'mort'/'morx' table %d\n"
 msgstr "Grafem izvan granica u 'mort/morx' tablici %d\n"
 
 #, c-format
-msgid "Glyph out of bounds in 'opbd' table %d\n"
-msgstr "Grafem izvan granica u 'opbd' tablici %d\n"
+msgid "Glyph out of bounds in 'opbd' table %d"
+msgstr "Grafem izvan granica u 'opbd' tablici %d"
 
 #, c-format
-msgid "Glyph out of bounds in 'prop' table %d\n"
-msgstr "Grafem izvan granica u 'prop' tablici %d\n"
+msgid "Glyph out of bounds in 'prop' table %d"
+msgstr "Grafem izvan granica u 'prop' tablici %d"
 
 msgid "Glyph too big"
 msgstr "Grafem prevelik"
@@ -10335,8 +10335,8 @@ msgstr "JSTF maks. širenje pri važnosti %d #%d za %c%c%c%c u %c%c%c%c"
 msgid "JSTF shrinkage max at priority %d #%d for %c%c%c%c in %c%c%c%c"
 msgstr "JSTF maks. suženje pri važnosti %d #%d za %c%c%c%c u %c%c%c%c"
 
-msgid "JSTF table is too long.\n"
-msgstr "JSTF tablica je predugačka.\n"
+msgid "JSTF table is too long."
+msgstr "JSTF tablica je predugačka."
 
 msgid "Japanese"
 msgstr "Japanski"
@@ -10541,8 +10541,8 @@ msgstr ""
 "Koji vrstu podrezivanja želiš za ovu pod-tablicu?"
 
 #, c-format
-msgid "Kerning subtable 3 says the glyph count is %d, but maxp says %d\n"
-msgstr "Treća pod-tablica podrezivanja kaže da je broj grafema %d, ali 'maxp' kaže %d\n"
+msgid "Kerning subtable 3 says the glyph count is %d, but maxp says %d"
+msgstr "Treća pod-tablica podrezivanja kaže da je broj grafema %d, ali 'maxp' kaže %d"
 
 msgid "Kerning values must be even"
 msgstr "Vrijednosti podrezivanja moraju biti jednake"
@@ -11266,12 +11266,12 @@ msgid "Lookup Type|Unspecified"
 msgstr "Neodređena"
 
 #, c-format
-msgid "Lookup index (%d) out of bounds in GPOS from JSTF table.\n"
-msgstr "Indeks tablice definicija (%d) izvan granica u GPOS-u JSTF tablice.\n"
+msgid "Lookup index (%d) out of bounds in GPOS from JSTF table."
+msgstr "Indeks tablice definicija (%d) izvan granica u GPOS-u JSTF tablice."
 
 #, c-format
-msgid "Lookup index (%d) out of bounds in GSUB from JSTF table.\n"
-msgstr "Indeks tablice definicija (%d) izvan granica u GSUB-u JSTF tablice.\n"
+msgid "Lookup index (%d) out of bounds in GSUB from JSTF table."
+msgstr "Indeks tablice definicija (%d) izvan granica u GSUB-u JSTF tablice."
 
 #, c-format
 msgid "Lookup information attached to unmarked glyph on line %d of %s"
@@ -11280,8 +11280,8 @@ msgstr "Informacije tablice definicije povezane na neoznačeni grafem u %d. retk
 msgid "Lookup name already used"
 msgstr "Naziv tablice definicija već postoji"
 
-msgid "Lookup out of bounds in feature table.\n"
-msgstr "Tablica definicija izvan granica u tablici font-funkcija.\n"
+msgid "Lookup out of bounds in feature table."
+msgstr "Tablica definicija izvan granica u tablici font-funkcija."
 
 #, c-format
 msgid "Lookup subtable %s (matched with %s)\n"
@@ -15951,8 +15951,8 @@ msgstr "Obavezne alternative varijacija"
 msgid "Required feature"
 msgstr "Obavezna font-funkcija"
 
-msgid "Required feature out of bounds in script table.\n"
-msgstr "Obavezna font-funkcija izvan granica u tablici pisama.\n"
+msgid "Required feature out of bounds in script table."
+msgstr "Obavezna font-funkcija izvan granica u tablici pisama."
 
 msgid "Reserved Bit 10"
 msgstr "Rezervirani bit 10"
@@ -18604,11 +18604,11 @@ msgstr "Pod-talblica"
 msgid "Subtable %.60s in glyph %.60s"
 msgstr "Pod-tablica %.60s u grafemu %.60s"
 
-msgid "Subtable extends beyond end of GPOS table\n"
-msgstr "Pod-tablica se proteže izvan kraja GPOS tablice\n"
+msgid "Subtable extends beyond end of GPOS table"
+msgstr "Pod-tablica se proteže izvan kraja GPOS tablice"
 
-msgid "Subtable extends beyond end of GSUB table\n"
-msgstr "Pod-tablica se proteže izvan kraja GSUB tablice\n"
+msgid "Subtable extends beyond end of GSUB table"
+msgstr "Pod-tablica se proteže izvan kraja GSUB tablice"
 
 msgid "Sum Around:"
 msgstr "Zbroj okolo:"
@@ -19156,8 +19156,8 @@ msgstr ""
 "u skladu s ranim Adobeovim pogrešnim tumačenjem\n"
 "standarda. Ne može se obraditi.\n"
 
-msgid "The 'size' feature of this font conforms to Adobe's early misinterpretation of the otf standard.\n"
-msgstr "Font-funkcija 'size' (veličina) u ovom fontu nije u skladu s ranim Adobeovim pogrešnim tumačenjem otf standarda.\n"
+msgid "The 'size' feature of this font conforms to Adobe's early misinterpretation of the otf standard."
+msgstr "Font-funkcija 'size' (veličina) u ovom fontu nije u skladu s ranim Adobeovim pogrešnim tumačenjem otf standarda."
 
 msgid "The AFM file contains metrics information that many word-processors will read when using a PostScript® font."
 msgstr "AFM datoteka sadrži informacije o metričnim podacima, koje će mnogi procesori za tekstove čitati prilikom upotrebe PostScript® fonta."
@@ -20095,12 +20095,12 @@ msgstr ""
 "(Za daljnje grafeme nećeš dobivati upozorenja.)"
 
 #, c-format
-msgid "The name parameter of the '%c%c%c%c' feature does not contain a valid name id.\n"
-msgstr "Parametar naziva '%c%c%c%c'-funkcije ne sadrži ispravnu ID-oznaku naziva.\n"
+msgid "The name parameter of the '%c%c%c%c' feature does not contain a valid name id."
+msgstr "Parametar naziva '%c%c%c%c'-funkcije ne sadrži ispravnu ID-oznaku naziva."
 
 #, c-format
-msgid "The name parameter of the '%c%c%c%c' feature has an unlikely version number %d.\n"
-msgstr "Parametar naziva '%c%c%c%c'-funkcije ima malo vjerojatni broj verzije %d.\n"
+msgid "The name parameter of the '%c%c%c%c' feature has an unlikely version number %d."
+msgstr "Parametar naziva '%c%c%c%c'-funkcije ima malo vjerojatni broj verzije %d."
 
 #, c-format
 msgid ""
@@ -20990,8 +20990,8 @@ msgstr ""
 "Imaš li takvo dopuštenje?"
 
 #, c-format
-msgid "This font, %s, has multiple GPOS 'size' features. I'm not sure how to interpret that. I shall pick one arbitrarily.\n"
-msgstr "Ovaj font, %s, ima višestruke GPOS 'size' funkcije. Interpretacija nije jasna, stoga će se odabrati jedna slučajno.\n"
+msgid "This font, %s, has multiple GPOS 'size' features. I'm not sure how to interpret that. I shall pick one arbitrarily."
+msgstr "Ovaj font, %s, ima višestruke GPOS 'size' funkcije. Interpretacija nije jasna, stoga će se odabrati jedna slučajno."
 
 msgid "This glyph can use a stem3 hint"
 msgstr "Ovaj grafem može koristiti 'stem3' kontrolu"
@@ -21636,8 +21636,8 @@ msgid "Too many entries in CharStrings dictionary \"%s"
 msgstr "Previše zapisa u 'CharStrings' rječniku \"%s"
 
 #, c-format
-msgid "Too many features %d\n"
-msgstr "Previše font-funkcija %d\n"
+msgid "Too many features %d"
+msgstr "Previše font-funkcija %d"
 
 msgid "Too many glyphs"
 msgstr "Previše grafema"
@@ -21649,16 +21649,16 @@ msgid "Too many layers"
 msgstr "Previše slojeva"
 
 #, c-format
-msgid "Too many lookups %d\n"
-msgstr "Previše tablica definicija %d\n"
+msgid "Too many lookups %d"
+msgstr "Previše tablica definicija %d"
 
 #, c-format
 msgid "Too many mapping data points specified in /BlendDesignMap for axis %s.\n"
 msgstr "Previše točaka podataka za mapiranje određeno u '/BlendDesignMap' za os %s.\n"
 
 #, c-format
-msgid "Too many scripts %d\n"
-msgstr "Previše pisama %d\n"
+msgid "Too many scripts %d"
+msgstr "Previše pisama %d"
 
 #, c-format
 msgid "Too many separation marks, starting at: %.20s..."
@@ -22130,17 +22130,17 @@ msgstr "Neočekivana gustoća"
 msgid "Unexpected encoding format in cff: %d\n"
 msgstr "Neočekivani format kodiranja u cff-u: %d\n"
 
-msgid "Unexpected end of file found in morx chain.\n"
-msgstr "Neočekivani kraj datoteke u 'morx' lancu.\n"
+msgid "Unexpected end of file found in morx chain."
+msgstr "Neočekivani kraj datoteke u 'morx' lancu."
 
 msgid "Unexpected end of file in GSUB ligature sub-table.\n"
 msgstr "Neočekivani kraj datoteke u GSUB pod-tablici ligatura.\n"
 
-msgid "Unexpected end of file in GSUB sub-table.\n"
-msgstr "Neočekivani kraj datoteke u GSUB pod-tablici.\n"
+msgid "Unexpected end of file in GSUB sub-table."
+msgstr "Neočekivani kraj datoteke u GSUB pod-tablici."
 
-msgid "Unexpected end of file in contextual chaining subtable.\n"
-msgstr "Neočekivani kraj datoteke u pod-tablici kontekstnog niza.\n"
+msgid "Unexpected end of file in contextual chaining subtable."
+msgstr "Neočekivani kraj datoteke u pod-tablici kontekstnog niza."
 
 #, c-format
 msgid "Unexpected end of file in feature definition on line %d of %s"
@@ -22321,12 +22321,12 @@ msgid "Unknown"
 msgstr "Nepoznato"
 
 #, c-format
-msgid "Unknown GPOS sub-table type: %d\n"
-msgstr "Nepoznata vrsta GPOS pod-tablice: %d\n"
+msgid "Unknown GPOS sub-table type: %d"
+msgstr "Nepoznata vrsta GPOS pod-tablice: %d"
 
 #, c-format
-msgid "Unknown GSUB sub-table type: %d\n"
-msgstr "Nepoznata vrsta GSUB pod-tablice: %d\n"
+msgid "Unknown GSUB sub-table type: %d"
+msgstr "Nepoznata vrsta GSUB pod-tablice: %d"
 
 msgid "Unknown Language"
 msgstr "Nepoznati jezik"

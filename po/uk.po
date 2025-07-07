@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-06 23:41+0300\n"
-"PO-Revision-Date: 2025-07-05 22:20\n"
+"POT-Creation-Date: 2025-07-07 19:14+0300\n"
+"PO-Revision-Date: 2025-07-07 16:00\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Language: uk_UA\n"
@@ -101,19 +101,19 @@ msgid " At least one reference to this glyph used point matching. That match is 
 msgstr " Принаймні одне посилання на цей гліф використовує відповідність точок. Цю відповідність тепер втрачено."
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad contextual chaining substitution table, ignored\n"
-msgstr " Помилкова таблиця контекстуальних ланцюгових підстановок, пропускаємо.\n"
+msgid " Bad contextual chaining substitution table, ignored"
+msgstr " Помилкова таблиця контекстуальних ланцюгових підстановок, пропускаємо."
 
-msgid " Bad contextual chaining table, ignored\n"
-msgstr " Помилкова таблиця контекстуальних ланцюжків, пропускаємо.\n"
-
-#. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad contextual substitution table, ignored\n"
-msgstr " Помилкова таблиця контекстуальних підстановок, пропускаємо.\n"
+msgid " Bad contextual chaining table, ignored"
+msgstr " Помилкова таблиця контекстуальних ланцюжків, пропускаємо."
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad contextual table, ignored\n"
-msgstr " Помилкова таблиця контекстів, пропускаємо.\n"
+msgid " Bad contextual substitution table, ignored"
+msgstr " Помилкова таблиця контекстуальних підстановок, пропускаємо."
+
+#. GT: This continues a multi-line error message, hence the leading space
+msgid " Bad contextual table, ignored"
+msgstr " Помилкова таблиця контекстів, пропускаємо."
 
 #. GT: This continues a multi-line error message, hence the leading space
 msgid " Bad cursive alignment table, ignored"
@@ -123,14 +123,14 @@ msgstr " Помилкова таблиця вирівнювання курсив
 msgid " Bad kerning class table, ignored"
 msgstr " Помилкова таблиця класів кернінґу, пропускаємо."
 
-msgid " Bad ligature table, ignored\n"
-msgstr " Помилкова таблиця лігатур, пропускаємо.\n"
+msgid " Bad ligature table, ignored"
+msgstr " Помилкова таблиця лігатур, пропускаємо."
 
 msgid " Bad mark attachment table, ignored"
 msgstr " Помилкова таблиця долучень позначок, пропускаємо."
 
-msgid " Bad multiple substitution table, ignored\n"
-msgstr " Помилкова таблиця кратних підстановок, пропускаємо.\n"
+msgid " Bad multiple substitution table, ignored"
+msgstr " Помилкова таблиця кратних підстановок, пропускаємо."
 
 #. GT: This continues a multi-line error message, hence the leading space
 msgid " Bad pairwise kerning table, ignored"
@@ -139,8 +139,8 @@ msgstr " Помилкова таблиця пар кернінґу, пропус
 msgid " Bad simple positioning table, ignored"
 msgstr " Помилкова таблиця простого розташування, пропускаємо."
 
-msgid " Bad simple substitution table, ignored\n"
-msgstr " Помилкова таблиця простих підстановок, пропускаємо.\n"
+msgid " Bad simple substitution table, ignored"
+msgstr " Помилкова таблиця простих підстановок, пропускаємо."
 
 #, c-format
 msgid " Curvature: %g"
@@ -2491,8 +2491,8 @@ msgstr "Помилкова назва гарнітури шрифту"
 msgid "Bad Font Name"
 msgstr "Помилкова назва шрифту"
 
-msgid "Bad GID in JSTF extenser table.\n"
-msgstr "Помилкове значення GID у таблиці розширення JSTF.\n"
+msgid "Bad GID in JSTF extenser table."
+msgstr "Помилкове значення GID у таблиці розширення JSTF."
 
 msgid "Bad Glyph Count"
 msgstr "Помилкова кількість гліфів"
@@ -2660,8 +2660,8 @@ msgstr "Помилкова обмежувальна рамка для %s.\n"
 msgid "Bad cidmap file"
 msgstr "Помилковий файл cidmap"
 
-msgid "Bad class count in contextual chaining sub-table.\n"
-msgstr "Помилкова кількість класів у контекстуальній ланцюговій таблиці.\n"
+msgid "Bad class count in contextual chaining sub-table."
+msgstr "Помилкова кількість класів у контекстуальній ланцюговій таблиці."
 
 #, c-format
 msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)\n"
@@ -2691,11 +2691,11 @@ msgstr "Помилкова контекстуальна або ланцюгов�
 msgid "Bad correction"
 msgstr "Помилкове виправлення"
 
-msgid "Bad count in context chaining sub-table.\n"
-msgstr "Помилкова кількість у контекстуальній ланцюговій підтаблиці.\n"
+msgid "Bad count in context chaining sub-table."
+msgstr "Помилкова кількість у контекстуальній ланцюговій підтаблиці."
 
-msgid "Bad count in contextual chaining sub-table.\n"
-msgstr "Помилкова кількість у контекстуальній ланцюговій підтаблиці.\n"
+msgid "Bad count in contextual chaining sub-table."
+msgstr "Помилкова кількість у контекстуальній ланцюговій підтаблиці."
 
 msgid "Bad count."
 msgstr "Помилкова кількість."
@@ -2799,8 +2799,8 @@ msgstr "Помилковий гліф (%d), його визначення про
 msgid "Bad glyph (%d), its definition extends beyond the space allowed for it\n"
 msgstr "Помилковий гліф (%d), його визначення продовжується поза відведеними для цього межами\n"
 
-msgid "Bad glyph count in mort table.\n"
-msgstr "Помилкова кількість гліфів у таблиці mort.\n"
+msgid "Bad glyph count in mort table."
+msgstr "Помилкова кількість гліфів у таблиці mort."
 
 msgid "Bad glyph name."
 msgstr "Помилкова назва гліфа."
@@ -2814,8 +2814,8 @@ msgstr "У підтаблиці коментарів до гліфів табл�
 msgid "Bad glyph reference in layer info.\n"
 msgstr "Помилкове посилання на гліф у відомостях щодо шару.\n"
 
-msgid "Bad glyph variant subtable of MATH table.\n"
-msgstr "Помилкова підтаблиця варіантів гліфів таблиці MATH.\n"
+msgid "Bad glyph variant subtable of MATH table."
+msgstr "Помилкова підтаблиця варіантів гліфів таблиці MATH."
 
 #, c-format
 msgid "Bad hex color spec: %s\n"
@@ -2844,7 +2844,7 @@ msgid "Bad kern pair: glyphs %d & %d must be less than %d\n"
 msgstr "Помилкова пара кернінґу: гліфи %d і %d мають бути менші за %d\n"
 
 #, c-format
-msgid "Bad kern pair: glyphs %d & %d mustn't be negative\n"
+msgid "Bad kern pair: glyphs %d & %d mustn't be negative"
 msgstr "Помилкова пара кернінґу: гліфи %d і %d не повинні бути від’ємними\n"
 
 #, c-format
@@ -2852,7 +2852,7 @@ msgid "Bad kern pair: glyphs %d & %d should have been < %d"
 msgstr "Помилкова пара кернінґу: гліфи %d і %d мають бути < %d"
 
 #, c-format
-msgid "Bad kern pair: glyphs at %d & %d are null\n"
+msgid "Bad kern pair: glyphs at %d & %d are null"
 msgstr "Помилкова пара кернінґу: гліфи %d і %d є порожніми\n"
 
 msgid "Bad language tag"
@@ -2865,12 +2865,12 @@ msgid "Bad ligature base table."
 msgstr "Помилкова основна таблиця лігатур."
 
 #, c-format
-msgid "Bad ligature component glyph. GID %d not less than %d (in ligature %d)\n"
-msgstr "Помилковий гліф компонента лігатури. GID %d не менше за %d (у лігатурі %d)\n"
+msgid "Bad ligature component glyph. GID %d not less than %d (in ligature %d)"
+msgstr "Помилковий гліф компонента лігатури. GID %d не менше за %d (у лігатурі %d)"
 
 #, c-format
-msgid "Bad ligature glyph. GID %d not less than %d\n"
-msgstr "Помилковий гліф лігатури. GID %d не менше за %d\n"
+msgid "Bad ligature glyph. GID %d not less than %d"
+msgstr "Помилковий гліф лігатури. GID %d не менше за %d"
 
 #, c-format
 msgid "Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
@@ -2881,12 +2881,12 @@ msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font
 msgstr "Помилкова таблиця фільтрування: формат=4 (%d/%d), перший=%d останній=%d загалом гліфів у шрифті=%d\n"
 
 #, c-format
-msgid "Bad lookup table: format=6, first=%d total glyphs in font=%d\n"
-msgstr "Помилкова таблиця фільтрування: формат=6, перший=%d загалом гліфів у шрифті=%d\n"
+msgid "Bad lookup table: format=6, first=%d total glyphs in font=%d"
+msgstr "Помилкова таблиця фільтрування: формат=6, перший=%d загалом гліфів у шрифті=%d"
 
 #, c-format
-msgid "Bad lookup table: format=8, first=%d cnt=%d total glyphs in font=%d\n"
-msgstr "Помилкова таблиця фільтрування: формат=8, перший=%d к-ть=%d загалом гліфів у шрифті=%d\n"
+msgid "Bad lookup table: format=8, first=%d cnt=%d total glyphs in font=%d"
+msgstr "Помилкова таблиця фільтрування: формат=8, перший=%d к-ть=%d загалом гліфів у шрифті=%d"
 
 msgid "Bad lookup type"
 msgstr "Помилковий тип фільтрування"
@@ -2897,8 +2897,8 @@ msgstr "Помилкове магічне число"
 msgid "Bad mark table."
 msgstr "Помилкова таблиця позначок."
 
-msgid "Bad mort ligature table. Not long enough\n"
-msgstr "Помилкова таблиця лігатур mort. Недостатня довжина.\n"
+msgid "Bad mort ligature table. Not long enough"
+msgstr "Помилкова таблиця лігатур mort. Недостатня довжина."
 
 #, c-format
 msgid "Bad name when parsing %s for unicode %x"
@@ -2953,8 +2953,8 @@ msgid "Bad replace pattern"
 msgstr "Помилковий шаблон заміни"
 
 #, c-format
-msgid "Bad reverse contextual chaining substitution glyph: %d is not less than %d\n"
-msgstr "Помилковий гліф зворотної контекстуальної ланцюгової підстановки: %d не менше за %d\n"
+msgid "Bad reverse contextual chaining substitution glyph: %d is not less than %d"
+msgstr "Помилковий гліф зворотної контекстуальної ланцюгової підстановки: %d не менше за %d"
 
 msgid "Bad rule"
 msgstr "Помилкове правило"
@@ -2993,8 +2993,8 @@ msgid "Bad subroutine INDEX in cff font.\n"
 msgstr "Помилкова підпрограма INDEX у шрифті cff.\n"
 
 #, c-format
-msgid "Bad substitution glyph: GID %d not less than %d\n"
-msgstr "Помилковий гліф підстановки: GID %d не менше за %d\n"
+msgid "Bad substitution glyph: GID %d not less than %d"
+msgstr "Помилковий гліф підстановки: GID %d не менше за %d"
 
 msgid "Bad tag"
 msgstr "Помилковий теґ"
@@ -6104,8 +6104,8 @@ msgstr ""
 "End IF\n"
 "Завершує послідовність команд IF або IF-ELSE"
 
-msgid "End of file found in JSTF table.\n"
-msgstr "У таблиці JSTF виявлено символ кінця файла.\n"
+msgid "End of file found in JSTF table."
+msgstr "У таблиці JSTF виявлено символ кінця файла."
 
 msgid "End of file found in coverage table."
 msgstr "Виявлено символ кінця файла у таблиці покриття."
@@ -6121,14 +6121,14 @@ msgstr "Під час читання закритого словника вия�
 msgid "End of file in %s table"
 msgstr "У таблиці %s виявлено символ завершення файла"
 
-msgid "End of file in context chaining sub-table.\n"
-msgstr "Кінець файла у контекстуальній ланцюговій підтаблиці.\n"
+msgid "End of file in context chaining sub-table."
+msgstr "Кінець файла у контекстуальній ланцюговій підтаблиці."
 
-msgid "End of file in context chaining subtable.\n"
-msgstr "Кінець файла у контекстуальній ланцюговій підтаблиці.\n"
+msgid "End of file in context chaining subtable."
+msgstr "Кінець файла у контекстуальній ланцюговій підтаблиці."
 
-msgid "End of file in feat table.\n"
-msgstr "У таблиці feat виявлено символ кінця файла.\n"
+msgid "End of file in feat table."
+msgstr "У таблиці feat виявлено символ кінця файла."
 
 #, c-format
 msgid "End of file in include on line %d of %s"
@@ -6875,8 +6875,8 @@ msgstr "_Ід. модифікації:"
 msgid "Feature file?"
 msgstr "Файл модифікацій?"
 
-msgid "Feature out of bounds in script table.\n"
-msgstr "Модифікація поза межами шрифту у таблиці скриптів.\n"
+msgid "Feature out of bounds in script table."
+msgstr "Модифікація поза межами шрифту у таблиці скриптів."
 
 msgid "Feature tags are limited to 4 letters"
 msgstr "Теґи модифікацій обмежено 4 літерами"
@@ -7889,20 +7889,20 @@ msgid "Glyph not in font"
 msgstr "Гліфа немає у шрифті"
 
 #, c-format
-msgid "Glyph out of bounds in 'lcar' table %d\n"
-msgstr "Гліф поза межами можливого діапазону у таблиці «lcar» %d\n"
+msgid "Glyph out of bounds in 'lcar' table %d"
+msgstr "Гліф поза межами можливого діапазону у таблиці «lcar» %d"
 
 #, c-format
 msgid "Glyph out of bounds in 'mort'/'morx' table %d\n"
 msgstr "Гліф поза межами можливого діапазону у таблиці «mort»/«morx» %d\n"
 
 #, c-format
-msgid "Glyph out of bounds in 'opbd' table %d\n"
-msgstr "Гліф поза межами можливого діапазону у таблиці «opbd» %d\n"
+msgid "Glyph out of bounds in 'opbd' table %d"
+msgstr "Гліф поза межами можливого діапазону у таблиці «opbd» %d"
 
 #, c-format
-msgid "Glyph out of bounds in 'prop' table %d\n"
-msgstr "Гліф поза межами можливого діапазону у таблиці «prop» %d\n"
+msgid "Glyph out of bounds in 'prop' table %d"
+msgstr "Гліф поза межами можливого діапазону у таблиці «prop» %d"
 
 msgid "Glyph too big"
 msgstr "Гліф занадто великий"
@@ -9649,8 +9649,8 @@ msgstr "Максимальне розширення JSTF з пріоритето
 msgid "JSTF shrinkage max at priority %d #%d for %c%c%c%c in %c%c%c%c"
 msgstr "Максимальне стискання JSTF з пріоритетом %d №%d для %c%c%c%c у %c%c%c%c"
 
-msgid "JSTF table is too long.\n"
-msgstr "Занадто довга таблиця JSTF.\n"
+msgid "JSTF table is too long."
+msgstr "Занадто довга таблиця JSTF."
 
 msgid "Japanese"
 msgstr "Японська"
@@ -9874,8 +9874,8 @@ msgstr ""
 "Який спосіб слід використати для цієї підтаблиці?"
 
 #, c-format
-msgid "Kerning subtable 3 says the glyph count is %d, but maxp says %d\n"
-msgstr "Відповідно до підтаблиці кернінґу 3 номер гліфа дорівнює %d, але згідно maxp максимальний номер — %d\n"
+msgid "Kerning subtable 3 says the glyph count is %d, but maxp says %d"
+msgstr "Відповідно до підтаблиці кернінґу 3 номер гліфа дорівнює %d, але згідно maxp максимальний номер — %d"
 
 msgid "Kerning values must be even"
 msgstr "Значення кернінґу мають бути парними"
@@ -10554,12 +10554,12 @@ msgid "Lookup Type|Unspecified"
 msgstr "Не вказано"
 
 #, c-format
-msgid "Lookup index (%d) out of bounds in GPOS from JSTF table.\n"
-msgstr "Номер фільтрування (%d) поза межами діапазону у GPOS з таблиці JSTF.\n"
+msgid "Lookup index (%d) out of bounds in GPOS from JSTF table."
+msgstr "Номер фільтрування (%d) поза межами діапазону у GPOS з таблиці JSTF."
 
 #, c-format
-msgid "Lookup index (%d) out of bounds in GSUB from JSTF table.\n"
-msgstr "Номер фільтрування (%d) поза межами діапазону у GSUB з таблиці JSTF.\n"
+msgid "Lookup index (%d) out of bounds in GSUB from JSTF table."
+msgstr "Номер фільтрування (%d) поза межами діапазону у GSUB з таблиці JSTF."
 
 #, c-format
 msgid "Lookup information attached to unmarked glyph on line %d of %s"
@@ -10568,8 +10568,8 @@ msgstr "До непозначеного гліфа долучено відомо
 msgid "Lookup name already used"
 msgstr "Фільтрування з такою назвою вже існує"
 
-msgid "Lookup out of bounds in feature table.\n"
-msgstr "Фільтрування поза межами діапазону у таблиці модифікацій.\n"
+msgid "Lookup out of bounds in feature table."
+msgstr "Фільтрування поза межами діапазону у таблиці модифікацій."
 
 #, c-format
 msgid "Lookup subtable %s (matched with %s)\n"
@@ -15206,8 +15206,8 @@ msgstr "Потрібні лігатури"
 msgid "Required feature"
 msgstr "Необхідна модифікація"
 
-msgid "Required feature out of bounds in script table.\n"
-msgstr "Потрібна модифікація поза межами шрифту у таблиці скриптів.\n"
+msgid "Required feature out of bounds in script table."
+msgstr "Потрібна модифікація поза межами шрифту у таблиці скриптів."
 
 msgid "Reserved Bit 10"
 msgstr "Зарезервований біт 10"
@@ -18098,11 +18098,11 @@ msgstr "Підтаблиця"
 msgid "Subtable %.60s in glyph %.60s"
 msgstr "Підтаблиця %.60s у гліфі %.60s"
 
-msgid "Subtable extends beyond end of GPOS table\n"
-msgstr "Підтаблиця поза межами таблиці GPOS\n"
+msgid "Subtable extends beyond end of GPOS table"
+msgstr "Підтаблиця поза межами таблиці GPOS"
 
-msgid "Subtable extends beyond end of GSUB table\n"
-msgstr "Підтаблиця поза межами таблиці GSUB\n"
+msgid "Subtable extends beyond end of GSUB table"
+msgstr "Підтаблиця поза межами таблиці GSUB"
 
 msgid "Sum Around:"
 msgstr "Сума:"
@@ -18593,8 +18593,8 @@ msgstr ""
 "початковій інтерпретації Adobe стандарту otf. Її обробка\n"
 "неможлива.\n"
 
-msgid "The 'size' feature of this font conforms to Adobe's early misinterpretation of the otf standard.\n"
-msgstr "Модифікація «size» цього шрифту відповідає помилковій початковій інтерпретації Adobe стандарту otf.\n"
+msgid "The 'size' feature of this font conforms to Adobe's early misinterpretation of the otf standard."
+msgstr "Модифікація «size» цього шрифту відповідає помилковій початковій інтерпретації Adobe стандарту otf."
 
 msgid "The AFM file contains metrics information that many word-processors will read when using a PostScript® font."
 msgstr "У файлі AFM містяться дані метрики, які використовуються багатьма текстовими процесорами у разі обробки шрифту PostScript®."
@@ -19440,12 +19440,12 @@ msgstr ""
 "(Це попередження не буде показано для наступних гліфів зі зміненими назвами.)"
 
 #, c-format
-msgid "The name parameter of the '%c%c%c%c' feature does not contain a valid name id.\n"
-msgstr "Для параметра назви модифікації «%c%c%c%c» не вказано коректного ідентифікатора назви.\n"
+msgid "The name parameter of the '%c%c%c%c' feature does not contain a valid name id."
+msgstr "Для параметра назви модифікації «%c%c%c%c» не вказано коректного ідентифікатора назви."
 
 #, c-format
-msgid "The name parameter of the '%c%c%c%c' feature has an unlikely version number %d.\n"
-msgstr "Для параметра назви модифікації «%c%c%c%c» вказано неймовірний номер версії, %d.\n"
+msgid "The name parameter of the '%c%c%c%c' feature has an unlikely version number %d."
+msgstr "Для параметра назви модифікації «%c%c%c%c» вказано неймовірний номер версії, %d."
 
 #, c-format
 msgid ""
@@ -20304,8 +20304,8 @@ msgstr ""
 "У вас є такий дозвіл?"
 
 #, c-format
-msgid "This font, %s, has multiple GPOS 'size' features. I'm not sure how to interpret that. I shall pick one arbitrarily.\n"
-msgstr "У цьому шрифті, %s, вказано декілька записів модифікацій GPOS «size». Програмі невідомий спосіб їх обробки. Запис буде вибрано довільним чином.\n"
+msgid "This font, %s, has multiple GPOS 'size' features. I'm not sure how to interpret that. I shall pick one arbitrarily."
+msgstr "У цьому шрифті, %s, вказано декілька записів модифікацій GPOS «size». Програмі невідомий спосіб їх обробки. Запис буде вибрано довільним чином."
 
 msgid "This glyph can use a stem3 hint"
 msgstr "У цьому гліфі можна використати гінт stem3"
@@ -20961,8 +20961,8 @@ msgid "Too many entries in CharStrings dictionary \"%s"
 msgstr "Занадто багато записів у словнику CharStrings «%s"
 
 #, c-format
-msgid "Too many features %d\n"
-msgstr "Занадто багато модифікацій, %d\n"
+msgid "Too many features %d"
+msgstr "Занадто багато модифікацій, %d"
 
 msgid "Too many glyphs"
 msgstr "Занадто багато гліфів"
@@ -20974,16 +20974,16 @@ msgid "Too many layers"
 msgstr "Занадто багато шарів"
 
 #, c-format
-msgid "Too many lookups %d\n"
-msgstr "Занадто багато фільтрувань %d\n"
+msgid "Too many lookups %d"
+msgstr "Занадто багато фільтрувань %d"
 
 #, c-format
 msgid "Too many mapping data points specified in /BlendDesignMap for axis %s.\n"
 msgstr "У /BlendDesignMap для вісі %s задано занадто багато точок відображення даних.\n"
 
 #, c-format
-msgid "Too many scripts %d\n"
-msgstr "Занадто багато скриптів, %d\n"
+msgid "Too many scripts %d"
+msgstr "Занадто багато скриптів, %d"
 
 #, c-format
 msgid "Too many separation marks, starting at: %.20s..."
@@ -21424,17 +21424,17 @@ msgstr "Неочікувана щільність"
 msgid "Unexpected encoding format in cff: %d\n"
 msgstr "Неочікуваний формат кодування у cff: %d\n"
 
-msgid "Unexpected end of file found in morx chain.\n"
-msgstr "Несподіваний кінець файла у ланцюжку morx.\n"
+msgid "Unexpected end of file found in morx chain."
+msgstr "Несподіваний кінець файла у ланцюжку morx."
 
 msgid "Unexpected end of file in GSUB ligature sub-table.\n"
 msgstr "Несподіваний кінець файла у підтаблиці лігатур GSUB.\n"
 
-msgid "Unexpected end of file in GSUB sub-table.\n"
-msgstr "Несподіваний кінець файла у підтаблиці GSUB.\n"
+msgid "Unexpected end of file in GSUB sub-table."
+msgstr "Несподіваний кінець файла у підтаблиці GSUB."
 
-msgid "Unexpected end of file in contextual chaining subtable.\n"
-msgstr "Неочікуваний кінець файла у контекстуальні ланцюговій підтаблиці.\n"
+msgid "Unexpected end of file in contextual chaining subtable."
+msgstr "Неочікуваний кінець файла у контекстуальні ланцюговій підтаблиці."
 
 #, c-format
 msgid "Unexpected end of file in feature definition on line %d of %s"
@@ -21607,12 +21607,12 @@ msgid "Unknown"
 msgstr "Невідомо"
 
 #, c-format
-msgid "Unknown GPOS sub-table type: %d\n"
-msgstr "Невідомий тип підтаблиці GPOS: %d\n"
+msgid "Unknown GPOS sub-table type: %d"
+msgstr "Невідомий тип підтаблиці GPOS: %d"
 
 #, c-format
-msgid "Unknown GSUB sub-table type: %d\n"
-msgstr "Невідомий тип підтаблиці GSUB: %d\n"
+msgid "Unknown GSUB sub-table type: %d"
+msgstr "Невідомий тип підтаблиці GSUB: %d"
 
 msgid "Unknown Language"
 msgstr "Невідома мова"

@@ -2082,8 +2082,8 @@ msgstr "不當的邊界框用於 %s。\n"
 msgid "Bad cidmap file"
 msgstr "不當的 cidmap 檔案"
 
-msgid "Bad class count in contextual chaining sub-table.\n"
-msgstr "在上下文鏈接子表格中不當的類別計數。\n"
+msgid "Bad class count in contextual chaining sub-table."
+msgstr "在上下文鏈接子表格中不當的類別計數。"
 
 #, c-format
 msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)\n"
@@ -2107,11 +2107,11 @@ msgstr "不當的上下文或鏈接子表格。字圖 %d 超出範圍 [0,%d)\n"
 msgid "Bad correction"
 msgstr "不當的校正"
 
-msgid "Bad count in context chaining sub-table.\n"
-msgstr "在狀態組合鏈接子表格中不當的計數。\n"
+msgid "Bad count in context chaining sub-table."
+msgstr "在狀態組合鏈接子表格中不當的計數。"
 
-msgid "Bad count in contextual chaining sub-table.\n"
-msgstr "在上下文鏈接子表格中不當的計數。\n"
+msgid "Bad count in contextual chaining sub-table."
+msgstr "在上下文鏈接子表格中不當的計數。"
 
 msgid "Bad count."
 msgstr "不當的計數。"
@@ -2190,8 +2190,8 @@ msgstr "不當的字圖 (%d)，它的定義延展於 glyf 表格結束之後\n"
 msgid "Bad glyph (%d), its definition extends beyond the space allowed for it\n"
 msgstr "不當的字圖 (%d)，它的定義延展於它所允許的空間之後\n"
 
-msgid "Bad glyph count in mort table.\n"
-msgstr "在 mort 表格中不當的字圖計數。\n"
+msgid "Bad glyph count in mort table."
+msgstr "在 mort 表格中不當的字圖計數。"
 
 msgid "Bad glyph range specified in color subtable of PfEd table\n"
 msgstr "在 PfEd 表格的顏色子表格中指定不當的字圖範圍\n"
@@ -2199,8 +2199,8 @@ msgstr "在 PfEd 表格的顏色子表格中指定不當的字圖範圍\n"
 msgid "Bad glyph range specified in glyph comment subtable of PfEd table\n"
 msgstr "在 PfEd 表格的註釋子表格中指定不當的字圖範圍\n"
 
-msgid "Bad glyph variant subtable of MATH table.\n"
-msgstr "數學表格的不當字圖變體子表格。\n"
+msgid "Bad glyph variant subtable of MATH table."
+msgstr "數學表格的不當字圖變體子表格。"
 
 #, c-format
 msgid "Bad hex color spec: %s\n"
@@ -2242,12 +2242,12 @@ msgid "Bad ligature base table."
 msgstr "不當的連體字基底表格。"
 
 #, c-format
-msgid "Bad ligature component glyph. GID %d not less than %d (in ligature %d)\n"
-msgstr "不當的連體字成份字圖。GID %d 未少於 %d (在連體字 %d 中)\n"
+msgid "Bad ligature component glyph. GID %d not less than %d (in ligature %d)"
+msgstr "不當的連體字成份字圖。GID %d 未少於 %d (在連體字 %d 中)"
 
 #, c-format
-msgid "Bad ligature glyph. GID %d not less than %d\n"
-msgstr "不當的連體字字圖。GID %d 未少於 %d\n"
+msgid "Bad ligature glyph. GID %d not less than %d"
+msgstr "不當的連體字字圖。GID %d 未少於 %d"
 
 #, c-format
 msgid "Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
@@ -2258,12 +2258,12 @@ msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font
 msgstr "不當的查找表：格式=4 (%d/%d)，首筆=%d 末筆=%d 字型中字圖總計=%d\n"
 
 #, c-format
-msgid "Bad lookup table: format=6, first=%d total glyphs in font=%d\n"
-msgstr "不當的查找表：格式=6, 首筆=%d 字型中字圖總計=%d\n"
+msgid "Bad lookup table: format=6, first=%d total glyphs in font=%d"
+msgstr "不當的查找表：格式=6, 首筆=%d 字型中字圖總計=%d"
 
 #, c-format
-msgid "Bad lookup table: format=8, first=%d cnt=%d total glyphs in font=%d\n"
-msgstr "不當的查找表：格式=8, 首筆=%d 計數=%d 字型中字圖總計=%d\n"
+msgid "Bad lookup table: format=8, first=%d cnt=%d total glyphs in font=%d"
+msgstr "不當的查找表：格式=8, 首筆=%d 計數=%d 字型中字圖總計=%d"
 
 msgid "Bad lookup type"
 msgstr "不當的查找型態"
@@ -2274,8 +2274,8 @@ msgstr "不當的魔術字碼"
 msgid "Bad mark table."
 msgstr "不當的標記表格。"
 
-msgid "Bad mort ligature table. Not long enough\n"
-msgstr "不當的 mort 連體字表格。長度不夠\n"
+msgid "Bad mort ligature table. Not long enough"
+msgstr "不當的 mort 連體字表格。長度不夠"
 
 #, c-format
 msgid "Bad name when parsing %s for unicode %x"
@@ -2327,8 +2327,8 @@ msgid "Bad replace pattern"
 msgstr "不當的置換胚騰"
 
 #, c-format
-msgid "Bad reverse contextual chaining substitution glyph: %d is not less than %d\n"
-msgstr "不當的反向上下文鏈接替代字圖：%d 未少於 %d\n"
+msgid "Bad reverse contextual chaining substitution glyph: %d is not less than %d"
+msgstr "不當的反向上下文鏈接替代字圖：%d 未少於 %d"
 
 msgid "Bad script tag"
 msgstr "不當的文字標記"
@@ -2353,8 +2353,8 @@ msgid "Bad subroutine INDEX in cff font.\n"
 msgstr "在 cff 字型中的不當副常式 INDEX 。\n"
 
 #, c-format
-msgid "Bad substitution glyph: GID %d not less than %d\n"
-msgstr "不當的替代字圖：GID %d 未少於 %d\n"
+msgid "Bad substitution glyph: GID %d not less than %d"
+msgstr "不當的替代字圖：GID %d 未少於 %d"
 
 msgid "Bad tag"
 msgstr "不當的標記"
@@ -5000,8 +5000,8 @@ msgstr "編碼值不在字型中"
 msgid "Encoding|Glyph Order"
 msgstr "字圖排序"
 
-msgid "End of file found in JSTF table.\n"
-msgstr "在 JSTF 表格中找到檔案結尾。\n"
+msgid "End of file found in JSTF table."
+msgstr "在 JSTF 表格中找到檔案結尾。"
 
 msgid "End of file found in coverage table."
 msgstr "在覆蓋表格中找到檔案結尾。"
@@ -5010,14 +5010,14 @@ msgstr "在覆蓋表格中找到檔案結尾。"
 msgid "End of file in %s table"
 msgstr "在 %s 表格中出現檔案結尾"
 
-msgid "End of file in context chaining sub-table.\n"
-msgstr "在狀態組合鏈接子表格中出現檔案結尾。\n"
+msgid "End of file in context chaining sub-table."
+msgstr "在狀態組合鏈接子表格中出現檔案結尾。"
 
-msgid "End of file in context chaining subtable.\n"
-msgstr "在狀態組合鏈接子表格中出現檔案結尾。\n"
+msgid "End of file in context chaining subtable."
+msgstr "在狀態組合鏈接子表格中出現檔案結尾。"
 
-msgid "End of file in feat table.\n"
-msgstr "在 feat 表格中出現檔案結尾。\n"
+msgid "End of file in feat table."
+msgstr "在 feat 表格中出現檔案結尾。"
 
 #, c-format
 msgid "End of file in include on line %d of %s"
@@ -5576,8 +5576,8 @@ msgstr "特徵識別號(_I)："
 msgid "Feature file?"
 msgstr "特徵檔案？"
 
-msgid "Feature out of bounds in script table.\n"
-msgstr "特徵超出文字表格邊界。\n"
+msgid "Feature out of bounds in script table."
+msgstr "特徵超出文字表格邊界。"
 
 msgid "Feature tags are limited to 4 letters"
 msgstr "特徵標記被限制為 4 個字母"
@@ -6372,20 +6372,20 @@ msgid "Glyph not in font"
 msgstr "字圖不在字型中"
 
 #, c-format
-msgid "Glyph out of bounds in 'lcar' table %d\n"
-msgstr "在「lcar」表格 %d 中的字圖超出邊界\n"
+msgid "Glyph out of bounds in 'lcar' table %d"
+msgstr "在「lcar」表格 %d 中的字圖超出邊界"
 
 #, c-format
 msgid "Glyph out of bounds in 'mort'/'morx' table %d\n"
 msgstr "在「mort」/「morx」表格 %d 中的字圖超出邊界\n"
 
 #, c-format
-msgid "Glyph out of bounds in 'opbd' table %d\n"
-msgstr "在「opbd」表格 %d 中的字圖超出邊界\n"
+msgid "Glyph out of bounds in 'opbd' table %d"
+msgstr "在「opbd」表格 %d 中的字圖超出邊界"
 
 #, c-format
-msgid "Glyph out of bounds in 'prop' table %d\n"
-msgstr "在「prop」表格 %d 中的字圖超出邊界\n"
+msgid "Glyph out of bounds in 'prop' table %d"
+msgstr "在「prop」表格 %d 中的字圖超出邊界"
 
 msgid "Glyph too big"
 msgstr "字圖太大"
@@ -7535,8 +7535,8 @@ msgstr "JIS83 形式"
 msgid "JIS90 Forms"
 msgstr "JIS90 形式"
 
-msgid "JSTF table is too long.\n"
-msgstr "JSTF 表格太長。\n"
+msgid "JSTF table is too long."
+msgstr "JSTF 表格太長。"
 
 msgid "Japanese"
 msgstr "日語"
@@ -7686,8 +7686,8 @@ msgid "Kerning is likely to fail on Windows"
 msgstr "字距微調似乎會在 Windows 中失敗"
 
 #, c-format
-msgid "Kerning subtable 3 says the glyph count is %d, but maxp says %d\n"
-msgstr "字距微調子表格 3 表示字圖計數是 %d，但是 maxp 表示為 %d\n"
+msgid "Kerning subtable 3 says the glyph count is %d, but maxp says %d"
+msgstr "字距微調子表格 3 表示字圖計數是 %d，但是 maxp 表示為 %d"
 
 msgid "Kerning values must be even"
 msgstr "字距微調值必須是偶數"
@@ -8224,8 +8224,8 @@ msgstr "未指定的"
 msgid "Lookup name already used"
 msgstr "查找名稱已被使用"
 
-msgid "Lookup out of bounds in feature table.\n"
-msgstr "查找超出特徵表格邊界。\n"
+msgid "Lookup out of bounds in feature table."
+msgstr "查找超出特徵表格邊界。"
 
 #, c-format
 msgid "Lookup subtable %s (matched with %s)\n"
@@ -11866,8 +11866,8 @@ msgstr "必要變體替代"
 msgid "Required feature"
 msgstr "必要的特徵"
 
-msgid "Required feature out of bounds in script table.\n"
-msgstr "必要特徵超出文字表格邊界。\n"
+msgid "Required feature out of bounds in script table."
+msgstr "必要特徵超出文字表格邊界。"
 
 msgid "Reserved Bit 10"
 msgstr "保留位元 10"
@@ -14048,11 +14048,11 @@ msgstr "子表格"
 msgid "Subtable %.60s in glyph %.60s"
 msgstr "子表格 %.60s 於字圖 %.60s"
 
-msgid "Subtable extends beyond end of GPOS table\n"
-msgstr "子表格延展至 GPOS 表格結束之後\n"
+msgid "Subtable extends beyond end of GPOS table"
+msgstr "子表格延展至 GPOS 表格結束之後"
 
-msgid "Subtable extends beyond end of GSUB table\n"
-msgstr "子表格延展至 GSUB 表格結束之後\n"
+msgid "Subtable extends beyond end of GSUB table"
+msgstr "子表格延展至 GSUB 表格結束之後"
 
 msgid "Sum Around:"
 msgstr "周圍總和："
@@ -14459,8 +14459,8 @@ msgstr "「字距微調」表格支援在子表格中最多有 10920 對字距�
 msgid "The 'sfnt' format is currently limited to 65535 glyphs, and your font has %d of them."
 msgstr "「sfnt」格式目前限制為 65535 個字圖，而您的字型有 %d 個。"
 
-msgid "The 'size' feature of this font conforms to Adobe's early misinterpretation of the otf standard.\n"
-msgstr "這個字型的「尺寸」特徵符合 Adobe 早期錯誤解讀的 otf 標準。\n"
+msgid "The 'size' feature of this font conforms to Adobe's early misinterpretation of the otf standard."
+msgstr "這個字型的「尺寸」特徵符合 Adobe 早期錯誤解讀的 otf 標準。"
 
 msgid "The AFM file contains metrics information that many word-processors will read when using a PostScript® font."
 msgstr "AFM 檔案含有字框，這是許多文書處理程式使用 PostScript® 字型時，將會讀取的資訊。"
@@ -14979,12 +14979,12 @@ msgid "The name FontForge would like to assign to this glyph, %.30s, is already 
 msgstr "FontForge 想要指派到這個字圖 %.30s 的名稱, 已被不同的字圖所使用。"
 
 #, c-format
-msgid "The name parameter of the '%c%c%c%c' feature does not contain a valid name id.\n"
-msgstr "「%c%c%c%c」特徵的名稱參數不包含有效名稱識別號。\n"
+msgid "The name parameter of the '%c%c%c%c' feature does not contain a valid name id."
+msgstr "「%c%c%c%c」特徵的名稱參數不包含有效名稱識別號。"
 
 #, c-format
-msgid "The name parameter of the '%c%c%c%c' feature has an unlikely version number %d.\n"
-msgstr "「%c%c%c%c」特徵的名稱參數具有不太可能的版本編號 %d。\n"
+msgid "The name parameter of the '%c%c%c%c' feature has an unlikely version number %d."
+msgstr "「%c%c%c%c」特徵的名稱參數具有不太可能的版本編號 %d。"
 
 msgid "The number of em-units by which an arrow key will move a selected point"
 msgstr "方向鍵將會移動已選取點的 em-units 數量"
@@ -15873,8 +15873,8 @@ msgid "Too many entries in CharStrings dictionary \"%s"
 msgstr "太多條目在 CharStrings 字典中 \"%s"
 
 #, c-format
-msgid "Too many features %d\n"
-msgstr "太多特徵 %d\n"
+msgid "Too many features %d"
+msgstr "太多特徵 %d"
 
 msgid "Too many glyphs"
 msgstr "太多字圖"
@@ -15886,12 +15886,12 @@ msgid "Too many layers"
 msgstr "太多圖層"
 
 #, c-format
-msgid "Too many lookups %d\n"
-msgstr "太多查找 %d\n"
+msgid "Too many lookups %d"
+msgstr "太多查找 %d"
 
 #, c-format
-msgid "Too many scripts %d\n"
-msgstr "太多文字 %d\n"
+msgid "Too many scripts %d"
+msgstr "太多文字 %d"
 
 #, c-format
 msgid "Too many subroutine calls in %s\n"
@@ -16237,17 +16237,17 @@ msgstr "未預期的密度"
 msgid "Unexpected encoding format in cff: %d\n"
 msgstr "在 cff 中未預期的編碼格式：%d\n"
 
-msgid "Unexpected end of file found in morx chain.\n"
-msgstr "在 morx 鏈接中找到未預期的檔案結束。\n"
+msgid "Unexpected end of file found in morx chain."
+msgstr "在 morx 鏈接中找到未預期的檔案結束。"
 
 msgid "Unexpected end of file in GSUB ligature sub-table.\n"
 msgstr "在 GSUB 連體字子表格中出現未預期的檔案結束。\n"
 
-msgid "Unexpected end of file in GSUB sub-table.\n"
-msgstr "在 GSUB 子表格中未預期的檔案結束。\n"
+msgid "Unexpected end of file in GSUB sub-table."
+msgstr "在 GSUB 子表格中未預期的檔案結束。"
 
-msgid "Unexpected end of file in contextual chaining subtable.\n"
-msgstr "在上下文鏈接子表格中未預期的檔案結束。\n"
+msgid "Unexpected end of file in contextual chaining subtable."
+msgstr "在上下文鏈接子表格中未預期的檔案結束。"
 
 msgid "Unexpected error"
 msgstr "非預期錯誤"
@@ -16368,12 +16368,12 @@ msgid "Unknown"
 msgstr "不明的"
 
 #, c-format
-msgid "Unknown GPOS sub-table type: %d\n"
-msgstr "不明的 GPOS 子表格型態：%d\n"
+msgid "Unknown GPOS sub-table type: %d"
+msgstr "不明的 GPOS 子表格型態：%d"
 
 #, c-format
-msgid "Unknown GSUB sub-table type: %d\n"
-msgstr "不明的 GSUB 子表格型態：%d\n"
+msgid "Unknown GSUB sub-table type: %d"
+msgstr "不明的 GSUB 子表格型態：%d"
 
 msgid "Unknown Language"
 msgstr "未知的語言"

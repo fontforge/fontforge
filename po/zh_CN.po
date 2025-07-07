@@ -22,8 +22,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-06 23:41+0300\n"
-"PO-Revision-Date: 2025-07-05 22:20\n"
+"POT-Creation-Date: 2025-07-07 19:14+0300\n"
+"PO-Revision-Date: 2025-07-07 16:00\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Language: zh_CN\n"
@@ -128,19 +128,19 @@ msgid " At least one reference to this glyph used point matching. That match is 
 msgstr " 至少有一个对此字形的引用使用了点匹配。该匹配现已过期。"
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad contextual chaining substitution table, ignored\n"
+msgid " Bad contextual chaining substitution table, ignored"
 msgstr " 错误的上下文链式替换表，已忽略"
 
-msgid " Bad contextual chaining table, ignored\n"
+msgid " Bad contextual chaining table, ignored"
 msgstr " 错误的上下文链式表，已忽略"
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad contextual substitution table, ignored\n"
+msgid " Bad contextual substitution table, ignored"
 msgstr "错误的上下文替换表，已忽略"
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad contextual table, ignored\n"
-msgstr " 错误的上下文表，已忽略\n"
+msgid " Bad contextual table, ignored"
+msgstr " 错误的上下文表，已忽略"
 
 #. GT: This continues a multi-line error message, hence the leading space
 msgid " Bad cursive alignment table, ignored"
@@ -150,14 +150,14 @@ msgstr " 错误的草书对齐表，已忽略"
 msgid " Bad kerning class table, ignored"
 msgstr " 字偶距类表有误，已忽略"
 
-msgid " Bad ligature table, ignored\n"
-msgstr " 连字表不正确，已忽略\n"
+msgid " Bad ligature table, ignored"
+msgstr " 连字表不正确，已忽略"
 
 msgid " Bad mark attachment table, ignored"
 msgstr " 标记附件表不对，忽略之"
 
-msgid " Bad multiple substitution table, ignored\n"
-msgstr " 错误的多重替换表，已忽略\n"
+msgid " Bad multiple substitution table, ignored"
+msgstr " 错误的多重替换表，已忽略"
 
 #. GT: This continues a multi-line error message, hence the leading space
 msgid " Bad pairwise kerning table, ignored"
@@ -166,8 +166,8 @@ msgstr " 错误的成对字偶距表，已忽略"
 msgid " Bad simple positioning table, ignored"
 msgstr " 错误的简单定位表，忽略"
 
-msgid " Bad simple substitution table, ignored\n"
-msgstr " 错误的简单替换表，已忽略\n"
+msgid " Bad simple substitution table, ignored"
+msgstr " 错误的简单替换表，已忽略"
 
 #, c-format
 msgid " Curvature: %g"
@@ -2702,7 +2702,7 @@ msgstr "错误的字族名称"
 msgid "Bad Font Name"
 msgstr "错误字体名"
 
-msgid "Bad GID in JSTF extenser table.\n"
+msgid "Bad GID in JSTF extenser table."
 msgstr "JSTF 扩展器表中的 GID 错误。"
 
 msgid "Bad Glyph Count"
@@ -2871,7 +2871,7 @@ msgstr "%s 的边界框错误。"
 msgid "Bad cidmap file"
 msgstr "错误的 cidmap 文件"
 
-msgid "Bad class count in contextual chaining sub-table.\n"
+msgid "Bad class count in contextual chaining sub-table."
 msgstr "上下文链式子表中的类别计数错误。"
 
 #, c-format
@@ -2902,10 +2902,10 @@ msgstr "上下文或链式子表错误。字形 %d 超出范围 [0,%d)"
 msgid "Bad correction"
 msgstr "错误的修正"
 
-msgid "Bad count in context chaining sub-table.\n"
+msgid "Bad count in context chaining sub-table."
 msgstr "上下文链式子表中的计数错误。"
 
-msgid "Bad count in contextual chaining sub-table.\n"
+msgid "Bad count in contextual chaining sub-table."
 msgstr "上下文链式子表中的计数错误。"
 
 msgid "Bad count."
@@ -3010,8 +3010,8 @@ msgstr "不当字形（%d），其定义超出了字形表的末尾"
 msgid "Bad glyph (%d), its definition extends beyond the space allowed for it\n"
 msgstr "错误字形 (%d)，其定义超出了允许的空间"
 
-msgid "Bad glyph count in mort table.\n"
-msgstr "mort 表中的字形计数错误。\n"
+msgid "Bad glyph count in mort table."
+msgstr "mort 表中的字形计数错误。"
 
 msgid "Bad glyph name."
 msgstr "错误的字形名称。"
@@ -3025,8 +3025,8 @@ msgstr "PfEd 表的字形注释子表中指定的字形范围不正确\n"
 msgid "Bad glyph reference in layer info.\n"
 msgstr "图层信息中的字形引用不正确。\n"
 
-msgid "Bad glyph variant subtable of MATH table.\n"
-msgstr "MATH表中不好的字形变差子表。\n"
+msgid "Bad glyph variant subtable of MATH table."
+msgstr "MATH表中不好的字形变差子表。"
 
 #, c-format
 msgid "Bad hex color spec: %s\n"
@@ -3055,7 +3055,7 @@ msgid "Bad kern pair: glyphs %d & %d must be less than %d\n"
 msgstr "错误的字偶对：字形 %d 和 %d 必须小于 %d\n"
 
 #, c-format
-msgid "Bad kern pair: glyphs %d & %d mustn't be negative\n"
+msgid "Bad kern pair: glyphs %d & %d mustn't be negative"
 msgstr "错误的字偶对：字形 %d 和 %d 不能为负\n"
 
 #, c-format
@@ -3063,7 +3063,7 @@ msgid "Bad kern pair: glyphs %d & %d should have been < %d"
 msgstr "错误的字偶对：字形 %d 和 %d 应该是 < %d"
 
 #, c-format
-msgid "Bad kern pair: glyphs at %d & %d are null\n"
+msgid "Bad kern pair: glyphs at %d & %d are null"
 msgstr "错误的字偶对：%d 和 %d 处的字形为空\n"
 
 msgid "Bad language tag"
@@ -3076,12 +3076,12 @@ msgid "Bad ligature base table."
 msgstr "连字基表不正确。"
 
 #, c-format
-msgid "Bad ligature component glyph. GID %d not less than %d (in ligature %d)\n"
-msgstr "错误的连字部件字形。GID %d 不小于 %d（在连字 %d 中）\n"
+msgid "Bad ligature component glyph. GID %d not less than %d (in ligature %d)"
+msgstr "错误的连字部件字形。GID %d 不小于 %d（在连字 %d 中）"
 
 #, c-format
-msgid "Bad ligature glyph. GID %d not less than %d\n"
-msgstr "错误的连字字形。GID %d 不小于 %d\n"
+msgid "Bad ligature glyph. GID %d not less than %d"
+msgstr "错误的连字字形。GID %d 不小于 %d"
 
 #, c-format
 msgid "Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
@@ -3092,12 +3092,12 @@ msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font
 msgstr "错误的查找表：format=4 (%d/%d)，first=%d last=%d 字体中的总字形=%d\n"
 
 #, c-format
-msgid "Bad lookup table: format=6, first=%d total glyphs in font=%d\n"
-msgstr "错误的查找表：format=6，first=%d 字体中的总字形=%d\n"
+msgid "Bad lookup table: format=6, first=%d total glyphs in font=%d"
+msgstr "错误的查找表：format=6，first=%d 字体中的总字形=%d"
 
 #, c-format
-msgid "Bad lookup table: format=8, first=%d cnt=%d total glyphs in font=%d\n"
-msgstr "错误的查找表：format=8，first=%d cnt=%d 字体中的总字形=%d\n"
+msgid "Bad lookup table: format=8, first=%d cnt=%d total glyphs in font=%d"
+msgstr "错误的查找表：format=8，first=%d cnt=%d 字体中的总字形=%d"
 
 msgid "Bad lookup type"
 msgstr "错误的查找类型"
@@ -3108,7 +3108,7 @@ msgstr "错误魔法数字"
 msgid "Bad mark table."
 msgstr "不当标记表。"
 
-msgid "Bad mort ligature table. Not long enough\n"
+msgid "Bad mort ligature table. Not long enough"
 msgstr "MORT 连字表错误。 不够长"
 
 #, c-format
@@ -3168,7 +3168,7 @@ msgid "Bad replace pattern"
 msgstr "错误的替代模板"
 
 #, c-format
-msgid "Bad reverse contextual chaining substitution glyph: %d is not less than %d\n"
+msgid "Bad reverse contextual chaining substitution glyph: %d is not less than %d"
 msgstr "错误的逆向上下文链式替换字形：%d 不小于 %d"
 
 msgid "Bad rule"
@@ -3210,8 +3210,8 @@ msgid "Bad subroutine INDEX in cff font.\n"
 msgstr "cff 字体中的子例程 INDEX 不正确。\n"
 
 #, c-format
-msgid "Bad substitution glyph: GID %d not less than %d\n"
-msgstr "错误的替换字形：GID %d 不小于 %d\n"
+msgid "Bad substitution glyph: GID %d not less than %d"
+msgstr "错误的替换字形：GID %d 不小于 %d"
 
 msgid "Bad tag"
 msgstr "错误的标签"
@@ -6761,8 +6761,8 @@ msgstr ""
 "结束 IF（EIF）\n"
 "结束 IF 或 IF-ELSE 序列"
 
-msgid "End of file found in JSTF table.\n"
-msgstr "JSTF表中找到文件结束符号。\n"
+msgid "End of file found in JSTF table."
+msgstr "JSTF表中找到文件结束符号。"
 
 msgid "End of file found in coverage table."
 msgstr "在覆盖表中发现文件终止。"
@@ -6778,14 +6778,14 @@ msgstr "读取私有字典时遇到文件结尾。\n"
 msgid "End of file in %s table"
 msgstr " %s 表中文件结束符号"
 
-msgid "End of file in context chaining sub-table.\n"
+msgid "End of file in context chaining sub-table."
 msgstr "上下文链式子表中出现文件终止。"
 
-msgid "End of file in context chaining subtable.\n"
-msgstr "上下文链式子表中出现文件终止。\n"
+msgid "End of file in context chaining subtable."
+msgstr "上下文链式子表中出现文件终止。"
 
-msgid "End of file in feat table.\n"
-msgstr "feat table文件末尾。\n"
+msgid "End of file in feat table."
+msgstr "feat table文件末尾。"
 
 #, c-format
 msgid "End of file in include on line %d of %s"
@@ -7560,8 +7560,8 @@ msgstr "特征标识(_I):"
 msgid "Feature file?"
 msgstr "特征文件?"
 
-msgid "Feature out of bounds in script table.\n"
-msgstr "文字表中特征超出范围.\n"
+msgid "Feature out of bounds in script table."
+msgstr "文字表中特征超出范围."
 
 msgid "Feature tags are limited to 4 letters"
 msgstr "特征标签只限4个字符"
@@ -8699,20 +8699,20 @@ msgid "Glyph not in font"
 msgstr "字形不在字体中"
 
 #, c-format
-msgid "Glyph out of bounds in 'lcar' table %d\n"
-msgstr "'lcar' 表 %d 中字形超出边界\n"
+msgid "Glyph out of bounds in 'lcar' table %d"
+msgstr "'lcar' 表 %d 中字形超出边界"
 
 #, c-format
 msgid "Glyph out of bounds in 'mort'/'morx' table %d\n"
 msgstr "'mort'/'morx' 表 %d 中字形超出边界\n"
 
 #, c-format
-msgid "Glyph out of bounds in 'opbd' table %d\n"
-msgstr "'opbd' 表 %d 中字形超出边界\n"
+msgid "Glyph out of bounds in 'opbd' table %d"
+msgstr "'opbd' 表 %d 中字形超出边界"
 
 #, c-format
-msgid "Glyph out of bounds in 'prop' table %d\n"
-msgstr "'prop' 表 %d 中字形超出边界\n"
+msgid "Glyph out of bounds in 'prop' table %d"
+msgstr "'prop' 表 %d 中字形超出边界"
 
 msgid "Glyph too big"
 msgstr "字形过大"
@@ -10506,8 +10506,8 @@ msgstr "JSTF 扩展最大优先级为 %d #%d，针对 %c%c%c%c，位于 %c%c%c%c
 msgid "JSTF shrinkage max at priority %d #%d for %c%c%c%c in %c%c%c%c"
 msgstr "JSTF 收缩最大优先级为 %d #%d，针对 %c%c%c%c，位于 %c%c%c%c"
 
-msgid "JSTF table is too long.\n"
-msgstr "JSTF 表太长.\n"
+msgid "JSTF table is too long."
+msgstr "JSTF 表太长."
 
 msgid "Japanese"
 msgstr "日语"
@@ -10717,8 +10717,8 @@ msgstr ""
 "您想要此子表采用哪种方式？"
 
 #, c-format
-msgid "Kerning subtable 3 says the glyph count is %d, but maxp says %d\n"
-msgstr "字偶距子表 3 表示字形计数为 %d，但 maxp 表示为 %d\n"
+msgid "Kerning subtable 3 says the glyph count is %d, but maxp says %d"
+msgstr "字偶距子表 3 表示字形计数为 %d，但 maxp 表示为 %d"
 
 msgid "Kerning values must be even"
 msgstr "字偶距值必须是偶数"
@@ -11369,11 +11369,11 @@ msgid "Lookup Type|Unspecified"
 msgstr "未指定"
 
 #, c-format
-msgid "Lookup index (%d) out of bounds in GPOS from JSTF table.\n"
-msgstr "从 JSTF 表查找索引（%d）超出 GPOS 范围。\n"
+msgid "Lookup index (%d) out of bounds in GPOS from JSTF table."
+msgstr "从 JSTF 表查找索引（%d）超出 GPOS 范围。"
 
 #, c-format
-msgid "Lookup index (%d) out of bounds in GSUB from JSTF table.\n"
+msgid "Lookup index (%d) out of bounds in GSUB from JSTF table."
 msgstr "JSTF 表中的 GSUB 查找索引 (%d) 超出范围。"
 
 #, c-format
@@ -11383,8 +11383,8 @@ msgstr "在 %2$s 的第 %1$d 行附加到未标记字形的查找信息"
 msgid "Lookup name already used"
 msgstr "查找已使用"
 
-msgid "Lookup out of bounds in feature table.\n"
-msgstr "特征表中查找超出范围.\n"
+msgid "Lookup out of bounds in feature table."
+msgstr "特征表中查找超出范围."
 
 #, c-format
 msgid "Lookup subtable %s (matched with %s)\n"
@@ -16250,8 +16250,8 @@ msgstr "必要变体替代"
 msgid "Required feature"
 msgstr "必需特征"
 
-msgid "Required feature out of bounds in script table.\n"
-msgstr "文字表中指定特征超出范围.\n"
+msgid "Required feature out of bounds in script table."
+msgstr "文字表中指定特征超出范围."
 
 msgid "Reserved Bit 10"
 msgstr "保留位 10"
@@ -19247,10 +19247,10 @@ msgstr "子表"
 msgid "Subtable %.60s in glyph %.60s"
 msgstr "子表 %.60s 于字形 %.60s"
 
-msgid "Subtable extends beyond end of GPOS table\n"
+msgid "Subtable extends beyond end of GPOS table"
 msgstr "子表超出 GPOS 表末尾"
 
-msgid "Subtable extends beyond end of GSUB table\n"
+msgid "Subtable extends beyond end of GSUB table"
 msgstr "子表超出 GSUB 表末尾"
 
 msgid "Sum Around:"
@@ -19793,8 +19793,8 @@ msgstr ""
 "也不符合 Adob​​e 早期对标准的误解。\n"
 "无法解析。\n"
 
-msgid "The 'size' feature of this font conforms to Adobe's early misinterpretation of the otf standard.\n"
-msgstr "该字体的‘大小’特征符合Adobe早期对otf标准的误解。\n"
+msgid "The 'size' feature of this font conforms to Adobe's early misinterpretation of the otf standard."
+msgstr "该字体的‘大小’特征符合Adobe早期对otf标准的误解。"
 
 msgid "The AFM file contains metrics information that many word-processors will read when using a PostScript® font."
 msgstr "AFM 文件包含许多文字处理器在使用 PostScript® 字体时会读取的度量信息。"
@@ -20714,12 +20714,12 @@ msgstr ""
 " （您不会收到后续字形的警告。）"
 
 #, c-format
-msgid "The name parameter of the '%c%c%c%c' feature does not contain a valid name id.\n"
-msgstr "'%c%c%c%c' 特征的名称参数不包含有效的名称 ID。\n"
+msgid "The name parameter of the '%c%c%c%c' feature does not contain a valid name id."
+msgstr "'%c%c%c%c' 特征的名称参数不包含有效的名称 ID。"
 
 #, c-format
-msgid "The name parameter of the '%c%c%c%c' feature has an unlikely version number %d.\n"
-msgstr "'%c%c%c%c' 特征的名称参数具有不太可能的版本号 %d。\n"
+msgid "The name parameter of the '%c%c%c%c' feature has an unlikely version number %d."
+msgstr "'%c%c%c%c' 特征的名称参数具有不太可能的版本号 %d。"
 
 #, c-format
 msgid ""
@@ -21589,8 +21589,8 @@ msgstr ""
 "您有这样的许可吗？"
 
 #, c-format
-msgid "This font, %s, has multiple GPOS 'size' features. I'm not sure how to interpret that. I shall pick one arbitrarily.\n"
-msgstr "此字体 %s 具有多个 GPOS“大小”功能。我不确定如何解释这一点。我将任意选择一个。\n"
+msgid "This font, %s, has multiple GPOS 'size' features. I'm not sure how to interpret that. I shall pick one arbitrarily."
+msgstr "此字体 %s 具有多个 GPOS“大小”功能。我不确定如何解释这一点。我将任意选择一个。"
 
 msgid "This glyph can use a stem3 hint"
 msgstr "此字形可以使用 stem3 渲调提示"
@@ -22231,8 +22231,8 @@ msgid "Too many entries in CharStrings dictionary \"%s"
 msgstr "字符字串字典中有过多项 \"%s"
 
 #, c-format
-msgid "Too many features %d\n"
-msgstr "过多特征 %d\n"
+msgid "Too many features %d"
+msgstr "过多特征 %d"
 
 msgid "Too many glyphs"
 msgstr "过多字形"
@@ -22244,16 +22244,16 @@ msgid "Too many layers"
 msgstr "过多图层"
 
 #, c-format
-msgid "Too many lookups %d\n"
-msgstr "过多查找 %d\n"
+msgid "Too many lookups %d"
+msgstr "过多查找 %d"
 
 #, c-format
 msgid "Too many mapping data points specified in /BlendDesignMap for axis %s.\n"
 msgstr "/BlendDesignMap 中为轴 %s 指定的映射数据点过多。"
 
 #, c-format
-msgid "Too many scripts %d\n"
-msgstr "过多文字 %d\n"
+msgid "Too many scripts %d"
+msgstr "过多文字 %d"
 
 #, c-format
 msgid "Too many separation marks, starting at: %.20s..."
@@ -22726,16 +22726,16 @@ msgstr "未料到的密度数值"
 msgid "Unexpected encoding format in cff: %d\n"
 msgstr "未预期的编码格式于cff: %d\n"
 
-msgid "Unexpected end of file found in morx chain.\n"
+msgid "Unexpected end of file found in morx chain."
 msgstr "在 morx 链中发现意外的文件终止。"
 
 msgid "Unexpected end of file in GSUB ligature sub-table.\n"
 msgstr "GSUB 连字子表中出现意外的文件结尾。\n"
 
-msgid "Unexpected end of file in GSUB sub-table.\n"
-msgstr "GSUB 子表中出现意外的文件结尾。\n"
+msgid "Unexpected end of file in GSUB sub-table."
+msgstr "GSUB 子表中出现意外的文件结尾。"
 
-msgid "Unexpected end of file in contextual chaining subtable.\n"
+msgid "Unexpected end of file in contextual chaining subtable."
 msgstr "上下文链式子表中出现意外的文件终止。"
 
 #, c-format
@@ -22924,11 +22924,11 @@ msgid "Unknown"
 msgstr "未知"
 
 #, c-format
-msgid "Unknown GPOS sub-table type: %d\n"
+msgid "Unknown GPOS sub-table type: %d"
 msgstr "未知的 GPOS 子表类型：%d"
 
 #, c-format
-msgid "Unknown GSUB sub-table type: %d\n"
+msgid "Unknown GSUB sub-table type: %d"
 msgstr "未知的 GSUB 子表类型：%d"
 
 msgid "Unknown Language"

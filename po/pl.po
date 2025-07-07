@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-06 23:41+0300\n"
-"PO-Revision-Date: 2025-07-05 22:20\n"
+"POT-Creation-Date: 2025-07-07 19:14+0300\n"
+"PO-Revision-Date: 2025-07-07 16:00\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "Language: pl_PL\n"
@@ -105,19 +105,19 @@ msgid " At least one reference to this glyph used point matching. That match is 
 msgstr " Co najmniej jedno odwołanie do tego glifu korzystała z mechanizmu przystawania punktów. To przystawanie jest teraz nieaktualne."
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad contextual chaining substitution table, ignored\n"
-msgstr " Błędna tablica łańcuchowego podstawienia kontekstowego, zignorowano\n"
+msgid " Bad contextual chaining substitution table, ignored"
+msgstr " Błędna tablica łańcuchowego podstawienia kontekstowego, zignorowano"
 
-msgid " Bad contextual chaining table, ignored\n"
-msgstr " Błędna kontekstowa tablica łańcuchowa, zignorowano\n"
-
-#. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad contextual substitution table, ignored\n"
-msgstr " Błędna tablica podstawienia kontekstowego, zignorowano\n"
+msgid " Bad contextual chaining table, ignored"
+msgstr " Błędna kontekstowa tablica łańcuchowa, zignorowano"
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad contextual table, ignored\n"
-msgstr " Błędna tablica kontekstowa, zignorowano\n"
+msgid " Bad contextual substitution table, ignored"
+msgstr " Błędna tablica podstawienia kontekstowego, zignorowano"
+
+#. GT: This continues a multi-line error message, hence the leading space
+msgid " Bad contextual table, ignored"
+msgstr " Błędna tablica kontekstowa, zignorowano"
 
 #. GT: This continues a multi-line error message, hence the leading space
 msgid " Bad cursive alignment table, ignored"
@@ -127,14 +127,14 @@ msgstr " Błędna tablica złącz pisanych międzyznakowych, zignorowano"
 msgid " Bad kerning class table, ignored"
 msgstr " Błędna tablica klas kerningu, zignorowano"
 
-msgid " Bad ligature table, ignored\n"
-msgstr " Błędna tablica ligatur, zignorowano\n"
+msgid " Bad ligature table, ignored"
+msgstr " Błędna tablica ligatur, zignorowano"
 
 msgid " Bad mark attachment table, ignored"
 msgstr " Błędna tablica położenia znaków diakrytycznych, zignorowano"
 
-msgid " Bad multiple substitution table, ignored\n"
-msgstr " Błędna tablica podstawienia wieokrotnego, zignorowano\n"
+msgid " Bad multiple substitution table, ignored"
+msgstr " Błędna tablica podstawienia wieokrotnego, zignorowano"
 
 #. GT: This continues a multi-line error message, hence the leading space
 msgid " Bad pairwise kerning table, ignored"
@@ -143,8 +143,8 @@ msgstr " Błędna tablica kerningu, zignorowano"
 msgid " Bad simple positioning table, ignored"
 msgstr " Błędna tablica pozycjonowania prostego, zignorowano"
 
-msgid " Bad simple substitution table, ignored\n"
-msgstr " Błędna tablica podstawienia prostego, zignorowano\n"
+msgid " Bad simple substitution table, ignored"
+msgstr " Błędna tablica podstawienia prostego, zignorowano"
 
 #, c-format
 msgid " Curvature: %g"
@@ -2490,8 +2490,8 @@ msgstr "Błędna nazwa rodziny fontu"
 msgid "Bad Font Name"
 msgstr "Błędna nazwa fontu"
 
-msgid "Bad GID in JSTF extenser table.\n"
-msgstr "Błędny numer glifu w tablicy rozszerzonej JSTF.\n"
+msgid "Bad GID in JSTF extenser table."
+msgstr "Błędny numer glifu w tablicy rozszerzonej JSTF."
 
 msgid "Bad Glyph Count"
 msgstr "Błędna liczba glifów"
@@ -2661,8 +2661,8 @@ msgstr "Błędny prostokąt brzegowy dla %s.\n"
 msgid "Bad cidmap file"
 msgstr "Błędny plik mapowania CID"
 
-msgid "Bad class count in contextual chaining sub-table.\n"
-msgstr "Błędna liczba klas w kontekstowej podtablicy łańcuchowej.\n"
+msgid "Bad class count in contextual chaining sub-table."
+msgstr "Błędna liczba klas w kontekstowej podtablicy łańcuchowej."
 
 #, c-format
 msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)\n"
@@ -2692,11 +2692,11 @@ msgstr "Błędna podtablica kontekstowa bądź łańcuchowa: numer glifu %d poza
 msgid "Bad correction"
 msgstr "Błędna korekta"
 
-msgid "Bad count in context chaining sub-table.\n"
-msgstr "Błędna wartość w kontekstowej podtablicy łańcuchowej.\n"
+msgid "Bad count in context chaining sub-table."
+msgstr "Błędna wartość w kontekstowej podtablicy łańcuchowej."
 
-msgid "Bad count in contextual chaining sub-table.\n"
-msgstr "Błędna podtablica kontekstowego podstawienia łańcuchowego.\n"
+msgid "Bad count in contextual chaining sub-table."
+msgstr "Błędna podtablica kontekstowego podstawienia łańcuchowego."
 
 msgid "Bad count."
 msgstr "Błędna liczba."
@@ -2800,8 +2800,8 @@ msgstr "Błędny glif %d – jego definicja wystaje poza koniec tablicy „glyf�
 msgid "Bad glyph (%d), its definition extends beyond the space allowed for it\n"
 msgstr "Błędny glif %d – jego definicja wystaje poza przydzielony obszar.\n"
 
-msgid "Bad glyph count in mort table.\n"
-msgstr "Błędna liczba glifów w tablicy „mort”.\n"
+msgid "Bad glyph count in mort table."
+msgstr "Błędna liczba glifów w tablicy „mort”."
 
 msgid "Bad glyph name."
 msgstr "Błędna nazwa glifu."
@@ -2815,8 +2815,8 @@ msgstr "Błędny zakres glifów w podtablicy komentarzy w tablicy „PfEd”\n"
 msgid "Bad glyph reference in layer info.\n"
 msgstr "Błędne odwołanie do glifu w danych warstwy.\n"
 
-msgid "Bad glyph variant subtable of MATH table.\n"
-msgstr "Błędna podtablica wariantów w tablicy „MATH”.\n"
+msgid "Bad glyph variant subtable of MATH table."
+msgstr "Błędna podtablica wariantów w tablicy „MATH”."
 
 #, c-format
 msgid "Bad hex color spec: %s\n"
@@ -2845,15 +2845,15 @@ msgid "Bad kern pair: glyphs %d & %d must be less than %d\n"
 msgstr "Błędna para kerningowa: %d i %d muszą być mniejsze niż %d.\n"
 
 #, c-format
-msgid "Bad kern pair: glyphs %d & %d mustn't be negative\n"
+msgid "Bad kern pair: glyphs %d & %d mustn't be negative"
 msgstr "Błędna para kerningu: numery glifów %d i %d nie mogą być ujemne\n"
 
-#, c-format
+##, c-format
 msgid "Bad kern pair: glyphs %d & %d should have been < %d"
 msgstr "Błędna para kerningowa: numery glifów %d i %d powinny być mniejsze niż %d"
 
 #, c-format
-msgid "Bad kern pair: glyphs at %d & %d are null\n"
+msgid "Bad kern pair: glyphs at %d & %d are null"
 msgstr "Błędna para kerningu: glify o numerach %d i %d nie istnieją\n"
 
 msgid "Bad language tag"
@@ -2866,14 +2866,12 @@ msgid "Bad ligature base table."
 msgstr "Błędna tablica ligatur."
 
 #, c-format
-msgid "Bad ligature component glyph. GID %d not less than %d (in ligature %d)\n"
-msgstr ""
-"Błędny glif składowy ligatury: numer znaku %d nie jest mniejszy od %d\n"
-" (w ligaturze %d)\n"
+msgid "Bad ligature component glyph. GID %d not less than %d (in ligature %d)"
+msgstr "Błędny glif składowy ligatury: numer znaku %d nie jest mniejszy od %d (w ligaturze %d)\n"
 
 #, c-format
-msgid "Bad ligature glyph. GID %d not less than %d\n"
-msgstr "Błędny glif ligatury: numer znaku %d nie jest mniejszy od %d\n"
+msgid "Bad ligature glyph. GID %d not less than %d"
+msgstr "Błędny glif ligatury: numer znaku %d nie jest mniejszy od %d"
 
 #, c-format
 msgid "Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
@@ -2884,12 +2882,12 @@ msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font
 msgstr "Błędna tablica funkcji zecerskich: format=4 (%d/%d), pierwszy=%d, ostatni=%d, liczba glifów w foncie=%d\n"
 
 #, c-format
-msgid "Bad lookup table: format=6, first=%d total glyphs in font=%d\n"
-msgstr "Błędna tablica funkcji zecerskich: format=6, pierwszy=%d, liczba glifów w foncie=%d\n"
+msgid "Bad lookup table: format=6, first=%d total glyphs in font=%d"
+msgstr "Błędna tablica funkcji zecerskich: format=6, pierwszy=%d, liczba glifów w foncie=%d"
 
 #, c-format
-msgid "Bad lookup table: format=8, first=%d cnt=%d total glyphs in font=%d\n"
-msgstr "Błędna tablica funkcji zecerskich: format=8, pierwszy=%d, liczba=%d, liczba glifów w foncie=%d\n"
+msgid "Bad lookup table: format=8, first=%d cnt=%d total glyphs in font=%d"
+msgstr "Błędna tablica funkcji zecerskich: format=8, pierwszy=%d, liczba=%d, liczba glifów w foncie=%d"
 
 msgid "Bad lookup type"
 msgstr "Błędny typ tablicy funkcji"
@@ -2900,8 +2898,8 @@ msgstr "Błędny „magic number”"
 msgid "Bad mark table."
 msgstr "Błędna tablica „mark”."
 
-msgid "Bad mort ligature table. Not long enough\n"
-msgstr "Błędna (zbyt krótka) tablica ligatur „mort”\n"
+msgid "Bad mort ligature table. Not long enough"
+msgstr "Błędna (zbyt krótka) tablica ligatur „mort”"
 
 #, c-format
 msgid "Bad name when parsing %s for unicode %x"
@@ -2956,10 +2954,8 @@ msgid "Bad replace pattern"
 msgstr "Błędny wzorzec zastępujący"
 
 #, c-format
-msgid "Bad reverse contextual chaining substitution glyph: %d is not less than %d\n"
-msgstr ""
-"Błędny glif w odwrotnym łańcuchowym podstawieniu kontekstowym:\n"
-" numer glifu %d nie jest mniejszy od %d\n"
+msgid "Bad reverse contextual chaining substitution glyph: %d is not less than %d"
+msgstr "Błędny glif w odwrotnym łańcuchowym podstawieniu kontekstowym: numer glifu %d nie jest mniejszy od %d\n"
 
 msgid "Bad rule"
 msgstr "Błędna reguła"
@@ -2998,8 +2994,8 @@ msgid "Bad subroutine INDEX in cff font.\n"
 msgstr "Błędny INDEX funkcji w foncie cff.\n"
 
 #, c-format
-msgid "Bad substitution glyph: GID %d not less than %d\n"
-msgstr "Błędny glif w podstawieniu: numer glifu %d nie jest mniejszy od %d\n"
+msgid "Bad substitution glyph: GID %d not less than %d"
+msgstr "Błędny glif w podstawieniu: numer glifu %d nie jest mniejszy od %d"
 
 msgid "Bad tag"
 msgstr "Błędny tag"
@@ -6067,8 +6063,8 @@ msgstr ""
 "EIF (ang. End IF).\n"
 "Zamyka sekwencję IF-EIF lub IF-ELSE-EIF."
 
-msgid "End of file found in JSTF table.\n"
-msgstr "Nieoczekiwany koniec pliku wewnątrz tablicy „JSTF.”\n"
+msgid "End of file found in JSTF table."
+msgstr "Nieoczekiwany koniec pliku wewnątrz tablicy „JSTF.”"
 
 msgid "End of file found in coverage table."
 msgstr "Nieoczekiwany koniec pliku przy przetwarzając tablicy grupującej."
@@ -6084,14 +6080,14 @@ msgstr "Podczas wczytywania słownika prywatnego napotkano koniec pliku.\n"
 msgid "End of file in %s table"
 msgstr "Nieoczekiwany koniec pliku podczas czytania tablicy „%s”."
 
-msgid "End of file in context chaining sub-table.\n"
-msgstr "Nieoczekiwany koniec pliku w podtablicy kontekstowego podstawienia łańcuchowego.\n"
+msgid "End of file in context chaining sub-table."
+msgstr "Nieoczekiwany koniec pliku w podtablicy kontekstowego podstawienia łańcuchowego."
 
-msgid "End of file in context chaining subtable.\n"
-msgstr "Nieoczekiwany koniec pliku w podtablicy kontekstowego podstawienia łańcuchowego.\n"
+msgid "End of file in context chaining subtable."
+msgstr "Nieoczekiwany koniec pliku w podtablicy kontekstowego podstawienia łańcuchowego."
 
-msgid "End of file in feat table.\n"
-msgstr "Nieoczekiwany koniec pliku w tablicy „feat”.\n"
+msgid "End of file in feat table."
+msgstr "Nieoczekiwany koniec pliku w tablicy „feat”."
 
 #, c-format
 msgid "End of file in include on line %d of %s"
@@ -6831,8 +6827,8 @@ msgstr "_Id funkcji"
 msgid "Feature file?"
 msgstr "Plik funkcji?"
 
-msgid "Feature out of bounds in script table.\n"
-msgstr "Numer funkcji poza zakresem w tablicy pism.\n"
+msgid "Feature out of bounds in script table."
+msgstr "Numer funkcji poza zakresem w tablicy pism."
 
 msgid "Feature tags are limited to 4 letters"
 msgstr "Tagi funkcji są co najwyżej czteroliterowe"
@@ -7832,20 +7828,20 @@ msgid "Glyph not in font"
 msgstr "Glif spoza fontu"
 
 #, c-format
-msgid "Glyph out of bounds in 'lcar' table %d\n"
-msgstr "Numer glifu w tablicy „lcar” poza dozwolonym zakresem: %d\n"
+msgid "Glyph out of bounds in 'lcar' table %d"
+msgstr "Numer glifu w tablicy „lcar” poza dozwolonym zakresem: %d"
 
 #, c-format
 msgid "Glyph out of bounds in 'mort'/'morx' table %d\n"
 msgstr "Numer glifu w tablicy „mort”/„morx” poza dozwolonym zakresem: %d\n"
 
 #, c-format
-msgid "Glyph out of bounds in 'opbd' table %d\n"
-msgstr "Numer glifu w tablicy „opbd” poza dozwolonym zakresem: %d\n"
+msgid "Glyph out of bounds in 'opbd' table %d"
+msgstr "Numer glifu w tablicy „opbd” poza dozwolonym zakresem: %d"
 
 #, c-format
-msgid "Glyph out of bounds in 'prop' table %d\n"
-msgstr "Numer glifu w tablicy „prop” poza dozwolonym zakresem: %d\n"
+msgid "Glyph out of bounds in 'prop' table %d"
+msgstr "Numer glifu w tablicy „prop” poza dozwolonym zakresem: %d"
 
 msgid "Glyph too big"
 msgstr "Glif jest za duży"
@@ -9587,8 +9583,8 @@ msgstr "'jstf' graniczne rozbicie wiersza: waga %d #%d, język %c%c%c%c, pismo %
 msgid "JSTF shrinkage max at priority %d #%d for %c%c%c%c in %c%c%c%c"
 msgstr "'jstf' graniczne zbicie wiersza: waga %d #%d, język %c%c%c%c, pismo %c%c%c%c"
 
-msgid "JSTF table is too long.\n"
-msgstr "Tablica „JSTF” jest zbyt długa.\n"
+msgid "JSTF table is too long."
+msgstr "Tablica „JSTF” jest zbyt długa."
 
 msgid "Japanese"
 msgstr "japoński"
@@ -9801,8 +9797,8 @@ msgstr ""
 "albo param klas znaków. Którą metodę zastosować?"
 
 #, c-format
-msgid "Kerning subtable 3 says the glyph count is %d, but maxp says %d\n"
-msgstr "Podtablica 3 kerningu podaje, że font liczy %d glifów, a tablica „maxp”, że %d\n"
+msgid "Kerning subtable 3 says the glyph count is %d, but maxp says %d"
+msgstr "Podtablica 3 kerningu podaje, że font liczy %d glifów, a tablica „maxp”, że %d"
 
 msgid "Kerning values must be even"
 msgstr "Wartości kerningu muszą być parzyste"
@@ -10461,12 +10457,12 @@ msgid "Lookup Type|Unspecified"
 msgstr "Nieokreślony"
 
 #, c-format
-msgid "Lookup index (%d) out of bounds in GPOS from JSTF table.\n"
-msgstr "Numer tablicy funkcji zecerskich w tablicy „JSTF” (%d) poza zakresem dostępnych w „GPOS”.\n"
+msgid "Lookup index (%d) out of bounds in GPOS from JSTF table."
+msgstr "Numer tablicy funkcji zecerskich w tablicy „JSTF” (%d) poza zakresem dostępnych w „GPOS”."
 
 #, c-format
-msgid "Lookup index (%d) out of bounds in GSUB from JSTF table.\n"
-msgstr "Numer tablicy funkcji zecerskich w tablicy „JSTF” (%d) poza zakresem dostępnych w „GSUB”.\n"
+msgid "Lookup index (%d) out of bounds in GSUB from JSTF table."
+msgstr "Numer tablicy funkcji zecerskich w tablicy „JSTF” (%d) poza zakresem dostępnych w „GSUB”."
 
 #, c-format
 msgid "Lookup information attached to unmarked glyph on line %d of %s"
@@ -10475,8 +10471,8 @@ msgstr "Tablice zecerskie powiązano z glifem niezaznaczonym (przez „'”), . 
 msgid "Lookup name already used"
 msgstr "Nazwa tablicy jest już używana"
 
-msgid "Lookup out of bounds in feature table.\n"
-msgstr "Numer tablicy funkcji zecerskich poza zakresem w tablicy funkcji zecerskich.\n"
+msgid "Lookup out of bounds in feature table."
+msgstr "Numer tablicy funkcji zecerskich poza zakresem w tablicy funkcji zecerskich."
 
 #, c-format
 msgid "Lookup subtable %s (matched with %s)\n"
@@ -15058,8 +15054,8 @@ msgstr "Ligatury wymagane"
 msgid "Required feature"
 msgstr "Funkcja wymagana"
 
-msgid "Required feature out of bounds in script table.\n"
-msgstr "Numer wymaganej funkcji poza zakresem w tablicy pism.\n"
+msgid "Required feature out of bounds in script table."
+msgstr "Numer wymaganej funkcji poza zakresem w tablicy pism."
 
 msgid "Reserved Bit 10"
 msgstr "zarezerwowany bit 10"
@@ -17913,11 +17909,11 @@ msgstr "Podtablica"
 msgid "Subtable %.60s in glyph %.60s"
 msgstr "Podtablica %.60s w glifie %.60s"
 
-msgid "Subtable extends beyond end of GPOS table\n"
-msgstr "Podtablica wystaje poza tablicę GPOS.\n"
+msgid "Subtable extends beyond end of GPOS table"
+msgstr "Podtablica wystaje poza tablicę GPOS."
 
-msgid "Subtable extends beyond end of GSUB table\n"
-msgstr "Podtablica wystaje poza zawierającą ją tablicę „GSUB”\n"
+msgid "Subtable extends beyond end of GSUB table"
+msgstr "Podtablica wystaje poza zawierającą ją tablicę „GSUB”"
 
 msgid "Sum Around:"
 msgstr "Szer. przedziałów:"
@@ -18400,8 +18396,8 @@ msgstr ""
 "zgodnie z wczesnym, adobe-owskim błędnym rozumieniem standardu OpenType, ani\n"
 "na zgodne z tym standardem. Nie ma jak tego przetworzyć.\n"
 
-msgid "The 'size' feature of this font conforms to Adobe's early misinterpretation of the otf standard.\n"
-msgstr "Dane dotyczące funkcji zecerskiej „size” w tym foncie wyglądają tak jakby powstały zgodnie z wczesnym, adobe-owskim błędnym rozumieniem standardu OpenType.\n"
+msgid "The 'size' feature of this font conforms to Adobe's early misinterpretation of the otf standard."
+msgstr "Dane dotyczące funkcji zecerskiej „size” w tym foncie wyglądają tak jakby powstały zgodnie z wczesnym, adobe-owskim błędnym rozumieniem standardu OpenType."
 
 msgid "The AFM file contains metrics information that many word-processors will read when using a PostScript® font."
 msgstr "Plik AFM przechowuje informacje metryczne używane przez wiele edytorów przy korzystaniu z fontów postscriptowych"
@@ -19231,12 +19227,12 @@ msgstr ""
 "(To ostrzeżenie NIE będzie już powtarzane dla pozostałych glifów.)"
 
 #, c-format
-msgid "The name parameter of the '%c%c%c%c' feature does not contain a valid name id.\n"
-msgstr "Parametr „name” funkcji „%c%c%c%c” zawiera niepoprawny identyfikator nazwy.\n"
+msgid "The name parameter of the '%c%c%c%c' feature does not contain a valid name id."
+msgstr "Parametr „name” funkcji „%c%c%c%c” zawiera niepoprawny identyfikator nazwy."
 
 #, c-format
-msgid "The name parameter of the '%c%c%c%c' feature has an unlikely version number %d.\n"
-msgstr "Parametr „name” funkcji „%c%c%c%c” zawiera zbyt nietypowy numer wersji: %d.\n"
+msgid "The name parameter of the '%c%c%c%c' feature has an unlikely version number %d."
+msgstr "Parametr „name” funkcji „%c%c%c%c” zawiera zbyt nietypowy numer wersji: %d."
 
 #, c-format
 msgid ""
@@ -20088,8 +20084,8 @@ msgstr ""
 "Czy producent udzielił zezwolenia na edycję tego fontu?"
 
 #, c-format
-msgid "This font, %s, has multiple GPOS 'size' features. I'm not sure how to interpret that. I shall pick one arbitrarily.\n"
-msgstr "W foncie %s funkcja zecerska „size” występuje wielokrotnie. Interpretacja takiej zawartości jest niepewna. FontForge wybierze któreś pojedyncze wystąpienie.\n"
+msgid "This font, %s, has multiple GPOS 'size' features. I'm not sure how to interpret that. I shall pick one arbitrarily."
+msgstr "W foncie %s funkcja zecerska „size” występuje wielokrotnie. Interpretacja takiej zawartości jest niepewna. FontForge wybierze któreś pojedyncze wystąpienie."
 
 msgid "This glyph can use a stem3 hint"
 msgstr "Dla tego glifu można zastosować hint typu stem3"
@@ -20730,8 +20726,8 @@ msgid "Too many entries in CharStrings dictionary \"%s"
 msgstr "Zbyt wiele pozycji w słowniku CharStrings \"%s"
 
 #, c-format
-msgid "Too many features %d\n"
-msgstr "Zbyt wiele funkcji %d\n"
+msgid "Too many features %d"
+msgstr "Zbyt wiele funkcji %d"
 
 msgid "Too many glyphs"
 msgstr "Zbyt wiele glifów"
@@ -20743,16 +20739,16 @@ msgid "Too many layers"
 msgstr "Zbyt wiele warstw"
 
 #, c-format
-msgid "Too many lookups %d\n"
-msgstr "Zbyt wiele tablic funkcji %d\n"
+msgid "Too many lookups %d"
+msgstr "Zbyt wiele tablic funkcji %d"
 
 #, c-format
 msgid "Too many mapping data points specified in /BlendDesignMap for axis %s.\n"
 msgstr "Zbyt wiele punktów danych mapowań w /BlendDesignMap dla osi %s.\n"
 
 #, c-format
-msgid "Too many scripts %d\n"
-msgstr "Zbyt wiele pism %d\n"
+msgid "Too many scripts %d"
+msgstr "Zbyt wiele pism %d"
 
 #, c-format
 msgid "Too many separation marks, starting at: %.20s..."
@@ -21210,17 +21206,17 @@ msgstr "Nieoczekiwana gęstość"
 msgid "Unexpected encoding format in cff: %d\n"
 msgstr "Nieznany format kodowania w cff: %d\n"
 
-msgid "Unexpected end of file found in morx chain.\n"
-msgstr "Nieoczekiwany koniec pliku podczas przetwarzania łańcucha „morx”.\n"
+msgid "Unexpected end of file found in morx chain."
+msgstr "Nieoczekiwany koniec pliku podczas przetwarzania łańcucha „morx”."
 
 msgid "Unexpected end of file in GSUB ligature sub-table.\n"
 msgstr "Nieoczekiwany koniec pliku w podtablicy ligatur w „GSUB”.\n"
 
-msgid "Unexpected end of file in GSUB sub-table.\n"
-msgstr "Nieoczekiwany koniec pliku w podtablicy w „GSUB”.\n"
+msgid "Unexpected end of file in GSUB sub-table."
+msgstr "Nieoczekiwany koniec pliku w podtablicy w „GSUB”."
 
-msgid "Unexpected end of file in contextual chaining subtable.\n"
-msgstr "Nieoczekiwany koniec pliku w kontekstowej podtablicy łańcuchowej.\n"
+msgid "Unexpected end of file in contextual chaining subtable."
+msgstr "Nieoczekiwany koniec pliku w kontekstowej podtablicy łańcuchowej."
 
 #, c-format
 msgid "Unexpected end of file in feature definition on line %d of %s"
@@ -21405,12 +21401,12 @@ msgid "Unknown"
 msgstr "nieznane"
 
 #, c-format
-msgid "Unknown GPOS sub-table type: %d\n"
-msgstr "Nieznany typ podtablicy GPOS: %d\n"
+msgid "Unknown GPOS sub-table type: %d"
+msgstr "Nieznany typ podtablicy GPOS: %d"
 
 #, c-format
-msgid "Unknown GSUB sub-table type: %d\n"
-msgstr "Nieznany typ podtablicy „GSUB”: %d\n"
+msgid "Unknown GSUB sub-table type: %d"
+msgstr "Nieznany typ podtablicy „GSUB”: %d"
 
 msgid "Unknown Language"
 msgstr "Nieznany język"

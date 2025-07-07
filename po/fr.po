@@ -14,8 +14,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-06 23:41+0300\n"
-"PO-Revision-Date: 2025-07-05 22:20\n"
+"POT-Creation-Date: 2025-07-07 19:14+0300\n"
+"PO-Revision-Date: 2025-07-07 16:00\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -115,19 +115,19 @@ msgid " At least one reference to this glyph used point matching. That match is 
 msgstr "Au moins une référence à ce glyphe utilise des points de correspondance. Cette correspondance est maintenant périmée."
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad contextual chaining substitution table, ignored\n"
-msgstr " Table d'enchaînement de substittutions contextuelles incorrecte ignorée\n"
+msgid " Bad contextual chaining substitution table, ignored"
+msgstr " Table d'enchaînement de substittutions contextuelles incorrecte ignorée"
 
-msgid " Bad contextual chaining table, ignored\n"
-msgstr "Sous-table d'enchainement contextuel incorrecte. Glyphe %d hors limite [0,%d]\n"
-
-#. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad contextual substitution table, ignored\n"
-msgstr " Table de substitution contextuelle incorrecte ignorée\n"
+msgid " Bad contextual chaining table, ignored"
+msgstr "Sous-table d'enchainement contextuel incorrecte. Glyphe %d hors limite [0,%d]"
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad contextual table, ignored\n"
-msgstr " Table contextuelle incorrecte ignorée\n"
+msgid " Bad contextual substitution table, ignored"
+msgstr " Table de substitution contextuelle incorrecte ignorée"
+
+#. GT: This continues a multi-line error message, hence the leading space
+msgid " Bad contextual table, ignored"
+msgstr " Table contextuelle incorrecte ignorée"
 
 #. GT: This continues a multi-line error message, hence the leading space
 msgid " Bad cursive alignment table, ignored"
@@ -137,14 +137,14 @@ msgstr "Table d'alignement de cursive incorrecte ignorée"
 msgid " Bad kerning class table, ignored"
 msgstr "T able de crénage invalide ignorée."
 
-msgid " Bad ligature table, ignored\n"
-msgstr "Table de ligature incorrecte, ignorée\n"
+msgid " Bad ligature table, ignored"
+msgstr "Table de ligature incorrecte, ignorée"
 
 msgid " Bad mark attachment table, ignored"
 msgstr "Table de signes incorrecte ignorée"
 
-msgid " Bad multiple substitution table, ignored\n"
-msgstr "Table de substitution multiple incorrected ignorée\n"
+msgid " Bad multiple substitution table, ignored"
+msgstr "Table de substitution multiple incorrected ignorée"
 
 #. GT: This continues a multi-line error message, hence the leading space
 msgid " Bad pairwise kerning table, ignored"
@@ -153,8 +153,8 @@ msgstr "Table de crénage par paire incorrecte ignorée"
 msgid " Bad simple positioning table, ignored"
 msgstr "Table de positionnement simple incorrecte ignorée"
 
-msgid " Bad simple substitution table, ignored\n"
-msgstr " Table de substitution unique incorrecte ignorée\n"
+msgid " Bad simple substitution table, ignored"
+msgstr " Table de substitution unique incorrecte ignorée"
 
 #, c-format
 msgid " Curvature: %g"
@@ -2433,8 +2433,8 @@ msgstr "Nom de famille de fonte incorrect"
 msgid "Bad Font Name"
 msgstr "Nom de fonte incorrect"
 
-msgid "Bad GID in JSTF extenser table.\n"
-msgstr "GID incorrect dans la table étendue JSTF\n"
+msgid "Bad GID in JSTF extenser table."
+msgstr "GID incorrect dans la table étendue JSTF"
 
 msgid "Bad Glyph Count"
 msgstr "Nombre de glyphes incorrect"
@@ -2602,8 +2602,8 @@ msgstr "Boîte englobante invalide pour %s.\n"
 msgid "Bad cidmap file"
 msgstr "fichier cidmap incorrect"
 
-msgid "Bad class count in contextual chaining sub-table.\n"
-msgstr "Compte de classes incorrect dans la sous-table d'enchaînement contextuel.\n"
+msgid "Bad class count in contextual chaining sub-table."
+msgstr "Compte de classes incorrect dans la sous-table d'enchaînement contextuel."
 
 #, c-format
 msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)\n"
@@ -2633,11 +2633,11 @@ msgstr "Sous-table de contexte ou d'enchainement incorrecte. Glyphe %d hors limi
 msgid "Bad correction"
 msgstr "Correction incorrecte"
 
-msgid "Bad count in context chaining sub-table.\n"
-msgstr "Compte incorrect dans la sous-table d'enchaînement contextuel.\n"
+msgid "Bad count in context chaining sub-table."
+msgstr "Compte incorrect dans la sous-table d'enchaînement contextuel."
 
-msgid "Bad count in contextual chaining sub-table.\n"
-msgstr "Compte incorrect dans la sous-table d'enchaînement contextuel.\n"
+msgid "Bad count in contextual chaining sub-table."
+msgstr "Compte incorrect dans la sous-table d'enchaînement contextuel."
 
 msgid "Bad count."
 msgstr "Compte incorrect."
@@ -2741,8 +2741,8 @@ msgstr "Glyphe incorrect (%d), sa définition s'étend au-delà de la fin de la 
 msgid "Bad glyph (%d), its definition extends beyond the space allowed for it\n"
 msgstr "Glyphe incorrect (%d), sa définition s'étend au-delà de l'espace lui étant alloué\n"
 
-msgid "Bad glyph count in mort table.\n"
-msgstr "Nombre de glyphes incorrect dans la table 'mort'.\n"
+msgid "Bad glyph count in mort table."
+msgstr "Nombre de glyphes incorrect dans la table 'mort'."
 
 msgid "Bad glyph name."
 msgstr "Nom de glyphe incorrect."
@@ -2756,8 +2756,8 @@ msgstr "Intervalle incorrect dans la sous-table 'commentaire' de la table PfEd\n
 msgid "Bad glyph reference in layer info.\n"
 msgstr "Référence de glyphe incorrecte dans la couche info.\n"
 
-msgid "Bad glyph variant subtable of MATH table.\n"
-msgstr "Sous-table de variantes glyphiques incorrecte dans la table MATH.\n"
+msgid "Bad glyph variant subtable of MATH table."
+msgstr "Sous-table de variantes glyphiques incorrecte dans la table MATH."
 
 #, c-format
 msgid "Bad hex color spec: %s\n"
@@ -2786,7 +2786,7 @@ msgid "Bad kern pair: glyphs %d & %d must be less than %d\n"
 msgstr "Paire de crénage incorrecte: les glyphes %d & %d doivent être moins que %d\n"
 
 #, c-format
-msgid "Bad kern pair: glyphs %d & %d mustn't be negative\n"
+msgid "Bad kern pair: glyphs %d & %d mustn't be negative"
 msgstr "Paire de crénage incorrecte : les glyphes %d & %d ne doivent pas être négatifs\n"
 
 #, c-format
@@ -2794,7 +2794,7 @@ msgid "Bad kern pair: glyphs %d & %d should have been < %d"
 msgstr "Paire de crénage incorrecte: les glyphes %d & %d devraient avoir été  < %d"
 
 #, c-format
-msgid "Bad kern pair: glyphs at %d & %d are null\n"
+msgid "Bad kern pair: glyphs at %d & %d are null"
 msgstr "Paire de crénage incorrecte : les glyphes à %d & %d sont nuls\n"
 
 msgid "Bad language tag"
@@ -2807,12 +2807,12 @@ msgid "Bad ligature base table."
 msgstr "Table de ligature de base incorrecte."
 
 #, c-format
-msgid "Bad ligature component glyph. GID %d not less than %d (in ligature %d)\n"
-msgstr "Glyphe de composant ligature incorrect. GID %d ne peut être moins que %d (dans la ligature %d)\n"
+msgid "Bad ligature component glyph. GID %d not less than %d (in ligature %d)"
+msgstr "Glyphe de composant ligature incorrect. GID %d ne peut être moins que %d (dans la ligature %d)"
 
 #, c-format
-msgid "Bad ligature glyph. GID %d not less than %d\n"
-msgstr "Glyphe de ligature incorrect. GID %d ne peut être moins que %d\n"
+msgid "Bad ligature glyph. GID %d not less than %d"
+msgstr "Glyphe de ligature incorrect. GID %d ne peut être moins que %d"
 
 #, c-format
 msgid "Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
@@ -2823,12 +2823,12 @@ msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font
 msgstr "Format de table de lookup incorrect: format=4 (%d/%d), premier=%d dernier=%d total de glyphes dans la fonte=%d\n"
 
 #, c-format
-msgid "Bad lookup table: format=6, first=%d total glyphs in font=%d\n"
-msgstr "Format de table de lookup incorrect: format=6, premier=%d total de glyphes dans la fonte=%d\n"
+msgid "Bad lookup table: format=6, first=%d total glyphs in font=%d"
+msgstr "Format de table de lookup incorrect: format=6, premier=%d total de glyphes dans la fonte=%d"
 
 #, c-format
-msgid "Bad lookup table: format=8, first=%d cnt=%d total glyphs in font=%d\n"
-msgstr "Format de table de lookup incorrect: format=8, premier=%d cnt=%d total de glyphes dans la fonte=%d\n"
+msgid "Bad lookup table: format=8, first=%d cnt=%d total glyphs in font=%d"
+msgstr "Format de table de lookup incorrect: format=8, premier=%d cnt=%d total de glyphes dans la fonte=%d"
 
 msgid "Bad lookup type"
 msgstr "Type de lookup incorrect"
@@ -2839,8 +2839,8 @@ msgstr "Constante (valeur magique) incorrecte"
 msgid "Bad mark table."
 msgstr "Table de signes incorrecte."
 
-msgid "Bad mort ligature table. Not long enough\n"
-msgstr "Table de ligature 'mort' incorrecte.  Elle n'est pas assez longue\n"
+msgid "Bad mort ligature table. Not long enough"
+msgstr "Table de ligature 'mort' incorrecte.  Elle n'est pas assez longue"
 
 #, c-format
 msgid "Bad name when parsing %s for unicode %x"
@@ -2895,8 +2895,8 @@ msgid "Bad replace pattern"
 msgstr "Motif de remplacement incorrect"
 
 #, c-format
-msgid "Bad reverse contextual chaining substitution glyph: %d is not less than %d\n"
-msgstr "Glyphe avec enchaînement de substitutions contextuelles à contresens incorrect: %d ne peut être moins que %d\n"
+msgid "Bad reverse contextual chaining substitution glyph: %d is not less than %d"
+msgstr "Glyphe avec enchaînement de substitutions contextuelles à contresens incorrect: %d ne peut être moins que %d"
 
 msgid "Bad rule"
 msgstr "Règle incorrecte"
@@ -2935,8 +2935,8 @@ msgid "Bad subroutine INDEX in cff font.\n"
 msgstr "Sous-routine INDEX incorrect dans la fonte CFF.\n"
 
 #, c-format
-msgid "Bad substitution glyph: GID %d not less than %d\n"
-msgstr "Glyphe de substitution incorrect : GID %d ne peut être moins que %d\n"
+msgid "Bad substitution glyph: GID %d not less than %d"
+msgstr "Glyphe de substitution incorrect : GID %d ne peut être moins que %d"
 
 msgid "Bad tag"
 msgstr "Mauvais marqueur"
@@ -5914,8 +5914,8 @@ msgstr ""
 "End IF\n"
 "Termine un IF ou une séquence IF-ELSE"
 
-msgid "End of file found in JSTF table.\n"
-msgstr "Fin de fichier atteinte dans la table JSTF.\n"
+msgid "End of file found in JSTF table."
+msgstr "Fin de fichier atteinte dans la table JSTF."
 
 msgid "End of file found in coverage table."
 msgstr "Fin de fichier atteinte dans la table de couverture."
@@ -5933,14 +5933,14 @@ msgstr ""
 msgid "End of file in %s table"
 msgstr "Fin de fichier atteinte dans la table %s"
 
-msgid "End of file in context chaining sub-table.\n"
-msgstr "Fin de fichier atteinte dans une sous-table d'enchaînement contextuel.\n"
+msgid "End of file in context chaining sub-table."
+msgstr "Fin de fichier atteinte dans une sous-table d'enchaînement contextuel."
 
-msgid "End of file in context chaining subtable.\n"
-msgstr "Fin de fichier atteinte dans une sous-table d'enchaînement contextuel.\n"
+msgid "End of file in context chaining subtable."
+msgstr "Fin de fichier atteinte dans une sous-table d'enchaînement contextuel."
 
-msgid "End of file in feat table.\n"
-msgstr "Fin de fichier dans la table de fonction.\n"
+msgid "End of file in feat table."
+msgstr "Fin de fichier dans la table de fonction."
 
 #, c-format
 msgid "End of file in include on line %d of %s"
@@ -6675,8 +6675,8 @@ msgstr "Identifiant:"
 msgid "Feature file?"
 msgstr "Fichier de Fonctionnalités?"
 
-msgid "Feature out of bounds in script table.\n"
-msgstr "Fonctionnalité hors limites dans la table de scripts.\n"
+msgid "Feature out of bounds in script table."
+msgstr "Fonctionnalité hors limites dans la table de scripts."
 
 msgid "Feature tags are limited to 4 letters"
 msgstr "Les balises de fonctionnalité sont limités à 4 caractères."
@@ -7649,20 +7649,20 @@ msgid "Glyph not in font"
 msgstr "Glyphe absent de la fonte"
 
 #, c-format
-msgid "Glyph out of bounds in 'lcar' table %d\n"
-msgstr "Glyphe hors-limite dans la table 'lcar' %d\n"
+msgid "Glyph out of bounds in 'lcar' table %d"
+msgstr "Glyphe hors-limite dans la table 'lcar' %d"
 
 #, c-format
 msgid "Glyph out of bounds in 'mort'/'morx' table %d\n"
 msgstr "Glyphe hors-limite dans les tables 'mort'/'morx' %d\n"
 
 #, c-format
-msgid "Glyph out of bounds in 'opbd' table %d\n"
-msgstr "Glyphe hors-limite dans la table 'opbd' %d\n"
+msgid "Glyph out of bounds in 'opbd' table %d"
+msgstr "Glyphe hors-limite dans la table 'opbd' %d"
 
 #, c-format
-msgid "Glyph out of bounds in 'prop' table %d\n"
-msgstr "Glyphe hors-limite dans la table 'prop' %d\n"
+msgid "Glyph out of bounds in 'prop' table %d"
+msgstr "Glyphe hors-limite dans la table 'prop' %d"
 
 msgid "Glyph too big"
 msgstr "Glyphe trop grand"
@@ -9379,8 +9379,8 @@ msgstr "Étirement JSTF max à la priorité %d #%d pour %c%c%c%c dans %c%c%c%c"
 msgid "JSTF shrinkage max at priority %d #%d for %c%c%c%c in %c%c%c%c"
 msgstr "Rétrécissement JSTF max à la priorité %d #%d pour %c%c%c%c dans %c%c%c%c"
 
-msgid "JSTF table is too long.\n"
-msgstr "La table JSTF est trop longue.\n"
+msgid "JSTF table is too long."
+msgstr "La table JSTF est trop longue."
 
 msgid "Japanese"
 msgstr "Japonais"
@@ -9557,8 +9557,8 @@ msgstr ""
 "Que souhaitez-vous pour cette sous-table?"
 
 #, c-format
-msgid "Kerning subtable 3 says the glyph count is %d, but maxp says %d\n"
-msgstr "La sous-table de crénage 3 dit que le compte de glyphe est %d, mais celle de 'maxp' dit %d\n"
+msgid "Kerning subtable 3 says the glyph count is %d, but maxp says %d"
+msgstr "La sous-table de crénage 3 dit que le compte de glyphe est %d, mais celle de 'maxp' dit %d"
 
 msgid "Kerning values must be even"
 msgstr "Les valeurs de crénage doivent être paires"
@@ -10139,12 +10139,12 @@ msgid "Lookup Type|Unspecified"
 msgstr "Non spécifié"
 
 #, c-format
-msgid "Lookup index (%d) out of bounds in GPOS from JSTF table.\n"
-msgstr "Index de lookup (%d) hors limites dans la GPOS de la table JSTF.\n"
+msgid "Lookup index (%d) out of bounds in GPOS from JSTF table."
+msgstr "Index de lookup (%d) hors limites dans la GPOS de la table JSTF."
 
 #, c-format
-msgid "Lookup index (%d) out of bounds in GSUB from JSTF table.\n"
-msgstr "Index de lookup (%d) hors limites dans la GSUB de la table JSTF.\n"
+msgid "Lookup index (%d) out of bounds in GSUB from JSTF table."
+msgstr "Index de lookup (%d) hors limites dans la GSUB de la table JSTF."
 
 #, c-format
 msgid "Lookup information attached to unmarked glyph on line %d of %s"
@@ -10153,8 +10153,8 @@ msgstr "Information de lookup attachée à un glyphe non marqué à la ligne %d 
 msgid "Lookup name already used"
 msgstr "Nom de lookup déjà utilisé"
 
-msgid "Lookup out of bounds in feature table.\n"
-msgstr "Lookup hors limites dans la table de fonctionnalités.\n"
+msgid "Lookup out of bounds in feature table."
+msgstr "Lookup hors limites dans la table de fonctionnalités."
 
 #, c-format
 msgid "Lookup subtable %s (matched with %s)\n"
@@ -14586,8 +14586,8 @@ msgstr "Ligatures requises "
 msgid "Required feature"
 msgstr "Fonctionnalité obligatoire"
 
-msgid "Required feature out of bounds in script table.\n"
-msgstr "Fonctionnalité obligatoire hors limite dans la table de scripts.\n"
+msgid "Required feature out of bounds in script table."
+msgstr "Fonctionnalité obligatoire hors limite dans la table de scripts."
 
 msgid "Reserved Bit 10"
 msgstr "Bit réservé 10"
@@ -17359,11 +17359,11 @@ msgstr "Sous-table"
 msgid "Subtable %.60s in glyph %.60s"
 msgstr "Sous-table %60s dans le glyphe %60s"
 
-msgid "Subtable extends beyond end of GPOS table\n"
-msgstr "La sous-table s'étend au-delà de la fin de la table GPOS\n"
+msgid "Subtable extends beyond end of GPOS table"
+msgstr "La sous-table s'étend au-delà de la fin de la table GPOS"
 
-msgid "Subtable extends beyond end of GSUB table\n"
-msgstr "La sous-table s'étend au-delà de la fin de la table GSUB\n"
+msgid "Subtable extends beyond end of GSUB table"
+msgstr "La sous-table s'étend au-delà de la fin de la table GSUB"
 
 msgid "Sum Around:"
 msgstr "Somme autour :"
@@ -17850,8 +17850,8 @@ msgstr ""
 "ni se conformer à l'interprétation erronée précoce du standard par Adobe.\n"
 "Je ne peux l'analyser.\n"
 
-msgid "The 'size' feature of this font conforms to Adobe's early misinterpretation of the otf standard.\n"
-msgstr "La fonctionnalité 'size' se conforme à l'interprétation erronée précoce par Adobe du standard otf.\n"
+msgid "The 'size' feature of this font conforms to Adobe's early misinterpretation of the otf standard."
+msgstr "La fonctionnalité 'size' se conforme à l'interprétation erronée précoce par Adobe du standard otf."
 
 msgid "The AFM file contains metrics information that many word-processors will read when using a PostScript® font."
 msgstr ""
@@ -18701,12 +18701,12 @@ msgstr ""
 "(Vous ne serez plus averti pour les glyphes suivants.)"
 
 #, c-format
-msgid "The name parameter of the '%c%c%c%c' feature does not contain a valid name id.\n"
-msgstr "Le paramètre nom de la fonctionnalité '%c%c%c%c' ne contient pas un ID de nom valide.\n"
+msgid "The name parameter of the '%c%c%c%c' feature does not contain a valid name id."
+msgstr "Le paramètre nom de la fonctionnalité '%c%c%c%c' ne contient pas un ID de nom valide."
 
 #, c-format
-msgid "The name parameter of the '%c%c%c%c' feature has an unlikely version number %d.\n"
-msgstr "Le paramètre nom de la fonctionnalité '%c%c%c%c' a un numéro de version %d improbable.\n"
+msgid "The name parameter of the '%c%c%c%c' feature has an unlikely version number %d."
+msgstr "Le paramètre nom de la fonctionnalité '%c%c%c%c' a un numéro de version %d improbable."
 
 #, c-format
 msgid ""
@@ -19573,8 +19573,8 @@ msgstr ""
 "Avez vous cette permission ?"
 
 #, c-format
-msgid "This font, %s, has multiple GPOS 'size' features. I'm not sure how to interpret that. I shall pick one arbitrarily.\n"
-msgstr "Cette fonte, %s, a de multiples fonctionnalités GPOS 'size'. Je ne suis pas certain comment interpréter cela. J'en choisi une arbitrairement.\n"
+msgid "This font, %s, has multiple GPOS 'size' features. I'm not sure how to interpret that. I shall pick one arbitrarily."
+msgstr "Cette fonte, %s, a de multiples fonctionnalités GPOS 'size'. Je ne suis pas certain comment interpréter cela. J'en choisi une arbitrairement."
 
 msgid "This glyph can use a stem3 hint"
 msgstr "Ce glyphe peut utiliser un triple hint"
@@ -20211,8 +20211,8 @@ msgid "Too many entries in CharStrings dictionary \"%s"
 msgstr "Trop d'entrées dans le dictionnaire CharStrings \"%s"
 
 #, c-format
-msgid "Too many features %d\n"
-msgstr "Trop de fonctionalités : %d\n"
+msgid "Too many features %d"
+msgstr "Trop de fonctionalités : %d"
 
 msgid "Too many glyphs"
 msgstr "Trop de glyphes"
@@ -20224,16 +20224,16 @@ msgid "Too many layers"
 msgstr "Trop de calques"
 
 #, c-format
-msgid "Too many lookups %d\n"
-msgstr "Trop de lookups : %d\n"
+msgid "Too many lookups %d"
+msgstr "Trop de lookups : %d"
 
 #, c-format
 msgid "Too many mapping data points specified in /BlendDesignMap for axis %s.\n"
 msgstr "Trop de points de mappage dans /BlendDesignMap pour l'axe %s.\n"
 
 #, c-format
-msgid "Too many scripts %d\n"
-msgstr "Trop d'écritures : %d\n"
+msgid "Too many scripts %d"
+msgstr "Trop d'écritures : %d"
 
 #, c-format
 msgid "Too many separation marks, starting at: %.20s..."
@@ -20667,17 +20667,17 @@ msgstr "Densité inattendue"
 msgid "Unexpected encoding format in cff: %d\n"
 msgstr "Format de codage inattendu dans cff : %d\n"
 
-msgid "Unexpected end of file found in morx chain.\n"
-msgstr "Fin de fichier inattendue trouvée dans une chaîne 'morx'.\n"
+msgid "Unexpected end of file found in morx chain."
+msgstr "Fin de fichier inattendue trouvée dans une chaîne 'morx'."
 
 msgid "Unexpected end of file in GSUB ligature sub-table.\n"
 msgstr "Fin de fichier inattendue dans la sous-table de ligatures GSUB.\n"
 
-msgid "Unexpected end of file in GSUB sub-table.\n"
-msgstr "Fin de fichier inattendue dans la sous-table GSUB.\n"
+msgid "Unexpected end of file in GSUB sub-table."
+msgstr "Fin de fichier inattendue dans la sous-table GSUB."
 
-msgid "Unexpected end of file in contextual chaining subtable.\n"
-msgstr "Fin de fichier inattendu dans la sous-table d'enchaînement contextuel.\n"
+msgid "Unexpected end of file in contextual chaining subtable."
+msgstr "Fin de fichier inattendu dans la sous-table d'enchaînement contextuel."
 
 #, c-format
 msgid "Unexpected end of file in feature definition on line %d of %s"
@@ -20849,12 +20849,12 @@ msgid "Unknown"
 msgstr "Inconnu"
 
 #, c-format
-msgid "Unknown GPOS sub-table type: %d\n"
-msgstr "Type de sous-table GPOS inconnu : %d\n"
+msgid "Unknown GPOS sub-table type: %d"
+msgstr "Type de sous-table GPOS inconnu : %d"
 
 #, c-format
-msgid "Unknown GSUB sub-table type: %d\n"
-msgstr "Type de sous-table GSUB inconnu : %d\n"
+msgid "Unknown GSUB sub-table type: %d"
+msgstr "Type de sous-table GSUB inconnu : %d"
 
 msgid "Unknown Language"
 msgstr "Langue inconnue"

@@ -6027,8 +6027,8 @@ msgstr "Formes JIS83"
 msgid "JIS90 Forms"
 msgstr "Formes JIS90"
 
-msgid "JSTF table is too long.\n"
-msgstr "La taula JSTF és massa llarga\n"
+msgid "JSTF table is too long."
+msgstr "La taula JSTF és massa llarga"
 
 msgid "Japanese"
 msgstr "Japonès"
@@ -12717,8 +12717,8 @@ msgid "Too many layers"
 msgstr "Hi ha massa capes"
 
 #, c-format
-msgid "Too many lookups %d\n"
-msgstr "Hi ha massa consultes %d\n"
+msgid "Too many lookups %d"
+msgstr "Hi ha massa consultes %d"
 
 #, c-format
 msgid "Too many separation marks, starting at: %.20s..."
@@ -12949,17 +12949,17 @@ msgstr "La densitat és inesperada"
 msgid "Unexpected encoding format in cff: %d\n"
 msgstr "S'ha trobat un format de codificació inesperat al cff: %d\n"
 
-msgid "Unexpected end of file found in morx chain.\n"
-msgstr "S'ha trobat un final de fitxer inesperat a la cadena morx.\n"
+msgid "Unexpected end of file found in morx chain."
+msgstr "S'ha trobat un final de fitxer inesperat a la cadena morx."
 
 msgid "Unexpected end of file in GSUB ligature sub-table.\n"
 msgstr "S'ha torbat un final de fitxer inesperat a la subtaula de lligadures GSUB.\n"
 
-msgid "Unexpected end of file in GSUB sub-table.\n"
-msgstr "S'ha trobat un final de fitxer inesperat a la subtaula GSUB.\n"
+msgid "Unexpected end of file in GSUB sub-table."
+msgstr "S'ha trobat un final de fitxer inesperat a la subtaula GSUB."
 
-msgid "Unexpected end of file in contextual chaining subtable.\n"
-msgstr "S'ha trobat un final de fitxer inesperat a la subtaula de canvis contextuals.\n"
+msgid "Unexpected end of file in contextual chaining subtable."
+msgstr "S'ha trobat un final de fitxer inesperat a la subtaula de canvis contextuals."
 
 #, c-format
 msgid "Unexpected end of file in feature definition on line %d of %s"

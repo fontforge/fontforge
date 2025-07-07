@@ -18,8 +18,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-06 23:41+0300\n"
-"PO-Revision-Date: 2025-07-05 22:20\n"
+"POT-Creation-Date: 2025-07-07 19:14+0300\n"
+"PO-Revision-Date: 2025-07-07 16:00\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -115,19 +115,19 @@ msgstr ""
 " Die Übereinstimmung ist jetzt nicht mehr aktuell."
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad contextual chaining substitution table, ignored\n"
-msgstr " Ungültige Tabelle der kontextuellen Ketten-Substitution, ignoriert\n"
+msgid " Bad contextual chaining substitution table, ignored"
+msgstr " Ungültige Tabelle der kontextuellen Ketten-Substitution, ignoriert"
 
-msgid " Bad contextual chaining table, ignored\n"
-msgstr " Ungültige Tabelle der kontextuellen Kette, ignoriert\n"
-
-#. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad contextual substitution table, ignored\n"
-msgstr " Ungültige Tabelle der kontekstuellen Substitution, ignoriert\n"
+msgid " Bad contextual chaining table, ignored"
+msgstr " Ungültige Tabelle der kontextuellen Kette, ignoriert"
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad contextual table, ignored\n"
-msgstr " Ungültige kontextuelle Tabelle, ignoriert\n"
+msgid " Bad contextual substitution table, ignored"
+msgstr " Ungültige Tabelle der kontekstuellen Substitution, ignoriert"
+
+#. GT: This continues a multi-line error message, hence the leading space
+msgid " Bad contextual table, ignored"
+msgstr " Ungültige kontextuelle Tabelle, ignoriert"
 
 #. GT: This continues a multi-line error message, hence the leading space
 msgid " Bad cursive alignment table, ignored"
@@ -137,14 +137,14 @@ msgstr " Ungültige Tabelle der Kursiv-Ausrichtung, ignoriert"
 msgid " Bad kerning class table, ignored"
 msgstr " Ungültige Tabelle der Unterschneidungs-Klassen, ignoriert"
 
-msgid " Bad ligature table, ignored\n"
-msgstr " Ungültige Tabelle der Ligaturen, ignoriert\n"
+msgid " Bad ligature table, ignored"
+msgstr " Ungültige Tabelle der Ligaturen, ignoriert"
 
 msgid " Bad mark attachment table, ignored"
 msgstr " Ungültige Tabelle der Akzent-Verbindung, ignoriert"
 
-msgid " Bad multiple substitution table, ignored\n"
-msgstr " Ungültige Tabelle der mehrfachen Substitution, ignoriert\n"
+msgid " Bad multiple substitution table, ignored"
+msgstr " Ungültige Tabelle der mehrfachen Substitution, ignoriert"
 
 #. GT: This continues a multi-line error message, hence the leading space
 msgid " Bad pairwise kerning table, ignored"
@@ -153,8 +153,8 @@ msgstr " Ungültige Tabelle der paarweisen Unterschneidung, ignoriert"
 msgid " Bad simple positioning table, ignored"
 msgstr " Ungültige Tabelle der einfachen Positionierung, ignoriert"
 
-msgid " Bad simple substitution table, ignored\n"
-msgstr " Ungültige Tabelle der einfachen Substitution, ignoriert\n"
+msgid " Bad simple substitution table, ignored"
+msgstr " Ungültige Tabelle der einfachen Substitution, ignoriert"
 
 #, c-format
 msgid " Curvature: %g"
@@ -2387,8 +2387,8 @@ msgstr "Ungültiger Begrenzungsrahmen für %s.\n"
 msgid "Bad cidmap file"
 msgstr "Ungültige cidmap-Datei"
 
-msgid "Bad class count in contextual chaining sub-table.\n"
-msgstr "Ungültige Anzahl der Klassen in der Subtabelle der kontextuellen Kette.\n"
+msgid "Bad class count in contextual chaining sub-table."
+msgstr "Ungültige Anzahl der Klassen in der Subtabelle der kontextuellen Kette."
 
 msgid "Bad class name"
 msgstr "Ungültiger Klassenname"
@@ -2407,11 +2407,11 @@ msgstr "Ungütlige Tabelle der kontextuellen oder Ketten-Substitution. Glyphe %d
 msgid "Bad correction"
 msgstr "Ungültige Korrektur"
 
-msgid "Bad count in context chaining sub-table.\n"
-msgstr "Ungültige Anzahl in Subtabelle der kontekstuellen Kettung.\n"
+msgid "Bad count in context chaining sub-table."
+msgstr "Ungültige Anzahl in Subtabelle der kontekstuellen Kettung."
 
-msgid "Bad count in contextual chaining sub-table.\n"
-msgstr "Ungültige Anzahl in Subtabelle der kontextuellen Kette.\n"
+msgid "Bad count in contextual chaining sub-table."
+msgstr "Ungültige Anzahl in Subtabelle der kontextuellen Kette."
 
 msgid "Bad count."
 msgstr "Ungültige Anzahl."
@@ -2463,8 +2463,8 @@ msgstr "Ungültiges Format für Abdeckungstabelle %d"
 msgid "Bad glif file %s"
 msgstr "Ungültige glif-Datei %s"
 
-msgid "Bad glyph count in mort table.\n"
-msgstr "Ungültige Anzahl an Glyphen in mort Tabelle.\n"
+msgid "Bad glyph count in mort table."
+msgstr "Ungültige Anzahl an Glyphen in mort Tabelle."
 
 msgid "Bad glyph name."
 msgstr "Falscher Glyphenname."
@@ -2472,8 +2472,8 @@ msgstr "Falscher Glyphenname."
 msgid "Bad glyph reference in layer info.\n"
 msgstr "Ungültige Glyphen-Referenz in Ebenen-Informationen.\n"
 
-msgid "Bad glyph variant subtable of MATH table.\n"
-msgstr "Ungültige Subtabelle der Glyphen-Varianten der MATH Tabelle.\n"
+msgid "Bad glyph variant subtable of MATH table."
+msgstr "Ungültige Subtabelle der Glyphen-Varianten der MATH Tabelle."
 
 #, c-format
 msgid "Bad hex color spec: %s\n"
@@ -2502,7 +2502,7 @@ msgid "Bad kern pair: glyphs %d & %d must be less than %d\n"
 msgstr "Ungültiges Unterschneidungpaar: Glyphen %d und %d müssen weniger sein %d\n"
 
 #, c-format
-msgid "Bad kern pair: glyphs %d & %d mustn't be negative\n"
+msgid "Bad kern pair: glyphs %d & %d mustn't be negative"
 msgstr "Ungültiges Unterschneidungpaar: Glyphen %d und %d sollten nicht negativ sein\n"
 
 #, c-format
@@ -2510,7 +2510,7 @@ msgid "Bad kern pair: glyphs %d & %d should have been < %d"
 msgstr "Ungültiges Unterschneidungpaar: Glyphen %d und %d sollten kleiner sein als %d"
 
 #, c-format
-msgid "Bad kern pair: glyphs at %d & %d are null\n"
+msgid "Bad kern pair: glyphs at %d & %d are null"
 msgstr "Ungültiges Unterschneidungpaar: Glyphen bei %d und %d sind Null\n"
 
 msgid "Bad language tag"
@@ -2523,12 +2523,12 @@ msgid "Bad ligature base table."
 msgstr "Ungültige Tabelle der Grundzeichen von Ligaturen."
 
 #, c-format
-msgid "Bad ligature component glyph. GID %d not less than %d (in ligature %d)\n"
-msgstr "Ungültige Glyphe der Ligaturen-Komponente. GID %d nicht weniger als %d (in Ligatur %d)\n"
+msgid "Bad ligature component glyph. GID %d not less than %d (in ligature %d)"
+msgstr "Ungültige Glyphe der Ligaturen-Komponente. GID %d nicht weniger als %d (in Ligatur %d)"
 
 #, c-format
-msgid "Bad ligature glyph. GID %d not less than %d\n"
-msgstr "Ungültige Ligaturen-Glyphe: GID %d nicht kleiner als %d\n"
+msgid "Bad ligature glyph. GID %d not less than %d"
+msgstr "Ungültige Ligaturen-Glyphe: GID %d nicht kleiner als %d"
 
 msgid "Bad lookup type"
 msgstr "Ungültige Nachschlagetabellen-Art"
@@ -2539,8 +2539,8 @@ msgstr "Ungültige magische Nummer"
 msgid "Bad mark table."
 msgstr "Ungültige Akzent-Tabelle."
 
-msgid "Bad mort ligature table. Not long enough\n"
-msgstr "Ungültige mort Ligaturen-Tabelle. Nicht lang genug\n"
+msgid "Bad mort ligature table. Not long enough"
+msgstr "Ungültige mort Ligaturen-Tabelle. Nicht lang genug"
 
 msgid "Bad namelist file"
 msgstr "Ungültige Datei der Namensliste"
@@ -2587,8 +2587,8 @@ msgid "Bad replace pattern"
 msgstr "Ungültiges Ersatz-Muster"
 
 #, c-format
-msgid "Bad reverse contextual chaining substitution glyph: %d is not less than %d\n"
-msgstr "Ungültige Glyphe der umgekehrten kontextuellen Ketten-Substitution: %d ist nicht weniger als %d\n"
+msgid "Bad reverse contextual chaining substitution glyph: %d is not less than %d"
+msgstr "Ungültige Glyphe der umgekehrten kontextuellen Ketten-Substitution: %d ist nicht weniger als %d"
 
 msgid "Bad rule"
 msgstr "Ungültige Regel"
@@ -2628,8 +2628,8 @@ msgid "Bad stem add"
 msgstr "Ungültige Stammvergrößerung"
 
 #, c-format
-msgid "Bad substitution glyph: GID %d not less than %d\n"
-msgstr "Ungültige Substitutions-Glyphe: GID %d nicht kleiner als %d\n"
+msgid "Bad substitution glyph: GID %d not less than %d"
+msgstr "Ungültige Substitutions-Glyphe: GID %d nicht kleiner als %d"
 
 msgid "Bad tag"
 msgstr "Ungültiges Markierungselement"
@@ -5362,8 +5362,8 @@ msgstr "Kodierungswert nicht in Schrift"
 msgid "Encoding|Glyph Order"
 msgstr "Glyphen-Reihenfolge"
 
-msgid "End of file found in JSTF table.\n"
-msgstr "Ende der Datei in der JSTF-Tabelle gefunden.\n"
+msgid "End of file found in JSTF table."
+msgstr "Ende der Datei in der JSTF-Tabelle gefunden."
 
 msgid "End of file found in coverage table."
 msgstr "Ende der Datei in Abdeckungstabelle gefunden."
@@ -5376,14 +5376,14 @@ msgstr "Ende der Datei in Zeichenfolge gefunden, in Zeile %d von %s"
 msgid "End of file in %s table"
 msgstr "Ende der Datei in Tabelle %s"
 
-msgid "End of file in context chaining sub-table.\n"
-msgstr "Ende der Datei in Subtabelle der kontekstuellen Kettung.\n"
+msgid "End of file in context chaining sub-table."
+msgstr "Ende der Datei in Subtabelle der kontekstuellen Kettung."
 
-msgid "End of file in context chaining subtable.\n"
-msgstr "Ende der Datei in Subtabelle der kontekstuellen Kettung.\n"
+msgid "End of file in context chaining subtable."
+msgstr "Ende der Datei in Subtabelle der kontekstuellen Kettung."
 
-msgid "End of file in feat table.\n"
-msgstr "Ende der Datei in feat Tabelle.\n"
+msgid "End of file in feat table."
+msgstr "Ende der Datei in feat Tabelle."
 
 #, c-format
 msgid "End of file in include on line %d of %s"
@@ -5908,8 +5908,8 @@ msgstr "_ID der Funktion:"
 msgid "Feature file?"
 msgstr "Funktionen-Datei?"
 
-msgid "Feature out of bounds in script table.\n"
-msgstr "Funktion außerhlab der Grenzen in der Tabelle der Schriftsysteme.\n"
+msgid "Feature out of bounds in script table."
+msgstr "Funktion außerhlab der Grenzen in der Tabelle der Schriftsysteme."
 
 msgid "Feature tags are limited to 4 letters"
 msgstr "Markierungselemente der Funktionen sind auf 4 Buchstaben beschränkt"
@@ -6685,20 +6685,20 @@ msgid "Glyph not in font"
 msgstr "Glyphe nicht in Schrift"
 
 #, c-format
-msgid "Glyph out of bounds in 'lcar' table %d\n"
-msgstr "Glyphe außerhlab der Grenzen in 'lcar' Tabelle %d\n"
+msgid "Glyph out of bounds in 'lcar' table %d"
+msgstr "Glyphe außerhlab der Grenzen in 'lcar' Tabelle %d"
 
 #, c-format
 msgid "Glyph out of bounds in 'mort'/'morx' table %d\n"
 msgstr "Glyphe außerhlab der Grenzen in 'mort'/'morx' Tabelle %d\n"
 
 #, c-format
-msgid "Glyph out of bounds in 'opbd' table %d\n"
-msgstr "Glyphe außerhlab der Grenzen in 'opbd' Tabelle %d\n"
+msgid "Glyph out of bounds in 'opbd' table %d"
+msgstr "Glyphe außerhlab der Grenzen in 'opbd' Tabelle %d"
 
 #, c-format
-msgid "Glyph out of bounds in 'prop' table %d\n"
-msgstr "Glyphe außerhlab der Grenzen in 'prop' Tabelle %d\n"
+msgid "Glyph out of bounds in 'prop' table %d"
+msgstr "Glyphe außerhlab der Grenzen in 'prop' Tabelle %d"
 
 msgid "Glyph too big"
 msgstr "Glyphe zu groß"
@@ -7907,8 +7907,8 @@ msgstr "JSTF max. Erweiterung bei Priorität %d #%d für %c%c%c%c in %c%c%c%c"
 msgid "JSTF shrinkage max at priority %d #%d for %c%c%c%c in %c%c%c%c"
 msgstr "JSTF max. Schrumpfen bei Priorität %d #%d für %c%c%c%c in %c%c%c%c"
 
-msgid "JSTF table is too long.\n"
-msgstr "JSTF-Tabelle ist zu lang.\n"
+msgid "JSTF table is too long."
+msgstr "JSTF-Tabelle ist zu lang."
 
 msgid "Japanese"
 msgstr "Japanisch"
@@ -12229,8 +12229,8 @@ msgstr "Erforderliche Variationsalternativen"
 msgid "Required feature"
 msgstr "Erforderliche Funktion"
 
-msgid "Required feature out of bounds in script table.\n"
-msgstr "Benötigte Schrift-Funktion außerhlab der Begrenzung in der Tabelle der Schriftsysteme.\n"
+msgid "Required feature out of bounds in script table."
+msgstr "Benötigte Schrift-Funktion außerhlab der Begrenzung in der Tabelle der Schriftsysteme."
 
 msgid "Reserved Bit 10"
 msgstr "Reserviertes Bit 10"
@@ -14458,13 +14458,11 @@ msgstr "Subtabelle"
 msgid "Subtable %.60s in glyph %.60s"
 msgstr "Subtabelle %.60s in Glyphe %.60s"
 
-msgid "Subtable extends beyond end of GPOS table\n"
-msgstr ""
-"Subtabelle reicht über das Ende der GPOS-Tabelle hinaus\n"
-"\n"
+msgid "Subtable extends beyond end of GPOS table"
+msgstr "Subtabelle reicht über das Ende der GPOS-Tabelle hinaus\n"
 
-msgid "Subtable extends beyond end of GSUB table\n"
-msgstr "Subtabelle reicht über das Ende der GSUB-Tabelle hinaus\n"
+msgid "Subtable extends beyond end of GSUB table"
+msgstr "Subtabelle reicht über das Ende der GSUB-Tabelle hinaus"
 
 msgid "Sum Around:"
 msgstr "Summe drumherum:"
@@ -14870,8 +14868,8 @@ msgstr ""
 "noch entspricht es Adobes früher Fehlinterpretation\n"
 "des Standards. Ich kann es nicht analysieren.\n"
 
-msgid "The 'size' feature of this font conforms to Adobe's early misinterpretation of the otf standard.\n"
-msgstr "Die 'size'-Funktion entspricht Adobes frühen Fehlinterpretation des otf Standards.\n"
+msgid "The 'size' feature of this font conforms to Adobe's early misinterpretation of the otf standard."
+msgstr "Die 'size'-Funktion entspricht Adobes frühen Fehlinterpretation des otf Standards."
 
 msgid "The AFM file contains metrics information that many word-processors will read when using a PostScript® font."
 msgstr "Die AFM-Datei enthält Metriken-Informationen, die viele Wortprozessoren lesen, wenn Sie PostScript® Schriften verwenden."
@@ -15432,12 +15430,12 @@ msgstr ""
 "(Über nachfolgende Glyphen wird nicht gewarnt.)"
 
 #, c-format
-msgid "The name parameter of the '%c%c%c%c' feature does not contain a valid name id.\n"
-msgstr "Der Namensparameter der Schrift-Funktion '%c%c%c%c' enthält keine gültige Namens-ID.\n"
+msgid "The name parameter of the '%c%c%c%c' feature does not contain a valid name id."
+msgstr "Der Namensparameter der Schrift-Funktion '%c%c%c%c' enthält keine gültige Namens-ID."
 
 #, c-format
-msgid "The name parameter of the '%c%c%c%c' feature has an unlikely version number %d.\n"
-msgstr "Der Namensparameter der Schrift-Funktion '%c%c%c%c' enthält eine unwahrscheinliche Versionsnummer %d.\n"
+msgid "The name parameter of the '%c%c%c%c' feature has an unlikely version number %d."
+msgstr "Der Namensparameter der Schrift-Funktion '%c%c%c%c' enthält eine unwahrscheinliche Versionsnummer %d."
 
 #, c-format
 msgid ""
@@ -15942,8 +15940,8 @@ msgstr ""
 "Hast du die Zustimmung?"
 
 #, c-format
-msgid "This font, %s, has multiple GPOS 'size' features. I'm not sure how to interpret that. I shall pick one arbitrarily.\n"
-msgstr "Diese Schriftart, %s, hat mehrere GPOS 'size' Funktionen. Ich bin mir nicht sicher, wie man das interpretieren kann. Ich werde eine beliebige auswählen.\n"
+msgid "This font, %s, has multiple GPOS 'size' features. I'm not sure how to interpret that. I shall pick one arbitrarily."
+msgstr "Diese Schriftart, %s, hat mehrere GPOS 'size' Funktionen. Ich bin mir nicht sicher, wie man das interpretieren kann. Ich werde eine beliebige auswählen."
 
 msgid "This glyph can use a stem3 hint"
 msgstr "Diese Glyphe kann einen stem3 Hint benutzen"
@@ -16416,8 +16414,8 @@ msgid "Too many elements in FamilyBlues/FamilyOtherBlues array."
 msgstr "Zu viele Elemente in der FamilyBlues/FamilyOtherBlues Reihe."
 
 #, c-format
-msgid "Too many features %d\n"
-msgstr "Zu viele Schriftfunktionen %d\n"
+msgid "Too many features %d"
+msgstr "Zu viele Schriftfunktionen %d"
 
 msgid "Too many glyphs"
 msgstr "Zu viele Glyphen"
@@ -16429,16 +16427,16 @@ msgid "Too many layers"
 msgstr "Zu viele Ebenen"
 
 #, c-format
-msgid "Too many lookups %d\n"
-msgstr "Zu viele Nachschlagetabellen %d\n"
+msgid "Too many lookups %d"
+msgstr "Zu viele Nachschlagetabellen %d"
 
 #, c-format
 msgid "Too many mapping data points specified in /BlendDesignMap for axis %s.\n"
 msgstr "Zu viele Zuordnungs-Datenpunkte angegeben, in /BlendDesignMap für Achsen %s.\n"
 
 #, c-format
-msgid "Too many scripts %d\n"
-msgstr "Zu viele Schriftsysteme %d\n"
+msgid "Too many scripts %d"
+msgstr "Zu viele Schriftsysteme %d"
 
 #, c-format
 msgid "Too many separation marks, starting at: %.20s..."
@@ -16833,17 +16831,17 @@ msgstr "Unerwartete Dichte"
 msgid "Unexpected encoding format in cff: %d\n"
 msgstr "Unerwartetes Kodierungsformat in cff: %d\n"
 
-msgid "Unexpected end of file found in morx chain.\n"
-msgstr "Unerwartetes Ende der Datei in der morx Kette.\n"
+msgid "Unexpected end of file found in morx chain."
+msgstr "Unerwartetes Ende der Datei in der morx Kette."
 
 msgid "Unexpected end of file in GSUB ligature sub-table.\n"
 msgstr "Unerwartetes Ende der Datei in der GSUB Subtabelle der Ligaturen.\n"
 
-msgid "Unexpected end of file in GSUB sub-table.\n"
-msgstr "Unerwartetes Ende der Datei in der GSUB Subtabelle.\n"
+msgid "Unexpected end of file in GSUB sub-table."
+msgstr "Unerwartetes Ende der Datei in der GSUB Subtabelle."
 
-msgid "Unexpected end of file in contextual chaining subtable.\n"
-msgstr "Unerwartetes Ende der Datei in Subtabelle der kontextuellen Kette.\n"
+msgid "Unexpected end of file in contextual chaining subtable."
+msgstr "Unerwartetes Ende der Datei in Subtabelle der kontextuellen Kette."
 
 #, c-format
 msgid "Unexpected end of file in feature definition on line %d of %s"
@@ -16961,12 +16959,12 @@ msgid "Unknown"
 msgstr "Unbekannt"
 
 #, c-format
-msgid "Unknown GPOS sub-table type: %d\n"
-msgstr "Unbekannte Art der GPOS Subtabelle: %d\n"
+msgid "Unknown GPOS sub-table type: %d"
+msgstr "Unbekannte Art der GPOS Subtabelle: %d"
 
 #, c-format
-msgid "Unknown GSUB sub-table type: %d\n"
-msgstr "Unbekannte Art der GSUB Subtabelle: %d\n"
+msgid "Unknown GSUB sub-table type: %d"
+msgstr "Unbekannte Art der GSUB Subtabelle: %d"
 
 msgid "Unknown Language"
 msgstr "Unbekannte Sprache"

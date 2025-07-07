@@ -2890,8 +2890,8 @@ msgstr "Forme JIS83"
 msgid "JIS90 Forms"
 msgstr "Forme JIS90"
 
-msgid "JSTF table is too long.\n"
-msgstr "La tabella JSTF è troppo lunga.\n"
+msgid "JSTF table is too long."
+msgstr "La tabella JSTF è troppo lunga."
 
 msgid "Japanese"
 msgstr "Giapponese"

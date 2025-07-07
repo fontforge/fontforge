@@ -55,8 +55,8 @@ msgstr " ზომის დამატებით შეიქმნება
 msgid " Bad kerning class table, ignored"
 msgstr " შემოკვეცის კლასის უმართებულო ცხრილი, უგულებელყოფილია"
 
-msgid " Bad ligature table, ignored\n"
-msgstr " გადაბმების გაუმართავი ცხრილი, უგულებელყოფილია\n"
+msgid " Bad ligature table, ignored"
+msgstr " გადაბმების გაუმართავი ცხრილი, უგულებელყოფილია"
 
 #. GT: This continues a multi-line error message, hence the leading space
 msgid " Bad pairwise kerning table, ignored"
@@ -877,8 +877,8 @@ msgid "Bad language tag"
 msgstr "არამართებული ენის ჭდე"
 
 #, c-format
-msgid "Bad ligature glyph. GID %d not less than %d\n"
-msgstr "გადაბმის გაუმართავი ნიშანი. GID-ნომერი %d უნდა იყოს არანაკლებ %d\n"
+msgid "Bad ligature glyph. GID %d not less than %d"
+msgstr "გადაბმის გაუმართავი ნიშანი. GID-ნომერი %d უნდა იყოს არანაკლებ %d"
 
 msgid "Bad lookup type"
 msgstr "არამართებული ცნობარის სახეობა"
@@ -5863,8 +5863,8 @@ msgid "Too many dashes (at most %d allowed)"
 msgstr "ზედმეტად ბევრი ტირე (არაუმეტეს %d მისაღებია)"
 
 #, c-format
-msgid "Too many features %d\n"
-msgstr "ზედმეტად ბევრი თვისება %d\n"
+msgid "Too many features %d"
+msgstr "ზედმეტად ბევრი თვისება %d"
 
 msgid "Too many kern pairs"
 msgstr "ზედმეტად ბევრი შემოკვეცილი წყვილი"
@@ -5873,8 +5873,8 @@ msgid "Too many layers"
 msgstr "ზედმეტად ბევრი შრე"
 
 #, c-format
-msgid "Too many lookups %d\n"
-msgstr "ზედმეტად ბევრი ცნობარი %d\n"
+msgid "Too many lookups %d"
+msgstr "ზედმეტად ბევრი ცნობარი %d"
 
 msgid "Tools"
 msgstr "ხელსაწყოები"

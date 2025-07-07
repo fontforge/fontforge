@@ -129,19 +129,19 @@ msgid " At least one reference to this glyph used point matching. That match is 
 msgstr " 본 글리프로의 참조 중 적어도 하나의 점매칭을 사용하였습니다. 그 매칭은 이미 현 상황에 맞지 않으며 업데이트가 필요합니다."
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad contextual chaining substitution table, ignored\n"
-msgstr "잘못된 컨텍스트 체인 대체 테이블 무시되었습니다\n"
+msgid " Bad contextual chaining substitution table, ignored"
+msgstr "잘못된 컨텍스트 체인 대체 테이블 무시되었습니다"
 
-msgid " Bad contextual chaining table, ignored\n"
-msgstr "잘못된 컨텍스트 체인 테이블 무시되었습니다\n"
-
-#. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad contextual substitution table, ignored\n"
-msgstr "잘못된 컨텍스트 대체 테이블 무시되었습니다\n"
+msgid " Bad contextual chaining table, ignored"
+msgstr "잘못된 컨텍스트 체인 테이블 무시되었습니다"
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad contextual table, ignored\n"
-msgstr "잘못된 컨텍스트 테이블 무시되었습니다\n"
+msgid " Bad contextual substitution table, ignored"
+msgstr "잘못된 컨텍스트 대체 테이블 무시되었습니다"
+
+#. GT: This continues a multi-line error message, hence the leading space
+msgid " Bad contextual table, ignored"
+msgstr "잘못된 컨텍스트 테이블 무시되었습니다"
 
 #. GT: This continues a multi-line error message, hence the leading space
 msgid " Bad cursive alignment table, ignored"
@@ -151,14 +151,14 @@ msgstr "나쁜 필기체 정렬 테이블 무시되었습니다"
 msgid " Bad kerning class table, ignored"
 msgstr "커닝 클래스 테이블이 잘못되었습니다. 무시되었습니다"
 
-msgid " Bad ligature table, ignored\n"
-msgstr "잘못된 합자 표 무시되었습니다\n"
+msgid " Bad ligature table, ignored"
+msgstr "잘못된 합자 표 무시되었습니다"
 
 msgid " Bad mark attachment table, ignored"
 msgstr "잘못된 마크 첨부 테이블 무시되었습니다"
 
-msgid " Bad multiple substitution table, ignored\n"
-msgstr "무단 여러 대체 테이블 무시되었습니다\n"
+msgid " Bad multiple substitution table, ignored"
+msgstr "무단 여러 대체 테이블 무시되었습니다"
 
 #. GT: This continues a multi-line error message, hence the leading space
 msgid " Bad pairwise kerning table, ignored"
@@ -167,8 +167,8 @@ msgstr "잘못된 페어 와이즈 커닝 테이블 무시되었습니다"
 msgid " Bad simple positioning table, ignored"
 msgstr "무단 간단한 위치 결정 테이블 무시"
 
-msgid " Bad simple substitution table, ignored\n"
-msgstr "잘못된 단순 치환 테이블 무시되었습니다\n"
+msgid " Bad simple substitution table, ignored"
+msgstr "잘못된 단순 치환 테이블 무시되었습니다"
 
 #, c-format
 msgid " Curvature: %g"
@@ -2714,8 +2714,8 @@ msgstr "폰트패밀리명이 부적절합니다."
 msgid "Bad Font Name"
 msgstr "폰트명이 부적절합니다."
 
-msgid "Bad GID in JSTF extenser table.\n"
-msgstr "JSF 확장 테이블의 잘못된 GID.\n"
+msgid "Bad GID in JSTF extenser table."
+msgstr "JSF 확장 테이블의 잘못된 GID."
 
 msgid "Bad Glyph Count"
 msgstr "글리프의 개수이 부적절합니다"
@@ -2883,8 +2883,8 @@ msgstr "%s의 바운딩 박스가 부적절합니다.\n"
 msgid "Bad cidmap file"
 msgstr "cidmap파일이 부적절합니다."
 
-msgid "Bad class count in contextual chaining sub-table.\n"
-msgstr "문맥연쇄서브테이블 내의 클래스번호\n"
+msgid "Bad class count in contextual chaining sub-table."
+msgstr "문맥연쇄서브테이블 내의 클래스번호"
 
 #, c-format
 msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)\n"
@@ -2914,11 +2914,11 @@ msgstr "문맥의존/문맥연쇄의존 서브테이블이 부적절합니다. �
 msgid "Bad correction"
 msgstr "잘못된 수정"
 
-msgid "Bad count in context chaining sub-table.\n"
-msgstr "문맥연쇄 서브테이블 내의 개수가 올바르지 않습니다.\n"
+msgid "Bad count in context chaining sub-table."
+msgstr "문맥연쇄 서브테이블 내의 개수가 올바르지 않습니다."
 
-msgid "Bad count in contextual chaining sub-table.\n"
-msgstr "문맥연쇄 서브테이블 내의 개수가 올바르지 않습니다.\n"
+msgid "Bad count in contextual chaining sub-table."
+msgstr "문맥연쇄 서브테이블 내의 개수가 올바르지 않습니다."
 
 msgid "Bad count."
 msgstr "개수가 올바르지 않습니다."
@@ -3022,8 +3022,8 @@ msgstr "올바르지 않은 글리프(%d)가 있습니다. 정의 glyf테이블 
 msgid "Bad glyph (%d), its definition extends beyond the space allowed for it\n"
 msgstr "올바르지 않은 글리프(%d)가 있습니다. 글리프의 정의가 허락하는 빈 간격을 넘어섰습니다\n"
 
-msgid "Bad glyph count in mort table.\n"
-msgstr "mort 테이블 내 글리프의 개수가 부적절합니다.\n"
+msgid "Bad glyph count in mort table."
+msgstr "mort 테이블 내 글리프의 개수가 부적절합니다."
 
 msgid "Bad glyph name."
 msgstr "문자 이름이 잘못되었음."
@@ -3037,8 +3037,8 @@ msgstr "PfEd 테이블글리프메모 서브테이블에 지정된 글리프범�
 msgid "Bad glyph reference in layer info.\n"
 msgstr "레이어 정보에 유효하지 않은 그래핀 참조\n"
 
-msgid "Bad glyph variant subtable of MATH table.\n"
-msgstr "MATH 테이블의 잘못된 그리 변형 서브 테이블.\n"
+msgid "Bad glyph variant subtable of MATH table."
+msgstr "MATH 테이블의 잘못된 그리 변형 서브 테이블."
 
 #, c-format
 msgid "Bad hex color spec: %s\n"
@@ -3088,12 +3088,12 @@ msgid "Bad ligature base table."
 msgstr "합음자base테이블이 부적절합니다."
 
 #, c-format
-msgid "Bad ligature component glyph. GID %d not less than %d (in ligature %d)\n"
-msgstr "합자 구성 요소의 문양이 올바르지 않습니다. GID %d %d 이상 (합자 %d)\n"
+msgid "Bad ligature component glyph. GID %d not less than %d (in ligature %d)"
+msgstr "합자 구성 요소의 문양이 올바르지 않습니다. GID %d %d 이상 (합자 %d)"
 
 #, c-format
-msgid "Bad ligature glyph. GID %d not less than %d\n"
-msgstr "합음자글리프가 부적절합니다. GID %d가 %d 미만이 아닙니다\n"
+msgid "Bad ligature glyph. GID %d not less than %d"
+msgstr "합음자글리프가 부적절합니다. GID %d가 %d 미만이 아닙니다"
 
 #, c-format
 msgid "Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
@@ -3104,12 +3104,12 @@ msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font
 msgstr "포맷 4 (%d/%d) 의 참조테이블이 손상되어 있습니다.최초=%d 마지막=%d 폰트내의 모든 글리프수=%d\n"
 
 #, c-format
-msgid "Bad lookup table: format=6, first=%d total glyphs in font=%d\n"
-msgstr "잘못된 조회 테이블: format = 6 먼저 = %d 글꼴 총 그래프 = %d\n"
+msgid "Bad lookup table: format=6, first=%d total glyphs in font=%d"
+msgstr "잘못된 조회 테이블: format = 6 먼저 = %d 글꼴 총 그래프 = %d"
 
 #, c-format
-msgid "Bad lookup table: format=8, first=%d cnt=%d total glyphs in font=%d\n"
-msgstr "포맷 8 의 참조테이블이 손상되어 있습니다.최초=%d 개수=%d 폰트내의 모든 글리프수=%d\n"
+msgid "Bad lookup table: format=8, first=%d cnt=%d total glyphs in font=%d"
+msgstr "포맷 8 의 참조테이블이 손상되어 있습니다.최초=%d 개수=%d 폰트내의 모든 글리프수=%d"
 
 msgid "Bad lookup type"
 msgstr "잘못된 조회 유형"
@@ -3120,8 +3120,8 @@ msgstr "잘못된 magic 번호입니다."
 msgid "Bad mark table."
 msgstr "마크테이블이 부적절합니다."
 
-msgid "Bad mort ligature table. Not long enough\n"
-msgstr "mort 합음자테이블이 부적절합니다. 길이가 부족\n"
+msgid "Bad mort ligature table. Not long enough"
+msgstr "mort 합음자테이블이 부적절합니다. 길이가 부족"
 
 #, c-format
 msgid "Bad name when parsing %s for unicode %x"
@@ -3176,8 +3176,8 @@ msgid "Bad replace pattern"
 msgstr "잘못된 패턴 바꾸기입니다."
 
 #, c-format
-msgid "Bad reverse contextual chaining substitution glyph: %d is not less than %d\n"
-msgstr "전방문맥연쇄의존 변경할 글리프이 부적절합니다: %d 가 %d 미만이 아닙니다\n"
+msgid "Bad reverse contextual chaining substitution glyph: %d is not less than %d"
+msgstr "전방문맥연쇄의존 변경할 글리프이 부적절합니다: %d 가 %d 미만이 아닙니다"
 
 msgid "Bad rule"
 msgstr "잘못된 규칙"
@@ -3218,8 +3218,8 @@ msgid "Bad subroutine INDEX in cff font.\n"
 msgstr "CFF 폰트 내에 올바르지 않은 서브루틴 인덱스가 있습니다.\n"
 
 #, c-format
-msgid "Bad substitution glyph: GID %d not less than %d\n"
-msgstr "변경할 글리프이 부적절합니다: GID %d 가 %d 미만의 값이 아닙니다\n"
+msgid "Bad substitution glyph: GID %d not less than %d"
+msgstr "변경할 글리프이 부적절합니다: GID %d 가 %d 미만의 값이 아닙니다"
 
 msgid "Bad tag"
 msgstr "잘못된 태그"
@@ -6741,8 +6741,8 @@ msgstr ""
 "종료 IF\n"
 "IF 또는 IF-ELSE 시퀀스 종료"
 
-msgid "End of file found in JSTF table.\n"
-msgstr "JSTF 테이블에서 파일의 끝이 발견되었습니다.\n"
+msgid "End of file found in JSTF table."
+msgstr "JSTF 테이블에서 파일의 끝이 발견되었습니다."
 
 msgid "End of file found in coverage table."
 msgstr "범위테이블의 도중에 파일이 끝나있습니다"
@@ -6758,14 +6758,14 @@ msgstr "개인 사전을 읽는 동안 파일의 끝이 발견되었습니다.\n
 msgid "End of file in %s table"
 msgstr "%s 테이블 파일의 끝"
 
-msgid "End of file in context chaining sub-table.\n"
-msgstr "컨텍스트 체인 서브 테이블 파일의 끝.\n"
+msgid "End of file in context chaining sub-table."
+msgstr "컨텍스트 체인 서브 테이블 파일의 끝."
 
-msgid "End of file in context chaining subtable.\n"
-msgstr "문맥연쇄 서브테이블 의 도중에 파일이 끝나 있습니다.\n"
+msgid "End of file in context chaining subtable."
+msgstr "문맥연쇄 서브테이블 의 도중에 파일이 끝나 있습니다."
 
-msgid "End of file in feat table.\n"
-msgstr "feat 테이블의 도중에 파일이 잘려 있습니다.\n"
+msgid "End of file in feat table."
+msgstr "feat 테이블의 도중에 파일이 잘려 있습니다."
 
 #, c-format
 msgid "End of file in include on line %d of %s"
@@ -7560,8 +7560,8 @@ msgstr "특성_ID:"
 msgid "Feature file?"
 msgstr "특성 파일?"
 
-msgid "Feature out of bounds in script table.\n"
-msgstr "문자열테이블의 경계를 넘어서는 특성이 있습니다.\n"
+msgid "Feature out of bounds in script table."
+msgstr "문자열테이블의 경계를 넘어서는 특성이 있습니다."
 
 msgid "Feature tags are limited to 4 letters"
 msgstr "기능 태그는 4자로 제한됨"
@@ -8631,20 +8631,20 @@ msgid "Glyph not in font"
 msgstr "글꼴이 아닌 글리프"
 
 #, c-format
-msgid "Glyph out of bounds in 'lcar' table %d\n"
-msgstr "'lcar' 테이블 %d 의 경계를 넘어서는 글리프가 있습니다\n"
+msgid "Glyph out of bounds in 'lcar' table %d"
+msgstr "'lcar' 테이블 %d 의 경계를 넘어서는 글리프가 있습니다"
 
 #, c-format
 msgid "Glyph out of bounds in 'mort'/'morx' table %d\n"
 msgstr "'mort'/'morx' 테이블 %d 의 경계를 넘어서는 글리프가 있습니다\n"
 
 #, c-format
-msgid "Glyph out of bounds in 'opbd' table %d\n"
-msgstr "'opbd' 테이블 %d 의 경계를 넘어서는 글리프가 있습니다\n"
+msgid "Glyph out of bounds in 'opbd' table %d"
+msgstr "'opbd' 테이블 %d 의 경계를 넘어서는 글리프가 있습니다"
 
 #, c-format
-msgid "Glyph out of bounds in 'prop' table %d\n"
-msgstr "'prop' 테이블 %d 의 경계를 넘어서는 글리프가 있습니다\n"
+msgid "Glyph out of bounds in 'prop' table %d"
+msgstr "'prop' 테이블 %d 의 경계를 넘어서는 글리프가 있습니다"
 
 msgid "Glyph too big"
 msgstr "글자의 모양이 너무 큽니다."
@@ -10461,8 +10461,8 @@ msgstr "%7$c%8$c%9$c%10$c 의 %3$c%4$c%5$c%6$c의 우선 순위 %1$d %2$d 번에
 msgid "JSTF shrinkage max at priority %d #%d for %c%c%c%c in %c%c%c%c"
 msgstr "%7$c%8$c%9$c%10$c 의 %3$c%4$c%5$c%6$c의 우선 순위 %1$d %2$d 번에서 JSTF 수축 최대"
 
-msgid "JSTF table is too long.\n"
-msgstr "JSTF 테이블이 너무 깁니다.\n"
+msgid "JSTF table is too long."
+msgstr "JSTF 테이블이 너무 깁니다."
 
 msgid "Japanese"
 msgstr "일본어"
@@ -10696,8 +10696,8 @@ msgstr ""
 "이 하위 테이블로 어떤 것을 원하십니까?"
 
 #, c-format
-msgid "Kerning subtable 3 says the glyph count is %d, but maxp says %d\n"
-msgstr "커닝서브테이블 3 에서글리프의 개수는 %d 개 입니다만, maxp 는 %d 개라고 합니다\n"
+msgid "Kerning subtable 3 says the glyph count is %d, but maxp says %d"
+msgstr "커닝서브테이블 3 에서글리프의 개수는 %d 개 입니다만, maxp 는 %d 개라고 합니다"
 
 msgid "Kerning values must be even"
 msgstr "커닝값은 짝수개 이어야 합니다"
@@ -11419,12 +11419,12 @@ msgid "Lookup Type|Unspecified"
 msgstr "지정되지 않음"
 
 #, c-format
-msgid "Lookup index (%d) out of bounds in GPOS from JSTF table.\n"
-msgstr "JSTF 테이블에서 GPOS의 범위를 벗어난 조회 인덱스 (%d).\n"
+msgid "Lookup index (%d) out of bounds in GPOS from JSTF table."
+msgstr "JSTF 테이블에서 GPOS의 범위를 벗어난 조회 인덱스 (%d)."
 
 #, c-format
-msgid "Lookup index (%d) out of bounds in GSUB from JSTF table.\n"
-msgstr "JSTF 테이블에서 GSUB의 범위를 벗어난 조회 인덱스 (%d).\n"
+msgid "Lookup index (%d) out of bounds in GSUB from JSTF table."
+msgstr "JSTF 테이블에서 GSUB의 범위를 벗어난 조회 인덱스 (%d)."
 
 #, c-format
 msgid "Lookup information attached to unmarked glyph on line %d of %s"
@@ -11433,8 +11433,8 @@ msgstr "%2$s의 %1$d행에서 표시되지 않은 문자에 첨부된 색인 정
 msgid "Lookup name already used"
 msgstr "이미 사용된 조회 이름"
 
-msgid "Lookup out of bounds in feature table.\n"
-msgstr "특성테이블의 경계를 넘어서는 참조가 있습니다.\n"
+msgid "Lookup out of bounds in feature table."
+msgstr "특성테이블의 경계를 넘어서는 참조가 있습니다."
 
 #, c-format
 msgid "Lookup subtable %s (matched with %s)\n"
@@ -16296,8 +16296,8 @@ msgstr "필수 변형 대안"
 msgid "Required feature"
 msgstr "필수의 특성"
 
-msgid "Required feature out of bounds in script table.\n"
-msgstr "필수의 특성이 문자열테이블의 경례를 넘어섭니다.\n"
+msgid "Required feature out of bounds in script table."
+msgstr "필수의 특성이 문자열테이블의 경례를 넘어섭니다."
 
 msgid "Reserved Bit 10"
 msgstr "예약된 비트 10"
@@ -19260,11 +19260,11 @@ msgstr "하위 테이블"
 msgid "Subtable %.60s in glyph %.60s"
 msgstr "글리프 %2$.60s에 있는 하위 테이블%1$.60s"
 
-msgid "Subtable extends beyond end of GPOS table\n"
-msgstr "서브 테이블이 GPOS 테이블의 끝을 넘어서 늘어져 있습니다\n"
+msgid "Subtable extends beyond end of GPOS table"
+msgstr "서브 테이블이 GPOS 테이블의 끝을 넘어서 늘어져 있습니다"
 
-msgid "Subtable extends beyond end of GSUB table\n"
-msgstr "서브테이블이 GSUB 테이블의 끝을 넘어서 있습니다\n"
+msgid "Subtable extends beyond end of GSUB table"
+msgstr "서브테이블이 GSUB 테이블의 끝을 넘어서 있습니다"
 
 msgid "Sum Around:"
 msgstr "허용오차:"
@@ -19809,8 +19809,8 @@ msgid ""
 "the standard. I cannot parse it.\n"
 msgstr "\"크기\"기능은 표준을 준수하지 않는 것 같고, Adobe의 초기 표준 오해을 준수하지 않습니다. 해석 할 수 없습니다.\n"
 
-msgid "The 'size' feature of this font conforms to Adobe's early misinterpretation of the otf standard.\n"
-msgstr "이 글꼴 '크기'기능은 Adobe의 초기 otf 표준 오해을 준수하고 있습니다.\n"
+msgid "The 'size' feature of this font conforms to Adobe's early misinterpretation of the otf standard."
+msgstr "이 글꼴 '크기'기능은 Adobe의 초기 otf 표준 오해을 준수하고 있습니다."
 
 msgid "The AFM file contains metrics information that many word-processors will read when using a PostScript® font."
 msgstr ""
@@ -20747,12 +20747,12 @@ msgstr ""
 "(이후 글리프에서 경고는 생략됩니다.)"
 
 #, c-format
-msgid "The name parameter of the '%c%c%c%c' feature does not contain a valid name id.\n"
-msgstr "'%c%c%c%c' 기능의 이름 매개 변수에 유효한 이름 Id가 포함되어 있지 않습니다.\n"
+msgid "The name parameter of the '%c%c%c%c' feature does not contain a valid name id."
+msgstr "'%c%c%c%c' 기능의 이름 매개 변수에 유효한 이름 Id가 포함되어 있지 않습니다."
 
 #, c-format
-msgid "The name parameter of the '%c%c%c%c' feature has an unlikely version number %d.\n"
-msgstr "'%c%c%c%c' 기능의 이름 매개 변수의 버전 번호가 없습니다 %d.\n"
+msgid "The name parameter of the '%c%c%c%c' feature has an unlikely version number %d."
+msgstr "'%c%c%c%c' 기능의 이름 매개 변수의 버전 번호가 없습니다 %d."
 
 #, c-format
 msgid ""
@@ -21607,8 +21607,8 @@ msgstr ""
 "편집 권한을 가지고 계신가요?"
 
 #, c-format
-msgid "This font, %s, has multiple GPOS 'size' features. I'm not sure how to interpret that. I shall pick one arbitrarily.\n"
-msgstr "이 폰트 %s 는 복수의 GPOS 'size' 특성을 포함합니다. 이것을 어떡게 해석해야할지 모르겠습니다. 적당히 1 개를 꺼내옵니다.\n"
+msgid "This font, %s, has multiple GPOS 'size' features. I'm not sure how to interpret that. I shall pick one arbitrarily."
+msgstr "이 폰트 %s 는 복수의 GPOS 'size' 특성을 포함합니다. 이것을 어떡게 해석해야할지 모르겠습니다. 적당히 1 개를 꺼내옵니다."
 
 msgid "This glyph can use a stem3 hint"
 msgstr "본 글리프 는 stem3힌트를 사용할 수 있습니다"
@@ -22256,8 +22256,8 @@ msgid "Too many entries in CharStrings dictionary \"%s"
 msgstr "CharStrings사전 %s의 항목이 너무 많습니다"
 
 #, c-format
-msgid "Too many features %d\n"
-msgstr "커닝이 너무 많습니다 (%d 개)\n"
+msgid "Too many features %d"
+msgstr "커닝이 너무 많습니다 (%d 개)"
 
 msgid "Too many glyphs"
 msgstr "문자가 너무 많습니다."
@@ -22269,16 +22269,16 @@ msgid "Too many layers"
 msgstr "너무 많은 레이어"
 
 #, c-format
-msgid "Too many lookups %d\n"
-msgstr "룩업이 너무 많습니다 (%d 個)\n"
+msgid "Too many lookups %d"
+msgstr "룩업이 너무 많습니다 (%d 個)"
 
 #, c-format
 msgid "Too many mapping data points specified in /BlendDesignMap for axis %s.\n"
 msgstr "축 %s 의 /BlendDesignMap에서 지정된 화상데이터의 점이 너무 많습니다.\n"
 
 #, c-format
-msgid "Too many scripts %d\n"
-msgstr "문자열이 너무 많습니다 (%d 개)\n"
+msgid "Too many scripts %d"
+msgstr "문자열이 너무 많습니다 (%d 개)"
 
 #, c-format
 msgid "Too many separation marks, starting at: %.20s..."
@@ -22752,17 +22752,17 @@ msgstr "예상밖의 밀도 값"
 msgid "Unexpected encoding format in cff: %d\n"
 msgstr "CFF에 예상치 못한 인코딩포맷 %d가 사용되고 있습니다\n"
 
-msgid "Unexpected end of file found in morx chain.\n"
-msgstr "morx 연쇄의 도중에 파일이 갑자기 잘려 있습니다\n"
+msgid "Unexpected end of file found in morx chain."
+msgstr "morx 연쇄의 도중에 파일이 갑자기 잘려 있습니다"
 
 msgid "Unexpected end of file in GSUB ligature sub-table.\n"
 msgstr "GSUB 합음자 서브테이블 의 도중에 파일이 끝나있습니다.\n"
 
-msgid "Unexpected end of file in GSUB sub-table.\n"
-msgstr "GSUB서브테이블의 도중에 파일이 끝나있습니다.\n"
+msgid "Unexpected end of file in GSUB sub-table."
+msgstr "GSUB서브테이블의 도중에 파일이 끝나있습니다."
 
-msgid "Unexpected end of file in contextual chaining subtable.\n"
-msgstr "문맥의존 서브테이블의 도중에 파일이 끝났습니다.\n"
+msgid "Unexpected end of file in contextual chaining subtable."
+msgstr "문맥의존 서브테이블의 도중에 파일이 끝났습니다."
 
 #, c-format
 msgid "Unexpected end of file in feature definition on line %d of %s"
@@ -22954,12 +22954,12 @@ msgid "Unknown"
 msgstr "알수없음"
 
 #, c-format
-msgid "Unknown GPOS sub-table type: %d\n"
-msgstr "GPOS 서브테이블타입 %d 은 알수없는 값 입니다\n"
+msgid "Unknown GPOS sub-table type: %d"
+msgstr "GPOS 서브테이블타입 %d 은 알수없는 값 입니다"
 
 #, c-format
-msgid "Unknown GSUB sub-table type: %d\n"
-msgstr "GSUB 서브 테이블타입 %d 은 알수없는 값입니다\n"
+msgid "Unknown GSUB sub-table type: %d"
+msgstr "GSUB 서브 테이블타입 %d 은 알수없는 값입니다"
 
 msgid "Unknown Language"
 msgstr "알 수 없는 언어"

@@ -80,22 +80,22 @@ msgstr " 少なくとも1個のアンカーポイントが点の照合を使用�
 msgid " At least one reference to this glyph used point matching. That match is now out of date."
 msgstr " このグリフへの参照のうち少なくとも一つが点の照合を使用していました. その照合はもう現状に合わないものとなりました."
 
-msgid " Bad contextual chaining table, ignored\n"
-msgstr "文脈連鎖テーブルが不正です. 無視されました\n"
+msgid " Bad contextual chaining table, ignored"
+msgstr "文脈連鎖テーブルが不正です. 無視されました"
 
 #. GT: This continues a multi-line error message, hence the leading space
-msgid " Bad contextual substitution table, ignored\n"
-msgstr "文脈依存置換テーブルが不正です. 無視されました\n"
+msgid " Bad contextual substitution table, ignored"
+msgstr "文脈依存置換テーブルが不正です. 無視されました"
 
 #. GT: This continues a multi-line error message, hence the leading space
 msgid " Bad kerning class table, ignored"
 msgstr "カーニングクラステーブルが不正です. 無視されました"
 
-msgid " Bad ligature table, ignored\n"
-msgstr "合字テーブルが不正です. 無視されました\n"
+msgid " Bad ligature table, ignored"
+msgstr "合字テーブルが不正です. 無視されました"
 
-msgid " Bad multiple substitution table, ignored\n"
-msgstr "複数置換テーブルが不正です. 無視されました\n"
+msgid " Bad multiple substitution table, ignored"
+msgstr "複数置換テーブルが不正です. 無視されました"
 
 #. GT: This continues a multi-line error message, hence the leading space
 msgid " Bad pairwise kerning table, ignored"
@@ -1660,8 +1660,8 @@ msgstr "%sのバウンディングボックスが不正です.\n"
 msgid "Bad cidmap file"
 msgstr "cidmapファイルが不正です"
 
-msgid "Bad class count in contextual chaining sub-table.\n"
-msgstr "文脈連鎖サブテーブル内のクラス番号\n"
+msgid "Bad class count in contextual chaining sub-table."
+msgstr "文脈連鎖サブテーブル内のクラス番号"
 
 #, c-format
 msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)\n"
@@ -1681,11 +1681,11 @@ msgstr "クラス名が不正です"
 msgid "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)\n"
 msgstr "文脈依存/文脈連鎖依存サブテーブルが不正です. グリフ %d が範囲 [0,%d) を超えています\n"
 
-msgid "Bad count in context chaining sub-table.\n"
-msgstr "文脈連鎖サブテーブル内の個数が間違っています.\n"
+msgid "Bad count in context chaining sub-table."
+msgstr "文脈連鎖サブテーブル内の個数が間違っています."
 
-msgid "Bad count in contextual chaining sub-table.\n"
-msgstr "文脈連鎖サブテーブル内の個数が間違っています.\n"
+msgid "Bad count in contextual chaining sub-table."
+msgstr "文脈連鎖サブテーブル内の個数が間違っています."
 
 msgid "Bad count."
 msgstr "個数が間違っています."
@@ -1748,8 +1748,8 @@ msgstr "不正なグリフ(%d)があります. その定義がglyfテーブル�
 msgid "Bad glyph (%d), its definition extends beyond the space allowed for it\n"
 msgstr "不正なグリフ(%d)があります. グリフの定義が許される空間を超えています\n"
 
-msgid "Bad glyph count in mort table.\n"
-msgstr "mort テーブル内のグリフの個数が不正です.\n"
+msgid "Bad glyph count in mort table."
+msgstr "mort テーブル内のグリフの個数が不正です."
 
 msgid "Bad glyph range specified in glyph comment subtable of PfEd table\n"
 msgstr "PfEd テーブルのグリフコメントサブテーブルで指定されたグリフ範囲が不正です\n"
@@ -1780,8 +1780,8 @@ msgid "Bad ligature base table."
 msgstr "合字baseテーブルが不正です."
 
 #, c-format
-msgid "Bad ligature glyph. GID %d not less than %d\n"
-msgstr "合字グリフが不正です. GID %d が %d 未満ではありません\n"
+msgid "Bad ligature glyph. GID %d not less than %d"
+msgstr "合字グリフが不正です. GID %d が %d 未満ではありません"
 
 #, c-format
 msgid "Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
@@ -1792,12 +1792,12 @@ msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font
 msgstr "フォーマット 4 (%d/%d) の照合テーブルが壊れています.最初=%d 最後=%d フォント内の全グリフ数=%d\n"
 
 #, c-format
-msgid "Bad lookup table: format=6, first=%d total glyphs in font=%d\n"
-msgstr "フォーマット 6 の照合テーブルが壊れています.最初=%d フォント内の全グリフ数=%d\n"
+msgid "Bad lookup table: format=6, first=%d total glyphs in font=%d"
+msgstr "フォーマット 6 の照合テーブルが壊れています.最初=%d フォント内の全グリフ数=%d"
 
 #, c-format
-msgid "Bad lookup table: format=8, first=%d cnt=%d total glyphs in font=%d\n"
-msgstr "フォーマット 8 の照合テーブルが壊れています.最初=%d 個数=%d フォント内の全グリフ数=%d\n"
+msgid "Bad lookup table: format=8, first=%d cnt=%d total glyphs in font=%d"
+msgstr "フォーマット 8 の照合テーブルが壊れています.最初=%d 個数=%d フォント内の全グリフ数=%d"
 
 msgid "Bad magic number"
 msgstr "数値が間違っています."
@@ -1805,8 +1805,8 @@ msgstr "数値が間違っています."
 msgid "Bad mark table."
 msgstr "マークテーブルが不正です."
 
-msgid "Bad mort ligature table. Not long enough\n"
-msgstr "mort 合字テーブルが不正です. 長さが足りません\n"
+msgid "Bad mort ligature table. Not long enough"
+msgstr "mort 合字テーブルが不正です. 長さが足りません"
 
 #, c-format
 msgid "Bad name when parsing %s for unicode %x"
@@ -1829,8 +1829,8 @@ msgid "Bad replace pattern"
 msgstr "置換パターンが不正です"
 
 #, c-format
-msgid "Bad reverse contextual chaining substitution glyph: %d is not less than %d\n"
-msgstr "前方文脈連鎖依存置換グリフが不正です: %d が %d 未満ではありません\n"
+msgid "Bad reverse contextual chaining substitution glyph: %d is not less than %d"
+msgstr "前方文脈連鎖依存置換グリフが不正です: %d が %d 未満ではありません"
 
 #, c-format
 msgid "Bad sid %d (must be less than %d)\n"
@@ -1840,8 +1840,8 @@ msgid "Bad subroutine INDEX in cff font.\n"
 msgstr "CFF フォント内に不正なサブルーチンインデックスがあります.\n"
 
 #, c-format
-msgid "Bad substitution glyph: GID %d not less than %d\n"
-msgstr "置換グリフが不正です: GID %d が %d 未満の値ではありません\n"
+msgid "Bad substitution glyph: GID %d not less than %d"
+msgstr "置換グリフが不正です: GID %d が %d 未満の値ではありません"
 
 msgid "Bad template, no extension"
 msgstr "テンプレートが不正です. 拡張子がありません."
@@ -4245,20 +4245,20 @@ msgstr "文字コードがフォント内にありません."
 msgid "Encoding|Glyph Order"
 msgstr "グリフ順"
 
-msgid "End of file found in JSTF table.\n"
-msgstr "JSTFテーブルの途中でファイルが終わっていまます\n"
+msgid "End of file found in JSTF table."
+msgstr "JSTFテーブルの途中でファイルが終わっていまます"
 
 msgid "End of file found in coverage table."
 msgstr "範囲テーブルの途中でファイルが終わっていまます"
 
-msgid "End of file in context chaining sub-table.\n"
-msgstr "文脈連鎖サブテーブルの途中でファイルが終わっています.\n"
+msgid "End of file in context chaining sub-table."
+msgstr "文脈連鎖サブテーブルの途中でファイルが終わっています."
 
-msgid "End of file in context chaining subtable.\n"
-msgstr "文脈連鎖サブテーブルの途中でファイルが終わっています.\n"
+msgid "End of file in context chaining subtable."
+msgstr "文脈連鎖サブテーブルの途中でファイルが終わっています."
 
-msgid "End of file in feat table.\n"
-msgstr "feat テーブルの途中でファイルが切れています.\n"
+msgid "End of file in feat table."
+msgstr "feat テーブルの途中でファイルが切れています."
 
 msgid "End:"
 msgstr "終了:"
@@ -4578,8 +4578,8 @@ msgstr "機能タグ"
 msgid "Feature _Id:"
 msgstr "機能_ID:"
 
-msgid "Feature out of bounds in script table.\n"
-msgstr "用字系テーブルの境界を跨いだ機能があります.\n"
+msgid "Feature out of bounds in script table."
+msgstr "用字系テーブルの境界を跨いだ機能があります."
 
 msgid "Feature tags must be exactly 4 ASCII characters"
 msgstr "機能タグはASCIIでちょうど4文字でなければなりません."
@@ -5219,20 +5219,20 @@ msgstr ""
 "この名前リストには非ASCII文字が含まれた名前があります."
 
 #, c-format
-msgid "Glyph out of bounds in 'lcar' table %d\n"
-msgstr "'lcar' テーブル %d の境界を越えたグリフがあります\n"
+msgid "Glyph out of bounds in 'lcar' table %d"
+msgstr "'lcar' テーブル %d の境界を越えたグリフがあります"
 
 #, c-format
 msgid "Glyph out of bounds in 'mort'/'morx' table %d\n"
 msgstr "'mort'/'morx' テーブル %d の境界を越えたグリフがあります\n"
 
 #, c-format
-msgid "Glyph out of bounds in 'opbd' table %d\n"
-msgstr "'opbd' テーブル %d の境界を越えたグリフがあります\n"
+msgid "Glyph out of bounds in 'opbd' table %d"
+msgstr "'opbd' テーブル %d の境界を越えたグリフがあります"
 
 #, c-format
-msgid "Glyph out of bounds in 'prop' table %d\n"
-msgstr "'prop' テーブル %d の境界を越えたグリフがあります\n"
+msgid "Glyph out of bounds in 'prop' table %d"
+msgstr "'prop' テーブル %d の境界を越えたグリフがあります"
 
 msgid "Glyph too big"
 msgstr "グリフが大き過ぎます"
@@ -6392,8 +6392,8 @@ msgid "Kerning direction"
 msgstr "カーニング方向"
 
 #, c-format
-msgid "Kerning subtable 3 says the glyph count is %d, but maxp says %d\n"
-msgstr "カーニングサブテーブル 3 にはグリフの個数は %d 個だとありますが, maxp は %d 個だとしています\n"
+msgid "Kerning subtable 3 says the glyph count is %d, but maxp says %d"
+msgstr "カーニングサブテーブル 3 にはグリフの個数は %d 個だとありますが, maxp は %d 個だとしています"
 
 msgid "Kerning values must be even"
 msgstr "カーニング値は偶数個でなければなりません"
@@ -6946,8 +6946,8 @@ msgstr "参照テーブル編集"
 msgid "Lookup name already used"
 msgstr "その検索名は既に使用されています"
 
-msgid "Lookup out of bounds in feature table.\n"
-msgstr "機能テーブルの境界を跨いだ照合があります.\n"
+msgid "Lookup out of bounds in feature table."
+msgstr "機能テーブルの境界を跨いだ照合があります."
 
 #, c-format
 msgid "Lookup subtable %s is not in %s\n"
@@ -9909,8 +9909,8 @@ msgstr "必須の合字"
 msgid "Required feature"
 msgstr "必須の機能"
 
-msgid "Required feature out of bounds in script table.\n"
-msgstr "必須の機能が用字系テーブルの境界を跨いでいます.\n"
+msgid "Required feature out of bounds in script table."
+msgstr "必須の機能が用字系テーブルの境界を跨いでいます."
 
 msgid "Reserved Bit 10"
 msgstr "予約ビット 10"
@@ -11581,11 +11581,11 @@ msgstr "'mort'/'morx' テーブル %d の境界を越えた置換先グリフが
 msgid "Substitutions"
 msgstr "置換"
 
-msgid "Subtable extends beyond end of GPOS table\n"
-msgstr "サブテーブルが GPOS テーブルの終わりを越えて延びています\n"
+msgid "Subtable extends beyond end of GPOS table"
+msgstr "サブテーブルが GPOS テーブルの終わりを越えて延びています"
 
-msgid "Subtable extends beyond end of GSUB table\n"
-msgstr "サブテーブルが GSUB テーブルの終わりを越えて延びています\n"
+msgid "Subtable extends beyond end of GSUB table"
+msgstr "サブテーブルが GSUB テーブルの終わりを越えて延びています"
 
 msgid "Sum Around:"
 msgstr "許容誤差:"
@@ -12797,8 +12797,8 @@ msgstr ""
 "所有者の許諾を得なければならないという意味です. あなたは許諾を受けていますか?"
 
 #, c-format
-msgid "This font, %s, has multiple GPOS 'size' features. I'm not sure how to interpret that. I shall pick one arbitrarily.\n"
-msgstr "このフォント %s は複数の GPOS 'size' 機能を含んでいます. これをどう解釈したらよいのか解りません. 適当に 1 個を取り出すことにします.\n"
+msgid "This font, %s, has multiple GPOS 'size' features. I'm not sure how to interpret that. I shall pick one arbitrarily."
+msgstr "このフォント %s は複数の GPOS 'size' 機能を含んでいます. これをどう解釈したらよいのか解りません. 適当に 1 個を取り出すことにします."
 
 msgid "This glyph can use a stem3 hint"
 msgstr "このグリフはstem3ヒントを使うことができます"
@@ -13212,8 +13212,8 @@ msgid "Too many entries in CharStrings dictionary \"%s"
 msgstr "CharStrings辞書%sの項目が多すぎます"
 
 #, c-format
-msgid "Too many features %d\n"
-msgstr "カーニングが多すぎます (%d 個)\n"
+msgid "Too many features %d"
+msgstr "カーニングが多すぎます (%d 個)"
 
 msgid "Too many glyphs"
 msgstr "グリフが多すぎます"
@@ -13225,16 +13225,16 @@ msgid "Too many layers"
 msgstr "レイヤーが多すぎます"
 
 #, c-format
-msgid "Too many lookups %d\n"
-msgstr "表引きが多すぎます (%d 個)\n"
+msgid "Too many lookups %d"
+msgstr "表引きが多すぎます (%d 個)"
 
 #, c-format
 msgid "Too many mapping data points specified in /BlendDesignMap for axis %s.\n"
 msgstr "軸 %s の /BlendDesignMap で指定された写像データの点が多すぎます.\n"
 
 #, c-format
-msgid "Too many scripts %d\n"
-msgstr "用字系が多すぎます (%d 個)\n"
+msgid "Too many scripts %d"
+msgstr "用字系が多すぎます (%d 個)"
 
 #, c-format
 msgid "Too many subroutine calls in %s\n"
@@ -13501,17 +13501,17 @@ msgstr "密度が想定外の値です"
 msgid "Unexpected encoding format in cff: %d\n"
 msgstr "CFF にないはずのエンコーディングフォーマット %d が使われています\n"
 
-msgid "Unexpected end of file found in morx chain.\n"
-msgstr "morx 連鎖の途中でファイルが突然切れています\n"
+msgid "Unexpected end of file found in morx chain."
+msgstr "morx 連鎖の途中でファイルが突然切れています"
 
 msgid "Unexpected end of file in GSUB ligature sub-table.\n"
 msgstr "GSUB 合字サブテーブルの途中でファイルが終わっています.\n"
 
-msgid "Unexpected end of file in GSUB sub-table.\n"
-msgstr "GSUB サブテーブルの途中でファイルが終わっています.\n"
+msgid "Unexpected end of file in GSUB sub-table."
+msgstr "GSUB サブテーブルの途中でファイルが終わっています."
 
-msgid "Unexpected end of file in contextual chaining subtable.\n"
-msgstr "文脈依存サブテーブルの途中でファイルが終わっています.\n"
+msgid "Unexpected end of file in contextual chaining subtable."
+msgstr "文脈依存サブテーブルの途中でファイルが終わっています."
 
 msgid "Unexpected error"
 msgstr "想定外のエラーです"
@@ -13604,12 +13604,12 @@ msgid "Unknown"
 msgstr "不明"
 
 #, c-format
-msgid "Unknown GPOS sub-table type: %d\n"
-msgstr "GPOS サブテーブルタイプ %d は未知の値です\n"
+msgid "Unknown GPOS sub-table type: %d"
+msgstr "GPOS サブテーブルタイプ %d は未知の値です"
 
 #, c-format
-msgid "Unknown GSUB sub-table type: %d\n"
-msgstr "GSUB サブテーブルタイプ %d は未知の値です\n"
+msgid "Unknown GSUB sub-table type: %d"
+msgstr "GSUB サブテーブルタイプ %d は未知の値です"
 
 msgid "Unknown Language"
 msgstr "不明な言語"
