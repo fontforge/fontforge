@@ -4108,7 +4108,7 @@ SplineSet *SplineSetsDetectDir(SplineSet **_base,int *_lastscan) {
     dummy.layers[ly_fore].splines = base;
     ELFindEdges(&dummy,&el);
     if ( el.coordmax[1]-el.coordmin[1] > 1.e6 ) {
-	LogError( _("Warning: Unreasonably big splines. They will be ignored.\n") );
+	LogError( _("Warning: Unreasonably big splines. They will be ignored.") );
 return( NULL );
     }
     el.major = 1;
@@ -4190,7 +4190,7 @@ static int _SplinePointListIsClockwise(const SplineSet *spl, int max_depth) {
     next = spl->next; ((SplineSet *) spl)->next = NULL;
     ELFindEdges(&dummy,&el);
     if ( el.coordmax[1]-el.coordmin[1] > 1.e6 ) {
-	LogError( _("Warning: Unreasonably big splines. They will be ignored.\n") );
+	LogError( _("Warning: Unreasonably big splines. They will be ignored.") );
 	((SplineSet *) spl)->next = next;
 return( -1 );
     }

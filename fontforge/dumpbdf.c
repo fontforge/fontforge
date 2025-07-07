@@ -438,7 +438,7 @@ int BDFFontDump(char *filename,BDFFont *font, EncMap *map, int res) {
     }
     file = fopen(filename,"w" );
     if ( file==NULL )
-	LogError( _("Can't open %s\n"), filename );
+	LogError( _("Can't open %s"), filename );
     else {
 	BDFDumpHeader(file,font,map,res,&defs);
 	for ( i=0; i<map->enccount; ++i ) {

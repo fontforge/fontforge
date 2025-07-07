@@ -2494,8 +2494,7 @@ static void *UFOLoadGuideline(SplineFont *sf, SplineChar *sc, int layer, xmlDocP
 		isinf(gl->point.x) || isinf(gl->point.y) || isinf(gl->angle)
 	) {
 		// Invalid data; abort.
-		// fprintf(stderr, "Invalid guideline.\n");
-		LogError(_("Invalid guideline.\n"));
+		LogError(_("Invalid guideline."));
 		GuidelineSetFree(gl);
 		gl = NULL;
 		return NULL;

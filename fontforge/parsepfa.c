@@ -2662,7 +2662,7 @@ FontDict *ReadPSFont(char *fontname) {
 
     in = fopen(fontname,"rb");
     if ( in==NULL ) {
-	LogError( _("Cannot open %s\n"), fontname );
+	LogError( _("Cannot open %s"), fontname );
 return(NULL);
     }
     fd = _ReadPSFont(in);

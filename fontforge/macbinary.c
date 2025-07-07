@@ -2038,7 +2038,7 @@ return(NULL);
 	    if ( max<0x800 ) max = 0x800;
 	    buffer=malloc(max);
 	    if ( buffer==NULL ) {
-		LogError( _("Out of memory\n") );
+		LogError( _("Out of memory") );
 		exit( 1 );
 	    }
 	}

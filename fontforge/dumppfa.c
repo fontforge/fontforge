@@ -2720,7 +2720,7 @@ int PSBitmapDump(char *filename,BDFFont *font, EncMap *map) {
     }
     file = fopen(filename,"w" );
     if ( file==NULL )
-	LogError( _("Can't open %s\n"), filename );
+	LogError( _("Can't open %s"), filename );
     else {
     	for ( i=0; i<font->glyphcnt; i++ ) if ( font->glyphs[i] != NULL )
     	    BCPrepareForOutput( font->glyphs[i],true );

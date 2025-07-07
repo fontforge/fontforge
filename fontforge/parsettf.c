@@ -2823,7 +2823,7 @@ return( 1 );
 	*_ival = (int) (ival | getc(ttf));
 return( 1 );
     }
-    LogError(_("Unexpected value in dictionary %d\n"), ch );
+    LogError(_("Unexpected value in dictionary %d"), ch );
     info->bad_cff = true;
     *_ival = 0;
 return( 0 );
@@ -3029,7 +3029,7 @@ static struct topdicts *readcfftopdict(FILE *ttf, char *fontname, int len,
 	if ( ret==3 && oval==31 /* "T2" operator, can have 0 arguments */ ) {
 	    skipcfft2thing(ttf);
 	} else if ( sp==0 ) {
-	    LogError( _("No argument to operator\n") );
+	    LogError( _("No argument to operator") );
 	    info->bad_cff = true;
 	} else if ( ret==3 ) switch( oval ) {
 	  case 0:
@@ -3164,7 +3164,7 @@ static struct topdicts *readcfftopdict(FILE *ttf, char *fontname, int len,
 	    LogError(_("FontForge does not support Chameleon fonts"));
 	  break;
 	  default:
-	    LogError(_("Unknown operator in %s: %x\n"), fontname, oval );
+	    LogError(_("Unknown operator in %s: %x"), fontname, oval );
 	    info->bad_cff = true;
 	  break;
 	}
@@ -3295,7 +3295,7 @@ static void readcffprivate(FILE *ttf, struct topdicts *td, struct ttfinfo *info)
 	    td->nominalwidthx = stack[sp-1];
 	  break;
 	  default:
-	    LogError(_("Unknown operator in %s: %x\n"), td->fontname, oval );
+	    LogError(_("Unknown operator in %s: %x"), td->fontname, oval );
 	    info->bad_cff = true;
 	  break;
 	}

@@ -342,7 +342,7 @@ static uint16_t *getClassDefTable(FILE *ttf, int classdef_offset, struct ttfinfo
 	    glyphcnt = (g_bounds-ftell(ttf))/2;
 	}
 	if ( start+(int) glyphcnt>cnt ) {
-	    LogError( _("Bad class def table. start=%d cnt=%d, max glyph=%d\n"), start, glyphcnt, cnt );
+	    LogError( _("Bad class def table. start=%d cnt=%d, max glyph=%d"), start, glyphcnt, cnt );
 	    info->bad_ot = true;
 	    glyphcnt = cnt-start;
 	}
@@ -3136,7 +3136,7 @@ return;
 		    pst->u.lcaret.carets[j] = getushort(ttf);
 		    /* in device table = */ getushort(ttf);
 		} else {
-		    LogError( _("!!!! Unknown caret format %d !!!!\n"), format );
+		    LogError( _("!!!! Unknown caret format %d !!!!"), format );
 		    info->bad_ot = true;
 		}
 	    }
@@ -3249,7 +3249,7 @@ static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,
 	}
       break;
       default:
-	LogError( _("Invalid lookup table format. %d\n"), format );
+	LogError( _("Invalid lookup table format. %d"), format );
 	info->bad_gx = true;
       break;
     }
@@ -3714,7 +3714,7 @@ return;
 	lig_offset += memushort(sm->data,sm->length,2*( ((((int32_t) lig)<<2)>>2) + i ) );
 	if ( lig&0xc0000000 ) {
 	    if ( lig_offset+1 > sm->length ) {
-		LogError( _("Invalid ligature offset\n") );
+		LogError( _("Invalid ligature offset") );
 		info->bad_gx = true;
     break;
 	    }
@@ -3841,7 +3841,7 @@ return;
 	lig_offset += memushort(sm->data,sm->length,sm->compOff + 2*( ((((int32_t) lig)<<2)>>2) + i ) );
 	if ( lig&0xc0000000 ) {
 	    if ( sm->ligOff+2*lig_offset+1 > sm->length ) {
-		LogError( _("Invalid ligature offset\n") );
+		LogError( _("Invalid ligature offset") );
 		info->bad_gx = true;
     break;
 	    }
@@ -5639,7 +5639,7 @@ return;
 		    tot = coordcnt = getushort(ttf);
 		    if ( coordcnt!=curBase->baseline_cnt ) {
 			info->bad_ot = true;
-			LogError(_("!!!!! Coord count (%d) for '%c%c%c%c' script does not match base tag count (%d) in 'BASE' table\n"),
+			LogError(_("!!!!! Coord count (%d) for '%c%c%c%c' script does not match base tag count (%d) in 'BASE' table"),
 				coordcnt,
 				bs[i].tag>>24, bs[i].tag>>16, bs[i].tag>>8, bs[i].tag,
 				curBase->baseline_cnt );
@@ -5657,7 +5657,7 @@ return;
 			curScript->baseline_pos[j]  = (short) getushort(ttf);
 			if ( format!=1 && format!=2 && format!=3 ) {
 			    info->bad_ot = true;
-			    LogError(_("!!!!! Bad Base Coord format (%d) for '%c%c%c%c' in '%c%c%c%c' script in 'BASE' table\n"),
+			    LogError(_("!!!!! Bad Base Coord format (%d) for '%c%c%c%c' in '%c%c%c%c' script in 'BASE' table"),
 					format,
 					curBase->baseline_tags[j]>>24, curBase->baseline_tags[j]>>16, curBase->baseline_tags[j]>>8, curBase->baseline_tags[j],
 					bs[i].tag>>24, bs[i].tag>>16, bs[i].tag>>8, bs[i].tag );

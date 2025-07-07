@@ -650,7 +650,7 @@ int FNTFontDump(char *filename,BDFFont *font, EncMap *map, int res) {
 
     file = fopen(filename,"wb");
     if ( file==NULL ) {
-	LogError( _("Can't open %s\n"), filename );
+	LogError( _("Can't open %s"), filename );
 return( 0 );
     }
     ret = _FntFontDump(file,font,map,res);
