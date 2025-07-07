@@ -38,12 +38,12 @@ msgstr ""
 "Capes:"
 
 #, c-format
-msgid "  Ignoring '%c%c%c%c'\n"
-msgstr "  S'està ignorant «%c%c%c%c»\n"
+msgid "  Ignoring '%c%c%c%c'"
+msgstr "  S'està ignorant «%c%c%c%c»"
 
 #, c-format
-msgid "  Ignoring '%c%c%c%c' %s\n"
-msgstr "  S'està ignorant «%c%c%c%c» %s\n"
+msgid "  Ignoring '%c%c%c%c' %s"
+msgstr "  S'està ignorant «%c%c%c%c» %s"
 
 msgid "  Stroke _Width:"
 msgstr "  _Gruix del traç:"
@@ -80,8 +80,8 @@ msgid " _Em Size:"
 msgstr "Mida del _quadratí:"
 
 #, c-format
-msgid "!!!! Unknown caret format %d !!!!\n"
-msgstr "No s'admet el format del separador %d\n"
+msgid "!!!! Unknown caret format %d !!!!"
+msgstr "No s'admet el format del separador %d"
 
 #, c-format
 msgid "\"%s\" is not the name of a known named anchor on line %d of %s."
@@ -161,8 +161,8 @@ msgid "%s in %s lookup %d"
 msgstr "%s a %s consulta %d"
 
 #, c-format
-msgid "%s is a mac resource file but contains no postscript or truetype fonts\n"
-msgstr "%s és un recurs del Mac, però no conté cap font, ni PostScript ni TrueType.\n"
+msgid "%s is a mac resource file but contains no postscript or truetype fonts"
+msgstr "%s és un recurs del Mac, però no conté cap font, ni PostScript ni TrueType."
 
 #, c-format
 msgid ""
@@ -225,8 +225,8 @@ msgid "%s: %d Unexpected %s found"
 msgstr "%s: %d Contingut inesperat %s"
 
 #, c-format
-msgid "%s:%d Unexpected character %c (%d)\n"
-msgstr "%s:%d Caràcter inesperat %c (%d)\n"
+msgid "%s:%d Unexpected character %c (%d)"
+msgstr "%s:%d Caràcter inesperat %c (%d)"
 
 msgid "'JSTF' Justification Table"
 msgstr "«JSTF» Taula de justificació"
@@ -510,8 +510,8 @@ msgid "A match was found after unlinking references in glyph “%s”\n"
 msgstr "S’ha trobat una correspondència desenllaçant les referències del glif «%s»\n"
 
 #, c-format
-msgid "A point in %s is outside the font bounding box data.\n"
-msgstr "Un punt a %s és fora de la caixa contenidora de dades de la font.\n"
+msgid "A point in %s is outside the font bounding box data."
+msgstr "Un punt a %s és fora de la caixa contenidora de dades de la font."
 
 msgid "A reverse contextual chaining lookup can only match one coverage table directly"
 msgstr "Una consulta d'encadenament contextual invers només pot correspondre directament a una taula de cobertura"
@@ -1241,8 +1241,8 @@ msgid "AutoLBearingSync"
 msgstr "Sincronització automàtica del marge esquerre"
 
 #, c-format
-msgid "AutoWidth failure on %s\n"
-msgstr "Error d'amplada automàtica a %s\n"
+msgid "AutoWidth failure on %s"
+msgstr "Error d'amplada automàtica a %s"
 
 msgid "AutoWidthSync"
 msgstr "Sincronització d'amplada"
@@ -1472,8 +1472,8 @@ msgid "Bad base table."
 msgstr "La taula base no és correcta."
 
 #, c-format
-msgid "Bad bounding box for %s.\n"
-msgstr "La caixa contenidora de %s no és vàlida.\n"
+msgid "Bad bounding box for %s."
+msgstr "La caixa contenidora de %s no és vàlida."
 
 msgid "Bad cidmap file"
 msgstr "El fitxer de mapatge CID no és correcte"
@@ -1511,8 +1511,8 @@ msgstr "El format del fitxer de codificació no és correcte"
 msgid "Bad feature tag"
 msgstr "L'etiqueta de la singularitat és incorrecta"
 
-msgid "Bad font, offset out of bounds.\n"
-msgstr "La font no és correcta, el desplaçament se surt dels límits.\n"
+msgid "Bad font, offset out of bounds."
+msgstr "La font no és correcta, el desplaçament se surt dels límits."
 
 #, c-format
 msgid "Bad format of subtable %d (of %d) in bloc/EBLC of strike with pixelsize=%d. First=%d, last=%d.\n"
@@ -1558,8 +1558,8 @@ msgstr "El nombre és incorrecte"
 #. GT: NaN is a concept in IEEE floating point which means "Not a Number"
 #. GT: it is used to represent errors like 0/0 or sqrt(-1).
 #, c-format
-msgid "Bad number, infinity or nan: %s\n"
-msgstr "El nombre és incorrecte (infinit o valor no numèric): %s\n"
+msgid "Bad number, infinity or nan: %s"
+msgstr "El nombre és incorrecte (infinit o valor no numèric): %s"
 
 #, c-format
 msgid "Bad numeric value for %s.%s"
@@ -1926,8 +1926,8 @@ msgstr "CFF CID (sense contenidor)"
 msgid "CID findfont Name"
 msgstr "Nom pel findfont CID"
 
-msgid "CID format doesn't contain what we expected it to.\n"
-msgstr "El format CID no conté allò que hauria de tenir.\n"
+msgid "CID format doesn't contain what we expected it to."
+msgstr "El format CID no conté allò que hauria de tenir."
 
 msgid "CJK Compatibility"
 msgstr "Compatibilitat CJK"
@@ -2004,8 +2004,8 @@ msgstr "Cant_onada"
 msgid "Call Script"
 msgstr "Crida l'script"
 
-msgid "Called from...\n"
-msgstr "S'ha cridat des de...\n"
+msgid "Called from..."
+msgstr "S'ha cridat des de..."
 
 msgid "Cambodian"
 msgstr "Cambodjà (khmer)"
@@ -2068,14 +2068,14 @@ msgid "Can't insert 'prep'"
 msgstr "No es pot inserir 'prep'"
 
 #, c-format
-msgid "Can't open %s\n"
-msgstr "No es pot obrir %s\n"
+msgid "Can't open %s"
+msgstr "No es pot obrir %s"
 
-msgid "Can't open temporary file for postscript output\n"
-msgstr "No s'ha pogut obrir un fitxer temporal per a la sortida PostScript\n"
+msgid "Can't open temporary file for postscript output"
+msgstr "No s'ha pogut obrir un fitxer temporal per a la sortida PostScript"
 
-msgid "Can't open temporary file for truetype output.\n"
-msgstr "No es pot obrir el fitxer temporal per generar un tipus TrueType.\n"
+msgid "Can't open temporary file for truetype output."
+msgstr "No es pot obrir el fitxer temporal per generar un tipus TrueType."
 
 msgid "Can't run mf"
 msgstr "No es pot executar el MetaFont"
@@ -2106,12 +2106,8 @@ msgstr "No s'ha pogut trobar el fitxer de definició de dreceres de teclat.\n"
 msgid "Cannot open %s"
 msgstr "No es pot obrir %s"
 
-#, c-format
-msgid "Cannot open %s\n"
-msgstr "No es pot obrir %s\n"
-
-msgid "Cannot open a temporary file\n"
-msgstr "No es pot obrir el fitxer temporal\n"
+msgid "Cannot open a temporary file"
+msgstr "No es pot obrir el fitxer temporal"
 
 #, c-format
 msgid "Cannot open feature file %.120s"
@@ -2974,8 +2970,8 @@ msgid "Couldn't create directory: %s"
 msgstr "No s'ha pogut crear el directori %s"
 
 #, c-format
-msgid "Couldn't find a font file named %s\n"
-msgstr "No s'ha pogut trobar un fitxer de font anomenat %s\n"
+msgid "Couldn't find a font file named %s"
+msgstr "No s'ha pogut trobar un fitxer de font anomenat %s"
 
 msgid "Couldn't find base point"
 msgstr "No s'ha trobat el punt de base"
@@ -3369,52 +3365,52 @@ msgid "Different Fonts"
 msgstr "Fonts diferents"
 
 #, c-format
-msgid "Different fill patterns in layer %d of %s\n"
-msgstr "Hi ha diferents patrons d'ompliment a la capa %d de %s\n"
+msgid "Different fill patterns in layer %d of %s"
+msgstr "Hi ha diferents patrons d'ompliment a la capa %d de %s"
 
 #, c-format
 msgid "Different number of contours in glyph “%s”\n"
 msgstr "El glif «%s» té un nombre de contorns diferent\n"
 
 #, c-format
-msgid "Different numbers of layers in %s\n"
-msgstr "Hi ha nombres de capes diferents a %s\n"
+msgid "Different numbers of layers in %s"
+msgstr "Hi ha nombres de capes diferents a %s"
 
 #, c-format
-msgid "Different settings on stroke linecap in layer %d of %s\n"
-msgstr "La configuració d'extrem de traçat és diferent a la capa %d de %s\n"
+msgid "Different settings on stroke linecap in layer %d of %s"
+msgstr "La configuració d'extrem de traçat és diferent a la capa %d de %s"
 
 #, c-format
-msgid "Different settings on stroke linejoin in layer %d of %s\n"
-msgstr "La configuració d'unió de traçat és diferent a la capa %d de %s\n"
+msgid "Different settings on stroke linejoin in layer %d of %s"
+msgstr "La configuració d'unió de traçat és diferent a la capa %d de %s"
 
 #, c-format
-msgid "Different settings on whether to fill in layer %d of %s\n"
-msgstr "La configuració d'ompliment és diferent a la capa %d de %s\n"
+msgid "Different settings on whether to fill in layer %d of %s"
+msgstr "La configuració d'ompliment és diferent a la capa %d de %s"
 
 #, c-format
-msgid "Different settings on whether to inherit fill color in layer %d of %s\n"
-msgstr "La configuració d'heretar color d'ompliment és diferent a la capa %d de %s\n"
+msgid "Different settings on whether to inherit fill color in layer %d of %s"
+msgstr "La configuració d'heretar color d'ompliment és diferent a la capa %d de %s"
 
 #, c-format
-msgid "Different settings on whether to inherit fill opacity in layer %d of %s\n"
-msgstr "La configuració d'heretar opacitat d'ompliment és diferent a la capa %d de %s\n"
+msgid "Different settings on whether to inherit fill opacity in layer %d of %s"
+msgstr "La configuració d'heretar opacitat d'ompliment és diferent a la capa %d de %s"
 
 #, c-format
-msgid "Different settings on whether to inherit stroke opacity in layer %d of %s\n"
-msgstr "La configuració d'heretar opacitat de traçat és diferent a la capa %d de %s\n"
+msgid "Different settings on whether to inherit stroke opacity in layer %d of %s"
+msgstr "La configuració d'heretar opacitat de traçat és diferent a la capa %d de %s"
 
 #, c-format
-msgid "Different settings on whether to inherit stroke width in layer %d of %s\n"
-msgstr "La configuració d'heretar gruix de traçat és diferent a la capa %d de %s\n"
+msgid "Different settings on whether to inherit stroke width in layer %d of %s"
+msgstr "La configuració d'heretar gruix de traçat és diferent a la capa %d de %s"
 
 #, c-format
-msgid "Different settings on whether to stroke in layer %d of %s\n"
-msgstr "La configuració de traçat és diferent a la capa %d de %s\n"
+msgid "Different settings on whether to stroke in layer %d of %s"
+msgstr "La configuració de traçat és diferent a la capa %d de %s"
 
 #, c-format
-msgid "Different stroke patterns in layer %d of %s\n"
-msgstr "Hi ha diferents patrons d'e traçat a la capa %d de %s\n"
+msgid "Different stroke patterns in layer %d of %s"
+msgstr "Hi ha diferents patrons d'e traçat a la capa %d de %s"
 
 msgid "Dingbats"
 msgstr "Dibuixos"
@@ -3628,8 +3624,8 @@ msgid "Duplicate pixelsize"
 msgstr "Cos en píxels duplicat"
 
 #, c-format
-msgid "Duplicate repeat row count in char %d of pk file\n"
-msgstr "El recompte de files repetides està duplicat al caràcter %d del fitxer pk\n"
+msgid "Duplicate repeat row count in char %d of pk file"
+msgstr "El recompte de files repetides està duplicat al caràcter %d del fitxer pk"
 
 msgid "Duployan"
 msgstr "Duployan"
@@ -3883,8 +3879,8 @@ msgid "Error Bound"
 msgstr "El límit és erroni"
 
 #, c-format
-msgid "Error: %s\n"
-msgstr "Error: %s\n"
+msgid "Error: %s"
+msgstr "Error: %s"
 
 #, c-format
 msgid "Error: Expected %s, got %s"
@@ -4312,8 +4308,8 @@ msgid "Failed to rename the new hotkeys file over your old one!\n"
 msgstr "No s'ha pogut sobreescriure el fitxer de dreceres de teclat.\n"
 
 #, c-format
-msgid "Failed to write %s\n"
-msgstr "No s'ha pogut escriure %s\n"
+msgid "Failed to write %s"
+msgstr "No s'ha pogut escriure %s"
 
 msgid "Family"
 msgstr "Família"
@@ -4583,8 +4579,8 @@ msgid "FontForge does not support anonymous tables on line %d of %s"
 msgstr "El FontForge no admet taules sense nom a la línia %d de %s"
 
 #, c-format
-msgid "FontForge does not support this bit depth %d (must be 1,2,4,8,16,32)\n"
-msgstr "El FontForge no admet aquesta profunditat de bit: %d. Ha de ser 1, 2, 4, 8, 16 o 32.\n"
+msgid "FontForge does not support this bit depth %d (must be 1,2,4,8,16,32)"
+msgstr "El FontForge no admet aquesta profunditat de bit: %d. Ha de ser 1, 2, 4, 8, 16 o 32."
 
 msgid ""
 "FontForge does not update this window when a change is made to the font.\n"
@@ -5370,11 +5366,11 @@ msgstr "Lligadures històriques"
 msgid "Historical Forms"
 msgstr "Formes històriques"
 
-msgid "Hmm, this 'fvar' table has an unexpected size for an axis, I shan't parse it\n"
-msgstr "No s'ha pogut analitzar la taula «fvar» ja que un dels eixos té un valor inesperat\n"
+msgid "Hmm, this 'fvar' table has an unexpected size for an axis, I shan't parse it"
+msgstr "No s'ha pogut analitzar la taula «fvar» ja que un dels eixos té un valor inesperat"
 
-msgid "Hmm, this 'fvar' table has an unexpected size for an instance, I shan't parse it\n"
-msgstr "No s'ha pogut analitzar la taula «fvar» ja que una instància seva té una mida inesperada\n"
+msgid "Hmm, this 'fvar' table has an unexpected size for an instance, I shan't parse it"
+msgstr "No s'ha pogut analitzar la taula «fvar» ja que una instància seva té una mida inesperada"
 
 msgid "Hojo (JIS X 0212-1990) Kanji Forms"
 msgstr "Hojo (JIS X 0212-1990) formes kanji"
@@ -5441,12 +5437,12 @@ msgid "Hungarian"
 msgstr "Hongarès"
 
 #, c-format
-msgid "I can't even imagine how to attempt to interpolate gradients in layer %d of %s\n"
-msgstr "No es poden interpolar els degradats a la capa %d de %s\n"
+msgid "I can't even imagine how to attempt to interpolate gradients in layer %d of %s"
+msgstr "No es poden interpolar els degradats a la capa %d de %s"
 
 #, c-format
-msgid "I can't even imagine how to attempt to interpolate images in layer %d of %s\n"
-msgstr "No es poden interpolar les imatges a la capa %d de %s\n"
+msgid "I can't even imagine how to attempt to interpolate images in layer %d of %s"
+msgstr "No es poden interpolar les imatges a la capa %d de %s"
 
 #, c-format
 msgid "I can't figure out how to compare the subtable, %s, in %s to %s in %s\n"
@@ -5728,16 +5724,16 @@ msgid "In an italic font the horizontal change per unit vertical change"
 msgstr "Inclinació de la cursiva: canvi horitzontal / unitat de canvi vertical"
 
 #, c-format
-msgid "In character %s, could not find reference to %s\n"
-msgstr "Al caràcter %s, no s'ha trobat la referència a %s\n"
+msgid "In character %s, could not find reference to %s"
+msgstr "Al caràcter %s, no s'ha trobat la referència a %s"
 
 #, c-format
-msgid "In character %s, there are too few points on a path in the base\n"
-msgstr "Al caràcter %s hi ha massa pocs punts en un traçat de la base\n"
+msgid "In character %s, there are too few points on a path in the base"
+msgstr "Al caràcter %s hi ha massa pocs punts en un traçat de la base"
 
 #, c-format
-msgid "In character %s, there are too many points on a path in the base\n"
-msgstr "Al caràcter %s hi ha massa punts en un traçat de la base\n"
+msgid "In character %s, there are too many points on a path in the base"
+msgstr "Al caràcter %s hi ha massa punts en un traçat de la base"
 
 #, c-format
 msgid "In lookup subtable %.30s you refer to a glyph named %.80s, which is not in the font yet. Was this intentional?"
@@ -5942,12 +5938,12 @@ msgstr "Hi ha una posició de cursiva incorrecta a la línia %d de %s"
 msgid "Invalid glyph name range in glyph class on line %d of %s"
 msgstr "El rang de noms de glifs a la classe de glifs no és correcte, a la línia %d de %s"
 
-msgid "Invalid hex digit in sfnts array\n"
-msgstr "Hi ha un digit hexadecimal incorrecte a la matriu\n"
+msgid "Invalid hex digit in sfnts array"
+msgstr "Hi ha un digit hexadecimal incorrecte a la matriu"
 
 #, c-format
-msgid "Invalid lookup table format. %d\n"
-msgstr "El format de la taula de consulta no és correcte. %d\n"
+msgid "Invalid lookup table format. %d"
+msgstr "El format de la taula de consulta no és correcte. %d"
 
 #, c-format
 msgid "Invalid platform for string on line %d of %s"
@@ -7346,8 +7342,8 @@ msgid "Missing Glyph..."
 msgstr "Falta un glif..."
 
 #, c-format
-msgid "Missing POST resource %u\n"
-msgstr "No s'ha trobat el recurs POST %u\n"
+msgid "Missing POST resource %u"
+msgstr "No s'ha trobat el recurs POST %u"
 
 msgid "Missing Script"
 msgstr "No s'ha trobat l'script"
@@ -7851,8 +7847,8 @@ msgstr "No a _tot"
 msgid "No applicable lookup subtables"
 msgstr "No hi ha cap subtaula de consultes aplicable"
 
-msgid "No argument to operator\n"
-msgstr "L'operador no té arguments\n"
+msgid "No argument to operator"
+msgstr "L'operador no té arguments"
 
 msgid "No bitmap strikes"
 msgstr "No hi ha cap pòlissa de mapa de bits"
@@ -7878,8 +7874,8 @@ msgid "No flags specified in lookupflags on line %d of %s"
 msgstr "No hi ha senyaladors especificats a la consulta, a la línia %d de %s"
 
 #, c-format
-msgid "No glyph named %s, used as a pattern in %s\n"
-msgstr "No hi ha cap glif anomenat %s que s'usi com a patró a %s\n"
+msgid "No glyph named %s, used as a pattern in %s"
+msgstr "No hi ha cap glif anomenat %s que s'usi com a patró a %s"
 
 #, c-format
 msgid "No glyph named %s."
@@ -7897,8 +7893,8 @@ msgid "No kerning pairs found in %.200s"
 msgstr "No s'han trobat parells d'interlletratge a %.200s"
 
 #, c-format
-msgid "No kerning table for %s\n"
-msgstr "No hi ha cap taula d'interlletratge a %s\n"
+msgid "No kerning table for %s"
+msgstr "No hi ha cap taula d'interlletratge a %s"
 
 msgid "No languages"
 msgstr "No hi ha cap idioma"
@@ -7945,8 +7941,8 @@ msgstr "No hi ha cap alfabet"
 msgid "No selection"
 msgstr "Sense selecció"
 
-msgid "No selection\n"
-msgstr "No hi ha res seleccionat\n"
+msgid "No selection"
+msgstr "No hi ha res seleccionat"
 
 msgid "No significant differences found"
 msgstr "No s'han trobat diferències significatives"
@@ -8503,8 +8499,8 @@ msgstr "L'ordre és incorrecte"
 msgid "Out of Range"
 msgstr "Fora de rang"
 
-msgid "Out of memory\n"
-msgstr "No hi ha prou memòria\n"
+msgid "Out of memory"
+msgstr "No hi ha prou memòria"
 
 msgid "Outline"
 msgstr "Contorns"
@@ -8942,8 +8938,8 @@ msgid "Parent Folder"
 msgstr "Vés al directori pare"
 
 #, c-format
-msgid "ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s\n"
-msgstr "Ordre d'anàlisi de glifs i àlies de base de dades erroni, falta una entrada separada per tabuladors a l'índex %d: %s\n"
+msgid "ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s"
+msgstr "Ordre d'anàlisi de glifs i àlies de base de dades erroni, falta una entrada separada per tabuladors a l'índex %d: %s"
 
 msgid "Pashto"
 msgstr "Paixtu"
@@ -11939,8 +11935,8 @@ msgstr ""
 "Les opcions següents afecten la manera d'exportar els glifs.\n"
 "Moltes són específiques d’un o més formats."
 
-msgid "The following table(s) in the font have been ignored by FontForge\n"
-msgstr "S'han ignorat les següents taules presents a la font\n"
+msgid "The following table(s) in the font have been ignored by FontForge"
+msgstr "S'han ignorat les següents taules presents a la font"
 
 msgid "The font comment can contain whatever you feel it should"
 msgstr ""
@@ -12094,8 +12090,8 @@ msgstr ""
 msgid "The name, %.80s, has already been used to identify an anchor class in a different lookup subtable (%.80s)"
 msgstr "El nom %.80s ja s'està fent servir per indentificar una classe d'àncora en una altra subtaula de consulta (%.80s)."
 
-msgid "The names 'alefmaksurainitialarabic' and 'alefmaksuramedialarabic' in the Adobe Glyph List disagree with Unicode.  The use of these glyph names is therefore discouraged.\n"
-msgstr "Els noms «alefmaksurainitialarabic» i «alefmaksuramedialarabic» del llistat de glifs d'Adobe no concorden amb l'Unicode.  Per tant, es desacolsella l'ús d'aquests noms de glifs.\n"
+msgid "The names 'alefmaksurainitialarabic' and 'alefmaksuramedialarabic' in the Adobe Glyph List disagree with Unicode.  The use of these glyph names is therefore discouraged."
+msgstr "Els noms «alefmaksurainitialarabic» i «alefmaksuramedialarabic» del llistat de glifs d'Adobe no concorden amb l'Unicode.  Per tant, es desacolsella l'ús d'aquests noms de glifs."
 
 msgid "The number of em-units by which an arrow key will move a selected point"
 msgstr ""
@@ -12349,8 +12345,8 @@ msgid "This anchor was attached to point %d, but that's not a point I can move. 
 msgstr "Aquesta àncora és adjunta al punt %d, però aquest punt no es pot moure.Es sepaparà l'àncora del punt."
 
 #, c-format
-msgid "This character (gid=%d) has a following part (%d). I'm not sure what that means, please send me (gww@silcom.com) a copy of this font so I can test with it.\n"
-msgstr "El caràcter (gid=%d) té una part següent (%d) i el FontForge no sap exactament com s'ha d'interpretar, això. Podeu enviar una còpia de la font a l'autor del FontForge (gww@silcom.com) perquè en faci proves.\n"
+msgid "This character (gid=%d) has a following part (%d). I'm not sure what that means, please send me (gww@silcom.com) a copy of this font so I can test with it."
+msgstr "El caràcter (gid=%d) té una part següent (%d) i el FontForge no sap exactament com s'ha d'interpretar, això. Podeu enviar una còpia de la font a l'autor del FontForge (gww@silcom.com) perquè en faci proves."
 
 msgid "This contextual rule applies no lookups."
 msgstr "Aquesta regla contextual no aplica cap consulta."
@@ -12724,8 +12720,8 @@ msgstr "Hi ha massa consultes %d"
 msgid "Too many separation marks, starting at: %.20s..."
 msgstr "Hi ha massa marques de separció. A partir de: %.20s..."
 
-msgid "Too many subroutines. We can deal with at most 14 (0-13)\n"
-msgstr "Hi ha massa subrutines. Com a molt n'hi poden haver 14 (0-13)\n"
+msgid "Too many subroutines. We can deal with at most 14 (0-13)"
+msgstr "Hi ha massa subrutines. Com a molt n'hi poden haver 14 (0-13)"
 
 msgid "Tool_s"
 msgstr "Eine_s"
@@ -12924,12 +12920,12 @@ msgstr "Nivells de desfer"
 msgid "Uneven Weighting"
 msgstr "Gruix no uniforme"
 
-msgid "Unexpected EOF in gf\n"
-msgstr "S'ha trobat un final de fitxer inesperat a gf\n"
+msgid "Unexpected EOF in gf"
+msgstr "S'ha trobat un final de fitxer inesperat a gf"
 
 #, c-format
-msgid "Unexpected PST type in GetPosSub (%d).\n"
-msgstr "S'ha trobat un tipus PST inesperat a GetPosSub (%d).\n"
+msgid "Unexpected PST type in GetPosSub (%d)."
+msgstr "S'ha trobat un tipus PST inesperat a GetPosSub (%d)."
 
 msgid "Unexpected Variation Selector"
 msgstr "El selector de variacions és inusual"
@@ -12939,15 +12935,15 @@ msgid "Unexpected character (0x%02X) on line %d of %s"
 msgstr "Hi ha un caràcter incorrecte (0x%02X) a la línia %d de %s"
 
 #, c-format
-msgid "Unexpected charset format in cff: %d\n"
-msgstr "S'ha trobat un format de joc de caràcters inesperat al cff: %d\n"
+msgid "Unexpected charset format in cff: %d"
+msgstr "S'ha trobat un format de joc de caràcters inesperat al cff: %d"
 
 msgid "Unexpected density"
 msgstr "La densitat és inesperada"
 
 #, c-format
-msgid "Unexpected encoding format in cff: %d\n"
-msgstr "S'ha trobat un format de codificació inesperat al cff: %d\n"
+msgid "Unexpected encoding format in cff: %d"
+msgstr "S'ha trobat un format de codificació inesperat al cff: %d"
 
 msgid "Unexpected end of file found in morx chain."
 msgstr "S'ha trobat un final de fitxer inesperat a la cadena morx."
@@ -12973,12 +12969,12 @@ msgid "Unexpected error"
 msgstr "S'ha produït un error"
 
 #, c-format
-msgid "Unexpected size for font info section of URW font (expected 12, got %d)\n"
-msgstr "La mida de la secció «info» de la font d'URW hauria de ser 12 i és %d\n"
+msgid "Unexpected size for font info section of URW font (expected 12, got %d)"
+msgstr "La mida de la secció «info» de la font d'URW hauria de ser 12 i és %d"
 
 #, c-format
-msgid "Unexpected size for name section of URW font (expected 55, got %d)\n"
-msgstr "La mida de la secció «nom» de la font d'URW hauria de ser 55 i és %d\n"
+msgid "Unexpected size for name section of URW font (expected 55, got %d)"
+msgstr "La mida de la secció «nom» de la font d'URW hauria de ser 55 i és %d"
 
 #, c-format
 msgid ""
@@ -13028,12 +13024,12 @@ msgstr ""
 "Element incorrecte.\n"
 "abans de ... %40s"
 
-msgid "Unexpected use of bitmap format 5, no metrics are appearant\n"
-msgstr "S'ha trobat un ús inesperat del format de mapa de bits 5, no hi figura cap mètrica\n"
+msgid "Unexpected use of bitmap format 5, no metrics are appearant"
+msgstr "S'ha trobat un ús inesperat del format de mapa de bits 5, no hi figura cap mètrica"
 
 #, c-format
-msgid "Unexpected value in dictionary %d\n"
-msgstr "S'ha trobat un valor inesperat al diccionari %d\n"
+msgid "Unexpected value in dictionary %d"
+msgstr "S'ha trobat un valor inesperat al diccionari %d"
 
 #, c-format
 msgid ""
@@ -13097,8 +13093,8 @@ msgid "Unified Font Object"
 msgstr "Unified Font Object (UFO)"
 
 #, c-format
-msgid "Uninterpreted code in gf: %d\n"
-msgstr "Hi ha codi sense interpretar a gf: %d\n"
+msgid "Uninterpreted code in gf: %d"
+msgstr "Hi ha codi sense interpretar a gf: %d"
 
 msgid "UniqueID"
 msgstr "Identificador únic"
@@ -13173,8 +13169,8 @@ msgid "Unparseable include on line %d of %s"
 msgstr "No es pot analitzar el fitxer de capçalera de la línia %d de %s"
 
 #, c-format
-msgid "Unparsed characters found after end of groups file (last line parsed was %d).\n"
-msgstr "S'han trobat caràcters sense analitzar al final del fitxer de grups (la darrera línia analitzada és la %d).\n"
+msgid "Unparsed characters found after end of groups file (last line parsed was %d)."
+msgstr "S'han trobat caràcters sense analitzar al final del fitxer de grups (la darrera línia analitzada és la %d)."
 
 msgid "Unreasonable ligature caret count"
 msgstr "El número de separadors no és raonable"
@@ -13524,11 +13520,11 @@ msgid "Warning"
 msgstr "Avís"
 
 #, c-format
-msgid "Warning: %s(%s) is both extended and condensed. That's impossible.\n"
-msgstr "Alerta: %s(%s) és ampla i estreta al mateix temps. Això és impossible.\n"
+msgid "Warning: %s(%s) is both extended and condensed. That's impossible."
+msgstr "Alerta: %s(%s) és ampla i estreta al mateix temps. Això és impossible."
 
-msgid "Warning: Both extended and condensed. That's impossible.\n"
-msgstr "Alerta: No pot ser ampla i estreta al mateix temps.\n"
+msgid "Warning: Both extended and condensed. That's impossible."
+msgstr "Alerta: No pot ser ampla i estreta al mateix temps."
 
 msgid "Warning: Font contained no glyphs"
 msgstr "Avis: la font no conté cap glif"
@@ -14990,8 +14986,8 @@ msgstr "taula d'ubicació dels mapes de bits (versió AAT)"
 msgid "bitmap location table (OT version)"
 msgstr "taula d'ubicació dels mapes de bits (versió OpenType)"
 
-msgid "can't create temporary file\n"
-msgstr "no es pot crear el fitxer temporal\n"
+msgid "can't create temporary file"
+msgstr "no es pot crear el fitxer temporal"
 
 msgid "character code mapping table"
 msgstr "taula de mapatge del codi de caràcter"
@@ -15019,8 +15015,8 @@ msgstr "nota de copyright"
 msgid "couldn't find the character %s"
 msgstr "no s'ha trobat el caràcter %s"
 
-msgid "couldn't write encodings file\n"
-msgstr "no s'ha pogut escriure el fitxer de codificacions\n"
+msgid "couldn't write encodings file"
+msgstr "no s'ha pogut escriure el fitxer de codificacions"
 
 msgid "cursive entry"
 msgstr "entrada de cursiva"

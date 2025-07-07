@@ -74,8 +74,8 @@ msgid "%d@%d pixel bitmap"
 msgstr "Bitmap con %d@%d pixel"
 
 #, c-format
-msgid "%s does not contain an <svg> element at the top\n"
-msgstr "%s non contiene un elemento <svg> in cima\n"
+msgid "%s does not contain an <svg> element at the top"
+msgstr "%s non contiene un elemento <svg> in cima"
 
 #, c-format
 msgid "%s has a bounding box which is too big for this algorithm to work. Ignored."
@@ -543,8 +543,8 @@ msgid "At least one anchor point was lost when pasting from one font to another 
 msgstr "Almeno un'ancora si è persa durante l'inserimento, perché non c'era una classe d'ancore idonea nel font di destiazione."
 
 #, c-format
-msgid "Attempt to encode missing glyph %d to %d (0x%x)\n"
-msgstr "Tenta di codificare il glifo mancante %d a %d (0x%x)\n"
+msgid "Attempt to encode missing glyph %d to %d (0x%x)"
+msgstr "Tenta di codificare il glifo mancante %d a %d (0x%x)"
 
 #, c-format
 msgid "Attempt to have a font with more than %d layers"
@@ -592,8 +592,8 @@ msgid "AutoKern Row"
 msgstr "Crenatura Automatica della riga"
 
 #, c-format
-msgid "AutoWidth failure on %s\n"
-msgstr "Errore di larghezza automatica su %s\n"
+msgid "AutoWidth failure on %s"
+msgstr "Errore di larghezza automatica su %s"
 
 msgid "Auto_Kern"
 msgstr "Crenatura Automatica(_K)"
@@ -763,14 +763,14 @@ msgstr "Formato del file di codifica errato"
 msgid "Bad encoding information in 'cmap' table."
 msgstr "Errore nelle informazioni di codifica nella tabela 'cmap'."
 
-msgid "Bad fdselect\n"
-msgstr "fdselect errato\n"
+msgid "Bad fdselect"
+msgstr "fdselect errato"
 
-msgid "Bad font, offset out of bounds.\n"
-msgstr "Font errato, esterno fuori dai limiti.\n"
+msgid "Bad font, offset out of bounds."
+msgstr "Font errato, esterno fuori dai limiti."
 
-msgid "Bad font: Encoding data out of range.\n"
-msgstr "Errore del font: dati di Codifica fuori dai limiti.\n"
+msgid "Bad font: Encoding data out of range."
+msgstr "Errore del font: dati di Codifica fuori dai limiti."
 
 #, c-format
 msgid "Bad glif file %s"
@@ -1013,8 +1013,8 @@ msgstr "Spig_olo"
 msgid "Call Script"
 msgstr "Richiama uno script"
 
-msgid "Called from...\n"
-msgstr "Richiamato da...\n"
+msgid "Called from..."
+msgstr "Richiamato da..."
 
 msgid "Cambodian"
 msgstr "Cambogiano"
@@ -1075,14 +1075,14 @@ msgid "Can't open %s"
 msgstr "Impossibile aprire %s"
 
 #, c-format
-msgid "Can't open %s\n"
-msgstr "Impossibile aprire %s\n"
+msgid "Can't open %s"
+msgstr "Impossibile aprire %s"
 
-msgid "Can't open temporary file for postscript output\n"
-msgstr "Impossibile aprire un file temporaneo per l'output postscript\n"
+msgid "Can't open temporary file for postscript output"
+msgstr "Impossibile aprire un file temporaneo per l'output postscript"
 
-msgid "Can't open temporary file for truetype output.\n"
-msgstr "Impossibile aprire un file temporaneo per l'output truetype.\n"
+msgid "Can't open temporary file for truetype output."
+msgstr "Impossibile aprire un file temporaneo per l'output truetype."
 
 msgid "Can't run mf"
 msgstr "Impossibile lanciare mf"
@@ -1094,11 +1094,11 @@ msgid "Canadian Syllabics"
 msgstr "Canadese sillabico"
 
 #, c-format
-msgid "Cannot open %s\n"
-msgstr "Impossibile aprire %s\n"
+msgid "Cannot open %s"
+msgstr "Impossibile aprire %s"
 
-msgid "Cannot open a temporary file\n"
-msgstr "Impossibile aprire un file temporaneo\n"
+msgid "Cannot open a temporary file"
+msgstr "Impossibile aprire un file temporaneo"
 
 msgid "Cannot open file"
 msgstr "Impossibile aprire il file"
@@ -1677,12 +1677,12 @@ msgid "Diagonal Fractions"
 msgstr "Frazioni diagonali"
 
 #, c-format
-msgid "Didn't understand format for fdselect %d\n"
-msgstr "Non ho capito il formato per fdselect %d\n"
+msgid "Didn't understand format for fdselect %d"
+msgstr "Non ho capito il formato per fdselect %d"
 
 #, c-format
-msgid "Didn't understand index format: %d\n"
-msgstr "Non ho capito il formato dell'indice: %d\n"
+msgid "Didn't understand index format: %d"
+msgstr "Non ho capito il formato dell'indice: %d"
 
 msgid "Differences..."
 msgstr "Differenze..."
@@ -1918,8 +1918,8 @@ msgid "Enter the name of a glyph in the font"
 msgstr "Nome di un carattere nel font"
 
 #, c-format
-msgid "Error: %s\n"
-msgstr "Errore: %s\n"
+msgid "Error: %s"
+msgstr "Errore: %s"
 
 #, c-format
 msgid "Error: Expected %s, got %s"
@@ -2050,8 +2050,8 @@ msgid "Failed to open file %s for output"
 msgstr "Errore nell'apertura del file %s per l'output"
 
 #, c-format
-msgid "Failed to open glyph to name map file for writing: %s\n"
-msgstr "Impossibile aprire il glifo al file della mappa per la scrittura: %s\n"
+msgid "Failed to open glyph to name map file for writing: %s"
+msgstr "Impossibile aprire il glifo al file della mappa per la scrittura: %s"
 
 msgid "Failed to open temporary output file"
 msgstr "Errore nell'apertura di un file temporaneo"
@@ -2065,8 +2065,8 @@ msgid "Failed to rename the new hotkeys file over your old one!\n"
 msgstr "Impossibile rinominare il tuo file delle scorciatoie sopra quello vecchio!\n"
 
 #, c-format
-msgid "Failed to write %s\n"
-msgstr "Errore di scrittura %s\n"
+msgid "Failed to write %s"
+msgstr "Errore di scrittura %s"
 
 msgid "Failure"
 msgstr "Fallimento"
@@ -2827,8 +2827,8 @@ msgstr "Interpretazione dei glifi"
 msgid "Invalid Encoding"
 msgstr "Codifica non valida"
 
-msgid "Invalid ligature offset\n"
-msgstr "Legatura esterna errata\n"
+msgid "Invalid ligature offset"
+msgstr "Legatura esterna errata"
 
 msgid "Invalid point size"
 msgstr "Corpo errato"
@@ -3398,8 +3398,8 @@ msgid "Missing Glyph..."
 msgstr "Glifi mancanti..."
 
 #, c-format
-msgid "Missing POST resource %u\n"
-msgstr "Risorsa POST mancante %u\n"
+msgid "Missing POST resource %u"
+msgstr "Risorsa POST mancante %u"
 
 msgid "Missing cidmap file"
 msgstr "File cidmap mancante"
@@ -3453,8 +3453,8 @@ msgid "More Images Than Selected Glyphs"
 msgstr "Ci sono più immagini che glifi selezionati"
 
 #, c-format
-msgid "More than 256 entries in subfont %s\n"
-msgstr "Più di 256 voci nel sottofont %s\n"
+msgid "More than 256 entries in subfont %s"
+msgstr "Più di 256 voci nel sottofont %s"
 
 msgid "Move..."
 msgstr "Sposta..."
@@ -3469,8 +3469,8 @@ msgid "Multiple copies of the selection should be tiled onto the path"
 msgstr "Diverse copie della selezione devono essere impilate sul percorso"
 
 #, c-format
-msgid "Multiple glyphs map to the same unicode encoding U+%04X, only one will be used\n"
-msgstr "Più glifi mappano alla stessa codifica unicode U+%04X, solo una sarà usata\n"
+msgid "Multiple glyphs map to the same unicode encoding U+%04X, only one will be used"
+msgstr "Più glifi mappano alla stessa codifica unicode U+%04X, solo una sarà usata"
 
 msgid "Multiple names for language"
 msgstr "Nomi multipli per la lingua"
@@ -3728,8 +3728,8 @@ msgstr "Niente script"
 msgid "No selection"
 msgstr "Nessuna selezione"
 
-msgid "No selection\n"
-msgstr "Nessuna selezione\n"
+msgid "No selection"
+msgstr "Nessuna selezione"
 
 msgid "No such file"
 msgstr "Questo file non esiste."
@@ -4038,8 +4038,8 @@ msgstr "Altro:"
 msgid "Out Of Order"
 msgstr "Non in ordine"
 
-msgid "Out of memory\n"
-msgstr "Errore di memoria\n"
+msgid "Out of memory"
+msgstr "Errore di memoria"
 
 msgid "Outer Border:"
 msgstr "Bordo esterno:"
@@ -4108,8 +4108,8 @@ msgid "Papiamentu"
 msgstr "Papamiento"
 
 #, c-format
-msgid "ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s\n"
-msgstr "ParseGlyphOrderAndAliasDB: Voce non valida (non separata da tabulazione) all'indice %d: %s\n"
+msgid "ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s"
+msgstr "ParseGlyphOrderAndAliasDB: Voce non valida (non separata da tabulazione) all'indice %d: %s"
 
 msgid "Parts List"
 msgstr "Lista di parti"
@@ -5365,8 +5365,8 @@ msgstr "TS Miscellaneo"
 msgid "TTF Names"
 msgstr "Nomi TTF"
 
-msgid "Table length should not be odd\n"
-msgstr "La lunghezza della tabella non dovrebbe essere dispari\n"
+msgid "Table length should not be odd"
+msgstr "La lunghezza della tabella non dovrebbe essere dispari"
 
 msgid "Tabular Numbers"
 msgstr "Numeri per tavole"
@@ -5502,8 +5502,8 @@ msgstr "La codifica non contiene qualcosa chiamato %.40s"
 msgid "The following error occurred on the selected glyphs: %.100s"
 msgstr "Il seguente errore si è verificato con il glifo selezionato: %.100s"
 
-msgid "The following table(s) in the font have been ignored by FontForge\n"
-msgstr "Le seguenti tabelle nel font sono state ignorate da FontForge\n"
+msgid "The following table(s) in the font have been ignored by FontForge"
+msgstr "Le seguenti tabelle nel font sono state ignorate da FontForge"
 
 #, c-format
 msgid ""
@@ -5785,8 +5785,8 @@ msgstr "Questo codice di funzione è già usato:"
 msgid "This file contains an unnamed encoding, which cannot be named in a script"
 msgstr "Questo file contiene una codifica senza nome, che non può essere nominata in uno script"
 
-msgid "This file contains no SVG fonts.\n"
-msgstr "Questo file non contiene font SVG.\n"
+msgid "This file contains no SVG fonts."
+msgstr "Questo file non contiene font SVG."
 
 msgid "This font comes from an old format sfd file. Not all aspects of it can be reverted successfully."
 msgstr "Il font deriva da un vecchio file di formato sfd. Non tutti i suoi aspetti possono essere ripristinati con successo."
@@ -5844,8 +5844,8 @@ msgstr ""
 "Le metriche verticali non sono state attivate in questo font.\n"
 "Usa Elemento->Informazioni sul font per abilitarle."
 
-msgid "This font does not specify font-face\n"
-msgstr "Questo font non specifica il font-face\n"
+msgid "This font does not specify font-face"
+msgstr "Questo font non specifica il font-face"
 
 #, c-format
 msgid ""
@@ -6166,8 +6166,8 @@ msgstr "Sconosciuto"
 msgid "Unknown Language"
 msgstr "Lingua sconosciuta"
 
-msgid "Unknown character after backslash in literal string.\n"
-msgstr "Carattere sconosciuto dopo il backslash nella stringa letterale.\n"
+msgid "Unknown character after backslash in literal string."
+msgstr "Carattere sconosciuto dopo il backslash nella stringa letterale."
 
 msgid "Unknown string type\n"
 msgstr "Tipo di stringa sconosciuto\n"
@@ -6250,8 +6250,8 @@ msgstr "Valore"
 msgid "Value exceeds tfm limitations"
 msgstr "Il valore eccede i limiti TFM"
 
-msgid "Value out of bounds in spline.\n"
-msgstr "Valore fuori limiti in spline.\n"
+msgid "Value out of bounds in spline."
+msgstr "Valore fuori limiti in spline."
 
 msgid "Value out of range"
 msgstr "Valore fuori limiti"
@@ -6332,8 +6332,8 @@ msgid "Warning"
 msgstr "Attenzione"
 
 #, c-format
-msgid "Warning: %s has a different family name than does %s (GenerateFamily)\n"
-msgstr "Attenzione: %s ha un diverso nome della famiglia da %s (GeneraFamiglia)\n"
+msgid "Warning: %s has a different family name than does %s (GenerateFamily)"
+msgstr "Attenzione: %s ha un diverso nome della famiglia da %s (GeneraFamiglia)"
 
 msgid "Warning: Font contained no glyphs"
 msgstr "Attenzione: il font non contiene glifi"
@@ -7257,8 +7257,8 @@ msgstr "_Sì"
 msgid "by"
 msgstr "di"
 
-msgid "can't create temporary file\n"
-msgstr "Impossibile creare un file temporaneo\n"
+msgid "can't create temporary file"
+msgstr "Impossibile creare un file temporaneo"
 
 #, c-format
 msgid "cidmap entry out of bounds: %s"
@@ -7267,8 +7267,8 @@ msgstr "voce di cidmap fuori dai limiti: %s"
 msgid "copyright notice"
 msgstr "Messaggio di Copyright:"
 
-msgid "couldn't write encodings file\n"
-msgstr "Impossibile scrivere il file delle codifiche\n"
+msgid "couldn't write encodings file"
+msgstr "Impossibile scrivere il file delle codifiche"
 
 msgid "digital signature table"
 msgstr "Tabella firma digitale"

@@ -65,8 +65,8 @@ msgid "  Stroke _Width:"
 msgstr "ストローク幅(_W):"
 
 #, c-format
-msgid " %s: line %d\n"
-msgstr "%s: %d 行目\n"
+msgid " %s: line %d"
+msgstr "%s: %d 行目"
 
 msgid " Adding a size will create it by scaling."
 msgstr " サイズを追加すると, 拡大/縮小を行って作成します."
@@ -130,8 +130,8 @@ msgid " refers to a missing glyph"
 msgstr "は存在しないグリフを参照しています"
 
 #, c-format
-msgid "!!!! Unknown caret format %d !!!!\n"
-msgstr "!!!! キャレットフォーマット %d は未知の値です!!!!\n"
+msgid "!!!! Unknown caret format %d !!!!"
+msgstr "!!!! キャレットフォーマット %d は未知の値です!!!!"
 
 #, c-format
 msgid "%.100s is not in a known format (or uses features of that format fontforge does not support, or is so badly corrupted as to be unreadable)"
@@ -179,8 +179,8 @@ msgid "%s by %s"
 msgstr "%2$sによる%1$s"
 
 #, c-format
-msgid "%s does not contain an <svg> element at the top\n"
-msgstr "%s の最上位エレメントとして <svg> が含まれていません\n"
+msgid "%s does not contain an <svg> element at the top"
+msgstr "%s の最上位エレメントとして <svg> が含まれていません"
 
 #, c-format
 msgid ""
@@ -196,12 +196,12 @@ msgid "%s is not in %.100s"
 msgstr "%sは%.100sに含まれません."
 
 #, c-format
-msgid "%s line: %d %s\n"
-msgstr "%s 行目: %d %s\n"
+msgid "%s line: %d %s"
+msgstr "%s 行目: %d %s"
 
 #, c-format
-msgid "%s line: %d %s: %s\n"
-msgstr "%s 行目: %d %s: %s\n"
+msgid "%s line: %d %s: %s"
+msgstr "%s 行目: %d %s: %s"
 
 #. GT: This string is used to generate a name for an OpenType lookup subtable.
 #. GT:  %s is the lookup name
@@ -214,8 +214,8 @@ msgid "%s subtable %d"
 msgstr "%s サブテーブル %d"
 
 #, c-format
-msgid "%s(%s) and %s(%s) 0x%x in FOND %s\n"
-msgstr "%s(%s) および %s(%s) 0x%x という相違が FOND %s にあります\n"
+msgid "%s(%s) and %s(%s) 0x%x in FOND %s"
+msgstr "%s(%s) および %s(%s) 0x%x という相違が FOND %s にあります"
 
 #, c-format
 msgid "%s: %d Expected %s, got %s"
@@ -226,8 +226,8 @@ msgid "%s: %d Unexpected %s found"
 msgstr "%s: %d で予期しない %s が見つかりました"
 
 #, c-format
-msgid "%s:%d Unexpected character %c (%d)\n"
-msgstr "%s:%d 予期しない文字 %c (%d)\n"
+msgid "%s:%d Unexpected character %c (%d)"
+msgstr "%s:%d 予期しない文字 %c (%d)"
 
 msgid "'GDEF' Glyph Definition Table"
 msgstr "'GDEF' グリフ定義テーブル"
@@ -1290,19 +1290,19 @@ msgstr ""
 "この文脈依存照合の範囲外の位置に照合を適用しようとしました\n"
 "  seq=%d max=%d\n"
 
-msgid "Attempt to back up twice\n"
-msgstr "バックアップを 2 回行おうとしました\n"
+msgid "Attempt to back up twice"
+msgstr "バックアップを 2 回行おうとしました"
 
 #, c-format
 msgid "Attempt to divide by 0 in %.30s"
 msgstr "0による除算を %.30s で行おうとしました."
 
 #, c-format
-msgid "Attempt to encode missing glyph %d to %d (0x%x)\n"
-msgstr "存在しないグリフ %d を %d (0x%x) に符号化しようとしています\n"
+msgid "Attempt to encode missing glyph %d to %d (0x%x)"
+msgstr "存在しないグリフ %d を %d (0x%x) に符号化しようとしています"
 
-msgid "Attempt to invert a singular matrix\n"
-msgstr "特異行列の逆行列を求めようとしました\n"
+msgid "Attempt to invert a singular matrix"
+msgstr "特異行列の逆行列を求めようとしました"
 
 msgid "Attempt to make a character that refers to itself"
 msgstr "自分自身を参照するグリフを作ろうとしました."
@@ -1343,11 +1343,11 @@ msgid "Attempt to take the square root of %1$g in %2$.30s"
 msgstr "値 %1$g の平方根を %2$.30s で求めようとしました."
 
 #, c-format
-msgid "Attempt to use a multiple master subroutine in a non-mm font in %s.\n"
-msgstr "グリフ %s で, マルチプルマスターサブルーチンを通常フォントで使おうとしました.\n"
+msgid "Attempt to use a multiple master subroutine in a non-mm font in %s."
+msgstr "グリフ %s で, マルチプルマスターサブルーチンを通常フォントで使おうとしました."
 
-msgid "Attempt to use a multiple master subroutine in a non-mm font.\n"
-msgstr "マルチプルマスターサブルーチンを通常フォントで使おうとしました.\n"
+msgid "Attempt to use a multiple master subroutine in a non-mm font."
+msgstr "マルチプルマスターサブルーチンを通常フォントで使おうとしました."
 
 msgid "Attention"
 msgstr "注意"
@@ -1379,8 +1379,8 @@ msgid "AutoLBearingSync"
 msgstr "LSBを自動更新"
 
 #, c-format
-msgid "AutoWidth failure on %s\n"
-msgstr "%sの幅の自動設定に失敗しました\n"
+msgid "AutoWidth failure on %s"
+msgstr "%sの幅の自動設定に失敗しました"
 
 msgid "AutoWidthSync"
 msgstr "幅を自動更新"
@@ -1529,15 +1529,15 @@ msgstr "軸が不正です"
 #. GT: The CFF font type contains a thing called a name INDEX, and that INDEX
 #. GT: is bad. It is an index of many of the names used in the CFF font.
 #. GT: We hope the user will never see this.
-msgid "Bad CFF name INDEX\n"
-msgstr "CFF の name INDEX が不正です\n"
+msgid "Bad CFF name INDEX"
+msgstr "CFF の name INDEX が不正です"
 
 #, c-format
-msgid "Bad CID offset for CID %d\n"
-msgstr "CID %d の CID オフセットが不正です\n"
+msgid "Bad CID offset for CID %d"
+msgstr "CID %d の CID オフセットが不正です"
 
-msgid "Bad CharString. Does not include lenIV bytes.\n"
-msgstr "CharStringが不正です. lenIV のバイト数が含まれていません\n"
+msgid "Bad CharString. Does not include lenIV bytes."
+msgstr "CharStringが不正です. lenIV のバイト数が含まれていません"
 
 msgid "Bad Class"
 msgstr "不正なクラス"
@@ -1654,8 +1654,8 @@ msgid "Bad base table."
 msgstr "baseテーブルが不正です"
 
 #, c-format
-msgid "Bad bounding box for %s.\n"
-msgstr "%sのバウンディングボックスが不正です.\n"
+msgid "Bad bounding box for %s."
+msgstr "%sのバウンディングボックスが不正です."
 
 msgid "Bad cidmap file"
 msgstr "cidmapファイルが不正です"
@@ -1668,8 +1668,8 @@ msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)\n"
 msgstr "クラス定義テーブルが不正です. グリフ範囲 %d-%d が範囲 [0,%d) を超えています\n"
 
 #, c-format
-msgid "Bad class def table. start=%d cnt=%d, max glyph=%d\n"
-msgstr "クラス定義テーブルが不正です. 先頭=%d, 個数=%d, 最大グリフ=%d\n"
+msgid "Bad class def table. start=%d cnt=%d, max glyph=%d"
+msgstr "クラス定義テーブルが不正です. 先頭=%d, 個数=%d, 最大グリフ=%d"
 
 msgid "Bad class in state machine.\n"
 msgstr "状態機械に不正なクラスが含まれています.\n"
@@ -1707,52 +1707,52 @@ msgstr "デバイステーブルが不正です\n"
 msgid "Bad encoding file format"
 msgstr "エンコーディングファイルのフォーマットが不正です."
 
-msgid "Bad fdselect\n"
-msgstr "fdselect が不正です\n"
+msgid "Bad fdselect"
+msgstr "fdselect が不正です"
 
 #, c-format
 msgid "Bad few values in /BlendDesignMap for axis %s.\n"
 msgstr "軸 %s の /BlendDesingmap の値が少なすぎて不正です.\n"
 
 #, c-format
-msgid "Bad flags value, implied MORE components at end of glyph %d\n"
-msgstr "フラグの値が不正です. グリフ %d の末尾に ま だ 構成要素があることになっています\n"
+msgid "Bad flags value, implied MORE components at end of glyph %d"
+msgstr "フラグの値が不正です. グリフ %d の末尾に ま だ 構成要素があることになっています"
 
 #, c-format
-msgid "Bad flex subroutine in %s\n"
-msgstr "グリフ %s に不正な flex サブルーチンが含まれています\n"
+msgid "Bad flex subroutine in %s"
+msgstr "グリフ %s に不正な flex サブルーチンが含まれています"
 
-msgid "Bad font, offset out of bounds.\n"
-msgstr "不正なフォントです. オフセットが境界を越えています\n"
+msgid "Bad font, offset out of bounds."
+msgstr "不正なフォントです. オフセットが境界を越えています"
 
-msgid "Bad font: Encoding data out of range.\n"
-msgstr "不正なフォント: エンコーディングデータが範囲外です.\n"
+msgid "Bad font: Encoding data out of range."
+msgstr "不正なフォント: エンコーディングデータが範囲外です."
 
 #, c-format
 msgid "Bad format for coverage table %d"
 msgstr "範囲テーブルのフォーマットが %d という不正な値です"
 
 #, c-format
-msgid "Bad glyph (%d), disordered 'loca' table (start comes after end)\n"
-msgstr "不正なグリフ(%d)があります. 'loca' テーブルが乱れています (開始位置が終了位置の後にあります)\n"
+msgid "Bad glyph (%d), disordered 'loca' table (start comes after end)"
+msgstr "不正なグリフ(%d)があります. 'loca' テーブルが乱れています (開始位置が終了位置の後にあります)"
 
 #, c-format
-msgid "Bad glyph (%d), its data length is negative\n"
-msgstr "不正なグリフ(%d)があります. データの長さが負数です\n"
+msgid "Bad glyph (%d), its data length is negative"
+msgstr "不正なグリフ(%d)があります. データの長さが負数です"
 
 #, c-format
-msgid "Bad glyph (%d), its definition extends beyond the end of the glyf table\n"
-msgstr "不正なグリフ(%d)があります. その定義がglyfテーブルの末尾を超えています\n"
+msgid "Bad glyph (%d), its definition extends beyond the end of the glyf table"
+msgstr "不正なグリフ(%d)があります. その定義がglyfテーブルの末尾を超えています"
 
 #, c-format
-msgid "Bad glyph (%d), its definition extends beyond the space allowed for it\n"
-msgstr "不正なグリフ(%d)があります. グリフの定義が許される空間を超えています\n"
+msgid "Bad glyph (%d), its definition extends beyond the space allowed for it"
+msgstr "不正なグリフ(%d)があります. グリフの定義が許される空間を超えています"
 
 msgid "Bad glyph count in mort table."
 msgstr "mort テーブル内のグリフの個数が不正です."
 
-msgid "Bad glyph range specified in glyph comment subtable of PfEd table\n"
-msgstr "PfEd テーブルのグリフコメントサブテーブルで指定されたグリフ範囲が不正です\n"
+msgid "Bad glyph range specified in glyph comment subtable of PfEd table"
+msgstr "PfEd テーブルのグリフコメントサブテーブルで指定されたグリフ範囲が不正です"
 
 msgid "Bad image file"
 msgstr "画像ファイルが不正です."
@@ -1818,8 +1818,8 @@ msgstr "不正な名前リストファイル"
 #. GT: NaN is a concept in IEEE floating point which means "Not a Number"
 #. GT: it is used to represent errors like 0/0 or sqrt(-1).
 #, c-format
-msgid "Bad number, infinity or nan: %s\n"
-msgstr "%sは不正な数値(無限大または非数)です\n"
+msgid "Bad number, infinity or nan: %s"
+msgstr "%sは不正な数値(無限大または非数)です"
 
 #, c-format
 msgid "Bad pair position: glyphs %d & %d should have been < %d"
@@ -1833,8 +1833,8 @@ msgid "Bad reverse contextual chaining substitution glyph: %d is not less than %
 msgstr "前方文脈連鎖依存置換グリフが不正です: %d が %d 未満ではありません"
 
 #, c-format
-msgid "Bad sid %d (must be less than %d)\n"
-msgstr "サブルーチンID %d は不正です (%d 未満でなければなりません)\n"
+msgid "Bad sid %d (must be less than %d)"
+msgstr "サブルーチンID %d は不正です (%d 未満でなければなりません)"
 
 msgid "Bad subroutine INDEX in cff font.\n"
 msgstr "CFF フォント内に不正なサブルーチンインデックスがあります.\n"
@@ -1882,8 +1882,8 @@ msgstr ""
 "...%2$40sの近辺に出現しました."
 
 #, c-format
-msgid "Bad tt font: contour ends make no sense in glyph %d.\n"
-msgstr "不正なTrueTypeフォント: グリフ %d の輪郭の終端は無意味です.\n"
+msgid "Bad tt font: contour ends make no sense in glyph %d."
+msgstr "不正なTrueTypeフォント: グリフ %d の輪郭の終端は無意味です."
 
 #. GT: The words "true" and "false" should be left untranslated. We are restricted
 #. GT: here by what PostScript understands, and it only understands the English
@@ -2257,8 +2257,8 @@ msgstr "(裸の) CFF"
 msgid "CFF CID (Bare)"
 msgstr "(裸の) CFF CID"
 
-msgid "CFF version mismatch\n"
-msgstr "CFF のバージョンが合っていません\n"
+msgid "CFF version mismatch"
+msgstr "CFF のバージョンが合っていません"
 
 msgid "CID"
 msgstr "CID"
@@ -2266,8 +2266,8 @@ msgstr "CID"
 msgid "CID findfont Name"
 msgstr "CID findfont名"
 
-msgid "CID format doesn't contain what we expected it to.\n"
-msgstr "CID フォーマットのデータに予想されるデータが含まれていません.\n"
+msgid "CID format doesn't contain what we expected it to."
+msgstr "CID フォーマットのデータに予想されるデータが含まれていません."
 
 msgid "CID keyed fonts may not be a master design of a multiple master font"
 msgstr "CIDフォントはマルチプルマスターフォントのマスターデザインとして使用できません"
@@ -2404,8 +2404,8 @@ msgstr "平行にできません."
 msgid "Can't _Be Interpolated"
 msgstr "補間を許可しない(_B)"
 
-msgid "Can't back up with nothing on stack\n"
-msgstr "スタック上にバックアップする物が何もありません\n"
+msgid "Can't back up with nothing on stack"
+msgstr "スタック上にバックアップする物が何もありません"
 
 msgid "Can't compare arrays\n"
 msgstr "配列を比較することはできません\n"
@@ -2447,11 +2447,11 @@ msgid "Can't open %s"
 msgstr "%sを開けません"
 
 #, c-format
-msgid "Can't open %s\n"
-msgstr "%sを開くことができません.\n"
+msgid "Can't open %s"
+msgstr "%sを開くことができません."
 
-msgid "Can't open temporary file for truetype output.\n"
-msgstr "TrueType出力のための一時ファイルを開けません\n"
+msgid "Can't open temporary file for truetype output."
+msgstr "TrueType出力のための一時ファイルを開けません"
 
 msgid "Can't run mf"
 msgstr "mfを実行できません."
@@ -2469,11 +2469,11 @@ msgid "Cannot be Undone"
 msgstr "取り消し不能です"
 
 #, c-format
-msgid "Cannot open %s\n"
-msgstr "%sを開けません\n"
+msgid "Cannot open %s"
+msgstr "%sを開けません"
 
-msgid "Cannot open a temporary file\n"
-msgstr "一時ファイルを開けません\n"
+msgid "Cannot open a temporary file"
+msgstr "一時ファイルを開けません"
 
 msgid "Cannot open file"
 msgstr "ファイルが開けません"
@@ -3422,8 +3422,8 @@ msgid "Could not find the glyph: %.70s"
 msgstr "グリフを見つけることができません: %.70s"
 
 #, c-format
-msgid "Could not match points in composite glyph (%d to %d) when adding %s to %s\n"
-msgstr "複合グリフ (%d から %d へ) 内で, %s を %s に追加する時に点を一致させることができません\n"
+msgid "Could not match points in composite glyph (%d to %d) when adding %s to %s"
+msgstr "複合グリフ (%d から %d へ) 内で, %s を %s に追加する時に点を一致させることができません"
 
 msgid "Could not open"
 msgstr "開くことができませんでした"
@@ -3441,8 +3441,8 @@ msgid "Could not parse %s"
 msgstr "%sを解析できませんでした"
 
 #, c-format
-msgid "Could not parse a CID font, %sCIDFontType %d, %sfonttype %d\n"
-msgstr "%sCIDFontType %d, %sfonttype %d の CID フォントを解析できません\n"
+msgid "Could not parse a CID font, %sCIDFontType %d, %sfonttype %d"
+msgstr "%sCIDFontType %d, %sfonttype %d の CID フォントを解析できません"
 
 #, c-format
 msgid "Could not read %s"
@@ -3470,8 +3470,8 @@ msgid "Couldn't create directory: %s"
 msgstr "ディレクトリ%sを作成できません"
 
 #, c-format
-msgid "Couldn't find a font file named %s\n"
-msgstr "%s という名前のビットマップフォントが見つかりませんでした.\n"
+msgid "Couldn't find a font file named %s"
+msgstr "%s という名前のビットマップフォントが見つかりませんでした."
 
 msgid "Couldn't find base point"
 msgstr "基準となる点が見つかりません"
@@ -3874,8 +3874,8 @@ msgid "Diameter:"
 msgstr "直径:"
 
 #, c-format
-msgid "Didn't understand format for fdselect %d\n"
-msgstr "fdselect %d のフォーマットが理解できませんでした\n"
+msgid "Didn't understand format for fdselect %d"
+msgstr "fdselect %d のフォーマットが理解できませんでした"
 
 msgid "Differences..."
 msgstr "相違点..."
@@ -3884,8 +3884,8 @@ msgid "Different Fonts"
 msgstr "フォントが異なります"
 
 #, c-format
-msgid "Different settings on whether to stroke in layer %d of %s\n"
-msgstr "レイヤー %d (%s の) でストロークをどう行うかの設定が異なります.\n"
+msgid "Different settings on whether to stroke in layer %d of %s"
+msgstr "レイヤー %d (%s の) でストロークをどう行うかの設定が異なります."
 
 msgid "Dingbats"
 msgstr "装飾記号"
@@ -4057,8 +4057,8 @@ msgid "Duplicate Name"
 msgstr "名前の重複"
 
 #, c-format
-msgid "Duplicate definition of subroutine %d\n"
-msgstr "サブルーチン %d が重複定義されています\n"
+msgid "Duplicate definition of subroutine %d"
+msgstr "サブルーチン %d が重複定義されています"
 
 msgid "Duplicate name"
 msgstr "名前の重複"
@@ -4067,8 +4067,8 @@ msgid "Duplicate pixelsize"
 msgstr "ピクセルサイズが重複しています."
 
 #, c-format
-msgid "Duplicate repeat row count in char %d of pk file\n"
-msgstr "PKファイルの文字 %d で, 繰返し列番号が重複しています\n"
+msgid "Duplicate repeat row count in char %d of pk file"
+msgstr "PKファイルの文字 %d で, 繰返し列番号が重複しています"
 
 msgid "Duployan"
 msgstr "デュプロワイエ式速記文字"
@@ -4206,8 +4206,8 @@ msgid "Empty"
 msgstr "空"
 
 #, c-format
-msgid "Empty composite %d\n"
-msgstr "複合文字 %d が空です\n"
+msgid "Empty composite %d"
+msgstr "複合文字 %d が空です"
 
 msgid "Enclosed Alphanumeric Supplement"
 msgstr "囲み英数字補助"
@@ -4228,12 +4228,12 @@ msgid "Encoding name"
 msgstr "エンコード"
 
 #, c-format
-msgid "Encoding subtable for platform=%d, specific=%d has a 0 length subtable.\n"
-msgstr "プラットフォームID=%d, 固有ID=%d のエンコーディングサブテーブルに,長さ 0 のサブテーブルが含まれています.\n"
+msgid "Encoding subtable for platform=%d, specific=%d has a 0 length subtable."
+msgstr "プラットフォームID=%d, 固有ID=%d のエンコーディングサブテーブルに,長さ 0 のサブテーブルが含まれています."
 
 #, c-format
-msgid "Encoding subtable for platform=%d, specific=%d has an unsupported format %d.\n"
-msgstr "プラットフォームID=%d, 固有ID=%d のエンコーディングサブテーブルが,未サポートのフォーマット %d で書かれています.\n"
+msgid "Encoding subtable for platform=%d, specific=%d has an unsupported format %d."
+msgstr "プラットフォームID=%d, 固有ID=%d のエンコーディングサブテーブルが,未サポートのフォーマット %d で書かれています."
 
 #, c-format
 msgid "Encoding value (%x) not in font, ignored"
@@ -4533,25 +4533,25 @@ msgid "Failed to open file %s for output"
 msgstr "ファイル%sを出力用に開くのに失敗しました"
 
 #, c-format
-msgid "Failed to open glyph to name map file for writing: %s\n"
-msgstr "名前マップファイル %s を, グリフ名を書き込むために開くのに失敗しました\n"
+msgid "Failed to open glyph to name map file for writing: %s"
+msgstr "名前マップファイル %s を, グリフ名を書き込むために開くのに失敗しました"
 
 msgid "Failed to open temporary output file"
 msgstr "一時ファイルを開くのに失敗しました."
 
 #, c-format
-msgid "Failed to parse color %s\n"
-msgstr "色 %s の構文解析に失敗しました\n"
+msgid "Failed to parse color %s"
+msgstr "色 %s の構文解析に失敗しました"
 
-msgid "Failed to parse the StartData command properly\n"
-msgstr "StartData コマンドを正しく解析できませんでした\n"
+msgid "Failed to parse the StartData command properly"
+msgstr "StartData コマンドを正しく解析できませんでした"
 
-msgid "Failed to parse the StartData command properly, bad count\n"
-msgstr "StartDataコマンドを正しく解析できず, 個数が不正です\n"
+msgid "Failed to parse the StartData command properly, bad count"
+msgstr "StartDataコマンドを正しく解析できず, 個数が不正です"
 
 #, c-format
-msgid "Failed to write %s\n"
-msgstr "%sの書き出しに失敗しました.\n"
+msgid "Failed to write %s"
+msgstr "%sの書き出しに失敗しました."
 
 msgid "Failure"
 msgstr "失敗"
@@ -4821,25 +4821,25 @@ msgstr "%.20s と合併するフォント"
 msgid "FontForge"
 msgstr "FontForge"
 
-msgid "FontForge does not support Chameleon fonts\n"
-msgstr "FontForge は Chameleon フォントをサポートしていません\n"
+msgid "FontForge does not support Chameleon fonts"
+msgstr "FontForge は Chameleon フォントをサポートしていません"
 
 msgid "FontForge does not support dictionary based imagemask operators.\n"
 msgstr "FontForge は辞書ベースの imagemask 演算子をサポートしていません.\n"
 
-msgid "FontForge does not support synthetic fonts\n"
-msgstr "FontForge は合成フォントをサポートしていません\n"
+msgid "FontForge does not support synthetic fonts"
+msgstr "FontForge は合成フォントをサポートしていません"
 
 #, c-format
-msgid "FontForge does not support this bit depth %d (must be 1,2,4,8,16,32)\n"
-msgstr "FontForge は %d ビットの諧調深度はサポートしていません(1,2,4,8,16,32のいずれかでなければなりません)\n"
+msgid "FontForge does not support this bit depth %d (must be 1,2,4,8,16,32)"
+msgstr "FontForge は %d ビットの諧調深度はサポートしていません(1,2,4,8,16,32のいずれかでなければなりません)"
 
-msgid "FontForge does not support type2 multiple master fonts\n"
-msgstr "FontForge は Type2 マルチプルマスターフォントをサポートしていません\n"
+msgid "FontForge does not support type2 multiple master fonts"
+msgstr "FontForge は Type2 マルチプルマスターフォントをサポートしていません"
 
 #. GT: DICT is a magic term inside CFF fonts, as is INDEX, and I guess CFF and type2
-msgid "FontForge does not support type2 programs embedded in CFF DICT INDICES.\n"
-msgstr "FontForge は CFF DICT INDEXに埋め込まれた Type2 プログラムはサポートしていません\n"
+msgid "FontForge does not support type2 programs embedded in CFF DICT INDICES."
+msgstr "FontForge は CFF DICT INDEXに埋め込まれた Type2 プログラムはサポートしていません"
 
 msgid "FontForge font debugging table"
 msgstr "FontForge フォントデバッグテーブル"
@@ -5134,8 +5134,8 @@ msgid "Glyph"
 msgstr "グリフ"
 
 #, c-format
-msgid "Glyph %d attempts to reference glyph %d which is outside the font\n"
-msgstr "グリフ %d がフォントのグリフ数を超えるグリフ %d を参照しようとしました\n"
+msgid "Glyph %d attempts to reference glyph %d which is outside the font"
+msgstr "グリフ %d がフォントのグリフ数を超えるグリフ %d を参照しようとしました"
 
 #, c-format
 msgid ""
@@ -5547,41 +5547,41 @@ msgstr "歴史的字体"
 msgid "Hit Watch Point"
 msgstr "監視点に到達"
 
-msgid "Hmm, more glyph variation data specified than there are glyphs in font.\n"
-msgstr "ふむ, フォント内に存在するよりも多くのグリフバリエーションデータが指定されています.\n"
+msgid "Hmm, more glyph variation data specified than there are glyphs in font."
+msgstr "ふむ, フォント内に存在するよりも多くのグリフバリエーションデータが指定されています."
 
-msgid "Hmm, no global tuples specified in the 'gvar' table.\n"
-msgstr "ふむ, 'gvar' テーブル内でグローバルタプルが指定されていません.\n"
+msgid "Hmm, no global tuples specified in the 'gvar' table."
+msgstr "ふむ, 'gvar' テーブル内でグローバルタプルが指定されていません."
 
-msgid "Hmm, the 'avar' table is too long.\n"
-msgstr "ふむ, 'avar' テーブルが大きすぎます\n"
+msgid "Hmm, the 'avar' table is too long."
+msgstr "ふむ, 'avar' テーブルが大きすぎます"
 
-msgid "Hmm, the axis count in the 'avar' table is different from that in the 'fvar' table.\n"
-msgstr "ふむ, 'avar' テーブル内の軸の本数が 'fvar' テーブルの値と異なります.\n"
+msgid "Hmm, the axis count in the 'avar' table is different from that in the 'fvar' table."
+msgstr "ふむ, 'avar' テーブル内の軸の本数が 'fvar' テーブルの値と異なります."
 
-msgid "Hmm, the axis count in the 'gvar' table is different from that in the 'fvar' table.\n"
-msgstr "ふむ, 'gvar' テーブル内の軸の本数が 'fvar' テーブルの値と異なります.\n"
+msgid "Hmm, the axis count in the 'gvar' table is different from that in the 'fvar' table."
+msgstr "ふむ, 'gvar' テーブル内の軸の本数が 'fvar' テーブルの値と異なります."
 
-msgid "Hmm, this 'fvar' table has an unexpected size for an axis, I shan't parse it\n"
-msgstr "ふむ, この 'fvar' テーブルに含まれる軸のサイズが予期に反する値なので,解析を中止します.\n"
+msgid "Hmm, this 'fvar' table has an unexpected size for an axis, I shan't parse it"
+msgstr "ふむ, この 'fvar' テーブルに含まれる軸のサイズが予期に反する値なので,解析を中止します."
 
-msgid "Hmm, this 'fvar' table has an unexpected size for an instance, I shan't parse it\n"
-msgstr "ふむ, この 'fvar' テーブルに含まれるインスタンスのサイズが予期に反する値なので, 解析を中止します.\n"
+msgid "Hmm, this 'fvar' table has an unexpected size for an instance, I shan't parse it"
+msgstr "ふむ, この 'fvar' テーブルに含まれるインスタンスのサイズが予期に反する値なので, 解析を中止します."
 
-msgid "Hmm, this 'fvar' table has more axes than FontForge can handle.\n"
-msgstr "ふむ, この 'fvar' テーブルには FontForge が扱える限界より多くのデザイン軸が含まれています.\n"
+msgid "Hmm, this 'fvar' table has more axes than FontForge can handle."
+msgstr "ふむ, この 'fvar' テーブルには FontForge が扱える限界より多くのデザイン軸が含まれています."
 
 msgid "Hmm, this 'fvar' table has more count/size pairs than I expect\n"
 msgstr "ふむ, この 'fvar' テーブルは予想されるより多くの個数/サイズペアが含まれています\n"
 
-msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense.\n"
-msgstr "ふむ, この 'fvar' テーブルにはデザイン軸が無いので意味をなしません.\n"
+msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense."
+msgstr "ふむ, この 'fvar' テーブルにはデザイン軸が無いので意味をなしません."
 
 msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it\n"
 msgstr "ふむ, この 'fvar' テーブルの個数/サイズペアは少なすぎますので, 解析を中止します\n"
 
-msgid "Hmm, this 'fvar' table is too short\n"
-msgstr "ふむ, この 'fvar' テーブルは小さすぎます\n"
+msgid "Hmm, this 'fvar' table is too short"
+msgstr "ふむ, この 'fvar' テーブルは小さすぎます"
 
 #, c-format
 msgid ""
@@ -5902,16 +5902,16 @@ msgid "In an italic font the horizontal change per unit vertical change"
 msgstr "イタリックフォントにおける, 1単位の垂直変化に対する水平変化の量"
 
 #, c-format
-msgid "In character %s, could not find reference to %s\n"
-msgstr "文字 %s において, %s への参照を見つけることができませんでした.\n"
+msgid "In character %s, could not find reference to %s"
+msgstr "文字 %s において, %s への参照を見つけることができませんでした."
 
 #, c-format
-msgid "In character %s, there are too few points on a path in the base\n"
-msgstr "文字 %s において, 基底グリフのパスに含まれる点の個数が少なすぎます.\n"
+msgid "In character %s, there are too few points on a path in the base"
+msgstr "文字 %s において, 基底グリフのパスに含まれる点の個数が少なすぎます."
 
 #, c-format
-msgid "In character %s, there are too many points on a path in the base\n"
-msgstr "文字 %s において, 基底グリフのパスに含まれる点の個数が多すぎます.\n"
+msgid "In character %s, there are too many points on a path in the base"
+msgstr "文字 %s において, 基底グリフのパスに含まれる点の個数が多すぎます."
 
 #, c-format
 msgid "In font %1$d the advance width of glyph %2$.30s does not scale the base advance width properly, it shall be forced to the proper value"
@@ -5949,12 +5949,12 @@ msgstr "インライン(_L)..."
 msgid "Inari Sami"
 msgstr "イナリ・サーミ語"
 
-msgid "Incorrect number of deltas in cvt\n"
-msgstr "cvt に含まれる delta の個数が不正です\n"
+msgid "Incorrect number of deltas in cvt"
+msgstr "cvt に含まれる delta の個数が不正です"
 
 #, c-format
-msgid "Incorrect number of deltas in glyph %d (%s)\n"
-msgstr "グリフ %d (%s) のデルタの個数が不正です\n"
+msgid "Incorrect number of deltas in glyph %d (%s)"
+msgstr "グリフ %d (%s) のデルタの個数が不正です"
 
 msgid "Incorrect number of instances weights, or illegal numbers"
 msgstr "重みづけインスタンスの個数が間違っているか,数値が不正です"
@@ -5981,8 +5981,8 @@ msgid "Index in use"
 msgstr "インデックスが使用中です."
 
 #, c-format
-msgid "Index out of range in %s\n"
-msgstr "グリフ %s に範囲外のインデックスが含まれています\n"
+msgid "Index out of range in %s"
+msgstr "グリフ %s に範囲外のインデックスが含まれています"
 
 #, c-format
 msgid "Index too big (must be <%d) \"%s"
@@ -6124,33 +6124,33 @@ msgid "Invalid Encoding"
 msgstr "不正なエンコーディング"
 
 #, c-format
-msgid "Invalid FD (%d) assigned to CID %d.\n"
-msgstr "FD (%d) が CID %d に不正に代入されています.\n"
+msgid "Invalid FD (%d) assigned to CID %d."
+msgstr "FD (%d) が CID %d に不正に代入されています."
 
-msgid "Invalid character outside of string in sfnts array\n"
-msgstr "sfnts 配列内の文字列以外の場所に不正な文字が含まれています\n"
+msgid "Invalid character outside of string in sfnts array"
+msgstr "sfnts 配列内の文字列以外の場所に不正な文字が含まれています"
 
-msgid "Invalid hex digit in sfnts array\n"
-msgstr "sfnts 配列に不正な16進文字列が含まれています\n"
+msgid "Invalid hex digit in sfnts array"
+msgstr "sfnts 配列に不正な16進文字列が含まれています"
 
-msgid "Invalid ligature offset\n"
-msgstr "合字オフセットが不正です\n"
+msgid "Invalid ligature offset"
+msgstr "合字オフセットが不正です"
 
 #, c-format
-msgid "Invalid lookup table format. %d\n"
-msgstr "照合テーブルフォーマット %d は不正な値です\n"
+msgid "Invalid lookup table format. %d"
+msgstr "照合テーブルフォーマット %d は不正な値です"
 
-msgid "Invalid point match. Point would be after this reference.\n"
-msgstr "点の一致が不正です. 点はこの参照の後にあるはずです.\n"
+msgid "Invalid point match. Point would be after this reference."
+msgstr "点の一致が不正です. 点はこの参照の後にあるはずです."
 
 msgid "Invalid point size"
 msgstr "ポイント数が不正です"
 
-msgid "Invalid ttf hmtx table (or hhea), numOfLongMetrics is 0\n"
-msgstr "TTF の hmtx (または hhea) テーブルが不正です. numOfLongMetrics が 0 になっています\n"
+msgid "Invalid ttf hmtx table (or hhea), numOfLongMetrics is 0"
+msgstr "TTF の hmtx (または hhea) テーブルが不正です. numOfLongMetrics が 0 になっています"
 
-msgid "Invalid ttf vmtx table (or vhea), numOfLongVerMetrics is 0\n"
-msgstr "TTF の vmtx (または vhea) テーブルが不正です. numOvLongVerMetrics が 0 になっています\n"
+msgid "Invalid ttf vmtx table (or vhea), numOfLongVerMetrics is 0"
+msgstr "TTF の vmtx (または vhea) テーブルが不正です. numOvLongVerMetrics が 0 になっています"
 
 msgid "Irish"
 msgstr "アイルランド語"
@@ -6403,8 +6403,8 @@ msgstr "キー"
 
 #. GT: Here "def" is a PostScript keyword, (meaning define).
 #. GT: This "def" should not be translated as it is part of the PostScript language.
-msgid "Key for a def must be a string or name literal\n"
-msgstr "def のキーは文字列または名前リテラルでなければなりません\n"
+msgid "Key for a def must be a string or name literal"
+msgstr "def のキーは文字列または名前リテラルでなければなりません"
 
 msgid "Khakass"
 msgstr "ハカス語"
@@ -7483,8 +7483,8 @@ msgstr "その他の記号及び絵記号"
 msgid "Miscellaneous Technical"
 msgstr "その他の技術用記号"
 
-msgid "Mismatched local and shared tuple flags.\n"
-msgstr "ローカルタプルフラグと共有タプルフラグが一致しません\n"
+msgid "Mismatched local and shared tuple flags."
+msgstr "ローカルタプルフラグと共有タプルフラグが一致しません"
 
 msgid "Missing \"OS/2\" table"
 msgstr "\"OS/2\"テーブルがありません"
@@ -7500,8 +7500,8 @@ msgid "Missing Glyph..."
 msgstr "不足のグリフ..."
 
 #, c-format
-msgid "Missing POST resource %u\n"
-msgstr "POSTリソース%uがありません\n"
+msgid "Missing POST resource %u"
+msgstr "POSTリソース%uがありません"
 
 msgid "Missing bitmap strike"
 msgstr "存在しないビットマップストライク"
@@ -7637,8 +7637,8 @@ msgid "More pushes specified than needed"
 msgstr "必要な回数より余計にpushがあります"
 
 #, c-format
-msgid "More than 256 entries in subfont %s\n"
-msgstr "サブフォント%sに256個を超える項目があります\n"
+msgid "More than 256 entries in subfont %s"
+msgstr "サブフォント%sに256個を超える項目があります"
 
 msgid "Moroccan"
 msgstr "モロッコ語"
@@ -7674,18 +7674,18 @@ msgid "Multiple copies of the selection should be tiled onto the path"
 msgstr "選択したアウトラインをタイルとして扱い, パス上に繰り返し敷き詰めます."
 
 #, c-format
-msgid "Multiple glyphs map to the same unicode encoding U+%04X, only one will be used\n"
-msgstr "複数のグリフが同一の Unicode 符号位置 U+%04X に対応づけられています. このうちの片方だけが使用されます\n"
+msgid "Multiple glyphs map to the same unicode encoding U+%04X, only one will be used"
+msgstr "複数のグリフが同一の Unicode 符号位置 U+%04X に対応づけられています. このうちの片方だけが使用されます"
 
-msgid "Multiple master font with more than 16 instances\n"
-msgstr "マルチプルマスターフォントのインスタンスが 16 個を超えています\n"
+msgid "Multiple master font with more than 16 instances"
+msgstr "マルチプルマスターフォントのインスタンスが 16 個を超えています"
 
-msgid "Multiple master font with more than 4 axes\n"
-msgstr "マルチプルマスターフォントの軸の本数が 4 軸を超えています.\n"
+msgid "Multiple master font with more than 4 axes"
+msgstr "マルチプルマスターフォントの軸の本数が 4 軸を超えています."
 
 #, c-format
-msgid "Multiple master subroutine called with the wrong number of arguments in %s.\n"
-msgstr "グリフ %s で, マルチプルマスターサブルーチンの呼出し時の引数の個数が間違っています.\n"
+msgid "Multiple master subroutine called with the wrong number of arguments in %s."
+msgstr "グリフ %s で, マルチプルマスターサブルーチンの呼出し時の引数の個数が間違っています."
 
 msgid "Multiple names for language"
 msgstr "異なる言語での複数の名前"
@@ -8103,12 +8103,12 @@ msgstr "幅なし"
 msgid "No _to All"
 msgstr "全部いいえ(_T)"
 
-msgid "No argument to operator\n"
-msgstr "演算子に引数がありません\n"
+msgid "No argument to operator"
+msgstr "演算子に引数がありません"
 
 #, c-format
-msgid "No argument to operator %d in private dict\n"
-msgstr "Private 辞書内の演算子 %d に引数がありません\n"
+msgid "No argument to operator %d in private dict"
+msgstr "Private 辞書内の演算子 %d に引数がありません"
 
 msgid "No bitmap strikes"
 msgstr "ビットマップが全くありません."
@@ -8133,8 +8133,8 @@ msgid "No glyph named %s."
 msgstr "%s という名前のグリフはありません。"
 
 #, c-format
-msgid "No glyph with unicode U+%05x in font\n"
-msgstr "Unicode U+%05x のグリフはフォントにありません\n"
+msgid "No glyph with unicode U+%05x in font"
+msgstr "Unicode U+%05x のグリフはフォントにありません"
 
 msgid "No glyphs matched"
 msgstr "一致するグリフがありません"
@@ -8144,20 +8144,20 @@ msgid "No kerning pairs found in %.200s"
 msgstr "%.200s にはカーニングペアが含まれていません."
 
 #, c-format
-msgid "No kerning table for %s\n"
-msgstr "%sのカーニングテーブルがありません\n"
+msgid "No kerning table for %s"
+msgstr "%sのカーニングテーブルがありません"
 
 msgid "No lookup selected"
 msgstr "機能が選択されていません."
 
-msgid "No mark in ] (close array)\n"
-msgstr "] (配列の終了) にマークがありません\n"
+msgid "No mark in ] (close array)"
+msgstr "] (配列の終了) にマークがありません"
 
-msgid "No mark in cleartomark\n"
-msgstr "cleartomark にマークがありません\n"
+msgid "No mark in cleartomark"
+msgstr "cleartomark にマークがありません"
 
-msgid "No mark in counttomark\n"
-msgstr "counttomark にマークがありません\n"
+msgid "No mark in counttomark"
+msgstr "counttomark にマークがありません"
 
 #, c-format
 msgid "No matching AnchorClass for %s"
@@ -8171,24 +8171,24 @@ msgid "No paths with within a glyph should intersect"
 msgstr "同一のグリフに属するパス同士が交差していてはなりません."
 
 #, c-format
-msgid "No previous point on path in curveto from flex 0 in %s\n"
-msgstr "グリフ %s の flex0 からの curveto に, 直前の点が存在しません\n"
+msgid "No previous point on path in curveto from flex 0 in %s"
+msgstr "グリフ %s の flex0 からの curveto に, 直前の点が存在しません"
 
 #, c-format
-msgid "No previous point on path in curveto in %s\n"
-msgstr "グリフ %s 内の curveto 演算子で, パスの直前の点が存在しません\n"
+msgid "No previous point on path in curveto in %s"
+msgstr "グリフ %s 内の curveto 演算子で, パスの直前の点が存在しません"
 
 #, c-format
-msgid "No previous point on path in flex operator in %s\n"
-msgstr "グリフ %s 内の flex 演算子で, パスの直前の点が存在しません\n"
+msgid "No previous point on path in flex operator in %s"
+msgstr "グリフ %s 内の flex 演算子で, パスの直前の点が存在しません"
 
 #, c-format
-msgid "No previous point on path in lineto from flex 0 in %s\n"
-msgstr "グリフ %s の flex0 からの lineto に, 直前の点が存在しません\n"
+msgid "No previous point on path in lineto from flex 0 in %s"
+msgstr "グリフ %s の flex0 からの lineto に, 直前の点が存在しません"
 
 #, c-format
-msgid "No previous point on path in lineto in %s\n"
-msgstr "グリフ %s 内の lineto 演算子がスタックアンダーフローを起こしました\n"
+msgid "No previous point on path in lineto in %s"
+msgstr "グリフ %s 内の lineto 演算子がスタックアンダーフローを起こしました"
 
 msgid "No problems detected"
 msgstr "問題は見つかりませんでした"
@@ -8196,8 +8196,8 @@ msgstr "問題は見つかりませんでした"
 msgid "No problems found"
 msgstr "問題はありませんでした."
 
-msgid "No selection\n"
-msgstr "選択されていません\n"
+msgid "No selection"
+msgstr "選択されていません"
 
 msgid "No such file"
 msgstr "そのようなファイルはありません"
@@ -8382,8 +8382,8 @@ msgstr "何も読み込んでいません."
 msgid "Nothing Selected"
 msgstr "何も選択されていません."
 
-msgid "Nothing on stack to print\n"
-msgstr "スタック上に印字できる物が何もありません\n"
+msgid "Nothing on stack to print"
+msgstr "スタック上に印字できる物が何もありません"
 
 msgid "Nothing to trace"
 msgstr "トレースする物がありません."
@@ -8823,8 +8823,8 @@ msgstr "順序が違います."
 msgid "Out of Range"
 msgstr "範囲外です."
 
-msgid "Out of memory\n"
-msgstr "メモリ不足です\n"
+msgid "Out of memory"
+msgstr "メモリ不足です"
 
 msgid "Outline"
 msgstr "アウトライン"
@@ -9451,8 +9451,8 @@ msgid "Polytonic Greek"
 msgstr "古典ギリシャ語"
 
 #, c-format
-msgid "Pop stack underflow on pop in %s\n"
-msgstr "グリフ %s の pop で、スタックアンダーフローが発生しました\n"
+msgid "Pop stack underflow on pop in %s"
+msgstr "グリフ %s の pop で、スタックアンダーフローが発生しました"
 
 msgid "Portuguese"
 msgstr "ポルトガル語"
@@ -9694,11 +9694,11 @@ msgstr "削除(_M)"
 msgid "Re_vert List"
 msgstr "リストを反転(_V)"
 
-msgid "Reached end of file when reading composite glyph\n"
-msgstr "合成グリフの読み込み中にファイルの終端に到達しました\n"
+msgid "Reached end of file when reading composite glyph"
+msgstr "合成グリフの読み込み中にファイルの終端に到達しました"
 
-msgid "Reached end of file when reading simple glyph\n"
-msgstr "単純グリフの読込み中にファイル終端に達しました.\n"
+msgid "Reached end of file when reading simple glyph"
+msgstr "単純グリフの読込み中にファイル終端に達しました."
 
 msgid "Read of Uninitialized Store"
 msgstr "未初期化のストレージの読み込み"
@@ -9743,8 +9743,8 @@ msgid "Reference Names"
 msgstr "参照の名前"
 
 #, c-format
-msgid "Reference encoding out of bounds in %s\n"
-msgstr "グリフ %s 内の参照のエンコーディングが境界を超えています\n"
+msgid "Reference encoding out of bounds in %s"
+msgstr "グリフ %s 内の参照のエンコーディングが境界を超えています"
 
 msgid "Reference point match out of date"
 msgstr "参照の点の照合が現状に合っていません"
@@ -9754,12 +9754,12 @@ msgid "Reference to character %1$.20s at %2$d"
 msgstr "文字%1$.20sへの%2$dにおける参照"
 
 #, c-format
-msgid "Reference to glyph %d out of bounds when parsing 'glyf' table.\n"
-msgstr "'glyf'テーブルの解析中に, 境界を超えたグリフ %d への参照に出会いました.\n"
+msgid "Reference to glyph %d out of bounds when parsing 'glyf' table."
+msgstr "'glyf'テーブルの解析中に, 境界を超えたグリフ %d への参照に出会いました."
 
 #, c-format
-msgid "Reference to transient memory out of bounds in put in %s\n"
-msgstr "グリフ %s 内の put 演算子による一時メモリへの参照が境界を超えています\n"
+msgid "Reference to transient memory out of bounds in put in %s"
+msgstr "グリフ %s 内の put 演算子による一時メモリへの参照が境界を超えています"
 
 msgid "References are nested more deeply in this glyph than the maximum allowed"
 msgstr "このグリフでは、参照の入れ子レベルが最大許容値を超えています"
@@ -11266,88 +11266,88 @@ msgid "Stack (TrueType)"
 msgstr "スタック(TrueType)"
 
 #, c-format
-msgid "Stack got too big in %s\n"
-msgstr "グリフ %s 内でスタックが大きくなりすぎました\n"
+msgid "Stack got too big in %s"
+msgstr "グリフ %s 内でスタックが大きくなりすぎました"
 
 #, c-format
-msgid "Stack underflow on binary operator in %s\n"
-msgstr "グリフ %s 内の二項演算子がスタックアンダーフローを起こしました\n"
+msgid "Stack underflow on binary operator in %s"
+msgstr "グリフ %s 内の二項演算子がスタックアンダーフローを起こしました"
 
 #, c-format
-msgid "Stack underflow on callothersubr in %s\n"
-msgstr "グリフ %s 内の callothersubr 演算子がスタックアンダーフローを起こしました\n"
+msgid "Stack underflow on callothersubr in %s"
+msgstr "グリフ %s 内の callothersubr 演算子がスタックアンダーフローを起こしました"
 
 #, c-format
-msgid "Stack underflow on callsubr in %s\n"
-msgstr "グリフ %s 内の callsubr 演算子がスタックアンダーフローを起こしました\n"
+msgid "Stack underflow on callsubr in %s"
+msgstr "グリフ %s 内の callsubr 演算子がスタックアンダーフローを起こしました"
 
 #, c-format
-msgid "Stack underflow on hhcurveto in %s\n"
-msgstr "グリフ %s 内の hhcurveto 演算子がスタックアンダーフローを起こしました\n"
+msgid "Stack underflow on hhcurveto in %s"
+msgstr "グリフ %s 内の hhcurveto 演算子がスタックアンダーフローを起こしました"
 
 #, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s\n"
 msgstr "グリフ %s 内の hlineto/hmoveto 演算子がスタックアンダーフローを起こしました\n"
 
 #, c-format
-msgid "Stack underflow on hsbw in %s\n"
-msgstr "グリフ %s 内の hsbw 演算子がスタックアンダーフローを起こしました\n"
+msgid "Stack underflow on hsbw in %s"
+msgstr "グリフ %s 内の hsbw 演算子がスタックアンダーフローを起こしました"
 
 #, c-format
-msgid "Stack underflow on hstem in %s\n"
-msgstr "グリフ %s 内の hstem 演算子がスタックアンダーフローを起こしました\n"
+msgid "Stack underflow on hstem in %s"
+msgstr "グリフ %s 内の hstem 演算子がスタックアンダーフローを起こしました"
 
 #, c-format
-msgid "Stack underflow on hstem3 in %s\n"
-msgstr "グリフ %s 内の hstem3 演算子がスタックアンダーフローを起こしました\n"
+msgid "Stack underflow on hstem3 in %s"
+msgstr "グリフ %s 内の hstem3 演算子がスタックアンダーフローを起こしました"
 
 #, c-format
-msgid "Stack underflow on hvcurveto in %s\n"
-msgstr "グリフ %s 内の hvcurveto 演算子がスタックアンダーフローを起こしました\n"
+msgid "Stack underflow on hvcurveto in %s"
+msgstr "グリフ %s 内の hvcurveto 演算子がスタックアンダーフローを起こしました"
 
 #, c-format
-msgid "Stack underflow on ifelse in %s\n"
-msgstr "グリフ %s 内の ifelse 演算子がスタックアンダーフローを起こしました\n"
+msgid "Stack underflow on ifelse in %s"
+msgstr "グリフ %s 内の ifelse 演算子がスタックアンダーフローを起こしました"
 
 #, c-format
 msgid "Stack underflow on rlineto/rmoveto in %s\n"
 msgstr "グリフ %s 内の rlineto/rmoveto 演算子がスタックアンダーフローを起こしました\n"
 
 #, c-format
-msgid "Stack underflow on rrcurveto in %s\n"
-msgstr "グリフ %s 内の rrcurveto 演算子がスタックアンダーフローを起こしました\n"
+msgid "Stack underflow on rrcurveto in %s"
+msgstr "グリフ %s 内の rrcurveto 演算子がスタックアンダーフローを起こしました"
 
 #, c-format
-msgid "Stack underflow on sbw in %s\n"
-msgstr "グリフ %s 内の sbw 演算子がスタックアンダーフローを起こしました\n"
+msgid "Stack underflow on sbw in %s"
+msgstr "グリフ %s 内の sbw 演算子がスタックアンダーフローを起こしました"
 
 #, c-format
-msgid "Stack underflow on seac in %s\n"
-msgstr "グリフ %s 内の seac 演算子がスタックアンダーフローを起こしました\n"
+msgid "Stack underflow on seac in %s"
+msgstr "グリフ %s 内の seac 演算子がスタックアンダーフローを起こしました"
 
 #, c-format
-msgid "Stack underflow on setcurrentpoint in %s\n"
-msgstr "グリフ %s 内の setcurrentpoint 演算子がスタックアンダーフローを起こしました\n"
+msgid "Stack underflow on setcurrentpoint in %s"
+msgstr "グリフ %s 内の setcurrentpoint 演算子がスタックアンダーフローを起こしました"
 
 #, c-format
-msgid "Stack underflow on unary operator in %s\n"
-msgstr "グリフ %s 内の単項演算子がスタックアンダーフローを起こしました\n"
+msgid "Stack underflow on unary operator in %s"
+msgstr "グリフ %s 内の単項演算子がスタックアンダーフローを起こしました"
 
 #, c-format
-msgid "Stack underflow on vhcurveto in %s\n"
-msgstr "グリフ %s 内の vhcurveto 演算子がスタックアンダーフローを起こしました\n"
+msgid "Stack underflow on vhcurveto in %s"
+msgstr "グリフ %s 内の vhcurveto 演算子がスタックアンダーフローを起こしました"
 
 #, c-format
 msgid "Stack underflow on vlineto/vmoveto in %s\n"
 msgstr "グリフ %s 内の vlineto/vmoveto 演算子がスタックアンダーフローを起こしました\n"
 
 #, c-format
-msgid "Stack underflow on vstem in %s\n"
-msgstr "グリフ %s 内の vstem 演算子がスタックアンダーフローを起こしました\n"
+msgid "Stack underflow on vstem in %s"
+msgstr "グリフ %s 内の vstem 演算子がスタックアンダーフローを起こしました"
 
 #, c-format
-msgid "Stack underflow on vstem3 in %s\n"
-msgstr "グリフ %s 内の vstem3 演算子がスタックアンダーフローを起こしました\n"
+msgid "Stack underflow on vstem3 in %s"
+msgstr "グリフ %s 内の vstem3 演算子がスタックアンダーフローを起こしました"
 
 msgid "Standard"
 msgstr "標準"
@@ -11565,8 +11565,8 @@ msgid "SubFonts|_None"
 msgstr "なし(_N)"
 
 #, c-format
-msgid "Subroutine number out of bounds in %s\n"
-msgstr "グリフ %s 内で, サブルーチン番号が境界を超えています\n"
+msgid "Subroutine number out of bounds in %s"
+msgstr "グリフ %s 内で, サブルーチン番号が境界を超えています"
 
 msgid "Subscript"
 msgstr "下つき文字"
@@ -11802,8 +11802,8 @@ msgstr "テーブル '%c%c%c%c' の長さが正しくありません. 78, 86, 96
 msgid "Table '%c%c%c%c' has a bad length, must be even."
 msgstr "テーブル '%c%c%c%c' の長さが正しくありません. 偶数でなければなりません."
 
-msgid "Table length should not be odd\n"
-msgstr "テーブルの長さは奇数であってはなりません\n"
+msgid "Table length should not be odd"
+msgstr "テーブルの長さは奇数であってはなりません"
 
 msgid "Tabular Numbers"
 msgstr "表用数字"
@@ -12509,8 +12509,8 @@ msgstr ""
 " y(new) = tm[1,2]*x + tm[2,2]*y + tm[3,2]"
 
 #, c-format
-msgid "The truetype encoding specified by platform=%d specific=%d (which we map to %s) is not supported by your version of iconv(3).\n"
-msgstr "プラットフォームID=%d, 固有ID=%d で指定されたTrueType エンコーディング (%s に変換されます) はインストールされている iconv(3) ではサポートされていません\n"
+msgid "The truetype encoding specified by platform=%d specific=%d (which we map to %s) is not supported by your version of iconv(3)."
+msgstr "プラットフォームID=%d, 固有ID=%d で指定されたTrueType エンコーディング (%s に変換されます) はインストールされている iconv(3) ではサポートされていません"
 
 #, c-format
 msgid ""
@@ -12713,8 +12713,8 @@ msgstr ""
 msgid "This file contains an unnamed encoding, which cannot be named in a script"
 msgstr "このファイルには,スクリプトでは名前をつけることのできない名無しのエンコーディングを含んでいます."
 
-msgid "This file contains no SVG fonts.\n"
-msgstr "このファイルには SVG フォントが含まれていません.\n"
+msgid "This file contains no SVG fonts."
+msgstr "このファイルには SVG フォントが含まれていません."
 
 msgid "This font contains at least one translucent layer, but type3 does not support that (anything translucent or transparent is treated as opaque). Do you want to proceed anyway?"
 msgstr "このフォントには最低1個の半透明なレイヤーが含まれていますが,Type3ではサポートされていません(半透明または透明な部分は不透明なものとして扱われます). それでも続けますか?"
@@ -12760,11 +12760,11 @@ msgstr ""
 "このフォントでは, 縦書きメトリックが利用可能になっていません.\n"
 "エレメント(L)→フォント情報(F) で利用を可能にする設定を行ってください."
 
-msgid "This font does not specify font-face\n"
-msgstr "このフォントには font-face の指定がありません\n"
+msgid "This font does not specify font-face"
+msgstr "このフォントには font-face の指定がありません"
 
-msgid "This font does not specify units-per-em\n"
-msgstr "このフォントには em ユニット数の指定がありません\n"
+msgid "This font does not specify units-per-em"
+msgstr "このフォントには em ユニット数の指定がありません"
 
 #, c-format
 msgid ""
@@ -13186,16 +13186,16 @@ msgid "Too Many Kerns"
 msgstr "カーニングが多すぎます"
 
 #, c-format
-msgid "Too few items on stack for blend in %s\n"
-msgstr "グリフ %s 内で, スタック上に置かれたデータの個数が blend を実行するのに少なすぎます\n"
+msgid "Too few items on stack for blend in %s"
+msgstr "グリフ %s 内で, スタック上に置かれたデータの個数が blend を実行するのに少なすぎます"
 
 #, c-format
-msgid "Too few items on stack for get in %s\n"
-msgstr "グリフ %s で, スタック上の要素の個数が get を実行するのに少なすぎます\n"
+msgid "Too few items on stack for get in %s"
+msgstr "グリフ %s で, スタック上の要素の個数が get を実行するのに少なすぎます"
 
 #, c-format
-msgid "Too few items on stack for put in %s\n"
-msgstr "グリフ %s で, スタック上の要素の個数が put を実行するのに少なすぎます\n"
+msgid "Too few items on stack for put in %s"
+msgstr "グリフ %s で, スタック上の要素の個数が put を実行するのに少なすぎます"
 
 msgid "Too many Unique Font IDs"
 msgstr "ユニークフォントIDが多すぎます"
@@ -13237,11 +13237,11 @@ msgid "Too many scripts %d"
 msgstr "用字系が多すぎます (%d 個)"
 
 #, c-format
-msgid "Too many subroutine calls in %s\n"
-msgstr "グリフ %s 内のサブルーチン呼出しが多すぎます\n"
+msgid "Too many subroutine calls in %s"
+msgstr "グリフ %s 内のサブルーチン呼出しが多すぎます"
 
-msgid "Too many subroutines. We can deal with at most 14 (0-13)\n"
-msgstr "サブルーチンが多すぎます. 最大14個(0〜13)までしか扱えません\n"
+msgid "Too many subroutines. We can deal with at most 14 (0-13)"
+msgstr "サブルーチンが多すぎます. 最大14個(0〜13)までしか扱えません"
 
 msgid "Tool_s"
 msgstr "ツール(_S)"
@@ -13483,23 +13483,23 @@ msgstr "アンドゥの上限"
 msgid "Uneven Weighting"
 msgstr "不均一な太さ"
 
-msgid "Unexpected EOF in gf\n"
-msgstr "GFファイルが途中で切れています\n"
+msgid "Unexpected EOF in gf"
+msgstr "GFファイルが途中で切れています"
 
 #, c-format
-msgid "Unexpected PST type in GetPosSub (%d).\n"
-msgstr "GetPosSub (%d) 内に予期しないの PST 型が含まれています.\n"
+msgid "Unexpected PST type in GetPosSub (%d)."
+msgstr "GetPosSub (%d) 内に予期しないの PST 型が含まれています."
 
 #, c-format
-msgid "Unexpected charset format in cff: %d\n"
-msgstr "CFF にないはずの文字セットフォーマット %d が使われています\n"
+msgid "Unexpected charset format in cff: %d"
+msgstr "CFF にないはずの文字セットフォーマット %d が使われています"
 
 msgid "Unexpected density"
 msgstr "密度が想定外の値です"
 
 #, c-format
-msgid "Unexpected encoding format in cff: %d\n"
-msgstr "CFF にないはずのエンコーディングフォーマット %d が使われています\n"
+msgid "Unexpected encoding format in cff: %d"
+msgstr "CFF にないはずのエンコーディングフォーマット %d が使われています"
 
 msgid "Unexpected end of file found in morx chain."
 msgstr "morx 連鎖の途中でファイルが突然切れています"
@@ -13520,12 +13520,12 @@ msgid "Unexpected number"
 msgstr "想定外の値です"
 
 #, c-format
-msgid "Unexpected size for font info section of URW font (expected 12, got %d)\n"
-msgstr "URWフォントのフォント情報セクションが想定外の値です (12の筈ですが%dとなっています)\n"
+msgid "Unexpected size for font info section of URW font (expected 12, got %d)"
+msgstr "URWフォントのフォント情報セクションが想定外の値です (12の筈ですが%dとなっています)"
 
 #, c-format
-msgid "Unexpected size for name section of URW font (expected 55, got %d)\n"
-msgstr "URLフォントのnameセクションが想定外のサイズです (55の筈ですが%dとなっています)\n"
+msgid "Unexpected size for name section of URW font (expected 55, got %d)"
+msgstr "URLフォントのnameセクションが想定外のサイズです (55の筈ですが%dとなっています)"
 
 #, c-format
 msgid ""
@@ -13544,8 +13544,8 @@ msgstr ""
 "...%40s の前に出て来ました."
 
 #, c-format
-msgid "Unexpected value in dictionary %d\n"
-msgstr "辞書 %d に不正な値が含まれています\n"
+msgid "Unexpected value in dictionary %d"
+msgstr "辞書 %d に不正な値が含まれています"
 
 msgid "Unicase"
 msgstr "大小文字混在形"
@@ -13597,8 +13597,8 @@ msgid "Unified Canadian Aboriginal Syllabics Extended-A"
 msgstr "統合カナダ先住民音節拡張A"
 
 #, c-format
-msgid "Uninterpreted code in gf: %d\n"
-msgstr "GFファイルの位置 %d に予想外のコードがありました\n"
+msgid "Uninterpreted code in gf: %d"
+msgstr "GFファイルの位置 %d に予想外のコードがありました"
 
 msgid "Unknown"
 msgstr "不明"
@@ -13614,31 +13614,31 @@ msgstr "GSUB サブテーブルタイプ %d は未知の値です"
 msgid "Unknown Language"
 msgstr "不明な言語"
 
-msgid "Unknown character after backslash in literal string.\n"
-msgstr "文字列リテラル内で, バックスラッシュの後に不明な文字が含まれています.\n"
+msgid "Unknown character after backslash in literal string."
+msgstr "文字列リテラル内で, バックスラッシュの後に不明な文字が含まれています."
 
 #, c-format
 msgid "Unknown class table format: %d"
 msgstr "クラステーブルフォーマット %d には見覚えがありません"
 
 #, c-format
-msgid "Unknown operator in %s: %x\n"
-msgstr "%s に未知の演算子 %x があります\n"
+msgid "Unknown operator in %s: %x"
+msgstr "%s に未知の演算子 %x があります"
 
 msgid "Unknown string type\n"
 msgstr "文字列型が不明です\n"
 
 #, c-format
-msgid "Unknown subtable '%c%c%c%c' in 'PfEd' table, ignored\n"
-msgstr "'PfEd' テーブルに '%c%c%c%c' という不明なサブテーブルがあります. 無視しました\n"
+msgid "Unknown subtable '%c%c%c%c' in 'PfEd' table, ignored"
+msgstr "'PfEd' テーブルに '%c%c%c%c' という不明なサブテーブルがあります. 無視しました"
 
 #, c-format
-msgid "Unknown subtable '%c%c%c%c' in 'TeX ' table, ignored\n"
-msgstr "'TeX ' テーブルに '%c%c%c%c' という不明なサブテーブルがあります. 無視しました\n"
+msgid "Unknown subtable '%c%c%c%c' in 'TeX ' table, ignored"
+msgstr "'TeX ' テーブルに '%c%c%c%c' という不明なサブテーブルがあります. 無視しました"
 
 #, c-format
-msgid "Unknown type '%c' found in path specification\n"
-msgstr "パス指定の中に未知のタイプ '%c' が含まれています\n"
+msgid "Unknown type '%c' found in path specification"
+msgstr "パス指定の中に未知のタイプ '%c' が含まれています"
 
 msgid "Unlikely Ofm File"
 msgstr "OFM ファイルではないようです"
@@ -13652,8 +13652,8 @@ msgstr ""
 "入っているのかと思います. このデータの解析は諦めることにします.\n"
 
 #, c-format
-msgid "Unlikely length for table, so I'm ignoring it. %u\n"
-msgstr "テーブルの長さに見えないので, %u を無視することにします\n"
+msgid "Unlikely length for table, so I'm ignoring it. %u"
+msgstr "テーブルの長さに見えないので, %u を無視することにします"
 
 #, c-format
 msgid ""
@@ -13673,7 +13673,7 @@ msgid "Unnamed lookup"
 msgstr "検索名不明"
 
 #, c-format
-msgid "Unparsed characters found after end of groups file (last line parsed was %d).\n"
+msgid "Unparsed characters found after end of groups file (last line parsed was %d)."
 msgstr ""
 "グループファイルの末尾よりも後に解析されない文字があります\n"
 "(解析した最後の行は%dです).\n"
@@ -13760,11 +13760,11 @@ msgstr "ループの中にいないのに \"exit\" を使おうとしました\n
 msgid "Use of \"stop\" when not in a stopped\n"
 msgstr "stopped 状態でないのに \"stop\" を使おうとしました\n"
 
-msgid "Use of a range offset of 0xffff to mean a missing glyph in cmap table\n"
-msgstr "cmap テーブル中では範囲オフセット 0xffff は存在しないグリフを表します\n"
+msgid "Use of a range offset of 0xffff to mean a missing glyph in cmap table"
+msgstr "cmap テーブル中では範囲オフセット 0xffff は存在しないグリフを表します"
 
-msgid "Use of obsolete blend operator.\n"
-msgstr "廃止された blend 演算子を使用しています.\n"
+msgid "Use of obsolete blend operator."
+msgstr "廃止された blend 演算子を使用しています."
 
 msgid ""
 "Use quadratic (that is truetype) splines to hold the outlines of all\n"
@@ -13852,8 +13852,8 @@ msgstr "%.100s の検証"
 msgid "Value"
 msgstr "値"
 
-msgid "Value out of bounds in spline.\n"
-msgstr "スプライン内に範囲外の値が含まれています.\n"
+msgid "Value out of bounds in spline."
+msgstr "スプライン内に範囲外の値が含まれています."
 
 msgid "Value out of range"
 msgstr "範囲外の値です."
@@ -14002,12 +14002,12 @@ msgid "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]\n"
 msgstr "警告: %d 番目の軸の値 (%g) は可能な範囲 [%g,%g] の外にあります\n"
 
 #, c-format
-msgid "Warning: %s has a different family name than does %s (GenerateFamily)\n"
-msgstr "警告: %s のファミリー名は %s (GenerateFamily) と異なります\n"
+msgid "Warning: %s has a different family name than does %s (GenerateFamily)"
+msgstr "警告: %s のファミリー名は %s (GenerateFamily) と異なります"
 
 #, c-format
-msgid "Warning: %s(%s) is both extended and condensed. That's impossible.\n"
-msgstr "警告: %s(%s) はエクステンディドかつコンデンストです. それは不可能です.\n"
+msgid "Warning: %s(%s) is both extended and condensed. That's impossible."
+msgstr "警告: %s(%s) はエクステンディドかつコンデンストです. それは不可能です."
 
 msgid ""
 "Warning: 'cvar' contains intermediate tuple data.\n"
@@ -14016,8 +14016,8 @@ msgstr ""
 "警告: 'cvar' には中間タプルデータが含まれています.\n"
 "  FontForge はこれをサポートしていません\n"
 
-msgid "Warning: Both extended and condensed. That's impossible.\n"
-msgstr "警告: エクステンディドとコンデンストを同時指定しています. それは不可能です.\n"
+msgid "Warning: Both extended and condensed. That's impossible."
+msgstr "警告: エクステンディドとコンデンストを同時指定しています. それは不可能です."
 
 msgid "Warning: Byte swapped font mark in palm font."
 msgstr "警告: Palmフォントのフォントマークのバイト順が反転しています."
@@ -14086,19 +14086,19 @@ msgstr ""
 "Mac 文字列は Windows の文字列のサブセットです\n"
 
 #, c-format
-msgid "Warning: No characters selected in AddDHint(%d,%d %d,%d %d,%d)\n"
-msgstr "警告: AddDHint(%d,%d,%d,%d,%d,%d) で文字が選択されていません\n"
+msgid "Warning: No characters selected in AddDHint(%d,%d %d,%d %d,%d)"
+msgstr "警告: AddDHint(%d,%d,%d,%d,%d,%d) で文字が選択されていません"
 
 #, c-format
-msgid "Warning: No characters selected in AddHint(%d,%d,%d)\n"
-msgstr "警告: AddHint(%d,%d,%d) で文字が選択されていません\n"
+msgid "Warning: No characters selected in AddHint(%d,%d,%d)"
+msgstr "警告: AddHint(%d,%d,%d) で文字が選択されていません"
 
 #, c-format
-msgid "Warning: Unable to parse token %s, some features may be lost\n"
-msgstr "警告: トークン %s を解析できません. 機能がいくつか失われるでしょう\n"
+msgid "Warning: Unable to parse token %s, some features may be lost"
+msgstr "警告: トークン %s を解析できません. 機能がいくつか失われるでしょう"
 
-msgid "Warning: Unreasonably big splines. They will be ignored.\n"
-msgstr "警告: 異常に巨大なスプラインが含まれています. それらは無視します.\n"
+msgid "Warning: Unreasonably big splines. They will be ignored."
+msgstr "警告: 異常に巨大なスプラインが含まれています. それらは無視します."
 
 msgid "Warnings"
 msgstr "警告"
@@ -14119,8 +14119,8 @@ msgstr "監視中のcvtの変更"
 msgid "Watched Store Change"
 msgstr "監視中のストレージの変更"
 
-msgid "We don't understand this font\n"
-msgstr "このフォントを解釈することができません\n"
+msgid "We don't understand this font"
+msgstr "このフォントを解釈することができません"
 
 msgid "Welsh"
 msgstr "ウェールズ語"
@@ -15613,8 +15613,8 @@ msgstr "アンカーポイントテーブル"
 msgid "by"
 msgstr "比率:"
 
-msgid "can't create temporary file\n"
-msgstr "一時ファイルを作成できません.\n"
+msgid "can't create temporary file"
+msgstr "一時ファイルを作成できません."
 
 msgid "classes"
 msgstr "クラス"
@@ -15622,8 +15622,8 @@ msgstr "クラス"
 msgid "copyright notice"
 msgstr "著作権表示"
 
-msgid "couldn't write encodings file\n"
-msgstr "エンコーディングファイルに書き出せませんでした\n"
+msgid "couldn't write encodings file"
+msgstr "エンコーディングファイルに書き出せませんでした"
 
 msgid "coverage"
 msgstr "範囲"
@@ -15658,8 +15658,8 @@ msgid "em-units"
 msgstr "ユニット"
 
 #, c-format
-msgid "end of subroutine reached with no return in %s\n"
-msgstr "グリフ %s で, return が呼ばれないままサブルーチンが終わっています\n"
+msgid "end of subroutine reached with no return in %s"
+msgstr "グリフ %s で, return が呼ばれないままサブルーチンが終わっています"
 
 msgid "family name"
 msgstr "ファミリー名"
@@ -15738,12 +15738,12 @@ msgid "ppem is different in the two fonts, cowardly refusing to compare glyphs\n
 msgstr "EMあたりピクセル数が2つのフォントで異なるので,卑怯にもグリフの比較を拒否します\n"
 
 #, c-format
-msgid "return when not in subroutine in %s\n"
-msgstr "グリフ %s 内で, サブルーチンの中でないのに return しようとしました\n"
+msgid "return when not in subroutine in %s"
+msgstr "グリフ %s 内で, サブルーチンの中でないのに return しようとしました"
 
 #, c-format
-msgid "roll out of range in %s\n"
-msgstr "グリフ %s で範囲外の領域をローテートしようとしました\n"
+msgid "roll out of range in %s"
+msgstr "グリフ %s で範囲外の領域をローテートしようとしました"
 
 msgid "substitution"
 msgstr "置換"

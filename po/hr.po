@@ -72,12 +72,12 @@ msgid "  Hang right"
 msgstr "  Objesi desno"
 
 #, c-format
-msgid "  Ignoring '%c%c%c%c'\n"
-msgstr "  Zanemaruje se '%c%c%c%c'\n"
+msgid "  Ignoring '%c%c%c%c'"
+msgstr "  Zanemaruje se '%c%c%c%c'"
 
 #, c-format
-msgid "  Ignoring '%c%c%c%c' %s\n"
-msgstr "  Zanemaruje se '%c%c%c%c' %s\n"
+msgid "  Ignoring '%c%c%c%c' %s"
+msgstr "  Zanemaruje se '%c%c%c%c' %s"
 
 #, c-format
 msgid "  Left Bound=%d"
@@ -94,8 +94,8 @@ msgstr "  Desna granica=%d"
 msgid "  Stroke _Width:"
 msgstr "  _Debljina poteza:"
 
-msgid "  Subsequent errors will not be reported.\n"
-msgstr "  O svim daljnjim greškama se neće izvještavati.\n"
+msgid "  Subsequent errors will not be reported."
+msgstr "  O svim daljnjim greškama se neće izvještavati."
 
 #. GT: X is a coordinate, the leading spaces help to align it
 msgid "  X"
@@ -105,8 +105,8 @@ msgid "  Y"
 msgstr "  Y"
 
 #, c-format
-msgid " %s: line %d\n"
-msgstr " %s: %d. redak\n"
+msgid " %s: line %d"
+msgstr " %s: %d. redak"
 
 msgid " Adding a size will create it by scaling."
 msgstr " Dodavanjem veličine će ga stvoriti skaliranjem."
@@ -215,16 +215,16 @@ msgid " snapped"
 msgstr " privučeno"
 
 #, c-format
-msgid "!!!! Unknown caret format %d !!!!\n"
-msgstr "!!!! Nepoznati format znaka za umetanje %d !!!!\n"
+msgid "!!!! Unknown caret format %d !!!!"
+msgstr "!!!! Nepoznati format znaka za umetanje %d !!!!"
 
 #, c-format
-msgid "!!!!! Bad Base Coord format (%d) for '%c%c%c%c' in '%c%c%c%c' script in 'BASE' table\n"
-msgstr "!!!!! Neispravni format koordinata osnove (%d) za '%c%c%c%c' u pismu '%c%c%c%c' u 'BASE' tablici\n"
+msgid "!!!!! Bad Base Coord format (%d) for '%c%c%c%c' in '%c%c%c%c' script in 'BASE' table"
+msgstr "!!!!! Neispravni format koordinata osnove (%d) za '%c%c%c%c' u pismu '%c%c%c%c' u 'BASE' tablici"
 
 #, c-format
-msgid "!!!!! Coord count (%d) for '%c%c%c%c' script does not match base tag count (%d) in 'BASE' table\n"
-msgstr "!!!!! Broj koordinata (%d) za pismo '%c%c%c%c' se ne poklapa s brojem oznaka osnove (%d) u 'BASE' tablici\n"
+msgid "!!!!! Coord count (%d) for '%c%c%c%c' script does not match base tag count (%d) in 'BASE' table"
+msgstr "!!!!! Broj koordinata (%d) za pismo '%c%c%c%c' se ne poklapa s brojem oznaka osnove (%d) u 'BASE' tablici"
 
 #, c-format
 msgid "\"%.40s\" size=%d point=%d (%d,%d) distance=%g"
@@ -376,8 +376,8 @@ msgid "%s contextual %d"
 msgstr "%s, kontekstna %d"
 
 #, c-format
-msgid "%s does not contain an <svg> element at the top\n"
-msgstr "%s ne sadrži <svg> element na vrhu\n"
+msgid "%s does not contain an <svg> element at the top"
+msgstr "%s ne sadrži <svg> element na vrhu"
 
 #, c-format
 msgid "%s entry"
@@ -405,8 +405,8 @@ msgid "%s in %s lookup %d"
 msgstr "%s u %s tablici definicija %d"
 
 #, c-format
-msgid "%s is a mac resource file but contains no postscript or truetype fonts\n"
-msgstr "%s je datoteka mac resursa, ali ne sadrži niti postscript niti truetype fontove\n"
+msgid "%s is a mac resource file but contains no postscript or truetype fonts"
+msgstr "%s je datoteka mac resursa, ali ne sadrži niti postscript niti truetype fontove"
 
 #, c-format
 msgid ""
@@ -437,12 +437,12 @@ msgid "%s kerning class %d"
 msgstr "%s, klasa podrezivanja %d"
 
 #, c-format
-msgid "%s line: %d %s\n"
-msgstr "%s redak: %d %s\n"
+msgid "%s line: %d %s"
+msgstr "%s redak: %d %s"
 
 #, c-format
-msgid "%s line: %d %s: %s\n"
-msgstr "%s redak: %d %s: %s\n"
+msgid "%s line: %d %s: %s"
+msgstr "%s redak: %d %s: %s"
 
 #, c-format
 msgid "%s lookup %d"
@@ -497,8 +497,8 @@ msgid "%s's vstem3 operator is not supported for Type2\n"
 msgstr "'vstem3' operator od %s nije podržan za Type2\n"
 
 #, c-format
-msgid "%s(%s) and %s(%s) 0x%x in FOND %s\n"
-msgstr "%s(%s) i %s(%s) 0×%x u FOND-u %s\n"
+msgid "%s(%s) and %s(%s) 0x%x in FOND %s"
+msgstr "%s(%s) i %s(%s) 0×%x u FOND-u %s"
 
 #, c-format
 msgid "%s: %d Expected %s, got %s"
@@ -513,8 +513,8 @@ msgid "%s: Is not callable"
 msgstr "%s: Nije moguće pozvati"
 
 #, c-format
-msgid "%s:%d Unexpected character %c (%d)\n"
-msgstr "%s:%d Neočekivani znak %c (%d)\n"
+msgid "%s:%d Unexpected character %c (%d)"
+msgstr "%s:%d Neočekivani znak %c (%d)"
 
 msgid "'BASE' Baseline Table"
 msgstr "'BASE' tablica za osnovnu pismovnu liniju"
@@ -589,8 +589,8 @@ msgstr "+"
 msgid "-"
 msgstr "−"
 
-msgid "-1 glyph index in dumpcoveragetable.\n"
-msgstr "-1 indeks grafema u 'dumpcoveragetable'.\n"
+msgid "-1 glyph index in dumpcoveragetable."
+msgstr "-1 indeks grafema u 'dumpcoveragetable'."
 
 msgid "..."
 msgstr "…"
@@ -1013,12 +1013,12 @@ msgid "A pdf stream object may not be a compressed object"
 msgstr "Objekt pdf toka ne smije biti komprimirani objekt"
 
 #, c-format
-msgid "A point in %s is outside the font bounding box data.\n"
-msgstr "Jedna točka u %s se nalazi izvan graničnog okvira fonta.\n"
+msgid "A point in %s is outside the font bounding box data."
+msgstr "Jedna točka u %s se nalazi izvan graničnog okvira fonta."
 
 #, c-format
-msgid "A point in GID %d is outside the glyph bounding box\n"
-msgstr "Točka u grafemu s ID-oznakom %d se nalazi izvan graničnog okvira grafema\n"
+msgid "A point in GID %d is outside the glyph bounding box"
+msgstr "Točka u grafemu s ID-oznakom %d se nalazi izvan graničnog okvira grafema"
 
 msgid ""
 "A really big version of this glyph may be made up of the\n"
@@ -2286,23 +2286,23 @@ msgstr ""
 "Pokušaj primjene tablice definicija na lokaciju izvan raspona ove kontekstne\n"
 " tablice definicija slijed=%d, maks.=%d\n"
 
-msgid "Attempt to back up twice\n"
-msgstr "Pokušaj dvostrukog spremanja sigurnosne kopije\n"
+msgid "Attempt to back up twice"
+msgstr "Pokušaj dvostrukog spremanja sigurnosne kopije"
 
 #, c-format
 msgid "Attempt to divide by 0 in %.30s"
 msgstr "Pokušaj dijeljenja s 0 u %.30s"
 
 #, c-format
-msgid "Attempt to encode missing glyph %d to %d (0x%x)\n"
-msgstr "Pokušaj kodiranja nedostajućeg grafema %d u %d (0×%x)\n"
+msgid "Attempt to encode missing glyph %d to %d (0x%x)"
+msgstr "Pokušaj kodiranja nedostajućeg grafema %d u %d (0×%x)"
 
 #, c-format
 msgid "Attempt to have a font with more than %d layers"
 msgstr "Pokušaj stvaranja fonta s više od %d sloja/slojeva"
 
-msgid "Attempt to invert a singular matrix\n"
-msgstr "Pokušaj invertiranja jednostruke matrice\n"
+msgid "Attempt to invert a singular matrix"
+msgstr "Pokušaj invertiranja jednostruke matrice"
 
 msgid "Attempt to make a character that refers to itself"
 msgstr "Pokušaj stvaranja znaka, koji se referencira na sebe"
@@ -2367,11 +2367,11 @@ msgid "Attempt to take the square root of %1$g in %2$.30s"
 msgstr "Pokušaj uzimanja korijena od %1$g u %2$.30s"
 
 #, c-format
-msgid "Attempt to use a multiple master subroutine in a non-mm font in %s.\n"
-msgstr "Pokušaj korištenja multiple master podroutine u ne-mm fontu u %s.\n"
+msgid "Attempt to use a multiple master subroutine in a non-mm font in %s."
+msgstr "Pokušaj korištenja multiple master podroutine u ne-mm fontu u %s."
 
-msgid "Attempt to use a multiple master subroutine in a non-mm font.\n"
-msgstr "Pokušaj korištenja multiple master podroutine u ne-mm fontu.\n"
+msgid "Attempt to use a multiple master subroutine in a non-mm font."
+msgstr "Pokušaj korištenja multiple master podroutine u ne-mm fontu."
 
 msgid "Attention"
 msgstr "Oprez"
@@ -2416,8 +2416,8 @@ msgid "AutoSaveFrequency"
 msgstr "Učestalost automatskog spremanja"
 
 #, c-format
-msgid "AutoWidth failure on %s\n"
-msgstr "Greška u automatskoj širini 'AutoWidth' na %s\n"
+msgid "AutoWidth failure on %s"
+msgstr "Greška u automatskoj širini 'AutoWidth' na %s"
 
 msgid "AutoWidthSync"
 msgstr "Automatski sinkroniziraj širine"
@@ -2636,15 +2636,15 @@ msgstr "Neispravni zapis za 'BlueShift'."
 #. GT: The CFF font type contains a thing called a name INDEX, and that INDEX
 #. GT: is bad. It is an index of many of the names used in the CFF font.
 #. GT: We hope the user will never see this.
-msgid "Bad CFF name INDEX\n"
-msgstr "Neispravni CFF-ov INDEX naziva\n"
+msgid "Bad CFF name INDEX"
+msgstr "Neispravni CFF-ov INDEX naziva"
 
 #, c-format
-msgid "Bad CID offset for CID %d\n"
-msgstr "Neispravni CID odmak za CID %d\n"
+msgid "Bad CID offset for CID %d"
+msgstr "Neispravni CID odmak za CID %d"
 
-msgid "Bad CharString. Does not include lenIV bytes.\n"
-msgstr "Neispravni 'CharString' (niz znakova). Ne uključuje 'lenIV' bajtove.\n"
+msgid "Bad CharString. Does not include lenIV bytes."
+msgstr "Neispravni 'CharString' (niz znakova). Ne uključuje 'lenIV' bajtove."
 
 msgid "Bad Class"
 msgstr "Neispravna klasa"
@@ -2769,8 +2769,8 @@ msgid "Bad Private Dictionary"
 msgstr "Neispravni 'Private' rječnik"
 
 #, c-format
-msgid "Bad RGB color spec: %s\n"
-msgstr "Neispravna RGB specifikacija boje: %s\n"
+msgid "Bad RGB color spec: %s"
+msgstr "Neispravna RGB specifikacija boje: %s"
 
 msgid "Bad Range"
 msgstr "Neipravni raspon"
@@ -2854,8 +2854,8 @@ msgid "Bad base table."
 msgstr "Neispravna tablica osnovnih znakova."
 
 #, c-format
-msgid "Bad bounding box for %s.\n"
-msgstr "Neispravan granični okvir za %s.\n"
+msgid "Bad bounding box for %s."
+msgstr "Neispravan granični okvir za %s."
 
 msgid "Bad cidmap file"
 msgstr "Neispravna cidmap datoteka"
@@ -2868,8 +2868,8 @@ msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)\n"
 msgstr "Neispravna tablica za definiranje klasa. Raspon grafema %d – %d izvan raspona [0,%d)\n"
 
 #, c-format
-msgid "Bad class def table. start=%d cnt=%d, max glyph=%d\n"
-msgstr "Neispravna tablica za definiranje klasa. početak=%d broj=%d, maks. br. grafema=%d\n"
+msgid "Bad class def table. start=%d cnt=%d, max glyph=%d"
+msgstr "Neispravna tablica za definiranje klasa. početak=%d broj=%d, maks. br. grafema=%d"
 
 msgid "Bad class in state machine.\n"
 msgstr "Neispravna klasa u tablici stanja.\n"
@@ -2911,11 +2911,11 @@ msgstr "Neispravna tablica pokrivenosti. Raspon grafema %d – %d je izvan raspo
 msgid "Bad dash list"
 msgstr "Neispravni popis crtica"
 
-msgid "Bad data modifier in contour command in 'PfEd'\n"
-msgstr "Neispravna vrsta modifikatora u naredbi konture u 'PfEd'\n"
+msgid "Bad data modifier in contour command in 'PfEd'"
+msgstr "Neispravna vrsta modifikatora u naredbi konture u 'PfEd'"
 
-msgid "Bad data type in contour verb in 'PfEd'\n"
-msgstr "Neispravna vrsta podataka u naredbi konture u 'PfEd'\n"
+msgid "Bad data type in contour verb in 'PfEd'"
+msgstr "Neispravna vrsta podataka u naredbi konture u 'PfEd'"
 
 msgid "Bad default baseline"
 msgstr "Neispravna zadana osnovna pismovna linija"
@@ -2944,8 +2944,8 @@ msgstr "Neispravan datotečni format kodiranja"
 msgid "Bad encoding information in 'cmap' table."
 msgstr "Neispravne informacije o kodiranju u 'cmap' tablici (mapiranje znakova)."
 
-msgid "Bad fdselect\n"
-msgstr "Neispravni 'fdselect'\n"
+msgid "Bad fdselect"
+msgstr "Neispravni 'fdselect'"
 
 msgid "Bad feature tag"
 msgstr "Neispravna oznaka font-funkcija"
@@ -2955,21 +2955,21 @@ msgid "Bad few values in /BlendDesignMap for axis %s.\n"
 msgstr "Neispravno malo vrijednosti u '/BlendDesignMap' za os %s.\n"
 
 #, c-format
-msgid "Bad flags value, implied MORE components at end of glyph %d\n"
-msgstr "Neispravna vrijednost oznaka, implicira VIŠE komponenata na kraju grafema %d\n"
+msgid "Bad flags value, implied MORE components at end of glyph %d"
+msgstr "Neispravna vrijednost oznaka, implicira VIŠE komponenata na kraju grafema %d"
 
 #, c-format
-msgid "Bad flex subroutine in %s\n"
-msgstr "Neispravna 'flex' pod-rutina u %s\n"
+msgid "Bad flex subroutine in %s"
+msgstr "Neispravna 'flex' pod-rutina u %s"
 
 msgid "Bad font"
 msgstr "Neispravni font"
 
-msgid "Bad font, offset out of bounds.\n"
-msgstr "Neispravni font, odmak je izvan granica.\n"
+msgid "Bad font, offset out of bounds."
+msgstr "Neispravni font, odmak je izvan granica."
 
-msgid "Bad font: Encoding data out of range.\n"
-msgstr "Neispravni font: Podaci o kodiranju su izvan raspona.\n"
+msgid "Bad font: Encoding data out of range."
+msgstr "Neispravni font: Podaci o kodiranju su izvan raspona."
 
 #, c-format
 msgid "Bad format for coverage table %d"
@@ -2984,20 +2984,20 @@ msgid "Bad glif file %s"
 msgstr "Neispravna 'glif' datoteka %s"
 
 #, c-format
-msgid "Bad glyph (%d), disordered 'loca' table (start comes after end)\n"
-msgstr "Neispravni grafem (%d), neuređena 'loca' tablica (početak dolazi prije kraja)\n"
+msgid "Bad glyph (%d), disordered 'loca' table (start comes after end)"
+msgstr "Neispravni grafem (%d), neuređena 'loca' tablica (početak dolazi prije kraja)"
 
 #, c-format
-msgid "Bad glyph (%d), its data length is negative\n"
-msgstr "Neispravni grafem (%d), njegova duljina podataka je negativna\n"
+msgid "Bad glyph (%d), its data length is negative"
+msgstr "Neispravni grafem (%d), njegova duljina podataka je negativna"
 
 #, c-format
-msgid "Bad glyph (%d), its definition extends beyond the end of the glyf table\n"
-msgstr "Neispravni grafem (%d), njegova definicija prelazi kraj tablice grafema\n"
+msgid "Bad glyph (%d), its definition extends beyond the end of the glyf table"
+msgstr "Neispravni grafem (%d), njegova definicija prelazi kraj tablice grafema"
 
 #, c-format
-msgid "Bad glyph (%d), its definition extends beyond the space allowed for it\n"
-msgstr "Neispravni grafem (%d), njegova definicija prelazi dozvoljni prostor\n"
+msgid "Bad glyph (%d), its definition extends beyond the space allowed for it"
+msgstr "Neispravni grafem (%d), njegova definicija prelazi dozvoljni prostor"
 
 msgid "Bad glyph count in mort table."
 msgstr "Neispravni broj grafema u 'mort' tablici."
@@ -3005,21 +3005,21 @@ msgstr "Neispravni broj grafema u 'mort' tablici."
 msgid "Bad glyph name."
 msgstr "Neispravni naziv grafema."
 
-msgid "Bad glyph range specified in color subtable of PfEd table\n"
-msgstr "Neispravno određeni raspon grafema u pod-tablici za boje 'PfEd' tablice\n"
+msgid "Bad glyph range specified in color subtable of PfEd table"
+msgstr "Neispravno određeni raspon grafema u pod-tablici za boje 'PfEd' tablice"
 
-msgid "Bad glyph range specified in glyph comment subtable of PfEd table\n"
-msgstr "Neispravno određeni raspon grafema u pod-tablici za komentare grafema 'PfEd' tablice\n"
+msgid "Bad glyph range specified in glyph comment subtable of PfEd table"
+msgstr "Neispravno određeni raspon grafema u pod-tablici za komentare grafema 'PfEd' tablice"
 
-msgid "Bad glyph reference in layer info.\n"
-msgstr "Neispravna referenca grafema u informacijama sloja.\n"
+msgid "Bad glyph reference in layer info."
+msgstr "Neispravna referenca grafema u informacijama sloja."
 
 msgid "Bad glyph variant subtable of MATH table."
 msgstr "Neispravna pod-tablica varijanti grafema 'MATH' tablice."
 
 #, c-format
-msgid "Bad hex color spec: %s\n"
-msgstr "Neispravna heksadecimalna specifikacija boje: %s\n"
+msgid "Bad hex color spec: %s"
+msgstr "Neispravna heksadecimalna specifikacija boje: %s"
 
 msgid "Bad hex number"
 msgstr "Neispravan heksadecimalni broj"
@@ -3113,8 +3113,8 @@ msgstr "Neispravni broj"
 #. GT: NaN is a concept in IEEE floating point which means "Not a Number"
 #. GT: it is used to represent errors like 0/0 or sqrt(-1).
 #, c-format
-msgid "Bad number, infinity or nan: %s\n"
-msgstr "Neispravni broj, beskonačnost ili nije broj: %s\n"
+msgid "Bad number, infinity or nan: %s"
+msgstr "Neispravni broj, beskonačnost ili nije broj: %s"
 
 #, c-format
 msgid "Bad numeric value for %s.%s"
@@ -3128,8 +3128,8 @@ msgid "Bad offset on line %d, must be between 0% and 100%."
 msgstr "Neispravni odmak u %d. retku, mora biti između 0% and 100%."
 
 #, c-format
-msgid "Bad offset: %d for subfont %s\n"
-msgstr "Neispravni odmak: %d za pod-font %s\n"
+msgid "Bad offset: %d for subfont %s"
+msgstr "Neispravni odmak: %d za pod-font %s"
 
 #, c-format
 msgid "Bad opacity on line %d, must be between 0.0 and 1.0."
@@ -3180,12 +3180,12 @@ msgstr ""
 "  trebala biti ograničena na širinu grafema %s, koja je %d.\n"
 
 #, c-format
-msgid "Bad sid %d (0 <= sid < %d)\n"
-msgstr "Neispravni sid %d (0 <= sid < %d)\n"
+msgid "Bad sid %d (0 <= sid < %d)"
+msgstr "Neispravni sid %d (0 <= sid < %d)"
 
 #, c-format
-msgid "Bad sid %d (must be less than %d)\n"
-msgstr "Neispravni sid %d (mora biti manje od %d)\n"
+msgid "Bad sid %d (must be less than %d)"
+msgstr "Neispravni sid %d (mora biti manje od %d)"
 
 msgid "Bad signature in WOFF header."
 msgstr "Neispravna signatura u zaglavlju WOFF datoteke."
@@ -3242,8 +3242,8 @@ msgstr ""
 "blizu …%2$40s"
 
 #, c-format
-msgid "Bad tt font: contour ends make no sense in glyph %d.\n"
-msgstr "Neipravni tt font: krajevi konture nemaju smisla u grafemu %d.\n"
+msgid "Bad tt font: contour ends make no sense in glyph %d."
+msgstr "Neipravni tt font: krajevi konture nemaju smisla u grafemu %d."
 
 #. GT: The words "true" and "false" should be left untranslated. We are restricted
 #. GT: here by what PostScript understands, and it only understands the English
@@ -3792,8 +3792,8 @@ msgstr "CFF (osnovni)"
 msgid "CFF CID (Bare)"
 msgstr "CFF CID (osnovni)"
 
-msgid "CFF version mismatch\n"
-msgstr "Nepoklapanje CFF verzije\n"
+msgid "CFF version mismatch"
+msgstr "Nepoklapanje CFF verzije"
 
 msgid "CID"
 msgstr "CID"
@@ -3801,8 +3801,8 @@ msgstr "CID"
 msgid "CID findfont Name"
 msgstr "CID findfont naziv"
 
-msgid "CID format doesn't contain what we expected it to.\n"
-msgstr "CID format ne sadrži ono što se očekuje.\n"
+msgid "CID format doesn't contain what we expected it to."
+msgstr "CID format ne sadrži ono što se očekuje."
 
 msgid "CID keyed fonts may not be a master design of a multiple master font"
 msgstr "CID fontovi ne smiju biti master dizajni jednog multiple master fonta"
@@ -3938,8 +3938,8 @@ msgstr "_Visina verzala:"
 msgid "Call Script"
 msgstr "Skripta pozivanja"
 
-msgid "Called from...\n"
-msgstr "Pozvano s …\n"
+msgid "Called from..."
+msgstr "Pozvano s …"
 
 msgid "Cambodian"
 msgstr "Kambodžanski"
@@ -3965,8 +3965,8 @@ msgstr "Nije moguće postaviti paralelno"
 msgid "Can't _Be Interpolated"
 msgstr "_Ne može se interpolirati"
 
-msgid "Can't back up with nothing on stack\n"
-msgstr "Sigurnosna kopija se ne može stvoriti, jer se nema što spremiti\n"
+msgid "Can't back up with nothing on stack"
+msgstr "Sigurnosna kopija se ne može stvoriti, jer se nema što spremiti"
 
 msgid "Can't compare arrays\n"
 msgstr "Nemoguće uspoređivanje nizova\n"
@@ -4023,14 +4023,14 @@ msgid "Can't open %s"
 msgstr "Nije moguće otvoriti %s"
 
 #, c-format
-msgid "Can't open %s\n"
-msgstr "Nije moguće otvoriti %s\n"
+msgid "Can't open %s"
+msgstr "Nije moguće otvoriti %s"
 
-msgid "Can't open temporary file for postscript output\n"
-msgstr "Nije moguće otvoriti privremenu datoteku za izlazni postscript\n"
+msgid "Can't open temporary file for postscript output"
+msgstr "Nije moguće otvoriti privremenu datoteku za izlazni postscript"
 
-msgid "Can't open temporary file for truetype output.\n"
-msgstr "Nije moguće otvoriti privremenu datoteku za izlazni truetype\n"
+msgid "Can't open temporary file for truetype output."
+msgstr "Nije moguće otvoriti privremenu datoteku za izlazni truetype"
 
 msgid "Can't run mf"
 msgstr "Nije moguće pokrenuti program metafont"
@@ -4065,11 +4065,11 @@ msgid "Cannot open %s"
 msgstr "Nije moguće otvoriti %s"
 
 #, c-format
-msgid "Cannot open %s\n"
-msgstr "Nije moguće otvoriti %s\n"
+msgid "Cannot open %s"
+msgstr "Nije moguće otvoriti %s"
 
-msgid "Cannot open a temporary file\n"
-msgstr "Nije moguće otvoriti privremenu datoteku\n"
+msgid "Cannot open a temporary file"
+msgstr "Nije moguće otvoriti privremenu datoteku"
 
 #, c-format
 msgid "Cannot open feature file %.120s"
@@ -5319,8 +5319,8 @@ msgid "Cou_nter Clockwise"
 msgstr "Na_lijevo"
 
 #, c-format
-msgid "Could not create plugin directory '%s'\n"
-msgstr "Neuspjelo stvaranje mape dodataka „%s”\n"
+msgid "Could not create plugin directory '%s'"
+msgstr "Neuspjelo stvaranje mape dodataka „%s”"
 
 msgid "Could not figure out a lookup type"
 msgstr "Nemoguće prepoznati vrstu tablice definicija"
@@ -5351,8 +5351,8 @@ msgid "Could not find the glyph: %.70s"
 msgstr "Grafem „%.70s” nije nađen"
 
 #, c-format
-msgid "Could not match points in composite glyph (%d to %d) when adding %s to %s\n"
-msgstr "Neuspjelo poklapanje točaka u kompozitnom grafemu (%d na %d) tijekom dodavanja %s na %s\n"
+msgid "Could not match points in composite glyph (%d to %d) when adding %s to %s"
+msgstr "Neuspjelo poklapanje točaka u kompozitnom grafemu (%d na %d) tijekom dodavanja %s na %s"
 
 msgid "Could not open"
 msgstr "Neuspjelo otvaranje"
@@ -5383,8 +5383,8 @@ msgid "Could not parse %s"
 msgstr "Neuspjela obrada %s"
 
 #, c-format
-msgid "Could not parse a CID font, %sCIDFontType %d, %sfonttype %d\n"
-msgstr "Nemoguća obrada CID fonta, %sCIDFontType %d, %sfonttype %d\n"
+msgid "Could not parse a CID font, %sCIDFontType %d, %sfonttype %d"
+msgstr "Nemoguća obrada CID fonta, %sCIDFontType %d, %sfonttype %d"
 
 #, c-format
 msgid "Could not read %s"
@@ -5418,8 +5418,8 @@ msgid "Couldn't create directory: %s"
 msgstr "Neuspjelo stvaranje mape: %s"
 
 #, c-format
-msgid "Couldn't find a font file named %s\n"
-msgstr "Nema fonta koji se zove %s\n"
+msgid "Couldn't find a font file named %s"
+msgstr "Nema fonta koji se zove %s"
 
 msgid "Couldn't find base point"
 msgstr "Nema osnovne točke"
@@ -6011,12 +6011,12 @@ msgid "Didn't understand \"%s\" while adding info to private subroutines"
 msgstr "Nije moguće razumijeti \"%s\" prilikom dodavanja informacija 'private' podrutinama"
 
 #, c-format
-msgid "Didn't understand format for fdselect %d\n"
-msgstr "Nerazumljiv format za 'fdselect' %d\n"
+msgid "Didn't understand format for fdselect %d"
+msgstr "Nerazumljiv format za 'fdselect' %d"
 
 #, c-format
-msgid "Didn't understand index format: %d\n"
-msgstr "Nerazumljiv format indeksa %d\n"
+msgid "Didn't understand index format: %d"
+msgstr "Nerazumljiv format indeksa %d"
 
 msgid "Differ"
 msgstr "Razlikuju se"
@@ -6028,52 +6028,52 @@ msgid "Different Fonts"
 msgstr "Drugačiji fontovi"
 
 #, c-format
-msgid "Different fill patterns in layer %d of %s\n"
-msgstr "Drugačiji uzorak za ispunu u sloju „%d” od %s\n"
+msgid "Different fill patterns in layer %d of %s"
+msgstr "Drugačiji uzorak za ispunu u sloju „%d” od %s"
 
 #, c-format
 msgid "Different number of contours in glyph “%s”\n"
 msgstr "Drugačiji broj kontura u grafemu „%s”\n"
 
 #, c-format
-msgid "Different numbers of layers in %s\n"
-msgstr "Različiti broj slojeva u %s\n"
+msgid "Different numbers of layers in %s"
+msgstr "Različiti broj slojeva u %s"
 
 #, c-format
-msgid "Different settings on stroke linecap in layer %d of %s\n"
-msgstr "Različite postavke vrha linija poteza u sloju %d od %s\n"
+msgid "Different settings on stroke linecap in layer %d of %s"
+msgstr "Različite postavke vrha linija poteza u sloju %d od %s"
 
 #, c-format
-msgid "Different settings on stroke linejoin in layer %d of %s\n"
-msgstr "Različite postavke spoja linija poteza u sloju %d od %s\n"
+msgid "Different settings on stroke linejoin in layer %d of %s"
+msgstr "Različite postavke spoja linija poteza u sloju %d od %s"
 
 #, c-format
-msgid "Different settings on whether to fill in layer %d of %s\n"
-msgstr "Različite postavke o tome, želi li se izraditi ispuna u sloju %d od %s\n"
+msgid "Different settings on whether to fill in layer %d of %s"
+msgstr "Različite postavke o tome, želi li se izraditi ispuna u sloju %d od %s"
 
 #, c-format
-msgid "Different settings on whether to inherit fill color in layer %d of %s\n"
-msgstr "Različite postavke o tome, želi li se naslijediti boja ispune u sloju %d od %s\n"
+msgid "Different settings on whether to inherit fill color in layer %d of %s"
+msgstr "Različite postavke o tome, želi li se naslijediti boja ispune u sloju %d od %s"
 
 #, c-format
-msgid "Different settings on whether to inherit fill opacity in layer %d of %s\n"
-msgstr "Različite postavke o tome, želi li se naslijediti neprozirnost ispune u sloju %d od %s\n"
+msgid "Different settings on whether to inherit fill opacity in layer %d of %s"
+msgstr "Različite postavke o tome, želi li se naslijediti neprozirnost ispune u sloju %d od %s"
 
 #, c-format
-msgid "Different settings on whether to inherit stroke opacity in layer %d of %s\n"
-msgstr "Različite postavke o tome, želi li se naslijediti neprozirnost poteza u sloju %d od %s\n"
+msgid "Different settings on whether to inherit stroke opacity in layer %d of %s"
+msgstr "Različite postavke o tome, želi li se naslijediti neprozirnost poteza u sloju %d od %s"
 
 #, c-format
-msgid "Different settings on whether to inherit stroke width in layer %d of %s\n"
-msgstr "Različite postavke o tome, želi li se naslijediti širina poteza u sloju %d od %s\n"
+msgid "Different settings on whether to inherit stroke width in layer %d of %s"
+msgstr "Različite postavke o tome, želi li se naslijediti širina poteza u sloju %d od %s"
 
 #, c-format
-msgid "Different settings on whether to stroke in layer %d of %s\n"
-msgstr "Različite postavke o tome, želi li se izraditi potez u sloju %d od %s\n"
+msgid "Different settings on whether to stroke in layer %d of %s"
+msgstr "Različite postavke o tome, želi li se izraditi potez u sloju %d od %s"
 
 #, c-format
-msgid "Different stroke patterns in layer %d of %s\n"
-msgstr "Drugačiji uzorak za poteze u sloju „%d” od %s\n"
+msgid "Different stroke patterns in layer %d of %s"
+msgstr "Drugačiji uzorak za poteze u sloju „%d” od %s"
 
 msgid "Dingbats"
 msgstr "Dingbats"
@@ -6378,8 +6378,8 @@ msgid "Duplicate data"
 msgstr "Duplicirani podaci"
 
 #, c-format
-msgid "Duplicate definition of subroutine %d\n"
-msgstr "Dupla definicija podrutine %d\n"
+msgid "Duplicate definition of subroutine %d"
+msgstr "Dupla definicija podrutine %d"
 
 msgid "Duplicate lib data."
 msgstr "Dupli podaci biblioteke."
@@ -6391,8 +6391,8 @@ msgid "Duplicate pixelsize"
 msgstr "Duplikat veličine piksela"
 
 #, c-format
-msgid "Duplicate repeat row count in char %d of pk file\n"
-msgstr "Dupli broj ponovljenih redaka u znaku %d od pk datoteke\n"
+msgid "Duplicate repeat row count in char %d of pk file"
+msgstr "Dupli broj ponovljenih redaka u znaku %d od pk datoteke"
 
 msgid "Duployan"
 msgstr "Duplojska stenografija"
@@ -6613,8 +6613,8 @@ msgid "Empty Slot FG Color"
 msgstr "Prednja boja praznog polja"
 
 #, c-format
-msgid "Empty composite %d\n"
-msgstr "Prazni kompozit %d\n"
+msgid "Empty composite %d"
+msgstr "Prazni kompozit %d"
 
 #, c-format
 msgid "Empty position on line %d of %s"
@@ -6654,12 +6654,12 @@ msgstr ""
 "sadrži nepodržani format %d.\n"
 
 #, c-format
-msgid "Encoding subtable for platform=%d, specific=%d has a 0 length subtable.\n"
-msgstr "Pod-tablica kodiranja za platforma=%d, određeno=%d sadrži pod-tablicu s nula dužine.\n"
+msgid "Encoding subtable for platform=%d, specific=%d has a 0 length subtable."
+msgstr "Pod-tablica kodiranja za platforma=%d, određeno=%d sadrži pod-tablicu s nula dužine."
 
 #, c-format
-msgid "Encoding subtable for platform=%d, specific=%d has an unsupported format %d.\n"
-msgstr "Pod-tablica kodiranja za platforma=%d, određeno=%d sadrži nepodržani format %d.\n"
+msgid "Encoding subtable for platform=%d, specific=%d has an unsupported format %d."
+msgstr "Pod-tablica kodiranja za platforma=%d, određeno=%d sadrži nepodržani format %d."
 
 #, c-format
 msgid "Encoding value (%x) not in font, ignored"
@@ -6688,8 +6688,8 @@ msgstr "Kraj datoteke nađen u tablici pokrivenosti."
 msgid "End of file found in string on line %d of %s"
 msgstr "Kraj datoteke nađen u znakovnom nizu u %d. retku od %s"
 
-msgid "End of file found when reading private dictionary.\n"
-msgstr "Kraj datoteke nađen prilikom čitanja 'private' rječnika.\n"
+msgid "End of file found when reading private dictionary."
+msgstr "Kraj datoteke nađen prilikom čitanja 'private' rječnika."
 
 #, c-format
 msgid "End of file in %s table"
@@ -6830,8 +6830,8 @@ msgid "Error parsing color component."
 msgstr "Greška tijekom obrade komponente boje."
 
 #, c-format
-msgid "Error: %s\n"
-msgstr "Greška: %s\n"
+msgid "Error: %s"
+msgstr "Greška: %s"
 
 #, c-format
 msgid "Error: Expected %s, got %s"
@@ -7382,8 +7382,8 @@ msgid "Failed to open file %s for output"
 msgstr "Neuspjelo otvaranje fonta %s za izlaz"
 
 #, c-format
-msgid "Failed to open glyph to name map file for writing: %s\n"
-msgstr "Neuspjelo otvaranje datoteke za mapiranje grafema na naziv za pisanje: %s\n"
+msgid "Failed to open glyph to name map file for writing: %s"
+msgstr "Neuspjelo otvaranje datoteke za mapiranje grafema na naziv za pisanje: %s"
 
 #, c-format
 msgid "Failed to open hotkey definition file: %s\n"
@@ -7397,14 +7397,14 @@ msgid "Failed to open your hotkey definition file for updates.\n"
 msgstr "Neuspjelo otvaranje datoteke tipkovnih prečaca za aktualiziranja.\n"
 
 #, c-format
-msgid "Failed to parse color %s\n"
-msgstr "Neuspjela obrada boje %s\n"
+msgid "Failed to parse color %s"
+msgstr "Neuspjela obrada boje %s"
 
-msgid "Failed to parse the StartData command properly\n"
-msgstr "Neuspjela ispravna obrada 'StartData' naredbe\n"
+msgid "Failed to parse the StartData command properly"
+msgstr "Neuspjela ispravna obrada 'StartData' naredbe"
 
-msgid "Failed to parse the StartData command properly, bad count\n"
-msgstr "Neuspjela ispravna obrada 'StartData' naredbe, neispravni broj\n"
+msgid "Failed to parse the StartData command properly, bad count"
+msgstr "Neuspjela ispravna obrada 'StartData' naredbe, neispravni broj"
 
 #, c-format
 msgid "Failed to read a file. Bytes read:%ld file size:%ld\n"
@@ -7418,8 +7418,8 @@ msgid "Failed to rename the new hotkeys file over your old one!\n"
 msgstr "Neuspjelo preimenovanje datoteke tipkovnih prečaca i prepisivanja preko stare datoteke!\n"
 
 #, c-format
-msgid "Failed to write %s\n"
-msgstr "Neuspjelo zapisivanje za %s\n"
+msgid "Failed to write %s"
+msgstr "Neuspjelo zapisivanje za %s"
 
 msgid "Failure"
 msgstr "Neuspjeh"
@@ -7622,8 +7622,8 @@ msgstr "Ravno"
 msgid "Flat Nib"
 msgstr "Ravni vrh"
 
-msgid "Flate decompression failed.\n"
-msgstr "'Flate' dekompresija neuspjela.\n"
+msgid "Flate decompression failed."
+msgstr "'Flate' dekompresija neuspjela."
 
 msgid "Flattened Accents over Capitals"
 msgstr "Spljošteni naglasci iznad verzala"
@@ -7788,8 +7788,8 @@ msgstr ""
 msgid "FontForge does not currently parse pattern Color Sources (%s)."
 msgstr "FontForge trenutačno ne podržava obradu uzorak za 'Color Source' (izvor boje) (%s)."
 
-msgid "FontForge does not support Chameleon fonts\n"
-msgstr "FontForge ne podržava Chameleon fontove\n"
+msgid "FontForge does not support Chameleon fonts"
+msgstr "FontForge ne podržava Chameleon fontove"
 
 #, c-format
 msgid "FontForge does not support anonymous tables on line %d of %s"
@@ -7798,19 +7798,19 @@ msgstr "FontForge ne podržava anonimne tablice u %d. retku od %s"
 msgid "FontForge does not support dictionary based imagemask operators.\n"
 msgstr "FontForge ne podržava operatore slikovnih maski zasnovanih na rječnicima.\n"
 
-msgid "FontForge does not support synthetic fonts\n"
-msgstr "FontForge ne podržava sintetičke fontove\n"
+msgid "FontForge does not support synthetic fonts"
+msgstr "FontForge ne podržava sintetičke fontove"
 
 #, c-format
-msgid "FontForge does not support this bit depth %d (must be 1,2,4,8,16,32)\n"
-msgstr "FontForge ne podržava ovu dubinu bita %d (mora biti 1,2,4,8,16,32)\n"
+msgid "FontForge does not support this bit depth %d (must be 1,2,4,8,16,32)"
+msgstr "FontForge ne podržava ovu dubinu bita %d (mora biti 1,2,4,8,16,32)"
 
-msgid "FontForge does not support type2 multiple master fonts\n"
-msgstr "FontForge ne podržava type2 multiple master fontove\n"
+msgid "FontForge does not support type2 multiple master fonts"
+msgstr "FontForge ne podržava type2 multiple master fontove"
 
 #. GT: DICT is a magic term inside CFF fonts, as is INDEX, and I guess CFF and type2
-msgid "FontForge does not support type2 programs embedded in CFF DICT INDICES.\n"
-msgstr "FontForge ne podržava type2 programe ugrađene u indekse CFF rječnika.\n"
+msgid "FontForge does not support type2 programs embedded in CFF DICT INDICES."
+msgstr "FontForge ne podržava type2 programe ugrađene u indekse CFF rječnika."
 
 msgid ""
 "FontForge does not update this window when a change is made to the font.\n"
@@ -7857,8 +7857,8 @@ msgstr ""
 "i pogledati ih nakon što se završi mf obrada ili ih\n"
 "ukloniti i uštedjeti prostor"
 
-msgid "FontForge only supports embedded images in data: URIs\n"
-msgstr "FontForge podržava samo ugrađene sliku u podacima: URIs\n"
+msgid "FontForge only supports embedded images in data: URIs"
+msgstr "FontForge podržava samo ugrađene sliku u podacima: URIs"
 
 msgid ""
 "FontForge previously exported glyphs using a SVG\n"
@@ -8185,8 +8185,8 @@ msgid "GGadget|ScaleFactor|100"
 msgstr "140"
 
 #, c-format
-msgid "GID out of range (%d) in format 14 'cmap' subtable\n"
-msgstr "ID-oznaka grafema izvan raspona (%d) u formatu 14 'cmap' pod-tablice (mapiranje znakova)\n"
+msgid "GID out of range (%d) in format 14 'cmap' subtable"
+msgstr "ID-oznaka grafema izvan raspona (%d) u formatu 14 'cmap' pod-tablice (mapiranje znakova)"
 
 msgid "GID out of range."
 msgstr "ID-oznaka grafema izvan raspona."
@@ -8378,8 +8378,8 @@ msgid "Glyph %1$.50s with a %2$s from lookup subtable %3$.50s"
 msgstr "Grafem %1$.50s s %2$s iz pod-tablice tablice definicija %3$.50s"
 
 #, c-format
-msgid "Glyph %d attempts to reference glyph %d which is outside the font\n"
-msgstr "Grafem %d se pokušava referencirati na grafem %d koji se nalazi izvan fonta\n"
+msgid "Glyph %d attempts to reference glyph %d which is outside the font"
+msgstr "Grafem %d se pokušava referencirati na grafem %d koji se nalazi izvan fonta"
 
 #, c-format
 msgid "Glyph %d in bitmap strike %d pixels refers to a missing glyph (%d)"
@@ -8484,8 +8484,8 @@ msgid "Glyph _Metadata"
 msgstr "_Metapodataka grafema"
 
 #, c-format
-msgid "Glyph bounding box data exceeds font bounding box data for GID %d\n"
-msgstr "Granični okvir grafema prelazi granični okvir fonta u grafemu s ID-oznakom %d\n"
+msgid "Glyph bounding box data exceeds font bounding box data for GID %d"
+msgstr "Granični okvir grafema prelazi granični okvir fonta u grafemu s ID-oznakom %d"
 
 msgid "Glyph composed of:"
 msgstr "Sastavni dijelovi grafema:"
@@ -9045,8 +9045,8 @@ msgid "Hint _Width Near¹"
 msgstr "Širina kontrole u blizini¹"
 
 #, c-format
-msgid "Hint mask (or counter mask) with too many hints in %s\n"
-msgstr "Maska kontrola (ili maska kontrola unutarnjih bjelina) s previše kontrola u %s\n"
+msgid "Hint mask (or counter mask) with too many hints in %s"
+msgstr "Maska kontrola (ili maska kontrola unutarnjih bjelina) s previše kontrola u %s"
 
 #, c-format
 msgid "Hint masks differ in glyph “%s” at (%g,%g)\n"
@@ -9095,41 +9095,41 @@ msgstr "Povijesni oblici"
 msgid "Hit Watch Point"
 msgstr "Premještena točka"
 
-msgid "Hmm, more glyph variation data specified than there are glyphs in font.\n"
-msgstr "Hmm, specificirano je više varijacija grafema nego što je grafema u fontu.\n"
+msgid "Hmm, more glyph variation data specified than there are glyphs in font."
+msgstr "Hmm, specificirano je više varijacija grafema nego što je grafema u fontu."
 
-msgid "Hmm, no global tuples specified in the 'gvar' table.\n"
-msgstr "Hmm, u 'gvar' tablici nisu specificirane globalne n-torke.\n"
+msgid "Hmm, no global tuples specified in the 'gvar' table."
+msgstr "Hmm, u 'gvar' tablici nisu specificirane globalne n-torke."
 
-msgid "Hmm, the 'avar' table is too long.\n"
-msgstr "Hmm, ova 'avar' tablica je predugačka.\n"
+msgid "Hmm, the 'avar' table is too long."
+msgstr "Hmm, ova 'avar' tablica je predugačka."
 
-msgid "Hmm, the axis count in the 'avar' table is different from that in the 'fvar' table.\n"
-msgstr "Hmm, broj osi u 'avar' tablici se razlikuje od broja osi u 'fvar' tablici.\n"
+msgid "Hmm, the axis count in the 'avar' table is different from that in the 'fvar' table."
+msgstr "Hmm, broj osi u 'avar' tablici se razlikuje od broja osi u 'fvar' tablici."
 
-msgid "Hmm, the axis count in the 'gvar' table is different from that in the 'fvar' table.\n"
-msgstr "Hmm, broj osi u 'gvar' tablici se razlikuje od broja osi u 'fvar' tablici.\n"
+msgid "Hmm, the axis count in the 'gvar' table is different from that in the 'fvar' table."
+msgstr "Hmm, broj osi u 'gvar' tablici se razlikuje od broja osi u 'fvar' tablici."
 
-msgid "Hmm, this 'fvar' table has an unexpected size for an axis, I shan't parse it\n"
-msgstr "Hmm, ova 'fvar' tablica sadrži neočekivanu veličinu osi. Neće se obraditi\n"
+msgid "Hmm, this 'fvar' table has an unexpected size for an axis, I shan't parse it"
+msgstr "Hmm, ova 'fvar' tablica sadrži neočekivanu veličinu osi. Neće se obraditi"
 
-msgid "Hmm, this 'fvar' table has an unexpected size for an instance, I shan't parse it\n"
-msgstr "Hmm, ova 'fvar' tablica sadrži neočekivanu veličinu za instancu. Neće se obraditi\n"
+msgid "Hmm, this 'fvar' table has an unexpected size for an instance, I shan't parse it"
+msgstr "Hmm, ova 'fvar' tablica sadrži neočekivanu veličinu za instancu. Neće se obraditi"
 
-msgid "Hmm, this 'fvar' table has more axes than FontForge can handle.\n"
-msgstr "Hmm, ova 'fvar' tablica sadrži više osi, nego što ih FontForge može obraditi.\n"
+msgid "Hmm, this 'fvar' table has more axes than FontForge can handle."
+msgstr "Hmm, ova 'fvar' tablica sadrži više osi, nego što ih FontForge može obraditi."
 
 msgid "Hmm, this 'fvar' table has more count/size pairs than I expect\n"
 msgstr "Hmm, ova 'fvar' tablica sadrži više parova/veličina parova od očekivanog\n"
 
-msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense.\n"
-msgstr "Hmm, ova 'fvar' tablica ne sadrži osi. To nema smisla.\n"
+msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense."
+msgstr "Hmm, ova 'fvar' tablica ne sadrži osi. To nema smisla."
 
 msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it\n"
 msgstr "Hmm, ova 'fvar' tablica sadrži premalo parova/veličina parova. Neće se obraditi\n"
 
-msgid "Hmm, this 'fvar' table is too short\n"
-msgstr "Hmm, ova 'fvar' tablica je prekratka\n"
+msgid "Hmm, this 'fvar' table is too short"
+msgstr "Hmm, ova 'fvar' tablica je prekratka"
 
 #, c-format
 msgid ""
@@ -9246,12 +9246,12 @@ msgid "Hungarian"
 msgstr "Mađarski"
 
 #, c-format
-msgid "I can't even imagine how to attempt to interpolate gradients in layer %d of %s\n"
-msgstr "Ne mogu si niti zamisliti kako interpolirati gradijente u sloju %d od %s\n"
+msgid "I can't even imagine how to attempt to interpolate gradients in layer %d of %s"
+msgstr "Ne mogu si niti zamisliti kako interpolirati gradijente u sloju %d od %s"
 
 #, c-format
-msgid "I can't even imagine how to attempt to interpolate images in layer %d of %s\n"
-msgstr "Ne mogu si niti zamisliti kako interpolirati slike u sloju %d od %s\n"
+msgid "I can't even imagine how to attempt to interpolate images in layer %d of %s"
+msgstr "Ne mogu si niti zamisliti kako interpolirati slike u sloju %d od %s"
 
 #, c-format
 msgid "I can't figure out how to compare the subtable, %s, in %s to %s in %s\n"
@@ -9697,12 +9697,12 @@ msgstr ""
 "  'hmtx' širina (%d) se ne poklapaju. (O daljnjim nepoklapanjima se više neće izvještavati)\n"
 
 #, c-format
-msgid "In %s, the advance width (%d) for glyph %s is greater than the maximum (%d)\n"
-msgstr "U %s, širina stošca (%d) grafema %s je veća od maksimalne širine (%d)\n"
+msgid "In %s, the advance width (%d) for glyph %s is greater than the maximum (%d)"
+msgstr "U %s, širina stošca (%d) grafema %s je veća od maksimalne širine (%d)"
 
 #, c-format
-msgid "In GID %d the advance width (%d) is greater than the stated maximum (%d)\n"
-msgstr "U grafemu s ID-oznakom %d, širina stošca (%d) je veća od navedene maksimalne širine (%d)\n"
+msgid "In GID %d the advance width (%d) is greater than the stated maximum (%d)"
+msgstr "U grafemu s ID-oznakom %d, širina stošca (%d) je veća od navedene maksimalne širine (%d)"
 
 #, c-format
 msgid ""
@@ -9740,16 +9740,16 @@ msgid "In an italic font the horizontal change per unit vertical change"
 msgstr "U kurzivnom fontu, vodoravna promjena jedinicama uspravne promjene"
 
 #, c-format
-msgid "In character %s, could not find reference to %s\n"
-msgstr "U znaku %s, nije nađena referenca na %s\n"
+msgid "In character %s, could not find reference to %s"
+msgstr "U znaku %s, nije nađena referenca na %s"
 
 #, c-format
-msgid "In character %s, there are too few points on a path in the base\n"
-msgstr "U znaku %s je premalo točaka na stazi osnovnog znaka\n"
+msgid "In character %s, there are too few points on a path in the base"
+msgstr "U znaku %s je premalo točaka na stazi osnovnog znaka"
 
 #, c-format
-msgid "In character %s, there are too many points on a path in the base\n"
-msgstr "U znaku %s je previše točaka na stazi osnovnog znaka\n"
+msgid "In character %s, there are too many points on a path in the base"
+msgstr "U znaku %s je previše točaka na stazi osnovnog znaka"
 
 msgid ""
 "In every lookup that uses a glyph, check that at\n"
@@ -9858,12 +9858,12 @@ msgstr "'include filename' predugački u %d. retku od %s"
 msgid "Includes nested too deeply on line %d of %s"
 msgstr "'include' naredbe su ugniježdene preduboko u %d. retku od %s"
 
-msgid "Incorrect number of deltas in cvt\n"
-msgstr "Neispravan broj delta instrukcija u cvt-u\n"
+msgid "Incorrect number of deltas in cvt"
+msgstr "Neispravan broj delta instrukcija u cvt-u"
 
 #, c-format
-msgid "Incorrect number of deltas in glyph %d (%s)\n"
-msgstr "Neispravan broj delta instrukcija u grafemu %d (%s)\n"
+msgid "Incorrect number of deltas in glyph %d (%s)"
+msgstr "Neispravan broj delta instrukcija u grafemu %d (%s)"
 
 msgid "Incorrect number of instances weights, or illegal numbers"
 msgstr "Neispravni broj debljine instance ili nepravilni broj"
@@ -9890,8 +9890,8 @@ msgid "Index in use"
 msgstr "Indeks u upotrebi"
 
 #, c-format
-msgid "Index out of range in %s\n"
-msgstr "Indeks izvan raspona u %s\n"
+msgid "Index out of range in %s"
+msgstr "Indeks izvan raspona u %s"
 
 #, c-format
 msgid "Index too big (must be <%d) \"%s"
@@ -10128,11 +10128,11 @@ msgid "Invalid Encoding"
 msgstr "Nevaljano kodiranje"
 
 #, c-format
-msgid "Invalid FD (%d) assigned to CID %d.\n"
-msgstr "Neispravni FD (%d) dodijeljen CID-u %d.\n"
+msgid "Invalid FD (%d) assigned to CID %d."
+msgstr "Neispravni FD (%d) dodijeljen CID-u %d."
 
-msgid "Invalid character outside of string in sfnts array\n"
-msgstr "Neispravni znak izvan znakovnog niza u sfnt nizu\n"
+msgid "Invalid character outside of string in sfnts array"
+msgstr "Neispravni znak izvan znakovnog niza u sfnt nizu"
 
 #, c-format
 msgid "Invalid comment string (negative length?) in 'PfEd' table for glyph %s."
@@ -10161,21 +10161,21 @@ msgstr "Neispravni grafem za %s prilikom ispravljanja referenci."
 msgid "Invalid glyph name range in glyph class on line %d of %s"
 msgstr "Neispravni raspon naziva grafema u klasi grafema u %d. retku od %s"
 
-msgid "Invalid guideline.\n"
-msgstr "Neispravna vodilica.\n"
+msgid "Invalid guideline."
+msgstr "Neispravna vodilica."
 
-msgid "Invalid hex digit in sfnts array\n"
-msgstr "Neispravna heksadecimalna brojka u sfnt nizu\n"
+msgid "Invalid hex digit in sfnts array"
+msgstr "Neispravna heksadecimalna brojka u sfnt nizu"
 
 msgid "Invalid language"
 msgstr "Neispravni jezik"
 
-msgid "Invalid ligature offset\n"
-msgstr "Neispravni odmak ligature\n"
+msgid "Invalid ligature offset"
+msgstr "Neispravni odmak ligature"
 
 #, c-format
-msgid "Invalid lookup table format. %d\n"
-msgstr "Neipsravni format tablice definicija. %d\n"
+msgid "Invalid lookup table format. %d"
+msgstr "Neipsravni format tablice definicija. %d"
 
 #, c-format
 msgid "Invalid or unsupported format (%d) for subtable of 'kern' table"
@@ -10189,20 +10189,20 @@ msgstr "Neispravna ili nepodržana verzija (0×%x) za 'kern' tablicu"
 msgid "Invalid platform for string on line %d of %s"
 msgstr "Neispravna platforma za znakovni niz u %d. retku od %s"
 
-msgid "Invalid point match. Point would be after this reference.\n"
-msgstr "Neispravno poklapanje točke. Točka bi bila iza ove reference.\n"
+msgid "Invalid point match. Point would be after this reference."
+msgstr "Neispravno poklapanje točke. Točka bi bila iza ove reference."
 
 msgid "Invalid point size"
 msgstr "Neispravna veličina u točkama"
 
-msgid "Invalid ttf hmtx table (or hhea), numOfLongMetrics is 0\n"
-msgstr "Neipravna ttf 'hmtx' tablica (ili 'hhea'), 'numOfLongMetrics' je 0\n"
+msgid "Invalid ttf hmtx table (or hhea), numOfLongMetrics is 0"
+msgstr "Neipravna ttf 'hmtx' tablica (ili 'hhea'), 'numOfLongMetrics' je 0"
 
-msgid "Invalid ttf vmtx table (or vhea), numOfLongVerMetrics is 0\n"
-msgstr "Neipravna ttf 'vmtx' tablica (ili 'vhea'), 'numOfLongVerMetrics' je 0\n"
+msgid "Invalid ttf vmtx table (or vhea), numOfLongVerMetrics is 0"
+msgstr "Neipravna ttf 'vmtx' tablica (ili 'vhea'), 'numOfLongVerMetrics' je 0"
 
-msgid "Invalid unit vector has been specified. The hint is ignored.\n"
-msgstr "Određena je neispravna vektorska jedinica. Kontrola se zanemaruje.\n"
+msgid "Invalid unit vector has been specified. The hint is ignored."
+msgstr "Određena je neispravna vektorska jedinica. Kontrola se zanemaruje."
 
 msgid "Irish"
 msgstr "Irski"
@@ -10552,8 +10552,8 @@ msgstr "Ključ"
 
 #. GT: Here "def" is a PostScript keyword, (meaning define).
 #. GT: This "def" should not be translated as it is part of the PostScript language.
-msgid "Key for a def must be a string or name literal\n"
-msgstr "Ključ za 'def' mora biti znakovni niz ili doslovni naziv\n"
+msgid "Key for a def must be a string or name literal"
+msgstr "Ključ za 'def' mora biti znakovni niz ili doslovni naziv"
 
 msgid "Khakass"
 msgstr "Hakaski"
@@ -11288,8 +11288,8 @@ msgid "Lookup subtable %s (matched with %s)\n"
 msgstr "Pod-tablica tablice definicija %s (poklapa se s %s)\n"
 
 #, c-format
-msgid "Lookup subtable %s contains a glyph %s whose kerning information takes up more than 64k bytes\n"
-msgstr "Pod-tablica tablice definicija %s sadrži grafem %s, čije informacije o podrezivanju zauzimaju više od 64000 bajta\n"
+msgid "Lookup subtable %s contains a glyph %s whose kerning information takes up more than 64k bytes"
+msgstr "Pod-tablica tablice definicija %s sadrži grafem %s, čije informacije o podrezivanju zauzimaju više od 64000 bajta"
 
 #, c-format
 msgid ""
@@ -12355,8 +12355,8 @@ msgstr "Razni tehnički"
 msgid "Mismatch lookup types inside a parsed lookup"
 msgstr "Nepoklapajuće vrste tablica definicija unutar obrađene tablice definicija"
 
-msgid "Mismatched local and shared tuple flags.\n"
-msgstr "Nepoklapajuće privatne i dijeljene oznake n-torke.\n"
+msgid "Mismatched local and shared tuple flags."
+msgstr "Nepoklapajuće privatne i dijeljene oznake n-torke."
 
 msgid "Missing \"OS/2\" table"
 msgstr "Nedostaje \"OS/2\" tablica"
@@ -12381,8 +12381,8 @@ msgid "Missing Label Color"
 msgstr "Boja etikete nedostajućih znakova"
 
 #, c-format
-msgid "Missing POST resource %u\n"
-msgstr "Nedostajući POST resurs %u\n"
+msgid "Missing POST resource %u"
+msgstr "Nedostajući POST resurs %u"
 
 msgid "Missing Points at Extrema"
 msgstr "Nedostaju točke ektrema"
@@ -12564,8 +12564,8 @@ msgid "More Params"
 msgstr "Daljnji parametri"
 
 #, c-format
-msgid "More than 256 entries in subfont %s\n"
-msgstr "Više od 256 zapisa u pod-fontu %s\n"
+msgid "More than 256 entries in subfont %s"
+msgstr "Više od 256 zapisa u pod-fontu %s"
 
 msgid "Moroccan"
 msgstr "Marokanski"
@@ -12659,18 +12659,18 @@ msgid "Multiple copies of the selection should be tiled onto the path"
 msgstr "Staza se popločuje višestrukim kopijama odabira"
 
 #, c-format
-msgid "Multiple glyphs map to the same unicode encoding U+%04X, only one will be used\n"
-msgstr "Više grafema je mapirano na isti unicode U+%04X, koristit će se samo jedan\n"
+msgid "Multiple glyphs map to the same unicode encoding U+%04X, only one will be used"
+msgstr "Više grafema je mapirano na isti unicode U+%04X, koristit će se samo jedan"
 
-msgid "Multiple master font with more than 16 instances\n"
-msgstr "Multiple master font s više od 16 instanca\n"
+msgid "Multiple master font with more than 16 instances"
+msgstr "Multiple master font s više od 16 instanca"
 
-msgid "Multiple master font with more than 4 axes\n"
-msgstr "Multiple master font s više od 4 osi\n"
+msgid "Multiple master font with more than 4 axes"
+msgstr "Multiple master font s više od 4 osi"
 
 #, c-format
-msgid "Multiple master subroutine called with the wrong number of arguments in %s.\n"
-msgstr "Multiple master podrutina pozvana s krivim brojem argumenata u %s.\n"
+msgid "Multiple master subroutine called with the wrong number of arguments in %s."
+msgstr "Multiple master podrutina pozvana s krivim brojem argumenata u %s."
 
 msgid "Multiple names for language"
 msgstr "Mnogostruki nazivi za jezike"
@@ -13238,8 +13238,8 @@ msgstr "Ne _za sve"
 msgid "No applicable lookup subtables"
 msgstr "Nema primijenjive pod-tablice"
 
-msgid "No argument to operator\n"
-msgstr "Argument operatora nije naveden\n"
+msgid "No argument to operator"
+msgstr "Argument operatora nije naveden"
 
 msgid "No bitmap strikes"
 msgstr "Nema bitmap verzija"
@@ -13268,16 +13268,16 @@ msgid "No flags specified in lookupflags on line %d of %s"
 msgstr "Nema određenih oznaka u oznakama tablice definicije u %d. retku od %s"
 
 #, c-format
-msgid "No glyph named %s, used as a pattern in %s\n"
-msgstr "Nema grafema s nazivom %s, korišten kao uzorak u %s\n"
+msgid "No glyph named %s, used as a pattern in %s"
+msgstr "Nema grafema s nazivom %s, korišten kao uzorak u %s"
 
 #, c-format
 msgid "No glyph named %s."
 msgstr "Nema grafema s nazivom %s."
 
 #, c-format
-msgid "No glyph with unicode U+%05x in font\n"
-msgstr "U fontu nema grafema s U+%05x\n"
+msgid "No glyph with unicode U+%05x in font"
+msgstr "U fontu nema grafema s U+%05x"
 
 msgid "No glyphs directory or no contents file"
 msgstr "Nema mape grafema ili datoteke sadržaja"
@@ -13294,8 +13294,8 @@ msgid "No kerning pairs found in %.200s"
 msgstr "Nema podrezanih parova u %.200s"
 
 #, c-format
-msgid "No kerning table for %s\n"
-msgstr "Nema tablice podrezivanja za %s\n"
+msgid "No kerning table for %s"
+msgstr "Nema tablice podrezivanja za %s"
 
 msgid "No languages"
 msgstr "Bez jezika"
@@ -13317,14 +13317,14 @@ msgstr "Niti jedna tablica definicija ne smiju biti određena u obrnutoj konteks
 msgid "No lookups to copy"
 msgstr "Nema tablica definicija za kopiranje"
 
-msgid "No mark in ] (close array)\n"
-msgstr "Bez oznake u ] (zatvori niz)\n"
+msgid "No mark in ] (close array)"
+msgstr "Bez oznake u ] (zatvori niz)"
 
-msgid "No mark in cleartomark\n"
-msgstr "Nema oznake u 'cleartomark'\n"
+msgid "No mark in cleartomark"
+msgstr "Nema oznake u 'cleartomark'"
 
-msgid "No mark in counttomark\n"
-msgstr "Nema oznake u 'counttomark'\n"
+msgid "No mark in counttomark"
+msgstr "Nema oznake u 'counttomark'"
 
 #, c-format
 msgid "No marked glyphs allowed in replacement on line %d of %s"
@@ -13342,24 +13342,24 @@ msgid "No paths with within a glyph should intersect"
 msgstr "Nijedna staza unutar grafema se ne smije presijecati"
 
 #, c-format
-msgid "No previous point on path in curveto from flex 0 in %s\n"
-msgstr "Nema prethodne točke na stazi u curveto od flex 0 u %s\n"
+msgid "No previous point on path in curveto from flex 0 in %s"
+msgstr "Nema prethodne točke na stazi u curveto od flex 0 u %s"
 
 #, c-format
-msgid "No previous point on path in curveto in %s\n"
-msgstr "Nema prethodne točke na stazi pri 'curveto' u %s\n"
+msgid "No previous point on path in curveto in %s"
+msgstr "Nema prethodne točke na stazi pri 'curveto' u %s"
 
 #, c-format
-msgid "No previous point on path in flex operator in %s\n"
-msgstr "Nema prethodne točke na stazi u flex operatoru u %s\n"
+msgid "No previous point on path in flex operator in %s"
+msgstr "Nema prethodne točke na stazi u flex operatoru u %s"
 
 #, c-format
-msgid "No previous point on path in lineto from flex 0 in %s\n"
-msgstr "Nema prethodne točke na stazi u lineto od flex 0 u %s\n"
+msgid "No previous point on path in lineto from flex 0 in %s"
+msgstr "Nema prethodne točke na stazi u lineto od flex 0 u %s"
 
 #, c-format
-msgid "No previous point on path in lineto in %s\n"
-msgstr "Nema prethodne točke na stazi pri 'lineto' u %s\n"
+msgid "No previous point on path in lineto in %s"
+msgstr "Nema prethodne točke na stazi pri 'lineto' u %s"
 
 msgid "No problems detected"
 msgstr "Nema problema"
@@ -13384,8 +13384,8 @@ msgstr "Bez pisama"
 msgid "No selection"
 msgstr "Ništa nije odabrano"
 
-msgid "No selection\n"
-msgstr "Ništa nije odabrano\n"
+msgid "No selection"
+msgstr "Ništa nije odabrano"
 
 msgid "No significant differences found"
 msgstr "Nema značajnih razlika"
@@ -13662,8 +13662,8 @@ msgstr "Ništa nije odabrano"
 msgid "Nothing found"
 msgstr "Ništa nije nađeno"
 
-msgid "Nothing on stack to print\n"
-msgstr "Nema ničega što čeka na ispis\n"
+msgid "Nothing on stack to print"
+msgstr "Nema ničega što čeka na ispis"
 
 msgid "Nothing specified"
 msgstr "Ništa nije određeno"
@@ -14300,8 +14300,8 @@ msgstr "Neraspoređeno"
 msgid "Out of Range"
 msgstr "Izvan raspona"
 
-msgid "Out of memory\n"
-msgstr "Nedovoljno memorije\n"
+msgid "Out of memory"
+msgstr "Nedovoljno memorije"
 
 msgid "Outer Border:"
 msgstr "Vanjski obrub:"
@@ -14826,8 +14826,8 @@ msgid "Parse Error"
 msgstr "Greška prilikom obrade"
 
 #, c-format
-msgid "ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s\n"
-msgstr "Baza podataka za obradu redoslijeda grafema i aliasa (unos ne-razdvojen tabulatorima) pri indeksu %d: %s\n"
+msgid "ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s"
+msgstr "Baza podataka za obradu redoslijeda grafema i aliasa (unos ne-razdvojen tabulatorima) pri indeksu %d: %s"
 
 msgid "Parts List"
 msgstr "Popis dijelova"
@@ -15596,11 +15596,11 @@ msgstr "_Ukloni"
 msgid "Re_vert List"
 msgstr "Ob_novi popis"
 
-msgid "Reached end of file when reading composite glyph\n"
-msgstr "Dosegnut je kraj datoteke tijekom čitanja kompozitnog grafema\n"
+msgid "Reached end of file when reading composite glyph"
+msgstr "Dosegnut je kraj datoteke tijekom čitanja kompozitnog grafema"
 
-msgid "Reached end of file when reading simple glyph\n"
-msgstr "Dosegnut je kraj datoteke tijekom čitanja jednostavnog grafema\n"
+msgid "Reached end of file when reading simple glyph"
+msgstr "Dosegnut je kraj datoteke tijekom čitanja jednostavnog grafema"
 
 msgid "Read of Uninitialized Store"
 msgstr "Promjena neinicijaliziranog spremišta"
@@ -15664,8 +15664,8 @@ msgid "Reference Names"
 msgstr "Nazivi referenci"
 
 #, c-format
-msgid "Reference encoding out of bounds in %s\n"
-msgstr "Kodiranje reference izvan granica u %s\n"
+msgid "Reference encoding out of bounds in %s"
+msgstr "Kodiranje reference izvan granica u %s"
 
 msgid "Reference point match out of date"
 msgstr "Zastarjelo poklapanje točaka reference"
@@ -15693,8 +15693,8 @@ msgid "Reference to character %1$.20s at %2$d"
 msgstr "Referenca na znak %1$.20s pri %2$d"
 
 #, c-format
-msgid "Reference to glyph %d out of bounds when parsing 'glyf' table.\n"
-msgstr "Referenca na grafem %d izvan granica prilikom obrađivanja 'glyf' tablice.\n"
+msgid "Reference to glyph %d out of bounds when parsing 'glyf' table."
+msgstr "Referenca na grafem %d izvan granica prilikom obrađivanja 'glyf' tablice."
 
 msgid "References are nested more deeply in this glyph than the maximum allowed"
 msgstr "Reference su u ovom grafemu ugniježdene dublje od maksimalno dozvoljene razine"
@@ -18105,88 +18105,88 @@ msgid "Stack (TrueType)"
 msgstr "Snop (TrueType)"
 
 #, c-format
-msgid "Stack got too big in %s\n"
-msgstr "Snop je postao prevelik u %s\n"
+msgid "Stack got too big in %s"
+msgstr "Snop je postao prevelik u %s"
 
 #, c-format
-msgid "Stack underflow on binary operator in %s\n"
-msgstr "Pop greška pri binarnom operatoru u %s\n"
+msgid "Stack underflow on binary operator in %s"
+msgstr "Pop greška pri binarnom operatoru u %s"
 
 #, c-format
-msgid "Stack underflow on callothersubr in %s\n"
-msgstr "Pop greška pri 'callothersubr' u %s\n"
+msgid "Stack underflow on callothersubr in %s"
+msgstr "Pop greška pri 'callothersubr' u %s"
 
 #, c-format
-msgid "Stack underflow on callsubr in %s\n"
-msgstr "Pop greška pri 'callsubr' u %s\n"
+msgid "Stack underflow on callsubr in %s"
+msgstr "Pop greška pri 'callsubr' u %s"
 
 #, c-format
-msgid "Stack underflow on hhcurveto in %s\n"
-msgstr "Pop greška pri 'hhcurveto' u %s\n"
+msgid "Stack underflow on hhcurveto in %s"
+msgstr "Pop greška pri 'hhcurveto' u %s"
 
 #, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s\n"
 msgstr "Pop greška pri 'hlineto/hmoveto' u %s\n"
 
 #, c-format
-msgid "Stack underflow on hsbw in %s\n"
-msgstr "Pop greška pri 'hsbw' u %s\n"
+msgid "Stack underflow on hsbw in %s"
+msgstr "Pop greška pri 'hsbw' u %s"
 
 #, c-format
-msgid "Stack underflow on hstem in %s\n"
-msgstr "Pop greška pri 'hstem' u %s\n"
+msgid "Stack underflow on hstem in %s"
+msgstr "Pop greška pri 'hstem' u %s"
 
 #, c-format
-msgid "Stack underflow on hstem3 in %s\n"
-msgstr "Pop greška pri 'hstem3' u %s\n"
+msgid "Stack underflow on hstem3 in %s"
+msgstr "Pop greška pri 'hstem3' u %s"
 
 #, c-format
-msgid "Stack underflow on hvcurveto in %s\n"
-msgstr "Pop greška pri 'hvcurveto' u %s\n"
+msgid "Stack underflow on hvcurveto in %s"
+msgstr "Pop greška pri 'hvcurveto' u %s"
 
 #, c-format
-msgid "Stack underflow on ifelse in %s\n"
-msgstr "Pop greška pri 'ifelse' u %s\n"
+msgid "Stack underflow on ifelse in %s"
+msgstr "Pop greška pri 'ifelse' u %s"
 
 #, c-format
 msgid "Stack underflow on rlineto/rmoveto in %s\n"
 msgstr "Pop greška pri 'rlineto/rmoveto' u %s\n"
 
 #, c-format
-msgid "Stack underflow on rrcurveto in %s\n"
-msgstr "Pop greška pri 'rrcurveto' u %s\n"
+msgid "Stack underflow on rrcurveto in %s"
+msgstr "Pop greška pri 'rrcurveto' u %s"
 
 #, c-format
-msgid "Stack underflow on sbw in %s\n"
-msgstr "Pop greška pri 'sbw' u %s\n"
+msgid "Stack underflow on sbw in %s"
+msgstr "Pop greška pri 'sbw' u %s"
 
 #, c-format
-msgid "Stack underflow on seac in %s\n"
-msgstr "Nedosezanje na 'seac' u %s\n"
+msgid "Stack underflow on seac in %s"
+msgstr "Nedosezanje na 'seac' u %s"
 
 #, c-format
-msgid "Stack underflow on setcurrentpoint in %s\n"
-msgstr "Pop greška pri 'setcurrentpoint' u %s\n"
+msgid "Stack underflow on setcurrentpoint in %s"
+msgstr "Pop greška pri 'setcurrentpoint' u %s"
 
 #, c-format
-msgid "Stack underflow on unary operator in %s\n"
-msgstr "Pop greška pri jednočlanom operatoru u %s\n"
+msgid "Stack underflow on unary operator in %s"
+msgstr "Pop greška pri jednočlanom operatoru u %s"
 
 #, c-format
-msgid "Stack underflow on vhcurveto in %s\n"
-msgstr "Pop greška pri 'vhcurveto' u %s\n"
+msgid "Stack underflow on vhcurveto in %s"
+msgstr "Pop greška pri 'vhcurveto' u %s"
 
 #, c-format
 msgid "Stack underflow on vlineto/vmoveto in %s\n"
 msgstr "Pop greška pri 'vlineto/vmoveto' u %s\n"
 
 #, c-format
-msgid "Stack underflow on vstem in %s\n"
-msgstr "Pop greška pri 'vstem' u %s\n"
+msgid "Stack underflow on vstem in %s"
+msgstr "Pop greška pri 'vstem' u %s"
 
 #, c-format
-msgid "Stack underflow on vstem3 in %s\n"
-msgstr "Nedosezanje na 'vstem3' u %s\n"
+msgid "Stack underflow on vstem3 in %s"
+msgstr "Nedosezanje na 'vstem3' u %s"
 
 msgid "StackBottomDisplayStyleShiftDown:"
 msgstr "Pomak donjeg prema dolje, veći oblik:"
@@ -18563,8 +18563,8 @@ msgid "SubSuperscriptGapMin:"
 msgstr "Min. razmak između indeksa i eksponenta:"
 
 #, c-format
-msgid "Subroutine number out of bounds in %s\n"
-msgstr "Broj podrutina izvan granica u %s\n"
+msgid "Subroutine number out of bounds in %s"
+msgstr "Broj podrutina izvan granica u %s"
 
 msgid "Subscript"
 msgstr "Indeks"
@@ -18881,8 +18881,8 @@ msgstr "Tablica '%c%c%c%c' ima neispravnu veličinu, mora biti 78, 86 ili 96, al
 msgid "Table '%c%c%c%c' has a bad length, must be even."
 msgstr "Tablica '%c%c%c%c' ima neispravnu veličinu, mora biti parna."
 
-msgid "Table length should not be odd\n"
-msgstr "Duljina tablice ne treba biti neparna\n"
+msgid "Table length should not be odd"
+msgstr "Duljina tablice ne treba biti neparna"
 
 #, c-format
 msgid "Table length stretches beyond end of file for '%c%c%c%c'."
@@ -19357,8 +19357,8 @@ msgid "The Y coordinate of the anchor point in this glyph"
 msgstr "Y koordinata točke sidra u ovom grafemu"
 
 #, c-format
-msgid "The advance width of %s (%d) does not match the font's advanceWidthMax (%d) and this is a fixed pitch font\n"
-msgstr "Širina stošca od %s (%d) se ne poklapa s maksimalnom širinom sotšca fonta (%d), a radi se o fontu fiksne širine\n"
+msgid "The advance width of %s (%d) does not match the font's advanceWidthMax (%d) and this is a fixed pitch font"
+msgstr "Širina stošca od %s (%d) se ne poklapa s maksimalnom širinom sotšca fonta (%d), a radi se o fontu fiksne širine"
 
 msgid "The amount of space between words when using this font"
 msgstr "Količina razmaka između riječi, kad se koristi ovaj font"
@@ -19726,8 +19726,8 @@ msgstr ""
 "Sljedeće opcije utječu na način izvoza grafema.\n"
 "Većina ih je specifična za jedan ili više formata."
 
-msgid "The following table(s) in the font have been ignored by FontForge\n"
-msgstr "FontForge je zanemario sljedeće tablice u fontu\n"
+msgid "The following table(s) in the font have been ignored by FontForge"
+msgstr "FontForge je zanemario sljedeće tablice u fontu"
 
 #, c-format
 msgid "The font %.30s contains cubic splines. It must be converted to quadratic splines before it can be used in an apple distortable font"
@@ -20114,8 +20114,8 @@ msgstr ""
 msgid "The name, %.80s, has already been used to identify an anchor class in a different lookup subtable (%.80s)"
 msgstr "Naziv %.80s se već koristi za identifiranje klase sidara u jednof drugoj pod-tablici tablice definicija (%.80s)"
 
-msgid "The names 'alefmaksurainitialarabic' and 'alefmaksuramedialarabic' in the Adobe Glyph List disagree with Unicode.  The use of these glyph names is therefore discouraged.\n"
-msgstr "Nazivi 'alefmaksurainitialarabic' i 'alefmaksuramedialarabic' u Adobeovom popisu grafema se ne slaže s Unicode-om. Ne preporučamo upotrebu tih naziva grafema.\n"
+msgid "The names 'alefmaksurainitialarabic' and 'alefmaksuramedialarabic' in the Adobe Glyph List disagree with Unicode.  The use of these glyph names is therefore discouraged."
+msgstr "Nazivi 'alefmaksurainitialarabic' i 'alefmaksuramedialarabic' u Adobeovom popisu grafema se ne slaže s Unicode-om. Ne preporučamo upotrebu tih naziva grafema."
 
 msgid "The number of em-units by which an arrow key will move a selected point"
 msgstr "Broj jedinica četverca kojim se premješta točka upotrebom tipki strelica"
@@ -20414,8 +20414,8 @@ msgstr ""
 " y(novi) = tm[1,2]*x + tm[2,2]*y + tm[3,2]"
 
 #, c-format
-msgid "The truetype encoding specified by platform=%d specific=%d (which we map to %s) is not supported by your version of iconv(3).\n"
-msgstr "TrueType kodiranje određeno s platforma=%d određeno=%d (koje mapiramo na %s) nije podržano od tvoje verzije iconv(3).\n"
+msgid "The truetype encoding specified by platform=%d specific=%d (which we map to %s) is not supported by your version of iconv(3)."
+msgstr "TrueType kodiranje određeno s platforma=%d određeno=%d (koje mapiramo na %s) nije podržano od tvoje verzije iconv(3)."
 
 #, c-format
 msgid ""
@@ -20762,8 +20762,8 @@ msgid "This blank outline glyph has an unexpected bitmap version"
 msgstr "Prazni konturni grafem ima neočekivanu bitmap verziju"
 
 #, c-format
-msgid "This character (gid=%d) has a following part (%d). I'm not sure what that means, please send me (gww@silcom.com) a copy of this font so I can test with it.\n"
-msgstr "Ovaj znak (gid=%d) sadrži sljedeći dio (%d). Nije jasno što to znači, pošalji (gww@silcom.com) kopiju ovog fonta, kako bismo ga ispitali.\n"
+msgid "This character (gid=%d) has a following part (%d). I'm not sure what that means, please send me (gww@silcom.com) a copy of this font so I can test with it."
+msgstr "Ovaj znak (gid=%d) sadrži sljedeći dio (%d). Nije jasno što to znači, pošalji (gww@silcom.com) kopiju ovog fonta, kako bismo ga ispitali."
 
 msgid ""
 "This checks if the character almost, but not exactly,\n"
@@ -20846,8 +20846,8 @@ msgstr ""
 msgid "This file contains an unnamed encoding, which cannot be named in a script"
 msgstr "Ova datoteka sadrži neimenovano kodiranje, koje se ne može navesti u skriptu"
 
-msgid "This file contains no SVG fonts.\n"
-msgstr "Ova datoteka ne sadrži SVG fontove.\n"
+msgid "This file contains no SVG fonts."
+msgstr "Ova datoteka ne sadrži SVG fontove."
 
 msgid "This font comes from an old format sfd file. Not all aspects of it can be reverted successfully."
 msgstr "Ovaj font je starog formata za sfd datoteke. Neće biti moguće uspješno obnoviti sve dijelove fonta."
@@ -20858,15 +20858,15 @@ msgstr "Font sadrži funkciju 'size' (veličina) s dizajn-veličinom i dizajn-ra
 msgid "This font contains at least one translucent layer, but type3 does not support that (anything translucent or transparent is treated as opaque). Do you want to proceed anyway?"
 msgstr "Ovaj font sadrži najmanje jedan prozirni sloj, ali type3 to ne podržava (sve što je prozirno smatra se neprozirnim). Želiš li ipak nastaviti?"
 
-msgid "This font contains bitmaps in Apple's compressed format 4 (And I don't support that)\n"
-msgstr "Ovaj font sadrži bitmape u Appleovom komprimiranom formatu 4 (format se ne podržava)\n"
+msgid "This font contains bitmaps in Apple's compressed format 4 (And I don't support that)"
+msgstr "Ovaj font sadrži bitmape u Appleovom komprimiranom formatu 4 (format se ne podržava)"
 
 #, c-format
-msgid "This font contains bitmaps in a format %d that I've never heard of\n"
-msgstr "Ovaj font sadrži bitmape u formatu %d, za koji još nikad nisam čuo\n"
+msgid "This font contains bitmaps in a format %d that I've never heard of"
+msgstr "Ovaj font sadrži bitmape u formatu %d, za koji još nikad nisam čuo"
 
-msgid "This font contains bitmaps in the obsolete format 3 (And I can't read them)\n"
-msgstr "Ovaj font sadrži bitmape u zastarjelom formatu 3 (nije ga moguće čitati)\n"
+msgid "This font contains bitmaps in the obsolete format 3 (And I can't read them)"
+msgstr "Ovaj font sadrži bitmape u zastarjelom formatu 3 (nije ga moguće čitati)"
 
 msgid ""
 "This font contains both a 'BASE' table and a 'bsln' table.\n"
@@ -20945,11 +20945,11 @@ msgstr ""
 "Ovaj font nema aktiviranu uspravnu metriku.\n"
 "Aktiviraj je putem „Element → Informacije o fontu”."
 
-msgid "This font does not specify font-face\n"
-msgstr "Ovom fontu nije određen pismovni rez\n"
+msgid "This font does not specify font-face"
+msgstr "Ovom fontu nije određen pismovni rez"
 
-msgid "This font does not specify units-per-em\n"
-msgstr "Ovom fontu nije određen četverac\n"
+msgid "This font does not specify units-per-em"
+msgstr "Ovom fontu nije određen četverac"
 
 msgid "This font does not specify unitsPerEm, so we guess 1000."
 msgstr "Font ne određuje jedinice četverca, pretpostavlja se 1000."
@@ -21612,8 +21612,8 @@ msgid "Too Many Points"
 msgstr "Previše točaka"
 
 #, c-format
-msgid "Too few items on stack for blend in %s\n"
-msgstr "U snopu je premalo stavki za stapanje u %s\n"
+msgid "Too few items on stack for blend in %s"
+msgstr "U snopu je premalo stavki za stapanje u %s"
 
 msgid "Too many Unique Font IDs"
 msgstr "Previše jedinstvenih font ID-oznaka"
@@ -21665,11 +21665,11 @@ msgid "Too many separation marks, starting at: %.20s..."
 msgstr "Previše razdjeljivača, počevši pri: %.20s …"
 
 #, c-format
-msgid "Too many subroutine calls in %s\n"
-msgstr "Previše poziva podrutina u %s\n"
+msgid "Too many subroutine calls in %s"
+msgstr "Previše poziva podrutina u %s"
 
-msgid "Too many subroutines. We can deal with at most 14 (0-13)\n"
-msgstr "Previše podrutina. Ne smije ih biti više od 14 (0 – 13)\n"
+msgid "Too many subroutines. We can deal with at most 14 (0-13)"
+msgstr "Previše podrutina. Ne smije ih biti više od 14 (0 – 13)"
 
 msgid "Tool_s"
 msgstr "_Alati"
@@ -22105,12 +22105,12 @@ msgstr "Boja etikete nekodiranih znakova"
 msgid "Uneven Weighting"
 msgstr "Nejednolikih deljina"
 
-msgid "Unexpected EOF in gf\n"
-msgstr "Neočekivani EOF u gf-u\n"
+msgid "Unexpected EOF in gf"
+msgstr "Neočekivani EOF u gf-u"
 
 #, c-format
-msgid "Unexpected PST type in GetPosSub (%d).\n"
-msgstr "Neočekivana PST vrsta u GetPosSub (%d).\n"
+msgid "Unexpected PST type in GetPosSub (%d)."
+msgstr "Neočekivana PST vrsta u GetPosSub (%d)."
 
 msgid "Unexpected Variation Selector"
 msgstr "Neočekivani selektor varijacije"
@@ -22120,15 +22120,15 @@ msgid "Unexpected character (0x%02X) on line %d of %s"
 msgstr "Neočekivani znak (0×%02X) u %d. retku od %s"
 
 #, c-format
-msgid "Unexpected charset format in cff: %d\n"
-msgstr "Neočekivani format skupa znakova u cff-u: %d\n"
+msgid "Unexpected charset format in cff: %d"
+msgstr "Neočekivani format skupa znakova u cff-u: %d"
 
 msgid "Unexpected density"
 msgstr "Neočekivana gustoća"
 
 #, c-format
-msgid "Unexpected encoding format in cff: %d\n"
-msgstr "Neočekivani format kodiranja u cff-u: %d\n"
+msgid "Unexpected encoding format in cff: %d"
+msgstr "Neočekivani format kodiranja u cff-u: %d"
 
 msgid "Unexpected end of file found in morx chain."
 msgstr "Neočekivani kraj datoteke u 'morx' lancu."
@@ -22157,12 +22157,12 @@ msgid "Unexpected number"
 msgstr "Neočekivani broj"
 
 #, c-format
-msgid "Unexpected size for font info section of URW font (expected 12, got %d)\n"
-msgstr "Neočekivana veličina za odjeljak informacija o fontu, URW fonta (očekivano 55, dobiveno %d)\n"
+msgid "Unexpected size for font info section of URW font (expected 12, got %d)"
+msgstr "Neočekivana veličina za odjeljak informacija o fontu, URW fonta (očekivano 55, dobiveno %d)"
 
 #, c-format
-msgid "Unexpected size for name section of URW font (expected 55, got %d)\n"
-msgstr "Neočekivana veličina za odjeljak naziva URW fonta (očekivano 55, dobiveno %d)\n"
+msgid "Unexpected size for name section of URW font (expected 55, got %d)"
+msgstr "Neočekivana veličina za odjeljak naziva URW fonta (očekivano 55, dobiveno %d)"
 
 #, c-format
 msgid ""
@@ -22212,12 +22212,12 @@ msgstr ""
 "Neočekivani token.\n"
 "prije …%40s"
 
-msgid "Unexpected use of bitmap format 5, no metrics are appearant\n"
-msgstr "Neočekivana upotreba bitmap formata 5, čini se da nema metrika\n"
+msgid "Unexpected use of bitmap format 5, no metrics are appearant"
+msgstr "Neočekivana upotreba bitmap formata 5, čini se da nema metrika"
 
 #, c-format
-msgid "Unexpected value in dictionary %d\n"
-msgstr "Neočekivana vrijednost u mapi %d\n"
+msgid "Unexpected value in dictionary %d"
+msgstr "Neočekivana vrijednost u mapi %d"
 
 msgid "Unicase"
 msgstr "Jednorazinski"
@@ -22290,8 +22290,8 @@ msgid "Uniform scaling for stems of any width and direction"
 msgstr "Jednoliko skaliranje poteza bilo koje širine i smjera"
 
 #, c-format
-msgid "Uninterpreted code in gf: %d\n"
-msgstr "Neinterpretirani kȏd u gf-u: %d\n"
+msgid "Uninterpreted code in gf: %d"
+msgstr "Neinterpretirani kȏd u gf-u: %d"
 
 msgid "UniqueID"
 msgstr "Jedinstveni ID"
@@ -22331,8 +22331,8 @@ msgstr "Nepoznata vrsta GSUB pod-tablice: %d"
 msgid "Unknown Language"
 msgstr "Nepoznati jezik"
 
-msgid "Unknown character after backslash in literal string.\n"
-msgstr "Nepoznati znak nakon obrnute kose crte u doslovnom znakovnom nizu.\n"
+msgid "Unknown character after backslash in literal string."
+msgstr "Nepoznati znak nakon obrnute kose crte u doslovnom znakovnom nizu."
 
 #, c-format
 msgid "Unknown class table format: %d"
@@ -22357,8 +22357,8 @@ msgid "Unknown lookup: %s"
 msgstr "Nepoznata tablica definicija: %s"
 
 #, c-format
-msgid "Unknown operator in %s: %x\n"
-msgstr "Nepoznati operator u %s: %x\n"
+msgid "Unknown operator in %s: %x"
+msgstr "Nepoznati operator u %s: %x"
 
 #, c-format
 msgid "Unknown python type <%s> when reading UFO/GLIF lib data."
@@ -22368,16 +22368,16 @@ msgid "Unknown string type\n"
 msgstr "Nepoznata vrsta znakovnog niza\n"
 
 #, c-format
-msgid "Unknown subtable '%c%c%c%c' in 'PfEd' table, ignored\n"
-msgstr "Nepoznata pod-tablica '%c%c%c%c' u 'PfEd' tablici, zanemaruje se\n"
+msgid "Unknown subtable '%c%c%c%c' in 'PfEd' table, ignored"
+msgstr "Nepoznata pod-tablica '%c%c%c%c' u 'PfEd' tablici, zanemaruje se"
 
 #, c-format
-msgid "Unknown subtable '%c%c%c%c' in 'TeX ' table, ignored\n"
-msgstr "Nepoznata pod-tablica '%c%c%c%c' u 'TeX' tablici, zanemaruje se\n"
+msgid "Unknown subtable '%c%c%c%c' in 'TeX ' table, ignored"
+msgstr "Nepoznata pod-tablica '%c%c%c%c' u 'TeX' tablici, zanemaruje se"
 
 #, c-format
-msgid "Unknown type '%c' found in path specification\n"
-msgstr "Nepoznata vrsta '%c' neđena u specifikaciji staze\n"
+msgid "Unknown type '%c' found in path specification"
+msgstr "Nepoznata vrsta '%c' neđena u specifikaciji staze"
 
 msgid ""
 "Unlike most commands this one does not work directly on the\n"
@@ -22415,8 +22415,8 @@ msgstr ""
 " za smeće, odustaje se od nje.\n"
 
 #, c-format
-msgid "Unlikely length for table, so I'm ignoring it. %u\n"
-msgstr "Duljina tablice nije vjerojatna, stoga se zanemaruje. %u\n"
+msgid "Unlikely length for table, so I'm ignoring it. %u"
+msgstr "Duljina tablice nije vjerojatna, stoga se zanemaruje. %u"
 
 msgid "Unlikely scale factor"
 msgstr "Malo vjerojatan faktor skaliranja"
@@ -22461,8 +22461,8 @@ msgid "Unparseable include on line %d of %s"
 msgstr "Neobradivi 'include' u %d. retku od %s"
 
 #, c-format
-msgid "Unparsed characters found after end of groups file (last line parsed was %d).\n"
-msgstr "Neobrađeni znak nađen na kraju datoteke grupe (zadnji obrađeni redak je bio %d).\n"
+msgid "Unparsed characters found after end of groups file (last line parsed was %d)."
+msgstr "Neobrađeni znak nađen na kraju datoteke grupe (zadnji obrađeni redak je bio %d)."
 
 msgid "Unreasonable DPI"
 msgstr "Bezrazumni DPI"
@@ -22497,8 +22497,8 @@ msgid "Unsupported image format must be bmp or png"
 msgstr "Nepodržani slikovni format mora biti bmp ili png"
 
 #, c-format
-msgid "Unsupported mime type in data URI: %s\n"
-msgstr "Nepodržana mime vrsta u URI-ju podataka: %s\n"
+msgid "Unsupported mime type in data URI: %s"
+msgstr "Nepodržana mime vrsta u URI-ju podataka: %s"
 
 #, c-format
 msgid "Unterminated coverage table, starting at: %.20s..."
@@ -22604,11 +22604,11 @@ msgstr "Koristi se \"exit\" dok nije u petlji\n"
 msgid "Use of \"stop\" when not in a stopped\n"
 msgstr "Koristi se \"stop\" dok nije u \"stopped\"\n"
 
-msgid "Use of a range offset of 0xffff to mean a missing glyph in cmap table\n"
-msgstr "Koristi raspon odmaka od 0×ffff za označavanje nedostajućeg grafema u tablici za mapiranje znakova\n"
+msgid "Use of a range offset of 0xffff to mean a missing glyph in cmap table"
+msgstr "Koristi raspon odmaka od 0×ffff za označavanje nedostajućeg grafema u tablici za mapiranje znakova"
 
-msgid "Use of obsolete blend operator.\n"
-msgstr "Upotreba nepotrebnog operatora stapanja.\n"
+msgid "Use of obsolete blend operator."
+msgstr "Upotreba nepotrebnog operatora stapanja."
 
 #, c-format
 msgid "Use of undefined glyph class, %s, on line %d of %s"
@@ -22671,8 +22671,8 @@ msgstr ""
 "prilikom generiranja fonta."
 
 #, c-format
-msgid "Use-my-metrics flag set on at least two components in glyph %d\n"
-msgstr "Oznaka \"koristi-moje-metrike\" je postavljena na barem dvije komponente grafema %d\n"
+msgid "Use-my-metrics flag set on at least two components in glyph %d"
+msgstr "Oznaka \"koristi-moje-metrike\" je postavljena na barem dvije komponente grafema %d"
 
 msgid "UseCairoDrawing"
 msgstr "Koristi Cairo crtanje"
@@ -22760,8 +22760,8 @@ msgstr "Vrijednost prekoračuje tfm ograničenja"
 msgid "Value out of bounds"
 msgstr "Vrijednost izvan granica"
 
-msgid "Value out of bounds in spline.\n"
-msgstr "Vrijednost izvan granica u krivulji.\n"
+msgid "Value out of bounds in spline."
+msgstr "Vrijednost izvan granica u krivulji."
 
 msgid "Value out of range"
 msgstr "Vrijednost izvan raspona"
@@ -23034,12 +23034,12 @@ msgid "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]\n"
 msgstr "Upozorenje: %d. vrijednost osi (%g) je izvan dozvoljenog raspona [%g,%g]\n"
 
 #, c-format
-msgid "Warning: %s has a different family name than does %s (GenerateFamily)\n"
-msgstr "Upozorenje: %s ima drugačiji naziv obitelji od %s (stvori obitelj)\n"
+msgid "Warning: %s has a different family name than does %s (GenerateFamily)"
+msgstr "Upozorenje: %s ima drugačiji naziv obitelji od %s (stvori obitelj)"
 
 #, c-format
-msgid "Warning: %s(%s) is both extended and condensed. That's impossible.\n"
-msgstr "Upozorenje: %s(%s) je Prošireni i Suženi. To je nemoguće.\n"
+msgid "Warning: %s(%s) is both extended and condensed. That's impossible."
+msgstr "Upozorenje: %s(%s) je Prošireni i Suženi. To je nemoguće."
 
 msgid ""
 "Warning: 'cvar' contains intermediate tuple data.\n"
@@ -23052,21 +23052,21 @@ msgstr ""
 msgid "Warning: Accuracy target %lf less than minimum %lf, using %lf instead\n"
 msgstr "Upozorenje: Ciljana točnost %lf manja je od minimalne %lf, umjesto toga se koristi %lf\n"
 
-msgid "Warning: Both extended and condensed. That's impossible.\n"
-msgstr "Upozorenje: Prošireni i Suženi. To je nemoguće.\n"
+msgid "Warning: Both extended and condensed. That's impossible."
+msgstr "Upozorenje: Prošireni i Suženi. To je nemoguće."
 
 msgid "Warning: Can't identify contour direction, assuming clockwise\n"
 msgstr "Upozorenje: Nije moguće utvrditi smjer konture, pretpostavlja se nadesno\n"
 
-msgid "Warning: Contour end did not close\n"
-msgstr "Upozorenje: Kraj konture se nije zatvorio\n"
+msgid "Warning: Contour end did not close"
+msgstr "Upozorenje: Kraj konture se nije zatvorio"
 
-msgid "Warning: Contour start did not close\n"
-msgstr "Upozorenje: Početak konture se nije zatvorio\n"
+msgid "Warning: Contour start did not close"
+msgstr "Upozorenje: Početak konture se nije zatvorio"
 
 #, c-format
-msgid "Warning: Coordinate diff %lf greater than margin %lf\n"
-msgstr "Upozorenje: Razlika koordinate %lf veća je od margine %lf\n"
+msgid "Warning: Coordinate diff %lf greater than margin %lf"
+msgstr "Upozorenje: Razlika koordinate %lf veća je od margine %lf"
 
 #, c-format
 msgid ""
@@ -23091,8 +23091,8 @@ msgstr ""
 "Upozorenje: Grafem %d sadrži privatne podatke ili međupodatke n-torke.\n"
 " FontForge ne podržava niti jedno niti drugo.\n"
 
-msgid "Warning: Left contour did not close\n"
-msgstr "Upozorenje: Lijeva kontura se nije zatvorila\n"
+msgid "Warning: Left contour did not close"
+msgstr "Upozorenje: Lijeva kontura se nije zatvorila"
 
 #, c-format
 msgid ""
@@ -23135,22 +23135,22 @@ msgstr ""
 " znakovnog niza za %s u jeziku %s.\n"
 
 #, c-format
-msgid "Warning: No characters selected in AddDHint(%d,%d %d,%d %d,%d)\n"
-msgstr "Upozorenje: nema odabranih znakova u „Dodaj dijagonalnu kontrolu” (%d,%d %d,%d %d,%d)\n"
+msgid "Warning: No characters selected in AddDHint(%d,%d %d,%d %d,%d)"
+msgstr "Upozorenje: nema odabranih znakova u „Dodaj dijagonalnu kontrolu” (%d,%d %d,%d %d,%d)"
 
 #, c-format
-msgid "Warning: No characters selected in AddHint(%d,%d,%d)\n"
-msgstr "Upozorenje: nema odabranih znakova u „Dodaj kontrolu” (%d,%d,%d)\n"
+msgid "Warning: No characters selected in AddHint(%d,%d,%d)"
+msgstr "Upozorenje: nema odabranih znakova u „Dodaj kontrolu” (%d,%d,%d)"
 
-msgid "Warning: No stroke output for contour\n"
-msgstr "Upozorenje: Nema rezultata poteza za konturu\n"
+msgid "Warning: No stroke output for contour"
+msgstr "Upozorenje: Nema rezultata poteza za konturu"
 
-msgid "Warning: Right contour did not close\n"
-msgstr "Upozorenje: Desna kontura se nije zatvorila\n"
+msgid "Warning: Right contour did not close"
+msgstr "Upozorenje: Desna kontura se nije zatvorila"
 
 #, c-format
-msgid "Warning: StdGlyphName returning name for value %d outside of Unicode range\n"
-msgstr "Upozorenje: Vraćeni naziv standardnog naziva grafema za vrijednost %d je izvan Unicode raspona\n"
+msgid "Warning: StdGlyphName returning name for value %d outside of Unicode range"
+msgstr "Upozorenje: Vraćeni naziv standardnog naziva grafema za vrijednost %d je izvan Unicode raspona"
 
 msgid ""
 "Warning: There are already some 'aalt' lookups in\n"
@@ -23201,29 +23201,29 @@ msgstr ""
 " Je li to što želiš?"
 
 #, c-format
-msgid "Warning: Unable to parse token %s, some features may be lost\n"
-msgstr "Upozorenje: Neuspjela obrada tokena %s, neke funkcije će se možda izgubiti\n"
+msgid "Warning: Unable to parse token %s, some features may be lost"
+msgstr "Upozorenje: Neuspjela obrada tokena %s, neke funkcije će se možda izgubiti"
 
 #, c-format
 msgid "Warning: Unlikely number of subtables (%d) for 'kern' table"
 msgstr "Upozorenje: malo vjerojatan broj pod-tablica (%d) za 'kern' tablicu"
 
-msgid "Warning: Unreasonably big splines. They will be ignored.\n"
-msgstr "Upozorenje: Nerazumno velkie kruvulje. Bit će zanemarene.\n"
+msgid "Warning: Unreasonably big splines. They will be ignored."
+msgstr "Upozorenje: Nerazumno velkie kruvulje. Bit će zanemarene."
 
-msgid "Warning: Unrecognized or unsupported cap type, defaulting to 'nib'.\n"
-msgstr "Upozorenje: neprepoznat ili nepodržan vrh linija, postavlja se na naliv pero.\n"
+msgid "Warning: Unrecognized or unsupported cap type, defaulting to 'nib'."
+msgstr "Upozorenje: neprepoznat ili nepodržan vrh linija, postavlja se na naliv pero."
 
-msgid "Warning: Unrecognized or unsupported join type, defaulting to 'nib'.\n"
-msgstr "Upozorenje: neprepoznata ili nepodržana vrsta spoja, postavlja se na naliv pero.\n"
-
-#, c-format
-msgid "Warning: could not figure out where the hint (%d,%d %d,%d %d,%d) is valid\n"
-msgstr "Upozorenje: nije moguće prepoznati, gdje je kontrola (%d,%d %d,%d %d,%d) ispravna\n"
+msgid "Warning: Unrecognized or unsupported join type, defaulting to 'nib'."
+msgstr "Upozorenje: neprepoznata ili nepodržana vrsta spoja, postavlja se na naliv pero."
 
 #, c-format
-msgid "Warning: gid %d larger than glyph_cnt %d, skipping\n"
-msgstr "Upozorenje: gid %d je veći od glyph_cnt %d, preskaće se\n"
+msgid "Warning: could not figure out where the hint (%d,%d %d,%d %d,%d) is valid"
+msgstr "Upozorenje: nije moguće prepoznati, gdje je kontrola (%d,%d %d,%d %d,%d) ispravna"
+
+#, c-format
+msgid "Warning: gid %d larger than glyph_cnt %d, skipping"
+msgstr "Upozorenje: gid %d je veći od glyph_cnt %d, preskaće se"
 
 msgid "Warnings"
 msgstr "Upozorenja"
@@ -23247,8 +23247,8 @@ msgstr "Promjena spremišta"
 msgid "We cannot have lead-in points for an open curve."
 msgstr "Ne možemo imati ulazne točke za otvorenu krivulju."
 
-msgid "We don't understand this font\n"
-msgstr "Font se ne da razumjeti\n"
+msgid "We don't understand this font"
+msgstr "Font se ne da razumjeti"
 
 msgid "Web Open Font (WOFF OTF)"
 msgstr "Web Open Font (WOFF OTF)"
@@ -23604,29 +23604,29 @@ msgstr ""
 "Bjelina između matematičkih formula\n"
 "za izradu pravilnog proreda."
 
-msgid "Whoops, Ran out of spiros\n"
-msgstr "Joj, nema više spiroa\n"
+msgid "Whoops, Ran out of spiros"
+msgstr "Joj, nema više spiroa"
 
-msgid "Whoops, attempt to name anchors in a subtable which doesn't contain any\n"
-msgstr "Joj, pokušaj imenovanja sidra u pod-tablici koja ne sadrži niti jedno\n"
-
-#, c-format
-msgid "Whoops, bad spiro command %d\n"
-msgstr "Joj, neispravna spiro naredba %d\n"
-
-msgid "Whoops, contours must begin with a move to\n"
-msgstr "Joj, konture moraju započeti s 'move to'\n"
-
-msgid "Whoops, more names than lookups\n"
-msgstr "Joj, više naziva nego tablica definicija\n"
+msgid "Whoops, attempt to name anchors in a subtable which doesn't contain any"
+msgstr "Joj, pokušaj imenovanja sidra u pod-tablici koja ne sadrži niti jedno"
 
 #, c-format
-msgid "Whoops, more names than subtables of lookup %s\n"
-msgstr "Joj, više naziva nego pod-tablica u tablici definicija %s\n"
+msgid "Whoops, bad spiro command %d"
+msgstr "Joj, neispravna spiro naredba %d"
+
+msgid "Whoops, contours must begin with a move to"
+msgstr "Joj, konture moraju započeti s 'move to'"
+
+msgid "Whoops, more names than lookups"
+msgstr "Joj, više naziva nego tablica definicija"
 
 #, c-format
-msgid "Whoops, unexpected verb in contour %d.%d\n"
-msgstr "Joj, neočekivana naredba u konturi %d.%d\n"
+msgid "Whoops, more names than subtables of lookup %s"
+msgstr "Joj, više naziva nego pod-tablica u tablici definicija %s"
+
+#, c-format
+msgid "Whoops, unexpected verb in contour %d.%d"
+msgstr "Joj, neočekivana naredba u konturi %d.%d"
 
 msgid "Wide"
 msgstr "Široki"
@@ -25419,8 +25419,8 @@ msgstr "tablica bitmap lokacija (OT verzija)"
 msgid "by"
 msgstr "ovoliko"
 
-msgid "can't create temporary file\n"
-msgstr "nije moguće stvoriti privremenu mapu\n"
+msgid "can't create temporary file"
+msgstr "nije moguće stvoriti privremenu mapu"
 
 msgid "character code mapping table"
 msgstr "tablica mapiranja znakovnih kodova"
@@ -25454,8 +25454,8 @@ msgstr "napomena o autorskom pravu"
 msgid "couldn't find the character %s"
 msgstr "nema znaka %s"
 
-msgid "couldn't write encodings file\n"
-msgstr "nije bilo moguće zapisati datoteku kodiranja\n"
+msgid "couldn't write encodings file"
+msgstr "nije bilo moguće zapisati datoteku kodiranja"
 
 msgid "coverage"
 msgstr "pokrivenosti"
@@ -25771,12 +25771,12 @@ msgid "properties table"
 msgstr "tablica svojstava"
 
 #, c-format
-msgid "return when not in subroutine in %s\n"
-msgstr "vrati kad ne nalazi u podrutini u %s\n"
+msgid "return when not in subroutine in %s"
+msgstr "vrati kad ne nalazi u podrutini u %s"
 
 #, c-format
-msgid "roll out of range in %s\n"
-msgstr "'roll' izvan granica u %s\n"
+msgid "roll out of range in %s"
+msgstr "'roll' izvan granica u %s"
 
 msgid "romn"
 msgstr "romn"

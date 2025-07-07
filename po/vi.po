@@ -55,12 +55,12 @@ msgid "  Hang right"
 msgstr "  Treo bên phải"
 
 #, c-format
-msgid "  Ignoring '%c%c%c%c'\n"
-msgstr "  Đang lờ '%c%c%c%c'\n"
+msgid "  Ignoring '%c%c%c%c'"
+msgstr "  Đang lờ '%c%c%c%c'"
 
 #, c-format
-msgid "  Ignoring '%c%c%c%c' %s\n"
-msgstr "  Đang lờ '%c%c%c%c' %s\n"
+msgid "  Ignoring '%c%c%c%c' %s"
+msgstr "  Đang lờ '%c%c%c%c' %s"
 
 #, c-format
 msgid "  Left Bound=%d"
@@ -78,8 +78,8 @@ msgid "  Stroke _Width:"
 msgstr "  Bề _rộng nét vẽ:"
 
 #, c-format
-msgid " %s: line %d\n"
-msgstr " %s: dòng %d\n"
+msgid " %s: line %d"
+msgstr " %s: dòng %d"
 
 msgid " Adding a size will create it by scaling."
 msgstr " Thêm kích cỡ thì cũng tạo nó bằng cách co giãn."
@@ -143,8 +143,8 @@ msgid " refers to a missing glyph"
 msgstr " tham chiếu đến một hình tượng còn thiếu"
 
 #, c-format
-msgid "!!!! Unknown caret format %d !!!!\n"
-msgstr "••• Không rõ định dạng con nháy %d. •••\n"
+msgid "!!!! Unknown caret format %d !!!!"
+msgstr "••• Không rõ định dạng con nháy %d. •••"
 
 #, c-format
 msgid "\"%.40s\" size=%d point=%d (%d,%d) distance=%g"
@@ -249,8 +249,8 @@ msgid "%s contextual %d"
 msgstr "%s ngữ cảnh %d"
 
 #, c-format
-msgid "%s does not contain an <svg> element at the top\n"
-msgstr "%s không chứa yếu tố <svg> ở đâu\n"
+msgid "%s does not contain an <svg> element at the top"
+msgstr "%s không chứa yếu tố <svg> ở đâu"
 
 #, c-format
 msgid "%s entry"
@@ -290,12 +290,12 @@ msgid "%s kerning class %d"
 msgstr "%s hạng định chỗ %d"
 
 #, c-format
-msgid "%s line: %d %s\n"
-msgstr "%s dòng: %d %s\n"
+msgid "%s line: %d %s"
+msgstr "%s dòng: %d %s"
 
 #, c-format
-msgid "%s line: %d %s: %s\n"
-msgstr "%s dòng: %d %s: %s\n"
+msgid "%s line: %d %s: %s"
+msgstr "%s dòng: %d %s: %s"
 
 #, c-format
 msgid "%s lookup %d"
@@ -330,8 +330,8 @@ msgid "%s subtable %d"
 msgstr "Bảng phụ %s %d"
 
 #, c-format
-msgid "%s(%s) and %s(%s) 0x%x in FOND %s\n"
-msgstr "%s(%s) và %s(%s) 0x%x trong FOND %s\n"
+msgid "%s(%s) and %s(%s) 0x%x in FOND %s"
+msgstr "%s(%s) và %s(%s) 0x%x trong FOND %s"
 
 #, c-format
 msgid "%s: %d Expected %s, got %s"
@@ -342,8 +342,8 @@ msgid "%s: %d Unexpected %s found"
 msgstr "%s: %d Gặp %s bất thường"
 
 #, c-format
-msgid "%s:%d Unexpected character %c (%d)\n"
-msgstr "%s:%d Gặp ký tự bất thường %c (%d)\n"
+msgid "%s:%d Unexpected character %c (%d)"
+msgstr "%s:%d Gặp ký tự bất thường %c (%d)"
 
 msgid "'BASE' Baseline Table"
 msgstr "Bảng đường cơ bản « BASE »"
@@ -702,12 +702,12 @@ msgid "A pdf stream object is missing a Length attribute"
 msgstr "Có một đối tượng luồng PDF còn thiếu thuộc tính Chiều dài"
 
 #, c-format
-msgid "A point in %s is outside the font bounding box data.\n"
-msgstr "%s có một điểm nằm bên ngoài dữ liệu về hộp biên giới phông chữ.\n"
+msgid "A point in %s is outside the font bounding box data."
+msgstr "%s có một điểm nằm bên ngoài dữ liệu về hộp biên giới phông chữ."
 
 #, c-format
-msgid "A point in GID %d is outside the glyph bounding box\n"
-msgstr "GID %d có một điểm nằm bên ngoài hộp biên giới hình tượng\n"
+msgid "A point in GID %d is outside the glyph bounding box"
+msgstr "GID %d có một điểm nằm bên ngoài hộp biên giới hình tượng"
 
 msgid ""
 "A really big version of this glyph may be made up of the\n"
@@ -1762,23 +1762,23 @@ msgstr ""
 "Thử áp dụng sự tra tìm cho một vị trí ở ngoại phạm vi của sự tra tìm\n"
 "kiểu ngữ cảnh này: dãy=%d tối đa=%d\n"
 
-msgid "Attempt to back up twice\n"
-msgstr "Thử sao lưu hai lần\n"
+msgid "Attempt to back up twice"
+msgstr "Thử sao lưu hai lần"
 
 #, c-format
 msgid "Attempt to divide by 0 in %.30s"
 msgstr "Thử chia cho số 0 trong %.30s"
 
 #, c-format
-msgid "Attempt to encode missing glyph %d to %d (0x%x)\n"
-msgstr "Thử mã hoá hình tượng còn thiếu %d thành %d (0x%x)\n"
+msgid "Attempt to encode missing glyph %d to %d (0x%x)"
+msgstr "Thử mã hoá hình tượng còn thiếu %d thành %d (0x%x)"
 
 #, c-format
 msgid "Attempt to have a font with more than %d layers"
 msgstr "Sự thử có một phông với nhiều hơn %d lớp"
 
-msgid "Attempt to invert a singular matrix\n"
-msgstr "Thử đảo ngược một ma trận đơn\n"
+msgid "Attempt to invert a singular matrix"
+msgstr "Thử đảo ngược một ma trận đơn"
 
 msgid "Attempt to make a character that refers to itself"
 msgstr "Thử tạo ký tự tham chiếu đến chính nó"
@@ -1839,11 +1839,11 @@ msgid "Attempt to take the square root of %1$g in %2$.30s"
 msgstr "Thử tính căn bậc hai của %1$g trong %2$.30s"
 
 #, c-format
-msgid "Attempt to use a multiple master subroutine in a non-mm font in %s.\n"
-msgstr "Thử dùng hàm phụ đa chủ (MM) trong phông không MM trong %s.\n"
+msgid "Attempt to use a multiple master subroutine in a non-mm font in %s."
+msgstr "Thử dùng hàm phụ đa chủ (MM) trong phông không MM trong %s."
 
-msgid "Attempt to use a multiple master subroutine in a non-mm font.\n"
-msgstr "Thử dùng hàm phụ đa chủ (MM) trong phông không phải MM.\n"
+msgid "Attempt to use a multiple master subroutine in a non-mm font."
+msgstr "Thử dùng hàm phụ đa chủ (MM) trong phông không phải MM."
 
 msgid "Attention"
 msgstr "Chú ý"
@@ -1873,8 +1873,8 @@ msgid "AutoLBearingSync"
 msgstr "TĐ Theo PhHướng bên Trái"
 
 #, c-format
-msgid "AutoWidth failure on %s\n"
-msgstr "Lỗi đặt bề rộng tự động trên %s\n"
+msgid "AutoWidth failure on %s"
+msgstr "Lỗi đặt bề rộng tự động trên %s"
 
 msgid "AutoWidthSync"
 msgstr "TĐ Theo Rộng"
@@ -2049,15 +2049,15 @@ msgstr "Mục nhập Dời màu xanh sai."
 #. GT: The CFF font type contains a thing called a name INDEX, and that INDEX
 #. GT: is bad. It is an index of many of the names used in the CFF font.
 #. GT: We hope the user will never see this.
-msgid "Bad CFF name INDEX\n"
-msgstr "INDEX tên CFF sai\n"
+msgid "Bad CFF name INDEX"
+msgstr "INDEX tên CFF sai"
 
 #, c-format
-msgid "Bad CID offset for CID %d\n"
-msgstr "Bù CID sai đối với CID %d\n"
+msgid "Bad CID offset for CID %d"
+msgstr "Bù CID sai đối với CID %d"
 
-msgid "Bad CharString. Does not include lenIV bytes.\n"
-msgstr "CharString (chuỗi ký tự) sai : không chứa byte lenIV.\n"
+msgid "Bad CharString. Does not include lenIV bytes."
+msgstr "CharString (chuỗi ký tự) sai : không chứa byte lenIV."
 
 msgid "Bad Class"
 msgstr "Hạng sai"
@@ -2167,8 +2167,8 @@ msgid "Bad Private Dictionary"
 msgstr "Từ điển Riêng sai"
 
 #, c-format
-msgid "Bad RGB color spec: %s\n"
-msgstr "Sai ghi rõ màu RGB: %s\n"
+msgid "Bad RGB color spec: %s"
+msgstr "Sai ghi rõ màu RGB: %s"
 
 msgid "Bad Range"
 msgstr "Phạm vi sai"
@@ -2233,8 +2233,8 @@ msgid "Bad base table."
 msgstr "Bảng cơ sở sai."
 
 #, c-format
-msgid "Bad bounding box for %s.\n"
-msgstr "Hộp giới hạn sai cho %s.\n"
+msgid "Bad bounding box for %s."
+msgstr "Hộp giới hạn sai cho %s."
 
 msgid "Bad cidmap file"
 msgstr "Tập tin sơ đồ CID sai"
@@ -2247,8 +2247,8 @@ msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)\n"
 msgstr "Bảng xác định hạng sai : phạm vi hình tượng %d-%d ở ngoại phạm vi [0,%d)\n"
 
 #, c-format
-msgid "Bad class def table. start=%d cnt=%d, max glyph=%d\n"
-msgstr "Bảng xác định hạng sai : đầu=%d đếm=%d, hình tượng tối đa=%d\n"
+msgid "Bad class def table. start=%d cnt=%d, max glyph=%d"
+msgstr "Bảng xác định hạng sai : đầu=%d đếm=%d, hình tượng tối đa=%d"
 
 msgid "Bad class in state machine.\n"
 msgstr "Hạng sai trong cơ chế tình trạng.\n"
@@ -2308,8 +2308,8 @@ msgstr "Bảng thiết bị sai trên hàng %d của %s"
 msgid "Bad encoding file format"
 msgstr "Sai định dạng tập tin bảng mã"
 
-msgid "Bad fdselect\n"
-msgstr "fdselect sai\n"
+msgid "Bad fdselect"
+msgstr "fdselect sai"
 
 msgid "Bad feature tag"
 msgstr "Thẻ tính năng sai"
@@ -2319,57 +2319,57 @@ msgid "Bad few values in /BlendDesignMap for axis %s.\n"
 msgstr "Vài giá trị sai trong /BlendDesignMap (pha trộn sơ đồ thiết kế) đối với trục %s.\n"
 
 #, c-format
-msgid "Bad flags value, implied MORE components at end of glyph %d\n"
-msgstr "Giá trị cờ sai : ngụ ý thành phần THÊM nữa tại kết thúc hình tượng %d\n"
+msgid "Bad flags value, implied MORE components at end of glyph %d"
+msgstr "Giá trị cờ sai : ngụ ý thành phần THÊM nữa tại kết thúc hình tượng %d"
 
 #, c-format
-msgid "Bad flex subroutine in %s\n"
-msgstr "Có hàm phụ flex sai trong %s\n"
+msgid "Bad flex subroutine in %s"
+msgstr "Có hàm phụ flex sai trong %s"
 
 msgid "Bad font"
 msgstr "Phông sai"
 
-msgid "Bad font, offset out of bounds.\n"
-msgstr "Phông sai : giá trị bù ở ngoại phạm vi.\n"
+msgid "Bad font, offset out of bounds."
+msgstr "Phông sai : giá trị bù ở ngoại phạm vi."
 
-msgid "Bad font: Encoding data out of range.\n"
-msgstr "Phông sai : dữ liệu mã hoá ở ngoại phạm vi.\n"
+msgid "Bad font: Encoding data out of range."
+msgstr "Phông sai : dữ liệu mã hoá ở ngoại phạm vi."
 
 #, c-format
 msgid "Bad format for coverage table %d"
 msgstr "Định dạng sai cho bảng bao quát %d."
 
 #, c-format
-msgid "Bad glyph (%d), disordered 'loca' table (start comes after end)\n"
-msgstr "Hình tượng sai (%d): bảng 'loca' không theo thứ tự đúng (đầu nằm sau cuối)\n"
+msgid "Bad glyph (%d), disordered 'loca' table (start comes after end)"
+msgstr "Hình tượng sai (%d): bảng 'loca' không theo thứ tự đúng (đầu nằm sau cuối)"
 
 #, c-format
-msgid "Bad glyph (%d), its data length is negative\n"
-msgstr "Hình tượng sai (%d): có chiều dài dữ liệu âm\n"
+msgid "Bad glyph (%d), its data length is negative"
+msgstr "Hình tượng sai (%d): có chiều dài dữ liệu âm"
 
 #, c-format
-msgid "Bad glyph (%d), its definition extends beyond the end of the glyf table\n"
-msgstr "Hình tượng sai (%d): lời xác định nó kéo dài qua kết thúc bảng 'glyf'\n"
+msgid "Bad glyph (%d), its definition extends beyond the end of the glyf table"
+msgstr "Hình tượng sai (%d): lời xác định nó kéo dài qua kết thúc bảng 'glyf'"
 
 #, c-format
-msgid "Bad glyph (%d), its definition extends beyond the space allowed for it\n"
-msgstr "Hình tượng sai (%d): lời xác định nó kéo dài qua khoảng cách đã cấp phát\n"
+msgid "Bad glyph (%d), its definition extends beyond the space allowed for it"
+msgstr "Hình tượng sai (%d): lời xác định nó kéo dài qua khoảng cách đã cấp phát"
 
 msgid "Bad glyph count in mort table."
 msgstr "Số đếm hình tượng sai trong bảng 'mort'."
 
-msgid "Bad glyph range specified in color subtable of PfEd table\n"
-msgstr "Xác định phạm vi hình tượng sai trong bảng phụ màu sắc của bảng PfEd\n"
+msgid "Bad glyph range specified in color subtable of PfEd table"
+msgstr "Xác định phạm vi hình tượng sai trong bảng phụ màu sắc của bảng PfEd"
 
-msgid "Bad glyph range specified in glyph comment subtable of PfEd table\n"
-msgstr "Xác định phạm vi hình tượng sai trong bảng phụ ghi chú hình tượng của bảng PfEd\n"
+msgid "Bad glyph range specified in glyph comment subtable of PfEd table"
+msgstr "Xác định phạm vi hình tượng sai trong bảng phụ ghi chú hình tượng của bảng PfEd"
 
 msgid "Bad glyph variant subtable of MATH table."
 msgstr "Bảng MATH (toán học) có bảng phụ biến thế hình tượng sai."
 
 #, c-format
-msgid "Bad hex color spec: %s\n"
-msgstr "Sai ghi rõ màu thập lục: %s\n"
+msgid "Bad hex color spec: %s"
+msgstr "Sai ghi rõ màu thập lục: %s"
 
 msgid "Bad hex number"
 msgstr "Số thập lục sai"
@@ -2476,8 +2476,8 @@ msgstr "Con số sai"
 #. GT: NaN is a concept in IEEE floating point which means "Not a Number"
 #. GT: it is used to represent errors like 0/0 or sqrt(-1).
 #, c-format
-msgid "Bad number, infinity or nan: %s\n"
-msgstr "Số sai, vô hạn hay NaN (không phải con số): %s\n"
+msgid "Bad number, infinity or nan: %s"
+msgstr "Số sai, vô hạn hay NaN (không phải con số): %s"
 
 #, c-format
 msgid "Bad numeric value for %s.%s"
@@ -2491,8 +2491,8 @@ msgid "Bad offset on line %d, must be between 0% and 100%."
 msgstr "Sai đặt hiệu trên dòng %d, phải nằm giữa 0 và 100 phần trăm."
 
 #, c-format
-msgid "Bad offset: %d for subfont %s\n"
-msgstr "Bù sai: %d cho phông con %s\n"
+msgid "Bad offset: %d for subfont %s"
+msgstr "Bù sai: %d cho phông con %s"
 
 #, c-format
 msgid "Bad opacity on line %d, must be between 0.0 and 1.0."
@@ -2529,8 +2529,8 @@ msgid "Bad setting"
 msgstr "Thiết lập sai"
 
 #, c-format
-msgid "Bad sid %d (must be less than %d)\n"
-msgstr "SID sai %d (phải < %d)\n"
+msgid "Bad sid %d (must be less than %d)"
+msgstr "SID sai %d (phải < %d)"
 
 msgid "Bad stem add"
 msgstr "Sai thêm cuống"
@@ -2584,8 +2584,8 @@ msgstr ""
 "gần ...%2$40s"
 
 #, c-format
-msgid "Bad tt font: contour ends make no sense in glyph %d.\n"
-msgstr "Phông TT sai : trong hình tượng %d, các cuối của đường viền không có ích.\n"
+msgid "Bad tt font: contour ends make no sense in glyph %d."
+msgstr "Phông TT sai : trong hình tượng %d, các cuối của đường viền không có ích."
 
 #. GT: The words "true" and "false" should be left untranslated. We are restricted
 #. GT: here by what PostScript understands, and it only understands the English
@@ -3052,14 +3052,14 @@ msgstr "CFF (thô)"
 msgid "CFF CID (Bare)"
 msgstr "CFF CID (thô)"
 
-msgid "CFF version mismatch\n"
-msgstr "Sai khớp phiên bản CFF\n"
+msgid "CFF version mismatch"
+msgstr "Sai khớp phiên bản CFF"
 
 msgid "CID findfont Name"
 msgstr "Tên tìm phông CID"
 
-msgid "CID format doesn't contain what we expected it to.\n"
-msgstr "Định dạng CID không chứa nội dung mong đợi.\n"
+msgid "CID format doesn't contain what we expected it to."
+msgstr "Định dạng CID không chứa nội dung mong đợi."
 
 msgid "CID keyed fonts may not be a master design of a multiple master font"
 msgstr "Phông có khóa CID có lẽ không phải là sơ đồ thiết kế chủ của phông đa chủ (MM)"
@@ -3158,8 +3158,8 @@ msgstr "Tự _chọn"
 msgid "Call Script"
 msgstr "Gọi văn lệnh"
 
-msgid "Called from...\n"
-msgstr "Được gọi từ...\n"
+msgid "Called from..."
+msgstr "Được gọi từ..."
 
 msgid "Cambodian"
 msgstr "Tiếng Căm Bốt"
@@ -3185,8 +3185,8 @@ msgstr "Không thể đặt song song"
 msgid "Can't _Be Interpolated"
 msgstr "Không nội su_y được"
 
-msgid "Can't back up with nothing on stack\n"
-msgstr "Không thể sao lưu khi không có gì trên đống\n"
+msgid "Can't back up with nothing on stack"
+msgstr "Không thể sao lưu khi không có gì trên đống"
 
 msgid "Can't compare arrays\n"
 msgstr "Không thể so sánh các mảng\n"
@@ -3237,11 +3237,11 @@ msgid "Can't instruct this glyph"
 msgstr "Không thể chỉ dẫn hình tượng này"
 
 #, c-format
-msgid "Can't open %s\n"
-msgstr "Không thể mở %s.\n"
+msgid "Can't open %s"
+msgstr "Không thể mở %s."
 
-msgid "Can't open temporary file for truetype output.\n"
-msgstr "Không thể mở tập tin tạm thời để xuất TrueType.\n"
+msgid "Can't open temporary file for truetype output."
+msgstr "Không thể mở tập tin tạm thời để xuất TrueType."
 
 msgid "Can't run mf"
 msgstr "Không thể chạy mf"
@@ -3272,11 +3272,11 @@ msgid "Cannot open %s"
 msgstr "Không thể mở %s"
 
 #, c-format
-msgid "Cannot open %s\n"
-msgstr "Không thể mở %s\n"
+msgid "Cannot open %s"
+msgstr "Không thể mở %s"
 
-msgid "Cannot open a temporary file\n"
-msgstr "Không thể mở một tập tin tạm thời\n"
+msgid "Cannot open a temporary file"
+msgstr "Không thể mở một tập tin tạm thời"
 
 #, c-format
 msgid "Cannot open feature file %.120s"
@@ -4084,8 +4084,8 @@ msgid "Could not find the glyph: %.70s"
 msgstr "Không tìm thấy hình tượng: %.70s"
 
 #, c-format
-msgid "Could not match points in composite glyph (%d to %d) when adding %s to %s\n"
-msgstr "Không thể khớp điểm trong hình tượng ghép (%d với %d) khi thêm %s vào %s\n"
+msgid "Could not match points in composite glyph (%d to %d) when adding %s to %s"
+msgstr "Không thể khớp điểm trong hình tượng ghép (%d với %d) khi thêm %s vào %s"
 
 msgid "Could not open"
 msgstr "Không thể mở"
@@ -4113,8 +4113,8 @@ msgid "Could not parse %s"
 msgstr "Không thể phân tích %s"
 
 #, c-format
-msgid "Could not parse a CID font, %sCIDFontType %d, %sfonttype %d\n"
-msgstr "Không thể phân tích phông CID, %sCIDFontType %d, %sfonttype %d\n"
+msgid "Could not parse a CID font, %sCIDFontType %d, %sfonttype %d"
+msgstr "Không thể phân tích phông CID, %sCIDFontType %d, %sfonttype %d"
 
 #, c-format
 msgid "Could not read %s"
@@ -4142,8 +4142,8 @@ msgid "Couldn't create directory: %s"
 msgstr "Không thể tạo thư mục: %s"
 
 #, c-format
-msgid "Couldn't find a font file named %s\n"
-msgstr "Không tìm thấy tập tin phông tên %s\n"
+msgid "Couldn't find a font file named %s"
+msgstr "Không tìm thấy tập tin phông tên %s"
 
 msgid "Couldn't find base point"
 msgstr "Không tìm thấy điểm cơ sở"
@@ -4718,8 +4718,8 @@ msgid "Diameter:"
 msgstr "Đường kính:"
 
 #, c-format
-msgid "Didn't understand format for fdselect %d\n"
-msgstr "Không hiểu được định dạng đối với fdselect %d\n"
+msgid "Didn't understand format for fdselect %d"
+msgstr "Không hiểu được định dạng đối với fdselect %d"
 
 msgid "Differ"
 msgstr "Khác biệt"
@@ -4735,8 +4735,8 @@ msgid "Different number of contours in glyph “%s”\n"
 msgstr "Hình tượng « %s » chứa số các đường viền khác\n"
 
 #, c-format
-msgid "Different settings on whether to stroke in layer %d of %s\n"
-msgstr "Có thiết lập khác nhau về có nên vẽ nét trong lớp %d của %s\n"
+msgid "Different settings on whether to stroke in layer %d of %s"
+msgstr "Có thiết lập khác nhau về có nên vẽ nét trong lớp %d của %s"
 
 msgid "Dingbats"
 msgstr "Ký tự trang trí"
@@ -5004,8 +5004,8 @@ msgid "Duplicate data"
 msgstr "Dữ liệu trùng"
 
 #, c-format
-msgid "Duplicate definition of subroutine %d\n"
-msgstr "Gặp lời xác định trùng của hàm phụ %d\n"
+msgid "Duplicate definition of subroutine %d"
+msgstr "Gặp lời xác định trùng của hàm phụ %d"
 
 msgid "Duplicate name"
 msgstr "Tên trùng"
@@ -5014,8 +5014,8 @@ msgid "Duplicate pixelsize"
 msgstr "Kích cỡ điểm ảnh trùng"
 
 #, c-format
-msgid "Duplicate repeat row count in char %d of pk file\n"
-msgstr "Gặp số đếm hàng lặp lại trùng trong ký tự %d của tập tin pk\n"
+msgid "Duplicate repeat row count in char %d of pk file"
+msgstr "Gặp số đếm hàng lặp lại trùng trong ký tự %d của tập tin pk"
 
 msgid "Dutch"
 msgstr "Tiếng Hoà Lan"
@@ -5227,8 +5227,8 @@ msgid "Empty"
 msgstr "Rỗng"
 
 #, c-format
-msgid "Empty composite %d\n"
-msgstr "Đồ ghép rỗng %d\n"
+msgid "Empty composite %d"
+msgstr "Đồ ghép rỗng %d"
 
 #, c-format
 msgid "Empty position on line %d of %s"
@@ -5258,7 +5258,7 @@ msgstr ""
 "có định dạng không được hỗ trợ %d.\n"
 
 #, c-format
-msgid "Encoding subtable for platform=%d, specific=%d has a 0 length subtable.\n"
+msgid "Encoding subtable for platform=%d, specific=%d has a 0 length subtable."
 msgstr ""
 "Bảng phụ bảng mã đối với :\n"
 " • nền tảng=%d\n"
@@ -5266,7 +5266,7 @@ msgstr ""
 "có bảng phụ có chiều dài số không.\n"
 
 #, c-format
-msgid "Encoding subtable for platform=%d, specific=%d has an unsupported format %d.\n"
+msgid "Encoding subtable for platform=%d, specific=%d has an unsupported format %d."
 msgstr ""
 "Bảng phụ bảng mã đối với :\n"
 " • nền tảng=%d\n"
@@ -5888,25 +5888,25 @@ msgid "Failed to open file %s for output"
 msgstr "Lỗi mở tập tin %s để xuất"
 
 #, c-format
-msgid "Failed to open glyph to name map file for writing: %s\n"
-msgstr "Lỗi mở hình tượng để đặt tên tập tin sơ đồ để ghi : %s\n"
+msgid "Failed to open glyph to name map file for writing: %s"
+msgstr "Lỗi mở hình tượng để đặt tên tập tin sơ đồ để ghi : %s"
 
 msgid "Failed to open temporary output file"
 msgstr "Lỗi mở tập tin xuất tạm thời"
 
 #, c-format
-msgid "Failed to parse color %s\n"
-msgstr "Lỗi phân tích màu %s\n"
+msgid "Failed to parse color %s"
+msgstr "Lỗi phân tích màu %s"
 
-msgid "Failed to parse the StartData command properly\n"
-msgstr "Lỗi phân tích câu lệnh StartData (đầu dữ liệu)\n"
+msgid "Failed to parse the StartData command properly"
+msgstr "Lỗi phân tích câu lệnh StartData (đầu dữ liệu)"
 
-msgid "Failed to parse the StartData command properly, bad count\n"
-msgstr "Lỗi phân tích câu lệnh StartData (đầu dữ liệu), số đếm sai\n"
+msgid "Failed to parse the StartData command properly, bad count"
+msgstr "Lỗi phân tích câu lệnh StartData (đầu dữ liệu), số đếm sai"
 
 #, c-format
-msgid "Failed to write %s\n"
-msgstr "Lỗi ghi %s\n"
+msgid "Failed to write %s"
+msgstr "Lỗi ghi %s"
 
 msgid "Failure"
 msgstr "Không thành công"
@@ -6089,8 +6089,8 @@ msgstr "Xoè ra"
 msgid "Flat"
 msgstr "Phẳng"
 
-msgid "Flate decompression failed.\n"
-msgstr "Lỗi giải nén Flate.\n"
+msgid "Flate decompression failed."
+msgstr "Lỗi giải nén Flate."
 
 msgid "Flattened Accents over Capitals"
 msgstr "Dấu phụ bị trải phẳng trên chữ hoa"
@@ -6224,8 +6224,8 @@ msgstr ""
 "Nó cũng thử dùng cùng một khoảng cách cho các bảng\n"
 "trong các phông khác nhau mà trùng nhau theo từng bit."
 
-msgid "FontForge does not support Chameleon fonts\n"
-msgstr "Trình FontForge không hỗ trợ phông Chameleon\n"
+msgid "FontForge does not support Chameleon fonts"
+msgstr "Trình FontForge không hỗ trợ phông Chameleon"
 
 #, c-format
 msgid "FontForge does not support anonymous tables on line %d of %s"
@@ -6234,19 +6234,19 @@ msgstr "Trình FontForge không hỗ trợ bảng vô danh trên dòng %d của 
 msgid "FontForge does not support dictionary based imagemask operators.\n"
 msgstr "Trình FontForge không hỗ trợ toán tử lọc ảnh dựa vào từ điển.\n"
 
-msgid "FontForge does not support synthetic fonts\n"
-msgstr "Trình FontForge không hỗ trợ phông tổng hợp\n"
+msgid "FontForge does not support synthetic fonts"
+msgstr "Trình FontForge không hỗ trợ phông tổng hợp"
 
 #, c-format
-msgid "FontForge does not support this bit depth %d (must be 1,2,4,8,16,32)\n"
-msgstr "Trình FontForge không hỗ trợ độ sâu bit %d (phải là 1,2,4,8,16,32)\n"
+msgid "FontForge does not support this bit depth %d (must be 1,2,4,8,16,32)"
+msgstr "Trình FontForge không hỗ trợ độ sâu bit %d (phải là 1,2,4,8,16,32)"
 
-msgid "FontForge does not support type2 multiple master fonts\n"
-msgstr "Trình FontForge không hỗ trợ phông đa chủ kiểu 2\n"
+msgid "FontForge does not support type2 multiple master fonts"
+msgstr "Trình FontForge không hỗ trợ phông đa chủ kiểu 2"
 
 #. GT: DICT is a magic term inside CFF fonts, as is INDEX, and I guess CFF and type2
-msgid "FontForge does not support type2 programs embedded in CFF DICT INDICES.\n"
-msgstr "Trình FontForge không hỗ trợ chương trình kiểu 2 nhúng trong các CHỈ MỤC DICT CFF.\n"
+msgid "FontForge does not support type2 programs embedded in CFF DICT INDICES."
+msgstr "Trình FontForge không hỗ trợ chương trình kiểu 2 nhúng trong các CHỈ MỤC DICT CFF."
 
 msgid ""
 "FontForge does not update this window when a change is made to the font.\n"
@@ -6518,8 +6518,8 @@ msgid "GGadget|ScaleFactor|100"
 msgstr "100"
 
 #, c-format
-msgid "GID out of range (%d) in format 14 'cmap' subtable\n"
-msgstr "GID ở ngoại phạm vi (%d) trong bảng phụ 'cmap' định dạng 14\n"
+msgid "GID out of range (%d) in format 14 'cmap' subtable"
+msgstr "GID ở ngoại phạm vi (%d) trong bảng phụ 'cmap' định dạng 14"
 
 msgid "Ga"
 msgstr "Tiếng Ga"
@@ -6709,8 +6709,8 @@ msgid "Glyph %1$.50s with a %2$s from lookup subtable %3$.50s"
 msgstr "Hình tượng %1$.50s với một %2$s từ bảng phụ tra tìm %3$.50s"
 
 #, c-format
-msgid "Glyph %d attempts to reference glyph %d which is outside the font\n"
-msgstr "Hình tượng %d thử tham chiếu đến hình tượng %d mà nằm bên ngoài phông\n"
+msgid "Glyph %d attempts to reference glyph %d which is outside the font"
+msgstr "Hình tượng %d thử tham chiếu đến hình tượng %d mà nằm bên ngoài phông"
 
 #, c-format
 msgid ""
@@ -6799,8 +6799,8 @@ msgid "Glyph _Metadata"
 msgstr "_Siêu dữ liệu hình tượng"
 
 #, c-format
-msgid "Glyph bounding box data exceeds font bounding box data for GID %d\n"
-msgstr "Dữ liệu về hộp biên giới hình tượng vượt quá dữ liệu về hộp biên giới phông chữ cho GID %d\n"
+msgid "Glyph bounding box data exceeds font bounding box data for GID %d"
+msgstr "Dữ liệu về hộp biên giới hình tượng vượt quá dữ liệu về hộp biên giới phông chữ cho GID %d"
 
 msgid "Glyph composed of:"
 msgstr "Hình tượng chứa :"
@@ -7275,8 +7275,8 @@ msgid "Hint _Width Near¹"
 msgstr "Bề _rộng gợi ý gần¹"
 
 #, c-format
-msgid "Hint mask (or counter mask) with too many hints in %s\n"
-msgstr "Mặt nạ mẹo (hay phản mặt nạ) có quá nhiều mẹo trong %s\n"
+msgid "Hint mask (or counter mask) with too many hints in %s"
+msgstr "Mặt nạ mẹo (hay phản mặt nạ) có quá nhiều mẹo trong %s"
 
 #, c-format
 msgid "Hint masks differ in glyph “%s” at (%g,%g)\n"
@@ -7319,41 +7319,41 @@ msgstr "Hình lịch sử"
 msgid "Hit Watch Point"
 msgstr "Đánh điểm theo dõi"
 
-msgid "Hmm, more glyph variation data specified than there are glyphs in font.\n"
-msgstr "Có xác định dữ liệu biến thể hình tượng nhiều hơn số hình tượng trong phông.\n"
+msgid "Hmm, more glyph variation data specified than there are glyphs in font."
+msgstr "Có xác định dữ liệu biến thể hình tượng nhiều hơn số hình tượng trong phông."
 
-msgid "Hmm, no global tuples specified in the 'gvar' table.\n"
-msgstr "Trong bảng 'gvar' chưa xác định đối tượng nhiều thành phần toàn cục.\n"
+msgid "Hmm, no global tuples specified in the 'gvar' table."
+msgstr "Trong bảng 'gvar' chưa xác định đối tượng nhiều thành phần toàn cục."
 
-msgid "Hmm, the 'avar' table is too long.\n"
-msgstr "Bảng 'avar; quá dài.\n"
+msgid "Hmm, the 'avar' table is too long."
+msgstr "Bảng 'avar; quá dài."
 
-msgid "Hmm, the axis count in the 'avar' table is different from that in the 'fvar' table.\n"
-msgstr "Trong bảng 'avar' có số đếm trục khác với số trong bảng 'fvar'.\n"
+msgid "Hmm, the axis count in the 'avar' table is different from that in the 'fvar' table."
+msgstr "Trong bảng 'avar' có số đếm trục khác với số trong bảng 'fvar'."
 
-msgid "Hmm, the axis count in the 'gvar' table is different from that in the 'fvar' table.\n"
-msgstr "Trong bảng 'gvar' có số đếm trục khác với số trong bảng 'fvar'.\n"
+msgid "Hmm, the axis count in the 'gvar' table is different from that in the 'fvar' table."
+msgstr "Trong bảng 'gvar' có số đếm trục khác với số trong bảng 'fvar'."
 
-msgid "Hmm, this 'fvar' table has an unexpected size for an axis, I shan't parse it\n"
-msgstr "Bảng 'fvar' này có kích cỡ bất thường đối với trục nên không phân tích nó\n"
+msgid "Hmm, this 'fvar' table has an unexpected size for an axis, I shan't parse it"
+msgstr "Bảng 'fvar' này có kích cỡ bất thường đối với trục nên không phân tích nó"
 
-msgid "Hmm, this 'fvar' table has an unexpected size for an instance, I shan't parse it\n"
-msgstr "Bảng 'fvar' này có kích cỡ bất thường đối với thể hiện nên không phân tích nó\n"
+msgid "Hmm, this 'fvar' table has an unexpected size for an instance, I shan't parse it"
+msgstr "Bảng 'fvar' này có kích cỡ bất thường đối với thể hiện nên không phân tích nó"
 
-msgid "Hmm, this 'fvar' table has more axes than FontForge can handle.\n"
-msgstr "Bảng 'fvar' này có số trục hơn số trình FontForge có khả năng xử lý.\n"
+msgid "Hmm, this 'fvar' table has more axes than FontForge can handle."
+msgstr "Bảng 'fvar' này có số trục hơn số trình FontForge có khả năng xử lý."
 
 msgid "Hmm, this 'fvar' table has more count/size pairs than I expect\n"
 msgstr "Bảng 'fvar' này có số cặp đếm/kích cỡ lớn hơn số mong đợi\n"
 
-msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense.\n"
-msgstr "Bảng 'fvar' này không có trục: trường hợp vô ích.\n"
+msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense."
+msgstr "Bảng 'fvar' này không có trục: trường hợp vô ích."
 
 msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it\n"
 msgstr "Bảng 'fvar' này có quá ít cặp đếm/kích cỡ nên không phân tích nó\n"
 
-msgid "Hmm, this 'fvar' table is too short\n"
-msgstr "Bảng 'fvar' này quá ngắn\n"
+msgid "Hmm, this 'fvar' table is too short"
+msgstr "Bảng 'fvar' này quá ngắn"
 
 #, c-format
 msgid ""
@@ -7811,16 +7811,16 @@ msgid "In an italic font the horizontal change per unit vertical change"
 msgstr "Trong phông in nghiêng, tỷ lệ thay đổi theo chiều ngang cho mỗi đơn vị thay đổi theo chiều dọc"
 
 #, c-format
-msgid "In character %s, could not find reference to %s\n"
-msgstr "Trong ký tự %s, không tìm thấy tham chiếu đến %s\n"
+msgid "In character %s, could not find reference to %s"
+msgstr "Trong ký tự %s, không tìm thấy tham chiếu đến %s"
 
 #, c-format
-msgid "In character %s, there are too few points on a path in the base\n"
-msgstr "Trong ký tự %s, có quá ít điểm trên đường dẫn trong cơ sở\n"
+msgid "In character %s, there are too few points on a path in the base"
+msgstr "Trong ký tự %s, có quá ít điểm trên đường dẫn trong cơ sở"
 
 #, c-format
-msgid "In character %s, there are too many points on a path in the base\n"
-msgstr "Trong ký tự %s, có quá nhiều điểm trên đường dẫn trong cơ sở\n"
+msgid "In character %s, there are too many points on a path in the base"
+msgstr "Trong ký tự %s, có quá nhiều điểm trên đường dẫn trong cơ sở"
 
 msgid ""
 "In every lookup that uses a glyph, check that at\n"
@@ -7906,12 +7906,12 @@ msgstr "Tên tập tin bao gồm quá dài trên dòng %d của %s"
 msgid "Includes nested too deeply on line %d of %s"
 msgstr "Các lời bao gồm lồng nhau quá sâu trên dòng %d của %s"
 
-msgid "Incorrect number of deltas in cvt\n"
-msgstr "Trong 'cvt' có số delta (δ) không đúng\n"
+msgid "Incorrect number of deltas in cvt"
+msgstr "Trong 'cvt' có số delta (δ) không đúng"
 
 #, c-format
-msgid "Incorrect number of deltas in glyph %d (%s)\n"
-msgstr "Có số delta (δ) không đúng trong hình tượng %d (%s)\n"
+msgid "Incorrect number of deltas in glyph %d (%s)"
+msgstr "Có số delta (δ) không đúng trong hình tượng %d (%s)"
 
 msgid "Incorrect number of instances weights, or illegal numbers"
 msgstr "Số độ đậm thể hiện không đúng, hay con số bị cấm"
@@ -7938,8 +7938,8 @@ msgid "Index in use"
 msgstr "Chỉ số đang dùng"
 
 #, c-format
-msgid "Index out of range in %s\n"
-msgstr "Chỉ số ở ngoại phạm vi trong %s\n"
+msgid "Index out of range in %s"
+msgstr "Chỉ số ở ngoại phạm vi trong %s"
 
 #, c-format
 msgid "Index too big (must be <%d) \"%s"
@@ -8151,11 +8151,11 @@ msgid "Invalid Encoding"
 msgstr "Bảng mã không hợp lệ"
 
 #, c-format
-msgid "Invalid FD (%d) assigned to CID %d.\n"
-msgstr "FD không hợp lệ (%d) được gán cho CID %d.\n"
+msgid "Invalid FD (%d) assigned to CID %d."
+msgstr "FD không hợp lệ (%d) được gán cho CID %d."
 
-msgid "Invalid character outside of string in sfnts array\n"
-msgstr "Gặp ký tự không hợp lệ bên ngoài chuỗi trong mảng sfnts\n"
+msgid "Invalid character outside of string in sfnts array"
+msgstr "Gặp ký tự không hợp lệ bên ngoài chuỗi trong mảng sfnts"
 
 #, c-format
 msgid "Invalid cursive position on line %d of %s"
@@ -8165,18 +8165,18 @@ msgstr "Vị trí chữ thảo không hợp lệ trên dòng %d của %s"
 msgid "Invalid glyph name range in glyph class on line %d of %s"
 msgstr "Phạm vi tênhình tượng không hợp lệ trong hạng hình tượng trên dòng %d của %s"
 
-msgid "Invalid hex digit in sfnts array\n"
-msgstr "Gặp chữ số thập lục không hợp lệ trong mảng sfnts\n"
+msgid "Invalid hex digit in sfnts array"
+msgstr "Gặp chữ số thập lục không hợp lệ trong mảng sfnts"
 
 msgid "Invalid language"
 msgstr "Ngôn ngữ không hợp lệ"
 
-msgid "Invalid ligature offset\n"
-msgstr "Bù chữ ghép không hợp lệ\n"
+msgid "Invalid ligature offset"
+msgstr "Bù chữ ghép không hợp lệ"
 
 #, c-format
-msgid "Invalid lookup table format. %d\n"
-msgstr "Định dạng bảng tra tìm không hợp lệ. %d\n"
+msgid "Invalid lookup table format. %d"
+msgstr "Định dạng bảng tra tìm không hợp lệ. %d"
 
 #, c-format
 msgid "Invalid or unsupported format (%d) for subtable of 'kern' table"
@@ -8188,17 +8188,17 @@ msgstr ""
 msgid "Invalid platform for string on line %d of %s"
 msgstr "Nền tảng không hợp lệ cho chuỗi trên dòng %d của %s"
 
-msgid "Invalid point match. Point would be after this reference.\n"
-msgstr "Sai khớp điểm: điểm nên nằm sau tham chiếu này.\n"
+msgid "Invalid point match. Point would be after this reference."
+msgstr "Sai khớp điểm: điểm nên nằm sau tham chiếu này."
 
 msgid "Invalid point size"
 msgstr "Kích cỡ điểm sai"
 
-msgid "Invalid ttf hmtx table (or hhea), numOfLongMetrics is 0\n"
-msgstr "Bảng 'hmtx' (hay 'hhea') TTF không hợp lệ : numOfLongMetrics là 0\n"
+msgid "Invalid ttf hmtx table (or hhea), numOfLongMetrics is 0"
+msgstr "Bảng 'hmtx' (hay 'hhea') TTF không hợp lệ : numOfLongMetrics là 0"
 
-msgid "Invalid ttf vmtx table (or vhea), numOfLongVerMetrics is 0\n"
-msgstr "Bảng 'vmtx' (hay 'vhea') TTF không hợp lệ : numOfLongVerMetrics là 0\n"
+msgid "Invalid ttf vmtx table (or vhea), numOfLongVerMetrics is 0"
+msgstr "Bảng 'vmtx' (hay 'vhea') TTF không hợp lệ : numOfLongVerMetrics là 0"
 
 msgid "Irish"
 msgstr "Tiếng Ái Nhĩ Lan"
@@ -8530,8 +8530,8 @@ msgstr "Giá trị định chỗ phải là số chẵn"
 
 #. GT: Here "def" is a PostScript keyword, (meaning define).
 #. GT: This "def" should not be translated as it is part of the PostScript language.
-msgid "Key for a def must be a string or name literal\n"
-msgstr "Khoá cho « def » (lời xác định) phải là một chuỗi hay một tên chữ nghĩa\n"
+msgid "Key for a def must be a string or name literal"
+msgstr "Khoá cho « def » (lời xác định) phải là một chuỗi hay một tên chữ nghĩa"
 
 msgid "Khakass"
 msgstr "Tiếng Kha-kax"
@@ -9180,8 +9180,8 @@ msgid "Lookup subtable %s (matched with %s)\n"
 msgstr "Tra tìm bảng phụ %s (tương ứng với %s)\n"
 
 #, c-format
-msgid "Lookup subtable %s contains a glyph %s whose kerning information takes up more than 64k bytes\n"
-msgstr "Bảng phụ tra tìm %s chứa một hình tượng %s có thông tin định chỗ chiếm hơn 64k byte.\n"
+msgid "Lookup subtable %s contains a glyph %s whose kerning information takes up more than 64k bytes"
+msgstr "Bảng phụ tra tìm %s chứa một hình tượng %s có thông tin định chỗ chiếm hơn 64k byte."
 
 #, c-format
 msgid ""
@@ -10091,8 +10091,8 @@ msgstr "Kỹ thuật linh tinh"
 msgid "Mismatch lookup types inside a parsed lookup"
 msgstr "Sai khớp kiểu sự tra tìm bên trong sự tra tìm đã phân tích"
 
-msgid "Mismatched local and shared tuple flags.\n"
-msgstr "Sai khớp cờ nhiều thành phần kiểu cục bộ và dùng chung.\n"
+msgid "Mismatched local and shared tuple flags."
+msgstr "Sai khớp cờ nhiều thành phần kiểu cục bộ và dùng chung."
 
 msgid "Missing \"OS/2\" table"
 msgstr "Thiếu bảng « OS/2 »"
@@ -10114,8 +10114,8 @@ msgid "Missing Glyph..."
 msgstr "Thiếu hình tượng..."
 
 #, c-format
-msgid "Missing POST resource %u\n"
-msgstr "Thiếu tài nguyên POST %u\n"
+msgid "Missing POST resource %u"
+msgstr "Thiếu tài nguyên POST %u"
 
 msgid "Missing Points at Extrema"
 msgstr "Thiếu điểm tại thái cực"
@@ -10266,8 +10266,8 @@ msgid "More pushes specified than needed"
 msgstr "Xác định nhiều sự đẩy hơn số cần thiết"
 
 #, c-format
-msgid "More than 256 entries in subfont %s\n"
-msgstr "Trong phông con %s có hơn 256 mục nhập.\n"
+msgid "More than 256 entries in subfont %s"
+msgstr "Trong phông con %s có hơn 256 mục nhập."
 
 msgid "Moroccan"
 msgstr "Tiếng Ma-rốc"
@@ -10467,20 +10467,20 @@ msgid "Multiple copies of the selection should be tiled onto the path"
 msgstr "Nhiều bản sao của vùng chọn nên được lát vào đường dẫn"
 
 #, c-format
-msgid "Multiple glyphs map to the same unicode encoding U+%04X, only one will be used\n"
+msgid "Multiple glyphs map to the same unicode encoding U+%04X, only one will be used"
 msgstr ""
 "Có nhiều hình tượng ánh xạ tới cùng một mã Unicode U+%04X\n"
 "nên chỉ dùng một cái\n"
 
-msgid "Multiple master font with more than 16 instances\n"
-msgstr "Gặp phông đa chủ có hơn 16 thể hiện\n"
+msgid "Multiple master font with more than 16 instances"
+msgstr "Gặp phông đa chủ có hơn 16 thể hiện"
 
-msgid "Multiple master font with more than 4 axes\n"
-msgstr "Gặp phông đa chủ có hơn 4 trục\n"
+msgid "Multiple master font with more than 4 axes"
+msgstr "Gặp phông đa chủ có hơn 4 trục"
 
 #, c-format
-msgid "Multiple master subroutine called with the wrong number of arguments in %s.\n"
-msgstr "Hàm phụ đa chủ được gọi với số đối số không đúng trong %s.\n"
+msgid "Multiple master subroutine called with the wrong number of arguments in %s."
+msgstr "Hàm phụ đa chủ được gọi với số đối số không đúng trong %s."
 
 msgid "Multiple names for language"
 msgstr "Ngôn ngữ có nhiều tên"
@@ -10996,12 +10996,12 @@ msgstr "_Từ chối tất cả"
 msgid "No applicable lookup subtables"
 msgstr "Không có bảng phụ tra tìm thích hợp"
 
-msgid "No argument to operator\n"
-msgstr "Không có đối số tới toán tử\n"
+msgid "No argument to operator"
+msgstr "Không có đối số tới toán tử"
 
 #, c-format
-msgid "No argument to operator %d in private dict\n"
-msgstr "Không có đối số tới toán tử %d trong từ điển riêng\n"
+msgid "No argument to operator %d in private dict"
+msgstr "Không có đối số tới toán tử %d trong từ điển riêng"
 
 msgid "No bitmap strikes"
 msgstr "Không có gạch mảng ảnh"
@@ -11030,8 +11030,8 @@ msgid "No flags specified in lookupflags on line %d of %s"
 msgstr "Chưa ghi rõ cờ trong lookupflags (các cờ tra tìm) trên dòng %d của %s"
 
 #, c-format
-msgid "No glyph with unicode U+%05x in font\n"
-msgstr "Phông không chứa hình tượng có mã Unicode U+%05x\n"
+msgid "No glyph with unicode U+%05x in font"
+msgstr "Phông không chứa hình tượng có mã Unicode U+%05x"
 
 msgid "No glyphs matched"
 msgstr "Không tìm thấy"
@@ -11045,8 +11045,8 @@ msgid "No kerning pairs found in %.200s"
 msgstr "Không tìm thấy cặp định chỗ trong %.200s"
 
 #, c-format
-msgid "No kerning table for %s\n"
-msgstr "Không có bảng định chỗ cho %s\n"
+msgid "No kerning table for %s"
+msgstr "Không có bảng định chỗ cho %s"
 
 msgid "No languages"
 msgstr "Không có ngôn ngữ"
@@ -11064,14 +11064,14 @@ msgstr "Chưa chọn sự tra tìm"
 msgid "No lookups to copy"
 msgstr "Không có sự tra tìm cần sao chép"
 
-msgid "No mark in ] (close array)\n"
-msgstr "Không có dấu trong ] (đóng mảng)\n"
+msgid "No mark in ] (close array)"
+msgstr "Không có dấu trong ] (đóng mảng)"
 
-msgid "No mark in cleartomark\n"
-msgstr "Không có dấu trong cleartomark (gột đến dấu)\n"
+msgid "No mark in cleartomark"
+msgstr "Không có dấu trong cleartomark (gột đến dấu)"
 
-msgid "No mark in counttomark\n"
-msgstr "Không có dấu trong counttomark (đếm đến dấu)\n"
+msgid "No mark in counttomark"
+msgstr "Không có dấu trong counttomark (đếm đến dấu)"
 
 #, c-format
 msgid "No marked glyphs allowed in replacement on line %d of %s"
@@ -11085,24 +11085,24 @@ msgid "No paths with within a glyph should intersect"
 msgstr "Trong hình tượng, không nên có các đường dẫn cắt chéo với nhau"
 
 #, c-format
-msgid "No previous point on path in curveto from flex 0 in %s\n"
-msgstr "Không có điểm nằm trước trên đường dẫn trong 'curveto' (cong tới) từ flex 0 trong %s\n"
+msgid "No previous point on path in curveto from flex 0 in %s"
+msgstr "Không có điểm nằm trước trên đường dẫn trong 'curveto' (cong tới) từ flex 0 trong %s"
 
 #, c-format
-msgid "No previous point on path in curveto in %s\n"
-msgstr "Không có điểm nằm trước trên đường dẫn trong hàm curveto (cong tới) trong %s\n"
+msgid "No previous point on path in curveto in %s"
+msgstr "Không có điểm nằm trước trên đường dẫn trong hàm curveto (cong tới) trong %s"
 
 #, c-format
-msgid "No previous point on path in flex operator in %s\n"
-msgstr "Không có điểm nằm trước trên đường dẫn trong toán tử flex trong %s\n"
+msgid "No previous point on path in flex operator in %s"
+msgstr "Không có điểm nằm trước trên đường dẫn trong toán tử flex trong %s"
 
 #, c-format
-msgid "No previous point on path in lineto from flex 0 in %s\n"
-msgstr "Không có điểm nằm trước trên đường dẫn trong 'lineto' (đường tới) từ flex 0 trong %s\n"
+msgid "No previous point on path in lineto from flex 0 in %s"
+msgstr "Không có điểm nằm trước trên đường dẫn trong 'lineto' (đường tới) từ flex 0 trong %s"
 
 #, c-format
-msgid "No previous point on path in lineto in %s\n"
-msgstr "Không có điểm nằm trước trên đường dẫn trong hàm lineto (đường tới) trong %s\n"
+msgid "No previous point on path in lineto in %s"
+msgstr "Không có điểm nằm trước trên đường dẫn trong hàm lineto (đường tới) trong %s"
 
 msgid "No problems detected"
 msgstr "Không có lỗi được phát hiện"
@@ -11117,8 +11117,8 @@ msgstr "Không tìm thấy vấn đề"
 msgid "No scripts"
 msgstr "Không có chữ viết"
 
-msgid "No selection\n"
-msgstr "Chưa chọn gì\n"
+msgid "No selection"
+msgstr "Chưa chọn gì"
 
 msgid "No significant differences found"
 msgstr "Không tìm thấy sự khác nhau đáng kể"
@@ -11360,8 +11360,8 @@ msgstr "Chưa chọn gì"
 msgid "Nothing found"
 msgstr "Không tìm thấy"
 
-msgid "Nothing on stack to print\n"
-msgstr "Không có gì trên đống cần in\n"
+msgid "Nothing on stack to print"
+msgstr "Không có gì trên đống cần in"
 
 msgid "Nothing to match."
 msgstr "Không có gì cần khớp."
@@ -11855,8 +11855,8 @@ msgstr "Sai thứ tự"
 msgid "Out of Range"
 msgstr "Ở ngoại phạm vi"
 
-msgid "Out of memory\n"
-msgstr "Tràn bộ nhớ\n"
+msgid "Out of memory"
+msgstr "Tràn bộ nhớ"
 
 msgid "Outer Shadow"
 msgstr "Bóng bên ngoài"
@@ -12470,8 +12470,8 @@ msgid "Polytonic Greek"
 msgstr "Tiếng Hy Lạp đa giọng"
 
 #, c-format
-msgid "Pop stack underflow on pop in %s\n"
-msgstr "Trán ngược đống trên hàm pop trong %s\n"
+msgid "Pop stack underflow on pop in %s"
+msgstr "Trán ngược đống trên hàm pop trong %s"
 
 msgid "Popup"
 msgstr "Tự mở"
@@ -12890,11 +12890,11 @@ msgstr "Thô"
 msgid "Re_move"
 msgstr "_Bỏ"
 
-msgid "Reached end of file when reading composite glyph\n"
-msgstr "Gặp kết thúc tập tin trong khi đọc hình tượng ghép\n"
+msgid "Reached end of file when reading composite glyph"
+msgstr "Gặp kết thúc tập tin trong khi đọc hình tượng ghép"
 
-msgid "Reached end of file when reading simple glyph\n"
-msgstr "Gặp kết thúc tập tin trong khi đọc hình tượng đợn giản\n"
+msgid "Reached end of file when reading simple glyph"
+msgstr "Gặp kết thúc tập tin trong khi đọc hình tượng đợn giản"
 
 msgid ""
 "Read Control Value Table entry\n"
@@ -12966,8 +12966,8 @@ msgid "Reference Names"
 msgstr "Tên tham chiếu"
 
 #, c-format
-msgid "Reference encoding out of bounds in %s\n"
-msgstr "Bảng mã tham chiếu nằm ở ngoại phạm vi trong %s\n"
+msgid "Reference encoding out of bounds in %s"
+msgstr "Bảng mã tham chiếu nằm ở ngoại phạm vi trong %s"
 
 msgid "Reference point match out of date"
 msgstr "Quá cũ khớp tham chiếu"
@@ -12989,12 +12989,12 @@ msgid "Reference to character %1$.20s at %2$d"
 msgstr "Tham chiếu đến ký tự %1$.20s tại %2$d"
 
 #, c-format
-msgid "Reference to glyph %d out of bounds when parsing 'glyf' table.\n"
-msgstr "Tham chiếu đến hình tượng %d ở ngoại phạm vi khi phân tích bảng 'glyf'\n"
+msgid "Reference to glyph %d out of bounds when parsing 'glyf' table."
+msgstr "Tham chiếu đến hình tượng %d ở ngoại phạm vi khi phân tích bảng 'glyf'"
 
 #, c-format
-msgid "Reference to transient memory out of bounds in put in %s\n"
-msgstr "Tham chiếu đến bộ nhớ tạm nằm ở ngoài phạm vi trong hàm put (để) trong %s\n"
+msgid "Reference to transient memory out of bounds in put in %s"
+msgstr "Tham chiếu đến bộ nhớ tạm nằm ở ngoài phạm vi trong hàm put (để) trong %s"
 
 msgid "References are nested more deeply in this glyph than the maximum allowed"
 msgstr "Trong hình tượng này, các tham chiếu lồng nhau sâu hơn giá trị tối đa"
@@ -15375,88 +15375,88 @@ msgid "Stack (TrueType)"
 msgstr "Đống (TrueType)"
 
 #, c-format
-msgid "Stack got too big in %s\n"
-msgstr "Đống đã trở thành quá lớn trong %s\n"
+msgid "Stack got too big in %s"
+msgstr "Đống đã trở thành quá lớn trong %s"
 
 #, c-format
-msgid "Stack underflow on binary operator in %s\n"
-msgstr "Trán ngược đống trên toán tử nhị phân trong %s\n"
+msgid "Stack underflow on binary operator in %s"
+msgstr "Trán ngược đống trên toán tử nhị phân trong %s"
 
 #, c-format
-msgid "Stack underflow on callothersubr in %s\n"
-msgstr "Trán ngược đống trên 'callothersubr' (gọi hàm phụ khác) trong %s\n"
+msgid "Stack underflow on callothersubr in %s"
+msgstr "Trán ngược đống trên 'callothersubr' (gọi hàm phụ khác) trong %s"
 
 #, c-format
-msgid "Stack underflow on callsubr in %s\n"
-msgstr "Trán ngược đống trên hàm callsubr (gọi hàm phụ) trong %s\n"
+msgid "Stack underflow on callsubr in %s"
+msgstr "Trán ngược đống trên hàm callsubr (gọi hàm phụ) trong %s"
 
 #, c-format
-msgid "Stack underflow on hhcurveto in %s\n"
-msgstr "Trán ngược đống trên hàm hhcurveto trong %s\n"
+msgid "Stack underflow on hhcurveto in %s"
+msgstr "Trán ngược đống trên hàm hhcurveto trong %s"
 
 #, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s\n"
 msgstr "Trán ngược đống trên hlineto/hmoveto (đường/chuyển ngang tới) trong %s\n"
 
 #, c-format
-msgid "Stack underflow on hsbw in %s\n"
-msgstr "Trán ngược đống trên hsbw trong %s\n"
+msgid "Stack underflow on hsbw in %s"
+msgstr "Trán ngược đống trên hsbw trong %s"
 
 #, c-format
-msgid "Stack underflow on hstem in %s\n"
-msgstr "Trán ngược đống trên hstem (cuống ngang) trong %s\n"
+msgid "Stack underflow on hstem in %s"
+msgstr "Trán ngược đống trên hstem (cuống ngang) trong %s"
 
 #, c-format
-msgid "Stack underflow on hstem3 in %s\n"
-msgstr "Tràn ngược đống trên hstem3 (cuống ngang) trong %s\n"
+msgid "Stack underflow on hstem3 in %s"
+msgstr "Tràn ngược đống trên hstem3 (cuống ngang) trong %s"
 
 #, c-format
-msgid "Stack underflow on hvcurveto in %s\n"
-msgstr "Trán ngược đống trên hàm hvcurveto trong %s\n"
+msgid "Stack underflow on hvcurveto in %s"
+msgstr "Trán ngược đống trên hàm hvcurveto trong %s"
 
 #, c-format
-msgid "Stack underflow on ifelse in %s\n"
-msgstr "Trán ngược đống trên 'ifelse' (nếu ... nếu không) trong %s\n"
+msgid "Stack underflow on ifelse in %s"
+msgstr "Trán ngược đống trên 'ifelse' (nếu ... nếu không) trong %s"
 
 #, c-format
 msgid "Stack underflow on rlineto/rmoveto in %s\n"
 msgstr "Trán ngược đống trên rlineto/rmoveto (đường/chuyển bên phải tới) trong %s\n"
 
 #, c-format
-msgid "Stack underflow on rrcurveto in %s\n"
-msgstr "Trán ngược đống trên hàm rrcurveto trong %s\n"
+msgid "Stack underflow on rrcurveto in %s"
+msgstr "Trán ngược đống trên hàm rrcurveto trong %s"
 
 #, c-format
-msgid "Stack underflow on sbw in %s\n"
-msgstr "Trán ngược đống trên 'sbw' trong %s\n"
+msgid "Stack underflow on sbw in %s"
+msgstr "Trán ngược đống trên 'sbw' trong %s"
 
 #, c-format
-msgid "Stack underflow on seac in %s\n"
-msgstr "Tràn ngược đống trên 'seac' trong %s\n"
+msgid "Stack underflow on seac in %s"
+msgstr "Tràn ngược đống trên 'seac' trong %s"
 
 #, c-format
-msgid "Stack underflow on setcurrentpoint in %s\n"
-msgstr "Trán ngược đống trên hàm setcurrentpoint (đặt điểm hiện thời) trong %s\n"
+msgid "Stack underflow on setcurrentpoint in %s"
+msgstr "Trán ngược đống trên hàm setcurrentpoint (đặt điểm hiện thời) trong %s"
 
 #, c-format
-msgid "Stack underflow on unary operator in %s\n"
-msgstr "Trán ngược đống trên toán tử chỉ có một tác tử trong %s\n"
+msgid "Stack underflow on unary operator in %s"
+msgstr "Trán ngược đống trên toán tử chỉ có một tác tử trong %s"
 
 #, c-format
-msgid "Stack underflow on vhcurveto in %s\n"
-msgstr "Trán ngược đống trên hàm vhcurveto trong %s\n"
+msgid "Stack underflow on vhcurveto in %s"
+msgstr "Trán ngược đống trên hàm vhcurveto trong %s"
 
 #, c-format
 msgid "Stack underflow on vlineto/vmoveto in %s\n"
 msgstr "Trán ngược đống trên vlineto/vmoveto (đường/chuyển dọc tới) trong %s\n"
 
 #, c-format
-msgid "Stack underflow on vstem in %s\n"
-msgstr "Trán ngược đống trên vstem (cuống dọc) trong %s\n"
+msgid "Stack underflow on vstem in %s"
+msgstr "Trán ngược đống trên vstem (cuống dọc) trong %s"
 
 #, c-format
-msgid "Stack underflow on vstem3 in %s\n"
-msgstr "Tràn ngược đống trên vstem3 (cuống dọc) trong %s\n"
+msgid "Stack underflow on vstem3 in %s"
+msgstr "Tràn ngược đống trên vstem3 (cuống dọc) trong %s"
 
 msgid "StackBottomDisplayStyleShiftDown:"
 msgstr "Dời xuống kiểu hiển thị cuối đống:"
@@ -15820,8 +15820,8 @@ msgid "SubSuperscriptGapMin:"
 msgstr "Tiểu khe chữ cao/thấp"
 
 #, c-format
-msgid "Subroutine number out of bounds in %s\n"
-msgstr "Số hàm phụ ở ngoại phạm vi trong %s\n"
+msgid "Subroutine number out of bounds in %s"
+msgstr "Số hàm phụ ở ngoại phạm vi trong %s"
 
 msgid "Subscript"
 msgstr "Chữ thấp"
@@ -16081,8 +16081,8 @@ msgstr "Bảng « %c%c%c%c » có một chiều dài sai, phải là 78, 86 hay 
 msgid "Table '%c%c%c%c' has a bad length, must be even."
 msgstr "Bảng « %c%c%c%c » có một chiều dài sai, phải là một con số dương."
 
-msgid "Table length should not be odd\n"
-msgstr "Không cho phép chiều dài bảng số lẻ\n"
+msgid "Table length should not be odd"
+msgstr "Không cho phép chiều dài bảng số lẻ"
 
 #, c-format
 msgid ""
@@ -16448,8 +16448,8 @@ msgid "The Y coordinate of the anchor point in this glyph"
 msgstr "Tọa độ Y của điểm neo trong hình tượng này."
 
 #, c-format
-msgid "The advance width of %s (%d) does not match the font's advanceWidthMax (%d) and this is a fixed pitch font\n"
-msgstr "Chiều rộng sớm của %s (%d) không tương ứng với chiều rộng sớm tối đa (advanceWidthMax) của phông chữ (%d), và đây là một phông cỡ cố định\n"
+msgid "The advance width of %s (%d) does not match the font's advanceWidthMax (%d) and this is a fixed pitch font"
+msgstr "Chiều rộng sớm của %s (%d) không tương ứng với chiều rộng sớm tối đa (advanceWidthMax) của phông chữ (%d), và đây là một phông cỡ cố định"
 
 msgid "The amount of space between words when using this font"
 msgstr "Khoảng cách giữa hai từ khi dùng phông này"
@@ -16709,8 +16709,8 @@ msgstr "Dòng %d có một thẻ tính năng (%s) nên chứa chỉ ký tự ASC
 msgid "The following error occurred on the selected glyphs: %.100s"
 msgstr "Gặp lỗi theo đây tại những hình tượng đã chọn: %.100s"
 
-msgid "The following table(s) in the font have been ignored by FontForge\n"
-msgstr "Những bảng theo đây trong phông chữ đã bị FontForge bỏ qua\n"
+msgid "The following table(s) in the font have been ignored by FontForge"
+msgstr "Những bảng theo đây trong phông chữ đã bị FontForge bỏ qua"
 
 #, c-format
 msgid "The font %.30s contains cubic splines. It must be converted to quadratic splines before it can be used in an apple distortable font"
@@ -17293,7 +17293,7 @@ msgstr ""
 " y(new) = tm[1,2]*x + tm[2,2]*y + tm[3,2]"
 
 #, c-format
-msgid "The truetype encoding specified by platform=%d specific=%d (which we map to %s) is not supported by your version of iconv(3).\n"
+msgid "The truetype encoding specified by platform=%d specific=%d (which we map to %s) is not supported by your version of iconv(3)."
 msgstr ""
 "Bảng mã TrueType được xác định bởi :\n"
 " • nền tảng=%d\n"
@@ -17622,8 +17622,8 @@ msgid "This blank outline glyph has an unexpected bitmap version"
 msgstr "Hình tượng nét ngoài trắng này có một phiên bản mảng ảnh bất thường"
 
 #, c-format
-msgid "This character (gid=%d) has a following part (%d). I'm not sure what that means, please send me (gww@silcom.com) a copy of this font so I can test with it.\n"
-msgstr "Ký tự này (gid=%d) có một phần đi theo (%d). Trường hợp này bất thường: vui lòng gửi cho nhà phát triển (George Williams: gww@silcom.com) một thư đính kèm một bản sao của phông này, để thử.\n"
+msgid "This character (gid=%d) has a following part (%d). I'm not sure what that means, please send me (gww@silcom.com) a copy of this font so I can test with it."
+msgstr "Ký tự này (gid=%d) có một phần đi theo (%d). Trường hợp này bất thường: vui lòng gửi cho nhà phát triển (George Williams: gww@silcom.com) một thư đính kèm một bản sao của phông này, để thử."
 
 msgid ""
 "This checks if the character almost, but not exactly,\n"
@@ -17689,8 +17689,8 @@ msgstr ""
 msgid "This file contains an unnamed encoding, which cannot be named in a script"
 msgstr "Tập tin này chứa một bảng mã vô danh nên không thể đặt tên nó trong văn lệnh."
 
-msgid "This file contains no SVG fonts.\n"
-msgstr "Tập tin này không chứa phông SVG.\n"
+msgid "This file contains no SVG fonts."
+msgstr "Tập tin này không chứa phông SVG."
 
 msgid "This font comes from an old format sfd file. Not all aspects of it can be reverted successfully."
 msgstr "Phông này thuộc về một tập tin sfd định dạng cũ nên không thể phục hồi thành công tất cả các hình thể của nó."
@@ -17785,11 +17785,11 @@ msgstr ""
 "Phông này chưa hiệu lực đơn vị đo theo chiều dọc.\n"
 "Hãy sử dụng « Phần tử > Thông tin phông » để hiệu lực."
 
-msgid "This font does not specify font-face\n"
-msgstr "Phông này không xác định mặt phông\n"
+msgid "This font does not specify font-face"
+msgstr "Phông này không xác định mặt phông"
 
-msgid "This font does not specify units-per-em\n"
-msgstr "Phông này không xác định đơn vị-trên-mỗi-Em\n"
+msgid "This font does not specify units-per-em"
+msgstr "Phông này không xác định đơn vị-trên-mỗi-Em"
 
 #, c-format
 msgid ""
@@ -18357,16 +18357,16 @@ msgid "Too Many Points"
 msgstr "Quá nhiều điểm"
 
 #, c-format
-msgid "Too few items on stack for blend in %s\n"
-msgstr "Trên đống có quá ít mục cho hàm pha trộn trong %s\n"
+msgid "Too few items on stack for blend in %s"
+msgstr "Trên đống có quá ít mục cho hàm pha trộn trong %s"
 
 #, c-format
-msgid "Too few items on stack for get in %s\n"
-msgstr "Trên đống có quá ít mục đối với hàm get (lấy) trong %s\n"
+msgid "Too few items on stack for get in %s"
+msgstr "Trên đống có quá ít mục đối với hàm get (lấy) trong %s"
 
 #, c-format
-msgid "Too few items on stack for put in %s\n"
-msgstr "Trên đống có quá ít mục đối với hàm put (để) trong %s\n"
+msgid "Too few items on stack for put in %s"
+msgstr "Trên đống có quá ít mục đối với hàm put (để) trong %s"
 
 msgid "Too many Unique Font IDs"
 msgstr "Quá nhiều Mã số Phông Duy nhất"
@@ -18414,11 +18414,11 @@ msgid "Too many scripts %d"
 msgstr "Quá nhiều chữ viết %d"
 
 #, c-format
-msgid "Too many subroutine calls in %s\n"
-msgstr "Quá nhiều cuộc gọi hàm phụ trong %s\n"
+msgid "Too many subroutine calls in %s"
+msgstr "Quá nhiều cuộc gọi hàm phụ trong %s"
 
-msgid "Too many subroutines. We can deal with at most 14 (0-13)\n"
-msgstr "Quá nhiều hàm phụ. Có thể xử lý nhiều nhất 14 (phạm vi 0-13)\n"
+msgid "Too many subroutines. We can deal with at most 14 (0-13)"
+msgstr "Quá nhiều hàm phụ. Có thể xử lý nhiều nhất 14 (phạm vi 0-13)"
 
 msgid "Tool_s"
 msgstr "Côn_g cụ"
@@ -18812,8 +18812,8 @@ msgstr "_Cao :"
 msgid "UndoDepth"
 msgstr "Số Bước Hủy"
 
-msgid "Unexpected EOF in gf\n"
-msgstr "Gặp kết thúc tập tịn bất thường trong gf\n"
+msgid "Unexpected EOF in gf"
+msgstr "Gặp kết thúc tập tịn bất thường trong gf"
 
 msgid "Unexpected Variation Selector"
 msgstr "Dấu chọn biến đổi bất thường"
@@ -18823,15 +18823,15 @@ msgid "Unexpected character (0x%02X) on line %d of %s"
 msgstr "Gặp ký tự bất thường (0x%02X) trên dòng %d của %s"
 
 #, c-format
-msgid "Unexpected charset format in cff: %d\n"
-msgstr "Gặp định dạng bộ ký tự bất thường trong CFF: %d\n"
+msgid "Unexpected charset format in cff: %d"
+msgstr "Gặp định dạng bộ ký tự bất thường trong CFF: %d"
 
 msgid "Unexpected density"
 msgstr "Mật độ bất thường"
 
 #, c-format
-msgid "Unexpected encoding format in cff: %d\n"
-msgstr "Gặp định dạng bảng mã bất thường trong CFF: %d\n"
+msgid "Unexpected encoding format in cff: %d"
+msgstr "Gặp định dạng bảng mã bất thường trong CFF: %d"
 
 msgid "Unexpected end of file found in morx chain."
 msgstr "Gặp kết thúc tập tin bất thường trong dãy 'morx'."
@@ -18860,12 +18860,12 @@ msgid "Unexpected number"
 msgstr "Số bất thường"
 
 #, c-format
-msgid "Unexpected size for font info section of URW font (expected 12, got %d)\n"
-msgstr "Gặp kích cỡ bất thường cho phần thông tin phông của phông URW (đợi 12 còn nhận %d)\n"
+msgid "Unexpected size for font info section of URW font (expected 12, got %d)"
+msgstr "Gặp kích cỡ bất thường cho phần thông tin phông của phông URW (đợi 12 còn nhận %d)"
 
 #, c-format
-msgid "Unexpected size for name section of URW font (expected 55, got %d)\n"
-msgstr "Gặp kích cỡ bất thường cho phần tên của phông URW (đợi 55 còn nhận %d)\n"
+msgid "Unexpected size for name section of URW font (expected 55, got %d)"
+msgstr "Gặp kích cỡ bất thường cho phần tên của phông URW (đợi 55 còn nhận %d)"
 
 #, c-format
 msgid ""
@@ -18916,8 +18916,8 @@ msgstr ""
 "phía trước ...%40s"
 
 #, c-format
-msgid "Unexpected value in dictionary %d\n"
-msgstr "Gặp giá trị bất thường trong từ điển %d\n"
+msgid "Unexpected value in dictionary %d"
+msgstr "Gặp giá trị bất thường trong từ điển %d"
 
 #, c-format
 msgid ""
@@ -18973,16 +18973,16 @@ msgid "Uniform scaling for horizontal counters and side bearings"
 msgstr "Co giãn đều các bộ đếm theo chiều ngang và các vị trí phương hướng bên"
 
 #, c-format
-msgid "Uninterpreted code in gf: %d\n"
-msgstr "Gặp mã chưa giải thích trong gf: %d\n"
+msgid "Uninterpreted code in gf: %d"
+msgstr "Gặp mã chưa giải thích trong gf: %d"
 
 #, c-format
-msgid "Uninterpreted opcode %d in %s\n"
-msgstr "Chưa giải thích mã thao tác opcode %d in %s\n"
+msgid "Uninterpreted opcode %d in %s"
+msgstr "Chưa giải thích mã thao tác opcode %d in %s"
 
 #, c-format
-msgid "Uninterpreted opcode 12,%d in %s\n"
-msgstr "Chưa giải thích mã thao tác opcode 12,%d in %s\n"
+msgid "Uninterpreted opcode 12,%d in %s"
+msgstr "Chưa giải thích mã thao tác opcode 12,%d in %s"
 
 msgid "UniqueID"
 msgstr "Mã số duy nhất"
@@ -19024,8 +19024,8 @@ msgstr "Không rõ kiểu bảng phụ GSUB: %d"
 msgid "Unknown Language"
 msgstr "Ngôn ngữ không rõ"
 
-msgid "Unknown character after backslash in literal string.\n"
-msgstr "Gặp ký tự lạ phía sau dấu xuyệc ngược trong chuỗi nghĩa chữ.\n"
+msgid "Unknown character after backslash in literal string."
+msgstr "Gặp ký tự lạ phía sau dấu xuyệc ngược trong chuỗi nghĩa chữ."
 
 #, c-format
 msgid "Unknown class table format: %d"
@@ -19046,23 +19046,23 @@ msgid "Unknown lookup name: %60.60s"
 msgstr "Không nhận ra tên sự tra tìm: %60.60s"
 
 #, c-format
-msgid "Unknown operator in %s: %x\n"
-msgstr "Không rõ toán tử trong %s: %x\n"
+msgid "Unknown operator in %s: %x"
+msgstr "Không rõ toán tử trong %s: %x"
 
 msgid "Unknown string type\n"
 msgstr "Không rõ kiểu chuỗi\n"
 
 #, c-format
-msgid "Unknown subtable '%c%c%c%c' in 'PfEd' table, ignored\n"
-msgstr "Gặp bảng phụ không rõ « %c%c%c%c » trong bảng « PfEd » nên bị bỏ qua\n"
+msgid "Unknown subtable '%c%c%c%c' in 'PfEd' table, ignored"
+msgstr "Gặp bảng phụ không rõ « %c%c%c%c » trong bảng « PfEd » nên bị bỏ qua"
 
 #, c-format
-msgid "Unknown subtable '%c%c%c%c' in 'TeX ' table, ignored\n"
-msgstr "Gặp bảng phụ không rõ « %c%c%c%c » trong bảng « TeX » nên bị bỏ qua\n"
+msgid "Unknown subtable '%c%c%c%c' in 'TeX ' table, ignored"
+msgstr "Gặp bảng phụ không rõ « %c%c%c%c » trong bảng « TeX » nên bị bỏ qua"
 
 #, c-format
-msgid "Unknown type '%c' found in path specification\n"
-msgstr "Tìm thấy kiểu không rõ « %c » trong đặc tả đường dẫn\n"
+msgid "Unknown type '%c' found in path specification"
+msgstr "Tìm thấy kiểu không rõ « %c » trong đặc tả đường dẫn"
 
 msgid ""
 "Unlike most commands this one does not work directly on the\n"
@@ -19102,8 +19102,8 @@ msgstr ""
 "rất có thể là rác nên trình này chịu thua về nó.\n"
 
 #, c-format
-msgid "Unlikely length for table, so I'm ignoring it. %u\n"
-msgstr "Chiều dài bảng không chắc nên bỏ qua. %u\n"
+msgid "Unlikely length for table, so I'm ignoring it. %u"
+msgstr "Chiều dài bảng không chắc nên bỏ qua. %u"
 
 msgid "Unlikely scale factor"
 msgstr "Hệ số co giãn không chắc"
@@ -19142,8 +19142,8 @@ msgid "Unparseable include on line %d of %s"
 msgstr "Lời bao gồm không thể phân tách trên dòng %d của %s"
 
 #, c-format
-msgid "Unparsed characters found after end of groups file (last line parsed was %d).\n"
-msgstr "Gặp ký tự chưa phân tích nằm sau kết thúc của tập tin các nhóm (dòng cuối cùng đã phân tích là %d).\n"
+msgid "Unparsed characters found after end of groups file (last line parsed was %d)."
+msgstr "Gặp ký tự chưa phân tích nằm sau kết thúc của tập tin các nhóm (dòng cuối cùng đã phân tích là %d)."
 
 msgid "Unreasonable DPI"
 msgstr "Điểm/insơ vô lý"
@@ -19224,11 +19224,11 @@ msgstr "Dùng « exit » khi không phải trong vòng lặp\n"
 msgid "Use of \"stop\" when not in a stopped\n"
 msgstr "Dùng « stop » khi không phải trong một « stopped ».\n"
 
-msgid "Use of a range offset of 0xffff to mean a missing glyph in cmap table\n"
-msgstr "Trong bảng cmap, dùng bù phạm vi 0xffff có nghĩa hình tượng còn thiếu\n"
+msgid "Use of a range offset of 0xffff to mean a missing glyph in cmap table"
+msgstr "Trong bảng cmap, dùng bù phạm vi 0xffff có nghĩa hình tượng còn thiếu"
 
-msgid "Use of obsolete blend operator.\n"
-msgstr "Dùng toán tử pha trộn quá cũ.\n"
+msgid "Use of obsolete blend operator."
+msgstr "Dùng toán tử pha trộn quá cũ."
 
 #, c-format
 msgid "Use of undefined glyph class, %s, on line %d of %s"
@@ -19277,7 +19277,7 @@ msgstr ""
 "cho tên tập tin khi tạo ra phông."
 
 #, c-format
-msgid "Use-my-metrics flag set on at least two components in glyph %d\n"
+msgid "Use-my-metrics flag set on at least two components in glyph %d"
 msgstr ""
 "Cờ « use-my-metrics » (dùng đơn vị đo của tôi) được đặt vào\n"
 "ít nhất hai thành phần trong hình tượng %d\n"
@@ -19353,8 +19353,8 @@ msgstr "Giá trị vượt quá phạm vi TFM"
 msgid "Value out of bounds"
 msgstr "Giá trị ở ngoại phạm vi"
 
-msgid "Value out of bounds in spline.\n"
-msgstr "Giá trị ở ngoại giới hạn trong chốt trục.\n"
+msgid "Value out of bounds in spline."
+msgstr "Giá trị ở ngoại giới hạn trong chốt trục."
 
 msgid "Value out of range"
 msgstr "Giá trị ở ngoại phạm vi"
@@ -19557,12 +19557,12 @@ msgid "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]\n"
 msgstr "Cảnh báo : giá trị trục thứ %d (%g) nằm ở ngoại phạm vi hợp lệ [%g,%g]\n"
 
 #, c-format
-msgid "Warning: %s has a different family name than does %s (GenerateFamily)\n"
-msgstr "Cảnh báo : %s có nhóm tên khác với %s (Tạo ra nhóm)\n"
+msgid "Warning: %s has a different family name than does %s (GenerateFamily)"
+msgstr "Cảnh báo : %s có nhóm tên khác với %s (Tạo ra nhóm)"
 
 #, c-format
-msgid "Warning: %s(%s) is both extended and condensed. That's impossible.\n"
-msgstr "Cảnh báo : %s(%s) đã được dãn ra còn cũng được co lại. Không thể làm được.\n"
+msgid "Warning: %s(%s) is both extended and condensed. That's impossible."
+msgstr "Cảnh báo : %s(%s) đã được dãn ra còn cũng được co lại. Không thể làm được."
 
 msgid ""
 "Warning: 'cvar' contains intermediate tuple data.\n"
@@ -19571,8 +19571,8 @@ msgstr ""
 "Cảnh báo : 'cvar' chứa dữ liệu đối tượng nhiều thành phần trung gian.\n"
 "Trình FontForge không hỗ trợ.\n"
 
-msgid "Warning: Both extended and condensed. That's impossible.\n"
-msgstr "Cảnh báo : cả hai đã được dãn ra còn cũng được co lại. Không thể làm được.\n"
+msgid "Warning: Both extended and condensed. That's impossible."
+msgstr "Cảnh báo : cả hai đã được dãn ra còn cũng được co lại. Không thể làm được."
 
 msgid "Warning: Byte swapped font mark in palm font."
 msgstr "Cảnh báo : gặp dấu phông đã trao đổi byte trong phông Palm."
@@ -19642,12 +19642,12 @@ msgstr ""
 "của chuỗi Windows đối với chuỗi %s bằng ngôn ngữ %s.\n"
 
 #, c-format
-msgid "Warning: No characters selected in AddDHint(%d,%d %d,%d %d,%d)\n"
-msgstr "Cảnh báo : chưa chọn ký tự trong Thêm lời gợi ý (%d,%d %d,%d %d,%d)\n"
+msgid "Warning: No characters selected in AddDHint(%d,%d %d,%d %d,%d)"
+msgstr "Cảnh báo : chưa chọn ký tự trong Thêm lời gợi ý (%d,%d %d,%d %d,%d)"
 
 #, c-format
-msgid "Warning: No characters selected in AddHint(%d,%d,%d)\n"
-msgstr "Cảnh báo : chưa chọn ký tự trong Thêm lời gợi ý (%d,%d,%d)\n"
+msgid "Warning: No characters selected in AddHint(%d,%d,%d)"
+msgstr "Cảnh báo : chưa chọn ký tự trong Thêm lời gợi ý (%d,%d,%d)"
 
 msgid ""
 "Warning: There are already some 'aalt' lookups in\n"
@@ -19699,15 +19699,15 @@ msgstr ""
 "sẽ bị MẤT. Bạn có muốn tạo trường hợp này không?"
 
 #, c-format
-msgid "Warning: Unable to parse token %s, some features may be lost\n"
-msgstr "Cảnh báo : không thể phân tích hiệu bài %s nên một số tính năng có thể bị mất\n"
+msgid "Warning: Unable to parse token %s, some features may be lost"
+msgstr "Cảnh báo : không thể phân tích hiệu bài %s nên một số tính năng có thể bị mất"
 
-msgid "Warning: Unreasonably big splines. They will be ignored.\n"
-msgstr "Cảnh báo : chốt trục quá lớn vô lý nên bị bỏ qua.\n"
+msgid "Warning: Unreasonably big splines. They will be ignored."
+msgstr "Cảnh báo : chốt trục quá lớn vô lý nên bị bỏ qua."
 
 #, c-format
-msgid "Warning: could not figure out where the hint (%d,%d %d,%d %d,%d) is valid\n"
-msgstr "Cảnh báo : không thể tìm biết lời gợi ý (%d,%d %d,%d %d,%d) hợp lệ ở đâu\n"
+msgid "Warning: could not figure out where the hint (%d,%d %d,%d %d,%d) is valid"
+msgstr "Cảnh báo : không thể tìm biết lời gợi ý (%d,%d %d,%d %d,%d) hợp lệ ở đâu"
 
 msgid "Warnings"
 msgstr "Cảnh báo"
@@ -19728,8 +19728,8 @@ msgstr "Cvt đã theo dõi có thay đổi"
 msgid "Watched Store Change"
 msgstr "Kho đã theo dõi có thay đổi"
 
-msgid "We don't understand this font\n"
-msgstr "Không hiểu được phông này\n"
+msgid "We don't understand this font"
+msgstr "Không hiểu được phông này"
 
 msgid "Weight, Width, Slope Only"
 msgstr "Chỉ Đậm, Rộng, Dốc"
@@ -21499,8 +21499,8 @@ msgstr "Bảng vị trí mảng ảnh (phiên bản OT)"
 msgid "by"
 msgstr "theo"
 
-msgid "can't create temporary file\n"
-msgstr "không thể tạo tập tin tạm thời\n"
+msgid "can't create temporary file"
+msgstr "không thể tạo tập tin tạm thời"
 
 msgid "character code mapping table"
 msgstr "bảng ánh xạ mã ký tự"
@@ -21520,8 +21520,8 @@ msgstr "bảng giá trị điều khiển"
 msgid "copyright notice"
 msgstr "thông báo bản quyền"
 
-msgid "couldn't write encodings file\n"
-msgstr "không thể ghi tâp tin bảng mã\n"
+msgid "couldn't write encodings file"
+msgstr "không thể ghi tâp tin bảng mã"
 
 msgid "coverage"
 msgstr "bao quát"
@@ -21561,8 +21561,8 @@ msgid "embedded bitmap scaling control table"
 msgstr "bảng điều khiển co giãn mảng ảnh nhúng"
 
 #, c-format
-msgid "end of subroutine reached with no return in %s\n"
-msgstr "gặp kết thúc hàm phụ, chưa trả lại trong %s\n"
+msgid "end of subroutine reached with no return in %s"
+msgstr "gặp kết thúc hàm phụ, chưa trả lại trong %s"
 
 msgid "extended metamorphosis table"
 msgstr "bảng biến thái kéo dài"
@@ -21806,12 +21806,12 @@ msgid "properties table"
 msgstr "bảng thuộc tính"
 
 #, c-format
-msgid "return when not in subroutine in %s\n"
-msgstr "trả lại khi không phải trong hàm phụ trong %s\n"
+msgid "return when not in subroutine in %s"
+msgstr "trả lại khi không phải trong hàm phụ trong %s"
 
 #, c-format
-msgid "roll out of range in %s\n"
-msgstr "roll ở ngoại phạm vi trong %s\n"
+msgid "roll out of range in %s"
+msgstr "roll ở ngoại phạm vi trong %s"
 
 msgid "set the auto FLIP boolean to OFF"
 msgstr "lập biểu thức Bun tự động FLIP thành TẮT"

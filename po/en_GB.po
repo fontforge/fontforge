@@ -177,8 +177,8 @@ msgid "Auto Hinting Font..."
 msgstr "Auto Hinting Font..."
 
 #, c-format
-msgid "AutoWidth failure on %s\n"
-msgstr "AutoWidth failure on %s\n"
+msgid "AutoWidth failure on %s"
+msgstr "AutoWidth failure on %s"
 
 msgid "Autotracing..."
 msgstr "Autotracing..."
@@ -193,8 +193,8 @@ msgid "Bad Color"
 msgstr "Bad Colour"
 
 #, c-format
-msgid "Bad RGB color spec: %s\n"
-msgstr "Bad RGB colour spec: %s\n"
+msgid "Bad RGB color spec: %s"
+msgstr "Bad RGB colour spec: %s"
 
 msgid "Bad Reference"
 msgstr "Bad Reference"
@@ -212,12 +212,12 @@ msgstr "Bad colour on line %d, must be between 000000 and ffffff."
 msgid "Bad encoding file format"
 msgstr "Bad encoding file format"
 
-msgid "Bad glyph range specified in color subtable of PfEd table\n"
-msgstr "Bad glyph range specified in colour subtable of PfEd table\n"
+msgid "Bad glyph range specified in color subtable of PfEd table"
+msgstr "Bad glyph range specified in colour subtable of PfEd table"
 
 #, c-format
-msgid "Bad hex color spec: %s\n"
-msgstr "Bad hex colour spec: %s\n"
+msgid "Bad hex color spec: %s"
+msgstr "Bad hex colour spec: %s"
 
 msgid "Bad image file"
 msgstr "Bad image file"
@@ -328,8 +328,8 @@ msgid "Can't find the file"
 msgstr "Cannot find the file"
 
 #, c-format
-msgid "Can't open %s\n"
-msgstr "Cannot open %s\n"
+msgid "Can't open %s"
+msgstr "Cannot open %s"
 
 msgid "Can't run mf"
 msgstr "Cannot run mf"
@@ -529,8 +529,8 @@ msgid "Extrema Point Color"
 msgstr "Extrema Point Colour"
 
 #, c-format
-msgid "Failed to parse color %s\n"
-msgstr "Failed to parse colour %s\n"
+msgid "Failed to parse color %s"
+msgstr "Failed to parse colour %s"
 
 msgid "Family Blue Color"
 msgstr "Family Blue Colour"
@@ -771,8 +771,8 @@ msgid "More Images Than Selected Glyphs"
 msgstr "More Images Than Selected Glyphs"
 
 #, c-format
-msgid "Multiple master subroutine called with the wrong number of arguments in %s.\n"
-msgstr "Multiple master subroutine called with the wrong number of arguments in %s.\n"
+msgid "Multiple master subroutine called with the wrong number of arguments in %s."
+msgstr "Multiple master subroutine called with the wrong number of arguments in %s."
 
 msgid "MultipleEncodingIgnored"
 msgstr "MultipleEncodingIgnored"
@@ -798,12 +798,12 @@ msgstr "No Vertical Metrics"
 msgid "No _to All"
 msgstr "No _to All"
 
-msgid "No argument to operator\n"
-msgstr "No argument to operator\n"
+msgid "No argument to operator"
+msgstr "No argument to operator"
 
 #, c-format
-msgid "No argument to operator %d in private dict\n"
-msgstr "No argument to operator %d in private dict\n"
+msgid "No argument to operator %d in private dict"
+msgstr "No argument to operator %d in private dict"
 
 msgid "No cidmap file..."
 msgstr "No cidmap file..."
@@ -887,8 +887,8 @@ msgid "Oriya"
 msgstr "Oriya"
 
 #, c-format
-msgid "ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s\n"
-msgstr "ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s\n"
+msgid "ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s"
+msgstr "ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s"
 
 msgid "Phonetic Extensions"
 msgstr "Phonetic Extensions"
@@ -1506,8 +1506,8 @@ msgstr "_Yes"
 msgid "cidmap entry out of bounds: %s"
 msgstr "cidmap entry out of bounds: %s"
 
-msgid "couldn't write encodings file\n"
-msgstr "could not write encodings file\n"
+msgid "couldn't write encodings file"
+msgstr "could not write encodings file"
 
 msgid "electronic end user license table"
 msgstr "electronic end user licence table"

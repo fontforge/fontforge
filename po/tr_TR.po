@@ -89,8 +89,8 @@ msgid "Can't find the file"
 msgstr "Dosya bulunamadı"
 
 #, c-format
-msgid "Can't open %s\n"
-msgstr "%s açılamıyor\n"
+msgid "Can't open %s"
+msgstr "%s açılamıyor"
 
 msgid "Can't run mf"
 msgstr "Mf çalıştırılamadı"
@@ -137,8 +137,8 @@ msgid "Don't Warn Again"
 msgstr "Tekrar Uyarma"
 
 #, c-format
-msgid "Duplicate repeat row count in char %d of pk file\n"
-msgstr "PK dosyasındaki karakterde yinelenen satır sayısı %d\n"
+msgid "Duplicate repeat row count in char %d of pk file"
+msgstr "PK dosyasındaki karakterde yinelenen satır sayısı %d"
 
 msgid "Dutch"
 msgstr "Felemenkçe"
@@ -150,8 +150,8 @@ msgid "Estonian"
 msgstr "Estonca"
 
 #, c-format
-msgid "Failed to write %s\n"
-msgstr "%s üzerine yazılamadı\n"
+msgid "Failed to write %s"
+msgstr "%s üzerine yazılamadı"
 
 msgid "Faroese (Icelandic)"
 msgstr "Faroece (İzlanda)"
@@ -337,8 +337,8 @@ msgid "No cidmap file..."
 msgstr "Cidmap dosyası yok..."
 
 #, c-format
-msgid "No kerning table for %s\n"
-msgstr "%s için karakter aralık tablosu yok.\n"
+msgid "No kerning table for %s"
+msgstr "%s için karakter aralık tablosu yok."
 
 msgid "Normal Text Color:"
 msgstr "Normal Metin Rengi:"
@@ -364,8 +364,8 @@ msgstr "Orhun Alfabesi"
 msgid "Old sfd file"
 msgstr "Eski sfd dosyası"
 
-msgid "Out of memory\n"
-msgstr "Yetersiz bellek\n"
+msgid "Out of memory"
+msgstr "Yetersiz bellek"
 
 msgid "Pick a font, any font..."
 msgstr "Bir yazı tipi seçin, herhangi bir yazı tipi..."
@@ -592,8 +592,8 @@ msgstr "Kayde_t"
 msgid "_Vertical"
 msgstr "_Dikey"
 
-msgid "couldn't write encodings file\n"
-msgstr "kodlama dosyasına yazılamadı\n"
+msgid "couldn't write encodings file"
+msgstr "kodlama dosyasına yazılamadı"
 
 msgid "font;fonts;editor;TTF;OTF;typeface;"
 msgstr "yazı tipi;yazı tipleri;editör;TTF;OTF;typeface;"

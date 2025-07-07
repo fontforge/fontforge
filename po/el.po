@@ -100,8 +100,8 @@ msgid "Attempt to regenerate a pixel size that has not been created (%d@%d)"
 msgstr "Προσπάθεια επαναδημιουργίας μεγέθους pixel το οποίο δεν έχει δημιουργηθεί (%d@%d)"
 
 #, c-format
-msgid "AutoWidth failure on %s\n"
-msgstr "Αποτυχία της διαδικασίας AutoWidth στο %s\n"
+msgid "AutoWidth failure on %s"
+msgstr "Αποτυχία της διαδικασίας AutoWidth στο %s"
 
 msgid "Automatic"
 msgstr "Αυτόματα"

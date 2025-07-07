@@ -76,12 +76,12 @@ msgid "  Hang right"
 msgstr "  Colgar a la derecha"
 
 #, c-format
-msgid "  Ignoring '%c%c%c%c'\n"
-msgstr "  Ignorando '%c%c%c%c'\n"
+msgid "  Ignoring '%c%c%c%c'"
+msgstr "  Ignorando '%c%c%c%c'"
 
 #, c-format
-msgid "  Ignoring '%c%c%c%c' %s\n"
-msgstr "  Ignorando '%c%c%c%c' %s\n"
+msgid "  Ignoring '%c%c%c%c' %s"
+msgstr "  Ignorando '%c%c%c%c' %s"
 
 #, c-format
 msgid "  Left Bound=%d"
@@ -98,8 +98,8 @@ msgstr "  Límite derecho=%d"
 msgid "  Stroke _Width:"
 msgstr "  Ancho del trazo:(_W)"
 
-msgid "  Subsequent errors will not be reported.\n"
-msgstr "  Los errores posteriores no serán reportados.\n"
+msgid "  Subsequent errors will not be reported."
+msgstr "  Los errores posteriores no serán reportados."
 
 #. GT: X is a coordinate, the leading spaces help to align it
 msgid "  X"
@@ -109,8 +109,8 @@ msgid "  Y"
 msgstr "  Y"
 
 #, c-format
-msgid " %s: line %d\n"
-msgstr " %s: línea %d\n"
+msgid " %s: line %d"
+msgstr " %s: línea %d"
 
 msgid " Adding a size will create it by scaling."
 msgstr " Añadir un tamaño lo creará por escalado."
@@ -216,16 +216,16 @@ msgid " snapped"
 msgstr " acoplado"
 
 #, c-format
-msgid "!!!! Unknown caret format %d !!!!\n"
-msgstr "¡¡¡¡ Formato desconocido de circunflejo: %d !!!!\n"
+msgid "!!!! Unknown caret format %d !!!!"
+msgstr "¡¡¡¡ Formato desconocido de circunflejo: %d !!!!"
 
 #, c-format
-msgid "!!!!! Bad Base Coord format (%d) for '%c%c%c%c' in '%c%c%c%c' script in 'BASE' table\n"
-msgstr "!!!!! Formato incorrecto de código base (%d) para \"%c%c%c%c\" en el sistema de escritura \"%c%c%c%c\" en la tabla \"BASE\"\n"
+msgid "!!!!! Bad Base Coord format (%d) for '%c%c%c%c' in '%c%c%c%c' script in 'BASE' table"
+msgstr "!!!!! Formato incorrecto de código base (%d) para \"%c%c%c%c\" en el sistema de escritura \"%c%c%c%c\" en la tabla \"BASE\""
 
 #, c-format
-msgid "!!!!! Coord count (%d) for '%c%c%c%c' script does not match base tag count (%d) in 'BASE' table\n"
-msgstr "!!!! El conteo de coordenadas (%d) para el sistema de escritura \"%c%c%c%c\" no coincide con el conteo de etiquetas base (%d) en la tabla \"BASE\"\n"
+msgid "!!!!! Coord count (%d) for '%c%c%c%c' script does not match base tag count (%d) in 'BASE' table"
+msgstr "!!!! El conteo de coordenadas (%d) para el sistema de escritura \"%c%c%c%c\" no coincide con el conteo de etiquetas base (%d) en la tabla \"BASE\""
 
 #, c-format
 msgid "\"%.40s\" size=%d point=%d (%d,%d) distance=%g"
@@ -377,8 +377,8 @@ msgid "%s contextual %d"
 msgstr "%s contextual %d"
 
 #, c-format
-msgid "%s does not contain an <svg> element at the top\n"
-msgstr "%s no contiene un elemento <svg> en la parte superior\n"
+msgid "%s does not contain an <svg> element at the top"
+msgstr "%s no contiene un elemento <svg> en la parte superior"
 
 #, c-format
 msgid "%s entry"
@@ -406,8 +406,8 @@ msgid "%s in %s lookup %d"
 msgstr "%s en %s búsqueda %d"
 
 #, c-format
-msgid "%s is a mac resource file but contains no postscript or truetype fonts\n"
-msgstr "%s es un archivo de recursos de Mac pero no contiene ningún PostScript ni fuentes TrueType\n"
+msgid "%s is a mac resource file but contains no postscript or truetype fonts"
+msgstr "%s es un archivo de recursos de Mac pero no contiene ningún PostScript ni fuentes TrueType"
 
 #, c-format
 msgid ""
@@ -438,12 +438,12 @@ msgid "%s kerning class %d"
 msgstr "%s clase de interletraje %d"
 
 #, c-format
-msgid "%s line: %d %s\n"
-msgstr "%s línea: %d %s\n"
+msgid "%s line: %d %s"
+msgstr "%s línea: %d %s"
 
 #, c-format
-msgid "%s line: %d %s: %s\n"
-msgstr "%s línea: %d %s: %s\n"
+msgid "%s line: %d %s: %s"
+msgstr "%s línea: %d %s: %s"
 
 #, c-format
 msgid "%s lookup %d"
@@ -498,7 +498,7 @@ msgid "%s's vstem3 operator is not supported for Type2\n"
 msgstr "El operador vstem3 de %sno es compatible con Type2\n"
 
 #, c-format
-msgid "%s(%s) and %s(%s) 0x%x in FOND %s\n"
+msgid "%s(%s) and %s(%s) 0x%x in FOND %s"
 msgstr "%s(%s) y %s(%s) 0x%x en FOND %s"
 
 #, c-format
@@ -514,8 +514,8 @@ msgid "%s: Is not callable"
 msgstr "%s: No es invocable"
 
 #, c-format
-msgid "%s:%d Unexpected character %c (%d)\n"
-msgstr "%s:%d Carácter inesperado %c (%d)\n"
+msgid "%s:%d Unexpected character %c (%d)"
+msgstr "%s:%d Carácter inesperado %c (%d)"
 
 #, c-format
 msgid "'%s' is not the name of a currently known plugin"
@@ -597,7 +597,7 @@ msgstr "+"
 msgid "-"
 msgstr "-"
 
-msgid "-1 glyph index in dumpcoveragetable.\n"
+msgid "-1 glyph index in dumpcoveragetable."
 msgstr "Índice de glifo -1 en dumpcoveragetable."
 
 msgid "..."
@@ -1053,11 +1053,11 @@ msgid "A pdf stream object may not be a compressed object"
 msgstr "Un objeto de flujo pdf no puede ser un objeto comprimido"
 
 #, c-format
-msgid "A point in %s is outside the font bounding box data.\n"
+msgid "A point in %s is outside the font bounding box data."
 msgstr "Un punto en %s está fuera de los datos de la caja delimitadora de la fuente."
 
 #, c-format
-msgid "A point in GID %d is outside the glyph bounding box\n"
+msgid "A point in GID %d is outside the glyph bounding box"
 msgstr "Un punto en el GID %d está fuera de la caja delimitadora de glifos"
 
 msgid ""
@@ -2430,22 +2430,22 @@ msgstr ""
 "Intento de aplicar una búsqueda a una ubicación fuera del rango de esta\n"
 " búsqueda contextual sec=%d, máx=%d"
 
-msgid "Attempt to back up twice\n"
-msgstr "Intento de hacer una copia de seguridad dos veces\n"
+msgid "Attempt to back up twice"
+msgstr "Intento de hacer una copia de seguridad dos veces"
 
 #, c-format
 msgid "Attempt to divide by 0 in %.30s"
 msgstr "Intento de dividir entre 0 en %.30s"
 
 #, c-format
-msgid "Attempt to encode missing glyph %d to %d (0x%x)\n"
+msgid "Attempt to encode missing glyph %d to %d (0x%x)"
 msgstr "Intento de codificar el glifo faltante %d a %d (0x%x)"
 
 #, c-format
 msgid "Attempt to have a font with more than %d layers"
 msgstr "Intento de tener una fuente con más de %d capas"
 
-msgid "Attempt to invert a singular matrix\n"
+msgid "Attempt to invert a singular matrix"
 msgstr "Intento de invertir una matriz singular"
 
 msgid "Attempt to make a character that refers to itself"
@@ -2511,10 +2511,10 @@ msgid "Attempt to take the square root of %1$g in %2$.30s"
 msgstr "Intento de calcular la raíz cuadrada de %1$g en %2$.30s"
 
 #, c-format
-msgid "Attempt to use a multiple master subroutine in a non-mm font in %s.\n"
-msgstr "Intento de usar una subrutina múltiple maestra en una fuente que no es mm en %s.\n"
+msgid "Attempt to use a multiple master subroutine in a non-mm font in %s."
+msgstr "Intento de usar una subrutina múltiple maestra en una fuente que no es mm en %s."
 
-msgid "Attempt to use a multiple master subroutine in a non-mm font.\n"
+msgid "Attempt to use a multiple master subroutine in a non-mm font."
 msgstr "Intento de usar una subrutina múltiple maestra en una fuente que no es mm."
 
 msgid "Attention"
@@ -2560,8 +2560,8 @@ msgid "AutoSaveFrequency"
 msgstr "Frecuencia de autoguardado"
 
 #, c-format
-msgid "AutoWidth failure on %s\n"
-msgstr "Error de AutoWidth en %s\n"
+msgid "AutoWidth failure on %s"
+msgstr "Error de AutoWidth en %s"
 
 msgid "AutoWidthSync"
 msgstr "Sincronización de ancho automática"
@@ -2791,14 +2791,14 @@ msgstr "Entrada de BlueShift incorrecta."
 #. GT: The CFF font type contains a thing called a name INDEX, and that INDEX
 #. GT: is bad. It is an index of many of the names used in the CFF font.
 #. GT: We hope the user will never see this.
-msgid "Bad CFF name INDEX\n"
+msgid "Bad CFF name INDEX"
 msgstr "INDEX de nombre CFF incorrecto"
 
 #, c-format
-msgid "Bad CID offset for CID %d\n"
-msgstr "Desplazamiento de CID incorrecto para CID %d\n"
+msgid "Bad CID offset for CID %d"
+msgstr "Desplazamiento de CID incorrecto para CID %d"
 
-msgid "Bad CharString. Does not include lenIV bytes.\n"
+msgid "Bad CharString. Does not include lenIV bytes."
 msgstr "Cadena de caracteres incorrecta. No incluye los bytes lenIV."
 
 msgid "Bad Class"
@@ -2924,7 +2924,7 @@ msgid "Bad Private Dictionary"
 msgstr "Diccionario privado incorrecto"
 
 #, c-format
-msgid "Bad RGB color spec: %s\n"
+msgid "Bad RGB color spec: %s"
 msgstr "Especificación de color RGB incorrecta: %s"
 
 msgid "Bad Range"
@@ -3009,8 +3009,8 @@ msgid "Bad base table."
 msgstr "Tabla base incorrecta."
 
 #, c-format
-msgid "Bad bounding box for %s.\n"
-msgstr "Caja delimitadora incorrecta para %s.\n"
+msgid "Bad bounding box for %s."
+msgstr "Caja delimitadora incorrecta para %s."
 
 msgid "Bad cidmap file"
 msgstr "Archivo cidmap incorrecto"
@@ -3023,7 +3023,7 @@ msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)\n"
 msgstr "Tabla de def. de clases incorrecta. Glifo %d fuera de rango [0,%d)"
 
 #, c-format
-msgid "Bad class def table. start=%d cnt=%d, max glyph=%d\n"
+msgid "Bad class def table. start=%d cnt=%d, max glyph=%d"
 msgstr "Tabla de def. de clase incorrecta. inicio=%d cnt=%d, glifo máx=%d"
 
 msgid "Bad class in state machine.\n"
@@ -3066,11 +3066,11 @@ msgstr "Tabla de cobertura incorrecta. Rango de glifos %d-%d fuera de rango [0,%
 msgid "Bad dash list"
 msgstr "Lista de guiones incorrecta"
 
-msgid "Bad data modifier in contour command in 'PfEd'\n"
-msgstr "Modificador de datos incorrecto en comando de contornos en \"PfEd\"\n"
+msgid "Bad data modifier in contour command in 'PfEd'"
+msgstr "Modificador de datos incorrecto en comando de contornos en \"PfEd\""
 
-msgid "Bad data type in contour verb in 'PfEd'\n"
-msgstr "Tipo de datos incorrecto en el verbo de contornos en \"PfEd\"\n"
+msgid "Bad data type in contour verb in 'PfEd'"
+msgstr "Tipo de datos incorrecto en el verbo de contornos en \"PfEd\""
 
 msgid "Bad default baseline"
 msgstr "Línea base predeterminada incorrecta"
@@ -3099,7 +3099,7 @@ msgstr "Formato de archivo de codificación incorrecto"
 msgid "Bad encoding information in 'cmap' table."
 msgstr "Información de codificación incorrecta en la tabla 'cmap'."
 
-msgid "Bad fdselect\n"
+msgid "Bad fdselect"
 msgstr "Fdselect incorrecto"
 
 msgid "Bad feature tag"
@@ -3110,21 +3110,21 @@ msgid "Bad few values in /BlendDesignMap for axis %s.\n"
 msgstr "Valores pocos incorrectos en /BlendDesignMap para el eje %s."
 
 #, c-format
-msgid "Bad flags value, implied MORE components at end of glyph %d\n"
+msgid "Bad flags value, implied MORE components at end of glyph %d"
 msgstr "Valor de marcas incorrecto, implican MÁS componentes al final del glifo %d"
 
 #, c-format
-msgid "Bad flex subroutine in %s\n"
-msgstr "Subrutina de flex incorrecta en %s\n"
+msgid "Bad flex subroutine in %s"
+msgstr "Subrutina de flex incorrecta en %s"
 
 msgid "Bad font"
 msgstr "Fuente incorrecta"
 
-msgid "Bad font, offset out of bounds.\n"
-msgstr "Fuente incorrecta, desplazamiento fuera de límites.\n"
+msgid "Bad font, offset out of bounds."
+msgstr "Fuente incorrecta, desplazamiento fuera de límites."
 
-msgid "Bad font: Encoding data out of range.\n"
-msgstr "Fuente incorrecta: Codificación de datos fuera de rango.\n"
+msgid "Bad font: Encoding data out of range."
+msgstr "Fuente incorrecta: Codificación de datos fuera de rango."
 
 #, c-format
 msgid "Bad format for coverage table %d"
@@ -3139,19 +3139,19 @@ msgid "Bad glif file %s"
 msgstr "Archivo glif incorrecto %s"
 
 #, c-format
-msgid "Bad glyph (%d), disordered 'loca' table (start comes after end)\n"
-msgstr "Glifo incorrecto (%d), tabla \"loca\" desordenada (el inicio aparece después del final)\n"
+msgid "Bad glyph (%d), disordered 'loca' table (start comes after end)"
+msgstr "Glifo incorrecto (%d), tabla \"loca\" desordenada (el inicio aparece después del final)"
 
 #, c-format
-msgid "Bad glyph (%d), its data length is negative\n"
-msgstr "Glifo incorrecto (%d), su longitud de datos es negativa\n"
+msgid "Bad glyph (%d), its data length is negative"
+msgstr "Glifo incorrecto (%d), su longitud de datos es negativa"
 
 #, c-format
-msgid "Bad glyph (%d), its definition extends beyond the end of the glyf table\n"
-msgstr "Glifo incorrecto (%d), su definición se extiende más allá del final de la tabla de glifos\n"
+msgid "Bad glyph (%d), its definition extends beyond the end of the glyf table"
+msgstr "Glifo incorrecto (%d), su definición se extiende más allá del final de la tabla de glifos"
 
 #, c-format
-msgid "Bad glyph (%d), its definition extends beyond the space allowed for it\n"
+msgid "Bad glyph (%d), its definition extends beyond the space allowed for it"
 msgstr "Glifo incorrecto (%d), su definición se extiende más allá del espacio permitido para él"
 
 msgid "Bad glyph count in mort table."
@@ -3160,21 +3160,21 @@ msgstr "Conteo de glifos incorrecto en tabla mort."
 msgid "Bad glyph name."
 msgstr "Nombre incorrecto de glifo."
 
-msgid "Bad glyph range specified in color subtable of PfEd table\n"
-msgstr "Rango de glifos incorrecto especificado en la subtabla de colores de la tabla PfEd\n"
+msgid "Bad glyph range specified in color subtable of PfEd table"
+msgstr "Rango de glifos incorrecto especificado en la subtabla de colores de la tabla PfEd"
 
-msgid "Bad glyph range specified in glyph comment subtable of PfEd table\n"
-msgstr "Rango de glifos incorrecto especificado en la subtabla de comentarios de glifos de la tabla PfEd\n"
+msgid "Bad glyph range specified in glyph comment subtable of PfEd table"
+msgstr "Rango de glifos incorrecto especificado en la subtabla de comentarios de glifos de la tabla PfEd"
 
-msgid "Bad glyph reference in layer info.\n"
+msgid "Bad glyph reference in layer info."
 msgstr "Referencia de glifo incorrecta en la información de la capa."
 
 msgid "Bad glyph variant subtable of MATH table."
 msgstr "Subtabla de variantes de glifos incorrecta de la tabla MATH."
 
 #, c-format
-msgid "Bad hex color spec: %s\n"
-msgstr "Especificación de color hexadecimal incorrecta: %s\n"
+msgid "Bad hex color spec: %s"
+msgstr "Especificación de color hexadecimal incorrecta: %s"
 
 msgid "Bad hex number"
 msgstr "Número hexadecimal incorrecto"
@@ -3268,8 +3268,8 @@ msgstr "Número incorrecto"
 #. GT: NaN is a concept in IEEE floating point which means "Not a Number"
 #. GT: it is used to represent errors like 0/0 or sqrt(-1).
 #, c-format
-msgid "Bad number, infinity or nan: %s\n"
-msgstr "Número incorrecto, infinito o nan: %s\n"
+msgid "Bad number, infinity or nan: %s"
+msgstr "Número incorrecto, infinito o nan: %s"
 
 #, c-format
 msgid "Bad numeric value for %s.%s"
@@ -3283,8 +3283,8 @@ msgid "Bad offset on line %d, must be between 0% and 100%."
 msgstr "Desplazamiento incorrecto en la línea %d, debe estar entre 0% y 100%."
 
 #, c-format
-msgid "Bad offset: %d for subfont %s\n"
-msgstr "Desplazamiento incorrecto: %d para la subfuente %s\n"
+msgid "Bad offset: %d for subfont %s"
+msgstr "Desplazamiento incorrecto: %d para la subfuente %s"
 
 #, c-format
 msgid "Bad opacity on line %d, must be between 0.0 and 1.0."
@@ -3339,11 +3339,11 @@ msgstr ""
 "  que debería estar limitado al ancho de %s, que es %d.\n"
 
 #, c-format
-msgid "Bad sid %d (0 <= sid < %d)\n"
+msgid "Bad sid %d (0 <= sid < %d)"
 msgstr "Sid %d incorrecto (0 <= sid < %d)"
 
 #, c-format
-msgid "Bad sid %d (must be less than %d)\n"
+msgid "Bad sid %d (must be less than %d)"
 msgstr "Sid %d incorrecto (debe ser menor a %d)"
 
 msgid "Bad signature in WOFF header."
@@ -3401,8 +3401,8 @@ msgstr ""
 "cerca de ...%2$40s"
 
 #, c-format
-msgid "Bad tt font: contour ends make no sense in glyph %d.\n"
-msgstr "Fuente TT incorrecta: los finales del contorno no tienen sentido en el glifo %d.\n"
+msgid "Bad tt font: contour ends make no sense in glyph %d."
+msgstr "Fuente TT incorrecta: los finales del contorno no tienen sentido en el glifo %d."
 
 #. GT: The words "true" and "false" should be left untranslated. We are restricted
 #. GT: here by what PostScript understands, and it only understands the English
@@ -4042,10 +4042,10 @@ msgid "CFF CID (Bare)"
 msgstr "CFF CID (Sin contenido)"
 
 #, c-format
-msgid "CFF dict stack underflow detected: %d < 4\n"
+msgid "CFF dict stack underflow detected: %d < 4"
 msgstr "Subflujo de pila de diccionario CFF detectado: %d < 4"
 
-msgid "CFF version mismatch\n"
+msgid "CFF version mismatch"
 msgstr "Discrepancia de versión de CFF"
 
 msgid "CID"
@@ -4054,8 +4054,8 @@ msgstr "CID"
 msgid "CID findfont Name"
 msgstr "Nombre de búsqueda de fuente CID"
 
-msgid "CID format doesn't contain what we expected it to.\n"
-msgstr "El formato CID no contiene lo que esperábamos.\n"
+msgid "CID format doesn't contain what we expected it to."
+msgstr "El formato CID no contiene lo que esperábamos."
 
 msgid "CID keyed fonts may not be a master design of a multiple master font"
 msgstr "Las fuentes con claves CID no pueden servir de diseño maestro para una fuente MM"
@@ -4202,8 +4202,8 @@ msgstr "Francés cajún"
 msgid "Call Script"
 msgstr "Llamar a script"
 
-msgid "Called from...\n"
-msgstr "Llamado desde...\n"
+msgid "Called from..."
+msgstr "Llamado desde..."
 
 msgid "Cambodian"
 msgstr "Camboyano"
@@ -4230,8 +4230,8 @@ msgstr "No se pueden poner en paralelo"
 msgid "Can't _Be Interpolated"
 msgstr "No puede ser interpolado(_B)"
 
-msgid "Can't back up with nothing on stack\n"
-msgstr "No se puede hacer una copia de seguridad sin nada en la pila\n"
+msgid "Can't back up with nothing on stack"
+msgstr "No se puede hacer una copia de seguridad sin nada en la pila"
 
 msgid "Can't compare arrays\n"
 msgstr "No se pueden comparar los arrays\n"
@@ -4286,14 +4286,14 @@ msgid "Can't open %s"
 msgstr "No se puede abrir %s"
 
 #, c-format
-msgid "Can't open %s\n"
-msgstr "No se puede abrir %s\n"
+msgid "Can't open %s"
+msgstr "No se puede abrir %s"
 
-msgid "Can't open temporary file for postscript output\n"
-msgstr "No se puede abrir el archivo temporal para la salida de PostScript\n"
+msgid "Can't open temporary file for postscript output"
+msgstr "No se puede abrir el archivo temporal para la salida de PostScript"
 
-msgid "Can't open temporary file for truetype output.\n"
-msgstr "No se puede abrir el archivo temporal para la salida de truetype.\n"
+msgid "Can't open temporary file for truetype output."
+msgstr "No se puede abrir el archivo temporal para la salida de truetype."
 
 msgid "Can't run mf"
 msgstr "No se puede ejecutar MF"
@@ -4328,11 +4328,11 @@ msgid "Cannot open %s"
 msgstr "No se puede abrir %s"
 
 #, c-format
-msgid "Cannot open %s\n"
-msgstr "No se puede abrir %s\n"
+msgid "Cannot open %s"
+msgstr "No se puede abrir %s"
 
-msgid "Cannot open a temporary file\n"
-msgstr "No se puede abrir un archivo temporal\n"
+msgid "Cannot open a temporary file"
+msgstr "No se puede abrir un archivo temporal"
 
 #, c-format
 msgid "Cannot open feature file %.120s"
@@ -5626,8 +5626,8 @@ msgstr "El texto de copyright (en el panel Nombres) debe ser totalmente ASCII. P
 msgid "Cor:"
 msgstr "Corrección:"
 
-msgid "Core python package 'pkg_resources' not found: Cannot discover plugins\n"
-msgstr "El paquete nucleo de python 'pkg_resources' no fue encontrado: No se pueden escanear los plugins\n"
+msgid "Core python package 'pkg_resources' not found: Cannot discover plugins"
+msgstr "El paquete nucleo de python 'pkg_resources' no fue encontrado: No se pueden escanear los plugins"
 
 msgid "Corner"
 msgstr "Esquina"
@@ -5672,8 +5672,8 @@ msgid "Cou_nter Clockwise"
 msgstr "E_n sentido antihorario"
 
 #, c-format
-msgid "Could not create plugin directory '%s'\n"
-msgstr "No se pudo crear el directorio del plugin '%s'\n"
+msgid "Could not create plugin directory '%s'"
+msgstr "No se pudo crear el directorio del plugin '%s'"
 
 msgid "Could not figure out a lookup type"
 msgstr "No se ha podido resolver un tipo de búsqueda"
@@ -5707,12 +5707,12 @@ msgstr "No se pudo encontrar el glifo original"
 msgid "Could not find the glyph: %.70s"
 msgstr "No se encontró el carácter: %.70s"
 
-msgid "Could not iterate 'fontforge_plugin' entry points.\n"
-msgstr "No se pudo iterar los puntos de entrada de \"fontforge_plugin\".\n"
+msgid "Could not iterate 'fontforge_plugin' entry points."
+msgstr "No se pudo iterar los puntos de entrada de \"fontforge_plugin\"."
 
 #, c-format
-msgid "Could not match points in composite glyph (%d to %d) when adding %s to %s\n"
-msgstr "No se pudo coincidir los puntos en el glifo compuesto (%d a %d) al añadir %s a %s\n"
+msgid "Could not match points in composite glyph (%d to %d) when adding %s to %s"
+msgstr "No se pudo coincidir los puntos en el glifo compuesto (%d a %d) al añadir %s a %s"
 
 msgid "Could not open"
 msgstr "No se pudo abrir"
@@ -5747,8 +5747,8 @@ msgid "Could not parse %s"
 msgstr "No se pudo interpretar a %s"
 
 #, c-format
-msgid "Could not parse a CID font, %sCIDFontType %d, %sfonttype %d\n"
-msgstr "No se pudo analizar una fuente CID, %sCIDFontType %d, %ssfonttype %d\n"
+msgid "Could not parse a CID font, %sCIDFontType %d, %sfonttype %d"
+msgstr "No se pudo analizar una fuente CID, %sCIDFontType %d, %ssfonttype %d"
 
 #, c-format
 msgid "Could not read %s"
@@ -5782,8 +5782,8 @@ msgid "Couldn't create directory: %s"
 msgstr "No se pudo crear el directorio: %s"
 
 #, c-format
-msgid "Couldn't find a font file named %s\n"
-msgstr "No se pudo encontrar un archivo de fuente llamado %s\n"
+msgid "Couldn't find a font file named %s"
+msgstr "No se pudo encontrar un archivo de fuente llamado %s"
 
 msgid "Couldn't find base point"
 msgstr "No se pudo encontrar el punto base"
@@ -6482,12 +6482,12 @@ msgid "Didn't understand \"%s\" while adding info to private subroutines"
 msgstr "No se entendió \"%s\" al añadir información a subrutinas privadas"
 
 #, c-format
-msgid "Didn't understand format for fdselect %d\n"
-msgstr "No entendía el formato para fdselect %d\n"
+msgid "Didn't understand format for fdselect %d"
+msgstr "No entendía el formato para fdselect %d"
 
 #, c-format
-msgid "Didn't understand index format: %d\n"
-msgstr "No se comprendió el formato de índice: %d\n"
+msgid "Didn't understand index format: %d"
+msgstr "No se comprendió el formato de índice: %d"
 
 msgid "Differ"
 msgstr "Es diferente"
@@ -6499,52 +6499,52 @@ msgid "Different Fonts"
 msgstr "Fuentes diferentes"
 
 #, c-format
-msgid "Different fill patterns in layer %d of %s\n"
-msgstr "Diferentes patrones de relleno en la capa %d de %s\n"
+msgid "Different fill patterns in layer %d of %s"
+msgstr "Diferentes patrones de relleno en la capa %d de %s"
 
 #, c-format
 msgid "Different number of contours in glyph “%s”\n"
 msgstr "Diferente número de contornos en el glifo “%s”\n"
 
 #, c-format
-msgid "Different numbers of layers in %s\n"
-msgstr "Diferentes números de capas en %s\n"
+msgid "Different numbers of layers in %s"
+msgstr "Diferentes números de capas en %s"
 
 #, c-format
-msgid "Different settings on stroke linecap in layer %d of %s\n"
-msgstr "Diferentes ajustes en el trazo de la línea de mayúsculas en la capa %d de %s\n"
+msgid "Different settings on stroke linecap in layer %d of %s"
+msgstr "Diferentes ajustes en el trazo de la línea de mayúsculas en la capa %d de %s"
 
 #, c-format
-msgid "Different settings on stroke linejoin in layer %d of %s\n"
-msgstr "Diferentes ajustes en la unión de línea del trazo en la capa %d de %s\n"
+msgid "Different settings on stroke linejoin in layer %d of %s"
+msgstr "Diferentes ajustes en la unión de línea del trazo en la capa %d de %s"
 
 #, c-format
-msgid "Different settings on whether to fill in layer %d of %s\n"
-msgstr "Diferentes ajustes sobre si rellenar o no la capa %d de %s\n"
+msgid "Different settings on whether to fill in layer %d of %s"
+msgstr "Diferentes ajustes sobre si rellenar o no la capa %d de %s"
 
 #, c-format
-msgid "Different settings on whether to inherit fill color in layer %d of %s\n"
-msgstr "Diferentes ajustes sobre si heredar o no color en la capa %d de %s\n"
+msgid "Different settings on whether to inherit fill color in layer %d of %s"
+msgstr "Diferentes ajustes sobre si heredar o no color en la capa %d de %s"
 
 #, c-format
-msgid "Different settings on whether to inherit fill opacity in layer %d of %s\n"
-msgstr "Diferentes ajustes sobre si heredar la opacidad de relleno en la capa %d de %s\n"
+msgid "Different settings on whether to inherit fill opacity in layer %d of %s"
+msgstr "Diferentes ajustes sobre si heredar la opacidad de relleno en la capa %d de %s"
 
 #, c-format
-msgid "Different settings on whether to inherit stroke opacity in layer %d of %s\n"
-msgstr "Diferentes ajustes sobre si heredar la opacidad del trazo en la capa %d de %s\n"
+msgid "Different settings on whether to inherit stroke opacity in layer %d of %s"
+msgstr "Diferentes ajustes sobre si heredar la opacidad del trazo en la capa %d de %s"
 
 #, c-format
-msgid "Different settings on whether to inherit stroke width in layer %d of %s\n"
-msgstr "Diferentes ajustes sobre si heredar el ancho del trazo en la capa %d de %s\n"
+msgid "Different settings on whether to inherit stroke width in layer %d of %s"
+msgstr "Diferentes ajustes sobre si heredar el ancho del trazo en la capa %d de %s"
 
 #, c-format
-msgid "Different settings on whether to stroke in layer %d of %s\n"
-msgstr "Diferentes ajustes sobre si se debe hacer un trazo en la capa %d de %s\n"
+msgid "Different settings on whether to stroke in layer %d of %s"
+msgstr "Diferentes ajustes sobre si se debe hacer un trazo en la capa %d de %s"
 
 #, c-format
-msgid "Different stroke patterns in layer %d of %s\n"
-msgstr "Diferentes patrones de trazo en la capa %d de %s\n"
+msgid "Different stroke patterns in layer %d of %s"
+msgstr "Diferentes patrones de trazo en la capa %d de %s"
 
 msgid "Dimli"
 msgstr "Dimli"
@@ -6885,8 +6885,8 @@ msgid "Duplicate data"
 msgstr "Duplicar datos"
 
 #, c-format
-msgid "Duplicate definition of subroutine %d\n"
-msgstr "Definición duplicada de la subrutina %d\n"
+msgid "Duplicate definition of subroutine %d"
+msgstr "Definición duplicada de la subrutina %d"
 
 msgid "Duplicate lib data."
 msgstr "Duplicar datos de la librería."
@@ -6898,7 +6898,7 @@ msgid "Duplicate pixelsize"
 msgstr "Duplicar tamaño de píxeles"
 
 #, c-format
-msgid "Duplicate repeat row count in char %d of pk file\n"
+msgid "Duplicate repeat row count in char %d of pk file"
 msgstr "Conteo de filas repetidas duplicado en el carácter %d del archivo pk"
 
 msgid "Duployan"
@@ -7151,8 +7151,8 @@ msgid "Empty Slot FG Color"
 msgstr "Color del primer plano de las ranuras vacío"
 
 #, c-format
-msgid "Empty composite %d\n"
-msgstr "Compositor vacío %d\n"
+msgid "Empty composite %d"
+msgstr "Compositor vacío %d"
 
 #, c-format
 msgid "Empty position on line %d of %s"
@@ -7190,11 +7190,11 @@ msgid ""
 msgstr "La subtabla de codificación para la plataforma=%d y su específico=%d (que debe ser 14) tiene un formato %d no soportado."
 
 #, c-format
-msgid "Encoding subtable for platform=%d, specific=%d has a 0 length subtable.\n"
+msgid "Encoding subtable for platform=%d, specific=%d has a 0 length subtable."
 msgstr "La subtabla de codificación para la plataforma=%d y su específico=%d tiene una subtabla con longitud 0."
 
 #, c-format
-msgid "Encoding subtable for platform=%d, specific=%d has an unsupported format %d.\n"
+msgid "Encoding subtable for platform=%d, specific=%d has an unsupported format %d."
 msgstr "La subtabla de codificación para la plataforma=%d y su específico=%d tiene un formato %d no soportado."
 
 #, c-format
@@ -7224,8 +7224,8 @@ msgstr "Fin del archivo encontrado en tabla coverage."
 msgid "End of file found in string on line %d of %s"
 msgstr "Se ha encontrado fin de archivo en la cadena en la línea %d de %s"
 
-msgid "End of file found when reading private dictionary.\n"
-msgstr "Fin del archivo encontrado al leer el diccionario privado.\n"
+msgid "End of file found when reading private dictionary."
+msgstr "Fin del archivo encontrado al leer el diccionario privado."
 
 #, c-format
 msgid "End of file in %s table"
@@ -7366,16 +7366,16 @@ msgid "Error parsing color component."
 msgstr "Error al analizar el componente de color."
 
 #, c-format
-msgid "Error reading plugin configuration file '%s': %s\n"
-msgstr "Error al leer el archivo de configuración del plugin: '%s': %s\n"
+msgid "Error reading plugin configuration file '%s': %s"
+msgstr "Error al leer el archivo de configuración del plugin: '%s': %s"
 
 #, c-format
-msgid "Error saving plugin configuration file '%s': %s\n"
-msgstr "Error al guardar el archivo de configuración del plugin: '%s': %s\n"
+msgid "Error saving plugin configuration file '%s': %s"
+msgstr "Error al guardar el archivo de configuración del plugin: '%s': %s"
 
 #, c-format
-msgid "Error: %s\n"
-msgstr "Error: %s\n"
+msgid "Error: %s"
+msgstr "Error: %s"
 
 #, c-format
 msgid "Error: Expected %s, got %s"
@@ -7965,8 +7965,8 @@ msgid "Failed to open file %s for output"
 msgstr "Error al abrir el archivo %s para la salida"
 
 #, c-format
-msgid "Failed to open glyph to name map file for writing: %s\n"
-msgstr "Error al abrir el glifo para nombrar el archivo de mapa para escritura: %s\n"
+msgid "Failed to open glyph to name map file for writing: %s"
+msgstr "Error al abrir el glifo para nombrar el archivo de mapa para escritura: %s"
 
 #, c-format
 msgid "Failed to open hotkey definition file: %s\n"
@@ -7980,14 +7980,14 @@ msgid "Failed to open your hotkey definition file for updates.\n"
 msgstr "Error al abrir el archivo de definición de teclas acceso rápido para las actualizaciones.\n"
 
 #, c-format
-msgid "Failed to parse color %s\n"
-msgstr "Error al interpretar el color %s\n"
+msgid "Failed to parse color %s"
+msgstr "Error al interpretar el color %s"
 
-msgid "Failed to parse the StartData command properly\n"
-msgstr "Error al interpretar el comando StartData correctamente\n"
+msgid "Failed to parse the StartData command properly"
+msgstr "Error al interpretar el comando StartData correctamente"
 
-msgid "Failed to parse the StartData command properly, bad count\n"
-msgstr "Error al interpretar el comando StartData correctamente, contador incorrecto\n"
+msgid "Failed to parse the StartData command properly, bad count"
+msgstr "Error al interpretar el comando StartData correctamente, contador incorrecto"
 
 #, c-format
 msgid "Failed to read a file. Bytes read:%ld file size:%ld\n"
@@ -8001,8 +8001,8 @@ msgid "Failed to rename the new hotkeys file over your old one!\n"
 msgstr "¡Error al renombrar el nuevo archivo de teclas acceso rápido sobre el antiguo!\n"
 
 #, c-format
-msgid "Failed to write %s\n"
-msgstr "Error al escribir %s\n"
+msgid "Failed to write %s"
+msgstr "Error al escribir %s"
 
 msgid "Failure"
 msgstr "Error"
@@ -8217,7 +8217,7 @@ msgstr "Plano"
 msgid "Flat Nib"
 msgstr "Pluma plana"
 
-msgid "Flate decompression failed.\n"
+msgid "Flate decompression failed."
 msgstr "Decompresión Flate fallida."
 
 msgid "Flattened Accents over Capitals"
@@ -8436,8 +8436,8 @@ msgstr "Desarrolladores de FontForge"
 msgid "FontForge does not currently parse pattern Color Sources (%s)."
 msgstr "FontForge actualmente no analiza fuentes de colores de patrón (%s)."
 
-msgid "FontForge does not support Chameleon fonts\n"
-msgstr "FontForge no soporta las fuentes Chameleon\n"
+msgid "FontForge does not support Chameleon fonts"
+msgstr "FontForge no soporta las fuentes Chameleon"
 
 #, c-format
 msgid "FontForge does not support anonymous tables on line %d of %s"
@@ -8446,19 +8446,19 @@ msgstr "FontForge no soporta tablas anónimas en la línea %d de %s"
 msgid "FontForge does not support dictionary based imagemask operators.\n"
 msgstr "FontForge no soporta operadores de máscaras de imagen basadas en diccionarios."
 
-msgid "FontForge does not support synthetic fonts\n"
-msgstr "FontForge no soporta fuentes sintéticas\n"
+msgid "FontForge does not support synthetic fonts"
+msgstr "FontForge no soporta fuentes sintéticas"
 
 #, c-format
-msgid "FontForge does not support this bit depth %d (must be 1,2,4,8,16,32)\n"
-msgstr "FontForge no soporta esta profundidad de bits %d (debe ser 1,2,4,8,16,32)\n"
+msgid "FontForge does not support this bit depth %d (must be 1,2,4,8,16,32)"
+msgstr "FontForge no soporta esta profundidad de bits %d (debe ser 1,2,4,8,16,32)"
 
-msgid "FontForge does not support type2 multiple master fonts\n"
+msgid "FontForge does not support type2 multiple master fonts"
 msgstr "FontForge no soporta fuentes múltiples maestras type2"
 
 #. GT: DICT is a magic term inside CFF fonts, as is INDEX, and I guess CFF and type2
-msgid "FontForge does not support type2 programs embedded in CFF DICT INDICES.\n"
-msgstr "FontForge no soporta programas de Type2 incrustados en CFF DICT INDICES.\n"
+msgid "FontForge does not support type2 programs embedded in CFF DICT INDICES."
+msgstr "FontForge no soporta programas de Type2 incrustados en CFF DICT INDICES."
 
 msgid ""
 "FontForge does not update this window when a change is made to the font.\n"
@@ -8506,8 +8506,8 @@ msgstr ""
 "mirarlas después de que el procesamiento mf esté completado,\n"
 "o eliminarlas para ahorrar espacio"
 
-msgid "FontForge only supports embedded images in data: URIs\n"
-msgstr "FontForge sólo soporta imágenes incrustadas en datos: URIs\n"
+msgid "FontForge only supports embedded images in data: URIs"
+msgstr "FontForge sólo soporta imágenes incrustadas en datos: URIs"
 
 msgid ""
 "FontForge previously exported glyphs using a SVG\n"
@@ -8872,7 +8872,7 @@ msgid "GGadget|ScaleFactor|100"
 msgstr "120"
 
 #, c-format
-msgid "GID out of range (%d) in format 14 'cmap' subtable\n"
+msgid "GID out of range (%d) in format 14 'cmap' subtable"
 msgstr "GIF fuera de rango (%d) en la subtabla \"cmap\" con formato 14"
 
 msgid "GID out of range."
@@ -9116,7 +9116,7 @@ msgid "Glyph %1$.50s with a %2$s from lookup subtable %3$.50s"
 msgstr "El glifo %1$.50s tiene un %2$s de la subtabla de búsquedas %3$.50s"
 
 #, c-format
-msgid "Glyph %d attempts to reference glyph %d which is outside the font\n"
+msgid "Glyph %d attempts to reference glyph %d which is outside the font"
 msgstr "El glifo %d intenta referenciar el glifo %d que está fuera de la fuente"
 
 #, c-format
@@ -9222,7 +9222,7 @@ msgid "Glyph _Metadata"
 msgstr "Metadatos del carácter(_N)"
 
 #, c-format
-msgid "Glyph bounding box data exceeds font bounding box data for GID %d\n"
+msgid "Glyph bounding box data exceeds font bounding box data for GID %d"
 msgstr "Los datos del cuadro delimitador exceden los datos del cuadro delimitador de la fuente para el GID %d"
 
 msgid "Glyph composed of:"
@@ -9846,8 +9846,8 @@ msgid "Hint _Width Near¹"
 msgstr "Ancho de las pistas cerca de¹(_W)"
 
 #, c-format
-msgid "Hint mask (or counter mask) with too many hints in %s\n"
-msgstr "Máscara de pistas (o máscara de contador) con demasiadas pistas en %s\n"
+msgid "Hint mask (or counter mask) with too many hints in %s"
+msgstr "Máscara de pistas (o máscara de contador) con demasiadas pistas en %s"
 
 #, c-format
 msgid "Hint masks differ in glyph “%s” at (%g,%g)\n"
@@ -9905,41 +9905,41 @@ msgstr "Formas históricas"
 msgid "Hit Watch Point"
 msgstr "Punto de inspección alcanzado"
 
-msgid "Hmm, more glyph variation data specified than there are glyphs in font.\n"
-msgstr "Mmm, se especificaron más datos de variación de glifos que los glifos que hay en la fuente.\n"
+msgid "Hmm, more glyph variation data specified than there are glyphs in font."
+msgstr "Mmm, se especificaron más datos de variación de glifos que los glifos que hay en la fuente."
 
-msgid "Hmm, no global tuples specified in the 'gvar' table.\n"
-msgstr "Mmm, no se especificaron tuplas globales en la tabla 'gvar'.\n"
+msgid "Hmm, no global tuples specified in the 'gvar' table."
+msgstr "Mmm, no se especificaron tuplas globales en la tabla 'gvar'."
 
-msgid "Hmm, the 'avar' table is too long.\n"
-msgstr "Mmm, la tabla 'avar' es demasiado larga.\n"
+msgid "Hmm, the 'avar' table is too long."
+msgstr "Mmm, la tabla 'avar' es demasiado larga."
 
-msgid "Hmm, the axis count in the 'avar' table is different from that in the 'fvar' table.\n"
-msgstr "Mmm, el número de ejes en la tabla 'avar' es diferente al de la tabla 'fvar'.\n"
+msgid "Hmm, the axis count in the 'avar' table is different from that in the 'fvar' table."
+msgstr "Mmm, el número de ejes en la tabla 'avar' es diferente al de la tabla 'fvar'."
 
-msgid "Hmm, the axis count in the 'gvar' table is different from that in the 'fvar' table.\n"
-msgstr "Mmm, el número de ejes en la tabla 'gvar' es diferente al de la tabla 'fvar'.\n"
+msgid "Hmm, the axis count in the 'gvar' table is different from that in the 'fvar' table."
+msgstr "Mmm, el número de ejes en la tabla 'gvar' es diferente al de la tabla 'fvar'."
 
-msgid "Hmm, this 'fvar' table has an unexpected size for an axis, I shan't parse it\n"
-msgstr "Mmm, esta tabla 'fvar' tiene un tamaño inesperado para un eje. No debo interpretarla\n"
+msgid "Hmm, this 'fvar' table has an unexpected size for an axis, I shan't parse it"
+msgstr "Mmm, esta tabla 'fvar' tiene un tamaño inesperado para un eje. No debo interpretarla"
 
-msgid "Hmm, this 'fvar' table has an unexpected size for an instance, I shan't parse it\n"
-msgstr "Mmm, esta tabla 'fvar' tiene un tamaño inesperado para una instancia. No debo interpretarla\n"
+msgid "Hmm, this 'fvar' table has an unexpected size for an instance, I shan't parse it"
+msgstr "Mmm, esta tabla 'fvar' tiene un tamaño inesperado para una instancia. No debo interpretarla"
 
-msgid "Hmm, this 'fvar' table has more axes than FontForge can handle.\n"
-msgstr "Mmm, esta tabla 'fvar' tiene más ejes de los que FontForge puede manejar.\n"
+msgid "Hmm, this 'fvar' table has more axes than FontForge can handle."
+msgstr "Mmm, esta tabla 'fvar' tiene más ejes de los que FontForge puede manejar."
 
 msgid "Hmm, this 'fvar' table has more count/size pairs than I expect\n"
 msgstr "Mmm, esta tabla 'fvar' tiene más pares de contador/tamaño de lo que espero\n"
 
-msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense.\n"
-msgstr "Mmm, esta tabla 'fvar' no tiene ejes. Eso no tiene sentido.\n"
+msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense."
+msgstr "Mmm, esta tabla 'fvar' no tiene ejes. Eso no tiene sentido."
 
 msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it\n"
 msgstr "Mmm, esta tabla 'fvar' tiene muy pocos pares de contador/tamaño. No debo interpretarla\n"
 
-msgid "Hmm, this 'fvar' table is too short\n"
-msgstr "Mmm, esta tabla 'fvar' es demasiado corta\n"
+msgid "Hmm, this 'fvar' table is too short"
+msgstr "Mmm, esta tabla 'fvar' es demasiado corta"
 
 #, c-format
 msgid ""
@@ -10064,12 +10064,12 @@ msgid "Hungarian"
 msgstr "Húngaro"
 
 #, c-format
-msgid "I can't even imagine how to attempt to interpolate gradients in layer %d of %s\n"
-msgstr "No puedo ni imaginar cómo intentar interpolar los degradados en la capa %d de %s\n"
+msgid "I can't even imagine how to attempt to interpolate gradients in layer %d of %s"
+msgstr "No puedo ni imaginar cómo intentar interpolar los degradados en la capa %d de %s"
 
 #, c-format
-msgid "I can't even imagine how to attempt to interpolate images in layer %d of %s\n"
-msgstr "No puedo ni imaginar cómo intentar interpolar imágenes en la capa %d de %s\n"
+msgid "I can't even imagine how to attempt to interpolate images in layer %d of %s"
+msgstr "No puedo ni imaginar cómo intentar interpolar imágenes en la capa %d de %s"
 
 #, c-format
 msgid "I can't figure out how to compare the subtable, %s, in %s to %s in %s\n"
@@ -10573,12 +10573,12 @@ msgstr ""
 "  el ancho \"hmtx\" (%d). (No se reportarán discrepancias subsecuentes).\n"
 
 #, c-format
-msgid "In %s, the advance width (%d) for glyph %s is greater than the maximum (%d)\n"
-msgstr "En %s, el ancho de avance (%d) para el glifo %s es mayor que el máximo (%d)\n"
+msgid "In %s, the advance width (%d) for glyph %s is greater than the maximum (%d)"
+msgstr "En %s, el ancho de avance (%d) para el glifo %s es mayor que el máximo (%d)"
 
 #, c-format
-msgid "In GID %d the advance width (%d) is greater than the stated maximum (%d)\n"
-msgstr "En GID %d el ancho de avance (%d) es mayor que el máximo indicado (%d)\n"
+msgid "In GID %d the advance width (%d) is greater than the stated maximum (%d)"
+msgstr "En GID %d el ancho de avance (%d) es mayor que el máximo indicado (%d)"
 
 #, c-format
 msgid ""
@@ -10617,16 +10617,16 @@ msgid "In an italic font the horizontal change per unit vertical change"
 msgstr "En una fuente cursiva, el cambio horizontal por unidad de cambio vertical"
 
 #, c-format
-msgid "In character %s, could not find reference to %s\n"
-msgstr "En el carácter %s, no se pudo encontrar referencia a %s\n"
+msgid "In character %s, could not find reference to %s"
+msgstr "En el carácter %s, no se pudo encontrar referencia a %s"
 
 #, c-format
-msgid "In character %s, there are too few points on a path in the base\n"
-msgstr "En el carácter %s, hay demasiado pocos puntos en un trazado en la base\n"
+msgid "In character %s, there are too few points on a path in the base"
+msgstr "En el carácter %s, hay demasiado pocos puntos en un trazado en la base"
 
 #, c-format
-msgid "In character %s, there are too many points on a path in the base\n"
-msgstr "En el carácter %s, hay demasiados puntos en una trazado en la base\n"
+msgid "In character %s, there are too many points on a path in the base"
+msgstr "En el carácter %s, hay demasiados puntos en una trazado en la base"
 
 msgid ""
 "In every lookup that uses a glyph, check that at\n"
@@ -10736,12 +10736,12 @@ msgstr "Nombre de archivo demasiado largo en la línea %d de %s"
 msgid "Includes nested too deeply on line %d of %s"
 msgstr "Incluye anidados demasiado profundos en la línea %d de %s"
 
-msgid "Incorrect number of deltas in cvt\n"
-msgstr "Número incorrecto de deltas en cvt\n"
+msgid "Incorrect number of deltas in cvt"
+msgstr "Número incorrecto de deltas en cvt"
 
 #, c-format
-msgid "Incorrect number of deltas in glyph %d (%s)\n"
-msgstr "Número incorrecto de deltas en el glifo %d (%s)\n"
+msgid "Incorrect number of deltas in glyph %d (%s)"
+msgstr "Número incorrecto de deltas en el glifo %d (%s)"
 
 msgid "Incorrect number of instances weights, or illegal numbers"
 msgstr "Número de instancias incorrecto o números incorrectos"
@@ -10768,8 +10768,8 @@ msgid "Index in use"
 msgstr "Índice ya utilizado"
 
 #, c-format
-msgid "Index out of range in %s\n"
-msgstr "Índice fuera de rango en %s\n"
+msgid "Index out of range in %s"
+msgstr "Índice fuera de rango en %s"
 
 #, c-format
 msgid "Index too big (must be <%d) \"%s"
@@ -11071,11 +11071,11 @@ msgid "Invalid Encoding"
 msgstr "Codificación inválida"
 
 #, c-format
-msgid "Invalid FD (%d) assigned to CID %d.\n"
-msgstr "FD no válido (%d) asignado a CID %d.\n"
+msgid "Invalid FD (%d) assigned to CID %d."
+msgstr "FD no válido (%d) asignado a CID %d."
 
-msgid "Invalid character outside of string in sfnts array\n"
-msgstr "Carácter no válido fuera de cadena en el array sfnts\n"
+msgid "Invalid character outside of string in sfnts array"
+msgstr "Carácter no válido fuera de cadena en el array sfnts"
 
 #, c-format
 msgid "Invalid comment string (negative length?) in 'PfEd' table for glyph %s."
@@ -11104,21 +11104,21 @@ msgstr "Glifo inválido para %s al arreglar referencias."
 msgid "Invalid glyph name range in glyph class on line %d of %s"
 msgstr "Rango de nombres de glifos no válido en la clase de glifos en la línea %d de %s"
 
-msgid "Invalid guideline.\n"
-msgstr "Pauta inválida.\n"
+msgid "Invalid guideline."
+msgstr "Pauta inválida."
 
-msgid "Invalid hex digit in sfnts array\n"
-msgstr "Dígito hexadecimal inválido en el array sfnts\n"
+msgid "Invalid hex digit in sfnts array"
+msgstr "Dígito hexadecimal inválido en el array sfnts"
 
 msgid "Invalid language"
 msgstr "Idioma no válido"
 
-msgid "Invalid ligature offset\n"
-msgstr "Desplazamiento incorrecto de ligadura\n"
+msgid "Invalid ligature offset"
+msgstr "Desplazamiento incorrecto de ligadura"
 
 #, c-format
-msgid "Invalid lookup table format. %d\n"
-msgstr "Formato de tabla de búsquedas no válido. %d\n"
+msgid "Invalid lookup table format. %d"
+msgstr "Formato de tabla de búsquedas no válido. %d"
 
 #, c-format
 msgid "Invalid or unsupported format (%d) for subtable of 'kern' table"
@@ -11132,20 +11132,20 @@ msgstr "Versión inválida o no soportada (0x%x) de la tabla \"kern\""
 msgid "Invalid platform for string on line %d of %s"
 msgstr "Plataforma no válida para cadena en línea %d de %s"
 
-msgid "Invalid point match. Point would be after this reference.\n"
-msgstr "Coincidencia de puntos no válida. Un punto estaría después de esta referencia.\n"
+msgid "Invalid point match. Point would be after this reference."
+msgstr "Coincidencia de puntos no válida. Un punto estaría después de esta referencia."
 
 msgid "Invalid point size"
 msgstr "Tamaño de puntos inválido"
 
-msgid "Invalid ttf hmtx table (or hhea), numOfLongMetrics is 0\n"
+msgid "Invalid ttf hmtx table (or hhea), numOfLongMetrics is 0"
 msgstr "Tabla hmtx ttf (o hhea) no válida, numOfLongMetrics es 0"
 
-msgid "Invalid ttf vmtx table (or vhea), numOfLongVerMetrics is 0\n"
+msgid "Invalid ttf vmtx table (or vhea), numOfLongVerMetrics is 0"
 msgstr "Tabla vmtx ttf (o vhea) no válida, numOfLongVerMetrics es 0"
 
-msgid "Invalid unit vector has been specified. The hint is ignored.\n"
-msgstr "Se ha especificado un vector de unidad inválida. La pista ha sido ignorada.\n"
+msgid "Invalid unit vector has been specified. The hint is ignored."
+msgstr "Se ha especificado un vector de unidad inválida. La pista ha sido ignorada."
 
 msgid "Irish"
 msgstr "Irlandés"
@@ -11575,7 +11575,7 @@ msgstr "Clave"
 
 #. GT: Here "def" is a PostScript keyword, (meaning define).
 #. GT: This "def" should not be translated as it is part of the PostScript language.
-msgid "Key for a def must be a string or name literal\n"
+msgid "Key for a def must be a string or name literal"
 msgstr "La clave para def debe ser una cadena o un literal de nombre"
 
 msgid "Khakass"
@@ -12444,8 +12444,8 @@ msgid "Lookup subtable %s (matched with %s)\n"
 msgstr "Búsqueda subtabla %s (coincide con %s)\n"
 
 #, c-format
-msgid "Lookup subtable %s contains a glyph %s whose kerning information takes up more than 64k bytes\n"
-msgstr "La subtabla de búsqueda %s contiene un glifo %s cuya información de interletraje ocupa más de 64k bytes\n"
+msgid "Lookup subtable %s contains a glyph %s whose kerning information takes up more than 64k bytes"
+msgstr "La subtabla de búsqueda %s contiene un glifo %s cuya información de interletraje ocupa más de 64k bytes"
 
 #, c-format
 msgid ""
@@ -13677,7 +13677,7 @@ msgstr "Técnicos misceláneos"
 msgid "Mismatch lookup types inside a parsed lookup"
 msgstr "Discrepancia de tipos de búsqueda dentro de una búsqueda analizada"
 
-msgid "Mismatched local and shared tuple flags.\n"
+msgid "Mismatched local and shared tuple flags."
 msgstr "Discrepancia entre las marcas de tuplas locales y compartidas."
 
 msgid "Missing \"OS/2\" table"
@@ -13709,8 +13709,8 @@ msgid "Missing Outline Color"
 msgstr "Falta el color del contorno"
 
 #, c-format
-msgid "Missing POST resource %u\n"
-msgstr "Falta el recurso POST %u\n"
+msgid "Missing POST resource %u"
+msgstr "Falta el recurso POST %u"
 
 msgid "Missing Points at Extrema"
 msgstr "Faltan puntos en los nodos extremos"
@@ -13904,8 +13904,8 @@ msgid "More pushes specified than needed"
 msgstr "Más empujes especificados de lo necesario"
 
 #, c-format
-msgid "More than 256 entries in subfont %s\n"
-msgstr "Más de 256 entradas en la subfuente %s\n"
+msgid "More than 256 entries in subfont %s"
+msgstr "Más de 256 entradas en la subfuente %s"
 
 msgid "Morisyen"
 msgstr "Morisyen"
@@ -14127,17 +14127,17 @@ msgid "Multiple copies of the selection should be tiled onto the path"
 msgstr "Se deben colocar múltiples copias de la selección en el trazado"
 
 #, c-format
-msgid "Multiple glyphs map to the same unicode encoding U+%04X, only one will be used\n"
-msgstr "Múltiples glifos mapean a la misma codificación unicode U+%04X, solo uno será usado\n"
+msgid "Multiple glyphs map to the same unicode encoding U+%04X, only one will be used"
+msgstr "Múltiples glifos mapean a la misma codificación unicode U+%04X, solo uno será usado"
 
-msgid "Multiple master font with more than 16 instances\n"
-msgstr "Fuente maestra múltiple con más de 16 instancias\n"
+msgid "Multiple master font with more than 16 instances"
+msgstr "Fuente maestra múltiple con más de 16 instancias"
 
-msgid "Multiple master font with more than 4 axes\n"
-msgstr "Fuente maestra múltiple con más de 4 ejes\n"
+msgid "Multiple master font with more than 4 axes"
+msgstr "Fuente maestra múltiple con más de 4 ejes"
 
 #, c-format
-msgid "Multiple master subroutine called with the wrong number of arguments in %s.\n"
+msgid "Multiple master subroutine called with the wrong number of arguments in %s."
 msgstr "Subrutina múltiple maestra llamada con el número incorrecto de argumentos en %s."
 
 msgid "Multiple names for language"
@@ -14784,12 +14784,12 @@ msgstr "No _a todo"
 msgid "No applicable lookup subtables"
 msgstr "No hay subtablas de búsqueda aplicables"
 
-msgid "No argument to operator\n"
-msgstr "Ningún argumento para el operador\n"
+msgid "No argument to operator"
+msgstr "Ningún argumento para el operador"
 
 #, c-format
-msgid "No argument to operator %d in private dict\n"
-msgstr "Ningún argumento para el operador %d en diccionario privado\n"
+msgid "No argument to operator %d in private dict"
+msgstr "Ningún argumento para el operador %d en diccionario privado"
 
 msgid "No bitmap strikes"
 msgstr "Sin trazos de mapa de bits"
@@ -14818,16 +14818,16 @@ msgid "No flags specified in lookupflags on line %d of %s"
 msgstr "No se especificaron banderas en las banderas de búsqueda en la línea %d de %s"
 
 #, c-format
-msgid "No glyph named %s, used as a pattern in %s\n"
-msgstr "Ningún glifo llamado %s, usado como patrón en %s\n"
+msgid "No glyph named %s, used as a pattern in %s"
+msgstr "Ningún glifo llamado %s, usado como patrón en %s"
 
 #, c-format
 msgid "No glyph named %s."
 msgstr "No hay ningún glifo llamado %s."
 
 #, c-format
-msgid "No glyph with unicode U+%05x in font\n"
-msgstr "No hay glifos con unicode U+%05x en la fuente\n"
+msgid "No glyph with unicode U+%05x in font"
+msgstr "No hay glifos con unicode U+%05x en la fuente"
 
 msgid "No glyphs directory or no contents file"
 msgstr "Sin directorio de glifos o sin archivo de contenido"
@@ -14844,8 +14844,8 @@ msgid "No kerning pairs found in %.200s"
 msgstr "No se encontraron pares de interletraje en %.200s"
 
 #, c-format
-msgid "No kerning table for %s\n"
-msgstr "No hay tabla de interletraje para %s\n"
+msgid "No kerning table for %s"
+msgstr "No hay tabla de interletraje para %s"
 
 msgid "No languages"
 msgstr "Sin idiomas"
@@ -14867,13 +14867,13 @@ msgstr "No se pueden especificar búsquedas dentro de una búsqueda contextual i
 msgid "No lookups to copy"
 msgstr "No hay búsquedas para copiar"
 
-msgid "No mark in ] (close array)\n"
-msgstr "No hay marca en ] (array cerrado)\n"
+msgid "No mark in ] (close array)"
+msgstr "No hay marca en ] (array cerrado)"
 
-msgid "No mark in cleartomark\n"
+msgid "No mark in cleartomark"
 msgstr "No hay marca en \"cleartomark\""
 
-msgid "No mark in counttomark\n"
+msgid "No mark in counttomark"
 msgstr "No hay marca en \"counttomark\""
 
 #, c-format
@@ -14885,8 +14885,8 @@ msgid "No matching AnchorClass for %s"
 msgstr "No coincide con la clase de anclaje para %s"
 
 #, c-format
-msgid "No module name for '%s' in plugin config -- skipping.\n"
-msgstr "No hay nombre de módulo para '%s' en la configuración del plugin -- omitiendo.\n"
+msgid "No module name for '%s' in plugin config -- skipping."
+msgstr "No hay nombre de módulo para '%s' en la configuración del plugin -- omitiendo."
 
 #, c-format
 msgid "No name for CharStrings dictionary \"%s"
@@ -14896,24 +14896,24 @@ msgid "No paths with within a glyph should intersect"
 msgstr "Ningún trazado dentro de un glifo debe intersectarse con otro"
 
 #, c-format
-msgid "No previous point on path in curveto from flex 0 in %s\n"
+msgid "No previous point on path in curveto from flex 0 in %s"
 msgstr "No hay un punto anterior en el trazado en curveto de flex 0 en %s"
 
 #, c-format
-msgid "No previous point on path in curveto in %s\n"
-msgstr "No hay un punto anterior en el trazado en curveto en %s\n"
+msgid "No previous point on path in curveto in %s"
+msgstr "No hay un punto anterior en el trazado en curveto en %s"
 
 #, c-format
-msgid "No previous point on path in flex operator in %s\n"
+msgid "No previous point on path in flex operator in %s"
 msgstr "No hay un punto anterior en el trazado en el operador flex en %s"
 
 #, c-format
-msgid "No previous point on path in lineto from flex 0 in %s\n"
+msgid "No previous point on path in lineto from flex 0 in %s"
 msgstr "No hay un punto anterior en el trazado en lineto de flex 0 en %s"
 
 #, c-format
-msgid "No previous point on path in lineto in %s\n"
-msgstr "No hay un punto anterior en el trazado en lineto en %s\n"
+msgid "No previous point on path in lineto in %s"
+msgstr "No hay un punto anterior en el trazado en lineto en %s"
 
 msgid "No problems detected"
 msgstr "No se detectaron problemas"
@@ -14938,8 +14938,8 @@ msgstr "Sin scripts"
 msgid "No selection"
 msgstr "Sin selección"
 
-msgid "No selection\n"
-msgstr "Sin selección\n"
+msgid "No selection"
+msgstr "Sin selección"
 
 msgid "No significant differences found"
 msgstr "No se encontraron diferencias significativas"
@@ -15249,8 +15249,8 @@ msgstr "No se seleccionó nada"
 msgid "Nothing found"
 msgstr "No se encontró nada"
 
-msgid "Nothing on stack to print\n"
-msgstr "Nada en la pila para imprimir\n"
+msgid "Nothing on stack to print"
+msgstr "Nada en la pila para imprimir"
 
 msgid "Nothing specified"
 msgstr "Nada especificado"
@@ -15914,8 +15914,8 @@ msgstr "Sin ordenar"
 msgid "Out of Range"
 msgstr "Fuera de rango"
 
-msgid "Out of memory\n"
-msgstr "Memoria insuficiente\n"
+msgid "Out of memory"
+msgstr "Memoria insuficiente"
 
 msgid "Outer Border:"
 msgstr "Borde exterior:"
@@ -16482,8 +16482,8 @@ msgid "Parse Error"
 msgstr "Error de análisis"
 
 #, c-format
-msgid "ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s\n"
-msgstr "ParseGlyphOrderAndAliasDB: No válido (entrada no separada por pestañas) en el índice %d: %s\n"
+msgid "ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s"
+msgstr "ParseGlyphOrderAndAliasDB: No válido (entrada no separada por pestañas) en el índice %d: %s"
 
 msgid "Parts List"
 msgstr "Lista de partes"
@@ -16829,8 +16829,8 @@ msgid "Polytonic Greek"
 msgstr "Griego politónico"
 
 #, c-format
-msgid "Pop stack underflow on pop in %s\n"
-msgstr "Subflujo de pila pop en pop en %s\n"
+msgid "Pop stack underflow on pop in %s"
+msgstr "Subflujo de pila pop en pop en %s"
 
 msgid "Popup"
 msgstr "Ventana emergente"
@@ -17331,11 +17331,11 @@ msgstr "Eli_minar"
 msgid "Re_vert List"
 msgstr "Re_vertir lista"
 
-msgid "Reached end of file when reading composite glyph\n"
+msgid "Reached end of file when reading composite glyph"
 msgstr "Se alcanzó el final del archivo al leer el glifo compuesto"
 
-msgid "Reached end of file when reading simple glyph\n"
-msgstr "Se alcanzó el final del archivo al leer un glifo simple\n"
+msgid "Reached end of file when reading simple glyph"
+msgstr "Se alcanzó el final del archivo al leer un glifo simple"
 
 msgid ""
 "Read Control Value Table entry\n"
@@ -17417,7 +17417,7 @@ msgid "Reference Names"
 msgstr "Nombres de referencia"
 
 #, c-format
-msgid "Reference encoding out of bounds in %s\n"
+msgid "Reference encoding out of bounds in %s"
 msgstr "La codificación de referencias está fuera de límites en %s"
 
 msgid "Reference point match out of date"
@@ -17444,12 +17444,12 @@ msgid "Reference to character %1$.20s at %2$d"
 msgstr "Referencia al carácter %1$.20s en %2$d"
 
 #, c-format
-msgid "Reference to glyph %d out of bounds when parsing 'glyf' table.\n"
-msgstr "Referencia al glifo %d fuera de límites al analizar la tabla \"glyf\".\n"
+msgid "Reference to glyph %d out of bounds when parsing 'glyf' table."
+msgstr "Referencia al glifo %d fuera de límites al analizar la tabla \"glyf\"."
 
 #, c-format
-msgid "Reference to transient memory out of bounds in put in %s\n"
-msgstr "Referencia a la memoria transitoria fuera de límites en la inserción en %s\n"
+msgid "Reference to transient memory out of bounds in put in %s"
+msgstr "Referencia a la memoria transitoria fuera de límites en la inserción en %s"
 
 msgid "References are nested more deeply in this glyph than the maximum allowed"
 msgstr "En este carácter las referencias se encuentran anidadas en un nivel superior al máximo permitido"
@@ -19957,16 +19957,16 @@ msgid "Skipping non-existent glyph %s in group %s."
 msgstr "Omitiendo el glifo %s inexistente en el grupo %s."
 
 #, c-format
-msgid "Skipping plugin %s: module '%s': Could not load.\n"
-msgstr "Omitiendo el plugin %s: módulo '%s': No se pudo cargar.\n"
+msgid "Skipping plugin %s: module '%s': Could not load."
+msgstr "Omitiendo el plugin %s: módulo '%s': No se pudo cargar."
 
 #, c-format
-msgid "Skipping plugin %s: module '%s': Error calling 'fontforge_plugin_init' function\n"
-msgstr "Omitiendo el plugin %s: módulo '%s': Error al llamar la función 'fontforge_plugin_init'\n"
+msgid "Skipping plugin %s: module '%s': Error calling 'fontforge_plugin_init' function"
+msgstr "Omitiendo el plugin %s: módulo '%s': Error al llamar la función 'fontforge_plugin_init'"
 
 #, c-format
-msgid "Skipping plugin %s: module '%s': Lacks 'fontforge_plugin_init' function\n"
-msgstr "Omitiendo el plugin %s: módulo '%s': Falta la función 'fontforge_plugin_init'\n"
+msgid "Skipping plugin %s: module '%s': Lacks 'fontforge_plugin_init' function"
+msgstr "Omitiendo el plugin %s: módulo '%s': Falta la función 'fontforge_plugin_init'"
 
 msgid "Skolt Sami"
 msgstr "Sami skolt"
@@ -20400,88 +20400,88 @@ msgid "Stack (TrueType)"
 msgstr "Pila (TrueType)"
 
 #, c-format
-msgid "Stack got too big in %s\n"
-msgstr "La pila se ha hecho demasiado grande en %s\n"
+msgid "Stack got too big in %s"
+msgstr "La pila se ha hecho demasiado grande en %s"
 
 #, c-format
-msgid "Stack underflow on binary operator in %s\n"
-msgstr "Subflujo de pila en operador binario en %s\n"
+msgid "Stack underflow on binary operator in %s"
+msgstr "Subflujo de pila en operador binario en %s"
 
 #, c-format
-msgid "Stack underflow on callothersubr in %s\n"
-msgstr "Subflujo de pila en callothersubr en %s\n"
+msgid "Stack underflow on callothersubr in %s"
+msgstr "Subflujo de pila en callothersubr en %s"
 
 #, c-format
-msgid "Stack underflow on callsubr in %s\n"
-msgstr "Subflujo de pila en callsubr en %s\n"
+msgid "Stack underflow on callsubr in %s"
+msgstr "Subflujo de pila en callsubr en %s"
 
 #, c-format
-msgid "Stack underflow on hhcurveto in %s\n"
-msgstr "Subflujo de pila en hhcurveto en %s\n"
+msgid "Stack underflow on hhcurveto in %s"
+msgstr "Subflujo de pila en hhcurveto en %s"
 
 #, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s\n"
 msgstr "Subflujo de pila en hlineto/hmoveto en %s\n"
 
 #, c-format
-msgid "Stack underflow on hsbw in %s\n"
-msgstr "Subflujo de pila en hsbw en %s\n"
+msgid "Stack underflow on hsbw in %s"
+msgstr "Subflujo de pila en hsbw en %s"
 
 #, c-format
-msgid "Stack underflow on hstem in %s\n"
-msgstr "Subflujo de pila en hstem en %s\n"
+msgid "Stack underflow on hstem in %s"
+msgstr "Subflujo de pila en hstem en %s"
 
 #, c-format
-msgid "Stack underflow on hstem3 in %s\n"
-msgstr "Subflujo de pila en hstem3 en %s\n"
+msgid "Stack underflow on hstem3 in %s"
+msgstr "Subflujo de pila en hstem3 en %s"
 
 #, c-format
-msgid "Stack underflow on hvcurveto in %s\n"
-msgstr "Subflujo de pila en hhcurveto en %s\n"
+msgid "Stack underflow on hvcurveto in %s"
+msgstr "Subflujo de pila en hhcurveto en %s"
 
 #, c-format
-msgid "Stack underflow on ifelse in %s\n"
-msgstr "Subflujo de pila en ifelse en %s\n"
+msgid "Stack underflow on ifelse in %s"
+msgstr "Subflujo de pila en ifelse en %s"
 
 #, c-format
 msgid "Stack underflow on rlineto/rmoveto in %s\n"
 msgstr "Subflujo de pila en rlineto/rmoveto en %s\n"
 
 #, c-format
-msgid "Stack underflow on rrcurveto in %s\n"
-msgstr "Subflujo de pila en vmoveto en %s\n"
+msgid "Stack underflow on rrcurveto in %s"
+msgstr "Subflujo de pila en vmoveto en %s"
 
 #, c-format
-msgid "Stack underflow on sbw in %s\n"
-msgstr "Subflujo de pila en sbw en %s\n"
+msgid "Stack underflow on sbw in %s"
+msgstr "Subflujo de pila en sbw en %s"
 
 #, c-format
-msgid "Stack underflow on seac in %s\n"
-msgstr "Subflujo de pila en seac en %s\n"
+msgid "Stack underflow on seac in %s"
+msgstr "Subflujo de pila en seac en %s"
 
 #, c-format
-msgid "Stack underflow on setcurrentpoint in %s\n"
-msgstr "Subflujo de pila en setcurrentpoint en %s\n"
+msgid "Stack underflow on setcurrentpoint in %s"
+msgstr "Subflujo de pila en setcurrentpoint en %s"
 
 #, c-format
-msgid "Stack underflow on unary operator in %s\n"
-msgstr "Subflujo de pila en operador unario en %s\n"
+msgid "Stack underflow on unary operator in %s"
+msgstr "Subflujo de pila en operador unario en %s"
 
 #, c-format
-msgid "Stack underflow on vhcurveto in %s\n"
-msgstr "Subflujo de pila en vhcurveto en %s\n"
+msgid "Stack underflow on vhcurveto in %s"
+msgstr "Subflujo de pila en vhcurveto en %s"
 
 #, c-format
 msgid "Stack underflow on vlineto/vmoveto in %s\n"
 msgstr "Subflujo de pila en vlineto/vmoveto en %s\n"
 
 #, c-format
-msgid "Stack underflow on vstem in %s\n"
-msgstr "Subflujo de pila en vstem en %s\n"
+msgid "Stack underflow on vstem in %s"
+msgstr "Subflujo de pila en vstem en %s"
 
 #, c-format
-msgid "Stack underflow on vstem3 in %s\n"
-msgstr "Subflujo de pila en vstem3 en %s\n"
+msgid "Stack underflow on vstem3 in %s"
+msgstr "Subflujo de pila en vstem3 en %s"
 
 msgid "StackBottomDisplayStyleShiftDown:"
 msgstr "Desplazamiento hacia abajo del estilo de visualización del elemento inferior de la pila:"
@@ -20868,8 +20868,8 @@ msgid "SubSuperscriptGapMin:"
 msgstr "Espacio mínimo entre subíndice y superíndice:"
 
 #, c-format
-msgid "Subroutine number out of bounds in %s\n"
-msgstr "Número de suroutina fuera de límites en %s\n"
+msgid "Subroutine number out of bounds in %s"
+msgstr "Número de suroutina fuera de límites en %s"
 
 msgid "Subscript"
 msgstr "Subíndice"
@@ -21224,8 +21224,8 @@ msgstr "La tabla '%c%c%c%c' tiene una longitud incorrecta. Debe ser 78, 86 o 96,
 msgid "Table '%c%c%c%c' has a bad length, must be even."
 msgstr "La tabla '%c%c%c%c' tiene una longitud incorrecta. Debe ser par."
 
-msgid "Table length should not be odd\n"
-msgstr "La longitud de la tabla no debe ser impar\n"
+msgid "Table length should not be odd"
+msgstr "La longitud de la tabla no debe ser impar"
 
 #, c-format
 msgid "Table length stretches beyond end of file for '%c%c%c%c'."
@@ -21742,8 +21742,8 @@ msgid "The Y coordinate of the anchor point in this glyph"
 msgstr "La coordenada Y del punto de anclaje en este glifo"
 
 #, c-format
-msgid "The advance width of %s (%d) does not match the font's advanceWidthMax (%d) and this is a fixed pitch font\n"
-msgstr "El ancho de avance de %s (%d) no coincide con el advanceWidthMax (%d) de la fuente, y esta es una fuente de ancho fijo\n"
+msgid "The advance width of %s (%d) does not match the font's advanceWidthMax (%d) and this is a fixed pitch font"
+msgstr "El ancho de avance de %s (%d) no coincide con el advanceWidthMax (%d) de la fuente, y esta es una fuente de ancho fijo"
 
 msgid "The amount of space between words when using this font"
 msgstr "La cantidad de espacio entre palabras al usar esta fuente"
@@ -22123,8 +22123,8 @@ msgstr ""
 "Las siguientes opciones influyen en cómo se exportan los glifos.\n"
 "La mayoría son específicas para uno o más formatos."
 
-msgid "The following table(s) in the font have been ignored by FontForge\n"
-msgstr "Las siguientes tabla(s) en la fuente han sido ignoradas por FontForge\n"
+msgid "The following table(s) in the font have been ignored by FontForge"
+msgstr "Las siguientes tabla(s) en la fuente han sido ignoradas por FontForge"
 
 #, c-format
 msgid "The font %.30s contains cubic splines. It must be converted to quadratic splines before it can be used in an apple distortable font"
@@ -22521,8 +22521,8 @@ msgstr ""
 msgid "The name, %.80s, has already been used to identify an anchor class in a different lookup subtable (%.80s)"
 msgstr "El nombre %.80s ya ha sido utilizado para identificar una clase de anclaje en una subtabla de búsquedas diferente (%.80s)"
 
-msgid "The names 'alefmaksurainitialarabic' and 'alefmaksuramedialarabic' in the Adobe Glyph List disagree with Unicode.  The use of these glyph names is therefore discouraged.\n"
-msgstr "Los nombres \"alefmaksurainitialarabic\" y \"alefmaksuramedialarabic\" en la lista de glifos de Adobe no concuerdan con Unicode. Por lo tanto, se desalienta el uso de estos nombres de glifos.\n"
+msgid "The names 'alefmaksurainitialarabic' and 'alefmaksuramedialarabic' in the Adobe Glyph List disagree with Unicode.  The use of these glyph names is therefore discouraged."
+msgstr "Los nombres \"alefmaksurainitialarabic\" y \"alefmaksuramedialarabic\" en la lista de glifos de Adobe no concuerdan con Unicode. Por lo tanto, se desalienta el uso de estos nombres de glifos."
 
 msgid "The number of em-units by which an arrow key will move a selected point"
 msgstr "El número de unidades em en las que una flecha moverá un punto seleccionado"
@@ -22833,7 +22833,7 @@ msgstr ""
 " y(nuevo) = tm[1,2]*x + tm[2,2]*y + tm[3,2]"
 
 #, c-format
-msgid "The truetype encoding specified by platform=%d specific=%d (which we map to %s) is not supported by your version of iconv(3).\n"
+msgid "The truetype encoding specified by platform=%d specific=%d (which we map to %s) is not supported by your version of iconv(3)."
 msgstr "La codificación TrueType especificada por la plataforma=%d y su específico=%d (que mapeamos a %s) no es soportada por tu versión de iconv(3)."
 
 #, c-format
@@ -23189,8 +23189,8 @@ msgid "This blank outline glyph has an unexpected bitmap version"
 msgstr "Este glifo de contorno en blanco tiene una versión de mapa de bits inesperada"
 
 #, c-format
-msgid "This character (gid=%d) has a following part (%d). I'm not sure what that means, please send me (gww@silcom.com) a copy of this font so I can test with it.\n"
-msgstr "Este carácter (gid=%d) tiene una parte siguiente (%d). No estoy seguro de lo que eso significa. Por favor, envíame (gww@silcom.com) una copia de esta fuente para que pueda probar con ella.\n"
+msgid "This character (gid=%d) has a following part (%d). I'm not sure what that means, please send me (gww@silcom.com) a copy of this font so I can test with it."
+msgstr "Este carácter (gid=%d) tiene una parte siguiente (%d). No estoy seguro de lo que eso significa. Por favor, envíame (gww@silcom.com) una copia de esta fuente para que pueda probar con ella."
 
 msgid ""
 "This checks if the character almost, but not exactly,\n"
@@ -23273,8 +23273,8 @@ msgstr ""
 msgid "This file contains an unnamed encoding, which cannot be named in a script"
 msgstr "Este archivo contiene una codificación sin nombre, que no puede ser nombrada en un script"
 
-msgid "This file contains no SVG fonts.\n"
-msgstr "Este archivo no contiene fuentes SVG.\n"
+msgid "This file contains no SVG fonts."
+msgstr "Este archivo no contiene fuentes SVG."
 
 msgid "This font comes from an old format sfd file. Not all aspects of it can be reverted successfully."
 msgstr "Esta fuente proviene de un archivo sfd de formato antiguo. No todos sus aspectos podrán revertirse correctamente."
@@ -23292,15 +23292,15 @@ msgstr "Esta fuente contiene una característica \"size\" (tamaño) con un tama�
 msgid "This font contains at least one translucent layer, but type3 does not support that (anything translucent or transparent is treated as opaque). Do you want to proceed anyway?"
 msgstr "Esta fuente contiene por lo menos una capa translúcida, pero type3 no soporta eso (cualquier capa translúcida o transparente se trata como si fuera opaca). ¿Deseas continuar de todos modos?"
 
-msgid "This font contains bitmaps in Apple's compressed format 4 (And I don't support that)\n"
-msgstr "Esta fuente contiene mapas de bits en el formato comprimido 4 de Apple (y yo no lo soporto)\n"
+msgid "This font contains bitmaps in Apple's compressed format 4 (And I don't support that)"
+msgstr "Esta fuente contiene mapas de bits en el formato comprimido 4 de Apple (y yo no lo soporto)"
 
 #, c-format
-msgid "This font contains bitmaps in a format %d that I've never heard of\n"
-msgstr "Esta fuente contiene mapas de bits en un formato %d del que nunca he oído hablar\n"
+msgid "This font contains bitmaps in a format %d that I've never heard of"
+msgstr "Esta fuente contiene mapas de bits en un formato %d del que nunca he oído hablar"
 
-msgid "This font contains bitmaps in the obsolete format 3 (And I can't read them)\n"
-msgstr "Esta fuente contiene mapas de bits en el formato obsoleto 3 (y no puedo leerlos)\n"
+msgid "This font contains bitmaps in the obsolete format 3 (And I can't read them)"
+msgstr "Esta fuente contiene mapas de bits en el formato obsoleto 3 (y no puedo leerlos)"
 
 msgid ""
 "This font contains both a 'BASE' table and a 'bsln' table.\n"
@@ -23379,10 +23379,10 @@ msgstr ""
 "Esta fuente no tiene métricas verticales habilitadas.\n"
 "Utiliza Elemento->Información de la fuente para habilitarlas."
 
-msgid "This font does not specify font-face\n"
-msgstr "Esta fuente no especifica font-face\n"
+msgid "This font does not specify font-face"
+msgstr "Esta fuente no especifica font-face"
 
-msgid "This font does not specify units-per-em\n"
+msgid "This font does not specify units-per-em"
 msgstr "Esta fuente no especifica unidades por em"
 
 msgid "This font does not specify unitsPerEm, so we guess 1000."
@@ -24098,16 +24098,16 @@ msgid "Too Many Points"
 msgstr "Demasiados puntos"
 
 #, c-format
-msgid "Too few items on stack for blend in %s\n"
-msgstr "Muy pocos objetos en la pila para mezclar en %s\n"
+msgid "Too few items on stack for blend in %s"
+msgstr "Muy pocos objetos en la pila para mezclar en %s"
 
 #, c-format
-msgid "Too few items on stack for get in %s\n"
-msgstr "Muy pocos objetos en la pila para obtener en %s\n"
+msgid "Too few items on stack for get in %s"
+msgstr "Muy pocos objetos en la pila para obtener en %s"
 
 #, c-format
-msgid "Too few items on stack for put in %s\n"
-msgstr "Muy pocos objetos en la pila para poner en %s\n"
+msgid "Too few items on stack for put in %s"
+msgstr "Muy pocos objetos en la pila para poner en %s"
 
 msgid "Too many Unique Font IDs"
 msgstr "Demasiadas IDs únicas de fuente"
@@ -24159,11 +24159,11 @@ msgid "Too many separation marks, starting at: %.20s..."
 msgstr "Demasiadas marcas de separación, comenzando en: %.20s..."
 
 #, c-format
-msgid "Too many subroutine calls in %s\n"
-msgstr "Demasiadas llamadas de subrutina en %s\n"
+msgid "Too many subroutine calls in %s"
+msgstr "Demasiadas llamadas de subrutina en %s"
 
-msgid "Too many subroutines. We can deal with at most 14 (0-13)\n"
-msgstr "Demasiadas subrutinas. Podemos tratar como máximo 14 (0-13)\n"
+msgid "Too many subroutines. We can deal with at most 14 (0-13)"
+msgstr "Demasiadas subrutinas. Podemos tratar como máximo 14 (0-13)"
 
 msgid "Tool_s"
 msgstr "Herramienta_s"
@@ -24637,12 +24637,12 @@ msgstr "Color de las etiquetas sin codificar"
 msgid "Uneven Weighting"
 msgstr "Peso desigual"
 
-msgid "Unexpected EOF in gf\n"
-msgstr "EOF inesperado en gf\n"
+msgid "Unexpected EOF in gf"
+msgstr "EOF inesperado en gf"
 
 #, c-format
-msgid "Unexpected PST type in GetPosSub (%d).\n"
-msgstr "Tipo de PST inesperado en GetPosSub (%d).\n"
+msgid "Unexpected PST type in GetPosSub (%d)."
+msgstr "Tipo de PST inesperado en GetPosSub (%d)."
 
 msgid "Unexpected Variation Selector"
 msgstr "Selector de variación inesperado"
@@ -24652,15 +24652,15 @@ msgid "Unexpected character (0x%02X) on line %d of %s"
 msgstr "Carácter inesperado (0x%02X) en la línea %d de %s"
 
 #, c-format
-msgid "Unexpected charset format in cff: %d\n"
-msgstr "Formato de conjunto de caracteres inesperado en cff: %d\n"
+msgid "Unexpected charset format in cff: %d"
+msgstr "Formato de conjunto de caracteres inesperado en cff: %d"
 
 msgid "Unexpected density"
 msgstr "Densidad inesperada"
 
 #, c-format
-msgid "Unexpected encoding format in cff: %d\n"
-msgstr "Formato de codificación inesperado en cff: %d\n"
+msgid "Unexpected encoding format in cff: %d"
+msgstr "Formato de codificación inesperado en cff: %d"
 
 msgid "Unexpected end of file found in morx chain."
 msgstr "Fin inesperado del archivo encontrado en la cadena morx."
@@ -24689,12 +24689,12 @@ msgid "Unexpected number"
 msgstr "Número inesperado"
 
 #, c-format
-msgid "Unexpected size for font info section of URW font (expected 12, got %d)\n"
-msgstr "Tamaño inesperado para la sección de información de fuentes de URW (se esperaba 12, se obtuvo %d)\n"
+msgid "Unexpected size for font info section of URW font (expected 12, got %d)"
+msgstr "Tamaño inesperado para la sección de información de fuentes de URW (se esperaba 12, se obtuvo %d)"
 
 #, c-format
-msgid "Unexpected size for name section of URW font (expected 55, got %d)\n"
-msgstr "Tamaño inesperado para la sección nombre de URW (se esperaba 55, se obtuvo %d)\n"
+msgid "Unexpected size for name section of URW font (expected 55, got %d)"
+msgstr "Tamaño inesperado para la sección nombre de URW (se esperaba 55, se obtuvo %d)"
 
 #, c-format
 msgid ""
@@ -24744,12 +24744,12 @@ msgstr ""
 "Token inesperado.\n"
 "antes de ...%40s"
 
-msgid "Unexpected use of bitmap format 5, no metrics are appearant\n"
-msgstr "Uso inesperado del formato de mapa de bits 5. No hay métricas aparentes\n"
+msgid "Unexpected use of bitmap format 5, no metrics are appearant"
+msgstr "Uso inesperado del formato de mapa de bits 5. No hay métricas aparentes"
 
 #, c-format
-msgid "Unexpected value in dictionary %d\n"
-msgstr "Valor inesperado en el diccionario %d\n"
+msgid "Unexpected value in dictionary %d"
+msgstr "Valor inesperado en el diccionario %d"
 
 #, c-format
 msgid ""
@@ -24830,15 +24830,15 @@ msgid "Uniform scaling for stems of any width and direction"
 msgstr "Escala uniforme para astas de cualquier ancho y dirección"
 
 #, c-format
-msgid "Uninterpreted code in gf: %d\n"
-msgstr "Código no interpretado en gf: %d\n"
+msgid "Uninterpreted code in gf: %d"
+msgstr "Código no interpretado en gf: %d"
 
 #, c-format
-msgid "Uninterpreted opcode %d in %s\n"
+msgid "Uninterpreted opcode %d in %s"
 msgstr "Opcode %d no interpretado en %s"
 
 #, c-format
-msgid "Uninterpreted opcode 12,%d in %s\n"
+msgid "Uninterpreted opcode 12,%d in %s"
 msgstr "Opcode 12 %d no interpretado en %s"
 
 msgid "UniqueID"
@@ -24879,8 +24879,8 @@ msgstr "Tipo de subtabla GSUB desconocido: %d"
 msgid "Unknown Language"
 msgstr "Idioma desconocido"
 
-msgid "Unknown character after backslash in literal string.\n"
-msgstr "Carácter desconocido después de la diagonal inversa en la cadena literal.\n"
+msgid "Unknown character after backslash in literal string."
+msgstr "Carácter desconocido después de la diagonal inversa en la cadena literal."
 
 #, c-format
 msgid "Unknown class table format: %d"
@@ -24905,8 +24905,8 @@ msgid "Unknown lookup: %s"
 msgstr "Búsqueda desconocida: %s"
 
 #, c-format
-msgid "Unknown operator in %s: %x\n"
-msgstr "Operador desconocido en %s: %x\n"
+msgid "Unknown operator in %s: %x"
+msgstr "Operador desconocido en %s: %x"
 
 #, c-format
 msgid "Unknown python type <%s> when reading UFO/GLIF lib data."
@@ -24916,16 +24916,16 @@ msgid "Unknown string type\n"
 msgstr "Tipo de cadena desconocido\n"
 
 #, c-format
-msgid "Unknown subtable '%c%c%c%c' in 'PfEd' table, ignored\n"
-msgstr "Subtabla desconocida \"%c%c%c%c\" en la tabla \"PfEd\". Ignorada\n"
+msgid "Unknown subtable '%c%c%c%c' in 'PfEd' table, ignored"
+msgstr "Subtabla desconocida \"%c%c%c%c\" en la tabla \"PfEd\". Ignorada"
 
 #, c-format
-msgid "Unknown subtable '%c%c%c%c' in 'TeX ' table, ignored\n"
-msgstr "Subtabla desconocida \"%c%c%c%c\" en la tabla \"TeX\". Ignorada\n"
+msgid "Unknown subtable '%c%c%c%c' in 'TeX ' table, ignored"
+msgstr "Subtabla desconocida \"%c%c%c%c\" en la tabla \"TeX\". Ignorada"
 
 #, c-format
-msgid "Unknown type '%c' found in path specification\n"
-msgstr "Tipo desconocido '%c' encontrado en la especificación de ruta\n"
+msgid "Unknown type '%c' found in path specification"
+msgstr "Tipo desconocido '%c' encontrado en la especificación de ruta"
 
 msgid ""
 "Unlike most commands this one does not work directly on the\n"
@@ -24964,7 +24964,7 @@ msgstr ""
 "esta subtabla de ligaduras es basura. Me rindo con ella."
 
 #, c-format
-msgid "Unlikely length for table, so I'm ignoring it. %u\n"
+msgid "Unlikely length for table, so I'm ignoring it. %u"
 msgstr "Longitud improbable para una tabla, así que la estoy ignorando. %u"
 
 msgid "Unlikely scale factor"
@@ -25010,8 +25010,8 @@ msgid "Unparseable include on line %d of %s"
 msgstr "Include no analizable en línea %d de %s"
 
 #, c-format
-msgid "Unparsed characters found after end of groups file (last line parsed was %d).\n"
-msgstr "Caracteres sin analizar encontrados después del final del archivo de grupos (la última línea analizada fue %d).\n"
+msgid "Unparsed characters found after end of groups file (last line parsed was %d)."
+msgstr "Caracteres sin analizar encontrados después del final del archivo de grupos (la última línea analizada fue %d)."
 
 msgid "Unreasonable DPI"
 msgstr "PPP (DPI) no razonable"
@@ -25049,7 +25049,7 @@ msgid "Unsupported image format must be bmp or png"
 msgstr "El formato de imagen no soportado debe ser bmp o png"
 
 #, c-format
-msgid "Unsupported mime type in data URI: %s\n"
+msgid "Unsupported mime type in data URI: %s"
 msgstr "Tipo de mime no soportado en el URI de los datos: %s"
 
 #, c-format
@@ -25160,11 +25160,11 @@ msgstr "Uso de \"exit\" cuando no se está en un bucle"
 msgid "Use of \"stop\" when not in a stopped\n"
 msgstr "Uso de \"stop\" cuando no se está en un \"stopped\""
 
-msgid "Use of a range offset of 0xffff to mean a missing glyph in cmap table\n"
+msgid "Use of a range offset of 0xffff to mean a missing glyph in cmap table"
 msgstr "Usa un desplazamiento de rango de 0xffff para representar un glifo fantante en la tabla cmap"
 
-msgid "Use of obsolete blend operator.\n"
-msgstr "Uso del operador de mezcla obsoleto.\n"
+msgid "Use of obsolete blend operator."
+msgstr "Uso del operador de mezcla obsoleto."
 
 #, c-format
 msgid "Use of undefined glyph class, %s, on line %d of %s"
@@ -25233,7 +25233,7 @@ msgstr ""
 "nombre de archivo al generar una fuente."
 
 #, c-format
-msgid "Use-my-metrics flag set on at least two components in glyph %d\n"
+msgid "Use-my-metrics flag set on at least two components in glyph %d"
 msgstr "Marca de Usar-mis métricas establecida en al menos dos componentes en el glifo %d"
 
 msgid "UseCairoDrawing"
@@ -25331,8 +25331,8 @@ msgstr "El valor excede las limitaciones de tfm"
 msgid "Value out of bounds"
 msgstr "Valor fuera de límites"
 
-msgid "Value out of bounds in spline.\n"
-msgstr "Valor fuera de límites en curva.\n"
+msgid "Value out of bounds in spline."
+msgstr "Valor fuera de límites en curva."
 
 msgid "Value out of range"
 msgstr "Valor fuera de rango"
@@ -25640,12 +25640,12 @@ msgid "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]\n"
 msgstr "Advertencia: El valor del eje %dº (%g) está fuera del rango permitido [%g,%g]"
 
 #, c-format
-msgid "Warning: %s has a different family name than does %s (GenerateFamily)\n"
-msgstr "Advertencia: %s tiene un nombre de familia diferente a %s (GenerateFamily)\n"
+msgid "Warning: %s has a different family name than does %s (GenerateFamily)"
+msgstr "Advertencia: %s tiene un nombre de familia diferente a %s (GenerateFamily)"
 
 #, c-format
-msgid "Warning: %s(%s) is both extended and condensed. That's impossible.\n"
-msgstr "Advertencia: %s(%s) está extendido y condensado al mismo tiempo. Eso es imposible.\n"
+msgid "Warning: %s(%s) is both extended and condensed. That's impossible."
+msgstr "Advertencia: %s(%s) está extendido y condensado al mismo tiempo. Eso es imposible."
 
 msgid ""
 "Warning: 'cvar' contains intermediate tuple data.\n"
@@ -25658,8 +25658,8 @@ msgstr ""
 msgid "Warning: Accuracy target %lf less than minimum %lf, using %lf instead\n"
 msgstr "Advertencia: El objetivo de precisión %lf es menor que %lf, usando %lf en su lugar\n"
 
-msgid "Warning: Both extended and condensed. That's impossible.\n"
-msgstr "Advertencia: Extendido y condensado al mismo tiempo. Eso es imposible.\n"
+msgid "Warning: Both extended and condensed. That's impossible."
+msgstr "Advertencia: Extendido y condensado al mismo tiempo. Eso es imposible."
 
 msgid "Warning: Byte swapped font mark in palm font."
 msgstr "Advertencia: Marca de fuente intercambiada por byte en la fuente de palma."
@@ -25667,19 +25667,19 @@ msgstr "Advertencia: Marca de fuente intercambiada por byte en la fuente de palm
 msgid "Warning: Can't identify contour direction, assuming clockwise\n"
 msgstr "Advertencia: No se puede identificar la dirección del contorno, asumiendo un sentido horario\n"
 
-msgid "Warning: Contour end did not close\n"
-msgstr "Advertencia: El final del contorno no se cerró\n"
+msgid "Warning: Contour end did not close"
+msgstr "Advertencia: El final del contorno no se cerró"
 
-msgid "Warning: Contour start did not close\n"
-msgstr "Advertencia: El comienzo del contorno no se cerró\n"
-
-#, c-format
-msgid "Warning: Coordinate diff %lf greater than margin %lf\n"
-msgstr "Advertencia: La diferencia de coordenadas %lf es mayor que el margen %lf\n"
+msgid "Warning: Contour start did not close"
+msgstr "Advertencia: El comienzo del contorno no se cerró"
 
 #, c-format
-msgid "Warning: Enabled Plugin '%s' was not discovered\n"
-msgstr "Avertencia: El plugin habilitado '%s' no pudo ser encontrado\n"
+msgid "Warning: Coordinate diff %lf greater than margin %lf"
+msgstr "Advertencia: La diferencia de coordenadas %lf es mayor que el margen %lf"
+
+#, c-format
+msgid "Warning: Enabled Plugin '%s' was not discovered"
+msgstr "Avertencia: El plugin habilitado '%s' no pudo ser encontrado"
 
 #, c-format
 msgid ""
@@ -25707,8 +25707,8 @@ msgstr ""
 "Advertencia: El glifo %d contiene datos tuples privados o intermedios.\n"
 "FontForge no soporta ninguno de los dos.\n"
 
-msgid "Warning: Left contour did not close\n"
-msgstr "Advertencia: El contorno izquierdo no se cerró\n"
+msgid "Warning: Left contour did not close"
+msgstr "Advertencia: El contorno izquierdo no se cerró"
 
 #, c-format
 msgid ""
@@ -25751,26 +25751,26 @@ msgstr ""
 " para la cadena %s en el idioma %s.\n"
 
 #, c-format
-msgid "Warning: No characters selected in AddDHint(%d,%d %d,%d %d,%d)\n"
-msgstr "Advertencia: No hay caracteres seleccionados en AddDHint(%d,%d %d,%d %d,%d)\n"
+msgid "Warning: No characters selected in AddDHint(%d,%d %d,%d %d,%d)"
+msgstr "Advertencia: No hay caracteres seleccionados en AddDHint(%d,%d %d,%d %d,%d)"
 
 #, c-format
-msgid "Warning: No characters selected in AddHint(%d,%d,%d)\n"
-msgstr "Advertencia: No hay caracteres seleccionados en AddDHint(%d %d,%d)\n"
+msgid "Warning: No characters selected in AddHint(%d,%d,%d)"
+msgstr "Advertencia: No hay caracteres seleccionados en AddDHint(%d %d,%d)"
 
-msgid "Warning: No stroke output for contour\n"
-msgstr "Advertencia: No hay salida de trazo para el contorno\n"
+msgid "Warning: No stroke output for contour"
+msgstr "Advertencia: No hay salida de trazo para el contorno"
 
-msgid "Warning: Right contour did not close\n"
-msgstr "Advertencia: El contorno derecho no se cerró\n"
+msgid "Warning: Right contour did not close"
+msgstr "Advertencia: El contorno derecho no se cerró"
 
 #, c-format
-msgid "Warning: SplinePointListIsClockwise found no usable line even at %dx magnification.\n"
+msgid "Warning: SplinePointListIsClockwise found no usable line even at %dx magnification."
 msgstr "Advertencia: SplinePointListIsClockwise no encontró ninguna línea utilizable, ni siquiera en la magnificación %dx."
 
 #, c-format
-msgid "Warning: StdGlyphName returning name for value %d outside of Unicode range\n"
-msgstr "Advertencia: StdGlyphName devuelve el nombre para el valor %d fuera del rango Unicode\n"
+msgid "Warning: StdGlyphName returning name for value %d outside of Unicode range"
+msgstr "Advertencia: StdGlyphName devuelve el nombre para el valor %d fuera del rango Unicode"
 
 msgid ""
 "Warning: There are already some 'aalt' lookups in\n"
@@ -25824,29 +25824,29 @@ msgstr ""
 " ¿Eso es lo que deseas?"
 
 #, c-format
-msgid "Warning: Unable to parse token %s, some features may be lost\n"
-msgstr "Advertencia: No se puede analizar el token %s, algunas características pueden perderse\n"
+msgid "Warning: Unable to parse token %s, some features may be lost"
+msgstr "Advertencia: No se puede analizar el token %s, algunas características pueden perderse"
 
 #, c-format
 msgid "Warning: Unlikely number of subtables (%d) for 'kern' table"
 msgstr "Advertencia: Número improbable de subtablas (%d) para la tabla \"kern\""
 
-msgid "Warning: Unreasonably big splines. They will be ignored.\n"
-msgstr "Advertencia: curvas irrazonablemente grandes. Se ignorarán.\n"
+msgid "Warning: Unreasonably big splines. They will be ignored."
+msgstr "Advertencia: curvas irrazonablemente grandes. Se ignorarán."
 
-msgid "Warning: Unrecognized or unsupported cap type, defaulting to 'nib'.\n"
+msgid "Warning: Unrecognized or unsupported cap type, defaulting to 'nib'."
 msgstr "Advertencia: Tipo de tope no reconocido o no soportado, regresando por defecto a \"nib\"."
 
-msgid "Warning: Unrecognized or unsupported join type, defaulting to 'nib'.\n"
+msgid "Warning: Unrecognized or unsupported join type, defaulting to 'nib'."
 msgstr "Advertencia: Tipo de unión no reconocido o no soportado, regresando por defecto a \"nib\"."
 
 #, c-format
-msgid "Warning: could not figure out where the hint (%d,%d %d,%d %d,%d) is valid\n"
+msgid "Warning: could not figure out where the hint (%d,%d %d,%d %d,%d) is valid"
 msgstr "Advertencia: No se pudo averiguar dónde es válida la pista (%d,%d %d,%d %d,%d)"
 
 #, c-format
-msgid "Warning: gid %d larger than glyph_cnt %d, skipping\n"
-msgstr "Advertencia: gid %d es más grande que glyph_cnt %d, omitiendo\n"
+msgid "Warning: gid %d larger than glyph_cnt %d, skipping"
+msgstr "Advertencia: gid %d es más grande que glyph_cnt %d, omitiendo"
 
 msgid "Warnings"
 msgstr "Advertencias"
@@ -25879,8 +25879,8 @@ msgstr "Wayú"
 msgid "We cannot have lead-in points for an open curve."
 msgstr "No podemos tener puntos de entrada para una curva abierta."
 
-msgid "We don't understand this font\n"
-msgstr "No entendemos esta fuente\n"
+msgid "We don't understand this font"
+msgstr "No entendemos esta fuente"
 
 msgid "Web Open Font (WOFF OTF)"
 msgstr "Web Open Font (WOFF OTF)"
@@ -26278,29 +26278,29 @@ msgstr ""
 "matemáticas garantizar un espaciado adecuado de\n"
 "línea."
 
-msgid "Whoops, Ran out of spiros\n"
+msgid "Whoops, Ran out of spiros"
 msgstr "Ups, me quedé sin espiras"
 
-msgid "Whoops, attempt to name anchors in a subtable which doesn't contain any\n"
-msgstr "Ups, intento de nombrar anclas en una subtabla que no contiene ninguna\n"
+msgid "Whoops, attempt to name anchors in a subtable which doesn't contain any"
+msgstr "Ups, intento de nombrar anclas en una subtabla que no contiene ninguna"
 
 #, c-format
-msgid "Whoops, bad spiro command %d\n"
+msgid "Whoops, bad spiro command %d"
 msgstr "Ups, comando %d de espiras incorrecto"
 
-msgid "Whoops, contours must begin with a move to\n"
-msgstr "Ups, los contornos deben comenzar con un movimiento hacia\n"
+msgid "Whoops, contours must begin with a move to"
+msgstr "Ups, los contornos deben comenzar con un movimiento hacia"
 
-msgid "Whoops, more names than lookups\n"
+msgid "Whoops, more names than lookups"
 msgstr "Ups, más nombres que búsquedas"
 
 #, c-format
-msgid "Whoops, more names than subtables of lookup %s\n"
+msgid "Whoops, more names than subtables of lookup %s"
 msgstr "Ups, más nombres que subtablas de búsqueda %s"
 
 #, c-format
-msgid "Whoops, unexpected verb in contour %d.%d\n"
-msgstr "Ups, verbo inesperado en el contorno %d.%d\n"
+msgid "Whoops, unexpected verb in contour %d.%d"
+msgstr "Ups, verbo inesperado en el contorno %d.%d"
 
 msgid "Wide"
 msgstr "Ancho"
@@ -28146,8 +28146,8 @@ msgstr "tabla de ubicación de mapa de bits (versión OT)"
 msgid "by"
 msgstr "un"
 
-msgid "can't create temporary file\n"
-msgstr "no se puede crear el archivo temporal\n"
+msgid "can't create temporary file"
+msgstr "no se puede crear el archivo temporal"
 
 msgid "character code mapping table"
 msgstr "Tabla de mapeo de código de caracteres"
@@ -28181,8 +28181,8 @@ msgstr "aviso de copyright"
 msgid "couldn't find the character %s"
 msgstr "no se pudo encontrar el carácter %s"
 
-msgid "couldn't write encodings file\n"
-msgstr "no se pudo escribir el archivo de codificaciones\n"
+msgid "couldn't write encodings file"
+msgstr "no se pudo escribir el archivo de codificaciones"
 
 msgid "coverage"
 msgstr "cobertura"
@@ -28229,8 +28229,8 @@ msgid "embedded bitmap scaling control table"
 msgstr "tabla de control de escalado de mapas de bits incrustados"
 
 #, c-format
-msgid "end of subroutine reached with no return in %s\n"
-msgstr "se alcanzó el final de la subrutina sin retorno en %s\n"
+msgid "end of subroutine reached with no return in %s"
+msgstr "se alcanzó el final de la subrutina sin retorno en %s"
 
 msgid "extended metamorphosis table"
 msgstr "tabla de metamórfosis extendida"
@@ -28534,11 +28534,11 @@ msgid "properties table"
 msgstr "tabla de propiedades"
 
 #, c-format
-msgid "return when not in subroutine in %s\n"
-msgstr "devolver cuando no esté en subrutina en %s\n"
+msgid "return when not in subroutine in %s"
+msgstr "devolver cuando no esté en subrutina en %s"
 
 #, c-format
-msgid "roll out of range in %s\n"
+msgid "roll out of range in %s"
 msgstr "roll fuera de rango en %s"
 
 msgid "romn"

@@ -48,12 +48,12 @@ msgid "  Hang right"
 msgstr "  掛向右側"
 
 #, c-format
-msgid "  Ignoring '%c%c%c%c'\n"
-msgstr "  忽略 '%c%c%c%c'\n"
+msgid "  Ignoring '%c%c%c%c'"
+msgstr "  忽略 '%c%c%c%c'"
 
 #, c-format
-msgid "  Ignoring '%c%c%c%c' %s\n"
-msgstr "  忽略 '%c%c%c%c' %s\n"
+msgid "  Ignoring '%c%c%c%c' %s"
+msgstr "  忽略 '%c%c%c%c' %s"
 
 #, c-format
 msgid "  Left Bound=%d"
@@ -71,8 +71,8 @@ msgid "  Stroke _Width:"
 msgstr "  筆畫寬度(_W)："
 
 #, c-format
-msgid " %s: line %d\n"
-msgstr " %s: 列 %d\n"
+msgid " %s: line %d"
+msgstr " %s: 列 %d"
 
 msgid " Adding a size will create it by scaling."
 msgstr " 加入尺寸將會依縮放建立它。"
@@ -133,8 +133,8 @@ msgid " refers to a missing glyph"
 msgstr " 參照缺少的字圖"
 
 #, c-format
-msgid "!!!! Unknown caret format %d !!!!\n"
-msgstr "!!!! 不明的插字符號格式 %d !!!!\n"
+msgid "!!!! Unknown caret format %d !!!!"
+msgstr "!!!! 不明的插字符號格式 %d !!!!"
 
 #, c-format
 msgid "\"%.40s\" size=%d point=%d (%d,%d) distance=%g"
@@ -239,8 +239,8 @@ msgid "%s contextual %d"
 msgstr "%s 上下文的 %d"
 
 #, c-format
-msgid "%s does not contain an <svg> element at the top\n"
-msgstr "%s 的頂端不包含 <svg> 元件\n"
+msgid "%s does not contain an <svg> element at the top"
+msgstr "%s 的頂端不包含 <svg> 元件"
 
 #, c-format
 msgid "%s entry"
@@ -264,8 +264,8 @@ msgid "%s in %s lookup %d"
 msgstr "%s 於 %s 中查找 %d"
 
 #, c-format
-msgid "%s is a mac resource file but contains no postscript or truetype fonts\n"
-msgstr "%s 是 mac 資源檔案但是不含任何 postscript 或 truetype 字型\n"
+msgid "%s is a mac resource file but contains no postscript or truetype fonts"
+msgstr "%s 是 mac 資源檔案但是不含任何 postscript 或 truetype 字型"
 
 #, c-format
 msgid ""
@@ -284,12 +284,12 @@ msgid "%s kerning class %d"
 msgstr "%s 字距微調類別 %d"
 
 #, c-format
-msgid "%s line: %d %s\n"
-msgstr "%s 列：%d %s\n"
+msgid "%s line: %d %s"
+msgstr "%s 列：%d %s"
 
 #, c-format
-msgid "%s line: %d %s: %s\n"
-msgstr "%s 列：%d %s: %s\n"
+msgid "%s line: %d %s: %s"
+msgstr "%s 列：%d %s: %s"
 
 #, c-format
 msgid "%s lookup %d"
@@ -336,8 +336,8 @@ msgid "%s's vstem3 operator is not supported for Type2\n"
 msgstr "%s 的 vstem3 運算子未支援 Type2\n"
 
 #, c-format
-msgid "%s(%s) and %s(%s) 0x%x in FOND %s\n"
-msgstr "%s(%s) 和 %s(%s) 0x%x 於 FOND %s 之中\n"
+msgid "%s(%s) and %s(%s) 0x%x in FOND %s"
+msgstr "%s(%s) 和 %s(%s) 0x%x 於 FOND %s 之中"
 
 #, c-format
 msgid "%s: %d Expected %s, got %s"
@@ -348,8 +348,8 @@ msgid "%s: %d Unexpected %s found"
 msgstr "%s: %d 未預期，找到 %s"
 
 #, c-format
-msgid "%s:%d Unexpected character %c (%d)\n"
-msgstr "%s:%d 未預期的字元 %c (%d)\n"
+msgid "%s:%d Unexpected character %c (%d)"
+msgstr "%s:%d 未預期的字元 %c (%d)"
 
 #, c-format
 msgid "'%s' is not the name of a currently known plugin"
@@ -731,12 +731,12 @@ msgid "A pdf stream object may not be a compressed object"
 msgstr "pdf 串流物件不可以是壓縮物件"
 
 #, c-format
-msgid "A point in %s is outside the font bounding box data.\n"
-msgstr "%s 中的一點位於字型邊界框資料之外。\n"
+msgid "A point in %s is outside the font bounding box data."
+msgstr "%s 中的一點位於字型邊界框資料之外。"
 
 #, c-format
-msgid "A point in GID %d is outside the glyph bounding box\n"
-msgstr "在 GID %d 中的點超出字圖邊界框\n"
+msgid "A point in GID %d is outside the glyph bounding box"
+msgstr "在 GID %d 中的點超出字圖邊界框"
 
 msgid "A reference in this glyph refers to a different encoding in different instances"
 msgstr "這個字圖中的參照在不同的實體中會參照不同的編碼"
@@ -1580,23 +1580,23 @@ msgstr ""
 "試圖套用查找到超出這個上下文範圍位置的\n"
 "查找 seq=%d，max=%d\n"
 
-msgid "Attempt to back up twice\n"
-msgstr "試圖回到上兩步\n"
+msgid "Attempt to back up twice"
+msgstr "試圖回到上兩步"
 
 #, c-format
 msgid "Attempt to divide by 0 in %.30s"
 msgstr "試圖在 %.30s 中除以 0"
 
 #, c-format
-msgid "Attempt to encode missing glyph %d to %d (0x%x)\n"
-msgstr "試圖編碼缺少的字圖 %d 到 %d (0x%x)\n"
+msgid "Attempt to encode missing glyph %d to %d (0x%x)"
+msgstr "試圖編碼缺少的字圖 %d 到 %d (0x%x)"
 
 #, c-format
 msgid "Attempt to have a font with more than %d layers"
 msgstr "嘗試產生具備超過 %d 個圖層的字型"
 
-msgid "Attempt to invert a singular matrix\n"
-msgstr "試圖反相單一矩陣\n"
+msgid "Attempt to invert a singular matrix"
+msgstr "試圖反相單一矩陣"
 
 msgid "Attempt to make a character that refers to itself"
 msgstr "試圖製作參照它自己的字元"
@@ -1661,11 +1661,11 @@ msgid "Attempt to take the square root of %1$g in %2$.30s"
 msgstr "試圖去取 %2$.30s 中 %1$g 的平方根"
 
 #, c-format
-msgid "Attempt to use a multiple master subroutine in a non-mm font in %s.\n"
-msgstr "在%s中試圖在非多主字型中使用多重主副常式。\n"
+msgid "Attempt to use a multiple master subroutine in a non-mm font in %s."
+msgstr "在%s中試圖在非多主字型中使用多重主副常式。"
 
-msgid "Attempt to use a multiple master subroutine in a non-mm font.\n"
-msgstr "試圖在非多主字型中使用多重主副常式。\n"
+msgid "Attempt to use a multiple master subroutine in a non-mm font."
+msgstr "試圖在非多主字型中使用多重主副常式。"
 
 msgid "Attention"
 msgstr "注意"
@@ -1698,8 +1698,8 @@ msgid "AutoKern Row"
 msgstr "列自動字距微調"
 
 #, c-format
-msgid "AutoWidth failure on %s\n"
-msgstr "自動調整寬度於 %s 失敗\n"
+msgid "AutoWidth failure on %s"
+msgstr "自動調整寬度於 %s 失敗"
 
 msgid "Auto_Hint"
 msgstr "自動渲調(_H)"
@@ -1877,15 +1877,15 @@ msgstr "不當的 BlueShift 條目。"
 #. GT: The CFF font type contains a thing called a name INDEX, and that INDEX
 #. GT: is bad. It is an index of many of the names used in the CFF font.
 #. GT: We hope the user will never see this.
-msgid "Bad CFF name INDEX\n"
-msgstr "不當的 CFF 名稱 INDEX\n"
+msgid "Bad CFF name INDEX"
+msgstr "不當的 CFF 名稱 INDEX"
 
 #, c-format
-msgid "Bad CID offset for CID %d\n"
-msgstr "CID %d 有不當的偏移\n"
+msgid "Bad CID offset for CID %d"
+msgstr "CID %d 有不當的偏移"
 
-msgid "Bad CharString. Does not include lenIV bytes.\n"
-msgstr "不當的 CharString。不包含 lenIV 位元組。\n"
+msgid "Bad CharString. Does not include lenIV bytes."
+msgstr "不當的 CharString。不包含 lenIV 位元組。"
 
 msgid "Bad Color"
 msgstr "不當的顏色"
@@ -2001,8 +2001,8 @@ msgid "Bad Private Dictionary"
 msgstr "不當的私用字典"
 
 #, c-format
-msgid "Bad RGB color spec: %s\n"
-msgstr "不當的紅綠藍三原色規格：%s\n"
+msgid "Bad RGB color spec: %s"
+msgstr "不當的紅綠藍三原色規格：%s"
 
 msgid "Bad Range"
 msgstr "不當的範圍"
@@ -2076,8 +2076,8 @@ msgid "Bad base table."
 msgstr "不當的基底表格。"
 
 #, c-format
-msgid "Bad bounding box for %s.\n"
-msgstr "不當的邊界框用於 %s。\n"
+msgid "Bad bounding box for %s."
+msgstr "不當的邊界框用於 %s。"
 
 msgid "Bad cidmap file"
 msgstr "不當的 cidmap 檔案"
@@ -2090,8 +2090,8 @@ msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)\n"
 msgstr "不當的類別定義表格。字圖範圍 %d-%d 超出 [0,%d)\n"
 
 #, c-format
-msgid "Bad class def table. start=%d cnt=%d, max glyph=%d\n"
-msgstr "不當的類別定義表格。開始=%d 計數=%d, 最大字圖=%d\n"
+msgid "Bad class def table. start=%d cnt=%d, max glyph=%d"
+msgstr "不當的類別定義表格。開始=%d 計數=%d, 最大字圖=%d"
 
 msgid "Bad class in state machine.\n"
 msgstr "在狀態器中的不當類別。\n"
@@ -2151,60 +2151,60 @@ msgstr "不當的裝置表格用於 %2$s 中的 %1$d 列"
 msgid "Bad encoding file format"
 msgstr "不當的編碼檔案格式"
 
-msgid "Bad fdselect\n"
-msgstr "不當的 fdselect\n"
+msgid "Bad fdselect"
+msgstr "不當的 fdselect"
 
 msgid "Bad feature tag"
 msgstr "不當的特徵標記"
 
 #, c-format
-msgid "Bad flags value, implied MORE components at end of glyph %d\n"
-msgstr "不當的旗標值，意味著更多成份於字圖 %d 的結尾\n"
+msgid "Bad flags value, implied MORE components at end of glyph %d"
+msgstr "不當的旗標值，意味著更多成份於字圖 %d 的結尾"
 
 #, c-format
-msgid "Bad flex subroutine in %s\n"
-msgstr "在 %s 中不當的 flex 副常式\n"
+msgid "Bad flex subroutine in %s"
+msgstr "在 %s 中不當的 flex 副常式"
 
 msgid "Bad font"
 msgstr "不當的字型"
 
-msgid "Bad font, offset out of bounds.\n"
-msgstr "不當的字型，偏移超出邊界。\n"
+msgid "Bad font, offset out of bounds."
+msgstr "不當的字型，偏移超出邊界。"
 
-msgid "Bad font: Encoding data out of range.\n"
-msgstr "不當的字型：編碼資料超出範圍。\n"
+msgid "Bad font: Encoding data out of range."
+msgstr "不當的字型：編碼資料超出範圍。"
 
 #, c-format
 msgid "Bad format for coverage table %d"
 msgstr "不當的格式用於覆蓋的表格 %d"
 
 #, c-format
-msgid "Bad glyph (%d), its data length is negative\n"
-msgstr "不當的字圖 (%d)，它的資料長度是負值\n"
+msgid "Bad glyph (%d), its data length is negative"
+msgstr "不當的字圖 (%d)，它的資料長度是負值"
 
 #, c-format
-msgid "Bad glyph (%d), its definition extends beyond the end of the glyf table\n"
-msgstr "不當的字圖 (%d)，它的定義延展於 glyf 表格結束之後\n"
+msgid "Bad glyph (%d), its definition extends beyond the end of the glyf table"
+msgstr "不當的字圖 (%d)，它的定義延展於 glyf 表格結束之後"
 
 #, c-format
-msgid "Bad glyph (%d), its definition extends beyond the space allowed for it\n"
-msgstr "不當的字圖 (%d)，它的定義延展於它所允許的空間之後\n"
+msgid "Bad glyph (%d), its definition extends beyond the space allowed for it"
+msgstr "不當的字圖 (%d)，它的定義延展於它所允許的空間之後"
 
 msgid "Bad glyph count in mort table."
 msgstr "在 mort 表格中不當的字圖計數。"
 
-msgid "Bad glyph range specified in color subtable of PfEd table\n"
-msgstr "在 PfEd 表格的顏色子表格中指定不當的字圖範圍\n"
+msgid "Bad glyph range specified in color subtable of PfEd table"
+msgstr "在 PfEd 表格的顏色子表格中指定不當的字圖範圍"
 
-msgid "Bad glyph range specified in glyph comment subtable of PfEd table\n"
-msgstr "在 PfEd 表格的註釋子表格中指定不當的字圖範圍\n"
+msgid "Bad glyph range specified in glyph comment subtable of PfEd table"
+msgstr "在 PfEd 表格的註釋子表格中指定不當的字圖範圍"
 
 msgid "Bad glyph variant subtable of MATH table."
 msgstr "數學表格的不當字圖變體子表格。"
 
 #, c-format
-msgid "Bad hex color spec: %s\n"
-msgstr "不當的十六進位顏色規格：%s\n"
+msgid "Bad hex color spec: %s"
+msgstr "不當的十六進位顏色規格：%s"
 
 msgid "Bad hex number"
 msgstr "不當的十六進位數字"
@@ -2290,8 +2290,8 @@ msgstr "不當的數字"
 #. GT: NaN is a concept in IEEE floating point which means "Not a Number"
 #. GT: it is used to represent errors like 0/0 or sqrt(-1).
 #, c-format
-msgid "Bad number, infinity or nan: %s\n"
-msgstr "不當的數字，無限大或無定義：%s\n"
+msgid "Bad number, infinity or nan: %s"
+msgstr "不當的數字，無限大或無定義：%s"
 
 #, c-format
 msgid "Bad numeric value for %s.%s"
@@ -2305,8 +2305,8 @@ msgid "Bad offset on line %d, must be between 0% and 100%."
 msgstr "不當的偏移於第 %d 條線，必須在 0% 和 100% 之間。"
 
 #, c-format
-msgid "Bad offset: %d for subfont %s\n"
-msgstr "不當的偏移：%d 用於子字型 %s\n"
+msgid "Bad offset: %d for subfont %s"
+msgstr "不當的偏移：%d 用於子字型 %s"
 
 #, c-format
 msgid "Bad opacity on line %d, must be between 0.0 and 1.0."
@@ -2343,8 +2343,8 @@ msgid "Bad setting"
 msgstr "不當的設定"
 
 #, c-format
-msgid "Bad sid %d (must be less than %d)\n"
-msgstr "不當的 sid %d (必須少於 %d)\n"
+msgid "Bad sid %d (must be less than %d)"
+msgstr "不當的 sid %d (必須少於 %d)"
 
 msgid "Bad stem add"
 msgstr "不當的字幹附加"
@@ -2398,8 +2398,8 @@ msgstr ""
 "接近...%2$40s"
 
 #, c-format
-msgid "Bad tt font: contour ends make no sense in glyph %d.\n"
-msgstr "不當的 TrueType 字型：在字圖 %d 中的輪廓結束並不具任何意義。\n"
+msgid "Bad tt font: contour ends make no sense in glyph %d."
+msgstr "不當的 TrueType 字型：在字圖 %d 中的輪廓結束並不具任何意義。"
 
 #. GT: The words "true" and "false" should be left untranslated. We are restricted
 #. GT: here by what PostScript understands, and it only understands the English
@@ -2868,14 +2868,14 @@ msgstr "CFF (裸)"
 msgid "CFF CID (Bare)"
 msgstr "CFF CID (裸)"
 
-msgid "CFF version mismatch\n"
-msgstr "CFF 版本不匹配\n"
+msgid "CFF version mismatch"
+msgstr "CFF 版本不匹配"
 
 msgid "CID findfont Name"
 msgstr "CID 尋找字型名稱"
 
-msgid "CID format doesn't contain what we expected it to.\n"
-msgstr "CID 格式不含我們對它的預期。\n"
+msgid "CID format doesn't contain what we expected it to."
+msgstr "CID 格式不含我們對它的預期。"
 
 msgid "CID keyed fonts may not be a master design of a multiple master font"
 msgstr "CID 鍵的字型不可以是多重主字型的主設計"
@@ -3000,8 +3000,8 @@ msgstr "自訂(_U)"
 msgid "Call Script"
 msgstr "呼叫命令稿"
 
-msgid "Called from...\n"
-msgstr "呼叫自…\n"
+msgid "Called from..."
+msgstr "呼叫自…"
 
 msgid "Cambodian"
 msgstr "柬埔寨語"
@@ -3026,8 +3026,8 @@ msgstr "無法平行"
 msgid "Can't _Be Interpolated"
 msgstr "無法被添插(_B)"
 
-msgid "Can't back up with nothing on stack\n"
-msgstr "沒有任何東西在堆疊上而無法向上返回\n"
+msgid "Can't back up with nothing on stack"
+msgstr "沒有任何東西在堆疊上而無法向上返回"
 
 msgid "Can't compare arrays\n"
 msgstr "無法比較陣列\n"
@@ -3082,14 +3082,14 @@ msgid "Can't open %s"
 msgstr "無法開啟 %s"
 
 #, c-format
-msgid "Can't open %s\n"
-msgstr "無法開啟 %s\n"
+msgid "Can't open %s"
+msgstr "無法開啟 %s"
 
-msgid "Can't open temporary file for postscript output\n"
-msgstr "無法開啟暫存檔用於 postscript 輸出\n"
+msgid "Can't open temporary file for postscript output"
+msgstr "無法開啟暫存檔用於 postscript 輸出"
 
-msgid "Can't open temporary file for truetype output.\n"
-msgstr "無法開啟暫存檔用於 truetype 輸出。\n"
+msgid "Can't open temporary file for truetype output."
+msgstr "無法開啟暫存檔用於 truetype 輸出。"
 
 msgid "Can't run mf"
 msgstr "無法運行 mf"
@@ -3120,11 +3120,11 @@ msgid "Cannot open %s"
 msgstr "無法開啟 %s"
 
 #, c-format
-msgid "Cannot open %s\n"
-msgstr "無法開啟 %s\n"
+msgid "Cannot open %s"
+msgstr "無法開啟 %s"
 
-msgid "Cannot open a temporary file\n"
-msgstr "無法開啟暫時檔案\n"
+msgid "Cannot open a temporary file"
+msgstr "無法開啟暫時檔案"
 
 #, c-format
 msgid "Cannot open feature file %.120s"
@@ -3977,8 +3977,8 @@ msgid "Could not find the glyph: %.70s"
 msgstr "找不到字圖：%.70s"
 
 #, c-format
-msgid "Could not match points in composite glyph (%d to %d) when adding %s to %s\n"
-msgstr "當加入 %3$s 到 %4$s 之中時，無法匹配在組合字圖 (%1$d 到 %2$d) 中的點\n"
+msgid "Could not match points in composite glyph (%d to %d) when adding %s to %s"
+msgstr "當加入 %3$s 到 %4$s 之中時，無法匹配在組合字圖 (%1$d 到 %2$d) 中的點"
 
 msgid "Could not open"
 msgstr "無法開啟"
@@ -4009,8 +4009,8 @@ msgid "Could not parse %s"
 msgstr "無法剖析 %s"
 
 #, c-format
-msgid "Could not parse a CID font, %sCIDFontType %d, %sfonttype %d\n"
-msgstr "無法剖析 CID 字型，%sCIDFontType %d，%sfonttype %d\n"
+msgid "Could not parse a CID font, %sCIDFontType %d, %sfonttype %d"
+msgstr "無法剖析 CID 字型，%sCIDFontType %d，%sfonttype %d"
 
 #, c-format
 msgid "Could not read %s"
@@ -4038,8 +4038,8 @@ msgid "Couldn't create directory: %s"
 msgstr "無法建立目錄：%s"
 
 #, c-format
-msgid "Couldn't find a font file named %s\n"
-msgstr "找不到名為 %s 的字型檔案\n"
+msgid "Couldn't find a font file named %s"
+msgstr "找不到名為 %s 的字型檔案"
 
 msgid "Couldn't find base point"
 msgstr "找不到基點"
@@ -4534,8 +4534,8 @@ msgid "Diameter:"
 msgstr "直徑："
 
 #, c-format
-msgid "Didn't understand format for fdselect %d\n"
-msgstr "並不了解用於 fdselect %d 的格式\n"
+msgid "Didn't understand format for fdselect %d"
+msgstr "並不了解用於 fdselect %d 的格式"
 
 msgid "Differ"
 msgstr "差異"
@@ -4764,8 +4764,8 @@ msgid "Duplicate data"
 msgstr "重製資料"
 
 #, c-format
-msgid "Duplicate definition of subroutine %d\n"
-msgstr "副常式 %d 的重複定義\n"
+msgid "Duplicate definition of subroutine %d"
+msgstr "副常式 %d 的重複定義"
 
 msgid "Duplicate name"
 msgstr "重製名稱"
@@ -4949,8 +4949,8 @@ msgid "Empty"
 msgstr "清空"
 
 #, c-format
-msgid "Empty composite %d\n"
-msgstr "清空合成 %d\n"
+msgid "Empty composite %d"
+msgstr "清空合成 %d"
 
 #, c-format
 msgid "Empty position on line %d of %s"
@@ -4983,12 +4983,12 @@ msgstr ""
 "有不受支援的格式 %d。\n"
 
 #, c-format
-msgid "Encoding subtable for platform=%d, specific=%d has a 0 length subtable.\n"
-msgstr "用於平臺=%d，規格=%d 的編碼子表格有 0 長度的子表格。\n"
+msgid "Encoding subtable for platform=%d, specific=%d has a 0 length subtable."
+msgstr "用於平臺=%d，規格=%d 的編碼子表格有 0 長度的子表格。"
 
 #, c-format
-msgid "Encoding subtable for platform=%d, specific=%d has an unsupported format %d.\n"
-msgstr "用於平臺=%d，規格=%d 的編碼子表格有不受支援的格式 %d。\n"
+msgid "Encoding subtable for platform=%d, specific=%d has an unsupported format %d."
+msgstr "用於平臺=%d，規格=%d 的編碼子表格有不受支援的格式 %d。"
 
 #, c-format
 msgid "Encoding value (%x) not in font, ignored"
@@ -5119,8 +5119,8 @@ msgid "Error Bound"
 msgstr "繫結時發生錯誤"
 
 #, c-format
-msgid "Error: %s\n"
-msgstr "錯誤：%s\n"
+msgid "Error: %s"
+msgstr "錯誤：%s"
 
 #, c-format
 msgid "Error: Expected %s, got %s"
@@ -5522,29 +5522,29 @@ msgid "Failed to open file %s for output"
 msgstr "開啟檔案 %s 用於輸出時失敗 "
 
 #, c-format
-msgid "Failed to open glyph to name map file for writing: %s\n"
-msgstr "開啟字圖以命名對應檔案用於寫入時失敗：%s\n"
+msgid "Failed to open glyph to name map file for writing: %s"
+msgstr "開啟字圖以命名對應檔案用於寫入時失敗：%s"
 
 msgid "Failed to open temporary output file"
 msgstr "開啟臨時輸出檔案時失敗 "
 
 #, c-format
-msgid "Failed to parse color %s\n"
-msgstr "剖析顏色 %s 時失敗\n"
+msgid "Failed to parse color %s"
+msgstr "剖析顏色 %s 時失敗"
 
-msgid "Failed to parse the StartData command properly\n"
-msgstr "無法適當地剖析 StartData 命令\n"
+msgid "Failed to parse the StartData command properly"
+msgstr "無法適當地剖析 StartData 命令"
 
-msgid "Failed to parse the StartData command properly, bad count\n"
-msgstr "無法適當地剖析 StartData 命令，不當的計數\n"
+msgid "Failed to parse the StartData command properly, bad count"
+msgstr "無法適當地剖析 StartData 命令，不當的計數"
 
 #, c-format
 msgid "Failed to read a file. Bytes read:%ld file size:%ld\n"
 msgstr "未能閱讀檔案。已閱讀：%ld位元；檔案大小：%ld位元\n"
 
 #, c-format
-msgid "Failed to write %s\n"
-msgstr "寫入 %s 時失敗\n"
+msgid "Failed to write %s"
+msgstr "寫入 %s 時失敗"
 
 msgid "Failure"
 msgstr "失敗"
@@ -5729,8 +5729,8 @@ msgstr "扁平"
 msgid "Flat Nib"
 msgstr "扁平"
 
-msgid "Flate decompression failed.\n"
-msgstr "扁平解壓縮失敗。\n"
+msgid "Flate decompression failed."
+msgstr "扁平解壓縮失敗。"
 
 msgid "Flattened Accents over Capitals"
 msgstr "大寫字母上的平面音調記號"
@@ -5838,8 +5838,8 @@ msgstr "字型："
 msgid "FontForge"
 msgstr "字型鍛造廠"
 
-msgid "FontForge does not support Chameleon fonts\n"
-msgstr "FontForge 不支援 Chameleon 字型\n"
+msgid "FontForge does not support Chameleon fonts"
+msgstr "FontForge 不支援 Chameleon 字型"
 
 #, c-format
 msgid "FontForge does not support anonymous tables on line %d of %s"
@@ -5848,19 +5848,19 @@ msgstr "FontForge 不支援匿名表格於 %2$s 的第 %1$d 列"
 msgid "FontForge does not support dictionary based imagemask operators.\n"
 msgstr "FontForge 不支援基於字典的圖像遮罩運算子。\n"
 
-msgid "FontForge does not support synthetic fonts\n"
-msgstr "FontForge 不支援合成的字型\n"
+msgid "FontForge does not support synthetic fonts"
+msgstr "FontForge 不支援合成的字型"
 
 #, c-format
-msgid "FontForge does not support this bit depth %d (must be 1,2,4,8,16,32)\n"
-msgstr "FontForge不支援此這點深度&d（應為1、2、4、8、16、32）\n"
+msgid "FontForge does not support this bit depth %d (must be 1,2,4,8,16,32)"
+msgstr "FontForge不支援此這點深度&d（應為1、2、4、8、16、32）"
 
-msgid "FontForge does not support type2 multiple master fonts\n"
-msgstr "FontForge 不支援 type2 多重主字型\n"
+msgid "FontForge does not support type2 multiple master fonts"
+msgstr "FontForge 不支援 type2 多重主字型"
 
 #. GT: DICT is a magic term inside CFF fonts, as is INDEX, and I guess CFF and type2
-msgid "FontForge does not support type2 programs embedded in CFF DICT INDICES.\n"
-msgstr "FontForge 不支援嵌入在 CFF DICT INDICES 中的 type2 程式。\n"
+msgid "FontForge does not support type2 programs embedded in CFF DICT INDICES."
+msgstr "FontForge 不支援嵌入在 CFF DICT INDICES 中的 type2 程式。"
 
 msgid ""
 "FontForge does not update this window when a change is made to the font.\n"
@@ -6108,8 +6108,8 @@ msgid "GGadget|ScaleFactor|100"
 msgstr "100"
 
 #, c-format
-msgid "GID out of range (%d) in format 14 'cmap' subtable\n"
-msgstr "在格式 14「cmap」子表格中 GID 超出範圍 (%d)\n"
+msgid "GID out of range (%d) in format 14 'cmap' subtable"
+msgstr "在格式 14「cmap」子表格中 GID 超出範圍 (%d)"
 
 msgid "GID out of range."
 msgstr "GID 超出範圍。"
@@ -6338,8 +6338,8 @@ msgid "Glyph _Metadata"
 msgstr "字圖後設資料(_M)"
 
 #, c-format
-msgid "Glyph bounding box data exceeds font bounding box data for GID %d\n"
-msgstr "字圖邊界框資料超出 GID %d 的字型邊界框資料\n"
+msgid "Glyph bounding box data exceeds font bounding box data for GID %d"
+msgstr "字圖邊界框資料超出 GID %d 的字型邊界框資料"
 
 msgid "Glyph composed of:"
 msgstr "字圖合成自："
@@ -6736,8 +6736,8 @@ msgid "Hint _Width Near¹"
 msgstr "渲調寬度接近¹(_W)"
 
 #, c-format
-msgid "Hint mask (or counter mask) with too many hints in %s\n"
-msgstr "渲調遮罩 (或字腔遮罩) 在 %s 中有太多渲調指令\n"
+msgid "Hint mask (or counter mask) with too many hints in %s"
+msgstr "渲調遮罩 (或字腔遮罩) 在 %s 中有太多渲調指令"
 
 msgid "HintMasks only if conflicts"
 msgstr "只當衝突時使用渲調遮罩"
@@ -6766,14 +6766,14 @@ msgstr "歷史形式"
 msgid "Hit Watch Point"
 msgstr "符合監看點"
 
-msgid "Hmm, the 'avar' table is too long.\n"
-msgstr "嗯，「avar」表格太長。\n"
+msgid "Hmm, the 'avar' table is too long."
+msgstr "嗯，「avar」表格太長。"
 
 msgid "Hmm, this 'fvar' table has more count/size pairs than I expect\n"
 msgstr "嗯，這個「fvar」表格比我預期有更多的計數/尺寸對\n"
 
-msgid "Hmm, this 'fvar' table is too short\n"
-msgstr "嗯，此「fvar」表格太短\n"
+msgid "Hmm, this 'fvar' table is too short"
+msgstr "嗯，此「fvar」表格太短"
 
 msgid "Hojo (JIS X 0212-1990) Kanji Forms"
 msgstr "Hojo (JIS X 0212-1990) 漢字形式"
@@ -6861,12 +6861,12 @@ msgid "Hungarian"
 msgstr "匈牙利語"
 
 #, c-format
-msgid "I can't even imagine how to attempt to interpolate gradients in layer %d of %s\n"
-msgstr "我根本想像不到如何在%s的%d層中插入梯度\n"
+msgid "I can't even imagine how to attempt to interpolate gradients in layer %d of %s"
+msgstr "我根本想像不到如何在%s的%d層中插入梯度"
 
 #, c-format
-msgid "I can't even imagine how to attempt to interpolate images in layer %d of %s\n"
-msgstr "我根本想像不到如何在%s的%d層中插入圖像\n"
+msgid "I can't even imagine how to attempt to interpolate images in layer %d of %s"
+msgstr "我根本想像不到如何在%s的%d層中插入圖像"
 
 #, c-format
 msgid "I miscalculated the size of subtable %s, this means the kerning output is wrong."
@@ -7123,8 +7123,8 @@ msgid "In an italic font the horizontal change per unit vertical change"
 msgstr "在斜體字型中每單位垂直變更的相應水平變更"
 
 #, c-format
-msgid "In character %s, could not find reference to %s\n"
-msgstr "在字元 %s 中，找不到到 %s 的參照\n"
+msgid "In character %s, could not find reference to %s"
+msgstr "在字元 %s 中，找不到到 %s 的參照"
 
 #, c-format
 msgid "In font %1$d the advance width of glyph %2$.30s does not scale the base advance width properly, it shall be forced to the proper value"
@@ -7187,8 +7187,8 @@ msgid "Includes nested too deeply on line %d of %s"
 msgstr "包含太多層的巢狀於 %2$s 的第 %1$d 列"
 
 #, c-format
-msgid "Incorrect number of deltas in glyph %d (%s)\n"
-msgstr "在字圖 %d (%s) 中的不正確 deltas 數量\n"
+msgid "Incorrect number of deltas in glyph %d (%s)"
+msgstr "在字圖 %d (%s) 中的不正確 deltas 數量"
 
 msgid "Incorrect number of instances weights, or illegal numbers"
 msgstr "不正確實體字重數量，或不合法的數量"
@@ -7215,8 +7215,8 @@ msgid "Index in use"
 msgstr "索引使用中"
 
 #, c-format
-msgid "Index out of range in %s\n"
-msgstr "索引超出 %s 的範圍\n"
+msgid "Index out of range in %s"
+msgstr "索引超出 %s 的範圍"
 
 #, c-format
 msgid "Index too big (must be <%d) \"%s"
@@ -7389,11 +7389,11 @@ msgid "Invalid Encoding"
 msgstr "無效編碼"
 
 #, c-format
-msgid "Invalid FD (%d) assigned to CID %d.\n"
-msgstr "無效的 FD (%d) 被指派到 CID %d。\n"
+msgid "Invalid FD (%d) assigned to CID %d."
+msgstr "無效的 FD (%d) 被指派到 CID %d。"
 
-msgid "Invalid character outside of string in sfnts array\n"
-msgstr "無效字元在 sfnts 陣列中的字串之外\n"
+msgid "Invalid character outside of string in sfnts array"
+msgstr "無效字元在 sfnts 陣列中的字串之外"
 
 #, c-format
 msgid "Invalid compressed table length for '%c%c%c%c'."
@@ -7407,18 +7407,18 @@ msgstr "無效的草寫位置於 %2$s 的第 %1$d 列"
 msgid "Invalid glyph name range in glyph class on line %d of %s"
 msgstr "在字圖類別中無效的字圖名稱範圍於 %2$s 的第 %1$d 列"
 
-msgid "Invalid hex digit in sfnts array\n"
-msgstr "在 sfnts 陣列中有無效的十六進位\n"
+msgid "Invalid hex digit in sfnts array"
+msgstr "在 sfnts 陣列中有無效的十六進位"
 
 msgid "Invalid language"
 msgstr "無效的語言"
 
-msgid "Invalid ligature offset\n"
-msgstr "無效的連體字偏移\n"
+msgid "Invalid ligature offset"
+msgstr "無效的連體字偏移"
 
 #, c-format
-msgid "Invalid lookup table format. %d\n"
-msgstr "無效的查找表格格式。%d\n"
+msgid "Invalid lookup table format. %d"
+msgstr "無效的查找表格格式。%d"
 
 #, c-format
 msgid "Invalid or unsupported format (%d) for subtable of 'kern' table"
@@ -7428,17 +7428,17 @@ msgstr "無效的或不受支援的格式 (%d) 用於子表格的「字距微調
 msgid "Invalid or unsupported version (0x%x) for 'kern' table"
 msgstr "無效的或不受支援的版本 (0x%x) 用於「字距微調」表格"
 
-msgid "Invalid point match. Point would be after this reference.\n"
-msgstr "無效的點匹配。點將會依據此參照。\n"
+msgid "Invalid point match. Point would be after this reference."
+msgstr "無效的點匹配。點將會依據此參照。"
 
 msgid "Invalid point size"
 msgstr "無效的點尺寸"
 
-msgid "Invalid ttf hmtx table (or hhea), numOfLongMetrics is 0\n"
-msgstr "無效的 ttf hmtx 表格 (或 hhea)，numOfLongMetrics 是 0\n"
+msgid "Invalid ttf hmtx table (or hhea), numOfLongMetrics is 0"
+msgstr "無效的 ttf hmtx 表格 (或 hhea)，numOfLongMetrics 是 0"
 
-msgid "Invalid ttf vmtx table (or vhea), numOfLongVerMetrics is 0\n"
-msgstr "無效的 ttf vmtx 表格 (或 vhea)，numOfLongVerMetrics 是 0\n"
+msgid "Invalid ttf vmtx table (or vhea), numOfLongVerMetrics is 0"
+msgstr "無效的 ttf vmtx 表格 (或 vhea)，numOfLongVerMetrics 是 0"
 
 msgid "Irish"
 msgstr "愛爾蘭語"
@@ -7697,8 +7697,8 @@ msgstr "鍵"
 
 #. GT: Here "def" is a PostScript keyword, (meaning define).
 #. GT: This "def" should not be translated as it is part of the PostScript language.
-msgid "Key for a def must be a string or name literal\n"
-msgstr "用於 def 的鍵值必須是字串或名稱常數\n"
+msgid "Key for a def must be a string or name literal"
+msgstr "用於 def 的鍵值必須是字串或名稱常數"
 
 msgid "Kharoshthi"
 msgstr "佉盧文"
@@ -8929,8 +8929,8 @@ msgstr "各式技術符號"
 msgid "Mismatch lookup types inside a parsed lookup"
 msgstr "被剖析的查找內部有不匹配的查找類型"
 
-msgid "Mismatched local and shared tuple flags.\n"
-msgstr "不相符的本地和共享的字組旗標。\n"
+msgid "Mismatched local and shared tuple flags."
+msgstr "不相符的本地和共享的字組旗標。"
 
 msgid "Missing \"OS/2\" table"
 msgstr "缺少「OS/2」表格"
@@ -8952,8 +8952,8 @@ msgid "Missing Glyph..."
 msgstr "缺少字圖…"
 
 #, c-format
-msgid "Missing POST resource %u\n"
-msgstr "缺少 POST 資源 %u\n"
+msgid "Missing POST resource %u"
+msgstr "缺少 POST 資源 %u"
 
 msgid "Missing Points at Extrema"
 msgstr "於末端缺少點"
@@ -9104,8 +9104,8 @@ msgid "More pushes specified than needed"
 msgstr "比所需還指定更多的移位"
 
 #, c-format
-msgid "More than 256 entries in subfont %s\n"
-msgstr "在子字型  %s 中有超過 256 個條目\n"
+msgid "More than 256 entries in subfont %s"
+msgstr "在子字型  %s 中有超過 256 個條目"
 
 msgid "Move by Ruler..."
 msgstr "移動依照尺規…"
@@ -9145,14 +9145,14 @@ msgid "Multiple copies of the selection should be tiled onto the path"
 msgstr "所選的多重複本應該在路徑上並排"
 
 #, c-format
-msgid "Multiple glyphs map to the same unicode encoding U+%04X, only one will be used\n"
-msgstr "多重字圖映射到相同的 Unicode 値 U+%04X，只有一個將會使用\n"
+msgid "Multiple glyphs map to the same unicode encoding U+%04X, only one will be used"
+msgstr "多重字圖映射到相同的 Unicode 値 U+%04X，只有一個將會使用"
 
-msgid "Multiple master font with more than 16 instances\n"
-msgstr "多重主字型具有超過 16 個實體\n"
+msgid "Multiple master font with more than 16 instances"
+msgstr "多重主字型具有超過 16 個實體"
 
-msgid "Multiple master font with more than 4 axes\n"
-msgstr "多重主字型具有超過 4 條軸線\n"
+msgid "Multiple master font with more than 4 axes"
+msgstr "多重主字型具有超過 4 條軸線"
 
 msgid "Multiple names for language"
 msgstr "語言的多重名稱"
@@ -9616,12 +9616,12 @@ msgstr "全部皆否(_T)"
 msgid "No applicable lookup subtables"
 msgstr "無適用的查找子表格"
 
-msgid "No argument to operator\n"
-msgstr "運算子沒有引數\n"
+msgid "No argument to operator"
+msgstr "運算子沒有引數"
 
 #, c-format
-msgid "No argument to operator %d in private dict\n"
-msgstr "在私用的字典中運算子 %d 沒有引數\n"
+msgid "No argument to operator %d in private dict"
+msgstr "在私用的字典中運算子 %d 沒有引數"
 
 msgid "No bitmap strikes"
 msgstr "無點陣字筆畫"
@@ -9650,7 +9650,7 @@ msgid "No flags specified in lookupflags on line %d of %s"
 msgstr "在查找旗標中無旗標指定於 %2$s 的第 %1$d 列"
 
 #, c-format
-msgid "No glyph named %s, used as a pattern in %s\n"
+msgid "No glyph named %s, used as a pattern in %s"
 msgstr "沒有稱為%s的字形，在%s中用作圖案"
 
 #, c-format
@@ -9658,8 +9658,8 @@ msgid "No glyph named %s."
 msgstr "沒有稱為%s的字形。"
 
 #, c-format
-msgid "No glyph with unicode U+%05x in font\n"
-msgstr "在字型中沒有 Unicode 値為 U+%05x 的字圖\n"
+msgid "No glyph with unicode U+%05x in font"
+msgstr "在字型中沒有 Unicode 値為 U+%05x 的字圖"
 
 msgid "No glyphs matched"
 msgstr "沒有匹配的字圖"
@@ -9669,8 +9669,8 @@ msgid "No kerning pairs found in %.200s"
 msgstr "在 %.200s 中找不到字距微調配對"
 
 #, c-format
-msgid "No kerning table for %s\n"
-msgstr "沒有字距微調表格用於 %s\n"
+msgid "No kerning table for %s"
+msgstr "沒有字距微調表格用於 %s"
 
 msgid "No languages"
 msgstr "沒有語言"
@@ -9688,14 +9688,14 @@ msgstr "沒有已選的查找"
 msgid "No lookups to copy"
 msgstr "無查找可複製"
 
-msgid "No mark in ] (close array)\n"
-msgstr "在 ] 中沒有標記 (關閉陣列)\n"
+msgid "No mark in ] (close array)"
+msgstr "在 ] 中沒有標記 (關閉陣列)"
 
-msgid "No mark in cleartomark\n"
-msgstr "在 cleartomark 中沒有標記\n"
+msgid "No mark in cleartomark"
+msgstr "在 cleartomark 中沒有標記"
 
-msgid "No mark in counttomark\n"
-msgstr "在 counttomark 中沒有標記\n"
+msgid "No mark in counttomark"
+msgstr "在 counttomark 中沒有標記"
 
 #, c-format
 msgid "No name for CharStrings dictionary \"%s"
@@ -9705,24 +9705,24 @@ msgid "No paths with within a glyph should intersect"
 msgstr "在字圖內不應該有任何交叉路徑"
 
 #, c-format
-msgid "No previous point on path in curveto from flex 0 in %s\n"
-msgstr "來自 %s 中 flex 0 的 curveto 中沒有前一點於路徑之上\n"
+msgid "No previous point on path in curveto from flex 0 in %s"
+msgstr "來自 %s 中 flex 0 的 curveto 中沒有前一點於路徑之上"
 
 #, c-format
-msgid "No previous point on path in curveto in %s\n"
-msgstr "在 %s 的 curveto 中沒有前一個點於路徑上\n"
+msgid "No previous point on path in curveto in %s"
+msgstr "在 %s 的 curveto 中沒有前一個點於路徑上"
 
 #, c-format
-msgid "No previous point on path in flex operator in %s\n"
-msgstr "在 %s 的 flex 運算子中沒有前一點於路徑之上\n"
+msgid "No previous point on path in flex operator in %s"
+msgstr "在 %s 的 flex 運算子中沒有前一點於路徑之上"
 
 #, c-format
-msgid "No previous point on path in lineto from flex 0 in %s\n"
-msgstr "來自 %s 中 flex 0 的 lineto 中沒有前一點於路徑之上\n"
+msgid "No previous point on path in lineto from flex 0 in %s"
+msgstr "來自 %s 中 flex 0 的 lineto 中沒有前一點於路徑之上"
 
 #, c-format
-msgid "No previous point on path in lineto in %s\n"
-msgstr "在 %s 的 lineto 中沒有前一個點於路徑上\n"
+msgid "No previous point on path in lineto in %s"
+msgstr "在 %s 的 lineto 中沒有前一個點於路徑上"
 
 msgid "No problems detected"
 msgstr "沒有偵測到問題"
@@ -9743,8 +9743,8 @@ msgstr "沒有文字"
 msgid "No selection"
 msgstr "沒有選擇"
 
-msgid "No selection\n"
-msgstr "無選取\n"
+msgid "No selection"
+msgstr "無選取"
 
 msgid "No significant differences found"
 msgstr "找不到任何顯著的差異"
@@ -9957,8 +9957,8 @@ msgstr "未選取任何東西"
 msgid "Nothing found"
 msgstr "找不到任何東西"
 
-msgid "Nothing on stack to print\n"
-msgstr "堆疊上沒有任何東西可列印\n"
+msgid "Nothing on stack to print"
+msgstr "堆疊上沒有任何東西可列印"
 
 msgid "Nothing specified"
 msgstr "沒有指定任何東西"
@@ -10454,8 +10454,8 @@ msgstr "超出排序"
 msgid "Out of Range"
 msgstr "超出範圍"
 
-msgid "Out of memory\n"
-msgstr "記憶體不足\n"
+msgid "Out of memory"
+msgstr "記憶體不足"
 
 msgid "Outer Shadow"
 msgstr "外陰影"
@@ -11188,8 +11188,8 @@ msgid "Polygon or Star"
 msgstr "多邊形或星型"
 
 #, c-format
-msgid "Pop stack underflow on pop in %s\n"
-msgstr "疊出堆疊下限溢位於 %s 中的 pop\n"
+msgid "Pop stack underflow on pop in %s"
+msgstr "疊出堆疊下限溢位於 %s 中的 pop"
 
 msgid "Popup"
 msgstr "突現視窗"
@@ -11552,11 +11552,11 @@ msgstr "原始"
 msgid "Re_move"
 msgstr "移除(_M)"
 
-msgid "Reached end of file when reading composite glyph\n"
-msgstr "讀取混合字圖時達到檔案結尾\n"
+msgid "Reached end of file when reading composite glyph"
+msgstr "讀取混合字圖時達到檔案結尾"
 
-msgid "Reached end of file when reading simple glyph\n"
-msgstr "讀取簡單字圖時達到檔案結尾\n"
+msgid "Reached end of file when reading simple glyph"
+msgstr "讀取簡單字圖時達到檔案結尾"
 
 msgid "Read of Uninitialized Store"
 msgstr "未初始化儲存的讀取"
@@ -11607,8 +11607,8 @@ msgid "Reference Names"
 msgstr "參照名稱"
 
 #, c-format
-msgid "Reference encoding out of bounds in %s\n"
-msgstr "參照編碼超出 %s 的邊界\n"
+msgid "Reference encoding out of bounds in %s"
+msgstr "參照編碼超出 %s 的邊界"
 
 msgid "Reference point match out of date"
 msgstr "參照點匹配已過時"
@@ -13632,88 +13632,88 @@ msgid "Stack (TrueType)"
 msgstr "堆疊 (TrueType)"
 
 #, c-format
-msgid "Stack got too big in %s\n"
-msgstr "堆疊在 %s 中變得太大\n"
+msgid "Stack got too big in %s"
+msgstr "堆疊在 %s 中變得太大"
 
 #, c-format
-msgid "Stack underflow on binary operator in %s\n"
-msgstr "堆疊下限溢位於 %s 中的二元運算子\n"
+msgid "Stack underflow on binary operator in %s"
+msgstr "堆疊下限溢位於 %s 中的二元運算子"
 
 #, c-format
-msgid "Stack underflow on callothersubr in %s\n"
-msgstr "堆疊下限溢位於 %s 中的 callothersubr\n"
+msgid "Stack underflow on callothersubr in %s"
+msgstr "堆疊下限溢位於 %s 中的 callothersubr"
 
 #, c-format
-msgid "Stack underflow on callsubr in %s\n"
-msgstr "堆疊下限溢位於 %s 中的 callsubr\n"
+msgid "Stack underflow on callsubr in %s"
+msgstr "堆疊下限溢位於 %s 中的 callsubr"
 
 #, c-format
-msgid "Stack underflow on hhcurveto in %s\n"
-msgstr "堆疊下限溢位於 %s 中的 hhcurveto\n"
+msgid "Stack underflow on hhcurveto in %s"
+msgstr "堆疊下限溢位於 %s 中的 hhcurveto"
 
 #, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s\n"
 msgstr "堆疊下限溢位於 %s 中的 hlineto/hmoveto\n"
 
 #, c-format
-msgid "Stack underflow on hsbw in %s\n"
-msgstr "堆疊下限溢位於 %s 中的 hsbw\n"
+msgid "Stack underflow on hsbw in %s"
+msgstr "堆疊下限溢位於 %s 中的 hsbw"
 
 #, c-format
-msgid "Stack underflow on hstem in %s\n"
-msgstr "堆疊下限溢位於 %s 中的 hstem\n"
+msgid "Stack underflow on hstem in %s"
+msgstr "堆疊下限溢位於 %s 中的 hstem"
 
 #, c-format
-msgid "Stack underflow on hstem3 in %s\n"
-msgstr "堆疊下限溢位於 %s 中的 hstem3\n"
+msgid "Stack underflow on hstem3 in %s"
+msgstr "堆疊下限溢位於 %s 中的 hstem3"
 
 #, c-format
-msgid "Stack underflow on hvcurveto in %s\n"
-msgstr "堆疊下限溢位於 %s 中的 hvcurveto\n"
+msgid "Stack underflow on hvcurveto in %s"
+msgstr "堆疊下限溢位於 %s 中的 hvcurveto"
 
 #, c-format
-msgid "Stack underflow on ifelse in %s\n"
-msgstr "堆疊下限溢位於 %s 中的 ifelse\n"
+msgid "Stack underflow on ifelse in %s"
+msgstr "堆疊下限溢位於 %s 中的 ifelse"
 
 #, c-format
 msgid "Stack underflow on rlineto/rmoveto in %s\n"
 msgstr "堆疊下限溢位於 %s 中的 rlineto/rmoveto\n"
 
 #, c-format
-msgid "Stack underflow on rrcurveto in %s\n"
-msgstr "堆疊下限溢位於 %s 中的 rrcurveto\n"
+msgid "Stack underflow on rrcurveto in %s"
+msgstr "堆疊下限溢位於 %s 中的 rrcurveto"
 
 #, c-format
-msgid "Stack underflow on sbw in %s\n"
-msgstr "堆疊下限溢位於 %s 中的 sbw\n"
+msgid "Stack underflow on sbw in %s"
+msgstr "堆疊下限溢位於 %s 中的 sbw"
 
 #, c-format
-msgid "Stack underflow on seac in %s\n"
-msgstr "堆疊下限溢位於 %s 中的 seac\n"
+msgid "Stack underflow on seac in %s"
+msgstr "堆疊下限溢位於 %s 中的 seac"
 
 #, c-format
-msgid "Stack underflow on setcurrentpoint in %s\n"
-msgstr "堆疊下限溢位於 %s 中的 setcurrentpoint 之上\n"
+msgid "Stack underflow on setcurrentpoint in %s"
+msgstr "堆疊下限溢位於 %s 中的 setcurrentpoint 之上"
 
 #, c-format
-msgid "Stack underflow on unary operator in %s\n"
-msgstr "堆疊下限溢位於 %s 中的一元運算子\n"
+msgid "Stack underflow on unary operator in %s"
+msgstr "堆疊下限溢位於 %s 中的一元運算子"
 
 #, c-format
-msgid "Stack underflow on vhcurveto in %s\n"
-msgstr "堆疊下限溢位於 %s 中的 vhcurveto\n"
+msgid "Stack underflow on vhcurveto in %s"
+msgstr "堆疊下限溢位於 %s 中的 vhcurveto"
 
 #, c-format
 msgid "Stack underflow on vlineto/vmoveto in %s\n"
 msgstr "堆疊下限溢位於 %s 中的 vlineto/vmoveto\n"
 
 #, c-format
-msgid "Stack underflow on vstem in %s\n"
-msgstr "堆疊下限溢位於 %s 中的 vstem\n"
+msgid "Stack underflow on vstem in %s"
+msgstr "堆疊下限溢位於 %s 中的 vstem"
 
 #, c-format
-msgid "Stack underflow on vstem3 in %s\n"
-msgstr "堆疊下限溢位於 %s 中的 vstem3\n"
+msgid "Stack underflow on vstem3 in %s"
+msgstr "堆疊下限溢位於 %s 中的 vstem3"
 
 msgid "StackBottomDisplayStyleShiftDown:"
 msgstr "StackBottomDisplayStyleShiftDown："
@@ -14007,8 +14007,8 @@ msgid "SubSuperscriptGapMin:"
 msgstr "SubSuperscriptGapMin："
 
 #, c-format
-msgid "Subroutine number out of bounds in %s\n"
-msgstr "副常式數量超出 %s 的邊界\n"
+msgid "Subroutine number out of bounds in %s"
+msgstr "副常式數量超出 %s 的邊界"
 
 msgid "Subscript"
 msgstr "下標"
@@ -14291,8 +14291,8 @@ msgstr "表格「%c%c%c%c」長度不當，必須是 78, 86 或 96 但卻是 %d�
 msgid "Table '%c%c%c%c' has a bad length, must be even."
 msgstr "表格「%c%c%c%c」長度不當，必須被平衡。"
 
-msgid "Table length should not be odd\n"
-msgstr "表格長度不應為奇數\n"
+msgid "Table length should not be odd"
+msgstr "表格長度不應為奇數"
 
 #, c-format
 msgid "Table length stretches beyond end of file for '%c%c%c%c'."
@@ -14542,8 +14542,8 @@ msgid "The Y coordinate of the anchor point in this glyph"
 msgstr "在這個字圖中錨點的 Y 座標"
 
 #, c-format
-msgid "The advance width of %s (%d) does not match the font's advanceWidthMax (%d) and this is a fixed pitch font\n"
-msgstr "%s 的前加寬度 (%d) 不匹配字型的 advanceWidthMax (%d)，而這是個固定間距的字型\n"
+msgid "The advance width of %s (%d) does not match the font's advanceWidthMax (%d) and this is a fixed pitch font"
+msgstr "%s 的前加寬度 (%d) 不匹配字型的 advanceWidthMax (%d)，而這是個固定間距的字型"
 
 msgid "The amount of space between words when using this font"
 msgstr "使用此字型時在字詞之間的空間數量"
@@ -14753,8 +14753,8 @@ msgstr "特徵標記於第 %d 列 (%s) 應該以 ASCII 編碼。\n"
 msgid "The following error occurred on the selected glyphs: %.100s"
 msgstr "下列的錯誤發生在已選字圖上：%.100s"
 
-msgid "The following table(s) in the font have been ignored by FontForge\n"
-msgstr "在字型中的下列表格已被 FontForge 忽略\n"
+msgid "The following table(s) in the font have been ignored by FontForge"
+msgstr "在字型中的下列表格已被 FontForge 忽略"
 
 #, c-format
 msgid "The font %s is one of the standard fonts. It isn't actually in the file."
@@ -15121,8 +15121,8 @@ msgstr ""
 "y(新) = tm[1,2]*x + tm[2,2]*y + tm[3,2]"
 
 #, c-format
-msgid "The truetype encoding specified by platform=%d specific=%d (which we map to %s) is not supported by your version of iconv(3).\n"
-msgstr "由平臺=%d 規格=%d (我們將其映射到 %s) 指定的 truetype 編碼，未被您的 iconv(3) 版本所支援。\n"
+msgid "The truetype encoding specified by platform=%d specific=%d (which we map to %s) is not supported by your version of iconv(3)."
+msgstr "由平臺=%d 規格=%d (我們將其映射到 %s) 指定的 truetype 編碼，未被您的 iconv(3) 版本所支援。"
 
 #, c-format
 msgid ""
@@ -15382,8 +15382,8 @@ msgstr ""
 msgid "This file contains an unnamed encoding, which cannot be named in a script"
 msgstr "這個檔案含有未命名編碼，無法在命令稿中被命名"
 
-msgid "This file contains no SVG fonts.\n"
-msgstr "這個檔案不含 SVG 字型。\n"
+msgid "This file contains no SVG fonts."
+msgstr "這個檔案不含 SVG 字型。"
 
 msgid "This font comes from an old format sfd file. Not all aspects of it can be reverted successfully."
 msgstr "這個字型來自舊的 sfd 格式檔案。並非它的所有比例都可以成功回復。"
@@ -15443,11 +15443,11 @@ msgstr ""
 "此字型尚未啟用垂直字框。\n"
 "使用 「元件→字型資訊」以啟用它們。"
 
-msgid "This font does not specify font-face\n"
-msgstr "此字型不指定 font-face\n"
+msgid "This font does not specify font-face"
+msgstr "此字型不指定 font-face"
 
-msgid "This font does not specify units-per-em\n"
-msgstr "此字型不指定 units-per-em\n"
+msgid "This font does not specify units-per-em"
+msgstr "此字型不指定 units-per-em"
 
 #, c-format
 msgid ""
@@ -15844,16 +15844,16 @@ msgid "Too Many Points"
 msgstr "太多點"
 
 #, c-format
-msgid "Too few items on stack for blend in %s\n"
-msgstr "在 %s 中混色時堆疊上的項目太少\n"
+msgid "Too few items on stack for blend in %s"
+msgstr "在 %s 中混色時堆疊上的項目太少"
 
 #, c-format
-msgid "Too few items on stack for get in %s\n"
-msgstr "對於 %s 中的 get 而言太少項目於堆疊之上\n"
+msgid "Too few items on stack for get in %s"
+msgstr "對於 %s 中的 get 而言太少項目於堆疊之上"
 
 #, c-format
-msgid "Too few items on stack for put in %s\n"
-msgstr "對於 %s 中的 put 而言太少項目於堆疊之上\n"
+msgid "Too few items on stack for put in %s"
+msgstr "對於 %s 中的 put 而言太少項目於堆疊之上"
 
 msgid "Too many Unique Font IDs"
 msgstr "太多唯一的字型識別號"
@@ -15894,11 +15894,11 @@ msgid "Too many scripts %d"
 msgstr "太多文字 %d"
 
 #, c-format
-msgid "Too many subroutine calls in %s\n"
-msgstr "在 %s 中太多副常式呼叫\n"
+msgid "Too many subroutine calls in %s"
+msgstr "在 %s 中太多副常式呼叫"
 
-msgid "Too many subroutines. We can deal with at most 14 (0-13)\n"
-msgstr "太多副常式。我們最多可以處理 14 個(0-13)\n"
+msgid "Too many subroutines. We can deal with at most 14 (0-13)"
+msgstr "太多副常式。我們最多可以處理 14 個(0-13)"
 
 msgid "Tool_s"
 msgstr "工具(_S)"
@@ -16227,15 +16227,15 @@ msgid "Unexpected character (0x%02X) on line %d of %s"
 msgstr "未預期的字元 (0x%1$02X) 於 %3$s 的第 %2$d 列"
 
 #, c-format
-msgid "Unexpected charset format in cff: %d\n"
-msgstr "在 cff 中未預期的字元集格式：%d\n"
+msgid "Unexpected charset format in cff: %d"
+msgstr "在 cff 中未預期的字元集格式：%d"
 
 msgid "Unexpected density"
 msgstr "未預期的密度"
 
 #, c-format
-msgid "Unexpected encoding format in cff: %d\n"
-msgstr "在 cff 中未預期的編碼格式：%d\n"
+msgid "Unexpected encoding format in cff: %d"
+msgstr "在 cff 中未預期的編碼格式：%d"
 
 msgid "Unexpected end of file found in morx chain."
 msgstr "在 morx 鏈接中找到未預期的檔案結束。"
@@ -16288,8 +16288,8 @@ msgstr ""
 "在...%40s 之前"
 
 #, c-format
-msgid "Unexpected value in dictionary %d\n"
-msgstr "在字典 %d 中有未預期的值\n"
+msgid "Unexpected value in dictionary %d"
+msgstr "在字典 %d 中有未預期的值"
 
 msgid "Unicase"
 msgstr "無大小寫分別"
@@ -16350,16 +16350,16 @@ msgid "Uniform scaling for stems of any width and direction"
 msgstr "單一形式縮放任何寬度與方向的字幹"
 
 #, c-format
-msgid "Uninterpreted code in gf: %d\n"
-msgstr "在gf中有未解譯的操作碼 %d\n"
+msgid "Uninterpreted code in gf: %d"
+msgstr "在gf中有未解譯的操作碼 %d"
 
 #, c-format
-msgid "Uninterpreted opcode %d in %s\n"
-msgstr "在 %2$s 中有未解譯的操作碼 %1$d\n"
+msgid "Uninterpreted opcode %d in %s"
+msgstr "在 %2$s 中有未解譯的操作碼 %1$d"
 
 #, c-format
-msgid "Uninterpreted opcode 12,%d in %s\n"
-msgstr "未解譯的 opcode 12,%d 於 %s 之中\n"
+msgid "Uninterpreted opcode 12,%d in %s"
+msgstr "未解譯的 opcode 12,%d 於 %s 之中"
 
 msgid "UniqueID"
 msgstr "惟一ID"
@@ -16378,8 +16378,8 @@ msgstr "不明的 GSUB 子表格型態：%d"
 msgid "Unknown Language"
 msgstr "未知的語言"
 
-msgid "Unknown character after backslash in literal string.\n"
-msgstr "在實文字串中反斜線之後出現不明字元。\n"
+msgid "Unknown character after backslash in literal string."
+msgstr "在實文字串中反斜線之後出現不明字元。"
 
 #, c-format
 msgid "Unknown class table format: %d"
@@ -16400,30 +16400,30 @@ msgid "Unknown lookup name: %60.60s"
 msgstr "不明的查找名稱：%60.60s"
 
 #, c-format
-msgid "Unknown operator in %s: %x\n"
-msgstr "在 %s 中的不明運算子: %x\n"
+msgid "Unknown operator in %s: %x"
+msgstr "在 %s 中的不明運算子: %x"
 
 msgid "Unknown string type\n"
 msgstr "不明字串型態\n"
 
 #, c-format
-msgid "Unknown subtable '%c%c%c%c' in 'PfEd' table, ignored\n"
-msgstr "在「PfEd」表格中的不明子表格「%c%c%c%c」，已忽略\n"
+msgid "Unknown subtable '%c%c%c%c' in 'PfEd' table, ignored"
+msgstr "在「PfEd」表格中的不明子表格「%c%c%c%c」，已忽略"
 
 #, c-format
-msgid "Unknown subtable '%c%c%c%c' in 'TeX ' table, ignored\n"
-msgstr "在「TeX」表格中的不明子表格「%c%c%c%c」，已忽略\n"
+msgid "Unknown subtable '%c%c%c%c' in 'TeX ' table, ignored"
+msgstr "在「TeX」表格中的不明子表格「%c%c%c%c」，已忽略"
 
 #, c-format
-msgid "Unknown type '%c' found in path specification\n"
-msgstr "在路徑規格中找到不明的型態「%c」\n"
+msgid "Unknown type '%c' found in path specification"
+msgstr "在路徑規格中找到不明的型態「%c」"
 
 msgid "Unlikely Ofm File"
 msgstr "不太可能是 Ofm 檔案"
 
 #, c-format
-msgid "Unlikely length for table, so I'm ignoring it. %u\n"
-msgstr "不太可能的表格長度，因此我將忽略它。%u\n"
+msgid "Unlikely length for table, so I'm ignoring it. %u"
+msgstr "不太可能的表格長度，因此我將忽略它。%u"
 
 msgid "Unlikely scale factor"
 msgstr "不太可能的伸縮因子"
@@ -16448,8 +16448,8 @@ msgid "Unparseable include on line %d of %s"
 msgstr "包含檔無法解析於 %2$s 的第 %1$d 列"
 
 #, c-format
-msgid "Unparsed characters found after end of groups file (last line parsed was %d).\n"
-msgstr "群組檔案結束之後找到未被剖析的字元 (被剖析的最後一列是 %d)。\n"
+msgid "Unparsed characters found after end of groups file (last line parsed was %d)."
+msgstr "群組檔案結束之後找到未被剖析的字元 (被剖析的最後一列是 %d)。"
 
 msgid "Unreasonable DPI"
 msgstr "不合理的 DPI"
@@ -16548,8 +16548,8 @@ msgstr "不在迴圈中時使用「exit」\n"
 msgid "Use of \"stop\" when not in a stopped\n"
 msgstr "不在停止項目中使用「stop」\n"
 
-msgid "Use of obsolete blend operator.\n"
-msgstr "使用淘汰的混色運算子。\n"
+msgid "Use of obsolete blend operator."
+msgstr "使用淘汰的混色運算子。"
 
 #, c-format
 msgid "Use of undefined glyph class, %s, on line %d of %s"
@@ -16655,8 +16655,8 @@ msgstr "數值超出 tfm 限制"
 msgid "Value out of bounds"
 msgstr "數值超出邊界"
 
-msgid "Value out of bounds in spline.\n"
-msgstr "在雲形曲線中的值超出邊界。\n"
+msgid "Value out of bounds in spline."
+msgstr "在雲形曲線中的值超出邊界。"
 
 msgid "Value out of range"
 msgstr "值超出範圍"
@@ -16886,15 +16886,15 @@ msgid "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]\n"
 msgstr "警告：%dth 軸線值 (%g) 超出允許的範圍 [%g,%g]\n"
 
 #, c-format
-msgid "Warning: %s has a different family name than does %s (GenerateFamily)\n"
-msgstr "警告：%s 有與 %s 不同的字族名稱 (GenerateFamily)\n"
+msgid "Warning: %s has a different family name than does %s (GenerateFamily)"
+msgstr "警告：%s 有與 %s 不同的字族名稱 (GenerateFamily)"
 
 #, c-format
-msgid "Warning: %s(%s) is both extended and condensed. That's impossible.\n"
-msgstr "警告：%s(%s) 將同時被延展和緊縮。這是不可能的。\n"
+msgid "Warning: %s(%s) is both extended and condensed. That's impossible."
+msgstr "警告：%s(%s) 將同時被延展和緊縮。這是不可能的。"
 
-msgid "Warning: Both extended and condensed. That's impossible.\n"
-msgstr "警告：同時延展和緊縮是不可能的。\n"
+msgid "Warning: Both extended and condensed. That's impossible."
+msgstr "警告：同時延展和緊縮是不可能的。"
 
 msgid "Warning: Byte swapped font mark in palm font."
 msgstr "警告：在 palm 字型中有位元組置換的字型標記。"
@@ -16926,27 +16926,27 @@ msgstr ""
 "FontForge 兩者都不支援。\n"
 
 #, c-format
-msgid "Warning: No characters selected in AddDHint(%d,%d %d,%d %d,%d)\n"
-msgstr "警告：AddDHint (%d,%d %d,%d %d,%d) 未選中任何字元\n"
+msgid "Warning: No characters selected in AddDHint(%d,%d %d,%d %d,%d)"
+msgstr "警告：AddDHint (%d,%d %d,%d %d,%d) 未選中任何字元"
 
 #, c-format
-msgid "Warning: No characters selected in AddHint(%d,%d,%d)\n"
-msgstr "警告：AddHint (%d,%d,%d) 未選中任何字元\n"
+msgid "Warning: No characters selected in AddHint(%d,%d,%d)"
+msgstr "警告：AddHint (%d,%d,%d) 未選中任何字元"
 
 #, c-format
-msgid "Warning: Unable to parse token %s, some features may be lost\n"
-msgstr "警告：無法剖析符記 %s，某些特徵也許會失去\n"
+msgid "Warning: Unable to parse token %s, some features may be lost"
+msgstr "警告：無法剖析符記 %s，某些特徵也許會失去"
 
 #, c-format
 msgid "Warning: Unlikely number of subtables (%d) for 'kern' table"
 msgstr "警告：不太可能的子表格數量 (%d) 用於「字距微調」表格"
 
-msgid "Warning: Unreasonably big splines. They will be ignored.\n"
-msgstr "警告：不合理的大型曲線。它們將被忽略。\n"
+msgid "Warning: Unreasonably big splines. They will be ignored."
+msgstr "警告：不合理的大型曲線。它們將被忽略。"
 
 #, c-format
-msgid "Warning: could not figure out where the hint (%d,%d %d,%d %d,%d) is valid\n"
-msgstr "警告：無法算出渲調 (%d,%d %d,%d %d,%d) 何處有效\n"
+msgid "Warning: could not figure out where the hint (%d,%d %d,%d %d,%d) is valid"
+msgstr "警告：無法算出渲調 (%d,%d %d,%d %d,%d) 何處有效"
 
 msgid "Warnings"
 msgstr "警告"
@@ -16967,8 +16967,8 @@ msgstr "監看的 Cvt 變更"
 msgid "Watched Store Change"
 msgstr "監看的儲存變更"
 
-msgid "We don't understand this font\n"
-msgstr "我們無法了解此字型\n"
+msgid "We don't understand this font"
+msgstr "我們無法了解此字型"
 
 msgid "Weight, Width, Slope Only"
 msgstr "只限字重、寬度、斜率"
@@ -18643,8 +18643,8 @@ msgstr "點陣圖位置表格 (OT 版本)"
 msgid "by"
 msgstr "約"
 
-msgid "can't create temporary file\n"
-msgstr "無法建立暫存檔\n"
+msgid "can't create temporary file"
+msgstr "無法建立暫存檔"
 
 msgid "character code mapping table"
 msgstr "字元碼映射表格"
@@ -18668,8 +18668,8 @@ msgstr "控制值表格"
 msgid "copyright notice"
 msgstr "版權備註"
 
-msgid "couldn't write encodings file\n"
-msgstr "無法寫入編碼檔案\n"
+msgid "couldn't write encodings file"
+msgstr "無法寫入編碼檔案"
 
 msgid "coverage"
 msgstr "覆蓋"
@@ -18713,8 +18713,8 @@ msgid "embedded bitmap scaling control table"
 msgstr "嵌入式點陣圖縮放控制表格"
 
 #, c-format
-msgid "end of subroutine reached with no return in %s\n"
-msgstr "到達副常式的末端而在 %s 中沒有回傳\n"
+msgid "end of subroutine reached with no return in %s"
+msgstr "到達副常式的末端而在 %s 中沒有回傳"
 
 msgid "extended metamorphosis table"
 msgstr "延展中繼變化表格"
@@ -18923,12 +18923,12 @@ msgid "properties table"
 msgstr "屬性表格"
 
 #, c-format
-msgid "return when not in subroutine in %s\n"
-msgstr "不在 %s 的副常式中時回傳\n"
+msgid "return when not in subroutine in %s"
+msgstr "不在 %s 的副常式中時回傳"
 
 #, c-format
-msgid "roll out of range in %s\n"
-msgstr "輪轉超出 %s 的範圍\n"
+msgid "roll out of range in %s"
+msgstr "輪轉超出 %s 的範圍"
 
 msgid "scripts.sil.org/OFL"
 msgstr "scripts.sil.org/OFL"

@@ -31,12 +31,12 @@ msgstr ""
 "შრეები:"
 
 #, c-format
-msgid "  Ignoring '%c%c%c%c'\n"
-msgstr "  უგულებელყოფილია „%c%c%c%c“\n"
+msgid "  Ignoring '%c%c%c%c'"
+msgstr "  უგულებელყოფილია „%c%c%c%c“"
 
 #, c-format
-msgid "  Ignoring '%c%c%c%c' %s\n"
-msgstr "  უგულებელყოფილია „%c%c%c%c“ %s\n"
+msgid "  Ignoring '%c%c%c%c' %s"
+msgstr "  უგულებელყოფილია „%c%c%c%c“ %s"
 
 #. GT: X is a coordinate, the leading spaces help to align it
 msgid "  X"
@@ -163,8 +163,8 @@ msgid "%s subtable"
 msgstr "%s ქვეცხრილი"
 
 #, c-format
-msgid "%s:%d Unexpected character %c (%d)\n"
-msgstr "%s:%d მოულოდნელი სიმბოლო %c (%d)\n"
+msgid "%s:%d Unexpected character %c (%d)"
+msgstr "%s:%d მოულოდნელი სიმბოლო %c (%d)"
 
 #, c-format
 msgid "'%s' is not the name of a currently known plugin"
@@ -736,8 +736,8 @@ msgid "AutoLBearingSync"
 msgstr "მარცხენა საბჯენის თვითშეწყობა"
 
 #, c-format
-msgid "AutoWidth failure on %s\n"
-msgstr "სიგანე ვერ განისაზღვრა – %s\n"
+msgid "AutoWidth failure on %s"
+msgstr "სიგანე ვერ განისაზღვრა – %s"
 
 msgid "AutoWidthSync"
 msgstr "სიგანის თვითშეწყობა"
@@ -889,8 +889,8 @@ msgstr "არასწორ სახელთა სიის ფაილი
 #. GT: NaN is a concept in IEEE floating point which means "Not a Number"
 #. GT: it is used to represent errors like 0/0 or sqrt(-1).
 #, c-format
-msgid "Bad number, infinity or nan: %s\n"
-msgstr "არასწორი რიცხვი, Infinity ან NaN: %s\n"
+msgid "Bad number, infinity or nan: %s"
+msgstr "არასწორი რიცხვი, Infinity ან NaN: %s"
 
 msgid "Bad rule"
 msgstr "გაუმართავი წესი"
@@ -1140,14 +1140,14 @@ msgid "Can't open %s"
 msgstr "ვერ იხსნება %s"
 
 #, c-format
-msgid "Can't open %s\n"
-msgstr "ვერ იხსნება %s\n"
+msgid "Can't open %s"
+msgstr "ვერ იხსნება %s"
 
-msgid "Can't open temporary file for postscript output\n"
-msgstr "ვერ იხსნება დროებითი ფაილი PostScript-გამოტანისთვის\n"
+msgid "Can't open temporary file for postscript output"
+msgstr "ვერ იხსნება დროებითი ფაილი PostScript-გამოტანისთვის"
 
-msgid "Can't open temporary file for truetype output.\n"
-msgstr "ვერ იხსნება დროებითი ფაილი Truetype-გამოტანისთვის.\n"
+msgid "Can't open temporary file for truetype output."
+msgstr "ვერ იხსნება დროებითი ფაილი Truetype-გამოტანისთვის."
 
 msgid "Can't run mf"
 msgstr "ვერ გაეშვა mf (metafont)"
@@ -1172,8 +1172,8 @@ msgid "Cannot find your hotkey definition file!\n"
 msgstr "ვერ მოიძებნა სწრაფი ღილაკების განსაზღვრის ფაილი!\n"
 
 #, c-format
-msgid "Cannot open %s\n"
-msgstr "ვერ იხსნება %s\n"
+msgid "Cannot open %s"
+msgstr "ვერ იხსნება %s"
 
 #, c-format
 msgid "Cannot open feature file %.120s"
@@ -1701,8 +1701,8 @@ msgid "Corner"
 msgstr "კუთხოვანი"
 
 #, c-format
-msgid "Could not create plugin directory '%s'\n"
-msgstr "ვერ შეიქმნა მოდულის საქაღალდე: „%s“\n"
+msgid "Could not create plugin directory '%s'"
+msgstr "ვერ შეიქმნა მოდულის საქაღალდე: „%s“"
 
 msgid "Could not figure out a lookup type"
 msgstr "ვერ დადგინდა ცნობარის სახეობა"
@@ -1739,8 +1739,8 @@ msgid "Couldn't create directory: %s"
 msgstr "ვერ შეიქმნა საქაღალდე: %s"
 
 #, c-format
-msgid "Couldn't find a font file named %s\n"
-msgstr "ვერ მოიძებნა შრიფტი სახელით %s\n"
+msgid "Couldn't find a font file named %s"
+msgstr "ვერ მოიძებნა შრიფტი სახელით %s"
 
 msgid "Couldn't find base point"
 msgstr "ვერ მოინახა საყრდენი წერტილი"
@@ -2137,12 +2137,12 @@ msgid "End:"
 msgstr "დასასრული:"
 
 #, c-format
-msgid "Error reading plugin configuration file '%s': %s\n"
-msgstr "შეცდომა მოდულის გამართვის ფაილის წაკითხვისას „%s“: %s\n"
+msgid "Error reading plugin configuration file '%s': %s"
+msgstr "შეცდომა მოდულის გამართვის ფაილის წაკითხვისას „%s“: %s"
 
 #, c-format
-msgid "Error saving plugin configuration file '%s': %s\n"
-msgstr "შეცდომა მოდულის გამართვის ფაილის შენახვისას „%s“: %s\n"
+msgid "Error saving plugin configuration file '%s': %s"
+msgstr "შეცდომა მოდულის გამართვის ფაილის შენახვისას „%s“: %s"
 
 msgid "Ethiopic"
 msgstr "ეთიოპიური"
@@ -3041,8 +3041,8 @@ msgstr "არა"
 msgid "Invalid compressed table length for '%c%c%c%c'."
 msgstr "უმართებული სიგრძე შეკუმშული ცხრილისთვის „%c%c%c%c“."
 
-msgid "Invalid guideline.\n"
-msgstr "გაუმართავი მიმმართველი ხაზი.\n"
+msgid "Invalid guideline."
+msgstr "გაუმართავი მიმმართველი ხაზი."
 
 #, c-format
 msgid "Invalid or unsupported format (%d) for subtable of 'kern' table"
@@ -4001,12 +4001,12 @@ msgstr "ცნობარი არაა მონიშნული"
 msgid "No lookups to copy"
 msgstr "ასლისთვის ცნობარები არაა"
 
-msgid "No mark in ] (close array)\n"
-msgstr "არაა ნიშანი ] (მასივის დასასრული)\n"
+msgid "No mark in ] (close array)"
+msgstr "არაა ნიშანი ] (მასივის დასასრული)"
 
 #, c-format
-msgid "No module name for '%s' in plugin config -- skipping.\n"
-msgstr "მოდული დასახელებით „%s“ ვერ მოინახა -- გამოტოვება.\n"
+msgid "No module name for '%s' in plugin config -- skipping."
+msgstr "მოდული დასახელებით „%s“ ვერ მოინახა -- გამოტოვება."
 
 msgid "No spaces allowed in class names."
 msgstr "ადგილის გამოტოვება დაუშვებელია სახელებში."
@@ -4055,8 +4055,8 @@ msgstr "ვერაფერი ჩაიტვირთა"
 msgid "Nothing Selected"
 msgstr "არაფერია შერჩეული"
 
-msgid "Nothing on stack to print\n"
-msgstr "არაფერია მითითებული ამოსაბეჭდად\n"
+msgid "Nothing on stack to print"
+msgstr "არაფერია მითითებული ამოსაბეჭდად"
 
 msgid "Nothing to trace"
 msgstr "არაფერია გამოსახაზი"
@@ -4559,11 +4559,11 @@ msgstr "მო_ცილება"
 msgid "Re_vert List"
 msgstr "სიის ა_ღდგენა"
 
-msgid "Reached end of file when reading composite glyph\n"
-msgstr "მიღწეულია ფაილის ბოლო შედგენილი ასონიშნის წაკითხვისას\n"
+msgid "Reached end of file when reading composite glyph"
+msgstr "მიღწეულია ფაილის ბოლო შედგენილი ასონიშნის წაკითხვისას"
 
-msgid "Reached end of file when reading simple glyph\n"
-msgstr "მიღწეულია ფაილის ბოლო მარტივი ასონიშნის წაკითხვისას\n"
+msgid "Reached end of file when reading simple glyph"
+msgstr "მიღწეულია ფაილის ბოლო მარტივი ასონიშნის წაკითხვისას"
 
 msgid "Reading Glyphs"
 msgstr "იკითხება ასონიშნები"
@@ -5580,8 +5580,8 @@ msgstr ""
 "მოცემული პარამეტრები გავლენას ახდენს ასონიშნების გამოტანაზე.\n"
 "უმეტესობა თავსებადია ერთ ან რამდენიმე ცალკეულ სახეობასთან."
 
-msgid "The following table(s) in the font have been ignored by FontForge\n"
-msgstr "მოცემულ ცხრილ(ებ)ს შრიფტში არ გაითვალისწინებს FontForge\n"
+msgid "The following table(s) in the font have been ignored by FontForge"
+msgstr "მოცემულ ცხრილ(ებ)ს შრიფტში არ გაითვალისწინებს FontForge"
 
 #, c-format
 msgid "The font %s is one of the standard fonts. It isn't actually in the file."
@@ -5990,8 +5990,8 @@ msgid "Unknown lookup name: %60.60s"
 msgstr "დაუდგენელი ცნობარის სახელი: %60.60s"
 
 #, c-format
-msgid "Unknown subtable '%c%c%c%c' in 'TeX ' table, ignored\n"
-msgstr "უცნობი ქვეცხრილი „%c%c%c%c“ TeX-ცხრილში, უგულებელყოფილია\n"
+msgid "Unknown subtable '%c%c%c%c' in 'TeX ' table, ignored"
+msgstr "უცნობი ქვეცხრილი „%c%c%c%c“ TeX-ცხრილში, უგულებელყოფილია"
 
 msgid ""
 "Unlike most commands this one does not work directly on the\n"
@@ -6035,8 +6035,8 @@ msgid "Unsupported image format must be bmp or png"
 msgstr "მხარდაუჭერელი სურათის სახეობა უნდა იყოს bpm ან png"
 
 #, c-format
-msgid "Unsupported mime type in data URI: %s\n"
-msgstr "მხარდაუჭერელი MIME-სახეობა მონაცემთა URI-ში : %s\n"
+msgid "Unsupported mime type in data URI: %s"
+msgstr "მხარდაუჭერელი MIME-სახეობა მონაცემთა URI-ში : %s"
 
 msgid "UntitledGroup"
 msgstr "უსათაურო ჯგუფი"
@@ -6202,8 +6202,8 @@ msgstr ""
 msgid "Warning: Unlikely number of subtables (%d) for 'kern' table"
 msgstr "გაფრთხილება: შეუსაბამო რაოდენობის ქვეცხრილები (%d) „kern“ ცხრილისთვის"
 
-msgid "Warning: Unrecognized or unsupported join type, defaulting to 'nib'.\n"
-msgstr "გაფრთხილება: დაუდგენელი ან მხარდაუჭერელი სახის შეერთება, ნაგულისხმევად დაბრუნდება 'nib'.\n"
+msgid "Warning: Unrecognized or unsupported join type, defaulting to 'nib'."
+msgstr "გაფრთხილება: დაუდგენელი ან მხარდაუჭერელი სახის შეერთება, ნაგულისხმევად დაბრუნდება 'nib'."
 
 msgid "Warnings"
 msgstr "გაფრთხილებები"
@@ -6262,8 +6262,8 @@ msgstr "გამოიყენოს თუ არა Mac-ის ხატუ�
 msgid "Which archived item should be opened?"
 msgstr "რომელი შეკუმშული ფაილი უნდა გაიხსნას?"
 
-msgid "Whoops, more names than lookups\n"
-msgstr "ვაჰ, სახელები აღემატება ცნობარებს\n"
+msgid "Whoops, more names than lookups"
+msgstr "ვაჰ, სახელები აღემატება ცნობარებს"
 
 msgid "Wide"
 msgstr "ფართო"
@@ -7137,8 +7137,8 @@ msgstr "ფერის ცხრილურ ადგილთა ნუსხ
 msgid "couldn't find the character %s"
 msgstr "ვერ მოიძებნა სიმბოლო %s"
 
-msgid "couldn't write encodings file\n"
-msgstr "დაშიფრვის ფაილის ვერ ჩაიწერა\n"
+msgid "couldn't write encodings file"
+msgstr "დაშიფრვის ფაილის ვერ ჩაიწერა"
 
 #. GT: See the long comment at "Property|New"
 #. GT: The msgstr should contain a translation of "Script", ignore "cursive|"

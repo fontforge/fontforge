@@ -59,12 +59,12 @@ msgid "  Hang right"
 msgstr "  Підвісити праворуч"
 
 #, c-format
-msgid "  Ignoring '%c%c%c%c'\n"
-msgstr "  Ігноруємо «%c%c%c%c»\n"
+msgid "  Ignoring '%c%c%c%c'"
+msgstr "  Ігноруємо «%c%c%c%c»"
 
 #, c-format
-msgid "  Ignoring '%c%c%c%c' %s\n"
-msgstr "  Ігноруємо %5$s «%1$c%2$c%3$c%4$c»\n"
+msgid "  Ignoring '%c%c%c%c' %s"
+msgstr "  Ігноруємо %5$s «%1$c%2$c%3$c%4$c»"
 
 #, c-format
 msgid "  Left Bound=%d"
@@ -81,12 +81,12 @@ msgstr "  Права межа=%d"
 msgid "  Stroke _Width:"
 msgstr "  _Ширина штриха:"
 
-msgid "  Subsequent errors will not be reported.\n"
-msgstr "  Наступні помилки буде пропущено.\n"
+msgid "  Subsequent errors will not be reported."
+msgstr "  Наступні помилки буде пропущено."
 
 #, c-format
-msgid " %s: line %d\n"
-msgstr " %s: рядок %d\n"
+msgid " %s: line %d"
+msgstr " %s: рядок %d"
 
 msgid " Adding a size will create it by scaling."
 msgstr " Додавання розміру призведе до його створення масштабуванням."
@@ -195,16 +195,16 @@ msgid " snapped"
 msgstr " приліплено"
 
 #, c-format
-msgid "!!!! Unknown caret format %d !!!!\n"
-msgstr "!!!! Невідомий формат прогалини %d !!!!\n"
+msgid "!!!! Unknown caret format %d !!!!"
+msgstr "!!!! Невідомий формат прогалини %d !!!!"
 
 #, c-format
-msgid "!!!!! Bad Base Coord format (%d) for '%c%c%c%c' in '%c%c%c%c' script in 'BASE' table\n"
-msgstr "!!!!! Помилкове форматування основних координат (%d) для «%c%c%c%c» у писемності «%c%c%c%c» таблиці «BASE»\n"
+msgid "!!!!! Bad Base Coord format (%d) for '%c%c%c%c' in '%c%c%c%c' script in 'BASE' table"
+msgstr "!!!!! Помилкове форматування основних координат (%d) для «%c%c%c%c» у писемності «%c%c%c%c» таблиці «BASE»"
 
 #, c-format
-msgid "!!!!! Coord count (%d) for '%c%c%c%c' script does not match base tag count (%d) in 'BASE' table\n"
-msgstr "!!!!! Кількість координат (%d) для скрипту «%c%c%c%c» не відповідає кількості основних теґів (%d) у таблиці «BASE»\n"
+msgid "!!!!! Coord count (%d) for '%c%c%c%c' script does not match base tag count (%d) in 'BASE' table"
+msgstr "!!!!! Кількість координат (%d) для скрипту «%c%c%c%c» не відповідає кількості основних теґів (%d) у таблиці «BASE»"
 
 #, c-format
 msgid "\"%.40s\" size=%d point=%d (%d,%d) distance=%g"
@@ -333,8 +333,8 @@ msgid "%s contextual %d"
 msgstr "%s, контекстуальних %d"
 
 #, c-format
-msgid "%s does not contain an <svg> element at the top\n"
-msgstr "%s не містить елемента <svg> у верхній частині\n"
+msgid "%s does not contain an <svg> element at the top"
+msgstr "%s не містить елемента <svg> у верхній частині"
 
 #, c-format
 msgid "%s entry"
@@ -362,8 +362,8 @@ msgid "%s in %s lookup %d"
 msgstr "%s у %s, фільтрування %d"
 
 #, c-format
-msgid "%s is a mac resource file but contains no postscript or truetype fonts\n"
-msgstr "%s є файлом ресурсів mac, але не містить жодних шрифтів postscript або truetype\n"
+msgid "%s is a mac resource file but contains no postscript or truetype fonts"
+msgstr "%s є файлом ресурсів mac, але не містить жодних шрифтів postscript або truetype"
 
 #, c-format
 msgid ""
@@ -394,12 +394,12 @@ msgid "%s kerning class %d"
 msgstr "%s, клас кернінґу %d"
 
 #, c-format
-msgid "%s line: %d %s\n"
-msgstr "Рядок %s: %d %s\n"
+msgid "%s line: %d %s"
+msgstr "Рядок %s: %d %s"
 
 #, c-format
-msgid "%s line: %d %s: %s\n"
-msgstr "Рядок %s: %d %s: %s\n"
+msgid "%s line: %d %s: %s"
+msgstr "Рядок %s: %d %s: %s"
 
 #, c-format
 msgid "%s lookup %d"
@@ -454,8 +454,8 @@ msgid "%s's vstem3 operator is not supported for Type2\n"
 msgstr "підтримки оператора vstem3 %s для Type2 не передбачено\n"
 
 #, c-format
-msgid "%s(%s) and %s(%s) 0x%x in FOND %s\n"
-msgstr "%s(%s) і %s(%s) 0x%x у FOND %s\n"
+msgid "%s(%s) and %s(%s) 0x%x in FOND %s"
+msgstr "%s(%s) і %s(%s) 0x%x у FOND %s"
 
 #, c-format
 msgid "%s: %d Expected %s, got %s"
@@ -470,8 +470,8 @@ msgid "%s: Is not callable"
 msgstr "%s: непридатне до викликання"
 
 #, c-format
-msgid "%s:%d Unexpected character %c (%d)\n"
-msgstr "%s:%d неочікуваний символ %c (%d)\n"
+msgid "%s:%d Unexpected character %c (%d)"
+msgstr "%s:%d неочікуваний символ %c (%d)"
 
 msgid "'BASE' Baseline Table"
 msgstr "Таблиця лінії шрифту «BASE»"
@@ -525,8 +525,8 @@ msgstr "(невказана) Таблиця Graphite SIL"
 msgid ") while in %s it is ("
 msgstr "), а у %s це ("
 
-msgid "-1 glyph index in dumpcoveragetable.\n"
-msgstr "-1 індекс гліфа у dumpcoveragetable.\n"
+msgid "-1 glyph index in dumpcoveragetable."
+msgstr "-1 індекс гліфа у dumpcoveragetable."
 
 msgid "..."
 msgstr "…"
@@ -880,12 +880,12 @@ msgid "A pdf stream object may not be a compressed object"
 msgstr "Об’єкт потоку (stream) pdf не може бути стиснутим об’єктом"
 
 #, c-format
-msgid "A point in %s is outside the font bounding box data.\n"
-msgstr "Точка у %s лежить поза межами даних обмежувальної рамки даних шрифту.\n"
+msgid "A point in %s is outside the font bounding box data."
+msgstr "Точка у %s лежить поза межами даних обмежувальної рамки даних шрифту."
 
 #, c-format
-msgid "A point in GID %d is outside the glyph bounding box\n"
-msgstr "Точка у гліфі GID %d поза межами обмежувальної рамки гліфа\n"
+msgid "A point in GID %d is outside the glyph bounding box"
+msgstr "Точка у гліфі GID %d поза межами обмежувальної рамки гліфа"
 
 msgid ""
 "A really big version of this glyph may be made up of the\n"
@@ -2109,23 +2109,23 @@ msgstr ""
 "Спроба застосування фільтрування до адреси поза діапазоном цього контекстуального\n"
 " фільтрування посл.=%d, макс.=%d\n"
 
-msgid "Attempt to back up twice\n"
-msgstr "Подвійна спроба резервування\n"
+msgid "Attempt to back up twice"
+msgstr "Подвійна спроба резервування"
 
 #, c-format
 msgid "Attempt to divide by 0 in %.30s"
 msgstr "Спроба ділення на 0 у %.30s"
 
 #, c-format
-msgid "Attempt to encode missing glyph %d to %d (0x%x)\n"
-msgstr "Спроба визначення кодування пропущеного гліфа %d з %d (0x%x)\n"
+msgid "Attempt to encode missing glyph %d to %d (0x%x)"
+msgstr "Спроба визначення кодування пропущеного гліфа %d з %d (0x%x)"
 
 #, c-format
 msgid "Attempt to have a font with more than %d layers"
 msgstr "Шрифт з більше ніж %d шарами"
 
-msgid "Attempt to invert a singular matrix\n"
-msgstr "Спроба знайти обернену матрицю виродженої матриці\n"
+msgid "Attempt to invert a singular matrix"
+msgstr "Спроба знайти обернену матрицю виродженої матриці"
 
 msgid "Attempt to make a character that refers to itself"
 msgstr "Спроба створення символу з посиланням на самого себе"
@@ -2190,11 +2190,11 @@ msgid "Attempt to take the square root of %1$g in %2$.30s"
 msgstr "Спроба обчислення квадратного кореня з %1$g у %2$.30s"
 
 #, c-format
-msgid "Attempt to use a multiple master subroutine in a non-mm font in %s.\n"
-msgstr "Спроба використання підпрограми багатоосновного шрифту у шрифті, який не є багатоосновним, у %s.\n"
+msgid "Attempt to use a multiple master subroutine in a non-mm font in %s."
+msgstr "Спроба використання підпрограми багатоосновного шрифту у шрифті, який не є багатоосновним, у %s."
 
-msgid "Attempt to use a multiple master subroutine in a non-mm font.\n"
-msgstr "Спроба використання підпрограми багатоосновного шрифту у шрифті, який не є багатоосновним.\n"
+msgid "Attempt to use a multiple master subroutine in a non-mm font."
+msgstr "Спроба використання підпрограми багатоосновного шрифту у шрифті, який не є багатоосновним."
 
 msgid "Attention"
 msgstr "Увага"
@@ -2239,8 +2239,8 @@ msgid "AutoSaveFrequency"
 msgstr "Частота автозбереження"
 
 #, c-format
-msgid "AutoWidth failure on %s\n"
-msgstr "Помилка AutoWidth у %s\n"
+msgid "AutoWidth failure on %s"
+msgstr "Помилка AutoWidth у %s"
 
 msgid "AutoWidthSync"
 msgstr "Автосинхр. ширин"
@@ -2436,15 +2436,15 @@ msgstr "Помилковий запис BlueShift."
 #. GT: The CFF font type contains a thing called a name INDEX, and that INDEX
 #. GT: is bad. It is an index of many of the names used in the CFF font.
 #. GT: We hope the user will never see this.
-msgid "Bad CFF name INDEX\n"
-msgstr "Помилкова назва INDEX CFF\n"
+msgid "Bad CFF name INDEX"
+msgstr "Помилкова назва INDEX CFF"
 
 #, c-format
-msgid "Bad CID offset for CID %d\n"
-msgstr "Помилковий відступ CID для CID %d\n"
+msgid "Bad CID offset for CID %d"
+msgstr "Помилковий відступ CID для CID %d"
 
-msgid "Bad CharString. Does not include lenIV bytes.\n"
-msgstr "Помилкове значення CharString. Не містить байтів lenIV.\n"
+msgid "Bad CharString. Does not include lenIV bytes."
+msgstr "Помилкове значення CharString. Не містить байтів lenIV."
 
 msgid "Bad Class"
 msgstr "Помилковий клас"
@@ -2569,8 +2569,8 @@ msgid "Bad Private Dictionary"
 msgstr "Помилковий приватний словник"
 
 #, c-format
-msgid "Bad RGB color spec: %s\n"
-msgstr "Помилкова специфікація кольорів RGB: %s\n"
+msgid "Bad RGB color spec: %s"
+msgstr "Помилкова специфікація кольорів RGB: %s"
 
 msgid "Bad Range"
 msgstr "Помилковий діапазон"
@@ -2654,8 +2654,8 @@ msgid "Bad base table."
 msgstr "Помилкова основна таблиця."
 
 #, c-format
-msgid "Bad bounding box for %s.\n"
-msgstr "Помилкова обмежувальна рамка для %s.\n"
+msgid "Bad bounding box for %s."
+msgstr "Помилкова обмежувальна рамка для %s."
 
 msgid "Bad cidmap file"
 msgstr "Помилковий файл cidmap"
@@ -2668,8 +2668,8 @@ msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)\n"
 msgstr "Помилкова таблиця визначення класів. Діапазон гліфів %d—%d перебуває поза межами [0,%d)\n"
 
 #, c-format
-msgid "Bad class def table. start=%d cnt=%d, max glyph=%d\n"
-msgstr "Помилкова таблиця визначення класів. початок=%d кількість=%d, макс. гліф=%d\n"
+msgid "Bad class def table. start=%d cnt=%d, max glyph=%d"
+msgstr "Помилкова таблиця визначення класів. початок=%d кількість=%d, макс. гліф=%d"
 
 msgid "Bad class in state machine.\n"
 msgstr "Помилковий клас у скінченному автоматі.\n"
@@ -2711,11 +2711,11 @@ msgstr "Помилкова таблиця покриття. Діапазон г�
 msgid "Bad dash list"
 msgstr "Помилковий список рисок"
 
-msgid "Bad data modifier in contour command in 'PfEd'\n"
-msgstr "Помилковий модифікатор даних у команді контуру у «PfEd»\n"
+msgid "Bad data modifier in contour command in 'PfEd'"
+msgstr "Помилковий модифікатор даних у команді контуру у «PfEd»"
 
-msgid "Bad data type in contour verb in 'PfEd'\n"
-msgstr "Помилковий тип даних у verb контуру у «PfEd»\n"
+msgid "Bad data type in contour verb in 'PfEd'"
+msgstr "Помилковий тип даних у verb контуру у «PfEd»"
 
 msgid "Bad default baseline"
 msgstr "Помилкова типова лінія шрифту"
@@ -2744,8 +2744,8 @@ msgstr "Формат файлів з помилковим кодуванням"
 msgid "Bad encoding information in 'cmap' table."
 msgstr "Помилкові дані щодо кодування у таблиці «cmap»."
 
-msgid "Bad fdselect\n"
-msgstr "Помилковий fdselect\n"
+msgid "Bad fdselect"
+msgstr "Помилковий fdselect"
 
 msgid "Bad feature tag"
 msgstr "Помилковий теґ модифікації"
@@ -2755,21 +2755,21 @@ msgid "Bad few values in /BlendDesignMap for axis %s.\n"
 msgstr "Декілька помилкових значень у /BlendDesignMap для вісі %s.\n"
 
 #, c-format
-msgid "Bad flags value, implied MORE components at end of glyph %d\n"
-msgstr "Помилкове значення flags, вказує на додаткові компоненти у кінці опису гліфа %d\n"
+msgid "Bad flags value, implied MORE components at end of glyph %d"
+msgstr "Помилкове значення flags, вказує на додаткові компоненти у кінці опису гліфа %d"
 
 #, c-format
-msgid "Bad flex subroutine in %s\n"
-msgstr "Помилкова флекс-підпрограма у %s\n"
+msgid "Bad flex subroutine in %s"
+msgstr "Помилкова флекс-підпрограма у %s"
 
 msgid "Bad font"
 msgstr "Помилковий шрифт"
 
-msgid "Bad font, offset out of bounds.\n"
-msgstr "Помилковий шрифт, відступ поза межами можливого діапазону.\n"
+msgid "Bad font, offset out of bounds."
+msgstr "Помилковий шрифт, відступ поза межами можливого діапазону."
 
-msgid "Bad font: Encoding data out of range.\n"
-msgstr "Помилка у шрифті: дані кодування поза межами діапазону.\n"
+msgid "Bad font: Encoding data out of range."
+msgstr "Помилка у шрифті: дані кодування поза межами діапазону."
 
 #, c-format
 msgid "Bad format for coverage table %d"
@@ -2784,20 +2784,20 @@ msgid "Bad glif file %s"
 msgstr "Помилковий файл glif %s"
 
 #, c-format
-msgid "Bad glyph (%d), disordered 'loca' table (start comes after end)\n"
-msgstr "Помилковий гліф (%d), невпорядкована таблиця «loca» (початок після кінця)\n"
+msgid "Bad glyph (%d), disordered 'loca' table (start comes after end)"
+msgstr "Помилковий гліф (%d), невпорядкована таблиця «loca» (початок після кінця)"
 
 #, c-format
-msgid "Bad glyph (%d), its data length is negative\n"
-msgstr "Помилковий гліф (%d), вказано від’ємну довжину його даних\n"
+msgid "Bad glyph (%d), its data length is negative"
+msgstr "Помилковий гліф (%d), вказано від’ємну довжину його даних"
 
 #, c-format
-msgid "Bad glyph (%d), its definition extends beyond the end of the glyf table\n"
-msgstr "Помилковий гліф (%d), його визначення продовжується після завершення таблиці glyf\n"
+msgid "Bad glyph (%d), its definition extends beyond the end of the glyf table"
+msgstr "Помилковий гліф (%d), його визначення продовжується після завершення таблиці glyf"
 
 #, c-format
-msgid "Bad glyph (%d), its definition extends beyond the space allowed for it\n"
-msgstr "Помилковий гліф (%d), його визначення продовжується поза відведеними для цього межами\n"
+msgid "Bad glyph (%d), its definition extends beyond the space allowed for it"
+msgstr "Помилковий гліф (%d), його визначення продовжується поза відведеними для цього межами"
 
 msgid "Bad glyph count in mort table."
 msgstr "Помилкова кількість гліфів у таблиці mort."
@@ -2805,21 +2805,21 @@ msgstr "Помилкова кількість гліфів у таблиці mor
 msgid "Bad glyph name."
 msgstr "Помилкова назва гліфа."
 
-msgid "Bad glyph range specified in color subtable of PfEd table\n"
-msgstr "У підтаблиці кольорів таблиці PfEd вказано помилковий діапазон гліфів\n"
+msgid "Bad glyph range specified in color subtable of PfEd table"
+msgstr "У підтаблиці кольорів таблиці PfEd вказано помилковий діапазон гліфів"
 
-msgid "Bad glyph range specified in glyph comment subtable of PfEd table\n"
-msgstr "У підтаблиці коментарів до гліфів таблиці PfEd вказано помилковий діапазон гліфів\n"
+msgid "Bad glyph range specified in glyph comment subtable of PfEd table"
+msgstr "У підтаблиці коментарів до гліфів таблиці PfEd вказано помилковий діапазон гліфів"
 
-msgid "Bad glyph reference in layer info.\n"
-msgstr "Помилкове посилання на гліф у відомостях щодо шару.\n"
+msgid "Bad glyph reference in layer info."
+msgstr "Помилкове посилання на гліф у відомостях щодо шару."
 
 msgid "Bad glyph variant subtable of MATH table."
 msgstr "Помилкова підтаблиця варіантів гліфів таблиці MATH."
 
 #, c-format
-msgid "Bad hex color spec: %s\n"
-msgstr "Помилкова шістнадцяткова специфікація кольорів: %s\n"
+msgid "Bad hex color spec: %s"
+msgstr "Помилкова шістнадцяткова специфікація кольорів: %s"
 
 msgid "Bad hex number"
 msgstr "Помилкове шістнадцяткове число"
@@ -2913,8 +2913,8 @@ msgstr "Помилковий номер"
 #. GT: NaN is a concept in IEEE floating point which means "Not a Number"
 #. GT: it is used to represent errors like 0/0 or sqrt(-1).
 #, c-format
-msgid "Bad number, infinity or nan: %s\n"
-msgstr "Помилкове, нескінченне або некоректне число: %s\n"
+msgid "Bad number, infinity or nan: %s"
+msgstr "Помилкове, нескінченне або некоректне число: %s"
 
 #, c-format
 msgid "Bad numeric value for %s.%s"
@@ -2928,8 +2928,8 @@ msgid "Bad offset on line %d, must be between 0% and 100%."
 msgstr "Помилковий відступ у рядку %d, колір має належати діапазону між 0% і 100%."
 
 #, c-format
-msgid "Bad offset: %d for subfont %s\n"
-msgstr "Помилковий відступ: %d, для підшрифту %s\n"
+msgid "Bad offset: %d for subfont %s"
+msgstr "Помилковий відступ: %d, для підшрифту %s"
 
 #, c-format
 msgid "Bad opacity on line %d, must be between 0.0 and 1.0."
@@ -2980,8 +2980,8 @@ msgstr ""
 "  має бути прив’язано до ширини %s, рівної %d.\n"
 
 #, c-format
-msgid "Bad sid %d (must be less than %d)\n"
-msgstr "Помилкове значення sid %d (має бути меншим за %d)\n"
+msgid "Bad sid %d (must be less than %d)"
+msgstr "Помилкове значення sid %d (має бути меншим за %d)"
 
 msgid "Bad signature in WOFF header."
 msgstr "Помилковий підпис у заголовку WOFF."
@@ -3038,8 +3038,8 @@ msgstr ""
 "поряд з …%2$40s"
 
 #, c-format
-msgid "Bad tt font: contour ends make no sense in glyph %d.\n"
-msgstr "Помилковий шрифт tt: беззмістовні кінці контурів у гліфі %d.\n"
+msgid "Bad tt font: contour ends make no sense in glyph %d."
+msgstr "Помилковий шрифт tt: беззмістовні кінці контурів у гліфі %d."
 
 #. GT: The words "true" and "false" should be left untranslated. We are restricted
 #. GT: here by what PostScript understands, and it only understands the English
@@ -3561,14 +3561,14 @@ msgstr "CFF (рідкісний)"
 msgid "CFF CID (Bare)"
 msgstr "CFF CID (рідкісний)"
 
-msgid "CFF version mismatch\n"
-msgstr "Невідповідність версій CFF\n"
+msgid "CFF version mismatch"
+msgstr "Невідповідність версій CFF"
 
 msgid "CID findfont Name"
 msgstr "Назва findfont CID"
 
-msgid "CID format doesn't contain what we expected it to.\n"
-msgstr "Формат CID не містить даних, на які очікувала програма.\n"
+msgid "CID format doesn't contain what we expected it to."
+msgstr "Формат CID не містить даних, на які очікувала програма."
 
 msgid "CID keyed fonts may not be a master design of a multiple master font"
 msgstr "Шрифти з ключами CID не можуть бути основними для багатоосновних шрифтів"
@@ -3688,8 +3688,8 @@ msgstr "_Висота прописної:"
 msgid "Call Script"
 msgstr "Викликати скрипт"
 
-msgid "Called from...\n"
-msgstr "Викликано з…\n"
+msgid "Called from..."
+msgstr "Викликано з…"
 
 msgid "Cambodian"
 msgstr "Камбоджийська"
@@ -3715,8 +3715,8 @@ msgstr "Не вдалося провести паралельну"
 msgid "Can't _Be Interpolated"
 msgstr "_Не може бути інтерпольованою"
 
-msgid "Can't back up with nothing on stack\n"
-msgstr "Резервування неможливе, оскільки стек команд порожній\n"
+msgid "Can't back up with nothing on stack"
+msgstr "Резервування неможливе, оскільки стек команд порожній"
 
 msgid "Can't compare arrays\n"
 msgstr "Неможливо порівняти масиви\n"
@@ -3771,14 +3771,14 @@ msgid "Can't open %s"
 msgstr "Не вдалося відкрити %s"
 
 #, c-format
-msgid "Can't open %s\n"
-msgstr "Не вдалося відкрити %s\n"
+msgid "Can't open %s"
+msgstr "Не вдалося відкрити %s"
 
-msgid "Can't open temporary file for postscript output\n"
-msgstr "Не вдалося відкрити файл тимчасових даних для виведення даних postscript\n"
+msgid "Can't open temporary file for postscript output"
+msgstr "Не вдалося відкрити файл тимчасових даних для виведення даних postscript"
 
-msgid "Can't open temporary file for truetype output.\n"
-msgstr "Не вдалося відкрити файл тимчасових даних для виведення даних truetype.\n"
+msgid "Can't open temporary file for truetype output."
+msgstr "Не вдалося відкрити файл тимчасових даних для виведення даних truetype."
 
 msgid "Can't run mf"
 msgstr "Не вдалося запустити mf"
@@ -3813,11 +3813,11 @@ msgid "Cannot open %s"
 msgstr "Не вдалося відкрити %s"
 
 #, c-format
-msgid "Cannot open %s\n"
-msgstr "Не вдалося відкрити %s\n"
+msgid "Cannot open %s"
+msgstr "Не вдалося відкрити %s"
 
-msgid "Cannot open a temporary file\n"
-msgstr "Не вдалося відкрити файл тимчасових даних\n"
+msgid "Cannot open a temporary file"
+msgstr "Не вдалося відкрити файл тимчасових даних"
 
 #, c-format
 msgid "Cannot open feature file %.120s"
@@ -4749,8 +4749,8 @@ msgid "Could not find the glyph: %.70s"
 msgstr "Не вдалося знайти гліфа: %.70s"
 
 #, c-format
-msgid "Could not match points in composite glyph (%d to %d) when adding %s to %s\n"
-msgstr "Не вдалося встановити відповідність точок складеного гліфа (%d на %d) під час додавання %s до %s\n"
+msgid "Could not match points in composite glyph (%d to %d) when adding %s to %s"
+msgstr "Не вдалося встановити відповідність точок складеного гліфа (%d на %d) під час додавання %s до %s"
 
 msgid "Could not open"
 msgstr "Не вдалося відкрити"
@@ -4781,8 +4781,8 @@ msgid "Could not parse %s"
 msgstr "Не вдалося обробити %s"
 
 #, c-format
-msgid "Could not parse a CID font, %sCIDFontType %d, %sfonttype %d\n"
-msgstr "Не вдалося обробити шрифт CID, %sCIDFontType %d, %sfonttype %d\n"
+msgid "Could not parse a CID font, %sCIDFontType %d, %sfonttype %d"
+msgstr "Не вдалося обробити шрифт CID, %sCIDFontType %d, %sfonttype %d"
 
 #, c-format
 msgid "Could not read %s"
@@ -4810,8 +4810,8 @@ msgid "Couldn't create directory: %s"
 msgstr "Не вдалося створити каталог: %s"
 
 #, c-format
-msgid "Couldn't find a font file named %s\n"
-msgstr "Не вдалося знайти файла шрифту з назвою %s\n"
+msgid "Couldn't find a font file named %s"
+msgstr "Не вдалося знайти файла шрифту з назвою %s"
 
 msgid "Couldn't find base point"
 msgstr "Не вдалося знайти базову точку"
@@ -5450,12 +5450,12 @@ msgid "Didn't understand \"%s\" while adding info to private subroutines"
 msgstr "Не вдалося обробити «%s» під час додавання даних до закритих (private) підпрограм"
 
 #, c-format
-msgid "Didn't understand format for fdselect %d\n"
-msgstr "Не вдалося розпізнати формат для fdselect %d\n"
+msgid "Didn't understand format for fdselect %d"
+msgstr "Не вдалося розпізнати формат для fdselect %d"
 
 #, c-format
-msgid "Didn't understand index format: %d\n"
-msgstr "Не вдалося розібрати формат покажчика: %d\n"
+msgid "Didn't understand index format: %d"
+msgstr "Не вдалося розібрати формат покажчика: %d"
 
 msgid "Differ"
 msgstr "Відмінності"
@@ -5467,52 +5467,52 @@ msgid "Different Fonts"
 msgstr "Різні шрифти"
 
 #, c-format
-msgid "Different fill patterns in layer %d of %s\n"
-msgstr "Різні шаблони заповнення у шарі %d %s\n"
+msgid "Different fill patterns in layer %d of %s"
+msgstr "Різні шаблони заповнення у шарі %d %s"
 
 #, c-format
 msgid "Different number of contours in glyph “%s”\n"
 msgstr "Інша кількість контурів у гліфі «%s»\n"
 
 #, c-format
-msgid "Different numbers of layers in %s\n"
-msgstr "Різна кількість шарів у %s\n"
+msgid "Different numbers of layers in %s"
+msgstr "Різна кількість шарів у %s"
 
 #, c-format
-msgid "Different settings on stroke linecap in layer %d of %s\n"
-msgstr "Різні параметри завершення штрихів у шарі %d %s\n"
+msgid "Different settings on stroke linecap in layer %d of %s"
+msgstr "Різні параметри завершення штрихів у шарі %d %s"
 
 #, c-format
-msgid "Different settings on stroke linejoin in layer %d of %s\n"
-msgstr "Різні параметри з’єднання штрихів у шарі %d %s\n"
+msgid "Different settings on stroke linejoin in layer %d of %s"
+msgstr "Різні параметри з’єднання штрихів у шарі %d %s"
 
 #, c-format
-msgid "Different settings on whether to fill in layer %d of %s\n"
-msgstr "Різні параметри заповнення у шарі %d %s\n"
+msgid "Different settings on whether to fill in layer %d of %s"
+msgstr "Різні параметри заповнення у шарі %d %s"
 
 #, c-format
-msgid "Different settings on whether to inherit fill color in layer %d of %s\n"
-msgstr "Різні параметри успадкованого кольору заповнення у шарі %d %s\n"
+msgid "Different settings on whether to inherit fill color in layer %d of %s"
+msgstr "Різні параметри успадкованого кольору заповнення у шарі %d %s"
 
 #, c-format
-msgid "Different settings on whether to inherit fill opacity in layer %d of %s\n"
-msgstr "Різні параметри успадкованої непрозорості заповнення у шарі %d %s\n"
+msgid "Different settings on whether to inherit fill opacity in layer %d of %s"
+msgstr "Різні параметри успадкованої непрозорості заповнення у шарі %d %s"
 
 #, c-format
-msgid "Different settings on whether to inherit stroke opacity in layer %d of %s\n"
-msgstr "Різні параметри успадкованої непрозорості штриха у шарі %d %s\n"
+msgid "Different settings on whether to inherit stroke opacity in layer %d of %s"
+msgstr "Різні параметри успадкованої непрозорості штриха у шарі %d %s"
 
 #, c-format
-msgid "Different settings on whether to inherit stroke width in layer %d of %s\n"
-msgstr "Різні параметри успадкованої ширини штриха у шарі %d %s\n"
+msgid "Different settings on whether to inherit stroke width in layer %d of %s"
+msgstr "Різні параметри успадкованої ширини штриха у шарі %d %s"
 
 #, c-format
-msgid "Different settings on whether to stroke in layer %d of %s\n"
-msgstr "Різні параметри розташування штриха у шарі %d %s\n"
+msgid "Different settings on whether to stroke in layer %d of %s"
+msgstr "Різні параметри розташування штриха у шарі %d %s"
 
 #, c-format
-msgid "Different stroke patterns in layer %d of %s\n"
-msgstr "Різні шаблони штрихів у шарі %d %s\n"
+msgid "Different stroke patterns in layer %d of %s"
+msgstr "Різні шаблони штрихів у шарі %d %s"
 
 msgid "Dingbats"
 msgstr "Декоративні"
@@ -5803,8 +5803,8 @@ msgid "Duplicate data"
 msgstr "Дублювання даних"
 
 #, c-format
-msgid "Duplicate definition of subroutine %d\n"
-msgstr "Дублювати визначення підпрограми %d\n"
+msgid "Duplicate definition of subroutine %d"
+msgstr "Дублювати визначення підпрограми %d"
 
 msgid "Duplicate lib data."
 msgstr "Дублювання бібліотечних даних."
@@ -5816,8 +5816,8 @@ msgid "Duplicate pixelsize"
 msgstr "Дублювати розмір у пікселях"
 
 #, c-format
-msgid "Duplicate repeat row count in char %d of pk file\n"
-msgstr "Дублювання повторення кількості рядків у символі %d файла pk\n"
+msgid "Duplicate repeat row count in char %d of pk file"
+msgstr "Дублювання повторення кількості рядків у символі %d файла pk"
 
 msgid "Dutch"
 msgstr "Голландська"
@@ -6039,8 +6039,8 @@ msgid "Empty Slot FG Color"
 msgstr "Колір ПП порожніх слотів"
 
 #, c-format
-msgid "Empty composite %d\n"
-msgstr "Порожній складений %d\n"
+msgid "Empty composite %d"
+msgstr "Порожній складений %d"
 
 #, c-format
 msgid "Empty position on line %d of %s"
@@ -6080,12 +6080,12 @@ msgstr ""
 "має непідтримуваний формат %d.\n"
 
 #, c-format
-msgid "Encoding subtable for platform=%d, specific=%d has a 0 length subtable.\n"
-msgstr "Підтаблиця кодування для платформи=%d, специфіка=%d містить підтаблицю нульового розміру.\n"
+msgid "Encoding subtable for platform=%d, specific=%d has a 0 length subtable."
+msgstr "Підтаблиця кодування для платформи=%d, специфіка=%d містить підтаблицю нульового розміру."
 
 #, c-format
-msgid "Encoding subtable for platform=%d, specific=%d has an unsupported format %d.\n"
-msgstr "Підтаблиця кодування для платформи=%d, специфіка=%d має непідтримуваний формат %d.\n"
+msgid "Encoding subtable for platform=%d, specific=%d has an unsupported format %d."
+msgstr "Підтаблиця кодування для платформи=%d, специфіка=%d має непідтримуваний формат %d."
 
 #, c-format
 msgid "Encoding value (%x) not in font, ignored"
@@ -6114,8 +6114,8 @@ msgstr "Виявлено символ кінця файла у таблиці п
 msgid "End of file found in string on line %d of %s"
 msgstr "Виявлено кінець файла у рядку (значенні типу string), рядок %d %s"
 
-msgid "End of file found when reading private dictionary.\n"
-msgstr "Під час читання закритого словника виявлено вихід за межі файла.\n"
+msgid "End of file found when reading private dictionary."
+msgstr "Під час читання закритого словника виявлено вихід за межі файла."
 
 #, c-format
 msgid "End of file in %s table"
@@ -6247,8 +6247,8 @@ msgid "Error clearing %s."
 msgstr "Під час спроби спорожнення %s сталася помилка."
 
 #, c-format
-msgid "Error: %s\n"
-msgstr "Помилка: %s\n"
+msgid "Error: %s"
+msgstr "Помилка: %s"
 
 #, c-format
 msgid "Error: Expected %s, got %s"
@@ -6809,8 +6809,8 @@ msgid "Failed to open file %s for output"
 msgstr "Не вдалося відкрити файл %s для виведення даних"
 
 #, c-format
-msgid "Failed to open glyph to name map file for writing: %s\n"
-msgstr "Не вдалося відкрити гліф для визначення назви файла карти для запису: %s\n"
+msgid "Failed to open glyph to name map file for writing: %s"
+msgstr "Не вдалося відкрити гліф для визначення назви файла карти для запису: %s"
 
 #, c-format
 msgid "Failed to open hotkey definition file: %s\n"
@@ -6824,14 +6824,14 @@ msgid "Failed to open your hotkey definition file for updates.\n"
 msgstr "Не вдалося відкрити файл визначення клавіатурних скорочень для оновлення.\n"
 
 #, c-format
-msgid "Failed to parse color %s\n"
-msgstr "Не вдалося обробити колір %s\n"
+msgid "Failed to parse color %s"
+msgstr "Не вдалося обробити колір %s"
 
-msgid "Failed to parse the StartData command properly\n"
-msgstr "Не вдалося обробити команду StartData належним чином\n"
+msgid "Failed to parse the StartData command properly"
+msgstr "Не вдалося обробити команду StartData належним чином"
 
-msgid "Failed to parse the StartData command properly, bad count\n"
-msgstr "Не вдалося обробити команду StartData належним чином, помилкове значення лічильника\n"
+msgid "Failed to parse the StartData command properly, bad count"
+msgstr "Не вдалося обробити команду StartData належним чином, помилкове значення лічильника"
 
 #, c-format
 msgid "Failed to read a file. Bytes read:%ld file size:%ld\n"
@@ -6842,8 +6842,8 @@ msgid "Failed to rename the new hotkeys file over your old one!\n"
 msgstr "Не вдалося змінити назву нового файла клавіатурних скорочень на назву старого файла!\n"
 
 #, c-format
-msgid "Failed to write %s\n"
-msgstr "Не вдалося записати %s\n"
+msgid "Failed to write %s"
+msgstr "Не вдалося записати %s"
 
 msgid "Failure"
 msgstr "Невдача"
@@ -7039,8 +7039,8 @@ msgstr "Нейтральний"
 msgid "Flat Nib"
 msgstr "Плоский кінчик"
 
-msgid "Flate decompression failed.\n"
-msgstr "Помилка під час спроби видобування з Flate\n"
+msgid "Flate decompression failed."
+msgstr "Помилка під час спроби видобування з Flate"
 
 msgid "Flattened Accents over Capitals"
 msgstr "Вирівняти акценти над великими літерами"
@@ -7192,8 +7192,8 @@ msgstr ""
 msgid "FontForge does not currently parse pattern Color Sources (%s)."
 msgstr "FontForge у поточній версії не може обробляти шаблон джерел кольорів (%s)."
 
-msgid "FontForge does not support Chameleon fonts\n"
-msgstr "У FontForge не передбачено підтримки шрифтів Chameleon\n"
+msgid "FontForge does not support Chameleon fonts"
+msgstr "У FontForge не передбачено підтримки шрифтів Chameleon"
 
 #, c-format
 msgid "FontForge does not support anonymous tables on line %d of %s"
@@ -7202,19 +7202,19 @@ msgstr "FontForge не підтримує таблиць без назви у р
 msgid "FontForge does not support dictionary based imagemask operators.\n"
 msgstr "У FontForge не передбачено підтримки словників, заснованих на операторах imagemask.\n"
 
-msgid "FontForge does not support synthetic fonts\n"
-msgstr "У FontForge не передбачено підтримки синтетичних шрифтів\n"
+msgid "FontForge does not support synthetic fonts"
+msgstr "У FontForge не передбачено підтримки синтетичних шрифтів"
 
 #, c-format
-msgid "FontForge does not support this bit depth %d (must be 1,2,4,8,16,32)\n"
-msgstr "У FontForge не передбачено підтримки глибини у бітах %d (глибина має дорівнювати одному зі значень: 1,2,4,8,16,32)\n"
+msgid "FontForge does not support this bit depth %d (must be 1,2,4,8,16,32)"
+msgstr "У FontForge не передбачено підтримки глибини у бітах %d (глибина має дорівнювати одному зі значень: 1,2,4,8,16,32)"
 
-msgid "FontForge does not support type2 multiple master fonts\n"
-msgstr "У FontForge не передбачено підтримки багатоосновних шрифтів type2\n"
+msgid "FontForge does not support type2 multiple master fonts"
+msgstr "У FontForge не передбачено підтримки багатоосновних шрифтів type2"
 
 #. GT: DICT is a magic term inside CFF fonts, as is INDEX, and I guess CFF and type2
-msgid "FontForge does not support type2 programs embedded in CFF DICT INDICES.\n"
-msgstr "У FontForge не передбачено підтримки програм type2, вбудованих до CFF DICT INDICES.\n"
+msgid "FontForge does not support type2 programs embedded in CFF DICT INDICES."
+msgstr "У FontForge не передбачено підтримки програм type2, вбудованих до CFF DICT INDICES."
 
 msgid ""
 "FontForge does not update this window when a change is made to the font.\n"
@@ -7252,8 +7252,8 @@ msgstr ""
 "зберігати ці зображення після завершення обробки за допомогою\n"
 "mf або вилучити зображення з метою економії місця."
 
-msgid "FontForge only supports embedded images in data: URIs\n"
-msgstr "У FontForge передбачено підтримку лише вбудованих у дані зображень: адреси\n"
+msgid "FontForge only supports embedded images in data: URIs"
+msgstr "У FontForge передбачено підтримку лише вбудованих у дані зображень: адреси"
 
 #, c-format
 msgid "FontForge supports at most %d layers"
@@ -7546,8 +7546,8 @@ msgid "GGadget|ScaleFactor|100"
 msgstr "100"
 
 #, c-format
-msgid "GID out of range (%d) in format 14 'cmap' subtable\n"
-msgstr "GID поза межами діапазону (%d) у форматі 14 підтаблиці «cmap»\n"
+msgid "GID out of range (%d) in format 14 'cmap' subtable"
+msgstr "GID поза межами діапазону (%d) у форматі 14 підтаблиці «cmap»"
 
 msgid "GID out of range."
 msgstr "GID поза межами припустимого діапазону."
@@ -7742,8 +7742,8 @@ msgid "Glyph %1$.50s with a %2$s from lookup subtable %3$.50s"
 msgstr "Гліф %1$.50s з %2$s з підтаблиці фільтрування %3$.50s"
 
 #, c-format
-msgid "Glyph %d attempts to reference glyph %d which is outside the font\n"
-msgstr "У гліфі %d вказано посилання на гліф %d, що лежить поза межами шрифту\n"
+msgid "Glyph %d attempts to reference glyph %d which is outside the font"
+msgstr "У гліфі %d вказано посилання на гліф %d, що лежить поза межами шрифту"
 
 #, c-format
 msgid "Glyph %d in bitmap strike %d pixels refers to a missing glyph (%d)"
@@ -7842,8 +7842,8 @@ msgid "Glyph _Metadata"
 msgstr "_Метаданих гліфа"
 
 #, c-format
-msgid "Glyph bounding box data exceeds font bounding box data for GID %d\n"
-msgstr "У гліфі з ідентифікатором %d дані обмежувальної рамки гліфа розташовано поза межами даних обмежувальної рамки шрифту\n"
+msgid "Glyph bounding box data exceeds font bounding box data for GID %d"
+msgstr "У гліфі з ідентифікатором %d дані обмежувальної рамки гліфа розташовано поза межами даних обмежувальної рамки шрифту"
 
 msgid "Glyph composed of:"
 msgstr "Гліф складається з:"
@@ -8381,8 +8381,8 @@ msgid "Hint _Width Near¹"
 msgstr "_Ширина гінту, близька¹"
 
 #, c-format
-msgid "Hint mask (or counter mask) with too many hints in %s\n"
-msgstr "Маска гінту (або маска прогалини) з занадто великою кількістю гінтів у %s\n"
+msgid "Hint mask (or counter mask) with too many hints in %s"
+msgstr "Маска гінту (або маска прогалини) з занадто великою кількістю гінтів у %s"
 
 #, c-format
 msgid "Hint masks differ in glyph “%s” at (%g,%g)\n"
@@ -8431,41 +8431,41 @@ msgstr "Історичні форми"
 msgid "Hit Watch Point"
 msgstr "Досягнуто позиції спостереження"
 
-msgid "Hmm, more glyph variation data specified than there are glyphs in font.\n"
-msgstr "Г-м-м, вказано більше даних варіантів гліфів, чим гліфів у шрифті.\n"
+msgid "Hmm, more glyph variation data specified than there are glyphs in font."
+msgstr "Г-м-м, вказано більше даних варіантів гліфів, чим гліфів у шрифті."
 
-msgid "Hmm, no global tuples specified in the 'gvar' table.\n"
-msgstr "Г-м-м, у таблиці «gvar» не вказано загальних кортежів.\n"
+msgid "Hmm, no global tuples specified in the 'gvar' table."
+msgstr "Г-м-м, у таблиці «gvar» не вказано загальних кортежів."
 
-msgid "Hmm, the 'avar' table is too long.\n"
-msgstr "Г-м-м, таблиця «avar» є занадто довгою.\n"
+msgid "Hmm, the 'avar' table is too long."
+msgstr "Г-м-м, таблиця «avar» є занадто довгою."
 
-msgid "Hmm, the axis count in the 'avar' table is different from that in the 'fvar' table.\n"
-msgstr "Г-м-м, кількість осей у таблиці «avar» не збігається зі значенням з таблиці «fvar».\n"
+msgid "Hmm, the axis count in the 'avar' table is different from that in the 'fvar' table."
+msgstr "Г-м-м, кількість осей у таблиці «avar» не збігається зі значенням з таблиці «fvar»."
 
-msgid "Hmm, the axis count in the 'gvar' table is different from that in the 'fvar' table.\n"
-msgstr "Г-м-м, кількість осей у таблиці «gvar» не збігається зі значенням з таблиці «fvar».\n"
+msgid "Hmm, the axis count in the 'gvar' table is different from that in the 'fvar' table."
+msgstr "Г-м-м, кількість осей у таблиці «gvar» не збігається зі значенням з таблиці «fvar»."
 
-msgid "Hmm, this 'fvar' table has an unexpected size for an axis, I shan't parse it\n"
-msgstr "Г-м-м, ця таблиця «fvar» має неочікувані розміри вісі, її не вдасться обробити\n"
+msgid "Hmm, this 'fvar' table has an unexpected size for an axis, I shan't parse it"
+msgstr "Г-м-м, ця таблиця «fvar» має неочікувані розміри вісі, її не вдасться обробити"
 
-msgid "Hmm, this 'fvar' table has an unexpected size for an instance, I shan't parse it\n"
-msgstr "Г-м-м, ця таблиця «fvar» має неочікувані розміри екземпляра, її не вдасться обробити\n"
+msgid "Hmm, this 'fvar' table has an unexpected size for an instance, I shan't parse it"
+msgstr "Г-м-м, ця таблиця «fvar» має неочікувані розміри екземпляра, її не вдасться обробити"
 
-msgid "Hmm, this 'fvar' table has more axes than FontForge can handle.\n"
-msgstr "Г-м-м, ця таблиця «fvar» містить більше осей, ніж FontForge здатен обробити.\n"
+msgid "Hmm, this 'fvar' table has more axes than FontForge can handle."
+msgstr "Г-м-м, ця таблиця «fvar» містить більше осей, ніж FontForge здатен обробити."
 
 msgid "Hmm, this 'fvar' table has more count/size pairs than I expect\n"
 msgstr "Г-м-м, у цій таблиці «fvar» міститься більше пар номер-розмір, ніж має бути\n"
 
-msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense.\n"
-msgstr "Г-м-м, ця таблиця «fvar» не містить даних осей, така таблиця є беззмістовною.\n"
+msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense."
+msgstr "Г-м-м, ця таблиця «fvar» не містить даних осей, така таблиця є беззмістовною."
 
 msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it\n"
 msgstr "Г-м-м, у цій таблиці «fvar» занадто мало пар номер-розмір, її не вдасться обробити\n"
 
-msgid "Hmm, this 'fvar' table is too short\n"
-msgstr "Г-м-м, ця таблиця «fvar» є занадто короткою\n"
+msgid "Hmm, this 'fvar' table is too short"
+msgstr "Г-м-м, ця таблиця «fvar» є занадто короткою"
 
 #, c-format
 msgid ""
@@ -8583,12 +8583,12 @@ msgid "Hungarian"
 msgstr "Угорська"
 
 #, c-format
-msgid "I can't even imagine how to attempt to interpolate gradients in layer %d of %s\n"
-msgstr "Навіть не можна уявити, як інтерполювати градієнти у шарі %d %s\n"
+msgid "I can't even imagine how to attempt to interpolate gradients in layer %d of %s"
+msgstr "Навіть не можна уявити, як інтерполювати градієнти у шарі %d %s"
 
 #, c-format
-msgid "I can't even imagine how to attempt to interpolate images in layer %d of %s\n"
-msgstr "Навіть не можна уявити, як інтерполювати зображення у шарі %d %s\n"
+msgid "I can't even imagine how to attempt to interpolate images in layer %d of %s"
+msgstr "Навіть не можна уявити, як інтерполювати зображення у шарі %d %s"
 
 #, c-format
 msgid "I can't figure out how to compare the subtable, %s, in %s to %s in %s\n"
@@ -9002,12 +9002,12 @@ msgstr ""
 "  «hmtx» (%d) не збігаються (надалі повідомлення про цю розбіжність пропущено).\n"
 
 #, c-format
-msgid "In %s, the advance width (%d) for glyph %s is greater than the maximum (%d)\n"
-msgstr "У %s додаткова ширина (%d) гліфа %s перевищує максимальне значення (%d)\n"
+msgid "In %s, the advance width (%d) for glyph %s is greater than the maximum (%d)"
+msgstr "У %s додаткова ширина (%d) гліфа %s перевищує максимальне значення (%d)"
 
 #, c-format
-msgid "In GID %d the advance width (%d) is greater than the stated maximum (%d)\n"
-msgstr "У GID %d додаткова ширина (%d) перевищує встановлене максимальне значення (%d)\n"
+msgid "In GID %d the advance width (%d) is greater than the stated maximum (%d)"
+msgstr "У GID %d додаткова ширина (%d) перевищує встановлене максимальне значення (%d)"
 
 #, c-format
 msgid ""
@@ -9046,16 +9046,16 @@ msgid "In an italic font the horizontal change per unit vertical change"
 msgstr "У курсивних шрифтах горизонтальна зміна на одиницю вертикальної зміни"
 
 #, c-format
-msgid "In character %s, could not find reference to %s\n"
-msgstr "У символі %s не вдалося знайти посилання на %s\n"
+msgid "In character %s, could not find reference to %s"
+msgstr "У символі %s не вдалося знайти посилання на %s"
 
 #, c-format
-msgid "In character %s, there are too few points on a path in the base\n"
-msgstr "У символу %s занадто мало точок для контуру в основі\n"
+msgid "In character %s, there are too few points on a path in the base"
+msgstr "У символу %s занадто мало точок для контуру в основі"
 
 #, c-format
-msgid "In character %s, there are too many points on a path in the base\n"
-msgstr "У символу %s занадто багато точок для контуру в основі\n"
+msgid "In character %s, there are too many points on a path in the base"
+msgstr "У символу %s занадто багато точок для контуру в основі"
 
 msgid ""
 "In every lookup that uses a glyph, check that at\n"
@@ -9164,12 +9164,12 @@ msgstr "Занадто довга назва файла у рядку %d %s"
 msgid "Includes nested too deeply on line %d of %s"
 msgstr "Занадто великий рівень вкладеності включення у рядку %d %s"
 
-msgid "Incorrect number of deltas in cvt\n"
-msgstr "Некоректна кількість поправок у ТКЗ\n"
+msgid "Incorrect number of deltas in cvt"
+msgstr "Некоректна кількість поправок у ТКЗ"
 
 #, c-format
-msgid "Incorrect number of deltas in glyph %d (%s)\n"
-msgstr "Некоректна кількість приростів у гліфі %d (%s)\n"
+msgid "Incorrect number of deltas in glyph %d (%s)"
+msgstr "Некоректна кількість приростів у гліфі %d (%s)"
 
 msgid "Incorrect number of instances weights, or illegal numbers"
 msgstr "Некоректна кількість екземплярів насиченостей або помилкові числа"
@@ -9196,8 +9196,8 @@ msgid "Index in use"
 msgstr "Індекс вже використано"
 
 #, c-format
-msgid "Index out of range in %s\n"
-msgstr "Індекст поза межами діапазону у %s\n"
+msgid "Index out of range in %s"
+msgstr "Індекст поза межами діапазону у %s"
 
 #, c-format
 msgid "Index too big (must be <%d) \"%s"
@@ -9445,11 +9445,11 @@ msgid "Invalid Encoding"
 msgstr "Некоректне кодування"
 
 #, c-format
-msgid "Invalid FD (%d) assigned to CID %d.\n"
-msgstr "Некоректний дескриптор шрифту (%d) призначено до CID %d.\n"
+msgid "Invalid FD (%d) assigned to CID %d."
+msgstr "Некоректний дескриптор шрифту (%d) призначено до CID %d."
 
-msgid "Invalid character outside of string in sfnts array\n"
-msgstr "Некоректний символ поза межами рядка у масиві sfnt\n"
+msgid "Invalid character outside of string in sfnts array"
+msgstr "Некоректний символ поза межами рядка у масиві sfnt"
 
 #, c-format
 msgid "Invalid comment string (negative length?) in 'PfEd' table for glyph %s."
@@ -9478,18 +9478,18 @@ msgstr "Некоректний гліф %s під час виправлення 
 msgid "Invalid glyph name range in glyph class on line %d of %s"
 msgstr "Некоректний діапазон назв гліфів у класі гліфів, рядок %d %s"
 
-msgid "Invalid hex digit in sfnts array\n"
-msgstr "Некоректна шістнадцяткова цифра у масиві sfnt\n"
+msgid "Invalid hex digit in sfnts array"
+msgstr "Некоректна шістнадцяткова цифра у масиві sfnt"
 
 msgid "Invalid language"
 msgstr "Некоректна мова"
 
-msgid "Invalid ligature offset\n"
-msgstr "Некоректний відступ лігатури\n"
+msgid "Invalid ligature offset"
+msgstr "Некоректний відступ лігатури"
 
 #, c-format
-msgid "Invalid lookup table format. %d\n"
-msgstr "Некоректний формат таблиці фільтрування. %d\n"
+msgid "Invalid lookup table format. %d"
+msgstr "Некоректний формат таблиці фільтрування. %d"
 
 #, c-format
 msgid "Invalid or unsupported format (%d) for subtable of 'kern' table"
@@ -9503,20 +9503,20 @@ msgstr "Некоректна або непідтримувана версія (0
 msgid "Invalid platform for string on line %d of %s"
 msgstr "Некоректна платформа для значення типу string у рядку %d %s"
 
-msgid "Invalid point match. Point would be after this reference.\n"
-msgstr "Некоректна відповідність точок. Точку має бути вказано після цього посилання.\n"
+msgid "Invalid point match. Point would be after this reference."
+msgstr "Некоректна відповідність точок. Точку має бути вказано після цього посилання."
 
 msgid "Invalid point size"
 msgstr "Некоректний розмір точки"
 
-msgid "Invalid ttf hmtx table (or hhea), numOfLongMetrics is 0\n"
-msgstr "Некоректна таблиця hmtx (або hhea) ttf, numOfLongMetrics дорівнює 0\n"
+msgid "Invalid ttf hmtx table (or hhea), numOfLongMetrics is 0"
+msgstr "Некоректна таблиця hmtx (або hhea) ttf, numOfLongMetrics дорівнює 0"
 
-msgid "Invalid ttf vmtx table (or vhea), numOfLongVerMetrics is 0\n"
-msgstr "Некоректна таблиця vmtx (або vhea) ttf, numOfLongVerMetrics дорівнює 0\n"
+msgid "Invalid ttf vmtx table (or vhea), numOfLongVerMetrics is 0"
+msgstr "Некоректна таблиця vmtx (або vhea) ttf, numOfLongVerMetrics дорівнює 0"
 
-msgid "Invalid unit vector has been specified. The hint is ignored.\n"
-msgstr "Вказано некоректний одиничний вектор. Гінт проігноровано.\n"
+msgid "Invalid unit vector has been specified. The hint is ignored."
+msgstr "Вказано некоректний одиничний вектор. Гінт проігноровано."
 
 msgid "Irish"
 msgstr "Ірландська"
@@ -9885,8 +9885,8 @@ msgstr "Ключ"
 
 #. GT: Here "def" is a PostScript keyword, (meaning define).
 #. GT: This "def" should not be translated as it is part of the PostScript language.
-msgid "Key for a def must be a string or name literal\n"
-msgstr "Ключем для def має бути рядок або літерал назви\n"
+msgid "Key for a def must be a string or name literal"
+msgstr "Ключем для def має бути рядок або літерал назви"
 
 msgid "Khakass"
 msgstr "Хакаська"
@@ -10576,8 +10576,8 @@ msgid "Lookup subtable %s (matched with %s)\n"
 msgstr "Підтаблиця фільтрування %s (встановлено відповідність з %s)\n"
 
 #, c-format
-msgid "Lookup subtable %s contains a glyph %s whose kerning information takes up more than 64k bytes\n"
-msgstr "У підтаблиці фільтрування %s міститься гліф %s, чиї відомості щодо кернінґу мають об’єм, що перевищує 64 кілобайтів.\n"
+msgid "Lookup subtable %s contains a glyph %s whose kerning information takes up more than 64k bytes"
+msgstr "У підтаблиці фільтрування %s міститься гліф %s, чиї відомості щодо кернінґу мають об’єм, що перевищує 64 кілобайтів."
 
 #, c-format
 msgid ""
@@ -11628,8 +11628,8 @@ msgstr "Різні технічні"
 msgid "Mismatch lookup types inside a parsed lookup"
 msgstr "Невідповідні типи фільтрування у фільтруванні, яке обробляється"
 
-msgid "Mismatched local and shared tuple flags.\n"
-msgstr "Невідповідність локального і спільного прапорців кортежів.\n"
+msgid "Mismatched local and shared tuple flags."
+msgstr "Невідповідність локального і спільного прапорців кортежів."
 
 msgid "Missing \"OS/2\" table"
 msgstr "Не знайдено таблиці \"OS/2\""
@@ -11651,8 +11651,8 @@ msgid "Missing Glyph..."
 msgstr "Немає гліфа…"
 
 #, c-format
-msgid "Missing POST resource %u\n"
-msgstr "Не виявлено ресурсу POST %u\n"
+msgid "Missing POST resource %u"
+msgstr "Не виявлено ресурсу POST %u"
 
 msgid "Missing Points at Extrema"
 msgstr "Немає точок у екстремумах"
@@ -11816,8 +11816,8 @@ msgid "More pushes specified than needed"
 msgstr "Вказано більше інструкцій push, ніж потрібно"
 
 #, c-format
-msgid "More than 256 entries in subfont %s\n"
-msgstr "Більше за 256 записів у підшрифті %s\n"
+msgid "More than 256 entries in subfont %s"
+msgstr "Більше за 256 записів у підшрифті %s"
 
 msgid "Moroccan"
 msgstr "Марокканська"
@@ -12021,18 +12021,18 @@ msgid "Multiple copies of the selection should be tiled onto the path"
 msgstr "Декілька копій позначеного фрагмента має бути розташовано вздовж контуру"
 
 #, c-format
-msgid "Multiple glyphs map to the same unicode encoding U+%04X, only one will be used\n"
-msgstr "На одне кодування Unicode U+%04X відображено декілька гліфів. Буде використано лише один з них.\n"
+msgid "Multiple glyphs map to the same unicode encoding U+%04X, only one will be used"
+msgstr "На одне кодування Unicode U+%04X відображено декілька гліфів. Буде використано лише один з них."
 
-msgid "Multiple master font with more than 16 instances\n"
-msgstr "У багатоосновного шрифту більше за 16 екземплярів\n"
+msgid "Multiple master font with more than 16 instances"
+msgstr "У багатоосновного шрифту більше за 16 екземплярів"
 
-msgid "Multiple master font with more than 4 axes\n"
-msgstr "Багатоосновний шрифт, з кількістю осей, що перевищує 4\n"
+msgid "Multiple master font with more than 4 axes"
+msgstr "Багатоосновний шрифт, з кількістю осей, що перевищує 4"
 
 #, c-format
-msgid "Multiple master subroutine called with the wrong number of arguments in %s.\n"
-msgstr "У %s викликано багатоосновну підпрограму з помилковою кількістю аргументів.\n"
+msgid "Multiple master subroutine called with the wrong number of arguments in %s."
+msgstr "У %s викликано багатоосновну підпрограму з помилковою кількістю аргументів."
 
 msgid "Multiple names for language"
 msgstr "Декілька назв мови"
@@ -12601,12 +12601,12 @@ msgstr "«Ні» _для всіх"
 msgid "No applicable lookup subtables"
 msgstr "Немає відповідних підтаблиць фільтрування"
 
-msgid "No argument to operator\n"
-msgstr "Не вказано аргументу оператора\n"
+msgid "No argument to operator"
+msgstr "Не вказано аргументу оператора"
 
 #, c-format
-msgid "No argument to operator %d in private dict\n"
-msgstr "Не вказано аргументу оператора %d у приватному словнику\n"
+msgid "No argument to operator %d in private dict"
+msgstr "Не вказано аргументу оператора %d у приватному словнику"
 
 msgid "No bitmap strikes"
 msgstr "Немає растрових розмірів"
@@ -12635,16 +12635,16 @@ msgid "No flags specified in lookupflags on line %d of %s"
 msgstr "У прапорцях фільтрування не вказано прапорців, рядок %d %s"
 
 #, c-format
-msgid "No glyph named %s, used as a pattern in %s\n"
-msgstr "Немає гліфа з назвою %s, використаного як шаблон у %s\n"
+msgid "No glyph named %s, used as a pattern in %s"
+msgstr "Немає гліфа з назвою %s, використаного як шаблон у %s"
 
 #, c-format
 msgid "No glyph named %s."
 msgstr "Немає гліфа з назвою %s."
 
 #, c-format
-msgid "No glyph with unicode U+%05x in font\n"
-msgstr "У шрифті немає гліфа з кодом Unicode U+%05x\n"
+msgid "No glyph with unicode U+%05x in font"
+msgstr "У шрифті немає гліфа з кодом Unicode U+%05x"
 
 msgid "No glyphs directory or no contents file"
 msgstr "Немає каталогу з гліфами або файла вмісту"
@@ -12661,8 +12661,8 @@ msgid "No kerning pairs found in %.200s"
 msgstr "У %.200s не виявлено кернових пар"
 
 #, c-format
-msgid "No kerning table for %s\n"
-msgstr "Немає таблиці кернінґу для %s\n"
+msgid "No kerning table for %s"
+msgstr "Немає таблиці кернінґу для %s"
 
 msgid "No languages"
 msgstr "Не вказано мови"
@@ -12684,14 +12684,14 @@ msgstr "У зворотному контекстному ланцюговому 
 msgid "No lookups to copy"
 msgstr "Немає фільтрів для копіювання"
 
-msgid "No mark in ] (close array)\n"
-msgstr "Немає позначки у ] (завершення масиву)\n"
+msgid "No mark in ] (close array)"
+msgstr "Немає позначки у ] (завершення масиву)"
 
-msgid "No mark in cleartomark\n"
-msgstr "Немає позначки у cleartomark\n"
+msgid "No mark in cleartomark"
+msgstr "Немає позначки у cleartomark"
 
-msgid "No mark in counttomark\n"
-msgstr "Немає позначки у counttomark\n"
+msgid "No mark in counttomark"
+msgstr "Немає позначки у counttomark"
 
 #, c-format
 msgid "No marked glyphs allowed in replacement on line %d of %s"
@@ -12709,24 +12709,24 @@ msgid "No paths with within a glyph should intersect"
 msgstr "Контури у гліфі не повинні перетинатися"
 
 #, c-format
-msgid "No previous point on path in curveto from flex 0 in %s\n"
-msgstr "Немає попередньої точки на контурі у curveto з флекса 0 у %s\n"
+msgid "No previous point on path in curveto from flex 0 in %s"
+msgstr "Немає попередньої точки на контурі у curveto з флекса 0 у %s"
 
 #, c-format
-msgid "No previous point on path in curveto in %s\n"
-msgstr "Немає попередньої точки на контурі у curveto у %s\n"
+msgid "No previous point on path in curveto in %s"
+msgstr "Немає попередньої точки на контурі у curveto у %s"
 
 #, c-format
-msgid "No previous point on path in flex operator in %s\n"
-msgstr "Немає попередньої точки на контурі у операторі flex у %s\n"
+msgid "No previous point on path in flex operator in %s"
+msgstr "Немає попередньої точки на контурі у операторі flex у %s"
 
 #, c-format
-msgid "No previous point on path in lineto from flex 0 in %s\n"
-msgstr "Немає попередньої точки на контурі у lineto з флекса 0 у %s\n"
+msgid "No previous point on path in lineto from flex 0 in %s"
+msgstr "Немає попередньої точки на контурі у lineto з флекса 0 у %s"
 
 #, c-format
-msgid "No previous point on path in lineto in %s\n"
-msgstr "Немає попередньої точки на контурі у lineto у %s\n"
+msgid "No previous point on path in lineto in %s"
+msgstr "Немає попередньої точки на контурі у lineto у %s"
 
 msgid "No problems detected"
 msgstr "Проблем не виявлено"
@@ -12751,8 +12751,8 @@ msgstr "Не вказано писемності"
 msgid "No selection"
 msgstr "Нічого не позначено"
 
-msgid "No selection\n"
-msgstr "Нічого не позначено\n"
+msgid "No selection"
+msgstr "Нічого не позначено"
 
 msgid "No significant differences found"
 msgstr "Значних відмінностей не виявлено"
@@ -13021,8 +13021,8 @@ msgstr "Нічого не позначено"
 msgid "Nothing found"
 msgstr "Нічого не знайдено"
 
-msgid "Nothing on stack to print\n"
-msgstr "У стеку немає даних для друку\n"
+msgid "Nothing on stack to print"
+msgstr "У стеку немає даних для друку"
 
 msgid "Nothing specified"
 msgstr "Нічого не вказано"
@@ -13604,8 +13604,8 @@ msgstr "Не за порядком"
 msgid "Out of Range"
 msgstr "Значення поза діапазоном"
 
-msgid "Out of memory\n"
-msgstr "Не вистачає пам'яті\n"
+msgid "Out of memory"
+msgstr "Не вистачає пам'яті"
 
 msgid "Outer Border:"
 msgstr "Зовнішня межа:"
@@ -14092,8 +14092,8 @@ msgid "Parse Error"
 msgstr "Помилка обробки"
 
 #, c-format
-msgid "ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s\n"
-msgstr "ParseGlyphOrderAndAliasDB: некоректний (не відокремлений табуляцією) запис із індексом %d: %s\n"
+msgid "ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s"
+msgstr "ParseGlyphOrderAndAliasDB: некоректний (не відокремлений табуляцією) запис із індексом %d: %s"
 
 msgid "Parts List"
 msgstr "Список частин"
@@ -14395,8 +14395,8 @@ msgid "Polytonic Greek"
 msgstr "Політонічна грецька"
 
 #, c-format
-msgid "Pop stack underflow on pop in %s\n"
-msgstr "Вичерпання стеку інструкцією pop у %s\n"
+msgid "Pop stack underflow on pop in %s"
+msgstr "Вичерпання стеку інструкцією pop у %s"
 
 msgid "Popup"
 msgstr "Контекстна підказка"
@@ -14852,11 +14852,11 @@ msgstr "Без обробки"
 msgid "Re_move"
 msgstr "В_илучити"
 
-msgid "Reached end of file when reading composite glyph\n"
-msgstr "Під час спроби читання складеного гліфа досягнуто кінця файла\n"
+msgid "Reached end of file when reading composite glyph"
+msgstr "Під час спроби читання складеного гліфа досягнуто кінця файла"
 
-msgid "Reached end of file when reading simple glyph\n"
-msgstr "Під час спроби читання простого гліфа досягнуто кінця файла\n"
+msgid "Reached end of file when reading simple glyph"
+msgstr "Під час спроби читання простого гліфа досягнуто кінця файла"
 
 msgid ""
 "Read Control Value Table entry\n"
@@ -14933,8 +14933,8 @@ msgid "Reference Names"
 msgstr "Назви посилань"
 
 #, c-format
-msgid "Reference encoding out of bounds in %s\n"
-msgstr "Кодування посилання поза межами у %s\n"
+msgid "Reference encoding out of bounds in %s"
+msgstr "Кодування посилання поза межами у %s"
 
 msgid "Reference point match out of date"
 msgstr "Відповідність точок посилань є застарілою"
@@ -14956,12 +14956,12 @@ msgid "Reference to character %1$.20s at %2$d"
 msgstr "Посилання на символ %1$.20s, %2$d"
 
 #, c-format
-msgid "Reference to glyph %d out of bounds when parsing 'glyf' table.\n"
-msgstr "Під час обробки таблиці «glyf» виявлено посилання на гліф %d, що лежить поза межами припустимого діапазону.\n"
+msgid "Reference to glyph %d out of bounds when parsing 'glyf' table."
+msgstr "Під час обробки таблиці «glyf» виявлено посилання на гліф %d, що лежить поза межами припустимого діапазону."
 
 #, c-format
-msgid "Reference to transient memory out of bounds in put in %s\n"
-msgstr "Посилання за межі області пам’яті тимчасового використання у інструкції put, %s\n"
+msgid "Reference to transient memory out of bounds in put in %s"
+msgstr "Посилання за межі області пам’яті тимчасового використання у інструкції put, %s"
 
 msgid "References are nested more deeply in this glyph than the maximum allowed"
 msgstr "Посилання у цьому гліфі розташовано на рівні ієрархії, глибшому за максимальний дозволений"
@@ -17608,88 +17608,88 @@ msgid "Stack (TrueType)"
 msgstr "Стек (TrueType)"
 
 #, c-format
-msgid "Stack got too big in %s\n"
-msgstr "Занадто великий стек команд у %s\n"
+msgid "Stack got too big in %s"
+msgstr "Занадто великий стек команд у %s"
 
 #, c-format
-msgid "Stack underflow on binary operator in %s\n"
-msgstr "Вичерпання стеку для бінарного оператора у %s\n"
+msgid "Stack underflow on binary operator in %s"
+msgstr "Вичерпання стеку для бінарного оператора у %s"
 
 #, c-format
-msgid "Stack underflow on callothersubr in %s\n"
-msgstr "Вичерпання стеку для callothersubr у %s\n"
+msgid "Stack underflow on callothersubr in %s"
+msgstr "Вичерпання стеку для callothersubr у %s"
 
 #, c-format
-msgid "Stack underflow on callsubr in %s\n"
-msgstr "Вичерпання стеку для callsubr у %s\n"
+msgid "Stack underflow on callsubr in %s"
+msgstr "Вичерпання стеку для callsubr у %s"
 
 #, c-format
-msgid "Stack underflow on hhcurveto in %s\n"
-msgstr "Вичерпання стеку для hhcurveto у %s\n"
+msgid "Stack underflow on hhcurveto in %s"
+msgstr "Вичерпання стеку для hhcurveto у %s"
 
 #, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s\n"
 msgstr "Вичерпання стеку для hlineto/hmoveto у %s\n"
 
 #, c-format
-msgid "Stack underflow on hsbw in %s\n"
-msgstr "Вичерпання стеку для hsbw у %s\n"
+msgid "Stack underflow on hsbw in %s"
+msgstr "Вичерпання стеку для hsbw у %s"
 
 #, c-format
-msgid "Stack underflow on hstem in %s\n"
-msgstr "Вичерпання стеку для hstem у %s\n"
+msgid "Stack underflow on hstem in %s"
+msgstr "Вичерпання стеку для hstem у %s"
 
 #, c-format
-msgid "Stack underflow on hstem3 in %s\n"
-msgstr "Вичерпання стеку для hstem3 у %s\n"
+msgid "Stack underflow on hstem3 in %s"
+msgstr "Вичерпання стеку для hstem3 у %s"
 
 #, c-format
-msgid "Stack underflow on hvcurveto in %s\n"
-msgstr "Вичерпання стеку для hvcurveto у %s\n"
+msgid "Stack underflow on hvcurveto in %s"
+msgstr "Вичерпання стеку для hvcurveto у %s"
 
 #, c-format
-msgid "Stack underflow on ifelse in %s\n"
-msgstr "Вичерпання стеку для ifelse у %s\n"
+msgid "Stack underflow on ifelse in %s"
+msgstr "Вичерпання стеку для ifelse у %s"
 
 #, c-format
 msgid "Stack underflow on rlineto/rmoveto in %s\n"
 msgstr "Вичерпання стеку для rlineto/rmoveto у %s\n"
 
 #, c-format
-msgid "Stack underflow on rrcurveto in %s\n"
-msgstr "Вичерпання стеку для rrcurveto у %s\n"
+msgid "Stack underflow on rrcurveto in %s"
+msgstr "Вичерпання стеку для rrcurveto у %s"
 
 #, c-format
-msgid "Stack underflow on sbw in %s\n"
-msgstr "Вичерпання стеку для sbw у %s\n"
+msgid "Stack underflow on sbw in %s"
+msgstr "Вичерпання стеку для sbw у %s"
 
 #, c-format
-msgid "Stack underflow on seac in %s\n"
-msgstr "Вичерпання стеку для seac у %s\n"
+msgid "Stack underflow on seac in %s"
+msgstr "Вичерпання стеку для seac у %s"
 
 #, c-format
-msgid "Stack underflow on setcurrentpoint in %s\n"
-msgstr "Вичерпання стеку для setcurrentpoint у %s\n"
+msgid "Stack underflow on setcurrentpoint in %s"
+msgstr "Вичерпання стеку для setcurrentpoint у %s"
 
 #, c-format
-msgid "Stack underflow on unary operator in %s\n"
-msgstr "Вичерпання стеку для унарного оператора у %s\n"
+msgid "Stack underflow on unary operator in %s"
+msgstr "Вичерпання стеку для унарного оператора у %s"
 
 #, c-format
-msgid "Stack underflow on vhcurveto in %s\n"
-msgstr "Вичерпання стеку для vhcurveto у %s\n"
+msgid "Stack underflow on vhcurveto in %s"
+msgstr "Вичерпання стеку для vhcurveto у %s"
 
 #, c-format
 msgid "Stack underflow on vlineto/vmoveto in %s\n"
 msgstr "Вичерпання стеку для vlineto/vmoveto у %s\n"
 
 #, c-format
-msgid "Stack underflow on vstem in %s\n"
-msgstr "Вичерпання стеку для vstem у %s\n"
+msgid "Stack underflow on vstem in %s"
+msgstr "Вичерпання стеку для vstem у %s"
 
 #, c-format
-msgid "Stack underflow on vstem3 in %s\n"
-msgstr "Вичерпання стеку для vstem3 у %s\n"
+msgid "Stack underflow on vstem3 in %s"
+msgstr "Вичерпання стеку для vstem3 у %s"
 
 msgid "StackBottomDisplayStyleShiftDown:"
 msgstr "Зсув низу стосу відділеної формули вниз:"
@@ -18057,8 +18057,8 @@ msgid "SubSuperscriptGapMin:"
 msgstr "Мін. відстань між верх. і нижн. межами:"
 
 #, c-format
-msgid "Subroutine number out of bounds in %s\n"
-msgstr "Номер підпрограми поза припустимими межами у %s\n"
+msgid "Subroutine number out of bounds in %s"
+msgstr "Номер підпрограми поза припустимими межами у %s"
 
 msgid "Subscript"
 msgstr "Нижній індекс"
@@ -18350,8 +18350,8 @@ msgstr "Таблиця «%c%c%c%c» має помилкову довжину: м
 msgid "Table '%c%c%c%c' has a bad length, must be even."
 msgstr "Таблиця «%c%c%c%c» має помилкову довжину: довжина має бути парним числом."
 
-msgid "Table length should not be odd\n"
-msgstr "Довжина таблиці має бути парним числом\n"
+msgid "Table length should not be odd"
+msgstr "Довжина таблиці має бути парним числом"
 
 #, c-format
 msgid "Table length stretches beyond end of file for '%c%c%c%c'."
@@ -18779,8 +18779,8 @@ msgid "The Y coordinate of the anchor point in this glyph"
 msgstr "Координата за віссю Y точки прив’язки у цьому гліфі"
 
 #, c-format
-msgid "The advance width of %s (%d) does not match the font's advanceWidthMax (%d) and this is a fixed pitch font\n"
-msgstr "Додаткова ширина %s (%d) не відповідає значенню advanceWidthMax шрифту (%d), а цей шрифт є шрифтом з фіксованою шириною\n"
+msgid "The advance width of %s (%d) does not match the font's advanceWidthMax (%d) and this is a fixed pitch font"
+msgstr "Додаткова ширина %s (%d) не відповідає значенню advanceWidthMax шрифту (%d), а цей шрифт є шрифтом з фіксованою шириною"
 
 msgid "The amount of space between words when using this font"
 msgstr "Інтервал між словами у разі використання цього шрифту"
@@ -19080,8 +19080,8 @@ msgstr "Теґ модифікації у рядку %d (%s) слід вказа�
 msgid "The following error occurred on the selected glyphs: %.100s"
 msgstr "Під час обробки позначених гліфів сталася така помилка: %.100s"
 
-msgid "The following table(s) in the font have been ignored by FontForge\n"
-msgstr "Наведені нижче таблиці шрифту було проігноровано FontForge\n"
+msgid "The following table(s) in the font have been ignored by FontForge"
+msgstr "Наведені нижче таблиці шрифту було проігноровано FontForge"
 
 #, c-format
 msgid "The font %.30s contains cubic splines. It must be converted to quadratic splines before it can be used in an apple distortable font"
@@ -19459,8 +19459,8 @@ msgstr ""
 msgid "The name, %.80s, has already been used to identify an anchor class in a different lookup subtable (%.80s)"
 msgstr "Назву %.80s вже було використано для ідентифікації класу прив’язки у іншій підтаблиці фільтрування (%.80s)"
 
-msgid "The names 'alefmaksurainitialarabic' and 'alefmaksuramedialarabic' in the Adobe Glyph List disagree with Unicode.  The use of these glyph names is therefore discouraged.\n"
-msgstr "Назви «alefmaksurainitialarabic» та «alefmaksuramedialarabic» у списку гліфів Adobe не узгоджуються з Unicode. Через це, такими назвами не слід користуватися.\n"
+msgid "The names 'alefmaksurainitialarabic' and 'alefmaksuramedialarabic' in the Adobe Glyph List disagree with Unicode.  The use of these glyph names is therefore discouraged."
+msgstr "Назви «alefmaksurainitialarabic» та «alefmaksuramedialarabic» у списку гліфів Adobe не узгоджуються з Unicode. Через це, такими назвами не слід користуватися."
 
 msgid "The number of em-units by which an arrow key will move a selected point"
 msgstr "Кількість одиниць em, на які натискання клавіші зі стрілкою пересуватиме позначену точку"
@@ -19726,8 +19726,8 @@ msgstr ""
 " y(нове) = tm[1,2]*x + tm[2,2]*y + tm[3,2]"
 
 #, c-format
-msgid "The truetype encoding specified by platform=%d specific=%d (which we map to %s) is not supported by your version of iconv(3).\n"
-msgstr "Кодування truetype, вказане за значеннями платформи=%d специфіки=%d (яку було відображено на %s), не підтримується цією версією iconv(3).\n"
+msgid "The truetype encoding specified by platform=%d specific=%d (which we map to %s) is not supported by your version of iconv(3)."
+msgstr "Кодування truetype, вказане за значеннями платформи=%d специфіки=%d (яку було відображено на %s), не підтримується цією версією iconv(3)."
 
 #, c-format
 msgid ""
@@ -20074,8 +20074,8 @@ msgid "This blank outline glyph has an unexpected bitmap version"
 msgstr "Для цього порожнього обрису гліфа вказано неочікувану версію растру"
 
 #, c-format
-msgid "This character (gid=%d) has a following part (%d). I'm not sure what that means, please send me (gww@silcom.com) a copy of this font so I can test with it.\n"
-msgstr "Цей символ (gid=%d) містить вказану нижче частину (%d). Будь ласка, вишліть копію цього шрифту за адресою gww@silcom.com, щоб розробник зміг вивчити його.\n"
+msgid "This character (gid=%d) has a following part (%d). I'm not sure what that means, please send me (gww@silcom.com) a copy of this font so I can test with it."
+msgstr "Цей символ (gid=%d) містить вказану нижче частину (%d). Будь ласка, вишліть копію цього шрифту за адресою gww@silcom.com, щоб розробник зміг вивчити його."
 
 msgid ""
 "This checks if the character almost, but not exactly,\n"
@@ -20160,8 +20160,8 @@ msgstr ""
 msgid "This file contains an unnamed encoding, which cannot be named in a script"
 msgstr "У цьому файлі міститься кодування без назви, яку неможливо встановити за допомогою скрипту"
 
-msgid "This file contains no SVG fonts.\n"
-msgstr "У цьому файлі не міститься шрифтів SVG.\n"
+msgid "This file contains no SVG fonts."
+msgstr "У цьому файлі не міститься шрифтів SVG."
 
 msgid "This font comes from an old format sfd file. Not all aspects of it can be reverted successfully."
 msgstr "Цей шрифт походить з файла у старому форматі sfd. Не всі його елементи може бути успішно розвернуто."
@@ -20172,15 +20172,15 @@ msgstr "Цей шрифт містить модифікацію «size» з пр
 msgid "This font contains at least one translucent layer, but type3 does not support that (anything translucent or transparent is treated as opaque). Do you want to proceed anyway?"
 msgstr "У цьому шрифті міститься принаймні один прозорий шар, а у type3 підтримки таких шарів не передбачено (всі прозорі або напівпрозорі частини вважаються непрозорими). Продовжити обробку?"
 
-msgid "This font contains bitmaps in Apple's compressed format 4 (And I don't support that)\n"
-msgstr "У цьому шрифті містяться растрові зображення у стисненому форматі Apple 4 (у програмі не передбачено підтримки таких зображень)\n"
+msgid "This font contains bitmaps in Apple's compressed format 4 (And I don't support that)"
+msgstr "У цьому шрифті містяться растрові зображення у стисненому форматі Apple 4 (у програмі не передбачено підтримки таких зображень)"
 
 #, c-format
-msgid "This font contains bitmaps in a format %d that I've never heard of\n"
-msgstr "У цьому шрифті містяться растрові зображення у форматі %d, який є невідомим програмі.\n"
+msgid "This font contains bitmaps in a format %d that I've never heard of"
+msgstr "У цьому шрифті містяться растрові зображення у форматі %d, який є невідомим програмі."
 
-msgid "This font contains bitmaps in the obsolete format 3 (And I can't read them)\n"
-msgstr "У шрифті містяться растрові зображення у застарілому форматі 3 (програма не може їх прочитати)\n"
+msgid "This font contains bitmaps in the obsolete format 3 (And I can't read them)"
+msgstr "У шрифті містяться растрові зображення у застарілому форматі 3 (програма не може їх прочитати)"
 
 msgid ""
 "This font contains both a 'BASE' table and a 'bsln' table.\n"
@@ -20259,11 +20259,11 @@ msgstr ""
 "У шрифті не увімкнено вертикальної метрики.\n"
 "Увімкніть метрику за допомогою пункту меню «Елемент->Відомості щодо шрифту»."
 
-msgid "This font does not specify font-face\n"
-msgstr "У цьому шрифті не вказано нарису шрифту\n"
+msgid "This font does not specify font-face"
+msgstr "У цьому шрифті не вказано нарису шрифту"
 
-msgid "This font does not specify units-per-em\n"
-msgstr "У цьому шрифті не вказано кількість одиниць на em\n"
+msgid "This font does not specify units-per-em"
+msgstr "У цьому шрифті не вказано кількість одиниць на em"
 
 msgid "This font does not specify unitsPerEm, so we guess 1000."
 msgstr "У цьому шрифті не вказано unitsPerEm, припускаємо 1000."
@@ -20929,16 +20929,16 @@ msgid "Too Many Points"
 msgstr "Занадто багато точок"
 
 #, c-format
-msgid "Too few items on stack for blend in %s\n"
-msgstr "Занадто мало елементів у стеку для виконання blend у %s\n"
+msgid "Too few items on stack for blend in %s"
+msgstr "Занадто мало елементів у стеку для виконання blend у %s"
 
 #, c-format
-msgid "Too few items on stack for get in %s\n"
-msgstr "Занадто мало елементів у стеку для виконання get у %s\n"
+msgid "Too few items on stack for get in %s"
+msgstr "Занадто мало елементів у стеку для виконання get у %s"
 
 #, c-format
-msgid "Too few items on stack for put in %s\n"
-msgstr "Занадто мало елементів у стеку для виконання put у %s\n"
+msgid "Too few items on stack for put in %s"
+msgstr "Занадто мало елементів у стеку для виконання put у %s"
 
 msgid "Too many Unique Font IDs"
 msgstr "Занадто багато унікальних ідентифікаторів шрифту"
@@ -20990,11 +20990,11 @@ msgid "Too many separation marks, starting at: %.20s..."
 msgstr "Забагато позначок відокремлення, починаючи з: %.20s…"
 
 #, c-format
-msgid "Too many subroutine calls in %s\n"
-msgstr "Занадто багато викликів підпрограм у %s\n"
+msgid "Too many subroutine calls in %s"
+msgstr "Занадто багато викликів підпрограм у %s"
 
-msgid "Too many subroutines. We can deal with at most 14 (0-13)\n"
-msgstr "Занадто багато підпрограм. Можлива обробка не більше за 14 (0-13)\n"
+msgid "Too many subroutines. We can deal with at most 14 (0-13)"
+msgstr "Занадто багато підпрограм. Можлива обробка не більше за 14 (0-13)"
 
 msgid "Tool_s"
 msgstr "_Інструменти"
@@ -21399,12 +21399,12 @@ msgstr "Розмір збереженого буфера скасування/п
 msgid "Uneven Weighting"
 msgstr "Нерівна вага"
 
-msgid "Unexpected EOF in gf\n"
-msgstr "Неочікуваний кінець файла у gf\n"
+msgid "Unexpected EOF in gf"
+msgstr "Неочікуваний кінець файла у gf"
 
 #, c-format
-msgid "Unexpected PST type in GetPosSub (%d).\n"
-msgstr "Неочікуваний тип PST у GetPosSub (%d).\n"
+msgid "Unexpected PST type in GetPosSub (%d)."
+msgstr "Неочікуваний тип PST у GetPosSub (%d)."
 
 msgid "Unexpected Variation Selector"
 msgstr "Неочікуваний вибір з варіантів"
@@ -21414,15 +21414,15 @@ msgid "Unexpected character (0x%02X) on line %d of %s"
 msgstr "Неочікуваний символ (0x%02X), рядок %d %s"
 
 #, c-format
-msgid "Unexpected charset format in cff: %d\n"
-msgstr "Неочікуваний формат набору символів у cff: %d\n"
+msgid "Unexpected charset format in cff: %d"
+msgstr "Неочікуваний формат набору символів у cff: %d"
 
 msgid "Unexpected density"
 msgstr "Неочікувана щільність"
 
 #, c-format
-msgid "Unexpected encoding format in cff: %d\n"
-msgstr "Неочікуваний формат кодування у cff: %d\n"
+msgid "Unexpected encoding format in cff: %d"
+msgstr "Неочікуваний формат кодування у cff: %d"
 
 msgid "Unexpected end of file found in morx chain."
 msgstr "Несподіваний кінець файла у ланцюжку morx."
@@ -21451,12 +21451,12 @@ msgid "Unexpected number"
 msgstr "Неочікуване числове значення"
 
 #, c-format
-msgid "Unexpected size for font info section of URW font (expected 12, got %d)\n"
-msgstr "Неочікуваний розмір розділу інформації щодо шрифту у шрифті URW (мало бути 12, маємо — %d)\n"
+msgid "Unexpected size for font info section of URW font (expected 12, got %d)"
+msgstr "Неочікуваний розмір розділу інформації щодо шрифту у шрифті URW (мало бути 12, маємо — %d)"
 
 #, c-format
-msgid "Unexpected size for name section of URW font (expected 55, got %d)\n"
-msgstr "Неочікуваний розмір розділу назви у шрифті URW (мало бути 55, маємо — %d)\n"
+msgid "Unexpected size for name section of URW font (expected 55, got %d)"
+msgstr "Неочікуваний розмір розділу назви у шрифті URW (мало бути 55, маємо — %d)"
 
 #, c-format
 msgid ""
@@ -21506,12 +21506,12 @@ msgstr ""
 "Неочікуваний елемент.\n"
 "перед …%40s"
 
-msgid "Unexpected use of bitmap format 5, no metrics are appearant\n"
-msgstr "Неочікуване використання растрового формату 5, немає метрики\n"
+msgid "Unexpected use of bitmap format 5, no metrics are appearant"
+msgstr "Неочікуване використання растрового формату 5, немає метрики"
 
 #, c-format
-msgid "Unexpected value in dictionary %d\n"
-msgstr "Неочікуване значення у словнику %d\n"
+msgid "Unexpected value in dictionary %d"
+msgstr "Неочікуване значення у словнику %d"
 
 #, c-format
 msgid ""
@@ -21568,16 +21568,16 @@ msgid "Uniform scaling for stems of any width and direction"
 msgstr "Однорідне масштабування для основних штрихів будь-якої товщини та напрямку"
 
 #, c-format
-msgid "Uninterpreted code in gf: %d\n"
-msgstr "Непридатний для обробки код у gf: %d\n"
+msgid "Uninterpreted code in gf: %d"
+msgstr "Непридатний для обробки код у gf: %d"
 
 #, c-format
-msgid "Uninterpreted opcode %d in %s\n"
-msgstr "Непридатний для інтерпретації код операції %d у %s\n"
+msgid "Uninterpreted opcode %d in %s"
+msgstr "Непридатний для інтерпретації код операції %d у %s"
 
 #, c-format
-msgid "Uninterpreted opcode 12,%d in %s\n"
-msgstr "Непридатний для інтерпретації код операції 12,%d у %s\n"
+msgid "Uninterpreted opcode 12,%d in %s"
+msgstr "Непридатний для інтерпретації код операції 12,%d у %s"
 
 msgid "UniqueID"
 msgstr "Ідентифікатор"
@@ -21617,8 +21617,8 @@ msgstr "Невідомий тип підтаблиці GSUB: %d"
 msgid "Unknown Language"
 msgstr "Невідома мова"
 
-msgid "Unknown character after backslash in literal string.\n"
-msgstr "Невідомий символ після зворотної риски у рядку-літералі.\n"
+msgid "Unknown character after backslash in literal string."
+msgstr "Невідомий символ після зворотної риски у рядку-літералі."
 
 #, c-format
 msgid "Unknown class table format: %d"
@@ -21643,8 +21643,8 @@ msgid "Unknown lookup: %s"
 msgstr "Невідомий фільтр: %s"
 
 #, c-format
-msgid "Unknown operator in %s: %x\n"
-msgstr "Невідомий оператор у %s: %x\n"
+msgid "Unknown operator in %s: %x"
+msgstr "Невідомий оператор у %s: %x"
 
 #, c-format
 msgid "Unknown python type <%s> when reading UFO/GLIF lib data."
@@ -21654,16 +21654,16 @@ msgid "Unknown string type\n"
 msgstr "Невідомий тип рядка\n"
 
 #, c-format
-msgid "Unknown subtable '%c%c%c%c' in 'PfEd' table, ignored\n"
-msgstr "Невідома підтаблиця «%c%c%c%c» у таблиці «PfEd», проігноровано\n"
+msgid "Unknown subtable '%c%c%c%c' in 'PfEd' table, ignored"
+msgstr "Невідома підтаблиця «%c%c%c%c» у таблиці «PfEd», проігноровано"
 
 #, c-format
-msgid "Unknown subtable '%c%c%c%c' in 'TeX ' table, ignored\n"
-msgstr "Невідома підтаблиця «%c%c%c%c» у таблиці «TeX », проігноровано\n"
+msgid "Unknown subtable '%c%c%c%c' in 'TeX ' table, ignored"
+msgstr "Невідома підтаблиця «%c%c%c%c» у таблиці «TeX », проігноровано"
 
 #, c-format
-msgid "Unknown type '%c' found in path specification\n"
-msgstr "У специфікації контурів виявлено невідомий тип «%c»\n"
+msgid "Unknown type '%c' found in path specification"
+msgstr "У специфікації контурів виявлено невідомий тип «%c»"
 
 msgid ""
 "Unlike most commands this one does not work directly on the\n"
@@ -21702,8 +21702,8 @@ msgstr ""
 " лігатури є помилковою, програма не може її обробити.\n"
 
 #, c-format
-msgid "Unlikely length for table, so I'm ignoring it. %u\n"
-msgstr "Неймовірна довжина таблиці. Її значення буде проігноровано. %u\n"
+msgid "Unlikely length for table, so I'm ignoring it. %u"
+msgstr "Неймовірна довжина таблиці. Її значення буде проігноровано. %u"
 
 msgid "Unlikely scale factor"
 msgstr "Неймовірний коефіцієнт масштабування"
@@ -21745,8 +21745,8 @@ msgid "Unparseable include on line %d of %s"
 msgstr "Непридатне для обробки включення у рядку %d %s"
 
 #, c-format
-msgid "Unparsed characters found after end of groups file (last line parsed was %d).\n"
-msgstr "Після завершення файла груп виявлено необроблені символи (останнім обробленим рядком був рядок %d).\n"
+msgid "Unparsed characters found after end of groups file (last line parsed was %d)."
+msgstr "Після завершення файла груп виявлено необроблені символи (останнім обробленим рядком був рядок %d)."
 
 msgid "Unreasonable DPI"
 msgstr "Некоректне значення роздільності"
@@ -21775,8 +21775,8 @@ msgid "Unsupported image format must be bmp or png"
 msgstr "Непідтримуваний формат зображення, слід використовувати bmp або png"
 
 #, c-format
-msgid "Unsupported mime type in data URI: %s\n"
-msgstr "Непідтримуваний тип MIME у адресі даних: %s\n"
+msgid "Unsupported mime type in data URI: %s"
+msgstr "Непідтримуваний тип MIME у адресі даних: %s"
 
 #, c-format
 msgid "Unterminated coverage table, starting at: %.20s..."
@@ -21877,11 +21877,11 @@ msgstr "Використання «exit» поза межами циклу\n"
 msgid "Use of \"stop\" when not in a stopped\n"
 msgstr "Використання «stop» поза межами stopped\n"
 
-msgid "Use of a range offset of 0xffff to mean a missing glyph in cmap table\n"
-msgstr "Використати відступ діапазону 0xffff для осереднення гліфа у таблиці cmap\n"
+msgid "Use of a range offset of 0xffff to mean a missing glyph in cmap table"
+msgstr "Використати відступ діапазону 0xffff для осереднення гліфа у таблиці cmap"
 
-msgid "Use of obsolete blend operator.\n"
-msgstr "Використання застарілого оператора blend.\n"
+msgid "Use of obsolete blend operator."
+msgstr "Використання застарілого оператора blend."
 
 #, c-format
 msgid "Use of undefined glyph class, %s, on line %d of %s"
@@ -21946,8 +21946,8 @@ msgstr ""
 "під час створення шрифту."
 
 #, c-format
-msgid "Use-my-metrics flag set on at least two components in glyph %d\n"
-msgstr "Прапорець «використовувати власну метрику» встановлено принаймні для двох компонентів гліфа %d\n"
+msgid "Use-my-metrics flag set on at least two components in glyph %d"
+msgstr "Прапорець «використовувати власну метрику» встановлено принаймні для двох компонентів гліфа %d"
 
 msgid "UseCairoDrawing"
 msgstr "Використовувати можливості Cairo"
@@ -22026,8 +22026,8 @@ msgstr "Значення перевищує обмеження tfm"
 msgid "Value out of bounds"
 msgstr "Значення поза припустимим діапазоном"
 
-msgid "Value out of bounds in spline.\n"
-msgstr "Значення поза діапазоном сплайна.\n"
+msgid "Value out of bounds in spline."
+msgstr "Значення поза діапазоном сплайна."
 
 msgid "Value out of range"
 msgstr "Значення поза діапазоном"
@@ -22271,12 +22271,12 @@ msgid "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]\n"
 msgstr "Попередження: %d-те значення вісі (%g) лежить поза дозволеним діапазоном [%g,%g]\n"
 
 #, c-format
-msgid "Warning: %s has a different family name than does %s (GenerateFamily)\n"
-msgstr "Попередження: для %s вказано назву гарнітури, що не збігається з %s (GenerateFamily)\n"
+msgid "Warning: %s has a different family name than does %s (GenerateFamily)"
+msgstr "Попередження: для %s вказано назву гарнітури, що не збігається з %s (GenerateFamily)"
 
 #, c-format
-msgid "Warning: %s(%s) is both extended and condensed. That's impossible.\n"
-msgstr "Попередження: %s(%s) належить одразу до розширених та стиснутих. Така належність є некоректною.\n"
+msgid "Warning: %s(%s) is both extended and condensed. That's impossible."
+msgstr "Попередження: %s(%s) належить одразу до розширених та стиснутих. Така належність є некоректною."
 
 msgid ""
 "Warning: 'cvar' contains intermediate tuple data.\n"
@@ -22285,8 +22285,8 @@ msgstr ""
 "Попередження: у «cvar» містяться дані проміжних кортежів.\n"
 " У FontForge не передбачено підтримки таких кортежів.\n"
 
-msgid "Warning: Both extended and condensed. That's impossible.\n"
-msgstr "Попередження: належність одразу до розширених та стиснутих. Така належність є некоректною.\n"
+msgid "Warning: Both extended and condensed. That's impossible."
+msgstr "Попередження: належність одразу до розширених та стиснутих. Така належність є некоректною."
 
 msgid "Warning: Byte swapped font mark in palm font."
 msgstr "Попередження: позначка зміни порядку байтів у шрифті palm."
@@ -22354,12 +22354,12 @@ msgstr ""
 " для рядка %s у мові %s.\n"
 
 #, c-format
-msgid "Warning: No characters selected in AddDHint(%d,%d %d,%d %d,%d)\n"
-msgstr "Попередження: у AddDHint(%d,%d %d,%d %d,%d) не позначено жодного символу\n"
+msgid "Warning: No characters selected in AddDHint(%d,%d %d,%d %d,%d)"
+msgstr "Попередження: у AddDHint(%d,%d %d,%d %d,%d) не позначено жодного символу"
 
 #, c-format
-msgid "Warning: No characters selected in AddHint(%d,%d,%d)\n"
-msgstr "Попередження: у AddHint(%d,%d,%d) не позначено жодного символу\n"
+msgid "Warning: No characters selected in AddHint(%d,%d,%d)"
+msgstr "Попередження: у AddHint(%d,%d,%d) не позначено жодного символу"
 
 msgid ""
 "Warning: There are already some 'aalt' lookups in\n"
@@ -22411,19 +22411,19 @@ msgstr ""
 "цього?"
 
 #, c-format
-msgid "Warning: Unable to parse token %s, some features may be lost\n"
-msgstr "Попередження: не вдалося обробити елемент %s, деякі з модифікацій може бути втрачено\n"
+msgid "Warning: Unable to parse token %s, some features may be lost"
+msgstr "Попередження: не вдалося обробити елемент %s, деякі з модифікацій може бути втрачено"
 
 #, c-format
 msgid "Warning: Unlikely number of subtables (%d) for 'kern' table"
 msgstr "Попередження: сумнівна кількість підтаблиць (%d) для таблиці «kern»"
 
-msgid "Warning: Unreasonably big splines. They will be ignored.\n"
-msgstr "Попередження: занадто великі сплайни. Їх буде проігноровано.\n"
+msgid "Warning: Unreasonably big splines. They will be ignored."
+msgstr "Попередження: занадто великі сплайни. Їх буде проігноровано."
 
 #, c-format
-msgid "Warning: could not figure out where the hint (%d,%d %d,%d %d,%d) is valid\n"
-msgstr "Попередження: не вдалося визначити коректність гінту (%d,%d %d,%d %d,%d)\n"
+msgid "Warning: could not figure out where the hint (%d,%d %d,%d %d,%d) is valid"
+msgstr "Попередження: не вдалося визначити коректність гінту (%d,%d %d,%d %d,%d)"
 
 msgid "Warnings"
 msgstr "Попередження"
@@ -22447,8 +22447,8 @@ msgstr "Зміна у даних, за якими ведеться спосте�
 msgid "We cannot have lead-in points for an open curve."
 msgstr "На незамкненій кривій не може бути вхідних точок."
 
-msgid "We don't understand this font\n"
-msgstr "Програмі не вдалося обробити цей шрифт\n"
+msgid "We don't understand this font"
+msgstr "Програмі не вдалося обробити цей шрифт"
 
 msgid "Weight, Width, Slope Only"
 msgstr "Лише насиченість, ширина і нахил"
@@ -22775,29 +22775,29 @@ msgstr ""
 "Інтервал, який слід додати між математичними формулами\n"
 "для забезпечення належного вигляду тексту."
 
-msgid "Whoops, Ran out of spiros\n"
-msgstr "Ой, занадто багато spiro\n"
+msgid "Whoops, Ran out of spiros"
+msgstr "Ой, занадто багато spiro"
 
-msgid "Whoops, attempt to name anchors in a subtable which doesn't contain any\n"
-msgstr "Ой, спроба назвати прив’язки у підтаблиці, у якій немає прив’язок\n"
-
-#, c-format
-msgid "Whoops, bad spiro command %d\n"
-msgstr "Ой, помилкова команда spiro, %d\n"
-
-msgid "Whoops, contours must begin with a move to\n"
-msgstr "Ой, контури мають починатися з команди пересування до\n"
-
-msgid "Whoops, more names than lookups\n"
-msgstr "Ой, назв більше ніж фільтрувань.\n"
+msgid "Whoops, attempt to name anchors in a subtable which doesn't contain any"
+msgstr "Ой, спроба назвати прив’язки у підтаблиці, у якій немає прив’язок"
 
 #, c-format
-msgid "Whoops, more names than subtables of lookup %s\n"
-msgstr "Ой, більше назв, ніжу підтаблицях фільтрування %s\n"
+msgid "Whoops, bad spiro command %d"
+msgstr "Ой, помилкова команда spiro, %d"
+
+msgid "Whoops, contours must begin with a move to"
+msgstr "Ой, контури мають починатися з команди пересування до"
+
+msgid "Whoops, more names than lookups"
+msgstr "Ой, назв більше ніж фільтрувань."
 
 #, c-format
-msgid "Whoops, unexpected verb in contour %d.%d\n"
-msgstr "Ой, неочікуване verb у контурі %d.%d\n"
+msgid "Whoops, more names than subtables of lookup %s"
+msgstr "Ой, більше назв, ніжу підтаблицях фільтрування %s"
+
+#, c-format
+msgid "Whoops, unexpected verb in contour %d.%d"
+msgstr "Ой, неочікуване verb у контурі %d.%d"
 
 msgid "Wide"
 msgstr "Широкий"
@@ -24455,8 +24455,8 @@ msgstr "таблиця розташування растру (OT-версія)"
 msgid "by"
 msgstr "на"
 
-msgid "can't create temporary file\n"
-msgstr "не вдалося створити файл тимчасових даних\n"
+msgid "can't create temporary file"
+msgstr "не вдалося створити файл тимчасових даних"
 
 msgid "character code mapping table"
 msgstr "таблиця відображення кодів символів"
@@ -24480,8 +24480,8 @@ msgstr "авторські права"
 msgid "couldn't find the character %s"
 msgstr "не вдалося знайти символ %s"
 
-msgid "couldn't write encodings file\n"
-msgstr "не вдалося записати файл кодувань\n"
+msgid "couldn't write encodings file"
+msgstr "не вдалося записати файл кодувань"
 
 msgid "coverage"
 msgstr "покриття"
@@ -24528,8 +24528,8 @@ msgid "embedded bitmap scaling control table"
 msgstr "таблиця керування вбудованим масштабуванням растру"
 
 #, c-format
-msgid "end of subroutine reached with no return in %s\n"
-msgstr "підпрограму завершено без інструкції return у %s\n"
+msgid "end of subroutine reached with no return in %s"
+msgstr "підпрограму завершено без інструкції return у %s"
 
 msgid "extended metamorphosis table"
 msgstr "таблиця розширених перетворень"
@@ -24789,12 +24789,12 @@ msgid "properties table"
 msgstr "таблиця властивостей"
 
 #, c-format
-msgid "return when not in subroutine in %s\n"
-msgstr "Використання return поза межами підпрограми у %s\n"
+msgid "return when not in subroutine in %s"
+msgstr "Використання return поза межами підпрограми у %s"
 
 #, c-format
-msgid "roll out of range in %s\n"
-msgstr "вихід за межі діапазону у %s\n"
+msgid "roll out of range in %s"
+msgstr "вихід за межі діапазону у %s"
 
 msgid "set the auto FLIP boolean to OFF"
 msgstr ""

@@ -80,12 +80,12 @@ msgid "  Hang right"
 msgstr "  오른쪽에 걸기"
 
 #, c-format
-msgid "  Ignoring '%c%c%c%c'\n"
-msgstr "  '%c%c%c%c'를 무시합니다\n"
+msgid "  Ignoring '%c%c%c%c'"
+msgstr "  '%c%c%c%c'를 무시합니다"
 
 #, c-format
-msgid "  Ignoring '%c%c%c%c' %s\n"
-msgstr "  '%c%c%c%c' %s를 무시합니다\n"
+msgid "  Ignoring '%c%c%c%c' %s"
+msgstr "  '%c%c%c%c' %s를 무시합니다"
 
 #, c-format
 msgid "  Left Bound=%d"
@@ -102,8 +102,8 @@ msgstr "  오른쪽의 경계=%d"
 msgid "  Stroke _Width:"
 msgstr "  스트로크 폭(_W):"
 
-msgid "  Subsequent errors will not be reported.\n"
-msgstr "후속 오류가보고되지 않습니다.\n"
+msgid "  Subsequent errors will not be reported."
+msgstr "후속 오류가보고되지 않습니다."
 
 #. GT: X is a coordinate, the leading spaces help to align it
 msgid "  X"
@@ -113,8 +113,8 @@ msgid "  Y"
 msgstr "  Y"
 
 #, c-format
-msgid " %s: line %d\n"
-msgstr " %s: %d 행\n"
+msgid " %s: line %d"
+msgstr " %s: %d 행"
 
 msgid " Adding a size will create it by scaling."
 msgstr " 크기를 추가하면, 확대/축소를 수행해 생성합니다."
@@ -223,16 +223,16 @@ msgid " snapped"
 msgstr " 부러지다"
 
 #, c-format
-msgid "!!!! Unknown caret format %d !!!!\n"
-msgstr "!!!! 캬렛 포맷 %d 은 알수없는 값입니다!!!!\n"
+msgid "!!!! Unknown caret format %d !!!!"
+msgstr "!!!! 캬렛 포맷 %d 은 알수없는 값입니다!!!!"
 
 #, c-format
-msgid "!!!!! Bad Base Coord format (%d) for '%c%c%c%c' in '%c%c%c%c' script in 'BASE' table\n"
-msgstr "!!!!! 'BASE'테이블 '%2$c%3$c%4$c%5$c'스크립트 '%6$c%7$c%8$c%9$c'기반 좌표 형식 (%1$d) 가 잘못되었습니다\n"
+msgid "!!!!! Bad Base Coord format (%d) for '%c%c%c%c' in '%c%c%c%c' script in 'BASE' table"
+msgstr "!!!!! 'BASE'테이블 '%2$c%3$c%4$c%5$c'스크립트 '%6$c%7$c%8$c%9$c'기반 좌표 형식 (%1$d) 가 잘못되었습니다"
 
 #, c-format
-msgid "!!!!! Coord count (%d) for '%c%c%c%c' script does not match base tag count (%d) in 'BASE' table\n"
-msgstr "!!!!! '%2$c%3$c%4$c%5$c'스크립트의 좌표 개수 (%1$d) 가 'BASE'테이블의 기본 태그 개수 (%6$d) 와 일치하지 않습니다\n"
+msgid "!!!!! Coord count (%d) for '%c%c%c%c' script does not match base tag count (%d) in 'BASE' table"
+msgstr "!!!!! '%2$c%3$c%4$c%5$c'스크립트의 좌표 개수 (%1$d) 가 'BASE'테이블의 기본 태그 개수 (%6$d) 와 일치하지 않습니다"
 
 #, c-format
 msgid "\"%.40s\" size=%d point=%d (%d,%d) distance=%g"
@@ -388,8 +388,8 @@ msgid "%s contextual %d"
 msgstr "%s 상황별 %d"
 
 #, c-format
-msgid "%s does not contain an <svg> element at the top\n"
-msgstr "%s 의 최상위 요소로  <svg> 가 포함되어 있지 않습니다\n"
+msgid "%s does not contain an <svg> element at the top"
+msgstr "%s 의 최상위 요소로  <svg> 가 포함되어 있지 않습니다"
 
 #, c-format
 msgid "%s entry"
@@ -419,8 +419,8 @@ msgid "%s in %s lookup %d"
 msgstr "%s %s 조회 %d"
 
 #, c-format
-msgid "%s is a mac resource file but contains no postscript or truetype fonts\n"
-msgstr "%s는 mac 리소스 파일이지만 포스트 스크립트 또는 트루 타입 글꼴이 없다.\n"
+msgid "%s is a mac resource file but contains no postscript or truetype fonts"
+msgstr "%s는 mac 리소스 파일이지만 포스트 스크립트 또는 트루 타입 글꼴이 없다."
 
 #, c-format
 msgid ""
@@ -452,12 +452,12 @@ msgid "%s kerning class %d"
 msgstr "%s 커닝 클래스 %d"
 
 #, c-format
-msgid "%s line: %d %s\n"
-msgstr "%s 행: %d %s\n"
+msgid "%s line: %d %s"
+msgstr "%s 행: %d %s"
 
 #, c-format
-msgid "%s line: %d %s: %s\n"
-msgstr "%s 행: %d %s: %s\n"
+msgid "%s line: %d %s: %s"
+msgstr "%s 행: %d %s: %s"
 
 #, c-format
 msgid "%s lookup %d"
@@ -512,8 +512,8 @@ msgid "%s's vstem3 operator is not supported for Type2\n"
 msgstr "%s의 vstem3 연산자는 Type2에서는 지원되지 않습니다\n"
 
 #, c-format
-msgid "%s(%s) and %s(%s) 0x%x in FOND %s\n"
-msgstr "%s(%s) 과 %s(%s) 0x%x 라는 상이가 FOND %s 에 있습니다\n"
+msgid "%s(%s) and %s(%s) 0x%x in FOND %s"
+msgstr "%s(%s) 과 %s(%s) 0x%x 라는 상이가 FOND %s 에 있습니다"
 
 #, c-format
 msgid "%s: %d Expected %s, got %s"
@@ -528,8 +528,8 @@ msgid "%s: Is not callable"
 msgstr "%s: 호출 할 수 없습니다"
 
 #, c-format
-msgid "%s:%d Unexpected character %c (%d)\n"
-msgstr "%s:%d 예상치 못한 글자 %c (%d)\n"
+msgid "%s:%d Unexpected character %c (%d)"
+msgstr "%s:%d 예상치 못한 글자 %c (%d)"
 
 #, c-format
 msgid "'%s' is not the name of a currently known plugin"
@@ -608,8 +608,8 @@ msgstr "+"
 msgid "-"
 msgstr "−"
 
-msgid "-1 glyph index in dumpcoveragetable.\n"
-msgstr "dumpcoveragetable -1 그래프 인덱스.\n"
+msgid "-1 glyph index in dumpcoveragetable."
+msgstr "dumpcoveragetable -1 그래프 인덱스."
 
 msgid "..."
 msgstr "…"
@@ -1004,12 +1004,12 @@ msgid "A pdf stream object may not be a compressed object"
 msgstr "pdf 스트림 객체는 압축된 객체가 아닐 수 있다"
 
 #, c-format
-msgid "A point in %s is outside the font bounding box data.\n"
-msgstr "%s 포인트 글꼴 경계 상자 데이터의 외부에 있습니다.\n"
+msgid "A point in %s is outside the font bounding box data."
+msgstr "%s 포인트 글꼴 경계 상자 데이터의 외부에 있습니다."
 
 #, c-format
-msgid "A point in GID %d is outside the glyph bounding box\n"
-msgstr "GID %d 포인트가 글리프의 경계 상자 밖으로 있습니다\n"
+msgid "A point in GID %d is outside the glyph bounding box"
+msgstr "GID %d 포인트가 글리프의 경계 상자 밖으로 있습니다"
 
 msgid ""
 "A really big version of this glyph may be made up of the\n"
@@ -2309,23 +2309,23 @@ msgstr ""
 "이 문맥의존참조의 범위 밖에 위치에 참조를 적용하려고 합니다\n"
 "  seq=%d max=%d\n"
 
-msgid "Attempt to back up twice\n"
-msgstr "백업을 2 두번 수행합니다\n"
+msgid "Attempt to back up twice"
+msgstr "백업을 2 두번 수행합니다"
 
 #, c-format
 msgid "Attempt to divide by 0 in %.30s"
 msgstr "0 으로의 나눗셈을  %.30s 로부터 구하도록 합니다."
 
 #, c-format
-msgid "Attempt to encode missing glyph %d to %d (0x%x)\n"
-msgstr "존재하지 않는 글리프 %d 를  %d (0x%x) 에 부호화 하려고 합니다\n"
+msgid "Attempt to encode missing glyph %d to %d (0x%x)"
+msgstr "존재하지 않는 글리프 %d 를  %d (0x%x) 에 부호화 하려고 합니다"
 
 #, c-format
 msgid "Attempt to have a font with more than %d layers"
 msgstr "%d 개 이상의 레이어가있는 글꼴을 사용하십시오"
 
-msgid "Attempt to invert a singular matrix\n"
-msgstr "특이행렬의 역행렬을 구합니다\n"
+msgid "Attempt to invert a singular matrix"
+msgstr "특이행렬의 역행렬을 구합니다"
 
 msgid "Attempt to make a character that refers to itself"
 msgstr "자기자신을 참조하는 글리프 만들기를 시도하였습니다."
@@ -2390,11 +2390,11 @@ msgid "Attempt to take the square root of %1$g in %2$.30s"
 msgstr "값 %1$g 제곱근을  %2$.30s 로부터 구하도록 합니다."
 
 #, c-format
-msgid "Attempt to use a multiple master subroutine in a non-mm font in %s.\n"
-msgstr "글리프 %s 에서, 다중 마스터서브루틴를 보통폰트로 사용하려 합니다.\n"
+msgid "Attempt to use a multiple master subroutine in a non-mm font in %s."
+msgstr "글리프 %s 에서, 다중 마스터서브루틴를 보통폰트로 사용하려 합니다."
 
-msgid "Attempt to use a multiple master subroutine in a non-mm font.\n"
-msgstr "다중 마스터서브루틴를 보통폰트로 사용하려 합니다.\n"
+msgid "Attempt to use a multiple master subroutine in a non-mm font."
+msgstr "다중 마스터서브루틴를 보통폰트로 사용하려 합니다."
 
 msgid "Attention"
 msgstr "주의"
@@ -2441,8 +2441,8 @@ msgid "AutoSaveFrequency"
 msgstr "정기 자동 저장"
 
 #, c-format
-msgid "AutoWidth failure on %s\n"
-msgstr "%s폭의 자동설정에 실패 \n"
+msgid "AutoWidth failure on %s"
+msgstr "%s폭의 자동설정에 실패 "
 
 msgid "AutoWidthSync"
 msgstr "폭을 자동갱신 "
@@ -2659,15 +2659,15 @@ msgstr "잘못된 BlueShift 항목입니다."
 #. GT: The CFF font type contains a thing called a name INDEX, and that INDEX
 #. GT: is bad. It is an index of many of the names used in the CFF font.
 #. GT: We hope the user will never see this.
-msgid "Bad CFF name INDEX\n"
-msgstr "CFF의 name INDEX가 부적절합니다\n"
+msgid "Bad CFF name INDEX"
+msgstr "CFF의 name INDEX가 부적절합니다"
 
 #, c-format
-msgid "Bad CID offset for CID %d\n"
-msgstr "CID %d 의 CID 오프셋이 부적절합니다\n"
+msgid "Bad CID offset for CID %d"
+msgstr "CID %d 의 CID 오프셋이 부적절합니다"
 
-msgid "Bad CharString. Does not include lenIV bytes.\n"
-msgstr "CharString이 부적절합니다. lenIV 의 바이트수가 포함되어있지 않습니다\n"
+msgid "Bad CharString. Does not include lenIV bytes."
+msgstr "CharString이 부적절합니다. lenIV 의 바이트수가 포함되어있지 않습니다"
 
 msgid "Bad Class"
 msgstr "올바르지 않은 클래스"
@@ -2792,8 +2792,8 @@ msgid "Bad Private Dictionary"
 msgstr "잘못된 비공개 사전"
 
 #, c-format
-msgid "Bad RGB color spec: %s\n"
-msgstr "잘못된 RGB 색상 사양 : %s\n"
+msgid "Bad RGB color spec: %s"
+msgstr "잘못된 RGB 색상 사양 : %s"
 
 msgid "Bad Range"
 msgstr "범위가 부적절합니다"
@@ -2877,8 +2877,8 @@ msgid "Bad base table."
 msgstr "base테이블이 부적절합니다"
 
 #, c-format
-msgid "Bad bounding box for %s.\n"
-msgstr "%s의 바운딩 박스가 부적절합니다.\n"
+msgid "Bad bounding box for %s."
+msgstr "%s의 바운딩 박스가 부적절합니다."
 
 msgid "Bad cidmap file"
 msgstr "cidmap파일이 부적절합니다."
@@ -2891,8 +2891,8 @@ msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)\n"
 msgstr "클래스정의테이블이 부적절합니다. 글리프범위 %d-%d 가 범위 [0,%d) 를 넘어서 있습니다\n"
 
 #, c-format
-msgid "Bad class def table. start=%d cnt=%d, max glyph=%d\n"
-msgstr "클래스정의테이블이 부적절합니다. 선두=%d, 개수=%d, 최대글리프=%d\n"
+msgid "Bad class def table. start=%d cnt=%d, max glyph=%d"
+msgstr "클래스정의테이블이 부적절합니다. 선두=%d, 개수=%d, 최대글리프=%d"
 
 msgid "Bad class in state machine.\n"
 msgstr "상태기계에 올바르지 않은 클래스가 포함되어 있습니다.\n"
@@ -2934,11 +2934,11 @@ msgstr "범위테이블이 부적절합니다. 글리프범위 %d-%d 가 [0,%d) 
 msgid "Bad dash list"
 msgstr "점선패턴이 부적절합니다"
 
-msgid "Bad data modifier in contour command in 'PfEd'\n"
-msgstr "'PfEd'의 윤곽 명령에 잘못된 데이터 한정자가 있음\n"
+msgid "Bad data modifier in contour command in 'PfEd'"
+msgstr "'PfEd'의 윤곽 명령에 잘못된 데이터 한정자가 있음"
 
-msgid "Bad data type in contour verb in 'PfEd'\n"
-msgstr "'PfEd'의 형상 명령에 잘못된 데이터 유형\n"
+msgid "Bad data type in contour verb in 'PfEd'"
+msgstr "'PfEd'의 형상 명령에 잘못된 데이터 유형"
 
 msgid "Bad default baseline"
 msgstr "잘못된 기본 베이스라인입니다."
@@ -2967,8 +2967,8 @@ msgstr "인코딩파일 포맷이 부적절합니다."
 msgid "Bad encoding information in 'cmap' table."
 msgstr "\"cmap\"테이블의 인코딩 정보가 올바르지 않습니다."
 
-msgid "Bad fdselect\n"
-msgstr "fdselect가 부적절합니다\n"
+msgid "Bad fdselect"
+msgstr "fdselect가 부적절합니다"
 
 msgid "Bad feature tag"
 msgstr "잘못된 특성 태그"
@@ -2978,21 +2978,21 @@ msgid "Bad few values in /BlendDesignMap for axis %s.\n"
 msgstr "축 %s 의 /BlendDesingmap 의 값이 너무 적어 올바르지 않습니다.\n"
 
 #, c-format
-msgid "Bad flags value, implied MORE components at end of glyph %d\n"
-msgstr "플래그의 값이 부적절합니다. 글리프 %d 의 말미에 아직 구성요소가 남아 있습니다\n"
+msgid "Bad flags value, implied MORE components at end of glyph %d"
+msgstr "플래그의 값이 부적절합니다. 글리프 %d 의 말미에 아직 구성요소가 남아 있습니다"
 
 #, c-format
-msgid "Bad flex subroutine in %s\n"
-msgstr "글리프 %s 에 올바르지 않은  flex 서브루틴가 포함되어 있습니다\n"
+msgid "Bad flex subroutine in %s"
+msgstr "글리프 %s 에 올바르지 않은  flex 서브루틴가 포함되어 있습니다"
 
 msgid "Bad font"
 msgstr "잘못된 폰트"
 
-msgid "Bad font, offset out of bounds.\n"
-msgstr "올바르지 않은 폰트입니다. 오프셋이 경계를 넘어서고 있습니다\n"
+msgid "Bad font, offset out of bounds."
+msgstr "올바르지 않은 폰트입니다. 오프셋이 경계를 넘어서고 있습니다"
 
-msgid "Bad font: Encoding data out of range.\n"
-msgstr "올바르지 않은 폰트: 인코딩데이터가 범위 밖입니다.\n"
+msgid "Bad font: Encoding data out of range."
+msgstr "올바르지 않은 폰트: 인코딩데이터가 범위 밖입니다."
 
 #, c-format
 msgid "Bad format for coverage table %d"
@@ -3007,20 +3007,20 @@ msgid "Bad glif file %s"
 msgstr "잘못된 glif 파일 %s"
 
 #, c-format
-msgid "Bad glyph (%d), disordered 'loca' table (start comes after end)\n"
-msgstr "올바르지 않은 글리프(%d)가 있습니다. 'loca' 테이블의 순서가 뒤섞여있습니다 (시작위치가 종료위치 뒤에 있습니다)\n"
+msgid "Bad glyph (%d), disordered 'loca' table (start comes after end)"
+msgstr "올바르지 않은 글리프(%d)가 있습니다. 'loca' 테이블의 순서가 뒤섞여있습니다 (시작위치가 종료위치 뒤에 있습니다)"
 
 #, c-format
-msgid "Bad glyph (%d), its data length is negative\n"
-msgstr "잘못된 글리프 (%d), 데이터 길이가 음수\n"
+msgid "Bad glyph (%d), its data length is negative"
+msgstr "잘못된 글리프 (%d), 데이터 길이가 음수"
 
 #, c-format
-msgid "Bad glyph (%d), its definition extends beyond the end of the glyf table\n"
-msgstr "올바르지 않은 글리프(%d)가 있습니다. 정의 glyf테이블 의 말미를 넘어섭니다\n"
+msgid "Bad glyph (%d), its definition extends beyond the end of the glyf table"
+msgstr "올바르지 않은 글리프(%d)가 있습니다. 정의 glyf테이블 의 말미를 넘어섭니다"
 
 #, c-format
-msgid "Bad glyph (%d), its definition extends beyond the space allowed for it\n"
-msgstr "올바르지 않은 글리프(%d)가 있습니다. 글리프의 정의가 허락하는 빈 간격을 넘어섰습니다\n"
+msgid "Bad glyph (%d), its definition extends beyond the space allowed for it"
+msgstr "올바르지 않은 글리프(%d)가 있습니다. 글리프의 정의가 허락하는 빈 간격을 넘어섰습니다"
 
 msgid "Bad glyph count in mort table."
 msgstr "mort 테이블 내 글리프의 개수가 부적절합니다."
@@ -3028,21 +3028,21 @@ msgstr "mort 테이블 내 글리프의 개수가 부적절합니다."
 msgid "Bad glyph name."
 msgstr "문자 이름이 잘못되었음."
 
-msgid "Bad glyph range specified in color subtable of PfEd table\n"
-msgstr "PfEd 테이블 색상 서브 테이블에서 지정된 부정한 그래프 범위\n"
+msgid "Bad glyph range specified in color subtable of PfEd table"
+msgstr "PfEd 테이블 색상 서브 테이블에서 지정된 부정한 그래프 범위"
 
-msgid "Bad glyph range specified in glyph comment subtable of PfEd table\n"
-msgstr "PfEd 테이블글리프메모 서브테이블에 지정된 글리프범위이 부적절합니다\n"
+msgid "Bad glyph range specified in glyph comment subtable of PfEd table"
+msgstr "PfEd 테이블글리프메모 서브테이블에 지정된 글리프범위이 부적절합니다"
 
-msgid "Bad glyph reference in layer info.\n"
-msgstr "레이어 정보에 유효하지 않은 그래핀 참조\n"
+msgid "Bad glyph reference in layer info."
+msgstr "레이어 정보에 유효하지 않은 그래핀 참조"
 
 msgid "Bad glyph variant subtable of MATH table."
 msgstr "MATH 테이블의 잘못된 그리 변형 서브 테이블."
 
 #, c-format
-msgid "Bad hex color spec: %s\n"
-msgstr "잘못된 16진수 색상 사양 :  %s\n"
+msgid "Bad hex color spec: %s"
+msgstr "잘못된 16진수 색상 사양 :  %s"
 
 msgid "Bad hex number"
 msgstr "잘못된 16진수"
@@ -3136,8 +3136,8 @@ msgstr "잘못된 숫자"
 #. GT: NaN is a concept in IEEE floating point which means "Not a Number"
 #. GT: it is used to represent errors like 0/0 or sqrt(-1).
 #, c-format
-msgid "Bad number, infinity or nan: %s\n"
-msgstr "%s는 올바르지 않은 수치(무한대 또는 허수)입니다\n"
+msgid "Bad number, infinity or nan: %s"
+msgstr "%s는 올바르지 않은 수치(무한대 또는 허수)입니다"
 
 #, c-format
 msgid "Bad numeric value for %s.%s"
@@ -3151,8 +3151,8 @@ msgid "Bad offset on line %d, must be between 0% and 100%."
 msgstr "%d 번쨰 줄의 오프셋이 잘못되었습니다. 0에서 100 사이여야 합니다%."
 
 #, c-format
-msgid "Bad offset: %d for subfont %s\n"
-msgstr "잘못된 오프셋: 서브 글꼴 %2$s %1$d\n"
+msgid "Bad offset: %d for subfont %s"
+msgstr "잘못된 오프셋: 서브 글꼴 %2$s %1$d"
 
 #, c-format
 msgid "Bad opacity on line %d, must be between 0.0 and 1.0."
@@ -3201,12 +3201,12 @@ msgid ""
 msgstr "잘못된 sfd 파일. 문양 %s의 폭은 %d이며, %s의 폭 %d에 바인딩해야합니다.\n"
 
 #, c-format
-msgid "Bad sid %d (0 <= sid < %d)\n"
-msgstr "잘못된 sid %d (0 <= sid < %d)\n"
+msgid "Bad sid %d (0 <= sid < %d)"
+msgstr "잘못된 sid %d (0 <= sid < %d)"
 
 #, c-format
-msgid "Bad sid %d (must be less than %d)\n"
-msgstr "서브루틴ID %d은 부적절합니다 (%d 미만이어야 합니다)\n"
+msgid "Bad sid %d (must be less than %d)"
+msgstr "서브루틴ID %d은 부적절합니다 (%d 미만이어야 합니다)"
 
 msgid "Bad signature in WOFF header."
 msgstr "WOFF 헤더에 잘못된 서명이 있음"
@@ -3263,8 +3263,8 @@ msgstr ""
 "...%2$40s의 주변에 출현했습니다."
 
 #, c-format
-msgid "Bad tt font: contour ends make no sense in glyph %d.\n"
-msgstr "올바르지 않은 TrueType폰트: 글리프 %d의 윤곽 끝이 무의미합니다.\n"
+msgid "Bad tt font: contour ends make no sense in glyph %d."
+msgstr "올바르지 않은 TrueType폰트: 글리프 %d의 윤곽 끝이 무의미합니다."
 
 #. GT: The words "true" and "false" should be left untranslated. We are restricted
 #. GT: here by what PostScript understands, and it only understands the English
@@ -3814,11 +3814,11 @@ msgid "CFF CID (Bare)"
 msgstr "(나체의) CFF CID"
 
 #, c-format
-msgid "CFF dict stack underflow detected: %d < 4\n"
-msgstr "CFF dict 스택 언더 플로가 발생했습니다: %d <4\n"
+msgid "CFF dict stack underflow detected: %d < 4"
+msgstr "CFF dict 스택 언더 플로가 발생했습니다: %d <4"
 
-msgid "CFF version mismatch\n"
-msgstr "CFF의 버전이 맞지 않습니다\n"
+msgid "CFF version mismatch"
+msgstr "CFF의 버전이 맞지 않습니다"
 
 msgid "CID"
 msgstr "CID"
@@ -3826,8 +3826,8 @@ msgstr "CID"
 msgid "CID findfont Name"
 msgstr "CID findfont명"
 
-msgid "CID format doesn't contain what we expected it to.\n"
-msgstr "CID 포맷의 데이터에 예상하는 데이터가 포함되어 있지않습니다.\n"
+msgid "CID format doesn't contain what we expected it to."
+msgstr "CID 포맷의 데이터에 예상하는 데이터가 포함되어 있지않습니다."
 
 msgid "CID keyed fonts may not be a master design of a multiple master font"
 msgstr "CID폰트는 다중 마스터폰트의 마스터 디자인으로 사용할 수 없습니다"
@@ -3965,8 +3965,8 @@ msgstr "대문자 높이(_p):"
 msgid "Call Script"
 msgstr "문자열를 불러오기"
 
-msgid "Called from...\n"
-msgstr "불러올 대상...\n"
+msgid "Called from..."
+msgstr "불러올 대상..."
 
 msgid "Cambodian"
 msgstr "캄보디아어(크메르어)"
@@ -3992,8 +3992,8 @@ msgstr "평행하게 할 수 없습니다."
 msgid "Can't _Be Interpolated"
 msgstr "보간 될 수 없음(_B)"
 
-msgid "Can't back up with nothing on stack\n"
-msgstr "스택상에 백업할 것이 아무것도 없습니다\n"
+msgid "Can't back up with nothing on stack"
+msgstr "스택상에 백업할 것이 아무것도 없습니다"
 
 msgid "Can't compare arrays\n"
 msgstr "배열를 비교할 수 없습니다\n"
@@ -4047,14 +4047,14 @@ msgid "Can't open %s"
 msgstr "%s을 열 수 없습니다"
 
 #, c-format
-msgid "Can't open %s\n"
-msgstr "%s를 열 수 없습니다.\n"
+msgid "Can't open %s"
+msgstr "%s를 열 수 없습니다."
 
-msgid "Can't open temporary file for postscript output\n"
-msgstr "포스트 스크립트 출력을 위해 임시 파일을 열 수 없다.\n"
+msgid "Can't open temporary file for postscript output"
+msgstr "포스트 스크립트 출력을 위해 임시 파일을 열 수 없다."
 
-msgid "Can't open temporary file for truetype output.\n"
-msgstr "TrueType출력을 위한 임시파일을 열 수 없습니다\n"
+msgid "Can't open temporary file for truetype output."
+msgstr "TrueType출력을 위한 임시파일을 열 수 없습니다"
 
 msgid "Can't run mf"
 msgstr "mf를 실행할 수 없습니다."
@@ -4089,11 +4089,11 @@ msgid "Cannot open %s"
 msgstr "%s을(를) 열 수 없음"
 
 #, c-format
-msgid "Cannot open %s\n"
-msgstr "%s를 열 수 없습니다\n"
+msgid "Cannot open %s"
+msgstr "%s를 열 수 없습니다"
 
-msgid "Cannot open a temporary file\n"
-msgstr "임시파일을 열 수 없습니다\n"
+msgid "Cannot open a temporary file"
+msgstr "임시파일을 열 수 없습니다"
 
 #, c-format
 msgid "Cannot open feature file %.120s"
@@ -5257,8 +5257,8 @@ msgstr "저작권 텍스트(이름 창의)는 완전히 ASCII여야 한다. 따�
 msgid "Cor:"
 msgstr "보정:"
 
-msgid "Core python package 'pkg_resources' not found: Cannot discover plugins\n"
-msgstr "핵심 python 패키지 'pkg_resources'를 찾을 수 없음: 플러그인을 찾을 수 없음\n"
+msgid "Core python package 'pkg_resources' not found: Cannot discover plugins"
+msgstr "핵심 python 패키지 'pkg_resources'를 찾을 수 없음: 플러그인을 찾을 수 없음"
 
 msgid "Corner"
 msgstr "모서리점"
@@ -5297,8 +5297,8 @@ msgid "Cou_nter Clockwise"
 msgstr "반시계방향(_N)"
 
 #, c-format
-msgid "Could not create plugin directory '%s'\n"
-msgstr "플러그인 디렉터리 '%s'을(를) 생성할 수 없습니다.\n"
+msgid "Could not create plugin directory '%s'"
+msgstr "플러그인 디렉터리 '%s'을(를) 생성할 수 없습니다."
 
 msgid "Could not figure out a lookup type"
 msgstr "색인 유형을 파악할 수 없다"
@@ -5328,12 +5328,12 @@ msgstr "원본 글리프를 찾을 수 없습니다."
 msgid "Could not find the glyph: %.70s"
 msgstr "글리프를 찾기를 할 수 없습니다: %.70s"
 
-msgid "Could not iterate 'fontforge_plugin' entry points.\n"
-msgstr "'fontforge_plugin' entry points를 반복할 수 없습니다.\n"
+msgid "Could not iterate 'fontforge_plugin' entry points."
+msgstr "'fontforge_plugin' entry points를 반복할 수 없습니다."
 
 #, c-format
-msgid "Could not match points in composite glyph (%d to %d) when adding %s to %s\n"
-msgstr "복합 글리프 (%d 에서 %d 까지) 중에, %s 를  %s 에 추가할 때에 점을 일치시킬수 없습니다\n"
+msgid "Could not match points in composite glyph (%d to %d) when adding %s to %s"
+msgstr "복합 글리프 (%d 에서 %d 까지) 중에, %s 를  %s 에 추가할 때에 점을 일치시킬수 없습니다"
 
 msgid "Could not open"
 msgstr "열 수 없습니다"
@@ -5364,8 +5364,8 @@ msgid "Could not parse %s"
 msgstr "%s를 해석 할 수 없습니다"
 
 #, c-format
-msgid "Could not parse a CID font, %sCIDFontType %d, %sfonttype %d\n"
-msgstr "%sCIDFontType %d, %sfonttype %d 의 CID 폰트를 해석할 수 없습니다\n"
+msgid "Could not parse a CID font, %sCIDFontType %d, %sfonttype %d"
+msgstr "%sCIDFontType %d, %sfonttype %d 의 CID 폰트를 해석할 수 없습니다"
 
 #, c-format
 msgid "Could not read %s"
@@ -5399,8 +5399,8 @@ msgid "Couldn't create directory: %s"
 msgstr "폴더%s를 생성할 수 없습니다"
 
 #, c-format
-msgid "Couldn't find a font file named %s\n"
-msgstr "%s 라고하는 이름의 비트맵폰트를 찾을 수 없습니다.\n"
+msgid "Couldn't find a font file named %s"
+msgstr "%s 라고하는 이름의 비트맵폰트를 찾을 수 없습니다."
 
 msgid "Couldn't find base point"
 msgstr "기준이 되는 베이스 점을 찾을 수 없습니다"
@@ -6057,12 +6057,12 @@ msgid "Didn't understand \"%s\" while adding info to private subroutines"
 msgstr "개인 하위루틴에 정보를 추가하는 동안 \"%s\"를 이해할 수 없다"
 
 #, c-format
-msgid "Didn't understand format for fdselect %d\n"
-msgstr "fdselect %d의 포맷을 이해 할 수 없습니다 \n"
+msgid "Didn't understand format for fdselect %d"
+msgstr "fdselect %d의 포맷을 이해 할 수 없습니다 "
 
 #, c-format
-msgid "Didn't understand index format: %d\n"
-msgstr "인덱스 형식을 이해할 수 없습니다: %d\n"
+msgid "Didn't understand index format: %d"
+msgstr "인덱스 형식을 이해할 수 없습니다: %d"
 
 msgid "Differ"
 msgstr "차이가 있습니다"
@@ -6074,52 +6074,52 @@ msgid "Different Fonts"
 msgstr "폰트가 다릅니다"
 
 #, c-format
-msgid "Different fill patterns in layer %d of %s\n"
-msgstr "%2$s의 %1$d행에서 다른 채우기 패턴\n"
+msgid "Different fill patterns in layer %d of %s"
+msgstr "%2$s의 %1$d행에서 다른 채우기 패턴"
 
 #, c-format
 msgid "Different number of contours in glyph “%s”\n"
 msgstr "글리프“%s”에 포함되는 윤곽선의 수가 서로 다릅니다\n"
 
 #, c-format
-msgid "Different numbers of layers in %s\n"
-msgstr "%s의 층에서 다른 숫자\n"
+msgid "Different numbers of layers in %s"
+msgstr "%s의 층에서 다른 숫자"
 
 #, c-format
-msgid "Different settings on stroke linecap in layer %d of %s\n"
-msgstr "%2$s의 %1$d층에서 획 라인캡에 대한 다른 설정\n"
+msgid "Different settings on stroke linecap in layer %d of %s"
+msgstr "%2$s의 %1$d층에서 획 라인캡에 대한 다른 설정"
 
 #, c-format
-msgid "Different settings on stroke linejoin in layer %d of %s\n"
-msgstr "%2$s의 %1$d층에서 획 선조인에 대한 다른 설정\n"
+msgid "Different settings on stroke linejoin in layer %d of %s"
+msgstr "%2$s의 %1$d층에서 획 선조인에 대한 다른 설정"
 
 #, c-format
-msgid "Different settings on whether to fill in layer %d of %s\n"
-msgstr "%2$s의 %1$d 레이어를 채울 것인가에 대한 다른 설정\n"
+msgid "Different settings on whether to fill in layer %d of %s"
+msgstr "%2$s의 %1$d 레이어를 채울 것인가에 대한 다른 설정"
 
 #, c-format
-msgid "Different settings on whether to inherit fill color in layer %d of %s\n"
-msgstr "%2$s의 %1$d층에서 채우기 색상을 상속할지 여부에 대한 다른 설정\n"
+msgid "Different settings on whether to inherit fill color in layer %d of %s"
+msgstr "%2$s의 %1$d층에서 채우기 색상을 상속할지 여부에 대한 다른 설정"
 
 #, c-format
-msgid "Different settings on whether to inherit fill opacity in layer %d of %s\n"
-msgstr "%2$s의 %1$d층에서 채우기 불투명도를 상속할 지 여부에 대한 다른 설정\n"
+msgid "Different settings on whether to inherit fill opacity in layer %d of %s"
+msgstr "%2$s의 %1$d층에서 채우기 불투명도를 상속할 지 여부에 대한 다른 설정"
 
 #, c-format
-msgid "Different settings on whether to inherit stroke opacity in layer %d of %s\n"
-msgstr "%2$s의 %1$d층에서 획 불투명도를 상속할 지 여부에 대한 다른 설정\n"
+msgid "Different settings on whether to inherit stroke opacity in layer %d of %s"
+msgstr "%2$s의 %1$d층에서 획 불투명도를 상속할 지 여부에 대한 다른 설정"
 
 #, c-format
-msgid "Different settings on whether to inherit stroke width in layer %d of %s\n"
-msgstr "%2$s의 %1$d층에서 획 너비를 상속할 지 여부에 대한 다른 설정\n"
+msgid "Different settings on whether to inherit stroke width in layer %d of %s"
+msgstr "%2$s의 %1$d층에서 획 너비를 상속할 지 여부에 대한 다른 설정"
 
 #, c-format
-msgid "Different settings on whether to stroke in layer %d of %s\n"
-msgstr "레이어 %d (%s 의) 에 스트로크를 어떻게 실행할지 설정이 다릅니다.\n"
+msgid "Different settings on whether to stroke in layer %d of %s"
+msgstr "레이어 %d (%s 의) 에 스트로크를 어떻게 실행할지 설정이 다릅니다."
 
 #, c-format
-msgid "Different stroke patterns in layer %d of %s\n"
-msgstr "%2$s의 %1$d행에서 다른 획 패턴\n"
+msgid "Different stroke patterns in layer %d of %s"
+msgstr "%2$s의 %1$d행에서 다른 획 패턴"
 
 msgid "Dingbats"
 msgstr "딩뱃"
@@ -6422,8 +6422,8 @@ msgid "Duplicate data"
 msgstr "중복 데이터"
 
 #, c-format
-msgid "Duplicate definition of subroutine %d\n"
-msgstr "서브루틴 %d 이 중복정의되어 있습니다\n"
+msgid "Duplicate definition of subroutine %d"
+msgstr "서브루틴 %d 이 중복정의되어 있습니다"
 
 msgid "Duplicate lib data."
 msgstr "중복된 lib 데이터."
@@ -6435,8 +6435,8 @@ msgid "Duplicate pixelsize"
 msgstr "픽셀크기를 복제"
 
 #, c-format
-msgid "Duplicate repeat row count in char %d of pk file\n"
-msgstr "PK파일의 글자 %d에서, 반복해 열번호가 중복됩니다\n"
+msgid "Duplicate repeat row count in char %d of pk file"
+msgstr "PK파일의 글자 %d에서, 반복해 열번호가 중복됩니다"
 
 msgid "Duployan"
 msgstr "듀플로이안 문자"
@@ -6678,8 +6678,8 @@ msgid "Empty Slot FG Color"
 msgstr "빈 슬롯 FG 색상"
 
 #, c-format
-msgid "Empty composite %d\n"
-msgstr "복합자 %d 가 비어있습니다\n"
+msgid "Empty composite %d"
+msgstr "복합자 %d 가 비어있습니다"
 
 #, c-format
 msgid "Empty position on line %d of %s"
@@ -6717,12 +6717,12 @@ msgid ""
 msgstr "Platform = %d, specific = %d (14이어야한다) 인코딩 서브 테이블 형식은 지원되지 않습니다 %d.\n"
 
 #, c-format
-msgid "Encoding subtable for platform=%d, specific=%d has a 0 length subtable.\n"
-msgstr "플랫폼ID=%d, 고유ID=%d 의 인코딩 서브 테이블에 , 길이가 0 인 서브테이블이 포함되어 있습니다.\n"
+msgid "Encoding subtable for platform=%d, specific=%d has a 0 length subtable."
+msgstr "플랫폼ID=%d, 고유ID=%d 의 인코딩 서브 테이블에 , 길이가 0 인 서브테이블이 포함되어 있습니다."
 
 #, c-format
-msgid "Encoding subtable for platform=%d, specific=%d has an unsupported format %d.\n"
-msgstr "플랫폼 ID=%d, 고유 ID=%d 의 인코딩 서브테이블이,지원하지 않는 포맷 %d로 쓰여져 있습니다.\n"
+msgid "Encoding subtable for platform=%d, specific=%d has an unsupported format %d."
+msgstr "플랫폼 ID=%d, 고유 ID=%d 의 인코딩 서브테이블이,지원하지 않는 포맷 %d로 쓰여져 있습니다."
 
 #, c-format
 msgid "Encoding value (%x) not in font, ignored"
@@ -6751,8 +6751,8 @@ msgstr "범위테이블의 도중에 파일이 끝나있습니다"
 msgid "End of file found in string on line %d of %s"
 msgstr "%2$s의 %1$d행에 있는 문자열에서 발견된 파일 끝"
 
-msgid "End of file found when reading private dictionary.\n"
-msgstr "개인 사전을 읽는 동안 파일의 끝이 발견되었습니다.\n"
+msgid "End of file found when reading private dictionary."
+msgstr "개인 사전을 읽는 동안 파일의 끝이 발견되었습니다."
 
 #, c-format
 msgid "End of file in %s table"
@@ -6891,16 +6891,16 @@ msgid "Error parsing color component."
 msgstr "색상 구성 요소를 구문 분석하는 중 오류 발생."
 
 #, c-format
-msgid "Error reading plugin configuration file '%s': %s\n"
-msgstr "플러그인 구성 파일 '%s'을(를) 읽는 중 오류: %s\n"
+msgid "Error reading plugin configuration file '%s': %s"
+msgstr "플러그인 구성 파일 '%s'을(를) 읽는 중 오류: %s"
 
 #, c-format
-msgid "Error saving plugin configuration file '%s': %s\n"
-msgstr "플러그인 구성 파일 '%s'을(를) 저장 중 오류: %s\n"
+msgid "Error saving plugin configuration file '%s': %s"
+msgstr "플러그인 구성 파일 '%s'을(를) 저장 중 오류: %s"
 
 #, c-format
-msgid "Error: %s\n"
-msgstr "오류: %s\n"
+msgid "Error: %s"
+msgstr "오류: %s"
 
 #, c-format
 msgid "Error: Expected %s, got %s"
@@ -7487,8 +7487,8 @@ msgid "Failed to open file %s for output"
 msgstr "파일%s를 출력용으로 열기에 실패했습니다"
 
 #, c-format
-msgid "Failed to open glyph to name map file for writing: %s\n"
-msgstr "%s 에 쓰기 위한 이름 맵파일의 글리프를 불러오기에 실패하였습니다\n"
+msgid "Failed to open glyph to name map file for writing: %s"
+msgstr "%s 에 쓰기 위한 이름 맵파일의 글리프를 불러오기에 실패하였습니다"
 
 #, c-format
 msgid "Failed to open hotkey definition file: %s\n"
@@ -7502,14 +7502,14 @@ msgid "Failed to open your hotkey definition file for updates.\n"
 msgstr "업데이트를 위해 hotkey 정의 파일을 열지 못함\n"
 
 #, c-format
-msgid "Failed to parse color %s\n"
-msgstr "색상 %s 의 구문해석에 실패했습니다\n"
+msgid "Failed to parse color %s"
+msgstr "색상 %s 의 구문해석에 실패했습니다"
 
-msgid "Failed to parse the StartData command properly\n"
-msgstr "StartData 명령을 올바르게 해석 할 수 없었습니다 \n"
+msgid "Failed to parse the StartData command properly"
+msgstr "StartData 명령을 올바르게 해석 할 수 없었습니다 "
 
-msgid "Failed to parse the StartData command properly, bad count\n"
-msgstr "StartData명령을 올바르게 해석 할 수 없었습니다. 개수가 부적절합니다\n"
+msgid "Failed to parse the StartData command properly, bad count"
+msgstr "StartData명령을 올바르게 해석 할 수 없었습니다. 개수가 부적절합니다"
 
 #, c-format
 msgid "Failed to read a file. Bytes read:%ld file size:%ld\n"
@@ -7523,8 +7523,8 @@ msgid "Failed to rename the new hotkeys file over your old one!\n"
 msgstr "hotkeys 파일 이름을 바꾸고 이전 파일을 덮어 쓰지 못했습니다!\n"
 
 #, c-format
-msgid "Failed to write %s\n"
-msgstr "%s 내보내기 실패\n"
+msgid "Failed to write %s"
+msgstr "%s 내보내기 실패"
 
 msgid "Failure"
 msgstr "실패"
@@ -7729,8 +7729,8 @@ msgstr "평평한"
 msgid "Flat Nib"
 msgstr "평평한 펜촉"
 
-msgid "Flate decompression failed.\n"
-msgstr "압축 알고리즘 해제에 실패함\n"
+msgid "Flate decompression failed."
+msgstr "압축 알고리즘 해제에 실패함"
 
 msgid "Flattened Accents over Capitals"
 msgstr "대문자의 평평한 악센트"
@@ -7881,8 +7881,8 @@ msgstr ""
 msgid "FontForge does not currently parse pattern Color Sources (%s)."
 msgstr "FontForge는 현재 색깔 속성에 대한 패턴 처리를 지원하지 않습니다. (%s)"
 
-msgid "FontForge does not support Chameleon fonts\n"
-msgstr "FontForge는 Chameleon 폰트를 지원하지 않습니다\n"
+msgid "FontForge does not support Chameleon fonts"
+msgstr "FontForge는 Chameleon 폰트를 지원하지 않습니다"
 
 #, c-format
 msgid "FontForge does not support anonymous tables on line %d of %s"
@@ -7891,19 +7891,19 @@ msgstr "FontForge는 %2$s의 %1$d행에서 익명의 테이블을 지원하지 �
 msgid "FontForge does not support dictionary based imagemask operators.\n"
 msgstr "FontForge는 사전 기반의 imagemask 연산자를 지원하지 않습니다.\n"
 
-msgid "FontForge does not support synthetic fonts\n"
-msgstr "FontForge는 합성폰트를 지원하지 않습니다\n"
+msgid "FontForge does not support synthetic fonts"
+msgstr "FontForge는 합성폰트를 지원하지 않습니다"
 
 #, c-format
-msgid "FontForge does not support this bit depth %d (must be 1,2,4,8,16,32)\n"
-msgstr "FontForge는 %d 비트의 심도는 지원하지 않습니다(1,2,4,8,16,32 의 어느것 이어야 합니다)\n"
+msgid "FontForge does not support this bit depth %d (must be 1,2,4,8,16,32)"
+msgstr "FontForge는 %d 비트의 심도는 지원하지 않습니다(1,2,4,8,16,32 의 어느것 이어야 합니다)"
 
-msgid "FontForge does not support type2 multiple master fonts\n"
-msgstr "FontForge는 Type2 다중 마스터폰트를 지원하지 않습니다\n"
+msgid "FontForge does not support type2 multiple master fonts"
+msgstr "FontForge는 Type2 다중 마스터폰트를 지원하지 않습니다"
 
 #. GT: DICT is a magic term inside CFF fonts, as is INDEX, and I guess CFF and type2
-msgid "FontForge does not support type2 programs embedded in CFF DICT INDICES.\n"
-msgstr "FontForge는 CFF DICT INDEX에 내장된 Type2 프로그램을 지원하지 않습니다\n"
+msgid "FontForge does not support type2 programs embedded in CFF DICT INDICES."
+msgstr "FontForge는 CFF DICT INDEX에 내장된 Type2 프로그램을 지원하지 않습니다"
 
 msgid ""
 "FontForge does not update this window when a change is made to the font.\n"
@@ -7943,8 +7943,8 @@ msgstr ""
 "볼수있도록 보존할지, 스페이스를 절약하기 위해 \n"
 "삭제할지를 선택합니다."
 
-msgid "FontForge only supports embedded images in data: URIs\n"
-msgstr "FontForge는 데이터에 포함된 이미지만 지원한다.: URIs\n"
+msgid "FontForge only supports embedded images in data: URIs"
+msgstr "FontForge는 데이터에 포함된 이미지만 지원한다.: URIs"
 
 msgid ""
 "FontForge previously exported glyphs using a SVG\n"
@@ -8261,8 +8261,8 @@ msgid "GGadget|ScaleFactor|100"
 msgstr "115"
 
 #, c-format
-msgid "GID out of range (%d) in format 14 'cmap' subtable\n"
-msgstr "포맷 14 'cmap'서브 테이블의 GID가 범위 외 (%d)\n"
+msgid "GID out of range (%d) in format 14 'cmap' subtable"
+msgstr "포맷 14 'cmap'서브 테이블의 GID가 범위 외 (%d)"
 
 msgid "GID out of range."
 msgstr "GID가 범위를 벗어났습니다"
@@ -8486,8 +8486,8 @@ msgid "Glyph %1$.50s with a %2$s from lookup subtable %3$.50s"
 msgstr "조회 하위 테이블 %3$.50s에서 %2$s의 글리프 %1$.50s"
 
 #, c-format
-msgid "Glyph %d attempts to reference glyph %d which is outside the font\n"
-msgstr "글리프 %d가 폰트글리프수를 넘는 글리프 %d를 참조하려고 합니다\n"
+msgid "Glyph %d attempts to reference glyph %d which is outside the font"
+msgstr "글리프 %d가 폰트글리프수를 넘는 글리프 %d를 참조하려고 합니다"
 
 #, c-format
 msgid "Glyph %d in bitmap strike %d pixels refers to a missing glyph (%d)"
@@ -8585,8 +8585,8 @@ msgid "Glyph _Metadata"
 msgstr "글리프의 메타데이터(_M)"
 
 #, c-format
-msgid "Glyph bounding box data exceeds font bounding box data for GID %d\n"
-msgstr "그래프의 경계 상자 데이터가 GID %d 글꼴의 경계 상자 데이터를 초과합니다\n"
+msgid "Glyph bounding box data exceeds font bounding box data for GID %d"
+msgstr "그래프의 경계 상자 데이터가 GID %d 글꼴의 경계 상자 데이터를 초과합니다"
 
 msgid "Glyph composed of:"
 msgstr "글리프의 구성요소:"
@@ -9152,8 +9152,8 @@ msgid "Hint _Width Near¹"
 msgstr "가까운 ¹폭의 힌트(_W)"
 
 #, c-format
-msgid "Hint mask (or counter mask) with too many hints in %s\n"
-msgstr "%s 팁이 너무 팁 마스크 (또는 카운터 마스크)\n"
+msgid "Hint mask (or counter mask) with too many hints in %s"
+msgstr "%s 팁이 너무 팁 마스크 (또는 카운터 마스크)"
 
 #, c-format
 msgid "Hint masks differ in glyph “%s” at (%g,%g)\n"
@@ -9202,41 +9202,41 @@ msgstr "역사적자형"
 msgid "Hit Watch Point"
 msgstr "감시점에 도달"
 
-msgid "Hmm, more glyph variation data specified than there are glyphs in font.\n"
-msgstr "흠, 폰트 내에 존재하는것보다 많은 글리프 변형형의 데이터가 지정되어 있습니다.\n"
+msgid "Hmm, more glyph variation data specified than there are glyphs in font."
+msgstr "흠, 폰트 내에 존재하는것보다 많은 글리프 변형형의 데이터가 지정되어 있습니다."
 
-msgid "Hmm, no global tuples specified in the 'gvar' table.\n"
-msgstr "흠, 'gvar' 테이블내에서 글로벌 tuples이 지정되어있지 않습니다.\n"
+msgid "Hmm, no global tuples specified in the 'gvar' table."
+msgstr "흠, 'gvar' 테이블내에서 글로벌 tuples이 지정되어있지 않습니다."
 
-msgid "Hmm, the 'avar' table is too long.\n"
-msgstr "흠, 'avar' 테이블가 너무 깁니다\n"
+msgid "Hmm, the 'avar' table is too long."
+msgstr "흠, 'avar' 테이블가 너무 깁니다"
 
-msgid "Hmm, the axis count in the 'avar' table is different from that in the 'fvar' table.\n"
-msgstr "흠, 'avar' 테이블 내의 축의 개수가 'fvar' 테이블의 값과 다릅니다.\n"
+msgid "Hmm, the axis count in the 'avar' table is different from that in the 'fvar' table."
+msgstr "흠, 'avar' 테이블 내의 축의 개수가 'fvar' 테이블의 값과 다릅니다."
 
-msgid "Hmm, the axis count in the 'gvar' table is different from that in the 'fvar' table.\n"
-msgstr "흠, 'gvar' 테이블내의 축의 개수가 'fvar' 테이블의 값과 다릅니다.\n"
+msgid "Hmm, the axis count in the 'gvar' table is different from that in the 'fvar' table."
+msgstr "흠, 'gvar' 테이블내의 축의 개수가 'fvar' 테이블의 값과 다릅니다."
 
-msgid "Hmm, this 'fvar' table has an unexpected size for an axis, I shan't parse it\n"
-msgstr "흠, 이  'fvar' 테이블에 포함되는 축의 크기가 예상치 못한 값이므로,해석을 중단합니다.\n"
+msgid "Hmm, this 'fvar' table has an unexpected size for an axis, I shan't parse it"
+msgstr "흠, 이  'fvar' 테이블에 포함되는 축의 크기가 예상치 못한 값이므로,해석을 중단합니다."
 
-msgid "Hmm, this 'fvar' table has an unexpected size for an instance, I shan't parse it\n"
-msgstr "흠, 이  'fvar' 테이블에 포함되는 인스턴스의 크기가 예상 밖의값이므로, 해석을 중단합니다.\n"
+msgid "Hmm, this 'fvar' table has an unexpected size for an instance, I shan't parse it"
+msgstr "흠, 이  'fvar' 테이블에 포함되는 인스턴스의 크기가 예상 밖의값이므로, 해석을 중단합니다."
 
-msgid "Hmm, this 'fvar' table has more axes than FontForge can handle.\n"
-msgstr "흠, 이  'fvar' 테이블에서 FontForge가 취급가능한 경계보다 더 많은디자인 축이포함되어 있습니다.\n"
+msgid "Hmm, this 'fvar' table has more axes than FontForge can handle."
+msgstr "흠, 이  'fvar' 테이블에서 FontForge가 취급가능한 경계보다 더 많은디자인 축이포함되어 있습니다."
 
 msgid "Hmm, this 'fvar' table has more count/size pairs than I expect\n"
 msgstr "흠, 이  'fvar' 테이블은 예상한것보다 많은 개수/크기 짝이 포함되어 있습니다\n"
 
-msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense.\n"
-msgstr "흠, 이  'fvar' 테이블에서디자인축이 없으므로 말이 되지 않습니다.\n"
+msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense."
+msgstr "흠, 이  'fvar' 테이블에서디자인축이 없으므로 말이 되지 않습니다."
 
 msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it\n"
 msgstr "흠, 이  'fvar' 테이블의 개수/크기 짝은 너무 적으므로, 해석을 중지합니다\n"
 
-msgid "Hmm, this 'fvar' table is too short\n"
-msgstr "흠, 이  'fvar' 테이블은 너무 짧습니다\n"
+msgid "Hmm, this 'fvar' table is too short"
+msgstr "흠, 이  'fvar' 테이블은 너무 짧습니다"
 
 #, c-format
 msgid ""
@@ -9349,12 +9349,12 @@ msgid "Hungarian"
 msgstr "헝가리어"
 
 #, c-format
-msgid "I can't even imagine how to attempt to interpolate gradients in layer %d of %s\n"
-msgstr "%2$s의 %1$d층에서 경사도를 시도하는 방법을 알 수 없음\n"
+msgid "I can't even imagine how to attempt to interpolate gradients in layer %d of %s"
+msgstr "%2$s의 %1$d층에서 경사도를 시도하는 방법을 알 수 없음"
 
 #, c-format
-msgid "I can't even imagine how to attempt to interpolate images in layer %d of %s\n"
-msgstr "%2$s의 %1$d행에서 이미지를 보간하려고 시도하는 방법을 생각할 수 없음\n"
+msgid "I can't even imagine how to attempt to interpolate images in layer %d of %s"
+msgstr "%2$s의 %1$d행에서 이미지를 보간하려고 시도하는 방법을 생각할 수 없음"
 
 #, c-format
 msgid "I can't figure out how to compare the subtable, %s, in %s to %s in %s\n"
@@ -9803,12 +9803,12 @@ msgstr ""
 "  이 일치하지 않습니다. (이후, 불일치가 발견되어도 보고하지 않습니다)\n"
 
 #, c-format
-msgid "In %s, the advance width (%d) for glyph %s is greater than the maximum (%d)\n"
-msgstr "%1$s에서 그래프 %3$s의 유효폭 (%2$d) 가 최대 (%4$d) 를 초과했습니다\n"
+msgid "In %s, the advance width (%d) for glyph %s is greater than the maximum (%d)"
+msgstr "%1$s에서 그래프 %3$s의 유효폭 (%2$d) 가 최대 (%4$d) 를 초과했습니다"
 
 #, c-format
-msgid "In GID %d the advance width (%d) is greater than the stated maximum (%d)\n"
-msgstr "GID %d는 유효폭 (%d) 가 지정된 최대 값 (%d) 를 초과했습니다\n"
+msgid "In GID %d the advance width (%d) is greater than the stated maximum (%d)"
+msgstr "GID %d는 유효폭 (%d) 가 지정된 최대 값 (%d) 를 초과했습니다"
 
 #, c-format
 msgid ""
@@ -9845,16 +9845,16 @@ msgid "In an italic font the horizontal change per unit vertical change"
 msgstr "이탤릭폰트에 대해 수직변화에 대한 수평변화값"
 
 #, c-format
-msgid "In character %s, could not find reference to %s\n"
-msgstr "글자 %s 에 대해, %s 에의 참조를 찾을 수 없었습니다.\n"
+msgid "In character %s, could not find reference to %s"
+msgstr "글자 %s 에 대해, %s 에의 참조를 찾을 수 없었습니다."
 
 #, c-format
-msgid "In character %s, there are too few points on a path in the base\n"
-msgstr "글자 %s 에 대해, 기저글리프의 경로에 포함되는 점의 개수가 너무 적습니다.\n"
+msgid "In character %s, there are too few points on a path in the base"
+msgstr "글자 %s 에 대해, 기저글리프의 경로에 포함되는 점의 개수가 너무 적습니다."
 
 #, c-format
-msgid "In character %s, there are too many points on a path in the base\n"
-msgstr "글자 %s 에 대해, 기저글리프의 경로에 포함되는 점의 개수가 너무 많습니다.\n"
+msgid "In character %s, there are too many points on a path in the base"
+msgstr "글자 %s 에 대해, 기저글리프의 경로에 포함되는 점의 개수가 너무 많습니다."
 
 msgid ""
 "In every lookup that uses a glyph, check that at\n"
@@ -9962,12 +9962,12 @@ msgstr "%2$s의 %1$d행 파일 이름이 너무 길다."
 msgid "Includes nested too deeply on line %d of %s"
 msgstr "%2$s의 %1$d 행에 너무 많이 중첩되어 있다."
 
-msgid "Incorrect number of deltas in cvt\n"
-msgstr "cvt 에 포함되는 delta의 개수가 부적절합니다\n"
+msgid "Incorrect number of deltas in cvt"
+msgstr "cvt 에 포함되는 delta의 개수가 부적절합니다"
 
 #, c-format
-msgid "Incorrect number of deltas in glyph %d (%s)\n"
-msgstr "글리프 %d (%s) 의 델타의 개수가 부적절합니다\n"
+msgid "Incorrect number of deltas in glyph %d (%s)"
+msgstr "글리프 %d (%s) 의 델타의 개수가 부적절합니다"
 
 msgid "Incorrect number of instances weights, or illegal numbers"
 msgstr "가중치 인스턴스의 개수가 틀렸거나, 수치가 부적절합니다"
@@ -9994,8 +9994,8 @@ msgid "Index in use"
 msgstr "인덱스가 사용중입니다."
 
 #, c-format
-msgid "Index out of range in %s\n"
-msgstr "글리프 %s 에 범위 밖의 인덱스가 포함되어 있습니다\n"
+msgid "Index out of range in %s"
+msgstr "글리프 %s 에 범위 밖의 인덱스가 포함되어 있습니다"
 
 #, c-format
 msgid "Index too big (must be <%d) \"%s"
@@ -10255,11 +10255,11 @@ msgid "Invalid Encoding"
 msgstr "올바르지 않은 인코딩"
 
 #, c-format
-msgid "Invalid FD (%d) assigned to CID %d.\n"
-msgstr "부적합한 FD (%d) 가 CID %d 에 대입되어 있습니다.\n"
+msgid "Invalid FD (%d) assigned to CID %d."
+msgstr "부적합한 FD (%d) 가 CID %d 에 대입되어 있습니다."
 
-msgid "Invalid character outside of string in sfnts array\n"
-msgstr "sfnts 배열내의 문자열 이외의 장소에 올바르지 않은 글자가 포함되어 있습니다\n"
+msgid "Invalid character outside of string in sfnts array"
+msgstr "sfnts 배열내의 문자열 이외의 장소에 올바르지 않은 글자가 포함되어 있습니다"
 
 #, c-format
 msgid "Invalid comment string (negative length?) in 'PfEd' table for glyph %s."
@@ -10288,21 +10288,21 @@ msgstr "참조를 수정할 때 %s에 대한 문자가 잘못되었다."
 msgid "Invalid glyph name range in glyph class on line %d of %s"
 msgstr "%2$s의 %1$d행의 문자 클래스에서 잘못된 문자 이름 범위"
 
-msgid "Invalid guideline.\n"
-msgstr "잘못된 지침\n"
+msgid "Invalid guideline."
+msgstr "잘못된 지침"
 
-msgid "Invalid hex digit in sfnts array\n"
-msgstr "sfnts 배열에 올바르지 않은 16진수 문자열이 포함되어 있습니다\n"
+msgid "Invalid hex digit in sfnts array"
+msgstr "sfnts 배열에 올바르지 않은 16진수 문자열이 포함되어 있습니다"
 
 msgid "Invalid language"
 msgstr "잘못된 언어"
 
-msgid "Invalid ligature offset\n"
-msgstr "합음자오프셋이 부적절합니다\n"
+msgid "Invalid ligature offset"
+msgstr "합음자오프셋이 부적절합니다"
 
 #, c-format
-msgid "Invalid lookup table format. %d\n"
-msgstr "참조테이블포맷 %d 는 올바르지 않은 값입니다\n"
+msgid "Invalid lookup table format. %d"
+msgstr "참조테이블포맷 %d 는 올바르지 않은 값입니다"
 
 #, c-format
 msgid "Invalid or unsupported format (%d) for subtable of 'kern' table"
@@ -10316,20 +10316,20 @@ msgstr "'kern'테이블의 잘못되었거나 지원되지 않는 버전 (0x%x)"
 msgid "Invalid platform for string on line %d of %s"
 msgstr "%2$s의 %1$d행에 있는 문자열에 대해 유효하지 않은 플랫폼"
 
-msgid "Invalid point match. Point would be after this reference.\n"
-msgstr "점의 매칭이 부적절합니다. 점은 참조 뒤에 있어야 합니다.\n"
+msgid "Invalid point match. Point would be after this reference."
+msgstr "점의 매칭이 부적절합니다. 점은 참조 뒤에 있어야 합니다."
 
 msgid "Invalid point size"
 msgstr "포인트수이 부적절합니다"
 
-msgid "Invalid ttf hmtx table (or hhea), numOfLongMetrics is 0\n"
-msgstr "TTF의 hmtx (또는 hhea) 테이블이 부적절합니다. numOfLongMetrics가 0 으로 되어 있습니다\n"
+msgid "Invalid ttf hmtx table (or hhea), numOfLongMetrics is 0"
+msgstr "TTF의 hmtx (또는 hhea) 테이블이 부적절합니다. numOfLongMetrics가 0 으로 되어 있습니다"
 
-msgid "Invalid ttf vmtx table (or vhea), numOfLongVerMetrics is 0\n"
-msgstr "TTF의 vmtx (또는 vhea) 테이블이 부적절합니다. numOvLongVerMetrics 가 0으로 되어 있습니다\n"
+msgid "Invalid ttf vmtx table (or vhea), numOfLongVerMetrics is 0"
+msgstr "TTF의 vmtx (또는 vhea) 테이블이 부적절합니다. numOvLongVerMetrics 가 0으로 되어 있습니다"
 
-msgid "Invalid unit vector has been specified. The hint is ignored.\n"
-msgstr "잘못된 단위 벡터가 지정되었습니다. 힌트는 무시됩니다.\n"
+msgid "Invalid unit vector has been specified. The hint is ignored."
+msgstr "잘못된 단위 벡터가 지정되었습니다. 힌트는 무시됩니다."
 
 msgid "Irish"
 msgstr "아일랜드어"
@@ -10707,8 +10707,8 @@ msgstr "Key"
 
 #. GT: Here "def" is a PostScript keyword, (meaning define).
 #. GT: This "def" should not be translated as it is part of the PostScript language.
-msgid "Key for a def must be a string or name literal\n"
-msgstr "def 의 키는 문자열 또는 이름 literal 이어야 합니다\n"
+msgid "Key for a def must be a string or name literal"
+msgstr "def 의 키는 문자열 또는 이름 literal 이어야 합니다"
 
 msgid "Khakass"
 msgstr "하카스어"
@@ -11441,8 +11441,8 @@ msgid "Lookup subtable %s (matched with %s)\n"
 msgstr "색인 하위 테이블 %s(%s와 일치)\n"
 
 #, c-format
-msgid "Lookup subtable %s contains a glyph %s whose kerning information takes up more than 64k bytes\n"
-msgstr "조회 서브 테이블 %s에는 커닝 정보가 64k 바이트 이상의 그래프 %s가 포함되어 있습니다\n"
+msgid "Lookup subtable %s contains a glyph %s whose kerning information takes up more than 64k bytes"
+msgstr "조회 서브 테이블 %s에는 커닝 정보가 64k 바이트 이상의 그래프 %s가 포함되어 있습니다"
 
 #, c-format
 msgid ""
@@ -12528,8 +12528,8 @@ msgstr "기타 기술"
 msgid "Mismatch lookup types inside a parsed lookup"
 msgstr "구문 분석된 색인 내에서 불일치 색인 유형"
 
-msgid "Mismatched local and shared tuple flags.\n"
-msgstr "로컬 tuple플래그와 공유 tuple플래그가 일치하지 않습니다\n"
+msgid "Mismatched local and shared tuple flags."
+msgstr "로컬 tuple플래그와 공유 tuple플래그가 일치하지 않습니다"
 
 msgid "Missing \"OS/2\" table"
 msgstr "OS/2테이블이 없다."
@@ -12551,8 +12551,8 @@ msgid "Missing Glyph..."
 msgstr "글리프 부족..."
 
 #, c-format
-msgid "Missing POST resource %u\n"
-msgstr "POST 리소스%u가 없습니다\n"
+msgid "Missing POST resource %u"
+msgstr "POST 리소스%u가 없습니다"
 
 msgid "Missing Points at Extrema"
 msgstr "극값에서 누락된 점"
@@ -12731,8 +12731,8 @@ msgid "More pushes specified than needed"
 msgstr "필요한 횟수보다 더 많은 push가 있습니다"
 
 #, c-format
-msgid "More than 256 entries in subfont %s\n"
-msgstr "서브폰트%s에 256개를 넘는 항목이 있습니다\n"
+msgid "More than 256 entries in subfont %s"
+msgstr "서브폰트%s에 256개를 넘는 항목이 있습니다"
 
 msgid "Moroccan"
 msgstr "모로코어"
@@ -12936,18 +12936,18 @@ msgid "Multiple copies of the selection should be tiled onto the path"
 msgstr "선택한 아웃라인을 타일로 취급해, 경로 위에 반복(타일)해 놓아야 합니다."
 
 #, c-format
-msgid "Multiple glyphs map to the same unicode encoding U+%04X, only one will be used\n"
-msgstr "복수글리프가 동일한 Unicode 부호위치 U+%04X 에 맵핑되어있습니다. 이 중 한쪽만 사용됩니다\n"
+msgid "Multiple glyphs map to the same unicode encoding U+%04X, only one will be used"
+msgstr "복수글리프가 동일한 Unicode 부호위치 U+%04X 에 맵핑되어있습니다. 이 중 한쪽만 사용됩니다"
 
-msgid "Multiple master font with more than 16 instances\n"
-msgstr "다중 마스터폰트의 인스턴스가 16 개를 넘어서 있습니다\n"
+msgid "Multiple master font with more than 16 instances"
+msgstr "다중 마스터폰트의 인스턴스가 16 개를 넘어서 있습니다"
 
-msgid "Multiple master font with more than 4 axes\n"
-msgstr "다중 마스터폰트의 축의 개수 4 축을 넘어서 있습니다.\n"
+msgid "Multiple master font with more than 4 axes"
+msgstr "다중 마스터폰트의 축의 개수 4 축을 넘어서 있습니다."
 
 #, c-format
-msgid "Multiple master subroutine called with the wrong number of arguments in %s.\n"
-msgstr "글리프 %s 에서, 다중 마스터서브루틴을 불러낼 때의 인수 개수가 올바르지 않습니다.\n"
+msgid "Multiple master subroutine called with the wrong number of arguments in %s."
+msgstr "글리프 %s 에서, 다중 마스터서브루틴을 불러낼 때의 인수 개수가 올바르지 않습니다."
 
 msgid "Multiple names for language"
 msgstr "다른 언어에서의 복수 이름"
@@ -13561,12 +13561,12 @@ msgstr "모두 아니오(_T)"
 msgid "No applicable lookup subtables"
 msgstr "해당하는 조회 하위 테이블 없음"
 
-msgid "No argument to operator\n"
-msgstr "인산자에 인수가 없습니다\n"
+msgid "No argument to operator"
+msgstr "인산자에 인수가 없습니다"
 
 #, c-format
-msgid "No argument to operator %d in private dict\n"
-msgstr "Private 사전 내의 연산자 %d에 인수가 없습니다\n"
+msgid "No argument to operator %d in private dict"
+msgstr "Private 사전 내의 연산자 %d에 인수가 없습니다"
 
 msgid "No bitmap strikes"
 msgstr "비트맵이 없습니다."
@@ -13595,16 +13595,16 @@ msgid "No flags specified in lookupflags on line %d of %s"
 msgstr "%2$s의 %1$d행의 색인 플래그에서 플래그가 지정되지 않음"
 
 #, c-format
-msgid "No glyph named %s, used as a pattern in %s\n"
-msgstr "%s라는 문자가 존재하지 않으며, %s에서 패턴으로 사용되었습니다.\n"
+msgid "No glyph named %s, used as a pattern in %s"
+msgstr "%s라는 문자가 존재하지 않으며, %s에서 패턴으로 사용되었습니다."
 
 #, c-format
 msgid "No glyph named %s."
 msgstr "%s라는 문자가 존재하지 않는다."
 
 #, c-format
-msgid "No glyph with unicode U+%05x in font\n"
-msgstr "글꼴 Unicode U+%05x의 그래프는 없습니다\n"
+msgid "No glyph with unicode U+%05x in font"
+msgstr "글꼴 Unicode U+%05x의 그래프는 없습니다"
 
 msgid "No glyphs directory or no contents file"
 msgstr "그리 디렉토리 또는 콘텐츠 파일이 없습니다"
@@ -13621,8 +13621,8 @@ msgid "No kerning pairs found in %.200s"
 msgstr "%.200s에서 커닝 짝이 포함되어 있지 않습니다."
 
 #, c-format
-msgid "No kerning table for %s\n"
-msgstr "%s의 커닝테이블이 없습니다\n"
+msgid "No kerning table for %s"
+msgstr "%s의 커닝테이블이 없습니다"
 
 msgid "No languages"
 msgstr "언어가 없습니다"
@@ -13644,14 +13644,14 @@ msgstr "%.20s...로 시작 반대로 컨텍스트 조회 (대신 대체 목록 �
 msgid "No lookups to copy"
 msgstr "복사할 색인이 없습니다."
 
-msgid "No mark in ] (close array)\n"
-msgstr "] (배열의 종료)에 마크가 없습니다\n"
+msgid "No mark in ] (close array)"
+msgstr "] (배열의 종료)에 마크가 없습니다"
 
-msgid "No mark in cleartomark\n"
-msgstr "cleartomark에 마크가 없습니다\n"
+msgid "No mark in cleartomark"
+msgstr "cleartomark에 마크가 없습니다"
 
-msgid "No mark in counttomark\n"
-msgstr "counttomark에 마크가 없습니다\n"
+msgid "No mark in counttomark"
+msgstr "counttomark에 마크가 없습니다"
 
 #, c-format
 msgid "No marked glyphs allowed in replacement on line %d of %s"
@@ -13662,8 +13662,8 @@ msgid "No matching AnchorClass for %s"
 msgstr "%s에 일치하는 앵커클래스가 없습니다."
 
 #, c-format
-msgid "No module name for '%s' in plugin config -- skipping.\n"
-msgstr "플러그인 구성에 '%s'에 대한 모듈 이름이 없습니다. -- 건너뜁니다.\n"
+msgid "No module name for '%s' in plugin config -- skipping."
+msgstr "플러그인 구성에 '%s'에 대한 모듈 이름이 없습니다. -- 건너뜁니다."
 
 #, c-format
 msgid "No name for CharStrings dictionary \"%s"
@@ -13673,24 +13673,24 @@ msgid "No paths with within a glyph should intersect"
 msgstr "동일 글리프에 소속되는 경로끼리 교차되서는 안됩니다."
 
 #, c-format
-msgid "No previous point on path in curveto from flex 0 in %s\n"
-msgstr "글리프 %s 의 flex0 로부터의 curveto 에서, 직전의 점이 존재하지 않습니다\n"
+msgid "No previous point on path in curveto from flex 0 in %s"
+msgstr "글리프 %s 의 flex0 로부터의 curveto 에서, 직전의 점이 존재하지 않습니다"
 
 #, c-format
-msgid "No previous point on path in curveto in %s\n"
-msgstr "글리프 %s 내의 curveto 연산자에서, 경로 직전의 점이 존재하지 않습니다\n"
+msgid "No previous point on path in curveto in %s"
+msgstr "글리프 %s 내의 curveto 연산자에서, 경로 직전의 점이 존재하지 않습니다"
 
 #, c-format
-msgid "No previous point on path in flex operator in %s\n"
-msgstr "글리프 %s 내의 flex 연산자에서, 경로 직전의 점이 존재하지 않습니다\n"
+msgid "No previous point on path in flex operator in %s"
+msgstr "글리프 %s 내의 flex 연산자에서, 경로 직전의 점이 존재하지 않습니다"
 
 #, c-format
-msgid "No previous point on path in lineto from flex 0 in %s\n"
-msgstr "글리프 %s 의 flex0 로부터의 lineto 에서, 직전의 점이 존재하지 않습니다\n"
+msgid "No previous point on path in lineto from flex 0 in %s"
+msgstr "글리프 %s 의 flex0 로부터의 lineto 에서, 직전의 점이 존재하지 않습니다"
 
 #, c-format
-msgid "No previous point on path in lineto in %s\n"
-msgstr "글리프 %s 내의 lineto 연산자가 스택 언더플로우를 넘어서 있습니다\n"
+msgid "No previous point on path in lineto in %s"
+msgstr "글리프 %s 내의 lineto 연산자가 스택 언더플로우를 넘어서 있습니다"
 
 msgid "No problems detected"
 msgstr "문제가 발견되지 않았습니다"
@@ -13715,8 +13715,8 @@ msgstr "스크립트가 없습니다"
 msgid "No selection"
 msgstr "선택되지 않음"
 
-msgid "No selection\n"
-msgstr "선택되지 않음.\n"
+msgid "No selection"
+msgstr "선택되지 않음."
 
 msgid "No significant differences found"
 msgstr "유의한 차이를 찾을 수 없음"
@@ -13998,8 +13998,8 @@ msgstr "아무것도 선택되지 않았습니다."
 msgid "Nothing found"
 msgstr "찾을 수 없음"
 
-msgid "Nothing on stack to print\n"
-msgstr "스택 상에 인쇄 가능한 것이 없습니다\n"
+msgid "Nothing on stack to print"
+msgstr "스택 상에 인쇄 가능한 것이 없습니다"
 
 msgid "Nothing specified"
 msgstr "지정된 항목 없음"
@@ -14616,8 +14616,8 @@ msgstr "순서가 틀립니다."
 msgid "Out of Range"
 msgstr "범위 밖입니다."
 
-msgid "Out of memory\n"
-msgstr "메모리 부족입니다\n"
+msgid "Out of memory"
+msgstr "메모리 부족입니다"
 
 msgid "Outer Border:"
 msgstr "외부 테두리:"
@@ -15144,8 +15144,8 @@ msgid "Parse Error"
 msgstr "해석 에러"
 
 #, c-format
-msgid "ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s\n"
-msgstr "ParseGlyphOrderAndAliasDB : 인덱스 % d에서 비활성화 (탭으로 구분되지 않은 항목) : % s\n"
+msgid "ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s"
+msgstr "ParseGlyphOrderAndAliasDB : 인덱스 % d에서 비활성화 (탭으로 구분되지 않은 항목) : % s"
 
 msgid "Parts List"
 msgstr "부품 목록"
@@ -15450,8 +15450,8 @@ msgid "Polytonic Greek"
 msgstr "고대그리스어"
 
 #, c-format
-msgid "Pop stack underflow on pop in %s\n"
-msgstr "글리프 %s 의 pop 에서, 스택언더플로우가 발생했습니다\n"
+msgid "Pop stack underflow on pop in %s"
+msgstr "글리프 %s 의 pop 에서, 스택언더플로우가 발생했습니다"
 
 msgid "Popup"
 msgstr "팝업"
@@ -15923,11 +15923,11 @@ msgstr "무변환"
 msgid "Re_move"
 msgstr "삭제(_M)"
 
-msgid "Reached end of file when reading composite glyph\n"
-msgstr "합성글리프의 불러오기 중에 파일이 끝났습니다.\n"
+msgid "Reached end of file when reading composite glyph"
+msgstr "합성글리프의 불러오기 중에 파일이 끝났습니다."
 
-msgid "Reached end of file when reading simple glyph\n"
-msgstr "단순글리프 불러오기 중에 파일이 끝났습니다.\n"
+msgid "Reached end of file when reading simple glyph"
+msgstr "단순글리프 불러오기 중에 파일이 끝났습니다."
 
 msgid ""
 "Read Control Value Table entry\n"
@@ -16008,8 +16008,8 @@ msgid "Reference Names"
 msgstr "참조 이름"
 
 #, c-format
-msgid "Reference encoding out of bounds in %s\n"
-msgstr "글리프 %s 내의 참조 인코딩이 경계를 넘어서 있습니다\n"
+msgid "Reference encoding out of bounds in %s"
+msgstr "글리프 %s 내의 참조 인코딩이 경계를 넘어서 있습니다"
 
 msgid "Reference point match out of date"
 msgstr "참조점의 매치가 구식입니다"
@@ -16035,12 +16035,12 @@ msgid "Reference to character %1$.20s at %2$d"
 msgstr "글자%1$.20s에의 %2$d에 대한 참조"
 
 #, c-format
-msgid "Reference to glyph %d out of bounds when parsing 'glyf' table.\n"
-msgstr "'glyf'테이블의 분석중에, 경계를 넘어가는 글리프 %d 에의 참조에 부딪혔습니다.\n"
+msgid "Reference to glyph %d out of bounds when parsing 'glyf' table."
+msgstr "'glyf'테이블의 분석중에, 경계를 넘어가는 글리프 %d 에의 참조에 부딪혔습니다."
 
 #, c-format
-msgid "Reference to transient memory out of bounds in put in %s\n"
-msgstr "글리프 %s 내의 put 연산자로 임시메모리로의 참조가경계를 넘어서 있습니다\n"
+msgid "Reference to transient memory out of bounds in put in %s"
+msgstr "글리프 %s 내의 put 연산자로 임시메모리로의 참조가경계를 넘어서 있습니다"
 
 msgid "References are nested more deeply in this glyph than the maximum allowed"
 msgstr "본 글리프에서는、참조삽입 레벨이 최대허용치를 넘어섭니다"
@@ -18382,16 +18382,16 @@ msgid "Skipping non-existent glyph %s in group %s."
 msgstr "그룹 %2$s에 존재하지 않는 문양 %1$s를 생략합니다."
 
 #, c-format
-msgid "Skipping plugin %s: module '%s': Could not load.\n"
-msgstr "플러그인 %s 건너뛰기: 모듈 '%s': 로드할 수 없습니다.\n"
+msgid "Skipping plugin %s: module '%s': Could not load."
+msgstr "플러그인 %s 건너뛰기: 모듈 '%s': 로드할 수 없습니다."
 
 #, c-format
-msgid "Skipping plugin %s: module '%s': Error calling 'fontforge_plugin_init' function\n"
-msgstr "플러그인 %s 건너뛰기: 모듈 '%s': 'fontforge_plugin_init' 함수 호출 오류\n"
+msgid "Skipping plugin %s: module '%s': Error calling 'fontforge_plugin_init' function"
+msgstr "플러그인 %s 건너뛰기: 모듈 '%s': 'fontforge_plugin_init' 함수 호출 오류"
 
 #, c-format
-msgid "Skipping plugin %s: module '%s': Lacks 'fontforge_plugin_init' function\n"
-msgstr "플러그인 %s 건너뛰기: 모듈 '%s': 'fontforge_plugin_init' 함수 없음\n"
+msgid "Skipping plugin %s: module '%s': Lacks 'fontforge_plugin_init' function"
+msgstr "플러그인 %s 건너뛰기: 모듈 '%s': 'fontforge_plugin_init' 함수 없음"
 
 msgid "Skolt Sami"
 msgstr "스콜트・싸미어"
@@ -18763,88 +18763,88 @@ msgid "Stack (TrueType)"
 msgstr "스택(TrueType)"
 
 #, c-format
-msgid "Stack got too big in %s\n"
-msgstr "글리프 %s 내에서 스택이 너무 커져 있습니다 \n"
+msgid "Stack got too big in %s"
+msgstr "글리프 %s 내에서 스택이 너무 커져 있습니다 "
 
 #, c-format
-msgid "Stack underflow on binary operator in %s\n"
-msgstr "글리프 %s 내의 이항(binary)연산자가 스택 언더플로우를 넘어서 있습니다\n"
+msgid "Stack underflow on binary operator in %s"
+msgstr "글리프 %s 내의 이항(binary)연산자가 스택 언더플로우를 넘어서 있습니다"
 
 #, c-format
-msgid "Stack underflow on callothersubr in %s\n"
-msgstr "글리프 %s 내의 callothersubr 연산자가 스택 언더플로우를 넘어서 있습니다\n"
+msgid "Stack underflow on callothersubr in %s"
+msgstr "글리프 %s 내의 callothersubr 연산자가 스택 언더플로우를 넘어서 있습니다"
 
 #, c-format
-msgid "Stack underflow on callsubr in %s\n"
-msgstr "글리프 %s 내의 callsubr 연산자가 스택 언더플로우를 넘어서 있습니다\n"
+msgid "Stack underflow on callsubr in %s"
+msgstr "글리프 %s 내의 callsubr 연산자가 스택 언더플로우를 넘어서 있습니다"
 
 #, c-format
-msgid "Stack underflow on hhcurveto in %s\n"
-msgstr "글리프 %s 내의 hhcurveto 연산자가 스택 언더플로우를 넘어서 있습니다\n"
+msgid "Stack underflow on hhcurveto in %s"
+msgstr "글리프 %s 내의 hhcurveto 연산자가 스택 언더플로우를 넘어서 있습니다"
 
 #, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s\n"
 msgstr "글리프 %s 내의 hlineto/hmoveto 연산자가 스택 언더플로우를 넘어서 있습니다\n"
 
 #, c-format
-msgid "Stack underflow on hsbw in %s\n"
-msgstr "글리프 %s 내의 hsbw 연산자가 스택 언더플로우를 넘어서 있습니다\n"
+msgid "Stack underflow on hsbw in %s"
+msgstr "글리프 %s 내의 hsbw 연산자가 스택 언더플로우를 넘어서 있습니다"
 
 #, c-format
-msgid "Stack underflow on hstem in %s\n"
-msgstr "글리프 %s 내의 hstem 연산자가 스택 언더플로우를 넘어서 있습니다\n"
+msgid "Stack underflow on hstem in %s"
+msgstr "글리프 %s 내의 hstem 연산자가 스택 언더플로우를 넘어서 있습니다"
 
 #, c-format
-msgid "Stack underflow on hstem3 in %s\n"
-msgstr "글리프 %s 내의 hstem3 연산자가 스택 언더플로우를 넘어서 있습니다\n"
+msgid "Stack underflow on hstem3 in %s"
+msgstr "글리프 %s 내의 hstem3 연산자가 스택 언더플로우를 넘어서 있습니다"
 
 #, c-format
-msgid "Stack underflow on hvcurveto in %s\n"
-msgstr "글리프 %s 내의 hvcurveto 연산자가 스택 언더플로우를 넘어서 있습니다\n"
+msgid "Stack underflow on hvcurveto in %s"
+msgstr "글리프 %s 내의 hvcurveto 연산자가 스택 언더플로우를 넘어서 있습니다"
 
 #, c-format
-msgid "Stack underflow on ifelse in %s\n"
-msgstr "글리프 %s 내의 ifelse 연산자가 스택 언더플로우를 넘어서 있습니다\n"
+msgid "Stack underflow on ifelse in %s"
+msgstr "글리프 %s 내의 ifelse 연산자가 스택 언더플로우를 넘어서 있습니다"
 
 #, c-format
 msgid "Stack underflow on rlineto/rmoveto in %s\n"
 msgstr "글리프 %s 내의 hlineto/rmoveto 연산자가 스택 언더플로우를 넘어서 있습니다\n"
 
 #, c-format
-msgid "Stack underflow on rrcurveto in %s\n"
-msgstr "글리프 %s 내의 rrcurveto 연산자가 스택 언더플로우를 넘어서 있습니다\n"
+msgid "Stack underflow on rrcurveto in %s"
+msgstr "글리프 %s 내의 rrcurveto 연산자가 스택 언더플로우를 넘어서 있습니다"
 
 #, c-format
-msgid "Stack underflow on sbw in %s\n"
-msgstr "글리프 %s 내의 sbw 연산자가 스택 언더플로우를 넘어서 있습니다\n"
+msgid "Stack underflow on sbw in %s"
+msgstr "글리프 %s 내의 sbw 연산자가 스택 언더플로우를 넘어서 있습니다"
 
 #, c-format
-msgid "Stack underflow on seac in %s\n"
-msgstr "글리프 %s 내의 seac 연산자가 스택 언더플로우를 넘어서 있습니다\n"
+msgid "Stack underflow on seac in %s"
+msgstr "글리프 %s 내의 seac 연산자가 스택 언더플로우를 넘어서 있습니다"
 
 #, c-format
-msgid "Stack underflow on setcurrentpoint in %s\n"
-msgstr "글리프 %s 내의 setcurrentpoint 연산자가 스택 언더플로우를 넘어서 있습니다\n"
+msgid "Stack underflow on setcurrentpoint in %s"
+msgstr "글리프 %s 내의 setcurrentpoint 연산자가 스택 언더플로우를 넘어서 있습니다"
 
 #, c-format
-msgid "Stack underflow on unary operator in %s\n"
-msgstr "글리프 %s 내의 단항(unary)연산자가 스택 언더플로우를 넘어서 있습니다\n"
+msgid "Stack underflow on unary operator in %s"
+msgstr "글리프 %s 내의 단항(unary)연산자가 스택 언더플로우를 넘어서 있습니다"
 
 #, c-format
-msgid "Stack underflow on vhcurveto in %s\n"
-msgstr "글리프 %s 내의 vhcurveto 연산자가 스택 언더플로우를 넘어서 있습니다\n"
+msgid "Stack underflow on vhcurveto in %s"
+msgstr "글리프 %s 내의 vhcurveto 연산자가 스택 언더플로우를 넘어서 있습니다"
 
 #, c-format
 msgid "Stack underflow on vlineto/vmoveto in %s\n"
 msgstr "글리프 %s 내의 vlineto/vmoveto 연산자가 스택 언더플로우를 넘어서 있습니다\n"
 
 #, c-format
-msgid "Stack underflow on vstem in %s\n"
-msgstr "글리프 %s 내의 vstem 연산자가 스택 언더플로우를 넘어서 있습니다\n"
+msgid "Stack underflow on vstem in %s"
+msgstr "글리프 %s 내의 vstem 연산자가 스택 언더플로우를 넘어서 있습니다"
 
 #, c-format
-msgid "Stack underflow on vstem3 in %s\n"
-msgstr "글리프 %s 내의 vstem3 연산자가 스택 언더플로우를 넘어서 있습니다\n"
+msgid "Stack underflow on vstem3 in %s"
+msgstr "글리프 %s 내의 vstem3 연산자가 스택 언더플로우를 넘어서 있습니다"
 
 msgid "StackBottomDisplayStyleShiftDown:"
 msgstr "스택 하단 디스플레이 스타일 아래로 이동:"
@@ -19219,8 +19219,8 @@ msgid "SubSuperscriptGapMin:"
 msgstr "위 첨자, 아래 첨자 간격 최소:"
 
 #, c-format
-msgid "Subroutine number out of bounds in %s\n"
-msgstr "글리프 %s 내에서, 서브루틴번호가 경계를 넘어서 있습니다\n"
+msgid "Subroutine number out of bounds in %s"
+msgstr "글리프 %s 내에서, 서브루틴번호가 경계를 넘어서 있습니다"
 
 msgid "Subscript"
 msgstr "아래첨자"
@@ -19548,8 +19548,8 @@ msgstr "표%c%c%c%c의 길이가 잘못되었다. 78,86 또는 96이어야 하�
 msgid "Table '%c%c%c%c' has a bad length, must be even."
 msgstr "표%c%c%c%c의 길이가 잘못되었다. 짝수여야 한다."
 
-msgid "Table length should not be odd\n"
-msgstr "테이블의 길이는 홀수이어야 합니다\n"
+msgid "Table length should not be odd"
+msgstr "테이블의 길이는 홀수이어야 합니다"
 
 #, c-format
 msgid "Table length stretches beyond end of file for '%c%c%c%c'."
@@ -20003,8 +20003,8 @@ msgid "The Y coordinate of the anchor point in this glyph"
 msgstr "이 그래프의 기준점의 Y 좌표"
 
 #, c-format
-msgid "The advance width of %s (%d) does not match the font's advanceWidthMax (%d) and this is a fixed pitch font\n"
-msgstr "%s (%d) 의 유효폭은 글꼴 advanceWidthMax (%d) 와 일치하지 않습니다. 이것은 고정 폭 글꼴입니다\n"
+msgid "The advance width of %s (%d) does not match the font's advanceWidthMax (%d) and this is a fixed pitch font"
+msgstr "%s (%d) 의 유효폭은 글꼴 advanceWidthMax (%d) 와 일치하지 않습니다. 이것은 고정 폭 글꼴입니다"
 
 msgid "The amount of space between words when using this font"
 msgstr "이 폰트를 사용했을 경우의 단어간 간격"
@@ -20378,8 +20378,8 @@ msgstr ""
 "다음 옵션은 그래프를 내보내는 방법에 영향을줍니다.\n"
 "대부분은 하나 이상의 형식에 고유합니다."
 
-msgid "The following table(s) in the font have been ignored by FontForge\n"
-msgstr "폰트에 있는 다음 테이블을 FontForge가 무시했습니다\n"
+msgid "The following table(s) in the font have been ignored by FontForge"
+msgstr "폰트에 있는 다음 테이블을 FontForge가 무시했습니다"
 
 #, c-format
 msgid "The font %.30s contains cubic splines. It must be converted to quadratic splines before it can be used in an apple distortable font"
@@ -20766,8 +20766,8 @@ msgstr ""
 msgid "The name, %.80s, has already been used to identify an anchor class in a different lookup subtable (%.80s)"
 msgstr "%.80s 이름은 이미 다른 lookup 하위 테이블(%.80s)에서 앵커 클래스를 식별하는 데 사용되었습니다."
 
-msgid "The names 'alefmaksurainitialarabic' and 'alefmaksuramedialarabic' in the Adobe Glyph List disagree with Unicode.  The use of these glyph names is therefore discouraged.\n"
-msgstr "Adobe Glyph List의 \"alefmaksurainitialarabic\"및 \"alefmaksuramedialarabic '라는 이름은 Unicode에 동의하지 않습니다. 따라서 이러한 그래프 이름의 사용은 권장되지 않습니다.\n"
+msgid "The names 'alefmaksurainitialarabic' and 'alefmaksuramedialarabic' in the Adobe Glyph List disagree with Unicode.  The use of these glyph names is therefore discouraged."
+msgstr "Adobe Glyph List의 \"alefmaksurainitialarabic\"및 \"alefmaksuramedialarabic '라는 이름은 Unicode에 동의하지 않습니다. 따라서 이러한 그래프 이름의 사용은 권장되지 않습니다."
 
 msgid "The number of em-units by which an arrow key will move a selected point"
 msgstr ""
@@ -21055,8 +21055,8 @@ msgstr ""
 " y(new) = tm[1,2]*x + tm[2,2]*y + tm[3,2]"
 
 #, c-format
-msgid "The truetype encoding specified by platform=%d specific=%d (which we map to %s) is not supported by your version of iconv(3).\n"
-msgstr "플랫폼 ID=%d, 고유ID=%d 로 지정된 TrueType 인코딩 (%s 에 변환됩니다) 은 설치된  iconv(3) 에서 지원하지 않습니다\n"
+msgid "The truetype encoding specified by platform=%d specific=%d (which we map to %s) is not supported by your version of iconv(3)."
+msgstr "플랫폼 ID=%d, 고유ID=%d 로 지정된 TrueType 인코딩 (%s 에 변환됩니다) 은 설치된  iconv(3) 에서 지원하지 않습니다"
 
 #, c-format
 msgid ""
@@ -21389,8 +21389,8 @@ msgid "This blank outline glyph has an unexpected bitmap version"
 msgstr "본 글리프는 아웃라인이 공백이며, 예상치 못한비트맵버전이 존재합니다."
 
 #, c-format
-msgid "This character (gid=%d) has a following part (%d). I'm not sure what that means, please send me (gww@silcom.com) a copy of this font so I can test with it.\n"
-msgstr "이 문자 (gid = %d)은 다음의 부분 (%d)가 있습니다. 무슨 뜻인지 모르겠습니다. 테스트 할 수 있도록이 글꼴의 사본을 내가 (gww@silcom.com)로 보내주세요.\n"
+msgid "This character (gid=%d) has a following part (%d). I'm not sure what that means, please send me (gww@silcom.com) a copy of this font so I can test with it."
+msgstr "이 문자 (gid = %d)은 다음의 부분 (%d)가 있습니다. 무슨 뜻인지 모르겠습니다. 테스트 할 수 있도록이 글꼴의 사본을 내가 (gww@silcom.com)로 보내주세요."
 
 msgid ""
 "This checks if the character almost, but not exactly,\n"
@@ -21470,8 +21470,8 @@ msgstr ""
 msgid "This file contains an unnamed encoding, which cannot be named in a script"
 msgstr "이 파일에서, 문자열은 이름을 붙일수 없는 이름없는 인코딩을 포함하고 있습니다."
 
-msgid "This file contains no SVG fonts.\n"
-msgstr "이 파일에서 SVG 폰트가 포함되어 있지 않습니다.\n"
+msgid "This file contains no SVG fonts."
+msgstr "이 파일에서 SVG 폰트가 포함되어 있지 않습니다."
 
 msgid "This font comes from an old format sfd file. Not all aspects of it can be reverted successfully."
 msgstr "이 폰트는 이전 형식의 sfd 파일에서 가져온 것입니다. 모든 부분을 성공적으로 복구할 수는 없습니다."
@@ -21489,15 +21489,15 @@ msgstr "이 글꼴은 디자인 크기 및 디자인 범위있는 \"크기\"기�
 msgid "This font contains at least one translucent layer, but type3 does not support that (anything translucent or transparent is treated as opaque). Do you want to proceed anyway?"
 msgstr "이 폰트에서 최소 1개의 반투명한 레이어가 포함되어 있습니다만,Type3에서 지원하지 않습니다(반투명 또는 투명한 부분은 불투명으로 처리됩니다). 그래도 계속하시겠습니까?"
 
-msgid "This font contains bitmaps in Apple's compressed format 4 (And I don't support that)\n"
-msgstr "이 글꼴은 Apple의 압축 4 비트 맵이 포함되어 있습니다 (나는 그것을 지원하지 않습니다)\n"
+msgid "This font contains bitmaps in Apple's compressed format 4 (And I don't support that)"
+msgstr "이 글꼴은 Apple의 압축 4 비트 맵이 포함되어 있습니다 (나는 그것을 지원하지 않습니다)"
 
 #, c-format
-msgid "This font contains bitmaps in a format %d that I've never heard of\n"
-msgstr "이 폰트는 내가 들어 본 적이없는 형식 %d 비트 맵이 포함되어 있습니다\n"
+msgid "This font contains bitmaps in a format %d that I've never heard of"
+msgstr "이 폰트는 내가 들어 본 적이없는 형식 %d 비트 맵이 포함되어 있습니다"
 
-msgid "This font contains bitmaps in the obsolete format 3 (And I can't read them)\n"
-msgstr "이 글꼴은 폐지 된 포맷 3의 비트 맵이 포함되어 있습니다 (그리고 나는 그들을 읽을 수 없습니다)\n"
+msgid "This font contains bitmaps in the obsolete format 3 (And I can't read them)"
+msgstr "이 글꼴은 폐지 된 포맷 3의 비트 맵이 포함되어 있습니다 (그리고 나는 그들을 읽을 수 없습니다)"
 
 msgid ""
 "This font contains both a 'BASE' table and a 'bsln' table.\n"
@@ -21566,11 +21566,11 @@ msgstr ""
 "이 폰트에서, 세로쓰기 메트릭이 이용가능상태가 아닙니다.\n"
 "요소(L)→폰트정보(F)를 이용해 가능하도록 설정해 주십시오."
 
-msgid "This font does not specify font-face\n"
-msgstr "이 폰트에서 font-face 의 지정이 없습니다\n"
+msgid "This font does not specify font-face"
+msgstr "이 폰트에서 font-face 의 지정이 없습니다"
 
-msgid "This font does not specify units-per-em\n"
-msgstr "이 폰트에서 em 유닛수의 지정이 없습니다\n"
+msgid "This font does not specify units-per-em"
+msgstr "이 폰트에서 em 유닛수의 지정이 없습니다"
 
 msgid "This font does not specify unitsPerEm, so we guess 1000."
 msgstr "이 글꼴은 unitPerEm을 지정하지 않았으므로 1000으로 예상한다."
@@ -22224,16 +22224,16 @@ msgid "Too Many Points"
 msgstr "너무 많은 점"
 
 #, c-format
-msgid "Too few items on stack for blend in %s\n"
-msgstr "글리프 %s 내에서, 스택 상에 놓여진 데이터의 개수가 blend 를 실행하기엔 적습니다\n"
+msgid "Too few items on stack for blend in %s"
+msgstr "글리프 %s 내에서, 스택 상에 놓여진 데이터의 개수가 blend 를 실행하기엔 적습니다"
 
 #, c-format
-msgid "Too few items on stack for get in %s\n"
-msgstr "글리프 %s 에서, 스택위의 요소의 개수가 get 를 실행하기에 적습니다\n"
+msgid "Too few items on stack for get in %s"
+msgstr "글리프 %s 에서, 스택위의 요소의 개수가 get 를 실행하기에 적습니다"
 
 #, c-format
-msgid "Too few items on stack for put in %s\n"
-msgstr "글리프 %s 에서, 스택위의 요소의 개수가 put를 실행하기엔 부족합니다\n"
+msgid "Too few items on stack for put in %s"
+msgstr "글리프 %s 에서, 스택위의 요소의 개수가 put를 실행하기엔 부족합니다"
 
 msgid "Too many Unique Font IDs"
 msgstr "유니크 폰트ID가 너무 많습니다"
@@ -22285,11 +22285,11 @@ msgid "Too many separation marks, starting at: %.20s..."
 msgstr "%.20s에서 시작하는 분리 마크가 너무 많다"
 
 #, c-format
-msgid "Too many subroutine calls in %s\n"
-msgstr "글리프 %s 내의 서브루틴 불러오기가 너무 많습니다\n"
+msgid "Too many subroutine calls in %s"
+msgstr "글리프 %s 내의 서브루틴 불러오기가 너무 많습니다"
 
-msgid "Too many subroutines. We can deal with at most 14 (0-13)\n"
-msgstr "서브루틴이 너무 많습니다. 최대14개(0〜13)까지만 취급가능합니다\n"
+msgid "Too many subroutines. We can deal with at most 14 (0-13)"
+msgstr "서브루틴이 너무 많습니다. 최대14개(0〜13)까지만 취급가능합니다"
 
 msgid "Tool_s"
 msgstr "도구(_s)"
@@ -22727,12 +22727,12 @@ msgstr "저장할 재실행 제한 실행 취소"
 msgid "Uneven Weighting"
 msgstr "불균형한 중량"
 
-msgid "Unexpected EOF in gf\n"
-msgstr "GF파일이 도중에 잘려있습니다\n"
+msgid "Unexpected EOF in gf"
+msgstr "GF파일이 도중에 잘려있습니다"
 
 #, c-format
-msgid "Unexpected PST type in GetPosSub (%d).\n"
-msgstr "GetPosSub (%d) 내에 예상치 못한 PST 형이 포함되어 있습니다.\n"
+msgid "Unexpected PST type in GetPosSub (%d)."
+msgstr "GetPosSub (%d) 내에 예상치 못한 PST 형이 포함되어 있습니다."
 
 msgid "Unexpected Variation Selector"
 msgstr "예기치 않은 변화 선택기"
@@ -22742,15 +22742,15 @@ msgid "Unexpected character (0x%02X) on line %d of %s"
 msgstr "%3$s의 %2$d 행에 예기치 않은 문자가 있다.(0x%1$02X)"
 
 #, c-format
-msgid "Unexpected charset format in cff: %d\n"
-msgstr "CFF에 예상치 못한 글자세트 포맷 %d가 사용되고 있습니다\n"
+msgid "Unexpected charset format in cff: %d"
+msgstr "CFF에 예상치 못한 글자세트 포맷 %d가 사용되고 있습니다"
 
 msgid "Unexpected density"
 msgstr "예상밖의 밀도 값"
 
 #, c-format
-msgid "Unexpected encoding format in cff: %d\n"
-msgstr "CFF에 예상치 못한 인코딩포맷 %d가 사용되고 있습니다\n"
+msgid "Unexpected encoding format in cff: %d"
+msgstr "CFF에 예상치 못한 인코딩포맷 %d가 사용되고 있습니다"
 
 msgid "Unexpected end of file found in morx chain."
 msgstr "morx 연쇄의 도중에 파일이 갑자기 잘려 있습니다"
@@ -22779,12 +22779,12 @@ msgid "Unexpected number"
 msgstr "예상치 못한 수"
 
 #, c-format
-msgid "Unexpected size for font info section of URW font (expected 12, got %d)\n"
-msgstr "URW폰트의 폰트정보선택이 예상밖의 값입니다(12곳 예상에 비해 %d로 되어 있습니다)\n"
+msgid "Unexpected size for font info section of URW font (expected 12, got %d)"
+msgstr "URW폰트의 폰트정보선택이 예상밖의 값입니다(12곳 예상에 비해 %d로 되어 있습니다)"
 
 #, c-format
-msgid "Unexpected size for name section of URW font (expected 55, got %d)\n"
-msgstr "URL폰트의 name선택이 예상밖의 크기 입니다(55곳 예상에 비해 %d로 되어 있습니다)\n"
+msgid "Unexpected size for name section of URW font (expected 55, got %d)"
+msgstr "URL폰트의 name선택이 예상밖의 크기 입니다(55곳 예상에 비해 %d로 되어 있습니다)"
 
 #, c-format
 msgid ""
@@ -22834,12 +22834,12 @@ msgstr ""
 "나타나지 않아야 하는 토큰이\n"
 "...%40s 이전에 나타났습니다."
 
-msgid "Unexpected use of bitmap format 5, no metrics are appearant\n"
-msgstr "비트 맵 형식 5의 예기치 않은 사용 통계는 표시되지 않습니다\n"
+msgid "Unexpected use of bitmap format 5, no metrics are appearant"
+msgstr "비트 맵 형식 5의 예기치 않은 사용 통계는 표시되지 않습니다"
 
 #, c-format
-msgid "Unexpected value in dictionary %d\n"
-msgstr "사전 %d에 올바르지 않은 값이 포함되어 있습니다\n"
+msgid "Unexpected value in dictionary %d"
+msgstr "사전 %d에 올바르지 않은 값이 포함되어 있습니다"
 
 #, c-format
 msgid ""
@@ -22915,16 +22915,16 @@ msgid "Uniform scaling for stems of any width and direction"
 msgstr "모든 폭과 방향의 줄기에 대한 균일한 확장/축소"
 
 #, c-format
-msgid "Uninterpreted code in gf: %d\n"
-msgstr "GF파일위치 %d 에 예상밖의 코드가 있습니다\n"
+msgid "Uninterpreted code in gf: %d"
+msgstr "GF파일위치 %d 에 예상밖의 코드가 있습니다"
 
 #, c-format
-msgid "Uninterpreted opcode %d in %s\n"
-msgstr "%2$s의 미 해석의 작동 코드 %1$d\n"
+msgid "Uninterpreted opcode %d in %s"
+msgstr "%2$s의 미 해석의 작동 코드 %1$d"
 
 #, c-format
-msgid "Uninterpreted opcode 12,%d in %s\n"
-msgstr "미 해석의 opcode를 12 %2$s %1$d\n"
+msgid "Uninterpreted opcode 12,%d in %s"
+msgstr "미 해석의 opcode를 12 %2$s %1$d"
 
 msgid "UniqueID"
 msgstr "고유ID"
@@ -22964,8 +22964,8 @@ msgstr "GSUB 서브 테이블타입 %d 은 알수없는 값입니다"
 msgid "Unknown Language"
 msgstr "알 수 없는 언어"
 
-msgid "Unknown character after backslash in literal string.\n"
-msgstr "문자열 literal 내에, 백슬래쉬 뒤에 불명확한 글자가 포함되어 있습니다.\n"
+msgid "Unknown character after backslash in literal string."
+msgstr "문자열 literal 내에, 백슬래쉬 뒤에 불명확한 글자가 포함되어 있습니다."
 
 #, c-format
 msgid "Unknown class table format: %d"
@@ -22990,8 +22990,8 @@ msgid "Unknown lookup: %s"
 msgstr "알 수 없는 색인 : %s"
 
 #, c-format
-msgid "Unknown operator in %s: %x\n"
-msgstr "%s에 알수없는 연산자 %x가 있습니다\n"
+msgid "Unknown operator in %s: %x"
+msgstr "%s에 알수없는 연산자 %x가 있습니다"
 
 #, c-format
 msgid "Unknown python type <%s> when reading UFO/GLIF lib data."
@@ -23001,16 +23001,16 @@ msgid "Unknown string type\n"
 msgstr "문자열형을 알수 없습니다\n"
 
 #, c-format
-msgid "Unknown subtable '%c%c%c%c' in 'PfEd' table, ignored\n"
-msgstr "'PfEd' 테이블에  '%c%c%c%c' 라는 알수없는 서브테이블이 있습니다. 무시합니다\n"
+msgid "Unknown subtable '%c%c%c%c' in 'PfEd' table, ignored"
+msgstr "'PfEd' 테이블에  '%c%c%c%c' 라는 알수없는 서브테이블이 있습니다. 무시합니다"
 
 #, c-format
-msgid "Unknown subtable '%c%c%c%c' in 'TeX ' table, ignored\n"
-msgstr "'TeX ' 테이블에  '%c%c%c%c' 라는 알수없는 서브테이블이 있습니다. 무시합니다\n"
+msgid "Unknown subtable '%c%c%c%c' in 'TeX ' table, ignored"
+msgstr "'TeX ' 테이블에  '%c%c%c%c' 라는 알수없는 서브테이블이 있습니다. 무시합니다"
 
 #, c-format
-msgid "Unknown type '%c' found in path specification\n"
-msgstr "경로지정 중에 알수없는 타입 '%c' 가 포함되어 있습니다\n"
+msgid "Unknown type '%c' found in path specification"
+msgstr "경로지정 중에 알수없는 타입 '%c' 가 포함되어 있습니다"
 
 msgid ""
 "Unlike most commands this one does not work directly on the\n"
@@ -23048,8 +23048,8 @@ msgstr ""
 "들어있다고 생각됩니다. 이 데이터의 분석은 중단합니다.\n"
 
 #, c-format
-msgid "Unlikely length for table, so I'm ignoring it. %u\n"
-msgstr "테이블의 길이로 보이지 않으므로, %u 를 무시합니다\n"
+msgid "Unlikely length for table, so I'm ignoring it. %u"
+msgstr "테이블의 길이로 보이지 않으므로, %u 를 무시합니다"
 
 msgid "Unlikely scale factor"
 msgstr "있음직하지 않은 척도 계수"
@@ -23089,7 +23089,7 @@ msgid "Unparseable include on line %d of %s"
 msgstr "%2$s의 %1$d 행에 구문 분석할 수 없는 포함이 있다."
 
 #, c-format
-msgid "Unparsed characters found after end of groups file (last line parsed was %d).\n"
+msgid "Unparsed characters found after end of groups file (last line parsed was %d)."
 msgstr ""
 "그룹파일의 말미보다도 나중에 해석되지않은 글자가 있습니다\n"
 "(해석한 마지막 행은 %d입니다).\n"
@@ -23127,8 +23127,8 @@ msgid "Unsupported image format must be bmp or png"
 msgstr "지원되지 않는 이미지 형식은 bmp 또는 png 여야합니다"
 
 #, c-format
-msgid "Unsupported mime type in data URI: %s\n"
-msgstr "데이터 URI에서 지원되지 않는 MIME 유형 : %s\n"
+msgid "Unsupported mime type in data URI: %s"
+msgstr "데이터 URI에서 지원되지 않는 MIME 유형 : %s"
 
 #, c-format
 msgid "Unterminated coverage table, starting at: %.20s..."
@@ -23234,11 +23234,11 @@ msgstr "루프 내에 없는 것에 \"exit\" 를 사용합니다\n"
 msgid "Use of \"stop\" when not in a stopped\n"
 msgstr "stopped 상태에 있지 않는 것에 \"stop\" 를 사용합니다\n"
 
-msgid "Use of a range offset of 0xffff to mean a missing glyph in cmap table\n"
-msgstr "cmap 테이블 중의 범위오프셋 0xffff 는 존재하지 않는 글리프를 나타냅니다\n"
+msgid "Use of a range offset of 0xffff to mean a missing glyph in cmap table"
+msgstr "cmap 테이블 중의 범위오프셋 0xffff 는 존재하지 않는 글리프를 나타냅니다"
 
-msgid "Use of obsolete blend operator.\n"
-msgstr "폐지된 blend 연산자를 사용합니다.\n"
+msgid "Use of obsolete blend operator."
+msgstr "폐지된 blend 연산자를 사용합니다."
 
 #, c-format
 msgid "Use of undefined glyph class, %s, on line %d of %s"
@@ -23299,8 +23299,8 @@ msgid ""
 msgstr "글꼴을 생성할 때 파일 이름의 기본 기준으로 사용하십시오."
 
 #, c-format
-msgid "Use-my-metrics flag set on at least two components in glyph %d\n"
-msgstr "문양 %d 적어도 2 개의 구성 요소 Use-my-metrics 플래그 세트\n"
+msgid "Use-my-metrics flag set on at least two components in glyph %d"
+msgstr "문양 %d 적어도 2 개의 구성 요소 Use-my-metrics 플래그 세트"
 
 msgid "UseCairoDrawing"
 msgstr "카이로 드로잉을 사용한다."
@@ -23382,8 +23382,8 @@ msgstr "값이 tfm 한도를 초과 함"
 msgid "Value out of bounds"
 msgstr "값이 범위를 벗어남"
 
-msgid "Value out of bounds in spline.\n"
-msgstr "스플라인 내에 범위 밖의 값이 포함되어 있습니다.\n"
+msgid "Value out of bounds in spline."
+msgstr "스플라인 내에 범위 밖의 값이 포함되어 있습니다."
 
 msgid "Value out of range"
 msgstr "범위 밖의 값입니다."
@@ -23649,12 +23649,12 @@ msgid "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]\n"
 msgstr "경고: %d 번째의 축의 값 (%g) 은 가능한 범위 [%g,%g] 의 밖에 있습니다\n"
 
 #, c-format
-msgid "Warning: %s has a different family name than does %s (GenerateFamily)\n"
-msgstr "경고: %s 의 패밀리명은 %s (GenerateFamily) 과 다릅니다\n"
+msgid "Warning: %s has a different family name than does %s (GenerateFamily)"
+msgstr "경고: %s 의 패밀리명은 %s (GenerateFamily) 과 다릅니다"
 
 #, c-format
-msgid "Warning: %s(%s) is both extended and condensed. That's impossible.\n"
-msgstr "경고: %s(%s) 는 확장 또는 압축입니다. 그것은 불가능합니다.\n"
+msgid "Warning: %s(%s) is both extended and condensed. That's impossible."
+msgstr "경고: %s(%s) 는 확장 또는 압축입니다. 그것은 불가능합니다."
 
 msgid ""
 "Warning: 'cvar' contains intermediate tuple data.\n"
@@ -23667,8 +23667,8 @@ msgstr ""
 msgid "Warning: Accuracy target %lf less than minimum %lf, using %lf instead\n"
 msgstr "경고: 정확도 목표 %lf는 최소 %lf 미만입니다. 대신 %lf를 사용합니다\n"
 
-msgid "Warning: Both extended and condensed. That's impossible.\n"
-msgstr "경고: 확장 또는 압축을 동시 지정하고 있습니다. 그것은 불가능합니다.\n"
+msgid "Warning: Both extended and condensed. That's impossible."
+msgstr "경고: 확장 또는 압축을 동시 지정하고 있습니다. 그것은 불가능합니다."
 
 msgid "Warning: Byte swapped font mark in palm font."
 msgstr "경고: Palm폰트의 폰트마크 바이트순서가 반전"
@@ -23676,19 +23676,19 @@ msgstr "경고: Palm폰트의 폰트마크 바이트순서가 반전"
 msgid "Warning: Can't identify contour direction, assuming clockwise\n"
 msgstr "경고 : 시계 방향을 가정하면 윤곽의 방향을 확인할 수 없습니다\n"
 
-msgid "Warning: Contour end did not close\n"
-msgstr "경고 : 등고선 엔드가 닫히지 않았습니다\n"
+msgid "Warning: Contour end did not close"
+msgstr "경고 : 등고선 엔드가 닫히지 않았습니다"
 
-msgid "Warning: Contour start did not close\n"
-msgstr "경고 : 등고선 시작이 닫 없습니다\n"
-
-#, c-format
-msgid "Warning: Coordinate diff %lf greater than margin %lf\n"
-msgstr "경고: 좌표 차이 %lf이 여백 %lf를 초과합니다\n"
+msgid "Warning: Contour start did not close"
+msgstr "경고 : 등고선 시작이 닫 없습니다"
 
 #, c-format
-msgid "Warning: Enabled Plugin '%s' was not discovered\n"
-msgstr "경고: 활성화된 플러그인 '%s'을(를) 찾을 수 없습니다.\n"
+msgid "Warning: Coordinate diff %lf greater than margin %lf"
+msgstr "경고: 좌표 차이 %lf이 여백 %lf를 초과합니다"
+
+#, c-format
+msgid "Warning: Enabled Plugin '%s' was not discovered"
+msgstr "경고: 활성화된 플러그인 '%s'을(를) 찾을 수 없습니다."
 
 #, c-format
 msgid ""
@@ -23712,8 +23712,8 @@ msgstr ""
 "경고: 글리프 %d 는 비공개 또는 중간 tuple데이터를 포함합니다.\n"
 "  FontForge는 어느쪽도 지원하지 않습니다.\n"
 
-msgid "Warning: Left contour did not close\n"
-msgstr "경고 : 왼쪽의 윤곽이 닫히지 않았습니다\n"
+msgid "Warning: Left contour did not close"
+msgstr "경고 : 왼쪽의 윤곽이 닫히지 않았습니다"
 
 #, c-format
 msgid ""
@@ -23754,26 +23754,26 @@ msgstr ""
 "Mac 문자열은 Windows 문자열의 서브세트입니다\n"
 
 #, c-format
-msgid "Warning: No characters selected in AddDHint(%d,%d %d,%d %d,%d)\n"
-msgstr "경고: AddDHint (%d,%d %d,%d %d,%d) 에서 문자가 선택되어 있지 않습니다\n"
+msgid "Warning: No characters selected in AddDHint(%d,%d %d,%d %d,%d)"
+msgstr "경고: AddDHint (%d,%d %d,%d %d,%d) 에서 문자가 선택되어 있지 않습니다"
 
 #, c-format
-msgid "Warning: No characters selected in AddHint(%d,%d,%d)\n"
-msgstr "경고: AddHint(%d,%d,%d) 로 글자가 선택되지 않았습니다\n"
+msgid "Warning: No characters selected in AddHint(%d,%d,%d)"
+msgstr "경고: AddHint(%d,%d,%d) 로 글자가 선택되지 않았습니다"
 
-msgid "Warning: No stroke output for contour\n"
-msgstr "경고 : 등고선의 선 출력은 없습니다\n"
+msgid "Warning: No stroke output for contour"
+msgstr "경고 : 등고선의 선 출력은 없습니다"
 
-msgid "Warning: Right contour did not close\n"
-msgstr "경고 : 오른쪽의 윤곽이 닫히지 않았습니다\n"
-
-#, c-format
-msgid "Warning: SplinePointListIsClockwise found no usable line even at %dx magnification.\n"
-msgstr "경고: SplinePointListIsClockwise는 %dx의 배율로도 사용 가능한 선을 찾을 수 없습니다.\n"
+msgid "Warning: Right contour did not close"
+msgstr "경고 : 오른쪽의 윤곽이 닫히지 않았습니다"
 
 #, c-format
-msgid "Warning: StdGlyphName returning name for value %d outside of Unicode range\n"
-msgstr "경고: 유니 코드 범위를 벗어난 값 %d의 이름을 반환하는 StdGlyphName\n"
+msgid "Warning: SplinePointListIsClockwise found no usable line even at %dx magnification."
+msgstr "경고: SplinePointListIsClockwise는 %dx의 배율로도 사용 가능한 선을 찾을 수 없습니다."
+
+#, c-format
+msgid "Warning: StdGlyphName returning name for value %d outside of Unicode range"
+msgstr "경고: 유니 코드 범위를 벗어난 값 %d의 이름을 반환하는 StdGlyphName"
 
 msgid ""
 "Warning: There are already some 'aalt' lookups in\n"
@@ -23820,29 +23820,29 @@ msgstr ""
 " 이것을 원하시던 건가요?"
 
 #, c-format
-msgid "Warning: Unable to parse token %s, some features may be lost\n"
-msgstr "경고: 토큰 %s 를 해석할 수 없습니다. 특성가 몇가지 손실되어 있습니다\n"
+msgid "Warning: Unable to parse token %s, some features may be lost"
+msgstr "경고: 토큰 %s 를 해석할 수 없습니다. 특성가 몇가지 손실되어 있습니다"
 
 #, c-format
 msgid "Warning: Unlikely number of subtables (%d) for 'kern' table"
 msgstr "경고: 'kern'테이블의 하위 테이블의 수 (%d) 가 없습니다"
 
-msgid "Warning: Unreasonably big splines. They will be ignored.\n"
-msgstr "경고: 이상하게 거대한 스플라인이 포함되어 있습니다. 이것을 무시합니다.\n"
+msgid "Warning: Unreasonably big splines. They will be ignored."
+msgstr "경고: 이상하게 거대한 스플라인이 포함되어 있습니다. 이것을 무시합니다."
 
-msgid "Warning: Unrecognized or unsupported cap type, defaulting to 'nib'.\n"
-msgstr "경고 : 인식 할 수 없거나 지원되지 않는 캡 타입입니다. 기본값은 \"nib\"입니다.\n"
+msgid "Warning: Unrecognized or unsupported cap type, defaulting to 'nib'."
+msgstr "경고 : 인식 할 수 없거나 지원되지 않는 캡 타입입니다. 기본값은 \"nib\"입니다."
 
-msgid "Warning: Unrecognized or unsupported join type, defaulting to 'nib'.\n"
-msgstr "경고 : 인식 할 수 없거나 지원되지 않는 조인 유형입니다. 기본값은 \"nib\"입니다.\n"
-
-#, c-format
-msgid "Warning: could not figure out where the hint (%d,%d %d,%d %d,%d) is valid\n"
-msgstr "경고: 팁 (%d,%d %d,%d %d,%d) 가 유효한 위치를 확인할 수 없습니다\n"
+msgid "Warning: Unrecognized or unsupported join type, defaulting to 'nib'."
+msgstr "경고 : 인식 할 수 없거나 지원되지 않는 조인 유형입니다. 기본값은 \"nib\"입니다."
 
 #, c-format
-msgid "Warning: gid %d larger than glyph_cnt %d, skipping\n"
-msgstr "경고: gid %d가 glyph_cnt %d보다 크기 때문에 생략합니다\n"
+msgid "Warning: could not figure out where the hint (%d,%d %d,%d %d,%d) is valid"
+msgstr "경고: 팁 (%d,%d %d,%d %d,%d) 가 유효한 위치를 확인할 수 없습니다"
+
+#, c-format
+msgid "Warning: gid %d larger than glyph_cnt %d, skipping"
+msgstr "경고: gid %d가 glyph_cnt %d보다 크기 때문에 생략합니다"
 
 msgid "Warnings"
 msgstr "경고"
@@ -23866,8 +23866,8 @@ msgstr "저장소 변화 확인"
 msgid "We cannot have lead-in points for an open curve."
 msgstr "열린 곡선에 도입 점을 설정할 수 없습니다."
 
-msgid "We don't understand this font\n"
-msgstr "이 폰트를 해석 할 수 없습니다\n"
+msgid "We don't understand this font"
+msgstr "이 폰트를 해석 할 수 없습니다"
 
 msgid "Weight, Width, Slope Only"
 msgstr "무게, 폭, 경사만"
@@ -24189,29 +24189,29 @@ msgstr ""
 "수식 사이에 공백이 있어야 한다\n"
 "적절한 줄 간격을 유지해라"
 
-msgid "Whoops, Ran out of spiros\n"
-msgstr "이런, 스피로스가 다 떨어졌습니다.\n"
+msgid "Whoops, Ran out of spiros"
+msgstr "이런, 스피로스가 다 떨어졌습니다."
 
-msgid "Whoops, attempt to name anchors in a subtable which doesn't contain any\n"
-msgstr "아무것도 포함되지 않은 서브 테이블에서 앵커에 이름을 붙여보세요\n"
-
-#, c-format
-msgid "Whoops, bad spiro command %d\n"
-msgstr "이런, 잘못된 스피로 명령 %d\n"
-
-msgid "Whoops, contours must begin with a move to\n"
-msgstr "이런, 윤곽은 '이동'으로 시작해야 한다.\n"
-
-msgid "Whoops, more names than lookups\n"
-msgstr "이런, lookup들보다 이름이 더 많습니다.\n"
+msgid "Whoops, attempt to name anchors in a subtable which doesn't contain any"
+msgstr "아무것도 포함되지 않은 서브 테이블에서 앵커에 이름을 붙여보세요"
 
 #, c-format
-msgid "Whoops, more names than subtables of lookup %s\n"
-msgstr "이런, lookup %s의 항위 테이블보다 더 많은 이름입니다.\n"
+msgid "Whoops, bad spiro command %d"
+msgstr "이런, 잘못된 스피로 명령 %d"
+
+msgid "Whoops, contours must begin with a move to"
+msgstr "이런, 윤곽은 '이동'으로 시작해야 한다."
+
+msgid "Whoops, more names than lookups"
+msgstr "이런, lookup들보다 이름이 더 많습니다."
 
 #, c-format
-msgid "Whoops, unexpected verb in contour %d.%d\n"
-msgstr "이런, 윤곽선에서 예기치 않은 명령이 발생했다. %d.%d\n"
+msgid "Whoops, more names than subtables of lookup %s"
+msgstr "이런, lookup %s의 항위 테이블보다 더 많은 이름입니다."
+
+#, c-format
+msgid "Whoops, unexpected verb in contour %d.%d"
+msgstr "이런, 윤곽선에서 예기치 않은 명령이 발생했다. %d.%d"
 
 msgid "Wide"
 msgstr "넓음"
@@ -26006,8 +26006,8 @@ msgstr "비트맵 위치 표 (OT 버전)"
 msgid "by"
 msgstr "비율:"
 
-msgid "can't create temporary file\n"
-msgstr "임시파일을 생성할 수 없습니다.\n"
+msgid "can't create temporary file"
+msgstr "임시파일을 생성할 수 없습니다."
 
 msgid "character code mapping table"
 msgstr "문자 코드 대응표"
@@ -26041,8 +26041,8 @@ msgstr "저작권표시"
 msgid "couldn't find the character %s"
 msgstr "%s 문자를 찾을 수 없음"
 
-msgid "couldn't write encodings file\n"
-msgstr "인코딩파일에 출력할수 없었습니다\n"
+msgid "couldn't write encodings file"
+msgstr "인코딩파일에 출력할수 없었습니다"
 
 msgid "coverage"
 msgstr "범위"
@@ -26089,8 +26089,8 @@ msgid "embedded bitmap scaling control table"
 msgstr "매입 비트 맵 스케일링 제어 테이블"
 
 #, c-format
-msgid "end of subroutine reached with no return in %s\n"
-msgstr "글리프 %s 에, return이 불려지지 않은채로 서브루틴이 끝나 있습니다\n"
+msgid "end of subroutine reached with no return in %s"
+msgstr "글리프 %s 에, return이 불려지지 않은채로 서브루틴이 끝나 있습니다"
 
 msgid "extended metamorphosis table"
 msgstr "확장된 변형 테이블"
@@ -26393,12 +26393,12 @@ msgid "properties table"
 msgstr "특성 표"
 
 #, c-format
-msgid "return when not in subroutine in %s\n"
-msgstr "글리프 %s 내에서, 서브루틴에 없는 것으로  return 하려고 합니다\n"
+msgid "return when not in subroutine in %s"
+msgstr "글리프 %s 내에서, 서브루틴에 없는 것으로  return 하려고 합니다"
 
 #, c-format
-msgid "roll out of range in %s\n"
-msgstr "글리프 %s 에서 범위밖의 영역을 roll out 합니다\n"
+msgid "roll out of range in %s"
+msgstr "글리프 %s 에서 범위밖의 영역을 roll out 합니다"
 
 msgid "romn"
 msgstr "루마니아"

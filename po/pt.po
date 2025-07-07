@@ -95,8 +95,8 @@ msgid "Auto Width"
 msgstr "Largura Automática"
 
 #, c-format
-msgid "AutoWidth failure on %s\n"
-msgstr "Falha de largura automática em %s\n"
+msgid "AutoWidth failure on %s"
+msgstr "Falha de largura automática em %s"
 
 msgid "Autotracing..."
 msgstr "Autotracing..."
@@ -205,8 +205,8 @@ msgid "Can't find the file"
 msgstr "Não foi possível encontrar o arquivo"
 
 #, c-format
-msgid "Can't open %s\n"
-msgstr "Não é possível abrir %s\n"
+msgid "Can't open %s"
+msgstr "Não é possível abrir %s"
 
 msgid "Can't run mf"
 msgstr "Não é possível executar programa mf"
@@ -652,8 +652,8 @@ msgstr "Nenhum glifo chamado %s."
 msgid "No kerning pairs found in %.200s"
 msgstr "Não pares de kerning encontrado em %.200s"
 
-msgid "No selection\n"
-msgstr "Sem seleção\n"
+msgid "No selection"
+msgstr "Sem seleção"
 
 msgid "Non-existant glyph"
 msgstr "Glifo não existe"

@@ -275,5 +275,5 @@ msgstr "ใ_ช้"
 msgid "_Yes"
 msgstr "ใ_ช่"
 
-msgid "couldn't write encodings file\n"
-msgstr "ไม่สามารถเขียนไฟล์รหัสอักขระ\n"
+msgid "couldn't write encodings file"
+msgstr "ไม่สามารถเขียนไฟล์รหัสอักขระ"
