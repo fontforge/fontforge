@@ -2390,7 +2390,7 @@ msgid "Bad image file: %.100s"
 msgstr "Tập tin ảnh sai : %.100s"
 
 #, c-format
-msgid "Bad kern pair: glyphs %d & %d must be less than %d\n"
+msgid "Bad kern pair: glyphs %d & %d must be less than %d"
 msgstr "Cặp định chỗ sai : hình tượng %d và %d phải < %d\n"
 
 #, c-format

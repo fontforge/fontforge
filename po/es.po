@@ -3195,7 +3195,7 @@ msgid "Bad image file: %.100s"
 msgstr "Archivo de imagen incorrecto: %.100s"
 
 #, c-format
-msgid "Bad kern pair: glyphs %d & %d must be less than %d\n"
+msgid "Bad kern pair: glyphs %d & %d must be less than %d"
 msgstr "Par de interletraje incorrecto: Los glifos %d y %d deben ser menores a %d\n"
 
 #, c-format

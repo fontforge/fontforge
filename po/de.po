@@ -2498,7 +2498,7 @@ msgid "Bad image file: %.100s"
 msgstr "Ungültige Bilddatei: %.100s"
 
 #, c-format
-msgid "Bad kern pair: glyphs %d & %d must be less than %d\n"
+msgid "Bad kern pair: glyphs %d & %d must be less than %d"
 msgstr "Ungültiges Unterschneidungpaar: Glyphen %d und %d müssen weniger sein %d\n"
 
 #, c-format

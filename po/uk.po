@@ -2840,7 +2840,7 @@ msgid "Bad image file: %.100s"
 msgstr "Помилковий файл зображення: %.100s"
 
 #, c-format
-msgid "Bad kern pair: glyphs %d & %d must be less than %d\n"
+msgid "Bad kern pair: glyphs %d & %d must be less than %d"
 msgstr "Помилкова пара кернінґу: гліфи %d і %d мають бути менші за %d\n"
 
 #, c-format

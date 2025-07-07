@@ -3063,7 +3063,7 @@ msgid "Bad image file: %.100s"
 msgstr "이미지파일 %.100s 은 부적절합니다."
 
 #, c-format
-msgid "Bad kern pair: glyphs %d & %d must be less than %d\n"
+msgid "Bad kern pair: glyphs %d & %d must be less than %d"
 msgstr "커닝 짝글리프 %d 과  %d 이 부적절합니다. %d미만이어야 합니다\n"
 
 #, c-format
@@ -3075,7 +3075,7 @@ msgid "Bad kern pair: glyphs %d & %d should have been < %d"
 msgstr "커닝 짝이 부적절합니다: 글리프 %d 과  %d 는 %d 미만이어야 합니다"
 
 #, c-format
-msgid "Bad kern pair: glyphs at %d & %d are null\n"
+msgid "Bad kern pair: glyphs at %d & %d are null"
 msgstr "커닝 쌍이 잘못되었습니다: %d 와 %d 의 그래프가 null입니다\n"
 
 msgid "Bad language tag"

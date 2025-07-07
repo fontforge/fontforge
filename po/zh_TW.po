@@ -2225,7 +2225,7 @@ msgid "Bad image file: %.100s"
 msgstr "不當的圖像檔案：%.100s"
 
 #, c-format
-msgid "Bad kern pair: glyphs %d & %d must be less than %d\n"
+msgid "Bad kern pair: glyphs %d & %d must be less than %d"
 msgstr "不當的字距微調對：字圖 %d & %d 必須少於 %d\n"
 
 #, c-format

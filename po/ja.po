@@ -1766,7 +1766,7 @@ msgid "Bad image file: %.100s"
 msgstr "画像ファイル %.100s は不正です."
 
 #, c-format
-msgid "Bad kern pair: glyphs %d & %d must be less than %d\n"
+msgid "Bad kern pair: glyphs %d & %d must be less than %d"
 msgstr "カーニングペアグリフ %d と %d が不正です. これらは %d未満でなければなりません\n"
 
 #, c-format

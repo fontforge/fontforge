@@ -3040,7 +3040,7 @@ msgid "Bad image file: %.100s"
 msgstr "Neispravna slikovna datoteka: %.100s"
 
 #, c-format
-msgid "Bad kern pair: glyphs %d & %d must be less than %d\n"
+msgid "Bad kern pair: glyphs %d & %d must be less than %d"
 msgstr "Neispravno podrezani par: grafem %d i %d mora biti manje od %d\n"
 
 #, c-format
@@ -3052,7 +3052,7 @@ msgid "Bad kern pair: glyphs %d & %d should have been < %d"
 msgstr "Neispravno podrezani par: grafem %d i %d trebalo je biti manje od %d"
 
 #, c-format
-msgid "Bad kern pair: glyphs at %d & %d are null\n"
+msgid "Bad kern pair: glyphs at %d & %d are null"
 msgstr "Neispravno podrezani par: grafem %d i %d su nula\n"
 
 msgid "Bad language tag"

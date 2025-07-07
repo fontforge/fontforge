@@ -3051,7 +3051,7 @@ msgid "Bad image file: %.100s"
 msgstr "错误的图像文件：%.100s"
 
 #, c-format
-msgid "Bad kern pair: glyphs %d & %d must be less than %d\n"
+msgid "Bad kern pair: glyphs %d & %d must be less than %d"
 msgstr "错误的字偶对：字形 %d 和 %d 必须小于 %d\n"
 
 #, c-format
