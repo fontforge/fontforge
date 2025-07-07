@@ -4914,17 +4914,17 @@ return;
 		offset = (short) getushort(ttf);
 		if ( left<0 || right<0 ) {
 		    /* We've seen such buggy fonts... */
-		    LogError( _("Bad kern pair: glyphs %d "Bad kern pair: glyphs %d & %d mustn't be negative\n" %d mustn't be negative"),
+		    LogError( _("Bad kern pair: glyphs %d & %d mustn't be negative"),
 			    left, right );
 		    info->bad_gx = true;
 		} else if ( left>=info->glyph_cnt || right>=info->glyph_cnt ) {
 		    /* Holes happen when reading ttc files. They are probably ok */
-		    LogError( _("Bad kern pair: glyphs %d "Bad kern pair: glyphs %d & %d must be less than %d\n" %d must be less than %d"),
+		    LogError( _("Bad kern pair: glyphs %d & %d must be less than %d"),
 			    left, right, info->glyph_cnt );
 		    info->bad_gx = true;
 		} else if (chars[left]==NULL || chars[right]==NULL ) {
                     /* Shouldn't happen. */
-		    LogError( _("Bad kern pair: glyphs at %d "Bad kern pair: glyphs at %d & %d are null\n" %d are null"),
+		    LogError( _("Bad kern pair: glyphs at %d & %d are null"),
 			    left, right);
 		    info->bad_gx = true;
 		} else {
