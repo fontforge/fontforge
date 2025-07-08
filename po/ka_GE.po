@@ -4064,7 +4064,7 @@ msgid "Number of star points/Polygon vertices"
 msgstr "ვარკვლავის წერტილების ან მრავალკუთხედის წვეროების რაოდენობა"
 
 #, c-format
-msgid "Number out of range: %g in type2 output (must be [-65536,65535])\n"
+msgid "Number out of range: %g in type2 output (must be [-65536,65535])"
 msgstr "რიცხვი გასცდა არეს: %g Type2-გამოტანისას (უნდა იყოს [-65536,65535])\n"
 
 msgid "Nushu"

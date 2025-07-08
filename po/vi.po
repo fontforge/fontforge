@@ -2128,7 +2128,7 @@ msgid "Bad Multiple Master Font"
 msgstr "Phông Multiple Master sai"
 
 #, c-format
-msgid "Bad Multiple/Alternate substitution glyph. GID %d not less than %d\n"
+msgid "Bad Multiple/Alternate substitution glyph. GID %d not less than %d"
 msgstr "Hình tượng thay thế Đa/Xen kẽ sai : GID %d không phải nhỏ hơn %d\n"
 
 msgid "Bad Name"
@@ -2242,7 +2242,7 @@ msgid "Bad class count in contextual chaining sub-table."
 msgstr "Số đếm hạng sai trong bảng phụ tạo dãy ngữ cảnh."
 
 #, c-format
-msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)\n"
+msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)"
 msgstr "Bảng xác định hạng sai : phạm vi hình tượng %d-%d ở ngoại phạm vi [0,%d)\n"
 
 #, c-format
@@ -2257,7 +2257,7 @@ msgid "Bad color on line %d, must be between 000000 and ffffff."
 msgstr "Màu sai trên đường %d, phải nằm giữa 000000 và ffffff."
 
 #, c-format
-msgid "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)\n"
+msgid "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)"
 msgstr "Bảng phụ sai kiểu ngữ cảnh hay tạo dãy. Hình tượng %d ở ngoại phạm vi [0,%d)\n"
 
 msgid "Bad correction"
@@ -2273,11 +2273,11 @@ msgid "Bad count."
 msgstr "Số đếm sai"
 
 #, c-format
-msgid "Bad coverage table. Glyph %d out of range [0,%d)\n"
+msgid "Bad coverage table. Glyph %d out of range [0,%d)"
 msgstr "Bảng bao quát sai : hình tượng %d ở ngoại phạm vi [0,%d)\n"
 
 #, c-format
-msgid "Bad coverage table. Glyph range %d-%d out of range [0,%d)\n"
+msgid "Bad coverage table. Glyph range %d-%d out of range [0,%d)"
 msgstr "Bảng bao quát sai : phạm vi hình tượng %d-%d ở ngoại phạm vi [0,%d)\n"
 
 msgid "Bad dash list"
@@ -2314,7 +2314,7 @@ msgid "Bad feature tag"
 msgstr "Thẻ tính năng sai"
 
 #, c-format
-msgid "Bad few values in /BlendDesignMap for axis %s.\n"
+msgid "Bad few values in /BlendDesignMap for axis %s."
 msgstr "Vài giá trị sai trong /BlendDesignMap (pha trộn sơ đồ thiết kế) đối với trục %s.\n"
 
 #, c-format
@@ -2416,7 +2416,7 @@ msgid "Bad ligature glyph. GID %d not less than %d"
 msgstr "Hình tượng chữ ghép sai : GID %d không phải nhỏ hơn %d"
 
 #, c-format
-msgid "Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
+msgid "Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d"
 msgstr ""
 "Bảng tra tìm sai:\n"
 " • định dạng=2 (%d/%d)\n"
@@ -2604,7 +2604,7 @@ msgstr ""
 "%s"
 
 #, c-format
-msgid "Bad value for blend in /BlendDesignMap for axis %s.\n"
+msgid "Bad value for blend in /BlendDesignMap for axis %s."
 msgstr "Giá trị sai đối với việc pha trộn trong /BlendDesignMap (pha trộn sơ đồ thiết kế) đối với trục %s.\n"
 
 msgid "Bad xfig file"
@@ -6839,7 +6839,7 @@ msgid "Glyph out of bounds in 'lcar' table %d"
 msgstr "Hình tượng ở ngoại phạm vi trong bảng 'lcar' %d"
 
 #, c-format
-msgid "Glyph out of bounds in 'mort'/'morx' table %d\n"
+msgid "Glyph out of bounds in 'mort'/'morx' table %d"
 msgstr "Hình tượng ở ngoại phạm vi trong bảng 'mort/morx' %d\n"
 
 #, c-format
@@ -7338,7 +7338,7 @@ msgstr "Bảng 'fvar' này có kích cỡ bất thường đối với thể hi�
 msgid "Hmm, this 'fvar' table has more axes than FontForge can handle."
 msgstr "Bảng 'fvar' này có số trục hơn số trình FontForge có khả năng xử lý."
 
-msgid "Hmm, this 'fvar' table has more count/size pairs than I expect\n"
+msgid "Hmm, this 'fvar' table has more count/size pairs than I expect"
 msgstr "Bảng 'fvar' này có số cặp đếm/kích cỡ lớn hơn số mong đợi\n"
 
 msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense."
@@ -7721,10 +7721,10 @@ msgstr "Bỏ qua chữ ghép"
 msgid "Ignore this problem in the future"
 msgstr "Bỏ qua vấn đề này về sau"
 
-msgid "Ignoring duplicate /CharStrings entry\n"
+msgid "Ignoring duplicate /CharStrings entry"
 msgstr "Đang bỏ qua mục nhập /CharStrings (chuỗi ký tự) trùng\n"
 
-msgid "Ignoring duplicate /Subrs entry\n"
+msgid "Ignoring duplicate /Subrs entry"
 msgstr "Đang bỏ qua mục nhập /Subrs trùng\n"
 
 msgid "Ilokano"
@@ -10820,7 +10820,7 @@ msgstr "Tình trạng kế:"
 msgid "Next _Defined Glyph"
 msgstr "Hình tượng _xác định kế"
 
-msgid "Nifty, you've got one of the old Apple/Adobe type1 sfnts here\n"
+msgid "Nifty, you've got one of the old Apple/Adobe type1 sfnts here"
 msgstr "Ồ, bạn có một của các phông sfnt kiểu 1 Apple/Adobe cũ\n"
 
 msgid "Nisi"
@@ -11400,7 +11400,7 @@ msgid "Number out of range"
 msgstr "Con số ở ngoại phạm vi"
 
 #, c-format
-msgid "Number out of range: %g in type2 output (must be [-65536,65535])\n"
+msgid "Number out of range: %g in type2 output (must be [-65536,65535])"
 msgstr "Con số ở ngoại phạm vi : %g trong kết xuất kiểu 2 (phải là [-65536,65535])\n"
 
 #, c-format
@@ -15414,7 +15414,7 @@ msgid "Stack underflow on ifelse in %s"
 msgstr "Trán ngược đống trên 'ifelse' (nếu ... nếu không) trong %s"
 
 #, c-format
-msgid "Stack underflow on rlineto/rmoveto in %s\n"
+msgid "Stack underflow on rlineto/rmoveto in %s"
 msgstr "Trán ngược đống trên rlineto/rmoveto (đường/chuyển bên phải tới) trong %s\n"
 
 #, c-format
@@ -15442,7 +15442,7 @@ msgid "Stack underflow on vhcurveto in %s"
 msgstr "Trán ngược đống trên hàm vhcurveto trong %s"
 
 #, c-format
-msgid "Stack underflow on vlineto/vmoveto in %s\n"
+msgid "Stack underflow on vlineto/vmoveto in %s"
 msgstr "Trán ngược đống trên vlineto/vmoveto (đường/chuyển dọc tới) trong %s\n"
 
 #, c-format
@@ -15840,7 +15840,7 @@ msgid "Subscripts/Superscripts"
 msgstr "Chữ in cao/thấp"
 
 #, c-format
-msgid "Substitute glyph out of bounds in 'mort'/'morx' table %d\n"
+msgid "Substitute Glyph out of bounds in 'mort'/'morx' table %d"
 msgstr "Hình tượng thay thế ở ngoại phạm vi trong bảng 'mort/morx' %d\n"
 
 msgid "Substitution generates itself"
@@ -18366,7 +18366,7 @@ msgstr "Trên đống có quá ít mục đối với hàm put (để) trong %s"
 msgid "Too many Unique Font IDs"
 msgstr "Quá nhiều Mã số Phông Duy nhất"
 
-msgid "Too many axis positions specified in /BlendDesignPositions.\n"
+msgid "Too many axis positions specified in /BlendDesignPositions."
 msgstr "Quá nhiều vị trí trục được xác định trong /BlendDesignPositions (pha trộn các vị trí thiết kế).\n"
 
 #, c-format
@@ -18401,7 +18401,7 @@ msgid "Too many lookups %d"
 msgstr "Quá nhiều sự tra tìm %d"
 
 #, c-format
-msgid "Too many mapping data points specified in /BlendDesignMap for axis %s.\n"
+msgid "Too many mapping data points specified in /BlendDesignMap for axis %s."
 msgstr "Quá nhiều điểm ánh xạ dữ liệu được xác định trong /BlendDesignMap (pha trộn sơ đồ thiết kế) đối với trục %s.\n"
 
 #, c-format
@@ -19211,12 +19211,12 @@ msgstr "Dùng đồ thứ _hai"
 #. GT: as it is a PostScript keyword. (FF contains a small PostScript interpreter
 #. GT: so it can understand some PostScript fonts, and can generate errors when
 #. GT: handed bad PostScript).
-msgid "Use of \"exit\" when not in a loop\n"
+msgid "Use of \"exit\" when not in a loop"
 msgstr "Dùng « exit » khi không phải trong vòng lặp\n"
 
 #. GT: This is part of the PostScript language. Neither "stop" nor "stopped"
 #. GT: should be translated as both are PostScript keywords.
-msgid "Use of \"stop\" when not in a stopped\n"
+msgid "Use of \"stop\" when not in a stopped"
 msgstr "Dùng « stop » khi không phải trong một « stopped ».\n"
 
 msgid "Use of a range offset of 0xffff to mean a missing glyph in cmap table"
@@ -19548,7 +19548,7 @@ msgid "Warning"
 msgstr "Cảnh báo"
 
 #, c-format
-msgid "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]\n"
+msgid "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]"
 msgstr "Cảnh báo : giá trị trục thứ %d (%g) nằm ở ngoại phạm vi hợp lệ [%g,%g]\n"
 
 #, c-format

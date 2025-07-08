@@ -2401,7 +2401,7 @@ msgid "Bad contents.plist"
 msgstr "Ungültige contents.plist"
 
 #, c-format
-msgid "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)\n"
+msgid "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)"
 msgstr "Ungütlige Tabelle der kontextuellen oder Ketten-Substitution. Glyphe %d ausserhalb des Bereichs [0,%d)\n"
 
 msgid "Bad correction"
@@ -2417,11 +2417,11 @@ msgid "Bad count."
 msgstr "Ungültige Anzahl."
 
 #, c-format
-msgid "Bad coverage table. Glyph %d out of range [0,%d)\n"
+msgid "Bad coverage table. Glyph %d out of range [0,%d)"
 msgstr "Ungütlige Abdeckungstabelle. Glyphe %d ausserhalb des Bereichs [0,%d)\n"
 
 #, c-format
-msgid "Bad coverage table. Glyph range %d-%d out of range [0,%d)\n"
+msgid "Bad coverage table. Glyph range %d-%d out of range [0,%d)"
 msgstr "Ungütlige Abdeckungstabelle. Glyphenbereich %d – %d ausserhalb des Bereichs [0,%d)\n"
 
 msgid "Bad dash list"
@@ -6681,7 +6681,7 @@ msgid "Glyph out of bounds in 'lcar' table %d"
 msgstr "Glyphe außerhlab der Grenzen in 'lcar' Tabelle %d"
 
 #, c-format
-msgid "Glyph out of bounds in 'mort'/'morx' table %d\n"
+msgid "Glyph out of bounds in 'mort'/'morx' table %d"
 msgstr "Glyphe außerhlab der Grenzen in 'mort'/'morx' Tabelle %d\n"
 
 #, c-format
@@ -7127,7 +7127,7 @@ msgstr "Hmm, diese 'fvar' Tabelle hat eine unerwartete Größe für eine Instanz
 msgid "Hmm, this 'fvar' table has more axes than FontForge can handle."
 msgstr "Hmm, diese 'fvar' Tabelle hat mehr Achsen als FontForge verarbeiten kann."
 
-msgid "Hmm, this 'fvar' table has more count/size pairs than I expect\n"
+msgid "Hmm, this 'fvar' table has more count/size pairs than I expect"
 msgstr "Hmm, diese 'fvar' Tabelle enthällt mehr Paare für Anzahl/Größe als erwartet\n"
 
 msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense."
@@ -10328,7 +10328,7 @@ msgid "Number out of range"
 msgstr "Zahl außerhalb des Bereichs"
 
 #, c-format
-msgid "Number out of range: %g in type2 output (must be [-65536,65535])\n"
+msgid "Number out of range: %g in type2 output (must be [-65536,65535])"
 msgstr "Zahl außerhalb des Bereichs: %g bei Type2-Ausgabe (muss sein [-65536,65535])\n"
 
 #, c-format
@@ -14431,7 +14431,7 @@ msgid "Subscripts/Superscripts"
 msgstr "Tief-/Hochgestellte Zeichen"
 
 #, c-format
-msgid "Substitute glyph out of bounds in 'mort'/'morx' table %d\n"
+msgid "Substitute Glyph out of bounds in 'mort'/'morx' table %d"
 msgstr "Substitutions-Glyphe außerhlab der Grenzen in 'mort'/'morx' Tabelle %d\n"
 
 msgid "Substitution generates itself"
@@ -16420,7 +16420,7 @@ msgid "Too many lookups %d"
 msgstr "Zu viele Nachschlagetabellen %d"
 
 #, c-format
-msgid "Too many mapping data points specified in /BlendDesignMap for axis %s.\n"
+msgid "Too many mapping data points specified in /BlendDesignMap for axis %s."
 msgstr "Zu viele Zuordnungs-Datenpunkte angegeben, in /BlendDesignMap für Achsen %s.\n"
 
 #, c-format
@@ -17520,7 +17520,7 @@ msgid "Warning"
 msgstr "Warnung"
 
 #, c-format
-msgid "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]\n"
+msgid "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]"
 msgstr "Warnung: %d. Achsenwert (%g) ist außerhalb des erlaubten Bereichs [%g,%g]\n"
 
 #, c-format

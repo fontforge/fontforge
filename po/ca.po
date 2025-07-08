@@ -7740,7 +7740,7 @@ msgstr "Punt següent del contorn"
 msgid "Next _Defined Glyph"
 msgstr "Glif definit s_egüent"
 
-msgid "Nifty, you've got one of the old Apple/Adobe type1 sfnts here\n"
+msgid "Nifty, you've got one of the old Apple/Adobe type1 sfnts here"
 msgstr "Aquest és una font de tipus 1 antic d'Apple o d'Adobe\n"
 
 #, c-format

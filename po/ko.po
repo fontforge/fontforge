@@ -492,23 +492,23 @@ msgid "%s subtable %d"
 msgstr "%s 하위 테이블 %d"
 
 #, c-format
-msgid "%s's SEAC operator is invalid for Type2\n"
+msgid "%s's SEAC operator is invalid for Type2"
 msgstr "%s의 SEAC 연산자는 Type2에 유효하지 않습니다\n"
 
 #, c-format
-msgid "%s's SEAC-like endchar operator is deprecated for Type2\n"
+msgid "%s's SEAC-like endchar operator is deprecated for Type2"
 msgstr "%s의 SEAC 같은 endchar 연산자는 Type2에서 비추천되었습니다\n"
 
 #, c-format
-msgid "%s's dotsection operator is deprecated for Type2\n"
+msgid "%s's dotsection operator is deprecated for Type2"
 msgstr "%s의 도트 섹션 연산자는 Type2는 비추천입니다\n"
 
 #, c-format
-msgid "%s's sbw operator is not supported for Type2\n"
+msgid "%s's sbw operator is not supported for Type2"
 msgstr "%s의 sbw 연산자는 Type2에서는 지원되지 않습니다\n"
 
 #, c-format
-msgid "%s's vstem3 operator is not supported for Type2\n"
+msgid "%s's vstem3 operator is not supported for Type2"
 msgstr "%s의 vstem3 연산자는 Type2에서는 지원되지 않습니다\n"
 
 #, c-format
@@ -2754,7 +2754,7 @@ msgid "Bad Multiple Master Font"
 msgstr "다중 마스터폰트가 부적절합니다"
 
 #, c-format
-msgid "Bad Multiple/Alternate substitution glyph. GID %d not less than %d\n"
+msgid "Bad Multiple/Alternate substitution glyph. GID %d not less than %d"
 msgstr "복수/선택가능 변경할 글리프이 부적절합니다. GID %d が가%d 미만이 아닙니다\n"
 
 msgid "Bad Name"
@@ -2887,7 +2887,7 @@ msgid "Bad class count in contextual chaining sub-table."
 msgstr "문맥연쇄서브테이블 내의 클래스번호"
 
 #, c-format
-msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)\n"
+msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)"
 msgstr "클래스정의테이블이 부적절합니다. 글리프범위 %d-%d 가 범위 [0,%d) 를 넘어서 있습니다\n"
 
 #, c-format
@@ -2908,7 +2908,7 @@ msgid "Bad contents.plist"
 msgstr "잘못된 contents.plist 파일"
 
 #, c-format
-msgid "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)\n"
+msgid "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)"
 msgstr "문맥의존/문맥연쇄의존 서브테이블이 부적절합니다. 글리프 %d 가 범위 [0,%d) 를 넘어섭니다\n"
 
 msgid "Bad correction"
@@ -2924,11 +2924,11 @@ msgid "Bad count."
 msgstr "개수가 올바르지 않습니다."
 
 #, c-format
-msgid "Bad coverage table. Glyph %d out of range [0,%d)\n"
+msgid "Bad coverage table. Glyph %d out of range [0,%d)"
 msgstr "범위테이블이 부적절합니다. 글리프 %d 가 [0,%d) 의 범위 밖입니다\n"
 
 #, c-format
-msgid "Bad coverage table. Glyph range %d-%d out of range [0,%d)\n"
+msgid "Bad coverage table. Glyph range %d-%d out of range [0,%d)"
 msgstr "범위테이블이 부적절합니다. 글리프범위 %d-%d 가 [0,%d) 의 범위 밖입니다\n"
 
 msgid "Bad dash list"
@@ -2974,7 +2974,7 @@ msgid "Bad feature tag"
 msgstr "잘못된 특성 태그"
 
 #, c-format
-msgid "Bad few values in /BlendDesignMap for axis %s.\n"
+msgid "Bad few values in /BlendDesignMap for axis %s."
 msgstr "축 %s 의 /BlendDesingmap 의 값이 너무 적어 올바르지 않습니다.\n"
 
 #, c-format
@@ -3096,7 +3096,7 @@ msgid "Bad ligature glyph. GID %d not less than %d"
 msgstr "합음자글리프가 부적절합니다. GID %d가 %d 미만이 아닙니다"
 
 #, c-format
-msgid "Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
+msgid "Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d"
 msgstr "포맷 2 (%d/%d) 의 참조테이블이 손상되어 있습니다.최초=%d 마지막=%d 폰트내의 모든 글리프수=%d\n"
 
 #, c-format
@@ -3287,7 +3287,7 @@ msgstr ""
 "%s"
 
 #, c-format
-msgid "Bad value for blend in /BlendDesignMap for axis %s.\n"
+msgid "Bad value for blend in /BlendDesignMap for axis %s."
 msgstr "축 %s의 /BlendDesignMap 내의 값이 올바르지 않습니다.\n"
 
 msgid "Bad xfig file"
@@ -8627,7 +8627,7 @@ msgid "Glyph out of bounds in 'lcar' table %d"
 msgstr "'lcar' 테이블 %d 의 경계를 넘어서는 글리프가 있습니다"
 
 #, c-format
-msgid "Glyph out of bounds in 'mort'/'morx' table %d\n"
+msgid "Glyph out of bounds in 'mort'/'morx' table %d"
 msgstr "'mort'/'morx' 테이블 %d 의 경계를 넘어서는 글리프가 있습니다\n"
 
 #, c-format
@@ -9218,7 +9218,7 @@ msgstr "흠, 이  'fvar' 테이블에 포함되는 인스턴스의 크기가 예
 msgid "Hmm, this 'fvar' table has more axes than FontForge can handle."
 msgstr "흠, 이  'fvar' 테이블에서 FontForge가 취급가능한 경계보다 더 많은디자인 축이포함되어 있습니다."
 
-msgid "Hmm, this 'fvar' table has more count/size pairs than I expect\n"
+msgid "Hmm, this 'fvar' table has more count/size pairs than I expect"
 msgstr "흠, 이  'fvar' 테이블은 예상한것보다 많은 개수/크기 짝이 포함되어 있습니다\n"
 
 msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense."
@@ -9715,10 +9715,10 @@ msgstr "합음자를 무시"
 msgid "Ignore this problem in the future"
 msgstr "이 문제는 이후에 무시"
 
-msgid "Ignoring duplicate /CharStrings entry\n"
+msgid "Ignoring duplicate /CharStrings entry"
 msgstr "/CharStrings의 중복되는 항목을 무시합니다\n"
 
-msgid "Ignoring duplicate /Subrs entry\n"
+msgid "Ignoring duplicate /Subrs entry"
 msgstr "/Subrs의 중복되는 항목을 무시합니다\n"
 
 msgid "Ilokano"
@@ -13357,7 +13357,7 @@ msgstr "펜촉 종류:"
 msgid "Nib shape not valid"
 msgstr "펜촉 모양이 잘못되었습니다."
 
-msgid "Nifty, you've got one of the old Apple/Adobe type1 sfnts here\n"
+msgid "Nifty, you've got one of the old Apple/Adobe type1 sfnts here"
 msgstr "재치있는 당신은 여기에 오래된 Apple / Adobe type1 sfnt 중 하나를 가지고 있습니다\n"
 
 msgid "Nisi"
@@ -14045,7 +14045,7 @@ msgid "Number out of range"
 msgstr "번호가 범위를 벗어남"
 
 #, c-format
-msgid "Number out of range: %g in type2 output (must be [-65536,65535])\n"
+msgid "Number out of range: %g in type2 output (must be [-65536,65535])"
 msgstr "수치가 범위 밖 입니다: Type2 출력에  %g 가 포함되어 있습니다 ([-65536,65535] 의 범위 내 이어야 합니다)\n"
 
 #, c-format
@@ -18796,7 +18796,7 @@ msgid "Stack underflow on ifelse in %s"
 msgstr "글리프 %s 내의 ifelse 연산자가 스택 언더플로우를 넘어서 있습니다"
 
 #, c-format
-msgid "Stack underflow on rlineto/rmoveto in %s\n"
+msgid "Stack underflow on rlineto/rmoveto in %s"
 msgstr "글리프 %s 내의 hlineto/rmoveto 연산자가 스택 언더플로우를 넘어서 있습니다\n"
 
 #, c-format
@@ -18824,7 +18824,7 @@ msgid "Stack underflow on vhcurveto in %s"
 msgstr "글리프 %s 내의 vhcurveto 연산자가 스택 언더플로우를 넘어서 있습니다"
 
 #, c-format
-msgid "Stack underflow on vlineto/vmoveto in %s\n"
+msgid "Stack underflow on vlineto/vmoveto in %s"
 msgstr "글리프 %s 내의 vlineto/vmoveto 연산자가 스택 언더플로우를 넘어서 있습니다\n"
 
 #, c-format
@@ -19233,7 +19233,7 @@ msgid "Subscripts/Superscripts"
 msgstr "아래 첨자 / 위 첨자"
 
 #, c-format
-msgid "Substitute glyph out of bounds in 'mort'/'morx' table %d\n"
+msgid "Substitute Glyph out of bounds in 'mort'/'morx' table %d"
 msgstr "'mort'/'morx' 테이블 %d 의 경계를 넘어서는 치환대상의 글리프가 있습니다\n"
 
 msgid "Substitution generates itself"
@@ -22227,7 +22227,7 @@ msgstr "글리프 %s 에서, 스택위의 요소의 개수가 put를 실행하�
 msgid "Too many Unique Font IDs"
 msgstr "유니크 폰트ID가 너무 많습니다"
 
-msgid "Too many axis positions specified in /BlendDesignPositions.\n"
+msgid "Too many axis positions specified in /BlendDesignPositions."
 msgstr "/BlendDesignPositions에서 지정된 축의 위치가 너무 많습니다.\n"
 
 #, c-format
@@ -22262,7 +22262,7 @@ msgid "Too many lookups %d"
 msgstr "룩업이 너무 많습니다 (%d 個)"
 
 #, c-format
-msgid "Too many mapping data points specified in /BlendDesignMap for axis %s.\n"
+msgid "Too many mapping data points specified in /BlendDesignMap for axis %s."
 msgstr "축 %s 의 /BlendDesignMap에서 지정된 화상데이터의 점이 너무 많습니다.\n"
 
 #, c-format
@@ -23215,12 +23215,12 @@ msgstr "정보가 손실될 수 있는 경우에도 기능 파일 대신 기본 
 #. GT: as it is a PostScript keyword. (FF contains a small PostScript interpreter
 #. GT: so it can understand some PostScript fonts, and can generate errors when
 #. GT: handed bad PostScript).
-msgid "Use of \"exit\" when not in a loop\n"
+msgid "Use of \"exit\" when not in a loop"
 msgstr "루프 내에 없는 것에 \"exit\" 를 사용합니다\n"
 
 #. GT: This is part of the PostScript language. Neither "stop" nor "stopped"
 #. GT: should be translated as both are PostScript keywords.
-msgid "Use of \"stop\" when not in a stopped\n"
+msgid "Use of \"stop\" when not in a stopped"
 msgstr "stopped 상태에 있지 않는 것에 \"stop\" 를 사용합니다\n"
 
 msgid "Use of a range offset of 0xffff to mean a missing glyph in cmap table"
@@ -23634,7 +23634,7 @@ msgid "Warning"
 msgstr "경고"
 
 #, c-format
-msgid "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]\n"
+msgid "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]"
 msgstr "경고: %d 번째의 축의 값 (%g) 은 가능한 범위 [%g,%g] 의 밖에 있습니다\n"
 
 #, c-format

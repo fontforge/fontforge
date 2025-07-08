@@ -484,23 +484,23 @@ msgid "%s subtable %d"
 msgstr "%s替代表%d"
 
 #, c-format
-msgid "%s's SEAC operator is invalid for Type2\n"
+msgid "%s's SEAC operator is invalid for Type2"
 msgstr "%s 的 SEAC 运算符对于 Type2 无效\n"
 
 #, c-format
-msgid "%s's SEAC-like endchar operator is deprecated for Type2\n"
+msgid "%s's SEAC-like endchar operator is deprecated for Type2"
 msgstr "%s 的类 SEAC endchar 运算符对于 Type2 已弃用\n"
 
 #, c-format
-msgid "%s's dotsection operator is deprecated for Type2\n"
+msgid "%s's dotsection operator is deprecated for Type2"
 msgstr "%s 的点切运算符对于 Type2 已弃用"
 
 #, c-format
-msgid "%s's sbw operator is not supported for Type2\n"
+msgid "%s's sbw operator is not supported for Type2"
 msgstr "%s 的 sbw 运算符不支持 Type2\n"
 
 #, c-format
-msgid "%s's vstem3 operator is not supported for Type2\n"
+msgid "%s's vstem3 operator is not supported for Type2"
 msgstr "%s 的 vstem3 运算符不支持 Type2\n"
 
 #, c-format
@@ -2742,7 +2742,7 @@ msgid "Bad Multiple Master Font"
 msgstr "错误的多主字体"
 
 #, c-format
-msgid "Bad Multiple/Alternate substitution glyph. GID %d not less than %d\n"
+msgid "Bad Multiple/Alternate substitution glyph. GID %d not less than %d"
 msgstr "错误的多重/替代替换字形。GID %d 不应小于 %d\n"
 
 msgid "Bad Name"
@@ -2875,7 +2875,7 @@ msgid "Bad class count in contextual chaining sub-table."
 msgstr "上下文链式子表中的类别计数错误。"
 
 #, c-format
-msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)\n"
+msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)"
 msgstr "错误的类定义表。字形范围 %d-%d 超出范围 [0,%d)\n"
 
 #, c-format
@@ -2896,7 +2896,7 @@ msgid "Bad contents.plist"
 msgstr "错误的 contents.plist"
 
 #, c-format
-msgid "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)\n"
+msgid "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)"
 msgstr "上下文或链式子表错误。字形 %d 超出范围 [0,%d)"
 
 msgid "Bad correction"
@@ -2912,11 +2912,11 @@ msgid "Bad count."
 msgstr "错误计数。"
 
 #, c-format
-msgid "Bad coverage table. Glyph %d out of range [0,%d)\n"
+msgid "Bad coverage table. Glyph %d out of range [0,%d)"
 msgstr "覆盖表错误。字形 %d 超出范围 [0,%d)"
 
 #, c-format
-msgid "Bad coverage table. Glyph range %d-%d out of range [0,%d)\n"
+msgid "Bad coverage table. Glyph range %d-%d out of range [0,%d)"
 msgstr "覆盖表错误。字形范围 %d-%d 超出范围 [0,%d)"
 
 msgid "Bad dash list"
@@ -2962,7 +2962,7 @@ msgid "Bad feature tag"
 msgstr "不良特征标签"
 
 #, c-format
-msgid "Bad few values in /BlendDesignMap for axis %s.\n"
+msgid "Bad few values in /BlendDesignMap for axis %s."
 msgstr "/BlendDesignMap 中轴 %s 的几个值错误。"
 
 #, c-format
@@ -3084,7 +3084,7 @@ msgid "Bad ligature glyph. GID %d not less than %d"
 msgstr "错误的连字字形。GID %d 不小于 %d"
 
 #, c-format
-msgid "Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
+msgid "Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d"
 msgstr "错误的查找表：format=2 (%d/%d)，first=%d last=%d 字体中的总字形=%d\n"
 
 #, c-format
@@ -3279,7 +3279,7 @@ msgstr ""
 "%s"
 
 #, c-format
-msgid "Bad value for blend in /BlendDesignMap for axis %s.\n"
+msgid "Bad value for blend in /BlendDesignMap for axis %s."
 msgstr "/BlendDesignMap 中轴 %s 的混合值错误。"
 
 msgid "Bad xfig file"
@@ -8695,7 +8695,7 @@ msgid "Glyph out of bounds in 'lcar' table %d"
 msgstr "'lcar' 表 %d 中字形超出边界"
 
 #, c-format
-msgid "Glyph out of bounds in 'mort'/'morx' table %d\n"
+msgid "Glyph out of bounds in 'mort'/'morx' table %d"
 msgstr "'mort'/'morx' 表 %d 中字形超出边界\n"
 
 #, c-format
@@ -9281,7 +9281,7 @@ msgstr "嗯，这个“fvar”表的实例大小不符合预期，我无法解�
 msgid "Hmm, this 'fvar' table has more axes than FontForge can handle."
 msgstr "呃，此“fvar”表的轴数量超出了 FontForge 的处理能力。"
 
-msgid "Hmm, this 'fvar' table has more count/size pairs than I expect\n"
+msgid "Hmm, this 'fvar' table has more count/size pairs than I expect"
 msgstr "嗯，这个“fvar”表的数量/大小对比我预期的要多\n"
 
 msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense."
@@ -9738,10 +9738,10 @@ msgstr "忽略无效替换"
 msgid "Ignore this problem in the future"
 msgstr "I以后忽略此问题"
 
-msgid "Ignoring duplicate /CharStrings entry\n"
+msgid "Ignoring duplicate /CharStrings entry"
 msgstr "忽略重复的 /字符字串项\n"
 
-msgid "Ignoring duplicate /Subrs entry\n"
+msgid "Ignoring duplicate /Subrs entry"
 msgstr "忽略重复的 /Subrs 项目\n"
 
 msgid "Image"
@@ -13282,7 +13282,7 @@ msgstr "笔尖类型:"
 msgid "Nib shape not valid"
 msgstr "笔尖形状无效"
 
-msgid "Nifty, you've got one of the old Apple/Adobe type1 sfnts here\n"
+msgid "Nifty, you've got one of the old Apple/Adobe type1 sfnts here"
 msgstr "有趣的是，你这里有一个旧的 Apple/Adobe Type1 sfnt 字体。\n"
 
 msgid "Niuean"
@@ -13968,7 +13968,7 @@ msgid "Number out of range"
 msgstr "取值超出范围"
 
 #, c-format
-msgid "Number out of range: %g in type2 output (must be [-65536,65535])\n"
+msgid "Number out of range: %g in type2 output (must be [-65536,65535])"
 msgstr "超出范围的数字：type2 输出中的 %g（必须为 [-65536,65535]）\n"
 
 #, c-format
@@ -18780,7 +18780,7 @@ msgid "Stack underflow on ifelse in %s"
 msgstr "在 %s 中，执行 ifelse 操作时发生堆栈下溢"
 
 #, c-format
-msgid "Stack underflow on rlineto/rmoveto in %s\n"
+msgid "Stack underflow on rlineto/rmoveto in %s"
 msgstr "在 %s 中，执行 rlineto/rmoveto 操作时发生堆栈下溢\n"
 
 #, c-format
@@ -18808,7 +18808,7 @@ msgid "Stack underflow on vhcurveto in %s"
 msgstr "在 %s 中，执行 vhcurveto 操作时发生堆栈下溢"
 
 #, c-format
-msgid "Stack underflow on vlineto/vmoveto in %s\n"
+msgid "Stack underflow on vlineto/vmoveto in %s"
 msgstr "在 %s 中，执行 vlineto/vmoveto 操作时发生堆栈下溢\n"
 
 #, c-format
@@ -19220,7 +19220,7 @@ msgid "Subscripts/Superscripts"
 msgstr "上下标"
 
 #, c-format
-msgid "Substitute glyph out of bounds in 'mort'/'morx' table %d\n"
+msgid "Substitute Glyph out of bounds in 'mort'/'morx' table %d"
 msgstr "替换字形在“mort”/“morx”表 %d 中超出边界"
 
 msgid "Substitution generates itself"
@@ -22202,7 +22202,7 @@ msgstr "在 %s 中，堆栈上的项不足以执行 put 操作"
 msgid "Too many Unique Font IDs"
 msgstr "过多相同的字体编号"
 
-msgid "Too many axis positions specified in /BlendDesignPositions.\n"
+msgid "Too many axis positions specified in /BlendDesignPositions."
 msgstr "/BlendDesignPositions 中指定了太多轴位置。"
 
 #, c-format
@@ -22237,7 +22237,7 @@ msgid "Too many lookups %d"
 msgstr "过多查找 %d"
 
 #, c-format
-msgid "Too many mapping data points specified in /BlendDesignMap for axis %s.\n"
+msgid "Too many mapping data points specified in /BlendDesignMap for axis %s."
 msgstr "/BlendDesignMap 中为轴 %s 指定的映射数据点过多。"
 
 #, c-format
@@ -23175,12 +23175,12 @@ msgstr "使用原生字偶距结构（而不​​是特征文件），即使这
 #. GT: as it is a PostScript keyword. (FF contains a small PostScript interpreter
 #. GT: so it can understand some PostScript fonts, and can generate errors when
 #. GT: handed bad PostScript).
-msgid "Use of \"exit\" when not in a loop\n"
+msgid "Use of \"exit\" when not in a loop"
 msgstr "不处于循环中时使用“exit”"
 
 #. GT: This is part of the PostScript language. Neither "stop" nor "stopped"
 #. GT: should be translated as both are PostScript keywords.
-msgid "Use of \"stop\" when not in a stopped\n"
+msgid "Use of \"stop\" when not in a stopped"
 msgstr "未处于停止状态时使用“stop”"
 
 msgid "Use of a range offset of 0xffff to mean a missing glyph in cmap table"
@@ -23616,7 +23616,7 @@ msgid "Warning Foreground"
 msgstr "警告前景"
 
 #, c-format
-msgid "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]\n"
+msgid "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]"
 msgstr "警告：%dth 轴值（%g）超出允许范围 [%g,%g]"
 
 #, c-format

@@ -477,23 +477,23 @@ msgid "%s subtable %d"
 msgstr "%s pod-talblica %d"
 
 #, c-format
-msgid "%s's SEAC operator is invalid for Type2\n"
+msgid "%s's SEAC operator is invalid for Type2"
 msgstr "'SEAC' operator od %s je neispravan za Type2\n"
 
 #, c-format
-msgid "%s's SEAC-like endchar operator is deprecated for Type2\n"
+msgid "%s's SEAC-like endchar operator is deprecated for Type2"
 msgstr "Krajnji znak 'SEAC'-sličnog operatora od %s je zastario za Type2\n"
 
 #, c-format
-msgid "%s's dotsection operator is deprecated for Type2\n"
+msgid "%s's dotsection operator is deprecated for Type2"
 msgstr "'dotsection' operator od %s je zastario za Type2\n"
 
 #, c-format
-msgid "%s's sbw operator is not supported for Type2\n"
+msgid "%s's sbw operator is not supported for Type2"
 msgstr "'sbw' operator od %s nije podržan za Type2\n"
 
 #, c-format
-msgid "%s's vstem3 operator is not supported for Type2\n"
+msgid "%s's vstem3 operator is not supported for Type2"
 msgstr "'vstem3' operator od %s nije podržan za Type2\n"
 
 #, c-format
@@ -2731,7 +2731,7 @@ msgid "Bad Multiple Master Font"
 msgstr "Neispravni Multiple Master font"
 
 #, c-format
-msgid "Bad Multiple/Alternate substitution glyph. GID %d not less than %d\n"
+msgid "Bad Multiple/Alternate substitution glyph. GID %d not less than %d"
 msgstr "Neispravan višestruki/alternativni zamjenski grafem. ID-oznaka grafema %d ne manja od %d\n"
 
 msgid "Bad Name"
@@ -2864,7 +2864,7 @@ msgid "Bad class count in contextual chaining sub-table."
 msgstr "Neispravni broj klasa u pod-tablici kontekstnog niza."
 
 #, c-format
-msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)\n"
+msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)"
 msgstr "Neispravna tablica za definiranje klasa. Raspon grafema %d – %d izvan raspona [0,%d)\n"
 
 #, c-format
@@ -2885,7 +2885,7 @@ msgid "Bad contents.plist"
 msgstr "Neispravna contents.plist datoteka"
 
 #, c-format
-msgid "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)\n"
+msgid "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)"
 msgstr "Neispravna kontekstna tablica ili tablica niza. Grafem %d je izvan raspona [0,%d)\n"
 
 msgid "Bad correction"
@@ -2901,11 +2901,11 @@ msgid "Bad count."
 msgstr "Neispravni zbroj."
 
 #, c-format
-msgid "Bad coverage table. Glyph %d out of range [0,%d)\n"
+msgid "Bad coverage table. Glyph %d out of range [0,%d)"
 msgstr "Neispravna tablica pokrivenosti. Grafem %d je izvan raspona [0,%d)\n"
 
 #, c-format
-msgid "Bad coverage table. Glyph range %d-%d out of range [0,%d)\n"
+msgid "Bad coverage table. Glyph range %d-%d out of range [0,%d)"
 msgstr "Neispravna tablica pokrivenosti. Raspon grafema %d – %d je izvan raspona [0,%d)\n"
 
 msgid "Bad dash list"
@@ -2951,7 +2951,7 @@ msgid "Bad feature tag"
 msgstr "Neispravna oznaka font-funkcija"
 
 #, c-format
-msgid "Bad few values in /BlendDesignMap for axis %s.\n"
+msgid "Bad few values in /BlendDesignMap for axis %s."
 msgstr "Neispravno malo vrijednosti u '/BlendDesignMap' za os %s.\n"
 
 #, c-format
@@ -3073,7 +3073,7 @@ msgid "Bad ligature glyph. GID %d not less than %d"
 msgstr "Neispravni grafem ligature. ID-oznaka grafema %d ne manja od %d"
 
 #, c-format
-msgid "Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
+msgid "Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d"
 msgstr "Neispravna tablica definicija: format=2 (%d/%d), prvi=%d zadnji=%d ukupno grafema u fontu=%d\n"
 
 #, c-format
@@ -3266,7 +3266,7 @@ msgstr ""
 "%s"
 
 #, c-format
-msgid "Bad value for blend in /BlendDesignMap for axis %s.\n"
+msgid "Bad value for blend in /BlendDesignMap for axis %s."
 msgstr "Neispravna vrijednost za stapljanje u '/BlendDesignMap' za os %s.\n"
 
 msgid "Bad xfig file"
@@ -8526,7 +8526,7 @@ msgid "Glyph out of bounds in 'lcar' table %d"
 msgstr "Grafem izvan granica u 'lcar' tablici %d"
 
 #, c-format
-msgid "Glyph out of bounds in 'mort'/'morx' table %d\n"
+msgid "Glyph out of bounds in 'mort'/'morx' table %d"
 msgstr "Grafem izvan granica u 'mort/morx' tablici %d\n"
 
 #, c-format
@@ -9111,7 +9111,7 @@ msgstr "Hmm, ova 'fvar' tablica sadrži neočekivanu veličinu za instancu. Neć
 msgid "Hmm, this 'fvar' table has more axes than FontForge can handle."
 msgstr "Hmm, ova 'fvar' tablica sadrži više osi, nego što ih FontForge može obraditi."
 
-msgid "Hmm, this 'fvar' table has more count/size pairs than I expect\n"
+msgid "Hmm, this 'fvar' table has more count/size pairs than I expect"
 msgstr "Hmm, ova 'fvar' tablica sadrži više parova/veličina parova od očekivanog\n"
 
 msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense."
@@ -9606,10 +9606,10 @@ msgstr "Zanemari nevažeće zamjene"
 msgid "Ignore this problem in the future"
 msgstr "Ubuduće zanemari ovaj problem"
 
-msgid "Ignoring duplicate /CharStrings entry\n"
+msgid "Ignoring duplicate /CharStrings entry"
 msgstr "Zanemaruje se dupli /CharStrings unos\n"
 
-msgid "Ignoring duplicate /Subrs entry\n"
+msgid "Ignoring duplicate /Subrs entry"
 msgstr "Zanemaruje se dupli /Subrs unos\n"
 
 msgid "Ilokano"
@@ -13051,7 +13051,7 @@ msgstr "Vrsta naliv pera:"
 msgid "Nib shape not valid"
 msgstr "Oblik naliv pera nije ispravan"
 
-msgid "Nifty, you've got one of the old Apple/Adobe type1 sfnts here\n"
+msgid "Nifty, you've got one of the old Apple/Adobe type1 sfnts here"
 msgstr "Baš zgodno, ovdje se radi o jednom starom Apple/Adobe Type1 sfnt fontu\n"
 
 msgid "Nisi"
@@ -13709,7 +13709,7 @@ msgid "Number out of range"
 msgstr "Broj izvan raspona"
 
 #, c-format
-msgid "Number out of range: %g in type2 output (must be [-65536,65535])\n"
+msgid "Number out of range: %g in type2 output (must be [-65536,65535])"
 msgstr "Broj je izvan granica: %g u izlaznom type2 (mora biti [-65536,65535])\n"
 
 #, c-format
@@ -18138,7 +18138,7 @@ msgid "Stack underflow on ifelse in %s"
 msgstr "Pop greška pri 'ifelse' u %s"
 
 #, c-format
-msgid "Stack underflow on rlineto/rmoveto in %s\n"
+msgid "Stack underflow on rlineto/rmoveto in %s"
 msgstr "Pop greška pri 'rlineto/rmoveto' u %s\n"
 
 #, c-format
@@ -18166,7 +18166,7 @@ msgid "Stack underflow on vhcurveto in %s"
 msgstr "Pop greška pri 'vhcurveto' u %s"
 
 #, c-format
-msgid "Stack underflow on vlineto/vmoveto in %s\n"
+msgid "Stack underflow on vlineto/vmoveto in %s"
 msgstr "Pop greška pri 'vlineto/vmoveto' u %s\n"
 
 #, c-format
@@ -18577,7 +18577,7 @@ msgid "Subscripts/Superscripts"
 msgstr "Indeksi/Eksponenti"
 
 #, c-format
-msgid "Substitute glyph out of bounds in 'mort'/'morx' table %d\n"
+msgid "Substitute Glyph out of bounds in 'mort'/'morx' table %d"
 msgstr "Zamjenski grafem izvan granica u 'mort/morx' tablici %d\n"
 
 msgid "Substitution generates itself"
@@ -21607,7 +21607,7 @@ msgstr "U snopu je premalo stavki za stapanje u %s"
 msgid "Too many Unique Font IDs"
 msgstr "Previše jedinstvenih font ID-oznaka"
 
-msgid "Too many axis positions specified in /BlendDesignPositions.\n"
+msgid "Too many axis positions specified in /BlendDesignPositions."
 msgstr "Previše pozicija osi određeno u '/BlendDesignPositions'.\n"
 
 #, c-format
@@ -21642,7 +21642,7 @@ msgid "Too many lookups %d"
 msgstr "Previše tablica definicija %d"
 
 #, c-format
-msgid "Too many mapping data points specified in /BlendDesignMap for axis %s.\n"
+msgid "Too many mapping data points specified in /BlendDesignMap for axis %s."
 msgstr "Previše točaka podataka za mapiranje određeno u '/BlendDesignMap' za os %s.\n"
 
 #, c-format
@@ -22585,12 +22585,12 @@ msgstr "Koristi izvorne strukture za podrezivanje (umjesto datoteke s funkcijama
 #. GT: as it is a PostScript keyword. (FF contains a small PostScript interpreter
 #. GT: so it can understand some PostScript fonts, and can generate errors when
 #. GT: handed bad PostScript).
-msgid "Use of \"exit\" when not in a loop\n"
+msgid "Use of \"exit\" when not in a loop"
 msgstr "Koristi se \"exit\" dok nije u petlji\n"
 
 #. GT: This is part of the PostScript language. Neither "stop" nor "stopped"
 #. GT: should be translated as both are PostScript keywords.
-msgid "Use of \"stop\" when not in a stopped\n"
+msgid "Use of \"stop\" when not in a stopped"
 msgstr "Koristi se \"stop\" dok nije u \"stopped\"\n"
 
 msgid "Use of a range offset of 0xffff to mean a missing glyph in cmap table"
@@ -23019,7 +23019,7 @@ msgid "Warning"
 msgstr "Upozorenje"
 
 #, c-format
-msgid "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]\n"
+msgid "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]"
 msgstr "Upozorenje: %d. vrijednost osi (%g) je izvan dozvoljenog raspona [%g,%g]\n"
 
 #, c-format

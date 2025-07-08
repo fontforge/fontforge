@@ -3621,7 +3621,7 @@ msgstr "CP successivo:"
 msgid "Next _Defined Glyph"
 msgstr "Glifo _definito successivo"
 
-msgid "Nifty, you've got one of the old Apple/Adobe type1 sfnts here\n"
+msgid "Nifty, you've got one of the old Apple/Adobe type1 sfnts here"
 msgstr "Ingegnoso, hai una delle vecchie Apple/Apple type1 sfnts qui\n"
 
 #, c-format
