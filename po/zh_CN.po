@@ -2289,13 +2289,13 @@ msgstr "在较小的像素尺寸（屏幕字体大小）下，发生的舍入误
 #, c-format
 msgid ""
 "Attempt to apply a lookup to a location out of the range of this contextual\n"
-" lookup seq=%d max=%d\n"
+" lookup seq=%d max=%d"
 msgstr "尝试将查找应用到此上下文查找范围之外的位置 seq=%d max=%d\n"
 
 #, c-format
 msgid ""
 "Attempt to apply a lookup to a location out of the range of this contextual\n"
-" lookup seq=%d, max=%d\n"
+" lookup seq=%d, max=%d"
 msgstr "尝试将查找应用到此上下文查找范围之外的位置 seq=%d, max=%d\n"
 
 msgid "Attempt to back up twice"
@@ -2357,7 +2357,7 @@ msgstr "尝试重新定义”%s“的值于%d行%s列"
 #, c-format
 msgid ""
 "Attempt to reference lookup %d (within a contextual lookup), but there are\n"
-" only %d lookups in %s\n"
+" only %d lookups in %s"
 msgstr "尝试引用查找 %1$d（在上下文查找中），但 %3$s 中只有 %2$d 个查找"
 
 #, c-format
@@ -5425,7 +5425,7 @@ msgid "Couldn't find point in reference"
 msgstr "参照中未找到点"
 
 #, c-format
-msgid "Couldn't find referenced character \"%s\" in %s\n"
+msgid "Couldn't find referenced character \"%s\" in %s"
 msgstr "未能找到参照字符 \"%s\" 于 %s\n"
 
 #, c-format

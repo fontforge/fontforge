@@ -2296,7 +2296,7 @@ msgstr ""
 #, c-format
 msgid ""
 "Attempt to apply a lookup to a location out of the range of this contextual\n"
-" lookup seq=%d max=%d\n"
+" lookup seq=%d max=%d"
 msgstr ""
 "이 문맥의존참조의 범위 밖의 위치에 참조를 적용하려고 합니다\n"
 "  seq=%d max=%d\n"
@@ -2304,7 +2304,7 @@ msgstr ""
 #, c-format
 msgid ""
 "Attempt to apply a lookup to a location out of the range of this contextual\n"
-" lookup seq=%d, max=%d\n"
+" lookup seq=%d, max=%d"
 msgstr ""
 "이 문맥의존참조의 범위 밖에 위치에 참조를 적용하려고 합니다\n"
 "  seq=%d max=%d\n"
@@ -2368,7 +2368,7 @@ msgstr "%3$s의 %2$d행에서 %1$s의 값 레코드 정의를 재정의하려고
 #, c-format
 msgid ""
 "Attempt to reference lookup %d (within a contextual lookup), but there are\n"
-" only %d lookups in %s\n"
+" only %d lookups in %s"
 msgstr ""
 "참조 %d 를  (문맥의존 참조 중에) 참조하려고 했습니다만, %d 개만 %s 에 \n"
 "포함되어있습니다\n"
@@ -5401,7 +5401,7 @@ msgid "Couldn't find point in reference"
 msgstr "참조에 포함되는 점을 찾을 수 없습니다"
 
 #, c-format
-msgid "Couldn't find referenced character \"%s\" in %s\n"
+msgid "Couldn't find referenced character \"%s\" in %s"
 msgstr "피참조자 \"%s\" (%s 내의 ) 를 참조할 수 없습니다\n"
 
 #, c-format

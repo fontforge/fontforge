@@ -2096,7 +2096,7 @@ msgstr ""
 #, c-format
 msgid ""
 "Attempt to apply a lookup to a location out of the range of this contextual\n"
-" lookup seq=%d max=%d\n"
+" lookup seq=%d max=%d"
 msgstr ""
 "Спроба застосування фільтрування до адреси поза діапазоном цього контекстуального\n"
 " фільтрування посл.=%d макс.=%d\n"
@@ -2104,7 +2104,7 @@ msgstr ""
 #, c-format
 msgid ""
 "Attempt to apply a lookup to a location out of the range of this contextual\n"
-" lookup seq=%d, max=%d\n"
+" lookup seq=%d, max=%d"
 msgstr ""
 "Спроба застосування фільтрування до адреси поза діапазоном цього контекстуального\n"
 " фільтрування посл.=%d, макс.=%d\n"
@@ -2168,7 +2168,7 @@ msgstr "Спроба перевизначення визначення запи�
 #, c-format
 msgid ""
 "Attempt to reference lookup %d (within a contextual lookup), but there are\n"
-" only %d lookups in %s\n"
+" only %d lookups in %s"
 msgstr ""
 "Спроба посилання на фільтрування %d (у контекстуальному фільтруванні), але маємо\n"
 " лише %d фільтрувань у %s\n"
@@ -4812,7 +4812,7 @@ msgid "Couldn't find point in reference"
 msgstr "Не вдалося знайти точку за посиланням"
 
 #, c-format
-msgid "Couldn't find referenced character \"%s\" in %s\n"
+msgid "Couldn't find referenced character \"%s\" in %s"
 msgstr "Не вдалося знайти еталонний символ «%s» у %s\n"
 
 #, c-format

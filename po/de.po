@@ -1901,7 +1901,7 @@ msgstr "In der Pixelgröße %d beginnt das Zeichen %s entweder vor dem Ursprung 
 #, c-format
 msgid ""
 "Attempt to apply a lookup to a location out of the range of this contextual\n"
-" lookup seq=%d max=%d\n"
+" lookup seq=%d max=%d"
 msgstr ""
 "Versuch, eine Nachschlagetabelle auf eine Position außerhalb des Bereichs\n"
 "dieser kontextuellen Nachschlagetabelle anzuwenden\n"
@@ -1947,7 +1947,7 @@ msgstr "Versuch, die Definition der Anker von \"%s\" in Zeile %d von %s neu zu d
 #, c-format
 msgid ""
 "Attempt to reference lookup %d (within a contextual lookup), but there are\n"
-" only %d lookups in %s\n"
+" only %d lookups in %s"
 msgstr ""
 "Versuch, die Nachschlagetabelle %d (innerhalb einer Kontextsuche) zu referenzieren, aber es gibt\n"
 " nur %d Nachschlagetabellen in %s\n"
@@ -4378,7 +4378,7 @@ msgid "Couldn't find point in reference"
 msgstr "Konnte Punkt in der Referenz nicht finden"
 
 #, c-format
-msgid "Couldn't find referenced character \"%s\" in %s\n"
+msgid "Couldn't find referenced character \"%s\" in %s"
 msgstr "Das referenzierte Zeichen \"%s\" konnte in %s nicht gefunden werden\n"
 
 #, c-format
