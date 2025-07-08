@@ -23,7 +23,7 @@ msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-09 02:27+0300\n"
-"PO-Revision-Date: 2025-07-08 23:21\n"
+"PO-Revision-Date: 2025-07-08 23:51\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Language: zh_CN\n"
@@ -227,11 +227,11 @@ msgstr "!!!! 未知游标格式 %d !!!!"
 
 #, c-format
 msgid "!!!!! Bad Base Coord format (%d) for '%c%c%c%c' in '%c%c%c%c' script in 'BASE' table"
-msgstr "!!!!! ‘BASE’ 表中的 ‘%c%c%c%c’ 文字中的 ‘%c%c%c%c’ 的基底坐标格式 (%d) 错误"
+msgstr "!!!!! ‘BASE’ 表中的 ‘%2$c%3$c%4$c%5$c’ 文字中的 ‘%6$c%7$c%8$c%9$c’ 的基底坐标格式 (%1$d) 错误"
 
 #, c-format
 msgid "!!!!! Coord count (%d) for '%c%c%c%c' script does not match base tag count (%d) in 'BASE' table"
-msgstr "!!!!! 文字“%c%c%c%c”的坐标计数（%d）与“BASE”表中的基底标签计数（%d）不匹配"
+msgstr "!!!!! 文字“%2$c%3$c%4$c%5$c”的坐标计数（%1$d）与“BASE”表中的基底标签计数（%6$d）不匹配"
 
 #, c-format
 msgid "\"%.40s\" size=%d point=%d (%d,%d) distance=%g"
@@ -2947,7 +2947,7 @@ msgstr "%2$s 中字形 %1$s 的设备表错误"
 
 #, c-format
 msgid "Bad device table for in row %d of %s"
-msgstr "%s 行中 %d 行的设备表不正确"
+msgstr "%2$s 行中 %1$d 行的设备表不正确"
 
 msgid "Bad encoding file format"
 msgstr "编码文件格式错误"
@@ -3117,7 +3117,7 @@ msgstr "MORT 连字表错误。 不够长"
 
 #, c-format
 msgid "Bad name when parsing %s for unicode %x"
-msgstr "解析 unicode 值 %x 的 %s 时的名称错误"
+msgstr "解析 unicode 值 %2$x 的 %1$s 时的名称错误"
 
 msgid "Bad namelist file"
 msgstr "错误的名录文件"
@@ -3144,7 +3144,7 @@ msgstr "线 %d 的偏移量错误，必须介于 0% 和 100% 之间。"
 
 #, c-format
 msgid "Bad offset: %d for subfont %s"
-msgstr "错误偏移：子字体 %s 的 %d"
+msgstr "错误偏移：子字体 %2$s 的 %1$d"
 
 #, c-format
 msgid "Bad opacity on line %d, must be between 0.0 and 1.0."
@@ -6734,7 +6734,7 @@ msgstr "platform=%d、specific=%d（必须为 14）的编码子表具有不受�
 
 #, c-format
 msgid "Encoding subtable for platform=%d, specific=%d has a 0 length subtable."
-msgstr "针对 platform=％d、specific=％d 的编码子表具有 0 长度子表。"
+msgstr "针对 platform=%d、specific=%d 的编码子表具有 0 长度子表。"
 
 #, c-format
 msgid "Encoding subtable for platform=%d, specific=%d has an unsupported format %d."
@@ -7214,7 +7214,7 @@ msgstr "第 %d 行（共 %s 行）需要整数"
 
 #, c-format
 msgid "Expected integer or list of integers after %s on line %d of %s"
-msgstr "在第 %d 行（共 %s 行）的 %s 之后需要整数或整数列表"
+msgstr "在第 %2$d 行（共 %3$s 行）的 %1$s 之后需要整数或整数列表"
 
 #, c-format
 msgid "Expected matching tag in table on line %d of %s"
@@ -8335,7 +8335,7 @@ msgstr "100"
 
 #, c-format
 msgid "GID out of range (%d) in format 14 'cmap' subtable"
-msgstr "格式 14‘cmap’子表中的 GID 超出范围（％d）"
+msgstr "格式 14‘cmap’子表中的 GID 超出范围（%d）"
 
 msgid "GID out of range."
 msgstr "GID 超出范围."
@@ -9842,7 +9842,7 @@ msgstr "在 %s 中，在字形 %s 中，“CFF ”步进宽度 (%d) 和“hmtx�
 
 #, c-format
 msgid "In %s, the advance width (%d) for glyph %s is greater than the maximum (%d)"
-msgstr "在 %s 中，字形 %s 的步进宽度 (%d) 大于最大值 (%d)"
+msgstr "在 %1$s 中，字形 %3$s 的步进宽度 (%2$d) 大于最大值 (%4$d)"
 
 #, c-format
 msgid "In GID %d the advance width (%d) is greater than the stated maximum (%d)"
@@ -10684,7 +10684,7 @@ msgstr "字偶距类"
 
 #, c-format
 msgid "Kerning Metrics For %.50s"
-msgstr "%50 的字偶距度量"
+msgstr "%.50s 的字偶距度量"
 
 msgid "Kerning State Machine"
 msgstr "字偶距状态机"
@@ -19777,7 +19777,7 @@ msgid ""
 "The 'name' table contains (at least) two strings for the %s in language %s, the first '%.12s...' the second '%.12s...'.\n"
 "Which do you prefer?"
 msgstr ""
-"“name”表包含（至少）两个字符串，表示语言 %2$s 中的 %1$s，第一个是“%.12s...”，第二个是“%.12s...”。\n"
+"“name”表包含（至少）两个字符串，表示语言 %2$s 中的 %1$s，第一个是“%3$.12s...”，第二个是“%4$.12s...”。\n"
 "您更偏向哪一个？"
 
 #, c-format
@@ -22790,7 +22790,7 @@ msgstr "BASE 表中的意外标记 %1$s，位于 %3$s 的第 %2$d 行"
 
 #, c-format
 msgid "Unexpected token, %s, in feature definition on line %d of %s"
-msgstr "第 %d 行（共 %s 行）功能定义中的意外标记 %s"
+msgstr "第 %2$d 行（共 %3$s 行）功能定义中的意外标记 %1$s"
 
 #, c-format
 msgid "Unexpected token, %s, in lookup definition on line %d of %s"

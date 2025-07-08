@@ -14,7 +14,7 @@ msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-09 02:27+0300\n"
-"PO-Revision-Date: 2025-07-08 23:13\n"
+"PO-Revision-Date: 2025-07-08 23:47\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Language: zh_TW\n"
@@ -5849,7 +5849,7 @@ msgstr "FontForge 不支援合成的字型"
 
 #, c-format
 msgid "FontForge does not support this bit depth %d (must be 1,2,4,8,16,32)"
-msgstr "FontForge不支援此這點深度&d（應為1、2、4、8、16、32）"
+msgstr "FontForge不支援此這點深度%d（應為1、2、4、8、16、32）"
 
 msgid "FontForge does not support type2 multiple master fonts"
 msgstr "FontForge 不支援 type2 多重主字型"
@@ -6858,11 +6858,11 @@ msgstr "匈牙利語"
 
 #, c-format
 msgid "I can't even imagine how to attempt to interpolate gradients in layer %d of %s"
-msgstr "我根本想像不到如何在%s的%d層中插入梯度"
+msgstr "我根本想像不到如何在%2$s的%1$d層中插入梯度"
 
 #, c-format
 msgid "I can't even imagine how to attempt to interpolate images in layer %d of %s"
-msgstr "我根本想像不到如何在%s的%d層中插入圖像"
+msgstr "我根本想像不到如何在%2$s的%1$d層中插入圖像"
 
 #, c-format
 msgid "I miscalculated the size of subtable %s, this means the kerning output is wrong."
@@ -11620,7 +11620,7 @@ msgstr "查找的參照並非在特徵檔案之中，而是在字型之中，%.5
 
 #, c-format
 msgid "Reference to a non-existent glyph name on line %d of %s: %s"
-msgstr "%s的第%d行中有不存在的字形名稱：%s"
+msgstr "%2$s的第%1$d行中有不存在的字形名稱：%3$s"
 
 #, c-format
 msgid "Reference to character %1$.20s at %2$d"
@@ -16984,7 +16984,7 @@ msgstr "當字型開啟，它就應該被壓縮？"
 
 #, c-format
 msgid "When a single substitution is specified by glyph classes, those classes must be of the same length on line %d of %s"
-msgstr "當字形定類指定單一替換時，這些類別在%s的第%d行上必須具有相同的長度"
+msgstr "當字形定類指定單一替換時，這些類別在%2$s的第%1$d行上必須具有相同的長度"
 
 msgid "When adding new entries provide default kerning values."
 msgstr "加入新條目時提供預設字距微調值。"

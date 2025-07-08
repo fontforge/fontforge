@@ -13,7 +13,7 @@ msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-09 02:27+0300\n"
-"PO-Revision-Date: 2025-07-08 23:13\n"
+"PO-Revision-Date: 2025-07-08 23:47\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Language: ru_RU\n"
@@ -407,7 +407,7 @@ msgstr "%s не является именем класса для классов
 
 #, c-format
 msgid "%s is not a class name for the matching classes."
-msgstr "не является именем класса для совпадающих классов"
+msgstr "%s не является именем класса для совпадающих классов"
 
 #, c-format
 msgid "%s is not in %.100s"
