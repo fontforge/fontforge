@@ -14,8 +14,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-07 19:14+0300\n"
-"PO-Revision-Date: 2025-07-07 16:00\n"
+"POT-Creation-Date: 2025-07-09 01:00+0300\n"
+"PO-Revision-Date: 2025-07-08 21:59\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -2474,7 +2474,7 @@ msgstr "Fonte Multi-Maîtres incorrecte"
 
 #, c-format
 msgid "Bad Multiple/Alternate substitution glyph. GID %d not less than %d"
-msgstr "Glyphe de substitution multiple/alternative incorrect. GID %d ne peut être moins que %d\n"
+msgstr "Glyphe de substitution multiple/alternative incorrect. GID %d ne peut être moins que %d"
 
 msgid "Bad Name"
 msgstr "Nom incorrect"
@@ -2607,7 +2607,7 @@ msgstr "Compte de classes incorrect dans la sous-table d'enchaînement contextue
 
 #, c-format
 msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)"
-msgstr "Table de définition de classe incorrecte. L'intervalle %d-%d de glyphe est hors intervalle [0,%d)\n"
+msgstr "Table de définition de classe incorrecte. L'intervalle %d-%d de glyphe est hors intervalle [0,%d)"
 
 #, c-format
 msgid "Bad class def table. start=%d cnt=%d, max glyph=%d"
@@ -2628,7 +2628,7 @@ msgstr "Contents.plist incorrect"
 
 #, c-format
 msgid "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)"
-msgstr "Sous-table de contexte ou d'enchainement incorrecte. Glyphe %d hors limite [0,%d]\n"
+msgstr "Sous-table de contexte ou d'enchainement incorrecte. Glyphe %d hors limite [0,%d]"
 
 msgid "Bad correction"
 msgstr "Correction incorrecte"
@@ -2644,11 +2644,11 @@ msgstr "Compte incorrect."
 
 #, c-format
 msgid "Bad coverage table. Glyph %d out of range [0,%d)"
-msgstr "Table de couverture incorrecte. Le glyphe %d est hors intervalle [0,%d)\n"
+msgstr "Table de couverture incorrecte. Le glyphe %d est hors intervalle [0,%d)"
 
 #, c-format
 msgid "Bad coverage table. Glyph range %d-%d out of range [0,%d)"
-msgstr "Table de couverture incorrecte. L'intervalle %d-%d de glyphe est hors intervalle [0,%d)\n"
+msgstr "Table de couverture incorrecte. L'intervalle %d-%d de glyphe est hors intervalle [0,%d)"
 
 msgid "Bad dash list"
 msgstr "Liste de tirets incorrecte"
@@ -2694,7 +2694,7 @@ msgstr "Tag de fonctionnalité incorrect"
 
 #, c-format
 msgid "Bad few values in /BlendDesignMap for axis %s."
-msgstr "Quelques valeurs de mélange incorrectes dans /BlendDesignMap pour l'axe %s.\n"
+msgstr "Quelques valeurs de mélange incorrectes dans /BlendDesignMap pour l'axe %s."
 
 #, c-format
 msgid "Bad flags value, implied MORE components at end of glyph %d"
@@ -2783,11 +2783,11 @@ msgstr "Fichier image incorrect : %.100s"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d must be less than %d"
-msgstr "Paire de crénage incorrecte: les glyphes %d & %d doivent être moins que %d\n"
+msgstr "Paire de crénage incorrecte: les glyphes %d & %d doivent être moins que %d"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d mustn't be negative"
-msgstr "Paire de crénage incorrecte : les glyphes %d & %d ne doivent pas être négatifs\n"
+msgstr "Paire de crénage incorrecte : les glyphes %d & %d ne doivent pas être négatifs"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d should have been < %d"
@@ -2795,7 +2795,7 @@ msgstr "Paire de crénage incorrecte: les glyphes %d & %d devraient avoir été 
 
 #, c-format
 msgid "Bad kern pair: glyphs at %d & %d are null"
-msgstr "Paire de crénage incorrecte : les glyphes à %d & %d sont nuls\n"
+msgstr "Paire de crénage incorrecte : les glyphes à %d & %d sont nuls"
 
 msgid "Bad language tag"
 msgstr "Balise de langue incorrecte"
@@ -2816,7 +2816,11 @@ msgstr "Glyphe de ligature incorrect. GID %d ne peut être moins que %d"
 
 #, c-format
 msgid "Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d"
-msgstr "Format de table de lookup incorrect: format=2 (%d/%d), premier=%d dernier=%d total de glyphes dans la fonte=%d\n"
+msgstr "Format de table de lookup incorrect: format=2 (%d/%d), premier=%d dernier=%d total de glyphes dans la fonte=%d"
+
+#, c-format
+msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d"
+msgstr "Format de table de lookup incorrect: format=4 (%d/%d), premier=%d dernier=%d total de glyphes dans la fonte=%d\n"
 
 #, c-format
 msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
@@ -3005,7 +3009,7 @@ msgstr ""
 
 #, c-format
 msgid "Bad value for blend in /BlendDesignMap for axis %s."
-msgstr "Valeur de mélange incorrecte dans /BlendDesignMap pour l'axe %s.\n"
+msgstr "Valeur de mélange incorrecte dans /BlendDesignMap pour l'axe %s."
 
 msgid "Bad xfig file"
 msgstr "Fichier XFIG incorrect"
@@ -3644,7 +3648,7 @@ msgstr "Impossible d'ajouter des instructions à ce glyphe"
 
 #, c-format
 msgid "Can't open %s"
-msgstr "Impossible d'ouvrir %s"
+msgstr "Impossible d'ouvrir %s⬤"
 
 msgid "Can't open temporary file for postscript output"
 msgstr "Impossible d'ouvrir le fichier temporaire pour la sortie PostScript"
@@ -3682,7 +3686,7 @@ msgstr "Impossible de trouver votre fichier de raccourcis clavier !\n"
 
 #, c-format
 msgid "Cannot open %s"
-msgstr "Impossible d'ouvir %s"
+msgstr "Impossible d'ouvir %s⬤"
 
 msgid "Cannot open a temporary file"
 msgstr "Impossible d'ouvir un fichier temporaire"
@@ -5281,7 +5285,7 @@ msgstr "Je n'ai pas compris le format pour fdselect %d"
 msgid "Didn't understand index format: %d"
 msgstr ""
 "Je n'ai pas compris le format d'index: %d\n"
-"\n"
+"⬤"
 
 msgid "Differ"
 msgstr "Différences"
@@ -5919,7 +5923,7 @@ msgstr "Fin de fichier trouvée dans une chaîne, ligne %d de %s"
 msgid "End of file found when reading private dictionary."
 msgstr ""
 "Fin de fichier atteinte lors de la lecture du dictionnaire privé.\n"
-"\n"
+"⬤"
 
 #, c-format
 msgid "End of file in %s table"
@@ -7040,7 +7044,7 @@ msgstr ""
 msgid "FontForge only supports embedded images in data: URIs"
 msgstr ""
 "Fontforge prend seulement en charge les images incorporées dans data: URIs\n"
-"\n"
+"⬤"
 
 #, c-format
 msgid "FontForge supports at most %d layers"
@@ -8175,10 +8179,13 @@ msgid "Hmm, this 'fvar' table has more axes than FontForge can handle."
 msgstr "Hmm, cette table 'fvar' a plus d'axes que FonForge peut gérer."
 
 msgid "Hmm, this 'fvar' table has more count/size pairs than I expect"
-msgstr "Hmm, cette table 'fvar' a plus de paires que j'attends\n"
+msgstr "Hmm, cette table 'fvar' a plus de paires que j'attends"
 
 msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense."
 msgstr "Hmm, cette table 'fvar' n'a pas d'axes, ce qui n'a pas de sens."
+
+msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it"
+msgstr "Hmm, cette table 'fvar' a trop peu de paires, je ne peux l'analyser\n"
 
 msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it\n"
 msgstr "Hmm, cette table 'fvar' a trop peu de paires, je ne peux l'analyser\n"
@@ -8661,10 +8668,10 @@ msgid "Ignore this problem in the future"
 msgstr "Ignorer ce problème à l'avenir"
 
 msgid "Ignoring duplicate /CharStrings entry"
-msgstr "J'ignore les entrées CharStrings en double\n"
+msgstr "J'ignore les entrées CharStrings en double"
 
 msgid "Ignoring duplicate /Subrs entry"
-msgstr "J'ignore les entrées de sous-routines en double\n"
+msgstr "J'ignore les entrées de sous-routines en double"
 
 msgid "Image Info"
 msgstr "Infos images"
@@ -11885,7 +11892,7 @@ msgid "Next _Line in Word List"
 msgstr "Ligne _suivante dans la liste de mots"
 
 msgid "Nifty, you've got one of the old Apple/Adobe type1 sfnts here"
-msgstr "Formidable, vous avez l'un des anciens sfnts type1 d' Apple/Adobe ici\n"
+msgstr "Formidable, vous avez l'un des anciens sfnts type1 d' Apple/Adobe ici"
 
 msgid "Niuean"
 msgstr "Niué"
@@ -12222,7 +12229,7 @@ msgid "No scripts"
 msgstr "Aucun système d'écriture"
 
 msgid "No selection"
-msgstr "Pas de sélection"
+msgstr "Pas de sélection⬤"
 
 msgid "No significant differences found"
 msgstr "Aucune différence significative trouvée"
@@ -12554,7 +12561,7 @@ msgstr "Valeur hors limites"
 
 #, c-format
 msgid "Number out of range: %g in type2 output (must be [-65536,65535])"
-msgstr "Type2 : nombre hors limites : %g (doit-être dans [-65536,65535])\n"
+msgstr "Type2 : nombre hors limites : %g (doit-être dans [-65536,65535])"
 
 #, c-format
 msgid "Number too long on line %d of %s"
@@ -16923,6 +16930,10 @@ msgid "Stack underflow on hhcurveto in %s"
 msgstr "Pile trop vide sur hhcurveto dans %s"
 
 #, c-format
+msgid "Stack underflow on hlineto/hmoveto in %s"
+msgstr "Pile trop vide sur hlineto/hmoveto dans %s\n"
+
+#, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s\n"
 msgstr "Pile trop vide sur hlineto/hmoveto dans %s\n"
 
@@ -16948,7 +16959,7 @@ msgstr "Pile trop vide pour un ifelse dans %s"
 
 #, c-format
 msgid "Stack underflow on rlineto/rmoveto in %s"
-msgstr "Pile trop vide sur rlineto/moveto dans %s\n"
+msgstr "Pile trop vide sur rlineto/moveto dans %s"
 
 #, c-format
 msgid "Stack underflow on rrcurveto in %s"
@@ -16976,7 +16987,7 @@ msgstr "Pile trop vide sur vhcurveto dans %s"
 
 #, c-format
 msgid "Stack underflow on vlineto/vmoveto in %s"
-msgstr "Pile trop vide sur vlineto/vmoveto dans %s\n"
+msgstr "Pile trop vide sur vlineto/vmoveto dans %s"
 
 #, c-format
 msgid "Stack underflow on vstem in %s"
@@ -17336,6 +17347,10 @@ msgstr "Indices/Exposants"
 
 #, c-format
 msgid "Substitute Glyph out of bounds in 'mort'/'morx' table %d"
+msgstr "Glyphe de substitution hors-limite dans les tables 'mort'/'morx' %d\n"
+
+#, c-format
+msgid "Substitute glyph out of bounds in 'mort'/'morx' table %d"
 msgstr "Glyphe de substitution hors-limite dans les tables 'mort'/'morx' %d\n"
 
 msgid "Substitution generates itself"
@@ -20183,7 +20198,7 @@ msgid "Too many Unique Font IDs"
 msgstr "Trop d'identifiants unique"
 
 msgid "Too many axis positions specified in /BlendDesignPositions."
-msgstr "Trop de positions axiales dans /BlendDesignPositions.\n"
+msgstr "Trop de positions axiales dans /BlendDesignPositions."
 
 #, c-format
 msgid "Too many dashes (at most %d allowed)"
@@ -20218,7 +20233,7 @@ msgstr "Trop de lookups : %d"
 
 #, c-format
 msgid "Too many mapping data points specified in /BlendDesignMap for axis %s."
-msgstr "Trop de points de mappage dans /BlendDesignMap pour l'axe %s.\n"
+msgstr "Trop de points de mappage dans /BlendDesignMap pour l'axe %s."
 
 #, c-format
 msgid "Too many scripts %d"
@@ -21106,7 +21121,7 @@ msgstr "L'utilisation d'un intervalle de décalage de 0xffff signifie un glyphe 
 msgid "Use of obsolete blend operator."
 msgstr ""
 "Utilisage de l'opérateur 'blend' obsolète.\n"
-"\n"
+"⬤"
 
 #, c-format
 msgid "Use of undefined glyph class, %s, on line %d of %s"
@@ -21472,7 +21487,7 @@ msgstr "Attention"
 
 #, c-format
 msgid "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]"
-msgstr "Attention: %dème valeur d'axe (%g) est à l'extérieur de l'intervalle permise [%g,%g]\n"
+msgstr "Attention: %dème valeur d'axe (%g) est à l'extérieur de l'intervalle permise [%g,%g]"
 
 #, c-format
 msgid "Warning: %s has a different family name than does %s (GenerateFamily)"
@@ -21993,7 +22008,7 @@ msgstr "Oups, commande spiro %d incorrect"
 msgid "Whoops, contours must begin with a move to"
 msgstr ""
 "Oups, les contours doivent commencer avec un \"move to\"\n"
-"\n"
+"⬤"
 
 msgid "Whoops, more names than lookups"
 msgstr "Oups, plus de noms que de lookups"

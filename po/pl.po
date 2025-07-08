@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-07 19:14+0300\n"
-"PO-Revision-Date: 2025-07-07 16:00\n"
+"POT-Creation-Date: 2025-07-09 01:00+0300\n"
+"PO-Revision-Date: 2025-07-08 21:59\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "Language: pl_PL\n"
@@ -2533,7 +2533,7 @@ msgstr "Błędny font Multiple Master"
 msgid "Bad Multiple/Alternate substitution glyph. GID %d not less than %d"
 msgstr ""
 "Błędny glif w podstawieniu wielokrotnym lub alternatywnym:\n"
-" numer glifu %d nie jest mniejszy od %d\n"
+" numer glifu %d nie jest mniejszy od %d"
 
 msgid "Bad Name"
 msgstr "Błędna nazwa"
@@ -2666,7 +2666,7 @@ msgstr "Błędna liczba klas w kontekstowej podtablicy łańcuchowej."
 
 #, c-format
 msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)"
-msgstr "Błędna tablica definicji klasy: glify %d-%d poza zakresem [0, %d)\n"
+msgstr "Błędna tablica definicji klasy: glify %d-%d poza zakresem [0, %d)"
 
 #, c-format
 msgid "Bad class def table. start=%d cnt=%d, max glyph=%d"
@@ -2687,7 +2687,7 @@ msgstr "Błędny plik contents.plist"
 
 #, c-format
 msgid "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)"
-msgstr "Błędna podtablica kontekstowa bądź łańcuchowa: numer glifu %d poza zakresem [0, %d)\n"
+msgstr "Błędna podtablica kontekstowa bądź łańcuchowa: numer glifu %d poza zakresem [0, %d)"
 
 msgid "Bad correction"
 msgstr "Błędna korekta"
@@ -2703,11 +2703,11 @@ msgstr "Błędna liczba."
 
 #, c-format
 msgid "Bad coverage table. Glyph %d out of range [0,%d)"
-msgstr "Błędna tablica grupująca. Glif %d poza dopuszczalnym zakresem [0...%d).\n"
+msgstr "Błędna tablica grupująca. Glif %d poza dopuszczalnym zakresem [0...%d)."
 
 #, c-format
 msgid "Bad coverage table. Glyph range %d-%d out of range [0,%d)"
-msgstr "Błędna tablica grupująca. Glify %d-%d poza dopuszczalnym zakresem [0...%d).\n"
+msgstr "Błędna tablica grupująca. Glify %d-%d poza dopuszczalnym zakresem [0...%d)."
 
 msgid "Bad dash list"
 msgstr "Błędne kreskowanie"
@@ -2753,7 +2753,7 @@ msgstr "Błędny tag funkcji"
 
 #, c-format
 msgid "Bad few values in /BlendDesignMap for axis %s."
-msgstr "Błędne wartości w /BlendDesignMap dla osi %s.\n"
+msgstr "Błędne wartości w /BlendDesignMap dla osi %s."
 
 #, c-format
 msgid "Bad flags value, implied MORE components at end of glyph %d"
@@ -2842,19 +2842,19 @@ msgstr "Błędny plik obrazu: %.100s"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d must be less than %d"
-msgstr "Błędna para kerningowa: %d i %d muszą być mniejsze niż %d.\n"
+msgstr "Błędna para kerningowa: %d i %d muszą być mniejsze niż %d."
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d mustn't be negative"
-msgstr "Błędna para kerningu: numery glifów %d i %d nie mogą być ujemne\n"
+msgstr "Błędna para kerningu: numery glifów %d i %d nie mogą być ujemne"
 
-# #, c-format
+#, c-format
 msgid "Bad kern pair: glyphs %d & %d should have been < %d"
 msgstr "Błędna para kerningowa: numery glifów %d i %d powinny być mniejsze niż %d"
 
 #, c-format
 msgid "Bad kern pair: glyphs at %d & %d are null"
-msgstr "Błędna para kerningu: glify o numerach %d i %d nie istnieją\n"
+msgstr "Błędna para kerningu: glify o numerach %d i %d nie istnieją"
 
 msgid "Bad language tag"
 msgstr "Błędny tag języka"
@@ -2867,7 +2867,7 @@ msgstr "Błędna tablica ligatur."
 
 #, c-format
 msgid "Bad ligature component glyph. GID %d not less than %d (in ligature %d)"
-msgstr "Błędny glif składowy ligatury: numer znaku %d nie jest mniejszy od %d (w ligaturze %d)\n"
+msgstr "Błędny glif składowy ligatury: numer znaku %d nie jest mniejszy od %d (w ligaturze %d)"
 
 #, c-format
 msgid "Bad ligature glyph. GID %d not less than %d"
@@ -2875,7 +2875,11 @@ msgstr "Błędny glif ligatury: numer znaku %d nie jest mniejszy od %d"
 
 #, c-format
 msgid "Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d"
-msgstr "Błędna tablica funkcji zecerskich: format=2 (%d/%d), pierwszy=%d, ostatni=%d, liczba glifów w foncie=%d\n"
+msgstr "Błędna tablica funkcji zecerskich: format=2 (%d/%d), pierwszy=%d, ostatni=%d, liczba glifów w foncie=%d"
+
+#, c-format
+msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d"
+msgstr "Błędna tablica funkcji zecerskich: format=4 (%d/%d), pierwszy=%d, ostatni=%d, liczba glifów w foncie=%d\n"
 
 #, c-format
 msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
@@ -2955,7 +2959,7 @@ msgstr "Błędny wzorzec zastępujący"
 
 #, c-format
 msgid "Bad reverse contextual chaining substitution glyph: %d is not less than %d"
-msgstr "Błędny glif w odwrotnym łańcuchowym podstawieniu kontekstowym: numer glifu %d nie jest mniejszy od %d\n"
+msgstr "Błędny glif w odwrotnym łańcuchowym podstawieniu kontekstowym: numer glifu %d nie jest mniejszy od %d"
 
 msgid "Bad rule"
 msgstr "Błędna reguła"
@@ -3064,7 +3068,7 @@ msgstr ""
 
 #, c-format
 msgid "Bad value for blend in /BlendDesignMap for axis %s."
-msgstr "Błędna wartość w /BlendDesignMap dla osi %s.\n"
+msgstr "Błędna wartość w /BlendDesignMap dla osi %s."
 
 msgid "Bad xfig file"
 msgstr "Błędny plik xfig"
@@ -3757,7 +3761,7 @@ msgstr "Nie udało się poinstruować glifu"
 
 #, c-format
 msgid "Can't open %s"
-msgstr "Nie udało się otworzyć %s"
+msgstr "Nie można otworzyć %s"
 
 msgid "Can't open temporary file for postscript output"
 msgstr "Nie udało się otworzyć pliku tymczasowego dla wyjścia postscriptowego."
@@ -3795,7 +3799,7 @@ msgstr "Nie znaleziono pliku definicji skrótów klawiaturowych!\n"
 
 #, c-format
 msgid "Cannot open %s"
-msgstr "Nie udało się otworzyć %s"
+msgstr "Nie udało się otworzyć %s⬤"
 
 msgid "Cannot open a temporary file"
 msgstr "Nie udało się otworzyć pliku tymczasowego"
@@ -8373,10 +8377,13 @@ msgid "Hmm, this 'fvar' table has more axes than FontForge can handle."
 msgstr "Hmm, ta tablica „fvar” zawiera zbyt wiele osi."
 
 msgid "Hmm, this 'fvar' table has more count/size pairs than I expect"
-msgstr "Hmm, ta tablica „fvar” zawiera zbyt wiele par licznik/rozmiar.\n"
+msgstr "Hmm, ta tablica „fvar” zawiera zbyt wiele par licznik/rozmiar."
 
 msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense."
 msgstr "Hmm, ta tablica „fvar” nie zawiera osi, to bez sensu."
+
+msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it"
+msgstr "Hmm, ta tablica „fvar” zawiera zbyt mało par licznik/rozmiar.\n"
 
 msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it\n"
 msgstr "Hmm, ta tablica „fvar” zawiera zbyt mało par licznik/rozmiar.\n"
@@ -8861,10 +8868,10 @@ msgid "Ignore this problem in the future"
 msgstr "Ignoruj ten problem przy dalszym wyszukiwaniu"
 
 msgid "Ignoring duplicate /CharStrings entry"
-msgstr "Zignorowano powieloną pozycję /CharStrings\n"
+msgstr "Zignorowano powieloną pozycję /CharStrings"
 
 msgid "Ignoring duplicate /Subrs entry"
-msgstr "Zignorowano powieloną pozycję /Subrs\n"
+msgstr "Zignorowano powieloną pozycję /Subrs"
 
 msgid "Ilokano"
 msgstr "iloko"
@@ -12281,7 +12288,7 @@ msgid "Next _Line in Word List"
 msgstr "Następny wyraz z _listy"
 
 msgid "Nifty, you've got one of the old Apple/Adobe type1 sfnts here"
-msgstr "To najwidoczniej jakiś wiekowy „PS Type1 w sfnt” od Apple/Adobe.\n"
+msgstr "To najwidoczniej jakiś wiekowy „PS Type1 w sfnt” od Apple/Adobe."
 
 msgid "Niuean"
 msgstr "niue"
@@ -12615,7 +12622,7 @@ msgid "No scripts"
 msgstr "Brak pism"
 
 msgid "No selection"
-msgstr "Brak zaznaczenia"
+msgstr "Niczego nie wybrano"
 
 msgid "No significant differences found"
 msgstr "Nie znaleziono żadnych istotnych różnic."
@@ -12932,7 +12939,7 @@ msgstr "Wartość poza zakresem"
 
 #, c-format
 msgid "Number out of range: %g in type2 output (must be [-65536,65535])"
-msgstr "Wartość poza zakresem: %.g w foncie Type2 (dozwolony zakres to -65536...65535)\n"
+msgstr "Wartość poza zakresem: %.g w foncie Type2 (dozwolony zakres to -65536...65535)"
 
 #, c-format
 msgid "Number too long on line %d of %s"
@@ -17421,6 +17428,10 @@ msgid "Stack underflow on hhcurveto in %s"
 msgstr "„hhcurveto” wyczerpało stos w %s"
 
 #, c-format
+msgid "Stack underflow on hlineto/hmoveto in %s"
+msgstr "„hlineto/hmoveto” wyczerpało stos w %s\n"
+
+#, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s\n"
 msgstr "„hlineto/hmoveto” wyczerpało stos w %s\n"
 
@@ -17446,7 +17457,7 @@ msgstr "„ifelse” wyczerpało stos w %s"
 
 #, c-format
 msgid "Stack underflow on rlineto/rmoveto in %s"
-msgstr "„rlineto/rmoveto” wyczerpało stos w %s\n"
+msgstr "„rlineto/rmoveto” wyczerpało stos w %s"
 
 #, c-format
 msgid "Stack underflow on rrcurveto in %s"
@@ -17474,7 +17485,7 @@ msgstr "„vhcurveto” wyczerpało stos w %s"
 
 #, c-format
 msgid "Stack underflow on vlineto/vmoveto in %s"
-msgstr "„vlineto/vmoveto” wyczerpało stos w %s\n"
+msgstr "„vlineto/vmoveto” wyczerpało stos w %s"
 
 #, c-format
 msgid "Stack underflow on vstem in %s"
@@ -17883,6 +17894,10 @@ msgstr "Frakcje górne i dolne"
 
 #, c-format
 msgid "Substitute Glyph out of bounds in 'mort'/'morx' table %d"
+msgstr "Numer glifu podstawianego w tablicy „mort”/„morx” poza dozwolonym zakresem: %d\n"
+
+#, c-format
+msgid "Substitute glyph out of bounds in 'mort'/'morx' table %d"
 msgstr "Numer glifu podstawianego w tablicy „mort”/„morx” poza dozwolonym zakresem: %d\n"
 
 msgid "Substitution generates itself"
@@ -20698,7 +20713,7 @@ msgid "Too many Unique Font IDs"
 msgstr "Zbyt wiele unikalnych ID fontów"
 
 msgid "Too many axis positions specified in /BlendDesignPositions."
-msgstr "Zbyt wiele współrzędnych na osiach w /BlendDesignPositions.\n"
+msgstr "Zbyt wiele współrzędnych na osiach w /BlendDesignPositions."
 
 #, c-format
 msgid "Too many dashes (at most %d allowed)"
@@ -20733,7 +20748,7 @@ msgstr "Zbyt wiele tablic funkcji %d"
 
 #, c-format
 msgid "Too many mapping data points specified in /BlendDesignMap for axis %s."
-msgstr "Zbyt wiele punktów danych mapowań w /BlendDesignMap dla osi %s.\n"
+msgstr "Zbyt wiele punktów danych mapowań w /BlendDesignMap dla osi %s."
 
 #, c-format
 msgid "Too many scripts %d"
@@ -22039,7 +22054,7 @@ msgstr "Ostrzeżenie"
 
 #, c-format
 msgid "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]"
-msgstr "Ostrzeżenie: %d. wartość osi (%g) jest poza dozwolonym zakresem [%g...%g]\n"
+msgstr "Ostrzeżenie: %d. wartość osi (%g) jest poza dozwolonym zakresem [%g...%g]"
 
 #, c-format
 msgid "Warning: %s has a different family name than does %s (GenerateFamily)"
@@ -22176,7 +22191,7 @@ msgstr ""
 msgid "Warning: Unable to parse token %s, some features may be lost"
 msgstr ""
 "Ostrzeżenie: nie udało się przetworzyć tokenu %s, niektóre\n"
-"informacje mogły zostać pominięte.\n"
+"informacje mogły zostać pominięte."
 
 #, c-format
 msgid "Warning: Unlikely number of subtables (%d) for 'kern' table"

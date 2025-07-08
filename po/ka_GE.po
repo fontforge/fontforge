@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-06 23:41+0300\n"
-"PO-Revision-Date: 2025-07-05 22:20\n"
+"POT-Creation-Date: 2025-07-09 01:00+0300\n"
+"PO-Revision-Date: 2025-07-08 21:59\n"
 "Last-Translator: \n"
 "Language-Team: Georgian\n"
 "Language: ka_GE\n"
@@ -1137,7 +1137,7 @@ msgstr "ვერ ჩაისმება „prep“"
 
 #, c-format
 msgid "Can't open %s"
-msgstr "ვერ იხსნება %s"
+msgstr "ვერ იხსნება %s⬤"
 
 msgid "Can't open temporary file for postscript output"
 msgstr "ვერ იხსნება დროებითი ფაილი PostScript-გამოტანისთვის"
@@ -1698,7 +1698,7 @@ msgstr "კუთხოვანი"
 
 #, c-format
 msgid "Could not create plugin directory '%s'"
-msgstr "ვერ შეიქმნა მოდულის საქაღალდე: „%s“"
+msgstr "ვერ შეიქმნა მოდულის საქაღალდე: „%s“⬤"
 
 msgid "Could not figure out a lookup type"
 msgstr "ვერ დადგინდა ცნობარის სახეობა"
@@ -4065,7 +4065,7 @@ msgstr "ვარკვლავის წერტილების ან მ
 
 #, c-format
 msgid "Number out of range: %g in type2 output (must be [-65536,65535])"
-msgstr "რიცხვი გასცდა არეს: %g Type2-გამოტანისას (უნდა იყოს [-65536,65535])\n"
+msgstr "რიცხვი გასცდა არეს: %g Type2-გამოტანისას (უნდა იყოს [-65536,65535])"
 
 msgid "Nushu"
 msgstr "ნუშუ"

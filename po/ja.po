@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-06 23:41+0300\n"
-"PO-Revision-Date: 2025-07-06 18:20\n"
+"POT-Creation-Date: 2025-07-09 01:00+0300\n"
+"PO-Revision-Date: 2025-07-08 21:59\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Language: ja_JP\n"
@@ -1598,7 +1598,7 @@ msgstr "マルチプルマスターフォントが不正です"
 
 #, c-format
 msgid "Bad Multiple/Alternate substitution glyph. GID %d not less than %d"
-msgstr "複数/選択可能置換グリフが不正です. GID %d が %d 未満ではありません\n"
+msgstr "複数/選択可能置換グリフが不正です. GID %d が %d 未満ではありません"
 
 msgid "Bad Name"
 msgstr "不正な名前"
@@ -1665,7 +1665,7 @@ msgstr "文脈連鎖サブテーブル内のクラス番号"
 
 #, c-format
 msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)"
-msgstr "クラス定義テーブルが不正です. グリフ範囲 %d-%d が範囲 [0,%d) を超えています\n"
+msgstr "クラス定義テーブルが不正です. グリフ範囲 %d-%d が範囲 [0,%d) を超えています"
 
 #, c-format
 msgid "Bad class def table. start=%d cnt=%d, max glyph=%d"
@@ -1679,7 +1679,7 @@ msgstr "クラス名が不正です"
 
 #, c-format
 msgid "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)"
-msgstr "文脈依存/文脈連鎖依存サブテーブルが不正です. グリフ %d が範囲 [0,%d) を超えています\n"
+msgstr "文脈依存/文脈連鎖依存サブテーブルが不正です. グリフ %d が範囲 [0,%d) を超えています"
 
 msgid "Bad count in context chaining sub-table."
 msgstr "文脈連鎖サブテーブル内の個数が間違っています."
@@ -1692,11 +1692,11 @@ msgstr "個数が間違っています."
 
 #, c-format
 msgid "Bad coverage table. Glyph %d out of range [0,%d)"
-msgstr "範囲テーブルが不正です. グリフ %d が [0,%d) の範囲外です\n"
+msgstr "範囲テーブルが不正です. グリフ %d が [0,%d) の範囲外です"
 
 #, c-format
 msgid "Bad coverage table. Glyph range %d-%d out of range [0,%d)"
-msgstr "範囲テーブルが不正です. グリフ範囲 %d-%d が [0,%d) の範囲外です\n"
+msgstr "範囲テーブルが不正です. グリフ範囲 %d-%d が [0,%d) の範囲外です"
 
 msgid "Bad dash list"
 msgstr "破線パターンが不正です"
@@ -1712,7 +1712,7 @@ msgstr "fdselect が不正です"
 
 #, c-format
 msgid "Bad few values in /BlendDesignMap for axis %s."
-msgstr "軸 %s の /BlendDesingmap の値が少なすぎて不正です.\n"
+msgstr "軸 %s の /BlendDesingmap の値が少なすぎて不正です."
 
 #, c-format
 msgid "Bad flags value, implied MORE components at end of glyph %d"
@@ -1767,7 +1767,7 @@ msgstr "画像ファイル %.100s は不正です."
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d must be less than %d"
-msgstr "カーニングペアグリフ %d と %d が不正です. これらは %d未満でなければなりません\n"
+msgstr "カーニングペアグリフ %d と %d が不正です. これらは %d未満でなければなりません"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d should have been < %d"
@@ -1785,7 +1785,11 @@ msgstr "合字グリフが不正です. GID %d が %d 未満ではありませ�
 
 #, c-format
 msgid "Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d"
-msgstr "フォーマット 2 (%d/%d) の照合テーブルが壊れています.最初=%d 最後=%d フォント内の全グリフ数=%d\n"
+msgstr "フォーマット 2 (%d/%d) の照合テーブルが壊れています.最初=%d 最後=%d フォント内の全グリフ数=%d"
+
+#, c-format
+msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d"
+msgstr "フォーマット 4 (%d/%d) の照合テーブルが壊れています.最初=%d 最後=%d フォント内の全グリフ数=%d\n"
 
 #, c-format
 msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
@@ -1901,7 +1905,7 @@ msgstr ""
 
 #, c-format
 msgid "Bad value for blend in /BlendDesignMap for axis %s."
-msgstr "軸 %s の /BlendDesignMap 内の値が間違っています.\n"
+msgstr "軸 %s の /BlendDesignMap 内の値が間違っています."
 
 msgid "Bad xfig file"
 msgstr "xfigファイルが不正です."
@@ -2444,7 +2448,7 @@ msgstr "このグリフに命令が追加できません"
 
 #, c-format
 msgid "Can't open %s"
-msgstr "%sを開けません"
+msgstr "%sを開くことができません."
 
 msgid "Can't open temporary file for truetype output."
 msgstr "TrueType出力のための一時ファイルを開けません"
@@ -5568,10 +5572,13 @@ msgid "Hmm, this 'fvar' table has more axes than FontForge can handle."
 msgstr "ふむ, この 'fvar' テーブルには FontForge が扱える限界より多くのデザイン軸が含まれています."
 
 msgid "Hmm, this 'fvar' table has more count/size pairs than I expect"
-msgstr "ふむ, この 'fvar' テーブルは予想されるより多くの個数/サイズペアが含まれています\n"
+msgstr "ふむ, この 'fvar' テーブルは予想されるより多くの個数/サイズペアが含まれています"
 
 msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense."
 msgstr "ふむ, この 'fvar' テーブルにはデザイン軸が無いので意味をなしません."
+
+msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it"
+msgstr "ふむ, この 'fvar' テーブルの個数/サイズペアは少なすぎますので, 解析を中止します\n"
 
 msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it\n"
 msgstr "ふむ, この 'fvar' テーブルの個数/サイズペアは少なすぎますので, 解析を中止します\n"
@@ -5824,10 +5831,10 @@ msgid "Ignore this problem in the future"
 msgstr "この問題は今後無視する"
 
 msgid "Ignoring duplicate /CharStrings entry"
-msgstr "/CharStringsの重複した項目を無視します\n"
+msgstr "/CharStringsの重複した項目を無視します"
 
 msgid "Ignoring duplicate /Subrs entry"
-msgstr "/Subrsの重複した項目を無視します\n"
+msgstr "/Subrsの重複した項目を無視します"
 
 msgid "Ilokano"
 msgstr "イロカノ語"
@@ -8412,7 +8419,7 @@ msgstr "星のツノの数/多角形の頂点の数"
 
 #, c-format
 msgid "Number out of range: %g in type2 output (must be [-65536,65535])"
-msgstr "数値が範囲外です: Type2 出力に %g が含まれています ([-65536,65535] の範囲内でなければなりません)\n"
+msgstr "数値が範囲外です: Type2 出力に %g が含まれています ([-65536,65535] の範囲内でなければなりません)"
 
 msgid "Numerators"
 msgstr "分子"
@@ -11282,6 +11289,10 @@ msgid "Stack underflow on hhcurveto in %s"
 msgstr "グリフ %s 内の hhcurveto 演算子がスタックアンダーフローを起こしました"
 
 #, c-format
+msgid "Stack underflow on hlineto/hmoveto in %s"
+msgstr "グリフ %s 内の hlineto/hmoveto 演算子がスタックアンダーフローを起こしました\n"
+
+#, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s\n"
 msgstr "グリフ %s 内の hlineto/hmoveto 演算子がスタックアンダーフローを起こしました\n"
 
@@ -11307,7 +11318,7 @@ msgstr "グリフ %s 内の ifelse 演算子がスタックアンダーフロー
 
 #, c-format
 msgid "Stack underflow on rlineto/rmoveto in %s"
-msgstr "グリフ %s 内の rlineto/rmoveto 演算子がスタックアンダーフローを起こしました\n"
+msgstr "グリフ %s 内の rlineto/rmoveto 演算子がスタックアンダーフローを起こしました"
 
 #, c-format
 msgid "Stack underflow on rrcurveto in %s"
@@ -11335,7 +11346,7 @@ msgstr "グリフ %s 内の vhcurveto 演算子がスタックアンダーフロ
 
 #, c-format
 msgid "Stack underflow on vlineto/vmoveto in %s"
-msgstr "グリフ %s 内の vlineto/vmoveto 演算子がスタックアンダーフローを起こしました\n"
+msgstr "グリフ %s 内の vlineto/vmoveto 演算子がスタックアンダーフローを起こしました"
 
 #, c-format
 msgid "Stack underflow on vstem in %s"
@@ -11572,6 +11583,10 @@ msgstr "下付きおよび上付き文字"
 
 #, c-format
 msgid "Substitute Glyph out of bounds in 'mort'/'morx' table %d"
+msgstr "'mort'/'morx' テーブル %d の境界を越えた置換先グリフがあります\n"
+
+#, c-format
+msgid "Substitute glyph out of bounds in 'mort'/'morx' table %d"
 msgstr "'mort'/'morx' テーブル %d の境界を越えた置換先グリフがあります\n"
 
 msgid "Substitutions"
@@ -13197,7 +13212,7 @@ msgid "Too many Unique Font IDs"
 msgstr "ユニークフォントIDが多すぎます"
 
 msgid "Too many axis positions specified in /BlendDesignPositions."
-msgstr "/BlendDesignPositions で指定された軸の位置が多すぎます.\n"
+msgstr "/BlendDesignPositions で指定された軸の位置が多すぎます."
 
 #, c-format
 msgid "Too many dashes (at most %d allowed)"
@@ -13226,7 +13241,7 @@ msgstr "表引きが多すぎます (%d 個)"
 
 #, c-format
 msgid "Too many mapping data points specified in /BlendDesignMap for axis %s."
-msgstr "軸 %s の /BlendDesignMap で指定された写像データの点が多すぎます.\n"
+msgstr "軸 %s の /BlendDesignMap で指定された写像データの点が多すぎます."
 
 #, c-format
 msgid "Too many scripts %d"
@@ -13672,7 +13687,7 @@ msgstr "検索名不明"
 msgid "Unparsed characters found after end of groups file (last line parsed was %d)."
 msgstr ""
 "グループファイルの末尾よりも後に解析されない文字があります\n"
-"(解析した最後の行は%dです).\n"
+"(解析した最後の行は%dです)."
 
 #, c-format
 msgid "Unsupported filter: %s"
@@ -13995,7 +14010,7 @@ msgstr "警告する"
 
 #, c-format
 msgid "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]"
-msgstr "警告: %d 番目の軸の値 (%g) は可能な範囲 [%g,%g] の外にあります\n"
+msgstr "警告: %d 番目の軸の値 (%g) は可能な範囲 [%g,%g] の外にあります"
 
 #, c-format
 msgid "Warning: %s has a different family name than does %s (GenerateFamily)"

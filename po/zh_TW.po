@@ -13,8 +13,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-06 23:41+0300\n"
-"PO-Revision-Date: 2025-07-05 22:20\n"
+"POT-Creation-Date: 2025-07-09 01:00+0300\n"
+"PO-Revision-Date: 2025-07-08 21:59\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Language: zh_TW\n"
@@ -1964,7 +1964,7 @@ msgstr "不當的多重主字型"
 
 #, c-format
 msgid "Bad Multiple/Alternate substitution glyph. GID %d not less than %d"
-msgstr "不當的多重/替換代替字圖。GID %d 不可少於 %d\n"
+msgstr "不當的多重/替換代替字圖。GID %d 不可少於 %d"
 
 msgid "Bad Name"
 msgstr "不當的名稱"
@@ -2087,7 +2087,7 @@ msgstr "在上下文鏈接子表格中不當的類別計數。"
 
 #, c-format
 msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)"
-msgstr "不當的類別定義表格。字圖範圍 %d-%d 超出 [0,%d)\n"
+msgstr "不當的類別定義表格。字圖範圍 %d-%d 超出 [0,%d)"
 
 #, c-format
 msgid "Bad class def table. start=%d cnt=%d, max glyph=%d"
@@ -2102,7 +2102,7 @@ msgstr "不當的顏色於第 %d 條線，必須在 000000 和 ffffff 之間。"
 
 #, c-format
 msgid "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)"
-msgstr "不當的上下文或鏈接子表格。字圖 %d 超出範圍 [0,%d)\n"
+msgstr "不當的上下文或鏈接子表格。字圖 %d 超出範圍 [0,%d)"
 
 msgid "Bad correction"
 msgstr "不當的校正"
@@ -2118,11 +2118,11 @@ msgstr "不當的計數。"
 
 #, c-format
 msgid "Bad coverage table. Glyph %d out of range [0,%d)"
-msgstr "不當的覆蓋表格。字圖 %d 超出範圍 [0,%d)\n"
+msgstr "不當的覆蓋表格。字圖 %d 超出範圍 [0,%d)"
 
 #, c-format
 msgid "Bad coverage table. Glyph range %d-%d out of range [0,%d)"
-msgstr "不當的覆蓋表格。字圖範圍 %d-%d 超出 [0,%d)\n"
+msgstr "不當的覆蓋表格。字圖範圍 %d-%d 超出 [0,%d)"
 
 msgid "Bad dash list"
 msgstr "不當的虛線表列"
@@ -2226,7 +2226,7 @@ msgstr "不當的圖像檔案：%.100s"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d must be less than %d"
-msgstr "不當的字距微調對：字圖 %d & %d 必須少於 %d\n"
+msgstr "不當的字距微調對：字圖 %d & %d 必須少於 %d"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d should have been < %d"
@@ -2251,7 +2251,11 @@ msgstr "不當的連體字字圖。GID %d 未少於 %d"
 
 #, c-format
 msgid "Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d"
-msgstr "不當的查找表格：格式=2 (%d/%d), 第一筆=%d 最末筆=%d 總計在字型=%d 中的字圖\n"
+msgstr "不當的查找表格：格式=2 (%d/%d), 第一筆=%d 最末筆=%d 總計在字型=%d 中的字圖"
+
+#, c-format
+msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d"
+msgstr "不當的查找表：格式=4 (%d/%d)，首筆=%d 末筆=%d 字型中字圖總計=%d\n"
 
 #, c-format
 msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
@@ -3079,7 +3083,7 @@ msgstr "無法指揮這個字圖"
 
 #, c-format
 msgid "Can't open %s"
-msgstr "無法開啟 %s"
+msgstr "無法開啟 %s⬤"
 
 msgid "Can't open temporary file for postscript output"
 msgstr "無法開啟暫存檔用於 postscript 輸出"
@@ -3113,7 +3117,7 @@ msgstr "無法復原"
 
 #, c-format
 msgid "Cannot open %s"
-msgstr "無法開啟 %s"
+msgstr "無法開啟 %s⬤"
 
 msgid "Cannot open a temporary file"
 msgstr "無法開啟暫時檔案"
@@ -6762,7 +6766,7 @@ msgid "Hmm, the 'avar' table is too long."
 msgstr "嗯，「avar」表格太長。"
 
 msgid "Hmm, this 'fvar' table has more count/size pairs than I expect"
-msgstr "嗯，這個「fvar」表格比我預期有更多的計數/尺寸對\n"
+msgstr "嗯，這個「fvar」表格比我預期有更多的計數/尺寸對"
 
 msgid "Hmm, this 'fvar' table is too short"
 msgstr "嗯，此「fvar」表格太短"
@@ -7047,10 +7051,10 @@ msgid "Ignore this problem in the future"
 msgstr "在未來忽略此問題"
 
 msgid "Ignoring duplicate /CharStrings entry"
-msgstr "忽略重複的 /CharStrings 條目\n"
+msgstr "忽略重複的 /CharStrings 條目"
 
 msgid "Ignoring duplicate /Subrs entry"
-msgstr "忽略重複的 /Subrs 條目\n"
+msgstr "忽略重複的 /Subrs 條目"
 
 msgid "Image"
 msgstr "圖像"
@@ -9439,7 +9443,7 @@ msgid "Next _Defined Glyph"
 msgstr "下一個定義的字圖(_D)"
 
 msgid "Nifty, you've got one of the old Apple/Adobe type1 sfnts here"
-msgstr "真有趣，這裡您獲得了舊的 Apple/Adobe type1 sfnts 之一\n"
+msgstr "真有趣，這裡您獲得了舊的 Apple/Adobe type1 sfnts 之一"
 
 msgid "Niuean"
 msgstr "紐埃語"
@@ -9733,7 +9737,7 @@ msgid "No scripts"
 msgstr "沒有文字"
 
 msgid "No selection"
-msgstr "沒有選擇"
+msgstr "無選取"
 
 msgid "No significant differences found"
 msgstr "找不到任何顯著的差異"
@@ -9995,7 +9999,7 @@ msgstr "數字超出範圍"
 
 #, c-format
 msgid "Number out of range: %g in type2 output (must be [-65536,65535])"
-msgstr "數字超出範圍：%g 在 type2 中輸出 (必須是 [-65536,65535])\n"
+msgstr "數字超出範圍：%g 在 type2 中輸出 (必須是 [-65536,65535])"
 
 #, c-format
 msgid "Number too long on line %d of %s"
@@ -13641,6 +13645,10 @@ msgid "Stack underflow on hhcurveto in %s"
 msgstr "堆疊下限溢位於 %s 中的 hhcurveto"
 
 #, c-format
+msgid "Stack underflow on hlineto/hmoveto in %s"
+msgstr "堆疊下限溢位於 %s 中的 hlineto/hmoveto\n"
+
+#, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s\n"
 msgstr "堆疊下限溢位於 %s 中的 hlineto/hmoveto\n"
 
@@ -13666,7 +13674,7 @@ msgstr "堆疊下限溢位於 %s 中的 ifelse"
 
 #, c-format
 msgid "Stack underflow on rlineto/rmoveto in %s"
-msgstr "堆疊下限溢位於 %s 中的 rlineto/rmoveto\n"
+msgstr "堆疊下限溢位於 %s 中的 rlineto/rmoveto"
 
 #, c-format
 msgid "Stack underflow on rrcurveto in %s"
@@ -13694,7 +13702,7 @@ msgstr "堆疊下限溢位於 %s 中的 vhcurveto"
 
 #, c-format
 msgid "Stack underflow on vlineto/vmoveto in %s"
-msgstr "堆疊下限溢位於 %s 中的 vlineto/vmoveto\n"
+msgstr "堆疊下限溢位於 %s 中的 vlineto/vmoveto"
 
 #, c-format
 msgid "Stack underflow on vstem in %s"
@@ -14022,6 +14030,10 @@ msgstr "下標/上標"
 
 #, c-format
 msgid "Substitute Glyph out of bounds in 'mort'/'morx' table %d"
+msgstr "替代在「mort」/「morx」表格 %d 中超出邊界的字圖\n"
+
+#, c-format
+msgid "Substitute glyph out of bounds in 'mort'/'morx' table %d"
 msgstr "替代在「mort」/「morx」表格 %d 中超出邊界的字圖\n"
 
 msgid "Substitution generates itself"
@@ -16872,7 +16884,7 @@ msgstr "警告"
 
 #, c-format
 msgid "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]"
-msgstr "警告：%dth 軸線值 (%g) 超出允許的範圍 [%g,%g]\n"
+msgstr "警告：%dth 軸線值 (%g) 超出允許的範圍 [%g,%g]"
 
 #, c-format
 msgid "Warning: %s has a different family name than does %s (GenerateFamily)"

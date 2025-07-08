@@ -18,8 +18,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-07 19:14+0300\n"
-"PO-Revision-Date: 2025-07-07 16:00\n"
+"POT-Creation-Date: 2025-07-09 01:00+0300\n"
+"PO-Revision-Date: 2025-07-08 21:59\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -220,7 +220,7 @@ msgstr "!!!!! Ungültiges Format der Koordinaten des Grundzeichens (%d) für '%c
 msgid "!!!!! Coord count (%d) for '%c%c%c%c' script does not match base tag count (%d) in 'BASE' table"
 msgstr ""
 "!!!!! Anzahl an Koordinaten (%d) für das Schriftsystem '%c%c%c%c' entspricht nicht der\n"
-"Anzahl der Markierungszeichen des Grundzeichens (%d) in der 'BASE' Tabelle\n"
+"Anzahl der Markierungszeichen des Grundzeichens (%d) in der 'BASE' Tabelle"
 
 #, c-format
 msgid "\"%.40s\" size=%d point=%d (%d,%d) distance=%g"
@@ -2402,7 +2402,7 @@ msgstr "Ungültige contents.plist"
 
 #, c-format
 msgid "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)"
-msgstr "Ungütlige Tabelle der kontextuellen oder Ketten-Substitution. Glyphe %d ausserhalb des Bereichs [0,%d)\n"
+msgstr "Ungütlige Tabelle der kontextuellen oder Ketten-Substitution. Glyphe %d ausserhalb des Bereichs [0,%d)"
 
 msgid "Bad correction"
 msgstr "Ungültige Korrektur"
@@ -2418,11 +2418,11 @@ msgstr "Ungültige Anzahl."
 
 #, c-format
 msgid "Bad coverage table. Glyph %d out of range [0,%d)"
-msgstr "Ungütlige Abdeckungstabelle. Glyphe %d ausserhalb des Bereichs [0,%d)\n"
+msgstr "Ungütlige Abdeckungstabelle. Glyphe %d ausserhalb des Bereichs [0,%d)"
 
 #, c-format
 msgid "Bad coverage table. Glyph range %d-%d out of range [0,%d)"
-msgstr "Ungütlige Abdeckungstabelle. Glyphenbereich %d – %d ausserhalb des Bereichs [0,%d)\n"
+msgstr "Ungütlige Abdeckungstabelle. Glyphenbereich %d – %d ausserhalb des Bereichs [0,%d)"
 
 msgid "Bad dash list"
 msgstr "Ungültige Strich-Liste"
@@ -2499,11 +2499,11 @@ msgstr "Ungültige Bilddatei: %.100s"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d must be less than %d"
-msgstr "Ungültiges Unterschneidungpaar: Glyphen %d und %d müssen weniger sein %d\n"
+msgstr "Ungültiges Unterschneidungpaar: Glyphen %d und %d müssen weniger sein %d"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d mustn't be negative"
-msgstr "Ungültiges Unterschneidungpaar: Glyphen %d und %d sollten nicht negativ sein\n"
+msgstr "Ungültiges Unterschneidungpaar: Glyphen %d und %d sollten nicht negativ sein"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d should have been < %d"
@@ -2511,7 +2511,7 @@ msgstr "Ungültiges Unterschneidungpaar: Glyphen %d und %d sollten kleiner sein 
 
 #, c-format
 msgid "Bad kern pair: glyphs at %d & %d are null"
-msgstr "Ungültiges Unterschneidungpaar: Glyphen bei %d und %d sind Null\n"
+msgstr "Ungültiges Unterschneidungpaar: Glyphen bei %d und %d sind Null"
 
 msgid "Bad language tag"
 msgstr "Ungültiges Markierungselement der Sprache"
@@ -3216,7 +3216,7 @@ msgstr "Dieser Glyphe können keine Instruktionen vergeben werden"
 
 #, c-format
 msgid "Can't open %s"
-msgstr "Kann %s nicht öffnen"
+msgstr "Kann %s nicht öffnen⬤"
 
 msgid "Can't open temporary file for postscript output"
 msgstr "Kann temporäre Datei für die PostScript-Ausgabe nicht öffnen"
@@ -3250,7 +3250,7 @@ msgstr "Kann nicht rückgängig gemacht werden"
 
 #, c-format
 msgid "Cannot open %s"
-msgstr "Kann %s nicht öffnen"
+msgstr "Kann %s nicht öffnen⬤"
 
 msgid "Cannot open a temporary file"
 msgstr "Kann temporäre Datei nicht öffnen"
@@ -7128,10 +7128,13 @@ msgid "Hmm, this 'fvar' table has more axes than FontForge can handle."
 msgstr "Hmm, diese 'fvar' Tabelle hat mehr Achsen als FontForge verarbeiten kann."
 
 msgid "Hmm, this 'fvar' table has more count/size pairs than I expect"
-msgstr "Hmm, diese 'fvar' Tabelle enthällt mehr Paare für Anzahl/Größe als erwartet\n"
+msgstr "Hmm, diese 'fvar' Tabelle enthällt mehr Paare für Anzahl/Größe als erwartet"
 
 msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense."
 msgstr "Hmm, diese 'fvar' Tabelle hat keine Achsen, das macht keinen Sinn."
+
+msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it"
+msgstr "Hmm, diese 'fvar' Tabelle enthällt zu wenige Paare für Anzahl/Größe, wrid nicht analysieret\n"
 
 msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it\n"
 msgstr "Hmm, diese 'fvar' Tabelle enthällt zu wenige Paare für Anzahl/Größe, wrid nicht analysieret\n"
@@ -10039,7 +10042,7 @@ msgid "No scripts"
 msgstr "Kein Schriftsysteme"
 
 msgid "No selection"
-msgstr "Keine Auswahl"
+msgstr "Keine Auswahl⬤"
 
 msgid "No significant differences found"
 msgstr "Keine wesentlichen Unterschiede gefunden"
@@ -10329,7 +10332,7 @@ msgstr "Zahl außerhalb des Bereichs"
 
 #, c-format
 msgid "Number out of range: %g in type2 output (must be [-65536,65535])"
-msgstr "Zahl außerhalb des Bereichs: %g bei Type2-Ausgabe (muss sein [-65536,65535])\n"
+msgstr "Zahl außerhalb des Bereichs: %g bei Type2-Ausgabe (muss sein [-65536,65535])"
 
 #, c-format
 msgid "Number too long on line %d of %s"
@@ -14434,6 +14437,10 @@ msgstr "Tief-/Hochgestellte Zeichen"
 msgid "Substitute Glyph out of bounds in 'mort'/'morx' table %d"
 msgstr "Substitutions-Glyphe außerhlab der Grenzen in 'mort'/'morx' Tabelle %d\n"
 
+#, c-format
+msgid "Substitute glyph out of bounds in 'mort'/'morx' table %d"
+msgstr "Substitutions-Glyphe außerhlab der Grenzen in 'mort'/'morx' Tabelle %d\n"
+
 msgid "Substitution generates itself"
 msgstr "Substitution erstellt sich selbst"
 
@@ -14448,7 +14455,7 @@ msgid "Subtable %.60s in glyph %.60s"
 msgstr "Subtabelle %.60s in Glyphe %.60s"
 
 msgid "Subtable extends beyond end of GPOS table"
-msgstr "Subtabelle reicht über das Ende der GPOS-Tabelle hinaus\n"
+msgstr "Subtabelle reicht über das Ende der GPOS-Tabelle hinaus"
 
 msgid "Subtable extends beyond end of GSUB table"
 msgstr "Subtabelle reicht über das Ende der GSUB-Tabelle hinaus"
@@ -16421,7 +16428,7 @@ msgstr "Zu viele Nachschlagetabellen %d"
 
 #, c-format
 msgid "Too many mapping data points specified in /BlendDesignMap for axis %s."
-msgstr "Zu viele Zuordnungs-Datenpunkte angegeben, in /BlendDesignMap für Achsen %s.\n"
+msgstr "Zu viele Zuordnungs-Datenpunkte angegeben, in /BlendDesignMap für Achsen %s."
 
 #, c-format
 msgid "Too many scripts %d"
@@ -17521,7 +17528,7 @@ msgstr "Warnung"
 
 #, c-format
 msgid "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]"
-msgstr "Warnung: %d. Achsenwert (%g) ist außerhalb des erlaubten Bereichs [%g,%g]\n"
+msgstr "Warnung: %d. Achsenwert (%g) ist außerhalb des erlaubten Bereichs [%g,%g]"
 
 #, c-format
 msgid "Warning: %s has a different family name than does %s (GenerateFamily)"

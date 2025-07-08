@@ -19,8 +19,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-06 23:41+0300\n"
-"PO-Revision-Date: 2025-07-05 22:20\n"
+"POT-Creation-Date: 2025-07-09 01:00+0300\n"
+"PO-Revision-Date: 2025-07-08 21:59\n"
 "Last-Translator: \n"
 "Language-Team: Korean\n"
 "Language: ko_KR\n"
@@ -1279,13 +1279,13 @@ msgid "Add DHint"
 msgstr "대각힌트를 추가"
 
 msgid "Add E_ncoding Name..."
-msgstr "인코딩명을 추가(_N)..."
+msgstr "인코딩명 추가(_N)..."
 
 msgid "Add E_xtrema"
 msgstr "극대점을 추가(_X)"
 
 msgid "Add Encoding Name..."
-msgstr "인코딩명을 추가..."
+msgstr "인코딩명 추가..."
 
 msgid "Add Entry Anchor..."
 msgstr "엔트리 앵커 추가..."
@@ -1533,7 +1533,7 @@ msgid "Alchemical Symbols"
 msgstr "연금술 기호"
 
 msgid "Align Points"
-msgstr "점 조정"
+msgstr "지점 정렬"
 
 msgid "Align:"
 msgstr "정렬:"
@@ -1805,7 +1805,7 @@ msgid "An ordered list of lookups and positions"
 msgstr "조회 및 위치 정렬 된 목록"
 
 msgid "An outline font editor"
-msgstr "폰트편집기 개요"
+msgstr "폰트 편집기 개요"
 
 msgid "An range in the \"Sizes\" field is incorrectly ordered."
 msgstr "\"사이즈\" 필드의 범위가 잘못 정렬되었다."
@@ -1850,7 +1850,7 @@ msgid "Anchor Lost"
 msgstr "고정점 손실"
 
 msgid "Anchor Point Info"
-msgstr "고정점점의 정보"
+msgstr "고정 지점 정보"
 
 #, c-format
 msgid "Anchor Point with no class name: %s"
@@ -2565,7 +2565,7 @@ msgid "BDF"
 msgstr "BDF"
 
 msgid "BDF Info..."
-msgstr "BDF정보..."
+msgstr "BDF 정보..."
 
 msgid "BDF Resolution"
 msgstr "BDF의 해상도"
@@ -2755,7 +2755,7 @@ msgstr "다중 마스터폰트가 부적절합니다"
 
 #, c-format
 msgid "Bad Multiple/Alternate substitution glyph. GID %d not less than %d"
-msgstr "복수/선택가능 변경할 글리프이 부적절합니다. GID %d が가%d 미만이 아닙니다\n"
+msgstr "복수/선택가능 변경할 글리프이 부적절합니다. GID %d が가%d 미만이 아닙니다"
 
 msgid "Bad Name"
 msgstr "올바르지 않은 명"
@@ -2780,7 +2780,7 @@ msgid "Bad Pattern Size"
 msgstr "잘못된 패턴 크기"
 
 msgid "Bad Point Match"
-msgstr "점의 맞춤이 부적절합니다"
+msgstr "지점 맞춤이 부적절합니다"
 
 msgid "Bad Point Numbering"
 msgstr "나쁜 점 번호 매기기"
@@ -2881,14 +2881,14 @@ msgid "Bad bounding box for %s."
 msgstr "%s의 바운딩 박스가 부적절합니다."
 
 msgid "Bad cidmap file"
-msgstr "cidmap파일이 부적절합니다."
+msgstr "잘못된 cidmap 파일입니다"
 
 msgid "Bad class count in contextual chaining sub-table."
 msgstr "문맥연쇄서브테이블 내의 클래스번호"
 
 #, c-format
 msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)"
-msgstr "클래스정의테이블이 부적절합니다. 글리프범위 %d-%d 가 범위 [0,%d) 를 넘어서 있습니다\n"
+msgstr "클래스정의테이블이 부적절합니다. 글리프범위 %d-%d 가 범위 [0,%d) 를 넘어서 있습니다"
 
 #, c-format
 msgid "Bad class def table. start=%d cnt=%d, max glyph=%d"
@@ -2909,7 +2909,7 @@ msgstr "잘못된 contents.plist 파일"
 
 #, c-format
 msgid "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)"
-msgstr "문맥의존/문맥연쇄의존 서브테이블이 부적절합니다. 글리프 %d 가 범위 [0,%d) 를 넘어섭니다\n"
+msgstr "문맥의존/문맥연쇄의존 서브테이블이 부적절합니다. 글리프 %d 가 범위 [0,%d) 를 넘어섭니다"
 
 msgid "Bad correction"
 msgstr "잘못된 수정"
@@ -2925,11 +2925,11 @@ msgstr "개수가 올바르지 않습니다."
 
 #, c-format
 msgid "Bad coverage table. Glyph %d out of range [0,%d)"
-msgstr "범위테이블이 부적절합니다. 글리프 %d 가 [0,%d) 의 범위 밖입니다\n"
+msgstr "범위테이블이 부적절합니다. 글리프 %d 가 [0,%d) 의 범위 밖입니다"
 
 #, c-format
 msgid "Bad coverage table. Glyph range %d-%d out of range [0,%d)"
-msgstr "범위테이블이 부적절합니다. 글리프범위 %d-%d 가 [0,%d) 의 범위 밖입니다\n"
+msgstr "범위테이블이 부적절합니다. 글리프범위 %d-%d 가 [0,%d) 의 범위 밖입니다"
 
 msgid "Bad dash list"
 msgstr "점선패턴이 부적절합니다"
@@ -2975,7 +2975,7 @@ msgstr "잘못된 특성 태그"
 
 #, c-format
 msgid "Bad few values in /BlendDesignMap for axis %s."
-msgstr "축 %s 의 /BlendDesingmap 의 값이 너무 적어 올바르지 않습니다.\n"
+msgstr "축 %s 의 /BlendDesingmap 의 값이 너무 적어 올바르지 않습니다."
 
 #, c-format
 msgid "Bad flags value, implied MORE components at end of glyph %d"
@@ -3064,7 +3064,11 @@ msgstr "이미지파일 %.100s 은 부적절합니다."
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d must be less than %d"
-msgstr "커닝 짝글리프 %d 과  %d 이 부적절합니다. %d미만이어야 합니다\n"
+msgstr "커닝 짝글리프 %d 과  %d 이 부적절합니다. %d미만이어야 합니다"
+
+#, c-format
+msgid "Bad kern pair: glyphs %d & %d mustn't be negative"
+msgstr "잘못된 케른 쌍: 글리프 %d 및 %d 은 (는) 음수가 아니어야합니다.\n"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d mustn't be negative\n"
@@ -3076,7 +3080,7 @@ msgstr "커닝 짝이 부적절합니다: 글리프 %d 과  %d 는 %d 미만이�
 
 #, c-format
 msgid "Bad kern pair: glyphs at %d & %d are null"
-msgstr "커닝 쌍이 잘못되었습니다: %d 와 %d 의 그래프가 null입니다\n"
+msgstr "커닝 쌍이 잘못되었습니다: %d 와 %d 의 그래프가 null입니다"
 
 msgid "Bad language tag"
 msgstr "언어 태그가 적합하지 않습니다"
@@ -3097,7 +3101,11 @@ msgstr "합음자글리프가 부적절합니다. GID %d가 %d 미만이 아닙�
 
 #, c-format
 msgid "Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d"
-msgstr "포맷 2 (%d/%d) 의 참조테이블이 손상되어 있습니다.최초=%d 마지막=%d 폰트내의 모든 글리프수=%d\n"
+msgstr "포맷 2 (%d/%d) 의 참조테이블이 손상되어 있습니다.최초=%d 마지막=%d 폰트내의 모든 글리프수=%d"
+
+#, c-format
+msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d"
+msgstr "포맷 4 (%d/%d) 의 참조테이블이 손상되어 있습니다.최초=%d 마지막=%d 폰트내의 모든 글리프수=%d\n"
 
 #, c-format
 msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
@@ -3288,7 +3296,7 @@ msgstr ""
 
 #, c-format
 msgid "Bad value for blend in /BlendDesignMap for axis %s."
-msgstr "축 %s의 /BlendDesignMap 내의 값이 올바르지 않습니다.\n"
+msgstr "축 %s의 /BlendDesignMap 내의 값이 올바르지 않습니다."
 
 msgid "Bad xfig file"
 msgstr "xfig파일이 부적절합니다."
@@ -3521,7 +3529,7 @@ msgid "Bitmap _Magnification..."
 msgstr "비트맵 확대(_M)..."
 
 msgid "Bitmap/outline _advance mismatch"
-msgstr "비트맵/아웃라인 진행(advance) 값 불일치(_A)"
+msgstr "비트맵/아웃라인 사전 불일치(_A)"
 
 msgid "Bits/Pixel:"
 msgstr "픽셀셰이드의 비트수:"
@@ -3842,7 +3850,7 @@ msgid "CJK Compatibility Forms"
 msgstr "한중일 호환 형태"
 
 msgid "CJK Compatibility Ideographs"
-msgstr "한중일 호환 문자"
+msgstr "한중일 호환용 한자"
 
 msgid "CJK Compatibility Ideographs Supplement"
 msgstr "한중일 호환용 한자 보충"
@@ -3921,7 +3929,7 @@ msgid "CVT variation table"
 msgstr "CVT 변형 표"
 
 msgid "C_ID Font Info..."
-msgstr "CID폰트정보(_I)..."
+msgstr "CID 폰트 정보(_I)..."
 
 msgid "C_all..."
 msgstr "불러오기(_A)..."
@@ -3948,7 +3956,7 @@ msgid "C_ontrast"
 msgstr "대조(_o)"
 
 msgid "C_opy Reference"
-msgstr "참조를 복사(_O)"
+msgstr "참조 복사(_O)"
 
 msgid "C_orner"
 msgstr "모서리점(_O)"
@@ -4018,11 +4026,11 @@ msgid ""
 "  http://www.ctan.org/\n"
 "It's part of the TeX distribution"
 msgstr ""
-"mf 프로그램을 찾을 수 없습니다. metafont(환경변수 MF에 설정)를 실행하거나,\n"
+"프로그램mf를 찾을 수 없습니다― metafont(환경변수 MF에 설정)로 실행하거나,\n"
 "이것을 포함하는 TeX 배포판 \n"
 "  http://www.tug.org/\n"
 "  http://www.ctan.org/\n"
-"을 다운로드할 필요가 있습니다"
+"다운로드할 필요가 있습니다"
 
 msgid "Can't find the file"
 msgstr "파일을 찾을 수 없습니다."
@@ -4044,7 +4052,7 @@ msgstr "본 글리프에 명령을 추가할 수 없습니다"
 
 #, c-format
 msgid "Can't open %s"
-msgstr "%s을 열 수 없습니다"
+msgstr "%s를 열 수 없습니다."
 
 msgid "Can't open temporary file for postscript output"
 msgstr "포스트 스크립트 출력을 위해 임시 파일을 열 수 없다."
@@ -4082,7 +4090,7 @@ msgstr "hotkey 정의 파일을 찾을 수 없음!\n"
 
 #, c-format
 msgid "Cannot open %s"
-msgstr "%s을(를) 열 수 없음"
+msgstr "%s를 열 수 없습니다"
 
 msgid "Cannot open a temporary file"
 msgstr "임시파일을 열 수 없습니다"
@@ -5395,7 +5403,7 @@ msgid "Couldn't find a font file named %s"
 msgstr "%s 라고하는 이름의 비트맵폰트를 찾을 수 없습니다."
 
 msgid "Couldn't find base point"
-msgstr "기준이 되는 베이스 점을 찾을 수 없습니다"
+msgstr "기준 지점을 찾을 수 없습니다"
 
 msgid "Couldn't find point in reference"
 msgstr "참조에 포함되는 점을 찾을 수 없습니다"
@@ -6697,10 +6705,10 @@ msgid "Enclosed Ideographic Supplement"
 msgstr "표의 원문자 보충"
 
 msgid "Encoding Too Large"
-msgstr "인코딩가 너무 큽니다."
+msgstr "인코딩이 너무 큽니다"
 
 msgid "Encoding name"
-msgstr "이름을 인코딩."
+msgstr "인코딩명"
 
 #, c-format
 msgid ""
@@ -7695,7 +7703,7 @@ msgid "First P_oint, Next Contour"
 msgstr "다음의 윤곽의 시작점(_O)"
 
 msgid "First Point Color"
-msgstr "첫번째 점 색상"
+msgstr "첫째 지점 색상"
 
 msgid "First and second arguments of imagemask must be integers.\n"
 msgstr "imagemask의 최초 2 개의 인수는 정수이어야 합니다.\n"
@@ -8427,7 +8435,7 @@ msgstr ""
 "2.14로 스택에 push합니다."
 
 msgid "Get Info..."
-msgstr "정보를 얻기..."
+msgstr "정보..."
 
 msgid ""
 "Get Projection Vector\n"
@@ -8439,7 +8447,7 @@ msgstr ""
 "2.14로 스택에 push합니다."
 
 msgid "Get _Info..."
-msgstr "정보를 얻기(_I)..."
+msgstr "정보(_I)..."
 
 msgid ""
 "Ghostview (perhaps other interpreters) has a problem when a\n"
@@ -8483,7 +8491,7 @@ msgstr "글리프 %d가 폰트글리프수를 넘는 글리프 %d를 참조하�
 
 #, c-format
 msgid "Glyph %d in bitmap strike %d pixels refers to a missing glyph (%d)"
-msgstr "%d 픽셀 비트맵 스트라이크를 위한 글리프 %d에서 누락된 글리프를(%d) 참조합니다"
+msgstr "비트 맵 스트라이크 %d 픽셀의 문양 %d는 누락 된 글리프 (%d) 를 참조하고 있습니다"
 
 #, c-format
 msgid ""
@@ -8538,7 +8546,7 @@ msgid "Glyph Info for %.40s"
 msgstr "글리프 %.40s 에 대한 정보"
 
 msgid "Glyph Info..."
-msgstr "글리프정보..."
+msgstr "글리프 정보..."
 
 msgid "Glyph Insertion"
 msgstr "글리프삽입"
@@ -8571,7 +8579,7 @@ msgid "Glyph Valid"
 msgstr "글리프 유효"
 
 msgid "Glyph _Info..."
-msgstr "글리프정보(_I)..."
+msgstr "글리프 정보(_I)..."
 
 msgid "Glyph _Metadata"
 msgstr "글리프의 메타데이터(_M)"
@@ -8726,10 +8734,10 @@ msgid "Glyph, %s, has no hints. FontForge will not produce many instructions."
 msgstr "문양 %s는 설명이 없습니다. FontForge는 많은 명령을 생성하지 않습니다."
 
 msgid "Glyph, Point, Size"
-msgstr "상형문자, 점, 크기"
+msgstr "글리프, 지점, 크기"
 
 msgid "Glyph, Size, Point"
-msgstr "상형문자, 크기, 점"
+msgstr "글리프, 크기, 지점"
 
 msgid "Glyph:"
 msgstr "상형문자:"
@@ -9219,10 +9227,13 @@ msgid "Hmm, this 'fvar' table has more axes than FontForge can handle."
 msgstr "흠, 이  'fvar' 테이블에서 FontForge가 취급가능한 경계보다 더 많은디자인 축이포함되어 있습니다."
 
 msgid "Hmm, this 'fvar' table has more count/size pairs than I expect"
-msgstr "흠, 이  'fvar' 테이블은 예상한것보다 많은 개수/크기 짝이 포함되어 있습니다\n"
+msgstr "흠, 이  'fvar' 테이블은 예상한것보다 많은 개수/크기 짝이 포함되어 있습니다"
 
 msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense."
 msgstr "흠, 이  'fvar' 테이블에서디자인축이 없으므로 말이 되지 않습니다."
+
+msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it"
+msgstr "흠, 이  'fvar' 테이블의 개수/크기 짝은 너무 적으므로, 해석을 중지합니다\n"
 
 msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it\n"
 msgstr "흠, 이  'fvar' 테이블의 개수/크기 짝은 너무 적으므로, 해석을 중지합니다\n"
@@ -9716,10 +9727,10 @@ msgid "Ignore this problem in the future"
 msgstr "이 문제는 이후에 무시"
 
 msgid "Ignoring duplicate /CharStrings entry"
-msgstr "/CharStrings의 중복되는 항목을 무시합니다\n"
+msgstr "/CharStrings의 중복되는 항목을 무시합니다"
 
 msgid "Ignoring duplicate /Subrs entry"
-msgstr "/Subrs의 중복되는 항목을 무시합니다\n"
+msgstr "/Subrs의 중복되는 항목을 무시합니다"
 
 msgid "Ilokano"
 msgstr "일로카노어"
@@ -9728,7 +9739,7 @@ msgid "Image"
 msgstr "이미지"
 
 msgid "Image Info"
-msgstr "이미지의 정보"
+msgstr "이미지 정보"
 
 msgid "Image Path"
 msgstr "이미지 경로"
@@ -10078,7 +10089,7 @@ msgid "Insert Glyph _Before..."
 msgstr "현재위치 이전에 삽입(_B)..."
 
 msgid "Insert Point On Spline At..."
-msgstr "스플라인에 점을 삽입합니다..."
+msgstr "스플라인에 지점 삽입..."
 
 msgid "Insert Text Outlines"
 msgstr "텍스트 윤곽선 삽입"
@@ -10721,7 +10732,7 @@ msgid "Khasi"
 msgstr "카시어"
 
 msgid "Khitan Small Script"
-msgstr "거란 소전"
+msgstr "거란 소자"
 
 msgid "Khmer"
 msgstr "크메르 문자"
@@ -11005,7 +11016,7 @@ msgid "Lao"
 msgstr "라오 문자"
 
 msgid "Last Anchor Point"
-msgstr "마지막 고정점"
+msgstr "마지막 고정 지점"
 
 #. GT: The (x,y) position on the window where the user last pressed a mouse button
 msgid "Last Press"
@@ -11057,7 +11068,7 @@ msgid "Layer"
 msgstr "레이어"
 
 msgid "Layer Info..."
-msgstr "레이어정보..."
+msgstr "레이어 정보..."
 
 msgid "Layer Name"
 msgstr "레이어 이름"
@@ -11311,7 +11322,7 @@ msgid "Load Bitmap Fonts"
 msgstr "비트맵폰트 불러오기"
 
 msgid "Load Encoding"
-msgstr "인코딩을 불러오기"
+msgstr "인코딩 불러오기"
 
 msgid "Load Glyph Name List..."
 msgstr "글리프 이름 목록 로드..."
@@ -11596,7 +11607,7 @@ msgstr ""
 
 #. GT: Here (and following) MM means "MultiMaster"
 msgid "MM"
-msgstr "멀티 마스터"
+msgstr "MM"
 
 msgid "MM Change Def Weights"
 msgstr "MM 변경 데프 중량"
@@ -11608,14 +11619,14 @@ msgid "MM _Info"
 msgstr "MM 정보(_I)"
 
 msgid "MM _Info..."
-msgstr "다중 마스터 정보(_I)..."
+msgstr "MM 정보(_I)..."
 
 #. GT: Here (and following) MM means "MultiMaster"
 msgid "MM _Reblend"
 msgstr "MM 보간을 다시 생성(_R)"
 
 msgid "MM _Validity Check"
-msgstr "MM의 유효성 검사(_V)"
+msgstr "MM 유효성 검사(_V)"
 
 msgid "MS Code Pages"
 msgstr "MS 코드 페이지"
@@ -13162,7 +13173,7 @@ msgid "Ndonga"
 msgstr "은동가어"
 
 msgid "Ne_xt Control Point"
-msgstr "다음의 제어점(_X)"
+msgstr "다음 제어점(_X)"
 
 msgid "Near"
 msgstr "가까운"
@@ -13358,7 +13369,7 @@ msgid "Nib shape not valid"
 msgstr "펜촉 모양이 잘못되었습니다."
 
 msgid "Nifty, you've got one of the old Apple/Adobe type1 sfnts here"
-msgstr "재치있는 당신은 여기에 오래된 Apple / Adobe type1 sfnt 중 하나를 가지고 있습니다\n"
+msgstr "재치있는 당신은 여기에 오래된 Apple / Adobe type1 sfnt 중 하나를 가지고 있습니다"
 
 msgid "Nisi"
 msgstr "니시어"
@@ -13477,13 +13488,13 @@ msgid "No Name"
 msgstr "이름 없음"
 
 msgid "No Next Control Point"
-msgstr "다음의 제어점이 없습니다"
+msgstr "다음 제어점이 없습니다"
 
 msgid "No Outline Font"
 msgstr "아웃라인폰트 부재"
 
 msgid "No Previous Control Point"
-msgstr "이전의 제어점이 없습니다"
+msgstr "이전 제어점이 없습니다"
 
 msgid ""
 "No ROUNDing of value[ab]\n"
@@ -13705,7 +13716,7 @@ msgid "No scripts"
 msgstr "스크립트가 없습니다"
 
 msgid "No selection"
-msgstr "선택되지 않음"
+msgstr "선택되지 않음."
 
 msgid "No significant differences found"
 msgstr "유의한 차이를 찾을 수 없음"
@@ -14046,7 +14057,7 @@ msgstr "번호가 범위를 벗어남"
 
 #, c-format
 msgid "Number out of range: %g in type2 output (must be [-65536,65535])"
-msgstr "수치가 범위 밖 입니다: Type2 출력에  %g 가 포함되어 있습니다 ([-65536,65535] 의 범위 내 이어야 합니다)\n"
+msgstr "수치가 범위 밖 입니다: Type2 출력에  %g 가 포함되어 있습니다 ([-65536,65535] 의 범위 내 이어야 합니다)"
 
 #, c-format
 msgid "Number too long on line %d of %s"
@@ -14459,7 +14470,7 @@ msgid "Open Path Color"
 msgstr "열린 경로 색상"
 
 msgid "Open Reference"
-msgstr "참조정보를 열기"
+msgstr "참조 정보 열기"
 
 msgid "Open failed"
 msgstr "열지 못했습니다."
@@ -14785,7 +14796,7 @@ msgid "P_ositions"
 msgstr "위치(_o)"
 
 msgid "P_rev Control Point"
-msgstr "이전의 제어점(_R)"
+msgstr "이전 제어점(_R)"
 
 msgid "Padding"
 msgstr "간격"
@@ -15357,10 +15368,10 @@ msgid "Point A_t"
 msgstr "위치를 지정해서 선택(_T)"
 
 msgid "Point Color"
-msgstr "점 색상"
+msgstr "지점 색상"
 
 msgid "Point Info"
-msgstr "점의 정보"
+msgstr "지점 정보"
 
 msgid "Point Size"
 msgstr "점 크기"
@@ -15391,7 +15402,7 @@ msgstr "96 dpi 화면에서의 포인트수"
 
 #, c-format
 msgid "Point: %d (%d)"
-msgstr "점: %d(%d)"
+msgstr "지점: %d (%d)"
 
 msgid "PointNumbers|_None"
 msgstr "없음(_N)"
@@ -15400,7 +15411,7 @@ msgid "Pointer"
 msgstr "포인터"
 
 msgid "Points"
-msgstr "점"
+msgstr "지점"
 
 msgid "Points (TrueType)"
 msgstr "점(TrueType)"
@@ -15409,10 +15420,10 @@ msgid "Points of _Inflection"
 msgstr "변곡점(_I)"
 
 msgid "Points on Selected _Contours"
-msgstr "선택한 윤곽의 점(_C)"
+msgstr "선택한 윤곽의 지점(_C)"
 
 msgid "Points:"
-msgstr "포인트수:"
+msgstr "지점 수:"
 
 msgid "Pointsize X"
 msgstr "포인트사이즈 X"
@@ -15668,7 +15679,7 @@ msgid "Private Dictionary"
 msgstr "비공개 사전"
 
 msgid "Private Use Area"
-msgstr "개인용 영역"
+msgstr "사용자 정의 영역"
 
 #, c-format
 msgid "Problem decompressing '%c%c%c%c' table."
@@ -15991,7 +16002,7 @@ msgid "Reference FG Color"
 msgstr "참조 FG 색상"
 
 msgid "Reference Info"
-msgstr "참조의 정보"
+msgstr "참조 정보"
 
 msgid "Reference Names"
 msgstr "참조 이름"
@@ -16117,10 +16128,10 @@ msgid "Remove Bookmark..."
 msgstr "책갈피 삭제..."
 
 msgid "Remove En_coding..."
-msgstr "인코딩을 삭제(_C)..."
+msgstr "인코딩 삭제(_C)..."
 
 msgid "Remove Encoding"
-msgstr "인코딩을 삭제"
+msgstr "인코딩 삭제"
 
 msgid "Remove Instr Tables"
 msgstr "Instr 테이블 제거"
@@ -16421,10 +16432,10 @@ msgid "Return from enabling function for menu item %s must be boolean"
 msgstr "%s 메뉴 항목에 대한 활성화 기능에서 반환은 부울이어야 함"
 
 msgid "Revalidate"
-msgstr "재검증"
+msgstr "재검토"
 
 msgid "Revalidate All"
-msgstr "모두 재확인"
+msgstr "모두 검토"
 
 msgid "Reverse Chaining Subs"
 msgstr "전방문맥연쇄의 바꾸기"
@@ -16921,7 +16932,7 @@ msgid "Sans-Serif|SS Low-x Round Geometric"
 msgstr "SS Low-x 원형 기하학적 구조"
 
 msgid "Sans-Serif|SS Matrix"
-msgstr "산 셰리프체|SS 매트릭스"
+msgstr "SS 매트릭스"
 
 msgid "Sans-Serif|SS Miscellaneous"
 msgstr "SS 기타항목"
@@ -17485,7 +17496,7 @@ msgid "Select Open Contours"
 msgstr "열린 윤곽선 선택"
 
 msgid "Select Point(s) at..."
-msgstr "지정위치의 점을 선택..."
+msgstr "지정 위치의 지점 선택..."
 
 msgid "Select Points Affected by HM"
 msgstr "힌트마스크가 생성하는 점을 선택"
@@ -17606,10 +17617,10 @@ msgid "Selected LBearing Color"
 msgstr "선택한 LBearing 색상"
 
 msgid "Selected Point Color"
-msgstr "선택한 점 색상"
+msgstr "선택한 지점 색상"
 
 msgid "Selected Point Width"
-msgstr "선택한 점 너비"
+msgstr "선택한 지점 너비"
 
 msgid "Selected Reference Border Color"
 msgstr "선택된 참조 테두리 색상"
@@ -18142,7 +18153,7 @@ msgid "Shift On Press"
 msgstr "신문 변환"
 
 msgid "Sho_w"
-msgstr "보여주다(_W)"
+msgstr "표시(_W)"
 
 msgid "Shorthand Format Controls"
 msgstr "속기 형식 제어"
@@ -18313,7 +18324,7 @@ msgid "Size set from _Window"
 msgstr "윈도우에서 설정된 크기(_W)"
 
 msgid "Size, Glyph, Point"
-msgstr "크기, 상형문자, 점"
+msgstr "크기, 글리프, 지점"
 
 msgid "Size:"
 msgstr "크기:"
@@ -18707,7 +18718,7 @@ msgstr ""
 " 6(헥스) 자리 숫자입니다."
 
 msgid "Spiro Point Info"
-msgstr "스피로 포인트 정보"
+msgstr "스피로 지점 정보"
 
 msgid "Spiros did not converge"
 msgstr "Spiros 가 수렴하지 않았습니다."
@@ -18772,6 +18783,10 @@ msgid "Stack underflow on hhcurveto in %s"
 msgstr "글리프 %s 내의 hhcurveto 연산자가 스택 언더플로우를 넘어서 있습니다"
 
 #, c-format
+msgid "Stack underflow on hlineto/hmoveto in %s"
+msgstr "글리프 %s 내의 hlineto/hmoveto 연산자가 스택 언더플로우를 넘어서 있습니다\n"
+
+#, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s\n"
 msgstr "글리프 %s 내의 hlineto/hmoveto 연산자가 스택 언더플로우를 넘어서 있습니다\n"
 
@@ -18797,7 +18812,7 @@ msgstr "글리프 %s 내의 ifelse 연산자가 스택 언더플로우를 넘어
 
 #, c-format
 msgid "Stack underflow on rlineto/rmoveto in %s"
-msgstr "글리프 %s 내의 hlineto/rmoveto 연산자가 스택 언더플로우를 넘어서 있습니다\n"
+msgstr "글리프 %s 내의 hlineto/rmoveto 연산자가 스택 언더플로우를 넘어서 있습니다"
 
 #, c-format
 msgid "Stack underflow on rrcurveto in %s"
@@ -18825,7 +18840,7 @@ msgstr "글리프 %s 내의 vhcurveto 연산자가 스택 언더플로우를 넘
 
 #, c-format
 msgid "Stack underflow on vlineto/vmoveto in %s"
-msgstr "글리프 %s 내의 vlineto/vmoveto 연산자가 스택 언더플로우를 넘어서 있습니다\n"
+msgstr "글리프 %s 내의 vlineto/vmoveto 연산자가 스택 언더플로우를 넘어서 있습니다"
 
 #, c-format
 msgid "Stack underflow on vstem in %s"
@@ -19236,6 +19251,10 @@ msgstr "아래 첨자 / 위 첨자"
 msgid "Substitute Glyph out of bounds in 'mort'/'morx' table %d"
 msgstr "'mort'/'morx' 테이블 %d 의 경계를 넘어서는 치환대상의 글리프가 있습니다\n"
 
+#, c-format
+msgid "Substitute glyph out of bounds in 'mort'/'morx' table %d"
+msgstr "'mort'/'morx' 테이블 %d 의 경계를 넘어서는 치환대상의 글리프가 있습니다\n"
+
 msgid "Substitution generates itself"
 msgstr "대체본은 저절로 생성된다."
 
@@ -19348,13 +19367,13 @@ msgid "Supplementary Multilingual Plane"
 msgstr "다국어 보충 기본"
 
 msgid "Supplementary Private Use Area A/B"
-msgstr "보조 개인 사용 영역 A/B"
+msgstr "보조 사용자 정의 영역 A/B"
 
 msgid "Supplementary Private Use Area-A"
-msgstr "보조 개인 사용 영역-A"
+msgstr "보조 사용자 정의 영역-A"
 
 msgid "Supplementary Private Use Area-B"
-msgstr "보조 개인 사용 영역-B"
+msgstr "보조 사용자 정의 영역-B"
 
 msgid "Supplementary Special-purpose Plane"
 msgstr "보조 특수 목적 평면"
@@ -20027,7 +20046,7 @@ msgid "The color of a reference"
 msgstr "참조 색상"
 
 msgid "The color of a selected point"
-msgstr "선택한 포인트의 색"
+msgstr "선택한 지점의 색상"
 
 msgid "The color of an on-curve point"
 msgstr "On-curve point의 색상"
@@ -21256,7 +21275,7 @@ msgstr "이미 그런 이름의 하위 테이블이 있으니 다른 테이블�
 
 #, c-format
 msgid "There is already an anchor point named %1$.40s in %2$.40s."
-msgstr "%1$.40s의 이름의 고정점포인트는 이미 %2$.40s에 있습니다."
+msgstr "%1$.40s의 이름의 고정 지점은 이미 %2$.40s에 있습니다."
 
 msgid "There is another glyph in the font with this name"
 msgstr "이 이름을 가진 또 다른 글자가 폰트에 있습니다."
@@ -22228,7 +22247,7 @@ msgid "Too many Unique Font IDs"
 msgstr "유니크 폰트ID가 너무 많습니다"
 
 msgid "Too many axis positions specified in /BlendDesignPositions."
-msgstr "/BlendDesignPositions에서 지정된 축의 위치가 너무 많습니다.\n"
+msgstr "/BlendDesignPositions에서 지정된 축의 위치가 너무 많습니다."
 
 #, c-format
 msgid "Too many dashes (at most %d allowed)"
@@ -22263,7 +22282,7 @@ msgstr "룩업이 너무 많습니다 (%d 個)"
 
 #, c-format
 msgid "Too many mapping data points specified in /BlendDesignMap for axis %s."
-msgstr "축 %s 의 /BlendDesignMap에서 지정된 화상데이터의 점이 너무 많습니다.\n"
+msgstr "축 %s 의 /BlendDesignMap에서 지정된 화상데이터의 점이 너무 많습니다."
 
 #, c-format
 msgid "Too many scripts %d"
@@ -22418,7 +22437,7 @@ msgid "Trimming Undo Information"
 msgstr "취소 정보 트리밍"
 
 msgid "TrueType"
-msgstr "트루타입"
+msgstr "TrueType"
 
 msgid "TrueType (Mac dfont)"
 msgstr "TrueType (Mac dfont)"
@@ -22631,7 +22650,7 @@ msgid "U+%04x"
 msgstr "U+%04x"
 
 msgid "U_nlink Reference"
-msgstr "참조를 제거(_N)"
+msgstr "참조 제거(_N)"
 
 msgid "Udmurt"
 msgstr "우두무르트어"
@@ -22889,13 +22908,13 @@ msgid "Unified Font Object"
 msgstr "Unified Font Object"
 
 msgid "Unified Font Object (UFO3)"
-msgstr "통합 글꼴 객체 (UFO3)"
+msgstr "Unified Font Object (UFO3)"
 
 msgid "Unified Font Object 2"
 msgstr "통합 글꼴 개체 2"
 
 msgid "Unified Font Object 3"
-msgstr "통합 글꼴 객체 3"
+msgstr "Unified Font Object 3"
 
 msgid "Uniform scaling for horizontal counters and side bearings"
 msgstr "수평 카운터 및 측면 베어링에 대한 균일한 확대/축소"
@@ -23081,7 +23100,7 @@ msgstr "%2$s의 %1$d 행에 구문 분석할 수 없는 포함이 있다."
 msgid "Unparsed characters found after end of groups file (last line parsed was %d)."
 msgstr ""
 "그룹파일의 말미보다도 나중에 해석되지않은 글자가 있습니다\n"
-"(해석한 마지막 행은 %d입니다).\n"
+"(해석한 마지막 행은 %d입니다)."
 
 msgid "Unreasonable DPI"
 msgstr "불합리한 DPI"
@@ -23167,7 +23186,7 @@ msgid "Urdu (Pakistan)"
 msgstr "우르두어(파키스탄)"
 
 msgid "Use CID Map"
-msgstr "CID Map를 사용"
+msgstr "CID Map 사용"
 
 msgid "Use Clip-paths (SVG)"
 msgstr "클립 경로 사용 (SVG)"
@@ -23353,10 +23372,10 @@ msgid "Vai"
 msgstr "Vai"
 
 msgid "Validate Before Saving"
-msgstr "저장하기 전에 확인"
+msgstr "저장 전 검토"
 
 msgid "Validating..."
-msgstr "확인하는 중.."
+msgstr "검토 중.."
 
 #, c-format
 msgid "Validation of %.100s"
@@ -23635,7 +23654,7 @@ msgstr "경고"
 
 #, c-format
 msgid "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]"
-msgstr "경고: %d 번째의 축의 값 (%g) 은 가능한 범위 [%g,%g] 의 밖에 있습니다\n"
+msgstr "경고: %d 번째의 축의 값 (%g) 은 가능한 범위 [%g,%g] 의 밖에 있습니다"
 
 #, c-format
 msgid "Warning: %s has a different family name than does %s (GenerateFamily)"
@@ -24803,7 +24822,7 @@ msgid "_AA"
 msgstr "쉐이드표시(_A)"
 
 msgid "_About..."
-msgstr "정보…(_A)..."
+msgstr "FontForge 정보(_A)..."
 
 msgid "_Accept inexact"
 msgstr "부정확한 일치를 허용(_A)"
@@ -24824,7 +24843,7 @@ msgid "_Add Diff Outlines to Background"
 msgstr "아웃라인의 차이를 배경에 추가(_A)"
 
 msgid "_Add Encoding Slots..."
-msgstr "인코딩슬롯을 추가(_A)..."
+msgstr "인코딩 슬롯 추가(_A)..."
 
 msgid "_Add HHint"
 msgstr "수평힌트를 추가(_A)"
@@ -24837,7 +24856,7 @@ msgstr "진행 폭만 해당(_A)"
 
 #. GT: Align these points to their average position
 msgid "_Align Points"
-msgstr "점 조정(_A)"
+msgstr "지점 정렬(_A)"
 
 msgid "_All Fonts"
 msgstr "모든 폰트(_A)"
@@ -24941,7 +24960,7 @@ msgid "_Bottom:"
 msgstr "하한(_B):"
 
 msgid "_Browse"
-msgstr "파일을 보기(_B)"
+msgstr "찾아보기(_B)"
 
 msgid "_Build Accented Glyph"
 msgstr "악센트가 있는 글리프를 조합생성(_B)"
@@ -24998,7 +25017,7 @@ msgid "_Contrast"
 msgstr "콘트라스트(_C)"
 
 msgid "_Control Point Info"
-msgstr "제어점의 정보(_C)"
+msgstr "제어점 정보(_C)"
 
 msgid "_Control Points near horizontal/vertical"
 msgstr "수평/수직에 가까운 제어점(_C)"
@@ -25020,7 +25039,7 @@ msgstr "올바른 방향 (PS/EPS)(_C)"
 
 #. GT: Here (and following) MM means "MultiMaster"
 msgid "_Create MM..."
-msgstr "MM를 생성(_C)..."
+msgstr "MM 생성(_C)..."
 
 msgid "_Create Pair"
 msgstr "페어 만들기(_C)"
@@ -25161,7 +25180,7 @@ msgid "_First"
 msgstr "최초(_F)"
 
 msgid "_First Point"
-msgstr "최초의 점(_F)"
+msgstr "첫째 지점(_F)"
 
 msgid "_Fit"
 msgstr "틀에 맞추기(_F)"
@@ -25176,10 +25195,10 @@ msgid "_Flatten bumps on lines"
 msgstr "선 위의 굴곡를 평평하게 하기(_F)"
 
 msgid "_Font Info..."
-msgstr "폰트정보(_F)..."
+msgstr "폰트 정보(_F)..."
 
 msgid "_Force Encoding"
-msgstr "인코딩을 강제적용(_F)"
+msgstr "인코딩 강제 적용(_F)"
 
 msgid "_Forget about it"
 msgstr "이건 잊어버려(_F)"
@@ -25366,7 +25385,7 @@ msgid "_Lining"
 msgstr "선 긋기(_L)"
 
 msgid "_Load Encoding..."
-msgstr "인코딩을 불러오기(_L)..."
+msgstr "인코딩 불러오기(_L)..."
 
 msgid "_Loops:"
 msgstr "고리(_L):"
@@ -25427,7 +25446,7 @@ msgid "_More points than:"
 msgstr "점의 개수의 상한(_M):"
 
 msgid "_Move Points"
-msgstr "점을 이동(_M)"
+msgstr "지점 이동(_M)"
 
 msgid "_Multi Size Glyph"
 msgstr "크기를 바꾸어 글리프를 인쇄(_M)"
@@ -25460,7 +25479,7 @@ msgid "_Next Glyph"
 msgstr "다음의 글리프(_N)"
 
 msgid "_Next Point"
-msgstr "다음의 점(_N)"
+msgstr "다음 지점(_N)"
 
 msgid "_Nib"
 msgstr "펜촉(_N)"
@@ -25478,7 +25497,7 @@ msgid "_Normal"
 msgstr "보통(_N)"
 
 msgid "_OK"
-msgstr "_OK"
+msgstr "확인(_O)"
 
 msgid "_OS/2 Version"
 msgstr "_OS/2 버전"
@@ -25532,7 +25551,7 @@ msgid "_Paste"
 msgstr "붙여넣기(_P)"
 
 msgid "_Point"
-msgstr "점(_P)"
+msgstr "지점(_P)"
 
 msgid "_Point of View Projection..."
 msgstr "투시변환(_P)..."
@@ -25565,7 +25584,7 @@ msgid "_Prev Glyph"
 msgstr "이전의 글리프(_P)"
 
 msgid "_Prev Point"
-msgstr "이전의 점(_P)"
+msgstr "이전 지점(_P)"
 
 msgid "_Print"
 msgstr "출력(_P)"
@@ -25592,10 +25611,10 @@ msgid "_Redo"
 msgstr "다시하기(_R)"
 
 msgid "_Reencode"
-msgstr "인코딩변환(_R)"
+msgstr "재인코딩(_R)"
 
 msgid "_References..."
-msgstr "참조목록(_R)..."
+msgstr "참조 목록(_R)..."
 
 msgid "_Refresh"
 msgstr "새로 고침(_R)"
@@ -25802,7 +25821,7 @@ msgid "_Transformations"
 msgstr "변형(_T)"
 
 msgid "_TrueType"
-msgstr "_TrueType"
+msgstr "TrueType(_T)"
 
 msgid "_TrueType Instructions"
 msgstr "_TrueType명령"
@@ -25853,10 +25872,10 @@ msgid "_VWidth"
 msgstr "높이(_V)"
 
 msgid "_Validate..."
-msgstr "검증(_V)..."
+msgstr "검토(_V)..."
 
 msgid "_Validation"
-msgstr "확인(_V)"
+msgstr "검토(_V)"
 
 msgid "_Version"
 msgstr "버전(_V)"
@@ -25874,7 +25893,7 @@ msgid "_Vertical Hints"
 msgstr "수직 힌트(_V)"
 
 msgid "_View"
-msgstr "표시(_V)"
+msgstr "보기(_V)"
 
 msgid "_Warn if inexact"
 msgstr "부정확한 일치를 경고(_W)"
@@ -25949,7 +25968,7 @@ msgid "alternate subs"
 msgstr "선택형 바꾸기"
 
 msgid "anchor point table"
-msgstr "고정점 표"
+msgstr "고정 지점 표"
 
 msgid "anti-alias merge table"
 msgstr "앤티에일리어싱 병합 테이블"
@@ -26370,7 +26389,7 @@ msgid "problselect|Errors"
 msgstr "오류"
 
 msgid "problselect|Missing Extrema"
-msgstr "problselect|극값 찾기"
+msgstr "극값 찾기"
 
 msgid "problselect|Open Contours"
 msgstr "열린 윤곽선"

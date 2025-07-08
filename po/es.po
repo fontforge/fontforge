@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-07 19:14+0300\n"
-"PO-Revision-Date: 2025-07-07 16:00\n"
+"POT-Creation-Date: 2025-07-09 01:00+0300\n"
+"PO-Revision-Date: 2025-07-08 21:59\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Language: es_ES\n"
@@ -1096,7 +1096,7 @@ msgstr "Una etiqueta de sistema de escritura en la línea %d (%s) es demasiado l
 
 #, c-format
 msgid "A script tag on line %d (%s) should be in ASCII.\n"
-msgstr "Una etiqueta de sistema de escritura en la línea %d (%s) debería estar en ASCII."
+msgstr "Una etiqueta de sistema de escritura en la línea %d (%s) debería estar en ASCII.\n"
 
 msgid "A separator line drawn across a dialog or in a menu"
 msgstr "Una línea separadora dibujada a través de un diálogo o en un menú"
@@ -1994,7 +1994,7 @@ msgid ""
 "that this will be ignored.\n"
 msgstr ""
 "Cualquier cambio de interletraje calculado cuyo valor absoluto\n"
-"sea menor a este será ignorado."
+"sea menor a este será ignorado.\n"
 
 msgid ""
 "Any other command with all its arguments.\n"
@@ -2887,7 +2887,7 @@ msgstr "Fuente múltiple maestra incorrecta"
 
 #, c-format
 msgid "Bad Multiple/Alternate substitution glyph. GID %d not less than %d"
-msgstr "Glifo de sustitución incorrecto/alterno: El GID %d no es menor que %d\n"
+msgstr "Glifo de sustitución incorrecto/alterno: El GID %d no es menor que %d"
 
 msgid "Bad Name"
 msgstr "Nombre incorrecto"
@@ -3057,11 +3057,11 @@ msgstr "Conteo incorrecto."
 
 #, c-format
 msgid "Bad coverage table. Glyph %d out of range [0,%d)"
-msgstr "Tabla de cobertura incorrecta. Glifo %d fuera de rango [0,%d)\n"
+msgstr "Tabla de cobertura incorrecta. Glifo %d fuera de rango [0,%d)"
 
 #, c-format
 msgid "Bad coverage table. Glyph range %d-%d out of range [0,%d)"
-msgstr "Tabla de cobertura incorrecta. Rango de glifos %d-%d fuera de rango [0,%d)\n"
+msgstr "Tabla de cobertura incorrecta. Rango de glifos %d-%d fuera de rango [0,%d)"
 
 msgid "Bad dash list"
 msgstr "Lista de guiones incorrecta"
@@ -3196,11 +3196,11 @@ msgstr "Archivo de imagen incorrecto: %.100s"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d must be less than %d"
-msgstr "Par de interletraje incorrecto: Los glifos %d y %d deben ser menores a %d\n"
+msgstr "Par de interletraje incorrecto: Los glifos %d y %d deben ser menores a %d"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d mustn't be negative"
-msgstr "Par de interletraje incorrecto: Los glifos %d y %d no deben ser negativos\n"
+msgstr "Par de interletraje incorrecto: Los glifos %d y %d no deben ser negativos"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d should have been < %d"
@@ -3208,7 +3208,7 @@ msgstr "Par de interletraje incorrecto: los glifos %d y %d deberían haber sido 
 
 #, c-format
 msgid "Bad kern pair: glyphs at %d & %d are null"
-msgstr "Par de interletraje incorrecto: Los glifos en %d y %d son nulos\n"
+msgstr "Par de interletraje incorrecto: Los glifos en %d y %d son nulos"
 
 msgid "Bad language tag"
 msgstr "Etiqueta de idioma incorrecta"
@@ -3229,7 +3229,11 @@ msgstr "Glifo de ligatura incorrecto. El GID %d no es menor que %d"
 
 #, c-format
 msgid "Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d"
-msgstr "Tabla de búsqueda errónea: formato=2 (%d/%d), primero=%d último=%d total de glifos en la fuente=%d\n"
+msgstr "Tabla de búsqueda errónea: formato=2 (%d/%d), primero=%d último=%d total de glifos en la fuente=%d"
+
+#, c-format
+msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d"
+msgstr "Tabla de búsqueda errónea: formato=4 (%d/%d), primero=%d último=%d total de glifos en la fuente=%d\n"
 
 #, c-format
 msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
@@ -3353,7 +3357,7 @@ msgid "Bad stem add"
 msgstr "Añadido de asta incorrecto"
 
 msgid "Bad subroutine INDEX in cff font.\n"
-msgstr "INDEX de subrutina incorrecto en la fuente cff."
+msgstr "INDEX de subrutina incorrecto en la fuente cff.\n"
 
 #, c-format
 msgid "Bad substitution glyph: GID %d not less than %d"
@@ -3426,7 +3430,7 @@ msgstr ""
 
 #, c-format
 msgid "Bad value for blend in /BlendDesignMap for axis %s."
-msgstr "Valor incorrecto para mezcla en /BlendDesignMap para el eje %s.\n"
+msgstr "Valor incorrecto para mezcla en /BlendDesignMap para el eje %s."
 
 msgid "Bad xfig file"
 msgstr "Archivo xfig incorrecto"
@@ -4283,7 +4287,7 @@ msgstr "No se puede dar instrucciones a este glifo"
 
 #, c-format
 msgid "Can't open %s"
-msgstr "No se puede abrir %s"
+msgstr "No se puede abrir %s⬤"
 
 msgid "Can't open temporary file for postscript output"
 msgstr "No se puede abrir el archivo temporal para la salida de PostScript"
@@ -4321,7 +4325,7 @@ msgstr "¡No se puede encontrar el archivo de definición de teclas acceso rápi
 
 #, c-format
 msgid "Cannot open %s"
-msgstr "No se puede abrir %s"
+msgstr "No se puede abrir %s⬤"
 
 msgid "Cannot open a temporary file"
 msgstr "No se puede abrir un archivo temporal"
@@ -5101,12 +5105,12 @@ msgid ""
 "including the corresponding FAQ. \n"
 msgstr ""
 "Haz clic aquí para más información sobre la OFL (SIL Open Font License) \n"
-"incluyendo las preguntas frecuentes correspondientes."
+"incluyendo las preguntas frecuentes correspondientes.\n"
 
 msgid ""
 "Click here to add the OFL metadata to your own font in the License and License URL fields. \n"
 "Then click on the License field to fill in the placeholders in sync with OFL.txt. \n"
-msgstr "Haz clic aquí para añadir los metadatos OFL a tu propia fuente en los campos de Licencia y URL de la licencia. Después, haz clic en el campo de Licencia para llenar los comodines en sincronía con OFL.txt."
+msgstr "Haz clic aquí para añadir los metadatos OFL a tu propia fuente en los campos de Licencia y URL de la licencia. Después, haz clic en el campo de Licencia para llenar los comodines en sincronía con OFL.txt.\n"
 
 msgid ""
 "Click on a range to select characters in that range.\n"
@@ -6959,7 +6963,7 @@ msgstr ""
 "Usualmente solo se especifica un sistema, pero\n"
 "ocasionalmente se especifican más.\n"
 "Un sistema de escritura es una etiqueta de un\n"
-"sistema de escritura de OpenType"
+"sistema de escritura de OpenType\n"
 
 msgid ""
 "Each lookup may contain many transformations,\n"
@@ -7179,7 +7183,7 @@ msgstr "Nombre de codificación"
 msgid ""
 "Encoding subtable for platform=%d, specific=%d (which must be 14)\n"
 "has an unsupported format %d.\n"
-msgstr "La subtabla de codificación para la plataforma=%d y su específico=%d (que debe ser 14) tiene un formato %d no soportado."
+msgstr "La subtabla de codificación para la plataforma=%d y su específico=%d (que debe ser 14) tiene un formato %d no soportado.\n"
 
 #, c-format
 msgid "Encoding subtable for platform=%d, specific=%d has a 0 length subtable."
@@ -7367,7 +7371,7 @@ msgstr "Error al guardar el archivo de configuración del plugin: '%s': %s"
 
 #, c-format
 msgid "Error: %s"
-msgstr "Error: %s"
+msgstr "Error: %s⬤"
 
 #, c-format
 msgid "Error: Expected %s, got %s"
@@ -8186,7 +8190,7 @@ msgid "First Point Color"
 msgstr "Color del primer punto"
 
 msgid "First and second arguments of imagemask must be integers.\n"
-msgstr "El primero y segundo argumento de la máscara de imagen deben ser enteros."
+msgstr "El primero y segundo argumento de la máscara de imagen deben ser enteros.\n"
 
 msgid "First to _All"
 msgstr "Primero a todo(_A)"
@@ -8436,7 +8440,7 @@ msgid "FontForge does not support anonymous tables on line %d of %s"
 msgstr "FontForge no soporta tablas anónimas en la línea %d de %s"
 
 msgid "FontForge does not support dictionary based imagemask operators.\n"
-msgstr "FontForge no soporta operadores de máscaras de imagen basadas en diccionarios."
+msgstr "FontForge no soporta operadores de máscaras de imagen basadas en diccionarios.\n"
 
 msgid "FontForge does not support synthetic fonts"
 msgstr "FontForge no soporta fuentes sintéticas"
@@ -8676,7 +8680,7 @@ msgid "FoundryName"
 msgstr "Nombre de fundición"
 
 msgid "Fourth argument of imagemask must be a 6-element transformation matrix.\n"
-msgstr "El cuarto argumento de la máscara de imagen debe ser una matriz de transformación de 6 elementos."
+msgstr "El cuarto argumento de la máscara de imagen debe ser una matriz de transformación de 6 elementos.\n"
 
 msgid "FractionDenominatorDisplayStyleGapMin:"
 msgstr "Espacio mínimo del estilo de visualización del denominador de fracción:"
@@ -9922,10 +9926,13 @@ msgid "Hmm, this 'fvar' table has more axes than FontForge can handle."
 msgstr "Mmm, esta tabla 'fvar' tiene más ejes de los que FontForge puede manejar."
 
 msgid "Hmm, this 'fvar' table has more count/size pairs than I expect"
-msgstr "Mmm, esta tabla 'fvar' tiene más pares de contador/tamaño de lo que espero\n"
+msgstr "Mmm, esta tabla 'fvar' tiene más pares de contador/tamaño de lo que espero"
 
 msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense."
 msgstr "Mmm, esta tabla 'fvar' no tiene ejes. Eso no tiene sentido."
+
+msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it"
+msgstr "Mmm, esta tabla 'fvar' tiene muy pocos pares de contador/tamaño. No debo interpretarla\n"
 
 msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it\n"
 msgstr "Mmm, esta tabla 'fvar' tiene muy pocos pares de contador/tamaño. No debo interpretarla\n"
@@ -11192,14 +11199,14 @@ msgid ""
 " states. Which makes me think there's probably an error\n"
 msgstr ""
 "Me parece que hay una subtabla morx con más de 1000 estados.\n"
-" Lo que me hace pensar que probablemente hay un error"
+" Lo que me hace pensar que probablemente hay un error\n"
 
 msgid ""
 "It looks to me as though there's a morx sub-table with more than 1000\n"
 " transitions. Which makes me think there's probably an error\n"
 msgstr ""
 "Me parece que hay una subtabla morx con más de 1000 transiciones.\n"
-" Lo que me hace pensar que probablemente hay un error"
+" Lo que me hace pensar que probablemente hay un error\n"
 
 msgid "Italian"
 msgstr "Italiano"
@@ -12856,7 +12863,7 @@ msgid ""
 "Make sure similar or equal counters remain the same in gridfitted outlines.\n"
 "Enabling this option may result in glyph advance widths being\n"
 "inconsistently scaled at some PPEMs."
-msgstr "Se asegura de que contadores similares o iguales permanezcan igual en contornos que se ajustan a la cuadrícula. Activar esta opción puede resultar en anchos de avance de glifos siendo inconsistentes al escalarse por algunos PPEMs.\n"
+msgstr "Se asegura de que contadores similares o iguales permanezcan igual en contornos que se ajustan a la cuadrícula. Activar esta opción puede resultar en anchos de avance de glifos siendo inconsistentes al escalarse por algunos PPEMs."
 
 msgid "Make the counters narrower"
 msgstr "Estrechar los contadores"
@@ -14811,7 +14818,7 @@ msgstr "No se especificaron banderas en las banderas de búsqueda en la línea %
 
 #, c-format
 msgid "No glyph named %s, used as a pattern in %s"
-msgstr "Ningún glifo llamado %s, usado como patrón en %s"
+msgstr "Ningún glifo llamado %s, usado como patrón en %s\n"
 
 #, c-format
 msgid "No glyph named %s."
@@ -14928,7 +14935,7 @@ msgid "No scripts"
 msgstr "Sin scripts"
 
 msgid "No selection"
-msgstr "Sin selección"
+msgstr "Sin selección⬤"
 
 msgid "No significant differences found"
 msgstr "No se encontraron diferencias significativas"
@@ -19312,7 +19319,7 @@ msgid ""
 msgstr ""
 "Establecer el vector de libertad al eje de coordenadas[a] (SFVTCA[a])\n"
 " 0=>eje y\n"
-" 1=>eje x"
+" 1=>eje x\n"
 
 msgid ""
 "Set Freedom Vector To Line[a]\n"
@@ -19389,7 +19396,7 @@ msgid ""
 msgstr ""
 "Establecer el vector de proyección al eje de coordenadas[a] (SPVTCA[a])\n"
 " 0=>eje y\n"
-" 1=>eje x"
+" 1=>eje x\n"
 
 msgid ""
 "Set Projection Vector To Line[a]\n"
@@ -19519,7 +19526,7 @@ msgid ""
 msgstr ""
 "Establecer los vectores de libertad y proyección para coordenar el eje[a] (SVTCA[a])\n"
 " 0=>ambos al eje y\n"
-" 1=>ambos al eje x"
+" 1=>ambos al eje x\n"
 
 msgid "Set the fontview's selection to be the glyphs named here"
 msgstr "Establece la selección de la vista de fuente para ser los glifos nombrados aquí"
@@ -20409,6 +20416,10 @@ msgid "Stack underflow on hhcurveto in %s"
 msgstr "Subflujo de pila en hhcurveto en %s"
 
 #, c-format
+msgid "Stack underflow on hlineto/hmoveto in %s"
+msgstr "Subflujo de pila en hlineto/hmoveto en %s\n"
+
+#, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s\n"
 msgstr "Subflujo de pila en hlineto/hmoveto en %s\n"
 
@@ -20434,7 +20445,7 @@ msgstr "Subflujo de pila en ifelse en %s"
 
 #, c-format
 msgid "Stack underflow on rlineto/rmoveto in %s"
-msgstr "Subflujo de pila en rlineto/rmoveto en %s\n"
+msgstr "Subflujo de pila en rlineto/rmoveto en %s"
 
 #, c-format
 msgid "Stack underflow on rrcurveto in %s"
@@ -20462,7 +20473,7 @@ msgstr "Subflujo de pila en vhcurveto en %s"
 
 #, c-format
 msgid "Stack underflow on vlineto/vmoveto in %s"
-msgstr "Subflujo de pila en vlineto/vmoveto en %s\n"
+msgstr "Subflujo de pila en vlineto/vmoveto en %s"
 
 #, c-format
 msgid "Stack underflow on vstem in %s"
@@ -20883,6 +20894,10 @@ msgstr "Subíndices/superíndices"
 
 #, c-format
 msgid "Substitute Glyph out of bounds in 'mort'/'morx' table %d"
+msgstr "Glifo de sustitución fuera de límites en la tabla \"mort'/'morx\" %d\n"
+
+#, c-format
+msgid "Substitute glyph out of bounds in 'mort'/'morx' table %d"
 msgstr "Glifo de sustitución fuera de límites en la tabla \"mort'/'morx\" %d\n"
 
 msgid "Substitution generates itself"
@@ -22092,7 +22107,7 @@ msgstr "La etiqueta de característica en la línea %d (%s) es demasiado larga. 
 
 #, c-format
 msgid "The feature tag on line %d (%s) should be in ASCII.\n"
-msgstr "La etiqueta de característica en la línea %d (%s) debería estar en ASCII."
+msgstr "La etiqueta de característica en la línea %d (%s) debería estar en ASCII.\n"
 
 #, c-format
 msgid "The following error occurred on the selected glyphs: %.100s"
@@ -22630,7 +22645,7 @@ msgstr "La etiqueta de sistema de escritura en la línea %d (%s) es demasiado la
 
 #, c-format
 msgid "The script tag on line %d (%s) should be in ASCII.\n"
-msgstr "La etiqueta de sistema de escritura en la línea %d (%s) debería estar en ASCII."
+msgstr "La etiqueta de sistema de escritura en la línea %d (%s) debería estar en ASCII.\n"
 
 #, c-format
 msgid "The search pattern was not found again in the font %.100s"
@@ -23165,7 +23180,7 @@ msgid "Third Widths"
 msgstr "Anchos de tercio"
 
 msgid "Third argument of imagemask must be a boolean.\n"
-msgstr "El tercer argumento de la máscara de imagen debe ser un booleano."
+msgstr "El tercer argumento de la máscara de imagen debe ser un booleano.\n"
 
 msgid "This anchor class already is associated with a point in this character"
 msgstr "Esta clase de anclaje ya está asociada con un punto en este carácter"
@@ -23296,14 +23311,14 @@ msgid ""
 "  FontForge will only read one of them ('BASE').\n"
 msgstr ""
 "Esta fuente contiene tanto una tabla \"BASE\" como una tabla \"bsln\".\n"
-"  FontForge solo leerá una de ellas (\"BASE\")."
+"  FontForge solo leerá una de ellas (\"BASE\").\n"
 
 msgid ""
 "This font contains both a 'kern' table and a 'GPOS' table.\n"
 "  The 'kern' table will only be read if there is no 'kern' feature in 'GPOS'.\n"
 msgstr ""
 "Este fuente contiene tanto una tabla \"kern\" como una tabla \"GPOS\".\n"
-" La tabla \"kern\" solo será leída si no hay ningunacaracterística \"kern\" en \"GPOS\"."
+" La tabla \"kern\" solo será leída si no hay ningunacaracterística \"kern\" en \"GPOS\".\n"
 
 msgid ""
 "This font contains both a 'mor[tx]' table and a 'GSUB' table.\n"
@@ -23390,14 +23405,14 @@ msgid ""
 "another extension sub-table.\n"
 msgstr ""
 "Esta fuente es errónea: tiene una subtabla de extensión GPOS que apunta\n"
-"a otra subtabla de extensión."
+"a otra subtabla de extensión.\n"
 
 msgid ""
 "This font is erroneous: it has a GSUB extension subtable that points to\n"
 "another extension sub-table.\n"
 msgstr ""
 "Esta fuente es errónea: tiene una subtabla de extensión GSUB que apunta\n"
-"a otra subtabla de extensión."
+"a otra subtabla de extensión.\n"
 
 msgid ""
 "This font is marked with an FSType of 2 (Restricted\n"
@@ -23539,7 +23554,7 @@ msgstr ""
 "Esta es una clase abstracta que define características comunes de la\n"
 "Vista de fuente, Vista de caracteres, Vista de mapa de bits y Vista de métricas.\n"
 "\n"
-"Presiona la tecla de ayuda o F1 para abrir una página web sobre esta herramienta."
+"Presiona la tecla de ayuda o F1 para abrir una página web sobre esta herramienta.\n"
 
 msgid ""
 "This is an identifying number shared by all members of\n"
@@ -24102,7 +24117,7 @@ msgid "Too many Unique Font IDs"
 msgstr "Demasiadas IDs únicas de fuente"
 
 msgid "Too many axis positions specified in /BlendDesignPositions."
-msgstr "Demasiadas posiciones de eje especificadas en /BlendDesignPositions.\n"
+msgstr "Demasiadas posiciones de eje especificadas en /BlendDesignPositions."
 
 #, c-format
 msgid "Too many dashes (at most %d allowed)"
@@ -24950,7 +24965,7 @@ msgid ""
 " table is garbage, I'm giving up on it.\n"
 msgstr ""
 "Conteo de componentes de ligadura improbable (%d). Sospecho que\n"
-"esta subtabla de ligaduras es basura. Me rindo con ella."
+"esta subtabla de ligaduras es basura. Me rindo con ella.\n"
 
 #, c-format
 msgid "Unlikely length for table, so I'm ignoring it. %u"
@@ -24965,7 +24980,7 @@ msgid ""
 " table is garbage, I'm giving up on it.\n"
 msgstr ""
 "Conteo de escrituras improbable (%d). Sospecho\n"
-"que la tabla JSTF es basura. Me rindo con ella."
+"que la tabla JSTF es basura. Me rindo con ella.\n"
 
 msgid "Unlikely stem threshold"
 msgstr "Umbral de astas improbable"
@@ -25641,7 +25656,7 @@ msgid ""
 " FontForge doesn't support this.\n"
 msgstr ""
 "Advertencia: \"cvar\" contiene datos de tupla intermedios.\n"
-" FontForge no soporta esto."
+" FontForge no soporta esto.\n"
 
 #, c-format
 msgid "Warning: Accuracy target %lf less than minimum %lf, using %lf instead\n"
@@ -25676,7 +25691,7 @@ msgid ""
 " Only one will be used here.\n"
 msgstr ""
 "Advertencia: La codificación %d (0x%x) es mapeada a al menos dos ubicaciones (%s@0x%02x y %s@0x%02x).\n"
-" Solo se usará una aquí."
+" Solo se usará una aquí.\n"
 
 msgid "Warning: Font Bucket version 4 treated as 0."
 msgstr "Advertencia: Versión 4 de Font Bucket tratada como 0."
@@ -26315,7 +26330,7 @@ msgid ""
 msgstr ""
 "Los argumentos de anchura o altura para la máscara de imagen \n"
 "contienen valores no válidos (ya sea negativos o requieren más datos\n"
-"que los proporcionados)."
+"que los proporcionados).\n"
 
 msgid "Width/Height of Thick Stems:"
 msgstr "Ancho/altura de astas gruesas:"

@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-07 19:14+0300\n"
-"PO-Revision-Date: 2025-07-07 16:00\n"
+"POT-Creation-Date: 2025-07-09 01:00+0300\n"
+"PO-Revision-Date: 2025-07-08 21:59\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Language: uk_UA\n"
@@ -2532,7 +2532,7 @@ msgstr "Помилковий багатоосновний шрифт"
 
 #, c-format
 msgid "Bad Multiple/Alternate substitution glyph. GID %d not less than %d"
-msgstr "Помилковий кратний/альтернативний гліф підстановки. GID %d не менше за %d\n"
+msgstr "Помилковий кратний/альтернативний гліф підстановки. GID %d не менше за %d"
 
 msgid "Bad Name"
 msgstr "Помилкова назва"
@@ -2665,7 +2665,7 @@ msgstr "Помилкова кількість класів у контексту
 
 #, c-format
 msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)"
-msgstr "Помилкова таблиця визначення класів. Діапазон гліфів %d—%d перебуває поза межами [0,%d)\n"
+msgstr "Помилкова таблиця визначення класів. Діапазон гліфів %d—%d перебуває поза межами [0,%d)"
 
 #, c-format
 msgid "Bad class def table. start=%d cnt=%d, max glyph=%d"
@@ -2686,7 +2686,7 @@ msgstr "Помилковий файл contents.plist"
 
 #, c-format
 msgid "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)"
-msgstr "Помилкова контекстуальна або ланцюгова підтаблиця. Гліф %d перебуває поза діапазоном [0,%d)\n"
+msgstr "Помилкова контекстуальна або ланцюгова підтаблиця. Гліф %d перебуває поза діапазоном [0,%d)"
 
 msgid "Bad correction"
 msgstr "Помилкове виправлення"
@@ -2702,11 +2702,11 @@ msgstr "Помилкова кількість."
 
 #, c-format
 msgid "Bad coverage table. Glyph %d out of range [0,%d)"
-msgstr "Помилкова таблиця покриття. Гліф %d перебуває поза діапазоном [0,%d)\n"
+msgstr "Помилкова таблиця покриття. Гліф %d перебуває поза діапазоном [0,%d)"
 
 #, c-format
 msgid "Bad coverage table. Glyph range %d-%d out of range [0,%d)"
-msgstr "Помилкова таблиця покриття. Діапазон гліфів %d—%d поза межами [0,%d)\n"
+msgstr "Помилкова таблиця покриття. Діапазон гліфів %d—%d поза межами [0,%d)"
 
 msgid "Bad dash list"
 msgstr "Помилковий список рисок"
@@ -2752,7 +2752,7 @@ msgstr "Помилковий теґ модифікації"
 
 #, c-format
 msgid "Bad few values in /BlendDesignMap for axis %s."
-msgstr "Декілька помилкових значень у /BlendDesignMap для вісі %s.\n"
+msgstr "Декілька помилкових значень у /BlendDesignMap для вісі %s."
 
 #, c-format
 msgid "Bad flags value, implied MORE components at end of glyph %d"
@@ -2841,11 +2841,11 @@ msgstr "Помилковий файл зображення: %.100s"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d must be less than %d"
-msgstr "Помилкова пара кернінґу: гліфи %d і %d мають бути менші за %d\n"
+msgstr "Помилкова пара кернінґу: гліфи %d і %d мають бути менші за %d"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d mustn't be negative"
-msgstr "Помилкова пара кернінґу: гліфи %d і %d не повинні бути від’ємними\n"
+msgstr "Помилкова пара кернінґу: гліфи %d і %d не повинні бути від’ємними"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d should have been < %d"
@@ -2853,7 +2853,7 @@ msgstr "Помилкова пара кернінґу: гліфи %d і %d маю
 
 #, c-format
 msgid "Bad kern pair: glyphs at %d & %d are null"
-msgstr "Помилкова пара кернінґу: гліфи %d і %d є порожніми\n"
+msgstr "Помилкова пара кернінґу: гліфи %d і %d є порожніми"
 
 msgid "Bad language tag"
 msgstr "Помилкова мітка мови"
@@ -2874,7 +2874,11 @@ msgstr "Помилковий гліф лігатури. GID %d не менше �
 
 #, c-format
 msgid "Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d"
-msgstr "Помилкова таблиця фільтрування: формат=2 (%d/%d), перший=%d останній=%d загалом гліфів у шрифті=%d\n"
+msgstr "Помилкова таблиця фільтрування: формат=2 (%d/%d), перший=%d останній=%d загалом гліфів у шрифті=%d"
+
+#, c-format
+msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d"
+msgstr "Помилкова таблиця фільтрування: формат=4 (%d/%d), перший=%d останній=%d загалом гліфів у шрифті=%d\n"
 
 #, c-format
 msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
@@ -3063,7 +3067,7 @@ msgstr ""
 
 #, c-format
 msgid "Bad value for blend in /BlendDesignMap for axis %s."
-msgstr "Помилкове значення blend у /BlendDesignMap для вісі %s.\n"
+msgstr "Помилкове значення blend у /BlendDesignMap для вісі %s."
 
 msgid "Bad xfig file"
 msgstr "Помилковий файл xfig"
@@ -3768,7 +3772,7 @@ msgstr "Не вдалося створити інструкції для цьо�
 
 #, c-format
 msgid "Can't open %s"
-msgstr "Не вдалося відкрити %s"
+msgstr "Не вдалося відкрити %s⬤"
 
 msgid "Can't open temporary file for postscript output"
 msgstr "Не вдалося відкрити файл тимчасових даних для виведення даних postscript"
@@ -3806,7 +3810,7 @@ msgstr "Не вдалося визначити розташування вашо
 
 #, c-format
 msgid "Cannot open %s"
-msgstr "Не вдалося відкрити %s"
+msgstr "Не вдалося відкрити %s⬤"
 
 msgid "Cannot open a temporary file"
 msgstr "Не вдалося відкрити файл тимчасових даних"
@@ -8448,10 +8452,13 @@ msgid "Hmm, this 'fvar' table has more axes than FontForge can handle."
 msgstr "Г-м-м, ця таблиця «fvar» містить більше осей, ніж FontForge здатен обробити."
 
 msgid "Hmm, this 'fvar' table has more count/size pairs than I expect"
-msgstr "Г-м-м, у цій таблиці «fvar» міститься більше пар номер-розмір, ніж має бути\n"
+msgstr "Г-м-м, у цій таблиці «fvar» міститься більше пар номер-розмір, ніж має бути"
 
 msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense."
 msgstr "Г-м-м, ця таблиця «fvar» не містить даних осей, така таблиця є беззмістовною."
+
+msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it"
+msgstr "Г-м-м, у цій таблиці «fvar» занадто мало пар номер-розмір, її не вдасться обробити\n"
 
 msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it\n"
 msgstr "Г-м-м, у цій таблиці «fvar» занадто мало пар номер-розмір, її не вдасться обробити\n"
@@ -8921,10 +8928,10 @@ msgid "Ignore this problem in the future"
 msgstr "Ігнорувати цю проблему надалі"
 
 msgid "Ignoring duplicate /CharStrings entry"
-msgstr "Ігнорування дубліката запису /CharStrings\n"
+msgstr "Ігнорування дубліката запису /CharStrings"
 
 msgid "Ignoring duplicate /Subrs entry"
-msgstr "Ігнорування дубліката запису /Subrs\n"
+msgstr "Ігнорування дубліката запису /Subrs"
 
 msgid "Ilokano"
 msgstr "Ілоканська"
@@ -12401,7 +12408,7 @@ msgid "Next _Line in Word List"
 msgstr "Наступний _рядок у списку слів"
 
 msgid "Nifty, you've got one of the old Apple/Adobe type1 sfnts here"
-msgstr "Чудово, тут ви маєте один з застарілих sfnt type1 Apple/Adobe\n"
+msgstr "Чудово, тут ви маєте один з застарілих sfnt type1 Apple/Adobe"
 
 msgid "Nisi"
 msgstr "Нісі"
@@ -12741,7 +12748,7 @@ msgid "No scripts"
 msgstr "Не вказано писемності"
 
 msgid "No selection"
-msgstr "Нічого не позначено"
+msgstr "Нічого не позначено⬤"
 
 msgid "No significant differences found"
 msgstr "Значних відмінностей не виявлено"
@@ -13065,7 +13072,7 @@ msgstr "Число поза діапазоном!"
 
 #, c-format
 msgid "Number out of range: %g in type2 output (must be [-65536,65535])"
-msgstr "Число, що лежить поза межами діапазону: %g у даних type2 (число має належати проміжку [-65536,65535])\n"
+msgstr "Число, що лежить поза межами діапазону: %g у даних type2 (число має належати проміжку [-65536,65535])"
 
 #, c-format
 msgid "Number too long on line %d of %s"
@@ -17617,6 +17624,10 @@ msgid "Stack underflow on hhcurveto in %s"
 msgstr "Вичерпання стеку для hhcurveto у %s"
 
 #, c-format
+msgid "Stack underflow on hlineto/hmoveto in %s"
+msgstr "Вичерпання стеку для hlineto/hmoveto у %s\n"
+
+#, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s\n"
 msgstr "Вичерпання стеку для hlineto/hmoveto у %s\n"
 
@@ -17642,7 +17653,7 @@ msgstr "Вичерпання стеку для ifelse у %s"
 
 #, c-format
 msgid "Stack underflow on rlineto/rmoveto in %s"
-msgstr "Вичерпання стеку для rlineto/rmoveto у %s\n"
+msgstr "Вичерпання стеку для rlineto/rmoveto у %s"
 
 #, c-format
 msgid "Stack underflow on rrcurveto in %s"
@@ -17670,7 +17681,7 @@ msgstr "Вичерпання стеку для vhcurveto у %s"
 
 #, c-format
 msgid "Stack underflow on vlineto/vmoveto in %s"
-msgstr "Вичерпання стеку для vlineto/vmoveto у %s\n"
+msgstr "Вичерпання стеку для vlineto/vmoveto у %s"
 
 #, c-format
 msgid "Stack underflow on vstem in %s"
@@ -18072,6 +18083,10 @@ msgstr "Верхні/Нижні індекси"
 
 #, c-format
 msgid "Substitute Glyph out of bounds in 'mort'/'morx' table %d"
+msgstr "Гліф-підстановка поза межами можливого діапазону у таблиці «mort»/«morx» %d\n"
+
+#, c-format
+msgid "Substitute glyph out of bounds in 'mort'/'morx' table %d"
 msgstr "Гліф-підстановка поза межами можливого діапазону у таблиці «mort»/«morx» %d\n"
 
 msgid "Substitution generates itself"
@@ -20933,7 +20948,7 @@ msgid "Too many Unique Font IDs"
 msgstr "Занадто багато унікальних ідентифікаторів шрифту"
 
 msgid "Too many axis positions specified in /BlendDesignPositions."
-msgstr "У /BlendDesignPositions визначено занадто багато розташувань осей.\n"
+msgstr "У /BlendDesignPositions визначено занадто багато розташувань осей."
 
 #, c-format
 msgid "Too many dashes (at most %d allowed)"
@@ -20968,7 +20983,7 @@ msgstr "Занадто багато фільтрувань %d"
 
 #, c-format
 msgid "Too many mapping data points specified in /BlendDesignMap for axis %s."
-msgstr "У /BlendDesignMap для вісі %s задано занадто багато точок відображення даних.\n"
+msgstr "У /BlendDesignMap для вісі %s задано занадто багато точок відображення даних."
 
 #, c-format
 msgid "Too many scripts %d"
@@ -22257,7 +22272,7 @@ msgstr "Попередження"
 
 #, c-format
 msgid "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]"
-msgstr "Попередження: %d-те значення вісі (%g) лежить поза дозволеним діапазоном [%g,%g]\n"
+msgstr "Попередження: %d-те значення вісі (%g) лежить поза дозволеним діапазоном [%g,%g]"
 
 #, c-format
 msgid "Warning: %s has a different family name than does %s (GenerateFamily)"

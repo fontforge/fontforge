@@ -11,8 +11,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-07 00:36+0300\n"
-"PO-Revision-Date: 2025-07-07 14:24\n"
+"POT-Creation-Date: 2025-07-09 01:00+0300\n"
+"PO-Revision-Date: 2025-07-08 21:59\n"
 "Last-Translator: \n"
 "Language-Team: Croatian\n"
 "Language: hr_HR\n"
@@ -137,27 +137,27 @@ msgstr " Neispravna kontekstna tablica, znemaruje se"
 
 #. GT: This continues a multi-line error message, hence the leading space
 msgid " Bad cursive alignment table, ignored"
-msgstr " Neispravna tablica poravnanja kurziva, zanemaruje se"
+msgstr " Neispravna tablica poravnanja kurziva, zanemaruje se_"
 
 #. GT: This continues a multi-line error message, hence the leading space
 msgid " Bad kerning class table, ignored"
-msgstr " Neispravna tablica klasa podrezivanja, zanemaruje se"
+msgstr " Neispravna tablica klasa podrezivanja, zanemaruje se_"
 
 msgid " Bad ligature table, ignored"
 msgstr " Neispravna tablica ligatura, zanemaruje se"
 
 msgid " Bad mark attachment table, ignored"
-msgstr " Neispravna tablica povezivanja dijakritičkih znakova, zanemaruje se"
+msgstr " Neispravna tablica povezivanja dijakritičkih znakova, zanemaruje se_"
 
 msgid " Bad multiple substitution table, ignored"
 msgstr " Neispravna tablica višestruke zamjene, zanemaruje se"
 
 #. GT: This continues a multi-line error message, hence the leading space
 msgid " Bad pairwise kerning table, ignored"
-msgstr " Neispravna tablica podrezivanja parova, zanemaruje se"
+msgstr " Neispravna tablica podrezivanja parova, zanemaruje se_"
 
 msgid " Bad simple positioning table, ignored"
-msgstr " Neispravna tablica jednostavnog pozicioniranja, zanemaruje se"
+msgstr " Neispravna tablica jednostavnog pozicioniranja, zanemaruje se_"
 
 msgid " Bad simple substitution table, ignored"
 msgstr " Neispravna tablica jednostavne zamjene, zanemaruje se"
@@ -206,7 +206,7 @@ msgid " Used in %s\n"
 msgstr " Korišteno u %s\n"
 
 msgid " _Em Size:"
-msgstr " _Veličina četverca:"
+msgstr "_Veličina četverca:"
 
 msgid " refers to a missing glyph"
 msgstr " referencira se na nedostajući grafem"
@@ -228,7 +228,7 @@ msgstr "!!!!! Broj koordinata (%d) za pismo '%c%c%c%c' se ne poklapa s brojem oz
 
 #, c-format
 msgid "\"%.40s\" size=%d point=%d (%d,%d) distance=%g"
-msgstr "\"%.40s\" veličina=%d točka=%d (%d,%d) udaljenost=%g"
+msgstr "\"%.40s” veličina=%d točka=%d (%d,%d) udaljenost=%g"
 
 #, c-format
 msgid "\"%s\" is not the name of a known named anchor on line %d of %s."
@@ -860,7 +860,9 @@ msgstr ""
 
 #, c-format
 msgid "A coverage table was found in a glyph or class based contextual lookup, starting at: %.20s..."
-msgstr "Tablica pokrivenosti je nađena u grafemskoj ili klasnoj kontekstnoj tablici definicija, počevši pri: %.20s …"
+msgstr ""
+"Tablica pokrivenosti je nađena u grafemskoj ili klasnoj kontekstnoj tablici definicija,\n"
+"počevši pri: %.20s …"
 
 msgid "A coverage table:"
 msgstr "Tablica pokrivenosti:"
@@ -931,7 +933,7 @@ msgstr "Naziv grafema ne smije započeti s brojkom niti s točkom"
 
 #, c-format
 msgid "A glyph name must be ASCII, without spaces and may not contain the characters \"([{<>}])/%%\", and should contain only alphanumerics, periods and underscores"
-msgstr "Naziv grafema treba biti zadan ASCII znakovima, bez razmaka i ne smije sadržati znakove \"([{<>}])/%%\" te bi trebao sadržati samo alfanumeričke znakove, točke i podvlake"
+msgstr "Naziv grafema treba biti zadan ASCII znakovima, bez razmaka i ne smije sadržati znakove ([{<>}])/%%, te bi trebao sadržati samo alfanumeričke znakove, točke i podvlake"
 
 msgid ""
 "A glyph name should contain only alphanumerics, periods and underscores\n"
@@ -991,7 +993,7 @@ msgstr ""
 
 #, c-format
 msgid "A lookup invocation must be started by the sequence '@<' and ended with '>', starting at: %.20s..."
-msgstr "Pozivanje tablice definicija mora započeti sekvencom '@<' i završiti s '>', počevši pri: %.20s..."
+msgstr "Pozivanje tablice definicija mora započeti sekvencom '@<' i završiti s '>', počevši pri: %.20s …"
 
 #, c-format
 msgid "A match was found after unlinking references in glyph “%s”\n"
@@ -1263,7 +1265,7 @@ msgid "Add Exit Anchor..."
 msgstr "Dodaj sidro izlaza …"
 
 msgid "Add Good Extrema"
-msgstr "Dodaj „dobre” ekstreme"
+msgstr "Dodaj dobre ekstreme"
 
 msgid "Add Language to Script..."
 msgstr "Pismu dodaj jezik …"
@@ -1359,7 +1361,7 @@ msgstr ""
 "Ako je dakle sufiks postavljen na \"superior\" i ako font\n"
 "sadrži grafeme s nazivom \"A\" i \"A.superior\" (i tablica definicija\n"
 "se primijenjuje na latinično pismo), tad će FontForge\n"
-"dodati zapis za mapiranje \"A\" -> \"A.superior\"."
+"dodati zapis za mapiranje \"A\" → \"A.superior\"."
 
 msgid ""
 "Add entries to the lookup trying to make the optical\n"
@@ -1444,13 +1446,13 @@ msgid "Advance Width Metrics For %.50s"
 msgstr "Metrika širina stožaca za %.50s"
 
 msgid "Advance Width as a Bar"
-msgstr "Širina stožca kao podvlaka"
+msgstr "Širina stošca kao podvlaka"
 
 msgid "Advance Width as a Line"
-msgstr "Širina stožca kao crta"
+msgstr "Širina stošca kao crta"
 
 msgid "Advance Width does not change."
-msgstr "Širina stožaca se ne mijenja."
+msgstr "Širina stošca se ne mijenja."
 
 msgid "Advance Width not"
 msgstr "Širina stošca nije"
@@ -1475,7 +1477,7 @@ msgid "Afrikaans"
 msgstr "Afrikaans"
 
 msgid "After rotating or skewing a glyph you should probably apply Element->Add Extrema"
-msgstr "Nakon rotiranja ili ukošenja grafema, vjerojatno bi bilo dobro primijeniti Element -> Dodaj ekstreme"
+msgstr "Nakon rotiranja ili ukošenja grafema, vjerojatno bi bilo dobro primijeniti „Element → Dodaj ekstreme”"
 
 msgid "Agaw"
 msgstr "Agaw"
@@ -1699,7 +1701,7 @@ msgid ""
 "Change requires a restart of fontforge."
 msgstr ""
 "Uvijek prikazuj kontrolne točke prilikom uređivanja grafema.\n"
-"Ovo možeš isključiti u izborniku „Prikaz -> Prikaži”. Postavka utječe na to, je li će se kontrolne točke na početku prikazivati.\n"
+"Ovo možeš isključiti u izborniku „Prikaz → Prikaži”. Postavka utječe na to, je li će se kontrolne točke na početku prikazivati.\n"
 "Za promjenu moraš ponovo pokernuti FontForge."
 
 msgid "Americanist IPA"
@@ -1996,7 +1998,7 @@ msgid ""
 msgstr ""
 "Apple i MS/Adobe razlikuju se oko formata za truetype i opentype datoteke.\n"
 "Ovo kontrolira zadane postavke potvrdnog okvira za Apple u dijalogu\n"
-"Datoteka -> Stvori fontove.\n"
+"„Datoteka → Stvori fontove”.\n"
 "Glavne razlike su:\n"
 " Bitmap podaci se spremaju u različite tablice\n"
 " Skalirani složeni znakovi se tretirajU različito\n"
@@ -2019,7 +2021,7 @@ msgid ""
 msgstr ""
 "Apple i MS/Adobe razlikuju se oko formata za truetype i opentype datoteke.\n"
 "Ovo kontrolira zadane postavke potvrdnog okvira za OpenType u dijalogu\n"
-"Datoteka -> Stvori fontove.\n"
+"„Datoteka → Stvori fontove”.\n"
 "Glavne razlike su:\n"
 " Bitmap podaci se spremaju u različite tablice\n"
 " Skalirani složeni znakovi se tretiraju različito\n"
@@ -2395,7 +2397,7 @@ msgid "AutoHint"
 msgstr "Automatske kontrole"
 
 msgid "AutoHint changed glyphs before generating a font"
-msgstr "Izradi automatske kontrole za grafeme prije generiranja fonta"
+msgstr "Izradi automatske kontrole za grafeme prije stvaranja fonta"
 
 msgid "AutoKern All"
 msgstr "Automatsko podrezivanje, sve"
@@ -2420,7 +2422,7 @@ msgid "AutoWidth failure on %s"
 msgstr "Greška u automatskoj širini 'AutoWidth' na %s"
 
 msgid "AutoWidthSync"
-msgstr "Automatski sinkroniziraj širine"
+msgstr "Automatski sinkroniziraj širine stožaca"
 
 msgid "Auto_Hint"
 msgstr "_Automatske kontrole"
@@ -2616,7 +2618,7 @@ msgid "Bad Anchor Point: %s"
 msgstr "Neispravna točka sidra: %s"
 
 msgid "Bad Apple Kern Class"
-msgstr "Neispravna Apple klasa podrezivanja"
+msgstr "Neispravna Apple klasa podrezivanja_"
 
 msgid "Bad Ascent/Descent"
 msgstr "Neispravan uzlazni/silazni potez"
@@ -2732,7 +2734,7 @@ msgstr "Neispravni Multiple Master font"
 
 #, c-format
 msgid "Bad Multiple/Alternate substitution glyph. GID %d not less than %d"
-msgstr "Neispravan višestruki/alternativni zamjenski grafem. ID-oznaka grafema %d ne manja od %d\n"
+msgstr "Neispravan višestruki/alternativni zamjenski grafem. ID-oznaka grafema %d ne manja od %d"
 
 msgid "Bad Name"
 msgstr "Neispravni naziv"
@@ -2783,11 +2785,11 @@ msgid "Bad Reference"
 msgstr "Neipravna referenca"
 
 msgid "Bad SFD file, missing subtable in kernclass defn."
-msgstr "Neispravna SFD datoteka, nedostaje pod-tablica u definiciji klase podrezivanja."
+msgstr "Neispravna SFD datoteka, nedostaje pod-tablica u definiciji klase podrezivanja._"
 
 #, c-format
 msgid "Bad SFD file, two kerning classes assigned to the same subtable: %s"
-msgstr "Neispravna SFD datoteka, istoj pod-tablici su dodijeljene dvije klase podrezivanja: %s"
+msgstr "Neispravna SFD datoteka, istoj pod-tablici su dodijeljene dvije klase podrezivanja: %s_"
 
 msgid "Bad Script"
 msgstr "Neispravno pismo"
@@ -2802,16 +2804,16 @@ msgid "Bad Size"
 msgstr "Neispravna veličina"
 
 msgid "Bad StdHW entry."
-msgstr "Neispravni zapis za standardnu vodoravnu širinu (StdHW)."
+msgstr "Neispravni zapis za StdHW (standardnu vodoravnu širinu)."
 
 msgid "Bad StdVW entry."
-msgstr "Neispravni zapis za standardnu uspravnu širinu (StdVW)."
+msgstr "Neispravni zapis za StdVW (standardnu uspravnu širinu)."
 
 msgid "Bad StemSnapH entry."
-msgstr "Neispravni zapis za vodoravno privlačenje poteza (StemSnapH)."
+msgstr "Neispravni zapis za StemSnapH (vodoravno privlačenje poteza)."
 
 msgid "Bad StemSnapV entry."
-msgstr "Neispravni zapis za uspravno privlačenje poteza (StemSnapH)."
+msgstr "Neispravni zapis za StemSnapH (uspravno privlačenje poteza)."
 
 msgid "Bad Style"
 msgstr "Neispravni stil"
@@ -2851,7 +2853,7 @@ msgid "Bad Weight"
 msgstr "Neispravna debljina"
 
 msgid "Bad base table."
-msgstr "Neispravna tablica osnovnih znakova."
+msgstr "Neispravna tablica osnovnih znakova._"
 
 #, c-format
 msgid "Bad bounding box for %s."
@@ -2865,7 +2867,7 @@ msgstr "Neispravni broj klasa u pod-tablici kontekstnog niza."
 
 #, c-format
 msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)"
-msgstr "Neispravna tablica za definiranje klasa. Raspon grafema %d – %d izvan raspona [0,%d)\n"
+msgstr "Neispravna tablica za definiranje klasa. Raspon grafema %d – %d izvan raspona [0,%d)"
 
 #, c-format
 msgid "Bad class def table. start=%d cnt=%d, max glyph=%d"
@@ -2886,7 +2888,7 @@ msgstr "Neispravna contents.plist datoteka"
 
 #, c-format
 msgid "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)"
-msgstr "Neispravna kontekstna tablica ili tablica niza. Grafem %d je izvan raspona [0,%d)\n"
+msgstr "Neispravna kontekstna tablica ili tablica niza. Grafem %d je izvan raspona [0,%d)"
 
 msgid "Bad correction"
 msgstr "Neispravni ispravak"
@@ -2898,15 +2900,15 @@ msgid "Bad count in contextual chaining sub-table."
 msgstr "Neispravni broj u pod-tablici kontekstnog niza."
 
 msgid "Bad count."
-msgstr "Neispravni zbroj."
+msgstr "Neispravni zbroj._"
 
 #, c-format
 msgid "Bad coverage table. Glyph %d out of range [0,%d)"
-msgstr "Neispravna tablica pokrivenosti. Grafem %d je izvan raspona [0,%d)\n"
+msgstr "Neispravna tablica pokrivenosti. Grafem %d je izvan raspona [0,%d)"
 
 #, c-format
 msgid "Bad coverage table. Glyph range %d-%d out of range [0,%d)"
-msgstr "Neispravna tablica pokrivenosti. Raspon grafema %d – %d je izvan raspona [0,%d)\n"
+msgstr "Neispravna tablica pokrivenosti. Raspon grafema %d – %d je izvan raspona [0,%d)"
 
 msgid "Bad dash list"
 msgstr "Neispravni popis crtica"
@@ -2952,7 +2954,7 @@ msgstr "Neispravna oznaka font-funkcija"
 
 #, c-format
 msgid "Bad few values in /BlendDesignMap for axis %s."
-msgstr "Neispravno malo vrijednosti u '/BlendDesignMap' za os %s.\n"
+msgstr "Neispravno malo vrijednosti u '/BlendDesignMap' za os %s."
 
 #, c-format
 msgid "Bad flags value, implied MORE components at end of glyph %d"
@@ -2973,7 +2975,7 @@ msgstr "Neispravni font: Podaci o kodiranju su izvan raspona."
 
 #, c-format
 msgid "Bad format for coverage table %d"
-msgstr "Neispravni format tablice pokrivenosti %d"
+msgstr "Neispravni format tablice pokrivenosti %d_"
 
 #, c-format
 msgid "Bad format of subtable %d (of %d) in bloc/EBLC of strike with pixelsize=%d. First=%d, last=%d.\n"
@@ -3041,7 +3043,11 @@ msgstr "Neispravna slikovna datoteka: %.100s"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d must be less than %d"
-msgstr "Neispravno podrezani par: grafem %d i %d mora biti manje od %d\n"
+msgstr "Neispravno podrezani par: grafem %d i %d mora biti manje od %d"
+
+#, c-format
+msgid "Bad kern pair: glyphs %d & %d mustn't be negative"
+msgstr "Neispravno podrezani par: grafem %d i %d ne smije biti negativno\n"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d mustn't be negative\n"
@@ -3053,16 +3059,16 @@ msgstr "Neispravno podrezani par: grafem %d i %d trebalo je biti manje od %d"
 
 #, c-format
 msgid "Bad kern pair: glyphs at %d & %d are null"
-msgstr "Neispravno podrezani par: grafem %d i %d su nula\n"
+msgstr "Neispravno podrezani par: grafem %d i %d su nula"
 
 msgid "Bad language tag"
 msgstr "Neispravna oznaka jezika"
 
 msgid "Bad ligature anchor count."
-msgstr "Neispravni broj sidara u ligaturama."
+msgstr "Neispravni broj sidara u ligaturama._"
 
 msgid "Bad ligature base table."
-msgstr "Neispravna tablica osnovnih znakova ligatura."
+msgstr "Neispravna tablica osnovnih znakova ligatura._"
 
 #, c-format
 msgid "Bad ligature component glyph. GID %d not less than %d (in ligature %d)"
@@ -3074,7 +3080,11 @@ msgstr "Neispravni grafem ligature. ID-oznaka grafema %d ne manja od %d"
 
 #, c-format
 msgid "Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d"
-msgstr "Neispravna tablica definicija: format=2 (%d/%d), prvi=%d zadnji=%d ukupno grafema u fontu=%d\n"
+msgstr "Neispravna tablica definicija: format=2 (%d/%d), prvi=%d zadnji=%d ukupno grafema u fontu=%d"
+
+#, c-format
+msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d"
+msgstr "Neispravna tablica definicija: format=4 (%d/%d), prvi=%d zadnji=%d ukupno grafema u fontu=%d\n"
 
 #, c-format
 msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
@@ -3095,7 +3105,7 @@ msgid "Bad magic number"
 msgstr "Neispravan magični broj"
 
 msgid "Bad mark table."
-msgstr "Neispravna tablica dijakritičkih znakova."
+msgstr "Neispravna tablica dijakritičkih znakova._"
 
 msgid "Bad mort ligature table. Not long enough"
 msgstr "Neispravna 'mort' tablica ligatura. Prekratka"
@@ -3267,7 +3277,7 @@ msgstr ""
 
 #, c-format
 msgid "Bad value for blend in /BlendDesignMap for axis %s."
-msgstr "Neispravna vrijednost za stapljanje u '/BlendDesignMap' za os %s.\n"
+msgstr "Neispravna vrijednost za stapljanje u '/BlendDesignMap' za os %s."
 
 msgid "Bad xfig file"
 msgstr "Neispravna xfig datoteka"
@@ -3504,7 +3514,7 @@ msgid "Bitmap _Magnification..."
 msgstr "Povećanje za bit_mape …"
 
 msgid "Bitmap/outline _advance mismatch"
-msgstr "Nepokl_apanje stožaca btimapa i kontura"
+msgstr "Nepokl_apanje širina stožaca btimapa i kontura"
 
 msgid "Bits/Pixel:"
 msgstr "Bitova po pikselu:"
@@ -3546,10 +3556,10 @@ msgid "BlueValues"
 msgstr "'BlueValues'"
 
 msgid "BlueValues come in pairs. Select another."
-msgstr "'BlueValues' kontrole dolaze u parovima. Odaberi jedan drugi."
+msgstr "BlueValues kontrole dolaze u parovima. Odaberi jedan drugi."
 
 msgid "Blues"
-msgstr "'Blue' kontrole"
+msgstr "Blue kontrole"
 
 msgid "Bold"
 msgstr "Debeli"
@@ -3904,7 +3914,7 @@ msgid "C_hange"
 msgstr "_Promijeni"
 
 msgid "C_hop"
-msgstr "_Odsjeci"
+msgstr "_Odsijeci"
 
 msgid "C_lasses"
 msgstr "K_lase"
@@ -4020,7 +4030,7 @@ msgstr "Nije moguće zadati instrukcije ovom grafemu"
 
 #, c-format
 msgid "Can't open %s"
-msgstr "Nije moguće otvoriti %s"
+msgstr "Nije moguće otvoriti %s⬤"
 
 msgid "Can't open temporary file for postscript output"
 msgstr "Nije moguće otvoriti privremenu datoteku za izlazni postscript"
@@ -4058,7 +4068,7 @@ msgstr "Nije moguće naći datoteku tipkovnih prečaca!\n"
 
 #, c-format
 msgid "Cannot open %s"
-msgstr "Nije moguće otvoriti %s"
+msgstr "Nije moguće otvoriti %s⬤"
 
 msgid "Cannot open a temporary file"
 msgstr "Nije moguće otvoriti privremenu datoteku"
@@ -4071,10 +4081,10 @@ msgid "Cannot open file"
 msgstr "Nije moguće otvoriti datoteku"
 
 msgid "Canonical Start _Point"
-msgstr "Kanonska _početna točka"
+msgstr "Kanonska početna _točka"
 
 msgid "Canonical _Contours"
-msgstr "Kanonske _konture"
+msgstr "_Kanonske konture"
 
 msgid "Capital Spacing"
 msgstr "Spacioniranje verzala"
@@ -4622,7 +4632,9 @@ msgid "Check whether a CID is undefined in all sub-fonts"
 msgstr "Provjeri, je li je jedna ID-oznaka znaka (CID) nedefinirana u svim pod-fontovima"
 
 msgid "Check whether a substitution, kerning class, etc. uses a glyph name which does not match any glyph in the font"
-msgstr "Provjeri, je li jedna zamjena, klasa podrezivanja, itd. koriste naziv grafema, koji ne odgovara nijednom grafemu u fontu"
+msgstr ""
+"Provjeri, je li jedna zamjena, klasa podrezivanja, itd. koristi naziv grafema,\n"
+"koji ne odgovara nijednom grafemu u fontu"
 
 msgid "Cherokee"
 msgstr "Čeroki"
@@ -4710,7 +4722,7 @@ msgid "Class 0"
 msgstr "Klasa 0"
 
 msgid "Class 1: {Everything Else}"
-msgstr "Klasa 1: {Everything Else}"
+msgstr "Klasa 1: {Sve ostalo}"
 
 msgid "Class Name"
 msgstr "Naziv klase"
@@ -4719,11 +4731,11 @@ msgid "Class already used"
 msgstr "Klasa se već koristi"
 
 msgid "Class definition sub-table extends beyond end of table"
-msgstr "Pod-tablica definicije klasa se proteže izvan kraja tablice"
+msgstr "Pod-tablica definicije klasa se proteže izvan kraja tablice_"
 
 #, c-format
 msgid "Class index out of range %d (must be <%d)"
-msgstr "Indeks klase izvan raspon %d (mora biti <%d)"
+msgstr "Indeks klase izvan raspon %d (mora biti <%d)_"
 
 msgid "Class out of bounds in GPOS mark sub-table"
 msgstr "Klasa je izvan granica u 'GPOS' pod-tablici dijakritičkih znakova"
@@ -4766,7 +4778,7 @@ msgid "Class|Name"
 msgstr "Naziv"
 
 msgid "Clea_nup Glyph"
-msgstr "Poč_isti grafem"
+msgstr "P_očisti grafem"
 
 msgid "Cleanup Self Intersect"
 msgstr "Ispravi samo-presijecanje"
@@ -5072,7 +5084,7 @@ msgid "Components"
 msgstr "Komponente"
 
 msgid "Composites in AFM"
-msgstr "Kompozite u AFM"
+msgstr "Sastavljene znakove u AFM"
 
 msgid "Compress (as a percentage)"
 msgstr "Sužavanje (u postocima)"
@@ -5208,7 +5220,7 @@ msgid "Coordinate Line Color"
 msgstr "Boja za koordinatne osi"
 
 msgid "Coordinate along which to space"
-msgstr "Koordinata, uzduž koje se razmiče"
+msgstr "Koordinata, uzduž koje se raspoređuje"
 
 msgid "Cop_y Layer To Layer..."
 msgstr "_Kopiraj sloj u sloj …"
@@ -5238,7 +5250,7 @@ msgid "Copy _Fg To Bg"
 msgstr "Kopiraj prednji u s_tražnji"
 
 msgid "Copy _From"
-msgstr "Kopiraj i_z"
+msgstr "Kopir_aj iz"
 
 msgid "Copy _Lookup Data"
 msgstr "Kopiraj podatke tablice de_finicija"
@@ -5265,7 +5277,9 @@ msgid "Copyright"
 msgstr "Autorsko pravo"
 
 msgid "Copyright text (in the Names pane) must be entirely ASCII. So, use (c) instead of ©."
-msgstr "Tekst za autorsko pravo (u pločama za nazive) mora u potpunosti biti zadan ASCII znakovima. Prema tome, koristi (c) umjesto ©."
+msgstr ""
+"Tekst za autorsko pravo (u pločama za nazive) mora u potpunosti biti zadan\n"
+"ASCII znakovima. Prema tome, koristi (c) umjesto ©."
 
 #. GT: Short for Correction
 msgid "Cor:"
@@ -5469,7 +5483,7 @@ msgid "Counting Rod Numerals"
 msgstr "Štapične brojke"
 
 msgid "Cove"
-msgstr "S mekim prijelazom"
+msgstr "Zaobljeni"
 
 #, c-format
 msgid "Coverage %d: "
@@ -5926,7 +5940,7 @@ msgid "Designer"
 msgstr "Dizajner"
 
 msgid "Designer URL"
-msgstr "URL dizajnera"
+msgstr "Dizajner URL"
 
 msgid "Design|_New..."
 msgstr "_Novi …"
@@ -5988,19 +6002,19 @@ msgstr "Promjer:"
 
 #, c-format
 msgid "Didn't understand \"%s\" in blended font defn"
-msgstr "Nije moguće razumijeti \"%s\" u definiciji stopljenog fonta"
+msgstr "Nije moguće razumijeti „%s” u definiciji stopljenog fonta"
 
 #, c-format
 msgid "Didn't understand \"%s\" in font info"
-msgstr "Nije moguće razumijeti \"%s\" u informacijama fonta"
+msgstr "Nije moguće razumijeti „%s” u informacijama fonta"
 
 #, c-format
 msgid "Didn't understand \"%s\" inside subs def'n"
-msgstr "Nije moguće razumijeti \"%s\" unutar definicije zamjene"
+msgstr "Nije moguće razumijeti „%s” unutar definicije zamjene"
 
 #, c-format
 msgid "Didn't understand \"%s\" while adding info to private subroutines"
-msgstr "Nije moguće razumijeti \"%s\" prilikom dodavanja informacija 'private' podrutinama"
+msgstr "Nije moguće razumijeti „%s” prilikom dodavanja informacija 'private' podrutinama"
 
 #, c-format
 msgid "Didn't understand format for fdselect %d"
@@ -6374,7 +6388,7 @@ msgid "Duplicate definition of subroutine %d"
 msgstr "Dupla definicija podrutine %d"
 
 msgid "Duplicate lib data."
-msgstr "Dupli podaci biblioteke."
+msgstr "Dupli podaci biblioteke._"
 
 msgid "Duplicate name"
 msgstr "Duplikat naziva"
@@ -6414,7 +6428,7 @@ msgid "E_ncoding"
 msgstr "Kodira_nje"
 
 msgid "E_xecute Script..."
-msgstr "Izvrši skri_pt …"
+msgstr "Izv_rši skript …"
 
 msgid "E_xport..."
 msgstr "_Izvezi …"
@@ -6549,15 +6563,14 @@ msgid ""
 "The amount of extra space to be added after a sentence\n"
 "Or the space to be used within math formulae"
 msgstr ""
-"Ili:\n"
-"Količina dodatne bjeline koji se dodaje nakon rečenice\n"
-"Ili bjelina koji se koristi unutar matematičkih formula"
+"Ili količina dodatne bjeline koja se dodaje nakon rečenice\n"
+"ili bjelina koja se koristi unutar matematičkih formula"
 
 msgid "Elbasan"
 msgstr "Albansko"
 
 msgid "Elements in BlueValues/OtherBlues array are disordered."
-msgstr "Elementi u nizu 'BlueValues'/'OtherBlues' nisu pravilno raspoređeni."
+msgstr "Neispravni redoslijed elemenata u nizu 'BlueValues'/'OtherBlues'."
 
 msgid "Elements in BlueValues/OtherBlues array are not integers."
 msgstr "Elementi u nizu 'BlueValues'/'OtherBlues' nisu cijeli brojevi."
@@ -6566,7 +6579,7 @@ msgid "Elements in BlueValues/OtherBlues array are too close (Change BlueFuzz)."
 msgstr "Elementi u nizu 'BlueValues'/'OtherBlues' su preblizu (promijeni 'BlueFuzz')."
 
 msgid "Elements in FamilyBlues/FamilyOtherBlues array are disordered."
-msgstr "Elementi u nizu 'FamilyBlues'/'FamilyOtherBlues' nisu pravilno raspoređeni."
+msgstr "Neispravni redoslijed elemenata u nizu 'FamilyBlues'/'FamilyOtherBlues'."
 
 msgid "Elements in FamilyBlues/FamilyOtherBlues array are not integers."
 msgstr "Elementi u nizu 'FamilyBlues'/'FamilyOtherBlues' nisu cijeli brojevi."
@@ -6674,7 +6687,7 @@ msgid "End of file found in JSTF table."
 msgstr "U JSTF tablici je nađen 'eof' (kraj datoteke)."
 
 msgid "End of file found in coverage table."
-msgstr "Kraj datoteke nađen u tablici pokrivenosti."
+msgstr "Kraj datoteke nađen u tablici pokrivenosti._"
 
 #, c-format
 msgid "End of file found in string on line %d of %s"
@@ -6785,7 +6798,7 @@ msgstr ""
 "Upiši popis oznaka tablica s 4 slova, odvojene zarezima.\n"
 "FontForge će napraviti binarnu kopiju ovih tablica kad učitava\n"
 "TrueType/OpenType font i ispisat će ih (nepromijenjeno)\n"
-"kad generira font. Ne uključuju oznake tablica koje\n"
+"kad stvori font. Ne uključuju oznake tablica koje\n"
 "FontForge misli da razumije."
 
 msgid ""
@@ -7264,7 +7277,7 @@ msgstr "Ekstra tamni (Nord)"
 #. GT: Extra Space, see below for a full comment
 #. GT: Extra Space
 msgid "Extra Sp:"
-msgstr "Dodatni prostor:"
+msgstr "Dodatna bjelina:"
 
 msgid ""
 "Extra arguments for configuring the autotrace program\n"
@@ -7420,11 +7433,11 @@ msgid "Family"
 msgstr "Obitelj"
 
 msgid "Family Blue Color"
-msgstr "Boja za vrijednosti 'Family Blue' kontrola"
+msgstr "Boja za vrijednosti 'Family Blue'"
 
 #. GT: You might not want to translate this, it's a keyword in PostScript font files
 msgid "FamilyBl_ues"
-msgstr "'_FamilyBlues' kontrole"
+msgstr "_FamilyBlues"
 
 msgid "Faroese"
 msgstr "Ferojski"
@@ -7760,7 +7773,7 @@ msgid ""
 "\n"
 "(Merging will take longer)"
 msgstr ""
-"FontForge može generirati dva stila ttc datoteke.\n"
+"FontForge može stvoriti dva stila ttc datoteke.\n"
 "U prvom je svaki font zasebna cjelina, bez veze s\n"
 "drugim fontovima. U drugom će FontForge pokušati\n"
 "koristiti istu tablicu grafema za sve fontove, sjedinjavanjem\n"
@@ -7922,7 +7935,7 @@ msgid ""
 msgstr ""
 "FontForge će pregledati grafeme odabrane u prikazu fonta\n"
 "i pokušat će pronaći skupove grafema koji su najsličniji\n"
-"i generirati klase podrezivanja na temelju tih podataka."
+"i stvoriti klase podrezivanja na temelju tih podataka."
 
 msgid "FontForge will place vertical or horizontal hints at the ends of diagonal stems."
 msgstr "FontForge će izraditi uspravne i vodoravne kontrole na krajevima dijagonalnih poteza."
@@ -8005,7 +8018,7 @@ msgid "Found %1$.4g, expected %2$.4g"
 msgstr "Nađeno %1$.4g, očekivano %2$.4g"
 
 msgid "Found an new style kerning pair inside a version 1 (or lower) sfd file."
-msgstr "Nađen je par podrezivanja zapisan novim stilom u sfd datoteci verzije 1 (ili ranije)."
+msgstr "Nađen je par podrezivanja zapisan novim stilom u sfd datoteci verzije 1 (ili ranije)._"
 
 msgid "FoundryName"
 msgstr "Naziv proizvođača"
@@ -8181,7 +8194,7 @@ msgid "GID out of range (%d) in format 14 'cmap' subtable"
 msgstr "ID-oznaka grafema izvan raspona (%d) u formatu 14 'cmap' pod-tablice (mapiranje znakova)"
 
 msgid "GID out of range."
-msgstr "ID-oznaka grafema izvan raspona."
+msgstr "ID-oznaka grafema izvan raspona._"
 
 msgid "G_2"
 msgstr "G_2"
@@ -8384,7 +8397,7 @@ msgid ""
 "FontForge will rename it.\n"
 msgstr ""
 "Grafem %d se zove \".notdef\", jedini naziv koji se ne može zadati (samo grafem 0\n"
-" smije imati naziv '.notdef')\n"
+" smije imati naziv .notdef)\n"
 "FontForge će ga preimenovati.\n"
 
 msgid "Glyph BB Above"
@@ -8636,7 +8649,7 @@ msgid "Glyph:"
 msgstr "Grafem:"
 
 msgid "GlyphAutoGoto"
-msgstr "Automatski prijeđi na grafem"
+msgstr "Automatski prijelaz na grafem"
 
 msgid "GlyphName|New"
 msgstr "Novi"
@@ -8854,7 +8867,7 @@ msgid "HHead Ascent Offset:"
 msgstr "HHead uzlazni potez, odmak:"
 
 msgid "HHead Ascent:"
-msgstr "HHead, uzlazni potez:"
+msgstr "HHead uzlazni potez:"
 
 msgid "HHead De_scent Offset:"
 msgstr "HH_ead silazni potez, odmak:"
@@ -8863,7 +8876,7 @@ msgid "HHead Descent Offset:"
 msgstr "HHead silazni potez, odmak:"
 
 msgid "HHead Descent:"
-msgstr "HHead, silazni potez:"
+msgstr "HHead silazni potez:"
 
 msgid "HHead _Line Gap:"
 msgstr "HHead _prored:"
@@ -8998,7 +9011,7 @@ msgid "Hide when _Moving"
 msgstr "Sakrij tijekom _micanja"
 
 msgid "High"
-msgstr "Visoka"
+msgstr "Visoki"
 
 msgid "High Mari"
 msgstr "Visoki Mari"
@@ -9007,7 +9020,7 @@ msgid "High Private Use Surrogates"
 msgstr "Visoki zamjenski znakovi za privatnu upotrebu"
 
 msgid "High Surrogates"
-msgstr "Visoki zamjenski znakovi"
+msgstr "Gornji zamjenski znakovi"
 
 msgid "High-Density Font"
 msgstr "Font visoke gustoće"
@@ -9112,10 +9125,13 @@ msgid "Hmm, this 'fvar' table has more axes than FontForge can handle."
 msgstr "Hmm, ova 'fvar' tablica sadrži više osi, nego što ih FontForge može obraditi."
 
 msgid "Hmm, this 'fvar' table has more count/size pairs than I expect"
-msgstr "Hmm, ova 'fvar' tablica sadrži više parova/veličina parova od očekivanog\n"
+msgstr "Hmm, ova 'fvar' tablica sadrži više parova/veličina parova od očekivanog"
 
 msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense."
 msgstr "Hmm, ova 'fvar' tablica ne sadrži osi. To nema smisla."
+
+msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it"
+msgstr "Hmm, ova 'fvar' tablica sadrži premalo parova/veličina parova. Neće se obraditi\n"
 
 msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it\n"
 msgstr "Hmm, ova 'fvar' tablica sadrži premalo parova/veličina parova. Neće se obraditi\n"
@@ -9185,7 +9201,7 @@ msgid "Horizontal Extents for %c%c%c%c"
 msgstr "Vodoravna protezanja za %c%c%c%c"
 
 msgid "Horizontal High"
-msgstr "Vodoravno visoko"
+msgstr "Vodoravno visoki"
 
 msgid "Horizontal Kana Alternatives"
 msgstr "Alternative vodoravnih Kana znakova"
@@ -9194,10 +9210,10 @@ msgid "Horizontal Kerning"
 msgstr "Vodoravno podrezivanje"
 
 msgid "Horizontal Low"
-msgstr "Vodoravno nisko"
+msgstr "Vodoravno niski"
 
 msgid "Horizontal Medium"
-msgstr "Vodoravno srednje"
+msgstr "Vodoravno srednji"
 
 msgid "Horizontal Stem Height Add"
 msgstr "Dodavanje visini vodoravnih poteza"
@@ -9607,10 +9623,10 @@ msgid "Ignore this problem in the future"
 msgstr "Ubuduće zanemari ovaj problem"
 
 msgid "Ignoring duplicate /CharStrings entry"
-msgstr "Zanemaruje se dupli /CharStrings unos\n"
+msgstr "Zanemaruje se dupli /CharStrings unos"
 
 msgid "Ignoring duplicate /Subrs entry"
-msgstr "Zanemaruje se dupli /Subrs unos\n"
+msgstr "Zanemaruje se dupli /Subrs unos"
 
 msgid "Ilokano"
 msgstr "Ilokano"
@@ -9648,13 +9664,17 @@ msgid "Image used instead of the Radio Off Mark"
 msgstr "Slika, korištena umjesto oznake za isključeni izborni gumb"
 
 msgid "Image used instead of the Radio Off Mark (when the radio is disabled)"
-msgstr "Slika, korištena umjesto oznake za isključeni izborni gumb (kad je izborni gumb deaktiviran)"
+msgstr ""
+"Slika, korištena umjesto oznake za isključeni izborni gumb\n"
+"(kad je izborni gumb deaktiviran)"
 
 msgid "Image used instead of the Radio On Mark"
 msgstr "Slika, korištena umjesto oznake za uključeni izborni gumb"
 
 msgid "Image used instead of the Radio On Mark (when the radio is disabled)"
-msgstr "Slika, korištena umjesto oznake za uključeni izborni gumb (kad je izborni gumb deaktiviran)"
+msgstr ""
+"Slika, korištena umjesto oznake za uključeni izborni gumb\n"
+"(kad je izborni gumb deaktiviran)"
 
 msgid "Image2 skipped as it uses an unsupported image type"
 msgstr "Slika2 preskočena, jer koristi nepodržanu vrstu slike"
@@ -9800,7 +9820,7 @@ msgid "In the design size range, the bottom top must be more than the design siz
 msgstr "U rasponu dizajn-veličina, donji vrh mora biti više od dizajn-veličine."
 
 msgid "In the saved font, force all glyph names to match those in the specified namelist"
-msgstr "U spremljenom fontu, prisili poklapanje svih naziva grafema sa određenim popisom naziva"
+msgstr "U spremljenom fontu, prisili poklapanje svih naziva grafema s određenim popisom naziva"
 
 msgid ""
 "In this format you define a series of glyph classes and\n"
@@ -9887,7 +9907,7 @@ msgstr "Indeks izvan raspona u %s"
 
 #, c-format
 msgid "Index too big (must be <%d) \"%s"
-msgstr "Indeks prevelik (mora biti manji od %d) \"%s"
+msgstr "Indeks prevelik (mora biti manji od %d) „%s"
 
 msgid "Indic (& Tibetan) hanging baseline"
 msgstr "Indijska (i Tibetska) osnovna pismovna linija"
@@ -10054,7 +10074,7 @@ msgid "Interpolate Fonts"
 msgstr "Interpoliraj fontove"
 
 msgid "Interpolate between stem edges some important points, not affected by other instructions."
-msgstr "Interpoliraj između rubova posteza neke važne točke, na koje druge instrukcije ne utječu."
+msgstr "Interpoliraj između rubova poteza neke važne točke, na koje druge instrukcije ne utječu."
 
 msgid "InterpolateCPsOnMotion"
 msgstr "Interpoliraj kontrolne točke prilikom premještanja"
@@ -10143,7 +10163,7 @@ msgid "Invalid font count in TTC %s."
 msgstr "Neispravan broj fontova u TTC %s."
 
 msgid "Invalid glif name."
-msgstr "Neispravni naziv 'glif'-a."
+msgstr "Neispravni naziv 'glif'-a._"
 
 #, c-format
 msgid "Invalid glyph for %s when fixing up references."
@@ -10487,7 +10507,7 @@ msgid "KernClass|_New Lookup..."
 msgstr "_Nova tablica definicija …"
 
 msgid "KernPair with no subtable name."
-msgstr "Podrezivanje parova bez naziva pod-talblice."
+msgstr "Podrezivanje parova bez naziva pod-talblice._"
 
 msgid "Kerning"
 msgstr "Podrezivanje"
@@ -10692,7 +10712,7 @@ msgid "Label Color"
 msgstr "Boja etikete"
 
 msgid "Label Gl_yph By"
-msgstr "Prikaži etikete _grafema kao"
+msgstr "Prikaži _etikete grafema kao"
 
 msgid "Ladakhi"
 msgstr "Ladakhi"
@@ -10977,7 +10997,7 @@ msgid "License"
 msgstr "Licenca"
 
 msgid "License URL"
-msgstr "URL licence"
+msgstr "Licenca URL"
 
 msgid "Life Time"
 msgstr "Trajanje"
@@ -11386,13 +11406,13 @@ msgid "Loop Count"
 msgstr "Broj petlja"
 
 msgid "Low"
-msgstr "Niska"
+msgstr "Niski"
 
 msgid "Low Mari"
 msgstr "Niski Mari"
 
 msgid "Low Surrogates"
-msgstr "Niske zamjene"
+msgstr "Niski zamjenski znakovi"
 
 msgid "Lower Case"
 msgstr "Kurenti"
@@ -11493,7 +11513,7 @@ msgid ""
 "like optical size)."
 msgstr ""
 "MS mora znati, da li se članovi obitelji fontova razlikuju\n"
-"samo u debljini, širini i nagibu (a ne u drugim varijablama,\n"
+"samo po debljini, širini i nagibu (a ne po drugim varijablama,\n"
 "poput optičke veličine)."
 
 msgid ""
@@ -11816,7 +11836,7 @@ msgid "Mark for Overlap fix before Save"
 msgstr "Označi za ispravljanje preklapanja prije spremanja"
 
 msgid "Mark for Unlink, Remove Overlap before Generating"
-msgstr "Označi za odspajanje i uklaljanje preklapanja prije generiranja"
+msgstr "Označi za odspajanje i uklaljanje preklapanja prije stvaranja"
 
 msgid "Mark to Base Position"
 msgstr "Pozicioniranje dijakritičkih znakova na osnovni grafem"
@@ -12066,10 +12086,10 @@ msgid "Medium (100%)"
 msgstr "Srednji (100%)"
 
 msgid "Medium High"
-msgstr "Srednje visoka"
+msgstr "Srednje visoki"
 
 msgid "Medium Low"
-msgstr "Srednje niska"
+msgstr "Srednje niski"
 
 msgid "Meetei Mayek"
 msgstr "Meitei-Mayek"
@@ -12495,7 +12515,7 @@ msgid "Modifier Letters & Modifier Tone Letters"
 msgstr "Modifikatorska slova i modifikatorska slova intonacije"
 
 msgid "Modifier Tone Letters"
-msgstr "Modifikatorska slova intonacije"
+msgstr "Modifikatori slova intonacije"
 
 msgid "Module Name:"
 msgstr "Ime modula:"
@@ -12543,7 +12563,7 @@ msgid "Montage"
 msgstr "Montaža"
 
 msgid "Montages"
-msgstr "Montaža"
+msgstr "Montaže"
 
 msgid "Moose Cree"
 msgstr "Cree los"
@@ -13052,7 +13072,7 @@ msgid "Nib shape not valid"
 msgstr "Oblik naliv pera nije ispravan"
 
 msgid "Nifty, you've got one of the old Apple/Adobe type1 sfnts here"
-msgstr "Baš zgodno, ovdje se radi o jednom starom Apple/Adobe Type1 sfnt fontu\n"
+msgstr "Baš zgodno, ovdje se radi o jednom starom Apple/Adobe Type1 sfnt fontu"
 
 msgid "Nisi"
 msgstr "Nisi"
@@ -13162,7 +13182,7 @@ msgid "No Lookups Limiting Shrinkage"
 msgstr "Bez tablica definicija za ograničavanje sužavanja"
 
 msgid "No Lower Case"
-msgstr "Bez kurenta"
+msgstr "Bez kurenata"
 
 msgid "No Mac Names"
 msgstr "Bez Mac naziva"
@@ -13328,7 +13348,7 @@ msgstr "Nema poklapajuće klase sidara za %s"
 
 #, c-format
 msgid "No name for CharStrings dictionary \"%s"
-msgstr "Nema naziva u 'CharStrings' rječniku \"%s"
+msgstr "Nema naziva u 'CharStrings' rječniku „%s"
 
 msgid "No paths with within a glyph should intersect"
 msgstr "Nijedna staza unutar grafema se ne smije presijecati"
@@ -13374,7 +13394,7 @@ msgid "No scripts"
 msgstr "Bez pisama"
 
 msgid "No selection"
-msgstr "Ništa nije odabrano"
+msgstr "Ništa nije odabrano⬤"
 
 msgid "No significant differences found"
 msgstr "Nema značajnih razlika"
@@ -13460,7 +13480,7 @@ msgstr "Ništa/Otvorenih petlja"
 
 #, c-format
 msgid "Nonsensical class assigned to a glyph-- class=%d is too big. Glyph=%d"
-msgstr "Besmislena klasa dodijeljena grafemu – klasa=%d je prevelika. Grafem=%d"
+msgstr "Besmislena klasa dodijeljena grafemu – klasa=%d je prevelika. Grafem=%d_"
 
 msgid "Normal"
 msgstr "Normalno"
@@ -13543,7 +13563,7 @@ msgstr ""
 "Obično se pločica sastoji od svega, što je\n"
 "unutar graničnog okvira pločice – tako da se\n"
 "susjedne pločice izravno naslanjaju jedna na\n"
-"drugu. Ako želiš razmak između pločica\n"
+"drugu. Ako želiš bjelinu između pločica\n"
 "aktiviraj ovu oznaku"
 
 msgid "Northern Sami"
@@ -13640,7 +13660,7 @@ msgstr "'Notdef' naziv"
 
 #, c-format
 msgid "Note: On Windows many apps can have problems with this font's kerning, because %d of its glyph kern pairs cannot be mapped to unicode-BMP kern pairs (eg, they have a Unicode value of -1) To avoid this, go to Generate, Options, and check the \"Windows-compatible 'kern'\" option."
-msgstr "Napomena: u sustavu Windows mnoge aplikacije mogu imati problema s podrezivanjem ovog fonta, jer se %d njegovih parova podrezivanja grafema ne mogu mapirati u unicode-BMP parove podrezivanja (npr., imaju Unicode vrijednost od −1). Kako bi se to izbjeglo, aktiviraj opciju „Windows-kompatibilni ‚kern’” u izborniku „Stvori fontove -> Opcije”."
+msgstr "Napomena: u sustavu Windows mnoge aplikacije mogu imati problema s podrezivanjem ovog fonta, jer se %d njegovih parova podrezivanja grafema ne mogu mapirati u unicode-BMP parove podrezivanja (npr., imaju Unicode vrijednost od −1). Kako bi se to izbjeglo, aktiviraj opciju „Windows-kompatibilni ‚kern’” u izborniku „Stvori fontove → Opcije”."
 
 msgid "Nothing Loaded"
 msgstr "Ništa nije učitano"
@@ -13710,7 +13730,7 @@ msgstr "Broj izvan raspona"
 
 #, c-format
 msgid "Number out of range: %g in type2 output (must be [-65536,65535])"
-msgstr "Broj je izvan granica: %g u izlaznom type2 (mora biti [-65536,65535])\n"
+msgstr "Broj je izvan granica: %g u izlaznom type2 (mora biti [-65536,65535])"
 
 #, c-format
 msgid "Number too long on line %d of %s"
@@ -13765,7 +13785,7 @@ msgid "OS/2"
 msgstr "OS/2"
 
 msgid "OS/2 -> Charsets"
-msgstr "OS/2 -> skupovi znakova"
+msgstr "OS/2 → skupovi znakova"
 
 msgid "OS/2 and Windows specific metrics table"
 msgstr "tablica metrike, specifična za OS/2 i Windows"
@@ -13864,13 +13884,13 @@ msgid "Obsolete table for a type1 font"
 msgstr "Nepotrebna tablica za type1 font"
 
 msgid "Obtuse Cove"
-msgstr "Kosi s mekim prijelazom"
+msgstr "Kosi zaobljeni"
 
 msgid "Obtuse Sans"
-msgstr "Zakošeni bezserifni"
+msgstr "Kosi bezserifni"
 
 msgid "Obtuse Square Cove"
-msgstr "Kosi pravokutni s mekim prijelazom"
+msgstr "Kosi uglati zaobljeni"
 
 msgid "Occitan"
 msgstr "Okcitanski"
@@ -14056,7 +14076,9 @@ msgstr "U stražnji sloj se može uvesti samo jedan font"
 
 #, c-format
 msgid "Only one replacement list may be specified in a reverse contextual chaining lookup, starting at: %.20s..."
-msgstr "Samo jedan popis zamjena smije biti određen u obrnutoj kontekstnoj tablici definicija niza, počevši pri: %.20s …"
+msgstr ""
+"Samo jedan popis zamjena smije biti određen u obrnutoj kontekstnoj tablici definicija niza,\n"
+"počevši pri: %.20s …"
 
 msgid ""
 "Only relevant in a truetype font, this flag indicates that if the reference\n"
@@ -14197,7 +14219,7 @@ msgid ""
 "Use Element->Font Info->OS/2->Misc to change this."
 msgstr ""
 "OpenType fontovi moraju imati verziju veću od 1\n"
-"Promijeni putem \"Element -> Informacije o fontu -> OS/2 -> Razno\"."
+"Promijeni putem „Element → Informacije o fontu → OS/2 → Razno”."
 
 msgid "OpenTypeFeature|New"
 msgstr "Nova"
@@ -14365,7 +14387,7 @@ msgid "Output error"
 msgstr "Greška u izradi"
 
 msgid "Oval"
-msgstr "Oval"
+msgstr "Ovalni"
 
 msgid "Over/Underbars"
 msgstr "Gornje i donje crte"
@@ -14431,7 +14453,7 @@ msgid "PS Type 1 (MacBin)"
 msgstr "PS Type 1 (MacBin)"
 
 msgid "PS Type 1 (Multiple)"
-msgstr "PS Type 1 (Multiple)"
+msgstr "PS Type 1 (višestruki)"
 
 msgid "PS Type 1 (Resource)"
 msgstr "PS Type 1 (resurs)"
@@ -14960,7 +14982,7 @@ msgid "Playing Cards"
 msgstr "Igrače karte"
 
 msgid "Please choose File/Generate Fonts to save to other formats."
-msgstr "Za spremanje u druge formate, odaberi „Datoteka -> Stvori fontove”."
+msgstr "Za spremanje u druge formate, odaberi „Datoteka → Stvori fontove”."
 
 #, c-format
 msgid "Please close %s before inserting it into a CID font"
@@ -15191,7 +15213,7 @@ msgstr ""
 "kazaljke na satu. Ako imaš referencu koja je preokrenuta,\n"
 "tad će staze u toj referenci vjerojatno biti suprotnog smjera.\n"
 "U tom slučaju prekini vezu reference i ispravi smjer pomoću\n"
-"„Element -> Ispravi smjer”."
+"„Element → Ispravi smjer”."
 
 msgid ""
 "PostScript and TrueType require that when a path\n"
@@ -15278,9 +15300,8 @@ msgid ""
 "Also if we output a truetype font from a\n"
 "cubic database, save the cubic splines."
 msgstr ""
-"Sačuvaj sve stražnje i spiro slojeve. Također\n"
-"spremi kubične krivulje, u izlaznom TrueType\n"
-"fontu, koji je izrađen iz kubične baze podataka."
+"Sačuvaj sve stražnje i spiro slojeve. Također spremi kubične krivulje u\n"
+"izlaznom TrueType fontu, koji je izrađen iz kubične baze podataka."
 
 msgid "Preserve cross-font kerning"
 msgstr "Zadrži međufontovsko podrezivanje"
@@ -15741,10 +15762,10 @@ msgid "Rejang"
 msgstr "Ređangsko"
 
 msgid "Remo_ve Undoes"
-msgstr "Ukloni poništ_avanja"
+msgstr "Ukloni poništavan_ja"
 
 msgid "Remo_ve Undoes..."
-msgstr "Ukloni poništ_avanja …"
+msgstr "Ukloni poništavan_ja …"
 
 msgid "Remove"
 msgstr "Ukloni"
@@ -15855,7 +15876,7 @@ msgid "Rename the glyphs in this font to the names found in the selected namelis
 msgstr "Preimenuj grafeme ovog fonta u nazive, nađene u odabranom popisu naziva"
 
 msgid "Render using Hinting"
-msgstr "Iscrta pomoću kontrola"
+msgstr "Iscrtaj pomoću kontrola"
 
 msgid "Repeat"
 msgstr "Ponovi"
@@ -16409,7 +16430,7 @@ msgid "Same as Match Classes"
 msgstr "Isto kao klase poklapanja"
 
 msgid "Same as PostScript Names"
-msgstr "Jednako PostScript nazivu"
+msgstr "Jednako PostScript nazivima"
 
 msgid "Same as above, but for terminals of small features (e. g. serifs), which can deviate more significantly from the horizontal or vertical direction."
 msgstr "Isto kao prethodno, ali se odnosi na krajeve malih karakteristika (npr. serife), koji mogu značajnije odstupati od vodoravnog ili uspravnog smjera."
@@ -17193,7 +17214,9 @@ msgstr "Razmak"
 
 #, c-format
 msgid "Separation marks only meaningful in contextual chaining lookups, starting at: %.20s..."
-msgstr "Razdjeljivači imaju smisla samo u kontekstnim tablicama definicija niza, počevši pri: %.20s …"
+msgstr ""
+"Razdjeljivači imaju smisla samo u kontekstnim tablicama definicija niza,\n"
+"počevši pri: %.20s …"
 
 msgid "Sepedi"
 msgstr "Sepedi"
@@ -17494,7 +17517,7 @@ msgstr "Kontrole stenografskog formata"
 
 #, c-format
 msgid "Shouldn't be in addinfo \"%s"
-msgstr "Ne bi trebalo biti u 'addinfo' \"%s"
+msgstr "Ne bi trebalo biti u 'addinfo' „%s"
 
 msgid "Show"
 msgstr "Prikaži"
@@ -17651,7 +17674,7 @@ msgid "Size of Points"
 msgstr "Veličina točaka"
 
 msgid "Size of comb delimiters in display styles"
-msgstr "Veličina kombiniranih razdjeljivača u veće obliku"
+msgstr "Veličina kombiniranih razdjeljivača u većem obliku"
 
 msgid "Size of comb delimiters in non-display styles"
 msgstr "Veličina kombiniranih razdjeljivača u običnom obliku"
@@ -17710,15 +17733,15 @@ msgstr "Preskoči"
 
 #, c-format
 msgid "Skipping duplicate group %s."
-msgstr "Preskakanje duple grupe %s."
+msgstr "Preskakanje duple grupe %s._"
 
 #, c-format
 msgid "Skipping group %s with same name as a glyph."
-msgstr "Preskakanje grupe %s s istim nazivom kao grafem."
+msgstr "Preskakanje grupe %s s istim nazivom kao grafem._"
 
 #, c-format
 msgid "Skipping non-existent glyph %s in group %s."
-msgstr "Preskakanje nepostojećeg grafema %s u grupi %s."
+msgstr "Preskakanje nepostojećeg grafema %s u grupi %s._"
 
 msgid "Skolt Sami"
 msgstr "Skolt Sami"
@@ -17906,10 +17929,10 @@ msgid "Space (in points) left between images and text in any labels, buttons, me
 msgstr "Razmak (u točkama) između slika i teksta u etiketama, gumbovima, stavkama izbornika, itd. koji sadrže i jedno i drugo"
 
 msgid "Space Regions"
-msgstr "Područja razmicanja"
+msgstr "Rasporedi područja"
 
 msgid "Space _Regions..."
-msgstr "_Razmakni područja …"
+msgstr "R_asporedi područja …"
 
 msgid ""
 "Space between the ink to of the\n"
@@ -17933,7 +17956,7 @@ msgid "SpaceAfterScript:"
 msgstr "Bjelina iza indeksa/eksponenta:"
 
 msgid "Spacing Modifier Letters"
-msgstr "Slova razmakovnih modifikatora"
+msgstr "Modifikatorska slova spacioniranja"
 
 msgid "Spanish"
 msgstr "Španjolski"
@@ -18070,10 +18093,10 @@ msgid "Spline mismatch in glyph “%s”\n"
 msgstr "Nepodudaranje krivulja u grafemu „%s”\n"
 
 msgid "Square"
-msgstr "Kvadratno"
+msgstr "Kvadratično"
 
 msgid "Square Cove"
-msgstr "Pravokutni s mekim prijelazom"
+msgstr "Uglati zaobljeni"
 
 msgid "Squish"
 msgstr "Stisni"
@@ -18114,6 +18137,10 @@ msgid "Stack underflow on hhcurveto in %s"
 msgstr "Pop greška pri 'hhcurveto' u %s"
 
 #, c-format
+msgid "Stack underflow on hlineto/hmoveto in %s"
+msgstr "Pop greška pri 'hlineto/hmoveto' u %s\n"
+
+#, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s\n"
 msgstr "Pop greška pri 'hlineto/hmoveto' u %s\n"
 
@@ -18139,7 +18166,7 @@ msgstr "Pop greška pri 'ifelse' u %s"
 
 #, c-format
 msgid "Stack underflow on rlineto/rmoveto in %s"
-msgstr "Pop greška pri 'rlineto/rmoveto' u %s\n"
+msgstr "Pop greška pri 'rlineto/rmoveto' u %s"
 
 #, c-format
 msgid "Stack underflow on rrcurveto in %s"
@@ -18167,7 +18194,7 @@ msgstr "Pop greška pri 'vhcurveto' u %s"
 
 #, c-format
 msgid "Stack underflow on vlineto/vmoveto in %s"
-msgstr "Pop greška pri 'vlineto/vmoveto' u %s\n"
+msgstr "Pop greška pri 'vlineto/vmoveto' u %s"
 
 #, c-format
 msgid "Stack underflow on vstem in %s"
@@ -18307,7 +18334,7 @@ msgstr "%4d. stanje, oznake: "
 
 #, c-format
 msgid "State %4d Mark: "
-msgstr "%4d. stanje, oznaka: "
+msgstr "%4d. stanje, dij. oznaka: "
 
 #. GT: You're in a state machine, and this is describing the %4d'th state of
 #. GT: that machine. From the state the next state will be a list of
@@ -18330,10 +18357,10 @@ msgid "Stem threshold should be positive"
 msgstr "Prag poteza treba biti pozitivan"
 
 msgid "StemSnapH does not contain StdHW value."
-msgstr "Vodoravno privlačenje poteza (StemSnapH) ne sadrži vrijednost standardne vodoravne širine (StdHW)."
+msgstr "StemSnapH (privlačenje na vodoravni potez) ne sadrži vrijednost StdHW (standardna vodoravna širina)."
 
 msgid "StemSnapV does not contain StdVW value."
-msgstr "Uspravno privlačenje poteza (StemSnapV) ne sadrži vrijednost standardne uspravne širine (StdVW)."
+msgstr "StemSnapV (privlačenje na uspravni potez) ne sadrži vrijednost StdVW (standardna uspravna širina)."
 
 msgid "Stems"
 msgstr "Potezi"
@@ -18450,7 +18477,7 @@ msgid "Strong Right to Left"
 msgstr "Desno-na-lijevo"
 
 msgid "Style Map:"
-msgstr "Mapiranje stilova:"
+msgstr "Mapiranje stila:"
 
 msgid "Style Name:"
 msgstr "Naziv stila:"
@@ -18578,6 +18605,10 @@ msgstr "Indeksi/Eksponenti"
 
 #, c-format
 msgid "Substitute Glyph out of bounds in 'mort'/'morx' table %d"
+msgstr "Zamjenski grafem izvan granica u 'mort/morx' tablici %d\n"
+
+#, c-format
+msgid "Substitute glyph out of bounds in 'mort'/'morx' table %d"
 msgstr "Zamjenski grafem izvan granica u 'mort/morx' tablici %d\n"
 
 msgid "Substitution generates itself"
@@ -18797,7 +18828,7 @@ msgid "TH-Cree"
 msgstr "Cree-TH"
 
 msgid "TS Direct Line"
-msgstr "2.1 – Jednostavni"
+msgstr "2.1 – Kontrastni"
 
 msgid "TS Miscellaneous"
 msgstr "2.15 – Razni"
@@ -18821,7 +18852,7 @@ msgid "TTF Names"
 msgstr "TTF nazivi fonta"
 
 msgid "TTFFoundry"
-msgstr "TTF naziv proizvođač"
+msgstr "Naziv proizvođača TTF"
 
 msgid "T_reatment"
 msgstr "_Ispuna"
@@ -19129,7 +19160,7 @@ msgid ""
 "The 'name' table contains (at least) two strings for the %s in language %s, the first '%.12s...' the second '%.12s...'.\n"
 "Which do you prefer?"
 msgstr ""
-"Tablica 'name' sadrži (barem) dva znakovna niza za %s u jeziku %s, prvi '%.12s…' drugi '%.12s…'.\n"
+"Tablica 'name' sadrži (barem) dva znakovna niza za %s u jeziku %s, prvi '%.12s …' drugi '%.12s …'.\n"
 "Koji želiš?"
 
 #, c-format
@@ -19166,7 +19197,7 @@ msgid ""
 "The Edit->Join command will join points which are this close together\n"
 "A value of 0 means they must be coincident"
 msgstr ""
-"Naredba „Uredi -> Spoji” će spojiti točke, koje su ovoliko udaljene\n"
+"Naredba „Uredi → Spoji” će spojiti točke, koje su ovoliko udaljene\n"
 "jedna od druge. Vrijednost 0 znači da se moraju podudarati"
 
 msgid ""
@@ -19350,13 +19381,13 @@ msgid "The advance width of %s (%d) does not match the font's advanceWidthMax (%
 msgstr "Širina stošca od %s (%d) se ne poklapa s maksimalnom širinom sotšca fonta (%d), a radi se o fontu fiksne širine"
 
 msgid "The amount of space between words when using this font"
-msgstr "Količina razmaka između riječi, kad se koristi ovaj font"
+msgstr "Količina bjeline između riječi, kad se koristi ovaj font"
 
 msgid "The amount of stretchable space between words when using this font"
-msgstr "Količina mogućeg proširivanja razmaka između riječi, kad se koristi ovaj font"
+msgstr "Količina mogućeg širenja bjeline između riječi, kad se koristi ovaj font"
 
 msgid "The amount the space between words may shrink when using this font"
-msgstr "Količina mogućeg sužavanja razmaka između riječi, kad se koristi ovaj font"
+msgstr "Količina mogućeg sužavanja bjeline između riječi, kad se koristi ovaj font"
 
 msgid "The box around the up/down arrows of a numeric field (spinner)"
 msgstr "Okvir okolo strelica za gore/dolje, u numeričkom polju (okretni gumb)"
@@ -19534,10 +19565,10 @@ msgid "The color used to fill the outline when in preview mode"
 msgstr "Boja za ispunjavanje konture u preglednom načinu prikaza"
 
 msgid "The color used to mark blue zones in the blue values entry of the private dictionary"
-msgstr "Boja koja se koristi za „plave” zone, zadane 'blue' vrijednostima u 'private' biblioteci"
+msgstr "Boja koja se koristi za 'blue' zone, zadane 'blue' vrijednostima u 'private' biblioteci"
 
 msgid "The color used to mark blue zones in the family blues entry of the private dictionary"
-msgstr "Boja koja se koristi za „plave” zone, zadane 'family blue' vrijednostima u 'private' biblioteci"
+msgstr "Boja koja se koristi za 'blue' zone, zadane 'family blue' vrijednostima u 'private' biblioteci"
 
 msgid "The color used to outline a reference"
 msgstr "Boja za konturu reference"
@@ -19617,7 +19648,7 @@ msgid ""
 "The convention is that PostScript fonts should have an Em-Size of 1000. But this font has a size of %d. This is not an error, but you might consider altering the Em-Size with the Element->Font Info->General dialog.\n"
 "Do you wish to continue to generate your font in spite of this?"
 msgstr ""
-"Općevažeće pravilo je, da PostScript fontovi trebaju imati četverac od 1000. Ali ovaj font ima četverac od %d. To nije krivo, ali možda ipak želiš promijeniti četverac u dijaloškom okviru „Element -> Informacije o fontu -> Opće”.\n"
+"Općevažeće pravilo je, da PostScript fontovi trebaju imati četverac od 1000. Ali ovaj font ima četverac od %d. To nije krivo, ali možda ipak želiš promijeniti četverac u dijaloškom okviru „Element → Informacije o fontu → Opće”.\n"
 "Želiš li svejedno nastaviti sa stvaranjem fonta?"
 
 #, c-format
@@ -19625,7 +19656,7 @@ msgid ""
 "The convention is that TrueType fonts should have an Em-Size which is a power of 2. But this font has a size of %d. This is not an error, but you might consider altering the Em-Size with the Element->Font Info->General dialog.\n"
 "Do you wish to continue to generate your font in spite of this?"
 msgstr ""
-"Općevažeće pravilo je, da TrueType fontovi trebaju imati četverac veličine druge potencije. Ali ovaj font ima četverac od %d. To nije krivo, ali možda ipak želiš promijeniti četverac u dijaloškom okviru „Element -> Informacije o fontu -> Opće”.\n"
+"Općevažeće pravilo je, da TrueType fontovi trebaju imati četverac veličine druge potencije. Ali ovaj font ima četverac od %d. To nije krivo, ali možda ipak želiš promijeniti četverac u dijaloškom okviru „Element → Informacije o fontu → Opće”.\n"
 "Želiš li svejedno nastaviti sa stvaranjem fonta?"
 
 msgid ""
@@ -19637,7 +19668,7 @@ msgid ""
 msgstr ""
 "Koordinate svih točaka i kontrolnih točaka u TrueTypeu moraju biti\n"
 "cijeli brojevi (ako nisu cijeli brojevi, tad će ih FontForge zaokružiti\n"
-"prilikom generiranja, što potencijalno može upropastiti font).\n"
+"prilikom stvaranja, što potencijalno može upropastiti font).\n"
 "Čak i u PostScript fontovima je općenito dobra ideja koristiti\n"
 "cjelobrojne vrijednosti."
 
@@ -19674,7 +19705,7 @@ msgstr "Kodiranje ne sadrži ništa što ima naziv %.40s"
 
 #, c-format
 msgid "The entry \"%1$.20s\" is not present in the private dictionary of both %2$.30s and %3$.30s"
-msgstr "Nema zapisa \"%1$.20s\" u 'private' rječniku za %2$.30s niti za %3$.30s"
+msgstr "Nema zapisa „%1$.20s” u 'private' rječniku za %2$.30s niti za %3$.30s"
 
 msgid "The extra glue place above and below displayed limits"
 msgstr "Dodatni prostor iznad i izpod prikazanih granica"
@@ -19824,7 +19855,7 @@ msgstr "Grafem CID-oznake %d je mapiran u više od %d kodiranja. Obradit će se 
 
 #, c-format
 msgid "The glyph at encoding %d is named \".notdef\" but contains an outline. Because it is called \".notdef\" it will not be included in the generated font. You may give it a new name using Element->Glyph Info. Do you wish to continue font generation (and omit this character)?"
-msgstr "Grafem kodiranja %d je imenovan kao \".notdef\", međutim sadrži konturu. Budući da se radi o \".notdef\" znaku, neće biti dodan generiranom fontu. Možeš ga preimenovati putem izbornika „Element -> Informacije o grafemu”. Želiš li nastaviti s generiranjem fonta (i zanemariti ovaj znak)?"
+msgstr "Grafem kodiranja %d je imenovan kao \".notdef\", međutim sadrži konturu. Budući da se radi o \".notdef\" znaku, grafem neće biti dodan stvorenom fontu. Možeš ga preimenovati putem izbornika „Element → Informacije o grafemu”. Želiš li nastaviti sa stvaranjem fonta (i zanemariti ovaj znak)?"
 
 msgid ""
 "The glyph is rasterized at the size above, but it\n"
@@ -19988,7 +20019,7 @@ msgid ""
 msgstr ""
 "Tablica definicija %.30s je aktivan za grafem %.30s koji ima pismo '%c%c%c%c', međutim tog pisma čini se nema u niti jednoj funkciji koja primijenjuje tablicu definicija.\n"
 "\n"
-"Želiš li dodati ovo pismo u jednu od tih funkcija?"
+"Želiš li dodati ovo pismo jednoj od tih funkcija?"
 
 #, c-format
 msgid ""
@@ -19996,7 +20027,7 @@ msgid ""
 "Would you like to add this script to one of those features?"
 msgstr ""
 "Tablica definicija %.30s, koja pokreće tablicu definicija %.30s, je aktivna za grafem %.30s koji ima pismo '%c%c%c%c', međutim tog pisma čini se nema u niti jednoj funkciji koja primijenjuje tablicu definicija.\n"
-"Želiš li dodati ovo pismo u jednu od tih funkcija?"
+"Želiš li dodati ovo pismo jednoj od tih funkcija?"
 
 msgid "The mark showing a checkbox is off (up, not selected)"
 msgstr "Oznaka prikazuje isključeni potvrdni okvir (nadignuto, nije odabrano)"
@@ -20063,13 +20094,13 @@ msgstr ""
 "većeg oblika, kad je granica manja od operatora"
 
 msgid "The minimum glue space above a large displayed operator"
-msgstr "Minimalni prostor iznad operatora većeg oblika"
+msgstr "Minimalna bjelina iznad operatora većeg oblika"
 
 msgid "The minimum glue space below a large displayed operator"
-msgstr "Minimalni prostor ispod operatora većeg oblika"
+msgstr "Minimalna bjelina ispod operatora većeg oblika"
 
 msgid "The move point must be at the beginning of the contour."
-msgstr "Točka za micanje se mora nalaziti na početku konture."
+msgstr "Točka za micanje se mora nalaziti na početku konture._"
 
 #, c-format
 msgid "The name FontForge would like to assign to this glyph, %.30s, is already used by a different glyph."
@@ -20211,8 +20242,9 @@ msgstr "Tražena datoteka %.100s ne postoji"
 
 msgid "The results produced by applying the NormalizeDesignVector and ConvertDesignVector functions were not the results expected. You may need to change these functions"
 msgstr ""
-"Rezultati, koji su dobiveni primjenom funkcija za normaliziranje vektora dizajna i za konverziju\n"
-"vektora dizajna, nisu bili očekivani rezultati. Možda trebaš promijeniti ove funkcije."
+"Rezultati, koji su dobiveni primjenom funkcija za normaliziranje vektora dizajna i\n"
+"za konverziju vektora dizajna, nisu bili očekivani rezultati.\n"
+"Možda trebaš promijeniti ove funkcije."
 
 #, c-format
 msgid "The script tag on line %d (%s) is too long.  It may be at most 4 letters"
@@ -20492,7 +20524,7 @@ msgid "The y coord of the selected point is near the xheight"
 msgstr "Y koordinata odabrane točke je blizu visine kurenta"
 
 msgid "There already exists a 'cvt' table, perhaps legacy. FontForge can use it, but can't make any assumptions on values stored there, so generated instructions will be of lower quality. If legacy hinting is to be scrapped, it is suggested to clear the `cvt` and repeat autoinstructing. "
-msgstr "Već postoji 'cvt' tablica, možda zastarjela. FontForge je može koristiti, ali ne može ocijeniti točnost spremljenih vrijednosti pohranjenim, tako da će generirane instrukcije biti lošije kvalitete. Ako zastarjele instrukcije želiš ukloniti, predlažemo da očistiš 'cvt' tablicu i ponoviš automatsko generiranje instrukcija."
+msgstr "Već postoji 'cvt' tablica, možda zastarjela. FontForge je može koristiti, ali ne može ocijeniti točnost spremljenih vrijednosti pohranjenim, tako da će stvorene instrukcije biti lošije kvalitete. Ako zastarjele instrukcije želiš ukloniti, predlažemo da očistiš 'cvt' tablicu i ponoviš automatsko stvaranje instrukcija."
 
 #, c-format
 msgid "There are %d pages in this file, which do you want?"
@@ -20554,7 +20586,7 @@ msgid "There aren't enough glyphs in the encoding to name all the selected chara
 msgstr "Nema dovoljno grafema u kodiranju za imenovanje svih odabranih znakova"
 
 msgid "There exists a 'fpgm' code that seems incompatible with FontForge's. Instructions generated will be of lower quality. If legacy hinting is to be scrapped, it is suggested to clear the `fpgm` and repeat autoinstructing. It will be then possible to append user's code to FontForge's 'fpgm', but due to possible future updates, it is extremely advised to use high numbers for user's functions."
-msgstr "Postoji 'fpgm' kȏd koji nije kompatibilan s FontForgeovim. Generirane instrukcije bit će lošije kvalitete. Ako zastarjele instrukcije želiš ukloniti, predlažemo da očistiš 'fpgm' tablicu i ponoviš automatsko generiranje instrukcija. Tad će biti moguće dodati korisnički kȏd FontForgeovoj 'fpgm' tablici, no zbog mogućih budućih aktualiziranja, savjetujemo da upotrijebiš velike brojeve za korisničke funkcije."
+msgstr "Postoji 'fpgm' kȏd koji nije kompatibilan s FontForgeovim. Stvorene instrukcije će biti lošije kvalitete. Ako zastarjele instrukcije želiš ukloniti, predlažemo da očistiš 'fpgm' tablicu i ponoviš automatsko stvaranje instrukcija. Tad će biti moguće dodati korisnički kȏd FontForgeovoj 'fpgm' tablici, no zbog mogućih budućih aktualiziranja, savjetujemo da upotrijebiš velike brojeve za korisničke funkcije."
 
 msgid "There exists a 'prep' code incompatible with FontForge's. It can't be guaranteed it will work well. It is suggested to allow FontForge to insert its code and then append user's own."
 msgstr "Postoji 'prep' kȏd koji nije kompatibilan s FontForgeovim. Ne možemo garantirati da će raditi dobro. Predlažemo da dopustiš FontForgeu da umetne svoj kȏd, a zatim dodaj vlastiti."
@@ -20636,7 +20668,7 @@ msgstr "U fontu postoji jedan drugi grafem s ovom unicode kodnom točkom"
 
 #, c-format
 msgid "There is no ForceBoldThreshold entry in the weighted font, but there is a ForceBold entry in font %30s"
-msgstr "Ne postoji zapis za „Prag za obavezno debljanje” u font s debljinom, ali u fontu %30s postoji zapis za 'ForceBold'"
+msgstr "Ne postoji zapis za „Prag za obavezno debljanje” (ForceBold) u fontu s debljinom, ali u fontu %30s postoji zapis za 'ForceBold'"
 
 #, c-format
 msgid "There is no anchor for class %1$.30s in subtable %2$.30s"
@@ -20905,7 +20937,7 @@ msgid ""
 "Would you like to use a \"Symbol\" encoding instead of Unicode?"
 msgstr ""
 "Ovaj font ne sadrži grafeme s unicode kodiranjem.\n"
-"Želiš li koristiti \"Symbol\" kodiranje umjesto Unicode kodiranja?"
+"Želiš li koristiti „Symbol” kodiranje umjesto Unicode kodiranja?"
 
 msgid ""
 "This font contains no glyphs with unicode encodings.\n"
@@ -21067,10 +21099,10 @@ msgid "This glyph should display spiro points, but unfortunately this version of
 msgstr "Ovaj bi grafem trebao prikazati spiro točke, ali nažalost ova verzija FontForgea nije bila povezana s bibliotekom spiro, tako da će biti prikazane samo normalne bezierove točke."
 
 msgid "This glyph's advance width is different from the standard width"
-msgstr "Širina stožca grafema se razlikuje od standardne širine"
+msgstr "Širina stošca grafema se razlikuje od standardne širine"
 
 msgid "This glyph's vertical advance is different from the standard width"
-msgstr "Visina stožca grafema se razlikuje od standardne visine"
+msgstr "Visina stošca grafema se razlikuje od standardne visine"
 
 msgid "This hint does not control any points"
 msgstr "Kontrola ne kontrolira niti jednu točku"
@@ -21280,7 +21312,7 @@ msgid "This operation cannot be undone, do it anyway?"
 msgstr "Nije moguće poništiti ovu operaciju. Svejedno obaviti?"
 
 msgid "This option prepends a timestamp in the format YYMMDDHHMM to the filename and font-family name metadata."
-msgstr "Ovom opcijom se pridodaje vremenska oznaka u formatu YYMMDDHHMM datoteci i metapodacima naziva obitelji fontova."
+msgstr "Ovom opcijom se pridodaje vremenska oznaka datoteci i metapodacima naziva obitelji fontova u formatu YYMMDDHHMM."
 
 msgid "This outline glyph is missing a bitmap version"
 msgstr "Ovom konturnom grafemu nedostaje bitmap verzija"
@@ -21305,10 +21337,10 @@ msgstr ""
 "provjeravanja presijecanja). Uvećaj prikaz i provjeri kutove."
 
 msgid "This path should have been drawn in a clockwise direction"
-msgstr "Ova staza bi trebala biti nacrtana u smjeru kazaljke na satu"
+msgstr "Ova staza bi trebala biti crtana u smjeru kazaljke na satu"
 
 msgid "This path should have been drawn in a counter-clockwise direction"
-msgstr "Ova staza bi trebala biti nacrtana u suprotnom smjeru kazaljke na satu"
+msgstr "Ova staza bi trebala biti crtana u suprotnom smjeru od kazaljke na satu"
 
 msgid ""
 "This pdf file contains an /Encrypt dictionary, and FontForge does not currently\n"
@@ -21411,7 +21443,7 @@ msgstr ""
 "sve što se nalazi ispod osnovne pismovne linije."
 
 msgid "This spline set has no points."
-msgstr "Krivulja nema točaka."
+msgstr "Krivulja nema točaka._"
 
 msgid "This version of FontForge expects freetype 2.3.7 or more."
 msgstr "Ova FontForge verzija očekuje freetype 2.3.7 ili noviji."
@@ -21608,7 +21640,7 @@ msgid "Too many Unique Font IDs"
 msgstr "Previše jedinstvenih font ID-oznaka"
 
 msgid "Too many axis positions specified in /BlendDesignPositions."
-msgstr "Previše pozicija osi određeno u '/BlendDesignPositions'.\n"
+msgstr "Previše pozicija osi određeno u '/BlendDesignPositions'."
 
 #, c-format
 msgid "Too many dashes (at most %d allowed)"
@@ -21622,7 +21654,7 @@ msgstr "Previše elemenata u nizu 'FamilyBlues'/'FamilyOtherBlues'."
 
 #, c-format
 msgid "Too many entries in CharStrings dictionary \"%s"
-msgstr "Previše zapisa u 'CharStrings' rječniku \"%s"
+msgstr "Previše zapisa u 'CharStrings' rječniku „%s"
 
 #, c-format
 msgid "Too many features %d"
@@ -21643,7 +21675,7 @@ msgstr "Previše tablica definicija %d"
 
 #, c-format
 msgid "Too many mapping data points specified in /BlendDesignMap for axis %s."
-msgstr "Previše točaka podataka za mapiranje određeno u '/BlendDesignMap' za os %s.\n"
+msgstr "Previše točaka podataka za mapiranje određeno u '/BlendDesignMap' za os %s."
 
 #, c-format
 msgid "Too many scripts %d"
@@ -21930,7 +21962,7 @@ msgid ""
 msgstr ""
 "Dva grafema dijele isti naziv.\n"
 "Promijeni kodiranje u „Redoslijed grafema” i koristi\n"
-"„Uredi -> Odaberi -> Zamjenski znak” sa sljedećom kodnom točkom"
+"„Uredi → Odaberi → Odaberi po zamjenskom znaku” sa sljedećom kodnom točkom"
 
 msgid ""
 "Two glyphs share the same unicode code point.\n"
@@ -21939,7 +21971,7 @@ msgid ""
 msgstr ""
 "Dva grafema dijele istu unicode kodnu točku.\n"
 "Promijeni kodiranje u „Redoslijed grafema” i koristi\n"
-"„Uredi -> Odaberi -> Zamjenski znak” sa sljedećom kodnom točkom"
+"„Uredi → Odaberi → Odaberi po zamjenskom znaku” sa sljedećom kodnom točkom"
 
 msgid "Type"
 msgstr "Vrsta"
@@ -21997,13 +22029,13 @@ msgid "Typo Ascent Offset:"
 msgstr "Typo uzlazni potez, odmak:"
 
 msgid "Typo Ascent:"
-msgstr "Typo, uzlazni potez:"
+msgstr "Typo uzlazni potez:"
 
 msgid "Typo Descent Offset:"
 msgstr "Typo silazni potez, odmak:"
 
 msgid "Typo Descent:"
-msgstr "Typo, silazni potez:"
+msgstr "Typo silazni potez:"
 
 msgid "Typo Line _Gap:"
 msgstr "Typo pro_red:"
@@ -22325,7 +22357,7 @@ msgstr "Nepoznati znak nakon obrnute kose crte u doslovnom znakovnom nizu."
 
 #, c-format
 msgid "Unknown class table format: %d"
-msgstr "Nepoznati format tablice klasa: %d"
+msgstr "Nepoznati format tablice klasa: %d_"
 
 #, c-format
 msgid "Unknown field %s on line %d of %s"
@@ -22657,7 +22689,7 @@ msgid ""
 "when generating a font."
 msgstr ""
 "Koristi ovo kao zadanu osnovu za naziv datoteke\n"
-"prilikom generiranja fonta."
+"prilikom stvaranja fonta."
 
 #, c-format
 msgid "Use-my-metrics flag set on at least two components in glyph %d"
@@ -22810,7 +22842,7 @@ msgid "Vendor ID:"
 msgstr "ID-oznaka prodavača:"
 
 msgid "Vendor URL"
-msgstr "URL prodavača"
+msgstr "Prodavač URL"
 
 msgid "Version"
 msgstr "Verzija"
@@ -22941,13 +22973,13 @@ msgid "Very Extended"
 msgstr "Jako prošireni"
 
 msgid "Very High"
-msgstr "Jako visoka"
+msgstr "Jako visoki"
 
 msgid "Very Light"
 msgstr "Jako svijetli"
 
 msgid "Very Low"
-msgstr "Jako niska"
+msgstr "Jako niski"
 
 msgid "Very Narrow"
 msgstr "Jako uski"
@@ -23020,7 +23052,7 @@ msgstr "Upozorenje"
 
 #, c-format
 msgid "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]"
-msgstr "Upozorenje: %d. vrijednost osi (%g) je izvan dozvoljenog raspona [%g,%g]\n"
+msgstr "Upozorenje: %d. vrijednost osi (%g) je izvan dozvoljenog raspona [%g,%g]"
 
 #, c-format
 msgid "Warning: %s has a different family name than does %s (GenerateFamily)"
@@ -23234,7 +23266,7 @@ msgid "Watched Store Change"
 msgstr "Promjena spremišta"
 
 msgid "We cannot have lead-in points for an open curve."
-msgstr "Ne možemo imati ulazne točke za otvorenu krivulju."
+msgstr "Ne možemo imati ulazne točke za otvorenu krivulju._"
 
 msgid "We don't understand this font"
 msgstr "Font se ne da razumjeti"
@@ -23381,7 +23413,9 @@ msgstr ""
 "kopiraj TrueType instrukcije grafema."
 
 msgid "When debugging in grey-scale this is the color of a raster block which is fully covered."
-msgstr "Prilikom ispravljanja grešaka u modusu sivih tonova, ovo je boja rasterskog bloka koji potpuno ispunjen."
+msgstr ""
+"Prilikom ispravljanja grešaka u modusu sivih tonova,\n"
+"ovo je boja rasterskog bloka koji je potpuno ispunjen."
 
 msgid ""
 "When displaying a list of glyph names\n"
@@ -23441,19 +23475,25 @@ msgid "When fontforge opens a (non-sfd) font it will try to display this unicode
 msgstr "Kad FontForge otvori (ne-sfd) font, pokušat će prikazati ovaj znak unicodea u prikazu fonta."
 
 msgid "When generating a Mac Type1 resource font, you MUST generate at least one NFNT bitmap font to go with it. If you have not created any bitmaps for this font, cancel this dlg and use the Element->Bitmaps Available command to create one"
-msgstr "Prilikom stvaranja Mac Type1 fonta resursa, MORAŠ proizvesti barem jedan NFNT bitmap font, koji će ići uz njega. Ako za ovaj font nema bitmapa, napusti ovaj dijaloški okvir i stvori bitmape pomoću \"Element -> Dostupni bitmapi\"."
+msgstr ""
+"Prilikom stvaranja Mac Type1 fonta resursa, MORAŠ stvoriti barem jedan NFNT bitmap font,\n"
+"koji će ići uz njega. Ako za ovaj font nema bitmapa, napusti ovaj dijaloški okvir i stvori bitmape\n"
+"pomoću „Element → Dostupni bitmapi”."
 
 msgid "When generating a font, ignore slight rounding errors for hints that should be at the top or bottom of the glyph. For example, you might like to set this to 0.02 so that 19.999 will be considered 20. But only for the hint width value."
-msgstr "Prilikom generiranja fonta, zanemari male greške u zaokruživanju za kontrole, koje bi trebale biti na vrhu ili na dnu grafema. Na primjer, možda želiš ovo postaviti na 0,02, tako da će se 19,999 smatrati 20. Ali samo za vrijednost širine kontrola."
+msgstr ""
+"Prilikom stvaranja fonta, zanemari male greške u zaokruživanju za kontrole, koje bi\n"
+"trebale biti na vrhu ili na dnu grafema. Na primjer, možda želiš ovo postaviti na 0,02,\n"
+"tako da će se 19,999 smatrati 20. Ali samo za vrijednost širine kontrola."
 
 msgid ""
 "When generating a set of BDF fonts ask the user\n"
 "to specify the screen resolution of the fonts\n"
 "otherwise FontForge will guess depending on the pixel size."
 msgstr ""
-"Prilikom generiranja skupa BDF fontova, zapitaj\n"
-"korisnika da odredi razlučivosti zaslona za fontove,\n"
-"inače će je FontForge pogoditi ovisno o veličini piksela."
+"Prilikom stvaranja skupa BDF fontova, zapitaj korisnika\n"
+"da odredi razlučivost zaslona za fontove, inače će je\n"
+"FontForge pogoditi ovisno o veličini piksela."
 
 msgid ""
 "When generating a truetype or opentype font it is occasionally\n"
@@ -23471,9 +23511,12 @@ msgid ""
 "This setting gives the user some control over this allowing a small tolerance value to be fed into the OpenType loading code.\n"
 "Comparisons are then not performed for raw equality but for equality within tolerance (e.g., values within the range -0.0002 to 0.0002 will be considered equal to 0 when figuring out hints)."
 msgstr ""
-"Prilikom uvoza OpenType fonta, u slučajevima kad kontrole točaka krivulja ne odgovaraju točno granicama. Na primjer, točka može biti −0,0002, umjesto točno 0.\n"
-"Ova postavka omogućuje unos male vrijednosti tolerancije, koja se OpenType kodu dodaje prilikom učitavanja.\n"
-"Usporedbe se tada ne provode na osnovi jednakosti, već jednakosti unutar tolerancije (npr. vrijednosti unutar raspona od −0,0002 do 0,0002 smatrat će se jednakim kao 0, kad se izračunavaju kontrole)."
+"Prilikom uvoza OpenType fonta, u slučajevima kad se kontrole točaka krivulja\n"
+"ne poklapaju točno s granicama. Na primjer, točka može biti −0,0002, umjesto točno 0.\n"
+"Ova postavka omogućuje unos male vrijednosti tolerancije, koja se OpenType kodu dodaje\n"
+"prilikom učitavanja. Usporedbe se tada ne provode na osnovi jednakosti, već na osnovi\n"
+"jednakosti unutar tolerancije (npr. vrijednosti unutar raspona od −0,0002 do 0,0002\n"
+"smatrat će se jednakim kao 0, kad se izračunavaju kontrole)."
 
 msgid ""
 "When loading a font in sfnt format (TrueType, OpenType, etc.),\n"
@@ -23493,10 +23536,14 @@ msgstr ""
 
 #, c-format
 msgid "When loading tt instrs from sfd: %s"
-msgstr "Tijekom učitavanja TT instrukcija iz SFD-a: %s"
+msgstr "Tijekom učitavanja TT instrukcija iz SFD-a: %s_"
 
 msgid "When merging two CID keyed fonts, they must have the same Registry and Ordering, and the font being merged into (the mergee) must have a supplement which is at least as recent as the other's. Furthermore the mergee must have at least as many subfonts as the merger."
-msgstr "Prilikom sjedinjavanja dvaju CID fonta, fontovi moraju imati isti registar i redoslijed, a font u koji se sjedinjuje, mora imati dodatak koji je nov, barem kao u drugom. Nadalje, font u koji se sjedinjuje mora imati najmanje onoliko podfontova koliko ih ima font koji se sjedinjuje."
+msgstr ""
+"Prilikom sjedinjavanja dvaju CID fonta, fontovi moraju imati isti registar i redoslijed,\n"
+"a font u koji se sjedinjuje, mora imati dodatak koji je nov, barem kao u drugom.\n"
+"Nadalje, font u koji se sjedinjuje mora imati najmanje onoliko podfontova,\n"
+"koliko ih ima font, koji se sjedinjuje."
 
 msgid ""
 "When moving one end point of a spline but not the other\n"
@@ -23552,7 +23599,7 @@ msgid ""
 "splines should be converted to the default order for new fonts\n"
 "(see NewFontsQuadratic)."
 msgstr ""
-"Hoće li fontovi učitani s diska zadržati njihove izvorne\n"
+"Hoće li fontovi učitani s diska zadržati svoje izvorne\n"
 "krivulje (kvadratne ili kubične) ili treba li krivulje pretvoriti\n"
 "u zadanu vrstu za nove fontove (vidi opciju\n"
 "„Kvadratne krivulje za novi font”)."
@@ -23578,7 +23625,7 @@ msgid ""
 "or to use an abbreviation (for instance \"Cnt-\")"
 msgstr ""
 "Želiš li koristiti mac-ikone za označivanje modifikatora (na primjer ^ za Control)\n"
-"ili kratice (na primjer \"Cnt-\")"
+"ili kratice (na primjer „Cnt-”)"
 
 msgid "Which archived item should be opened?"
 msgstr "Koju stavku arhive želiš otvoriti?"
@@ -24220,7 +24267,7 @@ msgid "_Add Selected"
 msgstr "_Dodaj odabrano"
 
 msgid "_Advance Width only"
-msgstr "_Samo širina stožca"
+msgstr "_Samo širina stošca"
 
 #. GT: Align these points to their average position
 msgid "_Align Points"
@@ -24251,7 +24298,7 @@ msgid "_Anchors"
 msgstr "_Sidra"
 
 msgid "_Anti Alias"
-msgstr "_Sa zaglađivanjem rubova"
+msgstr "Sa zaglađivanjem _rubova"
 
 msgid "_Anti-Aliased"
 msgstr "Sa zaglađivanjem rubova"
@@ -24316,7 +24363,7 @@ msgstr "Stopi u _novi font …"
 
 #. GT: You might not want to translate this, it's a keyword in PostScript font files
 msgid "_BlueValues"
-msgstr "'_BlueValues' kontrole"
+msgstr "_BlueValues"
 
 msgid "_Both"
 msgstr "_Oboje"
@@ -24502,7 +24549,7 @@ msgid "_Edit Instructions..."
 msgstr "Ur_edi instrukcije …"
 
 msgid "_Edit..."
-msgstr "Ur_edi..."
+msgstr "Ur_edi …"
 
 msgid "_Em Size:"
 msgstr "_Veličina četverca:"
@@ -24517,7 +24564,7 @@ msgid "_Enabled"
 msgstr "_Aktivirano"
 
 msgid "_Encoding Hex"
-msgstr "Heksadecimalni _kȏd"
+msgstr "_Heksadecimalni kȏd"
 
 msgid "_Error Limit:"
 msgstr "_Granica grešaka:"
@@ -24529,7 +24576,7 @@ msgid "_Exclude"
 msgstr "Is_ključi"
 
 msgid "_Expand Stroke..."
-msgstr "Proširi pot_ez …"
+msgstr "Pr_oširi potez …"
 
 msgid "_Extend Cap:"
 msgstr "_Proširi vrh linije:"
@@ -24559,7 +24606,7 @@ msgid "_Filter"
 msgstr "_Filtar"
 
 msgid "_Find Intersections"
-msgstr "_Naži presijecanja"
+msgstr "_Nađi presijecanja"
 
 msgid "_First"
 msgstr "Pr_vu"
@@ -24613,7 +24660,7 @@ msgid "_Give Up"
 msgstr "_Odustani"
 
 msgid "_Glyph Image"
-msgstr "Slike _grafema"
+msgstr "_Slike grafema"
 
 msgid "_Glyph Info..."
 msgstr "_Informacije o grafemu …"
@@ -24659,7 +24706,7 @@ msgid "_Hide Unused Columns"
 msgstr "_Sakrij neupotrebljene stupce"
 
 msgid "_Hinting Needed"
-msgstr "_Potrebne su kontrole za optimiranje prikaza"
+msgstr "Potreb_ne su kontrole za optimiranje prikaza"
 
 msgid "_Hints controlling no points"
 msgstr "_Kontrole nepovezane s točkama"
@@ -24704,10 +24751,10 @@ msgid "_Interpolated"
 msgstr "_Interpolirano"
 
 msgid "_Intersect"
-msgstr "Pre_sijeci"
+msgstr "Pre_sjek"
 
 msgid "_Invert Selection"
-msgstr "Pre_okreni odabir"
+msgstr "Pr_eokreni odabir"
 
 msgid "_Italic Angle:"
 msgstr "Kut kur_ziva:"
@@ -24801,13 +24848,13 @@ msgid "_Merge Feature Info..."
 msgstr "Sj_edini informacije font-funkcija …"
 
 msgid "_Merge Fonts..."
-msgstr "Sjedini _fontove …"
+msgstr "Sjedi_ni fontove …"
 
 msgid "_Metrics"
 msgstr "_Metrike"
 
 msgid "_Midline"
-msgstr "Sred_nji potez"
+msgstr "Visi_na kurenta"
 
 msgid "_Min Kern:"
 msgstr "_Min. podrezivanje:"
@@ -25122,7 +25169,7 @@ msgid "_Show"
 msgstr "_Prikaži"
 
 msgid "_Show ATT"
-msgstr "_Prikaži ATT"
+msgstr "Prik_aži ATT"
 
 msgid "_Show Exact *stem3"
 msgstr "_Prikaži točni *stem3"
@@ -25131,7 +25178,7 @@ msgid "_Side Bearings"
 msgstr "_Bočni odmaci"
 
 msgid "_Simplify"
-msgstr "Po_jednostavni"
+msgstr "_Pojednostavni"
 
 msgid "_Size:"
 msgstr "_Veličina:"
@@ -25155,10 +25202,10 @@ msgid "_Sort"
 msgstr "_Razvrstaj"
 
 msgid "_Space Points"
-msgstr "Raz_makni točke"
+msgstr "_Rasporedi točke"
 
 msgid "_Spacing"
-msgstr "Ši_rine stožaca"
+msgstr "_Spacioniranje"
 
 msgid "_Stop"
 msgstr "_Zaustavi"
@@ -25326,10 +25373,10 @@ msgid "_X near¹"
 msgstr "_X blizu¹"
 
 msgid "_X-Ascent"
-msgstr "Visina k_urenta"
+msgstr "_Uzlazni potez k_urenta"
 
 msgid "_X-Height"
-msgstr "Visina k_urenta"
+msgstr "_Visina verzala"
 
 msgid "_X:"
 msgstr "_X:"
@@ -25450,7 +25497,7 @@ msgid "coverage"
 msgstr "pokrivenosti"
 
 msgid "coverage table extends beyond end of table"
-msgstr "tablica pokrivenosti prekoračuje kraj tablice"
+msgstr "tablica pokrivenosti prekoračuje kraj tablice_"
 
 msgid "cursive entry"
 msgstr "kurzivni ulaz"
@@ -25917,7 +25964,7 @@ msgstr "ΤεΧ nazivi"
 
 #, c-format
 msgid "“%s” in %s contains an anchor point (%g,%g) class %s which differs from its counterpart by point matching\n"
-msgstr "\"%s\" u %s sadrži točku sidra (%g,%g) klase %s, koja se razlikuje od svog ekvivalenta poklapanjem točke\n"
+msgstr "„%s” u %s sadrži točku sidra (%g,%g) klase %s, koja se razlikuje od svog ekvivalenta poklapanjem točke\n"
 
 #, c-format
 msgid "“%s” in %s did not contain a pairwise positioning lookup ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d to %s ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"

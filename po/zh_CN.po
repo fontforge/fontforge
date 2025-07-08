@@ -22,8 +22,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-07 19:14+0300\n"
-"PO-Revision-Date: 2025-07-07 16:00\n"
+"POT-Creation-Date: 2025-07-09 01:00+0300\n"
+"PO-Revision-Date: 2025-07-08 21:59\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Language: zh_CN\n"
@@ -1018,7 +1018,7 @@ msgstr "查找调用必须以序列“@<”开始并以“>”结束，起始于
 
 #, c-format
 msgid "A match was found after unlinking references in glyph “%s”\n"
-msgstr "取消链接字形“%s”中的引用后发现匹配"
+msgstr "取消链接字形“%s”中的引用后发现匹配\n"
 
 msgid "A monospace font family at the same size as DefaultFont"
 msgstr "与DefaultFont大小相同的等宽字体系列"
@@ -1901,7 +1901,7 @@ msgid ""
 "that this will be ignored.\n"
 msgstr ""
 "任何绝对值小于此值的计算字偶距更改\n"
-"都将被忽略。"
+"都将被忽略。\n"
 
 msgid ""
 "Any other command with all its arguments.\n"
@@ -2743,7 +2743,7 @@ msgstr "错误的多主字体"
 
 #, c-format
 msgid "Bad Multiple/Alternate substitution glyph. GID %d not less than %d"
-msgstr "错误的多重/替代替换字形。GID %d 不应小于 %d\n"
+msgstr "错误的多重/替代替换字形。GID %d 不应小于 %d"
 
 msgid "Bad Name"
 msgstr "不当名称"
@@ -2876,14 +2876,14 @@ msgstr "上下文链式子表中的类别计数错误。"
 
 #, c-format
 msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)"
-msgstr "错误的类定义表。字形范围 %d-%d 超出范围 [0,%d)\n"
+msgstr "错误的类定义表。字形范围 %d-%d 超出范围 [0,%d)"
 
 #, c-format
 msgid "Bad class def table. start=%d cnt=%d, max glyph=%d"
 msgstr "错误的类定义表。start=%d cnt=%d，max glyph=%d"
 
 msgid "Bad class in state machine.\n"
-msgstr "状态机中的类不正确。"
+msgstr "状态机中的类不正确。\n"
 
 msgid "Bad class name"
 msgstr "类名不正确"
@@ -3052,11 +3052,11 @@ msgstr "错误的图像文件：%.100s"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d must be less than %d"
-msgstr "错误的字偶对：字形 %d 和 %d 必须小于 %d\n"
+msgstr "错误的字偶对：字形 %d 和 %d 必须小于 %d"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d mustn't be negative"
-msgstr "错误的字偶对：字形 %d 和 %d 不能为负\n"
+msgstr "错误的字偶对：字形 %d 和 %d 不能为负"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d should have been < %d"
@@ -3064,7 +3064,7 @@ msgstr "错误的字偶对：字形 %d 和 %d 应该是 < %d"
 
 #, c-format
 msgid "Bad kern pair: glyphs at %d & %d are null"
-msgstr "错误的字偶对：%d 和 %d 处的字形为空\n"
+msgstr "错误的字偶对：%d 和 %d 处的字形为空"
 
 msgid "Bad language tag"
 msgstr "不良语言标签"
@@ -3085,7 +3085,11 @@ msgstr "错误的连字字形。GID %d 不小于 %d"
 
 #, c-format
 msgid "Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d"
-msgstr "错误的查找表：format=2 (%d/%d)，first=%d last=%d 字体中的总字形=%d\n"
+msgstr "错误的查找表：format=2 (%d/%d)，first=%d last=%d 字体中的总字形=%d"
+
+#, c-format
+msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d"
+msgstr "错误的查找表：format=4 (%d/%d)，first=%d last=%d 字体中的总字形=%d\n"
 
 #, c-format
 msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
@@ -3190,7 +3194,7 @@ msgstr "错误的设置"
 msgid ""
 "Bad sfd file. Glyph %s has width %d even though it should be\n"
 "  bound to the width of %s which is %d.\n"
-msgstr "不当的 sfd 文件。字形 %s 的宽度为 %d，尽管它应该绑定到 %s 的宽度（即 %d）。"
+msgstr "不当的 sfd 文件。字形 %s 的宽度为 %d，尽管它应该绑定到 %s 的宽度（即 %d）。\n"
 
 #, c-format
 msgid "Bad sid %d (0 <= sid < %d)"
@@ -3995,7 +3999,7 @@ msgstr "不能构建此字形"
 
 #, c-format
 msgid "Can't open %s"
-msgstr "无法打开 %s"
+msgstr "不能打开 %s"
 
 msgid "Can't open temporary file for postscript output"
 msgstr "不能打开临时文件以供postscript输出"
@@ -4033,7 +4037,7 @@ msgstr "找不到您的热键定义文件！\n"
 
 #, c-format
 msgid "Cannot open %s"
-msgstr "无法打开 %s"
+msgstr "未能打开 %s"
 
 msgid "Cannot open a temporary file"
 msgstr "未能打开临时文件"
@@ -5481,7 +5485,7 @@ msgid "Coverage %d: "
 msgstr "范围 %d: "
 
 msgid "Coverage table specifies a different number of glyphs than the sub-table expects.\n"
-msgstr "覆盖表指定的字形数量与子表预期的不同。"
+msgstr "覆盖表指定的字形数量与子表预期的不同。\n"
 
 msgid "Cr_eate"
 msgstr "新建(_E)"
@@ -6726,7 +6730,7 @@ msgstr "编码名称"
 msgid ""
 "Encoding subtable for platform=%d, specific=%d (which must be 14)\n"
 "has an unsupported format %d.\n"
-msgstr "platform=%d、specific=%d（必须为 14）的编码子表具有不受支持的格式 %d。"
+msgstr "platform=%d、specific=%d（必须为 14）的编码子表具有不受支持的格式 %d。\n"
 
 #, c-format
 msgid "Encoding subtable for platform=%d, specific=%d has a 0 length subtable."
@@ -7508,7 +7512,7 @@ msgstr "解析StartData命令行参数失败，计数不对"
 
 #, c-format
 msgid "Failed to read a file. Bytes read:%ld file size:%ld\n"
-msgstr "无法读取文件。读取的字节数：%ld 文件大小：%ld"
+msgstr "无法读取文件。读取的字节数：%ld 文件大小：%ld\n"
 
 msgid "Failed to read guideline."
 msgstr "无法读取引导线。"
@@ -7696,7 +7700,7 @@ msgid "First Point Color"
 msgstr "第一点颜色"
 
 msgid "First and second arguments of imagemask must be integers.\n"
-msgstr "imagemask 的第一个和第二个参数必须是整数。"
+msgstr "imagemask 的第一个和第二个参数必须是整数。\n"
 
 msgid "First to _All"
 msgstr "首先(_A)"
@@ -7936,7 +7940,7 @@ msgid "FontForge does not support anonymous tables on line %d of %s"
 msgstr "FontForge 不支持第 %d 行的匿名表，共 %s"
 
 msgid "FontForge does not support dictionary based imagemask operators.\n"
-msgstr "FontForge 不支持基于字典的图像遮罩运算符。"
+msgstr "FontForge 不支持基于字典的图像遮罩运算符。\n"
 
 msgid "FontForge does not support synthetic fonts"
 msgstr "FontForge 不支持合成的字体"
@@ -8153,7 +8157,7 @@ msgid "FoundryName"
 msgstr "制作工具"
 
 msgid "Fourth argument of imagemask must be a 6-element transformation matrix.\n"
-msgstr "imagemask 的第四个参数必须是一个 6 元素变换矩阵。"
+msgstr "imagemask 的第四个参数必须是一个 6 元素变换矩阵。\n"
 
 msgid "FractionDenominatorDisplayStyleGapMin:"
 msgstr "FractionDenominatorDisplayStyleGapMin:"
@@ -8711,11 +8715,11 @@ msgstr "字形过大"
 
 #, c-format
 msgid "Glyph “%s” contains a reference to %s in %s\n"
-msgstr "字形“%1$s”在 %3$s 中包含对 %2$s 的引用"
+msgstr "字形“%1$s”在 %3$s 中包含对 %2$s 的引用\n"
 
 #, c-format
 msgid "Glyph “%s” contains a reference which has different truetype point match specifications\n"
-msgstr "字形“%s”包含具有不同 truetype 点匹配规范的引用"
+msgstr "字形“%s”包含具有不同 truetype 点匹配规范的引用\n"
 
 #. GT: FontForge needs to recognize the quotes used here(“”). If you change them
 #. GT: (in the translated strings) let me know. It currently also recognizes
@@ -8735,7 +8739,7 @@ msgstr "字形“%s”没有完全匹配的样条线，但已经接近了\n"
 
 #, c-format
 msgid "Glyph “%s” has a different bitmap at %d@%d\n"
-msgstr "字形“%s”在 %d@%d 处有不同的位图"
+msgstr "字形“%s”在 %d@%d 处有不同的位图\n"
 
 #, c-format
 msgid "Glyph “%s” has a different fill in layer %d\n"
@@ -8751,27 +8755,27 @@ msgstr "字形 “%s”在%d图层中有不同的笔划\n"
 
 #, c-format
 msgid "Glyph “%s” has advance width %d in %s but %d in %s\n"
-msgstr "字形“%1$s”在 %3$s 中具有间距宽度 %2$d，但在 %5$s 中具有 %4$d"
+msgstr "字形“%1$s”在 %3$s 中具有间距宽度 %2$d，但在 %5$s 中具有 %4$d\n"
 
 #, c-format
 msgid "Glyph “%s” has advance width %d in %s but %d in %s at %d@%d\n"
-msgstr "字形“%1$s”在 %3$s 中具有间距宽度 %2$d，但在 %5$s 中的 %6$d@%7$d 处具有 %4$d"
+msgstr "字形“%1$s”在 %3$s 中具有间距宽度 %2$d，但在 %5$s 中的 %6$d@%7$d 处具有 %4$d\n"
 
 #, c-format
 msgid "Glyph “%s” has different truetype instructions\n"
-msgstr "字形“%s”具有不同的 truetype 指令"
+msgstr "字形“%s”具有不同的 truetype 指令\n"
 
 #, c-format
 msgid "Glyph “%s” has vertical advance width %d in %s but %d in %s\n"
-msgstr "字形“%1$s”在 %3$s 中具有垂直间距宽度 %2$d，但在 %5$s 中具有 %4$d"
+msgstr "字形“%1$s”在 %3$s 中具有垂直间距宽度 %2$d，但在 %5$s 中具有 %4$d\n"
 
 #, c-format
 msgid "Glyph “%s” has vertical advance width %d in %s but %d in %s at %d@%d\n"
-msgstr "字形“%1$s”在 %3$s 中具有垂直间距宽度 %2$d，但在 %5$s 中的 %6$d@%7$d 处具有 %4$d"
+msgstr "字形“%1$s”在 %3$s 中具有垂直间距宽度 %2$d，但在 %5$s 中的 %6$d@%7$d 处具有 %4$d\n"
 
 #, c-format
 msgid "Glyph “%s” in %s has no truetype instructions\n"
-msgstr "%2$s 中的字形“%1$s”没有 truetype 指令"
+msgstr "%2$s 中的字形“%1$s”没有 truetype 指令\n"
 
 #, c-format
 msgid "Glyph “%s” missing from %s\n"
@@ -8779,15 +8783,15 @@ msgstr "字形“%s” 不在 %s 中\n"
 
 #, c-format
 msgid "Glyph “%s” missing from %s at %d@%d\n"
-msgstr "%2$s 在 %3$d@%4$d 处缺少字形“%1$s”"
+msgstr "%2$s 在 %3$d@%4$d 处缺少字形“%1$s”\n"
 
 #, c-format
 msgid "Glyph “%s” refers to %s with a different transformation matrix\n"
-msgstr "字形“%s”指的是具有不同变换矩阵的 %s"
+msgstr "字形“%s”指的是具有不同变换矩阵的 %s\n"
 
 #, c-format
 msgid "Glyph “%s” refers to %s with a different truetype point matching scheme\n"
-msgstr "字形“%s”指的是具有不同 truetype 点匹配方案的 %s"
+msgstr "字形“%s”指的是具有不同 truetype 点匹配方案的 %s\n"
 
 #, c-format
 msgid "Glyph, %s, has no hints. FontForge will not produce many instructions."
@@ -9282,10 +9286,13 @@ msgid "Hmm, this 'fvar' table has more axes than FontForge can handle."
 msgstr "呃，此“fvar”表的轴数量超出了 FontForge 的处理能力。"
 
 msgid "Hmm, this 'fvar' table has more count/size pairs than I expect"
-msgstr "嗯，这个“fvar”表的数量/大小对比我预期的要多\n"
+msgstr "嗯，这个“fvar”表的数量/大小对比我预期的要多"
 
 msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense."
 msgstr "嗯，这个“fvar”表没有轴，这没有意义。"
+
+msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it"
+msgstr "嗯，这个“fvar”表的数量/大小对太少，我不会解析它\n"
 
 msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it\n"
 msgstr "嗯，这个“fvar”表的数量/大小对太少，我不会解析它\n"
@@ -9299,7 +9306,7 @@ msgid ""
 " FontForge only supports %d\n"
 msgstr ""
 "呃，“gvar”表中指定的全局元组太多。\n"
-"FontForge 仅支持 %d"
+"FontForge 仅支持 %d\n"
 
 msgid "Hojo (JIS X 0212-1990) Kanji Forms"
 msgstr "JIS X 0212-1990 补助汉字表字形"
@@ -9739,10 +9746,10 @@ msgid "Ignore this problem in the future"
 msgstr "I以后忽略此问题"
 
 msgid "Ignoring duplicate /CharStrings entry"
-msgstr "忽略重复的 /字符字串项\n"
+msgstr "忽略重复的 /字符字串项"
 
 msgid "Ignoring duplicate /Subrs entry"
-msgstr "忽略重复的 /Subrs 项目\n"
+msgstr "忽略重复的 /Subrs 项目"
 
 msgid "Image"
 msgstr "图像"
@@ -9872,14 +9879,14 @@ msgstr ""
 "在尝试处理此字体的连字时，我得出结论，\n"
 "Apple 的 mort/morx 表中的状态机\n"
 "（就像博学的警员一样）太狡猾了，难以理解。\n"
-"我放弃了。您的连字可能不完整。"
+"我放弃了。您的连字可能不完整。\n"
 
 msgid "In an italic font the horizontal change per unit vertical change"
 msgstr "斜体字体中每单位垂直变化相应的水平变化"
 
 #, c-format
 msgid "In character %s, could not find reference to %s"
-msgstr "在字符 %s 中，找不到对 %s 的引用"
+msgstr "在字符 %s 中，找不到对 %s 的引用⬤"
 
 #, c-format
 msgid "In character %s, there are too few points on a path in the base"
@@ -11392,7 +11399,7 @@ msgid ""
 "because it was too big.\n"
 msgstr ""
 "查找子表 %s 必须拆分为多个子表\n"
-"因为它太大了。"
+"因为它太大了。\n"
 
 #, c-format
 msgid "Lookup subtable %s is not in %s\n"
@@ -13283,7 +13290,7 @@ msgid "Nib shape not valid"
 msgstr "笔尖形状无效"
 
 msgid "Nifty, you've got one of the old Apple/Adobe type1 sfnts here"
-msgstr "有趣的是，你这里有一个旧的 Apple/Adobe Type1 sfnt 字体。\n"
+msgstr "有趣的是，你这里有一个旧的 Apple/Adobe Type1 sfnt 字体。"
 
 msgid "Niuean"
 msgstr "纽埃语"
@@ -13625,7 +13632,7 @@ msgid "No scripts"
 msgstr "无文字"
 
 msgid "No selection"
-msgstr "无选中"
+msgstr "无选中⬤"
 
 msgid "No significant differences found"
 msgstr "未发现显著差异"
@@ -13969,7 +13976,7 @@ msgstr "取值超出范围"
 
 #, c-format
 msgid "Number out of range: %g in type2 output (must be [-65536,65535])"
-msgstr "超出范围的数字：type2 输出中的 %g（必须为 [-65536,65535]）\n"
+msgstr "超出范围的数字：type2 输出中的 %g（必须为 [-65536,65535]）"
 
 #, c-format
 msgid "Number too long on line %d of %s"
@@ -17944,7 +17951,7 @@ msgid ""
 msgstr ""
 "设置自由度和投影向量到坐标轴[a]\n"
 " 0=>两者都到 y 轴\n"
-" 1=>两者都到 x 轴"
+" 1=>两者都到 x 轴\n"
 
 msgid "Set the fontview's selection to be the glyphs named here"
 msgstr "将字体视图的选择设置为此处命名的字形"
@@ -18756,6 +18763,10 @@ msgid "Stack underflow on hhcurveto in %s"
 msgstr "在 %s 中，执行 hhcurveto 操作时发生堆栈下溢"
 
 #, c-format
+msgid "Stack underflow on hlineto/hmoveto in %s"
+msgstr "在 %s 中，执行 hlineto/hmoveto 操作时发生堆栈下溢\n"
+
+#, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s\n"
 msgstr "在 %s 中，执行 hlineto/hmoveto 操作时发生堆栈下溢\n"
 
@@ -18781,7 +18792,7 @@ msgstr "在 %s 中，执行 ifelse 操作时发生堆栈下溢"
 
 #, c-format
 msgid "Stack underflow on rlineto/rmoveto in %s"
-msgstr "在 %s 中，执行 rlineto/rmoveto 操作时发生堆栈下溢\n"
+msgstr "在 %s 中，执行 rlineto/rmoveto 操作时发生堆栈下溢"
 
 #, c-format
 msgid "Stack underflow on rrcurveto in %s"
@@ -18809,7 +18820,7 @@ msgstr "在 %s 中，执行 vhcurveto 操作时发生堆栈下溢"
 
 #, c-format
 msgid "Stack underflow on vlineto/vmoveto in %s"
-msgstr "在 %s 中，执行 vlineto/vmoveto 操作时发生堆栈下溢\n"
+msgstr "在 %s 中，执行 vlineto/vmoveto 操作时发生堆栈下溢"
 
 #, c-format
 msgid "Stack underflow on vstem in %s"
@@ -19221,6 +19232,10 @@ msgstr "上下标"
 
 #, c-format
 msgid "Substitute Glyph out of bounds in 'mort'/'morx' table %d"
+msgstr "替换字形在“mort”/“morx”表 %d 中超出边界"
+
+#, c-format
+msgid "Substitute glyph out of bounds in 'mort'/'morx' table %d"
 msgstr "替换字形在“mort”/“morx”表 %d 中超出边界"
 
 msgid "Substitution generates itself"
@@ -19812,7 +19827,7 @@ msgid ""
 "and contains a series of timestamps defined by FontForge\n"
 msgstr ""
 "FFTM 表是 TrueType 格式的扩展\n"
-"并包含 FontForge 定义的一系列时间戳"
+"并包含 FontForge 定义的一系列时间戳\n"
 
 msgid "The FONTLOG allows you to keep a log of changes made to your font."
 msgstr "FONTLOG 允许您记录对字体所做的更改。"
@@ -19930,7 +19945,7 @@ msgid ""
 "in the ttf file)\n"
 msgstr ""
 "TeX 表是 TrueType 格式的扩展\n"
-"以及您希望在 tfm 文件中找到的各种数据（尚未存储在 ttf 文件中的其他地方）"
+"以及您希望在 tfm 文件中找到的各种数据（尚未存储在 ttf 文件中的其他地方）\n"
 
 msgid ""
 "The Type 2 Charstring Reference (Appendix B) says that\n"
@@ -19987,7 +20002,7 @@ msgid ""
 " At %ld should be %d, off by %ld\n"
 msgstr ""
 "字符 %d 未正确读取（或pk文件格式错误）\n"
-" %ld 应该是 %d，由 %ld 结尾"
+" %ld 应该是 %d，由 %ld 结尾\n"
 
 #, c-format
 msgid "The class name, %s, is already in use."
@@ -20176,7 +20191,7 @@ msgstr "用于勾勒所选引用的颜色"
 
 #, c-format
 msgid "The context/chaining subtable %s in %s fails to match %s in %s\n"
-msgstr "%2$s 中的上下文/链接类子表 %1$s 无法匹配 %4$s 中的 %3$s"
+msgstr "%2$s 中的上下文/链接类子表 %1$s 无法匹配 %4$s 中的 %3$s\n"
 
 msgid "The contour bends or curves counter-clockwise at the selected point; all on-curve points must bend or curve clockwise."
 msgstr "轮廓线在选定点处逆时针弯曲或曲线化；所有曲线上的点都必须顺时针弯曲或曲线化。"
@@ -20321,7 +20336,7 @@ msgstr "第 %d 行（共 %s 行）上的特征标签太长。它最多可以是 
 
 #, c-format
 msgid "The feature tag on line %d (%s) should be in ASCII.\n"
-msgstr "第 %d 行（%s）的功能标签应为 ASCII。"
+msgstr "第 %d 行（%s）的功能标签应为 ASCII。\n"
 
 #, c-format
 msgid "The following error occurred on the selected glyphs: %.100s"
@@ -20501,7 +20516,7 @@ msgid ""
 "The one from %s will be removed.\n"
 msgstr ""
 "字形 %1$s 包含一个来自 %3$s 的 %2$s 和来自 %4$s 的一项。\n"
-"%5$s 中的一项将被删除。"
+"%5$s 中的一项将被删除。\n"
 
 #, c-format
 msgid ""
@@ -20509,7 +20524,7 @@ msgid ""
 "The one from %s will be removed.\n"
 msgstr ""
 "字形 %1$s 包含来自 %3$s 和 %4$s 的相同 %2$s。\n"
-"%5$s 中的一项将被删除。"
+"%5$s 中的一项将被删除。\n"
 
 #, c-format
 msgid ""
@@ -20581,7 +20596,7 @@ msgstr "组合字形的斜体校正。应独立于字形大小"
 
 #, c-format
 msgid "The kerning class subtable %s in %s fails to match %s in %s\n"
-msgstr "%2$s 中的字偶距类子表 %1$s 无法匹配 %4$s 中的 %3$s"
+msgstr "%2$s 中的字偶距类子表 %1$s 无法匹配 %4$s 中的 %3$s\n"
 
 msgid "The kerning values for class 0 (\"Everything Else\") should always be 0"
 msgstr "类 0（“其他”）的字距距值应始终为 0"
@@ -21470,7 +21485,7 @@ msgid ""
 "  FontForge will only read one of them ('BASE').\n"
 msgstr ""
 "此字体同时包含“BASE”表和“bsln”表。\n"
-"  FontForge 只会读取其中一个（“BASE”）。"
+"  FontForge 只会读取其中一个（“BASE”）。\n"
 
 msgid ""
 "This font contains both a 'kern' table and a 'GPOS' table.\n"
@@ -21496,14 +21511,14 @@ msgid ""
 msgstr ""
 "此字体包含 TrueType 和 PostScript 字形描述\n"
 "\n"
-"  仅使用其中一种。"
+"  仅使用其中一种。\n"
 
 msgid ""
 "This font contains multiple glyph descriptions\n"
 "  only one will be used.\n"
 msgstr ""
 "此字体包含多个字形描述\n"
-"  仅使用其中一个。"
+"  仅使用其中一个。\n"
 
 msgid "This font contains neither \"CFF \" nor \"glyf\"/\"loca\" tables"
 msgstr "该字体既没有 CFF 表也没有 glyf/loca 表"
@@ -21564,7 +21579,7 @@ msgstr "此字体有错误：它有一个 GPOS 扩展子表，其指向另一个
 msgid ""
 "This font is erroneous: it has a GSUB extension subtable that points to\n"
 "another extension sub-table.\n"
-msgstr "该字体是错误的：它有一个 GSUB 扩展子表指向另一个扩展子表。"
+msgstr "该字体是错误的：它有一个 GSUB 扩展子表指向另一个扩展子表。\n"
 
 msgid ""
 "This font is marked with an FSType of 2 (Restricted\n"
@@ -22221,7 +22236,7 @@ msgstr "字符字串字典中有过多项 \"%s"
 
 #, c-format
 msgid "Too many features %d"
-msgstr "过多特征 %d"
+msgstr "过多特征 %d\n"
 
 msgid "Too many glyphs"
 msgstr "过多字形"
@@ -22810,7 +22825,7 @@ msgid ""
 " expect searchRange=%d (not %d), entrySel=%d (not %d) rangeShift=%d (not %d)\n"
 msgstr ""
 "binsearch 标头的值不符合预期。根据表的数量，我预期 searchRange=%d（不是 %d）、\n"
-"entrySel=%d（不是 %d）rangeShift=%d（不是 %d）"
+"entrySel=%d（不是 %d）rangeShift=%d（不是 %d）\n"
 
 msgid "Unicase"
 msgstr "大小写一致"
@@ -23212,10 +23227,10 @@ msgid ""
 msgstr "构建重音字形时，使用间距重音符 (Unicode: 02C0-02FF)，而不是组合重音符 (Unicode: 0300-036F)。"
 
 msgid "Use the 'hhint' property to specify a horizontal hint.\n"
-msgstr "使用 'hhint' 属性指定水平渲调。"
+msgstr "使用 'hhint' 属性指定水平渲调。\n"
 
 msgid "Use the 'vhint' property to specify a vertical hint.\n"
-msgstr "使用“vhint”属性指定垂直渲调。"
+msgstr "使用“vhint”属性指定垂直渲调。\n"
 
 msgid ""
 "Use the FreeType rasterizer (when available)\n"
@@ -23632,11 +23647,11 @@ msgid ""
 " FontForge doesn't support this.\n"
 msgstr ""
 "警告：“cvar”包含中间元组数据。\n"
-"FontForge 不支持。"
+"FontForge 不支持。\n"
 
 #, c-format
 msgid "Warning: Accuracy target %lf less than minimum %lf, using %lf instead\n"
-msgstr "警告：精确度目标 %lf 小于最小值 %lf，请改用 %lf"
+msgstr "警告：精确度目标 %lf 小于最小值 %lf，请改用 %lf\n"
 
 msgid "Warning: Both extended and condensed. That's impossible."
 msgstr "警告：既是加宽的又是压缩的。这不可能。"
@@ -23645,7 +23660,7 @@ msgid "Warning: Byte swapped font mark in palm font."
 msgstr "警告：Palm 字体中的字节交换字体标记。"
 
 msgid "Warning: Can't identify contour direction, assuming clockwise\n"
-msgstr "警告：无法识别轮廓线方向，假设顺时针"
+msgstr "警告：无法识别轮廓线方向，假设顺时针\n"
 
 msgid "Warning: Contour end did not close"
 msgstr "警告：轮廓线末端未闭合"
@@ -23685,7 +23700,7 @@ msgid ""
 " FontForge supports neither.\n"
 msgstr ""
 "警告：字形 %d 包含私有或中间元组数据。\n"
-"FontForge 均不支持。"
+"FontForge 均不支持。\n"
 
 msgid "Warning: Left contour did not close"
 msgstr "警告：左轮廓线未闭合"
@@ -23710,19 +23725,19 @@ msgid ""
 msgstr ""
 "警告：在语言 %2$s 中，'name' 表中的 Mac 和 Windows 条目对于 %1$s 字符串有所不同\n"
 "Mac 字符串：%3$s\n"
-"Windows 字符串：%4$s"
+"Windows 字符串：%4$s\n"
 
 #, c-format
 msgid ""
 "Warning: Mac string is a subset of the Unicode string in the 'name' table\n"
 " for the %s string in the %s language.\n"
-msgstr "警告：对于 %2$s 语言中的 %1$s 字符串，Mac 字符串是“name”表中 Unicode 字符串的子集。"
+msgstr "警告：对于 %2$s 语言中的 %1$s 字符串，Mac 字符串是“name”表中 Unicode 字符串的子集。\n"
 
 #, c-format
 msgid ""
 "Warning: Mac string is a subset of the Windows string in the 'name' table\n"
 " for the %s string in the %s language.\n"
-msgstr "警告：对于 %2$s 语言中的 %1$s 字符串，Mac 字符串是“name”表中 Windows 字符串的子集。"
+msgstr "警告：对于 %2$s 语言中的 %1$s 字符串，Mac 字符串是“name”表中 Windows 字符串的子集。\n"
 
 #, c-format
 msgid "Warning: No characters selected in AddDHint(%d,%d %d,%d %d,%d)"
@@ -24219,7 +24234,7 @@ msgid ""
 "(either negative or they require more data than provided).\n"
 msgstr ""
 "imagemask 的宽度或高度参数包含无效值\n"
-"（要么为负数，要么需要比提供的数据更多的数据）。"
+"（要么为负数，要么需要比提供的数据更多的数据）。\n"
 
 msgid "Width/Height of Thick Stems:"
 msgstr "粗字干的宽度/高度："
@@ -26546,23 +26561,23 @@ msgstr "ΤεΧ 名称"
 
 #, c-format
 msgid "“%s” in %s contains an anchor point (%g,%g) class %s which differs from its counterpart by point matching\n"
-msgstr "%2$s 中的“%1$s”包含一个锚点 (%3$g,%4$g) 类 %5$s，该锚点与对应的点匹配不同"
+msgstr "%2$s 中的“%1$s”包含一个锚点 (%3$g,%4$g) 类 %5$s，该锚点与对应的点匹配不同\n"
 
 #, c-format
 msgid "“%s” in %s did not contain a pairwise positioning lookup ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d to %s ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"
-msgstr "%2$s 中的“%1$s”不包含成对定位查找 Δx=%3$d Δy=%4$d Δx_adv=%5$d Δy_adv=%6$d 至 %7$s Δx=%8$d Δy=%9$d Δx_adv=%10$d Δy_adv=%11$d"
+msgstr "%2$s 中的“%1$s”不包含成对定位查找 Δx=%3$d Δy=%4$d Δx_adv=%5$d Δy_adv=%6$d 至 %7$s Δx=%8$d Δy=%9$d Δx_adv=%10$d Δy_adv=%11$d\n"
 
 #, c-format
 msgid "“%s” in %s did not contain a positioning lookup ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"
-msgstr "%2$s 中的“%1$s”不包含定位查找 Δx=%3$d Δy=%4$d Δx_adv=%5$d Δy_adv=%6$d"
+msgstr "%2$s 中的“%1$s”不包含定位查找 Δx=%3$d Δy=%4$d Δx_adv=%5$d Δy_adv=%6$d\n"
 
 #, c-format
 msgid "“%s” in %s did not contain a substitution lookup to %s\n"
-msgstr "%2$s 中的“%1$s”不包含对 %3$s 的替换查找"
+msgstr "%2$s 中的“%1$s”不包含对 %3$s 的替换查找\n"
 
 #, c-format
 msgid "“%s” in %s did not contain an anchor point (%g,%g) class %s\n"
-msgstr "%2$s 中的“%1$s”不包含锚点 (%3$g,%4$g) 类 %5$s"
+msgstr "%2$s 中的“%1$s”不包含锚点 (%3$g,%4$g) 类 %5$s\n"
 
 msgid "←_Left"
 msgstr "← 向左(_L)"

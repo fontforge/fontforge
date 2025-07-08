@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-06 23:41+0300\n"
-"PO-Revision-Date: 2025-07-05 22:20\n"
+"POT-Creation-Date: 2025-07-09 01:00+0300\n"
+"PO-Revision-Date: 2025-07-08 21:59\n"
 "Last-Translator: \n"
 "Language-Team: Catalan\n"
 "Language: ca_ES\n"
@@ -3880,7 +3880,7 @@ msgstr "El límit és erroni"
 
 #, c-format
 msgid "Error: %s"
-msgstr "Error: %s"
+msgstr "Error: %s⬤"
 
 #, c-format
 msgid "Error: Expected %s, got %s"
@@ -7741,7 +7741,7 @@ msgid "Next _Defined Glyph"
 msgstr "Glif definit s_egüent"
 
 msgid "Nifty, you've got one of the old Apple/Adobe type1 sfnts here"
-msgstr "Aquest és una font de tipus 1 antic d'Apple o d'Adobe\n"
+msgstr "Aquest és una font de tipus 1 antic d'Apple o d'Adobe"
 
 #, c-format
 msgid "No (useable) bitmap strikes in this TTF font: %s"
@@ -7939,7 +7939,7 @@ msgid "No scripts"
 msgstr "No hi ha cap alfabet"
 
 msgid "No selection"
-msgstr "Sense selecció"
+msgstr "No hi ha res seleccionat"
 
 msgid "No significant differences found"
 msgstr "No s'han trobat diferències significatives"

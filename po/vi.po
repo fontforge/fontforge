@@ -1,9 +1,10 @@
+
 msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-06 23:41+0300\n"
-"PO-Revision-Date: 2025-07-05 22:20\n"
+"POT-Creation-Date: 2025-07-09 01:00+0300\n"
+"PO-Revision-Date: 2025-07-08 21:59\n"
 "Last-Translator: \n"
 "Language-Team: Vietnamese\n"
 "Language: vi_VN\n"
@@ -2129,7 +2130,7 @@ msgstr "Phông Multiple Master sai"
 
 #, c-format
 msgid "Bad Multiple/Alternate substitution glyph. GID %d not less than %d"
-msgstr "Hình tượng thay thế Đa/Xen kẽ sai : GID %d không phải nhỏ hơn %d\n"
+msgstr "Hình tượng thay thế Đa/Xen kẽ sai : GID %d không phải nhỏ hơn %d"
 
 msgid "Bad Name"
 msgstr "Tên sai"
@@ -2243,7 +2244,7 @@ msgstr "Số đếm hạng sai trong bảng phụ tạo dãy ngữ cảnh."
 
 #, c-format
 msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)"
-msgstr "Bảng xác định hạng sai : phạm vi hình tượng %d-%d ở ngoại phạm vi [0,%d)\n"
+msgstr "Bảng xác định hạng sai : phạm vi hình tượng %d-%d ở ngoại phạm vi [0,%d)"
 
 #, c-format
 msgid "Bad class def table. start=%d cnt=%d, max glyph=%d"
@@ -2258,7 +2259,7 @@ msgstr "Màu sai trên đường %d, phải nằm giữa 000000 và ffffff."
 
 #, c-format
 msgid "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)"
-msgstr "Bảng phụ sai kiểu ngữ cảnh hay tạo dãy. Hình tượng %d ở ngoại phạm vi [0,%d)\n"
+msgstr "Bảng phụ sai kiểu ngữ cảnh hay tạo dãy. Hình tượng %d ở ngoại phạm vi [0,%d)"
 
 msgid "Bad correction"
 msgstr "Sai điều chỉnh"
@@ -2274,11 +2275,11 @@ msgstr "Số đếm sai"
 
 #, c-format
 msgid "Bad coverage table. Glyph %d out of range [0,%d)"
-msgstr "Bảng bao quát sai : hình tượng %d ở ngoại phạm vi [0,%d)\n"
+msgstr "Bảng bao quát sai : hình tượng %d ở ngoại phạm vi [0,%d)"
 
 #, c-format
 msgid "Bad coverage table. Glyph range %d-%d out of range [0,%d)"
-msgstr "Bảng bao quát sai : phạm vi hình tượng %d-%d ở ngoại phạm vi [0,%d)\n"
+msgstr "Bảng bao quát sai : phạm vi hình tượng %d-%d ở ngoại phạm vi [0,%d)"
 
 msgid "Bad dash list"
 msgstr "Danh sách gạch gạch sai"
@@ -2315,7 +2316,7 @@ msgstr "Thẻ tính năng sai"
 
 #, c-format
 msgid "Bad few values in /BlendDesignMap for axis %s."
-msgstr "Vài giá trị sai trong /BlendDesignMap (pha trộn sơ đồ thiết kế) đối với trục %s.\n"
+msgstr "Vài giá trị sai trong /BlendDesignMap (pha trộn sơ đồ thiết kế) đối với trục %s."
 
 #, c-format
 msgid "Bad flags value, implied MORE components at end of glyph %d"
@@ -2390,7 +2391,7 @@ msgstr "Tập tin ảnh sai : %.100s"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d must be less than %d"
-msgstr "Cặp định chỗ sai : hình tượng %d và %d phải < %d\n"
+msgstr "Cặp định chỗ sai : hình tượng %d và %d phải < %d"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d should have been < %d"
@@ -2409,7 +2410,7 @@ msgstr "Bảng cơ sở chữ chép sai."
 msgid "Bad ligature component glyph. GID %d not less than %d (in ligature %d)"
 msgstr ""
 "Hình tượng thành phần chữ ghép sai : GID %d không phải nhỏ hơn %d\n"
-"(trong chữ ghép %d).\n"
+"(trong chữ ghép %d)."
 
 #, c-format
 msgid "Bad ligature glyph. GID %d not less than %d"
@@ -2420,6 +2421,15 @@ msgid "Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font
 msgstr ""
 "Bảng tra tìm sai:\n"
 " • định dạng=2 (%d/%d)\n"
+" • đầu=%d\n"
+" • cuối=%d\n"
+" • tổng hình tượng trong phông=%d"
+
+#, c-format
+msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d"
+msgstr ""
+"Bảng tra tìm sai:\n"
+" • định dạng=4 (%d/%d)\n"
 " • đầu=%d\n"
 " • cuối=%d\n"
 " • tổng hình tượng trong phông=%d\n"
@@ -2439,7 +2449,7 @@ msgstr ""
 "Bảng tra tìm sai:\n"
 " • định dạng=6\n"
 " • đầu=%d\n"
-" • tổng hình tượng trong phông=%d\n"
+" • tổng hình tượng trong phông=%d"
 
 #, c-format
 msgid "Bad lookup table: format=8, first=%d cnt=%d total glyphs in font=%d"
@@ -2448,7 +2458,7 @@ msgstr ""
 " • định dạng=8\n"
 " • đầu=%d\n"
 " • đếm=%d\n"
-" • tổng hình tượng trong phông=%d\n"
+" • tổng hình tượng trong phông=%d"
 
 msgid "Bad lookup type"
 msgstr "Sai kiểu sự tra tìm"
@@ -2605,7 +2615,7 @@ msgstr ""
 
 #, c-format
 msgid "Bad value for blend in /BlendDesignMap for axis %s."
-msgstr "Giá trị sai đối với việc pha trộn trong /BlendDesignMap (pha trộn sơ đồ thiết kế) đối với trục %s.\n"
+msgstr "Giá trị sai đối với việc pha trộn trong /BlendDesignMap (pha trộn sơ đồ thiết kế) đối với trục %s."
 
 msgid "Bad xfig file"
 msgstr "Tập tin xfig sai"
@@ -3268,7 +3278,7 @@ msgstr "Không thể hủy bước"
 
 #, c-format
 msgid "Cannot open %s"
-msgstr "Không thể mở %s"
+msgstr "Không thể mở %s⬤"
 
 msgid "Cannot open a temporary file"
 msgstr "Không thể mở một tập tin tạm thời"
@@ -5258,7 +5268,7 @@ msgstr ""
 "Bảng phụ bảng mã đối với :\n"
 " • nền tảng=%d\n"
 " • dứt khoát=%d\n"
-"có bảng phụ có chiều dài số không.\n"
+"có bảng phụ có chiều dài số không."
 
 #, c-format
 msgid "Encoding subtable for platform=%d, specific=%d has an unsupported format %d."
@@ -5266,7 +5276,7 @@ msgstr ""
 "Bảng phụ bảng mã đối với :\n"
 " • nền tảng=%d\n"
 " • dứt khoát=%d\n"
-"có định dạng không được hỗ trợ %d.\n"
+"có định dạng không được hỗ trợ %d."
 
 #, c-format
 msgid "Encoding value (%x) not in font, ignored"
@@ -7339,10 +7349,13 @@ msgid "Hmm, this 'fvar' table has more axes than FontForge can handle."
 msgstr "Bảng 'fvar' này có số trục hơn số trình FontForge có khả năng xử lý."
 
 msgid "Hmm, this 'fvar' table has more count/size pairs than I expect"
-msgstr "Bảng 'fvar' này có số cặp đếm/kích cỡ lớn hơn số mong đợi\n"
+msgstr "Bảng 'fvar' này có số cặp đếm/kích cỡ lớn hơn số mong đợi"
 
 msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense."
 msgstr "Bảng 'fvar' này không có trục: trường hợp vô ích."
+
+msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it"
+msgstr "Bảng 'fvar' này có quá ít cặp đếm/kích cỡ nên không phân tích nó\n"
 
 msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it\n"
 msgstr "Bảng 'fvar' này có quá ít cặp đếm/kích cỡ nên không phân tích nó\n"
@@ -7722,10 +7735,10 @@ msgid "Ignore this problem in the future"
 msgstr "Bỏ qua vấn đề này về sau"
 
 msgid "Ignoring duplicate /CharStrings entry"
-msgstr "Đang bỏ qua mục nhập /CharStrings (chuỗi ký tự) trùng\n"
+msgstr "Đang bỏ qua mục nhập /CharStrings (chuỗi ký tự) trùng"
 
 msgid "Ignoring duplicate /Subrs entry"
-msgstr "Đang bỏ qua mục nhập /Subrs trùng\n"
+msgstr "Đang bỏ qua mục nhập /Subrs trùng"
 
 msgid "Ilokano"
 msgstr "Tiếng I-lô-ca-nô"
@@ -8518,7 +8531,7 @@ msgstr ""
 msgid "Kerning subtable 3 says the glyph count is %d, but maxp says %d"
 msgstr ""
 "Bảng phụ định chỗ 3 hiển thị số đếm hình tượng %d,\n"
-"còn 'maxp' nói %d.\n"
+"còn 'maxp' nói %d."
 
 msgid "Kerning values must be even"
 msgstr "Giá trị định chỗ phải là số chẵn"
@@ -10465,7 +10478,7 @@ msgstr "Nhiều bản sao của vùng chọn nên được lát vào đường d
 msgid "Multiple glyphs map to the same unicode encoding U+%04X, only one will be used"
 msgstr ""
 "Có nhiều hình tượng ánh xạ tới cùng một mã Unicode U+%04X\n"
-"nên chỉ dùng một cái\n"
+"nên chỉ dùng một cái"
 
 msgid "Multiple master font with more than 16 instances"
 msgstr "Gặp phông đa chủ có hơn 16 thể hiện"
@@ -10821,7 +10834,7 @@ msgid "Next _Defined Glyph"
 msgstr "Hình tượng _xác định kế"
 
 msgid "Nifty, you've got one of the old Apple/Adobe type1 sfnts here"
-msgstr "Ồ, bạn có một của các phông sfnt kiểu 1 Apple/Adobe cũ\n"
+msgstr "Ồ, bạn có một của các phông sfnt kiểu 1 Apple/Adobe cũ"
 
 msgid "Nisi"
 msgstr "Tiếng Ni-xi"
@@ -11401,7 +11414,7 @@ msgstr "Con số ở ngoại phạm vi"
 
 #, c-format
 msgid "Number out of range: %g in type2 output (must be [-65536,65535])"
-msgstr "Con số ở ngoại phạm vi : %g trong kết xuất kiểu 2 (phải là [-65536,65535])\n"
+msgstr "Con số ở ngoại phạm vi : %g trong kết xuất kiểu 2 (phải là [-65536,65535])"
 
 #, c-format
 msgid "Number too long on line %d of %s"
@@ -15390,6 +15403,10 @@ msgid "Stack underflow on hhcurveto in %s"
 msgstr "Trán ngược đống trên hàm hhcurveto trong %s"
 
 #, c-format
+msgid "Stack underflow on hlineto/hmoveto in %s"
+msgstr "Trán ngược đống trên hlineto/hmoveto (đường/chuyển ngang tới) trong %s\n"
+
+#, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s\n"
 msgstr "Trán ngược đống trên hlineto/hmoveto (đường/chuyển ngang tới) trong %s\n"
 
@@ -15415,7 +15432,7 @@ msgstr "Trán ngược đống trên 'ifelse' (nếu ... nếu không) trong %s"
 
 #, c-format
 msgid "Stack underflow on rlineto/rmoveto in %s"
-msgstr "Trán ngược đống trên rlineto/rmoveto (đường/chuyển bên phải tới) trong %s\n"
+msgstr "Trán ngược đống trên rlineto/rmoveto (đường/chuyển bên phải tới) trong %s"
 
 #, c-format
 msgid "Stack underflow on rrcurveto in %s"
@@ -15443,7 +15460,7 @@ msgstr "Trán ngược đống trên hàm vhcurveto trong %s"
 
 #, c-format
 msgid "Stack underflow on vlineto/vmoveto in %s"
-msgstr "Trán ngược đống trên vlineto/vmoveto (đường/chuyển dọc tới) trong %s\n"
+msgstr "Trán ngược đống trên vlineto/vmoveto (đường/chuyển dọc tới) trong %s"
 
 #, c-format
 msgid "Stack underflow on vstem in %s"
@@ -15841,6 +15858,10 @@ msgstr "Chữ in cao/thấp"
 
 #, c-format
 msgid "Substitute Glyph out of bounds in 'mort'/'morx' table %d"
+msgstr "Hình tượng thay thế ở ngoại phạm vi trong bảng 'mort/morx' %d\n"
+
+#, c-format
+msgid "Substitute glyph out of bounds in 'mort'/'morx' table %d"
 msgstr "Hình tượng thay thế ở ngoại phạm vi trong bảng 'mort/morx' %d\n"
 
 msgid "Substitution generates itself"
@@ -16303,7 +16324,7 @@ msgstr ""
 msgid "The 'size' feature of this font conforms to Adobe's early misinterpretation of the otf standard."
 msgstr ""
 "Tính năng « size » (kích cỡ) của phông này tùy theo\n"
-"lời giải thích sai sớm của Adobe về tiêu chuẩn OTF.\n"
+"lời giải thích sai sớm của Adobe về tiêu chuẩn OTF."
 
 msgid "The AFM file contains metrics information that many word-processors will read when using a PostScript® font."
 msgstr "Tập tin AFM chứa thông tin đơn vị đo mà nhiều trình xử lý từ sẽ đọc khi sử dụng phông PostScript®."
@@ -17293,7 +17314,7 @@ msgstr ""
 "Bảng mã TrueType được xác định bởi :\n"
 " • nền tảng=%d\n"
 " • dứt khoát=%d\n"
-"(mà trình này ánh xạ tới %s) không được hỗ trợ bởi phiên bản iconv(3) trên máy này.\n"
+"(mà trình này ánh xạ tới %s) không được hỗ trợ bởi phiên bản iconv(3) trên máy này."
 
 #, c-format
 msgid ""
@@ -17826,7 +17847,7 @@ msgid "This font, %s, has multiple GPOS 'size' features. I'm not sure how to int
 msgstr ""
 "Phông này, %s, có nhiều tính năng 'size' (kích cỡ) kiểu GPOS.\n"
 "Trình này không có thủ tục xử lý trường hợp này nên\n"
-"chọn tùy ý một kích cỡ nào đó.\n"
+"chọn tùy ý một kích cỡ nào đó."
 
 msgid "This glyph can use a stem3 hint"
 msgstr "Hình tượng này có khả năng dùng một lời gợi ý stem3."
@@ -18367,7 +18388,7 @@ msgid "Too many Unique Font IDs"
 msgstr "Quá nhiều Mã số Phông Duy nhất"
 
 msgid "Too many axis positions specified in /BlendDesignPositions."
-msgstr "Quá nhiều vị trí trục được xác định trong /BlendDesignPositions (pha trộn các vị trí thiết kế).\n"
+msgstr "Quá nhiều vị trí trục được xác định trong /BlendDesignPositions (pha trộn các vị trí thiết kế)."
 
 #, c-format
 msgid "Too many dashes (at most %d allowed)"
@@ -18402,7 +18423,7 @@ msgstr "Quá nhiều sự tra tìm %d"
 
 #, c-format
 msgid "Too many mapping data points specified in /BlendDesignMap for axis %s."
-msgstr "Quá nhiều điểm ánh xạ dữ liệu được xác định trong /BlendDesignMap (pha trộn sơ đồ thiết kế) đối với trục %s.\n"
+msgstr "Quá nhiều điểm ánh xạ dữ liệu được xác định trong /BlendDesignMap (pha trộn sơ đồ thiết kế) đối với trục %s."
 
 #, c-format
 msgid "Too many scripts %d"
@@ -19275,7 +19296,7 @@ msgstr ""
 msgid "Use-my-metrics flag set on at least two components in glyph %d"
 msgstr ""
 "Cờ « use-my-metrics » (dùng đơn vị đo của tôi) được đặt vào\n"
-"ít nhất hai thành phần trong hình tượng %d\n"
+"ít nhất hai thành phần trong hình tượng %d"
 
 msgid "UseCairoDrawing"
 msgstr "VẽKiểuCairo"
@@ -19549,7 +19570,7 @@ msgstr "Cảnh báo"
 
 #, c-format
 msgid "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]"
-msgstr "Cảnh báo : giá trị trục thứ %d (%g) nằm ở ngoại phạm vi hợp lệ [%g,%g]\n"
+msgstr "Cảnh báo : giá trị trục thứ %d (%g) nằm ở ngoại phạm vi hợp lệ [%g,%g]"
 
 #, c-format
 msgid "Warning: %s has a different family name than does %s (GenerateFamily)"

@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-07 19:14+0300\n"
-"PO-Revision-Date: 2025-07-07 16:00\n"
+"POT-Creation-Date: 2025-07-09 01:00+0300\n"
+"PO-Revision-Date: 2025-07-08 21:59\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Language: ru_RU\n"
@@ -2767,7 +2767,7 @@ msgstr "Недопустимый шрифт Multiple Master"
 
 #, c-format
 msgid "Bad Multiple/Alternate substitution glyph. GID %d not less than %d"
-msgstr "Неверный глиф с множественной/альтернативной подстановкой. GID %d не менее %d\n"
+msgstr "Неверный глиф с множественной/альтернативной подстановкой. GID %d не менее %d"
 
 msgid "Bad Name"
 msgstr "Неверное имя"
@@ -2900,7 +2900,7 @@ msgstr "Неверное количество классов в контекст
 
 #, c-format
 msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)"
-msgstr "Неверная таблица определения класса. Глифы в интервале %d-%d вне диапазона [0,%d)\n"
+msgstr "Неверная таблица определения класса. Глифы в интервале %d-%d вне диапазона [0,%d)"
 
 #, c-format
 msgid "Bad class def table. start=%d cnt=%d, max glyph=%d"
@@ -2921,7 +2921,7 @@ msgstr "Недопустимый contents.plist"
 
 #, c-format
 msgid "Bad contextual or chaining sub table. Glyph %d out of range [0,%d)"
-msgstr "Неверная контекстная подтаблица или подтаблица цепочки. Глиф %d вне диапазона [0,%d)\n"
+msgstr "Неверная контекстная подтаблица или подтаблица цепочки. Глиф %d вне диапазона [0,%d)"
 
 msgid "Bad correction"
 msgstr "Неверная коррекция"
@@ -2937,11 +2937,11 @@ msgstr "Неверное количество."
 
 #, c-format
 msgid "Bad coverage table. Glyph %d out of range [0,%d)"
-msgstr "Неверная таблица охвата. Глиф %d вне диапазона [0,%d)\n"
+msgstr "Неверная таблица охвата. Глиф %d вне диапазона [0,%d)"
 
 #, c-format
 msgid "Bad coverage table. Glyph range %d-%d out of range [0,%d)"
-msgstr "Неверная таблица охвата. Глифы в интервале %d-%d вне диапазона [0,%d)\n"
+msgstr "Неверная таблица охвата. Глифы в интервале %d-%d вне диапазона [0,%d)"
 
 msgid "Bad dash list"
 msgstr "Неверный список тире"
@@ -2987,7 +2987,7 @@ msgstr "Неверный тег функции"
 
 #, c-format
 msgid "Bad few values in /BlendDesignMap for axis %s."
-msgstr "Несколько неверных значений в /BlendDesignMap для оси %s.\n"
+msgstr "Несколько неверных значений в /BlendDesignMap для оси %s."
 
 #, c-format
 msgid "Bad flags value, implied MORE components at end of glyph %d"
@@ -3076,11 +3076,11 @@ msgstr "Неверный файл изображения: %.100s"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d must be less than %d"
-msgstr "Неверная кернинговая пара: глифы %d и %d должны быть менее %d\n"
+msgstr "Неверная кернинговая пара: глифы %d и %d должны быть менее %d"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d mustn't be negative"
-msgstr "Неверная кернинговая пара: глифы %d и %d не должны быть отрицательными\n"
+msgstr "Неверная кернинговая пара: глифы %d и %d не должны быть отрицательными"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d should have been < %d"
@@ -3088,7 +3088,7 @@ msgstr "Неверная кернинговая пара: глифы %d & %d д�
 
 #, c-format
 msgid "Bad kern pair: glyphs at %d & %d are null"
-msgstr "Неверная кернинговая пара: глифы в %d и %d должны равняться нулю\n"
+msgstr "Неверная кернинговая пара: глифы в %d и %d должны равняться нулю"
 
 msgid "Bad language tag"
 msgstr "Неверный тег языка"
@@ -3109,7 +3109,11 @@ msgstr "Неверный глиф лигатуры. GID %d не менее, че
 
 #, c-format
 msgid "Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d"
-msgstr "Неверная таблица lookup: format=2 (%d/%d), first=%d last=%d общее количество глифов в шрифте font=%d\n"
+msgstr "Неверная таблица lookup: format=2 (%d/%d), first=%d last=%d общее количество глифов в шрифте font=%d"
+
+#, c-format
+msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d"
+msgstr "Неверная таблица lookup: format=4 (%d/%d), first=%d last=%d общее количество глифов в шрифте font=%d\n"
 
 #, c-format
 msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
@@ -3306,7 +3310,7 @@ msgstr ""
 
 #, c-format
 msgid "Bad value for blend in /BlendDesignMap for axis %s."
-msgstr "Неверное значение для смешивания в /BlendDesignMap для оси %s.\n"
+msgstr "Неверное значение для смешивания в /BlendDesignMap для оси %s."
 
 msgid "Bad xfig file"
 msgstr "Неверный файл xfig"
@@ -4094,7 +4098,7 @@ msgstr "Не удалось создать инструкции для этог�
 
 #, c-format
 msgid "Can't open %s"
-msgstr "Не удалось открыть %s"
+msgstr "Не удалось открыть %s⬤"
 
 msgid "Can't open temporary file for postscript output"
 msgstr "Не удалось открыть временный файл для вывода postscript"
@@ -4132,7 +4136,7 @@ msgstr "Не удалось найти файл определения соче�
 
 #, c-format
 msgid "Cannot open %s"
-msgstr "Не удалось открыть %s"
+msgstr "Не удалось открыть %s⬤"
 
 msgid "Cannot open a temporary file"
 msgstr "Не удалось открыть временный файл"
@@ -9590,10 +9594,13 @@ msgid "Hmm, this 'fvar' table has more axes than FontForge can handle."
 msgstr "Данная таблица 'fvar' содержит больше осей, чем FontForge может обработать."
 
 msgid "Hmm, this 'fvar' table has more count/size pairs than I expect"
-msgstr "Данняа таблица 'fvar' содержит большее количество или больший размер пар, чем ожидалось\n"
+msgstr "Данняа таблица 'fvar' содержит большее количество или больший размер пар, чем ожидалось"
 
 msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense."
 msgstr "Данная таблица 'fvar' не содержит осей, что нецелесообразно."
+
+msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it"
+msgstr "Данная таблица 'fvar' содержит меньшее количество или меньший размер пар, обработка выполняться не будет\n"
 
 msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it\n"
 msgstr "Данная таблица 'fvar' содержит меньшее количество или меньший размер пар, обработка выполняться не будет\n"
@@ -10121,10 +10128,10 @@ msgid "Ignore this problem in the future"
 msgstr "Игнорировать эту проблему в дальнейшем"
 
 msgid "Ignoring duplicate /CharStrings entry"
-msgstr "Игнорируется дублирующаяся запись /CharStrings\n"
+msgstr "Игнорируется дублирующаяся запись /CharStrings"
 
 msgid "Ignoring duplicate /Subrs entry"
-msgstr "Игнорируется дублирующаяся запись /Subrs\n"
+msgstr "Игнорируется дублирующаяся запись /Subrs"
 
 msgid "Ijo languages"
 msgstr "Иджоидные языки"
@@ -14186,7 +14193,7 @@ msgid "Nib shape not valid"
 msgstr "Недопустимая форма острия"
 
 msgid "Nifty, you've got one of the old Apple/Adobe type1 sfnts here"
-msgstr "Отлично! Здесь представлен один из старых type1 sfnt-файлов от Apple/Adobe\n"
+msgstr "Отлично! Здесь представлен один из старых type1 sfnt-файлов от Apple/Adobe"
 
 msgid "Nigerian Fulfulde"
 msgstr "Фульфульде"
@@ -14539,7 +14546,7 @@ msgid "No scripts"
 msgstr "Отсутствуют системы письменности"
 
 msgid "No selection"
-msgstr "Данные не выбраны"
+msgstr "Данные не выбраны⬤"
 
 msgid "No significant differences found"
 msgstr "Значительных расхождений не найдено"
@@ -14899,7 +14906,7 @@ msgstr "Число вне диапазона"
 
 #, c-format
 msgid "Number out of range: %g in type2 output (must be [-65536,65535])"
-msgstr "Число вне диапазона: %g в выводе type2 (должно быть [-65536,65535])\n"
+msgstr "Число вне диапазона: %g в выводе type2 (должно быть [-65536,65535])"
 
 #, c-format
 msgid "Number too long on line %d of %s"
@@ -19792,6 +19799,10 @@ msgid "Stack underflow on hhcurveto in %s"
 msgstr "Исчерпание стека на hhcurveto в %s"
 
 #, c-format
+msgid "Stack underflow on hlineto/hmoveto in %s"
+msgstr "Исчерпание стека на hlineto/hmoveto в %s\n"
+
+#, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s\n"
 msgstr "Исчерпание стека на hlineto/hmoveto в %s\n"
 
@@ -19817,7 +19828,7 @@ msgstr "Исчерпание стека при ifelse в %s"
 
 #, c-format
 msgid "Stack underflow on rlineto/rmoveto in %s"
-msgstr "Исчерпание стека на rlineto/rmoveto в %s\n"
+msgstr "Исчерпание стека на rlineto/rmoveto в %s"
 
 #, c-format
 msgid "Stack underflow on rrcurveto in %s"
@@ -19845,7 +19856,7 @@ msgstr "Исчерпание стека на vhcurveto в %s"
 
 #, c-format
 msgid "Stack underflow on vlineto/vmoveto in %s"
-msgstr "Исчерпание стека на vlineto/vmoveto в %s\n"
+msgstr "Исчерпание стека на vlineto/vmoveto в %s"
 
 #, c-format
 msgid "Stack underflow on vstem in %s"
@@ -20218,6 +20229,10 @@ msgstr "Нижние и верхние индексы"
 
 #, c-format
 msgid "Substitute Glyph out of bounds in 'mort'/'morx' table %d"
+msgstr "Глиф подстановки выходит за пределы в таблице 'mort'/'morx' %d\n"
+
+#, c-format
+msgid "Substitute glyph out of bounds in 'mort'/'morx' table %d"
 msgstr "Глиф подстановки выходит за пределы в таблице 'mort'/'morx' %d\n"
 
 msgid "Substitution generates itself"
@@ -23349,7 +23364,7 @@ msgid "Too many Unique Font IDs"
 msgstr "Слишком много уникальных идентификаторов шрифта"
 
 msgid "Too many axis positions specified in /BlendDesignPositions."
-msgstr "Указано слишком много позиций оси в /BlendDesignPositions.\n"
+msgstr "Указано слишком много позиций оси в /BlendDesignPositions."
 
 #, c-format
 msgid "Too many dashes (at most %d allowed)"
@@ -23384,7 +23399,7 @@ msgstr "Слишком большое количество lookup %d"
 
 #, c-format
 msgid "Too many mapping data points specified in /BlendDesignMap for axis %s."
-msgstr "Указано слишком много точек с данными привязки в /BlendDesignMap для оси %s.\n"
+msgstr "Указано слишком много точек с данными привязки в /BlendDesignMap для оси %s."
 
 #, c-format
 msgid "Too many scripts %d"
@@ -24775,7 +24790,7 @@ msgstr "Передний план предупреждений"
 
 #, c-format
 msgid "Warning: %dth axis value (%g) is outside the allowed range [%g,%g]"
-msgstr "Предупреждение: значение %d-й оси  (%g) находится за пределами допустимого диапазона [%g,%g]\n"
+msgstr "Предупреждение: значение %d-й оси  (%g) находится за пределами допустимого диапазона [%g,%g]"
 
 #, c-format
 msgid "Warning: %s has a different family name than does %s (GenerateFamily)"
