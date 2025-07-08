@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-09 01:00+0300\n"
-"PO-Revision-Date: 2025-07-08 21:59\n"
+"POT-Creation-Date: 2025-07-09 02:27+0300\n"
+"PO-Revision-Date: 2025-07-08 23:21\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Language: es_ES\n"
@@ -491,11 +491,11 @@ msgstr "El operador \"dotsection\" de %s está obsoleto para Type2"
 
 #, c-format
 msgid "%s's sbw operator is not supported for Type2"
-msgstr "El operador sbw de %s no es compatible con Type2\n"
+msgstr "El operador sbw de %s no es compatible con Type2"
 
 #, c-format
 msgid "%s's vstem3 operator is not supported for Type2"
-msgstr "El operador vstem3 de %sno es compatible con Type2\n"
+msgstr "El operador vstem3 de %sno es compatible con Type2"
 
 #, c-format
 msgid "%s(%s) and %s(%s) 0x%x in FOND %s"
@@ -3020,7 +3020,7 @@ msgstr "Conteo de clases incorrecto en la subtabla de encadenamiento de contexto
 
 #, c-format
 msgid "Bad class def table. Glyph range %d-%d out of range [0,%d)"
-msgstr "Tabla de def. de clases incorrecta. Glifo %d fuera de rango [0,%d)"
+msgstr "Tabla de def. de clases incorrecta. Rango de glifos %d-%d fuera de rango [0,%d)"
 
 #, c-format
 msgid "Bad class def table. start=%d cnt=%d, max glyph=%d"
@@ -3132,7 +3132,7 @@ msgstr "Formato incorrecto para la tabla de cobertura %d"
 
 #, c-format
 msgid "Bad format of subtable %d (of %d) in bloc/EBLC of strike with pixelsize=%d. First=%d, last=%d.\n"
-msgstr "Formato incorrecto de la subtabla %d (de %d) en bloc/EBLC del trazo con tamaño de píxeles=%d. Primero=%d, último=%d."
+msgstr "Formato incorrecto de la subtabla %d (de %d) en bloc/EBLC del trazo con tamaño de píxeles=%d. Primero=%d, último=%d.\n"
 
 #, c-format
 msgid "Bad glif file %s"
@@ -3233,7 +3233,7 @@ msgstr "Tabla de búsqueda errónea: formato=2 (%d/%d), primero=%d último=%d to
 
 #, c-format
 msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d"
-msgstr "Tabla de búsqueda errónea: formato=4 (%d/%d), primero=%d último=%d total de glifos en la fuente=%d\n"
+msgstr "Tabla de búsqueda errónea: formato=4 (%d/%d), primero=%d último=%d total de glifos en la fuente=%d"
 
 #, c-format
 msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
@@ -5789,7 +5789,7 @@ msgstr "No se pudo encontrar el punto en la referencia"
 
 #, c-format
 msgid "Couldn't find referenced character \"%s\" in %s"
-msgstr "No se pudo encontrar el carácter referenciado \"%s\" en %s\n"
+msgstr "No se pudo encontrar el carácter referenciado \"%s\" en %s"
 
 #, c-format
 msgid "Couldn't open cidmap file: %s"
@@ -9273,7 +9273,7 @@ msgstr "Glifo fuera de límites en la tabla \"icar\" %d"
 
 #, c-format
 msgid "Glyph out of bounds in 'mort'/'morx' table %d"
-msgstr "Glifo fuera de límites en la tabla \"mort'/'morx\" %d\n"
+msgstr "Glifo fuera de límites en la tabla \"mort'/'morx\" %d"
 
 #, c-format
 msgid "Glyph out of bounds in 'opbd' table %d"
@@ -9932,7 +9932,7 @@ msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense."
 msgstr "Mmm, esta tabla 'fvar' no tiene ejes. Eso no tiene sentido."
 
 msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it"
-msgstr "Mmm, esta tabla 'fvar' tiene muy pocos pares de contador/tamaño. No debo interpretarla\n"
+msgstr "Mmm, esta tabla 'fvar' tiene muy pocos pares de contador/tamaño. No debo interpretarla"
 
 msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it\n"
 msgstr "Mmm, esta tabla 'fvar' tiene muy pocos pares de contador/tamaño. No debo interpretarla\n"
@@ -14818,7 +14818,7 @@ msgstr "No se especificaron banderas en las banderas de búsqueda en la línea %
 
 #, c-format
 msgid "No glyph named %s, used as a pattern in %s"
-msgstr "Ningún glifo llamado %s, usado como patrón en %s\n"
+msgstr "Ningún glifo llamado %s, usado como patrón en %s"
 
 #, c-format
 msgid "No glyph named %s."
@@ -20417,7 +20417,7 @@ msgstr "Subflujo de pila en hhcurveto en %s"
 
 #, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s"
-msgstr "Subflujo de pila en hlineto/hmoveto en %s\n"
+msgstr "Subflujo de pila en hlineto/hmoveto en %s"
 
 #, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s\n"
@@ -20893,12 +20893,8 @@ msgid "Subscripts/Superscripts"
 msgstr "Subíndices/superíndices"
 
 #, c-format
-msgid "Substitute Glyph out of bounds in 'mort'/'morx' table %d"
-msgstr "Glifo de sustitución fuera de límites en la tabla \"mort'/'morx\" %d\n"
-
-#, c-format
 msgid "Substitute glyph out of bounds in 'mort'/'morx' table %d"
-msgstr "Glifo de sustitución fuera de límites en la tabla \"mort'/'morx\" %d\n"
+msgstr "Glifo de sustitución fuera de límites en la tabla \"mort'/'morx\" %d"
 
 msgid "Substitution generates itself"
 msgstr "La sustitución se genera a sí misma"
@@ -28698,7 +28694,7 @@ msgstr "Nombres ΤεΧ"
 
 #, c-format
 msgid "“%s” in %s contains an anchor point (%g,%g) class %s which differs from its counterpart by point matching\n"
-msgstr "“%s” en %s contiene una clase %s del punto de anclaje (%g,%g), que difiere de su contraparte por correspondencia de puntos\n"
+msgstr "“%1$s” en %2$s contiene una clase %5$s del punto de anclaje (%3$g,%4$g), que difiere de su contraparte por correspondencia de puntos\n"
 
 #, c-format
 msgid "“%s” in %s did not contain a pairwise positioning lookup ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d to %s ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"
@@ -28714,7 +28710,7 @@ msgstr "“%s” en %s no contenía una búsqueda de sustitución de %s\n"
 
 #, c-format
 msgid "“%s” in %s did not contain an anchor point (%g,%g) class %s\n"
-msgstr "“%s” en %s no contenía una clase %s del punto de anclaje (%g,%g)\n"
+msgstr "“%1$s” en %2$s no contenía una clase %5$s del punto de anclaje (%3$g,%4$g)\n"
 
 msgid "←_Left"
 msgstr "←Izquierda(_L)"

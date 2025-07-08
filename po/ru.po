@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-09 01:00+0300\n"
-"PO-Revision-Date: 2025-07-08 21:59\n"
+"POT-Creation-Date: 2025-07-09 02:27+0300\n"
+"PO-Revision-Date: 2025-07-08 23:13\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Language: ru_RU\n"
@@ -455,23 +455,23 @@ msgstr "%s подтаблица %d"
 
 #, c-format
 msgid "%s's SEAC operator is invalid for Type2"
-msgstr "Оператор SEAC %s недопустим для Type2\n"
+msgstr "Оператор SEAC %s недопустим для Type2"
 
 #, c-format
 msgid "%s's SEAC-like endchar operator is deprecated for Type2"
-msgstr "Оператор endchar в стиле SEAC %s устарел для Type2\n"
+msgstr "Оператор endchar в стиле SEAC %s устарел для Type2"
 
 #, c-format
 msgid "%s's dotsection operator is deprecated for Type2"
-msgstr "Оператор dotsection %s указан для Type2\n"
+msgstr "Оператор dotsection %s указан для Type2"
 
 #, c-format
 msgid "%s's sbw operator is not supported for Type2"
-msgstr "Оператор sbw %s не поддерживается для Type2\n"
+msgstr "Оператор sbw %s не поддерживается для Type2"
 
 #, c-format
 msgid "%s's vstem3 operator is not supported for Type2"
-msgstr "оператор vstem3 %s не поддерживается для Type2\n"
+msgstr "оператор vstem3 %s не поддерживается для Type2"
 
 #, c-format
 msgid "%s(%s) and %s(%s) 0x%x in FOND %s"
@@ -2322,7 +2322,7 @@ msgid ""
 " lookup seq=%d max=%d"
 msgstr ""
 "Попытка применить lookup к расположению вне диапазона этого контекстного\n"
-" lookup seq=%d max=%d\n"
+" lookup seq=%d max=%d"
 
 #, c-format
 msgid ""
@@ -2330,7 +2330,7 @@ msgid ""
 " lookup seq=%d, max=%d"
 msgstr ""
 "Попытка применить lookup к расположению вне диапазона этого контекстного\n"
-" lookup seq=%d, max=%d\n"
+" lookup seq=%d, max=%d"
 
 msgid "Attempt to back up twice"
 msgstr "Попытка повторного перехода назад"
@@ -2394,7 +2394,7 @@ msgid ""
 " only %d lookups in %s"
 msgstr ""
 "Попытка сослаться на lookup %d (в пределах контекстного lookup), но\n"
-" имеется только %d lookup в %s\n"
+" имеется только %d lookup в %s"
 
 #, c-format
 msgid "Attempt to regenerate a pixel size that has not been created (%d@%d)"
@@ -3113,7 +3113,7 @@ msgstr "Неверная таблица lookup: format=2 (%d/%d), first=%d last=
 
 #, c-format
 msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d"
-msgstr "Неверная таблица lookup: format=4 (%d/%d), first=%d last=%d общее количество глифов в шрифте font=%d\n"
+msgstr "Неверная таблица lookup: format=4 (%d/%d), first=%d last=%d общее количество глифов в шрифте font=%d"
 
 #, c-format
 msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
@@ -5601,7 +5601,7 @@ msgstr "Не удалось найти точку по ссылке"
 
 #, c-format
 msgid "Couldn't find referenced character \"%s\" in %s"
-msgstr "Не удалось найти по ссылке символ «%s» в %s\n"
+msgstr "Не удалось найти по ссылке символ «%s» в %s"
 
 #, c-format
 msgid "Couldn't open cidmap file: %s"
@@ -8957,7 +8957,7 @@ msgstr "Глиф выходит за пределы в таблице 'lcar' %d"
 
 #, c-format
 msgid "Glyph out of bounds in 'mort'/'morx' table %d"
-msgstr "Глиф выходит за пределы в таблице 'mort'/'morx' %d\n"
+msgstr "Глиф выходит за пределы в таблице 'mort'/'morx' %d"
 
 #, c-format
 msgid "Glyph out of bounds in 'opbd' table %d"
@@ -9600,7 +9600,7 @@ msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense."
 msgstr "Данная таблица 'fvar' не содержит осей, что нецелесообразно."
 
 msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it"
-msgstr "Данная таблица 'fvar' содержит меньшее количество или меньший размер пар, обработка выполняться не будет\n"
+msgstr "Данная таблица 'fvar' содержит меньшее количество или меньший размер пар, обработка выполняться не будет"
 
 msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it\n"
 msgstr "Данная таблица 'fvar' содержит меньшее количество или меньший размер пар, обработка выполняться не будет\n"
@@ -19800,7 +19800,7 @@ msgstr "Исчерпание стека на hhcurveto в %s"
 
 #, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s"
-msgstr "Исчерпание стека на hlineto/hmoveto в %s\n"
+msgstr "Исчерпание стека на hlineto/hmoveto в %s"
 
 #, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s\n"
@@ -20228,12 +20228,8 @@ msgid "Subscripts/Superscripts"
 msgstr "Нижние и верхние индексы"
 
 #, c-format
-msgid "Substitute Glyph out of bounds in 'mort'/'morx' table %d"
-msgstr "Глиф подстановки выходит за пределы в таблице 'mort'/'morx' %d\n"
-
-#, c-format
 msgid "Substitute glyph out of bounds in 'mort'/'morx' table %d"
-msgstr "Глиф подстановки выходит за пределы в таблице 'mort'/'morx' %d\n"
+msgstr "Глиф подстановки выходит за пределы в таблице 'mort'/'morx' %d"
 
 msgid "Substitution generates itself"
 msgstr "Подстановка создает себя сама"
@@ -24316,12 +24312,12 @@ msgstr "Используйте структуры оригинального к�
 #. GT: so it can understand some PostScript fonts, and can generate errors when
 #. GT: handed bad PostScript).
 msgid "Use of \"exit\" when not in a loop"
-msgstr "Использование оператора «exit» при нахождении вне цикла\n"
+msgstr "Использование оператора «exit» при нахождении вне цикла"
 
 #. GT: This is part of the PostScript language. Neither "stop" nor "stopped"
 #. GT: should be translated as both are PostScript keywords.
 msgid "Use of \"stop\" when not in a stopped"
-msgstr "Использование оператора «stop» при нахождении вне stopped\n"
+msgstr "Использование оператора «stop» при нахождении вне stopped"
 
 msgid "Use of a range offset of 0xffff to mean a missing glyph in cmap table"
 msgstr "Используйте диапазон отступа 0xffff для обозначения отсутствующего глифа в таблице cmap"

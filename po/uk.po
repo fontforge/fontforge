@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-09 01:00+0300\n"
-"PO-Revision-Date: 2025-07-08 21:59\n"
+"POT-Creation-Date: 2025-07-09 02:27+0300\n"
+"PO-Revision-Date: 2025-07-08 23:13\n"
 "Last-Translator: \n"
 "Language-Team: Ukrainian\n"
 "Language: uk_UA\n"
@@ -435,23 +435,23 @@ msgstr "Підтаблиця %s %d"
 
 #, c-format
 msgid "%s's SEAC operator is invalid for Type2"
-msgstr "Оператор SEAC %s є некоректним для Type2\n"
+msgstr "Оператор SEAC %s є некоректним для Type2"
 
 #, c-format
 msgid "%s's SEAC-like endchar operator is deprecated for Type2"
-msgstr "SEAC-подібний %s оператор endchar вважається застарілим для Type2\n"
+msgstr "SEAC-подібний %s оператор endchar вважається застарілим для Type2"
 
 #, c-format
 msgid "%s's dotsection operator is deprecated for Type2"
-msgstr "оператор dotsection %s для Type2 вважається застарілим\n"
+msgstr "оператор dotsection %s для Type2 вважається застарілим"
 
 #, c-format
 msgid "%s's sbw operator is not supported for Type2"
-msgstr "Підтримки оператора sbw %s для Type2 не передбачено\n"
+msgstr "Підтримки оператора sbw %s для Type2 не передбачено"
 
 #, c-format
 msgid "%s's vstem3 operator is not supported for Type2"
-msgstr "підтримки оператора vstem3 %s для Type2 не передбачено\n"
+msgstr "підтримки оператора vstem3 %s для Type2 не передбачено"
 
 #, c-format
 msgid "%s(%s) and %s(%s) 0x%x in FOND %s"
@@ -2099,7 +2099,7 @@ msgid ""
 " lookup seq=%d max=%d"
 msgstr ""
 "Спроба застосування фільтрування до адреси поза діапазоном цього контекстуального\n"
-" фільтрування посл.=%d макс.=%d\n"
+" фільтрування посл.=%d макс.=%d"
 
 #, c-format
 msgid ""
@@ -2107,7 +2107,7 @@ msgid ""
 " lookup seq=%d, max=%d"
 msgstr ""
 "Спроба застосування фільтрування до адреси поза діапазоном цього контекстуального\n"
-" фільтрування посл.=%d, макс.=%d\n"
+" фільтрування посл.=%d, макс.=%d"
 
 msgid "Attempt to back up twice"
 msgstr "Подвійна спроба резервування"
@@ -2171,7 +2171,7 @@ msgid ""
 " only %d lookups in %s"
 msgstr ""
 "Спроба посилання на фільтрування %d (у контекстуальному фільтруванні), але маємо\n"
-" лише %d фільтрувань у %s\n"
+" лише %d фільтрувань у %s"
 
 #, c-format
 msgid "Attempt to regenerate a pixel size that has not been created (%d@%d)"
@@ -2878,7 +2878,7 @@ msgstr "Помилкова таблиця фільтрування: формат
 
 #, c-format
 msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d"
-msgstr "Помилкова таблиця фільтрування: формат=4 (%d/%d), перший=%d останній=%d загалом гліфів у шрифті=%d\n"
+msgstr "Помилкова таблиця фільтрування: формат=4 (%d/%d), перший=%d останній=%d загалом гліфів у шрифті=%d"
 
 #, c-format
 msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
@@ -4817,7 +4817,7 @@ msgstr "Не вдалося знайти точку за посиланням"
 
 #, c-format
 msgid "Couldn't find referenced character \"%s\" in %s"
-msgstr "Не вдалося знайти еталонний символ «%s» у %s\n"
+msgstr "Не вдалося знайти еталонний символ «%s» у %s"
 
 #, c-format
 msgid "Couldn't open cidmap file: %s"
@@ -7890,7 +7890,7 @@ msgstr "Гліф поза межами можливого діапазону у 
 
 #, c-format
 msgid "Glyph out of bounds in 'mort'/'morx' table %d"
-msgstr "Гліф поза межами можливого діапазону у таблиці «mort»/«morx» %d\n"
+msgstr "Гліф поза межами можливого діапазону у таблиці «mort»/«morx» %d"
 
 #, c-format
 msgid "Glyph out of bounds in 'opbd' table %d"
@@ -8458,7 +8458,7 @@ msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense."
 msgstr "Г-м-м, ця таблиця «fvar» не містить даних осей, така таблиця є беззмістовною."
 
 msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it"
-msgstr "Г-м-м, у цій таблиці «fvar» занадто мало пар номер-розмір, її не вдасться обробити\n"
+msgstr "Г-м-м, у цій таблиці «fvar» занадто мало пар номер-розмір, її не вдасться обробити"
 
 msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it\n"
 msgstr "Г-м-м, у цій таблиці «fvar» занадто мало пар номер-розмір, її не вдасться обробити\n"
@@ -17625,7 +17625,7 @@ msgstr "Вичерпання стеку для hhcurveto у %s"
 
 #, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s"
-msgstr "Вичерпання стеку для hlineto/hmoveto у %s\n"
+msgstr "Вичерпання стеку для hlineto/hmoveto у %s"
 
 #, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s\n"
@@ -18082,12 +18082,8 @@ msgid "Subscripts/Superscripts"
 msgstr "Верхні/Нижні індекси"
 
 #, c-format
-msgid "Substitute Glyph out of bounds in 'mort'/'morx' table %d"
-msgstr "Гліф-підстановка поза межами можливого діапазону у таблиці «mort»/«morx» %d\n"
-
-#, c-format
 msgid "Substitute glyph out of bounds in 'mort'/'morx' table %d"
-msgstr "Гліф-підстановка поза межами можливого діапазону у таблиці «mort»/«morx» %d\n"
+msgstr "Гліф-підстановка поза межами можливого діапазону у таблиці «mort»/«morx» %d"
 
 msgid "Substitution generates itself"
 msgstr "Підстановка самостворюється"
@@ -21874,12 +21870,12 @@ msgstr "Використовувати природні структури ке�
 #. GT: so it can understand some PostScript fonts, and can generate errors when
 #. GT: handed bad PostScript).
 msgid "Use of \"exit\" when not in a loop"
-msgstr "Використання «exit» поза межами циклу\n"
+msgstr "Використання «exit» поза межами циклу"
 
 #. GT: This is part of the PostScript language. Neither "stop" nor "stopped"
 #. GT: should be translated as both are PostScript keywords.
 msgid "Use of \"stop\" when not in a stopped"
-msgstr "Використання «stop» поза межами stopped\n"
+msgstr "Використання «stop» поза межами stopped"
 
 msgid "Use of a range offset of 0xffff to mean a missing glyph in cmap table"
 msgstr "Використати відступ діапазону 0xffff для осереднення гліфа у таблиці cmap"

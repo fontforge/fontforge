@@ -18,8 +18,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-09 01:00+0300\n"
-"PO-Revision-Date: 2025-07-08 21:59\n"
+"POT-Creation-Date: 2025-07-09 02:27+0300\n"
+"PO-Revision-Date: 2025-07-08 23:13\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -1905,7 +1905,7 @@ msgid ""
 msgstr ""
 "Versuch, eine Nachschlagetabelle auf eine Position außerhalb des Bereichs\n"
 "dieser kontextuellen Nachschlagetabelle anzuwenden\n"
-" seq=%d max=%d\n"
+" seq=%d max=%d"
 
 msgid "Attempt to back up twice"
 msgstr "Versuch, zweifach zu sichern"
@@ -1950,7 +1950,7 @@ msgid ""
 " only %d lookups in %s"
 msgstr ""
 "Versuch, die Nachschlagetabelle %d (innerhalb einer Kontextsuche) zu referenzieren, aber es gibt\n"
-" nur %d Nachschlagetabellen in %s\n"
+" nur %d Nachschlagetabellen in %s"
 
 #, c-format
 msgid "Attempt to regenerate a pixel size that has not been created (%d@%d)"
@@ -4379,7 +4379,7 @@ msgstr "Konnte Punkt in der Referenz nicht finden"
 
 #, c-format
 msgid "Couldn't find referenced character \"%s\" in %s"
-msgstr "Das referenzierte Zeichen \"%s\" konnte in %s nicht gefunden werden\n"
+msgstr "Das referenzierte Zeichen \"%s\" konnte in %s nicht gefunden werden"
 
 #, c-format
 msgid "Couldn't open cidmap file: %s"
@@ -6682,7 +6682,7 @@ msgstr "Glyphe außerhlab der Grenzen in 'lcar' Tabelle %d"
 
 #, c-format
 msgid "Glyph out of bounds in 'mort'/'morx' table %d"
-msgstr "Glyphe außerhlab der Grenzen in 'mort'/'morx' Tabelle %d\n"
+msgstr "Glyphe außerhlab der Grenzen in 'mort'/'morx' Tabelle %d"
 
 #, c-format
 msgid "Glyph out of bounds in 'opbd' table %d"
@@ -7134,7 +7134,7 @@ msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense."
 msgstr "Hmm, diese 'fvar' Tabelle hat keine Achsen, das macht keinen Sinn."
 
 msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it"
-msgstr "Hmm, diese 'fvar' Tabelle enthällt zu wenige Paare für Anzahl/Größe, wrid nicht analysieret\n"
+msgstr "Hmm, diese 'fvar' Tabelle enthällt zu wenige Paare für Anzahl/Größe, wrid nicht analysieret"
 
 msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it\n"
 msgstr "Hmm, diese 'fvar' Tabelle enthällt zu wenige Paare für Anzahl/Größe, wrid nicht analysieret\n"
@@ -14434,12 +14434,8 @@ msgid "Subscripts/Superscripts"
 msgstr "Tief-/Hochgestellte Zeichen"
 
 #, c-format
-msgid "Substitute Glyph out of bounds in 'mort'/'morx' table %d"
-msgstr "Substitutions-Glyphe außerhlab der Grenzen in 'mort'/'morx' Tabelle %d\n"
-
-#, c-format
 msgid "Substitute glyph out of bounds in 'mort'/'morx' table %d"
-msgstr "Substitutions-Glyphe außerhlab der Grenzen in 'mort'/'morx' Tabelle %d\n"
+msgstr "Substitutions-Glyphe außerhlab der Grenzen in 'mort'/'morx' Tabelle %d"
 
 msgid "Substitution generates itself"
 msgstr "Substitution erstellt sich selbst"

@@ -11,8 +11,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-09 01:00+0300\n"
-"PO-Revision-Date: 2025-07-08 21:59\n"
+"POT-Creation-Date: 2025-07-09 02:27+0300\n"
+"PO-Revision-Date: 2025-07-08 23:13\n"
 "Last-Translator: \n"
 "Language-Team: Croatian\n"
 "Language: hr_HR\n"
@@ -478,23 +478,23 @@ msgstr "%s pod-talblica %d"
 
 #, c-format
 msgid "%s's SEAC operator is invalid for Type2"
-msgstr "'SEAC' operator od %s je neispravan za Type2\n"
+msgstr "'SEAC' operator od %s je neispravan za Type2"
 
 #, c-format
 msgid "%s's SEAC-like endchar operator is deprecated for Type2"
-msgstr "Krajnji znak 'SEAC'-sličnog operatora od %s je zastario za Type2\n"
+msgstr "Krajnji znak 'SEAC'-sličnog operatora od %s je zastario za Type2"
 
 #, c-format
 msgid "%s's dotsection operator is deprecated for Type2"
-msgstr "'dotsection' operator od %s je zastario za Type2\n"
+msgstr "'dotsection' operator od %s je zastario za Type2"
 
 #, c-format
 msgid "%s's sbw operator is not supported for Type2"
-msgstr "'sbw' operator od %s nije podržan za Type2\n"
+msgstr "'sbw' operator od %s nije podržan za Type2"
 
 #, c-format
 msgid "%s's vstem3 operator is not supported for Type2"
-msgstr "'vstem3' operator od %s nije podržan za Type2\n"
+msgstr "'vstem3' operator od %s nije podržan za Type2"
 
 #, c-format
 msgid "%s(%s) and %s(%s) 0x%x in FOND %s"
@@ -2278,7 +2278,7 @@ msgid ""
 " lookup seq=%d max=%d"
 msgstr ""
 "Pokušaj primjene tablice definicija na lokaciji izvan raspona ove kontekstne\n"
-" tablice definicija slijed=%d maks.=%d\n"
+" tablice definicija slijed=%d maks.=%d"
 
 #, c-format
 msgid ""
@@ -2286,7 +2286,7 @@ msgid ""
 " lookup seq=%d, max=%d"
 msgstr ""
 "Pokušaj primjene tablice definicija na lokaciju izvan raspona ove kontekstne\n"
-" tablice definicija slijed=%d, maks.=%d\n"
+" tablice definicija slijed=%d, maks.=%d"
 
 msgid "Attempt to back up twice"
 msgstr "Pokušaj dvostrukog spremanja sigurnosne kopije"
@@ -2350,7 +2350,7 @@ msgid ""
 " only %d lookups in %s"
 msgstr ""
 "Pokušaj referenciranja tablice definicija %d (s kontekstnom tablicom definicija),\n"
-"ali ima samo %d tablica definicija u %s\n"
+"ali ima samo %d tablica definicija u %s"
 
 #, c-format
 msgid "Attempt to regenerate a pixel size that has not been created (%d@%d)"
@@ -3047,7 +3047,7 @@ msgstr "Neispravno podrezani par: grafem %d i %d mora biti manje od %d"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d mustn't be negative"
-msgstr "Neispravno podrezani par: grafem %d i %d ne smije biti negativno\n"
+msgstr "Neispravno podrezani par: grafem %d i %d ne smije biti negativno"
 
 #, c-format
 msgid "Bad kern pair: glyphs %d & %d mustn't be negative\n"
@@ -3084,7 +3084,7 @@ msgstr "Neispravna tablica definicija: format=2 (%d/%d), prvi=%d zadnji=%d ukupn
 
 #, c-format
 msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d"
-msgstr "Neispravna tablica definicija: format=4 (%d/%d), prvi=%d zadnji=%d ukupno grafema u fontu=%d\n"
+msgstr "Neispravna tablica definicija: format=4 (%d/%d), prvi=%d zadnji=%d ukupno grafema u fontu=%d"
 
 #, c-format
 msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
@@ -5435,7 +5435,7 @@ msgstr "Nema točke u referenci"
 
 #, c-format
 msgid "Couldn't find referenced character \"%s\" in %s"
-msgstr "Nema referenciranog znaka „%s” u %s\n"
+msgstr "Nema referenciranog znaka „%s” u %s"
 
 #, c-format
 msgid "Couldn't open cidmap file: %s"
@@ -8540,7 +8540,7 @@ msgstr "Grafem izvan granica u 'lcar' tablici %d"
 
 #, c-format
 msgid "Glyph out of bounds in 'mort'/'morx' table %d"
-msgstr "Grafem izvan granica u 'mort/morx' tablici %d\n"
+msgstr "Grafem izvan granica u 'mort/morx' tablici %d"
 
 #, c-format
 msgid "Glyph out of bounds in 'opbd' table %d"
@@ -9131,7 +9131,7 @@ msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense."
 msgstr "Hmm, ova 'fvar' tablica ne sadrži osi. To nema smisla."
 
 msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it"
-msgstr "Hmm, ova 'fvar' tablica sadrži premalo parova/veličina parova. Neće se obraditi\n"
+msgstr "Hmm, ova 'fvar' tablica sadrži premalo parova/veličina parova. Neće se obraditi"
 
 msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it\n"
 msgstr "Hmm, ova 'fvar' tablica sadrži premalo parova/veličina parova. Neće se obraditi\n"
@@ -18138,7 +18138,7 @@ msgstr "Pop greška pri 'hhcurveto' u %s"
 
 #, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s"
-msgstr "Pop greška pri 'hlineto/hmoveto' u %s\n"
+msgstr "Pop greška pri 'hlineto/hmoveto' u %s"
 
 #, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s\n"
@@ -18604,12 +18604,8 @@ msgid "Subscripts/Superscripts"
 msgstr "Indeksi/Eksponenti"
 
 #, c-format
-msgid "Substitute Glyph out of bounds in 'mort'/'morx' table %d"
-msgstr "Zamjenski grafem izvan granica u 'mort/morx' tablici %d\n"
-
-#, c-format
 msgid "Substitute glyph out of bounds in 'mort'/'morx' table %d"
-msgstr "Zamjenski grafem izvan granica u 'mort/morx' tablici %d\n"
+msgstr "Zamjenski grafem izvan granica u 'mort/morx' tablici %d"
 
 msgid "Substitution generates itself"
 msgstr "Zamjena stvara samu sebe"
@@ -22618,12 +22614,12 @@ msgstr "Koristi izvorne strukture za podrezivanje (umjesto datoteke s funkcijama
 #. GT: so it can understand some PostScript fonts, and can generate errors when
 #. GT: handed bad PostScript).
 msgid "Use of \"exit\" when not in a loop"
-msgstr "Koristi se \"exit\" dok nije u petlji\n"
+msgstr "Koristi se \"exit\" dok nije u petlji"
 
 #. GT: This is part of the PostScript language. Neither "stop" nor "stopped"
 #. GT: should be translated as both are PostScript keywords.
 msgid "Use of \"stop\" when not in a stopped"
-msgstr "Koristi se \"stop\" dok nije u \"stopped\"\n"
+msgstr "Koristi se \"stop\" dok nije u \"stopped\""
 
 msgid "Use of a range offset of 0xffff to mean a missing glyph in cmap table"
 msgstr "Koristi raspon odmaka od 0×ffff za označavanje nedostajućeg grafema u tablici za mapiranje znakova"

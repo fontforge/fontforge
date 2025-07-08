@@ -22,8 +22,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-09 01:00+0300\n"
-"PO-Revision-Date: 2025-07-08 21:59\n"
+"POT-Creation-Date: 2025-07-09 02:27+0300\n"
+"PO-Revision-Date: 2025-07-08 23:21\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Language: zh_CN\n"
@@ -485,11 +485,11 @@ msgstr "%s替代表%d"
 
 #, c-format
 msgid "%s's SEAC operator is invalid for Type2"
-msgstr "%s 的 SEAC 运算符对于 Type2 无效\n"
+msgstr "%s 的 SEAC 运算符对于 Type2 无效"
 
 #, c-format
 msgid "%s's SEAC-like endchar operator is deprecated for Type2"
-msgstr "%s 的类 SEAC endchar 运算符对于 Type2 已弃用\n"
+msgstr "%s 的类 SEAC endchar 运算符对于 Type2 已弃用"
 
 #, c-format
 msgid "%s's dotsection operator is deprecated for Type2"
@@ -497,11 +497,11 @@ msgstr "%s 的点切运算符对于 Type2 已弃用"
 
 #, c-format
 msgid "%s's sbw operator is not supported for Type2"
-msgstr "%s 的 sbw 运算符不支持 Type2\n"
+msgstr "%s 的 sbw 运算符不支持 Type2"
 
 #, c-format
 msgid "%s's vstem3 operator is not supported for Type2"
-msgstr "%s 的 vstem3 运算符不支持 Type2\n"
+msgstr "%s 的 vstem3 运算符不支持 Type2"
 
 #, c-format
 msgid "%s(%s) and %s(%s) 0x%x in FOND %s"
@@ -2290,13 +2290,13 @@ msgstr "在较小的像素尺寸（屏幕字体大小）下，发生的舍入误
 msgid ""
 "Attempt to apply a lookup to a location out of the range of this contextual\n"
 " lookup seq=%d max=%d"
-msgstr "尝试将查找应用到此上下文查找范围之外的位置 seq=%d max=%d\n"
+msgstr "尝试将查找应用到此上下文查找范围之外的位置 seq=%d max=%d"
 
 #, c-format
 msgid ""
 "Attempt to apply a lookup to a location out of the range of this contextual\n"
 " lookup seq=%d, max=%d"
-msgstr "尝试将查找应用到此上下文查找范围之外的位置 seq=%d, max=%d\n"
+msgstr "尝试将查找应用到此上下文查找范围之外的位置 seq=%d, max=%d"
 
 msgid "Attempt to back up twice"
 msgstr "试图备份两次"
@@ -3089,7 +3089,7 @@ msgstr "错误的查找表：format=2 (%d/%d)，first=%d last=%d 字体中的总
 
 #, c-format
 msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d"
-msgstr "错误的查找表：format=4 (%d/%d)，first=%d last=%d 字体中的总字形=%d\n"
+msgstr "错误的查找表：format=4 (%d/%d)，first=%d last=%d 字体中的总字形=%d"
 
 #, c-format
 msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
@@ -5430,7 +5430,7 @@ msgstr "参照中未找到点"
 
 #, c-format
 msgid "Couldn't find referenced character \"%s\" in %s"
-msgstr "未能找到参照字符 \"%s\" 于 %s\n"
+msgstr "未能找到参照字符 \"%s\" 于 %s"
 
 #, c-format
 msgid "Couldn't open cidmap file: %s"
@@ -8700,7 +8700,7 @@ msgstr "'lcar' 表 %d 中字形超出边界"
 
 #, c-format
 msgid "Glyph out of bounds in 'mort'/'morx' table %d"
-msgstr "'mort'/'morx' 表 %d 中字形超出边界\n"
+msgstr "'mort'/'morx' 表 %d 中字形超出边界"
 
 #, c-format
 msgid "Glyph out of bounds in 'opbd' table %d"
@@ -9292,7 +9292,7 @@ msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense."
 msgstr "嗯，这个“fvar”表没有轴，这没有意义。"
 
 msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it"
-msgstr "嗯，这个“fvar”表的数量/大小对太少，我不会解析它\n"
+msgstr "嗯，这个“fvar”表的数量/大小对太少，我不会解析它"
 
 msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it\n"
 msgstr "嗯，这个“fvar”表的数量/大小对太少，我不会解析它\n"
@@ -18764,7 +18764,7 @@ msgstr "在 %s 中，执行 hhcurveto 操作时发生堆栈下溢"
 
 #, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s"
-msgstr "在 %s 中，执行 hlineto/hmoveto 操作时发生堆栈下溢\n"
+msgstr "在 %s 中，执行 hlineto/hmoveto 操作时发生堆栈下溢"
 
 #, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s\n"
@@ -19229,10 +19229,6 @@ msgstr "上下标"
 
 msgid "Subscripts/Superscripts"
 msgstr "上下标"
-
-#, c-format
-msgid "Substitute Glyph out of bounds in 'mort'/'morx' table %d"
-msgstr "替换字形在“mort”/“morx”表 %d 中超出边界"
 
 #, c-format
 msgid "Substitute glyph out of bounds in 'mort'/'morx' table %d"
@@ -22236,7 +22232,7 @@ msgstr "字符字串字典中有过多项 \"%s"
 
 #, c-format
 msgid "Too many features %d"
-msgstr "过多特征 %d\n"
+msgstr "过多特征 %d"
 
 msgid "Too many glyphs"
 msgstr "过多字形"

@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-09 01:00+0300\n"
-"PO-Revision-Date: 2025-07-08 21:59\n"
+"POT-Creation-Date: 2025-07-09 02:27+0300\n"
+"PO-Revision-Date: 2025-07-08 23:13\n"
 "Last-Translator: \n"
 "Language-Team: Japanese\n"
 "Language: ja_JP\n"
@@ -1280,7 +1280,7 @@ msgid ""
 " lookup seq=%d max=%d"
 msgstr ""
 "この文脈依存照合の範囲外の位置に照合を適用しようとしました\n"
-"  seq=%d max=%d\n"
+"  seq=%d max=%d"
 
 #, c-format
 msgid ""
@@ -1288,7 +1288,7 @@ msgid ""
 " lookup seq=%d, max=%d"
 msgstr ""
 "この文脈依存照合の範囲外の位置に照合を適用しようとしました\n"
-"  seq=%d max=%d\n"
+"  seq=%d max=%d"
 
 msgid "Attempt to back up twice"
 msgstr "バックアップを 2 回行おうとしました"
@@ -1324,7 +1324,7 @@ msgid ""
 " only %d lookups in %s"
 msgstr ""
 "照合 %d を (文脈依存照合の中で) 参照しようとしましたが, %d 個しか %s に\n"
-"照合が含まれていません\n"
+"照合が含まれていません"
 
 #, c-format
 msgid "Attempt to regenerate a pixel size that has not been created (%d@%d)"
@@ -1789,7 +1789,7 @@ msgstr "フォーマット 2 (%d/%d) の照合テーブルが壊れています.
 
 #, c-format
 msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d"
-msgstr "フォーマット 4 (%d/%d) の照合テーブルが壊れています.最初=%d 最後=%d フォント内の全グリフ数=%d\n"
+msgstr "フォーマット 4 (%d/%d) の照合テーブルが壊れています.最初=%d 最後=%d フォント内の全グリフ数=%d"
 
 #, c-format
 msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
@@ -3481,7 +3481,7 @@ msgstr "参照に含まれる点が見つかりません"
 
 #, c-format
 msgid "Couldn't find referenced character \"%s\" in %s"
-msgstr "被参照文字 \"%s\" (%s 内の) を参照できません\n"
+msgstr "被参照文字 \"%s\" (%s 内の) を参照できません"
 
 #, c-format
 msgid "Couldn't open cidmap file: %s"
@@ -5224,7 +5224,7 @@ msgstr "'lcar' テーブル %d の境界を越えたグリフがあります"
 
 #, c-format
 msgid "Glyph out of bounds in 'mort'/'morx' table %d"
-msgstr "'mort'/'morx' テーブル %d の境界を越えたグリフがあります\n"
+msgstr "'mort'/'morx' テーブル %d の境界を越えたグリフがあります"
 
 #, c-format
 msgid "Glyph out of bounds in 'opbd' table %d"
@@ -5578,7 +5578,7 @@ msgid "Hmm, this 'fvar' table has no axes, that doesn't make sense."
 msgstr "ふむ, この 'fvar' テーブルにはデザイン軸が無いので意味をなしません."
 
 msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it"
-msgstr "ふむ, この 'fvar' テーブルの個数/サイズペアは少なすぎますので, 解析を中止します\n"
+msgstr "ふむ, この 'fvar' テーブルの個数/サイズペアは少なすぎますので, 解析を中止します"
 
 msgid "Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it\n"
 msgstr "ふむ, この 'fvar' テーブルの個数/サイズペアは少なすぎますので, 解析を中止します\n"
@@ -11290,7 +11290,7 @@ msgstr "グリフ %s 内の hhcurveto 演算子がスタックアンダーフロ
 
 #, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s"
-msgstr "グリフ %s 内の hlineto/hmoveto 演算子がスタックアンダーフローを起こしました\n"
+msgstr "グリフ %s 内の hlineto/hmoveto 演算子がスタックアンダーフローを起こしました"
 
 #, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s\n"
@@ -11582,12 +11582,8 @@ msgid "Subscripts and Superscripts"
 msgstr "下付きおよび上付き文字"
 
 #, c-format
-msgid "Substitute Glyph out of bounds in 'mort'/'morx' table %d"
-msgstr "'mort'/'morx' テーブル %d の境界を越えた置換先グリフがあります\n"
-
-#, c-format
 msgid "Substitute glyph out of bounds in 'mort'/'morx' table %d"
-msgstr "'mort'/'morx' テーブル %d の境界を越えた置換先グリフがあります\n"
+msgstr "'mort'/'morx' テーブル %d の境界を越えた置換先グリフがあります"
 
 msgid "Substitutions"
 msgstr "置換"
@@ -13764,12 +13760,12 @@ msgstr "個々のカーニングペアを使用"
 #. GT: so it can understand some PostScript fonts, and can generate errors when
 #. GT: handed bad PostScript).
 msgid "Use of \"exit\" when not in a loop"
-msgstr "ループの中にいないのに \"exit\" を使おうとしました\n"
+msgstr "ループの中にいないのに \"exit\" を使おうとしました"
 
 #. GT: This is part of the PostScript language. Neither "stop" nor "stopped"
 #. GT: should be translated as both are PostScript keywords.
 msgid "Use of \"stop\" when not in a stopped"
-msgstr "stopped 状態でないのに \"stop\" を使おうとしました\n"
+msgstr "stopped 状態でないのに \"stop\" を使おうとしました"
 
 msgid "Use of a range offset of 0xffff to mean a missing glyph in cmap table"
 msgstr "cmap テーブル中では範囲オフセット 0xffff は存在しないグリフを表します"

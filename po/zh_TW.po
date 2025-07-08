@@ -13,8 +13,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-09 01:00+0300\n"
-"PO-Revision-Date: 2025-07-08 21:59\n"
+"POT-Creation-Date: 2025-07-09 02:27+0300\n"
+"PO-Revision-Date: 2025-07-08 23:13\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Language: zh_TW\n"
@@ -325,15 +325,15 @@ msgstr "%s 子表格 %d"
 
 #, c-format
 msgid "%s's SEAC operator is invalid for Type2"
-msgstr "%s 的 SEAC 運算子對於 Type2 無效\n"
+msgstr "%s 的 SEAC 運算子對於 Type2 無效"
 
 #, c-format
 msgid "%s's sbw operator is not supported for Type2"
-msgstr "%s 的 sbw 運算子未被 Type2 所支援\n"
+msgstr "%s 的 sbw 運算子未被 Type2 所支援"
 
 #, c-format
 msgid "%s's vstem3 operator is not supported for Type2"
-msgstr "%s 的 vstem3 運算子未支援 Type2\n"
+msgstr "%s 的 vstem3 運算子未支援 Type2"
 
 #, c-format
 msgid "%s(%s) and %s(%s) 0x%x in FOND %s"
@@ -1570,7 +1570,7 @@ msgid ""
 " lookup seq=%d max=%d"
 msgstr ""
 "試圖套用查找到超出這個上下文範圍位置的\n"
-"查找 seq=%d 最大=%d\n"
+"查找 seq=%d 最大=%d"
 
 #, c-format
 msgid ""
@@ -1578,7 +1578,7 @@ msgid ""
 " lookup seq=%d, max=%d"
 msgstr ""
 "試圖套用查找到超出這個上下文範圍位置的\n"
-"查找 seq=%d，max=%d\n"
+"查找 seq=%d，max=%d"
 
 msgid "Attempt to back up twice"
 msgstr "試圖回到上兩步"
@@ -1642,7 +1642,7 @@ msgid ""
 " only %d lookups in %s"
 msgstr ""
 "試圖參照查找 %d (在上下文查找之內)，但是\n"
-"只有 %d 項查找於 %s\n"
+"只有 %d 項查找於 %s"
 
 #, c-format
 msgid "Attempt to regenerate a pixel size that has not been created (%d@%d)"
@@ -2255,7 +2255,7 @@ msgstr "不當的查找表格：格式=2 (%d/%d), 第一筆=%d 最末筆=%d 總�
 
 #, c-format
 msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d"
-msgstr "不當的查找表：格式=4 (%d/%d)，首筆=%d 末筆=%d 字型中字圖總計=%d\n"
+msgstr "不當的查找表：格式=4 (%d/%d)，首筆=%d 末筆=%d 字型中字圖總計=%d"
 
 #, c-format
 msgid "Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d\n"
@@ -4045,7 +4045,7 @@ msgstr "在參照中找不到點"
 
 #, c-format
 msgid "Couldn't find referenced character \"%s\" in %s"
-msgstr "在 %2$s 中找不到參照字元「%1$s」\n"
+msgstr "在 %2$s 中找不到參照字元「%1$s」"
 
 #, c-format
 msgid "Couldn't open cidmap file: %s"
@@ -6373,7 +6373,7 @@ msgstr "在「lcar」表格 %d 中的字圖超出邊界"
 
 #, c-format
 msgid "Glyph out of bounds in 'mort'/'morx' table %d"
-msgstr "在「mort」/「morx」表格 %d 中的字圖超出邊界\n"
+msgstr "在「mort」/「morx」表格 %d 中的字圖超出邊界"
 
 #, c-format
 msgid "Glyph out of bounds in 'opbd' table %d"
@@ -13646,7 +13646,7 @@ msgstr "堆疊下限溢位於 %s 中的 hhcurveto"
 
 #, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s"
-msgstr "堆疊下限溢位於 %s 中的 hlineto/hmoveto\n"
+msgstr "堆疊下限溢位於 %s 中的 hlineto/hmoveto"
 
 #, c-format
 msgid "Stack underflow on hlineto/hmoveto in %s\n"
@@ -14029,12 +14029,8 @@ msgid "Subscripts/Superscripts"
 msgstr "下標/上標"
 
 #, c-format
-msgid "Substitute Glyph out of bounds in 'mort'/'morx' table %d"
-msgstr "替代在「mort」/「morx」表格 %d 中超出邊界的字圖\n"
-
-#, c-format
 msgid "Substitute glyph out of bounds in 'mort'/'morx' table %d"
-msgstr "替代在「mort」/「morx」表格 %d 中超出邊界的字圖\n"
+msgstr "替代在「mort」/「morx」表格 %d 中超出邊界的字圖"
 
 msgid "Substitution generates itself"
 msgstr "替代物自我產生"
@@ -16542,12 +16538,12 @@ msgstr "使用個別字距微調對"
 #. GT: so it can understand some PostScript fonts, and can generate errors when
 #. GT: handed bad PostScript).
 msgid "Use of \"exit\" when not in a loop"
-msgstr "不在迴圈中時使用「exit」\n"
+msgstr "不在迴圈中時使用「exit」"
 
 #. GT: This is part of the PostScript language. Neither "stop" nor "stopped"
 #. GT: should be translated as both are PostScript keywords.
 msgid "Use of \"stop\" when not in a stopped"
-msgstr "不在停止項目中使用「stop」\n"
+msgstr "不在停止項目中使用「stop」"
 
 msgid "Use of obsolete blend operator."
 msgstr "使用淘汰的混色運算子。"
