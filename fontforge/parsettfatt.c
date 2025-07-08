@@ -1005,7 +1005,7 @@ static void ProcessSubLookups(FILE *ttf,struct ttfinfo *info,int gpos,
 
     i = (intptr_t) sl->lookup;
     if ( i<0 || i>=info->lookup_cnt ) {
-	LogError( _("Attempt to reference lookup %d (within a contextual lookup), but there are\n only %d lookups in %s\n"),
+	LogError( _("Attempt to reference lookup %d (within a contextual lookup), but there are\n only %d lookups in %s"),
 		i, info->lookup_cnt, gpos ? "'GPOS'" : "'GSUB'" );
 	info->bad_ot = true;
 	sl->lookup = NULL;
@@ -1079,7 +1079,7 @@ return;
 		rules[i].subrules[j].sl[k].seq = getushort(ttf);
 		if ( rules[i].subrules[j].sl[k].seq >= rules[i].subrules[j].gcnt+1 )
 		    if ( !warned2 ) {
-			LogError( _("Attempt to apply a lookup to a location out of the range of this contextual\n lookup seq=%d max=%d\n"),
+			LogError( _("Attempt to apply a lookup to a location out of the range of this contextual\n lookup seq=%d max=%d"),
 				rules[i].subrules[j].sl[k].seq, rules[i].subrules[j].gcnt );
 			info->bad_ot = true;
 			warned2 = true;
@@ -1276,7 +1276,7 @@ return;
 		rules[i].subrules[j].sl[k].seq = getushort(ttf);
 		if ( rules[i].subrules[j].sl[k].seq >= rules[i].subrules[j].gcnt+1 )
 		    if ( !warned2 ) {
-			LogError( _("Attempt to apply a lookup to a location out of the range of this contextual\n lookup seq=%d max=%d\n"),
+			LogError( _("Attempt to apply a lookup to a location out of the range of this contextual\n lookup seq=%d max=%d"),
 				rules[i].subrules[j].sl[k].seq, rules[i].subrules[j].gcnt );
 			info->bad_ot = true;
 			warned2 = true;
@@ -1396,7 +1396,7 @@ return;
 		rules[i].subrules[j].sl[k].seq = getushort(ttf);
 		if ( rules[i].subrules[j].sl[k].seq >= rules[i].subrules[j].ccnt )
 		    if ( !warned2 ) {
-			LogError( _("Attempt to apply a lookup to a location out of the range of this contextual\n lookup seq=%d max=%d\n"),
+			LogError( _("Attempt to apply a lookup to a location out of the range of this contextual\n lookup seq=%d max=%d"),
 				rules[i].subrules[j].sl[k].seq, rules[i].subrules[j].ccnt-1);
 			info->bad_ot = true;
 			warned2 = true;
@@ -1553,7 +1553,7 @@ return;
 		rules[i].subrules[j].sl[k].seq = getushort(ttf);
 		if ( rules[i].subrules[j].sl[k].seq >= rules[i].subrules[j].ccnt )
 		    if ( !warned2 ) {
-			LogError( _("Attempt to apply a lookup to a location out of the range of this contextual\n lookup seq=%d max=%d\n"),
+			LogError( _("Attempt to apply a lookup to a location out of the range of this contextual\n lookup seq=%d max=%d"),
 				rules[i].subrules[j].sl[k].seq, rules[i].subrules[j].ccnt-1);
 			info->bad_ot = true;
 			warned2 = true;
@@ -1668,7 +1668,7 @@ return;
     for ( k=0; k<scnt; ++k ) {
 	sl[k].seq = getushort(ttf);
 	if ( sl[k].seq >= gcnt && !warned2 ) {
-	    LogError( _("Attempt to apply a lookup to a location out of the range of this contextual\n lookup seq=%d, max=%d\n"),
+	    LogError( _("Attempt to apply a lookup to a location out of the range of this contextual\n lookup seq=%d, max=%d"),
 		    sl[k].seq, gcnt-1 );
 	    info->bad_ot = true;
 	    warned2 = true;
@@ -1761,7 +1761,7 @@ return;
     for ( k=0; k<scnt; ++k ) {
 	sl[k].seq = getushort(ttf);
 	if ( sl[k].seq >= gcnt && !warned2 ) {
-	    LogError( _("Attempt to apply a lookup to a location out of the range of this contextual\n lookup seq=%d, max=%d\n"),
+	    LogError( _("Attempt to apply a lookup to a location out of the range of this contextual\n lookup seq=%d, max=%d"),
 		    sl[k].seq, gcnt-1 );
 	    info->bad_ot = true;
 	    warned2 = true;
