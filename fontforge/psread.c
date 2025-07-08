@@ -379,7 +379,7 @@ return;
 /* GT: as it is a PostScript keyword. (FF contains a small PostScript interpreter */
 /* GT: so it can understand some PostScript fonts, and can generate errors when */
 /* GT: handed bad PostScript). */
-    LogError( _("Use of \"exit\" when not in a loop\n") );
+    LogError( _("Use of \"exit\" when not in a loop") );
     wrapper->top = io;
 }
 
@@ -405,7 +405,7 @@ return(sp);
 
 /* GT: This is part of the PostScript language. Neither "stop" nor "stopped" */
 /* GT: should be translated as both are PostScript keywords. */
-    LogError( _("Use of \"stop\" when not in a stopped\n") );
+    LogError( _("Use of \"stop\" when not in a stopped") );
     wrapper->top = io;
 return( sp );
 }
@@ -4387,20 +4387,20 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 		dx = dy = 0;
 		if ( v==5 || v==21 ) {
 		    if ( sp<base+2 ) {
-			LogError( _("Stack underflow on rlineto/rmoveto in %s\n"), name );
+			LogError( _("Stack underflow on rlineto/rmoveto in %s"), name );
 	    break;
 		    }
 		    dx = stack[base++];
 		    dy = stack[base++];
 		} else if ( (v==6 && !(polarity&1)) || (v==7 && (polarity&1)) || v==22 ) {
 		    if ( sp<=base ) {
-			LogError( _("Stack underflow on hlineto/hmoveto in %s\n"), name );
+			LogError( _("Stack underflow on hlineto/hmoveto in %s"), name );
 	    break;
 		    }
 		    dx = stack[base++];
 		} else /*if ( (v==7 && !(parity&1)) || (v==6 && (parity&1) || v==4 )*/ {
 		    if ( sp<=base ) {
-			LogError( _("Stack underflow on vlineto/vmoveto in %s\n"), name );
+			LogError( _("Stack underflow on vlineto/vmoveto in %s"), name );
 	    break;
 		    }
 		    dy = stack[base++];

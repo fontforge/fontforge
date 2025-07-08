@@ -1031,7 +1031,7 @@ return( 0 );
     /*  or how */ /* Turns out to be pretty simple */
     /* typ1 is used for both type1 fonts and CID type1 fonts, I don't think a version of 'CID ' is actually used */
     if ( version==CHR('t','y','p','1') || version==CHR('C','I','D',' ')) {
-	LogError( _("Nifty, you've got one of the old Apple/Adobe type1 sfnts here\n") );
+	LogError( _("Nifty, you've got one of the old Apple/Adobe type1 sfnts here") );
     } else if ( version!=0x00010000 && version!=CHR('t','r','u','e') &&
 	    version!=0x00020000 &&	/* Windows 3.1 Chinese version used this version for some arphic fonts */
 					/* See discussion on freetype list, july 2004 */

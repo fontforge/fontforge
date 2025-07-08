@@ -6550,7 +6550,7 @@ static void Reblend(Context *c, int tonew) {
 	blends[i] = c->a.vals[1].u.aval->vals[i].u.ival/65536.0;
 	if ( blends[i]<mm->axismaps[i].min ||
 		blends[i]>mm->axismaps[i].max )
-	    LogError( _("Warning: %dth axis value (%g) is outside the allowed range [%g,%g]\n"),
+	    LogError( _("Warning: %dth axis value (%g) is outside the allowed range [%g,%g]"),
 		    i,blends[i],mm->axismaps[i].min,mm->axismaps[i].max );
     }
     c->curfv = MMCreateBlendedFont(mm,c->curfv,blends,tonew);

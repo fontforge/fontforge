@@ -2269,7 +2269,7 @@ static void InstanciateReference(SplineFont *sf, RefChar *topref, RefChar *refs,
 	    refs->unicode_enc = rsc->unicodeenc;
 	    SCMakeDependent(dsc,rsc);
 	} else {
-	    LogError( _("Couldn't find referenced character \"%s\" in %s\n"),
+	    LogError( _("Couldn't find referenced character \"%s\" in %s"),
 		    AdobeStandardEncoding[refs->adobe_enc], dsc->name);
 return;
 	}
@@ -2751,7 +2751,7 @@ return( NULL );
 	    apos=0;
 	    while ( *pt!=']' && *pt!='\0' ) {
 		if ( apos>=mm->axis_count ) {
-		    LogError( _("Too many axis positions specified in /BlendDesignPositions.\n") );
+		    LogError( _("Too many axis positions specified in /BlendDesignPositions.") );
 	    break;
 		}
 		mm->positions[ipos*mm->axis_count+apos] =
@@ -2783,7 +2783,7 @@ return( NULL );
 	    ppos=0;
 	    while ( *pt!=']' && *pt!='\0' ) {
 		if ( ppos>=12 ) {
-		    LogError( _("Too many mapping data points specified in /BlendDesignMap for axis %s.\n"), mm->axes[apos] );
+		    LogError( _("Too many mapping data points specified in /BlendDesignMap for axis %s."), mm->axes[apos] );
 	    break;
 		}
 		while ( *pt==' ' ) ++pt;
@@ -2792,7 +2792,7 @@ return( NULL );
 		    designs[ppos] = g_ascii_strtod(pt,&end);
 		    blends[ppos] = g_ascii_strtod(end,&end);
 		    if ( blends[ppos]<0 || blends[ppos]>1 ) {
-			LogError( _("Bad value for blend in /BlendDesignMap for axis %s.\n"), mm->axes[apos] );
+			LogError( _("Bad value for blend in /BlendDesignMap for axis %s."), mm->axes[apos] );
 			if ( blends[ppos]<0 ) blends[ppos] = 0;
 			if ( blends[ppos]>1 ) blends[ppos] = 1;
 		    }
@@ -2805,7 +2805,7 @@ return( NULL );
 	    }
 	    if ( *pt==']' ) ++pt;
 	    if ( ppos<2 )
-		LogError( _("Bad few values in /BlendDesignMap for axis %s.\n"), mm->axes[apos] );
+		LogError( _("Bad few values in /BlendDesignMap for axis %s."), mm->axes[apos] );
 	    mm->axismaps[apos].points = ppos;
 	    mm->axismaps[apos].blends = malloc(ppos*sizeof(real));
 	    mm->axismaps[apos].designs = malloc(ppos*sizeof(real));

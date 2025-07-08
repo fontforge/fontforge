@@ -262,7 +262,7 @@ return( NULL );
 return( NULL );
 	    }
 	    if ( glyphs[i]>=info->glyph_cnt ) {
-		LogError( _("Bad coverage table. Glyph %d out of range [0,%d)\n"), glyphs[i], info->glyph_cnt );
+		LogError( _("Bad coverage table. Glyph %d out of range [0,%d)"), glyphs[i], info->glyph_cnt );
 		info->bad_ot = true;
 		glyphs[i] = 0;
 	    }
@@ -287,7 +287,7 @@ return( NULL );
 return( NULL );
 	    }
 	    if ( start>end || end>=info->glyph_cnt ) {
-		LogError( _("Bad coverage table. Glyph range %d-%d out of range [0,%d)\n"), start, end, info->glyph_cnt );
+		LogError( _("Bad coverage table. Glyph range %d-%d out of range [0,%d)"), start, end, info->glyph_cnt );
 		info->bad_ot = true;
 		start = end = 0;
 	    }
@@ -359,7 +359,7 @@ static uint16_t *getClassDefTable(FILE *ttf, int classdef_offset, struct ttfinfo
 	    start = getushort(ttf);
 	    end = getushort(ttf);
 	    if ( start>end || end>=cnt ) {
-		LogError( _("Bad class def table. Glyph range %d-%d out of range [0,%d)\n"), start, end, cnt );
+		LogError( _("Bad class def table. Glyph range %d-%d out of range [0,%d)"), start, end, cnt );
 		info->bad_ot = true;
 	    }
 	    class = getushort(ttf);
@@ -1066,7 +1066,7 @@ return;
 		rules[i].subrules[j].glyphs[k] = getushort(ttf);
 		if ( rules[i].subrules[j].glyphs[k]>=info->glyph_cnt ) {
 		    if ( !warned )
-			LogError( _("Bad contextual or chaining sub table. Glyph %d out of range [0,%d)\n"),
+			LogError( _("Bad contextual or chaining sub table. Glyph %d out of range [0,%d)"),
 				 rules[i].subrules[j].glyphs[k], info->glyph_cnt );
 		    info->bad_ot = true;
 		    warned = true;
@@ -1244,7 +1244,7 @@ return;
 		for ( k=0; k<(&rules[i].subrules[j].gcnt)[which]; ++k ) {
 		    if ( (&rules[i].subrules[j].glyphs)[which][k]>=info->glyph_cnt ) {
 			if ( !warned )
-			    LogError( _("Bad contextual or chaining sub table. Glyph %d out of range [0,%d)\n"),
+			    LogError( _("Bad contextual or chaining sub table. Glyph %d out of range [0,%d)"),
 				    (&rules[i].subrules[j].glyphs)[which][k], info->glyph_cnt );
 			info->bad_ot = true;
 			warned = true;
@@ -2024,7 +2024,7 @@ return;
 			}
 			if ( glyph2s[j]>=info->glyph_cnt ) {
 			if ( !justinuse )
-				LogError( _("Bad Multiple/Alternate substitution glyph. GID %d not less than %d\n"),
+				LogError( _("Bad Multiple/Alternate substitution glyph. GID %d not less than %d"),
 					glyph2s[j], info->glyph_cnt );
 			info->bad_ot = true;
 			if ( ++badcnt>20 ) {
@@ -3174,7 +3174,7 @@ static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,
 	    first = getushort(ttf);
 	    if ( last<first || last>=0xffff ||
 		    (!allow_out_of_bounds && last>=info->glyph_cnt )) {
-		LogError( _("Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d\n"),
+		LogError( _("Bad lookup table: format=2 (%d/%d), first=%d last=%d total glyphs in font=%d"),
 			i,cnt,first,last,info->glyph_cnt );
 		info->bad_gx = true;
 	    } else {
@@ -3198,7 +3198,7 @@ static void readttf_applelookup(FILE *ttf,struct ttfinfo *info,
 	    data_off = getushort(ttf);
 	    if ( last<first || last>=0xffff ||
 		    (!allow_out_of_bounds && last>=info->glyph_cnt )) {
-		LogError( _("Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d\n"),
+		LogError( _("Bad lookup table: format=4 (%d/%d), first=%d last=%d total glyphs in font=%d"),
 			i,cnt,first,last,info->glyph_cnt );
 		info->bad_gx = true;
 	    } else {
@@ -3605,7 +3605,7 @@ return;
 	if ( info->justinuse != git_normal )
 return;
 	if ( !info->warned_morx_out_of_bounds_glyph ) {
-	    LogError( _("Glyph out of bounds in 'mort'/'morx' table %d\n"), gnum );
+	    LogError( _("Glyph out of bounds in 'mort'/'morx' table %d"), gnum );
 	    info->bad_gx = true;
 	    info->warned_morx_out_of_bounds_glyph = true;
 	}
@@ -3617,7 +3617,7 @@ return;
 	if ( info->justinuse != git_normal )
 return;
 	if ( !info->warned_morx_out_of_bounds_glyph ) {
-	    LogError( _("Substitute glyph out of bounds in 'mort'/'morx' table %d\n"), gsubs );
+	    LogError( _("Substitute glyph out of bounds in 'mort'/'morx' table %d"), gsubs );
 	    info->bad_gx = true;
 	    info->warned_morx_out_of_bounds_glyph = true;
 	}

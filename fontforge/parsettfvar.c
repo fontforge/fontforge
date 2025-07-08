@@ -105,9 +105,9 @@ return;
     data_off = getushort(ttf);
     cnt = getushort(ttf);
     if ( cnt>2 )
-	LogError( _("Hmm, this 'fvar' table has more count/size pairs than I expect\n") );
+	LogError( _("Hmm, this 'fvar' table has more count/size pairs than I expect") );
     else if ( cnt<2 ) {
-	LogError( _("Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it\n") );
+	LogError( _("Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it") );
 return;
     }
     axis_count = getushort(ttf);

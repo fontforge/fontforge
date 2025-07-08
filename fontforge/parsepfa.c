@@ -1749,7 +1749,7 @@ return;
 		fp->ignore = false;
 	    } else {
 		fp->ignore = true;
-		LogError( _("Ignoring duplicate /CharStrings entry\n") );
+		LogError( _("Ignoring duplicate /CharStrings entry") );
 	    }
 	    fp->inchars = 1;
 	    fp->insubs = 0;
@@ -1757,7 +1757,7 @@ return;
 	} else if ( strstr(line,"/Subrs")!=NULL ) {
 	    if ( fp->fd->private->subrs->next>0 ) {
 		fp->ignore = true;
-		LogError( _("Ignoring duplicate /Subrs entry\n") );
+		LogError( _("Ignoring duplicate /Subrs entry") );
 	    } else {
 		InitChars(fp->fd->private->subrs,line);
 		fp->ignore = false;
@@ -1846,7 +1846,7 @@ return;
 		fp->ignore = false;
 	    } else {
 		fp->ignore = true;
-		LogError( _("Ignoring duplicate /CharStrings entry\n") );
+		LogError( _("Ignoring duplicate /CharStrings entry") );
 	    }
 	    fp->inchars = 1;
 	    fp->insubs = 0;
