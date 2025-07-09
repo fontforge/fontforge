@@ -13,7 +13,7 @@ msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-09 02:27+0300\n"
-"PO-Revision-Date: 2025-07-08 23:13\n"
+"PO-Revision-Date: 2025-07-09 10:12\n"
 "Last-Translator: \n"
 "Language-Team: Polish\n"
 "Language: pl_PL\n"
@@ -3799,7 +3799,7 @@ msgstr "Nie znaleziono pliku definicji skrótów klawiaturowych!\n"
 
 #, c-format
 msgid "Cannot open %s"
-msgstr "Nie udało się otworzyć %s⬤"
+msgstr "Nie udało się otworzyć %s"
 
 msgid "Cannot open a temporary file"
 msgstr "Nie udało się otworzyć pliku tymczasowego"

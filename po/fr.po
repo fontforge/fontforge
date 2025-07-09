@@ -15,7 +15,7 @@ msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-09 02:27+0300\n"
-"PO-Revision-Date: 2025-07-08 23:13\n"
+"PO-Revision-Date: 2025-07-09 10:12\n"
 "Last-Translator: \n"
 "Language-Team: French\n"
 "Language: fr_FR\n"
@@ -3648,7 +3648,7 @@ msgstr "Impossible d'ajouter des instructions à ce glyphe"
 
 #, c-format
 msgid "Can't open %s"
-msgstr "Impossible d'ouvrir %s⬤"
+msgstr "Impossible d'ouvrir %s"
 
 msgid "Can't open temporary file for postscript output"
 msgstr "Impossible d'ouvrir le fichier temporaire pour la sortie PostScript"
@@ -3686,7 +3686,7 @@ msgstr "Impossible de trouver votre fichier de raccourcis clavier !\n"
 
 #, c-format
 msgid "Cannot open %s"
-msgstr "Impossible d'ouvir %s⬤"
+msgstr "Impossible d'ouvir %s"
 
 msgid "Cannot open a temporary file"
 msgstr "Impossible d'ouvir un fichier temporaire"
@@ -5283,9 +5283,7 @@ msgstr "Je n'ai pas compris le format pour fdselect %d"
 
 #, c-format
 msgid "Didn't understand index format: %d"
-msgstr ""
-"Je n'ai pas compris le format d'index: %d\n"
-"⬤"
+msgstr "Je n'ai pas compris le format d'index: %d"
 
 msgid "Differ"
 msgstr "Différences"
@@ -5921,9 +5919,7 @@ msgid "End of file found in string on line %d of %s"
 msgstr "Fin de fichier trouvée dans une chaîne, ligne %d de %s"
 
 msgid "End of file found when reading private dictionary."
-msgstr ""
-"Fin de fichier atteinte lors de la lecture du dictionnaire privé.\n"
-"⬤"
+msgstr "Fin de fichier atteinte lors de la lecture du dictionnaire privé."
 
 #, c-format
 msgid "End of file in %s table"
@@ -7042,9 +7038,7 @@ msgstr ""
 "économiser de la place"
 
 msgid "FontForge only supports embedded images in data: URIs"
-msgstr ""
-"Fontforge prend seulement en charge les images incorporées dans data: URIs\n"
-"⬤"
+msgstr "Fontforge prend seulement en charge les images incorporées dans data: URIs"
 
 #, c-format
 msgid "FontForge supports at most %d layers"
@@ -12229,7 +12223,7 @@ msgid "No scripts"
 msgstr "Aucun système d'écriture"
 
 msgid "No selection"
-msgstr "Pas de sélection⬤"
+msgstr "Pas de sélection"
 
 msgid "No significant differences found"
 msgstr "Aucune différence significative trouvée"
@@ -21115,9 +21109,7 @@ msgid "Use of a range offset of 0xffff to mean a missing glyph in cmap table"
 msgstr "L'utilisation d'un intervalle de décalage de 0xffff signifie un glyphe manquant dans la table 'cmap'"
 
 msgid "Use of obsolete blend operator."
-msgstr ""
-"Utilisage de l'opérateur 'blend' obsolète.\n"
-"⬤"
+msgstr "Utilisage de l'opérateur 'blend' obsolète."
 
 #, c-format
 msgid "Use of undefined glyph class, %s, on line %d of %s"
@@ -22002,9 +21994,7 @@ msgid "Whoops, bad spiro command %d"
 msgstr "Oups, commande spiro %d incorrect"
 
 msgid "Whoops, contours must begin with a move to"
-msgstr ""
-"Oups, les contours doivent commencer avec un \"move to\"\n"
-"⬤"
+msgstr "Oups, les contours doivent commencer avec un \"move to\""
 
 msgid "Whoops, more names than lookups"
 msgstr "Oups, plus de noms que de lookups"

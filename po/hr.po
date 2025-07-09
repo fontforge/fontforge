@@ -12,7 +12,7 @@ msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-09 02:27+0300\n"
-"PO-Revision-Date: 2025-07-08 23:13\n"
+"PO-Revision-Date: 2025-07-09 10:12\n"
 "Last-Translator: \n"
 "Language-Team: Croatian\n"
 "Language: hr_HR\n"
@@ -4030,7 +4030,7 @@ msgstr "Nije moguće zadati instrukcije ovom grafemu"
 
 #, c-format
 msgid "Can't open %s"
-msgstr "Nije moguće otvoriti %s⬤"
+msgstr "Nije moguće otvoriti %s"
 
 msgid "Can't open temporary file for postscript output"
 msgstr "Nije moguće otvoriti privremenu datoteku za izlazni postscript"
@@ -4068,7 +4068,7 @@ msgstr "Nije moguće naći datoteku tipkovnih prečaca!\n"
 
 #, c-format
 msgid "Cannot open %s"
-msgstr "Nije moguće otvoriti %s⬤"
+msgstr "Nije moguće otvoriti %s"
 
 msgid "Cannot open a temporary file"
 msgstr "Nije moguće otvoriti privremenu datoteku"
@@ -13394,7 +13394,7 @@ msgid "No scripts"
 msgstr "Bez pisama"
 
 msgid "No selection"
-msgstr "Ništa nije odabrano⬤"
+msgstr "Ništa nije odabrano"
 
 msgid "No significant differences found"
 msgstr "Nema značajnih razlika"

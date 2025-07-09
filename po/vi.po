@@ -4,7 +4,7 @@ msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-09 02:27+0300\n"
-"PO-Revision-Date: 2025-07-08 23:13\n"
+"PO-Revision-Date: 2025-07-09 10:12\n"
 "Last-Translator: \n"
 "Language-Team: Vietnamese\n"
 "Language: vi_VN\n"
@@ -3278,7 +3278,7 @@ msgstr "Không thể hủy bước"
 
 #, c-format
 msgid "Cannot open %s"
-msgstr "Không thể mở %s⬤"
+msgstr "Không thể mở %s"
 
 msgid "Cannot open a temporary file"
 msgstr "Không thể mở một tập tin tạm thời"

@@ -13,7 +13,7 @@ msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-09 02:27+0300\n"
-"PO-Revision-Date: 2025-07-08 23:05\n"
+"PO-Revision-Date: 2025-07-09 10:12\n"
 "Last-Translator: \n"
 "Language-Team: English, United Kingdom\n"
 "Language: en_GB\n"
@@ -178,7 +178,7 @@ msgstr "Auto Hinting Font..."
 
 #, c-format
 msgid "AutoWidth failure on %s"
-msgstr "AutoWidth failure on %s⬤"
+msgstr "AutoWidth failure on %s"
 
 msgid "Autotracing..."
 msgstr "Autotracing..."
@@ -772,7 +772,7 @@ msgstr "More Images Than Selected Glyphs"
 
 #, c-format
 msgid "Multiple master subroutine called with the wrong number of arguments in %s."
-msgstr "Multiple master subroutine called with the wrong number of arguments in %s.⬤"
+msgstr "Multiple master subroutine called with the wrong number of arguments in %s."
 
 msgid "MultipleEncodingIgnored"
 msgstr "MultipleEncodingIgnored"
@@ -800,7 +800,7 @@ msgstr "No _to All"
 
 #, c-format
 msgid "No argument to operator %d in private dict"
-msgstr "No argument to operator %d in private dict⬤"
+msgstr "No argument to operator %d in private dict"
 
 msgid "No cidmap file..."
 msgstr "No cidmap file..."
@@ -885,7 +885,7 @@ msgstr "Oriya"
 
 #, c-format
 msgid "ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s"
-msgstr "ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s⬤"
+msgstr "ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s"
 
 msgid "Phonetic Extensions"
 msgstr "Phonetic Extensions"

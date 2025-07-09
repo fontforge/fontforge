@@ -23,7 +23,7 @@ msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-09 02:27+0300\n"
-"PO-Revision-Date: 2025-07-08 23:51\n"
+"PO-Revision-Date: 2025-07-09 10:12\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Language: zh_CN\n"
@@ -9886,7 +9886,7 @@ msgstr "斜体字体中每单位垂直变化相应的水平变化"
 
 #, c-format
 msgid "In character %s, could not find reference to %s"
-msgstr "在字符 %s 中，找不到对 %s 的引用⬤"
+msgstr "在字符 %s 中，找不到对 %s 的引用"
 
 #, c-format
 msgid "In character %s, there are too few points on a path in the base"
@@ -13632,7 +13632,7 @@ msgid "No scripts"
 msgstr "无文字"
 
 msgid "No selection"
-msgstr "无选中⬤"
+msgstr "无选中"
 
 msgid "No significant differences found"
 msgstr "未发现显著差异"

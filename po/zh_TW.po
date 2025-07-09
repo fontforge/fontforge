@@ -14,7 +14,7 @@ msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-09 02:27+0300\n"
-"PO-Revision-Date: 2025-07-08 23:47\n"
+"PO-Revision-Date: 2025-07-09 10:12\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Language: zh_TW\n"
@@ -3083,7 +3083,7 @@ msgstr "無法指揮這個字圖"
 
 #, c-format
 msgid "Can't open %s"
-msgstr "無法開啟 %s⬤"
+msgstr "無法開啟 %s"
 
 msgid "Can't open temporary file for postscript output"
 msgstr "無法開啟暫存檔用於 postscript 輸出"
@@ -3117,7 +3117,7 @@ msgstr "無法復原"
 
 #, c-format
 msgid "Cannot open %s"
-msgstr "無法開啟 %s⬤"
+msgstr "無法開啟 %s"
 
 msgid "Cannot open a temporary file"
 msgstr "無法開啟暫時檔案"

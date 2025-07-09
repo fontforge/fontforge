@@ -13,7 +13,7 @@ msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-09 02:27+0300\n"
-"PO-Revision-Date: 2025-07-08 23:47\n"
+"PO-Revision-Date: 2025-07-09 10:12\n"
 "Last-Translator: \n"
 "Language-Team: Russian\n"
 "Language: ru_RU\n"
@@ -4098,7 +4098,7 @@ msgstr "Не удалось создать инструкции для этог�
 
 #, c-format
 msgid "Can't open %s"
-msgstr "Не удалось открыть %s⬤"
+msgstr "Не удалось открыть %s"
 
 msgid "Can't open temporary file for postscript output"
 msgstr "Не удалось открыть временный файл для вывода postscript"
@@ -4136,7 +4136,7 @@ msgstr "Не удалось найти файл определения соче�
 
 #, c-format
 msgid "Cannot open %s"
-msgstr "Не удалось открыть %s⬤"
+msgstr "Не удалось открыть %s"
 
 msgid "Cannot open a temporary file"
 msgstr "Не удалось открыть временный файл"
@@ -14546,7 +14546,7 @@ msgid "No scripts"
 msgstr "Отсутствуют системы письменности"
 
 msgid "No selection"
-msgstr "Данные не выбраны⬤"
+msgstr "Данные не выбраны"
 
 msgid "No significant differences found"
 msgstr "Значительных расхождений не найдено"

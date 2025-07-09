@@ -16,7 +16,7 @@ msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-09 02:27+0300\n"
-"PO-Revision-Date: 2025-07-08 23:05\n"
+"PO-Revision-Date: 2025-07-09 10:12\n"
 "Last-Translator: \n"
 "Language-Team: Catalan\n"
 "Language: ca_ES\n"
@@ -3880,7 +3880,7 @@ msgstr "El límit és erroni"
 
 #, c-format
 msgid "Error: %s"
-msgstr "Error: %s⬤"
+msgstr "Error: %s"
 
 #, c-format
 msgid "Error: Expected %s, got %s"

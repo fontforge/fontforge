@@ -14,7 +14,7 @@ msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-07-09 02:27+0300\n"
-"PO-Revision-Date: 2025-07-08 23:05\n"
+"PO-Revision-Date: 2025-07-09 10:12\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
 "Language: it_IT\n"
@@ -1072,7 +1072,7 @@ msgstr "Impossibile istruire questo glifo"
 
 #, c-format
 msgid "Can't open %s"
-msgstr "Impossibile aprire %s⬤"
+msgstr "Impossibile aprire %s"
 
 msgid "Can't open temporary file for postscript output"
 msgstr "Impossibile aprire un file temporaneo per l'output postscript"
@@ -3722,7 +3722,7 @@ msgid "No scripts"
 msgstr "Niente script"
 
 msgid "No selection"
-msgstr "Nessuna selezione⬤"
+msgstr "Nessuna selezione"
 
 msgid "No such file"
 msgstr "Questo file non esiste."
