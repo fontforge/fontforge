@@ -7498,7 +7498,7 @@ return( -1 );
             &lx,&ly,&rx,&ry,&ux,&uy ))
 return( -1 );
         if ( ux == 0 && uy == 0 ) {
-            LogError(_("Invalid unit vector has been specified. The hint is ignored.\n"));
+            LogError(_("Invalid unit vector has been specified. The hint is ignored."));
     continue;
         } else if ( ux == 0 ) {
             LogError(_("Use the \'vhint\' property to specify a vertical hint.\n"));
@@ -9245,7 +9245,7 @@ return( NULL );
 			PyTuple_SetItem(ret,i,Py_None);
 /* The important things here should not be translated. We hope the user will */
 /*  never see this. Let's not translate it at all */
-			LogError(_("Unexpected PST type in GetPosSub (%d).\n"), pst->type );
+			LogError(_("Unexpected PST type in GetPosSub (%d)."), pst->type );
 		      break;
 		      case pst_position:
 			PyTuple_SetItem(ret,cnt,Py_BuildValue("(ssiiii)",

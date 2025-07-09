@@ -2277,7 +2277,7 @@ static void AddNumber2(GrowBuf *gb, real pos, int round) {
     if ( pos>32767.99 || pos<-32768 ) {
 	/* same logic for big ints and reals */
 	if ( pos>0x3fffffff || pos<-0x40000000 ) {
-	    LogError( _("Number out of range: %g in type2 output (must be [-65536,65535])\n"),
+	    LogError( _("Number out of range: %g in type2 output (must be [-65536,65535])"),
 		    pos );
 	    if ( pos>0 ) pos = 0x3fffffff; else pos = -0x40000000;
 	}

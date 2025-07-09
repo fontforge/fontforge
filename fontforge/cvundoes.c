@@ -3422,7 +3422,7 @@ void FVCopyWidth(FontViewBase *fv,enum undotype ut) {
     copybuffer.u.multiple.mult = head;
     copybuffer.copied_from = fv->sf;
     if ( !any )
-	LogError( _("No selection\n") );
+	LogError( _("No selection") );
 }
 
 void FVCopyAnchors(FontViewBase *fv) {
@@ -3450,7 +3450,7 @@ void FVCopyAnchors(FontViewBase *fv) {
     copybuffer.u.multiple.mult = head;
     copybuffer.copied_from = fv->sf;
     if ( !any )
-	LogError( _("No selection\n") );
+	LogError( _("No selection") );
 }
 
 void FVCopy(FontViewBase *fv, enum fvcopy_type fullcopy) {

@@ -296,8 +296,8 @@ static void traceback(Context *c) {
 	    c->error = ce_true;
 	    return;
 	}
-	if ( cnt==1 ) LogError( _("Called from...\n") );
-	if ( cnt>0 ) LogError( _(" %s: line %d\n"), c->filename, c->lineno );
+	if ( cnt==1 ) LogError( _("Called from...") );
+	if ( cnt>0 ) LogError( _(" %s: line %d"), c->filename, c->lineno );
 	calldatafree(c);
 	if ( c->err_env!=NULL )
 	    longjmp(*c->err_env,1);
@@ -365,9 +365,9 @@ void ScriptError( Context *c, const char *msg ) {
     if ( verbose>0 )
 	fflush(stdout);
     if ( c->interactive )
-	LogError( "Error: %s\n", t1 );
+	LogError( "Error: %s", t1 );
     else if ( c->lineno!=0 )
-	LogError( _("%s line: %d %s\n"), ufile, c->lineno, t1 );
+	LogError( _("%s line: %d %s"), ufile, c->lineno, t1 );
     else
 	LogError( "%s: %s\n", ufile, t1 );
     if ( !no_windowing_ui ) {
@@ -387,7 +387,7 @@ void ScriptErrorString( Context *c, const char *msg, const char *name) {
     if ( c->interactive )
 	LogError( "Error: %s: %s\n", t1, t2 );
     else if ( c->lineno!=0 )
-	LogError( _("%s line: %d %s: %s\n"), ufile, c->lineno, t1, t2 );
+	LogError( _("%s line: %d %s: %s"), ufile, c->lineno, t1, t2 );
     else
 	LogError( "%s: %s: %s\n", ufile, t1, t2 );
     if ( !no_windowing_ui ) {
@@ -410,9 +410,9 @@ void ScriptErrorF( Context *c, const char *format, ... ) {
     if ( verbose>0 )
 	fflush(stdout);
     if (c->interactive)
-	LogError( _("Error: %s\n"), errbuf );
+	LogError( _("Error: %s"), errbuf );
     else if ( c->lineno!=0 )
-	LogError( _("%s line: %d %s\n"), ufile, c->lineno, errbuf );
+	LogError( _("%s line: %d %s"), ufile, c->lineno, errbuf );
     else
 	LogError( "%s: %s\n", ufile, errbuf );
     if ( !no_windowing_ui ) {
@@ -2018,7 +2018,7 @@ static void bGenerateFamily(Context *c) {
 	if ( sf==NULL )
 	    sf = fv->sf;
 	if ( strcmp(fv->sf->familyname,sf->familyname)!=0 )
-	    LogError( _("Warning: %s has a different family name than does %s (GenerateFamily)\n"),
+	    LogError( _("Warning: %s has a different family name than does %s (GenerateFamily)"),
 		    fv->sf->fontname, sf->fontname );
 	MacStyleCode(fv->sf,&psstyle);
 	if ( psstyle>=48 ) {
@@ -2050,7 +2050,7 @@ static void bGenerateFamily(Context *c) {
 			familysfs[fc][psstyle] = fv->sf;
 			added = true;
 		    } else {
-			LogError( _("%s(%s) and %s(%s) 0x%x in FOND %s\n"),
+			LogError( _("%s(%s) and %s(%s) 0x%x in FOND %s"),
 				familysfs[fc][psstyle]->origname, familysfs[fc][psstyle]->fontname,
 				fv->sf->origname, fv->sf->fontname,
 				psstyle, fv->sf->fondname );
@@ -6059,7 +6059,7 @@ static void bAddDHint( Context *c ) {
         SCGuessDHintInstances( sc,ly_fore,d );
         if ( d->where == NULL ) {
             DStemInfoFree( d );
-            LogError( _("Warning: could not figure out where the hint (%d,%d %d,%d %d,%d) is valid\n"),
+            LogError( _("Warning: could not figure out where the hint (%d,%d %d,%d %d,%d) is valid"),
                 args[0],args[1],args[2],args[3],args[4],args[5] );
         } else
             MergeDStemInfo( sc->parent,&sc->dstem,d );
@@ -6069,7 +6069,7 @@ static void bAddDHint( Context *c ) {
 	any = true;
     }
     if ( !any )
-        LogError( _("Warning: No characters selected in AddDHint(%d,%d %d,%d %d,%d)\n"),
+        LogError( _("Warning: No characters selected in AddDHint(%d,%d %d,%d %d,%d)"),
             args[0],args[1],args[2],args[3],args[4],args[5] );
 }
 
@@ -6115,7 +6115,7 @@ static void _AddHint(Context *c,int ish) {
 	any = true;
     }
     if ( !any )
-	LogError( _("Warning: No characters selected in AddHint(%d,%d,%d)\n"),
+	LogError( _("Warning: No characters selected in AddHint(%d,%d,%d)"),
 		ish, start, width);
 }
 
@@ -6550,7 +6550,7 @@ static void Reblend(Context *c, int tonew) {
 	blends[i] = c->a.vals[1].u.aval->vals[i].u.ival/65536.0;
 	if ( blends[i]<mm->axismaps[i].min ||
 		blends[i]>mm->axismaps[i].max )
-	    LogError( _("Warning: %dth axis value (%g) is outside the allowed range [%g,%g]\n"),
+	    LogError( _("Warning: %dth axis value (%g) is outside the allowed range [%g,%g]"),
 		    i,blends[i],mm->axismaps[i].min,mm->axismaps[i].max );
     }
     c->curfv = MMCreateBlendedFont(mm,c->curfv,blends,tonew);
@@ -7992,7 +7992,7 @@ static void bGetPosSub(Context *c) {
 			ret->vals[cnt].type = v_void;
 /* The important things here should not be translated. We hope the user will */
 /*  never see this. Let's not translate it at all */
-			LogError(_("Unexpected PST type in GetPosSub (%d).\n"), pst->type );
+			LogError(_("Unexpected PST type in GetPosSub (%d)."), pst->type );
 		      break;
 		      case pst_position:
 			temp->argc = 6;
@@ -9099,7 +9099,7 @@ return( c->tok );
 		cungetc(ch,c);
 	  break;
 	  default:
-	    LogError( _("%s:%d Unexpected character %c (%d)\n"),
+	    LogError( _("%s:%d Unexpected character %c (%d)"),
 		    c->filename, c->lineno, ch, ch);
 	    traceback(c);
 	}

@@ -566,7 +566,7 @@ static void pdf_BrushCheck(PI *pi,struct glyph_res *gr,struct brush *brush,
 	int lenpos, lenstart, len;
 
 	if ( pattern_sc==NULL )
-	    LogError(_("No glyph named %s, used as a pattern in %s\n"), pat->pattern, sc->name);
+	    LogError(_("No glyph named %s, used as a pattern in %s"), pat->pattern, sc->name);
 	PatternSCBounds(pattern_sc,&b);
 
 	if ( gr->pattern_cnt>=gr->pattern_max ) {

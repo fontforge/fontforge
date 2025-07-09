@@ -19,7 +19,7 @@ def update(potfile, pofile):
 
     print(f"Updating {pofile} with {potfile}...")
 
-    cmd = ["msgmerge", "-N", "-s", pofile, potfile, "-o", pofile]
+    cmd = ["msgmerge", "--no-wrap", "-N", "-s", pofile, potfile, "-o", pofile]
     if not updated_trans.exists():
         cmd.append("--for-msgfmt")
     subprocess.check_call(cmd)
@@ -27,7 +27,7 @@ def update(potfile, pofile):
     if updated_trans.exists():
         print(f"Updating {pofile} with {updated_trans}...")
         subprocess.check_call(
-            ["msgmerge", "--for-msgfmt", "-s", str(updated_trans), pofile, "-o", pofile]
+            ["msgmerge", "--no-wrap", "--for-msgfmt", "-s", str(updated_trans), pofile, "-o", pofile]
         )
 
     print(f"Reappending header to {pofile}...")

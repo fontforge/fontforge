@@ -403,7 +403,7 @@ static Encoding *enc_from_platspec(int platform,int specific) {
     if ( e==NULL ) {
 	static int p = -1,s = -1;
 	if ( p!=platform || s!=specific ) {
-	    LogError( _("The truetype encoding specified by platform=%d specific=%d (which we map to %s) is not supported by your version of iconv(3).\n"),
+	    LogError( _("The truetype encoding specified by platform=%d specific=%d (which we map to %s) is not supported by your version of iconv(3)."),
 		    platform, specific, enc );
 	    p = platform; s = specific;
 	}
@@ -1031,7 +1031,7 @@ return( 0 );
     /*  or how */ /* Turns out to be pretty simple */
     /* typ1 is used for both type1 fonts and CID type1 fonts, I don't think a version of 'CID ' is actually used */
     if ( version==CHR('t','y','p','1') || version==CHR('C','I','D',' ')) {
-	LogError( _("Nifty, you've got one of the old Apple/Adobe type1 sfnts here\n") );
+	LogError( _("Nifty, you've got one of the old Apple/Adobe type1 sfnts here") );
     } else if ( version!=0x00010000 && version!=CHR('t','r','u','e') &&
 	    version!=0x00020000 &&	/* Windows 3.1 Chinese version used this version for some arphic fonts */
 					/* See discussion on freetype list, july 2004 */
@@ -1236,16 +1236,16 @@ return( 0 );			/* Not version 1 of true type, nor Open Type */
                 }
                 if ( j==info->savecnt ) {
                     if ( first ) {
-                        LogError( _("The following table(s) in the font have been ignored by FontForge\n") );
+                        LogError( _("The following table(s) in the font have been ignored by FontForge") );
                         first = false;
                     }
                     for ( k=0; stdtables[k].tag!=0; ++k )
                         if ( stdtables[k].tag == tag )
                     break;
                     if ( stdtables[k].tag==0 ) {
-                        LogError( _("  Ignoring '%c%c%c%c'\n"), tag>>24, tag>>16, tag>>8, tag);
+                        LogError( _("  Ignoring '%c%c%c%c'"), tag>>24, tag>>16, tag>>8, tag);
                     } else {
-                        LogError( _("  Ignoring '%c%c%c%c' %s\n"), tag>>24, tag>>16, tag>>8, tag,
+                        LogError( _("  Ignoring '%c%c%c%c' %s"), tag>>24, tag>>16, tag>>8, tag,
                                 _(stdtables[k].name));
                     }
                 }
@@ -1962,7 +1962,7 @@ static void readttfsimpleglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, in
 	endpt[i] = getushort(ttf);
 	if ( i!=0 && endpt[i]<endpt[i-1] ) {
 	    info->bad_glyph_data = true;
-	    LogError( _("Bad tt font: contour ends make no sense in glyph %d.\n"),
+	    LogError( _("Bad tt font: contour ends make no sense in glyph %d."),
 		    sc->orig_pos );
 	    free(endpt);
 return;
@@ -2014,10 +2014,10 @@ return;
 	last_pos = pts[i].x;
 	if ( (last_pos<gbb[0] || last_pos>gbb[2]) && ( flags[i]&_On_Curve )) {
 	    if ( !info->gbbcomplain || (info->openflags&of_fontlint)) {
-		LogError(_("A point in GID %d is outside the glyph bounding box\n"), sc->orig_pos );
+		LogError(_("A point in GID %d is outside the glyph bounding box"), sc->orig_pos );
 		info->bad_glyph_data = true;
 		if ( !(info->openflags&of_fontlint) )
-		    LogError(_("  Subsequent errors will not be reported.\n") );
+		    LogError(_("  Subsequent errors will not be reported.") );
 		info->gbbcomplain = true;
 	    }
 	}
@@ -2037,10 +2037,10 @@ return;
 	last_pos = pts[i].y;
 	if (( last_pos<gbb[1] || last_pos>gbb[3]) && ( flags[i]&_On_Curve ) ) {
 	    if ( !info->gbbcomplain || (info->openflags&of_fontlint)) {
-		LogError(_("A point in GID %d is outside the glyph bounding box\n"), sc->orig_pos );
+		LogError(_("A point in GID %d is outside the glyph bounding box"), sc->orig_pos );
 		info->bad_glyph_data = true;
 		if ( !(info->openflags&of_fontlint) )
-		    LogError(_("  Subsequent errors will not be reported.\n") );
+		    LogError(_("  Subsequent errors will not be reported.") );
 		info->gbbcomplain = true;
 	    }
 	}
@@ -2057,7 +2057,7 @@ return;
     free(flags);
     free(pts);
     if ( feof(ttf)) {
-	LogError( _("Reached end of file when reading simple glyph\n") );
+	LogError( _("Reached end of file when reading simple glyph") );
 	info->bad_glyph_data = true;
     }
 }
@@ -2068,14 +2068,14 @@ static void readttfcompositglyph(FILE *ttf,struct ttfinfo *info,SplineChar *sc, 
     int use_my_metrics=0;
 
     if ( ftell(ttf)>=end ) {
-	LogError( _("Empty composite %d\n"), sc->orig_pos );
+	LogError( _("Empty composite %d"), sc->orig_pos );
 	info->bad_glyph_data = true;
 return;
     }
 
     do {
 	if ( ftell(ttf)>=end ) {
-	    LogError( _("Bad flags value, implied MORE components at end of glyph %d\n"), sc->orig_pos );
+	    LogError( _("Bad flags value, implied MORE components at end of glyph %d"), sc->orig_pos );
 	    info->bad_glyph_data = true;
     break;
 	}
@@ -2083,7 +2083,7 @@ return;
 	flags = getushort(ttf);
 	cur->orig_pos = getushort(ttf);
 	if ( feof(ttf) || cur->orig_pos>=info->glyph_cnt ) {
-	    LogError(_("Reference to glyph %d out of bounds when parsing 'glyf' table.\n"), cur->orig_pos );
+	    LogError(_("Reference to glyph %d out of bounds when parsing 'glyf' table."), cur->orig_pos );
 	    info->bad_glyph_data = true;
 	    cur->orig_pos = 0;
 	}
@@ -2099,7 +2099,7 @@ return;
 	cur->use_my_metrics =		 (flags & _USE_MY_METRICS) ? 1 : 0;
 	if ( cur->use_my_metrics ) {
 	    if ( use_my_metrics ) {
-		LogError( _("Use-my-metrics flag set on at least two components in glyph %d\n"), sc->orig_pos );
+		LogError( _("Use-my-metrics flag set on at least two components in glyph %d"), sc->orig_pos );
 		info->bad_glyph_data = true;
 	    } else
 		use_my_metrics = true;
@@ -2168,7 +2168,7 @@ return;
 	}
 	}
 	if ( cur->orig_pos>=info->glyph_cnt ) {
-	    LogError(_("Glyph %d attempts to reference glyph %d which is outside the font\n"), sc->orig_pos, cur->orig_pos );
+	    LogError(_("Glyph %d attempts to reference glyph %d which is outside the font"), sc->orig_pos, cur->orig_pos );
 	    chunkfree(cur,sizeof(*cur));
 	} else {
 	    if ( head==NULL )
@@ -2178,7 +2178,7 @@ return;
 	    last = cur;
 	}
 	if ( feof(ttf)) {
-	    LogError(_("Reached end of file when reading composite glyph\n") );
+	    LogError(_("Reached end of file when reading composite glyph") );
 	    info->bad_glyph_data = true;
     break;
 	}
@@ -2210,13 +2210,13 @@ static SplineChar *readttfglyph(FILE *ttf,struct ttfinfo *info,uint32_t start, u
 
     if ( end>info->glyph_length ) {
 	if ( !info->complainedbeyondglyfend )
-	    LogError(_("Bad glyph (%d), its definition extends beyond the end of the glyf table\n"), gid );
+	    LogError(_("Bad glyph (%d), its definition extends beyond the end of the glyf table"), gid );
 	info->bad_glyph_data = true;
 	info->complainedbeyondglyfend = true;
 	SplineCharFree(sc);
 return( NULL );
     } else if ( end<start ) {
-	LogError(_("Bad glyph (%d), its data length is negative\n"), gid );
+	LogError(_("Bad glyph (%d), its data length is negative"), gid );
 	SplineCharFree(sc);
 return( NULL );
     }
@@ -2235,10 +2235,10 @@ return( sc );
     if ( info->head_start!=0 && ( gbb[0]<info->fbb[0] || gbb[1]<info->fbb[1] ||
 				  gbb[2]>info->fbb[2] || gbb[3]>info->fbb[3])) {
 	if ( !info->bbcomplain || (info->openflags&of_fontlint)) {
-	    LogError(_("Glyph bounding box data exceeds font bounding box data for GID %d\n"), gid );
+	    LogError(_("Glyph bounding box data exceeds font bounding box data for GID %d"), gid );
 	    info->bad_glyph_data = true;
 	    if ( !(info->openflags&of_fontlint) )
-		LogError(_("  Subsequent errors will not be reported.\n") );
+		LogError(_("  Subsequent errors will not be reported.") );
 	    info->bbcomplain = true;
 	}
     }
@@ -2250,10 +2250,10 @@ return( sc );
 	/* because the components may not have been read in yet */
 	/* I'll check against the font bb later, if validation mode */
     if ( start>end ) {
-	LogError(_("Bad glyph (%d), disordered 'loca' table (start comes after end)\n"), gid );
+	LogError(_("Bad glyph (%d), disordered 'loca' table (start comes after end)"), gid );
 	info->bad_glyph_data = true;
     } else if ( ftell(ttf)>info->glyph_start+end ) {
-	LogError(_("Bad glyph (%d), its definition extends beyond the space allowed for it\n"), gid );
+	LogError(_("Bad glyph (%d), its definition extends beyond the space allowed for it"), gid );
 	info->bad_glyph_data = true;
     }
 return( sc );
@@ -2734,7 +2734,7 @@ return( NULL );
 /* GT: The CFF font type contains a thing called a name INDEX, and that INDEX */
 /* GT: is bad. It is an index of many of the names used in the CFF font. */
 /* GT: We hope the user will never see this. */
-	    LogError( _("Bad CFF name INDEX\n") );
+	    LogError( _("Bad CFF name INDEX") );
 	    if ( info!=NULL ) info->bad_cff = true;
 	    while ( i<count ) {
 		names[i] = copy("");
@@ -2823,7 +2823,7 @@ return( 1 );
 	*_ival = (int) (ival | getc(ttf));
 return( 1 );
     }
-    LogError(_("Unexpected value in dictionary %d\n"), ch );
+    LogError(_("Unexpected value in dictionary %d"), ch );
     info->bad_cff = true;
     *_ival = 0;
 return( 0 );
@@ -2840,7 +2840,7 @@ static void skipcfft2thing(FILE *ttf) {
     int ch;
 
 /* GT: DICT is a magic term inside CFF fonts, as is INDEX, and I guess CFF and type2 */
-    LogError( _("FontForge does not support type2 programs embedded in CFF DICT INDICES.\n") );
+    LogError( _("FontForge does not support type2 programs embedded in CFF DICT INDICES.") );
     for (;;) {
 	ch = getc(ttf);
 	if ( ch>=247 && ch<=254 )
@@ -3029,7 +3029,7 @@ static struct topdicts *readcfftopdict(FILE *ttf, char *fontname, int len,
 	if ( ret==3 && oval==31 /* "T2" operator, can have 0 arguments */ ) {
 	    skipcfft2thing(ttf);
 	} else if ( sp==0 ) {
-	    LogError( _("No argument to operator\n") );
+	    LogError( _("No argument to operator") );
 	    info->bad_cff = true;
 	} else if ( ret==3 ) switch( oval ) {
 	  case 0:
@@ -3099,7 +3099,7 @@ static struct topdicts *readcfftopdict(FILE *ttf, char *fontname, int len,
 	    td->private_offset = stack[1];
 	  break;
 	  case (12<<8)+20:
-	    LogError( _("FontForge does not support synthetic fonts\n") );
+	    LogError( _("FontForge does not support synthetic fonts") );
 	    td->synthetic_base = stack[sp-1];
 	  break;
 	  case (12<<8)+21:
@@ -3113,10 +3113,10 @@ static struct topdicts *readcfftopdict(FILE *ttf, char *fontname, int len,
 		td->basefontblend[i] = stack[i];
 	  break;
 	  case (12<<8)+24:
-	    LogError( _("FontForge does not support type2 multiple master fonts\n") );
+	    LogError( _("FontForge does not support type2 multiple master fonts") );
 	    info->bad_cff = true;
 	    if (sp < 4) {
-	        LogError(_("CFF dict stack underflow detected: %d < 4\n"), sp);
+	        LogError(_("CFF dict stack underflow detected: %d < 4"), sp);
 	        break;
 	    }
 	    td->nMasters = stack[0];
@@ -3161,10 +3161,10 @@ static struct topdicts *readcfftopdict(FILE *ttf, char *fontname, int len,
 	    td->sid_fontname = stack[sp-1];
 	  break;
 	  case (12<<8)+39:
-	    LogError(_("FontForge does not support Chameleon fonts\n"));
+	    LogError(_("FontForge does not support Chameleon fonts"));
 	  break;
 	  default:
-	    LogError(_("Unknown operator in %s: %x\n"), fontname, oval );
+	    LogError(_("Unknown operator in %s: %x"), fontname, oval );
 	    info->bad_cff = true;
 	  break;
 	}
@@ -3187,7 +3187,7 @@ static void readcffprivate(FILE *ttf, struct topdicts *td, struct ttfinfo *info)
 
     while ( ftell(ttf)<end ) {
 	if ( feof(ttf) ) {
-	    LogError(_("End of file found when reading private dictionary.\n") );
+	    LogError(_("End of file found when reading private dictionary.") );
     break;
 	}
 	sp = 0;
@@ -3200,7 +3200,7 @@ static void readcffprivate(FILE *ttf, struct topdicts *td, struct ttfinfo *info)
 	if ( ret==3 && oval==31 /* "T2" operator, can have 0 arguments */ ) {
 	    skipcfft2thing(ttf);
 	} else if ( sp==0 && oval!=6 && oval!=7 && oval!=8 && oval!=9 && oval !=(12<<8)+12 && oval !=(12<<8)+13) {
-	    LogError( _("No argument to operator %d in private dict\n"), oval );
+	    LogError( _("No argument to operator %d in private dict"), oval );
 	    info->bad_cff = true;
 	} else if ( ret==3 ) switch( oval ) {
 	  case 6:
@@ -3295,7 +3295,7 @@ static void readcffprivate(FILE *ttf, struct topdicts *td, struct ttfinfo *info)
 	    td->nominalwidthx = stack[sp-1];
 	  break;
 	  default:
-	    LogError(_("Unknown operator in %s: %x\n"), td->fontname, oval );
+	    LogError(_("Unknown operator in %s: %x"), td->fontname, oval );
 	    info->bad_cff = true;
 	  break;
 	}
@@ -3348,7 +3348,7 @@ static const char *getstrid(int sid,char **strings,int scnt,struct ttfinfo *info
     if ( sid==-1 ) // Default value, indicating it's not present
 return( NULL );
     else if (sid < 0) {
-        LogError(_("Bad sid %d (0 <= sid < %d)\n"), sid, scnt+nStdStrings);
+        LogError(_("Bad sid %d (0 <= sid < %d)"), sid, scnt+nStdStrings);
         if (info != NULL)
             info->bad_cff = true;
         return NULL;
@@ -3356,7 +3356,7 @@ return( NULL );
     else if ( sid<nStdStrings )
 return( cffnames[sid] );
     else if ( sid-nStdStrings>=scnt ) {
-	LogError( _("Bad sid %d (must be less than %d)\n"), sid, scnt+nStdStrings );
+	LogError( _("Bad sid %d (must be less than %d)"), sid, scnt+nStdStrings );
 	if ( info!=NULL ) info->bad_cff = true;
 return( NULL );
     } else
@@ -3423,7 +3423,7 @@ return;						/* Use cids instead */
 		}
 	    }
 	} else {
-	    LogError( _("Unexpected encoding format in cff: %d\n"), format );
+	    LogError( _("Unexpected encoding format in cff: %d"), format );
 	    if ( info!=NULL ) info->bad_cff = true;
 	}
         /* if additional encoding bit set, add all additional encodings */
@@ -3548,7 +3548,7 @@ static void readcffset(FILE *ttf,struct topdicts *dict,struct ttfinfo *info) {
 		    dict->charset[i++] = ++first;
 	    }
 	} else {
-	    LogError( _("Unexpected charset format in cff: %d\n"), format );
+	    LogError( _("Unexpected charset format in cff: %d"), format );
 	    if ( info!=NULL ) info->bad_cff = true;
 	}
     }
@@ -3571,7 +3571,7 @@ static uint8_t *readfdselect(FILE *ttf,int numglyphs,struct ttfinfo *info) {
 	    end = getushort(ttf);
 	    for ( j=first; j<end; ++j ) {
 		if ( j>=numglyphs ) {
-		    LogError( _("Bad fdselect\n") );
+		    LogError( _("Bad fdselect") );
 		    if ( info!=NULL ) info->bad_cff = true;
 		} else
 		    fdselect[j] = fd;
@@ -3579,7 +3579,7 @@ static uint8_t *readfdselect(FILE *ttf,int numglyphs,struct ttfinfo *info) {
 	    first = end;
 	}
     } else {
-	LogError( _("Didn't understand format for fdselect %d\n"), format );
+	LogError( _("Didn't understand format for fdselect %d"), format );
 	if ( info!=NULL ) info->bad_cff = true;
     }
 return( fdselect );
@@ -3936,7 +3936,7 @@ static int readcffglyphs(FILE *ttf,struct ttfinfo *info) {
 
     fseek(ttf,info->cff_start,SEEK_SET);
     if ( getc(ttf)!='\1' ) {		/* Major version */
-	LogError( _("CFF version mismatch\n" ));
+	LogError( _("CFF version mismatch" ));
 	info->bad_cff = true;
 return( 0 );
     }
@@ -4104,13 +4104,13 @@ static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
 	    if ( lastwidth>info->advanceWidthMax && info->hhea_start!=0 ) {
 		if ( !info->wdthcomplain || (info->openflags&of_fontlint)) {
 		    if ( info->fontname!=NULL && sc->name!=NULL )
-			LogError(_("In %s, the advance width (%d) for glyph %s is greater than the maximum (%d)\n"),
+			LogError(_("In %s, the advance width (%d) for glyph %s is greater than the maximum (%d)"),
 				info->fontname, lastwidth, sc->name, info->advanceWidthMax );
 		    else
-			LogError(_("In GID %d the advance width (%d) is greater than the stated maximum (%d)\n"),
+			LogError(_("In GID %d the advance width (%d) is greater than the stated maximum (%d)"),
 				i, lastwidth, info->advanceWidthMax );
 		    if ( !(info->openflags&of_fontlint) )
-			LogError(_("  Subsequent errors will not be reported.\n") );
+			LogError(_("  Subsequent errors will not be reported.") );
 		    info->wdthcomplain = true;
 		}
 	    }
@@ -4135,7 +4135,7 @@ static void readttfwidths(FILE *ttf,struct ttfinfo *info) {
 	}
     }
     if ( i==0 ) {
-	LogError( _("Invalid ttf hmtx table (or hhea), numOfLongMetrics is 0\n") );
+	LogError( _("Invalid ttf hmtx table (or hhea), numOfLongMetrics is 0") );
 	info->bad_metrics = true;
     }
 
@@ -4197,7 +4197,7 @@ static void readttfvwidths(FILE *ttf,struct ttfinfo *info) {
 	    info->chars[i]->vwidth = lastvwidth;
     }
     if ( i==0 ) {
-	LogError( _("Invalid ttf vmtx table (or vhea), numOfLongVerMetrics is 0\n") );
+	LogError( _("Invalid ttf vmtx table (or vhea), numOfLongVerMetrics is 0") );
 	info->bad_metrics = true;
     }
 
@@ -4310,7 +4310,7 @@ static int SubtableIsntSupported(FILE *ttf,uint32_t offset,struct cmap_encs *cma
 
     cmap_enc->format = format = getushort(ttf);
     if ( format<0 || (format&1) || format>12 ) {
-	LogError( _("Encoding subtable for platform=%d, specific=%d has an unsupported format %d.\n"),
+	LogError( _("Encoding subtable for platform=%d, specific=%d has an unsupported format %d."),
 		cmap_enc->platform, cmap_enc->specific, format );
 	info->bad_cmap = true;
 	ret = true;
@@ -4325,7 +4325,7 @@ static int SubtableIsntSupported(FILE *ttf,uint32_t offset,struct cmap_encs *cma
 	cmap_enc->lang = getlong(ttf);
     }
     if ( len==0 ) {
-	LogError( _("Encoding subtable for platform=%d, specific=%d has a 0 length subtable.\n"),
+	LogError( _("Encoding subtable for platform=%d, specific=%d has a 0 length subtable."),
 		cmap_enc->platform, cmap_enc->specific );
 	info->bad_cmap = true;
 	ret = true;
@@ -4391,7 +4391,7 @@ static void ApplyVariationSequenceSubtable(FILE *ttf,uint32_t vs_map,
 			}
 		    }
 		    if ( gid==info->glyph_cnt ) {
-			LogError( _("No glyph with unicode U+%05x in font\n"),
+			LogError( _("No glyph with unicode U+%05x in font"),
 				uni );
 			info->bad_cmap = true;
 		    } else {
@@ -4424,7 +4424,7 @@ static void ApplyVariationSequenceSubtable(FILE *ttf,uint32_t vs_map,
 		} else {
 		    if ( curgid>=info->glyph_cnt || curgid<0 ||
 			    info->chars[curgid]==NULL ) {
-			LogError( _("GID out of range (%d) in format 14 'cmap' subtable\n"),
+			LogError( _("GID out of range (%d) in format 14 'cmap' subtable"),
 				curgid );
 			info->bad_cmap = true;
 		    } else {
@@ -4817,7 +4817,7 @@ return;
 			if ( justinuse==git_justinuse && (uint16_t) (j+delta[i])<info->glyph_cnt )
 			    info->inuse[(uint16_t) (j+delta[i])] = true;
 			else if ( (uint16_t) (j+delta[i])>=info->glyph_cnt || info->chars[(uint16_t) (j+delta[i])]==NULL ) {
-			    LogError( _("Attempt to encode missing glyph %d to %d (0x%x)\n"),
+			    LogError( _("Attempt to encode missing glyph %d to %d (0x%x)"),
 				    (uint16_t) (j+delta[i]), modenc(j,mod), modenc(j,mod));
 			    info->bad_cmap = true;
 			} else {
@@ -4825,7 +4825,7 @@ return;
 			    int lenc = modenc(j,mod);
 			    if ( uenc!=-1 && used[uenc] ) {
 				if ( !badencwarned ) {
-				    LogError( _("Multiple glyphs map to the same unicode encoding U+%04X, only one will be used\n"), uenc );
+				    LogError( _("Multiple glyphs map to the same unicode encoding U+%04X, only one will be used"), uenc );
 			            info->bad_cmap = true;
 			            badencwarned = true;
 				}
@@ -4861,13 +4861,13 @@ return;
 			        /*  MS Chinese fonts (kaiu.ttf) the index */
 			        /*  goes out of bounds. and MS's ttf dump */
 			        /*  program says it is treated as 0 */
-				LogError( _("Attempt to encode missing glyph %d to %d (0x%x)\n"),
+				LogError( _("Attempt to encode missing glyph %d to %d (0x%x)"),
 					index, modenc(j,mod), modenc(j,mod));
 				info->bad_cmap = true;
 			    } else if ( justinuse==git_justinuse )
 				info->inuse[index] = 1;
 			    else if ( info->chars[index]==NULL ) {
-				LogError( _("Attempt to encode missing glyph %d to %d (0x%x)\n"),
+				LogError( _("Attempt to encode missing glyph %d to %d (0x%x)"),
 					index, modenc(j,mod), modenc(j,mod));
 				info->bad_cmap = true;
 			    } else {
@@ -4875,7 +4875,7 @@ return;
 				int lenc = modenc(j,mod);
 				if ( uenc!=-1 && used[uenc] ) {
 				    if ( !badencwarned ) {
-					LogError( _("Multiple glyphs map to the same unicode encoding U+%04X, only one will be used\n"), uenc );
+					LogError( _("Multiple glyphs map to the same unicode encoding U+%04X, only one will be used"), uenc );
 			                info->bad_cmap = true;
 					badencwarned = true;
 				    }
@@ -4890,7 +4890,7 @@ return;
 			}
 		    }
 		} else {
-		    LogError( _("Use of a range offset of 0xffff to mean a missing glyph in cmap table\n") );
+		    LogError( _("Use of a range offset of 0xffff to mean a missing glyph in cmap table") );
 		    info->bad_cmap = true;
 		}
 	    }
@@ -4923,7 +4923,7 @@ return;
 			    if ( map!=NULL && first+i < map->enccount )
 				map->map[first+i] = gid;
 			} else
-			    LogError( _("Warning: gid %d larger than glyph_cnt %d, skipping\n"), gid, info->glyph_cnt);
+			    LogError( _("Warning: gid %d larger than glyph_cnt %d, skipping"), gid, info->glyph_cnt);
 		    }
 		}
 	    }
@@ -5078,7 +5078,7 @@ return;
 		    for ( i=start; i<=end; ++i ) {
 			if ( startglyph+i-start >= info->glyph_cnt ||
 				info->chars[startglyph+i-start]==NULL ) {
-			    LogError( _("Bad font: Encoding data out of range.\n") );
+			    LogError( _("Bad font: Encoding data out of range.") );
 			    info->bad_cmap = true;
 		    break;
 			} else {
@@ -5427,7 +5427,7 @@ return( -1 );
     }
     for ( refs=sc->layers[layer].refs; refs!=NULL; refs=refs->next ) {
 	if ( refs==bound ) {
-	    LogError( _("Invalid point match. Point would be after this reference.\n") );
+	    LogError( _("Invalid point match. Point would be after this reference.") );
 return( 0x800000 );
 	}
 	ret = ttfFindPointInSC(refs->sc,ly_fore,pnum-last,pos,NULL);
@@ -5452,7 +5452,7 @@ static void ttfPointMatch(SplineChar *sc,RefChar *rf) {
 
     if ( ttfFindPointInSC(sc,ly_fore,rf->match_pt_base,&sofar,rf)!=-1 ||
 	    ttfFindPointInSC(rf->sc,ly_fore,rf->match_pt_ref,&inref,NULL)!=-1 ) {
-	LogError( _("Could not match points in composite glyph (%d to %d) when adding %s to %s\n"),
+	LogError( _("Could not match points in composite glyph (%d to %d) when adding %s to %s"),
 		rf->match_pt_base, rf->match_pt_ref, rf->sc->name, sc->name);
 return;
     }
@@ -5513,7 +5513,7 @@ static void TtfCopyTableBlindly(struct ttfinfo *info,FILE *ttf,
     if ( start==0 || len==0 )
 return;
     if ( len>0x1000000 ) {
-	LogError( _("Unlikely length for table, so I'm ignoring it. %u\n"), len );
+	LogError( _("Unlikely length for table, so I'm ignoring it. %u"), len );
 return;
     }
 
@@ -5760,7 +5760,7 @@ static void NameConsistencyCheck(SplineFont *sf,EncMap *map) {
                    if ( strcmp(sc->name,"alefmaksurainitialarabic")==0 ||
                         strcmp(sc->name,"alefmaksuramedialarabic")==0 )
                    {
-                      LogError( _("The names 'alefmaksurainitialarabic' and 'alefmaksuramedialarabic' in the Adobe Glyph List disagree with Unicode.  The use of these glyph names is therefore discouraged.\n") );
+                      LogError( _("The names 'alefmaksurainitialarabic' and 'alefmaksuramedialarabic' in the Adobe Glyph List disagree with Unicode.  The use of these glyph names is therefore discouraged.") );
                    } else {
 		      LogError( _("The glyph named %.30s is mapped to U+%04X.\nBut its name indicates it should be mapped to U+%04X.\n"),
 			    sc->name,sc->unicodeenc, uni);
@@ -6301,7 +6301,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 			/* Skip it, no points */;
 		    else if ( b.minx < info->fbb[0] || b.miny < info->fbb[1] ||
 			    b.maxx > info->fbb[2] || b.maxy > info->fbb[3] ) {
-			LogError(_("A point in %s is outside the font bounding box data.\n"), sc->name );
+			LogError(_("A point in %s is outside the font bounding box data."), sc->name );
 			info->bad_cff = true;
 		    }
 		    if ( info->isFixedPitch ) {
@@ -6311,7 +6311,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
 			   shouldn't affect pitch computation. */
 			bool valid = (sc->width==0 || sc->width==info->advanceWidthMax || sc->width==info->advanceWidthMax / 2);
 			if (!valid) {
-			    LogError(_("The advance width of %s (%d) does not match the font's advanceWidthMax (%d) and this is a fixed pitch font\n"),
+			    LogError(_("The advance width of %s (%d) does not match the font's advanceWidthMax (%d) and this is a fixed pitch font"),
 				sc->name, sc->width, info->advanceWidthMax );
 			}
 		    }
@@ -6415,7 +6415,7 @@ char **NamesReadCFF(char *filename) {
     if ( cff==NULL )
 return( NULL );
     if ( getc(cff)!='\1' ) {		/* Major version */
-	LogError( _("CFF version mismatch\n") );
+	LogError( _("CFF version mismatch") );
 	fclose(cff);
 return( NULL );
     }

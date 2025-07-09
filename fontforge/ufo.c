@@ -2475,10 +2475,10 @@ static void *UFOLoadGuideline(SplineFont *sf, SplineChar *sc, int layer, xmlDocP
 				char *after_color = NULL;
 				colorv = strtod(colors + colorps, &after_color);
 				if (after_color != colors + colorp)
-					LogError(_("Error parsing color component.\n"));
+					LogError(_("Error parsing color component."));
 				gl->color |= (((uint32_t)(colorv * 255.0)) << (8 * (4 - colori)));
 			} else {
-				LogError(_("Missing color component.\n"));
+				LogError(_("Missing color component."));
 			}
 		}
 		xmlFree(colors);
@@ -2494,8 +2494,7 @@ static void *UFOLoadGuideline(SplineFont *sf, SplineChar *sc, int layer, xmlDocP
 		isinf(gl->point.x) || isinf(gl->point.y) || isinf(gl->angle)
 	) {
 		// Invalid data; abort.
-		// fprintf(stderr, "Invalid guideline.\n");
-		LogError(_("Invalid guideline.\n"));
+		LogError(_("Invalid guideline."));
 		GuidelineSetFree(gl);
 		gl = NULL;
 		return NULL;
@@ -2796,13 +2795,13 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			        initcnt = precnt;
 			        if ( strcmp(type,"move")==0 ) {
 			          open = true;
-			          if (initcnt != 0) LogError(_("We cannot have lead-in points for an open curve.\n"));
+			          if (initcnt != 0) LogError(_("We cannot have lead-in points for an open curve."));
 			        }
 			    }
 
 			    if ( strcmp(type,"move")==0 ) {
 			        if (ss->first != sp) {
-			          LogError(_("The move point must be at the beginning of the contour.\n"));
+			          LogError(_("The move point must be at the beginning of the contour."));
 			          SplinePointFree(sp); sp = NULL;
 			        }
 			    } else if ( strcmp(type,"line")==0 ) {
@@ -2950,7 +2949,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			ss->last = ss->first;
 		    }
 		    if (ss->first == NULL) {
-				LogError(_("This spline set has no points.\n"));
+				LogError(_("This spline set has no points."));
 				SplinePointListFree(ss); ss = NULL;
 		    } else {
 		        if ( last==NULL ) {
@@ -2996,7 +2995,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 		if (sc->layers[layerdest].python_persistent == NULL) {
 		  sc->layers[layerdest].python_persistent = LibToPython(doc,dict,1);
 		  sc->layers[layerdest].python_persistent_has_lists = 1;
-		} else LogError(_("Duplicate lib data.\n"));
+		} else LogError(_("Duplicate lib data."));
 #endif
 	    }
 	}
@@ -3456,9 +3455,9 @@ return;
 	if ( xmlStrcmp(keys->name,(const xmlChar *) "key")==0 ) {
 	    keyname = (char *) xmlNodeListGetString(doc, keys->children, true);
 	    SplineChar *sc = SFGetChar(sf,-1,keyname);
-	    if ( sc!=NULL ) { LogError(_("Skipping group %s with same name as a glyph.\n"), keyname); free(keyname); keyname = NULL; continue; }
+	    if ( sc!=NULL ) { LogError(_("Skipping group %s with same name as a glyph."), keyname); free(keyname); keyname = NULL; continue; }
             struct ff_glyphclasses *sfg = SFGetGroup(sf,-1,keyname);
-	    if ( sfg!=NULL ) { LogError(_("Skipping duplicate group %s.\n"), keyname); free(keyname); keyname = NULL; continue; }
+	    if ( sfg!=NULL ) { LogError(_("Skipping duplicate group %s."), keyname); free(keyname); keyname = NULL; continue; }
 	    sfg = calloc(1, sizeof(struct ff_glyphclasses)); // We allocate space for the new group.
 	    sfg->classname = keyname; keyname = NULL; // We name it.
 	    if (current_group == NULL) sf->groups = sfg;
@@ -3474,7 +3473,7 @@ return;
 		if ( xmlStrcmp(subkeys->name,(const xmlChar *) "string")==0 ) {
 		    keyname = (char *) xmlNodeListGetString(doc,subkeys->children,true); // Get the member name.
 		    SplineChar *ssc = SFGetChar(sf,-1,keyname); // Try to match an existing glyph.
-		    if ( ssc==NULL ) { LogError(_("Skipping non-existent glyph %s in group %s.\n"), keyname, current_group->classname); free(keyname); keyname = NULL; continue; }
+		    if ( ssc==NULL ) { LogError(_("Skipping non-existent glyph %s in group %s."), keyname, current_group->classname); free(keyname); keyname = NULL; continue; }
 		    member_list_length += strlen(keyname) + 1; // Make space for its name.
 		    free(keyname); // Free the name for now. (We get it directly from the SplineChar later.)
 		    RefChar *member_native_temp = calloc(1, sizeof(RefChar)); // Make an entry in the list for the native reference.
