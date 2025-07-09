@@ -14,8 +14,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-30 03:08-0800\n"
-"PO-Revision-Date: 2023-12-30 08:15\n"
+"POT-Creation-Date: 2025-07-09 02:27+0300\n"
+"PO-Revision-Date: 2025-07-08 23:05\n"
 "Last-Translator: \n"
 "Language-Team: Portuguese\n"
 "Language: pt_PT\n"
@@ -30,11 +30,8 @@ msgstr ""
 "X-Crowdin-File-ID: 2\n"
 
 #, c-format
-msgid ""
-"%s has a bounding box which is too big for this algorithm to work. Ignored."
-msgstr ""
-"%s tem uma caixa delimitadora que é muito grande para este algoritmo para "
-"trabalhar. Ignorados."
+msgid "%s has a bounding box which is too big for this algorithm to work. Ignored."
+msgstr "%s tem uma caixa delimitadora que é muito grande para este algoritmo para trabalhar. Ignorados."
 
 msgid "Add Base Anchor..."
 msgstr "Adicionar Anchor Base..."
@@ -91,20 +88,15 @@ msgstr "Tem certeza que não deseja utilizar o cidmap que eu encontrei?"
 msgid "Armenian"
 msgstr "Arménio"
 
-msgid ""
-"At least one anchor point was lost when pasting from one font to another "
-"because no matching anchor class could be found in the new font."
-msgstr ""
-"Pelo menos um ponto de ancoragem foi perdido ao colar de uma fonte para "
-"outra porque nenhuma classe ancoradora correspondente pôde ser encontrada na "
-"nova fonte."
+msgid "At least one anchor point was lost when pasting from one font to another because no matching anchor class could be found in the new font."
+msgstr "Pelo menos um ponto de ancoragem foi perdido ao colar de uma fonte para outra porque nenhuma classe ancoradora correspondente pôde ser encontrada na nova fonte."
 
 msgid "Auto Width"
 msgstr "Largura Automática"
 
 #, c-format
-msgid "AutoWidth failure on %s\n"
-msgstr "Falha de largura automática em %s\n"
+msgid "AutoWidth failure on %s"
+msgstr "Falha de largura automática em %s"
 
 msgid "Autotracing..."
 msgstr "Autotracing..."
@@ -140,11 +132,17 @@ msgstr "Modelo ruim, formato não reconhecido"
 msgid "Bad xfig file"
 msgstr "Arquivo xfig inválido"
 
+msgid "Balinese"
+msgstr "Balinês"
+
 msgid "Baseline used for Latin, Greek, Cyrillic text."
 msgstr "Linha de base utilizada para o texto Latim, Grego, Cirílico."
 
 msgid "Basic Latin"
 msgstr "Latim básico"
+
+msgid "Batak"
+msgstr "Batak"
 
 msgid "Bengali"
 msgstr "Bengali"
@@ -154,6 +152,9 @@ msgstr "Bopomofo"
 
 msgid "Breton"
 msgstr "Bretão"
+
+msgid "Buginese"
+msgstr "Buginês"
 
 msgid "Buhid"
 msgstr "Buhid"
@@ -180,32 +181,32 @@ msgid "Can't find autotrace"
 msgstr "Não é possível encontrar autotrace"
 
 msgid ""
-"Can't find autotrace program (set AUTOTRACE environment variable) or "
-"download from:\n"
+"Can't find autotrace program (set AUTOTRACE environment variable) or download from:\n"
 "  http://sf.net/projects/autotrace/"
 msgstr ""
-"Não foi possível encontrar o programa autotrace (definir a variável "
-"AUTOTRACE) ou obtenha-no em:\n"
+"Não foi possível encontrar o programa autotrace (definir a variável AUTOTRACE) ou obtenha-no em:\n"
 "  http://sf.net/projects/autotrace/"
 
 msgid "Can't find mf"
 msgstr "Não é possível encontrar mf"
 
 msgid ""
-"Can't find mf program -- metafont (set MF environment variable) or download "
-"from:\n"
+"Can't find mf program -- metafont (set MF environment variable) or download from:\n"
 "  http://www.tug.org/\n"
 "  http://www.ctan.org/\n"
 "It's part of the TeX distribution"
 msgstr ""
-"Não pode encontrar o programa mf ― metafont (definir a variável MF) ou obter "
-"o programa:\n"
+"Não pode encontrar o programa mf ― metafont (definir a variável MF) ou obter o programa:\n"
 "  http://www.tug.org/\n"
 "  http://www.ctan.org/\n"
 "Que pertence programa TeX"
 
 msgid "Can't find the file"
 msgstr "Não foi possível encontrar o arquivo"
+
+#, c-format
+msgid "Can't open %s"
+msgstr "Não é possível abrir %s"
 
 msgid "Can't run mf"
 msgstr "Não é possível executar programa mf"
@@ -218,6 +219,12 @@ msgstr "Cheroqui"
 
 msgid "Combining Diacritical Marks"
 msgstr "Marcas diacríticas para combinar"
+
+msgid "Combining Diacritical Marks Extended"
+msgstr "Marcas diacríticas estendidas para combinar"
+
+msgid "Combining Diacritical Marks Supplement"
+msgstr "Suplemento de marcas diacríticas para combinar"
 
 msgid "Coordinate along which to space"
 msgstr "Coordenar ao longo da qual o espaço"
@@ -253,6 +260,9 @@ msgstr "Cirílico"
 msgid "Cyrillic Extended-A"
 msgstr "Cirílico Alargado-A"
 
+msgid "Cyrillic Extended-C"
+msgstr "Cirílico Alargado-C"
+
 msgid "Cyrillic Supplement"
 msgstr "Suplemento Cirílico"
 
@@ -279,6 +289,9 @@ msgstr "Fontes diferentes"
 
 msgid "Distance"
 msgstr "Distância"
+
+msgid "Duplicate Anchor"
+msgstr "Âncora Duplicada"
 
 msgid "Duplicate Anchor Class"
 msgstr "Classe âncora Duplicado"
@@ -322,48 +335,17 @@ msgstr "Procurar um arquivo cidmap..."
 msgid "Finnish"
 msgstr "Finlandês"
 
+msgid "Font Editor"
+msgstr "Editor de Fontes"
+
 msgid "FontForge"
 msgstr "FontForge"
 
-msgid ""
-"FontForge is a font editor for outline and bitmap fonts that lets you "
-"create, edit, or convert, a range of fonts, including PostScript, TrueType, "
-"OpenType, cid-keyed, multi-master, cff, SVG and BitMap (bdf, FON, NFNT) "
-"fonts."
-msgstr ""
-"FontForge — um editor de fontes para fontes outline e de bitmap que lhe "
-"permite criar, editar ou converter, uma série de fontes, incluindo "
-"PostScript, TrueType, OpenType, cid-keyed, multi-master, cff, SVG e de "
-"bitmap (bdf, FON, NFNT) fontes."
+msgid "FontForge is a font editor for outline and bitmap fonts that lets you create, edit, or convert, a range of fonts, including PostScript, TrueType, OpenType, cid-keyed, multi-master, cff, SVG and BitMap (bdf, FON, NFNT) fonts."
+msgstr "FontForge — um editor de fontes para fontes outline e de bitmap que lhe permite criar, editar ou converter, uma série de fontes, incluindo PostScript, TrueType, OpenType, cid-keyed, multi-master, cff, SVG e de bitmap (bdf, FON, NFNT) fontes."
 
-msgid ""
-"FontForge is free Open Source Software written to run on various computer "
-"operating systems. You can use FontForge Graphically or as a command-line "
-"tool."
-msgstr ""
-"FontForge é um Software Livre e Open Source escrito para rodar em diversos "
-"sistemas operacionais. Você pode usar FontForge graficamente ou como uma "
-"ferramenta de linha de comando."
-
-#, c-format
-msgid ""
-"FontForge was unable to find a cidmap file for this font. It is not "
-"essential to have one, but some things will work better if you do. If you "
-"have not done so you might want to download the cidmaps from:\n"
-"   http://FontForge.sourceforge.net/cidmaps.tgz\n"
-"and then gunzip and untar them and move them to:\n"
-"  %.80s\n"
-"\n"
-"Would you like to search your local disk for an appropriate file?"
-msgstr ""
-"FontForge não conseguiu encontrar um arquivo cidmap para esta fonte. Não é "
-"essencial possuir um, mas algumas coisas funcionarão melhor se você o tiver. "
-"Se você não tiver feito, você pode querer baixar os arquivos cidmap de:\n"
-"   http://FontForge.sourceforge.net/cidmaps.tgz\n"
-"e então gunzip e untar e movê-los para:\n"
-"  %.80s\n"
-"\n"
-"Gostaria de procurar por um arquivo apropriado seu disco local?"
+msgid "FontForge is free Open Source Software written to run on various computer operating systems. You can use FontForge Graphically or as a command-line tool."
+msgstr "FontForge é um Software Livre e Open Source escrito para rodar em diversos sistemas operacionais. Você pode usar FontForge graficamente ou como uma ferramenta de linha de comando."
 
 msgid ""
 "FontForge will attempt to adjust the left and right\n"
@@ -387,14 +369,16 @@ msgstr "Francês"
 msgid ""
 "From the list below, select the baselines for which you\n"
 "will provide data."
-msgstr ""
-"Da lista abaixo, selecione as linhas de base para que você vai dar de dados."
+msgstr "Da lista abaixo, selecione as linhas de base para que você vai dar de dados."
 
 msgid "Galician"
 msgstr "Galego"
 
 msgid "Georgian"
 msgstr "Georgiano"
+
+msgid "Georgian Extended"
+msgstr "Georgiano Estendido"
 
 msgid "German"
 msgstr "Alemão"
@@ -457,12 +441,8 @@ msgstr "Kerning Horizontal"
 msgid "Hungarian"
 msgstr "Húngaro"
 
-msgid ""
-"I'm sorry this file is too complex for me to understand (or is erroneous, or "
-"is empty)"
-msgstr ""
-"Desculpe, este arquivo é muito complexo para ser entendido (ou está errado, "
-"ou está vazio)"
+msgid "I'm sorry this file is too complex for me to understand (or is erroneous, or is empty)"
+msgstr "Desculpe, este arquivo é muito complexo para ser entendido (ou está errado, ou está vazio)"
 
 msgid "IPA Extensions"
 msgstr "Extensões IPA"
@@ -515,11 +495,17 @@ msgstr "Kannada"
 msgid "Katakana"
 msgstr "Katakana"
 
+msgid "Katakana Phonetic Extensions"
+msgstr "Extensões Phonetic Katakana"
+
 msgid "Kazakh"
 msgstr "Cazaque"
 
 msgid "Khmer"
 msgstr "Cambojano"
+
+msgid "Khmer Symbols"
+msgstr "Símbolos de Khmer"
 
 msgid "Korean"
 msgstr "Coreano"
@@ -543,23 +529,29 @@ msgstr "Farsi/Persa"
 msgid "Lao"
 msgstr "Lao"
 
+msgid "Latin Extended Additional"
+msgstr "Adição latina extendida"
+
 msgid "Latin Extended-A"
 msgstr "Latim Alargado-A"
 
 msgid "Latin Extended-B"
 msgstr "Latim Alargado-B"
 
+msgid "Latin Extended-C"
+msgstr "Latino Estendido -C"
+
 msgid "Latin-1 Supplement"
 msgstr "Suplemento Latim-1"
 
-msgid ""
-"Learning to use FontForge is easy, and there are various tutorials available "
-"beginning with the basics up to more advanced features such as making and "
-"using scripts."
-msgstr ""
-"Aprender a usar FontForge é fácil, e existem vários tutoriais disponíveis "
-"que começam com o básico até os recursos mais avançados, como criar e usar "
-"scripts."
+msgid "Learning to use FontForge is easy, and there are various tutorials available beginning with the basics up to more advanced features such as making and using scripts."
+msgstr "Aprender a usar FontForge é fácil, e existem vários tutoriais disponíveis que começam com o básico até os recursos mais avançados, como criar e usar scripts."
+
+msgid "Lepcha"
+msgstr "Lepcha"
+
+msgid "Limbu"
+msgstr "Limbu"
 
 msgid "Lithuanian"
 msgstr "Lituano"
@@ -633,6 +625,9 @@ msgstr "NKo"
 msgid "Nepali"
 msgstr "Nepalês"
 
+msgid "New Tai Lue"
+msgstr "Novo Tai Lue"
+
 #, c-format
 msgid "No CID named %s"
 msgstr "Nenhum CID chamado %s"
@@ -642,6 +637,9 @@ msgstr "Não há alteração"
 
 msgid "No Kern Pairs"
 msgstr "Bem Pares de Kerning"
+
+msgid "No _to All"
+msgstr "Não _para todos"
 
 msgid "No cidmap file..."
 msgstr "Nenhum arquivo cidmap..."
@@ -653,6 +651,9 @@ msgstr "Nenhum glifo chamado %s."
 #, c-format
 msgid "No kerning pairs found in %.200s"
 msgstr "Não pares de kerning encontrado em %.200s"
+
+msgid "No selection"
+msgstr "Sem seleção"
 
 msgid "Non-existant glyph"
 msgstr "Glifo não existe"
@@ -678,18 +679,32 @@ msgstr "Nada Gravado"
 msgid "Ogham"
 msgstr "Ogam"
 
+msgid "Ol Chiki"
+msgstr "Ol Chiki"
+
+msgid "Optical Character Recognition"
+msgstr "Reconhecimento de caractere óptico"
+
 msgid "Oriya"
 msgstr "Óriya"
 
 msgid "Out of Range"
 msgstr "Fora da Faixa"
 
-msgid ""
-"Please identify a glyph by name, and FontForge will add an anchor to that "
-"glyph."
-msgstr ""
-"Por favor, identifique um glifo pelo nome, e FontForge irá adicionar uma "
-"âncora para que glifo."
+msgid "Pasting..."
+msgstr "Colando..."
+
+msgid "Phonetic Extensions"
+msgstr "Extensões fonéticas"
+
+msgid "Phonetic Extensions Supplement"
+msgstr "Supplemento de extensões fonéticas"
+
+msgid "Please don't do that"
+msgstr "Por favor, não faça isso"
+
+msgid "Please identify a glyph by name, and FontForge will add an anchor to that glyph."
+msgstr "Por favor, identifique um glifo pelo nome, e FontForge irá adicionar uma âncora para que glifo."
 
 msgid "Polish"
 msgstr "Polonês"
@@ -722,9 +737,6 @@ msgstr "Escreva um nome para o glifo"
 msgid "Quechua"
 msgstr "Quíchua"
 
-msgid "Recovery Complete"
-msgstr "Recuperação de Falhas Completa"
-
 msgid "Romanian"
 msgstr "Romeno"
 
@@ -749,13 +761,8 @@ msgstr "Redimensionar Bitmaps"
 msgid "Scottish Gaelic"
 msgstr "Gaélico Escocês"
 
-#, c-format
-msgid ""
-"Script '%c%c%c%c' claims baseline '%c%c%c%c' as its default, but that "
-"baseline is not currently active."
-msgstr ""
-"'%c%c%c%c' script afirma linha de base '%c%c%c%c' como ruim, mas essa linha "
-"de base não está ativo no momento."
+msgid "Self-referential glyph"
+msgstr "Glifo auto-referencial"
 
 msgid "Separation"
 msgstr "Espaço"
@@ -819,6 +826,12 @@ msgstr "Spiros não convergem"
 msgid "Strike Information for %.90s"
 msgstr "Informação Para Apagar %.90s"
 
+msgid "Sundanese"
+msgstr "Sundanês"
+
+msgid "Sundanese Supplement"
+msgstr "Supplemento Sundanês"
+
 msgid "Supplemental Punctuation"
 msgstr "Pontuação suplementar"
 
@@ -836,6 +849,12 @@ msgstr "Tagálogo"
 
 msgid "Tagbanwa"
 msgstr "Tagsbanwa"
+
+msgid "Tai Le"
+msgstr "Tai Le"
+
+msgid "Tai Tham"
+msgstr "Tai Tham"
 
 msgid "Tamil"
 msgstr "Tâmil"
@@ -896,29 +915,21 @@ msgid "There is already an anchor point named %1$.40s in %2$.40s."
 msgstr "Já existe um ponto de ancoragem chamado %1$.40s em %2$.40s."
 
 msgid "These two lines share a common endpoint, I can't make them parallel"
-msgstr ""
-"Estas duas linhas de compartilhar um final comum, não posso fazê-los em "
-"paralelo"
+msgstr "Estas duas linhas de compartilhar um final comum, não posso fazê-los em paralelo"
 
 msgid "Things could be better..."
 msgstr "As coisas poderiam ser melhores..."
 
 #, c-format
-msgid ""
-"This anchor was attached to point %d, but that's not a point I can move. I'm "
-"detaching the anchor from the point."
-msgstr ""
-"Esta âncora foi anexado ao ponto %d, mas isso não é um ponto que pode se "
-"mover. FontForge retirar a âncora do ponto."
+msgid "This anchor was attached to point %d, but that's not a point I can move. I'm detaching the anchor from the point."
+msgstr "Esta âncora foi anexado ao ponto %d, mas isso não é um ponto que pode se mover. FontForge retirar a âncora do ponto."
 
 #, c-format
 msgid ""
-"This font is based on the charset %1$.20s-%2$.20s-%3$d, but the best I've "
-"been able to find is %1$.20s-%2$.20s-%4$d.\n"
+"This font is based on the charset %1$.20s-%2$.20s-%3$d, but the best I've been able to find is %1$.20s-%2$.20s-%4$d.\n"
 "Shall I use that or let you search?"
 msgstr ""
-"Esta fonte é baseada no conjunto de caracteres %1$.20s-%2$.20s-%3$d, mas o "
-"melhor que eu pude encontrar é %1$.20s-%2$.20s-%4$d.\n"
+"Esta fonte é baseada no conjunto de caracteres %1$.20s-%2$.20s-%3$d, mas o melhor que eu pude encontrar é %1$.20s-%2$.20s-%4$d.\n"
 "Devo usá-lo ou permitir que você pesquise?"
 
 msgid ""
@@ -981,6 +992,9 @@ msgstr "Caractere inesperado (0x%02X) na linha %d de %s"
 msgid "Unified Canadian Aboriginal Syllabics"
 msgstr "Silábicos aborígenes unificados do Canadá"
 
+msgid "Unified Canadian Aboriginal Syllabics Extended"
+msgstr "Silábicos aborígenes unificados estendidos do Canadá"
+
 msgid "Unknown Language"
 msgstr "Idioma desconhecido"
 
@@ -993,6 +1007,9 @@ msgstr "Utilizar mapa CID"
 msgid "Uzbek"
 msgstr "Usbeque"
 
+msgid "Vedic Extensions"
+msgstr "Extensões Vedic"
+
 msgid "Vertical Baselines"
 msgstr "Linhas de Base Verticais"
 
@@ -1002,6 +1019,9 @@ msgstr "Extensões Verticais para %c%c%c%c"
 
 msgid "Welsh"
 msgstr "Galês"
+
+msgid "Yes to _All"
+msgstr "Sim para _Todos"
 
 #, c-format
 msgid ""
@@ -1014,26 +1034,14 @@ msgstr ""
 "Gostaria de copiar as splines originais (ou excluir a referência)?"
 
 msgid ""
-"You are attempting to paste glyph instructions from one font to another. "
-"Generally this will not work unless the 'prep', 'fpgm' and 'cvt ' tables are "
-"the same.\n"
+"You are attempting to paste glyph instructions from one font to another. Generally this will not work unless the 'prep', 'fpgm' and 'cvt ' tables are the same.\n"
 "Do you want to continue anyway?"
 msgstr ""
-"Você está tentando colar instruções de glifo de uma fonte para outra. "
-"Geralmente isso não funciona a menos que as tabelas 'prep', 'fpgm' e 'cvt' "
-"sejam as mesmas.\n"
+"Você está tentando colar instruções de glifo de uma fonte para outra. Geralmente isso não funciona a menos que as tabelas 'prep', 'fpgm' e 'cvt' sejam as mesmas.\n"
 "Você quer continuar assim mesmo?"
 
 msgid "You must select a glyph before you can import an image into it"
 msgstr "Você deve selecionar um glifo antes de importar uma imagem nele"
-
-#, c-format
-msgid ""
-"Your file %s has been recovered.\n"
-"You must now Save your file to continue working on it."
-msgstr ""
-"Seu arquivo %s foi recuperado.\n"
-"Agora, guarda o seu arquivo para continuar usando nele."
 
 msgid "_Add"
 msgstr "_Adicionar"
@@ -1056,6 +1064,9 @@ msgstr "_distância _Máxima entre os pontos em uma região"
 msgid "_Min:"
 msgstr "_Mín:"
 
+msgid "_No"
+msgstr "_Não"
+
 msgid "_OK"
 msgstr "_OK"
 
@@ -1064,6 +1075,9 @@ msgstr "E_spaço:"
 
 msgid "_Size:"
 msgstr "_Tamanho:"
+
+msgid "_Yes"
+msgstr "_Sim"
 
 msgid "cursive entry"
 msgstr "início cursiva"

@@ -1109,7 +1109,7 @@ static int SplineStrokeAppendFixup(SplinePoint *tailp, BasePoint sxy,
 
     // assert( mg < 1 );
     if ( mg > FIXUP_MARGIN*fudge ) {
-	LogError(_("Warning: Coordinate diff %lf greater than margin %lf\n"),
+	LogError(_("Warning: Coordinate diff %lf greater than margin %lf"),
 	         mg, FIXUP_MARGIN*fudge);
     }
 
@@ -2110,7 +2110,7 @@ static int _HandleJoin(JoinParams *jpp) {
 	    MiterJoin(jpp);
     } else {
 	if ( c->join!=lj_nib && c->join!=lj_inherited )
-	    LogError( _("Warning: Unrecognized or unsupported join type, defaulting to 'nib'.\n") );
+	    LogError( _("Warning: Unrecognized or unsupported join type, defaulting to 'nib'.") );
 	NibJoin(jpp);
     }
     return is_flat;
@@ -2147,7 +2147,7 @@ static void HandleCap(StrokeContext *c, SplineSet *cur, BasePoint sxy,
 	DoubleBackJC(c, cur, sxy, oxy, BPRevIf(!is_right, ut), !is_right, 1);
     } else {
 	if ( c->cap!=lc_nib && c->cap!=lc_inherited )
-	    LogError( _("Warning: Unrecognized or unsupported cap type, defaulting to 'nib'.\n") );
+	    LogError( _("Warning: Unrecognized or unsupported cap type, defaulting to 'nib'.") );
 
 	CalcNibOffset(c, ut, false, &no_fm, -1);
 	corner_fm = SplineStrokeFindCorner(sxy, cur->last->me, &no_fm);
@@ -2262,7 +2262,7 @@ static SplineSet *OffsetSplineSet(SplineSet *ss, StrokeContext *c) {
     if (    (left!=NULL && left->first==NULL)
          || (right!=NULL && right->first==NULL) ) {
 	// The path (presumably) had only zero-length splines
-	LogError( _("Warning: No stroke output for contour\n") );
+	LogError( _("Warning: No stroke output for contour") );
 	assert(    (left==NULL || left->first==NULL)
 	        && (right==NULL || right->first==NULL) );
 	chunkfree(left, sizeof(SplineSet));
@@ -2277,12 +2277,12 @@ static SplineSet *OffsetSplineSet(SplineSet *ss, StrokeContext *c) {
 	right = NULL;
 	SplineSetJoin(left, true, FIXUP_MARGIN*c->log_maxdim, &closed, false);
 	if ( !closed )
-	     LogError( _("Warning: Contour end did not close\n") );
+	     LogError( _("Warning: Contour end did not close") );
 	else {
 	    HandleCap(c, left, ss->first->me, ut_ini, left->first->me, false);
 	    SplineSetJoin(left, true, FIXUP_MARGIN*c->log_maxdim, &closed, true);
 	    if ( !closed )
-		LogError( _("Warning: Contour start did not close\n") );
+		LogError( _("Warning: Contour start did not close") );
 	    else {
 		if ( c->rmov==srmov_contour ) {
 		    left = SplineSetRemoveOverlap(NULL,left,over_remove);
@@ -2316,7 +2316,7 @@ static SplineSet *OffsetSplineSet(SplineSet *ss, StrokeContext *c) {
             left = SplineSetJoin(left, true, FIXUP_MARGIN*c->log_maxdim,
 	                         &closed, true);
 	    if ( !closed )
-		LogError( _("Warning: Left contour did not close\n") );
+		LogError( _("Warning: Left contour did not close") );
 
 	    cur = left;
 	}
@@ -2327,7 +2327,7 @@ static SplineSet *OffsetSplineSet(SplineSet *ss, StrokeContext *c) {
             right = SplineSetJoin(right, true, FIXUP_MARGIN*c->log_maxdim,
 	                          &closed, true);
 	    if ( !closed )
-		LogError( _("Warning: Right contour did not close\n") );
+		LogError( _("Warning: Right contour did not close") );
 	    else {
 		SplineSetReverse(right);
 	    }

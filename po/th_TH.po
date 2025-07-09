@@ -1,0 +1,279 @@
+# (Thai) Thai User Interface strings for FontForge.
+# Copyright (C) 2000-2006 by George Williams
+# This file is distributed under the same license as the FontForge package.
+#
+# Translators:
+#
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: fontforge\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-07-09 02:27+0300\n"
+"PO-Revision-Date: 2025-07-08 23:05\n"
+"Last-Translator: \n"
+"Language-Team: Thai\n"
+"Language: th_TH\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Crowdin-Project: fontforge\n"
+"X-Crowdin-Project-ID: 368599\n"
+"X-Crowdin-Language: th\n"
+"X-Crowdin-File: FontForge.pot\n"
+"X-Crowdin-File-ID: 2\n"
+
+#, c-format
+msgid ""
+"%s is not a cidmap file, please download\n"
+"http://fontforge.sourceforge.net/cidmaps.tgz"
+msgstr ""
+"%s ไม่ใช่ไฟล์ cidmap โปรดดาวน์โหลด\n"
+"http://fontforge.sourceforge.net/cidmaps.tgz"
+
+msgid "Albanian"
+msgstr "แอลเบเนีย"
+
+msgid "Are you sure you don't want to use the cidmap I found?"
+msgstr "คุณแน่ใจหรือไม่ว่าไม่ต้องการใช้ cidmap ที่หาพบ"
+
+msgid "Bad Font Name"
+msgstr "ชื่อแบบอักษรไม่ถูกต้อง"
+
+msgid "Bad Number"
+msgstr "ตัวเลขไม่ถูกต้อง"
+
+msgid "Bad Reference"
+msgstr "การอ้างอิงไม่ถูกต้อง"
+
+msgid "Bad cidmap file"
+msgstr "ไฟล์ cidmap ไม่ถูกต้อง"
+
+msgid "Bad encoding file format"
+msgstr "รูปแบบไฟล์รหัสอักขระไม่ถูกต้อง"
+
+msgid "Bad image file"
+msgstr "ไฟล์ภาพไม่ถูกต้อง"
+
+#, c-format
+msgid "Bad image file: %.100s"
+msgstr "ไฟล์ภาพไม่ถูกต้อง: %.100s"
+
+msgid "Bulgarian"
+msgstr "บัลแกเรีย"
+
+msgid "Byelorussian"
+msgstr "เบลารุส"
+
+#, c-format
+msgid "Couldn't open cidmap file: %s"
+msgstr "ไม่สามารถเปิดไฟล์ cidmap: %s"
+
+msgid "Couldn't open file"
+msgstr "ไม่สามารถเปิดไฟล์"
+
+#, c-format
+msgid "Couldn't open file %.200s"
+msgstr "ไม่สามารถเปิดไฟล์ %.200s"
+
+msgid "Croatian"
+msgstr "โครเอเชีย"
+
+msgid "Cyrillic"
+msgstr "ซีริลลิก"
+
+msgid "Czech"
+msgstr "เช็ก"
+
+msgid "Danish"
+msgstr "เดนมาร์ก"
+
+msgid "Duplicate pixelsize"
+msgstr "ขนาดพิกเซลซ้ำกัน"
+
+msgid "Dutch"
+msgstr "ดัตช์"
+
+msgid "Encoding Too Large"
+msgstr "รหัสอักขระใหญ่เกินไป"
+
+msgid "Encoding name"
+msgstr "ชื่อรหัสอักขระ"
+
+msgid "English"
+msgstr "อังกฤษ"
+
+msgid "Estonian"
+msgstr "เอสโตเนีย"
+
+msgid "Find a cidmap file..."
+msgstr "หาไฟล์ cidmap..."
+
+msgid "Finnish"
+msgstr "ฟินแลนด์"
+
+msgid "French"
+msgstr "ฝรั่งเศส"
+
+msgid "Galician"
+msgstr "กาลิเซีย"
+
+msgid "German"
+msgstr "เยอรมัน"
+
+msgid "Hungarian"
+msgstr "ฮังการี"
+
+msgid "Icelandic"
+msgstr "ไอซ์แลนด์"
+
+msgid "Italian"
+msgstr "อิตาลี"
+
+msgid "Japanese"
+msgstr "ญี่ปุ่น"
+
+msgid "Kazakh"
+msgstr "คาซัค"
+
+msgid "Korean"
+msgstr "เกาหลี"
+
+msgid "Lang|Arabic"
+msgstr "อาหรับ"
+
+msgid "Lang|Thai"
+msgstr "ไทย"
+
+msgid "Latvian"
+msgstr "ลัตเวีย"
+
+msgid "Lithuanian"
+msgstr "ลิทัวเนีย"
+
+msgid "Macedonian"
+msgstr "มาซิโดเนีย"
+
+msgid "Maltese"
+msgstr "มอลตา"
+
+msgid "Missing cidmap file"
+msgstr "ไฟล์ cidmap ขาดหายไป"
+
+msgid "Nepali"
+msgstr "เนปาล"
+
+msgid "No cidmap file..."
+msgstr "ไม่มีไฟล์ cidmap..."
+
+msgid "Norwegian"
+msgstr "นอร์เวย์"
+
+#, c-format
+msgid "Please name encoding %d in this file"
+msgstr "โปรดตั้งชื่อให้กับรหัสอักขระ %d ในไฟล์นี้"
+
+msgid "Please name this encoding"
+msgstr "โปรดตั้งชื่อให้กับรหัสอักขระนี้"
+
+msgid "Polish"
+msgstr "โปแลนด์"
+
+msgid "Portuguese"
+msgstr "โปรตุเกส"
+
+msgid "Romanian"
+msgstr "โรมาเนีย"
+
+msgid "Russian"
+msgstr "รัสเซีย"
+
+msgid "Sanskrit"
+msgstr "สันสกฤต"
+
+msgid "Save Failed"
+msgstr "การบันทึกล้มเหลว"
+
+msgid "Serbian"
+msgstr "เซอร์เบีย"
+
+msgid "Simplified Chinese"
+msgstr "จีนตัวย่อ"
+
+msgid "Slovak"
+msgstr "สโลวัก"
+
+msgid "Slovenian"
+msgstr "สโลวีเนีย"
+
+msgid "Spanish"
+msgstr "สเปน"
+
+msgid "Swedish"
+msgstr "สวีเดน"
+
+msgid "Thai"
+msgstr "ไทย"
+
+#, c-format
+msgid ""
+"This font is based on the charset %1$.20s-%2$.20s-%3$d, but the best I've been able to find is %1$.20s-%2$.20s-%4$d.\n"
+"Shall I use that or let you search?"
+msgstr ""
+"แบบอักษรนี้เข้ารหัสอักขระแบบ %1$.20s-%2$.20s-%3$d แต่รหัสอักขระที่ใกล้เคียงที่สุดที่พบคือ %1$.20s-%2$.20s-%4$d\n"
+"คุณต้องการให้ใช้รหัสอักขระดังกล่าว หรือต้องการค้นหารหัสอักขระด้วยตนเอง"
+
+msgid "Traditional Chinese"
+msgstr "จีนตัวเต็ม"
+
+msgid "Turkish"
+msgstr "ตุรกี"
+
+msgid "Ukrainian"
+msgstr "ยูเครน"
+
+msgid "Unknown Language"
+msgstr "ไม่ทราบภาษา"
+
+msgid "Use CID Map"
+msgstr "ใช้ CID Map"
+
+msgid "Uzbek"
+msgstr "อุซเบก"
+
+msgid "Welsh"
+msgstr "เวลส์"
+
+msgid "_Add"
+msgstr "เ_พิ่ม"
+
+msgid "_Browse"
+msgstr "เ_รียกดู"
+
+msgid "_Cancel"
+msgstr "_ยกเลิก"
+
+msgid "_Delete"
+msgstr "_ลบ"
+
+msgid "_Give Up"
+msgstr "_ยอมแพ้"
+
+msgid "_No"
+msgstr "ไ_ม่"
+
+msgid "_OK"
+msgstr "_ตกลง"
+
+msgid "_Search"
+msgstr "_ค้นหา"
+
+msgid "_Use It"
+msgstr "ใ_ช้"
+
+msgid "_Yes"
+msgstr "ใ_ช่"
+
+msgid "couldn't write encodings file"
+msgstr "ไม่สามารถเขียนไฟล์รหัสอักขระ"

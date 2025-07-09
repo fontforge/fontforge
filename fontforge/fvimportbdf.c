@@ -329,7 +329,7 @@ static void AddBDFChar(FILE *bdf, SplineFont *sf, BDFFont *b,EncMap *map,int dep
 	    (( xmax+1==xmin || xmax==xmin) && ymax+1==ymin ))
 	/* Empty glyph */;
     else if ( xmax<xmin || ymax<ymin ) {
-	LogError( _("Bad bounding box for %s.\n"), name );
+	LogError( _("Bad bounding box for %s."), name );
 return;
     }
     i = figureProperEncoding(sf,map,b,enc,name,swidth,swidth1,encname);
@@ -677,7 +677,7 @@ static int slurp_header(FILE *bdf, int *_as, int *_ds, Encoding **_enc,
 	comments[strlen(comments)-1] = '\0';
 
     if ( *depth!=1 && *depth!=2 && *depth!=4 && *depth!=8 && *depth!=16 && *depth!=32 )
-	LogError( _("FontForge does not support this bit depth %d (must be 1,2,4,8,16,32)\n"), *depth);
+	LogError( _("FontForge does not support this bit depth %d (must be 1,2,4,8,16,32)"), *depth);
 
 return( pixelsize );
 }
@@ -981,10 +981,10 @@ return( false );
 	    else
 		r += get3byte(gf)+1;
 	} else if ( ch==EOF ) {
-	    LogError( _("Unexpected EOF in gf\n") );
+	    LogError( _("Unexpected EOF in gf") );
     break;
 	} else
-	    LogError( _("Uninterpreted code in gf: %d\n"), ch);
+	    LogError( _("Uninterpreted code in gf: %d"), ch);
     }
     fseek(gf,pos,SEEK_SET);
 return( true );
@@ -1099,7 +1099,7 @@ return( i );
 return( (i-st->dyn_f-1)*16 + getnibble(pk,st) + st->dyn_f + 1 );
 	} else {
 	    if ( st->rpt!=0 )
-		LogError( _("Duplicate repeat row count in char %d of pk file\n"), st->cc );
+		LogError( _("Duplicate repeat row count in char %d of pk file"), st->cc );
 	    if ( i==15 ) st->rpt = 1;
 	    else st->rpt = pkgetcount(pk,st);
  /*printf( "[%d]", st->rpt );*/

@@ -814,7 +814,7 @@ static int pdf_zfilter(FILE *to,FILE *from) {
     strm.next_in = Z_NULL;
     ret = inflateInit(&strm);
     if (ret != Z_OK) {
-	LogError( _("Flate decompression failed.\n") );
+	LogError( _("Flate decompression failed.") );
 return ret;
     }
     in = malloc(Z_CHUNK); out = malloc(Z_CHUNK);
@@ -830,7 +830,7 @@ return ret;
 	    ret = inflate(&strm, Z_NO_FLUSH);
 	    if ( ret==Z_NEED_DICT || ret==Z_DATA_ERROR || ret==Z_MEM_ERROR ) {
 		(void)inflateEnd(&strm);
-		LogError( _("Flate decompression failed.\n") );
+		LogError( _("Flate decompression failed.") );
 return ret;
 	    }
 	    fwrite(out,1,Z_CHUNK-strm.avail_out,to);
@@ -1200,7 +1200,7 @@ return( pt_number );
 	    if ( !isfinite(*val) ) {
 /* GT: NaN is a concept in IEEE floating point which means "Not a Number" */
 /* GT: it is used to represent errors like 0/0 or sqrt(-1). */
-		LogError( _("Bad number, infinity or nan: %s\n"), tokbuf );
+		LogError( _("Bad number, infinity or nan: %s"), tokbuf );
 		*val = 0;
 	    }
 	    if ( *end=='\0' )		/* It's a real */
@@ -1338,7 +1338,7 @@ static void _InterpretPdf(FILE *in, struct pdfcontext *pc, EntityChar *ec) {
 		if ( stack[sp-1-i].type==ps_mark )
 	    break;
 	    if ( i==sp )
-		LogError( _("No mark in ] (close array)\n") );
+		LogError( _("No mark in ] (close array)") );
 	    else {
 		struct pskeydict dict;
 		dict.cnt = dict.max = i;

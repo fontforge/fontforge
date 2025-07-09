@@ -493,7 +493,7 @@ return( NULL );
 	    while ( isspace(*end)) ++end;
 	    if ( *end==':' ) {
 		if ( r1>=256 || r1<0)
-		    LogError( _("Bad offset: %d for subfont %s\n"), r1, names[subfilecnt]);
+		    LogError( _("Bad offset: %d for subfont %s"), r1, names[subfilecnt]);
 		else
 		    thusfar = r1;
 		r1 = strtoul(end+1,&end,0);
@@ -535,7 +535,7 @@ return( NULL );
 	    }
 	}
 	if ( thusfar>256 )
-	    LogError( _("More than 256 entries in subfont %s\n"), names[subfilecnt] );
+	    LogError( _("More than 256 entries in subfont %s"), names[subfilecnt] );
 	++subfilecnt;
 	if ( bpt!=buffer )
 	    free(bpt);

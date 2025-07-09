@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-12-30 03:08-0800\n"
-"PO-Revision-Date: 2023-12-30 08:15\n"
+"POT-Creation-Date: 2025-07-09 02:27+0300\n"
+"PO-Revision-Date: 2025-07-09 10:12\n"
 "Last-Translator: \n"
 "Language-Team: English, United Kingdom\n"
 "Language: en_GB\n"
@@ -45,10 +45,16 @@ msgstr ""
 "is the same as the radius."
 
 #, c-format
+msgid "%s has a bounding box which is too big for this algorithm to work. Ignored."
+msgstr "%s has a bounding box which is too big for this algorithm to work. Ignored."
+
+#, c-format
 msgid ""
-"%s has a bounding box which is too big for this algorithm to work. Ignored."
+"%s is not a cidmap file, please download\n"
+"http://fontforge.sourceforge.net/cidmaps.tgz"
 msgstr ""
-"%s has a bounding box which is too big for this algorithm to work. Ignored."
+"%s is not a cidmap file, please download\n"
+"http://fontforge.sourceforge.net/cidmaps.tgz"
 
 msgid "(Adobe now considers XUID/UniqueID unnecessary)"
 msgstr "(Adobe now consider XUID/UniqueID unnecessary)"
@@ -136,19 +142,43 @@ msgstr ""
 msgid "Arabic"
 msgstr "Arabic"
 
+msgid "Arabic Extended-A"
+msgstr "Arabic Extended-A"
+
+msgid "Arabic Extended-B"
+msgstr "Arabic Extended-B"
+
+msgid "Arabic Supplement"
+msgstr "Arabic Supplement"
+
 msgid "Are you sure you don't want to use the cidmap I found?"
 msgstr "Are you sure you do not want to use the cidmap I found?"
 
+msgid "Armenian"
+msgstr "Armenian"
+
+msgid "Arrows"
+msgstr "Arrows"
+
 msgid "Ask the user for autotrace arguments each time autotrace is invoked"
 msgstr "Ask the user for autotrace arguements each time autotrace is invoked"
+
+msgid "At least one anchor point was lost when pasting from one font to another because no matching anchor class could be found in the new font."
+msgstr "At least one anchor point was lost when pasting from one font to another because no matching anchor class could be found in the new font."
+
+msgid "Attempt to make a glyph that refers to itself"
+msgstr "Attempt to make a glyph that refers to itself"
 
 #, c-format
 msgid "Attempt to regenerate a pixel size that has not been created (%d@%d)"
 msgstr "Attempt to regenerate a pixel size that has not been created (%d@%d)"
 
+msgid "Auto Hinting Font..."
+msgstr "Auto Hinting Font..."
+
 #, c-format
-msgid "AutoWidth failure on %s\n"
-msgstr "AutoWidth failure on %s\n"
+msgid "AutoWidth failure on %s"
+msgstr "AutoWidth failure on %s"
 
 msgid "Autotracing..."
 msgstr "Autotracing..."
@@ -163,8 +193,8 @@ msgid "Bad Color"
 msgstr "Bad Colour"
 
 #, c-format
-msgid "Bad RGB color spec: %s\n"
-msgstr "Bad RGB colour spec: %s\n"
+msgid "Bad RGB color spec: %s"
+msgstr "Bad RGB colour spec: %s"
 
 msgid "Bad Reference"
 msgstr "Bad Reference"
@@ -172,16 +202,22 @@ msgstr "Bad Reference"
 msgid "Bad Template"
 msgstr "Bad Template"
 
+msgid "Bad cidmap file"
+msgstr "Bad cidmap file"
+
 #, c-format
 msgid "Bad color on line %d, must be between 000000 and ffffff."
 msgstr "Bad colour on line %d, must be between 000000 and ffffff."
 
-msgid "Bad glyph range specified in color subtable of PfEd table\n"
-msgstr "Bad glyph range specified in colour subtable of PfEd table\n"
+msgid "Bad encoding file format"
+msgstr "Bad encoding file format"
+
+msgid "Bad glyph range specified in color subtable of PfEd table"
+msgstr "Bad glyph range specified in colour subtable of PfEd table"
 
 #, c-format
-msgid "Bad hex color spec: %s\n"
-msgstr "Bad hex colour spec: %s\n"
+msgid "Bad hex color spec: %s"
+msgstr "Bad hex colour spec: %s"
 
 msgid "Bad image file"
 msgstr "Bad image file"
@@ -203,6 +239,18 @@ msgstr "Bad template, unrecognised format"
 msgid "Bad xfig file"
 msgstr "Bad xfig file"
 
+msgid "Balinese"
+msgstr "Balinese"
+
+msgid "Basic Latin"
+msgstr "Basic Latin"
+
+msgid "Batak"
+msgstr "Batak"
+
+msgid "Bengali"
+msgstr "Bengali"
+
 msgid ""
 "Beyond the endpoints, the gradient takes on the color at the end-points\n"
 "This does not work for PostScript linear gradients"
@@ -210,8 +258,17 @@ msgstr ""
 "Beyond the endpoints, the gradient takes on the colour at the end-points\n"
 "This does not work for PostScript linear gradients"
 
+msgid "Block Elements"
+msgstr "Block Elements"
+
 msgid "Blue Values Color"
 msgstr "Blue Values Colour"
+
+msgid "Box Drawing"
+msgstr "Box Drawing"
+
+msgid "Braille Patterns"
+msgstr "Braille Patterns"
 
 msgid ""
 "Brings up a dialog which gives fine control over\n"
@@ -221,6 +278,15 @@ msgstr ""
 "Brings up a dialogue which gives fine control over\n"
 "horizontal positioning of subscripts and superscripts\n"
 "depending on their vertical positioning."
+
+msgid "Buginese"
+msgstr "Buginese"
+
+msgid "Buhid"
+msgstr "Buhid"
+
+msgid "CJK Radicals Supplement"
+msgstr "CJK Radicals Supplement"
 
 msgid ""
 "Can this font be embedded in a downloadable (pdf)\n"
@@ -238,26 +304,22 @@ msgid "Can't find autotrace"
 msgstr "Cannot find autotrace"
 
 msgid ""
-"Can't find autotrace program (set AUTOTRACE environment variable) or "
-"download from:\n"
+"Can't find autotrace program (set AUTOTRACE environment variable) or download from:\n"
 "  http://sf.net/projects/autotrace/"
 msgstr ""
-"Cannot find autotrace program, set AUTOTRACE environment variable or "
-"download from:\n"
+"Cannot find autotrace program, set AUTOTRACE environment variable or download from:\n"
 " http://sf.net/projects/autotrace/"
 
 msgid "Can't find mf"
 msgstr "Cannot find mf"
 
 msgid ""
-"Can't find mf program -- metafont (set MF environment variable) or download "
-"from:\n"
+"Can't find mf program -- metafont (set MF environment variable) or download from:\n"
 "  http://www.tug.org/\n"
 "  http://www.ctan.org/\n"
 "It's part of the TeX distribution"
 msgstr ""
-"Cannot find mf program (metafont), set MF environment variable or download "
-"from:\n"
+"Cannot find mf program (metafont), set MF environment variable or download from:\n"
 "  http://www.tug.org/\n"
 "  http://www.ctan.org/\n"
 "It's part of the TeX distribution"
@@ -266,11 +328,14 @@ msgid "Can't find the file"
 msgstr "Cannot find the file"
 
 #, c-format
-msgid "Can't open %s\n"
-msgstr "Cannot open %s\n"
+msgid "Can't open %s"
+msgstr "Cannot open %s"
 
 msgid "Can't run mf"
 msgstr "Cannot run mf"
+
+msgid "Cannot open file"
+msgstr "Cannot open file"
 
 msgid "Center Bet_ween Control Points"
 msgstr "Centre Bet_ween Control Points"
@@ -292,6 +357,9 @@ msgstr "Changed Colour"
 
 msgid "CharCenterHighest"
 msgstr "CharCentreHighest"
+
+msgid "Cherokee"
+msgstr "Cherokee"
 
 msgid "Clip Path Color"
 msgstr "Clip Path Colour"
@@ -326,11 +394,32 @@ msgstr "Colour used to mark the selected glyph"
 msgid "Color:"
 msgstr "Colour:"
 
+msgid "Combining Diacritical Marks"
+msgstr "Combining Diacritical Marks"
+
+msgid "Combining Diacritical Marks Extended"
+msgstr "Combining Diacritical Marks Extended"
+
+msgid "Combining Diacritical Marks Supplement"
+msgstr "Combining Diacritical Marks Supplement"
+
+msgid "Combining Diacritical Marks for Symbols"
+msgstr "Combining Diacritical Marks for Symbols"
+
 msgid "Conflict Hint Color"
 msgstr "Conflict Hint Colour"
 
+msgid "Control Pictures"
+msgstr "Control Pictures"
+
 msgid "Coordinate Line Color"
 msgstr "Coordinate Line Colour"
+
+msgid "Coptic"
+msgstr "Coptic"
+
+msgid "Could not find original glyph"
+msgstr "Could not find original glyph"
 
 msgid "Could not read (or perhaps find) mf output file"
 msgstr "Could not read (or perhaps find) mf output file"
@@ -346,8 +435,32 @@ msgstr "Could not open file"
 msgid "Couldn't open file %.200s"
 msgstr "Could not open file %.200s"
 
+msgid "Currency Symbols"
+msgstr "Currency Symbols"
+
+msgid "Cyrillic"
+msgstr "Cyrillic"
+
+msgid "Cyrillic Extended-A"
+msgstr "Cyrillic Extended-A"
+
+msgid "Cyrillic Extended-C"
+msgstr "Cyrillic Extended-C"
+
+msgid "Cyrillic Supplement"
+msgstr "Cyrillic Supplement"
+
+msgid "Devanagari"
+msgstr "Devanagari"
+
 msgid "Diagonal Hint Color"
 msgstr "Diagonal Hint Colour"
+
+msgid "Different Fonts"
+msgstr "Different Fonts"
+
+msgid "Dingbats"
+msgstr "Dingbats"
 
 msgid "Don't Warn Again"
 msgstr "Do not Warn Again"
@@ -374,12 +487,33 @@ msgstr ""
 "of data, but almost all lookups will use just one or two.\n"
 "Omitting the others makes the behaviour clearer."
 
+msgid "Duplicate Anchor"
+msgstr "Duplicate Anchor"
+
+msgid "Enclosed Alphanumerics"
+msgstr "Enclosed Alphanumerics"
+
+msgid "Encoding Too Large"
+msgstr "Encoding Too Large"
+
+msgid "Encoding name"
+msgstr "Encoding name"
+
 #, c-format
 msgid "Encoding value (%x) not in font, ignored"
 msgstr "Encoding value (%x) not in font, ignored"
 
 msgid "Encoding value not in font"
 msgstr "Encoding value not in font"
+
+msgid "Ethiopic"
+msgstr "Ethiopic"
+
+msgid "Ethiopic Extended"
+msgstr "Ethiopic Extended"
+
+msgid "Ethiopic Supplement"
+msgstr "Ethiopic Supplement"
 
 msgid ""
 "Extra arguments for configuring the autotrace program\n"
@@ -388,18 +522,24 @@ msgstr ""
 "Extra arguments for configuring the autotrace program\n"
 "(either autotrace or potrace)"
 
+msgid "Extraneous glyphs"
+msgstr "Extraneous glyphs"
+
 msgid "Extrema Point Color"
 msgstr "Extrema Point Colour"
 
 #, c-format
-msgid "Failed to parse color %s\n"
-msgstr "Failed to parse colour %s\n"
+msgid "Failed to parse color %s"
+msgstr "Failed to parse colour %s"
 
 msgid "Family Blue Color"
 msgstr "Family Blue Colour"
 
 msgid "Fill Color"
 msgstr "Fill Colour"
+
+msgid "Find a cidmap file..."
+msgstr "Find a cidmap file..."
 
 msgid "First Point Color"
 msgstr "First Point Colour"
@@ -413,36 +553,60 @@ msgstr "Font Editor"
 msgid "FontForge"
 msgstr "FontForge"
 
-msgid ""
-"FontForge is a font editor for outline and bitmap fonts that lets you "
-"create, edit, or convert, a range of fonts, including PostScript, TrueType, "
-"OpenType, cid-keyed, multi-master, cff, SVG and BitMap (bdf, FON, NFNT) "
-"fonts."
-msgstr ""
-"FontForge is a font editor for outline and bitmap fonts that lets you "
-"create, edit or convert, a range of fonts, including PostScript, TrueType, "
-"OpenType, cid-keyed, multi-master, cff, SVG and BitMap (bdf, FON, NFNT) "
-"fonts."
+#, c-format
+msgid "FontForge does not support anonymous tables on line %d of %s"
+msgstr "FontForge does not support anonymous tables on line %d of %s"
 
+msgid "FontForge is a font editor for outline and bitmap fonts that lets you create, edit, or convert, a range of fonts, including PostScript, TrueType, OpenType, cid-keyed, multi-master, cff, SVG and BitMap (bdf, FON, NFNT) fonts."
+msgstr "FontForge is a font editor for outline and bitmap fonts that lets you create, edit or convert, a range of fonts, including PostScript, TrueType, OpenType, cid-keyed, multi-master, cff, SVG and BitMap (bdf, FON, NFNT) fonts."
+
+msgid "FontForge is free Open Source Software written to run on various computer operating systems. You can use FontForge Graphically or as a command-line tool."
+msgstr "FontForge is free Open Source Software written to run on various computer operating systems. You can use FontForge Graphically or as a command-line tool."
+
+#, c-format
 msgid ""
-"FontForge is free Open Source Software written to run on various computer "
-"operating systems. You can use FontForge Graphically or as a command-line "
-"tool."
+"FontForge was unable to find a cidmap file for this font. The following path was searched:\n"
+"   %.80s\n"
+"\n"
+"It is not essential to have one, but some things will work better if you do. Would you like to search your local disk for an appropriate file?"
 msgstr ""
-"FontForge is free Open Source Software written to run on various computer "
-"operating systems. You can use FontForge Graphically or as a command-line "
-"tool."
+"FontForge was unable to find a cidmap file for this font. The following path was searched:\n"
+"   %.80s\n"
+"\n"
+"It is not essential to have one, but some things will work better if you do. Would you like to search your local disk for an appropriate file?"
 
 msgid "Fontforge showing a glyph being edited"
 msgstr "FontForge showing a glyph being edited"
 
-msgid ""
-"Fourth argument of imagemask must be a 6-element transformation matrix.\n"
-msgstr ""
-"Fourth argument of imagemask must be a 6-element transformation matrix.\n"
+msgid "Fourth argument of imagemask must be a 6-element transformation matrix.\n"
+msgstr "Fourth argument of imagemask must be a 6-element transformation matrix.\n"
+
+msgid "General Punctuation"
+msgstr "General Punctuation"
+
+msgid "Geometric Shapes"
+msgstr "Geometric Shapes"
+
+msgid "Georgian"
+msgstr "Georgian"
+
+msgid "Georgian Extended"
+msgstr "Georgian Extended"
+
+msgid "Georgian Supplement"
+msgstr "Georgian Supplement"
+
+msgid "Glagolitic"
+msgstr "Glagolitic"
 
 msgid "Glyph too big"
 msgstr "Glyph too big"
+
+msgid "Greek Extended"
+msgstr "Greek Extended"
+
+msgid "Greek and Coptic"
+msgstr "Greek and Coptic"
 
 msgid "Grid Fit Color"
 msgstr "Grid Fit Colour"
@@ -453,11 +617,29 @@ msgstr "Grid Fit Width Colour"
 msgid "Guide Layer Color"
 msgstr "Guide Layer Colour"
 
+msgid "Gujarati"
+msgstr "Gujarati"
+
+msgid "Gurmukhi"
+msgstr "Gurmukhi"
+
 msgid "HFlex Hint Color"
 msgstr "HFlex Hint Colour"
 
 msgid "HHint Active Color"
 msgstr "HHint Active Colour"
+
+msgid "Hangul Jamo"
+msgstr "Hangul Jamo"
+
+msgid "Hanunoo"
+msgstr "Hanunoo"
+
+msgid "Harmonizing..."
+msgstr "Harmonising..."
+
+msgid "Hebrew"
+msgstr "Hebrew"
 
 msgid "Hint Label Color"
 msgstr "Hint Label Colour"
@@ -468,58 +650,65 @@ msgstr "Histogram Dialogue"
 msgid "Horiz. Hint Color"
 msgstr "Horiz. Hint Colour"
 
-msgid ""
-"I'm sorry this file is too complex for me to understand (or is erroneous)"
-msgstr ""
-"I'm sorry this file is too complex for me to understand (or is erroneous)"
+msgid "I'm sorry this file is too complex for me to understand (or is erroneous)"
+msgstr "I'm sorry this file is too complex for me to understand (or is erroneous)"
 
-msgid ""
-"I'm sorry this file is too complex for me to understand (or is erroneous, or "
-"is empty)"
-msgstr ""
-"I'm sorry, this file is too complex for me to understand (or is erroneous, "
-"or is empty)"
+msgid "I'm sorry this file is too complex for me to understand (or is erroneous, or is empty)"
+msgstr "I'm sorry, this file is too complex for me to understand (or is erroneous, or is empty)"
+
+msgid "IPA Extensions"
+msgstr "IPA Extensions"
+
+msgid "Ideographic Description Characters"
+msgstr "Ideographic Description Characters"
 
 msgid "Inactive Layer Color"
 msgstr "Inactive Layer Colour"
 
-msgid ""
-"Instructions in a TrueType font refer to\n"
-"points by number, so if you edit a glyph\n"
-"in such a way that some points have different\n"
-"numbers (add points, remove them, etc.) then\n"
-"the instructions will be applied to the wrong\n"
-"points with disasterous results.\n"
-"  Normally FontForge will remove the instructions\n"
-"if it detects that the points have been renumbered\n"
-"in order to avoid the above problem. You may turn\n"
-"this behavior off -- but be careful!"
-msgstr ""
-"Instructions in a TrueType font refer to\n"
-"points by number, so if you edit a glyph\n"
-"in such a way that some points have different\n"
-"numbers (add points, remove them, etc.) then\n"
-"the instructions will be applied to the wrong\n"
-"points with disastrous results.\n"
-"  Normally FontForge will remove the instructions\n"
-"if it detects that the points have been renumbered\n"
-"in order to avoid the above problem. You may turn\n"
-"this behaviour off – but be careful!"
-
 msgid "Italic Coord. Color"
 msgstr "Italic Coord. Colour"
+
+msgid "Kangxi Radicals"
+msgstr "Kangxi Radicals"
+
+msgid "Kannada"
+msgstr "Kannada"
 
 msgid "Kern Line Color"
 msgstr "Kern Line Colour"
 
-msgid ""
-"Learning to use FontForge is easy, and there are various tutorials available "
-"beginning with the basics up to more advanced features such as making and "
-"using scripts."
-msgstr ""
-"Learning to use FontForge is easy, and there are various tutorials available "
-"beginning with the basics up to more advanced features, such as making and "
-"using scripts."
+msgid "Khmer"
+msgstr "Khmer"
+
+msgid "Khmer Symbols"
+msgstr "Khmer Symbols"
+
+msgid "Lao"
+msgstr "Lao"
+
+msgid "Latin Extended Additional"
+msgstr "Latin Extended Additional"
+
+msgid "Latin Extended-A"
+msgstr "Latin Extended-A"
+
+msgid "Latin Extended-B"
+msgstr "Latin Extended-B"
+
+msgid "Latin Extended-C"
+msgstr "Latin Extended-C"
+
+msgid "Latin-1 Supplement"
+msgstr "Latin-1 Supplement"
+
+msgid "Learning to use FontForge is easy, and there are various tutorials available beginning with the basics up to more advanced features such as making and using scripts."
+msgstr "Learning to use FontForge is easy, and there are various tutorials available beginning with the basics up to more advanced features, such as making and using scripts."
+
+msgid "Lepcha"
+msgstr "Lepcha"
+
+msgid "Letterlike Symbols"
+msgstr "Letterlike Symbols"
 
 msgid "License"
 msgstr "Licence"
@@ -530,6 +719,18 @@ msgstr "Licence URL"
 msgid "Ligature Caret Color"
 msgstr "Ligature Caret Colour"
 
+msgid "Limbu"
+msgstr "Limbu"
+
+msgid "Malayalam"
+msgstr "Malayalam"
+
+msgid "Mandaic"
+msgstr "Mandaic"
+
+msgid "Mathematical Operators"
+msgstr "Mathematical Operators"
+
 msgid "Mathematical centerline"
 msgstr "Mathematical centreline"
 
@@ -539,17 +740,51 @@ msgstr "MetaFont exited with an error"
 msgid "Metrics Label Color"
 msgstr "Metrics Label Colour"
 
+msgid "Miscellaneous Mathematical Symbols-A"
+msgstr "Miscellaneous Mathematical Symbols-A"
+
+msgid "Miscellaneous Mathematical Symbols-B"
+msgstr "Miscellaneous Mathematical Symbols-B"
+
+msgid "Miscellaneous Symbols"
+msgstr "Miscellaneous Symbols"
+
+msgid "Miscellaneous Symbols and Arrows"
+msgstr "Miscellaneous Symbols and Arrows"
+
+msgid "Miscellaneous Technical"
+msgstr "Miscellaneous Technical"
+
 msgid "Missing Bitmap"
 msgstr "Missing Bitmap"
+
+msgid "Missing cidmap file"
+msgstr "Missing cidmap file"
+
+msgid "Missing glyph"
+msgstr "Missing glyph"
+
+msgid "Mongolian"
+msgstr "Mongolian"
 
 msgid "More Images Than Selected Glyphs"
 msgstr "More Images Than Selected Glyphs"
 
 #, c-format
-msgid ""
-"Multiple master subroutine called with the wrong number of arguments in %s.\n"
-msgstr ""
-"Multiple master subroutine called with the wrong number of arguments in %s.\n"
+msgid "Multiple master subroutine called with the wrong number of arguments in %s."
+msgstr "Multiple master subroutine called with the wrong number of arguments in %s."
+
+msgid "MultipleEncodingIgnored"
+msgstr "MultipleEncodingIgnored"
+
+msgid "Myanmar"
+msgstr "Myanmar"
+
+msgid "NKo"
+msgstr "NKo"
+
+msgid "New Tai Lue"
+msgstr "New Tai Lue"
 
 msgid "Next CP Color"
 msgstr "Next CP Colour"
@@ -557,15 +792,18 @@ msgstr "Next CP Colour"
 msgid "No Kern Pairs"
 msgstr "No Kern Pairs"
 
+msgid "No Vertical Metrics"
+msgstr "No Vertical Metrics"
+
 msgid "No _to All"
 msgstr "No _to All"
 
-msgid "No argument to operator\n"
-msgstr "No argument to operator\n"
-
 #, c-format
-msgid "No argument to operator %d in private dict\n"
-msgstr "No argument to operator %d in private dict\n"
+msgid "No argument to operator %d in private dict"
+msgstr "No argument to operator %d in private dict"
+
+msgid "No cidmap file..."
+msgstr "No cidmap file..."
 
 #, c-format
 msgid "No kerning pairs found in %.200s"
@@ -573,6 +811,9 @@ msgstr "No kerning pairs found in %.200s"
 
 msgid "Normal/Off-Center"
 msgstr "Normal/Off-Centre"
+
+msgid "Not a CID-keyed font"
+msgstr "Not a CID-keyed font"
 
 msgid "Not a plate file"
 msgstr "Not a plate file"
@@ -586,8 +827,21 @@ msgstr "Nothing Selected"
 msgid "Nothing to trace"
 msgstr "Nothing to trace"
 
+msgid "Number Forms"
+msgstr "Number Forms"
+
+#, c-format
+msgid "Number too long on line %d of %s"
+msgstr "Number too long on line %d of %s"
+
 msgid "Oblique/Off-Center"
 msgstr "Oblique/Off-Centre"
+
+msgid "Ogham"
+msgstr "Ogham"
+
+msgid "Ol Chiki"
+msgstr "Ol Chiki"
 
 msgid "Old Outline Color"
 msgstr "Old Outline Colour"
@@ -623,14 +877,34 @@ msgstr ""
 "Note: This does not affect figuring out unicode from the font's encoding,\n"
 "it just controls determining unicode from a name."
 
-msgid "Original Color"
-msgstr "Original Colour"
+msgid "Optical Character Recognition"
+msgstr "Optical Character Recognition"
+
+msgid "Oriya"
+msgstr "Oriya"
+
+#, c-format
+msgid "ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s"
+msgstr "ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s"
+
+msgid "Phonetic Extensions"
+msgstr "Phonetic Extensions"
+
+msgid "Phonetic Extensions Supplement"
+msgstr "Phonetic Extensions Supplement"
 
 msgid "Pick a color"
 msgstr "Pick a colour"
 
 msgid "Please don't do that"
 msgstr "Please don't do that"
+
+#, c-format
+msgid "Please name encoding %d in this file"
+msgstr "Please name encoding %d in this file"
+
+msgid "Please name this encoding"
+msgstr "Please name this encoding"
 
 msgid "Point Color"
 msgstr "Point Colour"
@@ -665,11 +939,24 @@ msgstr "Raster Old Colour"
 msgid "RecognizePUANames"
 msgstr "RecognisePUANames"
 
+#, c-format
+msgid "Reference to a non-existent glyph name on line %d of %s: %s"
+msgstr "Reference to a non-existent glyph name on line %d of %s: %s"
+
+msgid "Replace Å"
+msgstr "Replace Å"
+
 msgid "Retain current advance width, center glyph within that width"
 msgstr "Retain current advance width, centre glyph within that width"
 
 msgid "Rotate _90° CCW"
 msgstr "Rotate _90° ACW"
+
+msgid "Runic"
+msgstr "Runic"
+
+msgid "Samaritan"
+msgstr "Samaritan"
 
 msgid "Save Colors"
 msgstr "Save Colours"
@@ -704,11 +991,20 @@ msgstr "Selected Point Colour"
 msgid "Selected Width Color"
 msgstr "Selected Width Colour"
 
+msgid "Self-referential glyph"
+msgstr "Self-referential glyph"
+
 msgid "Set _Color"
 msgstr "Set _Colour"
 
 msgid "Side Bearing Color"
 msgstr "Side Bearing Colour"
+
+msgid "Sinhala"
+msgstr "Sinhala"
+
+msgid "Spacing Modifier Letters"
+msgstr "Spacing Modifier Letters"
 
 msgid ""
 "Specify the color (& opacity) at stop points\n"
@@ -726,16 +1022,63 @@ msgstr ""
 msgid "Spiros did not converge"
 msgstr "Spiros did not converge"
 
-msgid "Template Color"
-msgstr "Template Colour"
+msgid "Sundanese"
+msgstr "Sundanese"
 
+msgid "Sundanese Supplement"
+msgstr "Sundanese Supplement"
+
+msgid "Superscripts and Subscripts"
+msgstr "Superscripts and Subscripts"
+
+msgid "Supplemental Arrows-A"
+msgstr "Supplemental Arrows-A"
+
+msgid "Supplemental Arrows-B"
+msgstr "Supplemental Arrows-B"
+
+msgid "Supplemental Mathematical Operators"
+msgstr "Supplemental Mathematical Operators"
+
+msgid "Supplemental Punctuation"
+msgstr "Supplemental Punctuation"
+
+msgid "Syriac"
+msgstr "Syriac"
+
+msgid "Syriac Supplement"
+msgstr "Syriac Supplement"
+
+msgid "Tagalog"
+msgstr "Tagalog"
+
+msgid "Tagbanwa"
+msgstr "Tagbanwa"
+
+msgid "Tai Le"
+msgstr "Tai Le"
+
+msgid "Tai Tham"
+msgstr "Tai Tham"
+
+msgid "Tamil"
+msgstr "Tamil"
+
+msgid "Telugu"
+msgstr "Telugu"
+
+msgid "Thaana"
+msgstr "Thaana"
+
+msgid "Thai"
+msgstr "Thai"
+
+#, c-format
 msgid ""
-"The %1$s in the search dialog contains a reference to %2$.20hs which does "
-"not exist in the new font.\n"
+"The %1$s in the search dialog contains a reference to %2$.20hs which does not exist in the new font.\n"
 "Should I remove the reference?"
 msgstr ""
-"The %1$s in the search dialogue contains a reference to %2$.20hs which does "
-"not exist in the new font.\n"
+"The %1$s in the search dialogue contains a reference to %2$.20hs which does not exist in the new font.\n"
 "Should I remove the reference?"
 
 msgid "The color of a selected point"
@@ -747,12 +1090,8 @@ msgstr "The colour of an on-curve point"
 msgid "The color of anchor stars"
 msgstr "The colour of anchor stars"
 
-msgid ""
-"The color of another glyph drawn in the current view to show where it would "
-"be placed by an anchor lookup"
-msgstr ""
-"The colour of another glyph drawn in the current view to show where it would "
-"be placed by an anchor lookup"
+msgid "The color of another glyph drawn in the current view to show where it would be placed by an anchor lookup"
+msgstr "The colour of another glyph drawn in the current view to show where it would be placed by an anchor lookup"
 
 msgid "The color of grid-fit (and other) raster blocks"
 msgstr "The colour of grid-fit (and other) raster blocks"
@@ -766,19 +1105,11 @@ msgstr "The colour of outlines in inactive layers"
 msgid "The color of outlines in the active layer"
 msgstr "The colour of outlines in the active layer"
 
-msgid ""
-"The color of raster blocks which have just been turned off (in the debugger "
-"when an instruction moves a point)"
-msgstr ""
-"The colour of raster blocks which have just been turned off (in the debugger "
-"when an instruction moves a point)"
+msgid "The color of raster blocks which have just been turned off (in the debugger when an instruction moves a point)"
+msgstr "The colour of raster blocks which have just been turned off (in the debugger when an instruction moves a point)"
 
-msgid ""
-"The color of raster blocks which have just been turned on (in the debugger "
-"when an instruction moves a point)"
-msgstr ""
-"The colour of raster blocks which have just been turned on (in the debugger "
-"when an instruction moves a point)"
+msgid "The color of raster blocks which have just been turned on (in the debugger when an instruction moves a point)"
+msgstr "The colour of raster blocks which have just been turned on (in the debugger when an instruction moves a point)"
 
 msgid "The color of the clip path"
 msgstr "The colour of the clip path"
@@ -804,11 +1135,8 @@ msgstr "The colour used to draw a hint which conflicts with another"
 msgid "The color used to draw a selected control point of an on-curve point"
 msgstr "The colour used to draw a selected control point of an on-curve point"
 
-msgid ""
-"The color used to draw bitmap (single bit) images which do not specify a clut"
-msgstr ""
-"The colour used to draw bitmap (single bit) images which do not specify a "
-"clut"
+msgid "The color used to draw bitmap (single bit) images which do not specify a clut"
+msgstr "The colour used to draw bitmap (single bit) images which do not specify a clut"
 
 msgid "The color used to draw diagonal hints"
 msgstr "The colour used to draw diagonal hints"
@@ -816,12 +1144,8 @@ msgstr "The colour used to draw diagonal hints"
 msgid "The color used to draw horizontal hints"
 msgstr "The colour used to draw horizontal hints"
 
-msgid ""
-"The color used to draw markers for splines which are almost, but not quite "
-"horizontal or vertical at their end-points"
-msgstr ""
-"The colour used to draw markers for splines which are almost, but not quite "
-"horizontal or vertical at their end-points"
+msgid "The color used to draw markers for splines which are almost, but not quite horizontal or vertical at their end-points"
+msgstr "The colour used to draw markers for splines which are almost, but not quite horizontal or vertical at their end-points"
 
 msgid "The color used to draw points at extrema (if that mode is active)"
 msgstr "The colour used to draw points at extrema (if that mode is active)"
@@ -830,27 +1154,16 @@ msgid "The color used to draw points of inflection (if that mode is active)"
 msgstr "The colour used to draw points of inflection (if that mode is active)"
 
 msgid "The color used to draw the \"next\" control point of an on-curve point"
-msgstr ""
-"The colour used to draw the \"next\" control point of an on-curve point"
+msgstr "The colour used to draw the \"next\" control point of an on-curve point"
 
-msgid ""
-"The color used to draw the \"previous\" control point of an on-curve point"
-msgstr ""
-"The colour used to draw the \"previous\" control point of an on-curve point"
+msgid "The color used to draw the \"previous\" control point of an on-curve point"
+msgstr "The colour used to draw the \"previous\" control point of an on-curve point"
 
-msgid ""
-"The color used to draw the active horizontal hint which the Review Hints "
-"dialog is examining"
-msgstr ""
-"The colour used to draw the active horizontal hint which the Review Hints "
-"dialogue is examining"
+msgid "The color used to draw the active horizontal hint which the Review Hints dialog is examining"
+msgstr "The colour used to draw the active horizontal hint which the Review Hints dialogue is examining"
 
-msgid ""
-"The color used to draw the active vertical hint which the Review Hints "
-"dialog is examining"
-msgstr ""
-"The colour used to draw the active vertical hint which the Review Hints "
-"dialogue is examining"
+msgid "The color used to draw the active vertical hint which the Review Hints dialog is examining"
+msgstr "The colour used to draw the active vertical hint which the Review Hints dialogue is examining"
 
 msgid "The color used to draw vertical hints"
 msgstr "The colour used to draw vertical hints"
@@ -858,45 +1171,38 @@ msgstr "The colour used to draw vertical hints"
 msgid "The color used to fill the outline if that mode is active"
 msgstr "The colour used to fill the outline if that mode is active"
 
-msgid ""
-"The color used to mark blue zones in the blue values entry of the private "
-"dictionary"
-msgstr ""
-"The colour used to mark blue zones in the blue values entry of the private "
-"dictionary"
+msgid "The color used to mark blue zones in the blue values entry of the private dictionary"
+msgstr "The colour used to mark blue zones in the blue values entry of the private dictionary"
 
-msgid ""
-"The color used to mark blue zones in the family blues entry of the private "
-"dictionary"
-msgstr ""
-"The colour used to mark blue zones in the family blues entry of the private "
-"dictionary"
+msgid "The color used to mark blue zones in the family blues entry of the private dictionary"
+msgstr "The colour used to mark blue zones in the family blues entry of the private dictionary"
 
 #, c-format
 msgid ""
-"The convention is that PostScript fonts should have an Em-Size of 1000. But "
-"this font has a size of %d. This is not an error, but you might consider "
-"altering the Em-Size with the Element->Font Info->General dialog.\n"
+"The convention is that PostScript fonts should have an Em-Size of 1000. But this font has a size of %d. This is not an error, but you might consider altering the Em-Size with the Element->Font Info->General dialog.\n"
 "Do you wish to continue to generate your font in spite of this?"
 msgstr ""
-"The convention is that PostScript fonts should have an Em-Size of 1000. But "
-"this font has a size of %d. This is not an error, but you might consider "
-"altering the Em-Size with the Element->Font Info->General dialogue.\n"
+"The convention is that PostScript fonts should have an Em-Size of 1000. But this font has a size of %d. This is not an error, but you might consider altering the Em-Size with the Element->Font Info->General dialogue.\n"
 "Do you wish to continue to generate your font in spite of this?"
 
 #, c-format
 msgid ""
-"The convention is that TrueType fonts should have an Em-Size which is a "
-"power of 2. But this font has a size of %d. This is not an error, but you "
-"might consider altering the Em-Size with the Element->Font Info->General "
-"dialog.\n"
+"The convention is that TrueType fonts should have an Em-Size which is a power of 2. But this font has a size of %d. This is not an error, but you might consider altering the Em-Size with the Element->Font Info->General dialog.\n"
 "Do you wish to continue to generate your font in spite of this?"
 msgstr ""
-"The convention is that TrueType fonts should have an Em-Size which is a "
-"power of 2. But this font has a size of %d. This is not an error, but you "
-"might consider altering the Em-Size with the Element->Font Info->General "
-"dialogue.\n"
+"The convention is that TrueType fonts should have an Em-Size which is a power of 2. But this font has a size of %d. This is not an error, but you might consider altering the Em-Size with the Element->Font Info->General dialogue.\n"
 "Do you wish to continue to generate your font in spite of this?"
+
+msgid ""
+"The current encoding contains glyphs which I cannot map to CIDs.\n"
+"Should I delete them or add them to the end (where they may conflict with future ros definitions)?"
+msgstr ""
+"The current encoding contains glyphs which I cannot map to CIDs.\n"
+"Should I delete them or add them to the end (where they may conflict with future ros definitions)?"
+
+#, c-format
+msgid "The glyph at CID %d is mapped to more than %d encodings. Only the first %d are handled."
+msgstr "The glyph at CID %d is mapped to more than %d encodings. Only the first %d are handled."
 
 msgid ""
 "The gradient will be a linear gradient,\n"
@@ -922,6 +1228,13 @@ msgstr ""
 
 msgid "The tiles should be centered on the path"
 msgstr "The tiles should be centred on the path"
+
+#, c-format
+msgid "There is already an anchor point named %1$.40s in %2$.40s."
+msgstr "There is already an anchor point named %1$.40s in %2$.40s."
+
+msgid "These results are those of the freetype autohinter. They do not reflect the truetype instructions."
+msgstr "These results are those of the freetype autohinter. They do not reflect the truetype instructions."
 
 msgid "Third argument of imagemask must be a boolean.\n"
 msgstr "Third argument of imagemask must be a boolean.\n"
@@ -954,6 +1267,24 @@ msgstr ""
 "This does not seem to be a plate file\n"
 "First line wrong"
 
+msgid "This file contains an unnamed encoding, which cannot be named in a script"
+msgstr "This file contains an unnamed encoding, which cannot be named in a script"
+
+msgid ""
+"This font does not have vertical metrics enabled.\n"
+"Use Element->Font Info to enable them."
+msgstr ""
+"This font does not have vertical metrics enabled.\n"
+"Use Element->Font Info to enable them."
+
+#, c-format
+msgid ""
+"This font is based on the charset %1$.20s-%2$.20s-%3$d, but the best I've been able to find is %1$.20s-%2$.20s-%4$d.\n"
+"Shall I use that or let you search?"
+msgstr ""
+"This font is based on the charset %1$.20s-%2$.20s-%3$d, but the best I've been able to find is %1$.20s-%2$.20s-%4$d.\n"
+"Shall I use that or let you search?"
+
 msgid ""
 "This font is marked with an FSType of 2 (Restricted\n"
 "License). That means it is not editable without the\n"
@@ -979,11 +1310,21 @@ msgstr ""
 "It does not include the offset induced by \"Centre of selection\"\n"
 "nor \"Last Press\"."
 
+msgid "Tibetan"
+msgstr "Tibetan"
+
+msgid "Tifinagh"
+msgstr "Tifinagh"
+
 msgid "Too Complex or Bad"
 msgstr "Too Complex or Bad"
 
 msgid "Trace Color"
 msgstr "Trace Colour"
+
+#, c-format
+msgid "Unexpected character (0x%02X) on line %d of %s"
+msgstr "Unexpected character (0x%02X) on line %d of %s"
 
 #, c-format
 msgid "Unicode value (%x) not in font, ignored"
@@ -992,14 +1333,30 @@ msgstr "Unicode value (%x) not in font, ignored"
 msgid "Unicode value not in font"
 msgstr "Unicode value not in font"
 
+msgid "Unified Canadian Aboriginal Syllabics"
+msgstr "Unified Canadian Aboriginal Syllabics"
+
+msgid "Unified Canadian Aboriginal Syllabics Extended"
+msgstr "Unified Canadian Aboriginal Syllabics Extended"
+
+msgid "Use CID Map"
+msgstr "Use CID Map"
+
 msgid "VFlex Hint Color"
 msgstr "VFlex Hint Colour"
 
 msgid "VHint Active Color"
 msgstr "VHint Active Colour"
 
+msgid "Vedic Extensions"
+msgstr "Vedic Extensions"
+
 msgid "Vert. Hint Color"
 msgstr "Vert. Hint Colour"
+
+#, c-format
+msgid "Warning: FontForge's implementation of include statements in UFO features.fea files was wrong. Please correct your path `%s` as per the specification for guaranteed future compatibility. (See GitHub issue №4629 for more info.)"
+msgstr "Warning: FontForge's implementation of include statements in UFO features.fea files was wrong. Please correct your path `%s` as per the specification for guaranteed future compatibility. (See GitHub issue №4629 for more info.)"
 
 msgid ""
 "When centering an accent over a glyph, should the accent\n"
@@ -1036,14 +1393,20 @@ msgstr "Yes to _All"
 
 #, c-format
 msgid ""
+"You are attempting to clear %.30s which is referred to by\n"
+"another character. Are you sure you want to clear it?"
+msgstr ""
+"You are attempting to clear %.30s which is referred to by\n"
+"another character. Are you sure you want to clear it?"
+
+#, c-format
+msgid ""
 "You are attempting to paste a reference to %1$s into %2$s.\n"
-"But %1$s does not exist in this font, nor can I find the original character "
-"referred to.\n"
+"But %1$s does not exist in this font, nor can I find the original character referred to.\n"
 "It will not be copied."
 msgstr ""
 "You are attempting to paste a reference to %1$s into %2$s.\n"
-"But %1$s does not exist in this font, nor can I find the original character "
-"referred to.\n"
+"But %1$s does not exist in this font, nor can I find the original character referred to.\n"
 "It will not be copied."
 
 #, c-format
@@ -1057,17 +1420,63 @@ msgstr ""
 "Would you like to copy the original splines or delete the reference?"
 
 msgid ""
+"You are attempting to paste glyph instructions from one font to another. Generally this will not work unless the 'prep', 'fpgm' and 'cvt ' tables are the same.\n"
+"Do you want to continue anyway?"
+msgstr ""
+"You are attempting to paste glyph instructions from one font to another. Generally this will not work unless the 'prep', 'fpgm' and 'cvt ' tables are the same.\n"
+"Do you want to continue anyway?"
+
+msgid ""
 "You are deleting the last anchor point in this character.\n"
 "Doing so will cause this dialog to close, is that what you want?"
 msgstr ""
 "You are deleting the last anchor point in this character.\n"
 "Doing so will cause this dialogue to close, is that what you want?"
 
+msgid "You may not paste a reference into this window"
+msgstr "You may not paste a reference into this window"
+
 msgid "You must select a glyph before you can import an image into it"
 msgstr "You must select a glyph before you can import an image into it"
 
+msgid ""
+"Your font is missing the dotlessi glyph,\n"
+"please add it and remake your accented glyphs"
+msgstr ""
+"Your font is missing the dotlessi glyph,\n"
+"please add it and remake your accented glyphs"
+
+#. GT: Adobe decided that a dotless j glyph was needed, assigned a code
+#. GT: point to it in the private use area, and named it "dotlessj". Then
+#. GT: years later the Unicode people decided one was needed and assigned
+#. GT: it U+0237, so that's now the official code point and it is named
+#. GT: "uni0237". The name "dotlessj" is deprecated but still present in
+#. GT: many fonts. Neither "dotlessj" nor "uni0237" should be translated
+#. GT: because they are standard PostScript glyph names.
+#. GT: Again you may wish to explain that these refer to a "j" without a dot
+msgid ""
+"Your font is missing the uni0237 glyph,\n"
+"and the deprecated dotlessj glyph,\n"
+"please add the former and remake your accented glyphs"
+msgstr ""
+"Your font is missing the uni0237 glyph,\n"
+"and the deprecated dotlessj glyph,\n"
+"please add the former and remake your accented glyphs"
+
+msgid "_Add"
+msgstr "_Add"
+
+msgid "_Browse"
+msgstr "_Browse"
+
 msgid "_Center in Width"
 msgstr "_Centre in Width"
+
+msgid "_Delete"
+msgstr "_Delete"
+
+msgid "_Give Up"
+msgstr "_Give Up"
 
 msgid "_License..."
 msgstr "_Licence..."
@@ -1081,11 +1490,21 @@ msgstr "_No"
 msgid "_OK"
 msgstr "_OK"
 
+msgid "_Search"
+msgstr "_Search"
+
+msgid "_Use It"
+msgstr "_Use It"
+
 msgid "_Yes"
 msgstr "_Yes"
 
-msgid "couldn't write encodings file\n"
-msgstr "could not write encodings file\n"
+#, c-format
+msgid "cidmap entry out of bounds: %s"
+msgstr "cidmap entry out of bounds: %s"
+
+msgid "couldn't write encodings file"
+msgstr "could not write encodings file"
 
 msgid "electronic end user license table"
 msgstr "electronic end user licence table"

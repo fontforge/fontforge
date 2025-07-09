@@ -713,7 +713,7 @@ static void dumpcoveragetable(FILE *gpos,SplineChar **glyphs) {
 			LogError(_("Glyphs must be ordered when creating coverage table"));
 		}
 		if (glyphs[i]->ttf_glyph < 0) {
-			LogError(_("-1 glyph index in dumpcoveragetable.\n"));
+			LogError(_("-1 glyph index in dumpcoveragetable."));
 		} else {
 			// On the first validly TrueType-indexed glyph or at the start of any discontinuity, start a new range.
 			if (range_cnt == 0 || glyphs[i]->ttf_glyph > last + 1)
@@ -1386,7 +1386,7 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
 				seconds[end_cnt][0].devtablen +
 			        2;	/* Number of secondary glyphs */
 	    if ( glyph_len>65535 && end_cnt==start_cnt ) {
-		LogError(_("Lookup subtable %s contains a glyph %s whose kerning information takes up more than 64k bytes\n"),
+		LogError(_("Lookup subtable %s contains a glyph %s whose kerning information takes up more than 64k bytes"),
 			sub->subtable_name, glyphs[start_cnt]->name );
 		len += glyph_len;
 	    } else if ( len+glyph_len>65535 ) {
