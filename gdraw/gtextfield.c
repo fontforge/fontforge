@@ -2684,7 +2684,7 @@ static GTextField *_GTextFieldCreate(GTextField *gt, struct gwindow *base, GGadg
     _GGadget_Create(&gt->g,base,gd,data,def);
 
     gt->g.takes_input = true; gt->g.takes_keyboard = true; gt->g.focusable = true;
-    if ( gd->label!=NULL ) {
+    if ( gd->label!=NULL && gd->label->text!=NULL ) {
 	if ( gd->label->text_is_1byte )
 	    gt->text = /* def2u_*/ utf82u_copy((char *) gd->label->text);
 	else
