@@ -3025,22 +3025,25 @@ void readttfgpossub(FILE *ttf,struct ttfinfo *info,int gpos) {
 void readttfgdef(FILE *ttf,struct ttfinfo *info) {
     int lclo, gclass, mac, mas=0;
     int coverage, cnt, i,j, format;
-    int version;
+    int version_major, version_minor;
     uint16_t *glyphs, *lc_offsets, *offsets;
     uint32_t caret_base;
     PST *pst;
     SplineChar *sc;
 
     fseek(ttf,info->gdef_start,SEEK_SET);
-    version = getlong(ttf);
-    if ( version!=0x00010000 && version != 0x00010002 )
+    version_major = getushort(ttf);
+    version_minor = getushort(ttf);
+    if ( version_major != 1 ) {
+	LogError(_("Unsupported GDEF table version: %d.%d"), version_major, version_minor);
 return;
+    }
     info->g_bounds = info->gdef_start + info->gdef_length;
     gclass = getushort(ttf);
     /* attach list = */ getushort(ttf);
     lclo = getushort(ttf);		/* ligature caret list */
     mac = getushort(ttf);		/* mark attach class */
-    if ( version==0x00010002 )
+    if ( version_minor >= 2 )
 	mas = getushort(ttf);
 
     if ( gclass!=0 ) {
