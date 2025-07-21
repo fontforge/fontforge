@@ -1243,12 +1243,11 @@ static PyObject *PyFF_scriptFromUnicode(PyObject *UNUSED(self), PyObject *args) 
     return TagToPythonString(script, false);
 }
 
-static bool sanitize_str_for_printf(char** message, const char* warning_fmt) {
+static bool sanitize_str_for_printf(char** message, const char* py_routine_name) {
     size_t source_pos, target_pos = 0;
     size_t length = strlen(*message);
     char* sanitized = *message;
     size_t additional_characters = 0;
-    bool already_warned = warning_fmt == NULL; // if warning_fmt is NULL, don't warn
 
     // First count number of unescaped '%' so we don't reallocate the same
     // string multiple times:
@@ -1266,8 +1265,10 @@ static bool sanitize_str_for_printf(char** message, const char* warning_fmt) {
     }
     if (additional_characters == 0) {
         // String is okay to pass to printf and friends
-        return FALSE;  // new message wasn't allocated
+        return false;  // new message wasn't allocated
     }
+
+    LogError(_("Function %s() called with a message string containing unescaped format character(s): \"%s\""), py_routine_name, *message);
 
     // Actually sanitize the string and emit warnings in case the string was not
     // properly escaped.
@@ -1279,9 +1280,6 @@ static bool sanitize_str_for_printf(char** message, const char* warning_fmt) {
             if (source_pos != length - 1 && (*message)[source_pos + 1] == '%') {
                 source_pos++;
                 continue;
-            } else if (!already_warned) {
-                LogError(warning_fmt, *message);
-                already_warned = TRUE;
             }
         }
     }
@@ -1289,15 +1287,16 @@ static bool sanitize_str_for_printf(char** message, const char* warning_fmt) {
 
     // don't free *message, maybe someone else owns it (e.g. Python)
     *message = sanitized;
-    return TRUE;  // new message was allocated
+    return true;  // new message was allocated
 }
 
 static PyObject *PyFF_logError(PyObject *UNUSED(self), PyObject *args) {
     char *msg;
     if ( !PyArg_ParseTuple(args,"s", &msg) )
         return( NULL );
-    sanitize_str_for_printf(&msg, "logWarning called with a string containing unescaped format character(s): \"%s\"");
+    bool allocated = sanitize_str_for_printf(&msg, "logWarning");
     LogError(msg);
+    if (allocated) free(msg);
     Py_RETURN_NONE;
 }
 
@@ -1309,9 +1308,10 @@ static PyObject *PyFF_postError(PyObject *UNUSED(self), PyObject *args) {
     char *msg, *title;
     if ( !PyArg_ParseTuple(args,"ss", &title, &msg) )
         return( NULL );
-    sanitize_str_for_printf(&msg, "postError called with a message string containing unescaped format character(s): \"%s\"");
+    bool allocated = sanitize_str_for_printf(&msg, "postError");
     if( showPythonErrors )
         ff_post_error(title,msg);		/* Prints to stderr if no ui */
+    if (allocated) free(msg);
     Py_RETURN_NONE;
 }
 
@@ -1319,8 +1319,9 @@ static PyObject *PyFF_postNotice(PyObject *UNUSED(self), PyObject *args) {
     char *msg, *title;
     if ( !PyArg_ParseTuple(args,"ss", &title, &msg) )
         return( NULL );
-    sanitize_str_for_printf(&msg, "postNotice called with a message string containing unescaped format character(s): \"%s\"");
+    bool allocated = sanitize_str_for_printf(&msg, "postNotice");
     ff_post_notice(title,msg);		/* Prints to stderr if no ui */
+    if (allocated) free(msg);
     Py_RETURN_NONE;
 }
 
