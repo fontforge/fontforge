@@ -80,6 +80,7 @@
 #include "tottfgpos.h"
 #include "ttf.h"
 #include "ttfinstrs.h"
+#include "uiinterface.h"
 #include "ustring.h"
 #include "utanvec.h"
 #include "utype.h"
@@ -89,6 +90,7 @@
 #include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -1241,12 +1243,61 @@ static PyObject *PyFF_scriptFromUnicode(PyObject *UNUSED(self), PyObject *args) 
     return TagToPythonString(script, false);
 }
 
+static bool sanitize_str_for_printf(char** message, const char* py_routine_name) {
+    size_t source_pos, target_pos = 0;
+    size_t length = strlen(*message);
+    char* sanitized = *message;
+    size_t additional_characters = 0;
+
+    // First count number of unescaped '%' so we don't reallocate the same
+    // string multiple times:
+    for (source_pos = 0; source_pos < length; source_pos++) {
+        if ((*message)[source_pos] == '%') {
+            if (source_pos != length - 1 && (*message)[source_pos + 1] == '%') {
+                // format char % is properly escaped; nothing to do
+                source_pos++;
+                continue;
+            }
+            // not escaped
+            additional_characters++;
+        }
+        // no need to escape
+    }
+    if (additional_characters == 0) {
+        // String is okay to pass to printf and friends
+        return false;  // new message wasn't allocated
+    }
+
+    LogError(_("Function %s() called with a message string containing unescaped format character(s): \"%s\""), py_routine_name, *message);
+
+    // Actually sanitize the string and emit warnings in case the string was not
+    // properly escaped.
+    sanitized = malloc(length + additional_characters + 1);
+    for (source_pos = 0; source_pos < length; source_pos++) {
+        sanitized[target_pos++] = (*message)[source_pos];
+        if ((*message)[source_pos] == '%') {
+            sanitized[target_pos++] = '%';
+            if (source_pos != length - 1 && (*message)[source_pos + 1] == '%') {
+                source_pos++;
+                continue;
+            }
+        }
+    }
+    sanitized[target_pos] = '\0';
+
+    // don't free *message, maybe someone else owns it (e.g. Python)
+    *message = sanitized;
+    return true;  // new message was allocated
+}
+
 static PyObject *PyFF_logError(PyObject *UNUSED(self), PyObject *args) {
     char *msg;
     if ( !PyArg_ParseTuple(args,"s", &msg) )
-return( NULL );
+        return( NULL );
+    bool allocated = sanitize_str_for_printf(&msg, "logWarning");
     LogError(msg);
-Py_RETURN_NONE;
+    if (allocated) free(msg);
+    Py_RETURN_NONE;
 }
 
 // This allows the init code to post only less aggressive warning
@@ -1256,18 +1307,22 @@ static bool showPythonErrors = 1;
 static PyObject *PyFF_postError(PyObject *UNUSED(self), PyObject *args) {
     char *msg, *title;
     if ( !PyArg_ParseTuple(args,"ss", &title, &msg) )
-return( NULL );
+        return( NULL );
+    bool allocated = sanitize_str_for_printf(&msg, "postError");
     if( showPythonErrors )
         ff_post_error(title,msg);		/* Prints to stderr if no ui */
-Py_RETURN_NONE;
+    if (allocated) free(msg);
+    Py_RETURN_NONE;
 }
 
 static PyObject *PyFF_postNotice(PyObject *UNUSED(self), PyObject *args) {
     char *msg, *title;
     if ( !PyArg_ParseTuple(args,"ss", &title, &msg) )
-return( NULL );
+        return( NULL );
+    bool allocated = sanitize_str_for_printf(&msg, "postNotice");
     ff_post_notice(title,msg);		/* Prints to stderr if no ui */
-Py_RETURN_NONE;
+    if (allocated) free(msg);
+    Py_RETURN_NONE;
 }
 
 static PyObject *PyFF_openFilename(PyObject *UNUSED(self), PyObject *args) {
