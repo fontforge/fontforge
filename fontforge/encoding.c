@@ -2217,10 +2217,23 @@ return;
 
     /* Remove any kerning pairs that look at this character */
     for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
+	/* Remove matching horizontal kerning pairs */
 	for ( kprev=NULL, kp=sf->glyphs[i]->kerns; kp!=NULL; kprev = kp, kp=kp->next ) {
 	    if ( kp->sc==sc ) {
 		if ( kprev==NULL )
 		    sf->glyphs[i]->kerns = kp->next;
+		else
+		    kprev->next = kp->next;
+		kp->next = NULL;
+		KernPairsFree(kp);
+	break;
+	    }
+	}
+	/* Remove matching vertical kerning pairs */
+	for ( kprev=NULL, kp=sf->glyphs[i]->vkerns; kp!=NULL; kprev = kp, kp=kp->next ) {
+	    if ( kp->sc==sc ) {
+		if ( kprev==NULL )
+		    sf->glyphs[i]->vkerns = kp->next;
 		else
 		    kprev->next = kp->next;
 		kp->next = NULL;
