@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-07-09 02:27+0300\n"
-"PO-Revision-Date: 2025-07-08 23:21\n"
+"POT-Creation-Date: 2025-08-01 15:10+0300\n"
+"PO-Revision-Date: 2025-08-01 12:08\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Language: es_ES\n"
@@ -149,6 +149,9 @@ msgstr " Tabla de clase de interletraje incorrecta, ignorada"
 
 msgid " Bad ligature table, ignored"
 msgstr " Tabla de ligatura incorrecta, ignorada"
+
+msgid " Bad mark attachment table, ignored"
+msgstr " Tabla de enlace de marca incorrecta, ignorada"
 
 msgid " Bad multiple substitution table, ignored"
 msgstr " Tabla de sustitución múltiple incorrecta, ignorada"
@@ -1388,6 +1391,9 @@ msgstr "Añadir sub_tabla"
 
 msgid "Add Subscripts/Superscripts..."
 msgstr "Añadir subíndices/superíndices..."
+
+msgid "Add Unencoded"
+msgstr "Añadir no codificado"
 
 msgid "Add VHi_nt"
 msgstr "Añadir aju_ste vertical"
@@ -6288,6 +6294,9 @@ msgstr "Pred."
 msgid "DefaultFont"
 msgstr "Fuente predeterminada"
 
+msgid "DefaultShaper"
+msgstr "Moldeador por defecto"
+
 msgid "Define \"Almost Horizontal\""
 msgstr "Definir \"casi horizontal\""
 
@@ -7357,6 +7366,9 @@ msgstr "Error al eliminar %s."
 
 msgid "Error in WriteUFOLayer."
 msgstr "Error en WriteUFOLayer."
+
+msgid "Error occurred while adding unencoded slots"
+msgstr "Ocurrió un error al añadir espacios sin codificar"
 
 msgid "Error parsing color component."
 msgstr "Error al analizar el componente de color."
@@ -17462,6 +17474,9 @@ msgstr "Reflejar"
 msgid "Refresh File List"
 msgstr "Actualizar lista de archivos"
 
+msgid "Refresh Shaper"
+msgstr "Actualizar moldeador"
+
 #. GT: Refs is an abbreviation for References. Space is tight here
 msgid "Refs"
 msgstr "Refs"
@@ -19663,6 +19678,9 @@ msgstr "Tipo de forma"
 
 msgid "Shaped Fill"
 msgstr "Relleno de forma"
+
+msgid "Shaper preference is not implemented in contextual preferences"
+msgstr "Las preferencias del moldeador no están implementadas en preferencias contextuales"
 
 msgid "Shapes"
 msgstr "Formas"
@@ -22069,6 +22087,9 @@ msgstr "La fuente predeterminada no posee una tabla \"cvt\", pero la instancia %
 
 msgid "The default left margin (in points)"
 msgstr "El margen izquierdo por defecto (en puntos)"
+
+msgid "The default shaper for MetricsView."
+msgstr "El moldeador por defecto para la vista de métricas."
 
 msgid "The default size of the Em-Square in a newly created font."
 msgstr "Tamaño predeterminado del cuadratín en un fuente recién creada."
