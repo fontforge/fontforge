@@ -67,7 +67,7 @@
 #include "fv_mids.h"
 
 #include "gtk/show_histogram_shim.hpp"
-#include "gtk/dialogs.hpp"
+#include "gtk/print_dialog.hpp"
 #include "gtk/simple_dialogs.hpp"
 
 #include <math.h>
