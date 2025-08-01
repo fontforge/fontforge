@@ -40,9 +40,6 @@ static const std::string preview_area_css(
 // accomodate the CSS box-shadow.
 static const int wrapper_margin = 20;
 
-Glib::RefPtr<Gtk::PageSetup> PrintPreviewWidget::default_setup_ =
-    PrintPreviewWidget::create_default_setup();
-
 bool PrintPreviewWidget::draw_preview_area(
     const Cairo::RefPtr<Cairo::Context>& cr) {
     // Number of preview area pixels in a paper millimeter
@@ -92,6 +89,7 @@ void PrintPreviewWidget::draw_page_cb(
 void PrintPreviewWidget::update(
     const Glib::RefPtr<Gtk::PageSetup>& setup,
     const Glib::RefPtr<Gtk::PrintSettings>& settings) {
+    default_setup_ = PrintPreviewWidget::create_default_setup();
     current_setup_ = setup ? setup : default_setup_;
     resize_preview_area(fixed_wrapper.get_allocation());
 }

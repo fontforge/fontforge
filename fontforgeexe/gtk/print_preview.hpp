@@ -81,7 +81,7 @@ class PrintPreviewWidget : public Gtk::Grid {
 
     // The default A4-based setup is used for preview when no printer has been
     // selected yet.
-    static Glib::RefPtr<Gtk::PageSetup> default_setup_;
+    Glib::RefPtr<Gtk::PageSetup> default_setup_;
 
     // This setup should never be nullptr, all drawing functions rely on it.
     Glib::RefPtr<Gtk::PageSetup> current_setup_;
