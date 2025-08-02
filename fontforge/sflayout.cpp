@@ -28,6 +28,9 @@
 
 #include <fontforge-config.h>
 
+extern "C" {
+#include "fffreetype.h"
+}
 #include "bvedit.h"
 #include "encoding.h"
 #include "ffglib_compat.h"
