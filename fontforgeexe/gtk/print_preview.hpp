@@ -39,8 +39,8 @@ class PrintPreviewWidget : public Gtk::Grid {
     static Glib::ustring label();
 
     // This slot is provided to Gtk::PrintOperation
-    static void draw_page_cb(const Glib::RefPtr<Gtk::PrintContext>& context,
-                             int page_nr);
+    void draw_page_cb(const Glib::RefPtr<Gtk::PrintContext>& context,
+                      int page_nr);
 
     void update(const Glib::RefPtr<Gtk::PageSetup>& setup,
                 const Glib::RefPtr<Gtk::PrintSettings>& settings);
@@ -68,8 +68,8 @@ class PrintPreviewWidget : public Gtk::Grid {
         Gtk::Unit unit);
 
     // Draw the entire printable page.
-    static void draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
-                          const Cairo::Rectangle& printable_area, int page_nr);
+    void draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
+                   const Cairo::Rectangle& printable_area, int page_nr);
 
     bool draw_preview_area(const Cairo::RefPtr<Cairo::Context>& cr);
 

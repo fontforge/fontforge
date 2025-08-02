@@ -40,8 +40,10 @@ void print_dialog() {
     Glib::RefPtr<Gtk::PrintOperation> print_operation =
         Gtk::PrintOperation::create();
 
-    ff::dlg::PrintPreviewWidget* ff_preview_widget =
-        Gtk::make_managed<ff::dlg::PrintPreviewWidget>();
+    // The preview widget is also responsible for actual printing, which happens
+    // after the print dialog has been closed. We should manage its lifecycle
+    // independently.
+    ff::dlg::PrintPreviewWidget ff_preview_widget;
 
     // The user should be able to select page size and orientation. This is
     // particularly important for printing to PDF.
@@ -50,14 +52,14 @@ void print_dialog() {
     print_operation->set_use_full_page(true);
 
     print_operation->set_n_pages(1);
-    print_operation->signal_draw_page().connect(
-        &ff_preview_widget->draw_page_cb);
-    print_operation->set_custom_tab_label(ff_preview_widget->label());
+    print_operation->signal_draw_page().connect(sigc::mem_fun(
+        ff_preview_widget, &ff::dlg::PrintPreviewWidget::draw_page_cb));
+    print_operation->set_custom_tab_label(ff_preview_widget.label());
     print_operation->signal_create_custom_widget().connect(
-        [ff_preview_widget]() { return ff_preview_widget; });
+        [&ff_preview_widget]() { return &ff_preview_widget; });
 
-    ff_preview_widget->update(print_operation->get_default_page_setup(),
-                              print_operation->get_print_settings());
+    ff_preview_widget.update(print_operation->get_default_page_setup(),
+                             print_operation->get_print_settings());
     print_operation->signal_update_custom_widget().connect(
         [](Gtk::Widget* widget, const Glib::RefPtr<Gtk::PageSetup>& setup,
            const Glib::RefPtr<Gtk::PrintSettings>& settings) {
