@@ -34,7 +34,7 @@ namespace ff::dlg {
 
 class PrintPreviewWidget : public Gtk::Grid {
  public:
-    PrintPreviewWidget();
+    PrintPreviewWidget(Cairo::RefPtr<Cairo::FtFontFace> cairo_face);
 
     static Glib::ustring label();
 
@@ -91,6 +91,8 @@ class PrintPreviewWidget : public Gtk::Grid {
     Gtk::Allocation last_preview_allocation_;
 
     Gtk::Label dummy_label;
+
+    Cairo::RefPtr<Cairo::FtFontFace> cairo_face_;
 };
 
 }  // namespace ff::dlg

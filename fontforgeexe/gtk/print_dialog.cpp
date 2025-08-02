@@ -29,10 +29,24 @@
 
 #include <gtkmm.h>
 
+extern "C" {
+#include "fffreetype.h"
+}
+
 #include "application.hpp"
 #include "print_preview.hpp"
 
-void print_dialog() {
+static Cairo::RefPtr<Cairo::FtFontFace> create_cairo_face(SplineFont* sf) {
+    FTC* ftc = (FTC*)_FreeTypeFontContext(sf, NULL, NULL, ly_fore, ff_ttf,
+                                          ttf_flag_otmode, NULL);
+    FT_Face face = ftc->face;
+
+    // TODO: Correctly release face - see Cairo docs
+    auto cairo_face = Cairo::FtFontFace::create(face, 0);
+    return cairo_face;
+}
+
+void print_dialog(SplineFont* sf) {
     // To avoid instability, the GTK application is lazily initialized only when
     // a GTK window is invoked.
     ff::app::GtkApp();
@@ -40,10 +54,12 @@ void print_dialog() {
     Glib::RefPtr<Gtk::PrintOperation> print_operation =
         Gtk::PrintOperation::create();
 
+    auto cairo_face = create_cairo_face(sf);
+
     // The preview widget is also responsible for actual printing, which happens
     // after the print dialog has been closed. We should manage its lifecycle
     // independently.
-    ff::dlg::PrintPreviewWidget ff_preview_widget;
+    ff::dlg::PrintPreviewWidget ff_preview_widget(cairo_face);
 
     // The user should be able to select page size and orientation. This is
     // particularly important for printing to PDF.

@@ -53,8 +53,11 @@ bool PrintPreviewWidget::draw_preview_area(
     return true;
 }
 
-PrintPreviewWidget::PrintPreviewWidget()
-    : fixed_wrapper(0.5, 0.5, 0.5), current_setup_(default_setup_) {
+PrintPreviewWidget::PrintPreviewWidget(
+    Cairo::RefPtr<Cairo::FtFontFace> cairo_face)
+    : fixed_wrapper(0.5, 0.5, 0.5),
+      current_setup_(default_setup_),
+      cairo_face_(cairo_face) {
     if (is_win32_display()) {
         // In Windows the GTK preview tab is embedded in the native Print
         // Dialog. The native dialog is not resizable, and its size can't be
@@ -219,8 +222,7 @@ void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
     cr->paint();
 
     // Print sample text in black
-    cr->select_font_face("Sans", Cairo::FontSlant::FONT_SLANT_NORMAL,
-                         Cairo::FontWeight::FONT_WEIGHT_NORMAL);
+    cr->set_font_face(cairo_face_);
     cr->set_font_size(24.0);
     cr->move_to(50.0, 50.0);
     cr->set_source_rgb(0, 0, 0);
