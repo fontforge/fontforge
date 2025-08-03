@@ -36,6 +36,11 @@ namespace ff::dlg {
 static const std::string preview_area_css(
     "box { box-shadow: 3pt 3pt 3pt black;}");
 
+// Widget names to be referred by stack children
+static const std::string FULL_DISPLAY("full_display");
+static const std::string GLYPH_PAGES("glyph_pages");
+static const std::string SAMPLE_TEXT("sample_text");
+
 // Margin around the page preview area in pixels. Must be lerge enough to
 // accomodate the CSS box-shadow.
 static const int wrapper_margin = 20;
@@ -69,10 +74,54 @@ PrintPreviewWidget::PrintPreviewWidget(
     }
 
     build_compound_preview_area();
-    dummy_label = Gtk::Label("Dummy label");
+    Gtk::VBox* controls = Gtk::make_managed<Gtk::VBox>();
+
+    radio_full_display_ =
+        Gtk::make_managed<Gtk::RadioButton>(_("_Full Font Display"), true);
+    Gtk::RadioButton::Group group = radio_full_display_->get_group();
+    radio_glyph_pages_ = Gtk::make_managed<Gtk::RadioButton>(
+        group, _("Full Pa_ge Glyphs"), true);
+    radio_sample_text_ =
+        Gtk::make_managed<Gtk::RadioButton>(group, _("Sample Text"), true);
+
+    radio_full_display_->set_name(FULL_DISPLAY);
+    radio_glyph_pages_->set_name(GLYPH_PAGES);
+    radio_sample_text_->set_name(SAMPLE_TEXT);
+
+    radio_full_display_->signal_toggled().connect(
+        sigc::mem_fun(*this, &PrintPreviewWidget::on_display_toggled));
+    radio_glyph_pages_->signal_toggled().connect(
+        sigc::mem_fun(*this, &PrintPreviewWidget::on_display_toggled));
+    radio_sample_text_->signal_toggled().connect(
+        sigc::mem_fun(*this, &PrintPreviewWidget::on_display_toggled));
+
+    Gtk::HBox* size = Gtk::make_managed<Gtk::HBox>();
+    Gtk::SpinButton* size_entry = Gtk::make_managed<Gtk::SpinButton>();
+    size->pack_start(*Gtk::make_managed<Gtk::Label>(_("Size:")));
+    size->pack_start(*size_entry);
+    size->pack_start(*Gtk::make_managed<Gtk::Label>(_("points")));
+
+    size_entry->set_width_chars(3);
+    size_entry->set_numeric(true);
+    size_entry->set_adjustment(Gtk::Adjustment::create(12, 1, 120, 1, 3, 0));
+    size->set_halign(Gtk::ALIGN_START);
+
+    Gtk::Entry* sample_text_1line = Gtk::make_managed<Gtk::Entry>();
+    sample_text_1line->set_text("Dummy text");
+
+    stack_ = Gtk::make_managed<Gtk::Stack>();
+    stack_->add(*size, FULL_DISPLAY);
+    stack_->add(*Gtk::make_managed<Gtk::Label>(), GLYPH_PAGES);
+    stack_->add(*sample_text_1line, SAMPLE_TEXT);
+
+    controls->pack_start(*radio_full_display_);
+    controls->pack_start(*radio_glyph_pages_);
+    controls->pack_start(*radio_sample_text_);
+    controls->pack_start(*stack_);
+    controls->set_valign(Gtk::ALIGN_START);
 
     attach(fixed_wrapper, 0, 0);
-    attach(dummy_label, 1, 0);
+    attach(*controls, 1, 0);
     show_all();
 }
 
@@ -244,6 +293,15 @@ void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
     cr->rectangle(0, 100 * printable_area.height / printable_area.width - 1, 10,
                   1);
     cr->fill();
+}
+
+void PrintPreviewWidget::on_display_toggled() {
+    for (auto r :
+         {radio_full_display_, radio_glyph_pages_, radio_sample_text_}) {
+        if (r->get_active()) {
+            stack_->set_visible_child(r->get_name());
+        }
+    }
 }
 
 }  // namespace ff::dlg

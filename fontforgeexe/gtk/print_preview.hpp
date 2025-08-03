@@ -73,11 +73,19 @@ class PrintPreviewWidget : public Gtk::Grid {
 
     bool draw_preview_area(const Cairo::RefPtr<Cairo::Context>& cr);
 
+    void on_display_toggled();
+
     // Containers for compound preview area
     widget::FixedWithBackground fixed_wrapper;
     Gtk::Box box_wrapper;
     Gtk::Overlay overlay;
     Gtk::DrawingArea preview_area;
+
+    // Preview controls
+    Gtk::RadioButton* radio_full_display_;
+    Gtk::RadioButton* radio_glyph_pages_;
+    Gtk::RadioButton* radio_sample_text_;
+    Gtk::Stack* stack_;
 
     // The default A4-based setup is used for preview when no printer has been
     // selected yet.
@@ -89,8 +97,6 @@ class PrintPreviewWidget : public Gtk::Grid {
     // Keep the most recent preview pane requested position, to avoid excessive
     // resizes.
     Gtk::Allocation last_preview_allocation_;
-
-    Gtk::Label dummy_label;
 
     Cairo::RefPtr<Cairo::FtFontFace> cairo_face_;
 };
