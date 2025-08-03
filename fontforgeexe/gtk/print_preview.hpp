@@ -85,6 +85,8 @@ class PrintPreviewWidget : public Gtk::Grid {
     Gtk::RadioButton* radio_full_display_;
     Gtk::RadioButton* radio_glyph_pages_;
     Gtk::RadioButton* radio_sample_text_;
+
+    Gtk::Entry* sample_text_1line_;
     Gtk::Stack* stack_;
 
     // The default A4-based setup is used for preview when no printer has been

@@ -106,13 +106,15 @@ PrintPreviewWidget::PrintPreviewWidget(
     size_entry->set_adjustment(Gtk::Adjustment::create(12, 1, 120, 1, 3, 0));
     size->set_halign(Gtk::ALIGN_START);
 
-    Gtk::Entry* sample_text_1line = Gtk::make_managed<Gtk::Entry>();
-    sample_text_1line->set_text("Dummy text");
+    sample_text_1line_ = Gtk::make_managed<Gtk::Entry>();
+    sample_text_1line_->set_text("Dummy text");
+    sample_text_1line_->signal_changed().connect(
+        [this] { preview_area.queue_draw(); });
 
     stack_ = Gtk::make_managed<Gtk::Stack>();
     stack_->add(*size, FULL_DISPLAY);
     stack_->add(*Gtk::make_managed<Gtk::Label>(), GLYPH_PAGES);
-    stack_->add(*sample_text_1line, SAMPLE_TEXT);
+    stack_->add(*sample_text_1line_, SAMPLE_TEXT);
 
     controls->pack_start(*radio_full_display_);
     controls->pack_start(*radio_glyph_pages_);
@@ -263,6 +265,8 @@ Cairo::Rectangle PrintPreviewWidget::calculate_printable_area(
 void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
                                    const Cairo::Rectangle& printable_area,
                                    int page_nr) {
+    Glib::ustring sample_text = sample_text_1line_->get_text();
+
     cr->translate(printable_area.x, printable_area.y);
     cr->scale(printable_area.width / 100, printable_area.width / 100);
 
@@ -270,12 +274,16 @@ void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
     cr->set_source_rgb(1, 1, 1);
     cr->paint();
 
-    // Print sample text in black
+    // Set the desired font face
     cr->set_font_face(cairo_face_);
     cr->set_font_size(24.0);
-    cr->move_to(50.0, 50.0);
+    Cairo::FontExtents extents;
+    cr->get_font_extents(extents);
+
+    // Print sample text in black
+    cr->move_to(10.0, 10.0 + extents.height);
     cr->set_source_rgb(0, 0, 0);
-    cr->show_text("Hello World");
+    cr->show_text(sample_text);
 
     // Print horizontal reference mark in yellow
     cr->set_source_rgb(1.0, 1.0, 0.0);
