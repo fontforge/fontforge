@@ -30,9 +30,9 @@
 
 namespace ff::widget {
 
-class FixedWithBackground : public Gtk::Fixed {
+class AspectFrameWithBackground : public Gtk::AspectFrame {
  public:
-    FixedWithBackground(double red, double green, double blue)
+    AspectFrameWithBackground(double red, double green, double blue)
         : red_(red), green_(green), blue_(blue) {}
 
  protected:
@@ -42,7 +42,7 @@ class FixedWithBackground : public Gtk::Fixed {
         cr->paint();
 
         // Draw the rest of the widget
-        return Gtk::Fixed::on_draw(cr);
+        return Gtk::AspectFrame::on_draw(cr);
     }
 
  private:

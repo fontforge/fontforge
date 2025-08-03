@@ -60,7 +60,7 @@ bool PrintPreviewWidget::draw_preview_area(
 
 PrintPreviewWidget::PrintPreviewWidget(
     Cairo::RefPtr<Cairo::FtFontFace> cairo_face)
-    : fixed_wrapper(0.5, 0.5, 0.5),
+    : aspect_wrapper(0.5, 0.5, 0.5),
       current_setup_(default_setup_),
       cairo_face_(cairo_face) {
     if (is_win32_display()) {
@@ -122,7 +122,7 @@ PrintPreviewWidget::PrintPreviewWidget(
     controls->pack_start(*stack_);
     controls->set_valign(Gtk::ALIGN_START);
 
-    attach(fixed_wrapper, 0, 0);
+    attach(aspect_wrapper, 0, 0);
     attach(*controls, 1, 0);
     show_all();
 }
@@ -145,7 +145,12 @@ void PrintPreviewWidget::update(
     const Glib::RefPtr<Gtk::PrintSettings>& settings) {
     default_setup_ = PrintPreviewWidget::create_default_setup();
     current_setup_ = setup ? setup : default_setup_;
-    resize_preview_area(fixed_wrapper.get_allocation());
+
+    double page_ratio = page_ratio =
+        current_setup_->get_paper_width(Gtk::UNIT_MM) /
+        current_setup_->get_paper_height(Gtk::UNIT_MM);
+
+    aspect_wrapper.set(Gtk::ALIGN_CENTER, Gtk::ALIGN_CENTER, page_ratio, false);
 }
 
 Glib::RefPtr<Gtk::PageSetup> PrintPreviewWidget::create_default_setup() {
@@ -169,81 +174,25 @@ void PrintPreviewWidget::build_compound_preview_area() {
     // The preview area contains a page preview with a 3D shadow on a grey
     // background, in a Firefox style. Unfortunately, 3D shadow is difficult to
     // draw manually in Cairo, so we implement it using CSS. This requires a
-    // Gtk::Fixed container, on which the preview widget can be placed in a free
-    // manner. To support CSS styling, the preview widget is wrapped with
+    // Gtk::AspectFrame container, which locks the aspect ratio of the preview
+    // widget. To support CSS styling, the preview widget is wrapped with
     // Gtk::Box, which provides a CSS node.
-    ui_utils::apply_css(box_wrapper, preview_area_css);
+    Gtk::Box* box_wrapper = Gtk::make_managed<Gtk::Box>();
+    ui_utils::apply_css(*box_wrapper, preview_area_css);
+    box_wrapper->set_margin_start(wrapper_margin);
+    box_wrapper->set_margin_end(wrapper_margin);
+    box_wrapper->set_margin_top(0);  // Gtk::Frame already boosts the top margin
+    box_wrapper->set_margin_bottom(wrapper_margin);
 
-    fixed_wrapper.set_hexpand(true);
-    fixed_wrapper.set_vexpand(true);
+    aspect_wrapper.set_hexpand(true);
+    aspect_wrapper.set_vexpand(true);
+    aspect_wrapper.set_shadow_type(Gtk::SHADOW_NONE);
+
     preview_area.signal_draw().connect(
         sigc::mem_fun(*this, &PrintPreviewWidget::draw_preview_area));
-    // Localize the page-sized preview area inside the allowed space.
-    fixed_wrapper.signal_size_allocate().connect(
-        [this](Gtk::Allocation& a) { resize_preview_area(a); });
 
-    fixed_wrapper.put(box_wrapper, 0, 0);
-    box_wrapper.pack_start(preview_area, true, true);
-}
-
-Gtk::Allocation PrintPreviewWidget::calculate_preview_allocation(
-    double page_ratio, const Gtk::Allocation& wrapper_size) {
-    int available_width = wrapper_size.get_width() - 2 * wrapper_margin;
-    int available_height = wrapper_size.get_height() - 2 * wrapper_margin;
-    Gtk::Allocation page_rectangle;
-
-    if (available_width < 0 || available_height < 0) {
-        return page_rectangle;
-    }
-
-    double wrapper_ratio = available_height / (double)available_width;
-    if (wrapper_ratio > page_ratio) {
-        // total area too high, leaving space above and below the page preview
-        // area
-        int space_above = (available_height - available_width * page_ratio) / 2;
-        page_rectangle =
-            Gtk::Allocation(wrapper_margin, wrapper_margin + space_above,
-                            available_width, available_width * page_ratio);
-    } else {
-        // total area too wide, leaving space at the left and at the right of
-        // the page preview area
-        int space_left = (available_width - available_height / page_ratio) / 2;
-        page_rectangle =
-            Gtk::Allocation(wrapper_margin + space_left, wrapper_margin,
-                            available_height / page_ratio, available_height);
-    }
-
-    return page_rectangle;
-}
-
-void PrintPreviewWidget::resize_preview_area(
-    const Gtk::Allocation& wrapper_size) {
-    double page_ratio = page_ratio =
-        current_setup_->get_paper_height(Gtk::UNIT_MM) /
-        current_setup_->get_paper_width(Gtk::UNIT_MM);
-
-    Gtk::Allocation page_rectangle =
-        calculate_preview_allocation(page_ratio, wrapper_size);
-
-    // Check if the new size is actually needed. Without this check there would
-    // be an inifinite cascade of size requests, as preview_area resizing
-    // triggers fixed_wrapper resizing, and vice versa.
-    if (page_rectangle == last_preview_allocation_) {
-        return;
-    }
-
-    last_preview_allocation_ = page_rectangle;
-    preview_area.set_size_request(page_rectangle.get_width(),
-                                  page_rectangle.get_height());
-    fixed_wrapper.move(box_wrapper, page_rectangle.get_x(),
-                       page_rectangle.get_y());
-
-    // queue_resize() will not work right inside the slot. We need to defer
-    // it as a separate subsequent event.
-    Glib::signal_idle().connect_once([this]() {
-        preview_area.queue_resize();
-        queue_draw();
-    });
+    box_wrapper->pack_start(preview_area, true, true);
+    aspect_wrapper.add(*box_wrapper);
 }
 
 Cairo::Rectangle PrintPreviewWidget::calculate_printable_area(
