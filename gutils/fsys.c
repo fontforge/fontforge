@@ -779,11 +779,11 @@ const char *getPixmapDir(void) {
     static char *pixmapdir=NULL;
     if (!pixmapdir) {
 	if (devel_env) {
-	    /* THEME macro is imported from the CMake ${THEME} variable */
+	    /* GUI_THEME macro is imported from the CMake ${GUI_THEME} variable */
 #if defined(__MINGW32__)
-            char *theme_src = smprintf("%s/../../work/mingw64/fontforge/fontforgeexe/pixmaps/%s", program_root, THEME);
+            char *theme_src = smprintf("%s/../../work/mingw64/fontforge/fontforgeexe/pixmaps/%s", program_root, GUI_THEME);
 #else
-            char *theme_src = smprintf("%s/../fontforgeexe/pixmaps/%s", program_root, THEME);
+            char *theme_src = smprintf("%s/../fontforgeexe/pixmaps/%s", program_root, GUI_THEME);
 #endif
             pixmapdir = GFileGetAbsoluteName(theme_src);
             free(theme_src);
