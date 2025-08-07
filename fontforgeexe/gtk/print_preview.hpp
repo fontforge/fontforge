@@ -60,7 +60,7 @@ class PrintPreviewWidget : public Gtk::Grid {
         Gtk::Unit unit);
 
     // Draw the entire printable page.
-    void draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
+    void draw_page(const Cairo::RefPtr<Cairo::Context>& cr, double scale, 
                    const Cairo::Rectangle& printable_area, int page_nr);
 
     bool draw_preview_area(const Cairo::RefPtr<Cairo::Context>& cr);

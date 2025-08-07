@@ -47,13 +47,13 @@ static const int wrapper_margin = 20;
 
 bool PrintPreviewWidget::draw_preview_area(
     const Cairo::RefPtr<Cairo::Context>& cr) {
-    // Number of preview area pixels in a paper millimeter
+    // Number of preview area pixels in a paper pt (1 pt = 1/72 in)
     double scale = preview_area.get_allocated_width() /
-                   current_setup_->get_paper_width(Gtk::UNIT_MM);
+                   current_setup_->get_paper_width(Gtk::UNIT_POINTS);
     Cairo::Rectangle printable_area =
-        calculate_printable_area(scale, current_setup_, Gtk::UNIT_MM);
+        calculate_printable_area(scale, current_setup_, Gtk::UNIT_POINTS);
 
-    draw_page(cr, printable_area, 0);
+    draw_page(cr, scale, printable_area, 0);
 
     return true;
 }
@@ -137,7 +137,7 @@ void PrintPreviewWidget::draw_page_cb(
     Cairo::Rectangle printable_area =
         calculate_printable_area(1.0, setup, Gtk::UNIT_POINTS);
 
-    draw_page(cr, printable_area, page_nr);
+    draw_page(cr, 1.0, printable_area, page_nr);
 }
 
 void PrintPreviewWidget::update(
@@ -211,13 +211,13 @@ Cairo::Rectangle PrintPreviewWidget::calculate_printable_area(
     return printable_area;
 }
 
-void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
+void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr, double scale,
                                    const Cairo::Rectangle& printable_area,
                                    int page_nr) {
     Glib::ustring sample_text = sample_text_1line_->get_text();
 
     cr->translate(printable_area.x, printable_area.y);
-    cr->scale(printable_area.width / 100, printable_area.width / 100);
+    cr->scale(scale, scale);
 
     // White background
     cr->set_source_rgb(1, 1, 1);
