@@ -96,15 +96,17 @@ PrintPreviewWidget::PrintPreviewWidget(
         sigc::mem_fun(*this, &PrintPreviewWidget::on_display_toggled));
 
     Gtk::HBox* size = Gtk::make_managed<Gtk::HBox>();
-    Gtk::SpinButton* size_entry = Gtk::make_managed<Gtk::SpinButton>();
+    size_entry_ = Gtk::make_managed<Gtk::SpinButton>();
     size->pack_start(*Gtk::make_managed<Gtk::Label>(_("Size:")));
-    size->pack_start(*size_entry);
+    size->pack_start(*size_entry_);
     size->pack_start(*Gtk::make_managed<Gtk::Label>(_("points")));
 
-    size_entry->set_width_chars(3);
-    size_entry->set_numeric(true);
-    size_entry->set_adjustment(Gtk::Adjustment::create(12, 1, 120, 1, 3, 0));
+    size_entry_->set_width_chars(3);
+    size_entry_->set_numeric(true);
+    size_entry_->set_adjustment(Gtk::Adjustment::create(20, 1, 120, 1, 3, 0));
     size->set_halign(Gtk::ALIGN_START);
+    size_entry_->signal_value_changed().connect(
+        [this] { preview_area.queue_draw(); });
 
     sample_text_1line_ = Gtk::make_managed<Gtk::Entry>();
     sample_text_1line_->set_text("Dummy text");
@@ -134,10 +136,15 @@ void PrintPreviewWidget::draw_page_cb(
     Cairo::RefPtr<Cairo::Context> cr = context->get_cairo_context();
     Glib::RefPtr<Gtk::PageSetup> setup = context->get_page_setup();
 
-    Cairo::Rectangle printable_area =
-        calculate_printable_area(1.0, setup, Gtk::UNIT_POINTS);
+    // The physical paper page is measured in points (1/72 in). We should not
+    // scale it, so that font size definitions (provided by the user) retain
+    // their physical size.
+    double scale = 1.0;
 
-    draw_page(cr, 1.0, printable_area, page_nr);
+    Cairo::Rectangle printable_area =
+        calculate_printable_area(scale, setup, Gtk::UNIT_POINTS);
+
+    draw_page(cr, scale, printable_area, page_nr);
 }
 
 void PrintPreviewWidget::update(
@@ -211,10 +218,12 @@ Cairo::Rectangle PrintPreviewWidget::calculate_printable_area(
     return printable_area;
 }
 
-void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr, double scale,
+void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
+                                   double scale,
                                    const Cairo::Rectangle& printable_area,
                                    int page_nr) {
     Glib::ustring sample_text = sample_text_1line_->get_text();
+    double font_size = size_entry_->get_value();
 
     cr->translate(printable_area.x, printable_area.y);
     cr->scale(scale, scale);
@@ -225,7 +234,7 @@ void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr, doub
 
     // Set the desired font face
     cr->set_font_face(cairo_face_);
-    cr->set_font_size(24.0);
+    cr->set_font_size(font_size);
     Cairo::FontExtents extents;
     cr->get_font_extents(extents);
 
@@ -259,6 +268,7 @@ void PrintPreviewWidget::on_display_toggled() {
             stack_->set_visible_child(r->get_name());
         }
     }
+    preview_area.queue_draw();
 }
 
 }  // namespace ff::dlg

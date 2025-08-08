@@ -60,7 +60,7 @@ class PrintPreviewWidget : public Gtk::Grid {
         Gtk::Unit unit);
 
     // Draw the entire printable page.
-    void draw_page(const Cairo::RefPtr<Cairo::Context>& cr, double scale, 
+    void draw_page(const Cairo::RefPtr<Cairo::Context>& cr, double scale,
                    const Cairo::Rectangle& printable_area, int page_nr);
 
     bool draw_preview_area(const Cairo::RefPtr<Cairo::Context>& cr);
@@ -76,6 +76,7 @@ class PrintPreviewWidget : public Gtk::Grid {
     Gtk::RadioButton* radio_glyph_pages_;
     Gtk::RadioButton* radio_sample_text_;
 
+    Gtk::SpinButton* size_entry_;
     Gtk::Entry* sample_text_1line_;
     Gtk::Stack* stack_;
 
