@@ -62,7 +62,7 @@ PrintPreviewWidget::PrintPreviewWidget(
     Cairo::RefPtr<Cairo::FtFontFace> cairo_face)
     : aspect_wrapper(0.5, 0.5, 0.5),
       current_setup_(default_setup_),
-      cairo_face_(cairo_face) {
+      cairo_painter_(cairo_face) {
     if (is_win32_display()) {
         // In Windows the GTK preview tab is embedded in the native Print
         // Dialog. The native dialog is not resizable, and its size can't be
@@ -225,40 +225,8 @@ void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
     Glib::ustring sample_text = sample_text_1line_->get_text();
     double font_size = size_entry_->get_value();
 
-    cr->translate(printable_area.x, printable_area.y);
-    cr->scale(scale, scale);
-
-    // White background
-    cr->set_source_rgb(1, 1, 1);
-    cr->paint();
-
-    // Set the desired font face
-    cr->set_font_face(cairo_face_);
-    cr->set_font_size(font_size);
-    Cairo::FontExtents extents;
-    cr->get_font_extents(extents);
-
-    // Print sample text in black
-    cr->move_to(10.0, 10.0 + extents.height);
-    cr->set_source_rgb(0, 0, 0);
-    cr->show_text(sample_text);
-
-    // Print horizontal reference mark in yellow
-    cr->set_source_rgb(1.0, 1.0, 0.0);
-    cr->rectangle(0, 0, 100, 10);
-    cr->fill();
-    cr->set_source_rgb(0.0, 0.0, 0.0);
-    cr->rectangle(99, 0, 1, 10);
-    cr->fill();
-
-    // Print vertical reference mark in red
-    cr->set_source_rgb(1.0, 0.0, 0.0);
-    cr->rectangle(0, 0, 10, 100 * printable_area.height / printable_area.width);
-    cr->fill();
-    cr->set_source_rgb(0.0, 0.0, 0.0);
-    cr->rectangle(0, 100 * printable_area.height / printable_area.width - 1, 10,
-                  1);
-    cr->fill();
+    cairo_painter_.draw_page(cr, scale, printable_area, 0, sample_text,
+                             font_size);
 }
 
 void PrintPreviewWidget::on_display_toggled() {

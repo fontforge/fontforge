@@ -28,6 +28,7 @@
 
 #include <gtkmm.h>
 
+#include "cairo_painter.hpp"
 #include "widgets.hpp"
 
 namespace ff::dlg {
@@ -87,7 +88,7 @@ class PrintPreviewWidget : public Gtk::Grid {
     // This setup should never be nullptr, all drawing functions rely on it.
     Glib::RefPtr<Gtk::PageSetup> current_setup_;
 
-    Cairo::RefPtr<Cairo::FtFontFace> cairo_face_;
+    utils::CairoPainter cairo_painter_;
 };
 
 }  // namespace ff::dlg

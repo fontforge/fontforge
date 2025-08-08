@@ -220,6 +220,16 @@ add_library(fontforge
 
 add_subdirectory(shapers)
 
+# TODO(iorsh): Move this to fontforge/layout/
+if(ENABLE_GUI)
+  target_sources(fontforge PRIVATE
+    cairo_painter.hpp
+    cairo_painter.cpp
+  )
+  target_link_libraries(fontforge PRIVATE PkgConfig::CairoMM)
+  target_compile_definitions(fontforge PRIVATE ENABLE_CAIRO)
+endif()
+
 if(ENABLE_WOFF2_RESULT)
   target_sources(fontforge PRIVATE woff2.cc)
 endif()
