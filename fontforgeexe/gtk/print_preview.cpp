@@ -45,19 +45,6 @@ static const std::string SAMPLE_TEXT("sample_text");
 // accomodate the CSS box-shadow.
 static const int wrapper_margin = 20;
 
-bool PrintPreviewWidget::draw_preview_area(
-    const Cairo::RefPtr<Cairo::Context>& cr) {
-    // Number of preview area pixels in a paper pt (1 pt = 1/72 in)
-    double scale = preview_area.get_allocated_width() /
-                   current_setup_->get_paper_width(Gtk::UNIT_POINTS);
-    Cairo::Rectangle printable_area =
-        calculate_printable_area(scale, current_setup_, Gtk::UNIT_POINTS);
-
-    draw_page(cr, scale, printable_area, 0);
-
-    return true;
-}
-
 PrintPreviewWidget::PrintPreviewWidget(
     Cairo::RefPtr<Cairo::FtFontFace> cairo_face)
     : aspect_wrapper(0.5, 0.5, 0.5),
@@ -227,6 +214,19 @@ void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
 
     cairo_painter_.draw_page(cr, scale, printable_area, 0, sample_text,
                              font_size);
+}
+
+bool PrintPreviewWidget::draw_preview_area(
+    const Cairo::RefPtr<Cairo::Context>& cr) {
+    // Number of preview area pixels in a paper pt (1 pt = 1/72 in)
+    double scale = preview_area.get_allocated_width() /
+                   current_setup_->get_paper_width(Gtk::UNIT_POINTS);
+    Cairo::Rectangle printable_area =
+        calculate_printable_area(scale, current_setup_, Gtk::UNIT_POINTS);
+
+    draw_page(cr, scale, printable_area, 0);
+
+    return true;
 }
 
 void PrintPreviewWidget::on_display_toggled() {
