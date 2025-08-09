@@ -27,6 +27,15 @@
 
 #include "cairo_painter.hpp"
 
+#include <array>
+#include <set>
+
+extern "C" {
+#include "gutils.h"
+#include "splinechar.h"
+#include "ustring.h"
+}
+
 namespace ff::utils {
 
 void CairoPainter::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
@@ -68,6 +77,197 @@ void CairoPainter::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
     cr->rectangle(0, 100 * printable_area.height / printable_area.width - 1, 10,
                   1);
     cr->fill();
+}
+
+static void set_surface_metadata(const Cairo::RefPtr<Cairo::Context>& cr,
+                                 const std::string& title) {
+    std::string author = GetAuthor();
+    Cairo::RefPtr<Cairo::Surface> surface = cr->get_target();
+    cairo_surface_t* c_surface = static_cast<cairo_surface_t*>(surface->cobj());
+
+    Cairo::RefPtr<Cairo::PdfSurface> pdf_surface =
+        Cairo::RefPtr<Cairo::PdfSurface>::cast_dynamic(surface);
+    if (pdf_surface) {
+        cairo_pdf_surface_set_metadata(c_surface, CAIRO_PDF_METADATA_TITLE,
+                                       title.c_str());
+        cairo_pdf_surface_set_metadata(c_surface, CAIRO_PDF_METADATA_AUTHOR,
+                                       author.c_str());
+        cairo_pdf_surface_set_metadata(c_surface, CAIRO_PDF_METADATA_CREATOR,
+                                       "FontForge");
+    }
+    Cairo::RefPtr<Cairo::PsSurface> ps_surface =
+        Cairo::RefPtr<Cairo::PsSurface>::cast_dynamic(surface);
+    if (ps_surface) {
+        cairo_ps_surface_dsc_comment(c_surface, ("%%Title: " + title).c_str());
+        cairo_ps_surface_dsc_comment(c_surface, "%%Creator: FontForge");
+        cairo_ps_surface_dsc_comment(c_surface, ("%%For: " + author).c_str());
+    }
+}
+
+static void draw_centered_text(const Cairo::RefPtr<Cairo::Context>& cr,
+                               const Cairo::Rectangle& box,
+                               const std::string& text) {
+    Cairo::FontExtents extents;
+    cr->get_font_extents(extents);
+
+    Cairo::TextExtents text_extents;
+    cr->get_text_extents(text, text_extents);
+
+    // The text is aligned vertically so that its ascent and descent are
+    // together centered around the box horizontal middle line. This ensures
+    // that for multiple aligned boxes the text in them would also be aligned.
+    cr->move_to(box.x + (box.width - text_extents.width) / 2,
+                box.y + (box.height + extents.ascent) / 2);
+    cr->show_text(text);
+}
+
+// Returns vector of glyph lines. Each line has a prefix label, e.g. "05D0", and
+// a list of codepoints. All the index lists must have the same size, which
+// corresponds to the number of slots per line. An index can be -1, which means
+// no glyph should be drawn at that slot.
+std::vector<std::pair<std::string, std::vector<int>>> split_to_lines(
+    const PrintGlyphMap& print_map, size_t line_length) {
+    std::set<int> encoded_glyphs;
+    for (const auto& glyph_item : print_map) {
+        if (glyph_item.second->unicodeenc == -1) continue;
+        encoded_glyphs.insert(glyph_item.second->unicodeenc);
+    }
+
+    // Group encoded glyphs into lines.
+    std::map<int, std::vector<int>> cp_lines;
+    for (int codepoint : encoded_glyphs) {
+        // round to a multiple of line_length
+        int prefix = codepoint / line_length * line_length;
+
+        if (!cp_lines.count(prefix)) {
+            cp_lines[prefix] = {codepoint};
+        } else {
+            cp_lines[prefix].push_back(codepoint);
+        }
+    }
+
+    // Convert each line of codepoints into glyph line
+    std::vector<std::pair<std::string, std::vector<int>>> glyph_lines;
+    for (const auto& cp_line : cp_lines) {
+        // Format prefix into 4-digit hex label
+        char hex_label[5] = "\0";
+        sprintf(hex_label, "%04X", cp_line.first);
+
+        // Pad vector of codepoints with missing slots
+        std::vector<int> slots(line_length, -1);
+        for (int cp : cp_line.second) {
+            slots[cp % line_length] = cp;
+        }
+
+        glyph_lines.emplace_back(hex_label, slots);
+    }
+
+    return glyph_lines;
+}
+
+// Rewritten PIFontDisplay()
+void CairoPainter::draw_page_full_display(
+    const Cairo::RefPtr<Cairo::Context>& cr, double scale,
+    const Cairo::Rectangle& printable_area, int page_nr, double pointsize) {
+    double offset_x;
+    Cairo::FontExtents extents;
+
+    std::string document_title = "Font Display for " + font_name_;
+    set_surface_metadata(cr, document_title);
+
+    cr->translate(printable_area.x, printable_area.y);
+    cr->scale(scale, scale);
+
+    Cairo::Rectangle scaled_printable_area{0, 0, printable_area.width / scale,
+                                           printable_area.height / scale};
+
+    double extravspace = pointsize / 6;
+    double extrahspace = pointsize / 3;
+
+    // All dimensions are in points
+    double margin = 36;
+    double top_margin = 96;
+    double left_code_area_width = 36;
+    double top_code_area_height = 12;
+
+    double char_area_width =
+        scaled_printable_area.width - margin * 2 - left_code_area_width;
+    double char_area_height = scaled_printable_area.height - margin -
+                              top_margin - top_code_area_height;
+    int max_slots = static_cast<int>(
+        std::floor(char_area_width / (extrahspace + pointsize)));
+    int max_lines = static_cast<int>(
+        std::floor(char_area_height / (extravspace + pointsize)));
+
+    cr->set_source_rgb(0, 0, 0);
+
+    // Set title
+    cr->select_font_face("times", Cairo::FONT_SLANT_NORMAL,
+                         Cairo::FONT_WEIGHT_BOLD);
+    cr->set_font_size(12.0);
+    draw_centered_text(cr, {0, 0, scaled_printable_area.width, top_margin},
+                       document_title);
+
+    // We want 2^n slots in a line, for the simplicity of hexadecimal
+    // representation.
+    size_t line_length = (max_slots >= 16)  ? 16
+                         : (max_slots >= 8) ? 8
+                         : (max_slots >= 4) ? 4
+                         : (max_slots >= 2) ? 2
+                                            : 1;
+    std::vector<std::pair<std::string, std::vector<int>>> glyph_lines =
+        split_to_lines(print_map_, line_length);
+
+    static const std::array<std::string, 16> slot_labels = {
+        "0", "1", "2", "3", "4", "5", "6", "7",
+        "8", "9", "A", "B", "C", "D", "E", "F"};
+    for (size_t i = 0; i < line_length; ++i) {
+        Cairo::Rectangle slot{margin + left_code_area_width + extrahspace +
+                                  i * (extrahspace + pointsize),
+                              top_margin, pointsize, top_code_area_height};
+        draw_centered_text(cr, slot, slot_labels[i]);
+    }
+
+    for (size_t i = 0; i < max_lines; ++i) {
+        Cairo::Rectangle slot{margin,
+                              top_margin + top_code_area_height + extravspace +
+                                  i * (extravspace + pointsize),
+                              left_code_area_width, pointsize};
+        if (i >= glyph_lines.size()) {
+            break;
+        }
+        const auto& glyph_line = glyph_lines[i];
+
+        // Draw line label
+        cr->select_font_face("times", Cairo::FONT_SLANT_NORMAL,
+                             Cairo::FONT_WEIGHT_BOLD);
+        cr->set_font_size(12.0);
+        draw_centered_text(cr, slot, glyph_line.first);
+
+        // Set the user font face
+        cr->set_font_face(cairo_face_);
+        cr->set_font_size(pointsize);
+
+        for (size_t j = 0; j < glyph_line.second.size(); ++j) {
+            int codepoint = glyph_line.second[j];
+            if (codepoint == -1) {
+                continue;
+            }
+
+            unichar_t glyph_unistr[2] = {0, 0};
+            glyph_unistr[0] = (unichar_t)codepoint;
+            char* glyph_utf8 = u2utf8_copy(glyph_unistr);
+
+            // Print sample glyph
+            Cairo::Rectangle slot{margin + left_code_area_width + extrahspace +
+                                      j * (extrahspace + pointsize),
+                                  top_margin + top_code_area_height +
+                                      extravspace +
+                                      i * (extravspace + pointsize),
+                                  pointsize, pointsize};
+            draw_centered_text(cr, slot, glyph_utf8);
+        }
+    }
 }
 
 }  // namespace ff::utils

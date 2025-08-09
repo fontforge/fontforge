@@ -45,11 +45,10 @@ static const std::string SAMPLE_TEXT("sample_text");
 // accomodate the CSS box-shadow.
 static const int wrapper_margin = 20;
 
-PrintPreviewWidget::PrintPreviewWidget(
-    Cairo::RefPtr<Cairo::FtFontFace> cairo_face)
+PrintPreviewWidget::PrintPreviewWidget(const utils::CairoPainter& cairo_painter)
     : aspect_wrapper(0.5, 0.5, 0.5),
       current_setup_(default_setup_),
-      cairo_painter_(cairo_face) {
+      cairo_painter_(cairo_painter) {
     if (is_win32_display()) {
         // In Windows the GTK preview tab is embedded in the native Print
         // Dialog. The native dialog is not resizable, and its size can't be
@@ -212,7 +211,11 @@ void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
     Glib::ustring sample_text = sample_text_1line_->get_text();
     double font_size = size_entry_->get_value();
 
-    cairo_painter_.draw_page(cr, scale, printable_area, 0, sample_text,
+    if (radio_full_display_->get_active()) {
+        return cairo_painter_.draw_page_full_display(cr, scale, printable_area,
+                                                     page_nr, font_size);
+    }
+    cairo_painter_.draw_page(cr, scale, printable_area, page_nr, sample_text,
                              font_size);
 }
 

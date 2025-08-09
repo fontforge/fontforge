@@ -26,22 +26,40 @@
  */
 #pragma once
 
+#include <map>
 #include <cairomm/context.h>
+
+typedef struct splinechar SplineChar;
+
+using PrintGlyphMap = std::map<int, SplineChar*>;
 
 namespace ff::utils {
 
 class CairoPainter {
  public:
-    explicit CairoPainter(Cairo::RefPtr<Cairo::FtFontFace> cairo_face)
-        : cairo_face_(cairo_face) {}
+    CairoPainter(Cairo::RefPtr<Cairo::FtFontFace> cairo_face,
+                 const PrintGlyphMap& print_map, const std::string& font_name)
+        : cairo_face_(cairo_face),
+          print_map_(print_map),
+          font_name_(font_name) {}
 
     // Draw the entire printable page.
     void draw_page(const Cairo::RefPtr<Cairo::Context>& cr, double scale,
                    const Cairo::Rectangle& printable_area, int page_nr,
                    const std::string& sample_text, double font_size);
 
+    // Draw full font display as a character grid.
+    void draw_page_full_display(const Cairo::RefPtr<Cairo::Context>& cr,
+                                double scale,
+                                const Cairo::Rectangle& printable_area,
+                                int page_nr, double pointsize);
+
  private:
     Cairo::RefPtr<Cairo::FtFontFace> cairo_face_;
+
+    PrintGlyphMap print_map_;
+
+    std::string font_name_;
 };
 
 }  // namespace ff::utils

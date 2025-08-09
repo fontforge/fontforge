@@ -31,9 +31,17 @@
 
 extern "C" {
 #include "fffreetype.h"
+#include "splinechar.h"
+
+// TODO(iorsh): This include should go to cairo_painter.hpp.
+#include "shapers/metrics.h"
+
+extern SplineCharTTFMap* MakeGlyphTTFMap(SplineFont* sf);
+extern char* SFGetFullName(SplineFont* sf);
 }
 
 #include "application.hpp"
+#include "cairo_painter.hpp"
 #include "print_preview.hpp"
 
 static Cairo::RefPtr<Cairo::FtFontFace> create_cairo_face(SplineFont* sf) {
@@ -46,6 +54,17 @@ static Cairo::RefPtr<Cairo::FtFontFace> create_cairo_face(SplineFont* sf) {
     return cairo_face;
 }
 
+static PrintGlyphMap build_glyph_map(SplineFont* sf) {
+    // Build map of TTF codepoints
+    PrintGlyphMap print_map;
+    SplineCharTTFMap* ttf_map = MakeGlyphTTFMap(sf);
+    for (SplineCharTTFMap* entry = ttf_map; entry->glyph != NULL; ++entry) {
+        print_map[entry->ttf_glyph] = entry->glyph;
+    }
+    free(ttf_map);
+    return print_map;
+}
+
 void print_dialog(SplineFont* sf) {
     // To avoid instability, the GTK application is lazily initialized only when
     // a GTK window is invoked.
@@ -55,11 +74,14 @@ void print_dialog(SplineFont* sf) {
         Gtk::PrintOperation::create();
 
     auto cairo_face = create_cairo_face(sf);
+    PrintGlyphMap print_map = build_glyph_map(sf);
+    char* font_name = SFGetFullName(sf);
 
     // The preview widget is also responsible for actual printing, which happens
     // after the print dialog has been closed. We should manage its lifecycle
     // independently.
-    ff::dlg::PrintPreviewWidget ff_preview_widget(cairo_face);
+    ff::utils::CairoPainter cairo_painter(cairo_face, print_map, font_name);
+    ff::dlg::PrintPreviewWidget ff_preview_widget(cairo_painter);
 
     // The user should be able to select page size and orientation. This is
     // particularly important for printing to PDF.
