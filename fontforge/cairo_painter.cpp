@@ -121,16 +121,63 @@ static void draw_centered_text(const Cairo::RefPtr<Cairo::Context>& cr,
     cr->show_text(text);
 }
 
+static void draw_centered_glyph(const Cairo::RefPtr<Cairo::Context>& cr,
+                                const Cairo::Rectangle& box,
+                                unsigned long glyph_index) {
+    Cairo::FontExtents extents;
+    cr->get_font_extents(extents);
+
+    Cairo::Glyph glyph{glyph_index, 0.0, 0.0};
+    Cairo::TextExtents text_extents;
+    cr->get_glyph_extents({glyph}, text_extents);
+
+    // The text is aligned vertically so that its ascent and descent are
+    // together centered around the box horizontal middle line. This ensures
+    // that for multiple aligned boxes the text in them would also be aligned.
+    glyph.x = box.x + (box.width - text_extents.width) / 2;
+    glyph.y = box.y + (box.height + extents.ascent) / 2;
+    cr->show_glyphs({glyph});
+}
+
 // Returns vector of glyph lines. Each line has a prefix label, e.g. "05D0", and
 // a list of codepoints. All the index lists must have the same size, which
 // corresponds to the number of slots per line. An index can be -1, which means
 // no glyph should be drawn at that slot.
-std::vector<std::pair<std::string, std::vector<int>>> split_to_lines(
-    const PrintGlyphMap& print_map, size_t line_length) {
+struct GlyphLine {
+    std::string label;
+    bool encoded;
+    // Unicode codepoints or TTF glyph indexes, according to the value of the
+    // "encoded" flag
+    std::vector<int> indexes;
+};
+
+std::vector<GlyphLine> split_to_lines(const PrintGlyphMap& print_map,
+                                      size_t max_slots) {
     std::set<int> encoded_glyphs;
+    std::vector<int> unencoded_glyphs;
     for (const auto& glyph_item : print_map) {
-        if (glyph_item.second->unicodeenc == -1) continue;
-        encoded_glyphs.insert(glyph_item.second->unicodeenc);
+        if (glyph_item.second->unicodeenc == -1) {
+            unencoded_glyphs.push_back(glyph_item.first);
+        } else {
+            encoded_glyphs.insert(glyph_item.second->unicodeenc);
+        }
+    }
+
+    size_t line_length = 0;
+    if (encoded_glyphs.empty()) {
+        line_length = (max_slots >= 20)   ? 20
+                      : (max_slots >= 10) ? 10
+                      : (max_slots >= 5)  ? 5
+                      : (max_slots >= 2)  ? 2
+                                          : 1;
+    } else {
+        // We want 2^n slots in a line, for the simplicity of hexadecimal
+        // representation.
+        line_length = (max_slots >= 16)  ? 16
+                      : (max_slots >= 8) ? 8
+                      : (max_slots >= 4) ? 4
+                      : (max_slots >= 2) ? 2
+                                         : 1;
     }
 
     // Group encoded glyphs into lines.
@@ -147,7 +194,7 @@ std::vector<std::pair<std::string, std::vector<int>>> split_to_lines(
     }
 
     // Convert each line of codepoints into glyph line
-    std::vector<std::pair<std::string, std::vector<int>>> glyph_lines;
+    std::vector<GlyphLine> glyph_lines;
     for (const auto& cp_line : cp_lines) {
         // Format prefix into 4-digit hex label
         char hex_label[5] = "\0";
@@ -159,7 +206,19 @@ std::vector<std::pair<std::string, std::vector<int>>> split_to_lines(
             slots[cp % line_length] = cp;
         }
 
-        glyph_lines.emplace_back(hex_label, slots);
+        glyph_lines.emplace_back(GlyphLine{hex_label, true, slots});
+    }
+
+    // Add unencoded glyphs as a running sequence
+    for (size_t i = 0; i <= (unencoded_glyphs.size() - 1) / line_length; ++i) {
+        auto range_begin = unencoded_glyphs.begin() + i * line_length;
+        auto range_end =
+            std::min(unencoded_glyphs.end(),
+                     unencoded_glyphs.begin() + (i + 1) * line_length);
+
+        glyph_lines.emplace_back(
+            GlyphLine{std::to_string(i * 10), false,
+                      std::vector<int>(range_begin, range_end)});
     }
 
     return glyph_lines;
@@ -208,15 +267,9 @@ void CairoPainter::draw_page_full_display(
     draw_centered_text(cr, {0, 0, scaled_printable_area.width, top_margin},
                        document_title);
 
-    // We want 2^n slots in a line, for the simplicity of hexadecimal
-    // representation.
-    size_t line_length = (max_slots >= 16)  ? 16
-                         : (max_slots >= 8) ? 8
-                         : (max_slots >= 4) ? 4
-                         : (max_slots >= 2) ? 2
-                                            : 1;
-    std::vector<std::pair<std::string, std::vector<int>>> glyph_lines =
-        split_to_lines(print_map_, line_length);
+    std::vector<GlyphLine> glyph_lines = split_to_lines(print_map_, max_slots);
+    size_t line_length =
+        glyph_lines.empty() ? 16 : glyph_lines[0].indexes.size();
 
     static const std::array<std::string, 16> slot_labels = {
         "0", "1", "2", "3", "4", "5", "6", "7",
@@ -236,20 +289,20 @@ void CairoPainter::draw_page_full_display(
         if (i >= glyph_lines.size()) {
             break;
         }
-        const auto& glyph_line = glyph_lines[i];
+        const GlyphLine& glyph_line = glyph_lines[i];
 
         // Draw line label
         cr->select_font_face("times", Cairo::FONT_SLANT_NORMAL,
                              Cairo::FONT_WEIGHT_BOLD);
         cr->set_font_size(12.0);
-        draw_centered_text(cr, slot, glyph_line.first);
+        draw_centered_text(cr, slot, glyph_line.label);
 
         // Set the user font face
         cr->set_font_face(cairo_face_);
         cr->set_font_size(pointsize);
 
-        for (size_t j = 0; j < glyph_line.second.size(); ++j) {
-            int codepoint = glyph_line.second[j];
+        for (size_t j = 0; j < glyph_line.indexes.size(); ++j) {
+            int codepoint = glyph_line.indexes[j];
             if (codepoint == -1) {
                 continue;
             }
@@ -265,7 +318,11 @@ void CairoPainter::draw_page_full_display(
                                       extravspace +
                                       i * (extravspace + pointsize),
                                   pointsize, pointsize};
-            draw_centered_text(cr, slot, glyph_utf8);
+            if (glyph_line.encoded) {
+                draw_centered_text(cr, slot, glyph_utf8);
+            } else {
+                draw_centered_glyph(cr, slot, codepoint);
+            }
         }
     }
 }
