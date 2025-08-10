@@ -291,6 +291,21 @@ void CairoPainter::draw_page_full_display(
         }
         const GlyphLine& glyph_line = glyph_lines[i];
 
+        // Draw a ruler between encoded and unencoded glyphs, if necessary.
+        double ruler_skip = 0.0;
+        if (i > 0 && !glyph_line.encoded && glyph_lines[i - 1].encoded) {
+            cr->move_to(margin + left_code_area_width + extrahspace,
+                        top_margin + top_code_area_height + extravspace +
+                            i * (extravspace + pointsize));
+            cr->line_to(margin + left_code_area_width +
+                            line_length * (extrahspace + pointsize),
+                        top_margin + top_code_area_height + extravspace +
+                            i * (extravspace + pointsize));
+            cr->stroke();
+
+            ruler_skip = extravspace;
+        }
+
         // Draw line label
         cr->select_font_face("times", Cairo::FONT_SLANT_NORMAL,
                              Cairo::FONT_WEIGHT_BOLD);
@@ -315,7 +330,7 @@ void CairoPainter::draw_page_full_display(
             Cairo::Rectangle slot{margin + left_code_area_width + extrahspace +
                                       j * (extrahspace + pointsize),
                                   top_margin + top_code_area_height +
-                                      extravspace +
+                                      extravspace + ruler_skip +
                                       i * (extravspace + pointsize),
                                   pointsize, pointsize};
             if (glyph_line.encoded) {
