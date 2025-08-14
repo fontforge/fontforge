@@ -1,4 +1,4 @@
-/* This is a GENERATED file - from makeutype.py with Unicode 15.0.0 */
+/* This is a GENERATED file - from makeutype.py with Unicode 16.0.0 */
 
 /* Copyright (C) 2000-2012 by George Williams */
 /* Contributions: Khaled Hosny, Joe Da Silva */
