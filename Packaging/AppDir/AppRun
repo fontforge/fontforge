@@ -1,6 +1,24 @@
 #!/bin/bash
+
+# This script is an entry point for an AppImage or bundled application.
+# It sets up the necessary environment and then executes the main binary.
+
+# Determine the application's root directory based on the script's location.
 HERE="$(dirname "$(readlink -f "${0}")")"
+
+# Set up the bundled Python environment.
 export PYTHONPATH="$HERE/usr/lib/python3.7"
 export PYTHONHOME="$HERE/usr"
+
+# --- FIX FOR MODERN LINUX SYSTEMS ---
+# Unset GIO_MODULE_DIR to prevent a library conflict with the host system's
+# libraries on distributions like Debian Testing, Arch, or Fedora.
+# This resolves the "undefined symbol" crash. See FontForge issue #5597.
+unset GIO_MODULE_DIR
+
+# Change to the application's internal 'usr' directory.
 cd "${HERE}/usr/"
+
+# Execute the main fontforge binary, passing along any command-line arguments.
+# 'exec' replaces the script process with the fontforge process.
 exec ./bin/fontforge "$@"
