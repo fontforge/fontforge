@@ -33,13 +33,13 @@ typedef struct gwindow* GWindow;
 namespace ff::dlg {
 
 // Modal dialog
-class Dialog : public Gtk::Dialog {
+class DialogBase : public Gtk::Dialog {
  public:
     // The parent is a legacy GDraw window.
     // TODO(iorsh): remove this constructor after the transition to GTK is
     // complete.
-    Dialog(GWindow parent_gwin);
-    ~Dialog();
+    DialogBase(GWindow parent_gwin);
+    ~DialogBase();
 
     Gtk::ResponseType run();
 

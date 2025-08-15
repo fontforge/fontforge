@@ -100,7 +100,7 @@ Glib::ustring BitmapsDlg::last_scope_ = "selection";
 BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode,
                        const BitmapSizes& sizes, bool bitmaps_only,
                        bool has_current_char)
-    : Dialog(parent) {
+    : DialogBase(parent) {
     set_help_context("ui/menus/elementmenu.html", "#elementmenu-bitmaps");
     Glib::ustring title;
     std::vector<Glib::ustring> headings;

@@ -26,14 +26,14 @@
  */
 #pragma once
 
-#include "dialog.hpp"
+#include "dialog_base.hpp"
 #include "tag.hpp"
 
 namespace ff::dlg {
 
 using LanguageRecords = std::vector<std::pair<std::string /*name*/, ff::Tag>>;
 
-class LanguageListDlg final : public Dialog {
+class LanguageListDlg final : public DialogBase {
  private:
     Gtk::ListViewText list_;
 

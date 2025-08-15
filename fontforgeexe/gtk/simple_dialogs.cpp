@@ -34,20 +34,20 @@
 #include "intl.h"
 #include "application.hpp"
 #include "bitmaps_dlg.hpp"
-#include "dialog.hpp"
+#include "dialog_base.hpp"
 #include "language_list.hpp"
 #include "utils.hpp"
 
 namespace ff::dlg {
 
 // A simple dialog to query the user for a number of new encoding slots to add.
-class NumericalInputDialog final : public Dialog {
+class NumericalInputDialog final : public DialogBase {
  private:
     Gtk::SpinButton* input;
 
     NumericalInputDialog(GWindow parent, const std::string& title,
                          const std::string& label)
-        : Dialog(parent) {
+        : DialogBase(parent) {
         set_title(title);
         set_resizable(false);
 

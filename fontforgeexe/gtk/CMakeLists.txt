@@ -9,8 +9,8 @@ add_library(ffgtk OBJECT
   bitmaps_dlg.cpp
   css_builder.hpp
   css_builder.cpp
-  dialog.hpp
-  dialog.cpp
+  dialog_base.hpp
+  dialog_base.cpp
   language_list.hpp
   language_list.cpp
   simple_dialogs.hpp

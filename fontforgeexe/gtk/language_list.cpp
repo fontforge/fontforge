@@ -35,7 +35,7 @@ namespace ff::dlg {
 LanguageListDlg::LanguageListDlg(GWindow parent,
                                  const ff::dlg::LanguageRecords& lang_recs,
                                  const std::vector<int>& initial_selection)
-    : Dialog(parent), list_(1, false, Gtk::SELECTION_MULTIPLE) {
+    : DialogBase(parent), list_(1, false, Gtk::SELECTION_MULTIPLE) {
     set_title(_("Language List"));
     set_help_context("ui/dialogs/lookups.html", "#lookups-scripts-dlg");
 

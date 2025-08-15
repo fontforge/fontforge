@@ -26,7 +26,7 @@
  */
 #pragma once
 
-#include "dialog.hpp"
+#include "dialog_base.hpp"
 
 #include "widgets/verified_entry.hpp"
 
@@ -41,7 +41,7 @@ typedef enum bitmaps_dlg_mode {
 using BitmapSize = std::pair<uint16_t /*size*/, uint16_t /*depth*/>;
 using BitmapSizes = std::vector<BitmapSize>;
 
-class BitmapsDlg final : public Dialog {
+class BitmapsDlg final : public DialogBase {
  public:
     // Update the list of available bitmap pixel sizes and action.
     // Arguments:
