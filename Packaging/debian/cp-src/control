@@ -26,7 +26,7 @@ Build-Depends: bzip2,
                libtiff-dev,
                libwoff-dev,
                libxml2-dev,
-               python3-dev (>= 3.3)
+               python3-dev (>= 3.10)
 Standards-Version: 3.9.7
 Homepage: http://fontforge.github.io/
 Vcs-Git: git://github.com/fontforge/fontforge/
