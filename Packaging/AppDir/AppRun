@@ -3,8 +3,6 @@ HERE="$(dirname "$(readlink -f "${0}")")"
 export PYTHONPATH="$HERE/usr/lib/python3.7"
 export PYTHONHOME="$HERE/usr"
 
-# Unset GIO_MODULE_DIR to prevent a library conflict with the host system's
-# modules. This resolves the "undefined symbol" crash.
 unset GIO_MODULE_DIR
 
 cd "${HERE}/usr/"
