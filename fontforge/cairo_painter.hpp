@@ -35,6 +35,8 @@ using PrintGlyphMap = std::map<int, SplineChar*>;
 
 namespace ff::utils {
 
+struct GlyphLine;
+
 class CairoPainter {
  public:
     CairoPainter(Cairo::RefPtr<Cairo::FtFontFace> cairo_face,
@@ -60,6 +62,11 @@ class CairoPainter {
     PrintGlyphMap print_map_;
 
     std::string font_name_;
+
+    void draw_line_full_display(const Cairo::RefPtr<Cairo::Context>& cr,
+                                const GlyphLine& glyph_line, double margin,
+                                double y_start, double left_code_area_width,
+                                double pointsize);
 };
 
 }  // namespace ff::utils

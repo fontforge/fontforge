@@ -281,63 +281,70 @@ void CairoPainter::draw_page_full_display(
         draw_centered_text(cr, slot, slot_labels[i]);
     }
 
+    double y_start = top_margin + top_code_area_height + extravspace;
+
     for (size_t i = 0; i < max_lines; ++i) {
-        Cairo::Rectangle slot{margin,
-                              top_margin + top_code_area_height + extravspace +
-                                  i * (extravspace + pointsize),
-                              left_code_area_width, pointsize};
         if (i >= glyph_lines.size()) {
             break;
         }
         const GlyphLine& glyph_line = glyph_lines[i];
 
         // Draw a ruler between encoded and unencoded glyphs, if necessary.
-        double ruler_skip = 0.0;
         if (i > 0 && !glyph_line.encoded && glyph_lines[i - 1].encoded) {
-            cr->move_to(margin + left_code_area_width + extrahspace,
-                        top_margin + top_code_area_height + extravspace +
-                            i * (extravspace + pointsize));
+            cr->move_to(margin + left_code_area_width + extrahspace, y_start);
             cr->line_to(margin + left_code_area_width +
                             line_length * (extrahspace + pointsize),
-                        top_margin + top_code_area_height + extravspace +
-                            i * (extravspace + pointsize));
+                        y_start);
             cr->stroke();
 
-            ruler_skip = extravspace;
+            // This provides a vertical shift after we have drawn a ruler
+            // between encoded and unencoded glyphs.
+            y_start += extravspace;
         }
 
-        // Draw line label
-        cr->select_font_face("times", Cairo::FONT_SLANT_NORMAL,
-                             Cairo::FONT_WEIGHT_BOLD);
-        cr->set_font_size(12.0);
-        draw_centered_text(cr, slot, glyph_line.label);
+        draw_line_full_display(cr, glyph_line, margin, y_start,
+                               left_code_area_width, pointsize);
 
-        // Set the user font face
-        cr->set_font_face(cairo_face_);
-        cr->set_font_size(pointsize);
+        y_start += (extravspace + pointsize);
+    }
+}
 
-        for (size_t j = 0; j < glyph_line.indexes.size(); ++j) {
-            int codepoint = glyph_line.indexes[j];
-            if (codepoint == -1) {
-                continue;
-            }
+void CairoPainter::draw_line_full_display(
+    const Cairo::RefPtr<Cairo::Context>& cr, const GlyphLine& glyph_line,
+    double margin, double y_start, double left_code_area_width,
+    double pointsize) {
+    double extrahspace = pointsize / 3;
+    Cairo::Rectangle slot{margin, y_start, left_code_area_width, pointsize};
 
-            unichar_t glyph_unistr[2] = {0, 0};
-            glyph_unistr[0] = (unichar_t)codepoint;
-            char* glyph_utf8 = u2utf8_copy(glyph_unistr);
+    // Draw line label
+    cr->select_font_face("times", Cairo::FONT_SLANT_NORMAL,
+                         Cairo::FONT_WEIGHT_BOLD);
+    cr->set_font_size(12.0);
+    draw_centered_text(cr, slot, glyph_line.label);
 
-            // Print sample glyph
-            Cairo::Rectangle slot{margin + left_code_area_width + extrahspace +
-                                      j * (extrahspace + pointsize),
-                                  top_margin + top_code_area_height +
-                                      extravspace + ruler_skip +
-                                      i * (extravspace + pointsize),
-                                  pointsize, pointsize};
-            if (glyph_line.encoded) {
-                draw_centered_text(cr, slot, glyph_utf8);
-            } else {
-                draw_centered_glyph(cr, slot, codepoint);
-            }
+    // Set the user font face
+    cr->set_font_face(cairo_face_);
+    cr->set_font_size(pointsize);
+
+    for (size_t j = 0; j < glyph_line.indexes.size(); ++j) {
+        int codepoint = glyph_line.indexes[j];
+        if (codepoint == -1) {
+            continue;
+        }
+
+        unichar_t glyph_unistr[2] = {0, 0};
+        glyph_unistr[0] = (unichar_t)codepoint;
+        char* glyph_utf8 = u2utf8_copy(glyph_unistr);
+
+        // Print sample glyph
+        Cairo::Rectangle glyph_slot{margin + left_code_area_width +
+                                        extrahspace +
+                                        j * (extrahspace + pointsize),
+                                    y_start, pointsize, pointsize};
+        if (glyph_line.encoded) {
+            draw_centered_text(cr, glyph_slot, glyph_utf8);
+        } else {
+            draw_centered_glyph(cr, glyph_slot, codepoint);
         }
     }
 }
