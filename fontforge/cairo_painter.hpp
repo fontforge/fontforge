@@ -56,6 +56,12 @@ class CairoPainter {
                                 const Cairo::Rectangle& printable_area,
                                 int page_nr, double pointsize);
 
+    // Draw formatted sample text.
+    void draw_page_sample_text(const Cairo::RefPtr<Cairo::Context>& cr,
+                               double scale,
+                               const Cairo::Rectangle& printable_area,
+                               int page_nr, const std::string& sample_text);
+
  private:
     Cairo::RefPtr<Cairo::FtFontFace> cairo_face_;
 

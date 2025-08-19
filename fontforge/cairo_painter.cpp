@@ -228,9 +228,6 @@ std::vector<GlyphLine> split_to_lines(const PrintGlyphMap& print_map,
 void CairoPainter::draw_page_full_display(
     const Cairo::RefPtr<Cairo::Context>& cr, double scale,
     const Cairo::Rectangle& printable_area, int page_nr, double pointsize) {
-    double offset_x;
-    Cairo::FontExtents extents;
-
     std::string document_title = "Font Display for " + font_name_;
     set_surface_metadata(cr, document_title);
 
@@ -347,6 +344,28 @@ void CairoPainter::draw_line_full_display(
             draw_centered_glyph(cr, glyph_slot, codepoint);
         }
     }
+}
+
+void CairoPainter::draw_page_sample_text(
+    const Cairo::RefPtr<Cairo::Context>& cr, double scale,
+    const Cairo::Rectangle& printable_area, int page_nr,
+    const std::string& sample_text) {
+    std::string document_title = "Sample Text from " + font_name_;
+    set_surface_metadata(cr, document_title);
+
+    cr->translate(printable_area.x, printable_area.y);
+    cr->scale(scale, scale);
+
+    // Set the desired font face
+    cr->set_font_face(cairo_face_);
+    cr->set_font_size(20);
+    Cairo::FontExtents extents;
+    cr->get_font_extents(extents);
+
+    // Print sample text in black
+    cr->move_to(10.0, 10.0 + extents.height);
+    cr->set_source_rgb(0, 0, 0);
+    cr->show_text(sample_text);
 }
 
 }  // namespace ff::utils
