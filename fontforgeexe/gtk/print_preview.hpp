@@ -55,6 +55,11 @@ class PrintPreviewWidget : public Gtk::Grid {
 
     Gdk::Point calculate_text_popover_size();
 
+    // The optimal popover size and attachment rectangle depend on the size of
+    // the print dialog, and they are recalculated every time the popover is
+    // shown.
+    void reconfigure_text_popover(Gtk::Popover* popover);
+
     // Build and initialize the sample text popover
     void build_sample_text_popover(Gtk::Widget* parent_widget);
 

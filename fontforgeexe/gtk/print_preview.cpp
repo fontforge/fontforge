@@ -211,6 +211,22 @@ Gdk::Point PrintPreviewWidget::calculate_text_popover_size() {
     return Gdk::Point(width, height);
 }
 
+void PrintPreviewWidget::reconfigure_text_popover(Gtk::Popover* text_popover) {
+    Gtk::Widget* parent_widget = text_popover->get_relative_to();
+    Gtk::ScrolledWindow* scrolled =
+        dynamic_cast<Gtk::ScrolledWindow*>(text_popover->get_child());
+
+    Gdk::Point size = calculate_text_popover_size();
+    scrolled->set_max_content_width(size.get_x());
+    scrolled->set_max_content_height(size.get_y());
+
+    text_popover->set_pointing_to({0, 0, parent_widget->get_allocated_width(),
+                                   parent_widget->get_allocated_height()});
+
+    text_popover->show_all();
+    text_popover->popup();
+}
+
 void PrintPreviewWidget::build_sample_text_popover(Gtk::Widget* parent_widget) {
     Gtk::Popover* text_popover = Gtk::make_managed<Gtk::Popover>();
     text_popover->set_relative_to(*parent_widget);
@@ -234,16 +250,8 @@ void PrintPreviewWidget::build_sample_text_popover(Gtk::Widget* parent_widget) {
     scrolled->set_propagate_natural_height(true);
 
     parent_widget->signal_button_press_event().connect(
-        [text_popover, scrolled, parent_widget,
-         this](GdkEventButton* button_event) {
-            Gdk::Point size = calculate_text_popover_size();
-            scrolled->set_max_content_width(size.get_x());
-            scrolled->set_max_content_height(size.get_y());
-            text_popover->set_pointing_to(
-                {0, 0, parent_widget->get_allocated_width(),
-                 parent_widget->get_allocated_height()});
-            text_popover->show_all();
-            text_popover->popup();
+        [text_popover, this](GdkEventButton*) {
+            reconfigure_text_popover(text_popover);
             return true;
         });
 
