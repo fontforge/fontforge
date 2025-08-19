@@ -53,6 +53,9 @@ class PrintPreviewWidget : public Gtk::Grid {
     // Build and initialize the preview area widgets
     void build_compound_preview_area();
 
+    // Build and initialize the sample text popover
+    void build_sample_text_popover(Gtk::Widget* parent_widget);
+
     // Calculate printable area: (x, y) are positive left/top margin offsets
     // from the upper left corner of the actual canvas - either paper or
     // preview_area. The prinable area is located within the page margins.
@@ -78,8 +81,10 @@ class PrintPreviewWidget : public Gtk::Grid {
     Gtk::RadioButton* radio_sample_text_;
 
     Gtk::SpinButton* size_entry_;
-    Gtk::Entry* sample_text_1line_;
+    Gtk::Entry* sample_text_oneliner_;
     Gtk::Stack* stack_;
+
+    Gtk::TextView* sample_text_;
 
     // The default A4-based setup is used for preview when no printer has been
     // selected yet.

@@ -94,15 +94,23 @@ PrintPreviewWidget::PrintPreviewWidget(const utils::CairoPainter& cairo_painter)
     size_entry_->signal_value_changed().connect(
         [this] { preview_area.queue_draw(); });
 
-    sample_text_1line_ = Gtk::make_managed<Gtk::Entry>();
-    sample_text_1line_->set_text("Dummy text");
-    sample_text_1line_->signal_changed().connect(
-        [this] { preview_area.queue_draw(); });
+    // One-liner preview of the sample text popup contents
+    sample_text_oneliner_ = Gtk::make_managed<Gtk::Entry>();
+    sample_text_oneliner_->set_editable(false);
+    sample_text_oneliner_->set_can_focus(false);
+
+    // Make the one-liner preview sensitive to mouse click, which would bring up
+    // the sample text popup.
+    Gtk::EventBox* oneliner_event_box = Gtk::make_managed<Gtk::EventBox>();
+    oneliner_event_box->add(*sample_text_oneliner_);
+    oneliner_event_box->set_above_child(true);
+
+    build_sample_text_popover(oneliner_event_box);
 
     stack_ = Gtk::make_managed<Gtk::Stack>();
     stack_->add(*size, FULL_DISPLAY);
     stack_->add(*Gtk::make_managed<Gtk::Label>(), GLYPH_PAGES);
-    stack_->add(*sample_text_1line_, SAMPLE_TEXT);
+    stack_->add(*oneliner_event_box, SAMPLE_TEXT);
 
     controls->pack_start(*radio_full_display_);
     controls->pack_start(*radio_glyph_pages_);
@@ -188,6 +196,43 @@ void PrintPreviewWidget::build_compound_preview_area() {
     aspect_wrapper.add(*box_wrapper);
 }
 
+void PrintPreviewWidget::build_sample_text_popover(Gtk::Widget* parent_widget) {
+    Gtk::Popover* text_popover = Gtk::make_managed<Gtk::Popover>();
+    text_popover->set_relative_to(*parent_widget);
+    text_popover->set_position(Gtk::POS_BOTTOM);
+    text_popover->set_modal(true);
+    text_popover->set_pointing_to({0, 0, 1, 1});
+    text_popover->set_constrain_to(Gtk::POPOVER_CONSTRAINT_WINDOW);
+
+    sample_text_ = Gtk::make_managed<Gtk::TextView>();
+    sample_text_->get_buffer()->set_text("Sample text\nSecond sample line.");
+    sample_text_->get_buffer()->signal_changed().connect([this] {
+        preview_area.queue_draw();
+        sample_text_oneliner_->set_text(sample_text_->get_buffer()->get_text());
+    });
+    sample_text_oneliner_->set_text(sample_text_->get_buffer()->get_text());
+
+    // The scroller limits the text popover window. Without limitations the
+    // TextView widget can expand until it covers the entire print dialog and
+    // get unsigtly cut-off at the dialog window borders.
+    Gtk::ScrolledWindow* scrolled = Gtk::make_managed<Gtk::ScrolledWindow>();
+    scrolled->set_propagate_natural_width(true);
+    scrolled->set_propagate_natural_height(true);
+    scrolled->set_max_content_width(500);
+    scrolled->set_max_content_height(500);
+
+    parent_widget->signal_button_press_event().connect(
+        [text_popover, this](GdkEventButton* button_event) {
+            text_popover->show_all();
+            text_popover->popup();
+            return true;
+        });
+
+    // Set up the popover structure
+    scrolled->add(*sample_text_);
+    text_popover->add(*scrolled);
+}
+
 Cairo::Rectangle PrintPreviewWidget::calculate_printable_area(
     double scale, const Glib::RefPtr<Gtk::PageSetup>& setup, Gtk::Unit unit) {
     Cairo::Rectangle printable_area;
@@ -208,7 +253,7 @@ void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
                                    double scale,
                                    const Cairo::Rectangle& printable_area,
                                    int page_nr) {
-    Glib::ustring sample_text = sample_text_1line_->get_text();
+    Glib::ustring sample_text = sample_text_->get_buffer()->get_text();
     double font_size = size_entry_->get_value();
 
     if (radio_full_display_->get_active()) {
