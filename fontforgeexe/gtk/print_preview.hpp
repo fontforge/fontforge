@@ -53,6 +53,8 @@ class PrintPreviewWidget : public Gtk::Grid {
     // Build and initialize the preview area widgets
     void build_compound_preview_area();
 
+    Gdk::Point calculate_text_popover_size();
+
     // Build and initialize the sample text popover
     void build_sample_text_popover(Gtk::Widget* parent_widget);
 

@@ -196,12 +196,26 @@ void PrintPreviewWidget::build_compound_preview_area() {
     aspect_wrapper.add(*box_wrapper);
 }
 
+Gdk::Point PrintPreviewWidget::calculate_text_popover_size() {
+    // Maximum width: controls_column + half of preview area.
+    int width = sample_text_oneliner_->get_allocated_width() +
+                aspect_wrapper.get_allocated_width() / 2;
+
+    // Maximum height: the gap between the parent widget and the bottom of the
+    // entire preview widget.
+    int x, y;
+    sample_text_oneliner_->translate_coordinates(
+        *this, 0, sample_text_oneliner_->get_allocated_height(), x, y);
+    int height = aspect_wrapper.get_allocated_height() - y;
+
+    return Gdk::Point(width, height);
+}
+
 void PrintPreviewWidget::build_sample_text_popover(Gtk::Widget* parent_widget) {
     Gtk::Popover* text_popover = Gtk::make_managed<Gtk::Popover>();
     text_popover->set_relative_to(*parent_widget);
     text_popover->set_position(Gtk::POS_BOTTOM);
     text_popover->set_modal(true);
-    text_popover->set_pointing_to({0, 0, 1, 1});
     text_popover->set_constrain_to(Gtk::POPOVER_CONSTRAINT_WINDOW);
 
     sample_text_ = Gtk::make_managed<Gtk::TextView>();
@@ -218,15 +232,25 @@ void PrintPreviewWidget::build_sample_text_popover(Gtk::Widget* parent_widget) {
     Gtk::ScrolledWindow* scrolled = Gtk::make_managed<Gtk::ScrolledWindow>();
     scrolled->set_propagate_natural_width(true);
     scrolled->set_propagate_natural_height(true);
-    scrolled->set_max_content_width(500);
-    scrolled->set_max_content_height(500);
 
     parent_widget->signal_button_press_event().connect(
-        [text_popover, this](GdkEventButton* button_event) {
+        [text_popover, scrolled, parent_widget,
+         this](GdkEventButton* button_event) {
+            Gdk::Point size = calculate_text_popover_size();
+            scrolled->set_max_content_width(size.get_x());
+            scrolled->set_max_content_height(size.get_y());
+            text_popover->set_pointing_to(
+                {0, 0, parent_widget->get_allocated_width(),
+                 parent_widget->get_allocated_height()});
             text_popover->show_all();
             text_popover->popup();
             return true;
         });
+
+    // Hide the popover when the window is resized. This would allow the popover
+    // to recumpute its optimal size when it is shown again.
+    signal_size_allocate().connect(
+        [text_popover](Gtk::Allocation&) { text_popover->popdown(); });
 
     // Set up the popover structure
     scrolled->add(*sample_text_);
