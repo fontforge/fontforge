@@ -213,12 +213,17 @@ Gdk::Point PrintPreviewWidget::calculate_text_popover_size() {
 
 void PrintPreviewWidget::reconfigure_text_popover(Gtk::Popover* text_popover) {
     Gtk::Widget* parent_widget = text_popover->get_relative_to();
-    Gtk::ScrolledWindow* scrolled =
-        dynamic_cast<Gtk::ScrolledWindow*>(text_popover->get_child());
+
+    // The scroller limits the text popover window. Without limitations the
+    // TextView widget can expand until it covers the entire print dialog and
+    // get unsigtly cut-off at the dialog window borders.
+    widget::RichTechEditor* rich_text =
+        dynamic_cast<widget::RichTechEditor*>(text_popover->get_child());
+    Gtk::ScrolledWindow& scrolled = rich_text->get_scrolled();
 
     Gdk::Point size = calculate_text_popover_size();
-    scrolled->set_max_content_width(size.get_x());
-    scrolled->set_max_content_height(size.get_y());
+    scrolled.set_max_content_width(size.get_x());
+    scrolled.set_max_content_height(size.get_y());
 
     text_popover->set_pointing_to({0, 0, parent_widget->get_allocated_width(),
                                    parent_widget->get_allocated_height()});
@@ -234,20 +239,13 @@ void PrintPreviewWidget::build_sample_text_popover(Gtk::Widget* parent_widget) {
     text_popover->set_modal(true);
     text_popover->set_constrain_to(Gtk::POPOVER_CONSTRAINT_WINDOW);
 
-    sample_text_ = Gtk::make_managed<Gtk::TextView>();
+    sample_text_ = Gtk::make_managed<widget::RichTechEditor>();
     sample_text_->get_buffer()->set_text("Sample text\nSecond sample line.");
     sample_text_->get_buffer()->signal_changed().connect([this] {
         preview_area.queue_draw();
         sample_text_oneliner_->set_text(sample_text_->get_buffer()->get_text());
     });
     sample_text_oneliner_->set_text(sample_text_->get_buffer()->get_text());
-
-    // The scroller limits the text popover window. Without limitations the
-    // TextView widget can expand until it covers the entire print dialog and
-    // get unsigtly cut-off at the dialog window borders.
-    Gtk::ScrolledWindow* scrolled = Gtk::make_managed<Gtk::ScrolledWindow>();
-    scrolled->set_propagate_natural_width(true);
-    scrolled->set_propagate_natural_height(true);
 
     parent_widget->signal_button_press_event().connect(
         [text_popover, this](GdkEventButton*) {
@@ -261,8 +259,7 @@ void PrintPreviewWidget::build_sample_text_popover(Gtk::Widget* parent_widget) {
         [text_popover](Gtk::Allocation&) { text_popover->popdown(); });
 
     // Set up the popover structure
-    scrolled->add(*sample_text_);
-    text_popover->add(*scrolled);
+    text_popover->add(*sample_text_);
 }
 
 Cairo::Rectangle PrintPreviewWidget::calculate_printable_area(

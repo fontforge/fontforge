@@ -28,6 +28,8 @@ add_library(ffgtk OBJECT
   win32_utils.hpp
   win32_utils.cpp
   widgets/aspect_frame_bg.hpp
+  widgets/rich_text_editor.hpp
+  widgets/rich_text_editor.cpp
 )
 
 target_link_libraries(ffgtk PUBLIC

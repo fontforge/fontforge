@@ -30,6 +30,7 @@
 
 #include "cairo_painter.hpp"
 #include "widgets/aspect_frame_bg.hpp"
+#include "widgets/rich_text_editor.hpp"
 
 namespace ff::dlg {
 
@@ -91,7 +92,7 @@ class PrintPreviewWidget : public Gtk::Grid {
     Gtk::Entry* sample_text_oneliner_;
     Gtk::Stack* stack_;
 
-    Gtk::TextView* sample_text_;
+    widget::RichTechEditor* sample_text_;
 
     // The default A4-based setup is used for preview when no printer has been
     // selected yet.
