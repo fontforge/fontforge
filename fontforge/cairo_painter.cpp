@@ -229,11 +229,7 @@ std::vector<GlyphLine> split_to_lines(const PrintGlyphMap& print_map,
 void CairoPainter::draw_page_full_display(
     const Cairo::RefPtr<Cairo::Context>& cr, double scale,
     const Cairo::Rectangle& printable_area, int page_nr, double pointsize) {
-    std::string document_title = "Font Display for " + font_name_;
-    set_surface_metadata(cr, document_title);
-
-    cr->translate(printable_area.x, printable_area.y);
-    cr->scale(scale, scale);
+    init_document(cr, scale, printable_area, "Font Display for " + font_name_);
 
     Cairo::Rectangle scaled_printable_area{0, 0, printable_area.width / scale,
                                            printable_area.height / scale};
@@ -242,28 +238,19 @@ void CairoPainter::draw_page_full_display(
     double extrahspace = pointsize / 3;
 
     // All dimensions are in points
-    double margin = 36;
-    double top_margin = 96;
     double left_code_area_width = 36;
     double top_code_area_height = 12;
 
     double char_area_width =
-        scaled_printable_area.width - margin * 2 - left_code_area_width;
-    double char_area_height = scaled_printable_area.height - margin -
-                              top_margin - top_code_area_height;
+        scaled_printable_area.width - margin_ * 2 - left_code_area_width;
+    double char_area_height = scaled_printable_area.height - margin_ -
+                              top_margin_ - top_code_area_height;
     int max_slots = static_cast<int>(
         std::floor(char_area_width / (extrahspace + pointsize)));
     int max_lines = static_cast<int>(
         std::floor(char_area_height / (extravspace + pointsize)));
 
     cr->set_source_rgb(0, 0, 0);
-
-    // Set title
-    cr->select_font_face("times", Cairo::FONT_SLANT_NORMAL,
-                         Cairo::FONT_WEIGHT_BOLD);
-    cr->set_font_size(12.0);
-    draw_centered_text(cr, {0, 0, scaled_printable_area.width, top_margin},
-                       document_title);
 
     std::vector<GlyphLine> glyph_lines = split_to_lines(print_map_, max_slots);
     size_t line_length =
@@ -273,13 +260,13 @@ void CairoPainter::draw_page_full_display(
         "0", "1", "2", "3", "4", "5", "6", "7",
         "8", "9", "A", "B", "C", "D", "E", "F"};
     for (size_t i = 0; i < line_length; ++i) {
-        Cairo::Rectangle slot{margin + left_code_area_width + extrahspace +
+        Cairo::Rectangle slot{margin_ + left_code_area_width + extrahspace +
                                   i * (extrahspace + pointsize),
-                              top_margin, pointsize, top_code_area_height};
+                              top_margin_, pointsize, top_code_area_height};
         draw_centered_text(cr, slot, slot_labels[i]);
     }
 
-    double y_start = top_margin + top_code_area_height + extravspace;
+    double y_start = top_margin_ + top_code_area_height + extravspace;
 
     for (size_t i = 0; i < max_lines; ++i) {
         if (i >= glyph_lines.size()) {
@@ -289,8 +276,8 @@ void CairoPainter::draw_page_full_display(
 
         // Draw a ruler between encoded and unencoded glyphs, if necessary.
         if (i > 0 && !glyph_line.encoded && glyph_lines[i - 1].encoded) {
-            cr->move_to(margin + left_code_area_width + extrahspace, y_start);
-            cr->line_to(margin + left_code_area_width +
+            cr->move_to(margin_ + left_code_area_width + extrahspace, y_start);
+            cr->line_to(margin_ + left_code_area_width +
                             line_length * (extrahspace + pointsize),
                         y_start);
             cr->stroke();
@@ -300,8 +287,8 @@ void CairoPainter::draw_page_full_display(
             y_start += extravspace;
         }
 
-        draw_line_full_display(cr, glyph_line, margin, y_start,
-                               left_code_area_width, pointsize);
+        draw_line_full_display(cr, glyph_line, y_start, left_code_area_width,
+                               pointsize);
 
         y_start += (extravspace + pointsize);
     }
@@ -309,10 +296,9 @@ void CairoPainter::draw_page_full_display(
 
 void CairoPainter::draw_line_full_display(
     const Cairo::RefPtr<Cairo::Context>& cr, const GlyphLine& glyph_line,
-    double margin, double y_start, double left_code_area_width,
-    double pointsize) {
+    double y_start, double left_code_area_width, double pointsize) {
     double extrahspace = pointsize / 3;
-    Cairo::Rectangle slot{margin, y_start, left_code_area_width, pointsize};
+    Cairo::Rectangle slot{margin_, y_start, left_code_area_width, pointsize};
 
     // Draw line label
     cr->select_font_face("times", Cairo::FONT_SLANT_NORMAL,
@@ -335,7 +321,7 @@ void CairoPainter::draw_line_full_display(
         char* glyph_utf8 = u2utf8_copy(glyph_unistr);
 
         // Print sample glyph
-        Cairo::Rectangle glyph_slot{margin + left_code_area_width +
+        Cairo::Rectangle glyph_slot{margin_ + left_code_area_width +
                                         extrahspace +
                                         j * (extrahspace + pointsize),
                                     y_start, pointsize, pointsize};
@@ -351,14 +337,7 @@ void CairoPainter::draw_page_sample_text(
     const Cairo::RefPtr<Cairo::Context>& cr, double scale,
     const Cairo::Rectangle& printable_area, int page_nr,
     const std::string& sample_text) {
-    std::string document_title = "Sample Text from " + font_name_;
-    set_surface_metadata(cr, document_title);
-
-    cr->translate(printable_area.x, printable_area.y);
-    cr->scale(scale, scale);
-
-    double margin = 36;
-    double top_margin = 96;
+    init_document(cr, scale, printable_area, "Sample Text from " + font_name_);
 
     // Set the desired font face
     cr->set_font_face(cairo_face_);
@@ -371,13 +350,30 @@ void CairoPainter::draw_page_sample_text(
 
     std::stringstream stream(sample_text);
     std::string line;
-    double y_start = top_margin;
+    double y_start = top_margin_;
 
     while (std::getline(stream, line, '\n')) {
-        cr->move_to(margin, y_start + extents.height);
+        cr->move_to(margin_, y_start + extents.height);
         cr->show_text(line);
         y_start += extents.height;
     }
+}
+
+void CairoPainter::init_document(const Cairo::RefPtr<Cairo::Context>& cr,
+                                 double scale,
+                                 const Cairo::Rectangle& printable_area,
+                                 const std::string& document_title) {
+    set_surface_metadata(cr, document_title);
+
+    cr->translate(printable_area.x, printable_area.y);
+    cr->scale(scale, scale);
+
+    // Set title
+    cr->select_font_face("times", Cairo::FONT_SLANT_NORMAL,
+                         Cairo::FONT_WEIGHT_BOLD);
+    cr->set_font_size(12.0);
+    draw_centered_text(cr, {0, 0, printable_area.width / scale, top_margin_},
+                       document_title);
 }
 
 }  // namespace ff::utils

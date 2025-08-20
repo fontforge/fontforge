@@ -69,10 +69,17 @@ class CairoPainter {
 
     std::string font_name_;
 
+    // All dimensions are in points
+    double margin_ = 36;
+    double top_margin_ = 96;
+
+    void init_document(const Cairo::RefPtr<Cairo::Context>& cr, double scale,
+                       const Cairo::Rectangle& printable_area,
+                       const std::string& document_title);
+
     void draw_line_full_display(const Cairo::RefPtr<Cairo::Context>& cr,
-                                const GlyphLine& glyph_line, double margin,
-                                double y_start, double left_code_area_width,
-                                double pointsize);
+                                const GlyphLine& glyph_line, double y_start,
+                                double left_code_area_width, double pointsize);
 };
 
 }  // namespace ff::utils
