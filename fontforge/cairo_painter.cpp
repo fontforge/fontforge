@@ -29,6 +29,7 @@
 
 #include <array>
 #include <set>
+#include <sstream>
 
 extern "C" {
 #include "gutils.h"
@@ -356,6 +357,9 @@ void CairoPainter::draw_page_sample_text(
     cr->translate(printable_area.x, printable_area.y);
     cr->scale(scale, scale);
 
+    double margin = 36;
+    double top_margin = 96;
+
     // Set the desired font face
     cr->set_font_face(cairo_face_);
     cr->set_font_size(20);
@@ -363,9 +367,17 @@ void CairoPainter::draw_page_sample_text(
     cr->get_font_extents(extents);
 
     // Print sample text in black
-    cr->move_to(10.0, 10.0 + extents.height);
     cr->set_source_rgb(0, 0, 0);
-    cr->show_text(sample_text);
+
+    std::stringstream stream(sample_text);
+    std::string line;
+    double y_start = top_margin;
+
+    while (std::getline(stream, line, '\n')) {
+        cr->move_to(margin, y_start + extents.height);
+        cr->show_text(line);
+        y_start += extents.height;
+    }
 }
 
 }  // namespace ff::utils
