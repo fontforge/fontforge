@@ -25,9 +25,9 @@ add_library(ffgtk OBJECT
   simple_dialogs.cpp
   utils.hpp
   utils.cpp
-  widgets.hpp
   win32_utils.hpp
   win32_utils.cpp
+  widgets/aspect_frame_bg.hpp
 )
 
 target_link_libraries(ffgtk PUBLIC

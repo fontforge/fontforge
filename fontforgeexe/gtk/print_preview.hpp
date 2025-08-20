@@ -29,7 +29,7 @@
 #include <gtkmm.h>
 
 #include "cairo_painter.hpp"
-#include "widgets.hpp"
+#include "widgets/aspect_frame_bg.hpp"
 
 namespace ff::dlg {
 
