@@ -222,8 +222,8 @@ void PrintPreviewWidget::reconfigure_text_popover(Gtk::Popover* text_popover) {
     Gtk::ScrolledWindow& scrolled = rich_text->get_scrolled();
 
     Gdk::Point size = calculate_text_popover_size();
-    scrolled.set_max_content_width(size.get_x());
-    scrolled.set_max_content_height(size.get_y());
+    text_popover->set_size_request(size.get_x(), size.get_y());
+    text_popover->queue_resize();
 
     text_popover->set_pointing_to({0, 0, parent_widget->get_allocated_width(),
                                    parent_widget->get_allocated_height()});
@@ -240,6 +240,8 @@ void PrintPreviewWidget::build_sample_text_popover(Gtk::Widget* parent_widget) {
     text_popover->set_constrain_to(Gtk::POPOVER_CONSTRAINT_WINDOW);
 
     sample_text_ = Gtk::make_managed<widget::RichTechEditor>();
+    sample_text_->set_hexpand();
+    sample_text_->set_vexpand();
     sample_text_->get_buffer()->set_text("Sample text\nSecond sample line.");
     sample_text_->get_buffer()->signal_changed().connect([this] {
         preview_area.queue_draw();

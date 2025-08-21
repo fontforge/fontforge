@@ -34,8 +34,11 @@ RichTechEditor::RichTechEditor() {
     bold_button->set_icon_name("format-text-bold");
     toolbar_.append(*bold_button);
 
-    scrolled_.set_propagate_natural_width(true);
-    scrolled_.set_propagate_natural_height(true);
+    toolbar_.set_hexpand();
+
+    text_view_.set_wrap_mode(Gtk::WRAP_WORD);
+    text_view_.set_hexpand();
+    text_view_.set_vexpand();
 
     scrolled_.add(text_view_);
     attach(toolbar_, 0, 0);
