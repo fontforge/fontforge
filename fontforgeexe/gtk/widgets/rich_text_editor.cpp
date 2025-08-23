@@ -27,11 +27,30 @@
 
 #include "rich_text_editor.hpp"
 
+#include "../utils.hpp"
+
 namespace ff::widget {
 
 RichTechEditor::RichTechEditor() {
-    Gtk::ToolButton* bold_button = Gtk::make_managed<Gtk::ToolButton>();
+    auto bold_tag = text_view_.get_buffer()->create_tag("bold");
+    bold_tag->property_weight() = 700;
+
+    ToggleTagButton* bold_button =
+        Gtk::make_managed<ToggleTagButton>(text_view_.get_buffer(), bold_tag);
     bold_button->set_icon_name("format-text-bold");
+
+    text_view_.get_buffer()->signal_mark_set().connect(sigc::mem_fun(
+        *bold_button, &ToggleTagButton::on_buffer_cursor_changed));
+
+    text_view_.get_buffer()->signal_insert().connect(
+        [bold_button](const Gtk::TextBuffer::iterator& pos,
+                      const Glib::ustring& text, int bytes) {
+            Gtk::TextBuffer::iterator start = pos;
+            if (start.backward_chars(text.size())) {
+                bold_button->toggle_tag(start, pos);
+            }
+        });
+
     toolbar_.append(*bold_button);
 
     toolbar_.set_hexpand();
@@ -43,6 +62,49 @@ RichTechEditor::RichTechEditor() {
     scrolled_.add(text_view_);
     attach(toolbar_, 0, 0);
     attach(scrolled_, 0, 1);
+}
+
+void RichTechEditor::ToggleTagButton::toggle_tag(
+    const Gtk::TextBuffer::iterator& start,
+    const Gtk::TextBuffer::iterator& end) {
+    if (get_active()) {
+        text_buffer_->apply_tag(tag_, start, end);
+    } else {
+        text_buffer_->remove_tag(tag_, start, end);
+    }
+}
+
+void RichTechEditor::ToggleTagButton::on_button_toggled() {
+    Gtk::TextBuffer::iterator start, end;
+    if (text_buffer_->get_selection_bounds(start, end)) {
+        toggle_tag(start, end);
+    }
+}
+
+void RichTechEditor::ToggleTagButton::on_buffer_cursor_changed(
+    const Gtk::TextBuffer::iterator&,
+    const Glib::RefPtr<Gtk::TextBuffer::Mark>& mark) {
+    if (mark->get_name() != "insert") {
+        return;
+    }
+
+    Gtk::TextBuffer::iterator start, end;
+    bool button_active = false;
+
+    if (!text_buffer_->get_selection_bounds(start, end)) {
+        start--;
+    }
+
+    if (start.has_tag(tag_) && start.forward_to_tag_toggle(tag_)) {
+        if (start >= end) {
+            button_active = true;
+        }
+    }
+
+    ui_utils::gtk_set_widget_state_without_event(
+        (Gtk::ToggleToolButton*)this, &ToggleTagButton::signal_toggled,
+        sigc::mem_fun(*this, &ToggleTagButton::on_button_toggled),
+        [this, button_active]() { set_active(button_active); });
 }
 
 }  // namespace ff::widget

@@ -40,6 +40,46 @@ class RichTechEditor : public Gtk::Grid {
     }
     Gtk::ScrolledWindow& get_scrolled() { return scrolled_; }
 
+    // Special widget class for toggling tags on TextBuffer contents. This
+    // widget is responsible for applying classes, such as "bold", "italic" etc.
+    // to the TextView buffer.
+    //
+    // The desired behavior is as follows (using Bold style as example):
+    //
+    // When a text range is selected, the button in "on" if the entire selected
+    // range is Bold. Otherwise the button is "off". When there is no selection,
+    // the button state is according the character right before the cursor. So
+    // if the character before the cursor is Bold, the button will be "on", and
+    // newly typed characters will be Bold too.
+    //
+    // When the user clicks the button, its state changes. Accordingly, if there
+    // was a selection, the selection style changes accordingly. If there was no
+    // selection, the newly typed characters would have the style according to
+    // the button state.
+    class ToggleTagButton : public Gtk::ToggleToolButton {
+     public:
+        ToggleTagButton(Glib::RefPtr<Gtk::TextBuffer> text_buffer,
+                        Glib::RefPtr<Gtk::TextTag> tag)
+            : text_buffer_(text_buffer), tag_(tag) {}
+
+        void toggle_tag(const Gtk::TextBuffer::iterator& start,
+                        const Gtk::TextBuffer::iterator& end);
+
+        // Toggle the current selection, if there is any. We don't want to
+        // override Gtk::ToggleToolButton::on_toggled(), we want to be able to
+        // disconnect it.
+        void on_button_toggled();
+
+        // Set the button state when the buffer cursor or selection changes.
+        void on_buffer_cursor_changed(
+            const Gtk::TextBuffer::iterator&,
+            const Glib::RefPtr<Gtk::TextBuffer::Mark>& mark);
+
+     protected:
+        Glib::RefPtr<Gtk::TextBuffer> text_buffer_;
+        Glib::RefPtr<Gtk::TextTag> tag_;
+    };
+
  protected:
     Gtk::Toolbar toolbar_;
     Gtk::ScrolledWindow scrolled_;
