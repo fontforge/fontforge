@@ -56,4 +56,47 @@ void unset_cursor(Gtk::Widget* widget, Glib::RefPtr<Gdk::Cursor> old_cursor);
 
 void apply_css(Gtk::Widget& w, const std::string& style);
 
+// Change widget's visual state without triggering the related signal. This
+// function is useful when the widget performs some action on activation and
+// changes its apperance (e.g. toggle button). Sometimes we just want to set its
+// apperance without triggereing the action.
+//
+// Arguments:
+//  * w - GTK widget. Note that it might need to be cast to the type which
+//    actually defines the signal, to avoid a conflict during template type
+//    deduction.
+//  * signal - the signal which should be disconnected and reconnected when
+//    changing the visual state.
+//  * signal_handler - the function which should be reconnected to the signal
+//    after the visual state was changed. Generally, this is just the normal
+//    handler for that signal.
+//  * state_changer - the function which actually changes the visual state while
+//    the signal is disconnected.
+template <typename WIDGET, typename SIGNAL_PROXY, typename SIGNAL_HANDLER>
+void gtk_set_widget_state_without_event(WIDGET* w,
+                                        SIGNAL_PROXY (WIDGET::*signal)(),
+                                        SIGNAL_HANDLER signal_handler,
+                                        std::function<void()> state_changer) {
+    // Currently we use a predefined string to store custom data in the widget's
+    // Glib::Object. This should work as long as we are not trying to make two
+    // different calls of such kind to any given widget.
+    static const char kSignalActivateConn[] = "signal_activate_conn";
+
+    // Disconnect the activation signal before setting visual state
+    sigc::connection* conn =
+        (sigc::connection*)w->get_data(kSignalActivateConn);
+    if (conn) {
+        conn->disconnect();
+        delete conn;
+        conn = NULL;
+    }
+
+    // Call the action which sets the new visual state
+    state_changer();
+
+    // Reconnect the activation signal
+    conn = new sigc::connection((w->*signal)().connect(signal_handler));
+    w->set_data(kSignalActivateConn, conn);
+}
+
 }  // namespace ff::ui_utils
