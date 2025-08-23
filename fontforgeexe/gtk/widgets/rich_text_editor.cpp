@@ -39,19 +39,15 @@ RichTechEditor::RichTechEditor() {
         Gtk::make_managed<ToggleTagButton>(text_view_.get_buffer(), bold_tag);
     bold_button->set_icon_name("format-text-bold");
 
-    text_view_.get_buffer()->signal_mark_set().connect(sigc::mem_fun(
-        *bold_button, &ToggleTagButton::on_buffer_cursor_changed));
+    auto italic_tag = text_view_.get_buffer()->create_tag("italic");
+    italic_tag->property_style() = Pango::STYLE_ITALIC;
 
-    text_view_.get_buffer()->signal_insert().connect(
-        [bold_button](const Gtk::TextBuffer::iterator& pos,
-                      const Glib::ustring& text, int bytes) {
-            Gtk::TextBuffer::iterator start = pos;
-            if (start.backward_chars(text.size())) {
-                bold_button->toggle_tag(start, pos);
-            }
-        });
+    ToggleTagButton* italic_button =
+        Gtk::make_managed<ToggleTagButton>(text_view_.get_buffer(), italic_tag);
+    italic_button->set_icon_name("format-text-italic");
 
     toolbar_.append(*bold_button);
+    toolbar_.append(*italic_button);
 
     toolbar_.set_hexpand();
 
@@ -62,6 +58,26 @@ RichTechEditor::RichTechEditor() {
     scrolled_.add(text_view_);
     attach(toolbar_, 0, 0);
     attach(scrolled_, 0, 1);
+}
+
+RichTechEditor::ToggleTagButton::ToggleTagButton(
+    Glib::RefPtr<Gtk::TextBuffer> text_buffer, Glib::RefPtr<Gtk::TextTag> tag)
+    : text_buffer_(text_buffer), tag_(tag) {
+    // Called whenever the selection or the cursor position is changed. Sets the
+    // correct visual state of the widget
+    text_buffer_->signal_mark_set().connect(
+        sigc::mem_fun(*this, &ToggleTagButton::on_buffer_cursor_changed));
+
+    // Called whenever a character is typed into the buffer. Set the tag on this
+    // character according to the widget state.
+    text_buffer_->signal_insert().connect(
+        [this](const Gtk::TextBuffer::iterator& pos, const Glib::ustring& text,
+               int bytes) {
+            Gtk::TextBuffer::iterator start = pos;
+            if (start.backward_chars(text.size())) {
+                toggle_tag(start, pos);
+            }
+        });
 }
 
 void RichTechEditor::ToggleTagButton::toggle_tag(

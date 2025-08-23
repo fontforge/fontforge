@@ -59,8 +59,7 @@ class RichTechEditor : public Gtk::Grid {
     class ToggleTagButton : public Gtk::ToggleToolButton {
      public:
         ToggleTagButton(Glib::RefPtr<Gtk::TextBuffer> text_buffer,
-                        Glib::RefPtr<Gtk::TextTag> tag)
-            : text_buffer_(text_buffer), tag_(tag) {}
+                        Glib::RefPtr<Gtk::TextTag> tag);
 
         void toggle_tag(const Gtk::TextBuffer::iterator& start,
                         const Gtk::TextBuffer::iterator& end);
