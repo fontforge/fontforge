@@ -312,13 +312,17 @@ std::string build_styles(const GResInfo* gdraw_ri) {
     };
 
     static const std::map<std::string, Selector> css_selector_map = {
-        {"", {"box", {"tooltip"}}},
-        {"GLabel", {"label", {"button", "tooltip", "tab"}}},
-        {"GButton", {"button", {"spinbutton"}}},
+        {"", {"box", {"button"}}},
+        {"GLabel", {"label", {"button", "radiobutton", "header", "tab"}}},
+        {"GButton", {"button:not(.toggle)", {"spinbutton"}}},
         {"GDefaultButton", {"button#ok", {}}},
         {"GCancelButton", {"button#cancel", {}}},
         {"GNumericField", {"spinbutton", {}}},
-        {"GNumericFieldSpinner", {"spinbutton button", {}}},
+        // It's not quite clear why internal spinbutton buttons need to specify
+        // the same pseudoclass as GButton, which is already excluded and should
+        // not be affecting the style.
+        // TODO(iorsh): Review this hack.
+        {"GNumericFieldSpinner", {"spinbutton button:not(.toggle)", {}}},
         {"GTextField", {"entry", {"spinbutton"}}},
         {"GGadget.Popup", {"tooltip", {}}},
         {"GScrollBar", {"scrollbar", {}}},
