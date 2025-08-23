@@ -47,10 +47,6 @@ void CairoPainter::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
     cr->translate(printable_area.x, printable_area.y);
     cr->scale(scale, scale);
 
-    // White background
-    cr->set_source_rgb(1, 1, 1);
-    cr->paint();
-
     // Set the desired font face
     cr->set_font_face(cairo_face_);
     cr->set_font_size(font_size);
@@ -368,7 +364,12 @@ void CairoPainter::init_document(const Cairo::RefPtr<Cairo::Context>& cr,
     cr->translate(printable_area.x, printable_area.y);
     cr->scale(scale, scale);
 
+    // White background
+    cr->set_source_rgb(1, 1, 1);
+    cr->paint();
+
     // Set title
+    cr->set_source_rgb(0, 0, 0);
     cr->select_font_face("times", Cairo::FONT_SLANT_NORMAL,
                          Cairo::FONT_WEIGHT_BOLD);
     cr->set_font_size(12.0);
