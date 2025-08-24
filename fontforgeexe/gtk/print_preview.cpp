@@ -247,6 +247,19 @@ void PrintPreviewWidget::build_sample_text_popover(Gtk::Widget* parent_widget) {
         preview_area.queue_draw();
         sample_text_oneliner_->set_text(sample_text_->get_buffer()->get_text());
     });
+    sample_text_->get_buffer()->signal_apply_tag().connect(
+        [this](const Glib::RefPtr<Gtk::TextBuffer::Tag>&,
+               const Gtk::TextBuffer::iterator&,
+               const Gtk::TextBuffer::iterator&) {
+            preview_area.queue_draw();
+        });
+    sample_text_->get_buffer()->signal_remove_tag().connect(
+        [this](const Glib::RefPtr<Gtk::TextBuffer::Tag>&,
+               const Gtk::TextBuffer::iterator&,
+               const Gtk::TextBuffer::iterator&) {
+            preview_area.queue_draw();
+        });
+
     sample_text_oneliner_->set_text(sample_text_->get_buffer()->get_text());
 
     parent_widget->signal_button_press_event().connect(
@@ -284,17 +297,22 @@ void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
                                    double scale,
                                    const Cairo::Rectangle& printable_area,
                                    int page_nr) {
-    Glib::ustring sample_text = sample_text_->get_buffer()->get_text();
     double font_size = size_entry_->get_value();
+
+    gsize length = 0;
+    char* out_buffer = (char*)sample_text_->get_buffer()->serialize(
+        sample_text_->get_buffer(), widget::RichTechEditor::rich_text_mime_type,
+        sample_text_->get_buffer()->begin(), sample_text_->get_buffer()->end(),
+        length);
 
     if (radio_full_display_->get_active()) {
         return cairo_painter_.draw_page_full_display(cr, scale, printable_area,
                                                      page_nr, font_size);
     } else if (radio_sample_text_->get_active()) {
         return cairo_painter_.draw_page_sample_text(cr, scale, printable_area,
-                                                    page_nr, sample_text);
+                                                    page_nr, out_buffer);
     }
-    cairo_painter_.draw_page(cr, scale, printable_area, page_nr, sample_text,
+    cairo_painter_.draw_page(cr, scale, printable_area, page_nr, out_buffer,
                              font_size);
 }
 

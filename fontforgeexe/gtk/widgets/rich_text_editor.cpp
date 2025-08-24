@@ -27,9 +27,142 @@
 
 #include "rich_text_editor.hpp"
 
+extern "C" {
+#include "ustring.h"
+}
+
 #include "../utils.hpp"
+#include <iostream>
 
 namespace ff::widget {
+
+void dump_character(std::vector<gunichar>& unicode_buffer,
+                    const gunichar& character) {
+    Glib::ustring seq;
+    switch (character) {
+        case '<':
+            seq = "&lt;";
+            break;
+        case '\"':
+            seq = "&quot;";
+            break;
+        case '\'':
+            seq = "&apos;";
+            break;
+        case '>':
+            seq = "&gt;";
+            break;
+        case '&':
+            seq = "&amp;";
+            break;
+    }
+
+    if (seq.empty()) {
+        unicode_buffer.push_back(character);
+    } else {
+        for (const gunichar& c : seq) {
+            unicode_buffer.push_back(c);
+        }
+    }
+}
+
+void dump_tag(std::vector<gunichar>& unicode_buffer,
+              const Glib::ustring& tag_name, bool opening) {
+    unicode_buffer.push_back('<');
+    if (!opening) {
+        unicode_buffer.push_back('/');
+    }
+    for (const gunichar& c : tag_name) {
+        unicode_buffer.push_back(c);
+    }
+    unicode_buffer.push_back('>');
+}
+
+guint8* ff_xml_serialize(const Glib::RefPtr<Gtk::TextBuffer>& content_buffer,
+                         const Gtk::TextBuffer::iterator& start,
+                         const Gtk::TextBuffer::iterator& end, gsize& length) {
+    std::vector<gunichar> unicode_buffer;
+
+    // Gtk::TextBuffer doesn't enforce nested ranges, so the sequence
+    // "aa<bold>bc<italic>dd</bold>efg</italic>hi" is perfectly valid. We will
+    // use the tag stack to normalize opening and closing tags to follow XML
+    // convention.
+    std::stack<std::string> open_tags;
+
+    dump_tag(unicode_buffer, "ff_root", true);
+
+    for (auto it = start; it != end; ++it) {
+        // Retrieve closing tags
+        std::vector<Glib::RefPtr<Gtk::TextTag>> closing_tags =
+            it.get_toggled_tags(false);
+
+        // Try to close the tags in the reverse order of opening
+        bool closing_tag_found = true;
+        std::stack<std::string> temporarily_closed_tags;
+
+        while (!closing_tags.empty() && !open_tags.empty()) {
+            const std::string& last_open_tag = open_tags.top();
+            auto it = std::find_if(
+                closing_tags.begin(), closing_tags.end(),
+                [last_open_tag](Glib::RefPtr<const Gtk::TextTag> closing_tag) {
+                    return closing_tag->property_name() == last_open_tag;
+                });
+            if (it == closing_tags.end()) {
+                // Closing tag is conflicting with the open tags stack
+                temporarily_closed_tags.push(last_open_tag);
+                open_tags.pop();
+            } else {
+                // Closing tag correctly corresponds to the latest open tag
+                open_tags.pop();
+                closing_tags.erase(it);
+            }
+            dump_tag(unicode_buffer, last_open_tag, false);
+        }
+
+        if (!closing_tags.empty()) {
+            std::cerr << "TextBuffer corruption: some closing tags haven't "
+                         "been opened."
+                      << std::endl;
+        }
+
+        // Reopen the tags which were temporarily closed to resolve conflicts.
+        while (!temporarily_closed_tags.empty()) {
+            const std::string& tag_name = temporarily_closed_tags.top();
+            open_tags.push(tag_name);
+            dump_tag(unicode_buffer, tag_name, true);
+            temporarily_closed_tags.pop();
+        }
+
+        // Dump opening tags
+        std::vector<Glib::RefPtr<Gtk::TextTag>> opening_tags =
+            it.get_toggled_tags(true);
+
+        for (auto tag : opening_tags) {
+            Glib::ustring tag_name = tag->property_name();
+            dump_tag(unicode_buffer, tag_name, true);
+            open_tags.push(tag_name);
+        }
+
+        dump_character(unicode_buffer, *it);
+    }
+
+    // Dump the remaining closing tags
+    while (!open_tags.empty()) {
+        dump_tag(unicode_buffer, open_tags.top(), false);
+        open_tags.pop();
+    }
+
+    dump_tag(unicode_buffer, "ff_root", false);
+    unicode_buffer.push_back('\0');
+
+    char* utf8_buffer = u2utf8_copy(unicode_buffer.data());
+    length = strlen(utf8_buffer);
+
+    return (guint8*)utf8_buffer;
+}
+
+const std::string RichTechEditor::rich_text_mime_type =
+    "application/vnd.fontforge.rich-text+xml";
 
 RichTechEditor::RichTechEditor() {
     auto bold_tag = text_view_.get_buffer()->create_tag("bold");
@@ -54,6 +187,9 @@ RichTechEditor::RichTechEditor() {
     text_view_.set_wrap_mode(Gtk::WRAP_WORD);
     text_view_.set_hexpand();
     text_view_.set_vexpand();
+
+    auto result = text_view_.get_buffer()->register_serialize_format(
+        rich_text_mime_type, &ff_xml_serialize);
 
     scrolled_.add(text_view_);
     attach(toolbar_, 0, 0);

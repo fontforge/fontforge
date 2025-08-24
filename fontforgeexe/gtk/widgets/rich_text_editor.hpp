@@ -34,6 +34,8 @@ class RichTechEditor : public Gtk::Grid {
  public:
     RichTechEditor();
 
+    static const std::string rich_text_mime_type;
+
     // TextView accessors
     Glib::RefPtr<Gtk::TextBuffer> get_buffer() {
         return text_view_.get_buffer();
