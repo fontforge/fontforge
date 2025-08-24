@@ -27,17 +27,14 @@
 
 #include "rich_text_editor.hpp"
 
-extern "C" {
-#include "ustring.h"
-}
+#include <iostream>
+#include <cstring>
 
 #include "../utils.hpp"
-#include <iostream>
 
 namespace ff::widget {
 
-void dump_character(std::vector<gunichar>& unicode_buffer,
-                    const gunichar& character) {
+void dump_character(Glib::ustring& unicode_buffer, const gunichar& character) {
     Glib::ustring seq;
     switch (character) {
         case '<':
@@ -58,30 +55,26 @@ void dump_character(std::vector<gunichar>& unicode_buffer,
     }
 
     if (seq.empty()) {
-        unicode_buffer.push_back(character);
+        unicode_buffer += character;
     } else {
-        for (const gunichar& c : seq) {
-            unicode_buffer.push_back(c);
-        }
+        unicode_buffer += seq;
     }
 }
 
-void dump_tag(std::vector<gunichar>& unicode_buffer,
-              const Glib::ustring& tag_name, bool opening) {
+void dump_tag(Glib::ustring& unicode_buffer, const Glib::ustring& tag_name,
+              bool opening) {
     unicode_buffer.push_back('<');
     if (!opening) {
         unicode_buffer.push_back('/');
     }
-    for (const gunichar& c : tag_name) {
-        unicode_buffer.push_back(c);
-    }
+    unicode_buffer += tag_name;
     unicode_buffer.push_back('>');
 }
 
 guint8* ff_xml_serialize(const Glib::RefPtr<Gtk::TextBuffer>& content_buffer,
                          const Gtk::TextBuffer::iterator& start,
                          const Gtk::TextBuffer::iterator& end, gsize& length) {
-    std::vector<gunichar> unicode_buffer;
+    Glib::ustring unicode_buffer;
 
     // Gtk::TextBuffer doesn't enforce nested ranges, so the sequence
     // "aa<bold>bc<italic>dd</bold>efg</italic>hi" is perfectly valid. We will
@@ -153,10 +146,10 @@ guint8* ff_xml_serialize(const Glib::RefPtr<Gtk::TextBuffer>& content_buffer,
     }
 
     dump_tag(unicode_buffer, "ff_root", false);
-    unicode_buffer.push_back('\0');
 
-    char* utf8_buffer = u2utf8_copy(unicode_buffer.data());
-    length = strlen(utf8_buffer);
+    length = unicode_buffer.bytes();
+    char* utf8_buffer = new char[length + 1];
+    std::strcpy(utf8_buffer, unicode_buffer.c_str());
 
     return (guint8*)utf8_buffer;
 }
