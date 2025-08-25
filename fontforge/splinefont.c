@@ -58,6 +58,7 @@
 #include "utype.h"
 #include "winfonts.h"
 #include "woff.h"
+#include "cairo_painter.hpp"
 
 #include <locale.h>
 #include <math.h>
@@ -394,6 +395,13 @@ void SplineFontSetUnChanged(SplineFont *sf) {
 
 char* SFGetFullName(SplineFont *sf) {
     return sf->fullname;
+}
+
+void SFGetProperties(SplineFont *sf, SplineFontModifiers *modifiers) {
+    modifiers->italic = (sf->italicangle != 0.0);
+    modifiers->os2_weight = sf->pfminfo.weight;
+    modifiers->os2_width = sf->pfminfo.width;
+    modifiers->styles = SFGetModifiers(sf);
 }
 
 static char *scaleString(char *string, double scale) {

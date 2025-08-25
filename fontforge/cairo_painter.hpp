@@ -26,10 +26,29 @@
  */
 #pragma once
 
-#include <map>
-#include <cairomm/context.h>
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <stdint.h>
 
 typedef struct splinechar SplineChar;
+typedef struct splinefont SplineFont;
+
+typedef struct spline_font_modifiers {
+    bool italic;
+    int16_t os2_weight;
+    int16_t os2_width;
+    const char* styles;
+} SplineFontModifiers;
+
+extern void SFGetProperties(SplineFont* sf, SplineFontModifiers* modifiers);
+
+#ifdef __cplusplus
+}
+
+#include <map>
+#include <cairomm/context.h>
 
 using PrintGlyphMap = std::map<int, SplineChar*>;
 
@@ -83,3 +102,5 @@ class CairoPainter {
 };
 
 }  // namespace ff::utils
+
+#endif  // __cplusplus
