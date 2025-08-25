@@ -1,4 +1,4 @@
-/* This is a GENERATED file - from makeutype.py with Unicode 15.0.0 */
+/* This is a GENERATED file - from makeutype.py with Unicode 16.0.0 */
 
 /* Copyright (C) 2000-2012 by George Williams */
 /*
@@ -34,7 +34,7 @@
 #include "basics.h" /* Include here so we can use pre-defined int types to correctly size constant data arrays. */
 
 /* Unicode basics */
-#define UNICODE_VERSION "15.0.0"
+#define UNICODE_VERSION "16.0.0"
 #define UNICODE_MAX 0x110000
 
 /* Pose flags */
