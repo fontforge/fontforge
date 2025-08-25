@@ -30,7 +30,6 @@
 #include <gtkmm.h>
 
 extern "C" {
-#include "fffreetype.h"
 #include "splinechar.h"
 
 // TODO(iorsh): This include should go to cairo_painter.hpp.
@@ -43,16 +42,6 @@ extern char* SFGetFullName(SplineFont* sf);
 #include "application.hpp"
 #include "cairo_painter.hpp"
 #include "print_preview.hpp"
-
-static Cairo::RefPtr<Cairo::FtFontFace> create_cairo_face(SplineFont* sf) {
-    FTC* ftc = (FTC*)_FreeTypeFontContext(sf, NULL, NULL, ly_fore, ff_ttf,
-                                          ttf_flag_otmode, NULL);
-    FT_Face face = ftc->face;
-
-    // TODO: Correctly release face - see Cairo docs
-    auto cairo_face = Cairo::FtFontFace::create(face, 0);
-    return cairo_face;
-}
 
 static PrintGlyphMap build_glyph_map(SplineFont* sf) {
     // Build map of TTF codepoints
@@ -73,14 +62,14 @@ void print_dialog(SplineFont* sf) {
     Glib::RefPtr<Gtk::PrintOperation> print_operation =
         Gtk::PrintOperation::create();
 
-    auto cairo_face = create_cairo_face(sf);
+    CairoFontFamily cairo_family = ff::utils::create_cairo_family(sf);
     PrintGlyphMap print_map = build_glyph_map(sf);
     char* font_name = SFGetFullName(sf);
 
     // The preview widget is also responsible for actual printing, which happens
     // after the print dialog has been closed. We should manage its lifecycle
     // independently.
-    ff::utils::CairoPainter cairo_painter(cairo_face, print_map, font_name);
+    ff::utils::CairoPainter cairo_painter(cairo_family, print_map, font_name);
     ff::dlg::PrintPreviewWidget ff_preview_widget(cairo_painter);
 
     // The user should be able to select page size and orientation. This is

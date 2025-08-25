@@ -32,9 +32,12 @@
 #include <sstream>
 
 extern "C" {
+#include "fffreetype.h"
 #include "gutils.h"
 #include "splinechar.h"
 #include "ustring.h"
+
+extern SplineFont** FVCollectFamily(SplineFont* sf);
 }
 
 namespace ff::utils {
@@ -375,6 +378,40 @@ void CairoPainter::init_document(const Cairo::RefPtr<Cairo::Context>& cr,
     cr->set_font_size(12.0);
     draw_centered_text(cr, {0, 0, printable_area.width / scale, top_margin_},
                        document_title);
+}
+
+Cairo::RefPtr<Cairo::FtFontFace> create_cairo_face(SplineFont* sf) {
+    FTC* ftc = (FTC*)_FreeTypeFontContext(sf, NULL, NULL, ly_fore, ff_ttf,
+                                          ttf_flag_otmode, NULL);
+    FT_Face face = ftc->face;
+
+    // TODO: Correctly release face - see Cairo docs
+    auto cairo_face = Cairo::FtFontFace::create(face, 0);
+    return cairo_face;
+}
+
+CairoFontFamily create_cairo_family(SplineFont* current_sf) {
+    SplineFont** family_sfs = FVCollectFamily(current_sf);
+    SplineFontModifiers modifiers;
+    Cairo::RefPtr<Cairo::FtFontFace> ft_face;
+
+    CairoFontFamily family;
+
+    // By convention, the first element is the default font
+    SFGetProperties(current_sf, &modifiers);
+    ft_face = create_cairo_face(current_sf);
+    family.emplace_back(modifiers, ft_face);
+
+    if (family_sfs) {
+        for (SplineFont** sf_it = family_sfs; *sf_it != nullptr; ++sf_it) {
+            SFGetProperties(*sf_it, &modifiers);
+            ft_face = create_cairo_face(*sf_it);
+            family.emplace_back(modifiers, ft_face);
+        }
+    }
+
+    free(family_sfs);
+    return family;
 }
 
 }  // namespace ff::utils

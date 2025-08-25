@@ -52,15 +52,22 @@ extern void SFGetProperties(SplineFont* sf, SplineFontModifiers* modifiers);
 
 using PrintGlyphMap = std::map<int, SplineChar*>;
 
+// Several fonts comprising a family. By convention, the first element is the
+// default font (it doesn't need to be the regular face). The default font is
+// used when no modifiers are specified.
+using CairoFontFamily = std::vector<
+    std::pair<SplineFontModifiers, Cairo::RefPtr<Cairo::FtFontFace>>>;
+
 namespace ff::utils {
 
 struct GlyphLine;
 
 class CairoPainter {
  public:
-    CairoPainter(Cairo::RefPtr<Cairo::FtFontFace> cairo_face,
+    CairoPainter(const CairoFontFamily& cairo_family,
                  const PrintGlyphMap& print_map, const std::string& font_name)
-        : cairo_face_(cairo_face),
+        : cairo_face_(cairo_family[0].second),
+          cairo_family_(cairo_family),
           print_map_(print_map),
           font_name_(font_name) {}
 
@@ -83,6 +90,7 @@ class CairoPainter {
 
  private:
     Cairo::RefPtr<Cairo::FtFontFace> cairo_face_;
+    CairoFontFamily cairo_family_;
 
     PrintGlyphMap print_map_;
 
@@ -100,6 +108,9 @@ class CairoPainter {
                                 const GlyphLine& glyph_line, double y_start,
                                 double left_code_area_width, double pointsize);
 };
+
+Cairo::RefPtr<Cairo::FtFontFace> create_cairo_face(SplineFont* sf);
+CairoFontFamily create_cairo_family(SplineFont* current_sf);
 
 }  // namespace ff::utils
 
