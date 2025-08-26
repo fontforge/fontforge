@@ -47,6 +47,7 @@ extern void SFGetProperties(SplineFont* sf, SplineFontModifiers* modifiers);
 #ifdef __cplusplus
 }
 
+#include <iostream>
 #include <map>
 #include <cairomm/context.h>
 
@@ -113,5 +114,10 @@ Cairo::RefPtr<Cairo::FtFontFace> create_cairo_face(SplineFont* sf);
 CairoFontFamily create_cairo_family(SplineFont* current_sf);
 
 }  // namespace ff::utils
+
+using ParsedRichText =
+    std::vector<std::pair<std::vector<std::string>, std::string>>;
+
+ParsedRichText parse_xml_stream(std::istream& input);
 
 #endif  // __cplusplus

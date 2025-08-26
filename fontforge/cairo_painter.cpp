@@ -415,3 +415,37 @@ CairoFontFamily create_cairo_family(SplineFont* current_sf) {
 }
 
 }  // namespace ff::utils
+
+ParsedRichText parse_xml_stream(std::istream& input) {
+    std::string text, tag;
+    // Array of text blocks as follows: (text block, list of tags applied on
+    // that block)
+    ParsedRichText parsed_input;
+    std::vector<std::string> current_tags;
+
+    while (std::getline(input, text, '<') && std::getline(input, tag, '>')) {
+        if (!text.empty()) {
+            parsed_input.emplace_back(current_tags, text);
+        }
+        if (tag.size() > 0 && tag.front() == '/') {
+            if (!current_tags.empty() &&
+                (tag.compare(1, std::string::npos, current_tags.back()) == 0)) {
+                current_tags.pop_back();
+            } else {
+                std::cerr << "Rich text XML parser failed at tag \"" << tag
+                          << "\", position " << input.tellg() << std::endl;
+                break;
+            }
+        } else {
+            current_tags.push_back(tag);
+        }
+    }
+
+    // Generally valid XML doesn't have trailing text after all tags have been
+    // closed. Push back whatever we have read, just in case.
+    if (!text.empty()) {
+        parsed_input.emplace_back(current_tags, text);
+    }
+
+    return parsed_input;
+}
