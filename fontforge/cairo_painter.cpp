@@ -347,14 +347,47 @@ void CairoPainter::draw_page_sample_text(
     // Print sample text in black
     cr->set_source_rgb(0, 0, 0);
 
-    std::stringstream stream(sample_text);
-    std::string line;
+    std::istringstream stream(sample_text);
+    ParsedRichText parsed_text = parse_xml_stream(stream);
+    build_style_map(parsed_text);
+
     double y_start = top_margin_;
 
-    while (std::getline(stream, line, '\n')) {
+    for (const auto& [current_tags, text] : parsed_text) {
+        cr->set_font_face(select_face(current_tags));
+
         cr->move_to(margin_, y_start + extents.height);
-        cr->show_text(line);
+        cr->show_text(text);
         y_start += extents.height;
+    }
+}
+
+void CairoPainter::build_style_map(const ParsedRichText&) {
+    style_map_[{false, false}] = cairo_face_;
+
+    for (const auto& [modifiers, ref_face] : cairo_family_) {
+        if (modifiers.italic) {
+            if (modifiers.os2_weight > 500) {
+                style_map_[{true, true}] = ref_face;
+            } else {
+                style_map_[{false, true}] = ref_face;
+            }
+        } else if (modifiers.os2_weight > 500) {
+            style_map_[{true, false}] = ref_face;
+        }
+    }
+}
+
+Cairo::RefPtr<Cairo::FtFontFace> CairoPainter::select_face(
+    const std::vector<std::string>& tags) const {
+    bool has_bold = std::count(tags.begin(), tags.end(), "bold");
+    bool has_italic = std::count(tags.begin(), tags.end(), "italic");
+
+    auto face_it = style_map_.find({has_bold, has_italic});
+    if (face_it != style_map_.end()) {
+        return face_it->second;
+    } else {
+        return cairo_face_;
     }
 }
 
@@ -414,8 +447,6 @@ CairoFontFamily create_cairo_family(SplineFont* current_sf) {
     return family;
 }
 
-}  // namespace ff::utils
-
 ParsedRichText parse_xml_stream(std::istream& input) {
     std::string text, tag;
     // Array of text blocks as follows: (text block, list of tags applied on
@@ -449,3 +480,5 @@ ParsedRichText parse_xml_stream(std::istream& input) {
 
     return parsed_input;
 }
+
+}  // namespace ff::utils

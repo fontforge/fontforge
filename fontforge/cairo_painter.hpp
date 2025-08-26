@@ -63,6 +63,9 @@ namespace ff::utils {
 
 struct GlyphLine;
 
+using ParsedRichText =
+    std::vector<std::pair<std::vector<std::string>, std::string>>;
+
 class CairoPainter {
  public:
     CairoPainter(const CairoFontFamily& cairo_family,
@@ -92,6 +95,9 @@ class CairoPainter {
  private:
     Cairo::RefPtr<Cairo::FtFontFace> cairo_face_;
     CairoFontFamily cairo_family_;
+    std::map<std::pair<bool /*bold*/, bool /*italic*/>,
+             Cairo::RefPtr<Cairo::FtFontFace>>
+        style_map_;
 
     PrintGlyphMap print_map_;
 
@@ -100,6 +106,10 @@ class CairoPainter {
     // All dimensions are in points
     double margin_ = 36;
     double top_margin_ = 96;
+
+    void build_style_map(const ParsedRichText& rich_text);
+    Cairo::RefPtr<Cairo::FtFontFace> select_face(
+        const std::vector<std::string>& tags) const;
 
     void init_document(const Cairo::RefPtr<Cairo::Context>& cr, double scale,
                        const Cairo::Rectangle& printable_area,
@@ -113,11 +123,8 @@ class CairoPainter {
 Cairo::RefPtr<Cairo::FtFontFace> create_cairo_face(SplineFont* sf);
 CairoFontFamily create_cairo_family(SplineFont* current_sf);
 
-}  // namespace ff::utils
-
-using ParsedRichText =
-    std::vector<std::pair<std::vector<std::string>, std::string>>;
-
 ParsedRichText parse_xml_stream(std::istream& input);
+
+}  // namespace ff::utils
 
 #endif  // __cplusplus
