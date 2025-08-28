@@ -397,6 +397,13 @@ void CairoPainter::init_document(const Cairo::RefPtr<Cairo::Context>& cr,
                                  const std::string& document_title) {
     set_surface_metadata(cr, document_title);
 
+    // To ensure faithful preview, the rendering must be identical on all
+    // devices and all resolutions. This requires disabling of font metrics
+    // rounding.
+    Cairo::FontOptions font_options;
+    font_options.set_hint_metrics(Cairo::HintMetrics::HINT_METRICS_OFF);
+    cr->set_font_options(font_options);
+
     cr->translate(printable_area.x, printable_area.y);
     cr->scale(scale, scale);
 
