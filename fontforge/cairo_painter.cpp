@@ -386,12 +386,20 @@ void CairoPainter::draw_page_sample_text(
             Cairo::TextExtents block_extents;
             cr->get_text_extents(subblock, block_extents);
 
-            if ((line_buffer.empty() && subblock_start == subblock_break) ||
-                (line_buffer_width + block_extents.width) <
-                    scaled_printable_area.width) {
-                // The first subblock always goes into empty buffer, even if
-                // it's too long. If the subblock still fits the page width, it
-                // also goes into the buffer.
+            // When to continue filling the current line buffer:
+            //  * The buffer doesn't end with user linebreak and...
+            //  * The line buffer is empty - we always want to output something,
+            //    so the first subblock always goes into empty buffer, even if
+            //    it's too long.
+            //  * The new subblock is short enough, so it still fits the page
+            //    width together with the buffer contents.
+            bool continue_filling_buffer =
+                (*subblock_break != '\n') &&
+                ((line_buffer.empty() && subblock_start == subblock_break) ||
+                 (line_buffer_width + block_extents.width) <
+                     scaled_printable_area.width);
+
+            if (continue_filling_buffer) {
                 subblock_break = space_it;
                 continue;
             } else {
@@ -408,8 +416,9 @@ void CairoPainter::draw_page_sample_text(
                 // The line break consumes all the whitespace that was at the
                 // breaking position
                 subblock_break = std::find_if_not(
-                    subblock_break, text.end(),
-                    [](unsigned char c) { return std::isspace(c); });
+                    ++subblock_break, text.end(), [](unsigned char c) {
+                        return std::isspace(c) && c != '\n';
+                    });
                 subblock_start = space_it = subblock_break;
             }
         } while (space_it != text.end());
