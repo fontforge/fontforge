@@ -338,6 +338,9 @@ void CairoPainter::draw_page_sample_text(
     const std::string& sample_text) {
     init_document(cr, scale, printable_area, "Sample Text from " + font_name_);
 
+    Cairo::Rectangle scaled_printable_area{0, 0, printable_area.width / scale,
+                                           printable_area.height / scale};
+
     // Set the desired font face
     cr->set_font_face(cairo_face_);
     cr->set_font_size(20);
@@ -353,13 +356,100 @@ void CairoPainter::draw_page_sample_text(
 
     double y_start = top_margin_;
 
+    // Buffer of text blocks for a single line of output
+    LineBuffer line_buffer;
+    double line_buffer_width = 0;
+
     for (const auto& [current_tags, text] : parsed_text) {
         cr->set_font_face(select_face(current_tags));
 
-        cr->move_to(margin_, y_start + extents.height);
-        cr->show_text(text);
-        y_start += extents.height;
+        // Iterator inside the currently processed block, which can be broken at
+        // word boundaries.
+        std::string::const_iterator space_it = text.begin();
+
+        // Iterator which keeps the beginning of the current block, which can
+        // differ from text.begin() if a part of text has already fiiled a line
+        // and went to output.
+        std::string::const_iterator subblock_start = text.begin();
+
+        // The end of the largest printable subblock, which can be printed
+        // without overflow. To prevent infinite loop, we must output at least
+        // some text on each line.
+        std::string::const_iterator subblock_break = text.begin();
+
+        do {
+            space_it =
+                std::find_if(++space_it, text.end(),
+                             [](unsigned char c) { return std::isspace(c); });
+            std::string subblock(subblock_start, space_it);
+
+            Cairo::TextExtents block_extents;
+            cr->get_text_extents(subblock, block_extents);
+
+            if ((line_buffer.empty() && subblock_start == subblock_break) ||
+                (line_buffer_width + block_extents.width) <
+                    scaled_printable_area.width) {
+                // The first subblock always goes into empty buffer, even if
+                // it's too long. If the subblock still fits the page width, it
+                // also goes into the buffer.
+                subblock_break = space_it;
+                continue;
+            } else {
+                // This subblock exceeds the page width, we should output the
+                // current buffer and start a new line
+                std::string printable_subblock(subblock_start, subblock_break);
+                line_buffer.emplace_back(printable_subblock,
+                                         select_face(current_tags));
+
+                y_start += draw_line_sample_text(cr, line_buffer, y_start);
+                line_buffer.clear();
+                line_buffer_width = 0;
+
+                // The line break consumes all the whitespace that was at the
+                // breaking position
+                subblock_break = std::find_if_not(
+                    subblock_break, text.end(),
+                    [](unsigned char c) { return std::isspace(c); });
+                subblock_start = space_it = subblock_break;
+            }
+        } while (space_it != text.end());
+
+        std::string printable_subblock(subblock_start, text.end());
+        Cairo::TextExtents block_extents;
+        cr->get_text_extents(printable_subblock, block_extents);
+
+        line_buffer.emplace_back(std::string(subblock_start, text.end()),
+                                 select_face(current_tags));
+        line_buffer_width += block_extents.x_advance;
     }
+    draw_line_sample_text(cr, line_buffer, y_start);
+}
+
+double CairoPainter::draw_line_sample_text(
+    const Cairo::RefPtr<Cairo::Context>& cr, const LineBuffer& line_buffer,
+    double y_start) {
+    // Determine the line height
+    double height = 0;
+    for (const auto& [text, face] : line_buffer) {
+        Cairo::FontExtents font_extents;
+        cr->set_font_face(face);
+        cr->get_font_extents(font_extents);
+        height = std::max(height, font_extents.height);
+    }
+
+    // Perform the actual text drawing
+    double x = 0, y = y_start + height;
+    for (const auto& [text, face] : line_buffer) {
+        Cairo::TextExtents text_extents;
+        cr->set_font_face(face);
+        cr->get_text_extents(text, text_extents);
+
+        cr->move_to(x, y);
+        cr->show_text(text);
+        x += text_extents.x_advance;
+    }
+
+    return height;
 }
 
 void CairoPainter::build_style_map(const ParsedRichText&) {

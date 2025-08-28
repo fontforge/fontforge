@@ -65,6 +65,8 @@ struct GlyphLine;
 
 using ParsedRichText =
     std::vector<std::pair<std::vector<std::string>, std::string>>;
+using LineBuffer =
+    std::vector<std::tuple<std::string, Cairo::RefPtr<Cairo::FtFontFace>>>;
 
 class CairoPainter {
  public:
@@ -118,6 +120,10 @@ class CairoPainter {
     void draw_line_full_display(const Cairo::RefPtr<Cairo::Context>& cr,
                                 const GlyphLine& glyph_line, double y_start,
                                 double left_code_area_width, double pointsize);
+
+    // Draw a single rich text buffer and return the line height it occupied.
+    double draw_line_sample_text(const Cairo::RefPtr<Cairo::Context>& cr,
+                                 const LineBuffer& line_buffer, double y_start);
 };
 
 Cairo::RefPtr<Cairo::FtFontFace> create_cairo_face(SplineFont* sf);
