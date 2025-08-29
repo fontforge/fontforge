@@ -42,6 +42,10 @@ extern SplineFont** FVCollectFamily(SplineFont* sf);
 
 namespace ff::utils {
 
+const std::string CairoPainter::kScaleToPage = "scale_to_page";
+const std::string CairoPainter::kScaleEmSize = "scale_to_em_size";
+const std::string CairoPainter::kScaleMaxHeight = "scale_to_max_height";
+
 void CairoPainter::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
                              double scale,
                              const Cairo::Rectangle& printable_area,

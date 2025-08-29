@@ -94,6 +94,10 @@ class CairoPainter {
                                const Cairo::Rectangle& printable_area,
                                int page_nr, const std::string& sample_text);
 
+    static const std::string kScaleToPage;
+    static const std::string kScaleEmSize;
+    static const std::string kScaleMaxHeight;
+
  private:
     Cairo::RefPtr<Cairo::FtFontFace> cairo_face_;
     CairoFontFamily cairo_family_;
