@@ -88,6 +88,12 @@ class CairoPainter {
                                 const Cairo::Rectangle& printable_area,
                                 int page_nr, double pointsize);
 
+    // Draw glyphs scaled to fill the page.
+    void draw_page_full_glyph(const Cairo::RefPtr<Cairo::Context>& cr,
+                              double scale,
+                              const Cairo::Rectangle& printable_area,
+                              int page_nr, const std::string& scaling_option);
+
     // Draw formatted sample text.
     void draw_page_sample_text(const Cairo::RefPtr<Cairo::Context>& cr,
                                double scale,

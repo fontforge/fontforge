@@ -336,6 +336,29 @@ void CairoPainter::draw_line_full_display(
     }
 }
 
+void CairoPainter::draw_page_full_glyph(const Cairo::RefPtr<Cairo::Context>& cr,
+                                        double scale,
+                                        const Cairo::Rectangle& printable_area,
+                                        int page_nr,
+                                        const std::string& scaling_option) {
+    init_document(cr, scale, printable_area, "Sample Text from " + font_name_);
+
+    Cairo::Rectangle scaled_printable_area{0, 0, printable_area.width / scale,
+                                           printable_area.height / scale};
+
+    // Set the desired font face
+    cr->set_font_face(cairo_face_);
+    cr->set_font_size(20);
+    Cairo::FontExtents extents;
+    cr->get_font_extents(extents);
+
+    // Print sample text in black
+    cr->set_source_rgb(0, 0, 0);
+
+    cr->move_to(72, 72);
+    cr->show_text(scaling_option);
+}
+
 void CairoPainter::draw_page_sample_text(
     const Cairo::RefPtr<Cairo::Context>& cr, double scale,
     const Cairo::Rectangle& printable_area, int page_nr,

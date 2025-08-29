@@ -108,6 +108,7 @@ PrintPreviewWidget::PrintPreviewWidget(const utils::CairoPainter& cairo_painter)
                             "Scale glyphs to em size");
     scaling_option_->append(utils::CairoPainter::kScaleToPage,
                             "Scale glyphs to maximum height");
+    scaling_option_->set_active_id(utils::CairoPainter::kScaleToPage);
 
     // One-liner preview of the sample text popup contents
     sample_text_oneliner_ = Gtk::make_managed<Gtk::Entry>();
@@ -325,6 +326,10 @@ void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
     if (radio_full_display_->get_active()) {
         return cairo_painter_.draw_page_full_display(cr, scale, printable_area,
                                                      page_nr, font_size);
+    } else if (radio_glyph_pages_->get_active()) {
+        Glib::ustring active_option = scaling_option_->get_active_id();
+        return cairo_painter_.draw_page_full_glyph(cr, scale, printable_area,
+                                                   page_nr, active_option);
     } else if (radio_sample_text_->get_active()) {
         return cairo_painter_.draw_page_sample_text(cr, scale, printable_area,
                                                     page_nr, out_buffer);
