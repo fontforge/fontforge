@@ -213,6 +213,10 @@ std::vector<GlyphLine> split_to_lines(const PrintGlyphMap& print_map,
         glyph_lines.emplace_back(GlyphLine{hex_label, true, slots});
     }
 
+    if (unencoded_glyphs.empty()) {
+        return glyph_lines;
+    }
+
     // Add unencoded glyphs as a running sequence
     for (size_t i = 0; i <= (unencoded_glyphs.size() - 1) / line_length; ++i) {
         auto range_begin = unencoded_glyphs.begin() + i * line_length;
