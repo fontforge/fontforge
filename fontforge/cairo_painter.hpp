@@ -35,14 +35,15 @@ extern "C" {
 typedef struct splinechar SplineChar;
 typedef struct splinefont SplineFont;
 
-typedef struct spline_font_modifiers {
+typedef struct spline_font_properties {
+    int ascent, descent;
     bool italic;
     int16_t os2_weight;
     int16_t os2_width;
     const char* styles;
-} SplineFontModifiers;
+} SplineFontProperties;
 
-extern void SFGetProperties(SplineFont* sf, SplineFontModifiers* modifiers);
+extern void SFGetProperties(SplineFont* sf, SplineFontProperties* properties);
 
 #ifdef __cplusplus
 }
@@ -57,7 +58,7 @@ using PrintGlyphMap = std::map<int, SplineChar*>;
 // default font (it doesn't need to be the regular face). The default font is
 // used when no modifiers are specified.
 using CairoFontFamily = std::vector<
-    std::pair<SplineFontModifiers, Cairo::RefPtr<Cairo::FtFontFace>>>;
+    std::pair<SplineFontProperties, Cairo::RefPtr<Cairo::FtFontFace>>>;
 
 namespace ff::utils {
 

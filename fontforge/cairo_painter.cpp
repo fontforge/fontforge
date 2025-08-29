@@ -495,14 +495,14 @@ double CairoPainter::draw_line_sample_text(
 void CairoPainter::build_style_map(const ParsedRichText&) {
     style_map_[{false, false}] = cairo_face_;
 
-    for (const auto& [modifiers, ref_face] : cairo_family_) {
-        if (modifiers.italic) {
-            if (modifiers.os2_weight > 500) {
+    for (const auto& [sf_properties, ref_face] : cairo_family_) {
+        if (sf_properties.italic) {
+            if (sf_properties.os2_weight > 500) {
                 style_map_[{true, true}] = ref_face;
             } else {
                 style_map_[{false, true}] = ref_face;
             }
-        } else if (modifiers.os2_weight > 500) {
+        } else if (sf_properties.os2_weight > 500) {
             style_map_[{true, false}] = ref_face;
         }
     }
@@ -562,21 +562,21 @@ Cairo::RefPtr<Cairo::FtFontFace> create_cairo_face(SplineFont* sf) {
 
 CairoFontFamily create_cairo_family(SplineFont* current_sf) {
     SplineFont** family_sfs = FVCollectFamily(current_sf);
-    SplineFontModifiers modifiers;
+    SplineFontProperties sf_properties;
     Cairo::RefPtr<Cairo::FtFontFace> ft_face;
 
     CairoFontFamily family;
 
     // By convention, the first element is the default font
-    SFGetProperties(current_sf, &modifiers);
+    SFGetProperties(current_sf, &sf_properties);
     ft_face = create_cairo_face(current_sf);
-    family.emplace_back(modifiers, ft_face);
+    family.emplace_back(sf_properties, ft_face);
 
     if (family_sfs) {
         for (SplineFont** sf_it = family_sfs; *sf_it != nullptr; ++sf_it) {
-            SFGetProperties(*sf_it, &modifiers);
+            SFGetProperties(*sf_it, &sf_properties);
             ft_face = create_cairo_face(*sf_it);
-            family.emplace_back(modifiers, ft_face);
+            family.emplace_back(sf_properties, ft_face);
         }
     }
 

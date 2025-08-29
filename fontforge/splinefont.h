@@ -52,7 +52,7 @@ extern "C" {
 /*  fonts */
 #define BACK_LAYER_MAX 256
 
-typedef struct spline_font_modifiers SplineFontModifiers;
+typedef struct spline_font_properties SplineFontProperties;
 
 typedef struct dbasepoint {
     bigreal x;
@@ -1465,7 +1465,7 @@ extern void ttfdumpbitmap(SplineFont *sf,struct alltabs *at,int32_t *sizes);
 extern void SplineFontSetUnChanged(SplineFont *sf);
 extern char* SFGetFullName(SplineFont *sf);
 extern SplineFont** FVCollectFamily(SplineFont *sf);
-extern void SFGetProperties(SplineFont *sf, SplineFontModifiers *modifiers);
+extern void SFGetProperties(SplineFont *sf, SplineFontProperties *properties);
 
 extern bool RealNear(real a,real b);
 
