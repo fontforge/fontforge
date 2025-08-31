@@ -117,8 +117,9 @@ class CairoPainter {
     std::string font_name_;
 
     // All dimensions are in points
-    double margin_ = 36;
-    double top_margin_ = 96;
+    const double margin_ = 36;
+    const double top_margin_ = 96;
+    const double full_glyph_top_margin_ = 48;
 
     void build_style_map(const ParsedRichText& rich_text);
     Cairo::RefPtr<Cairo::FtFontFace> select_face(
@@ -126,7 +127,12 @@ class CairoPainter {
 
     void init_document(const Cairo::RefPtr<Cairo::Context>& cr, double scale,
                        const Cairo::Rectangle& printable_area,
-                       const std::string& document_title);
+                       const std::string& document_title, double top_margin);
+
+    // Get SplineFont ascent and descent in Cairo context units, normalized for
+    // font size 1pt.
+    std::pair<double, double> get_splinefont_metrics(
+        const Cairo::RefPtr<Cairo::Context>& cr) const;
 
     void draw_line_full_display(const Cairo::RefPtr<Cairo::Context>& cr,
                                 const GlyphLine& glyph_line, double y_start,

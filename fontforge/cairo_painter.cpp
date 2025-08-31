@@ -236,7 +236,8 @@ std::vector<GlyphLine> split_to_lines(const PrintGlyphMap& print_map,
 void CairoPainter::draw_page_full_display(
     const Cairo::RefPtr<Cairo::Context>& cr, double scale,
     const Cairo::Rectangle& printable_area, int page_nr, double pointsize) {
-    init_document(cr, scale, printable_area, "Font Display for " + font_name_);
+    init_document(cr, scale, printable_area, "Font Display for " + font_name_,
+                  top_margin_);
 
     Cairo::Rectangle scaled_printable_area{0, 0, printable_area.width / scale,
                                            printable_area.height / scale};
@@ -341,33 +342,92 @@ void CairoPainter::draw_line_full_display(
 }
 
 void CairoPainter::draw_page_full_glyph(const Cairo::RefPtr<Cairo::Context>& cr,
-                                        double scale,
+                                        double page_scale,
                                         const Cairo::Rectangle& printable_area,
                                         int page_nr,
                                         const std::string& scaling_option) {
-    init_document(cr, scale, printable_area, "Sample Text from " + font_name_);
+    // Locate the desired glyph
+    int glyph_idx = std::min<int>(page_nr, print_map_.size() - 1);
+    auto glyph_it = std::next(print_map_.begin(), glyph_idx);
 
-    Cairo::Rectangle scaled_printable_area{0, 0, printable_area.width / scale,
-                                           printable_area.height / scale};
+    // Print page title for glyph
+    std::string page_title(glyph_it->second->name + (" from " + font_name_));
+    init_document(cr, page_scale, printable_area, page_title,
+                  full_glyph_top_margin_);
 
-    // Set the desired font face
+    // We are already in point units. Further rescale surface, exclude the top
+    // 12 pt for glyph title
+    cr->translate(0, full_glyph_top_margin_);
+    Cairo::Rectangle scaled_printable_area{
+        0, 0, printable_area.width / page_scale,
+        printable_area.height / page_scale - full_glyph_top_margin_};
+
+    // Retrieve the font metrics in normalized size
+    auto [sf_ascent, sf_descent] = get_splinefont_metrics(cr);
+
+    // Glyph metrics in normalized size
+    static const double normalized_size = 1.0;
     cr->set_font_face(cairo_face_);
-    cr->set_font_size(20);
-    Cairo::FontExtents extents;
-    cr->get_font_extents(extents);
+    cr->set_font_size(normalized_size);
 
-    // Print sample text in black
-    cr->set_source_rgb(0, 0, 0);
+    Cairo::Glyph glyph{(unsigned long)glyph_it->first, 0.0, 0.0};
+    Cairo::TextExtents text_extents;
+    cr->get_glyph_extents({glyph}, text_extents);
 
-    cr->move_to(72, 72);
-    cr->show_text(scaling_option);
+    double x_min = std::min(0.0, text_extents.x_bearing);
+    double x_max = std::max(text_extents.x_advance,
+                            text_extents.width + text_extents.x_bearing);
+    double y_min =
+        std::min(sf_descent, -text_extents.y_bearing - text_extents.height);
+    double y_max = std::max(sf_ascent, -text_extents.y_bearing);
+
+    double x_scale =
+        (x_max > x_min) ? scaled_printable_area.width / (x_max - x_min) : 1e-5;
+    double y_scale =
+        (y_max > y_min) ? scaled_printable_area.height / (y_max - y_min) : 1e-5;
+    double glyph_scale = std::min(x_scale, y_scale);
+
+    cr->scale(glyph_scale, glyph_scale);
+    cr->translate(-x_min, scaled_printable_area.height / glyph_scale + y_min);
+    Cairo::Rectangle na{scaled_printable_area.x / glyph_scale + x_min,
+                        scaled_printable_area.y / glyph_scale -
+                            scaled_printable_area.height / glyph_scale - y_min,
+                        scaled_printable_area.width / glyph_scale,
+                        scaled_printable_area.height / glyph_scale};
+
+    double scaled_size = glyph_scale * normalized_size;
+    cr->set_font_size(normalized_size);
+    cr->show_glyphs({glyph});
+
+    cr->set_line_width(0.002);
+
+    cr->move_to(0, na.y);
+    cr->line_to(0, na.y + na.height);
+    cr->stroke();
+
+    cr->move_to(text_extents.x_advance, na.y);
+    cr->line_to(text_extents.x_advance, na.y + na.height);
+    cr->stroke();
+
+    cr->move_to(na.x, 0);
+    cr->line_to(na.x + na.width, 0);
+    cr->stroke();
+
+    cr->move_to(na.x, -sf_ascent);
+    cr->line_to(na.x + na.width, -sf_ascent);
+    cr->stroke();
+
+    cr->move_to(na.x, -sf_descent);
+    cr->line_to(na.x + na.width, -sf_descent);
+    cr->stroke();
 }
 
 void CairoPainter::draw_page_sample_text(
     const Cairo::RefPtr<Cairo::Context>& cr, double scale,
     const Cairo::Rectangle& printable_area, int page_nr,
     const std::string& sample_text) {
-    init_document(cr, scale, printable_area, "Sample Text from " + font_name_);
+    init_document(cr, scale, printable_area, "Sample Text from " + font_name_,
+                  top_margin_);
 
     Cairo::Rectangle scaled_printable_area{0, 0, printable_area.width / scale,
                                            printable_area.height / scale};
@@ -524,7 +584,8 @@ Cairo::RefPtr<Cairo::FtFontFace> CairoPainter::select_face(
 void CairoPainter::init_document(const Cairo::RefPtr<Cairo::Context>& cr,
                                  double scale,
                                  const Cairo::Rectangle& printable_area,
-                                 const std::string& document_title) {
+                                 const std::string& document_title,
+                                 double top_margin) {
     set_surface_metadata(cr, document_title);
 
     // To ensure faithful preview, the rendering must be identical on all
@@ -546,8 +607,42 @@ void CairoPainter::init_document(const Cairo::RefPtr<Cairo::Context>& cr,
     cr->select_font_face("times", Cairo::FONT_SLANT_NORMAL,
                          Cairo::FONT_WEIGHT_BOLD);
     cr->set_font_size(12.0);
-    draw_centered_text(cr, {0, 0, printable_area.width / scale, top_margin_},
+    draw_centered_text(cr, {0, 0, printable_area.width / scale, top_margin},
                        document_title);
+}
+
+std::pair<double, double> CairoPainter::get_splinefont_metrics(
+    const Cairo::RefPtr<Cairo::Context>& cr) const {
+    // Retrieve the font and glyph metrics in normalized size 1 pt.
+    static const double normalized_size = 1.0;
+    cr->set_font_face(cairo_face_);
+    cr->set_font_size(normalized_size);
+
+    // Retrieve the real ascender and descender in Cairo context units
+    const SplineFontProperties& sf_properties = cairo_family_[0].first;
+    Cairo::FontExtents font_extents;
+    cr->get_font_extents(font_extents);
+
+    Cairo::Matrix I = Cairo::identity_matrix();
+    Cairo::RefPtr<Cairo::FtScaledFont> ft_scaled =
+        Cairo::FtScaledFont::create(cairo_face_, I, I);
+
+    // Retrieve the real ascender and descender in font units (like in
+    // SplineFont)
+    FT_Face face = ft_scaled->lock_face();
+    FT_Short ft_ascender = face->ascender;
+    FT_Short ft_descender = face->descender;
+    ft_scaled->unlock_face();
+
+    // Fontforge SplineFont::ascent doesn't always become the real ascent value
+    // in the font. OS/2 metrics can modify that. Convert the FontForge ascent
+    // value from font units to Cairo units:
+    double sf_ascent =
+        sf_properties.ascent * ((double)font_extents.ascent / ft_ascender);
+    double sf_descent =
+        sf_properties.descent * ((double)font_extents.descent / ft_descender);
+
+    return {sf_ascent, sf_descent};
 }
 
 Cairo::RefPtr<Cairo::FtFontFace> create_cairo_face(SplineFont* sf) {
