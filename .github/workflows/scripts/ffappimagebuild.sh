@@ -49,14 +49,13 @@ fi
 
 export DEPLOY_GTK_VERSION=3
 
-./linuxdeploy.AppImage --appdir $APPDIR --plugin gtk --output appimage -i ../desktop/tango/scalable/org.fontforge.FontForge.svg -d ../desktop/org.fontforge.FontForge.desktop
-# Manually invoke appimagetool so that the custom AppRun stays intact
-./linuxdeploy.AppImage --appimage-extract
+# linuxdeploy automatically detectes and uses custom AppRun
+install -m 755 $SCRIPT_BASE/../../../Packaging/AppDir/AppRun $APPDIR/AppRun
 
-export PATH=$(readlink -f ./squashfs-root/usr/bin):$PATH
-rm $APPDIR/AppRun
-install -m 755 $SCRIPT_BASE/../../../Packaging/AppDir/AppRun $APPDIR/AppRun # custom AppRun
-# ARCH=x86_64 ./squashfs-root/usr/bin/appimagetool -g $APPDIR/
+./linuxdeploy.AppImage --appdir $APPDIR --plugin gtk --output appimage -i ../desktop/tango/scalable/org.fontforge.FontForge.svg -d ../desktop/org.fontforge.FontForge.desktop
+
+# List remaining external dependencies for debug purposes
+./linuxdeploy.AppImage --appimage-extract
 find $APPDIR -executable -type f -exec ldd {} \; | grep " => /lib" | cut -d " " -f 2-3 | sort | uniq
 
 mv FontForge*.AppImage FontForge-$(date +%Y-%m-%d)-$LINUXDEPLOY_OUTPUT_VERSION-x86_64.AppImage
