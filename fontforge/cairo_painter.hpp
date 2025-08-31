@@ -78,11 +78,6 @@ class CairoPainter {
           print_map_(print_map),
           font_name_(font_name) {}
 
-    // Draw the entire printable page.
-    void draw_page(const Cairo::RefPtr<Cairo::Context>& cr, double scale,
-                   const Cairo::Rectangle& printable_area, int page_nr,
-                   const std::string& sample_text, double font_size);
-
     // Draw full font display as a character grid.
     void draw_page_full_display(const Cairo::RefPtr<Cairo::Context>& cr,
                                 double scale,
@@ -100,6 +95,12 @@ class CairoPainter {
                                double scale,
                                const Cairo::Rectangle& printable_area,
                                int page_nr, const std::string& sample_text);
+
+    // Draw each glyph in multiple sizes.
+    void draw_page_multisize(const Cairo::RefPtr<Cairo::Context>& cr,
+                             double scale,
+                             const Cairo::Rectangle& printable_area,
+                             int page_nr);
 
     static const std::string kScaleToPage;
     static const std::string kScaleEmSize;
@@ -141,6 +142,10 @@ class CairoPainter {
     // Draw a single rich text buffer and return the line height it occupied.
     double draw_line_sample_text(const Cairo::RefPtr<Cairo::Context>& cr,
                                  const LineBuffer& line_buffer, double y_start);
+
+    double draw_line_multisize(const Cairo::RefPtr<Cairo::Context>& cr,
+                               const std::vector<double>& pointsizes,
+                               int glyph_index, double y_start);
 };
 
 Cairo::RefPtr<Cairo::FtFontFace> create_cairo_face(SplineFont* sf);

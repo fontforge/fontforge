@@ -46,43 +46,6 @@ const std::string CairoPainter::kScaleToPage = "scale_to_page";
 const std::string CairoPainter::kScaleEmSize = "scale_to_em_size";
 const std::string CairoPainter::kScaleMaxHeight = "scale_to_max_height";
 
-void CairoPainter::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
-                             double scale,
-                             const Cairo::Rectangle& printable_area,
-                             int page_nr, const std::string& sample_text,
-                             double font_size) {
-    cr->translate(printable_area.x, printable_area.y);
-    cr->scale(scale, scale);
-
-    // Set the desired font face
-    cr->set_font_face(cairo_face_);
-    cr->set_font_size(font_size);
-    Cairo::FontExtents extents;
-    cr->get_font_extents(extents);
-
-    // Print sample text in black
-    cr->move_to(10.0, 10.0 + extents.height);
-    cr->set_source_rgb(0, 0, 0);
-    cr->show_text(sample_text);
-
-    // Print horizontal reference mark in yellow
-    cr->set_source_rgb(1.0, 1.0, 0.0);
-    cr->rectangle(0, 0, 100, 10);
-    cr->fill();
-    cr->set_source_rgb(0.0, 0.0, 0.0);
-    cr->rectangle(99, 0, 1, 10);
-    cr->fill();
-
-    // Print vertical reference mark in red
-    cr->set_source_rgb(1.0, 0.0, 0.0);
-    cr->rectangle(0, 0, 10, 100 * printable_area.height / printable_area.width);
-    cr->fill();
-    cr->set_source_rgb(0.0, 0.0, 0.0);
-    cr->rectangle(0, 100 * printable_area.height / printable_area.width - 1, 10,
-                  1);
-    cr->fill();
-}
-
 static void set_surface_metadata(const Cairo::RefPtr<Cairo::Context>& cr,
                                  const std::string& title) {
     std::string author = GetAuthor();
@@ -549,6 +512,64 @@ double CairoPainter::draw_line_sample_text(
         cr->move_to(x, y);
         cr->show_text(text);
         x += text_extents.x_advance;
+    }
+
+    return height;
+}
+
+// Rewritten PIMultiSize()
+void CairoPainter::draw_page_multisize(const Cairo::RefPtr<Cairo::Context>& cr,
+                                       double scale,
+                                       const Cairo::Rectangle& printable_area,
+                                       int page_nr) {
+    init_document(cr, scale, printable_area, "Sample Sizes of " + font_name_,
+                  top_margin_);
+
+    Cairo::Rectangle scaled_printable_area{0, 0, printable_area.width / scale,
+                                           printable_area.height / scale};
+
+    static const std::vector<double> pointsizes{
+        72, 48, 36,  24, 20,  18, 16,  15, 14,  13,  12, 11, 10,
+        9,  8,  7.5, 7,  6.5, 6,  5.5, 5,  4.5, 4.2, 4,  0};
+    double extravspace = pointsizes[0] / 6;
+
+    double char_area_height =
+        scaled_printable_area.height - margin_ - top_margin_;
+    int max_lines = static_cast<int>(std::floor(
+        (char_area_height + extravspace) / (pointsizes[0] + extravspace)));
+
+    // Set the user font face
+    cr->set_font_face(cairo_face_);
+
+    double y_start = top_margin_;
+    for (const auto [glyph_index, sc] : print_map_) {
+        y_start += draw_line_multisize(cr, pointsizes, glyph_index, y_start);
+        y_start += extravspace;
+    }
+}
+
+double CairoPainter::draw_line_multisize(
+    const Cairo::RefPtr<Cairo::Context>& cr,
+    const std::vector<double>& pointsizes, int glyph_index, double y_start) {
+    // Compute line height by maximum glyph size
+    double maximum_size =
+        (pointsizes.empty())
+            ? 1
+            : *std::max_element(pointsizes.begin(), pointsizes.end());
+    Cairo::FontExtents font_extents;
+    cr->set_font_size(maximum_size);
+    cr->get_font_extents(font_extents);
+    double height = font_extents.height;
+
+    Cairo::Glyph glyph{(unsigned long)glyph_index, 0, y_start + height};
+
+    for (double size : pointsizes) {
+        Cairo::TextExtents text_extents;
+        cr->set_font_size(size);
+        cr->get_glyph_extents({glyph}, text_extents);
+        cr->show_glyphs({glyph});
+
+        glyph.x += text_extents.x_advance;
     }
 
     return height;

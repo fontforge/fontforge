@@ -333,9 +333,10 @@ void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
     } else if (radio_sample_text_->get_active()) {
         return cairo_painter_.draw_page_sample_text(cr, scale, printable_area,
                                                     page_nr, out_buffer);
+    } else {
+        return cairo_painter_.draw_page_multisize(cr, scale, printable_area,
+                                                  page_nr);
     }
-    cairo_painter_.draw_page(cr, scale, printable_area, page_nr, out_buffer,
-                             font_size);
 }
 
 bool PrintPreviewWidget::draw_preview_area(
