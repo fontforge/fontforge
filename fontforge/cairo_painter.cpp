@@ -108,6 +108,20 @@ static void set_surface_metadata(const Cairo::RefPtr<Cairo::Context>& cr,
     }
 }
 
+// Draw a line across the box, at the specified horizontal or vertical position.
+static void draw_line(const Cairo::RefPtr<Cairo::Context>& cr,
+                      const Cairo::Rectangle& box, double level,
+                      bool horizontal) {
+    if (horizontal) {
+        cr->move_to(box.x, level);
+        cr->line_to(box.x + box.width, level);
+    } else {
+        cr->move_to(level, box.y);
+        cr->line_to(level, box.y + box.height);
+    }
+    cr->stroke();
+}
+
 static void draw_centered_text(const Cairo::RefPtr<Cairo::Context>& cr,
                                const Cairo::Rectangle& box,
                                const std::string& text) {
@@ -284,11 +298,10 @@ void CairoPainter::draw_page_full_display(
 
         // Draw a ruler between encoded and unencoded glyphs, if necessary.
         if (i > 0 && !glyph_line.encoded && glyph_lines[i - 1].encoded) {
-            cr->move_to(margin_ + left_code_area_width + extrahspace, y_start);
-            cr->line_to(margin_ + left_code_area_width +
-                            line_length * (extrahspace + pointsize),
-                        y_start);
-            cr->stroke();
+            Cairo::Rectangle line_slot{
+                margin_ + left_code_area_width + extrahspace, y_start,
+                line_length * (extrahspace + pointsize) - extrahspace, 0};
+            draw_line(cr, line_slot, y_start, true);
 
             // This provides a vertical shift after we have drawn a ruler
             // between encoded and unencoded glyphs.
@@ -401,25 +414,11 @@ void CairoPainter::draw_page_full_glyph(const Cairo::RefPtr<Cairo::Context>& cr,
 
     cr->set_line_width(0.002);
 
-    cr->move_to(0, na.y);
-    cr->line_to(0, na.y + na.height);
-    cr->stroke();
-
-    cr->move_to(text_extents.x_advance, na.y);
-    cr->line_to(text_extents.x_advance, na.y + na.height);
-    cr->stroke();
-
-    cr->move_to(na.x, 0);
-    cr->line_to(na.x + na.width, 0);
-    cr->stroke();
-
-    cr->move_to(na.x, -sf_ascent);
-    cr->line_to(na.x + na.width, -sf_ascent);
-    cr->stroke();
-
-    cr->move_to(na.x, -sf_descent);
-    cr->line_to(na.x + na.width, -sf_descent);
-    cr->stroke();
+    draw_line(cr, na, 0, false);
+    draw_line(cr, na, text_extents.x_advance, false);
+    draw_line(cr, na, 0, true);
+    draw_line(cr, na, -sf_ascent, true);
+    draw_line(cr, na, -sf_descent, true);
 }
 
 void CairoPainter::draw_page_sample_text(
