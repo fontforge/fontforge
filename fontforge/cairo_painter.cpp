@@ -109,6 +109,8 @@ static void set_surface_metadata(const Cairo::RefPtr<Cairo::Context>& cr,
 }
 
 // Draw a line across the box, at the specified horizontal or vertical position.
+// TODO(iorsh): Fix draw_line() to draw a pixel-wide line on screen or bitmap,
+// or a very thin line on a scalable surface (e.g. PDF, PS).
 static void draw_line(const Cairo::RefPtr<Cairo::Context>& cr,
                       const Cairo::Rectangle& box, double level,
                       bool horizontal) {
@@ -414,6 +416,7 @@ void CairoPainter::draw_page_full_glyph(const Cairo::RefPtr<Cairo::Context>& cr,
 
     cr->set_line_width(0.002);
 
+    // TODO(iorsh): extend lines by tiny dashes
     draw_line(cr, na, 0, false);
     draw_line(cr, na, text_extents.x_advance, false);
     draw_line(cr, na, 0, true);
