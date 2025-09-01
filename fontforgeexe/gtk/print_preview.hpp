@@ -82,6 +82,7 @@ class PrintPreviewWidget : public Gtk::Grid {
     // Containers for compound preview area
     widget::AspectFrameWithBackground aspect_wrapper;
     Gtk::DrawingArea preview_area;
+    Gtk::Scale page_counter_;
 
     // Preview controls
     Gtk::RadioButton* radio_full_display_;

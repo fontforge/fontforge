@@ -197,11 +197,22 @@ void PrintPreviewWidget::build_compound_preview_area() {
     // widget. To support CSS styling, the preview widget is wrapped with
     // Gtk::Box, which provides a CSS node.
     Gtk::Box* box_wrapper = Gtk::make_managed<Gtk::Box>();
+    Gtk::Overlay* overlay = Gtk::make_managed<Gtk::Overlay>();
     ui_utils::apply_css(*box_wrapper, preview_area_css);
     box_wrapper->set_margin_start(wrapper_margin);
     box_wrapper->set_margin_end(wrapper_margin);
     box_wrapper->set_margin_top(0);  // Gtk::Frame already boosts the top margin
     box_wrapper->set_margin_bottom(wrapper_margin);
+
+    page_counter_ = Gtk::Scale(Gtk::ORIENTATION_HORIZONTAL);
+    page_counter_.get_adjustment()->configure(1, 1, 21, 1, 1, 1);
+    page_counter_.set_valign(Gtk::ALIGN_END);
+    page_counter_.signal_format_value().connect([this](double page_num) {
+        char buffer[32];
+        int total_pages = (int)page_counter_.get_adjustment()->get_upper() - 1;
+        sprintf(buffer, "Page %d of %d", (int)page_num, total_pages);
+        return Glib::ustring(buffer);
+    });
 
     aspect_wrapper.set_hexpand(true);
     aspect_wrapper.set_vexpand(true);
@@ -210,7 +221,9 @@ void PrintPreviewWidget::build_compound_preview_area() {
     preview_area.signal_draw().connect(
         sigc::mem_fun(*this, &PrintPreviewWidget::draw_preview_area));
 
-    box_wrapper->pack_start(preview_area, true, true);
+    overlay->add(preview_area);
+    overlay->add_overlay(page_counter_);
+    box_wrapper->pack_start(*overlay, true, true);
     aspect_wrapper.add(*box_wrapper);
 }
 
