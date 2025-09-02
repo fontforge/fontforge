@@ -68,15 +68,12 @@ using ParsedRichText =
     std::vector<std::pair<std::vector<std::string>, std::string>>;
 using LineBuffer =
     std::vector<std::tuple<std::string, Cairo::RefPtr<Cairo::FtFontFace>>>;
+using PrintGlyphVec = std::vector<std::pair<int, SplineChar*>>;
 
 class CairoPainter {
  public:
     CairoPainter(const CairoFontFamily& cairo_family,
-                 const PrintGlyphMap& print_map, const std::string& font_name)
-        : cairo_face_(cairo_family[0].second),
-          cairo_family_(cairo_family),
-          print_map_(print_map),
-          font_name_(font_name) {}
+                 const PrintGlyphMap& print_map, const std::string& font_name);
 
     // Draw full font display as a character grid.
     void draw_page_full_display(const Cairo::RefPtr<Cairo::Context>& cr,
@@ -113,7 +110,9 @@ class CairoPainter {
              Cairo::RefPtr<Cairo::FtFontFace>>
         style_map_;
 
-    PrintGlyphMap print_map_;
+    // Sorted with encoded glyph first (ordered by encoding), unencoded glyphs
+    // second (ordered by glyph index).
+    PrintGlyphVec print_map_;
 
     std::string font_name_;
 
@@ -121,6 +120,23 @@ class CairoPainter {
     const double margin_ = 36;
     const double top_margin_ = 96;
     const double full_glyph_top_margin_ = 48;
+
+    // A line of glyphs for full display. It has a prefix label, e.g. "05D0",
+    // and a list of codepoints. All the index lists must have the same size,
+    // which corresponds to the number of slots per line. An index can be -1,
+    // which means no glyph should be drawn at that slot.
+    struct GlyphLine {
+        std::string label;
+        bool encoded;
+        // Unicode codepoints or TTF glyph indexes, according to the value of
+        // the "encoded" flag
+        std::vector<int> indexes;
+    };
+
+    void sort_glyphs(const PrintGlyphMap& print_map);
+
+    // Returns vector of glyph lines.
+    std::vector<GlyphLine> split_to_lines(size_t max_slots) const;
 
     void build_style_map(const ParsedRichText& rich_text);
     Cairo::RefPtr<Cairo::FtFontFace> select_face(

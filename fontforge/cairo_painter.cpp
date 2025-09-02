@@ -28,7 +28,6 @@
 #include "cairo_painter.hpp"
 
 #include <array>
-#include <set>
 #include <sstream>
 
 extern "C" {
@@ -45,6 +44,29 @@ namespace ff::utils {
 const std::string CairoPainter::kScaleToPage = "scale_to_page";
 const std::string CairoPainter::kScaleEmSize = "scale_to_em_size";
 const std::string CairoPainter::kScaleMaxHeight = "scale_to_max_height";
+
+CairoPainter::CairoPainter(const CairoFontFamily& cairo_family,
+                           const PrintGlyphMap& print_map,
+                           const std::string& font_name)
+    : cairo_face_(cairo_family[0].second),
+      cairo_family_(cairo_family),
+      font_name_(font_name) {
+    sort_glyphs(print_map);
+}
+
+void CairoPainter::sort_glyphs(const PrintGlyphMap& print_map) {
+    std::copy(print_map.begin(), print_map.end(), back_inserter(print_map_));
+    // Sort encoded glyphs first, unenecoded glyphs second.
+    std::sort(
+        print_map_.begin(), print_map_.end(), [](const auto& a, const auto& b) {
+            return (a.second->unicodeenc == -1)
+                       ? ((b.second->unicodeenc == -1) ? (a.first < b.first)
+                                                       : false)
+                       : ((b.second->unicodeenc == -1)
+                              ? true
+                              : (a.second->unicodeenc < b.second->unicodeenc));
+        });
+}
 
 static void set_surface_metadata(const Cairo::RefPtr<Cairo::Context>& cr,
                                  const std::string& title) {
@@ -122,32 +144,17 @@ static void draw_centered_glyph(const Cairo::RefPtr<Cairo::Context>& cr,
     cr->show_glyphs({glyph});
 }
 
-// Returns vector of glyph lines. Each line has a prefix label, e.g. "05D0", and
-// a list of codepoints. All the index lists must have the same size, which
-// corresponds to the number of slots per line. An index can be -1, which means
-// no glyph should be drawn at that slot.
-struct GlyphLine {
-    std::string label;
-    bool encoded;
-    // Unicode codepoints or TTF glyph indexes, according to the value of the
-    // "encoded" flag
-    std::vector<int> indexes;
-};
-
-std::vector<GlyphLine> split_to_lines(const PrintGlyphMap& print_map,
-                                      size_t max_slots) {
-    std::set<int> encoded_glyphs;
-    std::vector<int> unencoded_glyphs;
-    for (const auto& glyph_item : print_map) {
-        if (glyph_item.second->unicodeenc == -1) {
-            unencoded_glyphs.push_back(glyph_item.first);
-        } else {
-            encoded_glyphs.insert(glyph_item.second->unicodeenc);
-        }
+std::vector<CairoPainter::GlyphLine> CairoPainter::split_to_lines(
+    size_t max_slots) const {
+    std::vector<GlyphLine> glyph_lines;
+    if (print_map_.empty()) {
+        return glyph_lines;
     }
 
     size_t line_length = 0;
-    if (encoded_glyphs.empty()) {
+    bool no_encoded_glyphs = print_map_.front().second->unicodeenc == -1;
+
+    if (no_encoded_glyphs) {
         line_length = (max_slots >= 20)   ? 20
                       : (max_slots >= 10) ? 10
                       : (max_slots >= 5)  ? 5
@@ -165,7 +172,13 @@ std::vector<GlyphLine> split_to_lines(const PrintGlyphMap& print_map,
 
     // Group encoded glyphs into lines.
     std::map<int, std::vector<int>> cp_lines;
-    for (int codepoint : encoded_glyphs) {
+    PrintGlyphVec::const_iterator map_it = print_map_.begin();
+    for (; map_it != print_map_.end(); ++map_it) {
+        int codepoint = map_it->second->unicodeenc;
+        if (codepoint == -1) {
+            break;
+        }
+
         // round to a multiple of line_length
         int prefix = codepoint / line_length * line_length;
 
@@ -177,7 +190,6 @@ std::vector<GlyphLine> split_to_lines(const PrintGlyphMap& print_map,
     }
 
     // Convert each line of codepoints into glyph line
-    std::vector<GlyphLine> glyph_lines;
     for (const auto& cp_line : cp_lines) {
         // Format prefix into 4-digit hex label
         char hex_label[5] = "\0";
@@ -192,20 +204,24 @@ std::vector<GlyphLine> split_to_lines(const PrintGlyphMap& print_map,
         glyph_lines.emplace_back(GlyphLine{hex_label, true, slots});
     }
 
-    if (unencoded_glyphs.empty()) {
+    // All glyphs are encoded, nothing more to do.
+    if (map_it == print_map_.end()) {
         return glyph_lines;
     }
 
     // Add unencoded glyphs as a running sequence
-    for (size_t i = 0; i <= (unencoded_glyphs.size() - 1) / line_length; ++i) {
-        auto range_begin = unencoded_glyphs.begin() + i * line_length;
-        auto range_end =
-            std::min(unencoded_glyphs.end(),
-                     unencoded_glyphs.begin() + (i + 1) * line_length);
+    for (size_t i = 0; map_it != print_map_.end();) {
+        auto range_end = std::min(print_map_.end(), map_it + line_length);
 
+        // Extract glyph indexes
+        std::vector<int> indexes;
+        std::transform(
+            map_it, range_end, std::back_inserter(indexes),
+            [](const PrintGlyphVec::value_type& p) { return p.first; });
         glyph_lines.emplace_back(
-            GlyphLine{std::to_string(i * 10), false,
-                      std::vector<int>(range_begin, range_end)});
+            GlyphLine{std::to_string(i * line_length), false, indexes});
+
+        map_it = range_end;
     }
 
     return glyph_lines;
@@ -239,7 +255,7 @@ void CairoPainter::draw_page_full_display(
 
     cr->set_source_rgb(0, 0, 0);
 
-    std::vector<GlyphLine> glyph_lines = split_to_lines(print_map_, max_slots);
+    std::vector<GlyphLine> glyph_lines = split_to_lines(max_slots);
     size_t line_length =
         glyph_lines.empty() ? 16 : glyph_lines[0].indexes.size();
 
@@ -325,8 +341,10 @@ void CairoPainter::draw_page_full_glyph(const Cairo::RefPtr<Cairo::Context>& cr,
                                         int page_nr,
                                         const std::string& scaling_option) {
     // Locate the desired glyph
-    int glyph_idx = std::min<int>(page_nr, print_map_.size() - 1);
-    auto glyph_it = std::next(print_map_.begin(), glyph_idx);
+    if (page_nr >= print_map_.size()) {
+        return;
+    }
+    auto glyph_it = print_map_.begin() + page_nr;
 
     // Print page title for glyph
     std::string page_title(glyph_it->second->name + (" from " + font_name_));
