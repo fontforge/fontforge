@@ -96,6 +96,12 @@ void print_dialog(SplineFont* sf) {
                 preview->update(setup, settings);
             };
         });
+    print_operation->signal_begin_print().connect(
+        [print_operation,
+         &ff_preview_widget](const Glib::RefPtr<Gtk::PrintContext>& context) {
+            size_t num_pages = ff_preview_widget.paginate();
+            print_operation->set_n_pages((int)num_pages);
+        });
 
     print_operation->run(Gtk::PRINT_OPERATION_ACTION_PRINT_DIALOG);
 }

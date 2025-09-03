@@ -47,6 +47,10 @@ class PrintPreviewWidget : public Gtk::Grid {
     void update(const Glib::RefPtr<Gtk::PageSetup>& setup,
                 const Glib::RefPtr<Gtk::PrintSettings>& settings);
 
+    // Refresh layout information in CairoPainter and return total number of
+    // pages.
+    size_t paginate();
+
  private:
     // Create the default A4-based page setup
     static Glib::RefPtr<Gtk::PageSetup> create_default_setup();
@@ -82,7 +86,7 @@ class PrintPreviewWidget : public Gtk::Grid {
     // Containers for compound preview area
     widget::AspectFrameWithBackground aspect_wrapper;
     Gtk::DrawingArea preview_area;
-    Gtk::Scale page_counter_;
+    Gtk::Scale page_counter_;  // 1-based
 
     // Preview controls
     Gtk::RadioButton* radio_full_display_;

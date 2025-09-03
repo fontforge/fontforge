@@ -170,6 +170,7 @@ void PrintPreviewWidget::update(
         current_setup_->get_paper_height(Gtk::UNIT_MM);
 
     aspect_wrapper.set(Gtk::ALIGN_CENTER, Gtk::ALIGN_CENTER, page_ratio, false);
+    paginate();
 }
 
 Glib::RefPtr<Gtk::PageSetup> PrintPreviewWidget::create_default_setup() {
@@ -352,6 +353,18 @@ void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
     }
 }
 
+size_t PrintPreviewWidget::paginate() {
+    size_t num_pages = 1;
+    if (radio_glyph_pages_->get_active()) {
+        num_pages = cairo_painter_.paginate_full_glyph();
+    }
+
+    page_counter_.set_visible(num_pages > 1);
+    page_counter_.get_adjustment()->set_upper(num_pages + 1);
+
+    return num_pages;
+}
+
 bool PrintPreviewWidget::draw_preview_area(
     const Cairo::RefPtr<Cairo::Context>& cr) {
     // Number of preview area pixels in a paper pt (1 pt = 1/72 in)
@@ -359,8 +372,9 @@ bool PrintPreviewWidget::draw_preview_area(
                    current_setup_->get_paper_width(Gtk::UNIT_POINTS);
     Cairo::Rectangle printable_area =
         calculate_printable_area(scale, current_setup_, Gtk::UNIT_POINTS);
+    size_t page_nr = (size_t)page_counter_.get_value() - 1;
 
-    draw_page(cr, scale, printable_area, 0);
+    draw_page(cr, scale, printable_area, page_nr);
 
     return true;
 }
@@ -372,6 +386,7 @@ void PrintPreviewWidget::on_display_toggled() {
             stack_->set_visible_child(r->get_name());
         }
     }
+    paginate();
     preview_area.queue_draw();
 }
 

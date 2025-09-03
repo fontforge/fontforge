@@ -86,6 +86,7 @@ class CairoPainter {
                               double scale,
                               const Cairo::Rectangle& printable_area,
                               int page_nr, const std::string& scaling_option);
+    size_t paginate_full_glyph() const { return print_map_.size(); }
 
     // Draw formatted sample text.
     void draw_page_sample_text(const Cairo::RefPtr<Cairo::Context>& cr,
