@@ -76,12 +76,8 @@ function(fontforge_generate_config template destination)
   _set_negated(_NO_XKB "${X11_Xkb_FOUND}")
   _set_negated(_NO_XINPUT "${X11_Xi_FOUND}")
 
-  if(NOT ENABLE_GUI OR NOT ENABLE_X11)
+  if(NOT ENABLE_GUI)
     set(X_DISPLAY_MISSING 1)
-  endif()
-
-  if(ENABLE_GUI AND NOT ENABLE_X11)
-    set(FONTFORGE_CAN_USE_GDK 1)
   endif()
 
   set(FONTFORGE_CAN_USE_WOFF2 ${ENABLE_WOFF2_RESULT})

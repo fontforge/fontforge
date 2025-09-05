@@ -62,20 +62,10 @@ add_library(gdraw STATIC
 
 target_link_libraries(gdraw PRIVATE fontforge)
 
-if(ENABLE_X11)
-  target_link_libraries(gdraw PUBLIC
-    X11::X11
-    X11::Xi
-    X11::Xkb
-    Cairo::Cairo
-    Pango::Pango
-  )
-else()
-  if(APPLE)
-    target_sources(gdraw PRIVATE ggdkcocoa.m)
-  endif()
-  target_link_libraries(gdraw PUBLIC
-    GDK3::GDK3
-    PkgConfig::GTK3
-  )
+if(APPLE)
+  target_sources(gdraw PRIVATE ggdkcocoa.m)
 endif()
+target_link_libraries(gdraw PUBLIC
+  GDK3::GDK3
+  PkgConfig::GTK3
+)

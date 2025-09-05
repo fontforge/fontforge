@@ -94,8 +94,6 @@
 
 #cmakedefine X_DISPLAY_MISSING 1
 
-#cmakedefine FONTFORGE_CAN_USE_GDK 1
-
 #cmakedefine FONTFORGE_CAN_USE_WOFF2 1
 
 #cmakedefine _NO_FFSCRIPT 1
