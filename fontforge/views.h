@@ -254,7 +254,6 @@ typedef struct charview {
     GPoint e;					/* mouse location */
     GPoint olde;
     BasePoint last_c;
-    BDFChar *filled;
     GImage gi;					/* used for fill bitmap only */
     int enc;
     EncMap *map_of_enc;				/* Only use for comparison against fontview's map to see if our enc be valid */
@@ -1329,7 +1328,6 @@ extern void PI_Destroy(struct dlistnode *node);
 struct gidata;
 extern void PIChangePoint(struct gidata *ci);
 
-extern void CVRegenFill(CharView *cv);
 extern void RulerDlg(CharView *cv);
 extern int  CVCountSelectedPoints(CharView *cv);
 extern void _CVMenuInsertPt(CharView *cv);

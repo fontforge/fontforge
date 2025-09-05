@@ -2375,7 +2375,6 @@ static struct displayfuncs gdkfuncs = {
 
     GGDKDrawGetFontMetrics,
 
-    GGDKDrawHasCairo,
     GGDKDrawPathStartNew,
     GGDKDrawPathClose,
     GGDKDrawPathMoveTo,

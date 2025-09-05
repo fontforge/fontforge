@@ -511,10 +511,6 @@ void GDrawDefaultFontMetrics(GWindow w,int *as, int *ds, int *ld) {
     (w->display->funcs->getFontMetrics)(w,_ggadget_default_font.fi,as,ds,ld);
 }
 
-enum gcairo_flags GDrawHasCairo(GWindow w) {
-return( (w->display->funcs->hasCairo)(w));
-}
-
 void GDrawPathStartNew(GWindow w) {
     (w->display->funcs->startNewPath)(w);
 }

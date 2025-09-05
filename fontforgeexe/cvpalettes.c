@@ -2616,7 +2616,6 @@ static void CVLayerInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
     switch ( mi->mid ) {
       case LMID_Fill:
         cv->showfilled = !cv->showfilled;
-        CVRegenFill(cv);
         GDrawRequestExpose(cv->v,NULL,false);
       break;
 
@@ -2881,7 +2880,6 @@ void CVLSelectLayer(CharView *cv, int layer) {
     }
     layerinfo.active = CVLayer(&cv->b); /* the index of the active layer */
 
-    CVRegenFill(cv);
     GDrawRequestExpose(cv->v,NULL,false);
     if (cvlayers2) GDrawRequestExpose(cvlayers2,NULL,false);
     if (cvlayers)  GDrawRequestExpose(cvlayers,NULL,false);

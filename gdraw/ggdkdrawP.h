@@ -298,8 +298,6 @@ void GGDKDrawDrawImageMagnified(GWindow gw, GImage *gimg, GRect *src, int32_t x,
 
 void GGDKDrawDrawPixmap(GWindow gw1, GWindow gw2, GRect *src, int32_t x, int32_t y);
 
-enum gcairo_flags GGDKDrawHasCairo(GWindow w);
-
 void GGDKDrawPathStartNew(GWindow w);
 void GGDKDrawPathClose(GWindow w);
 void GGDKDrawPathMoveTo(GWindow w, double x, double y);

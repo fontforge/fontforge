@@ -31,7 +31,7 @@
 #include <fontforge-config.h>
 
 #include "gdrawP.h"
-#  include "ggdkdrawP.h"
+#include "ggdkdrawP.h"
 
 #define em_uplane0     (em_max+1)
 

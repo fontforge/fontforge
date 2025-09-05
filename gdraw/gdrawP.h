@@ -248,8 +248,6 @@ struct displayfuncs {
 
     void (*getFontMetrics)(GWindow,GFont *,int *,int *,int *);
 
-    enum gcairo_flags (*hasCairo)(GWindow w);
-
     void (*startNewPath)(GWindow w);
     void (*closePath)(GWindow w);
     void (*moveto)(GWindow w,double x, double y);

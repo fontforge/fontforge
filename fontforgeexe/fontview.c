@@ -380,7 +380,7 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int request_exp
 			j*fv->cbw+(fv->cbw-1-fv->magnify*xwidth)/2,
 			i*fv->cbh+fv->lab_height+1+fv->magnify*(fv->show->ascent-bdfc->ymax),
 			fv->magnify*base.width,fv->magnify*base.height);
-	    } else if ( (GDrawHasCairo(pixmap)&gc_alpha) && base.image_type==it_index ) {
+	    } else if ( base.image_type==it_index ) {
 		GDrawDrawGlyph(pixmap,&gi,NULL,
 			j*fv->cbw+(fv->cbw-1-xwidth)/2,
 			i*fv->cbh+fv->lab_height+1+fv->show->ascent-bdfc->ymax);
