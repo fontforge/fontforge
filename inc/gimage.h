@@ -109,11 +109,7 @@ struct _GImage {
 /*  accessing. it_screen means that we've got an image that can be drawn */
 /*  directly on the screen */
 typedef struct gimage {
-    short list_len;		/* length of list */
-    union {			/* depends on whether has_list is set */
 	struct _GImage *image;
-    	struct _GImage **images;
-    } u;
     void *userdata;
 } GImage;
 
@@ -136,8 +132,6 @@ typedef struct gpoint {
 extern GImage *GImageCreate(enum image_type type, int32_t width, int32_t height);
 extern GImage *_GImage_Create(enum image_type type, int32_t width, int32_t height);
 extern void GImageDestroy(GImage *gi);
-extern GImage *GImageCreateAnimation(GImage **images, int n);
-extern GImage *GImageAddImageBefore(GImage *dest, GImage *src, int pos);
 
 extern Color GImageGetPixelRGBA(GImage *base,int x, int y);
 extern int GImageGetWidth(GImage *);

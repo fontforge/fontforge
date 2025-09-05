@@ -327,18 +327,18 @@ GImage *GImageReadXpm(char * filename) {
 	fillupclut(clut,tab,0,nchar);
 	if ( (ret=GImageCreate(it_index,width,height))==NULL )
 	    goto errorGImageReadXpmMem;
-	ret->u.image->clut->clut_len = cols;
-	memcpy(ret->u.image->clut->clut,clut,cols*sizeof(Color));
-	ret->u.image->trans = clut[256];
-	ret->u.image->clut->trans_index = clut[256];
+	ret->image->clut->clut_len = cols;
+	memcpy(ret->image->clut->clut,clut,cols*sizeof(Color));
+	ret->image->trans = clut[256];
+	ret->image->clut->trans_index = clut[256];
     } else {
 	if ( (ret=GImageCreate(it_true,width,height))==NULL )
 	    goto errorGImageReadXpmMem;
-	ret->u.image->trans = TRANS;		/* TRANS isn't a valid Color, but it fits in our 32 bit pixels */
+	ret->image->trans = TRANS;		/* TRANS isn't a valid Color, but it fits in our 32 bit pixels */
     }
 
     /* Get image */
-    base = ret->u.image;
+    base = ret->image;
     for ( y=0; y<height; ++y ) {
 	if ( !getdata(line,lsiz,fp))
 	    goto errorGImageReadXpm;

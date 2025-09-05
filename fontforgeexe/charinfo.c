@@ -2856,7 +2856,7 @@ return( NULL );
 	if ( maxx<other->xmax + rint(old[cols*ci->r+PAIR_DX2].u.md_ival*scale) ) maxx = other->xmax+ rint(old[cols*ci->r+PAIR_DX2].u.md_ival*scale) ;
 
 	img = GImageCreate(it_index,maxx-minx+2,height);
-	base = img->u.image;
+	base = img->image;
 	memset(base->data,'\0',base->bytes_per_line*base->height);
 
 	yoffset = 1 + maxy - vwidth - kern - rint(old[cols*ci->r+PAIR_DY1].u.md_ival*scale);
@@ -2897,7 +2897,7 @@ return( NULL );
 	if ( maxy<other->ymax + rint(old[cols*ci->r+PAIR_DY2+coff2].u.md_ival*scale) ) maxy = other->ymax+ rint(old[cols*ci->r+PAIR_DY2+coff2].u.md_ival*scale) ;
 
 	img = GImageCreate(it_index,width,maxy-miny+2);
-	base = img->u.image;
+	base = img->image;
 	memset(base->data,'\0',base->bytes_per_line*base->height);
 
 	xoffset = rint(old[cols*ci->r+PAIR_DX1+coff1].u.md_ival*scale) + 1 - minx;
@@ -2968,7 +2968,7 @@ return( NULL );
     pixel = me->depth == 8 ? 0xff : 0xf;
 
     img = GImageCreate(it_index,maxx-minx+2,maxy-miny+2);
-    base = img->u.image;
+    base = img->image;
     memset(base->data,'\0',base->bytes_per_line*base->height);
 
     xoffset = 1 - minx;
@@ -3056,7 +3056,7 @@ return( NULL );
 	if ( ymax<=ICON_WIDTH ) ymax = ICON_WIDTH;
 	if ( ymin>0 ) ymin = 0;
 	img = GImageCreate(it_index,width+10,ymax-ymin+2);
-	base = img->u.image;
+	base = img->image;
 	memset(base->data,'\0',base->bytes_per_line*base->height);
 
 	++xoff;		/* One pixel margin */
@@ -3141,7 +3141,7 @@ return( NULL );
 	if ( ymax<=ICON_WIDTH ) ymax = ICON_WIDTH;
 	if ( ymin>0 ) ymin = 0;
 	img = GImageCreate(it_index,width+2,ymax-ymin+2);
-	base = img->u.image;
+	base = img->image;
 	memset(base->data,'\0',base->bytes_per_line*base->height);
 
 	++xoff;		/* One pixel margin */
@@ -3291,7 +3291,7 @@ return( NULL );
     if ( xmin>0 ) xmin = 0;
 
     img = GImageCreate(it_index,xmax - xmin + 2,ymax-ymin+2);
-    base = img->u.image;
+    base = img->image;
     memset(base->data,'\0',base->bytes_per_line*base->height);
 
     width = -xmin;
@@ -3793,7 +3793,7 @@ static void CI_SetColorList(CharInfo *ci,Color color) {
     }
     if ( std_colors[i].image==NULL ) {
 	std_colors[i].image = &customcolor_image;
-	customcolor_image.u.image->clut->clut[1] = color;
+	customcolor_image.image->clut->clut[1] = color;
 	std_colors[i].userdata = (void *) (intptr_t) color;
     }
     GGadgetSetList(GWidgetGetControl(ci->gw,CID_Color), GTextInfoArrayFromList(std_colors,&junk), false);

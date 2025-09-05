@@ -459,7 +459,7 @@ void GDrawDrawScaledImage(GWindow w, GImage *img, int32_t x, int32_t y) {
 void GDrawDrawGlyph(GWindow w, GImage *img, GRect *src, int32_t x, int32_t y) {
     GRect r;
     if ( src==NULL ) {
-	struct _GImage *base = img->list_len==0?img->u.image:img->u.images[0];
+	struct _GImage *base = img->image;
 	r.x = r.y = 0;
 	r.width = base->width; r.height = base->height;
 	src = &r;
@@ -480,7 +480,7 @@ void GDrawDrawPixmap(GWindow w, GWindow pixmap, GRect *src, int32_t x, int32_t y
 void GDrawDrawImageMagnified(GWindow w, GImage *img, GRect *dest, int32_t x, int32_t y,
 	int32_t width, int32_t height) {
     GRect temp;
-    struct _GImage *base = img->list_len==0?img->u.image:img->u.images[0];
+    struct _GImage *base = img->image;
 
     /* Not magnified after all */
     if ( base->width==width && base->height==height ) {

@@ -117,7 +117,7 @@ static void DVRasterExpose(GWindow pixmap,DebugView *dv,GEvent *event) {
 	memset(&gi,'\0',sizeof(gi));
 	memset(&base,'\0',sizeof(base));
 	memset(&clut,'\0',sizeof(clut));
-	gi.u.image = &base;
+	gi.image = &base;
 	base.clut = &clut;
 	if ( cv->raster->num_greys<=2 ) {
 	    base.image_type = it_mono;

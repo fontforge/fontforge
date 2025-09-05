@@ -542,7 +542,7 @@ int ExportImage(char *filename,SplineChar *sc, int layer, int format, int pixels
     memset(&gi,'\0', sizeof(gi));
     memset(&base,'\0', sizeof(base));
     memset(&clut,'\0', sizeof(clut));
-    gi.u.image = &base;
+    gi.image = &base;
 
     if ( bitsperpixel==1 ) {
 	if ( (freetypecontext = FreeTypeFontContext(sc->parent,sc,NULL,layer))==NULL )
@@ -632,7 +632,7 @@ int BCExportXBM(char *filename,BDFChar *bdfc, int format) {
 
     memset(&gi,'\0', sizeof(gi));
     memset(&base,'\0', sizeof(base));
-    gi.u.image = &base;
+    gi.image = &base;
 
     if ( !bdfc->byte_data ) {
 	BCRegularizeBitmap(bdfc);

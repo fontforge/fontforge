@@ -43,7 +43,7 @@ static void putl(short s, FILE *file) {
 }
 
 int GImageWrite_Bmp(GImage *gi, FILE *file) {
-    struct _GImage *base = gi->list_len==0?gi->u.image:gi->u.images[0];
+    struct _GImage *base = gi->image;
     int headersize=40, preheadersize=14;
     int filesize, offset, imagesize;
     int bitsperpixel, clutsize, ncol;

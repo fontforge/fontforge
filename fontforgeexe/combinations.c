@@ -486,7 +486,7 @@ static void KP_ExposeKerns(KPData *kpd,GWindow pixmap,GRect *rect) {
 
     memset(&gi,'\0',sizeof(gi));
     memset(&base,'\0',sizeof(base));
-    gi.u.image = &base;
+    gi.image = &base;
     base.image_type = it_index;
     GDrawSetDither(NULL, false);
 

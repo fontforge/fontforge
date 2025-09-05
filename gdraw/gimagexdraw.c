@@ -73,7 +73,7 @@ static void gdraw_8_on_1_nomag_dithered_masked(GXDisplay *gdisp,GImage *image,
 	GRect *src) {
     struct gcol clut[256];
     int i,j, index;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     int trans = base->trans;
     unsigned char *pt, *ipt, *mpt;
     short *g_d;
@@ -125,7 +125,7 @@ static void gdraw_8_on_1_nomag_dithered_masked(GXDisplay *gdisp,GImage *image,
 
 static void gdraw_32_on_1_nomag_dithered_masked(GXDisplay *gdisp, GImage *image, GRect *src) {
     int i,j, index;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     int trans = base->trans;
     uint32_t *pt;
     uint8_t *ipt, *mpt;
@@ -175,7 +175,7 @@ static void gdraw_32_on_1_nomag_dithered_masked(GXDisplay *gdisp, GImage *image,
 static void gdraw_32a_on_1_nomag_dithered(GXDisplay *gdisp, GImage *image, GRect *src) {
     int i,j;
     unsigned int index;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     int trans = base->trans;
     uint32_t *pt;
     uint8_t *ipt, *mpt;
@@ -225,7 +225,7 @@ static void gdraw_32a_on_1_nomag_dithered(GXDisplay *gdisp, GImage *image, GRect
 static void gdraw_8_on_1_nomag_dithered_nomask(GXDisplay *gdisp, GImage *image, GRect *src) {
     struct gcol clut[256];
     int i,j, index;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     unsigned char *pt, *ipt;
     short *g_d;
     register int gd;
@@ -269,7 +269,7 @@ static void gdraw_8_on_1_nomag_dithered_nomask(GXDisplay *gdisp, GImage *image, 
 static void gdraw_32_on_1_nomag_dithered_nomask(GXDisplay *gdisp, GImage *image, GRect *src) {
     struct gcol clut[256];
     int i,j, index;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     uint32_t *pt;
     uint8_t *ipt;
     short *g_d;
@@ -312,7 +312,7 @@ static void gdraw_32_on_1_nomag_dithered_nomask(GXDisplay *gdisp, GImage *image,
 static void gdraw_8_on_8_nomag_dithered_masked(GXDisplay *gdisp, GImage *image, GRect *src) {
     struct gcol clut[256];
     int i,j, index;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     int trans = base->trans;
     uint8_t *pt, *ipt, *mpt;
     short *r_d, *g_d, *b_d;
@@ -380,7 +380,7 @@ static void gdraw_8_on_8_nomag_nodithered_masked(GXDisplay *gdisp, GImage *image
     struct gcol clut[256];
     register int j;
     int i,index;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     int trans = base->trans;
     register uint8_t *pt, *ipt, *mpt;
     struct gcol *pos; const struct gcol *temp;
@@ -435,7 +435,7 @@ static void gdraw_8_on_8_nomag_nodithered_masked(GXDisplay *gdisp, GImage *image
 
 static void gdraw_32_on_8_nomag_dithered_masked(GXDisplay *gdisp, GImage *image, GRect *src) {
     int i,j;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     int trans = base->trans;
     uint32_t *pt, index;
     uint8_t *ipt, *mpt;
@@ -499,7 +499,7 @@ static void gdraw_32_on_8_nomag_dithered_masked(GXDisplay *gdisp, GImage *image,
 
 static void gdraw_32a_on_8_nomag_dithered(GXDisplay *gdisp, GImage *image, GRect *src) {
     int i,j;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     int trans = base->trans;
     uint32_t *pt, index;
     uint8_t *ipt, *mpt;
@@ -563,7 +563,7 @@ static void gdraw_32a_on_8_nomag_dithered(GXDisplay *gdisp, GImage *image, GRect
 
 static void gdraw_32_on_8_nomag_nodithered_masked(GXDisplay *gdisp, GImage *image, GRect *src) {
     int i,j;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     int trans = base->trans;
     uint32_t *pt, index;
     register uint8_t *ipt, *mpt;
@@ -611,7 +611,7 @@ static void gdraw_32_on_8_nomag_nodithered_masked(GXDisplay *gdisp, GImage *imag
 
 static void gdraw_32a_on_8_nomag_nodithered(GXDisplay *gdisp, GImage *image, GRect *src) {
     int i,j;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     int trans = base->trans;
     uint32_t *pt, index;
     register uint8_t *ipt, *mpt;
@@ -660,7 +660,7 @@ static void gdraw_32a_on_8_nomag_nodithered(GXDisplay *gdisp, GImage *image, GRe
 static void gdraw_8_on_8_nomag_dithered_nomask(GXDisplay *gdisp, GImage *image, GRect *src) {
     struct gcol clut[256];
     int i,j, index;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     uint8_t *pt, *ipt;
     short *r_d, *g_d, *b_d;
     register int rd, gd, bd;
@@ -695,7 +695,7 @@ static void gdraw_8_on_8_nomag_nodithered_nomask(GXDisplay *gdisp, GImage *image
     struct gcol clut[256];
     register int j;
     int i,index;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     register uint8_t *pt, *ipt;
     struct gcol *pos; const struct gcol *temp;
 
@@ -718,7 +718,7 @@ static void gdraw_8_on_8_nomag_nodithered_nomask(GXDisplay *gdisp, GImage *image
 
 static void gdraw_32_on_8_nomag_dithered_nomask(GXDisplay *gdisp, GImage *image, GRect *src) {
     int i,j;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     uint32_t *pt, index;
     uint8_t *ipt;
     short *r_d, *g_d, *b_d;
@@ -749,7 +749,7 @@ static void gdraw_32_on_8_nomag_dithered_nomask(GXDisplay *gdisp, GImage *image,
 
 static void gdraw_32_on_8_nomag_nodithered_nomask(GXDisplay *gdisp, GImage *image, GRect *src) {
     int i,j;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     uint32_t *pt, index;
     register uint8_t *ipt;
 
@@ -767,7 +767,7 @@ static void gdraw_8_on_16_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *s
     struct gcol clut[256];
     register int j;
     int i,index;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     int trans = base->trans;
 #if FAST_BITS==0
     uint16_t *mpt;
@@ -831,7 +831,7 @@ static void gdraw_8_on_16_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *s
 
 static void gdraw_32_on_16_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *src) {
     int i,j;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     int trans = base->trans;
     register uint32_t *pt, index;
     register uint16_t *ipt;
@@ -887,7 +887,7 @@ static void gdraw_32_on_16_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *
 
 static void gdraw_32a_on_16_nomag(GXDisplay *gdisp, GImage *image, GRect *src) {
     int i,j;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     int trans = base->trans;
     register uint32_t *pt, index;
     register uint16_t *ipt;
@@ -945,7 +945,7 @@ static void gdraw_8_on_16_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *s
     struct gcol clut[256];
     register int j;
     int i,index;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     register uint8_t *pt;
     uint16_t *ipt;
     struct gcol *pos;
@@ -972,7 +972,7 @@ static void gdraw_8_on_16_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *s
 
 static void gdraw_32_on_16_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *src) {
     int i,j;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     register uint32_t *pt, index;
     register uint16_t *ipt;
     int endian_mismatch = gdisp->endian_mismatch;
@@ -993,7 +993,7 @@ static void gdraw_8_on_any_nomag_glyph(GXDisplay *gdisp, GImage *image, GRect *s
     struct gcol clut[256];
     register int j;
     int i,index;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     int trans = base->trans;
     register uint8_t *pt;
     struct gcol *pos;
@@ -1079,7 +1079,7 @@ static void gdraw_8_on_24_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *s
 #if FAST_BITS
     int mbit;
 #endif
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     int trans = base->trans;
     register uint8_t *ipt;
     register uint8_t *pt, *mpt;
@@ -1142,7 +1142,7 @@ static void gdraw_8_on_24_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *s
 
 static void gdraw_32_on_24_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *src) {
     int i,j;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     int trans = base->trans;
     register uint32_t *pt, index;
     register uint8_t *mpt, *ipt;
@@ -1200,7 +1200,7 @@ static void gdraw_32_on_24_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *
 
 static void gdraw_32a_on_24_nomag(GXDisplay *gdisp, GImage *image, GRect *src) {
     int i,j;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     int trans = base->trans;
     register uint32_t *pt, index;
     register uint8_t *mpt, *ipt;
@@ -1262,7 +1262,7 @@ static void gdraw_8_on_24_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *s
     register uint8_t *pt;
     register int index, j;
     int i;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     struct gcol *pos;
 
     _GDraw_getimageclut(base,clut);
@@ -1296,7 +1296,7 @@ static void gdraw_8_on_24_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *s
 
 static void gdraw_32_on_24_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *src) {
     int i,j;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     register uint32_t *pt, index;
     register uint8_t *ipt;
 
@@ -1327,7 +1327,7 @@ static void gdraw_8_on_32a_nomag(GXDisplay *gdisp, GImage *image, GRect *src) {
     struct gcol clut[256];
     register int j;
     int i,index;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     int trans = base->trans;
     register uint8_t *pt;
     uint32_t *ipt;
@@ -1357,7 +1357,7 @@ static void gdraw_8a_on_32a_nomag(GXDisplay *gdisp, GImage *image, GRect *src,
 	Color fg) {
     register int j;
     int i,index;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     register uint8_t *pt;
     uint32_t *ipt;
     uint32_t fg_pixel = Pixel32(gdisp,fg) & 0xffffff;
@@ -1374,7 +1374,7 @@ static void gdraw_8a_on_32a_nomag(GXDisplay *gdisp, GImage *image, GRect *src,
 
 static void gdraw_32_on_32a_nomag(GXDisplay *gdisp, GImage *image, GRect *src) {
     int i,j;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     int trans = base->trans;
     register uint32_t *pt, index, *ipt;
     int endian_mismatch = gdisp->endian_mismatch;
@@ -1409,7 +1409,7 @@ static void gdraw_8_on_32_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *s
     int mbit;
     register uint8_t *mpt;
 #endif
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     int trans = base->trans;
     register uint8_t *pt;
     uint32_t *ipt;
@@ -1465,7 +1465,7 @@ static void gdraw_8_on_32_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *s
 
 static void gdraw_32_on_32_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *src) {
     int i,j;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     int trans = base->trans;
     register uint32_t *pt, index, *ipt;
     int endian_mismatch = gdisp->endian_mismatch;
@@ -1520,7 +1520,7 @@ static void gdraw_32_on_32_nomag_masked(GXDisplay *gdisp, GImage *image, GRect *
 
 static void gdraw_32a_on_32_nomag(GXDisplay *gdisp, GImage *image, GRect *src) {
     int i,j;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     int trans = base->trans;
     register uint32_t *pt, index, *ipt;
     int endian_mismatch = gdisp->endian_mismatch;
@@ -1577,7 +1577,7 @@ static void gdraw_8_on_32_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *s
     struct gcol clut[256];
     register int j;
     int i,index;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     register uint8_t *pt;
     uint32_t *ipt;
     struct gcol *pos;
@@ -1602,7 +1602,7 @@ static void gdraw_8_on_32_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *s
 
 static void gdraw_32_on_32_nomag_nomask(GXDisplay *gdisp, GImage *image, GRect *src) {
     int i,j;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     register uint32_t *pt, index, *ipt;
     int endian_mismatch = gdisp->endian_mismatch;
 
@@ -1789,7 +1789,7 @@ return;
 }
 
 static void gximage_to_ximage(GXWindow gw, GImage *image, GRect *src) {
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     GXDisplay *gdisp = gw->display;
     int depth;
 
@@ -1936,7 +1936,7 @@ static void gximage_to_ximage(GXWindow gw, GImage *image, GRect *src) {
 void _GXDraw_Image( GWindow _w, GImage *image, GRect *src, int32_t x, int32_t y) {
     GXWindow gw = (GXWindow) _w;
     GXDisplay *gdisp = gw->display;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     Display *display=gdisp->display;
     Window w = gw->w;
     GC gc = gdisp->gcstate[gw->ggc->bitmap_col].gc;
@@ -1965,7 +1965,7 @@ return;
     if ( base->image_type == it_mono ) {
 	/* Mono images are easy, because all X servers (no matter what their */
 	/*  depth) support 1 bit bitmaps */
-	gdraw_bitmap(gw,image->u.image,base->clut,base->trans,src,x,y);
+	gdraw_bitmap(gw,image->image,base->clut,base->trans,src,x,y);
 return;
     }
 
@@ -1996,7 +1996,7 @@ return;
         if (blended != NULL) {
             GImageBlendOver(blended, image, src, 0, 0);
             image = blended;
-            base = image->list_len==0?image->u.image:image->u.images[0];
+            base = image->image;
             src = &blend_src;
         }
     }
@@ -2060,7 +2060,7 @@ return;
 void _GXDraw_Glyph( GWindow _w, GImage *image, GRect *src, int32_t x, int32_t y) {
     GXWindow gw = (GXWindow) _w;
     GXDisplay *gdisp = gw->display;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     Color fg = -1;
 
 #ifndef _NO_LIBCAIRO
@@ -2110,7 +2110,7 @@ GImage *_GImageExtract(struct _GImage *base,GRect *src,GRect *size,
 
     memset(&temp,0,sizeof(temp));
     tbase = *base;
-    temp.u.image = &tbase;
+    temp.image = &tbase;
     tbase.width = size->width; tbase.height = size->height;
     if ( base->image_type==it_mono )
 	tbase.bytes_per_line = (size->width+7)/8;
@@ -2168,7 +2168,7 @@ void _GXDraw_ImageMagnified(GWindow _w, GImage *image, GRect *magsrc,
 	int32_t x, int32_t y, int32_t width, int32_t height) {
     GXWindow gw = (GXWindow) _w;
     GXDisplay *gdisp = gw->display;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     double xscale, yscale;
     GRect full, viewable;
     GImage *temp;
@@ -2231,7 +2231,7 @@ return( NULL );
         free(gi);
 return( NULL );
     }
-    gi->u.image = base;
+    gi->image = base;
     base->image_type = it_mono;
     base->width = xi->width;
     base->height = xi->height;
@@ -2279,7 +2279,7 @@ return( NULL );
         free(gi);
 return( NULL );
     }
-    gi->u.image = base;
+    gi->image = base;
     base->image_type = it_index;
     base->width = xi->width;
     base->height = xi->height;
@@ -2308,7 +2308,7 @@ static GImage *xi16_to_gi32(GXDisplay *gdisp,XImage *xi) {
 
     if (( gi = GImageCreate(it_true,xi->width,xi->height))==NULL )
 return( NULL );
-    base = gi->u.image;
+    base = gi->image;
 
     rs = gdisp->cs.red_shift; gs = gdisp->cs.green_shift; bs = gdisp->cs.blue_shift;
     rm = gdisp->visual->red_mask; gm = gdisp->visual->green_mask; bm = gdisp->visual->blue_mask;
@@ -2362,7 +2362,7 @@ static GImage *xi24_to_gi32(GXDisplay *gdisp,XImage *xi) {
 
     if (( gi = GImageCreate(it_true,xi->width,xi->height))==NULL )
 return( NULL );
-    base = gi->u.image;
+    base = gi->image;
 
     rs = gdisp->cs.red_shift; gs = gdisp->cs.green_shift; bs = gdisp->cs.blue_shift;
     for ( i=0; i<base->height; ++i ) {
@@ -2392,7 +2392,7 @@ static GImage *xi32_to_gi32(GXDisplay *gdisp,XImage *xi) {
 
     if (( gi = GImageCreate(it_true,xi->width,xi->height))==NULL )
 return( NULL );
-    base = gi->u.image;
+    base = gi->image;
 
     rs = gdisp->cs.red_shift; gs = gdisp->cs.green_shift; bs = gdisp->cs.blue_shift;
     for ( i=0; i<base->height; ++i ) {

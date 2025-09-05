@@ -60,7 +60,7 @@ static void mem_flush_fn(png_structp UNUSED(png_ptr)) {
 }
 
 static int GImageWritePngFull(GImage *gi, void *io, bool in_memory, int compression_level, bool progressive) {
-    struct _GImage *base = gi->list_len==0?gi->u.image:gi->u.images[0];
+    struct _GImage *base = gi->image;
     png_structp png_ptr;
     png_infop info_ptr;
     png_byte **rows;

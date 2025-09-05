@@ -43,7 +43,7 @@ GImage *GImageCreate(enum image_type type, int32_t width, int32_t height) {
     if ( gi==NULL || base==NULL )
 	goto errorGImageCreate;
 
-    gi->u.image = base;
+    gi->image = base;
     base->image_type = type;
     base->width = width;
     base->height = height;
@@ -82,7 +82,7 @@ GImage *_GImage_Create(enum image_type type, int32_t width, int32_t height) {
     if ( gi==NULL || base==NULL )
 	goto error_GImage_Create;
 
-    gi->u.image = base;
+    gi->image = base;
     base->image_type = type;
     base->width = width;
     base->height = height;
@@ -104,120 +104,19 @@ error_GImage_Create:
 
 void GImageDestroy(GImage *gi) {
 /* Free memory (if GImage exists) */
-    int i;
-
     if (gi!=NULL ) {
-	if ( gi->list_len!=0 ) {
-	    for ( i=0; i<gi->list_len; ++i ) {
-		free(gi->u.images[i]->clut);
-		free(gi->u.images[i]->data);
-		free(gi->u.images[i]);
-	    }
-	    free(gi->u.images);
-	} else {
-	    free(gi->u.image->clut);
-	    free(gi->u.image->data);
-	    free(gi->u.image);
-	}
+    free(gi->image->clut);
+    free(gi->image->data);
+    free(gi->image);
 	free(gi);
     }
-}
-
-GImage *GImageCreateAnimation(GImage **images, int n) {
-/* Create an animation using n "images". Return gi and free "images" if	*/
-/* okay, else return NULL and keep "images" if memory error occurred,	*/
-    GImage *gi;
-    struct _GImage **imgs;
-    int i;
-
-    /* Check if "images" are okay to copy before creating an animation.	*/
-    /* We expect to find single images (not an array). Type must match.	*/
-    for ( i=0; i<n; ++i ) {
-	if ( images[i]->list_len!=0 || \
-	     images[i]->u.image->image_type!=images[0]->u.image->image_type ) {
-	    fprintf( stderr, "Images are not compatible to make an Animation\n" );
-	    return( NULL );
-	}
-    }
-
-    /* First, create enough memory space to hold the complete animation	*/
-    gi = (GImage *) calloc(1,sizeof(GImage));
-    imgs = (struct _GImage **) malloc(n*sizeof(struct _GImage *));
-    if ( gi==NULL || imgs==NULL ) {
-	free(gi);
-	free(imgs);
-	NoMoreMemMessage();
-	return( NULL );
-    }
-
-    /* Copy images[i] pointer into 'gi', then release each "images[i]".	*/
-    gi->list_len = n;
-    gi->u.images = imgs;
-    for ( i=0; i<n; ++i ) {
-	imgs[i] = images[i]->u.image;
-	free(images[i]);
-    }
-    return( gi );
-}
-
-/* -1 => add it at the end */
-GImage *GImageAddImageBefore(GImage *dest, GImage *src, int pos) {
-    struct _GImage **imgs;
-    int n, i, j;
-    enum image_type it;
-
-    n = (src->list_len==0?1:src->list_len) + (dest->list_len==0?1:dest->list_len);
-    imgs = (struct _GImage **) malloc(n*sizeof(struct _GImage *));
-    if ( imgs==NULL ) {
-	NoMoreMemMessage();
-	return( NULL );
-    }
-
-    i = 0;
-    if ( dest->list_len==0 ) {
-	it = dest->u.image->image_type;
-	if ( pos==-1 ) pos = 1;
-	if ( pos!=0 ) imgs[i++] = dest->u.image;
-    } else {
-	it = dest->u.images[0]->image_type;
-	if ( pos==-1 ) pos = dest->list_len;
-	for ( i=0; i<pos; ++i )
-	    imgs[i] = dest->u.images[i];
-    }
-    j = i;
-    if ( src->list_len==0 ) {
-	if ( src->u.image->image_type!=it ) {
-            free(imgs);
-return( NULL );
-}
-	imgs[j++] = src->u.image;
-    } else {
-	for ( ; j<i+src->list_len; ++j ) {
-	    if ( src->u.images[j-i]->image_type!=it ) {
-                free(imgs);
-return( NULL );
-}
-	    imgs[j] = src->u.images[j-i];
-	}
-	free(src->u.images);
-    }
-    if ( dest->list_len==0 ) {
-	if ( pos==0 ) imgs[j++] = dest->u.image;
-    } else {
-	for ( ; j<n; ++j )
-	    imgs[j] = dest->u.images[i++];
-    }
-    dest->u.images = imgs;
-    dest->list_len = n;
-    free(src);
-return( dest );
 }
 
 void GImageDrawRect(GImage *img,GRect *r,Color col) {
     struct _GImage *base;
     int i;
 
-    base = img->u.image;
+    base = img->image;
     if ( r->y>=base->height || r->x>=base->width )
 return;
 
@@ -243,8 +142,8 @@ void GImageDrawImage(GImage *dest,GImage *src,GRect *UNUSED(junk),int x, int y) 
 
     /* This is designed to merge images which should be treated as alpha */
     /* channels. dest must be indexed, src may be either indexed or mono */
-    dbase = dest->u.image;
-    sbase =  src->u.image;
+    dbase = dest->image;
+    sbase =  src->image;
 
     if ( dbase->image_type != it_index ) {
 	fprintf( stderr, "Bad call to GImageMaxImage\n" );
@@ -302,8 +201,8 @@ void GImageBlendOver(GImage *dest,GImage *src,GRect *from,int x, int y) {
     int i, j, a, r, g, b;
     uint32_t *dpt, *spt;
 
-    dbase = dest->u.image;
-    sbase =  src->u.image;
+    dbase = dest->image;
+    sbase =  src->image;
 
     if ( dbase->image_type != it_true ) {
 	fprintf( stderr, "Bad call to GImageBlendOver\n" );
@@ -331,19 +230,11 @@ return;
 }
 
 int GImageGetWidth(GImage *img) {
-    if ( img->list_len==0 ) {
-return( img->u.image->width );
-    } else {
-return( img->u.images[0]->width );
-    }
+return( img->image->width );
 }
 
 int GImageGetHeight(GImage *img) {
-    if ( img->list_len==0 ) {
-return( img->u.image->height );
-    } else {
-return( img->u.images[0]->height );
-    }
+return( img->image->height );
 }
 
 void *GImageGetUserData(GImage *img) {
@@ -381,6 +272,6 @@ return( pixel==base->trans?(val&0xffffff):(val|0xff000000) );
 }
 
 Color GImageGetPixelRGBA(GImage *image,int x, int y) {
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
 return( _GImageGetPixelRGBA(base,x,y));
 }

@@ -2597,86 +2597,86 @@ static struct _GImage press2ptr0_base = {
     1
 };
 
-GImage GIcon_press2ptr = { 0, { &press2ptr0_base }, NULL };
-GImage GIcon_hand = { 0, { &hand0_base }, NULL };
-GImage GIcon_line = { 0, { &line0_base }, NULL };
-GImage GIcon_pencil = { 0, { &pencil0_base }, NULL };
-GImage GIcon_shift = { 0, { &shift0_base }, NULL };
-GImage GIcon_star = { 0, { &star0_base }, NULL };
-GImage GIcon_poly = { 0, { &poly0_base }, NULL };
-GImage GIcon_elipse = { 0, { &elipse0_base }, NULL };
-GImage GIcon_rrect = { 0, { &rrect0_base }, NULL };
-GImage GIcon_rect = { 0, { &rect0_base }, NULL };
-GImage GIcon_squarecap = { 0, { &squarecap0_base }, NULL };
-GImage GIcon_roundjoin = { 0, { &roundjoin0_base }, NULL };
-GImage GIcon_roundcap = { 0, { &roundcap0_base }, NULL };
-GImage GIcon_miterjoin = { 0, { &miterjoin0_base }, NULL };
-GImage GIcon_buttcap = { 0, { &buttcap0_base }, NULL };
-GImage GIcon_beveljoin = { 0, { &beveljoin0_base }, NULL };
-GImage GIcon_freehand = { 0, { &freehand0_base }, NULL };
-GImage GIcon_greyfree = { 0, { &greyfree0_base }, NULL };
-GImage GIcon_pen = { 0, { &pen0_base }, NULL };
-GImage GIcon_knife = { 0, { &knife0_base }, NULL };
-GImage GIcon_scale = { 0, { &scale0_base }, NULL };
-GImage GIcon_flip = { 0, { &flip0_base }, NULL };
-GImage GIcon_skew = { 0, { &skew0_base }, NULL };
-GImage GIcon_rotate = { 0, { &rotate0_base }, NULL };
-GImage GIcon_3drotate = { 0, { &rotate3d0_base }, NULL };
-GImage GIcon_perspective = { 0, { &perspective0_base }, NULL };
-GImage GIcon_tangent = { 0, { &tangent0_base }, NULL };
-GImage GIcon_curve = { 0, { &curve0_base }, NULL };
-GImage GIcon_hvcurve = { 0, { &hvcurve0_base }, NULL };
-GImage GIcon_corner = { 0, { &corner0_base }, NULL };
-GImage GIcon_spirocorner = { 0, { &spirocorner0_base }, NULL };
-GImage GIcon_spirocurve = { 0, { &spirocurve0_base }, NULL };
-GImage GIcon_spirog2curve = { 0, { &spirog2curve0_base }, NULL };
-GImage GIcon_spiroright = { 0, { &spiroright0_base }, NULL };
-GImage GIcon_spiroleft = { 0, { &spiroleft0_base }, NULL };
-GImage GIcon_spirodisabled = { 0, { &spirodisabled0_base }, NULL };
-GImage GIcon_spiroup = { 0, { &spiroup0_base }, NULL };
-GImage GIcon_spirodown = { 0, { &spirodown0_base }, NULL };
-GImage GIcon_ruler = { 0, { &ruler0_base }, NULL };
-GImage GIcon_pointer = { 0, { &pointer0_base }, NULL };
-GImage GIcon_magnify = { 0, { &magnify0_base }, NULL };
+GImage GIcon_press2ptr = { &press2ptr0_base, NULL };
+GImage GIcon_hand = { &hand0_base, NULL };
+GImage GIcon_line = { &line0_base, NULL };
+GImage GIcon_pencil = { &pencil0_base, NULL };
+GImage GIcon_shift = { &shift0_base, NULL };
+GImage GIcon_star = { &star0_base, NULL };
+GImage GIcon_poly = { &poly0_base, NULL };
+GImage GIcon_elipse = { &elipse0_base, NULL };
+GImage GIcon_rrect = { &rrect0_base, NULL };
+GImage GIcon_rect = { &rect0_base, NULL };
+GImage GIcon_squarecap = { &squarecap0_base, NULL };
+GImage GIcon_roundjoin = { &roundjoin0_base, NULL };
+GImage GIcon_roundcap = { &roundcap0_base, NULL };
+GImage GIcon_miterjoin = { &miterjoin0_base, NULL };
+GImage GIcon_buttcap = { &buttcap0_base, NULL };
+GImage GIcon_beveljoin = { &beveljoin0_base, NULL };
+GImage GIcon_freehand = { &freehand0_base, NULL };
+GImage GIcon_greyfree = { &greyfree0_base, NULL };
+GImage GIcon_pen = { &pen0_base, NULL };
+GImage GIcon_knife = { &knife0_base, NULL };
+GImage GIcon_scale = { &scale0_base, NULL };
+GImage GIcon_flip = { &flip0_base, NULL };
+GImage GIcon_skew = { &skew0_base, NULL };
+GImage GIcon_rotate = { &rotate0_base, NULL };
+GImage GIcon_3drotate = { &rotate3d0_base, NULL };
+GImage GIcon_perspective = { &perspective0_base, NULL };
+GImage GIcon_tangent = { &tangent0_base, NULL };
+GImage GIcon_curve = { &curve0_base, NULL };
+GImage GIcon_hvcurve = { &hvcurve0_base, NULL };
+GImage GIcon_corner = { &corner0_base, NULL };
+GImage GIcon_spirocorner = { &spirocorner0_base, NULL };
+GImage GIcon_spirocurve = { &spirocurve0_base, NULL };
+GImage GIcon_spirog2curve = { &spirog2curve0_base, NULL };
+GImage GIcon_spiroright = { &spiroright0_base, NULL };
+GImage GIcon_spiroleft = { &spiroleft0_base, NULL };
+GImage GIcon_spirodisabled = { &spirodisabled0_base, NULL };
+GImage GIcon_spiroup = { &spiroup0_base, NULL };
+GImage GIcon_spirodown = { &spirodown0_base, NULL };
+GImage GIcon_ruler = { &ruler0_base, NULL };
+GImage GIcon_pointer = { &pointer0_base, NULL };
+GImage GIcon_magnify = { &magnify0_base, NULL };
 
-GImage GIcon_pointer_selected = { 0, { &pointer0_base }, NULL };
-GImage GIcon_magnify_selected = { 0, { &magnify0_base }, NULL };
-GImage GIcon_freehand_selected = { 0, { &freehand0_base }, NULL };
-GImage GIcon_hand_selected = { 0, { &hand0_base }, NULL };
-GImage GIcon_knife_selected = { 0, { &knife0_base }, NULL };
-GImage GIcon_ruler_selected = { 0, { &ruler0_base }, NULL };
-GImage GIcon_pen_selected = { 0, { &pen0_base }, NULL };
-GImage GIcon_spiroup_selected = { 0, { &spiroup0_base }, NULL };
-GImage GIcon_spirocorner_selected = { 0, { &spirocorner0_base }, NULL };
-GImage GIcon_spirocurve_selected = { 0, { &spirocurve0_base }, NULL };
-GImage GIcon_spirog2curve_selected = { 0, { &spirog2curve0_base }, NULL };
-GImage GIcon_spiroright_selected = { 0, { &spiroright0_base }, NULL };
-GImage GIcon_spiroleft_selected = { 0, { &spiroleft0_base }, NULL };
-GImage GIcon_spirodisabled_selected = { 0, { &spirodisabled0_base }, NULL };
-GImage GIcon_spirodown_selected = { 0, { &spirodown0_base }, NULL };
-GImage GIcon_curve_selected = { 0, { &curve0_base }, NULL };
-GImage GIcon_hvcurve_selected = { 0, { &hvcurve0_base }, NULL };
-GImage GIcon_corner_selected = { 0, { &corner0_base }, NULL };
-GImage GIcon_tangent_selected = { 0, { &tangent0_base }, NULL };
-GImage GIcon_scale_selected = { 0, { &scale0_base }, NULL };
-GImage GIcon_rotate_selected = { 0, { &rotate0_base }, NULL };
-GImage GIcon_flip_selected = { 0, { &flip0_base }, NULL };
-GImage GIcon_skew_selected = { 0, { &skew0_base }, NULL };
-GImage GIcon_3drotate_selected = { 0, { &rotate3d0_base }, NULL };
-GImage GIcon_perspective_selected = { 0, { &perspective0_base }, NULL };
-GImage GIcon_rect_selected = { 0, { &rect0_base }, NULL };
-GImage GIcon_poly_selected = { 0, { &poly0_base }, NULL };
-GImage GIcon_elipse_selected = { 0, { &elipse0_base }, NULL };
-GImage GIcon_star_selected = { 0, { &star0_base }, NULL };
-GImage GIcon_line_selected = { 0, { &line0_base }, NULL };
-GImage GIcon_pencil_selected = { 0, { &pencil0_base }, NULL };
-GImage GIcon_shift_selected = { 0, { &shift0_base }, NULL };
-GImage GIcon_greyfree_selected = { 0, { &greyfree0_base }, NULL };
+GImage GIcon_pointer_selected = { &pointer0_base, NULL };
+GImage GIcon_magnify_selected = { &magnify0_base, NULL };
+GImage GIcon_freehand_selected = { &freehand0_base, NULL };
+GImage GIcon_hand_selected = { &hand0_base, NULL };
+GImage GIcon_knife_selected = { &knife0_base, NULL };
+GImage GIcon_ruler_selected = { &ruler0_base, NULL };
+GImage GIcon_pen_selected = { &pen0_base, NULL };
+GImage GIcon_spiroup_selected = { &spiroup0_base, NULL };
+GImage GIcon_spirocorner_selected = { &spirocorner0_base, NULL };
+GImage GIcon_spirocurve_selected = { &spirocurve0_base, NULL };
+GImage GIcon_spirog2curve_selected = { &spirog2curve0_base, NULL };
+GImage GIcon_spiroright_selected = { &spiroright0_base, NULL };
+GImage GIcon_spiroleft_selected = { &spiroleft0_base, NULL };
+GImage GIcon_spirodisabled_selected = { &spirodisabled0_base, NULL };
+GImage GIcon_spirodown_selected = { &spirodown0_base, NULL };
+GImage GIcon_curve_selected = { &curve0_base, NULL };
+GImage GIcon_hvcurve_selected = { &hvcurve0_base, NULL };
+GImage GIcon_corner_selected = { &corner0_base, NULL };
+GImage GIcon_tangent_selected = { &tangent0_base, NULL };
+GImage GIcon_scale_selected = { &scale0_base, NULL };
+GImage GIcon_rotate_selected = { &rotate0_base, NULL };
+GImage GIcon_flip_selected = { &flip0_base, NULL };
+GImage GIcon_skew_selected = { &skew0_base, NULL };
+GImage GIcon_3drotate_selected = { &rotate3d0_base, NULL };
+GImage GIcon_perspective_selected = { &perspective0_base, NULL };
+GImage GIcon_rect_selected = { &rect0_base, NULL };
+GImage GIcon_poly_selected = { &poly0_base, NULL };
+GImage GIcon_elipse_selected = { &elipse0_base, NULL };
+GImage GIcon_star_selected = { &star0_base, NULL };
+GImage GIcon_line_selected = { &line0_base, NULL };
+GImage GIcon_pencil_selected = { &pencil0_base, NULL };
+GImage GIcon_shift_selected = { &shift0_base, NULL };
+GImage GIcon_greyfree_selected = { &greyfree0_base, NULL };
 
-GImage GIcon_midtangent = { 0, { &tangent1_base }, NULL };
-GImage GIcon_midcurve = { 0, { &curve1_base }, NULL };
-GImage GIcon_midhvcurve = { 0, { &hvcurve1_base }, NULL };
-GImage GIcon_midcorner = { 0, { &corner1_base }, NULL };
+GImage GIcon_midtangent = { &tangent1_base, NULL };
+GImage GIcon_midcurve = { &curve1_base, NULL };
+GImage GIcon_midhvcurve = { &hvcurve1_base, NULL };
+GImage GIcon_midcorner = { &corner1_base, NULL };
 
 /* Small (16x12) images */
 
@@ -3609,15 +3609,15 @@ static struct _GImage custom_base = {
     COLOR_UNKNOWN
 };
 
-GImage def_image = { 0, { &def_base }, NULL };
-GImage red_image = { 0, { &red_base }, NULL };
-GImage blue_image = { 0, { &blue_base }, NULL };
-GImage green_image = { 0, { &green_base }, NULL };
-GImage magenta_image = { 0, { &magenta_base }, NULL };
-GImage yellow_image = { 0, { &yellow_base }, NULL };
-GImage cyan_image = { 0, { &cyan_base }, NULL };
-GImage white_image = { 0, { &white_base }, NULL };
-GImage customcolor_image = { 0, { &custom_base }, NULL };
+GImage def_image = { &def_base, NULL };
+GImage red_image = { &red_base, NULL };
+GImage blue_image = { &blue_base, NULL };
+GImage green_image = { &green_base, NULL };
+GImage magenta_image = { &magenta_base, NULL };
+GImage yellow_image = { &yellow_base, NULL };
+GImage cyan_image = { &cyan_base, NULL };
+GImage white_image = { &white_base, NULL };
+GImage customcolor_image = { &custom_base, NULL };
 
 static uint8_t continue_data[] = {
     0xfe, 0xff, 
@@ -4584,71 +4584,71 @@ static struct _GImage lock0_base = {
 };
 
 
-GImage GIcon_small3drotate = { 0, { &small3drotate0_base }, NULL };
-GImage GIcon_smallperspective = { 0, { &smallperspective0_base }, NULL };
-GImage GIcon_smallskew = { 0, { &smallskew0_base }, NULL };
-GImage GIcon_smallscale = { 0, { &smallscale0_base }, NULL };
-GImage GIcon_smallrotate = { 0, { &smallrotate0_base }, NULL };
-GImage GIcon_smallflip = { 0, { &smallflip0_base }, NULL };
-GImage GIcon_smalltangent = { 0, { &smalltangent0_base }, NULL };
-GImage GIcon_smallcorner = { 0, { &smallcorner0_base }, NULL };
-GImage GIcon_smallcurve = { 0, { &smallcurve0_base }, NULL };
-GImage GIcon_smallhvcurve = { 0, { &smallhvcurve0_base }, NULL };
-GImage GIcon_smallspirocorner = { 0, { &smallspirocorner0_base }, NULL };
-GImage GIcon_smallspirog2curve = { 0, { &smallspirog2curve0_base }, NULL };
-GImage GIcon_smallspirocurve = { 0, { &smallspirocurve0_base }, NULL };
-GImage GIcon_smallspiroright = { 0, { &smallspiroright0_base }, NULL };
-GImage GIcon_smallspiroleft = { 0, { &smallspiroleft0_base }, NULL };
-GImage GIcon_smallmag = { 0, { &smallmag0_base }, NULL };
-GImage GIcon_smallknife = { 0, { &smallknife0_base }, NULL };
-GImage GIcon_smallhand = { 0, { &smallhand0_base }, NULL };
-GImage GIcon_smallpen = { 0, { &smallpen0_base }, NULL };
-GImage GIcon_smallpencil = { 0, { &smallpencil0_base }, NULL };
-GImage GIcon_smallpointer = { 0, { &smallpointer0_base }, NULL };
-GImage GIcon_smallruler = { 0, { &smallruler0_base }, NULL };
-GImage GIcon_smallelipse = { 0, { &smallelipse0_base }, NULL };
-GImage GIcon_smallrect = { 0, { &smallrect0_base }, NULL };
-GImage GIcon_smallpoly = { 0, { &smallpoly0_base }, NULL };
-GImage GIcon_smallstar = { 0, { &smallstar0_base }, NULL };
-GImage GIcon_FontForgeLogo = { 0, { &logo_base }, NULL };
-GImage GIcon_FontForgeBack = { 0, { &logoback_base }, NULL };
-GImage GIcon_FontForgeGuide = { 0, { &logogrid_base }, NULL };
+GImage GIcon_small3drotate = { &small3drotate0_base, NULL };
+GImage GIcon_smallperspective = { &smallperspective0_base, NULL };
+GImage GIcon_smallskew = { &smallskew0_base, NULL };
+GImage GIcon_smallscale = { &smallscale0_base, NULL };
+GImage GIcon_smallrotate = { &smallrotate0_base, NULL };
+GImage GIcon_smallflip = { &smallflip0_base, NULL };
+GImage GIcon_smalltangent = { &smalltangent0_base, NULL };
+GImage GIcon_smallcorner = { &smallcorner0_base, NULL };
+GImage GIcon_smallcurve = { &smallcurve0_base, NULL };
+GImage GIcon_smallhvcurve = { &smallhvcurve0_base, NULL };
+GImage GIcon_smallspirocorner = { &smallspirocorner0_base, NULL };
+GImage GIcon_smallspirog2curve = { &smallspirog2curve0_base, NULL };
+GImage GIcon_smallspirocurve = { &smallspirocurve0_base, NULL };
+GImage GIcon_smallspiroright = { &smallspiroright0_base, NULL };
+GImage GIcon_smallspiroleft = { &smallspiroleft0_base, NULL };
+GImage GIcon_smallmag = { &smallmag0_base, NULL };
+GImage GIcon_smallknife = { &smallknife0_base, NULL };
+GImage GIcon_smallhand = { &smallhand0_base, NULL };
+GImage GIcon_smallpen = { &smallpen0_base, NULL };
+GImage GIcon_smallpencil = { &smallpencil0_base, NULL };
+GImage GIcon_smallpointer = { &smallpointer0_base, NULL };
+GImage GIcon_smallruler = { &smallruler0_base, NULL };
+GImage GIcon_smallelipse = { &smallelipse0_base, NULL };
+GImage GIcon_smallrect = { &smallrect0_base, NULL };
+GImage GIcon_smallpoly = { &smallpoly0_base, NULL };
+GImage GIcon_smallstar = { &smallstar0_base, NULL };
+GImage GIcon_FontForgeLogo = { &logo_base, NULL };
+GImage GIcon_FontForgeBack = { &logoback_base, NULL };
+GImage GIcon_FontForgeGuide = { &logogrid_base, NULL };
 
-GImage GIcon_continue = { 0, { &continue_base }, NULL };
-GImage GIcon_stepout = { 0, { &stepout_base }, NULL };
-GImage GIcon_stepover = { 0, { &stepover_base }, NULL };
-GImage GIcon_stepinto = { 0, { &stepinto_base }, NULL };
-GImage GIcon_watchpnt = { 0, { &watchpnt_base }, NULL };
-GImage GIcon_menudelta = { 0, { &menudelta_base }, NULL };
-GImage GIcon_exit = { 0, { &exit_base }, NULL };
+GImage GIcon_continue = { &continue_base, NULL };
+GImage GIcon_stepout = { &stepout_base, NULL };
+GImage GIcon_stepover = { &stepover_base, NULL };
+GImage GIcon_stepinto = { &stepinto_base, NULL };
+GImage GIcon_watchpnt = { &watchpnt_base, NULL };
+GImage GIcon_menudelta = { &menudelta_base, NULL };
+GImage GIcon_exit = { &exit_base, NULL };
 
-GImage GIcon_Stopped = { 0, { &stopped_base }, NULL };
-GImage GIcon_Stop = { 0, { &stop_base }, NULL };
+GImage GIcon_Stopped = { &stopped_base, NULL };
+GImage GIcon_Stop = { &stop_base, NULL };
 
-GImage GIcon_exclude = { 0, { &exclude_base }, NULL };
-GImage GIcon_intersection = { 0, { &intersection_base }, NULL };
-GImage GIcon_rmoverlap = { 0, { &rmoverlap_base }, NULL };
-GImage GIcon_findinter = { 0, { &findinter_base }, NULL };
+GImage GIcon_exclude = { &exclude_base, NULL };
+GImage GIcon_intersection = { &intersection_base, NULL };
+GImage GIcon_rmoverlap = { &rmoverlap_base, NULL };
+GImage GIcon_findinter = { &findinter_base, NULL };
 
-GImage GIcon_styles = { 0, { &styles_base }, NULL };
-GImage GIcon_bold = { 0, { &bold_base }, NULL };
-GImage GIcon_italic = { 0, { &italic_base }, NULL };
-GImage GIcon_oblique = { 0, { &oblique_base }, NULL };
-GImage GIcon_changexheight = { 0, { &changexheight_base }, NULL };
-GImage GIcon_smallcaps = { 0, { &smallcaps_base }, NULL };
-GImage GIcon_subsup = { 0, { &subsuper0_base }, NULL };
-GImage GIcon_condense = { 0, { &condense_base }, NULL };
-GImage GIcon_outline = { 0, { &outline_base }, NULL };
-GImage GIcon_inline = { 0, { &inline_base }, NULL };
-GImage GIcon_shadow = { 0, { &shadow_base }, NULL };
-GImage GIcon_wireframe = { 0, { &wireframe_base }, NULL };
+GImage GIcon_styles = { &styles_base, NULL };
+GImage GIcon_bold = { &bold_base, NULL };
+GImage GIcon_italic = { &italic_base, NULL };
+GImage GIcon_oblique = { &oblique_base, NULL };
+GImage GIcon_changexheight = { &changexheight_base, NULL };
+GImage GIcon_smallcaps = { &smallcaps_base, NULL };
+GImage GIcon_subsup = { &subsuper0_base, NULL };
+GImage GIcon_condense = { &condense_base, NULL };
+GImage GIcon_outline = { &outline_base, NULL };
+GImage GIcon_inline = { &inline_base, NULL };
+GImage GIcon_shadow = { &shadow_base, NULL };
+GImage GIcon_wireframe = { &wireframe_base, NULL };
 
-GImage GIcon_menumark = { 0, { &menumark_base }, NULL };
+GImage GIcon_menumark = { &menumark_base, NULL };
 
-GImage GIcon_up = { 0, { &upicon0_base }, NULL };
-GImage GIcon_down = { 0, { &downicon0_base }, NULL };
+GImage GIcon_up = { &upicon0_base, NULL };
+GImage GIcon_down = { &downicon0_base, NULL };
 
-GImage GIcon_lock = { 0, { &lock0_base }, NULL };
+GImage GIcon_lock = { &lock0_base, NULL };
 
 static uint8_t OFL_logo0_data[] = {
     0x9, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 
@@ -5008,7 +5008,7 @@ static struct _GImage OFL_logo0_base = {
     0xffffffff
 };
 
-GImage OFL_logo = { 0, { &OFL_logo0_base }, NULL };
+GImage OFL_logo = { &OFL_logo0_base, NULL };
 
 static GClut clut = { 2, 0, 1,
     { 0x0, 0xb0b0b0 } };
@@ -5139,12 +5139,12 @@ static struct _GImage magicon0_base = {
     1
 };
 
-GImage GIcon_mag = { 0, { &magicon0_base }, NULL };
-GImage GIcon_angle = { 0, { &angle0_base }, NULL };
-GImage GIcon_distance = { 0, { &distance0_base }, NULL };
-GImage GIcon_selectedpoint = { 0, { &selectedpoint0_base }, NULL };
-GImage GIcon_sel2ptr = { 0, { &sel2ptr0_base }, NULL };
-GImage GIcon_rightpointer = { 0, { &rightpointer0_base }, NULL };
+GImage GIcon_mag = { &magicon0_base, NULL };
+GImage GIcon_angle = { &angle0_base, NULL };
+GImage GIcon_distance = { &distance0_base, NULL };
+GImage GIcon_selectedpoint = { &selectedpoint0_base, NULL };
+GImage GIcon_sel2ptr = { &sel2ptr0_base, NULL };
+GImage GIcon_rightpointer = { &rightpointer0_base, NULL };
 
 static uint8_t BottomSerifs0_data[] = {
     0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 
@@ -12194,36 +12194,36 @@ static struct _GImage u45fItalic_base = {
     0
 };
 
-GImage GIcon_u45fItalic = { 0, { &u45fItalic_base }, NULL };
-GImage GIcon_u452Italic = { 0, { &u452Italic_base }, NULL };
-GImage GIcon_u448Italic = { 0, { &u449Italic_base }, NULL };
-GImage GIcon_u446Italic = { 0, { &u446Italic_base }, NULL };
-GImage GIcon_u444Italic = { 0, { &u444Italic_base }, NULL };
-GImage GIcon_u442Italic = { 0, { &u442Italic_base }, NULL };
-GImage GIcon_u43fItalic = { 0, { &u43fItalic_base }, NULL };
-GImage GIcon_u43cItalic = { 0, { &u43cItalic_base }, NULL };
-GImage GIcon_u438Italic = { 0, { &u438Italic_base }, NULL };
-GImage GIcon_u436Italic = { 0, { &u436Italic_base }, NULL };
-GImage GIcon_u434Italic = { 0, { &u434Italic_base }, NULL };
-GImage GIcon_u433Italic = { 0, { &u433Italic_base }, NULL };
-GImage GIcon_u432Italic = { 0, { &u432Italic_base }, NULL };
-GImage GIcon_zItalic = { 0, { &zItalic_base }, NULL };
-GImage GIcon_yItalic = { 0, { &yItalic_base }, NULL };
-GImage GIcon_xItalic = { 0, { &xItalic_base }, NULL };
-GImage GIcon_wItalic = { 0, { &wItalic_base }, NULL };
-GImage GIcon_vItalic = { 0, { &vItalic_base }, NULL };
-GImage GIcon_pItalic = { 0, { &pItalic_base }, NULL };
-GImage GIcon_kItalic = { 0, { &kItalic_base }, NULL };
-GImage GIcon_gItalic = { 0, { &gItalic_base }, NULL };
-GImage GIcon_f2Italic = { 0, { &f2Italic_base }, NULL };
-GImage GIcon_fItalic = { 0, { &fImage_base }, NULL };
-GImage GIcon_aItalic = { 0, { &aItalic_base }, NULL };
-GImage GIcon_FlatSerif = { 0, { &FlatSerif_base }, NULL };
-GImage GIcon_SlantSerif = { 0, { &SlantSerif_base }, NULL };
-GImage GIcon_PenSerif = { 0, { &PenSerif_base }, NULL };
-GImage GIcon_TopSerifs = { 0, { &TopSerifs_base }, NULL };
-GImage GIcon_BottomSerifs = { 0, { &BottomSerifs0_base }, NULL };
-GImage GIcon_DiagSerifs = { 0, { &DiagSerifs_base }, NULL };
+GImage GIcon_u45fItalic = { &u45fItalic_base, NULL };
+GImage GIcon_u452Italic = { &u452Italic_base, NULL };
+GImage GIcon_u448Italic = { &u449Italic_base, NULL };
+GImage GIcon_u446Italic = { &u446Italic_base, NULL };
+GImage GIcon_u444Italic = { &u444Italic_base, NULL };
+GImage GIcon_u442Italic = { &u442Italic_base, NULL };
+GImage GIcon_u43fItalic = { &u43fItalic_base, NULL };
+GImage GIcon_u43cItalic = { &u43cItalic_base, NULL };
+GImage GIcon_u438Italic = { &u438Italic_base, NULL };
+GImage GIcon_u436Italic = { &u436Italic_base, NULL };
+GImage GIcon_u434Italic = { &u434Italic_base, NULL };
+GImage GIcon_u433Italic = { &u433Italic_base, NULL };
+GImage GIcon_u432Italic = { &u432Italic_base, NULL };
+GImage GIcon_zItalic = { &zItalic_base, NULL };
+GImage GIcon_yItalic = { &yItalic_base, NULL };
+GImage GIcon_xItalic = { &xItalic_base, NULL };
+GImage GIcon_wItalic = { &wItalic_base, NULL };
+GImage GIcon_vItalic = { &vItalic_base, NULL };
+GImage GIcon_pItalic = { &pItalic_base, NULL };
+GImage GIcon_kItalic = { &kItalic_base, NULL };
+GImage GIcon_gItalic = { &gItalic_base, NULL };
+GImage GIcon_f2Italic = { &f2Italic_base, NULL };
+GImage GIcon_fItalic = { &fImage_base, NULL };
+GImage GIcon_aItalic = { &aItalic_base, NULL };
+GImage GIcon_FlatSerif = { &FlatSerif_base, NULL };
+GImage GIcon_SlantSerif = { &SlantSerif_base, NULL };
+GImage GIcon_PenSerif = { &PenSerif_base, NULL };
+GImage GIcon_TopSerifs = { &TopSerifs_base, NULL };
+GImage GIcon_BottomSerifs = { &BottomSerifs0_base, NULL };
+GImage GIcon_DiagSerifs = { &DiagSerifs_base, NULL };
 
 void InitToolIconClut(Color bg) {
     if ( bg==0x000000 ) {

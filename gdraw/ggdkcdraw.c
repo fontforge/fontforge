@@ -252,7 +252,7 @@ static void _GGDKDraw_EllipsePath(cairo_t *cc, double cx, double cy, double widt
 }
 
 static cairo_surface_t *_GGDKDraw_GImage2Surface(GImage *image, GRect *src) {
-    struct _GImage *base = (image->list_len == 0) ? image->u.image : image->u.images[0];
+    struct _GImage *base = image->image;
     cairo_format_t type;
     uint8_t *pt;
     uint32_t *idata, *ipt, *ito;
@@ -498,7 +498,7 @@ static GImage *_GGDKDraw_GImageExtract(struct _GImage *base, GRect *src, GRect *
 
     memset(&temp, 0, sizeof(temp));
     tbase = *base;
-    temp.u.image = &tbase;
+    temp.image = &tbase;
     tbase.width = size->width;
     tbase.height = size->height;
     if (base->image_type == it_mono) {
@@ -965,7 +965,7 @@ void GGDKDrawDrawImage(GWindow w, GImage *image, GRect *src, int32_t x, int32_t 
     _GGDKDraw_CheckAutoPaint(gw);
 
     cairo_surface_t *is = _GGDKDraw_GImage2Surface(image, src), *cs = is;
-    struct _GImage *base = (image->list_len == 0) ? image->u.image : image->u.images[0];
+    struct _GImage *base = image->image;
 
     if (cairo_image_surface_get_format(is) == CAIRO_FORMAT_A1) {
         /* No color info, just alpha channel */
@@ -1007,7 +1007,7 @@ void GGDKDrawDrawGlyph(GWindow w, GImage *image, GRect *src, int32_t x, int32_t 
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CheckAutoPaint(gw);
 
-    struct _GImage *base = (image->list_len) == 0 ? image->u.image : image->u.images[0];
+    struct _GImage *base = image->image;
     cairo_surface_t *is;
 
     if (base->image_type != it_index) {
@@ -1052,7 +1052,7 @@ void GGDKDrawDrawImageMagnified(GWindow w, GImage *image, GRect *src, int32_t x,
     GGDKWindow gw = (GGDKWindow)w;
     _GGDKDraw_CheckAutoPaint(gw);
 
-    struct _GImage *base = (image->list_len == 0) ? image->u.image : image->u.images[0];
+    struct _GImage *base = image->image;
     GRect full;
     double xscale, yscale;
     GRect viewable;

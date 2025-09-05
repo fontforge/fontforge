@@ -188,7 +188,7 @@ void ShowAboutScreen(void) {
     static int first=1;
 
     if ( first ) {
-	GDrawResize(splashw,splashimagep->u.image->width,splashimagep->u.image->height+linecnt*fh);
+	GDrawResize(splashw,splashimagep->image->width,splashimagep->image->height+linecnt*fh);
 	first = false;
     }
     
@@ -213,7 +213,7 @@ static void SplashLayout() {
 	lastspace = NULL;
 	for ( pt=start; ; ++pt ) {
 	    if ( *pt==' ' || *pt=='\0' ) {
-		if ( GDrawGetTextWidth(splashw,start,pt-start)<splashimagep->u.image->width-10 )
+		if ( GDrawGetTextWidth(splashw,start,pt-start)<splashimagep->image->width-10 )
 		    lastspace = pt;
 		else
 	break;
@@ -402,9 +402,9 @@ static int splash_e_h(GWindow gw, GEvent *event) {
       case et_expose:
 	GDrawPushClip(gw,&event->u.expose.rect,&old);
 	GDrawDrawImage(gw,splashimagep,NULL,0,0);
-	if ((event->u.expose.rect.y+event->u.expose.rect.height) > splashimagep->u.image->height) {
+	if ((event->u.expose.rect.y+event->u.expose.rect.height) > splashimagep->image->height) {
 	    GDrawSetFont(gw,splash_font.fi);
-	    y = splashimagep->u.image->height + as + fh/2;
+	    y = splashimagep->image->height + as + fh/2;
 	    for ( i=1; i<linecnt; ++i ) {
 	    // The number 10 comes from lines[linecnt] created in the function SplashLayout. It refers
 	    // to the line at which we want to make the font monospace. If you add or remove a line, 
@@ -434,8 +434,8 @@ static int splash_e_h(GWindow gw, GEvent *event) {
 	// the splash from being displayed properly unless a resize occurs.
 	// So this forces a resize to make it display properly...
 	GDrawGetSize(gw, &old);
-	if (old.height < splashimagep->u.image->height) {
-	    GDrawResize(gw,splashimagep->u.image->width,splashimagep->u.image->height);
+	if (old.height < splashimagep->image->height) {
+	    GDrawResize(gw,splashimagep->image->width,splashimagep->image->height);
 	}
 	break;
       case et_timer:
@@ -899,8 +899,8 @@ int fontforge_main( int argc, char **argv ) {
 #endif
     pos.x = pos.y = 200;
     SplashImageInit();
-    pos.width = splashimagep->u.image->width;
-    pos.height = splashimagep->u.image->height-1; // See splash_e_h:et_map
+    pos.width = splashimagep->image->width;
+    pos.height = splashimagep->image->height-1; // See splash_e_h:et_map
     GDrawBindSelection(NULL,sn_user1,"FontForge");
     if ( unique && GDrawSelectionOwned(NULL,sn_user1)) {
 	/* Different event handler, not a dialog */

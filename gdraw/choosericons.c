@@ -1362,39 +1362,39 @@ static struct _GImage forward0_base = {
 
 
 
-GImage _GIcon_compressed = { 0, { &compressed0_base }, NULL };
-GImage _GIcon_tar = { 0, { &tar0_base }, NULL };
-GImage _GIcon_ttf = { 0, { &ttf0_base }, NULL };
-GImage _GIcon_unknown = { 0, { &unknown0_base }, NULL };
-GImage _GIcon_texthtml = { 0, { &texthtml0_base }, NULL };
-GImage _GIcon_textxml = { 0, { &textxml0_base }, NULL };
-GImage _GIcon_textcss = { 0, { &textcss0_base }, NULL };
-GImage _GIcon_textjava = { 0, { &textjava0_base }, NULL };
-GImage _GIcon_textfontsfd = { 0, { &textfontsfd0_base }, NULL };
-GImage _GIcon_textfontbdf = { 0, { &textbdf0_base }, NULL };
-GImage _GIcon_textfontps = { 0, { &textfontps0_base }, NULL };
-GImage _GIcon_textps = { 0, { &textps0_base }, NULL };
-GImage _GIcon_textplain = { 0, { &textplain0_base }, NULL };
-GImage _GIcon_textc = { 0, { &textc0_base }, NULL };
-GImage _GIcon_textmake = { 0, { &textmake_base }, NULL };
-GImage _GIcon_object = { 0, { &object0_base }, NULL };
-GImage _GIcon_updir = { 0, { &updir0_base }, NULL };
-GImage _GIcon_dir = { 0, { &dir0_base }, NULL };
-GImage _GIcon_core = { 0, { &core0_base }, NULL };
-GImage _GIcon_image = { 0, { &image0_base }, NULL };
-GImage _GIcon_video = { 0, { &video0_base }, NULL };
-GImage _GIcon_audio = { 0, { &audio0_base }, NULL };
-GImage _GIcon_cid = { 0, { &cid0_base }, NULL };
-GImage _GIcon_mac = { 0, { &mac_base }, NULL };
-GImage _GIcon_macttf = { 0, { &macttf0_base }, NULL };
+GImage _GIcon_compressed = { &compressed0_base, NULL };
+GImage _GIcon_tar = { &tar0_base, NULL };
+GImage _GIcon_ttf = { &ttf0_base, NULL };
+GImage _GIcon_unknown = { &unknown0_base, NULL };
+GImage _GIcon_texthtml = { &texthtml0_base, NULL };
+GImage _GIcon_textxml = { &textxml0_base, NULL };
+GImage _GIcon_textcss = { &textcss0_base, NULL };
+GImage _GIcon_textjava = { &textjava0_base, NULL };
+GImage _GIcon_textfontsfd = { &textfontsfd0_base, NULL };
+GImage _GIcon_textfontbdf = { &textbdf0_base, NULL };
+GImage _GIcon_textfontps = { &textfontps0_base, NULL };
+GImage _GIcon_textps = { &textps0_base, NULL };
+GImage _GIcon_textplain = { &textplain0_base, NULL };
+GImage _GIcon_textc = { &textc0_base, NULL };
+GImage _GIcon_textmake = { &textmake_base, NULL };
+GImage _GIcon_object = { &object0_base, NULL };
+GImage _GIcon_updir = { &updir0_base, NULL };
+GImage _GIcon_dir = { &dir0_base, NULL };
+GImage _GIcon_core = { &core0_base, NULL };
+GImage _GIcon_image = { &image0_base, NULL };
+GImage _GIcon_video = { &video0_base, NULL };
+GImage _GIcon_audio = { &audio0_base, NULL };
+GImage _GIcon_cid = { &cid0_base, NULL };
+GImage _GIcon_mac = { &mac_base, NULL };
+GImage _GIcon_macttf = { &macttf0_base, NULL };
 
-GImage _GIcon_homefolder = { 0, { &homefolder_base }, NULL };
-GImage _GIcon_configtool = { 0, { &configtool0_base }, NULL };
-GImage _GIcon_bookmark   = { 0, { &bookmark0_base }, NULL };
-GImage _GIcon_nobookmark = { 0, { &nobookmark0_base }, NULL };
+GImage _GIcon_homefolder = { &homefolder_base, NULL };
+GImage _GIcon_configtool = { &configtool0_base, NULL };
+GImage _GIcon_bookmark = { &bookmark0_base, NULL };
+GImage _GIcon_nobookmark = { &nobookmark0_base, NULL };
 
-GImage _GIcon_backarrow = { 0, { &back0_base }, NULL };
-GImage _GIcon_forwardarrow = { 0, { &forward0_base }, NULL };
+GImage _GIcon_backarrow = { &back0_base, NULL };
+GImage _GIcon_forwardarrow = { &forward0_base, NULL };
 
 
 /* Some icons in this file, so that FontForge could show anything meaningful */

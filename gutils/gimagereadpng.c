@@ -132,7 +132,7 @@ return( NULL );
     } else if ( png_get_color_type(png_ptr, info_ptr)==PNG_COLOR_TYPE_GRAY || png_get_color_type(png_ptr, info_ptr)==PNG_COLOR_TYPE_GRAY_ALPHA ) {
 	GClut *clut;
 	ret = GImageCreate(it_index,png_get_image_width(png_ptr,info_ptr),png_get_image_height(png_ptr,info_ptr));
-	clut = ret->u.image->clut;
+	clut = ret->image->clut;
 	clut->is_grey = true;
 	clut->clut_len = 256;
 	for ( i=0; i<256; ++i )
@@ -147,9 +147,9 @@ return( NULL );
 	GClut *clut;
 	ret = GImageCreate(png_get_bit_depth(png_ptr,info_ptr) != 1? it_index : it_mono,
 		png_get_image_width(png_ptr,info_ptr),png_get_image_height(png_ptr,info_ptr));
-	clut = ret->u.image->clut;
+	clut = ret->image->clut;
 	if ( clut==NULL )
-	    clut = ret->u.image->clut = (GClut *) calloc(1,sizeof(GClut));
+	    clut = ret->image->clut = (GClut *) calloc(1,sizeof(GClut));
 	clut->is_grey = true;
 	png_get_PLTE(png_ptr,info_ptr,&palette,&num_palette);
 	clut->clut_len = num_palette;
@@ -159,7 +159,7 @@ return( NULL );
 			palette[i].blue);
     }
     png_get_tRNS(png_ptr,info_ptr,&trans_alpha,&num_trans,&trans_color);
-    base = ret->u.image;
+    base = ret->image;
     if ( (png_get_valid(png_ptr,info_ptr,PNG_INFO_tRNS)) && num_trans>0 ) {
 	if ( png_get_color_type(png_ptr, info_ptr)==PNG_COLOR_TYPE_RGB || png_get_color_type(png_ptr, info_ptr)==PNG_COLOR_TYPE_RGB_ALPHA )
 	    base->trans = COLOR_CREATE(

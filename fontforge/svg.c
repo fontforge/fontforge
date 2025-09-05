@@ -391,7 +391,7 @@ static void DataURI_ImageDump(FILE *file,struct gimage *img) {
     int done = false;
     int threechars[3], fourchars[4], i, ch, ch_on_line;
 #if !defined( _NO_LIBJPEG)
-    struct _GImage *base = img->list_len==0 ? img->u.image : img->u.images[0];
+    struct _GImage *base = img->image;
 #endif
 
     /* Technically we can only put a file into an URI if the whole thing is */
@@ -641,8 +641,7 @@ static void svg_dumptype3(FILE *file,SplineChar *sc,const char *name,int istop) 
 	for ( images=sc->layers[i].images ; images!=NULL; images = images->next ) {
 	    struct _GImage *base;
 	    fprintf(file, "      <image\n" );
-	    base = images->image->list_len==0 ? images->image->u.image :
-		    images->image->u.images[0];
+	    base = images->image->image;
 	    fprintf(file, "\twidth=\"%g\"\n\theight=\"%g\"\n",
 		    (double) (base->width*images->xscale), (double) (base->height*images->yscale) );
 	    fprintf(file, "\tx=\"%g\"\n\ty=\"%g\"\n", (double) images->xoff, (double) images->yoff );
@@ -2444,7 +2443,7 @@ return( NULL );		/* I can only handle data URIs */
     free(val);
     if ( img==NULL )
 return( NULL );
-    base = img->list_len==0 ? img->u.image : img->u.images[0];
+    base = img->image;
 
     ent = chunkalloc(sizeof(Entity));
     ent->type = et_image;

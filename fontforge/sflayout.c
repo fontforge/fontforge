@@ -947,13 +947,13 @@ return( ret );
     }
 
     if ( ret->bdf->clut ) {
-	ret->gi.u.image = &ret->base;
+	ret->gi.image = &ret->base;
 	ret->base.image_type = it_index;
 	ret->base.clut = ret->bdf->clut;
 	ret->base.trans = 0;
     } else {
 	memset(&ret->clut,'\0',sizeof(ret->clut));
-	ret->gi.u.image = &ret->base;
+	ret->gi.image = &ret->base;
 	ret->base.image_type = it_mono;
 	ret->base.clut = &ret->clut;
 	ret->clut.clut_len = 2;
@@ -1287,7 +1287,7 @@ void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
 	height = li->lineheights[li->lcnt-1].y + li->lineheights[li->lcnt-1].fh + 2 + ybase;
 
     image = GImageCreate(it_index,width,height);
-    base = image->u.image;
+    base = image->image;
     memset(base->data,0,base->bytes_per_line*base->height);
     for ( i=0; i<256; ++i )
 	base->clut->clut[i] = (255-i)*0x010101;

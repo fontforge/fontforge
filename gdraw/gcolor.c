@@ -48,7 +48,7 @@ static GImage *ColorWheel(int width,int height) {
     hh = height/2.0; hw = width/2.0;
 
     wheel = GImageCreate(it_true,width,height);
-    base = wheel->u.image;
+    base = wheel->image;
     for ( i=0; i<height; ++i ) {
 	row = (uint32_t *) (base->data + i*base->bytes_per_line);
 	y = (i-hh)/(hh-1);
@@ -65,7 +65,7 @@ static GImage *ColorWheel(int width,int height) {
 	    }
 	}
     }
-return( wheel );	
+return( wheel );
 }
 
 #define GRAD_WIDTH	20
@@ -78,7 +78,7 @@ static GImage *Gradient(int height) {
     if ( height<10 ) height = 10;
 
     grad = GImageCreate(it_true,GRAD_WIDTH,height);
-    base = grad->u.image;
+    base = grad->image;
     for ( i=0; i<height; ++i ) {
 	row = (uint32_t *) (base->data + i*base->bytes_per_line);
 	c = 255*(height-1-i)/(height-1);

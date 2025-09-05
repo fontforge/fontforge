@@ -268,7 +268,7 @@ void _SCAutoTrace(SplineChar *sc, int layer, char **args) {
 	return;
     ispotrace = (strstrmatch(prog,"potrace")!=NULL );
     for ( images = sc->layers[ly_back].images; images!=NULL; images=images->next ) {
-	ib = images->image->list_len==0 ? images->image->u.image : images->image->u.images[0];
+	ib = images->image->image;
 	if ( ib->width==0 || ib->height==0 ) {
 	    continue;
 	}
@@ -367,7 +367,7 @@ return;
 /* the linker tells me not to use tempnam(). Which does almost exactly what */
 /*  I want. So we go through a much more complex set of machinations to make */
 /*  it happy. */
-	ib = images->image->list_len==0 ? images->image->u.image : images->image->u.images[0];
+	ib = images->image->image;
 	if ( ib->width==0 || ib->height==0 ) {
 	    /* pk fonts can have 0 sized bitmaps for space characters */
 	    /*  but autotrace gets all snooty about being given an empty image */

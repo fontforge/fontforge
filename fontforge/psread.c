@@ -1194,7 +1194,7 @@ return( sp-5 );
     trans[5] = stack[sp-2].u.dict.entries[5].u.val;
 
     gi = GImageCreate(it_mono,width,height);
-    base = gi->u.image;
+    base = gi->image;
     base->trans = 1;
     if ( polarity ) {
 	for ( i=0; i<datalen; ++i )

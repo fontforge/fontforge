@@ -369,9 +369,9 @@ GImage *GImageRead_Bmp(FILE *file) {
 	    goto errorGImageMemBmp;
 	}
 	if ( bmp.bitsperpixel>=16 ) {
-	    ret->u.image->data = (uint8_t *) bmp.int32_pixels;
+	    ret->image->data = (uint8_t *) bmp.int32_pixels;
 	} else if ( bmp.bitsperpixel!=1 ) {
-	    ret->u.image->data = (uint8_t *) bmp.byte_pixels;
+	    ret->image->data = (uint8_t *) bmp.byte_pixels;
 	}
     } else {
 	if ( bmp.bitsperpixel>=16 ) {
@@ -379,7 +379,7 @@ GImage *GImageRead_Bmp(FILE *file) {
 		NoMoreMemMessage();
 		goto errorGImageMemBmp;
 	    }
-	    base = ret->u.image;
+	    base = ret->image;
 	    for ( i=0; i<bmp.height; ++i ) {
 		l = bmp.height-1-i;
 		memcpy(base->data+l*base->bytes_per_line,bmp.int32_pixels+i*bmp.width,bmp.width*sizeof(uint32_t));
@@ -390,7 +390,7 @@ GImage *GImageRead_Bmp(FILE *file) {
 		NoMoreMemMessage();
 		goto errorGImageMemBmp;
 	    }
-	    base = ret->u.image;
+	    base = ret->image;
 	    for ( i=0; i<bmp.height; ++i ) {
 		l = bmp.height-1-i;
 		memcpy(base->data+l*base->bytes_per_line,bmp.byte_pixels+i*bmp.width,bmp.width);
@@ -401,7 +401,7 @@ GImage *GImageRead_Bmp(FILE *file) {
 		NoMoreMemMessage();
 		goto errorGImageMemBmp;
 	    }
-	    base = ret->u.image;
+	    base = ret->image;
 	    for ( i=0; i<bmp.height; ++i ) {
 		l = bmp.height-1-i;
 		memcpy(base->data+l*base->bytes_per_line,bmp.byte_pixels+i*base->bytes_per_line,base->bytes_per_line);
@@ -409,18 +409,18 @@ GImage *GImageRead_Bmp(FILE *file) {
 	    free(bmp.byte_pixels);
 	}
     }
-    if ( ret->u.image->image_type==it_index ) {
-	ret->u.image->clut->clut_len = bmp.colorsused;
-	memcpy(ret->u.image->clut->clut,bmp.clut,bmp.colorsused*sizeof(Color));
-	ret->u.image->clut->trans_index = COLOR_UNKNOWN;
-    } else if ( ret->u.image->image_type==it_mono && bmp.colorsused!=0 ) {
-	if ( (ret->u.image->clut=(GClut *)(calloc(1,sizeof(GClut))))==NULL ) {
+    if ( ret->image->image_type==it_index ) {
+	ret->image->clut->clut_len = bmp.colorsused;
+	memcpy(ret->image->clut->clut,bmp.clut,bmp.colorsused*sizeof(Color));
+	ret->image->clut->trans_index = COLOR_UNKNOWN;
+    } else if ( ret->image->image_type==it_mono && bmp.colorsused!=0 ) {
+	if ( (ret->image->clut=(GClut *)(calloc(1,sizeof(GClut))))==NULL ) {
 	    NoMoreMemMessage();
 	    goto errorGImageMemBmp;
 	}
-	ret->u.image->clut->clut_len = bmp.colorsused;
-	memcpy(ret->u.image->clut->clut,bmp.clut,bmp.colorsused*sizeof(Color));
-	ret->u.image->clut->trans_index = COLOR_UNKNOWN;
+	ret->image->clut->clut_len = bmp.colorsused;
+	memcpy(ret->image->clut->clut,bmp.clut,bmp.colorsused*sizeof(Color));
+	ret->image->clut->trans_index = COLOR_UNKNOWN;
     }
     return( ret );
 

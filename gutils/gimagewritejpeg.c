@@ -132,7 +132,7 @@ return;
 
 /* quality is a number between 0 and 100 */
 int GImageWrite_Jpeg(GImage *gi, FILE *outfile, int quality, int progressive) {
-    struct _GImage *base = gi->list_len==0?gi->u.image:gi->u.images[0];
+    struct _GImage *base = gi->image;
     struct jpeg_compress_struct cinfo;
     struct my_error_mgr jerr;
     JSAMPROW row_pointer[1];	/* pointer to JSAMPLE row[s] */

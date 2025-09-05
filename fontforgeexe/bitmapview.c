@@ -860,7 +860,7 @@ return;
 	memset(&gi,'\0',sizeof(gi));
 	memset(&base,'\0',sizeof(base));
 	memset(&clut,'\0',sizeof(clut));
-	gi.u.image = &base;
+	gi.image = &base;
 	if ( bv->bdf->clut==NULL ) {
 	    base.image_type = it_mono;
 	    base.clut = &clut;

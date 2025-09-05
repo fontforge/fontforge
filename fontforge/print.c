@@ -647,7 +647,7 @@ static void pdf_ImageCheck(PI *pi,struct glyph_res *gr,ImageList *images,
 
     while ( images!=NULL ) {
 	img = images->image;
-	base = img->list_len==0 ? img->u.image : img->u.images[1];
+	base = img->image;
 
 	if ( gr->image_cnt>=gr->image_max ) {
 	    gr->image_names = realloc(gr->image_names,(gr->image_max+=100)*sizeof(char *));
@@ -850,7 +850,7 @@ static int pdf_charproc(PI *pi, SplineChar *sc) {
 		(sc->layers[i].dostroke && (sc->layers[i].stroke_pen.brush.col!=COLOR_INHERITED|| sc->layers[i].stroke_pen.brush.gradient!=NULL || sc->layers[i].stroke_pen.brush.pattern!=NULL)) )
     break;
 	for ( img=sc->layers[i].images; img!=NULL; img=img->next )
-	    if ( img->image->u.image->image_type != it_mono )
+	    if ( img->image->image->image_type != it_mono )
 	break;
 	if ( img!=NULL )
     break;
@@ -860,7 +860,7 @@ static int pdf_charproc(PI *pi, SplineChar *sc) {
 			(ref->layers[j].dostroke && (ref->layers[j].stroke_pen.brush.col!=COLOR_INHERITED|| ref->layers[j].stroke_pen.brush.gradient!=NULL || ref->layers[j].stroke_pen.brush.pattern!=NULL)) )
 	    break;
 		for ( img=ref->layers[j].images; img!=NULL; img=img->next )
-		    if ( img->image->u.image->image_type != it_mono )
+		    if ( img->image->image->image_type != it_mono )
 		break;
 		if ( img!=NULL )
 	    break;

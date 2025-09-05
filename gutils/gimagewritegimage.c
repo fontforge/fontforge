@@ -117,21 +117,8 @@ int GImageWriteGImage(GImage *gi, char *filename) {
     }
     fprintf(file,"/* This file was generated using GImageWriteGImage(gi,\"%s\") */\n",filename);
     fprintf(file,"#include \"gimage.h\"\n\n" );
-    if ( gi->list_len==0 ) {
-	/* Construct a single image */
-	WriteBase(file,gi->u.image,stem,0);
+	WriteBase(file,gi->image,stem,0);
 	fprintf(file,"GImage %s = { 0, &%s0_base };\n",stem,stem);
-    } else {
-	/* Construct an array of images */
-	for ( i=0; i<gi->list_len; ++i )
-	    WriteBase(file,gi->u.images[i],stem,i);
-	fprintf(file,"static struct _GImage *%s_bases = {\n",stem);
-	for ( i=0; i<gi->list_len; ++i )
-	    fprintf(file,"    &%s%d_base%s\n", stem, i, i==gi->list_len-1?"":"," );
-	fprintf(file,"};\n\n" );
-	
-	fprintf(file,"GImage %s = { %d, (struct _GImage *) %s_bases };\n",stem,gi->list_len,stem);
-    }
     fflush(file);
     i=ferror(file);
     fclose(file);

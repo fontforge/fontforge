@@ -316,7 +316,7 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int request_exp
 	    memset(&gi,'\0',sizeof(gi));
 	    memset(&base,'\0',sizeof(base));
 	    if ( bdfc->byte_data ) {
-		gi.u.image = &base;
+		gi.image = &base;
 		base.image_type = it_index;
 		if ( !fv->b.selected[index] )
 		    base.clut = fv->show->clut;
@@ -337,7 +337,7 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int request_exp
 		GDrawSetDither(NULL, false);	/* on 8 bit displays we don't want any dithering */
 	    } else {
 		memset(&clut,'\0',sizeof(clut));
-		gi.u.image = &base;
+		gi.image = &base;
 		base.image_type = it_mono;
 		base.clut = &clut;
 		clut.clut_len = 2;
@@ -5972,14 +5972,14 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
     memset(&gi,'\0',sizeof(gi));
     memset(&base,'\0',sizeof(base));
     if ( fv->show->clut!=NULL ) {
-	gi.u.image = &base;
+	gi.image = &base;
 	base.image_type = it_index;
 	base.clut = fv->show->clut;
 	GDrawSetDither(NULL, false);
 	base.trans = -1;
     } else {
 	memset(&clut,'\0',sizeof(clut));
-	gi.u.image = &base;
+	gi.image = &base;
 	base.image_type = it_mono;
 	base.clut = &clut;
 	clut.clut_len = 2;

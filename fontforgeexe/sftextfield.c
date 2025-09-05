@@ -824,7 +824,7 @@ return;
 
     image = GImageCreate(it_index,st->g.inner.width+2,
 	    st->li.lineheights[st->li.lcnt-1].y+st->li.lineheights[st->li.lcnt-1].fh+2);
-    base = image->u.image;
+    base = image->image;
     memset(base->data,0,base->bytes_per_line*base->height);
     for ( i=0; i<256; ++i )
 	base->clut->clut[i] = (255-i)*0x010101;

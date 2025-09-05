@@ -2390,7 +2390,7 @@ static void SFAddToBackground(SplineFont *sf,BDFFont *bdf) {
 	    base->clut = clut;
 
 	    img = calloc(1,sizeof(GImage));
-	    img->u.image = base;
+	    img->image = base;
 
 	    SCInsertImage(sc,img,scale,yoff+(bdfc->ymax+1)*scale,bdfc->xmin*scale,ly_back);
 	}
@@ -2472,7 +2472,7 @@ return;
 	if ( sc->layers[ly_fore].splines!=NULL || sc->layers[ly_fore].refs!=NULL )
 return;
 	if ( (il = sc->layers[ly_fore].images)!=NULL ) {
-	    base = il->image->list_len==0 ? il->image->u.image : il->image->u.images[0];
+	    base = il->image->image;
 	    if ( il->next!=NULL )
 return;
 	    if ( base->image_type!=it_mono )
@@ -2515,7 +2515,7 @@ return;			/* No images */
 	if ( (il = sc->layers[ly_fore].images)==NULL )
 	    bdfc->bitmap = malloc(1);
 	else {
-	    base = il->image->list_len==0 ? il->image->u.image : il->image->u.images[0];
+	    base = il->image->image;
 	    bdfc->xmin = rint(il->xoff/scale);
 	    bdfc->ymax = rint(il->yoff/scale);
 	    bdfc->xmax = bdfc->xmin + base->width -1;

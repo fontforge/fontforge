@@ -117,7 +117,7 @@ static int BVImportImage(BitmapView *bv,char *path) {
 	ff_post_error(_("Bad image file"),_("Bad image file: %.100s"), path);
 return(false);
     }
-    base = image->list_len==0?image->u.image:image->u.images[0];
+    base = image->image;
     BCPreserveState(bc);
     BCFlattenFloat(bc);
     free(bc->bitmap);

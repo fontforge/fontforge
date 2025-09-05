@@ -884,7 +884,7 @@ void SFDDumpUndo(FILE *sfd,SplineChar *sc,Undoes *u, const char* keyPrefix, int 
 
 static void SFDDumpImage(FILE *sfd,ImageList *img) {
     GImage *image = img->image;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     struct enc85 enc;
     int rlelen;
     uint8_t *rle;
@@ -3587,7 +3587,7 @@ static ImageList *SFDGetImage(FILE *sfd) {
     getint(sfd,&clutlen);
     gethex(sfd,&trans);
     image = GImageCreate(image_type,width,height);
-    base = image->list_len==0?image->u.image:image->u.images[0];
+    base = image->image;
     img = calloc(1,sizeof(ImageList));
     img->image = image;
     getreal(sfd,&img->xoff);

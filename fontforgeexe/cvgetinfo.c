@@ -654,8 +654,7 @@ static void ImgGetInfo(CharView *cv, ImageList *img) {
     GGadgetCreateData gcd[12], boxes[3], *varray[11], *harray[6];
     GTextInfo label[12];
     char posbuf[100], scalebuf[100], sizebuf[100];
-    struct _GImage *base = img->image->list_len==0?
-	    img->image->u.image:img->image->u.images[0];
+    struct _GImage *base = img->image->image;
 
     gi.cv = cv;
     gi.sc = cv->b.sc;

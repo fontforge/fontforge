@@ -86,7 +86,7 @@ static int getrasheader(SUNRASTER *head, FILE *fp) {
 }
 
 static GImage *ReadRasBitmap(GImage *ret,int width, int height, FILE *fp ) {
-    struct _GImage *base = ret->u.image;
+    struct _GImage *base = ret->image;
     int i,j,len;
     unsigned char *pt, *buf;
 
@@ -112,7 +112,7 @@ static GImage *ReadRasBitmap(GImage *ret,int width, int height, FILE *fp ) {
 }
 
 static GImage *ReadRas8Bit(GImage *ret,int width, int height, FILE *fp ) {
-    struct _GImage *base = ret->u.image;
+    struct _GImage *base = ret->image;
     int i;
 
     for ( i=0; i<height; ++i ) {
@@ -131,7 +131,7 @@ errorReadRas8Bit:
 }
 
 static GImage *ReadRas24Bit(GImage *ret,int width, int height, FILE *fp ) {
-    struct _GImage *base = ret->u.image;
+    struct _GImage *base = ret->image;
     int ch1,ch2,ch3=0;
     int i;
     long *ipt,*end;
@@ -154,7 +154,7 @@ errorReadRas24Bit:
 }
 
 static GImage *ReadRas32Bit(GImage *ret,int width, int height, FILE *fp ) {
-    struct _GImage *base = ret->u.image;
+    struct _GImage *base = ret->image;
     int ch1,ch2,ch3=0;
     int i;
     long *ipt, *end;
@@ -173,7 +173,7 @@ return ret;
 }
 
 static GImage *ReadRas24RBit(GImage *ret,int width, int height, FILE *fp ) {
-    struct _GImage *base = ret->u.image;
+    struct _GImage *base = ret->image;
     int ch1,ch2,ch3=0;
     int i;
     long *ipt,*end;
@@ -196,7 +196,7 @@ errorReadRas24RBit:
 }
 
 static GImage *ReadRas32RBit(GImage *ret,int width, int height, FILE *fp ) {
-    struct _GImage *base = ret->u.image;
+    struct _GImage *base = ret->image;
     int ch1,ch2,ch3=0;
     int i;
     long *ipt, *end;
@@ -217,7 +217,7 @@ return ret;
 static GImage *ReadRle8Bit(GImage *ret,int width, int height, FILE *fp ) {
 /* TODO: Make this an input filter that goes in front of other routines	*/
 /* above so that in can be re-used by the different converters above.	*/
-    struct _GImage *base = ret->u.image;
+    struct _GImage *base = ret->image;
     int x,y,cnt,val = 0;
     unsigned char *pt = NULL;
 
@@ -274,7 +274,7 @@ GImage *GImageReadRas(char *filename) {
     }
 
     /* Convert *.ras ColorMap to one that FF can use */
-    base = ret->u.image;
+    base = ret->image;
     if ( header.ColorMapLength!=0 && base->clut!=NULL ) {
 	unsigned char clutb[3*256]; int i,n;
 	if ( fread(clutb,header.ColorMapLength,1,fp)<1 )

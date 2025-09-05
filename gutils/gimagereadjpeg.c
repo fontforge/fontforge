@@ -117,7 +117,7 @@ return( NULL );
 	jpeg_destroy_decompress(&cinfo);
 return( NULL );
     }
-    base = ret->u.image;
+    base = ret->image;
 
     (void) jpeg_start_decompress(&cinfo);
     rows[0] = (JSAMPLE *) malloc(3*cinfo.image_width);

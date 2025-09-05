@@ -947,7 +947,7 @@ static void dumpimage(void (*dumpchar)(int ch,void *data), void *data,
 	ImageList *imgl, int use_imagemask, int pdfopers,
 	int layer, int icnt, SplineChar *sc ) {
     GImage *image = imgl->image;
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
 
     if ( pdfopers ) {
 	dumpf( dumpchar, data, "  q 1 0 0 1 %g %g cm %g 0 0 %g 0 0 cm\n",
@@ -1141,7 +1141,7 @@ return( true );
 return( true );
 	for ( img = sc->layers[l].images; img!=NULL; img=img->next ) {
 	    GImage *image = img->image;
-	    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+	    struct _GImage *base = image->image;
 	    if ( base->image_type!=it_mono )
 return( true );
 	    if ( !sc->layers[l].dofill )

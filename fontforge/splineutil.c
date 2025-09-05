@@ -1712,12 +1712,12 @@ ImageList *ImageListTransform(ImageList *img, real transform[6],int everything) 
 		img->yoff = transform[1]*x + transform[3]*img->yoff + transform[5];
 		if (( img->xscale *= transform[0])<0 ) {
 		    img->xoff += img->xscale *
-			(img->image->list_len==0?img->image->u.image:img->image->u.images[0])->width;
+			img->image->image->width;
 		    img->xscale = -img->xscale;
 		}
 		if (( img->yscale *= transform[3])<0 ) {
 		    img->yoff += img->yscale *
-			(img->image->list_len==0?img->image->u.image:img->image->u.images[0])->height;
+			img->image->image->height;
 		    img->yscale = -img->yscale;
 		}
 		img->bb.minx = img->xoff; img->bb.maxy = img->yoff;

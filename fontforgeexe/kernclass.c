@@ -407,7 +407,7 @@ void KCD_DrawGlyph(GWindow pixmap,int x,int baseline,BDFChar *bdfc,int mag) {
     memset(&gi,'\0',sizeof(gi));
     memset(&base,'\0',sizeof(base));
     memset(&clut,'\0',sizeof(clut));
-    gi.u.image = &base;
+    gi.image = &base;
     base.clut = &clut;
     if ( !bdfc->byte_data ) {
 	base.image_type = it_mono;

@@ -99,7 +99,7 @@ GImage *GImageReadXbm(char * filename) {
 	goto errorGImageReadXbmMem;
 
     /* Convert *.xbm graphic into one that FF can use */
-    base = gi->u.image;
+    base = gi->image;
     for ( i=0; i<height; ++i ) {
 	scanline = base->data + i*base->bytes_per_line;
 	for ( j=0; j<base->bytes_per_line; ++j ) {

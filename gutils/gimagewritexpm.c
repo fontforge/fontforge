@@ -48,7 +48,7 @@ return( two );
 
 int GImageWriteXpm(GImage *gi, char *filename) {
 /* Export an *.xpm image. Return 0 if all done okay */
-    struct _GImage *base = gi->list_len==0?gi->u.image:gi->u.images[0];
+    struct _GImage *base = gi->image;
     FILE *file;
     char stem[256];
     char *pt,*color_type; uint8_t *scanline;

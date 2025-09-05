@@ -67,7 +67,7 @@ GImage *GImageReadTiff(char *filename) {
     /* Read TIF image and process it into an internal FF usable format	*/
     if ( TIFFReadRGBAImage(tif,w,h,raster,0) ) {
 	TIFFClose(tif);
-	base=ret->u.image;
+	base=ret->image;
 	for ( i=0; i<h; ++i ) {
 	    ipt=(uint32_t *)(base->data+i*base->bytes_per_line);
 	    fpt=raster+(h-1-i)*w;

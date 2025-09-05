@@ -3382,7 +3382,7 @@ static void PSTKern_DrawGlyph(GWindow pixmap,int x,int y, BDFChar *bc, int mag) 
     memset(&gi,'\0',sizeof(gi));
     memset(&base,'\0',sizeof(base));
     memset(&clut,'\0',sizeof(clut));
-    gi.u.image = &base;
+    gi.image = &base;
     base.clut = &clut;
     base.data = bc->bitmap;
     base.bytes_per_line = bc->bytes_per_line;

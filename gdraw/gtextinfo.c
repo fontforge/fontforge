@@ -609,7 +609,7 @@ GImageCacheBucket *_GGadgetImageCache(const char *filename, int keep_empty) {
     }
 
     /* Play with the clut to make white be transparent */
-    struct _GImage *base = img->u.image;
+    struct _GImage *base = img->image;
     if ( base->image_type==it_mono && base->clut==NULL )
 	base->trans = 1;
     else if ( base->image_type!=it_true && base->clut!=NULL && base->trans==0xffffffff ) {

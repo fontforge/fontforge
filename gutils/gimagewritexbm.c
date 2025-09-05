@@ -31,7 +31,7 @@
 
 int GImageWriteXbm(GImage *gi, char *filename) {
 /* Export an *.xbm image, return 0 if all done okay */
-    struct _GImage *base = gi->list_len==0?gi->u.image:gi->u.images[0];
+    struct _GImage *base = gi->image;
     FILE *file;
     int i,j, val,val2,k;
     char stem[256];

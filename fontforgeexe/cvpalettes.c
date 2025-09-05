@@ -895,7 +895,7 @@ static GImage *spirosmalls[] = { &GIcon_smallpointer, &GIcon_smallmag,
 
 static int getSmallIconsHeight()
 {
-    return GIcon_smallpointer.u.image->height;
+    return GIcon_smallpointer.image->height;
 }
 
 static int getToolbarWidth( CharView *cv ) 
@@ -906,7 +906,7 @@ static int getToolbarWidth( CharView *cv )
 	int i = 0;
 	
 	for ( i=0; buttons[0][i][0]; ++i ) {
-	    cache = MAX( cache, buttons[0][i][0]->u.image->width + buttons[0][i][1]->u.image->width );
+	    cache = MAX( cache, buttons[0][i][0]->image->width + buttons[0][i][1]->image->width );
 	}
     }
     return cache;
@@ -920,7 +920,7 @@ static int getToolbarHeight( CharView *cv )
 	int i = 0;
 	
 	for ( i=0; buttons[0][i][0]; ++i ) {
-	    cache += MAX( buttons[0][i][0]->u.image->height, buttons[0][i][1]->u.image->height );
+	    cache += MAX( buttons[0][i][0]->image->height, buttons[0][i][1]->image->height );
 	}
     }
     cache += getSmallIconsHeight() * 4;
@@ -967,9 +967,9 @@ static void visitButtons( CharView* cv, visitButtonsVisitor v, void* udata )
 	    }
 	    
 	    v( cv, buttons[sel][mi][j], mi, i, j, iconx, icony, sel, udata );
-	    iconx += buttons[sel][mi][j]->u.image->width;
+	    iconx += buttons[sel][mi][j]->image->width;
 	}
-	icony += MAX( buttons[0][i][0]->u.image->width, buttons[0][i][1]->u.image->width );
+	icony += MAX( buttons[0][i][0]->image->width, buttons[0][i][1]->image->width );
     }
 }
 
@@ -984,8 +984,8 @@ static void getIJFromMouseVisitor( CharView *cv, GImage* gimage,
 				   int iconx, int icony, int selected, void* udata )
 {
     getIJFromMouseVisitorData* d = (getIJFromMouseVisitorData*)udata;
-    if( IS_IN_ORDER3( iconx, d->mx, iconx + gimage->u.image->width )
-	&& IS_IN_ORDER3( icony, d->my, icony + gimage->u.image->height ))
+    if( IS_IN_ORDER3( iconx, d->mx, iconx + gimage->image->width )
+	&& IS_IN_ORDER3( icony, d->my, icony + gimage->image->height ))
 	{
 	    d->ret.i = i;
 	    d->ret.j = j;
@@ -1012,8 +1012,8 @@ static IJ getIJFromMouse( CharView* cv, int mx, int my )
  */
 
 void cvp_draw_relief(GWindow pixmap, GImage *iconimg, int iconx, int icony, int selected) {
-	int iconw = iconimg->u.image->width;
-	int iconh = iconimg->u.image->height;
+	int iconw = iconimg->image->width;
+	int iconh = iconimg->image->height;
 	int norm = !selected;
 	// Note: The original code placed the right and bottom fake relief
 	// outside of the button image area (offset by 25 instead of 24),
@@ -1051,7 +1051,7 @@ static void ToolsExposeVisitor( CharView *cv, GImage* gimage,
 		if (cvbutton3d > 0) cvp_draw_relief(d->pixmap, buttons[0][mi][j], iconx, icony, selected);
 
     d->maxicony = MAX( d->maxicony, icony );
-    d->lastIconHeight = buttons[selected][mi][j]->u.image->height;
+    d->lastIconHeight = buttons[selected][mi][j]->image->height;
 }
 
 
@@ -1661,7 +1661,7 @@ return;
 
     memset(&gi,0,sizeof(gi));
     memset(&base,0,sizeof(base));
-    gi.u.image = &base;
+    gi.image = &base;
     base.image_type = it_index;
     base.clut = layer2.clut;
     base.trans = -1;
@@ -2253,7 +2253,7 @@ return;
 
     memset(&gi,0,sizeof(gi));
     memset(&base,0,sizeof(base));
-    gi.u.image = &base;
+    gi.image = &base;
     base.image_type = it_index;
     base.clut = layer2.clut;
     base.trans = -1;

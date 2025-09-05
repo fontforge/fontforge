@@ -51,7 +51,7 @@ static struct _GImage splashimage0_base = {{
     0xffffffff
 }};
 
-GImage splashimage = {{ 0, {{ &splashimage0_base }}, NULL }};
+GImage splashimage = {{ &splashimage0_base, NULL }};
 """
 
 if __name__ == "__main__":

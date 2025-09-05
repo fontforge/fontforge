@@ -1237,8 +1237,7 @@ static void FillImages(uint8_t *bytemap,EdgeList *es,ImageList *img,Layer *layer
 	fillcol = 0x000000;
 
     while ( img!=NULL ) {
-	struct _GImage *base = img->image->list_len==0?
-		img->image->u.image:img->image->u.images[0];
+	struct _GImage *base = img->image->image;
 
 	y1 = es->cnt-1 - (img->yoff*es->scale - es->mmin);
 	y2 = es->cnt-1 - ((img->yoff-base->height*img->yscale)*es->scale -es->mmin);

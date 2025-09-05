@@ -449,7 +449,7 @@ void _GXCDraw_PathFillAndStroke(GWindow w,Color fillcol, Color strokecol) {
 /* ****************************** Cairo Images ****************************** */
 /* ************************************************************************** */
 static cairo_surface_t *GImage2Surface(GImage *image, GRect *src, uint8_t **_data) {
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     cairo_format_t type;
     uint8_t *data, *pt;
     uint32_t *idata, *ipt, *ito;
@@ -682,7 +682,7 @@ return( cs );
 void _GXCDraw_Image( GXWindow gw, GImage *image, GRect *src, int32_t x, int32_t y) {
     uint8_t *data;
     cairo_surface_t *is = GImage2Surface(image,src,&data);
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
 
     if ( cairo_image_surface_get_format(is)==CAIRO_FORMAT_A1 ) {
 	/* No color info, just alpha channel */
@@ -705,7 +705,7 @@ void _GXCDraw_Image( GXWindow gw, GImage *image, GRect *src, int32_t x, int32_t 
 
 /* What we really want to do is use the grey levels as an alpha channel */
 void _GXCDraw_Glyph( GXWindow gw, GImage *image, GRect *src, int32_t x, int32_t y) {
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     cairo_surface_t *is;
 
     if ( base->image_type!=it_index )
@@ -746,7 +746,7 @@ void _GXCDraw_Glyph( GXWindow gw, GImage *image, GRect *src, int32_t x, int32_t 
 
 void _GXCDraw_ImageMagnified(GXWindow gw, GImage *image, GRect *magsrc,
 	int32_t x, int32_t y, int32_t width, int32_t height) {
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     GRect full;
     double xscale, yscale;
     GRect viewable;

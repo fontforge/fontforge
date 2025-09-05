@@ -112,8 +112,7 @@ return;
 	    sc->layers[pos].splines = e->u.splines.splines;
 	} else if ( e->type == et_image ) {
 	    ImageList *ilist = chunkalloc(sizeof(ImageList));
-	    struct _GImage *base = e->u.image.image->list_len==0?
-		    e->u.image.image->u.image:e->u.image.image->u.images[0];
+	    struct _GImage *base = e->u.image.image->image;
 	    sc->layers[pos].images = ilist;
 	    sc->layers[pos].dofill = base->image_type==it_mono && base->trans!=(Color)-1;
 	    sc->layers[pos].fill_brush.col = e->u.image.col==0xffffffff ?
@@ -909,14 +908,14 @@ return;
 /************************** Normal Image Import *******************************/
 
 GImage *ImageAlterClut(GImage *image) {
-    struct _GImage *base = image->list_len==0?image->u.image:image->u.images[0];
+    struct _GImage *base = image->image;
     GClut *clut;
 
     if ( base->image_type!=it_mono ) {
 	/* png b&w images come through as indexed, not mono */
 	if ( base->clut!=NULL && base->clut->clut_len==2 ) {
 	    GImage *new = GImageCreate(it_mono,base->width,base->height);
-	    struct _GImage *nbase = new->u.image;
+	    struct _GImage *nbase = new->image;
 	    int i,j;
 	    memset(nbase->data,0,nbase->height*nbase->bytes_per_line);
 	    for ( i=0; i<base->height; ++i ) for ( j=0; j<base->width; ++j )
@@ -1119,7 +1118,7 @@ return( false );
 		ff_post_error(_("Bad image file"),_("Bad image file: %.100s"),start);
     continue;
 	    }
-	    base = image->list_len==0?image->u.image:image->u.images[0];
+	    base = image->image;
 	    if ( base->image_type!=it_mono ) {
 		ff_post_error(_("Bad image file"),_("Bad image file, not a bitmap: %.100s"),start);
 		GImageDestroy(image);

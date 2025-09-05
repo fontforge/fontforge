@@ -64,7 +64,7 @@ static GImage *ProcessSavedImage(GifFileType *gif,struct SavedImage *si,int il) 
 		m->Colors[1].Red==255 && m->Colors[1].Green==255 && m->Colors[1].Blue==255 )
 	    /* Don't need a clut */;
 	else
-	    if ( (ret->u.image->clut = (GClut *) calloc(1,sizeof(GClut)))==NULL ) {
+	    if ( (ret->image->clut = (GClut *) calloc(1,sizeof(GClut)))==NULL ) {
 		free(ret);
 		NoMoreMemMessage();
 		return( NULL );
@@ -74,7 +74,7 @@ static GImage *ProcessSavedImage(GifFileType *gif,struct SavedImage *si,int il) 
 	    return( NULL );
     if ( il && ((id=(int *) malloc(si->ImageDesc.Height*sizeof(int)))==NULL || \
 		(iv=(uint8_t *) malloc(si->ImageDesc.Height*sizeof(uint8_t)))==NULL) ) {
-	free(ret->u.image->clut);
+	free(ret->image->clut);
 	free(ret);
 	free(id);
 	free(iv);
@@ -83,7 +83,7 @@ static GImage *ProcessSavedImage(GifFileType *gif,struct SavedImage *si,int il) 
     }
 
     /* Process gif image into an internal FF usable format */
-    base = ret->u.image;
+    base = ret->image;
     if ( base->clut!=NULL ) {
 	base->clut->clut_len = m->ColorCount;
 	for ( i=0; i<m->ColorCount; ++i )
@@ -152,9 +152,9 @@ static GImage *ProcessSavedImage(GifFileType *gif,struct SavedImage *si,int il) 
 
 GImage *GImageReadGif(char *filename) {
 /* Import a gif image (or gif animation), else return NULL if error  */
-    GImage *ret, **images;
+    GImage *ret;
     GifFileType *gif;
-    int i,il;
+    int il;
 
     //
     // MIQ: As at mid 2013 giflib version 4 is still the current
@@ -183,20 +183,8 @@ GImage *GImageReadGif(char *filename) {
     }
 
     /* Process each image so that it/they can be imported into FF. */
-    if ( (images=(GImage **) malloc(gif->ImageCount*sizeof(GImage *)))==NULL ) {
-#ifdef  _GIFLIB_51PLUS
-        DGifCloseFile(gif, NULL);
-#else
-        DGifCloseFile(gif);
-#endif
-        NoMoreMemMessage();
-        return( NULL );
-    }
     il=gif->SavedImages[0].ImageDesc.Interlace;
-    for ( i=0; i<gif->ImageCount; ++i ) {
-	if ( (images[i]=ProcessSavedImage(gif,&gif->SavedImages[i],il))==NULL ) {
-	    while ( --i>=0 ) free(images[i]);
-	    free(images);
+	if ( (ret=ProcessSavedImage(gif,&gif->SavedImages[0],il))==NULL ) {
 #ifdef  _GIFLIB_51PLUS
 	    DGifCloseFile(gif, NULL);
 #else
@@ -204,19 +192,13 @@ GImage *GImageReadGif(char *filename) {
 #endif
 	    return( NULL );
 	}
-    }
 
-    /* All okay if you reached here. We have 1 image or several images */
-    if ( gif->ImageCount==1 )
-	ret = images[0];
-    else
-	ret = GImageCreateAnimation(images,gif->ImageCount);
+    /* All okay if you reached here. */
 #ifdef  _GIFLIB_51PLUS
     DGifCloseFile(gif, NULL);
 #else
     DGifCloseFile(gif);
 #endif
-    free(images);
     return( ret );
 }
 

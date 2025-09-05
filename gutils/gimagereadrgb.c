@@ -207,7 +207,7 @@ GImage *GImageReadRgb(char *filename) {
 	fclose(fp);
 	return( NULL );
     }
-    base = ret->u.image;
+    base = ret->image;
 
     if ( header.format==RLE ) {
 	/* Working with RLE image data*/
