@@ -726,21 +726,13 @@ int GDrawShortcutKeyMatches(const GEvent *e, unichar_t ch) {
 
 void GDrawDestroyDisplays() {
   if (screen_display != NULL) {
-#ifndef FONTFORGE_CAN_USE_GDK
-    _GXDraw_DestroyDisplay(screen_display);
-#else
     _GGDKDraw_DestroyDisplay(screen_display);
-#endif
     screen_display = NULL;
   }
 }
 
 void GDrawCreateDisplays(char *displayname,char *programname) {
-#ifndef FONTFORGE_CAN_USE_GDK
-    screen_display = _GXDraw_CreateDisplay(displayname,programname);
-#else
     screen_display = _GGDKDraw_CreateDisplay(displayname, programname);
-#endif
     if ( screen_display==NULL ) {
 	fprintf( stderr, "Could not open screen.\n" );
 #if __Mac

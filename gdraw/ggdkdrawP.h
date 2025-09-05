@@ -32,7 +32,6 @@
 
 #include <fontforge-config.h>
 
-#ifdef FONTFORGE_CAN_USE_GDK
 
 #include "ffgdk.h"
 #include "fontP.h"
@@ -336,6 +335,5 @@ void _GGDKDrawCocoa_SetClipboardText(const char *text);
 
 // END functions in ggdkcocoa.m
 
-#endif // FONTFORGE_CAN_USE_GDK
 
 #endif /* FONTFORGE_GGDKDRAWP_H */

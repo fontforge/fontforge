@@ -31,7 +31,6 @@
 
 #include "ggdkdrawP.h"
 
-#ifdef FONTFORGE_CAN_USE_GDK
 
 #include "gkeysym.h"
 #include "gresource.h"
@@ -2608,4 +2607,3 @@ void _GGDKDraw_DestroyDisplay(GDisplay *disp) {
     return;
 }
 
-#endif // FONTFORGE_CAN_USE_GDK

@@ -36,7 +36,6 @@
 
 #include "ggdkdrawP.h"
 
-#ifdef FONTFORGE_CAN_USE_GDK
 
 #include "ustring.h"
 
@@ -1403,4 +1402,3 @@ int GGDKDrawLayoutLineStart(GWindow w, int l) {
     return line->start_index;
 }
 
-#endif // FONTFORGE_CAN_USE_GDK

@@ -30,7 +30,6 @@
 
 #include <fontforge-config.h>
 
-#ifdef FONTFORGE_CAN_USE_GDK
 
 // As gdk #includes glib, we must apply the same name mangling here.
 #define GTimer GTimer_GTK
@@ -45,6 +44,5 @@
 #undef GList
 #undef GTimer
 
-#endif // FONTFORGE_CAN_USE_GDK
 
 #endif /* FONTFORGE_FFGDK_H */

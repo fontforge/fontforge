@@ -31,11 +31,7 @@
 #include <fontforge-config.h>
 
 #include "gdrawP.h"
-#ifndef FONTFORGE_CAN_USE_GDK
-#  include "gxdrawP.h"
-#else
 #  include "ggdkdrawP.h"
-#endif
 
 #define em_uplane0     (em_max+1)
 

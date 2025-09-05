@@ -262,11 +262,7 @@ static void SplashLayout() {
 #ifdef FONTFORGE_CONFIG_USE_DOUBLE
     uc_strcat(pt,"-D");
 #endif
-#ifdef FONTFORGE_CAN_USE_GDK
     uc_strcat(pt, "-GDK3");
-#else
-    uc_strcat(pt,"-X11");
-#endif
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
     lines[linecnt] = NULL;
@@ -655,9 +651,7 @@ int fontforge_main( int argc, char **argv ) {
 #ifdef FONTFORGE_CONFIG_USE_DOUBLE
 	        "-D"
 #endif
-#ifdef FONTFORGE_CAN_USE_GDK
             "-GDK3"
-#endif
 #ifdef BUILT_WITH_XORG
             "-Xorg"
 #endif
@@ -814,10 +808,8 @@ int fontforge_main( int argc, char **argv ) {
 	else if ( strcmp(pt,"-home")==0 )
 	    /* already did a chdir earlier, don't need to do it again */;
     }
-#ifdef FONTFORGE_CAN_USE_GDK
     gdk_set_allowed_backends("win32,quartz,x11");
     gtk_init(&argc, &argv);
-#endif
     ensureDotFontForgeIsSetup();
 #if defined(__MINGW32__) && !defined(_NO_LIBCAIRO)
     //Load any custom fonts for the user interface
@@ -892,9 +884,7 @@ int fontforge_main( int argc, char **argv ) {
     wattrs.utf8_window_title = "FontForge";
     wattrs.border_width = 2;
     wattrs.background_color = splashbg;
-#ifdef FONTFORGE_CAN_USE_GDK
     wattrs.is_dlg = true;
-#endif
     pos.x = pos.y = 200;
     SplashImageInit();
     pos.width = splashimagep->u.image->width;
