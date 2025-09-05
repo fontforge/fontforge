@@ -73,13 +73,6 @@ The Preferences Window...
 
    Controls whether a splash screen is displayed on start up.
 
-.. object:: UseCairoDrawing
-
-   FontForge can use its own drawing routines, or rely on Cairo library in the
-   :doc:`outline glyph view </ui/mainviews/charview>`. Using Cairo is slower, but gives smooth
-   curves, and subpixel display precision. New setting applies only to windows
-   created afterwards.
-
 .. object:: EnsureCorrectSaveExtension
 
    When inputting a name in the Save or SaveAs dialogs, FontForge can ensure

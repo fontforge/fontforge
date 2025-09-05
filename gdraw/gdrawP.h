@@ -109,7 +109,6 @@ struct gwindow {
     unsigned int is_dying: 1;
     unsigned int is_popup: 1;
     unsigned int disable_expose_requests: 1;
-    unsigned int usecairo: 1;		/* use a cairo context -- if meaningful */
     /**
      * This is an optional window type string that is used by the hotkey subsystem.
      * It is a pointer to a constant string which is never to be freed or NULL.

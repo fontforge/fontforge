@@ -434,7 +434,6 @@ extern void GDrawPathCurveTo(GWindow w,
 extern void GDrawPathStroke(GWindow w,Color col);
 extern void GDrawPathFill(GWindow w,Color col);
 extern void GDrawPathFillAndStroke(GWindow w,Color fillcol, Color strokecol);
-extern void GDrawEnableCairo(int on);
 
 extern void GDrawLayoutInit(GWindow w, char *text, int cnt, GFont *fi);
 extern void GDrawLayoutDraw(GWindow w, int32_t x, int32_t y, Color fg);

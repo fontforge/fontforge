@@ -33,7 +33,6 @@ add_library(gdraw STATIC
   ghvbox.c
   gimageclut.c
   gimagecvt.c
-  gimagexdraw.c
   gkeysym.c
   glist.c
   gmatrixedit.c
@@ -52,10 +51,6 @@ add_library(gdraw STATIC
   gtextinfo.c
   gwidgetP.h
   gwidgets.c
-  gxcdraw.c
-  gxcdrawP.h
-  gxdraw.c
-  gxdrawP.h
   hotkeys.c
   xkeysyms_unicode.c
 )
