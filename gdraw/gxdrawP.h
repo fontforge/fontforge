@@ -72,10 +72,8 @@ capable of using composite.
 #   include <X11/XKBlib.h>
 /*# include <X11/extensions/XKBgeom.h>*/
 # endif
-# ifndef _NO_LIBCAIRO
 #  include <cairo/cairo-xlib.h>
 #  include <cairo/cairo.h>
-# endif
 #  define GTimer GTimer_GTK
 #  include <X11/Xft/Xft.h>
 #  include <ft2build.h>
@@ -141,11 +139,9 @@ typedef struct gxwindow /* :GWindow */ {
     Window parentissimus;
     struct gxinput_context *gic, *all;
     PangoLayout  *pango_layout;
-#ifndef _NO_LIBCAIRO
     cairo_t *cc;
     cairo_surface_t *cs;
     struct gcstate cairo_state;
-#endif
     XftDraw *xft_w;
     Window transient_owner;
 } *GXWindow;
@@ -327,10 +323,8 @@ typedef struct gxdisplay /* : GDisplay */ {
     struct xkb xkb;
     PangoFontMap *pango_fontmap;
     PangoContext *pango_context;
-# if !defined(_NO_LIBCAIRO)
     PangoFontMap *pangoc_fontmap;
     PangoContext *pangoc_context;
-# endif
 # if defined(__MINGW32__) || __CygWin
     int32_t  mousemove_last_x;
     int32_t  mousemove_last_y;

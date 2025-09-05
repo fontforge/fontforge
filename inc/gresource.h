@@ -86,9 +86,7 @@ typedef struct {
 typedef struct font_instance {
     FontRequest rq;		/* identification of this instance */
     PangoFontDescription *pango_fd;
-#ifndef _NO_LIBCAIRO
     PangoFontDescription *pangoc_fd;
-#endif
 } FontInstance, GFont;
 
 enum res_type { rt_int, rt_double, rt_bool/* int */, rt_color, rt_string, rt_image, rt_font, rt_stringlong, rt_coloralpha };

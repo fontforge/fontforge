@@ -47,11 +47,7 @@ void GDrawEnableCairo(int on) {
 # include <sys/utsname.h>
 #endif
 
-#ifdef _NO_LIBCAIRO
-static int usecairo = false;
-#else
 static int usecairo = true;
-#endif
 
 
 
@@ -60,7 +56,6 @@ void GDrawEnableCairo(int on) {
     /* Obviously, if we have no library, enabling it will do nothing */
 }
 
-#ifndef _NO_LIBCAIRO
 /* ************************************************************************** */
 /* ***************************** Cairo Library ****************************** */
 /* ************************************************************************** */
@@ -833,12 +828,6 @@ enum gcairo_flags _GXCDraw_CairoCapabilities( GXWindow gw) {
 
 return( flags );
 }
-#else
-int _GXCDraw_hasCairo(void) {
-return(false);
-}
-
-#endif	/* ! _NO_LIBCAIRO */
 
 /* ************************************************************************** */
 /* ***************************** Pango Library ****************************** */
@@ -846,9 +835,7 @@ return(false);
 
 #  define GTimer GTimer_GTK
 #  include <pango/pangoxft.h>
-#  if !defined(_NO_LIBCAIRO)
 #   include <pango/pangocairo.h>
-#  endif
 #  undef GTimer
 
 /* ************************************************************************** */
@@ -875,7 +862,6 @@ static void my_xft_render_layout(XftDraw *xftw,XftColor *fgcol,
     pango_layout_iter_free(iter);
 }
 
-# if !defined(_NO_LIBCAIRO)
 /* Strangely the equivalent routine was not part of the pangocairo library */
 /* Oh there's pango_cairo_layout_path but that's more restrictive and probably*/
 /*  less efficient */
@@ -902,7 +888,6 @@ static void my_cairo_render_layout(cairo_t *cc, Color fg,
     } while ( pango_layout_iter_next_run(iter));
     pango_layout_iter_free(iter);
 }
-#endif
 
 /* ************************************************************************** */
 /* ****************************** Pango Window ****************************** */
@@ -910,7 +895,6 @@ static void my_cairo_render_layout(cairo_t *cc, Color fg,
 void _GXPDraw_NewWindow(GXWindow nw) {
     GXDisplay *gdisp = nw->display;
 
-# if !defined(_NO_LIBCAIRO)
     if ( nw->usecairo ) {
 	/* using pango through cairo is different from using it on bare X */
 	if ( gdisp->pangoc_context==NULL ) {
@@ -923,7 +907,6 @@ void _GXPDraw_NewWindow(GXWindow nw) {
 	if (nw->pango_layout==NULL)
 	    nw->pango_layout = pango_layout_new(gdisp->pangoc_context);
     } else
-# endif
     {
 	if ( gdisp->pango_context==NULL ) {
 	    gdisp->pango_fontmap = pango_xft_get_font_map(gdisp->display,gdisp->screen);
@@ -956,17 +939,11 @@ PangoFontDescription *_GXPDraw_configfont(GWindow w, GFont *font) {
 
     /* initialize cairo and pango if not initialized, e.g. root window */
     if (gw->pango_layout == NULL){
-#ifndef _NO_LIBCAIRO
 	_GXCDraw_NewWindow(gw);
-#endif
 	_GXPDraw_NewWindow(gw);
     }
 
-#ifdef _NO_LIBCAIRO
-    PangoFontDescription **fdbase = &font->pango_fd;
-#else
     PangoFontDescription **fdbase = gw->usecairo ? &font->pangoc_fd : &font->pango_fd;
-#endif
 
     if ( *fdbase!=NULL )
 return( *fdbase );
@@ -1017,11 +994,9 @@ int32_t _GXPDraw_DoText8(GWindow w, int32_t x, int32_t y,
     pango_layout_set_text(gw->pango_layout,(char *) text,cnt);
     pango_layout_get_pixel_extents(gw->pango_layout,NULL,&rect);
     if ( drawit==tf_drawit ) {
-# if !defined(_NO_LIBCAIRO)
 	if ( gw->usecairo ) {
 	    my_cairo_render_layout(gw->cc,col,gw->pango_layout,x,y);
 	} else
-#endif
 	{
 	    XftColor fg;
 	    XRenderColor fgcol;
@@ -1085,12 +1060,10 @@ void _GXPDraw_FontMetrics(GWindow gw, GFont *fi, int *as, int *ds, int *ld) {
     PangoFontMetrics *fm;
 
     _GXPDraw_configfont(gw, fi);
-# if !defined(_NO_LIBCAIRO)
     if ( gw->usecairo )
 	pfont = pango_font_map_load_font(gdisp->pangoc_fontmap,gdisp->pangoc_context,
 		fi->pangoc_fd);
     else
-#endif
 	pfont = pango_font_map_load_font(gdisp->pango_fontmap,gdisp->pango_context,
 		fi->pango_fd);
     fm = pango_font_get_metrics(pfont,NULL);
@@ -1122,11 +1095,9 @@ void _GXPDraw_LayoutDraw(GWindow w, int32_t x, int32_t y, Color col) {
     GXWindow gw = (GXWindow) w;
     GXDisplay *gdisp = gw->display;
 
-# if !defined(_NO_LIBCAIRO)
     if ( gw->usecairo ) {
 	my_cairo_render_layout(gw->cc,col,gw->pango_layout,x,y);
     } else
-#endif
     {
 	XftColor fg;
 	XRenderColor fgcol;

@@ -8,7 +8,6 @@
 #include "gxdrawP.h"
 
 extern int _GXCDraw_hasCairo(void);
-#ifndef _NO_LIBCAIRO
 
 extern void _GXCDraw_NewWindow(GXWindow nw);
 extern void _GXCDraw_ResizeWindow(GXWindow gw,GRect *rect);
@@ -53,7 +52,6 @@ extern void _GXCDraw_PathFill(GWindow w,Color col);
 extern void _GXCDraw_PathFillAndStroke(GWindow w,Color fillcol, Color strokecol);
 
 #include "fontP.h"
-#endif
 extern void _GXPDraw_NewWindow(GXWindow nw);
 extern void _GXPDraw_DestroyWindow(GXWindow nw);
 #include "fontP.h"

@@ -99,9 +99,7 @@ static void _dousage(void) {
 #if MyMemory
     printf( "\t-memory\t\t\t (turns on memory checks, debugging)\n" );
 #endif
-#ifndef _NO_LIBCAIRO
     printf( "\t-usecairo=yes|no  Use (or not) the cairo library for drawing\n" );
-#endif
     printf( "\t-help\t\t\t (displays this message, and exits)\n" );
     printf( "\t-docs\t\t\t (displays this message, invokes a browser)\n\t\t\t\t (Using the BROWSER environment variable)\n" );
     printf( "\t-version\t\t (prints the version of fontforge and exits)\n" );

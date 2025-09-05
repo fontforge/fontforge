@@ -12,10 +12,6 @@ of these defines work.
 There are multiple definitions that are not covered by the config header,
 but which are used throughout FontForge.
 
-Defines that are not included, because they are obsolete, include:
-
-_NO_LIBCAIRO
-
 There are other defines where it is not clear if they should be
 configured, or if they are defined locally in source only:
 
