@@ -401,24 +401,25 @@ void CairoPainter::draw_page_full_glyph(const Cairo::RefPtr<Cairo::Context>& cr,
     draw_line(cr, na, -sf_descent, true);
 }
 
-void CairoPainter::draw_page_sample_text(
+void CairoPainter::calculate_layout_sample_text(
     const Cairo::RefPtr<Cairo::Context>& cr,
-    const Cairo::Rectangle& printable_area, int page_nr,
-    const std::string& sample_text) {
-    init_document(cr, printable_area, "Sample Text from " + font_name_,
-                  top_margin_);
+    const Cairo::Rectangle& printable_area, const std::string& sample_text) {
+    // Recalculate the layout only if the sample text has changed.
+    if (sample_text == cached_sample_text_) {
+        return;
+    }
 
-    // Print sample text in black
-    cr->set_source_rgb(0, 0, 0);
+    cached_sample_text_ = sample_text;
+    cached_full_layout_.clear();
+
+    setup_context(cr);
 
     std::istringstream stream(sample_text);
     ParsedRichText parsed_text = parse_xml_stream(stream);
     build_style_map(parsed_text);
 
-    double y_start = top_margin_;
-
     // Buffer of text blocks for a single line of output
-    LineBuffer line_buffer;
+    RichTextLineBuffer line_buffer;
     double line_buffer_width = 0;
 
     for (const auto& [current_tags, text] : parsed_text) {
@@ -470,7 +471,10 @@ void CairoPainter::draw_page_sample_text(
                 line_buffer.emplace_back(printable_subblock,
                                          select_face(current_tags));
 
-                y_start += draw_line_sample_text(cr, line_buffer, y_start);
+                double line_height =
+                    calculate_height_sample_text(cr, line_buffer);
+                cached_full_layout_.emplace_back(line_buffer, line_height);
+
                 line_buffer.clear();
                 line_buffer_width = 0;
 
@@ -492,13 +496,62 @@ void CairoPainter::draw_page_sample_text(
                                  select_face(current_tags));
         line_buffer_width += block_extents.x_advance;
     }
-    draw_line_sample_text(cr, line_buffer, y_start);
+
+    // Collect leftovers from the end of text sample.
+    double line_height = calculate_height_sample_text(cr, line_buffer);
+    cached_full_layout_.emplace_back(line_buffer, line_height);
 }
 
-double CairoPainter::draw_line_sample_text(
-    const Cairo::RefPtr<Cairo::Context>& cr, const LineBuffer& line_buffer,
-    double y_start) {
-    // Determine the line height
+void CairoPainter::paginate_sample_text(double layout_height) {
+    cached_pagination_list_ = {0};
+    double block_height = 0;
+    for (size_t i = 0; i < cached_full_layout_.size(); ++i) {
+        double line_height = cached_full_layout_[i].second;
+        if ((block_height > 0) &&
+            (block_height + line_height > layout_height)) {
+            // This line starts a new page
+            cached_pagination_list_.push_back(i);
+            block_height = 0;
+        }
+        block_height += line_height;
+    }
+}
+
+void CairoPainter::draw_page_sample_text(
+    const Cairo::RefPtr<Cairo::Context>& cr,
+    const Cairo::Rectangle& printable_area, int page_nr,
+    const std::string& sample_text) {
+    init_document(cr, printable_area, "Sample Text from " + font_name_,
+                  top_margin_);
+
+    calculate_layout_sample_text(cr, printable_area, sample_text);
+    paginate_sample_text(printable_area.height - top_margin_);
+
+    // Check page number
+    page_nr = std::clamp(page_nr, 0, (int)cached_pagination_list_.size() - 1);
+
+    // Print sample text in black
+    cr->set_source_rgb(0, 0, 0);
+
+    // TODO(iorsh): Consider the baseline instead of height
+    auto start_line_it =
+        cached_full_layout_.begin() + cached_pagination_list_[page_nr];
+    auto end_line_it = (page_nr == cached_pagination_list_.size() - 1)
+                           ? cached_full_layout_.end()
+                           : cached_full_layout_.begin() +
+                                 cached_pagination_list_[page_nr + 1];
+
+    double y_start = top_margin_;
+    for (auto line_it = start_line_it; line_it != end_line_it; ++line_it) {
+        double height = line_it->second;
+        y_start += height;
+        draw_line_sample_text(cr, line_it->first, y_start);
+    }
+}
+
+double CairoPainter::calculate_height_sample_text(
+    const Cairo::RefPtr<Cairo::Context>& cr,
+    const RichTextLineBuffer& line_buffer) {
     double height = 0;
     for (const auto& [text, face] : line_buffer) {
         Cairo::FontExtents font_extents;
@@ -506,20 +559,23 @@ double CairoPainter::draw_line_sample_text(
         cr->get_font_extents(font_extents);
         height = std::max(height, font_extents.height);
     }
+    return height;
+}
 
+void CairoPainter::draw_line_sample_text(
+    const Cairo::RefPtr<Cairo::Context>& cr,
+    const RichTextLineBuffer& line_buffer, double y_baseline) {
     // Perform the actual text drawing
-    double x = 0, y = y_start + height;
+    double x = 0;
     for (const auto& [text, face] : line_buffer) {
         Cairo::TextExtents text_extents;
         cr->set_font_face(face);
         cr->get_text_extents(text, text_extents);
 
-        cr->move_to(x, y);
+        cr->move_to(x, y_baseline);
         cr->show_text(text);
         x += text_extents.x_advance;
     }
-
-    return height;
 }
 
 // Rewritten PIMultiSize()
@@ -604,16 +660,13 @@ Cairo::RefPtr<Cairo::FtFontFace> CairoPainter::select_face(
     }
 }
 
-void CairoPainter::setup_context(const Cairo::RefPtr<Cairo::Context>& cr,
-                                 const Cairo::Rectangle& printable_area) {
+void CairoPainter::setup_context(const Cairo::RefPtr<Cairo::Context>& cr) {
     // To ensure faithful preview, the rendering must be identical on all
     // devices and all resolutions. This requires disabling of font metrics
     // rounding.
     Cairo::FontOptions font_options;
     font_options.set_hint_metrics(Cairo::HintMetrics::HINT_METRICS_OFF);
     cr->set_font_options(font_options);
-
-    cr->translate(printable_area.x, printable_area.y);
 }
 
 void CairoPainter::init_document(const Cairo::RefPtr<Cairo::Context>& cr,
@@ -621,7 +674,9 @@ void CairoPainter::init_document(const Cairo::RefPtr<Cairo::Context>& cr,
                                  const std::string& document_title,
                                  double top_margin) {
     set_surface_metadata(cr, document_title);
-    setup_context(cr, printable_area);
+    setup_context(cr);
+
+    cr->translate(printable_area.x, printable_area.y);
 
     // White background
     cr->set_source_rgb(1, 1, 1);

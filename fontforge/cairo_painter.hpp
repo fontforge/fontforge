@@ -66,8 +66,10 @@ struct GlyphLine;
 
 using ParsedRichText =
     std::vector<std::pair<std::vector<std::string>, std::string>>;
-using LineBuffer =
+using RichTextLineBuffer =
     std::vector<std::tuple<std::string, Cairo::RefPtr<Cairo::FtFontFace>>>;
+using RichTextLayout =
+    std::vector<std::pair<RichTextLineBuffer, double /*height*/>>;
 using PrintGlyphVec = std::vector<std::pair<int, SplineChar*>>;
 
 class CairoPainter {
@@ -84,12 +86,15 @@ class CairoPainter {
     void draw_page_full_glyph(const Cairo::RefPtr<Cairo::Context>& cr,
                               const Cairo::Rectangle& printable_area,
                               int page_nr, const std::string& scaling_option);
-    size_t paginate_full_glyph() const { return print_map_.size(); }
+    size_t page_count_full_glyph() const { return print_map_.size(); }
 
     // Draw formatted sample text.
     void draw_page_sample_text(const Cairo::RefPtr<Cairo::Context>& cr,
                                const Cairo::Rectangle& printable_area,
                                int page_nr, const std::string& sample_text);
+    size_t page_count_sample_text() const {
+        return cached_pagination_list_.size();
+    }
 
     // Draw each glyph in multiple sizes.
     void draw_page_multisize(const Cairo::RefPtr<Cairo::Context>& cr,
@@ -130,6 +135,15 @@ class CairoPainter {
         std::vector<int> indexes;
     };
 
+    // Cached layout data, which should be invalidated whenever the painter
+    // input changes.
+    std::string cached_sample_text_;
+    // Vector of output lines with calculated height.
+    RichTextLayout cached_full_layout_;
+    // Pagination list for cached_full_layout_, with i-th entry designating the
+    // first line of the i-th page.
+    std::vector<size_t> cached_pagination_list_;
+
     void sort_glyphs(const PrintGlyphMap& print_map);
 
     // Returns vector of glyph lines.
@@ -139,8 +153,7 @@ class CairoPainter {
     Cairo::RefPtr<Cairo::FtFontFace> select_face(
         const std::vector<std::string>& tags) const;
 
-    void setup_context(const Cairo::RefPtr<Cairo::Context>& cr,
-                       const Cairo::Rectangle& printable_area);
+    void setup_context(const Cairo::RefPtr<Cairo::Context>& cr);
 
     void init_document(const Cairo::RefPtr<Cairo::Context>& cr,
                        const Cairo::Rectangle& printable_area,
@@ -155,9 +168,20 @@ class CairoPainter {
                                 const GlyphLine& glyph_line, double y_start,
                                 double left_code_area_width, double pointsize);
 
-    // Draw a single rich text buffer and return the line height it occupied.
-    double draw_line_sample_text(const Cairo::RefPtr<Cairo::Context>& cr,
-                                 const LineBuffer& line_buffer, double y_start);
+    // Calculate height of single line
+    double calculate_height_sample_text(const Cairo::RefPtr<Cairo::Context>& cr,
+                                        const RichTextLineBuffer& line_buffer);
+
+    // Draw a single rich text buffer.
+    void draw_line_sample_text(const Cairo::RefPtr<Cairo::Context>& cr,
+                               const RichTextLineBuffer& line_buffer,
+                               double y_baseline);
+
+    void calculate_layout_sample_text(const Cairo::RefPtr<Cairo::Context>& cr,
+                                      const Cairo::Rectangle& printable_area,
+                                      const std::string& sample_text);
+
+    void paginate_sample_text(double layout_height);
 
     double draw_line_multisize(const Cairo::RefPtr<Cairo::Context>& cr,
                                const std::vector<double>& pointsizes,

@@ -353,7 +353,9 @@ void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
 size_t PrintPreviewWidget::paginate() {
     size_t num_pages = 1;
     if (radio_glyph_pages_->get_active()) {
-        num_pages = cairo_painter_.paginate_full_glyph();
+        num_pages = cairo_painter_.page_count_full_glyph();
+    } else if (radio_sample_text_->get_active()) {
+        num_pages = cairo_painter_.page_count_sample_text();
     }
 
     page_counter_.set_visible(num_pages > 1);
