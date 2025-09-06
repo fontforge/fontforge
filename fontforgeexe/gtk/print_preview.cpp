@@ -169,7 +169,7 @@ void PrintPreviewWidget::update_page_setup(
         current_setup_->get_paper_height(Gtk::UNIT_MM);
 
     aspect_wrapper.set(Gtk::ALIGN_CENTER, Gtk::ALIGN_CENTER, page_ratio, false);
-    paginate();
+    preview_area.queue_draw();
 }
 
 Glib::RefPtr<Gtk::PageSetup> PrintPreviewWidget::create_default_setup() {
@@ -205,8 +205,8 @@ void PrintPreviewWidget::build_compound_preview_area() {
     box_wrapper->set_margin_bottom(wrapper_margin);
 
     page_counter_ = Gtk::Scale(Gtk::ORIENTATION_HORIZONTAL);
-    page_counter_.get_adjustment()->configure(1, 1, 21, 1, 1, 1);
     page_counter_.set_valign(Gtk::ALIGN_END);
+    page_counter_.set_round_digits(0);
     page_counter_.signal_format_value().connect([this](double page_num) {
         char buffer[32];
         int total_pages = (int)page_counter_.get_adjustment()->get_upper() - 1;
@@ -336,18 +336,20 @@ void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
         length);
 
     if (radio_full_display_->get_active()) {
-        return cairo_painter_.draw_page_full_display(cr, printable_area,
-                                                     page_nr, font_size);
+        cairo_painter_.draw_page_full_display(cr, printable_area, page_nr,
+                                              font_size);
     } else if (radio_glyph_pages_->get_active()) {
         Glib::ustring active_option = scaling_option_->get_active_id();
-        return cairo_painter_.draw_page_full_glyph(cr, printable_area, page_nr,
-                                                   active_option);
+        cairo_painter_.draw_page_full_glyph(cr, printable_area, page_nr,
+                                            active_option);
     } else if (radio_sample_text_->get_active()) {
-        return cairo_painter_.draw_page_sample_text(cr, printable_area, page_nr,
-                                                    out_buffer);
+        cairo_painter_.draw_page_sample_text(cr, printable_area, page_nr,
+                                             out_buffer);
     } else {
-        return cairo_painter_.draw_page_multisize(cr, printable_area, page_nr);
+        cairo_painter_.draw_page_multisize(cr, printable_area, page_nr);
     }
+
+    paginate();
 }
 
 size_t PrintPreviewWidget::paginate() {
@@ -358,9 +360,24 @@ size_t PrintPreviewWidget::paginate() {
         num_pages = cairo_painter_.page_count_sample_text();
     }
 
-    page_counter_.set_visible(num_pages > 1);
-    page_counter_.get_adjustment()->set_upper(num_pages + 1);
+    // Changes to scale lead to focus changes which may inadvertently close the
+    // sample text popover. When the popover is visible, we shall avoid touching
+    // the scale. It would be updated automatically after the popover closes and
+    // the preview area refreshes.
+    if (!sample_text_->is_visible()) {
+        size_t old_num_pages = page_counter_.get_adjustment()->get_upper() - 1;
+        size_t new_value =
+            std::clamp((size_t)page_counter_.get_value(), (size_t)1, num_pages);
 
+        // We must reconfigure the scale sparingly to avoid infinite loop of
+        // redrawing events.
+        if (num_pages != old_num_pages) {
+            page_counter_.get_adjustment()->configure(new_value, 1,
+                                                      num_pages + 1, 1, 1, 1);
+        }
+
+        page_counter_.set_visible(num_pages > 1);
+    }
     return num_pages;
 }
 
@@ -390,7 +407,6 @@ void PrintPreviewWidget::on_display_toggled() {
             stack_->set_visible_child(r->get_name());
         }
     }
-    paginate();
     preview_area.queue_draw();
 }
 

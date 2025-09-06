@@ -74,7 +74,9 @@ class PrintPreviewWidget : public Gtk::Grid {
     static Cairo::Rectangle calculate_printable_area(
         const Glib::RefPtr<Gtk::PageSetup>& setup, Gtk::Unit unit);
 
-    // Draw the entire printable page.
+    // This function is responsible for updating the Cairo painter with data
+    // from UI widgets and drawing the entire printable page. It also triggers
+    // the page count calculation and updates the page counter.
     void draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
                    const Cairo::Rectangle& printable_area, int page_nr);
 
