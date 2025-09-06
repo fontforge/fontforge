@@ -168,6 +168,7 @@ void PrintPreviewWidget::update_page_setup(
         current_setup_->get_paper_width(Gtk::UNIT_MM) /
         current_setup_->get_paper_height(Gtk::UNIT_MM);
 
+    cairo_painter_.invalidate_cached_layouts();
     aspect_wrapper.set(Gtk::ALIGN_CENTER, Gtk::ALIGN_CENTER, page_ratio, false);
     preview_area.queue_draw();
 }

@@ -631,6 +631,12 @@ double CairoPainter::draw_line_multisize(
     return height;
 }
 
+void CairoPainter::invalidate_cached_layouts() {
+    cached_sample_text_.clear();
+    cached_full_layout_.clear();
+    cached_pagination_list_.clear();
+}
+
 void CairoPainter::build_style_map(const ParsedRichText&) {
     style_map_[{false, false}] = cairo_face_;
 

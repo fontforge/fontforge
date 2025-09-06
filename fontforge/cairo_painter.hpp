@@ -101,6 +101,8 @@ class CairoPainter {
                              const Cairo::Rectangle& printable_area,
                              int page_nr);
 
+    void invalidate_cached_layouts();
+
     static const std::string kScaleToPage;
     static const std::string kScaleEmSize;
     static const std::string kScaleMaxHeight;
