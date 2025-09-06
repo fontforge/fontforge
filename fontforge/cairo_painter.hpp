@@ -77,26 +77,22 @@ class CairoPainter {
 
     // Draw full font display as a character grid.
     void draw_page_full_display(const Cairo::RefPtr<Cairo::Context>& cr,
-                                double scale,
                                 const Cairo::Rectangle& printable_area,
                                 int page_nr, double pointsize);
 
     // Draw glyphs scaled to fill the page.
     void draw_page_full_glyph(const Cairo::RefPtr<Cairo::Context>& cr,
-                              double scale,
                               const Cairo::Rectangle& printable_area,
                               int page_nr, const std::string& scaling_option);
     size_t paginate_full_glyph() const { return print_map_.size(); }
 
     // Draw formatted sample text.
     void draw_page_sample_text(const Cairo::RefPtr<Cairo::Context>& cr,
-                               double scale,
                                const Cairo::Rectangle& printable_area,
                                int page_nr, const std::string& sample_text);
 
     // Draw each glyph in multiple sizes.
     void draw_page_multisize(const Cairo::RefPtr<Cairo::Context>& cr,
-                             double scale,
                              const Cairo::Rectangle& printable_area,
                              int page_nr);
 
@@ -143,10 +139,10 @@ class CairoPainter {
     Cairo::RefPtr<Cairo::FtFontFace> select_face(
         const std::vector<std::string>& tags) const;
 
-    void setup_context(const Cairo::RefPtr<Cairo::Context>& cr, double scale,
+    void setup_context(const Cairo::RefPtr<Cairo::Context>& cr,
                        const Cairo::Rectangle& printable_area);
 
-    void init_document(const Cairo::RefPtr<Cairo::Context>& cr, double scale,
+    void init_document(const Cairo::RefPtr<Cairo::Context>& cr,
                        const Cairo::Rectangle& printable_area,
                        const std::string& document_title, double top_margin);
 

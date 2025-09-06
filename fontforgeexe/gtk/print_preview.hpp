@@ -72,11 +72,10 @@ class PrintPreviewWidget : public Gtk::Grid {
     // from the upper left corner of the actual canvas - either paper or
     // preview_area. The prinable area is located within the page margins.
     static Cairo::Rectangle calculate_printable_area(
-        double scale, const Glib::RefPtr<Gtk::PageSetup>& setup,
-        Gtk::Unit unit);
+        const Glib::RefPtr<Gtk::PageSetup>& setup, Gtk::Unit unit);
 
     // Draw the entire printable page.
-    void draw_page(const Cairo::RefPtr<Cairo::Context>& cr, double scale,
+    void draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
                    const Cairo::Rectangle& printable_area, int page_nr);
 
     bool draw_preview_area(const Cairo::RefPtr<Cairo::Context>& cr);

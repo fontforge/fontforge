@@ -229,13 +229,10 @@ std::vector<CairoPainter::GlyphLine> CairoPainter::split_to_lines(
 
 // Rewritten PIFontDisplay()
 void CairoPainter::draw_page_full_display(
-    const Cairo::RefPtr<Cairo::Context>& cr, double scale,
+    const Cairo::RefPtr<Cairo::Context>& cr,
     const Cairo::Rectangle& printable_area, int page_nr, double pointsize) {
-    init_document(cr, scale, printable_area, "Font Display for " + font_name_,
+    init_document(cr, printable_area, "Font Display for " + font_name_,
                   top_margin_);
-
-    Cairo::Rectangle scaled_printable_area{0, 0, printable_area.width / scale,
-                                           printable_area.height / scale};
 
     double extravspace = pointsize / 6;
     double extrahspace = pointsize / 3;
@@ -245,9 +242,9 @@ void CairoPainter::draw_page_full_display(
     double top_code_area_height = 12;
 
     double char_area_width =
-        scaled_printable_area.width - margin_ * 2 - left_code_area_width;
-    double char_area_height = scaled_printable_area.height - margin_ -
-                              top_margin_ - top_code_area_height;
+        printable_area.width - margin_ * 2 - left_code_area_width;
+    double char_area_height =
+        printable_area.height - margin_ - top_margin_ - top_code_area_height;
     int max_slots = static_cast<int>(
         std::floor(char_area_width / (extrahspace + pointsize)));
     int max_lines = static_cast<int>(
@@ -336,7 +333,6 @@ void CairoPainter::draw_line_full_display(
 }
 
 void CairoPainter::draw_page_full_glyph(const Cairo::RefPtr<Cairo::Context>& cr,
-                                        double page_scale,
                                         const Cairo::Rectangle& printable_area,
                                         int page_nr,
                                         const std::string& scaling_option) {
@@ -348,15 +344,14 @@ void CairoPainter::draw_page_full_glyph(const Cairo::RefPtr<Cairo::Context>& cr,
 
     // Print page title for glyph
     std::string page_title(glyph_it->second->name + (" from " + font_name_));
-    init_document(cr, page_scale, printable_area, page_title,
-                  full_glyph_top_margin_);
+    init_document(cr, printable_area, page_title, full_glyph_top_margin_);
 
     // We are already in point units. Further rescale surface, exclude the top
     // 12 pt for glyph title
     cr->translate(0, full_glyph_top_margin_);
-    Cairo::Rectangle scaled_printable_area{
-        0, 0, printable_area.width / page_scale,
-        printable_area.height / page_scale - full_glyph_top_margin_};
+    Cairo::Rectangle shifted_printable_area{
+        0, 0, printable_area.width,
+        printable_area.height - full_glyph_top_margin_};
 
     // Retrieve the font metrics in normalized size
     auto [sf_ascent, sf_descent] = get_splinefont_metrics(cr);
@@ -378,18 +373,19 @@ void CairoPainter::draw_page_full_glyph(const Cairo::RefPtr<Cairo::Context>& cr,
     double y_max = std::max(sf_ascent, -text_extents.y_bearing);
 
     double x_scale =
-        (x_max > x_min) ? scaled_printable_area.width / (x_max - x_min) : 1e-5;
-    double y_scale =
-        (y_max > y_min) ? scaled_printable_area.height / (y_max - y_min) : 1e-5;
+        (x_max > x_min) ? shifted_printable_area.width / (x_max - x_min) : 1e-5;
+    double y_scale = (y_max > y_min)
+                         ? shifted_printable_area.height / (y_max - y_min)
+                         : 1e-5;
     double glyph_scale = std::min(x_scale, y_scale);
 
     cr->scale(glyph_scale, glyph_scale);
-    cr->translate(-x_min, scaled_printable_area.height / glyph_scale + y_min);
-    Cairo::Rectangle na{scaled_printable_area.x / glyph_scale + x_min,
-                        scaled_printable_area.y / glyph_scale -
-                            scaled_printable_area.height / glyph_scale - y_min,
-                        scaled_printable_area.width / glyph_scale,
-                        scaled_printable_area.height / glyph_scale};
+    cr->translate(-x_min, shifted_printable_area.height / glyph_scale + y_min);
+    Cairo::Rectangle na{shifted_printable_area.x / glyph_scale + x_min,
+                        shifted_printable_area.y / glyph_scale -
+                            shifted_printable_area.height / glyph_scale - y_min,
+                        shifted_printable_area.width / glyph_scale,
+                        shifted_printable_area.height / glyph_scale};
 
     double scaled_size = glyph_scale * normalized_size;
     cr->set_font_size(normalized_size);
@@ -406,20 +402,11 @@ void CairoPainter::draw_page_full_glyph(const Cairo::RefPtr<Cairo::Context>& cr,
 }
 
 void CairoPainter::draw_page_sample_text(
-    const Cairo::RefPtr<Cairo::Context>& cr, double scale,
+    const Cairo::RefPtr<Cairo::Context>& cr,
     const Cairo::Rectangle& printable_area, int page_nr,
     const std::string& sample_text) {
-    init_document(cr, scale, printable_area, "Sample Text from " + font_name_,
+    init_document(cr, printable_area, "Sample Text from " + font_name_,
                   top_margin_);
-
-    Cairo::Rectangle scaled_printable_area{0, 0, printable_area.width / scale,
-                                           printable_area.height / scale};
-
-    // Set the desired font face
-    cr->set_font_face(cairo_face_);
-    cr->set_font_size(20);
-    Cairo::FontExtents extents;
-    cr->get_font_extents(extents);
 
     // Print sample text in black
     cr->set_source_rgb(0, 0, 0);
@@ -471,7 +458,7 @@ void CairoPainter::draw_page_sample_text(
                 (*subblock_break != '\n') &&
                 ((line_buffer.empty() && subblock_start == subblock_break) ||
                  (line_buffer_width + block_extents.width) <
-                     scaled_printable_area.width);
+                     printable_area.width);
 
             if (continue_filling_buffer) {
                 subblock_break = space_it;
@@ -537,22 +524,17 @@ double CairoPainter::draw_line_sample_text(
 
 // Rewritten PIMultiSize()
 void CairoPainter::draw_page_multisize(const Cairo::RefPtr<Cairo::Context>& cr,
-                                       double scale,
                                        const Cairo::Rectangle& printable_area,
                                        int page_nr) {
-    init_document(cr, scale, printable_area, "Sample Sizes of " + font_name_,
+    init_document(cr, printable_area, "Sample Sizes of " + font_name_,
                   top_margin_);
-
-    Cairo::Rectangle scaled_printable_area{0, 0, printable_area.width / scale,
-                                           printable_area.height / scale};
 
     static const std::vector<double> pointsizes{
         72, 48, 36,  24, 20,  18, 16,  15, 14,  13,  12, 11, 10,
         9,  8,  7.5, 7,  6.5, 6,  5.5, 5,  4.5, 4.2, 4,  0};
     double extravspace = pointsizes[0] / 6;
 
-    double char_area_height =
-        scaled_printable_area.height - margin_ - top_margin_;
+    double char_area_height = printable_area.height - margin_ - top_margin_;
     int max_lines = static_cast<int>(std::floor(
         (char_area_height + extravspace) / (pointsizes[0] + extravspace)));
 
@@ -623,7 +605,6 @@ Cairo::RefPtr<Cairo::FtFontFace> CairoPainter::select_face(
 }
 
 void CairoPainter::setup_context(const Cairo::RefPtr<Cairo::Context>& cr,
-                                 double scale,
                                  const Cairo::Rectangle& printable_area) {
     // To ensure faithful preview, the rendering must be identical on all
     // devices and all resolutions. This requires disabling of font metrics
@@ -633,16 +614,14 @@ void CairoPainter::setup_context(const Cairo::RefPtr<Cairo::Context>& cr,
     cr->set_font_options(font_options);
 
     cr->translate(printable_area.x, printable_area.y);
-    cr->scale(scale, scale);
 }
 
 void CairoPainter::init_document(const Cairo::RefPtr<Cairo::Context>& cr,
-                                 double scale,
                                  const Cairo::Rectangle& printable_area,
                                  const std::string& document_title,
                                  double top_margin) {
     set_surface_metadata(cr, document_title);
-    setup_context(cr, scale, printable_area);
+    setup_context(cr, printable_area);
 
     // White background
     cr->set_source_rgb(1, 1, 1);
@@ -653,7 +632,7 @@ void CairoPainter::init_document(const Cairo::RefPtr<Cairo::Context>& cr,
     cr->select_font_face("times", Cairo::FONT_SLANT_NORMAL,
                          Cairo::FONT_WEIGHT_BOLD);
     cr->set_font_size(12.0);
-    draw_centered_text(cr, {0, 0, printable_area.width / scale, top_margin},
+    draw_centered_text(cr, {0, 0, printable_area.width, top_margin},
                        document_title);
 }
 

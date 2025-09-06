@@ -148,15 +148,14 @@ void PrintPreviewWidget::draw_page_cb(
     Cairo::RefPtr<Cairo::Context> cr = context->get_cairo_context();
     Glib::RefPtr<Gtk::PageSetup> setup = context->get_page_setup();
 
-    // The physical paper page is measured in points (1/72 in). We should not
-    // scale it, so that font size definitions (provided by the user) retain
-    // their physical size.
-    double scale = 1.0;
-
+    // The physical paper page is measured in points (1/72 in). The Cairo
+    // context provided by Gtk::PrintOperation already accounts for the physical
+    // size, and we don't need to scale it any further. Accordingly, all
+    // dimensions should be passed to Cairo::Context in points.
     Cairo::Rectangle printable_area =
-        calculate_printable_area(scale, setup, Gtk::UNIT_POINTS);
+        calculate_printable_area(setup, Gtk::UNIT_POINTS);
 
-    draw_page(cr, scale, printable_area, page_nr);
+    draw_page(cr, printable_area, page_nr);
 }
 
 void PrintPreviewWidget::update(
@@ -310,23 +309,22 @@ void PrintPreviewWidget::build_sample_text_popover(Gtk::Widget* parent_widget) {
 }
 
 Cairo::Rectangle PrintPreviewWidget::calculate_printable_area(
-    double scale, const Glib::RefPtr<Gtk::PageSetup>& setup, Gtk::Unit unit) {
+    const Glib::RefPtr<Gtk::PageSetup>& setup, Gtk::Unit unit) {
     Cairo::Rectangle printable_area;
 
-    printable_area.x = scale * setup->get_left_margin(unit);
-    printable_area.y = scale * setup->get_top_margin(unit);
-    printable_area.width =
-        scale * (setup->get_paper_width(unit) - setup->get_left_margin(unit) -
-                 setup->get_right_margin(unit));
-    printable_area.height =
-        scale * (setup->get_paper_height(unit) - setup->get_top_margin(unit) -
-                 setup->get_bottom_margin(unit));
+    printable_area.x = setup->get_left_margin(unit);
+    printable_area.y = setup->get_top_margin(unit);
+    printable_area.width = setup->get_paper_width(unit) -
+                           setup->get_left_margin(unit) -
+                           setup->get_right_margin(unit);
+    printable_area.height = setup->get_paper_height(unit) -
+                            setup->get_top_margin(unit) -
+                            setup->get_bottom_margin(unit);
 
     return printable_area;
 }
 
 void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
-                                   double scale,
                                    const Cairo::Rectangle& printable_area,
                                    int page_nr) {
     double font_size = size_entry_->get_value();
@@ -338,18 +336,17 @@ void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
         length);
 
     if (radio_full_display_->get_active()) {
-        return cairo_painter_.draw_page_full_display(cr, scale, printable_area,
+        return cairo_painter_.draw_page_full_display(cr, printable_area,
                                                      page_nr, font_size);
     } else if (radio_glyph_pages_->get_active()) {
         Glib::ustring active_option = scaling_option_->get_active_id();
-        return cairo_painter_.draw_page_full_glyph(cr, scale, printable_area,
-                                                   page_nr, active_option);
+        return cairo_painter_.draw_page_full_glyph(cr, printable_area, page_nr,
+                                                   active_option);
     } else if (radio_sample_text_->get_active()) {
-        return cairo_painter_.draw_page_sample_text(cr, scale, printable_area,
-                                                    page_nr, out_buffer);
+        return cairo_painter_.draw_page_sample_text(cr, printable_area, page_nr,
+                                                    out_buffer);
     } else {
-        return cairo_painter_.draw_page_multisize(cr, scale, printable_area,
-                                                  page_nr);
+        return cairo_painter_.draw_page_multisize(cr, printable_area, page_nr);
     }
 }
 
@@ -367,14 +364,19 @@ size_t PrintPreviewWidget::paginate() {
 
 bool PrintPreviewWidget::draw_preview_area(
     const Cairo::RefPtr<Cairo::Context>& cr) {
+    Cairo::Rectangle printable_area =
+        calculate_printable_area(current_setup_, Gtk::UNIT_POINTS);
+    size_t page_nr = (size_t)page_counter_.get_value() - 1;
+
     // Number of preview area pixels in a paper pt (1 pt = 1/72 in)
     double scale = preview_area.get_allocated_width() /
                    current_setup_->get_paper_width(Gtk::UNIT_POINTS);
-    Cairo::Rectangle printable_area =
-        calculate_printable_area(scale, current_setup_, Gtk::UNIT_POINTS);
-    size_t page_nr = (size_t)page_counter_.get_value() - 1;
+    // We are scaling the Cairo::Context according to the preview area pixel
+    // size. From this point on, all measurements and font sizes passed to the
+    // Cairo::Context correspond to the physical paper size.
+    cr->scale(scale, scale);
 
-    draw_page(cr, scale, printable_area, page_nr);
+    draw_page(cr, printable_area, page_nr);
 
     return true;
 }
