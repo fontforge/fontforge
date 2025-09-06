@@ -158,7 +158,7 @@ void PrintPreviewWidget::draw_page_cb(
     draw_page(cr, printable_area, page_nr);
 }
 
-void PrintPreviewWidget::update(
+void PrintPreviewWidget::update_page_setup(
     const Glib::RefPtr<Gtk::PageSetup>& setup,
     const Glib::RefPtr<Gtk::PrintSettings>& settings) {
     default_setup_ = PrintPreviewWidget::create_default_setup();

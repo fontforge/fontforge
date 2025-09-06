@@ -44,8 +44,8 @@ class PrintPreviewWidget : public Gtk::Grid {
     void draw_page_cb(const Glib::RefPtr<Gtk::PrintContext>& context,
                       int page_nr);
 
-    void update(const Glib::RefPtr<Gtk::PageSetup>& setup,
-                const Glib::RefPtr<Gtk::PrintSettings>& settings);
+    void update_page_setup(const Glib::RefPtr<Gtk::PageSetup>& setup,
+                           const Glib::RefPtr<Gtk::PrintSettings>& settings);
 
     // Refresh layout information in CairoPainter and return total number of
     // pages.
