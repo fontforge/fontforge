@@ -208,12 +208,16 @@ void PrintPreviewWidget::build_compound_preview_area() {
     page_counter_ = Gtk::Scale(Gtk::ORIENTATION_HORIZONTAL);
     page_counter_.set_valign(Gtk::ALIGN_END);
     page_counter_.set_round_digits(0);
+    page_counter_.set_draw_value(true);
     page_counter_.signal_format_value().connect([this](double page_num) {
         char buffer[32];
         int total_pages = (int)page_counter_.get_adjustment()->get_upper() - 1;
-        sprintf(buffer, "Page %d of %d", (int)page_num, total_pages);
+        sprintf(buffer, _("Page %d of %d"), (int)page_num, total_pages);
         return Glib::ustring(buffer);
     });
+    // Modify scale label layout to prevent line breaks, they don't look good.
+    page_counter_.signal_realize().connect(
+        [this]() { page_counter_.get_layout()->set_width(-1); });
     // Initialize with some sane values to avoid unsightly GTK warnings.
     page_counter_.get_adjustment()->configure(1, 1, 2, 1, 1, 1);
 
