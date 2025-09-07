@@ -214,6 +214,8 @@ void PrintPreviewWidget::build_compound_preview_area() {
         sprintf(buffer, "Page %d of %d", (int)page_num, total_pages);
         return Glib::ustring(buffer);
     });
+    // Initialize with some sane values to avoid unsightly GTK warnings.
+    page_counter_.get_adjustment()->configure(1, 1, 2, 1, 1, 1);
 
     aspect_wrapper.set_hexpand(true);
     aspect_wrapper.set_vexpand(true);
