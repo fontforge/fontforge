@@ -640,17 +640,20 @@ void CairoPainter::draw_page_multisize(const Cairo::RefPtr<Cairo::Context>& cr,
     double extravspace = pointsizes[0] / 6;
 
     double char_area_height = printable_area.height - margin_ - top_margin_;
-    int max_lines = static_cast<int>(std::floor(
+    cached_lines_per_page_multisize_ = static_cast<int>(std::floor(
         (char_area_height + extravspace) / (pointsizes[0] + extravspace)));
 
     // Set the user font face
     cr->set_font_face(cairo_face_);
 
     double y_start = top_margin_;
-    for (const auto [glyph_index, sc] : print_map_) {
-        y_start += draw_line_multisize(cr, pointsizes, glyph_index, y_start);
-        y_start += extravspace;
-    }
+    for (size_t i = page_nr * cached_lines_per_page_multisize_;
+         i < std::min((page_nr + 1) * cached_lines_per_page_multisize_,
+                      (int)print_map_.size());
+         ++i)
+        y_start +=
+            draw_line_multisize(cr, pointsizes, print_map_[i].first, y_start);
+    y_start += extravspace;
 }
 
 double CairoPainter::draw_line_multisize(
@@ -680,6 +683,14 @@ double CairoPainter::draw_line_multisize(
     return height;
 }
 
+size_t CairoPainter::page_count_multisize() const {
+    if (print_map_.empty()) {
+        return 1;
+    } else {
+        return (print_map_.size() - 1) / cached_lines_per_page_multisize_ + 1;
+    }
+}
+
 void CairoPainter::invalidate_cached_layouts() {
     cached_glyph_lines_.clear();
     cached_max_slots_ = 0;
@@ -688,6 +699,8 @@ void CairoPainter::invalidate_cached_layouts() {
     cached_sample_text_.clear();
     cached_full_layout_.clear();
     cached_pagination_list_.clear();
+
+    cached_lines_per_page_multisize_ = 0;
 }
 
 void CairoPainter::build_style_map(const ParsedRichText&) {

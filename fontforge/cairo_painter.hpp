@@ -103,6 +103,7 @@ class CairoPainter {
     void draw_page_multisize(const Cairo::RefPtr<Cairo::Context>& cr,
                              const Cairo::Rectangle& printable_area,
                              int page_nr);
+    size_t page_count_multisize() const;
 
     void invalidate_cached_layouts();
 
@@ -156,6 +157,8 @@ class CairoPainter {
     // Pagination list for cached_full_layout_, with i-th entry designating the
     // first line of the i-th page.
     std::vector<size_t> cached_pagination_list_;
+
+    int cached_lines_per_page_multisize_ = 0;
 
     void sort_glyphs(const PrintGlyphMap& print_map);
 

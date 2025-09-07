@@ -361,6 +361,8 @@ size_t PrintPreviewWidget::paginate() {
         num_pages = cairo_painter_.page_count_full_glyph();
     } else if (radio_sample_text_->get_active()) {
         num_pages = cairo_painter_.page_count_sample_text();
+    } else {
+        num_pages = cairo_painter_.page_count_multisize();
     }
 
     // Changes to scale lead to focus changes which may inadvertently close the
