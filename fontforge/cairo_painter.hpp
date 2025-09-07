@@ -81,6 +81,9 @@ class CairoPainter {
     void draw_page_full_display(const Cairo::RefPtr<Cairo::Context>& cr,
                                 const Cairo::Rectangle& printable_area,
                                 int page_nr, double pointsize);
+    size_t page_count_full_display() const {
+        return cached_glyph_line_pagination_.size();
+    }
 
     // Draw glyphs scaled to fill the page.
     void draw_page_full_glyph(const Cairo::RefPtr<Cairo::Context>& cr,
@@ -139,6 +142,14 @@ class CairoPainter {
 
     // Cached layout data, which should be invalidated whenever the painter
     // input changes.
+
+    // Full glyph display (grid), split into lines
+    std::vector<GlyphLine> cached_glyph_lines_;
+    size_t cached_max_slots_;
+    // Pagination list for cached_glyph_lines_, with i-th entry designating the
+    // first line of the i-th page.
+    std::vector<size_t> cached_glyph_line_pagination_;
+
     std::string cached_sample_text_;
     // Vector of output lines with calculated height.
     RichTextLayout cached_full_layout_;
@@ -150,6 +161,9 @@ class CairoPainter {
 
     // Returns vector of glyph lines.
     std::vector<GlyphLine> split_to_lines(size_t max_slots) const;
+
+    void paginate_full_display(double char_area_height, double pointsize,
+                               double extravspace);
 
     void build_style_map(const ParsedRichText& rich_text);
     Cairo::RefPtr<Cairo::FtFontFace> select_face(

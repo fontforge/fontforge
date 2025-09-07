@@ -218,13 +218,51 @@ std::vector<CairoPainter::GlyphLine> CairoPainter::split_to_lines(
         std::transform(
             map_it, range_end, std::back_inserter(indexes),
             [](const PrintGlyphVec::value_type& p) { return p.first; });
-        glyph_lines.emplace_back(
-            GlyphLine{std::to_string(i * line_length), false, indexes});
+        glyph_lines.emplace_back(GlyphLine{std::to_string(i), false, indexes});
 
         map_it = range_end;
+        i += line_length;
     }
 
     return glyph_lines;
+}
+
+void CairoPainter::paginate_full_display(double char_area_height,
+                                         double pointsize, double extravspace) {
+    int max_lines = static_cast<int>(
+        std::floor(char_area_height / (extravspace + pointsize)));
+
+    auto first_unencoded = std::find_if(
+        cached_glyph_lines_.begin(), cached_glyph_lines_.end(),
+        [](const auto& glyph_line) { return !glyph_line.encoded; });
+    int divider_position = first_unencoded - cached_glyph_lines_.begin();
+
+    bool has_encoded_glyphs = (first_unencoded != cached_glyph_lines_.begin());
+    bool has_unencoded_glyphs = (first_unencoded != cached_glyph_lines_.end());
+
+    // Check if the divider between encoded and unencoded glyphs forces putting
+    // less lines on a page. Effectively, the divider requires extravspace.
+    bool divider_pushes_line =
+        ((char_area_height - max_lines * (extravspace + pointsize)) <
+         extravspace);
+    // Check if the divider is present and doesn't fall on the page break.
+    bool divider_needed = has_encoded_glyphs && has_unencoded_glyphs &&
+                          (divider_position % max_lines != 0);
+
+    int num_pages = (divider_needed && divider_pushes_line)
+                        ? (cached_glyph_lines_.size() / max_lines) + 1
+                        : ((cached_glyph_lines_.size() - 1) / max_lines) + 1;
+    cached_glyph_line_pagination_ = {0};
+    for (size_t i = 1; i < num_pages; ++i) {
+        if (divider_pushes_line && divider_pushes_line &&
+            (i * max_lines > divider_position)) {
+            // Shift unencoded lines if the divider pushes a line onto the next
+            // page.
+            cached_glyph_line_pagination_.push_back(i * max_lines - 1);
+        } else {
+            cached_glyph_line_pagination_.push_back(i * max_lines);
+        }
+    }
 }
 
 // Rewritten PIFontDisplay()
@@ -247,14 +285,18 @@ void CairoPainter::draw_page_full_display(
         printable_area.height - margin_ - top_margin_ - top_code_area_height;
     int max_slots = static_cast<int>(
         std::floor(char_area_width / (extrahspace + pointsize)));
-    int max_lines = static_cast<int>(
-        std::floor(char_area_height / (extravspace + pointsize)));
 
     cr->set_source_rgb(0, 0, 0);
 
-    std::vector<GlyphLine> glyph_lines = split_to_lines(max_slots);
-    size_t line_length =
-        glyph_lines.empty() ? 16 : glyph_lines[0].indexes.size();
+    // Recalculate the layout only if the max_slots has changed.
+    if (max_slots != cached_max_slots_) {
+        cached_glyph_lines_ = split_to_lines(max_slots);
+        paginate_full_display(char_area_height, pointsize, extravspace);
+    }
+
+    size_t line_length = cached_glyph_lines_.empty()
+                             ? 16
+                             : cached_glyph_lines_[0].indexes.size();
 
     static const std::array<std::string, 16> slot_labels = {
         "0", "1", "2", "3", "4", "5", "6", "7",
@@ -268,14 +310,21 @@ void CairoPainter::draw_page_full_display(
 
     double y_start = top_margin_ + top_code_area_height + extravspace;
 
-    for (size_t i = 0; i < max_lines; ++i) {
-        if (i >= glyph_lines.size()) {
-            break;
-        }
-        const GlyphLine& glyph_line = glyph_lines[i];
+    // Check page number
+    page_nr =
+        std::clamp(page_nr, 0, (int)cached_glyph_line_pagination_.size() - 1);
 
+    auto start_line_it =
+        cached_glyph_lines_.begin() + cached_glyph_line_pagination_[page_nr];
+    auto end_line_it = (page_nr == cached_glyph_line_pagination_.size() - 1)
+                           ? cached_glyph_lines_.end()
+                           : cached_glyph_lines_.begin() +
+                                 cached_glyph_line_pagination_[page_nr + 1];
+
+    for (auto line_it = start_line_it; line_it != end_line_it; ++line_it) {
         // Draw a ruler between encoded and unencoded glyphs, if necessary.
-        if (i > 0 && !glyph_line.encoded && glyph_lines[i - 1].encoded) {
+        if ((line_it != start_line_it) && !line_it->encoded &&
+            std::prev(line_it)->encoded) {
             Cairo::Rectangle line_slot{
                 margin_ + left_code_area_width + extrahspace, y_start,
                 line_length * (extrahspace + pointsize) - extrahspace, 0};
@@ -286,7 +335,7 @@ void CairoPainter::draw_page_full_display(
             y_start += extravspace;
         }
 
-        draw_line_full_display(cr, glyph_line, y_start, left_code_area_width,
+        draw_line_full_display(cr, *line_it, y_start, left_code_area_width,
                                pointsize);
 
         y_start += (extravspace + pointsize);
@@ -632,6 +681,10 @@ double CairoPainter::draw_line_multisize(
 }
 
 void CairoPainter::invalidate_cached_layouts() {
+    cached_glyph_lines_.clear();
+    cached_max_slots_ = 0;
+    cached_glyph_line_pagination_.clear();
+
     cached_sample_text_.clear();
     cached_full_layout_.clear();
     cached_pagination_list_.clear();
