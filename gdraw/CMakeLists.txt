@@ -52,7 +52,6 @@ add_library(gdraw STATIC
   gwidgetP.h
   gwidgets.c
   hotkeys.c
-  xkeysyms_unicode.c
 )
 
 target_link_libraries(gdraw PRIVATE fontforge)
