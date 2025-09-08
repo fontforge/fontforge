@@ -3068,6 +3068,8 @@ static GWindow CharIcon(CharView *cv, FontView *fv) {
     bdf = NULL; bdfc = NULL;
     if ( sc->layers[ly_fore].refs!=NULL || sc->layers[ly_fore].splines!=NULL ) {
 	bdf = fv->show;
+	if ( sc->orig_pos>=bdf->glyphcnt || bdf->glyphs[sc->orig_pos]==NULL )
+	    bdf = fv->filled;
 	if ( sc->orig_pos>=bdf->glyphcnt || bdf->glyphs[sc->orig_pos]==NULL ) {
 	    bdf2 = NULL; bdfc = NULL;
 	    for ( bdf=fv->b.sf->bitmaps; bdf!=NULL && bdf->pixelsize<24 ; bdf=bdf->next )
