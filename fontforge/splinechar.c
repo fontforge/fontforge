@@ -472,7 +472,6 @@ return;
 	free(sc->ttf_instrs);
 	sc->ttf_instrs = NULL;
 	sc->ttf_instrs_len = 0;
-	SCOutOfDateBackground(sc);
     }
 }
 
@@ -508,7 +507,6 @@ return;
 return;
     SCPreserveBackground(sc);
     SCClearLayer(sc,ly_back);
-    SCOutOfDateBackground(sc);
     SCCharChangedUpdate(sc,ly_back);
 }
 
@@ -2768,7 +2766,6 @@ static void SCB_MoreLayers(SplineChar *sc,Layer *old) {
 }
 
 static struct sc_interface noui_sc = {
-    SCUpdateNothing,
     SCUpdateNothing,
     SCUpdateNothing,
     SCHintsChng,

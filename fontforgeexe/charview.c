@@ -2608,7 +2608,6 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 		DrawImageList(cv,pixmap,cv->b.sc->layers[layer].images);
 	}
 	}
-	cv->back_img_out_of_date = false;
 	if ( cv->showhhints || cv->showvhints || cv->showdhints || cv->showblues || cv->showfamilyblues)
 	CVShowHints(cv,pixmap);
 	if ( cv->backimgs!=NULL ) {
@@ -2885,14 +2884,6 @@ static void SC_UpdateAll(SplineChar *sc) {
     }
 }
 
-static void SC_OutOfDateBackground(SplineChar *sc) {
-    CharView *cv;
-
-    for ( cv=(CharView *) (sc->views); cv!=NULL; cv=(CharView *) (cv->b.next) )
-	cv->back_img_out_of_date = true;
-}
-
-
 static void FVRedrawAllCharViewsSF(SplineFont *sf)
 {
     int i;
@@ -2945,8 +2936,6 @@ static void CVUpdateInfo(CharView *cv, GEvent *event) {
 static void CVNewScale(CharView *cv) {
     CharViewTab* tab = CVGetActiveTab(cv);
     GEvent e;
-
-    cv->back_img_out_of_date = true;
 
     GScrollBarSetBounds(cv->vsb,-20000*tab->scale,8000*tab->scale,cv->height);
     GScrollBarSetBounds(cv->hsb,-8000*tab->scale,32000*tab->scale,cv->width);
@@ -3210,7 +3199,6 @@ return;
 	GGadgetMoveAddToY( cv->charselectorPrev, -1*gsize.height );
     }
     GGadgetSetVisible(cv->tabs,makevisible);
-    cv->back_img_out_of_date = true;
     pos.x = 0; pos.y = cv->mbh+cv->charselectorh+cv->infoh;
     pos.width = cv->width; pos.height = cv->height;
     if ( cv->showrulers ) {
@@ -5314,7 +5302,6 @@ static void CVTimer(CharView *cv,GEvent *event) {
 	    else if ( e.u.mouse.y>=cv->height )
 		dy = cv->height/8;
 	    tab->xoff += dx; tab->yoff += dy;
-	    cv->back_img_out_of_date = true;
 	    if ( dy!=0 )
 		GScrollBarSetPos(cv->vsb,tab->yoff-cv->height);
 	    if ( dx!=0 )
@@ -5728,7 +5715,6 @@ static void CVHScrollSetPos( CharView *cv, int newpos )
     if ( newpos!=tab->xoff ) {
 	int diff = newpos-tab->xoff;
 	tab->xoff = newpos;
-	cv->back_img_out_of_date = true;
 	GScrollBarSetPos(cv->hsb,-newpos);
 	GDrawScroll(cv->v,NULL,diff,0);
 	CVRulerLingerMove(cv);
@@ -5828,7 +5814,6 @@ static void CVVScroll(CharView *cv, struct sbevent *sb) {
     if ( newpos!=tab->yoff ) {
 	int diff = newpos-tab->yoff;
 	tab->yoff = newpos;
-	cv->back_img_out_of_date = true;
 	GScrollBarSetPos(cv->vsb,newpos-cv->height);
 	GDrawScroll(cv->v,NULL,0,diff);
 	CVRulerLingerMove(cv);
@@ -6798,23 +6783,18 @@ static void CVMenuShowHints(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e))
     switch ( mi->mid ) {
       case MID_ShowHHints:
 	CVShows.showhhints = cv->showhhints = !cv->showhhints;
-	cv->back_img_out_of_date = true;	/* only this cv */
       break;
       case MID_ShowVHints:
 	CVShows.showvhints = cv->showvhints = !cv->showvhints;
-	cv->back_img_out_of_date = true;	/* only this cv */
       break;
       case MID_ShowDHints:
 	CVShows.showdhints = cv->showdhints = !cv->showdhints;
-	cv->back_img_out_of_date = true;	/* only this cv */
       break;
       case MID_ShowBlueValues:
 	CVShows.showblues = cv->showblues = !cv->showblues;
-	cv->back_img_out_of_date = true;	/* only this cv */
       break;
       case MID_ShowFamilyBlues:
 	CVShows.showfamilyblues = cv->showfamilyblues = !cv->showfamilyblues;
-	cv->back_img_out_of_date = true;	/* only this cv */
       break;
       case MID_ShowAnchors:
 	CVShows.showanchor = cv->showanchor = !cv->showanchor;
@@ -6853,7 +6833,6 @@ static void _CVMenuShowHideRulers(CharView *cv) {
 	cv->height += cv->rulerh;
 	cv->width += cv->rulerh;
     }
-    cv->back_img_out_of_date = true;
     pos.width = cv->width; pos.height = cv->height;
     GDrawMoveResize(cv->v,pos.x,pos.y,pos.width,pos.height);
     GDrawSync(NULL);
@@ -8269,7 +8248,6 @@ static void CVDoClear(CharView *cv) {
 	}
     }
     if ( anyimages )
-	SCOutOfDateBackground(cv->b.sc);
     if ( cv->lastselpt!=NULL || cv->p.sp!=NULL || cv->p.spiro!=NULL || cv->lastselcp!=NULL ) {
 	cv->lastselpt = NULL; cv->p.sp = NULL;
 	cv->p.spiro = cv->lastselcp = NULL;
@@ -9255,7 +9233,6 @@ void CVTransFuncLayer(CharView *cv,Layer *ly,real transform[6], enum fvtrans_fla
 	SplineSetsRound2Int(ly->splines,1.0,cv->b.sc->inspiro && hasspiro(),!anysel);
     if ( ly->images!=NULL ) {
 	ImageListTransform(ly->images,transform,!anysel);
-	SCOutOfDateBackground(cv->b.sc);
     }
     for ( refs = ly->refs; refs!=NULL; refs=refs->next )
 	if ( refs->selected || !anysel )
@@ -10735,7 +10712,6 @@ static void CVMenuClearHints(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)
     if ( mi->mid != MID_ClearDStem ) {
         SCClearHintMasks(cv->b.sc,CVLayer((CharViewBase *) cv),true);
     }
-    SCOutOfDateBackground(cv->b.sc);
     SCUpdateAll(cv->b.sc);
 }
 
@@ -10844,7 +10820,6 @@ return;
         else
 	    SCClearHintMasks(cv->b.sc,layer,true);
     }
-    SCOutOfDateBackground(cv->b.sc);
     SCUpdateAll(cv->b.sc);
 }
 
@@ -13079,7 +13054,6 @@ static void SC_CloseAllWindows(SplineChar *sc) {
 
 struct sc_interface gdraw_sc_interface = {
     SC_UpdateAll,
-    SC_OutOfDateBackground,
     SC_RefreshTitles,
     SC_HintsChanged,
     SC_CharChangedUpdate,

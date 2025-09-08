@@ -126,7 +126,6 @@ static void RH_SetupHint(ReviewHintData *hd) {
     }
     if ( hd->lastactive!=hd->active ) {
 	hd->lastactive = hd->active;
-	SCOutOfDateBackground(hd->cv->b.sc);
 	SCUpdateAll(hd->cv->b.sc);	/* Changing the active Hint means we should redraw everything */
     }
     RH_SetNextPrev(hd);
@@ -253,7 +252,6 @@ return( true );
 		if ( hd->active->hasconflicts )
 		    GHVBoxFitWindow(GWidgetGetControl(hd->gw,CID_TopBox));
 	    }
-	    SCOutOfDateBackground(hd->cv->b.sc);
 	    SCUpdateAll(hd->cv->b.sc);
 	}
     }
@@ -282,7 +280,6 @@ static void Do_OKRegen(ReviewHintData *hd) {
 	    SCFigureHintMasks(hd->cv->b.sc,CVLayer((CharViewBase *) (hd->cv)));
     }
     /* Everything else got done as we went along... */
-    SCOutOfDateBackground(hd->cv->b.sc);
     SCUpdateAll(hd->cv->b.sc);
     SCHintsChanged(hd->cv->b.sc);
     hd->done = true;
@@ -306,7 +303,6 @@ static void DoCancel(ReviewHintData *hd) {
     hd->cv->b.sc->manualhints = hd->oldmanual;
     if ( hd->undocreated )
 	SCDoUndo(hd->cv->b.sc,ly_fore);
-    SCOutOfDateBackground(hd->cv->b.sc);
     SCUpdateAll(hd->cv->b.sc);
     hd->done = true;
 }
@@ -343,7 +339,6 @@ return( true );			/* Eh? */
 	hd->changed = true;
 	StemInfoFree( hd->active );
 	hd->active = prev;
-	SCOutOfDateBackground(hd->cv->b.sc);
 	RH_SetupHint(hd);
 	/*SCUpdateAll(hd->cv->b.sc);*/	/* Done in RH_SetupHint now */
     }
@@ -709,7 +704,6 @@ return(true);
 	    SCModifyHintMasksAdd(hd->cv->b.sc,layer,h);
 	else
 	    SCClearHintMasks(hd->cv->b.sc,layer,true);
-	SCOutOfDateBackground(hd->cv->b.sc);
 	SCUpdateAll(hd->cv->b.sc);
 	hd->done = true;
     }

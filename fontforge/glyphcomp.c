@@ -1064,7 +1064,6 @@ static void SCAddBackgrounds(SplineChar *sc1,SplineChar *sc2) {
     SplineSet *last;
     RefChar *ref;
 
-    SCOutOfDateBackground(sc1);
     SplinePointListsFree(sc1->layers[ly_back].splines);
     sc1->layers[ly_back].splines = SplinePointListCopy(sc2->layers[ly_fore].splines);
     if ( sc1->layers[ly_back].splines!=NULL )

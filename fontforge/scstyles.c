@@ -3468,7 +3468,6 @@ void SCCondenseExtend(struct counterinfo *ci,SplineChar *sc, int layer,
 	StemInfosFree(sc->vstem); sc->vstem=NULL;
 	StemInfosFree(sc->hstem); sc->hstem=NULL;
 	DStemInfosFree(sc->dstem); sc->dstem=NULL;
-	SCOutOfDateBackground(sc);
     }
     SCCharChangedUpdate(sc,layer);
 }
@@ -4090,7 +4089,6 @@ static void SCEmbolden(SplineChar *sc, struct lcg_zones *zones, int layer) {
 	StemInfosFree(sc->vstem); sc->vstem=NULL;
 	StemInfosFree(sc->hstem); sc->hstem=NULL;
 	DStemInfosFree(sc->dstem); sc->dstem=NULL;
-	SCOutOfDateBackground(sc);
     }
     SCCharChangedUpdate(sc,layer);
 }
