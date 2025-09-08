@@ -261,7 +261,6 @@ static void SplashLayout() {
 #ifdef FONTFORGE_CONFIG_USE_DOUBLE
     uc_strcat(pt,"-D");
 #endif
-    uc_strcat(pt, "-GDK3");
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
     lines[linecnt] = NULL;
@@ -650,7 +649,6 @@ int fontforge_main( int argc, char **argv ) {
 #ifdef FONTFORGE_CONFIG_USE_DOUBLE
 	        "-D"
 #endif
-            "-GDK3"
 #ifdef BUILT_WITH_XORG
             "-Xorg"
 #endif
