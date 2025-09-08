@@ -2610,11 +2610,6 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	}
 	if ( cv->showhhints || cv->showvhints || cv->showdhints || cv->showblues || cv->showfamilyblues)
 	CVShowHints(cv,pixmap);
-	if ( cv->backimgs!=NULL ) {
-	    GRect r;
-	    r.x = r.y = 0; r.width = cv->width; r.height = cv->height;
-	    GDrawDrawPixmap(pixmap,cv->backimgs,&r,0,0);
-	}
 	if ( cv->showgrids || cv->b.drawmode==dm_grid ) {
 	    CVDrawSplineSet(cv,pixmap,cv->b.fv->sf->grid.splines,guideoutlinecol,
 		    cv->showpoints && cv->b.drawmode==dm_grid,&clip);
@@ -5683,9 +5678,6 @@ return;
 
 	if ( newwidth == cv->width && newheight == cv->height )
 return;
-	if ( cv->backimgs!=NULL )
-	    GDrawDestroyWindow(cv->backimgs);
-	cv->backimgs = NULL;
 
 	/* MenuBar takes care of itself */
 	GDrawResize(cv->v,newwidth,newheight);
@@ -5978,10 +5970,6 @@ return( GGadgetDispatchEvent(cv->vsb,event));
       case et_destroy:
 	CVUnlinkView(cv);
 	CVPalettesHideIfMine(cv);
-	if ( cv->backimgs!=NULL ) {
-	    GDrawDestroyWindow(cv->backimgs);
-	    cv->backimgs = NULL;
-	}
 	if ( cv->icon!=NULL ) {
 	    GDrawDestroyWindow(cv->icon);
 	    cv->icon = NULL;
@@ -12797,12 +12785,6 @@ static int nested_cv_e_h(GWindow gw, GEvent *event) {
       case et_resize:
 	if ( event->u.resize.sized )
 	    CVResize(cv);
-      break;
-      case et_destroy:
-	if ( cv->backimgs!=NULL ) {
-	    GDrawDestroyWindow(cv->backimgs);
-	    cv->backimgs = NULL;
-	}
       break;
       case et_mouseup: case et_mousedown:
 	GGadgetEndPopup();

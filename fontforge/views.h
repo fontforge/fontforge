@@ -237,7 +237,6 @@ typedef struct charview {
     int end_intersection_snapped;
     GFont *rfont;
     GTimer *pressed;
-    GWindow backimgs;
     GIC *gic;
     GIC *gwgic;
     int width, height;
