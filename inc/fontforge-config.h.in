@@ -88,10 +88,6 @@
 
 /* FontForge feature detection */
 
-#cmakedefine _NO_XKB 1
-
-#cmakedefine _NO_XINPUT 1
-
 #cmakedefine FONTFORGE_CAN_USE_WOFF2 1
 
 #cmakedefine _NO_FFSCRIPT 1

@@ -547,7 +547,7 @@ static void ensureDotFontForgeIsSetup() {
     free(basedir);
 }
 
-#if defined(__MINGW32__) && !defined(_NO_LIBCAIRO)
+#if defined(__MINGW32__)
 /**
  * \brief Load fonts from the specified folder for the UI to use.
  * This should only be used if Cairo is used on Windows, which defaults to the
@@ -648,9 +648,6 @@ int fontforge_main( int argc, char **argv ) {
 #endif
 #ifdef FONTFORGE_CONFIG_USE_DOUBLE
 	        "-D"
-#endif
-#ifdef BUILT_WITH_XORG
-            "-Xorg"
 #endif
 	        ".\n",
 	        FONTFORGE_MODTIME_STR );
@@ -802,7 +799,7 @@ int fontforge_main( int argc, char **argv ) {
     gdk_set_allowed_backends("win32,quartz,x11");
     gtk_init(&argc, &argv);
     ensureDotFontForgeIsSetup();
-#if defined(__MINGW32__) && !defined(_NO_LIBCAIRO)
+#if defined(__MINGW32__)
     //Load any custom fonts for the user interface
     if (use_cairo) {
         const char *system_load = getShareDir();

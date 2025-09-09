@@ -73,9 +73,6 @@ function(fontforge_generate_config template destination)
   endif()
 
   # Configurable features
-  _set_negated(_NO_XKB "${X11_Xkb_FOUND}")
-  _set_negated(_NO_XINPUT "${X11_Xi_FOUND}")
-
   set(FONTFORGE_CAN_USE_WOFF2 ${ENABLE_WOFF2_RESULT})
 
   _set_negated(_NO_FFSCRIPT "${ENABLE_NATIVE_SCRIPTING}")
