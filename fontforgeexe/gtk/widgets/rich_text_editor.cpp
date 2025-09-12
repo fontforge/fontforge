@@ -95,21 +95,20 @@ guint8* ff_xml_serialize(const Glib::RefPtr<Gtk::TextBuffer>& content_buffer,
 
         while (!closing_tags.empty() && !open_tags.empty()) {
             const std::string& last_open_tag = open_tags.top();
-            auto it = std::find_if(
+            auto tag_it = std::find_if(
                 closing_tags.begin(), closing_tags.end(),
                 [last_open_tag](Glib::RefPtr<const Gtk::TextTag> closing_tag) {
                     return closing_tag->property_name() == last_open_tag;
                 });
-            if (it == closing_tags.end()) {
+            if (tag_it == closing_tags.end()) {
                 // Closing tag is conflicting with the open tags stack
                 temporarily_closed_tags.push(last_open_tag);
-                open_tags.pop();
             } else {
                 // Closing tag correctly corresponds to the latest open tag
-                open_tags.pop();
-                closing_tags.erase(it);
+                closing_tags.erase(tag_it);
             }
             dump_tag(unicode_buffer, last_open_tag, false);
+            open_tags.pop();
         }
 
         if (!closing_tags.empty()) {
