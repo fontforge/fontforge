@@ -30,6 +30,7 @@
 #include <iostream>
 #include <cstring>
 
+#include "intl.h"
 #include "../utils.hpp"
 
 namespace ff::widget {
@@ -63,11 +64,26 @@ void dump_character(Glib::ustring& unicode_buffer, const gunichar& character) {
 
 void dump_tag(Glib::ustring& unicode_buffer, const Glib::ustring& tag_name,
               bool opening) {
+    // By convention, TextBuffer::Tag name may come in the format
+    // "tag_name|tag_value". This format should be dumped as <tag_name
+    // value="tag_value">.
+    std::string name, value;
+    size_t delim = tag_name.find('|');
+    if (delim != std::string::npos) {
+        name = tag_name.substr(0, delim);
+        value = tag_name.substr(delim + 1);
+    } else {
+        name = tag_name;
+    }
+
     unicode_buffer.push_back('<');
     if (!opening) {
         unicode_buffer.push_back('/');
     }
-    unicode_buffer += tag_name;
+    unicode_buffer += name;
+    if (opening && !value.empty()) {
+        unicode_buffer += " value=\"" + value + '\"';
+    }
     unicode_buffer.push_back('>');
 }
 
@@ -171,8 +187,12 @@ RichTechEditor::RichTechEditor() {
         Gtk::make_managed<ToggleTagButton>(text_view_.get_buffer(), italic_tag);
     italic_button->set_icon_name("format-text-italic");
 
+    TagComboBox* stretch_combo =
+        Gtk::make_managed<TagComboBox>(text_view_.get_buffer());
+
     toolbar_.append(*bold_button);
     toolbar_.append(*italic_button);
+    toolbar_.append(*stretch_combo);
 
     toolbar_.set_hexpand();
 
@@ -249,6 +269,74 @@ void RichTechEditor::ToggleTagButton::on_buffer_cursor_changed(
         (Gtk::ToggleToolButton*)this, &ToggleTagButton::signal_toggled,
         sigc::mem_fun(*this, &ToggleTagButton::on_button_toggled),
         [this, button_active]() { set_active(button_active); });
+}
+
+RichTechEditor::TagComboBox::TagComboBox(
+    Glib::RefPtr<Gtk::TextBuffer> text_buffer)
+    : text_buffer_(text_buffer) {
+    // Lazy initialize statics
+    if (default_id_.empty()) {
+        default_id_ = "width|medium";
+    }
+    if (property_vec_.empty()) {
+        // By convention, TextBuffer::Tag with name e.g. "width|condensed" will
+        // be exported to XML tag as <width value="condensed">. Unlike in XML,
+        // TextBuffer tags must have unique names.
+        property_vec_ = {
+            {"width|ultra-condensed", _("Ultra-Condensed (50%)"),
+             Pango::STRETCH_ULTRA_CONDENSED},
+            {"width|extra-condensed", _("Extra-Condensed (62.5%)"),
+             Pango::STRETCH_EXTRA_CONDENSED},
+            {"width|condensed", _("Condensed (75%)"), Pango::STRETCH_CONDENSED},
+            {"width|semi-condensed", _("Semi-Condensed (87.5%)"),
+             Pango::STRETCH_SEMI_CONDENSED},
+            {"width|medium", _("Medium (100%)"), Pango::STRETCH_NORMAL},
+            {"width|semi-expanded", _("Semi-Expanded (112.5%)"),
+             Pango::STRETCH_SEMI_EXPANDED},
+            {"width|expanded", _("Expanded (125%)"), Pango::STRETCH_EXPANDED},
+            {"width|extra-expanded", _("Extra-Expanded (150%)"),
+             Pango::STRETCH_EXTRA_EXPANDED},
+            {"width|ultra-expanded", _("Ultra-Expanded (200%)"),
+             Pango::STRETCH_ULTRA_EXPANDED},
+        };
+    }
+
+    for (const auto& [tag_id, label, property] : property_vec_) {
+        // Create and register tag
+        if (tag_id != default_id_) {
+            auto tag = text_buffer_->create_tag(tag_id);
+            tag->property_stretch() = property;
+            tag_map_[tag_id] = tag;
+        }
+
+        // Add entry to combo box
+        combo_box_.append(tag_id, label);
+    }
+
+    add(combo_box_);
+
+    combo_box_.signal_changed().connect(
+        sigc::mem_fun(*this, &TagComboBox::on_box_changed));
+}
+
+void RichTechEditor::TagComboBox::toggle_tag(
+    const Gtk::TextBuffer::iterator& start,
+    const Gtk::TextBuffer::iterator& end) {
+    // Remove all other tags from this group, except the new one.
+    for (const auto& [tag_id, tag] : tag_map_) {
+        if (tag_id != default_id_ && tag_id != combo_box_.get_active_id()) {
+            text_buffer_->remove_tag(tag, start, end);
+        } else if (tag_id == combo_box_.get_active_id()) {
+            text_buffer_->apply_tag(tag, start, end);
+        }
+    }
+}
+
+void RichTechEditor::TagComboBox::on_box_changed() {
+    Gtk::TextBuffer::iterator start, end;
+    if (text_buffer_->get_selection_bounds(start, end)) {
+        toggle_tag(start, end);
+    }
 }
 
 }  // namespace ff::widget

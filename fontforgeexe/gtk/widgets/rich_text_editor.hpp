@@ -81,6 +81,30 @@ class RichTechEditor : public Gtk::Grid {
         Glib::RefPtr<Gtk::TextTag> tag_;
     };
 
+    class TagComboBox : public Gtk::ToolItem {
+     public:
+        TagComboBox(Glib::RefPtr<Gtk::TextBuffer> text_buffer);
+
+        void toggle_tag(const Gtk::TextBuffer::iterator& start,
+                        const Gtk::TextBuffer::iterator& end);
+
+        // Apply the tag to the current selection, if there is any. We don't
+        // want to override Gtk::ComboBox::on_changed(), we want to be able to
+        // disconnect it.
+        void on_box_changed();
+
+     protected:
+        std::string default_id_;
+        std::vector<std::tuple<std::string /*id*/, std::string /*label*/,
+                               Pango::Stretch>>
+            property_vec_;
+        std::map<std::string /*id*/, Glib::RefPtr<Gtk::TextTag>> tag_map_;
+
+        Glib::RefPtr<Gtk::TextBuffer> text_buffer_;
+
+        Gtk::ComboBoxText combo_box_;
+    };
+
  protected:
     Gtk::Toolbar toolbar_;
     Gtk::ScrolledWindow scrolled_;
