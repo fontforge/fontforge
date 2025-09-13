@@ -37,4 +37,9 @@ target_link_libraries(ffgtk PUBLIC
   ffgtk_widgets
   fontforge
   PkgConfig::GTKMM
+  PkgConfig::FontConfig
 )
+
+# FontConfig must be found before Mono's bundled fontconfig headers (injected
+# transitively by GTKMM on macOS). Force the pkg-config include path first.
+target_include_directories(ffgtk BEFORE PUBLIC ${FontConfig_INCLUDE_DIRS})
