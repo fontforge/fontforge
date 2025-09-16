@@ -831,6 +831,16 @@ CairoFontFamily create_cairo_family(SplineFont* current_sf) {
     return family;
 }
 
+bool tags_match(const std::string& opening_tag,
+                const std::string& closing_tag) {
+    // Compare the opening tag without the attributes (which may be present
+    // after the space delimiter or not present at all).
+    size_t space_in_opening_tag = opening_tag.find(' ');
+    // Compare with the closing tag without its leading slash character.
+    return opening_tag.compare(0, space_in_opening_tag, closing_tag, 1,
+                               std::string::npos) == 0;
+}
+
 ParsedRichText parse_xml_stream(std::istream& input) {
     std::string text, tag;
     // Array of text blocks as follows: (text block, list of tags applied on
@@ -844,7 +854,7 @@ ParsedRichText parse_xml_stream(std::istream& input) {
         }
         if (tag.size() > 0 && tag.front() == '/') {
             if (!current_tags.empty() &&
-                (tag.compare(1, std::string::npos, current_tags.back()) == 0)) {
+                tags_match(tag, current_tags.back()) == 0) {
                 current_tags.pop_back();
             } else {
                 std::cerr << "Rich text XML parser failed at tag \"" << tag
