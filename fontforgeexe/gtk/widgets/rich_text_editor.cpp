@@ -208,6 +208,10 @@ RichTechEditor::RichTechEditor() {
     attach(scrolled_, 0, 1);
 }
 
+///////////////////////////////////////////////////////////////////////
+///               RichTechEditor::ToggleTagButton                   ///
+///////////////////////////////////////////////////////////////////////
+
 RichTechEditor::ToggleTagButton::ToggleTagButton(
     Glib::RefPtr<Gtk::TextBuffer> text_buffer, Glib::RefPtr<Gtk::TextTag> tag)
     : text_buffer_(text_buffer), tag_(tag) {
@@ -271,6 +275,10 @@ void RichTechEditor::ToggleTagButton::on_buffer_cursor_changed(
         [this, button_active]() { set_active(button_active); });
 }
 
+///////////////////////////////////////////////////////////////////////
+///                 RichTechEditor::TagComboBox                     ///
+///////////////////////////////////////////////////////////////////////
+
 RichTechEditor::TagComboBox::TagComboBox(
     Glib::RefPtr<Gtk::TextBuffer> text_buffer)
     : text_buffer_(text_buffer) {
@@ -313,13 +321,28 @@ RichTechEditor::TagComboBox::TagComboBox(
         combo_box_.append(tag_id, label);
     }
 
+    combo_box_.set_active_id(default_id_);
+    combo_box_.set_focus_on_click(false);
     add(combo_box_);
 
-    combo_box_.signal_changed().connect(
-        sigc::mem_fun(*this, &TagComboBox::on_box_changed));
+    // Called whenever the selection or the cursor position is changed. Sets the
+    // correct visual state of the widget
+    text_buffer_->signal_mark_set().connect(
+        sigc::mem_fun(*this, &TagComboBox::on_buffer_cursor_changed));
+
+    // Called whenever a character is typed into the buffer. Set the tag on this
+    // character according to the widget state.
+    text_buffer_->signal_insert().connect(
+        [this](const Gtk::TextBuffer::iterator& pos, const Glib::ustring& text,
+               int bytes) {
+            Gtk::TextBuffer::iterator start = pos;
+            if (start.backward_chars(text.size())) {
+                apply_tag(start, pos);
+            }
+        });
 }
 
-void RichTechEditor::TagComboBox::toggle_tag(
+void RichTechEditor::TagComboBox::apply_tag(
     const Gtk::TextBuffer::iterator& start,
     const Gtk::TextBuffer::iterator& end) {
     // Remove all other tags from this group, except the new one.
@@ -335,8 +358,76 @@ void RichTechEditor::TagComboBox::toggle_tag(
 void RichTechEditor::TagComboBox::on_box_changed() {
     Gtk::TextBuffer::iterator start, end;
     if (text_buffer_->get_selection_bounds(start, end)) {
-        toggle_tag(start, end);
+        apply_tag(start, end);
     }
+}
+
+std::string RichTechEditor::TagComboBox::get_active_tag(
+    const Gtk::TextBuffer::iterator& start,
+    const Gtk::TextBuffer::iterator& end) {
+    // We are only interested in tags controlled by this widget. Check if any
+    // controlled tag is active at the start.
+    auto active_tags = start.get_tags();
+    for (const auto& tag : active_tags) {
+        Glib::ustring tag_id = tag->property_name();
+        if (tag_map_.count(tag_id) > 0) {
+            // We found an active controlled tag in the set. Check if it remains
+            // active throughout the selection.
+            auto start_copy = start;
+            // TODO: Remove this cast in GTKMM4.
+            start_copy.forward_to_tag_toggle(
+                Glib::RefPtr<Gtk::TextTag>::cast_const(tag));
+            if (start_copy >= end) {
+                return tag_id;
+            }
+            return "";  // Nothing is consistently active throughout the
+                        // selection
+        }
+    }
+
+    // No controlled tag is active at the start. Check if any tag become active
+    // before the end.
+    for (const auto& [id, tag] : tag_map_) {
+        auto start_copy = start;
+        start_copy.forward_to_tag_toggle(tag);
+        if (start_copy < end) {
+            // Controlled tag  activated, nothing is consistently active
+            // throughout the selection
+            return "";
+        }
+    }
+
+    return default_id_;
+}
+
+void RichTechEditor::TagComboBox::on_buffer_cursor_changed(
+    const Gtk::TextBuffer::iterator&,
+    const Glib::RefPtr<Gtk::TextBuffer::Mark>& mark) {
+    if (mark->get_name() != "insert") {
+        return;
+    }
+
+    Gtk::TextBuffer::iterator start, end;
+    if (!text_buffer_->get_selection_bounds(start, end)) {
+        start--;
+    }
+
+    std::string active_id = get_active_tag(start, end);
+
+    ui_utils::gtk_set_widget_state_without_event(
+        (Gtk::ComboBox*)&combo_box_, &Gtk::ComboBox::signal_changed,
+        sigc::mem_fun(*this, &TagComboBox::on_box_changed),
+        [this, active_id]() {
+            if (active_id.empty()) {
+                // Gtk::ComboBox continues to show the last active item even
+                // after it was unset. The following hack addresses it.
+                combo_box_.insert(0, "empty", "");
+                combo_box_.set_active_id("empty");
+                combo_box_.remove_text(0);
+            } else {
+                combo_box_.set_active_id(active_id);
+            }
+        });
 }
 
 }  // namespace ff::widget
