@@ -66,14 +66,17 @@ const int subrslens[] = { sizeof(subrs0), sizeof(subrs1), sizeof(subrs2),
 	sizeof(subrs3), sizeof(subrs4), sizeof(subrs5), sizeof(subrs6),
 	sizeof(subrs7), sizeof(subrs8), sizeof(subrs9) };
 
+	/* This code to be used for Flex and hint replacement. */
+	/* Version 1.1 */
 static const char *copyright[] = {
-	"% Copyright (c) 1987-1990 Adobe Systems Incorporated.",
+	"% Copyright 2014 Adobe Systems Incorporated (http://www.adobe.com/).",
 	"% All Rights Reserved.",
-	"% This code to be used for Flex and hint replacement.",
-	"% Version 1.1",
+	"% This software is licensed as OpenSource, under the Apache License, Version 2.0.",
+	"% This license is available at: http://opensource.org/licenses/Apache-2.0.",
 	NULL
 };
 
+/* https://github.com/adobe-type-tools/afdko/blob/5.0.0/c/shared/t1write/t1write_flexothers.h */
 static const char *othersubrs0[] = {
 	"systemdict /internaldict known",
 	"{1183615869 systemdict /internaldict get exec",
@@ -239,16 +242,19 @@ static const char *othersubrs0[] = {
 	NULL
 };
 
+/* https://github.com/adobe-type-tools/afdko/blob/5.0.0/c/shared/t1write/t1write_flexothers.h */
 static const char *othersubrs1[] = {
 	"{gsave currentpoint newpath moveto} executeonly",
 	NULL
 };
 
+/* https://github.com/adobe-type-tools/afdko/blob/5.0.0/c/shared/t1write/t1write_flexothers.h */
 static const char *othersubrs2[] = {
 	"{currentpoint grestore gsave currentpoint newpath moveto} executeonly",
 	NULL
 };
 
+/* https://github.com/adobe-type-tools/afdko/blob/5.0.0/c/shared/t1write/t1write_flexothers.h */
 static const char *othersubrs3[] = {
 	"{systemdict /internaldict known not",
 	"{pop 3}",
@@ -270,6 +276,7 @@ static const char *othersubrs4_12[] = {
 	NULL
 };
 
+/* https://github.com/adobe-type-tools/afdko/blob/5.0.0/c/shared/t1write/t1write_gcothers.h */
 static const char *othersubrs13[] = {
 	"{2 {cvi {{pop 0 lt {exit} if} loop} repeat} repeat}",	/* Other Subr 13 for counter hints */
 	NULL
@@ -311,6 +318,10 @@ const char *erode[] = {
 
 /* from Adobe Technical Specification #5014, Adobe CMap and CIDFont Files */
 /* Specification, Version 1.0. */
+/* https://github.com/adobe-type-tools/afdko/blob/5.0.0/c/shared/t1write/t1write_gcothers.h
+   Copyright 2014 Adobe Systems Incorporated (http://www.adobe.com/). All Rights Reserved.
+   This software is licensed as OpenSource, under the Apache License, Version 2.0.
+   This license is available at: http://opensource.org/licenses/Apache-2.0. */
 const char *cid_othersubrs[] = {
 	"[ {} {} {}",
 	"  { systemdict /internaldict known not",
