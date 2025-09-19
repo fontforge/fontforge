@@ -31,7 +31,6 @@
 
 #include "ggdkdrawP.h"
 
-#ifdef FONTFORGE_CAN_USE_GDK
 
 #include "gkeysym.h"
 #include "gresource.h"
@@ -2376,7 +2375,6 @@ static struct displayfuncs gdkfuncs = {
 
     GGDKDrawGetFontMetrics,
 
-    GGDKDrawHasCairo,
     GGDKDrawPathStartNew,
     GGDKDrawPathClose,
     GGDKDrawPathMoveTo,
@@ -2608,4 +2606,3 @@ void _GGDKDraw_DestroyDisplay(GDisplay *disp) {
     return;
 }
 
-#endif // FONTFORGE_CAN_USE_GDK

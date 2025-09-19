@@ -438,19 +438,9 @@ typedef struct layer /* : reflayer */ {
     int python_persistent_has_lists;
 } Layer;
 
-enum linelist_flags { cvli_onscreen = 0x1, cvli_clipped = 0x2 };
-
 typedef struct linelist {
     IPoint here;
     struct linelist* next;
-    /* The first two fields are constant for the linelist, the next ones */
-    /*  refer to a particular screen. If some portion of the line from */
-    /*  this point to the next one is on the screen then set cvli_onscreen */
-    /*  if this point needs to be clipped then set cvli_clipped */
-    /*  asend and asstart are the actual screen locations where this point */
-    /*  intersects the clip edge. */
-    enum linelist_flags flags;
-    IPoint asend, asstart;
 } LineList;
 
 typedef struct linearapprox {

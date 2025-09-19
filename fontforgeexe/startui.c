@@ -99,9 +99,6 @@ static void _dousage(void) {
 #if MyMemory
     printf( "\t-memory\t\t\t (turns on memory checks, debugging)\n" );
 #endif
-#ifndef _NO_LIBCAIRO
-    printf( "\t-usecairo=yes|no  Use (or not) the cairo library for drawing\n" );
-#endif
     printf( "\t-help\t\t\t (displays this message, and exits)\n" );
     printf( "\t-docs\t\t\t (displays this message, invokes a browser)\n\t\t\t\t (Using the BROWSER environment variable)\n" );
     printf( "\t-version\t\t (prints the version of fontforge and exits)\n" );
@@ -263,11 +260,6 @@ static void SplashLayout() {
 #endif
 #ifdef FONTFORGE_CONFIG_USE_DOUBLE
     uc_strcat(pt,"-D");
-#endif
-#ifdef FONTFORGE_CAN_USE_GDK
-    uc_strcat(pt, "-GDK3");
-#else
-    uc_strcat(pt,"-X11");
 #endif
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
@@ -555,7 +547,7 @@ static void ensureDotFontForgeIsSetup() {
     free(basedir);
 }
 
-#if defined(__MINGW32__) && !defined(_NO_LIBCAIRO)
+#if defined(__MINGW32__)
 /**
  * \brief Load fonts from the specified folder for the UI to use.
  * This should only be used if Cairo is used on Windows, which defaults to the
@@ -656,12 +648,6 @@ int fontforge_main( int argc, char **argv ) {
 #endif
 #ifdef FONTFORGE_CONFIG_USE_DOUBLE
 	        "-D"
-#endif
-#ifdef FONTFORGE_CAN_USE_GDK
-            "-GDK3"
-#endif
-#ifdef BUILT_WITH_XORG
-            "-Xorg"
 #endif
 	        ".\n",
 	        FONTFORGE_MODTIME_STR );
@@ -771,13 +757,7 @@ int fontforge_main( int argc, char **argv ) {
 	else if ( strcmp(pt,"-memory")==0 )
 	    __malloc_debug(5);
 # endif
-	else if ( strncmp(pt,"-usecairo",strlen("-usecairo"))==0 ) {
-	    if ( strcmp(pt,"-usecairo=no")==0 )
-	        use_cairo = false;
-	    else
-	        use_cairo = true;
-	    GDrawEnableCairo(use_cairo);
-	} else if ( strcmp(pt,"-nosplash")==0 )
+	else if ( strcmp(pt,"-nosplash")==0 )
 	    splash = 0;
 	else if ( strcmp(pt,"-quiet")==0 )
 	    /* already checked for this earlier, no need to do it again */;
@@ -816,12 +796,10 @@ int fontforge_main( int argc, char **argv ) {
 	else if ( strcmp(pt,"-home")==0 )
 	    /* already did a chdir earlier, don't need to do it again */;
     }
-#ifdef FONTFORGE_CAN_USE_GDK
     gdk_set_allowed_backends("win32,quartz,x11");
     gtk_init(&argc, &argv);
-#endif
     ensureDotFontForgeIsSetup();
-#if defined(__MINGW32__) && !defined(_NO_LIBCAIRO)
+#if defined(__MINGW32__)
     //Load any custom fonts for the user interface
     if (use_cairo) {
         const char *system_load = getShareDir();
@@ -894,9 +872,7 @@ int fontforge_main( int argc, char **argv ) {
     wattrs.utf8_window_title = "FontForge";
     wattrs.border_width = 2;
     wattrs.background_color = splashbg;
-#ifdef FONTFORGE_CAN_USE_GDK
     wattrs.is_dlg = true;
-#endif
     pos.x = pos.y = 200;
     SplashImageInit();
     pos.width = splashimagep->u.image->width;
@@ -967,7 +943,6 @@ exit( 0 );
 		    strcmp(pt,"-nosplash")==0 || strcmp(pt,"-recover=none")==0 ||
 		    strcmp(pt,"-recover=clean")==0 || strcmp(pt,"-recover=auto")==0 ||
 		    strcmp(pt,"-dontopenxdevices")==0 || strcmp(pt,"-unique")==0 ||
-		    strncmp(pt,"-usecairo",strlen("-usecairo"))==0 ||
 		    strcmp(pt,"-home")==0 || strcmp(pt,"-quiet")==0
 		    || strcmp(pt,"-forceuihidden")==0 )
 	    /* Already done, needed to be before display opened */;

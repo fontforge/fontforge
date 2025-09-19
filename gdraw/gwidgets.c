@@ -31,92 +31,10 @@
 #include "ggadget.h"
 #include "gwidgetP.h"
 
-#ifndef FONTFORGE_CAN_USE_GDK
-/* Temporarily do all drawing in this widget to a pixmap rather than the window */
-/*  if events are orderly then we can share one pixmap for all windows */
-static GWindow pixmap, cairo_pixmap;
-/*  otherwise we create and destroy pixmaps */
-
-GWindow _GWidget_GetPixmap(GWindow gw,GRect *rect) {
-    GWindow ours;
-
-    if ( gw->display!=screen_display )
-return( gw );
-    if ( gw->is_pixmap )
-return( gw );
-#ifdef UsingPThreads
-    this is a critical section if there are multiple pthreads
-#endif
-    if ( GDrawHasCairo(gw)&gc_alpha ) {
-	if ( cairo_pixmap==NULL || cairo_pixmap->pos.width<rect->x+rect->width ||
-			     cairo_pixmap->pos.height<rect->y+rect->height ) {
-	    if ( cairo_pixmap!=NULL )
-		GDrawDestroyWindow(cairo_pixmap);
-	    /* The 0x8000 on width is a hack to tell create pixmap to use*/
-	    /*  cairo convas */
-	    cairo_pixmap = GDrawCreatePixmap(gw->display,gw,0x8000|gw->pos.width,gw->pos.height);
-	}
-	ours = cairo_pixmap;
-	cairo_pixmap = NULL;
-    } else {
-	if ( pixmap==NULL || pixmap->pos.width<rect->x+rect->width ||
-			     pixmap->pos.height<rect->y+rect->height ) {
-	    if ( pixmap!=NULL )
-		GDrawDestroyWindow(pixmap);
-	    pixmap = GDrawCreatePixmap(gw->display,gw,gw->pos.width,gw->pos.height);
-	}
-	ours = pixmap;
-	pixmap = NULL;
-    }
-#ifdef UsingPThreads
-    End critical section
-#endif
-    if ( ours==NULL )
-	ours = gw;
-    else {
-	GWidgetD *gd = (GWidgetD *) (gw->widget_data);
-	ours->widget_data = gd;
-	gd->w = ours;
-	GDrawFillRect(ours,rect,gw->ggc->bg);
-    }
-return( ours );
-}
-#else
 GWindow _GWidget_GetPixmap(GWindow gw,GRect *rect) {
 	GDrawFillRect(gw, rect, gw->ggc->bg);
     return gw;
 }
-#endif /* FONTFORGE_CAN_USE_GDK */
 
 void _GWidget_RestorePixmap(GWindow gw, GWindow ours, GRect *rect) {
-#ifndef FONTFORGE_CAN_USE_GDK
-    GWidgetD *gd = (GWidgetD *) (gw->widget_data);
-
-    if ( gw==ours )
-return;				/* it wasn't a pixmap, all drawing was to real window */
-    GDrawDrawPixmap(gw, ours, rect, rect->x, rect->y);
-    
-#ifdef UsingPThreads
-    this is a critical section if there are multiple pthreads
-#endif
-    if ( GDrawHasCairo(gw)&gc_alpha ) {
-	if ( cairo_pixmap!=NULL )
-	    GDrawDestroyWindow(ours);
-	else {
-	    cairo_pixmap = ours;
-	    ours->widget_data = NULL;
-	}
-    } else {
-	if ( pixmap!=NULL )
-	    GDrawDestroyWindow(ours);
-	else {
-	    pixmap = ours;
-	    ours->widget_data = NULL;
-	}
-    }
-    gd->w = gw;
-#ifdef UsingPThreads
-    End critical section
-#endif
-#endif /* FONTFORGE_CAN_USE_GDK */
 }

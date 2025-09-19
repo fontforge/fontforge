@@ -380,7 +380,7 @@ static void FVDrawGlyph(GWindow pixmap, FontView *fv, int index, int request_exp
 			j*fv->cbw+(fv->cbw-1-fv->magnify*xwidth)/2,
 			i*fv->cbh+fv->lab_height+1+fv->magnify*(fv->show->ascent-bdfc->ymax),
 			fv->magnify*base.width,fv->magnify*base.height);
-	    } else if ( (GDrawHasCairo(pixmap)&gc_alpha) && base.image_type==it_index ) {
+	    } else if ( base.image_type==it_index ) {
 		GDrawDrawGlyph(pixmap,&gi,NULL,
 			j*fv->cbw+(fv->cbw-1-xwidth)/2,
 			i*fv->cbh+fv->lab_height+1+fv->show->ascent-bdfc->ymax);
@@ -7026,14 +7026,6 @@ void FontViewRemove(FontView *fv) {
     FontViewFree(&fv->b);
 }
 
-#ifndef FONTFORGE_CAN_USE_GDK
-/**
- * In some cases fontview gets an et_selclear event when using copy
- * and paste on the OSX. So this guard lets us quietly ignore that
- * event when we have just done command+c or command+x.
- */
-extern int osx_fontview_copy_cut_counter;
-#endif
 
 static FontView* ActiveFontView = 0;
 
@@ -7056,17 +7048,6 @@ return( GGadgetDispatchEvent(fv->vsb,event));
 	  }
 	  break;
       case et_selclear:
-#if defined(__Mac) && !defined(FONTFORGE_CAN_USE_GDK)
-	  // For some reason command + c and command + x wants
-	  // to send a clear to us, even if that key was pressed
-	  // on a charview.
-	  if( osx_fontview_copy_cut_counter )
-	  {
-	     osx_fontview_copy_cut_counter--;
-	     break;
-          }
-//	  printf("fontview et_selclear\n");
-#endif
 	ClipboardClear();
       break;
       case et_expose:
