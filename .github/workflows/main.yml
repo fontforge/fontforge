@@ -158,7 +158,10 @@ jobs:
       - name: Run InnoSetup
         if: github.ref == 'refs/heads/master'
         working-directory: fontforgebuilds/fontforge-setup
-        run: iscc -Qp fontforgesetup.iss -DMSYSTEM=${{ matrix.arch }}
+        run: |
+          winget install --id JRSoftware.InnoSetup -e -s winget
+          $env:path += ";$env:LOCALAPPDATA/Programs/Inno Setup 6"
+          iscc -Qp fontforgesetup.iss -DMSYSTEM=${{ matrix.arch }}
       - name: Build artifacts
         uses: actions/upload-artifact@v4
         with:
