@@ -340,6 +340,13 @@ const char *cid_othersubrs[] = {
 };
 
 
+/* The code is copyrighted by Adobe Systems Incorporated, and may not be reproduced
+ * except by permission of Adobe Systems Incorporated. Adobe Systems Incorporated
+ * grants permission to use this code in Type 1 font programs, as long as the code
+ * is used as it appears in this document, the copyright notice remains intact,
+ * and the character outline code included in such a font program is neither copied
+ * nor derived from character outline code in any Adobe Systems font program.
+ */
 const char *makeblendedfont[] = {
 	"% Copyright (c) 1990-1994 Adobe Systems Incorporated.",
 	"% All Rights Reserved.",
