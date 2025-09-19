@@ -66,11 +66,13 @@ const int subrslens[] = { sizeof(subrs0), sizeof(subrs1), sizeof(subrs2),
 	sizeof(subrs3), sizeof(subrs4), sizeof(subrs5), sizeof(subrs6),
 	sizeof(subrs7), sizeof(subrs8), sizeof(subrs9) };
 
+	/* This code to be used for Flex and hint replacement. */
+	/* Version 1.1 */
 static const char *copyright[] = {
-	"% Copyright (c) 1987-1990 Adobe Systems Incorporated.",
+	"% Copyright 2014 Adobe Systems Incorporated (http://www.adobe.com/).",
 	"% All Rights Reserved.",
-	"% This code to be used for Flex and hint replacement.",
-	"% Version 1.1",
+	"% This software is licensed as OpenSource, under the Apache License, Version 2.0.",
+	"% This license is available at: http://opensource.org/licenses/Apache-2.0.",
 	NULL
 };
 
@@ -311,6 +313,9 @@ const char *erode[] = {
 
 /* from Adobe Technical Specification #5014, Adobe CMap and CIDFont Files */
 /* Specification, Version 1.0. */
+/* Copyright 2014 Adobe Systems Incorporated (http://www.adobe.com/). All Rights Reserved.
+   This software is licensed as OpenSource, under the Apache License, Version 2.0.
+   This license is available at: http://opensource.org/licenses/Apache-2.0. */
 const char *cid_othersubrs[] = {
 	"[ {} {} {}",
 	"  { systemdict /internaldict known not",
