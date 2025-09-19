@@ -66,11 +66,13 @@ const int subrslens[] = { sizeof(subrs0), sizeof(subrs1), sizeof(subrs2),
 	sizeof(subrs3), sizeof(subrs4), sizeof(subrs5), sizeof(subrs6),
 	sizeof(subrs7), sizeof(subrs8), sizeof(subrs9) };
 
+	/* This code to be used for Flex and hint replacement. */
+	/* Version 1.1 */
 static const char *copyright[] = {
-	"% Copyright (c) 1987-1990 Adobe Systems Incorporated.",
+	"% Copyright 2014 Adobe Systems Incorporated (http://www.adobe.com/).",
 	"% All Rights Reserved.",
-	"% This code to be used for Flex and hint replacement.",
-	"% Version 1.1",
+	"% This software is licensed as OpenSource, under the Apache License, Version 2.0.",
+	"% This license is available at: http://opensource.org/licenses/Apache-2.0.",
 	NULL
 };
 
@@ -311,6 +313,9 @@ const char *erode[] = {
 
 /* from Adobe Technical Specification #5014, Adobe CMap and CIDFont Files */
 /* Specification, Version 1.0. */
+/* Copyright 2014 Adobe Systems Incorporated (http://www.adobe.com/). All Rights Reserved.
+   This software is licensed as OpenSource, under the Apache License, Version 2.0.
+   This license is available at: http://opensource.org/licenses/Apache-2.0. */
 const char *cid_othersubrs[] = {
 	"[ {} {} {}",
 	"  { systemdict /internaldict known not",
@@ -335,6 +340,13 @@ const char *cid_othersubrs[] = {
 };
 
 
+/* The code is copyrighted by Adobe Systems Incorporated, and may not be reproduced
+ * except by permission of Adobe Systems Incorporated. Adobe Systems Incorporated
+ * grants permission to use this code in Type 1 font programs, as long as the code
+ * is used as it appears in this document, the copyright notice remains intact,
+ * and the character outline code included in such a font program is neither copied
+ * nor derived from character outline code in any Adobe Systems font program.
+ */
 const char *makeblendedfont[] = {
 	"% Copyright (c) 1990-1994 Adobe Systems Incorporated.",
 	"% All Rights Reserved.",
