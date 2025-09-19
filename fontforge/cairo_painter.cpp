@@ -39,6 +39,23 @@ extern "C" {
 extern SplineFont** FVCollectFamily(SplineFont* sf);
 }
 
+inline ff::utils::SplineFontProperties* toCPP(cpp_SplineFontProperties* p) {
+    return reinterpret_cast<ff::utils::SplineFontProperties*>(p);
+}
+
+inline cpp_SplineFontProperties* toC(ff::utils::SplineFontProperties* p) {
+    return reinterpret_cast<cpp_SplineFontProperties*>(p);
+}
+
+cpp_SplineFontProperties* make_SplineFontProperties(int ascent, int descent,
+                                                    bool italic,
+                                                    int16_t os2_weight,
+                                                    int16_t os2_width,
+                                                    const char* styles) {
+    return toC(new ff::utils::SplineFontProperties{
+        ascent, descent, italic, os2_weight, os2_width, styles});
+}
+
 namespace ff::utils {
 
 const std::string CairoPainter::kScaleToPage = "scale_to_page";
@@ -809,21 +826,23 @@ Cairo::RefPtr<Cairo::FtFontFace> create_cairo_face(SplineFont* sf) {
 
 CairoFontFamily create_cairo_family(SplineFont* current_sf) {
     SplineFont** family_sfs = FVCollectFamily(current_sf);
-    SplineFontProperties sf_properties;
+    SplineFontProperties* sf_properties = nullptr;
     Cairo::RefPtr<Cairo::FtFontFace> ft_face;
 
     CairoFontFamily family;
 
     // By convention, the first element is the default font
-    SFGetProperties(current_sf, &sf_properties);
+    sf_properties = toCPP(SFGetProperties(current_sf));
     ft_face = create_cairo_face(current_sf);
-    family.emplace_back(sf_properties, ft_face);
+    family.emplace_back(*sf_properties, ft_face);
+    delete sf_properties;
 
     if (family_sfs) {
         for (SplineFont** sf_it = family_sfs; *sf_it != nullptr; ++sf_it) {
-            SFGetProperties(*sf_it, &sf_properties);
+            sf_properties = toCPP(SFGetProperties(*sf_it));
             ft_face = create_cairo_face(*sf_it);
-            family.emplace_back(sf_properties, ft_face);
+            family.emplace_back(*sf_properties, ft_face);
+            delete sf_properties;
         }
     }
 

@@ -43,6 +43,8 @@ extern char* SFGetFullName(SplineFont* sf);
 #include "cairo_painter.hpp"
 #include "print_preview.hpp"
 
+using ff::utils::PrintGlyphMap;
+
 static PrintGlyphMap build_glyph_map(SplineFont* sf) {
     // Build map of TTF codepoints
     PrintGlyphMap print_map;
@@ -62,7 +64,8 @@ void print_dialog(SplineFont* sf) {
     Glib::RefPtr<Gtk::PrintOperation> print_operation =
         Gtk::PrintOperation::create();
 
-    CairoFontFamily cairo_family = ff::utils::create_cairo_family(sf);
+    ff::utils::CairoFontFamily cairo_family =
+        ff::utils::create_cairo_family(sf);
     PrintGlyphMap print_map = build_glyph_map(sf);
     char* font_name = SFGetFullName(sf);
 

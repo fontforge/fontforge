@@ -35,15 +35,17 @@ extern "C" {
 typedef struct splinechar SplineChar;
 typedef struct splinefont SplineFont;
 
-typedef struct spline_font_properties {
-    int ascent, descent;
-    bool italic;
-    int16_t os2_weight;
-    int16_t os2_width;
-    const char* styles;
-} SplineFontProperties;
+/* Dummy incomplete type which can be casted to C++ type
+ * ff::utils::SplineFontProperties */
+typedef struct cpp_SplineFontProperties cpp_SplineFontProperties;
 
-extern void SFGetProperties(SplineFont* sf, SplineFontProperties* properties);
+/* Create a new SplineFontProperties object */
+cpp_SplineFontProperties* SFGetProperties(SplineFont* sf);
+cpp_SplineFontProperties* make_SplineFontProperties(int ascent, int descent,
+                                                    bool italic,
+                                                    int16_t os2_weight,
+                                                    int16_t os2_width,
+                                                    const char* styles);
 
 #ifdef __cplusplus
 }
@@ -51,6 +53,11 @@ extern void SFGetProperties(SplineFont* sf, SplineFontProperties* properties);
 #include <iostream>
 #include <map>
 #include <cairomm/context.h>
+
+namespace ff::utils {
+
+struct GlyphLine;
+struct SplineFontProperties;
 
 using PrintGlyphMap = std::map<int, SplineChar*>;
 
@@ -60,10 +67,6 @@ using PrintGlyphMap = std::map<int, SplineChar*>;
 using CairoFontFamily = std::vector<
     std::pair<SplineFontProperties, Cairo::RefPtr<Cairo::FtFontFace>>>;
 
-namespace ff::utils {
-
-struct GlyphLine;
-
 using ParsedRichText =
     std::vector<std::pair<std::vector<std::string>, std::string>>;
 using RichTextLineBuffer =
@@ -71,6 +74,14 @@ using RichTextLineBuffer =
 using RichTextLayout =
     std::vector<std::pair<RichTextLineBuffer, double /*height*/>>;
 using PrintGlyphVec = std::vector<std::pair<int, SplineChar*>>;
+
+struct SplineFontProperties {
+    int ascent, descent;
+    bool italic;
+    int16_t os2_weight;
+    int16_t os2_width;
+    const char* styles;
+};
 
 class CairoPainter {
  public:
