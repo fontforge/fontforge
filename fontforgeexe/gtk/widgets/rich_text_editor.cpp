@@ -187,8 +187,7 @@ RichTechEditor::RichTechEditor() {
         Gtk::make_managed<ToggleTagButton>(text_view_.get_buffer(), italic_tag);
     italic_button->set_icon_name("format-text-italic");
 
-    TagComboBox* stretch_combo =
-        Gtk::make_managed<TagComboBox>(text_view_.get_buffer());
+    TagComboBox* stretch_combo = build_stretch_combo(text_view_.get_buffer());
 
     toolbar_.append(*bold_button);
     toolbar_.append(*italic_button);
@@ -206,6 +205,51 @@ RichTechEditor::RichTechEditor() {
     scrolled_.add(text_view_);
     attach(toolbar_, 0, 0);
     attach(scrolled_, 0, 1);
+}
+
+RichTechEditor::TagComboBox* RichTechEditor::build_stretch_combo(
+    Glib::RefPtr<Gtk::TextBuffer> text_buffer) {
+    std::string default_id = "width|medium";
+
+    // By convention, TextBuffer::Tag with name e.g. "width|condensed" will
+    // be exported to XML tag as <width value="condensed">. Unlike in XML,
+    // TextBuffer tags must have unique names.
+    std::vector<
+        std::tuple<std::string /*id*/, std::string /*label*/, Pango::Stretch>>
+        property_vec{
+            {"width|ultra-condensed", _("Ultra-Condensed (50%)"),
+             Pango::STRETCH_ULTRA_CONDENSED},
+            {"width|extra-condensed", _("Extra-Condensed (62.5%)"),
+             Pango::STRETCH_EXTRA_CONDENSED},
+            {"width|condensed", _("Condensed (75%)"), Pango::STRETCH_CONDENSED},
+            {"width|semi-condensed", _("Semi-Condensed (87.5%)"),
+             Pango::STRETCH_SEMI_CONDENSED},
+            {"width|medium", _("Medium (100%)"), Pango::STRETCH_NORMAL},
+            {"width|semi-expanded", _("Semi-Expanded (112.5%)"),
+             Pango::STRETCH_SEMI_EXPANDED},
+            {"width|expanded", _("Expanded (125%)"), Pango::STRETCH_EXPANDED},
+            {"width|extra-expanded", _("Extra-Expanded (150%)"),
+             Pango::STRETCH_EXTRA_EXPANDED},
+            {"width|ultra-expanded", _("Ultra-Expanded (200%)"),
+             Pango::STRETCH_ULTRA_EXPANDED},
+        };
+
+    std::map<std::string /*id*/, Glib::RefPtr<Gtk::TextTag>> tag_map;
+    std::vector<std::pair<std::string /*id*/, std::string /*label*/>> labels;
+
+    for (const auto& [tag_id, label, property] : property_vec) {
+        // Create and register tag
+        if (tag_id != default_id) {
+            auto tag = text_buffer->create_tag(tag_id);
+            tag->property_stretch() = property;
+            tag_map[tag_id] = tag;
+        }
+
+        labels.emplace_back(tag_id, label);
+    }
+
+    return Gtk::make_managed<TagComboBox>(text_view_.get_buffer(), default_id,
+                                          tag_map, labels);
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -280,44 +324,13 @@ void RichTechEditor::ToggleTagButton::on_buffer_cursor_changed(
 ///////////////////////////////////////////////////////////////////////
 
 RichTechEditor::TagComboBox::TagComboBox(
-    Glib::RefPtr<Gtk::TextBuffer> text_buffer)
-    : text_buffer_(text_buffer) {
-    // Lazy initialize statics
-    if (default_id_.empty()) {
-        default_id_ = "width|medium";
-    }
-    if (property_vec_.empty()) {
-        // By convention, TextBuffer::Tag with name e.g. "width|condensed" will
-        // be exported to XML tag as <width value="condensed">. Unlike in XML,
-        // TextBuffer tags must have unique names.
-        property_vec_ = {
-            {"width|ultra-condensed", _("Ultra-Condensed (50%)"),
-             Pango::STRETCH_ULTRA_CONDENSED},
-            {"width|extra-condensed", _("Extra-Condensed (62.5%)"),
-             Pango::STRETCH_EXTRA_CONDENSED},
-            {"width|condensed", _("Condensed (75%)"), Pango::STRETCH_CONDENSED},
-            {"width|semi-condensed", _("Semi-Condensed (87.5%)"),
-             Pango::STRETCH_SEMI_CONDENSED},
-            {"width|medium", _("Medium (100%)"), Pango::STRETCH_NORMAL},
-            {"width|semi-expanded", _("Semi-Expanded (112.5%)"),
-             Pango::STRETCH_SEMI_EXPANDED},
-            {"width|expanded", _("Expanded (125%)"), Pango::STRETCH_EXPANDED},
-            {"width|extra-expanded", _("Extra-Expanded (150%)"),
-             Pango::STRETCH_EXTRA_EXPANDED},
-            {"width|ultra-expanded", _("Ultra-Expanded (200%)"),
-             Pango::STRETCH_ULTRA_EXPANDED},
-        };
-    }
-
-    for (const auto& [tag_id, label, property] : property_vec_) {
-        // Create and register tag
-        if (tag_id != default_id_) {
-            auto tag = text_buffer_->create_tag(tag_id);
-            tag->property_stretch() = property;
-            tag_map_[tag_id] = tag;
-        }
-
-        // Add entry to combo box
+    Glib::RefPtr<Gtk::TextBuffer> text_buffer, const std::string& default_id,
+    const std::map<std::string /*id*/, Glib::RefPtr<Gtk::TextTag>>& tag_map,
+    const std::vector<std::pair<std::string /*id*/, std::string /*label*/>>&
+        labels)
+    : text_buffer_(text_buffer), default_id_(default_id), tag_map_(tag_map) {
+    // Add entries to combo box
+    for (const auto& [tag_id, label] : labels) {
         combo_box_.append(tag_id, label);
     }
 

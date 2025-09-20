@@ -83,7 +83,13 @@ class RichTechEditor : public Gtk::Grid {
 
     class TagComboBox : public Gtk::ToolItem {
      public:
-        TagComboBox(Glib::RefPtr<Gtk::TextBuffer> text_buffer);
+        TagComboBox(
+            Glib::RefPtr<Gtk::TextBuffer> text_buffer,
+            const std::string& default_id,
+            const std::map<std::string /*id*/, Glib::RefPtr<Gtk::TextTag>>&
+                tag_map,
+            const std::vector<
+                std::pair<std::string /*id*/, std::string /*label*/>>& labels);
 
         void apply_tag(const Gtk::TextBuffer::iterator& start,
                        const Gtk::TextBuffer::iterator& end);
@@ -104,9 +110,6 @@ class RichTechEditor : public Gtk::Grid {
 
      protected:
         std::string default_id_;
-        std::vector<std::tuple<std::string /*id*/, std::string /*label*/,
-                               Pango::Stretch>>
-            property_vec_;
         std::map<std::string /*id*/, Glib::RefPtr<Gtk::TextTag>> tag_map_;
 
         Glib::RefPtr<Gtk::TextBuffer> text_buffer_;
@@ -118,6 +121,8 @@ class RichTechEditor : public Gtk::Grid {
     Gtk::Toolbar toolbar_;
     Gtk::ScrolledWindow scrolled_;
     Gtk::TextView text_view_;
+
+    TagComboBox* build_stretch_combo(Glib::RefPtr<Gtk::TextBuffer> text_buffer);
 };
 
 }  // namespace ff::widget
