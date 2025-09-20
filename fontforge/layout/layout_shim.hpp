@@ -45,15 +45,31 @@ cpp_SplineFontProperties* make_SplineFontProperties(int ascent, int descent,
 #ifdef __cplusplus
 }
 
+#include <string>
+#include <vector>
+
 namespace ff::layout {
 
 struct SplineFontProperties {
-    int ascent, descent;
-    bool italic;
-    int16_t os2_weight;
-    int16_t os2_width;
-    const char* styles;
+    int ascent = -1, descent = -1;
+    bool italic = false;
+    int16_t os2_weight = -1;
+    int16_t os2_width = -1;
+    std::string styles;
+
+    static SplineFontProperties from_tags(const std::vector<std::string>& tags);
+
+    // Merge properties, with the other object's meaningful fields taking
+    // priority.
+    void merge(const SplineFontProperties& other);
+
+    // Despite its name, distance() is not guaranteed to be a metric in
+    // mathematical sense.
+    int distance(const SplineFontProperties& other) const;
 };
+
+std::pair<std::string /*tag*/, std::string /*value*/> parse_tag(
+    const std::string& complete_tag);
 
 }  // namespace ff::layout
 

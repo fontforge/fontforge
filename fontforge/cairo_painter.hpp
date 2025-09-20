@@ -34,6 +34,8 @@
 
 typedef struct splinechar SplineChar;
 
+using ff::layout::SplineFontProperties;
+
 namespace ff::utils {
 
 using PrintGlyphMap = std::map<int, SplineChar*>;
@@ -42,7 +44,7 @@ using PrintGlyphMap = std::map<int, SplineChar*>;
 // default font (it doesn't need to be the regular face). The default font is
 // used when no modifiers are specified.
 using CairoFontFamily = std::vector<
-    std::pair<layout::SplineFontProperties, Cairo::RefPtr<Cairo::FtFontFace>>>;
+    std::pair<SplineFontProperties, Cairo::RefPtr<Cairo::FtFontFace>>>;
 
 using ParsedRichText =
     std::vector<std::pair<std::vector<std::string>, std::string>>;
@@ -92,8 +94,13 @@ class CairoPainter {
     static const std::string kScaleMaxHeight;
 
  private:
+    // Currently active font face (for example, whose FontView invoked the Print
+    // dialog).
     Cairo::RefPtr<Cairo::FtFontFace> cairo_face_;
+
+    // All the other currently open faces from the same family.
     CairoFontFamily cairo_family_;
+
     std::map<std::pair<bool /*bold*/, bool /*italic*/>,
              Cairo::RefPtr<Cairo::FtFontFace>>
         style_map_;
@@ -148,9 +155,14 @@ class CairoPainter {
     void paginate_full_display(double char_area_height, double pointsize,
                                double extravspace);
 
-    void build_style_map(const ParsedRichText& rich_text);
+    SplineFontProperties get_default_style(
+        const ParsedRichText& rich_text) const;
+
+    // Select specific face to print a text segment based on the tags which
+    // apply to it.
     Cairo::RefPtr<Cairo::FtFontFace> select_face(
-        const std::vector<std::string>& tags) const;
+        const std::vector<std::string>& tags,
+        const SplineFontProperties& default_properties) const;
 
     void setup_context(const Cairo::RefPtr<Cairo::Context>& cr);
 
