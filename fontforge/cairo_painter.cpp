@@ -630,14 +630,16 @@ void CairoPainter::draw_line_sample_text(
 
 // Rewritten PIMultiSize()
 void CairoPainter::draw_page_multisize(const Cairo::RefPtr<Cairo::Context>& cr,
+                                       const std::vector<double>& pointsizes,
                                        const Cairo::Rectangle& printable_area,
                                        int page_nr) {
     init_document(cr, printable_area, "Sample Sizes of " + font_name_,
                   top_margin_);
 
-    static const std::vector<double> pointsizes{
-        72, 48, 36,  24, 20,  18, 16,  15, 14,  13,  12, 11, 10,
-        9,  8,  7.5, 7,  6.5, 6,  5.5, 5,  4.5, 4.2, 4,  0};
+    if (pointsizes.empty()) {
+        return;
+    }
+
     double extravspace = pointsizes[0] / 6;
 
     double char_area_height = printable_area.height - margin_ - top_margin_;

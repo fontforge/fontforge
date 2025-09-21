@@ -27,6 +27,7 @@
 
 #include "rich_text_editor.hpp"
 
+#include <iomanip>
 #include <iostream>
 #include <cstring>
 
@@ -172,7 +173,7 @@ guint8* ff_xml_serialize(const Glib::RefPtr<Gtk::TextBuffer>& content_buffer,
 const std::string RichTechEditor::rich_text_mime_type =
     "application/vnd.fontforge.rich-text+xml";
 
-RichTechEditor::RichTechEditor() {
+RichTechEditor::RichTechEditor(const std::vector<double>& pointsizes) {
     auto bold_tag = text_view_.get_buffer()->create_tag("bold");
     bold_tag->property_weight() = 700;
 
@@ -188,10 +189,13 @@ RichTechEditor::RichTechEditor() {
     italic_button->set_icon_name("format-text-italic");
 
     TagComboBox* stretch_combo = build_stretch_combo(text_view_.get_buffer());
+    TagComboBox* size_combo =
+        build_size_combo(text_view_.get_buffer(), pointsizes);
 
     toolbar_.append(*bold_button);
     toolbar_.append(*italic_button);
     toolbar_.append(*stretch_combo);
+    toolbar_.append(*size_combo);
 
     toolbar_.set_hexpand();
 
@@ -242,6 +246,45 @@ RichTechEditor::TagComboBox* RichTechEditor::build_stretch_combo(
         if (tag_id != default_id) {
             auto tag = text_buffer->create_tag(tag_id);
             tag->property_stretch() = property;
+            tag_map[tag_id] = tag;
+        }
+
+        labels.emplace_back(tag_id, label);
+    }
+
+    return Gtk::make_managed<TagComboBox>(text_view_.get_buffer(), default_id,
+                                          tag_map, labels);
+}
+
+RichTechEditor::TagComboBox* RichTechEditor::build_size_combo(
+    Glib::RefPtr<Gtk::TextBuffer> text_buffer,
+    const std::vector<double>& pointsizes) {
+    std::string default_id = "size|12";
+
+    std::vector<double> sorted_pointsizes = pointsizes;
+    std::sort(sorted_pointsizes.begin(), sorted_pointsizes.end());
+
+    // By convention, TextBuffer::Tag with name e.g. "size|24" will
+    // be exported to XML tag as <size value="24">. Unlike in XML,
+    // TextBuffer tags must have unique names.
+    std::map<std::string /*id*/, Glib::RefPtr<Gtk::TextTag>> tag_map;
+    std::vector<std::pair<std::string /*id*/, std::string /*label*/>> labels;
+
+    for (double size_pt : sorted_pointsizes) {
+        // Convert double value to string without trailing zeros or period.
+        std::ostringstream oss;
+        oss << std::setprecision(8) << std::noshowpoint << size_pt;
+        std::string num_str = oss.str();
+
+        std::string tag_id = "size|" + num_str;
+        char buffer[321];
+        sprintf(buffer, _("%s pt"), num_str.c_str());
+        Glib::ustring label(buffer);
+
+        // Create and register tag
+        if (tag_id != default_id) {
+            auto tag = text_buffer->create_tag(tag_id);
+            tag->property_size_points() = size_pt;
             tag_map[tag_id] = tag;
         }
 

@@ -32,7 +32,7 @@ namespace ff::widget {
 
 class RichTechEditor : public Gtk::Grid {
  public:
-    RichTechEditor();
+    explicit RichTechEditor(const std::vector<double>& pointsizes);
 
     static const std::string rich_text_mime_type;
 
@@ -123,6 +123,8 @@ class RichTechEditor : public Gtk::Grid {
     Gtk::TextView text_view_;
 
     TagComboBox* build_stretch_combo(Glib::RefPtr<Gtk::TextBuffer> text_buffer);
+    TagComboBox* build_size_combo(Glib::RefPtr<Gtk::TextBuffer> text_buffer,
+                                  const std::vector<double>& pointsizes);
 };
 
 }  // namespace ff::widget

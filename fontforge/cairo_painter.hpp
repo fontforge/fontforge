@@ -83,6 +83,7 @@ class CairoPainter {
 
     // Draw each glyph in multiple sizes.
     void draw_page_multisize(const Cairo::RefPtr<Cairo::Context>& cr,
+                             const std::vector<double>& pointsizes,
                              const Cairo::Rectangle& printable_area,
                              int page_nr);
     size_t page_count_multisize() const;

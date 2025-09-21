@@ -42,6 +42,10 @@ static const std::string GLYPH_PAGES("glyph_pages");
 static const std::string MULTI_SIZE("multi_size");
 static const std::string SAMPLE_TEXT("sample_text");
 
+static const std::vector<double> kMultiPointsizes{
+    72, 48, 36, 24,  20, 18,  16, 15,  14, 13,  12,  11,
+    10, 9,  8,  7.5, 7,  6.5, 6,  5.5, 5,  4.5, 4.2, 4};
+
 // Margin around the page preview area in pixels. Must be lerge enough to
 // accomodate the CSS box-shadow.
 static const int wrapper_margin = 20;
@@ -277,7 +281,7 @@ void PrintPreviewWidget::build_sample_text_popover(Gtk::Widget* parent_widget) {
     text_popover->set_modal(true);
     text_popover->set_constrain_to(Gtk::POPOVER_CONSTRAINT_WINDOW);
 
-    sample_text_ = Gtk::make_managed<widget::RichTechEditor>();
+    sample_text_ = Gtk::make_managed<widget::RichTechEditor>(kMultiPointsizes);
     sample_text_->set_hexpand();
     sample_text_->set_vexpand();
     sample_text_->get_buffer()->set_text("Sample text\nSecond sample line.");
@@ -353,7 +357,8 @@ void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
         cairo_painter_.draw_page_sample_text(cr, printable_area, page_nr,
                                              out_buffer);
     } else {
-        cairo_painter_.draw_page_multisize(cr, printable_area, page_nr);
+        cairo_painter_.draw_page_multisize(cr, kMultiPointsizes, printable_area,
+                                           page_nr);
     }
 
     paginate();
