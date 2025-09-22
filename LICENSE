@@ -230,6 +230,16 @@ fontP.h
 
 fontforge-20120731-b/inc:
 gkeysym.h
+```
+
+### FontForge Files Using a Proprietary Adobe License
+
+The license stems from the Adobe Type 1 Font Format specification:
+
+```
+fontforge-20120731-b/fontforge:
+multimastersubrs.c
+```
 
 ### Other Files
 
