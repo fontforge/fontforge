@@ -293,24 +293,6 @@ static const char **default_othersubrs[] = { othersubrs0, othersubrs1, othersubr
 	NULL
 };
 
-/* Lives in private dictionary. Commonly used. I have no docs on it */
-/* (and Adobe's answer when asked about it was "try it and figure out what it does" */
-/*  The first numbers (9.5,72) change in different uses (4.5,34), (4.5,38), (5.5,41), (6.5,50) are other combo */
-/* James Cloos notes that the second number is /StdVW, and the first number is */
-/*  StdVW 8 idiv .5 add */
-/* 
-const char *erode[] = {
-	"/Erode",
-	"{ 9.5 dup 3 -1 roll 0.1 mul exch 0.5 sub mul cvi sub dup mul",
-	"  72 0 dtransform dup mul exch dup mul add le",
-	"    { pop pop 1.0 1.0 }",
-	"    { pop pop 0.0 1.5 }",
-	"  ifelse",
-	"} bind def",
-	NULL
-};
-*/
-
 /* from Adobe Technical Specification #5014, Adobe CMap and CIDFont Files */
 /* Specification, Version 1.0. */
 /* Copyright 2014 Adobe Systems Incorporated (http://www.adobe.com/). All Rights Reserved.
