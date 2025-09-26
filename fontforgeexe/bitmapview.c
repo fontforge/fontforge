@@ -2434,6 +2434,7 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv, int enc) {
     wattrs.event_masks = -1;
     wattrs.cursor = ( bc->refs == NULL ) ? ct_pencil : ct_pointer;
     bv->v = GWidgetCreateSubWindow(gw,&pos,v_e_h,bv,&wattrs);
+    GDrawSetWindowTypeName(bv->v, "BitmapView");
 
     bv->height = pos.height; bv->width = pos.width;
     bv->b1_tool = ( bc->refs == NULL ) ? bvt_pencil : bvt_pointer; bv->cb1_tool = bvt_pointer;
