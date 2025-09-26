@@ -117,6 +117,16 @@ class RichTechEditor : public Gtk::Grid {
         Gtk::ComboBoxText combo_box_;
     };
 
+    class ClearFormattingButton : public Gtk::ToolButton {
+     public:
+        ClearFormattingButton(Glib::RefPtr<Gtk::TextBuffer> text_buffer);
+
+        void on_button_clicked();
+
+     protected:
+        Glib::RefPtr<Gtk::TextBuffer> text_buffer_;
+    };
+
  protected:
     Gtk::Toolbar toolbar_;
     Gtk::ScrolledWindow scrolled_;

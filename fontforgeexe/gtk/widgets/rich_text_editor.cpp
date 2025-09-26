@@ -193,11 +193,16 @@ RichTechEditor::RichTechEditor(const std::vector<double>& pointsizes) {
         build_size_combo(text_view_.get_buffer(), pointsizes);
     TagComboBox* weight_combo = build_weight_combo(text_view_.get_buffer());
 
+    ClearFormattingButton* clear_button =
+        Gtk::make_managed<ClearFormattingButton>(text_view_.get_buffer());
+    clear_button->set_icon_name("edit-clear-all");
+
     toolbar_.append(*bold_button);
     toolbar_.append(*italic_button);
     toolbar_.append(*stretch_combo);
     toolbar_.append(*size_combo);
     toolbar_.append(*weight_combo);
+    toolbar_.append(*clear_button);
 
     toolbar_.set_hexpand();
 
@@ -534,6 +539,24 @@ void RichTechEditor::TagComboBox::on_buffer_cursor_changed(
                 combo_box_.set_active_id(active_id);
             }
         });
+}
+
+///////////////////////////////////////////////////////////////////////
+///             RichTechEditor::ClearFormattingButton               ///
+///////////////////////////////////////////////////////////////////////
+
+RichTechEditor::ClearFormattingButton::ClearFormattingButton(
+    Glib::RefPtr<Gtk::TextBuffer> text_buffer)
+    : text_buffer_(text_buffer) {
+    signal_clicked().connect(
+        sigc::mem_fun(*this, &ClearFormattingButton::on_button_clicked));
+}
+
+void RichTechEditor::ClearFormattingButton::on_button_clicked() {
+    Gtk::TextBuffer::iterator start, end;
+    if (text_buffer_->get_selection_bounds(start, end)) {
+        text_buffer_->remove_all_tags(start, end);
+    }
 }
 
 }  // namespace ff::widget
