@@ -191,11 +191,13 @@ RichTechEditor::RichTechEditor(const std::vector<double>& pointsizes) {
     TagComboBox* stretch_combo = build_stretch_combo(text_view_.get_buffer());
     TagComboBox* size_combo =
         build_size_combo(text_view_.get_buffer(), pointsizes);
+    TagComboBox* weight_combo = build_weight_combo(text_view_.get_buffer());
 
     toolbar_.append(*bold_button);
     toolbar_.append(*italic_button);
     toolbar_.append(*stretch_combo);
     toolbar_.append(*size_combo);
+    toolbar_.append(*weight_combo);
 
     toolbar_.set_hexpand();
 
@@ -285,6 +287,54 @@ RichTechEditor::TagComboBox* RichTechEditor::build_size_combo(
         if (tag_id != default_id) {
             auto tag = text_buffer->create_tag(tag_id);
             tag->property_size_points() = size_pt;
+            tag_map[tag_id] = tag;
+        }
+
+        labels.emplace_back(tag_id, label);
+    }
+
+    return Gtk::make_managed<TagComboBox>(text_view_.get_buffer(), default_id,
+                                          tag_map, labels);
+}
+
+RichTechEditor::TagComboBox* RichTechEditor::build_weight_combo(
+    Glib::RefPtr<Gtk::TextBuffer> text_buffer) {
+    std::string default_id = "weight|regular";
+
+    // By convention, TextBuffer::Tag with name e.g. "weight|light" will
+    // be exported to XML tag as <weight value="light">. Unlike in XML,
+    // TextBuffer tags must have unique names.
+    //
+    // UI fonts normally don't have a multitude of weights, so we emulate
+    // weights by color instead. The user shall check actual rendering in the
+    // preview panel.
+    std::vector<std::tuple<std::string /*id*/, std::string /*label*/,
+                           Pango::Weight, std::string /*color*/>>
+        property_vec{
+            {"weight|thin", _("100 Thin"), Pango::WEIGHT_NORMAL, "gray"},
+            {"weight|extra-light", _("200 Extra-Light"), Pango::WEIGHT_NORMAL,
+             "dimgray"},
+            {"weight|light", _("300 Light"), Pango::WEIGHT_NORMAL,
+             "darkslategray"},
+            {"weight|regular", _("400 Regular"), Pango::WEIGHT_NORMAL, "black"},
+            {"weight|medium", _("500 Medium"), Pango::WEIGHT_BOLD, "dimgray"},
+            {"weight|semi-bold", _("600 Semi-Bold"), Pango::WEIGHT_BOLD,
+             "darkslategray"},
+            {"weight|bold", _("700 Bold"), Pango::WEIGHT_BOLD, "black"},
+            {"weight|extra-bold", _("800 Extra-Bold"), Pango::WEIGHT_BOLD,
+             "blue"},
+            {"weight|black", _("900 Black"), Pango::WEIGHT_BOLD, "navy"},
+        };
+
+    std::map<std::string /*id*/, Glib::RefPtr<Gtk::TextTag>> tag_map;
+    std::vector<std::pair<std::string /*id*/, std::string /*label*/>> labels;
+
+    for (const auto& [tag_id, label, weight, color] : property_vec) {
+        // Create and register tag
+        if (tag_id != default_id) {
+            auto tag = text_buffer->create_tag(tag_id);
+            tag->property_weight() = weight;
+            tag->property_foreground() = color;
             tag_map[tag_id] = tag;
         }
 

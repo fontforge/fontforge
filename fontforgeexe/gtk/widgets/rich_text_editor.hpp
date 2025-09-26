@@ -125,6 +125,7 @@ class RichTechEditor : public Gtk::Grid {
     TagComboBox* build_stretch_combo(Glib::RefPtr<Gtk::TextBuffer> text_buffer);
     TagComboBox* build_size_combo(Glib::RefPtr<Gtk::TextBuffer> text_buffer,
                                   const std::vector<double>& pointsizes);
+    TagComboBox* build_weight_combo(Glib::RefPtr<Gtk::TextBuffer> text_buffer);
 };
 
 }  // namespace ff::widget
