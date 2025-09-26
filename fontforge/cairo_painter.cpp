@@ -28,6 +28,7 @@
 #include "cairo_painter.hpp"
 
 #include <array>
+#include <charconv>
 #include <sstream>
 
 extern "C" {
@@ -472,7 +473,11 @@ void CairoPainter::calculate_layout_sample_text(
     double line_buffer_width = 0;
 
     for (const auto& [current_tags, text] : parsed_text) {
-        cr->set_font_face(select_face(current_tags, default_properties));
+        Cairo::RefPtr<Cairo::FtFontFace> font_face =
+            select_face(current_tags, default_properties);
+        double font_size = get_size(current_tags);
+        cr->set_font_face(font_face);
+        cr->set_font_size(font_size);
 
         // Iterator inside the currently processed block, which can be broken at
         // word boundaries.
@@ -517,9 +522,8 @@ void CairoPainter::calculate_layout_sample_text(
                 // This subblock exceeds the page width, we should output the
                 // current buffer and start a new line
                 std::string printable_subblock(subblock_start, subblock_break);
-                line_buffer.emplace_back(
-                    printable_subblock,
-                    select_face(current_tags, default_properties));
+                line_buffer.emplace_back(printable_subblock, font_face,
+                                         font_size);
 
                 double line_height =
                     calculate_height_sample_text(cr, line_buffer);
@@ -543,7 +547,7 @@ void CairoPainter::calculate_layout_sample_text(
         cr->get_text_extents(printable_subblock, block_extents);
 
         line_buffer.emplace_back(std::string(subblock_start, text.end()),
-                                 select_face(current_tags, default_properties));
+                                 font_face, font_size);
         line_buffer_width += block_extents.x_advance;
     }
 
@@ -603,9 +607,10 @@ double CairoPainter::calculate_height_sample_text(
     const Cairo::RefPtr<Cairo::Context>& cr,
     const RichTextLineBuffer& line_buffer) {
     double height = 0;
-    for (const auto& [text, face] : line_buffer) {
+    for (const auto& [text, face, size] : line_buffer) {
         Cairo::FontExtents font_extents;
         cr->set_font_face(face);
+        cr->set_font_size(size);
         cr->get_font_extents(font_extents);
         height = std::max(height, font_extents.height);
     }
@@ -617,9 +622,10 @@ void CairoPainter::draw_line_sample_text(
     const RichTextLineBuffer& line_buffer, double y_baseline) {
     // Perform the actual text drawing
     double x = 0;
-    for (const auto& [text, face] : line_buffer) {
+    for (const auto& [text, face, size] : line_buffer) {
         Cairo::TextExtents text_extents;
         cr->set_font_face(face);
+        cr->set_font_size(size);
         cr->get_text_extents(text, text_extents);
 
         cr->move_to(x, y_baseline);
@@ -771,6 +777,22 @@ Cairo::RefPtr<Cairo::FtFontFace> CairoPainter::select_face(
                          });
 
     return closest_face->second;
+}
+
+double CairoPainter::get_size(const std::vector<std::string>& tags) {
+    double size = 12.0;
+    for (const std::string& tag : tags) {
+        auto [tag_name, tag_value] = layout::parse_tag(tag);
+        double result{};
+
+        if (tag_name == "size" &&
+            std::from_chars(tag_value.data(),
+                            tag_value.data() + tag_value.size(), result)
+                    .ec == std::errc{}) {
+            size = result;
+        }
+    }
+    return size;
 }
 
 void CairoPainter::setup_context(const Cairo::RefPtr<Cairo::Context>& cr) {
