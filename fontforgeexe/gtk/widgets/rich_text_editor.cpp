@@ -180,6 +180,7 @@ RichTechEditor::RichTechEditor(const std::vector<double>& pointsizes) {
     ToggleTagButton* bold_button =
         Gtk::make_managed<ToggleTagButton>(text_view_.get_buffer(), bold_tag);
     bold_button->set_icon_name("format-text-bold");
+    bold_button->set_tooltip_text(_("Bold"));
 
     auto italic_tag = text_view_.get_buffer()->create_tag("italic");
     italic_tag->property_style() = Pango::STYLE_ITALIC;
@@ -187,15 +188,20 @@ RichTechEditor::RichTechEditor(const std::vector<double>& pointsizes) {
     ToggleTagButton* italic_button =
         Gtk::make_managed<ToggleTagButton>(text_view_.get_buffer(), italic_tag);
     italic_button->set_icon_name("format-text-italic");
+    italic_button->set_tooltip_text(_("Italic"));
 
     TagComboBox* stretch_combo = build_stretch_combo(text_view_.get_buffer());
     TagComboBox* size_combo =
         build_size_combo(text_view_.get_buffer(), pointsizes);
     TagComboBox* weight_combo = build_weight_combo(text_view_.get_buffer());
+    stretch_combo->set_tooltip_text(_("Width Class"));
+    size_combo->set_tooltip_text(_("Font Size"));
+    weight_combo->set_tooltip_text(_("Weight Class"));
 
     ClearFormattingButton* clear_button =
         Gtk::make_managed<ClearFormattingButton>(text_view_.get_buffer());
     clear_button->set_icon_name("edit-clear-all");
+    clear_button->set_tooltip_text(_("Clear Formatting"));
 
     toolbar_.append(*bold_button);
     toolbar_.append(*italic_button);
