@@ -43,6 +43,11 @@ SplineFontProperties SplineFontProperties::from_tags(
         {"semi-condensed", 4},  {"medium", 5},          {"semi-expanded", 6},
         {"expanded", 7},        {"extra-expanded", 8},  {"ultra-expanded", 9},
     };
+    static const std::map<std::string, int16_t> weights{
+        {"thin", 100},    {"extra-light", 200}, {"light", 300},
+        {"regular", 400}, {"medium", 500},      {"semi-bold", 600},
+        {"bold", 700},    {"extra-bold", 800},  {"black", 900},
+    };
     SplineFontProperties props;
     for (const std::string& tag : tags) {
         auto [tag_name, tag_value] = parse_tag(tag);
@@ -52,6 +57,8 @@ SplineFontProperties SplineFontProperties::from_tags(
             props.os2_weight = 700;
         } else if (tag_name == "width") {
             props.os2_width = widths.at(tag_value);
+        } else if (tag_name == "weight") {
+            props.os2_weight = weights.at(tag_value);
         }
     }
     return props;
