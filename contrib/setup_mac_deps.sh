@@ -87,6 +87,7 @@ REQUIRED_LIBS=(
 # GUI dependencies (optional but usually desired)
 GUI_LIBS=(
     "gtk+3:GTK+ 3 GUI toolkit"
+    "gtkmm3:C++ interfaces for GTK+ and GNOME"
 )
 
 # Optional but recommended libraries
