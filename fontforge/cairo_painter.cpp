@@ -194,7 +194,7 @@ std::vector<CairoPainter::GlyphLine> CairoPainter::split_to_lines(
     for (const auto& cp_line : cp_lines) {
         // Format prefix into 4-digit hex label
         char hex_label[5] = "\0";
-        sprintf(hex_label, "%04X", cp_line.first);
+        snprintf(hex_label, 5, "%04X", cp_line.first);
 
         // Pad vector of codepoints with missing slots
         std::vector<int> slots(line_length, -1);
@@ -786,9 +786,7 @@ double CairoPainter::get_size(const std::vector<std::string>& tags) {
         double result{};
 
         if (tag_name == "size" &&
-            std::from_chars(tag_value.data(),
-                            tag_value.data() + tag_value.size(), result)
-                    .ec == std::errc{}) {
+            std::sscanf(tag_value.c_str(), "%lf", &result) == 1) {
             size = result;
         }
     }
