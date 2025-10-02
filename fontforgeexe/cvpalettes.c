@@ -1953,7 +1953,6 @@ return(true);
 		    cv->showback[0] |= 1;
 		else
 		    cv->showback[0] &= ~1;
-		cv->back_img_out_of_date = true;
 	      break;
 	      case CID_VGrid:
 		CVShows.showgrids = cv->showgrids = GGadgetIsChecked(event->u.control.g);
@@ -2647,7 +2646,6 @@ static void CVLayerInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
         if ( layer!=ly_grid && cv->b.sc->layers[layer].order2 ) {
             SFConvertLayerToOrder3(cv->b.sc->parent, layer);
 	    GDrawRequestExpose(cvlayers,NULL,false);
-            cv->back_img_out_of_date = true;
         }
       break;
 
@@ -2655,7 +2653,6 @@ static void CVLayerInvoked(GWindow v, GMenuItem *mi, GEvent *e) {
         if ( layer!=ly_grid && !cv->b.sc->layers[layer].order2 ) {
             SFConvertLayerToOrder2(cv->b.sc->parent, layer);
 	    GDrawRequestExpose(cvlayers,NULL,false);
-            cv->back_img_out_of_date = true;
         }
       break;
 
@@ -2976,7 +2973,6 @@ return( true );
                     SFConvertLayerToOrder3(cv->b.sc->parent, l);
                 else
                     SFConvertLayerToOrder2(cv->b.sc->parent, l);
-                cv->back_img_out_of_date = true;
 	        GDrawRequestExpose(cvlayers,NULL,false);
                 GDrawRequestExpose(cv->v,NULL,false);
             }
@@ -3066,7 +3062,6 @@ return ( true );
 		    cv->showback[0] |= 1;
 		else
 		    cv->showback[0] &= ~1;
-		cv->back_img_out_of_date = true;
                 GDrawRequestExpose(cv->v,NULL,false);
 	      break;
 	      case CID_VGrid:
@@ -3105,7 +3100,6 @@ return ( true );
                         cv->showback[cid>>5] |=  (1<<(cid&31));
                     else
                         cv->showback[cid>>5] &= ~(1<<(cid&31));
-                    cv->back_img_out_of_date = true;
 
                     GDrawRequestExpose(cv->v,NULL,false);
                     if ( dm!=cv->b.drawmode )

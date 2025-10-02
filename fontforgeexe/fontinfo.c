@@ -4492,7 +4492,6 @@ return(true);
 	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL ) {
 	    CharView *cv;
 	    for ( cv = (CharView *) (sf->glyphs[i]->views); cv!=NULL; cv=(CharView *) (cv->b.next) ) {
-		cv->back_img_out_of_date = true;
 		GDrawRequestExpose(cv->v,NULL,false);
 	    }
 	}

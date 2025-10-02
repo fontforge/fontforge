@@ -6064,7 +6064,6 @@ static void bAddDHint( Context *c ) {
         } else
             MergeDStemInfo( sc->parent,&sc->dstem,d );
 	sc->manualhints = true;
-	SCOutOfDateBackground(sc);
 	SCUpdateAll(sc);
 	any = true;
     }
@@ -6110,7 +6109,6 @@ static void _AddHint(Context *c,int ish) {
 	}
 	sc->manualhints = true;
 	SCClearHintMasks(sc,ly_fore,true);
-	SCOutOfDateBackground(sc);
 	SCUpdateAll(sc);
 	any = true;
     }

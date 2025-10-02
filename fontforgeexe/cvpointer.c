@@ -1304,7 +1304,6 @@ return(false);
 	img->yoff += transform[5];
 	img->bb.minx += transform[4]; img->bb.maxx += transform[4];
 	img->bb.miny += transform[5]; img->bb.maxy += transform[5];
-	SCOutOfDateBackground(cv->b.sc);
 	changed = true;
     }
     fudge = snapdistance/tab->scale/2;

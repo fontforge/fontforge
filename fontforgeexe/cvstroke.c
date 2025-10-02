@@ -2001,10 +2001,6 @@ static struct gradient *GradientEdit(struct layer_dlg *ld,struct gradient *activ
 
     {
 	CharView *cv = &gdd.cv_grad;
-	if ( cv->backimgs!=NULL ) {
-	    GDrawDestroyWindow(cv->backimgs);
-	    cv->backimgs = NULL;
-	}
 	CVPalettesHideIfMine(cv);
     }
     GDrawDestroyWindow(gdd.gw);

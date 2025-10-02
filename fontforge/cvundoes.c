@@ -937,7 +937,6 @@ static void SCUndoAct(SplineChar *sc,int layer, Undoes *undo) {
 	undo->u.state.hints = hints;
 	undo->u.state.instrs = instrs;
 	undo->u.state.instrs_len = instrs_len;
-	SCOutOfDateBackground(sc);
       } break;
       case ut_state: case ut_tstate: case ut_statehint: case ut_statename: {
 	Layer *head = layer==ly_grid ? &sc->parent->grid : &sc->layers[layer];
@@ -986,7 +985,6 @@ static void SCUndoAct(SplineChar *sc,int layer, Undoes *undo) {
 	    ImageList *images = ImageListCopy(head->images);
 	    FixupImages(sc,undo->u.state.images,layer);
 	    undo->u.state.images = images;
-	    SCOutOfDateBackground(sc);
 	}
 	undo->u.state.splines = spl;
 	if ( undo->u.state.lbearingchange ) {
@@ -2462,7 +2460,6 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 		new->next = sc->layers[layer].images;
 		sc->layers[layer].images = new;
 	    }
-	    SCOutOfDateBackground(sc);
 	}
 	if ( (paster->undotype==ut_statehint || paster->undotype==ut_statename ) &&
 		!sc->layers[layer].background ) {
@@ -3058,7 +3055,6 @@ return;
 		new->next = cvsc->layers[ly].images;
 		cvsc->layers[ly].images = new;
 	    }
-	    SCOutOfDateBackground(cvsc);
 	} else if ( paster->undotype==ut_statehint && cv->container==NULL &&
 		!cv->layerheads[cv->drawmode]->background ) {
 	    ExtractHints(cvsc,paster->u.state.hints,true);

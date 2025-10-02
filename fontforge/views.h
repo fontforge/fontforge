@@ -189,7 +189,6 @@ typedef struct charview {
     unsigned int needsrasterize:1;		/* Rasterization (of fill or fontview) needed on mouse up */
     unsigned int recentchange:1;		/* a change happened in the grids or background. don't need to rasterize */
     unsigned int info_within: 1;		/* cursor is within main window */
-    unsigned int back_img_out_of_date: 1;	/* Force redraw of back image pixmap */
     unsigned int cntrldown:1;
     unsigned int joinvalid:1;
     unsigned int widthsel:1;
@@ -238,7 +237,6 @@ typedef struct charview {
     int end_intersection_snapped;
     GFont *rfont;
     GTimer *pressed;
-    GWindow backimgs;
     GIC *gic;
     GIC *gwgic;
     int width, height;
