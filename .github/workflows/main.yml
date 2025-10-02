@@ -81,7 +81,7 @@ jobs:
           CROWDIN_API_KEY: ${{ secrets.CROWDIN_API_KEY }}
         run: java -jar $DEPSPREFIX/crowdin-cli.jar upload -c .crowdin.yml
   mac:
-    runs-on: macos-13
+    runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
         with:
