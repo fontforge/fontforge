@@ -949,7 +949,7 @@ Two contours may be compared to see if they describe similar paths.
    For more information on what these point types mean see
    `Raph Levien's work <https://www.levien.com/spiro/>`_.
 
-   The flags argument is treated as a bitmap of which currently one bit (0x1)
+   The flags argument is treated as a bitset of which currently only one bit (0x1)
    is defined. This indicates that this point is selected in the UI.
 
    When you assign a tuple of spiro control points to this member, the point
