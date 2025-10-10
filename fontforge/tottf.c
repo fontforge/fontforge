@@ -6174,7 +6174,7 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
 
 	fake_mappings = calloc(sf->glyphcnt,sizeof(bool));
 	for (i = 0; i < sf->glyphcnt; ++i) {
-	    if (sf->glyphs[i]->unicodeenc == -1) {
+	    if (sf->glyphs[i] && sf->glyphs[i]->unicodeenc == -1) {
 		sf->glyphs[i]->unicodeenc = fake_unicode_base + sf->glyphs[i]->orig_pos;
 		fake_mappings[i] = true;
 	    }
@@ -6222,7 +6222,7 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
     // Remove temporarily assigned fake Private Area unicode point from all unmapped glyphs
     if (flags & ttf_flag_fake_map) {
 	for (i = 0; i < sf->glyphcnt; ++i) {
-	    if (fake_mappings[i])
+	    if (sf->glyphs[i] && fake_mappings[i])
 		sf->glyphs[i]->unicodeenc = -1;
 	}
 	free(fake_mappings);
