@@ -1050,7 +1050,7 @@ void clear_cached_ufo_paths(SplineFont * sf) {
   // First we clear the glif names.
   for (i = 0; i < sf->glyphcnt; i++) {
     struct splinechar * sc = sf->glyphs[i];
-    if (sc->glif_name != NULL) { free(sc->glif_name); sc->glif_name = NULL; }
+    if (sc && sc->glif_name != NULL) { free(sc->glif_name); sc->glif_name = NULL; }
   }
   // Then we clear the layer names.
   for (i = 0; i < sf->layer_cnt; i++) {
