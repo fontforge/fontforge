@@ -747,8 +747,8 @@ typedef struct enc {
     int iso_2022_escape_len;
     int low_page, high_page;
     char *iconv_name;	/* For compatibility to old versions we might use a different name from that used by iconv. */
-    iconv_t *tounicode;
-    iconv_t *fromunicode;
+    iconv_t tounicode;
+    iconv_t fromunicode;
     int (*tounicode_func)(int);
     int (*fromunicode_func)(int);
     unsigned int is_temporary: 1;	/* freed when the map gets freed */
