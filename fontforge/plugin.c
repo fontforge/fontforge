@@ -285,28 +285,65 @@ static void ReimportPlugins() {
     }
 }
 
+static PyObject *GetPluginEntryPoints() {
+    PyObject *str = NULL, *iter = NULL, *ep_method = NULL;
+    PyObject *keywords = NULL, *entry_points = NULL;
+
+    /* Try importlib.metadata first, fallback to importlib_metadata */
+    PyObject *importlib = PyImport_ImportModule("importlib.metadata");
+    if (!importlib) {
+        PyErr_Clear();
+        importlib = PyImport_ImportModule("importlib_metadata");
+        if (!importlib) {
+            PyErr_Clear();
+            LogError(_("Core python package 'importlib.metadata' not found: Cannot discover plugins"));
+            return NULL;
+        }
+    }
+    if (!PyObject_HasAttrString(importlib, "entry_points")) {
+        LogError(_("Method 'entry_points()' not found in module 'importlib.metadata'"));
+	PyErr_Clear();
+        Py_DECREF(importlib);
+        return NULL;
+    }
+
+    /* Call entry_points(group="fontforge_plugin") */
+    ep_method = PyObject_GetAttrString(importlib, "entry_points");
+    str = PyUnicode_FromString("fontforge_plugin");
+    keywords = PyDict_New();
+    PyDict_SetItemString(keywords, "group", str);
+    entry_points = PyObject_Call(ep_method, PyTuple_New(0), keywords);
+
+    Py_DECREF(ep_method);
+    Py_DECREF(str);
+    Py_DECREF(keywords);
+    Py_DECREF(importlib);
+
+    if (!entry_points) {
+        LogError(_("Failed to retrieve plugin entry points"));
+	PyErr_Clear();
+        return NULL;
+    }
+
+    iter = PyObject_GetIter(entry_points);
+    if (!iter || !PyIter_Check(iter)) {
+	PyErr_Clear();
+        LogError(_("Could not iterate 'fontforge_plugin' entry points."));
+        Py_XDECREF(iter);
+        return NULL;
+    }
+
+    return iter;
+}
+
 static bool DiscoverPlugins(int do_import) {
     int do_ask = false;
     PluginEntry *pe;
     GList_Glib *i;
     PyObject *str, *str2, *iter, *tmp, *tmp2, *entrypoint;
-    PyObject *pkgres = PyImport_ImportModule("pkg_resources");
-    if (pkgres == NULL || !PyObject_HasAttrString(pkgres, "iter_entry_points")) {
-        LogError(_("Core python package 'pkg_resources' not found: Cannot discover plugins"));
-	PyErr_Clear();
-        return false;
-    }
-    str = PyUnicode_FromString("iter_entry_points");
-    str2 = PyUnicode_FromString("fontforge_plugin");
-    iter = PyObject_CallMethodObjArgs(pkgres, str, str2, NULL);
-    if (!PyIter_Check(iter)) {
-        LogError(_("Could not iterate 'fontforge_plugin' entry points."));
-        return false;
-    }
-    Py_DECREF(str);
-    Py_DECREF(str2);
 
-    PyObject *getmetastr = PyUnicode_FromString("get_metadata_lines");
+    iter = GetPluginEntryPoints();
+
     while ((entrypoint = PyIter_Next(iter))) {
         // Find name and module_name
         str = PyObject_GetAttrString(entrypoint, "name");
@@ -316,7 +353,7 @@ static bool DiscoverPlugins(int do_import) {
             PyErr_Clear();
             continue;
         }
-        str2 = PyObject_GetAttrString(entrypoint, "module_name");
+        str2 = PyObject_GetAttrString(entrypoint, "module");
         const char *modname = PyUnicode_AsUTF8(str2);
         if (modname == NULL) {
             Py_XDECREF(str);
@@ -341,7 +378,7 @@ static bool DiscoverPlugins(int do_import) {
         }
         Py_DECREF(str);
         Py_DECREF(str2);
-        str = PyObject_GetAttrString(entrypoint, "attrs");
+        str = PyObject_GetAttrString(entrypoint, "attr");
         if (str == NULL) {
             PyErr_Clear();
         } else {
@@ -357,9 +394,9 @@ static bool DiscoverPlugins(int do_import) {
         pe->entrypoint = entrypoint;
         // Extract project URL from package data
         PyObject *dist = PyObject_GetAttrString(entrypoint, "dist");
-        if (dist != NULL) {
-            tmp = PyObject_GetAttrString(dist, "PKG_INFO");
-            tmp2 = PyObject_CallMethodObjArgs(dist, getmetastr, tmp, NULL);
+        if (dist != NULL && PyObject_HasAttrString(dist, "metadata")) {
+            tmp = PyObject_GetAttrString(dist, "metadata");
+            tmp2 = PyObject_GetIter(tmp);
             Py_DECREF(tmp);
             if (PyIter_Check(tmp2)) {
                 while ((str = PyIter_Next(tmp2))) {
@@ -403,8 +440,6 @@ static bool DiscoverPlugins(int do_import) {
         }
     }
     Py_DECREF(iter);
-    Py_DECREF(getmetastr);
-    Py_DECREF(pkgres);
     return do_ask;
 }
 
