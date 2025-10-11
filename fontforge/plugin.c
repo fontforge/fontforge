@@ -286,19 +286,14 @@ static void ReimportPlugins() {
 }
 
 static PyObject *GetPluginEntryPoints() {
-    PyObject *iter = NULL, *ep_method = NULL;
-    PyObject *kw_args = NULL, *entry_points = NULL;
+    PyObject *iter = NULL, *all_eps = NULL;
+    PyObject *entry_points = NULL;
 
-    /* Try importlib.metadata first, fallback to importlib_metadata */
     PyObject *importlib = PyImport_ImportModule("importlib.metadata");
     if (!importlib) {
         PyErr_Clear();
-        importlib = PyImport_ImportModule("importlib_metadata");
-        if (!importlib) {
-            PyErr_Clear();
-            LogError(_("Core python package 'importlib.metadata' not found: Cannot discover plugins"));
-            return NULL;
-        }
+        LogError(_("Core python package 'importlib.metadata' not found: Cannot discover plugins"));
+        return NULL;
     }
     if (!PyObject_HasAttrString(importlib, "entry_points")) {
         LogError(_("Method 'entry_points()' not found in module 'importlib.metadata'"));
@@ -306,21 +301,32 @@ static PyObject *GetPluginEntryPoints() {
         Py_DECREF(importlib);
         return NULL;
     }
+    all_eps = PyObject_CallMethod(importlib, "entry_points", NULL);
 
-    /* Call entry_points(group="fontforge_plugin") */
-    ep_method = PyObject_GetAttrString(importlib, "entry_points");
-    kw_args = Py_BuildValue("{s,s}", "group", "fontforge_plugin");
-    entry_points = PyObject_Call(ep_method, PyTuple_New(0), kw_args);
-
-    Py_DECREF(ep_method);
-    Py_DECREF(kw_args);
-    Py_DECREF(importlib);
-
-    if (!entry_points) {
-        LogError(_("Failed to retrieve plugin entry points"));
-	PyErr_Clear();
-        return NULL;
+    /* The object returned from importlib.metadata.entry_points() varies between versions*/
+    if (PyDict_Check(all_eps)) {
+	/* entry_points is a dictionary of entry point groups */
+	entry_points = PyDict_GetItemString(all_eps, "fontforge_plugin");
+	if (!entry_points) {
+	    /* No FontForge plugins found */
+	    PyErr_Clear();
+            return NULL;
+	}
+    } else {
+        /* all_eps is an EntryPoints object. Call all_eps.select(group="fontforge_plugin") */
+        PyObject *select_method = PyObject_GetAttrString(all_eps, "select");
+        PyObject *kw_args = Py_BuildValue("{s,s}", "group", "fontforge_plugin");
+        entry_points = PyObject_Call(select_method, PyTuple_New(0), kw_args);
+        Py_DECREF(select_method);
+        Py_DECREF(kw_args);
+        if (!entry_points) {
+            LogError(_("Failed to retrieve plugin entry points"));
+	    PyErr_Print();
+            return NULL;
+        }
     }
+
+    Py_DECREF(importlib);
 
     iter = PyObject_GetIter(entry_points);
     if (!iter || !PyIter_Check(iter)) {
@@ -340,6 +346,9 @@ static bool DiscoverPlugins(int do_import) {
     PyObject *str, *str2, *iter, *tmp, *tmp2, *entrypoint;
 
     iter = GetPluginEntryPoints();
+    if (iter == NULL) {
+	return false;
+    }
 
     while ((entrypoint = PyIter_Next(iter))) {
         // Find name and module_name
@@ -350,7 +359,7 @@ static bool DiscoverPlugins(int do_import) {
             PyErr_Clear();
             continue;
         }
-        str2 = PyObject_GetAttrString(entrypoint, "module");
+        str2 = PyObject_GetAttrString(entrypoint, "value");
         const char *modname = PyUnicode_AsUTF8(str2);
         if (modname == NULL) {
             Py_XDECREF(str);
