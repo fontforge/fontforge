@@ -42,6 +42,7 @@ Dialog::Dialog() {
     cancel_button->set_name("cancel");
 
     set_default_response(Gtk::RESPONSE_OK);
+    set_position(Gtk::WIN_POS_CENTER);
 }
 
 Gtk::ResponseType Dialog::run() {
