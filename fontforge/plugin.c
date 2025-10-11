@@ -286,8 +286,8 @@ static void ReimportPlugins() {
 }
 
 static PyObject *GetPluginEntryPoints() {
-    PyObject *str = NULL, *iter = NULL, *ep_method = NULL;
-    PyObject *keywords = NULL, *entry_points = NULL;
+    PyObject *iter = NULL, *ep_method = NULL;
+    PyObject *kw_args = NULL, *entry_points = NULL;
 
     /* Try importlib.metadata first, fallback to importlib_metadata */
     PyObject *importlib = PyImport_ImportModule("importlib.metadata");
@@ -309,14 +309,11 @@ static PyObject *GetPluginEntryPoints() {
 
     /* Call entry_points(group="fontforge_plugin") */
     ep_method = PyObject_GetAttrString(importlib, "entry_points");
-    str = PyUnicode_FromString("fontforge_plugin");
-    keywords = PyDict_New();
-    PyDict_SetItemString(keywords, "group", str);
-    entry_points = PyObject_Call(ep_method, PyTuple_New(0), keywords);
+    kw_args = Py_BuildValue("{s,s}", "group", "fontforge_plugin");
+    entry_points = PyObject_Call(ep_method, PyTuple_New(0), kw_args);
 
     Py_DECREF(ep_method);
-    Py_DECREF(str);
-    Py_DECREF(keywords);
+    Py_DECREF(kw_args);
     Py_DECREF(importlib);
 
     if (!entry_points) {
