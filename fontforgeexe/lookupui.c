@@ -44,6 +44,7 @@
 #include "ttf.h"
 #include "ustring.h"
 #include "utype.h"
+#include "gtk/simple_dialogs.hpp"
 
 #include <locale.h>
 #include <math.h>
@@ -1064,12 +1065,13 @@ GTextInfo languages[] = {
 };
 
 static char *LK_LangsDlg(GGadget *, int r, int c);
+static char *LK_GTKLangsDlg(GGadget *, int r, int c);
 static char *LK_ScriptsDlg(GGadget *, int r, int c);
 static struct col_init scriptci[] = {
 /* GT: English uses "script" to mean a general writing system (latin, greek, kanji) */
 /* GT: and the cursive handwriting style. Here we mean the general writing system. */
     { me_stringchoicetag , NULL, scripts, NULL, N_("writing system|Script") },
-    { me_funcedit, LK_LangsDlg, NULL, NULL, N_("Language(s)") },
+    { me_funcedit, LK_GTKLangsDlg, NULL, NULL, N_("Language(s)") },
     COL_INIT_EMPTY
 };
 static struct col_init featureci[] = {
@@ -1163,6 +1165,20 @@ return( false );
 	}
     }
 return( true );
+}
+
+static char *LK_GTKLangsDlg(GGadget *g, int r, int c) {
+    LanguageRec lang_recs[sizeof(languages) / sizeof(languages[0])];
+    char* ret = malloc(1);
+    *ret = '\0';
+
+    for (int i=0; i < sizeof(languages) / sizeof(languages[0]); ++i ) {
+        lang_recs[i].name = (const char*)languages[i].text;
+	lang_recs[i].tag = (uint32_t)languages[i].userdata;
+    }
+
+    language_list_dialog(GGadgetGetWindow(g), lang_recs);
+    return ret;
 }
 
 static char *LK_LangsDlg(GGadget *g, int r, int c) {

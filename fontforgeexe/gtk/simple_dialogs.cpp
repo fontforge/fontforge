@@ -21,6 +21,7 @@
 #include "intl.h"
 #include "application.hpp"
 #include "dialog.hpp"
+#include "language_list.hpp"
 
 namespace ff::dlg {
 
@@ -88,6 +89,19 @@ int add_encoding_slots_dialog(GWindow parent, bool cid) {
         parent, _("Add Encoding Slots..."),
         cid ? _("How many CID slots do you wish to add?")
             : _("How many unencoded glyph slots do you wish to add?"));
+}
+
+int language_list_dialog(GWindow parent, LanguageRec* languages) {
+    // To avoid instability, the GTK application is lazily initialized only when
+    // a GTK window is invoked.
+    ff::app::GtkApp();
+
+    ff::dlg::LanguageRecords language_vec;
+    for (LanguageRec* lang = languages; lang->name != nullptr; ++lang) {
+        language_vec.emplace_back(lang->name, lang->tag);
+    }
+
+    return ff::dlg::LanguageListDlg::show(parent, language_vec);
 }
 
 void update_appearance() {

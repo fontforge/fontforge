@@ -22,7 +22,14 @@ extern "C" {
 
 typedef struct gwindow* GWindow;
 
+typedef struct {
+    const char* name;
+    uint32_t tag;
+} LanguageRec;
+
 int add_encoding_slots_dialog(GWindow parent, bool cid);
+
+int language_list_dialog(GWindow parent, LanguageRec* languages);
 
 void update_appearance();
 
