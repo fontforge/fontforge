@@ -27,25 +27,31 @@
 
 #include "utils.hpp"
 
-Glib::RefPtr<Gdk::Window> gtk_get_topmost_window() {
-    Glib::RefPtr<Gdk::Screen> screen = Gdk::Screen::get_default();
+static Cairo::TextExtents ui_font_extents(const std::string& sample_text) {
+    Cairo::RefPtr<Cairo::ImageSurface> srf =
+        Cairo::ImageSurface::create(Cairo::Format::FORMAT_RGB24, 100, 100);
+    Cairo::RefPtr<Cairo::Context> cairo_context = Cairo::Context::create(srf);
+    Glib::RefPtr<Gtk::StyleContext> style_context = Gtk::StyleContext::create();
 
-    Glib::RefPtr<Gdk::Window> topmost_window = screen->get_active_window();
-    if (topmost_window) {
-        return topmost_window;
-    }
+    Pango::FontDescription font = style_context->get_font();
+    cairo_context->select_font_face(font.get_family(),
+                                    Cairo::FontSlant::FONT_SLANT_NORMAL,
+                                    Cairo::FontWeight::FONT_WEIGHT_NORMAL);
+    cairo_context->set_font_size(font.get_size() / PANGO_SCALE *
+                                 Gdk::Screen::get_default()->get_resolution() /
+                                 96);
 
-    // Gdk::Screen::get_active_window() is not always reliable, e.g when the
-    // active window was just closed, and its parent hasn't been activated back
-    // yet.
-    std::vector<Glib::RefPtr<Gdk::Window>> stack = screen->get_window_stack();
-    for (auto rit = stack.rbegin(); rit != stack.rend(); ++rit) {
-        if ((*rit)->get_window_type() == Gdk::WINDOW_TOPLEVEL &&
-            (*rit)->is_visible()) {
-            topmost_window = *rit;
-            break;
-        }
-    }
+    Cairo::TextExtents extents;
+    cairo_context->get_text_extents("m", extents);
+    return extents;
+}
 
-    return topmost_window;
+double ui_font_em_size() {
+    Cairo::TextExtents extents = ui_font_extents("m");
+    return extents.x_advance;
+}
+
+double ui_font_eX_size() {
+    Cairo::TextExtents extents = ui_font_extents("X");
+    return extents.height;
 }
