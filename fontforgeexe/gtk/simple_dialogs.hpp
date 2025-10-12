@@ -20,7 +20,9 @@ extern "C" {
 
 #include "gresource.h"
 
-int add_encoding_slots_dialog(bool cid);
+typedef struct gwindow* GWindow;
+
+int add_encoding_slots_dialog(GWindow parent, bool cid);
 
 void update_appearance();
 

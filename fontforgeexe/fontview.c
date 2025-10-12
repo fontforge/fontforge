@@ -4970,7 +4970,7 @@ static void FVEncodingMenuBuild(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED
 
 static void FVMenuAddUnencoded(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
    FontView *fv = (FontView *) GDrawGetUserData(gw);
-   int i = add_encoding_slots_dialog(fv->b.cidmaster);
+   int i = add_encoding_slots_dialog(gw, fv->b.cidmaster);
    if(i == 0) {
       /* User canceled the action. */
       return;

@@ -28,16 +28,22 @@
 
 #include <gtkmm.h>
 
+typedef struct gwindow* GWindow;
+
 namespace ff::dlg {
 
+// Modal dialog
 class Dialog : public Gtk::Dialog {
  public:
-    Dialog();
+    // The parent is a legacy GDraw window.
+    // TODO(iorsh): remove this constructor after the transition to GTK is
+    // complete.
+    Dialog(GWindow parent_gwin);
 
     Gtk::ResponseType run();
 
  private:
-    Glib::RefPtr<Gdk::Window> parent_window;
+    GWindow parent_gwindow_ = nullptr;
 };
 
 }  // namespace ff::dlg

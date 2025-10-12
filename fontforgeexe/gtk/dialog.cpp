@@ -28,13 +28,14 @@
 #include "dialog.hpp"
 
 #include "intl.h"
+#include "gimage.h"
 #include "utils.hpp"
+
+typedef struct gevent GEvent;
 
 namespace ff::dlg {
 
-Dialog::Dialog() {
-    parent_window = gtk_get_topmost_window();
-
+Dialog::Dialog(GWindow parent_gwin) : parent_gwindow_(parent_gwin) {
     auto ok_button = add_button(_("_OK"), Gtk::RESPONSE_OK);
     ok_button->set_name("ok");
 
@@ -46,9 +47,23 @@ Dialog::Dialog() {
 }
 
 Gtk::ResponseType Dialog::run() {
-    if (parent_window) {
-        Glib::RefPtr<Gdk::Window> win = get_window();
-        win->set_transient_for(parent_window);
+    if (parent_gwindow_) {
+        // Redeclare GWindow to avoid dependency on the legacy headers.
+        struct ggdkwindow_local { /* :GWindow */
+            // Inherit GWindow start
+            void* ggc;
+            void* display;
+            int (*eh)(GWindow, GEvent*);
+            GRect pos;
+            struct ggdkwindow_local* parent;
+            void* user_data;
+            void* widget_data;
+            GdkWindow* w;
+        };
+
+        GdkWindow* parent_gdk_window = ((ggdkwindow_local*)parent_gwindow_)->w;
+        GdkWindow* this_window = get_window().get()->gobj();
+        gdk_window_set_transient_for(this_window, parent_gdk_window);
     }
 
     return (Gtk::ResponseType)Gtk::Dialog::run();
