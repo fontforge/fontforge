@@ -27,10 +27,13 @@ class LanguageListDlg final : public Dialog {
 
     LanguageListDlg(GWindow parent, const ff::dlg::LanguageRecords& lang_recs);
 
+    std::vector<int> get_selection() { return list_.get_selected(); }
+
  public:
-    // Show the dialog and return either the entered integer, 0 if the dialog
-    // was cancelled/closed, or -1 if something strange happened
-    static int show(GWindow parent, const ff::dlg::LanguageRecords& lang_recs);
+    // Show the dialog and return indexes of selected rows (or empty vector if
+    // the dialog was cancelled/closed).
+    static std::vector<int> show(GWindow parent,
+                                 const ff::dlg::LanguageRecords& lang_recs);
 };
 
 }  // namespace ff::dlg

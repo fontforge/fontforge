@@ -1169,16 +1169,13 @@ return( true );
 
 static char *LK_GTKLangsDlg(GGadget *g, int r, int c) {
     LanguageRec lang_recs[sizeof(languages) / sizeof(languages[0])];
-    char* ret = malloc(1);
-    *ret = '\0';
 
     for (int i=0; i < sizeof(languages) / sizeof(languages[0]); ++i ) {
         lang_recs[i].name = (const char*)languages[i].text;
 	lang_recs[i].tag = (uint32_t)languages[i].userdata;
     }
 
-    language_list_dialog(GGadgetGetWindow(g), lang_recs);
-    return ret;
+    return language_list_dialog(GGadgetGetWindow(g), lang_recs);
 }
 
 static char *LK_LangsDlg(GGadget *g, int r, int c) {

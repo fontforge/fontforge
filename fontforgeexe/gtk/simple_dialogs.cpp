@@ -15,6 +15,7 @@
 
 #include "simple_dialogs.hpp"
 
+#include <numeric>
 #include <string>
 #include <gtkmm.h>
 
@@ -91,7 +92,7 @@ int add_encoding_slots_dialog(GWindow parent, bool cid) {
             : _("How many unencoded glyph slots do you wish to add?"));
 }
 
-int language_list_dialog(GWindow parent, LanguageRec* languages) {
+char* language_list_dialog(GWindow parent, LanguageRec* languages) {
     // To avoid instability, the GTK application is lazily initialized only when
     // a GTK window is invoked.
     ff::app::GtkApp();
@@ -101,7 +102,23 @@ int language_list_dialog(GWindow parent, LanguageRec* languages) {
         language_vec.emplace_back(lang->name, lang->tag);
     }
 
-    return ff::dlg::LanguageListDlg::show(parent, language_vec);
+    std::vector<int> selection =
+        ff::dlg::LanguageListDlg::show(parent, language_vec);
+
+    if (selection.empty()) {
+        return nullptr;
+    } else {
+        auto append_tag = [&language_vec](std::string a, int b) {
+            return std::move(a) + ',' + (const char*)language_vec[b].second;
+        };
+
+        // Comma-seperated tags
+        std::string s((const char*)language_vec[selection[0]].second);
+        s = std::accumulate(std::next(selection.begin()), selection.end(),
+                            s,  // start with first element
+                            append_tag);
+        return strdup(s.c_str());
+    }
 }
 
 void update_appearance() {

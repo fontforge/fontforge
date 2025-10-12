@@ -47,26 +47,17 @@ LanguageListDlg::LanguageListDlg(GWindow parent,
     show_all();
 }
 
-int LanguageListDlg::show(GWindow parent,
-                          const ff::dlg::LanguageRecords& lang_recs) {
+std::vector<int> LanguageListDlg::show(
+    GWindow parent, const ff::dlg::LanguageRecords& lang_recs) {
     LanguageListDlg dialog(parent, lang_recs);
-    dialog.signal_response().connect([&](int response_id) {
-        // Ok/Add returns the entered integer
-        if (response_id == Gtk::RESPONSE_OK) {
-            // i = dialog.get_value();
-        }
-        // Cancel/close returns 0, which is semantically equivalent to the
-        // user actually entering 0
-        else if (response_id == Gtk::RESPONSE_CANCEL ||
-                 response_id == Gtk::RESPONSE_DELETE_EVENT ||
-                 response_id == Gtk::RESPONSE_CLOSE) {
-            // i = 0;
-        }
-        // Any other response, which shouldn't really be possible, returns
-        // -1 to indicate an error
-    });
-    dialog.run();
-    return 0;
+
+    Gtk::ResponseType result = dialog.run();
+    std::vector<int> selection;
+
+    if (result == Gtk::RESPONSE_OK) {
+        selection = dialog.get_selection();
+    }
+    return selection;
 }
 
 }  // namespace ff::dlg

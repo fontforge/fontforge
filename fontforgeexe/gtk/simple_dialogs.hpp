@@ -29,7 +29,9 @@ typedef struct {
 
 int add_encoding_slots_dialog(GWindow parent, bool cid);
 
-int language_list_dialog(GWindow parent, LanguageRec* languages);
+// Return comma-separated list of language tags, or NULL if the action was
+// canceled. The caller is responsible to release the retirned pointer.
+char* language_list_dialog(GWindow parent, LanguageRec* languages);
 
 void update_appearance();
 
