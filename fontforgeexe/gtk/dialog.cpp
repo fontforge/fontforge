@@ -35,6 +35,28 @@ typedef struct gevent GEvent;
 
 namespace ff::dlg {
 
+static GdkWindow* get_toplevel_gdk_window(GWindow gwin) {
+    // Redeclare GWindow to avoid dependency on the legacy headers.
+    struct ggdkwindow_local { /* :GWindow */
+        // Inherit GWindow start
+        void* ggc;
+        void* display;
+        int (*eh)(GWindow, GEvent*);
+        GRect pos;
+        struct ggdkwindow_local* parent;
+        void* user_data;
+        void* widget_data;
+        GdkWindow* w;
+    };
+
+    if (gwin) {
+        GdkWindow* gdk_win = ((ggdkwindow_local*)gwin)->w;
+        return gdk_window_get_effective_toplevel(gdk_win);
+    } else {
+        return nullptr;
+    }
+}
+
 Dialog::Dialog(GWindow parent_gwin) : parent_gwindow_(parent_gwin) {
     auto ok_button = add_button(_("_OK"), Gtk::RESPONSE_OK);
     ok_button->set_name("ok");
@@ -46,24 +68,24 @@ Dialog::Dialog(GWindow parent_gwin) : parent_gwindow_(parent_gwin) {
     set_position(Gtk::WIN_POS_CENTER);
 }
 
+Dialog::~Dialog() {
+    if (parent_gwindow_) {
+        // Unblock the parent GDraw window
+        GdkWindow* parent_gdk_window = get_toplevel_gdk_window(parent_gwindow_);
+        g_object_set_data(G_OBJECT(parent_gdk_window), "GTKModalBlock", NULL);
+    }
+}
+
 Gtk::ResponseType Dialog::run() {
     if (parent_gwindow_) {
-        // Redeclare GWindow to avoid dependency on the legacy headers.
-        struct ggdkwindow_local { /* :GWindow */
-            // Inherit GWindow start
-            void* ggc;
-            void* display;
-            int (*eh)(GWindow, GEvent*);
-            GRect pos;
-            struct ggdkwindow_local* parent;
-            void* user_data;
-            void* widget_data;
-            GdkWindow* w;
-        };
-
-        GdkWindow* parent_gdk_window = ((ggdkwindow_local*)parent_gwindow_)->w;
+        GdkWindow* parent_gdk_window = get_toplevel_gdk_window(parent_gwindow_);
         GdkWindow* this_window = get_window().get()->gobj();
         gdk_window_set_transient_for(this_window, parent_gdk_window);
+
+        // Mark the parent window as blocked, this would cause GDraw to discard
+        // its events.
+        g_object_set_data(G_OBJECT(parent_gdk_window), "GTKModalBlock",
+                          (gpointer) true);
     }
 
     return (Gtk::ResponseType)Gtk::Dialog::run();

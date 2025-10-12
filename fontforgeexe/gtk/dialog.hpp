@@ -39,6 +39,7 @@ class Dialog : public Gtk::Dialog {
     // TODO(iorsh): remove this constructor after the transition to GTK is
     // complete.
     Dialog(GWindow parent_gwin);
+    ~Dialog();
 
     Gtk::ResponseType run();
 
