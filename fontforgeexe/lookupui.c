@@ -1078,6 +1078,12 @@ static struct col_init featureci[] = {
     COL_INIT_EMPTY
 };
 
+int cmp_item_by_name(const void *a, const void *b) {
+    int res = strcmp((const char *)((const GTextInfo *)a)->text,
+                     (const char *)((const GTextInfo *)b)->text);
+    return res;
+}
+
 void LookupUIInit(void) {
     static int done = false;
     int i, j;
@@ -1094,6 +1100,13 @@ return;
 	    if ( needswork[j][i].text!=NULL )
 		needswork[j][i].text = (unichar_t *) S_((char *) needswork[j][i].text);
     }
+
+    /* Sort scripts and languages by localized name */
+    size_t n_scripts = sizeof(scripts) / sizeof(scripts[0]) - 1;    
+    qsort(scripts, n_scripts, sizeof(GTextInfo), cmp_item_by_name);
+    size_t n_languages = sizeof(languages) / sizeof(languages[0]) - 1;    
+    qsort(languages, n_languages, sizeof(GTextInfo), cmp_item_by_name);
+
     LookupInit();
 
     featureci[0].title = S_(featureci[0].title);
