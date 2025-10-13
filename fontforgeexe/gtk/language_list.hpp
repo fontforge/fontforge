@@ -25,7 +25,8 @@ class LanguageListDlg final : public Dialog {
  private:
     Gtk::ListViewText list_;
 
-    LanguageListDlg(GWindow parent, const ff::dlg::LanguageRecords& lang_recs);
+    LanguageListDlg(GWindow parent, const ff::dlg::LanguageRecords& lang_recs,
+                    const std::vector<int>& initial_selection);
 
     std::vector<int> get_selection() { return list_.get_selected(); }
 
@@ -33,7 +34,8 @@ class LanguageListDlg final : public Dialog {
     // Show the dialog and return indexes of selected rows (or empty vector if
     // the dialog was cancelled/closed).
     static std::vector<int> show(GWindow parent,
-                                 const ff::dlg::LanguageRecords& lang_recs);
+                                 const ff::dlg::LanguageRecords& lang_recs,
+                                 const std::vector<int>& initial_selection);
 };
 
 }  // namespace ff::dlg

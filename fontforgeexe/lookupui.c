@@ -1169,13 +1169,16 @@ return( true );
 
 static char *LK_GTKLangsDlg(GGadget *g, int r, int c) {
     LanguageRec lang_recs[sizeof(languages) / sizeof(languages[0])];
+    int rows;
+    struct matrix_data *strings = GMatrixEditGet(g, &rows);
+    char *langstr = strings[2*r+c].u.md_str;
 
     for (int i=0; i < sizeof(languages) / sizeof(languages[0]); ++i ) {
         lang_recs[i].name = (const char*)languages[i].text;
 	lang_recs[i].tag = (uint32_t)languages[i].userdata;
     }
 
-    return language_list_dialog(GGadgetGetWindow(g), lang_recs);
+    return language_list_dialog(GGadgetGetWindow(g), lang_recs, langstr);
 }
 
 static char *LK_LangsDlg(GGadget *g, int r, int c) {

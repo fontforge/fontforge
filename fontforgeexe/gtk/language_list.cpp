@@ -21,7 +21,8 @@
 namespace ff::dlg {
 
 LanguageListDlg::LanguageListDlg(GWindow parent,
-                                 const ff::dlg::LanguageRecords& lang_recs)
+                                 const ff::dlg::LanguageRecords& lang_recs,
+                                 const std::vector<int>& initial_selection)
     : Dialog(parent), list_(1, false, Gtk::SELECTION_MULTIPLE) {
     set_title(_("Language List"));
 
@@ -36,6 +37,11 @@ LanguageListDlg::LanguageListDlg(GWindow parent,
     list_.set_headers_visible(false);
     list_.set_search_entry(*search_entry);
 
+    // Set initial selection
+    for (int idx : initial_selection) {
+        list_.get_selection()->select(Gtk::TreePath(std::to_string(idx)));
+    }
+
     // Show initially roughtly 8 rows.
     property_default_height() = 40 * ui_font_eX_size();
 
@@ -48,8 +54,9 @@ LanguageListDlg::LanguageListDlg(GWindow parent,
 }
 
 std::vector<int> LanguageListDlg::show(
-    GWindow parent, const ff::dlg::LanguageRecords& lang_recs) {
-    LanguageListDlg dialog(parent, lang_recs);
+    GWindow parent, const ff::dlg::LanguageRecords& lang_recs,
+    const std::vector<int>& initial_selection) {
+    LanguageListDlg dialog(parent, lang_recs, initial_selection);
 
     Gtk::ResponseType result = dialog.run();
     std::vector<int> selection;

@@ -92,18 +92,33 @@ int add_encoding_slots_dialog(GWindow parent, bool cid) {
             : _("How many unencoded glyph slots do you wish to add?"));
 }
 
-char* language_list_dialog(GWindow parent, LanguageRec* languages) {
+char* language_list_dialog(GWindow parent, const LanguageRec* languages,
+                           const char* initial_tags) {
     // To avoid instability, the GTK application is lazily initialized only when
     // a GTK window is invoked.
     ff::app::GtkApp();
 
     ff::dlg::LanguageRecords language_vec;
-    for (LanguageRec* lang = languages; lang->name != nullptr; ++lang) {
+    for (const LanguageRec* lang = languages; lang->name != nullptr; ++lang) {
         language_vec.emplace_back(lang->name, lang->tag);
     }
 
+    // Compute initial selection
+    std::stringstream ss(initial_tags);
+    std::vector<int> tag_list;
+    while (ss.good()) {
+        std::string substr;
+        std::getline(ss, substr, ',');
+        auto it = std::find_if(
+            language_vec.begin(), language_vec.end(),
+            [&substr](const auto& rec) { return (rec.second == substr); });
+        if (it != language_vec.end()) {
+            tag_list.push_back(it - language_vec.begin());
+        }
+    }
+
     std::vector<int> selection =
-        ff::dlg::LanguageListDlg::show(parent, language_vec);
+        ff::dlg::LanguageListDlg::show(parent, language_vec, tag_list);
 
     if (selection.empty()) {
         return nullptr;
