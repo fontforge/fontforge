@@ -27,6 +27,9 @@
 
 #include "utils.hpp"
 
+#include <glib/gprintf.h>
+#include <iostream>
+
 static Cairo::TextExtents ui_font_extents(const std::string& sample_text) {
     Cairo::RefPtr<Cairo::ImageSurface> srf =
         Cairo::ImageSurface::create(Cairo::Format::FORMAT_RGB24, 100, 100);
@@ -54,4 +57,25 @@ double ui_font_em_size() {
 double ui_font_eX_size() {
     Cairo::TextExtents extents = ui_font_extents("X");
     return extents.height;
+}
+
+void gtk_post_error(const char* title, const char* statement, ...) {
+    va_list ap;
+    va_start(ap, statement);
+
+    // Format error statement
+    gchar* result_string = NULL;
+    gint chars_written = g_vasprintf(&result_string, statement, ap);
+    if (chars_written >= 0 && result_string != NULL) {
+        Gtk::MessageDialog message_dlg(result_string, false, Gtk::MESSAGE_ERROR,
+                                       Gtk::BUTTONS_OK, true);
+        message_dlg.set_title(title);
+        message_dlg.run();
+        g_free(result_string);
+    } else {
+        std::cerr << "Error formatting statement \"" << statement << "\""
+                  << std::endl;
+    }
+
+    va_end(ap);
 }
