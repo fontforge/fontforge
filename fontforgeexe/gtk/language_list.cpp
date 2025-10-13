@@ -54,6 +54,22 @@ LanguageListDlg::LanguageListDlg(GWindow parent,
     get_content_area()->pack_start(*search_entry, Gtk::PACK_SHRINK);
     get_content_area()->pack_start(*scrolled_window, Gtk::PACK_EXPAND_WIDGET);
 
+    // Connect this signal before the normal Ok/Cancel processing slot, to
+    // prevent dialog closing if we wish.
+    signal_response().connect(
+        [this](int response_id) {
+            if (response_id == Gtk::RESPONSE_OK) {
+                if (list_.get_selected().empty()) {
+                    gtk_post_error(
+                        _("Language Missing"),
+                        _("You must select at least one language.\nUse the "
+                          "\"Default\" language if nothing else fits."));
+                    signal_response().emission_stop();
+                }
+            }
+        },
+        false);
+
     show_all();
 }
 
