@@ -30,12 +30,26 @@ LanguageListDlg::LanguageListDlg(GWindow parent,
     scrolled_window->set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
 
     auto search_entry = Gtk::make_managed<Gtk::SearchEntry>();
+    // The default behavior resets the current selection and selects the
+    // matching row. Since we have a multiple-selection list, we want to just
+    // scroll to the matching row.
+    search_entry->signal_search_changed().connect([search_entry, this]() {
+        Glib::ustring search_text = search_entry->get_text();
+        // Look for matching row, assuming the rows are sorted
+        // alphabetically.
+        int row_idx = 0;
+        for (; row_idx < list_.size(); ++row_idx) {
+            if (search_text.lowercase() < list_.get_text(row_idx).lowercase())
+                break;
+        }
+        list_.scroll_to_row(Gtk::TreePath(std::to_string(row_idx)));
+    });
 
     for (const auto& [name, tag] : lang_recs) {
         list_.append(name);
     }
     list_.set_headers_visible(false);
-    list_.set_search_entry(*search_entry);
+    list_.set_enable_search(false);
     list_.set_tooltip_text(
         _("Select as many languages as needed\n"
           "Hold down the control key when clicking\n"
@@ -69,6 +83,8 @@ LanguageListDlg::LanguageListDlg(GWindow parent,
             }
         },
         false);
+
+    signal_realize().connect([this]() { list_.grab_focus(); });
 
     show_all();
 }
