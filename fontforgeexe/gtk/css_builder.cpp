@@ -197,6 +197,17 @@ std::map<std::string, std::string> collect_css_properties_disabled(
     return evaluate_css_properties(css_property_map, box_resource, false);
 }
 
+std::map<std::string, std::string> collect_css_properties_selected(
+    const GBox& box_resource) {
+    static const std::vector<std::pair<std::string, CssPropertyEvalCB>>
+        css_property_map = {
+            {"color", color_property<&GBox::main_foreground>},
+            {"background-color", color_property<&GBox::active_border>},
+        };
+
+    return evaluate_css_properties(css_property_map, box_resource, true);
+}
+
 std::map<std::string, std::string> collect_css_properties_main(
     const struct resed* ri_extras) {
     std::map<std::string, std::string> collection;
@@ -248,6 +259,8 @@ std::string build_styles(const GResInfo* gdraw_ri) {
         {"GCancelButton", {"button#cancel", {}}},
         {"GNumericField", {"spinbutton", {}}},
         {"GNumericFieldSpinner", {"spinbutton button", {}}},
+        {"GTextField", {"entry", {"spinbutton"}}},
+        {"GList", {"treeview", {}}},
     };
 
     std::string styles;
@@ -275,6 +288,9 @@ std::string build_styles(const GResInfo* gdraw_ri) {
 
         auto props_disabled = collect_css_properties_disabled(*(ri->boxdata));
         styles += build_style(selector.node_name + ":disabled", props_disabled);
+
+        auto props_selected = collect_css_properties_selected(*(ri->boxdata));
+        styles += build_style(selector.node_name + ":selected", props_selected);
 
         // When the node is inside predefined containers, we shall unset the
         // affected properties
