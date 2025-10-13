@@ -36,6 +36,10 @@ LanguageListDlg::LanguageListDlg(GWindow parent,
     }
     list_.set_headers_visible(false);
     list_.set_search_entry(*search_entry);
+    list_.set_tooltip_text(
+        _("Select as many languages as needed\n"
+          "Hold down the control key when clicking\n"
+          "to make disjoint selections."));
 
     // Set initial selection
     for (int idx : initial_selection) {
