@@ -67,7 +67,9 @@ void gtk_post_error(const char* title, const char* statement, ...) {
     gchar* result_string = NULL;
     gint chars_written = g_vasprintf(&result_string, statement, ap);
     if (chars_written >= 0 && result_string != NULL) {
-        Gtk::MessageDialog message_dlg(result_string, false, Gtk::MESSAGE_ERROR,
+        // Passing use_markup=false causes GTK to embolden the text, and we
+        // don't want it.
+        Gtk::MessageDialog message_dlg(result_string, true, Gtk::MESSAGE_ERROR,
                                        Gtk::BUTTONS_OK, true);
         message_dlg.set_title(title);
         message_dlg.run();
