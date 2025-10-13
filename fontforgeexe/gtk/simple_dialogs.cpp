@@ -23,6 +23,7 @@
 #include "application.hpp"
 #include "dialog.hpp"
 #include "language_list.hpp"
+#include "utils.hpp"
 
 namespace ff::dlg {
 
@@ -106,6 +107,7 @@ char* language_list_dialog(GWindow parent, const LanguageRec* languages,
     // Compute initial selection
     std::stringstream ss(initial_tags);
     std::vector<int> tag_list;
+    std::vector<std::string> unrecognized_tags;
     while (ss.good()) {
         std::string substr;
         std::getline(ss, substr, ',');
@@ -114,8 +116,21 @@ char* language_list_dialog(GWindow parent, const LanguageRec* languages,
             [&substr](const auto& rec) { return (rec.second == substr); });
         if (it != language_vec.end()) {
             tag_list.push_back(it - language_vec.begin());
+        } else {
+            unrecognized_tags.push_back(substr);
         }
     }
+
+    if (unrecognized_tags.size() == 1)
+        gtk_post_error(_("Unknown Language"),
+                       _("The language, '%s', is not in the list of known "
+                         "languages and will be omitted"),
+                       unrecognized_tags[0].c_str());
+    else if (unrecognized_tags.size() > 1)
+        gtk_post_error(_("Unknown Language"),
+                       _("Several language tags, including '%s', are not in "
+                         "the list of known languages and will be omitted"),
+                       unrecognized_tags[0].c_str());
 
     std::vector<int> selection =
         ff::dlg::LanguageListDlg::show(parent, language_vec, tag_list);
