@@ -43,7 +43,7 @@ LanguageListDlg::LanguageListDlg(GWindow parent,
             if (search_text.lowercase() < list_.get_text(row_idx).lowercase())
                 break;
         }
-        list_.scroll_to_row(Gtk::TreePath(std::to_string(row_idx)));
+        list_.scroll_to_row(Gtk::TreePath(std::to_string(row_idx)), 0.0);
     });
 
     for (const auto& [name, tag] : lang_recs) {
