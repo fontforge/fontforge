@@ -1064,7 +1064,6 @@ GTextInfo languages[] = {
     GTEXTINFO_EMPTY
 };
 
-static char *LK_LangsDlg(GGadget *, int r, int c);
 static char *LK_GTKLangsDlg(GGadget *, int r, int c);
 static char *LK_ScriptsDlg(GGadget *, int r, int c);
 static struct col_init scriptci[] = {
@@ -1143,30 +1142,6 @@ struct lookup_dlg {
     char *scriptret;
 };
 
-static int langs_e_h(GWindow gw, GEvent *event) {
-    int *done = GDrawGetUserData(gw);
-
-    if ( event->type==et_close ) {
-	*done = true;
-    } else if ( event->type==et_char ) {
-	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
-	    help("ui/dialogs/lookups.html", "#lookups-scripts-dlg");
-return( true );
-	}
-return( false );
-    } else if ( event->type==et_controlevent && event->u.control.subtype == et_buttonactivate ) {
-	switch ( GGadgetGetCid(event->u.control.g)) {
-	  case CID_OK:
-	    *done = 2;
-	  break;
-	  case CID_Cancel:
-	    *done = true;
-	  break;
-	}
-    }
-return( true );
-}
-
 static char *LK_GTKLangsDlg(GGadget *g, int r, int c) {
     LanguageRec lang_recs[sizeof(languages) / sizeof(languages[0])];
     int rows;
@@ -1175,163 +1150,10 @@ static char *LK_GTKLangsDlg(GGadget *g, int r, int c) {
 
     for (int i=0; i < sizeof(languages) / sizeof(languages[0]); ++i ) {
         lang_recs[i].name = (const char*)languages[i].text;
-	lang_recs[i].tag = (uint32_t)languages[i].userdata;
+	lang_recs[i].tag = (uint32_t)(intptr_t)languages[i].userdata;
     }
 
     return language_list_dialog(GGadgetGetWindow(g), lang_recs, langstr);
-}
-
-static char *LK_LangsDlg(GGadget *g, int r, int c) {
-    int rows, i;
-    struct matrix_data *strings = GMatrixEditGet(g, &rows);
-    char *langstr = strings[2*r+c].u.md_str, *pt, *start;
-    unsigned char tagstr[4], warnstr[8];
-    uint32_t tag;
-    int warn_cnt = 0;
-    int j,done=0;
-    GWindowAttrs wattrs;
-    GGadgetCreateData gcd[5], *varray[6], *harray[7], boxes[3];
-    GTextInfo label[5];
-    GRect pos;
-    GWindow gw;
-    int32_t len;
-    GTextInfo **ti;
-    char *ret;
-
-    for ( i=0; languages[i].text!=NULL; ++i )
-	languages[i].selected = false;
-
-    for ( start= langstr; *start; ) {
-	memset(tagstr,' ',sizeof(tagstr));
-	for ( pt=start, j=0; *pt!='\0' && *pt!=','; ++pt, ++j ) {
-	    if ( j<4 )
-		tagstr[j] = *pt;
-	}
-	if ( *pt==',' ) ++pt;
-	tag = (tagstr[0]<<24) | (tagstr[1]<<16) | (tagstr[2]<<8) | tagstr[3];
-	for ( i=0; languages[i].text!=NULL; ++i )
-	    if ( languages[i].userdata == (void *) (intptr_t) tag ) {
-		languages[i].selected = true;
-	break;
-	    }
-	if ( languages[i].text==NULL ) {
-	    ++warn_cnt;
-	    memcpy(warnstr,tagstr,4);
-	    warnstr[4] = '\0';
-	}
-	start = pt;
-    }
-    if ( warn_cnt!=0 ) {
-	if ( warn_cnt==1 )
-	    ff_post_error(_("Unknown Language"),_("The language, '%s', is not in the list of known languages and will be omitted"), warnstr );
-	else
-	    ff_post_error(_("Unknown Language"),_("Several language tags, including '%s', are not in the list of known languages and will be omitted"), warnstr );
-    }
-
-	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
-	wattrs.event_masks = ~(1<<et_charup);
-	wattrs.restrict_input_to_me = 1;
-	wattrs.undercursor = 1;
-	wattrs.cursor = ct_pointer;
-	wattrs.utf8_window_title =  _("Language List");
-	wattrs.is_dlg = true;
-	pos.x = pos.y = 0;
-	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,150));
-	pos.height = GDrawPointsToPixels(NULL,193);
-	gw = GDrawCreateTopWindow(NULL,&pos,langs_e_h,&done,&wattrs);
-
-	memset(&gcd,0,sizeof(gcd));
-	memset(&boxes,0,sizeof(boxes));
-	memset(&label,0,sizeof(label));
-
-	i = 0;
-	gcd[i].gd.pos.x = 10; gcd[i].gd.pos.y = 5;
-	gcd[i].gd.pos.height = 12*12+6;
-	gcd[i].gd.flags = gg_enabled|gg_visible|gg_list_alphabetic|gg_list_multiplesel;
-	gcd[i].gd.u.list = languages;
-	gcd[i].gd.cid = 0;
-	gcd[i].gd.popup_msg = _(
-	    "Select as many languages as needed\n"
-	    "Hold down the control key when clicking\n"
-	    "to make disjoint selections.");
-	varray[0] = &gcd[i]; varray[1] = NULL;
-	gcd[i++].creator = GListCreate;
-
-	gcd[i].gd.pos.x = 15-3; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+gcd[i-1].gd.pos.height+5;
-	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
-	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_default;
-	label[i].text = (unichar_t *) _("_OK");
-	label[i].text_is_1byte = true;
-	label[i].text_in_resource = true;
-	gcd[i].gd.mnemonic = 'O';
-	gcd[i].gd.label = &label[i];
-	gcd[i].gd.cid = CID_OK;
-	harray[0] = GCD_Glue; harray[1] = &gcd[i]; harray[2] = GCD_Glue;
-	gcd[i++].creator = GButtonCreate;
-
-	gcd[i].gd.pos.x = -15; gcd[i].gd.pos.y = gcd[i-1].gd.pos.y+3;
-	gcd[i].gd.pos.width = -1; gcd[i].gd.pos.height = 0;
-	gcd[i].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
-	label[i].text = (unichar_t *) _("_Cancel");
-	label[i].text_is_1byte = true;
-	label[i].text_in_resource = true;
-	gcd[i].gd.label = &label[i];
-	gcd[i].gd.mnemonic = 'C';
-	gcd[i].gd.cid = CID_Cancel;
-	harray[3] = GCD_Glue; harray[4] = &gcd[i]; harray[5] = GCD_Glue; harray[6] = NULL;
-	gcd[i++].creator = GButtonCreate;
-
-	boxes[2].gd.flags = gg_enabled|gg_visible;
-	boxes[2].gd.u.boxelements = harray;
-	boxes[2].creator = GHBoxCreate;
-	varray[2] = &boxes[2]; varray[3] = NULL; varray[4] = NULL;
-
-	boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
-	boxes[0].gd.flags = gg_enabled|gg_visible;
-	boxes[0].gd.u.boxelements = varray;
-	boxes[0].creator = GHVGroupCreate;
-
-	GGadgetsCreate(gw,boxes);
-	GHVBoxSetExpandableRow(boxes[0].ret,0);
-	GHVBoxSetExpandableCol(boxes[2].ret,gb_expandgluesame);
-	GHVBoxFitWindow(boxes[0].ret);
-
-    GDrawSetVisible(gw,true);
- retry:
-    while ( !done )
-	GDrawProcessOneEvent(NULL);
-    ret = NULL;
-    ti = GGadgetGetList(gcd[0].ret,&len);
-    if ( done==2 ) {
-	int lcnt=0;
-	for ( i=0; i<len; ++i ) {
-	    if ( ti[i]->selected )
-		++lcnt;
-	}
-	if ( lcnt==0 ) {
-	    ff_post_error(_("Language Missing"),_("You must select at least one language.\nUse the \"Default\" language if nothing else fits."));
-	    done = 0;
- goto retry;
-	}
-	ret = malloc(5*lcnt+1);
-	*ret = '\0';
-	pt = ret;
-	for ( i=0; i<len; ++i ) {
-	    if ( done==2 && ti[i]->selected ) {
-		uint32_t tag = (uint32_t) (intptr_t) (ti[i]->userdata);
-		*pt++ = tag>>24;
-		*pt++ = tag>>16;
-		*pt++ = tag>>8;
-		*pt++ = tag&0xff;
-		*pt++ = ',';
-	    }
-	}
-	if ( pt!=ret )
-	    pt[-1] = '\0';
-    }
-    GDrawDestroyWindow(gw);
-return( ret );
 }
 
 static void LK_NewScript(GGadget *g,int row) {
