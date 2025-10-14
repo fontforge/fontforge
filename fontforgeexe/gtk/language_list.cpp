@@ -25,6 +25,7 @@ LanguageListDlg::LanguageListDlg(GWindow parent,
                                  const std::vector<int>& initial_selection)
     : Dialog(parent), list_(1, false, Gtk::SELECTION_MULTIPLE) {
     set_title(_("Language List"));
+    set_help_context("ui/dialogs/lookups.html", "#lookups-scripts-dlg");
 
     auto scrolled_window = Gtk::make_managed<Gtk::ScrolledWindow>();
     scrolled_window->set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);

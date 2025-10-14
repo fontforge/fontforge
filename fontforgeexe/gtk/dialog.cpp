@@ -27,6 +27,10 @@
 
 #include "dialog.hpp"
 
+extern "C" {
+#include "gutils.h"
+}
+
 #include "intl.h"
 #include "gimage.h"
 #include "utils.hpp"
@@ -89,6 +93,25 @@ Gtk::ResponseType Dialog::run() {
     }
 
     return (Gtk::ResponseType)Gtk::Dialog::run();
+}
+
+void Dialog::set_help_context(const std::string& file,
+                              const std::string& section) {
+    help_file_ = file;
+    help_section_ = section;
+
+    if (!help_file_.empty()) {
+        signal_key_press_event().connect(
+            sigc::mem_fun(*this, &Dialog::on_help_key_press), false);
+    }
+}
+
+bool Dialog::on_help_key_press(GdkEventKey* event) {
+    if (event->keyval == GDK_KEY_F1 || event->keyval == GDK_KEY_Help) {
+        help(help_file_.c_str(), help_section_.c_str());
+        return true;
+    }
+    return false;  // let other keys be processed normally
 }
 
 }  // namespace ff::dlg
