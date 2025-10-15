@@ -543,9 +543,7 @@ return( gwwv_save_filename(title,defaultfile,initial_filter) );
 
 static void allow_events(void) {
     GDrawSync(NULL);
-#if !defined(__MINGW32__)
     nanosleep(&(const struct timespec){.tv_nsec = 100000}, NULL);
-#endif
     GDrawProcessPendingEvents(NULL);
 }
 
