@@ -34,6 +34,7 @@
 #include "utype.h"
 
 #include <assert.h>
+#include <time.h>
 
 extern GBox _ggadget_Default_Box;
 #define ACTIVE_BORDER   (_ggadget_Default_Box.active_border)
@@ -540,22 +541,11 @@ static char *UI_saveas_file(const char *title, const char *defaultfile,
 return( gwwv_save_filename(title,defaultfile,initial_filter) );
 }
 
-static void tinysleep(int microsecs) {
-#if !defined(__MINGW32__)
-    fd_set none;
-    struct timeval timeout;
-
-    FD_ZERO(&none);
-    memset(&timeout,0,sizeof(timeout));
-    timeout.tv_usec = microsecs;
-
-    select(1,&none,&none,&none,&timeout);
-#endif
-}
-
 static void allow_events(void) {
     GDrawSync(NULL);
-    tinysleep(100);
+#if !defined(__MINGW32__)
+    nanosleep(&(const struct timespec){.tv_nsec = 100000}, NULL);
+#endif
     GDrawProcessPendingEvents(NULL);
 }
 
