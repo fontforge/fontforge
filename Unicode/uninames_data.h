@@ -403,8 +403,8 @@ static const struct unicode_range unicode_planes[] = {
     {0xC0000, 0xCFFFD, 0xC0000, 0, N_("<Unassigned Plane 12>")},
     {0xD0000, 0xDFFFD, 0xD0000, 0, N_("<Unassigned Plane 13>")},
     {0xE0000, 0xEFFFD, 0xE0000, 337, N_("Supplementary Special-purpose Plane")},
-    {0xF0000, 0xFFFFD, 0xF0000, 65534, N_("Supplementary Private Use Area Plane A")},
-    {0x100000, 0x10FFFD, 0x100000, 65534, N_("Supplementary Private Use Area Plane B")},
+    {0xF0000, 0xFFFFD, 0xF0000, 65534, N_("Plane 15 (Supplementary Private Use Area-A)")},
+    {0x100000, 0x10FFFD, 0x100000, 65534, N_("Plane 16 (Supplementary Private Use Area-B)")},
 };
 
 /* lexicon data */
