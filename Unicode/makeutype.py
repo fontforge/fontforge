@@ -244,8 +244,8 @@ class UnicodeData:
             (0x20000, 0x2FFFD, "Supplementary Ideographic Plane"),
             (0x30000, 0x3FFFD, "Tertiary Ideographic Plane"),
             (0xE0000, 0xEFFFD, "Supplementary Special-purpose Plane"),
-            (0xF0000, 0xFFFFD, "Supplementary Private Use Area-A"),
-            (0x100000, 0x10FFFD, "Supplementary Private Use Area-B"),
+            (0xF0000, 0xFFFFD, "Supplementary Private Use Area Plane A"),
+            (0x100000, 0x10FFFD, "Supplementary Private Use Area Plane B"),
         ]
         planes = [
             (s, e, s, sum(1 for i in range(s, e + 1) if table[i]), n)
