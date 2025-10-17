@@ -33,10 +33,6 @@
 #include "gkeysym.h"
 #include "ustring.h"
 
-#if __Mac
-#  include <sys/select.h>
-#endif
-
 /* Functions for font metrics:
     rectangle of text (left side bearing of first char, right of last char)
 */
