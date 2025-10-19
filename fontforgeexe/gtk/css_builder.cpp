@@ -221,6 +221,17 @@ std::map<std::string, std::string> collect_css_properties_main(
     return collection;
 }
 
+std::map<std::string, std::string> collect_css_properties_color(
+    const GBox& box_resource) {
+    static const std::vector<std::pair<std::string, CssPropertyEvalCB>>
+        css_property_map = {
+            {"color", color_property<&GBox::main_foreground>},
+            {"background-color", color_property<&GBox::main_background>},
+        };
+
+    return evaluate_css_properties(css_property_map, box_resource, true);
+}
+
 std::string build_style(const std::string& selector,
                         const std::map<std::string, std::string>& properties) {
     std::string property_list;
@@ -260,12 +271,30 @@ std::string build_styles(const GResInfo* gdraw_ri) {
         {"GNumericField", {"spinbutton", {}}},
         {"GNumericFieldSpinner", {"spinbutton button", {}}},
         {"GTextField", {"entry", {"spinbutton"}}},
-        {"GList", {"treeview", {}}},
+    };
+
+    // Some GTK widgets have subrantially different structure from their GDraw
+    // analogs. For them we collect only color properties.
+    static const std::map<std::string, std::string> css_selector_map_color = {
+        {"GList", "treeview"},
     };
 
     std::string styles;
 
     for (const GResInfo* ri = gdraw_ri; ri->next != NULL; ri = ri->next) {
+        auto sel_color_it = css_selector_map_color.find(ri->resname);
+        if (sel_color_it != css_selector_map_color.end()) {
+            auto props_color = collect_css_properties_color(*(ri->boxdata));
+            styles += build_style(sel_color_it->second, props_color);
+
+            auto props_selected =
+                collect_css_properties_selected(*(ri->boxdata));
+            styles +=
+                build_style(sel_color_it->second + ":selected", props_selected);
+
+            continue;
+        }
+
         auto sel_it = css_selector_map.find(ri->resname);
         if (sel_it == css_selector_map.end()) {
             continue;
@@ -288,9 +317,6 @@ std::string build_styles(const GResInfo* gdraw_ri) {
 
         auto props_disabled = collect_css_properties_disabled(*(ri->boxdata));
         styles += build_style(selector.node_name + ":disabled", props_disabled);
-
-        auto props_selected = collect_css_properties_selected(*(ri->boxdata));
-        styles += build_style(selector.node_name + ":selected", props_selected);
 
         // When the node is inside predefined containers, we shall unset the
         // affected properties
