@@ -213,6 +213,9 @@ std::map<std::string, std::string> collect_css_properties_main(
     std::map<std::string, std::string> collection;
 
     for (const struct resed* rec = ri_extras; rec && rec->resname; ++rec) {
+        if (std::strcmp(rec->resname, "Foreground") == 0) {
+            collection["color"] = css_color(*(Color*)(rec->val));
+        }
         if (std::strcmp(rec->resname, "Background") == 0) {
             collection["background-color"] = css_color(*(Color*)(rec->val));
         }
@@ -263,14 +266,15 @@ std::string build_styles(const GResInfo* gdraw_ri) {
     };
 
     static const std::map<std::string, Selector> css_selector_map = {
-        {"", {"box", {}}},
-        {"GLabel", {"label", {"button"}}},
+        {"", {"box", {"tooltip"}}},
+        {"GLabel", {"label", {"button", "tooltip"}}},
         {"GButton", {"button", {"spinbutton"}}},
         {"GDefaultButton", {"button#ok", {}}},
         {"GCancelButton", {"button#cancel", {}}},
         {"GNumericField", {"spinbutton", {}}},
         {"GNumericFieldSpinner", {"spinbutton button", {}}},
         {"GTextField", {"entry", {"spinbutton"}}},
+        {"GGadget.Popup", {"tooltip", {}}},
     };
 
     // Some GTK widgets have subrantially different structure from their GDraw
@@ -301,10 +305,20 @@ std::string build_styles(const GResInfo* gdraw_ri) {
         }
         const Selector& selector = sel_it->second;
 
-        if ((std::strcmp(ri->resname, "") == 0) && ri->extras) {
+        if ((std::strcmp(ri->resname, "") == 0 ||
+             std::strcmp(ri->resname, "GGadget.Popup") == 0) &&
+            ri->extras) {
             // Collect some default properties from the base class.
             auto props_main = collect_css_properties_main(ri->extras);
             styles += build_style(selector.node_name, props_main);
+
+            // When the node is inside predefined containers, we shall unset the
+            // affected properties
+            for (const std::string& container : selector.excluded_containers) {
+                styles += build_unset_style(
+                    container + " " + selector.node_name, props_main);
+            }
+
             continue;
         }
 
