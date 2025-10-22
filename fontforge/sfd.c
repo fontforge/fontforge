@@ -64,6 +64,7 @@
 #include <limits.h>		/* For NAME_MAX or _POSIX_NAME_MAX */
 #include <locale.h>
 #include <math.h>
+#include <stdbool.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -1841,11 +1842,57 @@ return;
     putc('\n',sfd);
 }
 
+static void SFDDumpOtfSubFeatNames(FILE *sfd, SplineFont *sf, const char *prefix, uint32_t tag, uint32_t lang) {
+    struct otffeatname *fn;
+    struct otfname *on;
+    bool cvfound = false;
+
+	for ( fn=sf->feat_names; fn!=NULL; fn=fn->next ) {
+		if ( fn->tag == (((uint32_t)((uint8_t)prefix[0]) << 24) | ((uint32_t)((uint8_t)prefix[1]) << 16) | (tag & 0xffff)) ) {
+			for ( on=fn->names; on!=NULL; on=on->next ) {
+				if ( on->lang == lang ) {
+					SFDDumpUTF7Str(sfd, on->name);
+					cvfound = true;
+				}
+			}
+		}
+	}
+	if ( !cvfound ) {
+		fprintf( sfd, "\"\"" );
+	}
+}
+static int SFDDumpOtfCountFeatNames(FILE *sfd, SplineFont *sf, uint32_t tag, uint32_t lang) {
+    struct otffeatname *fn;
+    struct otfname *on;
+    bool cvfound;
+	int i;
+
+	for ( i = 0; i < 128; ++i ) {
+		cvfound = false;
+		for ( fn=sf->feat_names; fn!=NULL; fn=fn->next ) {
+			if ( fn->tag == (CHR('c',(128 + i),'\0','\0') | (tag & 0xffff)) ) {
+				for ( on=fn->names; on!=NULL; on=on->next ) {
+					if ( on->lang == lang ) {
+						cvfound = true;
+					}
+				}
+			}
+		}
+		if ( !cvfound ) {
+			break;
+		}
+	}
+	return i;
+}
 static void SFDDumpOtfFeatNames(FILE *sfd, SplineFont *sf) {
     struct otffeatname *fn;
     struct otfname *on;
+	bool cv[100] = {false};
+	int cvnum, cvcount, i;
+	char prefix[3] = {0};
 
     for ( fn=sf->feat_names; fn!=NULL; fn=fn->next ) {
+	if ( (fn->tag & 0xffff0000) == (('s' << 24) | ('s' << 16)) ) {
 	fprintf( sfd, "OtfFeatName: '%c%c%c%c' ",
 		fn->tag>>24, fn->tag>>16, fn->tag>>8, fn->tag );
 	for ( on=fn->names; on!=NULL; on=on->next ) {
@@ -1854,6 +1901,31 @@ static void SFDDumpOtfFeatNames(FILE *sfd, SplineFont *sf) {
 	    if ( on->next!=NULL ) putc(' ',sfd);
 	}
 	putc('\n',sfd);
+	}
+	else if ( ((fn->tag & 0xff00) >> 8) >= '0' && ((fn->tag & 0xff00) >> 8) <= '9' && (fn->tag & 0xff) >= '0' && (fn->tag & 0xff) <= '9' ) {
+		cvnum = (((fn->tag & 0xff00) >> 8) - '0') * 10 + (fn->tag & 0xff) - '0';
+		if ( !cv[cvnum] ) {
+			fprintf( sfd, "OtfFeatName: 'cv%c%c' ", fn->tag>>8, fn->tag );
+			for ( on=fn->names; on!=NULL; on=on->next ) {
+				fprintf( sfd, "%d ", on->lang );
+				SFDDumpOtfSubFeatNames(sfd, sf, "cv", fn->tag, on->lang); putc(' ',sfd);
+				SFDDumpOtfSubFeatNames(sfd, sf, "c|", fn->tag, on->lang); putc(' ',sfd);
+				SFDDumpOtfSubFeatNames(sfd, sf, "c~", fn->tag, on->lang); putc(' ',sfd);
+				cvcount = SFDDumpOtfCountFeatNames(sfd, sf, fn->tag, on->lang);
+				fprintf( sfd, "%d", cvcount );
+				if ( cvcount ) putc(' ', sfd);
+				for ( i = 0; i < cvcount; ++i ) {
+					prefix[0] = 'c';
+					prefix[1] = (char)(128 + (i % 128));
+					SFDDumpOtfSubFeatNames(sfd, sf, prefix, fn->tag, on->lang);
+					if ( on->next!=NULL || i < (cvcount - 1) ) putc(' ',sfd);
+				}
+			}
+			fprintf( sfd, " \"\"" ); // TODO: character
+			putc('\n',sfd);
+			cv[cvnum] = true;
+		}
+	}
     }
 }
 
@@ -6497,26 +6569,75 @@ static void SFDGetDesignSize(FILE *sfd,SplineFont *sf) {
     }
 }
 
-static void SFDGetOtfFeatName(FILE *sfd,SplineFont *sf) {
-    int ch;
-    struct otfname *cur;
-    struct otffeatname *fn;
+static void SFDGetOtfFeatSubName(FILE *sfd, SplineFont *sf, struct otffeatname *fn, int16_t lang) {
+	struct otfname *cur;
 
-    fn = chunkalloc(sizeof(struct otffeatname));
-    fn->tag = gettag(sfd);
-    for (;;) {
-	while ( (ch=nlgetc(sfd))==' ' );
-	ungetc(ch,sfd);
-	if ( !isdigit(ch))
-    break;
 	cur = chunkalloc(sizeof(struct otfname));
 	cur->next = fn->names;
 	fn->names = cur;
-	getsint(sfd,(int16_t *) &cur->lang);
+	cur->lang = lang;
 	cur->name = SFDReadUTF7Str(sfd);
+}
+
+static void SFDGetOtfFeatNamePrepareNext(SplineFont *sf, struct otffeatname *fn) {
+	struct otfname *cur;
+
+	if ( fn->names->name ) {
+		fn->next = sf->feat_names;
+		sf->feat_names = fn;
+	}
+	else {
+		cur = fn->names;
+		fn->names = cur->next;
+		chunkfree(cur, sizeof(struct otfname));
+		chunkfree(fn, sizeof(struct otffeatname));
+	}
+}
+
+static void SFDGetOtfFeatName(FILE *sfd,SplineFont *sf) {
+    int ch, i;
+    struct otffeatname *fn;
+	uint32_t tag;
+	int16_t lang, parmcnt;
+
+    fn = chunkalloc(sizeof(struct otffeatname));
+    tag = fn->tag = gettag(sfd);
+    for (;;) {
+		while ( (ch=nlgetc(sfd))==' ' );
+		ungetc(ch,sfd);
+		if ( !isdigit(ch))
+			break;
+		getsint(sfd, &lang);
+		SFDGetOtfFeatSubName(sfd, sf, fn, lang);
+		if ( (tag & 0xffff0000) == CHR('c','v','\0','\0') ) {
+			SFDGetOtfFeatNamePrepareNext(sf, fn);
+
+			fn = chunkalloc(sizeof(struct otffeatname));
+			fn->tag = (CHR('c','|','\0','\0') | (tag & 0xffff));
+			SFDGetOtfFeatSubName(sfd, sf, fn, lang);
+			SFDGetOtfFeatNamePrepareNext(sf, fn);
+
+			fn = chunkalloc(sizeof(struct otffeatname));
+			fn->tag = (CHR('c','~','\0','\0') | (tag & 0xffff));
+			SFDGetOtfFeatSubName(sfd, sf, fn, lang);
+
+			while ( (ch=nlgetc(sfd))==' ' );
+			ungetc(ch,sfd);
+			if ( !isdigit(ch))
+				break;
+			getsint(sfd, &parmcnt);
+
+			for ( i = 0; i < parmcnt; ++i ) {
+				SFDGetOtfFeatNamePrepareNext(sf, fn);
+				fn = chunkalloc(sizeof(struct otffeatname));
+				fn->tag = (CHR('c',128 + (i % 128),'\0','\0') | (tag & 0xffff));
+				SFDGetOtfFeatSubName(sfd, sf, fn, lang);
+			}
+
+			// TODO: character
+		}
     }
-    fn->next = sf->feat_names;
-    sf->feat_names = fn;
+	SFDGetOtfFeatNamePrepareNext(sf, fn);
 }
 
 static Encoding *SFDGetEncoding(FILE *sfd, char *tok) {

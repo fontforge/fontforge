@@ -1055,6 +1055,31 @@ static GTextInfo ttfnameids[] = {
     { (unichar_t *) N_("WWS Subfamily"), NULL, 0, 0, (void *) 22, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     GTEXTINFO_EMPTY
 };
+#define cvTagSingleMenu(label, lnum, chr1, chr2, chr3, chr4) { (unichar_t *) "cv" lnum " " label, NULL, 0, 0, (void *) (intptr_t) CHR(chr1,chr2,chr3,chr4), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+#define cvTagMenu0(label, lnum, chr1, chr2, chr3) \
+cvTagSingleMenu(label, lnum "1", chr1, chr2, chr3, '1') \
+cvTagSingleMenu(label, lnum "2", chr1, chr2, chr3, '2') \
+cvTagSingleMenu(label, lnum "3", chr1, chr2, chr3, '3') \
+cvTagSingleMenu(label, lnum "4", chr1, chr2, chr3, '4') \
+cvTagSingleMenu(label, lnum "5", chr1, chr2, chr3, '5') \
+cvTagSingleMenu(label, lnum "6", chr1, chr2, chr3, '6') \
+cvTagSingleMenu(label, lnum "7", chr1, chr2, chr3, '7') \
+cvTagSingleMenu(label, lnum "8", chr1, chr2, chr3, '8') \
+cvTagSingleMenu(label, lnum "9", chr1, chr2, chr3, '9')
+#define cvTagMenu1(label, lnum, chr1, chr2, chr3) \
+cvTagSingleMenu(label, lnum "0", chr1, chr2, chr3, '0') \
+cvTagMenu0(label, lnum, chr1, chr2, chr3)
+#define cvTagMenu(label, chr1, chr2) \
+cvTagMenu0(label, "0", chr1, chr2, '0') \
+cvTagMenu1(label, "1", chr1, chr2, '1') \
+cvTagMenu1(label, "2", chr1, chr2, '2') \
+cvTagMenu1(label, "3", chr1, chr2, '3') \
+cvTagMenu1(label, "4", chr1, chr2, '4') \
+cvTagMenu1(label, "5", chr1, chr2, '5') \
+cvTagMenu1(label, "6", chr1, chr2, '6') \
+cvTagMenu1(label, "7", chr1, chr2, '7') \
+cvTagMenu1(label, "8", chr1, chr2, '8') \
+cvTagMenu1(label, "9", chr1, chr2, '9')
 static GTextInfo otfssfeattags[] = {
 /* These should not be translated. They are tags */
     { (unichar_t *) "ss01", NULL, 0, 0, (void *) (intptr_t) CHR('s','s','0','1'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
@@ -1077,6 +1102,43 @@ static GTextInfo otfssfeattags[] = {
     { (unichar_t *) "ss18", NULL, 0, 0, (void *) (intptr_t) CHR('s','s','1','8'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
     { (unichar_t *) "ss19", NULL, 0, 0, (void *) (intptr_t) CHR('s','s','1','9'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
     { (unichar_t *) "ss20", NULL, 0, 0, (void *) (intptr_t) CHR('s','s','2','0'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+
+    cvTagMenu("label",       'c', 'v')
+    cvTagMenu("tooltip",     'c', '|')
+    cvTagMenu("sample text", 'c', '~')
+    cvTagMenu("parameter 1",  'c', 128)
+    cvTagMenu("parameter 2",  'c', 129)
+    cvTagMenu("parameter 3",  'c', 130)
+    cvTagMenu("parameter 4",  'c', 131)
+    cvTagMenu("parameter 5",  'c', 132)
+    cvTagMenu("parameter 6",  'c', 133)
+    cvTagMenu("parameter 7",  'c', 134)
+    cvTagMenu("parameter 8",  'c', 135)
+    cvTagMenu("parameter 9",  'c', 136)
+    cvTagMenu("parameter 10", 'c', 137)
+    cvTagMenu("parameter 11", 'c', 138)
+    cvTagMenu("parameter 12", 'c', 139)
+    cvTagMenu("parameter 13", 'c', 140)
+    cvTagMenu("parameter 14", 'c', 141)
+    cvTagMenu("parameter 15", 'c', 142)
+    cvTagMenu("parameter 16", 'c', 143)
+    cvTagMenu("parameter 17", 'c', 144)
+    cvTagMenu("parameter 18", 'c', 145)
+    cvTagMenu("parameter 19", 'c', 146)
+    cvTagMenu("parameter 20", 'c', 147)
+    cvTagMenu("parameter 21", 'c', 148)
+    cvTagMenu("parameter 22", 'c', 149)
+    cvTagMenu("parameter 23", 'c', 150)
+    cvTagMenu("parameter 24", 'c', 151)
+    cvTagMenu("parameter 25", 'c', 152)
+    cvTagMenu("parameter 26", 'c', 153)
+    cvTagMenu("parameter 27", 'c', 154)
+    cvTagMenu("parameter 28", 'c', 155)
+    cvTagMenu("parameter 29", 'c', 156)
+    cvTagMenu("parameter 30", 'c', 157)
+    cvTagMenu("parameter 31", 'c', 158)
+    cvTagMenu("parameter 32", 'c', 159)
+
     GTEXTINFO_EMPTY
 };
 /* Put styles (docs call it subfamily) first because it is most likely to change */

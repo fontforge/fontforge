@@ -3347,7 +3347,7 @@ return( NULL );
 	ginfo.feat_lookups[i].name_param_ptr = 0;
 	if ( ginfo.feat_lookups[i].tag==CHR('s','i','z','e') )
 	    size_params_ptr = ftell(g___);
-	else if ( ginfo.feat_lookups[i].tag>=CHR('s','s','0','1') && ginfo.feat_lookups[i].tag<=CHR('s','s','2','0'))
+	else if ( (ginfo.feat_lookups[i].tag>=CHR('s','s','0','1') && ginfo.feat_lookups[i].tag<=CHR('s','s','2','0')) || (ginfo.feat_lookups[i].tag>=CHR('c','v','0','1') && ginfo.feat_lookups[i].tag<=CHR('c','v','9','9')) )
 	    ginfo.feat_lookups[i].name_param_ptr = ftell(g___);
 	putshort(g___,0);			/* No feature params (we'll come back for 'size') */
 	putshort(g___,ginfo.feat_lookups[i].lcnt);/* this many lookups */
@@ -3373,17 +3373,69 @@ return( NULL );
 	putshort(g___,sf->design_range_top);
     }
     for ( i=0; i<ginfo.fcnt; ++i ) {
-	if ( ginfo.feat_lookups[i].name_param_ptr!=0 &&
-		(fn = findotffeatname(ginfo.feat_lookups[i].tag,sf))!=NULL ) {
-	    if ( fn->nid==0 )
-		fn->nid = at->next_strid++;
-	    uint32_t name_param_loc = ftell(g___);
-	    fseek(g___,ginfo.feat_lookups[i].name_param_ptr,SEEK_SET);
-	    putshort(g___,name_param_loc-ginfo.feat_lookups[i].name_param_ptr);
-	    fseek(g___,name_param_loc,SEEK_SET);
-	    putshort(g___,0);		/* Minor version number */
-	    putshort(g___,fn->nid);
-	}
+		if ( (ginfo.feat_lookups[i].tag & 0xffff0000) == CHR('c','v','\0','\0') ) {
+			uint16_t featUiLabelNameId = 0;
+			uint16_t featUiTooltipTextNameId = 0;
+			uint16_t sampleTextNameId = 0;
+			uint16_t numNamedParameters = 0;
+			uint16_t firstParamUiLabelNameId = 0;
+			uint32_t name_param_loc = ftell(g___);
+			if ( (fn = findotffeatname(ginfo.feat_lookups[i].tag,sf))!=NULL ) {
+				if ( fn->nid==0 )
+				fn->nid = at->next_strid++;
+				fseek(g___,ginfo.feat_lookups[i].name_param_ptr,SEEK_SET);
+				putshort(g___,name_param_loc-ginfo.feat_lookups[i].name_param_ptr);
+				featUiLabelNameId = fn->nid;
+			}
+			if ( (fn = findotffeatname(CHR('c','|','\0','\0') | (ginfo.feat_lookups[i].tag & 0xffff),sf))!=NULL ) {
+				if ( fn->nid==0 )
+				fn->nid = at->next_strid++;
+				fseek(g___,ginfo.feat_lookups[i].name_param_ptr,SEEK_SET);
+				putshort(g___,name_param_loc-ginfo.feat_lookups[i].name_param_ptr);
+				featUiTooltipTextNameId = fn->nid;
+			}
+			if ( (fn = findotffeatname(CHR('c','~','\0','\0') | (ginfo.feat_lookups[i].tag & 0xffff),sf))!=NULL ) {
+				if ( fn->nid==0 )
+				fn->nid = at->next_strid++;
+				fseek(g___,ginfo.feat_lookups[i].name_param_ptr,SEEK_SET);
+				putshort(g___,name_param_loc-ginfo.feat_lookups[i].name_param_ptr);
+				sampleTextNameId = fn->nid;
+			}
+			for ( numNamedParameters = 0; numNamedParameters < 128; ++numNamedParameters ) {
+				if ( (fn = findotffeatname(CHR('c',128 + numNamedParameters,'\0','\0') | (ginfo.feat_lookups[i].tag & 0xffff),sf))!=NULL ) {
+					if ( fn->nid==0 )
+					fn->nid = at->next_strid++;
+					fseek(g___,ginfo.feat_lookups[i].name_param_ptr,SEEK_SET);
+					putshort(g___,name_param_loc-ginfo.feat_lookups[i].name_param_ptr);
+					if (numNamedParameters == 0)
+						firstParamUiLabelNameId = fn->nid;
+				}
+				else {
+					break;
+				}
+			}
+
+			fseek(g___,name_param_loc,SEEK_SET);
+			putshort(g___,0); // format
+			putshort(g___,featUiLabelNameId);
+			putshort(g___,featUiTooltipTextNameId);
+			putshort(g___,sampleTextNameId);
+			putshort(g___,numNamedParameters);
+			putshort(g___,firstParamUiLabelNameId);
+			putshort(g___,0); // TODO: charCount
+			//putu24(g___,0); // TODO: character[charCount]
+		}
+		else if ( ginfo.feat_lookups[i].name_param_ptr!=0 &&
+			(fn = findotffeatname(ginfo.feat_lookups[i].tag,sf))!=NULL ) {
+			if ( fn->nid==0 )
+			fn->nid = at->next_strid++;
+			uint32_t name_param_loc = ftell(g___);
+			fseek(g___,ginfo.feat_lookups[i].name_param_ptr,SEEK_SET);
+			putshort(g___,name_param_loc-ginfo.feat_lookups[i].name_param_ptr);
+			fseek(g___,name_param_loc,SEEK_SET);
+			putshort(g___,0);		/* Minor version number */
+			putshort(g___,fn->nid);
+		}
     }
     /* And that should finish all the features */
 

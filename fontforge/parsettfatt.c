@@ -2412,8 +2412,22 @@ static void readttffeatnameparameters(FILE *ttf,int32_t pos,uint32_t tag,
 
     here = ftell(ttf);
     fseek(ttf,pos,SEEK_SET);
-    version = getushort(ttf);	/* Minor version #, currently (2009) 0 */
+	if ( (tag & 0xff000000) == ('c' << 24) &&
+		((tag & 0x00ff0000) == ('v' << 16) || (tag & 0x00ff0000) == ('|' << 16) || (tag & 0x00ff0000) == ('~' << 16) || (tag & 0x00800000) != 0) &&
+		(tag & 0x0000ff00) >= ('0' << 8) && (tag & 0x0000ff00) <= ('9' << 8) &&
+		(tag & 0x000000ff) >= ('0') && (tag & 0x000000ff) <= ('9') ) {
+			version = 0; /* ignore version for 'ccXX' */
+	}
+	else {
+		version = getushort(ttf);	/* Minor version #, currently (2009) 0 */
+	}
     nid = getushort(ttf);
+	if ( (tag & 0xff000000) == ('c' << 24) &&
+		(tag & 0x00800000) != 0 &&
+		(tag & 0x0000ff00) >= ('0' << 8) && (tag & 0x0000ff00) <= ('9' << 8) &&
+		(tag & 0x000000ff) >= ('0') && (tag & 0x000000ff) <= ('9') ) {
+			nid += (tag & 0x007f0000) >> 16;
+	}
     fseek(ttf,here,SEEK_SET);
 
     if ( version>=10 || nid<256 || nid>32767 ) {
@@ -2522,6 +2536,7 @@ static struct feature *readttffeatures(FILE *ttf,int32_t pos,int isgpos, struct 
     int i,j;
     struct feature *features;
     int parameters;
+	int ncnt;
 
     if ( pos>=info->g_bounds ) {
 	LogError(_("Attempt to read feature data beyond end of %s table"), isgpos ? "GPOS" : "GSUB" );
@@ -2560,6 +2575,37 @@ return( NULL );
 		parameters!=0 && !feof(ttf)) {
 	    readttffeatnameparameters(ttf,pos+parameters+features[i].offset,
 		    features[i].tag,info);
+	} else if ( features[i].tag>=CHR('c','v','0','1') && features[i].tag<=CHR('c','v','9','9') &&
+		parameters!=0 && !feof(ttf)) {
+		fseek(ttf,pos+parameters+features[i].offset+2,SEEK_SET);
+		if( getushort(ttf) != 0 )
+			readttffeatnameparameters(ttf,pos+parameters+features[i].offset+2,
+				features[i].tag,info);
+
+		fseek(ttf,pos+parameters+features[i].offset+4,SEEK_SET);
+		if( getushort(ttf) != 0 )
+			readttffeatnameparameters(ttf,pos+parameters+features[i].offset+4,
+				CHR('c','|','\0','\0') | (features[i].tag & 0xffff),info);
+
+		fseek(ttf,pos+parameters+features[i].offset+6,SEEK_SET);
+		if( getushort(ttf) != 0 )
+			readttffeatnameparameters(ttf,pos+parameters+features[i].offset+6,
+				CHR('c','~','\0','\0') | (features[i].tag & 0xffff),info);
+
+		fseek(ttf,pos+parameters+features[i].offset+8,SEEK_SET);
+		ncnt = getushort(ttf);
+		for ( j = 0; j < ncnt; ++j ) {
+			if ( j < 128 ) {
+				readttffeatnameparameters(ttf,pos+parameters+features[i].offset+10,
+					CHR('c',128 + j,'\0','\0') | (features[i].tag & 0xffff),info);
+			}
+		}
+		fseek(ttf,pos+features[i].offset+12,SEEK_SET);
+		ncnt = getushort(ttf); // TODO: charCount
+		for ( j = 0; j < ncnt; ++j ) {
+			get3byte(ttf); // TODO: character[j]
+		}
+		fseek(ttf,pos+features[i].offset+2,SEEK_SET);
 	}
 	features[i].lcnt = getushort(ttf);
 	if ( feof(ttf) ) {
