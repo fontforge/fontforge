@@ -290,9 +290,9 @@ ShaperOutput HarfBuzzShaper::apply_features(
     hb_buffer_add_utf32(hb_buffer, u_vec.data(), -1, 0, -1);
 
     // Set script and language
-    hb_script_t hb_script = hb_script_from_iso15924_tag((uint32_t)script);
+    hb_script_t hb_script = hb_ot_tag_to_script(script);
     hb_buffer_set_script(hb_buffer, hb_script);
-    hb_language_t hb_lang = hb_language_from_string((const char*)lang, -1);
+    hb_language_t hb_lang = hb_ot_tag_to_language(lang);
     hb_buffer_set_language(hb_buffer, hb_lang);
 
     bool rtl = false;
@@ -553,7 +553,7 @@ std::set<Tag> HarfBuzzShaper::default_features_from_plan(
 
 std::set<Tag> HarfBuzzShaper::default_features(Tag script, Tag lang,
                                                bool vertical) const {
-    hb_script_t hb_script = hb_script_from_iso15924_tag(script);
+    hb_script_t hb_script = hb_ot_tag_to_script(script);
     hb_language_t hb_lang = hb_ot_tag_to_language(lang);
     hb_direction_t dir = vertical
                              ? HB_DIRECTION_TTB
