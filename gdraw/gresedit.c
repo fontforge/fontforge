@@ -2476,8 +2476,11 @@ int _GResEditInitialize(GResInfo *ri) {
 	_GGadgetInitDefaultBox(ri->resname, ri->boxdata);
     }
 
-    if ( ri->font!=NULL )
-	GResourceFindFont(ri->resname, "Font", ri->font);
+    if ( ri->font!=NULL ) {
+        ri->font->rstr = get_CJK_UI_font(ri->font->rstr);
+		ri->font->can_free_name = true;
+        GResourceFindFont(ri->resname, "Font", ri->font);
+	}
 
     if ( ri->extras!=NULL )
 	GResEditFind(ri->extras, ri->resname);

@@ -804,3 +804,44 @@ GImage *GResImageGetImage(GResImage *ri) {
 
     return ri->bucket->image;
 }
+
+const char* get_CJK_UI_font(const char* defstr) {
+#if defined(__MINGW32__)
+    /* On Windows systems the default UI font doesn't support CJK. We need to override it.*/
+    char locale[100];
+    char *ui_font = NULL;
+
+    gettext_locale(locale);
+    if (strcmp(locale, "zh_CN") == 0) ui_font = "Microsoft YaHei UI";
+    if (strcmp(locale, "zh_SG") == 0) ui_font = "Microsoft YaHei UI";
+    if (strcmp(locale, "zh_TW") == 0) ui_font = "Microsoft JhengHei UI";
+    if (strcmp(locale, "zh_HK") == 0) ui_font = "Microsoft JhengHei UI";
+    if (strcmp(locale, "ja_JP") == 0) ui_font = "Meiryo UI,Yu Gothic UI";
+    if (strcmp(locale, "ja") == 0) ui_font = "Meiryo UI,Yu Gothic UI";
+    if (strcmp(locale, "ko_KR") == 0) ui_font = "Malgun Gothic";
+    if (strcmp(locale, "ko") == 0) ui_font = "Malgun Gothic";
+
+	if (ui_font == NULL) {
+		return strdup(defstr);
+	}
+
+    char* pos = strstr(defstr, "system-ui");
+        if (pos == NULL) {
+        return strdup(defstr);
+    }
+    
+    size_t prefix_len = pos - defstr;
+    size_t suffix_len = strlen(pos) + strlen("system-ui");  // Length after "system-ui"
+	size_t ui_font_len = strlen(ui_font);
+    char* result = malloc(prefix_len + ui_font_len + suffix_len + 1);
+    
+    // Copy parts together
+    strncpy(result, defstr, prefix_len);  // Copy prefix
+    strcpy(result + prefix_len, ui_font);  // Insert replacement
+    strcpy(result + prefix_len + ui_font_len, pos + strlen("system-ui"));  // Copy suffix
+    
+    return result;
+#else
+    return strdup(defstr);
+#endif
+}
