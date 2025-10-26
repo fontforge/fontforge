@@ -805,7 +805,7 @@ GImage *GResImageGetImage(GResImage *ri) {
     return ri->bucket->image;
 }
 
-char* get_CJK_UI_font(const char* defstr) {
+void fix_CJK_UI_font(GResFont* font) {
 #if defined(__MINGW32__)
     /* On Windows systems the default UI font doesn't support CJK. We need to override it.*/
     char locale[100];
@@ -821,27 +821,26 @@ char* get_CJK_UI_font(const char* defstr) {
     if (strcmp(locale, "ko_KR") == 0) ui_font = "Malgun Gothic";
     if (strcmp(locale, "ko") == 0) ui_font = "Malgun Gothic";
 
-	if (ui_font == NULL) {
-		return strdup(defstr);
-	}
-
-    char* pos = strstr(defstr, "system-ui");
-        if (pos == NULL) {
-        return strdup(defstr);
+    if (ui_font == NULL) {
+        return;
     }
-    
-    size_t prefix_len = pos - defstr;
-    size_t suffix_len = strlen(pos) + strlen("system-ui");  // Length after "system-ui"
-	size_t ui_font_len = strlen(ui_font);
+
+    char* pos = strstr(font->rstr, "system-ui");
+    if (pos == NULL) {
+        return;
+    }
+
+    size_t prefix_len = pos - font->rstr;
+    size_t suffix_len = strlen(pos) + strlen("system-ui");  /* Length after "system-ui" */
+    size_t ui_font_len = strlen(ui_font);
     char* result = malloc(prefix_len + ui_font_len + suffix_len + 1);
-    
-    // Copy parts together
-    strncpy(result, defstr, prefix_len);  // Copy prefix
-    strcpy(result + prefix_len, ui_font);  // Insert replacement
-    strcpy(result + prefix_len + ui_font_len, pos + strlen("system-ui"));  // Copy suffix
-    
-    return result;
-#else
-    return strdup(defstr);
+
+    /* Copy parts together */
+    strncpy(result, font->rstr, prefix_len);  /* Copy prefix */
+    strcpy(result + prefix_len, ui_font);  /* Insert replacement */
+    strcpy(result + prefix_len + ui_font_len, pos + strlen("system-ui"));  /* Copy suffix */
+
+    font->rstr = result;
+    font->can_free_name = true;
 #endif
 }

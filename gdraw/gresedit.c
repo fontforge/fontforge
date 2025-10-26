@@ -2477,17 +2477,14 @@ int _GResEditInitialize(GResInfo *ri) {
     }
 
     if ( ri->font!=NULL ) {
-        ri->font->rstr = get_CJK_UI_font(ri->font->rstr);
-        ri->font->can_free_name = true;
+        fix_CJK_UI_font(ri->font);
         GResourceFindFont(ri->resname, "Font", ri->font);
     }
 
     if ( ri->extras!=NULL ) {
         for ( int i=0; ri->extras[i].name!=NULL; ++i ) {
             if (ri->extras[i].type == rt_font) {
-                GResFont *font = (GResFont*)ri->extras[i].val;
-                font->rstr = get_CJK_UI_font(font->rstr);
-                font->can_free_name = true;
+                fix_CJK_UI_font(ri->extras[i].val);
             }
         }
         GResEditFind(ri->extras, ri->resname);
