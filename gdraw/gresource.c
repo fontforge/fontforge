@@ -805,7 +805,7 @@ GImage *GResImageGetImage(GResImage *ri) {
     return ri->bucket->image;
 }
 
-const char* get_CJK_UI_font(const char* defstr) {
+char* get_CJK_UI_font(const char* defstr) {
 #if defined(__MINGW32__)
     /* On Windows systems the default UI font doesn't support CJK. We need to override it.*/
     char locale[100];

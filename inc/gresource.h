@@ -104,7 +104,7 @@ typedef struct gresfont {
     uint8_t can_free_name;
 } GResFont;
 
-const char* get_CJK_UI_font(const char* defstr);
+char* get_CJK_UI_font(const char* defstr);
 
 #define GRESIMAGE_INIT(defstr) { (defstr), NULL }
 #define GRESFONT_INIT(defstr) { NULL, (defstr), false }
