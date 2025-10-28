@@ -2601,7 +2601,7 @@ return( NULL );
 			}
 		}
 		fseek(ttf,pos+features[i].offset+12,SEEK_SET);
-		ncnt = getushort(ttf); // TODO: charCount
+		ncnt = getushort(ttf);
 		for ( j = 0; j < ncnt; ++j ) {
 			get3byte(ttf); // TODO: character[j]
 		}
