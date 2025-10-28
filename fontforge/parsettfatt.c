@@ -2405,15 +2405,14 @@ return;
 }
 
 static void readttffeatnameparameters(FILE *ttf,int32_t pos,uint32_t tag,
-	struct ttfinfo *info) {
+	struct ttfinfo *info, enum otffn_field field) {
     int version, nid;
     struct otffeatname *fn;
     uint32_t here;
 
     here = ftell(ttf);
     fseek(ttf,pos,SEEK_SET);
-	if ( (tag & 0xff000000) == ('c' << 24) &&
-		((tag & 0x00ff0000) == ('v' << 16) || (tag & 0x00ff0000) == ('|' << 16) || (tag & 0x00ff0000) == ('~' << 16) || (tag & 0x00800000) != 0) &&
+	if ( (tag & 0xffff0000) == CHR('c','v','\0','\0') &&
 		(tag & 0x0000ff00) >= ('0' << 8) && (tag & 0x0000ff00) <= ('9' << 8) &&
 		(tag & 0x000000ff) >= ('0') && (tag & 0x000000ff) <= ('9') ) {
 			version = 0; /* ignore version for 'ccXX' */
@@ -2422,36 +2421,34 @@ static void readttffeatnameparameters(FILE *ttf,int32_t pos,uint32_t tag,
 		version = getushort(ttf);	/* Minor version #, currently (2009) 0 */
 	}
     nid = getushort(ttf);
-	if ( (tag & 0xff000000) == ('c' << 24) &&
-		(tag & 0x00800000) != 0 &&
-		(tag & 0x0000ff00) >= ('0' << 8) && (tag & 0x0000ff00) <= ('9' << 8) &&
-		(tag & 0x000000ff) >= ('0') && (tag & 0x000000ff) <= ('9') ) {
-			nid += (tag & 0x007f0000) >> 16;
+	if ( field >= otffn_paramname_begin ) {
+			nid += field - otffn_paramname_begin;
 	}
     fseek(ttf,here,SEEK_SET);
 
     if ( version>=10 || nid<256 || nid>32767 ) {
-	if ( nid<256 || nid>32767 )
-	    LogError(_("The name parameter of the '%c%c%c%c' feature does not contain a valid name id."),
-		    tag>>24, tag>>16, tag>>8, tag );
-	else
-	    LogError(_("The name parameter of the '%c%c%c%c' feature has an unlikely version number %d."),
-		    tag>>24, tag>>16, tag>>8, tag, version );
-	info->bad_ot = true;
-return;
+		if ( nid<256 || nid>32767 )
+			LogError(_("The name parameter of the '%c%c%c%c' feature does not contain a valid name id."),
+				tag>>24, tag>>16, tag>>8, tag );
+		else
+			LogError(_("The name parameter of the '%c%c%c%c' feature has an unlikely version number %d."),
+				tag>>24, tag>>16, tag>>8, tag, version );
+		info->bad_ot = true;
+		return;
     }
-    for ( fn=info->feat_names; fn!=NULL && fn->tag!=tag; fn=fn->next );
+    for ( fn=info->feat_names; fn!=NULL && (fn->tag!=tag || fn->field!=field); fn=fn->next );
     if ( fn!=NULL ) {
-	if ( fn->nid == nid )
-return;
-	LogError(_("There are multiple name ids naming the '%c%c%c%c' feature\n this is technically legitimate, but fontforge can't handle it.\n"),
-		tag>>24, tag>>16, tag>>8, tag );
-return;
+		if ( fn->nid == nid )
+			return;
+		LogError(_("There are multiple name ids naming the '%c%c%c%c' feature\n this is technically legitimate, but fontforge can't handle it.\n"),
+			tag>>24, tag>>16, tag>>8, tag );
+		return;
     }
 
     fn = chunkalloc( sizeof(*fn) );
     fn->tag = tag;
     fn->nid = nid;
+	fn->field = field;
     fn->next = info->feat_names;
     info->feat_names = fn;
     fn->names = FindAllLangEntries(ttf,info,nid);
@@ -2574,31 +2571,29 @@ return( NULL );
 	} else if ( features[i].tag>=CHR('s','s','0','1') && features[i].tag<=CHR('s','s','2','0') &&
 		parameters!=0 && !feof(ttf)) {
 	    readttffeatnameparameters(ttf,pos+parameters+features[i].offset,
-		    features[i].tag,info);
+		    features[i].tag,info, otffn_featname);
 	} else if ( features[i].tag>=CHR('c','v','0','1') && features[i].tag<=CHR('c','v','9','9') &&
 		parameters!=0 && !feof(ttf)) {
 		fseek(ttf,pos+parameters+features[i].offset+2,SEEK_SET);
 		if( getushort(ttf) != 0 )
 			readttffeatnameparameters(ttf,pos+parameters+features[i].offset+2,
-				features[i].tag,info);
+				features[i].tag,info, otffn_featname);
 
 		fseek(ttf,pos+parameters+features[i].offset+4,SEEK_SET);
 		if( getushort(ttf) != 0 )
 			readttffeatnameparameters(ttf,pos+parameters+features[i].offset+4,
-				CHR('c','|','\0','\0') | (features[i].tag & 0xffff),info);
+				features[i].tag,info, otffn_tooltiptext);
 
 		fseek(ttf,pos+parameters+features[i].offset+6,SEEK_SET);
 		if( getushort(ttf) != 0 )
 			readttffeatnameparameters(ttf,pos+parameters+features[i].offset+6,
-				CHR('c','~','\0','\0') | (features[i].tag & 0xffff),info);
+				features[i].tag,info, otffn_sampletext);
 
 		fseek(ttf,pos+parameters+features[i].offset+8,SEEK_SET);
 		ncnt = getushort(ttf);
 		for ( j = 0; j < ncnt; ++j ) {
-			if ( j < 128 ) {
-				readttffeatnameparameters(ttf,pos+parameters+features[i].offset+10,
-					CHR('c',128 + j,'\0','\0') | (features[i].tag & 0xffff),info);
-			}
+			readttffeatnameparameters(ttf,pos+parameters+features[i].offset+10,
+				features[i].tag,info, otffn_paramname_begin + j);
 		}
 		fseek(ttf,pos+features[i].offset+12,SEEK_SET);
 		ncnt = getushort(ttf);

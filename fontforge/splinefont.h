@@ -666,10 +666,15 @@ struct otfname {
     char *name;		/* utf8 */
 };
 
+enum otffn_field {
+    otffn_featname, otffn_tooltiptext, otffn_sampletext,
+    otffn_characters /* reserved */, otffn_paramname_begin
+};
 struct otffeatname {
     uint32_t tag;			/* Feature tag */
     struct otfname *names;
     struct otffeatname *next;
+    enum otffn_field field;
     uint16_t nid;			/* temporary value */
 };
 

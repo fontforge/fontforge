@@ -14989,25 +14989,25 @@ static PyObject *PyFF_Font_get_style_set_names(PyFF_Font *self, void *UNUSED(clo
                     ss_names_cv = PyTuple_Pack(5, Py_None, Py_None, Py_None, Py_None, Py_None);
                     for ( fn2=sf->feat_names; fn2!=NULL; fn2=fn2->next ) {
                         for ( on2=fn2->names; on2!=NULL; on2=on2->next ) {
-                            if ( fn2->tag == (CHR('c','v','\0','\0') | (fn->tag & 0xffff)) && on->lang == on2->lang ) {
+                            if ( fn2->tag == fn->tag && fn2->field == otffn_featname && on->lang == on2->lang ) {
                                 PyTuple_SetItem(ss_names_cv, 0, PyUnicode_FromString(on2->name));
                             }
-                            if ( fn2->tag == (CHR('c','|','\0','\0') | (fn->tag & 0xffff)) && on->lang == on2->lang ) {
+                            if ( fn2->tag == fn->tag && fn2->field == otffn_tooltiptext && on->lang == on2->lang ) {
                                 PyTuple_SetItem(ss_names_cv, 1, PyUnicode_FromString(on2->name));
                             }
-                            if ( fn2->tag == (CHR('c','~','\0','\0') | (fn->tag & 0xffff)) && on->lang == on2->lang ) {
+                            if ( fn2->tag == fn->tag && fn2->field == otffn_sampletext && on->lang == on2->lang ) {
                                 PyTuple_SetItem(ss_names_cv, 2, PyUnicode_FromString(on2->name));
                             }
-                            if ( (fn2->tag & 0xff80ffff) == (('c' << 24) | 0x800000 | (fn->tag & 0xffff)) && on->lang == on2->lang ) {
-                                if ( PyTuple_Size(ss_names_prm) < ((fn2->tag & 0x7f0000) >> 16) + 1 ) {
-                                    _PyTuple_Resize(&ss_names_prm, ((fn2->tag & 0x7f0000) >> 16) + 1);
+                            if ( fn2->tag == fn->tag && fn2->field >= otffn_paramname_begin && on->lang == on2->lang ) {
+                                if ( PyTuple_Size(ss_names_prm) < (fn2->field - otffn_paramname_begin + 1) ) {
+                                    _PyTuple_Resize(&ss_names_prm, (fn2->field - otffn_paramname_begin + 1));
                                     for ( i = 0; i < PyTuple_Size(ss_names_prm); ++i ) {
                                         if ( !PyTuple_GetItem(ss_names_prm, i) ) {
                                             PyTuple_SetItem(ss_names_prm, i, Py_None);
                                         }
                                     }
                                 }
-                                PyTuple_SetItem(ss_names_prm, ((fn2->tag & 0x7f0000) >> 16), PyUnicode_FromString(on2->name));
+                                PyTuple_SetItem(ss_names_prm, (fn2->field - otffn_paramname_begin), PyUnicode_FromString(on2->name));
                             }
                         }
                     }
@@ -15218,15 +15218,11 @@ static int PyFF_Font_set_style_set_names(PyFF_Font *self, PyObject *value, void 
             }
 
             if ( name_str ) {
-                if ( j == 1 ) { tag &= 0xffff; tag |= (('c' << 24) | ('|' << 16)); }
-                if ( j == 2 ) { tag &= 0xffff; tag |= (('c' << 24) | ('~' << 16)); }
-                if ( j == 3 ) { tag &= 0xffff; tag |= (('c' << 24) | (127 << 16)); }
-                if ( j >= 4 ) { tag &= 0xffff; tag |= (('c' << 24) | ((128 + j - 4) << 16)); }
-
-                for ( fn=sf->feat_names; fn!=NULL && fn->tag!=tag; fn=fn->next );
+                for ( fn=sf->feat_names; fn!=NULL && (fn->tag!=tag || fn->field!=j); fn=fn->next );
                 if ( fn==NULL ) {
                     fn = chunkalloc(sizeof(*fn));
                     fn->tag = tag;
+                    fn->field = j;
                     fn->next = sf->feat_names;
                     sf->feat_names = fn;
                 }

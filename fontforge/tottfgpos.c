@@ -3247,11 +3247,11 @@ return( NULL );
 return( efile );
 }
 
-struct otffeatname *findotffeatname(uint32_t tag,SplineFont *sf) {
+struct otffeatname *findotffeatname(uint32_t tag,enum otffn_field field,SplineFont *sf) {
     struct otffeatname *fn;
 
-    for ( fn=sf->feat_names; fn!=NULL && fn->tag!=tag; fn=fn->next );
-return( fn );
+    for ( fn=sf->feat_names; fn!=NULL && (fn->tag!=tag || fn->field!=field); fn=fn->next );
+    return( fn );
 }
 
 static FILE *dumpg___info(struct alltabs *at, SplineFont *sf,int is_gpos) {
@@ -3380,29 +3380,29 @@ return( NULL );
 			uint16_t numNamedParameters = 0;
 			uint16_t firstParamUiLabelNameId = 0;
 			uint32_t name_param_loc = ftell(g___);
-			if ( (fn = findotffeatname(ginfo.feat_lookups[i].tag,sf))!=NULL ) {
+			if ( (fn = findotffeatname(ginfo.feat_lookups[i].tag,otffn_featname,sf))!=NULL ) {
 				if ( fn->nid==0 )
 				fn->nid = at->next_strid++;
 				fseek(g___,ginfo.feat_lookups[i].name_param_ptr,SEEK_SET);
 				putshort(g___,name_param_loc-ginfo.feat_lookups[i].name_param_ptr);
 				featUiLabelNameId = fn->nid;
 			}
-			if ( (fn = findotffeatname(CHR('c','|','\0','\0') | (ginfo.feat_lookups[i].tag & 0xffff),sf))!=NULL ) {
+			if ( (fn = findotffeatname(ginfo.feat_lookups[i].tag,otffn_tooltiptext,sf))!=NULL ) {
 				if ( fn->nid==0 )
 				fn->nid = at->next_strid++;
 				fseek(g___,ginfo.feat_lookups[i].name_param_ptr,SEEK_SET);
 				putshort(g___,name_param_loc-ginfo.feat_lookups[i].name_param_ptr);
 				featUiTooltipTextNameId = fn->nid;
 			}
-			if ( (fn = findotffeatname(CHR('c','~','\0','\0') | (ginfo.feat_lookups[i].tag & 0xffff),sf))!=NULL ) {
+			if ( (fn = findotffeatname(ginfo.feat_lookups[i].tag,otffn_sampletext,sf))!=NULL ) {
 				if ( fn->nid==0 )
 				fn->nid = at->next_strid++;
 				fseek(g___,ginfo.feat_lookups[i].name_param_ptr,SEEK_SET);
 				putshort(g___,name_param_loc-ginfo.feat_lookups[i].name_param_ptr);
 				sampleTextNameId = fn->nid;
 			}
-			for ( numNamedParameters = 0; numNamedParameters < 128; ++numNamedParameters ) {
-				if ( (fn = findotffeatname(CHR('c',128 + numNamedParameters,'\0','\0') | (ginfo.feat_lookups[i].tag & 0xffff),sf))!=NULL ) {
+			for ( numNamedParameters = 0; numNamedParameters < 65536-256; ++numNamedParameters ) {
+				if ( (fn = findotffeatname(ginfo.feat_lookups[i].tag,otffn_paramname_begin + numNamedParameters,sf))!=NULL ) {
 					if ( fn->nid==0 )
 					fn->nid = at->next_strid++;
 					fseek(g___,ginfo.feat_lookups[i].name_param_ptr,SEEK_SET);
@@ -3426,7 +3426,7 @@ return( NULL );
 			//putu24(g___,0); // TODO: character[charCount]
 		}
 		else if ( ginfo.feat_lookups[i].name_param_ptr!=0 &&
-			(fn = findotffeatname(ginfo.feat_lookups[i].tag,sf))!=NULL ) {
+			(fn = findotffeatname(ginfo.feat_lookups[i].tag,otffn_featname,sf))!=NULL ) {
 			if ( fn->nid==0 )
 			fn->nid = at->next_strid++;
 			uint32_t name_param_loc = ftell(g___);

@@ -1842,13 +1842,13 @@ return;
     putc('\n',sfd);
 }
 
-static void SFDDumpOtfSubFeatNames(FILE *sfd, SplineFont *sf, const char *prefix, uint32_t tag, uint32_t lang) {
+static void SFDDumpOtfSubFeatNames(FILE *sfd, SplineFont *sf, uint32_t tag, enum otffn_field field, uint32_t lang) {
     struct otffeatname *fn;
     struct otfname *on;
     bool cvfound = false;
 
 	for ( fn=sf->feat_names; fn!=NULL; fn=fn->next ) {
-		if ( fn->tag == (((uint32_t)((uint8_t)prefix[0]) << 24) | ((uint32_t)((uint8_t)prefix[1]) << 16) | (tag & 0xffff)) ) {
+		if ( fn->tag == tag && fn->field == field ) {
 			for ( on=fn->names; on!=NULL; on=on->next ) {
 				if ( on->lang == lang ) {
 					SFDDumpUTF7Str(sfd, on->name);
@@ -1867,10 +1867,10 @@ static int SFDDumpOtfCountFeatNames(FILE *sfd, SplineFont *sf, uint32_t tag, uin
     bool cvfound;
 	int i;
 
-	for ( i = 0; i < 128; ++i ) {
+	for ( i = 0; i < 65536-256; ++i ) {
 		cvfound = false;
 		for ( fn=sf->feat_names; fn!=NULL; fn=fn->next ) {
-			if ( fn->tag == (CHR('c',(128 + i),'\0','\0') | (tag & 0xffff)) ) {
+			if ( fn->tag == tag && fn->field == otffn_paramname_begin + i ) {
 				for ( on=fn->names; on!=NULL; on=on->next ) {
 					if ( on->lang == lang ) {
 						cvfound = true;
@@ -1908,16 +1908,14 @@ static void SFDDumpOtfFeatNames(FILE *sfd, SplineFont *sf) {
 			fprintf( sfd, "OtfFeatName: 'cv%c%c' ", fn->tag>>8, fn->tag );
 			for ( on=fn->names; on!=NULL; on=on->next ) {
 				fprintf( sfd, "%d ", on->lang );
-				SFDDumpOtfSubFeatNames(sfd, sf, "cv", fn->tag, on->lang); putc(' ',sfd);
-				SFDDumpOtfSubFeatNames(sfd, sf, "c|", fn->tag, on->lang); putc(' ',sfd);
-				SFDDumpOtfSubFeatNames(sfd, sf, "c~", fn->tag, on->lang); putc(' ',sfd);
+				SFDDumpOtfSubFeatNames(sfd, sf, fn->tag, otffn_featname,    on->lang); putc(' ',sfd);
+				SFDDumpOtfSubFeatNames(sfd, sf, fn->tag, otffn_tooltiptext, on->lang); putc(' ',sfd);
+				SFDDumpOtfSubFeatNames(sfd, sf, fn->tag, otffn_sampletext,  on->lang); putc(' ',sfd);
 				cvcount = SFDDumpOtfCountFeatNames(sfd, sf, fn->tag, on->lang);
 				fprintf( sfd, "%d", cvcount );
 				if ( cvcount ) putc(' ', sfd);
 				for ( i = 0; i < cvcount; ++i ) {
-					prefix[0] = 'c';
-					prefix[1] = (char)(128 + (i % 128));
-					SFDDumpOtfSubFeatNames(sfd, sf, prefix, fn->tag, on->lang);
+					SFDDumpOtfSubFeatNames(sfd, sf, fn->tag, otffn_paramname_begin + i, on->lang);
 					if ( on->next!=NULL || i < (cvcount - 1) ) putc(' ',sfd);
 				}
 			}
@@ -6602,6 +6600,7 @@ static void SFDGetOtfFeatName(FILE *sfd,SplineFont *sf) {
 
     fn = chunkalloc(sizeof(struct otffeatname));
     tag = fn->tag = gettag(sfd);
+	fn->field = otffn_featname;
     for (;;) {
 		while ( (ch=nlgetc(sfd))==' ' );
 		ungetc(ch,sfd);
@@ -6613,12 +6612,14 @@ static void SFDGetOtfFeatName(FILE *sfd,SplineFont *sf) {
 			SFDGetOtfFeatNamePrepareNext(sf, fn);
 
 			fn = chunkalloc(sizeof(struct otffeatname));
-			fn->tag = (CHR('c','|','\0','\0') | (tag & 0xffff));
+			fn->tag = tag;
+			fn->field = otffn_tooltiptext;
 			SFDGetOtfFeatSubName(sfd, sf, fn, lang);
 			SFDGetOtfFeatNamePrepareNext(sf, fn);
 
 			fn = chunkalloc(sizeof(struct otffeatname));
-			fn->tag = (CHR('c','~','\0','\0') | (tag & 0xffff));
+			fn->tag = tag;
+			fn->field = otffn_sampletext;
 			SFDGetOtfFeatSubName(sfd, sf, fn, lang);
 
 			while ( (ch=nlgetc(sfd))==' ' );
@@ -6630,7 +6631,8 @@ static void SFDGetOtfFeatName(FILE *sfd,SplineFont *sf) {
 			for ( i = 0; i < parmcnt; ++i ) {
 				SFDGetOtfFeatNamePrepareNext(sf, fn);
 				fn = chunkalloc(sizeof(struct otffeatname));
-				fn->tag = (CHR('c',128 + (i % 128),'\0','\0') | (tag & 0xffff));
+				fn->tag = tag;
+				fn->field = otffn_paramname_begin + i;
 				SFDGetOtfFeatSubName(sfd, sf, fn, lang);
 			}
 
