@@ -9669,8 +9669,9 @@ return;
     SSMatrixInit(&ssmi,d);
 
     ssngcd[0].gd.flags = gg_visible | gg_enabled;
-    ssnlabel[0].text = (unichar_t *) _("The OpenType Style Set features ('ss01'-'ss20') may\n"
-				      "be assigned human readable names here.");
+    ssnlabel[0].text = (unichar_t *) _(
+    "The OpenType Style Set ('ss01'-'ss20') and Character Variant ('cv01'-'cv99')\n"
+    "features may be assigned human readable names here.");
     ssnlabel[0].text_is_1byte = true;
     ssngcd[0].gd.label = &ssnlabel[0];
     ssngcd[0].creator = GLabelCreate;
