@@ -1055,31 +1055,6 @@ static GTextInfo ttfnameids[] = {
     { (unichar_t *) N_("WWS Subfamily"), NULL, 0, 0, (void *) 22, NULL, 0, 0, 0, 0, 0, 0, 1, 0, 0, '\0'},
     GTEXTINFO_EMPTY
 };
-#define cvTagSingleMenu(label, lnum, chr1, chr2, chr3, chr4) { (unichar_t *) "cv" lnum " " label, NULL, 0, 0, (void *) (intptr_t) CHR(chr1,chr2,chr3,chr4), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
-#define cvTagMenu0(label, lnum, chr1, chr2, chr3) \
-cvTagSingleMenu(label, lnum "1", chr1, chr2, chr3, '1') \
-cvTagSingleMenu(label, lnum "2", chr1, chr2, chr3, '2') \
-cvTagSingleMenu(label, lnum "3", chr1, chr2, chr3, '3') \
-cvTagSingleMenu(label, lnum "4", chr1, chr2, chr3, '4') \
-cvTagSingleMenu(label, lnum "5", chr1, chr2, chr3, '5') \
-cvTagSingleMenu(label, lnum "6", chr1, chr2, chr3, '6') \
-cvTagSingleMenu(label, lnum "7", chr1, chr2, chr3, '7') \
-cvTagSingleMenu(label, lnum "8", chr1, chr2, chr3, '8') \
-cvTagSingleMenu(label, lnum "9", chr1, chr2, chr3, '9')
-#define cvTagMenu1(label, lnum, chr1, chr2, chr3) \
-cvTagSingleMenu(label, lnum "0", chr1, chr2, chr3, '0') \
-cvTagMenu0(label, lnum, chr1, chr2, chr3)
-#define cvTagMenu(label, chr1, chr2) \
-cvTagMenu0(label, "0", chr1, chr2, '0') \
-cvTagMenu1(label, "1", chr1, chr2, '1') \
-cvTagMenu1(label, "2", chr1, chr2, '2') \
-cvTagMenu1(label, "3", chr1, chr2, '3') \
-cvTagMenu1(label, "4", chr1, chr2, '4') \
-cvTagMenu1(label, "5", chr1, chr2, '5') \
-cvTagMenu1(label, "6", chr1, chr2, '6') \
-cvTagMenu1(label, "7", chr1, chr2, '7') \
-cvTagMenu1(label, "8", chr1, chr2, '8') \
-cvTagMenu1(label, "9", chr1, chr2, '9')
 static GTextInfo otfssfeattags[] = {
 /* These should not be translated. They are tags */
     { (unichar_t *) "ss01", NULL, 0, 0, (void *) (intptr_t) CHR('s','s','0','1'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
@@ -1103,42 +1078,145 @@ static GTextInfo otfssfeattags[] = {
     { (unichar_t *) "ss19", NULL, 0, 0, (void *) (intptr_t) CHR('s','s','1','9'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
     { (unichar_t *) "ss20", NULL, 0, 0, (void *) (intptr_t) CHR('s','s','2','0'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
 
-    cvTagMenu("label",       'c', 'v')
-    cvTagMenu("tooltip",     'c', '|')
-    cvTagMenu("sample text", 'c', '~')
-    cvTagMenu("parameter 1",  'c', 128)
-    cvTagMenu("parameter 2",  'c', 129)
-    cvTagMenu("parameter 3",  'c', 130)
-    cvTagMenu("parameter 4",  'c', 131)
-    cvTagMenu("parameter 5",  'c', 132)
-    cvTagMenu("parameter 6",  'c', 133)
-    cvTagMenu("parameter 7",  'c', 134)
-    cvTagMenu("parameter 8",  'c', 135)
-    cvTagMenu("parameter 9",  'c', 136)
-    cvTagMenu("parameter 10", 'c', 137)
-    cvTagMenu("parameter 11", 'c', 138)
-    cvTagMenu("parameter 12", 'c', 139)
-    cvTagMenu("parameter 13", 'c', 140)
-    cvTagMenu("parameter 14", 'c', 141)
-    cvTagMenu("parameter 15", 'c', 142)
-    cvTagMenu("parameter 16", 'c', 143)
-    cvTagMenu("parameter 17", 'c', 144)
-    cvTagMenu("parameter 18", 'c', 145)
-    cvTagMenu("parameter 19", 'c', 146)
-    cvTagMenu("parameter 20", 'c', 147)
-    cvTagMenu("parameter 21", 'c', 148)
-    cvTagMenu("parameter 22", 'c', 149)
-    cvTagMenu("parameter 23", 'c', 150)
-    cvTagMenu("parameter 24", 'c', 151)
-    cvTagMenu("parameter 25", 'c', 152)
-    cvTagMenu("parameter 26", 'c', 153)
-    cvTagMenu("parameter 27", 'c', 154)
-    cvTagMenu("parameter 28", 'c', 155)
-    cvTagMenu("parameter 29", 'c', 156)
-    cvTagMenu("parameter 30", 'c', 157)
-    cvTagMenu("parameter 31", 'c', 158)
-    cvTagMenu("parameter 32", 'c', 159)
+    { (unichar_t *) "cv01", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','0','1'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv02", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','0','2'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv03", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','0','3'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv04", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','0','4'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv05", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','0','5'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv06", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','0','6'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv07", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','0','7'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv08", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','0','8'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv09", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','0','9'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv10", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','1','0'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv11", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','1','1'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv12", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','1','2'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv13", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','1','3'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv14", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','1','4'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv15", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','1','5'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv16", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','1','6'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv17", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','1','7'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv18", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','1','8'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv19", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','1','9'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv20", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','2','0'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv21", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','2','1'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv22", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','2','2'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv23", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','2','3'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv24", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','2','4'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv25", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','2','5'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv26", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','2','6'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv27", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','2','7'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv28", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','2','8'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv29", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','2','9'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv30", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','3','0'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv31", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','3','1'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv32", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','3','2'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv33", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','3','3'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv34", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','3','4'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv35", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','3','5'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv36", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','3','6'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv37", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','3','7'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv38", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','3','8'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv39", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','3','9'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv40", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','4','0'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv41", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','4','1'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv42", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','4','2'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv43", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','4','3'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv44", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','4','4'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv45", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','4','5'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv46", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','4','6'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv47", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','4','7'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv48", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','4','8'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv49", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','4','9'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv50", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','5','0'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv51", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','5','1'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv52", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','5','2'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv53", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','5','3'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv54", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','5','4'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv55", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','5','5'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv56", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','5','6'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv57", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','5','7'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv58", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','5','8'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv59", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','5','9'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv60", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','6','0'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv61", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','6','1'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv62", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','6','2'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv63", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','6','3'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv64", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','6','4'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv65", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','6','5'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv66", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','6','6'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv67", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','6','7'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv68", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','6','8'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv69", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','6','9'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv70", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','7','0'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv71", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','7','1'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv72", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','7','2'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv73", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','7','3'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv74", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','7','4'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv75", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','7','5'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv76", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','7','6'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv77", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','7','7'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv78", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','7','8'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv79", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','7','9'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv80", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','8','0'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv81", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','8','1'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv82", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','8','2'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv83", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','8','3'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv84", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','8','4'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv85", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','8','5'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv86", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','8','6'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv87", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','8','7'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv88", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','8','8'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv89", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','8','9'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv90", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','9','0'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv91", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','9','1'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv92", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','9','2'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv93", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','9','3'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv94", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','9','4'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv95", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','9','5'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv96", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','9','6'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv97", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','9','7'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv98", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','9','8'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) "cv99", NULL, 0, 0, (void *) (intptr_t) CHR('c','v','9','9'), NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
 
+    GTEXTINFO_EMPTY
+};
+static GTextInfo otfssfeatfields[] = {
+    { (unichar_t *) N_("Feature Name"), NULL, 0, 0, (void *) (intptr_t) otffn_featname, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Tooltip Text"), NULL, 0, 0, (void *) (intptr_t) otffn_tooltiptext, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("featname|Sample Text"), NULL, 0, 0, (void *) (intptr_t) otffn_sampletext, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    //{ (unichar_t *) N_("Characters"), NULL, 0, 0, (void *) (intptr_t) otffn_characters, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 1"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 2"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 1, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 3"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 2, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 4"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 3, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 5"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 4, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 6"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 5, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 7"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 6, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 8"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 7, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 9"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 8, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 10"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 9, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 11"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 10, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 12"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 11, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 13"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 12, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 14"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 13, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 15"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 14, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 16"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 15, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 17"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 16, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 18"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 17, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 19"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 18, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 20"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 19, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 21"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 20, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 22"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 21, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 23"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 22, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 24"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 23, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 25"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 24, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 26"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 25, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 27"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 26, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 28"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 27, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 29"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 28, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 30"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 29, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 31"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 30, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    { (unichar_t *) N_("Parameter Name 32"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 31, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
     GTEXTINFO_EMPTY
 };
 /* Put styles (docs call it subfamily) first because it is most likely to change */
@@ -1359,6 +1437,7 @@ static struct col_init ci[] = {
 static struct col_init ssci[] = {
     { me_enum, NULL, mslanguages, NULL, N_("Language") },
     { me_enum, NULL, otfssfeattags, NULL, N_("Feature Tags") },
+    { me_enum, NULL, otfssfeatfields, NULL, N_("Field") },
     { me_string, NULL, NULL, NULL, N_("Friendly Name") }
 };
 static struct col_init sizeci[] = {
@@ -3345,11 +3424,14 @@ static int ss_cmp(const void *_md1, const void *_md2) {
     const char *l1, *l2;
 
     if ( md1[1].u.md_ival == md2[1].u.md_ival ) {
-       l1 = langname(md1[0].u.md_ival,buf1);
-       l2 = langname(md2[0].u.md_ival,buf2);
-return( strcoll(l1,l2));
+        if ( md1[2].u.md_ival == md2[2].u.md_ival ) {
+            l1 = langname(md1[0].u.md_ival,buf1);
+            l2 = langname(md2[0].u.md_ival,buf2);
+            return( strcoll(l1,l2));
+        }
+        return( md1[2].u.md_ival - md2[2].u.md_ival );
     }
-return( md1[1].u.md_ival - md2[1].u.md_ival );
+    return( md1[1].u.md_ival - md2[1].u.md_ival );
 }
 
 static void SSMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
@@ -3360,21 +3442,22 @@ static void SSMatrixInit(struct matrixinit *mi,struct gfi_data *d) {
     int cnt;
 
     memset(mi,0,sizeof(*mi));
-    mi->col_cnt = 3;
+    mi->col_cnt = 4;
     mi->col_init = ssci;
 
     for ( cnt=0, fn=sf->feat_names; fn!=NULL; fn=fn->next ) {
 	for ( on=fn->names; on!=NULL; on=on->next, ++cnt );
     }
-    md = calloc(3*(cnt+10),sizeof(struct matrix_data));
+    md = calloc(4*(cnt+10),sizeof(struct matrix_data));
     for ( cnt=0, fn=sf->feat_names; fn!=NULL; fn=fn->next ) {
 	for ( on=fn->names; on!=NULL; on=on->next, ++cnt ) {
-	    md[3*cnt  ].u.md_ival = on->lang;
-	    md[3*cnt+1].u.md_ival = fn->tag;
-	    md[3*cnt+2].u.md_str = copy(on->name);
+	    md[4*cnt  ].u.md_ival = on->lang;
+	    md[4*cnt+1].u.md_ival = fn->tag;
+	    md[4*cnt+2].u.md_ival = fn->field;
+	    md[4*cnt+3].u.md_str = copy(on->name);
 	}
     }
-    qsort( md, cnt, 3*sizeof(struct matrix_data), ss_cmp );
+    qsort( md, cnt, 4*sizeof(struct matrix_data), ss_cmp );
     mi->matrix_data = md;
     mi->initial_row_cnt = cnt;
 }
@@ -3811,6 +3894,7 @@ static void StoreSSNames(struct gfi_data *d) {
     struct matrix_data *strings = GMatrixEditGet(edit, &rows);
     int i;
     uint32_t tag, lang;
+    enum otffn_field field;
     struct otffeatname *fn;
     struct otfname *on;
     SplineFont *sf = d->sf;
@@ -3818,16 +3902,18 @@ static void StoreSSNames(struct gfi_data *d) {
     OtfFeatNameListFree(sf->feat_names);
     sf->feat_names = NULL;
 
-    qsort( strings, rows, 3*sizeof(struct matrix_data), ss_cmp );
+    qsort( strings, rows, 4*sizeof(struct matrix_data), ss_cmp );
     for ( i=rows-1; i>=0; --i ) {
-	if ( strings[3*i+2].u.md_str == NULL )
+	if ( strings[4*i+3].u.md_str == NULL )
     continue;
-	tag = strings[3*i+1].u.md_ival;
-	lang = strings[3*i].u.md_ival;
-	for ( fn=sf->feat_names; fn!=NULL && fn->tag!=tag; fn=fn->next );
+	field = strings[4*i+2].u.md_ival;
+	tag = strings[4*i+1].u.md_ival;
+	lang = strings[4*i].u.md_ival;
+	for ( fn=sf->feat_names; fn!=NULL && (fn->tag!=tag || fn->field!=field); fn=fn->next );
 	if ( fn==NULL ) {
 	    fn = chunkalloc(sizeof(*fn));
 	    fn->tag = tag;
+        fn->field = field;
 	    fn->next = sf->feat_names;
 	    sf->feat_names = fn;
 	}
@@ -3835,7 +3921,7 @@ static void StoreSSNames(struct gfi_data *d) {
 	on->next = fn->names;
 	fn->names = on;
 	on->lang = lang;
-	on->name = copy(strings[3*i+2].u.md_str );
+	on->name = copy(strings[4*i+3].u.md_str );
     }
 }
 
