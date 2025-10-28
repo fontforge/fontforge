@@ -2290,12 +2290,10 @@ enum toktype { tk_name, tk_class, tk_int, tk_char, tk_cid, tk_eof,
 	       tk_lookupflag, tk_mark, tk_nameid, tk_NULL, tk_parameters, tk_position,
 	       tk_required, tk_RightToLeft, tk_script, tk_substitute, tk_subtable,
 	       tk_table, tk_useExtension,
-/* Additional keywords in the 2008 draft */
 	       tk_anchorDef, tk_valueRecordDef, tk_contourpoint,
 	       tk_MarkAttachmentType, tk_UseMarkFilteringSet,
 	       tk_markClass, tk_reversesub, tk_base, tk_ligature, tk_ligComponent,
 	       tk_featureNames,
-/* Additional keywords */
 	       tk_cvParameters, tk_FeatUILabelNameID, tk_FeatUITooltipTextNameID,
 	       tk_SampleTextNameID, tk_ParamUILabelNameID, tk_Character
 };
