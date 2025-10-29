@@ -2918,6 +2918,9 @@ static int SVGGetUnicodeEnc(xmlChar *unicode, xmlChar *arabic_form, xmlChar *gly
 static char* SVGGetGlyphName(xmlChar *glyphname, xmlChar *orientation, int unicodeenc, unsigned int glyph_idx) {
     char* name = NULL;
     char buffer[400];
+    bool has_vert_suffix = false;
+    unsigned int name_len = 0, vert_len = 0;
+
     if ( glyphname!=NULL ) {
         /* Check name validity. */
         unichar_t *uname = utf82u_copy((char *) glyphname);
@@ -2935,7 +2938,11 @@ static char* SVGGetGlyphName(xmlChar *glyphname, xmlChar *orientation, int unico
             name = copy(StdGlyphName(buffer,unicodeenc,ui_none,NULL));
     }
 
-    if (orientation != NULL && *orientation == 'v') {
+    name_len = strlen(name);
+    vert_len = strlen(".vert");
+    has_vert_suffix = (name_len >= vert_len) &&
+                      (strcmp(".vert", name + name_len - vert_len) == 0);
+    if (!has_vert_suffix && orientation != NULL && *orientation == 'v') {
         sprintf(buffer, "%s.vert", name);
         free(name);
         name = copy(buffer);
