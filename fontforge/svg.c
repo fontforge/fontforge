@@ -2888,12 +2888,66 @@ static void SVGParseGlyphBody(SplineChar *sc, xmlNodePtr glyph,
     SCCategorizePoints(sc);
 }
 
+static int SVGGetUnicodeEnc(xmlChar *unicode, xmlChar *arabic_form, xmlChar *glyphname) {
+    int unicodeenc = -1;
+    if (unicode != NULL && unicode[0] != '\0') {
+	uint32_t *u = utf82u_copy((char *) unicode);
+	if ( u[1]=='\0' ) {
+	    unicodeenc = u[0];
+	    if ( arabic_form!=NULL && u[0]>=0x600 && u[0]<=0x6ff ) {
+		const struct arabicforms* aform = arabicform(u[0]);
+		if ( xmlStrcmp(arabic_form,(xmlChar *) "initial")==0 )
+		    unicodeenc = aform->initial;
+		else if ( xmlStrcmp(arabic_form,(xmlChar *) "medial")==0 )
+		    unicodeenc = aform->medial;
+		else if ( xmlStrcmp(arabic_form,(xmlChar *) "final")==0 )
+		    unicodeenc = aform->final;
+		else if ( xmlStrcmp(arabic_form,(xmlChar *) "isolated")==0 )
+		    unicodeenc = aform->isolated;
+	    }
+	}
+	free(u);
+    }
+    if (unicodeenc == -1 && glyphname != NULL)
+	unicodeenc = UniFromName((char *) glyphname,ui_none,&custom);
+
+    return unicodeenc;
+}
+
+/* This function should never return NULL or empty string. */
+static char* SVGGetGlyphName(xmlChar *glyphname, xmlChar *orientation, int unicodeenc, unsigned int glyph_idx) {
+    char* name = NULL;
+    char buffer[400];
+    if ( glyphname!=NULL ) {
+        /* Check name validity. */
+        unichar_t *uname = utf82u_copy((char *) glyphname);
+        if (SCNameCheck(uname, NULL) == NULL)
+            name = copy((char *) glyphname);
+        free(uname);
+    }
+
+    /* Get name from unicode value. */
+    if (name == NULL) {
+        if (unicodeenc == -1) {
+            sprintf( buffer, "glyph%d", glyph_idx);
+            name = copy(buffer);
+        } else
+            name = copy(StdGlyphName(buffer,unicodeenc,ui_none,NULL));
+    }
+
+    if (orientation != NULL && *orientation == 'v') {
+        sprintf(buffer, "%s.vert", name);
+        free(name);
+        name = copy(buffer);
+    }
+
+    return name;
+}
+
 static SplineChar *SVGParseGlyphArgs(xmlNodePtr glyph,int defh, int defv,
-	SplineFont *sf) {
+	SplineFont *sf, unsigned int glyph_idx) {
     SplineChar *sc = SFSplineCharCreate(sf);
     xmlChar *name, *form, *glyphname, *unicode, *orientation;
-    uint32_t *u;
-    char buffer[100];
 
     name = xmlGetProp(glyph,(xmlChar *) "horiz-adv-x");
     if ( name!=NULL ) {
@@ -2919,50 +2973,22 @@ static SplineChar *SVGParseGlyphArgs(xmlNodePtr glyph,int defh, int defv,
     unicode = xmlGetProp(glyph,(xmlChar *) "unicode");
     glyphname = xmlGetProp(glyph,(xmlChar *) "glyph-name");
     orientation = xmlGetProp(glyph,(xmlChar *) "orientation");
-    if ( unicode!=NULL ) {
 
-	u = utf82u_copy((char *) unicode);
-	xmlFree(unicode);
-	if ( u[1]=='\0' ) {
-	    sc->unicodeenc = u[0];
-	    if ( form!=NULL && u[0]>=0x600 && u[0]<=0x6ff ) {
-		const struct arabicforms* aform = arabicform(u[0]);
-		if ( xmlStrcmp(form,(xmlChar *) "initial")==0 )
-		    sc->unicodeenc = aform->initial;
-		else if ( xmlStrcmp(form,(xmlChar *) "medial")==0 )
-		    sc->unicodeenc = aform->medial;
-		else if ( xmlStrcmp(form,(xmlChar *) "final")==0 )
-		    sc->unicodeenc = aform->final;
-		else if ( xmlStrcmp(form,(xmlChar *) "isolated")==0 )
-		    sc->unicodeenc = aform->isolated;
-	    }
-	}
-	free(u);
-    }
-    if ( glyphname!=NULL ) {
-	if ( sc->unicodeenc==-1 )
-	    sc->unicodeenc = UniFromName((char *) glyphname,ui_none,&custom);
-	sc->name = copy((char *) glyphname);
-	xmlFree(glyphname);
-    } else if ( orientation!=NULL && *orientation=='v' && sc->unicodeenc!=-1 ) {
-	if ( sc->unicodeenc<0x10000 )
-	    sprintf( buffer, "uni%04X.vert", sc->unicodeenc );
-	else
-	    sprintf( buffer, "u%04X.vert", sc->unicodeenc );
-	sc->name = copy( buffer );
-    }
-    /* we finish off defaulting the glyph name in the parseglyph routine */
-    if ( form!=NULL )
-	xmlFree(form);
-    if ( orientation!=NULL )
-	xmlFree(orientation);
-return( sc );
+    sc->unicodeenc = SVGGetUnicodeEnc(unicode, form, glyphname);
+    sc->name = SVGGetGlyphName(glyphname, orientation, sc->unicodeenc, glyph_idx);
+
+    xmlFree(form);
+    xmlFree(unicode);
+    xmlFree(glyphname);
+    xmlFree(orientation);
+    return sc;
 }
 
 static SplineChar *SVGParseMissing(SplineFont *sf,xmlNodePtr notdef,int defh,
                                    int defv, int enc, ImportParams *ip) {
-    SplineChar *sc = SVGParseGlyphArgs(notdef,defh,defv,sf);
+    SplineChar *sc = SVGParseGlyphArgs(notdef,defh,defv,sf,enc);
     sc->parent = sf;
+    free(sc->name);
     sc->name = copy(".notdef");
     sc->unicodeenc = 0;
     SVGParseGlyphBody(sc,notdef,ip);
@@ -2971,16 +2997,8 @@ return( sc );
 
 static SplineChar *SVGParseGlyph(SplineFont *sf,xmlNodePtr glyph,int defh,
                                  int defv, int enc, ImportParams *ip) {
-    char buffer[400];
-    SplineChar *sc = SVGParseGlyphArgs(glyph,defh,defv,sf);
+    SplineChar *sc = SVGParseGlyphArgs(glyph,defh,defv,sf,enc);
     sc->parent = sf;
-    if ( sc->name==NULL ) {
-	if ( sc->unicodeenc==-1 ) {
-	    sprintf( buffer, "glyph%d", enc);
-	    sc->name = copy(buffer);
-	} else
-	    sc->name = copy(StdGlyphName(buffer,sc->unicodeenc,ui_none,NULL));
-    }
     SVGParseGlyphBody(sc,glyph,ip);
 return( sc );
 }
@@ -2993,7 +3011,7 @@ static void SVGLigatureFixupCheck(SplineChar *sc,xmlNodePtr glyph) {
     char *comp, *pt;
 
     unicode = xmlGetProp(glyph,(xmlChar *) "unicode");
-    if ( unicode!=NULL ) {
+    if (unicode != NULL && unicode[0] != '\0') {
 	u = utf82u_copy((char *) unicode);
 	xmlFree(unicode);
 	if ( u[1]!='\0' && u[2]=='\0' &&
