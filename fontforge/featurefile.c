@@ -1799,15 +1799,35 @@ static void dump_header_languagesystem(FILE *out, SplineFont *sf) {
     fprintf( out, "\n" );
 }
 
+static bool dump_feature_names(FILE *out, uint32_t tag, enum otffn_field field, SplineFont *sf, const char *fieldname, bool *cvprm /* NULL if 'ssXX' */) {
+	struct otffeatname *fn;
+    struct otfname *on;
+	char indent[] = {cvprm ? ' ' : 0,' ',0};
+	if ( (fn = findotffeatname(tag,field,sf))!=NULL ) {
+		if ( cvprm && !(*cvprm) )
+			fprintf( out, "  cvParameters {\n" );
+		fprintf( out, "%s  %s {\n", indent, fieldname );
+		for ( on = fn->names; on!=NULL; on=on->next ) {
+			fprintf( out, "%s    name 3 1 0x%x \"", indent, on->lang );
+			UniOut(out,on->name );
+			fprintf( out, "\";\n" );
+		}
+		fprintf( out, "%s  };\n", indent );
+		if ( cvprm )
+			*cvprm = true;
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
 static void dump_gsubgpos(FILE *out, SplineFont *sf) {
     int isgpos;
     int i,l,s, subl;
-	bool cvprm;
     OTLookup *otl;
     FeatureScriptLangList *fl;
     struct scriptlanglist *sl;
-    struct otffeatname *fn;
-    struct otfname *on;
 
     for ( isgpos=0; isgpos<2; ++isgpos ) {
 	uint32_t *feats = SFFeaturesInScriptLang(sf,isgpos,0xffffffff,0xffffffff);
@@ -1820,70 +1840,17 @@ static void dump_gsubgpos(FILE *out, SplineFont *sf) {
 		    dump_lookup( out, sf, otl );
 	    for ( i=0; feats[i]!=0; ++i ) {
 		fprintf( out, "\nfeature %c%c%c%c {\n", feats[i]>>24, feats[i]>>16, feats[i]>>8, feats[i] );
-		if ( feats[i]>=CHR('s','s','0','1') &&  feats[i]<=CHR('s','s','2','0') &&
-			(fn = findotffeatname(feats[i],otffn_featname,sf))!=NULL ) {
-		    fprintf( out, "  featureNames {\n" );
-		    for ( on = fn->names; on!=NULL; on=on->next ) {
-			fprintf( out, "    name 3 1 0x%x \"", on->lang );
-			UniOut(out,on->name );
-			fprintf( out, "\";\n" );
-		    }
-		    fprintf( out, "  };\n" );
+		if ( feats[i]>=CHR('s','s','0','1') && feats[i]<=CHR('s','s','2','0') ) {
+			dump_feature_names(out, feats[i], otffn_featname, sf, "featureNames", NULL);
 		}
 		if ( feats[i]>=CHR('c','v','0','1') && feats[i]<=CHR('c','v','9','9') ) {
-			cvprm = false;
-			if ( (fn = findotffeatname(feats[i],otffn_featname,sf))!=NULL ) {
-				if ( !cvprm )
-					fprintf( out, "  cvParameters {\n" );
-				fprintf( out, "    FeatUILabelNameID {\n" );
-				for ( on = fn->names; on!=NULL; on=on->next ) {
-					fprintf( out, "      name 3 1 0x%x \"", on->lang );
-					UniOut(out,on->name );
-					fprintf( out, "\";\n" );
-				}
-				fprintf( out, "    };\n" );
-				cvprm = true;
-			}
-			if ( (fn = findotffeatname(feats[i],otffn_tooltiptext,sf))!=NULL ) {
-				if ( !cvprm )
-					fprintf( out, "  cvParameters {\n" );
-				fprintf( out, "    FeatUITooltipTextNameID {\n" );
-				for ( on = fn->names; on!=NULL; on=on->next ) {
-					fprintf( out, "      name 3 1 0x%x \"", on->lang );
-					UniOut(out,on->name );
-					fprintf( out, "\";\n" );
-				}
-				fprintf( out, "    };\n" );
-				cvprm = true;
-			}
-			if ( (fn = findotffeatname(feats[i],otffn_sampletext,sf))!=NULL ) {
-				if ( !cvprm )
-					fprintf( out, "  cvParameters {\n" );
-				fprintf( out, "    SampleTextNameID {\n" );
-				for ( on = fn->names; on!=NULL; on=on->next ) {
-					fprintf( out, "      name 3 1 0x%x \"", on->lang );
-					UniOut(out,on->name );
-					fprintf( out, "\";\n" );
-				}
-				fprintf( out, "    };\n" );
-				cvprm = true;
-			}
+			bool cvprm = false;
+			dump_feature_names(out, feats[i], otffn_featname, sf, "FeatUILabelNameID", &cvprm);
+			dump_feature_names(out, feats[i], otffn_tooltiptext, sf, "FeatUITooltipTextNameID", &cvprm);
+			dump_feature_names(out, feats[i], otffn_sampletext, sf, "SampleTextNameID", &cvprm);
 			for ( l = 0; l < 65536-256; ++l ) {
-				if ( (fn = findotffeatname(feats[i],otffn_paramname_begin+l,sf))!=NULL ) {
-					if ( !cvprm )
-						fprintf( out, "  cvParameters {\n" );
-					fprintf( out, "    ParamUILabelNameID {\n" );
-					for ( on = fn->names; on!=NULL; on=on->next ) {
-						fprintf( out, "      name 3 1 0x%x \"", on->lang );
-						UniOut(out,on->name );
-						fprintf( out, "\";\n" );
-					}
-					fprintf( out, "    };\n" );
-					cvprm = true;
-				}
-				else {
+				if ( !dump_feature_names(out, feats[i], otffn_paramname_begin+l, sf, "ParamUILabelNameID", &cvprm) )
 					break;
-				}
 			}
 			if ( cvprm ) {
 				fprintf( out, "  };\n" );

@@ -14947,7 +14947,7 @@ return( Py_BuildValue("d",val));
 }
 
 static PyObject *PyFF_Font_get_style_set_names(PyFF_Font *self, void *UNUSED(closure)) {
-    int cnt, cvnum;
+    int cnt;
     SplineFont *sf;
     struct otffeatname *fn, *fn2;
     struct otfname *on, *on2;
@@ -14974,7 +14974,6 @@ static PyObject *PyFF_Font_get_style_set_names(PyFF_Font *self, void *UNUSED(clo
                 PyTuple_SetItem(ss_names_tuple, cnt, ss_name_spec);
             }
             else if ( ((fn->tag & 0xff00) >> 8) >= '0' && ((fn->tag & 0xff00) >> 8) <= '9' && (fn->tag & 0xff) >= '0' && (fn->tag & 0xff) <= '9' ) {
-                cvnum = (((fn->tag & 0xff00) >> 8) - '0') * 10 + (fn->tag & 0xff) - '0';
                 dup = false;
                 for ( i = 0; i < cnt; ++i ) {
                     PyObject *langstr = PyUnicode_FromString(lang_str);
@@ -15101,36 +15100,39 @@ static int PyFF_Font_set_style_set_names(PyFF_Font *self, PyObject *value, void 
         }
 
         if ( is_cv ) {
-            if ( !PyTuple_Check(PyTuple_GetItem(ss_names_tuple, 2)) ) {
+            PyObject *ss_cv_names_tuple = PyTuple_GetItem(ss_names_tuple, 2);
+            PyObject *ss_prm_names_tuple;
+            if ( !PyTuple_Check(ss_cv_names_tuple) ) {
                 PyErr_Format(PyExc_TypeError, "The third element of a character variant name specification must be a tuple.");
                 return( -1 );
             }
-            if ( PyTuple_Size(PyTuple_GetItem(ss_names_tuple, 2))!=5 ) {
+            if ( PyTuple_Size(ss_cv_names_tuple)!=5 ) {
                 PyErr_Format(PyExc_ValueError, "The third element of a character variant name specification must have 5 elements (feature name, tooltip text, sample text, tuple of parameter labels and characters).");
                 return( -1 );
             }
-            if ( PyTuple_GetItem(PyTuple_GetItem(ss_names_tuple, 2), 0) != Py_None && !PyUnicode_Check(PyTuple_GetItem(PyTuple_GetItem(ss_names_tuple, 2), 0)) ) {
+            if ( PyTuple_GetItem(ss_cv_names_tuple, 0) != Py_None && !PyUnicode_Check(PyTuple_GetItem(ss_cv_names_tuple, 0)) ) {
                 PyErr_Format(PyExc_TypeError, "The first element of the third element of a character variant name specification must be a string or None.");
                 return( -1 );
             }
-            if ( PyTuple_GetItem(PyTuple_GetItem(ss_names_tuple, 2), 1) != Py_None && !PyUnicode_Check(PyTuple_GetItem(PyTuple_GetItem(ss_names_tuple, 2), 1)) ) {
+            if ( PyTuple_GetItem(ss_cv_names_tuple, 1) != Py_None && !PyUnicode_Check(PyTuple_GetItem(ss_cv_names_tuple, 1)) ) {
                 PyErr_Format(PyExc_TypeError, "The second element of the third element of a character variant name specification must be a string or None.");
                 return( -1 );
             }
-            if ( PyTuple_GetItem(PyTuple_GetItem(ss_names_tuple, 2), 2) != Py_None && !PyUnicode_Check(PyTuple_GetItem(PyTuple_GetItem(ss_names_tuple, 2), 2)) ) {
+            if ( PyTuple_GetItem(ss_cv_names_tuple, 2) != Py_None && !PyUnicode_Check(PyTuple_GetItem(ss_cv_names_tuple, 2)) ) {
                 PyErr_Format(PyExc_TypeError, "The third element of the third element of a character variant name specification must be a string or None.");
                 return( -1 );
             }
-            if ( PyTuple_GetItem(PyTuple_GetItem(ss_names_tuple, 2), 4) != Py_None ) { // TODO: characters
+            if ( PyTuple_GetItem(ss_cv_names_tuple, 4) != Py_None ) { // TODO: characters
                 PyErr_Format(PyExc_TypeError, "The fifth element of the third element of a character variant name specification is reserved and must be None.");
                 return( -1 );
             }
-            if ( !PyTuple_Check(PyTuple_GetItem(PyTuple_GetItem(ss_names_tuple, 2), 3)) ) {
+            ss_prm_names_tuple = PyTuple_GetItem(ss_cv_names_tuple, 3);
+            if ( !PyTuple_Check(ss_prm_names_tuple) ) {
                 PyErr_Format(PyExc_TypeError, "The fourth element of the third element of a character variant name specification must be a tuple.");
                 return( -1 );
             }
-            for ( j = 0; j < PyTuple_Size(PyTuple_GetItem(PyTuple_GetItem(ss_names_tuple, 2), 3)); ++j ) {
-                if ( PyTuple_GetItem(PyTuple_GetItem(PyTuple_GetItem(ss_names_tuple, 2), 3), j) != Py_None && !PyUnicode_Check(PyTuple_GetItem(PyTuple_GetItem(PyTuple_GetItem(ss_names_tuple, 2), 3), j)) ) {
+            for ( j = 0; j < PyTuple_Size(ss_prm_names_tuple); ++j ) {
+                if ( PyTuple_GetItem(ss_prm_names_tuple, j) != Py_None && !PyUnicode_Check(PyTuple_GetItem(ss_prm_names_tuple, j)) ) {
                     PyErr_Format(PyExc_TypeError, "All elements of the fourth element of the third element of a character variant name specification must be a string or None.");
                     return( -1 );
                 }
