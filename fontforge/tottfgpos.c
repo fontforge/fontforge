@@ -3409,7 +3409,7 @@ return( NULL );
 					if ( !getfeatnamefromginfo(at, g___, ginfo.feat_lookups[i].tag,
 						otffn_paramname_begin + numNamedParameters, sf, name_param_loc,
 						ginfo.feat_lookups[i].name_param_ptr,
-						numNamedParameters == 0 ? &sampleTextNameId : NULL) )
+						numNamedParameters == 0 ? &firstParamUiLabelNameId : NULL) )
 							break;
 				}
 
