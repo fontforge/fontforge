@@ -2597,9 +2597,12 @@ return( NULL );
 		}
 		fseek(ttf,pos+features[i].offset+12,SEEK_SET);
 		ncnt = getushort(ttf);
-		for ( j = 0; j < ncnt; ++j ) {
-			get3byte(ttf); // TODO: character[j]
+		if ( ncnt > 0 ) {
+			LogError( _("The character list in the feature parameter table of '%c%c%c%c' is ignored."), features[i].tag >> 24,features[i].tag >> 16,features[i].tag >> 8,features[i].tag );
 		}
+		//for ( j = 0; j < ncnt; ++j ) {
+		//	get3byte(ttf); // TODO: character[j]
+		//}
 		fseek(ttf,pos+features[i].offset+2,SEEK_SET);
 	}
 	features[i].lcnt = getushort(ttf);

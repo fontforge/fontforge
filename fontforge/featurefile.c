@@ -5503,6 +5503,7 @@ static void fea_ParseFeatureNames(struct parseState *tok,uint32_t tag,enum otffn
 static void fea_ParseCvParameters(struct parseState *tok,uint32_t tag) {
 	bool finished = false;
 	int paramCount = 0;
+	bool charList = false; // remove after once character list is implemented
 
 	for (finished = false;!finished;) {
 		fea_ParseTok(tok);
@@ -5527,12 +5528,22 @@ static void fea_ParseCvParameters(struct parseState *tok,uint32_t tag) {
 				fea_ParseFeatureNames(tok,tag,otffn_paramname_begin + (paramCount++));
 				fea_end_statement(tok);
 				break;
-			//case tk_Character:
-			// TODO: character
+			case tk_Character:
+				tok->base = 0;
+				fea_TokenMustBe(tok,tk_int,'\0');
+				// TODO: character
+				tok->base = 10;
+				fea_end_statement(tok);
+				charList = true; // remove after once character list is implemented
+				break;
 			default:
 				finished = true;
 				break;
 		}
+	}
+
+	if ( charList ) { // remove after once character list is implemented
+		LogError( _("The character list in the cvParameters block in feature %c%c%c%c is ignored."), tag >> 24,tag >> 16,tag >> 8,tag );
 	}
 
 	if ( tok->type!=tk_char || tok->tokbuf[0]!='}' ) {
