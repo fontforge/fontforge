@@ -1184,7 +1184,7 @@ static GTextInfo otfssfeatfields[] = {
     { (unichar_t *) N_("Feature Name"), NULL, 0, 0, (void *) (intptr_t) otffn_featname, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("Tooltip Text"), NULL, 0, 0, (void *) (intptr_t) otffn_tooltiptext, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("featname|Sample Text"), NULL, 0, 0, (void *) (intptr_t) otffn_sampletext, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
-    //{ (unichar_t *) N_("Characters"), NULL, 0, 0, (void *) (intptr_t) otffn_characters, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
+    //{ (unichar_t *) N_("Character List"), NULL, 0, 0, (void *) (intptr_t) otffn_characters, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("Parameter Name 1"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("Parameter Name 2"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 1, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
     { (unichar_t *) N_("Parameter Name 3"), NULL, 0, 0, (void *) (intptr_t) otffn_paramname_begin + 2, NULL, 0, 0, 0, 0, 1, 0, 1, 0, 0, '\0'},
@@ -3862,30 +3862,39 @@ static int SSNameValidate(struct gfi_data *d) {
     int rows;
     struct matrix_data *strings = GMatrixEditGet(edit, &rows);
     int i, j, k;
+    uint32_t tag;
 
     for ( i=0; i<rows; ++i ) {
-	if ( strings[3*i+2].u.md_str == NULL )
-    continue;
-	for ( j=i+1; j<rows; ++j ) {
-	    if ( strings[3*j+2].u.md_str == NULL )
-	continue;
-	    if ( strings[3*i  ].u.md_ival == strings[3*j  ].u.md_ival &&
-		    strings[3*i+1].u.md_ival == strings[3*j+1].u.md_ival ) {
-		uint32_t tag = strings[3*i+1].u.md_ival;
-		for ( k=0; mslanguages[k].text!=NULL &&
-			((intptr_t) mslanguages[k].userdata)!=strings[3*i].u.md_ival; ++k );
-		if ( mslanguages[k].text==NULL ) k=0;
-		ff_post_error(_("Duplicate StyleSet Name"),_("The feature '%c%c%c%c' is named twice in language %s\n%.80s\n%.80s"),
-			tag>>24, tag>>16, tag>>8, tag,
-			mslanguages[k].text,
-			strings[3*i+2].u.md_str,
-			strings[3*j+2].u.md_str
-			);
-return( false );
-	    }
-	}
+        if ( strings[4*i+3].u.md_str == NULL )
+            continue;
+        tag = strings[4*i+1].u.md_ival;
+        if ( (tag & 0xffff0000) == CHR('s','s','\0','\0') && strings[4*i+2].u.md_ival != otffn_featname ) {
+            ff_post_error(_("Invalid field"),_("The feature '%c%c%c%c' cannot contain Tooltip Text, Sample Text or Parameter Names."),
+                tag>>24, tag>>16, tag>>8, tag
+            );
+            return( false );
+        }
+        for ( j=i+1; j<rows; ++j ) {
+            if ( strings[4*j+3].u.md_str == NULL )
+                continue;
+            if ( strings[4*i  ].u.md_ival == strings[4*j  ].u.md_ival &&
+                strings[4*i+1].u.md_ival == strings[4*j+1].u.md_ival &&
+                strings[4*i+2].u.md_ival == strings[4*j+2].u.md_ival ) {
+                    for ( k=0; mslanguages[k].text!=NULL &&
+                        ((intptr_t) mslanguages[k].userdata)!=strings[4*i].u.md_ival; ++k );
+                    if ( mslanguages[k].text==NULL )
+                        k=0;
+                    ff_post_error(_("Duplicate StyleSet Name"),_("The feature '%c%c%c%c' is named twice in language %s\n%.80s\n%.80s"),
+                        tag>>24, tag>>16, tag>>8, tag,
+                        mslanguages[k].text,
+                        strings[4*i+3].u.md_str,
+                        strings[4*j+3].u.md_str
+                    );
+                    return( false );
+            }
+        }
     }
-return( true );
+    return( true );
 }
 
 static void StoreSSNames(struct gfi_data *d) {
