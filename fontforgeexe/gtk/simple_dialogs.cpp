@@ -34,6 +34,7 @@
 #include "intl.h"
 #include "application.hpp"
 #include "dialog.hpp"
+#include "find_problems.hpp"
 #include "language_list.hpp"
 #include "utils.hpp"
 
@@ -161,6 +162,14 @@ char* language_list_dialog(GWindow parent, const LanguageRec* languages,
                             append_tag);
         return strdup(s.c_str());
     }
+}
+
+bool find_problems_dialog(GWindow parent) {
+    // To avoid instability, the GTK application is lazily initialized only when
+    // a GTK window is invoked.
+    ff::app::GtkApp();
+
+    return (ff::dlg::FindProblemsDlg::show(parent) == Gtk::RESPONSE_OK);
 }
 
 void update_appearance() {
