@@ -3049,8 +3049,31 @@ static int e_h(GWindow gw, GEvent *event) {
 return( event->type!=et_char );
 }
 
+static ProblemRec pr_points[] = {
+    {N_("Non-_Integral coordinates"),
+     N_("The coordinates of all points and control points in truetype\n"
+        "must be integers (if they are not integers then FontForge will\n"
+        "round them when it outputs them, potentially causing havoc).\n"
+        "Even in PostScript fonts it is generally a good idea to use\n"
+        "integral values."),
+     prob_bool},
+    {N_("_X near¹"),
+     N_("Allows you to check that vertical stems in several\ncharacters start "
+        "at the same location."),
+     prob_double, .value.dval = 0.0},
+    PROBLEM_REC_EMPTY};
+
+static ProblemRec pr_paths[] = {{N_("O_pen Paths"),
+                                 N_("All paths should be closed loops, there "
+                                    "should be no exposed endpoints"),
+                                 prob_bool},
+                                PROBLEM_REC_EMPTY};
+
+static ProblemTab pr_tabs[] = {
+    {N_("Points"), pr_points}, {N_("Paths"), pr_paths}, PROBLEM_TAB_EMPTY};
+
 void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
-    return find_problems_dialog(fv->gw);
+    find_problems_dialog(fv->gw, pr_tabs);
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;

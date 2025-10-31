@@ -39,6 +39,29 @@ typedef struct {
     uint32_t tag;
 } LanguageRec;
 
+enum ProblemRecType { prob_bool, prob_int, prob_double };
+
+typedef struct {
+    const char* label;
+    const char* tooltip;
+    enum ProblemRecType type;
+    union {
+        int ival;
+        double dval;
+    } value;
+} ProblemRec;
+#define PROBLEM_REC_EMPTY            \
+    {                                \
+        NULL, NULL, prob_bool, { 0 } \
+    }
+
+typedef struct {
+    const char* label;
+    ProblemRec* records;
+} ProblemTab;
+#define PROBLEM_TAB_EMPTY \
+    { NULL, NULL }
+
 int add_encoding_slots_dialog(GWindow parent, bool cid);
 
 // Return comma-separated list of language tags, or NULL if the action was
@@ -46,7 +69,7 @@ int add_encoding_slots_dialog(GWindow parent, bool cid);
 char* language_list_dialog(GWindow parent, const LanguageRec* languages,
                            const char* initial_tags);
 
-bool find_problems_dialog(GWindow parent);
+bool find_problems_dialog(GWindow parent, const ProblemTab* pr_tabs);
 
 void update_appearance();
 

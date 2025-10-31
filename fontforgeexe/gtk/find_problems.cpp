@@ -31,13 +31,14 @@
 
 namespace ff::dlg {
 
-FindProblemsDlg::FindProblemsDlg(GWindow parent) : Dialog(parent) {
+FindProblemsDlg::FindProblemsDlg(GWindow parent,
+                                 const std::vector<ProblemTab>& pr_tabs)
+    : Dialog(parent) {
     set_title(_("Find Problems"));
     set_resizable(false);
     // set_help_context("ui/dialogs/problems.html", nullptr);
 
-    auto tabs = Gtk::make_managed<Gtk::Notebook>();
-    tabs->append_page(*Gtk::make_managed<Gtk::Label>(_("Dummy")), "Dummy");
+    auto tabs = build_notebook(pr_tabs);
     get_content_area()->pack_start(*tabs);
 
     auto button_box = Gtk::make_managed<Gtk::HBox>();
@@ -52,6 +53,7 @@ FindProblemsDlg::FindProblemsDlg(GWindow parent) : Dialog(parent) {
 
     auto near_value_box = Gtk::make_managed<Gtk::HBox>();
     auto near_value_entry = Gtk::make_managed<Gtk::Entry>();
+    near_value_entry->set_width_chars(6);
     near_value_box->pack_start(
         *Gtk::make_managed<Gtk::Label>(U_("¹ \"Near\" means within")),
         Gtk::PACK_SHRINK);
@@ -63,8 +65,44 @@ FindProblemsDlg::FindProblemsDlg(GWindow parent) : Dialog(parent) {
     show_all();
 }
 
-Gtk::ResponseType FindProblemsDlg::show(GWindow parent) {
-    FindProblemsDlg dialog(parent);
+Gtk::Notebook* FindProblemsDlg::build_notebook(
+    const std::vector<ProblemTab>& pr_tabs) const {
+    auto tabs = Gtk::make_managed<Gtk::Notebook>();
+
+    for (const ProblemTab& tab : pr_tabs) {
+        auto record_page = Gtk::make_managed<Gtk::VBox>();
+        for (const ProblemRecord& record : tab.records) {
+            auto record_box = Gtk::make_managed<Gtk::HBox>();
+
+            auto record_check =
+                Gtk::make_managed<Gtk::CheckButton>(record.label, true);
+            record_check->set_tooltip_text(record.tooltip);
+            record_check->set_active(record.active);
+            record_box->pack_start(*record_check, Gtk::PACK_SHRINK);
+
+            if (!std::holds_alternative<std::monostate>(record.value)) {
+                auto record_entry = Gtk::make_managed<Gtk::Entry>();
+                record_entry->set_width_chars(6);
+                if (std::holds_alternative<int>(record.value)) {
+                    record_entry->set_text(
+                        std::to_string(std::get<int>(record.value)));
+                } else {
+                    record_entry->set_text(
+                        std::to_string(std::get<double>(record.value)));
+                }
+                record_box->pack_start(*record_entry, Gtk::PACK_SHRINK);
+            }
+
+            record_page->pack_start(*record_box, Gtk::PACK_SHRINK);
+        }
+        tabs->append_page(*record_page, tab.label);
+    }
+    return tabs;
+}
+
+Gtk::ResponseType FindProblemsDlg::show(
+    GWindow parent, const std::vector<ProblemTab>& pr_tabs) {
+    FindProblemsDlg dialog(parent, pr_tabs);
 
     Gtk::ResponseType result = dialog.run();
 
