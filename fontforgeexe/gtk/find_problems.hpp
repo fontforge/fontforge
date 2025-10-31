@@ -28,14 +28,32 @@
 
 #include "dialog.hpp"
 
+#include <variant>
+
 namespace ff::dlg {
+
+using ProblemRecordValue = std::variant<std::monostate, int, double>;
+
+struct ProblemRecord {
+    std::string label;
+    std::string tooltip;
+    bool active;
+    ProblemRecordValue value;
+};
+struct ProblemTab {
+    std::string label;
+    std::vector<ProblemRecord> records;
+};
 
 class FindProblemsDlg final : public Dialog {
  private:
-    FindProblemsDlg(GWindow parent);
+    FindProblemsDlg(GWindow parent, const std::vector<ProblemTab>& pr_tabs);
+
+    Gtk::Notebook* build_notebook(const std::vector<ProblemTab>& pr_tabs) const;
 
  public:
-    static Gtk::ResponseType show(GWindow parent);
+    static Gtk::ResponseType show(GWindow parent,
+                                  const std::vector<ProblemTab>& pr_tabs);
 };
 
 }  // namespace ff::dlg
