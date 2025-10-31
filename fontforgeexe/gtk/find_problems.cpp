@@ -33,7 +33,32 @@ namespace ff::dlg {
 
 FindProblemsDlg::FindProblemsDlg(GWindow parent) : Dialog(parent) {
     set_title(_("Find Problems"));
+    set_resizable(false);
     // set_help_context("ui/dialogs/problems.html", nullptr);
+
+    auto tabs = Gtk::make_managed<Gtk::Notebook>();
+    tabs->append_page(*Gtk::make_managed<Gtk::Label>(_("Dummy")), "Dummy");
+    get_content_area()->pack_start(*tabs);
+
+    auto button_box = Gtk::make_managed<Gtk::HBox>();
+    auto clear_all_button = Gtk::make_managed<Gtk::Button>(_("Clear All"));
+    auto set_all_button = Gtk::make_managed<Gtk::Button>(_("Set All"));
+    button_box->pack_start(*clear_all_button, Gtk::PACK_SHRINK);
+    button_box->pack_start(*set_all_button, Gtk::PACK_SHRINK);
+    get_content_area()->pack_start(*button_box);
+
+    get_content_area()->pack_start(*Gtk::make_managed<Gtk::HSeparator>(),
+                                   Gtk::PACK_SHRINK, 5);
+
+    auto near_value_box = Gtk::make_managed<Gtk::HBox>();
+    auto near_value_entry = Gtk::make_managed<Gtk::Entry>();
+    near_value_box->pack_start(
+        *Gtk::make_managed<Gtk::Label>(U_("¹ \"Near\" means within")),
+        Gtk::PACK_SHRINK);
+    near_value_box->pack_start(*near_value_entry, Gtk::PACK_SHRINK);
+    near_value_box->pack_start(*Gtk::make_managed<Gtk::Label>(_("em-units")),
+                               Gtk::PACK_SHRINK);
+    get_content_area()->pack_start(*near_value_box);
 
     show_all();
 }
