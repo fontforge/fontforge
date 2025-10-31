@@ -45,6 +45,7 @@
 #include "tottfgpos.h"
 #include "ttf.h"
 #include "ustring.h"
+#include "gtk/simple_dialogs.hpp"
 
 #include <math.h>
 
@@ -3049,6 +3050,7 @@ return( event->type!=et_char );
 }
 
 void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
+    return find_problems_dialog(fv->gw);
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
