@@ -16,7 +16,7 @@ extern int gdefclass(SplineChar *sc);
 extern int SCRightToLeft(SplineChar *sc);
 extern int ScriptIsRightToLeft(uint32_t script);
 extern SplineChar **EntryExitDecompose(SplineFont *sf, AnchorClass *ac, struct glyphinfo *gi);
-extern struct otffeatname *findotffeatname(uint32_t tag, SplineFont *sf);
+extern struct otffeatname *findotffeatname(uint32_t tag, enum otffn_field field, SplineFont *sf);
 extern uint32_t ScriptFromUnicode(uint32_t u, SplineFont *sf);
 extern uint32_t SCScriptFromUnicode(SplineChar *sc);
 extern void AnchorClassDecompose(SplineFont *sf, AnchorClass *_ac, int classcnt, int *subcnts, SplineChar ***marks, SplineChar ***base, SplineChar ***lig, SplineChar ***mkmk, struct glyphinfo *gi);

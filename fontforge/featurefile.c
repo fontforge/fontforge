@@ -50,6 +50,7 @@
 #include <assert.h>
 #include <locale.h>
 #include <math.h>
+#include <stdbool.h>
 #include <stddef.h>
 
 /* Adobe's opentype feature file */
@@ -1798,14 +1799,35 @@ static void dump_header_languagesystem(FILE *out, SplineFont *sf) {
     fprintf( out, "\n" );
 }
 
+static bool dump_feature_names(FILE *out, uint32_t tag, enum otffn_field field, SplineFont *sf, const char *fieldname, bool *cvprm /* NULL if 'ssXX' */) {
+	struct otffeatname *fn;
+    struct otfname *on;
+	char indent[] = {cvprm ? ' ' : 0,' ',0};
+	if ( (fn = findotffeatname(tag,field,sf))!=NULL ) {
+		if ( cvprm && !(*cvprm) )
+			fprintf( out, "  cvParameters {\n" );
+		fprintf( out, "%s  %s {\n", indent, fieldname );
+		for ( on = fn->names; on!=NULL; on=on->next ) {
+			fprintf( out, "%s    name 3 1 0x%x \"", indent, on->lang );
+			UniOut(out,on->name );
+			fprintf( out, "\";\n" );
+		}
+		fprintf( out, "%s  };\n", indent );
+		if ( cvprm )
+			*cvprm = true;
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
 static void dump_gsubgpos(FILE *out, SplineFont *sf) {
     int isgpos;
     int i,l,s, subl;
     OTLookup *otl;
     FeatureScriptLangList *fl;
     struct scriptlanglist *sl;
-    struct otffeatname *fn;
-    struct otfname *on;
 
     for ( isgpos=0; isgpos<2; ++isgpos ) {
 	uint32_t *feats = SFFeaturesInScriptLang(sf,isgpos,0xffffffff,0xffffffff);
@@ -1818,15 +1840,21 @@ static void dump_gsubgpos(FILE *out, SplineFont *sf) {
 		    dump_lookup( out, sf, otl );
 	    for ( i=0; feats[i]!=0; ++i ) {
 		fprintf( out, "\nfeature %c%c%c%c {\n", feats[i]>>24, feats[i]>>16, feats[i]>>8, feats[i] );
-		if ( feats[i]>=CHR('s','s','0','1') &&  feats[i]<=CHR('s','s','2','0') &&
-			(fn = findotffeatname(feats[i],sf))!=NULL ) {
-		    fprintf( out, "  featureNames {\n" );
-		    for ( on = fn->names; on!=NULL; on=on->next ) {
-			fprintf( out, "    name 3 1 0x%x \"", on->lang );
-			UniOut(out,on->name );
-			fprintf( out, "\";\n" );
-		    }
-		    fprintf( out, "  };\n" );
+		if ( feats[i]>=CHR('s','s','0','1') && feats[i]<=CHR('s','s','2','0') ) {
+			dump_feature_names(out, feats[i], otffn_featname, sf, "featureNames", NULL);
+		}
+		if ( feats[i]>=CHR('c','v','0','1') && feats[i]<=CHR('c','v','9','9') ) {
+			bool cvprm = false;
+			dump_feature_names(out, feats[i], otffn_featname, sf, "FeatUILabelNameID", &cvprm);
+			dump_feature_names(out, feats[i], otffn_tooltiptext, sf, "FeatUITooltipTextNameID", &cvprm);
+			dump_feature_names(out, feats[i], otffn_sampletext, sf, "SampleTextNameID", &cvprm);
+			for ( l = 0; l < 65536-256; ++l ) {
+				if ( !dump_feature_names(out, feats[i], otffn_paramname_begin+l, sf, "ParamUILabelNameID", &cvprm) )
+					break;
+			}
+			if ( cvprm ) {
+				fprintf( out, "  };\n" );
+			}
 		}
 		if ( feats[i]==CHR('s','i','z','e') ) {
 		    struct otfname *nm;
@@ -2229,11 +2257,12 @@ enum toktype { tk_name, tk_class, tk_int, tk_char, tk_cid, tk_eof,
 	       tk_lookupflag, tk_mark, tk_nameid, tk_NULL, tk_parameters, tk_position,
 	       tk_required, tk_RightToLeft, tk_script, tk_substitute, tk_subtable,
 	       tk_table, tk_useExtension,
-/* Additional keywords in the 2008 draft */
 	       tk_anchorDef, tk_valueRecordDef, tk_contourpoint,
 	       tk_MarkAttachmentType, tk_UseMarkFilteringSet,
 	       tk_markClass, tk_reversesub, tk_base, tk_ligature, tk_ligComponent,
-	       tk_featureNames
+	       tk_featureNames,
+	       tk_cvParameters, tk_FeatUILabelNameID, tk_FeatUITooltipTextNameID,
+	       tk_SampleTextNameID, tk_ParamUILabelNameID, tk_Character
 };
 
 struct glyphclasses {
@@ -2341,7 +2370,6 @@ static struct keywords {
     { "subtable", tk_subtable },
     { "table", tk_table },
     { "useExtension", tk_useExtension },
-/* Additional keywords in the 2008 draft */
     { "anchorDef", tk_anchorDef },
     { "valueRecordDef", tk_valueRecordDef },
     { "contourpoint", tk_contourpoint },
@@ -2353,6 +2381,12 @@ static struct keywords {
     { "ligature", tk_ligature },
     { "ligComponent", tk_ligComponent },
     { "featureNames", tk_featureNames },
+    { "cvParameters", tk_cvParameters },
+    { "FeatUILabelNameID", tk_FeatUILabelNameID },
+    { "FeatUITooltipTextNameID", tk_FeatUITooltipTextNameID },
+    { "SampleTextNameID", tk_SampleTextNameID },
+    { "ParamUILabelNameID", tk_ParamUILabelNameID },
+    { "Character", tk_Character },
 /* synonyms */
     { "sub", tk_substitute },
     { "pos", tk_position },
@@ -5425,7 +5459,7 @@ static struct feat_item *fea_ParseSizeMenuName(struct parseState *tok, struct fe
 return( feat );
 }
 
-static void fea_ParseFeatureNames(struct parseState *tok,uint32_t tag) {
+static void fea_ParseFeatureNames(struct parseState *tok,uint32_t tag,enum otffn_field field) {
     struct otffeatname *cur;
     struct otfname *head=NULL, *string;
     struct nameid *temp;
@@ -5458,11 +5492,64 @@ static void fea_ParseFeatureNames(struct parseState *tok,uint32_t tag) {
 	item->u2.featnames = cur = chunkalloc(sizeof(*cur));
 	cur->tag = tag;
 	cur->names = head;
+	cur->field = field;
     }
     if ( tok->type!=tk_char || tok->tokbuf[0]!='}' ) {
 	LogError(_("Expected closing curly brace on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	++tok->err_count;
     }
+}
+
+static void fea_ParseCvParameters(struct parseState *tok,uint32_t tag) {
+	bool finished = false;
+	int paramCount = 0;
+	bool charList = false; // remove after once character list is implemented
+
+	for (finished = false;!finished;) {
+		fea_ParseTok(tok);
+		switch ( tok->type ) {
+			case tk_FeatUILabelNameID:
+				fea_TokenMustBe(tok,tk_char,'{');
+				fea_ParseFeatureNames(tok,tag,otffn_featname);
+				fea_end_statement(tok);
+				break;
+			case tk_FeatUITooltipTextNameID:
+				fea_TokenMustBe(tok,tk_char,'{');
+				fea_ParseFeatureNames(tok,tag,otffn_tooltiptext);
+				fea_end_statement(tok);
+				break;
+			case tk_SampleTextNameID:
+				fea_TokenMustBe(tok,tk_char,'{');
+				fea_ParseFeatureNames(tok,tag,otffn_sampletext);
+				fea_end_statement(tok);
+				break;
+			case tk_ParamUILabelNameID:
+				fea_TokenMustBe(tok,tk_char,'{');
+				fea_ParseFeatureNames(tok,tag,otffn_paramname_begin + (paramCount++));
+				fea_end_statement(tok);
+				break;
+			case tk_Character:
+				tok->base = 0;
+				fea_TokenMustBe(tok,tk_int,'\0');
+				// TODO: character
+				tok->base = 10;
+				fea_end_statement(tok);
+				charList = true; // remove after once character list is implemented
+				break;
+			default:
+				finished = true;
+				break;
+		}
+	}
+
+	if ( charList ) { // remove after once character list is implemented
+		LogError( _("The character list in the cvParameters block in feature %c%c%c%c is ignored."), tag >> 24,tag >> 16,tag >> 8,tag );
+	}
+
+	if ( tok->type!=tk_char || tok->tokbuf[0]!='}' ) {
+		LogError(_("Expected closing curly brace on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+		++tok->err_count;
+	}
 }
 
 static void fea_ParseFeatureDef(struct parseState *tok) {
@@ -5564,9 +5651,13 @@ return;
 		}
 	      break;
 	      case tk_featureNames:
-	        /* I don't handle these yet, so ignore 'em */
 		fea_TokenMustBe(tok,tk_char,'{');
-		fea_ParseFeatureNames(tok,feat_tag);
+		fea_ParseFeatureNames(tok,feat_tag,otffn_featname);
+		fea_end_statement(tok);
+	      break;
+	      case tk_cvParameters:
+		fea_TokenMustBe(tok,tk_char,'{');
+		fea_ParseCvParameters(tok,feat_tag);
 		fea_end_statement(tok);
 	      break;
 	      case tk_parameters:
@@ -7171,10 +7262,11 @@ static struct feat_item *fea_ApplyFeatureList(struct parseState *tok,
 	    fea_AttachFeatureToLookup(otl,feature_tag,sl);
     continue;
 	  case ft_featname:
-	    for ( fn = tok->sf->feat_names; fn!=NULL && fn->tag!=f->u2.featnames->tag; fn=fn->next );
+	    for ( fn = tok->sf->feat_names; fn!=NULL && (fn->tag!=f->u2.featnames->tag || fn->field!=f->u2.featnames->field); fn=fn->next );
 	    if ( fn!=NULL ) {
 		OtfNameListFree(fn->names);
 		fn->names = f->u2.featnames->names;
+		fn->field = f->u2.featnames->field;
 		chunkfree(f->u2.featnames,sizeof(struct otffeatname));
 		f->u2.featnames = NULL;
 	    } else {
