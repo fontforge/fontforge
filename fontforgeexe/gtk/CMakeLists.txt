@@ -1,5 +1,7 @@
 # Distributed under the original FontForge BSD 3-clause license
 
+add_subdirectory(widgets)
+
 add_library(ffgtk OBJECT
   application.hpp
   application.cpp
