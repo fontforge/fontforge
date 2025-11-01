@@ -66,7 +66,7 @@ FindProblemsDlg::FindProblemsDlg(GWindow parent,
 }
 
 Gtk::Notebook* FindProblemsDlg::build_notebook(
-    const std::vector<ProblemTab>& pr_tabs) const {
+    const std::vector<ProblemTab>& pr_tabs) {
     auto tabs = Gtk::make_managed<Gtk::Notebook>();
 
     for (const ProblemTab& tab : pr_tabs) {
@@ -74,39 +74,62 @@ Gtk::Notebook* FindProblemsDlg::build_notebook(
         for (const ProblemRecord& record : tab.records) {
             auto record_box = Gtk::make_managed<Gtk::HBox>();
 
-            auto record_check =
-                Gtk::make_managed<Gtk::CheckButton>(record.label, true);
-            record_check->set_tooltip_text(record.tooltip);
-            record_check->set_active(record.active);
-            record_box->pack_start(*record_check, Gtk::PACK_SHRINK);
+            Gtk::CheckButton record_check(record.label, true);
+            record_check.set_tooltip_text(record.tooltip);
+            record_check.set_active(record.active);
+            record_box->pack_start(record_check, Gtk::PACK_SHRINK);
 
+            Gtk::Entry record_entry;
             if (!std::holds_alternative<std::monostate>(record.value)) {
-                auto record_entry = Gtk::make_managed<Gtk::Entry>();
-                record_entry->set_width_chars(6);
+                record_entry.set_width_chars(6);
                 if (std::holds_alternative<int>(record.value)) {
-                    record_entry->set_text(
+                    record_entry.set_text(
                         std::to_string(std::get<int>(record.value)));
                 } else {
-                    record_entry->set_text(
+                    record_entry.set_text(
                         std::to_string(std::get<double>(record.value)));
                 }
-                record_box->pack_start(*record_entry, Gtk::PACK_SHRINK);
+                record_box->pack_start(record_entry, Gtk::PACK_SHRINK);
             }
 
             record_page->pack_start(*record_box, Gtk::PACK_SHRINK);
+            widget_map_.emplace(record.cid,
+                                std::make_pair(std::move(record_check),
+                                               std::move(record_entry)));
         }
         tabs->append_page(*record_page, tab.label);
     }
     return tabs;
 }
 
-Gtk::ResponseType FindProblemsDlg::show(
+ProblemRecordsOut FindProblemsDlg::show(
     GWindow parent, const std::vector<ProblemTab>& pr_tabs) {
     FindProblemsDlg dialog(parent, pr_tabs);
 
     Gtk::ResponseType result = dialog.run();
+    ProblemRecordsOut records_out;
 
-    return result;
+    if (result != Gtk::RESPONSE_OK) {
+        // Return empty result whenever the user canceled the dialog.
+        return records_out;
+    }
+
+    for (const ProblemTab& tab : pr_tabs) {
+        for (const ProblemRecord& record : tab.records) {
+            const auto& [checkbox, entry] = dialog.widget_map_[record.cid];
+            if (!checkbox.get_active()) continue;
+
+            ProblemRecordValue new_value = record.value;
+            if (std::holds_alternative<int>(record.value)) {
+                new_value = std::stoi(entry.get_text());
+            } else if (std::holds_alternative<double>(record.value)) {
+                new_value = std::stod(entry.get_text());
+            }
+            records_out.emplace(record.cid, new_value);
+        }
+    }
+
+    return records_out;
 }
 
 }  // namespace ff::dlg
