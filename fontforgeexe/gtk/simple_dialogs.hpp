@@ -42,17 +42,19 @@ typedef struct {
 enum ProblemRecType { prob_bool, prob_int, prob_double };
 
 typedef struct {
+    short cid;
     const char* label;
     const char* tooltip;
+    bool active;
     enum ProblemRecType type;
     union {
         int ival;
         double dval;
     } value;
 } ProblemRec;
-#define PROBLEM_REC_EMPTY            \
-    {                                \
-        NULL, NULL, prob_bool, { 0 } \
+#define PROBLEM_REC_EMPTY                      \
+    {                                          \
+        0, NULL, NULL, false, prob_bool, { 0 } \
     }
 
 typedef struct {
@@ -69,7 +71,12 @@ int add_encoding_slots_dialog(GWindow parent, bool cid);
 char* language_list_dialog(GWindow parent, const LanguageRec* languages,
                            const char* initial_tags);
 
-bool find_problems_dialog(GWindow parent, const ProblemTab* pr_tabs);
+/* This function updates pr_tabs in-place to preserve the state of the dialog
+   between invocations.
+
+   Return value: true, if any problem record was selected. The selected records
+                 are marked as active in pr_tabs. */
+bool find_problems_dialog(GWindow parent, ProblemTab* pr_tabs);
 
 void update_appearance();
 

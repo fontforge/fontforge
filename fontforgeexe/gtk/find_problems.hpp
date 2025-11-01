@@ -33,8 +33,10 @@
 namespace ff::dlg {
 
 using ProblemRecordValue = std::variant<std::monostate, int, double>;
+using ProblemRecordsOut = std::map<short /*cid*/, ProblemRecordValue>;
 
 struct ProblemRecord {
+    short cid;
     std::string label;
     std::string tooltip;
     bool active;
@@ -49,10 +51,16 @@ class FindProblemsDlg final : public Dialog {
  private:
     FindProblemsDlg(GWindow parent, const std::vector<ProblemTab>& pr_tabs);
 
-    Gtk::Notebook* build_notebook(const std::vector<ProblemTab>& pr_tabs) const;
+    Gtk::Notebook* build_notebook(const std::vector<ProblemTab>& pr_tabs);
+
+    using WidgetMap =
+        std::map<short /*cid*/, std::pair<Gtk::CheckButton, Gtk::Entry>>;
+    WidgetMap widget_map_;
 
  public:
-    static Gtk::ResponseType show(GWindow parent,
+    // Return only problem records ticked by the user, with their respective
+    // values.
+    static ProblemRecordsOut show(GWindow parent,
                                   const std::vector<ProblemTab>& pr_tabs);
 };
 
