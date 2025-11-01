@@ -4114,7 +4114,7 @@ This type may not be pickled.
    * ``gsub_ligature``
    * ``gsub_context``
    * ``gsub_contextchain``
-   * ``gsub_revesechain``
+   * ``gsub_reversecchain``
    * ``morx_indic``
    * ``morx_context``
    * ``morx_insert``
@@ -4654,7 +4654,7 @@ This type may not be pickled.
    x-height and another for the top of capitals and ascenders (and perhaps a
    fourth for descenders). Each such zone is specified by the ``vMap`` argument
    which is a tuple of 3-tuples, each 3-tuple specifying a zone with: Original
-   location, original width, and final location.
+   location, final location, and original width.
 
    .. note::
 
