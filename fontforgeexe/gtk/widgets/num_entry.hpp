@@ -1,4 +1,4 @@
-/* Copyright (C) 2025 by Maxim Iorsh <iorsh@users@sourceforge.net>
+/* Copyright 2025 Maxim Iorsh <iorsh@users.sourceforge.net>
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
@@ -26,45 +26,35 @@
  */
 #pragma once
 
-#include "dialog.hpp"
+#include <iostream>
+#include <gtkmm.h>
 
-#include <variant>
+namespace ff::widgets {
 
-#include "widgets/num_entry.hpp"
-
-namespace ff::dlg {
-
-using ProblemRecordValue = std::variant<std::monostate, int, double>;
-using ProblemRecordsOut = std::map<short /*cid*/, ProblemRecordValue>;
-
-struct ProblemRecord {
-    short cid;
-    std::string label;
-    std::string tooltip;
-    bool active;
-    ProblemRecordValue value;
-};
-struct ProblemTab {
-    std::string label;
-    std::vector<ProblemRecord> records;
-};
-
-class FindProblemsDlg final : public Dialog {
- private:
-    FindProblemsDlg(GWindow parent, const std::vector<ProblemTab>& pr_tabs);
-
-    Gtk::Notebook* build_notebook(const std::vector<ProblemTab>& pr_tabs);
-
-    using WidgetMap =
-        std::map<short /*cid*/,
-                 std::pair<Gtk::CheckButton, widgets::NumericalEntry>>;
-    WidgetMap widget_map_;
-
+class NumericalEntry : public Gtk::Entry {
  public:
-    // Return only problem records ticked by the user, with their respective
-    // values.
-    static ProblemRecordsOut show(GWindow parent,
-                                  const std::vector<ProblemTab>& pr_tabs);
+    template <class N>
+    N get_value() const {
+        static_assert(std::is_integral_v<N> || std::is_floating_point_v<N>,
+                      "Unsupported type for string conversion");
+
+        Glib::ustring text_val = get_text();
+        N val = N{};
+
+        try {
+            if constexpr (std::is_integral_v<N>) {
+                val = std::stoi(text_val);
+            } else if constexpr (std::is_floating_point_v<N>) {
+                val = std::stod(text_val);
+            }
+        } catch (...) {
+            std::cerr << "Couldn't parse " << text_val << " as a numeral."
+                      << std::endl;
+            val = N{};
+        }
+
+        return val;
+    }
 };
 
-}  // namespace ff::dlg
+}  // namespace ff::widgets

@@ -79,7 +79,7 @@ Gtk::Notebook* FindProblemsDlg::build_notebook(
             record_check.set_active(record.active);
             record_box->pack_start(record_check, Gtk::PACK_SHRINK);
 
-            Gtk::Entry record_entry;
+            widgets::NumericalEntry record_entry;
             if (!std::holds_alternative<std::monostate>(record.value)) {
                 record_entry.set_width_chars(6);
                 if (std::holds_alternative<int>(record.value)) {
@@ -121,9 +121,9 @@ ProblemRecordsOut FindProblemsDlg::show(
 
             ProblemRecordValue new_value = record.value;
             if (std::holds_alternative<int>(record.value)) {
-                new_value = std::stoi(entry.get_text());
+                new_value = entry.get_value<int>();
             } else if (std::holds_alternative<double>(record.value)) {
-                new_value = std::stod(entry.get_text());
+                new_value = entry.get_value<double>();
             }
             records_out.emplace(record.cid, new_value);
         }
