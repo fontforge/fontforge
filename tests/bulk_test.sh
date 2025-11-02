@@ -20,6 +20,7 @@ FF_BIN_PROJECT=$SCRIPT_DIR/$FF_BIN_PROJECT
 
 cat $FONT_LIST |
 while read font_url; do
+    failure=0
     TMP_DIR_SYS=`mktemp -d`
     pushd $TMP_DIR_SYS > /dev/null
     if (wget -q --timeout=60 $font_url); then
@@ -41,12 +42,21 @@ while read font_url; do
             echo "PASS: $font_url"
         else
             echo -e "\e[0;31mFAIL\e[0m: $font_url"
+            failure=1
         fi
 
-        rm -rf $TMP_DIR_PROJ
+        if [ $failure -eq 0 ]; then
+            rm -rf $TMP_DIR_PROJ
+        else
+            echo "    Project output: $TMP_DIR_PROJ"
+        fi
     else
         echo "SKIP: $font_url"
     fi
     popd > /dev/null
-    rm -rf $TMP_DIR_SYS
+    if [ $failure -eq 0 ]; then
+        rm -rf $TMP_DIR_SYS
+    else
+        echo "    System output: $TMP_DIR_SYS"
+    fi
 done
