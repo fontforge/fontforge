@@ -807,6 +807,12 @@ static bool _GGDKDraw_FilterByModal(GdkEvent *event, GGDKWindow gw) {
             break;
     }
 
+    // Check if this window has an active GTK modal dialog over it
+    GdkWindow* top_gdk_win = gdk_window_get_effective_toplevel(gw->w);
+    if (g_object_get_data(G_OBJECT(top_gdk_win), "GTKModalBlock")) {
+	return true;
+    }
+
     GGDKWindow gww = gw;
     GPtrArray *stack = gw->display->transient_stack;
 

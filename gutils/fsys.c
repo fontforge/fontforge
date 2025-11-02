@@ -768,9 +768,17 @@ const char *getShareDir(void) {
 }
 
 const char *getLocaleDir(void) {
-    static char *localedir=NULL;
+    static char *localedir = NULL;
     if (!localedir) {
-        localedir = smprintf("%s/share/locale", program_root);
+	if (devel_env) {
+#if defined(__MINGW32__)
+            localedir = smprintf("%s/share/locale", program_root);
+#else
+            localedir = smprintf("%s/po", program_root);
+#endif
+	} else {
+            localedir = smprintf("%s/share/locale", program_root);
+	}
     }
     return localedir;
 }
