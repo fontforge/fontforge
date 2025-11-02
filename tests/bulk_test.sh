@@ -15,6 +15,17 @@ FF_BIN_PROJECT=../build/bin/fontforge
 FF_PY_SCRIPT_LINE="f=fontforge.open(argv[1]); f.save(argv[2])"
 FF_OUTPUT_FILE="Output.sfd"
 
+# FF_PY_SCRIPT_LINE="f=fontforge.open(argv[1]); f.generate(argv[2], flags='no-FFTM-table')"
+# FF_OUTPUT_FILE="Output.ttf"
+
+# FF_PY_SCRIPT_LINE="\
+# f=fontforge.open(argv[1]);\
+# f.generateFeatureFile('Out.fea')"$'\n'"\
+# for l in f.gsub_lookups: f.removeLookup(l)"$'\n'"\
+# for l in f.gpos_lookups: f.removeLookup(l)"$'\n'"\
+# f.mergeFeature('Out.fea'); f.save(argv[2])"
+# FF_OUTPUT_FILE="Output.sfd"
+
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 FF_BIN_PROJECT=$SCRIPT_DIR/$FF_BIN_PROJECT
 
