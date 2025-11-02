@@ -41,3 +41,34 @@ char *sgettext(const char *msgid) {
 	    msgval = found+1;
 return (char *) msgval;
 }
+
+char* gettext_locale(char* locale_out) {
+    const char *loc = getenv("LANGUAGE");
+
+    if (loc == NULL) loc = getenv("LC_ALL");
+    if (loc == NULL) loc = getenv("LC_MESSAGES");
+    if (loc == NULL) loc = getenv("LANG");
+
+    /* Fallback for empty environment */
+    if (loc == NULL) {
+        strcpy(locale_out, "en");
+        return locale_out;
+    }
+
+    char* dot_position = strchr(loc, '.');
+    char* colon_position = strchr(loc, ':');
+
+    // If no dot or colon is found, copy the entire string
+    if (dot_position == NULL && colon_position == NULL) {
+        strcpy(locale_out, loc);
+        return locale_out;
+    }
+
+    size_t substring_length = (dot_position == NULL) ? (colon_position - loc) :
+        (colon_position == NULL) ? (dot_position - loc) :
+        ((colon_position < dot_position) ? (colon_position - loc) : (dot_position - loc));
+
+    strncpy(locale_out, loc, substring_length);
+    locale_out[substring_length] = '\0';
+    return locale_out;
+}

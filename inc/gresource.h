@@ -104,6 +104,9 @@ typedef struct gresfont {
     uint8_t can_free_name;
 } GResFont;
 
+/* Override "system-ui" Pango font alias, because it doesn't support CJK scripts on Windows */
+void fix_CJK_UI_font(GResFont* font);
+
 #define GRESIMAGE_INIT(defstr) { (defstr), NULL }
 #define GRESFONT_INIT(defstr) { NULL, (defstr), false }
 
