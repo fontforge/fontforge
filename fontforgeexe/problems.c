@@ -2878,13 +2878,13 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	struct problems *p = GDrawGetUserData(gw);
 	int errs = false;
 
-	openpaths = p->openpaths = GGadgetIsChecked(GWidgetGetControl(gw,CID_OpenPaths));
+	// openpaths = p->openpaths = GGadgetIsChecked(GWidgetGetControl(gw,CID_OpenPaths));
 	intersectingpaths = p->intersectingpaths = GGadgetIsChecked(GWidgetGetControl(gw,CID_IntersectingPaths));
-	nonintegral = p->nonintegral = GGadgetIsChecked(GWidgetGetControl(gw,CID_NonIntegral));
+	// nonintegral = p->nonintegral = GGadgetIsChecked(GWidgetGetControl(gw,CID_NonIntegral));
 	pointstooclose = p->pointstooclose = GGadgetIsChecked(GWidgetGetControl(gw,CID_PointsTooClose));
 	pointstoofar = p->pointstoofar = GGadgetIsChecked(GWidgetGetControl(gw,CID_PointsTooFar));
 	/*missing = p->missingextrema = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingExtrema))*/;
-	doxnear = p->xnearval = GGadgetIsChecked(GWidgetGetControl(gw,CID_XNear));
+	// doxnear = p->xnearval = GGadgetIsChecked(GWidgetGetControl(gw,CID_XNear));
 	doynear = p->ynearval = GGadgetIsChecked(GWidgetGetControl(gw,CID_YNear));
 	doynearstd = p->ynearstd = GGadgetIsChecked(GWidgetGetControl(gw,CID_YNearStd));
 	linestd = p->linenearstd = GGadgetIsChecked(GWidgetGetControl(gw,CID_LineStd));
@@ -2932,8 +2932,8 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	} else
 	    p->vadvancewidth = false;
 	p->explain = true;
-	if ( doxnear )
-	    p->xval = xval = GetReal8(gw,CID_XNearVal,U_("_X near¹"),&errs);
+	// if ( doxnear )
+	//     p->xval = xval = GetReal8(gw,CID_XNearVal,U_("_X near¹"),&errs);
 	if ( doynear )
 	    p->yval = yval = GetReal8(gw,CID_YNearVal,U_("_Y near¹"),&errs);
 	if ( hintwidth )
@@ -3072,8 +3072,26 @@ static ProblemRec pr_paths[] = {{CID_OpenPaths, N_("O_pen Paths"),
 static ProblemTab pr_tabs[] = {
     {N_("Points"), pr_points}, {N_("Paths"), pr_paths}, PROBLEM_TAB_EMPTY};
 
+static void apply_dialog_results(const ProblemTab *problem_tabs, struct problems *p) {
+    for (const ProblemTab* tab = pr_tabs; tab->label != NULL; ++tab) {
+        for (const ProblemRec* rec = tab->records; rec->label != NULL; ++rec) {
+            /* Points */
+            if (rec->cid == CID_NonIntegral) nonintegral = p->nonintegral = rec->active;
+            if (rec->cid == CID_XNear) {
+                doxnear = p->xnearval = rec->active;
+                if ( doxnear )
+                    p->xval = xval = rec->value.dval;
+	    }
+
+	    /* Paths */
+	    if (rec->cid == CID_OpenPaths) openpaths = p->openpaths = rec->active;
+        }
+    }
+}
+
+
 void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
-    find_problems_dialog(fv->gw, pr_tabs);
+    bool do_apply = find_problems_dialog(fv->gw, pr_tabs);
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
@@ -3099,6 +3117,10 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     /*static GBox smallbox = { bt_raised, bs_rect, 2, 1, 0, 0, 0, 0, 0, 0, COLOR_DEFAULT, COLOR_DEFAULT, 0, 0, 0, 0, 0, 0, 0 };*/
 
     memset(&p,0,sizeof(p));
+    if (do_apply) {
+	apply_dialog_results(pr_tabs, &p);
+    }
+
     if ( fv==NULL ) fv = (FontView *) (cv->b.fv);
     p.fv = fv; p.cv=cv; p.msc = sc;
     if ( cv!=NULL )
@@ -3130,13 +3152,14 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     memset(&pgcd,0,sizeof(pgcd));
     memset(&pboxes,0,sizeof(pboxes));
 
+    // XXXXXXXXXXXXXXXXXXX
     plabel[0].text = (unichar_t *) _("Non-_Integral coordinates");
     plabel[0].text_is_1byte = true;
     plabel[0].text_in_resource = true;
     pgcd[0].gd.label = &plabel[0];
     pgcd[0].gd.pos.x = 3; pgcd[0].gd.pos.y = 5;
     pgcd[0].gd.flags = gg_visible | gg_enabled;
-    if ( nonintegral ) pgcd[0].gd.flags |= gg_cb_on;
+//     if ( nonintegral ) pgcd[0].gd.flags |= gg_cb_on;
     pgcd[0].gd.popup_msg = _(
 	    "The coordinates of all points and control points in truetype\n"
 	    "must be integers (if they are not integers then FontForge will\n"
@@ -3147,6 +3170,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pgcd[0].creator = GCheckBoxCreate;
     parray[0] = &pgcd[0];
 
+    // XXXXXXXXXXXXXXXXXXX
     plabel[1].text = (unichar_t *) U_("_X near¹");
     plabel[1].text_is_1byte = true;
     plabel[1].text_in_resource = true;
@@ -3154,14 +3178,15 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pgcd[1].gd.mnemonic = 'X';
     pgcd[1].gd.pos.x = 3; pgcd[1].gd.pos.y = pgcd[0].gd.pos.y+17;
     pgcd[1].gd.flags = gg_visible | gg_enabled;
-    if ( doxnear ) pgcd[1].gd.flags |= gg_cb_on;
+//     if ( doxnear ) pgcd[1].gd.flags |= gg_cb_on;
     pgcd[1].gd.popup_msg = _("Allows you to check that vertical stems in several\ncharacters start at the same location.");
     pgcd[1].gd.cid = CID_XNear;
     pgcd[1].creator = GCheckBoxCreate;
     pharray1[0] = &pgcd[1];
 
-    sprintf(xnbuf,"%g",xval);
-    plabel[2].text = (unichar_t *) xnbuf;
+    // XXXXXXXXXXXXXXXXXXX
+//     sprintf(xnbuf,"%g",xval);
+//     plabel[2].text = (unichar_t *) xnbuf;
     plabel[2].text_is_1byte = true;
     pgcd[2].gd.label = &plabel[2];
     pgcd[2].gd.pos.x = 60; pgcd[2].gd.pos.y = pgcd[1].gd.pos.y-5; pgcd[2].gd.pos.width = 40;
@@ -3328,6 +3353,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     memset(&pagcd,0,sizeof(pagcd));
     memset(&paboxes,0,sizeof(paboxes));
 
+    // XXXXXXXXXXXXXXXXXXX
     palabel[0].text = (unichar_t *) _("O_pen Paths");
     palabel[0].text_is_1byte = true;
     palabel[0].text_in_resource = true;
@@ -3335,7 +3361,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pagcd[0].gd.mnemonic = 'P';
     pagcd[0].gd.pos.x = 3; pagcd[0].gd.pos.y = 6;
     pagcd[0].gd.flags = gg_visible | gg_enabled;
-    if ( openpaths ) pagcd[0].gd.flags |= gg_cb_on;
+//     if ( openpaths ) pagcd[0].gd.flags |= gg_cb_on;
     pagcd[0].gd.popup_msg = _("All paths should be closed loops, there should be no exposed endpoints");
     pagcd[0].gd.cid = CID_OpenPaths;
     pagcd[0].creator = GCheckBoxCreate;
