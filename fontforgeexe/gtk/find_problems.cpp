@@ -79,23 +79,23 @@ Gtk::Notebook* FindProblemsDlg::build_notebook(
             record_check.set_active(record.active);
             record_box->pack_start(record_check, Gtk::PACK_SHRINK);
 
-            widgets::NumericalEntry record_entry;
+            auto record_entry = Gtk::make_managed<widgets::NumericalEntry>();
             if (!std::holds_alternative<std::monostate>(record.value)) {
-                record_entry.set_width_chars(6);
+                record_entry->set_width_chars(6);
                 if (std::holds_alternative<int>(record.value)) {
-                    record_entry.set_text(
+                    record_entry->set_text(
                         std::to_string(std::get<int>(record.value)));
                 } else {
-                    record_entry.set_text(
+                    record_entry->set_text(
                         std::to_string(std::get<double>(record.value)));
                 }
-                record_box->pack_start(record_entry, Gtk::PACK_SHRINK);
+                record_box->pack_start(*record_entry, Gtk::PACK_SHRINK);
             }
 
             record_page->pack_start(*record_box, Gtk::PACK_SHRINK);
-            widget_map_.emplace(record.cid,
-                                std::make_pair(std::move(record_check),
-                                               std::move(record_entry)));
+            widget_map_.emplace(
+                record.cid,
+                std::make_pair(std::move(record_check), record_entry));
         }
         tabs->append_page(*record_page, tab.label);
     }
@@ -121,9 +121,9 @@ ProblemRecordsOut FindProblemsDlg::show(
 
             ProblemRecordValue new_value = record.value;
             if (std::holds_alternative<int>(record.value)) {
-                new_value = entry.get_value<int>();
+                new_value = entry->get_value<int>();
             } else if (std::holds_alternative<double>(record.value)) {
-                new_value = entry.get_value<double>();
+                new_value = entry->get_value<double>();
             }
             records_out.emplace(record.cid, new_value);
         }

@@ -24,42 +24,46 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#pragma once
 
-#include <iostream>
-#include <gtkmm.h>
+#include "num_entry.hpp"
+
+#include <cstring>
 
 namespace ff::widgets {
 
-class NumericalEntry : public Gtk::Entry {
- public:
-    NumericalEntry();
+NumericalEntry::NumericalEntry() {
+    signal_insert_text().connect(
+        sigc::mem_fun(*this, &NumericalEntry::validate_text), false);
+}
 
-    template <class N>
-    N get_value() const {
-        static_assert(std::is_integral_v<N> || std::is_floating_point_v<N>,
-                      "Unsupported type for string conversion");
+// See also source code of gtk_spin_button_insert_text() in GTK repository.
+void NumericalEntry::validate_text(const Glib::ustring& text, int* position) {
+    // Predict what would be the Gtk::Entry contents after the
+    // insertion.
+    Glib::ustring current_text = get_text();
+    Glib::ustring new_text = current_text;
+    new_text.replace(*position, 0, text);
 
-        Glib::ustring text_val = get_text();
-        N val = N{};
-
-        try {
-            if constexpr (std::is_integral_v<N>) {
-                val = std::stoi(text_val);
-            } else if constexpr (std::is_floating_point_v<N>) {
-                val = std::stod(text_val);
-            }
-        } catch (...) {
-            std::cerr << "Couldn't parse " << text_val << " as a numeral."
-                      << std::endl;
-            val = N{};
-        }
-
-        return val;
+    // Special cases which arise when the user started typing a not yet
+    // recognizable number
+    std::string decimal_point(1, *std::localeconv()->decimal_point);
+    if (new_text == "-" || new_text == decimal_point ||
+        new_text == "-" + decimal_point) {
+        return;
     }
 
- private:
-    void validate_text(const Glib::ustring& text, int* position);
-};
+    // Attempt numeric conversion
+    char* end{};
+    errno = 0;
+    double d = std::strtod(new_text.c_str(), &end);
+
+    // If the new Gtk::Entry contents can't be converted to a number,
+    // the change should be discarded.
+    if (end != (new_text.c_str() + std::strlen(new_text.c_str())) ||
+        errno != 0) {
+        errno = 0;
+        signal_insert_text().emission_stop();
+    }
+}
 
 }  // namespace ff::widgets
