@@ -4542,6 +4542,10 @@ This type may not be pickled.
 
       Include a 'TeX ' table in an ttf/otf file
 
+   .. object:: no-mac-names
+
+      Do not include Mac names used on Classic Mac OS, not on current macOS
+
    .. object:: round
 
       Round PS coordinates to integers
