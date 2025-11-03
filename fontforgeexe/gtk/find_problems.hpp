@@ -57,7 +57,7 @@ class FindProblemsDlg final : public Dialog {
 
     using WidgetMap =
         std::map<short /*cid*/,
-                 std::pair<Gtk::CheckButton, widgets::NumericalEntry>>;
+                 std::pair<Gtk::CheckButton, widgets::NumericalEntry*>>;
     WidgetMap widget_map_;
 
  public:
