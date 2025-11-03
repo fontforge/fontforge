@@ -1821,24 +1821,24 @@ static SplineChar **allmarkglyphs(SplineChar ***glyphlist, int classcnt) {
     int i, tot, k;
 
     if ( classcnt==1 )
-return( SFOrderedGlyphs(glyphlist[0]));
+        return( SFOrderedGlyphs(glyphlist[0]));
 
     for ( i=tot=0; i<classcnt; ++i ) {
-	for ( k=0; glyphlist[i][k]!=NULL; ++k );
-	tot += k;
+        for ( k=0; glyphlist[i]!=NULL && glyphlist[i][k]!=NULL; ++k );
+        tot += k;
     }
     glyphs = malloc((tot+1)*sizeof(SplineChar *));
     for ( i=tot=0; i<classcnt; ++i ) {
-	for ( k=0; glyphlist[i][k]!=NULL; ++k )
-	    glyphs[tot++] = glyphlist[i][k];
+        for ( k=0; glyphlist[i]!=NULL && glyphlist[i][k]!=NULL; ++k )
+            glyphs[tot++] = glyphlist[i][k];
     }
     qsort(glyphs,tot,sizeof(SplineChar *),orderglyph);
     for ( i=k=0; i<tot; ++i ) {
-	while ( i+1<tot && glyphs[i]==glyphs[i+1]) ++i;
-	glyphs[k++] = glyphs[i];
+        while ( i+1<tot && glyphs[i]==glyphs[i+1]) ++i;
+        glyphs[k++] = glyphs[i];
     }
     glyphs[k] = NULL;
-return( glyphs );
+    return( glyphs );
 }
 
 static void dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
