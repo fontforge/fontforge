@@ -49,6 +49,8 @@ void NumericalEntry::validate_text_cb(const Glib::ustring& text,
     }
 }
 
+void IntegerEntry::set_value(int val) { set_text(std::to_string(val)); }
+
 int IntegerEntry::get_value() const {
     Glib::ustring text_val = get_text();
     int val = 0;
@@ -86,6 +88,31 @@ bool IntegerEntry::validate_text(const Glib::ustring& text) const {
     return true;
 }
 
+DoubleEntry::DoubleEntry() {
+    decimal_point_ = std::string(1, *std::localeconv()->decimal_point);
+}
+
+void DoubleEntry::set_value(double val) {
+    std::string text_val = std::to_string(val);
+
+    // to_string() formats the number with excessive trailing zeros. We need to
+    // strip them.
+    size_t last_non_zero = text_val.find_last_not_of('0');
+
+    if (last_non_zero == std::string::npos) {
+        // All zeros, which is probably not really possible.
+        text_val = "0.0";
+    } else {
+        // If the non-zero character is period, keep one zero after it
+        if (text_val[last_non_zero] == decimal_point_[0]) {
+            last_non_zero = std::min(last_non_zero + 1, text_val.size() - 1);
+        }
+        text_val.erase(last_non_zero + 1);
+    }
+
+    set_text(text_val);
+}
+
 double DoubleEntry::get_value() const {
     Glib::ustring text_val = get_text();
     double val = 0.0;
@@ -105,8 +132,7 @@ double DoubleEntry::get_value() const {
 bool DoubleEntry::validate_text(const Glib::ustring& text) const {
     // Special cases which arise when the user started typing a not yet
     // recognizable number
-    std::string decimal_point(1, *std::localeconv()->decimal_point);
-    if (text == "-" || text == decimal_point || text == "-" + decimal_point) {
+    if (text == "-" || text == decimal_point_ || text == "-" + decimal_point_) {
         return true;
     }
 
