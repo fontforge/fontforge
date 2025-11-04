@@ -33,37 +33,95 @@ namespace ff::widgets {
 
 NumericalEntry::NumericalEntry() {
     signal_insert_text().connect(
-        sigc::mem_fun(*this, &NumericalEntry::validate_text), false);
+        sigc::mem_fun(*this, &NumericalEntry::validate_text_cb), false);
 }
 
-// See also source code of gtk_spin_button_insert_text() in GTK repository.
-void NumericalEntry::validate_text(const Glib::ustring& text, int* position) {
+void NumericalEntry::validate_text_cb(const Glib::ustring& text,
+                                      int* position) {
     // Predict what would be the Gtk::Entry contents after the
     // insertion.
     Glib::ustring current_text = get_text();
     Glib::ustring new_text = current_text;
     new_text.replace(*position, 0, text);
 
+    if (!validate_text(new_text)) {
+        signal_insert_text().emission_stop();
+    }
+}
+
+int IntegerEntry::get_value() const {
+    Glib::ustring text_val = get_text();
+    int val = 0;
+
+    try {
+        val = std::stoi(text_val);
+    } catch (...) {
+        // The user can steer the logic here by typing "-" and then leaving
+        // the widget
+        val = 0;
+    }
+
+    return val;
+}
+
+// See also source code of gtk_spin_button_insert_text() in GTK repository.
+bool IntegerEntry::validate_text(const Glib::ustring& text) const {
     // Special cases which arise when the user started typing a not yet
     // recognizable number
-    std::string decimal_point(1, *std::localeconv()->decimal_point);
-    if (new_text == "-" || new_text == decimal_point ||
-        new_text == "-" + decimal_point) {
-        return;
+    if (text == "-") {
+        return true;
     }
 
     // Attempt numeric conversion
     char* end{};
     errno = 0;
-    double d = std::strtod(new_text.c_str(), &end);
+    std::strtol(text.c_str(), &end, 10);
 
     // If the new Gtk::Entry contents can't be converted to a number,
     // the change should be discarded.
-    if (end != (new_text.c_str() + std::strlen(new_text.c_str())) ||
-        errno != 0) {
+    if (end != (text.c_str() + std::strlen(text.c_str())) || errno != 0) {
         errno = 0;
-        signal_insert_text().emission_stop();
+        return false;
     }
+    return true;
+}
+
+double DoubleEntry::get_value() const {
+    Glib::ustring text_val = get_text();
+    double val = 0.0;
+
+    try {
+        val = std::stod(text_val);
+    } catch (...) {
+        // The user can steer the logic here by typing "-" and then leaving
+        // the widget
+        val = 0.0;
+    }
+
+    return val;
+}
+
+// See also source code of gtk_spin_button_insert_text() in GTK repository.
+bool DoubleEntry::validate_text(const Glib::ustring& text) const {
+    // Special cases which arise when the user started typing a not yet
+    // recognizable number
+    std::string decimal_point(1, *std::localeconv()->decimal_point);
+    if (text == "-" || text == decimal_point || text == "-" + decimal_point) {
+        return true;
+    }
+
+    // Attempt numeric conversion
+    char* end{};
+    errno = 0;
+    std::strtod(text.c_str(), &end);
+
+    // If the new Gtk::Entry contents can't be converted to a number,
+    // the change should be discarded.
+    if (end != (text.c_str() + std::strlen(text.c_str())) || errno != 0) {
+        errno = 0;
+        return false;
+    }
+    return true;
 }
 
 }  // namespace ff::widgets

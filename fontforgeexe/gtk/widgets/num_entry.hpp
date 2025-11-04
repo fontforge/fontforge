@@ -35,31 +35,27 @@ class NumericalEntry : public Gtk::Entry {
  public:
     NumericalEntry();
 
-    template <class N>
-    N get_value() const {
-        static_assert(std::is_integral_v<N> || std::is_floating_point_v<N>,
-                      "Unsupported type for string conversion");
-
-        Glib::ustring text_val = get_text();
-        N val = N{};
-
-        try {
-            if constexpr (std::is_integral_v<N>) {
-                val = std::stoi(text_val);
-            } else if constexpr (std::is_floating_point_v<N>) {
-                val = std::stod(text_val);
-            }
-        } catch (...) {
-            std::cerr << "Couldn't parse " << text_val << " as a numeral."
-                      << std::endl;
-            val = N{};
-        }
-
-        return val;
-    }
+ protected:
+    virtual bool validate_text(const Glib::ustring& text) const = 0;
 
  private:
-    void validate_text(const Glib::ustring& text, int* position);
+    void validate_text_cb(const Glib::ustring& text, int* position);
+};
+
+class IntegerEntry : public NumericalEntry {
+ public:
+    int get_value() const;
+
+ private:
+    bool validate_text(const Glib::ustring& text) const override;
+};
+
+class DoubleEntry : public NumericalEntry {
+ public:
+    double get_value() const;
+
+ private:
+    bool validate_text(const Glib::ustring& text) const override;
 };
 
 }  // namespace ff::widgets

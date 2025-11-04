@@ -79,16 +79,18 @@ Gtk::Notebook* FindProblemsDlg::build_notebook(
             record_check.set_active(record.active);
             record_box->pack_start(record_check, Gtk::PACK_SHRINK);
 
-            auto record_entry = Gtk::make_managed<widgets::NumericalEntry>();
+            widgets::NumericalEntry* record_entry = nullptr;
             if (!std::holds_alternative<std::monostate>(record.value)) {
-                record_entry->set_width_chars(6);
                 if (std::holds_alternative<int>(record.value)) {
+                    record_entry = Gtk::make_managed<widgets::IntegerEntry>();
                     record_entry->set_text(
                         std::to_string(std::get<int>(record.value)));
                 } else {
+                    record_entry = Gtk::make_managed<widgets::DoubleEntry>();
                     record_entry->set_text(
                         std::to_string(std::get<double>(record.value)));
                 }
+                record_entry->set_width_chars(6);
                 record_box->pack_start(*record_entry, Gtk::PACK_SHRINK);
             }
 
@@ -121,9 +123,15 @@ ProblemRecordsOut FindProblemsDlg::show(
 
             ProblemRecordValue new_value = record.value;
             if (std::holds_alternative<int>(record.value)) {
-                new_value = entry->get_value<int>();
+                auto int_entry = dynamic_cast<widgets::IntegerEntry*>(entry);
+                if (int_entry) {
+                    new_value = int_entry->get_value();
+                }
             } else if (std::holds_alternative<double>(record.value)) {
-                new_value = entry->get_value<double>();
+                auto double_entry = dynamic_cast<widgets::DoubleEntry*>(entry);
+                if (double_entry) {
+                    new_value = double_entry->get_value();
+                }
             }
             records_out.emplace(record.cid, new_value);
         }
