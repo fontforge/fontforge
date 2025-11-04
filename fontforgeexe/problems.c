@@ -2885,11 +2885,11 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	pointstoofar = p->pointstoofar = GGadgetIsChecked(GWidgetGetControl(gw,CID_PointsTooFar));
 	/*missing = p->missingextrema = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingExtrema))*/;
 	// doxnear = p->xnearval = GGadgetIsChecked(GWidgetGetControl(gw,CID_XNear));
-	doynear = p->ynearval = GGadgetIsChecked(GWidgetGetControl(gw,CID_YNear));
-	doynearstd = p->ynearstd = GGadgetIsChecked(GWidgetGetControl(gw,CID_YNearStd));
+	// doynear = p->ynearval = GGadgetIsChecked(GWidgetGetControl(gw,CID_YNear));
+	// doynearstd = p->ynearstd = GGadgetIsChecked(GWidgetGetControl(gw,CID_YNearStd));
 	linestd = p->linenearstd = GGadgetIsChecked(GWidgetGetControl(gw,CID_LineStd));
-	cpstd = p->cpnearstd = GGadgetIsChecked(GWidgetGetControl(gw,CID_CpStd));
-	cpodd = p->cpodd = GGadgetIsChecked(GWidgetGetControl(gw,CID_CpOdd));
+	// cpstd = p->cpnearstd = GGadgetIsChecked(GWidgetGetControl(gw,CID_CpStd));
+	// cpodd = p->cpodd = GGadgetIsChecked(GWidgetGetControl(gw,CID_CpOdd));
 	hintnopt = p->hintwithnopt = GGadgetIsChecked(GWidgetGetControl(gw,CID_HintNoPt));
 	ptnearhint = p->ptnearhint = GGadgetIsChecked(GWidgetGetControl(gw,CID_PtNearHint));
 	hintwidth = p->hintwidthnearval = GGadgetIsChecked(GWidgetGetControl(gw,CID_HintWidthNear));
@@ -2903,7 +2903,7 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	bbymin = p->bbymin = GGadgetIsChecked(GWidgetGetControl(gw,CID_BBYMin));
 	bbxmax = p->bbxmax = GGadgetIsChecked(GWidgetGetControl(gw,CID_BBXMax));
 	bbxmin = p->bbxmin = GGadgetIsChecked(GWidgetGetControl(gw,CID_BBXMin));
-	irrelevantcp = p->irrelevantcontrolpoints = GGadgetIsChecked(GWidgetGetControl(gw,CID_IrrelevantCP));
+	// irrelevantcp = p->irrelevantcontrolpoints = GGadgetIsChecked(GWidgetGetControl(gw,CID_IrrelevantCP));
 	multuni = p->multuni = GGadgetIsChecked(GWidgetGetControl(gw,CID_MultUni));
 	multname = p->multname = GGadgetIsChecked(GWidgetGetControl(gw,CID_MultName));
 	uninamemismatch = p->uninamemismatch = GGadgetIsChecked(GWidgetGetControl(gw,CID_UniNameMisMatch));
@@ -2934,8 +2934,8 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	p->explain = true;
 	// if ( doxnear )
 	//     p->xval = xval = GetReal8(gw,CID_XNearVal,U_("_X near¹"),&errs);
-	if ( doynear )
-	    p->yval = yval = GetReal8(gw,CID_YNearVal,U_("_Y near¹"),&errs);
+	// if ( doynear )
+	//     p->yval = yval = GetReal8(gw,CID_YNearVal,U_("_Y near¹"),&errs);
 	if ( hintwidth )
 	    widthval = p->widthval = GetReal8(gw,CID_HintWidth,U_("Hint _Width Near¹"),&errs);
 	if ( p->advancewidth )
@@ -2957,8 +2957,8 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	if ( toodeeprefs )
 /* GT: Refs is an abbreviation for References. Space is somewhat constrained here */
 	    p->refdepthmax = refdepthmax = GetInt8(gw,CID_RefDepthMax,_("Refs neste_d deeper than:"),&errs);
-	if ( irrelevantcp )
-	    p->irrelevantfactor = irrelevantfactor = GetReal8(gw,CID_IrrelevantFactor,_("Irrelevant _Factor:"),&errs)/100.0;
+	// if ( irrelevantcp )
+	//     p->irrelevantfactor = irrelevantfactor = GetReal8(gw,CID_IrrelevantFactor,_("Irrelevant _Factor:"),&errs)/100.0;
 	near = p->near = GetReal8(gw,CID_Near,_("Near"),&errs);
 	if ( errs )
 return( true );
@@ -3061,6 +3061,29 @@ static ProblemRec pr_points[] = {
      N_("Allows you to check that vertical stems in several\ncharacters start "
         "at the same location."),
      false, prob_double, .value.dval = 0.0},
+    {CID_YNear, N_("_Y near¹"),
+     N_("Allows you to check that horizontal stems in several\ncharacters "
+        "start at the same location."),
+     false, prob_double, .value.dval = 0.0},
+    {CID_YNearStd, N_("Y near¹ _standard heights"),
+     N_("Allows you to find points which are slightly\noff from the baseline, "
+        "xheight, cap height,\nascender, descender heights."),
+     false, prob_bool},
+    {CID_CpStd, N_("_Control Points near horizontal/vertical"),
+     N_("Allows you to find control points which are almost,\nbut not quite "
+        "horizontal or vertical\nfrom their base point\n(or at the italic "
+        "angle)."),
+     false, prob_bool},
+    {CID_CpOdd, N_("Control Points _beyond spline"),
+     N_("Allows you to find control points which when projected\nonto the line "
+        "segment between the two end points lie\noutside of those end points"),
+     false, prob_bool},
+    {CID_IrrelevantCP,
+     N_("Check for _irrelevant control\npoints with factor (%)"),
+     N_("Control points are irrelevant if they are too close to the "
+        "main\npoint to make a significant difference in the shape of the "
+        "curve."),
+     false, prob_double, .value.dval = 0.5},
     PROBLEM_REC_EMPTY};
 
 static ProblemRec pr_paths[] = {{CID_OpenPaths, N_("O_pen Paths"),
@@ -3072,23 +3095,38 @@ static ProblemRec pr_paths[] = {{CID_OpenPaths, N_("O_pen Paths"),
 static ProblemTab pr_tabs[] = {
     {N_("Points"), pr_points}, {N_("Paths"), pr_paths}, PROBLEM_TAB_EMPTY};
 
-static void apply_dialog_results(const ProblemTab *problem_tabs, struct problems *p) {
+static void apply_dialog_results(const ProblemTab* problem_tabs,
+                                 struct problems* p) {
     for (const ProblemTab* tab = pr_tabs; tab->label != NULL; ++tab) {
         for (const ProblemRec* rec = tab->records; rec->label != NULL; ++rec) {
             /* Points */
-            if (rec->cid == CID_NonIntegral) nonintegral = p->nonintegral = rec->active;
+            if (rec->cid == CID_NonIntegral)
+                nonintegral = p->nonintegral = rec->active;
             if (rec->cid == CID_XNear) {
                 doxnear = p->xnearval = rec->active;
-                if ( doxnear )
-                    p->xval = xval = rec->value.dval;
-	    }
+                if (doxnear) p->xval = xval = rec->value.dval;
+            }
+            if (rec->cid == CID_YNear) {
+                doynear = p->ynearval = rec->active;
+                if (doynear) p->yval = yval = rec->value.dval;
+            }
+            if (rec->cid == CID_YNearStd)
+                doynearstd = p->ynearstd = rec->active;
+            if (rec->cid == CID_CpStd) cpstd = p->cpnearstd = rec->active;
+            if (rec->cid == CID_CpOdd) cpodd = p->cpodd = rec->active;
+            if (rec->cid == CID_IrrelevantCP) {
+                irrelevantcp = p->irrelevantcontrolpoints = rec->active;
+                if (irrelevantcp)
+                    p->irrelevantfactor = irrelevantfactor =
+                        rec->value.dval / 100.0;
+            }
 
-	    /* Paths */
-	    if (rec->cid == CID_OpenPaths) openpaths = p->openpaths = rec->active;
+            /* Paths */
+            if (rec->cid == CID_OpenPaths)
+                openpaths = p->openpaths = rec->active;
         }
     }
 }
-
 
 void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     bool do_apply = find_problems_dialog(fv->gw, pr_tabs);
@@ -3202,6 +3240,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pboxes[2].creator = GHBoxCreate;
     parray[1] = &pboxes[2];
 
+    // XXXXXXXXXXXXXXXXXXX
     plabel[3].text = (unichar_t *) U_("_Y near¹");
     plabel[3].text_is_1byte = true;
     plabel[3].text_in_resource = true;
@@ -3209,14 +3248,15 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pgcd[3].gd.mnemonic = 'Y';
     pgcd[3].gd.pos.x = 3; pgcd[3].gd.pos.y = pgcd[1].gd.pos.y+24;
     pgcd[3].gd.flags = gg_visible | gg_enabled;
-    if ( doynear ) pgcd[3].gd.flags |= gg_cb_on;
+//     if ( doynear ) pgcd[3].gd.flags |= gg_cb_on;
     pgcd[3].gd.popup_msg = _("Allows you to check that horizontal stems in several\ncharacters start at the same location.");
     pgcd[3].gd.cid = CID_YNear;
     pgcd[3].creator = GCheckBoxCreate;
     pharray2[0] = &pgcd[3];
 
-    sprintf(ynbuf,"%g",yval);
-    plabel[4].text = (unichar_t *) ynbuf;
+    // XXXXXXXXXXXXXXXXXXX
+//     sprintf(ynbuf,"%g",yval);
+//     plabel[4].text = (unichar_t *) ynbuf;
     plabel[4].text_is_1byte = true;
     pgcd[4].gd.label = &plabel[4];
     pgcd[4].gd.pos.x = 60; pgcd[4].gd.pos.y = pgcd[3].gd.pos.y-5; pgcd[4].gd.pos.width = 40;
@@ -3232,6 +3272,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pboxes[3].creator = GHBoxCreate;
     parray[2] = &pboxes[3];
 
+    // XXXXXXXXXXXXXXXXXXX
     plabel[5].text = (unichar_t *) U_("Y near¹ _standard heights");
     plabel[5].text_is_1byte = true;
     plabel[5].text_in_resource = true;
@@ -3239,12 +3280,13 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pgcd[5].gd.mnemonic = 'S';
     pgcd[5].gd.pos.x = 3; pgcd[5].gd.pos.y = pgcd[3].gd.pos.y+18;
     pgcd[5].gd.flags = gg_visible | gg_enabled;
-    if ( doynearstd ) pgcd[5].gd.flags |= gg_cb_on;
+//     if ( doynearstd ) pgcd[5].gd.flags |= gg_cb_on;
     pgcd[5].gd.popup_msg = _("Allows you to find points which are slightly\noff from the baseline, xheight, cap height,\nascender, descender heights.");
     pgcd[5].gd.cid = CID_YNearStd;
     pgcd[5].creator = GCheckBoxCreate;
     parray[3] = &pgcd[5];
 
+    // XXXXXXXXXXXXXXXXXXX
     plabel[6].text = (unichar_t *) (fv->b.sf->italicangle==0?_("_Control Points near horizontal/vertical"):_("Control Points near horizontal/vertical/italic"));
     plabel[6].text_is_1byte = true;
     plabel[6].text_in_resource = true;
@@ -3252,12 +3294,13 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pgcd[6].gd.mnemonic = 'C';
     pgcd[6].gd.pos.x = 3; pgcd[6].gd.pos.y = pgcd[5].gd.pos.y+14;
     pgcd[6].gd.flags = gg_visible | gg_enabled;
-    if ( cpstd ) pgcd[6].gd.flags |= gg_cb_on;
+//     if ( cpstd ) pgcd[6].gd.flags |= gg_cb_on;
     pgcd[6].gd.popup_msg = _("Allows you to find control points which are almost,\nbut not quite horizontal or vertical\nfrom their base point\n(or at the italic angle).");
     pgcd[6].gd.cid = CID_CpStd;
     pgcd[6].creator = GCheckBoxCreate;
     parray[4] = &pgcd[6];
 
+    // XXXXXXXXXXXXXXXXXXX
     plabel[7].text = (unichar_t *) _("Control Points _beyond spline");
     plabel[7].text_is_1byte = true;
     plabel[7].text_in_resource = true;
@@ -3265,24 +3308,26 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pgcd[7].gd.mnemonic = 'b';
     pgcd[7].gd.pos.x = 3; pgcd[7].gd.pos.y = pgcd[6].gd.pos.y+14;
     pgcd[7].gd.flags = gg_visible | gg_enabled;
-    if ( cpodd ) pgcd[7].gd.flags |= gg_cb_on;
+//     if ( cpodd ) pgcd[7].gd.flags |= gg_cb_on;
     pgcd[7].gd.popup_msg = _("Allows you to find control points which when projected\nonto the line segment between the two end points lie\noutside of those end points");
     pgcd[7].gd.cid = CID_CpOdd;
     pgcd[7].creator = GCheckBoxCreate;
     parray[5] = &pgcd[7];
 
+    // XXXXXXXXXXXXXXXXXXX
     plabel[8].text = (unichar_t *) _("Check for _irrelevant control points");
     plabel[8].text_is_1byte = true;
     plabel[8].text_in_resource = true;
     pgcd[8].gd.label = &plabel[8];
     pgcd[8].gd.pos.x = 3; pgcd[8].gd.pos.y = pgcd[7].gd.pos.y+14;
     pgcd[8].gd.flags = gg_visible | gg_enabled;
-    if ( irrelevantcp ) pgcd[8].gd.flags |= gg_cb_on;
+//     if ( irrelevantcp ) pgcd[8].gd.flags |= gg_cb_on;
     pgcd[8].gd.popup_msg = _("Control points are irrelevant if they are too close to the main\npoint to make a significant difference in the shape of the curve.");
     pgcd[8].gd.cid = CID_IrrelevantCP;
     pgcd[8].creator = GCheckBoxCreate;
     parray[6] = &pgcd[8];
 
+    // XXXXXXXXXXXXXXXXXXX
     plabel[9].text = (unichar_t *) _("Irrelevant _Factor:");
     plabel[9].text_is_1byte = true;
     plabel[9].text_in_resource = true;
@@ -3293,8 +3338,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pgcd[9].creator = GLabelCreate;
     pharray3[0] = GCD_HPad10; pharray3[1] = &pgcd[9];
 
-    sprintf( irrel, "%g", irrelevantfactor*100 );
-    plabel[10].text = (unichar_t *) irrel;
+    // XXXXXXXXXXXXXXXXXXX
+//     sprintf( irrel, "%g", irrelevantfactor*100 );
+//     plabel[10].text = (unichar_t *) irrel;
     plabel[10].text_is_1byte = true;
     pgcd[10].gd.label = &plabel[10];
     pgcd[10].gd.pos.x = 105; pgcd[10].gd.pos.y = pgcd[9].gd.pos.y-3;
