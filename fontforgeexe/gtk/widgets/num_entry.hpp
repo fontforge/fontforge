@@ -44,6 +44,7 @@ class NumericalEntry : public Gtk::Entry {
 
 class IntegerEntry : public NumericalEntry {
  public:
+    void set_value(int val);
     int get_value() const;
 
  private:
@@ -52,9 +53,14 @@ class IntegerEntry : public NumericalEntry {
 
 class DoubleEntry : public NumericalEntry {
  public:
+    DoubleEntry();
+
+    void set_value(double val);
     double get_value() const;
 
  private:
+    std::string decimal_point_;
+
     bool validate_text(const Glib::ustring& text) const override;
 };
 

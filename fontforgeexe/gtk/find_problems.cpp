@@ -82,13 +82,14 @@ Gtk::Notebook* FindProblemsDlg::build_notebook(
             widgets::NumericalEntry* record_entry = nullptr;
             if (!std::holds_alternative<std::monostate>(record.value)) {
                 if (std::holds_alternative<int>(record.value)) {
-                    record_entry = Gtk::make_managed<widgets::IntegerEntry>();
-                    record_entry->set_text(
-                        std::to_string(std::get<int>(record.value)));
+                    auto int_entry = Gtk::make_managed<widgets::IntegerEntry>();
+                    int_entry->set_value(std::get<int>(record.value));
+                    record_entry = int_entry;
                 } else {
-                    record_entry = Gtk::make_managed<widgets::DoubleEntry>();
-                    record_entry->set_text(
-                        std::to_string(std::get<double>(record.value)));
+                    auto double_entry =
+                        Gtk::make_managed<widgets::DoubleEntry>();
+                    double_entry->set_value(std::get<double>(record.value));
+                    record_entry = double_entry;
                 }
                 record_entry->set_width_chars(6);
                 record_box->pack_start(*record_entry, Gtk::PACK_SHRINK);
