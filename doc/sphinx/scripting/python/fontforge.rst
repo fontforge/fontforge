@@ -4544,7 +4544,8 @@ This type may not be pickled.
 
    .. object:: no-mac-names
 
-      Do not include Mac names used on Classic Mac OS, not on current macOS
+      Do not include Mac names used on Classic Mac OS. This option does not
+      affect native Mac OS X applications.
 
    .. object:: round
 
