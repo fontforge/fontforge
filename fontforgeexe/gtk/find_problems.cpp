@@ -92,6 +92,8 @@ Gtk::Notebook* FindProblemsDlg::build_notebook(
                     record_entry = double_entry;
                 }
                 record_entry->set_width_chars(6);
+                record_entry->set_valign(Gtk::ALIGN_END);
+                record_entry->set_vexpand(false);
                 record_box->pack_start(*record_entry, Gtk::PACK_SHRINK);
             }
 
