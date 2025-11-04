@@ -2879,7 +2879,7 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	int errs = false;
 
 	// openpaths = p->openpaths = GGadgetIsChecked(GWidgetGetControl(gw,CID_OpenPaths));
-	intersectingpaths = p->intersectingpaths = GGadgetIsChecked(GWidgetGetControl(gw,CID_IntersectingPaths));
+	// intersectingpaths = p->intersectingpaths = GGadgetIsChecked(GWidgetGetControl(gw,CID_IntersectingPaths));
 	// nonintegral = p->nonintegral = GGadgetIsChecked(GWidgetGetControl(gw,CID_NonIntegral));
 	pointstooclose = p->pointstooclose = GGadgetIsChecked(GWidgetGetControl(gw,CID_PointsTooClose));
 	pointstoofar = p->pointstoofar = GGadgetIsChecked(GWidgetGetControl(gw,CID_PointsTooFar));
@@ -2887,14 +2887,14 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	// doxnear = p->xnearval = GGadgetIsChecked(GWidgetGetControl(gw,CID_XNear));
 	// doynear = p->ynearval = GGadgetIsChecked(GWidgetGetControl(gw,CID_YNear));
 	// doynearstd = p->ynearstd = GGadgetIsChecked(GWidgetGetControl(gw,CID_YNearStd));
-	linestd = p->linenearstd = GGadgetIsChecked(GWidgetGetControl(gw,CID_LineStd));
+	// linestd = p->linenearstd = GGadgetIsChecked(GWidgetGetControl(gw,CID_LineStd));
 	// cpstd = p->cpnearstd = GGadgetIsChecked(GWidgetGetControl(gw,CID_CpStd));
 	// cpodd = p->cpodd = GGadgetIsChecked(GWidgetGetControl(gw,CID_CpOdd));
 	hintnopt = p->hintwithnopt = GGadgetIsChecked(GWidgetGetControl(gw,CID_HintNoPt));
 	ptnearhint = p->ptnearhint = GGadgetIsChecked(GWidgetGetControl(gw,CID_PtNearHint));
 	hintwidth = p->hintwidthnearval = GGadgetIsChecked(GWidgetGetControl(gw,CID_HintWidthNear));
-	missingextrema = p->missingextrema = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingExtrema));
-	direction = p->direction = GGadgetIsChecked(GWidgetGetControl(gw,CID_Direction));
+	// missingextrema = p->missingextrema = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingExtrema));
+	// direction = p->direction = GGadgetIsChecked(GWidgetGetControl(gw,CID_Direction));
 	flippedrefs = p->flippedrefs = GGadgetIsChecked(GWidgetGetControl(gw,CID_FlippedRefs));
 	bitmaps = p->bitmaps = GGadgetIsChecked(GWidgetGetControl(gw,CID_Bitmaps));
 	bitmapwidths = p->bitmapwidths = GGadgetIsChecked(GWidgetGetControl(gw,CID_BitmapWidths));
@@ -2911,7 +2911,7 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	missinganchor = p->missinganchor = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingAnchor));
 	missingglyph = p->missingglyph = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingGlyph));
 	missingscriptinfeature = p->missingscriptinfeature = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingScriptInFeature));
-	toomanypoints = p->toomanypoints = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooManyPoints));
+	// toomanypoints = p->toomanypoints = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooManyPoints));
 	toomanyhints = p->toomanyhints = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooManyHints));
 	overlappedhints = p->overlappedhints = GGadgetIsChecked(GWidgetGetControl(gw,CID_OverlappedHints));
 	ptmatchrefsoutofdate = p->ptmatchrefsoutofdate = GGadgetIsChecked(GWidgetGetControl(gw,CID_PtMatchRefsOutOfDate));
@@ -2950,8 +2950,8 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	    bbxmax_val = p->bbxmax_val = GetInt8(gw,CID_BBXMaxVal,U_("Bounding box right of"),&errs);
 	if ( p->bbxmin )
 	    bbxmin_val = p->bbxmin_val = GetInt8(gw,CID_BBXMinVal,U_("Bounding box left of"),&errs);
-	if ( toomanypoints )
-	    p->pointsmax = pointsmax = GetInt8(gw,CID_PointsMax,_("_More points than:"),&errs);
+	// if ( toomanypoints )
+	//     p->pointsmax = pointsmax = GetInt8(gw,CID_PointsMax,_("_More points than:"),&errs);
 	if ( toomanyhints )
 	    p->hintsmax = hintsmax = GetInt8(gw,CID_HintsMax,_("_More hints than:"),&errs);
 	if ( toodeeprefs )
@@ -3086,11 +3086,36 @@ static ProblemRec pr_points[] = {
      false, prob_double, .value.dval = 0.5},
     PROBLEM_REC_EMPTY};
 
-static ProblemRec pr_paths[] = {{CID_OpenPaths, N_("O_pen Paths"),
-                                 N_("All paths should be closed loops, there "
-                                    "should be no exposed endpoints"),
-                                 false, prob_bool},
-                                PROBLEM_REC_EMPTY};
+static ProblemRec pr_paths[] = {
+    {CID_OpenPaths, N_("O_pen Paths"),
+     N_("All paths should be closed loops, there "
+        "should be no exposed endpoints"),
+     false, prob_bool},
+    {CID_IntersectingPaths, N_("Intersecting Paths"),
+     N_("No paths with within a glyph should intersect"), false, prob_bool},
+    {CID_LineStd, N_("_Edges near horizontal/vertical"),
+     N_("Allows you to find lines which are almost,\nbut not quite horizontal "
+        "or vertical\n(or at the italic angle)."),
+     false, prob_bool},
+    {CID_Direction, N_("Check _outermost paths clockwise"),
+     N_("FontForge internally uses paths drawn in a\nclockwise direction. This "
+        "lets you check that they are.\nBefore doing this test insure that\nno "
+        "paths self-intersect."),
+     false, prob_bool},
+    {CID_MissingExtrema, N_("Check _missing extrema"),
+     N_("PostScript and TrueType require that when a path\nreaches its maximum "
+        "or minimum position\nthere must be a point at that location."),
+     false, prob_bool},
+    {CID_TooManyPoints, N_("_More points than:"),
+     N_("The PostScript Language Reference Manual (Appendix B) says that\nan "
+        "interpreter need not support paths with more than 1500 points.\nI "
+        "think this count includes control points. From PostScript's point\nof "
+        "view, all the contours in a character make up one path. "
+        "Modern\ninterpreters tend to support paths with more points than this "
+        "limit.\n(Note a truetype font after conversion to PS will "
+        "contain\ntwice as many control points)"),
+     false, prob_int, .value.ival = 1500},
+    PROBLEM_REC_EMPTY};
 
 static ProblemTab pr_tabs[] = {
     {N_("Points"), pr_points}, {N_("Paths"), pr_paths}, PROBLEM_TAB_EMPTY};
@@ -3124,6 +3149,17 @@ static void apply_dialog_results(const ProblemTab* problem_tabs,
             /* Paths */
             if (rec->cid == CID_OpenPaths)
                 openpaths = p->openpaths = rec->active;
+            if (rec->cid == CID_IntersectingPaths)
+                intersectingpaths = p->intersectingpaths = rec->active;
+            if (rec->cid == CID_LineStd) linestd = p->linenearstd = rec->active;
+            if (rec->cid == CID_Direction)
+                direction = p->direction = rec->active;
+            if (rec->cid == CID_MissingExtrema)
+                missingextrema = p->missingextrema = rec->active;
+            if (rec->cid == CID_TooManyPoints) {
+                toomanypoints = p->toomanypoints = rec->active;
+                if (toomanypoints) p->pointsmax = pointsmax = rec->value.ival;
+            }
         }
     }
 }
@@ -3413,18 +3449,20 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pagcd[0].creator = GCheckBoxCreate;
     paarray[0] = &pagcd[0];
 
+    // XXXXXXXXXXXXXXXXXXX
     palabel[1].text = (unichar_t *) _("Intersecting Paths");
     palabel[1].text_is_1byte = true;
     pagcd[1].gd.label = &palabel[1];
     pagcd[1].gd.mnemonic = 'E';
     pagcd[1].gd.pos.x = 3; pagcd[1].gd.pos.y = pagcd[0].gd.pos.y+17;
     pagcd[1].gd.flags = gg_visible | gg_enabled;
-    if ( intersectingpaths ) pagcd[1].gd.flags |= gg_cb_on;
+//     if ( intersectingpaths ) pagcd[1].gd.flags |= gg_cb_on;
     pagcd[1].gd.popup_msg = _("No paths with within a glyph should intersect");
     pagcd[1].gd.cid = CID_IntersectingPaths;
     pagcd[1].creator = GCheckBoxCreate;
     paarray[1] = &pagcd[1];
 
+    // XXXXXXXXXXXXXXXXXXX
     palabel[2].text = (unichar_t *) (fv->b.sf->italicangle==0?_("_Edges near horizontal/vertical"):_("Edges near horizontal/vertical/italic"));
     palabel[2].text_is_1byte = true;
     palabel[2].text_in_resource = true;
@@ -3432,12 +3470,13 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pagcd[2].gd.mnemonic = 'E';
     pagcd[2].gd.pos.x = 3; pagcd[2].gd.pos.y = pagcd[1].gd.pos.y+17;
     pagcd[2].gd.flags = gg_visible | gg_enabled;
-    if ( linestd ) pagcd[2].gd.flags |= gg_cb_on;
+//     if ( linestd ) pagcd[2].gd.flags |= gg_cb_on;
     pagcd[2].gd.popup_msg = _("Allows you to find lines which are almost,\nbut not quite horizontal or vertical\n(or at the italic angle).");
     pagcd[2].gd.cid = CID_LineStd;
     pagcd[2].creator = GCheckBoxCreate;
     paarray[2] = &pagcd[2];
 
+    // XXXXXXXXXXXXXXXXXXX
     palabel[3].text = (unichar_t *) _("Check _outermost paths clockwise");
     palabel[3].text_is_1byte = true;
     palabel[3].text_in_resource = true;
@@ -3445,24 +3484,26 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pagcd[3].gd.mnemonic = 'S';
     pagcd[3].gd.pos.x = 3; pagcd[3].gd.pos.y = pagcd[2].gd.pos.y+17;
     pagcd[3].gd.flags = gg_visible | gg_enabled;
-    if ( direction ) pagcd[3].gd.flags |= gg_cb_on;
+//     if ( direction ) pagcd[3].gd.flags |= gg_cb_on;
     pagcd[3].gd.popup_msg = _("FontForge internally uses paths drawn in a\nclockwise direction. This lets you check that they are.\nBefore doing this test insure that\nno paths self-intersect.");
     pagcd[3].gd.cid = CID_Direction;
     pagcd[3].creator = GCheckBoxCreate;
     paarray[3] = &pagcd[3];
 
+    // XXXXXXXXXXXXXXXXXXX
     palabel[4].text = (unichar_t *) _("Check _missing extrema");
     palabel[4].text_is_1byte = true;
     palabel[4].text_in_resource = true;
     pagcd[4].gd.label = &palabel[4];
     pagcd[4].gd.pos.x = 3; pagcd[4].gd.pos.y = pagcd[3].gd.pos.y+17;
     pagcd[4].gd.flags = gg_visible | gg_enabled;
-    if ( missingextrema ) pagcd[4].gd.flags |= gg_cb_on;
+//     if ( missingextrema ) pagcd[4].gd.flags |= gg_cb_on;
     pagcd[4].gd.popup_msg = _("PostScript and TrueType require that when a path\nreaches its maximum or minimum position\nthere must be a point at that location.");
     pagcd[4].gd.cid = CID_MissingExtrema;
     pagcd[4].creator = GCheckBoxCreate;
     paarray[4] = &pagcd[4];
 
+    // XXXXXXXXXXXXXXXXXXX
     palabel[5].text = (unichar_t *) _("_More points than:");
     palabel[5].text_is_1byte = true;
     palabel[5].text_in_resource = true;
@@ -3470,14 +3511,15 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pagcd[5].gd.mnemonic = 'r';
     pagcd[5].gd.pos.x = 3; pagcd[5].gd.pos.y = pagcd[4].gd.pos.y+21;
     pagcd[5].gd.flags = gg_visible | gg_enabled;
-    if ( toomanypoints ) pagcd[5].gd.flags |= gg_cb_on;
+//     if ( toomanypoints ) pagcd[5].gd.flags |= gg_cb_on;
     pagcd[5].gd.popup_msg = _("The PostScript Language Reference Manual (Appendix B) says that\nan interpreter need not support paths with more than 1500 points.\nI think this count includes control points. From PostScript's point\nof view, all the contours in a character make up one path. Modern\ninterpreters tend to support paths with more points than this limit.\n(Note a truetype font after conversion to PS will contain\ntwice as many control points)");
     pagcd[5].gd.cid = CID_TooManyPoints;
     pagcd[5].creator = GCheckBoxCreate;
     paharray[0] = &pagcd[5];
 
-    sprintf( pmax, "%d", pointsmax );
-    palabel[6].text = (unichar_t *) pmax;
+    // XXXXXXXXXXXXXXXXXXX
+//     sprintf( pmax, "%d", pointsmax );
+//     palabel[6].text = (unichar_t *) pmax;
     palabel[6].text_is_1byte = true;
     pagcd[6].gd.label = &palabel[6];
     pagcd[6].gd.pos.x = 105; pagcd[6].gd.pos.y = pagcd[5].gd.pos.y-3;
