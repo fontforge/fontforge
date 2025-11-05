@@ -2895,7 +2895,7 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	hintwidth = p->hintwidthnearval = GGadgetIsChecked(GWidgetGetControl(gw,CID_HintWidthNear));
 	// missingextrema = p->missingextrema = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingExtrema));
 	// direction = p->direction = GGadgetIsChecked(GWidgetGetControl(gw,CID_Direction));
-	flippedrefs = p->flippedrefs = GGadgetIsChecked(GWidgetGetControl(gw,CID_FlippedRefs));
+	// flippedrefs = p->flippedrefs = GGadgetIsChecked(GWidgetGetControl(gw,CID_FlippedRefs));
 	bitmaps = p->bitmaps = GGadgetIsChecked(GWidgetGetControl(gw,CID_Bitmaps));
 	bitmapwidths = p->bitmapwidths = GGadgetIsChecked(GWidgetGetControl(gw,CID_BitmapWidths));
 	advancewidth = p->advancewidth = GGadgetIsChecked(GWidgetGetControl(gw,CID_AdvanceWidth));
@@ -2914,12 +2914,12 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	// toomanypoints = p->toomanypoints = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooManyPoints));
 	toomanyhints = p->toomanyhints = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooManyHints));
 	overlappedhints = p->overlappedhints = GGadgetIsChecked(GWidgetGetControl(gw,CID_OverlappedHints));
-	ptmatchrefsoutofdate = p->ptmatchrefsoutofdate = GGadgetIsChecked(GWidgetGetControl(gw,CID_PtMatchRefsOutOfDate));
-	multusemymetrics = p->multusemymetrics = GGadgetIsChecked(GWidgetGetControl(gw,CID_MultUseMyMetrics));
-	refsbadtransformttf = p->refsbadtransformttf = GGadgetIsChecked(GWidgetGetControl(gw,CID_RefBadTransformTTF));
-	refsbadtransformps = p->refsbadtransformps = GGadgetIsChecked(GWidgetGetControl(gw,CID_RefBadTransformPS));
-	mixedcontoursrefs = p->mixedcontoursrefs = GGadgetIsChecked(GWidgetGetControl(gw,CID_MixedContoursRefs));
-	toodeeprefs = p->toodeeprefs = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooDeepRefs));
+	// ptmatchrefsoutofdate = p->ptmatchrefsoutofdate = GGadgetIsChecked(GWidgetGetControl(gw,CID_PtMatchRefsOutOfDate));
+	// multusemymetrics = p->multusemymetrics = GGadgetIsChecked(GWidgetGetControl(gw,CID_MultUseMyMetrics));
+	// refsbadtransformttf = p->refsbadtransformttf = GGadgetIsChecked(GWidgetGetControl(gw,CID_RefBadTransformTTF));
+	// refsbadtransformps = p->refsbadtransformps = GGadgetIsChecked(GWidgetGetControl(gw,CID_RefBadTransformPS));
+	// mixedcontoursrefs = p->mixedcontoursrefs = GGadgetIsChecked(GWidgetGetControl(gw,CID_MixedContoursRefs));
+	// toodeeprefs = p->toodeeprefs = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooDeepRefs));
 	stem3 = p->stem3 = GGadgetIsChecked(GWidgetGetControl(gw,CID_Stem3));
 	if ( stem3 )
 	    showexactstem3 = p->showexactstem3 = GGadgetIsChecked(GWidgetGetControl(gw,CID_ShowExactStem3));
@@ -2954,9 +2954,9 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	//     p->pointsmax = pointsmax = GetInt8(gw,CID_PointsMax,_("_More points than:"),&errs);
 	if ( toomanyhints )
 	    p->hintsmax = hintsmax = GetInt8(gw,CID_HintsMax,_("_More hints than:"),&errs);
-	if ( toodeeprefs )
-/* GT: Refs is an abbreviation for References. Space is somewhat constrained here */
-	    p->refdepthmax = refdepthmax = GetInt8(gw,CID_RefDepthMax,_("Refs neste_d deeper than:"),&errs);
+// 	if ( toodeeprefs )
+// /* GT: Refs is an abbreviation for References. Space is somewhat constrained here */
+// 	    p->refdepthmax = refdepthmax = GetInt8(gw,CID_RefDepthMax,_("Refs neste_d deeper than:"),&errs);
 	// if ( irrelevantcp )
 	//     p->irrelevantfactor = irrelevantfactor = GetReal8(gw,CID_IrrelevantFactor,_("Irrelevant _Factor:"),&errs)/100.0;
 	near = p->near = GetReal8(gw,CID_Near,_("Near"),&errs);
@@ -3117,8 +3117,45 @@ static ProblemRec pr_paths[] = {
      false, prob_int, .value.ival = 1500},
     PROBLEM_REC_EMPTY};
 
-static ProblemTab pr_tabs[] = {
-    {N_("Points"), pr_points}, {N_("Paths"), pr_paths}, PROBLEM_TAB_EMPTY};
+static ProblemRec pr_refs[] = {
+    {CID_FlippedRefs, N_("Check _flipped references"),
+     N_("PostScript and TrueType require that paths be drawn\nin a clockwise "
+        "direction. If you have a reference\nthat has been flipped then the "
+        "paths in that reference will\nprobably be counter-clockwise. You "
+        "should unlink it and do\nElement->Correct direction on it."),
+     false, prob_bool},
+    {CID_RefBadTransformTTF, N_("Refs with bad tt transformation matrices"),
+     N_("TrueType requires that all scaling and rotational\nentries in a "
+        "transformation matrix be between -2 and 2"),
+     false, prob_bool},
+    {CID_MixedContoursRefs, N_("Mixed contours and references"),
+     N_("TrueType glyphs can either contain references or contours.\nNot "
+        "both."),
+     false, prob_bool},
+    {CID_RefBadTransformPS, N_("Refs with bad ps transformation matrices"),
+     N_("Type1 and 2 fonts only support translation of references.\nThe first "
+        "four entries of the transformation matrix should be\n[1 0 0 1]."),
+     false, prob_bool},
+    {CID_TooDeepRefs, N_("Refs neste_d deeper than:"),
+     N_("The Type 2 Charstring Reference (Appendix B) says that\nsubroutines "
+        "may not be nested more than 10 deep. Each\nnesting level for "
+        "references requires one subroutine\nlevel, and hints may require "
+        "another level."),
+     false, prob_int, .value.ival = 9},
+    {CID_PtMatchRefsOutOfDate, N_("Refs with out of date point matching"),
+     N_("If a glyph has been edited so that it has a different\nnumber of "
+        "points now, then any references\nwhich use point matching and "
+        "depended on that glyph's\npoint count will be incorrect."),
+     false, prob_bool},
+    {CID_MultUseMyMetrics, N_("Multiple refs with use-my-metrics"),
+     N_("There may be at most one reference with the use-my-metrics bit set"),
+     false, prob_bool},
+    PROBLEM_REC_EMPTY};
+
+static ProblemTab pr_tabs[] = {{N_("Points"), pr_points},
+                               {N_("Paths"), pr_paths},
+                               {N_("Refs"), pr_refs},
+                               PROBLEM_TAB_EMPTY};
 
 static void apply_dialog_results(const ProblemTab* problem_tabs,
                                  struct problems* p) {
@@ -3160,6 +3197,24 @@ static void apply_dialog_results(const ProblemTab* problem_tabs,
                 toomanypoints = p->toomanypoints = rec->active;
                 if (toomanypoints) p->pointsmax = pointsmax = rec->value.ival;
             }
+
+            /* Refs */
+            if (rec->cid == CID_FlippedRefs)
+                flippedrefs = p->flippedrefs = rec->active;
+            if (rec->cid == CID_RefBadTransformTTF)
+                refsbadtransformttf = p->refsbadtransformttf = rec->active;
+            if (rec->cid == CID_MixedContoursRefs)
+                mixedcontoursrefs = p->mixedcontoursrefs = rec->active;
+            if (rec->cid == CID_RefBadTransformPS)
+                refsbadtransformps = p->refsbadtransformps = rec->active;
+            if (rec->cid == CID_TooDeepRefs) {
+                toodeeprefs = p->toodeeprefs = rec->active;
+                if (toodeeprefs) p->refdepthmax = refdepthmax = rec->value.ival;
+            }
+            if (rec->cid == CID_PtMatchRefsOutOfDate)
+                ptmatchrefsoutofdate = p->ptmatchrefsoutofdate = rec->active;
+            if (rec->cid == CID_MultUseMyMetrics)
+                multusemymetrics = p->multusemymetrics = rec->active;
         }
     }
 }
@@ -3545,6 +3600,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     memset(&rfgcd,0,sizeof(rfgcd));
     memset(&rfboxes,0,sizeof(rfboxes));
 
+    // XXXXXXXXXXXXXXXXXXX
     rflabel[0].text = (unichar_t *) _("Check _flipped references");
     rflabel[0].text_is_1byte = true;
     rflabel[0].text_in_resource = true;
@@ -3552,12 +3608,13 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rfgcd[0].gd.mnemonic = 'r';
     rfgcd[0].gd.pos.x = 3; rfgcd[0].gd.pos.y = 6;
     rfgcd[0].gd.flags = gg_visible | gg_enabled;
-    if ( flippedrefs ) rfgcd[0].gd.flags |= gg_cb_on;
+//     if ( flippedrefs ) rfgcd[0].gd.flags |= gg_cb_on;
     rfgcd[0].gd.popup_msg = _("PostScript and TrueType require that paths be drawn\nin a clockwise direction. If you have a reference\nthat has been flipped then the paths in that reference will\nprobably be counter-clockwise. You should unlink it and do\nElement->Correct direction on it.");
     rfgcd[0].gd.cid = CID_FlippedRefs;
     rfgcd[0].creator = GCheckBoxCreate;
     rfarray[0] = &rfgcd[0];
 
+    // XXXXXXXXXXXXXXXXXXX
 /* GT: Refs is an abbreviation for References. Space is somewhat constrained here */
     rflabel[1].text = (unichar_t *) _("Refs with bad tt transformation matrices");
     rflabel[1].text_is_1byte = true;
@@ -3566,12 +3623,13 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rfgcd[1].gd.mnemonic = 'r';
     rfgcd[1].gd.pos.x = 3; rfgcd[1].gd.pos.y = rfgcd[0].gd.pos.y+17;
     rfgcd[1].gd.flags = gg_visible | gg_enabled;
-    if ( refsbadtransformttf ) rfgcd[1].gd.flags |= gg_cb_on;
+//     if ( refsbadtransformttf ) rfgcd[1].gd.flags |= gg_cb_on;
     rfgcd[1].gd.popup_msg = _("TrueType requires that all scaling and rotational\nentries in a transformation matrix be between -2 and 2");
     rfgcd[1].gd.cid = CID_RefBadTransformTTF;
     rfgcd[1].creator = GCheckBoxCreate;
     rfarray[1] = &rfgcd[1];
 
+    // XXXXXXXXXXXXXXXXXXX
     rflabel[2].text = (unichar_t *) _("Mixed contours and references");
     rflabel[2].text_is_1byte = true;
     rflabel[2].text_in_resource = true;
@@ -3579,12 +3637,13 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rfgcd[2].gd.mnemonic = 'r';
     rfgcd[2].gd.pos.x = 3; rfgcd[2].gd.pos.y = rfgcd[1].gd.pos.y+17;
     rfgcd[2].gd.flags = gg_visible | gg_enabled;
-    if ( mixedcontoursrefs ) rfgcd[2].gd.flags |= gg_cb_on;
+//     if ( mixedcontoursrefs ) rfgcd[2].gd.flags |= gg_cb_on;
     rfgcd[2].gd.popup_msg = _("TrueType glyphs can either contain references or contours.\nNot both.");
     rfgcd[2].gd.cid = CID_MixedContoursRefs;
     rfgcd[2].creator = GCheckBoxCreate;
     rfarray[2] = &rfgcd[2];
 
+    // XXXXXXXXXXXXXXXXXXX
 /* GT: Refs is an abbreviation for References. Space is somewhat constrained here */
     rflabel[3].text = (unichar_t *) _("Refs with bad ps transformation matrices");
     rflabel[3].text_is_1byte = true;
@@ -3593,12 +3652,13 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rfgcd[3].gd.mnemonic = 'r';
     rfgcd[3].gd.pos.x = 3; rfgcd[3].gd.pos.y = rfgcd[2].gd.pos.y+17;
     rfgcd[3].gd.flags = gg_visible | gg_enabled;
-    if ( refsbadtransformps ) rfgcd[3].gd.flags |= gg_cb_on;
+//     if ( refsbadtransformps ) rfgcd[3].gd.flags |= gg_cb_on;
     rfgcd[3].gd.popup_msg = _("Type1 and 2 fonts only support translation of references.\nThe first four entries of the transformation matrix should be\n[1 0 0 1].");
     rfgcd[3].gd.cid = CID_RefBadTransformPS;
     rfgcd[3].creator = GCheckBoxCreate;
     rfarray[3] = &rfgcd[3];
 
+    // XXXXXXXXXXXXXXXXXXX
 /* GT: Refs is an abbreviation for References. Space is somewhat constrained here */
     rflabel[4].text = (unichar_t *) _("Refs neste_d deeper than:");
     rflabel[4].text_is_1byte = true;
@@ -3607,14 +3667,15 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rfgcd[4].gd.mnemonic = 'r';
     rfgcd[4].gd.pos.x = 3; rfgcd[4].gd.pos.y = rfgcd[3].gd.pos.y+21;
     rfgcd[4].gd.flags = gg_visible | gg_enabled;
-    if ( toodeeprefs ) rfgcd[4].gd.flags |= gg_cb_on;
+//     if ( toodeeprefs ) rfgcd[4].gd.flags |= gg_cb_on;
     rfgcd[4].gd.popup_msg = _("The Type 2 Charstring Reference (Appendix B) says that\nsubroutines may not be nested more than 10 deep. Each\nnesting level for references requires one subroutine\nlevel, and hints may require another level.");
     rfgcd[4].gd.cid = CID_TooDeepRefs;
     rfgcd[4].creator = GCheckBoxCreate;
     rfharray[0] = &rfgcd[4];
 
-    sprintf( rmax, "%d", refdepthmax );
-    rflabel[5].text = (unichar_t *) rmax;
+    // XXXXXXXXXXXXXXXXXXX
+//     sprintf( rmax, "%d", refdepthmax );
+//     rflabel[5].text = (unichar_t *) rmax;
     rflabel[5].text_is_1byte = true;
     rfgcd[5].gd.label = &rflabel[5];
     rfgcd[5].gd.pos.x = 140; rfgcd[5].gd.pos.y = rfgcd[4].gd.pos.y-3;
@@ -3630,6 +3691,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rfboxes[2].creator = GHBoxCreate;
     rfarray[4] = &rfboxes[2];
 
+    // XXXXXXXXXXXXXXXXXXX
     rflabel[6].text = (unichar_t *) _("Refs with out of date point matching");
     rflabel[6].text_is_1byte = true;
     rflabel[6].text_in_resource = true;
@@ -3637,19 +3699,20 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rfgcd[6].gd.mnemonic = 'r';
     rfgcd[6].gd.pos.x = 3; rfgcd[6].gd.pos.y = rfgcd[5].gd.pos.y+24;
     rfgcd[6].gd.flags = gg_visible | gg_enabled;
-    if ( ptmatchrefsoutofdate ) rfgcd[6].gd.flags |= gg_cb_on;
+//     if ( ptmatchrefsoutofdate ) rfgcd[6].gd.flags |= gg_cb_on;
     rfgcd[6].gd.popup_msg = _("If a glyph has been edited so that it has a different\nnumber of points now, then any references\nwhich use point matching and depended on that glyph's\npoint count will be incorrect.");
     rfgcd[6].gd.cid = CID_PtMatchRefsOutOfDate;
     rfgcd[6].creator = GCheckBoxCreate;
     rfarray[5] = &rfgcd[6];
 
+    // XXXXXXXXXXXXXXXXXXX
     rflabel[7].text = (unichar_t *) _("Multiple refs with use-my-metrics");
     rflabel[7].text_is_1byte = true;
     rflabel[7].text_in_resource = true;
     rfgcd[7].gd.label = &rflabel[7];
     rfgcd[7].gd.mnemonic = 'r';
     rfgcd[7].gd.flags = gg_visible | gg_enabled;
-    if ( multusemymetrics ) rfgcd[7].gd.flags |= gg_cb_on;
+//     if ( multusemymetrics ) rfgcd[7].gd.flags |= gg_cb_on;
     rfgcd[7].gd.popup_msg = _("There may be at most one reference with the use-my-metrics bit set");
     rfgcd[7].gd.cid = CID_MultUseMyMetrics;
     rfgcd[7].creator = GCheckBoxCreate;
