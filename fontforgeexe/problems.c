@@ -2890,9 +2890,9 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	// linestd = p->linenearstd = GGadgetIsChecked(GWidgetGetControl(gw,CID_LineStd));
 	// cpstd = p->cpnearstd = GGadgetIsChecked(GWidgetGetControl(gw,CID_CpStd));
 	// cpodd = p->cpodd = GGadgetIsChecked(GWidgetGetControl(gw,CID_CpOdd));
-	hintnopt = p->hintwithnopt = GGadgetIsChecked(GWidgetGetControl(gw,CID_HintNoPt));
-	ptnearhint = p->ptnearhint = GGadgetIsChecked(GWidgetGetControl(gw,CID_PtNearHint));
-	hintwidth = p->hintwidthnearval = GGadgetIsChecked(GWidgetGetControl(gw,CID_HintWidthNear));
+	// hintnopt = p->hintwithnopt = GGadgetIsChecked(GWidgetGetControl(gw,CID_HintNoPt));
+	// ptnearhint = p->ptnearhint = GGadgetIsChecked(GWidgetGetControl(gw,CID_PtNearHint));
+	// hintwidth = p->hintwidthnearval = GGadgetIsChecked(GWidgetGetControl(gw,CID_HintWidthNear));
 	// missingextrema = p->missingextrema = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingExtrema));
 	// direction = p->direction = GGadgetIsChecked(GWidgetGetControl(gw,CID_Direction));
 	// flippedrefs = p->flippedrefs = GGadgetIsChecked(GWidgetGetControl(gw,CID_FlippedRefs));
@@ -2912,17 +2912,17 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	missingglyph = p->missingglyph = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingGlyph));
 	missingscriptinfeature = p->missingscriptinfeature = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingScriptInFeature));
 	// toomanypoints = p->toomanypoints = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooManyPoints));
-	toomanyhints = p->toomanyhints = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooManyHints));
-	overlappedhints = p->overlappedhints = GGadgetIsChecked(GWidgetGetControl(gw,CID_OverlappedHints));
+	// toomanyhints = p->toomanyhints = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooManyHints));
+	// overlappedhints = p->overlappedhints = GGadgetIsChecked(GWidgetGetControl(gw,CID_OverlappedHints));
 	// ptmatchrefsoutofdate = p->ptmatchrefsoutofdate = GGadgetIsChecked(GWidgetGetControl(gw,CID_PtMatchRefsOutOfDate));
 	// multusemymetrics = p->multusemymetrics = GGadgetIsChecked(GWidgetGetControl(gw,CID_MultUseMyMetrics));
 	// refsbadtransformttf = p->refsbadtransformttf = GGadgetIsChecked(GWidgetGetControl(gw,CID_RefBadTransformTTF));
 	// refsbadtransformps = p->refsbadtransformps = GGadgetIsChecked(GWidgetGetControl(gw,CID_RefBadTransformPS));
 	// mixedcontoursrefs = p->mixedcontoursrefs = GGadgetIsChecked(GWidgetGetControl(gw,CID_MixedContoursRefs));
 	// toodeeprefs = p->toodeeprefs = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooDeepRefs));
-	stem3 = p->stem3 = GGadgetIsChecked(GWidgetGetControl(gw,CID_Stem3));
-	if ( stem3 )
-	    showexactstem3 = p->showexactstem3 = GGadgetIsChecked(GWidgetGetControl(gw,CID_ShowExactStem3));
+	// stem3 = p->stem3 = GGadgetIsChecked(GWidgetGetControl(gw,CID_Stem3));
+	// if ( stem3 )
+	//     showexactstem3 = p->showexactstem3 = GGadgetIsChecked(GWidgetGetControl(gw,CID_ShowExactStem3));
 	if ( p->fv->b.cidmaster!=NULL ) {
 	    cidmultiple = p->cidmultiple = GGadgetIsChecked(GWidgetGetControl(gw,CID_CIDMultiple));
 	    cidblank = p->cidblank = GGadgetIsChecked(GWidgetGetControl(gw,CID_CIDBlank));
@@ -2936,8 +2936,8 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	//     p->xval = xval = GetReal8(gw,CID_XNearVal,U_("_X near¹"),&errs);
 	// if ( doynear )
 	//     p->yval = yval = GetReal8(gw,CID_YNearVal,U_("_Y near¹"),&errs);
-	if ( hintwidth )
-	    widthval = p->widthval = GetReal8(gw,CID_HintWidth,U_("Hint _Width Near¹"),&errs);
+	// if ( hintwidth )
+	//     widthval = p->widthval = GetReal8(gw,CID_HintWidth,U_("Hint _Width Near¹"),&errs);
 	if ( p->advancewidth )
 	    advancewidthval = p->advancewidthval = GetInt8(gw,CID_AdvanceWidthVal,U_("Advance Width not"),&errs);
 	if ( p->vadvancewidth )
@@ -2952,8 +2952,8 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	    bbxmin_val = p->bbxmin_val = GetInt8(gw,CID_BBXMinVal,U_("Bounding box left of"),&errs);
 	// if ( toomanypoints )
 	//     p->pointsmax = pointsmax = GetInt8(gw,CID_PointsMax,_("_More points than:"),&errs);
-	if ( toomanyhints )
-	    p->hintsmax = hintsmax = GetInt8(gw,CID_HintsMax,_("_More hints than:"),&errs);
+	// if ( toomanyhints )
+	//     p->hintsmax = hintsmax = GetInt8(gw,CID_HintsMax,_("_More hints than:"),&errs);
 // 	if ( toodeeprefs )
 // /* GT: Refs is an abbreviation for References. Space is somewhat constrained here */
 // 	    p->refdepthmax = refdepthmax = GetInt8(gw,CID_RefDepthMax,_("Refs neste_d deeper than:"),&errs);
@@ -3152,9 +3152,41 @@ static ProblemRec pr_refs[] = {
      false, prob_bool},
     PROBLEM_REC_EMPTY};
 
+static ProblemRec pr_hints[] = {
+    {CID_HintNoPt, N_("_Hints controlling no points"),
+     N_("Ghostview (perhaps other interpreters) has a problem when a\nhint "
+        "exists without any points that lie on it."),
+     false, prob_bool},
+    {CID_PtNearHint, N_("_Points near¹ hint edges"),
+     N_("Often if a point is slightly off from a hint\nit is because a stem is "
+        "made up\nof several segments, and one of them\nhas the wrong width."),
+     false, prob_bool},
+    {CID_HintWidthNear, N_("Hint _Width Near¹"),
+     N_("Allows you to check that stems have consistent widths.."), false,
+     prob_double, .value.dval = 50.0},
+/* GT: The _3 is used to mark an accelerator */
+    {CID_Stem3, N_("Almost stem_3 hint"),
+     N_("This checks if the character almost, but not exactly,\nconforms to "
+        "the requirements for a stem3 hint.\nThat is, either vertically or "
+        "horizontally, there must\nbe exactly three hints, and they must have "
+        "the same\nwidth and they must be evenly spaced."),
+     false, prob_bool},
+    {CID_ShowExactStem3, N_("_Show Exact *stem3"),
+     N_("Shows when this character is exactly a stem3 hint"), false, prob_bool},
+    {CID_TooManyHints, N_("_More hints than:"),
+     N_("The Type 2 Charstring Reference (Appendix B) says that\nthere may be "
+        "at most 96 horizontal and vertical stem hints\nin a character."),
+     false, prob_int, .value.ival = 96},
+    {CID_OverlappedHints, N_("_Overlapped hints"),
+     N_("Either a glyph should have no overlapping hints,\nor a glyph with "
+        "hint masks should have no overlapping\nhints within a hint mask."),
+     false, prob_bool},
+    PROBLEM_REC_EMPTY};
+
 static ProblemTab pr_tabs[] = {{N_("Points"), pr_points},
                                {N_("Paths"), pr_paths},
                                {N_("Refs"), pr_refs},
+                               {N_("Hints"), pr_hints},
                                PROBLEM_TAB_EMPTY};
 
 static void apply_dialog_results(const ProblemTab* problem_tabs,
@@ -3215,6 +3247,25 @@ static void apply_dialog_results(const ProblemTab* problem_tabs,
                 ptmatchrefsoutofdate = p->ptmatchrefsoutofdate = rec->active;
             if (rec->cid == CID_MultUseMyMetrics)
                 multusemymetrics = p->multusemymetrics = rec->active;
+
+            /* Hints */
+            if (rec->cid == CID_HintNoPt)
+                hintnopt = p->hintwithnopt = rec->active;
+            if (rec->cid == CID_PtNearHint)
+                ptnearhint = p->ptnearhint = rec->active;
+            if (rec->cid == CID_HintWidthNear) {
+                hintwidth = p->hintwidthnearval = rec->active;
+                if (hintwidth) widthval = p->widthval = rec->value.dval;
+            }
+            if (rec->cid == CID_Stem3) stem3 = p->stem3 = rec->active;
+            if (rec->cid == CID_ShowExactStem3 && stem3)
+                showexactstem3 = p->showexactstem3 = rec->active;
+            if (rec->cid == CID_TooManyHints) {
+                toomanyhints = p->toomanyhints = rec->active;
+                if (toomanyhints) p->hintsmax = hintsmax = rec->value.ival;
+            }
+            if (rec->cid == CID_OverlappedHints)
+                overlappedhints = p->overlappedhints = rec->active;
         }
     }
 }
@@ -3728,6 +3779,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     memset(&hgcd,0,sizeof(hgcd));
     memset(&hboxes,0,sizeof(hboxes));
 
+    // XXXXXXXXXXXXXXXXXXX
     hlabel[0].text = (unichar_t *) _("_Hints controlling no points");
     hlabel[0].text_is_1byte = true;
     hlabel[0].text_in_resource = true;
@@ -3735,12 +3787,13 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     hgcd[0].gd.mnemonic = 'H';
     hgcd[0].gd.pos.x = 3; hgcd[0].gd.pos.y = 5;
     hgcd[0].gd.flags = gg_visible | gg_enabled;
-    if ( hintnopt ) hgcd[0].gd.flags |= gg_cb_on;
+//     if ( hintnopt ) hgcd[0].gd.flags |= gg_cb_on;
     hgcd[0].gd.popup_msg = _("Ghostview (perhaps other interpreters) has a problem when a\nhint exists without any points that lie on it.");
     hgcd[0].gd.cid = CID_HintNoPt;
     hgcd[0].creator = GCheckBoxCreate;
     harray[0] = &hgcd[0];
 
+    // XXXXXXXXXXXXXXXXXXX
     hlabel[1].text = (unichar_t *) U_("_Points near¹ hint edges");
     hlabel[1].text_is_1byte = true;
     hlabel[1].text_in_resource = true;
@@ -3748,12 +3801,13 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     hgcd[1].gd.mnemonic = 'H';
     hgcd[1].gd.pos.x = 3; hgcd[1].gd.pos.y = hgcd[0].gd.pos.y+17;
     hgcd[1].gd.flags = gg_visible | gg_enabled;
-    if ( ptnearhint ) hgcd[1].gd.flags |= gg_cb_on;
+//     if ( ptnearhint ) hgcd[1].gd.flags |= gg_cb_on;
     hgcd[1].gd.popup_msg = _("Often if a point is slightly off from a hint\nit is because a stem is made up\nof several segments, and one of them\nhas the wrong width.");
     hgcd[1].gd.cid = CID_PtNearHint;
     hgcd[1].creator = GCheckBoxCreate;
     harray[1] = &hgcd[1];
 
+    // XXXXXXXXXXXXXXXXXXX
     hlabel[2].text = (unichar_t *) U_("Hint _Width Near¹");
     hlabel[2].text_is_1byte = true;
     hlabel[2].text_in_resource = true;
@@ -3761,14 +3815,15 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     hgcd[2].gd.mnemonic = 'W';
     hgcd[2].gd.pos.x = 3; hgcd[2].gd.pos.y = hgcd[1].gd.pos.y+21;
     hgcd[2].gd.flags = gg_visible | gg_enabled;
-    if ( hintwidth ) hgcd[2].gd.flags |= gg_cb_on;
+//     if ( hintwidth ) hgcd[2].gd.flags |= gg_cb_on;
     hgcd[2].gd.popup_msg = _("Allows you to check that stems have consistent widths..");
     hgcd[2].gd.cid = CID_HintWidthNear;
     hgcd[2].creator = GCheckBoxCreate;
     hharray1[0] = &hgcd[2];
 
-    sprintf(widthbuf,"%g",widthval);
-    hlabel[3].text = (unichar_t *) widthbuf;
+    // XXXXXXXXXXXXXXXXXXX
+//     sprintf(widthbuf,"%g",widthval);
+//     hlabel[3].text = (unichar_t *) widthbuf;
     hlabel[3].text_is_1byte = true;
     hgcd[3].gd.label = &hlabel[3];
     hgcd[3].gd.pos.x = 100+5; hgcd[3].gd.pos.y = hgcd[2].gd.pos.y-1; hgcd[3].gd.pos.width = 40;
@@ -3784,6 +3839,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     hboxes[2].creator = GHBoxCreate;
     harray[2] = &hboxes[2];
 
+    // XXXXXXXXXXXXXXXXXXX
 /* GT: The _3 is used to mark an accelerator */
     hlabel[4].text = (unichar_t *) _("Almost stem_3 hint");
     hlabel[4].text_is_1byte = true;
@@ -3792,13 +3848,14 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     hgcd[4].gd.mnemonic = '3';
     hgcd[4].gd.pos.x = 3; hgcd[4].gd.pos.y = hgcd[3].gd.pos.y+19;
     hgcd[4].gd.flags = gg_visible | gg_enabled;
-    if ( stem3 ) hgcd[4].gd.flags |= gg_cb_on;
+//     if ( stem3 ) hgcd[4].gd.flags |= gg_cb_on;
     hgcd[4].gd.popup_msg = _("This checks if the character almost, but not exactly,\nconforms to the requirements for a stem3 hint.\nThat is, either vertically or horizontally, there must\nbe exactly three hints, and they must have the same\nwidth and they must be evenly spaced.");
     hgcd[4].gd.cid = CID_Stem3;
     hgcd[4].gd.handle_controlevent = Prob_EnableExact;
     hgcd[4].creator = GCheckBoxCreate;
     harray[3] = &hgcd[4];
 
+    // XXXXXXXXXXXXXXXXXXX
     hlabel[5].text = (unichar_t *) _("_Show Exact *stem3");
     hlabel[5].text_is_1byte = true;
     hlabel[5].text_in_resource = true;
@@ -3806,8 +3863,8 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     hgcd[5].gd.mnemonic = 'S';
     hgcd[5].gd.pos.x = hgcd[4].gd.pos.x+5; hgcd[5].gd.pos.y = hgcd[4].gd.pos.y+17;
     hgcd[5].gd.flags = gg_visible;
-    if ( showexactstem3 ) hgcd[5].gd.flags |= gg_cb_on;
-    if ( stem3 ) hgcd[5].gd.flags |= gg_enabled;
+//     if ( showexactstem3 ) hgcd[5].gd.flags |= gg_cb_on;
+//     if ( stem3 ) hgcd[5].gd.flags |= gg_enabled;
     hgcd[5].gd.popup_msg = _("Shows when this character is exactly a stem3 hint");
     hgcd[5].gd.cid = CID_ShowExactStem3;
     hgcd[5].creator = GCheckBoxCreate;
@@ -3818,20 +3875,22 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     hboxes[3].creator = GHBoxCreate;
     harray[4] = &hboxes[3];
 
+    // XXXXXXXXXXXXXXXXXXX
     hlabel[6].text = (unichar_t *) _("_More hints than:");
     hlabel[6].text_is_1byte = true;
     hlabel[6].text_in_resource = true;
     hgcd[6].gd.label = &hlabel[6];
     hgcd[6].gd.pos.x = 3; hgcd[6].gd.pos.y = hgcd[5].gd.pos.y+21;
     hgcd[6].gd.flags = gg_visible | gg_enabled;
-    if ( toomanyhints ) hgcd[6].gd.flags |= gg_cb_on;
+//     if ( toomanyhints ) hgcd[6].gd.flags |= gg_cb_on;
     hgcd[6].gd.popup_msg = _("The Type 2 Charstring Reference (Appendix B) says that\nthere may be at most 96 horizontal and vertical stem hints\nin a character.");
     hgcd[6].gd.cid = CID_TooManyHints;
     hgcd[6].creator = GCheckBoxCreate;
     hharray3[0] = &hgcd[6];
 
-    sprintf( hmax, "%d", hintsmax );
-    hlabel[7].text = (unichar_t *) hmax;
+    // XXXXXXXXXXXXXXXXXXX
+//     sprintf( hmax, "%d", hintsmax );
+//     hlabel[7].text = (unichar_t *) hmax;
     hlabel[7].text_is_1byte = true;
     hgcd[7].gd.label = &hlabel[7];
     hgcd[7].gd.pos.x = 105; hgcd[7].gd.pos.y = hgcd[6].gd.pos.y-3;
@@ -3847,12 +3906,13 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     hboxes[4].creator = GHBoxCreate;
     harray[5] = &hboxes[4];
 
+    // XXXXXXXXXXXXXXXXXXX
     hlabel[8].text = (unichar_t *) _("_Overlapped hints");
     hlabel[8].text_is_1byte = true;
     hlabel[8].text_in_resource = true;
     hgcd[8].gd.label = &hlabel[8];
     hgcd[8].gd.flags = gg_visible | gg_enabled;
-    if ( overlappedhints ) hgcd[8].gd.flags |= gg_cb_on;
+//     if ( overlappedhints ) hgcd[8].gd.flags |= gg_cb_on;
     hgcd[8].gd.popup_msg = _("Either a glyph should have no overlapping hints,\nor a glyph with hint masks should have no overlapping\nhints within a hint mask.");
     hgcd[8].gd.cid = CID_OverlappedHints;
     hgcd[8].creator = GCheckBoxCreate;
