@@ -73,7 +73,7 @@ LanguageListDlg::LanguageListDlg(GWindow parent,
         list_.get_selection()->select(Gtk::TreePath(std::to_string(idx)));
     }
 
-    // Show initially roughtly 8 rows.
+    // Show initially roughly 8 rows.
     property_default_height() = 40 * ui_font_eX_size();
 
     scrolled_window->add(list_);

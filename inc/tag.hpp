@@ -48,7 +48,7 @@ class Tag {
             if (arr[i] == rhs[i]) continue;
 
             // If tags differ, it's either a real difference or a space vs zero
-            // delimiter.
+            // terminator.
             return ((arr[i] == ' ') && (rhs[i] == '\0'));
         }
         return true;

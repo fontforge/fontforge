@@ -277,7 +277,7 @@ std::string build_styles(const GResInfo* gdraw_ri) {
         {"GGadget.Popup", {"tooltip", {}}},
     };
 
-    // Some GTK widgets have subrantially different structure from their GDraw
+    // Some GTK widgets have substantially different structure from their GDraw
     // analogs. For them we collect only color properties.
     static const std::map<std::string, std::string> css_selector_map_color = {
         {"GList", "treeview"},
