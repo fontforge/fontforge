@@ -2923,10 +2923,10 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	// stem3 = p->stem3 = GGadgetIsChecked(GWidgetGetControl(gw,CID_Stem3));
 	// if ( stem3 )
 	//     showexactstem3 = p->showexactstem3 = GGadgetIsChecked(GWidgetGetControl(gw,CID_ShowExactStem3));
-	if ( p->fv->b.cidmaster!=NULL ) {
-	    cidmultiple = p->cidmultiple = GGadgetIsChecked(GWidgetGetControl(gw,CID_CIDMultiple));
-	    cidblank = p->cidblank = GGadgetIsChecked(GWidgetGetControl(gw,CID_CIDBlank));
-	}
+	// if ( p->fv->b.cidmaster!=NULL ) {
+	//     cidmultiple = p->cidmultiple = GGadgetIsChecked(GWidgetGetControl(gw,CID_CIDMultiple));
+	//     cidblank = p->cidblank = GGadgetIsChecked(GWidgetGetControl(gw,CID_CIDBlank));
+	// }
 	if ( p->fv->b.sf->hasvmetrics ) {
 	    vadvancewidth = p->vadvancewidth = GGadgetIsChecked(GWidgetGetControl(gw,CID_VAdvanceWidth));
 	} else
@@ -3204,11 +3204,20 @@ static ProblemRec pr_att[] = {
      false, prob_bool},
     PROBLEM_REC_EMPTY};
 
+static ProblemRec pr_cid[] = {
+    {CID_CIDMultiple, N_("Check for CIDs defined _twice"),
+     N_("Check whether a CID is defined in more than one sub-font"), false,
+     prob_bool},
+    {CID_CIDBlank, N_("Check for _undefined CIDs"),
+     N_("Check whether a CID is undefined in all sub-fonts"), false, prob_bool},
+    PROBLEM_REC_EMPTY};
+
 static ProblemTab pr_tabs[] = {{N_("Points"), pr_points},
                                {N_("Paths"), pr_paths},
                                {N_("Refs"), pr_refs},
                                {N_("Hints"), pr_hints},
                                {N_("ATT"), pr_att},
+                               {N_("CID"), pr_cid},
                                PROBLEM_TAB_EMPTY};
 
 static void apply_dialog_results(const ProblemTab* problem_tabs,
@@ -3298,6 +3307,14 @@ static void apply_dialog_results(const ProblemTab* problem_tabs,
             if (rec->cid == CID_BadSubs) badsubs = p->badsubs = rec->active;
             if (rec->cid == CID_MissingAnchor)
                 missinganchor = p->missinganchor = rec->active;
+
+            /* CID */
+            if (p->fv->b.cidmaster != NULL) {
+                if (rec->cid == CID_CIDMultiple)
+                    cidmultiple = p->cidmultiple = rec->active;
+                if (rec->cid == CID_CIDBlank)
+                    cidblank = p->cidblank = rec->active;
+            }
         }
     }
 }
@@ -4193,6 +4210,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     memset(&cgcd,0,sizeof(cgcd));
     memset(&cboxes,0,sizeof(cboxes));
 
+    // XXXXXXXXXXXXXXXXXXX
     clabel[0].text = (unichar_t *) _("Check for CIDs defined _twice");
     clabel[0].text_is_1byte = true;
     clabel[0].text_in_resource = true;
@@ -4200,12 +4218,13 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     cgcd[0].gd.mnemonic = 'S';
     cgcd[0].gd.pos.x = 3; cgcd[0].gd.pos.y = 6;
     cgcd[0].gd.flags = gg_visible | gg_enabled;
-    if ( cidmultiple ) cgcd[0].gd.flags |= gg_cb_on;
+//     if ( cidmultiple ) cgcd[0].gd.flags |= gg_cb_on;
     cgcd[0].gd.popup_msg = _("Check whether a CID is defined in more than one sub-font");
     cgcd[0].gd.cid = CID_CIDMultiple;
     cgcd[0].creator = GCheckBoxCreate;
     carray[0] = &cgcd[0];
 
+    // XXXXXXXXXXXXXXXXXXX
     clabel[1].text = (unichar_t *) _("Check for _undefined CIDs");
     clabel[1].text_is_1byte = true;
     clabel[1].text_in_resource = true;
@@ -4213,7 +4232,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     cgcd[1].gd.mnemonic = 'S';
     cgcd[1].gd.pos.x = 3; cgcd[1].gd.pos.y = cgcd[0].gd.pos.y+17;
     cgcd[1].gd.flags = gg_visible | gg_enabled;
-    if ( cidblank ) cgcd[1].gd.flags |= gg_cb_on;
+//     if ( cidblank ) cgcd[1].gd.flags |= gg_cb_on;
     cgcd[1].gd.popup_msg = _("Check whether a CID is undefined in all sub-fonts");
     cgcd[1].gd.cid = CID_CIDBlank;
     cgcd[1].creator = GCheckBoxCreate;
