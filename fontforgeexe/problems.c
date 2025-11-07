@@ -2907,10 +2907,10 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	multuni = p->multuni = GGadgetIsChecked(GWidgetGetControl(gw,CID_MultUni));
 	multname = p->multname = GGadgetIsChecked(GWidgetGetControl(gw,CID_MultName));
 	uninamemismatch = p->uninamemismatch = GGadgetIsChecked(GWidgetGetControl(gw,CID_UniNameMisMatch));
-	badsubs = p->badsubs = GGadgetIsChecked(GWidgetGetControl(gw,CID_BadSubs));
-	missinganchor = p->missinganchor = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingAnchor));
-	missingglyph = p->missingglyph = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingGlyph));
-	missingscriptinfeature = p->missingscriptinfeature = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingScriptInFeature));
+	// badsubs = p->badsubs = GGadgetIsChecked(GWidgetGetControl(gw,CID_BadSubs));
+	// missinganchor = p->missinganchor = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingAnchor));
+	// missingglyph = p->missingglyph = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingGlyph));
+	// missingscriptinfeature = p->missingscriptinfeature = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingScriptInFeature));
 	// toomanypoints = p->toomanypoints = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooManyPoints));
 	// toomanyhints = p->toomanyhints = GGadgetIsChecked(GWidgetGetControl(gw,CID_TooManyHints));
 	// overlappedhints = p->overlappedhints = GGadgetIsChecked(GWidgetGetControl(gw,CID_OverlappedHints));
@@ -3183,10 +3183,32 @@ static ProblemRec pr_hints[] = {
      false, prob_bool},
     PROBLEM_REC_EMPTY};
 
+static ProblemRec pr_att[] = {
+    {CID_MissingGlyph, N_("Check for missing _glyph names"),
+     N_("Check whether a substitution, kerning class, etc. uses a glyph name "
+        "which does not match any glyph in the font"),
+     false, prob_bool},
+    {CID_MissingScriptInFeature, N_("Check for missing _scripts in features"),
+     N_("In every lookup that uses a glyph, check that at\n"
+        "least one feature is active for the glyph's script."),
+     false, prob_bool},
+    {CID_BadSubs, N_("Check substitutions for empty chars"),
+     N_("Check for characters which contain 'GSUB' entries which refer to "
+        "empty characters"),
+     false, prob_bool},
+    {CID_MissingAnchor, N_("Check for incomplete mark to base subtables"),
+     N_("The OpenType documentation suggests in a rather confusing way\n"
+        "that if a base glyph (or base mark) contains an anchor point\n"
+        "for one class in a lookup subtable, then it should contain\n"
+        "anchors for all classes in the subtable"),
+     false, prob_bool},
+    PROBLEM_REC_EMPTY};
+
 static ProblemTab pr_tabs[] = {{N_("Points"), pr_points},
                                {N_("Paths"), pr_paths},
                                {N_("Refs"), pr_refs},
                                {N_("Hints"), pr_hints},
+                               {N_("ATT"), pr_att},
                                PROBLEM_TAB_EMPTY};
 
 static void apply_dialog_results(const ProblemTab* problem_tabs,
@@ -3266,6 +3288,16 @@ static void apply_dialog_results(const ProblemTab* problem_tabs,
             }
             if (rec->cid == CID_OverlappedHints)
                 overlappedhints = p->overlappedhints = rec->active;
+
+            /* ATT */
+            if (rec->cid == CID_MissingGlyph)
+                missingglyph = p->missingglyph = rec->active;
+            if (rec->cid == CID_MissingScriptInFeature)
+                missingscriptinfeature = p->missingscriptinfeature =
+                    rec->active;
+            if (rec->cid == CID_BadSubs) badsubs = p->badsubs = rec->active;
+            if (rec->cid == CID_MissingAnchor)
+                missinganchor = p->missinganchor = rec->active;
         }
     }
 }
@@ -4197,25 +4229,27 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     memset(&agcd,0,sizeof(agcd));
     memset(&aboxes,0,sizeof(aboxes));
 
+    // XXXXXXXXXXXXXXXXXXX
     alabel[0].text = (unichar_t *) _("Check for missing _glyph names");
     alabel[0].text_is_1byte = true;
     alabel[0].text_in_resource = true;
     agcd[0].gd.label = &alabel[0];
     agcd[0].gd.pos.x = 3; agcd[0].gd.pos.y = 6;
     agcd[0].gd.flags = gg_visible | gg_enabled;
-    if ( missingglyph ) agcd[0].gd.flags |= gg_cb_on;
+//     if ( missingglyph ) agcd[0].gd.flags |= gg_cb_on;
     agcd[0].gd.popup_msg = _("Check whether a substitution, kerning class, etc. uses a glyph name which does not match any glyph in the font");
     agcd[0].gd.cid = CID_MissingGlyph;
     agcd[0].creator = GCheckBoxCreate;
     aarray[0] = &agcd[0];
 
+    // XXXXXXXXXXXXXXXXXXX
     alabel[1].text = (unichar_t *) _("Check for missing _scripts in features");
     alabel[1].text_is_1byte = true;
     alabel[1].text_in_resource = true;
     agcd[1].gd.label = &alabel[1];
     agcd[1].gd.pos.x = 3; agcd[1].gd.pos.y = agcd[0].gd.pos.y+14;
     agcd[1].gd.flags = gg_visible | gg_enabled;
-    if ( missingscriptinfeature ) agcd[1].gd.flags |= gg_cb_on;
+//     if ( missingscriptinfeature ) agcd[1].gd.flags |= gg_cb_on;
     agcd[1].gd.popup_msg = _(
 	    "In every lookup that uses a glyph, check that at\n"
 	    "least one feature is active for the glyph's script.");
@@ -4223,23 +4257,25 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     agcd[1].creator = GCheckBoxCreate;
     aarray[1] = &agcd[1];
 
+    // XXXXXXXXXXXXXXXXXXX
     alabel[2].text = (unichar_t *) _("Check substitutions for empty chars");
     alabel[2].text_is_1byte = true;
     agcd[2].gd.label = &alabel[2];
     agcd[2].gd.pos.x = 3; agcd[2].gd.pos.y = agcd[1].gd.pos.y+15;
     agcd[2].gd.flags = gg_visible | gg_enabled;
-    if ( badsubs ) agcd[2].gd.flags |= gg_cb_on;
+//     if ( badsubs ) agcd[2].gd.flags |= gg_cb_on;
     agcd[2].gd.popup_msg = _("Check for characters which contain 'GSUB' entries which refer to empty characters");
     agcd[2].gd.cid = CID_BadSubs;
     agcd[2].creator = GCheckBoxCreate;
     aarray[2] = &agcd[2];
 
+    // XXXXXXXXXXXXXXXXXXX
     alabel[3].text = (unichar_t *) _("Check for incomplete mark to base subtables");
     alabel[3].text_is_1byte = true;
     agcd[3].gd.label = &alabel[3];
     agcd[3].gd.pos.x = 3; agcd[3].gd.pos.y = agcd[1].gd.pos.y+15;
     agcd[3].gd.flags = gg_visible | gg_enabled;
-    if ( missinganchor ) agcd[3].gd.flags |= gg_cb_on;
+//     if ( missinganchor ) agcd[3].gd.flags |= gg_cb_on;
     agcd[3].gd.popup_msg = _(
 	"The OpenType documentation suggests in a rather confusing way\n"
 	"that if a base glyph (or base mark) contains an anchor point\n"
