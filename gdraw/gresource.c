@@ -840,6 +840,9 @@ void fix_CJK_UI_font(GResFont* font) {
     strcpy(result + prefix_len, ui_font);  /* Insert replacement */
     strcpy(result + prefix_len + ui_font_len, pos + strlen("system-ui"));  /* Copy suffix */
 
+    if (font->can_free_name)
+        free(font->rstr);
+
     font->rstr = result;
     font->can_free_name = true;
 #endif
