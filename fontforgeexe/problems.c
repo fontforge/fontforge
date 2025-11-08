@@ -2881,8 +2881,8 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	// openpaths = p->openpaths = GGadgetIsChecked(GWidgetGetControl(gw,CID_OpenPaths));
 	// intersectingpaths = p->intersectingpaths = GGadgetIsChecked(GWidgetGetControl(gw,CID_IntersectingPaths));
 	// nonintegral = p->nonintegral = GGadgetIsChecked(GWidgetGetControl(gw,CID_NonIntegral));
-	pointstooclose = p->pointstooclose = GGadgetIsChecked(GWidgetGetControl(gw,CID_PointsTooClose));
-	pointstoofar = p->pointstoofar = GGadgetIsChecked(GWidgetGetControl(gw,CID_PointsTooFar));
+	// pointstooclose = p->pointstooclose = GGadgetIsChecked(GWidgetGetControl(gw,CID_PointsTooClose));
+	// pointstoofar = p->pointstoofar = GGadgetIsChecked(GWidgetGetControl(gw,CID_PointsTooFar));
 	/*missing = p->missingextrema = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingExtrema))*/;
 	// doxnear = p->xnearval = GGadgetIsChecked(GWidgetGetControl(gw,CID_XNear));
 	// doynear = p->ynearval = GGadgetIsChecked(GWidgetGetControl(gw,CID_YNear));
@@ -3084,6 +3084,16 @@ static ProblemRec pr_points[] = {
         "main\npoint to make a significant difference in the shape of the "
         "curve."),
      false, prob_double, .value.dval = 0.5},
+    {CID_PointsTooClose, N_("Poin_ts too close"),
+     N_("If two adjacent points on the same path are less than a few\nemunits "
+        "apart they will cause problems for some of FontForge's\ncommands. "
+        "PostScript shouldn't care though."),
+     false, prob_bool},
+    {CID_PointsTooFar, N_("_Points too far"),
+     N_("Most font formats cannot specify adjacent points (or control "
+        "points)\nwhich are more than 32767 em-units apart in either the x or "
+        "y direction"),
+     false, prob_bool},
     PROBLEM_REC_EMPTY};
 
 static ProblemRec pr_paths[] = {
@@ -3292,6 +3302,10 @@ static void apply_dialog_results(const ProblemTab* problem_tabs,
                     p->irrelevantfactor = irrelevantfactor =
                         rec->value.dval / 100.0;
             }
+            if (rec->cid == CID_PointsTooClose)
+                pointstooclose = p->pointstooclose = rec->active;
+            if (rec->cid == CID_PointsTooFar)
+                pointstoofar = p->pointstoofar = rec->active;
 
             /* Paths */
             if (rec->cid == CID_OpenPaths)
@@ -3640,25 +3654,27 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     pboxes[4].creator = GHBoxCreate;
     parray[7] = &pboxes[4];
 
+    // XXXXXXXXXXXXXXXXXXX
     plabel[12].text = (unichar_t *) _("Poin_ts too close");
     plabel[12].text_is_1byte = true;
     plabel[12].text_in_resource = true;
     pgcd[12].gd.label = &plabel[12];
     pgcd[12].gd.pos.x = 3; pgcd[12].gd.pos.y = pgcd[11].gd.pos.y+14;
     pgcd[12].gd.flags = gg_visible | gg_enabled;
-    if ( pointstooclose ) pgcd[12].gd.flags |= gg_cb_on;
+//     if ( pointstooclose ) pgcd[12].gd.flags |= gg_cb_on;
     pgcd[12].gd.popup_msg = _("If two adjacent points on the same path are less than a few\nemunits apart they will cause problems for some of FontForge's\ncommands. PostScript shouldn't care though.");
     pgcd[12].gd.cid = CID_PointsTooClose;
     pgcd[12].creator = GCheckBoxCreate;
     parray[8] = &pgcd[12];
 
+    // XXXXXXXXXXXXXXXXXXX
     plabel[13].text = (unichar_t *) _("_Points too far");
     plabel[13].text_is_1byte = true;
     plabel[13].text_in_resource = true;
     pgcd[13].gd.label = &plabel[13];
     pgcd[13].gd.pos.x = 3; pgcd[13].gd.pos.y = pgcd[12].gd.pos.y+14;
     pgcd[13].gd.flags = gg_visible | gg_enabled;
-    if ( pointstoofar ) pgcd[13].gd.flags |= gg_cb_on;
+//     if ( pointstoofar ) pgcd[13].gd.flags |= gg_cb_on;
     pgcd[13].gd.popup_msg = _("Most font formats cannot specify adjacent points (or control points)\nwhich are more than 32767 em-units apart in either the x or y direction");
     pgcd[13].gd.cid = CID_PointsTooFar;
     pgcd[13].creator = GCheckBoxCreate;
