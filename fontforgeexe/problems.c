@@ -47,6 +47,7 @@
 #include "ustring.h"
 #include "gtk/simple_dialogs.hpp"
 
+#include <assert.h>
 #include <math.h>
 
 /* ************************************************************************** */
@@ -3277,6 +3278,21 @@ static ProblemTab pr_tabs[] = {{N_("Points"), pr_points},
                                {N_("Random"), pr_random},
                                PROBLEM_TAB_EMPTY};
 
+static void adjust_problem_records(FontView* fv,
+                                   const ProblemTab* problem_tabs) {
+    assert(problem_tabs[0].records[4].cid == CID_CpStd);
+    problem_tabs[0].records[4].label =
+        (fv->b.sf->italicangle == 0
+             ? _("_Control Points near horizontal/vertical")
+             : _("Control Points near horizontal/vertical/italic"));
+
+    assert(problem_tabs[1].records[2].cid == CID_LineStd);
+    problem_tabs[1].records[2].label =
+        (fv->b.sf->italicangle == 0
+             ? _("_Edges near horizontal/vertical")
+             : _("Edges near horizontal/vertical/italic"));
+}
+
 static void apply_dialog_results(const ProblemTab* problem_tabs,
                                  struct problems* p) {
     for (const ProblemTab* tab = pr_tabs; tab->label != NULL; ++tab) {
@@ -3418,7 +3434,6 @@ static void apply_dialog_results(const ProblemTab* problem_tabs,
 }
 
 void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
-    bool do_apply = find_problems_dialog(fv->gw, pr_tabs);
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
@@ -3458,6 +3473,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
 	p.map = sc->parent->fv->map;
 	p.layer = sc->parent->fv->active_layer;
     }
+
+    adjust_problem_records(fv, pr_tabs);
+    bool do_apply = find_problems_dialog(fv->gw, pr_tabs);
 
     if (do_apply) {
 	apply_dialog_results(pr_tabs, &p);
