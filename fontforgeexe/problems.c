@@ -3051,7 +3051,7 @@ return( event->type!=et_char );
 }
 
 static ProblemRec pr_points[] = {
-    {CID_NonIntegral, N_("Non-_Integral coordinates"),
+    {CID_NonIntegral, N_("Non-_integral coordinates"),
      N_("The coordinates of all points and control points in truetype\n"
         "must be integers (if they are not integers then FontForge will\n"
         "round them when it outputs them, potentially causing havoc).\n"
@@ -3070,12 +3070,12 @@ static ProblemRec pr_points[] = {
      N_("Allows you to find points which are slightly\noff from the baseline, "
         "xheight, cap height,\nascender, descender heights."),
      false, prob_bool},
-    {CID_CpStd, N_("_Control Points near horizontal/vertical"),
+    {CID_CpStd, N_("_Control points near horizontal/vertical"),
      N_("Allows you to find control points which are almost,\nbut not quite "
         "horizontal or vertical\nfrom their base point\n(or at the italic "
         "angle)."),
      false, prob_bool},
-    {CID_CpOdd, N_("Control Points _beyond spline"),
+    {CID_CpOdd, N_("Control points _beyond spline"),
      N_("Allows you to find control points which when projected\nonto the line "
         "segment between the two end points lie\noutside of those end points"),
      false, prob_bool},
@@ -3098,11 +3098,11 @@ static ProblemRec pr_points[] = {
     PROBLEM_REC_EMPTY};
 
 static ProblemRec pr_paths[] = {
-    {CID_OpenPaths, N_("O_pen Paths"),
+    {CID_OpenPaths, N_("O_pen paths"),
      N_("All paths should be closed loops, there "
         "should be no exposed endpoints"),
      false, prob_bool},
-    {CID_IntersectingPaths, N_("Intersecting Paths"),
+    {CID_IntersectingPaths, N_("Intersecting paths"),
      N_("No paths with within a glyph should intersect"), false, prob_bool},
     {CID_LineStd, N_("_Edges near horizontal/vertical"),
      N_("Allows you to find lines which are almost,\nbut not quite horizontal "
@@ -3135,7 +3135,8 @@ static ProblemRec pr_refs[] = {
         "paths in that reference will\nprobably be counter-clockwise. You "
         "should unlink it and do\nElement->Correct direction on it."),
      false, prob_bool},
-    {CID_RefBadTransformTTF, N_("Refs with bad tt transformation matrices"),
+    {CID_RefBadTransformTTF,
+     N_("References with bad TrueType transformation matrices"),
      N_("TrueType requires that all scaling and rotational\nentries in a "
         "transformation matrix be between -2 and 2"),
      false, prob_bool},
@@ -3143,22 +3144,23 @@ static ProblemRec pr_refs[] = {
      N_("TrueType glyphs can either contain references or contours.\nNot "
         "both."),
      false, prob_bool},
-    {CID_RefBadTransformPS, N_("Refs with bad ps transformation matrices"),
+    {CID_RefBadTransformPS,
+     N_("References with bad PostScript transformation matrices"),
      N_("Type1 and 2 fonts only support translation of references.\nThe first "
         "four entries of the transformation matrix should be\n[1 0 0 1]."),
      false, prob_bool},
-    {CID_TooDeepRefs, N_("Refs neste_d deeper than:"),
+    {CID_TooDeepRefs, N_("References neste_d deeper than:"),
      N_("The Type 2 Charstring Reference (Appendix B) says that\nsubroutines "
         "may not be nested more than 10 deep. Each\nnesting level for "
         "references requires one subroutine\nlevel, and hints may require "
         "another level."),
      false, prob_int, .value.ival = 9},
-    {CID_PtMatchRefsOutOfDate, N_("Refs with out of date point matching"),
+    {CID_PtMatchRefsOutOfDate, N_("References with out of date point matching"),
      N_("If a glyph has been edited so that it has a different\nnumber of "
         "points now, then any references\nwhich use point matching and "
         "depended on that glyph's\npoint count will be incorrect."),
      false, prob_bool},
-    {CID_MultUseMyMetrics, N_("Multiple refs with use-my-metrics"),
+    {CID_MultUseMyMetrics, N_("Multiple references with use-my-metrics"),
      N_("There may be at most one reference with the use-my-metrics bit set"),
      false, prob_bool},
     PROBLEM_REC_EMPTY};
@@ -3172,7 +3174,7 @@ static ProblemRec pr_hints[] = {
      N_("Often if a point is slightly off from a hint\nit is because a stem is "
         "made up\nof several segments, and one of them\nhas the wrong width."),
      false, prob_bool},
-    {CID_HintWidthNear, N_("Hint _Width Near¹"),
+    {CID_HintWidthNear, N_("Hint _width near¹"),
      N_("Allows you to check that stems have consistent widths.."), false,
      prob_double, .value.dval = 50.0},
 /* GT: The _3 is used to mark an accelerator */
@@ -3182,7 +3184,7 @@ static ProblemRec pr_hints[] = {
         "horizontally, there must\nbe exactly three hints, and they must have "
         "the same\nwidth and they must be evenly spaced."),
      false, prob_bool},
-    {CID_ShowExactStem3, N_("_Show Exact *stem3"),
+    {CID_ShowExactStem3, N_("_Show exact *stem3"),
      N_("Shows when this character is exactly a stem3 hint"), false, prob_bool},
     {CID_TooManyHints, N_("_More hints than:"),
      N_("The Type 2 Charstring Reference (Appendix B) says that\nthere may be "
@@ -3224,24 +3226,24 @@ static ProblemRec pr_cid[] = {
     PROBLEM_REC_EMPTY};
 
 static ProblemRec pr_bb[] = {
-    {CID_BBYMax, N_("Glyph BB Above"),
+    {CID_BBYMax, N_("Glyph bounding box above"),
      N_("Are there any glyph's whose bounding boxes extend above this number?"),
      false, prob_int, .value.ival = 0},
-    {CID_BBYMin, N_("Glyph BB Below"),
+    {CID_BBYMin, N_("Glyph bounding box below"),
      N_("Are there any glyph's whose bounding boxes extend below this number?"),
      false, prob_int, .value.ival = 0},
-    {CID_BBXMax, N_("Glyph BB Right Of"),
+    {CID_BBXMax, N_("Glyph bounding box right of"),
      N_("Are there any glyphs whose bounding boxes extend to the right of this "
         "number?"),
      false, prob_int, .value.ival = 0},
-    {CID_BBXMin, N_("Glyph BB Left Of"),
+    {CID_BBXMin, N_("Glyph bounding box left of"),
      N_("Are there any glyph's whose bounding boxes extend to the left of this "
         "number?"),
      false, prob_int, .value.ival = 0},
-    {CID_AdvanceWidth, N_("Check Advance:"),
+    {CID_AdvanceWidth, N_("Check advance:"),
      N_("Check for characters whose advance width is not the displayed value."),
      false, prob_int, .value.ival = 0},
-    {CID_VAdvanceWidth, N_("Check VAdvance:"),
+    {CID_VAdvanceWidth, N_("Check vertical advance:"),
      N_("Check for characters whose vertical advance width is not the "
         "displayed value."),
      false, prob_int, .value.ival = 0},
@@ -3260,31 +3262,26 @@ static ProblemRec pr_random[] = {
     {CID_MultUni, N_("Check multiple Unicode"),
      N_("Check for multiple characters with the same Unicode code point"),
      false, prob_bool},
-    {CID_MultName, N_("Check multiple Names"),
+    {CID_MultName, N_("Check multiple names"),
      N_("Check for multiple characters with the same name"), false, prob_bool},
-    {CID_UniNameMisMatch, N_("Check Unicode/Name mismatch"),
+    {CID_UniNameMisMatch, N_("Check Unicode/name mismatch"),
      N_("Check for characters whose name maps to a unicode code point\nwhich "
         "does not map the character's assigned code point."),
      false, prob_bool},
     PROBLEM_REC_EMPTY};
 
-static ProblemTab pr_tabs[] = {{N_("Points"), pr_points},
-                               {N_("Paths"), pr_paths},
-                               {N_("Refs"), pr_refs},
-                               {N_("Hints"), pr_hints},
-                               {N_("ATT"), pr_att},
-                               {N_("CID"), pr_cid},
-                               {N_("BB"), pr_bb},
-                               {N_("Random"), pr_random},
-                               PROBLEM_TAB_EMPTY};
+static ProblemTab pr_tabs[] = {
+    {N_("Points"), pr_points}, {N_("Paths"), pr_paths},   {N_("Refs"), pr_refs},
+    {N_("Hints"), pr_hints},   {N_("ATT"), pr_att},       {N_("CID"), pr_cid},
+    {N_("BB"), pr_bb},         {N_("Random"), pr_random}, PROBLEM_TAB_EMPTY};
 
 static void adjust_problem_records(FontView* fv,
                                    const ProblemTab* problem_tabs) {
     assert(problem_tabs[0].records[4].cid == CID_CpStd);
     problem_tabs[0].records[4].label =
         (fv->b.sf->italicangle == 0
-             ? _("_Control Points near horizontal/vertical")
-             : _("Control Points near horizontal/vertical/italic"));
+             ? _("_Control points near horizontal/vertical")
+             : _("Control points near horizontal/vertical/italic"));
 
     assert(problem_tabs[1].records[2].cid == CID_LineStd);
     problem_tabs[1].records[2].label =
