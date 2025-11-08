@@ -2896,17 +2896,17 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 	// missingextrema = p->missingextrema = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingExtrema));
 	// direction = p->direction = GGadgetIsChecked(GWidgetGetControl(gw,CID_Direction));
 	// flippedrefs = p->flippedrefs = GGadgetIsChecked(GWidgetGetControl(gw,CID_FlippedRefs));
-	bitmaps = p->bitmaps = GGadgetIsChecked(GWidgetGetControl(gw,CID_Bitmaps));
-	bitmapwidths = p->bitmapwidths = GGadgetIsChecked(GWidgetGetControl(gw,CID_BitmapWidths));
+	// bitmaps = p->bitmaps = GGadgetIsChecked(GWidgetGetControl(gw,CID_Bitmaps));
+	// bitmapwidths = p->bitmapwidths = GGadgetIsChecked(GWidgetGetControl(gw,CID_BitmapWidths));
 	// advancewidth = p->advancewidth = GGadgetIsChecked(GWidgetGetControl(gw,CID_AdvanceWidth));
 	// bbymax = p->bbymax = GGadgetIsChecked(GWidgetGetControl(gw,CID_BBYMax));
 	// bbymin = p->bbymin = GGadgetIsChecked(GWidgetGetControl(gw,CID_BBYMin));
 	// bbxmax = p->bbxmax = GGadgetIsChecked(GWidgetGetControl(gw,CID_BBXMax));
 	// bbxmin = p->bbxmin = GGadgetIsChecked(GWidgetGetControl(gw,CID_BBXMin));
 	// irrelevantcp = p->irrelevantcontrolpoints = GGadgetIsChecked(GWidgetGetControl(gw,CID_IrrelevantCP));
-	multuni = p->multuni = GGadgetIsChecked(GWidgetGetControl(gw,CID_MultUni));
-	multname = p->multname = GGadgetIsChecked(GWidgetGetControl(gw,CID_MultName));
-	uninamemismatch = p->uninamemismatch = GGadgetIsChecked(GWidgetGetControl(gw,CID_UniNameMisMatch));
+	// multuni = p->multuni = GGadgetIsChecked(GWidgetGetControl(gw,CID_MultUni));
+	// multname = p->multname = GGadgetIsChecked(GWidgetGetControl(gw,CID_MultName));
+	// uninamemismatch = p->uninamemismatch = GGadgetIsChecked(GWidgetGetControl(gw,CID_UniNameMisMatch));
 	// badsubs = p->badsubs = GGadgetIsChecked(GWidgetGetControl(gw,CID_BadSubs));
 	// missinganchor = p->missinganchor = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingAnchor));
 	// missingglyph = p->missingglyph = GGadgetIsChecked(GWidgetGetControl(gw,CID_MissingGlyph));
@@ -3236,6 +3236,27 @@ static ProblemRec pr_bb[] = {
      false, prob_int, .value.ival = 0},
     PROBLEM_REC_EMPTY};
 
+static ProblemRec pr_random[] = {
+    {CID_Bitmaps, N_("Check missing _bitmaps"),
+     N_("Are there any outline characters which don't have a bitmap version in "
+        "one of the bitmap fonts?\nConversely are there any bitmap characters "
+        "without a corresponding outline character?"),
+     false, prob_bool},
+    {CID_BitmapWidths, N_("Bitmap/outline _advance mismatch"),
+     N_("Are there any bitmap glyphs whose advance width\nis not is expected "
+        "from scaling and rounding\nthe outline's advance width?"),
+     false, prob_bool},
+    {CID_MultUni, N_("Check multiple Unicode"),
+     N_("Check for multiple characters with the same Unicode code point"),
+     false, prob_bool},
+    {CID_MultName, N_("Check multiple Names"),
+     N_("Check for multiple characters with the same name"), false, prob_bool},
+    {CID_UniNameMisMatch, N_("Check Unicode/Name mismatch"),
+     N_("Check for characters whose name maps to a unicode code point\nwhich "
+        "does not map the character's assigned code point."),
+     false, prob_bool},
+    PROBLEM_REC_EMPTY};
+
 static ProblemTab pr_tabs[] = {{N_("Points"), pr_points},
                                {N_("Paths"), pr_paths},
                                {N_("Refs"), pr_refs},
@@ -3243,6 +3264,7 @@ static ProblemTab pr_tabs[] = {{N_("Points"), pr_points},
                                {N_("ATT"), pr_att},
                                {N_("CID"), pr_cid},
                                {N_("BB"), pr_bb},
+                               {N_("Random"), pr_random},
                                PROBLEM_TAB_EMPTY};
 
 static void apply_dialog_results(const ProblemTab* problem_tabs,
@@ -3368,6 +3390,15 @@ static void apply_dialog_results(const ProblemTab* problem_tabs,
                 if (vadvancewidth)
                     vadvancewidthval = p->vadvancewidthval = rec->value.ival;
             }
+
+            /* Random */
+            if (rec->cid == CID_Bitmaps) bitmaps = p->bitmaps = rec->active;
+            if (rec->cid == CID_BitmapWidths)
+                bitmapwidths = p->bitmapwidths = rec->active;
+            if (rec->cid == CID_MultUni) multuni = p->multuni = rec->active;
+            if (rec->cid == CID_MultName) multname = p->multname = rec->active;
+            if (rec->cid == CID_UniNameMisMatch)
+                uninamemismatch = p->uninamemismatch = rec->active;
         }
     }
 }
@@ -4032,6 +4063,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     memset(&rgcd,0,sizeof(rgcd));
     memset(&rboxes,0,sizeof(rboxes));
 
+    // XXXXXXXXXXXXXXXXXXX
     rlabel[0].text = (unichar_t *) _("Check missing _bitmaps");
     rlabel[0].text_is_1byte = true;
     rlabel[0].text_in_resource = true;
@@ -4039,11 +4071,12 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rgcd[0].gd.mnemonic = 'r';
     rgcd[0].gd.pos.x = 3; rgcd[0].gd.pos.y = 6;
     rgcd[0].gd.flags = gg_visible | gg_enabled;
-    if ( bitmaps ) rgcd[0].gd.flags |= gg_cb_on;
+//     if ( bitmaps ) rgcd[0].gd.flags |= gg_cb_on;
     rgcd[0].gd.popup_msg = _("Are there any outline characters which don't have a bitmap version in one of the bitmap fonts?\nConversely are there any bitmap characters without a corresponding outline character?");
     rgcd[0].gd.cid = CID_Bitmaps;
     rgcd[0].creator = GCheckBoxCreate;
 
+    // XXXXXXXXXXXXXXXXXXX
     rlabel[1].text = (unichar_t *) _("Bitmap/outline _advance mismatch");
     rlabel[1].text_is_1byte = true;
     rlabel[1].text_in_resource = true;
@@ -4051,37 +4084,40 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     rgcd[1].gd.mnemonic = 'r';
     rgcd[1].gd.pos.x = 3; rgcd[1].gd.pos.y = 6;
     rgcd[1].gd.flags = gg_visible | gg_enabled;
-    if ( bitmapwidths ) rgcd[1].gd.flags |= gg_cb_on;
+//     if ( bitmapwidths ) rgcd[1].gd.flags |= gg_cb_on;
     rgcd[1].gd.popup_msg = _("Are there any bitmap glyphs whose advance width\nis not is expected from scaling and rounding\nthe outline's advance width?");
     rgcd[1].gd.cid = CID_BitmapWidths;
     rgcd[1].creator = GCheckBoxCreate;
 
+    // XXXXXXXXXXXXXXXXXXX
     rlabel[2].text = (unichar_t *) _("Check multiple Unicode");
     rlabel[2].text_is_1byte = true;
     rgcd[2].gd.label = &rlabel[2];
     rgcd[2].gd.pos.x = 3; rgcd[2].gd.pos.y = rgcd[1].gd.pos.y+15;
     rgcd[2].gd.flags = gg_visible | gg_enabled;
-    if ( multuni ) rgcd[2].gd.flags |= gg_cb_on;
+//     if ( multuni ) rgcd[2].gd.flags |= gg_cb_on;
     rgcd[2].gd.popup_msg = _("Check multiple Unicode");
     rgcd[2].gd.cid = CID_MultUni;
     rgcd[2].creator = GCheckBoxCreate;
 
+    // XXXXXXXXXXXXXXXXXXX
     rlabel[3].text = (unichar_t *) _("Check multiple Names");
     rlabel[3].text_is_1byte = true;
     rgcd[3].gd.label = &rlabel[3];
     rgcd[3].gd.pos.x = 3; rgcd[3].gd.pos.y = rgcd[2].gd.pos.y+15;
     rgcd[3].gd.flags = gg_visible | gg_enabled;
-    if ( multname ) rgcd[3].gd.flags |= gg_cb_on;
+//     if ( multname ) rgcd[3].gd.flags |= gg_cb_on;
     rgcd[3].gd.popup_msg = _("Check for multiple characters with the same name");
     rgcd[3].gd.cid = CID_MultName;
     rgcd[3].creator = GCheckBoxCreate;
 
+    // XXXXXXXXXXXXXXXXXXX
     rlabel[4].text = (unichar_t *) _("Check Unicode/Name mismatch");
     rlabel[4].text_is_1byte = true;
     rgcd[4].gd.label = &rlabel[4];
     rgcd[4].gd.pos.x = 3; rgcd[4].gd.pos.y = rgcd[3].gd.pos.y+15;
     rgcd[4].gd.flags = gg_visible | gg_enabled;
-    if ( uninamemismatch ) rgcd[4].gd.flags |= gg_cb_on;
+//     if ( uninamemismatch ) rgcd[4].gd.flags |= gg_cb_on;
     rgcd[4].gd.popup_msg = _("Check for characters whose name maps to a unicode code point\nwhich does not map the character's assigned code point.");
     rgcd[4].gd.cid = CID_UniNameMisMatch;
     rgcd[4].creator = GCheckBoxCreate;
