@@ -55,6 +55,8 @@ class FindProblemsDlg final : public Dialog {
 
     Gtk::Notebook* build_notebook(const std::vector<ProblemTab>& pr_tabs);
 
+    void set_all_checkboxes(bool state);
+
     using WidgetMap =
         std::map<short /*cid*/,
                  std::pair<Gtk::CheckButton, widgets::NumericalEntry*>>;

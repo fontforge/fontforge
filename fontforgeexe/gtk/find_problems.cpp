@@ -44,6 +44,12 @@ FindProblemsDlg::FindProblemsDlg(GWindow parent,
     auto button_box = Gtk::make_managed<Gtk::HBox>();
     auto clear_all_button = Gtk::make_managed<Gtk::Button>(_("Clear All"));
     auto set_all_button = Gtk::make_managed<Gtk::Button>(_("Set All"));
+
+    clear_all_button->signal_clicked().connect(sigc::bind(
+        sigc::mem_fun(*this, &FindProblemsDlg::set_all_checkboxes), false));
+    set_all_button->signal_clicked().connect(sigc::bind(
+        sigc::mem_fun(*this, &FindProblemsDlg::set_all_checkboxes), true));
+
     button_box->pack_start(*clear_all_button, Gtk::PACK_SHRINK);
     button_box->pack_start(*set_all_button, Gtk::PACK_SHRINK);
     get_content_area()->pack_start(*button_box);
@@ -105,6 +111,12 @@ Gtk::Notebook* FindProblemsDlg::build_notebook(
         tabs->append_page(*record_page, tab.label);
     }
     return tabs;
+}
+
+void FindProblemsDlg::set_all_checkboxes(bool status) {
+    for (auto& [cid, widgets] : widget_map_) {
+        widgets.first.set_active(status);
+    }
 }
 
 ProblemRecordsOut FindProblemsDlg::show(
