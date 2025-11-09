@@ -197,17 +197,42 @@ std::map<std::string, std::string> collect_css_properties_disabled(
     return evaluate_css_properties(css_property_map, box_resource, false);
 }
 
+std::map<std::string, std::string> collect_css_properties_selected(
+    const GBox& box_resource) {
+    static const std::vector<std::pair<std::string, CssPropertyEvalCB>>
+        css_property_map = {
+            {"color", color_property<&GBox::main_foreground>},
+            {"background-color", color_property<&GBox::active_border>},
+        };
+
+    return evaluate_css_properties(css_property_map, box_resource, true);
+}
+
 std::map<std::string, std::string> collect_css_properties_main(
     const struct resed* ri_extras) {
     std::map<std::string, std::string> collection;
 
     for (const struct resed* rec = ri_extras; rec && rec->resname; ++rec) {
+        if (std::strcmp(rec->resname, "Foreground") == 0) {
+            collection["color"] = css_color(*(Color*)(rec->val));
+        }
         if (std::strcmp(rec->resname, "Background") == 0) {
             collection["background-color"] = css_color(*(Color*)(rec->val));
         }
     }
 
     return collection;
+}
+
+std::map<std::string, std::string> collect_css_properties_color(
+    const GBox& box_resource) {
+    static const std::vector<std::pair<std::string, CssPropertyEvalCB>>
+        css_property_map = {
+            {"color", color_property<&GBox::main_foreground>},
+            {"background-color", color_property<&GBox::main_background>},
+        };
+
+    return evaluate_css_properties(css_property_map, box_resource, true);
 }
 
 std::string build_style(const std::string& selector,
@@ -241,28 +266,59 @@ std::string build_styles(const GResInfo* gdraw_ri) {
     };
 
     static const std::map<std::string, Selector> css_selector_map = {
-        {"", {"box", {}}},
-        {"GLabel", {"label", {"button"}}},
+        {"", {"box", {"tooltip"}}},
+        {"GLabel", {"label", {"button", "tooltip"}}},
         {"GButton", {"button", {"spinbutton"}}},
         {"GDefaultButton", {"button#ok", {}}},
         {"GCancelButton", {"button#cancel", {}}},
         {"GNumericField", {"spinbutton", {}}},
         {"GNumericFieldSpinner", {"spinbutton button", {}}},
+        {"GTextField", {"entry", {"spinbutton"}}},
+        {"GGadget.Popup", {"tooltip", {}}},
+    };
+
+    // Some GTK widgets have substantially different structure from their GDraw
+    // analogs. For them we collect only color properties.
+    static const std::map<std::string, std::string> css_selector_map_color = {
+        {"GList", "treeview"},
     };
 
     std::string styles;
 
     for (const GResInfo* ri = gdraw_ri; ri->next != NULL; ri = ri->next) {
+        auto sel_color_it = css_selector_map_color.find(ri->resname);
+        if (sel_color_it != css_selector_map_color.end()) {
+            auto props_color = collect_css_properties_color(*(ri->boxdata));
+            styles += build_style(sel_color_it->second, props_color);
+
+            auto props_selected =
+                collect_css_properties_selected(*(ri->boxdata));
+            styles +=
+                build_style(sel_color_it->second + ":selected", props_selected);
+
+            continue;
+        }
+
         auto sel_it = css_selector_map.find(ri->resname);
         if (sel_it == css_selector_map.end()) {
             continue;
         }
         const Selector& selector = sel_it->second;
 
-        if ((std::strcmp(ri->resname, "") == 0) && ri->extras) {
+        if ((std::strcmp(ri->resname, "") == 0 ||
+             std::strcmp(ri->resname, "GGadget.Popup") == 0) &&
+            ri->extras) {
             // Collect some default properties from the base class.
             auto props_main = collect_css_properties_main(ri->extras);
             styles += build_style(selector.node_name, props_main);
+
+            // When the node is inside predefined containers, we shall unset the
+            // affected properties
+            for (const std::string& container : selector.excluded_containers) {
+                styles += build_unset_style(
+                    container + " " + selector.node_name, props_main);
+            }
+
             continue;
         }
 

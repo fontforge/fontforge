@@ -27,25 +27,57 @@
 
 #include "utils.hpp"
 
-Glib::RefPtr<Gdk::Window> gtk_get_topmost_window() {
-    Glib::RefPtr<Gdk::Screen> screen = Gdk::Screen::get_default();
+#include <glib/gprintf.h>
+#include <iostream>
 
-    Glib::RefPtr<Gdk::Window> topmost_window = screen->get_active_window();
-    if (topmost_window) {
-        return topmost_window;
+static Cairo::TextExtents ui_font_extents(const std::string& sample_text) {
+    Cairo::RefPtr<Cairo::ImageSurface> srf =
+        Cairo::ImageSurface::create(Cairo::Format::FORMAT_RGB24, 100, 100);
+    Cairo::RefPtr<Cairo::Context> cairo_context = Cairo::Context::create(srf);
+    Glib::RefPtr<Gtk::StyleContext> style_context = Gtk::StyleContext::create();
+
+    Pango::FontDescription font = style_context->get_font();
+    cairo_context->select_font_face(font.get_family(),
+                                    Cairo::FontSlant::FONT_SLANT_NORMAL,
+                                    Cairo::FontWeight::FONT_WEIGHT_NORMAL);
+    cairo_context->set_font_size(font.get_size() / PANGO_SCALE *
+                                 Gdk::Screen::get_default()->get_resolution() /
+                                 96);
+
+    Cairo::TextExtents extents;
+    cairo_context->get_text_extents("m", extents);
+    return extents;
+}
+
+double ui_font_em_size() {
+    Cairo::TextExtents extents = ui_font_extents("m");
+    return extents.x_advance;
+}
+
+double ui_font_eX_size() {
+    Cairo::TextExtents extents = ui_font_extents("X");
+    return extents.height;
+}
+
+void gtk_post_error(const char* title, const char* statement, ...) {
+    va_list ap;
+    va_start(ap, statement);
+
+    // Format error statement
+    gchar* result_string = NULL;
+    gint chars_written = g_vasprintf(&result_string, statement, ap);
+    if (chars_written >= 0 && result_string != NULL) {
+        // Passing use_markup=false causes GTK to embolden the text, and we
+        // don't want it.
+        Gtk::MessageDialog message_dlg(result_string, true, Gtk::MESSAGE_ERROR,
+                                       Gtk::BUTTONS_OK, true);
+        message_dlg.set_title(title);
+        message_dlg.run();
+        g_free(result_string);
+    } else {
+        std::cerr << "Error formatting statement \"" << statement << "\""
+                  << std::endl;
     }
 
-    // Gdk::Screen::get_active_window() is not always reliable, e.g when the
-    // active window was just closed, and its parent hasn't been activated back
-    // yet.
-    std::vector<Glib::RefPtr<Gdk::Window>> stack = screen->get_window_stack();
-    for (auto rit = stack.rbegin(); rit != stack.rend(); ++rit) {
-        if ((*rit)->get_window_type() == Gdk::WINDOW_TOPLEVEL &&
-            (*rit)->is_visible()) {
-            topmost_window = *rit;
-            break;
-        }
-    }
-
-    return topmost_window;
+    va_end(ap);
 }
