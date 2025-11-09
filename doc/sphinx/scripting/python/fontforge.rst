@@ -3577,6 +3577,11 @@ This type may not be pickled.
    A tuple each entry of which is itself a tuple containing a mark-class-name
    and a tuple of glyph-names.
 
+.. attribute:: font.markSets
+
+   A tuple each entry of which is itself a tuple containing a mark-set-name
+   and a tuple of glyph-names.
+
 .. attribute:: font.layer_cnt
 
    The number of layers in the font. (Read only. Can change using ``add``
