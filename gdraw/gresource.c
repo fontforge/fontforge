@@ -807,7 +807,9 @@ GImage *GResImageGetImage(GResImage *ri) {
 
 void fix_CJK_UI_font(GResFont* font) {
 #if defined(__MINGW32__)
-    /* On Windows systems the default UI font doesn't support CJK. We need to override it.*/
+    /* On Windows systems the default UI font doesn't support CJK. We prepend it
+	   with locale-specific font by replacing the predefined
+	   "windows-cjk-workaround" alias. */
     char locale[100];
     char *ui_font = NULL;
 
@@ -825,20 +827,20 @@ void fix_CJK_UI_font(GResFont* font) {
         return;
     }
 
-    char* pos = strstr(font->rstr, "system-ui");
+    char* pos = strstr(font->rstr, "windows-cjk-workaround");
     if (pos == NULL) {
         return;
     }
 
     size_t prefix_len = pos - font->rstr;
-    size_t suffix_len = strlen(pos) + strlen("system-ui");  /* Length after "system-ui" */
+    size_t suffix_len = strlen(pos) + strlen("windows-cjk-workaround");  /* Length after "windows-cjk-workaround" */
     size_t ui_font_len = strlen(ui_font);
     char* result = malloc(prefix_len + ui_font_len + suffix_len + 1);
 
     /* Copy parts together */
     strncpy(result, font->rstr, prefix_len);  /* Copy prefix */
     strcpy(result + prefix_len, ui_font);  /* Insert replacement */
-    strcpy(result + prefix_len + ui_font_len, pos + strlen("system-ui"));  /* Copy suffix */
+    strcpy(result + prefix_len + ui_font_len, pos + strlen("windows-cjk-workaround"));  /* Copy suffix */
 
     if (font->can_free_name)
         free(font->rstr);
