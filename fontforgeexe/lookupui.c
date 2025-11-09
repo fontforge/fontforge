@@ -1080,6 +1080,9 @@ static struct col_init featureci[] = {
 };
 
 int cmp_item_by_name(const void *a, const void *b) {
+    /* TODO: strcmp() doesn't consider linguistic comparison, e.g. putting
+       accented and non-accented character together. Consider using
+       g_utf8_collate() with an appropriate locale. */
     int res = strcmp((const char *)((const GTextInfo *)a)->text,
                      (const char *)((const GTextInfo *)b)->text);
     return res;
