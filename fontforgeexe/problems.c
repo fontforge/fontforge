@@ -3277,17 +3277,40 @@ static ProblemTab pr_tabs[] = {
 
 static void adjust_problem_records(FontView* fv,
                                    const ProblemTab* problem_tabs) {
+    static SplineFont* lastsf = NULL;
+    SplineFont* sf = fv->b.sf;
+
+    if (lastsf != sf) {
+        SplineChar* ssc = SFGetChar(sf, ' ', NULL);
+
+        assert(problem_tabs[6].records[0].cid == CID_BBYMax);
+        problem_tabs[6].records[0].value.ival = sf->ascent;
+
+        assert(problem_tabs[6].records[1].cid == CID_BBYMin);
+        problem_tabs[6].records[1].value.ival = -sf->descent;
+
+        assert(problem_tabs[6].records[2].cid == CID_BBXMax);
+        problem_tabs[6].records[2].value.ival = sf->ascent + sf->descent;
+
+        assert(problem_tabs[6].records[4].cid == CID_AdvanceWidth);
+        problem_tabs[6].records[4].value.ival = ssc ? ssc->width : 0;
+
+        assert(problem_tabs[6].records[5].cid == CID_VAdvanceWidth);
+        problem_tabs[6].records[5].value.ival = sf->ascent + sf->descent;
+
+        lastsf = sf;
+    }
+
     assert(problem_tabs[0].records[4].cid == CID_CpStd);
     problem_tabs[0].records[4].label =
-        (fv->b.sf->italicangle == 0
+        (sf->italicangle == 0
              ? _("_Control points near horizontal/vertical")
              : _("Control points near horizontal/vertical/italic"));
 
     assert(problem_tabs[1].records[2].cid == CID_LineStd);
     problem_tabs[1].records[2].label =
-        (fv->b.sf->italicangle == 0
-             ? _("_Edges near horizontal/vertical")
-             : _("Edges near horizontal/vertical/italic"));
+        (sf->italicangle == 0 ? _("_Edges near horizontal/vertical")
+                              : _("Edges near horizontal/vertical/italic"));
 
     assert(problem_tabs[5].records[0].cid == CID_CIDMultiple);
     problem_tabs[5].records[0].disabled = (fv->b.cidmaster == NULL);
@@ -3296,7 +3319,7 @@ static void adjust_problem_records(FontView* fv,
     problem_tabs[5].records[1].disabled = (fv->b.cidmaster == NULL);
 
     assert(problem_tabs[6].records[5].cid == CID_VAdvanceWidth);
-    problem_tabs[6].records[5].disabled = (!fv->b.sf->hasvmetrics);
+    problem_tabs[6].records[5].disabled = (!sf->hasvmetrics);
 }
 
 static void apply_dialog_results(const ProblemTab* problem_tabs,
