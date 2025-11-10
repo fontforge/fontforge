@@ -53,7 +53,8 @@ struct ProblemTab {
 
 class FindProblemsDlg final : public Dialog {
  private:
-    FindProblemsDlg(GWindow parent, const std::vector<ProblemTab>& pr_tabs);
+    FindProblemsDlg(GWindow parent, const std::vector<ProblemTab>& pr_tabs,
+                    double near);
 
     Gtk::Notebook* build_notebook(const std::vector<ProblemTab>& pr_tabs);
 
@@ -63,12 +64,14 @@ class FindProblemsDlg final : public Dialog {
         std::map<short /*cid*/,
                  std::pair<Gtk::CheckButton, widgets::NumericalEntry*>>;
     WidgetMap widget_map_;
+    widgets::DoubleEntry near_value_entry_;
 
  public:
     // Return only problem records ticked by the user, with their respective
     // values.
     static ProblemRecordsOut show(GWindow parent,
-                                  const std::vector<ProblemTab>& pr_tabs);
+                                  const std::vector<ProblemTab>& pr_tabs,
+                                  double& near);
 };
 
 }  // namespace ff::dlg

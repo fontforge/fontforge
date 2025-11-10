@@ -2960,7 +2960,7 @@ static int Prob_OK(GGadget *g, GEvent *e) {
 // 	    p->refdepthmax = refdepthmax = GetInt8(gw,CID_RefDepthMax,_("Refs neste_d deeper than:"),&errs);
 	// if ( irrelevantcp )
 	//     p->irrelevantfactor = irrelevantfactor = GetReal8(gw,CID_IrrelevantFactor,_("Irrelevant _Factor:"),&errs)/100.0;
-	near = p->near = GetReal8(gw,CID_Near,_("Near"),&errs);
+	// near = p->near = GetReal8(gw,CID_Near,_("Near"),&errs);
 	if ( errs )
 return( true );
 	lastsf = p->fv->b.sf;
@@ -3326,6 +3326,8 @@ static void adjust_problem_records(FontView* fv,
 
 static void apply_dialog_results(const ProblemTab* problem_tabs,
                                  struct problems* p) {
+    near = p->near;
+
     for (const ProblemTab* tab = pr_tabs; tab->label != NULL; ++tab) {
         for (const ProblemRec* rec = tab->records; rec->label != NULL; ++rec) {
             /* Points */
@@ -3492,6 +3494,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     memset(&p,0,sizeof(p));
     if ( fv==NULL ) fv = (FontView *) (cv->b.fv);
     p.fv = fv; p.cv=cv; p.msc = sc;
+    p.near = near;
     if ( cv!=NULL )
 	p.lastcharopened = cv->b.sc;
     if ( fv!=NULL ) {
@@ -3506,7 +3509,7 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     }
 
     adjust_problem_records(fv, pr_tabs);
-    bool do_apply = find_problems_dialog(fv->gw, pr_tabs);
+    bool do_apply = find_problems_dialog(fv->gw, pr_tabs, &p.near);
 
     if (do_apply) {
 	apply_dialog_results(pr_tabs, &p);
@@ -4570,8 +4573,9 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     mgcd[4].creator = GLabelCreate;
     mharray2[0] = &mgcd[4];
 
-    sprintf(nearbuf,"%g",near);
-    mlabel[5].text = (unichar_t *) nearbuf;
+    // XXXXXXXXXXXXXXXXXXX
+//     sprintf(nearbuf,"%g",near);
+//     mlabel[5].text = (unichar_t *) nearbuf;
     mlabel[5].text_is_1byte = true;
     mgcd[5].gd.label = &mlabel[5];
     mgcd[5].gd.pos.x = 130; mgcd[5].gd.pos.y = mgcd[4].gd.pos.y-6; mgcd[5].gd.pos.width = 40;
