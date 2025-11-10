@@ -3080,10 +3080,11 @@ static ProblemRec pr_points[] = {
         "segment between the two end points lie\noutside of those end points"),
      false, prob_bool},
     {CID_IrrelevantCP,
-     N_("Check for _irrelevant control\npoints with factor (%)"),
-     N_("Control points are irrelevant if they are too close to the "
-        "main\npoint to make a significant difference in the shape of the "
-        "curve."),
+     N_("Check for _irrelevant control points with factor (%)"),
+     N_("Control points are irrelevant if they are too close to the main point "
+        "to make a significant difference in the shape of the curve. The "
+        "minimum relevant distance is computed as a factor of distance between "
+        "the main points."),
      false, prob_double, .value.dval = 0.5},
     {CID_PointsTooClose, N_("Poin_ts too close"),
      N_("If two adjacent points on the same path are less than a few\nemunits "
