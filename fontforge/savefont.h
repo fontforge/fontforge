@@ -71,6 +71,7 @@ int _DoSave(SplineFont *sf,char *newname,int32_t *sizes,int res,
 	EncMap *map, char *subfontdefinition,int layer);
 int CheckIfTransparent(SplineFont *sf);
 
+int fmflag2ttfflag(int fmflags, bool is_postscript_or_cff);
 extern int GenerateScript(SplineFont *sf, char *filename, const char *bitmaptype, int fmflags, int res, char *subfontdirectory, struct sflist *sfs, EncMap *map, NameList *rename_to, int layer);
 
 #ifdef FONTFORGE_CONFIG_WRITE_PFM
