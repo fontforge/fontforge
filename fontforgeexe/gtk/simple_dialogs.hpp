@@ -51,11 +51,10 @@ typedef struct {
         int ival;
         double dval;
     } value;
+    bool disabled;
 } ProblemRec;
-#define PROBLEM_REC_EMPTY                      \
-    {                                          \
-        0, NULL, NULL, false, prob_bool, { 0 } \
-    }
+#define PROBLEM_REC_EMPTY \
+    { 0, NULL, NULL, false, prob_bool, {0}, false }
 
 typedef struct {
     const char* label;

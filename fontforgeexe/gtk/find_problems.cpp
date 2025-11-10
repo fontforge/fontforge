@@ -83,6 +83,7 @@ Gtk::Notebook* FindProblemsDlg::build_notebook(
             Gtk::CheckButton record_check(record.label, true);
             record_check.set_tooltip_text(record.tooltip);
             record_check.set_active(record.active);
+            record_check.set_sensitive(!record.disabled);
             record_box->pack_start(record_check, Gtk::PACK_SHRINK);
 
             widgets::NumericalEntry* record_entry = nullptr;
@@ -100,6 +101,7 @@ Gtk::Notebook* FindProblemsDlg::build_notebook(
                 record_entry->set_width_chars(6);
                 record_entry->set_valign(Gtk::ALIGN_END);
                 record_entry->set_vexpand(false);
+                record_entry->set_sensitive(!record.disabled);
                 record_box->pack_start(*record_entry, Gtk::PACK_SHRINK);
             }
 

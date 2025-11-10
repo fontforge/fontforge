@@ -3288,6 +3288,15 @@ static void adjust_problem_records(FontView* fv,
         (fv->b.sf->italicangle == 0
              ? _("_Edges near horizontal/vertical")
              : _("Edges near horizontal/vertical/italic"));
+
+    assert(problem_tabs[5].records[0].cid == CID_CIDMultiple);
+    problem_tabs[5].records[0].disabled = (fv->b.cidmaster == NULL);
+
+    assert(problem_tabs[5].records[1].cid == CID_CIDBlank);
+    problem_tabs[5].records[1].disabled = (fv->b.cidmaster == NULL);
+
+    assert(problem_tabs[6].records[5].cid == CID_VAdvanceWidth);
+    problem_tabs[6].records[5].disabled = (!fv->b.sf->hasvmetrics);
 }
 
 static void apply_dialog_results(const ProblemTab* problem_tabs,
