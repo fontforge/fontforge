@@ -42,6 +42,7 @@ struct ProblemRecord {
     std::string label;
     std::string tooltip;
     bool active;
+    bool disabled;
     ProblemRecordValue value;
 };
 struct ProblemTab {

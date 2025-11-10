@@ -178,8 +178,9 @@ bool find_problems_dialog(GWindow parent, ProblemTab* pr_tabs) {
                 : (rec->type == prob_int)
                     ? ff::dlg::ProblemRecordValue(rec->value.ival)
                     : ff::dlg::ProblemRecordValue(rec->value.dval);
-            ff::dlg::ProblemRecord record{rec->cid, rec->label, rec->tooltip,
-                                          rec->active, value};
+            ff::dlg::ProblemRecord record{rec->cid,      rec->label,
+                                          rec->tooltip,  rec->active,
+                                          rec->disabled, value};
             records.push_back(std::move(record));
         }
         ff::dlg::ProblemTab pr_tab{tab->label, std::move(records)};
