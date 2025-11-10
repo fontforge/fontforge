@@ -3178,7 +3178,7 @@ static ProblemRec pr_hints[] = {
     {CID_HintWidthNear, N_("Hint _width near¹"),
      N_("Allows you to check that stems have consistent widths.."), false,
      prob_double, .value.dval = 50.0},
-/* GT: The _3 is used to mark an accelerator */
+    /* GT: The _3 is used to mark an accelerator */
     {CID_Stem3, N_("Almost stem_3 hint"),
      N_("This checks if the character almost, but not exactly,\nconforms to "
         "the requirements for a stem3 hint.\nThat is, either vertically or "
@@ -3186,7 +3186,8 @@ static ProblemRec pr_hints[] = {
         "the same\nwidth and they must be evenly spaced."),
      false, prob_bool},
     {CID_ShowExactStem3, N_("_Show exact *stem3"),
-     N_("Shows when this character is exactly a stem3 hint"), false, prob_bool},
+     N_("Shows when this character is exactly a stem3 hint"), false, prob_bool,
+     .parent_cid = CID_Stem3},
     {CID_TooManyHints, N_("_More hints than:"),
      N_("The Type 2 Charstring Reference (Appendix B) says that\nthere may be "
         "at most 96 horizontal and vertical stem hints\nin a character."),

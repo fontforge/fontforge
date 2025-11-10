@@ -43,6 +43,7 @@ struct ProblemRecord {
     std::string tooltip;
     bool active;
     bool disabled;
+    short parent_cid;
     ProblemRecordValue value;
 };
 struct ProblemTab {

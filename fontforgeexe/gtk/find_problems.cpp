@@ -78,7 +78,7 @@ Gtk::Notebook* FindProblemsDlg::build_notebook(
     for (const ProblemTab& tab : pr_tabs) {
         auto record_page = Gtk::make_managed<Gtk::VBox>();
 
-        // If ALL the records on this page have numerical value, we want them
+        // If ALL the records on this page have numerical entry, we want them
         // neatly aligned.
         bool align_entries = !std::any_of(
             tab.records.cbegin(), tab.records.cend(), [](const auto& rec) {
@@ -90,15 +90,32 @@ Gtk::Notebook* FindProblemsDlg::build_notebook(
 
         for (const ProblemRecord& record : tab.records) {
             auto record_box = Gtk::make_managed<Gtk::HBox>();
+            bool disabled = record.disabled;
 
             Gtk::CheckButton record_check(record.label, true);
             record_check.set_tooltip_text(record.tooltip);
             record_check.set_active(record.active);
-            record_check.set_sensitive(!record.disabled);
             if (align_entries) {
                 size_group->add_widget(record_check);
             }
+
+            // This notation of parent is unrelated to parent/child widgets. It
+            // denotes problem records which logically depend on other records,
+            // and cannot be selected without their parent.
+            if (record.parent_cid != 0) {
+                Gtk::CheckButton& parent_check =
+                    widget_map_[record.parent_cid].first;
+                record_check.set_margin_start(
+                    100);  // TODO(iorsh): Use Em width
+                disabled |= !parent_check.get_active();
+                parent_check.signal_toggled().connect(
+                    [&parent_check, record_box]() {
+                        record_box->set_sensitive(parent_check.get_active());
+                    });
+            }
+
             record_box->pack_start(record_check, Gtk::PACK_SHRINK);
+            record_box->set_sensitive(!disabled);
 
             widgets::NumericalEntry* record_entry = nullptr;
             if (!std::holds_alternative<std::monostate>(record.value)) {
@@ -115,7 +132,6 @@ Gtk::Notebook* FindProblemsDlg::build_notebook(
                 record_entry->set_width_chars(6);
                 record_entry->set_valign(Gtk::ALIGN_END);
                 record_entry->set_vexpand(false);
-                record_entry->set_sensitive(!record.disabled);
                 record_box->pack_start(*record_entry, Gtk::PACK_SHRINK);
             }
 
