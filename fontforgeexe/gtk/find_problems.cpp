@@ -77,6 +77,17 @@ Gtk::Notebook* FindProblemsDlg::build_notebook(
 
     for (const ProblemTab& tab : pr_tabs) {
         auto record_page = Gtk::make_managed<Gtk::VBox>();
+
+        // If ALL the records on this page have numerical value, we want them
+        // neatly aligned.
+        bool align_entries = !std::any_of(
+            tab.records.cbegin(), tab.records.cend(), [](const auto& rec) {
+                return std::holds_alternative<std::monostate>(rec.value);
+            });
+        auto size_group =
+            align_entries ? Gtk::SizeGroup::create(Gtk::SIZE_GROUP_HORIZONTAL)
+                          : (Glib::RefPtr<Gtk::SizeGroup>)nullptr;
+
         for (const ProblemRecord& record : tab.records) {
             auto record_box = Gtk::make_managed<Gtk::HBox>();
 
@@ -84,6 +95,9 @@ Gtk::Notebook* FindProblemsDlg::build_notebook(
             record_check.set_tooltip_text(record.tooltip);
             record_check.set_active(record.active);
             record_check.set_sensitive(!record.disabled);
+            if (align_entries) {
+                size_group->add_widget(record_check);
+            }
             record_box->pack_start(record_check, Gtk::PACK_SHRINK);
 
             widgets::NumericalEntry* record_entry = nullptr;
