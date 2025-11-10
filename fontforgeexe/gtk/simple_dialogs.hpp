@@ -76,7 +76,7 @@ char* language_list_dialog(GWindow parent, const LanguageRec* languages,
 
    Return value: true, if any problem record was selected. The selected records
                  are marked as active in pr_tabs. */
-bool find_problems_dialog(GWindow parent, ProblemTab* pr_tabs);
+bool find_problems_dialog(GWindow parent, ProblemTab* pr_tabs, double* near);
 
 void update_appearance();
 

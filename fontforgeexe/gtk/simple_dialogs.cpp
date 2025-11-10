@@ -164,7 +164,7 @@ char* language_list_dialog(GWindow parent, const LanguageRec* languages,
     }
 }
 
-bool find_problems_dialog(GWindow parent, ProblemTab* pr_tabs) {
+bool find_problems_dialog(GWindow parent, ProblemTab* pr_tabs, double* near) {
     // To avoid instability, the GTK application is lazily initialized only when
     // a GTK window is invoked.
     ff::app::GtkApp();
@@ -188,7 +188,7 @@ bool find_problems_dialog(GWindow parent, ProblemTab* pr_tabs) {
     }
 
     ff::dlg::ProblemRecordsOut result =
-        ff::dlg::FindProblemsDlg::show(parent, cpp_pr_tabs);
+        ff::dlg::FindProblemsDlg::show(parent, cpp_pr_tabs, *near);
 
     for (const ProblemTab* tab = pr_tabs; tab->label != NULL; ++tab) {
         for (ProblemRec* rec = tab->records; rec->label != NULL; ++rec) {

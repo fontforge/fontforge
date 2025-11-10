@@ -32,7 +32,8 @@
 namespace ff::dlg {
 
 FindProblemsDlg::FindProblemsDlg(GWindow parent,
-                                 const std::vector<ProblemTab>& pr_tabs)
+                                 const std::vector<ProblemTab>& pr_tabs,
+                                 double near)
     : Dialog(parent) {
     set_title(_("Find Problems"));
     set_resizable(false);
@@ -58,12 +59,12 @@ FindProblemsDlg::FindProblemsDlg(GWindow parent,
                                    Gtk::PACK_SHRINK, 5);
 
     auto near_value_box = Gtk::make_managed<Gtk::HBox>();
-    auto near_value_entry = Gtk::make_managed<Gtk::Entry>();
-    near_value_entry->set_width_chars(6);
+    near_value_entry_.set_width_chars(6);
+    near_value_entry_.set_value(near);
     near_value_box->pack_start(
         *Gtk::make_managed<Gtk::Label>(U_("¹ \"Near\" means within")),
         Gtk::PACK_SHRINK);
-    near_value_box->pack_start(*near_value_entry, Gtk::PACK_SHRINK);
+    near_value_box->pack_start(near_value_entry_, Gtk::PACK_SHRINK);
     near_value_box->pack_start(*Gtk::make_managed<Gtk::Label>(_("em-units")),
                                Gtk::PACK_SHRINK);
     get_content_area()->pack_start(*near_value_box);
@@ -151,9 +152,10 @@ void FindProblemsDlg::set_all_checkboxes(bool status) {
     }
 }
 
-ProblemRecordsOut FindProblemsDlg::show(
-    GWindow parent, const std::vector<ProblemTab>& pr_tabs) {
-    FindProblemsDlg dialog(parent, pr_tabs);
+ProblemRecordsOut FindProblemsDlg::show(GWindow parent,
+                                        const std::vector<ProblemTab>& pr_tabs,
+                                        double& near) {
+    FindProblemsDlg dialog(parent, pr_tabs, near);
 
     Gtk::ResponseType result = dialog.run();
     ProblemRecordsOut records_out;
@@ -183,6 +185,7 @@ ProblemRecordsOut FindProblemsDlg::show(
             records_out.emplace(record.cid, new_value);
         }
     }
+    near = dialog.near_value_entry_.get_value();
 
     return records_out;
 }
