@@ -1,3 +1,4 @@
+inc/tag.hpp
 fontforge/metrics.h
 fontforge/splinechar.h
 fontforge/splinefont_enums.h
@@ -10,13 +11,16 @@ fontforgeexe/shapers/harfbuzz.hpp
 fontforgeexe/shapers/i_shaper.hpp
 fontforgeexe/shapers/shaper_shim.cpp
 fontforgeexe/shapers/shaper_shim.hpp
-fontforgeexe/shapers/tag.hpp
 fontforgeexe/gtk/application.cpp
 fontforgeexe/gtk/application.hpp
 fontforgeexe/gtk/css_builder.cpp
 fontforgeexe/gtk/css_builder.hpp
-fontforgeexe/gtk/find_problems.hpp
+fontforgeexe/gtk/dialog.cpp
+fontforgeexe/gtk/dialog.hpp
 fontforgeexe/gtk/find_problems.cpp
+fontforgeexe/gtk/find_problems.hpp
+fontforgeexe/gtk/language_list.cpp
+fontforgeexe/gtk/language_list.hpp
 fontforgeexe/gtk/simple_dialogs.cpp
 fontforgeexe/gtk/simple_dialogs.hpp
 fontforgeexe/gtk/utils.cpp
