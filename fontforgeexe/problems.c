@@ -3280,7 +3280,19 @@ static ProblemTab pr_tabs[] = {
 static void adjust_problem_records(FontView* fv,
                                    const ProblemTab* problem_tabs) {
     static SplineFont* lastsf = NULL;
+    static bool loc_initialized = false;
     SplineFont* sf = fv->b.sf;
+
+    if (!loc_initialized) {
+        for (ProblemTab* tab = problem_tabs; tab->label != NULL; ++tab) {
+            tab->label = S_(tab->label);
+            for (ProblemRec* rec = tab->records; rec->label != NULL; ++rec) {
+                rec->label = S_(rec->label);
+                rec->tooltip = S_(rec->tooltip);
+            }
+        }
+        loc_initialized = true;
+    }
 
     if (lastsf != sf) {
         SplineChar* ssc = SFGetChar(sf, ' ', NULL);
@@ -3328,7 +3340,7 @@ static void apply_dialog_results(const ProblemTab* problem_tabs,
                                  struct problems* p) {
     near = p->near;
 
-    for (const ProblemTab* tab = pr_tabs; tab->label != NULL; ++tab) {
+    for (const ProblemTab* tab = problem_tabs; tab->label != NULL; ++tab) {
         for (const ProblemRec* rec = tab->records; rec->label != NULL; ++rec) {
             /* Points */
             if (rec->cid == CID_NonIntegral)
