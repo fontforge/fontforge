@@ -4193,7 +4193,7 @@ This type may not be pickled.
    * ``kern_statemachine``
 
    The flags argument is a tuple of strings, or ``None``. At most one of these
-   strings may be the name of a mark class. The others are:
+   strings may be the name of a mark class or a mark set. The others are:
 
    * ``right_to_left``
    * ``ignore_bases``
