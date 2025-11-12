@@ -71,5 +71,6 @@
 #define H_(str)		(str)
 
 char *sgettext(const char *msgid);
+char *gettext_locale();
 
 #endif /* FONTFORGE_INTL_H */
