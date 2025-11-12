@@ -3052,32 +3052,32 @@ return( event->type!=et_char );
 
 static ProblemRec pr_points[] = {
     {CID_NonIntegral, N_("Non-_integral coordinates"),
-     N_("The coordinates of all points and control points in truetype\n"
-        "must be integers (if they are not integers then FontForge will\n"
-        "round them when it outputs them, potentially causing havoc).\n"
-        "Even in PostScript fonts it is generally a good idea to use\n"
+     N_("The coordinates of all points and control points in truetype "
+        "must be integers (if they are not integers then FontForge will "
+        "round them when it outputs them, potentially causing havoc). "
+        "Even in PostScript fonts it is generally a good idea to use "
         "integral values."),
      false, prob_bool},
     {CID_XNear, N_("_X near¹"),
-     N_("Allows you to check that vertical stems in several\ncharacters start "
+     N_("Allows you to check that vertical stems in several characters start "
         "at the same location."),
      false, prob_double, .value.dval = 0.0},
     {CID_YNear, N_("_Y near¹"),
-     N_("Allows you to check that horizontal stems in several\ncharacters "
+     N_("Allows you to check that horizontal stems in several characters "
         "start at the same location."),
      false, prob_double, .value.dval = 0.0},
     {CID_YNearStd, N_("Y near¹ _standard heights"),
-     N_("Allows you to find points which are slightly\noff from the baseline, "
-        "xheight, cap height,\nascender, descender heights."),
+     N_("Allows you to find points which are slightly off from the baseline, "
+        "xheight, cap height, ascender, descender heights."),
      false, prob_bool},
     {CID_CpStd, N_("_Control points near horizontal/vertical"),
-     N_("Allows you to find control points which are almost,\nbut not quite "
-        "horizontal or vertical\nfrom their base point\n(or at the italic "
+     N_("Allows you to find control points which are almost, but not quite "
+        "horizontal or vertical from their base point (or at the italic "
         "angle)."),
      false, prob_bool},
     {CID_CpOdd, N_("Control points _beyond spline"),
-     N_("Allows you to find control points which when projected\nonto the line "
-        "segment between the two end points lie\noutside of those end points"),
+     N_("Allows you to find control points which when projected onto the line "
+        "segment between the two end points lie outside of those end points"),
      false, prob_bool},
     {CID_IrrelevantCP,
      N_("Check for _irrelevant control points with factor (%)"),
@@ -3087,13 +3087,13 @@ static ProblemRec pr_points[] = {
         "the main points."),
      false, prob_double, .value.dval = 0.5},
     {CID_PointsTooClose, N_("Poin_ts too close"),
-     N_("If two adjacent points on the same path are less than a few\nemunits "
-        "apart they will cause problems for some of FontForge's\ncommands. "
+     N_("If two adjacent points on the same path are less than a few emunits "
+        "apart they will cause problems for some of FontForge's commands. "
         "PostScript shouldn't care though."),
      false, prob_bool},
     {CID_PointsTooFar, N_("_Points too far"),
      N_("Most font formats cannot specify adjacent points (or control "
-        "points)\nwhich are more than 32767 em-units apart in either the x or "
+        "points) which are more than 32767 em-units apart in either the x or "
         "y direction"),
      false, prob_bool},
     PROBLEM_REC_EMPTY};
@@ -3106,60 +3106,60 @@ static ProblemRec pr_paths[] = {
     {CID_IntersectingPaths, N_("Intersecting paths"),
      N_("No paths with within a glyph should intersect"), false, prob_bool},
     {CID_LineStd, N_("_Edges near horizontal/vertical"),
-     N_("Allows you to find lines which are almost,\nbut not quite horizontal "
-        "or vertical\n(or at the italic angle)."),
+     N_("Allows you to find lines which are almost, but not quite horizontal "
+        "or vertical (or at the italic angle)."),
      false, prob_bool},
     {CID_Direction, N_("Check _outermost paths clockwise"),
-     N_("FontForge internally uses paths drawn in a\nclockwise direction. This "
-        "lets you check that they are.\nBefore doing this test insure that\nno "
+     N_("FontForge internally uses paths drawn in a clockwise direction. This "
+        "lets you check that they are. Before doing this test insure that no "
         "paths self-intersect."),
      false, prob_bool},
     {CID_MissingExtrema, N_("Check _missing extrema"),
-     N_("PostScript and TrueType require that when a path\nreaches its maximum "
-        "or minimum position\nthere must be a point at that location."),
+     N_("PostScript and TrueType require that when a path reaches its maximum "
+        "or minimum position there must be a point at that location."),
      false, prob_bool},
     {CID_TooManyPoints, N_("_More points than:"),
-     N_("The PostScript Language Reference Manual (Appendix B) says that\nan "
-        "interpreter need not support paths with more than 1500 points.\nI "
-        "think this count includes control points. From PostScript's point\nof "
+     N_("The PostScript Language Reference Manual (Appendix B) says that an "
+        "interpreter need not support paths with more than 1500 points. I "
+        "think this count includes control points. From PostScript's point of "
         "view, all the contours in a character make up one path. "
-        "Modern\ninterpreters tend to support paths with more points than this "
-        "limit.\n(Note a truetype font after conversion to PS will "
-        "contain\ntwice as many control points)"),
+        "Modern interpreters tend to support paths with more points than this "
+        "limit. (Note a truetype font after conversion to PS will "
+        "contain twice as many control points)"),
      false, prob_int, .value.ival = 1500},
     PROBLEM_REC_EMPTY};
 
 static ProblemRec pr_refs[] = {
     {CID_FlippedRefs, N_("Check _flipped references"),
-     N_("PostScript and TrueType require that paths be drawn\nin a clockwise "
-        "direction. If you have a reference\nthat has been flipped then the "
-        "paths in that reference will\nprobably be counter-clockwise. You "
-        "should unlink it and do\nElement->Correct direction on it."),
+     N_("PostScript and TrueType require that paths be drawn in a clockwise "
+        "direction. If you have a reference that has been flipped then the "
+        "paths in that reference will probably be counter-clockwise. You "
+        "should unlink it and do Element->Correct direction on it."),
      false, prob_bool},
     {CID_RefBadTransformTTF,
      N_("References with bad TrueType transformation matrices"),
-     N_("TrueType requires that all scaling and rotational\nentries in a "
+     N_("TrueType requires that all scaling and rotational entries in a "
         "transformation matrix be between -2 and 2"),
      false, prob_bool},
     {CID_MixedContoursRefs, N_("Mixed contours and references"),
-     N_("TrueType glyphs can either contain references or contours.\nNot "
+     N_("TrueType glyphs can either contain references or contours. Not "
         "both."),
      false, prob_bool},
     {CID_RefBadTransformPS,
      N_("References with bad PostScript transformation matrices"),
-     N_("Type1 and 2 fonts only support translation of references.\nThe first "
-        "four entries of the transformation matrix should be\n[1 0 0 1]."),
+     N_("Type1 and 2 fonts only support translation of references. The first "
+        "four entries of the transformation matrix should be [1 0 0 1]."),
      false, prob_bool},
     {CID_TooDeepRefs, N_("References neste_d deeper than:"),
-     N_("The Type 2 Charstring Reference (Appendix B) says that\nsubroutines "
-        "may not be nested more than 10 deep. Each\nnesting level for "
-        "references requires one subroutine\nlevel, and hints may require "
+     N_("The Type 2 Charstring Reference (Appendix B) says that subroutines "
+        "may not be nested more than 10 deep. Each nesting level for "
+        "references requires one subroutine level, and hints may require "
         "another level."),
      false, prob_int, .value.ival = 9},
     {CID_PtMatchRefsOutOfDate, N_("References with out of date point matching"),
-     N_("If a glyph has been edited so that it has a different\nnumber of "
-        "points now, then any references\nwhich use point matching and "
-        "depended on that glyph's\npoint count will be incorrect."),
+     N_("If a glyph has been edited so that it has a different number of "
+        "points now, then any references which use point matching and "
+        "depended on that glyph's point count will be incorrect."),
      false, prob_bool},
     {CID_MultUseMyMetrics, N_("Multiple references with use-my-metrics"),
      N_("There may be at most one reference with the use-my-metrics bit set"),
@@ -3168,33 +3168,33 @@ static ProblemRec pr_refs[] = {
 
 static ProblemRec pr_hints[] = {
     {CID_HintNoPt, N_("_Hints controlling no points"),
-     N_("Ghostview (perhaps other interpreters) has a problem when a\nhint "
+     N_("Ghostview (perhaps other interpreters) has a problem when a hint "
         "exists without any points that lie on it."),
      false, prob_bool},
     {CID_PtNearHint, N_("_Points near¹ hint edges"),
-     N_("Often if a point is slightly off from a hint\nit is because a stem is "
-        "made up\nof several segments, and one of them\nhas the wrong width."),
+     N_("Often if a point is slightly off from a hint it is because a stem is "
+        "made up of several segments, and one of them has the wrong width."),
      false, prob_bool},
     {CID_HintWidthNear, N_("Hint _width near¹"),
      N_("Allows you to check that stems have consistent widths.."), false,
      prob_double, .value.dval = 50.0},
     /* GT: The _3 is used to mark an accelerator */
     {CID_Stem3, N_("Almost stem_3 hint"),
-     N_("This checks if the character almost, but not exactly,\nconforms to "
-        "the requirements for a stem3 hint.\nThat is, either vertically or "
-        "horizontally, there must\nbe exactly three hints, and they must have "
-        "the same\nwidth and they must be evenly spaced."),
+     N_("This checks if the character almost, but not exactly, conforms to "
+        "the requirements for a stem3 hint. That is, either vertically or "
+        "horizontally, there must be exactly three hints, and they must have "
+        "the same width and they must be evenly spaced."),
      false, prob_bool},
     {CID_ShowExactStem3, N_("_Show exact *stem3"),
      N_("Shows when this character is exactly a stem3 hint"), false, prob_bool,
      .parent_cid = CID_Stem3},
     {CID_TooManyHints, N_("_More hints than:"),
-     N_("The Type 2 Charstring Reference (Appendix B) says that\nthere may be "
-        "at most 96 horizontal and vertical stem hints\nin a character."),
+     N_("The Type 2 Charstring Reference (Appendix B) says that there may be "
+        "at most 96 horizontal and vertical stem hints in a character."),
      false, prob_int, .value.ival = 96},
     {CID_OverlappedHints, N_("_Overlapped hints"),
-     N_("Either a glyph should have no overlapping hints,\nor a glyph with "
-        "hint masks should have no overlapping\nhints within a hint mask."),
+     N_("Either a glyph should have no overlapping hints, or a glyph with "
+        "hint masks should have no overlapping hints within a hint mask."),
      false, prob_bool},
     PROBLEM_REC_EMPTY};
 
@@ -3204,7 +3204,7 @@ static ProblemRec pr_att[] = {
         "which does not match any glyph in the font"),
      false, prob_bool},
     {CID_MissingScriptInFeature, N_("Check for missing _scripts in features"),
-     N_("In every lookup that uses a glyph, check that at\n"
+     N_("In every lookup that uses a glyph, check that at "
         "least one feature is active for the glyph's script."),
      false, prob_bool},
     {CID_BadSubs, N_("Check substitutions for empty chars"),
@@ -3212,9 +3212,9 @@ static ProblemRec pr_att[] = {
         "empty characters"),
      false, prob_bool},
     {CID_MissingAnchor, N_("Check for incomplete mark to base subtables"),
-     N_("The OpenType documentation suggests in a rather confusing way\n"
-        "that if a base glyph (or base mark) contains an anchor point\n"
-        "for one class in a lookup subtable, then it should contain\n"
+     N_("The OpenType documentation suggests in a rather confusing way "
+        "that if a base glyph (or base mark) contains an anchor point "
+        "for one class in a lookup subtable, then it should contain "
         "anchors for all classes in the subtable"),
      false, prob_bool},
     PROBLEM_REC_EMPTY};
@@ -3254,12 +3254,12 @@ static ProblemRec pr_bb[] = {
 static ProblemRec pr_random[] = {
     {CID_Bitmaps, N_("Check missing _bitmaps"),
      N_("Are there any outline characters which don't have a bitmap version in "
-        "one of the bitmap fonts?\nConversely are there any bitmap characters "
+        "one of the bitmap fonts? Conversely are there any bitmap characters "
         "without a corresponding outline character?"),
      false, prob_bool},
     {CID_BitmapWidths, N_("Bitmap/outline _advance mismatch"),
-     N_("Are there any bitmap glyphs whose advance width\nis not is expected "
-        "from scaling and rounding\nthe outline's advance width?"),
+     N_("Are there any bitmap glyphs whose advance width is not is expected "
+        "from scaling and rounding the outline's advance width?"),
      false, prob_bool},
     {CID_MultUni, N_("Check multiple Unicode"),
      N_("Check for multiple characters with the same Unicode code point"),
@@ -3267,7 +3267,7 @@ static ProblemRec pr_random[] = {
     {CID_MultName, N_("Check multiple names"),
      N_("Check for multiple characters with the same name"), false, prob_bool},
     {CID_UniNameMisMatch, N_("Check Unicode/name mismatch"),
-     N_("Check for characters whose name maps to a unicode code point\nwhich "
+     N_("Check for characters whose name maps to a unicode code point which "
         "does not map the character's assigned code point."),
      false, prob_bool},
     PROBLEM_REC_EMPTY};
