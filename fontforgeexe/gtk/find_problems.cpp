@@ -27,6 +27,7 @@
 
 #include "find_problems.hpp"
 
+#include "utils.hpp"
 #include "intl.h"
 
 namespace ff::dlg {
@@ -37,7 +38,7 @@ FindProblemsDlg::FindProblemsDlg(GWindow parent,
     : Dialog(parent) {
     set_title(_("Find Problems"));
     set_resizable(false);
-    // set_help_context("ui/dialogs/problems.html", nullptr);
+    set_help_context("ui/dialogs/problems.html");
 
     auto tabs = build_notebook(pr_tabs);
     get_content_area()->pack_start(*tabs);
@@ -106,8 +107,7 @@ Gtk::Notebook* FindProblemsDlg::build_notebook(
             if (record.parent_cid != 0) {
                 Gtk::CheckButton& parent_check =
                     widget_map_[record.parent_cid].first;
-                record_check.set_margin_start(
-                    100);  // TODO(iorsh): Use Em width
+                record_check.set_margin_start(2 * ui_font_em_size());
                 disabled |= !parent_check.get_active();
                 parent_check.signal_toggled().connect(
                     [&parent_check, record_box]() {
