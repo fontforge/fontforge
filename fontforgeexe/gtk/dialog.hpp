@@ -44,7 +44,8 @@ class Dialog : public Gtk::Dialog {
     Gtk::ResponseType run();
 
     // Add Help context to be opened if the user presses "F1".
-    void set_help_context(const std::string& file, const std::string& section);
+    void set_help_context(const std::string& file,
+                          const std::string& section = "");
 
  private:
     GWindow parent_gwindow_ = nullptr;
