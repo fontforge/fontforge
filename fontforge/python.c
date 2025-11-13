@@ -14651,10 +14651,20 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFF_Font_get_mark_classes(PyFF_Font *self, void *UNUSED(closure)) {
+static PyObject *PyFF_Font_get_mark_classes_or_sets(int start, int count, char **names, char **values) {
     PyObject *tuple, *nametuple;
-    SplineFont *sf;
     int i;
+
+    tuple = PyTuple_New(count-start);
+    for ( i=start; i<count; ++i ) {
+	nametuple = TupleOfGlyphNames(values[i],0);
+	PyTuple_SetItem(tuple,i-start,Py_BuildValue("(sO)", names[i], nametuple));
+    }
+    return( tuple );
+}
+
+static PyObject *PyFF_Font_get_mark_classes(PyFF_Font *self, void *UNUSED(closure)) {
+    SplineFont *sf;
 
     if ( CheckIfFontClosed(self) )
 return (NULL);
@@ -14662,24 +14672,16 @@ return (NULL);
     if ( sf->mark_class_cnt==0 )
 Py_RETURN_NONE;
 
-    tuple = PyTuple_New(sf->mark_class_cnt-1);
-    for ( i=1; i<sf->mark_class_cnt; ++i ) {
-	nametuple = TupleOfGlyphNames(sf->mark_classes[i],0);
-	PyTuple_SetItem(tuple,i-1,Py_BuildValue("(sO)", sf->mark_class_names[i], nametuple));
-    }
-return( tuple );
+    return( PyFF_Font_get_mark_classes_or_sets(1, sf->mark_class_cnt, sf->mark_class_names, sf->mark_classes) );
 }
 
-static int PyFF_Font_set_mark_classes(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
-    SplineFont *sf;
+static int PyFF_Font_parse_mark_classes_or_sets(PyObject *value, bool sets, char ***names_ptr, char ***values_ptr) {
+    int start = sets ? 0 : 1;
     int i, cnt;
     char **names, **classes;
     char *nm;
     PyObject *subtuple;
 
-    if ( CheckIfFontClosed(self) )
-        return (-1);
-    sf = self->fv->sf;
     if ( value==NULL || value==Py_None ) {
         /* del font.markClasses  or  font.markClasses=None  removes old values */
         cnt = 0;
@@ -14691,27 +14693,29 @@ static int PyFF_Font_set_mark_classes(PyFF_Font *self,PyObject *value, void *UNU
         cnt = PySequence_Size(value);
         if ( cnt==-1 )
             return( -1 );
-        if ( cnt>=256 ) {
+        if ( sets && cnt>=65536 ) {
+            PyErr_Format(PyExc_ValueError, "There may be at most 65535 mark sets" );
+	    return( -1 );
+	}
+        if ( !sets && cnt>=256 ) {
             PyErr_Format(PyExc_ValueError, "There may be at most 255 mark classes" );
             return( -1 );
         }
     }
     if ( cnt==0 ) {
-        /* markClasses is being removed, delete any old, reset counts and pointers */
-	MarkClassFree(sf->mark_class_cnt,sf->mark_classes,sf->mark_class_names);
-	sf->mark_class_cnt = 0;
-	sf->mark_classes = NULL;
-	sf->mark_class_names = NULL;
+        /* del font.markClasses  or  font.markClasses=None  removes old values */
+        *names_ptr = NULL;
+        *values_ptr = NULL;
         return( 0 );
     }
 
     names = malloc((cnt+1)*sizeof(char *));
     classes = malloc((cnt+1)*sizeof(char *));
     names[0] = classes[0] = NULL;
-    /* Fill in names[] and classes[], starting at index 1 instead of 0 */
-    for ( i=1; i<=cnt; ++i ) {
+    /* Fill in names[] and classes[], starting at index 1 instead of 0 in case of classes */
+    for ( i=start; i<cnt+start; ++i ) {
 	names[i] = classes[i] = NULL;
-        PyObject *seqItem = PySequence_GetItem(value,i-1);
+        PyObject *seqItem = PySequence_GetItem(value,i-start);
 	if ( !PyArg_ParseTuple(seqItem,"sO", &nm, &subtuple)) {
             PyErr_Format(PyExc_TypeError,"Expecting inner tuples to be name and glyphs");
             Py_DECREF(seqItem);
@@ -14721,7 +14725,7 @@ static int PyFF_Font_set_mark_classes(PyFF_Font *self,PyObject *value, void *UNU
 	}
         Py_DECREF(seqItem);
         if ( strlen(nm)==0 ) {
-            PyErr_Format(PyExc_TypeError,"Mark class name strings may not be empty");
+            PyErr_Format(PyExc_TypeError,sets ? "Mark set name strings may not be empty" : "Mark class name strings may not be empty");
             FreeStringArray( i, names );
             FreeStringArray( i, classes );
             return( -1 );
@@ -14734,13 +14738,61 @@ static int PyFF_Font_set_mark_classes(PyFF_Font *self,PyObject *value, void *UNU
 	}
 	names[i] = copy(nm);
     }
+    *names_ptr = names;
+    *values_ptr = classes;
+    return cnt + start;
+}
+
+static int PyFF_Font_set_mark_classes(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
+    SplineFont *sf;
+    int cnt;
+    char **names, **classes;
+
+    if ( CheckIfFontClosed(self) )
+        return (-1);
+    sf = self->fv->sf;
+    cnt = PyFF_Font_parse_mark_classes_or_sets(value, false, &names, &classes);
+    if ( cnt==-1 )
+        return (-1);
 
     MarkClassFree(sf->mark_class_cnt,sf->mark_classes,sf->mark_class_names);
-    sf->mark_class_cnt = cnt+1; /* +1 because index 0 was skipped */
+    sf->mark_class_cnt = cnt;
     sf->mark_classes = classes;
     sf->mark_class_names = names;
 
 return( 0 );
+}
+
+static PyObject *PyFF_Font_get_mark_sets(PyFF_Font *self, void *UNUSED(closure)) {
+    SplineFont *sf;
+
+    if ( CheckIfFontClosed(self) )
+	return (NULL);
+    sf = self->fv->sf;
+    if ( sf->mark_set_cnt==0 )
+	Py_RETURN_NONE;
+
+    return ( PyFF_Font_get_mark_classes_or_sets(0, sf->mark_set_cnt, sf->mark_set_names, sf->mark_sets) );
+}
+
+static int PyFF_Font_set_mark_sets(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
+    SplineFont *sf;
+    int cnt;
+    char **names, **sets;
+
+    if ( CheckIfFontClosed(self) )
+        return (-1);
+    sf = self->fv->sf;
+    cnt = PyFF_Font_parse_mark_classes_or_sets(value, true, &names, &sets);
+    if ( cnt==-1 )
+        return (-1);
+
+    MarkSetFree(sf->mark_set_cnt,sf->mark_sets,sf->mark_set_names);
+    sf->mark_set_cnt = cnt;
+    sf->mark_sets = sets;
+    sf->mark_set_names = names;
+
+    return( 0 );
 }
 
 static PyObject *PyFF_Font_get_em(PyFF_Font *self, void *UNUSED(closure)) {
@@ -15616,6 +15668,9 @@ static PyGetSetDef PyFF_Font_getset[] = {
     {(char *)"markClasses",
      (getter)PyFF_Font_get_mark_classes, (setter)PyFF_Font_set_mark_classes,
      (char *)"A tuple each entry of which is itself a tuple containing a mark-class-name and a tuple of glyph-names", NULL},
+    {(char *)"markSets",
+     (getter)PyFF_Font_get_mark_sets, (setter)PyFF_Font_set_mark_sets,
+     (char *)"A tuple each entry of which is itself a tuple containing a mark-set-name and a tuple of glyph-names", NULL},
     {(char *)"style_set_names",
      (getter)PyFF_Font_get_style_set_names, (setter)PyFF_Font_set_style_set_names,
      (char *)"A tuple, each entry of which is a 3-element tuple containing the language name (e.g. \"English (US)\"), the style set tag (e.g. \"ss01\") and the style set name.", NULL},
