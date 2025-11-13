@@ -1547,6 +1547,7 @@ static void CI_ApplyAll(CharInfo *ci) {
 	if ( sc->name==NULL || strcmp( sc->name,cached->name )!=0 ) {
 	    if ( sc->name!=NULL )
 		SFGlyphRenameFixup(sf,sc->name,cached->name,false);
+	    free(sc->glif_name); sc->glif_name = NULL;
 	    free(sc->name); sc->name = copy(cached->name);
 	    sc->namechanged = true;
 	    GlyphHashFree(sf);
