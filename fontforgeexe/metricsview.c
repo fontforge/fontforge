@@ -4327,8 +4327,12 @@ static void MVChar(MetricsView *mv,GEvent *event)
 	    //      should always move up/down in the list of kerning words.
 	    if( active != mv->text )
 	    {
+		const unichar_t *title = _GGadgetGetTitle(active);
+		if (!title)
+		    return;
+
 		unichar_t *end;
-		double val = u_strtod(_GGadgetGetTitle(active),&end);
+		double val = u_strtod(title,&end);
 		if (isValidInt(end)) {
 		    int dir = ( event->u.chr.keysym == GK_Up || event->u.chr.keysym==GK_KP_Up ) ? 1 : -1;
 		    if( event->u.chr.state&ksm_control && event->u.chr.state&ksm_shift ) {
