@@ -56,6 +56,8 @@ class FindProblemsDlg final : public Dialog {
     FindProblemsDlg(GWindow parent, const std::vector<ProblemTab>& pr_tabs,
                     double near);
 
+    Gtk::HBox* build_record_box(const ProblemRecord& record,
+                                Glib::RefPtr<Gtk::SizeGroup> size_group);
     Gtk::Notebook* build_notebook(const std::vector<ProblemTab>& pr_tabs);
 
     void set_all_checkboxes(bool state);
