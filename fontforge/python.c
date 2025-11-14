@@ -18137,7 +18137,7 @@ return( NULL );
 
     locfilename = utf82def_copy(filename);
 
-    if ( !WriteTTC(locfilename,head,ff_ttc,bf,iflags,layer,ittcflags)) {
+    if ( !WriteTTC(locfilename,head,ff_ttc,bf,fmflag2ttfflag(iflags,false),layer,ittcflags)) {
 	PyErr_Format(PyExc_EnvironmentError, "Font generation failed");
 	/* Don't return here, will return after memory is freed below */
     }
