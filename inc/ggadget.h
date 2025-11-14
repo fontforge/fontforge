@@ -590,6 +590,7 @@ extern int GGadgetUndoMacEnglishOptionCombinations(GEvent *event);
 
 /* Among other things, this routine sets global icon cache up. */
 extern void GGadgetInit(void);
+extern void GTabSetInit();
 extern int GGadgetWithin(GGadget *g, int x, int y);
 extern void GMenuItemArrayFree(GMenuItem *mi);
 extern void GMenuItem2ArrayFree(GMenuItem2 *mi);
