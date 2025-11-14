@@ -44,10 +44,10 @@ HarfBuzzShaper::HarfBuzzShaper(std::shared_ptr<ShaperContext> context)
     // View must support the capability to shape glyphs which don't have
     // assigned Unicode values. When writing a temporary TrueType font, we need
     // to make sure that every glyph is assigned Unicode value (possibly fake,
-    // see flag ttf_flag_fake_map), and that we have means to map each
-    // SplineChar to its assigned Unicode value.
+    // see flag ttf_flag_fake_map_and_no_outlines), and that we have means to
+    // map each SplineChar to its assigned Unicode value.
     _WriteTTFFont(ttf_file, context_->sf, ff_ttf, NULL, bf_ttf,
-                  ttf_flag_otmode | ttf_flag_fake_map | ttf_flag_no_outlines,
+                  ttf_flag_otmode | ttf_flag_fake_map_and_no_outlines,
                   context_->get_enc_map(context_->sf), ly_fore);
 
     // Build map of TTF codepoints
