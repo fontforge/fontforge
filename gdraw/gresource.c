@@ -219,7 +219,7 @@ static char* replace_CJK_font_alias(const char* resource) {
 }
 
 void GResourceAddResourceString(const char *string,const char *prog) {
-    char *ept, *value=NULL, *fixed_CJK=NULL;
+    char *ept, *value=NULL;
     const char *pt, *next;
     int cnt, plen;
     struct _GResource_Res temp;
@@ -277,11 +277,13 @@ return;
 	    while ( isspace( *pt ) && pt<next ) ++pt;
 	    value = copyn(pt,next-pt);
 #if defined(__MINGW32__)
-		fixed_CJK = replace_CJK_font_alias(value);
-		if (fixed_CJK != NULL) {
-			free(value);
-			value = fixed_CJK;
-		}
+        {
+            char* fixed_CJK = replace_CJK_font_alias(value);
+            if (fixed_CJK != NULL) {
+                free(value);
+                value = fixed_CJK;
+            }
+        }
 #endif
         temp.val = value;
 	    temp.new = true;
