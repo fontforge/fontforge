@@ -181,8 +181,45 @@ return;
 return;
 }
 
+static char* replace_CJK_font_alias(const char* resource) {
+    /* On Windows systems the default UI font doesn't support CJK. We prepend it
+	   with locale-specific font by replacing the predefined
+	   "windows-cjk-workaround" alias. */
+    static const char alias[] = "windows-cjk-workaround";
+    char locale[100];
+    const char *ui_font = NULL;
+
+    gettext_locale(locale, sizeof(locale));
+    if (strcmp(locale, "zh_CN") == 0) ui_font = "Microsoft YaHei UI";
+    else if (strcmp(locale, "zh_SG") == 0) ui_font = "Microsoft YaHei UI";
+    else if (strcmp(locale, "zh_TW") == 0) ui_font = "Microsoft JhengHei UI";
+    else if (strcmp(locale, "zh_HK") == 0) ui_font = "Microsoft JhengHei UI";
+    else if (strcmp(locale, "ja_JP") == 0) ui_font = "Meiryo UI,Yu Gothic UI";
+    else if (strcmp(locale, "ja") == 0) ui_font = "Meiryo UI,Yu Gothic UI";
+    else if (strcmp(locale, "ko_KR") == 0) ui_font = "Malgun Gothic";
+    else if (strcmp(locale, "ko") == 0) ui_font = "Malgun Gothic";
+
+    if (ui_font == NULL) {
+        return NULL;
+    }
+
+    const char* pos = strstr(resource, alias);
+    if (pos == NULL) {
+        return NULL;
+    }
+
+    int prefix_len = pos - resource;
+    const char *suffix = pos + sizeof(alias) - 1;
+    char *result = smprintf("%.*s%s%s",
+	                    prefix_len, resource,
+			    ui_font,
+			    suffix);
+
+	return result;
+}
+
 void GResourceAddResourceString(const char *string,const char *prog) {
-    char *ept;
+    char *ept, *value=NULL;
     const char *pt, *next;
     int cnt, plen;
     struct _GResource_Res temp;
@@ -238,7 +275,17 @@ return;
 	    temp.res = copyn(pt+off,ept-(pt+off));
 	    pt = ept+1;
 	    while ( isspace( *pt ) && pt<next ) ++pt;
-	    temp.val = copyn(pt,next-pt);
+	    value = copyn(pt,next-pt);
+#if defined(__MINGW32__)
+        {
+            char* fixed_CJK = replace_CJK_font_alias(value);
+            if (fixed_CJK != NULL) {
+                free(value);
+                value = fixed_CJK;
+            }
+        }
+#endif
+        temp.val = value;
 	    temp.new = true;
 	    _GResource_Res[rcur++] = temp;
 	}
@@ -807,45 +854,14 @@ GImage *GResImageGetImage(GResImage *ri) {
 
 void fix_CJK_UI_font(GResFont* font) {
 #if defined(__MINGW32__)
-    /* On Windows systems the default UI font doesn't support CJK. We prepend it
-	   with locale-specific font by replacing the predefined
-	   "windows-cjk-workaround" alias. */
-    char locale[100];
-    char *ui_font = NULL;
-
-    gettext_locale(locale);
-    if (strcmp(locale, "zh_CN") == 0) ui_font = "Microsoft YaHei UI";
-    if (strcmp(locale, "zh_SG") == 0) ui_font = "Microsoft YaHei UI";
-    if (strcmp(locale, "zh_TW") == 0) ui_font = "Microsoft JhengHei UI";
-    if (strcmp(locale, "zh_HK") == 0) ui_font = "Microsoft JhengHei UI";
-    if (strcmp(locale, "ja_JP") == 0) ui_font = "Meiryo UI,Yu Gothic UI";
-    if (strcmp(locale, "ja") == 0) ui_font = "Meiryo UI,Yu Gothic UI";
-    if (strcmp(locale, "ko_KR") == 0) ui_font = "Malgun Gothic";
-    if (strcmp(locale, "ko") == 0) ui_font = "Malgun Gothic";
-
-    if (ui_font == NULL) {
-        return;
-    }
-
-    char* pos = strstr(font->rstr, "windows-cjk-workaround");
-    if (pos == NULL) {
-        return;
-    }
-
-    size_t prefix_len = pos - font->rstr;
-    size_t suffix_len = strlen(pos) + strlen("windows-cjk-workaround");  /* Length after "windows-cjk-workaround" */
-    size_t ui_font_len = strlen(ui_font);
-    char* result = malloc(prefix_len + ui_font_len + suffix_len + 1);
-
-    /* Copy parts together */
-    strncpy(result, font->rstr, prefix_len);  /* Copy prefix */
-    strcpy(result + prefix_len, ui_font);  /* Insert replacement */
-    strcpy(result + prefix_len + ui_font_len, pos + strlen("windows-cjk-workaround"));  /* Copy suffix */
+    char* fixed_res = replace_CJK_font_alias(font->rstr);
+	if (fixed_res == NULL)
+	    return;
 
     if (font->can_free_name)
         free(font->rstr);
 
-    font->rstr = result;
+    font->rstr = fixed_res;
     font->can_free_name = true;
 #endif
 }
