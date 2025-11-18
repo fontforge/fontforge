@@ -811,7 +811,10 @@ return( 0 );
 	winding += nw;
     }
     if ( space[i]==NULL ) {
-	fprintf( stderr, "FindMatchinHVEdge didn't\n" );
+	if ( gd->sc )
+	    fprintf( stderr, "FindMatchingHVEdge didn't: 0x%X, '%s'\n", gd->sc->unicodeenc, gd->sc->name );
+	else
+	    fprintf( stderr, "FindMatchingHVEdge didn't: unknown glyph\n" );
 return( 0 );
     }
 

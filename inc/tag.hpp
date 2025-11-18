@@ -25,6 +25,7 @@
 #include <array>
 #include <cstdint>
 #include <cstring>
+#include <string>
 
 namespace ff {
 
@@ -41,6 +42,22 @@ class Tag {
         return (arr[0] << 24) | (arr[1] << 16) | (arr[2] << 8) | arr[3];
     }
 
+    bool operator==(const char* rhs) const {
+        for (int i = 0; i < 5; ++i) {
+            // We shall usually continue here.
+            if (arr[i] == rhs[i]) continue;
+
+            // If tags differ, it's either a real difference or a space vs zero
+            // terminator.
+            return ((arr[i] == ' ') && (rhs[i] == '\0'));
+        }
+        return true;
+    }
+
+    bool operator==(const std::string& rhs) const {
+        return operator==(rhs.c_str());
+    }
+
  private:
     // OpenType tags normally have four characters, the fifth is the trailing
     // zero.
@@ -48,9 +65,5 @@ class Tag {
 };
 
 const Tag REQUIRED_FEATURE = Tag(" RQD");
-
-inline bool operator==(const Tag& tag1, const char tag2[5]) {
-    return std::memcmp((const char*)tag1, tag2, 4) == 0;
-}
 
 }  // namespace ff

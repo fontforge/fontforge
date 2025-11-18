@@ -252,7 +252,6 @@ typedef struct charview {
     GPoint e;					/* mouse location */
     GPoint olde;
     BasePoint last_c;
-    GImage gi;					/* used for fill bitmap only */
     int enc;
     EncMap *map_of_enc;				/* Only use for comparison against fontview's map to see if our enc be valid */
 						/*  Will not be updated when fontview is reencoded */

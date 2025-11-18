@@ -666,10 +666,17 @@ struct otfname {
     char *name;		/* utf8 */
 };
 
+enum otffn_field {
+    otffn_featname, otffn_tooltiptext, otffn_sampletext,
+    otffn_characters /* reserved */,
+    otffn_paramname_begin /* this is the beginning of parameter block, so */
+                          /* there should be no enum elements beyond this */
+};
 struct otffeatname {
     uint32_t tag;			/* Feature tag */
     struct otfname *names;
     struct otffeatname *next;
+    enum otffn_field field;
     uint16_t nid;			/* temporary value */
 };
 
@@ -747,8 +754,8 @@ typedef struct enc {
     int iso_2022_escape_len;
     int low_page, high_page;
     char *iconv_name;	/* For compatibility to old versions we might use a different name from that used by iconv. */
-    iconv_t *tounicode;
-    iconv_t *fromunicode;
+    iconv_t tounicode;
+    iconv_t fromunicode;
     int (*tounicode_func)(int);
     int (*fromunicode_func)(int);
     unsigned int is_temporary: 1;	/* freed when the map gets freed */

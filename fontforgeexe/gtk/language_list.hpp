@@ -26,28 +26,28 @@
  */
 #pragma once
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "dialog.hpp"
+#include "tag.hpp"
 
-#include "gresource.h"
+namespace ff::dlg {
 
-typedef struct gwindow* GWindow;
+using LanguageRecords = std::vector<std::pair<std::string /*name*/, ff::Tag>>;
 
-typedef struct {
-    const char* name;
-    uint32_t tag;
-} LanguageRec;
+class LanguageListDlg final : public Dialog {
+ private:
+    Gtk::ListViewText list_;
 
-int add_encoding_slots_dialog(GWindow parent, bool cid);
+    LanguageListDlg(GWindow parent, const ff::dlg::LanguageRecords& lang_recs,
+                    const std::vector<int>& initial_selection);
 
-// Return comma-separated list of language tags, or NULL if the action was
-// canceled. The caller is responsible to release the returned pointer.
-char* language_list_dialog(GWindow parent, const LanguageRec* languages,
-                           const char* initial_tags);
+    std::vector<int> get_selection() { return list_.get_selected(); }
 
-void update_appearance();
+ public:
+    // Show the dialog and return indexes of selected rows (or empty vector if
+    // the dialog was cancelled/closed).
+    static std::vector<int> show(GWindow parent,
+                                 const ff::dlg::LanguageRecords& lang_recs,
+                                 const std::vector<int>& initial_selection);
+};
 
-#ifdef __cplusplus
-}
-#endif
+}  // namespace ff::dlg

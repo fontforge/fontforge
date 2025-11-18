@@ -28,5 +28,8 @@
 
 #include <gtkmm.h>
 
-// Get the current topmost window
-Glib::RefPtr<Gdk::Window> gtk_get_topmost_window();
+double ui_font_em_size();
+double ui_font_eX_size();
+
+// TODO(iorsh): Integrate this function into the global log collection
+void gtk_post_error(const char* title, const char* statement, ...);

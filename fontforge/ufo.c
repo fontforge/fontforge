@@ -1050,7 +1050,7 @@ void clear_cached_ufo_paths(SplineFont * sf) {
   // First we clear the glif names.
   for (i = 0; i < sf->glyphcnt; i++) {
     struct splinechar * sc = sf->glyphs[i];
-    if (sc->glif_name != NULL) { free(sc->glif_name); sc->glif_name = NULL; }
+    if (sc && sc->glif_name != NULL) { free(sc->glif_name); sc->glif_name = NULL; }
   }
   // Then we clear the layer names.
   for (i = 0; i < sf->layer_cnt; i++) {
@@ -2722,6 +2722,10 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
             for ( points=contour->children; points!=NULL; points=points->next )
                 if ( xmlStrcmp(points->name,(const xmlChar *) "point")==0 )
             break;
+            if (points == NULL) {
+                // The UFO3 specification allows empty contours, we just drop them.
+                continue;
+            }
             for ( npoints=points->next; npoints!=NULL; npoints=npoints->next )
                 if ( xmlStrcmp(npoints->name,(const xmlChar *) "point")==0 )
             break;

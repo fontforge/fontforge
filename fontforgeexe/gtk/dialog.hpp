@@ -28,16 +28,30 @@
 
 #include <gtkmm.h>
 
+typedef struct gwindow* GWindow;
+
 namespace ff::dlg {
 
+// Modal dialog
 class Dialog : public Gtk::Dialog {
  public:
-    Dialog();
+    // The parent is a legacy GDraw window.
+    // TODO(iorsh): remove this constructor after the transition to GTK is
+    // complete.
+    Dialog(GWindow parent_gwin);
+    ~Dialog();
 
     Gtk::ResponseType run();
 
+    // Add Help context to be opened if the user presses "F1".
+    void set_help_context(const std::string& file, const std::string& section);
+
  private:
-    Glib::RefPtr<Gdk::Window> parent_window;
+    GWindow parent_gwindow_ = nullptr;
+
+    std::string help_file_, help_section_;
+
+    bool on_help_key_press(GdkEventKey* event);
 };
 
 }  // namespace ff::dlg

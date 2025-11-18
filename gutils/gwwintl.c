@@ -41,3 +41,20 @@ char *sgettext(const char *msgid) {
 	    msgval = found+1;
 return (char *) msgval;
 }
+
+void gettext_locale(char* buffer, int size) {
+    const char *loc = getenv("LANGUAGE");
+    int i;
+
+    if (loc == NULL) loc = getenv("LC_ALL");
+    if (loc == NULL) loc = getenv("LC_MESSAGES");
+    if (loc == NULL) loc = getenv("LANG");
+
+    /* Fallback for empty environment */
+    if (loc == NULL) loc = "en";
+
+    /* Copy the string until '.' or ':' */
+    for (i = 0; i < size - 1 && loc[i] && loc[i] != '.' && loc[i] != ':'; i++)
+	buffer[i] = loc[i];
+    buffer[i] = 0;
+}
