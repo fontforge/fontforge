@@ -339,11 +339,96 @@ static PyObject *GetPluginEntryPoints() {
     return iter;
 }
 
+/* Retrieve name, URL, and summary of the plugin */
+static void LoadPluginMetadata(PluginEntry* pe) {
+    PyObject *globals = PyDict_New(), *locals = PyDict_New();
+    PyObject *dist = NULL, *function_args = NULL;
+
+    /* The `EntryPoint.dist` attribute is available starting with Python 3.10.
+     * To support Python 3.8+ we resort to the ugly but more uniform method of
+     * retrieving all `Distribution` objects and traversing them until we find
+     * one which points to our `EntryPoint` object. */
+    const char* function_string =
+        "def load_plugin_metadata(entrypoint):\n"
+        "    import importlib.metadata\n"
+        "    all_dists = importlib.metadata.distributions()\n"
+        "    for dist in all_dists:\n"
+        "        dist_eps = dist.entry_points\n"
+        "        for ep in dist_eps:\n"
+        "            if ep == entrypoint:\n"
+        "                return dist\n"
+        "    return None\n";
+
+    /* Execute the function definition */
+    if (PyRun_String(function_string, Py_file_input, globals, locals) == NULL) {
+        Py_DECREF(globals);
+        Py_DECREF(locals);
+        return;
+    }
+
+    /* Retrieve the function object */
+    PyObject* func = PyDict_GetItemString(locals, "load_plugin_metadata");
+    if (func == NULL || !PyCallable_Check(func)) {
+        PyErr_SetString(PyExc_RuntimeError, "Could not find the function");
+        Py_DECREF(globals);
+        Py_DECREF(locals);
+        return;
+    }
+
+    /* Call the function */
+    function_args = PyTuple_Pack(1, pe->entrypoint);
+    if (function_args != NULL) {
+        dist = PyObject_Call(func, function_args, NULL);
+    }
+    Py_XDECREF(func);
+    Py_XDECREF(function_args);
+
+    if (dist == NULL) {
+        PyErr_Print();
+        PyErr_SetString(PyExc_RuntimeError, "Could not retrieve distribution");
+        return;
+    }
+
+    if (PyObject_HasAttrString(dist, "metadata")) {
+        PyObject *str, *val;
+        PyObject* metadata = PyObject_GetAttrString(dist, "metadata");
+        str = PyUnicode_FromString("Home-page");
+        val = PyObject_GetItem(metadata, str);
+        if (val) {
+            free(pe->package_url);
+            pe->package_url = copy(PyUnicode_AsUTF8(val));
+        }
+        Py_XDECREF(str);
+        Py_XDECREF(val);
+
+        str = PyUnicode_FromString("Name");
+        val = PyObject_GetItem(metadata, str);
+        if (val) {
+            free(pe->package_name);
+            pe->package_name = copy(PyUnicode_AsUTF8(val));
+        }
+        Py_XDECREF(str);
+        Py_XDECREF(val);
+
+        str = PyUnicode_FromString("Summary");
+        val = PyObject_GetItem(metadata, str);
+        if (val) {
+            free(pe->summary);
+            pe->summary = copy(PyUnicode_AsUTF8(val));
+        }
+        Py_XDECREF(str);
+        Py_XDECREF(val);
+        Py_XDECREF(metadata);
+    }
+
+    Py_XDECREF(dist);
+}
+
 static bool DiscoverPlugins(int do_import) {
     int do_ask = false;
-    PluginEntry *pe;
+    PluginEntry *pe = NULL;
     GList_Glib *i;
-    PyObject *str, *str2, *iter, *tmp, *tmp2, *entrypoint;
+    PyObject *str, *str2, *iter, *entrypoint;
 
     iter = GetPluginEntryPoints();
     if (iter == NULL) {
@@ -385,7 +470,7 @@ static bool DiscoverPlugins(int do_import) {
         Py_DECREF(str);
         Py_DECREF(str2);
         str = PyObject_GetAttrString(entrypoint, "attr");
-        if (str == NULL) {
+        if (str == NULL || str == Py_None) {
             PyErr_Clear();
         } else {
             if (pe->attrs) {
@@ -398,43 +483,13 @@ static bool DiscoverPlugins(int do_import) {
         pe->is_present = true;
         Py_XDECREF(pe->entrypoint);
         pe->entrypoint = entrypoint;
-        // Extract project URL from package data
-        PyObject *dist = PyObject_GetAttrString(entrypoint, "dist");
-        if (dist != NULL && PyObject_HasAttrString(dist, "metadata")) {
-            tmp = PyObject_GetAttrString(dist, "metadata");
-            tmp2 = PyObject_GetIter(tmp);
-            Py_DECREF(tmp);
-            if (PyIter_Check(tmp2)) {
-                while ((str = PyIter_Next(tmp2))) {
-                    const char *metaline = PyUnicode_AsUTF8(str);
-                    // printf("%s\n", metaline);
-                    if (strncmp(metaline, "Home-page: ", 11) == 0) {
-                        if (pe->package_url != NULL) {
-                            free(pe->package_url);
-                        }
-                        pe->package_url = copy(metaline + 11);
-                    } else if (strncmp(metaline, "Name: ", 6) == 0) {
-                        if (pe->package_name != NULL) {
-                            free(pe->package_name);
-                        }
-                        pe->package_name = copy(metaline + 6);
-                    } else if (strncmp(metaline, "Summary: ", 9) == 0) {
-                        if (pe->summary != NULL) {
-                            free(pe->summary);
-                        }
-                        pe->summary = copy(metaline + 9);
-                    }
-                    Py_DECREF(str);
-                }
-            }
-            Py_DECREF(tmp2);
-        }
+
+	LoadPluginMetadata(pe);
         if (do_import && pe->startup_mode == sm_on) {
             LoadPlugin(pe);
         } else if (do_import && pe->startup_mode == sm_ask) {
             do_ask = true;
         }
-        Py_XDECREF(dist);
     }
     if (PyErr_Occurred()) {
         PyErr_Print();

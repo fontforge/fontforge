@@ -164,7 +164,7 @@ static void PluginInfoDlg(PluginEntry *pe) {
     gcd[k++].creator = GLabelCreate;
     hvgrid[3][0] = &gcd[k - 1];
 
-    label[k].text = (unichar_t *) pe->attrs;
+    label[k].text = (unichar_t *)(pe->attrs == NULL ? "" : pe->attrs);
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.flags = gg_enabled | gg_visible;
