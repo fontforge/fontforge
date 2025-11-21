@@ -339,6 +339,17 @@ static PyObject *GetPluginEntryPoints() {
     return iter;
 }
 
+static void RetrieveStringItem(PyObject* obj, const char* key, char** p_value) {
+    PyObject* str = PyUnicode_FromString(key);
+    PyObject* val = PyObject_GetItem(obj, str);
+    if (val) {
+        free(*p_value);
+        *p_value = copy(PyUnicode_AsUTF8(val));
+    }
+    Py_XDECREF(str);
+    Py_XDECREF(val);
+}
+
 /* Retrieve name, URL, and summary of the plugin */
 static void LoadPluginMetadata(PluginEntry* pe) {
     PyObject *globals = PyDict_New(), *locals = PyDict_New();
@@ -390,34 +401,11 @@ static void LoadPluginMetadata(PluginEntry* pe) {
     }
 
     if (PyObject_HasAttrString(dist, "metadata")) {
-        PyObject *str, *val;
         PyObject* metadata = PyObject_GetAttrString(dist, "metadata");
-        str = PyUnicode_FromString("Home-page");
-        val = PyObject_GetItem(metadata, str);
-        if (val) {
-            free(pe->package_url);
-            pe->package_url = copy(PyUnicode_AsUTF8(val));
-        }
-        Py_XDECREF(str);
-        Py_XDECREF(val);
 
-        str = PyUnicode_FromString("Name");
-        val = PyObject_GetItem(metadata, str);
-        if (val) {
-            free(pe->package_name);
-            pe->package_name = copy(PyUnicode_AsUTF8(val));
-        }
-        Py_XDECREF(str);
-        Py_XDECREF(val);
-
-        str = PyUnicode_FromString("Summary");
-        val = PyObject_GetItem(metadata, str);
-        if (val) {
-            free(pe->summary);
-            pe->summary = copy(PyUnicode_AsUTF8(val));
-        }
-        Py_XDECREF(str);
-        Py_XDECREF(val);
+	RetrieveStringItem(metadata, "Home-page", &pe->package_url);
+	RetrieveStringItem(metadata, "Name", &pe->package_name);
+	RetrieveStringItem(metadata, "Summary", &pe->summary);
         Py_XDECREF(metadata);
     }
 
