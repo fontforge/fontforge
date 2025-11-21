@@ -522,6 +522,7 @@ static int PLUG_PluginOp(GGadget *g, GEvent *e) {
     } else if (cid == CID_Revert) {
         FigurePluginList(d);
     }
+    GGadgetRedraw(list);
     return true;
 }
 
