@@ -285,28 +285,144 @@ static void ReimportPlugins() {
     }
 }
 
+static PyObject *GetPluginEntryPoints() {
+    PyObject *iter = NULL, *all_eps = NULL;
+    PyObject *entry_points = NULL;
+
+    PyObject *importlib = PyImport_ImportModule("importlib.metadata");
+    if (!importlib) {
+        PyErr_Clear();
+        LogError(_("Core python package 'importlib.metadata' not found: Cannot discover plugins"));
+        return NULL;
+    }
+    if (!PyObject_HasAttrString(importlib, "entry_points")) {
+        LogError(_("Method 'entry_points()' not found in module 'importlib.metadata'"));
+	PyErr_Clear();
+        Py_DECREF(importlib);
+        return NULL;
+    }
+    all_eps = PyObject_CallMethod(importlib, "entry_points", NULL);
+
+    /* The object returned from importlib.metadata.entry_points() varies between versions*/
+    if (PyDict_Check(all_eps)) {
+	/* entry_points is a dictionary of entry point groups */
+	entry_points = PyDict_GetItemString(all_eps, "fontforge_plugin");
+	if (!entry_points) {
+	    /* No FontForge plugins found */
+	    PyErr_Clear();
+            return NULL;
+	}
+    } else {
+        /* all_eps is an EntryPoints object. Call all_eps.select(group="fontforge_plugin") */
+        PyObject *select_method = PyObject_GetAttrString(all_eps, "select");
+        PyObject *kw_args = Py_BuildValue("{s,s}", "group", "fontforge_plugin");
+        entry_points = PyObject_Call(select_method, PyTuple_New(0), kw_args);
+        Py_DECREF(select_method);
+        Py_DECREF(kw_args);
+        if (!entry_points) {
+            LogError(_("Failed to retrieve plugin entry points"));
+	    PyErr_Print();
+            return NULL;
+        }
+    }
+
+    Py_DECREF(importlib);
+
+    iter = PyObject_GetIter(entry_points);
+    if (!iter || !PyIter_Check(iter)) {
+	PyErr_Clear();
+        LogError(_("Could not iterate 'fontforge_plugin' entry points."));
+        Py_XDECREF(iter);
+        return NULL;
+    }
+
+    return iter;
+}
+
+static void RetrieveStringItem(PyObject* obj, const char* key, char** p_value) {
+    PyObject* str = PyUnicode_FromString(key);
+    PyObject* val = PyObject_GetItem(obj, str);
+    if (val) {
+        free(*p_value);
+        *p_value = copy(PyUnicode_AsUTF8(val));
+    }
+    Py_XDECREF(str);
+    Py_XDECREF(val);
+}
+
+/* Retrieve name, URL, and summary of the plugin */
+static void LoadPluginMetadata(PluginEntry* pe) {
+    PyObject *globals = PyDict_New(), *locals = PyDict_New();
+    PyObject *dist = NULL, *function_args = NULL;
+
+    /* The `EntryPoint.dist` attribute is available starting with Python 3.10.
+     * To support Python 3.8+ we resort to the ugly but more uniform method of
+     * retrieving all `Distribution` objects and traversing them until we find
+     * one which points to our `EntryPoint` object. */
+    const char* function_string =
+        "def load_plugin_metadata(entrypoint):\n"
+        "    import importlib.metadata\n"
+        "    all_dists = importlib.metadata.distributions()\n"
+        "    for dist in all_dists:\n"
+        "        dist_eps = dist.entry_points\n"
+        "        for ep in dist_eps:\n"
+        "            if ep == entrypoint:\n"
+        "                return dist\n"
+        "    return None\n";
+
+    /* Execute the function definition */
+    if (PyRun_String(function_string, Py_file_input, globals, locals) == NULL) {
+        Py_DECREF(globals);
+        Py_DECREF(locals);
+        return;
+    }
+
+    /* Retrieve the function object */
+    PyObject* func = PyDict_GetItemString(locals, "load_plugin_metadata");
+    if (func == NULL || !PyCallable_Check(func)) {
+        PyErr_SetString(PyExc_RuntimeError, "Could not find the function");
+        Py_DECREF(globals);
+        Py_DECREF(locals);
+        return;
+    }
+
+    /* Call the function */
+    function_args = PyTuple_Pack(1, pe->entrypoint);
+    if (function_args != NULL) {
+        dist = PyObject_Call(func, function_args, NULL);
+    }
+    Py_XDECREF(func);
+    Py_XDECREF(function_args);
+
+    if (dist == NULL) {
+        PyErr_Print();
+        PyErr_SetString(PyExc_RuntimeError, "Could not retrieve distribution");
+        return;
+    }
+
+    if (PyObject_HasAttrString(dist, "metadata")) {
+        PyObject* metadata = PyObject_GetAttrString(dist, "metadata");
+
+	RetrieveStringItem(metadata, "Home-page", &pe->package_url);
+	RetrieveStringItem(metadata, "Name", &pe->package_name);
+	RetrieveStringItem(metadata, "Summary", &pe->summary);
+        Py_XDECREF(metadata);
+    }
+
+    Py_XDECREF(dist);
+}
+
 static bool DiscoverPlugins(int do_import) {
     int do_ask = false;
-    PluginEntry *pe;
+    PluginEntry *pe = NULL;
     GList_Glib *i;
-    PyObject *str, *str2, *iter, *tmp, *tmp2, *entrypoint;
-    PyObject *pkgres = PyImport_ImportModule("pkg_resources");
-    if (pkgres == NULL || !PyObject_HasAttrString(pkgres, "iter_entry_points")) {
-        LogError(_("Core python package 'pkg_resources' not found: Cannot discover plugins"));
-	PyErr_Clear();
-        return false;
-    }
-    str = PyUnicode_FromString("iter_entry_points");
-    str2 = PyUnicode_FromString("fontforge_plugin");
-    iter = PyObject_CallMethodObjArgs(pkgres, str, str2, NULL);
-    if (!PyIter_Check(iter)) {
-        LogError(_("Could not iterate 'fontforge_plugin' entry points."));
-        return false;
-    }
-    Py_DECREF(str);
-    Py_DECREF(str2);
+    PyObject *str, *str2, *iter, *entrypoint;
 
-    PyObject *getmetastr = PyUnicode_FromString("get_metadata_lines");
+    iter = GetPluginEntryPoints();
+    if (iter == NULL) {
+	return false;
+    }
+
     while ((entrypoint = PyIter_Next(iter))) {
         // Find name and module_name
         str = PyObject_GetAttrString(entrypoint, "name");
@@ -316,7 +432,7 @@ static bool DiscoverPlugins(int do_import) {
             PyErr_Clear();
             continue;
         }
-        str2 = PyObject_GetAttrString(entrypoint, "module_name");
+        str2 = PyObject_GetAttrString(entrypoint, "value");
         const char *modname = PyUnicode_AsUTF8(str2);
         if (modname == NULL) {
             Py_XDECREF(str);
@@ -341,8 +457,8 @@ static bool DiscoverPlugins(int do_import) {
         }
         Py_DECREF(str);
         Py_DECREF(str2);
-        str = PyObject_GetAttrString(entrypoint, "attrs");
-        if (str == NULL) {
+        str = PyObject_GetAttrString(entrypoint, "attr");
+        if (str == NULL || str == Py_None) {
             PyErr_Clear();
         } else {
             if (pe->attrs) {
@@ -355,43 +471,13 @@ static bool DiscoverPlugins(int do_import) {
         pe->is_present = true;
         Py_XDECREF(pe->entrypoint);
         pe->entrypoint = entrypoint;
-        // Extract project URL from package data
-        PyObject *dist = PyObject_GetAttrString(entrypoint, "dist");
-        if (dist != NULL) {
-            tmp = PyObject_GetAttrString(dist, "PKG_INFO");
-            tmp2 = PyObject_CallMethodObjArgs(dist, getmetastr, tmp, NULL);
-            Py_DECREF(tmp);
-            if (PyIter_Check(tmp2)) {
-                while ((str = PyIter_Next(tmp2))) {
-                    const char *metaline = PyUnicode_AsUTF8(str);
-                    // printf("%s\n", metaline);
-                    if (strncmp(metaline, "Home-page: ", 11) == 0) {
-                        if (pe->package_url != NULL) {
-                            free(pe->package_url);
-                        }
-                        pe->package_url = copy(metaline + 11);
-                    } else if (strncmp(metaline, "Name: ", 6) == 0) {
-                        if (pe->package_name != NULL) {
-                            free(pe->package_name);
-                        }
-                        pe->package_name = copy(metaline + 6);
-                    } else if (strncmp(metaline, "Summary: ", 9) == 0) {
-                        if (pe->summary != NULL) {
-                            free(pe->summary);
-                        }
-                        pe->summary = copy(metaline + 9);
-                    }
-                    Py_DECREF(str);
-                }
-            }
-            Py_DECREF(tmp2);
-        }
+
+	LoadPluginMetadata(pe);
         if (do_import && pe->startup_mode == sm_on) {
             LoadPlugin(pe);
         } else if (do_import && pe->startup_mode == sm_ask) {
             do_ask = true;
         }
-        Py_XDECREF(dist);
     }
     if (PyErr_Occurred()) {
         PyErr_Print();
@@ -403,8 +489,6 @@ static bool DiscoverPlugins(int do_import) {
         }
     }
     Py_DECREF(iter);
-    Py_DECREF(getmetastr);
-    Py_DECREF(pkgres);
     return do_ask;
 }
 
