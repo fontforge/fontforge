@@ -57,10 +57,10 @@ are essentially the same, while Apple's differ significantly from either.
      - `bloc <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6bloc.html>`__
      - *
    * - CFF
-     - `Compact Font Format <http://partners.adobe.com/asn/developer/pdfs/tn/5176.CFF.pdf>`__
+     - `Compact Font Format <http://adobe-type-tools.github.io/font-tech-notes/pdfs/5176.CFF.pdf>`__
      - Provides all the outline data (and sometimes glyph names as well) for the
        PostScript
-       `Type2 <http://partners.adobe.com/asn/developer/pdfs/tn/5177.Type2.pdf>`__
+       `Type2 <http://adobe-type-tools.github.io/font-tech-notes/pdfs/5177.Type2.pdf>`__
        font that is the heart of an OpenType font. Vaguely equivalent to 'glyf' ,
        'loca' and 'post' combined.
      - *

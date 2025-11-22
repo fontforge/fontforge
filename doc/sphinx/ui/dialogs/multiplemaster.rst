@@ -10,7 +10,7 @@ What is a multiple master font?
 -------------------------------
 
 A multiple master font is a
-(`PostScript Type1 <http://partners.adobe.com/asn/developer/pdfs/tn/5015.Type1_Supp.pdf>`__)
+(`PostScript Type1 <http://adobe-type-tools.github.io/font-tech-notes/pdfs/5015.Type1_Supp.pdf>`__)
 font which contains, in one font description several extreme styles of a font
 family and code for interpolating between them to produce intermediate designs.
 Apple has a
