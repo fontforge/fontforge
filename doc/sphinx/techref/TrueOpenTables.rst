@@ -1,7 +1,7 @@
 TrueType and OpenType tables supported by FontForge
 ===================================================
 
-`Apple <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6.html>`__,
+`Apple <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6.html>`__,
 `MS <http://www.microsoft.com/typography/tt/tt.htm>`__ and
 `Adobe <http://partners.adobe.com/public/developer/opentype/index_spec.html>`__
 all have their descriptions of TrueType and OpenType. MS and Adobe's versions
@@ -19,7 +19,7 @@ are essentially the same, while Apple's differ significantly from either.
    * - avar
      - axis variation
      - Used to specify piecewise linear sections of axes for distortable fonts
-     - `avar <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6avar.html>`__
+     - `avar <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6avar.html>`__
      - *
    * - BASE
      - baseline data
@@ -30,7 +30,7 @@ are essentially the same, while Apple's differ significantly from either.
    * - bsln
      - baseline data
      - Provides information on baseline positioning for AAT.
-     - `bsln <http://developer.apple.com/textfonts/TTRefMan/RM06/Chap6bsln.html>`__
+     - `bsln <http://developer.apple.com/textfonts/TrueType-Reference-Manual/RM06/Chap6bsln.html>`__
      - *
    * - BDF
      - X11 BDF header
@@ -43,18 +43,18 @@ are essentially the same, while Apple's differ significantly from either.
      - bitmap data
      - Provides the actual bitmap data for all bitmap glyphs in Apple fonts. 'EBDT'
        is used by MS/Adobe instead (and has the same format)
-     - `bdat <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6bdat.html>`__
+     - `bdat <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6bdat.html>`__
      - *
    * - bhed
      - bitmap font header
      - Replaces the 'head' table in Apple's bitmap only fonts. (similar to 'head')
-     - `bhed <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6bhed.html>`__
+     - `bhed <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6bhed.html>`__
      - *
    * - bloc
      - bitmap location data
      - Provides pointers to the appropriate bitmap data for each bitmap glyph in
        Apple fonts. 'EBLC' is used by MS/Adobe instead (and has the same format)
-     - `bloc <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6bloc.html>`__
+     - `bloc <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6bloc.html>`__
      - *
    * - CFF
      - `Compact Font Format <http://partners.adobe.com/asn/developer/pdfs/tn/5176.CFF.pdf>`__
@@ -76,18 +76,18 @@ are essentially the same, while Apple's differ significantly from either.
        For fonts with special 1-byte encodings (such as symbol) it will provide a
        "symbol" encoding which maps a known page in the corporate use area to the
        glyphs.
-     - `cmap <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6cmap.html>`__
+     - `cmap <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6cmap.html>`__
      - `cmap <http://partners.adobe.com/public/developer/opentype/index_cmap.html>`__
    * - cvar
      - variations on cvt table
      - Used to specify hinting differences in distortable fonts
-     - `cvar <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6cvar.html>`__
+     - `cvar <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6cvar.html>`__
      - *
    * - cvt
      - control value table
      - FontForge uses this when it attempts to hint truetype fonts (FontForge will
        read it from a font and save it into another).
-     - `cvt <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6cvt.html>`__
+     - `cvt <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6cvt.html>`__
      - `cvt <http://partners.adobe.com/public/developer/opentype/index_cvt.html>`__
    * - EBDT
      - embedded bitmap data
@@ -106,14 +106,14 @@ are essentially the same, while Apple's differ significantly from either.
      - Provides information on how to scale bitmaps (on those rare occasions where
        this is desirable). FontForge uses it when making bitmap only fonts for
        windows.
-     - `EBSC <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6EBSC.html>`__
+     - `EBSC <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6EBSC.html>`__
      - `EBSC <http://partners.adobe.com/public/developer/opentype/index_ebsc.html>`__
    * - feat
      - layout feature table
      - Maps features specified in Apple's 'morx' (or 'mort') tables into names
        provided in the 'name' table. FontForge generates this when it generates a
        'morx' table.
-     - `feat <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6feat.html>`__
+     - `feat <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6feat.html>`__
      - *
    * - FFTM
      - FontForge timestamp
@@ -126,20 +126,20 @@ are essentially the same, while Apple's differ significantly from either.
      - font program
      - FontForge never generates this, but it will preserve it and allows users to
        edit it.
-     - `fpgm <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6fpgm.html>`__
+     - `fpgm <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6fpgm.html>`__
      - `fpgm <http://partners.adobe.com/public/developer/opentype/index_fpgm.html>`__
    * - fvar
      - font variations
      - Provides top level information about distortable fonts. Specifies the types
        of distortions possible.
-     - `fvar <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6fvar.html>`__
+     - `fvar <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6fvar.html>`__
      - *
    * - gasp
      - grid-fitting and scan conversion
      - When FontForge does not attempt to hint a truetype font it will generate this
        table which tells the rasterizer not to to do grid-fitting (hinting) but to
        do anti-aliasing instead.
-     - `gasp <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6gasp.html>`__
+     - `gasp <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6gasp.html>`__
      - `gasp <http://partners.adobe.com/public/developer/opentype/index_gasp.html>`__
    * - GDEF
      - glyph definition
@@ -152,7 +152,7 @@ are essentially the same, while Apple's differ significantly from either.
      - glyph outline
      - Provides outline information for truetype glyphs. Vaguely equivalent to 'CFF
        '.
-     - `glyf <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6glyf.html>`__
+     - `glyf <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6glyf.html>`__
      - `glyf <http://partners.adobe.com/public/developer/opentype/index_glyf.html>`__
    * - GPOS
      - glyph positioning
@@ -172,43 +172,43 @@ are essentially the same, while Apple's differ significantly from either.
      - glyph variations
      - This table contains the meat of a distortable font. It specifies how each
        glyph can be distorted.
-     - `gvar <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6gvar.html>`__
+     - `gvar <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6gvar.html>`__
      - *
    * - head
      - font header
      - Contains general font information, such as the size of the em-square, a time
        stamp, check sum information, etc.
-     - `head <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6head.html>`__
+     - `head <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6head.html>`__
      - `head <http://partners.adobe.com/public/developer/opentype/index_head.html>`__
    * - hhea
      - horizontal header
      - This table contains font-wide horizontal metric information.
-     - `hhea <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6hhea.html>`__
+     - `hhea <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6hhea.html>`__
      - `hhea <http://partners.adobe.com/public/developer/opentype/index_hhea.html>`__
    * - hmtx
      - horizontal metrics
      - This contains the per-glyph horizontal metrics.
-     - `hmtx <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6hmtx.html>`__
+     - `hmtx <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6hmtx.html>`__
      - `hmtx <http://partners.adobe.com/public/developer/opentype/index_hmtx.html>`__
    * - kern
      - kerning
      - Provides kerning information for Apple's truetype fonts (and for older MS
        truetype fonts). In OpenType fonts this information is contained in the GPOS
        table.
-     - `kern <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6kern.html>`__
+     - `kern <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6kern.html>`__
      - `kern <http://partners.adobe.com/public/developer/opentype/index_kern.html>`__
    * - lcar
      - ligature caret
      - This table provides the location of carets within ligatures in an Apple font.
        This information is contained in the GDEF table in opentype fonts.
-     - `lcar <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6lcar.html>`__
+     - `lcar <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6lcar.html>`__
      - *
    * - loca
      - glyph location
      - This provides a pointer into the 'glyf' table for each glyph in the font. It
        is required for truetype and meaningless for opentype (where vaguely
        equivalent information is provided in the CFF table).
-     - `loca <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6loca.html>`__
+     - `loca <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6loca.html>`__
      - `loca <http://partners.adobe.com/public/developer/opentype/index_loca.html>`__
    * - MATH
      - mathematical typesetting
@@ -223,14 +223,14 @@ are essentially the same, while Apple's differ significantly from either.
      - Provides general "maximum" information about the font. This contains: the
        maximum number of glyphs in a font, the maximum number of points in a glyph,
        the maximum number of references in a glyph, etc.
-     - `maxp <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6maxp.html>`__
+     - `maxp <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6maxp.html>`__
      - `maxp <http://partners.adobe.com/public/developer/opentype/index_maxp.html>`__
    * - mort
      - metamorphosis
      - FontForge will read this table but not generate it. This table has been
        replaced by the 'morx' table which will be generated instead. It is vaguely
        equivalent to the GSUB table.
-     - `mort <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6mort.html>`__
+     - `mort <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6mort.html>`__
      - *
    * - morx
      - extended metamorphosis
@@ -238,21 +238,21 @@ are essentially the same, while Apple's differ significantly from either.
        FontForge can read and write this table. See the
        :ref:`chapter on morx <gposgsub.AAT>` in FontForge for more information.
        Vaguely equivalent to 'GSUB'.
-     - `morx <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6morx.html>`__
+     - `morx <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6morx.html>`__
      - *
    * - name
      - name
      - Provides certain standard strings relevant to the font (font name, family
        name, license, etc.) in various languages. In Apple fonts also provides the
        names of various features of the 'morx'/'mort' table.
-     - `name <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6name.html>`__
+     - `name <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6name.html>`__
      - `name <http://partners.adobe.com/public/developer/opentype/index_name.html>`__
    * - opbd
      - optical bounds
      - This table provides optical bound information for each glyph in the table in
        an Apple font. This information may also be provided in the GPOS table of an
        opentype font.
-     - `opbd <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6opbd.html>`__
+     - `opbd <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6opbd.html>`__
      - *
    * - PfEd
      - FontForge's personal table
@@ -264,19 +264,19 @@ are essentially the same, while Apple's differ significantly from either.
      - glyph name and postscript compatibility
      - This table provides some additional postscript information (italic angle),
        but mostly it provides names for all glyphs.
-     - `post <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6post.html>`__
+     - `post <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6post.html>`__
      - `post <http://partners.adobe.com/public/developer/opentype/index_post.html>`__
    * - prep
      - cvt program
      - FontForge never generatest this table itself, but it will retain it when
        reading other fonts, and it allows users to edit it.
-     - `prep <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6prep.html>`__
+     - `prep <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6prep.html>`__
      - `prep <http://partners.adobe.com/public/developer/opentype/index_prep.html>`__
    * - prop
      - glyph properties
      - Provides the unicode properties of each glyph for an Apple font. This table
        bears some similarities to the GDEF table.
-     - `prop <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6prop.html>`__
+     - `prop <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6prop.html>`__
      - *
    * - TeX
      - TeX information
@@ -288,13 +288,13 @@ are essentially the same, while Apple's differ significantly from either.
      - vertical header
      - FontForge generates this table for fonts with vertical metrics. This table
        contains font-wide vertical metric information.
-     - `vhea <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6vhea.html>`__
+     - `vhea <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6vhea.html>`__
      - `vhea <http://partners.adobe.com/public/developer/opentype/index_vhea.html>`__
    * - vmtx
      - vertical metrics
      - FontForge generates this table for fonts with vertical metrics. This contains
        the per-glyph vertical metrics.
-     - `vmtx <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6vmtx.html>`__
+     - `vmtx <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6vmtx.html>`__
      - `vmtx <http://partners.adobe.com/public/developer/opentype/index_vmtx.html>`__
 
 :doc:`Advanced Typography tables in FontForge <gposgsub>`

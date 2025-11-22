@@ -14,7 +14,7 @@ A multiple master font is a
 font which contains, in one font description several extreme styles of a font
 family and code for interpolating between them to produce intermediate designs.
 Apple has a
-`similar concept <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6fvar.html>`__
+`similar concept <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6fvar.html>`__
 for TrueType -- The only name I've seen given to this is "Apple Distortable
 Font" -- I call both multiple master.
 
