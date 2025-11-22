@@ -19568,7 +19568,7 @@ PyMethodDef PyFF_Font_methods[] = {
     { "validate", (PyCFunction)PyFFFont_validate, METH_VARARGS, "Check whether a font is valid and return True if it is." },
     { "reencode", (PyCFunction)PyFFFont_reencode, METH_VARARGS, "Reencodes the current font into the given encoding." },
     { "clearSpecialData", (PyCFunction)PyFFFont_clearSpecialData, METH_NOARGS, "Clear special data not accessible in FontForge." },
-    { "__enter__", (PyCFunction) PyFFFont_enter, METH_NOARGS, "Frees up memory for the current font. Any python pointers to it will become invalid." },
+    { "__enter__", (PyCFunction) PyFFFont_enter, METH_NOARGS, "Empty function declaring the entry into context statement." },
     { "__exit__", (PyCFunction) PyFFFont_close, METH_FASTCALL, "Frees up memory for the current font. Any python pointers to it will become invalid." },
 
     // Leave some sentinel slots here so that the UI
