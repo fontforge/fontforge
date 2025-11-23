@@ -19465,6 +19465,10 @@ return (NULL);
 Py_RETURN( self );
 }
 
+static PyObject *PyFFFont_enter(PyFF_Font *self, PyObject *UNUSED(args)) {
+    Py_RETURN(self);
+}
+
 PyMethodDef PyFF_Font_methods[] = {
     { "appendSFNTName", (PyCFunction) PyFFFont_appendSFNTName, METH_VARARGS, "Adds or replaces a name in the sfnt 'name' table. Takes three arguments, a language, a string id, and the string value" },
     { "close", (PyCFunction) PyFFFont_close, METH_NOARGS, "Frees up memory for the current font. Any python pointers to it will become invalid." },
@@ -19564,6 +19568,8 @@ PyMethodDef PyFF_Font_methods[] = {
     { "validate", (PyCFunction)PyFFFont_validate, METH_VARARGS, "Check whether a font is valid and return True if it is." },
     { "reencode", (PyCFunction)PyFFFont_reencode, METH_VARARGS, "Reencodes the current font into the given encoding." },
     { "clearSpecialData", (PyCFunction)PyFFFont_clearSpecialData, METH_NOARGS, "Clear special data not accessible in FontForge." },
+    { "__enter__", (PyCFunction) PyFFFont_enter, METH_NOARGS, "Empty function declaring the entry into context statement." },
+    { "__exit__", (PyCFunction) PyFFFont_close, METH_FASTCALL, "Frees up memory for the current font. Any python pointers to it will become invalid." },
 
     // Leave some sentinel slots here so that the UI
     // code can add it's methods to the end of the object declaration.

@@ -414,6 +414,15 @@ Module functions
 
       Retain all recognized font tables that do not have a native format.
 
+   This function can also be used with the ``with`` statement, in which case
+   there is no need to call :meth:`font.close()` explicitly:
+
+   ::
+
+      with fontforge.open('somefont.sfd') as fnt:
+          # do something
+          fnt.generate('somefont.ttf')
+
 .. function:: parseTTInstrs(string)
 
    Returns a binary string each byte of which corresponds to a truetype
