@@ -531,6 +531,7 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into,struct sfmergecontext
     nsc->parent = into;
     nsc->orig_pos = -2;
     nsc->name = copy(sc->name);
+    nsc->comment = copy(sc->comment);
     nsc->hstem = StemInfoCopy(nsc->hstem);
     nsc->vstem = StemInfoCopy(nsc->vstem);
     nsc->dstem = DStemInfoCopy(nsc->dstem);
@@ -550,6 +551,8 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into,struct sfmergecontext
     nsc->altuni = AltUniCopy(nsc->altuni,into);
     nsc->charinfo = NULL;
     nsc->views = NULL;
+    nsc->python_sc_object = NULL;
+    nsc->python_temporary = NULL;
 return(nsc);
 }
 
