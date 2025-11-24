@@ -551,8 +551,10 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into,struct sfmergecontext
     nsc->altuni = AltUniCopy(nsc->altuni,into);
     nsc->charinfo = NULL;
     nsc->views = NULL;
+#ifndef _NO_PYTHON
     nsc->python_sc_object = NULL;
     nsc->python_temporary = NULL;
+#endif
 return(nsc);
 }
 
