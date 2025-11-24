@@ -1147,7 +1147,7 @@ static void dumpcomposite(SplineChar *sc, struct glyphinfo *gi) {
 	    /*  scale factors, or rotations */
 	    /* That description does not match the behavior of their rasterizer*/
 	    /*  I've reverse engineered something else (see parsettf.c) */
-	    /*  http://fonts.apple.com/TTRefMan/RM06/Chap6glyf.html */
+	    /*  http://fonts.apple.com/TrueType-Reference-Manual/RM06/Chap6glyf.html */
 	    /* Adobe says that setting bit 12 means that this will not happen */
 	    /*  Apple doesn't mention bit 12 though...(but they do support it) */
 	}

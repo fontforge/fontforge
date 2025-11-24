@@ -13,12 +13,11 @@ https://github.com/fontforge/fontforge/tree/master/contrib/fonttools
 ShowTTF
 -------
 
-showttf is a program which will decompose a truetype (or opentype) font file
+``showttf`` is a program which will decompose a truetype (or opentype) font file
 into its various tables and display the contents of those tables as best it can.
 It will also point out the errors it finds in the file. This is similar to
-MicroSoft's `ttfdump <http://www.microsoft.com/typography/tools/tools.htm>`_
-(except mine shows some of Apple's tables which ttfdump does not), and to
-Apple's `ftxdumperfuser <http://developer.apple.com/fonts/OSXTools.html>`_
+fontTools `ttx <https://fonttools.readthedocs.io/en/latest/ttx.html#module-fontTools.ttx>`_
+utility, and to Apple's `ftxdumperfuser <https://developer.apple.com/download/all/?q=font>`_
 (except mine shows some OpenType tables which Apple's ignores). And, of course,
 mine is open source and runs on most any system.
 
@@ -30,14 +29,14 @@ mine is open source and runs on most any system.
 Ttf2Eps
 -------
 
-ttf2eps will allow you to extract one (or all) glyphs from a font and convert
+``ttf2eps`` will allow you to extract one (or all) glyphs from a font and convert
 them into eps files.
 
 
 PfaDecrypt
 -----------
 
-pfadecrypt will undo Adobe's encryption on pfa/pfb files and converts the byte
+``pfadecrypt`` will undo Adobe's encryption on pfa/pfb files and converts the byte
 codes into readable postscript like instructions.
 
 

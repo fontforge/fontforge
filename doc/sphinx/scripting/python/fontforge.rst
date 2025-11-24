@@ -2757,11 +2757,12 @@ must be created through the font.
 
    Draw the glyph's outline to the `pen argument. <http://robofab.org/objects/pens.html>`_
 
-.. method:: glyph.glyphPen([replace=False])
+.. method:: glyph.glyphPen([replace=True])
 
    Creates a new glyphPen which will draw into the current glyph. By default
    the pen will replace any existing contours and references, but setting the
    optional keyword argument, ``replace`` to false will retain the old contents.
+   Replacing the foreground layer will also reset the advance.
 
 .. method:: glyph.addInflections()
 
