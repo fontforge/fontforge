@@ -202,3 +202,10 @@ endif()
 
 setup_cpack()
 print_build_options()
+
+add_custom_target(
+    format
+    COMMAND cat .clang-files | xargs -I % sh -c 'clang-format --verbose -i --style=file:.clang-format %'
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Running clang-format"
+)
