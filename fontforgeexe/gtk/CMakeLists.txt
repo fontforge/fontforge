@@ -3,6 +3,8 @@
 add_library(ffgtk OBJECT
   application.hpp
   application.cpp
+  bitmaps_dlg.hpp
+  bitmaps_dlg.cpp
   css_builder.hpp
   css_builder.cpp
   dialog.hpp

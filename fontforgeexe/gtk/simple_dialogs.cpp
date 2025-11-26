@@ -33,6 +33,7 @@
 
 #include "intl.h"
 #include "application.hpp"
+#include "bitmaps_dlg.hpp"
 #include "dialog.hpp"
 #include "language_list.hpp"
 #include "utils.hpp"
@@ -161,6 +162,14 @@ char* language_list_dialog(GWindow parent, const LanguageRec* languages,
                             append_tag);
         return strdup(s.c_str());
     }
+}
+
+void bitmap_strikes_dialog(GWindow parent) {
+    // To avoid instability, the GTK application is lazily initialized only when
+    // a GTK window is invoked.
+    ff::app::GtkApp();
+
+    ff::dlg::BitmapsDlg::show(parent);
 }
 
 void update_appearance() {

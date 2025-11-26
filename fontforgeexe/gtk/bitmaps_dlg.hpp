@@ -26,30 +26,16 @@
  */
 #pragma once
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "dialog.hpp"
 
-#include "gresource.h"
+namespace ff::dlg {
 
-typedef struct gwindow* GWindow;
+class BitmapsDlg final : public Dialog {
+ private:
+    BitmapsDlg(GWindow parent);
 
-typedef struct {
-    const char* name;
-    uint32_t tag;
-} LanguageRec;
+ public:
+    static void show(GWindow parent);
+};
 
-int add_encoding_slots_dialog(GWindow parent, bool cid);
-
-// Return comma-separated list of language tags, or NULL if the action was
-// canceled. The caller is responsible to release the returned pointer.
-char* language_list_dialog(GWindow parent, const LanguageRec* languages,
-                           const char* initial_tags);
-
-void bitmap_strikes_dialog(GWindow parent);
-
-void update_appearance();
-
-#ifdef __cplusplus
-}
-#endif
+}  // namespace ff::dlg

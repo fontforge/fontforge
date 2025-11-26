@@ -33,6 +33,7 @@
 #include "gwidget.h"
 #include "splinefill.h"
 #include "ustring.h"
+#include "gtk/simple_dialogs.hpp"
 
 #include <math.h>
 
@@ -268,6 +269,8 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     int32_t *sizes;
     BDFFont *bdf;
     static int done= false;
+
+    bitmap_strikes_dialog(fv->gw);
 
     if ( !done ) {
 	for ( i=0; which[i].text!=NULL; ++i )

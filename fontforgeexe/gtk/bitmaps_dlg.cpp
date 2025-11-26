@@ -24,32 +24,29 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#pragma once
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "bitmaps_dlg.hpp"
 
-#include "gresource.h"
+#include "intl.h"
 
-typedef struct gwindow* GWindow;
+namespace ff::dlg {
 
-typedef struct {
-    const char* name;
-    uint32_t tag;
-} LanguageRec;
+BitmapsDlg::BitmapsDlg(GWindow parent) : Dialog(parent) {
+    set_title(_("Bitmap Strikes Available"));
+    set_help_context("ui/menus/elementmenu.html", "#elementmenu-bitmaps");
 
-int add_encoding_slots_dialog(GWindow parent, bool cid);
-
-// Return comma-separated list of language tags, or NULL if the action was
-// canceled. The caller is responsible to release the returned pointer.
-char* language_list_dialog(GWindow parent, const LanguageRec* languages,
-                           const char* initial_tags);
-
-void bitmap_strikes_dialog(GWindow parent);
-
-void update_appearance();
-
-#ifdef __cplusplus
+    show_all();
 }
-#endif
+
+void BitmapsDlg::show(GWindow parent) {
+    BitmapsDlg dialog(parent);
+
+    Gtk::ResponseType result = dialog.run();
+
+    if (result == Gtk::RESPONSE_OK) {
+        return;
+    }
+    return;
+}
+
+}  // namespace ff::dlg
