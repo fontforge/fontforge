@@ -28,14 +28,20 @@
 
 #include "dialog.hpp"
 
+#include "simple_dialogs.hpp"
+
 namespace ff::dlg {
 
 class BitmapsDlg final : public Dialog {
  private:
-    BitmapsDlg(GWindow parent);
+    BitmapsDlg(GWindow parent, BitmapsDlgMode mode);
+
+    Gtk::ComboBoxText glyphs_combo_;
+    Gtk::Entry pixels_entry_;
+    Gtk::CheckButton rasterize_check_;
 
  public:
-    static void show(GWindow parent);
+    static void show(GWindow parent, BitmapsDlgMode mode);
 };
 
 }  // namespace ff::dlg

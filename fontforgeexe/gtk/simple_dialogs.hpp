@@ -39,6 +39,12 @@ typedef struct {
     uint32_t tag;
 } LanguageRec;
 
+typedef enum bitmaps_dlg_mode {
+    bitmaps_dlg_avail,
+    bitmaps_dlg_regen,
+    bitmaps_dlg_remove
+} BitmapsDlgMode;
+
 int add_encoding_slots_dialog(GWindow parent, bool cid);
 
 // Return comma-separated list of language tags, or NULL if the action was
@@ -46,7 +52,7 @@ int add_encoding_slots_dialog(GWindow parent, bool cid);
 char* language_list_dialog(GWindow parent, const LanguageRec* languages,
                            const char* initial_tags);
 
-void bitmap_strikes_dialog(GWindow parent);
+void bitmap_strikes_dialog(GWindow parent, BitmapsDlgMode mode);
 
 void update_appearance();
 

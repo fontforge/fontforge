@@ -269,8 +269,11 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     int32_t *sizes;
     BDFFont *bdf;
     static int done= false;
-
-    bitmap_strikes_dialog(fv->gw);
+    enum bitmaps_dlg_mode dlg_mode =
+        (isavail == 1) ? bitmaps_dlg_avail
+                       : (isavail == -1) ? bitmaps_dlg_remove
+                                         : bitmaps_dlg_regen;
+    bitmap_strikes_dialog(fv->gw, dlg_mode);
 
     if ( !done ) {
 	for ( i=0; which[i].text!=NULL; ++i )

@@ -27,19 +27,92 @@
 
 #include "bitmaps_dlg.hpp"
 
+#include <numeric>
+
+#include "utils.hpp"
 #include "intl.h"
 
 namespace ff::dlg {
 
-BitmapsDlg::BitmapsDlg(GWindow parent) : Dialog(parent) {
-    set_title(_("Bitmap Strikes Available"));
+BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode) : Dialog(parent) {
     set_help_context("ui/menus/elementmenu.html", "#elementmenu-bitmaps");
+    Glib::ustring title;
+    std::vector<Glib::ustring> headings;
 
+    static const std::vector<std::pair<Glib::ustring, Glib::ustring>>
+        glyphs_combo_items = {
+            {"all", _("All Glyphs")},
+            {"selection", _("Selected Glyphs")},
+            {"current", _("Current Glyph")},
+        };
+
+    if (mode == bitmaps_dlg_avail) {
+        title = _("Bitmap Strikes Available");
+        headings = {_("The list of current pixel bitmap sizes"),
+                    _(" Removing a size will delete it."),
+                    _(" Adding a size will create it.")};
+    } else if (mode == bitmaps_dlg_regen) {
+        title = _("Regenerate Bitmap Glyphs");
+        headings = {_("Specify bitmap sizes to be regenerated")};
+    } else {
+        title = _("Remove Bitmap Glyphs");
+        headings = {_("Specify bitmap sizes to be removed")};
+    }
+
+    set_title(title);
+
+    Glib::ustring heading = std::accumulate(
+        headings.begin() + 1, headings.end(), headings[0],
+        [](const auto& a, const auto& b) { return a + "\n   " + b; });
+    auto heading_label = Gtk::make_managed<Gtk::Label>(heading);
+    heading_label->set_halign(Gtk::ALIGN_START);
+    get_content_area()->pack_start(*heading_label);
+
+    if (mode != bitmaps_dlg_avail) {
+        for (const auto& [item_id, item_label] : glyphs_combo_items) {
+            glyphs_combo_.append(item_id, item_label);
+        }
+        glyphs_combo_.set_active_id("selection");
+        get_content_area()->pack_start(glyphs_combo_);
+    }
+
+    auto pixels_frame = Gtk::make_managed<Gtk::Frame>(_("Pixel Sizes:"));
+    pixels_frame->add(pixels_entry_);
+    pixels_frame->set_shadow_type(Gtk::SHADOW_NONE);
+    get_content_area()->pack_start(*pixels_frame);
+
+    auto pt_this_frame =
+        Gtk::make_managed<Gtk::Frame>(_("Point sizes on this monitor"));
+    auto pt_this_entry = Gtk::make_managed<Gtk::Entry>();
+    pt_this_entry->set_editable(false);
+    pt_this_entry->set_can_focus(false);
+    pt_this_frame->add(*pt_this_entry);
+    pt_this_frame->set_shadow_type(Gtk::SHADOW_NONE);
+    get_content_area()->pack_start(*pt_this_frame);
+
+    auto pt_96_frame =
+        Gtk::make_managed<Gtk::Frame>(_("Point sizes on a 96 ppi monitor"));
+    auto pt_96_entry = Gtk::make_managed<Gtk::Entry>();
+    pt_96_entry->set_editable(false);
+    pt_96_entry->set_can_focus(false);
+    pt_96_frame->add(*pt_96_entry);
+    pt_96_frame->set_shadow_type(Gtk::SHADOW_NONE);
+    get_content_area()->pack_start(*pt_96_frame);
+
+    if (mode == bitmaps_dlg_avail) {
+        rasterize_check_.set_label(
+            _("Create Rasterized Strikes (Not empty ones)"));
+        rasterize_check_.set_halign(Gtk::ALIGN_START);
+        rasterize_check_.set_active(true);
+        get_content_area()->pack_start(rasterize_check_);
+    }
+
+    get_content_area()->set_spacing(ui_font_eX_size());
     show_all();
 }
 
-void BitmapsDlg::show(GWindow parent) {
-    BitmapsDlg dialog(parent);
+void BitmapsDlg::show(GWindow parent, BitmapsDlgMode mode) {
+    BitmapsDlg dialog(parent, mode);
 
     Gtk::ResponseType result = dialog.run();
 
