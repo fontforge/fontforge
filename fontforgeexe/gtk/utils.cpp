@@ -30,6 +30,8 @@
 #include <glib/gprintf.h>
 #include <iostream>
 
+namespace ff::ui_utils {
+
 static Cairo::TextExtents ui_font_extents(const std::string& sample_text) {
     Cairo::RefPtr<Cairo::ImageSurface> srf =
         Cairo::ImageSurface::create(Cairo::Format::FORMAT_RGB24, 100, 100);
@@ -59,7 +61,7 @@ double ui_font_eX_size() {
     return extents.height;
 }
 
-void gtk_post_error(const char* title, const char* statement, ...) {
+void post_error(const char* title, const char* statement, ...) {
     va_list ap;
     va_start(ap, statement);
 
@@ -81,3 +83,5 @@ void gtk_post_error(const char* title, const char* statement, ...) {
 
     va_end(ap);
 }
+
+}  // namespace ff::ui_utils

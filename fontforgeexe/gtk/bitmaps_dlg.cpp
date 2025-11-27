@@ -107,7 +107,7 @@ BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode) : Dialog(parent) {
         get_content_area()->pack_start(rasterize_check_);
     }
 
-    get_content_area()->set_spacing(ui_font_eX_size());
+    get_content_area()->set_spacing(ui_utils::ui_font_eX_size());
     show_all();
 }
 

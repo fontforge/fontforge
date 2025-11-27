@@ -74,7 +74,7 @@ LanguageListDlg::LanguageListDlg(GWindow parent,
     }
 
     // Show initially roughly 8 rows.
-    property_default_height() = 40 * ui_font_eX_size();
+    property_default_height() = 40 * ui_utils::ui_font_eX_size();
 
     scrolled_window->add(list_);
 
@@ -87,7 +87,7 @@ LanguageListDlg::LanguageListDlg(GWindow parent,
         [this](int response_id) {
             if (response_id == Gtk::RESPONSE_OK) {
                 if (list_.get_selected().empty()) {
-                    gtk_post_error(
+                    ui_utils::post_error(
                         _("Language Missing"),
                         _("You must select at least one language.\nUse the "
                           "\"Default\" language if nothing else fits."));

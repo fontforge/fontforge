@@ -135,15 +135,17 @@ char* language_list_dialog(GWindow parent, const LanguageRec* languages,
     }
 
     if (unrecognized_tags.size() == 1)
-        gtk_post_error(_("Unknown Language"),
-                       _("The language, '%s', is not in the list of known "
-                         "languages and will be omitted"),
-                       unrecognized_tags[0].c_str());
+        ff::ui_utils::post_error(
+            _("Unknown Language"),
+            _("The language, '%s', is not in the list of known "
+              "languages and will be omitted"),
+            unrecognized_tags[0].c_str());
     else if (unrecognized_tags.size() > 1)
-        gtk_post_error(_("Unknown Language"),
-                       _("Several language tags, including '%s', are not in "
-                         "the list of known languages and will be omitted"),
-                       unrecognized_tags[0].c_str());
+        ff::ui_utils::post_error(
+            _("Unknown Language"),
+            _("Several language tags, including '%s', are not in "
+              "the list of known languages and will be omitted"),
+            unrecognized_tags[0].c_str());
 
     std::vector<int> selection =
         ff::dlg::LanguageListDlg::show(parent, language_vec, tag_list);

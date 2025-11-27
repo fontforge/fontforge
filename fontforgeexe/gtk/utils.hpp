@@ -28,8 +28,12 @@
 
 #include <gtkmm.h>
 
+namespace ff::ui_utils {
+
 double ui_font_em_size();
 double ui_font_eX_size();
 
 // TODO(iorsh): Integrate this function into the global log collection
-void gtk_post_error(const char* title, const char* statement, ...);
+void post_error(const char* title, const char* statement, ...);
+
+}  // namespace ff::ui_utils
