@@ -85,15 +85,21 @@ BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode) : Dialog(parent) {
     pixels_frame->set_shadow_type(Gtk::SHADOW_NONE);
     get_content_area()->pack_start(*pixels_frame);
 
-    char* pt_this_label = smprintf(_("Point sizes on this monitor (%d PPI)"),
-                                   (int)ui_utils::get_current_ppi(this));
-    auto pt_this_frame = Gtk::make_managed<Gtk::Frame>(pt_this_label);
-    free(pt_this_label);
+    auto pt_this_frame = Gtk::make_managed<Gtk::Frame>();
     auto pt_this_entry = Gtk::make_managed<Gtk::Entry>();
     pt_this_entry->set_editable(false);
     pt_this_entry->set_can_focus(false);
     pt_this_frame->add(*pt_this_entry);
     pt_this_frame->set_shadow_type(Gtk::SHADOW_NONE);
+    pt_this_frame->signal_realize().connect([pt_this_frame]() {
+        // Set the PPI here, as the monitor is not available before the
+        // realization.
+        int current_ppi = ui_utils::get_current_ppi(pt_this_frame);
+        char* pt_this_label =
+            smprintf(_("Point sizes on this monitor (%d PPI)"), current_ppi);
+        pt_this_frame->set_label(pt_this_label);
+        free(pt_this_label);
+    });
     get_content_area()->pack_start(*pt_this_frame);
 
     auto pt_96_frame =
