@@ -32,6 +32,10 @@
 #include "utils.hpp"
 #include "intl.h"
 
+extern "C" {
+#include "ustring.h"
+}
+
 namespace ff::dlg {
 
 BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode) : Dialog(parent) {
@@ -81,8 +85,10 @@ BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode) : Dialog(parent) {
     pixels_frame->set_shadow_type(Gtk::SHADOW_NONE);
     get_content_area()->pack_start(*pixels_frame);
 
-    auto pt_this_frame =
-        Gtk::make_managed<Gtk::Frame>(_("Point sizes on this monitor"));
+    char* pt_this_label = smprintf(_("Point sizes on this monitor (%d PPI)"),
+                                   (int)ui_utils::get_current_ppi(this));
+    auto pt_this_frame = Gtk::make_managed<Gtk::Frame>(pt_this_label);
+    free(pt_this_label);
     auto pt_this_entry = Gtk::make_managed<Gtk::Entry>();
     pt_this_entry->set_editable(false);
     pt_this_entry->set_can_focus(false);
