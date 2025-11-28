@@ -34,14 +34,16 @@ namespace ff::dlg {
 
 class BitmapsDlg final : public Dialog {
  private:
-    BitmapsDlg(GWindow parent, BitmapsDlgMode mode);
+    BitmapsDlg(GWindow parent, BitmapsDlgMode mode, bool bitmaps_only,
+               bool has_current_char);
 
     Gtk::ComboBoxText glyphs_combo_;
     Gtk::Entry pixels_entry_;
     Gtk::CheckButton rasterize_check_;
 
  public:
-    static void show(GWindow parent, BitmapsDlgMode mode);
+    static void show(GWindow parent, BitmapsDlgMode mode, bool bitmaps_only,
+                     bool has_current_char);
 };
 
 }  // namespace ff::dlg

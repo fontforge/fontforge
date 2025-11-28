@@ -166,12 +166,13 @@ char* language_list_dialog(GWindow parent, const LanguageRec* languages,
     }
 }
 
-void bitmap_strikes_dialog(GWindow parent, BitmapsDlgMode mode) {
+void bitmap_strikes_dialog(GWindow parent, BitmapsDlgMode mode,
+                           bool bitmaps_only, bool has_current_char) {
     // To avoid instability, the GTK application is lazily initialized only when
     // a GTK window is invoked.
     ff::app::GtkApp();
 
-    ff::dlg::BitmapsDlg::show(parent, mode);
+    ff::dlg::BitmapsDlg::show(parent, mode, bitmaps_only, has_current_char);
 }
 
 void update_appearance() {

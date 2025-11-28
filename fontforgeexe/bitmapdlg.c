@@ -273,7 +273,6 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
         (isavail == 1) ? bitmaps_dlg_avail
                        : (isavail == -1) ? bitmaps_dlg_remove
                                          : bitmaps_dlg_regen;
-    bitmap_strikes_dialog(fv->gw, dlg_mode);
 
     if ( !done ) {
 	for ( i=0; which[i].text!=NULL; ++i )
@@ -287,6 +286,9 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     bd.bd.sf = fv->b.cidmaster ? fv->b.cidmaster : fv->b.sf;
     bd.bd.isavail = isavail;
     bd.bd.done = false;
+
+    bitmap_strikes_dialog(fv->gw, dlg_mode,
+        bd.bd.sf->onlybitmaps && bd.bd.sf->bitmaps!=NULL, sc != NULL);
 
     for ( bdf=bd.bd.sf->bitmaps, i=0; bdf!=NULL; bdf=bdf->next, ++i );
 /*

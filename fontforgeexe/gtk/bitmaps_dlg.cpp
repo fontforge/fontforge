@@ -38,7 +38,9 @@ extern "C" {
 
 namespace ff::dlg {
 
-BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode) : Dialog(parent) {
+BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode, bool bitmaps_only,
+                       bool has_current_char)
+    : Dialog(parent) {
     set_help_context("ui/menus/elementmenu.html", "#elementmenu-bitmaps");
     Glib::ustring title;
     std::vector<Glib::ustring> headings;
@@ -54,7 +56,9 @@ BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode) : Dialog(parent) {
         title = _("Bitmap Strikes Available");
         headings = {_("The list of current pixel bitmap sizes"),
                     _(" Removing a size will delete it."),
-                    _(" Adding a size will create it.")};
+                    bitmaps_only
+                        ? _(" Adding a size will create it by scaling.")
+                        : _(" Adding a size will create it.")};
     } else if (mode == bitmaps_dlg_regen) {
         title = _("Regenerate Bitmap Glyphs");
         headings = {_("Specify bitmap sizes to be regenerated")};
@@ -78,6 +82,22 @@ BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode) : Dialog(parent) {
         }
         glyphs_combo_.set_active_id("selection");
         get_content_area()->pack_start(glyphs_combo_);
+
+        // When the current character is not applicable, we need to disable its
+        // entry in the drop-down list.
+        if (!has_current_char) {
+            Gtk::CellRenderer* renderer = glyphs_combo_.get_first_cell();
+            glyphs_combo_.set_cell_data_func(
+                *renderer,
+                [renderer](const Gtk::TreeModel::const_iterator& it) {
+                    // In the Gtk::ComboBoxText, the second column of the
+                    // TreeModel contains the item id as a string. It's a sacred
+                    // knowledge, we must not question it.
+                    Glib::ustring item_id;
+                    it->get_value(1, item_id);
+                    renderer->set_sensitive(item_id != "current");
+                });
+        }
     }
 
     auto pixels_frame = Gtk::make_managed<Gtk::Frame>(_("Pixel Sizes:"));
@@ -123,8 +143,9 @@ BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode) : Dialog(parent) {
     show_all();
 }
 
-void BitmapsDlg::show(GWindow parent, BitmapsDlgMode mode) {
-    BitmapsDlg dialog(parent, mode);
+void BitmapsDlg::show(GWindow parent, BitmapsDlgMode mode, bool bitmaps_only,
+                      bool has_current_char) {
+    BitmapsDlg dialog(parent, mode, bitmaps_only, has_current_char);
 
     Gtk::ResponseType result = dialog.run();
 
