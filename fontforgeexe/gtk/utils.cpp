@@ -61,6 +61,21 @@ double ui_font_eX_size() {
     return extents.height;
 }
 
+double get_current_ppi(Gtk::Widget* w) {
+    Glib::RefPtr<const Gdk::Display> display = w->get_display();
+    Glib::RefPtr<Gdk::Window> window = w->get_window();
+    Glib::RefPtr<const Gdk::Monitor> monitor =
+        display->get_monitor_at_window(window);
+
+    Gdk::Rectangle monitor_geom;
+    monitor->get_geometry(monitor_geom);
+    int monitor_width_mm = monitor->get_width_mm();
+    int monitor_width_px = monitor_geom.get_width();
+
+    double ppi = 25.4 * monitor_width_px / monitor_width_mm;
+    return ppi;
+}
+
 void post_error(const char* title, const char* statement, ...) {
     va_list ap;
     va_start(ap, statement);

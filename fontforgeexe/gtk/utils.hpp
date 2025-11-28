@@ -33,6 +33,8 @@ namespace ff::ui_utils {
 double ui_font_em_size();
 double ui_font_eX_size();
 
+double get_current_ppi(Gtk::Widget* w);
+
 // TODO(iorsh): Integrate this function into the global log collection
 void post_error(const char* title, const char* statement, ...);
 
