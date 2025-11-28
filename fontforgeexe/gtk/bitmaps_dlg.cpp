@@ -67,7 +67,7 @@ BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode) : Dialog(parent) {
 
     Glib::ustring heading = std::accumulate(
         headings.begin() + 1, headings.end(), headings[0],
-        [](const auto& a, const auto& b) { return a + "\n   " + b; });
+        [](const auto& a, const auto& b) { return a + "\n•  " + b; });
     auto heading_label = Gtk::make_managed<Gtk::Label>(heading);
     heading_label->set_halign(Gtk::ALIGN_START);
     get_content_area()->pack_start(*heading_label);
