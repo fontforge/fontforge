@@ -53,7 +53,8 @@ char* language_list_dialog(GWindow parent, const LanguageRec* languages,
                            const char* initial_tags);
 
 void bitmap_strikes_dialog(GWindow parent, BitmapsDlgMode mode,
-                           bool bitmaps_only, bool has_current_char);
+                           int32_t* c_sizes, bool bitmaps_only,
+                           bool has_current_char);
 
 void update_appearance();
 

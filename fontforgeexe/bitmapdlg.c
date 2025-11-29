@@ -287,9 +287,6 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     bd.bd.isavail = isavail;
     bd.bd.done = false;
 
-    bitmap_strikes_dialog(fv->gw, dlg_mode,
-        bd.bd.sf->onlybitmaps && bd.bd.sf->bitmaps!=NULL, sc != NULL);
-
     for ( bdf=bd.bd.sf->bitmaps, i=0; bdf!=NULL; bdf=bdf->next, ++i );
 /*
     if ( i==0 && isavail )
@@ -305,6 +302,9 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     }
 */
     sizes[i] = 0;
+
+    bitmap_strikes_dialog(fv->gw, dlg_mode, sizes,
+        bd.bd.sf->onlybitmaps && bd.bd.sf->bitmaps!=NULL, sc != NULL);
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;

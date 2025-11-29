@@ -38,7 +38,23 @@ extern "C" {
 
 namespace ff::dlg {
 
-BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode, bool bitmaps_only,
+static std::string SizeString(const BitmapSize& size) {
+    return (size.second == 1)
+               ? std::to_string(size.first)
+               : std::to_string(size.first) + "@" + std::to_string(size.second);
+}
+
+static std::string SizeString(const BitmapSizes& sizes) {
+    return std::accumulate(sizes.begin(), sizes.end(), std::string{},
+                           [](std::string acc, const auto& size) {
+                               if (!acc.empty()) acc += ",";
+                               acc += SizeString(size);
+                               return acc;
+                           });
+}
+
+BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode,
+                       const BitmapSizes& sizes, bool bitmaps_only,
                        bool has_current_char)
     : Dialog(parent) {
     set_help_context("ui/menus/elementmenu.html", "#elementmenu-bitmaps");
@@ -74,6 +90,7 @@ BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode, bool bitmaps_only,
         get_content_area()->pack_start(glyphs_combo_);
     }
 
+    pixels_entry_.set_text(SizeString(sizes));
     auto pixels_frame = Gtk::make_managed<Gtk::Frame>(_("Pixel Sizes:"));
     pixels_frame->add(pixels_entry_);
     pixels_frame->set_shadow_type(Gtk::SHADOW_NONE);
@@ -148,9 +165,10 @@ Gtk::ComboBoxText BitmapsDlg::build_glyphs_combo(bool has_current_char) const {
     return glyphs_combo;
 }
 
-void BitmapsDlg::show(GWindow parent, BitmapsDlgMode mode, bool bitmaps_only,
+void BitmapsDlg::show(GWindow parent, BitmapsDlgMode mode,
+                      const BitmapSizes& sizes, bool bitmaps_only,
                       bool has_current_char) {
-    BitmapsDlg dialog(parent, mode, bitmaps_only, has_current_char);
+    BitmapsDlg dialog(parent, mode, sizes, bitmaps_only, has_current_char);
 
     Gtk::ResponseType result = dialog.run();
 

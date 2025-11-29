@@ -167,12 +167,19 @@ char* language_list_dialog(GWindow parent, const LanguageRec* languages,
 }
 
 void bitmap_strikes_dialog(GWindow parent, BitmapsDlgMode mode,
-                           bool bitmaps_only, bool has_current_char) {
+                           int32_t* c_sizes, bool bitmaps_only,
+                           bool has_current_char) {
     // To avoid instability, the GTK application is lazily initialized only when
     // a GTK window is invoked.
     ff::app::GtkApp();
 
-    ff::dlg::BitmapsDlg::show(parent, mode, bitmaps_only, has_current_char);
+    ff::dlg::BitmapSizes sizes;
+    for (int32_t* p_sizes = c_sizes; *p_sizes != 0; ++p_sizes) {
+        sizes.emplace_back(*p_sizes & 0xffff, *p_sizes >> 16);
+    }
+
+    ff::dlg::BitmapsDlg::show(parent, mode, sizes, bitmaps_only,
+                              has_current_char);
 }
 
 void update_appearance() {

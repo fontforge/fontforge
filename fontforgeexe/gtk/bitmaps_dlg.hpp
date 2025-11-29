@@ -32,10 +32,13 @@
 
 namespace ff::dlg {
 
+using BitmapSize = std::pair<uint16_t /*size*/, uint16_t /*depth*/>;
+using BitmapSizes = std::vector<BitmapSize>;
+
 class BitmapsDlg final : public Dialog {
  private:
-    BitmapsDlg(GWindow parent, BitmapsDlgMode mode, bool bitmaps_only,
-               bool has_current_char);
+    BitmapsDlg(GWindow parent, BitmapsDlgMode mode, const BitmapSizes& sizes,
+               bool bitmaps_only, bool has_current_char);
 
     Gtk::ComboBoxText glyphs_combo_;
     Gtk::Entry pixels_entry_;
@@ -44,7 +47,8 @@ class BitmapsDlg final : public Dialog {
     Gtk::ComboBoxText build_glyphs_combo(bool has_current_char) const;
 
  public:
-    static void show(GWindow parent, BitmapsDlgMode mode, bool bitmaps_only,
+    static void show(GWindow parent, BitmapsDlgMode mode,
+                     const BitmapSizes& sizes, bool bitmaps_only,
                      bool has_current_char);
 };
 
