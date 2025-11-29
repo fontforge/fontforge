@@ -38,19 +38,31 @@ extern "C" {
 
 namespace ff::dlg {
 
-static std::string SizeString(const BitmapSize& size) {
-    return (size.second == 1)
-               ? std::to_string(size.first)
-               : std::to_string(size.first) + "@" + std::to_string(size.second);
+static std::string FormatBitmapSize(int px_size) {
+    return std::to_string(px_size);
 }
 
-static std::string SizeString(const BitmapSizes& sizes) {
-    return std::accumulate(sizes.begin(), sizes.end(), std::string{},
-                           [](std::string acc, const auto& size) {
-                               if (!acc.empty()) acc += ",";
-                               acc += SizeString(size);
-                               return acc;
-                           });
+static std::string FormatBitmapSize(int px_size, double scale) {
+    char decimal_point = ui_utils::get_decimal_point();
+    char buffer[10];
+    sprintf(buffer, "%.1f", px_size * scale);
+    return buffer;
+}
+
+template <typename... ARGS>
+static std::string SizeString(const BitmapSizes& sizes, ARGS... args) {
+    char list_separator = ui_utils::get_list_separator();
+    std::string size_list;
+    for (auto [px_size, depth] : sizes) {
+        if (!size_list.empty()) size_list += list_separator;
+        if (depth == 1) {
+            size_list += FormatBitmapSize(px_size, args...);
+        } else {
+            size_list += FormatBitmapSize(px_size, args...) + "@" +
+                         std::to_string(depth);
+        }
+    }
+    return size_list;
 }
 
 BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode,
@@ -102,13 +114,15 @@ BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode,
     pt_this_entry->set_can_focus(false);
     pt_this_frame->add(*pt_this_entry);
     pt_this_frame->set_shadow_type(Gtk::SHADOW_NONE);
-    pt_this_frame->signal_realize().connect([pt_this_frame]() {
+    pt_this_frame->signal_realize().connect([pt_this_frame, pt_this_entry,
+                                             sizes]() {
         // Set the PPI here, as the monitor is not available before the
         // realization.
         int current_ppi = ui_utils::get_current_ppi(pt_this_frame);
         char* pt_this_label =
             smprintf(_("Point sizes on this monitor (%d PPI)"), current_ppi);
         pt_this_frame->set_label(pt_this_label);
+        pt_this_entry->set_text(SizeString(sizes, 72.0 / current_ppi));
         free(pt_this_label);
     });
     get_content_area()->pack_start(*pt_this_frame);
@@ -116,6 +130,7 @@ BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode,
     auto pt_96_frame =
         Gtk::make_managed<Gtk::Frame>(_("Point sizes on a 96 ppi monitor"));
     auto pt_96_entry = Gtk::make_managed<Gtk::Entry>();
+    pt_96_entry->set_text(SizeString(sizes, 72.0 / 96.0));
     pt_96_entry->set_editable(false);
     pt_96_entry->set_can_focus(false);
     pt_96_frame->add(*pt_96_entry);
