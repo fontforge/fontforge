@@ -45,13 +45,6 @@ BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode, bool bitmaps_only,
     Glib::ustring title;
     std::vector<Glib::ustring> headings;
 
-    static const std::vector<std::pair<Glib::ustring, Glib::ustring>>
-        glyphs_combo_items = {
-            {"all", _("All Glyphs")},
-            {"selection", _("Selected Glyphs")},
-            {"current", _("Current Glyph")},
-        };
-
     if (mode == bitmaps_dlg_avail) {
         title = _("Bitmap Strikes Available");
         headings = {_("The list of current pixel bitmap sizes"),
@@ -77,27 +70,8 @@ BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode, bool bitmaps_only,
     get_content_area()->pack_start(*heading_label);
 
     if (mode != bitmaps_dlg_avail) {
-        for (const auto& [item_id, item_label] : glyphs_combo_items) {
-            glyphs_combo_.append(item_id, item_label);
-        }
-        glyphs_combo_.set_active_id("selection");
+        glyphs_combo_ = build_glyphs_combo(has_current_char);
         get_content_area()->pack_start(glyphs_combo_);
-
-        // When the current character is not applicable, we need to disable its
-        // entry in the drop-down list.
-        if (!has_current_char) {
-            Gtk::CellRenderer* renderer = glyphs_combo_.get_first_cell();
-            glyphs_combo_.set_cell_data_func(
-                *renderer,
-                [renderer](const Gtk::TreeModel::const_iterator& it) {
-                    // In the Gtk::ComboBoxText, the second column of the
-                    // TreeModel contains the item id as a string. It's a sacred
-                    // knowledge, we must not question it.
-                    Glib::ustring item_id;
-                    it->get_value(1, item_id);
-                    renderer->set_sensitive(item_id != "current");
-                });
-        }
     }
 
     auto pixels_frame = Gtk::make_managed<Gtk::Frame>(_("Pixel Sizes:"));
@@ -141,6 +115,37 @@ BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode, bool bitmaps_only,
 
     get_content_area()->set_spacing(ui_utils::ui_font_eX_size());
     show_all();
+}
+
+Gtk::ComboBoxText BitmapsDlg::build_glyphs_combo(bool has_current_char) const {
+    static const std::vector<std::pair<Glib::ustring, Glib::ustring>>
+        glyphs_combo_items = {
+            {"all", _("All Glyphs")},
+            {"selection", _("Selected Glyphs")},
+            {"current", _("Current Glyph")},
+        };
+
+    Gtk::ComboBoxText glyphs_combo;
+    for (const auto& [item_id, item_label] : glyphs_combo_items) {
+        glyphs_combo.append(item_id, item_label);
+    }
+    glyphs_combo.set_active_id("selection");
+
+    // When the current character is not applicable, we need to disable its
+    // entry in the drop-down list.
+    if (!has_current_char) {
+        Gtk::CellRenderer* renderer = glyphs_combo.get_first_cell();
+        glyphs_combo.set_cell_data_func(
+            *renderer, [renderer](const Gtk::TreeModel::const_iterator& it) {
+                // In the Gtk::ComboBoxText, the second column of the TreeModel
+                // contains the item id as a string. It's a sacred knowledge, we
+                // must not question it.
+                Glib::ustring item_id;
+                it->get_value(1, item_id);
+                renderer->set_sensitive(item_id != "current");
+            });
+    }
+    return glyphs_combo;
 }
 
 void BitmapsDlg::show(GWindow parent, BitmapsDlgMode mode, bool bitmaps_only,

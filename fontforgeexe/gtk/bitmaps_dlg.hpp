@@ -41,6 +41,8 @@ class BitmapsDlg final : public Dialog {
     Gtk::Entry pixels_entry_;
     Gtk::CheckButton rasterize_check_;
 
+    Gtk::ComboBoxText build_glyphs_combo(bool has_current_char) const;
+
  public:
     static void show(GWindow parent, BitmapsDlgMode mode, bool bitmaps_only,
                      bool has_current_char);
