@@ -38,6 +38,8 @@ extern "C" {
 
 namespace ff::dlg {
 
+static const uint16_t kSizeError = 0xffffu;
+
 static std::string FormatBitmapSize(int px_size) {
     return std::to_string(px_size);
 }
@@ -63,6 +65,29 @@ static std::string SizeString(const BitmapSizes& sizes, ARGS... args) {
         }
     }
     return size_list;
+}
+
+static BitmapSizes ParseList(const Glib::ustring& str) {
+    BitmapSizes sizes;
+    uint16_t size, depth;
+    char* end = nullptr;
+
+    for (const char* pt = str.c_str(); *pt != '\0';) {
+        size = strtoul(pt, &end, 10);
+        if (*end == '@')
+            depth = strtoul(end + 1, &end, 10);
+        else
+            depth = 1u;
+        if (size > 0) sizes.emplace_back(size, depth);
+        if (*end != ' ' && *end != ',' && *end != ';' && *end != '\0') {
+            return {{kSizeError, kSizeError}};
+        }
+        // We are pedantic with list separators, but the user could be not.
+        while (*end == ' ' || *end == ',' || *end == ';') ++end;
+        pt = end;
+    }
+
+    return sizes;
 }
 
 BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode,
