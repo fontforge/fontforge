@@ -5594,6 +5594,9 @@ return( 0 );
 	readttfglyphs(ttf,info);
     } else if ( info->cff_start!=0 ) {
 	info->to_order2 = (loaded_fonts_same_as_new && new_fonts_are_order2);
+	// Relevant only for TrueType (Font Header Table specification): 
+	// https://learn.microsoft.com/en-us/typography/opentype/spec/head#flags
+	info->apply_lsb = false;
 	if ( !readcffglyphs(ttf,info) ) {
 	    switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
 return( 0 );
