@@ -20826,7 +20826,7 @@ void FontForge_FinalizeEmbeddedPython(void) {
 }
 
 /* This is called to start up the embedded python interpreter */
-void FontForge_InitializeEmbeddedPython(void) {
+void FontForge_InitializeEmbeddedPythonEx(int argc, wchar_t **argv) {
     // static int python_initialized is declared above.
     if ( python_initialized )
 	return;
@@ -20834,7 +20834,8 @@ void FontForge_InitializeEmbeddedPython(void) {
     PyConfig config;
     PyStatus status;
     PyConfig_InitPythonConfig(&config);
-
+    if (argc > 0)
+        PyConfig_SetArgv(&config, argc, argv);
     status = PyConfig_SetBytesString(&config, &config.program_name,
                                      "fontforge");
     if (PyStatus_Exception(status)) {
@@ -20860,6 +20861,10 @@ void FontForge_InitializeEmbeddedPython(void) {
     InitializePythonMainNamespace();
 }
 
+void FontForge_InitializeEmbeddedPython() {
+    FontForge_InitializeEmbeddedPythonEx(0, NULL);
+}
+
 static wchar_t ** copy_argv(char *arg0, int argc ,char **argv);
 
 /* PyFF_Main() -- This is called to run a script as the main task, by
@@ -20879,8 +20884,6 @@ _Noreturn void PyFF_Main(int argc,char **argv,int start, int do_inits,
 
     no_windowing_ui = running_script = true;
 
-    FontForge_InitializeEmbeddedPython();
-    PyFF_ProcessInitFiles(do_inits, do_plugins);
 
     /* Skip '-script' option */
     arg = argv[start];
@@ -20892,8 +20895,11 @@ _Noreturn void PyFF_Main(int argc,char **argv,int start, int do_inits,
     newargc = argc - start + 1;
     newargv = copy_argv(argv[0], newargc-1, &argv[start] );
 
+    FontForge_InitializeEmbeddedPythonEx(newargc, newargv);
+    PyFF_ProcessInitFiles(do_inits, do_plugins);
+
     /* Run Python */
-    exitcode = Py_Main( newargc, newargv );
+    exitcode = Py_RunMain();
     FontForge_FinalizeEmbeddedPython();
     exit(exitcode);
 }
