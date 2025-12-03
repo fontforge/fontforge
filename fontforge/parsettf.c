@@ -66,7 +66,7 @@ int ask_user_for_cmap = false;
 /* True Type is a really icky format. Nothing is together. It's badly described */
 /*  much of the description is misleading */
 /* Apple's version: */
-/*  http://fonts.apple.com/TTRefMan/index.html */
+/*  http://fonts.apple.com/TrueType-Reference-Manual/index.html */
 /* MS's version: */
 /*  http://www.microsoft.com/typography/tt/tt.htm */
 /* An helpful but incomplete description is given at */
@@ -2110,7 +2110,7 @@ return;
 	    /*  site about how these should be interpreted when there are */
 	    /*  scale factors, or rotations */
 	    /* It isn't well enough described to be comprehensible */
-	    /*  http://fonts.apple.com/TTRefMan/RM06/Chap6glyf.html */
+	    /*  http://fonts.apple.com/TrueType-Reference-Manual/RM06/Chap6glyf.html */
 	    /* Microsoft says nothing about this */
 	    /* Adobe implies this is a difference between MS and Apple */
 	    /*  MS doesn't do this, Apple does (GRRRGH!!!!) */

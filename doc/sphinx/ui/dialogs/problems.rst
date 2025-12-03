@@ -283,7 +283,7 @@ Refs Deeper Than
 ----------------
 
 Appendix B of the the
-`Type2 <http://partners.adobe.com/asn/developer/pdfs/tn/5177.Type2.pdf>`__ spec
+`Type2 <http://adobe-type-tools.github.io/font-tech-notes/pdfs/5177.Type2.pdf>`__ spec
 says that an interpreter is only required to support subroutine nesting up to 10
 levels. FontForge uses subroutine calls to handle referenced glyphs and
 sometimes also to handle hinting. Hinting will take up a maximum of 1 level of
@@ -369,7 +369,7 @@ More Hints Than
 ---------------
 
 Appendix B of the the
-`Type2 <http://partners.adobe.com/asn/developer/pdfs/tn/5177.Type2.pdf>`__ spec
+`Type2 <http://adobe-type-tools.github.io/font-tech-notes/pdfs/5177.Type2.pdf>`__ spec
 says that an interpreter is only required to support a total of 96 horizontal
 and vertical hints.
 
