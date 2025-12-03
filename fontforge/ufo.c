@@ -1177,12 +1177,10 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer, int
             /* Empty styleMapStyleName means we imported a UFO that does not have this field. Bypass the fallback. */
             if (sf->styleMapFamilyName[0]!='\0')
                 styleMapFamily = sf->styleMapFamilyName;
-        } else if (preferredFamilyName != NULL && preferredSubfamilyName != NULL) {
-            styleMapFamily = malloc(strlen(preferredFamilyName)+strlen(preferredSubfamilyName)+2);
+        } else if (preferredFamilyName != NULL) {
+            styleMapFamily = malloc(strlen(preferredFamilyName)+1);
             strcpy(styleMapFamily, preferredFamilyName);
-            strcat(styleMapFamily, " ");
-            strcat(styleMapFamily, preferredSubfamilyName);
-        } else if (sf->fullname != NULL) styleMapFamily = sf->fullname;
+        } else if (sf->familyname != NULL) styleMapFamily = sf->familyname;
         if (styleMapFamily != NULL) PListAddString(dictnode,"styleMapFamilyName", styleMapFamily);
     }
     {
