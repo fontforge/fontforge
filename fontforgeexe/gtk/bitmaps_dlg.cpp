@@ -170,7 +170,7 @@ BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode,
         get_content_area()->pack_start(rasterize_check_);
     }
 
-    get_content_area()->set_spacing(ui_utils::ui_font_eX_size());
+    get_content_area()->set_spacing(0.5 * ui_utils::ui_font_eX_size());
     show_all();
 }
 

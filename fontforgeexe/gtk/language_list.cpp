@@ -74,7 +74,7 @@ LanguageListDlg::LanguageListDlg(GWindow parent,
     }
 
     // Show initially roughly 8 rows.
-    property_default_height() = 40 * ui_utils::ui_font_eX_size();
+    property_default_height() = 25 * ui_utils::ui_font_eX_size();
 
     scrolled_window->add(list_);
 

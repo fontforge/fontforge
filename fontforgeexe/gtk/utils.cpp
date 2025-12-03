@@ -44,10 +44,10 @@ static Cairo::TextExtents ui_font_extents(const std::string& sample_text) {
                                     Cairo::FontWeight::FONT_WEIGHT_NORMAL);
     cairo_context->set_font_size(font.get_size() / PANGO_SCALE *
                                  Gdk::Screen::get_default()->get_resolution() /
-                                 96);
+                                 72);
 
     Cairo::TextExtents extents;
-    cairo_context->get_text_extents("m", extents);
+    cairo_context->get_text_extents(sample_text, extents);
     return extents;
 }
 
