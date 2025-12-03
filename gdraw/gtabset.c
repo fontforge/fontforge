@@ -87,7 +87,7 @@ static GResInfo gvtabset_ri = {
 };
 #define NEST_INDENT	4
 
-static void GTabSetInit() {
+void GTabSetInit() {
     GResEditDoInit(&gtabset_ri);
     GResEditDoInit(&gvtabset_ri);
 }
