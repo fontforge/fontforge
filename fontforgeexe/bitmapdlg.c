@@ -305,9 +305,23 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
 */
     sizes[i] = 0;
 
-    bool is_ok = bitmap_strikes_dialog(fv->gw, dlg_mode, &sizes,
-        bd.bd.sf->onlybitmaps && bd.bd.sf->bitmaps!=NULL,
-        sc != NULL, &rasterize, &scope);
+    bool is_ok = bitmap_strikes_dialog(
+        fv->gw, dlg_mode, &sizes,
+        bd.bd.sf->onlybitmaps && bd.bd.sf->bitmaps != NULL, sc != NULL,
+        &rasterize, &scope);
+
+    if (!is_ok) return;
+
+    if (bd.bd.isavail < true)
+        bd.bd.which = (strcmp(scope, "all") == 0)         ? bd_all
+                      : (strcmp(scope, "selection") == 0) ? bd_selected
+                                                          : bd_current;
+    if (bd.bd.isavail == 1) bd.bd.rasterize = rasterize;
+
+    BitmapsDoIt(&bd.bd, sizes, true);
+    free(sizes);
+    free(scope);
+    return;
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
