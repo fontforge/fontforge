@@ -39,7 +39,7 @@
 
 #include <math.h>
 
-int bdfcontrol_lastwhich = bd_selected;
+enum bd_scope bdfcontrol_lastwhich = bd_selected;
 
 static void RemoveBDFWindows(BDFFont *bdf) {
     int i;

@@ -31,20 +31,20 @@
 #include "baseviews.h"
 #include "splinefont.h"
 
+enum bd_scope { bd_all, bd_selected, bd_current };
+
 typedef struct createbitmapdata {
     FontViewBase *fv;
     SplineFont *sf;
     SplineChar *sc;
     int layer;
     int isavail;
-    int which;
+    enum bd_scope which;
     int rasterize;
     unsigned int done: 1;
 } CreateBitmapData;
 
-enum { bd_all, bd_selected, bd_current };
-
-extern int bdfcontrol_lastwhich;
+extern enum bd_scope bdfcontrol_lastwhich;
 
 void BitmapsDoIt(CreateBitmapData *bd,int32_t *sizes,int usefreetype);
 extern int BitmapControl(FontViewBase *fv, int32_t *sizes, int isavail, int rasterize);
