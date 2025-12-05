@@ -47,6 +47,8 @@ class BitmapsDlg final : public Dialog {
     Glib::ustring get_active_scope() const;
 
  private:
+    static Glib::ustring last_scope_;
+
     Gtk::ComboBoxText glyphs_combo_;
     widgets::VerifiedEntry pixels_entry_;
     Gtk::CheckButton rasterize_check_;

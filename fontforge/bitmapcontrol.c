@@ -39,8 +39,6 @@
 
 #include <math.h>
 
-enum bd_scope bdfcontrol_lastwhich = bd_selected;
-
 static void RemoveBDFWindows(BDFFont *bdf) {
     int i;
 
@@ -343,11 +341,9 @@ void BitmapsDoIt(CreateBitmapData *bd,int32_t *sizes,int usefreetype) {
 		FVChangeDisplayBitmap(fvs,bdf);
 	}
     } else {
-	if ( FVRegenBitmaps(bd,sizes,usefreetype))
-	    bdfcontrol_lastwhich = bd->which;
-	else {
+	if ( !FVRegenBitmaps(bd,sizes,usefreetype)) {
 	    bd->done = false;
-return;
+            return;
 	}
     }
     bd->done = true;

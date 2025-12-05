@@ -44,8 +44,6 @@ typedef struct createbitmapdata {
     unsigned int done: 1;
 } CreateBitmapData;
 
-extern enum bd_scope bdfcontrol_lastwhich;
-
 void BitmapsDoIt(CreateBitmapData *bd,int32_t *sizes,int usefreetype);
 extern int BitmapControl(FontViewBase *fv, int32_t *sizes, int isavail, int rasterize);
 

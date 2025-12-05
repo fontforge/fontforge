@@ -95,6 +95,8 @@ static BitmapSizes ParseList(const Glib::ustring& str) {
     return sizes;
 }
 
+Glib::ustring BitmapsDlg::last_scope_ = "selection";
+
 BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode,
                        const BitmapSizes& sizes, bool bitmaps_only,
                        bool has_current_char)
@@ -212,21 +214,22 @@ Gtk::ComboBoxText BitmapsDlg::build_glyphs_combo(bool has_current_char) const {
     for (const auto& [item_id, item_label] : glyphs_combo_items) {
         glyphs_combo.append(item_id, item_label);
     }
-    Glib::ustring active_item = has_current_char ? "current" : "selection";
+
+    // In Font View the current character is not applicable, and we need to
+    // disable its entry in the drop-down list. Conversely, in Char and Metrics
+    // Views the current character is applicable, but the selection belongs to
+    // an obscured Font View, and acting on it would be counterintuitive.
+    Glib::ustring disabled_item = has_current_char ? "selection" : "current";
+
+    Glib::ustring active_item = (last_scope_ == "all") ? last_scope_
+                                : has_current_char     ? "current"
+                                                       : "selection";
     glyphs_combo.set_active_id(active_item);
 
     Gtk::CellRenderer* renderer = glyphs_combo.get_first_cell();
     glyphs_combo.set_cell_data_func(
         *renderer,
-        [renderer, has_current_char](const Gtk::TreeModel::const_iterator& it) {
-            // In Font View the current character is not applicable, and we need
-            // to disable its entry in the drop-down list. Conversely, in Char
-            // and Metrics Views the current character is applicable, but the
-            // selection belongs to an obscured Font View, and acting on it
-            // would be counterintuitive.
-            Glib::ustring disabled_item =
-                has_current_char ? "selection" : "current";
-
+        [renderer, disabled_item](const Gtk::TreeModel::const_iterator& it) {
             // In the Gtk::ComboBoxText, the second column of the TreeModel
             // contains the item id as a string. It's a sacred knowledge, we
             // must not question it.
@@ -252,7 +255,11 @@ bool BitmapsDlg::pixel_size_verifier(const Glib::ustring& text, int& start_pos,
 
 bool BitmapsDlg::show() {
     Gtk::ResponseType result = run();
-    return result == Gtk::RESPONSE_OK;
+    if (result == Gtk::RESPONSE_OK) {
+        last_scope_ = get_active_scope();
+        return true;
+    }
+    return false;
 }
 
 BitmapSizes BitmapsDlg::get_sizes() const {
