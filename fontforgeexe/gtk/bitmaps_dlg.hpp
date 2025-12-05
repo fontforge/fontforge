@@ -29,6 +29,7 @@
 #include "dialog.hpp"
 
 #include "simple_dialogs.hpp"
+#include "widgets/verified_entry.hpp"
 
 namespace ff::dlg {
 
@@ -41,10 +42,13 @@ class BitmapsDlg final : public Dialog {
                bool bitmaps_only, bool has_current_char);
 
     Gtk::ComboBoxText glyphs_combo_;
-    Gtk::Entry pixels_entry_;
+    widgets::VerifiedEntry pixels_entry_;
     Gtk::CheckButton rasterize_check_;
 
     Gtk::ComboBoxText build_glyphs_combo(bool has_current_char) const;
+
+    static bool pixel_size_verifier(const Glib::ustring& text, int& start_pos,
+                                    int& end_pos);
 
  public:
     static void show(GWindow parent, BitmapsDlgMode mode,

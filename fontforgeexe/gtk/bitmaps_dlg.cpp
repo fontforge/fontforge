@@ -80,7 +80,12 @@ static BitmapSizes ParseList(const Glib::ustring& str) {
             depth = 1u;
         if (size > 0) sizes.emplace_back(size, depth);
         if (*end != ' ' && *end != ',' && *end != ';' && *end != '\0') {
-            return {{kSizeError, kSizeError}};
+            // If the token is bad, we seek to its end and report its position
+            // in a slight abuse of the return value.
+            while (*end != ' ' && *end != ',' && *end != ';' && *end != '\0')
+                ++end;
+            return {{kSizeError, kSizeError},
+                    {pt - str.c_str(), end - str.c_str()}};
         }
         // We are pedantic with list separators, but the user could be not.
         while (*end == ' ' || *end == ',' || *end == ';') ++end;
@@ -132,6 +137,7 @@ BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode,
     pixels_frame->add(pixels_entry_);
     pixels_frame->set_shadow_type(Gtk::SHADOW_NONE);
     get_content_area()->pack_start(*pixels_frame);
+    pixels_entry_.set_verifier(pixel_size_verifier);
 
     auto pt_this_frame = Gtk::make_managed<Gtk::Frame>();
     auto pt_this_entry = Gtk::make_managed<Gtk::Entry>();
@@ -170,6 +176,14 @@ BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode,
         get_content_area()->pack_start(rasterize_check_);
     }
 
+    signal_response().connect(
+        [this](int response_id) {
+            if (response_id == Gtk::RESPONSE_OK && !pixels_entry_.verify()) {
+                signal_response().emission_stop();
+            }
+        },
+        false);
+
     get_content_area()->set_spacing(0.5 * ui_utils::ui_font_eX_size());
     show_all();
 }
@@ -203,6 +217,18 @@ Gtk::ComboBoxText BitmapsDlg::build_glyphs_combo(bool has_current_char) const {
             });
     }
     return glyphs_combo;
+}
+
+bool BitmapsDlg::pixel_size_verifier(const Glib::ustring& text, int& start_pos,
+                                     int& end_pos) {
+    auto sizes = ParseList(text);
+    bool is_valid = true;
+    if (sizes.size() == 2 && sizes[0].first == kSizeError) {
+        is_valid = false;
+        start_pos = sizes[1].first;
+        end_pos = sizes[1].second;
+    }
+    return is_valid;
 }
 
 void BitmapsDlg::show(GWindow parent, BitmapsDlgMode mode,
