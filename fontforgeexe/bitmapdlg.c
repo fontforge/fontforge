@@ -268,6 +268,8 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     int i,j,k,y;
     int32_t *sizes;
     BDFFont *bdf;
+    bool rasterize = true;
+    char* scope = NULL;
     static int done= false;
     enum bitmaps_dlg_mode dlg_mode =
         (isavail == 1) ? bitmaps_dlg_avail
@@ -303,8 +305,9 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
 */
     sizes[i] = 0;
 
-    bitmap_strikes_dialog(fv->gw, dlg_mode, sizes,
-        bd.bd.sf->onlybitmaps && bd.bd.sf->bitmaps!=NULL, sc != NULL);
+    bool is_ok = bitmap_strikes_dialog(fv->gw, dlg_mode, &sizes,
+        bd.bd.sf->onlybitmaps && bd.bd.sf->bitmaps!=NULL,
+        sc != NULL, &rasterize, &scope);
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;

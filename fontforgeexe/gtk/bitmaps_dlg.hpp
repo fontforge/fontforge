@@ -37,10 +37,16 @@ using BitmapSize = std::pair<uint16_t /*size*/, uint16_t /*depth*/>;
 using BitmapSizes = std::vector<BitmapSize>;
 
 class BitmapsDlg final : public Dialog {
- private:
+ public:
     BitmapsDlg(GWindow parent, BitmapsDlgMode mode, const BitmapSizes& sizes,
                bool bitmaps_only, bool has_current_char);
 
+    bool show();
+    BitmapSizes get_sizes() const;
+    bool get_rasterize() const;
+    Glib::ustring get_active_scope() const;
+
+ private:
     Gtk::ComboBoxText glyphs_combo_;
     widgets::VerifiedEntry pixels_entry_;
     Gtk::CheckButton rasterize_check_;
@@ -49,11 +55,6 @@ class BitmapsDlg final : public Dialog {
 
     static bool pixel_size_verifier(const Glib::ustring& text, int& start_pos,
                                     int& end_pos);
-
- public:
-    static void show(GWindow parent, BitmapsDlgMode mode,
-                     const BitmapSizes& sizes, bool bitmaps_only,
-                     bool has_current_char);
 };
 
 }  // namespace ff::dlg

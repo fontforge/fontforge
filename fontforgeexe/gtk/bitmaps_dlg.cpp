@@ -250,17 +250,19 @@ bool BitmapsDlg::pixel_size_verifier(const Glib::ustring& text, int& start_pos,
     return is_valid;
 }
 
-void BitmapsDlg::show(GWindow parent, BitmapsDlgMode mode,
-                      const BitmapSizes& sizes, bool bitmaps_only,
-                      bool has_current_char) {
-    BitmapsDlg dialog(parent, mode, sizes, bitmaps_only, has_current_char);
+bool BitmapsDlg::show() {
+    Gtk::ResponseType result = run();
+    return result == Gtk::RESPONSE_OK;
+}
 
-    Gtk::ResponseType result = dialog.run();
+BitmapSizes BitmapsDlg::get_sizes() const {
+    return ParseList(pixels_entry_.get_text());
+}
 
-    if (result == Gtk::RESPONSE_OK) {
-        return;
-    }
-    return;
+bool BitmapsDlg::get_rasterize() const { return rasterize_check_.get_active(); }
+
+Glib::ustring BitmapsDlg::get_active_scope() const {
+    return glyphs_combo_.get_active_id();
 }
 
 }  // namespace ff::dlg

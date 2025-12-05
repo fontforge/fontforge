@@ -166,20 +166,34 @@ char* language_list_dialog(GWindow parent, const LanguageRec* languages,
     }
 }
 
-void bitmap_strikes_dialog(GWindow parent, BitmapsDlgMode mode,
-                           int32_t* c_sizes, bool bitmaps_only,
-                           bool has_current_char) {
+bool bitmap_strikes_dialog(GWindow parent, BitmapsDlgMode mode,
+                           int32_t** c_sizes, bool bitmaps_only,
+                           bool has_current_char, bool* p_rasterize,
+                           char** p_scope) {
     // To avoid instability, the GTK application is lazily initialized only when
     // a GTK window is invoked.
     ff::app::GtkApp();
 
     ff::dlg::BitmapSizes sizes;
-    for (int32_t* p_sizes = c_sizes; *p_sizes != 0; ++p_sizes) {
+    for (int32_t* p_sizes = *c_sizes; *p_sizes != 0; ++p_sizes) {
         sizes.emplace_back(*p_sizes & 0xffff, *p_sizes >> 16);
     }
 
-    ff::dlg::BitmapsDlg::show(parent, mode, sizes, bitmaps_only,
-                              has_current_char);
+    ff::dlg::BitmapsDlg dialog(parent, mode, sizes, bitmaps_only,
+                               has_current_char);
+    bool is_ok = dialog.show();
+    if (is_ok) {
+        free(*c_sizes);
+        ff::dlg::BitmapSizes new_sizes = dialog.get_sizes();
+        *c_sizes = (int32_t*)calloc(new_sizes.size() + 1, sizeof(int32_t));
+        for (size_t i = 0; i < new_sizes.size(); ++i) {
+            (*c_sizes)[i] = new_sizes[i].first | (new_sizes[i].second << 16);
+        }
+        *p_rasterize = dialog.get_rasterize();
+        *p_scope = strdup(dialog.get_active_scope().c_str());
+    }
+
+    return is_ok;
 }
 
 void update_appearance() {
