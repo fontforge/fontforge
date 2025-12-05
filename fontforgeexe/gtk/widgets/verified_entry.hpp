@@ -34,13 +34,12 @@ namespace ff::widgets {
 class VerifiedEntry : public Gtk::Entry {
  public:
     // Verification callback for the entry widget contents.
-    // Input:
-    //    text - widget contents to be verified.
-    // Output:
-    //    start_pos, end_pos - the invalid region to be selected in case of
-    //    verification failure.
-    // Return value:
-    //    true if the input is verified successfully, otherwise false.
+    // Arguments:
+    //  * text [input] - widget contents to be verified.
+    //  * start_pos, end_pos [output] - the invalid region to be selected in
+    //    case of verification failure.
+    //  * return value - true if the input is verified successfully, otherwise
+    //    false.
     using Verifier = std::function<bool(const Glib::ustring& text,
                                         int& /*start_pos*/, int& /*end_pos*/)>;
 
