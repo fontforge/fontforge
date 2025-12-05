@@ -212,22 +212,29 @@ Gtk::ComboBoxText BitmapsDlg::build_glyphs_combo(bool has_current_char) const {
     for (const auto& [item_id, item_label] : glyphs_combo_items) {
         glyphs_combo.append(item_id, item_label);
     }
-    glyphs_combo.set_active_id("selection");
+    Glib::ustring active_item = has_current_char ? "current" : "selection";
+    glyphs_combo.set_active_id(active_item);
 
-    // When the current character is not applicable, we need to disable its
-    // entry in the drop-down list.
-    if (!has_current_char) {
-        Gtk::CellRenderer* renderer = glyphs_combo.get_first_cell();
-        glyphs_combo.set_cell_data_func(
-            *renderer, [renderer](const Gtk::TreeModel::const_iterator& it) {
-                // In the Gtk::ComboBoxText, the second column of the TreeModel
-                // contains the item id as a string. It's a sacred knowledge, we
-                // must not question it.
-                Glib::ustring item_id;
-                it->get_value(1, item_id);
-                renderer->set_sensitive(item_id != "current");
-            });
-    }
+    Gtk::CellRenderer* renderer = glyphs_combo.get_first_cell();
+    glyphs_combo.set_cell_data_func(
+        *renderer,
+        [renderer, has_current_char](const Gtk::TreeModel::const_iterator& it) {
+            // In Font View the current character is not applicable, and we need
+            // to disable its entry in the drop-down list. Conversely, in Char
+            // and Metrics Views the current character is applicable, but the
+            // selection belongs to an obscured Font View, and acting on it
+            // would be counterintuitive.
+            Glib::ustring disabled_item =
+                has_current_char ? "selection" : "current";
+
+            // In the Gtk::ComboBoxText, the second column of the TreeModel
+            // contains the item id as a string. It's a sacred knowledge, we
+            // must not question it.
+            Glib::ustring item_id;
+            it->get_value(1, item_id);
+            renderer->set_sensitive(item_id != disabled_item);
+        });
+
     return glyphs_combo;
 }
 
