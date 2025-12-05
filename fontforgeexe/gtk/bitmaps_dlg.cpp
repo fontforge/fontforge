@@ -168,6 +168,18 @@ BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode,
     pt_96_frame->set_shadow_type(Gtk::SHADOW_NONE);
     get_content_area()->pack_start(*pt_96_frame);
 
+    pixels_entry_.signal_changed().connect(
+        [this, pt_96_entry, pt_this_entry]() {
+            auto sizes = ParseList(pixels_entry_.get_text());
+            if (!sizes.empty() && sizes[0].first == kSizeError) {
+                return;
+            }
+
+            int current_ppi = ui_utils::get_current_ppi(pt_this_entry);
+            pt_this_entry->set_text(SizeString(sizes, 72.0 / current_ppi));
+            pt_96_entry->set_text(SizeString(sizes, 72.0 / 96.0));
+        });
+
     if (mode == bitmaps_dlg_avail) {
         rasterize_check_.set_label(
             _("Create Rasterized Strikes (Not empty ones)"));
