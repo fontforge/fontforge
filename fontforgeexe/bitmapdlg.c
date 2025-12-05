@@ -37,8 +37,6 @@
 
 #include <math.h>
 
-int oldsystem=0 /* X11 */;
-
 void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     CreateBitmapData bd;
     int i;

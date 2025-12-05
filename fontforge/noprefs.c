@@ -131,7 +131,6 @@ static int infowindowdistance=10;		/* in cvruler.c */
 static int loacal_markextrema, loacal_markpoi, loacal_showrulers,
     loacal_showcpinfo, loacal_showsidebearings, loacal_showpoints,
     loacal_showfilled, loacal_showtabs, loacal_showrefnames;
-static int oldsystem=100;
 static int rectelipse=0, polystar=0, regular_star=0;	/* from cvpalettes.c */
 static int center_out[2]={0,0};			/* from cvpalettes.c */
 static float rr_radius=0;				/* from cvpalettes.c */
@@ -293,7 +292,6 @@ extras[] = {
     { "ShowPoints", pr_bool, &loacal_showpoints, NULL, NULL, '\0', NULL, 1, NULL },
     { "ShowFilled", pr_int, &loacal_showfilled, NULL, NULL, '\0', NULL, 1, NULL },
     { "ShowTabs", pr_int, &loacal_showtabs, NULL, NULL, '\0', NULL, 1, NULL },
-    { "DefaultScreenDpiSystem", pr_int, &oldsystem, NULL, NULL, '\0', NULL, 1, NULL },
     { "RegularStar", pr_bool, &regular_star, NULL, NULL, '\0', NULL, 1, NULL },
     { "PolyStar", pr_bool, &polystar, NULL, NULL, '\0', NULL, 1, NULL },
     { "RectEllipse", pr_bool, &rectelipse, NULL, NULL, '\0', NULL, 1, NULL },
