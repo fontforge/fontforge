@@ -322,6 +322,7 @@ static int FVRemoveBitmaps(CreateBitmapData *bd,int32_t *sizes) {
 return( true );
 }
 
+/* usefreetype is now always true */
 void BitmapsDoIt(CreateBitmapData *bd,int32_t *sizes,int usefreetype) {
 
     if ( bd->isavail==-1 )
@@ -363,6 +364,6 @@ int BitmapControl(FontViewBase *fv,int32_t *sizes,int isavail,int rasterize) {
     bd.which = bd_selected;
     bd.rasterize = rasterize;
     bd.layer = fv->active_layer;
-    BitmapsDoIt(&bd,sizes,hasFreeType());
+    BitmapsDoIt(&bd,sizes,true);
 return( bd.done );
 }
