@@ -25,17 +25,10 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <fontforge-config.h>
-
 #include "bitmapcontrol.h"
-#include "fontforgeui.h"
-#include "gkeysym.h"
-#include "gwidget.h"
 #include "splinefill.h"
-#include "ustring.h"
+#include "views.h"
 #include "gtk/simple_dialogs.hpp"
-
-#include <math.h>
 
 void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     CreateBitmapData bd;
