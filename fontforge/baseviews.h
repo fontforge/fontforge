@@ -301,7 +301,7 @@ extern void FVRound2Int(FontViewBase *fv,real factor);
 extern void FVCanonicalStart(FontViewBase *fv);
 extern void FVCanonicalContours(FontViewBase *fv);
 extern void FVCluster(FontViewBase *fv);
-extern void CIDSetEncMap(FontViewBase *fv, SplineFont *new );
+extern void CIDSetEncMap(FontViewBase *fv, SplineFont *new_font);
 extern void FVInsertInCID(FontViewBase *fv,SplineFont *sf);
 
 extern void FVAutoHint(FontViewBase *fv);
@@ -410,8 +410,8 @@ enum search_flags { sv_reverse = 0x1, sv_flips = 0x2, sv_rotate = 0x4,
 enum flipset { flip_none = 0, flip_x, flip_y, flip_xy };
 
 extern struct python_import_export {
-    struct _object *import;	/* None becomes NULL */
-    struct _object *export;	/* None becomes NULL */
+    struct _object *import_obj;	/* None becomes NULL */
+    struct _object *export_obj;	/* None becomes NULL */
     struct _object *data;	/* None stays None */
     char *name;
     char *extension;
