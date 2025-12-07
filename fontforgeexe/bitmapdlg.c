@@ -30,7 +30,7 @@
 #include "views.h"
 #include "gtk/simple_dialogs.hpp"
 
-void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
+void BitmapDlg(FontViewBase *fv, GWindow gw, SplineChar *sc, int isavail) {
     CreateBitmapData bd;
     int i;
     int32_t *sizes;
@@ -42,10 +42,10 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
                        : (isavail == -1) ? bitmaps_dlg_remove
                                          : bitmaps_dlg_regen;
 
-    bd.fv = (FontViewBase *) fv;
+    bd.fv = fv;
     bd.sc = sc;
-    bd.layer = fv!=NULL ? fv->b.active_layer : ly_fore;
-    bd.sf = fv->b.cidmaster ? fv->b.cidmaster : fv->b.sf;
+    bd.layer = fv!=NULL ? fv->active_layer : ly_fore;
+    bd.sf = fv->cidmaster ? fv->cidmaster : fv->sf;
     bd.isavail = isavail;
     bd.done = false;
 
@@ -57,7 +57,7 @@ void BitmapDlg(FontView *fv,SplineChar *sc, int isavail) {
     sizes[i] = 0;
 
     bool is_ok = bitmap_strikes_dialog(
-        fv->gw, dlg_mode, &sizes,
+        gw, dlg_mode, &sizes,
         bd.sf->onlybitmaps && bd.sf->bitmaps != NULL, sc != NULL,
         &rasterize, &scope);
 

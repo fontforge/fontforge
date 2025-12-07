@@ -29,6 +29,7 @@
 #include <fontforge-config.h>
 
 #include "bitmapchar.h"
+#include "bitmapcontrol.h"
 #include "bvedit.h"
 #include "cvundoes.h"
 #include "encoding.h"
@@ -1936,7 +1937,7 @@ static void BVMenuGetInfo(GWindow gw,struct gmenuitem *mi,GEvent *g) {
 
 static void BVMenuBitmaps(GWindow gw,struct gmenuitem *mi,GEvent *g) {
     BitmapView *bv = (BitmapView *) GDrawGetUserData(gw);
-    BitmapDlg(bv->fv,bv->bc->sc,mi->mid==MID_AvailBitmaps );
+    BitmapDlg(&bv->fv->b,gw,bv->bc->sc,mi->mid==MID_AvailBitmaps );
 }
 
 static void BVMenuRmGlyph(GWindow gw,struct gmenuitem *mi,GEvent *g) {
