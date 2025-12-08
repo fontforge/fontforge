@@ -1459,7 +1459,6 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     FigureFullMetricsEnd(sf,gi,true);
 
     if ( fixed>0 ) {
-	gi->lasthwidth = 3;
 	gi->hfullcnt = 3;
     }
     for ( i=0; i<gi->gcnt; ++i ) {
