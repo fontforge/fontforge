@@ -75,6 +75,7 @@ set(FONTFORGE_INST_HEADERS
   autowidth2.h
   baseviews.h
   bezctx_ff.h
+  bdffont.h
   bitmapcontrol.h
   delta.h
   edgelist.h
