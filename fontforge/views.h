@@ -1283,8 +1283,6 @@ extern const char *UI_TTFNameIds(int id);
 extern const char *UI_MSLangString(int language);
 extern void FontInfoInit(void);
 extern void LookupUIInit(void);
-extern void _ImportParamsDlg(ImportParams *ip);
-extern void _ExportParamsDlg(ExportParams *ep);
 #ifndef _NO_PYTHON
 extern void _PluginDlg(void);
 #endif
