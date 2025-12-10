@@ -29,7 +29,6 @@
 #define FONTFORGE_BITMAPCONTROL_H
 
 #include "baseviews.h"
-#include "splinefont.h"
 
 typedef struct gwindow* GWindow;
 

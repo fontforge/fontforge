@@ -28,9 +28,18 @@
 #ifndef FONTFORGE_BASEVIEWS_H
 #define FONTFORGE_BASEVIEWS_H
 
-#include "ffglib.h"
-#include "splinefont.h"
-#include "sd.h"
+#include "splinechar.h"
+
+typedef struct splinefont SplineFont;
+typedef struct encmap EncMap;
+typedef struct bdffont BDFFont;
+typedef struct anchorpoint AnchorPoint;
+typedef struct enc Encoding;
+struct lookup_subtable;
+enum overlap_type;
+struct simplifyinfo;
+struct metricsview;
+
 
 #define free_with_debug(x) { fprintf(stderr,"%p FREE()\n",x); free(x); }
 

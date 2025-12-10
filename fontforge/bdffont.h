@@ -31,6 +31,8 @@
 #include <stdint.h>
 #include "splinechar.h"
 
+typedef struct splinefont SplineFont;
+
 enum property_type {
     prt_string,
     prt_atom,
@@ -75,5 +77,7 @@ typedef struct bdffont {
 } BDFFont;
 
 extern int BDFDepth(BDFFont* bdf);
+BDFFont* SFGetBdfFont(SplineFont *sf);
+bool SFIsBitmap(SplineFont *sf);
 
 #endif /* FONTFORGE_BDFFONT_H */

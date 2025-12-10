@@ -25,9 +25,11 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+extern "C" {
+#include "bdffont.h"
 #include "bitmapcontrol.h"
-#include "splinefill.h"
-#include "views.h"
+#include "splinefont_enums.h"
+}
 #include "gtk/simple_dialogs.hpp"
 
 void BitmapDlg(FontViewBase *fv, GWindow gw, SplineChar *sc, int isavail) {
@@ -49,16 +51,16 @@ void BitmapDlg(FontViewBase *fv, GWindow gw, SplineChar *sc, int isavail) {
     bd.isavail = isavail;
     bd.done = false;
 
-    for ( bdf=bd.sf->bitmaps, i=0; bdf!=NULL; bdf=bdf->next, ++i );
+    for ( bdf=SFGetBdfFont(bd.sf), i=0; bdf!=NULL; bdf=bdf->next, ++i );
 
-    sizes = malloc((i+1)*sizeof(int32_t));
-    for ( bdf=bd.sf->bitmaps, i=0; bdf!=NULL; bdf=bdf->next, ++i )
+    sizes = (int32_t*)malloc((i+1)*sizeof(int32_t));
+    for ( bdf=SFGetBdfFont(bd.sf), i=0; bdf!=NULL; bdf=bdf->next, ++i )
 	sizes[i] = bdf->pixelsize | (BDFDepth(bdf)<<16);
     sizes[i] = 0;
 
     bool is_ok = bitmap_strikes_dialog(
         gw, dlg_mode, &sizes,
-        bd.sf->onlybitmaps && bd.sf->bitmaps != NULL, sc != NULL,
+        SFIsBitmap(bd.sf), sc != NULL,
         &rasterize, &scope);
 
     if (!is_ok) return;

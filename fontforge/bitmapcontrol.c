@@ -363,3 +363,9 @@ int BitmapControl(FontViewBase *fv,int32_t *sizes,int isavail,int rasterize) {
     BitmapsDoIt(&bd,sizes,true);
 return( bd.done );
 }
+
+BDFFont* SFGetBdfFont(SplineFont* sf) { return sf->bitmaps; }
+
+bool SFIsBitmap(SplineFont* sf) {
+    return sf->onlybitmaps && sf->bitmaps != NULL;
+}
