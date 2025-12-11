@@ -28,22 +28,38 @@
 
 #include "dialog.hpp"
 
-#include "simple_dialogs.hpp"
 #include "widgets/verified_entry.hpp"
 
 namespace ff::dlg {
+
+typedef enum bitmaps_dlg_mode {
+    bitmaps_dlg_avail = 1,
+    bitmaps_dlg_regen = 0,
+    bitmaps_dlg_remove = -1
+} BitmapsDlgMode;
 
 using BitmapSize = std::pair<uint16_t /*size*/, uint16_t /*depth*/>;
 using BitmapSizes = std::vector<BitmapSize>;
 
 class BitmapsDlg final : public Dialog {
  public:
+    // Update the list of available bitmap pixel sizes and action.
+    // Arguments:
+    //  * mode - set available bitmaps / regenerate from outline / clear
+    //  * sizes - list of existing bitmap sizes and color depths
+    //  * bitmaps_only - the font has bitmaps and no outlines
+    //  * has_current_char - dialog called from Char View or similar context
     BitmapsDlg(GWindow parent, BitmapsDlgMode mode, const BitmapSizes& sizes,
                bool bitmaps_only, bool has_current_char);
 
+    // Return value - the user confirmed or dismissed the dialog
     bool show();
     BitmapSizes get_sizes() const;
+
+    // Rasterize outlines to fill the newly created bitmaps or create empty
     bool get_rasterize() const;
+
+    // Scope of change (all / selection / current)
     Glib::ustring get_active_scope() const;
 
  private:

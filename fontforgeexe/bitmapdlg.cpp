@@ -30,49 +30,52 @@ extern "C" {
 #include "bitmapcontrol.h"
 #include "splinefont_enums.h"
 }
+#include "gtk/application.hpp"
+#include "gtk/bitmaps_dlg.hpp"
 #include "gtk/simple_dialogs.hpp"
 
-void BitmapDlg(FontViewBase *fv, GWindow gw, SplineChar *sc, int isavail) {
+void BitmapDlg(FontViewBase* fv, GWindow gw, SplineChar* sc, int isavail) {
     CreateBitmapData bd;
-    int i;
-    int32_t *sizes;
-    BDFFont *bdf;
     bool rasterize = true;
-    char* scope = NULL;
-    enum bitmaps_dlg_mode dlg_mode =
-        (isavail == 1) ? bitmaps_dlg_avail
-                       : (isavail == -1) ? bitmaps_dlg_remove
-                                         : bitmaps_dlg_regen;
+    std::string scope;
+    ff::dlg::bitmaps_dlg_mode dlg_mode = (ff::dlg::bitmaps_dlg_mode)isavail;
 
     bd.fv = fv;
     bd.sc = sc;
-    bd.layer = fv!=NULL ? fv->active_layer : ly_fore;
+    bd.layer = fv != NULL ? fv->active_layer : ly_fore;
     bd.sf = fv->cidmaster ? fv->cidmaster : fv->sf;
     bd.isavail = isavail;
     bd.done = false;
 
-    for ( bdf=SFGetBdfFont(bd.sf), i=0; bdf!=NULL; bdf=bdf->next, ++i );
+    ff::dlg::BitmapSizes sizes;
+    for (BDFFont* bdf = SFGetBdfFont(bd.sf); bdf != NULL; bdf = bdf->next) {
+        sizes.emplace_back(bdf->pixelsize, BDFDepth(bdf));
+    }
 
-    sizes = (int32_t*)malloc((i+1)*sizeof(int32_t));
-    for ( bdf=SFGetBdfFont(bd.sf), i=0; bdf!=NULL; bdf=bdf->next, ++i )
-	sizes[i] = bdf->pixelsize | (BDFDepth(bdf)<<16);
-    sizes[i] = 0;
+    // To avoid instability, the GTK application is lazily initialized only when
+    // a GTK window is invoked.
+    ff::app::GtkApp();
 
-    bool is_ok = bitmap_strikes_dialog(
-        gw, dlg_mode, &sizes,
-        SFIsBitmap(bd.sf), sc != NULL,
-        &rasterize, &scope);
-
+    ff::dlg::BitmapsDlg dialog(gw, dlg_mode, sizes, SFIsBitmap(bd.sf),
+                               sc != NULL);
+    bool is_ok = dialog.show();
     if (!is_ok) return;
 
-    if (bd.isavail < true)
-        bd.which = (strcmp(scope, "all") == 0)         ? bd_all
-                      : (strcmp(scope, "selection") == 0) ? bd_selected
-                                                          : bd_current;
-    if (bd.isavail == 1) bd.rasterize = rasterize;
+    ff::dlg::BitmapSizes new_sizes = dialog.get_sizes();
+    std::vector<int32_t> c_sizes;
+    for (const ff::dlg::BitmapSize& sz : new_sizes) {
+        c_sizes.push_back(sz.first | (sz.second << 16));
+    }
+    c_sizes.push_back(0); /* C data is zero-terminated */
+    rasterize = dialog.get_rasterize();
+    scope = dialog.get_active_scope();
 
-    BitmapsDoIt(&bd, sizes, true);
-    free(sizes);
-    free(scope);
-    return;
+    if (dlg_mode != ff::dlg::bitmaps_dlg_avail)
+        bd.which = (scope == "all")         ? bd_all
+                   : (scope == "selection") ? bd_selected
+                                            : bd_current;
+    else
+        bd.rasterize = rasterize;
+
+    BitmapsDoIt(&bd, c_sizes.data(), true);
 }

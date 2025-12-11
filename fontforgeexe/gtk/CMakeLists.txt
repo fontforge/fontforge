@@ -19,7 +19,7 @@ add_library(ffgtk OBJECT
   utils.cpp
 )
 
-target_link_libraries(ffgtk PRIVATE
+target_link_libraries(ffgtk PUBLIC
   fontforge_common_headers
   ffgtk_widgets
   PkgConfig::GTKMM

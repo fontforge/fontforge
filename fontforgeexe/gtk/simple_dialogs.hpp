@@ -39,33 +39,12 @@ typedef struct {
     uint32_t tag;
 } LanguageRec;
 
-typedef enum bitmaps_dlg_mode {
-    bitmaps_dlg_avail,
-    bitmaps_dlg_regen,
-    bitmaps_dlg_remove
-} BitmapsDlgMode;
-
 int add_encoding_slots_dialog(GWindow parent, bool cid);
 
 // Return comma-separated list of language tags, or NULL if the action was
 // canceled. The caller is responsible to release the returned pointer.
 char* language_list_dialog(GWindow parent, const LanguageRec* languages,
                            const char* initial_tags);
-
-// Update the list of available bitmap pixel sizes and action.
-// Arguments:
-//  * c_sizes [input/output, may be reallocated inside] - NULL-terminated list
-//    of bitmap pixel sizes
-//  * bitmaps_only [input] - the font has bitmaps and no outlines
-//  * has_current_char [input] - dialog called from Char View or similar context
-//  * p_rasterize [output] - rasterze outlines to fill the newly created bitmaps
-//  * p_scope [output, released by caller] - scope of change (all / selection /
-//  current)
-//  * return value - the user confirmed or dismissed the dialog
-bool bitmap_strikes_dialog(GWindow parent, BitmapsDlgMode mode,
-                           int32_t** c_sizes, bool bitmaps_only,
-                           bool has_current_char, bool* p_rasterize,
-                           char** p_scope);
 
 void update_appearance();
 
