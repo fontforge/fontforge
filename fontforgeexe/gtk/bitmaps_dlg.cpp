@@ -161,7 +161,7 @@ BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode,
     get_content_area()->pack_start(*pt_this_frame);
 
     auto pt_96_frame =
-        Gtk::make_managed<Gtk::Frame>(_("Point sizes on a 96 ppi monitor"));
+        Gtk::make_managed<Gtk::Frame>(_("Point sizes on a 96 PPI monitor"));
     auto pt_96_entry = Gtk::make_managed<Gtk::Entry>();
     pt_96_entry->set_text(SizeString(sizes, 72.0 / 96.0));
     pt_96_entry->set_editable(false);
