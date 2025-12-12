@@ -111,8 +111,10 @@ static std::string margin(const GBox& box_resource, bool enabled) {
 
 static std::string border_style(const GBox& box_resource, bool enabled) {
     static const std::map<enum border_type, std::string> border_type_map = {
-        {bt_none, "none"},     {bt_box, "solid"},       {bt_raised, "outset"},
-        {bt_lowered, "inset"}, {bt_engraved, "groove"}, {bt_embossed, "ridge"},
+        // CSS property values "inset" and "outset" modify colors, so we don't
+        // use them.
+        {bt_none, "none"},     {bt_box, "solid"},       {bt_raised, "solid"},
+        {bt_lowered, "solid"}, {bt_engraved, "groove"}, {bt_embossed, "ridge"},
         {bt_double, "double"}};
     return border_type_map.at(
         static_cast<enum border_type>(box_resource.border_type));
