@@ -400,7 +400,7 @@ PANOSE
 This sub-dialog allows you to describe your font in 10 different dimensions. The
 exact meanings of many of these entries vary from script to script, and even the
 Latin ones are not clear to me, I have merely typed them in as specified in the
-`true type docs <http://fonts.apple.com/TTRefMan/RM06/Chap6OS2.html>`__. Better
+`true type docs <http://fonts.apple.com/TrueType-Reference-Manual/RM06/Chap6OS2.html>`__. Better
 information is available from `HP <http://panose.com/>`__,
 `MS <https://msdn.microsoft.com/en-us/library/windows/desktop/dd162774(v=vs.85).aspx>`__,
 `RS <https://www.w3.org/Printing/stevahn.html>`__,
@@ -584,7 +584,7 @@ The various strings and a brief description of their meanings are:
    Whatever.
 
 These are described in the
-`original true type docs <http://fonts.apple.com/TTRefMan/RM06/Chap6name.html>`__,
+`original true type docs <http://fonts.apple.com/TrueType-Reference-Manual/RM06/Chap6name.html>`__,
 but they apply to
 `open type <http://partners.adobe.com/asn/tech/type/opentype/recom.jsp>`__ as
 well.
