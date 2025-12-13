@@ -2254,8 +2254,6 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 
     if ( sf->version!=NULL )
 	fprintf(sfd, "Version: %s\n", sf->version );
-    if ( sf->styleMapFamilyName!=NULL )
-	fprintf(sfd, "StyleMapFamilyName: %s\n", sf->styleMapFamilyName );
     if ( sf->fondname!=NULL )
 	fprintf(sfd, "FONDName: %s\n", sf->fondname );
     if ( sf->defbasefilename!=NULL )
@@ -7691,13 +7689,28 @@ bool SFD_GetFontMetaData( FILE *sfd,
     }
     else if ( strmatch(tok,"StyleMapFamilyName:")==0 )
     {
-    sf->styleMapFamilyName = SFDReadUTF7Str(sfd);
+	struct ttflangname *names;
+
+	for ( names=sf->names; names!=NULL && names->lang!=0x409; names=names->next );
+	if ( names ) {
+	    if ( names->names[ttf_family] ) {
+		LogError(_("'StyleMapFamilyName' entry has been ignored") );
+	    }
+	    else {
+		names->names[ttf_family] = SFDReadUTF7Str(sfd);
+	    }
+	}
+	else {
+	    names = chunkalloc(sizeof(struct ttflangname));
+	    names->next = sf->names;
+	    names->lang = 0x409;
+	    names->names[ttf_family] = SFDReadUTF7Str(sfd);
+	    sf->names = names;
+	}
     }
     /* Legacy attribute for StyleMapFamilyName. Deprecated. */
     else if ( strmatch(tok,"OS2FamilyName:")==0 )
     {
-    if (sf->styleMapFamilyName == NULL)
-        sf->styleMapFamilyName = SFDReadUTF7Str(sfd);
     }
     else if ( strmatch(tok,"FONDName:")==0 )
     {
@@ -7738,7 +7751,29 @@ bool SFD_GetFontMetaData( FILE *sfd,
     }
     else if ( strmatch(tok,"LangName:")==0 )
     {
+	struct ttflangname *names, *prev;
+
 	sf->names = SFDGetLangName(sfd,sf->names);
+
+	if ( sf->names->lang == 0x409 ) {  /* if StyleMapFamilyName was loaded */
+	    prev = sf->names;
+	    for ( names=sf->names->next; names!=NULL && names->lang!=0x409; prev=names, names=names->next );
+	    if ( names ) {
+		if ( sf->names->names[ttf_family] ) {
+		    LogError(_("'StyleMapFamilyName' entry has been ignored") );
+		}
+		else {
+		    sf->names->names[ttf_family] = names->names[ttf_family];
+		    names->names[ttf_family] = NULL;
+		}
+		prev->next = names->next;
+		for ( int i = 0; i < ttf_namemax; ++i ) {
+		    if ( names->names[i] )
+			free(names->names[i]);
+		}
+		free(names);
+	    }
+	}
     }
     else if ( strmatch(tok,"GaspTable:")==0 )
     {
