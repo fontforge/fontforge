@@ -2254,8 +2254,6 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 
     if ( sf->version!=NULL )
 	fprintf(sfd, "Version: %s\n", sf->version );
-    if ( sf->styleMapFamilyName!=NULL )
-	fprintf(sfd, "StyleMapFamilyName: %s\n", sf->styleMapFamilyName );
     if ( sf->fondname!=NULL )
 	fprintf(sfd, "FONDName: %s\n", sf->fondname );
     if ( sf->defbasefilename!=NULL )
@@ -7691,13 +7689,11 @@ bool SFD_GetFontMetaData( FILE *sfd,
     }
     else if ( strmatch(tok,"StyleMapFamilyName:")==0 )
     {
-    sf->styleMapFamilyName = SFDReadUTF7Str(sfd);
+	d->lastStyleMapFamilyName = SFDReadUTF7Str(sfd);
     }
     /* Legacy attribute for StyleMapFamilyName. Deprecated. */
     else if ( strmatch(tok,"OS2FamilyName:")==0 )
     {
-    if (sf->styleMapFamilyName == NULL)
-        sf->styleMapFamilyName = SFDReadUTF7Str(sfd);
     }
     else if ( strmatch(tok,"FONDName:")==0 )
     {
@@ -7738,7 +7734,21 @@ bool SFD_GetFontMetaData( FILE *sfd,
     }
     else if ( strmatch(tok,"LangName:")==0 )
     {
+	struct ttflangname *english;
+
 	sf->names = SFDGetLangName(sfd,sf->names);
+
+	for ( english=sf->names; english!=NULL && english->lang!=0x409; english=english->next );
+	if ( english && d->lastStyleMapFamilyName ) {
+	    if ( english->names[ttf_family] ) {
+		LogError(_("'StyleMapFamilyName' entry has been ignored") );
+		free(d->lastStyleMapFamilyName);
+	    }
+	    else {
+		english->names[ttf_family] = d->lastStyleMapFamilyName;
+	    }
+	    d->lastStyleMapFamilyName = NULL;
+	}
     }
     else if ( strmatch(tok,"GaspTable:")==0 )
     {
