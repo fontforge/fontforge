@@ -7740,12 +7740,12 @@ bool SFD_GetFontMetaData( FILE *sfd,
 
 	for ( english=sf->names; english!=NULL && english->lang!=0x409; english=english->next );
 	if ( english && d->lastStyleMapFamilyName ) {
-	    if ( sf->names->names[ttf_family] ) {
+	    if ( english->names[ttf_family] ) {
 		LogError(_("'StyleMapFamilyName' entry has been ignored") );
 		free(d->lastStyleMapFamilyName);
 	    }
 	    else {
-		sf->names->names[ttf_family] = d->lastStyleMapFamilyName;
+		english->names[ttf_family] = d->lastStyleMapFamilyName;
 	    }
 	    d->lastStyleMapFamilyName = NULL;
 	}
