@@ -1170,12 +1170,8 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer, int
     if (styleNameSynthetic)
 	    PListAddString(dictnode,"styleName",styleNameSynthetic);
     {
-        char* familyName = fetchTTFAttribute(sf,ttf_family);
-        char* styleMapFamily = NULL;
-        if (familyName != NULL) {
-            styleMapFamily = malloc(strlen(familyName)+1);
-            strcpy(styleMapFamily, familyName);
-        } else if (sf->familyname != NULL) styleMapFamily = sf->familyname;
+        char* styleMapFamily = fetchTTFAttribute(sf,ttf_family);
+        if (styleMapFamily == NULL && sf->familyname != NULL) styleMapFamily = sf->familyname;
         if (styleMapFamily != NULL) PListAddString(dictnode,"styleMapFamilyName", styleMapFamily);
     }
     {

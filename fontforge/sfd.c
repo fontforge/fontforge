@@ -7689,24 +7689,7 @@ bool SFD_GetFontMetaData( FILE *sfd,
     }
     else if ( strmatch(tok,"StyleMapFamilyName:")==0 )
     {
-	struct ttflangname *names;
-
-	for ( names=sf->names; names!=NULL && names->lang!=0x409; names=names->next );
-	if ( names ) {
-	    if ( names->names[ttf_family] ) {
-		LogError(_("'StyleMapFamilyName' entry has been ignored") );
-	    }
-	    else {
-		names->names[ttf_family] = SFDReadUTF7Str(sfd);
-	    }
-	}
-	else {
-	    names = chunkalloc(sizeof(struct ttflangname));
-	    names->next = sf->names;
-	    names->lang = 0x409;
-	    names->names[ttf_family] = SFDReadUTF7Str(sfd);
-	    sf->names = names;
-	}
+	d->lastStyleMapFamilyName = SFDReadUTF7Str(sfd);
     }
     /* Legacy attribute for StyleMapFamilyName. Deprecated. */
     else if ( strmatch(tok,"OS2FamilyName:")==0 )
@@ -7751,28 +7734,20 @@ bool SFD_GetFontMetaData( FILE *sfd,
     }
     else if ( strmatch(tok,"LangName:")==0 )
     {
-	struct ttflangname *names, *prev;
+	struct ttflangname *english;
 
 	sf->names = SFDGetLangName(sfd,sf->names);
 
-	if ( sf->names->lang == 0x409 ) {  /* if StyleMapFamilyName was loaded */
-	    prev = sf->names;
-	    for ( names=sf->names->next; names!=NULL && names->lang!=0x409; prev=names, names=names->next );
-	    if ( names ) {
-		if ( sf->names->names[ttf_family] ) {
-		    LogError(_("'StyleMapFamilyName' entry has been ignored") );
-		}
-		else {
-		    sf->names->names[ttf_family] = names->names[ttf_family];
-		    names->names[ttf_family] = NULL;
-		}
-		prev->next = names->next;
-		for ( int i = 0; i < ttf_namemax; ++i ) {
-		    if ( names->names[i] )
-			free(names->names[i]);
-		}
-		free(names);
+	for ( english=sf->names; english!=NULL && english->lang!=0x409; english=english->next );
+	if ( english && d->lastStyleMapFamilyName ) {
+	    if ( sf->names->names[ttf_family] ) {
+		LogError(_("'StyleMapFamilyName' entry has been ignored") );
+		free(d->lastStyleMapFamilyName);
 	    }
+	    else {
+		sf->names->names[ttf_family] = d->lastStyleMapFamilyName;
+	    }
+	    d->lastStyleMapFamilyName = NULL;
 	}
     }
     else if ( strmatch(tok,"GaspTable:")==0 )
