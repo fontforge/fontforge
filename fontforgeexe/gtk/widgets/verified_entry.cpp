@@ -50,6 +50,13 @@ bool VerifiedEntry::verify() {
         get_style_context()->add_provider(error_css_provider_,
                                           GTK_STYLE_PROVIDER_PRIORITY_USER - 1);
         select_region(start_pos, end_pos);
+
+        // This widget is designed to clear highlight when the user focuses on
+        // it to fix the value. The focus is not always lost (e.g. when pressing
+        // Enter to close the dialog), so we force it to later trigger the
+        // focus-in.
+        Gtk::Window* top = dynamic_cast<Gtk::Window*>(get_toplevel());
+        if (top) top->unset_focus();
     }
     return contents_valid;
 }

@@ -135,11 +135,12 @@ BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode,
     }
 
     pixels_entry_.set_text(SizeString(sizes));
+    pixels_entry_.set_activates_default();
+    pixels_entry_.set_verifier(pixel_size_verifier);
     auto pixels_frame = Gtk::make_managed<Gtk::Frame>(_("Pixel Sizes:"));
     pixels_frame->add(pixels_entry_);
     pixels_frame->set_shadow_type(Gtk::SHADOW_NONE);
     get_content_area()->pack_start(*pixels_frame);
-    pixels_entry_.set_verifier(pixel_size_verifier);
 
     auto pt_this_frame = Gtk::make_managed<Gtk::Frame>();
     auto pt_this_entry = Gtk::make_managed<Gtk::Entry>();
