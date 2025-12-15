@@ -29,6 +29,7 @@
 
 #include <cstring>
 #include <functional>
+#include <iostream>
 #include <map>
 #include <vector>
 
@@ -258,6 +259,40 @@ std::string build_unset_style(
     return selector + " {\n" + property_list + "}\n";
 }
 
+// Some GTK widgets have substantially different structure from their GDraw
+// analogs. For them we collect only color properties.
+std::string build_color_only_styles(const GResInfo* gdraw_ri) {
+    static const std::vector<
+        std::tuple<std::string /*GDraw resource*/, std::string /*CSS class*/,
+                   std::string /*CSS pseudoclass*/>>
+        css_selector_map_color = {
+            {"GList", "treeview", "selected"},
+            {"GList", "combobox menuitem", "hover"},
+        };
+
+    std::string styles;
+    for (const auto& [gres, css_class, css_pseudoclass] :
+         css_selector_map_color) {
+        const GResInfo* ri = gdraw_ri;
+        for (; ri != NULL && ri->resname != gres; ri = ri->next);
+        if (ri == NULL || ri->boxdata == NULL) {
+            std::cerr << "GDraw resource \"" << gres << "\" not found"
+                      << std::endl;
+            continue;
+        }
+        auto props_color = collect_css_properties_color(*(ri->boxdata));
+        styles += build_style(css_class, props_color);
+
+        auto props_disabled = collect_css_properties_disabled(*(ri->boxdata));
+        styles += build_style(css_class + ":disabled", props_disabled);
+
+        auto props_selected = collect_css_properties_selected(*(ri->boxdata));
+        styles +=
+            build_style(css_class + ":" + css_pseudoclass, props_selected);
+    }
+    return styles;
+}
+
 std::string build_styles(const GResInfo* gdraw_ri) {
     struct Selector {
         std::string node_name;
@@ -279,28 +314,9 @@ std::string build_styles(const GResInfo* gdraw_ri) {
         {"GGadget.Popup", {"tooltip", {}}},
     };
 
-    // Some GTK widgets have substantially different structure from their GDraw
-    // analogs. For them we collect only color properties.
-    static const std::map<std::string, std::string> css_selector_map_color = {
-        {"GList", "treeview"},
-    };
-
     std::string styles;
 
     for (const GResInfo* ri = gdraw_ri; ri->next != NULL; ri = ri->next) {
-        auto sel_color_it = css_selector_map_color.find(ri->resname);
-        if (sel_color_it != css_selector_map_color.end()) {
-            auto props_color = collect_css_properties_color(*(ri->boxdata));
-            styles += build_style(sel_color_it->second, props_color);
-
-            auto props_selected =
-                collect_css_properties_selected(*(ri->boxdata));
-            styles +=
-                build_style(sel_color_it->second + ":selected", props_selected);
-
-            continue;
-        }
-
         auto sel_it = css_selector_map.find(ri->resname);
         if (sel_it == css_selector_map.end()) {
             continue;
@@ -344,6 +360,8 @@ std::string build_styles(const GResInfo* gdraw_ri) {
                 props_disabled);
         }
     }
+
+    styles += build_color_only_styles(gdraw_ri);
 
     return styles;
 }
