@@ -39,15 +39,17 @@ static Cairo::TextExtents ui_font_extents(const std::string& sample_text) {
     Glib::RefPtr<Gtk::StyleContext> style_context = Gtk::StyleContext::create();
 
     Pango::FontDescription font = style_context->get_font();
-    cairo_context->select_font_face(font.get_family(),
-                                    Cairo::FontSlant::FONT_SLANT_NORMAL,
-                                    Cairo::FontWeight::FONT_WEIGHT_NORMAL);
+    Cairo::RefPtr<Cairo::ToyFontFace> toy_face = Cairo::ToyFontFace::create(
+        font.get_family(), Cairo::FontSlant::FONT_SLANT_NORMAL,
+        Cairo::FontWeight::FONT_WEIGHT_NORMAL);
+    cairo_context->set_font_face(toy_face);
     cairo_context->set_font_size(font.get_size() / PANGO_SCALE *
                                  Gdk::Screen::get_default()->get_resolution() /
                                  72);
 
     Cairo::TextExtents extents;
     cairo_context->get_text_extents(sample_text, extents);
+    toy_face->unreference();  // Prevent memory leak
     return extents;
 }
 
