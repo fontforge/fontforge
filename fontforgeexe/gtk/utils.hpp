@@ -26,6 +26,7 @@
  */
 #pragma once
 
+#include <clocale>
 #include <gtkmm.h>
 
 namespace ff::ui_utils {
