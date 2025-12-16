@@ -121,6 +121,7 @@ BitmapsDlg::BitmapsDlg(GWindow parent, BitmapsDlgMode mode,
     }
 
     set_title(title);
+    set_hints_horizontal_resize_only();
 
     Glib::ustring heading = std::accumulate(
         headings.begin() + 1, headings.end(), headings[0],

@@ -106,6 +106,18 @@ void Dialog::set_help_context(const std::string& file,
     }
 }
 
+void Dialog::set_hints_horizontal_resize_only() {
+    Gdk::Geometry geometry;
+    // Height can't grow beyond the necessary minimum
+    geometry.min_height = 1;
+    geometry.max_height = 1;
+    // Width is not limited
+    geometry.min_width = 1;
+    geometry.max_width = 10000;
+    set_geometry_hints(*this, geometry,
+                       Gdk::HINT_MIN_SIZE | Gdk::HINT_MAX_SIZE);
+}
+
 bool Dialog::on_help_key_press(GdkEventKey* event) {
     if (event->keyval == GDK_KEY_F1 || event->keyval == GDK_KEY_Help) {
         help(help_file_.c_str(), help_section_.c_str());
