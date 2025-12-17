@@ -77,5 +77,5 @@ void BitmapDlg(FontViewBase* fv, GWindow gw, SplineChar* sc, int isavail) {
     else
         bd.rasterize = rasterize;
 
-    BitmapsDoIt(&bd, c_sizes.data(), true);
+    BitmapsDoIt(&bd, c_sizes.data());
 }
