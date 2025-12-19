@@ -77,7 +77,7 @@ typedef struct bdffont {
 } BDFFont;
 
 extern int BDFDepth(BDFFont* bdf);
-BDFFont* SFGetBdfFont(SplineFont *sf);
-bool SFIsBitmap(SplineFont *sf);
+BDFFont* SFGetBdfFont(SplineFont* sf);
+bool SFIsBitmap(SplineFont* sf);
 
 #endif /* FONTFORGE_BDFFONT_H */
