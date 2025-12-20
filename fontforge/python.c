@@ -6989,11 +6989,7 @@ static PyObject *PyFF_Glyph_get_codepoint(PyFF_Glyph *self, SplineChar *sc, void
         Py_RETURN_NONE;
 
     /* PyUnicode_FromFormat() needs Python 3.12+ */
-    if (sc->unicodeenc <= 0xffff)
-        sprintf(buffer, "U+%04X", sc->unicodeenc);
-    else
-        sprintf(buffer, "U+%06X", sc->unicodeenc);
-
+    sprintf(buffer, "U+%04X", sc->unicodeenc);
     return PyUnicode_FromString(buffer);
 }
 
