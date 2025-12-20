@@ -6984,9 +6984,17 @@ return( Py_BuildValue("i", map->backmap[sc->orig_pos] ));
 }
 
 static PyObject *PyFF_Glyph_get_codepoint(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    char buffer[12];
     if ( sc==NULL || sc->unicodeenc < 0 )
-Py_RETURN_NONE;
-    return PyUnicode_FromFormat("U+%04X", sc->unicodeenc);
+        Py_RETURN_NONE;
+
+    /* PyUnicode_FromFormat() needs Python 3.12+ */
+    if (sc->unicodeenc <= 0xffff)
+        sprintf(buffer, "U+%04X", sc->unicodeenc);
+    else
+        sprintf(buffer, "U+%06X", sc->unicodeenc);
+
+    return PyUnicode_FromString(buffer);
 }
 
 static PyObject *PyFF_Glyph_get_unicode(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
