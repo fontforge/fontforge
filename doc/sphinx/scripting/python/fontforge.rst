@@ -1704,7 +1704,7 @@ must be created through the font.
 .. attribute:: glyph.codepoint
 
    Unicode code point for this glyph in U+XXXX format for the Basic Multilingual
-   Plane, or U+XXXXXX for the supplementary planes, or ``None``. (readonly)
+   Plane, and up to U+XXXXXX for the supplementary planes, or ``None``. (readonly)
 
 .. attribute:: glyph.color
 
