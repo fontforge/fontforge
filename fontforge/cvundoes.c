@@ -2366,8 +2366,7 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 	if ( !pasteinto ) {
 	    if ( !sc->layers[layer].background &&
 		    SCWasEmpty(sc,pasteinto==0?layer:-1) ) {
-		if ( !sc->parent->onlybitmaps )
-		    SCSynchronizeWidth(sc,width,sc->width,fv);
+		SCSynchronizeWidth(sc,width,sc->width,fv);
 		sc->vwidth = vwidth;
 	    }
 	    SplinePointListsFree(sc->layers[layer].splines);
