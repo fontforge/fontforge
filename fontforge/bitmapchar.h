@@ -20,5 +20,7 @@ extern void SFReplaceEncodingBDFProps(SplineFont *sf, EncMap *map);
 extern void SFReplaceFontnameBDFProps(SplineFont *sf);
 extern void XLFD_CreateComponents(BDFFont *font, EncMap *map, int res, struct xlfd_components *components);
 extern void XLFD_GetComponents(const char *xlfd, struct xlfd_components *components);
+extern void CalculateBoundingBox(BDFFont *font,
+	int *fbb_width,int *fbb_height,int *fbb_lbearing, int *fbb_descent);
 
 #endif /* FONTFORGE_BITMAPCHAR_H */

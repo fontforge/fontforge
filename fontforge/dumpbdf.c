@@ -51,36 +51,6 @@ return( true );
 return( !SCWorthOutputting(bdfc->sc));
 }
 
-static void calculate_bounding_box(BDFFont *font,
-	int *fbb_width,int *fbb_height,int *fbb_lbearing, int *fbb_descent) {
-    int minx=0,maxx=0,miny=0,maxy=0;
-    BDFChar *bdfc;
-    int i;
-
-    for ( i=0; i<font->glyphcnt; ++i ) {
-	if ( (bdfc = font->glyphs[i])!=NULL ) {
-	    if ( minx==0 && maxx==0 ) {
-		minx = bdfc->xmin;
-		maxx = bdfc->xmax;
-	    } else {
-		if ( minx>bdfc->xmin ) minx=bdfc->xmin;
-		if ( maxx<bdfc->xmax ) maxx = bdfc->xmax;
-	    }
-	    if ( miny==0 && maxy==0 ) {
-		miny = bdfc->ymin;
-		maxy = bdfc->ymax;
-	    } else {
-		if ( miny>bdfc->ymin ) miny=bdfc->ymin;
-		if ( maxy<bdfc->ymax ) maxy = bdfc->ymax;
-	    }
-	}
-    }
-    *fbb_height = maxy-miny+1;
-    *fbb_width = maxx-minx+1;
-    *fbb_descent = miny;
-    *fbb_lbearing = minx;
-}
-
 #define MS_Hor	1
 #define MS_Vert	2
 struct metric_defaults {
@@ -311,7 +281,7 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,EncMap *map,
 #else
     fprintf( file, "SIZE %d %d %d\n", components.point_size/10, components.res_x, components.res_y );
 #endif
-    calculate_bounding_box(font,&fbb_width,&fbb_height,&fbb_lbearing,&fbb_descent);
+    CalculateBoundingBox(font,&fbb_width,&fbb_height,&fbb_lbearing,&fbb_descent);
     fprintf( file, "FONTBOUNDINGBOX %d %d %d %d\n", fbb_width, fbb_height, fbb_lbearing, fbb_descent);
 
     if ( defs->metricssets!=0 ) {

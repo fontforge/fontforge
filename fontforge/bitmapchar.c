@@ -948,3 +948,30 @@ struct bc_interface *bc_interface = &noui_bc;
 void FF_SetBCInterface(struct bc_interface *bci) {
     bc_interface = bci;
 }
+
+void CalculateBoundingBox(BDFFont* font, int* fbb_width, int* fbb_height,
+                          int* fbb_lbearing, int* fbb_descent) {
+    int minx = 0, maxx = 0, miny = 0, maxy = 0;
+    BDFChar* bdfc;
+    int i;
+
+    if (font->glyphcnt > 0 && (bdfc = font->glyphs[0]) != NULL) {
+        minx = bdfc->xmin;
+        maxx = bdfc->xmax;
+        miny = bdfc->ymin;
+        maxy = bdfc->ymax;
+    }
+
+    for (i = 1; i < font->glyphcnt; ++i) {
+        if ((bdfc = font->glyphs[i]) != NULL) {
+            if (minx > bdfc->xmin) minx = bdfc->xmin;
+            if (maxx < bdfc->xmax) maxx = bdfc->xmax;
+            if (miny > bdfc->ymin) miny = bdfc->ymin;
+            if (maxy < bdfc->ymax) maxy = bdfc->ymax;
+        }
+    }
+    *fbb_height = maxy - miny + 1;
+    *fbb_width = maxx - minx + 1;
+    *fbb_descent = miny;
+    *fbb_lbearing = minx;
+}
