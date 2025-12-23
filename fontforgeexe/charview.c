@@ -31,6 +31,7 @@
 #include "autosave.h"
 #include "autotrace.h"
 #include "autowidth.h"
+#include "bitmapcontrol.h"
 #include "charview_private.h"
 #include "cvruler.h"
 #include "cvundoes.h"
@@ -10386,7 +10387,7 @@ static void CVMenuShowDependentSubs(GWindow gw, struct gmenuitem *UNUSED(mi), GE
 
 static void CVMenuBitmaps(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
-    BitmapDlg((FontView *) (cv->b.fv),cv->b.sc,mi->mid==MID_RemoveBitmaps?-1: (mi->mid==MID_AvailBitmaps) );
+    BitmapDlg(cv->b.fv,gw,cv->b.sc,mi->mid==MID_RemoveBitmaps?-1: (mi->mid==MID_AvailBitmaps) );
 }
 
 static void cv_allistcheck(CharView *cv, struct gmenuitem *mi) {

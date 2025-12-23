@@ -729,3 +729,13 @@ typedef struct splinechar_ttf_map {
     SplineChar* glyph;
     int ttf_glyph;
 } SplineCharTTFMap;
+
+enum overlap_type {
+    over_remove,
+    over_rmselected,
+    over_intersect,
+    over_intersel,
+    over_exclude,
+    over_findinter,
+    over_fisel
+};

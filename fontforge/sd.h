@@ -206,5 +206,7 @@ extern void InitImportParams(ImportParams *ip);
 extern ImportParams *ImportParamsState(void);
 extern void InitExportParams(ExportParams *ep);
 extern ExportParams *ExportParamsState(void);
+extern void _ImportParamsDlg(ImportParams *ip);
+extern void _ExportParamsDlg(ExportParams *ep);
 
 #endif /* FONTFORGE_SD_H */

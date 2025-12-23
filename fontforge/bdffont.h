@@ -25,28 +25,59 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef FONTFORGE_BITMAPCONTROL_H
-#define FONTFORGE_BITMAPCONTROL_H
+#ifndef FONTFORGE_BDFFONT_H
+#define FONTFORGE_BDFFONT_H
 
-#include "baseviews.h"
+#include <stdint.h>
+#include "splinechar.h"
 
-typedef struct gwindow* GWindow;
+typedef struct splinefont SplineFont;
 
-enum bd_scope { bd_all, bd_selected, bd_current };
+enum property_type {
+    prt_string,
+    prt_atom,
+    prt_int,
+    prt_uint,
+    prt_property = 0x10
+};
 
-typedef struct createbitmapdata {
-    FontViewBase *fv;
-    SplineFont *sf;
-    SplineChar *sc;
-    int layer;
-    int isavail;
-    enum bd_scope which;
-    int rasterize;
-    unsigned int done: 1;
-} CreateBitmapData;
+typedef struct bdfprops {
+    char* name; /* These include both properties (like SLANT) and non-properties
+                   (like FONT) */
+    int type;
+    union {
+        char* str;
+        char* atom;
+        int val;
+    } u;
+} BDFProperties;
 
-void BitmapsDoIt(CreateBitmapData *bd,int32_t *sizes);
-extern int BitmapControl(FontViewBase *fv, int32_t *sizes, int isavail, int rasterize);
-extern void BitmapDlg(FontViewBase *fv, GWindow gw, SplineChar *sc, int isavail);
+typedef struct bdffont {
+    struct splinefont* sf;
+    int glyphcnt, glyphmax; /* used & allocated sizes of glyphs array */
+    BDFChar** glyphs;       /* an array of charcnt entries */
+    int16_t pixelsize;
+    int16_t ascent, descent;
+    int16_t layer; /* for piecemeal fonts */
+    unsigned int piecemeal : 1;
+    unsigned int bbsized : 1;
+    unsigned int ticked : 1;
+    unsigned int unhinted_freetype : 1;
+    unsigned int recontext_freetype : 1;
+    struct bdffont* next;
+    struct clut* clut;
+    char* foundry;
+    int res;
+    void* freetype_context;
+    uint16_t truesize; /* for bbsized fonts */
+    int16_t prop_cnt;
+    int16_t prop_max; /* only used within bdfinfo dlg */
+    BDFProperties* props;
+    uint16_t ptsize, dpi; /* for piecemeal fonts */
+} BDFFont;
 
-#endif /* FONTFORGE_BITMAPCONTROL_H */
+extern int BDFDepth(BDFFont* bdf);
+BDFFont* SFGetBdfFont(SplineFont* sf);
+bool SFIsBitmap(SplineFont* sf);
+
+#endif /* FONTFORGE_BDFFONT_H */

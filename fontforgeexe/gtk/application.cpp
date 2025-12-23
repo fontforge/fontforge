@@ -64,10 +64,10 @@ void load_legacy_style() {
         auto screen = Gdk::Screen::get_default();
 
         // User-defined CSS should usually go with USER priority, but we reduce
-        // it by 1 so that GTK inspector which also applies USER, would get
-        // priority over it.
+        // it by 2 so that widget-specific customizations and the GTK inspector,
+        // which also applies USER, would have priority over it.
         Gtk::StyleContext::add_provider_for_screen(
-            screen, css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER - 1);
+            screen, css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER - 2);
 
         initialized = true;
     }

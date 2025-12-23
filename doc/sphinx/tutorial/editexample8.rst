@@ -64,12 +64,12 @@ Creating Bitmap strikes
 
 If you want to add a bitmap strike with a given pixel size to a font then use
 :ref:`Element->Bitmap Strikes Available <elementmenu.Bitmaps>`. Simply add the
-pixel size you are interested in to the list at the bottom of the screen.
+pixel size you are interested in to the list at the "Pixel sizes" field.
 
-If you are more comfortable dealing in point sizes, be aware that those depend
-on screen resolution. This dialog shows you the conversion between point and
-pixel sizes for two standard resolutions. The resolutions differ depending on
-what windowing system you use.
+For convenience, the available pixel sizes are also shown in point sizes, which
+depend on screen resolution. This dialog shows you the conversion between point
+and pixel sizes for the actual resolution of your monitor, as reported by the
+operating system, and for the typical 96 PPI resolution.
 
 You may add more than one pixel size, of course. You may also remove pixel sizes
 if you no longer want them.
