@@ -26,6 +26,16 @@ FF_OUTPUT_FILE="Output.sfd"
 # f.mergeFeature('Out.fea'); f.save(argv[2])"
 # FF_OUTPUT_FILE="Output.sfd"
 
+# # NOTE: Zeroize "CreationTime" and "ModificationTime" in SFD_DumpSplineFontMetadata()
+# FF_PY_SCRIPT_LINE="\
+# f=fontforge.open(argv[1]);\
+# f.cidConvertByCmap('/home/iorsh/devel/cmap-resources/Adobe-Identity-0/CMap/Identity-H')"$'\n'"\
+# f.generateFeatureFile('Out.fea')"$'\n'"\
+# for l in f.gsub_lookups: f.removeLookup(l)"$'\n'"\
+# for l in f.gpos_lookups: f.removeLookup(l)"$'\n'"\
+# f.mergeFeature('Out.fea'); f.save(argv[2])"
+# FF_OUTPUT_FILE="Output.sfd"
+
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 FF_BIN_PROJECT=$SCRIPT_DIR/$FF_BIN_PROJECT
 
