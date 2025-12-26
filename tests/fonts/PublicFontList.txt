@@ -176,3 +176,14 @@ https://gitlab.com/typebits/font-roseta/-/raw/master/Roseta-Regular.sfd
 https://gitlab.com/typebits/font-setperset/-/raw/master/Setperset-Regular.sfd
 https://gitlab.com/icewoodfire/tty-clock-ttf-font/-/raw/master/ttyclock.sfd
 https://gitlab.com/balasankarc/sokanasini/-/raw/master/Sokanasini.sfd
+https://github.com/slavonic/fonts-znam/raw/master/Mezenets/MezenetsUnicode.sfd
+https://github.com/slavonic/fonts-znam/raw/master/Shaidur/ShaidurUnicode.sfd
+https://github.com/slavonic/fonts-znam/raw/master/Smolensky/Smolensky-Regular.sfd
+https://github.com/slavonic/fonts-znam/raw/master/Stolp/Stolp-Regular.sfd
+https://github.com/slavonic/Monomakh/raw/main/sources/Monomakh-Regular.sfd
+https://github.com/slavonic/Pochaevsk/raw/main/sources/Pochaevsk.sfd
+https://github.com/slavonic/Ponomar/raw/main/sources/Ponomar.sfd
+https://github.com/slavonic/Triodion/raw/main/sources/Triodion.sfd
+https://github.com/slavonic/Shafarik/raw/main/sources/Shafarik-Regular.sfd
+https://github.com/slavonic/FiraSlav/raw/master/sources/FiraSlav-Regular.sfd
+https://github.com/slavonic/FiraSlav/raw/master/sources/FiraSlav-Bold.sfd
