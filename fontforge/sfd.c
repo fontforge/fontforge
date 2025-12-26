@@ -5275,7 +5275,7 @@ return( NULL );
 	    } else {
 		sc->orig_pos = orig_pos++;
 	    }
-	    if (sf->map && sf->map->map[enc] != -1) {
+	    if (enc != -1 && sf->map && sf->map->map[enc] != -1) {
 		/* Multiple glyphs with same encoding are not accessible from
 		   FontView, and we consider them corrupted. */
 		LogError(_("Duplicate local encoding 0x%04x encountered in glyph %s. This glyph will be unencoded."), enc, sc->name);
