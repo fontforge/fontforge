@@ -1251,12 +1251,10 @@ return;
 
 static void *SFDUnPickle(FILE *sfd, int python_data_has_lists) {
     int ch, quoted;
-    static int max = 0;
-    static char *buf = NULL;
-    char *pt, *end;
-    int cnt;
+    static char *buf = NULL, *end = NULL;
+    char *pt;
 
-    pt = buf; end = buf+max;
+    pt = buf;
     while ( (ch=nlgetc(sfd))!='"' && ch!='\n' && ch!=EOF );
     if ( ch!='"' )
 return( NULL );
@@ -1266,12 +1264,8 @@ return( NULL );
 	if ( !quoted && ch=='\\' )
 	    quoted = true;
 	else {
-	    if ( pt>=end ) {
-		cnt = pt-buf;
-		buf = realloc(buf,(max+=200)+1);
-		pt = buf+cnt;
-		end = buf+max;
-	    }
+	    if ( pt>=end )
+		realloc_tail(&buf, 200, &end, &pt);
 	    *pt++ = ch;
 	    quoted = false;
 	}
@@ -1890,7 +1884,6 @@ static void SFDDumpOtfFeatNames(FILE *sfd, SplineFont *sf) {
     struct otfname *on;
 	bool cv[100] = {false};
 	int cvnum, cvcount, i;
-	char prefix[3] = {0};
 
     for ( fn=sf->feat_names; fn!=NULL; fn=fn->next ) {
 	if ( (fn->tag & 0xffff0000) == (('s' << 24) | ('s' << 16)) ) {
@@ -3287,12 +3280,8 @@ char *getquotedeol(FILE *sfd) {
 	    /* FontForge doesn't write other escape sequences in this context. */
 	    /* So any other value of ch is assumed impossible. */
 	}
-	if ( pt>=end ) {
-	    pt = realloc(str,end-str+101);
-	    end = pt+(end-str)+100;
-	    str = pt;
-	    pt = end-100;
-	}
+	if ( pt>=end )
+	    realloc_tail(&str, 100, &end, &pt);
 	*pt++ = ch;
 	ch = nlgetc(sfd);
     }
@@ -3770,12 +3759,8 @@ static void SFDGetTtInstrs(FILE *sfd, SplineChar *sc) {
     int instr_len;
 
     while ( (ch=nlgetc(sfd))!=EOF ) {
-	if ( pt>=end ) {
-	    char *newbuf = realloc(buf,(end-buf+200));
-	    pt = newbuf+(pt-buf);
-	    end = newbuf+(end+200-buf);
-	    buf = newbuf;
-	}
+	if ( pt>=end )
+	    realloc_tail(&buf, 200, &end, &pt);
 	*pt++ = ch;
 	if ( pt-buf>backlen && strncmp(pt-backlen,end_tt_instrs,backlen)==0 ) {
 	    pt -= backlen;
@@ -3893,12 +3878,8 @@ static struct ttf_table *SFDGetTtTable(FILE *sfd, SplineFont *sf,struct ttf_tabl
 	which = 1;
 
     while ( (ch=nlgetc(sfd))!=EOF ) {
-	if ( pt>=end ) {
-	    char *newbuf = realloc(buf,(end-buf+200));
-	    pt = newbuf+(pt-buf);
-	    end = newbuf+(end+200-buf);
-	    buf = newbuf;
-	}
+	if ( pt>=end )
+	    realloc_tail(&buf, 200, &end, &pt);
 	*pt++ = ch;
 	if ( pt-buf>backlen && strncmp(pt-backlen,end_tt_instrs,backlen)==0 ) {
 	    pt -= backlen;
