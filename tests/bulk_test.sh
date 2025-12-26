@@ -58,7 +58,8 @@ while read font_url; do
         popd > /dev/null
 
         if [ ! -f $TMP_DIR_SYS/$FF_OUTPUT_FILE ] && [ ! -f $TMP_DIR_PROJ/$FF_OUTPUT_FILE ]; then
-            echo "NO OUTPUT: $font_url"
+            echo "\e[0;33mNO OUTPUT\e[0m: $font_url"
+            failure=1
         elif (cmp --quiet $TMP_DIR_SYS/$FF_OUTPUT_FILE $TMP_DIR_PROJ/$FF_OUTPUT_FILE); then
             echo "PASS: $font_url"
         else
