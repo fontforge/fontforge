@@ -175,6 +175,7 @@ static void SFDDumpHintList(FILE *sfd,const char *key, StemInfo *h);
 static void SFDDumpDHintList( FILE *sfd,const char *key, DStemInfo *d );
 static StemInfo *SFDReadHints(FILE *sfd);
 static DStemInfo *SFDReadDHints( SplineFont *sf,FILE *sfd,int old );
+static void SFDSizeMap(EncMap *map,int glyphcnt,int enccnt);
 
 static int PeekMatch(FILE *stream, const char * target) {
   // This returns 1 if target matches the next characters in the stream.
@@ -5293,7 +5294,17 @@ return( NULL );
 	    } else {
 		sc->orig_pos = orig_pos++;
 	    }
-	    SFDSetEncMap(sf,sc->orig_pos,enc);
+	    if (sf->map && sf->map->map[enc] != -1) {
+		/* Multiple glyphs with same encoding are not accessible from
+		   FontView, and we consider them corrupted. */
+		LogError(_("Duplicate local encoding 0x%04x encountered in glyph %s. This glyph will be unencoded."), enc, sc->name);
+
+		/* Append this glyph at the unencoded area at the end. */
+		enc = sf->map->enccount;
+		sc->unicodeenc = -1;
+		SFDSizeMap(sf->map, sf->glyphcnt, enc + 1);
+	    }
+	    SFDSetEncMap(sf, sc->orig_pos, enc);
 	} else if ( strmatch(tok,"AltUni:")==0 ) {
 	    int uni;
 	    while ( getint(sfd,&uni)==1 ) {
