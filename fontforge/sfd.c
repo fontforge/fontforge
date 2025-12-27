@@ -5278,12 +5278,18 @@ return( NULL );
 	    if (enc != -1 && sf->map && sf->map->map[enc] != -1) {
 		/* Multiple glyphs with same encoding are not accessible from
 		   FontView, and we consider them corrupted. */
-		LogError(_("Duplicate local encoding 0x%04x encountered in glyph %s. This glyph will be unencoded."), enc, sc->name);
+
+		/* The last of the identically encoded glyphs occludes the others,
+		   so we keep it, and drop the encoding of the previously encountered duplicate. */
+		SplineChar *dup_sc = sf->glyphs[sf->map->map[enc]];
+		LogError(_("Duplicate local encoding 0x%04x encountered in glyph %s. This glyph will be unencoded."), enc, dup_sc->name);
 
 		/* Append this glyph at the unencoded area at the end. */
-		enc = sf->map->enccount;
-		sc->unicodeenc = -1;
-		SFDSizeMap(sf->map, sf->glyphcnt, enc + 1);
+		// enc = sf->map->enccount;
+		dup_sc->unicodeenc = -1;
+		sf->map->backmap[dup_sc->orig_pos] = -1;
+	        SFDSetEncMap(sf, dup_sc->orig_pos, sf->map->enccount);
+		SFDSizeMap(sf->map, sf->glyphcnt, sf->map->enccount + 1);
 	    }
 	    SFDSetEncMap(sf, sc->orig_pos, enc);
 	} else if ( strmatch(tok,"AltUni:")==0 ) {
