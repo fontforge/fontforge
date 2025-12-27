@@ -4760,6 +4760,29 @@ return;
 	map->map[enc] = orig_pos;
 }
 
+static void SFDFixDuplicateEnc(SplineFont* sf, int enc) {
+    if (enc < 0 || enc >= sf->map->encmax) return;
+
+    int32_t glyph_idx = sf->map->map[enc];
+    if (glyph_idx < 0 || glyph_idx >= sf->glyphcnt) return;
+
+    /* The last of the identically encoded glyphs occludes the others, so we
+     * keep it, and drop the encoding of the previously encountered duplicate.
+     */
+    SplineChar* dup_sc = sf->glyphs[glyph_idx];
+    if (dup_sc == NULL || dup_sc->orig_pos < 0) return;
+    LogError(_("Duplicate local encoding 0x%04x encountered in glyph %s. This "
+               "glyph will be unencoded."),
+             enc, dup_sc->name);
+
+    /* Append this glyph at the unencoded area at the end. */
+    dup_sc->unicodeenc = -1;
+    if (dup_sc->orig_pos < sf->map->backmax)
+        sf->map->backmap[dup_sc->orig_pos] = -1;
+    SFDSetEncMap(sf, dup_sc->orig_pos, sf->map->enccount);
+    SFDSizeMap(sf->map, sf->glyphcnt, sf->map->enccount + 1);
+}
+
 static void SCDefaultInterpolation(SplineChar *sc) {
     SplineSet *cur;
     SplinePoint *sp;
@@ -5278,18 +5301,7 @@ return( NULL );
 	    if (enc != -1 && sf->map && sf->map->map[enc] != -1) {
 		/* Multiple glyphs with same encoding are not accessible from
 		   FontView, and we consider them corrupted. */
-
-		/* The last of the identically encoded glyphs occludes the others,
-		   so we keep it, and drop the encoding of the previously encountered duplicate. */
-		SplineChar *dup_sc = sf->glyphs[sf->map->map[enc]];
-		LogError(_("Duplicate local encoding 0x%04x encountered in glyph %s. This glyph will be unencoded."), enc, dup_sc->name);
-
-		/* Append this glyph at the unencoded area at the end. */
-		// enc = sf->map->enccount;
-		dup_sc->unicodeenc = -1;
-		sf->map->backmap[dup_sc->orig_pos] = -1;
-	        SFDSetEncMap(sf, dup_sc->orig_pos, sf->map->enccount);
-		SFDSizeMap(sf->map, sf->glyphcnt, sf->map->enccount + 1);
+		SFDFixDuplicateEnc(sf, enc);
 	    }
 	    SFDSetEncMap(sf, sc->orig_pos, enc);
 	} else if ( strmatch(tok,"AltUni:")==0 ) {
