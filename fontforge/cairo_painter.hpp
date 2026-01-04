@@ -52,8 +52,10 @@ using CairoFontFamily = std::vector<CairoFontRec>;
 
 using ParsedRichText =
     std::vector<std::pair<std::vector<std::string>, std::string>>;
-using RichTextLineBuffer = std::vector<
-    std::tuple<std::string, Cairo::RefPtr<Cairo::FtFontFace>, double /*size*/>>;
+
+// size_t "font_idx" is an index into CairoPainter::cairo_family_.
+using RichTextLineBuffer =
+    std::vector<std::tuple<std::string, size_t /*font_idx*/, double /*size*/>>;
 using RichTextLayout =
     std::vector<std::pair<RichTextLineBuffer, double /*height*/>>;
 using PrintGlyphVec = std::vector<std::pair<int, SplineChar*>>;
@@ -164,10 +166,9 @@ class CairoPainter {
         const ParsedRichText& rich_text) const;
 
     // Select specific face to print a text segment based on the tags which
-    // apply to it.
-    Cairo::RefPtr<Cairo::FtFontFace> select_face(
-        const std::vector<std::string>& tags,
-        const SplineFontProperties& default_properties) const;
+    // apply to it. Returns an index into CairoPainter::cairo_family_.
+    size_t select_face(const std::vector<std::string>& tags,
+                       const SplineFontProperties& default_properties) const;
 
     double get_size(const std::vector<std::string>& tags);
 

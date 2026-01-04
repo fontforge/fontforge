@@ -474,8 +474,10 @@ void CairoPainter::calculate_layout_sample_text(
     double line_buffer_width = 0;
 
     for (const auto& [current_tags, text] : parsed_text) {
+        size_t font_idx = select_face(current_tags, default_properties);
         Cairo::RefPtr<Cairo::FtFontFace> font_face =
-            select_face(current_tags, default_properties);
+            cairo_family_[font_idx].face;
+        select_face(current_tags, default_properties);
         double font_size = get_size(current_tags);
         cr->set_font_face(font_face);
         cr->set_font_size(font_size);
@@ -523,7 +525,7 @@ void CairoPainter::calculate_layout_sample_text(
                 // This subblock exceeds the page width, we should output the
                 // current buffer and start a new line
                 std::string printable_subblock(subblock_start, subblock_break);
-                line_buffer.emplace_back(printable_subblock, font_face,
+                line_buffer.emplace_back(printable_subblock, font_idx,
                                          font_size);
 
                 double line_height =
@@ -548,7 +550,7 @@ void CairoPainter::calculate_layout_sample_text(
         cr->get_text_extents(printable_subblock, block_extents);
 
         line_buffer.emplace_back(std::string(subblock_start, text.end()),
-                                 font_face, font_size);
+                                 font_idx, font_size);
         line_buffer_width += block_extents.x_advance;
     }
 
@@ -608,7 +610,8 @@ double CairoPainter::calculate_height_sample_text(
     const Cairo::RefPtr<Cairo::Context>& cr,
     const RichTextLineBuffer& line_buffer) {
     double height = 0;
-    for (const auto& [text, face, size] : line_buffer) {
+    for (const auto& [text, font_idx, size] : line_buffer) {
+        auto face = cairo_family_[font_idx].face;
         Cairo::FontExtents font_extents;
         cr->set_font_face(face);
         cr->set_font_size(size);
@@ -623,7 +626,8 @@ void CairoPainter::draw_line_sample_text(
     const RichTextLineBuffer& line_buffer, double y_baseline) {
     // Perform the actual text drawing
     double x = 0;
-    for (const auto& [text, face, size] : line_buffer) {
+    for (const auto& [text, font_idx, size] : line_buffer) {
+        auto face = cairo_family_[font_idx].face;
         Cairo::TextExtents text_extents;
         cr->set_font_face(face);
         cr->set_font_size(size);
@@ -760,7 +764,7 @@ SplineFontProperties CairoPainter::get_default_style(
     return default_properties;
 }
 
-Cairo::RefPtr<Cairo::FtFontFace> CairoPainter::select_face(
+size_t CairoPainter::select_face(
     const std::vector<std::string>& tags,
     const SplineFontProperties& default_properties) const {
     // Desired properties are derived from the default ones, with
@@ -777,7 +781,7 @@ Cairo::RefPtr<Cairo::FtFontFace> CairoPainter::select_face(
                                     desired_properties.distance(b.props);
                          });
 
-    return closest_face->face;
+    return closest_face - cairo_family_.begin();
 }
 
 double CairoPainter::get_size(const std::vector<std::string>& tags) {
