@@ -40,11 +40,15 @@ namespace ff::utils {
 
 using PrintGlyphMap = std::map<int, SplineChar*>;
 
+struct CairoFontRec {
+    SplineFontProperties props;
+    Cairo::RefPtr<Cairo::FtFontFace> face;
+};
+
 // Several fonts comprising a family. By convention, the first element is the
 // default font (it doesn't need to be the regular face). The default font is
 // used when no modifiers are specified.
-using CairoFontFamily = std::vector<
-    std::pair<SplineFontProperties, Cairo::RefPtr<Cairo::FtFontFace>>>;
+using CairoFontFamily = std::vector<CairoFontRec>;
 
 using ParsedRichText =
     std::vector<std::pair<std::vector<std::string>, std::string>>;

@@ -50,7 +50,7 @@ const std::string CairoPainter::kScaleMaxHeight = "scale_to_max_height";
 CairoPainter::CairoPainter(const CairoFontFamily& cairo_family,
                            const PrintGlyphMap& print_map,
                            const std::string& font_name)
-    : cairo_face_(cairo_family[0].second),
+    : cairo_face_(cairo_family[0].face),
       cairo_family_(cairo_family),
       font_name_(font_name) {
     sort_glyphs(print_map);
@@ -746,13 +746,13 @@ SplineFontProperties CairoPainter::get_default_style(
         0,
         0,  // ascent and descent are not used
         (sample_text_values.count("italic") == 0)
-            ? cairo_family_[0].first.italic
+            ? cairo_family_[0].props.italic
             : false,
         (sample_text_values.count("bold") == 0)
-            ? cairo_family_[0].first.os2_weight
+            ? cairo_family_[0].props.os2_weight
             : (int16_t)400,
         (sample_text_values.count("width") == 0)
-            ? cairo_family_[0].first.os2_width
+            ? cairo_family_[0].props.os2_width
             : (int16_t)5,
         ""  // style names are not used
     };
@@ -773,11 +773,11 @@ Cairo::RefPtr<Cairo::FtFontFace> CairoPainter::select_face(
     auto closest_face =
         std::min_element(cairo_family_.begin(), cairo_family_.end(),
                          [&desired_properties](const auto& a, const auto& b) {
-                             return desired_properties.distance(a.first) <
-                                    desired_properties.distance(b.first);
+                             return desired_properties.distance(a.props) <
+                                    desired_properties.distance(b.props);
                          });
 
-    return closest_face->second;
+    return closest_face->face;
 }
 
 double CairoPainter::get_size(const std::vector<std::string>& tags) {
@@ -833,7 +833,7 @@ std::pair<double, double> CairoPainter::get_splinefont_metrics(
     cr->set_font_size(normalized_size);
 
     // Retrieve the real ascender and descender in Cairo context units
-    const SplineFontProperties& sf_properties = cairo_family_[0].first;
+    const SplineFontProperties& sf_properties = cairo_family_[0].props;
     Cairo::FontExtents font_extents;
     cr->get_font_extents(font_extents);
 
@@ -879,14 +879,14 @@ CairoFontFamily create_cairo_family(SplineFont* current_sf) {
     // By convention, the first element is the default font
     sf_properties = toCPP(SFGetProperties(current_sf));
     ft_face = create_cairo_face(current_sf);
-    family.emplace_back(*sf_properties, ft_face);
+    family.push_back(CairoFontRec{*sf_properties, ft_face});
     delete sf_properties;
 
     if (family_sfs) {
         for (SplineFont** sf_it = family_sfs; *sf_it != nullptr; ++sf_it) {
             sf_properties = toCPP(SFGetProperties(*sf_it));
             ft_face = create_cairo_face(*sf_it);
-            family.emplace_back(*sf_properties, ft_face);
+            family.push_back(CairoFontRec{*sf_properties, ft_face});
             delete sf_properties;
         }
     }
