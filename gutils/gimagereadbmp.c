@@ -181,12 +181,18 @@ static int readpixels(FILE *file,struct bmpheader *head) {
 	int ii = 0;
 	while ( ii<head->height*head->width ) {
 	    int cnt = getc(file);
+	    if (cnt < 0 || ii + cnt > head->height * head->width) {
+		return 0;
+	    }
 	    if ( cnt!=0 ) {
 		int ch = getc(file);
 		while ( --cnt>=0 )
 		    head->byte_pixels[ii++] = ch;
 	    } else {
 		cnt = getc(file);
+		if (cnt < 0 || ii + cnt > head->height * head->width) {
+		    return 0;
+		}
 		if ( cnt>= 3 ) {
 		    int odd = cnt&1;
 		    while ( --cnt>=0 )
