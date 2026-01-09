@@ -3653,6 +3653,10 @@ static ImageList *SFDGetImage(FILE *sfd) {
     getint(sfd,&image_type);
     getint(sfd,&bpl);
     getint(sfd,&clutlen);
+    if ( clutlen < 0 || clutlen > 256 ) {
+        LogError(_("Invalid clut length %d in sfd file, must be between 0 and 256"), clutlen);
+        return NULL;
+    }
     gethex(sfd,&trans);
     image = GImageCreate(image_type,width,height);
     base = image->list_len==0?image->u.image:image->u.images[0];
