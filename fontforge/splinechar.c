@@ -2829,3 +2829,43 @@ void SCRemoveVKern(SplineChar* sc) {
 	    sc->parent->fv->cidmaster->changed = true;
     }
 }
+
+const char* SCNameCheck(const unichar_t *name, bool *p_questionable) {
+    bool bad = false, questionable = false;
+    extern int allow_utf8_glyphnames;
+
+    if (p_questionable) *p_questionable = questionable;
+
+    if ( uc_strcmp(name,".notdef")==0 )		/* This name is a special case and doesn't follow conventions */
+        return NULL;
+    if ( u_strlen(name)>31 ) {
+        return _("Glyph names are limited to 31 characters");
+    } else if ( *name=='\0' ) {
+        return _("Bad Name");
+    } else if ( isdigit(*name) || *name=='.' ) {
+        return _("A glyph name may not start with a digit nor a full stop (period)");
+    }
+
+    while ( *name ) {
+        if ( *name<=' ' || (!allow_utf8_glyphnames && *name>=0x7f) ||
+                *name=='(' || *name=='[' || *name=='{' || *name=='<' ||
+                *name==')' || *name==']' || *name=='}' || *name=='>' ||
+                *name=='%' || *name=='/' )
+            bad=true;
+        else if ( !isalnum(*name) && *name!='.' && *name!='_' )
+            questionable = true;
+        ++name;
+    }
+    if ( bad ) {
+        return _("A glyph name must be ASCII, without spaces and may not contain the characters \"([{<>}])/%%\", and should contain only alphanumerics, periods and underscores");
+    } else if ( questionable ) {
+        if (p_questionable == NULL) {
+            /* The caller doesn't care, just accept the name. */
+            return NULL;
+	} else {
+            *p_questionable = questionable;
+            return _("A glyph name should contain only alphanumerics, periods and underscores\nDo you want to use this name in spite of that?");
+        }
+    }
+    return NULL;
+}

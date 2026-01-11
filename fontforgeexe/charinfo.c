@@ -511,42 +511,20 @@ void SCInsertPST(SplineChar *sc,PST *new_) {
 }
 
 static int CI_NameCheck(const unichar_t *name) {
-    int bad, questionable;
-    extern int allow_utf8_glyphnames;
-    char *buts[3];
-    buts[0] = _("_Yes"); buts[1]=_("_No"); buts[2] = NULL;
+    bool questionable = false;
+    const char* error = SCNameCheck(name, &questionable);
 
-    if ( uc_strcmp(name,".notdef")==0 )		/* This name is a special case and doesn't follow conventions */
-return( true );
-    if ( u_strlen(name)>31 ) {
-	ff_post_error(_("Bad Name"),_("Glyph names are limited to 31 characters"));
-return( false );
-    } else if ( *name=='\0' ) {
-	ff_post_error(_("Bad Name"),_("Bad Name"));
-return( false );
-    } else if ( isdigit(*name) || *name=='.' ) {
-	ff_post_error(_("Bad Name"),_("A glyph name may not start with a digit nor a full stop (period)"));
-return( false );
+    if (error == NULL)
+        return true;
+
+    if (questionable) {
+        char *buts[3];
+        buts[0] = _("_Yes"); buts[1]=_("_No"); buts[2] = NULL;
+        return (gwwv_ask(_("Bad Name"),(const char **) buts,0,1,error) != 1);
     }
-    bad = questionable = false;
-    while ( *name ) {
-	if ( *name<=' ' || (!allow_utf8_glyphnames && *name>=0x7f) ||
-		*name=='(' || *name=='[' || *name=='{' || *name=='<' ||
-		*name==')' || *name==']' || *name=='}' || *name=='>' ||
-		*name=='%' || *name=='/' )
-	    bad=true;
-	else if ( !isalnum(*name) && *name!='.' && *name!='_' )
-	    questionable = true;
-	++name;
-    }
-    if ( bad ) {
-	ff_post_error(_("Bad Name"),_("A glyph name must be ASCII, without spaces and may not contain the characters \"([{<>}])/%%\", and should contain only alphanumerics, periods and underscores"));
-return( false );
-    } else if ( questionable ) {
-	if ( gwwv_ask(_("Bad Name"),(const char **) buts,0,1,_("A glyph name should contain only alphanumerics, periods and underscores\nDo you want to use this name in spite of that?"))==1 )
-return(false);
-    }
-return( true );
+
+    ff_post_error(_("Bad Name"), error);
+    return false;
 }
 
 static void CI_ParseCounters(CharInfo *ci) {
@@ -1569,6 +1547,7 @@ static void CI_ApplyAll(CharInfo *ci) {
 	if ( sc->name==NULL || strcmp( sc->name,cached->name )!=0 ) {
 	    if ( sc->name!=NULL )
 		SFGlyphRenameFixup(sf,sc->name,cached->name,false);
+	    free(sc->glif_name); sc->glif_name = NULL;
 	    free(sc->name); sc->name = copy(cached->name);
 	    sc->namechanged = true;
 	    GlyphHashFree(sf);
