@@ -187,7 +187,6 @@ static struct flaglist sfnt_name_mslangs[];
 /*SplineChar *sc_active_in_ui = NULL;*/
 /*int layer_active_in_ui = ly_fore;*/
 
-static PyObject *hook_dict;			/* Dictionary of python hook scripts (to be activated when certain fontforge events happen) */
 static PyObject *pickler, *unpickler;		/* cPickle.dumps, cPickle.loads */
 static PyObject *_new_point, *_new_contour, *_new_layer;	/* Python handles to c functions, needed for pickler */
 static void PyFF_PickleTypesInit(void);
@@ -20788,6 +20787,13 @@ static void CreateAllPyModules(void) {
         CreatePyModule( all_modules[i] );
 }
 
+static PyObject* GetRuntimePyModule(const char* module_name) {
+    PyObject* module = NULL;
+    for (unsigned i = 0; i < NUM_MODULES; i++)
+        if (strcmp(all_modules[i]->module_name, module_name) == 0)
+            module = all_modules[i]->runtime.module;
+    return module;
+}
 
 static void RegisterAllPyModules(void) {
     /* This adds all the modules to Python's 'builtin' module list.
@@ -21222,6 +21228,7 @@ void PyFF_InitFontHook(FontViewBase *fv) {
     /*  We have not added a window or menu to it yet */
     SplineFont *sf = fv->sf;
     PyObject *obj;
+    PyObject *fontforge_module = GetRuntimePyModule("fontforge");
 
     if ( fv->nextsame!=NULL )		/* Duplicate window looking at previously loaded font */
 return;
@@ -21245,10 +21252,19 @@ return;
     }
     Py_XDECREF(obj);
 
-    if ( sf->new )
-	PyFF_CallDictFunc(hook_dict,"newFontHook","f", fv );
-    else
-	PyFF_CallDictFunc(hook_dict,"loadFontHook","f", fv );
+    /* Uninitialized module probably means we are running a native script. */
+    if (!fontforge_module) return;
+
+    if (PyObject_HasAttrString(fontforge_module, "hooks")) {
+        PyObject* hook_dict = PyObject_GetAttrString(fontforge_module, "hooks");
+        if (sf->new)
+            PyFF_CallDictFunc(hook_dict, "newFontHook", "f", fv);
+        else
+            PyFF_CallDictFunc(hook_dict, "loadFontHook", "f", fv);
+        Py_DECREF(hook_dict);
+    } else {
+        LogError(_("FontForge Python hooks not found"));
+    }
 }
 
 
@@ -21276,10 +21292,7 @@ PyMODINIT_FUNC fontforge_python_init(const char* modulename) {
         initted = true;
     }
 
-    for ( unsigned i=0; i<NUM_MODULES; i++ )
-	if (strcmp(all_modules[i]->module_name, modulename)==0 )
-	    return all_modules[i]->runtime.module;
-    return NULL;
+    return GetRuntimePyModule(modulename);
 }
 
 #else
