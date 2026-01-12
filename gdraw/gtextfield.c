@@ -633,7 +633,7 @@ static int GTextFieldSelForeword(unichar_t *text,int end) {
 return( end );
 }
 
-static void GTextFieldSelectWord(GTextField *gt,int mid, int16_t *start, int16_t *end) {
+static void GTextFieldSelectWord(GTextField *gt,int mid, int32_t *start, int32_t *end) {
     unichar_t *text;
     unichar_t ch = gt->text[mid];
 
@@ -664,7 +664,7 @@ static void GTextFieldSelectWord(GTextField *gt,int mid, int16_t *start, int16_t
 }
 
 static void GTextFieldSelectWords(GTextField *gt,int last) {
-    int16_t ss, se;
+    int32_t ss, se;
     GTextFieldSelectWord(gt,gt->sel_base,&gt->sel_start,&gt->sel_end);
     if ( last!=gt->sel_base ) {
 	GTextFieldSelectWord(gt,last,&ss,&se);
