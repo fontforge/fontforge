@@ -2185,7 +2185,7 @@ static void gtextfield_redraw(GGadget *g) {
 
 static void gtextfield_move(GGadget *g, int32_t x, int32_t y ) {
     GTextField *gt = (GTextField *) g;
-    int fxo=0, fyo=0, bxo, byo;
+    int fxo=0, fyo=0, bxo=0, byo=0;
 
     if ( gt->listfield || gt->numericfield ) {
 	fxo = ((GListField *) gt)->fieldrect.x - g->r.x;
@@ -2209,7 +2209,7 @@ static void gtextfield_move(GGadget *g, int32_t x, int32_t y ) {
 static void gtextfield_resize(GGadget *g, int32_t width, int32_t height ) {
     GTextField *gt = (GTextField *) g;
     int gtwidth=width, gtheight=height, oldheight=0;
-    int fxo=0, fwo=0, fyo=0, bxo, byo;
+    int fxo=0, fwo=0, fyo=0, bxo=0, byo=0;
     int l;
 
     if ( gt->listfield || gt->numericfield ) {
