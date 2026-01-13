@@ -314,19 +314,19 @@ typedef struct gtextfield {
     uint8_t fh;
     uint8_t as;
     uint8_t nw;			/* Width of one character (an "n") */
-    int16_t xoff_left, loff_top;
-    int16_t sel_start, sel_end, sel_base;
-    int16_t sel_oldstart, sel_oldend, sel_oldbase;
-    int16_t dd_cursor_pos;
+    int32_t xoff_left, loff_top;
+    int32_t sel_start, sel_end, sel_base;
+    int32_t sel_oldstart, sel_oldend, sel_oldbase;
+    int32_t dd_cursor_pos;
     unichar_t *text, *oldtext;
     FontInstance *font;
     GTimer *pressed;
     GTimer *cursor;
     GCursor old_cursor;
     GScrollBar *hsb, *vsb;
-    int16_t lcnt, lmax;
+    int32_t lcnt, lmax;
     int32_t *lines;		/* offsets in text to the start of the nth line */
-    int16_t xmax;
+    int32_t xmax;
     GIC *gic;
     GTimer *numeric_scroll;
     char *utf8_text;		/* For Pango */
