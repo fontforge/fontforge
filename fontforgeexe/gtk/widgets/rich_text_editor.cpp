@@ -272,7 +272,7 @@ RichTechEditor::TagComboBox* RichTechEditor::build_stretch_combo(
 RichTechEditor::TagComboBox* RichTechEditor::build_size_combo(
     Glib::RefPtr<Gtk::TextBuffer> text_buffer,
     const std::vector<double>& pointsizes) {
-    std::string default_id = "size|12";
+    std::string default_id = "size|36";
 
     std::vector<double> sorted_pointsizes = pointsizes;
     std::sort(sorted_pointsizes.begin(), sorted_pointsizes.end());
