@@ -34,12 +34,13 @@
 
 extern "C" {
 #include "fffreetype.h"
-#include "gutils.h"
-#include "splinechar.h"
-#include "ustring.h"
-
-extern SplineFont** FVCollectFamily(SplineFont* sf);
 }
+#include "gutils.h"
+#include "lookups.h"
+#include "splinechar.h"
+#include "tottf.h"
+#include "tottfgpos.h"
+#include "ustring.h"
 
 namespace ff::utils {
 
@@ -626,16 +627,43 @@ void CairoPainter::draw_line_sample_text(
     const RichTextLineBuffer& line_buffer, double y_baseline) {
     // Perform the actual text drawing
     double x = 0;
+    SplineFont* sf = print_map_[0].second->parent;
     for (const auto& [text, font_idx, size] : line_buffer) {
         auto face = cairo_family_[font_idx].face;
-        Cairo::TextExtents text_extents;
+        auto shaper = cairo_family_[font_idx].shaper;
+        const auto& features = cairo_family_[font_idx].features;
+
+        unichar_t* unitext = utf82u_copy(text.c_str());
+        // Copy zero-terminated array into vector
+        std::vector<unichar_t> uni_buf(unitext,
+                                       unitext + u_strlen(unitext) + 1);
+
+        // TODO(iorsh): retrieve enabled features from UI.
+        std::vector<MetricsCore> metrics = shaper->apply_features(
+            uni_buf, features, Tag("DFLT"), Tag("dflt"), false);
+        size_t n_glyphs =
+            metrics.size() - 1;  // Exclude auxiliary trailing element
+        double hb_scale = 1200;
+
+        std::vector<Cairo::Glyph> cairo_glyphs;
+        for (size_t i = 0; i < n_glyphs; ++i) {
+            double x_offset =
+                x + size * (metrics[i].dx + metrics[i].xoff) / hb_scale;
+            double y_offset =
+                y_baseline +
+                size * (metrics[i].dy + metrics[i].yoff) / hb_scale;
+            Cairo::Glyph cairo_glyph{metrics[i].codepoint, x_offset, y_offset};
+            cairo_glyphs.push_back(cairo_glyph);
+        }
+
         cr->set_font_face(face);
         cr->set_font_size(size);
-        cr->get_text_extents(text, text_extents);
 
         cr->move_to(x, y_baseline);
-        cr->show_text(text);
-        x += text_extents.x_advance;
+        // TODO(iorsh): Use Cairo::Context::show_text_glyphs() to embed original
+        // text information into PDF.
+        cr->show_glyphs(cairo_glyphs);
+        x += metrics.back().dx;
     }
 }
 
@@ -719,6 +747,10 @@ void CairoPainter::invalidate_cached_layouts() {
 
 SplineFontProperties CairoPainter::get_default_style(
     const ParsedRichText& rich_text) const {
+    if (rich_text.empty()) {
+        return cairo_family_[0].props;
+    }
+
     // Collect values for all tags in the sample text. A special value "set" is
     // used for tags without arguments, like <bold> and <italic>. A special
     // value "" is used for tags which are sometimes set and sometimes unset.
@@ -785,7 +817,7 @@ size_t CairoPainter::select_face(
 }
 
 double CairoPainter::get_size(const std::vector<std::string>& tags) {
-    double size = 12.0;
+    double size = 36.0;
     for (const std::string& tag : tags) {
         auto [tag_name, tag_value] = layout::parse_tag(tag);
         double result{};
@@ -873,24 +905,86 @@ Cairo::RefPtr<Cairo::FtFontFace> create_cairo_face(SplineFont* sf) {
     return cairo_face;
 }
 
-CairoFontFamily create_cairo_family(SplineFont* current_sf) {
+struct opentype_str* dummy_apply_ticked_features(SplineFont*, uint32_t*,
+                                                 uint32_t, uint32_t, bool, int,
+                                                 SplineChar** glyphs) {
+    size_t len;
+    for (len = 0; glyphs[len] != NULL; ++len);
+    struct opentype_str* out =
+        (struct opentype_str*)calloc(len + 1, sizeof(struct opentype_str));
+    for (size_t i = 0; glyphs[i] != NULL; ++i) out[i].sc = glyphs[i];
+    return out;
+}
+
+static void char_metrics(MetricsView*, SplineChar* sc, int16_t* width,
+                         int16_t* vwidth) {
+    SCCharMetrics(sc, width, vwidth);
+}
+
+static int dummy_get_kern_offset(struct opentype_str*) { return 0; }
+
+std::shared_ptr<ShaperContext> make_shaper_context(SplineFont* sf) {
+    auto context = std::make_shared<ShaperContext>();
+    context->sf = sf;
+    context->apply_ticked_features = dummy_apply_ticked_features;
+    context->get_char_metrics = char_metrics;
+    context->get_kern_offset = dummy_get_kern_offset;
+    context->script_is_rtl = ScriptIsRightToLeft;
+    context->get_or_make_char = SFGetOrMakeChar;
+    context->write_font_into_memory = WriteTTFFontForShaper;
+    context->get_name = SCGetName;
+    context->get_encoding = SCGetEncoding;
+
+    return context;
+}
+
+std::shared_ptr<shapers::IShaper> create_shaper(SplineFont* sf) {
+    std::shared_ptr<ShaperContext> context = make_shaper_context(sf);
+    return shapers::Factory(context);
+}
+
+std::map<Tag, bool> filter_features(SplineFont* sf,
+                                    std::shared_ptr<shapers::IShaper> shaper,
+                                    Tag script, Tag lang) {
+    std::set<Tag> default_features =
+        shaper->default_features(script, lang, false);
+    uint32_t* tags = SFFeaturesInScriptLang(sf, -2, script, lang);
+    int cnt;
+    for (cnt = 0; tags[cnt] != 0; ++cnt);
+    std::map<Tag, bool> feats;
+    for (int i = 0; i < cnt; ++i) {
+        feats[tags[i]] = default_features.count(tags[i]);
+    }
+
+    return feats;
+}
+
+CairoFontFamily create_cairo_family(SplineFont* current_sf, Tag script,
+                                    Tag lang) {
     SplineFont** family_sfs = FVCollectFamily(current_sf);
     SplineFontProperties* sf_properties = nullptr;
     Cairo::RefPtr<Cairo::FtFontFace> ft_face;
+    std::shared_ptr<shapers::IShaper> shaper;
+    std::map<Tag, bool> features;
 
     CairoFontFamily family;
 
     // By convention, the first element is the default font
     sf_properties = toCPP(SFGetProperties(current_sf));
     ft_face = create_cairo_face(current_sf);
-    family.push_back(CairoFontRec{*sf_properties, ft_face});
+    shaper = create_shaper(current_sf);
+    features = filter_features(current_sf, shaper, script, lang);
+    family.push_back(CairoFontRec{*sf_properties, ft_face, shaper, features});
     delete sf_properties;
 
     if (family_sfs) {
         for (SplineFont** sf_it = family_sfs; *sf_it != nullptr; ++sf_it) {
             sf_properties = toCPP(SFGetProperties(*sf_it));
             ft_face = create_cairo_face(*sf_it);
-            family.push_back(CairoFontRec{*sf_properties, ft_face});
+            shaper = create_shaper(*sf_it);
+            features = filter_features(*sf_it, shaper, script, lang);
+            family.push_back(
+                CairoFontRec{*sf_properties, ft_face, shaper, features});
             delete sf_properties;
         }
     }

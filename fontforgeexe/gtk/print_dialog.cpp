@@ -64,8 +64,9 @@ void print_dialog(SplineFont* sf) {
     Glib::RefPtr<Gtk::PrintOperation> print_operation =
         Gtk::PrintOperation::create();
 
+    // TODO(iorsh): retrieve enabled features from UI.
     ff::utils::CairoFontFamily cairo_family =
-        ff::utils::create_cairo_family(sf);
+        ff::utils::create_cairo_family(sf, "DFLT", "dflt");
     PrintGlyphMap print_map = build_glyph_map(sf);
     char* font_name = SFGetFullName(sf);
 

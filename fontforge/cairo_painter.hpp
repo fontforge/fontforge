@@ -28,9 +28,12 @@
 
 #include <iostream>
 #include <map>
+#include <memory>
 #include <cairomm/context.h>
 
 #include "layout/layout_shim.hpp"
+#include "shapers/i_shaper.hpp"
+#include "shapers/shaper_shim.hpp"
 
 typedef struct splinechar SplineChar;
 
@@ -43,6 +46,8 @@ using PrintGlyphMap = std::map<int, SplineChar*>;
 struct CairoFontRec {
     SplineFontProperties props;
     Cairo::RefPtr<Cairo::FtFontFace> face;
+    std::shared_ptr<shapers::IShaper> shaper;
+    std::map<Tag, bool> features;
 };
 
 // Several fonts comprising a family. By convention, the first element is the
@@ -208,7 +213,8 @@ class CairoPainter {
 };
 
 Cairo::RefPtr<Cairo::FtFontFace> create_cairo_face(SplineFont* sf);
-CairoFontFamily create_cairo_family(SplineFont* current_sf);
+CairoFontFamily create_cairo_family(SplineFont* current_sf, Tag script,
+                                    Tag lang);
 
 ParsedRichText parse_xml_stream(std::istream& input);
 
