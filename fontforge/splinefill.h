@@ -20,7 +20,6 @@ extern Edge *ActiveEdgesFindStem(Edge *apt, Edge **prev, real i);
 extern Edge *ActiveEdgesInsertNew(EdgeList *es, Edge *active, int i);
 extern Edge *ActiveEdgesRefigure(EdgeList *es, Edge *active, real i);
 extern GClut *_BDFClut(int linear_scale);
-extern int BDFDepth(BDFFont *bdf);
 extern int GradientHere(bigreal scale, DBounds *bbox, int iy, int ix, struct gradient *grad, struct pattern *pat, int defgrey);
 extern void BCCompressBitmap(BDFChar *bdfc);
 extern void BCRegularizeBitmap(BDFChar *bdfc);

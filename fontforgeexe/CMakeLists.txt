@@ -10,7 +10,7 @@ if(ENABLE_GUI)
     autowidth2dlg.c
     basedlg.c
     bdfinfo.c
-    bitmapdlg.c
+    bitmapdlg.cpp
     bitmapview.c
     charinfo.c
     charview_private.h

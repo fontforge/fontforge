@@ -26,10 +26,26 @@
  */
 #pragma once
 
+#include <clocale>
 #include <gtkmm.h>
+
+namespace ff::ui_utils {
 
 double ui_font_em_size();
 double ui_font_eX_size();
 
+double get_current_ppi(Gtk::Widget* w);
+
+inline char get_decimal_point() { return *std::localeconv()->decimal_point; }
+
+// Under some locales (e.g. French) the double values may contain commas, and in
+// that case we separate the list entries by semicolons.
+// See https://en.wikipedia.org/wiki/Semicolon#Data.
+inline char get_list_separator() {
+    return get_decimal_point() == ',' ? ';' : ',';
+}
+
 // TODO(iorsh): Integrate this function into the global log collection
-void gtk_post_error(const char* title, const char* statement, ...);
+void post_error(const char* title, const char* statement, ...);
+
+}  // namespace ff::ui_utils

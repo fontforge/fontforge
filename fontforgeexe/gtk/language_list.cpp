@@ -35,7 +35,7 @@ namespace ff::dlg {
 LanguageListDlg::LanguageListDlg(GWindow parent,
                                  const ff::dlg::LanguageRecords& lang_recs,
                                  const std::vector<int>& initial_selection)
-    : Dialog(parent), list_(1, false, Gtk::SELECTION_MULTIPLE) {
+    : DialogBase(parent), list_(1, false, Gtk::SELECTION_MULTIPLE) {
     set_title(_("Language List"));
     set_help_context("ui/dialogs/lookups.html", "#lookups-scripts-dlg");
 
@@ -74,7 +74,7 @@ LanguageListDlg::LanguageListDlg(GWindow parent,
     }
 
     // Show initially roughly 8 rows.
-    property_default_height() = 40 * ui_font_eX_size();
+    property_default_height() = 25 * ui_utils::ui_font_eX_size();
 
     scrolled_window->add(list_);
 
@@ -87,7 +87,7 @@ LanguageListDlg::LanguageListDlg(GWindow parent,
         [this](int response_id) {
             if (response_id == Gtk::RESPONSE_OK) {
                 if (list_.get_selected().empty()) {
-                    gtk_post_error(
+                    ui_utils::post_error(
                         _("Language Missing"),
                         _("You must select at least one language.\nUse the "
                           "\"Default\" language if nothing else fits."));
