@@ -41,6 +41,7 @@ FindProblemsDlg::FindProblemsDlg(GWindow parent,
     set_help_context("ui/dialogs/problems.html");
 
     auto tabs = build_notebook(pr_tabs);
+    tabs->set_scrollable();
     get_content_area()->pack_start(*tabs);
 
     auto button_box = Gtk::make_managed<Gtk::HBox>();
