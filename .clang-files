@@ -15,6 +15,10 @@ fontforgeexe/gtk/application.cpp
 fontforgeexe/gtk/application.hpp
 fontforgeexe/gtk/css_builder.cpp
 fontforgeexe/gtk/css_builder.hpp
+fontforgeexe/gtk/dialog.cpp
+fontforgeexe/gtk/dialog.hpp
+fontforgeexe/gtk/language_list.cpp
+fontforgeexe/gtk/language_list.hpp
 fontforgeexe/gtk/simple_dialogs.cpp
 fontforgeexe/gtk/simple_dialogs.hpp
 fontforgeexe/gtk/utils.cpp
