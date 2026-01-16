@@ -3116,12 +3116,11 @@ static ProblemRec pr_random[] = {
 static ProblemTab pr_tabs[] = {
     {N_("Points"), pr_points},
     {N_("Paths"), pr_paths},
-/* GT: Refs is an abbreviation for References. Space is tight here */
-    {N_("Refs"), pr_refs},
+    {N_("References"), pr_refs},
     {N_("Hints"), pr_hints},
     {N_("ATT"), pr_att},
     {N_("CID"), pr_cid},
-    {N_("BB"), pr_bb},
+    {N_("Bounding Box"), pr_bb},
     {N_("Random"), pr_random},
     PROBLEM_TAB_EMPTY};
 
