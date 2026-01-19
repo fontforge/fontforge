@@ -1233,7 +1233,7 @@ enum cmaptype { cmt_out=-1, cmt_coderange, cmt_notdefs, cmt_cid, cmt_max };
 struct coderange { uint32_t first, last, cid; };
 struct cmap {
     struct {
-	int n;
+	size_t n;
 	struct coderange *ranges;
     } groups[cmt_max];
     char *registry;
@@ -1253,7 +1253,7 @@ static void cmapfree(struct cmap *cmap) {
     free(cmap);
 }
 
-static struct coderange *ExtendArray(struct coderange *ranges,int *n, int val) {
+static struct coderange *ExtendArray(struct coderange *ranges, size_t *n, int val) {
     if ( *n == 0 )
 	ranges = calloc(val,sizeof(struct coderange));
     else {
@@ -1280,7 +1280,8 @@ static struct cmap *ParseCMap(char *filename) {
     FILE *file;
     struct cmap *cmap;
     char *end, *pt;
-    int val, pos;
+    int val;
+    size_t pos;
     enum cmaptype in;
     int in_is_single; // We set this if we are to parse cidchars into cidranges.
     static const char *bcsr = "begincodespacerange", *bndr = "beginnotdefrange", *bcr = "begincidrange", *bcc = "begincidchar";
