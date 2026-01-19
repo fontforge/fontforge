@@ -535,7 +535,7 @@ unichar_t *utf82u_strncpy(unichar_t *ubuf,const char *utf8buf,int len) {
 }
 
 unichar_t *utf82u_strcpy(unichar_t *ubuf,const char *utf8buf) {
-return( utf82u_strncpy(ubuf,utf8buf,strlen(utf8buf)+1));
+return( utf82u_strncpy(ubuf,utf8buf,c_strlen(utf8buf)+1));
 }
 
 unichar_t *utf82u_copyn(const char *utf8buf,int len) {
