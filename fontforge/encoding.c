@@ -2363,21 +2363,32 @@ return( any );
 }
 
 void SFAddGlyphAndEncode(SplineFont *sf,SplineChar *sc,EncMap *basemap, int baseenc) {
-    int gid, mapfound = false;
+    int j, gid, mapfound = false;
     FontViewBase *fv;
     BDFFont *bdf;
 
     if ( sf->cidmaster==NULL ) {
-	if ( sf->glyphcnt+1>=sf->glyphmax )
-	    sf->glyphs = realloc(sf->glyphs,(sf->glyphmax+=10)*sizeof(SplineChar *));
-	gid = sf->glyphcnt++;
-	for ( bdf = sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-	    if ( sf->glyphcnt+1>=bdf->glyphmax )
-		bdf->glyphs = realloc(bdf->glyphs,(bdf->glyphmax=sf->glyphmax)*sizeof(BDFChar *));
-	    if ( sf->glyphcnt>bdf->glyphcnt ) {
-		memset(bdf->glyphs+bdf->glyphcnt,0,(sf->glyphcnt-bdf->glyphcnt)*sizeof(BDFChar *));
-		bdf->glyphcnt = sf->glyphcnt;
-	    }
+        if (sf->glyphcnt + 1 > sf->glyphmax)
+            ExpandBuffer((void**)&sf->glyphs, sizeof(SplineChar*), 10,
+                         &sf->glyphmax);
+        gid = sf->glyphcnt++;
+        for (bdf = sf->bitmaps; bdf != NULL; bdf = bdf->next) {
+            if (sf->glyphcnt + 1 > bdf->glyphmax)
+                ExpandBuffer((void**)&bdf->glyphs, sizeof(BDFChar*),
+                             sf->glyphmax - bdf->glyphmax, &bdf->glyphmax);
+        }
+        if (sf->mm != NULL) {
+            if (sf->mm->normal->glyphmax < sf->glyphmax)
+                ExpandBuffer((void**)&sf->mm->normal->glyphs,
+                             sizeof(SplineChar*),
+                             sf->glyphmax - sf->mm->normal->glyphmax,
+                             &sf->mm->normal->glyphmax);
+            for (j = 0; j < sf->mm->instance_count; ++j)
+                if (sf->mm->instances[j]->glyphmax < sf->glyphmax)
+                    ExpandBuffer((void**)&sf->mm->instances[j]->glyphs,
+                                 sizeof(SplineChar*),
+                                 sf->glyphmax - sf->mm->instances[j]->glyphmax,
+                                 &sf->mm->instances[j]->glyphmax);
 	}
 	for ( fv=sf->fv; fv!=NULL; fv = fv->nextsame ) {
 	    EncMap *map = fv->map;
