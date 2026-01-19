@@ -1762,9 +1762,9 @@ static void MMW_ParseNamedStyles(MMSet *setto,MMW *mmw) {
 
 static void MMW_DoOK(MMW *mmw) {
     real weights[AppleMmMax+1];
-    real fbt;
+    real fbt = 0.;
     int err = false;
-    char *familyname, *fn, *origname=NULL;
+    char *familyname, *fn=NULL, *origname=NULL;
     int i,j;
     MMSet *setto, *dlgmm;
     FontView *fv = NULL;
