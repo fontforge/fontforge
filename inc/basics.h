@@ -73,6 +73,8 @@ typedef uint32_t unichar_t;
 #endif
 
 extern void NoMoreMemMessage(void);
+extern void ExpandBuffer(void** p_buf, size_t elem_size, size_t increment,
+                         int* p_maxalloc);
 
 static inline int imin(int a, int b)
 {

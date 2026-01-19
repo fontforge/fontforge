@@ -9014,7 +9014,9 @@ exit( 1 );
 	    }
 	}
     }
-    if ( sf->cidmaster==NULL )
+
+    /* MM font has already been already fixed up. */
+    if (sf->cidmaster == NULL && sf->mm == NULL)
 	SFDFixupRefs(sf);
 
     if ( !haddupenc )

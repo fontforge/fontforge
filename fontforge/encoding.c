@@ -1233,7 +1233,7 @@ enum cmaptype { cmt_out=-1, cmt_coderange, cmt_notdefs, cmt_cid, cmt_max };
 struct coderange { uint32_t first, last, cid; };
 struct cmap {
     struct {
-	int n;
+	size_t n;
 	struct coderange *ranges;
     } groups[cmt_max];
     char *registry;
@@ -1253,7 +1253,7 @@ static void cmapfree(struct cmap *cmap) {
     free(cmap);
 }
 
-static struct coderange *ExtendArray(struct coderange *ranges,int *n, int val) {
+static struct coderange *ExtendArray(struct coderange *ranges, size_t *n, int val) {
     if ( *n == 0 )
 	ranges = calloc(val,sizeof(struct coderange));
     else {
@@ -1280,7 +1280,8 @@ static struct cmap *ParseCMap(char *filename) {
     FILE *file;
     struct cmap *cmap;
     char *end, *pt;
-    int val, pos;
+    int val;
+    size_t pos;
     enum cmaptype in;
     int in_is_single; // We set this if we are to parse cidchars into cidranges.
     static const char *bcsr = "begincodespacerange", *bndr = "beginnotdefrange", *bcr = "begincidrange", *bcc = "begincidchar";
@@ -2363,21 +2364,32 @@ return( any );
 }
 
 void SFAddGlyphAndEncode(SplineFont *sf,SplineChar *sc,EncMap *basemap, int baseenc) {
-    int gid, mapfound = false;
+    int j, gid, mapfound = false;
     FontViewBase *fv;
     BDFFont *bdf;
 
     if ( sf->cidmaster==NULL ) {
-	if ( sf->glyphcnt+1>=sf->glyphmax )
-	    sf->glyphs = realloc(sf->glyphs,(sf->glyphmax+=10)*sizeof(SplineChar *));
-	gid = sf->glyphcnt++;
-	for ( bdf = sf->bitmaps; bdf!=NULL; bdf=bdf->next ) {
-	    if ( sf->glyphcnt+1>=bdf->glyphmax )
-		bdf->glyphs = realloc(bdf->glyphs,(bdf->glyphmax=sf->glyphmax)*sizeof(BDFChar *));
-	    if ( sf->glyphcnt>bdf->glyphcnt ) {
-		memset(bdf->glyphs+bdf->glyphcnt,0,(sf->glyphcnt-bdf->glyphcnt)*sizeof(BDFChar *));
-		bdf->glyphcnt = sf->glyphcnt;
-	    }
+        if (sf->glyphcnt + 1 > sf->glyphmax)
+            ExpandBuffer((void**)&sf->glyphs, sizeof(SplineChar*), 10,
+                         &sf->glyphmax);
+        gid = sf->glyphcnt++;
+        for (bdf = sf->bitmaps; bdf != NULL; bdf = bdf->next) {
+            if (sf->glyphcnt + 1 > bdf->glyphmax)
+                ExpandBuffer((void**)&bdf->glyphs, sizeof(BDFChar*),
+                             sf->glyphmax - bdf->glyphmax, &bdf->glyphmax);
+        }
+        if (sf->mm != NULL) {
+            if (sf->mm->normal->glyphmax < sf->glyphmax)
+                ExpandBuffer((void**)&sf->mm->normal->glyphs,
+                             sizeof(SplineChar*),
+                             sf->glyphmax - sf->mm->normal->glyphmax,
+                             &sf->mm->normal->glyphmax);
+            for (j = 0; j < sf->mm->instance_count; ++j)
+                if (sf->mm->instances[j]->glyphmax < sf->glyphmax)
+                    ExpandBuffer((void**)&sf->mm->instances[j]->glyphs,
+                                 sizeof(SplineChar*),
+                                 sf->glyphmax - sf->mm->instances[j]->glyphmax,
+                                 &sf->mm->instances[j]->glyphmax);
 	}
 	for ( fv=sf->fv; fv!=NULL; fv = fv->nextsame ) {
 	    EncMap *map = fv->map;

@@ -1632,7 +1632,7 @@ return( NULL );
 	pt[-1] = ']';
 	ustyle = PickNameFromMacName(mmw->old->named_instances[i].names);
 	ti[i].bg = ti[i].fg = COLOR_DEFAULT;
-	ti[i].text = malloc((strlen(buffer)+3+strlen(ustyle))*sizeof(unichar_t));
+	ti[i].text = calloc(strlen(buffer)+3+c_strlen(ustyle), sizeof(unichar_t));
 	utf82u_strcpy(ti[i].text,ustyle);
 	uc_strcat(ti[i].text," ");
 	uc_strcat(ti[i].text,buffer);
@@ -1762,9 +1762,9 @@ static void MMW_ParseNamedStyles(MMSet *setto,MMW *mmw) {
 
 static void MMW_DoOK(MMW *mmw) {
     real weights[AppleMmMax+1];
-    real fbt;
+    real fbt = 0.;
     int err = false;
-    char *familyname, *fn, *origname=NULL;
+    char *familyname, *fn=NULL, *origname=NULL;
     int i,j;
     MMSet *setto, *dlgmm;
     FontView *fv = NULL;
