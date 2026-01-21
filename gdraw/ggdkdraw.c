@@ -477,8 +477,13 @@ static GWindow _GGDKDraw_CreateWindow(GGDKDisplay *gdisp, GGDKWindow gw, GRect *
         }
 
         attribs.title = nw->window_title;
-        attribs.type_hint = (nw->is_popup || (wattrs->mask & wam_palette)) ?
-                            GDK_WINDOW_TYPE_HINT_UTILITY : GDK_WINDOW_TYPE_HINT_NORMAL;
+        if (nw->is_popup || (wattrs->mask & wam_palette)) {
+            attribs.type_hint = GDK_WINDOW_TYPE_HINT_UTILITY;
+        } else if (nw->is_dlg || nw->istransient) {
+            attribs.type_hint = GDK_WINDOW_TYPE_HINT_DIALOG;
+        } else {
+            attribs.type_hint = GDK_WINDOW_TYPE_HINT_NORMAL;
+        }
 
         if (attribs.title != NULL) {
             attribs_mask |= GDK_WA_TITLE;
