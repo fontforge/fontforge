@@ -34,7 +34,6 @@ https://github.com/marutan/riscos-free-fonts/raw/main/Fonts/Trinity.Bold.sfd
 https://github.com/marutan/riscos-free-fonts/raw/main/Fonts/Trinity.Medium.Italic.sfd
 https://github.com/marutan/riscos-free-fonts/raw/main/Fonts/Trinity.Medium.sfd
 https://github.com/dokutan/legacy_computing-font/raw/master/LegacyComputing.sfd
-https://github.com/dokutan/legacy_computing-font/raw/master/LegacyComputing114.sfd
 https://github.com/fontforge/debugfonts/raw/master/charstring-corruption-1747.sfd
 https://github.com/fontforge/debugfonts/raw/master/jieub-bt-ps.sfd
 https://github.com/fontforge/debugfonts/raw/master/point-on-curve.sfd
@@ -118,7 +117,6 @@ https://gitlab.com/ameliedumont/fonts/-/raw/master/Ductus/regular/source/qunific
 https://gitlab.com/ameliedumont/fonts/-/raw/master/Ductus/regular/source/DuctusRegular.sfd
 https://gitlab.com/ameliedumont/fonts/-/raw/master/Ductus/regular/source/DuctusGeometric.sfd
 https://gitlab.com/ameliedumont/fonts/-/raw/master/Ductus/regular/source/DuctusCalligraphic.sfd
-https://gitlab.com/ameliedumont/fonts/-/raw/master/Ductus/regular/DuctusGeometric.sfd
 https://gitlab.com/kreativekorp/bitsnpicas/-/raw/master/fonts/sfsu/tos/ibm8.sfd
 https://gitlab.com/kreativekorp/bitsnpicas/-/raw/master/fonts/sfsu/tos/rgb.sfd
 https://gitlab.com/kreativekorp/bitsnpicas/-/raw/master/fonts/sfsu/tos/tosx.sfd
@@ -178,3 +176,14 @@ https://gitlab.com/typebits/font-roseta/-/raw/master/Roseta-Regular.sfd
 https://gitlab.com/typebits/font-setperset/-/raw/master/Setperset-Regular.sfd
 https://gitlab.com/icewoodfire/tty-clock-ttf-font/-/raw/master/ttyclock.sfd
 https://gitlab.com/balasankarc/sokanasini/-/raw/master/Sokanasini.sfd
+https://github.com/slavonic/fonts-znam/raw/master/Mezenets/MezenetsUnicode.sfd
+https://github.com/slavonic/fonts-znam/raw/master/Shaidur/ShaidurUnicode.sfd
+https://github.com/slavonic/fonts-znam/raw/master/Smolensky/Smolensky-Regular.sfd
+https://github.com/slavonic/fonts-znam/raw/master/Stolp/Stolp-Regular.sfd
+https://github.com/slavonic/Monomakh/raw/main/sources/Monomakh-Regular.sfd
+https://github.com/slavonic/Pochaevsk/raw/main/sources/Pochaevsk.sfd
+https://github.com/slavonic/Ponomar/raw/main/sources/Ponomar.sfd
+https://github.com/slavonic/Triodion/raw/main/sources/Triodion.sfd
+https://github.com/slavonic/Shafarik/raw/main/sources/Shafarik-Regular.sfd
+https://github.com/slavonic/FiraSlav/raw/master/sources/FiraSlav-Regular.sfd
+https://github.com/slavonic/FiraSlav/raw/master/sources/FiraSlav-Bold.sfd
