@@ -33,18 +33,21 @@ typedef struct gwindow* GWindow;
 namespace ff::dlg {
 
 // Modal dialog
-class Dialog : public Gtk::Dialog {
+class DialogBase : public Gtk::Dialog {
  public:
     // The parent is a legacy GDraw window.
     // TODO(iorsh): remove this constructor after the transition to GTK is
     // complete.
-    Dialog(GWindow parent_gwin);
-    ~Dialog();
+    DialogBase(GWindow parent_gwin);
+    ~DialogBase();
 
     Gtk::ResponseType run();
 
     // Add Help context to be opened if the user presses "F1".
     void set_help_context(const std::string& file, const std::string& section);
+
+    // Allow window resize in horizontal direction only.
+    void set_hints_horizontal_resize_only();
 
  private:
     GWindow parent_gwindow_ = nullptr;

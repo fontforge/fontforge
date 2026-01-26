@@ -30,6 +30,8 @@
 #include <glib/gprintf.h>
 #include <iostream>
 
+namespace ff::ui_utils {
+
 static Cairo::TextExtents ui_font_extents(const std::string& sample_text) {
     Cairo::RefPtr<Cairo::ImageSurface> srf =
         Cairo::ImageSurface::create(Cairo::Format::FORMAT_RGB24, 100, 100);
@@ -37,15 +39,17 @@ static Cairo::TextExtents ui_font_extents(const std::string& sample_text) {
     Glib::RefPtr<Gtk::StyleContext> style_context = Gtk::StyleContext::create();
 
     Pango::FontDescription font = style_context->get_font();
-    cairo_context->select_font_face(font.get_family(),
-                                    Cairo::FontSlant::FONT_SLANT_NORMAL,
-                                    Cairo::FontWeight::FONT_WEIGHT_NORMAL);
+    Cairo::RefPtr<Cairo::ToyFontFace> toy_face = Cairo::ToyFontFace::create(
+        font.get_family(), Cairo::FontSlant::FONT_SLANT_NORMAL,
+        Cairo::FontWeight::FONT_WEIGHT_NORMAL);
+    cairo_context->set_font_face(toy_face);
     cairo_context->set_font_size(font.get_size() / PANGO_SCALE *
                                  Gdk::Screen::get_default()->get_resolution() /
-                                 96);
+                                 72);
 
     Cairo::TextExtents extents;
-    cairo_context->get_text_extents("m", extents);
+    cairo_context->get_text_extents(sample_text, extents);
+    toy_face->unreference();  // Prevent memory leak
     return extents;
 }
 
@@ -59,7 +63,22 @@ double ui_font_eX_size() {
     return extents.height;
 }
 
-void gtk_post_error(const char* title, const char* statement, ...) {
+double get_current_ppi(Gtk::Widget* w) {
+    Glib::RefPtr<const Gdk::Display> display = w->get_display();
+    Glib::RefPtr<Gdk::Window> window = w->get_window();
+    Glib::RefPtr<const Gdk::Monitor> monitor =
+        display->get_monitor_at_window(window);
+
+    Gdk::Rectangle monitor_geom;
+    monitor->get_geometry(monitor_geom);
+    int monitor_width_mm = monitor->get_width_mm();
+    int monitor_width_px = monitor_geom.get_width();
+
+    double ppi = 25.4 * monitor_width_px / monitor_width_mm;
+    return ppi;
+}
+
+void post_error(const char* title, const char* statement, ...) {
     va_list ap;
     va_start(ap, statement);
 
@@ -81,3 +100,5 @@ void gtk_post_error(const char* title, const char* statement, ...) {
 
     va_end(ap);
 }
+
+}  // namespace ff::ui_utils

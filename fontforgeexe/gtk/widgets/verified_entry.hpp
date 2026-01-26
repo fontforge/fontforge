@@ -1,5 +1,5 @@
-/* Copyright (C) 2000-2012 by George Williams */
-/*
+/* Copyright 2025 Maxim Iorsh <iorsh@users.sourceforge.net>
+ *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are met:
 
@@ -24,29 +24,38 @@
  * OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
+#pragma once
 
-#ifndef FONTFORGE_BITMAPCONTROL_H
-#define FONTFORGE_BITMAPCONTROL_H
+#include <gtkmm.h>
 
-#include "baseviews.h"
+namespace ff::widgets {
 
-typedef struct gwindow* GWindow;
+// A text entry field which can verify its contents and highlight the error.
+class VerifiedEntry : public Gtk::Entry {
+ public:
+    // Verification callback for the entry widget contents.
+    // Arguments:
+    //  * text [input] - widget contents to be verified.
+    //  * start_pos, end_pos [output] - the invalid region to be selected in
+    //    case of verification failure.
+    //  * return value - true if the input is verified successfully, otherwise
+    //    false.
+    using Verifier = std::function<bool(const Glib::ustring& text,
+                                        int& /*start_pos*/, int& /*end_pos*/)>;
 
-enum bd_scope { bd_all, bd_selected, bd_current };
+    VerifiedEntry();
 
-typedef struct createbitmapdata {
-    FontViewBase *fv;
-    SplineFont *sf;
-    SplineChar *sc;
-    int layer;
-    int isavail;
-    enum bd_scope which;
-    int rasterize;
-    unsigned int done: 1;
-} CreateBitmapData;
+    void set_verifier(Verifier verifier) { verifier_ = verifier; }
 
-void BitmapsDoIt(CreateBitmapData *bd,int32_t *sizes);
-extern int BitmapControl(FontViewBase *fv, int32_t *sizes, int isavail, int rasterize);
-extern void BitmapDlg(FontViewBase *fv, GWindow gw, SplineChar *sc, int isavail);
+    // Verify the widget contents using the provided callback, and highlight the
+    // widget in case of error.
+    bool verify();
 
-#endif /* FONTFORGE_BITMAPCONTROL_H */
+ private:
+    Glib::RefPtr<Gtk::CssProvider> error_css_provider_;
+    Verifier verifier_;
+
+    bool focus_in_event_slot(GdkEventFocus*);
+};
+
+}  // namespace ff::widgets

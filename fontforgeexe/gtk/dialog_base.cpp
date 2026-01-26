@@ -25,7 +25,7 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "dialog.hpp"
+#include "dialog_base.hpp"
 
 extern "C" {
 #include "gutils.h"
@@ -61,7 +61,7 @@ static GdkWindow* get_toplevel_gdk_window(GWindow gwin) {
     }
 }
 
-Dialog::Dialog(GWindow parent_gwin) : parent_gwindow_(parent_gwin) {
+DialogBase::DialogBase(GWindow parent_gwin) : parent_gwindow_(parent_gwin) {
     auto ok_button = add_button(_("_OK"), Gtk::RESPONSE_OK);
     ok_button->set_name("ok");
 
@@ -72,7 +72,7 @@ Dialog::Dialog(GWindow parent_gwin) : parent_gwindow_(parent_gwin) {
     set_position(Gtk::WIN_POS_CENTER);
 }
 
-Dialog::~Dialog() {
+DialogBase::~DialogBase() {
     if (parent_gwindow_) {
         // Unblock the parent GDraw window
         GdkWindow* parent_gdk_window = get_toplevel_gdk_window(parent_gwindow_);
@@ -80,7 +80,7 @@ Dialog::~Dialog() {
     }
 }
 
-Gtk::ResponseType Dialog::run() {
+Gtk::ResponseType DialogBase::run() {
     if (parent_gwindow_) {
         GdkWindow* parent_gdk_window = get_toplevel_gdk_window(parent_gwindow_);
         GdkWindow* this_window = get_window().get()->gobj();
@@ -95,18 +95,30 @@ Gtk::ResponseType Dialog::run() {
     return (Gtk::ResponseType)Gtk::Dialog::run();
 }
 
-void Dialog::set_help_context(const std::string& file,
-                              const std::string& section) {
+void DialogBase::set_help_context(const std::string& file,
+                                  const std::string& section) {
     help_file_ = file;
     help_section_ = section;
 
     if (!help_file_.empty()) {
         signal_key_press_event().connect(
-            sigc::mem_fun(*this, &Dialog::on_help_key_press), false);
+            sigc::mem_fun(*this, &DialogBase::on_help_key_press), false);
     }
 }
 
-bool Dialog::on_help_key_press(GdkEventKey* event) {
+void DialogBase::set_hints_horizontal_resize_only() {
+    Gdk::Geometry geometry;
+    // Height can't grow beyond the necessary minimum
+    geometry.min_height = 1;
+    geometry.max_height = 1;
+    // Width is not limited
+    geometry.min_width = 1;
+    geometry.max_width = 10000;
+    set_geometry_hints(*this, geometry,
+                       Gdk::HINT_MIN_SIZE | Gdk::HINT_MAX_SIZE);
+}
+
+bool DialogBase::on_help_key_press(GdkEventKey* event) {
     if (event->keyval == GDK_KEY_F1 || event->keyval == GDK_KEY_Help) {
         help(help_file_.c_str(), help_section_.c_str());
         return true;

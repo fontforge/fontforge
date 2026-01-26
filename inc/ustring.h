@@ -139,7 +139,7 @@ extern char *latin1_2_utf8_copy(const char *lbuf);
 extern char *utf8_2_latin1_copy(const char *utf8buf);
 extern long utf8_strlen(const char *utf8_str);	 /* Count how many characters in the string NOT bytes */
 extern long utf82u_strlen(const char *utf8_str); /* Count how many shorts needed to represent in UCS2 */
-extern void utf8_strncpy(register char *to, const char *from, int len); /* copy n characters NOT bytes */
+extern void utf8_strncpy(char *to, const char *from, int len); /* copy n characters NOT bytes */
 extern char *def2utf8_copy(const char *from);
 extern char *utf82def_copy(const char *ufrom);
 extern char *utf82def_copy_safe(const char *ufrom);

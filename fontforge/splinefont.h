@@ -29,6 +29,7 @@
 #define FONTFORGE_SPLINEFONT_H
 
 #include "basics.h"
+#include "bdffont.h"
 #include "dlist.h"
 #include "gwwiconv.h"
 #include "ustring.h"
@@ -155,9 +156,6 @@ typedef struct strokeinfo {
 extern StrokeInfo *InitializeStrokeInfo(StrokeInfo *sip);
 extern void SITranslatePSArgs(StrokeInfo *sip, enum linejoin lj,
                               enum linecap lc);
-
-enum overlap_type { over_remove, over_rmselected, over_intersect, over_intersel,
-	over_exclude, over_findinter, over_fisel };
 
 enum simpify_flags { sf_cleanup=-1, sf_normal=0, sf_ignoreslopes=1,
 	sf_ignoreextremum=2, sf_smoothcurves=4, sf_choosehv=8,
@@ -792,42 +790,6 @@ typedef struct encmap {		/* A per-font map of encoding to glyph id */
     Encoding *enc;
     unsigned int ticked: 1;
 } EncMap;
-
-enum property_type { prt_string, prt_atom, prt_int, prt_uint, prt_property=0x10 };
-
-typedef struct bdfprops {
-    char *name;		/* These include both properties (like SLANT) and non-properties (like FONT) */
-    int type;
-    union {
-	char *str;
-	char *atom;
-	int val;
-    } u;
-} BDFProperties;
-
-typedef struct bdffont {
-    struct splinefont *sf;
-    int glyphcnt, glyphmax;	/* used & allocated sizes of glyphs array */
-    BDFChar **glyphs;		/* an array of charcnt entries */
-    int16_t pixelsize;
-    int16_t ascent, descent;
-    int16_t layer;		/* for piecemeal fonts */
-    unsigned int piecemeal: 1;
-    unsigned int bbsized: 1;
-    unsigned int ticked: 1;
-    unsigned int unhinted_freetype: 1;
-    unsigned int recontext_freetype: 1;
-    struct bdffont *next;
-    struct clut *clut;
-    char *foundry;
-    int res;
-    void *freetype_context;
-    uint16_t truesize;		/* for bbsized fonts */
-    int16_t prop_cnt;
-    int16_t prop_max;		/* only used within bdfinfo dlg */
-    BDFProperties *props;
-    uint16_t ptsize, dpi;		/* for piecemeal fonts */
-} BDFFont;
 
 struct gv_part {
     char *component;

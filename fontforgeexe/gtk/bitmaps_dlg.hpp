@@ -27,27 +27,52 @@
 #pragma once
 
 #include "dialog_base.hpp"
-#include "tag.hpp"
+
+#include "widgets/verified_entry.hpp"
 
 namespace ff::dlg {
 
-using LanguageRecords = std::vector<std::pair<std::string /*name*/, ff::Tag>>;
+typedef enum bitmaps_dlg_mode {
+    bitmaps_dlg_avail = 1,
+    bitmaps_dlg_regen = 0,
+    bitmaps_dlg_remove = -1
+} BitmapsDlgMode;
 
-class LanguageListDlg final : public DialogBase {
- private:
-    Gtk::ListViewText list_;
+using BitmapSize = std::pair<uint16_t /*size*/, uint16_t /*depth*/>;
+using BitmapSizes = std::vector<BitmapSize>;
 
-    LanguageListDlg(GWindow parent, const ff::dlg::LanguageRecords& lang_recs,
-                    const std::vector<int>& initial_selection);
-
-    std::vector<int> get_selection() { return list_.get_selected(); }
-
+class BitmapsDlg final : public DialogBase {
  public:
-    // Show the dialog and return indexes of selected rows (or empty vector if
-    // the dialog was cancelled/closed).
-    static std::vector<int> show(GWindow parent,
-                                 const ff::dlg::LanguageRecords& lang_recs,
-                                 const std::vector<int>& initial_selection);
+    // Update the list of available bitmap pixel sizes and action.
+    // Arguments:
+    //  * mode - set available bitmaps / regenerate from outline / clear
+    //  * sizes - list of existing bitmap sizes and color depths
+    //  * bitmaps_only - the font has bitmaps and no outlines
+    //  * has_current_char - dialog called from Char View or similar context
+    BitmapsDlg(GWindow parent, BitmapsDlgMode mode, const BitmapSizes& sizes,
+               bool bitmaps_only, bool has_current_char);
+
+    // Return value - the user confirmed or dismissed the dialog
+    bool show();
+    BitmapSizes get_sizes() const;
+
+    // Rasterize outlines to fill the newly created bitmaps or create empty
+    bool get_rasterize() const;
+
+    // Scope of change (all / selection / current)
+    Glib::ustring get_active_scope() const;
+
+ private:
+    static Glib::ustring last_scope_;
+
+    Gtk::ComboBoxText glyphs_combo_;
+    widgets::VerifiedEntry pixels_entry_;
+    Gtk::CheckButton rasterize_check_;
+
+    Gtk::ComboBoxText build_glyphs_combo(bool has_current_char) const;
+
+    static bool pixel_size_verifier(const Glib::ustring& text, int& start_pos,
+                                    int& end_pos);
 };
 
 }  // namespace ff::dlg

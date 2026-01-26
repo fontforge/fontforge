@@ -32,6 +32,7 @@
 #include "autowidth.h"
 #include "autowidth2.h"
 #include "bitmapchar.h"
+#include "bitmapcontrol.h"
 #include "bvedit.h"
 #include "cvundoes.h"
 #include "dumppfa.h"
@@ -2806,7 +2807,7 @@ return;
 
 static void FVMenuBitmaps(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     FontView *fv = (FontView *) GDrawGetUserData(gw);
-    BitmapDlg(fv,NULL,mi->mid==MID_RemoveBitmaps?-1:(mi->mid==MID_AvailBitmaps) );
+    BitmapDlg(&fv->b,gw,NULL,mi->mid==MID_RemoveBitmaps?-1:(mi->mid==MID_AvailBitmaps) );
 }
 
 static void FVMenuStroke(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
