@@ -1657,3 +1657,33 @@ return( NULL );
     new->map = EncMapFromEncoding(new,enc);
 return( new );
 }
+
+bool RecomputePitch(int16_t this_width, FontPitch* pitch, int* width) {
+    if (this_width == 0) {
+        /* Zero-width glyphs, such as control characters or diacritical marks
+           don't affect the state. */
+        return true;
+    }
+
+    if (*pitch == pitch_unknown) {
+        *width = this_width;
+        *pitch = pitch_fixed;
+    } else if (*pitch == pitch_fixed) {
+        if (this_width == 2 * (*width)) {
+            *pitch = pitch_dual;
+        } else if (2 * this_width == *width) {
+            *width = this_width;
+            *pitch = pitch_dual;
+        } else if (this_width != *width) {
+            *width = -1;
+            *pitch = pitch_variable;
+            return false; /* no further check necessary */
+        }
+    } else if (*pitch == pitch_dual &&
+               (this_width != *width && this_width != 2 * (*width))) {
+        *width = -1;
+        *pitch = pitch_variable;
+        return false; /* no further check necessary */
+    }
+    return true;
+}

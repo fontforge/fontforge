@@ -51,36 +51,6 @@ return( true );
 return( !SCWorthOutputting(bdfc->sc));
 }
 
-static void calculate_bounding_box(BDFFont *font,
-	int *fbb_width,int *fbb_height,int *fbb_lbearing, int *fbb_descent) {
-    int minx=0,maxx=0,miny=0,maxy=0;
-    BDFChar *bdfc;
-    int i;
-
-    for ( i=0; i<font->glyphcnt; ++i ) {
-	if ( (bdfc = font->glyphs[i])!=NULL ) {
-	    if ( minx==0 && maxx==0 ) {
-		minx = bdfc->xmin;
-		maxx = bdfc->xmax;
-	    } else {
-		if ( minx>bdfc->xmin ) minx=bdfc->xmin;
-		if ( maxx<bdfc->xmax ) maxx = bdfc->xmax;
-	    }
-	    if ( miny==0 && maxy==0 ) {
-		miny = bdfc->ymin;
-		maxy = bdfc->ymax;
-	    } else {
-		if ( miny>bdfc->ymin ) miny=bdfc->ymin;
-		if ( maxy<bdfc->ymax ) maxy = bdfc->ymax;
-	    }
-	}
-    }
-    *fbb_height = maxy-miny+1;
-    *fbb_width = maxx-minx+1;
-    *fbb_descent = miny;
-    *fbb_lbearing = minx;
-}
-
 #define MS_Hor	1
 #define MS_Vert	2
 struct metric_defaults {
@@ -311,7 +281,7 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,EncMap *map,
 #else
     fprintf( file, "SIZE %d %d %d\n", components.point_size/10, components.res_x, components.res_y );
 #endif
-    calculate_bounding_box(font,&fbb_width,&fbb_height,&fbb_lbearing,&fbb_descent);
+    CalculateBoundingBox(font,&fbb_width,&fbb_height,&fbb_lbearing,&fbb_descent);
     fprintf( file, "FONTBOUNDINGBOX %d %d %d %d\n", fbb_width, fbb_height, fbb_lbearing, fbb_descent);
 
     if ( defs->metricssets!=0 ) {
@@ -353,8 +323,10 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,EncMap *map,
 	    ++pcnt;
     }
     if ( pcnt!=0 ) {
+	if (!BdfPropHasKey(font, "FONT_ASCENT", NULL, 0)) ++pcnt;
+	if (!BdfPropHasKey(font, "FONT_DESCENT", NULL, 0)) ++pcnt;
 	fprintf( file, "STARTPROPERTIES %d\n", pcnt );
-	for ( i=pcnt=0; i<font->prop_cnt; ++i ) {
+	for ( i=0; i<font->prop_cnt; ++i ) {
 	    if ( font->props[i].type&prt_property ) {
 		fprintf( file, "%s ", font->props[i].name );
 		switch ( font->props[i].type&~prt_property ) {
@@ -378,8 +350,12 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,EncMap *map,
 		}
 	    }
 	}
+	if (!BdfPropHasKey(font, "FONT_ASCENT", NULL, 0))
+	    fprintf( file, "FONT_ASCENT %d\n",font->ascent );
+	if (!BdfPropHasKey(font, "FONT_DESCENT", NULL, 0))
+	    fprintf( file, "FONT_DESCENT %d\n",font->descent );
     } else {
-	fprintf( file, "STARTPROPERTIES %d\n", 15+ (font->clut!=NULL));
+	fprintf( file, "STARTPROPERTIES %d\n", 17+ (font->clut!=NULL));
 	fprintf( file, "FONTNAME_REGISTRY \"\"\n" );
 	fprintf( file, "FOUNDRY \"%s\"\n", components.foundry );
 	fprintf( file, "FAMILY_NAME \"%s\"\n", components.family );
@@ -397,6 +373,8 @@ static void BDFDumpHeader(FILE *file,BDFFont *font,EncMap *map,
 	    fprintf( file, "BITS_PER_PIXEL %d\n", BDFDepth(font));
 	fprintf( file, "CHARSET_REGISTRY \"%s\"\n", components.cs_reg );
 	fprintf( file, "CHARSET_ENCODING \"%s\"\n", components.cs_enc );
+	fprintf( file, "FONT_ASCENT %d\n",font->ascent );
+	fprintf( file, "FONT_DESCENT %d\n",font->descent );
     }
     fprintf( file, "ENDPROPERTIES\n" );
     { /* AllSame tells us how many glyphs in the font. Which is great for */
