@@ -36,18 +36,24 @@ extern "C" {
 
 namespace ff::shapers {
 
+static hb_bool_t resolve_fake_encoding(hb_font_t* font, void* font_data,
+                                       hb_codepoint_t unicode,
+                                       hb_codepoint_t* glyph, void* user_data) {
+    hb_font_t* parent = (hb_font_t*)font_data;
+
+    if (unicode >= 0x110000) {
+        *glyph = unicode - 0x110000;
+        return true;
+    }
+    return hb_font_get_nominal_glyph(parent, unicode, glyph);
+}
+
 HarfBuzzShaper::HarfBuzzShaper(std::shared_ptr<ShaperContext> context)
     : context_(context) {
     FILE* ttf_file = GFileTmpfile();
 
-    // HarfBuzz can only accept Unicode as the input buffer, but the Metrics
-    // View must support the capability to shape glyphs which don't have
-    // assigned Unicode values. When writing a temporary TrueType font, we need
-    // to make sure that every glyph is assigned Unicode value (possibly fake,
-    // see flag ttf_flag_fake_map), and that we have means to map each
-    // SplineChar to its assigned Unicode value.
     _WriteTTFFont(ttf_file, context_->sf, ff_ttf, NULL, bf_ttf,
-                  ttf_flag_otmode | ttf_flag_fake_map | ttf_flag_no_outlines,
+                  ttf_flag_otmode | ttf_flag_no_outlines,
                   context_->get_enc_map(context_->sf), ly_fore);
 
     // Build map of TTF codepoints
@@ -70,14 +76,23 @@ HarfBuzzShaper::HarfBuzzShaper(std::shared_ptr<ShaperContext> context)
         hb_blob_create(blob, blob_size, HB_MEMORY_MODE_WRITABLE, NULL, NULL);
 
     hb_ttf_face = hb_face_create(hb_ttf_blob, 0);
+    hb_font_t* hb_ttf_raw_font = hb_font_create(hb_ttf_face);
 
-    hb_ttf_font = hb_font_create(hb_ttf_face);
+    // To access unencoded glyphs with HarfBuzz, we need to assign them fake
+    // encodings above the canonic Unicode range. We also need to create a
+    // subfont with custom encoding resolution callback.
+    hb_ttf_font = hb_font_create_sub_font(hb_ttf_raw_font);
+    hb_font_funcs_t* funcs = hb_font_funcs_create();
+    hb_font_funcs_set_nominal_glyph_func(funcs, resolve_fake_encoding, NULL,
+                                         NULL);
+    hb_font_set_funcs(hb_ttf_font, funcs, hb_ttf_raw_font, NULL);
 
     fclose(ttf_file);
 }
 
 HarfBuzzShaper::~HarfBuzzShaper() {
     hb_font_destroy(hb_ttf_font);
+    hb_font_destroy(hb_ttf_raw_font);
     hb_face_destroy(hb_ttf_face);
     hb_blob_destroy(hb_ttf_blob);
     delete[] blob;
@@ -287,7 +302,7 @@ ShaperOutput HarfBuzzShaper::apply_features(
     u_vec.push_back(0);
 
     hb_buffer_t* hb_buffer = hb_buffer_create();
-    hb_buffer_add_utf32(hb_buffer, u_vec.data(), -1, 0, -1);
+    hb_buffer_add_codepoints(hb_buffer, u_vec.data(), -1, 0, -1);
 
     // Set script and language
     hb_script_t hb_script = hb_ot_tag_to_script(script);

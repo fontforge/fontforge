@@ -1889,55 +1889,7 @@ return( result );
 }
 
 extern int SFFakeUnicodeBase(SplineFont *sf) {
-	int fake_unicode_base=0;
-	/* If they have nothing in Supplementary Private Use Area-A use it */
-	/* If they have nothing in Supplementary Private Use Area-B use it */
-	int a, al, ah, b, bl, bh;
-	int gid,k,max;
-	SplineChar *test;
-	SplineFont *_sf;
-	if ( sf->cidmaster ) sf = sf->cidmaster;
-	k=0;
-	a = al = ah = b = bl = bh = 0;
-	max = 0;
-	do {
-	    _sf =  ( sf->subfontcnt==0 ) ? sf : sf->subfonts[k];
-	    for ( gid=0; gid<_sf->glyphcnt; ++gid ) if ( (test=_sf->glyphs[gid])!=NULL ) {
-		if ( test->unicodeenc>=0xf0000 && test->unicodeenc<=0xfffff ) {
-		    a = true;
-		    if ( test->unicodeenc<0xf8000 )
-			al = true;
-		    else
-			ah = true;
-		} else if ( test->unicodeenc>=0x100000 && test->unicodeenc<=0x10ffff ) {
-		    b = true;
-		    if ( test->unicodeenc<0x108000 )
-			bl = true;
-		    else
-			bh = true;
-		}
-	    }
-	    if ( gid>max ) max = gid;
-	    ++k;
-	} while ( k<sf->subfontcnt );
-	if ( !a )		/* Nothing in SPUA-A */
-	    fake_unicode_base = 0xf0000;
-	else if ( !b )
-	    fake_unicode_base = 0x100000;
-	else if ( max<0x8000 ) {
-	    if ( !al )
-		fake_unicode_base = 0xf0000;
-	    else if ( !ah )
-		fake_unicode_base = 0xf8000;
-	    else if ( !bl )
-		fake_unicode_base = 0x100000;
-	    else if ( !bh )
-		fake_unicode_base = 0x108000;
-	}
-	if ( fake_unicode_base==0 )
-	    fake_unicode_base = -1;
-
-	return fake_unicode_base;
+    return 0x110000;
 }
 
 static void arraystring(char *buffer,real *array,int cnt) {
