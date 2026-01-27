@@ -294,10 +294,9 @@ ShaperOutput HarfBuzzShaper::apply_features(
     Tag lang, int pixelsize, bool vertical) {
     std::vector<unichar_t> u_vec;
     for (size_t len = 0; glyphs[len] != NULL; ++len) {
-        u_vec.push_back(
-            (glyphs[len]->unicodeenc > 0)
-                ? glyphs[len]->unicodeenc
-                : context_->fake_unicode(context_->mv, glyphs[len]));
+        u_vec.push_back((glyphs[len]->unicodeenc > 0)
+                            ? glyphs[len]->unicodeenc
+                            : (glyphs[len]->ttf_glyph + 0x110000));
     }
     u_vec.push_back(0);
 
