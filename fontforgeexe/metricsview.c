@@ -483,7 +483,7 @@ return;
 }
 
 static void MVSetSubtables(SplineFont *sf) {
-    GTextInfo **ti;
+    GTextInfo **ti = NULL;
     OTLookup *otl;
     struct lookup_subtable *sub;
     int cnt, doit;
@@ -5178,7 +5178,7 @@ GTextInfo *SLOfFont(SplineFont *sf) {
     int s, l, i, k, cnt;
     extern GTextInfo scripts[], languages[];
     GTextInfo *ret = NULL;
-    char *sname, *lname, *temp;
+    char *sname=NULL, *lname, *temp;
     char sbuf[8], lbuf[8];
 
     LookupUIInit();
