@@ -1622,9 +1622,8 @@ static SplineChar *MVSCFromUnicode(MetricsView *mv, SplineFont *sf, EncMap *map,
     int i;
     SplineChar *sc;
 
-    if ( mv->fake_unicode_base && ch>=mv->fake_unicode_base &&
-	    ch<=mv->fake_unicode_base+mv->sf->glyphcnt )
-return( mv->sf->glyphs[ch-mv->fake_unicode_base] );
+    if ( ch>=FAKE_UNICODE_BASE && ch<FAKE_UNICODE_BASE+mv->sf->glyphcnt )
+        return( mv->sf->glyphs[ch-FAKE_UNICODE_BASE] );
 
     i = SFFindSlot(sf,map,ch,NULL);
     if ( i==-1 )
@@ -1820,27 +1819,17 @@ static void MVVScroll(MetricsView *mv,struct sbevent *sb) {
 }
 
 static int MVFakeUnicodeOfSc(MetricsView *mv, SplineChar *sc) {
-
-    if ( sc->unicodeenc!=-1 )
-return( sc->unicodeenc );
-
-    if ( mv->fake_unicode_base==0 ) {		/* Not set */
-    	mv->fake_unicode_base = SFFakeUnicodeBase(mv->sf);
-    }
-
-    if ( mv->fake_unicode_base==-1 )
-return( 0xfffd );
+    if (sc->unicodeenc != -1)
+        return sc->unicodeenc;
     else
-return( mv->fake_unicode_base+sc->orig_pos );
+        return FAKE_UNICODE_BASE + sc->orig_pos;
 }
 
 static int MVOddMatch(MetricsView *mv,int uni,SplineChar *sc) {
     if ( sc->unicodeenc!=-1 )
 return( false );
-    else if ( mv->fake_unicode_base<=0 )
-return( uni==0xfffd );
     else
-return( uni>=mv->fake_unicode_base && sc->orig_pos == uni-mv->fake_unicode_base );
+return( uni>=FAKE_UNICODE_BASE && sc->orig_pos == uni-FAKE_UNICODE_BASE );
 }
 
 void MVSetSCs(MetricsView *mv, SplineChar **scs) {
@@ -1923,8 +1912,7 @@ return;					/* Nothing changed */
 
     missing = 0;
     for ( tpt=pt; tpt<ept; ++tpt )
-	if ( mv->fake_unicode_base>0 && *tpt>=mv->fake_unicode_base &&
-		*tpt<=mv->fake_unicode_base+mv->sf->glyphcnt )
+	if ( *tpt>=FAKE_UNICODE_BASE && *tpt<=FAKE_UNICODE_BASE+mv->sf->glyphcnt )
 	    /* That's ok */;
 	else if ( SFFindSlot(mv->sf,mv->fv->b.map,*tpt,NULL)==-1 )
 	    ++missing;

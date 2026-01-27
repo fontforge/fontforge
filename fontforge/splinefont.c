@@ -1888,10 +1888,6 @@ bigreal SFDescender(SplineFont *sf, int layer, int return_error) {
 return( result );
 }
 
-extern int SFFakeUnicodeBase(SplineFont *sf) {
-    return 0x110000;
-}
-
 static void arraystring(char *buffer,real *array,int cnt) {
     int i, ei;
 
