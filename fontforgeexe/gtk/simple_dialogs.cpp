@@ -34,6 +34,7 @@
 #include "intl.h"
 #include "application.hpp"
 #include "dialog.hpp"
+#include "find_problems.hpp"
 #include "language_list.hpp"
 #include "utils.hpp"
 
@@ -161,6 +162,48 @@ char* language_list_dialog(GWindow parent, const LanguageRec* languages,
                             append_tag);
         return strdup(s.c_str());
     }
+}
+
+bool find_problems_dialog(GWindow parent, ProblemTab* pr_tabs, double* near) {
+    // To avoid instability, the GTK application is lazily initialized only when
+    // a GTK window is invoked.
+    ff::app::GtkApp();
+
+    std::vector<ff::dlg::ProblemTab> cpp_pr_tabs;
+    for (const ProblemTab* tab = pr_tabs; tab->label != NULL; ++tab) {
+        std::vector<ff::dlg::ProblemRecord> records;
+        for (const ProblemRec* rec = tab->records; rec->label != NULL; ++rec) {
+            ff::dlg::ProblemRecordValue value =
+                (rec->type == prob_bool) ? ff::dlg::ProblemRecordValue()
+                : (rec->type == prob_int)
+                    ? ff::dlg::ProblemRecordValue(rec->value.ival)
+                    : ff::dlg::ProblemRecordValue(rec->value.dval);
+            ff::dlg::ProblemRecord record{
+                rec->cid,      rec->label,      rec->tooltip, rec->active,
+                rec->disabled, rec->parent_cid, value};
+            records.push_back(std::move(record));
+        }
+        ff::dlg::ProblemTab pr_tab{tab->label, std::move(records)};
+        cpp_pr_tabs.push_back(std::move(pr_tab));
+    }
+
+    ff::dlg::ProblemRecordsOut result =
+        ff::dlg::FindProblemsDlg::show(parent, cpp_pr_tabs, *near);
+
+    for (const ProblemTab* tab = pr_tabs; tab->label != NULL; ++tab) {
+        for (ProblemRec* rec = tab->records; rec->label != NULL; ++rec) {
+            rec->active = result.count(rec->cid);
+            if (rec->active) {
+                if (rec->type == prob_int) {
+                    rec->value.ival = std::get<int>(result[rec->cid]);
+                } else if (rec->type == prob_double) {
+                    rec->value.dval = std::get<double>(result[rec->cid]);
+                }
+            }
+        }
+    }
+
+    return (!result.empty());
 }
 
 void update_appearance() {

@@ -267,7 +267,7 @@ std::string build_styles(const GResInfo* gdraw_ri) {
 
     static const std::map<std::string, Selector> css_selector_map = {
         {"", {"box", {"tooltip"}}},
-        {"GLabel", {"label", {"button", "tooltip"}}},
+        {"GLabel", {"label", {"button", "tooltip", "tab"}}},
         {"GButton", {"button", {"spinbutton"}}},
         {"GDefaultButton", {"button#ok", {}}},
         {"GCancelButton", {"button#cancel", {}}},
@@ -279,26 +279,30 @@ std::string build_styles(const GResInfo* gdraw_ri) {
 
     // Some GTK widgets have substantially different structure from their GDraw
     // analogs. For them we collect only color properties.
-    static const std::map<std::string, std::string> css_selector_map_color = {
-        {"GList", "treeview"},
-    };
+    static const std::vector<std::pair<std::string, std::string>>
+        css_selector_map_color = {
+            {"GList", "treeview"},
+            {"GTabSet", "header"},
+            {"GTabSet", "tab"},
+        };
 
     std::string styles;
 
     for (const GResInfo* ri = gdraw_ri; ri->next != NULL; ri = ri->next) {
-        auto sel_color_it = css_selector_map_color.find(ri->resname);
-        if (sel_color_it != css_selector_map_color.end()) {
-            auto props_color = collect_css_properties_color(*(ri->boxdata));
-            styles += build_style(sel_color_it->second, props_color);
+        for (const auto& [resname, css_node] : css_selector_map_color) {
+            if (resname == ri->resname) {
+                auto props_color = collect_css_properties_color(*(ri->boxdata));
+                styles += build_style(css_node, props_color);
 
-            auto props_selected =
-                collect_css_properties_selected(*(ri->boxdata));
-            styles +=
-                build_style(sel_color_it->second + ":selected", props_selected);
-
-            continue;
+                auto props_selected =
+                    collect_css_properties_selected(*(ri->boxdata));
+                styles += build_style(css_node + ":selected", props_selected);
+                styles += build_style(css_node + ":checked", props_selected);
+            }
         }
+    }
 
+    for (const GResInfo* ri = gdraw_ri; ri->next != NULL; ri = ri->next) {
         auto sel_it = css_selector_map.find(ri->resname);
         if (sel_it == css_selector_map.end()) {
             continue;
@@ -342,6 +346,8 @@ std::string build_styles(const GResInfo* gdraw_ri) {
                 props_disabled);
         }
     }
+
+    styles += "tab { margin-bottom: 1px; }\n";
 
     return styles;
 }
