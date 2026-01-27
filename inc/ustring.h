@@ -233,6 +233,10 @@ extern char* str_replace_all( char* s, char* orig, char* replacement, int free_s
 
 int toint( char* v );
 char* tostr( int v );
+/* reallocate buffer and adjust its tail and intermediate processor if present
+ */
+void realloc_tail(char** p_buf, size_t size_delta, char** p_tail,
+                  char** p_proc);
 
 #pragma pop_macro("PRINTF_FORMAT_ATTRIBUTE")
 
