@@ -55,6 +55,9 @@ class HarfBuzzShaper : public IShaper {
     char* blob = nullptr;
     hb_blob_t* hb_ttf_blob = nullptr;
     hb_face_t* hb_ttf_face = nullptr;
+    hb_font_t* hb_ttf_raw_font = nullptr;
+
+    // HarfBuzz subfont with custom resolution for fake encodings
     hb_font_t* hb_ttf_font = nullptr;
 
     // Map glyph indexes in TTF file to SplineChar objects

@@ -37,7 +37,8 @@ typedef struct splinefont SplineFont;
 typedef struct metricsview MetricsView;
 typedef struct encmap EncMap;
 
-static int INVALID_KERN_OFFSET = 0x7ffffff;
+static const int INVALID_KERN_OFFSET = 0x7ffffff;
+static const int FAKE_UNICODE_BASE = 0x110000;
 
 char* u2utf8_copy(const unichar_t* ubuf);
 int _WriteTTFFont(FILE* ttf, SplineFont* sf, int /*enum fontformat*/ format,
