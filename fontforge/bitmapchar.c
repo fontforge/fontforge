@@ -871,7 +871,7 @@ return( NULL );
 	bdf->glyphcnt = sf->glyphcnt;
     }
     if ( (bc = bdf->glyphs[gid])==NULL ) {
-	if ( use_freetype_to_rasterize_fv ) {
+	if ( use_freetype_to_rasterize_fv && SCDrawsSomething(sc) ) {
 	    void *freetype_context = FreeTypeFontContext(sf,sc,NULL,ly_fore);
 	    if ( freetype_context != NULL ) {
 		bc = SplineCharFreeTypeRasterize(freetype_context,
