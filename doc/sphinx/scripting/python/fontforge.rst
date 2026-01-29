@@ -2361,11 +2361,18 @@ must be created through the font.
    Ligature data will be followed by several strings each containing the name
    of a ligature component glyph.
 
-.. method:: glyph.importOutlines(filename, [KEYWORD])
+.. method:: glyph.importOutlines(file, [KEYWORD])
 
-   Uses the file's extension to determine behavior. Imports outline descriptions
-   (eps, svg, glif files) into the foreground layer. Imports image descriptions
-   (bmp, png, xbm, etc.) into the background layer. The following optional keywords modify the import process for various formats:
+   The first argument, file, allows a filename string or `file-like object <https://docs.python.org/3/glossary.html#term-file-object>`_.
+   Uses the file's extension or the type keyword to determine behavior.
+   Imports outline descriptions (eps, svg, glif files) into the foreground layer.
+   Imports image descriptions (bmp, png, xbm, etc.) into the background layer.
+   The following optional keywords modify the import process for various formats:
+
+   .. object:: filename (string, default=False)
+
+      This keyword adds the ability to specify the filename
+      if the file argument is not given a filename.
 
    .. object:: scale (boolean, default=True)
 
@@ -2403,6 +2410,11 @@ must be created through the font.
 
       If the UI is present show the Import options dialog to the user
       and use the chosen values (does nothing otherwise).
+
+   .. object:: type (string, default=False)
+
+      Overrides the filetype in the case of the first argument being a filename.
+      In the case of it being a file-like object, it is required.
 
    Note: The old PostScript correctdir/handle_eraser flag tuple is still
    supported but is not compatible with the other keywords.
