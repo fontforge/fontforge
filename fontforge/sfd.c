@@ -175,6 +175,7 @@ static void SFDDumpHintList(FILE *sfd,const char *key, StemInfo *h);
 static void SFDDumpDHintList( FILE *sfd,const char *key, DStemInfo *d );
 static StemInfo *SFDReadHints(FILE *sfd);
 static DStemInfo *SFDReadDHints( SplineFont *sf,FILE *sfd,int old );
+static void SFDSizeMap(EncMap *map,int glyphcnt,int enccnt);
 
 static int PeekMatch(FILE *stream, const char * target) {
   // This returns 1 if target matches the next characters in the stream.
@@ -1250,12 +1251,10 @@ return;
 
 static void *SFDUnPickle(FILE *sfd, int python_data_has_lists) {
     int ch, quoted;
-    static int max = 0;
-    static char *buf = NULL;
-    char *pt, *end;
-    int cnt;
+    static char *buf = NULL, *end = NULL;
+    char *pt;
 
-    pt = buf; end = buf+max;
+    pt = buf;
     while ( (ch=nlgetc(sfd))!='"' && ch!='\n' && ch!=EOF );
     if ( ch!='"' )
 return( NULL );
@@ -1265,12 +1264,8 @@ return( NULL );
 	if ( !quoted && ch=='\\' )
 	    quoted = true;
 	else {
-	    if ( pt>=end ) {
-		cnt = pt-buf;
-		buf = realloc(buf,(max+=200)+1);
-		pt = buf+cnt;
-		end = buf+max;
-	    }
+	    if ( pt>=end )
+		realloc_tail(&buf, 200, &end, &pt);
 	    *pt++ = ch;
 	    quoted = false;
 	}
@@ -1889,7 +1884,6 @@ static void SFDDumpOtfFeatNames(FILE *sfd, SplineFont *sf) {
     struct otfname *on;
 	bool cv[100] = {false};
 	int cvnum, cvcount, i;
-	char prefix[3] = {0};
 
     for ( fn=sf->feat_names; fn!=NULL; fn=fn->next ) {
 	if ( (fn->tag & 0xffff0000) == (('s' << 24) | ('s' << 16)) ) {
@@ -3286,12 +3280,8 @@ char *getquotedeol(FILE *sfd) {
 	    /* FontForge doesn't write other escape sequences in this context. */
 	    /* So any other value of ch is assumed impossible. */
 	}
-	if ( pt>=end ) {
-	    pt = realloc(str,end-str+101);
-	    end = pt+(end-str)+100;
-	    str = pt;
-	    pt = end-100;
-	}
+	if ( pt>=end )
+	    realloc_tail(&str, 100, &end, &pt);
 	*pt++ = ch;
 	ch = nlgetc(sfd);
     }
@@ -3773,12 +3763,8 @@ static void SFDGetTtInstrs(FILE *sfd, SplineChar *sc) {
     int instr_len;
 
     while ( (ch=nlgetc(sfd))!=EOF ) {
-	if ( pt>=end ) {
-	    char *newbuf = realloc(buf,(end-buf+200));
-	    pt = newbuf+(pt-buf);
-	    end = newbuf+(end+200-buf);
-	    buf = newbuf;
-	}
+	if ( pt>=end )
+	    realloc_tail(&buf, 200, &end, &pt);
 	*pt++ = ch;
 	if ( pt-buf>backlen && strncmp(pt-backlen,end_tt_instrs,backlen)==0 ) {
 	    pt -= backlen;
@@ -3896,12 +3882,8 @@ static struct ttf_table *SFDGetTtTable(FILE *sfd, SplineFont *sf,struct ttf_tabl
 	which = 1;
 
     while ( (ch=nlgetc(sfd))!=EOF ) {
-	if ( pt>=end ) {
-	    char *newbuf = realloc(buf,(end-buf+200));
-	    pt = newbuf+(pt-buf);
-	    end = newbuf+(end+200-buf);
-	    buf = newbuf;
-	}
+	if ( pt>=end )
+	    realloc_tail(&buf, 200, &end, &pt);
 	*pt++ = ch;
 	if ( pt-buf>backlen && strncmp(pt-backlen,end_tt_instrs,backlen)==0 ) {
 	    pt -= backlen;
@@ -4783,6 +4765,29 @@ return;
 	map->map[enc] = orig_pos;
 }
 
+static void SFDFixDuplicateEnc(SplineFont* sf, int enc) {
+    if (enc < 0 || enc >= sf->map->encmax) return;
+
+    int32_t glyph_idx = sf->map->map[enc];
+    if (glyph_idx < 0 || glyph_idx >= sf->glyphcnt) return;
+
+    /* The last of the identically encoded glyphs occludes the others, so we
+     * keep it, and drop the encoding of the previously encountered duplicate.
+     */
+    SplineChar* dup_sc = sf->glyphs[glyph_idx];
+    if (dup_sc == NULL || dup_sc->orig_pos < 0) return;
+    LogError(_("Duplicate local encoding 0x%04x encountered in glyph %s. This "
+               "glyph will be unencoded."),
+             enc, dup_sc->name);
+
+    /* Append this glyph at the unencoded area at the end. */
+    dup_sc->unicodeenc = -1;
+    if (dup_sc->orig_pos < sf->map->backmax)
+        sf->map->backmap[dup_sc->orig_pos] = -1;
+    SFDSetEncMap(sf, dup_sc->orig_pos, sf->map->enccount);
+    SFDSizeMap(sf->map, sf->glyphcnt, sf->map->enccount + 1);
+}
+
 static void SCDefaultInterpolation(SplineChar *sc) {
     SplineSet *cur;
     SplinePoint *sp;
@@ -5298,7 +5303,12 @@ return( NULL );
 	    } else {
 		sc->orig_pos = orig_pos++;
 	    }
-	    SFDSetEncMap(sf,sc->orig_pos,enc);
+	    if (enc != -1 && sf->map && sf->map->map[enc] != -1) {
+		/* Multiple glyphs with same encoding are not accessible from
+		   FontView, and we consider them corrupted. */
+		SFDFixDuplicateEnc(sf, enc);
+	    }
+	    SFDSetEncMap(sf, sc->orig_pos, enc);
 	} else if ( strmatch(tok,"AltUni:")==0 ) {
 	    int uni;
 	    while ( getint(sfd,&uni)==1 ) {
