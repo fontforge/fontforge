@@ -1035,7 +1035,12 @@ return(false);
 	ff_post_error(_("Nothing Selected"),_("You must select a glyph before you can import an image into it"));
     else if ( path_list[file_idx]!=NULL )
 	ff_post_error(_("More Images Than Selected Glyphs"),_("More Images Than Selected Glyphs"));
-return( true );
+
+    for (char** p_path = path_list; *p_path != NULL; ++p_path)
+	free(*p_path);
+    free(path_list);
+    
+    return( true );
 }
 
 int FVImportImageTemplate(FontViewBase *fv,char *path,int format,int toback,
