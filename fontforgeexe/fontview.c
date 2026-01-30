@@ -1251,7 +1251,6 @@ static void FVMenuMergeKern(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UN
 
 void _FVMenuOpen(FontView *fv) {
     char *temp;
-    char *eod, *fpt, *file, *full;
     FontView *test; int fvcnt, fvtest;
 
     char* OpenDir = NULL, *DefaultDir = NULL, *NewDir = NULL;
@@ -1278,6 +1277,7 @@ void _FVMenuOpen(FontView *fv) {
         }
         
         temp = GetPostScriptFontName(OpenDir,true,fv != NULL);
+	char** path_list = GFileChooserGetMultipleFiles(temp);
         if ( temp==NULL )
             return;
 
@@ -1288,24 +1288,14 @@ void _FVMenuOpen(FontView *fv) {
             NewDir = NULL;
         }
 
-        eod = strrchr(temp,'/');
-        if (eod != NULL) {
-            *eod = '\0';
-            file = eod+1;
-            
-            if (*file) {
-                do {
-                    fpt = strstr(file,"; ");
-                    if ( fpt!=NULL ) *fpt = '\0';
-                    full = malloc(strlen(temp)+1+strlen(file)+1);
-                    strcpy(full,temp); strcat(full,"/"); strcat(full,file);
-                    ViewPostScriptFont(full,0);
-                    file = fpt+2;
-                    free(full);
-                } while ( fpt!=NULL );
-            }
-        }
+	for (char** p_path = path_list; *p_path != NULL; ++p_path)
+	    ViewPostScriptFont(*p_path,0);
+
         free(temp);
+	for (char** p_path = path_list; *p_path != NULL; ++p_path)
+	    free(*p_path);
+	free(path_list);
+
         for ( fvtest=0, test=fv_list; test!=NULL; ++fvtest, test=(FontView *) (test->b.next) );
     } while ( fvtest==fvcnt );	/* did the load fail for some reason? try again */
     
