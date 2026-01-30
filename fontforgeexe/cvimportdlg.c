@@ -567,7 +567,7 @@ static int GFD_ImportOk(GGadget *g, GEvent *e) {
 	ImportParams *ip = ImportParamsState();
 
 	GFileChooserGetChildren(d->gfc,NULL,NULL,&tf);
-	if ( *_GGadgetGetTitle(tf)=='\0' )
+	if ( *_GGadgetGetTitle(tf)=='\0' || !temp)
 return( true );
 	GDrawSetCursor(GGadgetGetWindow(g),ct_watch);
 	if ( d->fv!=NULL ) {
@@ -584,13 +584,13 @@ return( true );
 	    if ( toback && path_list[1]!=NULL && format<3 )
 		ff_post_error(_("Only One Font"),_("Only one font may be imported into the background"));
 	    else if ( format==fv_bdf )
-		d->done = FVImportBDF((FontViewBase *) d->fv,temp,false, toback);
+		d->done = FVImportBDFs((FontViewBase *) d->fv,path_list,false, toback);
 	    else if ( format==fv_ttf )
 		d->done = FVImportMult((FontViewBase *) d->fv,temp,toback,bf_ttf);
 	    else if ( format==fv_pk )		/* pk */
-		d->done = FVImportBDF((FontViewBase *) d->fv,temp,true, toback);
+		d->done = FVImportBDFs((FontViewBase *) d->fv,path_list,true, toback);
 	    else if ( format==fv_pcf )		/* pcf */
-		d->done = FVImportBDF((FontViewBase *) d->fv,temp,2, toback);
+		d->done = FVImportBDFs((FontViewBase *) d->fv,path_list,2, toback);
 	    else if ( format==fv_mac )
 		d->done = FVImportMult((FontViewBase *) d->fv,temp,toback,bf_nfntmacbin);
 	    else if ( format==fv_win )

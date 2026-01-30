@@ -2295,47 +2295,36 @@ static void SFMergeBitmaps(SplineFont *sf,BDFFont *strikes,EncMap *map) {
 static void SFAddToBackground(SplineFont *sf,BDFFont *bdf);
 
 int FVImportBDF(FontViewBase *fv, char *filename, int ispk, int toback) {
+    char *path_list[2] = {filename, NULL};
+    return FVImportBDFs(fv, path_list, ispk, toback);
+}
+
+int FVImportBDFs(FontViewBase *fv, char **path_list, int ispk, int toback) {
     BDFFont *b, *anyb=NULL;
-    char *buf, *eod, *fpt, *file, *full, *freeme;
+    char *buf, *full;
     int fcnt, any = 0;
     int oldenccnt = fv->map->enccount;
 
-    freeme = filename = copy(filename);
-    eod = strrchr(filename,'/');
-    if (eod != NULL) {
-        *eod = '\0';
-        file = eod+1;
-    } else {
-        file = filename;
-        filename = ".";
-    }
-    fcnt = 1;
-    fpt = file;
-    while (( fpt=strstr(fpt,"; "))!=NULL )
-	{ ++fcnt; fpt += 2; }
+    for (fcnt = 0; path_list[fcnt] != NULL; ++fcnt);
 
-    buf = smprintf(_("Loading font from %.100s"), filename);
+    buf = smprintf(_("Loading font from %.100s"), path_list[0]);
     ff_progress_start_indicator(10,_("Loading..."),buf,_("Reading Glyphs"),0,fcnt);
     ff_progress_enable_stop(false);
     free(buf);
 
-    do {
-	fpt = strstr(file,"; ");
-	if ( fpt!=NULL ) *fpt = '\0';
-	full = smprintf("%s/%s", filename, file);
+    for (char** p_path = path_list; *p_path != NULL; ++p_path) {
+	full = *p_path;
 	buf = smprintf(_("Loading font from %.100s"), full);
 	ff_progress_change_line1(buf);
 	free(buf);
 	b = _SFImportBDF(fv->sf,full,ispk,toback, fv->map);
-	free(full);
-	if ( fpt!=NULL ) ff_progress_next_stage();
+	ff_progress_next_stage();
 	if ( b!=NULL ) {
 	    anyb = b;
 	    any = true;
 	    FVRefreshAll(fv->sf);
 	}
-	file = fpt+2;
-    } while ( fpt!=NULL );
+    }
     ff_progress_end_indicator();
     if ( oldenccnt != fv->map->enccount ) {
 	FontViewBase *fvs;
@@ -2346,10 +2335,9 @@ int FVImportBDF(FontViewBase *fv, char *filename, int ispk, int toback) {
 	FontViewReformatAll(fv->sf);
     }
     if ( anyb==NULL ) {
-	ff_post_error( _("No Bitmap Font"), _("Could not find a bitmap font in %s"), filename );
+	ff_post_error( _("No Bitmap Font"), _("Could not find a bitmap font in %s"), path_list[0]);
     } else if ( toback )
 	SFAddToBackground(fv->sf,anyb);
-    free(freeme);
 return( any );
 }
 
