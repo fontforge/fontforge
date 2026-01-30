@@ -232,23 +232,22 @@ char *utf8toutf7_copy(const char *_str) {
 	    if ( ch<127 && ch!='\n' && ch!='\r' && ch!='\\' && ch!='~' &&
 		    ch!='+' && ch!='=' && ch!='"' ) {
 		if ( prev_cnt!=0 ) {
-			prev<<= (prev_cnt==1?16:8);
-			ostr = base64_encode(ostr,prev);
-			prev_cnt=prev=0;
+		    prev<<= (prev_cnt==1?16:8);
+		    ostr = base64_encode(ostr,prev);
+		    prev_cnt=prev=0;
 		}
 		if ( in ) {
-		    if ( inbase64[ch]!=-1 || ch=='-' ) {
-			    *ostr++ = '-';
-		    }
+		    if ( inbase64[ch]!=-1 || ch=='-' )
+			*ostr++ = '-';
 		    in = 0;
 		}
-		    *ostr++ = ch;
+		*ostr++ = ch;
 	    } else if ( ch=='+' && !in ) {
-		    *ostr++ = '+';
-		    *ostr++ = '-';
+		*ostr++ = '+';
+		*ostr++ = '-';
 	    } else if ( prev_cnt== 0 ) {
 		if ( !in ) {
-			*ostr++ = '+';
+		    *ostr++ = '+';
 		    in = 1;
 		}
 		prev = ch;
@@ -256,15 +255,13 @@ char *utf8toutf7_copy(const char *_str) {
 	    } else if ( prev_cnt==2 ) {
 		prev<<=8;
 		prev += (ch>>8)&0xff;
-		    ostr = base64_encode(ostr,prev);
-		    prev_cnt=prev=0;
+		ostr = base64_encode(ostr,prev);
 		prev = (ch&0xff);
 		prev_cnt=1;
 	    } else {
 		prev<<=16;
 		prev |= ch;
-		    ostr = base64_encode(ostr,prev);
-		    prev_cnt=prev=0;
+		ostr = base64_encode(ostr,prev);
 		prev_cnt = prev = 0;
 	    }
 	}
@@ -276,19 +273,16 @@ char *utf8toutf7_copy(const char *_str) {
            output 4 chars. */
 	if ( prev_cnt==2 ) {
 	    prev<<=8;
-		ostr = base64_encode(ostr,prev);
-		prev_cnt=prev=0;
+	    ostr = base64_encode(ostr,prev);
 	} else if ( prev_cnt==1 ) {
 	    prev<<=16;
-		ostr = base64_encode(ostr,prev);
-		prev_cnt=prev=0;
+	    ostr = base64_encode(ostr,prev);
 	}
         /* Base64 block can optionally end with a hyphen '-'. We omit it at the
            end of the encoded string to preserve the existing SFD convention. */
         /*
-	if ( in ) {
+	if ( in )
 	    *ostr++ = '-';
-	}
         */
 
     *ostr = '\0';
