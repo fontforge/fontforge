@@ -7,7 +7,7 @@
 #include "splinefont.h"
 
 extern GImage *ImageAlterClut(GImage *image);
-extern int FVImportImages(FontViewBase *fv, char *path, int format, int toback,
+extern int FVImportImages(FontViewBase *fv, char** path_list, int format, int toback,
                           bool preclear, ImportParams *ip);
 extern int FVImportImageTemplate(FontViewBase *fv, char *path, int format,
                                  int toback, bool preclear, ImportParams *ip);

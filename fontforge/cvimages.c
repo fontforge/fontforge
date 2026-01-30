@@ -991,14 +991,12 @@ void SCAddScaleImage(SplineChar *sc,GImage *image,bool doclear, int layer,
     SCInsertImage(sc,image,scale,sc->parent->ascent,0,layer);
 }
 
-int FVImportImages(FontViewBase *fv,char *path,int format,int toback,
+int FVImportImages(FontViewBase *fv,char** path_list,int format,int toback,
                    bool preclear, ImportParams *ip) {
     GImage *image;
     int tot;
     int idx, file_idx = 0;
     SplineChar *sc;
-
-    char** path_list = GFileChooserGetMultipleFiles(path);
 
     tot = 0;
     for ( idx=0; idx<fv->map->enccount && path_list[file_idx] != NULL; ++idx ) if ( fv->selected[idx]) {
@@ -1036,10 +1034,6 @@ return(false);
     else if ( path_list[file_idx]!=NULL )
 	ff_post_error(_("More Images Than Selected Glyphs"),_("More Images Than Selected Glyphs"));
 
-    for (char** p_path = path_list; *p_path != NULL; ++p_path)
-	free(*p_path);
-    free(path_list);
-    
     return( true );
 }
 
