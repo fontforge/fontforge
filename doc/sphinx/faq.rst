@@ -126,7 +126,7 @@ Image file questions
 Random questions
 ----------------
 
-* :ref:`FontForge's grey background distesses me. How do I change it? <faq.background>`
+* :ref:`FontForge's grey background distresses me. How do I change it? <faq.background>`
 * :ref:`The fonts FontForge uses in its GUI are too small (too big) how do I change them? <faq.fontsize>`
 * :ref:`How do I mark a font as monospaced? <faq.monospace>`
 * :ref:`How do I tell fontforge about a new encoding? <faq.new-encoding>`
@@ -417,7 +417,7 @@ Random questions
 
       -- *The Lady's not for Burning* -- Christopher Fry
 
-   Mostly because I don't thnk that way. I don't plan things out, I have a vague
+   Mostly because I don't think that way. I don't plan things out, I have a vague
    idea where I want to go and I explore in that direction.
 
    Consider python scripting. I decided to add python to fontforge. I found that
@@ -590,7 +590,7 @@ Random questions
        :ref:`Element->Font Info->OS/2->Metrics <fontinfo.TTF-Metrics>`.
      * On windows
 
-       Line spacing is supposed to be set to the Typo Ascent/Typo Desent values
+       Line spacing is supposed to be set to the Typo Ascent/Typo Descent values
        specified in the OS/2 table. And these in turn are supposed to sum to the
        emsize. (FontForge sets these values to the ascent/descent values you specify
        for your font). Unfortunately most windows applications don't follow this
@@ -603,7 +603,7 @@ Random questions
        (The clipping region should be bigger than the bounding box if a GPOS lookup
        could move a glyph so that it extended beyond the bounding box (mark to base
        is likely to cause problems). I'm not sure how this applies to cursive
-       positioning in Urdu where GPOS lookups can make lines arbetrarily tall)
+       positioning in Urdu where GPOS lookups can make lines arbitrarily tall)
 
        MicroSoft has added a redundant bit to the OS/2 table, which essentially
        tells applications they should follow the standard and use the Typographic
@@ -686,7 +686,7 @@ Random questions
    * If you are interested in scripts with no more than few hundred simple glyphs
      (like the latin alphabet) then 192Mb is more than enough.
    * If you are doing serious editing of CJK fonts then 512Mb is on the low end of
-     useablity.
+     useability.
 
    FontForge requires a color (or grey-scale) monitor -- black & white will not
    suffice.
@@ -952,7 +952,7 @@ Random questions
       postscript file. It is based on the postscript font name but suffers a
       transformation. Don't try to rename this file. Basically the rules are
       (see
-      `Adobe Technical Note 0091 <http://partners.adobe.com/asn/developer/pdfs/tn/0091.Mac_Fond.pdf>`__):
+      `Adobe Technical Note 0091 <http://adobe-type-tools.github.io/font-tech-notes/pdfs/0091.Mac_Fond.pdf>`__):
 
       * The fontname is broken into chunks where each chunk starts with a capital
         letter.

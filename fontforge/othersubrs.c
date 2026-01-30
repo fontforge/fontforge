@@ -539,7 +539,7 @@ return( false );
 	    else if ( sub_num<14 )
 		osubs[sub_num] = CopyLines(lines,l,false);
 	    else if ( sub_num==14 )
-		LogError( _("Too many subroutines. We can deal with at most 14 (0-13)\n") );
+		LogError( _("Too many subroutines. We can deal with at most 14 (0-13)") );
 	    ++sub_num;
 	    l = 0;
 	} else {

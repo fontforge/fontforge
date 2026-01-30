@@ -616,3 +616,75 @@ CharView.Menu.View.Show.Tab.Tab4:Alt+5
 CharView.Menu.View.Show.Tab.Tab5:Alt+6
 
 +CharView._ImmediateKeys.TogglePreview:`
+
+
+
+BitmapView.Menu.File.New:Ctl+N
+BitmapView.Menu.File.Open:Ctl+O
+BitmapView.Menu.File.Close:Ctl+Shft+Q
+BitmapView.Menu.File.Save:Ctl+S
+BitmapView.Menu.File.Save as...:Ctl+Shft+S
+BitmapView.Menu.File.Generate Fonts...:Ctl+Shft+G
+BitmapView.Menu.File.Generate Mac Family...:Alt+Ctl+G
+BitmapView.Menu.File.Generate TTC...:No Shortcut
+BitmapView.Menu.File.Export...:No Shortcut
+BitmapView.Menu.File.Import...:Ctl+Shft+I
+BitmapView.Menu.File.Revert File:Ctl+Shft+R
+BitmapView.Menu.File.Preferences...:No Shortcut
+BitmapView.Menu.File.Appearance Editor...:No Shortcut
+BitmapView.Menu.File.Configure Plugins...:No Shortcut
+BitmapView.Menu.File.Quit:Ctl+Q
+
+BitmapView.Menu.Edit.Undo:Ctrl+Z
+BitmapView.Menu.Edit.Redo:Ctrl+Y
+BitmapView.Menu.Edit.Cut:Ctrl+X
+BitmapView.Menu.Edit.Copy:Ctrl+C
+BitmapView.Menu.Edit.Copy Reference:Ctrl+G
+BitmapView.Menu.Edit.Paste:Ctrl+V
+BitmapView.Menu.Edit.Clear:Delete
+BitmapView.Menu.Edit.Select All:Ctrl+A
+BitmapView.Menu.Edit.Remove Undoes:No Shortcut
+BitmapView.Menu.Edit.Unlink Reference:Ctrl+U
+
+BitmapView.Menu.Element.Font Info...:Ctl+Shft+F
+BitmapView.Menu.Element.Glyph Info...:Ctl+I
+BitmapView.Menu.Element.BDF Info...:No Shortcut
+BitmapView.Menu.Element.Bitmap Strikes Available...:Ctl+Shft+B
+BitmapView.Menu.Element.Regenerate Bitmap Glyphs...:Ctl+B
+BitmapView.Menu.Element.Remove This Glyph:No Shortcut
+BitmapView.Menu.Element.Transformations.Flip Horizontally:No Shortcut
+BitmapView.Menu.Element.Transformations.Flip Vertically:No Shortcut
+BitmapView.Menu.Element.Transformations.Rotate 90 CW:No Shortcut
+BitmapView.Menu.Element.Transformations.Rotate 90 CCW:No Shortcut
+BitmapView.Menu.Element.Transformations.Rotate 180:No Shortcut
+BitmapView.Menu.Element.Transformations.Skew...:No Shortcut
+
+BitmapView.Menu.View.Palettes.Tools:No Shortcut
+BitmapView.Menu.View.Palettes.Layers:No Shortcut
+BitmapView.Menu.View.Palettes.Shades:No Shortcut
+BitmapView.Menu.View.Palettes.Docked Palettes:No Shortcut
+BitmapView.Menu.View.Fit:Ctl+F
+BitmapView.Menu.View.Zoom out:Alt+Ctl+-
+BitmapView.Menu.View.Zoom in:Alt+Ctl+Shft++
+BitmapView.Menu.View.Next Glyph:Ctrl+]
+BitmapView.Menu.View.Prev Glyph:Ctrl+[
+BitmapView.Menu.View.Next Defined Glyph:Alt+Ctrl+]
+BitmapView.Menu.View.Prev Defined Glyph:Alt+Ctrl+[
+BitmapView.Menu.View.Goto:Ctl+Shft+>
+BitmapView.Menu.View.Find In Font View:Ctl+Shft+<
+BitmapView.Menu.View.Bigger Pixel Size:Ctl+Shft++
+BitmapView.Menu.View.Smaller Pixel Size:Ctl+-
+
+BitmapView.Menu.Metrics.Set Width...:Ctl+Shft+L
+BitmapView.Menu.Metrics.Set Vertical Width...:Ctl+Shft+L
+
+BitmapView.Menu.Window.New Outline Window:Ctl+H
+BitmapView.Menu.Window.New Bitmap Window:Ctl+J
+BitmapView.Menu.Window.New Metrics Window:Ctl+K
+BitmapView.Menu.Window.Warnings:No Shortcut
+
+BitmapView.Menu.Help.Help:F1
+BitmapView.Menu.Help.Overview:Shift+F1
+BitmapView.Menu.Help.Index:Ctrl+F1
+BitmapView.Menu.Help.About...:No Shortcut
+BitmapView.Menu.Help.License...:No Shortcut

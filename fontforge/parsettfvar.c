@@ -45,7 +45,7 @@
 /***************************************************************************/
 /*                                                                         */
 /* Apple documents these tables at                                         */
-/*    http://developer.apple.com/fonts/TTRefMan/RM06/Chap6[fgca]var.html   */
+/*    http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6[fgca]var.html   */
 /* The documentation for fvar is inconsistent. At one point it says that   */
 /*  countSizePairs should be 3, at another point 2. It should be 2.        */
 /* The documentation for gvar is not intelligible, cvar refers you to gvar */
@@ -105,30 +105,30 @@ return;
     data_off = getushort(ttf);
     cnt = getushort(ttf);
     if ( cnt>2 )
-	LogError( _("Hmm, this 'fvar' table has more count/size pairs than I expect\n") );
+	LogError( _("Hmm, this 'fvar' table has more count/size pairs than I expect") );
     else if ( cnt<2 ) {
-	LogError( _("Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it\n") );
+	LogError( _("Hmm, this 'fvar' table has too few count/size pairs, I shan't parse it") );
 return;
     }
     axis_count = getushort(ttf);
     if ( axis_count==0 || axis_count>4 ) {
 	if ( axis_count==0 )
-	    LogError( _("Hmm, this 'fvar' table has no axes, that doesn't make sense.\n") );
+	    LogError( _("Hmm, this 'fvar' table has no axes, that doesn't make sense.") );
 	else
-	    LogError( _("Hmm, this 'fvar' table has more axes than FontForge can handle.\n") );
+	    LogError( _("Hmm, this 'fvar' table has more axes than FontForge can handle.") );
 return;
     }
     if ( getushort(ttf)!=20 ) {
-	LogError( _("Hmm, this 'fvar' table has an unexpected size for an axis, I shan't parse it\n") );
+	LogError( _("Hmm, this 'fvar' table has an unexpected size for an axis, I shan't parse it") );
 return;
     }
     instance_count = getushort(ttf);
     if ( getushort(ttf)!=4+4*axis_count ) {
-	LogError( _("Hmm, this 'fvar' table has an unexpected size for an instance, I shan't parse it\n") );
+	LogError( _("Hmm, this 'fvar' table has an unexpected size for an instance, I shan't parse it") );
 return;
     }
     if ( data_off+axis_count*20+instance_count*(4+4*axis_count)> info->fvar_len ) {
-	LogError( _("Hmm, this 'fvar' table is too short\n") );
+	LogError( _("Hmm, this 'fvar' table is too short") );
 return;
     }
 
@@ -173,7 +173,7 @@ return;
     }
     axis_count = getlong(ttf);
     if ( axis_count!=info->variations->axis_count ) {
-	LogError( _("Hmm, the axis count in the 'avar' table is different from that in the 'fvar' table.\n") );
+	LogError( _("Hmm, the axis count in the 'avar' table is different from that in the 'fvar' table.") );
 	VariationFree(info);
 return;
     }
@@ -189,7 +189,7 @@ return;
 	}
     }
     if ( ftell(ttf)-info->avar_start>info->avar_len) {
-	LogError( _("Hmm, the 'avar' table is too long.\n") );
+	LogError( _("Hmm, the 'avar' table is too long.") );
 	VariationFree(info);
 return;
     }
@@ -503,7 +503,7 @@ static void VaryGlyphs(struct ttfinfo *info,int tupleIndex,int gnum,
     if ( info->chars[gnum]==NULL )	/* Apple doesn't support ttc so this */
 return;					/*  can't happen */
     if ( points==NULL ) {
-	LogError( _("Mismatched local and shared tuple flags.\n") );
+	LogError( _("Mismatched local and shared tuple flags.") );
 return;
     }
 
@@ -521,7 +521,7 @@ return;
     } else {
 	static int warned = false;
 	if ( !warned )
-	    LogError( _("Incorrect number of deltas in glyph %d (%s)\n"), gnum,
+	    LogError( _("Incorrect number of deltas in glyph %d (%s)"), gnum,
 		    info->chars[gnum]->name!=NULL?info->chars[gnum]->name:"<Nameless>" );
 	warned = true;
     }
@@ -543,7 +543,7 @@ return;
     }
     axiscount = getushort(ttf);
     if ( axiscount!=info->variations->axis_count ) {
-	LogError( _("Hmm, the axis count in the 'gvar' table is different from that in the 'fvar' table.\n") );
+	LogError( _("Hmm, the axis count in the 'gvar' table is different from that in the 'fvar' table.") );
 	VariationFree(info);
 return;
     }
@@ -554,14 +554,14 @@ return;
     dataoff = getlong(ttf) + info->gvar_start;
     if ( globaltc==0 || globaltc>AppleMmMax ) {
 	if ( globaltc==0 )
-	    LogError( _("Hmm, no global tuples specified in the 'gvar' table.\n") );
+	    LogError( _("Hmm, no global tuples specified in the 'gvar' table.") );
 	else
 	    LogError( _("Hmm, too many global tuples specified in the 'gvar' table.\n FontForge only supports %d\n"), AppleMmMax );
 	VariationFree(info);
 return;
     }
     if ( gc>info->glyph_cnt ) {
-	LogError( _("Hmm, more glyph variation data specified than there are glyphs in font.\n") );
+	LogError( _("Hmm, more glyph variation data specified than there are glyphs in font.") );
 	VariationFree(info);
 return;
     }
@@ -579,7 +579,7 @@ return;
     v->tuples = calloc(globaltc,sizeof(struct tuples));
     fseek(ttf,tupoff,SEEK_SET);
     for ( i=0; i<globaltc; ++i ) {
-	v->tuples[i].coords = malloc(axiscount*sizeof(float));
+	v->tuples[i].coords = malloc(axiscount*sizeof(real));
 	for ( j=0; j<axiscount; ++j )
 	    v->tuples[i].coords[j] = ((short) getushort(ttf))/16384.0;
 	v->tuples[i].chars = InfoCopyGlyphs(info);
@@ -679,7 +679,7 @@ static void VaryCvts(struct ttfinfo *info,int tupleIndex, int *points, FILE *ttf
     } else {
 	static int warned = false;
 	if ( !warned )
-	    LogError( _("Incorrect number of deltas in cvt\n") );
+	    LogError( _("Incorrect number of deltas in cvt") );
 	warned = true;
     }
     free(deltas);

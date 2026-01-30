@@ -465,7 +465,7 @@ static void IkarusReadChar(SplineChar *sc,FILE *file) {
     IkarusNameFromURWNumber(sc,number);
     following = getushort(file);
     if ( following!=0 )
-	LogError( _("This character (gid=%d) has a following part (%d). I'm not sure what that means, please send me (gww@silcom.com) a copy of this font so I can test with it.\n"),
+	LogError( _("This character (gid=%d) has a following part (%d). I'm not sure what that means, please send me (gww@silcom.com) a copy of this font so I can test with it."),
 		sc->orig_pos, following );
     for ( i=3; i<n ; ++i )
 	getushort(file);	/* Just in case the name section is bigger now */
@@ -637,7 +637,7 @@ return( NULL );
 return( NULL );
     }
     if ( ilen!=55 )
-	LogError( _("Unexpected size for name section of URW font (expected 55, got %d)\n"), ilen );
+	LogError( _("Unexpected size for name section of URW font (expected 55, got %d)"), ilen );
 
     fseek(file,2*ilen+2,SEEK_SET);
     jlen = getushort(file);
@@ -646,7 +646,7 @@ return( NULL );
 return( NULL );
     }
     if ( jlen!=12 )
-	LogError( _("Unexpected size for font info section of URW font (expected 12, got %d)\n"), jlen );
+	LogError( _("Unexpected size for font info section of URW font (expected 12, got %d)"), jlen );
     if ( getushort(file)!=1 ) {		/* 1=> typeface */
 	fclose(file);
 return( NULL );

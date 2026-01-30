@@ -46,10 +46,7 @@ static unsigned short crctab[256] = {
     0x6e17, 0x7e36, 0x4e55, 0x5e74, 0x2e93, 0x3eb2, 0x0ed1, 0x1ef0,
 };
 
-static unsigned long binhex_updcrc(icrc, icp, icnt)
-    unsigned long icrc;
-    unsigned char *icp;
-    int icnt;
+static unsigned long binhex_updcrc(unsigned long icrc, unsigned char *icp, int icnt)
 {
 #define M1 0xff
 #define M2 0xff00

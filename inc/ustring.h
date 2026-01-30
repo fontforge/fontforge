@@ -142,6 +142,7 @@ extern long utf82u_strlen(const char *utf8_str); /* Count how many shorts needed
 extern void utf8_strncpy(register char *to, const char *from, int len); /* copy n characters NOT bytes */
 extern char *def2utf8_copy(const char *from);
 extern char *utf82def_copy(const char *ufrom);
+extern char *utf82def_copy_safe(const char *ufrom);
 extern char *utf8_strchr(const char *utf8_str, int search_char);
 
 extern unichar_t *utf82u_strncpy(unichar_t *ubuf,const char *utf8buf,int len);
@@ -157,6 +158,11 @@ extern unichar_t *def2u_strncpy(unichar_t *uto, const char *from, size_t n);
 extern char *u2def_strncpy(char *to, const unichar_t *ufrom, size_t n);
 extern unichar_t *def2u_copy(const char *from);
 extern char *u2def_copy(const unichar_t *ufrom);
+
+extern uint16_t *u2utf16_strcpy(uint16_t *utf16buf,const unichar_t *ubuf);
+extern unichar_t *utf162u_strcpy(unichar_t*ubuf, const uint16_t *utf16buf);
+
+extern uint16_t *utf82utf16_copy(const char* utf8buf);
 
 extern int uAllAscii(const unichar_t *str);
 extern int AllAscii(const char *);
@@ -227,6 +233,10 @@ extern char* str_replace_all( char* s, char* orig, char* replacement, int free_s
 
 int toint( char* v );
 char* tostr( int v );
+/* reallocate buffer and adjust its tail and intermediate processor if present
+ */
+void realloc_tail(char** p_buf, size_t size_delta, char** p_tail,
+                  char** p_proc);
 
 #pragma pop_macro("PRINTF_FORMAT_ATTRIBUTE")
 

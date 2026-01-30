@@ -864,71 +864,6 @@ GDraw
 
    Whether to synchronize the display before raising the first window.
 
-GDraw (X backend only)
-~~~~~~~~~~~~~~~~~~~~~~
-
-These are not included in the appearance editor and need to be set
-some other way, perhaps through the normal X Resources system.
-
-.. object:: Gdraw.Depth
-
-   An integer (1, 8, 16, 32)
-
-   You can use this to request a different depth than the default one. Not all
-   servers will support all depths. If FontForge can't find a visual with the
-   desired depth it will use the default depth.
-
-.. object:: Gdraw.VisualClass
-
-   A string ("StaticGray", "GrayScale", "StaticColor", "PseudoColor",
-   "TrueColor", "DirectColor")
-
-   FontForge will search for a visual with the given class (and possibly depth
-   if the depth argument is specified too).
-
-.. _xres.Colormap:
-
-.. object:: Gdraw.Colormap
-
-   An string ("Current", "Copy", "Private")
-
-   You can use this to control what FontForge does about the colormap on an 8bit
-   screen
-
-   * Current -- FontForge will attempt to allocate its colors in the current
-     colormap.
-   * Copy -- FontForge will allocate what colors it can and then copy the current
-     color map into a private copy. This means FontForge has access to a much
-     wider range of colors, and (as long as the shared colormap doesn't change)
-     FontForge's colormap will match that of the rest of the screen.
-   * Private -- FontForge will allocate a private colormap and set the colors just
-     as it wants them. It will almost certainly not match the shared colormap.
-
-.. _xres.Keyboard:
-
-.. object:: Gdraw.Keyboard
-
-   ibm | mac | sun | ppc | 0 | 1 | 2 | 3
-
-   Allows you to specify the type of keyboard. Currently this is only relevant
-   when generating menus. The modifier keys are in different locations on
-   different keyboards (under different operating systems) and if FontForge
-   knows what keyboard you are using it can make the hot-keys have better
-   labels.
-
-   * ibm | 0
-
-     Uses the Control and Alt keys
-   * mac | 1
-
-     Uses the Command and Option keys (Mac OS/X, Mac keyboard)
-   * ppc | 3
-
-     Uses the Control and Command keys (Suse ppc linux, Mac keyboard)
-   * sun | 2
-
-     Uses the Control and Meta keys
-
 Popup
 ~~~~~
 
@@ -1590,11 +1525,6 @@ Almost all keyboards now-a-days will have the needed modifier keys, but which
 key is used for what will depend on the keyboard and the OS (for instance
 XDarwin and suse linux use quite different mappings for the modifier keys on the
 mac keyboard). Usually this is only relevant for menus (and mnemonics).
-FontForge tries to guess the keyboard from the environment in which it was
-compiled. But with X this may not always be appropriate. So the
-":ref:`Gdraw.Keyboard <xres.Keyboard>`" resource above may be used to change
-this. (Currently this setting only control the labels that appear in menus for
-the hotkeys).
 
 Mice are more problematic. On PCs we usually have two button mice and on mac
 single button mice. Many linuxes that run on a PC will give you an option of

@@ -31,4 +31,14 @@ extern void MergeFont(FontViewBase *fv, SplineFont *other, int preserveCrossFont
 extern void SFFinishMergeContext(struct sfmergecontext *mc);
 extern void SFHashGlyph(SplineFont *sf, SplineChar *sc);
 
+typedef enum font_pitch {
+    pitch_unknown,
+    pitch_variable,
+    pitch_fixed,
+    pitch_dual
+} FontPitch;
+/* Call RecomputePitch() in a cycle for each glyph, while treating pitch and
+ * width as a state. */
+bool RecomputePitch(int16_t this_width, FontPitch* pitch, int* width);
+
 #endif /* FONTFORGE_FVFONTS_H */

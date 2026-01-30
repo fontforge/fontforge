@@ -13,8 +13,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-12-31 02:48+0000\n"
-"PO-Revision-Date: 2022-12-31 02:46\n"
+"POT-Creation-Date: 2025-08-01 15:10+0300\n"
+"PO-Revision-Date: 2025-08-01 12:08\n"
 "Last-Translator: \n"
 "Language-Team: Italian\n"
 "Language: it_IT\n"
@@ -51,12 +51,9 @@ msgid " _Em Size:"
 msgstr "Dimensione dell'_em:"
 
 #, c-format
-msgid ""
-"%.50s contains a flipped reference. This cannot be corrected as is. Would "
-"you like me to unlink it and then correct it?"
+msgid "%.50s contains a flipped reference. This cannot be corrected as is. Would you like me to unlink it and then correct it?"
 msgstr ""
-"%.50s contiene un riferimento invertito (di cui il senso di rotazione non "
-"è \n"
+"%.50s contiene un riferimento invertito (di cui il senso di rotazione non è \n"
 "compatibile). Allo stato attuale ciò non può essere corretto.\n"
 "Vuoi che FontForge la cancelli e la corregga in seguito?"
 
@@ -77,15 +74,12 @@ msgid "%d@%d pixel bitmap"
 msgstr "Bitmap con %d@%d pixel"
 
 #, c-format
-msgid "%s does not contain an <svg> element at the top\n"
-msgstr "%s non contiene un elemento <svg> in cima\n"
+msgid "%s does not contain an <svg> element at the top"
+msgstr "%s non contiene un elemento <svg> in cima"
 
 #, c-format
-msgid ""
-"%s has a bounding box which is too big for this algorithm to work. Ignored."
-msgstr ""
-"%s ha una casella di delimitazione troppo grande per far funzionare questo "
-"algoritmo. Ignorato."
+msgid "%s has a bounding box which is too big for this algorithm to work. Ignored."
+msgstr "%s ha una casella di delimitazione troppo grande per far funzionare questo algoritmo. Ignorato."
 
 #, c-format
 msgid ""
@@ -190,19 +184,8 @@ msgstr "È necessario un nome di famiglia "
 msgid "A PostScript name may not be a number"
 msgstr "Il nome PostScript non può essere un numero"
 
-msgid ""
-"A comma separated list of font family names used to display small example "
-"images of glyphs over the user designed glyphs"
-msgstr ""
-"Una lista separata da virgole dei nomi delle famiglie dei font usata per "
-"mostrare piccole immagini di esempio di glifi sopra i glifi selezionati"
-
-msgid ""
-"A contour in this glyph contains a different number of points in different "
-"instances"
-msgstr ""
-"Un contorno in questo glifo contiene un numero differente di punti in "
-"diverse istanze"
+msgid "A contour in this glyph contains a different number of points in different instances"
+msgstr "Un contorno in questo glifo contiene un numero differente di punti in diverse istanze"
 
 #. GT: These strings are for fun. If they are offensive or incomprehensible
 #. GT: simply translate them as something dull like: "FontForge"
@@ -218,21 +201,14 @@ msgid "A glyph name may not start with a digit nor a full stop (period)"
 msgstr "Il nome di un glifo non può iniziare con un numero o con un punto"
 
 #, c-format
-msgid ""
-"A glyph name must be ASCII, without spaces and may not contain the "
-"characters \"([{<>}])/%%\", and should contain only alphanumerics, periods "
-"and underscores"
-msgstr ""
-"Il nome di un glifo dev'essere ASCII, senza spazi e non può contenere i "
-"caratteri \"([{<>}])/%%\", e dovrebbe contenere solo alfanumerici, punti ed "
-"underscore"
+msgid "A glyph name must be ASCII, without spaces and may not contain the characters \"([{<>}])/%%\", and should contain only alphanumerics, periods and underscores"
+msgstr "Il nome di un glifo dev'essere ASCII, senza spazi e non può contenere i caratteri \"([{<>}])/%%\", e dovrebbe contenere solo alfanumerici, punti ed underscore"
 
 msgid ""
 "A glyph name should contain only alphanumerics, periods and underscores\n"
 "Do you want to use this name in spite of that?"
 msgstr ""
-"Il nome di un glifo dovrebbe contenere solo alfanumerici, punti ed "
-"underscores\n"
+"Il nome di un glifo dovrebbe contenere solo alfanumerici, punti ed underscores\n"
 "Vuoi usare il nome scelto nonostante questo?"
 
 msgid "A list of glyph names"
@@ -248,12 +224,8 @@ msgstr ""
 msgid "A name list with this name already exists. Replace it?"
 msgstr "Una lista di nomi con questo nome esiste già. Vuoi sostituirla?"
 
-msgid ""
-"A reference in this glyph refers to a different encoding in different "
-"instances"
-msgstr ""
-"Un riferimento a questo glifo punta ad un'altra codifica in differenti "
-"istanze"
+msgid "A reference in this glyph refers to a different encoding in different instances"
+msgstr "Un riferimento a questo glifo punta ad un'altra codifica in differenti istanze"
 
 msgid "A tag must be 4 ASCII characters"
 msgstr "Un tag è limitato a 4 caratteri ASCII"
@@ -284,8 +256,7 @@ msgid ""
 "It may be off by an em-unit, or have a reference which matches a contour."
 msgstr ""
 "Accetta un contorno esterno che è una vicina approssimazione all'originale.\n"
-"Può essere diverso di un'unità-em, o avere un riferimento che coincide con "
-"un contorno."
+"Può essere diverso di un'unità-em, o avere un riferimento che coincide con un contorno."
 
 msgid "Accept outlines which exactly match the original"
 msgstr "Accetta bordi esterni che coincidono esattamente con l'originale"
@@ -307,9 +278,6 @@ msgstr "Aggiungi gli estremi(_X)"
 
 msgid "Add Encoding Name..."
 msgstr "Aggiungi il nome della codifica..."
-
-msgid "Add Encoding Slots..."
-msgstr "Aggiungi slot di codifica..."
 
 msgid "Add Language to Script..."
 msgstr "Aggiungi lingua allo script..."
@@ -370,12 +338,8 @@ msgstr "Avanzamento mostrato da una linea"
 msgid "Advance Width does not change."
 msgstr "La larghezza dell'avanzamento non cambia."
 
-msgid ""
-"After rotating or skewing a glyph you should probably apply Element->Add "
-"Extrema"
-msgstr ""
-"Dopo una rotazione o una trasformazione del carattere, dovresti "
-"probabilmente rifare Element->Aggiungi gli estremi"
+msgid "After rotating or skewing a glyph you should probably apply Element->Add Extrema"
+msgstr "Dopo una rotazione o una trasformazione del carattere, dovresti probabilmente rifare Element->Aggiungi gli estremi"
 
 msgid "Albanian"
 msgstr "Albanese"
@@ -554,12 +518,8 @@ msgstr ""
 "Sei sicuro di volere sostituire Å?\n"
 "Il circoletto non sarà più legato ad A."
 
-msgid ""
-"Are you sure you wish to remove these glyphs? This operation cannot be "
-"undone."
-msgstr ""
-"Sei sicuro di voler rimuovere questi glifi? L'operazione non può essere "
-"annullata."
+msgid "Are you sure you wish to remove these glyphs? This operation cannot be undone."
+msgstr "Sei sicuro di voler rimuovere questi glifi? L'operazione non può essere annullata."
 
 msgid "Arrow Options"
 msgstr "Opzioni frecce"
@@ -571,9 +531,7 @@ msgid "As Background"
 msgstr "Sfondo"
 
 msgid "Ascent and Descent must be positive and their sum less than 16384"
-msgstr ""
-"L'ascendente e il discendente devono essere positivi e la loro somma non "
-"deve superare 16384"
+msgstr "L'ascendente e il discendente devono essere positivi e la loro somma non deve superare 16384"
 
 msgid "Ask the user for autotrace arguments each time autotrace is invoked"
 msgstr "Chiede all'utente i paramenti per 'autotrace' ad ogni utilizzazione"
@@ -581,16 +539,12 @@ msgstr "Chiede all'utente i paramenti per 'autotrace' ad ogni utilizzazione"
 msgid "Ask the user for mf commands each time mf is invoked"
 msgstr "Chiede all'utente i parametri per 'mf' ad ogni utilizzazione"
 
-msgid ""
-"At least one anchor point was lost when pasting from one font to another "
-"because no matching anchor class could be found in the new font."
-msgstr ""
-"Almeno un'ancora si è persa durante l'inserimento, perché non c'era una "
-"classe d'ancore idonea nel font di destiazione."
+msgid "At least one anchor point was lost when pasting from one font to another because no matching anchor class could be found in the new font."
+msgstr "Almeno un'ancora si è persa durante l'inserimento, perché non c'era una classe d'ancore idonea nel font di destiazione."
 
 #, c-format
-msgid "Attempt to encode missing glyph %d to %d (0x%x)\n"
-msgstr "Tenta di codificare il glifo mancante %d a %d (0x%x)\n"
+msgid "Attempt to encode missing glyph %d to %d (0x%x)"
+msgstr "Tenta di codificare il glifo mancante %d a %d (0x%x)"
 
 #, c-format
 msgid "Attempt to have a font with more than %d layers"
@@ -604,8 +558,7 @@ msgstr "Stai cercando di creare un glifo con un riferimento a lui stesso"
 
 #, c-format
 msgid "Attempt to make a ligature for (non-existent) glyph %d out of "
-msgstr ""
-"Stai cercando di creare una legatura per il glifo (non esistente) %d da "
+msgstr "Stai cercando di creare una legatura per il glifo (non esistente) %d da "
 
 #, c-format
 msgid "Attempt to make a ligature for glyph %d out of "
@@ -613,21 +566,15 @@ msgstr "Stai cercando di creare una legatura per il glifo %d da "
 
 #, c-format
 msgid "Attempt to redefine anchor definition of \"%s\" on line %d of %s"
-msgstr ""
-"Tentativo di ridefinire la definizione dell'ancora di \"%s\" alla riga %d di "
-"%s"
+msgstr "Tentativo di ridefinire la definizione dell'ancora di \"%s\" alla riga %d di %s"
 
 #, c-format
 msgid "Attempt to regenerate a pixel size that has not been created (%d@%d)"
-msgstr ""
-"Tentativo di rigenerazione di una dimensione di pixel che non è stata già "
-"creata (%d@%d)"
+msgstr "Tentativo di rigenerazione di una dimensione di pixel che non è stata già creata (%d@%d)"
 
 #, c-format
 msgid "Attempt to save a pixel size that has not been created (%d@%d)"
-msgstr ""
-"Tentativo di salvataggio di una dimensione di pixel che non è stata già "
-"creata (%d@%d)"
+msgstr "Tentativo di salvataggio di una dimensione di pixel che non è stata già creata (%d@%d)"
 
 msgid "Attention"
 msgstr "Attenzione"
@@ -645,8 +592,8 @@ msgid "AutoKern Row"
 msgstr "Crenatura Automatica della riga"
 
 #, c-format
-msgid "AutoWidth failure on %s\n"
-msgstr "Errore di larghezza automatica su %s\n"
+msgid "AutoWidth failure on %s"
+msgstr "Errore di larghezza automatica su %s"
 
 msgid "Auto_Kern"
 msgstr "Crenatura Automatica(_K)"
@@ -722,8 +669,8 @@ msgstr "Colore di sfondo per l'area di disegno in tutte le visualizzazioni"
 msgid "Bad Anchor Point: %s"
 msgstr "Errore punto di ancoraggio: %s"
 
-msgid "Bad Apple Kern Class\n"
-msgstr "Classe di crenatura Apple errata\n"
+msgid "Bad Apple Kern Class"
+msgstr "Classe di crenatura Apple errata"
 
 msgid "Bad Ascent/Descent"
 msgstr "Errore nell'ascendente/discendente"
@@ -747,8 +694,7 @@ msgid "Bad Family Name"
 msgstr "Nome di Famiglia errato"
 
 msgid "Bad Family Name, must begin with an alphabetic character."
-msgstr ""
-"Nome di Famiglia errato; il nome deve cominciare con un carattere alfabetico."
+msgstr "Nome di Famiglia errato; il nome deve cominciare con un carattere alfabetico."
 
 msgid "Bad Font"
 msgstr "Font errato"
@@ -817,14 +763,14 @@ msgstr "Formato del file di codifica errato"
 msgid "Bad encoding information in 'cmap' table."
 msgstr "Errore nelle informazioni di codifica nella tabela 'cmap'."
 
-msgid "Bad fdselect\n"
-msgstr "fdselect errato\n"
+msgid "Bad fdselect"
+msgstr "fdselect errato"
 
-msgid "Bad font, offset out of bounds.\n"
-msgstr "Font errato, esterno fuori dai limiti.\n"
+msgid "Bad font, offset out of bounds."
+msgstr "Font errato, esterno fuori dai limiti."
 
-msgid "Bad font: Encoding data out of range.\n"
-msgstr "Errore del font: dati di Codifica fuori dai limiti.\n"
+msgid "Bad font: Encoding data out of range."
+msgstr "Errore del font: dati di Codifica fuori dai limiti."
 
 #, c-format
 msgid "Bad glif file %s"
@@ -1067,8 +1013,8 @@ msgstr "Spig_olo"
 msgid "Call Script"
 msgstr "Richiama uno script"
 
-msgid "Called from...\n"
-msgstr "Richiamato da...\n"
+msgid "Called from..."
+msgstr "Richiamato da..."
 
 msgid "Cambodian"
 msgstr "Cambogiano"
@@ -1086,8 +1032,7 @@ msgid "Can't find autotrace"
 msgstr "Non è possibile lanciare autotrace"
 
 msgid ""
-"Can't find autotrace program (set AUTOTRACE environment variable) or "
-"download from:\n"
+"Can't find autotrace program (set AUTOTRACE environment variable) or download from:\n"
 "  http://sf.net/projects/autotrace/"
 msgstr ""
 "Impossibile trovare il programma 'autotrace'.\n"
@@ -1097,14 +1042,12 @@ msgid "Can't find mf"
 msgstr "Non ho trovato mf--metafont"
 
 msgid ""
-"Can't find mf program -- metafont (set MF environment variable) or download "
-"from:\n"
+"Can't find mf program -- metafont (set MF environment variable) or download from:\n"
 "  http://www.tug.org/\n"
 "  http://www.ctan.org/\n"
 "It's part of the TeX distribution"
 msgstr ""
-"Impossibile trovare mf-- metafont => variabile di environnement MF, o "
-"scaricare da:\n"
+"Impossibile trovare mf-- metafont => variabile di environnement MF, o scaricare da:\n"
 "  http://www.tug.org/\n"
 "  http://www.ctan.org/\n"
 "Potrebbe non essere incluso nella distribuzione di TeX"
@@ -1131,15 +1074,11 @@ msgstr "Impossibile istruire questo glifo"
 msgid "Can't open %s"
 msgstr "Impossibile aprire %s"
 
-#, c-format
-msgid "Can't open %s\n"
-msgstr "Impossibile aprire %s\n"
+msgid "Can't open temporary file for postscript output"
+msgstr "Impossibile aprire un file temporaneo per l'output postscript"
 
-msgid "Can't open temporary file for postscript output\n"
-msgstr "Impossibile aprire un file temporaneo per l'output postscript\n"
-
-msgid "Can't open temporary file for truetype output.\n"
-msgstr "Impossibile aprire un file temporaneo per l'output truetype.\n"
+msgid "Can't open temporary file for truetype output."
+msgstr "Impossibile aprire un file temporaneo per l'output truetype."
 
 msgid "Can't run mf"
 msgstr "Impossibile lanciare mf"
@@ -1151,11 +1090,11 @@ msgid "Canadian Syllabics"
 msgstr "Canadese sillabico"
 
 #, c-format
-msgid "Cannot open %s\n"
-msgstr "Impossibile aprire %s\n"
+msgid "Cannot open %s"
+msgstr "Impossibile aprire %s"
 
-msgid "Cannot open a temporary file\n"
-msgstr "Impossibile aprire un file temporaneo\n"
+msgid "Cannot open a temporary file"
+msgstr "Impossibile aprire un file temporaneo"
 
 msgid "Cannot open file"
 msgstr "Impossibile aprire il file"
@@ -1278,15 +1217,6 @@ msgstr "Controlla se un CID non è definito in nessun sotto-font"
 msgid "Chinese (Taiwan)"
 msgstr "Cinese (Taiwan)"
 
-msgid "Chinese Hong Kong"
-msgstr "Cinese Hong Kong"
-
-msgid "Chinese Phonetic"
-msgstr "Cinese Fonetico"
-
-msgid "Chinese Simplified"
-msgstr "Cinese Semplificato"
-
 msgid "Choose a file format..."
 msgstr "Scegli il formato del file..."
 
@@ -1336,8 +1266,7 @@ msgid "Color Source with id %s had an unexpected type %s."
 msgstr "L'origine del colore con id %s ha un tipo inaspettato %s."
 
 msgid "Color of the font used to display glyph information in the fontview"
-msgstr ""
-"Colore del font usato per mostrare le informazioni nel glifo nell'anteprima"
+msgstr "Colore del font usato per mostrare le informazioni nel glifo nell'anteprima"
 
 msgid "Color used to draw the background of selected glyphs"
 msgstr "Colore usato per disegnare lo sfondo dei glifi selezionati"
@@ -1369,11 +1298,8 @@ msgstr "Scegli colore..."
 msgid "Com_binations"
 msgstr "Com_binazioni"
 
-msgid ""
-"Commands to pass to mf (metafont) program, the filename will follow these"
-msgstr ""
-"Comandi da passare a 'mf' (METAFONT), il nome del file sarà inserito subito "
-"dopo"
+msgid "Commands to pass to mf (metafont) program, the filename will follow these"
+msgstr "Comandi da passare a 'mf' (METAFONT), il nome del file sarà inserito subito dopo"
 
 msgid "Comment"
 msgstr "Commento"
@@ -1450,9 +1376,7 @@ msgid "Control Points _beyond spline"
 msgstr "Punti di controllo oltre la spline(_B)"
 
 msgid "Control Points near horizontal/vertical/italic"
-msgstr ""
-"Punti di controllo quasi orizzontali o verticali o con l'inclinazione del "
-"corsivo"
+msgstr "Punti di controllo quasi orizzontali o verticali o con l'inclinazione del corsivo"
 
 msgid "Convert By C_Map"
 msgstr "Converti per C_Map"
@@ -1487,12 +1411,8 @@ msgstr "Copia la lar_ghezza"
 msgid "Copy one layer to another"
 msgstr "Copia un livello su un altro"
 
-msgid ""
-"Copyright text (in the Names pane) must be entirely ASCII. So, use (c) "
-"instead of ©."
-msgstr ""
-"Il testo del Copyright (nel pannello dei nomi) dev'essere completamente "
-"ASCII. Usa (c) invece di ©."
+msgid "Copyright text (in the Names pane) must be entirely ASCII. So, use (c) instead of ©."
+msgstr "Il testo del Copyright (nel pannello dei nomi) dev'essere completamente ASCII. Usa (c) invece di ©."
 
 msgid "Correct References"
 msgstr "Correggi riferimenti"
@@ -1535,10 +1455,6 @@ msgstr "Carattere introvabile: %.70s"
 msgid "Could not open %.100s"
 msgstr "Impossibile aprire %.100s"
 
-#, c-format
-msgid "Could not open %s"
-msgstr "Impossibile aprire %s"
-
 msgid "Could not open file"
 msgstr "Impossibile aprire il file"
 
@@ -1570,16 +1486,6 @@ msgstr "Impossibile scrivere %s"
 
 msgid "Couldn't create directory"
 msgstr "Impossibile creare la cartella"
-
-#, c-format
-msgid ""
-"Couldn't create directory: %1$s\n"
-"%2$s\n"
-"%3$s"
-msgstr ""
-"Non è possibile creare la cartella: %1$s\n"
-"%2$s\n"
-"%3$s"
 
 #, c-format
 msgid "Couldn't create directory: %s"
@@ -1654,8 +1560,7 @@ msgid "Current Raster (TrueType)"
 msgstr "Raster attuale (TrueType)"
 
 msgid "Currently, FontForge only supports bitmap (not bytemap) type3 output"
-msgstr ""
-"Al momento, FontForge supporta solo bitmap (non bytemap) con output di tipo3"
+msgstr "Al momento, FontForge supporta solo bitmap (non bytemap) con output di tipo3"
 
 msgid "Cursive Position"
 msgstr "Posizione del corsivo"
@@ -1768,12 +1673,12 @@ msgid "Diagonal Fractions"
 msgstr "Frazioni diagonali"
 
 #, c-format
-msgid "Didn't understand format for fdselect %d\n"
-msgstr "Non ho capito il formato per fdselect %d\n"
+msgid "Didn't understand format for fdselect %d"
+msgstr "Non ho capito il formato per fdselect %d"
 
 #, c-format
-msgid "Didn't understand index format: %d\n"
-msgstr "Non ho capito il formato dell'indice: %d\n"
+msgid "Didn't understand index format: %d"
+msgstr "Non ho capito il formato dell'indice: %d"
 
 msgid "Differences..."
 msgstr "Differenze..."
@@ -1837,11 +1742,8 @@ msgstr ""
 "Mostra l'avanzamento mediante una linea perpendicolare \n"
 "alla direzione dell'avanzamento"
 
-msgid ""
-"Displays all the glyphs in the font on a rectangular grid at the given point "
-"size"
-msgstr ""
-"Mostra tutti i glifi del font su un reticolo rettangolare di corpo assegnato"
+msgid "Displays all the glyphs in the font on a rectangular grid at the given point size"
+msgstr "Mostra tutti i glifi del font su un reticolo rettangolare di corpo assegnato"
 
 msgid "Distance"
 msgstr "Distanza"
@@ -1858,8 +1760,7 @@ msgstr "Maldiviano Divehi"
 msgid "Do Nothing"
 msgstr "Non fare nulla"
 
-msgid ""
-"Do you want the font file to contain the names of each glyph in the font?"
+msgid "Do you want the font file to contain the names of each glyph in the font?"
 msgstr "Vuoi che il file contegna i nomi di tutti i caratteri del font?"
 
 msgid ""
@@ -1875,8 +1776,7 @@ msgid ""
 "Do you want to load the bitmap fonts embedded in this true/open type file?\n"
 "(And if so, which)"
 msgstr ""
-"Vuoi caricare il font bitmap contenuto in questo file di tipo true/open "
-"type?\n"
+"Vuoi caricare il font bitmap contenuto in questo file di tipo true/open type?\n"
 "(Se sì, quale)"
 
 msgid "Does not inherit from anything"
@@ -2014,8 +1914,8 @@ msgid "Enter the name of a glyph in the font"
 msgstr "Nome di un carattere nel font"
 
 #, c-format
-msgid "Error: %s\n"
-msgstr "Errore: %s\n"
+msgid "Error: %s"
+msgstr "Errore: %s"
 
 #, c-format
 msgid "Error: Expected %s, got %s"
@@ -2146,26 +2046,23 @@ msgid "Failed to open file %s for output"
 msgstr "Errore nell'apertura del file %s per l'output"
 
 #, c-format
-msgid "Failed to open glyph to name map file for writing: %s\n"
-msgstr "Impossibile aprire il glifo al file della mappa per la scrittura: %s\n"
+msgid "Failed to open glyph to name map file for writing: %s"
+msgstr "Impossibile aprire il glifo al file della mappa per la scrittura: %s"
 
 msgid "Failed to open temporary output file"
 msgstr "Errore nell'apertura di un file temporaneo"
 
 #, c-format
 msgid "Failed to open your hotkey definition file for updates.\n"
-msgstr ""
-"Impossibile aprire il tuo file di definizione delle scorciatoie per "
-"aggiornamenti.\n"
+msgstr "Impossibile aprire il tuo file di definizione delle scorciatoie per aggiornamenti.\n"
 
 #, c-format
 msgid "Failed to rename the new hotkeys file over your old one!\n"
-msgstr ""
-"Impossibile rinominare il tuo file delle scorciatoie sopra quello vecchio!\n"
+msgstr "Impossibile rinominare il tuo file delle scorciatoie sopra quello vecchio!\n"
 
 #, c-format
-msgid "Failed to write %s\n"
-msgstr "Errore di scrittura %s\n"
+msgid "Failed to write %s"
+msgstr "Errore di scrittura %s"
 
 msgid "Failure"
 msgstr "Fallimento"
@@ -2177,8 +2074,7 @@ msgid "Faroese (Icelandic)"
 msgstr "Faroese / Faringio (Islandese)"
 
 msgid "Feature tags must be exactly 4 ASCII characters"
-msgstr ""
-"i nomi delle targhette di funzionalità sono limitati a 4 caratteri ASCII"
+msgstr "i nomi delle targhette di funzionalità sono limitati a 4 caratteri ASCII"
 
 msgid "Features"
 msgstr "Funzioni"
@@ -2303,15 +2199,12 @@ msgid ""
 "Reverting the file will lose those changes.\n"
 "Is that what you want?"
 msgstr ""
-"Il font %1$.40s nel file %2$.40hs è stato modificato.\n"
+"Il font %1$.40s nel file %2$.40s è stato modificato.\n"
 "Ripristinando il file perderai tutte le modifiche.\n"
 "È quello che vuoi fare?"
 
 msgid "Font Editor"
 msgstr "Editor dei font"
-
-msgid "Font Family"
-msgstr "_Famiglia del font"
 
 msgid "Font Info"
 msgstr "Informazioni sul font"
@@ -2319,9 +2212,6 @@ msgstr "Informazioni sul font"
 #, c-format
 msgid "Font Information for %.90s"
 msgstr "Font Information per %.90s"
-
-msgid "Font Size"
-msgstr "Dimensione del font"
 
 msgid "Font Type:"
 msgstr "Tipo di font:"
@@ -2342,31 +2232,16 @@ msgstr "FontForge"
 
 #, c-format
 msgid "FontForge does not currently parse pattern Color Sources (%s)."
-msgstr ""
-"FontForge al momento non identifica gli schemi delle origini di colore (%s)"
+msgstr "FontForge al momento non identifica gli schemi delle origini di colore (%s)"
 
 msgid "FontForge does not support dictionary based imagemask operators.\n"
 msgstr "FontForge non supporta operatori imagemask basati su dizionari.\n"
 
-msgid ""
-"FontForge is a font editor for outline and bitmap fonts that lets you "
-"create, edit, or convert, a range of fonts, including PostScript, TrueType, "
-"OpenType, cid-keyed, multi-master, cff, SVG and BitMap (bdf, FON, NFNT) "
-"fonts."
-msgstr ""
-"FontForge è un editor di font per i caratteri di testo outline e bitmap che "
-"ti permette di creare, modificare o convertire diversi tipi di font, inclusi "
-"PostScript, TrueType, OpenType, CID, multi-master, cff, SVG e BitMap (bdf, "
-"FON, NFNT)."
+msgid "FontForge is a font editor for outline and bitmap fonts that lets you create, edit, or convert, a range of fonts, including PostScript, TrueType, OpenType, cid-keyed, multi-master, cff, SVG and BitMap (bdf, FON, NFNT) fonts."
+msgstr "FontForge è un editor di font per i caratteri di testo outline e bitmap che ti permette di creare, modificare o convertire diversi tipi di font, inclusi PostScript, TrueType, OpenType, CID, multi-master, cff, SVG e BitMap (bdf, FON, NFNT)."
 
-msgid ""
-"FontForge is free Open Source Software written to run on various computer "
-"operating systems. You can use FontForge Graphically or as a command-line "
-"tool."
-msgstr ""
-"FontForge è un Software Open Source gratuito, scritto per funzionare su vari "
-"sistemi operativi. Puoi usare FontForge con interfaccia grafica o tramite "
-"riga di comando."
+msgid "FontForge is free Open Source Software written to run on various computer operating systems. You can use FontForge Graphically or as a command-line tool."
+msgstr "FontForge è un Software Open Source gratuito, scritto per funzionare su vari sistemi operativi. Puoi usare FontForge con interfaccia grafica o tramite riga di comando."
 
 msgid ""
 "FontForge loads large images into the background of each glyph\n"
@@ -2379,35 +2254,11 @@ msgstr ""
 "il risultato prodotto da 'mf', oppure le puoi cancellare per\n"
 "conservare spazio"
 
-#, c-format
-msgid ""
-"FontForge was unable to find a cidmap file for this font. It is not "
-"essential to have one, but some things will work better if you do. If you "
-"have not done so you might want to download the cidmaps from:\n"
-"   http://FontForge.sourceforge.net/cidmaps.tgz\n"
-"and then gunzip and untar them and move them to:\n"
-"  %.80s\n"
-"\n"
-"Would you like to search your local disk for an appropriate file?"
-msgstr ""
-"FontForge non è riuscito a trovare un file di mappa cid per questo font. Non "
-"è indispensabile, ma certe cose andrebbero meglio se ci fosse. Se non "
-"disponi, potresti scaricarne da:\n"
-"   http://FontForge.sourceforge.net/cidmaps.tgz\n"
-"et le potresti installare, decomprimerle ed estrarre dai file .tarmettendole "
-"in:\n"
-"  %.80s\n"
-"\n"
-"Vuoi cercare un file adatto nel tuo hard disk?"
-
 msgid "FontForge's SFD"
 msgstr "FontForge SFD"
 
 msgid "FontLog Save Failed"
 msgstr "Errore di salvataggio del log"
-
-msgid "FontView"
-msgstr "VisualizzaFont"
 
 msgid "Fontforge showing a glyph being edited"
 msgstr "Fontforge mostra un glyph in fase di modifica"
@@ -2449,12 +2300,6 @@ msgstr "Francese (Belgio)"
 msgid "French Canadian"
 msgstr "Francese (Canada)"
 
-msgid "French Côte d'Ivoire"
-msgstr "Francesce (Costa d'Avorio)"
-
-msgid "French D.R. Congo"
-msgstr "Francese (Congo)"
-
 msgid "French French"
 msgstr "Francese (Francia)"
 
@@ -2475,9 +2320,6 @@ msgstr "Dall'altra classe"
 
 msgid "From:"
 msgstr "Da:"
-
-msgid "Fulfulde"
-msgstr "Fula"
 
 msgid "Full Pa_ge Glyph"
 msgstr "_Glifo a piena pagina"
@@ -2517,11 +2359,8 @@ msgstr "70"
 msgid "GGadget|ScaleFactor|100"
 msgstr "120"
 
-msgid "GID out of range.\n"
-msgstr "GID fuori dai limiti\n"
-
-msgid "Gaelic (Scottish)"
-msgstr "Gaelico (Scozzese)"
+msgid "GID out of range."
+msgstr "GID fuori dai limiti"
 
 msgid "General"
 msgstr "Generale"
@@ -2636,12 +2475,8 @@ msgstr "Glifo in due classi"
 msgid "Glyph names must be valid postscript names"
 msgstr "I nomi dei glifi devono essere nomi postscript validi"
 
-msgid ""
-"Glyph names should be limited to characters in the ASCII character set, but "
-"there are names in this namelist which use characters outside that range."
-msgstr ""
-"I nomi dei glifi dovrebbero essere limitati a caratteri nel set ASCII, ma ci "
-"sono nomi in questa lista che usano caratteri fuori da quel range."
+msgid "Glyph names should be limited to characters in the ASCII character set, but there are names in this namelist which use characters outside that range."
+msgstr "I nomi dei glifi dovrebbero essere limitati a caratteri nel set ASCII, ma ci sono nomi in questa lista che usano caratteri fuori da quel range."
 
 msgid "Glyph too big"
 msgstr "Glifo troppo grande"
@@ -2655,11 +2490,8 @@ msgid "Glyph “%s” differs\n"
 msgstr "Il glifo “%s” differisce\n"
 
 #, c-format
-msgid ""
-"Glyph “%s” refers to %s with a different truetype point matching scheme\n"
-msgstr ""
-"“%s” si riferisce a %s con un diverso schema di confronto del punto "
-"truetype\n"
+msgid "Glyph “%s” refers to %s with a different truetype point matching scheme\n"
+msgstr "“%s” si riferisce a %s con un diverso schema di confronto del punto truetype\n"
 
 msgid "Glyph, Point, Size"
 msgstr "Glifo, punto, dimensioni"
@@ -2813,27 +2645,14 @@ msgid_plural "Horizontal: %d baselines"
 msgstr[0] "Orizzontale: base %d"
 msgstr[1] "Orizzontale: basi %d"
 
-msgid "How many CID slots do you wish to add?"
-msgstr "Quanti slot CID vuoi aggiungere?"
-
-msgid "How many unencoded glyph slots do you wish to add?"
-msgstr "Quanti slot di glifi non codificati vuoi aggiungere"
-
 msgid "Hungarian"
 msgstr "Ungherese"
 
-msgid ""
-"I'm sorry this file is too complex for me to understand (or is erroneous)"
-msgstr ""
-"Mi dispiace, trovo questo file troppo complesso da comprendere (o è "
-"sbagliato)"
+msgid "I'm sorry this file is too complex for me to understand (or is erroneous)"
+msgstr "Mi dispiace, trovo questo file troppo complesso da comprendere (o è sbagliato)"
 
-msgid ""
-"I'm sorry this file is too complex for me to understand (or is erroneous, or "
-"is empty)"
-msgstr ""
-"Mi dispiace, trovo questo file troppo complesso da comprendere (o è "
-"sbagliato, oppure vuoto)"
+msgid "I'm sorry this file is too complex for me to understand (or is erroneous, or is empty)"
+msgstr "Mi dispiace, trovo questo file troppo complesso da comprendere (o è sbagliato, oppure vuoto)"
 
 msgid "ISO (Deprecated)"
 msgstr "ISO (Deprecato)"
@@ -2867,10 +2686,8 @@ msgid ""
 "less than 16777216 which uniquely identify your organization\n"
 "FontForge will generate a random number for the final component."
 msgstr ""
-"Se viene specificata, deve essere una lista di numeri interi separati da "
-"spazi, tutti\n"
-"inferiori a 16777216, che identificano la tua organizzazione in modo "
-"univoco\n"
+"Se viene specificata, deve essere una lista di numeri interi separati da spazi, tutti\n"
+"inferiori a 16777216, che identificano la tua organizzazione in modo univoco\n"
 "FontForge genererà un numero casuale per l'ultimo valore."
 
 msgid ""
@@ -3006,8 +2823,8 @@ msgstr "Interpretazione dei glifi"
 msgid "Invalid Encoding"
 msgstr "Codifica non valida"
 
-msgid "Invalid ligature offset\n"
-msgstr "Legatura esterna errata\n"
+msgid "Invalid ligature offset"
+msgstr "Legatura esterna errata"
 
 msgid "Invalid point size"
 msgstr "Corpo errato"
@@ -3069,8 +2886,8 @@ msgstr "Forme JIS83"
 msgid "JIS90 Forms"
 msgstr "Forme JIS90"
 
-msgid "JSTF table is too long.\n"
-msgstr "La tabella JSTF è troppo lunga.\n"
+msgid "JSTF table is too long."
+msgstr "La tabella JSTF è troppo lunga."
 
 msgid "Japanese"
 msgstr "Giapponese"
@@ -3117,8 +2934,8 @@ msgstr "Ammontare della crenatura"
 msgid "Kern:"
 msgstr "Crenatura:"
 
-msgid "KernPair with no subtable name.\n"
-msgstr "Coppia di crenature senza nome di sottotabella.\n"
+msgid "KernPair with no subtable name."
+msgstr "Coppia di crenature senza nome di sottotabella."
 
 msgid "Kerning"
 msgstr "Crenatura"
@@ -3193,9 +3010,6 @@ msgstr "Cherokee"
 
 msgid "Lang|Default"
 msgstr "Default"
-
-msgid "Lang|Farsi"
-msgstr "Farsi / Persiano"
 
 #. GT: See the long comment at "Property|New"
 #. GT: The msgstr should contain a translation of "Farsi/Persian"), ignore "Lang|"
@@ -3274,14 +3088,8 @@ msgstr "Livelli"
 msgid "Leading Jamo Forms"
 msgstr "Forme Jamo anteriori"
 
-msgid ""
-"Learning to use FontForge is easy, and there are various tutorials available "
-"beginning with the basics up to more advanced features such as making and "
-"using scripts."
-msgstr ""
-"Imparare ad usare FontForge è facile, e sono disponibili vari tutorial che "
-"iniziano dalle basi fino ad arrivare alle funzioni avanzate, come la "
-"creazione e l'uso di script."
+msgid "Learning to use FontForge is easy, and there are various tutorials available beginning with the basics up to more advanced features such as making and using scripts."
+msgstr "Imparare ad usare FontForge è facile, e sono disponibili vari tutorial che iniziano dalle basi fino ad arrivare alle funzioni avanzate, come la creazione e l'uso di script."
 
 msgid "Left Bounds"
 msgstr "Limiti di sinistra"
@@ -3334,9 +3142,6 @@ msgstr "Cifre di allineamento"
 
 msgid "Lithuanian"
 msgstr "Lituano"
-
-msgid "Lithuanian (Classic)"
-msgstr "Lituano (Classico)"
 
 msgid "Load Bitmap Fonts"
 msgstr "Caricam font Bitmap"
@@ -3554,8 +3359,7 @@ msgid ""
 "important to see if something goes wrong."
 msgstr ""
 "MetaFont (mf) produce molti messaggi su stdout.\n"
-"La maggior parte delle volte non sono importanti, salvo quando qualcosa va "
-"storto."
+"La maggior parte delle volte non sono importanti, salvo quando qualcosa va storto."
 
 msgid "MetaFont exited with an error"
 msgstr "MetaFont è stato terminato per un errore"
@@ -3569,9 +3373,6 @@ msgstr "Metriche"
 #, c-format
 msgid "Metrics For %.50s"
 msgstr "Metriche per %.50s"
-
-msgid "MetricsView"
-msgstr "VisualizzaMetriche"
 
 msgid "Min Kern"
 msgstr "Crenatura minima"
@@ -3593,8 +3394,8 @@ msgid "Missing Glyph..."
 msgstr "Glifi mancanti..."
 
 #, c-format
-msgid "Missing POST resource %u\n"
-msgstr "Risorsa POST mancante %u\n"
+msgid "Missing POST resource %u"
+msgstr "Risorsa POST mancante %u"
 
 msgid "Missing cidmap file"
 msgstr "File cidmap mancante"
@@ -3648,8 +3449,8 @@ msgid "More Images Than Selected Glyphs"
 msgstr "Ci sono più immagini che glifi selezionati"
 
 #, c-format
-msgid "More than 256 entries in subfont %s\n"
-msgstr "Più di 256 voci nel sottofont %s\n"
+msgid "More than 256 entries in subfont %s"
+msgstr "Più di 256 voci nel sottofont %s"
 
 msgid "Move..."
 msgstr "Sposta..."
@@ -3664,11 +3465,8 @@ msgid "Multiple copies of the selection should be tiled onto the path"
 msgstr "Diverse copie della selezione devono essere impilate sul percorso"
 
 #, c-format
-msgid ""
-"Multiple glyphs map to the same unicode encoding U+%04X, only one will be "
-"used\n"
-msgstr ""
-"Più glifi mappano alla stessa codifica unicode U+%04X, solo una sarà usata\n"
+msgid "Multiple glyphs map to the same unicode encoding U+%04X, only one will be used"
+msgstr "Più glifi mappano alla stessa codifica unicode U+%04X, solo una sarà usata"
 
 msgid "Multiple names for language"
 msgstr "Nomi multipli per la lingua"
@@ -3763,9 +3561,6 @@ msgstr ""
 msgid "Nepali"
 msgstr "Nepalese"
 
-msgid "Nepali (India)"
-msgstr "Nepalese (India)"
-
 msgid "Neutral"
 msgstr "Neutrale"
 
@@ -3826,8 +3621,8 @@ msgstr "CP successivo:"
 msgid "Next _Defined Glyph"
 msgstr "Glifo _definito successivo"
 
-msgid "Nifty, you've got one of the old Apple/Adobe type1 sfnts here\n"
-msgstr "Ingegnoso, hai una delle vecchie Apple/Apple type1 sfnts qui\n"
+msgid "Nifty, you've got one of the old Apple/Adobe type1 sfnts here"
+msgstr "Ingegnoso, hai una delle vecchie Apple/Apple type1 sfnts qui"
 
 #, c-format
 msgid "No (useable) bitmap strikes in this TTF font: %s"
@@ -3929,9 +3724,6 @@ msgstr "Niente script"
 msgid "No selection"
 msgstr "Nessuna selezione"
 
-msgid "No selection\n"
-msgstr "Nessuna selezione\n"
-
 msgid "No such file"
 msgstr "Questo file non esiste."
 
@@ -3959,12 +3751,8 @@ msgstr "Glifo inesistente"
 msgid "Non-standard Em-Size"
 msgstr "Dimensioni di Em non-standard"
 
-msgid ""
-"None of the glyphs in the current font match any names or code points in the "
-"selected groups"
-msgstr ""
-"Nessuno dei glifi nell'attuale font combacia con nomi o codici nel gruppo "
-"selezionato"
+msgid "None of the glyphs in the current font match any names or code points in the selected groups"
+msgstr "Nessuno dei glifi nell'attuale font combacia con nomi o codici nel gruppo selezionato"
 
 msgid "Normal"
 msgstr "Normale"
@@ -3999,8 +3787,7 @@ msgstr "Normale/Quadrato"
 msgid "Normal/Weighted"
 msgstr "Normale/Pesato"
 
-msgid ""
-"Normally simplify will not change the slope of the contour at the points."
+msgid "Normally simplify will not change the slope of the contour at the points."
 msgstr "Normalmente semplificare non cambia la pendenza delle corve nei nodi."
 
 msgid ""
@@ -4244,8 +4031,8 @@ msgstr "Altro:"
 msgid "Out Of Order"
 msgstr "Non in ordine"
 
-msgid "Out of memory\n"
-msgstr "Errore di memoria\n"
+msgid "Out of memory"
+msgstr "Errore di memoria"
 
 msgid "Outer Border:"
 msgstr "Bordo esterno:"
@@ -4314,12 +4101,8 @@ msgid "Papiamentu"
 msgstr "Papamiento"
 
 #, c-format
-msgid ""
-"ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: "
-"%s\n"
-msgstr ""
-"ParseGlyphOrderAndAliasDB: Voce non valida (non separata da tabulazione) "
-"all'indice %d: %s\n"
+msgid "ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s"
+msgstr "ParseGlyphOrderAndAliasDB: Voce non valida (non separata da tabulazione) all'indice %d: %s"
 
 msgid "Parts List"
 msgstr "Lista di parti"
@@ -4342,28 +4125,6 @@ msgstr "_Angolo della penna:"
 msgid "Pfm Save Failed"
 msgstr "Errore di salvataggio del file PFM"
 
-msgid ""
-"Physical screen width, measured in centimeters\n"
-"For this to take effect you must save the resource data (press the [Save] "
-"button)\n"
-"and restart fontforge"
-msgstr ""
-"Larghezza fisica dello schermo, misurata in centimetri\n"
-"Perché abbia effetto, devi salvare i dati delle risorse (premi il pulsante "
-"[Salva])\n"
-"e riavvia FontForge"
-
-msgid ""
-"Physical screen width, measured in inches\n"
-"For this to take effect you must save the resource data (press the [Save] "
-"button)\n"
-"and restart fontforge"
-msgstr ""
-"Larghezza fisica dello schermo, misurata in pollici\n"
-"Perché abbia effetto, devi salvare i dati delle risorse (premi il pulsante "
-"[Salva])\n"
-"e riavvia FontForge"
-
 msgid "Pick a CMap subtable"
 msgstr "Scegli una sottotabella CMap"
 
@@ -4375,9 +4136,6 @@ msgstr "Scegli un font qualunque..."
 
 msgid "Pick a page"
 msgstr "Scegli una pagina"
-
-msgid "Pilipino (Filipino)"
-msgstr "Filippino"
 
 msgid "Pixel List"
 msgstr "Mostra i pixel"
@@ -4622,21 +4380,15 @@ msgstr "Informazione sui riferimenti"
 
 #, c-format
 msgid "Reference to a CID in a non-CID-keyed font on line %d of %s"
-msgstr ""
-"Riferimento a un CID in un font non codificato CID sulla linea %d di %s"
+msgstr "Riferimento a un CID in un font non codificato CID sulla linea %d di %s"
 
 #, c-format
 msgid "Reference to a glyph name in a CID-keyed font on line %d of %s"
-msgstr ""
-"Riferimento a un nome di glyph in un font codificato CID sulla linea %d di %s"
+msgstr "Riferimento a un nome di glyph in un font codificato CID sulla linea %d di %s"
 
 #, c-format
-msgid ""
-"Reference to a lookup which is not in the feature file but which is in the "
-"font, %.50s"
-msgstr ""
-"Riferimento a un lookup che non è nel file di funzionalità, ma che è "
-"presente nel font, %.50s"
+msgid "Reference to a lookup which is not in the feature file but which is in the font, %.50s"
+msgstr "Riferimento a un lookup che non è nel file di funzionalità, ma che è presente nel font, %.50s"
 
 #, c-format
 msgid "Reference to a non-existent glyph name on line %d of %s: %s"
@@ -4705,10 +4457,8 @@ msgstr "Rinomina tutti i glifi nella selezione"
 msgid "Rename by NameList"
 msgstr "Rinomina per lista di nomi"
 
-msgid ""
-"Rename the glyphs in this font to the names found in the selected namelist"
-msgstr ""
-"Rinomina il glifo in questo font con i nomi trovati nella lista selezionata"
+msgid "Rename the glyphs in this font to the names found in the selected namelist"
+msgstr "Rinomina il glifo in questo font con i nomi trovati nella lista selezionata"
 
 msgid "Reph Form"
 msgstr "Forma Reph"
@@ -4739,8 +4489,7 @@ msgstr "Sostituisci: "
 
 #, c-format
 msgid "Requested bitmap size not available in font. Font supports %s"
-msgstr ""
-"La dimensione richiesta per le bitmaps non è nel font. Il font offre: %s"
+msgstr "La dimensione richiesta per le bitmaps non è nel font. Il font offre: %s"
 
 msgid "Required Feature"
 msgstr "Funzione richiesta"
@@ -4787,9 +4536,6 @@ msgstr "_Arrotondato"
 msgid "Romanian"
 msgstr "Rumeno"
 
-msgid "Romanian (Moldova)"
-msgstr "Rumeno (Moldavia)"
-
 msgid "Rotate _180°"
 msgstr "Ruota a _180°"
 
@@ -4835,9 +4581,6 @@ msgstr "Runico"
 
 msgid "Russian"
 msgstr "Russo"
-
-msgid "Russian (Moldova)"
-msgstr "Russo (Moldavia)"
 
 msgid "S Brush Joined"
 msgstr "S Pennello unito"
@@ -5018,12 +4761,6 @@ msgstr "Pedici scientifici"
 
 msgid "Scottish Gaelic"
 msgstr "Scozzese Gaelico"
-
-msgid "Screen Width in Centimeters"
-msgstr "Larghezza dello schermo in Centimetri"
-
-msgid "Screen Width in Inches"
-msgstr "Larghezza dello schermo in Pollici"
 
 msgid "Script File"
 msgstr "File di script"
@@ -5406,12 +5143,6 @@ msgstr "Semplifica ancora..."
 msgid "Simplifying..."
 msgstr "Semplificazione..."
 
-msgid "Sindhi India"
-msgstr "Sindhi (India)"
-
-msgid "Sindhi Pakistan"
-msgstr "Sindhi (Pakistan)"
-
 msgid "Single Position"
 msgstr "Posizione singola"
 
@@ -5426,13 +5157,6 @@ msgstr "Font a densità singola ed alta"
 
 msgid "Single and Multi-Density Fonts"
 msgstr "Font a densità singola e multipla"
-
-msgid ""
-"Size (in points) of the font used to display information and glyph labels in "
-"the fontview"
-msgstr ""
-"Dimensione (in punti( del font usato per mostrare informazioni ed etichette "
-"dei glifi nell'anteprima"
 
 msgid "Size of Points"
 msgstr "Dimensione dei punti"
@@ -5634,8 +5358,8 @@ msgstr "TS Miscellaneo"
 msgid "TTF Names"
 msgstr "Nomi TTF"
 
-msgid "Table length should not be odd\n"
-msgstr "La lunghezza della tabella non dovrebbe essere dispari\n"
+msgid "Table length should not be odd"
+msgstr "La lunghezza della tabella non dovrebbe essere dispari"
 
 msgid "Tabular Numbers"
 msgstr "Numeri per tavole"
@@ -5645,9 +5369,6 @@ msgstr "I tag sono limitati a 4 caratteri ASCII"
 
 msgid "Tajik"
 msgstr "Tagico"
-
-msgid "Tamazight (Arabic)"
-msgstr "Berbero (Arabo)"
 
 msgid "Tamazight (Latin)"
 msgstr "Berbero (Latino)"
@@ -5677,28 +5398,18 @@ msgid "Tfm Save Failed"
 msgstr "Errore di salvataggio del file TFM"
 
 msgid "The 'kern' table supports at most 10920 kern pairs in a subtable"
-msgstr ""
-"La tabella 'kern' supporta al massimo 10920 coppie di crenature in una "
-"sottotabella"
+msgstr "La tabella 'kern' supporta al massimo 10920 coppie di crenature in una sottotabella"
 
 #, c-format
-msgid ""
-"The 'sfnt' format is currently limited to 65535 glyphs, and your font has %d "
-"of them."
-msgstr ""
-"Il formato 'sfnt' è al momento limitato a 65535 glifi, e il tuo font ne ha "
-"%d."
+msgid "The 'sfnt' format is currently limited to 65535 glyphs, and your font has %d of them."
+msgstr "Il formato 'sfnt' è al momento limitato a 65535 glifi, e il tuo font ne ha %d."
 
-msgid ""
-"The AFM file contains metrics information that many word-processors will "
-"read when using a PostScript® font."
+msgid "The AFM file contains metrics information that many word-processors will read when using a PostScript® font."
 msgstr ""
 "Il file AFM contiene le metriche usate da molti programmi\n"
 "di elaborazione di testo se usano font PostScript®."
 
-msgid ""
-"The PFM file contains information Windows needs to install a PostScript® "
-"font."
+msgid "The PFM file contains information Windows needs to install a PostScript® font."
 msgstr ""
 "Il file PFM contiene le informazioni necessarie a Windows\n"
 "per installare un font PostScript®."
@@ -5716,9 +5427,7 @@ msgstr ""
 "e dev'essere più breve di 63 caratteri"
 
 msgid "The control point above the selected point is near the italic angle"
-msgstr ""
-"Il punto di controllo sopra al punto scelto è inclinato quasi quanto il "
-"corsivo"
+msgstr "Il punto di controllo sopra al punto scelto è inclinato quasi quanto il corsivo"
 
 msgid "The control point above the selected point is nearly horizontal"
 msgstr "Il punto di controllo sopra al punto scelto è quasi orizzontale"
@@ -5726,15 +5435,11 @@ msgstr "Il punto di controllo sopra al punto scelto è quasi orizzontale"
 msgid "The control point above the selected point is nearly vertical"
 msgstr "Il punto di controllo sopra al punto scelto è quasi verticale"
 
-msgid ""
-"The control point above the selected point is outside the spline segment"
-msgstr ""
-"Il punto di controllo sopra al punto scelto è esterno al segmento di spline "
+msgid "The control point above the selected point is outside the spline segment"
+msgstr "Il punto di controllo sopra al punto scelto è esterno al segmento di spline "
 
 msgid "The control point below the selected point is near the italic angle"
-msgstr ""
-"Il punto di controllo sotto al punto scelto è inclinato quasi quanto il "
-"corsivo"
+msgstr "Il punto di controllo sotto al punto scelto è inclinato quasi quanto il corsivo"
 
 msgid "The control point below the selected point is nearly horizontal"
 msgstr "Il punto di controllo sotto al punto scelto è quasi orizzontale"
@@ -5742,15 +5447,11 @@ msgstr "Il punto di controllo sotto al punto scelto è quasi orizzontale"
 msgid "The control point below the selected point is nearly vertical"
 msgstr "Il punto di controllo sotto al punto scelto è quasi verticale"
 
-msgid ""
-"The control point below the selected point is outside the spline segment"
-msgstr ""
-"Il punto di controllo sotto al punto scelto è esterno al segmento di spline"
+msgid "The control point below the selected point is outside the spline segment"
+msgstr "Il punto di controllo sotto al punto scelto è esterno al segmento di spline"
 
 msgid "The control point left of the selected point is near the italic angle"
-msgstr ""
-"Il punto di controllo a sinistra del punto scelto è inclinato quasi quanto "
-"il corsivo"
+msgstr "Il punto di controllo a sinistra del punto scelto è inclinato quasi quanto il corsivo"
 
 msgid "The control point left of the selected point is nearly horizontal"
 msgstr "Il punto di controllo a sinistra del punto scelto è quasi orizzontale"
@@ -5758,16 +5459,11 @@ msgstr "Il punto di controllo a sinistra del punto scelto è quasi orizzontale"
 msgid "The control point left of the selected point is nearly vertical"
 msgstr "Il punto di controllo a sinistra del punto scelto è quasi verticale"
 
-msgid ""
-"The control point left of the selected point is outside the spline segment"
-msgstr ""
-"Il punto di controllo a sinistra del punto scelto è esterno al segmento di "
-"spline"
+msgid "The control point left of the selected point is outside the spline segment"
+msgstr "Il punto di controllo a sinistra del punto scelto è esterno al segmento di spline"
 
 msgid "The control point right of the selected point is near the italic angle"
-msgstr ""
-"Il punto di controllo a destra del punto scelto è inclinato quasi quanto il "
-"corsivo"
+msgstr "Il punto di controllo a destra del punto scelto è inclinato quasi quanto il corsivo"
 
 msgid "The control point right of the selected point is nearly horizontal"
 msgstr "Il punto di controllo a destra del punto scelto è quasi orizzontale"
@@ -5775,27 +5471,18 @@ msgstr "Il punto di controllo a destra del punto scelto è quasi orizzontale"
 msgid "The control point right of the selected point is nearly vertical"
 msgstr "Il punto di controllo a destra del punto scelto è quasi verticale"
 
-msgid ""
-"The control point right of the selected point is outside the spline segment"
-msgstr ""
-"Il punto di controllo a destra del punto scelto è esterno al segmento di "
-"spline"
+msgid "The control point right of the selected point is outside the spline segment"
+msgstr "Il punto di controllo a destra del punto scelto è esterno al segmento di spline"
 
-msgid ""
-"The counters between these hints are not the same size, bad for a stem3 hint"
-msgstr ""
-"Le spalle fra questi hint non sono dello stesso valore, e ciò è sbagliato "
-"per un tratto di tipo 3"
+msgid "The counters between these hints are not the same size, bad for a stem3 hint"
+msgstr "Le spalle fra questi hint non sono dello stesso valore, e ciò è sbagliato per un tratto di tipo 3"
 
 msgid ""
 "The current encoding contains glyphs which I cannot map to CIDs.\n"
-"Should I delete them or add them to the end (where they may conflict with "
-"future ros definitions)?"
+"Should I delete them or add them to the end (where they may conflict with future ros definitions)?"
 msgstr ""
-"L'encoding attuale contiene dei glifi che FontForge non sa mappare verso "
-"CID.\n"
-"Bisogna distruggerli oppure aggiungerli alla fine (e ciò potrebbe portare a "
-"dei problemi con future definizioni)?"
+"L'encoding attuale contiene dei glifi che FontForge non sa mappare verso CID.\n"
+"Bisogna distruggerli oppure aggiungerli alla fine (e ciò potrebbe portare a dei problemi con future definizioni)?"
 
 msgid "The different instances of this mm have a different number of glyphs"
 msgstr "Le diverse istanze di questo mm hanno un diverso numero di glifi"
@@ -5808,8 +5495,8 @@ msgstr "La codifica non contiene qualcosa chiamato %.40s"
 msgid "The following error occurred on the selected glyphs: %.100s"
 msgstr "Il seguente errore si è verificato con il glifo selezionato: %.100s"
 
-msgid "The following table(s) in the font have been ignored by FontForge\n"
-msgstr "Le seguenti tabelle nel font sono state ignorate da FontForge\n"
+msgid "The following table(s) in the font have been ignored by FontForge"
+msgstr "Le seguenti tabelle nel font sono state ignorate da FontForge"
 
 #, c-format
 msgid ""
@@ -5822,109 +5509,67 @@ msgstr ""
 
 #, c-format
 msgid "The font database does not contain a bitmap of size %d and depth %d"
-msgstr ""
-"Il database del font non contiene delle bitmap di grandezza %d e profondità "
-"%d"
+msgstr "Il database del font non contiene delle bitmap di grandezza %d e profondità %d"
 
 #, c-format
 msgid "The font does not contain a glyph named %s."
 msgstr "Questo font non contiene un glifo chiamato %s."
 
 #, c-format
-msgid ""
-"The glyph %1$.30s has a different number of contours in font %2$.30s than in "
-"%3$.30s"
-msgstr ""
-"Il glifo %1$.30s ha un diverso numero di contorni nel font %2$.30hs rispetto "
-"a %3$.30s"
+msgid "The glyph %1$.30s has a different number of contours in font %2$.30s than in %3$.30s"
+msgstr "Il glifo %1$.30s ha un diverso numero di contorni nel font %2$.30s rispetto a %3$.30s"
 
 #, c-format
-msgid ""
-"The glyph %1$.30s in font %2$.30s has a different number of points (or "
-"control points) on its contours than in %3$.30s"
-msgstr ""
-"Il glifo %1$.30s nel font %2$.30s ha un diverso numero di punti (o punti di "
-"controllo) sui suoi contorni rispetto a %3$.30s"
+msgid "The glyph %1$.30s in font %2$.30s has a different number of points (or control points) on its contours than in %3$.30s"
+msgstr "Il glifo %1$.30s nel font %2$.30s ha un diverso numero di punti (o punti di controllo) sui suoi contorni rispetto a %3$.30s"
 
 #, c-format
-msgid ""
-"The glyph %1$.30s in font %2$.30s has a different number of references than "
-"in %3$.30s"
-msgstr ""
-"Il glifo %1$.30s nel font %2$.30s ha un diverso numero di riferimenti "
-"rispetto a %3$.30s"
+msgid "The glyph %1$.30s in font %2$.30s has a different number of references than in %3$.30s"
+msgstr "Il glifo %1$.30s nel font %2$.30s ha un diverso numero di riferimenti rispetto a %3$.30s"
 
 #, c-format
-msgid ""
-"The glyph %1$.30s in font %2$.30s has a different set of kern pairs than in "
-"%3$.30s"
-msgstr ""
-"Il glifo %1$.30s nel font %2$.30s ha un diverso set di coppie di "
-"crenaturerispetto a %3$.30s"
+msgid "The glyph %1$.30s in font %2$.30s has a different set of kern pairs than in %3$.30s"
+msgstr "Il glifo %1$.30s nel font %2$.30s ha un diverso set di coppie di crenaturerispetto a %3$.30s"
 
 #, c-format
-msgid ""
-"The glyph %1$.30s in font %2$.30s has contours running in a different "
-"direction than in %3$.30s"
-msgstr ""
-"Il glifo %1$.30s nel font %2$.30s ha contorni rivolti in una direzione "
-"diversa rispetto a %3$.30s"
+msgid "The glyph %1$.30s in font %2$.30s has contours running in a different direction than in %3$.30s"
+msgstr "Il glifo %1$.30s nel font %2$.30s ha contorni rivolti in una direzione diversa rispetto a %3$.30s"
 
 #, c-format
-msgid ""
-"The glyph %1$.30s in font %2$.30s has references with different scaling or "
-"rotation (etc.) than in %3$.30s"
-msgstr ""
-"Il glifo %1$.30s nel font %2$.30s ha una riferimenti con scala o rotazione "
-"(ecc.) diverse rispetto a %3$.30s"
+msgid "The glyph %1$.30s in font %2$.30s has references with different scaling or rotation (etc.) than in %3$.30s"
+msgstr "Il glifo %1$.30s nel font %2$.30s ha una riferimenti con scala o rotazione (ecc.) diverse rispetto a %3$.30s"
 
 #, c-format
-msgid ""
-"The glyph at CID %d is mapped to more than %d encodings. Only the first %d "
-"are handled."
-msgstr ""
-"Il glifo in CID %d è mappato verso più di %d encoding. Solo i primi %d "
-"verranno presi in considerazione."
+msgid "The glyph at CID %d is mapped to more than %d encodings. Only the first %d are handled."
+msgstr "Il glifo in CID %d è mappato verso più di %d encoding. Solo i primi %d verranno presi in considerazione."
 
 #, c-format
 msgid "The glyph, %.80s, can't be found in the sfd file"
 msgstr "Il glifo, %.80s, non è reperibile nel file sfd"
 
-msgid ""
-"The human-readable fontname text (in the Names pane) must be entirely ASCII."
-msgstr ""
-"Il testo del nome del font leggibile dagli umani (nel pannello dei nomi) "
-"dev'essere completamente ASCII."
+msgid "The human-readable fontname text (in the Names pane) must be entirely ASCII."
+msgstr "Il testo del nome del font leggibile dagli umani (nel pannello dei nomi) dev'essere completamente ASCII."
 
 msgid "The kerning values for class 0 (\"Everything Else\") should always be 0"
-msgstr ""
-"I valori di crenatura per la classe 0 (\"Tutto il resto\") dev'essere sempre "
-"0"
+msgstr "I valori di crenatura per la classe 0 (\"Tutto il resto\") dev'essere sempre 0"
 
 #, c-format
-msgid ""
-"The language, '%s', is not in the list of known languages and will be omitted"
+msgid "The language, '%s', is not in the list of known languages and will be omitted"
 msgstr "La lingua, '%s', non è nella lista di lingue conosciute e sarà omessa"
 
 msgid "The list of current pixel bitmap sizes"
 msgstr "Lista dei valori correnti delle dimensioni dei pixel nella bitmap"
 
 #, c-format
-msgid ""
-"The name FontForge would like to assign to this glyph, %.30s, is already "
-"used by a different glyph."
-msgstr ""
-"Il nome che FontForge vorrebbe assegnare a questo glifo, %.30s, è già usato "
-"da un glifo diverso."
+msgid "The name FontForge would like to assign to this glyph, %.30s, is already used by a different glyph."
+msgstr "Il nome che FontForge vorrebbe assegnare a questo glifo, %.30s, è già usato da un glifo diverso."
 
 #, c-format
 msgid ""
-"The name of glyph %.40s has changed. This is what I use to find the glyph in "
-"the file, so I cannot revert this glyph.\n"
+"The name of glyph %.40s has changed. This is what I use to find the glyph in the file, so I cannot revert this glyph.\n"
 "(You will not be warned for subsequent glyphs.)"
 msgstr ""
-"Il nome del glifo %.40s è cambiato. Questo è cosa utilizzo per cercare il "
-"glifo nel file, così non posso ripristinare questo glifo.\n"
+"Il nome del glifo %.40s è cambiato. Questo è cosa utilizzo per cercare il glifo nel file, così non posso ripristinare questo glifo.\n"
 "(Non sarai più avvertito per i glifi successivi)"
 
 msgid "The number of em-units by which an arrow key will move a selected point"
@@ -5939,9 +5584,7 @@ msgstr "I soli valori leciti per il rapporto bit/pixel sono 1, 2, 4 e 8"
 msgid "The outlines of glyph %2$.30s were not found in the font %1$.60s"
 msgstr "I contorni del glifo %2$.30s non è stato trovato nel font %1$.60s"
 
-msgid ""
-"The percentage of an em by which an accent is offset from its base glyph in "
-"Build Accent"
+msgid "The percentage of an em by which an accent is offset from its base glyph in Build Accent"
 msgstr ""
 "Percentuale di un Em per separare un accento dal suo glifo di base\n"
 "con il comando 'Crea accentati'"
@@ -5982,9 +5625,7 @@ msgstr ""
 "corrisponda alla lunghezza del percorso"
 
 msgid "The smaller number must be selected first in a pair of bluevalues"
-msgstr ""
-"Il numero più piccolo dev'essere selezionato prima in una coppia di valori "
-"blu"
+msgstr "Il numero più piccolo dev'essere selezionato prima in una coppia di valori blu"
 
 msgid ""
 "The transformation matrix specifies how the points in\n"
@@ -6003,13 +5644,10 @@ msgid "The two selected points are the endpoints of an open path"
 msgstr "I due punti scelti sono gli estremi di una curva aperta"
 
 msgid "The version text (in the Names pane) must be entirely ASCII."
-msgstr ""
-"Il testo della versione (nel pannello dei nomi) dev'essere completamente "
-"ASCII."
+msgstr "Il testo della versione (nel pannello dei nomi) dev'essere completamente ASCII."
 
 msgid "The weight text (in the Names pane) must be entirely ASCII."
-msgstr ""
-"Il testo del peso (nel pannello dei nomi) dev'essere completamente ASCII."
+msgstr "Il testo del peso (nel pannello dei nomi) dev'essere completamente ASCII."
 
 msgid "The x coord of the selected point is near the specified value"
 msgstr "L'ascissa del punto scelto è vicina al valore specificato"
@@ -6039,25 +5677,15 @@ msgstr "Ci sono %d pagine in questo file, quale scegli?"
 msgid "There are multiple fonts in this file, pick one"
 msgstr "Ci sono diversi font in questo file, scegline uno"
 
-msgid ""
-"There are so few glyphs selected that it seems unlikely to me that you will "
-"get a representative sample of this aspect of your font. If you deselect "
-"everything the command will apply to all glyphs in the font"
-msgstr ""
-"Ci sono così pochi glifi selezionati che mi sembra improbabile avrai un "
-"esempio rappresentativo dell'aspetto del tuo font. Se deselezioni tutto il "
-"comando si applicherà su tutti i glifi nel font."
+msgid "There are so few glyphs selected that it seems unlikely to me that you will get a representative sample of this aspect of your font. If you deselect everything the command will apply to all glyphs in the font"
+msgstr "Ci sono così pochi glifi selezionati che mi sembra improbabile avrai un esempio rappresentativo dell'aspetto del tuo font. Se deselezioni tutto il comando si applicherà su tutti i glifi nel font."
 
 #, c-format
 msgid "There are two entries for the same glyph (%.80s)"
 msgstr "Ci sono due voci per lo stesso glifo (%.80s)"
 
-msgid ""
-"There aren't enough glyphs in the encoding to name all the selected "
-"characters"
-msgstr ""
-"Non ci sono abbastanza glifi nella codifica per nominare tutti i caratteri "
-"selezionati"
+msgid "There aren't enough glyphs in the encoding to name all the selected characters"
+msgstr "Non ci sono abbastanza glifi nella codifica per nominare tutti i caratteri selezionati"
 
 #, c-format
 msgid "There is a character (%d) which cannot be encoded"
@@ -6068,12 +5696,8 @@ msgid "There is a character (%d) which is not normally in the encoding"
 msgstr "C'è un carattere (%d) che normalmente non appare nella codifica"
 
 #, c-format
-msgid ""
-"There is a single byte character (%d) using one of the slots needed for "
-"double byte characters"
-msgstr ""
-"C'è un carattere da un byte (%d) che utilizza il posto di un carattere a due "
-"byte"
+msgid "There is a single byte character (%d) using one of the slots needed for double byte characters"
+msgstr "C'è un carattere da un byte (%d) che utilizza il posto di un carattere a due byte"
 
 msgid ""
 "There is already a glyph with this name,\n"
@@ -6091,9 +5715,7 @@ msgstr "C'è un altro glifo nel font con questo nome"
 
 #, c-format
 msgid "There is no anchor for class %1$.30s in subtable %2$.30s"
-msgstr ""
-"Non c'è un punto di ancoraggio per la classe %1$.30s nella sottotabella "
-"%2$.30s"
+msgstr "Non c'è un punto di ancoraggio per la classe %1$.30s nella sottotabella %2$.30s"
 
 #, c-format
 msgid "There is no glyph named \"%s\" in the font."
@@ -6108,15 +5730,13 @@ msgid "There is no glyph named %s in the font"
 msgstr "Non c'è un glifo chiamato %s nel font"
 
 msgid "These two lines share a common endpoint, I can't make them parallel"
-msgstr ""
-"Queste due linee hanno un punto in comune e non posso renderle parallele."
+msgstr "Queste due linee hanno un punto in comune e non posso renderle parallele."
 
 msgid "Third Widths"
 msgstr "Terzi di larghezza"
 
 msgid "This blank outline glyph has an unexpected bitmap version"
-msgstr ""
-"Questo carattere vettoriale è vuoto, ma stranamente ha una versione bitmap"
+msgstr "Questo carattere vettoriale è vuoto, ma stranamente ha una versione bitmap"
 
 msgid "This does not appear to be a Windows FNT for FON file"
 msgstr "Questo non sembra essere un file Windows FNT per FON"
@@ -6155,21 +5775,14 @@ msgstr "Questo non sembra un file OFM, non so come leggerlo."
 msgid "This feature code is already used"
 msgstr "Questo codice di funzione è già usato:"
 
-msgid ""
-"This file contains an unnamed encoding, which cannot be named in a script"
-msgstr ""
-"Questo file contiene una codifica senza nome, che non può essere nominata in "
-"uno script"
+msgid "This file contains an unnamed encoding, which cannot be named in a script"
+msgstr "Questo file contiene una codifica senza nome, che non può essere nominata in uno script"
 
-msgid "This file contains no SVG fonts.\n"
-msgstr "Questo file non contiene font SVG.\n"
+msgid "This file contains no SVG fonts."
+msgstr "Questo file non contiene font SVG."
 
-msgid ""
-"This font comes from an old format sfd file. Not all aspects of it can be "
-"reverted successfully."
-msgstr ""
-"Il font deriva da un vecchio file di formato sfd. Non tutti i suoi aspetti "
-"possono essere ripristinati con successo."
+msgid "This font comes from an old format sfd file. Not all aspects of it can be reverted successfully."
+msgstr "Il font deriva da un vecchio file di formato sfd. Non tutti i suoi aspetti possono essere ripristinati con successo."
 
 msgid ""
 "This font contains both a 'BASE' table and a 'bsln' table.\n"
@@ -6180,12 +5793,10 @@ msgstr ""
 
 msgid ""
 "This font contains both a 'kern' table and a 'GPOS' table.\n"
-"  The 'kern' table will only be read if there is no 'kern' feature in "
-"'GPOS'.\n"
+"  The 'kern' table will only be read if there is no 'kern' feature in 'GPOS'.\n"
 msgstr ""
 "Questo file contiene una tabella 'kern' e una 'GPOS'.\n"
-" La tabella 'kern' sarà in sola lettura se non c'è una funzione 'kern' in "
-"'GPOS'.\n"
+" La tabella 'kern' sarà in sola lettura se non c'è una funzione 'kern' in 'GPOS'.\n"
 
 msgid ""
 "This font contains both truetype and PostScript glyph descriptions\n"
@@ -6226,17 +5837,15 @@ msgstr ""
 "Le metriche verticali non sono state attivate in questo font.\n"
 "Usa Elemento->Informazioni sul font per abilitarle."
 
-msgid "This font does not specify font-face\n"
-msgstr "Questo font non specifica il font-face\n"
+msgid "This font does not specify font-face"
+msgstr "Questo font non specifica il font-face"
 
 #, c-format
 msgid ""
-"This font is based on the charset %1$.20s-%2$.20s-%3$d, but the best I've "
-"been able to find is %1$.20s-%2$.20s-%4$d.\n"
+"This font is based on the charset %1$.20s-%2$.20s-%3$d, but the best I've been able to find is %1$.20s-%2$.20s-%4$d.\n"
 "Shall I use that or let you search?"
 msgstr ""
-"Questo font è basato sulla codifica di caratteri %1$.20s-%2$.20hs-%3$d, ma "
-"il migliore che io abbia trovato è %1$.20hs-%2$.20hs-%4$d.\n"
+"Questo font è basato sulla codifica di caratteri %1$.20s-%2$.20s-%3$d, ma il migliore che io abbia trovato è %1$.20s-%2$.20s-%4$d.\n"
 "Devo usare questo valore o preferisci cercare tu stesso?"
 
 msgid ""
@@ -6255,53 +5864,32 @@ msgstr ""
 msgid "This glyph can use a stem3 hint"
 msgstr "Questo glifo può utilizzare un hint per tratti di tipo 3"
 
-msgid ""
-"This glyph contains a different number of contours in different instances"
-msgstr ""
-"Questo glifo contiene un numero differente di contorni in diverse istanze"
+msgid "This glyph contains a different number of contours in different instances"
+msgstr "Questo glifo contiene un numero differente di contorni in diverse istanze"
 
 msgid "This glyph contains a different number of hints in different instances"
 msgstr "Questo glifo contiene un numero differente di hint in diverse istanze"
 
-msgid ""
-"This glyph contains a different number of references in different instances"
-msgstr ""
-"Questo glifo contiene un numero differente di riferimenti in diverse istanze"
+msgid "This glyph contains a different number of references in different instances"
+msgstr "Questo glifo contiene un numero differente di riferimenti in diverse istanze"
 
 msgid "This glyph contains a horizontal hint near the specified width"
-msgstr ""
-"Questo carattere contiene un hint orizzontale di valore simile al valore "
-"specificato"
+msgstr "Questo carattere contiene un hint orizzontale di valore simile al valore specificato"
 
-msgid ""
-"This glyph contains a substitution or ligature entry which refers to an "
-"empty char"
-msgstr ""
-"Questo glifo contiene una sostituzione o una legatura che si riferisce ad un "
-"carattere vuoto"
+msgid "This glyph contains a substitution or ligature entry which refers to an empty char"
+msgstr "Questo glifo contiene una sostituzione o una legatura che si riferisce ad un carattere vuoto"
 
 msgid "This glyph contains a vertical hint near the specified width"
-msgstr ""
-"Questo carattere contiene un hint verticale di valore simile al valore "
-"specificato"
+msgstr "Questo carattere contiene un hint verticale di valore simile al valore specificato"
 
-msgid ""
-"This glyph contains anchor points from some, but not all anchor classes in a "
-"subtable"
-msgstr ""
-"Questo glifo contiene punti di ancoraggio da alcune, ma non tutte, le classi "
-"di ancoraggio in una sottotabella"
+msgid "This glyph contains anchor points from some, but not all anchor classes in a subtable"
+msgstr "Questo glifo contiene punti di ancoraggio da alcune, ma non tutte, le classi di ancoraggio in una sottotabella"
 
 msgid "This glyph contains different kerning pairs in different instances"
-msgstr ""
-"Questo glifo contiene coppie di crenature differenti in diverse istanze"
+msgstr "Questo glifo contiene coppie di crenature differenti in diverse istanze"
 
-msgid ""
-"This glyph has four hints, but if this one were omitted it would fit a stem3 "
-"hint"
-msgstr ""
-"Questo glifo ha quattro hint, ma togliendo questo potrebbe andar bene per un "
-"tratto di tipo 3"
+msgid "This glyph has four hints, but if this one were omitted it would fit a stem3 hint"
+msgstr "Questo glifo ha quattro hint, ma togliendo questo potrebbe andar bene per un tratto di tipo 3"
 
 msgid "This glyph is defined in more than one of the CID subfonts"
 msgstr "Questo carattere è definito in più di un sotto-font CID"
@@ -6316,9 +5904,7 @@ msgid "This glyph's advance width is different from the standard width"
 msgstr "L'avanzamento di questo carattere è diverso dall'avanzamento standard"
 
 msgid "This glyph's vertical advance is different from the standard width"
-msgstr ""
-"L'avanzamento verticale di questo carattere è diverso dall'avanzamento "
-"verticale standard"
+msgstr "L'avanzamento verticale di questo carattere è diverso dall'avanzamento verticale standard"
 
 msgid "This hint does not control any points"
 msgstr "Questo hint non è usato da nessun punto"
@@ -6354,22 +5940,15 @@ msgstr ""
 msgid "This may take a while. Please be patient..."
 msgstr "Potrebbe volerci un po'. Sii paziente..."
 
-msgid ""
-"This must be ASCII, so you may not use the copyright symbol (use (c) "
-"instead)."
-msgstr ""
-"Dev'essere ASCII, non puoi usare il simbolo del copyright (usa (c) "
-"piuttosto)."
+msgid "This must be ASCII, so you may not use the copyright symbol (use (c) instead)."
+msgstr "Dev'essere ASCII, non puoi usare il simbolo del copyright (usa (c) piuttosto)."
 
 #, c-format
 msgid "This namelist contains at least one non-ASCII glyph name, namely: %s"
-msgstr ""
-"Questa lista contiene almeno un nome di glifo non-ASCII, precisamente: %s"
+msgstr "Questa lista contiene almeno un nome di glifo non-ASCII, precisamente: %s"
 
-msgid ""
-"This namelist is based on a namelist which contains non-ASCII glyph names"
-msgstr ""
-"Questa lista è basata su una lista che contiene nomi di glifi non-ASCII"
+msgid "This namelist is based on a namelist which contains non-ASCII glyph names"
+msgstr "Questa lista è basata su una lista che contiene nomi di glifi non-ASCII"
 
 msgid "This outline glyph is missing a bitmap version"
 msgstr "Questo carattere vettoriale manca della versione bitmap"
@@ -6381,9 +5960,7 @@ msgid "This path should have been drawn in a counter-clockwise direction"
 msgstr "Questo percorso dovrebbe essere in senso antiorario"
 
 msgid "This reference has been flipped, so the paths in it are drawn backwards"
-msgstr ""
-"Questo riferimento è stato rovesciato, perciò i contorni che essa contiene "
-"sono tracciati nel senso sbagliato"
+msgstr "Questo riferimento è stato rovesciato, perciò i contorni che essa contiene sono tracciati nel senso sbagliato"
 
 msgid "This setting is already used"
 msgstr "Questa impostazione è già in uso"
@@ -6394,17 +5971,8 @@ msgstr "Questa finestra mostra informazioni sulle metriche di un font"
 msgid "Tibetan (PRC)"
 msgstr "Tibetano (Repubblica Popolare Cinese)"
 
-msgid "Tibetan Bhutan"
-msgstr "Tibetano (Bhutan)"
-
 msgid "Tigrinya"
 msgstr "Tigrino"
-
-msgid "Tigrinya Ethiopia"
-msgstr "Tigrino (Etiopia)"
-
-msgid "Tigrinyan Eritrea"
-msgstr "Tigrino (Eritrea)"
 
 msgid "Tile _Path..."
 msgstr "Sovra_pponi i percorsi..."
@@ -6421,14 +5989,8 @@ msgstr "Verso un _file"
 msgid "To _Int"
 msgstr "a _intero"
 
-msgid ""
-"To generate a Mac family file, the current font must have plain (Normal, "
-"Regular, etc.) style, and there must be other open fonts with the same "
-"family name."
-msgstr ""
-"Per ottenere un file con una famiglia Mac , il font corrente deve avere uno "
-"stile di tipo Normal, Regular, etc. e devono essere aperti altri font con lo "
-"stesso nome di famiglia."
+msgid "To generate a Mac family file, the current font must have plain (Normal, Regular, etc.) style, and there must be other open fonts with the same family name."
+msgstr "Per ottenere un file con una famiglia Mac , il font corrente deve avere uno stile di tipo Normal, Regular, etc. e devono essere aperti altri font con lo stesso nome di famiglia."
 
 msgid "To the glyph names starting at:"
 msgstr "Ai nomi dei glifi che iniziano a:"
@@ -6597,8 +6159,8 @@ msgstr "Sconosciuto"
 msgid "Unknown Language"
 msgstr "Lingua sconosciuta"
 
-msgid "Unknown character after backslash in literal string.\n"
-msgstr "Carattere sconosciuto dopo il backslash nella stringa letterale.\n"
+msgid "Unknown character after backslash in literal string."
+msgstr "Carattere sconosciuto dopo il backslash nella stringa letterale."
 
 msgid "Unknown string type\n"
 msgstr "Tipo di stringa sconosciuto\n"
@@ -6681,8 +6243,8 @@ msgstr "Valore"
 msgid "Value exceeds tfm limitations"
 msgstr "Il valore eccede i limiti TFM"
 
-msgid "Value out of bounds in spline.\n"
-msgstr "Valore fuori limiti in spline.\n"
+msgid "Value out of bounds in spline."
+msgstr "Valore fuori limiti in spline."
 
 msgid "Value out of range"
 msgstr "Valore fuori limiti"
@@ -6763,9 +6325,8 @@ msgid "Warning"
 msgstr "Attenzione"
 
 #, c-format
-msgid "Warning: %s has a different family name than does %s (GenerateFamily)\n"
-msgstr ""
-"Attenzione: %s ha un diverso nome della famiglia da %s (GeneraFamiglia)\n"
+msgid "Warning: %s has a different family name than does %s (GenerateFamily)"
+msgstr "Attenzione: %s ha un diverso nome della famiglia da %s (GeneraFamiglia)"
 
 msgid "Warning: Font contained no glyphs"
 msgstr "Attenzione: il font non contiene glifi"
@@ -6801,22 +6362,12 @@ msgid ""
 "and a CJK encoding table, use this flag to specify which\n"
 "should be loaded for the font."
 msgstr ""
-"Quando si carica un font truetype o opentype che contiene "
-"contemporaneamente\n"
-"un encoding unicode et un encoding CJK, questa opzione permette di "
-"specificare\n"
+"Quando si carica un font truetype o opentype che contiene contemporaneamente\n"
+"un encoding unicode et un encoding CJK, questa opzione permette di specificare\n"
 "quale encoding caricare."
 
-msgid ""
-"When merging two CID keyed fonts, they must have the same Registry and "
-"Ordering, and the font being merged into (the mergee) must have a supplement "
-"which is at least as recent as the other's. Furthermore the mergee must have "
-"at least as many subfonts as the merger."
-msgstr ""
-"Quando si uniscono due font CID, essi devono avere gli stessi Registry e "
-"Ordering, et il font di destinazione deve avere un supplemento altrettanto "
-"recente quanto gli altri. Inoltre questo deve avere tanti sotto-font quanti "
-"gli altri."
+msgid "When merging two CID keyed fonts, they must have the same Registry and Ordering, and the font being merged into (the mergee) must have a supplement which is at least as recent as the other's. Furthermore the mergee must have at least as many subfonts as the merger."
+msgstr "Quando si uniscono due font CID, essi devono avere gli stessi Registry e Ordering, et il font di destinazione deve avere un supplemento altrettanto recente quanto gli altri. Inoltre questo deve avere tanti sotto-font quanti gli altri."
 
 msgid ""
 "When placing grave and acute accents above letters, should\n"
@@ -6827,15 +6378,6 @@ msgstr ""
 "Quando mette un accento acuto o grave su una lettera, FontForge\n"
 "deve centrarlo tendo conto della sua larghezza oppure lo deve centrare\n"
 "tendo conto del punto più basso dell'accento?"
-
-msgid ""
-"When the hint's position is changed\n"
-"adjust the postion of any points\n"
-"which lie on that hint"
-msgstr ""
-"Qunado si cambia la posizione dell'hint\n"
-"bisogna correggere la posizione di tutti i punti\n"
-"che cadono in quell'hint"
 
 msgid ""
 "When the mouse pointer is within this many pixels\n"
@@ -6914,13 +6456,11 @@ msgstr ""
 #, c-format
 msgid ""
 "You are attempting to paste a reference to %1$s into %2$s.\n"
-"But %1$s does not exist in this font, nor can I find the original character "
-"referred to.\n"
+"But %1$s does not exist in this font, nor can I find the original character referred to.\n"
 "It will not be copied."
 msgstr ""
 "Stai tentando di incollare un riferimento a %1$s in %2$s.\n"
-"Ma %1$s non esiste in questo font, né riesco a trovare il carattere "
-"originale a cui si riferiva.\n"
+"Ma %1$s non esiste in questo font, né riesco a trovare il carattere originale a cui si riferiva.\n"
 "Non verrà copiato."
 
 #, c-format
@@ -6934,19 +6474,14 @@ msgstr ""
 "Vuoi copiare le spline originali (o eliminare il riferimento)?"
 
 msgid ""
-"You are attempting to paste glyph instructions from one font to another. "
-"Generally this will not work unless the 'prep', 'fpgm' and 'cvt ' tables are "
-"the same.\n"
+"You are attempting to paste glyph instructions from one font to another. Generally this will not work unless the 'prep', 'fpgm' and 'cvt ' tables are the same.\n"
 "Do you want to continue anyway?"
 msgstr ""
-"Stai provando ad incollare istruzioni di un glifo da un font ad un altro. "
-"Generalmente non funzionerà, a meno che le tavole 'prep', 'fpgm' e 'cvt' "
-"siano le stesse.\n"
+"Stai provando ad incollare istruzioni di un glifo da un font ad un altro. Generalmente non funzionerà, a meno che le tavole 'prep', 'fpgm' e 'cvt' siano le stesse.\n"
 "Vuoi continuare comunque?"
 
 msgid ""
-"You are attempting to save a CID font in a non-CID format. This is ok, but "
-"it means that only the current sub-font will be saved.\n"
+"You are attempting to save a CID font in a non-CID format. This is ok, but it means that only the current sub-font will be saved.\n"
 "Is that what you want?"
 msgstr ""
 "Stai cercando di salvare un font CID in un formato\n"
@@ -6960,12 +6495,8 @@ msgstr "Hai cambiato la numerazione dei punti"
 msgid "You do not have permission to read %.100s"
 msgstr "Non hai i permessi per leggere %.100s"
 
-msgid ""
-"You have changed the transformation matrix, do you wish to use the new "
-"version?"
-msgstr ""
-"Hai modificato la matrice di trasformazione, vuoi usare la sua nuova "
-"versione?"
+msgid "You have changed the transformation matrix, do you wish to use the new version?"
+msgstr "Hai modificato la matrice di trasformazione, vuoi usare la sua nuova versione?"
 
 msgid ""
 "You may create a script menu containing up to 10 frequently used scripts\n"
@@ -6976,33 +6507,23 @@ msgstr ""
 "Puoi creare un menu di script che contiene fino a 10 elementi.\n"
 "Ogni elemento implica un nome da esporre e un nome di script da eseguire.\n"
 "Il nome del menu può contenere qualunque carattere Unicode.\n"
-"Il bottone indicato con \"...\" permette di cercare un file di script da "
-"eseguire."
+"Il bottone indicato con \"...\" permette di cercare un file di script da eseguire."
 
 msgid "You may not paste a reference into this window"
 msgstr "Non puoi incollare un riferimento in questa finestra"
 
-msgid ""
-"You may not rename any of the base glyphs, but your selection overlaps the "
-"set of base glyphs."
-msgstr ""
-"Non puoi rinominare uno dei glifi base, ma la tua selezione sovrappone il "
-"set di glifi base."
+msgid "You may not rename any of the base glyphs, but your selection overlaps the set of base glyphs."
+msgstr "Non puoi rinominare uno dei glifi base, ma la tua selezione sovrappone il set di glifi base."
 
 msgid "You must provide at least one name here"
 msgstr "Qui devi fornire almeno un nome"
 
 msgid "You must select a glyph before you can import an image into it"
-msgstr ""
-"Devi selezionare un glifo prima di poter importare un'immagine al suo interno"
+msgstr "Devi selezionare un glifo prima di poter importare un'immagine al suo interno"
 
 #, c-format
 msgid "You must specify a glyph name for subtable %s"
 msgstr "Devi specificare il nome di un glifo per la sottotabella %s"
-
-#, c-format
-msgid "You must specify a replacement glyph for %s"
-msgstr "Devi specificare un glifo di sostituzione per %s"
 
 msgid "You must specify a standard type1 extension (.pfb or .pfa)"
 msgstr "Devi specificare un'estensione standard di tipo1 (.pfb o .pfa)"
@@ -7163,9 +6684,6 @@ msgstr "_Cancella gli Hint"
 
 msgid "_Close"
 msgstr "_Chiudi"
-
-msgid "_Compact"
-msgstr "_Compatta"
 
 msgid "_Condense/Extend..."
 msgstr "_Condensa/Estendi..."
@@ -7712,9 +7230,6 @@ msgstr "Larghezza...(_W)"
 msgid "_Window"
 msgstr "_Finestra"
 
-msgid "_X Resource Editor..."
-msgstr "Editor di Risorse _X"
-
 msgid "_X near¹"
 msgstr "_X vicino¹"
 
@@ -7735,8 +7250,8 @@ msgstr "_Sì"
 msgid "by"
 msgstr "di"
 
-msgid "can't create temporary file\n"
-msgstr "Impossibile creare un file temporaneo\n"
+msgid "can't create temporary file"
+msgstr "Impossibile creare un file temporaneo"
 
 #, c-format
 msgid "cidmap entry out of bounds: %s"
@@ -7745,8 +7260,8 @@ msgstr "voce di cidmap fuori dai limiti: %s"
 msgid "copyright notice"
 msgstr "Messaggio di Copyright:"
 
-msgid "couldn't write encodings file\n"
-msgstr "Impossibile scrivere il file delle codifiche\n"
+msgid "couldn't write encodings file"
+msgstr "Impossibile scrivere il file delle codifiche"
 
 msgid "digital signature table"
 msgstr "Tabella firma digitale"

@@ -1732,7 +1732,6 @@ void PI_ShowHints(SplineChar *sc, GGadget *list, int set) {
 	for ( h = sc->vstem; h!=NULL && i<len; h=h->next, ++i )
 	    h->active = ti[i]->selected;
     }
-    SCOutOfDateBackground(sc);
     SCUpdateAll(sc);
 }
 

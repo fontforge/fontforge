@@ -718,7 +718,7 @@ return( NULL );
     ret->bytes_per_row = slot->bitmap.pitch;
     ret->as = slot->bitmap_top;
     ret->lb = slot->bitmap_left;
-    ret->num_greys = slot->bitmap.num_grays;
+    ret->num_greys = slot->bitmap.pixel_mode == ft_pixel_mode_mono ?  2 : slot->bitmap.num_grays;
 	/* Can't find any description of freetype's bitendianness */
 	/* But the obvious seems to work */
     ret->bitmap = malloc(ret->rows*ret->bytes_per_row);

@@ -5,10 +5,10 @@ Viewing and Editing truetype instructions in FontForge.
 .. image:: /images/ttfinstrs-edit.png
 
 
-* `Apple's overview on instructing glyphs <http://developer.apple.com/fonts/TTRefMan/RM03/Chap3.html>`__
-* `Apple's list of truetype instructions <http://developer.apple.com/fonts/TTRefMan/RM05/Chap5.html>`__
-* `Apple's description of the truetype graphics state <http://developer.apple.com/fonts/TTRefMan/RM04/Chap4.html>`__
-* `Apple's summary of truetype instructions <http://developer.apple.com/fonts/TTRefMan/RM07/appendixA.html>`__
+* `Apple's overview on instructing glyphs <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM03/Chap3.html>`__
+* `Apple's list of truetype instructions <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM05/Chap5.html>`__
+* `Apple's description of the truetype graphics state <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM04/Chap4.html>`__
+* `Apple's summary of truetype instructions <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM07/appendixA.html>`__
 
 I shall not attempt to describe the mechanics of instructing truetype, if you
 want to understand it I refer you to the above links.

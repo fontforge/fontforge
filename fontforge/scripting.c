@@ -51,6 +51,7 @@
 #include "fvfonts.h"
 #include "fvimportbdf.h"
 #include "fvmetrics.h"
+#include "getline.h"
 #include "gfile.h"
 #include "gutils.h"
 #include "lookups.h"
@@ -295,8 +296,8 @@ static void traceback(Context *c) {
 	    c->error = ce_true;
 	    return;
 	}
-	if ( cnt==1 ) LogError( _("Called from...\n") );
-	if ( cnt>0 ) LogError( _(" %s: line %d\n"), c->filename, c->lineno );
+	if ( cnt==1 ) LogError( _("Called from...") );
+	if ( cnt>0 ) LogError( _(" %s: line %d"), c->filename, c->lineno );
 	calldatafree(c);
 	if ( c->err_env!=NULL )
 	    longjmp(*c->err_env,1);
@@ -364,9 +365,9 @@ void ScriptError( Context *c, const char *msg ) {
     if ( verbose>0 )
 	fflush(stdout);
     if ( c->interactive )
-	LogError( "Error: %s\n", t1 );
+	LogError( "Error: %s", t1 );
     else if ( c->lineno!=0 )
-	LogError( _("%s line: %d %s\n"), ufile, c->lineno, t1 );
+	LogError( _("%s line: %d %s"), ufile, c->lineno, t1 );
     else
 	LogError( "%s: %s\n", ufile, t1 );
     if ( !no_windowing_ui ) {
@@ -386,7 +387,7 @@ void ScriptErrorString( Context *c, const char *msg, const char *name) {
     if ( c->interactive )
 	LogError( "Error: %s: %s\n", t1, t2 );
     else if ( c->lineno!=0 )
-	LogError( _("%s line: %d %s: %s\n"), ufile, c->lineno, t1, t2 );
+	LogError( _("%s line: %d %s: %s"), ufile, c->lineno, t1, t2 );
     else
 	LogError( "%s: %s: %s\n", ufile, t1, t2 );
     if ( !no_windowing_ui ) {
@@ -409,9 +410,9 @@ void ScriptErrorF( Context *c, const char *format, ... ) {
     if ( verbose>0 )
 	fflush(stdout);
     if (c->interactive)
-	LogError( _("Error: %s\n"), errbuf );
+	LogError( _("Error: %s"), errbuf );
     else if ( c->lineno!=0 )
-	LogError( _("%s line: %d %s\n"), ufile, c->lineno, errbuf );
+	LogError( _("%s line: %d %s"), ufile, c->lineno, errbuf );
     else
 	LogError( "%s: %s\n", ufile, errbuf );
     if ( !no_windowing_ui ) {
@@ -461,7 +462,7 @@ static void PrintVal(Val *val) {
 
     if ( val->type==v_str ) {
 	char *t1 = script2utf8_copy(val->u.sval);
-	char *loc = utf82def_copy(t1);
+	char *loc = utf82def_copy_safe(t1);
 	printf( "%s", loc );
 	free(loc);
     free(t1);
@@ -520,7 +521,7 @@ static void bPostNotice(Context *c) {
     } else
     {
 	t1 = script2utf8_copy(loc);
-	loc = utf82def_copy(t1);
+	loc = utf82def_copy_safe(t1);
 	fprintf(stderr,"%s\n", loc );
 	free(loc); free(t1);
     }
@@ -543,7 +544,7 @@ static void bAskUser(Context *c) {
     if ( no_windowing_ui ) {
 	char buffer[300];
 	char *t1 = script2utf8_copy(quest);
-	char *loc = utf82def_copy(t1);
+	char *loc = utf82def_copy_safe(t1);
 	printf( "%s", loc );
 	free(t1); free(loc);
 	buffer[0] = '\0';
@@ -2017,7 +2018,7 @@ static void bGenerateFamily(Context *c) {
 	if ( sf==NULL )
 	    sf = fv->sf;
 	if ( strcmp(fv->sf->familyname,sf->familyname)!=0 )
-	    LogError( _("Warning: %s has a different family name than does %s (GenerateFamily)\n"),
+	    LogError( _("Warning: %s has a different family name than does %s (GenerateFamily)"),
 		    fv->sf->fontname, sf->fontname );
 	MacStyleCode(fv->sf,&psstyle);
 	if ( psstyle>=48 ) {
@@ -2049,7 +2050,7 @@ static void bGenerateFamily(Context *c) {
 			familysfs[fc][psstyle] = fv->sf;
 			added = true;
 		    } else {
-			LogError( _("%s(%s) and %s(%s) 0x%x in FOND %s\n"),
+			LogError( _("%s(%s) and %s(%s) 0x%x in FOND %s"),
 				familysfs[fc][psstyle]->origname, familysfs[fc][psstyle]->fontname,
 				fv->sf->origname, fv->sf->fontname,
 				psstyle, fv->sf->fondname );
@@ -2340,7 +2341,7 @@ static void bExport(Context *c) {
 
     InitExportParams(&ep);
 
-    if ( c->a.argc<2 && c->a.argc>4 ) {
+    if ( c->a.argc<2 || c->a.argc>4 ) {
 	c->error = ce_wrongnumarg;
 	return;
     }
@@ -4820,6 +4821,7 @@ static void bSmallCaps(Context *c) {
 	.hcounter_scale = 0.66, .lsb_scale = 0.66, .rsb_scale = 0.66,
 	.v_scale = 0.675,
 	.gc = gc_smallcaps,
+        .do_smallcap_symbols = 1,
 	.extension_for_letters = "sc",
 	.extension_for_symbols = "taboldstyle",
 	.use_vert_mapping = 1,
@@ -5007,7 +5009,7 @@ static void bNonLinearTransform(Context *c) {
 }
 
 static const int nibmap[] = { si_round, si_calligraphic, si_nib };
-static const int joinmap[] = { lj_miter, lj_round, lj_bevel, lj_nib, 
+static const int joinmap[] = { lj_miter, lj_round, lj_bevel, lj_nib,
                                lj_miterclip, lj_arcs, lj_inherited };
 static const int capmap[] = { lc_butt, lc_round, lc_square, lc_nib,
                               lc_inherited };
@@ -5067,7 +5069,7 @@ static void bExpandStroke(Context *c) {
 	6 => stroke width, line cap, line join, 0, flags
 	7 => stroke width, calligraphic angle, thickness-numerator, thickness-denom, 0, flags
 	11 => nib type, width, height, calligraphic angle, line cap, line join, join limit, extend cap, accuracy target, flags
-    */ 
+    */
 
     if ( c->a.argc<2 || (c->a.argc>7 && c->a.argc!=11) ) {
 	c->error = ce_wrongnumarg;
@@ -5118,13 +5120,13 @@ static void bExpandStroke(Context *c) {
 	i = c->a.vals[1].u.ival;
 	if ( i >= 0 && i<=2 )
 	    si.stroke_type = nibmap[i];
-	else 
+	else
 	    ScriptError(c,"Unrecognized stroke type");
 	if ( si.stroke_type == si_nib ) {
 	    if ( c->a.vals[2].type!=v_int )
 		ScriptError(c,"Bad argument type");
 	    si.nib = StrokeGetConvex(c->a.vals[2].u.ival, false);
-	    if ( si.nib==NULL ) 
+	    if ( si.nib==NULL )
 		ScriptError(c,"Convex nib unknown or not defined");
 	} else
 	    si.height = args[3];
@@ -6057,17 +6059,16 @@ static void bAddDHint( Context *c ) {
         SCGuessDHintInstances( sc,ly_fore,d );
         if ( d->where == NULL ) {
             DStemInfoFree( d );
-            LogError( _("Warning: could not figure out where the hint (%d,%d %d,%d %d,%d) is valid\n"),
+            LogError( _("Warning: could not figure out where the hint (%d,%d %d,%d %d,%d) is valid"),
                 args[0],args[1],args[2],args[3],args[4],args[5] );
         } else
             MergeDStemInfo( sc->parent,&sc->dstem,d );
 	sc->manualhints = true;
-	SCOutOfDateBackground(sc);
 	SCUpdateAll(sc);
 	any = true;
     }
     if ( !any )
-        LogError( _("Warning: No characters selected in AddDHint(%d,%d %d,%d %d,%d)\n"),
+        LogError( _("Warning: No characters selected in AddDHint(%d,%d %d,%d %d,%d)"),
             args[0],args[1],args[2],args[3],args[4],args[5] );
 }
 
@@ -6108,12 +6109,11 @@ static void _AddHint(Context *c,int ish) {
 	}
 	sc->manualhints = true;
 	SCClearHintMasks(sc,ly_fore,true);
-	SCOutOfDateBackground(sc);
 	SCUpdateAll(sc);
 	any = true;
     }
     if ( !any )
-	LogError( _("Warning: No characters selected in AddHint(%d,%d,%d)\n"),
+	LogError( _("Warning: No characters selected in AddHint(%d,%d,%d)"),
 		ish, start, width);
 }
 
@@ -6548,7 +6548,7 @@ static void Reblend(Context *c, int tonew) {
 	blends[i] = c->a.vals[1].u.aval->vals[i].u.ival/65536.0;
 	if ( blends[i]<mm->axismaps[i].min ||
 		blends[i]>mm->axismaps[i].max )
-	    LogError( _("Warning: %dth axis value (%g) is outside the allowed range [%g,%g]\n"),
+	    LogError( _("Warning: %dth axis value (%g) is outside the allowed range [%g,%g]"),
 		    i,blends[i],mm->axismaps[i].min,mm->axismaps[i].max );
     }
     c->curfv = MMCreateBlendedFont(mm,c->curfv,blends,tonew);
@@ -7990,7 +7990,7 @@ static void bGetPosSub(Context *c) {
 			ret->vals[cnt].type = v_void;
 /* The important things here should not be translated. We hope the user will */
 /*  never see this. Let's not translate it at all */
-			LogError(_("Unexpected PST type in GetPosSub (%d).\n"), pst->type );
+			LogError(_("Unexpected PST type in GetPosSub (%d)."), pst->type );
 		      break;
 		      case pst_position:
 			temp->argc = 6;
@@ -8718,22 +8718,6 @@ static int AddScriptLine(FILE *script, const char *line)
     return getc(script);
 }
 
-#if defined(__MINGW32__) && defined(_NO_LIBREADLINE)
-
-static ssize_t getline(char **lineptr, size_t *n, FILE *stream)
-{
-	if (!*lineptr || !*n) {
-		*n = 1024;
-		*lineptr = calloc(*n+1, sizeof(char));
-	}
-	if (!fgets(*lineptr, *n, stream)) {
-		return -1;
-	}
-    return 1; // good enough
-}
-
-#endif
-
 static int _buffered_cgetc(Context *c) {
     if (c->interactive) {
 	int ch;
@@ -8742,7 +8726,7 @@ static int _buffered_cgetc(Context *c) {
 #ifdef _NO_LIBREADLINE
 	    static char *linebuf = NULL;
 	    static size_t lbsize = 0;
-	    if (getline(&linebuf, &lbsize, stdin) > 0) {
+	    if (getline_(&linebuf, &lbsize, stdin) > 0) {
 		ch = AddScriptLine(c->script, linebuf);
 	    } else {
 		if (linebuf) {
@@ -9113,7 +9097,7 @@ return( c->tok );
 		cungetc(ch,c);
 	  break;
 	  default:
-	    LogError( _("%s:%d Unexpected character %c (%d)\n"),
+	    LogError( _("%s:%d Unexpected character %c (%d)"),
 		    c->filename, c->lineno, ch, ch);
 	    traceback(c);
 	}

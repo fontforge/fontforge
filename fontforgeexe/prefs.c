@@ -45,6 +45,8 @@
 #include "splineutil.h"
 #include "ttf.h"
 #include "ustring.h"
+#include "gtk/simple_dialogs.hpp"
+#include "shapers/shaper_shim.hpp"
 
 #include <assert.h>
 #include <dirent.h>
@@ -205,8 +207,6 @@ static int alwaysgenapple=false, alwaysgenopentype=false;
 static int gfc_showhidden, gfc_dirplace;
 static char *gfc_bookmarks=NULL;
 
-static int prefs_usecairo = true;
-
 static int pointless;
 
     /* These first three must match the values in macenc.c */
@@ -276,7 +276,7 @@ return( false );
 
 /* don't use mnemonics 'C' or 'O' (Cancel & OK) */
 enum pref_types { pr_int, pr_real, pr_bool, pr_encoding, pr_string,
-	pr_file, pr_namelist, pr_unicode, pr_angle };
+	pr_file, pr_namelist, pr_unicode, pr_angle, pr_shaper };
 struct enums { char *name; int value; };
 
 struct enums fvsize_enums[] = { {NULL, 0} };
@@ -304,9 +304,6 @@ static struct prefs_list {
 	{ N_("FreeTypeInFontView"), pr_bool, &use_freetype_to_rasterize_fv, NULL, NULL, 'O', NULL, 0, N_("Use the FreeType rasterizer (when available)\nto rasterize glyphs in the font view.\nThis generally results in better quality.") },
 	{ N_("FreeTypeAAFillInOutlineView"), pr_bool, &use_freetype_with_aa_fill_cv, NULL, NULL, 'O', NULL, 0, N_("When filling using freetype in the outline view,\nhave freetype render the glyph antialiased.") },
 	{ N_("SplashScreen"), pr_bool, &splash, NULL, NULL, 'S', NULL, 0, N_("Show splash screen on start-up") },
-#ifndef _NO_LIBCAIRO
-	{ N_("UseCairoDrawing"), pr_bool, &prefs_usecairo, NULL, NULL, '\0', NULL, 0, N_("Use the cairo library for drawing (if available)\nThis makes for prettier (anti-aliased) but slower drawing\nThis applies to any windows created AFTER this is set.\nAlready existing windows will continue as they are.") },
-#endif
 	{ N_("ExportClipboard"), pr_bool, &export_clipboard, NULL, NULL, '\0', NULL, 0, N_( "If you are running an X11 clipboard manager you might want\nto turn this off. FF can put things into its internal clipboard\nwhich it cannot export to X11 (things like copying more than\none glyph in the fontview). If you have a clipboard manager\nrunning it will force these to be exported with consequent\nloss of data.") },
 	{ N_("AutoSaveFrequency"), pr_int, &AutoSaveFrequency, NULL, NULL, '\0', NULL, 0, N_( "The number of seconds between autosaves. If you set this to 0 there will be no autosaves.") },
 	{ N_("RevisionsToRetain"), pr_int, &prefRevisionsToRetain, NULL, NULL, '\0', NULL, 0, N_( "When Saving, keep this number of previous versions of the file. file.sfd-01 will be the last saved file, file.sfd-02 will be the file saved before that, and so on. If you set this to 0 then no revisions will be retained.") },
@@ -316,6 +313,7 @@ static struct prefs_list {
 #ifndef _NO_PYTHON
 	{ N_("UsePlugins"), pr_bool, &use_plugins, NULL, NULL, '\0', NULL, 0, N_( "Whether or not to try to discover and import Python plugins.") },
 #endif
+	{ N_("DefaultShaper"), pr_shaper, NULL, (void * (*)(void))get_default_shaper, (void (*)(void *))set_default_shaper, '\0', NULL, 0, N_( "The default shaper for MetricsView.") },
 	PREFS_LIST_EMPTY
 },
   new_list[] = {
@@ -413,7 +411,7 @@ static struct prefs_list {
 #endif
 
 	{ N_("GenerateHintWidthEqualityTolerance"), pr_real, &GenerateHintWidthEqualityTolerance, NULL, NULL, '\0', NULL, 0, N_( "When generating a font, ignore slight rounding errors for hints that should be at the top or bottom of the glyph. For example, you might like to set this to 0.02 so that 19.999 will be considered 20. But only for the hint width value.") },
-	
+
 	PREFS_LIST_EMPTY
 },
  hints_list[] = {
@@ -515,9 +513,6 @@ static struct prefs_list {
 	{ "DefaultBVWidth", pr_int, &bv_width, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "DefaultBVHeight", pr_int, &bv_height, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "AnchorControlPixelSize", pr_int, &aa_pixelsize, NULL, NULL, '\0', NULL, 1, NULL },
-#ifdef _NO_LIBCAIRO
-	{ "UseCairoDrawing", pr_bool, &prefs_usecairo, NULL, NULL, '\0', NULL, 0, N_("Use the cairo library for drawing (if available)\nThis makes for prettier (anti-aliased) but slower drawing\nThis applies to any windows created AFTER this is set.\nAlready existing windows will continue as they are.") },
-#endif
 	{ "CV_B1Tool", pr_int, (int *) &cv_b1_tool, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "CV_CB1Tool", pr_int, (int *) &cv_cb1_tool, NULL, NULL, '\0', NULL, 1, NULL },
 	{ "CV_B2Tool", pr_int, (int *) &cv_b2_tool, NULL, NULL, '\0', NULL, 1, NULL },
@@ -663,7 +658,7 @@ static int PrefsUI_GetPrefs(char *name,Val *val) {
 	    if ( pf->type == pr_bool || pf->type == pr_int || pf->type == pr_unicode ) {
 		val->type = v_int;
 		val->u.ival = *((int *) (pf->val));
-	    } else if ( pf->type == pr_string || pf->type == pr_file ) {
+	    } else if ( pf->type == pr_string || pf->type == pr_file || pf->type == pr_shaper) {
 		val->type = v_str;
 
 		char *tmpstr = pf->val ? *((char **) (pf->val)) : (char *) (pf->get)();
@@ -731,7 +726,7 @@ return( -1 );
 		    *((float *) (pf->val)) = (val2==NULL ? val1->u.ival : val1->u.ival / (double) val2->u.ival);
 		if ( pf->type == pr_angle )
 		    *((float *) (pf->val)) /= RAD2DEG;
-	    } else if ( pf->type == pr_string || pf->type == pr_file ) {
+	    } else if ( pf->type == pr_string || pf->type == pr_file || pf->type == pr_shaper) {
 		if ( val1->type!=v_str || val2!=NULL )
 return( -1 );
 		if ( pf->set ) {
@@ -952,7 +947,7 @@ static void PrefsUI_LoadPrefs_FromFile( char* filename )
 		if ( pl->type == pr_angle )
 		    *(float *) pl->val /= RAD2DEG;
 	      break;
-	      case pr_string: case pr_file:
+	      case pr_string: case pr_file: case pr_shaper:
 		if ( *pt=='\0' ) pt=NULL;
 		if ( pl->val!=NULL )
 		    *((char **) (pl->val)) = copy(pt);
@@ -1074,7 +1069,7 @@ static void PrefsUI_LoadPrefs(void)
 		if ( pl->type == pr_angle )
 		    *(float *) pl->val /= RAD2DEG;
 	      break;
-	      case pr_string: case pr_file:
+	      case pr_string: case pr_file: case pr_shaper:
 		if ( *pt=='\0' ) pt=NULL;
 		if ( pl->val!=NULL )
 		    *((char **) (pl->val)) = copy(pt);
@@ -1111,7 +1106,6 @@ static void PrefsUI_LoadPrefs(void)
 	old_sfnt_flags |= ttf_flag_glyphmap;
     LoadNamelistDir(NULL);
     ProcessFileChooserPrefs();
-    GDrawEnableCairo( prefs_usecairo );
 }
 
 static void PrefsUI_SavePrefs(int not_if_script) {
@@ -1160,6 +1154,11 @@ return;
 		fprintf( p, "%s:\t%s\n", pl->name, temp );
 	    if ( (pl->val)==NULL )
 		free(temp);
+	  break;
+	  case pr_shaper:
+	    temp = (char *) (pl->get());
+	    if ( temp!=NULL )
+		fprintf( p, "%s:\t%s\n", pl->name, temp );
 	  break;
 	  case pr_angle:
 	    fprintf( p, "%s:\t%g\n", pl->name, ((double) *(float *) pl->val) * RAD2DEG );
@@ -1685,6 +1684,14 @@ return( true );
 		    }
 		}
 	      break;
+	       case pr_shaper: 
+		{ GTextInfo *ti = GGadgetGetListItemSelected(GWidgetGetControl(gw,j*CID_PrefsOffset+CID_PrefsBase+i));
+		  if ( ti!=NULL ) {
+			char *name = ti->userdata;
+			(pl->set)(name);
+		    }
+		}
+	      break;
 	      case pr_string: case pr_file:
 	        ret = _GGadgetGetTitle(GWidgetGetControl(gw,j*CID_PrefsOffset+CID_PrefsBase+i));
 		if ( pl->val!=NULL ) {
@@ -1747,7 +1754,6 @@ return( true );
 	}
 	if ( othersubrsfile!=NULL && ReadOtherSubrsFile(othersubrsfile)<=0 )
 	    fprintf( stderr, "Failed to read OtherSubrs from %s\n", othersubrsfile );
-	GDrawEnableCairo(prefs_usecairo);
 
 	int force_redraw_charviews = 0;
 	if( prefs_oldval_cvEditHandleSize != prefs_cvEditHandleSize )
@@ -2141,6 +2147,19 @@ void DoPrefs(void) {
 		hvarray[si++] = GCD_ColSpan; hvarray[si++] = GCD_ColSpan;
 		y += 28;
 	      } break;
+	      case pr_shaper:
+	      {
+		int default_idx = 0;
+		pgcd[gc].gd.u.list = GetShaperList(&default_idx);
+		pgcd[gc].gd.label = pgcd[gc].gd.u.list + default_idx;
+		pgcd[gc].creator = GListFieldCreate;
+		pgcd[gc].gd.pos.width = 160;
+		++gc;
+		hvarray[si++] = &pgcd[gc-1];
+		hvarray[si++] = GCD_ColSpan; hvarray[si++] = GCD_ColSpan;
+		y += 28;
+	      }
+	      break;
 	      case pr_string: case pr_file:
 		if ( pl->set==SetAutoTraceArgs || ((char **) pl->val)==&mf_args )
 		    pgcd[gc].gd.pos.width = 160;
@@ -2362,7 +2381,7 @@ void DoPrefs(void) {
 	  case pr_namelist:
 	    free(gcd[gc+1].gd.u.list);
 	  break;
-	  case pr_string: case pr_file: case pr_int: case pr_real: case pr_unicode: case pr_angle:
+	  case pr_string: case pr_file: case pr_int: case pr_real: case pr_unicode: case pr_angle: case pr_shaper:
 	    free(plabels[k][gc+1].text);
 	    if ( pl->type==pr_file || pl->type==pr_angle )
 		++gc;
@@ -2454,6 +2473,9 @@ void DoXRes(void) {
     CVColInit();
     BVColInit();
     GResEdit(&view_ri,xdefs_filename,change_res_filename);
+
+    // Trigger GTK StyleProvider update
+    update_appearance();
 }
 
 struct prefs_list pointer_dialog_list[] = {
@@ -2531,6 +2553,10 @@ static int PrefsSubSet_Ok(GGadget *g, GEvent *e) {
 	case pr_angle:
 	    *((float *) (pl->val)) = GetReal8(gw,j*CID_PrefsOffset+CID_PrefsBase+i,pl->name,&err)/RAD2DEG;
 	    break;
+	case pr_shaper:
+	    ff_post_error(_("Preferences"),
+		_("Shaper preference is not implemented in contextual preferences"));
+	    break;
 	}
     }
 
@@ -2551,7 +2577,7 @@ static void PrefsSubSetDlg(CharView *cv,char* windowTitle,struct prefs_list* pli
     GTabInfo aspects[TOPICS+5], subaspects[3];
     GGadgetCreateData **hvarray, boxes[2*TOPICS];
     struct pref_data p;
-    int line = 0,line_max = 3;
+    int line_max = 3;
     int i = 0, gc = 0, ii, y=0, si=0, k=0;
     char buf[20];
     char *tempstr;
@@ -2764,8 +2790,11 @@ static void PrefsSubSetDlg(CharView *cv,char* windowTitle,struct prefs_list* pli
 		hvarray[si++] = GCD_Glue;
 		y += 26;
 	      break;
+	      case pr_shaper:
+		ff_post_error(_("Preferences"),
+		    _("Shaper preference is not implemented in contextual preferences"));
+	      break;
 	    }
-	    ++line;
 	    hvarray[si++] = NULL;
 
     }

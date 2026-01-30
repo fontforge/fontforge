@@ -613,7 +613,7 @@ static void dumpPattern(void (*dumpchar)(int ch,void *data), void *data,
 	/*  and can't live in the content stream, so they are done elsewhere */
     } else {
 	if ( pattern_sc==NULL )
-	    LogError(_("No glyph named %s, used as a pattern in %s\n"), pat->pattern, sc->name);
+	    LogError(_("No glyph named %s, used as a pattern in %s"), pat->pattern, sc->name);
 	PatternSCBounds(pattern_sc,&b);
 
 	dumpf(dumpchar,data, "<<\n" );
@@ -1714,7 +1714,7 @@ static void dumpfontinfo(void (*dumpchar)(int ch,void *data), void *data, Spline
 	dumpf(dumpchar,data," /FSType %d def\n", sf->pfminfo.fstype );
     if ( sf->subfontcnt==0 ) {
 	dumpf(dumpchar,data," /ItalicAngle %g def\n", (double) sf->italicangle );
-	dumpf(dumpchar,data," /isFixedPitch %s def\n", SFOneWidth(sf)!=-1?"true":"false" );
+	dumpf(dumpchar,data," /isFixedPitch %s def\n", SFIsFixedWidth(sf)?"true":"false" );
 	if ( format==ff_type42 || format==ff_type42cid ) {
 	    if ( sf->upos )
 		dumpf(dumpchar,data," /UnderlinePosition %g def\n", (double) (sf->upos/(sf->ascent+sf->descent)) );
@@ -2720,7 +2720,7 @@ int PSBitmapDump(char *filename,BDFFont *font, EncMap *map) {
     }
     file = fopen(filename,"w" );
     if ( file==NULL )
-	LogError( _("Can't open %s\n"), filename );
+	LogError( _("Can't open %s"), filename );
     else {
     	for ( i=0; i<font->glyphcnt; i++ ) if ( font->glyphs[i] != NULL )
     	    BCPrepareForOutput( font->glyphs[i],true );

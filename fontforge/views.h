@@ -39,12 +39,14 @@
 #include "ggadget.h"
 #include "multidialog.h"
 #include "search.h"
-
+#include "metrics.h"
 
 struct gfi_data;
 struct contextchaindlg;
 struct statemachinedlg;
 
+/* Dummy incomplete type which can be casted to C++ type ff::shapers::IShaper */
+typedef struct cpp_IShaper cpp_IShaper;
 
 extern struct cvshows {
     int showfore, showback, showgrids, showhhints, showvhints, showdhints;
@@ -187,7 +189,6 @@ typedef struct charview {
     unsigned int needsrasterize:1;		/* Rasterization (of fill or fontview) needed on mouse up */
     unsigned int recentchange:1;		/* a change happened in the grids or background. don't need to rasterize */
     unsigned int info_within: 1;		/* cursor is within main window */
-    unsigned int back_img_out_of_date: 1;	/* Force redraw of back image pixmap */
     unsigned int cntrldown:1;
     unsigned int joinvalid:1;
     unsigned int widthsel:1;
@@ -236,7 +237,6 @@ typedef struct charview {
     int end_intersection_snapped;
     GFont *rfont;
     GTimer *pressed;
-    GWindow backimgs;
     GIC *gic;
     GIC *gwgic;
     int width, height;
@@ -252,8 +252,6 @@ typedef struct charview {
     GPoint e;					/* mouse location */
     GPoint olde;
     BasePoint last_c;
-    BDFChar *filled;
-    GImage gi;					/* used for fill bitmap only */
     int enc;
     EncMap *map_of_enc;				/* Only use for comparison against fontview's map to see if our enc be valid */
 						/*  Will not be updated when fontview is reencoded */
@@ -365,13 +363,9 @@ struct aplist { AnchorPoint *ap; int connected_to, selected; struct aplist *next
 enum mv_grids { mv_hidegrid, mv_showgrid, mv_partialgrid, mv_hidemovinggrid };
 enum mv_type { mv_kernonly, mv_widthonly, mv_kernwidth };
 
-struct metricchar {
-    int16_t dx, dwidth;	/* position and width of the displayed char */
-    int16_t dy, dheight;	/*  displayed info for vertical metrics */
-    int xoff, yoff;
-    int16_t mx, mwidth;	/* position and width of the text underneath */
-    int16_t kernafter;
+struct metrics_ui {
     unsigned int selected: 1;
+    int16_t mx, mwidth;	/* position and width of the text underneath */
     GGadget *width, *lbearing, *rbearing, *kern, *name;
     GGadget* updownkparray[10]; /* Cherry picked elements from width...kern allowing up/down key navigation */
 };
@@ -399,7 +393,8 @@ typedef struct metricsview {
     int16_t cmax, clen;
     SplineChar **chars;		/* Character input stream */
     struct opentype_str *glyphs;/* after going through the various gsub/gpos transformations */
-    struct metricchar *perchar;	/* One for each glyph above */
+    struct metrics_core *metrics; /* Position and advance values, one for each glyph above */
+    struct metrics_ui *perchar;	/* UI widgets and state, one for each glyph above */
     SplineChar **sstr;		/* Character input stream */
     int16_t mwidth, mbase;
     int16_t glyphcnt, max;
@@ -430,9 +425,10 @@ typedef struct metricsview {
     int ptsize, dpi;
     int ybaseline;
     int oldscript, oldlang;
+    cpp_IShaper* shaper;
 } MetricsView;
 
-enum fv_metrics { fvm_baseline=1, fvm_origin=2, fvm_advanceat=4, fvm_advanceto=8 };
+enum fv_metrics { fvm_baseline=1, fvm_origin=2, fvm_advanceat=4, fvm_advanceto=8, fvm_contour=16  };
 typedef struct fontview {
     FontViewBase b;
     BDFFont *show, *filled;
@@ -456,7 +452,7 @@ typedef struct fontview {
     unsigned int wasonlybitmaps:1;
     /*unsigned int refstate: 3;*/	/* 0x1 => paste orig of all non exist refs, 0x2=>don't, 0x3 => don't warn about non-exist refs with no source font */
     unsigned int touched: 1;
-    unsigned int showhmetrics: 4;
+    unsigned int showhmetrics: 5;
     unsigned int showvmetrics: 4;
     unsigned int drag_and_drop: 1;
     unsigned int has_dd_no_cursor: 1;
@@ -879,6 +875,8 @@ extern void CVDrawSplineSetSpecialized( CharView *cv, GWindow pixmap, SplinePoin
 					Color AlphaChannelOverride );
 extern void CVDrawSplineSet(CharView *cv, GWindow pixmap, SplinePointList *set,
 	Color fg, int dopoints, DRect *clip );
+extern void CVDrawSplinePointList(CharView *cv, GWindow pixmap, SplinePointList *set, Color fg,
+                           enum outlinesfm_flags strokeFillMode, float xoff, float yoff, real scale);
 extern void CVDrawSplineSetOutlineOnly(CharView *cv, GWindow pixmap, SplinePointList *set,
 	Color fg, int dopoints, DRect *clip, enum outlinesfm_flags strokeFillMode );
 extern GWindow CVMakeTools(CharView *cv);
@@ -949,7 +947,7 @@ extern void PI_ShowHints(SplineChar *sc, GGadget *list, int set);
 extern GTextInfo *SCHintList(SplineChar *sc,HintMask *);
 extern void CVResize(CharView *cv );
 extern CharView *CharViewCreate(SplineChar *sc,FontView *fv,int enc);
-extern void CharViewFinishNonStatic();
+extern void CharViewFinishNonStatic(void);
 
 /**
  * Extended version of CharViewCreate() which allows a window to be created but
@@ -1075,7 +1073,7 @@ extern int GotoChar(SplineFont *sf,EncMap *map, int *merge_with_selection);
 
 extern void CVShowPoint(CharView *cv, BasePoint *me);
 
-extern void BitmapViewFinishNonStatic();
+extern void BitmapViewFinishNonStatic(void);
 extern BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv,int enc);
 extern BitmapView *BitmapViewCreatePick(int enc, FontView *fv);
 extern void BitmapViewFree(BitmapView *bv);
@@ -1091,11 +1089,12 @@ extern void MVSetSCs(MetricsView *mv, SplineChar **scs);
 extern void MVRefreshChar(MetricsView *mv, SplineChar *sc);
 extern void MVRegenChar(MetricsView *mv, SplineChar *sc);
 extern void MVReKern(MetricsView *mv);
-extern void MetricsViewFinishNonStatic();
+extern void MetricsViewFinishNonStatic(void);
 extern MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf);
 extern void MetricsViewFree(MetricsView *mv);
 extern void MVRefreshAll(MetricsView *mv);
 extern void MV_FriendlyFeatures(GGadget *g, int pos);
+extern GTextInfo *GetShaperList(int* p_default);
 extern GTextInfo *SLOfFont(SplineFont *sf);
 
 extern void DoPrefs(void);
@@ -1313,7 +1312,7 @@ extern void CVColInit( void );
 extern void BVColInit( void );
 
 extern void FontViewRemove(FontView *fv);
-extern void FontViewFinishNonStatic();
+extern void FontViewFinishNonStatic(void);
 extern void FVChar(FontView *fv,GEvent *event);
 extern void FVDrawInfo(FontView *fv,GWindow pixmap,GEvent *event);
 extern void FVRedrawAllCharViews(FontView *fv);
@@ -1326,7 +1325,6 @@ extern void PI_Destroy(struct dlistnode *node);
 struct gidata;
 extern void PIChangePoint(struct gidata *ci);
 
-extern void CVRegenFill(CharView *cv);
 extern void RulerDlg(CharView *cv);
 extern int  CVCountSelectedPoints(CharView *cv);
 extern void _CVMenuInsertPt(CharView *cv);

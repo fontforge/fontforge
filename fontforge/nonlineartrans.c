@@ -648,6 +648,19 @@ static void SplineSetNLTrans(SplineSet *ss, struct expr_context *c,
     ss->last = last;
 }
 
+static void SCNLTransAnchors(SplineChar *sc, struct expr_context *c, int everything) {
+    AnchorPoint *ap;
+
+    for ( ap=sc->anchor; ap!=NULL; ap=ap->next ) {
+        if ( everything || ap->selected ) {
+            c->x = ap->me.x;
+            c->y = ap->me.y;
+            ap->me.x = NL_expr(c,c->x_expr);
+            ap->me.y = NL_expr(c,c->y_expr);
+        }
+    }
+}
+
 static void _SCNLTrans(SplineChar *sc, struct expr_context *c, int layer) {
     SplineSet *ss;
     RefChar *ref;
@@ -675,6 +688,7 @@ return;
 	    ref->transform[5] = NL_expr(c,c->y_expr);
 	    /* we'll fix up the splines after all characters have been transformed*/
 	}
+    SCNLTransAnchors(sc,c,true);
     }
 }
 
@@ -779,6 +793,7 @@ return;
 	ref->transform[5] = NL_expr(c,c->y_expr);
 	SCReinstanciateRefChar(cv->sc,ref,layer);
     }
+    SCNLTransAnchors(cv->sc,c,false);
     CVCharChangedUpdate(cv);
 }
 

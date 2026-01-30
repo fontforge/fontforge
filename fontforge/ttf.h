@@ -29,6 +29,7 @@
 #define FONTFORGE_TTF_H
 
 #include "psfont.h"		/* for struct fddata */
+#include "std_maps.hpp"
 
 #define MAC_DELETED_GLYPH_NAME	"<Delete>"
 
@@ -734,6 +735,7 @@ struct alltabs {
     EncMap *map;
     struct ttf_table *oldcvt;
     unsigned oldcvtlen;
+    cpp_SubtableMap* subtable_map;
 };
 
 struct subhead { uint16_t first, cnt, delta, rangeoff; };	/* a sub header in 8/16 cmap table */

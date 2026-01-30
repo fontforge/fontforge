@@ -524,7 +524,7 @@ static void svg_dumppattern(FILE *file,struct pattern *pattern,
 	patsubname = strconcat3(scname,"-",pattern->pattern);
 	svg_dumpscdefs(file,pattern_sc,patsubname,false);
     } else
-	LogError(_("No glyph named %s, used as a pattern in %s\n"), pattern->pattern, scname);
+	LogError(_("No glyph named %s, used as a pattern in %s"), pattern->pattern, scname);
 
     fprintf( file, "    <pattern " );
     if ( nested==NULL )
@@ -593,6 +593,10 @@ static void svg_dumpscdefs(FILE *file,SplineChar *sc,const char *name,int istop)
     }
 }
 
+static char* svg_sc_name(SplineChar *sc) {
+    return sc->glif_name ? sc->glif_name : sc->name;
+}
+
 static void svg_dumptype3(FILE *file,SplineChar *sc,const char *name,int istop) {
     int i, j;
     RefChar *ref;
@@ -623,12 +627,12 @@ static void svg_dumptype3(FILE *file,SplineChar *sc,const char *name,int istop) 
 		fprintf(file, "   <g " );
 		transed = ref->layers[j].splines;
 		if ( SSHasClip(transed))
-		    fprintf( file, "clip-path=\"url(#%s-%s-ly%d-clip)\" ", name, ref->sc->name, j );
+		    fprintf( file, "clip-path=\"url(#%s-%s-ly%d-clip)\" ", name, svg_sc_name(ref->sc), j );
 		if ( ref->layers[j].dostroke ) {
-		    svg_dumpstroke(file,&ref->layers[j].stroke_pen,&sc->layers[i].stroke_pen,sc->name,ref->sc,j,istop);
+		    svg_dumpstroke(file,&ref->layers[j].stroke_pen,&sc->layers[i].stroke_pen,svg_sc_name(sc),ref->sc,j,istop);
 		    transed = TransBy(transed,ref->layers[j].stroke_pen.trans);
 		}
-		svg_dumpfill(file,&ref->layers[j].fill_brush,&sc->layers[i].fill_brush,ref->layers[j].dofill,sc->name,ref->sc,j,istop);
+		svg_dumpfill(file,&ref->layers[j].fill_brush,&sc->layers[i].fill_brush,ref->layers[j].dofill,svg_sc_name(sc),ref->sc,j,istop);
 		fprintf( file, ">\n" );
 		fprintf(file, "  <path d=\"\n");
 		svg_pathdump(file,transed,12,!ref->layers[j].dostroke,false);
@@ -706,10 +710,10 @@ static void svg_scpathdump(FILE *file, SplineChar *sc,const char *endpath,int la
 	}
 	if ( needs_defs ) {
 	    fprintf(file, "  <defs>\n" );
-	    svg_dumpscdefs(file,sc,sc->name,true);
+	    svg_dumpscdefs(file,sc,svg_sc_name(sc),true);
 	    fprintf(file, "  </defs>\n" );
 	}
-	svg_dumptype3(file,sc,sc->name,true);
+	svg_dumptype3(file,sc,svg_sc_name(sc),true);
 	fputs(endpath,file);
     }
 }
@@ -779,7 +783,7 @@ static void svg_scdump(FILE *file, SplineChar *sc,int defwid, int encuni, int vs
     if ( sc->comment!=NULL ) {
 	fprintf( file, "\n<!--\n%s\n-->\n",sc->comment );
     }
-    fprintf(file,"    <glyph glyph-name=\"%s\" ",sc->name );
+    fprintf(file,"    <glyph glyph-name=\"%s\" ",svg_sc_name(sc) );
     if ( best!=NULL ) {
 	c = LigCnt(sc->parent,best,univals,sizeof(univals)/sizeof(univals[0]));
 	fputs("unicode=\"",file);
@@ -888,7 +892,7 @@ static void svg_dumpkerns(FILE *file,SplineFont *sf,int isv) {
 		else
 		    fprintf( file, "u1=\"&#x%x;\" ", sf->glyphs[i]->unicodeenc );
 		if ( kp->sc->unicodeenc==-1 || HasLigature(kp->sc))
-		    fprintf( file, "g2=\"%s\" ", kp->sc->name );
+		    fprintf( file, "g2=\"%s\" ", svg_sc_name(kp->sc) );
 		else if ( kp->sc->unicodeenc>='A' && kp->sc->unicodeenc<='z' )
 		    fprintf( file, "u2=\"%c\" ", kp->sc->unicodeenc );
 		else
@@ -1560,7 +1564,7 @@ static SplineSet *SVGParsePath(xmlChar *path) {
 		    SVGTraceArc(cur,&current,x,y,rx,ry,axisrot,large_arc,sweep);
 	      break;
 	      default:
-		LogError( _("Unknown type '%c' found in path specification\n"), type );
+		LogError( _("Unknown type '%c' found in path specification"), type );
 	      break;
 	    }
 	}
@@ -2262,7 +2266,7 @@ static int xmlParseColor(xmlChar *name,uint32_t *color, char **url,struct svg_st
 	else if ( name[0]=='#' ) {
 	    unsigned int temp=0;
 	    if ( sscanf( (char *) name, "#%x", &temp )!=1 )
-		LogError( _("Bad hex color spec: %s\n"), (char *) name );
+		LogError( _("Bad hex color spec: %s"), (char *) name );
 	    if ( strlen( (char *) name)==4 ) {
 		*color = (((temp&0xf00)*0x11)<<8) |
 			 (((temp&0x0f0)*0x11)<<4) |
@@ -2274,7 +2278,7 @@ static int xmlParseColor(xmlChar *name,uint32_t *color, char **url,struct svg_st
 	} else if ( strncmp( (char *) name, "rgb(",4)==0 ) {
 	    float r=0,g=0,b=0;
 	    if ( sscanf((char *)name + 4, "%g,%g,%g", &r, &g, &b )!=3 )
-		LogError( _("Bad RGB color spec: %s\n"), (char *) name );
+		LogError( _("Bad RGB color spec: %s"), (char *) name );
 	    if ( strchr((char *) name,'.')!=NULL ) {
 		if ( r>=1 ) r = 1; else if ( r<0 ) r=0;
 		if ( g>=1 ) g = 1; else if ( g<0 ) g=0;
@@ -2294,7 +2298,7 @@ static int xmlParseColor(xmlChar *name,uint32_t *color, char **url,struct svg_st
 	    *url = copy( (char *) name);
 	    *color = COLOR_INHERITED;
 	} else {
-	    LogError( _("Failed to parse color %s\n"), (char *) name );
+	    LogError( _("Failed to parse color %s"), (char *) name );
 	    *color = COLOR_INHERITED;
 	}
     }
@@ -2372,7 +2376,7 @@ return( NULL );
 	    strcmp(mimetype,"image/bmp")==0 )
 	/* These we support (if we've got the libraries) */;
     else {
-	LogError(_("Unsupported mime type in data URI: %s\n"), mimetype );
+	LogError(_("Unsupported mime type in data URI: %s"), mimetype );
 return( NULL );
     }
     tmp = GFileTmpfile();
@@ -2436,7 +2440,7 @@ static Entity *SVGParseImage(xmlNodePtr svg) {
     if ( val==NULL )
 return( NULL );
     if ( strncmp((char *) val,"data:",5)!=0 ) {
-	LogError(_("FontForge only supports embedded images in data: URIs\n"));
+	LogError(_("FontForge only supports embedded images in data: URIs"));
 	free(val);
 return( NULL );		/* I can only handle data URIs */
     }
@@ -2800,7 +2804,7 @@ void SCDimensionFromSVG(xmlNodePtr svg, SplineChar *sc, bool vert) {
 
 void SCDimensionFromSVGFile(const char *path, SplineChar *sc, bool vert) {
     xmlDocPtr doc;
-    xmlNodePtr svg;
+    xmlNodePtr svg = NULL;
     doc = xmlParseFile(path);
     if (doc != NULL)
 	svg = xmlDocGetRootElement(doc);
@@ -2888,12 +2892,77 @@ static void SVGParseGlyphBody(SplineChar *sc, xmlNodePtr glyph,
     SCCategorizePoints(sc);
 }
 
+static int SVGGetUnicodeEnc(xmlChar *unicode, xmlChar *arabic_form, xmlChar *glyphname) {
+    int unicodeenc = -1;
+    if (unicode != NULL && unicode[0] != '\0') {
+	uint32_t *u = utf82u_copy((char *) unicode);
+	if ( u[1]=='\0' ) {
+	    unicodeenc = u[0];
+	    if ( arabic_form!=NULL && u[0]>=0x600 && u[0]<=0x6ff ) {
+		const struct arabicforms* aform = arabicform(u[0]);
+		if ( xmlStrcmp(arabic_form,(xmlChar *) "initial")==0 )
+		    unicodeenc = aform->initial;
+		else if ( xmlStrcmp(arabic_form,(xmlChar *) "medial")==0 )
+		    unicodeenc = aform->medial;
+		else if ( xmlStrcmp(arabic_form,(xmlChar *) "final")==0 )
+		    unicodeenc = aform->final;
+		else if ( xmlStrcmp(arabic_form,(xmlChar *) "isolated")==0 )
+		    unicodeenc = aform->isolated;
+	    }
+	}
+	free(u);
+    }
+    if (unicodeenc == -1 && glyphname != NULL)
+	unicodeenc = UniFromName((char *) glyphname,ui_none,&custom);
+
+    return unicodeenc;
+}
+
+/* This function should never return NULL or empty string. */
+static char* SVGGetGlyphName(xmlChar *glyphname, xmlChar *orientation,
+	int unicodeenc, unsigned int glyph_idx, bool* glyphname_valid) {
+    char* name = NULL;
+    bool has_vert_suffix = false;
+    unsigned int name_len = 0, vert_len = 0;
+    *glyphname_valid = false;
+
+    if ( glyphname!=NULL ) {
+        /* Check name validity. */
+        unichar_t *uname = utf82u_copy((char *) glyphname);
+        if (SCNameCheck(uname, NULL) == NULL) {
+            name = copy((char *) glyphname);
+	    *glyphname_valid = true;
+	}
+        free(uname);
+    }
+
+    /* Get name from unicode value. */
+    if (name == NULL) {
+        char buffer[40];
+        if (unicodeenc == -1)
+            name = smprintf("glyph%d", glyph_idx);
+        else
+            name = copy(StdGlyphName(buffer,unicodeenc,ui_none,NULL));
+    }
+
+    name_len = strlen(name);
+    vert_len = strlen(".vert");
+    has_vert_suffix = (name_len >= vert_len) &&
+                      (strcmp(".vert", name + name_len - vert_len) == 0);
+    if (!has_vert_suffix && orientation != NULL && *orientation == 'v') {
+        char* new_name = smprintf("%s.vert", name);
+        free(name);
+        name = new_name;
+    }
+
+    return name;
+}
+
 static SplineChar *SVGParseGlyphArgs(xmlNodePtr glyph,int defh, int defv,
-	SplineFont *sf) {
+	SplineFont *sf, unsigned int glyph_idx) {
     SplineChar *sc = SFSplineCharCreate(sf);
     xmlChar *name, *form, *glyphname, *unicode, *orientation;
-    uint32_t *u;
-    char buffer[100];
+    bool glyphname_valid = false;
 
     name = xmlGetProp(glyph,(xmlChar *) "horiz-adv-x");
     if ( name!=NULL ) {
@@ -2919,50 +2988,27 @@ static SplineChar *SVGParseGlyphArgs(xmlNodePtr glyph,int defh, int defv,
     unicode = xmlGetProp(glyph,(xmlChar *) "unicode");
     glyphname = xmlGetProp(glyph,(xmlChar *) "glyph-name");
     orientation = xmlGetProp(glyph,(xmlChar *) "orientation");
-    if ( unicode!=NULL ) {
 
-	u = utf82u_copy((char *) unicode);
-	xmlFree(unicode);
-	if ( u[1]=='\0' ) {
-	    sc->unicodeenc = u[0];
-	    if ( form!=NULL && u[0]>=0x600 && u[0]<=0x6ff ) {
-		const struct arabicforms* aform = arabicform(u[0]);
-		if ( xmlStrcmp(form,(xmlChar *) "initial")==0 )
-		    sc->unicodeenc = aform->initial;
-		else if ( xmlStrcmp(form,(xmlChar *) "medial")==0 )
-		    sc->unicodeenc = aform->medial;
-		else if ( xmlStrcmp(form,(xmlChar *) "final")==0 )
-		    sc->unicodeenc = aform->final;
-		else if ( xmlStrcmp(form,(xmlChar *) "isolated")==0 )
-		    sc->unicodeenc = aform->isolated;
-	    }
-	}
-	free(u);
+    sc->unicodeenc = SVGGetUnicodeEnc(unicode, form, glyphname);
+    sc->name = SVGGetGlyphName(glyphname, orientation, sc->unicodeenc, glyph_idx, &glyphname_valid);
+    if (!glyphname_valid && glyphname && glyphname[0] != '\0') {
+	/* Preserve the original glyph name and use it for SVG export.  */
+	free(sc->glif_name);
+	sc->glif_name = copy((char *) glyphname);
     }
-    if ( glyphname!=NULL ) {
-	if ( sc->unicodeenc==-1 )
-	    sc->unicodeenc = UniFromName((char *) glyphname,ui_none,&custom);
-	sc->name = copy((char *) glyphname);
-	xmlFree(glyphname);
-    } else if ( orientation!=NULL && *orientation=='v' && sc->unicodeenc!=-1 ) {
-	if ( sc->unicodeenc<0x10000 )
-	    sprintf( buffer, "uni%04X.vert", sc->unicodeenc );
-	else
-	    sprintf( buffer, "u%04X.vert", sc->unicodeenc );
-	sc->name = copy( buffer );
-    }
-    /* we finish off defaulting the glyph name in the parseglyph routine */
-    if ( form!=NULL )
-	xmlFree(form);
-    if ( orientation!=NULL )
-	xmlFree(orientation);
-return( sc );
+
+    xmlFree(form);
+    xmlFree(unicode);
+    xmlFree(glyphname);
+    xmlFree(orientation);
+    return sc;
 }
 
 static SplineChar *SVGParseMissing(SplineFont *sf,xmlNodePtr notdef,int defh,
                                    int defv, int enc, ImportParams *ip) {
-    SplineChar *sc = SVGParseGlyphArgs(notdef,defh,defv,sf);
+    SplineChar *sc = SVGParseGlyphArgs(notdef,defh,defv,sf,enc);
     sc->parent = sf;
+    free(sc->name);
     sc->name = copy(".notdef");
     sc->unicodeenc = 0;
     SVGParseGlyphBody(sc,notdef,ip);
@@ -2971,16 +3017,8 @@ return( sc );
 
 static SplineChar *SVGParseGlyph(SplineFont *sf,xmlNodePtr glyph,int defh,
                                  int defv, int enc, ImportParams *ip) {
-    char buffer[400];
-    SplineChar *sc = SVGParseGlyphArgs(glyph,defh,defv,sf);
+    SplineChar *sc = SVGParseGlyphArgs(glyph,defh,defv,sf,enc);
     sc->parent = sf;
-    if ( sc->name==NULL ) {
-	if ( sc->unicodeenc==-1 ) {
-	    sprintf( buffer, "glyph%d", enc);
-	    sc->name = copy(buffer);
-	} else
-	    sc->name = copy(StdGlyphName(buffer,sc->unicodeenc,ui_none,NULL));
-    }
     SVGParseGlyphBody(sc,glyph,ip);
 return( sc );
 }
@@ -2993,7 +3031,7 @@ static void SVGLigatureFixupCheck(SplineChar *sc,xmlNodePtr glyph) {
     char *comp, *pt;
 
     unicode = xmlGetProp(glyph,(xmlChar *) "unicode");
-    if ( unicode!=NULL ) {
+    if (unicode != NULL && unicode[0] != '\0') {
 	u = utf82u_copy((char *) unicode);
 	xmlFree(unicode);
 	if ( u[1]!='\0' && u[2]=='\0' &&
@@ -3256,7 +3294,7 @@ static SplineFont *SVGParseFont(xmlNodePtr font) {
 		if ( defh==0 ) defh = val;
 		SFDefaultOS2Simple(&sf->pfminfo,sf);
 	    } else {
-		LogError( _("This font does not specify units-per-em\n") );
+		LogError( _("This font does not specify units-per-em") );
 		SplineFontFree(sf);
 		ip->default_joinlimit = tmpjl;
 return( NULL );
@@ -3392,7 +3430,7 @@ return( NULL );
 	    ++cnt;
     }
     if ( !has_font_face ) {
-	LogError( _("This font does not specify font-face\n") );
+	LogError( _("This font does not specify font-face") );
 	SplineFontFree(sf);
 	ip->default_joinlimit = tmpjl;
 return( NULL );
@@ -3597,7 +3635,7 @@ static SplineFont *_SFReadSVG(xmlDocPtr doc, char *filename) {
 
     fonts = FindSVGFontNodes(doc);
     if ( fonts==NULL || fonts[0]==NULL ) {
-	LogError( _("This file contains no SVG fonts.\n") );
+	LogError( _("This file contains no SVG fonts.") );
 	xmlFreeDoc(doc);
 return( NULL );
     }
@@ -3721,7 +3759,7 @@ return( NULL );
 
     top = xmlDocGetRootElement(doc);
     if ( xmlStrcmp(top->name,(xmlChar *) "svg")!=0 ) {
-	LogError( _("%s does not contain an <svg> element at the top\n"), filename);
+	LogError( _("%s does not contain an <svg> element at the top"), filename);
 	xmlFreeDoc(doc);
 return( NULL );
     }

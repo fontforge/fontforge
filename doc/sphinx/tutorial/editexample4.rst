@@ -152,7 +152,7 @@ So the first time you create a ligature glyph you will need to create a lookup
 (and a lookup subtable) in which the information for that glyph will reside. Any
 subsequent ligatures can probably share the same lookup and subtable.
 
-(This may seem like overkill for latin ligatures, and perhaps it is, bt the
+(This may seem like overkill for latin ligatures, and perhaps it is, but the
 complexity is needed for more complex writing systems).
 
 You would open the Lookups pane of the

@@ -775,6 +775,8 @@ return;
     pos.height = GDrawPointsToPixels(NULL,375);
     bd.gw = gw = GDrawCreateTopWindow(NULL,&pos,bdfp_e_h,&bd,&wattrs);
 
+    /* TODO(iorsh): Show read-only BDF properties which are not stored in
+       BDFFont::props, e.g. "FONT_ASCENT", "FONT_DESCENT".  */
     sbwidth = GDrawPointsToPixels(bd.gw,_GScrollBar_Width);
     subpos.x = 0; subpos.y =  GDrawPointsToPixels(NULL,28);
     subpos.width = pos.width-sbwidth;

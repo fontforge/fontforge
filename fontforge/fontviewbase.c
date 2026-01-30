@@ -492,7 +492,6 @@ void BackgroundImageTransform(SplineChar *sc, ImageList *img,real transform[6]) 
 	/* Don't support rotating, flipping or skewing images */
 	;
     }
-    SCOutOfDateBackground(sc);
 }
 
 static void GV_Trans(struct glyphvariants *gv,real transform[6], int is_v) {

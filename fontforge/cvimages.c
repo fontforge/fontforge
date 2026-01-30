@@ -974,7 +974,6 @@ void SCInsertImage(SplineChar *sc,GImage *image,real scale,real yoff,real xoff,
     im->bb.miny = im->yoff - GImageGetHeight(im->image)*im->yscale;
     sc->layers[layer].images = im;
     sc->parent->onlybitmaps = false;
-    SCOutOfDateBackground(sc);
     SCCharChangedUpdate(sc,layer);
 }
 

@@ -1132,7 +1132,7 @@ return( NULL );
 					    macenc==sm_korean ? "EUC-KR" :
 			                    macenc==sm_tradchinese ? "Big5" :
 			                      "EUC-CN" );
-	iconv_t *toutf8;
+	iconv_t toutf8;
 	ICONV_CONST char *in;
 	char *out;
 	size_t inlen, outlen;

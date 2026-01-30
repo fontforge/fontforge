@@ -90,17 +90,9 @@ static void _dousage(void) {
     printf( "\t-quiet\t\t\t (don't print non-essential\n\t\t\t\t  information to stderr)\n" );
     printf( "\t-unique\t\t\t (if a fontforge is already running open all\n\t\t\t\t  arguments in it and have this process exit)\n" );
     printf( "\t-display display-name\t (sets the X display)\n" );
-    printf( "\t-depth val\t\t (sets the display depth if possible)\n" );
-    printf( "\t-vc val\t\t\t (sets the visual class if possible)\n" );
-    printf( "\t-cmap current|copy|private\t (sets the type of colormap)\n" );
-    printf( "\t-dontopenxdevices\t (in case that fails)\n" );
     printf( "\t-sync\t\t\t (syncs the display, debugging)\n" );
-    printf( "\t-keyboard ibm|mac|sun|ppc  (generates appropriate hotkeys in menus)\n" );
 #if MyMemory
     printf( "\t-memory\t\t\t (turns on memory checks, debugging)\n" );
-#endif
-#ifndef _NO_LIBCAIRO
-    printf( "\t-usecairo=yes|no  Use (or not) the cairo library for drawing\n" );
 #endif
     printf( "\t-help\t\t\t (displays this message, and exits)\n" );
     printf( "\t-docs\t\t\t (displays this message, invokes a browser)\n\t\t\t\t (Using the BROWSER environment variable)\n" );
@@ -263,11 +255,6 @@ static void SplashLayout() {
 #endif
 #ifdef FONTFORGE_CONFIG_USE_DOUBLE
     uc_strcat(pt,"-D");
-#endif
-#ifdef FONTFORGE_CAN_USE_GDK
-    uc_strcat(pt, "-GDK3");
-#else
-    uc_strcat(pt,"-X11");
 #endif
     pt += u_strlen(pt);
     lines[linecnt++] = pt;
@@ -489,20 +476,6 @@ return( true );
 return( true );
 }
 
-static void  AddR(char *program_name, char *window_name, char *cmndline_val) {
-/* Add this command line value to this GUI resource.			*/
-/* These are the command line options expected when using this routine:	*/
-/*	-depth, -vc,-cmap or -colormap,-dontopenxdevices, -keyboard	*/
-    char *full;
-    if ((full = malloc(strlen(window_name)+strlen(cmndline_val)+4))!=NULL) {
-	strcpy(full,window_name);
-	strcat(full,": ");
-	strcat(full,cmndline_val);
-	GResourceAddResourceString(full,program_name);
-	free(full);
-    }
-}
-
 static int ReopenLastFonts(void) {
     char buffer[1024];
     char *ffdir = getFontForgeUserDir(Config);
@@ -555,7 +528,7 @@ static void ensureDotFontForgeIsSetup() {
     free(basedir);
 }
 
-#if defined(__MINGW32__) && !defined(_NO_LIBCAIRO)
+#if defined(__MINGW32__)
 /**
  * \brief Load fonts from the specified folder for the UI to use.
  * This should only be used if Cairo is used on Windows, which defaults to the
@@ -657,12 +630,6 @@ int fontforge_main( int argc, char **argv ) {
 #ifdef FONTFORGE_CONFIG_USE_DOUBLE
 	        "-D"
 #endif
-#ifdef FONTFORGE_CAN_USE_GDK
-            "-GDK3"
-#endif
-#ifdef BUILT_WITH_XORG
-            "-Xorg"
-#endif
 	        ".\n",
 	        FONTFORGE_MODTIME_STR );
         // Can be empty if e.g. building from a tarball
@@ -755,29 +722,13 @@ int fontforge_main( int argc, char **argv ) {
 	    ++pt;
 	if ( strcmp(pt,"-sync")==0 )
 	    GResourceAddResourceString("Gdraw.Synchronize: true",argv[0]);
-	else if ( strcmp(pt,"-depth")==0 && i<argc-1 )
-	    AddR(argv[0],"Gdraw.Depth", argv[++i]);
-	else if ( strcmp(pt,"-vc")==0 && i<argc-1 )
-	    AddR(argv[0],"Gdraw.VisualClass", argv[++i]);
-	else if ( (strcmp(pt,"-cmap")==0 || strcmp(pt,"-colormap")==0) && i<argc-1 )
-	    AddR(argv[0],"Gdraw.Colormap", argv[++i]);
-	else if ( (strcmp(pt,"-dontopenxdevices")==0) )
-	    AddR(argv[0],"Gdraw.DontOpenXDevices", "true");
-	else if ( strcmp(pt,"-keyboard")==0 && i<argc-1 )
-	    AddR(argv[0],"Gdraw.Keyboard", argv[++i]);
 	else if ( strcmp(pt,"-display")==0 && i<argc-1 )
 	    display = argv[++i];
 # if MyMemory
 	else if ( strcmp(pt,"-memory")==0 )
 	    __malloc_debug(5);
 # endif
-	else if ( strncmp(pt,"-usecairo",strlen("-usecairo"))==0 ) {
-	    if ( strcmp(pt,"-usecairo=no")==0 )
-	        use_cairo = false;
-	    else
-	        use_cairo = true;
-	    GDrawEnableCairo(use_cairo);
-	} else if ( strcmp(pt,"-nosplash")==0 )
+	else if ( strcmp(pt,"-nosplash")==0 )
 	    splash = 0;
 	else if ( strcmp(pt,"-quiet")==0 )
 	    /* already checked for this earlier, no need to do it again */;
@@ -816,12 +767,10 @@ int fontforge_main( int argc, char **argv ) {
 	else if ( strcmp(pt,"-home")==0 )
 	    /* already did a chdir earlier, don't need to do it again */;
     }
-#ifdef FONTFORGE_CAN_USE_GDK
     gdk_set_allowed_backends("win32,quartz,x11");
-    gdk_init(&argc, &argv);
-#endif
+    gtk_init(&argc, &argv);
     ensureDotFontForgeIsSetup();
-#if defined(__MINGW32__) && !defined(_NO_LIBCAIRO)
+#if defined(__MINGW32__)
     //Load any custom fonts for the user interface
     if (use_cairo) {
         const char *system_load = getShareDir();
@@ -894,9 +843,7 @@ int fontforge_main( int argc, char **argv ) {
     wattrs.utf8_window_title = "FontForge";
     wattrs.border_width = 2;
     wattrs.background_color = splashbg;
-#ifdef FONTFORGE_CAN_USE_GDK
     wattrs.is_dlg = true;
-#endif
     pos.x = pos.y = 200;
     SplashImageInit();
     pos.width = splashimagep->u.image->width;
@@ -966,15 +913,11 @@ exit( 0 );
 	} else if ( strcmp(pt,"-sync")==0 || strcmp(pt,"-memory")==0 ||
 		    strcmp(pt,"-nosplash")==0 || strcmp(pt,"-recover=none")==0 ||
 		    strcmp(pt,"-recover=clean")==0 || strcmp(pt,"-recover=auto")==0 ||
-		    strcmp(pt,"-dontopenxdevices")==0 || strcmp(pt,"-unique")==0 ||
-		    strncmp(pt,"-usecairo",strlen("-usecairo"))==0 ||
+		    strcmp(pt,"-unique")==0 ||
 		    strcmp(pt,"-home")==0 || strcmp(pt,"-quiet")==0
 		    || strcmp(pt,"-forceuihidden")==0 )
 	    /* Already done, needed to be before display opened */;
-	else if ( (strcmp(pt,"-depth")==0 || strcmp(pt,"-vc")==0 ||
-		    strcmp(pt,"-cmap")==0 || strcmp(pt,"-colormap")==0 ||
-		    strcmp(pt,"-keyboard")==0 ||
-		    strcmp(pt,"-display")==0 || strcmp(pt,"-recover")==0 ) &&
+	else if ( ( strcmp(pt,"-display")==0 || strcmp(pt,"-recover")==0 ) &&
 		i<argc-1 )
 	    ++i; /* Already done, needed to be before display opened */
 	else if ( strcmp(pt,"-allglyphs")==0 )

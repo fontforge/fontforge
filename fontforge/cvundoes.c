@@ -93,6 +93,11 @@ return( NULL );
 	free(new->layers);
 	*new = *crefs;
 	new->layers = calloc(new->layer_cnt,sizeof(struct reflayer));
+	for ( layer=0; layer<new->layer_cnt; ++layer ) {
+	    new->layers[layer] = crefs->layers[layer];
+	    new->layers[layer].splines = SplinePointListCopy(crefs->layers[layer].splines);
+	    new->layers[layer].images = NULL;
+	}
 	new->next = NULL;
 	if ( last==NULL )
 	    head = last = new;
@@ -932,7 +937,6 @@ static void SCUndoAct(SplineChar *sc,int layer, Undoes *undo) {
 	undo->u.state.hints = hints;
 	undo->u.state.instrs = instrs;
 	undo->u.state.instrs_len = instrs_len;
-	SCOutOfDateBackground(sc);
       } break;
       case ut_state: case ut_tstate: case ut_statehint: case ut_statename: {
 	Layer *head = layer==ly_grid ? &sc->parent->grid : &sc->layers[layer];
@@ -981,7 +985,6 @@ static void SCUndoAct(SplineChar *sc,int layer, Undoes *undo) {
 	    ImageList *images = ImageListCopy(head->images);
 	    FixupImages(sc,undo->u.state.images,layer);
 	    undo->u.state.images = images;
-	    SCOutOfDateBackground(sc);
 	}
 	undo->u.state.splines = spl;
 	if ( undo->u.state.lbearingchange ) {
@@ -1086,6 +1089,7 @@ void _CVRestoreTOriginalState(CharViewBase *cv,PressedOn *p) {
 		    SplinePointListFree(cv->layerheads[cv->drawmode]->splines);
 		    cv->layerheads[cv->drawmode]->splines = SplinePointListCopy(undo->u.state.splines);
 		    memcpy(&ref->transform,&uref->transform,sizeof(ref->transform));
+		    ref->layers[j].splines = SplinePointListCopy(uref->layers[j].splines);
 		}
     }
     for ( img=cv->layerheads[cv->drawmode]->images, uimg=undo->u.state.images; uimg!=NULL;
@@ -2362,8 +2366,7 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 	if ( !pasteinto ) {
 	    if ( !sc->layers[layer].background &&
 		    SCWasEmpty(sc,pasteinto==0?layer:-1) ) {
-		if ( !sc->parent->onlybitmaps )
-		    SCSynchronizeWidth(sc,width,sc->width,fv);
+		SCSynchronizeWidth(sc,width,sc->width,fv);
 		sc->vwidth = vwidth;
 	    }
 	    SplinePointListsFree(sc->layers[layer].splines);
@@ -2456,7 +2459,6 @@ static void _PasteToSC(SplineChar *sc,Undoes *paster,FontViewBase *fv,int pastei
 		new->next = sc->layers[layer].images;
 		sc->layers[layer].images = new;
 	    }
-	    SCOutOfDateBackground(sc);
 	}
 	if ( (paster->undotype==ut_statehint || paster->undotype==ut_statename ) &&
 		!sc->layers[layer].background ) {
@@ -3052,7 +3054,6 @@ return;
 		new->next = cvsc->layers[ly].images;
 		cvsc->layers[ly].images = new;
 	    }
-	    SCOutOfDateBackground(cvsc);
 	} else if ( paster->undotype==ut_statehint && cv->container==NULL &&
 		!cv->layerheads[cv->drawmode]->background ) {
 	    ExtractHints(cvsc,paster->u.state.hints,true);
@@ -3416,7 +3417,7 @@ void FVCopyWidth(FontViewBase *fv,enum undotype ut) {
     copybuffer.u.multiple.mult = head;
     copybuffer.copied_from = fv->sf;
     if ( !any )
-	LogError( _("No selection\n") );
+	LogError( _("No selection") );
 }
 
 void FVCopyAnchors(FontViewBase *fv) {
@@ -3444,7 +3445,7 @@ void FVCopyAnchors(FontViewBase *fv) {
     copybuffer.u.multiple.mult = head;
     copybuffer.copied_from = fv->sf;
     if ( !any )
-	LogError( _("No selection\n") );
+	LogError( _("No selection") );
 }
 
 void FVCopy(FontViewBase *fv, enum fvcopy_type fullcopy) {

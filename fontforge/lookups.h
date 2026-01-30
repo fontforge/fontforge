@@ -4,6 +4,8 @@
 #include "splinefont.h"
 #include "uiinterface.h"
 
+typedef struct cpp_SubtableMap cpp_SubtableMap;
+
 struct sllk {
 	uint32_t script;
 	int cnt;
@@ -68,18 +70,19 @@ extern OTLookup *OTLookupCopyInto(SplineFont *into_sf, SplineFont *from_sf, OTLo
 extern OTLookup *SFFindLookup(SplineFont *sf, const char *name);
 extern OTLookup **SFLookupsInScriptLangFeature(SplineFont *sf, int gpos, uint32_t script, uint32_t lang, uint32_t feature);
 extern SplineChar **SFGlyphsWithLigatureinLookup(SplineFont *sf, struct lookup_subtable *subtable);
-extern SplineChar **SFGlyphsWithPSTinSubtable(SplineFont *sf, struct lookup_subtable *subtable);
+extern void SFCollectSubtableMap(SplineFont *sf, cpp_SubtableMap *map);
+extern SplineChar **SFGlyphsWithPSTinSubtable(SplineFont *sf, struct lookup_subtable *subtable, cpp_SubtableMap *map);
 extern struct lookup_subtable *SFFindLookupSubtableAndFreeName(SplineFont *sf, char *name);
 extern struct lookup_subtable *SFSubTableFindOrMake(SplineFont *sf, uint32_t tag, uint32_t script, int lookup_type);
 extern struct lookup_subtable *SFSubTableMake(SplineFont *sf, uint32_t tag, uint32_t script, int lookup_type);
-extern struct opentype_str *ApplyTickedFeatures(SplineFont *sf, uint32_t *flist, uint32_t script, uint32_t lang, int pixelsize, SplineChar **glyphs);
+extern struct opentype_str *ApplyTickedFeatures(SplineFont *sf, uint32_t *flist, uint32_t script, uint32_t lang, bool gpos_only, int pixelsize, SplineChar **glyphs);
 extern struct scriptlanglist *DefaultLangTagInScriptList(struct scriptlanglist *sl, int DFLT_ok);
 extern struct scriptlanglist *SLCopy(struct scriptlanglist *sl);
 extern struct scriptlanglist *SListCopy(struct scriptlanglist *sl);
 extern struct sllk *AddOTLToSllks(OTLookup *otl, struct sllk *sllk, int *_sllk_cnt, int *_sllk_max);
 extern uint32_t *SFFeaturesInScriptLang(SplineFont *sf, int gpos, uint32_t script, uint32_t lang);
 extern uint32_t *SFLangsInScript(SplineFont *sf, int gpos, uint32_t script);
-extern uint32_t *SFScriptsInLookups(SplineFont *sf, int gpos);
+extern uint32_t *SFScriptsInLookups(SplineFont *sf);
 extern void AddNewAALTFeatures(SplineFont *sf);
 extern void FF_SetFIInterface(struct fi_interface *fii);
 extern void FListAppendScriptLang(FeatureScriptLangList *fl, uint32_t script_tag, uint32_t lang_tag);

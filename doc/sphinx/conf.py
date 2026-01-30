@@ -13,11 +13,11 @@ sys.path.append(os.path.abspath('_extensions'))
 # -- Project information -----------------------------------------------------
 
 project = 'FontForge'
-copyright = '2000-2012 by George Williams, 2012-2020 by FontForge authors'
+copyright = '2000-2012 by George Williams, 2012-2025 by FontForge authors'
 author = 'FontForge authors'
 
 # The full version, including alpha/beta/rc tags
-release = '20230101'
+release = '20251009'
 
 
 # -- General configuration ---------------------------------------------------

@@ -535,7 +535,7 @@ unichar_t *utf82u_strncpy(unichar_t *ubuf,const char *utf8buf,int len) {
 }
 
 unichar_t *utf82u_strcpy(unichar_t *ubuf,const char *utf8buf) {
-return( utf82u_strncpy(ubuf,utf8buf,strlen(utf8buf)+1));
+return( utf82u_strncpy(ubuf,utf8buf,c_strlen(utf8buf)+1));
 }
 
 unichar_t *utf82u_copyn(const char *utf8buf,int len) {
@@ -871,6 +871,64 @@ void utf8_strncpy(register char *to, const char *from, int len) {
     to[old-from] = 0;
 }
 
+uint16_t *u2utf16_strcpy(uint16_t *utf16buf,const unichar_t *ubuf) {
+/* Copy unichar string 'ubuf' into utf16 buffer string 'utf16buf' */
+    uint16_t *pt = utf16buf;
+    unichar_t ch;
+
+    if (utf16buf == NULL || ubuf == NULL)
+        return NULL;
+
+    while ( *ubuf ) {
+        ch = *ubuf++;
+        if (ch <= 0xFFFF)
+            *pt++ = ch;
+        else {
+            /* Encode with surrogate pair */
+            *pt++ = ((ch - 0x10000)>>10) + 0xD800;    /* high surrogate */
+            *pt++ = ((ch - 0x10000)&0x3FF) + 0xDC00;  /* low surrogate */
+        }
+    }
+    *pt = '\0';
+    return( utf16buf );
+}
+
+extern unichar_t *utf162u_strcpy(unichar_t*ubuf, const uint16_t *utf16buf) {
+    unichar_t uch = 0x0, uch2 = 0x0;
+    unichar_t *pt = ubuf;
+
+    if (utf16buf == NULL || ubuf == NULL)
+        return NULL;
+
+    while ( *utf16buf ) {
+        uch = *utf16buf++;
+	if ( uch>=0xd800 && uch<0xdc00 ) {
+	    /* Is this a possible utf16 high surrogate value? */
+	    uch2 = *utf16buf++;
+	    if ( uch2>=0xdc00 && uch2<0xe000 ) /* low surrogate */
+		uch = ((uch-0xd800)<<10 | (uch2&0x3ff)) + 0x10000;
+	    else {
+		*pt++ = uch;
+                if (uch2==0)
+                    break;
+		uch = uch2;
+	    }
+	}
+        *pt++ = uch;
+    }
+    *pt = '\0';
+    return( ubuf );
+}
+
+uint16_t *utf82utf16_copy(const char* utf8buf) {
+    unichar_t *utf32_str = utf82u_copy(utf8buf); /* Convert from utf8 to utf32 */
+    uint16_t *utf16buf = (uint16_t *) malloc(2*(u_strlen(utf32_str)+1)*sizeof(uint16_t));
+    u2utf16_strcpy(utf16buf, utf32_str);
+    free(utf32_str);
+
+    return utf16buf;
+}
+
 char *StripToASCII(const char *utf8_str) {
     /* Remove any non-ascii characters: Special case, convert the copyright symbol to (c) */
     char *newcr, *pt, *end;
@@ -1110,4 +1168,13 @@ char* tostr( int v )
     static char buf[101];
     snprintf(buf,bufsz,"%d",v);
     return buf;
+}
+
+void realloc_tail(char** p_buf, size_t size_delta, char** p_tail,
+                  char** p_proc) {
+    size_t new_size = size_delta + (*p_tail - *p_buf);
+    char* new_buf = realloc(*p_buf, new_size);
+    *p_tail = new_buf + new_size;
+    if (p_proc) *p_proc = new_buf + (*p_proc - *p_buf);
+    *p_buf = new_buf;
 }

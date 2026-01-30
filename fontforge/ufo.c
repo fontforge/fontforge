@@ -35,6 +35,7 @@
 #include "gfile.h"
 #include "glif_name_hash.h"
 #include "lookups.h"
+#include "splinesave.h"
 #include "splinesaveafm.h"
 #include "splineutil.h"
 #include "splineutil2.h"
@@ -355,7 +356,7 @@ xmlDocPtr PlistInit() {
     // Some of this code is pasted from libxml2 samples.
     xmlDocPtr doc = NULL;
     xmlNodePtr root_node = NULL;
-    
+
 
     LIBXML_TEST_VERSION;
 
@@ -575,7 +576,7 @@ xmlNodePtr PythonLibToXML(void *python_persistent, const SplineChar *sc, int has
     xmlNodePtr retval = NULL, dictnode = NULL;
     // retval = xmlNewNode(NULL, BAD_CAST "lib"); //     "<lib>"
     dictnode = xmlNewNode(NULL, BAD_CAST "dict"); //     "  <dict>"
-    if ( has_hints 
+    if ( has_hints
 #ifndef _NO_PYTHON
          || (python_persistent!=NULL && PyMapping_Check((PyObject *)python_persistent))
 #endif
@@ -834,7 +835,7 @@ xmlNodePtr _GlifToXML(const SplineChar *sc, int layer, int version) {
           xmlSetPropPrintf(unicodexml, BAD_CAST "hex", "%04X", altuni->unienc);
         }
         // "<unicode hex=\"%04X\"/>" altuni->unienc
-    
+
 	if (version >= 3) {
 		// Handle the guidelines.
 		GuidelineSet *gl;
@@ -859,7 +860,7 @@ xmlNodePtr _GlifToXML(const SplineChar *sc, int layer, int version) {
 		    if (gl->identifier != NULL)
 		        xmlSetPropPrintf(guidelinexml, BAD_CAST "identifier", "%s", gl->identifier);
 		    // "<guideline/>\n"
-		    
+
 		}
 		// Handle the anchors. Put global anchors only in the foreground layer.
 		if (layer == ly_fore)
@@ -1049,7 +1050,7 @@ void clear_cached_ufo_paths(SplineFont * sf) {
   // First we clear the glif names.
   for (i = 0; i < sf->glyphcnt; i++) {
     struct splinechar * sc = sf->glyphs[i];
-    if (sc->glif_name != NULL) { free(sc->glif_name); sc->glif_name = NULL; }
+    if (sc && sc->glif_name != NULL) { free(sc->glif_name); sc->glif_name = NULL; }
   }
   // Then we clear the layer names.
   for (i = 0; i < sf->layer_cnt; i++) {
@@ -1169,19 +1170,8 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer, int
     if (styleNameSynthetic)
 	    PListAddString(dictnode,"styleName",styleNameSynthetic);
     {
-        char* preferredFamilyName = fetchTTFAttribute(sf,ttf_preffamilyname);
-        char* preferredSubfamilyName = fetchTTFAttribute(sf,ttf_prefmodifiers);
-        char* styleMapFamily = NULL;
-        if (sf->styleMapFamilyName != NULL) {
-            /* Empty styleMapStyleName means we imported a UFO that does not have this field. Bypass the fallback. */
-            if (sf->styleMapFamilyName[0]!='\0')
-                styleMapFamily = sf->styleMapFamilyName;
-        } else if (preferredFamilyName != NULL && preferredSubfamilyName != NULL) {
-            styleMapFamily = malloc(strlen(preferredFamilyName)+strlen(preferredSubfamilyName)+2);
-            strcpy(styleMapFamily, preferredFamilyName);
-            strcat(styleMapFamily, " ");
-            strcat(styleMapFamily, preferredSubfamilyName);
-        } else if (sf->fullname != NULL) styleMapFamily = sf->fullname;
+        char* styleMapFamily = fetchTTFAttribute(sf,ttf_family);
+        if (styleMapFamily == NULL && sf->familyname != NULL) styleMapFamily = sf->familyname;
         if (styleMapFamily != NULL) PListAddString(dictnode,"styleMapFamilyName", styleMapFamily);
     }
     {
@@ -1350,6 +1340,7 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer, int
     /* UniqueID is obsolete */
     PListAddInteger(dictnode,"postscriptUnderlineThickness",sf->uwidth);
     PListAddInteger(dictnode,"postscriptUnderlinePosition",sf->upos);
+    PListAddBoolean(dictnode,"postscriptIsFixedPitch", SFIsFixedWidth(sf));
     if ( sf->private!=NULL ) {
 	char *pt;
 	PListAddPrivateArray(dictnode, "BlueValues", sf->private);
@@ -1978,7 +1969,7 @@ int WriteUFOFontFlex(const char *basedir, SplineFont *sf, enum fontformat ff, in
 	numberedname = NULL;
     }
     glif_name_index_destroy(glif_name_hash); // Close the hash table.
-    
+
     struct glif_name_index * layer_name_hash = glif_name_index_new(); // Open the hash table.
     struct glif_name_index * layer_path_hash = glif_name_index_new(); // Open the hash table.
 
@@ -2228,7 +2219,7 @@ return( Py_BuildValue("d",val));
 	free(contents);
 return( ret );
       }
-      
+
       free( contents );
     }
     if (has_lists) {
@@ -2463,7 +2454,7 @@ static void *UFOLoadGuideline(SplineFont *sf, SplineChar *sc, int layer, xmlDocP
 		what_is_defined |= 0x20;
 		gl->flags |= 0x20;
 		int colori;
-		off_t colorp, colorps;
+		off_t colorp = 0, colorps;
 		double colorv;
 		for (colori = 0; colori < 4; colori++) {
 			while (colors[colorp] == ' ' || colors[colorp] == ',') colorp++;
@@ -2473,10 +2464,10 @@ static void *UFOLoadGuideline(SplineFont *sf, SplineChar *sc, int layer, xmlDocP
 				char *after_color = NULL;
 				colorv = strtod(colors + colorps, &after_color);
 				if (after_color != colors + colorp)
-					LogError(_("Error parsing color component.\n"));
+					LogError(_("Error parsing color component."));
 				gl->color |= (((uint32_t)(colorv * 255.0)) << (8 * (4 - colori)));
 			} else {
-				LogError(_("Missing color component.\n"));
+				LogError(_("Missing color component."));
 			}
 		}
 		xmlFree(colors);
@@ -2492,8 +2483,7 @@ static void *UFOLoadGuideline(SplineFont *sf, SplineChar *sc, int layer, xmlDocP
 		isinf(gl->point.x) || isinf(gl->point.y) || isinf(gl->angle)
 	) {
 		// Invalid data; abort.
-		// fprintf(stderr, "Invalid guideline.\n");
-		LogError(_("Invalid guideline.\n"));
+		LogError(_("Invalid guideline."));
 		GuidelineSetFree(gl);
 		gl = NULL;
 		return NULL;
@@ -2596,7 +2586,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
     } else if ( name==NULL )
 		name = copy("nameless");
 	// We assign a placeholder name if no name exists.
-	// We create a new SplineChar 
+	// We create a new SplineChar
 	if (existingglyph != NULL) {
 		sc = existingglyph;
 		free(name); name = NULL;
@@ -2721,6 +2711,10 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
             for ( points=contour->children; points!=NULL; points=points->next )
                 if ( xmlStrcmp(points->name,(const xmlChar *) "point")==0 )
             break;
+            if (points == NULL) {
+                // The UFO3 specification allows empty contours, we just drop them.
+                continue;
+            }
             for ( npoints=points->next; npoints!=NULL; npoints=npoints->next )
                 if ( xmlStrcmp(npoints->name,(const xmlChar *) "point")==0 )
             break;
@@ -2794,13 +2788,13 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			        initcnt = precnt;
 			        if ( strcmp(type,"move")==0 ) {
 			          open = true;
-			          if (initcnt != 0) LogError(_("We cannot have lead-in points for an open curve.\n"));
+			          if (initcnt != 0) LogError(_("We cannot have lead-in points for an open curve."));
 			        }
 			    }
 
 			    if ( strcmp(type,"move")==0 ) {
 			        if (ss->first != sp) {
-			          LogError(_("The move point must be at the beginning of the contour.\n"));
+			          LogError(_("The move point must be at the beginning of the contour."));
 			          SplinePointFree(sp); sp = NULL;
 			        }
 			    } else if ( strcmp(type,"line")==0 ) {
@@ -2948,7 +2942,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 			ss->last = ss->first;
 		    }
 		    if (ss->first == NULL) {
-				LogError(_("This spline set has no points.\n"));
+				LogError(_("This spline set has no points."));
 				SplinePointListFree(ss); ss = NULL;
 		    } else {
 		        if ( last==NULL ) {
@@ -2994,7 +2988,7 @@ static SplineChar *_UFOLoadGlyph(SplineFont *sf, xmlDocPtr doc, char *glifname, 
 		if (sc->layers[layerdest].python_persistent == NULL) {
 		  sc->layers[layerdest].python_persistent = LibToPython(doc,dict,1);
 		  sc->layers[layerdest].python_persistent_has_lists = 1;
-		} else LogError(_("Duplicate lib data.\n"));
+		} else LogError(_("Duplicate lib data."));
 #endif
 	    }
 	}
@@ -3454,9 +3448,9 @@ return;
 	if ( xmlStrcmp(keys->name,(const xmlChar *) "key")==0 ) {
 	    keyname = (char *) xmlNodeListGetString(doc, keys->children, true);
 	    SplineChar *sc = SFGetChar(sf,-1,keyname);
-	    if ( sc!=NULL ) { LogError(_("Skipping group %s with same name as a glyph.\n"), keyname); free(keyname); keyname = NULL; continue; }
+	    if ( sc!=NULL ) { LogError(_("Skipping group %s with same name as a glyph."), keyname); free(keyname); keyname = NULL; continue; }
             struct ff_glyphclasses *sfg = SFGetGroup(sf,-1,keyname);
-	    if ( sfg!=NULL ) { LogError(_("Skipping duplicate group %s.\n"), keyname); free(keyname); keyname = NULL; continue; }
+	    if ( sfg!=NULL ) { LogError(_("Skipping duplicate group %s."), keyname); free(keyname); keyname = NULL; continue; }
 	    sfg = calloc(1, sizeof(struct ff_glyphclasses)); // We allocate space for the new group.
 	    sfg->classname = keyname; keyname = NULL; // We name it.
 	    if (current_group == NULL) sf->groups = sfg;
@@ -3465,7 +3459,6 @@ return;
 	    // We prepare to populate it. We will match to native glyphs first (in order to validate) and then convert back to strings later.
 	    RefChar *members_native = NULL;
 	    RefChar *member_native_current = NULL;
-	    int member_count = 0;
 	    int member_list_length = 0; // This makes it easy to allocate a string at the end.
 	    // We fetch the contents now. They are in an array, but we do not verify that.
 	    keys = value;
@@ -3473,8 +3466,8 @@ return;
 		if ( xmlStrcmp(subkeys->name,(const xmlChar *) "string")==0 ) {
 		    keyname = (char *) xmlNodeListGetString(doc,subkeys->children,true); // Get the member name.
 		    SplineChar *ssc = SFGetChar(sf,-1,keyname); // Try to match an existing glyph.
-		    if ( ssc==NULL ) { LogError(_("Skipping non-existent glyph %s in group %s.\n"), keyname, current_group->classname); free(keyname); keyname = NULL; continue; }
-		    member_list_length += strlen(keyname) + 1; member_count++; // Make space for its name.
+		    if ( ssc==NULL ) { LogError(_("Skipping non-existent glyph %s in group %s."), keyname, current_group->classname); free(keyname); keyname = NULL; continue; }
+		    member_list_length += strlen(keyname) + 1; // Make space for its name.
 		    free(keyname); // Free the name for now. (We get it directly from the SplineChar later.)
 		    RefChar *member_native_temp = calloc(1, sizeof(RefChar)); // Make an entry in the list for the native reference.
 		    member_native_temp->sc = ssc; ssc = NULL;
@@ -3836,8 +3829,8 @@ SplineFont *SFReadUFO(char *basedir, int flags) {
 		else free(valname);
 	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "styleMapFamilyName")==0 ) {
-		if (sf->styleMapFamilyName == NULL) sf->styleMapFamilyName = (char *) valname;
-		else free(valname);
+		if (strcmp((char *) valname, sf->familyname) != 0)
+		    UFOAddName(sf,(char *) valname, ttf_family);
 	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "styleMapStyleName")==0 ) {
 		if (strcmp((char *) valname, "regular")==0) sf->pfminfo.stylemap = 0x40;
@@ -4107,8 +4100,6 @@ SplineFont *SFReadUFO(char *basedir, int flags) {
     if ( sf->familyname==NULL )
 	sf->familyname = copy(sf->fontname);
     free(stylename); stylename = NULL;
-    if (sf->styleMapFamilyName == NULL)
-        sf->styleMapFamilyName = ""; // Empty default to disable fallback at export (not user-accessible anyway as of now).
     if ( sf->weight==NULL )
 	sf->weight = copy("Regular");
     // We can now free the document.

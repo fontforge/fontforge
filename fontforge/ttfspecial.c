@@ -1010,7 +1010,7 @@ return;			/* Bad version number */
 	grange[i].end = getushort(ttf);
 	grange[i].offset = getlong(ttf);
 	if ( grange[i].start>grange[i].end || grange[i].end>info->glyph_cnt ) {
-	    LogError( _("Bad glyph range specified in glyph comment subtable of PfEd table\n") );
+	    LogError( _("Bad glyph range specified in glyph comment subtable of PfEd table") );
 	    grange[i].start = 1; grange[i].end = 0;
 	}
     }
@@ -1044,7 +1044,7 @@ return;			/* Bad version number */
 	end = getushort(ttf);
 	col = getlong(ttf);
 	if ( start>end || end>info->glyph_cnt )
-	    LogError( _("Bad glyph range specified in color subtable of PfEd table\n") );
+	    LogError( _("Bad glyph range specified in color subtable of PfEd table") );
 	else {
 	    for ( j=start; j<=end; ++j )
 		info->chars[j]->color = col;
@@ -1089,7 +1089,7 @@ return;			/* Bad version number */
 		}
 		if ( ss[j].subs_off!=0 ) {
 		    if ( !sub->anchor_classes )
-			LogError(_("Whoops, attempt to name anchors in a subtable which doesn't contain any\n"));
+			LogError(_("Whoops, attempt to name anchors in a subtable which doesn't contain any"));
 		    else {
 			fseek(ttf,base+ss[j].subs_off,SEEK_SET);
 			a = getushort(ttf);
@@ -1113,13 +1113,13 @@ return;			/* Bad version number */
 	    }
 	    /* I guess it's ok for some subtables to be unnamed, so no check for sub!=NULL */
 	    if ( j<s )
-		LogError(_("Whoops, more names than subtables of lookup %s\n"), otl->lookup_name );
+		LogError(_("Whoops, more names than subtables of lookup %s"), otl->lookup_name );
 	    free(ss);
 	}
     }
     /* I guess it's ok for some lookups to be unnamed, so no check for otf!=NULL */
     if ( i<n )
-	LogError(_("Whoops, more names than lookups\n") );
+	LogError(_("Whoops, more names than lookups") );
     free(ls);
 }
 
@@ -1131,7 +1131,7 @@ return( (float) (short) getushort(ttf));
     else if ( mod==V_F )
 return( getlong(ttf)/256.0 );
     else {
-	LogError(_("Bad data type in contour verb in 'PfEd'\n"));
+	LogError(_("Bad data type in contour verb in 'PfEd'"));
 return( 0 );
     }
 }
@@ -1147,7 +1147,7 @@ static void pfed_read_normal_contour(FILE *ttf,SplineSet *ss,
 
     verb = getc(ttf);
     if ( COM_VERB(verb)!=V_MoveTo ) {
-	LogError(_("Whoops, contours must begin with a move to\n") );
+	LogError(_("Whoops, contours must begin with a move to") );
 	ss->first = ss->last = SplinePointCreate(0,0);
 	ss->start_offset = 0;
 return;
@@ -1160,7 +1160,7 @@ return;
 	verb = getc(ttf);
 	v = COM_VERB(verb); m = COM_MOD(verb);
 	if ( m==3 ) {
-	    LogError(_("Bad data modifier in contour command in 'PfEd'\n") );
+	    LogError(_("Bad data modifier in contour command in 'PfEd'") );
     break;
 	}
 	if ( verb==V_Close || verb==V_End )
@@ -1229,7 +1229,7 @@ return;
 	    sp->prevcp.x = current->nextcp.x+offx1;
 	    sp->prevcp.y = current->nextcp.y+offy1;
 	} else {
-	    LogError(_("Whoops, unexpected verb in contour %d.%d\n"), v, m );
+	    LogError(_("Whoops, unexpected verb in contour %d.%d"), v, m );
     break;
 	}
 	SplineMake(current,sp,type==2);
@@ -1266,7 +1266,7 @@ static void pfed_read_spiro_contour(FILE *ttf,SplineSet *ss,
 	if ( ch!=SPIRO_OPEN_CONTOUR && ch!=SPIRO_CORNER && ch!=SPIRO_G4 &&
 		ch!=SPIRO_G2 && ch!=SPIRO_LEFT && ch!=SPIRO_RIGHT &&
 		ch!=SPIRO_END && ch!=SPIRO_CLOSE_CONTOUR ) {
-	    LogError(_("Whoops, bad spiro command %d\n"), ch);
+	    LogError(_("Whoops, bad spiro command %d"), ch);
     break;
 	}
 	if ( ss->spiro_cnt>=ss->spiro_max )
@@ -1320,7 +1320,7 @@ static void pfed_read_glyph_layer(FILE *ttf,struct ttfinfo *info,Layer *ly,
 	    cur->transform[j] = getlong(ttf)/32768.0;
 	gid = getushort(ttf);
 	if ( gid>=info->glyph_cnt ) {
-	    LogError(_("Bad glyph reference in layer info.\n"));
+	    LogError(_("Bad glyph reference in layer info."));
     break;
 	}
 	cur->sc = info->chars[gid];
@@ -1350,7 +1350,7 @@ static void pfed_read_glyph_layer(FILE *ttf,struct ttfinfo *info,Layer *ly,
 		pfed_read_spiro_contour(ttf,ss,base+contours[i].data_off,type);
 		ss = ss->next;
 	    } else
-		LogError(_("Whoops, Ran out of spiros\n"));
+		LogError(_("Whoops, Ran out of spiros"));
 	}
     }
     free(contours);
@@ -1584,7 +1584,7 @@ return;
 	pfed_readguidelines(ttf,info,info->pfed_start+tagoff[i].offset);
       break;
       default:
-	LogError( _("Unknown subtable '%c%c%c%c' in 'PfEd' table, ignored\n"),
+	LogError( _("Unknown subtable '%c%c%c%c' in 'PfEd' table, ignored"),
 		tagoff[i].tag>>24, (tagoff[i].tag>>16)&0xff, (tagoff[i].tag>>8)&0xff, tagoff[i].tag&0xff );
       break;
     }
@@ -1914,7 +1914,7 @@ return;
 	TeX_readItalicCorr(ttf,info,info->tex_start+tagoff[i].offset);
       break;
       default:
-	LogError( _("Unknown subtable '%c%c%c%c' in 'TeX ' table, ignored\n"),
+	LogError( _("Unknown subtable '%c%c%c%c' in 'TeX ' table, ignored"),
 		tagoff[i].tag>>24, (tagoff[i].tag>>16)&0xff, (tagoff[i].tag>>8)&0xff, tagoff[i].tag&0xff );
       break;
     }
@@ -2225,11 +2225,8 @@ return;
 /*  date of fontforge sources */
 /*  date of font's (not file's) creation */
 /*  date of font's modification */
-int ttf_fftm_dump(SplineFont *sf,struct alltabs *at) {
+void ttf_fftm_dump(SplineFont *sf,struct alltabs *at) {
     int32_t results[2];
-
-    if ( at->gi.flags & ttf_flag_noFFTMtable )
-	return false;
 
     at->fftmf = GFileTmpfile();
 
@@ -2253,5 +2250,4 @@ int ttf_fftm_dump(SplineFont *sf,struct alltabs *at) {
 	putc(0,at->fftmf);
     if ( ((at->fftmlen+1)&2)!=0 )
 	putshort(at->fftmf,0);
-return( true );
 }

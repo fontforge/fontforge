@@ -43,6 +43,8 @@
 #include "ustring.h"
 #include "utype.h"
 
+#include <stdbool.h>
+
 int coverageformatsallowed=3;
 int use_second_indic_scripts = true;
 
@@ -66,26 +68,26 @@ static uint32_t scripts[][117] = {
 /* Anatolian */	{ CHR('h','l','u','w'), 0x14400, 0x14646 },
 /* Arabic */	{ CHR('a','r','a','b'), 0x0600, 0x0604, 0x0606, 0x060b, 0x060d, 0x061a, 0x061c, 0x061e,
 	0x0620, 0x063f, 0x0641, 0x064a, 0x0656, 0x066f, 0x0671, 0x06dc, 0x06de, 0x06ff, 0x0750, 0x077f,
-	0x0870, 0x088e, 0x0890, 0x0891, 0x0898, 0x08e1, 0x08e3, 0x08ff, 0xfb50, 0xfbc2, 0xfbd3, 0xfd3d,
-	0xfd40, 0xfd8f, 0xfd92, 0xfdc7, 0xfdcf, 0xfdcf, 0xfdf0, 0xfdff, 0xfe70, 0xfe74, 0xfe76, 0xfefc,
-	0x10e60, 0x10e7e, 0x10efd, 0x10eff, 0x1ee00, 0x1ee03, 0x1ee05, 0x1ee1f, 0x1ee21, 0x1ee22,
-	0x1ee24, 0x1ee24, 0x1ee27, 0x1ee27, 0x1ee29, 0x1ee32, 0x1ee34, 0x1ee37, 0x1ee39, 0x1ee39,
-	0x1ee3b, 0x1ee3b, 0x1ee42, 0x1ee42, 0x1ee47, 0x1ee47, 0x1ee49, 0x1ee49, 0x1ee4b, 0x1ee4b,
-	0x1ee4d, 0x1ee4f, 0x1ee51, 0x1ee52, 0x1ee54, 0x1ee54, 0x1ee57, 0x1ee57, 0x1ee59, 0x1ee59,
-	0x1ee5b, 0x1ee5b, 0x1ee5d, 0x1ee5d, 0x1ee5f, 0x1ee5f, 0x1ee61, 0x1ee62, 0x1ee64, 0x1ee64,
-	0x1ee67, 0x1ee6a, 0x1ee6c, 0x1ee72, 0x1ee74, 0x1ee77, 0x1ee79, 0x1ee7c, 0x1ee7e, 0x1ee7e,
-	0x1ee80, 0x1ee89, 0x1ee8b, 0x1ee9b, 0x1eea1, 0x1eea3, 0x1eea5, 0x1eea9, 0x1eeab, 0x1eebb,
-	0x1eef0, 0x1eef1 },
+	0x0870, 0x0891, 0x0897, 0x08e1, 0x08e3, 0x08ff, 0xfb50, 0xfd3d, 0xfd40, 0xfdcf, 0xfdf0, 0xfdff,
+	0xfe70, 0xfe74, 0xfe76, 0xfefc, 0x10e60, 0x10e7e, 0x10ec2, 0x10ec7, 0x10ed0, 0x10ed8, 0x10efa, 0x10eff,
+	0x1ee00, 0x1ee03, 0x1ee05, 0x1ee1f, 0x1ee21, 0x1ee22, 0x1ee24, 0x1ee24, 0x1ee27, 0x1ee27,
+	0x1ee29, 0x1ee32, 0x1ee34, 0x1ee37, 0x1ee39, 0x1ee39, 0x1ee3b, 0x1ee3b, 0x1ee42, 0x1ee42,
+	0x1ee47, 0x1ee47, 0x1ee49, 0x1ee49, 0x1ee4b, 0x1ee4b, 0x1ee4d, 0x1ee4f, 0x1ee51, 0x1ee52,
+	0x1ee54, 0x1ee54, 0x1ee57, 0x1ee57, 0x1ee59, 0x1ee59, 0x1ee5b, 0x1ee5b, 0x1ee5d, 0x1ee5d,
+	0x1ee5f, 0x1ee5f, 0x1ee61, 0x1ee62, 0x1ee64, 0x1ee64, 0x1ee67, 0x1ee6a, 0x1ee6c, 0x1ee72,
+	0x1ee74, 0x1ee77, 0x1ee79, 0x1ee7c, 0x1ee7e, 0x1ee7e, 0x1ee80, 0x1ee89, 0x1ee8b, 0x1ee9b,
+	0x1eea1, 0x1eea3, 0x1eea5, 0x1eea9, 0x1eeab, 0x1eebb, 0x1eef0, 0x1eef1 },
 /* Aramaic */	{ CHR('s','a','m','r'), 0x0800, 0x082d, 0x0830, 0x083e },
 /* Armenian */	{ CHR('a','r','m','n'), 0x0531, 0x0556, 0x0559, 0x058a, 0x058d, 0x058f, 0xfb13, 0xfb17 },
 /* Avestan */	{ CHR('a','v','s','t'), 0x10b00, 0x10b35, 0x10b39, 0x10b3f },
-/* Balinese */	{ CHR('b','a','l','i'), 0x1b00, 0x1b4c, 0x1b50, 0x1b7e },
+/* Balinese */	{ CHR('b','a','l','i'), 0x1b00, 0x1b4c, 0x1b4e, 0x1b7f },
 /* Bamum */	{ CHR('b','a','m','u'), 0xa6a0, 0xa6f7, 0x16800, 0x16a38 },
 /* Bassa Vah */	{ CHR('b','a','s','s'), 0x16ad0, 0x16aed, 0x16af0, 0x16af5 },
 /* Batak */	{ CHR('b','a','t','k'), 0x1bc0, 0x1bf3, 0x1bfc, 0x1bff },
 /* Bengali */	{ CHR('b','e','n','g'), 0x0980, 0x0983, 0x0985, 0x098c, 0x098f, 0x0990, 0x0993, 0x09a8,
 	0x09aa, 0x09b0, 0x09b2, 0x09b2, 0x09b6, 0x09b9, 0x09bc, 0x09c4, 0x09c7, 0x09c8, 0x09cb, 0x09ce,
 	0x09d7, 0x09d7, 0x09dc, 0x09dd, 0x09df, 0x09e3, 0x09e6, 0x09fe },
+/* Beria Erfe */{ CHR('b','e','r','f'), 0x16ea0, 0x16eb8, 0x16ebb, 0x16ed3 },
 /* Bhaiksuki */	{ CHR('b','h','k','s'), 0x11c00, 0x11c08, 0x11c0a, 0x11c36, 0x11c38, 0x11c45,
 	0x11c50, 0x11c6c },
 /* Bopomofo */	{ CHR('b','o','p','o'), 0x02ea, 0x02eb, 0x3105, 0x312f, 0x31a0, 0x31bf },
@@ -104,15 +106,15 @@ static uint32_t scripts[][117] = {
 /* Chorasmian */{ CHR('c','h','r','s'), 0x10fb0, 0x10fcb },
 /* CJKIdeogra */{ CHR('h','a','n','i'), 0x2e80, 0x2e99, 0x2e9b, 0x2ef3, 0x2f00, 0x2fd5, 0x3005, 0x3005,
 	0x3007, 0x3007, 0x3021, 0x3029, 0x3038, 0x303b, 0x3400, 0x4dbf, 0x4e00, 0x9fff, 0xf900, 0xfa6d,
-	0xfa70, 0xfad9, 0x16fe2, 0x16fe3, 0x16ff0, 0x16ff1, 0x20000, 0x2a6df, 0x2a700, 0x2b739,
-	0x2b740, 0x2b81d, 0x2b820, 0x2cea1, 0x2ceb0, 0x2ebe0, 0x2f800, 0x2fa1d, 0x30000, 0x3134a,
-	0x31350, 0x323af },
+	0xfa70, 0xfad9, 0x16fe2, 0x16fe3, 0x16ff0, 0x16ff6, 0x20000, 0x2a6df, 0x2a700, 0x2b81d,
+	0x2b820, 0x2cead, 0x2ceb0, 0x2ebe0, 0x2ebf0, 0x2ee5d, 0x2f800, 0x2fa1d, 0x30000, 0x3134a,
+	0x31350, 0x33479 },
 /* Coptic */	{ CHR('c','o','p','t'), 0x03e2, 0x03ef, 0x2c80, 0x2cf3, 0x2cf9, 0x2cff },
 /* Cypriot */	{ CHR('c','p','r','t'), 0x10800, 0x10805, 0x10808, 0x10808, 0x1080a, 0x10835,
 	0x10837, 0x10838, 0x1083c, 0x1083c, 0x1083f, 0x1083f },
 /* Cypro-Minoan */
 		{ CHR('c','p','m','n'), 0x12f90, 0x12ff2 },
-/* Cyrillic */	{ CHR('c','y','r','l'), 0x0400, 0x0484, 0x0487, 0x052f, 0x1c80, 0x1c88, 0x1d2b, 0x1d2b,
+/* Cyrillic */	{ CHR('c','y','r','l'), 0x0400, 0x0484, 0x0487, 0x052f, 0x1c80, 0x1c8a, 0x1d2b, 0x1d2b,
 	0x1d78, 0x1d78, 0x2de0, 0x2dff, 0xa640, 0xa69f, 0xfe2e, 0xfe2f, 0x1e030, 0x1e06d,
 	0x1e08f, 0x1e08f },
 /* Dives Akuru */{CHR('d','i','a','k'), 0x11900, 0x11906, 0x11909, 0x11909, 0x1190c, 0x11913,
@@ -123,7 +125,7 @@ static uint32_t scripts[][117] = {
 /* Dogra */	{ CHR('d','o','g','r'), 0x11800, 0x1183b },
 /* Duployan */	{ CHR('d','u','p','l'), 0x1bc00, 0x1bc6a, 0x1bc70, 0x1bc7c, 0x1bc80, 0x1bc88,
 	0x1bc90, 0x1bc99, 0x1bc9c, 0x1bc9f },
-/* Egyptian */	{ CHR('e','g','y','p'), 0x13000, 0x1342f, 0x13430, 0x13455 },
+/* Egyptian */	{ CHR('e','g','y','p'), 0x13000, 0x13455, 0x13460, 0x143fa },
 /* Elbasan */	{ CHR('e','l','b','a'), 0x10500, 0x10527 },
 /* Elymaic */	{ CHR('e','l','y','m'), 0x10fe0, 0x10ff6 },
 /* Ethiopic */	{ CHR('e','t','h','i'), 0x1200, 0x1248, 0x124a, 0x124d, 0x1250, 0x1256, 0x1258, 0x1258,
@@ -133,6 +135,7 @@ static uint32_t scripts[][117] = {
 	0x2db8, 0x2dbe, 0x2dc0, 0x2dc6, 0x2dc8, 0x2dce, 0x2dd0, 0x2dd6, 0x2dd8, 0x2dde, 0xab01, 0xab06,
 	0xab09, 0xab0e, 0xab11, 0xab16, 0xab20, 0xab26, 0xab28, 0xab2e, 0x1e7e0, 0x1e7e6,
 	0x1e7e8, 0x1e7eb, 0x1e7ed, 0x1e7ee, 0x1e7f0, 0x1e7fe },
+/* Garay */	{ CHR('g','a','r','a'), 0x10d40, 0x10d65, 0x10d69, 0x10d85, 0x10d8e, 0x10d8f },
 /* Georgian */	{ CHR('g','e','o','r'), 0x10a0, 0x10c5, 0x10c7, 0x10c7, 0x10cd, 0x10cd, 0x10d0, 0x10fa,
 	0x10fc, 0x10ff, 0x1c90, 0x1cba, 0x1cbd, 0x1cbf, 0x2d00, 0x2d25, 0x2d27, 0x2d27, 0x2d2d, 0x2d2d },
 /* Glagolitic */{ CHR('g','l','a','g'), 0x2c00, 0x2c5f, 0x1e000, 0x1e006, 0x1e008, 0x1e018,
@@ -155,10 +158,10 @@ static uint32_t scripts[][117] = {
 /* Gunjala Gondi */
 		{ CHR('g','o','n','g'), 0x11d60, 0x11d65, 0x11d67, 0x11d68, 0x11d6a, 0x11d8e, 0x11d90, 0x11d91,
 	0x11d93, 0x11d98, 0x11da0, 0x11da9 },
-/* Gurmukhi */	{ CHR('g','u','r','u'),	0x0a01, 0x0a03, 0x0a05, 0x0a0a, 0x0a0f, 0x0a0f, 0x0a10, 0x0a10,
-	0x0a13, 0x0a28, 0x0a2a, 0x0a30, 0x0a32, 0x0a32, 0x0a33, 0x0a33, 0x0a35, 0x0a35, 0x0a36, 0x0a36,
-	0x0a38, 0x0a38, 0x0a39, 0x0a39, 0x0a3c, 0x0a3c, 0x0a3e, 0x0a42, 0x0a47, 0x0a47, 0x0a48, 0x0a48,
-	0x0a4b, 0x0a4d, 0x0a51, 0x0a51, 0x0a59, 0x0a5c, 0x0a5e, 0x0a5e, 0x0a66, 0x0a76 },
+/* Gurmukhi */	{ CHR('g','u','r','u'), 0x0a01, 0x0a03, 0x0a05, 0x0a0a, 0x0a0f, 0x0a10, 0x0a13, 0x0a28,
+	0x0a2a, 0x0a30, 0x0a32, 0x0a33, 0x0a35, 0x0a36, 0x0a38, 0x0a39, 0x0a3c, 0x0a3c, 0x0a3e, 0x0a42,
+	0x0a47, 0x0a48, 0x0a4b, 0x0a4d, 0x0a51, 0x0a51, 0x0a59, 0x0a5c, 0x0a5e, 0x0a5e, 0x0a66, 0x0a76 },
+/* Gurung Khema*/{CHR('g','u','k','h'), 0x16100, 0x16139 },
 /* Hangul */	{ CHR('h','a','n','g'), 0x1100, 0x11ff, 0x302e, 0x302f, 0x3131, 0x318e, 0x3200, 0x321e,
 	0x3260, 0x327e, 0xa960, 0xa97c, 0xac00, 0xd7a3, 0xd7b0, 0xd7c6, 0xd7cb, 0xd7fb, 0xffa0, 0xffbe,
 	0xffc2, 0xffc7, 0xffca, 0xffcf, 0xffd2, 0xffd7, 0xffda, 0xffdc },
@@ -182,28 +185,29 @@ static uint32_t scripts[][117] = {
 	0x1aff5, 0x1affb, 0x1affd, 0x1affe, 0x1b000, 0x1b122, 0x1b132, 0x1b132, 0x1b150, 0x1b152,
 	0x1b155, 0x1b155, 0x1b164, 0x1b167, 0x1f200, 0x1f200 },
 /* Kaithi */	{ CHR('k','t','h','i'), 0x11080, 0x110c2, 0x110cd, 0x110cd },
-/* Kawi */	{ CHR('k','a','w','i'), 0x11f00, 0x11f10, 0x11f12, 0x11f3a, 0x11f3e, 0x11f59 },
+/* Kawi */	{ CHR('k','a','w','i'), 0x11f00, 0x11f10, 0x11f12, 0x11f3a, 0x11f3e, 0x11f5a },
 /* Kayah Li */	{ CHR('k','a','l','i'), 0xa900, 0xa92d, 0xa92f, 0xa92f },
 /* Kannada */	{ CHR('k','n','d','a'), 0x0c80, 0x0c8c, 0x0c8e, 0x0c90, 0x0c92, 0x0ca8, 0x0caa, 0x0cb3,
-	0x0cb5, 0x0cb9, 0x0cbc, 0x0cc4, 0x0cc6, 0x0cc8, 0x0cca, 0x0ccd, 0x0cd5, 0x0cd6, 0x0cdd, 0x0cde,
+	0x0cb5, 0x0cb9, 0x0cbc, 0x0cc4, 0x0cc6, 0x0cc8, 0x0cca, 0x0ccd, 0x0cd5, 0x0cd6, 0x0cdc, 0x0cde,
 	0x0ce0, 0x0ce3, 0x0ce6, 0x0cef, 0x0cf1, 0x0cf3 },
 /* Kharosthi */	{ CHR('k','h','a','r'), 0x10a00, 0x10a03, 0x10a05, 0x10a06, 0x10a0c, 0x10a13,
 	0x10a15, 0x10a17, 0x10a19, 0x10a35, 0x10a38, 0x10a3a, 0x10a3f, 0x10a48, 0x10a50, 0x10a58 },
 /* Khitan Small Script */
-		{ CHR('k','i','t','s'), 0x16fe4, 0x16fe4, 0x18b00, 0x18cd5 },
+		{ CHR('k','i','t','s'), 0x16fe4, 0x16fe4, 0x18b00, 0x18cd5, 0x18cff, 0x18cff },
 /* Khmer */	{ CHR('k','h','m','r'), 0x1780, 0x17dd, 0x17e0, 0x17e9, 0x17f0, 0x17f9, 0x19e0, 0x19ff },
 /* Khojki */	{ CHR('k','h','o','j'), 0x11200, 0x11211, 0x11213, 0x11241 },
 /* Khudawadi */	{ CHR('s','i','n','d'), 0x112b0, 0x112ea, 0x112f0, 0x112f9 },
+/* Kirat Rai */	{ CHR('k','r','a','i'), 0x16d40, 0x16d79 },
 /* Lao */	{ CHR('l','a','o',' '), 0x0e81, 0x0e82, 0x0e84, 0x0e84, 0x0e86, 0x0e8a, 0x0e8c, 0x0ea3,
-	0x0ea5, 0x0ea5, 0x0ea7, 0x0ebd, 0x0ec0, 0x0ec4, 0x0ec6, 0x0ec6, 0x0ec8, 0x0ecd, 0x0ed0, 0x0ed9,
+	0x0ea5, 0x0ea5, 0x0ea7, 0x0ebd, 0x0ec0, 0x0ec4, 0x0ec6, 0x0ec6, 0x0ec8, 0x0ece, 0x0ed0, 0x0ed9,
 	0x0edc, 0x0edf },
 /* Latin */	{ CHR('l','a','t','n'), 0x0041, 0x005a, 0x0061, 0x007a, 0x00aa, 0x00aa, 0x00ba, 0x00ba,
 	0x00c0, 0x00d6, 0x00d8, 0x00f6, 0x00f8, 0x02b8, 0x02e0, 0x02e4, 0x1d00, 0x1d25, 0x1d2c, 0x1d5c,
 	0x1d62, 0x1d65, 0x1d6b, 0x1d77, 0x1d79, 0x1dbe, 0x1e00, 0x1eff, 0x2071, 0x2071, 0x207f, 0x207f,
 	0x2090, 0x209c, 0x212a, 0x212b, 0x2132, 0x2132, 0x214e, 0x214e, 0x2160, 0x2188, 0x2c60, 0x2c7f,
-	0xa722, 0xa787, 0xa78b, 0xa7ca, 0xa7d0, 0xa7d1, 0xa7d3, 0xa7d3, 0xa7d5, 0xa7d9, 0xa7f2, 0xa7ff,
-	0xab30, 0xab5a, 0xab5c, 0xab64, 0xab66, 0xab69, 0xfb00, 0xfb06, 0xff21, 0xff3a, 0xff41, 0xff5a,
-	0x10780, 0x10785, 0x10787, 0x107b0, 0x107b2, 0x107ba, 0x1df00, 0x1df1e, 0x1df25, 0x1df2a },
+	0xa722, 0xa787, 0xa78b, 0xa7dc, 0xa7f1, 0xa7ff, 0xab30, 0xab5a, 0xab5c, 0xab64, 0xab66, 0xab69,
+	0xfb00, 0xfb06, 0xff21, 0xff3a, 0xff41, 0xff5a, 0x10780, 0x10785, 0x10787, 0x107b0, 0x107b2, 0x107ba,
+	0x1df00, 0x1df1e, 0x1df25, 0x1df2a },
 /* Lepcha */	{ CHR('l','e','p','c'), 0x1c00, 0x1c37, 0x1c3b, 0x1c49, 0x1c4d, 0x1c4f },
 /* Limbu */	{ CHR('l','i','m','b'), 0x1900, 0x191e, 0x1920, 0x192b, 0x1930, 0x193b, 0x1940, 0x1940,
 	0x1944, 0x194f },
@@ -244,7 +248,7 @@ static uint32_t scripts[][117] = {
 /* Multani */	{ CHR('m','u','l','t'), 0x11280, 0x11286, 0x11288, 0x11288, 0x1128a, 0x1128d,
 	0x1128f, 0x1129d, 0x1129f, 0x112a9 },
 /* Musical */	{ CHR('m','u','s','c'), 0x1d100, 0x1d126, 0x1d129, 0x1d1ea },
-/* Myanmar */	{ CHR('m','y','m','2'), 0x1000, 0x109f, 0xa9e0, 0xa9fe, 0xaa60, 0xaa7f },
+/* Myanmar */	{ CHR('m','y','m','2'), 0x1000, 0x109f, 0xa9e0, 0xa9fe, 0xaa60, 0xaa7f, 0x116d0, 0x116e3 },
 /* Nabataean */	{ CHR('n','b','a','t'), 0x10880, 0x1089e, 0x108a7, 0x108af },
 /* Nandinagari */{CHR('n','a','n','d'), 0x119a0, 0x119a7, 0x119aa, 0x119d7, 0x119da, 0x119e4 },
 /* Newa */	{ CHR('n','e','w','a'), 0x11400, 0x1145b, 0x1145d, 0x11461 },
@@ -253,10 +257,10 @@ static uint32_t scripts[][117] = {
 /* Nag Mundari*/{ CHR('n','a','g','m'), 0x1e4d0, 0x1e4f9 },
 /* Nushu */	{ CHR('n','s','h','u'), 0x16fe1, 0x16fe1, 0x1b170, 0x1b2fb },
 /* Nyiakeng Puachue Hmong */
-		{ CHR('h','m','n','p'), 0x1e100, 0x1e12c, 0x1e130, 0x1e13d, 0x1e140, 0x1e149, 0x1e14e, 0x1e14e,
-	0x1e14f, 0x1e14f },
+		{ CHR('h','m','n','p'), 0x1e100, 0x1e12c, 0x1e130, 0x1e13d, 0x1e140, 0x1e149, 0x1e14e, 0x1e14f },
 /* Ogham */	{ CHR('o','g','a','m'), 0x1680, 0x169c },
 /* Ol Chiki */	{ CHR('o','l','c','k'), 0x1c50, 0x1c7f },
+/* Ol Onal */	{ CHR('o','n','a','o'), 0x1e5d0, 0x1e5fa, 0x1e5ff, 0x1e5ff },
 /* Old Italic */{ CHR('i','t','a','l'), 0x10300, 0x10323, 0x1032d, 0x1032f },
 /* Old Hungarian */
 		{ CHR('h','u','n','g'), 0x10c80, 0x10cb2, 0x10cc0, 0x10cf2, 0x10cfa, 0x10cff },
@@ -286,9 +290,10 @@ static uint32_t scripts[][117] = {
 /* Rejang */	{ CHR('r','j','n','g'), 0xa930, 0xa953, 0xa95f, 0xa95f },
 /* Runic */	{ CHR('r','u','n','r'), 0x16a0, 0x16ea, 0x16ee, 0x16f8 },
 /* Saurashtra*/ { CHR('s','a','u','r'), 0xa880, 0xa8c5, 0xa8ce, 0xa8d9 },
-/* Sharada */	{ CHR('s','h','r','d'), 0x11180, 0x111df },
+/* Sharada */	{ CHR('s','h','r','d'), 0x11180, 0x111df, 0x11b60, 0x11b67 },
 /* Shavian */	{ CHR('s','h','a','w'), 0x10450, 0x1047f },
 /* Siddham */	{ CHR('s','i','d','d'), 0x11580, 0x115b5, 0x115b8, 0x115dd },
+/* Sidetic */	{ CHR('s','i','d','t'), 0x10940, 0x10959 },
 /* Sinhala */	{ CHR('s','i','n','h'), 0x0d81, 0x0d83, 0x0d85, 0x0d96, 0x0d9a, 0x0db1, 0x0db3, 0x0dbb,
 	0x0dbd, 0x0dbd, 0x0dc0, 0x0dc6, 0x0dca, 0x0dca, 0x0dcf, 0x0dd4, 0x0dd6, 0x0dd6, 0x0dd8, 0x0ddf,
 	0x0de6, 0x0def, 0x0df2, 0x0df4, 0x111e1, 0x111f4 },
@@ -298,6 +303,7 @@ static uint32_t scripts[][117] = {
 /* Soyombo */	{ CHR('s','o','y','o'), 0x11a50, 0x11aa2 },
 /* Sumero-Akkadian Cuneiform */
 		{ CHR('x','s','u','x'), 0x12000, 0x12399, 0x12400, 0x1246e, 0x12470, 0x12474, 0x12480, 0x12543 },
+/* Sunuwar */	{ CHR('s','u','n','u'), 0x11bc0, 0x11be1, 0x11bf0, 0x11bf9 },
 /* Sundanese */ { CHR('s','u','n','d'), 0x1b80, 0x1bbf, 0x1cc0, 0x1cc7 },
 /* Syloti Nagri */
 		{ CHR('s','y','l','o'), 0xa800, 0xa82c },
@@ -308,16 +314,17 @@ static uint32_t scripts[][117] = {
 /* Tai Tham */	{ CHR('l','a','n','a'), 0x1a20, 0x1a5e, 0x1a60, 0x1a7c, 0x1a7f, 0x1a89, 0x1a90, 0x1a99,
 	0x1aa0, 0x1aad },
 /* Tai Viet */	{ CHR('t','a','v','t'), 0xaa80, 0xaac2, 0xaadb, 0xaadf },
+/* Tai Yo */	{ CHR('t','a','y','o'), 0x1e6c0, 0x1e6de, 0x1e6e0, 0x1e6f5, 0x1e6fe, 0x1e6ff },
 /* Takri */	{ CHR('t','a','k','r'), 0x11680, 0x116b9, 0x116c0, 0x116c9 },
 /* Tamil */	{ CHR('t','a','m','l'), 0x0b82, 0x0b83, 0x0b85, 0x0b8a, 0x0b8e, 0x0b90, 0x0b92, 0x0b95,
 	0x0b99, 0x0b9a, 0x0b9c, 0x0b9c, 0x0b9e, 0x0b9f, 0x0ba3, 0x0ba4, 0x0ba8, 0x0baa, 0x0bae, 0x0bb9,
 	0x0bbe, 0x0bc2, 0x0bc6, 0x0bc8, 0x0bca, 0x0bcd, 0x0bd0, 0x0bd0, 0x0bd7, 0x0bd7, 0x0be6, 0x0bfa,
 	0x11fc0, 0x11ff1, 0x11fff, 0x11fff },
 /* Tangsa */	{ CHR('t','n','s','a'), 0x16a70, 0x16abe, 0x16ac0, 0x16ac9 },
-/* Tangut */	{ CHR('t','a','n','g'), 0x16fe0, 0x16fe0, 0x17000, 0x187f7, 0x18800, 0x18aff,
-	0x18d00, 0x18d08 },
+/* Tangut */	{ CHR('t','a','n','g'), 0x16fe0, 0x16fe0, 0x17000, 0x18aff, 0x18d00, 0x18d1e,
+	0x18d80, 0x18df2 },
 /* Telugu */	{ CHR('t','e','l','u'), 0x0c00, 0x0c0c, 0x0c0e, 0x0c10, 0x0c12, 0x0c28, 0x0c2a, 0x0c39,
-	0x0c3c, 0x0c44, 0x0c46, 0x0c48, 0x0c4a, 0x0c4d, 0x0c55, 0x0c56, 0x0c58, 0x0c5a, 0x0c5d, 0x0c5d,
+	0x0c3c, 0x0c44, 0x0c46, 0x0c48, 0x0c4a, 0x0c4d, 0x0c55, 0x0c56, 0x0c58, 0x0c5a, 0x0c5c, 0x0c5d,
 	0x0c60, 0x0c63, 0x0c66, 0x0c6f, 0x0c77, 0x0c7f },
 /* Thaana */	{ CHR('t','h','a','a'), 0x0780, 0x07b1 },
 /* Thai */	{ CHR('t','h','a','i'), 0x0e01, 0x0e3a, 0x0e40, 0x0e5b },
@@ -325,7 +332,13 @@ static uint32_t scripts[][117] = {
 	0x0fbe, 0x0fcc, 0x0fce, 0x0fd4, 0x0fd9, 0x0fda },
 /* Tifinagh */	{ CHR('t','f','n','g'), 0x2d30, 0x2d67, 0x2d6f, 0x2d70, 0x2d7f, 0x2d7f },
 /* Tirhuta */	{ CHR('t','i','r','h'), 0x11480, 0x114c7, 0x114d0, 0x114d9 },
+/* Todhri */	{ CHR('t','o','d','r'), 0x105c0, 0x105f3 },
+/* Tolong Siki */{CHR('t','o','l','s'), 0x11db0, 0x11ddb, 0x11de0, 0x11de9 },
 /* Toto */	{ CHR('t','o','t','o'), 0x1e290, 0x1e2ae },
+/* Tulu-Tigalari */
+		{ CHR('t','u','t','g'), 0x11380, 0x11389, 0x1138b, 0x1138b, 0x1138e, 0x1138e, 0x11390, 0x113b5,
+	0x113b7, 0x113c0, 0x113c2, 0x113c2, 0x113c5, 0x113c5, 0x113c7, 0x113ca, 0x113cc, 0x113d5,
+	0x113d7, 0x113d8, 0x113e1, 0x113e2 },
 /* Ugaritic */	{ CHR('u','g','a','r'), 0x10380, 0x1039d, 0x1039f, 0x1039f },
 /* Vai */	{ CHR('v','a','i',' '), 0xa500, 0xa62b },
 /* Vithkuqi */	{ CHR('v','i','t','h'), 0x10570, 0x1057a, 0x1057c, 0x1058a, 0x1058c, 0x10592,
@@ -361,6 +374,7 @@ int ScriptIsRightToLeft(uint32_t script) {
       case CHR('a','r','m','i'):
       case CHR('a','v','s','t'):
       case CHR('c','p','r','t'):
+      case CHR('g','a','r','a'):
       case CHR('h','a','t','r'):
       case CHR('h','e','b','r'):
       case CHR('h','u','n','g'):
@@ -383,6 +397,7 @@ int ScriptIsRightToLeft(uint32_t script) {
       case CHR('r','o','h','g'):
       case CHR('s','a','m','r'):
       case CHR('s','a','r','b'):
+      case CHR('s','i','d','t'):
       case CHR('s','o','g','d'):
       case CHR('s','o','g','o'):
       case CHR('s','y','r','c'):
@@ -708,15 +723,13 @@ static void dumpcoveragetable(FILE *gpos,SplineChar **glyphs) {
 
 	// We will not emit glyphs with -1 identifiers.
 	// We count the valid glyphs and the ranges.
-	int glyph_cnt = 0;
 	for (i=0; glyphs[i]!=NULL; i++) {
 		if (i > 0 && glyphs[i]->ttf_glyph <= glyphs[i-1]->ttf_glyph) {
 			LogError(_("Glyphs must be ordered when creating coverage table"));
 		}
 		if (glyphs[i]->ttf_glyph < 0) {
-			LogError(_("-1 glyph index in dumpcoveragetable.\n"));
+			LogError(_("-1 glyph index in dumpcoveragetable."));
 		} else {
-			glyph_cnt++;
 			// On the first validly TrueType-indexed glyph or at the start of any discontinuity, start a new range.
 			if (range_cnt == 0 || glyphs[i]->ttf_glyph > last + 1)
 				range_cnt++;
@@ -804,8 +817,8 @@ return( NULL );
 return( glyphs );
 }
 
-static SplineChar **SFOrderedGlyphsWithPSTinSubtable(SplineFont *sf,struct lookup_subtable *sub) {
-    SplineChar **glyphs = SFGlyphsWithPSTinSubtable(sf,sub);
+static SplineChar **SFOrderedGlyphsWithPSTinSubtable(SplineFont *sf,struct lookup_subtable *sub,cpp_SubtableMap *map) {
+    SplineChar **glyphs = SFGlyphsWithPSTinSubtable(sf,sub,map);
     return SFOrderedGlyphs(glyphs);
 }
 
@@ -1100,14 +1113,14 @@ return( DevTabsSame(&vdt1->xadjust,&vdt2->xadjust) &&
 	DevTabsSame(&vdt1->yadv,&vdt2->yadv) );
 }
 
-static void dumpGPOSsimplepos(FILE *gpos,SplineFont *sf,struct lookup_subtable *sub ) {
+static void dumpGPOSsimplepos(FILE *gpos,SplineFont *sf,struct lookup_subtable *sub, struct alltabs *at ) {
     int cnt, cnt2;
     int32_t coverage_pos, end;
     PST *pst, *first=NULL;
     int bits = 0, same=true;
     SplineChar **glyphs;
 
-    glyphs = SFOrderedGlyphsWithPSTinSubtable(sf,sub);
+    glyphs = SFOrderedGlyphsWithPSTinSubtable(sf,sub,at->subtable_map);
     for ( cnt=cnt2=0; glyphs[cnt]!=NULL; ++cnt) {
 	for ( pst=glyphs[cnt]->possub; pst!=NULL; pst=pst->next ) {
 	    if ( pst->subtable==sub && pst->type==pst_position ) {
@@ -1227,12 +1240,12 @@ static int cmp_gid( const void *_s1, const void *_s2 ) {
 return( ((int) s1->other_gid) - ((int) s2->other_gid) );
 }
 
-static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *sub) {
+static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *sub, struct alltabs *at) {
     int cnt;
     int32_t coverage_pos, offset_pos, end, start, pos;
     PST *pst;
     KernPair *kp;
-    int vf1 = 0, vf2=0, i, j, k, tot, bit_cnt, v;
+    int vf1 = 0, vf2=0, i, j, tot, bit_cnt, v;
     int start_cnt, end_cnt;
     int chunk_cnt, chunk_max;
     SplineChar *sc, **glyphs, *gtemp;
@@ -1242,53 +1255,49 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
 
     /* Figure out all the data we need. First the glyphs with kerning info */
     /*  then the glyphs to which they kern, and by how much */
-    glyphs = SFOrderedGlyphsWithPSTinSubtable(sf,sub);
+    glyphs = SFOrderedGlyphsWithPSTinSubtable(sf,sub,at->subtable_map);
+    int max_entries = SubtableMap_get_size(at->subtable_map, sub);
+    struct sckppst *tmp_seconds = calloc(max_entries+1,sizeof(struct sckppst));
+
     for ( cnt=0; glyphs[cnt]!=NULL; ++cnt);
     seconds = malloc(cnt*sizeof(struct sckppst *));
     for ( cnt=0; glyphs[cnt]!=NULL; ++cnt) {
-	for ( k=0; k<2; ++k ) {
-	    devtablen = 0;
-	    tot = 0;
-	    for ( pst=glyphs[cnt]->possub; pst!=NULL; pst=pst->next ) {
-		if ( pst->subtable==sub && pst->type==pst_pair &&
-			(sc = SFGetChar(sf,-1,pst->u.pair.paired))!=NULL &&
-			sc->ttf_glyph!=-1 ) {
-		    if ( k ) {
-			seconds[cnt][tot].sc = sc;
-			seconds[cnt][tot].other_gid = sc->ttf_glyph;
-			seconds[cnt][tot].pst = pst;
-			devtablen += ValDevTabLen(pst->u.pair.vr[0].adjust) +
-				 ValDevTabLen(pst->u.pair.vr[1].adjust);
-
-		    }
+	devtablen = 0;
+	tot = 0;
+	for ( pst=glyphs[cnt]->possub; pst!=NULL; pst=pst->next ) {
+	    if ( pst->subtable==sub && pst->type==pst_pair &&
+		 (sc = SFGetChar(sf,-1,pst->u.pair.paired))!=NULL &&
+		 sc->ttf_glyph!=-1 ) {
+		tmp_seconds[tot].sc = sc;
+		tmp_seconds[tot].other_gid = sc->ttf_glyph;
+		tmp_seconds[tot].pst = pst;
+		devtablen += ValDevTabLen(pst->u.pair.vr[0].adjust) +
+			     ValDevTabLen(pst->u.pair.vr[1].adjust);
+		++tot;
+	    }
+	}
+	for ( v=0; v<2; ++v ) {
+	    for ( kp = v ? glyphs[cnt]->vkerns : glyphs[cnt]->kerns; kp!=NULL; kp=kp->next ) {
+		if( kp->subtable!=sub ) continue; // process only glyphs from the current subtable
+		if ( kp->sc->ttf_glyph!=-1 ) {
+		    tmp_seconds[tot].other_gid = kp->sc->ttf_glyph;
+		    tmp_seconds[tot].sc = kp->sc;
+		    tmp_seconds[tot].kp = kp;
+		    tmp_seconds[tot].isv = v;
+		    devtablen += DevTabLen(kp->adjust);
 		    ++tot;
 		}
 	    }
-	    for ( v=0; v<2; ++v ) {
-		for ( kp = v ? glyphs[cnt]->vkerns : glyphs[cnt]->kerns; kp!=NULL; kp=kp->next ) {
-		    if( kp->subtable!=sub ) continue; // process only glyphs from the current subtable
-		    if ( kp->sc->ttf_glyph!=-1 ) {
-			if ( k ) {
-			    seconds[cnt][tot].other_gid = kp->sc->ttf_glyph;
-			    seconds[cnt][tot].sc = kp->sc;
-			    seconds[cnt][tot].kp = kp;
-			    seconds[cnt][tot].isv = v;
-			    devtablen += DevTabLen(kp->adjust);
-			}
-			++tot;
-		    }
-		}
-	    }
-	    if ( k==0 ) {
-		seconds[cnt] = calloc(tot+1,sizeof(struct sckppst));
-	    } else {
-		qsort(seconds[cnt],tot,sizeof(struct sckppst),cmp_gid);
-		seconds[cnt][0].tot = tot;
-		/* Devtablen is 0 unless we are configured for device tables */
-		seconds[cnt][0].devtablen = devtablen;
-		seconds[cnt][0].samewas = 0xffff;
-	    }
 	}
+	qsort(tmp_seconds,tot,sizeof(struct sckppst),cmp_gid);
+	tmp_seconds[0].tot = tot;
+	/* Devtablen is 0 unless we are configured for device tables */
+	tmp_seconds[0].devtablen = devtablen;
+	tmp_seconds[0].samewas = 0xffff;
+
+	seconds[cnt] = calloc(tot+1,sizeof(struct sckppst));
+	memcpy(seconds[cnt], tmp_seconds, (tot+1)*sizeof(struct sckppst));
+	memset(tmp_seconds, 0, (tot+1)*sizeof(struct sckppst));
     }
 
     /* Some fonts do a primitive form of class based kerning, several glyphs */
@@ -1392,7 +1401,7 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
 				seconds[end_cnt][0].devtablen +
 			        2;	/* Number of secondary glyphs */
 	    if ( glyph_len>65535 && end_cnt==start_cnt ) {
-		LogError(_("Lookup subtable %s contains a glyph %s whose kerning information takes up more than 64k bytes\n"),
+		LogError(_("Lookup subtable %s contains a glyph %s whose kerning information takes up more than 64k bytes"),
 			sub->subtable_name, glyphs[start_cnt]->name );
 		len += glyph_len;
 	    } else if ( len+glyph_len>65535 ) {
@@ -1502,6 +1511,7 @@ static void dumpGPOSpairpos(FILE *gpos,SplineFont *sf,struct lookup_subtable *su
     for ( i=0; i<cnt; ++i )
 	free(seconds[i]);
     free(seconds);
+    free(tmp_seconds);
     free(glyphs);
 }
 
@@ -1811,24 +1821,24 @@ static SplineChar **allmarkglyphs(SplineChar ***glyphlist, int classcnt) {
     int i, tot, k;
 
     if ( classcnt==1 )
-return( SFOrderedGlyphs(glyphlist[0]));
+        return( SFOrderedGlyphs(glyphlist[0]));
 
     for ( i=tot=0; i<classcnt; ++i ) {
-	for ( k=0; glyphlist[i][k]!=NULL; ++k );
-	tot += k;
+        for ( k=0; glyphlist[i]!=NULL && glyphlist[i][k]!=NULL; ++k );
+        tot += k;
     }
     glyphs = malloc((tot+1)*sizeof(SplineChar *));
     for ( i=tot=0; i<classcnt; ++i ) {
-	for ( k=0; glyphlist[i][k]!=NULL; ++k )
-	    glyphs[tot++] = glyphlist[i][k];
+        for ( k=0; glyphlist[i]!=NULL && glyphlist[i][k]!=NULL; ++k )
+            glyphs[tot++] = glyphlist[i][k];
     }
     qsort(glyphs,tot,sizeof(SplineChar *),orderglyph);
     for ( i=k=0; i<tot; ++i ) {
-	while ( i+1<tot && glyphs[i]==glyphs[i+1]) ++i;
-	glyphs[k++] = glyphs[i];
+        while ( i+1<tot && glyphs[i]==glyphs[i+1]) ++i;
+        glyphs[k++] = glyphs[i];
     }
     glyphs[k] = NULL;
-return( glyphs );
+    return( glyphs );
 }
 
 static void dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
@@ -2014,12 +2024,12 @@ static void dumpgposAnchorData(FILE *gpos,AnchorClass *_ac,
     fseek(gpos,0,SEEK_END);
 }
 
-static void dumpGSUBsimplesubs(FILE *gsub,SplineFont *sf,struct lookup_subtable *sub) {
+static void dumpGSUBsimplesubs(FILE *gsub,SplineFont *sf,struct lookup_subtable *sub, struct alltabs *at) {
     int cnt, diff, ok = true;
     int32_t coverage_pos, end;
     SplineChar **glyphs, ***maps;
 
-    glyphs = SFOrderedGlyphsWithPSTinSubtable(sf,sub);
+    glyphs = SFOrderedGlyphsWithPSTinSubtable(sf,sub,at->subtable_map);
     maps = generateMapList(glyphs,sub);
 
     diff = (*maps[0])->ttf_glyph - glyphs[0]->ttf_glyph;
@@ -2049,13 +2059,13 @@ static void dumpGSUBsimplesubs(FILE *gsub,SplineFont *sf,struct lookup_subtable 
     GlyphMapFree(maps);
 }
 
-static void dumpGSUBmultiplesubs(FILE *gsub,SplineFont *sf,struct lookup_subtable *sub) {
+static void dumpGSUBmultiplesubs(FILE *gsub,SplineFont *sf,struct lookup_subtable *sub, struct alltabs *at) {
     int cnt, offset;
     int32_t coverage_pos, end;
     int gc;
     SplineChar **glyphs, ***maps;
 
-    glyphs = SFOrderedGlyphsWithPSTinSubtable(sf,sub);
+    glyphs = SFOrderedGlyphsWithPSTinSubtable(sf,sub,at->subtable_map);
     maps = generateMapList(glyphs,sub);
     for ( cnt=0; glyphs[cnt]!=NULL; ++cnt);
 
@@ -2114,7 +2124,7 @@ static void dumpGSUBligdata(FILE *gsub,SplineFont *sf,
     LigList *ll;
     struct splinecharlist *scl;
 
-    glyphs = SFOrderedGlyphsWithPSTinSubtable(sf,sub);
+    glyphs = SFOrderedGlyphsWithPSTinSubtable(sf,sub,at->subtable_map);
     cnt=0;
     if ( glyphs!=NULL ) for ( ; glyphs[cnt]!=NULL; ++cnt );
 
@@ -2794,7 +2804,7 @@ static void otf_dumpALookup(FILE *lfile, OTLookup *otl, SplineFont *sf,
 	    switch ( otl->lookup_type ) {
 	    /* GPOS lookup types */
 	      case gpos_single:
-		dumpGPOSsimplepos(lfile,sf,sub);
+		dumpGPOSsimplepos(lfile,sf,sub,at);
 	      break;
 
 	      case gpos_pair:
@@ -2803,7 +2813,7 @@ static void otf_dumpALookup(FILE *lfile, OTLookup *otl, SplineFont *sf,
 		if ( sub->kc!=NULL )
 		    dumpgposkernclass(lfile,sf,sub,at);
 		else
-		    dumpGPOSpairpos(lfile,sf,sub);
+		    dumpGPOSpairpos(lfile,sf,sub,at);
 	      break;
 
 	      case gpos_cursive:
@@ -2823,12 +2833,12 @@ static void otf_dumpALookup(FILE *lfile, OTLookup *otl, SplineFont *sf,
 
 	    /* GSUB lookup types */
 	      case gsub_single:
-		dumpGSUBsimplesubs(lfile,sf,sub);
+		dumpGSUBsimplesubs(lfile,sf,sub,at);
 	      break;
 
 	      case gsub_multiple:
 	      case gsub_alternate:
-		dumpGSUBmultiplesubs(lfile,sf,sub);
+		dumpGSUBmultiplesubs(lfile,sf,sub,at);
 	      break;
 
 	      case gsub_ligature:
@@ -3044,7 +3054,7 @@ static void FindFeatures(SplineFont *sf,int is_gpos,struct ginfo *ginfo) {
 
     memset(ginfo,0,sizeof(struct ginfo));
 
-    scripts = SFScriptsInLookups(sf,is_gpos);
+    scripts = SFScriptsInLookups(sf);
     if ( scripts==NULL )	/* All lookups unused */
 return;
     for ( sc=0; scripts[sc]!=0; ++sc );
@@ -3239,11 +3249,27 @@ return( NULL );
 return( efile );
 }
 
-struct otffeatname *findotffeatname(uint32_t tag,SplineFont *sf) {
+struct otffeatname *findotffeatname(uint32_t tag,enum otffn_field field,SplineFont *sf) {
     struct otffeatname *fn;
 
-    for ( fn=sf->feat_names; fn!=NULL && fn->tag!=tag; fn=fn->next );
-return( fn );
+    for ( fn=sf->feat_names; fn!=NULL && (fn->tag!=tag || fn->field!=field); fn=fn->next );
+    return( fn );
+}
+
+static bool getfeatnamefromginfo(struct alltabs *at, FILE *g___, uint32_t tag, enum otffn_field field, SplineFont *sf, uint32_t name_param_loc, uint32_t name_param_ptr, uint16_t *nameid) {
+	struct otffeatname *fn;
+	if ( (fn = findotffeatname(tag,field,sf))!=NULL ) {
+		if ( fn->nid==0 )
+			fn->nid = at->next_strid++;
+		fseek(g___,name_param_ptr,SEEK_SET);
+		putshort(g___,name_param_loc-name_param_ptr);
+		if ( nameid )
+			*nameid = fn->nid;
+		return true;
+	}
+	else {
+		return false;
+	}
 }
 
 static FILE *dumpg___info(struct alltabs *at, SplineFont *sf,int is_gpos) {
@@ -3339,7 +3365,7 @@ return( NULL );
 	ginfo.feat_lookups[i].name_param_ptr = 0;
 	if ( ginfo.feat_lookups[i].tag==CHR('s','i','z','e') )
 	    size_params_ptr = ftell(g___);
-	else if ( ginfo.feat_lookups[i].tag>=CHR('s','s','0','1') && ginfo.feat_lookups[i].tag<=CHR('s','s','2','0'))
+	else if ( (ginfo.feat_lookups[i].tag>=CHR('s','s','0','1') && ginfo.feat_lookups[i].tag<=CHR('s','s','2','0')) || (ginfo.feat_lookups[i].tag>=CHR('c','v','0','1') && ginfo.feat_lookups[i].tag<=CHR('c','v','9','9')) )
 	    ginfo.feat_lookups[i].name_param_ptr = ftell(g___);
 	putshort(g___,0);			/* No feature params (we'll come back for 'size') */
 	putshort(g___,ginfo.feat_lookups[i].lcnt);/* this many lookups */
@@ -3365,17 +3391,48 @@ return( NULL );
 	putshort(g___,sf->design_range_top);
     }
     for ( i=0; i<ginfo.fcnt; ++i ) {
-	if ( ginfo.feat_lookups[i].name_param_ptr!=0 &&
-		(fn = findotffeatname(ginfo.feat_lookups[i].tag,sf))!=NULL ) {
-	    if ( fn->nid==0 )
-		fn->nid = at->next_strid++;
-	    uint32_t name_param_loc = ftell(g___);
-	    fseek(g___,ginfo.feat_lookups[i].name_param_ptr,SEEK_SET);
-	    putshort(g___,name_param_loc-ginfo.feat_lookups[i].name_param_ptr);
-	    fseek(g___,name_param_loc,SEEK_SET);
-	    putshort(g___,0);		/* Minor version number */
-	    putshort(g___,fn->nid);
-	}
+		if ( ginfo.feat_lookups[i].name_param_ptr!=0 ) {
+			if ( (ginfo.feat_lookups[i].tag & 0xffff0000) == CHR('c','v','\0','\0') ) {
+				uint16_t featUiLabelNameId = 0;
+				uint16_t featUiTooltipTextNameId = 0;
+				uint16_t sampleTextNameId = 0;
+				uint16_t numNamedParameters = 0;
+				uint16_t firstParamUiLabelNameId = 0;
+				uint32_t name_param_loc = ftell(g___);
+				getfeatnamefromginfo(at, g___, ginfo.feat_lookups[i].tag, otffn_featname, sf,
+					name_param_loc, ginfo.feat_lookups[i].name_param_ptr, &featUiLabelNameId);
+				getfeatnamefromginfo(at, g___, ginfo.feat_lookups[i].tag, otffn_tooltiptext, sf,
+					name_param_loc, ginfo.feat_lookups[i].name_param_ptr, &featUiTooltipTextNameId);
+				getfeatnamefromginfo(at, g___, ginfo.feat_lookups[i].tag, otffn_sampletext, sf,
+					name_param_loc, ginfo.feat_lookups[i].name_param_ptr, &sampleTextNameId);
+				for ( numNamedParameters = 0; numNamedParameters < 65536-256; ++numNamedParameters ) {
+					if ( !getfeatnamefromginfo(at, g___, ginfo.feat_lookups[i].tag,
+						otffn_paramname_begin + numNamedParameters, sf, name_param_loc,
+						ginfo.feat_lookups[i].name_param_ptr,
+						numNamedParameters == 0 ? &firstParamUiLabelNameId : NULL) )
+							break;
+				}
+
+				fseek(g___,name_param_loc,SEEK_SET);
+				putshort(g___,0); // format
+				putshort(g___,featUiLabelNameId);
+				putshort(g___,featUiTooltipTextNameId);
+				putshort(g___,sampleTextNameId);
+				putshort(g___,numNamedParameters);
+				putshort(g___,firstParamUiLabelNameId);
+				putshort(g___,0); // TODO: charCount
+				//putu24(g___,0); // TODO: character[charCount]
+			}
+			else {
+				uint32_t name_param_loc = ftell(g___);
+				uint16_t nameId = 0;
+				getfeatnamefromginfo(at, g___, ginfo.feat_lookups[i].tag, otffn_featname, sf,
+					name_param_loc, ginfo.feat_lookups[i].name_param_ptr, &nameId);
+				fseek(g___,name_param_loc,SEEK_SET);
+				putshort(g___,0);		/* Minor version number */
+				putshort(g___,nameId);
+			}
+		}
     }
     /* And that should finish all the features */
 

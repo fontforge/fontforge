@@ -47,8 +47,10 @@
 #include "ustring.h"
 #include "utype.h"
 
+#include <assert.h>
 #include <locale.h>
 #include <math.h>
+#include <stdbool.h>
 #include <stddef.h>
 
 /* Adobe's opentype feature file */
@@ -456,20 +458,21 @@ static OTLookup *lookup_in_rule(struct fpst_rule *r,int seq,int *index, int *pos
     /* That's legal in otf, but I don't think it can be specified in the */
     /*  feature file. It doesn't seem likely to be used so I ignore it */
 
-    for ( i=0; i<r->lookup_cnt && seq<r->lookups[i].seq; ++i );
-    if ( i>=r->lookup_cnt )
-return( NULL );
+    for ( i=0; i<r->lookup_cnt && seq>r->lookups[i].seq; ++i );
+    if (i == r->lookup_cnt || (i > 0 && seq < r->lookups[i].seq))
+        --i;
     *index = i;
     *pos = seq-r->lookups[i].seq;
     otl = r->lookups[i].lookup;
     if ( seq==r->lookups[i].seq )
-return( otl );
-    if ( otl->lookup_type == gsub_ligature )
-return( otl );
+        return( otl );
+    /* This does not seem to be needed, and it is better if not used at all */
+    //if ( otl->lookup_type == gsub_ligature )
+    //    return( otl );
     else if ( otl->lookup_type == gpos_pair && *pos==1 )
-return( otl );
+        return( otl );
 
-return( NULL );
+    return( NULL );
 }
 
 static PST *pst_from_single_lookup(SplineFont *sf, OTLookup *otl, char *name ) {
@@ -633,8 +636,10 @@ static void dump_contextpstglyphs(FILE *out,SplineFont *sf,
 		    *last_end = ch2;
 		} else {
 		    char *next_start, *next_end;
+		    *pt = ch;
 		    next_start = pt;
 		    while ( *next_start==' ' ) ++next_start;
+		    *pt = '\0';
 		    if ( *next_start!='\0' ) {
 			for ( next_end=next_start; *next_end!=' ' && *next_end!='\0'; ++next_end );
 			ch2 = *next_end; *next_end = '\0';
@@ -1745,12 +1750,16 @@ static void dump_header_languagesystem(FILE *out, SplineFont *sf) {
     struct scriptlanglist *sl;
     int has_DFLT = 0;
 
+    uint32_t *scripts = SFScriptsInLookups(sf);
+    if (scripts == NULL) {
+        return;
+    }
+
     GTree* ht = g_tree_new_full( tree_strcasecmp, 0, free, NULL );
 
     for ( isgpos=0; isgpos<2; ++isgpos ) {
 	uint32_t *feats = SFFeaturesInScriptLang(sf,isgpos,0xffffffff,0xffffffff);
 	if ( feats[0]!=0 ) {
-	    uint32_t *scripts = SFScriptsInLookups(sf,isgpos);
 	    note_nested_lookups_used_twice(isgpos ? sf->gpos_lookups : sf->gsub_lookups);
 	    for ( i=0; feats[i]!=0; ++i ) {
 
@@ -1782,7 +1791,6 @@ static void dump_header_languagesystem(FILE *out, SplineFont *sf) {
                     free(langs);
 		}
 	    }
-            free(scripts);
 	}
         free(feats);
     }
@@ -1791,19 +1799,40 @@ static void dump_header_languagesystem(FILE *out, SplineFont *sf) {
     fprintf( out, "\n" );
 }
 
+static bool dump_feature_names(FILE *out, uint32_t tag, enum otffn_field field, SplineFont *sf, const char *fieldname, bool *cvprm /* NULL if 'ssXX' */) {
+	struct otffeatname *fn;
+    struct otfname *on;
+	char indent[] = {cvprm ? ' ' : 0,' ',0};
+	if ( (fn = findotffeatname(tag,field,sf))!=NULL ) {
+		if ( cvprm && !(*cvprm) )
+			fprintf( out, "  cvParameters {\n" );
+		fprintf( out, "%s  %s {\n", indent, fieldname );
+		for ( on = fn->names; on!=NULL; on=on->next ) {
+			fprintf( out, "%s    name 3 1 0x%x \"", indent, on->lang );
+			UniOut(out,on->name );
+			fprintf( out, "\";\n" );
+		}
+		fprintf( out, "%s  };\n", indent );
+		if ( cvprm )
+			*cvprm = true;
+		return true;
+	}
+	else {
+		return false;
+	}
+}
+
 static void dump_gsubgpos(FILE *out, SplineFont *sf) {
     int isgpos;
     int i,l,s, subl;
     OTLookup *otl;
     FeatureScriptLangList *fl;
     struct scriptlanglist *sl;
-    struct otffeatname *fn;
-    struct otfname *on;
 
     for ( isgpos=0; isgpos<2; ++isgpos ) {
 	uint32_t *feats = SFFeaturesInScriptLang(sf,isgpos,0xffffffff,0xffffffff);
 	if ( feats[0]!=0 ) {
-	    uint32_t *scripts = SFScriptsInLookups(sf,isgpos);
+	    uint32_t *scripts = SFScriptsInLookups(sf);
 	    fprintf( out, "\n# %s \n\n", isgpos ? "GPOS" : "GSUB" );
 	    note_nested_lookups_used_twice(isgpos ? sf->gpos_lookups : sf->gsub_lookups);
 	    for ( otl= isgpos ? sf->gpos_lookups : sf->gsub_lookups; otl!=NULL; otl=otl->next )
@@ -1811,15 +1840,21 @@ static void dump_gsubgpos(FILE *out, SplineFont *sf) {
 		    dump_lookup( out, sf, otl );
 	    for ( i=0; feats[i]!=0; ++i ) {
 		fprintf( out, "\nfeature %c%c%c%c {\n", feats[i]>>24, feats[i]>>16, feats[i]>>8, feats[i] );
-		if ( feats[i]>=CHR('s','s','0','1') &&  feats[i]<=CHR('s','s','2','0') &&
-			(fn = findotffeatname(feats[i],sf))!=NULL ) {
-		    fprintf( out, "  featureNames {\n" );
-		    for ( on = fn->names; on!=NULL; on=on->next ) {
-			fprintf( out, "    name 3 1 0x%x \"", on->lang );
-			UniOut(out,on->name );
-			fprintf( out, "\";\n" );
-		    }
-		    fprintf( out, "  };\n" );
+		if ( feats[i]>=CHR('s','s','0','1') && feats[i]<=CHR('s','s','2','0') ) {
+			dump_feature_names(out, feats[i], otffn_featname, sf, "featureNames", NULL);
+		}
+		if ( feats[i]>=CHR('c','v','0','1') && feats[i]<=CHR('c','v','9','9') ) {
+			bool cvprm = false;
+			dump_feature_names(out, feats[i], otffn_featname, sf, "FeatUILabelNameID", &cvprm);
+			dump_feature_names(out, feats[i], otffn_tooltiptext, sf, "FeatUITooltipTextNameID", &cvprm);
+			dump_feature_names(out, feats[i], otffn_sampletext, sf, "SampleTextNameID", &cvprm);
+			for ( l = 0; l < 65536-256; ++l ) {
+				if ( !dump_feature_names(out, feats[i], otffn_paramname_begin+l, sf, "ParamUILabelNameID", &cvprm) )
+					break;
+			}
+			if ( cvprm ) {
+				fprintf( out, "  };\n" );
+			}
 		}
 		if ( feats[i]==CHR('s','i','z','e') ) {
 		    struct otfname *nm;
@@ -2222,11 +2257,12 @@ enum toktype { tk_name, tk_class, tk_int, tk_char, tk_cid, tk_eof,
 	       tk_lookupflag, tk_mark, tk_nameid, tk_NULL, tk_parameters, tk_position,
 	       tk_required, tk_RightToLeft, tk_script, tk_substitute, tk_subtable,
 	       tk_table, tk_useExtension,
-/* Additional keywords in the 2008 draft */
 	       tk_anchorDef, tk_valueRecordDef, tk_contourpoint,
 	       tk_MarkAttachmentType, tk_UseMarkFilteringSet,
 	       tk_markClass, tk_reversesub, tk_base, tk_ligature, tk_ligComponent,
-	       tk_featureNames
+	       tk_featureNames,
+	       tk_cvParameters, tk_FeatUILabelNameID, tk_FeatUITooltipTextNameID,
+	       tk_SampleTextNameID, tk_ParamUILabelNameID, tk_Character
 };
 
 struct glyphclasses {
@@ -2334,7 +2370,6 @@ static struct keywords {
     { "subtable", tk_subtable },
     { "table", tk_table },
     { "useExtension", tk_useExtension },
-/* Additional keywords in the 2008 draft */
     { "anchorDef", tk_anchorDef },
     { "valueRecordDef", tk_valueRecordDef },
     { "contourpoint", tk_contourpoint },
@@ -2346,6 +2381,12 @@ static struct keywords {
     { "ligature", tk_ligature },
     { "ligComponent", tk_ligComponent },
     { "featureNames", tk_featureNames },
+    { "cvParameters", tk_cvParameters },
+    { "FeatUILabelNameID", tk_FeatUILabelNameID },
+    { "FeatUITooltipTextNameID", tk_FeatUITooltipTextNameID },
+    { "SampleTextNameID", tk_SampleTextNameID },
+    { "ParamUILabelNameID", tk_ParamUILabelNameID },
+    { "Character", tk_Character },
 /* synonyms */
     { "sub", tk_substitute },
     { "pos", tk_position },
@@ -2581,7 +2622,8 @@ return;
 	    ch = getc(in);
 	    check_keywords = false;
 	}
-	while ( isalnum(ch) || ch=='_' || ch=='.' || (ch=='-' && tok->type==tk_class) ) {
+        /* *+-:^|~ are allowed in names per OpenType Feature File Specification 2.f.i. */
+	while ( isalnum(ch) || strchr("_.*+-:^|~", ch) ) {
 	    if ( pt<tok->tokbuf+MAXT )
 		*pt++ = ch;
 	    ch = getc(in);
@@ -2902,7 +2944,7 @@ return(NULL);
     for ( i=0; i<tok->sf->subfontcnt; ++i ) {
 	SplineFont *sub = tok->sf->subfonts[i];
 	if ( cid<sub->glyphcnt && sub->glyphs[cid]!=NULL )
-return( sub->glyphs[cid]->name );
+return( copy( sub->glyphs[cid]->name ));
 	if ( sub->glyphcnt>max ) {
 	    max = sub->glyphcnt;
 	    maxsf = sub;
@@ -2927,7 +2969,7 @@ return( NULL );
 return( copy( sc->name ));
 }
 
-static SplineChar *fea_glyphname_get(struct parseState *tok,char *name) {
+static SplineChar *fea_glyphname_get_silent(struct parseState *tok,char *name) {
     SplineFont *sf = tok->sf;
     EncMap *map = sf->fv==NULL ? sf->map : sf->fv->map;
     SplineChar *sc = SFGetChar(sf,-1,name);
@@ -2976,9 +3018,19 @@ return( sc );
     }
 return( sc );
 #else
-    LogError(_("Reference to a non-existent glyph name on line %d of %s: %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth], name);
     return NULL;
 #endif // 0
+}
+
+static SplineChar *fea_glyphname_get(struct parseState *tok,char *name) {
+    SplineChar *sc = fea_glyphname_get_silent(tok, name);
+
+    if (sc == NULL) {
+        LogError(_("Reference to a non-existent glyph name on line %d of %s: %s"),
+                 tok->line[tok->inc_depth], tok->filename[tok->inc_depth], name);
+    }
+
+    return sc;
 }
 
 static char *fea_glyphname_validate(struct parseState *tok,char *name) {
@@ -2988,6 +3040,102 @@ static char *fea_glyphname_validate(struct parseState *tok,char *name) {
 return( NULL );
 
 return( copy( sc->name ));
+}
+
+static char* fea_AddGlyphCIDRange(struct parseState* tok, int last_val, char** _glyphs, int* _max, int* _cnt) {
+    char* contents = NULL;
+
+    assert(tok->type == tk_cid);
+    if (last_val >= tok->value) {
+        LogError(_("Invalid CID range in glyph class on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth]);
+        ++tok->err_count;
+    }
+    /* Last val has already been added to the class */
+    /* and we'll add the current value later */
+    for (++last_val; last_val < tok->value; ++last_val) {
+        contents = fea_cid_validate(tok, last_val);
+        if (contents != NULL) {
+            *_cnt = fea_AddGlyphs(_glyphs, _max, *_cnt, contents);
+            contents = NULL;
+        }
+    }
+    contents = fea_cid_validate(tok, tok->value);
+    return contents;
+}
+
+static char* fea_AddGlyphNameRange(struct parseState* tok, char* glyph_from, char* glyph_to,
+                                   char** _glyphs, int* _max, int* _cnt) {
+    char* contents = NULL;
+    int range_type = 0, range_len;
+    char* pt1, * start1, * pt2, * start2;
+    int v1, v2;
+
+    assert(tok->type == tk_name);
+    if (strlen(glyph_from) == strlen(glyph_to) &&
+        strcmp(glyph_from, glyph_to) < 0) {
+        start1 = NULL;
+        for (pt1 = glyph_from, pt2 = glyph_to;
+            *pt1 != '\0'; ++pt1, ++pt2) {
+            if (*pt1 != *pt2) {
+                if (start1 != NULL) {
+                    range_type = 0;
+                    break;
+                }
+                start1 = pt1;
+                start2 = pt2;
+                if (!isdigit(*pt1) || !isdigit(*pt2))
+                    range_type = 1;
+                else {
+                    for (range_len = 0; range_len < 3 && isdigit(*pt1) && isdigit(*pt2);
+                        ++range_len, ++pt1, ++pt2)
+                        ;
+                    range_type = 2;
+                    --pt1;
+                    --pt2;
+                }
+            }
+        }
+    }
+    if (range_type == 0) {
+        LogError(_("Invalid glyph name range in glyph class on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth]);
+        ++tok->err_count;
+    }
+    else if (range_type == 1 || range_len == 1) {
+        /* Single letter changes */
+        v1 = *start1;
+        v2 = *start2;
+        for (++v1; v1 <= v2; ++v1) {
+            sprintf(glyph_from, "%.*s%c%s", (int)(start2 - glyph_to),
+                glyph_to, v1, start2 + 1);
+            contents = fea_glyphname_validate(tok, glyph_from);
+            if (v1 == v2)
+                break;
+            if (contents != NULL) {
+                *_cnt = fea_AddGlyphs(_glyphs, _max, *_cnt, contents);
+                contents = NULL;
+            }
+        }
+    }
+    else {
+        v1 = strtol(start1, NULL, 10);
+        v2 = strtol(start2, NULL, 10);
+        for (++v1; v1 <= v2; ++v1) {
+            if (range_len == 2)
+                sprintf(glyph_from, "%.*s%02d%s", (int)(start2 - glyph_to),
+                    glyph_to, v1, start2 + 2);
+            else
+                sprintf(glyph_from, "%.*s%03d%s", (int)(start2 - glyph_to),
+                    glyph_to, v1, start2 + 3);
+            contents = fea_glyphname_validate(tok, glyph_from);
+            if (v1 == v2)
+                break;
+            if (contents != NULL) {
+                *_cnt = fea_AddGlyphs(_glyphs, _max, *_cnt, contents);
+                contents = NULL;
+            }
+        }
+    }
+    return contents;
 }
 
 static char *fea_ParseGlyphClass(struct parseState *tok) {
@@ -3005,10 +3153,8 @@ return( NULL );
 	// Start parsing the list.
 	char *contents = NULL; // This is a temporary buffer used for each cycle below.
 	int cnt=0, max=0;
-	int last_val, range_type, range_len;
+	int last_val;
 	char last_glyph[MAXT+1];
-	char *pt1, *start1, *pt2, *start2;
-	int v1, v2;
 
 	last_val = -1; last_glyph[0] = '\0';
 	for (;;) {
@@ -3023,83 +3169,40 @@ return( NULL );
 		last_val = tok->value; last_glyph[0] = '\0';
 		contents = fea_cid_validate(tok,tok->value);
 	    } else if ( tok->type==tk_name ) {
-		strcpy(last_glyph,tok->tokbuf); last_val = -1;
-		contents = fea_glyphname_validate(tok,tok->tokbuf);
+                char* p_hyphen = NULL;
+                last_val = -1;
+                p_hyphen = strchr(tok->tokbuf, '-');
+                /* According to OpenType Feature File Specification 2.f.i. the
+                hyphen should first be assumed as a part of glyph name. Only if
+                there is no such glyph, we shall proceed to the range interpretation. */
+                if ( p_hyphen &&
+                     p_hyphen - tok->tokbuf > 0 &&
+                     p_hyphen - tok->tokbuf < strlen(tok->tokbuf) - 1 ) {
+                    /* Check glyph name without raising error. */
+                    SplineChar *sc = fea_glyphname_get_silent(tok, tok->tokbuf);
+                    if (sc != NULL) {
+                        contents = copy(sc->name);
+                    }
+                    else {
+                        /* Interpret this token as a range. */
+                        char glyph_from[MAXT+1] = "\0", glyph_to[MAXT+1] = "\0";
+                        strncat(glyph_from, tok->tokbuf, p_hyphen - tok->tokbuf);
+                        strcat(glyph_to, p_hyphen + 1);
+                        contents = fea_AddGlyphNameRange(tok, glyph_from, glyph_to, &glyphs, &max, &cnt);
+                        last_val=-1; last_glyph[0] = '\0';
+                    }
+                } else {
+                    /* Name token without hyphen */
+		    strcpy(last_glyph,tok->tokbuf); last_val = -1;
+                    contents = fea_glyphname_validate(tok,tok->tokbuf);
+                }
 	    } else if ( tok->type==tk_char && tok->tokbuf[0]=='-' ) {
 		// It's a range extending from the previous token.
 		fea_ParseTok(tok);
 		if ( last_val!=-1 && tok->type==tk_cid ) {
-		    if ( last_val>=tok->value ) {
-			LogError(_("Invalid CID range in glyph class on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
-			++tok->err_count;
-		    }
-		    /* Last val has already been added to the class */
-		    /* and we'll add the current value later */
-		    for ( ++last_val; last_val<tok->value; ++last_val ) {
-			contents = fea_cid_validate(tok,last_val);
-			if ( contents!=NULL ) {
-			    cnt = fea_AddGlyphs(&glyphs,&max,cnt,contents); contents = NULL;
-			}
-		    }
-		    contents = fea_cid_validate(tok,tok->value);
+                    contents = fea_AddGlyphCIDRange(tok, last_val, &glyphs, &max, &cnt);
 		} else if ( last_glyph[0]!='\0' && tok->type==tk_name ) {
-		    range_type=0;
-		    if ( strlen(last_glyph)==strlen(tok->tokbuf) &&
-			    strcmp(last_glyph,tok->tokbuf)<0 ) {
-			start1=NULL;
-			for ( pt1=last_glyph, pt2=tok->tokbuf;
-				*pt1!='\0'; ++pt1, ++pt2 ) {
-			    if ( *pt1!=*pt2 ) {
-				if ( start1!=NULL ) {
-				    range_type=0;
-			break;
-				}
-			        start1 = pt1; start2 = pt2;
-			        if ( !isdigit(*pt1) || !isdigit(*pt2))
-				    range_type = 1;
-				else {
-				    for ( range_len=0; range_len<3 && isdigit(*pt1) && isdigit(*pt2);
-					    ++range_len, ++pt1, ++pt2 );
-				    range_type = 2;
-			            --pt1; --pt2;
-				}
-			    }
-			}
-		    }
-		    if ( range_type==0 ) {
-			LogError(_("Invalid glyph name range in glyph class on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
-			++tok->err_count;
-		    } else if ( range_type==1 || range_len==1 ) {
-			/* Single letter changes */
-			v1 = *start1; v2 = *start2;
-			for ( ++v1; v1<=v2; ++v1 ) {
-			    sprintf( last_glyph, "%.*s%c%s", (int) (start2-tok->tokbuf),
-			             tok->tokbuf, v1, start2+1);
-			    contents = fea_glyphname_validate(tok,last_glyph);
-			    if ( v1==v2 )
-			break;
-			    if ( contents!=NULL ) {
-				cnt = fea_AddGlyphs(&glyphs,&max,cnt,contents); contents = NULL;
-			    }
-			}
-		    } else {
-			v1 = strtol(start1,NULL,10);
-			v2 = strtol(start2,NULL,10);
-			for ( ++v1; v1<=v2; ++v1 ) {
-			    if ( range_len==2 )
-				sprintf( last_glyph, "%.*s%02d%s", (int) (start2-tok->tokbuf),
-					tok->tokbuf, v1, start2+2 );
-			    else
-				sprintf( last_glyph, "%.*s%03d%s", (int) (start2-tok->tokbuf),
-					tok->tokbuf, v1, start2+3 );
-			    contents = fea_glyphname_validate(tok,last_glyph);
-			    if ( v1==v2 )
-			break;
-			    if ( contents!=NULL ) {
-				cnt = fea_AddGlyphs(&glyphs,&max,cnt,contents); contents = NULL;
-			    }
-			}
-		    }
+                    contents = fea_AddGlyphNameRange(tok, last_glyph, tok->tokbuf, &glyphs, &max, &cnt);
 		} else {
 		    LogError(_("Unexpected token in glyph class range on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 		    ++tok->err_count;
@@ -3112,7 +3215,7 @@ return( NULL );
 	    } else {
 		LogError(_("Expected glyph name, cid, or class in glyph class definition on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 		++tok->err_count;
-	break;
+	        break;
 	    }
 	    if ( contents!=NULL ) {
 		cnt = fea_AddGlyphs(&glyphs,&max,cnt,contents); contents = NULL;
@@ -3219,7 +3322,6 @@ static void fea_ParseLookupFlags(struct parseState *tok) {
 		fea_skip_to_semi(tok);
 	break;
 	    }
-	    fea_ParseTok(tok);
 	}
 	if ( tok->type != tk_char || tok->tokbuf[0]!=';' ) {
 	    LogError(_("Unexpected token in lookupflags on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
@@ -3808,11 +3910,10 @@ static struct markedglyphs *fea_parseBaseMarkSequence(struct parseState *tok,
 	    contents = fea_glyphname_validate(tok,tok->tokbuf);
 	else
 	    contents = fea_cid_validate(tok,tok->value);
-	if ( contents!=NULL ) {
-	    cur = chunkalloc(sizeof(struct markedglyphs));
-	    cur->is_name = true;
-	    cur->name_or_class = contents;
-	}
+
+	cur = chunkalloc(sizeof(struct markedglyphs));
+	cur->is_name = true;
+	cur->name_or_class = contents;
     } else if ( tok->type == tk_class || (tok->type==tk_char && tok->tokbuf[0]=='[')) {
 	cur = chunkalloc(sizeof(struct markedglyphs));
 	cur->is_name = false;
@@ -3872,11 +3973,10 @@ static struct markedglyphs *fea_parseLigatureSequence(struct parseState *tok,
 	    contents = fea_glyphname_validate(tok,tok->tokbuf);
 	else
 	    contents = fea_cid_validate(tok,tok->value);
-	if ( contents!=NULL ) {
-	    cur = chunkalloc(sizeof(struct markedglyphs));
-	    cur->is_name = true;
-	    cur->name_or_class = contents;
-	}
+
+	cur = chunkalloc(sizeof(struct markedglyphs));
+	cur->is_name = true;
+	cur->name_or_class = contents;
     } else if ( tok->type == tk_class || (tok->type==tk_char && tok->tokbuf[0]=='[')) {
 	cur = chunkalloc(sizeof(struct markedglyphs));
 	cur->is_name = false;
@@ -5359,7 +5459,7 @@ static struct feat_item *fea_ParseSizeMenuName(struct parseState *tok, struct fe
 return( feat );
 }
 
-static void fea_ParseFeatureNames(struct parseState *tok,uint32_t tag) {
+static void fea_ParseFeatureNames(struct parseState *tok,uint32_t tag,enum otffn_field field) {
     struct otffeatname *cur;
     struct otfname *head=NULL, *string;
     struct nameid *temp;
@@ -5392,11 +5492,64 @@ static void fea_ParseFeatureNames(struct parseState *tok,uint32_t tag) {
 	item->u2.featnames = cur = chunkalloc(sizeof(*cur));
 	cur->tag = tag;
 	cur->names = head;
+	cur->field = field;
     }
     if ( tok->type!=tk_char || tok->tokbuf[0]!='}' ) {
 	LogError(_("Expected closing curly brace on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
 	++tok->err_count;
     }
+}
+
+static void fea_ParseCvParameters(struct parseState *tok,uint32_t tag) {
+	bool finished = false;
+	int paramCount = 0;
+	bool charList = false; // remove after once character list is implemented
+
+	for (finished = false;!finished;) {
+		fea_ParseTok(tok);
+		switch ( tok->type ) {
+			case tk_FeatUILabelNameID:
+				fea_TokenMustBe(tok,tk_char,'{');
+				fea_ParseFeatureNames(tok,tag,otffn_featname);
+				fea_end_statement(tok);
+				break;
+			case tk_FeatUITooltipTextNameID:
+				fea_TokenMustBe(tok,tk_char,'{');
+				fea_ParseFeatureNames(tok,tag,otffn_tooltiptext);
+				fea_end_statement(tok);
+				break;
+			case tk_SampleTextNameID:
+				fea_TokenMustBe(tok,tk_char,'{');
+				fea_ParseFeatureNames(tok,tag,otffn_sampletext);
+				fea_end_statement(tok);
+				break;
+			case tk_ParamUILabelNameID:
+				fea_TokenMustBe(tok,tk_char,'{');
+				fea_ParseFeatureNames(tok,tag,otffn_paramname_begin + (paramCount++));
+				fea_end_statement(tok);
+				break;
+			case tk_Character:
+				tok->base = 0;
+				fea_TokenMustBe(tok,tk_int,'\0');
+				// TODO: character
+				tok->base = 10;
+				fea_end_statement(tok);
+				charList = true; // remove after once character list is implemented
+				break;
+			default:
+				finished = true;
+				break;
+		}
+	}
+
+	if ( charList ) { // remove after once character list is implemented
+		LogError( _("The character list in the cvParameters block in feature %c%c%c%c is ignored."), tag >> 24,tag >> 16,tag >> 8,tag );
+	}
+
+	if ( tok->type!=tk_char || tok->tokbuf[0]!='}' ) {
+		LogError(_("Expected closing curly brace on line %d of %s"), tok->line[tok->inc_depth], tok->filename[tok->inc_depth] );
+		++tok->err_count;
+	}
 }
 
 static void fea_ParseFeatureDef(struct parseState *tok) {
@@ -5498,9 +5651,13 @@ return;
 		}
 	      break;
 	      case tk_featureNames:
-	        /* I don't handle these yet, so ignore 'em */
 		fea_TokenMustBe(tok,tk_char,'{');
-		fea_ParseFeatureNames(tok,feat_tag);
+		fea_ParseFeatureNames(tok,feat_tag,otffn_featname);
+		fea_end_statement(tok);
+	      break;
+	      case tk_cvParameters:
+		fea_TokenMustBe(tok,tk_char,'{');
+		fea_ParseCvParameters(tok,feat_tag);
 		fea_end_statement(tok);
 	      break;
 	      case tk_parameters:
@@ -6687,7 +6844,7 @@ static void fea_ApplyLookupListPair(struct parseState *tok,
 		      PSTFree(pst);
 		    } else {
 		      LogError(_("Discarding a duplicate kerning pair."));
-		      SplineCharFree(sc); sc = NULL;
+		      sc = NULL;
 		      free(kp); kp = NULL;
 		    }
 		} else {
@@ -7105,10 +7262,11 @@ static struct feat_item *fea_ApplyFeatureList(struct parseState *tok,
 	    fea_AttachFeatureToLookup(otl,feature_tag,sl);
     continue;
 	  case ft_featname:
-	    for ( fn = tok->sf->feat_names; fn!=NULL && fn->tag!=f->u2.featnames->tag; fn=fn->next );
+	    for ( fn = tok->sf->feat_names; fn!=NULL && (fn->tag!=f->u2.featnames->tag || fn->field!=f->u2.featnames->field); fn=fn->next );
 	    if ( fn!=NULL ) {
 		OtfNameListFree(fn->names);
 		fn->names = f->u2.featnames->names;
+		fn->field = f->u2.featnames->field;
 		chunkfree(f->u2.featnames,sizeof(struct otffeatname));
 		f->u2.featnames = NULL;
 	    } else {

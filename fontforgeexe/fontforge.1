@@ -11,13 +11,10 @@ fontforge \- create, modify, and view font files
 .BR fontforge
 [\fB\-allglyphs\fP]
 [\fB\-c\fP\ \fIstring\fP]
-[\fB\-cmap\fP\ \fImaptype\fP]
-[\fB\-depth\fP\ \fIpixeld\fP]
 [\fB\-display\fP\ \fIstr\fP]
 [\fB\-lang\fP=ff]
 [\fB\-lang\fP=py]
 [\fB\-help\fP]
-[\fB\-keyboard\fP\ \fIktype\fP]
 [\fB\-last\fP]
 [\fB\-new\fP]
 [\fB\-nosplash\fP]
@@ -29,7 +26,6 @@ fontforge \- create, modify, and view font files
 [\fB\-sync\fP]
 [\fB\-unique\fP]
 [\fB\-usage\fP]
-[\fB\-vc\fP\ \fIclass\fP]
 [\fB\-version\fP]
 [\fIfontfile\fP\ ...]
 .SH DESCRIPTION
@@ -96,37 +92,8 @@ in it and have this process exit.
 Employ the X display specified by the string
 \fIdisplay-name\fP (for example: localhost:0).
 .TP
-.B \-depth \fIpixeld\fP
-Attempt to employ a visual that matches the specified pixel depth,
-\fIpixeld\fP.
-.TP
-.B \-vc \fIval\fP
-Sets the visual class if possible.
-.TP
-.B \-cmap current\fR|\fPcopy\fR|\fPprivate
-Sets the type of color map.
-\fBcurrent\fP attempts to allocate colors int he current (shared) color map.
-The program will likely not find everything it requires.
-\fBcopy\fP allocates what can be allocated,
-then copies the current color map; it can thus
-make use of cells other programs are using.
-\fBprivate\fP creates a new color map and fills it with the required colors.
-.TP
-.B \-dontopenxdevices
-In case that fails.
-.TP
 .B \-sync
 Syncs the display, debugging.
-.TP
-.B \-keyboard ibm\fR|\fPmac\fR|\fPsun\fR|\fPppc
-Generates appropriate hotkeys in menus.
-Use \fBibm\fP on an IBM-compatible PC.
-Use \fBmac\fP on a Mac computer running Mac\ OS.
-Use \fBsun\fP on a Sun workstation.
-Use \fBppc\fP on Power PC Mac running SUSE GNU/Linux.
-.TP
-\fB\-usecairo\fP=yes|no
-Use (or not) the cairo library for drawing.
 .TP
 .B \-help
 Displays a help message and exits.

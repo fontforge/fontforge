@@ -38,6 +38,7 @@
 #include "ffglib.h"
 #include "fontforge.h"
 #include "fvfonts.h"
+#include "getline.h"
 #include "gfile.h"
 #include "gutils.h"
 #include "gwidget.h"
@@ -63,6 +64,7 @@
 #include <limits.h>		/* For NAME_MAX or _POSIX_NAME_MAX */
 #include <locale.h>
 #include <math.h>
+#include <stdbool.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -173,6 +175,7 @@ static void SFDDumpHintList(FILE *sfd,const char *key, StemInfo *h);
 static void SFDDumpDHintList( FILE *sfd,const char *key, DStemInfo *d );
 static StemInfo *SFDReadHints(FILE *sfd);
 static DStemInfo *SFDReadDHints( SplineFont *sf,FILE *sfd,int old );
+static void SFDSizeMap(EncMap *map,int glyphcnt,int enccnt);
 
 static int PeekMatch(FILE *stream, const char * target) {
   // This returns 1 if target matches the next characters in the stream.
@@ -187,14 +190,6 @@ static int PeekMatch(FILE *stream, const char * target) {
   return (target[pos1] == '\0');
 }
 
-static void utf7_encode(FILE *sfd,long ch) {
-
-    putc(base64[(ch>>18)&0x3f],sfd);
-    putc(base64[(ch>>12)&0x3f],sfd);
-    putc(base64[(ch>>6)&0x3f],sfd);
-    putc(base64[ch&0x3f],sfd);
-}
-
 static char *base64_encode(char *ostr, long ch) {
 
     *ostr++ = base64[(ch>>18)&0x3f];
@@ -204,107 +199,33 @@ static char *base64_encode(char *ostr, long ch) {
 return( ostr );
 }
 
-void SFDDumpUTF7Str(FILE *sfd, const char *_str) {
-    int ch, prev_cnt=0, prev=0, in=0;
-    const unsigned char *str = (const unsigned char *) _str;
-
+void SFDDumpUTF7Str(FILE *sfd, const char *str) {
     putc('"',sfd);
-    if ( str!=NULL ) while ( (ch = *str++)!='\0' ) {
-	/* Convert from utf8 to ucs4 */
-	if ( ch<=127 )
-	    /* Done */;
-	else if ( ch<=0xdf && *str!='\0' ) {
-	    ch = ((ch&0x1f)<<6) | (*str++&0x3f);
-	} else if ( ch<=0xef && *str!='\0' && str[1]!='\0' ) {
-	    ch = ((ch&0xf)<<12) | ((str[0]&0x3f)<<6) | (str[1]&0x3f);
-	    str += 2;
-	} else if ( *str!='\0' && str[1]!='\0' && str[2]!='\0' ) {
-	    int w = ( ((ch&0x7)<<2) | ((str[0]&0x30)>>4) )-1;
-	    int s1, s2;
-	    s1 = (w<<6) | ((str[0]&0xf)<<2) | ((str[1]&0x30)>>4);
-	    s2 = ((str[1]&0xf)<<6) | (str[2]&0x3f);
-	    ch = (s1*0x400)+s2 + 0x10000;
-	    str += 3;
-	} else {
-	    /* illegal */
-	}
-	if ( ch<127 && ch!='\n' && ch!='\r' && ch!='\\' && ch!='~' &&
-		ch!='+' && ch!='=' && ch!='"' ) {
-	    if ( prev_cnt!=0 ) {
-		prev<<= (prev_cnt==1?16:8);
-		utf7_encode(sfd,prev);
-		prev_cnt=prev=0;
-	    }
-	    if ( in ) {
-		if ( inbase64[ch]!=-1 || ch=='-' )
-		    putc('-',sfd);
-		in = 0;
-	    }
-	    putc(ch,sfd);
-	} else if ( ch=='+' && !in ) {
-	    putc('+',sfd);
-	    putc('-',sfd);
-	} else if ( prev_cnt== 0 ) {
-	    if ( !in ) {
-		putc('+',sfd);
-		in = 1;
-	    }
-	    prev = ch;
-	    prev_cnt = 2;		/* 2 bytes */
-	} else if ( prev_cnt==2 ) {
-	    prev<<=8;
-	    prev += (ch>>8)&0xff;
-	    utf7_encode(sfd,prev);
-	    prev = (ch&0xff);
-	    prev_cnt=1;
-	} else {
-	    prev<<=16;
-	    prev |= ch;
-	    utf7_encode(sfd,prev);
-	    prev_cnt = prev = 0;
-	}
-    }
-    if ( prev_cnt==2 ) {
-	prev<<=8;
-	utf7_encode(sfd,prev);
-    } else if ( prev_cnt==1 ) {
-	prev<<=16;
-	utf7_encode(sfd,prev);
+    if ( str!=NULL ) {
+        char *utf7_str = utf8toutf7_copy(str);
+        fprintf(sfd, "%s", utf7_str);
+        free(utf7_str);
     }
     putc('"',sfd);
 }
 
 
 char *utf8toutf7_copy(const char *_str) {
-    int ch, prev_cnt=0, prev=0, in=0;
-    const unsigned char *str = (const unsigned char *) _str;
+    uint16_t ch;
+    int prev_cnt=0, prev=0, in=0;
     int i, len;
     char *ret=NULL, *ostr=NULL;
+    uint16_t *utf16_str, *pt;
 
-    if ( str==NULL )
-return( NULL );
+    if ( _str==NULL )
+        return( NULL );
+
+    utf16_str = utf82utf16_copy(_str);
+
     for ( i=0; i<2; ++i ) {
-	str = (const unsigned char *) _str;
+        pt = utf16_str;
 	len= prev_cnt= prev= in=0;
-	while ( (ch = *str++)!='\0' ) {
-	    /* Convert from utf8 to ucs2 */
-	    if ( ch<=127 )
-		/* Done */;
-	    else if ( ch<=0xdf && *str!='\0' ) {
-		ch = ((ch&0x1f)<<6) | (*str++&0x3f);
-	    } else if ( ch<=0xef && *str!='\0' && str[1]!='\0' ) {
-		ch = ((ch&0xf)<<12) | ((str[0]&0x3f)<<6) | (str[1]&0x3f);
-		str += 2;
-	    } else if ( *str!='\0' && str[1]!='\0' && str[2]!='\0' ) {
-		int w = ( ((ch&0x7)<<2) | ((str[0]&0x30)>>4) )-1;
-		int s1, s2;
-		s1 = (w<<6) | ((str[0]&0xf)<<2) | ((str[1]&0x30)>>4);
-		s2 = ((str[1]&0xf)<<6) | (str[2]&0x3f);
-		ch = (s1*0x400)+s2 + 0x10000;
-		str += 3;
-	    } else {
-		/* illegal */
-	    }
+	while ( (ch = *pt++)!='\0' ) {
 	    if ( ch<127 && ch!='\n' && ch!='\r' && ch!='\\' && ch!='~' &&
 		    ch!='+' && ch!='=' && ch!='"' ) {
 		if ( prev_cnt!=0 ) {
@@ -365,6 +286,12 @@ return( NULL );
 		prev_cnt = prev = 0;
 	    }
 	}
+        /* Finalize the UTF-7 string with trailing zero bit padding.
+           Here we apparently break the UTF-7 standard, as we should have 
+           added just the necessary amount of padding (2 zero bits for
+           16 unconverted data bits or 4 zero bits for 8 unconverted data
+           bits) or at least pad with '='. Instead we pad to 24 bits and
+           output 4 chars. */
 	if ( prev_cnt==2 ) {
 	    prev<<=8;
 	    if ( i ) {
@@ -380,16 +307,21 @@ return( NULL );
 	    } else
 		len += 4;
 	}
+        /* Base64 block can optionally end with a hyphen '-'. We omit it at the
+           end of the encoded string to preserve the existing SFD convention. */
+        /*
 	if ( in ) {
 	    if ( i )
 		*ostr++ = '-';
 	    else
 		++len;
 	}
+        */
 	if ( i==0 )
 	    ostr = ret = malloc(len+1);
     }
     *ostr = '\0';
+    free(utf16_str);
 return( ret );
 }
 
@@ -411,112 +343,41 @@ return( ch );
 }
 
 char *SFDReadUTF7Str(FILE *sfd) {
-    char *buffer = NULL, *pt, *end = NULL;
-    int ch1, ch2, ch3, ch4, done, c;
-    int prev_cnt=0, prev=0, in=0;
+    int ch;
+    char *utf7_buf = NULL, *utf8_buf = NULL;
+    ssize_t n_chars;
+    size_t buf_size = 0;
 
-    ch1 = nlgetc(sfd);
-    while ( isspace(ch1) && ch1!='\n' && ch1!='\r') ch1 = nlgetc(sfd);
-    if ( ch1=='\n' || ch1=='\r' )
-	ungetc(ch1,sfd);
-    if ( ch1!='"' )
-return( NULL );
-    pt = 0;
-    while ( (ch1=nlgetc(sfd))!=EOF && ch1!='"' ) {
-	done = 0;
-	if ( !done && !in ) {
-	    if ( ch1=='+' ) {
-		ch1 = nlgetc(sfd);
-		if ( ch1=='-' ) {
-		    ch1 = '+';
-		    done = true;
-		} else {
-		    in = true;
-		    prev_cnt = 0;
-		}
-	    } else
-		done = true;
-	}
-	if ( !done ) {
-	    if ( ch1=='-' ) {
-		in = false;
-	    } else if ( inbase64[ch1]==-1 ) {
-		in = false;
-		done = true;
-	    } else {
-		ch1 = inbase64[ch1];
-		ch2 = inbase64[c = nlgetc(sfd)];
-		if ( ch2==-1 ) {
-		    ungetc(c, sfd);
-		    ch2 = ch3 = ch4 = 0;
-		} else {
-		    ch3 = inbase64[c = nlgetc(sfd)];
-		    if ( ch3==-1 ) {
-			ungetc(c, sfd);
-			ch3 = ch4 = 0;
-		    } else {
-			ch4 = inbase64[c = nlgetc(sfd)];
-			if ( ch4==-1 ) {
-			    ungetc(c, sfd);
-			    ch4 = 0;
-			}
-		    }
-		}
-		ch1 = (ch1<<18) | (ch2<<12) | (ch3<<6) | ch4;
-		if ( prev_cnt==0 ) {
-		    prev = ch1&0xff;
-		    ch1 >>= 8;
-		    prev_cnt = 1;
-		} else /* if ( prev_cnt == 1 ) */ {
-		    ch1 |= (prev<<24);
-		    prev = (ch1&0xffff);
-		    ch1 = (ch1>>16)&0xffff;
-		    prev_cnt = 2;
-		}
-		done = true;
-	    }
-	}
-	if ( pt+10>=end ) {
-	    if ( buffer==NULL ) {
-		pt = buffer = malloc(400);
-		end = buffer+400;
-	    } else if (pt) {
-		char *temp = realloc(buffer,end-buffer+400);
-		pt = temp+(pt-buffer);
-		end = temp+(end-buffer+400);
-		buffer = temp;
-	    }
-	}
-	if ( pt && done )
-	    pt = utf8_idpb(pt,ch1,0);
-	if ( prev_cnt==2 ) {
-	    prev_cnt = 0;
-	    if ( pt && prev!=0 )
-		pt = utf8_idpb(pt,prev,0);
-	}
-	if ( pt==0 ) {
-	    free(buffer);
-	    return( NULL );
-	}
+    do { ch = nlgetc(sfd); } while ( isspace(ch) && ch!='\n' && ch!='\r');
+    if ( ch=='\n' || ch=='\r' )
+	ungetc(ch,sfd);
+    if ( ch!='"' )
+        return( NULL );
+
+    n_chars = getdelim_(&utf7_buf, &buf_size, '"', sfd);
+    if (n_chars > 0) {
+        if (utf7_buf[n_chars-1] == '"')
+            /* Remove the trailing doublequote if present */
+            utf7_buf[n_chars-1] = '\0';
+        utf8_buf = utf7toutf8_copy(utf7_buf);
     }
-    if ( buffer==NULL )
-return( NULL );
-    *pt = '\0';
-    pt = copy(buffer);
-    free(buffer );
-return( pt );
+    free(utf7_buf);
+
+    return utf8_buf;
 }
 
 char *utf7toutf8_copy(const char *_str) {
-    char *buffer = NULL, *pt, *end = NULL;
+    uint16_t *pt, *utf16buf = NULL;
     int ch1, ch2, ch3, ch4, done;
     int prev_cnt=0, prev=0, in=0;
     const char *str = _str;
+    char *utf8_buf;
+    unichar_t *ucs2_str = NULL;
 
     if ( str==NULL )
 return( NULL );
-    buffer = pt = malloc(400);
-    end = pt+400;
+
+    pt = utf16buf = (uint16_t *) malloc((strlen(_str)+1)*sizeof(uint16_t));
     while ( (ch1=*str++)!='\0' ) {
 	done = 0;
 	if ( !done && !in ) {
@@ -541,7 +402,7 @@ return( NULL );
 	    } else {
 		ch1 = inbase64[ch1];
 		ch2 = inbase64[(unsigned char) *str++];
-		if ( ch2==1 ) {
+		if ( ch2==-1 ) {
 		    --str;
 		    ch2 = ch3 = ch4 = 0;
 		} else {
@@ -557,6 +418,7 @@ return( NULL );
 			}
 		    }
 		}
+                /* Fill ch1 up to at most 24 bits */
 		ch1 = (ch1<<18) | (ch2<<12) | (ch3<<6) | ch4;
 		if ( prev_cnt==0 ) {
 		    prev = ch1&0xff;
@@ -568,31 +430,32 @@ return( NULL );
 		    ch1 = (ch1>>16)&0xffff;
 		    prev_cnt = 2;
 		}
+                /* ch1 is guaranteed to have at most 16 significant bits at this point */
 		done = true;
 	    }
 	}
-	if ( pt+10>=end ) {
-	    char *temp = realloc(buffer,end-buffer+400);
-	    pt = temp+(pt-buffer);
-	    end = temp+(end-buffer+400);
-	    buffer = temp;
-	}
 	if ( pt && done )
-	    pt = utf8_idpb(pt,ch1,0);
+            *pt++ = ch1;
 	if ( prev_cnt==2 ) {
 	    prev_cnt = 0;
 	    if ( pt && prev!=0 )
-		pt = utf8_idpb(pt,prev,0);
-	}
-	if ( pt==0 ) {
-	    free(buffer);
-	    return( NULL );
+                *pt++ = prev;
 	}
     }
     *pt = '\0';
-    pt = copy(buffer);
-    free(buffer );
-return( pt );
+    if (pt == utf16buf) {
+        /* Failed to decode any character */
+        free(utf16buf);
+        return NULL;
+    }
+
+    ucs2_str = (unichar_t *) malloc((strlen(_str)+1)*sizeof(unichar_t));
+    utf162u_strcpy(ucs2_str, utf16buf);
+    free(utf16buf);
+    utf8_buf = u2utf8_copy(ucs2_str); /* Convert from ucs2 to utf8 */
+    free(ucs2_str);
+
+    return( utf8_buf );
 }
 
 struct enc85 {
@@ -1388,12 +1251,10 @@ return;
 
 static void *SFDUnPickle(FILE *sfd, int python_data_has_lists) {
     int ch, quoted;
-    static int max = 0;
-    static char *buf = NULL;
-    char *pt, *end;
-    int cnt;
+    static char *buf = NULL, *end = NULL;
+    char *pt;
 
-    pt = buf; end = buf+max;
+    pt = buf;
     while ( (ch=nlgetc(sfd))!='"' && ch!='\n' && ch!=EOF );
     if ( ch!='"' )
 return( NULL );
@@ -1403,12 +1264,8 @@ return( NULL );
 	if ( !quoted && ch=='\\' )
 	    quoted = true;
 	else {
-	    if ( pt>=end ) {
-		cnt = pt-buf;
-		buf = realloc(buf,(max+=200)+1);
-		pt = buf+cnt;
-		end = buf+max;
-	    }
+	    if ( pt>=end )
+		realloc_tail(&buf, 200, &end, &pt);
 	    *pt++ = ch;
 	    quoted = false;
 	}
@@ -1837,8 +1694,8 @@ static void appendnames(char *dest,char *dir,const char *dir_char,char *name,con
 	} else if ( name[0]=='u' && ishexdigit(name[1]) && ishexdigit(name[2]) &&
 		ishexdigit(name[3]) && ishexdigit(name[4]) &&
 		ishexdigit(name[5]) ) {
-	    strncpy(dest,name,5);
-	    dest += 5; name += 5;
+	    strncpy(dest,name,6);
+	    dest += 6; name += 6;
 	} else
     break;
 	if ( *name!='_' )
@@ -1980,11 +1837,56 @@ return;
     putc('\n',sfd);
 }
 
+static void SFDDumpOtfSubFeatNames(FILE *sfd, SplineFont *sf, uint32_t tag, enum otffn_field field, uint32_t lang) {
+    struct otffeatname *fn;
+    struct otfname *on;
+    bool cvfound = false;
+
+	for ( fn=sf->feat_names; fn!=NULL; fn=fn->next ) {
+		if ( fn->tag == tag && fn->field == field ) {
+			for ( on=fn->names; on!=NULL; on=on->next ) {
+				if ( on->lang == lang ) {
+					SFDDumpUTF7Str(sfd, on->name);
+					cvfound = true;
+				}
+			}
+		}
+	}
+	if ( !cvfound ) {
+		fprintf( sfd, "\"\"" );
+	}
+}
+static int SFDDumpOtfCountFeatNames(FILE *sfd, SplineFont *sf, uint32_t tag, uint32_t lang) {
+    struct otffeatname *fn;
+    struct otfname *on;
+    bool cvfound;
+	int i;
+
+	for ( i = 0; i < 65536-256; ++i ) {
+		cvfound = false;
+		for ( fn=sf->feat_names; fn!=NULL; fn=fn->next ) {
+			if ( fn->tag == tag && fn->field == otffn_paramname_begin + i ) {
+				for ( on=fn->names; on!=NULL; on=on->next ) {
+					if ( on->lang == lang ) {
+						cvfound = true;
+					}
+				}
+			}
+		}
+		if ( !cvfound ) {
+			break;
+		}
+	}
+	return i;
+}
 static void SFDDumpOtfFeatNames(FILE *sfd, SplineFont *sf) {
     struct otffeatname *fn;
     struct otfname *on;
+	bool cv[100] = {false};
+	int cvnum, cvcount, i;
 
     for ( fn=sf->feat_names; fn!=NULL; fn=fn->next ) {
+	if ( (fn->tag & 0xffff0000) == (('s' << 24) | ('s' << 16)) ) {
 	fprintf( sfd, "OtfFeatName: '%c%c%c%c' ",
 		fn->tag>>24, fn->tag>>16, fn->tag>>8, fn->tag );
 	for ( on=fn->names; on!=NULL; on=on->next ) {
@@ -1993,6 +1895,29 @@ static void SFDDumpOtfFeatNames(FILE *sfd, SplineFont *sf) {
 	    if ( on->next!=NULL ) putc(' ',sfd);
 	}
 	putc('\n',sfd);
+	}
+	else if ( ((fn->tag & 0xff00) >> 8) >= '0' && ((fn->tag & 0xff00) >> 8) <= '9' && (fn->tag & 0xff) >= '0' && (fn->tag & 0xff) <= '9' ) {
+		cvnum = (((fn->tag & 0xff00) >> 8) - '0') * 10 + (fn->tag & 0xff) - '0';
+		if ( !cv[cvnum] ) {
+			fprintf( sfd, "OtfFeatName: 'cv%c%c' ", fn->tag>>8, fn->tag );
+			for ( on=fn->names; on!=NULL; on=on->next ) {
+				fprintf( sfd, "%d ", on->lang );
+				SFDDumpOtfSubFeatNames(sfd, sf, fn->tag, otffn_featname,    on->lang); putc(' ',sfd);
+				SFDDumpOtfSubFeatNames(sfd, sf, fn->tag, otffn_tooltiptext, on->lang); putc(' ',sfd);
+				SFDDumpOtfSubFeatNames(sfd, sf, fn->tag, otffn_sampletext,  on->lang); putc(' ',sfd);
+				cvcount = SFDDumpOtfCountFeatNames(sfd, sf, fn->tag, on->lang);
+				fprintf( sfd, "%d", cvcount );
+				if ( cvcount ) putc(' ', sfd);
+				for ( i = 0; i < cvcount; ++i ) {
+					SFDDumpOtfSubFeatNames(sfd, sf, fn->tag, otffn_paramname_begin + i, on->lang);
+					if ( on->next!=NULL || i < (cvcount - 1) ) putc(' ',sfd);
+				}
+			}
+			fprintf( sfd, " \"\"" ); // TODO: character
+			putc('\n',sfd);
+			cv[cvnum] = true;
+		}
+	}
     }
 }
 
@@ -2323,8 +2248,6 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 
     if ( sf->version!=NULL )
 	fprintf(sfd, "Version: %s\n", sf->version );
-    if ( sf->styleMapFamilyName!=NULL )
-	fprintf(sfd, "StyleMapFamilyName: %s\n", sf->styleMapFamilyName );
     if ( sf->fondname!=NULL )
 	fprintf(sfd, "FONDName: %s\n", sf->fondname );
     if ( sf->defbasefilename!=NULL )
@@ -3357,12 +3280,8 @@ char *getquotedeol(FILE *sfd) {
 	    /* FontForge doesn't write other escape sequences in this context. */
 	    /* So any other value of ch is assumed impossible. */
 	}
-	if ( pt>=end ) {
-	    pt = realloc(str,end-str+101);
-	    end = pt+(end-str)+100;
-	    str = pt;
-	    pt = end-100;
-	}
+	if ( pt>=end )
+	    realloc_tail(&str, 100, &end, &pt);
 	*pt++ = ch;
 	ch = nlgetc(sfd);
     }
@@ -3724,6 +3643,10 @@ static ImageList *SFDGetImage(FILE *sfd) {
     getint(sfd,&image_type);
     getint(sfd,&bpl);
     getint(sfd,&clutlen);
+    if ( clutlen < 0 || clutlen > 256 ) {
+        LogError(_("Invalid clut length %d in sfd file, must be between 0 and 256"), clutlen);
+        return NULL;
+    }
     gethex(sfd,&trans);
     image = GImageCreate(image_type,width,height);
     base = image->list_len==0?image->u.image:image->u.images[0];
@@ -3828,7 +3751,7 @@ static void SFDGetTtfInstrs(FILE *sfd, SplineChar *sc) {
 }
 
 static void tterr(void *UNUSED(rubbish), char *message, int UNUSED(pos)) {
-    LogError(_("When loading tt instrs from sfd: %s\n"), message );
+    LogError(_("When loading tt instrs from sfd: %s"), message );
 }
 
 static void SFDGetTtInstrs(FILE *sfd, SplineChar *sc) {
@@ -3840,12 +3763,8 @@ static void SFDGetTtInstrs(FILE *sfd, SplineChar *sc) {
     int instr_len;
 
     while ( (ch=nlgetc(sfd))!=EOF ) {
-	if ( pt>=end ) {
-	    char *newbuf = realloc(buf,(end-buf+200));
-	    pt = newbuf+(pt-buf);
-	    end = newbuf+(end+200-buf);
-	    buf = newbuf;
-	}
+	if ( pt>=end )
+	    realloc_tail(&buf, 200, &end, &pt);
 	*pt++ = ch;
 	if ( pt-buf>backlen && strncmp(pt-backlen,end_tt_instrs,backlen)==0 ) {
 	    pt -= backlen;
@@ -3963,12 +3882,8 @@ static struct ttf_table *SFDGetTtTable(FILE *sfd, SplineFont *sf,struct ttf_tabl
 	which = 1;
 
     while ( (ch=nlgetc(sfd))!=EOF ) {
-	if ( pt>=end ) {
-	    char *newbuf = realloc(buf,(end-buf+200));
-	    pt = newbuf+(pt-buf);
-	    end = newbuf+(end+200-buf);
-	    buf = newbuf;
-	}
+	if ( pt>=end )
+	    realloc_tail(&buf, 200, &end, &pt);
 	*pt++ = ch;
 	if ( pt-buf>backlen && strncmp(pt-backlen,end_tt_instrs,backlen)==0 ) {
 	    pt -= backlen;
@@ -4782,6 +4697,7 @@ static PST1 *LigaCreateFromOldStyleMultiple(PST1 *liga) {
     while ( (pt = strrchr(liga->pst.u.lig.components,';'))!=NULL ) {
 	new = chunkalloc(sizeof( PST1 ));
 	*new = *liga;
+	new->pst.next = NULL;
 	new->pst.u.lig.components = copy(pt+1);
 	last->pst.next = (PST *) new;
 	last = new;
@@ -4847,6 +4763,29 @@ return;
 	map->enccount = enc+1;
     if ( enc>-1 )
 	map->map[enc] = orig_pos;
+}
+
+static void SFDFixDuplicateEnc(SplineFont* sf, int enc) {
+    if (enc < 0 || enc >= sf->map->encmax) return;
+
+    int32_t glyph_idx = sf->map->map[enc];
+    if (glyph_idx < 0 || glyph_idx >= sf->glyphcnt) return;
+
+    /* The last of the identically encoded glyphs occludes the others, so we
+     * keep it, and drop the encoding of the previously encountered duplicate.
+     */
+    SplineChar* dup_sc = sf->glyphs[glyph_idx];
+    if (dup_sc == NULL || dup_sc->orig_pos < 0) return;
+    LogError(_("Duplicate local encoding 0x%04x encountered in glyph %s. This "
+               "glyph will be unencoded."),
+             enc, dup_sc->name);
+
+    /* Append this glyph at the unencoded area at the end. */
+    dup_sc->unicodeenc = -1;
+    if (dup_sc->orig_pos < sf->map->backmax)
+        sf->map->backmap[dup_sc->orig_pos] = -1;
+    SFDSetEncMap(sf, dup_sc->orig_pos, sf->map->enccount);
+    SFDSizeMap(sf->map, sf->glyphcnt, sf->map->enccount + 1);
 }
 
 static void SCDefaultInterpolation(SplineChar *sc) {
@@ -5018,11 +4957,11 @@ void SFDGetKerns( FILE *sfd, SplineChar *sc, char* ttok ) {
 	    struct lookup_subtable *sub;
 	    int kernCount = 0;
 	    if ( sf->sfd_version<2 )
-		LogError(_("Found an new style kerning pair inside a version 1 (or lower) sfd file.\n") );
+		LogError(_("Found an new style kerning pair inside a version 1 (or lower) sfd file.") );
 	    while ( fscanf(sfd,"%d %d", &index, &off )==2 ) {
 		sub = SFFindLookupSubtableAndFreeName(sf,SFDReadUTF7Str(sfd));
 		if ( sub==NULL ) {
-		    LogError(_("KernPair with no subtable name.\n"));
+		    LogError(_("KernPair with no subtable name."));
 	    	    break;
 		}
 		kernCount++;
@@ -5364,7 +5303,12 @@ return( NULL );
 	    } else {
 		sc->orig_pos = orig_pos++;
 	    }
-	    SFDSetEncMap(sf,sc->orig_pos,enc);
+	    if (enc != -1 && sf->map && sf->map->map[enc] != -1) {
+		/* Multiple glyphs with same encoding are not accessible from
+		   FontView, and we consider them corrupted. */
+		SFDFixDuplicateEnc(sf, enc);
+	    }
+	    SFDSetEncMap(sf, sc->orig_pos, enc);
 	} else if ( strmatch(tok,"AltUni:")==0 ) {
 	    int uni;
 	    while ( getint(sfd,&uni)==1 ) {
@@ -5402,13 +5346,13 @@ return( NULL );
             ungetc(ch,sfd);
             if ( ch!='"' ) {
               if ( getname(sfd,tok)!=1 ) {
-                LogError(_("Invalid glif name.\n"));
+                LogError(_("Invalid glif name."));
               }
 	      sc->glif_name = copy(tok);
             } else {
 	      sc->glif_name = SFDReadUTF7Str(sfd);
 	      if ( sc->glif_name==NULL ) {
-                LogError(_("Invalid glif name.\n"));
+                LogError(_("Invalid glif name."));
 	      }
             }
 	} else if ( strmatch(tok,"Width:")==0 ) {
@@ -5773,11 +5717,11 @@ return( NULL );
 	    struct lookup_subtable *sub;
 
 	    if ( sf->sfd_version<2 )
-		LogError(_("Found an new style kerning pair inside a version 1 (or lower) sfd file.\n") );
+		LogError(_("Found an new style kerning pair inside a version 1 (or lower) sfd file.") );
 	    while ( fscanf(sfd,"%d %d", &index, &off )==2 ) {
 		sub = SFFindLookupSubtableAndFreeName(sf,SFDReadUTF7Str(sfd));
 		if ( sub==NULL ) {
-		    LogError(_("KernPair with no subtable name.\n"));
+		    LogError(_("KernPair with no subtable name."));
 	    break;
 		}
 		kp = chunkalloc(sizeof(KernPair1));
@@ -6636,26 +6580,79 @@ static void SFDGetDesignSize(FILE *sfd,SplineFont *sf) {
     }
 }
 
-static void SFDGetOtfFeatName(FILE *sfd,SplineFont *sf) {
-    int ch;
-    struct otfname *cur;
-    struct otffeatname *fn;
+static void SFDGetOtfFeatSubName(FILE *sfd, SplineFont *sf, struct otffeatname *fn, int16_t lang) {
+	struct otfname *cur;
 
-    fn = chunkalloc(sizeof(struct otffeatname));
-    fn->tag = gettag(sfd);
-    for (;;) {
-	while ( (ch=nlgetc(sfd))==' ' );
-	ungetc(ch,sfd);
-	if ( !isdigit(ch))
-    break;
 	cur = chunkalloc(sizeof(struct otfname));
 	cur->next = fn->names;
 	fn->names = cur;
-	getsint(sfd,(int16_t *) &cur->lang);
+	cur->lang = lang;
 	cur->name = SFDReadUTF7Str(sfd);
+}
+
+static void SFDGetOtfFeatNamePrepareNext(SplineFont *sf, struct otffeatname *fn) {
+	struct otfname *cur;
+
+	if ( fn->names->name ) {
+		fn->next = sf->feat_names;
+		sf->feat_names = fn;
+	}
+	else {
+		cur = fn->names;
+		fn->names = cur->next;
+		chunkfree(cur, sizeof(struct otfname));
+		chunkfree(fn, sizeof(struct otffeatname));
+	}
+}
+
+static void SFDGetOtfFeatName(FILE *sfd,SplineFont *sf) {
+    int ch, i;
+    struct otffeatname *fn;
+	uint32_t tag;
+	int16_t lang, parmcnt;
+
+    fn = chunkalloc(sizeof(struct otffeatname));
+    tag = fn->tag = gettag(sfd);
+	fn->field = otffn_featname;
+    for (;;) {
+		while ( (ch=nlgetc(sfd))==' ' );
+		ungetc(ch,sfd);
+		if ( !isdigit(ch))
+			break;
+		getsint(sfd, &lang);
+		SFDGetOtfFeatSubName(sfd, sf, fn, lang);
+		if ( (tag & 0xffff0000) == CHR('c','v','\0','\0') ) {
+			SFDGetOtfFeatNamePrepareNext(sf, fn);
+
+			fn = chunkalloc(sizeof(struct otffeatname));
+			fn->tag = tag;
+			fn->field = otffn_tooltiptext;
+			SFDGetOtfFeatSubName(sfd, sf, fn, lang);
+			SFDGetOtfFeatNamePrepareNext(sf, fn);
+
+			fn = chunkalloc(sizeof(struct otffeatname));
+			fn->tag = tag;
+			fn->field = otffn_sampletext;
+			SFDGetOtfFeatSubName(sfd, sf, fn, lang);
+
+			while ( (ch=nlgetc(sfd))==' ' );
+			ungetc(ch,sfd);
+			if ( !isdigit(ch))
+				break;
+			getsint(sfd, &parmcnt);
+
+			for ( i = 0; i < parmcnt; ++i ) {
+				SFDGetOtfFeatNamePrepareNext(sf, fn);
+				fn = chunkalloc(sizeof(struct otffeatname));
+				fn->tag = tag;
+				fn->field = otffn_paramname_begin + i;
+				SFDGetOtfFeatSubName(sfd, sf, fn, lang);
+			}
+
+			// TODO: character
+		}
     }
-    fn->next = sf->feat_names;
-    sf->feat_names = fn;
+	SFDGetOtfFeatNamePrepareNext(sf, fn);
 }
 
 static Encoding *SFDGetEncoding(FILE *sfd, char *tok) {
@@ -7707,13 +7704,11 @@ bool SFD_GetFontMetaData( FILE *sfd,
     }
     else if ( strmatch(tok,"StyleMapFamilyName:")==0 )
     {
-    sf->styleMapFamilyName = SFDReadUTF7Str(sfd);
+	d->lastStyleMapFamilyName = SFDReadUTF7Str(sfd);
     }
     /* Legacy attribute for StyleMapFamilyName. Deprecated. */
     else if ( strmatch(tok,"OS2FamilyName:")==0 )
     {
-    if (sf->styleMapFamilyName == NULL)
-        sf->styleMapFamilyName = SFDReadUTF7Str(sfd);
     }
     else if ( strmatch(tok,"FONDName:")==0 )
     {
@@ -7754,7 +7749,21 @@ bool SFD_GetFontMetaData( FILE *sfd,
     }
     else if ( strmatch(tok,"LangName:")==0 )
     {
+	struct ttflangname *english;
+
 	sf->names = SFDGetLangName(sfd,sf->names);
+
+	for ( english=sf->names; english!=NULL && english->lang!=0x409; english=english->next );
+	if ( english && d->lastStyleMapFamilyName ) {
+	    if ( english->names[ttf_family] ) {
+		LogError(_("'StyleMapFamilyName' entry has been ignored") );
+		free(d->lastStyleMapFamilyName);
+	    }
+	    else {
+		english->names[ttf_family] = d->lastStyleMapFamilyName;
+	    }
+	    d->lastStyleMapFamilyName = NULL;
+	}
     }
     else if ( strmatch(tok,"GaspTable:")==0 )
     {
@@ -8260,9 +8269,9 @@ bool SFD_GetFontMetaData( FILE *sfd,
 		kc->subtable->kc = kc;
 	    else {
 		if ( kc->subtable==NULL )
-		    LogError(_("Bad SFD file, missing subtable in kernclass defn.\n") );
+		    LogError(_("Bad SFD file, missing subtable in kernclass defn.") );
 		else
-		    LogError(_("Bad SFD file, two kerning classes assigned to the same subtable: %s\n"), kc->subtable->subtable_name );
+		    LogError(_("Bad SFD file, two kerning classes assigned to the same subtable: %s"), kc->subtable->subtable_name );
 		kc->subtable = NULL;
 	    }
 	}
@@ -9015,7 +9024,9 @@ exit( 1 );
 	    }
 	}
     }
-    if ( sf->cidmaster==NULL )
+
+    /* MM font has already been already fixed up. */
+    if (sf->cidmaster == NULL && sf->mm == NULL)
 	SFDFixupRefs(sf);
 
     if ( !haddupenc )

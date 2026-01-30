@@ -1796,48 +1796,61 @@ static void SplineFont2FullSubrs1(int flags,GlyphInfo *gi) {
 #endif	/* FONTFORGE_CONFIG_PS_REFS_GET_SUBRS */
 }
 
-int SFOneWidth(SplineFont *sf) {
-    int width, i;
+static FontPitch SFComputePitch(SplineFont *sf, int *p_width) {
+    FontPitch pitch = pitch_unknown;
+    int width = -1;
 
-    width = -2;
-    for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sf->glyphs[i]) &&
-	    (strcmp(sf->glyphs[i]->name,".notdef")!=0 || sf->glyphs[i]->layers[ly_fore].splines!=NULL)) {
+    for ( int i=0; i<sf->glyphcnt; ++i) {
 	/* Only trust the width of notdef if it's got some content */
 	/* (at least as far as fixed pitch determination goes) */
-	if ( width==-2 ) width = sf->glyphs[i]->width;
-	else if ( width!=sf->glyphs[i]->width ) {
-	    width = -1;
-    break;
+    	if ( SCWorthOutputting(sf->glyphs[i]) &&
+	     strcmp(sf->glyphs[i]->name,".null")!=0 &&
+	     strcmp(sf->glyphs[i]->name,"nonmarkingreturn")!=0 &&
+	     (strcmp(sf->glyphs[i]->name,".notdef")!=0 || sf->glyphs[i]->layers[ly_fore].splines!=NULL))
+	{
+	    int16_t this_width = sf->glyphs[i]->width;
+	    if (!RecomputePitch(this_width, &pitch, &width))
+	    break;
 	}
     }
-return(width);
+
+    if (p_width) *p_width = width;
+    return pitch;
 }
 
-int CIDOneWidth(SplineFont *_sf) {
-    int width, i;
-    int k;
+bool SFIsFixedWidth(SplineFont *sf) {
+    FontPitch pitch = SFComputePitch(sf, NULL);
+    return (pitch == pitch_fixed || pitch == pitch_dual);
+}
+
+/* Return value:
+	-2: unknown pitch
+	-1: variable or dual pitch
+	width>0: fixed pitch with given character width
+*/
+int SFOneWidth(SplineFont *_sf) {
+    int width, total_width = -2;
+    int k = 0;
     SplineFont *sf;
+    FontPitch pitch = pitch_unknown;
 
     if ( _sf->cidmaster!=NULL ) _sf = _sf->cidmaster;
-    width = -2;
-    k=0;
     do {
 	sf = _sf->subfonts==NULL? _sf : _sf->subfonts[k];
-	for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sf->glyphs[i]) &&
-		strcmp(sf->glyphs[i]->name,".null")!=0 &&
-		strcmp(sf->glyphs[i]->name,"nonmarkingreturn")!=0 &&
-		(strcmp(sf->glyphs[i]->name,".notdef")!=0 || sf->glyphs[i]->layers[ly_fore].splines!=NULL)) {
-	    /* Only trust the width of notdef if it's got some content */
-	    /* (at least as far as fixed pitch determination goes) */
-	    if ( width==-2 ) width = sf->glyphs[i]->width;
-	    else if ( width!=sf->glyphs[i]->width ) {
-		width = -1;
-	break;
-	    }
+	pitch = SFComputePitch(sf, &width);
+	if (pitch == pitch_unknown) {
+	    continue;
 	}
+
+	if (pitch == pitch_dual || pitch == pitch_variable ||
+	    (pitch == pitch_fixed && total_width != -2 && width != total_width)) {
+	    total_width = -1;
+	    break;
+	}
+	total_width = width;
 	++k;
     } while ( k<_sf->subfontcnt );
-return(width);
+    return total_width;
 }
 
 int SFOneHeight(SplineFont *sf) {
@@ -2239,7 +2252,7 @@ static void AddNumber2(GrowBuf *gb, real pos, int round) {
     if ( pos>32767.99 || pos<-32768 ) {
 	/* same logic for big ints and reals */
 	if ( pos>0x3fffffff || pos<-0x40000000 ) {
-	    LogError( _("Number out of range: %g in type2 output (must be [-65536,65535])\n"),
+	    LogError( _("Number out of range: %g in type2 output (must be [-65536,65535])"),
 		    pos );
 	    if ( pos>0 ) pos = 0x3fffffff; else pos = -0x40000000;
 	}
@@ -2908,7 +2921,7 @@ static void RSC2PS2(GrowBuf *gb, SplineChar *base,SplineChar *rsc,
     BasePoint subtrans;
     int stationary = trans->x==0 && trans->y==0;
     RefChar *r, *unsafe=NULL;
-    int unsafecnt=0, allwithouthints=true;
+    int allwithouthints=true;
     int round = (flags&ps_flag_round)? true : false;
     StemInfo *oldh, *oldv;
     int hc, vc;
@@ -2929,7 +2942,6 @@ static void RSC2PS2(GrowBuf *gb, SplineChar *base,SplineChar *rsc,
 	    if ( !r->justtranslated )
 	continue;
 	    if ( r->sc->hconflicts || r->sc->vconflicts ) {
-		++unsafecnt;
 		unsafe = r;
 	    } else if ( r->sc->hstem!=NULL || r->sc->vstem!=NULL )
 		allwithouthints = false;

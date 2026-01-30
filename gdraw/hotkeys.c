@@ -196,7 +196,7 @@ Hotkey* hotkeySetFull( const char* action, const char* keydefinition, int append
 	free(hk);
 	return NULL;
     }
-	
+
     // If we already have a binding for that hotkey combination
     // for this window, forget the old one. One combo = One action.
     Hotkey* oldkey = hotkeyFindByStateAndKeysym( hotkeyGetWindowTypeString(hk),
@@ -211,7 +211,7 @@ Hotkey* hotkeySetFull( const char* action, const char* keydefinition, int append
 	dlist_erase( &hotkeys, (struct dlistnode *)oldkey );
 	free(oldkey);
     }
-	
+
     hk->source = source;
     dlist_pushfront( &hotkeys, (struct dlistnode *)hk );
     return hk;
@@ -233,7 +233,7 @@ static void loadHotkeysFromFile( const char* filename, enum hk_source source, in
 
     while ( fgets(line,sizeof(line),f)!=NULL ) {
 	int append = 0;
-	
+
 	if ( *line=='#' )
 	    continue;
 	char* pt = strchr(line,':');
@@ -248,7 +248,7 @@ static void loadHotkeysFromFile( const char* filename, enum hk_source source, in
 	    append = 1;
 	    action++;
 	}
-	
+
 	hotkeySetFull( action, keydefinition, append, source );
     }
     fclose(f);
@@ -380,8 +380,6 @@ Hotkey* isImmediateKey( GWindow w, char* path, GEvent *event )
 //    printf("line:%s\n",line);
     Hotkey* hk = hotkeyFindByAction( line );
     if( !hk )
-	return 0;
-    if( !hk->action )
 	return 0;
 
     if( event->u.chr.keysym == hk->keysym )

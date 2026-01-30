@@ -1924,7 +1924,6 @@ static void AutoHintRefs(SplineChar *sc,int layer, BlueData *bd, int picky, int 
     sc->vconflicts = StemListAnyConflicts(sc->vstem);
     sc->hconflicts = StemListAnyConflicts(sc->hstem);
 
-    SCOutOfDateBackground(sc);
     SCHintsChanged(sc);
 }
 
@@ -1944,7 +1943,6 @@ void SCClearHints(SplineChar *sc) {
     sc->dstem = NULL;
     MinimumDistancesFree(sc->md);
     sc->md = NULL;
-    SCOutOfDateBackground(sc);
     if ( any )
 	SCHintsChanged(sc);
 }

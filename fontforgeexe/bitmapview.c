@@ -2381,6 +2381,7 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv, int enc) {
 
     bv->gw = gw = GDrawCreateTopWindow(NULL,&pos,bv_e_h,bv,&wattrs);
     free( (unichar_t *) wattrs.icon_title );
+    GDrawSetWindowTypeName(bv->gw, "BitmapView");
 
     GDrawGetSize(GDrawGetRoot(screen_display),&zoom);
     zoom.x = BVPalettesWidth(); zoom.width -= zoom.x-10;
@@ -2433,6 +2434,7 @@ BitmapView *BitmapViewCreate(BDFChar *bc, BDFFont *bdf, FontView *fv, int enc) {
     wattrs.event_masks = -1;
     wattrs.cursor = ( bc->refs == NULL ) ? ct_pencil : ct_pointer;
     bv->v = GWidgetCreateSubWindow(gw,&pos,v_e_h,bv,&wattrs);
+    GDrawSetWindowTypeName(bv->v, "BitmapView");
 
     bv->height = pos.height; bv->width = pos.width;
     bv->b1_tool = ( bc->refs == NULL ) ? bvt_pencil : bvt_pointer; bv->cb1_tool = bvt_pointer;

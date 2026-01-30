@@ -89,6 +89,9 @@ if(ENABLE_GUI)
     wordlistparser.h
   )
 
+  add_subdirectory(shapers)
+  add_subdirectory(gtk)
+
   if(APPLE)
     target_sources(fontforgeexe PRIVATE macobjective.m)
     target_link_libraries(fontforgeexe
@@ -101,7 +104,11 @@ if(ENABLE_GUI)
     target_link_libraries(fontforgeexe PRIVATE Threads::Threads)
   endif()
 
-  target_link_libraries(fontforgeexe PRIVATE gdraw)
+  target_link_libraries(fontforgeexe PRIVATE
+    gdraw
+    shapers
+    ffgtk
+  )
 else()
   target_sources(fontforgeexe PRIVATE startnoui.c)
 endif()
@@ -142,4 +149,6 @@ else()
 endif()
 install(FILES fontforge.1 sfddiff.1 fontlint.1 fontimage.1 DESTINATION ${CMAKE_INSTALL_MANDIR}/man1)
 
-add_subdirectory(pixmaps)
+if(ENABLE_GUI)
+  add_subdirectory(pixmaps)
+endif()
