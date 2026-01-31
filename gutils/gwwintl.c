@@ -35,7 +35,7 @@
 
 char *sgettext(const char *msgid) {
     const char *msgval = _(msgid);
-    char *found;
+    const char *found;
     if (msgval == msgid)
 	if ( (found = strrchr (msgid, '|'))!=NULL )
 	    msgval = found+1;
