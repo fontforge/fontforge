@@ -8290,6 +8290,10 @@ bool SFD_GetFontMetaData( FILE *sfd,
 	for ( i=classstart; i<kc->first_cnt; ++i ) {
 	  if (kernclassversion < 3) {
 	    getint(sfd,&temp);
+	    if (temp < 0) {
+	      LogError(_("Corrupted SFD file: Invalid kern class name length %d. Aborting load."), temp);
+	      return false;
+	    }
 	    kc->firsts[i] = malloc(temp+1); kc->firsts[i][temp] = '\0';
 	    nlgetc(sfd);	/* skip space */
 	    fread(kc->firsts[i],1,temp,sfd);
@@ -8307,6 +8311,10 @@ bool SFD_GetFontMetaData( FILE *sfd,
 	for ( i=1; i<kc->second_cnt; ++i ) {
 	  if (kernclassversion < 3) {
 	    getint(sfd,&temp);
+	    if (temp < 0) {
+	      LogError(_("Corrupted SFD file: Invalid kern class name length %d. Aborting load."), temp);
+	      return false;
+	    }
 	    kc->seconds[i] = malloc(temp+1); kc->seconds[i][temp] = '\0';
 	    nlgetc(sfd);	/* skip space */
 	    fread(kc->seconds[i],1,temp,sfd);
