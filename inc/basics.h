@@ -72,9 +72,17 @@ typedef uint32_t unichar_t;
 #define VASSERT(v) ((void)(v))
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern void NoMoreMemMessage(void);
 extern void ExpandBuffer(void** p_buf, size_t elem_size, size_t increment,
                          int* p_maxalloc);
+
+#ifdef __cplusplus
+}
+#endif
 
 static inline int imin(int a, int b)
 {

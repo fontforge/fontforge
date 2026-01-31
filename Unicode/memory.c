@@ -89,7 +89,7 @@ char *vsmprintf(const char *fmt, va_list args) {
         return NULL;
     }
 
-    ret = malloc(len + 1);
+    ret = (char*)malloc(len + 1);
     if (ret == NULL) {
         perror("smprintf");
         abort();
