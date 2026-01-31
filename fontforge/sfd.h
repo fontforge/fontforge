@@ -5,6 +5,10 @@
 
 #include "splinefont.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct sfd_getfontmetadatadata {
 	// these indicate if we saw some metadata or not.
 	// perhaps the caller wants to do something special
@@ -135,5 +139,9 @@ extern void visitSFDFragment(FILE *sfd, SplineFont *sf, visitSFDFragmentFunc ufu
 
 extern void SFDDumpUTF7Str(FILE *sfd, const char *_str);
 extern char *SFDReadUTF7Str(FILE *sfd);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_SFD_H */

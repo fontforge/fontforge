@@ -32,7 +32,7 @@
 
 #include "cvexport.h"
 #include "dumppfa.h"
-#include "ffglib.h"
+#include "ffglib_compat.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
 #include "gfile.h"
@@ -76,11 +76,11 @@ struct printdefaults pdefs[] = {
 static int pdf_addobject(PI *pi) {
     if ( pi->next_object==0 ) {
 	pi->max_object = 100;
-	pi->object_offsets = malloc(pi->max_object*sizeof(int));
+	pi->object_offsets = (int *)malloc(pi->max_object*sizeof(int));
 	pi->object_offsets[pi->next_object++] = 0;	/* Object 0 is magic */
     } else if ( pi->next_object>=pi->max_object ) {
 	pi->max_object += 100;
-	pi->object_offsets = realloc(pi->object_offsets,pi->max_object*sizeof(int));
+	pi->object_offsets = (int *)realloc(pi->object_offsets,pi->max_object*sizeof(int));
     }
     pi->object_offsets[pi->next_object] = ftell(pi->out);
     fprintf( pi->out, "%d 0 obj\n", pi->next_object++ );
@@ -90,10 +90,10 @@ return( pi->next_object-1 );
 static void pdf_addpage(PI *pi) {
     if ( pi->next_page==0 ) {
 	pi->max_page = 100;
-	pi->page_objects = malloc(pi->max_page*sizeof(int));
+	pi->page_objects = (int *)malloc(pi->max_page*sizeof(int));
     } else if ( pi->next_page>=pi->max_page ) {
 	pi->max_page += 100;
-	pi->page_objects = realloc(pi->page_objects,pi->max_page*sizeof(int));
+	pi->page_objects = (int *)realloc(pi->page_objects,pi->max_page*sizeof(int));
     }
     pi->page_objects[pi->next_page++] = pi->next_object;
     pdf_addobject(pi);
@@ -273,10 +273,10 @@ static int figure_fontdesc(PI *pi, int sfid, struct fontdesc *fd, int fonttype, 
     if ( strstrmatch(sf->fontname,"script")) fd->flags |= 0x10;
     if ( sf->italicangle!=0 ) fd->flags |= (1<<(7-1));
 
-    if (( i = PSDictFindEntry(sf->private,"StdHW"))!=-1 )
-	fd->stemh = strtod(sf->private->values[i],NULL);
-    if (( i = PSDictFindEntry(sf->private,"StdVW"))!=-1 )
-	fd->stemv = strtod(sf->private->values[i],NULL);
+    if (( i = PSDictFindEntry(sf->private_dict,"StdHW"))!=-1 )
+	fd->stemh = strtod(sf->private_dict->values[i],NULL);
+    if (( i = PSDictFindEntry(sf->private_dict,"StdVW"))!=-1 )
+	fd->stemv = strtod(sf->private_dict->values[i],NULL);
 
     pdf_addobject(pi);
     fprintf( pi->out, "  <<\n" );
@@ -285,12 +285,12 @@ static int figure_fontdesc(PI *pi, int sfid, struct fontdesc *fd, int fonttype, 
     fprintf( pi->out, "    /Flags %d\n", fd->flags );
     fprintf( pi->out, "    /FontBBox [%g %g %g %g]\n",
 	    (double) fd->bb.minx, (double) fd->bb.miny, (double) fd->bb.maxx, (double) fd->bb.maxy );
-    stemv = PSDictHasEntry(sf->private,"StdVW");
+    stemv = PSDictHasEntry(sf->private_dict,"StdVW");
     if ( stemv!=NULL )		/* Said to be required, but meaningless for cid fonts where there should be multiple values */
 	fprintf( pi->out, "    /StemV %s\n", stemv );
     else
 	fprintf( pi->out, "    /StemV 0\n" );
-    stemv = PSDictHasEntry(sf->private,"StdHW");
+    stemv = PSDictHasEntry(sf->private_dict,"StdHW");
     if ( stemv!=NULL )
 	fprintf( pi->out, "    /StemH %s\n", stemv );
     fprintf( pi->out, "    /ItalicAngle %g\n", (double) sf->italicangle );
@@ -409,8 +409,8 @@ static void pdf_dump_type1(PI *pi,int sfid) {
 
     fd_obj = figure_fontdesc(pi, sfid, &fd,1,font_stream);
 
-    sfbit->our_font_objs = malloc((sfbit->map->enccount/256+1)*sizeof(int));
-    sfbit->fonts = malloc((sfbit->map->enccount/256+1)*sizeof(int));
+    sfbit->our_font_objs = (int *)malloc((sfbit->map->enccount/256+1)*sizeof(int));
+    sfbit->fonts = (int *)malloc((sfbit->map->enccount/256+1)*sizeof(int));
     for ( i=0; i<sfbit->map->enccount; i += 256 ) {
 	sfbit->fonts[i/256] = -1;
 	dump_pfb_encoding(pi,sfid,i,fd_obj);
@@ -546,8 +546,8 @@ static void pdf_BrushCheck(PI *pi,struct glyph_res *gr,struct brush *brush,
 	fprintf( pi->out, "endobj\n" );
 
 	if ( gr->pattern_cnt>=gr->pattern_max ) {
-	    gr->pattern_names = realloc(gr->pattern_names,(gr->pattern_max+=100)*sizeof(char *));
-	    gr->pattern_objs  = realloc(gr->pattern_objs ,(gr->pattern_max     )*sizeof(int   ));
+	    gr->pattern_names = (char **)realloc(gr->pattern_names,(gr->pattern_max+=100)*sizeof(char *));
+	    gr->pattern_objs  = (int *)realloc(gr->pattern_objs ,(gr->pattern_max     )*sizeof(int   ));
 	}
 	makePatName(buffer,ref,sc,layer,!isfill,true);
 	gr->pattern_names[gr->pattern_cnt  ] = copy(buffer);
@@ -570,8 +570,8 @@ static void pdf_BrushCheck(PI *pi,struct glyph_res *gr,struct brush *brush,
 	PatternSCBounds(pattern_sc,&b);
 
 	if ( gr->pattern_cnt>=gr->pattern_max ) {
-	    gr->pattern_names = realloc(gr->pattern_names,(gr->pattern_max+=100)*sizeof(char *));
-	    gr->pattern_objs  = realloc(gr->pattern_objs ,(gr->pattern_max     )*sizeof(int   ));
+	    gr->pattern_names = (char **)realloc(gr->pattern_names,(gr->pattern_max+=100)*sizeof(char *));
+	    gr->pattern_objs  = (int *)realloc(gr->pattern_objs ,(gr->pattern_max     )*sizeof(int   ));
 	}
 	makePatName(buffer,ref,sc,layer,!isfill,false);
 	gr->pattern_names[gr->pattern_cnt  ] = copy(buffer);
@@ -618,7 +618,7 @@ static void pdf_BrushCheck(PI *pi,struct glyph_res *gr,struct brush *brush,
 	}
 	if ( i==-1 ) {
 	    if ( gr->opacity_cnt>=gr->opacity_max ) {
-		gr->opac_state = realloc(gr->opac_state,(gr->opacity_max+=100)*sizeof(struct opac_state));
+		gr->opac_state = (struct opac_state *)realloc(gr->opac_state,(gr->opacity_max+=100)*sizeof(struct opac_state));
 	    }
 	    gr->opac_state[gr->opacity_cnt].opacity = brush->opacity;
 	    gr->opac_state[gr->opacity_cnt].isfill  = isfill;
@@ -650,8 +650,8 @@ static void pdf_ImageCheck(PI *pi,struct glyph_res *gr,ImageList *images,
 	base = img->list_len==0 ? img->u.image : img->u.images[1];
 
 	if ( gr->image_cnt>=gr->image_max ) {
-	    gr->image_names = realloc(gr->image_names,(gr->image_max+=100)*sizeof(char *));
-	    gr->image_objs  = realloc(gr->image_objs ,(gr->image_max     )*sizeof(int   ));
+	    gr->image_names = (char **)realloc(gr->image_names,(gr->image_max+=100)*sizeof(char *));
+	    gr->image_objs  = (int *)realloc(gr->image_objs ,(gr->image_max     )*sizeof(int   ));
 	}
 	sprintf( buffer, "%s_ly%d_%d_image", sc->name, layer, icnt );
 	gr->image_names[gr->image_cnt  ] = copy(buffer);
@@ -996,7 +996,7 @@ static void pdf_gen_type3(PI *pi,int sfid) {
 	notdefproc = pdf_charproc(pi,sf->glyphs[notdefpos]);
     else {
 	memset(&sc,0,sizeof(sc));
-	sc.name = ".notdef";
+	sc.name = (char *)".notdef";
 	sc.parent = sf;
 	sc.width = sf->ascent+sf->descent;
 	sc.layer_cnt = 2;
@@ -1006,8 +1006,8 @@ static void pdf_gen_type3(PI *pi,int sfid) {
     }
 
     SplineFontFindBounds(sf,&bb);
-    sfbit->our_font_objs = malloc((map->enccount/256+1)*sizeof(int *));
-    sfbit->fonts = malloc((map->enccount/256+1)*sizeof(int *));
+    sfbit->our_font_objs = (int *)malloc((map->enccount/256+1)*sizeof(int *));
+    sfbit->fonts = (int *)malloc((map->enccount/256+1)*sizeof(int *));
     for ( i=0; i<map->enccount; i += 256 ) {
 	sfbit->fonts[i/256] = -1;
 	dump_pdf3_encoding(pi,sfid,i,&bb,notdefproc);
@@ -1071,7 +1071,7 @@ static void pdf_build_type0(PI *pi, int sfid) {
     } else
 	cidmax = cidmaster->glyphcnt + 2;	/* two extra useless glyphs in ttf */
 
-    widths = malloc(cidmax*sizeof(uint16_t));
+    widths = (uint16_t *)malloc(cidmax*sizeof(uint16_t));
 
     for ( i=0; i<cidmax; ++i ) {
 	SplineChar *sc = NULL;
@@ -1121,7 +1121,7 @@ static void pdf_build_type0(PI *pi, int sfid) {
     fprintf( pi->out, "\n" );
 
     /* OK, now we've dumped up the CID part, we need to create a Type0 Font */
-    sfbit->our_font_objs = malloc(sizeof(int));
+    sfbit->our_font_objs = (int *)malloc(sizeof(int));
     sfbit->our_font_objs[0] = pi->next_object;
     sfbit->next_font = 1;
     pdf_addobject(pi);
@@ -1141,8 +1141,8 @@ static void pdf_build_type0(PI *pi, int sfid) {
 static void dump_pdfprologue(PI *pi) {
 /* TODO: Note, maybe this routine can be combined somehow with cvexports.c _ExportPDF() */
     time_t now;
-    GDateTime *gdt;
-    GTimeSpan zoffset;
+    struct tm tm_buf;
+    long zoffset;
     const char *author = GetAuthor();
     int sfid;
 
@@ -1163,14 +1163,23 @@ static void dump_pdfprologue(PI *pi) {
     fprintf( pi->out, "  /Producer (FontForge)\n" );
     now = GetTime();
     if (!getenv("SOURCE_DATE_EPOCH")) {
-	gdt = g_date_time_new_from_unix_local((gint64)now);
+#ifdef _WIN32
+	localtime_s(&tm_buf, &now);
+#else
+	localtime_r(&now, &tm_buf);
+#endif
+	zoffset = ff_get_utc_offset(now);
     } else {
-	gdt = g_date_time_new_from_unix_utc((gint64)now);
+#ifdef _WIN32
+	gmtime_s(&tm_buf, &now);
+#else
+	gmtime_r(&now, &tm_buf);
+#endif
+	zoffset = 0;
     }
     fprintf( pi->out, "    /CreationDate (D:%04d%02d%02d%02d%02d%02d",
-	    g_date_time_get_year(gdt), g_date_time_get_month(gdt), g_date_time_get_day_of_month(gdt),
-	    g_date_time_get_hour(gdt), g_date_time_get_minute(gdt), g_date_time_get_second(gdt) );
-    zoffset = g_date_time_get_utc_offset(gdt)/1000000;
+	    tm_buf.tm_year + 1900, tm_buf.tm_mon + 1, tm_buf.tm_mday,
+	    tm_buf.tm_hour, tm_buf.tm_min, tm_buf.tm_sec );
     if ( zoffset==0 || getenv("SOURCE_DATE_EPOCH") )
 	fprintf( pi->out, "Z)\n" );
     else {
@@ -1181,8 +1190,6 @@ static void dump_pdfprologue(PI *pi) {
 	    fprintf( pi->out, "+" );
 	fprintf( pi->out, "%02d'%02d')\n", (int)(zoffset/3600),(int)(zoffset/60-(zoffset/3600)*60) );
     }
-    g_date_time_unref(gdt);
-    gdt = NULL;
     if ( author!=NULL )
 	fprintf( pi->out, "  /Author (%s)\n", author );
     fprintf( pi->out, ">>\n" );
@@ -1976,7 +1983,7 @@ return;
 }
 
 static void outputotchar(PI *pi,struct opentype_str *osc,int x,int baseline) {
-    struct fontlist *fl = osc->fl;
+    struct fontlist *fl = (struct fontlist *)osc->fl;
     FontData *fd = fl->fd;
     struct sfmaps *sfmap = fd->sfmap;
     int sfid = sfmap->sfbit_id;
@@ -2155,11 +2162,11 @@ return;
 /* ************************************************************************** */
 
 /* English */
-static char *_simple[] = {
+static const char *_simple[] = {
     " A quick brown fox jumps over the lazy dog.",
     NULL
 };
-static char *_simplelatnchoices[] = {
+static const char *_simplelatnchoices[] = {
 /* English */
     " A quick brown fox jumps over the lazy dog.",
     " Few zebras validate my paradox, quoth Jack Xeno",
@@ -2202,26 +2209,26 @@ static uint32_t _simplelatnlangs[] = {
 };
 
 /* Hebrew (from http://shiar.net/misc/txt/pangram.en) */
-static char *_simplehebrew[] = {
+static const char *_simplehebrew[] = {
     " ?דג סקרן שט בים מאוכזב ולפתע מצא לו חברה איך הקליטה ",
     NULL
 };
 /* Katakana (from http://shiar.net/misc/txt/pangram.en) */
-static char *_simplekata[] = {
+static const char *_simplekata[] = {
     " イロハニホヘト チリヌルヲ ワカヨタレソ ツネナラム/ ウヰノオクヤマ ケフコエテ アサキユメミシ ヱヒモセスン ",
     NULL
 };
 /* Hiragana (from http://shiar.net/misc/txt/pangram.en) */
-static char *_simplehira[] = {
+static const char *_simplehira[] = {
     " いろはにほへとちりぬるを/ わかよたれそつねならむ/ うゐのおくやまけふこえて/ あさきゆめみしゑひもせす ",
     NULL
 };
 /* Russian */
-static char *_simplecyrill[] = {
+static const char *_simplecyrill[] = {
     " Съешь ещё этих мягких французских булок, да выпей чаю!",
     NULL
 };
-static char *_simplecyrillchoices[] = {
+static const char *_simplecyrillchoices[] = {
 /* Eat more those soft french 'little-sweet-breads' and drink tea */
     " Съешь ещё этих мягких французских булок, да выпей чаю!",
 /* "In the deep forests of South citrus lived... /answer/Yeah but falsificated one!" */
@@ -2240,23 +2247,23 @@ static uint32_t _simplecyrilliclangs[] = {
     CHR('S','R','B',' ')
 };
 /* Russian */
-static char *_annakarenena[] = {
+static const char *_annakarenena[] = {
     " Всѣ счастливыя семьи похожи другъ на друга, каждая несчастливая семья несчастлива по-своему.",
     " Все смѣшалось въ домѣ Облонскихъ. Жена узнала, что мужъ былъ связи съ бывшею въ ихъ домѣ француженкою-гувернанткой, и объявила мужу, что не можетъ жить съ нимъ въ одномъ домѣ.",
     NULL
 };
 /* Serbian (Cyrillic) */
-static char *_serbcyriljohn[] = {
+static const char *_serbcyriljohn[] = {
     "У почетку беше Реч Божија, и та Реч беше у Бога, и Бог беше Реч.",
     NULL
 };
 /* Spanish */
-static char *_donquixote[] = {
+static const char *_donquixote[] = {
     " En un lugar de la Mancha, de cuyo nombre no quiero acordarme, no ha mucho tiempo que vivía un hidalgo de los de lanza en astillero, adarga antigua, rocín flaco y galgo corredor.",
     NULL
 };
 /* German */
-static char *_faust[] = {
+static const char *_faust[] = {
     "Ihr naht euch wieder, schwankende Gestalten,",
     "Die früh sich einst dem trüben Blick gezeigt.",
     "Versuch ich wohl, euch diesmal festzuhalten?",
@@ -2268,7 +2275,7 @@ static char *_faust[] = {
     NULL
 };
 /* Anglo Saxon */
-static char *_beorwulf[] = {
+static const char *_beorwulf[] = {
     "Hwæt, we Gar-Dena  in geardagum",
     "þeodcyninga  þrym gefrunon,",
     "hu ða æþelingas  ellen fremedon.",
@@ -2283,7 +2290,7 @@ static char *_beorwulf[] = {
     NULL
 };
 /* Italian */
-static char *_inferno[] = {
+static const char *_inferno[] = {
     " Nel mezzo del cammin di nostra vita",
     "mi ritrovai per una selva obscura,",
     "ché la diritta via era smarrita.",
@@ -2293,12 +2300,12 @@ static char *_inferno[] = {
     NULL
 };
 /* Latin */
-static char *_debello[] = {
+static const char *_debello[] = {
     " Gallia est omnis dīvīsa in partēs trēs, quārum ūnum incolunt Belgae, aliam Aquītānī, tertiam, quī ipsōrum linguā Celtae, nostrā Gallī appelantur. Hī omnēs linguā, īnstitūtīs, lēgibus inter sē differunt. Gallōs ab Aquītānīs Garumna flūmen, ā Belgīs Matrona et Sēquana dīvidit.",
     NULL
 };
 /* French */
-static char *_pheadra[] = {
+static const char *_pheadra[] = {
     "Le dessein en est pris: je pars, cher Théramène,",
     "Et quitte le séjour de l'aimable Trézène.",
     "Dans le doute mortel dont je suis agité,",
@@ -2309,30 +2316,30 @@ static char *_pheadra[] = {
     NULL
 };
 /* Classical Greek */
-static char *_antigone[] = {
+static const char *_antigone[] = {
     "Ὦ κοινὸν αὐτάδελφον Ἰσμήνης κάρα,",
     "ἆῤ οἶσθ᾽ ὅτι Ζεὺς τῶν ἀπ᾽ Οἰδίπου κακῶν",
     "ὁποῖον οὐχὶ νῷν ἔτι ζσαιν τελεῖ;",
     NULL
 };
 /* Hebrew */ /* Seder */
-static char *_hebrew[] = {
+static const char *_hebrew[] = {
     "וְאָתָא מַלְאַךְ הַמָּוֶת, וְשָׁחַט לְשּׁוׂחֵט, רְּשָׁחַט לְתוׂרָא, רְּשָׁתַה לְמַּיָּא, דְּכָכָה לְנוּרָא, דְּשָׂרַף לְחוּטְרָא, דְּהִכָּה לְכַלְכָּא, דְּנָשַׁךְ לְשׁוּנְרָא, דְּאָכְלָה לְגַדְיָא, דִּזְבַן אַבָּא בִּתְרֵי זוּזֵי. חַד גַּדְיָא, חַד גַּדְיָא.",
     "וְאָתָא הַקָּדוֹשׁ כָּדוּךְ הוּא, וְשָׁחַט לְמַלְאַךְ הַמָּוֶת, רְּשָׁחַט לְשּׁוׂחֵט, רְּשָׁחַט לְתוׂרָא, רְּשָׁתַה לְמַּיָּא, דְּכָכָה לְנוּרָא, דְּשָׂרַף לְחוּטְרָא, דְּהִכָּה לְכַלְכָּא, דְּנָשַׁךְ לְשׁוּנְרָא, דְּאָכְלָה לְגַדְיָא, דִּזְבַן אַבָּא בִּתְרֵי זוּזֵי. חַד גַּדְיָא, חַד גַּדְיָא.",
     NULL
 };
 /* Arabic with no dots or vowel marks */
-static char *_arabic[] = {
+static const char *_arabic[] = {
     "لقيت الحكمة العادلة حبا عظيما من الشعب. انسحبت من النادی فی السنة الماضية. وقعت فی الوادی فانكسرت يدی. قابلت صديقی عمرا الكاتب القدير فی السوق فقال لی انه ارسل الى الجامعة عددا من مجلته الجديدة. احتل الامير فيصل مدينة دمسق فی الحرب العالمية ودخلها راكبا على فرسه المحبوبة. ارسل عمر خالدا الى العراق ولاكن بعد مدة قصيرة وجه خالد جيشه الى سورية. قدم على دمشق واستطاع فتحها. قبل احتل عمر القدس وعقد جلستة مع حاكم القدس وقد تكلم معه عن فتح المدينة. ثم رجع عمر الى المدنة المنورة.",
     NULL
 };
 /* Renaissance English with period ligatures */
-static char *_muchado[] = {
+static const char *_muchado[] = {
     " But till all graces be in one woman, one womã ſhal not com in my grace: rich ſhe ſhall be thats certain, wiſe, or ile none, vertuous, or ile neuer cheapen her.",
     NULL
 };
 /* Modern (well, Dickens) English */
-static char *_chuzzlewit[] = {
+static const char *_chuzzlewit[] = {
     " As no lady or gentleman, with any claims to polite breeding, can"
     " possibly sympathize with the Chuzzlewit Family without being first"
     " assured of the extreme antiquity of the race, it is a great satisfaction"
@@ -2347,49 +2354,49 @@ static char *_chuzzlewit[] = {
     NULL
 };
 /* Middle Welsh */
-static char *_mabinogion[] = {
+static const char *_mabinogion[] = {
     " Gan fod Argraffiad Rhydychen o'r Mabinogion yn rhoi'r testun yn union fel y digwydd yn y llawysgrifau, ac felly yn cyfarfod â gofyn yr ysgolhaig, bernais mai gwell mewn llawlyfr fel hwn oedd golygu peth arno er mwyn helpu'r ieuainc a'r dibrofiad yn yr hen orgraff.",
     NULL
 };
 /* Swedish */
-static char *_PippiGarOmBord[] = {
+static const char *_PippiGarOmBord[] = {
     "Om någon människa skulle komma resande till den lilla, lilla staden och så kanske ett tu tre råka förirra sig lite för långt bort åt ena utkanten, då skulle den månniskan få se Villa Villekulla. Inte för att huset var så mycket att titta på just, en rätt fallfårdig gammal villa och en rätt vanskött gammal trädgård runt omkring, men främlingen skulle kanske i alla fall stanna och undra vem som bodde där.",
     NULL
 };
 /* Czech */
-static char *_goodsoldier[] = {
+static const char *_goodsoldier[] = {
     " „Tak nám zabili Ferdinanda,“ řekla posluhovačka panu Švejkovi, který opustiv před léty vojenskou službu, když byl definitivně prohlášen vojenskou lékařskou komisí za blba, živil se prodejem psů, ošklivých nečistokrevných oblud, kterým padělal rodokmeny.",
     " Kromě tohoto zaměstnání byl stižen revmatismem a mazal si právě kolena opodeldokem.",
     NULL
 };
 /* Lithuanian */
-static char *_lithuanian[] = {
+static const char *_lithuanian[] = {
     " Kiekviena šventė yra surišta su praeitimi. Nešvenčiamas gimtadienis, kai, kūdikis gimsta. Ir po keliolikos metų gimtinės arba vardinės nėra tiek reikšmingos, kaip sulaukus 50 ar 75 metų. Juo tolimesnis įvykis, tuo šventė darosi svarbesnė ir iškilmingesnė.",
     NULL
 };
 /* Polish */
-static char *_polish[] = {
+static const char *_polish[] = {
     " Język prasłowiański miał w zakresie deklinacji (fleksji imiennej) następujące kategorie gramatyczne: liczby, rodzaju i przypadku. Poza tym istniały w nim (w zakresie fleksji rzeczownika) różne «odmiany», czyli typy deklinacyjne. Im dawniej w czasie, tym owe różnice deklinacyjne miały mniejszy związek z semantyką rzeczownika.",
     NULL
 };
 /* Slovene */
-static char *_slovene[] = {
+static const char *_slovene[] = {
     " Razvoj glasoslovja je diametralno drugačen od razvoja morfologije.",
     " V govoru si besede slede. V vsaki sintagmi dobi beseda svojo vrednost, če je zvezana z besedo, ki je pred njo, in z besedo, ki ji sledi.",
     NULL
 };
 /* Macedonian */
-static char *_macedonian[] = {
+static const char *_macedonian[] = {
     " Македонскиот јазик во балканската јазична средина и наспрема соседните словенски јаеици. 1. Македонскиот јазик се говори во СР Македонија, и надвор од нејзините граници, во оние делови на Македонија што по балканските војни влегоа во составот на Грција и Бугарија.",
     NULL
 };
 /* Bulgarian */
-static char *_bulgarian[] = {
+static const char *_bulgarian[] = {
    " ПРЕДМЕТ И ЗАДАЧИ НА ФОНЕТИКАТА Думата фонетика произлиза от гръцката дума фоне, която означава „звук“, „глас“, „тон“.",
     NULL
 };
 /* Korean Hangul */
-static char *_hangulsijo[] = {
+static const char *_hangulsijo[] = {
     "어버이 살아신 제 섬길 일란 다 하여라",
     "지나간 후면 애닯다 어이 하리",
     "평생에 고쳐 못할 일이 이뿐인가 하노라",
@@ -2403,13 +2410,13 @@ static char *_hangulsijo[] = {
 };
 /* Chinese traditional */
 /* https://en.wikipedia.org/wiki/Tao_Te_Ching */
-static char *_TaoTeChing[] = {
+static const char *_TaoTeChing[] = {
     "道可道非常道，",
     "名可名非常名。",
     NULL
 };
 /* http://gan.wikipedia.org/wiki/%E5%B0%87%E9%80%B2%E9%85%92 */
-static char *_LiBai[] = {
+static const char *_LiBai[] = {
     "將進酒",
     "",
     "君不見 黃河之水天上來 奔流到海不復回",
@@ -2426,7 +2433,7 @@ static char *_LiBai[] = {
     "五花馬 千金裘 呼兒將出換美酒 與爾同消萬古愁",
     NULL
 };
-static char *_LiBaiShort[] = {
+static const char *_LiBaiShort[] = {
     "將進酒",
     "",
     "君不見 黃河之水天上來 奔流到海不復回",
@@ -2435,12 +2442,12 @@ static char *_LiBaiShort[] = {
 };
 /* Japanese */
 /* https://ja.wikipedia.org/wiki/%E6%BA%90%E6%B0%8F%E7%89%A9%E8%AA%9E */
-static char *_Genji[] = {
+static const char *_Genji[] = {
     "源氏物語（紫式部）：いづれの御時にか、女御・更衣あまた さぶらひたまひけるなかに、いとやむごとなき 際にはあらぬが、すぐれてときめきたまふありけり。",
     NULL
 };
 /* http://www.geocities.jp/sybrma/42souseki.neko.html */
-static char *_IAmACat[] = {
+static const char *_IAmACat[] = {
     "吾輩は猫である（夏目漱石）：吾輩は猫である",
     NULL
 };
@@ -2449,103 +2456,103 @@ static char *_IAmACat[] = {
 /*  Compendium of the world's languages. 1991 Routledge. by George L. Campbell*/
 
 /* Belorussian */
-static char *_belorussianjohn[] = {
+static const char *_belorussianjohn[] = {
     "У пачатку было Слова, і Слова было ў Бога, і Богам было Слова. Яно было ў пачатку ў Бога",
     NULL
 };
 /* basque */
-static char *_basquejohn[] = {
+static const char *_basquejohn[] = {
     "Asieran Itza ba-zan, ta Itza Yainkoagan zan, ta Itza Yainko zan.",
     "Asieran Bera Yainkoagan zan.",
     NULL
 };
 /* danish */
-static char *_danishjohn[] = {
+static const char *_danishjohn[] = {
     "Begyndelsen var Ordet, og Ordet var hos Gud, og Ordet var Gud.",
     "Dette var i Begyndelsen hos Gud.",
     NULL
 };
 /* dutch */
-static char *_dutchjohn[] = {
+static const char *_dutchjohn[] = {
     "In den beginne was het Woord en het Woord was bij God en het Woord was God.",
     "Dit was in den beginne bij God.",
     NULL
 };
 /* finnish */
-static char *_finnishjohn[] = {
+static const char *_finnishjohn[] = {
     "Alussa oli Sana, ja Sana oli Jumalan luona, Sana oli Jumala.",
     "ja hä oli alussa Jumalan luona.",
     NULL
 };
 /* georgian */
     /* Hmm, the first 0x10e0 might be 0x10dd, 0x301 */
-static char *_georgianjohn[] = {
+static const char *_georgianjohn[] = {
     "პირველითგან იყო სიტყუუ̂ა, და სიტყუუ̂ა იგი იყო ღუ̂თისა თანა, და დიერთი იყო სიტყუუ̂ა იგი.",
     "ესე იყო პირველითგან დიერთი თინი.",
     NULL
 };
 /* icelandic */
-static char *_icelandicjohn[] = {
+static const char *_icelandicjohn[] = {
     "Í upphafi var Orðið og Orðið var hjà Guði, og Orðið var Guði.",
     "Það var í upphafi hjá Guði.",
     NULL
 };
 /* irish */
-static char *_irishjohn[] = {
+static const char *_irishjohn[] = {
     "Bhí an Briathar(I) ann i dtús báire agus bhí an Briathar in éineacht le Dia, agus ba Dhia an Briathar.",
     "Bhí sé ann i dtús báire in éineacht le Dia.",
     NULL
 };
 /* Bokmål norwegian */
-static char *_norwegianjohn[] = {
+static const char *_norwegianjohn[] = {
     "I begynnelsen var Ordet, Ordet var hos Gud, og Ordet var Gud.",
     "Han var i begynnelsen hos Gud.",
     "Alt er blitt til ved ham; uten ham er ikke noe blitt til av alt som er til.",
     NULL
 };
 /* Nynorsk norwegian */
-static char *_nnorwegianjohn[] = {
+static const char *_nnorwegianjohn[] = {
     "I opphavet var Ordet, og Ordet var hjå Gud, og Ordet var Gud.",
     "Han var i opphavet hjå Gud.",
     NULL
 };
 /* old church slavonic */
-static char *_churchjohn[] = {
+static const char *_churchjohn[] = {
     "Въ нача́лѣ бѣ̀ сло́во и҆ сло́во бѣ̀ къ бг҃ꙋ, и҆ бг҃ъ бѣ̀ сло́во.",
     "Се́й бѣ̀ и҆сконѝ къ бг҃ꙋ.",
     NULL
 };
 /* swedish */
-static char *_swedishjohn[] = {
+static const char *_swedishjohn[] = {
     "I begynnelsen var Ordet, och Ordet var hos Gud, och Ordet var Gud.",
     "Han var i begynnelsen hos Gud.",
     NULL
 };
 /* portuguese */
-static char *_portjohn[] = {
+static const char *_portjohn[] = {
     "No Principio era a Palavra, e a Palavra estava junto de Deos, e a Palavra era Deos.",
     "Esta estava no principio junto de Deos.",
     NULL
 };
 /* cherokee */
-static char *_cherokeejohn[] = {
+static const char *_cherokeejohn[] = {
     "ᏗᏓᎴᏂᏯᎬ ᎧᏃᎮᏘ ᎡᎮᎢ, ᎠᎴ ᎾᏯᎩ ᎧᏃᎮᏘ ᎤᏁᎳᏅᎯ ᎢᏧᎳᎭ ᎠᏘᎮᎢ, ᎠᎴ ᎾᏯᎩ ᎧᏃᎮᏘ ᎤᏁᎳᏅᎯ ᎨᏎᎢ.",
     "ᏗᏓᎴᏂᏯᎬ ᎾᏯᎩ ᎤᏁᎳᏅᎯ ᎢᏧᎳᎭ ᎠᏘᎮᎢ",
     NULL
 };
 /* swahili */
-static char *_swahilijohn[] = {
+static const char *_swahilijohn[] = {
     "Hapo mwanzo kulikuwako Neno, naye Neno alikuwako kwa Mungo, naye Neno alikuwa Mungu, Huyo mwanzo alikuwako kwa Mungu.",
     "Vyote vilvanyika kwa huyo; wala pasipo yeye hakikufanyika cho chote kilichofanyiki.",
     NULL
 };
 /* thai */	/* I'm sure I've made transcription errors here, I can't figure out what "0xe27, 0xe38, 0xe4d" really is */
-static char *_thaijohn[] = {
+static const char *_thaijohn[] = {
     "๏ ในทีเดิมนะนพวุํลอโฆเปนอยู่ แลเปนอยู่ดว้ยกันกับ พวุํเฆ้า",
     NULL
 };
 /* Mayan K'iche' of Guatemala */ /* Prolog to Popol Wuj */ /* Provided by Daniel Johnson */
-static char *_mayanPopolWuj[] = {
+static const char *_mayanPopolWuj[] = {
     "Are u xe' ojer tzij waral, C'i Che' u bi'. Waral xchikatz'ibaj-wi, xchikatiquiba-wi ojer tzij, u ticaribal, u xe'nabal puch ronojel xban pa tinamit C'i Che', ramak C'i Che' winak.",
     NULL
 };
@@ -2558,8 +2565,8 @@ enum scripts { sc_latin, sc_greek, sc_cyrillic, sc_georgian, sc_hebrew,
 	sc_hiragana, sc_katakana
 };
 static struct langsamples {
-    char **sample;
-    char *iso_lang;		/* ISO 639 two character abbreviation */
+    const char **sample;
+    const char *iso_lang;		/* ISO 639 two character abbreviation */
     enum scripts script;
     uint32_t otf_script, lang;
 } sample[] = {
@@ -2611,7 +2618,7 @@ static struct langsamples {
     { _georgianjohn, "ka", sc_georgian, CHR('g','e','o','r'), CHR('K','A','T',' ') },
     { _swahilijohn, "sw", sc_latin, CHR('l','a','t','n'), CHR('S','W','K',' ')},
     { _mayanPopolWuj, "QUT", sc_latin, CHR('l','a','t','n'), CHR('Q','U','T',' ')},
-    { NULL, NULL, 0, 0, 0 }
+    { NULL, NULL, sc_latin, 0, 0 }
 };
 
 static void OrderSampleByLang(void) {
@@ -2722,7 +2729,7 @@ unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 	void (*langsyscallback)(void *tf, int end, uint32_t script, uint32_t lang) ) {
     int i, j, gotem, len, any=0, foundsomething=0;
     unichar_t *ret=NULL;
-    char **cur;
+    const char **cur;
     uint32_t scriptsdone[100], scriptsthere[100], langs[100];
     char *randoms[100];
     char buffer[220], *pt;
@@ -2758,7 +2765,7 @@ unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 		for ( j=0; cur[j]!=NULL; ++j ) {
 		    if ( ret )
 			utf82u_strcpy(ret+len,cur[j]);
-		    len += g_utf8_strlen( cur[j], -1 );
+		    len += ff_utf8_strlen( cur[j], -1 );
 		    if ( ret )
 			ret[len] = '\n';
 		    ++len;
@@ -2790,7 +2797,7 @@ unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 		if ( *pt=='\0' )
 		    *randoms[rcnt] = '\0';
 		else {
-		    len += g_utf8_strlen( randoms[rcnt], -1 )+2;
+		    len += ff_utf8_strlen( randoms[rcnt], -1 )+2;
 		    foundsomething = true;
 		}
 	    }
@@ -2820,7 +2827,7 @@ unichar_t *PrtBuildDef( SplineFont *sf, void *tf,
 		    if ( langsyscallback!=NULL )
 			(langsyscallback)(tf,len,DEFAULT_SCRIPT,DEFAULT_LANG);
 		} else
-		    len += g_utf8_strlen( buffer, -1 )+1;
+		    len += ff_utf8_strlen( buffer, -1 )+1;
 	    }
 	}
 
@@ -2830,9 +2837,9 @@ return( ret );
 	}
 	if ( len == 0 ) {
 	    /* Er... We didn't find anything?! */
-return( calloc(1,sizeof(unichar_t)));
+return( (unichar_t *)calloc(1,sizeof(unichar_t)));
 	}
-	ret = malloc((len+1)*sizeof(unichar_t));
+	ret = (unichar_t *)malloc((len+1)*sizeof(unichar_t));
     }
 }
 
@@ -2853,27 +2860,27 @@ static void QueueIt(PI *pi) {
 	i = 0;
 	if ( pi->printtype == pt_ghostview ) {
 	    if ( !use_gv )
-		argv[i++] = "ghostview";
+		argv[i++] = (char *)"ghostview";
 	    else {
-		argv[i++] = "gv";
-		argv[i++] = "-antialias";
+		argv[i++] = (char *)"gv";
+		argv[i++] = (char *)"-antialias";
 	    }
-	    argv[i++] = "-";		/* read from stdin */
+	    argv[i++] = (char *)"-";		/* read from stdin */
 	} else if ( pi->printtype == pt_lp ) {
-	    argv[i++] = "lp";
+	    argv[i++] = (char *)"lp";
 	    if ( pi->printer!=NULL ) {
-		argv[i++] = "-d";
+		argv[i++] = (char *)"-d";
 		argv[i++] = pi->printer;
 	    }
 	    if ( pi->copies>1 ) {
-		argv[i++] = "-n";
+		argv[i++] = (char *)"-n";
 		sprintf(buf,"%d", pi->copies );
 		argv[i++] = buf;
 	    }
 	} else if ( pi->printtype == pt_lpr ) {
-	    argv[i++] = "lpr";
+	    argv[i++] = (char *)"lpr";
 	    if ( pi->printer!=NULL ) {
-		argv[i++] = "-P";
+		argv[i++] = (char *)"-P";
 		argv[i++] = pi->printer;
 	    }
 	    if ( pi->copies>1 ) {
@@ -2911,7 +2918,7 @@ static void QueueIt(PI *pi) {
  /*for ( i=0; argv[i]!=NULL; ++i ) printf( "%s ", argv[i]); printf("\n" );*/
 	execvp(argv[0],argv);
 	if ( pi->printtype == pt_ghostview ) {
-	    argv[0] = "gv";
+	    argv[0] = (char *)"gv";
 	    execvp(argv[0],argv);
 	}
 	fprintf( stderr, "Failed to exec print job\n" );
@@ -2943,7 +2950,7 @@ void DoPrinting(PI *pi,char *filename) {
 	if ( sfmax==0 ) sfmax=1;
     }
     pi->sfmax = sfmax;
-    pi->sfbits = calloc(sfmax,sizeof(struct sfbits));
+    pi->sfbits = (struct sfbits *)calloc(sfmax,sizeof(struct sfbits));
     pi->sfcnt = 0;
 
     if ( pi->pt==pt_fontdisplay )
@@ -3028,7 +3035,7 @@ return( NULL );
 	format = 2;		/* byte-swapped ucs2 */
     else
 	rewind(file);
-    space = upt = malloc((max+1)*sizeof(unichar_t));
+    space = upt = (unichar_t *)malloc((max+1)*sizeof(unichar_t));
     end = space+max;
     if ( format!=0 ) {
 	while ( upt<end ) {
@@ -3064,10 +3071,10 @@ void ScriptPrint(FontViewBase *fv,int type,int32_t *pointsizes,char *samplefile,
 	pi.pointsizes = pointsizes;
 	pi.pointsize = pointsizes[0];
     }
-    pi.pt = type;
+    pi.pt = (enum printtype)type;
     if ( type==pt_fontsample ) {
 	int width = (pi.pagewidth-1*72)*printdpi/72;
-	li = calloc(1,sizeof(LayoutInfo));
+	li = (LayoutInfo *)calloc(1,sizeof(LayoutInfo));
 	temp[0] = 0;
 	li->wrap = true;
 	li->dpi = printdpi;

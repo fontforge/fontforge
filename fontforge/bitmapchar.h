@@ -4,6 +4,10 @@
 #include "splinefont.h"
 #include "uiinterface.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern BDFChar *BDFMakeChar(BDFFont *bdf, EncMap *map, int enc);
 extern BDFChar *BDFMakeGID(BDFFont *bdf, int gid);
 extern BDFProperties *BdfPropsCopy(BDFProperties *props, int cnt);
@@ -22,5 +26,9 @@ extern void XLFD_CreateComponents(BDFFont *font, EncMap *map, int res, struct xl
 extern void XLFD_GetComponents(const char *xlfd, struct xlfd_components *components);
 extern void CalculateBoundingBox(BDFFont *font,
 	int *fbb_width,int *fbb_height,int *fbb_lbearing, int *fbb_descent);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_BITMAPCHAR_H */

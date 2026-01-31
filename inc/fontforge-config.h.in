@@ -98,6 +98,8 @@
 
 #cmakedefine _NO_LIBSPIRO 1
 
+#cmakedefine _NO_LIBUNIBREAK 1
+
 #cmakedefine _NO_LIBTIFF 1
 
 #cmakedefine _NO_LIBUNGIF 1

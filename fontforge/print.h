@@ -31,6 +31,10 @@
 #include "baseviews.h"
 #include "splinefont.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum { pt_lp, pt_lpr, pt_ghostview, pt_file, pt_other, pt_pdf, pt_unknown=-1 };
 extern int pagewidth, pageheight;
 extern char *printlazyprinter;
@@ -123,5 +127,9 @@ extern void makePatName(char *buffer,
 
 extern unichar_t *PrtBuildDef(SplineFont *sf, void *tf, void (*langsyscallback)(void *tf, int end, uint32_t script, uint32_t lang));
 extern void ScriptPrint(FontViewBase *fv, int type, int32_t *pointsizes, char *samplefile, unichar_t *sample, char *outputfile);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_PRINT_H */

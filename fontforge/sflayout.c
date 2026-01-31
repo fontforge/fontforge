@@ -31,6 +31,7 @@
 #include "bvedit.h"
 #include "encoding.h"
 #include "ffglib.h"
+#include "ffglib_compat.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
 #include "lookups.h"
@@ -45,6 +46,10 @@
 
 #include <math.h>
 #include <unistd.h>
+
+#ifndef _NO_LIBUNIBREAK
+#include <linebreak.h>
+#endif
 
 #define BREAK_AFTER 0x1
 #define BREAK_BEFORE 0x2
@@ -64,49 +69,47 @@ static struct { uint32_t script, *stdfeatures; } script_2_std[] = {
     { 0, NULL }
 };
 
+#ifndef _NO_LIBUNIBREAK
+/* Use libunibreak for Unicode-compliant line breaking */
+static int IsBreakBetweenOk(unichar_t ch1, unichar_t ch2) {
+    return is_line_breakable((utf32_t)ch1, (utf32_t)ch2, NULL) == LINEBREAK_ALLOWBREAK;
+}
+#else
+/* Simple Latin-text fallback when libunibreak is not available.
+ * Not Unicode-compliant but sufficient for basic text layout. */
 static int BreakClassify(unichar_t ch) {
     int flags = 0;
-    switch (g_unichar_break_type(ch)) {
-        case G_UNICODE_BREAK_SPACE:
-        case G_UNICODE_BREAK_HYPHEN:
-        case G_UNICODE_BREAK_AFTER:
-        case G_UNICODE_BREAK_ZERO_WIDTH_SPACE:
-            flags |= BREAK_AFTER;
-            break;
-        case G_UNICODE_BREAK_BEFORE:
-            flags |= BREAK_BEFORE;
-            break;
-        case G_UNICODE_BREAK_BEFORE_AND_AFTER:
-        case G_UNICODE_BREAK_IDEOGRAPHIC:
-            flags |= BREAK_AFTER | BREAK_BEFORE;
-            break;
-        case G_UNICODE_BREAK_NON_STARTER:
-        case G_UNICODE_BREAK_CLOSE_PUNCTUATION:
-            flags |= BREAK_NONSTART;
-            break;
-        case G_UNICODE_BREAK_NON_BREAKING_GLUE:
-            flags |= BREAK_NONSTART | BREAK_NONEND;
-            break;
-        case G_UNICODE_BREAK_OPEN_PUNCTUATION:
-        case G_UNICODE_BREAK_COMBINING_MARK:
-            flags |= BREAK_NONEND;
-            break;
-        default:
-            break;
+    /* Spaces and hyphens - can break after */
+    if (ch == ' ' || ch == '\t' || ch == '-' || ch == 0x2010 || ch == 0x2011 ||
+        ch == 0x00AD /* soft hyphen */ || ch == 0x200B /* zero-width space */) {
+        flags |= BREAK_AFTER;
+    }
+    /* Opening punctuation - don't break after (keep with following text) */
+    if (ch == '(' || ch == '[' || ch == '{' || ch == '<' ||
+        ch == 0x00AB /* << */ || ch == 0x2018 /* ' */ || ch == 0x201C /* " */) {
+        flags |= BREAK_NONEND;
+    }
+    /* Closing punctuation - don't break before (keep with preceding text) */
+    if (ch == ')' || ch == ']' || ch == '}' || ch == '>' ||
+        ch == '.' || ch == ',' || ch == ';' || ch == ':' || ch == '!' || ch == '?' ||
+        ch == 0x00BB /* >> */ || ch == 0x2019 /* ' */ || ch == 0x201D /* " */) {
+        flags |= BREAK_NONSTART;
     }
     return flags;
 }
 
-// This is a copy of the algorithm from the old utype.c/makeutype.c
-// See https://github.com/fontforge/fontforge/blob/a5dedb4010cd49a5fcfaeed5d188dd7942294005/Unicode/makeutype.c#L687-L706
 static int IsBreakBetweenOk(unichar_t ch1, unichar_t ch2) {
     int b1 = BreakClassify(ch1), b2 = BreakClassify(ch2);
+    /* Don't break between digits */
+    if (isdigit(ch1) && isdigit(ch2)) return 0;
+    /* Don't break after slash if followed by digit (for fractions like 1/2) */
+    if (ch1 == '/' && isdigit(ch2)) return 0;
     return (
         ((b1 & BREAK_AFTER) && !(b2 & BREAK_NONSTART)) ||
-        ((b2 & BREAK_BEFORE) && !(b1 & BREAK_NONEND)) ||
-        (!isdigit(ch2) && ch1 == '/')
+        (!(b1 & BREAK_NONEND) && (b2 & BREAK_NONSTART) == 0 && ch1 != ' ' && ch2 == ' ')
     );
 }
+#endif /* _NO_LIBUNIBREAK */
 
 /* TODO(iorsh): Deprecate in favour of BuiltInShaper::default_features() */
 uint32_t *StdFeaturesOfScript(uint32_t script) {
@@ -177,7 +180,7 @@ uint32_t *LI_TagsCopy(uint32_t *tags) {
     if ( tags==NULL )
 return( NULL );
     for ( i=0; tags[i]!=0; ++i );
-    ret = malloc((i+1)*sizeof(uint32_t));
+    ret = (uint32_t *)malloc((i+1)*sizeof(uint32_t));
     for ( i=0; tags[i]!=0; ++i )
 	ret[i] = tags[i];
     ret[i] = 0;
@@ -269,7 +272,7 @@ static struct opentype_str **LineFromPara(struct opentype_str **str, int *_pos) 
     for ( len=0; str[len]!=NULL && !str[len]->line_break_after ; ++len );
     if ( str[len]!=NULL ) ++len;
     *_pos += len;
-    ret = malloc((len+1)*sizeof(struct opentype_str *));
+    ret = (struct opentype_str **)malloc((len+1)*sizeof(struct opentype_str *));
     for ( len=0; str[len]!=NULL && !str[len]->line_break_after ; ++len )
 	ret[len] = str[len];
     if ( str[len]!=NULL ) {
@@ -284,7 +287,7 @@ static struct basescript *FindBS(struct Base *base,struct opentype_str *ch,Layou
     uint32_t script = SCScriptFromUnicode(ch->sc);
     struct basescript *bs;
     if ( script == DEFAULT_SCRIPT ) {
-	struct fontlist *fl = ch->fl;
+	struct fontlist *fl = (struct fontlist *)ch->fl;
 	SplineChar *sc = fl->sctext[ch->orig_index];
 	script = SCScriptFromUnicode(sc);
     }
@@ -452,8 +455,8 @@ void LayoutInfoRefigureLines(LayoutInfo *li, int start_of_change,
     double scale;
 
     if ( li->lines==NULL ) {
-	li->lines = malloc(10*sizeof(struct opentype_str **));
-	li->lineheights = malloc(10*sizeof(struct lineheights));
+	li->lines = (struct opentype_str ***)malloc(10*sizeof(struct opentype_str **));
+	li->lineheights = (struct lineheights *)malloc(10*sizeof(struct lineheights));
 	li->lines[0] = NULL;
 	li->lmax = 10;
 	li->lcnt = 0;
@@ -484,7 +487,7 @@ void LayoutInfoRefigureLines(LayoutInfo *li, int start_of_change,
 		fl=fl->next, start = 0 ) {
 	    if ( start<0 ) start = 0;
 	    if ( fl->end - fl->start >= fl->scmax )
-		fl->sctext = realloc(fl->sctext,((fl->scmax = fl->end-fl->start+4)+1)*sizeof(SplineChar *));
+		fl->sctext = (SplineChar **)realloc(fl->sctext,((fl->scmax = fl->end-fl->start+4)+1)*sizeof(SplineChar *));
 	    for ( i=j=0; i<fl->end-fl->start; ++i ) {
 		SplineChar *sc = FDMap(fl->fd,li->text[fl->start+i]);
 		if ( sc!=NULL && sc!=(SplineChar *) -1 )
@@ -512,7 +515,7 @@ void LayoutInfoRefigureLines(LayoutInfo *li, int start_of_change,
     }
 
     if ( li->pmax <= li->pcnt+pcnt - (pe-ps+1) )
-	li->paras = realloc(li->paras,(li->pmax = li->pcnt+30+pcnt-(pe-ps+1))*sizeof(struct paras));
+	li->paras = (struct paras *)realloc(li->paras,(li->pmax = li->pcnt+30+pcnt-(pe-ps+1))*sizeof(struct paras));
     /* move any old paragraphs around */
     pdiff = pcnt-(pe-ps);
     for ( p=ps; p<pe; ++p )
@@ -535,7 +538,7 @@ void LayoutInfoRefigureLines(LayoutInfo *li, int start_of_change,
 	    if ( (fl->next==NULL || fl->next->end!=fl->end) && li->text[fl->end]=='\n' )
 	break;		/* End of paragraph */
 	}
-	li->paras[p].para = malloc((len+1)*sizeof( struct paras));
+	li->paras[p].para = (struct opentype_str **)malloc((len+1)*sizeof(struct opentype_str *));
 	li->paras[p].start_pos = curp->start;
 	len = 0;
 	for ( fl=curp; fl!=NULL; fl=fl->next ) {
@@ -554,8 +557,8 @@ void LayoutInfoRefigureLines(LayoutInfo *li, int start_of_change,
     li->pcnt += pdiff;
 
     if ( li->lmax <= li->lcnt+lcnt - (le-ls) + 1 ) {
-	li->lines = realloc(li->lines,(li->lmax = li->lcnt+30+lcnt-(le-ls+1))*sizeof(struct opentype_str **));
-	li->lineheights = realloc(li->lineheights,li->lmax*sizeof(struct lineheights));
+	li->lines = (struct opentype_str ***)realloc(li->lines,(li->lmax = li->lcnt+30+lcnt-(le-ls+1))*sizeof(struct opentype_str **));
+	li->lineheights = (struct lineheights *)realloc(li->lineheights,li->lmax*sizeof(struct lineheights));
     }
     /* move any old lines around */
     ldiff = lcnt-(le-ls);
@@ -610,7 +613,7 @@ struct fontlist *LI_fontlistcopy(struct fontlist *fl ) {
     struct fontlist *nfl, *nhead=NULL, *last=NULL;
 
     for ( ; fl!=NULL; fl=fl->next ) {
-	nfl = chunkalloc(sizeof(struct fontlist));
+	nfl = (struct fontlist *)chunkalloc(sizeof(struct fontlist));
 	*nfl = *fl;
 	nfl->feats = LI_TagsCopy(fl->feats);
 	nfl->scmax = 0; nfl->sctext = NULL; nfl->ottext = NULL;
@@ -661,7 +664,7 @@ return;
 		if ( fl->next!=NULL && fl->next->start == pt+1-li->text )
 		    fl->end = pt-li->text;
 		else {
-		    next = chunkalloc(sizeof(struct fontlist));
+		    next = (struct fontlist *)chunkalloc(sizeof(struct fontlist));
 		    *next = *fl;
 		    fl->next = next;
 		    fl->end = pt-li->text;
@@ -796,15 +799,15 @@ int LayoutInfoReplace(LayoutInfo *li, const unichar_t *str,
 	int sel_start, int sel_end, int width) {
     unichar_t *old = li->oldtext;
     int rpllen = u_strlen(str);
-    unichar_t *new = malloc((u_strlen(li->text)-(sel_end-sel_start) + rpllen+1)*sizeof(unichar_t));
+    unichar_t *newtext = (unichar_t *)malloc((u_strlen(li->text)-(sel_end-sel_start) + rpllen+1)*sizeof(unichar_t));
 
     li->oldtext = li->text;
     LayoutInfoChangeFontList(li,rpllen,sel_start,sel_end);
 
-    u_strncpy(new,li->text,sel_start);
-    u_strcpy(new+sel_start,str);
-    u_strcpy(new+sel_start+rpllen,li->text+sel_end);
-    li->text = new;
+    u_strncpy(newtext,li->text,sel_start);
+    u_strcpy(newtext+sel_start,str);
+    u_strcpy(newtext+sel_start+rpllen,li->text+sel_end);
+    li->text = newtext;
     free(old);
 
     LI_fontlistmergecheck(li);
@@ -861,7 +864,7 @@ struct sfmaps *SFMapOfSF(LayoutInfo *li,SplineFont *sf) {
 	if ( sfmaps->sf==sf )
 return( sfmaps );
 
-    sfmaps = chunkalloc(sizeof(struct sfmaps));
+    sfmaps = (struct sfmaps *)chunkalloc(sizeof(struct sfmaps));
     sfmaps->sf = sf;
     sfmaps->next = li->sfmaps;
     li->sfmaps = sfmaps;
@@ -924,7 +927,7 @@ FontData *LI_RegenFontData(LayoutInfo *li, FontData *ret) {
 	}
 	if ( ftc==NULL ) {
 	    int flags = 0;
-	    int ff = ret->fonttype==sftf_pfb ? ff_pfb :
+	    enum fontformat ff = ret->fonttype==sftf_pfb ? ff_pfb :
 		     ret->fonttype==sftf_ttf ? ff_ttf :
 		     ff_otf;
 	    ftc = _FreeTypeFontContext(ret->sf,NULL,NULL,ret->layer,ff,flags,NULL);
@@ -973,7 +976,7 @@ FontData *LI_FindFontData(LayoutInfo *li, SplineFont *sf,
 		test->layer==layer )
 return( test );
 
-    ret = calloc(1,sizeof(FontData));
+    ret = (FontData *)calloc(1,sizeof(FontData));
     ret->sf = sf;
     ret->fonttype = fonttype;
     ret->pointsize = size;
@@ -993,7 +996,7 @@ static FontData *FontDataCopyNoBDF(LayoutInfo *print_li, FontData *source) {
     FontData *head=NULL, *last=NULL, *cur;
 
     while ( source ) {
-	cur = calloc(1,sizeof(FontData));
+	cur = (FontData *)calloc(1,sizeof(FontData));
 	cur->sf = source->sf;
 	cur->fonttype = source->fonttype;
 	cur->pointsize = source->pointsize;
@@ -1021,7 +1024,7 @@ return;
 	next = li->fontlist;
     } else {
 	for ( prev = li->fontlist; prev->next!=NULL; prev=prev->next );
-	next = chunkalloc(sizeof(struct fontlist));
+	next = (struct fontlist *)chunkalloc(sizeof(struct fontlist));
 	*next = *prev;
 	next->scmax = 0; next->sctext = NULL; next->ottext = NULL;
 	next->feats = LI_TagsCopy(prev->feats);
@@ -1035,7 +1038,7 @@ return;
 }
 
 LayoutInfo *LIConvertToPrint(LayoutInfo *li, int width, int height, int dpi) {
-    LayoutInfo *print = calloc(1,sizeof(LayoutInfo));
+    LayoutInfo *print = (LayoutInfo *)calloc(1,sizeof(LayoutInfo));
     struct fontlist *fl;
     struct fontdata *fd1, *fd2;
 
@@ -1105,7 +1108,7 @@ static Array *SFDefaultScriptsLines(Array *arr,SplineFont *sf) {
     SplineChar *sc;
     char buffer[51*4+1], *pt;
     Array *ret;
-    char *str;
+    const char *str;
     int start, end, anyscript = 0, anyhere;
 
     if ( arr!=NULL && arr->argc==1 )
@@ -1174,8 +1177,8 @@ static Array *SFDefaultScriptsLines(Array *arr,SplineFont *sf) {
 	  break;
 	  }
 	  anyhere = false;
-	  for ( pt=str; *pt; ) {
-	      int ch = utf8_ildb((const char **) &pt);
+	  for ( const char *cpt=str; *cpt; ) {
+	      int ch = utf8_ildb(&cpt);
 	      if ( ch==' ' )
 	  continue;
 	      if ( SFGetChar(sf,ch,NULL)!=NULL ) {
@@ -1221,7 +1224,7 @@ return( ret );
 }
 
 void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
-    LayoutInfo *li = calloc(1,sizeof(LayoutInfo));
+    LayoutInfo *li = (LayoutInfo *)calloc(1,sizeof(LayoutInfo));
     int cnt, len, i,j, ret, p, x;
     struct fontlist *last;
     enum sftf_fonttype type = sf->layers[ly_fore].order2 ? sftf_ttf : sftf_otf;
@@ -1249,16 +1252,16 @@ void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
     cnt = arr->argc/2;
     len = 1;
     for ( i=0; i<cnt; ++i )
-	len += g_utf8_strlen( arr->vals[2*i+1].u.sval, -1 )+1;
+	len += ff_utf8_strlen( arr->vals[2*i+1].u.sval, -1 )+1;
 
-    li->text = malloc(len*sizeof(unichar_t));
+    li->text = (unichar_t *)malloc(len*sizeof(unichar_t));
     len = 0;
     last = NULL;
     for ( i=0; i<cnt; ++i ) {
 	if ( last==NULL )
-	    last = li->fontlist = chunkalloc(sizeof(struct fontlist));
+	    last = li->fontlist = (struct fontlist *)chunkalloc(sizeof(struct fontlist));
 	else {
-	    last->next = chunkalloc(sizeof(struct fontlist));
+	    last->next = (struct fontlist *)chunkalloc(sizeof(struct fontlist));
 	    last = last->next;
 	}
 	last->fd = LI_FindFontData(li,sf,ly_fore,type,arr->vals[2*i].u.ival,true);
@@ -1268,7 +1271,7 @@ void FontImage(SplineFont *sf,char *filename,Array *arr,int width,int height) {
 	script = DEFAULT_SCRIPT;
 	for ( upt = li->text+len; *upt && script==DEFAULT_SCRIPT; ++upt )
 	    script = ScriptFromUnicode(*upt,NULL);
-	len += g_utf8_strlen( arr->vals[2*i+1].u.sval, -1 );
+	len += ff_utf8_strlen( arr->vals[2*i+1].u.sval, -1 );
 	li->text[len++] = '\n';
 
 	last->end = len-1;
@@ -1341,7 +1344,7 @@ char *SFDefaultImage(SplineFont *sf,char *filename) {
 	static int cnt=0;
 	char *dir = getenv("TMPDIR");
 	if ( dir==NULL ) dir = P_tmpdir;
-	filename = malloc(strlen(dir)+strlen(sf->fontname)+100);
+	filename = (char *)malloc(strlen(dir)+strlen(sf->fontname)+100);
 #ifdef _NO_LIBPNG
 	sprintf( filename, "%s/ff-preview-%s-%d-%d.bmp", dir, sf->fontname, getpid(), ++cnt );
 #else
@@ -1383,52 +1386,52 @@ struct fontlist *LI_BreakFontList(LayoutInfo *li,int start,int end) {
     /* We are going to change some item in the fontlist between start and end */
     /* Make sure that after this call there will be an entry which starts at */
     /*  start and (perhaps) another which ends at end */
-    struct fontlist *new, *fl, *prev, *next, *first;
+    struct fontlist *newfl, *fl, *prevfl, *nextfl, *first;
 
     if ( li->fontlist==NULL ) {
-	new = chunkalloc(sizeof(struct fontlist));
-	new->start = start;
-	new->end = end;
-	li->fontlist = new;
-return( new );
+	newfl = (struct fontlist *)chunkalloc(sizeof(struct fontlist));
+	newfl->start = start;
+	newfl->end = end;
+	li->fontlist = newfl;
+return( newfl );
     }
 
-    prev = next = NULL;
+    prevfl = nextfl = NULL;
     for ( fl=li->fontlist; fl!=NULL && fl->end<start; fl=fl->next )
-	prev = fl;
+	prevfl = fl;
     if ( fl==NULL ) {
-	fl = chunkalloc(sizeof(struct fontlist));
-	*fl = *prev;
-	fl->feats = LI_TagsCopy(prev->feats);
-	fl->start = prev->end;
+	fl = (struct fontlist *)chunkalloc(sizeof(struct fontlist));
+	*fl = *prevfl;
+	fl->feats = LI_TagsCopy(prevfl->feats);
+	fl->start = prevfl->end;
 	fl->end = end;
 	fl->scmax = 0; fl->sctext = NULL; fl->ottext = NULL;
     }
     if ( fl->start == start )
 	first = fl;
     else {
-	new = chunkalloc(sizeof(struct fontlist));
-	*new = *fl;
-	new->feats = LI_TagsCopy(fl->feats);
-	new->start = start;
+	newfl = (struct fontlist *)chunkalloc(sizeof(struct fontlist));
+	*newfl = *fl;
+	newfl->feats = LI_TagsCopy(fl->feats);
+	newfl->start = start;
 	fl->end = start;
-	fl->next = new;
-	new->scmax = 0; new->sctext = NULL; new->ottext = NULL;
-	first = new;
+	fl->next = newfl;
+	newfl->scmax = 0; newfl->sctext = NULL; newfl->ottext = NULL;
+	first = newfl;
     }
-    prev = first;
+    prevfl = first;
     for ( fl=first; fl!=NULL && fl->start<end ; fl=fl->next )
-	prev = fl;
-    if ( fl==NULL && prev->end<end )
-	prev->end = end;
-    if ( prev->end>end ) {
-	new = chunkalloc(sizeof(struct fontlist));
-	*new = *prev;
-	new->feats = LI_TagsCopy(prev->feats);
-	new->start = end;
-	new->scmax = 0; new->sctext = NULL; new->ottext = NULL;
-	prev->end = end;
-	prev->next = new;
+	prevfl = fl;
+    if ( fl==NULL && prevfl->end<end )
+	prevfl->end = end;
+    if ( prevfl->end>end ) {
+	newfl = (struct fontlist *)chunkalloc(sizeof(struct fontlist));
+	*newfl = *prevfl;
+	newfl->feats = LI_TagsCopy(prevfl->feats);
+	newfl->start = end;
+	newfl->scmax = 0; newfl->sctext = NULL; newfl->ottext = NULL;
+	prevfl->end = end;
+	prevfl->next = newfl;
     }
 return( first );
 }

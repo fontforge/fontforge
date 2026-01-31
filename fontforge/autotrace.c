@@ -208,7 +208,7 @@ static int mytempnam(char *buffer) {
     else
 	strcpy(buffer,P_tmpdir);
     strcat(buffer,"/PfaEdXXXXXX");
-    fd = g_mkstemp(buffer);
+    fd = mkstemp(buffer);
 return( fd );
 }
 

@@ -31,6 +31,10 @@
 #include "psfont.h"		/* for struct fddata */
 #include "std_maps.hpp"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define MAC_DELETED_GLYPH_NAME	"<Delete>"
 
 /* Some glyphs have multiple encodings ("A" might be used for Alpha and Cyrillic A) */
@@ -122,7 +126,7 @@ struct ttfinfo {
     int upos, uwidth;		/* underline pos, width from post table */
     real strokewidth;
     int fstype;
-    struct psdict *private;	/* Only for open type cff fonts */
+    struct psdict *private_dict;	/* Only for open type cff fonts */
     EncMap *map;
     enum uni_interp uni_interp;
     struct pfminfo pfminfo;
@@ -659,7 +663,7 @@ struct alltabs {
     FILE *charset;
     FILE *encoding;
     FILE *globalsubrs;
-    FILE *private;
+    FILE *private_file;
     FILE *charstrings;
     FILE *fdselect;
     FILE *fdarray;
@@ -801,5 +805,9 @@ extern struct macsettingname {
 extern struct ttf_table *SFFindTable(SplineFont *sf,uint32_t tag);
 extern int TTF__getcvtval(SplineFont *sf,int val);
 extern int TTF_getcvtval(SplineFont *sf,int val);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_TTF_H */

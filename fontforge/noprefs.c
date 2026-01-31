@@ -30,6 +30,7 @@
 #include "autotrace.h"
 #include "encoding.h"
 #include "ffglib.h"
+#include "ffglib_compat.h"
 #include "fontforge.h"
 #include "gfile.h"
 #include "groups.h"
@@ -470,7 +471,7 @@ static const char *NOUI_getFontForgeShareDir(void) {
 
 static void DefaultEncoding(void) {
     const char* charset = NULL;
-    bool is_utf8 = g_get_charset(&charset);
+    bool is_utf8 = ff_get_charset(&charset);
 
     if (!SetupUCharMap(FindUnicharName(), charset, is_utf8)) {
         fprintf(stderr, "Failed to set up unichar<->system local encoding, assuming utf-8 and trying again...\n");
@@ -496,8 +497,8 @@ static void DefaultXUID(void) {
 	r1 = rand()&0x3ff;
     } while ( r1==0 );		/* I reserve "0" for me! */
     gettimeofday(&tv,NULL);
-    g_random_set_seed(tv.tv_usec+1);
-    r2 = g_random_int();
+    ff_random_set_seed(tv.tv_usec+1);
+    r2 = ff_random_int();
     sprintf( buffer, "1021 %d %d", r1, r2 );
     if (xuid != NULL) free(xuid);
     xuid = copy(buffer);
