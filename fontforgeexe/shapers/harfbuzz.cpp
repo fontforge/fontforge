@@ -76,7 +76,7 @@ HarfBuzzShaper::HarfBuzzShaper(std::shared_ptr<ShaperContext> context)
         hb_blob_create(blob, blob_size, HB_MEMORY_MODE_WRITABLE, NULL, NULL);
 
     hb_ttf_face = hb_face_create(hb_ttf_blob, 0);
-    hb_font_t* hb_ttf_raw_font = hb_font_create(hb_ttf_face);
+    hb_ttf_raw_font = hb_font_create(hb_ttf_face);
 
     // To access unencoded glyphs with HarfBuzz, we need to assign them fake
     // encodings above the canonic Unicode range. We also need to create a
@@ -86,6 +86,9 @@ HarfBuzzShaper::HarfBuzzShaper(std::shared_ptr<ShaperContext> context)
     hb_font_funcs_set_nominal_glyph_func(funcs, resolve_fake_encoding, NULL,
                                          NULL);
     hb_font_set_funcs(hb_ttf_font, funcs, hb_ttf_raw_font, NULL);
+
+    // Contrary to the name, it just decreases the reference.
+    hb_font_funcs_destroy(funcs);
 
     fclose(ttf_file);
 }
