@@ -31,7 +31,6 @@
 #include "start.h"
 
 #include "encoding.h"
-#include "ffglib.h"
 #include "ffglib_compat.h"
 #include "fontforgevw.h"
 #include "gfile.h"

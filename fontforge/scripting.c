@@ -44,7 +44,6 @@
 #include "effects.h"
 #include "encoding.h"
 #include "featurefile.h"
-#include "ffglib.h"
 #include "ffglib_compat.h"
 #include "flaglist.h"
 #include "fontforge.h"
