@@ -9,6 +9,7 @@ set_source_files_properties(
   gimagereadbmp.c
   gimageread.c
   gimagereadgif.c
+  gimagereadjpeg.c
   gimagereadpng.c
   gimagereadras.c
   gimagereadrgb.c
@@ -17,6 +18,7 @@ set_source_files_properties(
   gimagereadxpm.c
   gimagewritebmp.c
   gimagewritegimage.c
+  gimagewritejpeg.c
   gimagewritexbm.c
   gimagewritexpm.c
   gwwintl.c
