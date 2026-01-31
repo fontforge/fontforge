@@ -36,6 +36,10 @@
 /* home directories for fontforge */
 enum { Cache, Config, Data };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 int mkdir_p(const char *path, mode_t mode);
 
 extern char *GFileNormalizePath(char *path);
@@ -138,7 +142,8 @@ extern char *GFileDirName(const char *path);
  **/
 extern char* getLibexecDir_NonWindows(void);
 
-
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_GFILE_H */

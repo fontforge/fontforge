@@ -33,6 +33,10 @@
 #include <ctype.h> /* Include here so we can control it. If a system header includes it later bad things happen */
 #include "basics.h" /* Include here so we can use pre-defined int types to correctly size constant data arrays. */
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Unicode basics */
 #define UNICODE_VERSION "17.0.0"
 #define UNICODE_MAX 0x110000
@@ -185,5 +189,9 @@ extern const struct unicode_range* uniname_block(unichar_t ch);
 extern const struct unicode_range* uniname_plane(unichar_t ch);
 extern const struct unicode_range* uniname_blocks(int *sz);
 extern const struct unicode_range* uniname_planes(int *sz);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_UNICODE_UTYPE2_H */
