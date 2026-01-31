@@ -83,7 +83,7 @@ static void transferBufferToImage(struct jpegState *js,int ypos) {
 
     ppt = (Color *) (js->base->data+ypos*js->base->bytes_per_line);
     for ( pt = js->buffer, end = pt+3*cinfo->image_width; pt<end; ) {
-	register int r,g,b;
+	int r,g,b;
 	r = *(pt++); g= *(pt++); b= *(pt++);
 	*(ppt++) = COLOR_CREATE(r,g,b);
     }
