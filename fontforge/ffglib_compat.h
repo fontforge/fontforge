@@ -89,6 +89,19 @@ int ff_get_charset(const char **charset);
 long ff_get_utc_offset(long timestamp);
 
 /* ============================================================================
+ * POSIX compatibility for MSVC
+ * ============================================================================ */
+
+#ifdef _MSC_VER
+/* MSVC uses strtok_s instead of strtok_r (same signature) */
+#define strtok_r(str, delim, saveptr) strtok_s(str, delim, saveptr)
+
+/* MSVC uses _stricmp instead of strcasecmp */
+#define strcasecmp _stricmp
+#define strncasecmp _strnicmp
+#endif
+
+/* ============================================================================
  * Dynamic array (replaces GArray)
  * ============================================================================ */
 
