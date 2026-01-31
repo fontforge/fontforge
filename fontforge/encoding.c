@@ -577,7 +577,7 @@ static Encoding *ParseGlyphOrderAndAliasDB(FILE *file) {
         char *split = strchr(buffer, '\t'), *split2, *enc_name = NULL;
         if (split == NULL) {
             // Skip entries that do not contain at least two (tab separated) values
-            LogError(_("ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s"), enc_arr->len, ff_strstrip(buffer));
+            LogError(_("ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %zu: %s"), ff_array_len(enc_arr), ff_strstrip(buffer));
             //enc = -1;
             //g_array_append_val(enc_arr, enc);
             //g_array_append_val(names_arr, enc_name);
@@ -606,7 +606,7 @@ static Encoding *ParseGlyphOrderAndAliasDB(FILE *file) {
             any = TRUE;
         }
 
-        if (enc != -1 && enc_arr->len < 256) {
+        if (enc != -1 && ff_array_len(enc_arr) < 256) {
             // We have a valid encoding within the first 256 entries
             has_1byte = TRUE;
         }
@@ -616,7 +616,9 @@ static Encoding *ParseGlyphOrderAndAliasDB(FILE *file) {
         ff_array_append(names_arr, &enc_name);
     }
 
-    if (enc_arr->len > 0) {
+    size_t enc_len = ff_array_len(enc_arr);
+    size_t names_len = ff_array_len(names_arr);
+    if (enc_len > 0) {
         // If we have mappings, we make an encoding.
         char *tmp_name = ff_ask_string(_("Encoding name"), "GlyphOrderAndAliasDB", _("Please name this encoding"));
         if (tmp_name != NULL) {
@@ -629,21 +631,21 @@ static Encoding *ParseGlyphOrderAndAliasDB(FILE *file) {
                 item->enc_name = tmp_name;
                 // We pad the map in accordance with existing code in FindOrMakeEncoding and elsewhere.
                 // Nobody knows why.
-                item->char_cnt = (enc_arr->len < 256) ? 256 : enc_arr->len;
+                item->char_cnt = (enc_len < 256) ? 256 : enc_len;
                 item->unicode = malloc(item->char_cnt * sizeof(int32_t));
-                memcpy(item->unicode, enc_arr->data, enc_arr->len * sizeof(int32_t));
-                if (item->char_cnt > enc_arr->len) {
+                memcpy(item->unicode, ff_array_data(enc_arr), enc_len * sizeof(int32_t));
+                if ((size_t)item->char_cnt > enc_len) {
                     // Pad the unfilled entries with -1
-                    memset(item->unicode + enc_arr->len, -1, sizeof(int32_t) * (enc_arr->len - item->char_cnt));
+                    memset(item->unicode + enc_len, -1, sizeof(int32_t) * (item->char_cnt - enc_len));
                 }
                 if (any) {
                     item->psnames = calloc(item->char_cnt, sizeof(char *));
-                    memcpy(item->psnames, names_arr->data, names_arr->len * sizeof(char *));
+                    memcpy(item->psnames, ff_array_data(names_arr), names_len * sizeof(char *));
                 }
 
                 item->is_custom = TRUE;
                 item->has_1byte = has_1byte;
-                if (enc_arr->len < 256) {
+                if (enc_len < 256) {
                     item->only_1byte = TRUE;
                 } else {
                     item->has_2byte = TRUE;

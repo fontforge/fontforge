@@ -137,6 +137,7 @@ add_library(fontforge
   ${FONTFORGE_NOINST_HEADERS}
   ${FONTFORGE_INST_HEADERS}
   activeinui.c
+  ffglib_compat.cpp
   asmfpst.c
   autohint.c
   autosave.c
