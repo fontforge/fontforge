@@ -321,14 +321,12 @@ return( buffer );
 }
 
 char *GFileNameTail(const char *oldname) {
-    char *pt = 0;
-
-    pt = strrchr(oldname,'/');
+    const char *pt = strrchr(oldname,'/');
 
     // a final slash was found, so we know that p+1 is a valid
     // address in the string.
     if ( pt )
-	return( pt+1);
+	return( (char *)(pt+1));
 
     return( (char *)oldname );
 }
@@ -747,9 +745,9 @@ void FindProgRoot(const char *prog) {
 /* If the fontforge binary path includes "build" or "target" according to platform,
    we are in the development mode. */
 #if defined(__MINGW32__)
-    char* dev_dir_test = "target";
+    const char* dev_dir_test = "target";
 #else
-    char* dev_dir_test = "build";
+    const char* dev_dir_test = "build";
 #endif
     if (strstr(program_root, dev_dir_test)) {
 	devel_env = true;
@@ -931,7 +929,7 @@ char *GFileReadAll(char *name) {
     long sz;
 
     if ( (sz=GFileGetSize(name))>=0 && \
-	 (ret=calloc(1,sz+1))!=NULL ) {
+	 (ret=(char *)calloc(1,sz+1))!=NULL ) {
 	FILE *fp;
 	if ( (fp=fopen(name,"rb"))!=NULL ) {
 	    size_t bread=fread(ret,1,sz,fp);
@@ -1015,7 +1013,7 @@ char *GFileDirNameEx(const char *path, int treat_as_file)
     if (path != NULL) {
         //Must allocate enough space to append a trailing slash.
         size_t len = strlen(path);
-        ret = malloc(len + 2);
+        ret = (char *)malloc(len + 2);
 
         if (ret != NULL) {
             char *pt;
@@ -1058,7 +1056,7 @@ char* GFileMimeType(const char *path) {
 
     if (!mres || uncertain || strstr(mres, "application/x-ext") || !strcmp(mres, "application/octet-stream")) {
         path = GFileNameTail(path);
-        pt = strrchr(path, '.');
+        pt = (char *)strrchr(path, '.');
 
         if (pt == NULL) {
             if (!strmatch(path, "makefile") || !strmatch(path, "makefile~"))
@@ -1128,7 +1126,7 @@ char* GFileMimeType(const char *path) {
                 {"zip",   "application/x-compressed"},
             };
 
-            const char** elem = bsearch(pt, ext_mimes,
+            const char** elem = (const char **)bsearch(pt, ext_mimes,
                 sizeof(ext_mimes)/sizeof(ext_mimes[0]), sizeof(ext_mimes[0]),
                 mime_comp);
             ret = copy(elem ? elem[1] : "application/octet-stream");

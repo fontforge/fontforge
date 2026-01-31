@@ -389,8 +389,8 @@ extern void GDrawGrabSelection(GWindow w,enum selnames sel);
 extern void GDrawAddSelectionType(GWindow w,enum selnames sel,char *type,
 	void *data,int32_t cnt,int32_t unitsize,void *(*gendata)(void *,int32_t *len),
 	void (*freedata)(void *));
-extern void *GDrawRequestSelection(GWindow w,enum selnames sn, char *typename, int32_t *len);
-extern int GDrawSelectionHasType(GWindow w,enum selnames sn, char *typename);
+extern void *GDrawRequestSelection(GWindow w,enum selnames sn, char *type_name, int32_t *len);
+extern int GDrawSelectionHasType(GWindow w,enum selnames sn, char *type_name);
 extern void GDrawBindSelection(GDisplay *disp,enum selnames sel, char *atomname);
 extern int GDrawSelectionOwned(GDisplay *disp,enum selnames sel);
 

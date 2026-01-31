@@ -149,8 +149,8 @@ static int svg_outfontheader(FILE *file, SplineFont *sf,int layer) {
     fprintf( file, "    underline-position=\"%g\"\n", (double) sf->upos );
     if ( sf->italicangle!=0 )
 	fprintf(file, "    slope=\"%g\"\n", (double) sf->italicangle );
-    hash = PSDictHasEntry(sf->private,"StdHW");
-    hasv = PSDictHasEntry(sf->private,"StdVW");
+    hash = PSDictHasEntry(sf->private_dict,"StdHW");
+    hasv = PSDictHasEntry(sf->private_dict,"StdVW");
     if ( hash!=NULL ) {
 	if ( *hash=='[' ) ++hash;
 	ch = hash[strlen(hash)-1];

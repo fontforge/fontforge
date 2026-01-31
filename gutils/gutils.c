@@ -81,11 +81,11 @@ static char* SupportedLocale(const char *locale, const char *fullspec, const cha
 /* NOTE: If Docs are not maintained very well, maybe comment-out lang here. */
     int i;
     /* list languages in specific to generic order, ie: en_CA, en_GB, en... */
-    static char *supported[] = { "de","ja", NULL }; /* other html lang list */
+    static const char *supported[] = { "de","ja", NULL }; /* other html lang list */
 
     for ( i=0; supported[i]!=NULL; ++i ) {
         if ( strcmp(locale,supported[i])==0 ) {
-            char *pt = strrchr(filename, '/');
+            const char *pt = strrchr(filename, '/');
             return smprintf("%s/old/%s/%s", fullspec, supported[i], pt ? pt : filename);
         }
     }

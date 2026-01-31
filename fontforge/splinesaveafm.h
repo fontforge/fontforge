@@ -3,6 +3,10 @@
 
 #include "splinefont.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern const char *EncodingName(Encoding *map);
 extern int AfmSplineFont(FILE *afm, SplineFont *sf, int formattype, EncMap *map, int docc, SplineFont *fullsf, int layer);
 extern int AmfmSplineFont(FILE *amfm, MMSet *mm, int formattype, EncMap *map, int layer);
@@ -31,5 +35,9 @@ extern void SFLigatureCleanup(SplineFont *sf);
 extern void SFLigaturePrepare(SplineFont *sf);
 extern void SubsNew(SplineChar *to, enum possub_type type, int tag, char *components, SplineChar *default_script);
 extern void TeXDefaultParams(SplineFont *sf);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_SPLINESAVEAFM_H */

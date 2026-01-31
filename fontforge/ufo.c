@@ -470,11 +470,11 @@ static void PListAddIntArray(xmlNodePtr parent, const char *key, const char *ent
     }
 }
 
-static void PListAddPrivateArray(xmlNodePtr parent, const char *key, struct psdict *private) {
+static void PListAddPrivateArray(xmlNodePtr parent, const char *key, struct psdict *private_dict) {
     char *value;
-    if ( private==NULL )
+    if ( private_dict==NULL )
 return;
-    value = PSDictHasEntry(private,key);
+    value = PSDictHasEntry(private_dict,key);
     if ( value==NULL )
 return;
     xmlNewChildPrintf(parent, NULL, BAD_CAST "key", "postscript%s", key); // "<key>postscript%s</key>" key
@@ -512,11 +512,11 @@ return;
     // "</array>"
 }
 
-static void PListAddPrivateThing(xmlNodePtr parent, const char *key, struct psdict *private, char *type) {
+static void PListAddPrivateThing(xmlNodePtr parent, const char *key, struct psdict *private_dict, char *type) {
     char *value;
 
-    if ( private==NULL ) return;
-    value = PSDictHasEntry(private,key);
+    if ( private_dict==NULL ) return;
+    value = PSDictHasEntry(private_dict,key);
     if ( value==NULL ) return;
 
     while ( *value==' ' || *value=='[' ) ++value;
@@ -1341,18 +1341,18 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer, int
     PListAddInteger(dictnode,"postscriptUnderlineThickness",sf->uwidth);
     PListAddInteger(dictnode,"postscriptUnderlinePosition",sf->upos);
     PListAddBoolean(dictnode,"postscriptIsFixedPitch", SFIsFixedWidth(sf));
-    if ( sf->private!=NULL ) {
+    if ( sf->private_dict!=NULL ) {
 	char *pt;
-	PListAddPrivateArray(dictnode, "BlueValues", sf->private);
-	PListAddPrivateArray(dictnode, "OtherBlues", sf->private);
-	PListAddPrivateArray(dictnode, "FamilyBlues", sf->private);
-	PListAddPrivateArray(dictnode, "FamilyOtherBlues", sf->private);
-	PListAddPrivateArray(dictnode, "StemSnapH", sf->private);
-	PListAddPrivateArray(dictnode, "StemSnapV", sf->private);
-	PListAddPrivateThing(dictnode, "BlueFuzz", sf->private, "integer");
-	PListAddPrivateThing(dictnode, "BlueShift", sf->private, "integer");
-	PListAddPrivateThing(dictnode, "BlueScale", sf->private, "real");
-	if ( (pt=PSDictHasEntry(sf->private,"ForceBold"))!=NULL )
+	PListAddPrivateArray(dictnode, "BlueValues", sf->private_dict);
+	PListAddPrivateArray(dictnode, "OtherBlues", sf->private_dict);
+	PListAddPrivateArray(dictnode, "FamilyBlues", sf->private_dict);
+	PListAddPrivateArray(dictnode, "FamilyOtherBlues", sf->private_dict);
+	PListAddPrivateArray(dictnode, "StemSnapH", sf->private_dict);
+	PListAddPrivateArray(dictnode, "StemSnapV", sf->private_dict);
+	PListAddPrivateThing(dictnode, "BlueFuzz", sf->private_dict, "integer");
+	PListAddPrivateThing(dictnode, "BlueShift", sf->private_dict, "integer");
+	PListAddPrivateThing(dictnode, "BlueScale", sf->private_dict, "real");
+	if ( (pt=PSDictHasEntry(sf->private_dict,"ForceBold"))!=NULL )
 	    PListAddBoolean(dictnode, "postscriptForceBold", strstr(pt,"true")!=NULL ? true : false );
     }
     if ( sf->fondname!=NULL )
@@ -3690,13 +3690,13 @@ static void UFOAddName(SplineFont *sf,char *value,int strid) {
 static void UFOAddPrivate(SplineFont *sf,char *key,char *value) {
     char *pt;
 
-    if ( sf->private==NULL )
-	sf->private = chunkalloc(sizeof(struct psdict));
+    if ( sf->private_dict==NULL )
+	sf->private_dict = chunkalloc(sizeof(struct psdict));
     for ( pt=value; *pt!='\0'; ++pt ) {	/* Value might contain white space. turn into spaces */
 	if ( *pt=='\n' || *pt=='\r' || *pt=='\t' )
 	    *pt = ' ';
     }
-    PSDictChangeEntry(sf->private, key, value);
+    PSDictChangeEntry(sf->private_dict, key, value);
 }
 
 static void UFOAddPrivateArray(SplineFont *sf,char *key,xmlDocPtr doc,xmlNodePtr value) {

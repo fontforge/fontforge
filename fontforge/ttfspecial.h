@@ -4,6 +4,10 @@
 #include "splinefont.h"
 #include "ttf.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Non-standard tables */
 
 /* My PfEd table for FontForge/PfaEdit specific info */
@@ -57,5 +61,9 @@ extern void ttf_fftm_dump(SplineFont *sf, struct alltabs *at);
 #define TeX_BigOpSpace3  CHR('B','O','S','3')
 #define TeX_BigOpSpace4  CHR('B','O','S','4')
 #define TeX_BigOpSpace5  CHR('B','O','S','5')
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_TTFSPECIAL_H */

@@ -35,6 +35,10 @@
 
 #include <math.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define BPUNINIT ((BasePoint) { -INFINITY, INFINITY })
 #define UTZERO ((BasePoint) { 0.0, 1.0 })
 #define UTMIN ((BasePoint) { -1, -DBL_MIN })
@@ -128,5 +132,9 @@ extern BasePoint SplineUTanVecAt(Spline *s, bigreal t);
 extern bigreal SplineSolveForUTanVec(Spline *spl, BasePoint ut, bigreal min_t,
                                      bool picky);
 extern void UTanVecTests();
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif // FONTFORGE_UTANVEC_H

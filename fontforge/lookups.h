@@ -4,6 +4,10 @@
 #include "splinefont.h"
 #include "uiinterface.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct cpp_SubtableMap cpp_SubtableMap;
 
 struct sllk {
@@ -93,7 +97,7 @@ extern void NameOTLookup(OTLookup *otl, SplineFont *sf);
 extern void OTLookupsCopyInto(SplineFont *into_sf, SplineFont *from_sf, OTLookup **from_list, OTLookup *before);
 extern void SFFindClearUnusedLookupBits(SplineFont *sf);
 extern void SFFindUnusedLookups(SplineFont *sf);
-extern void SFGlyphRenameFixup(SplineFont *sf, const char *old, const char *new, int rename_related_glyphs);
+extern void SFGlyphRenameFixup(SplineFont *sf, const char *old, const char *new_name, int rename_related_glyphs);
 extern void SFRemoveLookup(SplineFont *sf, OTLookup *otl, int remove_acs);
 extern void SFRemoveLookupSubTable(SplineFont *sf, struct lookup_subtable *sub, int remove_acs);
 extern void SFRemoveUnusedLookupSubTables(SplineFont *sf, int remove_incomplete_anchorclasses, int remove_unused_lookups);
@@ -101,5 +105,9 @@ extern void SFRemoveUnusedLookupSubTables(SplineFont *sf, int remove_incomplete_
 extern void SFSubTablesMerge(SplineFont *_sf, struct lookup_subtable *subfirst, struct lookup_subtable *subsecond);
 extern void SllkFree(struct sllk *sllk, int sllk_cnt);
 extern void SLMerge(FeatureScriptLangList *into, struct scriptlanglist *fsl);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_LOOKUPS_H */

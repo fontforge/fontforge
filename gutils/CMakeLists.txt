@@ -23,6 +23,8 @@ set_source_files_properties(
   gimagewritexpm.c
   gwwintl.c
   prefs.c
+  gutils.c
+  fsys.c
   PROPERTIES LANGUAGE CXX
 )
 

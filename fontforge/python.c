@@ -41,7 +41,7 @@
 #include "dumppfa.h"
 #include "encoding.h"
 #include "featurefile.h"
-#include "ffglib.h"
+#include "ffglib_compat.h"
 #include "ffpython.h"
 #include "flaglist.h"
 #include "fontforgevw.h"
@@ -97,10 +97,21 @@
 #include <unistd.h>
 #include <wchar.h>
 
+#include <algorithm>
+#include <vector>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern int old_sfnt_flags;
 extern int prefRevisionsToRetain;
 
 extern int DeviceTableFind(DeviceTable *adjust,int pixelsize);
+
+#ifdef __cplusplus
+}
+#endif
 
 /* ========== MODULE DEFINITIONS ========== */
 /* The following types are used to define Python Modules.  For every
@@ -157,8 +168,8 @@ typedef struct {
 
 /* ----------------------------------------------------- */
 
-static PyTypeObject PyFF_FontType;
-static PyTypeObject PyFF_GlyphType;
+extern PyTypeObject PyFF_FontType;
+extern PyTypeObject PyFF_GlyphType;
 
 static PyObject *InitializePythonMainNamespace(void);
 
@@ -173,14 +184,14 @@ static wchar_t *copy_to_wide_string(const char *s) {
     ws = NULL;
     n = mbstowcs(NULL, s, 0) + 1;
     if (n != (size_t) -1) {
-        ws = calloc(n, sizeof(wchar_t));
+        ws = (wchar_t *)calloc(n, sizeof(wchar_t));
         mbstowcs(ws, s, n);
     }
     return ws;
 }
 
-static struct flaglist sfnt_name_str_ids[];
-static struct flaglist sfnt_name_mslangs[];
+extern struct flaglist sfnt_name_str_ids[];
+extern struct flaglist sfnt_name_mslangs[];
 
 /*** These have been moved elsewhere ***/
 /*FontViewBase *fv_active_in_ui = NULL;*/
@@ -222,7 +233,7 @@ PyObject* PyFF_FontForFV( FontViewBase *fv ) {
         ((PyFF_Font *) (fv->python_fv_object))->fv = fv;
         Py_INCREF( (PyObject *) (fv->python_fv_object) );
     }
-    return fv->python_fv_object;
+    return (PyObject *)fv->python_fv_object;
 }
 PyObject* PyFF_FontForFV_I( FontViewBase *fv ) {
     PyObject* pyfv = PyFF_FontForFV(fv);
@@ -260,7 +271,7 @@ return( -1 );
 /* Utilities */
 /* ************************************************************************** */
 
-static GPtrArray *default_pyinit_dirs(void);
+static std::vector<char*> default_pyinit_dirs(void);
 static int dir_exists(const char* path);
 
 
@@ -405,7 +416,7 @@ PyObject *PySC_From_SC(SplineChar *sc) {
 	glyph->layer = ly_fore;
 	Py_INCREF( (PyObject *) glyph );	/* for the pointer in my fv */
     }
-    return sc->python_sc_object;
+    return (PyObject *)sc->python_sc_object;
 }
 
 static PyObject *PySC_From_SC_I(SplineChar *sc) {
@@ -490,7 +501,7 @@ static SplineChar* PyFF_Glyph_GetSC(PyFF_Glyph *glyph) {
 	return NULL;
     }
 
-    return glyph->sc_opaque;
+    return (SplineChar *)glyph->sc_opaque;
 }
 
 /* ************************************************************************** */
@@ -665,7 +676,7 @@ return( NULL );
 	for_new_glyphs = fv_active_in_ui->sf->for_new_glyphs;
     }
 
-    name = StdGlyphNameBoundsCheck(buffer,uni,uniinterp,for_new_glyphs);
+    name = StdGlyphNameBoundsCheck(buffer,uni,(enum uni_interp)uniinterp,for_new_glyphs);
     if ( name!=NULL )
 	ret = Py_BuildValue("s", name);
     else
@@ -808,15 +819,14 @@ Py_RETURN_NONE;
 
 static PyObject *PyFF_GetScriptPath(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
     PyObject *ret;
-    GPtrArray *dpath;
 
-    dpath = default_pyinit_dirs();
-    ret = PyTuple_New((int)dpath->len);
-    for (guint i = 0; i < dpath->len; ++i) {
-        PyTuple_SET_ITEM(ret, (int)i, Py_BuildValue("s", dpath->pdata[i]));
+    std::vector<char*> dpath = default_pyinit_dirs();
+    ret = PyTuple_New((int)dpath.size());
+    for (size_t i = 0; i < dpath.size(); ++i) {
+        PyTuple_SET_ITEM(ret, (int)i, Py_BuildValue("s", dpath[i]));
     }
 
-    g_ptr_array_free(dpath, true);
+    for (char *p : dpath) free(p);
 
     return ret;
 }
@@ -909,7 +919,7 @@ static PyObject *PyFF_OpenFont(PyObject *UNUSED(self), PyObject *args) {
      * to LoadSplineFont, so we can't report the filename on an
      * error.
      */
-    sf = LoadSplineFont(locfilename,openflags);
+    sf = LoadSplineFont(locfilename,(enum openflags)openflags);
 
     if ( sf==NULL ) {
 	PyErr_Format(PyExc_EnvironmentError, "Open failed");
@@ -980,7 +990,7 @@ return( NULL );
     if ( PyBytes_Check(seq_any)) {
 	char *space; Py_ssize_t len;
 	PyBytes_AsStringAndSize(seq_any,&space,&len);
-	instrs = calloc(len,sizeof(uint8_t));
+	instrs = (uint8_t *)calloc(len,sizeof(uint8_t));
 	icnt = len;
 	memcpy(instrs,space,len);
     } else {
@@ -989,7 +999,7 @@ return( NULL );
 return( NULL );
 	}
 	icnt = PySequence_Fast_GET_SIZE(seq_fast);
-	instrs = malloc(icnt);
+	instrs = (uint8_t *)malloc(icnt);
 	for ( i=0; i<icnt; ++i ) {
 	    long val = PyLong_AsLong(PySequence_Fast_GET_ITEM(seq_fast,i));
 	    if (val==-1 && PyErr_Occurred()) {
@@ -1082,7 +1092,7 @@ return;
     PyTuple_SetItem(arglist,1,glyph);
     PyTuple_SetItem(arglist,2,PyUnicode_DecodeUTF8(filename,strlen(filename),NULL));
     PyTuple_SetItem(arglist,3,Py_BuildValue("i",toback));
-    result = PyObject_CallObject(py_ie[ie_index].import, arglist);
+    result = PyObject_CallObject(py_ie[ie_index].py_import, arglist);
     Py_DECREF(arglist);
     Py_XDECREF(result);
     if ( PyErr_Occurred()!=NULL )
@@ -1105,7 +1115,7 @@ return;
     PyTuple_SetItem(arglist,1,glyph);
     PyTuple_SetItem(arglist,2,PyUnicode_DecodeUTF8(filename,strlen(filename),NULL));
     PyTuple_SetItem(arglist,2,PyUnicode_DecodeUTF8(filename,strlen(filename),NULL));
-    result = PyObject_CallObject(py_ie[ie_index].export, arglist);
+    result = PyObject_CallObject(py_ie[ie_index].py_export, arglist);
     Py_DECREF(arglist);
     Py_XDECREF(result);
     if ( PyErr_Occurred()!=NULL )
@@ -1115,36 +1125,36 @@ return;
 }
 
 static PyObject *PyFF_registerImportExport(PyObject *UNUSED(self), PyObject *args) {
-    PyObject *import, *export, *data;
+    PyObject *importfunc, *exportfunc, *data;
     char *name, *exten, *exten_list=NULL;
     /* I'm assuming the extensions are in ASCII so no conversion will be needed*/
 
-    if ( !PyArg_ParseTuple(args,"OOOss|s", &import, &export, &data,
+    if ( !PyArg_ParseTuple(args,"OOOss|s", &importfunc, &exportfunc, &data,
 	    &name, &exten, &exten_list ))
 return( NULL );
-    if ( import==Py_None && export==Py_None )
+    if ( importfunc==Py_None && exportfunc==Py_None )
 Py_RETURN_NONE;			/* Well, that was pointless */
-    if ( import==Py_None )
-	import=NULL;
-    else if ( !PyCallable_Check(import) ) {
+    if ( importfunc==Py_None )
+	importfunc=NULL;
+    else if ( !PyCallable_Check(importfunc) ) {
 	PyErr_Format(PyExc_TypeError, "First argument is not callable" );
 return( NULL );
     }
-    if ( export==Py_None )
-	export=NULL;
-    else if ( !PyCallable_Check(export) ) {
+    if ( exportfunc==Py_None )
+	exportfunc=NULL;
+    else if ( !PyCallable_Check(exportfunc) ) {
 	PyErr_Format(PyExc_TypeError, "Second argument is not callable" );
 return( NULL );
     }
 
-    Py_XINCREF(import);
-    Py_XINCREF(export);
+    Py_XINCREF(importfunc);
+    Py_XINCREF(exportfunc);
     Py_XINCREF(data);
 
     if ( ie_cnt>=ie_max )
-	py_ie = realloc(py_ie,((ie_max += 10)+1)*sizeof(struct python_import_export));
-    py_ie[ie_cnt].import = import;
-    py_ie[ie_cnt].export = export;
+	py_ie = (struct python_import_export *)realloc(py_ie,((ie_max += 10)+1)*sizeof(struct python_import_export));
+    py_ie[ie_cnt].py_import = importfunc;
+    py_ie[ie_cnt].py_export = exportfunc;
     py_ie[ie_cnt].data = data;
     py_ie[ie_cnt].name = name;
     py_ie[ie_cnt].extension = copy(exten);
@@ -1171,7 +1181,7 @@ static PyObject *PyFF_SpiroVersion(PyObject *UNUSED(self), PyObject *UNUSED(args
     return( ret );
 }
 
-GList_Glib* closingFunctionList = 0;
+static std::vector<PyObject*> closingFunctionList;
 
 static PyObject *PyFF_onAppClosing(PyObject *self, PyObject *args) {
     int cnt;
@@ -1188,32 +1198,22 @@ static PyObject *PyFF_onAppClosing(PyObject *self, PyObject *args) {
     }
     PyObject *func = PyTuple_GetItem(args,0);
     Py_INCREF(func);
-    closingFunctionList = g_list_prepend( closingFunctionList, func );
+    closingFunctionList.push_back(func);
 
     PyObject *ret = Py_True;
     Py_INCREF(ret);
     return( ret );
 }
 
-static void python_call_onClosingFunctions_fe( gpointer data, gpointer udata )
-{
-    PyObject *func = (PyObject*)data;
-//    printf("python_call_onClosingFunctions_fe() f:%p\n", func );
-    if( func )
-    {
-	PyObject *arglist, *result;
-	arglist = PyTuple_New(0);
-	result = PyObject_CallObject( func, arglist);
-	if ( !result )
-	{ // error
-	}
-    }
-}
-
 void python_call_onClosingFunctions()
 {
-    g_list_foreach( closingFunctionList,
-		    python_call_onClosingFunctions_fe, 0 );
+    for (PyObject *func : closingFunctionList) {
+	if (func) {
+	    PyObject *arglist = PyTuple_New(0);
+	    PyObject *result = PyObject_CallObject(func, arglist);
+	    (void)result;  // Ignore result
+	}
+    }
 }
 
 /* ************************************************************************** */
@@ -1271,7 +1271,7 @@ static bool sanitize_str_for_printf(char** message, const char* py_routine_name)
 
     // Actually sanitize the string and emit warnings in case the string was not
     // properly escaped.
-    sanitized = malloc(length + additional_characters + 1);
+    sanitized = (char *)malloc(length + additional_characters + 1);
     for (source_pos = 0; source_pos < length; source_pos++) {
         sanitized[target_pos++] = (*message)[source_pos];
         if ((*message)[source_pos] == '%') {
@@ -1461,7 +1461,7 @@ return( NULL );
 return( NULL );
     }
     cnt = PySequence_Size(answero);
-    answers = calloc(cnt+1, sizeof(const char *));
+    answers = (const char **)calloc(cnt+1, sizeof(const char *));
     if ( cancel==-1 )
 	cancel = cnt-1;
     if ( cancel<0 || cancel>=cnt || def<0 || def>=cnt ) {
@@ -1517,7 +1517,7 @@ static PyObject *PyFF_askChoices(PyObject *UNUSED(self), PyObject *args, PyObjec
     }
 
     cnt = PySequence_Size(answero);
-    char* sel = calloc(cnt, sizeof(char));
+    char* sel = (char *)calloc(cnt, sizeof(char));
 
     if (defo != NULL && defo != Py_None) {
         if ( PyLong_Check(defo) ) {
@@ -1558,7 +1558,7 @@ static PyObject *PyFF_askChoices(PyObject *UNUSED(self), PyObject *args, PyObjec
         }
     }
 
-    answers = calloc(cnt+1, sizeof(const char *));
+    answers = (const char **)calloc(cnt+1, sizeof(const char *));
     for ( int i=0; i<cnt; ++i ) {
         PyObject *temp = PySequence_GetItem(answero,i);
         answers[i] = PyUnicode_AsUTF8(temp);
@@ -1692,7 +1692,7 @@ static int multiDlgDecodeQuestion(MultiDlgQuestion *qstn, PyObject *spec, PyObje
 	PyErr_Format(PyExc_TypeError, "askMulti: Missing 'type' key in Element specification.");
 	return false;
     }
-    if ( ( qstn->type = FlagsFromString(t, multiqstntype, "askMulti Element type") ) == FLAG_UNKNOWN) {
+    if ( ( qstn->type = (enum multi_dlg_question_type)FlagsFromString(t, multiqstntype, "askMulti Element type") ) == FLAG_UNKNOWN) {
         free(t);
 	return false;
     }
@@ -1726,7 +1726,7 @@ static int multiDlgDecodeQuestion(MultiDlgQuestion *qstn, PyObject *spec, PyObje
 	    return false;
 	}
 	qstn->answer_len = PySequence_Size(answers_spec);
-	qstn->answers = calloc(qstn->answer_len, sizeof(MultiDlgAnswer));
+	qstn->answers = (MultiDlgAnswer *)calloc(qstn->answer_len, sizeof(MultiDlgAnswer));
 	int defcnt = 0;
 	for (int i = 0; i<qstn->answer_len; ++i) {
 	    MultiDlgAnswer *answer = qstn->answers + i;
@@ -1774,7 +1774,7 @@ static int multiDlgDecodeCategory(MultiDlgCategory *category, PyObject *spec, Py
 	return false;
     }
     category->len = PySequence_Size(qstns_spec);
-    category->questions = calloc(category->len, sizeof(MultiDlgQuestion));
+    category->questions = (MultiDlgQuestion *)calloc(category->len, sizeof(MultiDlgQuestion));
     for (int i = 0; i<category->len; ++i) {
         PyObject *qstn_spec = PySequence_GetItem(qstns_spec, i);
         if ( !multiDlgDecodeQuestion(category->questions + i, qstn_spec, tagdict) ) {
@@ -1805,7 +1805,7 @@ PyObject *multiDlgExtractAnswers(MultiDlgSpec *dspec) {
 		ai = 0;
 		for ( a=0; a<qspec->answer_len; ++a )
 		    if ( qspec->answers[a].is_checked ) {
-			v = qspec->answers[a].tag;
+			v = (PyObject *)qspec->answers[a].tag;
 			Py_INCREF(v);
 			if ( qspec->multiple ) {
 			    PyTuple_SetItem(vtuple, ai, v);
@@ -1822,7 +1822,7 @@ PyObject *multiDlgExtractAnswers(MultiDlgSpec *dspec) {
 		} else
 		    v = PyUnicode_FromString(qspec->str_answer);
 	    }
-	    k = qspec->tag;
+	    k = (PyObject *)qspec->tag;
 	    assert( !PyDict_Contains(r, k) );
 	    PyDict_SetItem(r, k, v);
 	    // XXX seems like v should have an extra reference at this point,
@@ -1860,7 +1860,7 @@ static PyObject *PyFF_askMulti(PyObject *UNUSED(self), PyObject *args, PyObject 
 	}
 	if ( PyDict_Contains(test, catstring) ) {
 	    dlg.len = PySequence_Size(spec);
-	    dlg.categories = calloc(dlg.len, sizeof(MultiDlgCategory));
+	    dlg.categories = (MultiDlgCategory *)calloc(dlg.len, sizeof(MultiDlgCategory));
 	    for (int i = 0; i<dlg.len; ++i) {
 		PyObject *cat_spec = PySequence_GetItem(spec, i);
 		if ( !multiDlgDecodeCategory(dlg.categories + i, cat_spec, tagdict) ) {
@@ -1872,9 +1872,9 @@ static PyObject *PyFF_askMulti(PyObject *UNUSED(self), PyObject *args, PyObject 
 	    }
 	} else if ( PyDict_Contains(test, qstnstring) ) {
 	    dlg.len = 1;
-	    dlg.categories = calloc(1, sizeof(MultiDlgCategory));
+	    dlg.categories = (MultiDlgCategory *)calloc(1, sizeof(MultiDlgCategory));
 	    dlg.categories[0].len = PySequence_Size(spec);
-	    dlg.categories[0].questions = calloc(dlg.categories[0].len, sizeof(MultiDlgQuestion));
+	    dlg.categories[0].questions = (MultiDlgQuestion *)calloc(dlg.categories[0].len, sizeof(MultiDlgQuestion));
 	    for (int i = 0; i<dlg.categories[0].len; ++i) {
 		PyObject *qstn_spec = PySequence_GetItem(spec, i);
 		if ( !multiDlgDecodeQuestion(dlg.categories[0].questions + i, qstn_spec, tagdict) ) {
@@ -1893,7 +1893,7 @@ static PyObject *PyFF_askMulti(PyObject *UNUSED(self), PyObject *args, PyObject 
     } else if ( PyDict_Check(spec) ) {
 	if ( PyDict_Contains(spec, catstring) ) {
 	    dlg.len = 1;
-	    dlg.categories = calloc(1, sizeof(MultiDlgCategory));
+	    dlg.categories = (MultiDlgCategory *)calloc(1, sizeof(MultiDlgCategory));
 	    if ( !multiDlgDecodeCategory(dlg.categories, spec, tagdict) ) {
 		multiDlgFree(&dlg, false);
 		Py_DECREF(tagdict); Py_DECREF(catstring); Py_DECREF(qstnstring);
@@ -1901,9 +1901,9 @@ static PyObject *PyFF_askMulti(PyObject *UNUSED(self), PyObject *args, PyObject 
 	    }
 	} else if ( PyDict_Contains(spec, qstnstring) ) {
 	    dlg.len = 1;
-	    dlg.categories = calloc(1, sizeof(MultiDlgCategory));
+	    dlg.categories = (MultiDlgCategory *)calloc(1, sizeof(MultiDlgCategory));
 	    dlg.categories[0].len = 1;
-	    dlg.categories[0].questions = calloc(1, sizeof(MultiDlgQuestion));
+	    dlg.categories[0].questions = (MultiDlgQuestion *)calloc(1, sizeof(MultiDlgQuestion));
 	    if ( !multiDlgDecodeQuestion(dlg.categories[0].questions, spec, tagdict) ) {
 		multiDlgFree(&dlg, false);
 		Py_DECREF(tagdict); Py_DECREF(catstring); Py_DECREF(qstnstring);
@@ -1932,7 +1932,7 @@ static PyObject *PyFF_askMulti(PyObject *UNUSED(self), PyObject *args, PyObject 
 /* Points */
 /* ************************************************************************** */
 
-static PyTypeObject PyFF_PointType;
+extern PyTypeObject PyFF_PointType;
 static const char *py_point_types[] = { "splineCorner", "splineCurve", "splineHVCurve",
 				     "splineTangent", NULL };
 #define MAX_POINTTYPE_VAL 3
@@ -2171,7 +2171,7 @@ static PyObject *PyFFPoint_New(PyTypeObject *UNUSED(type), PyObject *args, PyObj
     return( (PyObject *)self );
 }
 
-static PyTypeObject PyFF_PointType = {
+PyTypeObject PyFF_PointType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "fontforge.point",         /* tp_name */
     sizeof(PyFF_Point),        /* tp_basicsize */
@@ -2230,7 +2230,7 @@ typedef struct {
     int pos;
     PyFF_Contour *contour;
 } contouriterobject;
-static PyTypeObject PyFF_ContourIterType;
+extern PyTypeObject PyFF_ContourIterType;
 
 static PyObject *contouriter_new(PyObject *contour) {
     contouriterobject *ci;
@@ -2264,7 +2264,7 @@ return( pt );
 return NULL;
 }
 
-static PyTypeObject PyFF_ContourIterType = {
+PyTypeObject PyFF_ContourIterType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "fontforge.contour_iterator", /* tp_name */
     sizeof(contouriterobject), /* tp_basicsize */
@@ -2375,7 +2375,7 @@ static PyObject *PyFFContour_Str(PyFF_Contour *self) {
     int i;
     PyObject *ret;
 
-    buffer=pt=malloc(self->pt_cnt*30+30);
+    buffer=pt=(char *)malloc(self->pt_cnt*30+30);
     strcpy(buffer, self->is_quadratic? "<Contour(quadratic)\n":"<Contour(cubic)\n");
     pt = buffer+strlen(buffer);
     for ( i=0; i<self->pt_cnt; ++i ) {
@@ -2564,7 +2564,7 @@ return( -1 );
         return( -1 );
     }
     PyFFContour_ClearSpiros((PyFF_Contour *) self);
-    spiros = malloc((cnt+1)*sizeof(spiro_cp));
+    spiros = (spiro_cp *)malloc((cnt+1)*sizeof(spiro_cp));
     spiros[cnt].x = spiros[cnt].y = 0;
     spiros[cnt].ty = SPIRO_END;
     for ( i=0; i<cnt; ++i ) {
@@ -3009,7 +3009,7 @@ static PyObject *PyFFContour_dup(PyFF_Contour *self) {
 	    ret->points[i] = (PyFF_Point *) PyFFPoint_dup(self->points[i]);
     }
     if ( ret->spiro_cnt!=0 ) {
-	ret->spiros = malloc(ret->pt_cnt*sizeof(spiro_cp));
+	ret->spiros = (spiro_cp *)malloc(ret->pt_cnt*sizeof(spiro_cp));
 	memcpy(ret->spiros,self->spiros,self->spiro_cnt*sizeof(spiro_cp));
     }
 return( (PyObject *) ret );
@@ -3544,7 +3544,7 @@ return( NULL );
 	else
 	    Py_RETURN( self );	// no points=> nothing to do
     }
-    SplineSetAddExtrema(NULL,ss,ae,emsize);
+    SplineSetAddExtrema(NULL,ss,(enum ae_type)ae,emsize);
     ContourFromSS(ss,self);
     SplinePointListFree(ss);
 Py_RETURN( self );
@@ -3733,7 +3733,7 @@ return( NULL );
 	}
     } else {
 	if ( start!=0 ) {
-	    points = malloc(self->pt_cnt*sizeof(PyFF_Point *));
+	    points = (PyFF_Point **)malloc(self->pt_cnt*sizeof(PyFF_Point *));
 	    for ( i=start; i<self->pt_cnt; ++i )
 		points[i-start] = self->points[i];
 	    off = self->pt_cnt - start;
@@ -3924,7 +3924,7 @@ typedef struct {
     int pos;
     PyFF_Layer *layer;
 } layeriterobject;
-static PyTypeObject PyFF_LayerIterType;
+extern PyTypeObject PyFF_LayerIterType;
 
 static PyObject *layeriter_new(PyObject *layer) {
     layeriterobject *li;
@@ -3958,7 +3958,7 @@ return( c );
 return NULL;
 }
 
-static PyTypeObject PyFF_LayerIterType = {
+PyTypeObject PyFF_LayerIterType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "fontforge.layer_iterator", /* tp_name */
     sizeof(layeriterobject),   /* tp_basicsize */
@@ -4060,7 +4060,7 @@ static PyObject *PyFFLayer_Str(PyFF_Layer *self) {
     cnt = 0;
     for ( i=0; i<self->cntr_cnt; ++i )
 	cnt += self->contours[i]->pt_cnt;
-    buffer=pt=malloc(cnt*30+self->cntr_cnt*30+30);
+    buffer=pt=(char *)malloc(cnt*30+self->cntr_cnt*30+30);
     strcpy(buffer, self->is_quadratic? "<Layer(quadratic)\n":"<Layer(cubic)\n");
     pt = buffer+strlen(buffer);
     for ( i=0; i<self->cntr_cnt; ++i ) {
@@ -4533,7 +4533,7 @@ return( NULL );
 	    Py_RETURN( self ); // no contours=> nothing to do
     }
 
-    SplineCharAddExtrema(NULL,ss,ae,emsize);
+    SplineCharAddExtrema(NULL,ss,(enum ae_type)ae,emsize);
     LayerFromSS(ss,self);
     SplinePointListsFree(ss);
 Py_RETURN( self );
@@ -4787,19 +4787,19 @@ static int Stroke_Parse(StrokeInfo *si, PyObject *args, PyObject *keywds) {
 	if ( si->extendcap!=0 )
 	    si->extendcap=0.5;
     }
-    si->cap = c;
+    si->cap = (enum linecap)c;
     j = FlagsFromString(join,linejoin,"linejoin type");
     if ( j==FLAG_UNKNOWN )
 	return( -1 );
-    si->join = j;
+    si->join = (enum linejoin)j;
     r = FlagsFromString(rostring,rmov,"removeoverlap type");
     if ( r==FLAG_UNKNOWN )
 	return( -1 );
-    si->rmov = r;
+    si->rmov = (enum stroke_rmov)r;
     a = FlagsFromString(acstring,sal,"arcsclip type");
     if ( a==FLAG_UNKNOWN )
 	return( -1 );
-    si->al = a;
+    si->al = (enum stroke_arclimit)a;
 
     if ( flagtuple!=NULL ) {
 	f = FlagsFromTuple(flagtuple,strokeflags,"stroke flag");
@@ -5320,7 +5320,7 @@ return( NULL );
     i = 0;
     next = start;
 
-    ss = chunkalloc(sizeof(SplineSet));
+    ss = (SplineSet *)chunkalloc(sizeof(SplineSet));
     if ( ss==NULL )
 	return( NULL );
     if ( c->spiro_cnt!=0 ) {
@@ -5529,7 +5529,7 @@ static PyFF_Contour *ContourFromSS(SplineSet *ss,PyFF_Contour *ret) {
 	if ( ss->first->next == NULL ) {
 	    if ( k )
 		ret->points[0] = PyFFPoint_CNew(ss->first->me.x,ss->first->me.y,true,
-		                                ss->first->selected,PyFF_ConvertFromPointType(ss->first->pointtype),
+		                                ss->first->selected,PyFF_ConvertFromPointType((enum pointtype)ss->first->pointtype),
 						ss->first->name);
 	    cnt = 1;
 	} else if ( ss->first->next->order2 ) {
@@ -5538,7 +5538,7 @@ static PyFF_Contour *ContourFromSS(SplineSet *ss,PyFF_Contour *ret) {
 	    for ( sp=ss->first; ; ) {
 		if ( k ) {
 		    ret->points[cnt] = PyFFPoint_CNew(sp->me.x,sp->me.y,true,sp->selected,
-		                                      PyFF_ConvertFromPointType(sp->pointtype), sp->name);
+		                                      PyFF_ConvertFromPointType((enum pointtype)sp->pointtype), sp->name);
 		    ret->points[cnt]->interpolated = SPInterpolate(sp);
 		}
 		++cnt;
@@ -5561,7 +5561,7 @@ static PyFF_Contour *ContourFromSS(SplineSet *ss,PyFF_Contour *ret) {
 	    for ( sp=ss->first, cnt=0; ; ) {
 		if ( k )
 		    ret->points[cnt] = PyFFPoint_CNew(sp->me.x,sp->me.y,true, sp->selected,
-		                                      PyFF_ConvertFromPointType(sp->pointtype), sp->name);
+		                                      PyFF_ConvertFromPointType((enum pointtype)sp->pointtype), sp->name);
 		++cnt;			/* Sp itself */
 		if ( sp->next==NULL )
 	    break;
@@ -5651,7 +5651,7 @@ return( layer );
 /* ************************************************************************** */
 /* GlyphPen Standard Methods */
 /* ************************************************************************** */
-static PyTypeObject PyFF_GlyphPenType;
+extern PyTypeObject PyFF_GlyphPenType;
 
 static void PyFF_GlyphPen_dealloc(PyFF_GlyphPen *self) {
     SplineChar *sc = PyFF_Glyph_GetSC(self->glyph);
@@ -5704,7 +5704,7 @@ return( NULL );
     }
     if ( self->replace )
 	GlyphClear(self);
-    ss = chunkalloc(sizeof(SplineSet));
+    ss = (SplineSet *)chunkalloc(sizeof(SplineSet));
     ss->next = sc->layers[layer].splines;
     sc->layers[layer].splines = ss;
     ss->first = ss->last = SplinePointCreate(x,y);
@@ -5816,7 +5816,7 @@ return( NULL );
 	if ( !PyArg_ParseTuple(pt_tuple,"dd", &x0, &y0 ))
 return( NULL );
 
-	ss = chunkalloc(sizeof(SplineSet));
+	ss = (SplineSet *)chunkalloc(sizeof(SplineSet));
 	ss->next = sc->layers[layer].splines;
 	sc->layers[layer].splines = ss;
 
@@ -5972,7 +5972,7 @@ static PyMethodDef PyFF_GlyphPen_methods[] = {
 /*  GlyphPen Type  */
 /* ************************************************************************** */
 
-static PyTypeObject PyFF_GlyphPenType = {
+PyTypeObject PyFF_GlyphPenType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "fontforge.glyphPen",      /* tp_name */
     sizeof(PyFF_GlyphPen),     /* tp_basicsize */
@@ -6171,13 +6171,13 @@ return( -1 );
 /* Layers dictionary iterator type */
 /* ************************************************************************** */
 
-static PyTypeObject PyFF_LayerArrayType;
+extern PyTypeObject PyFF_LayerArrayType;
 typedef struct {
 	PyObject_HEAD
 	PyFF_LayerArray *layers;
 	int pos;
 } layersiterobject;
-static PyTypeObject PyFF_LayerArrayIterType;
+extern PyTypeObject PyFF_LayerArrayIterType;
 
 static PyObject *layersiter_new(PyObject *layers) {
     layersiterobject *di;
@@ -6213,7 +6213,7 @@ return( Py_BuildValue("s",sf->layers[di->pos++].name) );
 return NULL;
 }
 
-static PyTypeObject PyFF_LayerArrayIterType = {
+PyTypeObject PyFF_LayerArrayIterType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "fontforge.layer_array_iterator",  /* tp_name */
     sizeof(layersiterobject),  /* tp_basicsize */
@@ -6387,7 +6387,7 @@ static PyMappingMethods PyFF_LayerArrayMapping = {
 /* ************************* initializer routines *************************** */
 /* ************************************************************************** */
 
-static PyTypeObject PyFF_LayerArrayType = {
+PyTypeObject PyFF_LayerArrayType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "fontforge.layer_array", /* tp_name */
     sizeof(PyFF_LayerArray),   /* tp_basicsize */
@@ -6441,7 +6441,7 @@ static PyTypeObject PyFF_LayerArrayType = {
 /* References Array Standard Methods */
 /* ************************************************************************** */
 
-static PyTypeObject PyFF_RefArrayType;
+extern PyTypeObject PyFF_RefArrayType;
 static void PyFF_RefArray_dealloc(PyFF_RefArray *self) {
     PyFF_Glyph *glyph = self->glyph;
     self->glyph = NULL;
@@ -6527,7 +6527,7 @@ static PyMappingMethods PyFF_RefArrayMapping = {
 /* ************************* initializer routines *************************** */
 /* ************************************************************************** */
 
-static PyTypeObject PyFF_RefArrayType = {
+PyTypeObject PyFF_RefArrayType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "fontforge.references",    /* tp_name */
     sizeof(PyFF_RefArray),     /* tp_basicsize */
@@ -6633,7 +6633,7 @@ static int PyFF_MathKern_set_kerns(PyFF_MathKern *self, PyObject *value, void *c
     if ( sc->mathkern==NULL ) {
 	if ( value==Py_None )
 return( 0 );
-	sc->mathkern = chunkalloc(sizeof(struct mathkern));
+	sc->mathkern = (struct mathkern *)chunkalloc(sizeof(struct mathkern));
     }
     mkv = &sc->mathkern->top_right + (int) (intptr_t) closure;
     if ( value==Py_None ) {
@@ -6647,7 +6647,7 @@ return( 0 );
 return( -1 );
     }
     cnt = PySequence_Size(value);
-    mkd = calloc(cnt,sizeof(struct mathkerndata));
+    mkd = (struct mathkerndata *)calloc(cnt,sizeof(struct mathkerndata));
     for ( i=0; i<cnt; ++i ) {
 	PyObject *obj = PySequence_GetItem(value,i);
 	if ( i==cnt-1 && PyLong_Check(obj))
@@ -6683,7 +6683,7 @@ static PyGetSetDef PyFFMathKern_members[] = {
     PYGETSETDEF_EMPTY /* Sentinel */
 };
 
-static PyTypeObject PyFF_MathKernType = {
+PyTypeObject PyFF_MathKernType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "fontforge.mathKern",      /* tp_name */
     sizeof(PyFF_MathKern),     /* tp_basicsize */
@@ -6776,7 +6776,7 @@ static PyObject *PyFFGlyph_Repr(PyFF_Glyph *self) {
 		space_needed += 9;
     }
     if ( space_needed >= sizeof(buf) )
-	repr = malloc( space_needed );
+	repr = (char *)malloc( space_needed );
 
 #ifdef DEBUG
     at = sprintf(repr, "<%s at 0x%p sc=0x%p",
@@ -6882,11 +6882,11 @@ static PyObject *PyFF_Glyph_get_temporary(PyFF_Glyph *self, SplineChar *sc, void
     if ( sc->python_temporary==NULL )
 Py_RETURN_NONE;
     Py_INCREF( (PyObject *) (sc->python_temporary) );
-return( sc->python_temporary );
+return( (PyObject *)sc->python_temporary );
 }
 
 static int PyFF_Glyph_set_temporary(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
-    PyObject *old = sc->python_temporary;
+    PyObject *old = (PyObject *)sc->python_temporary;
 
     /* I'd rather not store None, because C routines don't understand it */
     /*  and they occasionally need to know whether there is something real */
@@ -6903,12 +6903,12 @@ static PyObject *PyFF_Glyph_get_persistent(PyFF_Glyph *self, SplineChar *sc, voi
     if ( sc->layer_cnt <= ly_fore || sc->layers[ly_fore].python_persistent==NULL )
 Py_RETURN_NONE;
     Py_INCREF( (PyObject *) (sc->layers[ly_fore].python_persistent) );
-return( sc->layers[ly_fore].python_persistent );
+return( (PyObject *)sc->layers[ly_fore].python_persistent );
 }
 
 static int PyFF_Glyph_set_persistent(PyFF_Glyph *self, SplineChar *sc, PyObject *value, void *UNUSED(closure)) {
     if ( sc->layer_cnt <= ly_fore ) return -1;
-    PyObject *old = sc->layers[ly_fore].python_persistent;
+    PyObject *old = (PyObject *)sc->layers[ly_fore].python_persistent;
 
     /* I'd rather not store None, because C routines don't understand it */
     /*  and they occasionally need to know whether there is something real */
@@ -7053,7 +7053,7 @@ return( -1 );
 		uni = PyLong_AsLong(obj);
 	    else if ( !PyArg_ParseTuple(obj,"i|ii", &uni, &vs, &fid))
 return( -1 );
-	    cur = chunkalloc(sizeof(struct altuni));
+	    cur = (struct altuni *)chunkalloc(sizeof(struct altuni));
 	    if ( vs==0 ) vs=-1;		/* convention used in charinfo */
 	    cur->unienc = uni; cur->vs = vs; cur->fid = fid;
 	    if ( last == NULL )
@@ -7296,7 +7296,7 @@ static int PyFF_Glyph_set_lcarets(PyFF_Glyph *self, SplineChar *sc, PyObject *va
 return( -1 );
 
     if ( cnt > 0 )
-       carets = malloc( cnt*sizeof(int16_t) );
+       carets = (int16_t *)malloc( cnt*sizeof(int16_t) );
     for ( i=0; i<cnt; ++i ) {
        carets[i] = PyLong_AsLong( PySequence_GetItem(value,i) );
        if ( PyErr_Occurred()) {
@@ -7318,7 +7318,7 @@ return( -1 );
     }
 
     if ( lcar == NULL && cnt > 0 ) {
-       lcar = chunkalloc(sizeof(PST));
+       lcar = (PST *)chunkalloc(sizeof(PST));
        lcar->type = pst_lcaret;
        lcar->next = sc->possub;
        sc->possub = lcar;
@@ -7394,11 +7394,11 @@ return( 0 );
     if ( PyBytes_Check(value)) {
 	char *space; Py_ssize_t len;
 	PyBytes_AsStringAndSize(value,&space,&len);
-	sc->ttf_instrs = calloc(len,sizeof(uint8_t));
+	sc->ttf_instrs = (uint8_t *)calloc(len,sizeof(uint8_t));
 	sc->ttf_instrs_len = len;
 	memcpy(sc->ttf_instrs,space,len);
     } else {
-	sc->ttf_instrs = calloc(cnt,sizeof(uint8_t));
+	sc->ttf_instrs = (uint8_t *)calloc(cnt,sizeof(uint8_t));
 	for ( i=0; i<cnt; ++i ) {
 	    int val = PyLong_AsLong(PySequence_GetItem(value,i));
 	    if ( PyErr_Occurred()!=NULL )
@@ -7488,7 +7488,7 @@ return( -1 );
     for ( i=0; i<cnt; ++i ) {
 	if ( !PyArg_ParseTuple(PySequence_GetItem(value,i),"dd", &start, &width ))
 return( -1 );
-	cur = chunkalloc(sizeof(StemInfo));
+	cur = (StemInfo *)chunkalloc(sizeof(StemInfo));
 	if ( width==-20 || width==-21 )
 	    cur->ghost = true;
 	if ( width<0 ) {
@@ -7565,7 +7565,7 @@ return( -1 );
             LogError(_("Use the \'hhint\' property to specify a horizontal hint.\n"));
     continue;
         }
-	cur = chunkalloc(sizeof(DStemInfo));
+	cur = (DStemInfo *)chunkalloc(sizeof(DStemInfo));
         len = sqrt( pow( ux,2 ) + pow( uy,2 ));
         ux /= len; uy /= len;
         if ( ux < 0 ) {
@@ -7749,7 +7749,7 @@ return( NULL );
     break;
     }
     if ( ac==NULL ) {
-        ac = chunkalloc(sizeof(AnchorClass));
+        ac = (AnchorClass *)chunkalloc(sizeof(AnchorClass));
         ac->name = copy( ac_name );
         ac->subtable = NULL;
         ac->type = act_unknown;
@@ -7792,7 +7792,7 @@ return( NULL );
 return( NULL );
     }
 
-    ap = chunkalloc(sizeof(AnchorPoint));
+    ap = (AnchorPoint *)chunkalloc(sizeof(AnchorPoint));
     ap->anchor = ac;
     ap->type = aptype;
     ap->me.x = x;
@@ -7881,7 +7881,7 @@ return( NULL );
 	    }
 	    Py_DECREF(obj);
 	}
-	pt = str = malloc(len+1);
+	pt = str = (char *)malloc(len+1);
 	for ( i=0; i<cnt; ++i ) {
 	    PyObject *obj = PySequence_GetItem(value,i);
 	    SplineChar *sc = PyFF_Glyph_GetSC((PyFF_Glyph *) obj);
@@ -7945,7 +7945,7 @@ static struct gv_part *ParseComponentTuple(PyObject *tuple,int *_cnt) {
     }
 
     *_cnt = cnt = PySequence_Fast_GET_SIZE(seq);
-    parts = calloc(cnt+1,sizeof(struct gv_part));
+    parts = (struct gv_part *)calloc(cnt+1,sizeof(struct gv_part));
     for ( i=0; i<cnt; ++i ) {
 	PyObject *obj = PySequence_Fast_GET_ITEM(seq, i);
 	int extender=0, start=0, end=0, full=0;
@@ -8008,7 +8008,7 @@ static int PyFF_Glyph_set_horizontalCIC(PyFF_Glyph *self, SplineChar *sc, PyObje
     if ( PyErr_Occurred()!=NULL )
 return( -1 );
     if ( sc->horiz_variants == NULL )
-	sc->horiz_variants = chunkalloc(sizeof(struct glyphvariants));
+	sc->horiz_variants = (struct glyphvariants *)chunkalloc(sizeof(struct glyphvariants));
     sc->horiz_variants->italic_correction = val;
 return( 0 );
 }
@@ -8027,7 +8027,7 @@ static int PyFF_Glyph_set_verticalCIC(PyFF_Glyph *self, SplineChar *sc, PyObject
     if ( PyErr_Occurred()!=NULL )
 return( -1 );
     if ( sc->vert_variants == NULL )
-	sc->vert_variants = chunkalloc(sizeof(struct glyphvariants));
+	sc->vert_variants = (struct glyphvariants *)chunkalloc(sizeof(struct glyphvariants));
     sc->vert_variants->italic_correction = val;
 return( 0 );
 }
@@ -8050,7 +8050,7 @@ static int PyFF_Glyph_set_verticalVariants(PyFF_Glyph *self, SplineChar *sc, PyO
 	if ( str==NULL )
 return( -1 );
 	if ( sc->vert_variants == NULL )
-	    sc->vert_variants = chunkalloc(sizeof(struct glyphvariants));
+	    sc->vert_variants = (struct glyphvariants *)chunkalloc(sizeof(struct glyphvariants));
 	sc->vert_variants->variants = str;
     }
 return( 0 );
@@ -8074,7 +8074,7 @@ static int PyFF_Glyph_set_horizontalVariants(PyFF_Glyph *self, SplineChar *sc, P
 	if ( str==NULL )
 return( -1 );
 	if ( sc->horiz_variants == NULL )
-	    sc->horiz_variants = chunkalloc(sizeof(struct glyphvariants));
+	    sc->horiz_variants = (struct glyphvariants *)chunkalloc(sizeof(struct glyphvariants));
 	sc->horiz_variants->variants = str;
     }
 return( 0 );
@@ -8101,7 +8101,7 @@ static int PyFF_Glyph_set_horizontalComponents(PyFF_Glyph *self, SplineChar *sc,
 return( -1 );
 	FreeGVParts(sc->horiz_variants);
 	if ( sc->horiz_variants == NULL )
-	    sc->horiz_variants = chunkalloc(sizeof(struct glyphvariants));
+	    sc->horiz_variants = (struct glyphvariants *)chunkalloc(sizeof(struct glyphvariants));
 	sc->horiz_variants->part_cnt = cnt;
 	sc->horiz_variants->parts = parts;
     }
@@ -8129,7 +8129,7 @@ static int PyFF_Glyph_set_verticalComponents(PyFF_Glyph *self, SplineChar *sc, P
 return( -1 );
 	FreeGVParts(sc->vert_variants);
 	if ( sc->vert_variants == NULL )
-	    sc->vert_variants = chunkalloc(sizeof(struct glyphvariants));
+	    sc->vert_variants = (struct glyphvariants *)chunkalloc(sizeof(struct glyphvariants));
 	sc->vert_variants->part_cnt = cnt;
 	sc->vert_variants->parts = parts;
     }
@@ -8467,10 +8467,10 @@ static enum embolden_type CW_ParseArgs(SplineFont *sf, struct lcg_zones *zones, 
 	    &zones->removeoverlap,
 	    &zoneO ))
 return( embolden_error );
-    type = FlagsFromString(type_name,cw_types,"embolden type");
+    type = (enum embolden_type)FlagsFromString(type_name,cw_types,"embolden type");
     if ( type==(uint32_t)FLAG_UNKNOWN )
 return( embolden_error );
-    zones->counter_type = FlagsFromString(counter_name,co_types,"counter type");
+    zones->counter_type = (enum counter_type)FlagsFromString(counter_name,co_types,"counter type");
     if ( zones->counter_type==(uint32_t)FLAG_UNKNOWN )
 return( embolden_error );
 
@@ -8681,7 +8681,7 @@ static PyObject *PyFFGlyph_genericGlyphChange(PyFF_Glyph *self, PyObject *args,
     genchange.tan_ia = small.tan_ia;
 
     genchange.g.cnt = genchange.m.cnt+2;
-    genchange.g.maps = malloc(genchange.g.cnt*sizeof(struct position_maps));
+    genchange.g.maps = (struct position_maps *)malloc(genchange.g.cnt*sizeof(struct position_maps));
 
     if ( sc->layers[self->layer].splines!=NULL )
 	ChangeGlyph(sc,sc,self->layer,&genchange);
@@ -8705,7 +8705,7 @@ static PyObject *PyFFGlyph_addHint(PyObject *self, PyObject *args) {
     if ( !PyArg_ParseTuple(args,"idd", &is_v, &start, &width ) )
 return( NULL );
 
-    h = chunkalloc(sizeof(StemInfo));
+    h = (StemInfo *)chunkalloc(sizeof(StemInfo));
     if ( width==-20 || width==-21 )
 	h->ghost = true;
     if ( width<0 ) {
@@ -9113,7 +9113,7 @@ static char *GlyphNamesFromTuple(PyObject *glyphs) {
 	len += deltalen+1;
     }
 
-    ret = pt = malloc(len+1);
+    ret = pt = (char *)malloc(len+1);
     for ( i=0; i<cnt; ++i ) {
 	PyObject *aglyph = PySequence_GetItem(glyphs,i);
 	if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(aglyph)) ) {
@@ -9151,7 +9151,7 @@ static char **GlyphNameArrayFromTuple(PyObject *glyphs) {
 return(NULL );
     }
     cnt = PySequence_Size(glyphs);
-    ret = malloc((cnt+1)*sizeof(char *));
+    ret = (char **)malloc((cnt+1)*sizeof(char *));
     for ( i=0; i<cnt; ++i ) {
 	PyObject *aglyph = PySequence_GetItem(glyphs,i);
 	if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(aglyph)) ) {
@@ -9196,10 +9196,10 @@ return( NULL );
 	}
 	if ( cnt==0 ) {
         free(str);
-return( calloc(1,sizeof(SplineChar *)));
+return( (SplineChar **)calloc(1,sizeof(SplineChar *)));
 	}
 
-	ret = malloc((cnt+1)*sizeof(SplineChar *));
+	ret = (SplineChar **)malloc((cnt+1)*sizeof(SplineChar *));
 	cnt = 0;
 	for ( pt=str; *pt==' '; ++pt );
 	while ( *pt!='\0' ) {
@@ -9228,7 +9228,7 @@ return( ret );
 return(NULL );
     }
     cnt = PySequence_Size(glyphs);
-    ret = malloc((cnt+1)*sizeof(SplineChar *));
+    ret = (SplineChar **)malloc((cnt+1)*sizeof(SplineChar *));
     for ( i=0; i<cnt; ++i ) {
 	PyObject *aglyph = PySequence_GetItem(glyphs,i);
 	if ( PyType_IsSubtype(&PyFF_GlyphType, Py_TYPE(aglyph)) ) {
@@ -9477,7 +9477,7 @@ return( NULL );
     } else if ( sub->lookup->lookup_type==gpos_pair ) {
 	int off =0x7fffffff;
 	temp.type = pst_pair;
-	temp.u.pair.vr = chunkalloc(sizeof(struct vr [2]));
+	temp.u.pair.vr = (struct vr *)chunkalloc(sizeof(struct vr [2]));
 	if ( PyArg_ParseTuple(args,"ssi", &subname, &other, &off ))
 	    /* Good */;
 	else {
@@ -9515,7 +9515,7 @@ return( NULL );
 		kp = kpold;
 	    } else {
 		chunkfree(temp.u.pair.vr,sizeof(struct vr [2]));
-		kp = chunkalloc(sizeof(KernPair));
+		kp = (KernPair *)chunkalloc(sizeof(KernPair));
 		if ( sub->vertical_kerning ) {
 		    kp->next = sc->vkerns;
 		    sc->vkerns = kp;
@@ -9588,7 +9588,7 @@ return( NULL );
 	  break;
 	}
     } else {
-	pst = chunkalloc(sizeof(PST));
+	pst = (PST *)chunkalloc(sizeof(PST));
 	*pst = temp;
 	pst->next = sc->possub;
 	sc->possub = pst;
@@ -9653,7 +9653,7 @@ return( NULL );
     flags |= fvt_alllayers;
     for ( i=0; i<6; ++i )
 	t[i] = m[i];
-    FVTrans(sc->parent->fv,sc,t,NULL,flags);
+    FVTrans(sc->parent->fv,sc,t,NULL,(enum fvtrans_flags)flags);
 Py_RETURN( self );
 }
 
@@ -9749,7 +9749,7 @@ return( NULL );
 	if ( ae == FLAG_UNKNOWN )
 return( NULL );
     }
-    SplineCharAddExtrema(sc,sc->layers[self->layer].splines,ae,sf->ascent+sf->descent);
+    SplineCharAddExtrema(sc,sc->layers[self->layer].splines,(enum ae_type)ae,sf->ascent+sf->descent);
     SCCharChangedUpdate(sc,self->layer);
 Py_RETURN( self );
 }
@@ -10162,7 +10162,7 @@ static PyMethodDef PyFF_Glyph_methods[] = {
 /*  Glyph Type  */
 /* ************************************************************************** */
 
-static PyTypeObject PyFF_GlyphType = {
+PyTypeObject PyFF_GlyphType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "fontforge.glyph",         /* tp_name */
     sizeof(PyFF_Glyph),	       /* tp_basicsize */
@@ -10231,7 +10231,7 @@ int PyFF_Glyph_set_wrapper(PyFF_Glyph* self, PyObject* value, glyph_accessors* r
 /* Build a get/set table for the glyph type based on the raw accessors */
 static int setup_glyph_type(PyTypeObject* glyphtype) {
     int i, n_accessors = sizeof(PyFF_Glyph_raw_getset) / sizeof(PyFF_Glyph_raw_getset[0]);
-    PyGetSetDef *getset = calloc(n_accessors + 1, sizeof(PyGetSetDef));
+    PyGetSetDef *getset = (PyGetSetDef *)calloc(n_accessors + 1, sizeof(PyGetSetDef));
 
     for (i = 0; i < n_accessors; ++i) {
 	getset[i].name = PyFF_Glyph_raw_getset[i].name;
@@ -10253,7 +10253,7 @@ typedef struct {
     size_t pos;
     PyFF_Cvt *cvt;
 } cvtiterobject;
-static PyTypeObject PyFF_CvtIterType;
+extern PyTypeObject PyFF_CvtIterType;
 
 static PyObject *cvtiter_new(PyObject *cvt) {
     cvtiterobject *ci;
@@ -10286,7 +10286,7 @@ return( entry );
 return NULL;
 }
 
-static PyTypeObject PyFF_CvtIterType = {
+PyTypeObject PyFF_CvtIterType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "fontforge.cvt_iterator",  /* tp_name */
     sizeof(cvtiterobject),     /* tp_basicsize */
@@ -10341,7 +10341,7 @@ static PyTypeObject PyFF_CvtIterType = {
 /* Cvt sequence object */
 /* ************************************************************************** */
 
-static PyTypeObject PyFF_CvtType;
+extern PyTypeObject PyFF_CvtType;
 
 static void PyFFCvt_dealloc(PyFF_Cvt *self) {
     PyFF_Font *font = self->font;
@@ -10395,11 +10395,11 @@ return( ((PyFF_Cvt *) self)->cvt->len/2 );
 static struct ttf_table *BuildCvt(SplineFont *sf,int initial_size) {
     struct ttf_table *cvt;
 
-    cvt = chunkalloc(sizeof(struct ttf_table));
+    cvt = (struct ttf_table *)chunkalloc(sizeof(struct ttf_table));
     cvt->next = sf->ttf_tables;
     sf->ttf_tables = cvt;
     cvt->tag = CHR('c','v','t',' ');
-    cvt->data = malloc(initial_size);
+    cvt->data = (uint8_t *)malloc(initial_size);
     cvt->len = 0;
     cvt->maxlen = initial_size;
 return( cvt );
@@ -10461,7 +10461,7 @@ return( NULL );
 	self->cvt = BuildCvt(self->font->fv->sf,(len1+len2)*2);
     cvt = self->cvt;
     if ( (len1+len2)*2 >= cvt->maxlen )
-	cvt->data = realloc(cvt->data,cvt->maxlen = 2*(len1+len2)+10 );
+	cvt->data = (uint8_t *)realloc(cvt->data,cvt->maxlen = 2*(len1+len2)+10 );
     if ( is_cvt2 ) {
 	if ( len2!=0 )
 	    if ( CheckIfFontClosed(c2->font) )
@@ -10509,7 +10509,7 @@ return( -1 );
 return( -1 );
     }
     if ( 2*pos>=cvt->maxlen )
-	cvt->data = realloc(cvt->data,cvt->maxlen = sizeof(uint16_t)*pos+10 );
+	cvt->data = (uint8_t *)realloc(cvt->data,cvt->maxlen = sizeof(uint16_t)*pos+10 );
     if ( 2*pos>=cvt->len )
 	cvt->len = sizeof(uint16_t)*pos;
     memputshort(cvt->data,sizeof(uint16_t)*pos,val);
@@ -10595,10 +10595,10 @@ static PySequenceMethods PyFFCvt_Sequence = {
     PyFFCvt_Length,		/* length */
     PyFFCvt_Concat,		/* concat */
     NULL,			/* repeat */
-    PyFFCvt_Index,		/* subscript */
-    PyFFCvt_Slice,		/* slice */
-    PyFFCvt_IndexAssign,	/* subscript assign */
-    PyFFCvt_SliceAssign,	/* slice assign */
+    PyFFCvt_Index,		/* sq_item */
+    NULL,			/* was_sq_slice (deprecated in Py3) */
+    PyFFCvt_IndexAssign,	/* sq_ass_item */
+    NULL,			/* was_sq_ass_slice (deprecated in Py3) */
     PyFFCvt_Contains,		/* contains */
     PyFFCvt_InPlaceConcat,	/* inplace_concat */
     NULL			/* inplace repeat */
@@ -10640,7 +10640,7 @@ static PyMethodDef PyFFCvt_methods[] = {
     PYMETHODDEF_EMPTY /* Sentinel */
 };
 
-static PyTypeObject PyFF_CvtType = {
+PyTypeObject PyFF_CvtType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "fontforge.cvt",           /*tp_name*/
     sizeof(PyFF_Cvt),          /*tp_basicsize*/
@@ -10694,7 +10694,7 @@ static PyTypeObject PyFF_CvtType = {
 /* Selection Standard Methods */
 /* ************************************************************************** */
 
-static PyTypeObject PyFF_SelectionType;
+extern PyTypeObject PyFF_SelectionType;
 
 static void PyFFSelection_dealloc(PyFF_Selection *self) {
     PyFF_Font *font = self->font;
@@ -11000,7 +11000,7 @@ static PyMappingMethods PyFFSelection_Mapping = {
     (objobjargproc) PyFFSelection_IndexAssign	/* subscript assign */
 };
 
-static PyTypeObject PyFF_SelectionType = {
+PyTypeObject PyFF_SelectionType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "fontforge.selection",     /*tp_name*/
     sizeof(PyFF_Selection),    /*tp_basicsize*/
@@ -11055,15 +11055,15 @@ static PyTypeObject PyFF_SelectionType = {
 /* Layers info array iterator type */
 /* ************************************************************************** */
 
-static PyTypeObject PyFF_LayerInfoType;
-static PyTypeObject PyFF_LayerInfoArrayType;
+extern PyTypeObject PyFF_LayerInfoType;
+extern PyTypeObject PyFF_LayerInfoArrayType;
 
 typedef struct {
 	PyObject_HEAD
 	PyFF_LayerInfoArray *layers;
 	int pos;
 } layerinfoiterobject;
-static PyTypeObject PyFF_LayerInfoArrayIterType;
+extern PyTypeObject PyFF_LayerInfoArrayIterType;
 
 static PyObject *layerinfoiter_new(PyObject *layers) {
     layerinfoiterobject *di;
@@ -11092,7 +11092,7 @@ return( Py_BuildValue("s",d->font->fv->sf->layers[di->pos++].name) );
 return NULL;
 }
 
-static PyTypeObject PyFF_LayerInfoArrayIterType = {
+PyTypeObject PyFF_LayerInfoArrayIterType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "fontforge.layerinfo_array_iterator", /* tp_name */
     sizeof(layerinfoiterobject), /* tp_basicsize */
@@ -11252,7 +11252,7 @@ static PyGetSetDef PyFF_LayerInfo_getset[] = {
     PYGETSETDEF_EMPTY /* Sentinel */
 };
 
-static PyTypeObject PyFF_LayerInfoType = {
+PyTypeObject PyFF_LayerInfoType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "fontforge.layerinfo",     /* tp_name */
     sizeof(PyFF_LayerInfo),    /* tp_basicsize */
@@ -11451,7 +11451,7 @@ static PyMethodDef PyFF_LayerInfoArray_methods[] = {
     PYMETHODDEF_EMPTY /* Sentinel */
 };
 
-static PyTypeObject PyFF_LayerInfoArrayType = {
+PyTypeObject PyFF_LayerInfoArrayType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "fontforge.layerinfo_array",/*tp_name*/
     sizeof(PyFF_LayerInfoArray), /*tp_basicsize*/
@@ -11510,7 +11510,7 @@ typedef struct {
     int px; /* -1 for end iterator */
     PyFF_MathDeviceTable *py_devtab;
 } devicetable_iter_object;
-static PyTypeObject PyFF_MathDevTabIterType;
+extern PyTypeObject PyFF_MathDevTabIterType;
 
 static struct MATH *SFGetMathTable(PyFF_Font *font) {
     if ( CheckIfFontClosed(font) )
@@ -11582,7 +11582,7 @@ static PyObject *devtab_iter_iternext(devicetable_iter_object *devtab_iter) {
     return Py_BuildValue("i", px);
 }
 
-static PyTypeObject PyFF_MathDevTabIterType = {
+PyTypeObject PyFF_MathDevTabIterType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "fontforge.math.device_table_iterator",  /* tp_name */
     sizeof(devicetable_iter_object),     /* tp_basicsize */
@@ -11716,7 +11716,7 @@ static int PyFF_MathDeviceIndexAssign( PyFF_MathDeviceTable *self, PyObject *ind
     }
 
     if (*devtab==NULL) {
-        *devtab = chunkalloc(sizeof(DeviceTable));
+        *devtab = (DeviceTable *)chunkalloc(sizeof(DeviceTable));
     }
     DeviceTableSet(*devtab, px, correction);
     return 0;
@@ -11770,7 +11770,7 @@ static PyMappingMethods PyFF_MathDeviceTableMapping = {
     (objobjargproc) PyFF_MathDeviceIndexAssign	/* subscript assign */
 };
 
-static PyTypeObject PyFF_MathDeviceTableType = {
+PyTypeObject PyFF_MathDeviceTableType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "fontforge.math.device_table", /* tp_name */
     sizeof(PyFF_MathDeviceTable), /* tp_basicsize */
@@ -11931,10 +11931,10 @@ static int PythonObjToDeviceTable(DeviceTable **target_devtab, PyObject *value) 
             high = pixel;
     }
 
-    dv = chunkalloc(sizeof(DeviceTable));
+    dv = (DeviceTable *)chunkalloc(sizeof(DeviceTable));
     dv->first_pixel_size = low;
     dv->last_pixel_size = high;
-    dv->corrections = calloc(high-low+1,1);
+    dv->corrections = (int8_t *)calloc(high-low+1,1);
     
     for ( i=0; i<cnt; ++i ) {
         PyObject *adj_tuple = PySequence_Fast_GET_ITEM(seq, i);
@@ -11993,7 +11993,7 @@ static PyMethodDef FFMath_methods[] = {
     PYMETHODDEF_EMPTY /* Sentinel */
 };
 
-static PyTypeObject PyFF_MathType = {
+PyTypeObject PyFF_MathType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "fontforge.math",	       /* tp_name */
     sizeof(PyFF_Math),         /* tp_basicsize */
@@ -12054,7 +12054,7 @@ static int setup_math_type(PyTypeObject* mathtype) {
             ++cnt_dt;
     }
 
-    getset = calloc(cnt+cnt_dt+1,sizeof(PyGetSetDef));
+    getset = (PyGetSetDef *)calloc(cnt+cnt_dt+1,sizeof(PyGetSetDef));
     cnt_dt = 0;
     for ( cnt=0; math_constants_descriptor[cnt].script_name!=NULL; ++cnt ) {
     getset[cnt+cnt_dt].name = math_constants_descriptor[cnt].script_name;
@@ -12064,7 +12064,7 @@ static int setup_math_type(PyTypeObject* mathtype) {
     getset[cnt+cnt_dt].closure = (void *) (intptr_t) math_constants_descriptor[cnt].offset;
     if ( math_constants_descriptor[cnt].devtab_offset >= 0 ) {
         ++cnt_dt;
-        char *name = malloc(strlen(math_constants_descriptor[cnt].script_name) + 11 + 1);
+        char *name = (char *)malloc(strlen(math_constants_descriptor[cnt].script_name) + 11 + 1);
         strcpy(name, math_constants_descriptor[cnt].script_name);
         strcat(name, "DeviceTable");
         getset[cnt+cnt_dt].name = name;
@@ -12084,40 +12084,40 @@ static int setup_math_type(PyTypeObject* mathtype) {
 
 typedef struct {
 	PyObject_HEAD
-	PyFF_Private *private;
+	PyFF_Private *priv;
 	int pos;
 } privateiterobject;
-static PyTypeObject PyFF_PrivateIterType;
+extern PyTypeObject PyFF_PrivateIterType;
 
-static PyObject *privateiter_new(PyObject *private) {
+static PyObject *privateiter_new(PyObject *priv_obj) {
     privateiterobject *di;
     di = PyObject_New(privateiterobject, &PyFF_PrivateIterType);
     if (di == NULL)
 return NULL;
-    Py_INCREF(private);
-    di->private = (PyFF_Private *) private;
+    Py_INCREF(priv_obj);
+    di->priv = (PyFF_Private *) priv_obj;
     di->pos = 0;
 return (PyObject *)di;
 }
 
 static void privateiter_dealloc(privateiterobject *di) {
-    Py_XDECREF(di->private);
+    Py_XDECREF(di->priv);
     PyObject_Del(di);
 }
 
 static PyObject *privateiter_iternextkey(privateiterobject *di) {
-    PyFF_Private *d = di->private;
+    PyFF_Private *d = di->priv;
 
-    if (d == NULL || CheckIfFontClosed(d->font) || d->font->fv->sf->private==NULL )
+    if (d == NULL || CheckIfFontClosed(d->font) || d->font->fv->sf->private_dict==NULL )
 	return NULL;
 
-    if ( di->pos<d->font->fv->sf->private->next )
-return( Py_BuildValue("s",d->font->fv->sf->private->keys[di->pos++]) );
+    if ( di->pos<d->font->fv->sf->private_dict->next )
+return( Py_BuildValue("s",d->font->fv->sf->private_dict->keys[di->pos++]) );
 
 return NULL;
 }
 
-static PyTypeObject PyFF_PrivateIterType = {
+PyTypeObject PyFF_PrivateIterType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "fontforge.private_iterator",  /* tp_name */
     sizeof(privateiterobject), /* tp_basicsize */
@@ -12190,33 +12190,33 @@ static PyObject *PyFFPrivate_Str(PyFF_Private *self) {
 /* ************************************************************************** */
 
 static Py_ssize_t PyFF_PrivateLength( PyObject *self ) {
-    struct psdict *private;
+    struct psdict *private_dict;
     if ( CheckIfFontClosed(((PyFF_Private *) self)->font) )
 	return( 0 );
-    private = ((PyFF_Private *) self)->font->fv->sf->private;
-    if ( private==NULL )
+    private_dict = ((PyFF_Private *) self)->font->fv->sf->private_dict;
+    if ( private_dict==NULL )
 return( 0 );
     else
-return( private->next );
+return( private_dict->next );
 }
 
 static PyObject *PyFF_PrivateIndex( PyObject *self, PyObject *index ) {
-    struct psdict *private;
+    struct psdict *private_dict;
     char *value=NULL;
     char *pt, *end;
     double temp;
     PyObject *tuple;
     if ( CheckIfFontClosed(((PyFF_Private *) self)->font) )
 	return NULL;
-    private = ((PyFF_Private *) self)->font->fv->sf->private;
+    private_dict = ((PyFF_Private *) self)->font->fv->sf->private_dict;
 
     if ( PyUnicode_Check(index)) {
 	const char *name = PyUnicode_AsUTF8(index);
 	if (name == NULL) {
 	    return NULL;
 	}
-	if ( private!=NULL )
-	    value = PSDictHasEntry(private,name);
+	if ( private_dict!=NULL )
+	    value = PSDictHasEntry(private_dict,name);
     } else {
 	PyErr_Format(PyExc_TypeError, "Private dictionary index must be a string" );
 return( NULL );
@@ -12258,13 +12258,13 @@ return( Py_BuildValue("s",value));
 }
 
 static int PyFF_PrivateIndexAssign( PyObject *self, PyObject *index, PyObject *value ) {
-    struct psdict *private;
+    struct psdict *private_dict;
     const char *string, *name;
     char *freeme = NULL;
     char buffer[40];
     if ( CheckIfFontClosed(((PyFF_Private *) self)->font) )
 	return -1;
-    private = ((PyFF_Private *) self)->font->fv->sf->private;
+    private_dict = ((PyFF_Private *) self)->font->fv->sf->private_dict;
 
     if ( PyUnicode_Check(value)) {
         string = PyUnicode_AsUTF8(value);
@@ -12273,18 +12273,18 @@ static int PyFF_PrivateIndexAssign( PyObject *self, PyObject *index, PyObject *v
         }
     } else if ( PyFloat_Check(value)) {
         string = buffer;
-        g_ascii_formatd(buffer, sizeof(buffer), "%g", PyFloat_AsDouble(value));
+        ff_ascii_formatd(buffer, sizeof(buffer), "%g", PyFloat_AsDouble(value));
     } else if ( PyLong_Check(value)) {
         string = buffer;
         snprintf(buffer, sizeof(buffer), "%ld", PyLong_AsLong(value));
     } else if ( PySequence_Check(value)) {
 	char *pt;
 	int i, size = PySequence_Size(value);
-	string = pt = freeme = malloc(size*21+4);
+	string = pt = freeme = (char *)malloc(size*21+4);
 	*pt++ = '[';
 	for ( i=0; i<size; ++i ) {
 	    PyObject *obj = PySequence_GetItem(value, i);
-	    g_ascii_formatd(pt, 21, "%g", PyFloat_AsDouble(obj));
+	    ff_ascii_formatd(pt, 21, "%g", PyFloat_AsDouble(obj));
 	    Py_DECREF(obj);
 	    pt += strlen(pt);
 	    *pt++ = ' ';
@@ -12301,11 +12301,11 @@ static int PyFF_PrivateIndexAssign( PyObject *self, PyObject *index, PyObject *v
         PyErr_Format(PyExc_TypeError, "Private dictionary index must be a string" );
         free(freeme);
         return -1;
-    } else if (private == NULL) {
-        ((PyFF_Private *) self)->font->fv->sf->private = private = calloc(1,sizeof(struct psdict));
+    } else if (private_dict == NULL) {
+        ((PyFF_Private *) self)->font->fv->sf->private_dict = private_dict = (struct psdict*)calloc(1,sizeof(struct psdict));
     }
 
-    PSDictChangeEntry(private,name,string);
+    PSDictChangeEntry(private_dict,name,string);
     free(freeme);
     return( 0 );
 }
@@ -12325,10 +12325,10 @@ static PyObject *PyFFPrivate_Guess(PyFF_Private *self, PyObject *args) {
 
     if ( !PyArg_ParseTuple(args,"s", &name) )
 return( NULL );
-    if ( sf->private==NULL )
-	sf->private = calloc(1,sizeof(struct psdict));
+    if ( sf->private_dict==NULL )
+	sf->private_dict = (struct psdict *)calloc(1,sizeof(struct psdict));
 
-    SFPrivateGuess(sf,self->font->fv->active_layer,sf->private,name,true);
+    SFPrivateGuess(sf,self->font->fv->active_layer,sf->private_dict,name,true);
 Py_RETURN( self );
 }
 
@@ -12342,7 +12342,7 @@ static PyMethodDef FFPrivate_methods[] = {
 /* ************************* initializer routines *************************** */
 /* ************************************************************************** */
 
-static PyTypeObject PyFF_PrivateType = {
+PyTypeObject PyFF_PrivateType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "fontforge.private",       /* tp_name */
     sizeof(PyFF_Private),      /* tp_basicsize */
@@ -12404,7 +12404,7 @@ typedef struct {
     FontViewBase *fv;
     struct searchdata *sv;
 } fontiterobject;
-static PyTypeObject PyFF_FontIterType;
+extern PyTypeObject PyFF_FontIterType;
 
 static PyObject *fontiter_New(PyFF_Font *self, int bysel, struct searchdata *sv) {
     fontiterobject *di;
@@ -12523,7 +12523,7 @@ return( PySC_From_SC_I( fv->sf->glyphs[gid] ) );
 return NULL;
 }
 
-static PyTypeObject PyFF_FontIterType = {
+PyTypeObject PyFF_FontIterType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "fontforge.font_iterator", /* tp_name */
     sizeof(fontiterobject),    /* tp_basicsize */
@@ -12587,7 +12587,7 @@ static void PyFF_Font_dealloc(PyFF_Font *self) {
     Py_XDECREF(self->selection);
     Py_XDECREF(self->cvt);
     Py_XDECREF(self->layers);
-    Py_XDECREF(self->private);
+    Py_XDECREF(self->priv);
     Py_XDECREF(self->math);
     Py_TYPE(self)->tp_free((PyObject *) self);
 }
@@ -12750,7 +12750,7 @@ return( 0 );
     }
 
     if ( names==NULL ) {
-	names = chunkalloc(sizeof( struct ttflangname ));
+	names = (struct ttflangname *)chunkalloc(sizeof( struct ttflangname ));
 	names->lang = lang;
 	names->next = sf->names;
 	sf->names = names;
@@ -12878,7 +12878,7 @@ return(-1);
     cnt = PyTuple_Size(value);
     if ( PyErr_Occurred())
 return( -1 );
-    sizes = malloc((cnt+1)*sizeof(int));
+    sizes = (int *)malloc((cnt+1)*sizeof(int));
     for ( i=0; i<cnt; ++i ) {
 	sizes[i] = PyLong_AsLong(PyTuple_GetItem(value,i));
 	if (PyErr_Occurred() && !PyArg_ParseTuple(PyTuple_GetItem(value,i),"i", &sizes[i])) {
@@ -12953,7 +12953,7 @@ return( -1 );
     if ( cnt==0 )
 	gasp = NULL;
     else {
-	gasp = malloc(cnt*sizeof(struct gasp));
+	gasp = (struct gasp *)malloc(cnt*sizeof(struct gasp));
 	for ( i=0; i<cnt; ++i ) {
 	    if ( !PyArg_ParseTuple(PyTuple_GetItem(value,i),"HO",
 				   &gasp[i].ppem, &flags )) {
@@ -13024,19 +13024,19 @@ Py_RETURN( self->math );
 }
 
 static PyObject *PyFF_Font_get_private(PyFF_Font *self, void *UNUSED(closure)) {
-    PyFF_Private *private;
+    PyFF_Private *priv;
 
     if ( CheckIfFontClosed(self) )
 return(NULL);
 
-    if ( self->private!=NULL )
-Py_RETURN( self->private );
-    private = (PyFF_Private *) PyObject_New(PyFF_Private, &PyFF_PrivateType);
-    if (private == NULL)
+    if ( self->priv!=NULL )
+Py_RETURN( self->priv );
+    priv = (PyFF_Private *) PyObject_New(PyFF_Private, &PyFF_PrivateType);
+    if (priv == NULL)
 return NULL;
-    private->font = self;
-    self->private = private;
-Py_RETURN( self->private );
+    priv->font = self;
+    self->priv = priv;
+Py_RETURN( self->priv );
 }
 
 static PyObject *PyFF_Font_get_layers(PyFF_Font *self, void *UNUSED(closure)) {
@@ -13179,7 +13179,7 @@ return( -1 );
     if ( cvt==NULL )
 	cvt = BuildCvt(sf,len2*2);
     if ( len2*2>=cvt->maxlen )
-	cvt->data = realloc(cvt->data,cvt->maxlen = sizeof(uint16_t)*len2+10 );
+	cvt->data = (uint8_t *)realloc(cvt->data,cvt->maxlen = sizeof(uint16_t)*len2+10 );
     if ( is_cvt2 ) {
 	if ( len2!=0 ) {
 	    if ( CheckIfFontClosed(c2->font) )
@@ -13207,7 +13207,7 @@ return(NULL);
     if ( sf->python_temporary==NULL )
 Py_RETURN_NONE;
     Py_INCREF( (PyObject *) (sf->python_temporary) );
-return( sf->python_temporary );
+return( (PyObject *)sf->python_temporary );
 }
 
 static int PyFF_Font_set_temporary(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
@@ -13218,7 +13218,7 @@ static int PyFF_Font_set_temporary(PyFF_Font *self,PyObject *value, void *UNUSED
 return(-1);
 
     sf = self->fv->sf;
-    old = sf->python_temporary;
+    old = (PyObject *)sf->python_temporary;
     /* I'd rather not store None, because C routines don't understand it */
     /*  and they occasionally need to know whether there is something real */
     /*  in this field. */
@@ -13240,7 +13240,7 @@ return(NULL);
     if ( sf->python_persistent==NULL )
 Py_RETURN_NONE;
     Py_INCREF( (PyObject *) (sf->python_persistent) );
-return( sf->python_persistent );
+return( (PyObject *)sf->python_persistent );
 }
 
 static int PyFF_Font_set_persistent(PyFF_Font *self,PyObject *value, void *UNUSED(closure)) {
@@ -13251,7 +13251,7 @@ static int PyFF_Font_set_persistent(PyFF_Font *self,PyObject *value, void *UNUSE
 return(-1);
 
     sf = self->fv->sf;
-    old = sf->python_persistent;
+    old = (PyObject *)sf->python_persistent;
     /* I'd rather not store None, because C routines don't understand it */
     /*  and they occasionally need to know whether there is something real */
     /*  in this field. */
@@ -13698,7 +13698,7 @@ ff_gs_os2bit(typodescent_add)
 ff_gs_bit(changed)
 ff_gs_ro_bit(multilayer)
 ff_gs_bit(strokedfont)
-ff_gs_ro_bit(new)
+ff_gs_ro_bit(isnew)
 
 ff_gs_bit(use_typo_metrics)
 ff_gs_bit(weight_width_slope_only)
@@ -14004,9 +14004,9 @@ return( -1 );
 	if ( basecnt<0 )
 return( -1 );
     }
-    base = chunkalloc(sizeof( struct Base));
+    base = (struct Base *)chunkalloc(sizeof( struct Base));
     base->baseline_cnt = basecnt;
-    base->baseline_tags = malloc(basecnt*sizeof(uint32_t));
+    base->baseline_tags = (uint32_t *)malloc(basecnt*sizeof(uint32_t));
     base->scripts = NULL;
     for ( i=0; i<basecnt; ++i ) {
 	PyObject *str = PyTuple_GetItem(basetags,i);
@@ -14037,7 +14037,7 @@ return( -1 );
 	    BaseFree(base);
 return( -1 );
 	}
-	bs = chunkalloc(sizeof(struct basescript));
+	bs = (struct basescript *)chunkalloc(sizeof(struct basescript));
 	bs->next = NULL;
 	if ( lastbs==NULL )
 	    base->scripts = bs;
@@ -14070,7 +14070,7 @@ return( -1 );
 return( -1 );
 	    }
 	    bs->def_baseline = i;
-	    bs->baseline_pos = malloc(basecnt*sizeof(int16_t));
+	    bs->baseline_pos = (int16_t *)malloc(basecnt*sizeof(int16_t));
 	    for ( i=0; i<basecnt; ++i ) {
 		if ( !PyLong_Check(PyTuple_GetItem(offsets,i))) {
 		    PyErr_Format(PyExc_TypeError, "Baseline positions must be integers");
@@ -14107,7 +14107,7 @@ return( -1 );
 		BaseFree(base);
 return( -1 );
 	    }
-	    ln = chunkalloc(sizeof(struct baselangextent));
+	    ln = (struct baselangextent *)chunkalloc(sizeof(struct baselangextent));
 	    if ( lastln==NULL )
 		bs->langs = ln;
 	    else
@@ -14140,7 +14140,7 @@ return( -1 );
 		    BaseFree(base);
 return( -1 );
 		}
-		ft = chunkalloc(sizeof(struct baselangextent));
+		ft = (struct baselangextent *)chunkalloc(sizeof(struct baselangextent));
 		if ( lastft==NULL )
 		    ln->features = ft;
 		else
@@ -14429,7 +14429,7 @@ return( -1 );
 	    PyErr_Format(PyExc_TypeError, "Name must be a string");
 	    return -1;
 	}
-	cur = chunkalloc(sizeof( struct otfname ));
+	cur = (struct otfname *)chunkalloc(sizeof( struct otfname ));
 	cur->name = (char*)string; // last assignment to string was a copy
 	cur->lang = lang;
 	cur->next = NULL;
@@ -14522,11 +14522,11 @@ return( -1 );
     MVDestroyAll(self->fv->sf);
     if ( sf->glyphcnt>self->fv->sf->glyphcnt ) {
 	free(self->fv->selected);
-	self->fv->selected = calloc(sf->glyphcnt,sizeof(char));
+	self->fv->selected = (uint8_t *)calloc(sf->glyphcnt,sizeof(char));
 	if ( sf->glyphcnt>map->encmax )
-	    map->map = realloc(map->map,(map->encmax = sf->glyphcnt)*sizeof(int));
+	    map->map = (int32_t *)realloc(map->map,(map->encmax = sf->glyphcnt)*sizeof(int));
 	if ( sf->glyphcnt>map->backmax )
-	    map->backmap = realloc(map->backmap,(map->backmax = sf->glyphcnt)*sizeof(int));
+	    map->backmap = (int32_t *)realloc(map->backmap,(map->backmax = sf->glyphcnt)*sizeof(int));
 	for ( i=0; i<sf->glyphcnt; ++i )
 	    map->map[i] = map->backmap[i] = i;
 	map->enccount = sf->glyphcnt;
@@ -14712,8 +14712,8 @@ static int PyFF_Font_parse_mark_classes_or_sets(PyObject *value, bool sets, char
         return( 0 );
     }
 
-    names = malloc((cnt+1)*sizeof(char *));
-    classes = malloc((cnt+1)*sizeof(char *));
+    names = (char **)malloc((cnt+1)*sizeof(char *));
+    classes = (char **)malloc((cnt+1)*sizeof(char *));
     names[0] = classes[0] = NULL;
     /* Fill in names[] and classes[], starting at index 1 instead of 0 in case of classes */
     for ( i=start; i<cnt+start; ++i ) {
@@ -14845,13 +14845,13 @@ return( -1 );
 
     tab = SFFindTable(sf,CHR('m','a','x','p'));
     if ( tab==NULL ) {
-	tab = chunkalloc(sizeof(struct ttf_table));
+	tab = (struct ttf_table *)chunkalloc(sizeof(struct ttf_table));
 	tab->next = sf->ttf_tables;
 	sf->ttf_tables = tab;
 	tab->tag = CHR('m','a','x','p');
     }
     if ( tab->len<32 ) {
-	tab->data = realloc(tab->data,32);
+	tab->data = (uint8_t *)realloc(tab->data,32);
 	memset(tab->data+tab->len,0,32-tab->len);
 	if ( tab->len<16 )
 	    tab->data[15] = 2;			/* Default zones to 2 */
@@ -15254,7 +15254,7 @@ static int PyFF_Font_set_style_set_names(PyFF_Font *self, PyObject *value, void 
         else
             lang = PyLong_AsLong(lang_py);
 
-        tag = StrObjToTag(PyTuple_GetItem(ss_names_tuple, 1), false);
+        tag = StrObjToTag(PyTuple_GetItem(ss_names_tuple, 1), NULL);
 
         for ( j = 0; j < ( (tag & 0xffff0000) == (('s' << 24) | ('s' << 16)) ? 1 : 4 + PyTuple_Size(PyTuple_GetItem(PyTuple_GetItem(ss_names_tuple, 2), 3))); ++j ) {
             if ( (tag & 0xffff0000) == (('s' << 24) | ('s' << 16)) ) {
@@ -15277,15 +15277,15 @@ static int PyFF_Font_set_style_set_names(PyFF_Font *self, PyObject *value, void 
             if ( name_str ) {
                 for ( fn=sf->feat_names; fn!=NULL && (fn->tag!=tag || fn->field!=j); fn=fn->next );
                 if ( fn==NULL ) {
-                    fn = chunkalloc(sizeof(*fn));
+                    fn = (struct otffeatname *)chunkalloc(sizeof(*fn));
                     fn->tag = tag;
-                    fn->field = j;
+                    fn->field = (enum otffn_field)j;
                     fn->next = sf->feat_names;
                     sf->feat_names = fn;
                 }
                 for ( on=fn->names; on!=NULL && on->lang!=lang; on=on->next );
                 if ( on==NULL ) {
-                    on = chunkalloc(sizeof(*on));
+                    on = (struct otfname *)chunkalloc(sizeof(*on));
                     on->lang = lang;
                     on->next = fn->names;
                     fn->names = on;
@@ -15645,7 +15645,7 @@ static PyGetSetDef PyFF_Font_getset[] = {
      (getter)PyFF_Font_get_changed, (setter)PyFF_Font_set_changed,
      (char *)"Flag indicating whether the font has been changed since it was loaded (read only)", NULL},
     {(char *)"isnew",
-     (getter)PyFF_Font_get_new, NULL,
+     (getter)PyFF_Font_get_isnew, NULL,
      (char *)"Flag indicating whether the font is new (read only)", NULL},
     {(char *)"hasvmetrics",
      (getter)PyFF_Font_get_hasvmetrics, (setter)PyFF_Font_set_hasvmetrics,
@@ -15725,7 +15725,7 @@ static void TableAddInstrs(SplineFont *sf, uint32_t tag,int replace,
     if ( icnt==0 )
 return;
     if ( tab==NULL ) {
-	tab = chunkalloc(sizeof( struct ttf_table ));
+	tab = (struct ttf_table *)chunkalloc(sizeof( struct ttf_table ));
 	tab->tag = tag;
 	if ( tag==CHR('p','r','e','p') || tag==CHR('f','p','g','m') ||
 		tag==CHR('c','v','t',' ') || tag==CHR('m','a','x','p') ) {
@@ -15737,11 +15737,11 @@ return;
 	}
     }
     if ( tab->data==NULL ) {
-	tab->data = malloc(icnt);
+	tab->data = (uint8_t *)malloc(icnt);
 	memcpy(tab->data,instrs,icnt);
 	tab->len = icnt;
     } else {
-	uint8_t *newi = malloc(icnt+tab->len);
+	uint8_t *newi = (uint8_t *)malloc(icnt+tab->len);
 	memcpy(newi,tab->data,tab->len);
 	memcpy(newi+tab->len,instrs,icnt);
 	free(tab->data);
@@ -15778,12 +15778,12 @@ return( NULL );
     if ( PyBytes_Check(tuple)) {
 	char *space; Py_ssize_t len;
 	PyBytes_AsStringAndSize(tuple,&space,&len);
-	instrs = calloc(len,sizeof(uint8_t));
+	instrs = (uint8_t *)calloc(len,sizeof(uint8_t));
 	icnt = len;
 	memcpy(instrs,space,len);
     } else {
 	icnt = PySequence_Size(tuple);
-	instrs = malloc(icnt);
+	instrs = (uint8_t *)malloc(icnt);
 	for ( i=0; i<icnt; ++i ) {
 	    PyObject *val = PySequence_GetItem(tuple, i);
 	    instrs[i] = PyLong_AsLong(val);
@@ -16056,8 +16056,8 @@ return( NULL );
     sf->display_antialias = fv->sf->display_antialias;
     sf->display_bbsized = fv->sf->display_bbsized;
     sf->display_size = fv->sf->display_size;
-    sf->private = calloc(1,sizeof(struct psdict));
-    PSDictChangeEntry(sf->private,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
+    sf->private_dict = (struct psdict *)calloc(1,sizeof(struct psdict));
+    PSDictChangeEntry(sf->private_dict,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
     FVInsertInCID(fv,sf);
 Py_RETURN( self );
 }
@@ -16134,7 +16134,7 @@ return( NULL );
 return( NULL );
     }
 
-    sub = chunkalloc(sizeof(struct lookup_subtable));
+    sub = (struct lookup_subtable *)chunkalloc(sizeof(struct lookup_subtable));
     sub->lookup = otl;
     sub->subtable_name = copy(new_subtable);
     if ( after!=NULL ) {
@@ -16185,7 +16185,7 @@ Py_RETURN( self );
 
 static PyObject *PyFFFont_addAnchorClass(PyFF_Font *self, PyObject *args) {
     SplineFont *sf;
-    char *subtable, *anchor_name, *typename;
+    char *subtable, *anchor_name, *type_name;
     struct lookup_subtable *sub;
     AnchorClass *ac;
     int ac_type, aptype;
@@ -16193,16 +16193,16 @@ static PyObject *PyFFFont_addAnchorClass(PyFF_Font *self, PyObject *args) {
     if ( CheckIfFontClosed(self) )
 return (NULL);
     sf = self->fv->sf;
-    if ( !PyArg_ParseTuple(args,"ss|s", &subtable, &anchor_name, &typename ))
+    if ( !PyArg_ParseTuple(args,"ss|s", &subtable, &anchor_name, &type_name ))
 return( NULL );
 
     sub = SFFindLookupSubtable(sf,subtable);
-    if ( sub==NULL && !typename ) {
+    if ( sub==NULL && !type_name ) {
 	PyErr_Format(PyExc_EnvironmentError, "No subtable named %s", subtable );
 return( NULL );
     }
     else if ( sub==NULL) {
-        aptype = FlagsFromString(typename,ap_types,"anchor type");
+        aptype = FlagsFromString(type_name,ap_types,"anchor type");
         ac_type = aptype==at_basechar                           ? act_mark :
                         aptype==at_baselig                      ? act_mklg :
                         aptype==at_cexit || aptype==at_centry   ? act_curs :
@@ -16231,7 +16231,7 @@ return( NULL );
         ac->type = ac_type;
     }
     else {
-        ac = chunkalloc(sizeof(AnchorClass));
+        ac = (AnchorClass *)chunkalloc(sizeof(AnchorClass));
         ac->name = copy( anchor_name );
         ac->subtable = sub;
         ac->type = ac_type;
@@ -16273,7 +16273,7 @@ static int ParseClassNames(PyObject *classes,char ***class_strs) {
     cnt = PySequence_Size(classes);
     if ( cnt==-1 )
 return( -1 );
-    *class_strs = cls = malloc(cnt*sizeof(char *));
+    *class_strs = cls = (char **)malloc(cnt*sizeof(char *));
     for ( i=0; i<cnt; ++i ) {
 	PyObject *thingy = PySequence_GetItem(classes,i);
 	if ( i==0 && thingy==Py_None ) {
@@ -16324,7 +16324,7 @@ static SplineChar **GlyphsFromSelection(FontViewBase *fv) {
 return(NULL);
     }
 
-    glyphlist = malloc((selcnt+1)*sizeof(SplineChar *));
+    glyphlist = (SplineChar **)malloc((selcnt+1)*sizeof(SplineChar *));
     selcnt=0;
     for ( enc=0; enc<map->enccount; ++enc ) {
 	if ( fv->selected[enc] && (gid=map->map[enc])!=-1 &&
@@ -16364,7 +16364,7 @@ return( true );
 }
 
 static void pyAddOffsetAsIs(void *data,int left_index,int right_index, int kern) {
-    struct lookup_subtable *sub = data;
+    struct lookup_subtable *sub = (struct lookup_subtable *)data;
     KernClass *kc = sub->kc;
 
     if ( !(sub->lookup->lookup_flags & pst_r2l) ) {
@@ -16489,7 +16489,7 @@ return( NULL );
 		PyErr_Format(PyExc_ValueError, "There aren't enough kerning offsets for the number of kerning classes. Should be %d", cnt1*cnt2 );
 return( NULL );
 	    }
-	    offs = malloc(cnt1*cnt2*sizeof(int16_t));
+	    offs = (int16_t *)malloc(cnt1*cnt2*sizeof(int16_t));
 	    for ( i=0 ; i<cnt1*cnt2; ++i ) {
 		offs[i] = PyLong_AsLong(PySequence_GetItem(offsets,i));
 		if ( PyErr_Occurred()) {
@@ -16498,7 +16498,7 @@ return( NULL );
 }
 	    }
 	} else
-	    offs = calloc(cnt1*cnt2,sizeof(int16_t));
+	    offs = (int16_t *)calloc(cnt1*cnt2,sizeof(int16_t));
     }
 
     sub = addLookupSubtable(sf, lookup, subtable, after_str);
@@ -16518,7 +16518,7 @@ return( NULL );
 	sub->onlyCloser = only_closer;
 	sub->dontautokern = !autokern;
     }
-    sub->kc = chunkalloc(sizeof(KernClass));
+    sub->kc = (KernClass *)chunkalloc(sizeof(KernClass));
     sub->kc->subtable = sub;
     if ( class1s!=NULL ) {
 	sub->kc->first_cnt = cnt1;
@@ -16526,7 +16526,7 @@ return( NULL );
 	sub->kc->firsts = class1_strs;
 	sub->kc->seconds = class2_strs;
 	sub->kc->offsets = offs;
-	sub->kc->adjusts = calloc(cnt1*cnt2,sizeof(DeviceTable));
+	sub->kc->adjusts = (DeviceTable *)calloc(cnt1*cnt2,sizeof(DeviceTable));
 	if ( offsets==NULL )
 	    pyAutoKernAll(fv,sub);
     } else {
@@ -16580,7 +16580,7 @@ return( NULL );
 	PyErr_Format(PyExc_ValueError, "There aren't enough kerning offsets for the number of kerning classes. Should be %d", cnt1*cnt2 );
 return( NULL );
     }
-    offs = malloc(cnt1*cnt2*sizeof(int16_t));
+    offs = (int16_t *)malloc(cnt1*cnt2*sizeof(int16_t));
     for ( i=0 ; i<cnt1*cnt2; ++i ) {
 	offs[i] = PyLong_AsLong(PySequence_GetItem(offsets,i));
 	if ( PyErr_Occurred()) {
@@ -16595,7 +16595,7 @@ return( NULL );
     sub->kc->firsts = class1_strs;
     sub->kc->seconds = class2_strs;
     sub->kc->offsets = offs;
-    sub->kc->adjusts = calloc(cnt1*cnt2,sizeof(DeviceTable));
+    sub->kc->adjusts = (DeviceTable *)calloc(cnt1*cnt2,sizeof(DeviceTable));
 
 Py_RETURN( self );
 }
@@ -16968,7 +16968,7 @@ return( BAD_FEATURE_LIST );
 	    FeatureScriptLangListFree(flhead);
 return( BAD_FEATURE_LIST );
 	}
-	fl = chunkalloc(sizeof(FeatureScriptLangList));
+	fl = (FeatureScriptLangList *)chunkalloc(sizeof(FeatureScriptLangList));
 	fl->featuretag = StrObjToTag(PySequence_GetItem(subs,0),&wasmac);
 	if ( fl->featuretag == BAD_TAG ) {
 	    free(fl);
@@ -17008,7 +17008,7 @@ return( BAD_FEATURE_LIST );
 		FeatureScriptLangListFree(flhead);
 return( BAD_FEATURE_LIST );
 	    }
-	    sl = chunkalloc(sizeof(struct scriptlanglist));
+	    sl = (struct scriptlanglist *)chunkalloc(sizeof(struct scriptlanglist));
 	    sl->script = StrObjToTag(PySequence_GetItem(scriptsubs,0),NULL);
 	    if ( sl->script==BAD_TAG ) {
 		free(sl);
@@ -17039,7 +17039,7 @@ return( BAD_FEATURE_LIST );
 	    } else {
 		sl->lang_cnt = PySequence_Size(langs);
 		if ( sl->lang_cnt>MAX_LANG )
-		    sl->morelangs = malloc((sl->lang_cnt-MAX_LANG)*sizeof(uint32_t));
+		    sl->morelangs = (uint32_t *)malloc((sl->lang_cnt-MAX_LANG)*sizeof(uint32_t));
 		for ( l=0; l<sl->lang_cnt; ++l ) {
 		    uint32_t lang = StrObjToTag(PySequence_GetItem(langs,l),NULL);
 		    if ( lang==BAD_TAG ) {
@@ -17108,7 +17108,7 @@ return( NULL );
 
     if ( sf->cidmaster ) sf = sf->cidmaster;
 
-    otl = chunkalloc(sizeof(OTLookup));
+    otl = (OTLookup *)chunkalloc(sizeof(OTLookup));
     if ( after!=NULL ) {
 	otl->next = after->next;
 	after->next = otl;
@@ -17119,7 +17119,7 @@ return( NULL );
 	otl->next = sf->gsub_lookups;
 	sf->gsub_lookups = otl;
     }
-    otl->lookup_type = itype;
+    otl->lookup_type = (enum otlookup_type)itype;
     otl->lookup_flags = flags;
     otl->lookup_name = copy(lookup_str);
     otl->features = fl;
@@ -17164,11 +17164,11 @@ return (NULL);
 	    PyErr_Format(PyExc_EnvironmentError, "No lookup named %s exists in %s.", lookup_str, othersf->fontname );
 return( NULL );
 	}
-	list = calloc(2,sizeof(OTLookup *));
+	list = (OTLookup **)calloc(2,sizeof(OTLookup *));
 	list[0] = otl;
     } else if ( PySequence_Check(lookup_list)) {
 	int subcnt = PySequence_Size(lookup_list);
-	list = calloc(subcnt+1,sizeof(OTLookup *));
+	list = (OTLookup **)calloc(subcnt+1,sizeof(OTLookup *));
 	for ( i=0; i<subcnt; ++i ) {
 	    PyObject *str = PySequence_GetItem(lookup_list,i);
 	    if ((lookup_str = PyUnicode_AsUTF8(str)) == NULL) {
@@ -17487,7 +17487,7 @@ return( NULL );
 	free(backclassnames); free(matchclasses); free(forclasses);
 return( NULL );
     }
-    fpst = chunkalloc(sizeof(FPST));
+    fpst = (FPST *)chunkalloc(sizeof(FPST));
     fpst->subtable = new_subtable;
     new_subtable->fpst = fpst;
     fpst->format = format;
@@ -17501,23 +17501,23 @@ return( NULL );
     fpst->bccnt = bcnt;
     fpst->bclass = backclasses;
     if ( backclasses!=NULL && backclassnames==NULL )
-	fpst->bclassnames = calloc(bcnt,sizeof(char *));
+	fpst->bclassnames = (char **)calloc(bcnt,sizeof(char *));
     else
 	fpst->bclassnames = backclassnames;
     fpst->nccnt = mcnt;
     fpst->nclass = matchclasses;
     if ( matchclasses!=NULL && matchclassnames==NULL )
-	fpst->nclassnames = calloc(mcnt,sizeof(char *));
+	fpst->nclassnames = (char **)calloc(mcnt,sizeof(char *));
     else
 	fpst->nclassnames = matchclassnames;
     fpst->fccnt = fcnt;
     fpst->fclass = forclasses;
     if ( forclasses!=NULL && forclassnames==NULL )
-	fpst->fclassnames = calloc(fcnt,sizeof(char *));
+	fpst->fclassnames = (char **)calloc(fcnt,sizeof(char *));
     else
 	fpst->fclassnames = forclassnames;
     fpst->rule_cnt = 1;
-    fpst->rules = calloc(1,sizeof(struct fpst_rule));
+    fpst->rules = (struct fpst_rule *)calloc(1,sizeof(struct fpst_rule));
 
     msg = FPSTRule_From_Str( sf,fpst,fpst->rules,rule,&is_warning);
     if ( is_warning ) {
@@ -17805,7 +17805,7 @@ static PyObject *PyFFFont_Save(PyFF_Font *self, PyObject *args) {
 	    SplineFont *sf = fv->cidmaster?fv->cidmaster:
 		    fv->sf->mm!=NULL?fv->sf->mm->normal:fv->sf;
 	    char *fn = sf->defbasefilename ? sf->defbasefilename : sf->fontname;
-	    locfilename = malloc((strlen(fn)+10));
+	    locfilename = (char *)malloc((strlen(fn)+10));
 	    strcpy(locfilename,fn);
 	    if ( sf->defbasefilename!=NULL )
 		/* Don't add a default suffix, they've already told us what name to use */;
@@ -17848,7 +17848,7 @@ static PyObject *PyFFFont_Save(PyFF_Font *self, PyObject *args) {
 	sf->save_to_dir = s2d;
 	free(sf->origname);
 	sf->origname = copy(locfilename);
-	sf->new = false;
+	sf->isnew = false;
 	if ( sf->mm!=NULL ) {
 	    int i;
 	    for ( i=0; i<sf->mm->instance_count; ++i ) {
@@ -17856,7 +17856,7 @@ static PyObject *PyFFFont_Save(PyFF_Font *self, PyObject *args) {
 		sf->mm->instances[i]->filename = copy(locfilename);
 		free(sf->mm->instances[i]->origname);
 		sf->mm->instances[i]->origname = copy(locfilename);
-		sf->mm->instances[i]->new = false;
+		sf->mm->instances[i]->isnew = false;
 	    }
 	}
 	SplineFontSetUnChanged(sf);
@@ -18011,7 +18011,7 @@ static struct sflist *makesflist(PyFF_Font *font,enum bitmapformat bf) {
     if ( CheckIfFontClosed(font) )
 return(NULL);
 
-    ret = chunkalloc(sizeof( struct sflist ));
+    ret = (struct sflist *)chunkalloc(sizeof( struct sflist ));
     ret->sf  = font->fv->sf;
     ret->map = font->fv->map;
 
@@ -18020,7 +18020,7 @@ return(NULL);
 	BDFFont *bdf;
 	for ( cnt=0, bdf=ret->sf->bitmaps; bdf!=NULL; bdf=bdf->next, ++cnt );
 	if ( cnt!=0 ) {
-	    ret->sizes = malloc((cnt+1)*sizeof(int32_t));
+	    ret->sizes = (int32_t *)malloc((cnt+1)*sizeof(int32_t));
 	    ret->sizes[cnt] = 0;
 	    for ( cnt=0, bdf=ret->sf->bitmaps; bdf!=NULL; bdf=bdf->next, ++cnt ) {
 		ret->sizes[cnt] = (BDFDepth(bdf)<<16) | bdf->pixelsize;
@@ -18140,7 +18140,7 @@ return( NULL );
 
     locfilename = utf82def_copy(filename);
 
-    if ( !WriteTTC(locfilename,head,ff_ttc,bf,fmflag2ttfflag(iflags,false),layer,ittcflags)) {
+    if ( !WriteTTC(locfilename,head,ff_ttc,bf,fmflag2ttfflag(iflags,false),layer,(enum ttc_flags)ittcflags)) {
 	PyErr_Format(PyExc_EnvironmentError, "Font generation failed");
 	/* Don't return here, will return after memory is freed below */
     }
@@ -18236,7 +18236,7 @@ return( NULL );
 	sf = other->fv->sf;
     } else {
 	locfilename = utf82def_copy(filename);
-	sf = LoadSplineFont(locfilename,openflags);
+	sf = LoadSplineFont(locfilename,(enum openflags)openflags);
 	if ( sf==NULL ) {
 	    PyErr_Format(PyExc_EnvironmentError, "No font found in file \"%s\"", locfilename);
 	    free(locfilename);
@@ -18264,7 +18264,7 @@ return (NULL);
     if ( !PyArg_ParseTuple(args,"ds|i",&fraction,&filename, &openflags) )
 return( NULL );
     locfilename = utf82def_copy(filename);
-    sf = LoadSplineFont(locfilename,openflags);
+    sf = LoadSplineFont(locfilename,(enum openflags)openflags);
     if ( sf==NULL ) {
 	PyErr_Format(PyExc_EnvironmentError, "No font found in file \"%s\"", locfilename);
 	free(locfilename);
@@ -18502,12 +18502,12 @@ static PyObject *PyFFFont_printSample(PyFF_Font *self, PyObject *args) {
     }
     if ( pointsizeArg!=INT_MIN ) {
         if ( pointsizeArg>0 ) {
-            pointsizes = calloc(2,sizeof(int32_t));
+            pointsizes = (int32_t *)calloc(2,sizeof(int32_t));
             pointsizes[0] = pointsizeArg;
         }
     } else if ( pointsizeTuple!=NULL ) {
         int subcnt = PySequence_Size(pointsizeTuple);
-        pointsizes = malloc((subcnt+1)*sizeof(int32_t));
+        pointsizes = (int32_t *)malloc((subcnt+1)*sizeof(int32_t));
         for ( i=0; i<subcnt; ++i ) {
             arg = PySequence_GetItem(pointsizeTuple,i);
             pointsizes[i] = PyLong_AsLong(arg);
@@ -19101,7 +19101,7 @@ static bool PyFFParse_genericGlyphChange(PyObject *args, PyObject *keywds,
 	}
 	cnt = PySequence_Size(vMap);
 	genchange->m.cnt = cnt;
-	genchange->m.maps = malloc(cnt*sizeof(struct position_maps));
+	genchange->m.maps = (struct position_maps *)malloc(cnt*sizeof(struct position_maps));
 	for ( i=0; i<cnt; ++i ) {
 	    PyObject *subTuple = PySequence_GetItem(vMap,i);
 	    if ( subTuple==NULL || !PySequence_Check(subTuple) || PyUnicode_Check(subTuple) || PySequence_Size(subTuple)!=3 ) {
@@ -19230,7 +19230,7 @@ return( NULL );
     for ( i=0; i<6; ++i )
 	t[i] = m[i];
     bvts[0].func = bvt_none;
-    FVTransFunc(fv,t,0,bvts,flags);
+    FVTransFunc(fv,t,0,bvts,(enum fvtrans_flags)flags);
 Py_RETURN( self );
 }
 
@@ -19693,7 +19693,7 @@ static PyMappingMethods PyFF_FontMapping = {
     NULL			/* subscript assign */
 };
 
-static PyTypeObject PyFF_FontType = {
+PyTypeObject PyFF_FontType = {
     PyVarObject_HEAD_INIT(NULL, 0)
     "fontforge.font",          /* tp_name */
     sizeof(PyFF_Font),         /* tp_basicsize */
@@ -19772,7 +19772,7 @@ typedef struct {
     PyObject *regionHeight;
     PyObject *denom;
 } PyFF_AWContext;
-static PyTypeObject PyFF_AWGlyphType, PyFF_AWGlyphIndexType, PyFF_AWContextType;
+extern PyTypeObject PyFF_AWGlyphType, PyFF_AWGlyphIndexType, PyFF_AWContextType;
 
 static void PyFF_AWGlyphIndex_dealloc(PyFF_AWGlyphI *self) {
     Py_TYPE(self)->tp_free((PyObject *) self);
@@ -19809,7 +19809,7 @@ static PyMappingMethods PyFF_AWGlyphMapping = {
     NULL			/* subscript assign */
 };
 
-static PyTypeObject PyFF_AWGlyphIndexType = {
+PyTypeObject PyFF_AWGlyphIndexType = {
     PyVarObject_HEAD_INIT(NULL,0)
     "fontforge.awglyphIndex",  /* tp_name */
     sizeof(PyFF_AWGlyphI),     /* tp_basicsize */
@@ -19947,7 +19947,7 @@ static PyGetSetDef PyFF_AWGlyph_getset[] = {
     PYGETSETDEF_EMPTY /* Sentinel */
 };
 
-static PyTypeObject PyFF_AWGlyphType = {
+PyTypeObject PyFF_AWGlyphType = {
     PyVarObject_HEAD_INIT(NULL,0)
     "fontforge.awglyph",       /* tp_name */
     sizeof(PyFF_AWGlyph),      /* tp_basicsize */
@@ -20070,7 +20070,7 @@ static PyGetSetDef PyFF_AWContext_getset[] = {
     PYGETSETDEF_EMPTY /* Sentinel */
 };
 
-static PyTypeObject PyFF_AWContextType = {
+PyTypeObject PyFF_AWContextType = {
     PyVarObject_HEAD_INIT(NULL,0)
     "fontforge.awcontext",     /* tp_name */
     sizeof(PyFF_AWContext),    /* tp_basicsize */
@@ -20145,7 +20145,7 @@ return( -1 );
 	PyTuple_SetItem(arglist,3,PyFF_GlyphSeparationArg);
 	Py_XINCREF(PyFF_GlyphSeparationArg);
     }
-    result = PyObject_CallObject(PyFF_GlyphSeparationHook, arglist);
+    result = PyObject_CallObject((PyObject *)PyFF_GlyphSeparationHook, arglist);
     Py_DECREF(arglist);
     if ( PyErr_Occurred()!=NULL ) {
 	PyErr_Print();
@@ -20473,7 +20473,7 @@ char *PyFF_PickleMeToString(void *pydata) {
     char *ret = NULL;
 
     PyFF_PicklerInit();
-    pyobj = pydata;
+    pyobj = (PyObject *)pydata;
     arglist = PyTuple_New(2);
     Py_XINCREF(pyobj);
     PyTuple_SetItem(arglist,0,pyobj);
@@ -20825,6 +20825,12 @@ static void UnreferenceAllPyModules(void) {
 
 static int python_initialized = 0;
 
+/* Returns true if FontForge initialized Python (app mode),
+ * false if Python was already running (module mode) */
+extern "C" int FontForge_PythonInitialized(void) {
+    return python_initialized;
+}
+
 void FontForge_FinalizeEmbeddedPython(void) {
     // static int python_initialized is declared above.
     if ( !python_initialized )
@@ -20885,7 +20891,7 @@ static wchar_t ** copy_argv(char *arg0, int argc ,char **argv);
  * options up to and including the '-script' option, but while
  * preserving argv[0].
  */
-_Noreturn void PyFF_Main(int argc,char **argv,int start, int do_inits,
+void PyFF_Main(int argc,char **argv,int start, int do_inits,
                          int do_plugins) {
     char *arg;
     wchar_t **newargv;
@@ -20923,7 +20929,7 @@ static wchar_t ** copy_argv(char *arg0, int argc ,char **argv) {
     int i;
     wchar_t **newargv;
 
-    newargv= calloc(argc+2,sizeof(char *));
+    newargv= (wchar_t **)calloc(argc+2,sizeof(wchar_t *));
     newargv[0] = copy_to_wide_string(arg0);
     if (newargv[0] == NULL) {
         fprintf(stderr, "argv[0] is an invalid multibyte sequence in the current locale\n");
@@ -20982,7 +20988,7 @@ static void AddSpiroConstants( PyObject *module ) {
 }
 
 
-_Noreturn void PyFF_Stdin(int do_inits, int do_plugins) {
+void PyFF_Stdin(int do_inits, int do_plugins) {
     no_windowing_ui = running_script = true;
 
     FontForge_InitializeEmbeddedPython();
@@ -21063,37 +21069,32 @@ extern void PyFF_FreePythonPersistent(void *python_persistent) {
     Py_XDECREF((PyObject *)python_persistent);
 }
 
-static gint GPtrArrayStrcmp(gconstpointer a, gconstpointer b) {
-    return strcmp(*(const char**)a, *(const char**)b);
-}
-
 static void LoadFilesInPythonInitDir(char *dir) {
     DIR *diro;
     struct dirent *ent;
-    GPtrArray *filelist;
+    std::vector<char*> filelist;
 
     diro = opendir(dir);
     if ( diro==NULL )		/* It's ok not to have any python init scripts */
 return;
-
-    filelist = g_ptr_array_new_with_free_func(free);
 
     while ( (ent = readdir(diro))!=NULL ) {
 	char *pt = strrchr(ent->d_name,'.');
 	if ( pt==NULL )
     continue;
 	if ( strcmp(pt,".py")==0 ) {
-        g_ptr_array_add(filelist, smprintf("%s/%s", dir, ent->d_name));
+	    filelist.push_back(smprintf("%s/%s", dir, ent->d_name));
 	}
     }
     closedir(diro);
 
-    g_ptr_array_sort(filelist, GPtrArrayStrcmp);
+    std::sort(filelist.begin(), filelist.end(),
+	      [](const char *a, const char *b) { return strcmp(a, b) < 0; });
 
     showPythonErrors = 0;
-    for (guint i = 0; i < filelist->len; ++i) {
+    for (size_t i = 0; i < filelist.size(); ++i) {
 	FILE *fp;
-	char *pathname = (char*)filelist->pdata[i];
+	char *pathname = filelist[i];
 	fp = fopen( pathname, "rb" );
 	if ( fp==NULL ) {
 	    fprintf(stderr,"Failed to open script \"%s\": %s\n",pathname,strerror(errno));
@@ -21102,7 +21103,7 @@ return;
 	PyRun_SimpleFileEx(fp, pathname, 1/*close fp*/);
     }
     showPythonErrors = 1;
-    g_ptr_array_free(filelist, true);
+    for (char *p : filelist) free(p);
 }
 
 static int dir_exists(const char* path) {
@@ -21112,14 +21113,13 @@ static int dir_exists(const char* path) {
     return 0;
 }
 
-static GPtrArray *default_pyinit_dirs(void) {
-    GPtrArray *pathlist;
+static std::vector<char*> default_pyinit_dirs(void) {
+    std::vector<char*> pathlist;
     const char *sharedir;
     const char *userdir;
     char subdir[16];
     char *buffer;
 
-    pathlist = g_ptr_array_new_with_free_func(free);
     snprintf(subdir, sizeof(subdir), "python%d", PY_MAJOR_VERSION);
 
     sharedir = getFontForgeShareDir();
@@ -21128,13 +21128,13 @@ static GPtrArray *default_pyinit_dirs(void) {
     if ( sharedir!=NULL ) {
         buffer = smprintf("%s/%s", sharedir, subdir);
         if ( dir_exists(buffer) ) {
-            g_ptr_array_add(pathlist, buffer);
+            pathlist.push_back(buffer);
         }
         else { /* Fall back to version-less python */
             free(buffer);
             buffer = smprintf("%s/%s", sharedir, "python");
             if ( dir_exists(buffer) ) {
-                g_ptr_array_add(pathlist, buffer);
+                pathlist.push_back(buffer);
             } else {
                 free(buffer);
             }
@@ -21144,13 +21144,13 @@ static GPtrArray *default_pyinit_dirs(void) {
     if ( userdir!=NULL ) {
         buffer = smprintf("%s/%s", userdir, subdir);
         if ( dir_exists(buffer) ) {
-            g_ptr_array_add(pathlist, buffer);
+            pathlist.push_back(buffer);
         }
         else { /* Fall back to version-less python */
             free(buffer);
             buffer = smprintf("%s/%s", userdir, "python");
             if ( dir_exists(buffer) ) {
-                g_ptr_array_add(pathlist, buffer);
+                pathlist.push_back(buffer);
             } else {
                 free(buffer);
             }
@@ -21162,18 +21162,17 @@ static GPtrArray *default_pyinit_dirs(void) {
 
 void PyFF_ProcessInitFiles(int do_inits, int do_plugins) {
     static int done = false;
-    GPtrArray *dpath;
 
     PyFF_ImportPlugins(do_plugins);
 
     if ( done || !do_inits ) // Idempotency, I presume
 	return;
 
-    dpath = default_pyinit_dirs();
-    for (guint i = 0; i < dpath->len; ++i ) {
-	LoadFilesInPythonInitDir( (char*)dpath->pdata[i] );
+    std::vector<char*> dpath = default_pyinit_dirs();
+    for (size_t i = 0; i < dpath.size(); ++i ) {
+	LoadFilesInPythonInitDir( dpath[i] );
     }
-    g_ptr_array_free(dpath, true);
+    for (char *p : dpath) free(p);
     done = true;
 }
 
@@ -21239,9 +21238,9 @@ return;
     /* First check if it has a initScriptString in the persistent dictionary */
     /* (If we loaded from an sfd file) */
     obj = NULL;
-    if ( sf->python_persistent!=NULL && PyMapping_Check(sf->python_persistent) &&
-	 PyMapping_HasKeyString(sf->python_persistent,(char *)"initScriptString") &&
-	 (obj = PyMapping_GetItemString(sf->python_persistent,(char *)"initScriptString"))!=NULL &&
+    if ( sf->python_persistent!=NULL && PyMapping_Check((PyObject *)sf->python_persistent) &&
+	 PyMapping_HasKeyString((PyObject *)sf->python_persistent,(char *)"initScriptString") &&
+	 (obj = PyMapping_GetItemString((PyObject *)sf->python_persistent,(char *)"initScriptString"))!=NULL &&
 	 PyUnicode_Check(obj)) {
 	const char *str = PyUnicode_AsUTF8(obj);
 	if (str == NULL) {
@@ -21257,7 +21256,7 @@ return;
 
     if (PyObject_HasAttrString(fontforge_module, "hooks")) {
         PyObject* hook_dict = PyObject_GetAttrString(fontforge_module, "hooks");
-        if (sf->new)
+        if (sf->isnew)
             PyFF_CallDictFunc(hook_dict, "newFontHook", "f", fv);
         else
             PyFF_CallDictFunc(hook_dict, "loadFontHook", "f", fv);
@@ -21301,7 +21300,7 @@ PyMODINIT_FUNC fontforge_python_init(const char* modulename) {
 #endif		/* _NO_PYTHON */
 
 /* These don't get translated. They are a copy of a similar list in fontinfo.c */
-static struct flaglist sfnt_name_str_ids[] = {
+struct flaglist sfnt_name_str_ids[] = {
     { "SubFamily", 2},
     { "Copyright", 0},
     { "Family", 1},
@@ -21328,7 +21327,7 @@ static struct flaglist sfnt_name_str_ids[] = {
     FLAGLIST_EMPTY /* Sentinel */
 };
 /* These don't get translated. They are a copy of a similar list in fontinfo.c */
-static struct flaglist sfnt_name_mslangs[] = {
+struct flaglist sfnt_name_mslangs[] = {
     { "Afrikaans", 0x436},
     { "Albanian", 0x41c},
     { "Alsatian", 0x484},

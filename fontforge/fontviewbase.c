@@ -35,6 +35,7 @@
 #include "bvedit.h"
 #include "cvundoes.h"
 #include "encoding.h"
+#include "ffprocess.h"
 #include "fontforge.h"
 #include "fvcomposite.h"
 #include "fvfonts.h"
@@ -1244,8 +1245,8 @@ return( true );		/* A glyph with hints! */
 return( false );
 }
 
-void CIDSetEncMap(FontViewBase *fv, SplineFont *new ) {
-    int gcnt = new->glyphcnt;
+void CIDSetEncMap(FontViewBase *fv, SplineFont *new_sf ) {
+    int gcnt = new_sf->glyphcnt;
 
     if ( fv->cidmaster!=NULL && gcnt!=fv->sf->glyphcnt ) {
 	int i;
@@ -1264,8 +1265,8 @@ void CIDSetEncMap(FontViewBase *fv, SplineFont *new ) {
 	}
 	fv->map->enccount = gcnt;
     }
-    fv->sf = new;
-    new->fv = fv;
+    fv->sf = new_sf;
+    new_sf->fv = fv;
     FVSetTitle(fv);
     FontViewReformatOne(fv);
 }
@@ -1321,7 +1322,7 @@ void FVAutoInstr(FontViewBase *fv) {
     /* (This way the auto hinter won't complain if they existed) */
     if ( fv->sf->ttf_tables!=NULL && AllGlyphsSelected(fv))
 	ClearFpgmPrepCvt(fv->sf);
-    if ( fv->sf->private==NULL && !no_windowing_ui )
+    if ( fv->sf->private_dict==NULL && !no_windowing_ui )
 	ff_post_notice( _("Things could be better..."), _("You will get better instructions if you fill in the Private dictionary, Element->Font Info->Private, for the font"));
     if ( !no_windowing_ui && !AnySelectedHints(fv))
 	ff_post_notice(_("Things could be better..."), _("The selected glyphs have no hints. FontForge will not produce many instructions."));
@@ -1729,7 +1730,7 @@ return;
 	strcpy(buf,old->filename);
 	if ( old->compression!=0 ) {
 	    char *tmpf;
-	    strcat(buf,compressors[old->compression-1].ext);
+	    strcat(buf,ff_compression_ext(ff_compression_from_legacy(old->compression)));
 	    strcat(buf,"~");
 	    tmpf = Decompress(buf,old->compression-1);
 	    if ( tmpf==NULL )
@@ -1749,7 +1750,7 @@ return;
 	    char *tmpf;
 	    char *buf = malloc(strlen(old->filename)+20);
 	    strcpy(buf,old->filename);
-	    strcat(buf,compressors[old->compression-1].ext);
+	    strcat(buf,ff_compression_ext(ff_compression_from_legacy(old->compression)));
 	    tmpf = Decompress(buf,old->compression-1);
 	    if ( tmpf==NULL )
 		temp = NULL;
