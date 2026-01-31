@@ -102,6 +102,48 @@ long ff_get_utc_offset(long timestamp);
 #endif
 
 /* ============================================================================
+ * Filesystem functions (portable wrappers using std::filesystem)
+ * ============================================================================ */
+
+/* access() mode flags - match POSIX values */
+#ifndef F_OK
+#define F_OK 0  /* Test for existence */
+#define X_OK 1  /* Test for execute permission */
+#define W_OK 2  /* Test for write permission */
+#define R_OK 4  /* Test for read permission */
+#endif
+
+/* Check file accessibility. Returns 0 on success, -1 on failure.
+ * Replaces POSIX access().
+ */
+int ff_access(const char *path, int mode);
+
+/* Delete a file. Returns 0 on success, -1 on failure.
+ * Replaces POSIX unlink().
+ */
+int ff_unlink(const char *path);
+
+/* Remove an empty directory. Returns 0 on success, -1 on failure.
+ * Replaces POSIX rmdir().
+ */
+int ff_rmdir(const char *path);
+
+/* Create a directory. Returns 0 on success, -1 on failure.
+ * Replaces POSIX mkdir().
+ */
+int ff_mkdir(const char *path, int mode);
+
+/* Change current working directory. Returns 0 on success, -1 on failure.
+ * Replaces POSIX chdir().
+ */
+int ff_chdir(const char *path);
+
+/* Get current working directory. Returns buffer on success, NULL on failure.
+ * Replaces POSIX getcwd().
+ */
+char *ff_getcwd(char *buf, size_t size);
+
+/* ============================================================================
  * Dynamic array (replaces GArray)
  * ============================================================================ */
 
