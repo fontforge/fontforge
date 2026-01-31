@@ -32,6 +32,10 @@
 #include "splinefont.h"
 #include "sd.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define free_with_debug(x) { fprintf(stderr,"%p FREE()\n",x); free(x); }
 
 
@@ -301,7 +305,7 @@ extern void FVRound2Int(FontViewBase *fv,real factor);
 extern void FVCanonicalStart(FontViewBase *fv);
 extern void FVCanonicalContours(FontViewBase *fv);
 extern void FVCluster(FontViewBase *fv);
-extern void CIDSetEncMap(FontViewBase *fv, SplineFont *new );
+extern void CIDSetEncMap(FontViewBase *fv, SplineFont *new_sf );
 extern void FVInsertInCID(FontViewBase *fv,SplineFont *sf);
 
 extern void FVAutoHint(FontViewBase *fv);
@@ -410,8 +414,8 @@ enum search_flags { sv_reverse = 0x1, sv_flips = 0x2, sv_rotate = 0x4,
 enum flipset { flip_none = 0, flip_x, flip_y, flip_xy };
 
 extern struct python_import_export {
-    struct _object *import;	/* None becomes NULL */
-    struct _object *export;	/* None becomes NULL */
+    struct _object *py_import;	/* None becomes NULL */
+    struct _object *py_export;	/* None becomes NULL */
     struct _object *data;	/* None stays None */
     char *name;
     char *extension;
@@ -448,5 +452,9 @@ extern void AutoKern2(SplineFont *sf, int layer,SplineChar **left,SplineChar **r
 extern void MVSelectFirstKerningTable(struct metricsview *mv);
 
 extern float joinsnap;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_BASEVIEWS_H */

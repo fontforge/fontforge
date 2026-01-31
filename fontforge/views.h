@@ -40,6 +40,10 @@
 #include "multidialog.h"
 #include "search.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct gfi_data;
 struct contextchaindlg;
 struct statemachinedlg;
@@ -635,7 +639,7 @@ extern void StrokeCharViewInits(StrokeDlg *sd,int cid);
 struct lksubinfo {
     struct lookup_subtable *subtable;
     unsigned int deleted: 1;
-    unsigned int new: 1;
+    unsigned int isnew: 1;
     unsigned int selected: 1;
     unsigned int moved: 1;
 };
@@ -644,7 +648,7 @@ struct lkinfo {
     OTLookup *lookup;
     unsigned int open: 1;
     unsigned int deleted: 1;
-    unsigned int new: 1;
+    unsigned int isnew: 1;
     unsigned int selected: 1;
     unsigned int moved: 1;
     int16_t subtable_cnt, subtable_max;
@@ -1185,7 +1189,7 @@ extern void FVSelectByPST(FontView *fv);
 
 enum hist_type { hist_hstem, hist_vstem, hist_blues };
 struct psdict;
-extern void SFHistogram(SplineFont *sf,int layer, struct psdict *private,uint8_t *selected,
+extern void SFHistogram(SplineFont *sf,int layer, struct psdict *private_dict,uint8_t *selected,
 	EncMap *map, enum hist_type which);
 
 extern void ContextChainEdit(SplineFont *sf,FPST *fpst,
@@ -1486,5 +1490,9 @@ extern int CVNearLBearingLine( CharView* cv, real x, real fudge );
 extern void CVMenuConstrain(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e));
 
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_VIEWS_H */

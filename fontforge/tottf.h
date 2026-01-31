@@ -5,6 +5,10 @@
 #include "ttf.h"
 #include "shapers/metrics.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern char *utf8_verify_copy(const char *str);
 extern int32_t filechecksum(FILE *file);
 
@@ -31,5 +35,9 @@ extern void SFDummyUpCIDs(struct glyphinfo *gi, SplineFont *sf);
 extern void putfixed(FILE *file, real dval);
 extern void putlong(FILE *file, int val);
 extern void putshort(FILE *file, int sval);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_TOTTF_H */

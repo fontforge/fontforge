@@ -211,7 +211,7 @@ return( NULL );
 		    TransitiveClosureAdd(new,old,old[map->map[i]],layer);
 	    /* Add these guys so we'll get reasonable blue values */
 	    /* we won't rasterize them */
-	    if ( PSDictHasEntry(sf->private,"BlueValues")==NULL ) {
+	    if ( PSDictHasEntry(sf->private_dict,"BlueValues")==NULL ) {
 		AddIf(sf,new,old,'I',layer);
 		AddIf(sf,new,old,'O',layer);
 		AddIf(sf,new,old,'x',layer);

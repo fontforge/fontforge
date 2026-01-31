@@ -32,6 +32,7 @@
 
 #include "encoding.h"
 #include "ffglib.h"
+#include "ffglib_compat.h"
 #include "fontforgevw.h"
 #include "gfile.h"
 #include "namelist.h"
@@ -68,8 +69,7 @@ static void initrand(void) {
     struct timeval tv;
 
     gettimeofday(&tv,NULL);
-    srand(tv.tv_usec);
-    g_random_set_seed(tv.tv_usec);
+    ff_random_set_seed(tv.tv_usec);
 }
 
 void InitSimpleStuff(void) {

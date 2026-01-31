@@ -34,6 +34,7 @@
 #include "dumppfa.h"
 #include "encoding.h"
 #include "ffglib.h"
+#include "ffglib_compat.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
 #include "gfile.h"
@@ -566,8 +567,8 @@ return( item );
  *           to the first column.
  */
 static Encoding *ParseGlyphOrderAndAliasDB(FILE *file) {
-    GArray *enc_arr = g_array_sized_new(FALSE, TRUE, sizeof(int32_t), 256);
-    GArray *names_arr = g_array_sized_new(FALSE, TRUE, sizeof(char *), 256);
+    FFArray *enc_arr = ff_array_sized_new(FALSE, TRUE, sizeof(int32_t), 256);
+    FFArray *names_arr = ff_array_sized_new(FALSE, TRUE, sizeof(char *), 256);
     Encoding *item = NULL;
     char buffer[BUFSIZ];
     int enc, any = FALSE, has_1byte = FALSE;
@@ -576,7 +577,7 @@ static Encoding *ParseGlyphOrderAndAliasDB(FILE *file) {
         char *split = strchr(buffer, '\t'), *split2, *enc_name = NULL;
         if (split == NULL) {
             // Skip entries that do not contain at least two (tab separated) values
-            LogError(_("ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s"), enc_arr->len, g_strstrip(buffer));
+            LogError(_("ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s"), enc_arr->len, ff_strstrip(buffer));
             //enc = -1;
             //g_array_append_val(enc_arr, enc);
             //g_array_append_val(names_arr, enc_name);
@@ -584,15 +585,15 @@ static Encoding *ParseGlyphOrderAndAliasDB(FILE *file) {
         }
         *split++ = '\0';
         // Buffer now contains the first column
-        g_strstrip(buffer);
+        ff_strstrip(buffer);
         // split contains the second, and possibly the third column
-        g_strstrip(split);
+        ff_strstrip(split);
 
         // Optional third column
         split2 = strchr(split, '\t');
         if (split2 != NULL) {
             *split2++ = '\0';
-            g_strstrip(split2);
+            ff_strstrip(split2);
         }
 
         // Use the third column in preference to the first
@@ -611,8 +612,8 @@ static Encoding *ParseGlyphOrderAndAliasDB(FILE *file) {
         }
 
         // Append entry to our arrays
-        g_array_append_val(enc_arr, enc);
-        g_array_append_val(names_arr, enc_name);
+        ff_array_append(enc_arr, &enc);
+        ff_array_append(names_arr, &enc_name);
     }
 
     if (enc_arr->len > 0) {
@@ -651,8 +652,8 @@ static Encoding *ParseGlyphOrderAndAliasDB(FILE *file) {
         }
     }
 
-    g_array_free(enc_arr, TRUE);
-    g_array_free(names_arr, TRUE);
+    ff_array_free(enc_arr, TRUE);
+    ff_array_free(names_arr, TRUE);
     return item;
 }
 
@@ -1796,10 +1797,10 @@ return(NULL);
     cidmaster->possub = sf->possub; sf->possub = NULL;
     cidmaster->kerns = sf->kerns; sf->kerns = NULL;
     cidmaster->vkerns = sf->vkerns; sf->vkerns = NULL;
-    if ( sf->private==NULL )
-	sf->private = calloc(1,sizeof(struct psdict));
-    if ( !PSDictHasEntry(sf->private,"lenIV"))
-	PSDictChangeEntry(sf->private,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
+    if ( sf->private_dict==NULL )
+	sf->private_dict = calloc(1,sizeof(struct psdict));
+    if ( !PSDictHasEntry(sf->private_dict,"lenIV"))
+	PSDictChangeEntry(sf->private_dict,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
     for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
 	free(fvs->selected);
 	fvs->selected = calloc(fvs->sf->glyphcnt,sizeof(uint8_t));

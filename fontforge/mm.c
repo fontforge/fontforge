@@ -550,40 +550,40 @@ return( _("The different instances of this mm have a different number of glyphs"
 return(ret);
 }
 
-static struct psdict *BlendPrivate(struct psdict *private,MMSet *mm) {
+static struct psdict *BlendPrivate(struct psdict *private_dict,MMSet *mm) {
     struct psdict *other;
     real sum, val;
     char *data;
     int i,j,k, cnt;
     char *values[MmMax], buffer[32], *space, *pt, *end;
 
-    other = mm->instances[0]->private;
+    other = mm->instances[0]->private_dict;
     if ( other==NULL )
-return( private );
+return( private_dict );
 
-    if ( private==NULL )
-	private = calloc(1,sizeof(struct psdict));
+    if ( private_dict==NULL )
+	private_dict = calloc(1,sizeof(struct psdict));
 
-    i = PSDictFindEntry(private,"ForceBoldThreshold");
+    i = PSDictFindEntry(private_dict,"ForceBoldThreshold");
     if ( i!=-1 ) {
-	val = strtod(private->values[i],NULL);
+	val = strtod(private_dict->values[i],NULL);
 	sum = 0;
 	for ( j=0; j<mm->instance_count; ++j ) {
-	    i = PSDictFindEntry(mm->instances[j]->private,"ForceBold");
-	    if ( i!=-1 && strcmp(mm->instances[j]->private->values[i],"true")==0 )
+	    i = PSDictFindEntry(mm->instances[j]->private_dict,"ForceBold");
+	    if ( i!=-1 && strcmp(mm->instances[j]->private_dict->values[i],"true")==0 )
 		sum += mm->defweights[j];
 	}
 	data = ( sum>=val ) ? "true" : "false";
-	PSDictChangeEntry(private,"ForceBold",data);
+	PSDictChangeEntry(private_dict,"ForceBold",data);
     }
     for ( i=0; i<other->next; ++i ) {
 	if ( *other->values[i]!='[' && !isdigit( *other->values[i]) && *other->values[i]!='.' )
     continue;
 	for ( j=0; j<mm->instance_count; ++j ) {
-	    k = PSDictFindEntry(mm->instances[j]->private,other->keys[i]);
+	    k = PSDictFindEntry(mm->instances[j]->private_dict,other->keys[i]);
 	    if ( k==-1 )
 	break;
-	    values[j] = mm->instances[j]->private->values[k];
+	    values[j] = mm->instances[j]->private_dict->values[k];
 	}
 	if ( j!=mm->instance_count )
     continue;
@@ -599,7 +599,7 @@ return( private );
 	    if ( j!=mm->instance_count )
     continue;
 	    sprintf(buffer,"%g",(double) sum);
-	    PSDictChangeEntry(private,other->keys[i],buffer);
+	    PSDictChangeEntry(private_dict,other->keys[i],buffer);
 	} else {
 	    /* Blend an array of numbers */
 	    for ( pt = values[0], cnt=0; *pt!='\0' && *pt!=']'; ++pt ) {
@@ -627,12 +627,12 @@ return( private );
 	    if ( pt[-1]==' ' ) --pt;
 	    *pt++ = ']';
 	    *pt = '\0';
-	    PSDictChangeEntry(private,other->keys[i],space);
+	    PSDictChangeEntry(private_dict,other->keys[i],space);
 	    free(space);
 	}
     }
 
-return( private );
+return( private_dict );
 }
 
 int MMReblend(FontViewBase *fv, MMSet *mm) {
@@ -673,7 +673,7 @@ int MMReblend(FontViewBase *fv, MMSet *mm) {
 	    SCMakeDependent(sf->glyphs[i],ref->sc);
 	}
     }
-    sf->private = BlendPrivate(sf->private,mm);
+    sf->private_dict = BlendPrivate(sf->private_dict,mm);
 
     if ( olderr == NULL )	/* No Errors */
 return( true );
@@ -750,7 +750,7 @@ SplineFont *_MMNewFont(MMSet *mm,int index,char *familyname,real *normalized) {
 	free(sf->glyphs);
 	sf->glyphs = calloc(base->glyphcnt,sizeof(SplineChar *));
 	sf->glyphcnt = sf->glyphmax = base->glyphcnt;
-	sf->new = base->new;
+	sf->isnew = base->isnew;
 	sf->ascent = base->ascent;
 	sf->descent = base->descent;
 	free(sf->origname);
@@ -792,7 +792,7 @@ FontViewBase *MMCreateBlendedFont(MMSet *mm,FontViewBase *fv,real blends[MmMax],
 	free(new->fontname); free(new->fullname);
 	new->fontname = fn; new->fullname = full;
 	new->weight = _MMGuessWeight(mm,axispos,new->weight);
-	new->private = BlendPrivate(PSDictCopy(hold->private),mm);
+	new->private_dict = BlendPrivate(PSDictCopy(hold->private_dict),mm);
 	new->fv = NULL;
 	fv = FontViewCreate(new,false);
 	MMReblend(fv,mm);
@@ -998,8 +998,8 @@ return( false );
 
     sf = mm->apple ? mm->normal : mm->instances[0];
 
-    if ( !mm->apple && PSDictHasEntry(sf->private,"ForceBold")!=NULL &&
-	    PSDictHasEntry(mm->normal->private,"ForceBoldThreshold")==NULL) {
+    if ( !mm->apple && PSDictHasEntry(sf->private_dict,"ForceBold")!=NULL &&
+	    PSDictHasEntry(mm->normal->private_dict,"ForceBoldThreshold")==NULL) {
 	if ( complain )
 	    ff_post_error(_("Bad Multiple Master Font"),_("There is no ForceBoldThreshold entry in the weighted font, but there is a ForceBold entry in font %30s"),
 		    sf->fontname);
@@ -1019,16 +1019,16 @@ return( false );
 return( false );
 	}
 	if ( !mm->apple ) {
-	    if ( PSDictHasEntry(mm->instances[j]->private,"ForceBold")!=NULL &&
-		    PSDictHasEntry(mm->normal->private,"ForceBoldThreshold")==NULL) {
+	    if ( PSDictHasEntry(mm->instances[j]->private_dict,"ForceBold")!=NULL &&
+		    PSDictHasEntry(mm->normal->private_dict,"ForceBoldThreshold")==NULL) {
 		if ( complain )
 		    ff_post_error(_("Bad Multiple Master Font"),_("There is no ForceBoldThreshold entry in the weighted font, but there is a ForceBold entry in font %30s"),
 			    mm->instances[j]->fontname);
 return( false );
 	    }
 	    for ( i=0; arrnames[i]!=NULL; ++i ) {
-		if ( ArrayCount(PSDictHasEntry(mm->instances[j]->private,arrnames[i]))!=
-				ArrayCount(PSDictHasEntry(sf->private,arrnames[i])) ) {
+		if ( ArrayCount(PSDictHasEntry(mm->instances[j]->private_dict,arrnames[i]))!=
+				ArrayCount(PSDictHasEntry(sf->private_dict,arrnames[i])) ) {
 		    if ( complain )
 			ff_post_error(_("Bad Multiple Master Font"),_("The entry \"%1$.20s\" is not present in the private dictionary of both %2$.30s and %3$.30s"),
 				arrnames[i], sf->fontname, mm->instances[j]->fontname);

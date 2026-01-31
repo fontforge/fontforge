@@ -1,25 +1,18 @@
 # Distributed under the original FontForge BSD 3-clause license
 
 # Compile as C++ for GLib removal migration
-# Start with files that have no malloc casts needed
 set_source_files_properties(
-  activeinui.c
-  autosave.c
-  bezctx_ff.c
-  clipnoui.c
-  crctab.c
-  dumpbdf.c
-  flaglist.c
-  fvmetrics.c
-  mem.c
-  nouiutil.c
-  ofl.c
   pua.c
-  splinefit.c
-  splineorder2.c
-  splinerefigure.c
-  utanvec.c
   zapfnomen.c
+  flaglist.c
+  crctab.c
+  glif_name_hash.c
+  plugin.c
+  sflayout.c
+  print.c
+  scripting.c
+  python.c
+  sfd.c
   PROPERTIES LANGUAGE CXX
 )
 
@@ -43,6 +36,7 @@ set(FONTFORGE_NOINST_HEADERS
   effects.h
   encoding.h
   featurefile.h
+  ffprocess.h
   fontforgeui.h
   fvcomposite.h
   fvfonts.h
@@ -162,6 +156,7 @@ add_library(fontforge
   effects.c
   encoding.c
   featurefile.c
+  ffprocess.c
   flaglist.c
   fontviewbase.c
   freetype.c
@@ -275,6 +270,7 @@ target_link_libraries(fontforge
     MathLib::MathLib
     Iconv::Iconv
     ZLIB::ZLIB
+    mINI
 )
 
 if(APPLE)
@@ -298,6 +294,9 @@ if(ENABLE_PYTHON_SCRIPTING_RESULT)
 endif()
 if(ENABLE_WOFF2_RESULT)
   target_link_libraries(fontforge PRIVATE WOFF2::WOFF2)
+endif()
+if(ENABLE_LIBUNIBREAK_RESULT)
+  target_link_libraries(fontforge PRIVATE Libunibreak::Libunibreak)
 endif()
 
 if(${CMAKE_VERSION} VERSION_LESS "3.12.0")

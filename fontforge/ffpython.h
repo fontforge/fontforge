@@ -206,7 +206,7 @@ typedef struct ff_font {
     /* Type-specific fields go here. */
     FontViewBase *fv;
     PyFF_LayerInfoArray *layers;
-    PyFF_Private *private;
+    PyFF_Private *priv;
     PyFF_Cvt *cvt;
     PyFF_Selection *selection;
     PyFF_Math *math;
