@@ -36,6 +36,7 @@
 #include "cvundoes.h"
 #include "encoding.h"
 #include "ffglib.h"
+#include "ffglib_compat.h"
 #include "ffprocess.h"
 #include "fontforge.h"
 #include "fvfonts.h"
@@ -2106,7 +2107,7 @@ FILE* MakeTemporaryFile(void) {
 
     if (fd != -1) {
         ret = fdopen(fd, "w+");
-        unlink(loc);
+        ff_unlink(loc);
     }
 #else
     HANDLE hFile = INVALID_HANDLE_VALUE;
@@ -3028,7 +3029,7 @@ static void SFDirClean(char *filename) {
     struct dirent *ent;
     char *buffer, *pt;
 
-    unlink(filename);		/* Just in case it's a normal file, it shouldn't be, but just in case... */
+    ff_unlink(filename);		/* Just in case it's a normal file, it shouldn't be, but just in case... */
     dir = opendir(filename);
     if ( dir==NULL )
 return;
@@ -3043,7 +3044,7 @@ return;
 	if ( strcmp(pt,".props")==0 ||
 		strcmp(pt,GLYPH_EXT)==0 ||
 		strcmp(pt,BITMAP_EXT)==0 )
-	    unlink( buffer );
+	    ff_unlink( buffer );
 	else if ( strcmp(pt,STRIKE_EXT)==0 ||
 		strcmp(pt,SUBFONT_EXT)==0 ||
 		strcmp(pt,INSTANCE_EXT)==0 )
@@ -3242,7 +3243,7 @@ int SFDWriteBak(char *filename,SplineFont *sf,EncMap *map,EncMap *normal) {
 	    }
 	    idx = prefRevisionsToRetain+1;
 	    snprintf( path, PATH_MAX, "%s-%02d", filename, idx );
-	    unlink(path);
+	    ff_unlink(path);
 	}
 
     }
@@ -3250,7 +3251,7 @@ int SFDWriteBak(char *filename,SplineFont *sf,EncMap *map,EncMap *normal) {
 
     ret = SFDWrite(filename,sf,map,normal,false);
     if ( ret && sf->compression!=0 ) {
-	unlink(buf2);
+	ff_unlink(buf2);
 	if ( ff_compress_file(filename, ff_compression_from_legacy(sf->compression)) != FF_PROCESS_OK )
 	    sf->compression = 0;
     }
@@ -9409,7 +9410,7 @@ static int ask_about_file(char *filename, int *state, FILE **asfd) {
     } else if (*state&2) { //Forget all
         fclose(*asfd);
         *asfd = NULL;
-        unlink(filename);
+        ff_unlink(filename);
         return false;
     }
 
@@ -9444,7 +9445,7 @@ static int ask_about_file(char *filename, int *state, FILE **asfd) {
         case 4: //Forget one
             fclose(*asfd);
             *asfd = NULL;
-            unlink(filename);
+            ff_unlink(filename);
             return false;
         default: //Recover one
             break;
@@ -9470,7 +9471,7 @@ return( NULL );
 	const char *buts[3];
 	buts[0] = "_Forget It"; buts[1] = "_Try Again"; buts[2] = NULL;
 	if ( ff_ask(_("Recovery Failed"),(const char **) buts,0,1,_("Automagic recovery of changes to %.80s failed.\nShould FontForge try again to recover next time you start it?"),tok)==0 )
-	    unlink(autosavename);
+	    ff_unlink(autosavename);
     }
     switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.
     fclose(asfd);
@@ -9541,14 +9542,14 @@ void SFClearAutoSave(SplineFont *sf) {
 	ssf = sf->subfonts[i];
 	ssf->changed_since_autosave = false;
 	if ( ssf->autosavename!=NULL ) {
-	    unlink( ssf->autosavename );
+	    ff_unlink( ssf->autosavename );
 	    free( ssf->autosavename );
 	    ssf->autosavename = NULL;
 	}
     }
     if ( sf->autosavename==NULL )
 return;
-    unlink(sf->autosavename);
+    ff_unlink(sf->autosavename);
     free(sf->autosavename);
     sf->autosavename = NULL;
 }
