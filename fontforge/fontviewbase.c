@@ -35,6 +35,7 @@
 #include "bvedit.h"
 #include "cvundoes.h"
 #include "encoding.h"
+#include "ffglib_compat.h"
 #include "ffprocess.h"
 #include "fontforge.h"
 #include "fvcomposite.h"
@@ -1737,7 +1738,7 @@ return;
 		temp = NULL;
 	    else {
 		temp = ReadSplineFont(tmpf,0);
-		unlink(tmpf);
+		ff_unlink(tmpf);
 		free(tmpf);
 	    }
 	} else {
@@ -1756,7 +1757,7 @@ return;
 		temp = NULL;
 	    else {
 		temp = ReadSplineFont(tmpf,0);
-		unlink(tmpf);
+		ff_unlink(tmpf);
 		free(tmpf);
 	    }
 	} else
