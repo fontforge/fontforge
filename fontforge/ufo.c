@@ -27,6 +27,8 @@
 
 #include <fontforge-config.h>
 
+#include "ffglib_compat.h"
+
 #include "autohint.h"
 #include "dumppfa.h"
 #include "featurefile.h"
