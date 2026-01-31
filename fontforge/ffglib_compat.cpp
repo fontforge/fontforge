@@ -5,23 +5,24 @@
 
 #include "ffglib_compat.h"
 
-#include <algorithm>
 #include <cctype>
-#include <chrono>
 #include <climits>
 #include <clocale>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+#include <filesystem>
 #include <random>
-#include <string>
+#include <system_error>
 
 #ifdef _WIN32
 #include <windows.h>
 #else
 #include <langinfo.h>
 #endif
+
+namespace fs = std::filesystem;
 
 /* ============================================================================
  * String functions
@@ -421,4 +422,112 @@ extern "C" void *ff_steal_pointer_impl(void **pp) {
     void *tmp = *pp;
     *pp = nullptr;
     return tmp;
+}
+
+/* ============================================================================
+ * Filesystem functions using std::filesystem
+ * ============================================================================ */
+
+extern "C" int ff_access(const char *path, int mode) {
+    if (!path) return -1;
+
+    std::error_code ec;
+    fs::path p(path);
+
+    // Check existence first
+    if (!fs::exists(p, ec) || ec) {
+        return -1;
+    }
+
+    // For F_OK (existence), we're done
+    if (mode == 0) {
+        return 0;
+    }
+
+    // Check permissions
+    auto status = fs::status(p, ec);
+    if (ec) return -1;
+
+    auto perms = status.permissions();
+
+    // Note: std::filesystem permission checks are owner-based on POSIX,
+    // but on Windows they're simplified. This is a reasonable approximation.
+    if ((mode & 4) && (perms & fs::perms::owner_read) == fs::perms::none) {
+        return -1;
+    }
+    if ((mode & 2) && (perms & fs::perms::owner_write) == fs::perms::none) {
+        return -1;
+    }
+    if ((mode & 1) && (perms & fs::perms::owner_exec) == fs::perms::none) {
+        return -1;
+    }
+
+    return 0;
+}
+
+extern "C" int ff_unlink(const char *path) {
+    if (!path) return -1;
+
+    std::error_code ec;
+    if (fs::remove(path, ec) && !ec) {
+        return 0;
+    }
+    return -1;
+}
+
+extern "C" int ff_rmdir(const char *path) {
+    if (!path) return -1;
+
+    std::error_code ec;
+    fs::path p(path);
+
+    // Ensure it's a directory
+    if (!fs::is_directory(p, ec) || ec) {
+        return -1;
+    }
+
+    if (fs::remove(p, ec) && !ec) {
+        return 0;
+    }
+    return -1;
+}
+
+extern "C" int ff_mkdir(const char *path, int mode) {
+    (void)mode;  // std::filesystem doesn't take mode on Windows
+
+    if (!path) return -1;
+
+    std::error_code ec;
+    if (fs::create_directory(path, ec) && !ec) {
+        return 0;
+    }
+    // Also succeed if directory already exists
+    if (fs::is_directory(path, ec) && !ec) {
+        return 0;
+    }
+    return -1;
+}
+
+extern "C" int ff_chdir(const char *path) {
+    if (!path) return -1;
+
+    std::error_code ec;
+    fs::current_path(path, ec);
+    return ec ? -1 : 0;
+}
+
+extern "C" char *ff_getcwd(char *buf, size_t size) {
+    if (!buf || size == 0) return nullptr;
+
+    std::error_code ec;
+    fs::path cwd = fs::current_path(ec);
+    if (ec) return nullptr;
+
+    std::string cwd_str = cwd.string();
+    if (cwd_str.length() >= size) {
+        return nullptr;  // Buffer too small
+    }
+
+    std::strcpy(buf, cwd_str.c_str());
+    return buf;
 }
