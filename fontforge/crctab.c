@@ -50,9 +50,9 @@ static unsigned long binhex_updcrc(unsigned long icrc, unsigned char *icp, int i
 {
 #define M1 0xff
 #define M2 0xff00
-    register unsigned long crc = icrc;
-    register unsigned char *cp = icp;
-    register int cnt = icnt;
+    unsigned long crc = icrc;
+    unsigned char *cp = icp;
+    int cnt = icnt;
 
     while(cnt--) {
 	crc=((crc<<8)&M2)^crctab[((crc>>8)&0xff)^*cp++];
