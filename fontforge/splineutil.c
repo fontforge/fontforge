@@ -32,7 +32,6 @@
 #include "cvundoes.h"
 #include "dumppfa.h"
 #include "encoding.h"
-#include "ffglib.h"
 #include "ffglib_compat.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"

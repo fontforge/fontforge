@@ -29,7 +29,6 @@
 
 #include "autotrace.h"
 #include "encoding.h"
-#include "ffglib.h"
 #include "ffglib_compat.h"
 #include "fontforge.h"
 #include "gfile.h"

@@ -29,7 +29,6 @@
 #include <fontforge-config.h>
 
 #include "basics.h"
-#include "ffglib.h"
 #include "ffglib_compat.h"
 #include "fvfonts.h"
 #include "intl.h"
