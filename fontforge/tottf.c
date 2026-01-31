@@ -6165,21 +6165,6 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
 	if ( sf->subfontcnt!=0 ) sf = sf->subfonts[0];
     }
 
-    // Temporarily assign a fake Private Area unicode point to all unmapped glyphs
-    if (flags & ttf_flag_fake_map) {
-	int fake_unicode_base = SFFakeUnicodeBase(sf);
-	if (fake_unicode_base == -1)
-	    fake_unicode_base = 0xfffd;
-
-	fake_mappings = calloc(sf->glyphcnt,sizeof(bool));
-	for (i = 0; i < sf->glyphcnt; ++i) {
-	    if (sf->glyphs[i] && sf->glyphs[i]->unicodeenc == -1) {
-		sf->glyphs[i]->unicodeenc = fake_unicode_base + sf->glyphs[i]->orig_pos;
-		fake_mappings[i] = true;
-	    }
-	}
-    }
-
     if ( sf->subfontcnt==0 ) {
 	anyglyphs = false;
 	for ( i=sf->glyphcnt-1; i>=0 ; --i ) {
@@ -6216,15 +6201,6 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
     } else {
 	if ( initTables(&at,sf,format,flags,bsizes,bf))
 	    dumpttf(ttf,&at);
-    }
-
-    // Remove temporarily assigned fake Private Area unicode point from all unmapped glyphs
-    if (flags & ttf_flag_fake_map) {
-	for (i = 0; i < sf->glyphcnt; ++i) {
-	    if (sf->glyphs[i] && fake_mappings[i])
-		sf->glyphs[i]->unicodeenc = -1;
-	}
-	free(fake_mappings);
     }
 
     switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.

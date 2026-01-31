@@ -1853,10 +1853,6 @@ extern bigreal SFXHeight(SplineFont *sf, int layer, int return_error);
 extern bigreal SFAscender(SplineFont *sf, int layer, int return_error);
 extern bigreal SFDescender(SplineFont *sf, int layer, int return_error);
 
-/* Find Private Use Area range big enough to accomodate unencoded glyphs
-   with fake encoding slots. */
-extern int SFFakeUnicodeBase(SplineFont *sf);
-
 extern void SCRemoveKern(SplineChar* sc);
 extern void SCRemoveVKern(SplineChar* sc);
 
