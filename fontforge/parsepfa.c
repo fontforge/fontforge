@@ -1260,7 +1260,7 @@ static void findstring(struct fontparse *fp,struct pschars *subrs,int index,char
 	}
 	decodestr((unsigned char *) buffer,bpt-buffer);
 	bs = buffer + fp->fd->private->leniv;
-	if ( bpt<bs ) bs=bpt;		/* garbage */ 
+	if ( bpt<bs ) bs=bpt;		/* garbage */
 	subrs->lens[index] = bpt-bs;
 	subrs->keys[index] = copy(nametok);
 	subrs->values[index] = malloc(bpt-bs);
@@ -1386,7 +1386,7 @@ static void sfnts2tempfile(struct fontparse *fp,FILE *in,char *line) {
 		nibble = *pt-'A'+10;
 	    else {
 		if ( !complained ) {
-		    LogError( _("Invalid hex digit in sfnts array\n") );
+		    LogError( _("Invalid hex digit in sfnts array") );
 		    complained = true;
 		}
 		++pt;
@@ -1423,7 +1423,7 @@ static void sfnts2tempfile(struct fontparse *fp,FILE *in,char *line) {
 	    sofar = 0;
 	} else if ( !instring ) {
 	    if ( !complained ) {
-		LogError( _("Invalid character outside of string in sfnts array\n") );
+		LogError( _("Invalid character outside of string in sfnts array") );
 		complained = true;
 	    }
 	} else if ( instring && ch=='>' ) {
@@ -1441,7 +1441,7 @@ static void sfnts2tempfile(struct fontparse *fp,FILE *in,char *line) {
 		nibble = ch-'A'+10;
 	    else {
 		if ( !complained ) {
-		    LogError( _("Invalid hex digit in sfnts array\n") );
+		    LogError( _("Invalid hex digit in sfnts array") );
 		    complained = true;
 		}
     continue;
@@ -1749,7 +1749,7 @@ return;
 		fp->ignore = false;
 	    } else {
 		fp->ignore = true;
-		LogError( _("Ignoring duplicate /CharStrings entry\n") );
+		LogError( _("Ignoring duplicate /CharStrings entry") );
 	    }
 	    fp->inchars = 1;
 	    fp->insubs = 0;
@@ -1757,7 +1757,7 @@ return;
 	} else if ( strstr(line,"/Subrs")!=NULL ) {
 	    if ( fp->fd->private->subrs->next>0 ) {
 		fp->ignore = true;
-		LogError( _("Ignoring duplicate /Subrs entry\n") );
+		LogError( _("Ignoring duplicate /Subrs entry") );
 	    } else {
 		InitChars(fp->fd->private->subrs,line);
 		fp->ignore = false;
@@ -1846,7 +1846,7 @@ return;
 		fp->ignore = false;
 	    } else {
 		fp->ignore = true;
-		LogError( _("Ignoring duplicate /CharStrings entry\n") );
+		LogError( _("Ignoring duplicate /CharStrings entry") );
 	    }
 	    fp->inchars = 1;
 	    fp->insubs = 0;
@@ -1874,7 +1874,7 @@ return;
 	    ContinueValue(fp,NULL,line);
 return;
 	}
-	
+
 	if ( endtok==NULL ) {
 	    if ( fp->skipping_mbf )
 		;
@@ -1985,7 +1985,7 @@ static void addinfo(struct fontparse *fp,char *line,char *tok,char *binstart,int
     binstart += fp->fd->private->leniv;
     binlen -= fp->fd->private->leniv;
     if ( binlen<0 ) {
-	LogError( _("Bad CharString. Does not include lenIV bytes.\n") );
+	LogError( _("Bad CharString. Does not include lenIV bytes.") );
 return;
     }
 
@@ -1999,7 +1999,7 @@ return;
 		/* Do Nothing */;
 	    else if ( i<chars->cnt ) {
 		if ( chars->values[i]!=NULL )
-		    LogError( _("Duplicate definition of subroutine %d\n"), i );
+		    LogError( _("Duplicate definition of subroutine %d"), i );
 		chars->lens[i] = binlen;
 		chars->values[i] = malloc(binlen);
 		memcpy(chars->values[i],binstart,binlen);
@@ -2418,7 +2418,7 @@ static void figurecids(struct fontparse *fp,FILE *temp) {
 	for ( j=val=0; j<fd->fdbytes; ++j )
 	    val = (val<<8) + getc(temp);
 	if ( val >= fd->fdcnt && val!=255 ) {	/* 255 is a special mark */
-	    LogError( _("Invalid FD (%d) assigned to CID %d.\n"), val, i );
+	    LogError( _("Invalid FD (%d) assigned to CID %d."), val, i );
 	    val = 0;
 	}
 	fd->cidfds[i] = val;
@@ -2428,7 +2428,7 @@ static void figurecids(struct fontparse *fp,FILE *temp) {
 	if ( i!=0 ) {
 	    fd->cidlens[i-1] = offsets[i]-offsets[i-1];
 	    if ( fd->cidlens[i-1]<0 ) {
-		LogError( _("Bad CID offset for CID %d\n"), i-1 );
+		LogError( _("Bad CID offset for CID %d"), i-1 );
 		fd->cidlens[i-1] = 0;
 	    }
 	}
@@ -2503,14 +2503,14 @@ static void dodata( struct fontparse *fp, FILE *in, FILE *temp) {
 	else if ( ch=='H' || ch=='h' ) binary = false;
 	else {
 	    binary = true;		/* Who knows? */
-	    LogError( _("Failed to parse the StartData command properly\n") );
+	    LogError( _("Failed to parse the StartData command properly") );
 	}
 	fontsetname[0] = '\0';
 	while ( (ch=getc(in))!=')' && ch!=EOF );
     }
     if ( fscanf( in, "%d", &len )!=1 || len<=0 ) {
 	len = 0;
-	LogError( _("Failed to parse the StartData command properly, bad count\n") );
+	LogError( _("Failed to parse the StartData command properly, bad count") );
     }
     cnt = len;
     while ( isspace(ch=getc(in)) );
@@ -2633,8 +2633,8 @@ FontDict *_ReadPSFont(FILE *in) {
 
     temp = GFileTmpfile();
     if ( temp==NULL ) {
-	LogError( _("Cannot open a temporary file\n") );
-	fclose(in); 
+	LogError( _("Cannot open a temporary file") );
+	fclose(in);
 return(NULL);
     }
 
@@ -2662,7 +2662,7 @@ FontDict *ReadPSFont(char *fontname) {
 
     in = fopen(fontname,"rb");
     if ( in==NULL ) {
-	LogError( _("Cannot open %s\n"), fontname );
+	LogError( _("Cannot open %s"), fontname );
 return(NULL);
     }
     fd = _ReadPSFont(in);
@@ -2722,9 +2722,8 @@ static void FontInfoFree(struct fontinfo *fi) {
 void PSFontFree(FontDict *fd) {
     int i;
 
-    if ( fd->encoding!=NULL )
-	for ( i=0; i<256; ++i )
-	    free( fd->encoding[i]);
+    for ( i=0; i<256; ++i )
+        free( fd->encoding[i]);
     free(fd->fontname);
     free(fd->cidfontname);
     free(fd->registry);
@@ -2758,7 +2757,7 @@ void PSFontFree(FontDict *fd) {
 
     PSDictFree(fd->blendprivate);
     PSDictFree(fd->blendfontinfo);
-    
+
     free(fd);
 }
 

@@ -35,6 +35,7 @@
 
 static iconv_t to_unicode=(iconv_t) (-1), from_unicode=(iconv_t) (-1);
 static iconv_t to_utf8=(iconv_t) (-1), from_utf8=(iconv_t) (-1);
+static iconv_t from_utf8_safe=(iconv_t) (-1);
 static bool is_local_encoding_utf8 = true;
 
 bool SetupUCharMap(const char* unichar_name, const char* local_name, bool is_local_utf8) {
@@ -46,6 +47,8 @@ bool SetupUCharMap(const char* unichar_name, const char* local_name, bool is_loc
         iconv_close(to_utf8);
     if (from_utf8 != (iconv_t)-1)
         iconv_close(from_utf8);
+    if (from_utf8_safe != (iconv_t)-1)
+        iconv_close(from_utf8_safe);
 
     is_local_encoding_utf8 = is_local_utf8;
     if (is_local_encoding_utf8) {
@@ -59,6 +62,8 @@ bool SetupUCharMap(const char* unichar_name, const char* local_name, bool is_loc
     if ((to_utf8 = iconv_open("UTF-8", local_name)) == (iconv_t)-1)
         return false;
     if ((from_utf8 = iconv_open(local_name, "UTF-8")) == (iconv_t)-1)
+        return false;
+    if ((from_utf8_safe = iconv_open("ASCII//TRANSLIT", "UTF-8")) == (iconv_t)-1)
         return false;
 
     return true;
@@ -157,4 +162,21 @@ char *utf82def_copy(const char *ufrom) {
     else if (is_local_encoding_utf8)
         return copy(ufrom);
     return do_iconv(from_utf8, ufrom, strlen(ufrom), sizeof(ufrom[0]), sizeof(char));
+}
+
+char *utf82def_copy_safe(const char *ufrom) {
+    char* ret_val = NULL;
+    if (ufrom == NULL)
+        return copy("");
+
+    ret_val = utf82def_copy(ufrom);
+    if (ret_val == NULL) {
+        // This should never fail, unless iconv() is severely broken.
+        ret_val = do_iconv(from_utf8_safe, ufrom, strlen(ufrom), sizeof(ufrom[0]), sizeof(char));
+    }
+    if (ret_val == NULL) {
+        // We should never get here.
+        ret_val = copy("utf82def_copy failure!\n");
+    }
+    return ret_val;
 }

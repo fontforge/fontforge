@@ -319,9 +319,9 @@ static void unnextch(int ch,IO *wrapper) {
     if ( ch==EOF )
 return;
     if ( wrapper->top==NULL )
-	LogError( _("Can't back up with nothing on stack\n") );
+	LogError( _("Can't back up with nothing on stack") );
     else if ( wrapper->top->backedup!=EOF )
-	LogError( _("Attempt to back up twice\n") );
+	LogError( _("Attempt to back up twice") );
     else if ( wrapper->top->ps!=NULL )
 	ungetc(ch,wrapper->top->ps);
     else
@@ -379,7 +379,7 @@ return;
 /* GT: as it is a PostScript keyword. (FF contains a small PostScript interpreter */
 /* GT: so it can understand some PostScript fonts, and can generate errors when */
 /* GT: handed bad PostScript). */
-    LogError( _("Use of \"exit\" when not in a loop\n") );
+    LogError( _("Use of \"exit\" when not in a loop") );
     wrapper->top = io;
 }
 
@@ -405,7 +405,7 @@ return(sp);
 
 /* GT: This is part of the PostScript language. Neither "stop" nor "stopped" */
 /* GT: should be translated as both are PostScript keywords. */
-    LogError( _("Use of \"stop\" when not in a stopped\n") );
+    LogError( _("Use of \"stop\" when not in a stopped") );
     wrapper->top = io;
 return( sp );
 }
@@ -558,7 +558,7 @@ return( pt_number );
 	    if ( !isfinite(*val) ) {
 /* GT: NaN is a concept in IEEE floating point which means "Not a Number" */
 /* GT: it is used to represent errors like 0/0 or sqrt(-1). */
-		LogError( _("Bad number, infinity or nan: %s\n"), tokbuf );
+		LogError( _("Bad number, infinity or nan: %s"), tokbuf );
 		*val = 0;
 	    }
 	    if ( *end=='\0' )		/* It's a real */
@@ -602,7 +602,7 @@ void MatInverse(real into[6], real orig[6]) {
     real det = orig[0]*orig[3] - orig[1]*orig[2];
 
     if ( det==0 ) {
-	LogError( _("Attempt to invert a singular matrix\n") );
+	LogError( _("Attempt to invert a singular matrix") );
 	memset(into,0,sizeof(*into));
     } else {
 	into[0] =  orig[3]/det;
@@ -645,7 +645,7 @@ return(sp);
     if ( stack[sp-2].type!=ps_string && stack[sp-2].type!=ps_lit ) {
 /* GT: Here "def" is a PostScript keyword, (meaning define). */
 /* GT: This "def" should not be translated as it is part of the PostScript language. */
-	LogError( _("Key for a def must be a string or name literal\n") );
+	LogError( _("Key for a def must be a string or name literal") );
 return(sp-2);
     }
     for ( i=0; i<dict->cnt; ++i )
@@ -707,14 +707,14 @@ return( sp );
 
 static void CheckMakeB(BasePoint *test, BasePoint *good) {
     if ( !isfinite(test->x) || test->x>100000 || test->x<-100000 ) {
-	LogError( _("Value out of bounds in spline.\n") );
+	LogError( _("Value out of bounds in spline.") );
 	if ( good!=NULL )
 	    test->x = good->x;
 	else
 	    test->x = 0;
     }
     if ( !isfinite(test->y) || test->y>100000 || test->y<-100000 ) {
-	LogError( _("Value out of bounds in spline.\n") );
+	LogError( _("Value out of bounds in spline.") );
 	if ( good!=NULL )
 	    test->y = good->y;
 	else
@@ -1070,7 +1070,7 @@ return( NULL );
 		} else if ( *pt=='(' || *pt==')' || *pt=='\\' )
 		    *upt++ = *pt++;
 		else {
-		    LogError( _("Unknown character after backslash in literal string.\n"));
+		    LogError( _("Unknown character after backslash in literal string."));
 		    *upt++ = *pt++;
 		}
 	    }
@@ -2604,7 +2604,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 		if ( stack[sp-1-i].type==ps_mark )
 	    break;
 	    if ( (unsigned)i==sp )
-		LogError( _("No mark in counttomark\n") );
+		LogError( _("No mark in counttomark") );
 	    else if ( sp<sizeof(stack)/sizeof(stack[0]) ) {
 		stack[sp].type = ps_num;
 		stack[sp++].u.val = i;
@@ -2615,7 +2615,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 		if ( stack[sp-1-i].type==ps_mark )
 	    break;
 	    if ( (unsigned)i==sp )
-		LogError( _("No mark in cleartomark\n") );
+		LogError( _("No mark in cleartomark") );
 	    else {
 		while ( sp>=i ) {
 		    --sp;
@@ -2632,7 +2632,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 		if ( stack[sp-1-i].type==ps_mark )
 	    break;
 	    if ( (unsigned)i==sp )
-		LogError( _("No mark in ] (close array)\n") );
+		LogError( _("No mark in ] (close array)") );
 	    else {
 		struct pskeydict dict;
 		dict.cnt = dict.max = i;
@@ -2719,7 +2719,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 		if ( tok==pt_output || tok==pt_outputd )
 		    printf( "\n" );
 	    } else
-		LogError( _("Nothing on stack to print\n") );
+		LogError( _("Nothing on stack to print") );
 	  break;
 
 	  case pt_cvi: case pt_cvr:
@@ -2796,7 +2796,7 @@ static void _InterpretPS(IO *wrapper, EntityChar *ec, RetStack *rs) {
 
 	  case pt_unknown:
 	    if ( !warned ) {
-		LogError( _("Warning: Unable to parse token %s, some features may be lost\n"), tokbuf );
+		LogError( _("Warning: Unable to parse token %s, some features may be lost"), tokbuf );
 		warned = true;
 	    }
 	  break;
@@ -3251,7 +3251,7 @@ static void SCInterpretPS(FILE *ps, SplineChar *sc) {
 	pushio(&wrapper,ps,NULL,0);
 
 	if ( nextpstoken(&wrapper,&dval,tokbuf,sizeof(tokbuf))!=pt_opencurly )
-	    LogError( _("We don't understand this font\n") );
+	    LogError( _("We don't understand this font") );
     } else {
 	(void) getc(ps);
 	pushfogio(&wrapper,ps);
@@ -3655,7 +3655,7 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
     current.x = current.y = 0;
     while ( len>0 ) {
 	if ( sp>48 ) {
-	    LogError( _("Stack got too big in %s\n"), name );
+	    LogError( _("Stack got too big in %s"), name );
 	    sp = 48;
 	}
 	base = 0;
@@ -3704,16 +3704,16 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 	    switch ( v ) {
 	      case 0: /* dotsection */
 		if ( is_type2 )
-		    LogError( _("%s\'s dotsection operator is deprecated for Type2\n"), name );
+		    LogError( _("%s\'s dotsection operator is deprecated for Type2"), name );
 		sp = 0;
 	      break;
 	      case 1: /* vstem3 */	/* specifies three v hints zones at once */
-		if ( sp<6 ) LogError( _("Stack underflow on vstem3 in %s\n"), name );
+		if ( sp<6 ) LogError( _("Stack underflow on vstem3 in %s"), name );
 		/* according to the standard, if there is a vstem3 there can't */
 		/*  be any vstems, so there can't be any confusion about hint order */
 		/*  so we don't need to worry about unblended stuff */
 		if ( is_type2 )
-		    LogError( _("%s\'s vstem3 operator is not supported for Type2\n"), name );
+		    LogError( _("%s\'s vstem3 operator is not supported for Type2"), name );
 		sameh = NULL;
 		if ( !is_type2 )
 		    sameh = SameH(ret->vstem,stack[0] + ret->lsidebearing,stack[1],
@@ -3749,9 +3749,9 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 		sp = 0;
 	      break;
 	      case 2: /* hstem3 */	/* specifies three h hints zones at once */
-		if ( sp<6 ) LogError( _("Stack underflow on hstem3 in %s\n"), name );
+		if ( sp<6 ) LogError( _("Stack underflow on hstem3 in %s"), name );
 		if ( is_type2 )
-		    LogError( _("%s\'s vstem3 operator is not supported for Type2\n"), name );
+		    LogError( _("%s\'s vstem3 operator is not supported for Type2"), name );
 		sameh = NULL;
 		if ( !is_type2 )
 		    sameh = SameH(ret->hstem,stack[0],stack[1], unblended,0);
@@ -3786,10 +3786,10 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 	      break;
 	      case 6: /* seac */	/* build accented characters */
  seac:
-		if ( sp<5 ) LogError( _("Stack underflow on seac in %s\n"), name );
+		if ( sp<5 ) LogError( _("Stack underflow on seac in %s"), name );
 		if ( is_type2 ) {
-			if ( v==6 ) LogError( _("%s\'s SEAC operator is invalid for Type2\n"), name );
-			else LogError( _("%s\'s SEAC-like endchar operator is deprecated for Type2\n"), name );
+			if ( v==6 ) LogError( _("%s\'s SEAC operator is invalid for Type2"), name );
+			else LogError( _("%s\'s SEAC-like endchar operator is deprecated for Type2"), name );
 		}
 		/* stack[0] must be the lsidebearing of the accent. I'm not sure why */
 		r1 = RefCharCreate();
@@ -3807,7 +3807,7 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 		r1->adobe_enc = stack[3];
 		r2->adobe_enc = stack[4];
 		if ( stack[3]<0 || stack[3]>=256 || stack[4]<0 || stack[4]>=256 ) {
-		    LogError( _("Reference encoding out of bounds in %s\n"), name );
+		    LogError( _("Reference encoding out of bounds in %s"), name );
 		    r1->adobe_enc = 0;
 		    r2->adobe_enc = 0;
 		}
@@ -3819,9 +3819,9 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 		sp = 0;
 	      break;
 	      case 7: /* sbw */		/* generalized width/sidebearing command */
-		if ( sp<4 ) LogError( _("Stack underflow on sbw in %s\n"), name );
+		if ( sp<4 ) LogError( _("Stack underflow on sbw in %s"), name );
 		if ( is_type2 )
-		    LogError( _("%s\'s sbw operator is not supported for Type2\n"), name );
+		    LogError( _("%s\'s sbw operator is not supported for Type2"), name );
 		ret->lsidebearing = stack[0];
 		/* stack[1] is lsidebearing y (only for vertical writing styles, CJK) */
 		ret->width = stack[2];
@@ -3829,7 +3829,7 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 		sp = 0;
 	      break;
 	      case 5: case 9: case 14: case 26:
-		if ( sp<1 ) LogError( _("Stack underflow on unary operator in %s\n"), name );
+		if ( sp<1 ) LogError( _("Stack underflow on unary operator in %s"), name );
 		switch ( v ) {
 		  case 5: stack[sp-1] = (stack[sp-1]==0); break;	/* not */
 		  case 9: if ( stack[sp-1]<0 ) stack[sp-1]= -stack[sp-1]; break;	/* abs */
@@ -3839,7 +3839,7 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 		}
 	      break;
 	      case 3: case 4: case 10: case 11: case 12: case 15: case 24:
-		if ( sp<2 ) LogError( _("Stack underflow on binary operator in %s\n"), name );
+		if ( sp<2 ) LogError( _("Stack underflow on binary operator in %s"), name );
 		else switch ( v ) {
 		  case 3: /* and */
 		    stack[sp-2] = (stack[sp-1]!=0 && stack[sp-2]!=0);
@@ -3868,7 +3868,7 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 		--sp;
 	      break;
 	      case 22: /* ifelse */
-		if ( sp<4 ) LogError( _("Stack underflow on ifelse in %s\n"), name );
+		if ( sp<4 ) LogError( _("Stack underflow on ifelse in %s"), name );
 		else {
 		    if ( stack[sp-2]>stack[sp-1] )
 			stack[sp-4] = stack[sp-3];
@@ -3891,7 +3891,7 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 		if ( is_type2 )
 		    LogError( _("Type2 fonts do not support the Type1 callothersubrs operator") );
 		if ( sp<2 || sp < 2+stack[sp-2] ) {
-		    LogError( _("Stack underflow on callothersubr in %s\n"), name );
+		    LogError( _("Stack underflow on callothersubr in %s"), name );
 		    sp = 0;
 		} else {
 		    int tot = stack[sp-2], i, k, j;
@@ -3936,7 +3936,7 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 			    oldcur = cur;
 			    cur->next = NULL;
 			} else
-			    LogError( _("Bad flex subroutine in %s\n"), name );
+			    LogError( _("Bad flex subroutine in %s"), name );
 		      } break;
 		      case 2: {
 			/* No op */;
@@ -3974,7 +3974,7 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 				SplineMake3(cur->last,pt);
 				cur->last = pt;
 			    } else
-				LogError( _("No previous point on path in curveto from flex 0 in %s\n"), name );
+				LogError( _("No previous point on path in curveto from flex 0 in %s"), name );
 			} else {
 			    /* Um, something's wrong. Let's just draw a line */
 			    /* do the simple method, which consists of creating */
@@ -3987,14 +3987,14 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 				SplineMake3(cur->last,pt);
 				cur->last = pt;
 			    } else
-				LogError( _("No previous point on path in lineto from flex 0 in %s\n"), name );
+				LogError( _("No previous point on path in lineto from flex 0 in %s"), name );
 			}
 			--popsp;
 			cur->next = NULL;
 			SplinePointListsFree(spl);
 			oldcur = NULL;
 		      } else
-			LogError( _("Bad flex subroutine in %s\n"), name );
+			LogError( _("Bad flex subroutine in %s"), name );
 
 			is_type2 = context->is_type2;
 			/* If we found a type2 font with a type1 flex sequence */
@@ -4010,9 +4010,9 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 			int cnt = stack[sp-1]-13;
 			if ( cnt==5 ) cnt=6;
 			if ( context->instance_count==0 )
-			    LogError( _("Attempt to use a multiple master subroutine in a non-mm font in %s.\n"), name );
+			    LogError( _("Attempt to use a multiple master subroutine in a non-mm font in %s."), name );
 			else if ( tot!=cnt*context->instance_count )
-			    LogError( _("Multiple master subroutine called with the wrong number of arguments in %s.\n"), name );
+			    LogError( _("Multiple master subroutine called with the wrong number of arguments in %s."), name );
 			else {
 			    /* Hints need to keep track of the original blends */
 			    if ( cnt==1 && !is_type2 ) {
@@ -4046,16 +4046,16 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 		}
 	      break;
 	      case 20: /* put */
-		if ( sp<2 ) LogError( _("Too few items on stack for put in %s\n"), name );
-		else if ( stack[sp-1]<0 || stack[sp-1]>=32 ) LogError( _("Reference to transient memory out of bounds in put in %s\n"), name );
+		if ( sp<2 ) LogError( _("Too few items on stack for put in %s"), name );
+		else if ( stack[sp-1]<0 || stack[sp-1]>=32 ) LogError( _("Reference to transient memory out of bounds in put in %s"), name );
 		else {
 		    transient[(int)stack[sp-1]] = stack[sp-2];
 		    sp -= 2;
 		}
 	      break;
 	      case 21: /* get */
-		if ( sp<1 ) LogError( _("Too few items on stack for get in %s\n"), name );
-		else if ( stack[sp-1]<0 || stack[sp-1]>=32 ) LogError( _("Reference to transient memory out of bounds in put in %s\n"), name );
+		if ( sp<1 ) LogError( _("Too few items on stack for get in %s"), name );
+		else if ( stack[sp-1]<0 || stack[sp-1]>=32 ) LogError( _("Reference to transient memory out of bounds in put in %s"), name );
 		else
 		    stack[sp-1] = transient[(int)stack[sp-1]];
 	      break;
@@ -4065,7 +4065,7 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 		/* Bleah. Adobe wants the pops to return the arguments if we */
 		/*  don't understand the call. What use is the subroutine then?*/
 		if ( popsp<=0 )
-		    LogError( _("Pop stack underflow on pop in %s\n"), name );
+		    LogError( _("Pop stack underflow on pop in %s"), name );
 		else
 		    stack[sp++] = pops[--popsp];
 	      break;
@@ -4088,7 +4088,7 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 		if ( sp>=1 ) {
 		    int index = stack[--sp];
 		    if ( index<0 || sp<index+1 )
-			LogError( _("Index out of range in %s\n"), name );
+			LogError( _("Index out of range in %s"), name );
 		    else {
 			stack[sp] = stack[sp-index-1];
 			++sp;
@@ -4099,7 +4099,7 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 		if ( sp>=2 ) {
 		    int j = stack[sp-1], N=stack[sp-2];
 		    if ( N>sp || j>=N || j<0 || N<0 )
-			LogError( _("roll out of range in %s\n"), name );
+			LogError( _("roll out of range in %s"), name );
 		    else if ( j==0 || N==0 )
 			/* No op */;
 		    else {
@@ -4116,7 +4116,7 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 	      case 33: /* setcurrentpoint */
 		if ( is_type2 )
 		    LogError( _("Type2 fonts do not support the Type1 setcurrentpoint operator") );
-		if ( sp<2 ) LogError( _("Stack underflow on setcurrentpoint in %s\n"), name );
+		if ( sp<2 ) LogError( _("Stack underflow on setcurrentpoint in %s"), name );
 		else {
 		    current.x = stack[0];
 		    current.y = stack[1];
@@ -4195,11 +4195,11 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 		    SplineMake3(cur->last,pt);
 		    cur->last = pt;
 		} else
-		    LogError( _("No previous point on path in flex operator in %s\n"), name );
+		    LogError( _("No previous point on path in flex operator in %s"), name );
 		sp = 0;
 	      break;
 	      default:
-		LogError( _("Uninterpreted opcode 12,%d in %s\n"), v, name );
+		LogError( _("Uninterpreted opcode 12,%d in %s"), v, name );
 	      break;
 	    }
 	} else { last_was_b1 = false; switch ( v ) {
@@ -4211,7 +4211,7 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 	    if ( sp&1 )
 		base=1;
 	    if ( sp-base<2 )
-		LogError( _("Stack underflow on hstem in %s\n"), name );
+		LogError( _("Stack underflow on hstem in %s"), name );
 	    /* stack[0] is absolute y for start of horizontal hint */
 	    /*	(actually relative to the y specified as lsidebearing y in sbw*/
 	    /* stack[1] is relative y for height of hint zone */
@@ -4263,7 +4263,7 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 		/*  to be used if one uses a hintmask, but that's not what the */
 		/*  examples show.  Or I'm not understanding. */
 		if ( sp-base<2 && v!=19 && v!=20 )
-		    LogError( _("Stack underflow on vstem in %s\n"), name );
+		    LogError( _("Stack underflow on vstem in %s"), name );
 		/* stack[0] is absolute x for start of vertical hint */
 		/*	(actually relative to the x specified as lsidebearing in h/sbw*/
 		/* stack[1] is relative x for height of hint zone */
@@ -4314,7 +4314,7 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 		if ( bytes!=hint_cnt/8 ) {
 		    int mask = 0xff>>(hint_cnt&7);
 		    if ( type1[bytes-1]&mask )
-			LogError( _("Hint mask (or counter mask) with too many hints in %s\n"), name );
+			LogError( _("Hint mask (or counter mask) with too many hints in %s"), name );
 		}
 		type1 += bytes;
 		len -= bytes;
@@ -4351,7 +4351,7 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
   goto done;
 	  break;
 	  case 13: /* hsbw (set left sidebearing and width) */
-	    if ( sp<2 ) LogError( _("Stack underflow on hsbw in %s\n"), name );
+	    if ( sp<2 ) LogError( _("Stack underflow on hsbw in %s"), name );
 	    ret->lsidebearing = stack[0];
 	    current.x = stack[0];		/* sets the current point too */
 	    ret->width = stack[1];
@@ -4387,20 +4387,20 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 		dx = dy = 0;
 		if ( v==5 || v==21 ) {
 		    if ( sp<base+2 ) {
-			LogError( _("Stack underflow on rlineto/rmoveto in %s\n"), name );
+			LogError( _("Stack underflow on rlineto/rmoveto in %s"), name );
 	    break;
 		    }
 		    dx = stack[base++];
 		    dy = stack[base++];
 		} else if ( (v==6 && !(polarity&1)) || (v==7 && (polarity&1)) || v==22 ) {
 		    if ( sp<=base ) {
-			LogError( _("Stack underflow on hlineto/hmoveto in %s\n"), name );
+			LogError( _("Stack underflow on hlineto/hmoveto in %s"), name );
 	    break;
 		    }
 		    dx = stack[base++];
 		} else /*if ( (v==7 && !(parity&1)) || (v==6 && (parity&1) || v==4 )*/ {
 		    if ( sp<=base ) {
-			LogError( _("Stack underflow on vlineto/vmoveto in %s\n"), name );
+			LogError( _("Stack underflow on vlineto/vmoveto in %s"), name );
 	    break;
 		    }
 		    dy = stack[base++];
@@ -4431,7 +4431,7 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 			SplineMake3(cur->last,pt);
 			cur->last = pt;
 		    } else
-			LogError( _("No previous point on path in lineto in %s\n"), name );
+			LogError( _("No previous point on path in lineto in %s"), name );
 		    if ( !is_type2 )
 	    break;
 		}
@@ -4461,7 +4461,7 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 		dx = dy = dx2 = dy2 = dx3 = dy3 = 0;
 		if ( v==8 || v==25 || v==24 ) {
 		    if ( sp<6+base ) {
-			LogError( _("Stack underflow on rrcurveto in %s\n"), name );
+			LogError( _("Stack underflow on rrcurveto in %s"), name );
 			base = sp;
 		    } else {
 			dx = stack[base++];
@@ -4473,7 +4473,7 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 		    }
 		} else if ( v==27 ) {		/* hhcurveto */
 		    if ( sp<4+base ) {
-			LogError( _("Stack underflow on hhcurveto in %s\n"), name );
+			LogError( _("Stack underflow on hhcurveto in %s"), name );
 			base = sp;
 		    } else {
 			if ( (sp-base)&1 ) dy = stack[base++];
@@ -4484,7 +4484,7 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 		    }
 		} else if ( v==26 ) {		/* vvcurveto */
 		    if ( sp<4+base ) {
-			LogError( _("Stack underflow on hhcurveto in %s\n"), name );
+			LogError( _("Stack underflow on hhcurveto in %s"), name );
 			base = sp;
 		    } else {
 			if ( (sp-base)&1 ) dx = stack[base++];
@@ -4495,7 +4495,7 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 		    }
 		} else if ( (v==31 && !(polarity&1)) || (v==30 && (polarity&1)) ) {
 		    if ( sp<4+base ) {
-			LogError( _("Stack underflow on hvcurveto in %s\n"), name );
+			LogError( _("Stack underflow on hvcurveto in %s"), name );
 			base = sp;
 		    } else {
 			dx = stack[base++];
@@ -4507,7 +4507,7 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 		    }
 		} else /*if ( (v==30 && !(polarity&1)) || (v==31 && (polarity&1)) )*/ {
 		    if ( sp<4+base ) {
-			LogError( _("Stack underflow on vhcurveto in %s\n"), name );
+			LogError( _("Stack underflow on vhcurveto in %s"), name );
 			base = sp;
 		    } else {
 			dy = stack[base++];
@@ -4532,7 +4532,7 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 		    SplineMake3(cur->last,pt);
 		    cur->last = pt;
 		} else
-		    LogError( _("No previous point on path in curveto in %s\n"), name );
+		    LogError( _("No previous point on path in curveto in %s"), name );
 	    }
 	    if ( v==24 ) {
 		current.x = rint((current.x+stack[base++])*1024)/1024; current.y = rint((current.y+stack[base++])*1024)/1024;
@@ -4550,10 +4550,10 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 	  case 10: /* callsubr */
 	    /* stack[sp-1] contains the number of the subroutine to call */
 	    if ( sp<1 ) {
-		LogError( _("Stack underflow on callsubr in %s\n"), name );
+		LogError( _("Stack underflow on callsubr in %s"), name );
 	  break;
 	    } else if ( pcsp>10 ) {
-		LogError( _("Too many subroutine calls in %s\n"), name );
+		LogError( _("Too many subroutine calls in %s"), name );
 	  break;
 	    }
 	    s=subrs; if ( v==29 ) s = gsubrs;
@@ -4562,7 +4562,7 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 	    /* Type1 subrs do not. We set the bias on them to 0 */
 	    if ( s==NULL || stack[sp-1]>=s->cnt || stack[sp-1]<0 ||
 		    s->values[(int) stack[sp-1]]==NULL )
-		LogError( _("Subroutine number out of bounds in %s\n"), name );
+		LogError( _("Subroutine number out of bounds in %s"), name );
 	    else {
 		pcstack[pcsp].type1 = type1;
 		pcstack[pcsp].len = len;
@@ -4575,7 +4575,7 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 	  break;
 	  case 11: /* return */
 	    /* return from a subr outine */
-	    if ( pcsp<1 ) LogError( _("return when not in subroutine in %s\n"), name );
+	    if ( pcsp<1 ) LogError( _("return when not in subroutine in %s"), name );
 	    else {
 		--pcsp;
 		type1 = pcstack[pcsp].type1;
@@ -4585,12 +4585,12 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 	  case 16: { /* blend -- obsolete type 2 multiple master operator */
 	    int cnt,i,j;
 	    if ( context->instance_count==0 )
-		LogError( _("Attempt to use a multiple master subroutine in a non-mm font.\n") );
+		LogError( _("Attempt to use a multiple master subroutine in a non-mm font.") );
 	    else if ( sp<1 || sp<context->instance_count*stack[sp-1]+1 )
-		LogError( _("Too few items on stack for blend in %s\n"), name );
+		LogError( _("Too few items on stack for blend in %s"), name );
 	    else {
 		if ( !context->blend_warn ) {
-		    LogError( _("Use of obsolete blend operator.\n") );
+		    LogError( _("Use of obsolete blend operator.") );
 		    context->blend_warn = true;
 		}
 		cnt = stack[sp-1];
@@ -4607,13 +4607,13 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 	  }
 	  break;
 	  default:
-	    LogError( _("Uninterpreted opcode %d in %s\n"), v, name );
+	    LogError( _("Uninterpreted opcode %d in %s"), v, name );
 	  break;
 	}}
     }
   done:
     if ( pcsp!=0 )
-	LogError( _("end of subroutine reached with no return in %s\n"), name );
+	LogError( _("end of subroutine reached with no return in %s"), name );
     SCCategorizePoints(ret);
 
     ret->hstem = HintsAppend(ret->hstem,activeh); activeh=NULL;

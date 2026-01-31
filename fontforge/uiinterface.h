@@ -214,10 +214,6 @@ struct sc_interface {
    /* Update all windows looking at this glyph */
     void  (*update_all)(struct splinechar *);
 
-   /* Background images or kerning info have changed for this glyph and */
-   /*  all windows displaying them need to be refreshed */
-    void  (*out_of_date_background)(struct splinechar *);
-
    /* The name or code point or encoding of this glyph has changed */
    /*  update all window titles of any windows looking at us */
     void (*refresh_titles)(struct splinechar *);
@@ -247,7 +243,6 @@ struct sc_interface {
 extern struct sc_interface *sc_interface;
 
 #define SCUpdateAll			(sc_interface->update_all)
-#define SCOutOfDateBackground		(sc_interface->out_of_date_background)
 #define SCRefreshTitles			(sc_interface->refresh_titles)
 #define SCHintsChanged			(sc_interface->hints_changed)
 #define _SCCharChangedUpdate		(sc_interface->glyph__changed_update)

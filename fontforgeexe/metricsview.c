@@ -49,6 +49,7 @@
 #include "ustring.h"
 #include "utype.h"
 #include "wordlistparser.h"
+#include "shapers/shaper_shim.hpp"
 
 #include <math.h>
 
@@ -252,22 +253,22 @@ static void MVSubVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
 	GDrawDrawLine(pixmap,xbase,0,xbase,mv->vheight,widthcol);
 
     if ( mv->bdf==NULL && MVShowGrid(mv) ) {
-	y = mv->perchar[0].dy-mv->yoff;
+	y = mv->metrics[0].dy-mv->yoff;
 	MVDrawLine(mv,pixmap,0,y,mv->vwidth,y,widthcol);
     }
 
     si = -1;
     for ( i=0; i<mv->glyphcnt; ++i ) {
 	if ( mv->perchar[i].selected ) si = i;
-	y = mv->perchar[i].dy-mv->yoff;
+	y = mv->metrics[i].dy-mv->yoff;
 	if ( mv->bdf==NULL &&  MVShowGrid(mv)) {
-	    int yp = y+mv->perchar[i].dheight+mv->perchar[i].kernafter;
+	    int yp = y+mv->metrics[i].dheight+mv->metrics[i].kernafter;
 	    MVDrawLine(mv,pixmap,0, yp,mv->vwidth,yp,
 		    mv->type==mv_kernonly  && i!=mv->glyphcnt-1 ?kernlinecol :
 		    mv->type==mv_widthonly                      ?rbearinglinecol :
 			widthcol);
 	}
-	y += mv->perchar[i].yoff;
+	y += mv->metrics[i].yoff;
 	bdfc = mv->bdf==NULL ?	BDFPieceMealCheck(mv->show,mv->glyphs[i].sc->orig_pos) :
 				BDFGetMergedChar( mv->bdf->glyphs[mv->glyphs[i].sc->orig_pos]);
 	if ( bdfc==NULL )
@@ -275,7 +276,7 @@ static void MVSubVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
 	y += as-rint(iscale * bdfc->ymax);
 	if ( mv->perchar[i].selected )
 	    y += mv->activeoff;
-	x = xbase - rint(iscale * (mv->pixelsize/2 + bdfc->xmin) - mv->perchar[i].xoff);
+	x = xbase - rint(iscale * (mv->pixelsize/2 + bdfc->xmin) - mv->metrics[i].xoff);
 	width = bdfc->xmax-bdfc->xmin+1; height = bdfc->ymax-bdfc->ymin+1;
 	if ( clip->y+clip->height<y )
     break;
@@ -322,10 +323,10 @@ static void MVSubVExpose(MetricsView *mv, GWindow pixmap, GEvent *event) {
 	if ( mv->bdf!=NULL ) BDFCharFree( bdfc );
     }
     if ( si!=-1 && mv->bdf==NULL &&  MVShowGrid(mv) && mv->type==mv_kernwidth ) {
-	y = mv->perchar[si].dy-mv->yoff;
+	y = mv->metrics[si].dy-mv->yoff;
 	if ( si!=0 )
 	    MVDrawLine(mv,pixmap,0,y,mv->vwidth,y,kernlinecol);
-	y += mv->perchar[si].dheight+mv->perchar[si].kernafter;
+	y += mv->metrics[si].dheight+mv->metrics[si].kernafter;
 	MVDrawLine(mv,pixmap,0,y,mv->vwidth,y,rbearinglinecol);
     }
 }
@@ -358,9 +359,9 @@ return;
 	GDrawDrawLine(pixmap,0,ybase,mv->dwidth,ybase,widthcol);
 
     if ( mv->bdf==NULL && MVShowGrid(mv) ) {
-	x = mv->perchar[0].dx-mv->xoff;
+	x = mv->metrics[0].dx-mv->xoff;
 	if ( mv->right_to_left )
-	    x = mv->vwidth - x - mv->perchar[0].dwidth - mv->perchar[0].kernafter;
+	    x = mv->vwidth - x - mv->metrics[0].dwidth - mv->metrics[0].kernafter;
 	MVDrawLine(mv,pixmap,x,0,x,mv->vheight,widthcol);
 	x_iaoffh = rint(ybase*s), x_iaoffl = rint((mv->vheight-ybase)*s);
 	if ( ItalicConstrained && x_iaoffh!=0 ) {
@@ -370,11 +371,11 @@ return;
     si = -1;
     for ( i=0; i<mv->glyphcnt; ++i ) {
 	if ( mv->perchar[i].selected ) si = i;
-	x = mv->perchar[i].dx-mv->xoff;
+	x = mv->metrics[i].dx-mv->xoff;
 	if ( mv->right_to_left )
-	    x = mv->vwidth - x - mv->perchar[i].dwidth - mv->perchar[i].kernafter;
+	    x = mv->vwidth - x - mv->metrics[i].dwidth - mv->metrics[i].kernafter;
 	if ( mv->bdf==NULL && MVShowGrid(mv) ) {
-	    int xp = x+mv->perchar[i].dwidth+mv->perchar[i].kernafter;
+	    int xp = x+mv->metrics[i].dwidth+mv->metrics[i].kernafter;
 	    MVDrawLine(mv,pixmap,xp, 0,xp,mv->vheight,
 		    mv->type==mv_kernonly  && i!=mv->glyphcnt-1 ?kernlinecol :
 		    mv->type==mv_widthonly                      ?rbearinglinecol :
@@ -384,9 +385,9 @@ return;
 	    }
 	}
 	if ( mv->right_to_left )
-	    x += mv->perchar[i].kernafter-mv->perchar[i].xoff;
+	    x += mv->metrics[i].kernafter-mv->metrics[i].xoff;
 	else
-	    x += mv->perchar[i].xoff;
+	    x += mv->metrics[i].xoff;
 	bdfc = mv->bdf==NULL ?	BDFPieceMealCheck(mv->show,mv->glyphs[i].sc->orig_pos) :
 				BDFGetMergedChar( mv->bdf->glyphs[mv->glyphs[i].sc->orig_pos]);
 	if ( bdfc==NULL )
@@ -394,7 +395,7 @@ return;
 	x += rint( iscale * bdfc->xmin );
 	if ( mv->perchar[i].selected )
 	    x += mv->activeoff;
-	y = ybase - rint( iscale * bdfc->ymax ) - (iscale-1) - mv->perchar[i].yoff;
+	y = ybase - rint( iscale * bdfc->ymax ) - (iscale-1) - mv->metrics[i].yoff;
 	width = bdfc->xmax-bdfc->xmin+1; height = bdfc->ymax-bdfc->ymin+1;
 	if ( !mv->right_to_left && clip->x+clip->width<x )
     break;
@@ -443,15 +444,15 @@ return;
 	if ( mv->bdf!=NULL ) BDFCharFree( bdfc );
     }
     if ( si!=-1 && mv->bdf==NULL && MVShowGrid(mv) && mv->type==mv_kernwidth ) {
-	x = mv->perchar[si].dx-mv->xoff;
+	x = mv->metrics[si].dx-mv->xoff;
 	if ( mv->right_to_left )
 	    x = mv->vwidth - x;
 	if ( si!=0 )
 	    MVDrawLine(mv,pixmap,x,0,x,mv->vheight,kernlinecol);
 	if ( mv->right_to_left )
-	    x -= mv->perchar[si].dwidth+mv->perchar[si].kernafter;
+	    x -= mv->metrics[si].dwidth+mv->metrics[si].kernafter;
 	else
-	    x += mv->perchar[si].dwidth+mv->perchar[si].kernafter;
+	    x += mv->metrics[si].dwidth+mv->metrics[si].kernafter;
 	 MVDrawLine(mv,pixmap,x, 0,x,mv->vheight,rbearinglinecol);
     }
     GDrawPopClip(pixmap,&old);
@@ -557,7 +558,7 @@ static void MVSetFeatures(MetricsView *mv) {
     if ( pt[4]=='{' && u_strlen(pt)>=9 )
 	lang = (pt[5]<<24) | (pt[6]<<16) | (pt[7]<<8) | pt[8];
     if ( (uint32_t)mv->oldscript!=script || (uint32_t)mv->oldlang!=lang )
-	stds = StdFeaturesOfScript(script);
+	stds = shaper_default_features(mv->shaper, script, lang, mv->vertical);
     else {		/* features list may have changed, but retain those set */
 	int32_t len, sc;
 	ti = GGadgetGetList(mv->features,&len);
@@ -570,6 +571,29 @@ static void MVSetFeatures(MetricsView *mv) {
     tags = SFFeaturesInScriptLang(sf,-2,script,lang);
     /* Never returns NULL */
     for ( cnt=0; tags[cnt]!=0; ++cnt );
+
+    /* The feature of the active kerning lookup should always be included. */
+    /* TODO(iorsh): Sometimes the desired lookup is marked as unused and skipped 
+       in SFFeaturesInScriptLang(). This might better be handled there. */
+    if ( mv->cur_subtable != NULL &&
+         mv->cur_subtable->lookup != NULL &&
+	 mv->cur_subtable->lookup->features != NULL) {
+	FeatureScriptLangList *active_features = mv->cur_subtable->lookup->features;
+	uint32_t active_feat = active_features[0].featuretag;
+
+	for ( i=0; i<cnt; ++i ) {
+	    if (tags[i] == active_feat)
+	    	break;
+	}
+
+	if (i == cnt) {
+	    /* Active feature tag not found in the list, add it now. */
+	    ++cnt;
+	    tags = realloc(tags,(cnt+1)*sizeof(uint32_t));
+	    tags[cnt-1] = active_feat;
+	    tags[cnt] = 0;
+	}
+    }
 
     /*qsort(tags,cnt,sizeof(uint32_t),tag_comp);*/ /* The glist will do this for us */
 
@@ -594,6 +618,8 @@ static void MVSetFeatures(MetricsView *mv) {
     ti[i] = calloc(1,sizeof(GTextInfo));
     GGadgetSetList(mv->features,ti,false);
     mv->oldscript = script; mv->oldlang = lang;
+
+    free(stds);
 }
 
 static void MVSelectSubtable(MetricsView *mv, struct lookup_subtable *sub) {
@@ -624,14 +650,14 @@ return;
     if ( mv->perchar[i].selected )
 	off = mv->activeoff;
     r.y = 0; r.height = mv->vheight;
-    r.x = mv->perchar[i].dx-mv->xoff; r.width = mv->perchar[i].dwidth;
-    if ( mv->perchar[i].kernafter>0 )
-	r.width += mv->perchar[i].kernafter;
-    if ( mv->perchar[i].xoff<0 ) {
-	r.x += mv->perchar[i].xoff;
-	r.width -= mv->perchar[i].xoff;
+    r.x = mv->metrics[i].dx-mv->xoff; r.width = mv->metrics[i].dwidth;
+    if ( mv->metrics[i].kernafter>0 )
+	r.width += mv->metrics[i].kernafter;
+    if ( mv->metrics[i].xoff<0 ) {
+	r.x += mv->metrics[i].xoff;
+	r.width -= mv->metrics[i].xoff;
     } else
-	r.width += mv->perchar[i].xoff;
+	r.width += mv->metrics[i].xoff;
     bdfc = mv->bdf==NULL ?  BDFPieceMealCheck(mv->show,mv->glyphs[i].sc->orig_pos) :
 			    mv->bdf->glyphs[mv->glyphs[i].sc->orig_pos];
     if ( bdfc==NULL )
@@ -733,6 +759,17 @@ void MVRefreshChar(MetricsView *mv, SplineChar *sc) {
 	MVRedrawI(mv,i,0,0);
 }
 
+static int MVGetKernOffset(struct opentype_str* glyph) {
+    int kern_offset = INVALID_KERN_OFFSET;
+
+    if (glyph->kp != NULL)
+	kern_offset = glyph->kp->off;
+    else if (glyph->kc != NULL)
+	kern_offset = glyph->kc->offsets[glyph->kc_index];
+
+    return kern_offset;
+}
+
 static void MVRefreshValues(MetricsView *mv, int i) {
     char buf[40];
     DBounds bb;
@@ -774,15 +811,11 @@ return;
     }
     GGadgetSetTitle8(mv->perchar[i].rbearing,buf);
 
-    kern_offset = 0x7ffffff;
-    if ( mv->glyphs[i].kp!=NULL )
-	kern_offset = mv->glyphs[i].kp->off;
-    else if ( mv->glyphs[i].kc!=NULL )
-	kern_offset = mv->glyphs[i].kc->offsets[ mv->glyphs[i].kc_index ];
-if( !mv->perchar[i+1].kern )
-  return;
+    kern_offset = MVGetKernOffset(mv->glyphs + i);
+    if( !mv->perchar[i+1].kern )
+	return;
 
-    if ( kern_offset!=0x7ffffff && i!=mv->glyphcnt-1 ) {
+    if ( kern_offset!=INVALID_KERN_OFFSET && i!=mv->glyphcnt-1 ) {
 	sprintf(buf,"%d",kern_offset);
 	GGadgetSetTitle8(mv->perchar[i+1].kern,buf);
     } else if ( i!=mv->glyphcnt-1 )
@@ -845,7 +878,6 @@ static void MVCreateFields(MetricsView *mv,int i) {
     GGadgetData gd;
     GTextInfo label;
     static unichar_t nullstr[1] = { 0 };
-    int j;
     extern GBox _GGadget_gtextfield_box;
     int udaidx = 1; // we leave element zero to be NULL to allow bounds checking.
 
@@ -898,12 +930,6 @@ static void MVCreateFields(MetricsView *mv,int i) {
 	    mv->perchar[i-1].updownkparray[udaidx] = mv->perchar[i].kern;
 	}
 	mv->perchar[i].updownkparray[udaidx++] = mv->perchar[i].kern;
-
-	if ( i>=mv->glyphcnt ) {
-	    for ( j=mv->glyphcnt+1; j<=i ; ++ j )
-		mv->perchar[j].dx = mv->perchar[j-1].dx;
-	    mv->glyphcnt = i+1;
-	}
     }
 
     GWidgetIndicateFocusGadget(mv->text);
@@ -912,32 +938,27 @@ static void MVCreateFields(MetricsView *mv,int i) {
 static void MVSetSb(MetricsView *mv);
 static int MVSetVSb(MetricsView *mv);
 
+static int16_t MVCharWidth(MetricsView *mv, SplineChar *sc) {
+    BDFChar * bdfc = mv->bdf!=NULL ? mv->bdf->glyphs[sc->orig_pos] : BDFPieceMealCheck(mv->show,sc->orig_pos);
+    return bdfc->width;
+}
+
+static MetricsCore* MVGetMetrics(MetricsView *mv, int* p_glyphcnt) {
+    if (p_glyphcnt) {
+	*p_glyphcnt = mv->glyphcnt;
+    }
+    return mv->metrics;
+}
+
 void MVRefreshMetric(MetricsView *mv) {
     double iscale = mv->pixelsize_set_by_window ? 1.0 : mv_scales[mv->scale_index];
     double scale = iscale*mv->pixelsize/(double) (mv->sf->ascent+mv->sf->descent);
     int cnt;
     // Count the valid glyphs and segfault if there is no null splinechar terminator.
-    for ( cnt=0; mv->glyphs[cnt].sc!=NULL; ++cnt );
-    // Calculate positions.
-    int x = 10; int y = 10;
-    for ( int i=0; i<cnt; ++i ) {
-	MVRefreshValues(mv,i);
-	SplineChar * sc = mv->glyphs[i].sc;
-	BDFChar * bdfc = mv->bdf!=NULL ? mv->bdf->glyphs[sc->orig_pos] : BDFPieceMealCheck(mv->show,sc->orig_pos);
-	mv->perchar[i].dwidth = rint(iscale * bdfc->width);
-	mv->perchar[i].dx = x;
-	mv->perchar[i].xoff = rint(iscale * mv->glyphs[i].vr.xoff);
-	mv->perchar[i].yoff = rint(iscale * mv->glyphs[i].vr.yoff);
-	mv->perchar[i].kernafter = rint(iscale * mv->glyphs[i].vr.h_adv_off);
-	x += mv->perchar[i].dwidth + mv->perchar[i].kernafter;
-
-	mv->perchar[i].dheight = rint(sc->vwidth*scale);
-	mv->perchar[i].dy = y;
-	if ( mv->vertical ) {
-	    mv->perchar[i].kernafter = rint( iscale * mv->glyphs[i].vr.v_adv_off);
-	    y += mv->perchar[i].dheight + mv->perchar[i].kernafter;
-	}
+    for ( cnt=0; mv->glyphs[cnt].sc!=NULL; ++cnt ) {
+	MVRefreshValues(mv,cnt);
     }
+    shaper_scale_metrics(mv->shaper, mv, iscale, scale, mv->vertical);
     MVSetVSb(mv);
     MVSetSb(mv);
 }
@@ -946,11 +967,13 @@ static void MVRemetric(MetricsView *mv) {
     SplineChar *anysc, *goodsc;
     int i, cnt;
     const unichar_t *_script = _GGadgetGetTitle(mv->script);
-    uint32_t script, lang, *feats;
+    uint32_t script, lang;
+    FeatureMap *feats;
     char buf[20];
     int32_t len;
     GTextInfo **ti;
     SplineFont *sf;
+    struct shaper_out applied_feats = {0, 0};
 
     anysc = goodsc = NULL;
     // We recurse through all of the characters in the metrics view.
@@ -996,21 +1019,28 @@ static void MVRemetric(MetricsView *mv) {
 
     // Parse the current list of features into feats.
     ti = GGadgetGetList(mv->features,&len);
-    for ( i=cnt=0; i<len; ++i )
-	if ( ti[i]->selected ) ++cnt;
-    feats = calloc(cnt+1,sizeof(uint32_t));
-    for ( i=cnt=0; i<len; ++i )
-	if ( ti[i]->selected )
-	    feats[cnt++] = (intptr_t) ti[i]->userdata;
+    feats = calloc(len+1,sizeof(FeatureMap));
+    for ( i=0; i<len; ++i )
+	feats[i] = (FeatureMap){ (intptr_t) ti[i]->userdata, ti[i]->selected };
 
     // Regenerate glyphs for the selected characters according to features, script, and resolution.
     free(mv->glyphs); mv->glyphs = NULL;
+    free(mv->metrics); mv->metrics = NULL;
     sf = mv->sf;
     if ( sf->cidmaster ) sf = sf->cidmaster;
-    mv->glyphs = ApplyTickedFeatures(sf,feats,script, lang, mv->pixelsize, mv->chars);
+    applied_feats = shaper_apply_features(mv->shaper, mv->chars, feats,
+        				script, lang, mv->pixelsize, mv->vertical);
+    mv->glyphs = applied_feats.glyphs;
+    mv->metrics = applied_feats.metrics;
+
+    if (mv->glyphs == NULL) {
+	mv->glyphs = calloc(1, sizeof(struct opentype_str));
+    }
     free(feats);
     if ( goodsc!=NULL )
 	mv->right_to_left = SCRightToLeft(goodsc)?1:0;
+    else
+	mv->right_to_left = mv->glyphs[0].r2l;
 
     // Count the valid glyphs and segfault if there is no null splinechar terminator.
     for ( cnt=0; mv->glyphs[cnt].sc!=NULL; ++cnt );
@@ -1018,9 +1048,10 @@ static void MVRemetric(MetricsView *mv) {
     if ( cnt>=mv->max ) {
 	int oldmax=mv->max;
 	mv->max = cnt+10;
-	mv->perchar = realloc(mv->perchar,mv->max*sizeof(struct metricchar));
-	memset(mv->perchar+oldmax,'\0',(mv->max-oldmax)*sizeof(struct metricchar));
+	mv->perchar = realloc(mv->perchar,mv->max*sizeof(struct metrics_ui));
+	memset(mv->perchar+oldmax,'\0',(mv->max-oldmax)*sizeof(struct metrics_ui));
     }
+
     // Null names of controls in rows to be abandoned, starting at the last valid glyph and continuing to the end of mv->glyphs.
     // This may segfault here if mv->max is less than mv->glyphcnt, thus if cnt was 10 less than mv->glyphcnt.
     // It may segfault in GGadgetSetTitle if the gadgets do not exist.
@@ -1401,17 +1432,17 @@ return( false );
     }
     int16_t newkernafter = iscale * (offset*mv->pixelsize)/
 	(mv->sf->ascent+mv->sf->descent);
-    mv->perchar[which-1].kernafter = newkernafter;
+    mv->metrics[which-1].kernafter = newkernafter;
 
     if ( mv->vertical ) {
 	for ( i=which; i<mv->glyphcnt; ++i ) {
-	    mv->perchar[i].dy = mv->perchar[i-1].dy+mv->perchar[i-1].dheight +
-		    mv->perchar[i-1].kernafter ;
+	    mv->metrics[i].dy = mv->metrics[i-1].dy+mv->metrics[i-1].dheight +
+		    mv->metrics[i-1].kernafter ;
 	}
     } else {
 	for ( i=which; i<mv->glyphcnt; ++i ) {
-	    mv->perchar[i].dx = mv->perchar[i-1].dx + mv->perchar[i-1].dwidth +
-		    mv->perchar[i-1].kernafter;
+	    mv->metrics[i].dx = mv->metrics[i-1].dx + mv->metrics[i-1].dwidth +
+		    mv->metrics[i-1].kernafter;
 	}
     }
 
@@ -1473,11 +1504,11 @@ return( false );
 			// all the glyphs on the right over or back a bit so that things
 			// still all fit as expected.
 			//
-			mv->perchar[i-1].kernafter = newkernafter;
+			mv->metrics[i-1].kernafter = newkernafter;
 			int j;
 			for ( j=i; j<mv->glyphcnt; ++j ) {
-			    mv->perchar[j].dx = mv->perchar[j-1].dx + mv->perchar[j-1].dwidth +
-				mv->perchar[j-1].kernafter;
+			    mv->metrics[j].dx = mv->metrics[j-1].dx + mv->metrics[j-1].dwidth +
+				mv->metrics[j-1].kernafter;
 			}
 		    }
 		}
@@ -1553,12 +1584,6 @@ return( true );
 	MVSelectChar(mv,which);
     }
 
-    if( haveClassBasedKerningInView(mv) )
-    {
-	MVRefreshMetric(mv);
-	GDrawRequestExpose(mv->v,NULL,false);
-    }
-
 return( true );
 }
 
@@ -1588,9 +1613,9 @@ static void MVToggleVertical(MetricsView *mv) {
 		mv->show = SplineFontPieceMeal(mv->sf,mv->layer,mv->pixelsize,72,
 					       MVGetSplineFontPieceMealFlags( mv ), NULL );
 	    }
-	    MVRemetric(mv);
 	}
     }
+    MVRemetric(mv);
 }
 
 static SplineChar *MVSCFromUnicode(MetricsView *mv, SplineFont *sf, EncMap *map, int ch,BDFFont *bdf) {
@@ -1637,7 +1662,7 @@ static int MVDisplayedCnt(MetricsView *mv) {
     int i, wid = mv->mbase;
 
     for ( i=mv->coff; i<mv->glyphcnt; ++i ) {
-	wid += mv->perchar[i].dwidth;
+	wid += mv->metrics[i].dwidth;
 	if ( wid>mv->dwidth )
 return( i-mv->coff );
     }
@@ -1665,7 +1690,7 @@ return(0);		/* Setting the scroll bar is premature */
     if ( mv->vertical ) {
 	min = max = 0;
 	if ( mv->glyphcnt!=0 )
-	    max = mv->perchar[mv->glyphcnt-1].dy + mv->perchar[mv->glyphcnt-1].dheight;
+	    max = mv->metrics[mv->glyphcnt-1].dy + mv->metrics[mv->glyphcnt-1].dheight;
 	fudge = 10;
     } else {
 	SplineFont *sf = mv->sf;
@@ -1729,7 +1754,7 @@ static void MVHScroll(MetricsView *mv,struct sbevent *sb) {
     if ( newpos!=mv->coff ) {
 	int old = mv->coff;
 	int diff = newpos-mv->coff;
-	int charsize = mv->perchar[newpos].dx-mv->perchar[old].dx;
+	int charsize = mv->metrics[newpos].dx-mv->metrics[old].dx;
 	GRect fieldrect, charrect;
 
 	mv->coff = newpos;
@@ -1741,7 +1766,7 @@ static void MVHScroll(MetricsView *mv,struct sbevent *sb) {
 	GScrollBarSetPos(mv->hsb,mv->coff);
 	MVMoveFieldsBy(mv,newpos*mv->mwidth);
 	GDrawScroll(mv->gw,&fieldrect,-diff*mv->mwidth,0);
-	mv->xoff = mv->perchar[newpos].dx-mv->perchar[0].dx;
+	mv->xoff = mv->metrics[newpos].dx-mv->metrics[0].dx;
 	if ( mv->right_to_left ) {
 	    charsize = -charsize;
 	}
@@ -1800,54 +1825,7 @@ static int MVFakeUnicodeOfSc(MetricsView *mv, SplineChar *sc) {
 return( sc->unicodeenc );
 
     if ( mv->fake_unicode_base==0 ) {		/* Not set */
-	/* If they have nothing in Supplementary Private Use Area-A use it */
-	/* If they have nothing in Supplementary Private Use Area-B use it */
-	/* else just use 0xfffd */
-	int a, al, ah, b, bl, bh;
-	int gid,k,max;
-	SplineChar *test;
-	SplineFont *_sf, *sf;
-	sf = mv->sf;
-	if ( sf->cidmaster ) sf = sf->cidmaster;
-	k=0;
-	a = al = ah = b = bl = bh = 0;
-	max = 0;
-	do {
-	    _sf =  ( sf->subfontcnt==0 ) ? sf : sf->subfonts[k];
-	    for ( gid=0; gid<_sf->glyphcnt; ++gid ) if ( (test=_sf->glyphs[gid])!=NULL ) {
-		if ( test->unicodeenc>=0xf0000 && test->unicodeenc<=0xfffff ) {
-		    a = true;
-		    if ( test->unicodeenc<0xf8000 )
-			al = true;
-		    else
-			ah = true;
-		} else if ( test->unicodeenc>=0x100000 && test->unicodeenc<=0x10ffff ) {
-		    b = true;
-		    if ( test->unicodeenc<0x108000 )
-			bl = true;
-		    else
-			bh = true;
-		}
-	    }
-	    if ( gid>max ) max = gid;
-	    ++k;
-	} while ( k<sf->subfontcnt );
-	if ( !a )		/* Nothing in SPUA-A */
-	    mv->fake_unicode_base = 0xf0000;
-	else if ( !b )
-	    mv->fake_unicode_base = 0x100000;
-	else if ( max<0x8000 ) {
-	    if ( !al )
-		mv->fake_unicode_base = 0xf0000;
-	    else if ( !ah )
-		mv->fake_unicode_base = 0xf8000;
-	    else if ( !bl )
-		mv->fake_unicode_base = 0x100000;
-	    else if ( !bh )
-		mv->fake_unicode_base = 0x108000;
-	}
-	if ( mv->fake_unicode_base==0 )
-	    mv->fake_unicode_base = -1;
+    	mv->fake_unicode_base = SFFakeUnicodeBase(mv->sf);
     }
 
     if ( mv->fake_unicode_base==-1 )
@@ -3773,11 +3751,11 @@ static GMenuItem2 vwlist[] = {
     { { NULL, NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 0, 0, 0, 1, 0, 0, 0, '\0' }, NULL, NULL, NULL, NULL, 0 }, /* line */
     { { (unichar_t *) N_("_Outline"), NULL, COLOR_DEFAULT, COLOR_DEFAULT, NULL, NULL, 0, 1, 1, 0, 0, 0, 1, 1, 0, 'O' }, H_("Outline|No Shortcut"), NULL, NULL, MVMenuShowBitmap, MID_Outline },
     GMENUITEM2_EMPTY,
-    /* Some extra room to show bitmaps */
+    /* Some extra room to show bitmaps and shapers */
     GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
     GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
     GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY,
-    GMENUITEM2_EMPTY
+    GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY, GMENUITEM2_EMPTY
 };
 
 static void MVMenuContextualHelp(GWindow UNUSED(base), struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
@@ -3966,11 +3944,69 @@ static void ellistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     }
 }
 
+static ShaperContext* MVMakeShaperContext(MetricsView *mv) {
+    ShaperContext *context = calloc(1,sizeof(ShaperContext));
+    context->sf = mv->sf;
+    context->mv = mv;
+    context->apply_ticked_features = ApplyTickedFeatures;
+    context->fake_unicode = MVFakeUnicodeOfSc;
+    context->get_enc_map = SFGetMap;
+    context->get_char_width = MVCharWidth;
+    context->get_metrics = MVGetMetrics;
+    context->get_kern_offset = MVGetKernOffset;
+    context->script_is_rtl = ScriptIsRightToLeft;
+    context->get_or_make_char = SFGetOrMakeChar;
+
+    return context;
+}
+
+static void SetShaper(MetricsView *mv, const char* shaper_name) {
+    GCursor ct = GDrawGetCursor(mv->gw);
+
+    /* On window load, show the contents */
+    GDrawProcessPendingEvents(NULL);
+
+    /* The shaper initialization can be lengthy, give the user waiting indication */
+    GDrawSetCursor(mv->gw,ct_watch);
+
+    /* Make sure the cursor change is reflected immediately,
+       before the heavy load starts. */
+    GDrawSync(NULL);
+
+    shaper_free(&(mv->shaper));
+    mv->shaper = shaper_factory(shaper_name, MVMakeShaperContext(mv));
+    MVSetFeatures(mv);
+    MVRefreshAll(mv);
+
+    GDrawSetCursor(mv->gw,ct);
+}
+
+static void MVSetShaper(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    const char* new_shaper_name = mi->ti.userdata;
+
+    /* Check if the requested shaper is already active */
+    if (mv->shaper && (strcmp(shaper_name(mv->shaper), new_shaper_name) == 0)) {
+	return;
+    }
+
+    SetShaper(mv, new_shaper_name);
+}
+
+static void MVRefreshShaper(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
+    MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
+    const char* current_shaper_name = shaper_name(mv->shaper);
+
+    SetShaper(mv, current_shaper_name);
+}
+
 static void vwlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
     int i, j, base, aselection;
     BDFFont *bdf;
     char buffer[60];
+    int n_shapers = 0;
+    const ShaperDef *sh_def, *shaper_defs = get_shaper_defs();
 
     aselection = false;
     for ( j=0; j<mv->glyphcnt; ++j )
@@ -4021,10 +4057,13 @@ static void vwlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	}
     vwlist[i].ti.checked = mv->bdf==NULL;
     base = i+1;
-    for ( i=base; vwlist[i].ti.text!=NULL || vwlist[i].ti.line; ++i ) {
+    /* Reset dynamic menu items */
+    for ( i=base; i<sizeof(vwlist)/sizeof(vwlist[0]); ++i ) {
 	free( vwlist[i].ti.text);
 	vwlist[i].ti.text = NULL;
+	vwlist[i].ti.line = false;
     }
+    i = base;
 
     if ( mv->sf->bitmaps!=NULL ) {
 	for ( bdf = mv->sf->bitmaps, i=base;
@@ -4043,8 +4082,55 @@ static void vwlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	    vwlist[i].ti.fg = vwlist[i].ti.bg = COLOR_DEFAULT;
 	}
     }
+
+    /* Count shapers */
+    for (sh_def = shaper_defs; sh_def->name != NULL; ++sh_def) ++n_shapers;
+
+    /* List shapers when there is a choice */
+    if (n_shapers > 1) {
+	vwlist[i++].ti.line = true; /* separator */
+	for (sh_def = shaper_defs;
+	     i<sizeof(vwlist)/sizeof(vwlist[0])-1 && sh_def->name != NULL; ++sh_def) {
+	    vwlist[i].ti.text = utf82u_copy(sh_def->label);
+	    vwlist[i].ti.checkable = true;
+	    vwlist[i].ti.checked = (strcmp(shaper_name(mv->shaper), sh_def->name)==0);
+	    vwlist[i].ti.userdata = (void*) sh_def->name;
+	    vwlist[i].invoke = MVSetShaper;
+	    vwlist[i].ti.fg = vwlist[i].ti.bg = COLOR_DEFAULT;
+	    i++;
+	}
+
+	vwlist[i].ti.text = utf82u_copy(_("Refresh Shaper"));
+	vwlist[i].ti.checkable = false;
+	vwlist[i].invoke = MVRefreshShaper;
+	vwlist[i].ti.fg = vwlist[i].ti.bg = COLOR_DEFAULT;
+    }
     GMenuItemArrayFree(mi->sub);
     mi->sub = GMenuItem2ArrayCopy(vwlist,NULL);
+}
+
+GTextInfo *GetShaperList(int* p_default) {
+    GTextInfo *ti;
+    int i, cnt;
+    const ShaperDef *sh_def, *shaper_defs = get_shaper_defs();
+    const char* default_shaper = get_default_shaper();
+
+    if (p_default) *p_default = 0;
+
+    cnt = 0;
+    for ( sh_def=shaper_defs; sh_def->name!=NULL ; ++sh_def )
+	++cnt;
+
+    ti = calloc(cnt+1,sizeof(GTextInfo));
+    for ( i=0; i<cnt; ++i ) {
+	ti[i].text = uc_copy(shaper_defs[i].label);
+	ti[i].selected = (strcmp(shaper_defs[i].name, default_shaper) == 0);
+	if (ti[i].selected && p_default) {
+	    *p_default = i;
+	}
+	ti[i].userdata = (void *) shaper_defs[i].name;
+    }
+    return( ti );
 }
 
 static void mtlistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
@@ -4241,8 +4327,12 @@ static void MVChar(MetricsView *mv,GEvent *event)
 	    //      should always move up/down in the list of kerning words.
 	    if( active != mv->text )
 	    {
+		const unichar_t *title = _GGadgetGetTitle(active);
+		if (!title)
+		    return;
+
 		unichar_t *end;
-		double val = u_strtod(_GGadgetGetTitle(active),&end);
+		double val = u_strtod(title,&end);
 		if (isValidInt(end)) {
 		    int dir = ( event->u.chr.keysym == GK_Up || event->u.chr.keysym==GK_KP_Up ) ? 1 : -1;
 		    if( event->u.chr.state&ksm_control && event->u.chr.state&ksm_shift ) {
@@ -4297,8 +4387,8 @@ static void _MVSubVMouse(MetricsView *mv,GEvent *event) {
     xbase = mv->vwidth/2;
     within = -1;
     for ( i=0; i<mv->glyphcnt; ++i ) {
-	y = mv->perchar[i].dy + mv->perchar[i].yoff;
-	x = xbase - mv->pixelsize*iscale/2 - mv->perchar[i].xoff;
+	y = mv->metrics[i].dy + mv->metrics[i].yoff;
+	x = xbase - mv->pixelsize*iscale/2 - mv->metrics[i].xoff;
 	if ( mv->bdf==NULL ) {
 	    BDFChar *bdfc = BDFPieceMealCheck(mv->show,mv->glyphs[i].sc->orig_pos);
 	    if ( event->u.mouse.x >= x+bdfc->xmin &&
@@ -4309,8 +4399,8 @@ static void _MVSubVMouse(MetricsView *mv,GEvent *event) {
 			rint(iscale*(event->u.mouse.y-(y+as-bdfc->ymax)))) )
     break;
 	}
-	y += -mv->perchar[i].yoff;
-	if ( event->u.mouse.y >= y && event->u.mouse.y < y+mv->perchar[i].dheight+ mv->perchar[i].kernafter )
+	y += -mv->metrics[i].yoff;
+	if ( event->u.mouse.y >= y && event->u.mouse.y < y+mv->metrics[i].dheight+ mv->metrics[i].kernafter )
 	    within = i;
     }
     if ( i==mv->glyphcnt )
@@ -4323,34 +4413,34 @@ static void _MVSubVMouse(MetricsView *mv,GEvent *event) {
     if ( sc==NULL ) {
 	if ( mv->type == mv_kernonly ) {
 	    if ( within!=-1 && within+1<mv->glyphcnt &&
-		    event->u.mouse.y>mv->perchar[within+1].dy-3 ) {
+		    event->u.mouse.y>mv->metrics[within+1].dy-3 ) {
 		onkern = true;			/* subsequent char */
 		++within;
 	    } else if ( within>0 &&
-		    event->u.mouse.y<mv->perchar[within].dy+3 )
+		    event->u.mouse.y<mv->metrics[within].dy+3 )
 		onkern = true;
 	} else if ( mv->type == mv_widthonly ) {
 	    if ( within!=-1 && within+1<mv->glyphcnt &&
-		    event->u.mouse.y>mv->perchar[within+1].dy-3 )
+		    event->u.mouse.y>mv->metrics[within+1].dy-3 )
 		onwidth = true;			/* subsequent char */
 	    else if ( within>=0 &&
-		    event->u.mouse.y>mv->perchar[within].dy+mv->perchar[within].dheight+mv->perchar[within].kernafter-3 ) {
+		    event->u.mouse.y>mv->metrics[within].dy+mv->metrics[within].dheight+mv->metrics[within].kernafter-3 ) {
 		onwidth = true;
 	    }
 	} else {
 	    if ( within>0 && mv->perchar[within-1].selected &&
-		    event->u.mouse.y<mv->perchar[within].dy+3 )
+		    event->u.mouse.y<mv->metrics[within].dy+3 )
 		onwidth = true;		/* previous char */
 	    else if ( within!=-1 && within+1<mv->glyphcnt &&
 		    mv->perchar[within+1].selected &&
-		    event->u.mouse.y>mv->perchar[within+1].dy-3 ) {
+		    event->u.mouse.y>mv->metrics[within+1].dy-3 ) {
 		onkern = true;			/* subsequent char */
 		++within;
 	    } else if ( within>0 && mv->perchar[within].selected &&
-		    event->u.mouse.y<mv->perchar[within].dy+3 )
+		    event->u.mouse.y<mv->metrics[within].dy+3 )
 		onkern = true;
 	    else if ( within>=0 &&
-		    event->u.mouse.y>mv->perchar[within].dy+mv->perchar[within].dheight+mv->perchar[within].kernafter-3 ) {
+		    event->u.mouse.y>mv->metrics[within].dy+mv->metrics[within].dheight+mv->metrics[within].kernafter-3 ) {
 		onwidth = true;
 	    }
 	}
@@ -4411,16 +4501,16 @@ static void _MVSubVMouse(MetricsView *mv,GEvent *event) {
     } else if ( event->type == et_mousemove && mv->pressed ) {
 	for ( i=0; i<mv->glyphcnt && !mv->perchar[i].selected; ++i );
 	if ( mv->pressedwidth ) {
-	    int ow = mv->perchar[i].dwidth;
-	    mv->perchar[i].dwidth = rint(mv->glyphs[i].sc->vwidth*scale) + diff;
-	    if ( ow!=mv->perchar[i].dwidth ) {
+	    int ow = mv->metrics[i].dwidth;
+	    mv->metrics[i].dwidth = rint(mv->glyphs[i].sc->vwidth*scale) + diff;
+	    if ( ow!=mv->metrics[i].dwidth ) {
 		for ( j=i+1; j<mv->glyphcnt; ++j )
-		    mv->perchar[j].dy = mv->perchar[j-1].dy+mv->perchar[j-1].dheight+
-			    mv->perchar[j-1].kernafter;
+		    mv->metrics[j].dy = mv->metrics[j-1].dy+mv->metrics[j-1].dheight+
+			    mv->metrics[j-1].kernafter;
 		GDrawRequestExpose(mv->v,NULL,false);
 	    }
 	} else if ( mv->pressedkern ) {
-	    int ow = mv->perchar[i-1].kernafter;
+	    int ow = mv->metrics[i-1].kernafter;
 	    KernPair *kp;
 	    int kpoff;
 	    KernClass *kc;
@@ -4433,11 +4523,11 @@ static void _MVSubVMouse(MetricsView *mv,GEvent *event) {
 		kpoff = 0;
 	    kpoff = kpoff * mv->pixelsize*iscale /
 			(mv->sf->descent+mv->sf->ascent);
-	    mv->perchar[i-1].kernafter = kpoff + diff;
-	    if ( ow!=mv->perchar[i-1].kernafter ) {
+	    mv->metrics[i-1].kernafter = kpoff + diff;
+	    if ( ow!=mv->metrics[i-1].kernafter ) {
 		for ( j=i; j<mv->glyphcnt; ++j )
-		    mv->perchar[j].dy = mv->perchar[j-1].dy+mv->perchar[j-1].dheight+
-			    mv->perchar[j-1].kernafter;
+		    mv->metrics[j].dy = mv->metrics[j-1].dy+mv->metrics[j-1].dheight+
+			    mv->metrics[j-1].kernafter;
 		GDrawRequestExpose(mv->v,NULL,false);
 	    }
 	} else if ( mv->type!=mv_kernonly ) {
@@ -4470,8 +4560,8 @@ static void _MVSubVMouse(MetricsView *mv,GEvent *event) {
 		sc->vwidth += diff;
 		SCCharChangedUpdate(sc,ly_none);
 		for ( ; i<mv->glyphcnt; ++i )
-		    mv->perchar[i].dy = mv->perchar[i-1].dy+mv->perchar[i-1].dheight +
-			    mv->perchar[i-1].kernafter ;
+		    mv->metrics[i].dy = mv->metrics[i-1].dy+mv->metrics[i-1].dheight +
+			    mv->metrics[i-1].kernafter ;
 		GDrawRequestExpose(mv->v,NULL,false);
 	    } else if ( mv->showgrid==mv_hidemovinggrid )
 		GDrawRequestExpose(mv->v,NULL,false);
@@ -4533,10 +4623,10 @@ return;
     ybase = mv->ybaseline - mv->yoff;
     within = -1;
     for ( i=0; i<mv->glyphcnt; ++i ) {
-	x = mv->perchar[i].dx + mv->perchar[i].xoff;
+	x = mv->metrics[i].dx + mv->metrics[i].xoff;
 	if ( mv->right_to_left )
-	    x = mv->vwidth - x - mv->perchar[i].dwidth - mv->perchar[i].kernafter;
-	y = ybase - mv->perchar[i].yoff;
+	    x = mv->vwidth - x - mv->metrics[i].dwidth - mv->metrics[i].kernafter;
+	y = ybase - mv->metrics[i].yoff;
 	if ( mv->bdf==NULL ) {
 	    bdfc = BDFPieceMealCheck(mv->show,mv->glyphs[i].sc->orig_pos);
 	    if ( event->u.mouse.x >= x+bdfc->xmin &&
@@ -4547,8 +4637,8 @@ return;
 			rint(iscale*(bdfc->ymax-(y-event->u.mouse.y)))) )
     break;
 	}
-	x += mv->right_to_left ? mv->perchar[i].xoff : -mv->perchar[i].xoff;
-	if ( event->u.mouse.x >= x && event->u.mouse.x < x+mv->perchar[i].dwidth+ mv->perchar[i].kernafter )
+	x += mv->right_to_left ? mv->metrics[i].xoff : -mv->metrics[i].xoff;
+	if ( event->u.mouse.x >= x && event->u.mouse.x < x+mv->metrics[i].dwidth+ mv->metrics[i].kernafter )
 	    within = i;
     }
     if ( i==mv->glyphcnt )
@@ -4563,68 +4653,68 @@ return;
 	if ( !mv->right_to_left ) {
 	    if ( mv->type == mv_kernonly ) {
 		if ( within>=0 && within+1<mv->glyphcnt &&
-			event->u.mouse.x>mv->perchar[within+1].dx-3 ) {
+			event->u.mouse.x>mv->metrics[within+1].dx-3 ) {
 		    onkern = true;			/* subsequent char */
 		    ++within;
 		} else if ( within>0 &&
-			event->u.mouse.x<mv->perchar[within].dx+3 )
+			event->u.mouse.x<mv->metrics[within].dx+3 )
 		    onkern = true;
 	    } else if ( mv->type == mv_widthonly ) {
 		if ( within>=0 && within+1<mv->glyphcnt &&
-			event->u.mouse.x>mv->perchar[within+1].dx-3 )
+			event->u.mouse.x>mv->metrics[within+1].dx-3 )
 		    onwidth = true;			/* subsequent char */
 		else if ( within>=0 &&
-			event->u.mouse.x>mv->perchar[within].dx+mv->perchar[within].dwidth+mv->perchar[within].kernafter-3 ) {
+			event->u.mouse.x>mv->metrics[within].dx+mv->metrics[within].dwidth+mv->metrics[within].kernafter-3 ) {
 		    onwidth = true;
 		}
 	    } else {
 		if ( within>0 && mv->perchar[within-1].selected &&
-			event->u.mouse.x<mv->perchar[within].dx+3 )
+			event->u.mouse.x<mv->metrics[within].dx+3 )
 		    onwidth = true;		/* previous char */
 		else if ( within!=-1 && within+1<mv->glyphcnt &&
 			mv->perchar[within+1].selected &&
-			event->u.mouse.x>mv->perchar[within+1].dx-3 ) {
+			event->u.mouse.x>mv->metrics[within+1].dx-3 ) {
 		    onkern = true;			/* subsequent char */
 		    ++within;
 		} else if ( within>0 && mv->perchar[within].selected &&
-			event->u.mouse.x<mv->perchar[within].dx+3 )
+			event->u.mouse.x<mv->metrics[within].dx+3 )
 		    onkern = true;
 		else if ( within>=0 &&
-			event->u.mouse.x>mv->perchar[within].dx+mv->perchar[within].dwidth+mv->perchar[within].kernafter-3 ) {
+			event->u.mouse.x>mv->metrics[within].dx+mv->metrics[within].dwidth+mv->metrics[within].kernafter-3 ) {
 		    onwidth = true;
 		}
 	    }
 	} else {
 	    if ( mv->type == mv_kernonly ) {
 		if ( within>=0 && within+1<mv->glyphcnt &&
-			event->u.mouse.x<mv->dwidth-(mv->perchar[within+1].dx-3) ) {
+			event->u.mouse.x<mv->dwidth-(mv->metrics[within+1].dx-3) ) {
 		    onkern = true;			/* subsequent char */
 		    ++within;
 		} else if ( within>0 &&
-			event->u.mouse.x>mv->dwidth-(mv->perchar[within].dx+3) )
+			event->u.mouse.x>mv->dwidth-(mv->metrics[within].dx+3) )
 		    onkern = true;
 	    } else if ( mv->type == mv_widthonly ) {
 		if ( within>=0 && within+1<mv->glyphcnt &&
-			event->u.mouse.x<mv->dwidth-(mv->perchar[within+1].dx-3) )
+			event->u.mouse.x<mv->dwidth-(mv->metrics[within+1].dx-3) )
 		    onwidth = true;			/* subsequent char */
 		else if ( within>=0 &&
-			event->u.mouse.x<mv->dwidth-(mv->perchar[within].dx+mv->perchar[within].dwidth+mv->perchar[within].kernafter-3) ) {
+			event->u.mouse.x<mv->dwidth-(mv->metrics[within].dx+mv->metrics[within].dwidth+mv->metrics[within].kernafter-3) ) {
 		    onwidth = true;
 		}
 	    } else {
 		if ( within>0 && mv->perchar[within-1].selected &&
-			event->u.mouse.x>mv->dwidth-(mv->perchar[within].dx+3) )
+			event->u.mouse.x>mv->dwidth-(mv->metrics[within].dx+3) )
 		    onwidth = true;		/* previous char */
 		else if ( within!=-1 && within+1<mv->glyphcnt &&
 			mv->perchar[within+1].selected &&
-			event->u.mouse.x<mv->dwidth-(mv->perchar[within+1].dx-3) ) {
+			event->u.mouse.x<mv->dwidth-(mv->metrics[within+1].dx-3) ) {
 		    onkern = true;			/* subsequent char */
 		    ++within;
 		} else if ( within>0 && mv->perchar[within].selected &&
-			event->u.mouse.x>mv->dwidth-(mv->perchar[within].dx+3) )
+			event->u.mouse.x>mv->dwidth-(mv->metrics[within].dx+3) )
 		    onkern = true;
 		else if ( within>=0 &&
-			event->u.mouse.x<mv->dwidth-(mv->perchar[within].dx+mv->perchar[within].dwidth+mv->perchar[within].kernafter-3) ) {
+			event->u.mouse.x<mv->dwidth-(mv->metrics[within].dx+mv->metrics[within].dwidth+mv->metrics[within].kernafter-3) ) {
 		    onwidth = true;
 		}
 	    }
@@ -4692,17 +4782,17 @@ return;
 	}
 
 	if ( mv->pressedwidth ) {
-	    int ow = mv->perchar[i].dwidth;
+	    int ow = mv->metrics[i].dwidth;
 	    if ( mv->right_to_left ) diff = -diff;
 	    bdfc = BDFPieceMealCheck(mv->show,mv->glyphs[i].sc->orig_pos);
-	    mv->perchar[i].dwidth = bdfc->width + diff;
-	    if ( ow!=mv->perchar[i].dwidth ) {
+	    mv->metrics[i].dwidth = bdfc->width + diff;
+	    if ( ow!=mv->metrics[i].dwidth ) {
 		for ( j=i+1; j<mv->glyphcnt; ++j )
-		    mv->perchar[j].dx = mv->perchar[j-1].dx+mv->perchar[j-1].dwidth+ mv->perchar[j-1].kernafter;
+		    mv->metrics[j].dx = mv->metrics[j-1].dx+mv->metrics[j-1].dwidth+ mv->metrics[j-1].kernafter;
 		GDrawRequestExpose(mv->v,NULL,false);
 	    }
 	} else if ( mv->pressedkern ) {
-	    int ow = mv->perchar[i-1].kernafter;
+	    int ow = mv->metrics[i-1].kernafter;
 	    KernPair *kp;
 	    int kpoff;
 	    KernClass *kc;
@@ -4717,10 +4807,10 @@ return;
 	    kpoff = kpoff * mv->pixelsize*iscale /
 			(mv->sf->descent+mv->sf->ascent);
 	    if ( mv->right_to_left ) diff = -diff;
-	    mv->perchar[i-1].kernafter = kpoff + diff;
-	    if ( ow!=mv->perchar[i-1].kernafter ) {
+	    mv->metrics[i-1].kernafter = kpoff + diff;
+	    if ( ow!=mv->metrics[i-1].kernafter ) {
 		for ( j=i; j<mv->glyphcnt; ++j )
-		    mv->perchar[j].dx = mv->perchar[j-1].dx+mv->perchar[j-1].dwidth+ mv->perchar[j-1].kernafter;
+		    mv->metrics[j].dx = mv->metrics[j-1].dx+mv->metrics[j-1].dwidth+ mv->metrics[j-1].kernafter;
 		GDrawRequestExpose(mv->v,NULL,false);
 	    }
 	} else if ( mv->type!=mv_kernonly ) {
@@ -4840,19 +4930,19 @@ return;
     within = mv->glyphcnt;
     if ( !mv->vertical ) {
 	for ( i=0; i<mv->glyphcnt; ++i ) {
-	    x = mv->perchar[i].dx;
+	    x = mv->metrics[i].dx;
 	    if ( mv->right_to_left )
-		x = mv->dwidth - x - mv->perchar[i].dwidth - mv->perchar[i].kernafter ;
-	    if ( ex >= x && ex < x+mv->perchar[i].dwidth+ mv->perchar[i].kernafter ) {
+		x = mv->dwidth - x - mv->metrics[i].dwidth - mv->metrics[i].kernafter ;
+	    if ( ex >= x && ex < x+mv->metrics[i].dwidth+ mv->metrics[i].kernafter ) {
 		within = i;
 	break;
 	    }
 	}
     } else {
 	for ( i=0; i<mv->glyphcnt; ++i ) {
-	    y = mv->perchar[i].dy;
-	    if ( ey >= y && ey < y+mv->perchar[i].dheight+
-		    mv->perchar[i].kernafter ) {
+	    y = mv->metrics[i].dy;
+	    if ( ey >= y && ey < y+mv->metrics[i].dheight+
+		    mv->metrics[i].kernafter ) {
 		within = i;
 	break;
 	    }
@@ -5067,6 +5157,11 @@ return( true );
 	  default: break;
 	}
       break;
+      case et_map:
+        if (event->u.map.is_visible) {
+	  SetShaper(mv, get_default_shaper());
+	}
+      break;
       case et_close:
 	MVMenuClose(gw,NULL,NULL);
       break;
@@ -5099,7 +5194,7 @@ GTextInfo *SLOfFont(SplineFont *sf) {
     char sbuf[8], lbuf[8];
 
     LookupUIInit();
-    scripttags = SFScriptsInLookups(sf,-1);
+    scripttags = SFScriptsInLookups(sf);
     if ( scripttags==NULL )
 return( NULL );
 
@@ -5217,6 +5312,10 @@ MetricsView *MetricsViewCreate(FontView *fv,SplineChar *sc,BDFFont *bdf) {
     mv->type = mv_type;
     mv->pixelsize_set_by_window = true;
     mv->dpi = 72;
+
+    /* Start with fast internal shaper for initial presentation, defer the 
+       full-blown shaper until the Metrics window has been mapped. */
+    mv->shaper = shaper_factory("builtin", MVMakeShaperContext(mv));
 
     memset(&wattrs,0,sizeof(wattrs));
     wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_icon;
@@ -5393,7 +5492,9 @@ void MetricsViewFree(MetricsView *mv) {
     /* the fields will free themselves */
     free(mv->chars);
     free(mv->glyphs);
+    free(mv->metrics);
     free(mv->perchar);
+    shaper_free(&(mv->shaper));
     free(mv);
 }
 

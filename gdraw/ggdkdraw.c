@@ -31,7 +31,6 @@
 
 #include "ggdkdrawP.h"
 
-#ifdef FONTFORGE_CAN_USE_GDK
 
 #include "gkeysym.h"
 #include "gresource.h"
@@ -49,6 +48,8 @@
 #endif
 
 // Forward declarations
+void gtk_main_do_event (GdkEvent* event);
+
 static void GGDKDrawCancelTimer(GTimer *timer);
 static void GGDKDrawDestroyWindow(GWindow w);
 static void GGDKDrawPostEvent(GEvent *e);
@@ -806,6 +807,12 @@ static bool _GGDKDraw_FilterByModal(GdkEvent *event, GGDKWindow gw) {
             break;
     }
 
+    // Check if this window has an active GTK modal dialog over it
+    GdkWindow* top_gdk_win = gdk_window_get_effective_toplevel(gw->w);
+    if (g_object_get_data(G_OBJECT(top_gdk_win), "GTKModalBlock")) {
+	return true;
+    }
+
     GGDKWindow gww = gw;
     GPtrArray *stack = gw->display->transient_stack;
 
@@ -895,6 +902,11 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
         return;
     } else if ((gw = g_object_get_data(G_OBJECT(w), "GGDKWindow")) == NULL) {
         //Log(LOGDEBUG, "MISSING GW!");
+
+        // TODO: rework this hack to integrate better into event loop
+        //  (atm GTK is just snuffling up any events ignored by gdraw)
+        gtk_main_do_event(event);
+
         return;
     } else if (_GGDKDraw_WindowOrParentsDying(gw) || gdk_window_is_destroyed(w)) {
         Log(LOGDEBUG, "DYING! %p", w);
@@ -903,6 +915,9 @@ static void _GGDKDraw_DispatchEvent(GdkEvent *event, gpointer data) {
         Log(LOGDEBUG, "Discarding event - has modals!");
         return;
     }
+    // TODO(iorsh): Discard GDraw window mouse events when blocked by modal GTK window.
+    // GDK doesn't manage internally modal relations, so we need to keep track ourselves.
+    // This is too dangerous to implement at the inital GTK introduction.
 
     gevent.w = (GWindow)gw;
     gevent.native_window = (void *)gw->w;
@@ -2366,7 +2381,6 @@ static struct displayfuncs gdkfuncs = {
 
     GGDKDrawGetFontMetrics,
 
-    GGDKDrawHasCairo,
     GGDKDrawPathStartNew,
     GGDKDrawPathClose,
     GGDKDrawPathMoveTo,
@@ -2598,4 +2612,3 @@ void _GGDKDraw_DestroyDisplay(GDisplay *disp) {
     return;
 }
 
-#endif // FONTFORGE_CAN_USE_GDK

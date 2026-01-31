@@ -25,6 +25,7 @@ typedef struct sfd_getfontmetadatadata {
 	FPST*                   lastfp;
 	ASM*                    lastsm;
 	struct ttf_table*       lastttf[2];
+	char*                   lastStyleMapFamilyName;
 } SFD_GetFontMetaDataData;
 
 extern void SFD_GetFontMetaDataData_Init(SFD_GetFontMetaDataData* d);

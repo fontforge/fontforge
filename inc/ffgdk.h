@@ -30,18 +30,19 @@
 
 #include <fontforge-config.h>
 
-#ifdef FONTFORGE_CAN_USE_GDK
 
 // As gdk #includes glib, we must apply the same name mangling here.
 #define GTimer GTimer_GTK
 #define GList  GList_Glib
 #define GMenuItem GMenuItem_GIO
+#define GMenu GMenu_GIO
 #include <gdk/gdk.h>
 #include <gdk/gdkkeysyms.h>
+#include <gtk/gtk.h>
+#undef GMenu
 #undef GMenuItem
 #undef GList
 #undef GTimer
 
-#endif // FONTFORGE_CAN_USE_GDK
 
 #endif /* FONTFORGE_FFGDK_H */

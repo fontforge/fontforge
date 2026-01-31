@@ -3,7 +3,7 @@
 cmake_minimum_required(VERSION 3.5)
 
 # Update the version for each new release
-project(fontforge VERSION 20230101 LANGUAGES C CXX)
+project(fontforge VERSION 20251009 LANGUAGES C CXX)
 
 # No in source builds
 if("${PROJECT_SOURCE_DIR}" STREQUAL "${PROJECT_BINARY_DIR}")
@@ -27,9 +27,9 @@ include(PackageUtils)
 include(TargetUtils)
 
 # Set any global defines
-set(CMAKE_C_STANDARD 99)
+set(CMAKE_C_STANDARD 17)
 set(CMAKE_C_STANDARD_REQUIRED TRUE)
-set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 set(CMAKE_THREAD_PREFER_PTHREAD 1)
 
@@ -44,7 +44,6 @@ add_uninstall_target()
 # Options
 build_option(BUILD_SHARED_LIBS       BOOL ON  "Build libfontforge as a shared library")
 build_option(ENABLE_GUI              BOOL ON  "Build FontForge with GUI support")
-build_option(ENABLE_X11              BOOL OFF "Build the GUI using the X backend INSTEAD of the GDK backend" "ENABLE_GUI")
 
 build_option(ENABLE_NATIVE_SCRIPTING BOOL ON  "Enables FontForge's native scripting support")
 build_option(ENABLE_PYTHON_SCRIPTING BOOL ON  "Enables FontForge's Python scripting support")
@@ -57,6 +56,7 @@ build_option(ENABLE_LIBPNG           AUTO ON  "Enables PNG support")
 build_option(ENABLE_LIBREADLINE      AUTO ON  "Enables Readline support")
 build_option(ENABLE_LIBTIFF          AUTO ON  "Enables TIFF support")
 build_option(ENABLE_WOFF2            AUTO ON  "Enables WOFF2 support")
+build_option(ENABLE_HARFBUZZ         AUTO ON  "Enables HarfBuzz shaper support")
 
 build_option(ENABLE_DOCS             AUTO ON  "Enables building and installing documentation. Sphinx is required to build it.")
 build_option(ENABLE_CODE_COVERAGE    BOOL OFF "Build with code coverage support")
@@ -76,7 +76,8 @@ build_option(SPHINX_USE_VENV BOOL OFF "If building documentation and Sphinx\
  is not installed, try to install and use it from a python3 venv.")
 
 build_option(REAL_TYPE ENUM "double" "Sets the floating point type used." "double" "float")
-build_option(THEME     ENUM "tango"  "Sets the GUI theme." "tango" "2012")
+build_option(GUI_THEME     ENUM "tango"  "Sets the GUI theme." "tango" "2012")
+add_definitions( -DGUI_THEME="${GUI_THEME}" )
 
 build_option(FONT_FAMILIES_SERIF     STRING "default"  "Serif font family names to use in the UI separated by commas")
 build_option(FONT_FAMILIES_UI        STRING "default"  "Font family names to use in the UI separated by commas (typically sans-serif)")
@@ -125,15 +126,13 @@ endif()
 
 # Requirements for options
 if(ENABLE_GUI)
-  if(ENABLE_X11)
-    if(APPLE)
-      message(FATAL_ERROR "Using the X11 backend on MacOS is no longer supported.")
-    endif()
-    find_package(Cairo 1.6 REQUIRED)
-    find_package(Pango 1.10 COMPONENTS pangocairo pangoxft REQUIRED)
-    find_package(X11 REQUIRED)
-  else()
-    find_package(GDK3 3.10 REQUIRED)
+  find_package(GDK3 3.10 REQUIRED)
+  find_package(PkgConfig)
+  pkg_check_modules(GTK3 REQUIRED IMPORTED_TARGET gtk+-3.0)
+  pkg_check_modules(GTKMM REQUIRED IMPORTED_TARGET  gtkmm-3.0)
+  find_package(PkgConfig)
+  if (ENABLE_HARFBUZZ)
+    pkg_check_modules(HarfBuzz REQUIRED IMPORTED_TARGET harfbuzz)
   endif()
 endif()
 
@@ -150,7 +149,7 @@ set(Python3_FIND_REGISTRY LAST)
 if(BUILD_SHARED_LIBS)
   set(Python3_USE_STATIC_LIBS FALSE)
 endif()
-find_package_auto(ENABLE_PYTHON_SCRIPTING Python3 3.6 COMPONENTS Development Interpreter)
+find_package_auto(ENABLE_PYTHON_SCRIPTING Python3 3.8 COMPONENTS Development Interpreter)
 find_package_auto(ENABLE_DOCS             Sphinx) # Should come after ENABLE_PYTHON_SCRIPTING
 find_package_auto(ENABLE_LIBSPIRO         Libspiro)
 find_package_auto(ENABLE_LIBGIF           GIF)
@@ -189,7 +188,9 @@ endif()
 if(BUILD_TESTING)
   add_subdirectory(tests)
 endif()
-add_subdirectory(desktop)
+if(ENABLE_GUI)
+  add_subdirectory(desktop)
+endif()
 if(ENABLE_DOCS AND Sphinx_FOUND)
   add_subdirectory(doc)
 endif()
@@ -201,3 +202,10 @@ endif()
 
 setup_cpack()
 print_build_options()
+
+add_custom_target(
+    format
+    COMMAND cat .clang-files | xargs -I % sh -c 'clang-format --verbose -i --style=file:.clang-format %'
+    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+    COMMENT "Running clang-format"
+)

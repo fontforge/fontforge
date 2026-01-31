@@ -1,6 +1,6 @@
 #!/bin/bash
 HERE="$(dirname "$(readlink -f "${0}")")"
-export PYTHONPATH="$HERE/usr/lib/python3.7"
+export PYTHONPATH="$HERE/usr/lib/python3.10"
 export PYTHONHOME="$HERE/usr"
 cd "${HERE}/usr/"
 exec ./bin/fontforge "$@"

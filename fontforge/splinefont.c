@@ -390,6 +390,10 @@ void SplineFontSetUnChanged(SplineFont *sf) {
 	    _SplineFontSetUnChanged(sf->mm->instances[i]);
 }
 
+EncMap* SFGetMap(SplineFont *sf) {
+    return sf->map;
+}
+
 static char *scaleString(char *string, double scale) {
     char *result;
     char *pt;
@@ -788,11 +792,14 @@ return( name );
 
 char *Unarchive(char *name, char **_archivedir) {
     char *dir = getenv("TMPDIR");
-    char *pt, *archivedir, *listfile, *listcommand, *unarchivecmd, *desiredfile;
+    char *pt, *archivedir, *listfile, *desiredfile;
     char *finalfile;
     int i;
     int doall=false;
     static int cnt=0;
+    gchar *command[5];
+    gchar *stdoutresponse = NULL;
+    gchar *stderrresponse = NULL;
 
     *_archivedir = NULL;
 
@@ -827,18 +834,30 @@ return( NULL );
     listfile = malloc(strlen(archivedir)+strlen("/" TOC_NAME)+1);
     sprintf( listfile, "%s/" TOC_NAME, archivedir );
 
-    listcommand = malloc( strlen(archivers[i].unarchive) + 1 +
-			strlen( archivers[i].listargs) + 1 +
-			strlen( name ) + 3 +
-			strlen( listfile ) +4 );
-    sprintf( listcommand, "%s %s %s > %s", archivers[i].unarchive,
-	    archivers[i].listargs, name, listfile );
-    if ( system(listcommand)!=0 ) {
-	free(listcommand); free(listfile);
-	ArchiveCleanup(archivedir);
-return( NULL );
+    command[0] = archivers[i].unarchive;
+    command[1] = archivers[i].listargs;
+    command[2] = name;
+    command[3] = NULL; // command args need to be NULL-terminated
+
+    if ( g_spawn_sync(
+                      NULL,
+                      command,
+                      NULL,
+                      G_SPAWN_SEARCH_PATH, 
+                      NULL, 
+                      NULL, 
+                      &stdoutresponse, 
+                      &stderrresponse, 
+                      NULL, 
+                      NULL
+                      ) == FALSE) { // did not successfully execute
+      ArchiveCleanup(archivedir);
+      return( NULL );
     }
-    free(listcommand);
+    // Write out the listfile to be read in later
+    FILE *fp = fopen(listfile, "wb");
+    fwrite(stdoutresponse, strlen(stdoutresponse), 1, fp);
+    fclose(fp);
 
     desiredfile = ArchiveParseTOC(listfile, archivers[i].ars, &doall);
     free(listfile);
@@ -847,22 +866,28 @@ return( NULL );
 return( NULL );
     }
 
-    /* I tried sending everything to stdout, but that doesn't work if the */
-    /*  output is a directory file (ufo, sfdir) */
-    unarchivecmd = malloc( strlen(archivers[i].unarchive) + 1 +
-			strlen( archivers[i].listargs) + 1 +
-			strlen( name ) + 1 +
-			strlen( desiredfile ) + 3 +
-			strlen( archivedir ) + 30 );
-    sprintf( unarchivecmd, "( cd %s ; %s %s %s %s ) > /dev/null", archivedir,
-	    archivers[i].unarchive,
-	    archivers[i].extractargs, name, doall ? "" : desiredfile );
-    if ( system(unarchivecmd)!=0 ) {
-	free(unarchivecmd); free(desiredfile);
-	ArchiveCleanup(archivedir);
-return( NULL );
+    command[0] = archivers[i].unarchive;
+    command[1] = archivers[i].extractargs;
+    command[2] = name;
+    command[3] = doall ? "" : desiredfile;
+    command[4] = NULL;
+
+    if ( g_spawn_sync(
+                      (gchar*)archivedir,
+                      command,
+                      NULL,
+                      G_SPAWN_SEARCH_PATH, 
+                      NULL, 
+                      NULL, 
+                      &stdoutresponse, 
+                      &stderrresponse, 
+                      NULL, 
+                      NULL
+                      ) == FALSE) { // did not successfully execute
+      free(desiredfile);
+      ArchiveCleanup(archivedir);
+      return( NULL );
     }
-    free(unarchivecmd);
 
     finalfile = malloc( strlen(archivedir) + 1 + strlen(desiredfile) + 1);
     sprintf( finalfile, "%s/%s", archivedir, desiredfile );
@@ -885,20 +910,54 @@ struct compressors compressors[] = {
 
 char *Decompress(char *name, int compression) {
     char *dir = getenv("TMPDIR");
-    char buf[1500];
     char *tmpfn;
-
+    gchar *command[4];
+    gint stdout_pipe;
+    gchar buffer[4096];
+    gssize bytes_read;
+    GByteArray *binary_data = g_byte_array_new();
+    
     if ( dir==NULL ) dir = P_tmpdir;
     tmpfn = malloc(strlen(dir)+strlen(GFileNameTail(name))+2);
     strcpy(tmpfn,dir);
     strcat(tmpfn,"/");
     strcat(tmpfn,GFileNameTail(name));
     *strrchr(tmpfn,'.') = '\0';
-    snprintf( buf, sizeof(buf), "%s < %s > %s", compressors[compression].decomp, name, tmpfn );
-    if ( system(buf)==0 )
-return( tmpfn );
-    free(tmpfn);
-return( NULL );
+
+    command[0] = compressors[compression].decomp;
+    command[1] = "-c";
+    command[2] = name;
+    command[3] = NULL;
+
+    // Have to use async because g_spawn_sync doesn't handle nul-bytes in the output (which happens with binary data)
+    if (g_spawn_async_with_pipes(
+      NULL, 
+      command, 
+      NULL, 
+      G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_SEARCH_PATH,
+      NULL, 
+      NULL,  
+      NULL,
+      NULL, 
+      &stdout_pipe, 
+      NULL, 
+      NULL) == FALSE) {
+      //command has failed
+      return( NULL );
+    }
+
+    // Read binary data from pipe and output to file
+    while ((bytes_read = read(stdout_pipe, buffer, sizeof(buffer))) > 0) {
+        g_byte_array_append(binary_data, (guint8 *)buffer, bytes_read);
+    }
+    close(stdout_pipe);
+
+    FILE *fp = fopen(tmpfn, "wb");
+    fwrite(binary_data->data, sizeof(gchar), binary_data->len, fp);
+    fclose(fp);
+    g_byte_array_free(binary_data, TRUE);
+
+		return(tmpfn);
 }
 
 static char *ForceFileToHaveName(FILE *file, char *exten) {
@@ -1827,6 +1886,58 @@ bigreal SFDescender(SplineFont *sf, int layer, int return_error) {
     if ( result==1e23 && !return_error )
 	result = -sf->descent/2;
 return( result );
+}
+
+extern int SFFakeUnicodeBase(SplineFont *sf) {
+	int fake_unicode_base=0;
+	/* If they have nothing in Supplementary Private Use Area-A use it */
+	/* If they have nothing in Supplementary Private Use Area-B use it */
+	int a, al, ah, b, bl, bh;
+	int gid,k,max;
+	SplineChar *test;
+	SplineFont *_sf;
+	if ( sf->cidmaster ) sf = sf->cidmaster;
+	k=0;
+	a = al = ah = b = bl = bh = 0;
+	max = 0;
+	do {
+	    _sf =  ( sf->subfontcnt==0 ) ? sf : sf->subfonts[k];
+	    for ( gid=0; gid<_sf->glyphcnt; ++gid ) if ( (test=_sf->glyphs[gid])!=NULL ) {
+		if ( test->unicodeenc>=0xf0000 && test->unicodeenc<=0xfffff ) {
+		    a = true;
+		    if ( test->unicodeenc<0xf8000 )
+			al = true;
+		    else
+			ah = true;
+		} else if ( test->unicodeenc>=0x100000 && test->unicodeenc<=0x10ffff ) {
+		    b = true;
+		    if ( test->unicodeenc<0x108000 )
+			bl = true;
+		    else
+			bh = true;
+		}
+	    }
+	    if ( gid>max ) max = gid;
+	    ++k;
+	} while ( k<sf->subfontcnt );
+	if ( !a )		/* Nothing in SPUA-A */
+	    fake_unicode_base = 0xf0000;
+	else if ( !b )
+	    fake_unicode_base = 0x100000;
+	else if ( max<0x8000 ) {
+	    if ( !al )
+		fake_unicode_base = 0xf0000;
+	    else if ( !ah )
+		fake_unicode_base = 0xf8000;
+	    else if ( !bl )
+		fake_unicode_base = 0x100000;
+	    else if ( !bh )
+		fake_unicode_base = 0x108000;
+	}
+	if ( fake_unicode_base==0 )
+	    fake_unicode_base = -1;
+
+	return fake_unicode_base;
 }
 
 static void arraystring(char *buffer,real *array,int cnt) {

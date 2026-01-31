@@ -200,7 +200,7 @@ static SplineFont *PalmTestFont(FILE *file,int end, char *family,const char *sty
 
     type = getushort(file);
     if ( type==0x0090 || type==0x0092 ) {
-	LogError( _("Warning: Byte swapped font mark in palm font.\n") );
+	LogError( _("Warning: Byte swapped font mark in palm font.") );
 	type = type<<8;
     }
     if ( (type&0x9000)!=0x9000 )
@@ -316,7 +316,7 @@ return( NULL );
     /* Now test for a font bucket structure */
     version = getc(file); /* version number of font bucket format. currently 0 */
     if ( version==4 ) {
-	LogError( _("Warning: Font Bucket version 4 treated as 0.\n") );
+	LogError( _("Warning: Font Bucket version 4 treated as 0.") );
 	version=0;
     }
     if ( version!=0 )

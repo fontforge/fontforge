@@ -12,10 +12,6 @@ of these defines work.
 There are multiple definitions that are not covered by the config header,
 but which are used throughout FontForge.
 
-Defines that are not included, because they are obsolete, include:
-
-_NO_LIBCAIRO
-
 There are other defines where it is not clear if they should be
 configured, or if they are defined locally in source only:
 
@@ -77,17 +73,6 @@ function(fontforge_generate_config template destination)
   endif()
 
   # Configurable features
-  _set_negated(_NO_XKB "${X11_Xkb_FOUND}")
-  _set_negated(_NO_XINPUT "${X11_Xi_FOUND}")
-
-  if(NOT ENABLE_GUI OR NOT ENABLE_X11)
-    set(X_DISPLAY_MISSING 1)
-  endif()
-
-  if(ENABLE_GUI AND NOT ENABLE_X11)
-    set(FONTFORGE_CAN_USE_GDK 1)
-  endif()
-
   set(FONTFORGE_CAN_USE_WOFF2 ${ENABLE_WOFF2_RESULT})
 
   _set_negated(_NO_FFSCRIPT "${ENABLE_NATIVE_SCRIPTING}")
@@ -112,7 +97,7 @@ function(_get_git_version)
     if(Git_FOUND)
       execute_process(
         COMMAND
-          "${GIT_EXECUTABLE}" "log" "--pretty=format:%H" "-n" "1"
+          "${GIT_EXECUTABLE}" "rev-list" "-n" "1" "HEAD"
         WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
         RESULT_VARIABLE GIT_RETVAL
         OUTPUT_VARIABLE GIT_OUTPUT

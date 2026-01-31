@@ -108,6 +108,7 @@ static int IsBreakBetweenOk(unichar_t ch1, unichar_t ch2) {
     );
 }
 
+/* TODO(iorsh): Deprecate in favour of BuiltInShaper::default_features() */
 uint32_t *StdFeaturesOfScript(uint32_t script) {
     int i;
 
@@ -493,7 +494,7 @@ void LayoutInfoRefigureLines(LayoutInfo *li, int start_of_change,
 
 	    free( fl->ottext );
 	    fl->ottext = ApplyTickedFeatures(fl->fd->sf,fl->feats,
-		    fl->script, fl->lang,
+		    fl->script, fl->lang, false,
 		    rint( (fl->fd->pointsize*li->dpi)/72 ),
 		    fl->sctext);
 	    scale = fl->fd->pointsize*li->dpi / (72.0*(fl->fd->sf->ascent+fl->fd->sf->descent));

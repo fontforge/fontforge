@@ -2269,7 +2269,7 @@ static void InstanciateReference(SplineFont *sf, RefChar *topref, RefChar *refs,
 	    refs->unicode_enc = rsc->unicodeenc;
 	    SCMakeDependent(dsc,rsc);
 	} else {
-	    LogError( _("Couldn't find referenced character \"%s\" in %s\n"),
+	    LogError( _("Couldn't find referenced character \"%s\" in %s"),
 		    AdobeStandardEncoding[refs->adobe_enc], dsc->name);
 return;
 	}
@@ -2699,7 +2699,7 @@ return( NULL );
     break;
 	++(pscontext->instance_count);
 	if ( pscontext->instance_count>=sizeof(pscontext->blend_values)/sizeof(pscontext->blend_values[0])) {
-	    LogError( _("Multiple master font with more than 16 instances\n") );
+	    LogError( _("Multiple master font with more than 16 instances") );
     break;
 	}
 	for ( pt = end; *pt==' '; ++pt );
@@ -2724,7 +2724,7 @@ return( NULL );
 	if ( pt==end )
     break;
 	if ( mm->axis_count>=sizeof(mm->axes)/sizeof(mm->axes[0])) {
-	    LogError( _("Multiple master font with more than 4 axes\n") );
+	    LogError( _("Multiple master font with more than 4 axes") );
     break;
 	}
 	mm->axes[ mm->axis_count++ ] = copyn( pt,end-pt );
@@ -2751,7 +2751,7 @@ return( NULL );
 	    apos=0;
 	    while ( *pt!=']' && *pt!='\0' ) {
 		if ( apos>=mm->axis_count ) {
-		    LogError( _("Too many axis positions specified in /BlendDesignPositions.\n") );
+		    LogError( _("Too many axis positions specified in /BlendDesignPositions.") );
 	    break;
 		}
 		mm->positions[ipos*mm->axis_count+apos] =
@@ -2783,7 +2783,7 @@ return( NULL );
 	    ppos=0;
 	    while ( *pt!=']' && *pt!='\0' ) {
 		if ( ppos>=12 ) {
-		    LogError( _("Too many mapping data points specified in /BlendDesignMap for axis %s.\n"), mm->axes[apos] );
+		    LogError( _("Too many mapping data points specified in /BlendDesignMap for axis %s."), mm->axes[apos] );
 	    break;
 		}
 		while ( *pt==' ' ) ++pt;
@@ -2792,7 +2792,7 @@ return( NULL );
 		    designs[ppos] = g_ascii_strtod(pt,&end);
 		    blends[ppos] = g_ascii_strtod(end,&end);
 		    if ( blends[ppos]<0 || blends[ppos]>1 ) {
-			LogError( _("Bad value for blend in /BlendDesignMap for axis %s.\n"), mm->axes[apos] );
+			LogError( _("Bad value for blend in /BlendDesignMap for axis %s."), mm->axes[apos] );
 			if ( blends[ppos]<0 ) blends[ppos] = 0;
 			if ( blends[ppos]>1 ) blends[ppos] = 1;
 		    }
@@ -2805,7 +2805,7 @@ return( NULL );
 	    }
 	    if ( *pt==']' ) ++pt;
 	    if ( ppos<2 )
-		LogError( _("Bad few values in /BlendDesignMap for axis %s.\n"), mm->axes[apos] );
+		LogError( _("Bad few values in /BlendDesignMap for axis %s."), mm->axes[apos] );
 	    mm->axismaps[apos].points = ppos;
 	    mm->axismaps[apos].blends = malloc(ppos*sizeof(real));
 	    mm->axismaps[apos].designs = malloc(ppos*sizeof(real));
@@ -2918,7 +2918,7 @@ static SplineFont *SplineFontFromCIDType1(SplineFont *sf, FontDict *fd,
 	if ( fd->fds[i]->fonttype!=1 && fd->fds[i]->fonttype!=2 )
 	    bad = fd->fds[i]->fonttype;
     if ( bad!=0x80000000 || fd->cidfonttype!=0 ) {
-	LogError( _("Could not parse a CID font, %sCIDFontType %d, %sfonttype %d\n"),
+	LogError( _("Could not parse a CID font, %sCIDFontType %d, %sfonttype %d"),
 		( fd->cidfonttype!=0 ) ? "unexpected " : "",
 		( bad!=0x80000000 ) ? "unexpected " : "",
 		fd->cidfonttype, bad );
@@ -2926,7 +2926,7 @@ static SplineFont *SplineFontFromCIDType1(SplineFont *sf, FontDict *fd,
 return( NULL );
     }
     if ( fd->cidstrs==NULL || fd->cidcnt==0 ) {
-	LogError( _("CID format doesn't contain what we expected it to.\n") );
+	LogError( _("CID format doesn't contain what we expected it to.") );
 	SplineFontFree(sf);
 return( NULL );
     }
@@ -5468,6 +5468,14 @@ return( NULL );
 return( new );
 }
 
+int DeviceTableFind(DeviceTable *adjust,int pixelsize) {
+    if ( adjust==NULL || adjust->corrections==NULL ||
+	    pixelsize<adjust->first_pixel_size ||
+	    pixelsize>adjust->last_pixel_size )
+        return( 0 );
+    return( adjust->corrections[pixelsize-adjust->first_pixel_size]);
+}
+
 void DeviceTableSet(DeviceTable *adjust, int size, int correction) {
     int len, i, j;
 
@@ -5998,6 +6006,9 @@ void SplineCharFree(SplineChar *sc) {
     if ( sc==NULL )
 return;
     SplineCharFreeContents(sc);
+#if !defined(_NO_PYTHON)
+    PyFF_FreeSC(sc);
+#endif
     chunkfree(sc,sizeof(SplineChar));
 }
 
@@ -6573,7 +6584,6 @@ return;
     free(sf->xuid);
     free(sf->cidregistry);
     free(sf->ordering);
-    if ( sf->styleMapFamilyName && sf->styleMapFamilyName[0]!='\0' ) { free(sf->styleMapFamilyName); sf->styleMapFamilyName = NULL; }
     MacFeatListFree(sf->features);
     /* We don't free the EncMap. That field is only a temporary pointer. Let the FontViewBase free it, that's where it really lives */
     // TODO: But that doesn't always get freed. The statement below causes double-frees, so we need to come up with better conditions.

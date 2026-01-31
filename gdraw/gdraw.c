@@ -33,10 +33,6 @@
 #include "gkeysym.h"
 #include "ustring.h"
 
-#if __Mac
-#  include <sys/select.h>
-#endif
-
 /* Functions for font metrics:
     rectangle of text (left side bearing of first char, right of last char)
 */
@@ -511,10 +507,6 @@ void GDrawDefaultFontMetrics(GWindow w,int *as, int *ds, int *ld) {
     (w->display->funcs->getFontMetrics)(w,_ggadget_default_font.fi,as,ds,ld);
 }
 
-enum gcairo_flags GDrawHasCairo(GWindow w) {
-return( (w->display->funcs->hasCairo)(w));
-}
-
 void GDrawPathStartNew(GWindow w) {
     (w->display->funcs->startNewPath)(w);
 }
@@ -726,21 +718,13 @@ int GDrawShortcutKeyMatches(const GEvent *e, unichar_t ch) {
 
 void GDrawDestroyDisplays() {
   if (screen_display != NULL) {
-#ifndef FONTFORGE_CAN_USE_GDK
-    _GXDraw_DestroyDisplay(screen_display);
-#else
     _GGDKDraw_DestroyDisplay(screen_display);
-#endif
     screen_display = NULL;
   }
 }
 
 void GDrawCreateDisplays(char *displayname,char *programname) {
-#ifndef FONTFORGE_CAN_USE_GDK
-    screen_display = _GXDraw_CreateDisplay(displayname,programname);
-#else
     screen_display = _GGDKDraw_CreateDisplay(displayname, programname);
-#endif
     if ( screen_display==NULL ) {
 	fprintf( stderr, "Could not open screen.\n" );
 #if __Mac

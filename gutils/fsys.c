@@ -48,6 +48,7 @@
 #endif
 
 static char *program_root = NULL;
+static bool devel_env = false;
 
 /**
  * \brief Removes the extension from a file path, if it exists.
@@ -743,6 +744,17 @@ void FindProgRoot(const char *prog) {
     }
 #endif
 
+/* If the fontforge binary path includes "build" or "target" according to platform,
+   we are in the development mode. */
+#if defined(__MINGW32__)
+    char* dev_dir_test = "target";
+#else
+    char* dev_dir_test = "build";
+#endif
+    if (strstr(program_root, dev_dir_test)) {
+	devel_env = true;
+    }
+
     g_free(rprog);
     TRACE("Program root: %s\n", program_root);
 }
@@ -756,9 +768,17 @@ const char *getShareDir(void) {
 }
 
 const char *getLocaleDir(void) {
-    static char *localedir=NULL;
+    static char *localedir = NULL;
     if (!localedir) {
-        localedir = smprintf("%s/share/locale", program_root);
+	if (devel_env) {
+#if defined(__MINGW32__)
+            localedir = smprintf("%s/share/locale", program_root);
+#else
+            localedir = smprintf("%s/po", program_root);
+#endif
+	} else {
+            localedir = smprintf("%s/share/locale", program_root);
+	}
     }
     return localedir;
 }
@@ -766,7 +786,18 @@ const char *getLocaleDir(void) {
 const char *getPixmapDir(void) {
     static char *pixmapdir=NULL;
     if (!pixmapdir) {
-        pixmapdir = smprintf("%s/pixmaps", getShareDir());
+	if (devel_env) {
+	    /* GUI_THEME macro is imported from the CMake ${GUI_THEME} variable */
+#if defined(__MINGW32__)
+            char *theme_src = smprintf("%s/../../work/mingw64/fontforge/fontforgeexe/pixmaps/%s", program_root, GUI_THEME);
+#else
+            char *theme_src = smprintf("%s/../fontforgeexe/pixmaps/%s", program_root, GUI_THEME);
+#endif
+            pixmapdir = GFileGetAbsoluteName(theme_src);
+            free(theme_src);
+	} else {
+            pixmapdir = smprintf("%s/pixmaps", getShareDir());
+	}
     }
     return pixmapdir;
 }

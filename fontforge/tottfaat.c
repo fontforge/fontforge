@@ -198,7 +198,7 @@ static void ttf_dumpsfkerns(struct alltabs *at, SplineFont *sf, int tupleIndex, 
 return;
 
     if ( tupleIndex==-1 ) tupleIndex = 0;
-    
+
     for ( isv=0; isv<2; ++isv ) {
 	c = isv ? kcnt.vcnt : kcnt.cnt;
 	bmax = isv ? kcnt.vsubs : kcnt.hsubs;
@@ -296,14 +296,6 @@ return;
 	    /* If we are here, we must be using version 1 */
 	    uint32_t len_pos = ftell(at->kern), pos;
 	    uint16_t *class1, *class2;
-	    int first_cnt = kc->first_cnt;
-
-	    /* OpenType fonts can actually have a set of glyphs in class[0] of*/
-	    /*  the first class. This happens when there are glyphs in the */
-	    /*  coverage table which are not in any of the classes. Otherwise */
-	    /*  class 0 is sort of useless in opentype */
-	    if ( kc->firsts[0]!=NULL )
-		++first_cnt;
 
 	    putlong(at->kern,0); /* subtable length */
 	    putshort(at->kern,(isv?0x8002:2)|	/* format 2, horizontal/vertical flags (coverage) */
@@ -1427,7 +1419,7 @@ return( NULL );
     ret[scnt] = 0;
 return( ret );
 }
-    
+
 int Macable(SplineFont *sf, OTLookup *otl) {
     int ft, fs;
     FeatureScriptLangList *features;
@@ -1974,7 +1966,7 @@ return;
 	morxDumpChain(at,features,features_by_type,i,temp);
     fclose(temp);
     morxfeaturesfree(features_by_type);
-    
+
     at->morxlen = ftell(at->morx);
     if ( at->morxlen&1 )
 	putc('\0',at->morx);
@@ -2311,7 +2303,7 @@ int16_t *PerGlyphDefBaseline(SplineFont *sf,int *def_baseline) {
 	if ( bsln!=0xffff )
 	    ++counts[bsln];
     }
-    
+
     bestbsln = 0;
     bestcnt = 0;
     any = 0;
@@ -2436,7 +2428,7 @@ return;
 	putshort(at->bsln,0);
     free(baselines);
 }
-	
+
 /* ************************************************************************** */
 /* *************************    utility routines    ************************* */
 /* ************************************************************************** */
@@ -2465,7 +2457,7 @@ return( true );
 	}
     *featureType = (tag >> 16);
     *featureSetting = (tag & 0xFFFF);
-	/* Ranges taken from Apple Font Registry. An OT tag without a 
+	/* Ranges taken from Apple Font Registry. An OT tag without a
     corresponding mac feature should fail this test.*/
     if (*featureType >= 0 && *featureType < 105 && *featureSetting < 16)
         return ( true );
@@ -2486,9 +2478,9 @@ static struct feature *featureFromTag(SplineFont *sf, uint32_t tag ) {
         feat->mf = FindMacFeature(sf,feat->featureType,&feat->smf);
         feat->ms = FindMacSetting(sf,feat->featureType,feat->featureSetting,&feat->sms);
         feat->needsOff = feat->mf!=NULL && !feat->mf->ismutex;
-        feat->vertOnly = tag==CHR('v','r','t','2') || tag==CHR('v','k','n','a');    
+        feat->vertOnly = tag==CHR('v','r','t','2') || tag==CHR('v','k','n','a');
     }
-    
+
     return( feat );
 }
 
@@ -2512,7 +2504,7 @@ static struct feature *featureFromSubtable(SplineFont *sf, struct lookup_subtabl
   }
   return( featureFromTag(sf,fl->featuretag));
 }
-    
+
 static int PSTHasTag(PST *pst, uint32_t tag) {
     FeatureScriptLangList *fl;
 

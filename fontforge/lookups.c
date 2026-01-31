@@ -394,7 +394,7 @@ return( sl );
 return( NULL );
 }
 
-uint32_t *SFScriptsInLookups(SplineFont *sf,int gpos) {
+uint32_t *SFScriptsInLookups(SplineFont *sf) {
     /* Presumes that either SFFindUnusedLookups or SFFindClearUnusedLookupBits */
     /*  has been called first */
     /* Since MS will sometimes ignore a script if it isn't found in both */
@@ -429,7 +429,7 @@ better make sure that both tables have the same script set.
 (Sergey says we could optimize a little: A Latin GSUB table will run without
 a GPOS, but he says the GPOS won't work without a GSUB.)
 */
-    int cnt=0, tot=0, i;
+    int gpos, cnt=0, tot=0, i;
     uint32_t *scripts = NULL;
     OTLookup *test;
     FeatureScriptLangList *fl;
@@ -709,44 +709,51 @@ return( false );
 return( true );
 }
 
-SplineChar **SFGlyphsWithPSTinSubtable(SplineFont *sf,struct lookup_subtable *subtable) {
-    uint8_t *used = calloc(sf->glyphcnt,sizeof(uint8_t));
-    SplineChar **glyphs, *sc;
-    int i, k, gid, cnt;
+void SFCollectSubtableMap(SplineFont *sf,cpp_SubtableMap* map) {
+    SplineChar *sc;
+    int i, k;
     KernPair *kp;
     PST *pst;
-    int ispair = subtable->lookup->lookup_type == gpos_pair;
-    int isliga = subtable->lookup->lookup_type == gsub_ligature;
 
     for ( i=0; i<sf->glyphcnt; ++i ) if ( SCWorthOutputting(sc = sf->glyphs[i]) ) {
-	if ( ispair ) {
-	    for ( k=0; k<2; ++k ) {
-		for ( kp= k ? sc->kerns : sc->vkerns; kp!=NULL ; kp=kp->next ) {
-		    if ( !SCWorthOutputting(kp->sc))
-		continue;
-		    if ( kp->subtable == subtable ) {
-			used[i] = true;
-    goto continue_;
-		    }
-		}
+	for ( k=0; k<2; ++k ) {
+	    for ( kp= k ? sc->kerns : sc->vkerns; kp!=NULL ; kp=kp->next ) {
+		if ( !SCWorthOutputting(kp->sc))
+		    continue;
+		SubtableMap_add_kp(map, kp->subtable, i, kp);
 	    }
 	}
 	for ( pst=sc->possub; pst!=NULL; pst=pst->next ) {
-	    if ( pst->subtable == subtable && PSTValid(sf,pst)) {
-		if ( !isliga ) {
-		    used[i] = true;
-    goto continue_;
-		} else {
-		    gid = LigaturesFirstComponentGID(sf,pst->u.lig.components);
-		    pst->u.lig.lig = sc;
-		    if ( gid!=-1 )
-			used[gid] = true;
-		    /* can't continue here. ffi might be "f+f+i" and "ff+i" */
-		    /*  and we need to mark both "f" and "ff" as used */
-		}
+	    if (PSTValid(sf,pst)) {
+		SubtableMap_add_pst(map, pst->subtable, i, pst);
 	    }
 	}
-    continue_: ;
+    }
+}
+
+SplineChar **SFGlyphsWithPSTinSubtable(SplineFont *sf,struct lookup_subtable *subtable, cpp_SubtableMap* map) {
+    uint8_t *used = calloc(sf->glyphcnt,sizeof(uint8_t));
+    SplineChar **glyphs;
+    int i, gid, cnt;
+    int isliga = subtable->lookup->lookup_type == gsub_ligature;
+    struct kp_list* kp_it, *kps = SubtableMap_get_kp_list(map, subtable);
+    struct pst_list* pst_it, *psts = SubtableMap_get_pst_list(map, subtable);
+
+    for (kp_it = kps; kp_it && kp_it->kp; ++kp_it) {
+	used[kp_it->gid] = true;
+    }
+
+    for (pst_it = psts; pst_it && pst_it->pst; ++pst_it) {
+	if ( !isliga ) {
+	    used[pst_it->gid] = true;
+	} else {
+	    gid = LigaturesFirstComponentGID(sf,pst_it->pst->u.lig.components);
+	    pst_it->pst->u.lig.lig = sf->glyphs[pst_it->gid];
+	    if ( gid!=-1 )
+		used[gid] = true;
+	    /* can't continue here. ffi might be "f+f+i" and "ff+i" */
+	    /*  and we need to mark both "f" and "ff" as used */
+	}
     }
 
     for ( i=cnt=0 ; i<sf->glyphcnt; ++i )
@@ -1428,6 +1435,7 @@ static struct {
     { N_("Script|Batak"), CHR('b','a','t','k') },
     { N_("Script|Bengali"), CHR('b','e','n','g') },
     { N_("Script|Bengali2"), CHR('b','n','g','2') },
+    { N_("Beria Erfe"), CHR('b','e','r','f') },
     { N_("Bhaiksuki"), CHR('b','h','k','s') },
     { N_("Bopomofo"), CHR('b','o','p','o') },
     { NU_("Brāhmī"), CHR('b','r','a','h') },
@@ -1458,6 +1466,7 @@ static struct {
     { N_("Elbasan"), CHR('e','l','b','a') },
     { N_("Elymaic"), CHR('e','l','y','m') },
     { N_("Script|Ethiopic"), CHR('e','t','h','i') },
+    { N_("Garay"), CHR('g','a','r','a') },
     { N_("Script|Georgian"), CHR('g','e','o','r') },
     { N_("Glagolitic"), CHR('g','l','a','g') },
     { N_("Gothic"), CHR('g','o','t','h') },
@@ -1468,6 +1477,7 @@ static struct {
     { N_("Gunjala Gondi"), CHR('g','o','n','g') },
     { N_("Gurmukhi"), CHR('g','u','r','u') },
     { N_("Gurmukhi2"), CHR('g','u','r','2') },
+    { N_("Gurung Khema"), CHR('g','u','k','h') },
     { N_("Hangul Jamo"), CHR('j','a','m','o') },
     { N_("Hangul"), CHR('h','a','n','g') },
     { N_("Hanifi Rohingya"), CHR('r','o','h','g') },
@@ -1489,6 +1499,7 @@ static struct {
     { N_("Script|Khmer"), CHR('k','h','m','r') },
     { N_("Khojki"), CHR('k','h','o','j') },
     { N_("Khudawadi"), CHR('s','i','n','d') },
+    { N_("Kirat Rai"), CHR('k','r','a','i') },
     { N_("Script|Lao"), CHR('l','a','o',' ') },
     { N_("Script|Latin"), CHR('l','a','t','n') },
     { NU_("Lepcha (Róng)"), CHR('l','e','p','c') },
@@ -1530,6 +1541,7 @@ static struct {
     { N_("Nyiakeng Puachue Hmong"), CHR('h','m','n','p') },
     { N_("Ogham"), CHR('o','g','a','m') },
     { N_("Ol Chiki"), CHR('o','l','c','k') },
+    { N_("Ol Onal"), CHR('o','n','a','o') },
     { N_("Old Hungarian"), CHR('h','u','n','g') },
     { N_("Old Italic (Etruscan, Oscan, etc.)"), CHR('i','t','a','l') },
     { N_("Old North Arabian"), CHR('n','a','r','b') },
@@ -1555,6 +1567,7 @@ static struct {
     { N_("Sharada"), CHR('s','h','r','d') },
     { N_("Shavian"), CHR('s','h','a','w') },
     { N_("Siddham"), CHR('s','i','d','d') },
+    { N_("Script|Sidetic"), CHR('s','i','d','t') },
     { N_("Sutton SignWriting"), CHR('s','g','n','w') },
     { N_("Script|Sinhala"), CHR('s','i','n','h') },
     { N_("Sogdian"), CHR('s','o','g','d') },
@@ -1562,6 +1575,7 @@ static struct {
     { N_("Soyombo"), CHR('s','o','y','o') },
     { N_("Script|Sumero-Akkadian Cuneiform"), CHR('x','s','u','x') },
     { N_("Script|Sundanese"), CHR('s','u','n','d') },
+    { N_("Script|Sunuwar"), CHR('s','u','n','u') },
     { N_("Script|Syloti Nagri"), CHR('s','y','l','o') },
     { N_("Script|Syriac"), CHR('s','y','r','c') },
     { N_("Script|Tagalog"), CHR('t','g','l','g') },
@@ -1569,6 +1583,7 @@ static struct {
     { N_("Tai Le"), CHR('t','a','l','e') },
     { N_("Tai Tham"), CHR('l','a','n','a') },
     { N_("Tai Viet"), CHR('t','a','v','t') },
+    { N_("Script|Tai Yo"), CHR('t','a','y','o') },
     { N_("Takri"), CHR('t','a','k','r') },
     { N_("Tangsa"), CHR('t','n','s','a') },
     { N_("Script|Tamil"), CHR('t','a','m','l') },
@@ -1581,7 +1596,10 @@ static struct {
     { N_("Script|Tibetan"), CHR('t','i','b','t') },
     { N_("Tifinagh (Berber)"), CHR('t','f','n','g') },
     { N_("Tirhuta"), CHR('t','i','r','h') },
+    { N_("Todhri"), CHR('t','o','d','r') },
+    { N_("Tolong Siki"), CHR('t','o','l','s') },
     { N_("Toto"), CHR('t','o','t','o') },
+    { N_("Tulu-Tigalari"), CHR('t','u','t','g') },
     { N_("Script|Ugaritic"), CHR('u','g','a','r') },
     { N_("Script|Vai"), CHR('v','a','i',' ') },
     { N_("Vithkuqi"), CHR('v','i','t','h') },
@@ -3840,7 +3858,7 @@ return( 0 );
 /*  a transformed string with substitutions applied and containing positioning */
 /*  info */
 struct opentype_str *ApplyTickedFeatures(SplineFont *sf,uint32_t *flist, uint32_t script, uint32_t lang,
-	int pixelsize, SplineChar **glyphs) {
+	bool gpos_only, int pixelsize, SplineChar **glyphs) {
     int isgpos, cnt;
     OTLookup *otl;
     struct lookup_data data;
@@ -3861,8 +3879,8 @@ struct opentype_str *ApplyTickedFeatures(SplineFont *sf,uint32_t *flist, uint32_
     data.pixelsize = pixelsize;
     data.scale = pixelsize/(double) (sf->ascent+sf->descent);
 
-    /* Indic glyph reordering???? */
-    for ( isgpos=0; isgpos<2; ++isgpos ) {
+    isgpos = gpos_only ? 1 : 0;
+    for ( ; isgpos<2; ++isgpos ) {
 	/* Check that this table has an entry for this language */
 	/*  if it doesn't use the default language */
 	/* GPOS/GSUB may have different language sets, so we must be prepared */

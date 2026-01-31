@@ -34,6 +34,7 @@
 #include "utype.h"
 
 #include <assert.h>
+#include <time.h>
 
 extern GBox _ggadget_Default_Box;
 #define ACTIVE_BORDER   (_ggadget_Default_Box.active_border)
@@ -495,7 +496,7 @@ static void _LogError(const char *format,va_list ap) {
     *npt='\0';
 
     if ( no_windowing_ui || screen_display==NULL ) {
-	str = utf82def_copy(nbuffer);
+	str = utf82def_copy_safe(nbuffer);
 	fprintf(stderr,"%s",str);
 	if ( str[strlen(str)-1]!='\n' )
 	    putc('\n',stderr);
@@ -540,22 +541,9 @@ static char *UI_saveas_file(const char *title, const char *defaultfile,
 return( gwwv_save_filename(title,defaultfile,initial_filter) );
 }
 
-static void tinysleep(int microsecs) {
-#if !defined(__MINGW32__)
-    fd_set none;
-    struct timeval timeout;
-
-    FD_ZERO(&none);
-    memset(&timeout,0,sizeof(timeout));
-    timeout.tv_usec = microsecs;
-
-    select(1,&none,&none,&none,&timeout);
-#endif
-}
-
 static void allow_events(void) {
     GDrawSync(NULL);
-    tinysleep(100);
+    nanosleep(&(const struct timespec){.tv_nsec = 100000}, NULL);
     GDrawProcessPendingEvents(NULL);
 }
 

@@ -4,9 +4,9 @@ set -ex -o pipefail
 SCRIPT_BASE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 APPDIR=$1
-export VERSION=${2:0:7} # linuxdeployqt uses this for naming the file
+export LINUXDEPLOY_OUTPUT_VERSION=${2:0:7} # linuxdeploy uses this for naming the file
 
-if [ -z "$APPDIR" ] || [ -z "$VERSION" ]; then
+if [ -z "$APPDIR" ] || [ -z "$LINUXDEPLOY_OUTPUT_VERSION" ]; then
     echo "Usage: `basename $0` appdir version"
     echo "  appdir is the location to the dumped location that cmake generated"
     echo "  version is the version hash of this build"
@@ -15,19 +15,29 @@ if [ -z "$APPDIR" ] || [ -z "$VERSION" ]; then
     exit 1
 fi
 
-echo "Starting appimage build, folder is $APPDIR with version $VERSION"
+echo "Starting appimage build, folder is $APPDIR with version $LINUXDEPLOY_OUTPUT_VERSION"
+
+# AppImage still needs libfuse2. See https://github.com/AppImage/AppImageKit/issues/1235.
+sudo apt-get install -y libfuse2
 
 # TODO: AppStream metainfo
 PYVER=$(ldd $APPDIR/usr/bin/fontforge | grep -Eom1 'python[0-9\.]+[0-9]+' | head -1 | cut -c 7-)
 echo "FontForge built against Python $PYVER"
 
-( cd $APPDIR ; dpkg -x /var/cache/apt/archives/libpython${PYVER}-minimal*.deb . )
-( cd $APPDIR ; dpkg -x /var/cache/apt/archives/libpython${PYVER}-stdlib*.deb . )
+# In Ubuntu 20-22 the libpython3-minimal is not automatically included with the default Python installation.
+# In Ubuntu 24.04 this doesn't seem to be necessary anymore.
+( cd $APPDIR ; apt-get download -y libpython${PYVER}-minimal ; dpkg -x libpython${PYVER}-minimal*.deb . )
+( cd $APPDIR ; apt-get download -y libpython${PYVER}-stdlib ; dpkg -x libpython${PYVER}-stdlib*.deb . )
 "python${PYVER}" -m pip install -I --target "$APPDIR/usr/lib/python${PYVER}/dist-packages" setuptools
 
-if [ ! -f linuxdeployqt.AppImage ]; then
-    curl -Lo linuxdeployqt.AppImage "https://github.com/probonopd/linuxdeployqt/releases/download/continuous/linuxdeployqt-continuous-x86_64.AppImage"
-    chmod +x linuxdeployqt.AppImage
+if [ ! -f linuxdeploy.AppImage ]; then
+    curl -Lo linuxdeploy.AppImage "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage"
+    chmod +x linuxdeploy.AppImage
+fi
+
+if [ ! -f linuxdeploy-plugin-gtk.sh ]; then
+    curl -Lo linuxdeploy-plugin-gtk.sh "https://raw.githubusercontent.com/linuxdeploy/linuxdeploy-plugin-gtk/master/linuxdeploy-plugin-gtk.sh"
+    chmod +x linuxdeploy-plugin-gtk.sh
 fi
 
 if [ ! -f appstream-util.AppImage ]; then
@@ -37,14 +47,15 @@ fi
 
 ./appstream-util.AppImage validate-strict $APPDIR/usr/share/metainfo/org.fontforge.FontForge.appdata.xml
 
-./linuxdeployqt.AppImage $APPDIR/usr/share/applications/*.desktop -bundle-non-qt-libs #-unsupported-allow-new-glibc
-# Manually invoke appimagetool so that the custom AppRun stays intact
-./linuxdeployqt.AppImage --appimage-extract
+export DEPLOY_GTK_VERSION=3
 
-export PATH=$(readlink -f ./squashfs-root/usr/bin):$PATH
-rm $APPDIR/AppRun
-install -m 755 $SCRIPT_BASE/../../../Packaging/AppDir/AppRun $APPDIR/AppRun # custom AppRun
-ARCH=x86_64 ./squashfs-root/usr/bin/appimagetool -g $APPDIR/
-find $APPDIR -executable -type f -exec ldd {} \; | grep " => /usr" | cut -d " " -f 2-3 | sort | uniq
+# linuxdeploy automatically detectes and uses custom AppRun
+install -m 755 $SCRIPT_BASE/../../../Packaging/AppDir/AppRun $APPDIR/AppRun
 
-mv FontForge*.AppImage FontForge-$(date +%Y-%m-%d)-$VERSION-x86_64.AppImage
+./linuxdeploy.AppImage --appdir $APPDIR --plugin gtk --output appimage -i ../desktop/tango/scalable/org.fontforge.FontForge.svg -d ../desktop/org.fontforge.FontForge.desktop
+
+# List remaining external dependencies for debug purposes
+./linuxdeploy.AppImage --appimage-extract
+find $APPDIR -executable -type f -exec ldd {} \; | grep " => /lib" | cut -d " " -f 2-3 | sort | uniq
+
+mv FontForge*.AppImage FontForge-$(date +%Y-%m-%d)-$LINUXDEPLOY_OUTPUT_VERSION-x86_64.AppImage
