@@ -265,7 +265,6 @@ target_link_libraries(fontforge
     shapers
     Freetype::Freetype
     LibXml2::LibXml2
-    GLIB::GLIB
     Intl::Intl
   PRIVATE
     MathLib::MathLib
@@ -273,6 +272,11 @@ target_link_libraries(fontforge
     ZLIB::ZLIB
     mINI
 )
+
+# GLIB is only needed for GUI builds
+if(TARGET GLIB::GLIB)
+  target_link_libraries(fontforge PUBLIC GLIB::GLIB)
+endif()
 
 if(APPLE)
   target_link_libraries(fontforge

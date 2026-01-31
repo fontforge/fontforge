@@ -35,7 +35,6 @@
 #include "cvimages.h"
 #include "cvundoes.h"
 #include "encoding.h"
-#include "ffglib.h"
 #include "ffglib_compat.h"
 #include "ffprocess.h"
 #include "fontforge.h"

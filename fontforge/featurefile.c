@@ -32,7 +32,6 @@
 #include "featurefile.h"
 
 #include "encoding.h"
-#include "ffglib.h"
 #include "ffglib_compat.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
