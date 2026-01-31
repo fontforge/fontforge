@@ -763,7 +763,7 @@ void DumpPfaEditEncodings(void) {
 
     for ( item=enclist; item!=NULL && item->builtin; item=item->next );
     if ( item==NULL ) {
-	unlink(getPfaEditEncodings());
+	ff_unlink(getPfaEditEncodings());
 return;
     }
 

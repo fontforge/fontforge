@@ -30,7 +30,7 @@
 #include "autotrace.h"
 
 #include "cvundoes.h"
-#include "ffglib.h"
+#include "ffglib_compat.h"
 #include "fontforgevw.h"
 #include "fvimportbdf.h"
 #include "gfile.h"
@@ -333,8 +333,8 @@ void _SCAutoTrace(SplineChar *sc, int layer, char **args) {
 	    fclose(ps);
 	}
 
-	unlink(tempname_in);
-	unlink(tempname_out);
+	ff_unlink(tempname_in);
+	ff_unlink(tempname_out);
     }
     if ( changed )
 	SCCharChangedUpdate(sc,layer);
@@ -420,7 +420,7 @@ return;
 	    dup2(fileno(ps),1);
 	    if ( strrchr(tempname,'/')!=NULL ) {	/* See comment above */
 		*strrchr(tempname,'/') = '\0';
-		chdir(tempname);
+		ff_chdir(tempname);
 	    }
 	    exit(execvp(prog,(char * const *)arglist)==-1);	/* If exec fails, then die */
 	} else if ( pid!=-1 ) {
@@ -451,7 +451,7 @@ return;
 	}
 	fclose(ps);
 	close(fd);
-	unlink(tempname);		/* Might not be needed, but probably is*/
+	ff_unlink(tempname);		/* Might not be needed, but probably is*/
     }
     if ( changed )
 	SCCharChangedUpdate(sc,layer);
@@ -620,7 +620,7 @@ return( NULL );
 	    strcat(buffer,prog);
 	    /* Under cygwin, applying access to "potrace" will find "potrace.exe" */
 	    /*  no need for special check to add ".exe" */
-	    if ( access(buffer,X_OK)!=-1 ) {
+	    if ( ff_access(buffer,X_OK)!=-1 ) {
 return( buffer );
 	    }
 	}
@@ -727,11 +727,11 @@ static void cleantempdir(char *tempdir) {
 	closedir(temp);
 	todelete[cnt] = NULL;
 	for ( cnt=0; todelete[cnt]!=NULL; ++cnt ) {
-	    unlink(todelete[cnt]);
+	    ff_unlink(todelete[cnt]);
 	    free(todelete[cnt]);
 	}
     }
-    rmdir(tempdir);
+    ff_rmdir(tempdir);
 }
 
 static char *MfArgs(void) {
@@ -795,7 +795,7 @@ return( NULL );
     if ( (pid=fork())==0 ) {
 	/* Child */
 	int fd;
-	chdir(tempdir);
+	ff_chdir(tempdir);
 	if ( !mf_showerrors ) {
 	    close(1);		/* mf generates a lot of verbiage to stdout. Throw it away */
 	    fd = open("/dev/null",O_WRONLY);

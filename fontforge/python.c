@@ -8818,7 +8818,7 @@ static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args,
     locfilename = utf82def_copy(filename);
 
     /* Check if the file exists and is readable */
-    if ( access(locfilename,R_OK)!=0 ) {
+    if ( ff_access(locfilename,R_OK)!=0 ) {
 	PyErr_SetFromErrnoWithFilename(PyExc_IOError,locfilename);
 	free(locfilename);
 	return NULL;

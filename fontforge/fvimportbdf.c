@@ -33,6 +33,7 @@
 #include "bvedit.h"
 #include "cvimages.h"
 #include "encoding.h"
+#include "ffglib_compat.h"
 #include "ffprocess.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
@@ -2207,7 +2208,7 @@ static BDFFont *_SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback
     ret = SFImportBDF(sf, filename, ispk, toback, map);
 
     if ( temp != NULL ) {
-	unlink(temp);
+	ff_unlink(temp);
 	free(temp);
     }
     return( ret );

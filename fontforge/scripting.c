@@ -1599,7 +1599,7 @@ static void bFileAccess(Context *c) {
 	return;
     }
     c->return_val.type = v_int;
-    c->return_val.u.ival = access(c->a.vals[1].u.sval,c->a.argc==3 ? c->a.vals[2].u.ival : R_OK );
+    c->return_val.u.ival = ff_access(c->a.vals[1].u.sval,c->a.argc==3 ? c->a.vals[2].u.ival : R_OK );
 }
 
 static void bLoadFileToString(Context *c) {

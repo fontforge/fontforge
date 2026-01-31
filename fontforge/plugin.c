@@ -88,7 +88,7 @@ static char *GetPluginDirName() {
 
     buf = smprintf("%s/plugin", dir);
     free(dir);
-    if (access(buf, F_OK) == -1)
+    if (ff_access(buf, F_OK) == -1)
         if (GFileMkDir(buf, 0755) == -1) {
             LogError(_("Could not create plugin directory '%s'"), buf);
             return (NULL);
