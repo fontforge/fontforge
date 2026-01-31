@@ -1,5 +1,8 @@
 # Distributed under the original FontForge BSD 3-clause license
 
+# Compile as C++ for GLib removal migration
+set_source_files_properties(dlist.c PROPERTIES LANGUAGE CXX)
+
 add_library(gutils OBJECT
   dlist.c
   fsys.c
