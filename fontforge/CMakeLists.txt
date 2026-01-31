@@ -1,5 +1,28 @@
 # Distributed under the original FontForge BSD 3-clause license
 
+# Compile as C++ for GLib removal migration
+# Start with files that have no malloc casts needed
+set_source_files_properties(
+  activeinui.c
+  autosave.c
+  bezctx_ff.c
+  clipnoui.c
+  crctab.c
+  dumpbdf.c
+  flaglist.c
+  fvmetrics.c
+  mem.c
+  nouiutil.c
+  ofl.c
+  pua.c
+  splinefit.c
+  splineorder2.c
+  splinerefigure.c
+  utanvec.c
+  zapfnomen.c
+  PROPERTIES LANGUAGE CXX
+)
+
 set(FONTFORGE_NOINST_HEADERS
   asmfpst.h
   autohint.h
