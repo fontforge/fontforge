@@ -132,6 +132,9 @@ typedef struct gpoint {
 
 #define GPOINT_EMPTY { 0, 0 }
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 extern GImage *GImageCreate(enum image_type type, int32_t width, int32_t height);
 extern GImage *_GImage_Create(enum image_type type, int32_t width, int32_t height);
@@ -190,5 +193,9 @@ extern void gColor2Hslrgb(struct hslrgb *col,Color from);
 extern void gColor2Hslrgba(struct hslrgba *col,Color from);
 extern Color gHslrgb2Color(struct hslrgb *col);
 extern Color gHslrgba2Color(struct hslrgba *col);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_GIMAGE_H */
