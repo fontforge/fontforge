@@ -1912,7 +1912,7 @@ return;					/* Nothing changed */
 
     missing = 0;
     for ( tpt=pt; tpt<ept; ++tpt )
-	if ( *tpt>=FAKE_UNICODE_BASE && *tpt<=FAKE_UNICODE_BASE+mv->sf->glyphcnt )
+	if ( *tpt>=FAKE_UNICODE_BASE && *tpt<FAKE_UNICODE_BASE+mv->sf->glyphcnt )
 	    /* That's ok */;
 	else if ( SFFindSlot(mv->sf,mv->fv->b.map,*tpt,NULL)==-1 )
 	    ++missing;
