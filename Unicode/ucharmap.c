@@ -100,12 +100,12 @@ char *u2def_strncpy(char *to, const unichar_t *ufrom, size_t n) {
 static void* do_iconv(iconv_t cd, const void* inbuf, size_t incount, size_t inunitsize, size_t outunitsize) {
     size_t outbytes = (incount + 1) * outunitsize, outremain = outbytes;
     incount *= inunitsize;
-    char *buf = malloc(outbytes), *dst = buf;
+    char *buf = (char*) malloc(outbytes), *dst = buf;
 
     while (incount > 0 && buf) {
         if (iconv(cd, (iconv_arg2_t)&inbuf, &incount, &dst, &outremain) == (size_t)-1) {
             if (errno == E2BIG) {
-                buf = realloc(buf, outbytes*2);
+                buf = (char*) realloc(buf, outbytes*2);
                 if (buf) {
                     dst = buf + outbytes;
                     outremain += outbytes;
@@ -122,7 +122,7 @@ static void* do_iconv(iconv_t cd, const void* inbuf, size_t incount, size_t inun
         if (outremain < outunitsize) {
             outbytes += outunitsize - outremain;
             outremain = outunitsize;
-            buf = realloc(buf, outbytes);
+            buf = (char*) realloc(buf, outbytes);
         }
         if (buf) {
             memset(buf + (outbytes - outremain), 0, outremain);
@@ -137,7 +137,7 @@ unichar_t *def2u_copy(const char *from) {
         return NULL;
     else if (is_local_encoding_utf8)
         return utf82u_copy(from);
-    return do_iconv(to_unicode, from, strlen(from), sizeof(from[0]), sizeof(unichar_t));
+    return (unichar_t*) do_iconv(to_unicode, from, strlen(from), sizeof(from[0]), sizeof(unichar_t));
 }
 
 char *u2def_copy(const unichar_t *ufrom) {
@@ -145,7 +145,7 @@ char *u2def_copy(const unichar_t *ufrom) {
         return NULL;
     else if (is_local_encoding_utf8)
         return u2utf8_copy(ufrom);
-    return do_iconv(from_unicode, ufrom, u_strlen(ufrom), sizeof(ufrom[0]), sizeof(char));
+    return (char*) do_iconv(from_unicode, ufrom, u_strlen(ufrom), sizeof(ufrom[0]), sizeof(char));
 }
 
 char *def2utf8_copy(const char *from) {
@@ -153,7 +153,7 @@ char *def2utf8_copy(const char *from) {
         return NULL;
     else if (is_local_encoding_utf8)
         return copy(from);
-    return do_iconv(to_utf8, from, strlen(from), sizeof(from[0]), sizeof(char));
+    return (char*) do_iconv(to_utf8, from, strlen(from), sizeof(from[0]), sizeof(char));
 }
 
 char *utf82def_copy(const char *ufrom) {
@@ -161,7 +161,7 @@ char *utf82def_copy(const char *ufrom) {
         return NULL;
     else if (is_local_encoding_utf8)
         return copy(ufrom);
-    return do_iconv(from_utf8, ufrom, strlen(ufrom), sizeof(ufrom[0]), sizeof(char));
+    return (char*) do_iconv(from_utf8, ufrom, strlen(ufrom), sizeof(ufrom[0]), sizeof(char));
 }
 
 char *utf82def_copy_safe(const char *ufrom) {
@@ -172,7 +172,7 @@ char *utf82def_copy_safe(const char *ufrom) {
     ret_val = utf82def_copy(ufrom);
     if (ret_val == NULL) {
         // This should never fail, unless iconv() is severely broken.
-        ret_val = do_iconv(from_utf8_safe, ufrom, strlen(ufrom), sizeof(ufrom[0]), sizeof(char));
+        ret_val = (char*) do_iconv(from_utf8_safe, ufrom, strlen(ufrom), sizeof(ufrom[0]), sizeof(char));
     }
     if (ret_val == NULL) {
         // We should never get here.

@@ -12,7 +12,7 @@ add_library(gunicode OBJECT
 )
 
 # Compile as C++ for GLib removal migration
-set_source_files_properties(memory.c ustring.c PROPERTIES LANGUAGE CXX)
+set_source_files_properties(memory.c ucharmap.c ustring.c PROPERTIES LANGUAGE CXX)
 
 if(BUILD_SHARED_LIBS)
   set_property(TARGET gunicode PROPERTY POSITION_INDEPENDENT_CODE ON)
