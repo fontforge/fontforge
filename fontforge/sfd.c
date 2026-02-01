@@ -91,7 +91,14 @@ static const char *spreads[] = { "pad", "reflect", "repeat", NULL };
 
 int prefRevisionsToRetain = 32;
 #ifndef _NO_LIBPNG
+/* Needs C linkage since it's referenced from noprefs.c (compiled as C) */
+#ifdef __cplusplus
+extern "C" {
+#endif
 int WritePNGInSFD = true;
+#ifdef __cplusplus
+}
+#endif
 #endif
 
 #define SFD_PTFLAG_TYPE_MASK          0x3

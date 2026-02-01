@@ -62,9 +62,17 @@
         PyObject_HEAD_INIT(type) size,
 #endif
 
+/* These variables are defined in activeinui.c (compiled as C), so they need
+ * extern "C" linkage when referenced from C++ code like python.c */
+#ifdef __cplusplus
+extern "C" {
+#endif
 extern SplineChar *sc_active_in_ui;
 extern FontViewBase *fv_active_in_ui;
 extern int layer_active_in_ui;
+#ifdef __cplusplus
+}
+#endif
 
 extern void FfPy_Replace_MenuItemStub(PyObject *(*func)(PyObject *,PyObject *));
 extern int PyFF_ConvexNibID(const char *);
