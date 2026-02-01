@@ -1781,7 +1781,7 @@ return( cnt );
 
 static double CaseMajorVerticalStemWidth(SplineFont *sf, int layer,
 	unichar_t *list, double tan_ia) {
-    const int MW=100;
+    enum { MW = 100 };
     struct widths { double width, total; } widths[MW];
     int cnt,i,j;
     double width, sum, total;
@@ -6862,7 +6862,7 @@ void MakeItalic(FontViewBase *fv,CharViewBase *cv, ItalicInfo *ii) {
 void InitXHeightInfo(SplineFont *sf, int layer, struct xheightinfo *xi) {
     int i, j, cnt, besti;
     double val;
-    const int MW=100;
+    enum { MW = 100 };
     struct widths { double width, total; } widths[MW];
 
     memset(xi,0,sizeof(*xi));
