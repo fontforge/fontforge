@@ -60,7 +60,7 @@
 #include "ustring.h"
 #include "utype.h"
 
-#include <dirent.h>
+#include "ffdir.h"
 #include <limits.h>		/* For NAME_MAX or _POSIX_NAME_MAX */
 #include <locale.h>
 #include <math.h>
@@ -3023,22 +3023,22 @@ return( err );
 }
 
 static void SFDirClean(char *filename) {
-    DIR *dir;
-    struct dirent *ent;
+    FF_Dir *dir;
+    FF_DirEntry *ent;
     char *buffer, *pt;
 
     ff_unlink(filename);		/* Just in case it's a normal file, it shouldn't be, but just in case... */
-    dir = opendir(filename);
+    dir = ff_opendir(filename);
     if ( dir==NULL )
 return;
     buffer = (char *)malloc(strlen(filename)+1+NAME_MAX+1);
-    while ( (ent = readdir(dir))!=NULL ) {
-	if ( strcmp(ent->d_name,".")==0 || strcmp(ent->d_name,"..")==0 )
+    while ( (ent = ff_readdir(dir))!=NULL ) {
+	if ( strcmp(ent->name,".")==0 || strcmp(ent->name,"..")==0 )
     continue;
-	pt = strrchr(ent->d_name,EXT_CHAR);
+	pt = strrchr(ent->name,EXT_CHAR);
 	if ( pt==NULL )
     continue;
-	sprintf( buffer,"%s/%s", filename, ent->d_name );
+	sprintf( buffer,"%s/%s", filename, ent->name );
 	if ( strcmp(pt,".props")==0 ||
 		strcmp(pt,GLYPH_EXT)==0 ||
 		strcmp(pt,BITMAP_EXT)==0 )
@@ -3050,12 +3050,12 @@ return;
 	/* If there are filenames we don't recognize, leave them. They might contain version control info */
     }
     free(buffer);
-    closedir(dir);
+    ff_closedir(dir);
 }
 
 static void SFFinalDirClean(char *filename) {
-    DIR *dir;
-    struct dirent *ent;
+    FF_Dir *dir;
+    FF_DirEntry *ent;
     char *buffer, *markerfile, *pt;
 
     /* we did not unlink sub-directories in case they contained version control */
@@ -3063,18 +3063,18 @@ static void SFFinalDirClean(char *filename) {
     /*  removed a bitmap strike or a cid-subfont those sub-dirs will now be */
     /*  empty. If the user didn't remove them then they will contain our marker */
     /*  files. So if we find a subdir with no marker files in it, remove it */
-    dir = opendir(filename);
+    dir = ff_opendir(filename);
     if ( dir==NULL )
 return;
     buffer = (char *)malloc(strlen(filename)+1+NAME_MAX+1);
     markerfile = (char *)malloc(strlen(filename)+2+2*NAME_MAX+1);
-    while ( (ent = readdir(dir))!=NULL ) {
-	if ( strcmp(ent->d_name,".")==0 || strcmp(ent->d_name,"..")==0 )
+    while ( (ent = ff_readdir(dir))!=NULL ) {
+	if ( strcmp(ent->name,".")==0 || strcmp(ent->name,"..")==0 )
     continue;
-	pt = strrchr(ent->d_name,EXT_CHAR);
+	pt = strrchr(ent->name,EXT_CHAR);
 	if ( pt==NULL )
     continue;
-	sprintf( buffer,"%s/%s", filename, ent->d_name );
+	sprintf( buffer,"%s/%s", filename, ent->name );
 	if ( strcmp(pt,".strike")==0 ||
 		strcmp(pt,SUBFONT_EXT)==0 ||
 		strcmp(pt,INSTANCE_EXT)==0 ) {
@@ -3089,7 +3089,7 @@ return;
     }
     free(buffer);
     free(markerfile);
-    closedir(dir);
+    ff_closedir(dir);
 }
 
 int SFDWrite(char *filename,SplineFont *sf,EncMap *map,EncMap *normal,int todir) {
@@ -6196,22 +6196,22 @@ return( 0 );
     break;
     }
     if ( fromdir ) {
-	DIR *dir;
-	struct dirent *ent;
+	FF_Dir *dir;
+	FF_DirEntry *ent;
 	char *name;
 
-	dir = opendir(dirname);
+	dir = ff_opendir(dirname);
 	if ( dir==NULL )
 return( 0 );
 	name = (char *)malloc(strlen(dirname)+NAME_MAX+3);
 
-	while ( (ent=readdir(dir))!=NULL ) {
-	    char *pt = strrchr(ent->d_name,EXT_CHAR);
+	while ( (ent=ff_readdir(dir))!=NULL ) {
+	    char *pt = strrchr(ent->name,EXT_CHAR);
 	    if ( pt==NULL )
 		/* Nothing interesting */;
 	    else if ( strcmp(pt,BITMAP_EXT)==0 ) {
 		FILE *gsfd;
-		sprintf(name,"%s/%s", dirname, ent->d_name);
+		sprintf(name,"%s/%s", dirname, ent->name);
 		gsfd = fopen(name,"r");
 		if ( gsfd!=NULL ) {
 		    if ( getname(gsfd,tok) && strcmp(tok,"BDFChar:")==0)
@@ -6222,7 +6222,7 @@ return( 0 );
 	    }
 	}
 	free(name);
-	closedir(dir);
+	ff_closedir(dir);
     }
     SFDFixupBitmapRefs( bdf );
 return( 1 );
@@ -7103,16 +7103,16 @@ static SplineFont *SFD_FigureDirType(SplineFont *sf,char *tok, char *dirname,
     /* (or bitmap files, but we don't care about them here */
     /* It will not contain some glyph and some subfont nor instance files */
     int gc=0, sc=0, ic=0, bc=0;
-    DIR *dir;
-    struct dirent *ent;
+    FF_Dir *dir;
+    FF_DirEntry *ent;
     char *name, *props, *pt;
 
-    dir = opendir(dirname);
+    dir = ff_opendir(dirname);
     if ( dir==NULL )
 return( sf );
     sf->save_to_dir = true;
-    while ( (ent=readdir(dir))!=NULL ) {
-	pt = strrchr(ent->d_name,EXT_CHAR);
+    while ( (ent=ff_readdir(dir))!=NULL ) {
+	pt = strrchr(ent->name,EXT_CHAR);
 	if ( pt==NULL )
 	    /* Nothing interesting */;
 	else if ( strcmp(pt,GLYPH_EXT)==0 )
@@ -7124,7 +7124,7 @@ return( sf );
 	else if ( strcmp(pt,STRIKE_EXT)==0 )
 	    ++bc;
     }
-    rewinddir(dir);
+    ff_rewinddir(dir);
     name = (char *)malloc(strlen(dirname)+NAME_MAX+3);
     props = (char *)malloc(strlen(dirname)+2*NAME_MAX+4);
     if ( gc!=0 ) {
@@ -7140,13 +7140,13 @@ return( sf );
 	}
 	SFDSizeMap(sf->map,sf->glyphcnt,enc->char_cnt>gc?enc->char_cnt:gc);
 
-	while ( (ent=readdir(dir))!=NULL ) {
-	    pt = strrchr(ent->d_name,EXT_CHAR);
+	while ( (ent=ff_readdir(dir))!=NULL ) {
+	    pt = strrchr(ent->name,EXT_CHAR);
 	    if ( pt==NULL )
 		/* Nothing interesting */;
 	    else if ( strcmp(pt,GLYPH_EXT)==0 ) {
 		FILE *gsfd;
-		sprintf(name,"%s/%s", dirname, ent->d_name);
+		sprintf(name,"%s/%s", dirname, ent->name);
 		gsfd = fopen(name,"r");
 		if ( gsfd!=NULL ) {
 		    SFDGetChar(gsfd,sf,had_layer_cnt);
@@ -7163,13 +7163,13 @@ return( sf );
 	sf->map = EncMap1to1(1000);
 	ff_progress_change_stages(2*sc);
 
-	while ( (ent=readdir(dir))!=NULL ) {
-	    pt = strrchr(ent->d_name,EXT_CHAR);
+	while ( (ent=ff_readdir(dir))!=NULL ) {
+	    pt = strrchr(ent->name,EXT_CHAR);
 	    if ( pt==NULL )
 		/* Nothing interesting */;
 	    else if ( strcmp(pt,SUBFONT_EXT)==0 && i<sc ) {
 		FILE *ssfd;
-		sprintf(name,"%s/%s", dirname, ent->d_name);
+		sprintf(name,"%s/%s", dirname, ent->name);
 		sprintf(props,"%s/" FONT_PROPS, name);
 		ssfd = fopen(props,"r");
 		if ( ssfd!=NULL ) {
@@ -7186,15 +7186,15 @@ return( sf );
 
 	MMInferStuff(sf->mm);
 	ff_progress_change_stages(2*(mm->instance_count+1));
-	while ( (ent=readdir(dir))!=NULL ) {
-	    pt = strrchr(ent->d_name,EXT_CHAR);
+	while ( (ent=ff_readdir(dir))!=NULL ) {
+	    pt = strrchr(ent->name,EXT_CHAR);
 	    if ( pt==NULL )
 		/* Nothing interesting */;
-	    else if ( strcmp(pt,INSTANCE_EXT)==0 && sscanf( ent->d_name, "mm%d", &ipos)==1 ) {
+	    else if ( strcmp(pt,INSTANCE_EXT)==0 && sscanf( ent->name, "mm%d", &ipos)==1 ) {
 		FILE *ssfd;
 		if ( i!=0 )
 		    ff_progress_next_stage();
-		sprintf(name,"%s/%s", dirname, ent->d_name);
+		sprintf(name,"%s/%s", dirname, ent->name);
 		sprintf(props,"%s/" FONT_PROPS, name);
 		ssfd = fopen(props,"r");
 		if ( ssfd!=NULL ) {
@@ -7227,14 +7227,14 @@ return( sf );
     }
 
     if ( bc!=0 ) {
-	rewinddir(dir);
-	while ( (ent=readdir(dir))!=NULL ) {
-	    pt = strrchr(ent->d_name,EXT_CHAR);
+	ff_rewinddir(dir);
+	while ( (ent=ff_readdir(dir))!=NULL ) {
+	    pt = strrchr(ent->name,EXT_CHAR);
 	    if ( pt==NULL )
 		/* Nothing interesting */;
 	    else if ( strcmp(pt,STRIKE_EXT)==0 ) {
 		FILE *ssfd;
-		sprintf(name,"%s/%s", dirname, ent->d_name);
+		sprintf(name,"%s/%s", dirname, ent->name);
 		sprintf(props,"%s/" STRIKE_PROPS, name);
 		ssfd = fopen(props,"r");
 		if ( ssfd!=NULL ) {
@@ -7246,7 +7246,7 @@ return( sf );
 	}
 	SFOrderBitmapList(sf);
     }
-    closedir(dir);
+    ff_closedir(dir);
     free(name);
     free(props);
 return( sf );
