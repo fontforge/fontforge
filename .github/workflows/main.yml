@@ -118,7 +118,7 @@ jobs:
       - name: Run pyhook smoke test
         run: |
           $env:PYTHONPATH = "build\lib"
-          $env:PATH = "$PWD\build\bin;$env:PATH"
+          $env:PATH = "${{ github.workspace }}\build\bin;${{ github.workspace }}\vcpkg_installed\x64-windows\bin;$env:PATH"
           python tests/pyhook_smoketest.py
       - name: Save vcpkg binary cache
         if: always()
