@@ -44,28 +44,34 @@ jobs:
           otool -L build/lib/fontforge*.so || true
           echo "=== psMat.so dependencies ==="
           otool -L build/lib/psMat*.so || true
-      - name: Debug - Try minimal import with crash report
+      - name: Debug - Check Python state
         run: |
           cd build/lib
-          # Enable crash reporting
-          export MallocStackLogging=1
-          # Try import and capture any crash
-          python3 -c "
+          # Check if the issue is with how Python loads the module
+          python3 << 'PYEOF'
           import sys
-          import faulthandler
-          faulthandler.enable()
-          print('Python:', sys.executable)
-          print('Attempting import...')
+          import ctypes
+
+          print("=== Python State Check ===")
+          print(f"Python: {sys.executable}")
+          print(f"Version: {sys.version}")
+          print(f"Platform: {sys.platform}")
+
+          # Check thread state
+          import _thread
+          print(f"Thread ID: {_thread.get_ident()}")
+
+          # Try to check interpreter state
+          print("\n=== Attempting import ===")
           sys.stdout.flush()
-          import fontforge
-          print('Import succeeded!')
-          print('Version:', fontforge.__version__)
-          " 2>&1 || {
-            echo "=== Import crashed with exit code $? ==="
-            echo "=== Checking for crash reports ==="
-            ls -la ~/Library/Logs/DiagnosticReports/ 2>/dev/null || true
-            cat ~/Library/Logs/DiagnosticReports/python3* 2>/dev/null | tail -100 || true
-          }
+
+          try:
+              import fontforge
+              print("SUCCESS: fontforge imported")
+              print(f"Version: {fontforge.__version__}")
+          except Exception as e:
+              print(f"EXCEPTION: {type(e).__name__}: {e}")
+          PYEOF
       - name: Debug - Run with lldb for stack trace
         run: |
           cd build/lib
