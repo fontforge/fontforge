@@ -5,7 +5,7 @@
 #include "psfont.h"
 #include "splinefont.h"
 #include "ttfinstrs.h"
-#include "views.h"
+#include "baseviews.h"
 
 #ifdef __cplusplus
 extern "C" {
