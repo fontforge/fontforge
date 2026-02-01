@@ -33,7 +33,9 @@
 #include "ttfinstrs.h"
 
 #include "baseviews.h"
+#ifdef HAVE_GLIB
 #include "ffglib.h"
+#endif
 
 #include "dlist.h"
 #include "ggadget.h"

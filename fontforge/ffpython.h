@@ -30,7 +30,7 @@
 
 #include "flaglist.h"
 #include "splinefont.h"
-#include "views.h"
+#include "baseviews.h"
 
 #pragma push_macro("real")
 #undef real
