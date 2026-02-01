@@ -2309,9 +2309,10 @@ static void bImport(Context *c) {
     else if ( format==fv_pk )
 	ok = FVImportBDF(c->curfv,filename,true, back);
     else if (    format==fv_image || format==fv_eps || format==fv_svg
-              || format==fv_pdf )
-	ok = FVImportImages(c->curfv,filename,format,back,gclear,ipp);
-    else
+              || format==fv_pdf ) {
+	char *path_list[2] = {filename, NULL};
+	ok = FVImportImages(c->curfv,path_list,format,back,gclear,ipp);
+    } else
 	ok = FVImportImageTemplate(c->curfv,filename,format,back,gclear,ipp);
     free(filename);
     if ( !ok )
