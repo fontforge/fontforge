@@ -35,6 +35,11 @@
 #include "baseviews.h"
 #ifdef HAVE_GLIB
 #include "ffglib.h"
+#else
+/* Provide fallback types when GLib is not available */
+typedef int GPid;
+typedef void *GTimer;
+typedef void *GList_Glib;
 #endif
 
 #include "dlist.h"
