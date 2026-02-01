@@ -58,8 +58,10 @@ function(fontforge_generate_config template destination)
   check_function_exists(realpath HAVE_REALPATH)
   cmake_pop_check_state()
 
-  # These are hard requirements/unsupported, should get rid of these
-  set(HAVE_LIBINTL_H 1)
+  # Set HAVE_LIBINTL_H only if Intl was found
+  if(Intl_FOUND)
+    set(HAVE_LIBINTL_H 1)
+  endif()
 
   # Configurable settings
   set(FONTFORGE_CONFIG_SHOW_RAW_POINTS ${ENABLE_DEBUG_RAW_POINTS})

@@ -5,7 +5,6 @@
   "dependencies": [
     "freetype",
     "libxml2",
-    "gettext",
     "libiconv",
     "zlib"
   ]
