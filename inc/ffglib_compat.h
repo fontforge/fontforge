@@ -50,6 +50,12 @@ char *ff_strstrip(char *str);
  */
 int ff_ascii_strcasecmp(const char *s1, const char *s2);
 
+/* Convert ASCII string to lowercase.
+ * Compatible with g_ascii_strdown().
+ * Returns: newly allocated lowercase string (caller must free)
+ */
+char *ff_ascii_strdown(const char *str, int len);
+
 /* Decode percent-encoded URI string.
  * Compatible with g_uri_unescape_string().
  * Returns: newly allocated string (caller must free)
@@ -87,6 +93,18 @@ int ff_get_charset(const char **charset);
  * Replaces GDateTime timezone handling.
  */
 long ff_get_utc_offset(long timestamp);
+
+/* Get the real name of the current user.
+ * Compatible with g_get_real_name().
+ * Returns: static buffer containing user's real name (do not free)
+ */
+const char *ff_get_real_name(void);
+
+/* Get the system temporary directory.
+ * Compatible with g_get_tmp_dir().
+ * Returns: static buffer containing temp directory path (do not free)
+ */
+const char *ff_get_tmp_dir(void);
 
 /* ============================================================================
  * POSIX compatibility for MSVC
@@ -142,6 +160,40 @@ int ff_chdir(const char *path);
  * Replaces POSIX getcwd().
  */
 char *ff_getcwd(char *buf, size_t size);
+
+/* Get canonical (absolute, normalized) path.
+ * Replaces g_canonicalize_filename().
+ * Returns: newly allocated string (caller must free), or NULL on error.
+ */
+char *ff_canonical_path(const char *path);
+
+/* Remove a file or directory recursively.
+ * Replaces g_remove() + directory iteration for recursive delete.
+ * Returns: number of files/directories removed, or -1 on error.
+ */
+int ff_remove_all(const char *path);
+
+/* ============================================================================
+ * Byte array (replaces GByteArray)
+ * ============================================================================ */
+
+typedef struct FFByteArray {
+    unsigned char *data;
+    size_t len;
+    size_t capacity;
+} FFByteArray;
+
+/* Create a new byte array */
+FFByteArray *ff_byte_array_new(void);
+
+/* Append bytes to the array */
+void ff_byte_array_append(FFByteArray *arr, const unsigned char *data, size_t len);
+
+/* Free the byte array and optionally its data.
+ * If free_data is true, returns NULL.
+ * If free_data is false, returns the data pointer (caller takes ownership).
+ */
+unsigned char *ff_byte_array_free(FFByteArray *arr, int free_data);
 
 /* ============================================================================
  * Dynamic array (replaces GArray)

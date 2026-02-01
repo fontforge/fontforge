@@ -22,6 +22,13 @@
 #include <string.h>
 #include <stdio.h>
 #include <errno.h>
+#include <ctype.h>
+
+#ifdef _MSC_VER
+#define strcasecmp _stricmp
+#else
+#include <strings.h>  /* for strcasecmp on POSIX */
+#endif
 
 #ifndef _NO_PYTHON
 #include <Python.h>
@@ -784,4 +791,172 @@ FFProcessResult ff_decompress_in_place(const char *filename) {
 #endif
 
     return FF_PROCESS_NO_BACKEND;
+}
+
+/* ==================== MIME Type ==================== */
+
+/* Extension to MIME type table - sorted by extension for bsearch */
+static const char *ext_mime_table[][2] = {
+    {"bdf",   "application/x-font-bdf"},
+    {"bin",   "application/x-macbinary"},
+    {"bmp",   "image/bmp"},
+    {"bz2",   "application/x-compressed"},
+    {"c",     "text/c"},
+    {"cff",   "application/x-font-type1"},
+    {"cid",   "application/x-font-cid"},
+    {"css",   "text/css"},
+    {"dfont", "application/x-mac-dfont"},
+    {"eps",   "text/ps"},
+    {"gai",   "font/otf"},
+    {"gif",   "image/gif"},
+    {"gz",    "application/x-compressed"},
+    {"h",     "text/h"},
+    {"hqx",   "application/x-mac-binhex40"},
+    {"html",  "text/html"},
+    {"jpeg",  "image/jpeg"},
+    {"jpg",   "image/jpeg"},
+    {"mov",   "video/quicktime"},
+    {"o",     "application/x-object"},
+    {"obj",   "application/x-object"},
+    {"otb",   "font/otf"},
+    {"otf",   "font/otf"},
+    {"pcf",   "application/x-font-pcf"},
+    {"pdf",   "application/pdf"},
+    {"pfa",   "application/x-font-type1"},
+    {"pfb",   "application/x-font-type1"},
+    {"png",   "image/png"},
+    {"ps",    "text/ps"},
+    {"pt3",   "application/x-font-type1"},
+    {"ras",   "image/x-cmu-raster"},
+    {"rgb",   "image/x-rgb"},
+    {"rpm",   "application/x-compressed"},
+    {"sfd",   "application/vnd.font-fontforge-sfd"},
+    {"sgi",   "image/x-sgi"},
+    {"snf",   "application/x-font-snf"},
+    {"svg",   "image/svg+xml"},
+    {"tar",   "application/x-tar"},
+    {"tbz",   "application/x-compressed"},
+    {"text",  "text/plain"},
+    {"tgz",   "application/x-compressed"},
+    {"tif",   "image/tiff"},
+    {"tiff",  "image/tiff"},
+    {"ttf",   "font/ttf"},
+    {"txt",   "text/plain"},
+    {"wav",   "audio/wave"},
+    {"woff",  "font/woff"},
+    {"woff2", "font/woff2"},
+    {"xbm",   "image/x-xbitmap"},
+    {"xml",   "text/xml"},
+    {"xpm",   "image/x-xpixmap"},
+    {"z",     "application/x-compressed"},
+    {"zip",   "application/x-compressed"},
+};
+
+static int mime_ext_compare(const void *key, const void *elem) {
+    const char *ext = (const char *)key;
+    const char *const *entry = (const char *const *)elem;
+    return strcasecmp(ext, entry[0]);
+}
+
+static char *mime_from_extension(const char *path) {
+    const char *filename, *dot, *ext;
+    size_t ext_len;
+    char *ext_lower;
+
+    /* Get filename part */
+    filename = strrchr(path, '/');
+#ifdef _WIN32
+    const char *bs = strrchr(path, '\\');
+    if (bs && (!filename || bs > filename)) filename = bs;
+#endif
+    filename = filename ? filename + 1 : path;
+
+    /* Get extension */
+    dot = strrchr(filename, '.');
+    if (!dot || dot == filename) {
+        /* No extension - check special filenames */
+        if (strcasecmp(filename, "makefile") == 0 ||
+            strcasecmp(filename, "makefile~") == 0) {
+            return strdup("application/x-makefile");
+        }
+        if (strcasecmp(filename, "core") == 0) {
+            return strdup("application/x-core");
+        }
+        return NULL;
+    }
+
+    ext = dot + 1;
+    ext_len = strlen(ext);
+
+    /* Strip trailing ~ from backup files */
+    if (ext_len > 0 && ext[ext_len - 1] == '~') {
+        ext_len--;
+    }
+    if (ext_len == 0) return NULL;
+
+    /* Make lowercase copy for comparison */
+    ext_lower = (char *)malloc(ext_len + 1);
+    if (!ext_lower) return NULL;
+    for (size_t i = 0; i < ext_len; i++) {
+        ext_lower[i] = (char)tolower((unsigned char)ext[i]);
+    }
+    ext_lower[ext_len] = '\0';
+
+    /* Binary search the table */
+    const char **found = (const char **)bsearch(
+        ext_lower, ext_mime_table,
+        sizeof(ext_mime_table) / sizeof(ext_mime_table[0]),
+        sizeof(ext_mime_table[0]),
+        mime_ext_compare);
+
+    free(ext_lower);
+
+    if (found) {
+        return strdup(found[1]);
+    }
+    return NULL;
+}
+
+#ifndef _NO_PYTHON
+static char *python_guess_mime_type(const char *path) {
+    PyObject *mimetypes = NULL;
+    PyObject *result = NULL;
+    char *mime = NULL;
+
+    mimetypes = PyImport_ImportModule("mimetypes");
+    if (!mimetypes) { PyErr_Clear(); return NULL; }
+
+    result = PyObject_CallMethod(mimetypes, "guess_type", "s", path);
+    if (!result || !PyTuple_Check(result) || PyTuple_Size(result) < 1) {
+        PyErr_Clear();
+        goto cleanup;
+    }
+
+    PyObject *mime_obj = PyTuple_GetItem(result, 0);
+    if (mime_obj && mime_obj != Py_None && PyUnicode_Check(mime_obj)) {
+        const char *mime_str = PyUnicode_AsUTF8(mime_obj);
+        if (mime_str) {
+            mime = strdup(mime_str);
+        }
+    }
+
+cleanup:
+    Py_XDECREF(result);
+    Py_XDECREF(mimetypes);
+    return mime;
+}
+#endif
+
+char *ff_guess_mime_type(const char *path) {
+    if (!path) return NULL;
+
+#ifndef _NO_PYTHON
+    if (Py_IsInitialized()) {
+        char *mime = python_guess_mime_type(path);
+        if (mime) return mime;
+    }
+#endif
+
+    /* Fall back to built-in extension table */
+    return mime_from_extension(path);
 }

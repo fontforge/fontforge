@@ -274,6 +274,7 @@ target_link_libraries(fontforge
 # GLIB is only needed for GUI builds
 if(TARGET GLIB::GLIB)
   target_link_libraries(fontforge PUBLIC GLIB::GLIB)
+  target_compile_definitions(fontforge PUBLIC HAVE_GLIB=1)
 endif()
 
 if(APPLE)
