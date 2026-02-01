@@ -27,6 +27,7 @@
 
 #include <fontforge-config.h>
 
+#include "ffglib_compat.h"  /* For strcasecmp on MSVC */
 #include "gimage.h"
 #include "ustring.h"
 
