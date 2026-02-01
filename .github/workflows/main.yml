@@ -75,8 +75,20 @@ jobs:
 
   windows-msvc:
     runs-on: windows-latest
+    env:
+      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/vcpkg_cache
     steps:
       - uses: actions/checkout@v4
+      - name: Create vcpkg cache directory
+        run: mkdir -p ${{ github.workspace }}/vcpkg_cache
+        shell: bash
+      - name: Restore vcpkg cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/vcpkg_cache
+          key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-${{ runner.os }}-
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
         with:
