@@ -53,7 +53,7 @@ typedef struct createwidthdata {
     SplineChar* _sc;
 } CreateWidthData;
 
-extern void CVDoit(CreateWidthData *wd);
+extern void DoChar(SplineChar *sc, CreateWidthData *wd, FontViewBase *fv, BDFChar *bc);
 extern void FVDoit(CreateWidthData *wd);
 extern void GenericVDoit(CreateWidthData *wd);
 extern void FVSetWidthScript(FontViewBase *fv, enum widthtype wtype, int val, int incr);
