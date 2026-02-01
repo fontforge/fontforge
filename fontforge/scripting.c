@@ -4817,21 +4817,25 @@ static void bChangeWeight(Context *c) {
 
 static void bSmallCaps(Context *c) {
     struct smallcaps small;
-    struct position_maps maps[2] = {{ .cur_width = -1 }, { .cur_width = 1 }};
-    struct genericchange genchange = {
-	.gc = gc_smallcaps,
-	.extension_for_letters = (char *)"sc",
-	.extension_for_symbols = (char *)"taboldstyle",
-	.hcounter_scale = 0.66, .lsb_scale = 0.66, .rsb_scale = 0.66,
-	.use_vert_mapping = 1,
-        .do_smallcap_symbols = 1,
-	.v_scale = 0.675,
-	.m = { .cnt = 2, .maps = maps },
-	.dstem_control = 1,
-	.small = &small
-    };
+    struct position_maps maps[2] = {{0, 0, -1, 0, 0}, {0, 0, 1, 0, 0}};
+    struct genericchange genchange;
     double h_scale, v_scale = 0.66;
     double stem_h, stem_w = 0.93;
+
+    memset(&genchange, 0, sizeof(genchange));
+    genchange.gc = gc_smallcaps;
+    genchange.extension_for_letters = (char *)"sc";
+    genchange.extension_for_symbols = (char *)"taboldstyle";
+    genchange.hcounter_scale = 0.66;
+    genchange.lsb_scale = 0.66;
+    genchange.rsb_scale = 0.66;
+    genchange.use_vert_mapping = 1;
+    genchange.do_smallcap_symbols = 1;
+    genchange.v_scale = 0.675;
+    genchange.m.cnt = 2;
+    genchange.m.maps = maps;
+    genchange.dstem_control = 1;
+    genchange.small = &small;
 
     /* Arguments:
        1 => vertical scale: make smallcap height this fraction of full caps.
