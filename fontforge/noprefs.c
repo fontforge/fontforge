@@ -45,7 +45,9 @@
 #include <assert.h>
 #include <locale.h>
 #include <stdlib.h>
+#ifndef _MSC_VER
 #include <sys/time.h>
+#endif
 #include <sys/types.h>
 #include <time.h>
 
