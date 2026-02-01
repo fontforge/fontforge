@@ -30,6 +30,9 @@
 
 #include "basics.h"
 
+#include <stdio.h>
+#include <time.h>
+
 /* For mode_t and off_t */
 #ifdef _MSC_VER
 typedef unsigned short mode_t;
@@ -104,6 +107,9 @@ extern int u_GFileMkDir(unichar_t *name);
 extern int u_GFileRmDir(unichar_t *name);
 extern int u_GFileUnlink(unichar_t *name);
 extern off_t GFileGetSize(char *name);
+extern off_t GFileGetSizeF(FILE *file);
+extern time_t GFileGetMTime(const char *name);
+extern time_t GFileGetMTimeF(FILE *file);
 extern char *GFileReadAll(char *name);
 extern int   GFileWriteAll(char *filepath, char *data);
 extern void  FindProgRoot(const char *prog);

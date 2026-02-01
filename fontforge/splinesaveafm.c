@@ -32,6 +32,7 @@
 #include "autohint.h"
 #include "featurefile.h"
 #include "fontforgevw.h"		/* For Error */
+#include "gfile.h"
 #include "fvcomposite.h"
 #include "fvfonts.h"
 #include "gutils.h"
@@ -54,27 +55,12 @@
 #include <stdio.h>
 #include <time.h>
 
-#include <sys/stat.h>
-#include <sys/types.h>		/* For stat */
 #ifndef _MSC_VER
 #include <unistd.h>
 #endif
 
 #ifdef __CygWin
- #include <sys/stat.h>
- #include <sys/types.h>
  #include <unistd.h>
-#endif
-
-/* MSVC stat compatibility */
-#ifdef _MSC_VER
-typedef struct __stat64 ff_stat_t;
-#define ff_stat(p, b) _stat64(p, b)
-#define ff_fstat(f, b) _fstat64(f, b)
-#else
-typedef struct stat ff_stat_t;
-#define ff_stat(p, b) stat(p, b)
-#define ff_fstat(f, b) fstat(f, b)
 #endif
 
 static void *mygets(FILE *file,char *buffer,int size) {
@@ -3454,7 +3440,7 @@ enum metricsformat { mf_none, mf_afm, mf_amfm, mf_tfm, mf_ofm, mf_pfm, mf_feat }
 static enum metricsformat MetricsFormatType(char *filename) {
     FILE *file = fopen(filename,"rb");
     unsigned char buffer[200];
-    ff_stat_t sb;
+    off_t filesize;
     int len;
 
     if ( file==NULL )
@@ -3462,7 +3448,7 @@ return( mf_none );
 
     len = fread(buffer,1,sizeof(buffer)-1,file);
     buffer[len] = '\0';
-    ff_fstat(fileno(file),&sb);
+    filesize = GFileGetSizeF(file);
     fclose(file);
 
     if ( strstr((char *) buffer,"StartFontMetrics")!=NULL )
@@ -3471,7 +3457,7 @@ return( mf_afm );
 	    strstr((char *) buffer,"StarMasterFontMetrics")!=NULL )	/* ff had a bug and used this file header by mistake */
 return( mf_amfm );
 
-    if ( len >= 48 && sb.st_size == 4*((buffer[0]<<8)|buffer[1]) &&
+    if ( len >= 48 && filesize == 4*((buffer[0]<<8)|buffer[1]) &&
 	    ((buffer[0]<<8)|buffer[1]) == 6 +
 		    ((buffer[2]<<8)|buffer[3]) +
 		    ( ((buffer[6]<<8)|buffer[7]) - ((buffer[4]<<8)|buffer[5]) + 1 ) +
@@ -3485,7 +3471,7 @@ return( mf_amfm );
 		    ((buffer[22]<<8)|buffer[23]) )
 return( mf_tfm );
 
-    if ( len >= 48 && sb.st_size == 4*BigEndianWord(buffer+4) &&
+    if ( len >= 48 && filesize == 4*BigEndianWord(buffer+4) &&
 	    BigEndianWord(buffer) == 0 &&
 	    BigEndianWord(buffer+4) == 14 +
 		    BigEndianWord(buffer+8) +
@@ -3501,7 +3487,7 @@ return( mf_tfm );
 return( mf_ofm );
 
     if ( len>= 6 && buffer[0]==0 && buffer[1]==1 &&
-	    (buffer[2]|(buffer[3]<<8)|(buffer[4]<<16)|(buffer[5]<<24))== sb.st_size )
+	    (buffer[2]|(buffer[3]<<8)|(buffer[4]<<16)|(buffer[5]<<24))== filesize )
 return( mf_pfm );
 
     /* I don't see any distinguishing marks for a feature file */

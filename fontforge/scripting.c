@@ -88,20 +88,9 @@
 #include <locale.h>
 #include <math.h>
 #include <setjmp.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 #include <time.h>
 #ifndef _MSC_VER
 #include <unistd.h>
-#endif
-
-/* MSVC stat compatibility */
-#ifdef _MSC_VER
-typedef struct __stat64 ff_stat_t;
-#define ff_fstat(f, b) _fstat64(f, b)
-#else
-typedef struct stat ff_stat_t;
-#define ff_fstat(f, b) fstat(f, b)
 #endif
 
 #ifdef HAVE_IEEEFP_H
@@ -3274,7 +3263,7 @@ static void bLoadTableFromFile(Context *c) {
     char *tstr, *end;
     struct ttf_table *tab;
     FILE *file;
-    ff_stat_t statb;
+    off_t filesize;
     char *t; char *locfilename;
 
     tstr = c->a.vals[1].u.sval;
@@ -3292,8 +3281,9 @@ static void bLoadTableFromFile(Context *c) {
     free(locfilename); free(t);
     if ( file==NULL )
 	ScriptErrorString(c,"Could not open file: ", c->a.vals[2].u.sval );
-    if ( ff_fstat(fileno(file),&statb)==-1 )
-	ScriptErrorString(c,"ff_fstat() failed on: ", c->a.vals[2].u.sval );
+    filesize = GFileGetSizeF(file);
+    if ( filesize==-1 )
+	ScriptErrorString(c,"Could not get file size: ", c->a.vals[2].u.sval );
 
     for ( tab=sf->ttf_tab_saved; tab!=NULL && tab->tag!=tag; tab=tab->next );
     if ( tab==NULL ) {
@@ -3303,8 +3293,8 @@ static void bLoadTableFromFile(Context *c) {
 	sf->ttf_tab_saved = tab;
     } else
 	free(tab->data);
-    tab->data = (uint8_t *)malloc(statb.st_size);
-    tab->len = fread(tab->data,1,statb.st_size,file);
+    tab->data = (uint8_t *)malloc(filesize);
+    tab->len = fread(tab->data,1,filesize,file);
     fclose(file);
 }
 
