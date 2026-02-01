@@ -39,6 +39,7 @@
 #include <io.h>
 #include <process.h>
 #include <direct.h>
+#include <stdlib.h>
 
 /* File access mode constants */
 #ifndef F_OK
@@ -73,6 +74,15 @@
 #define write _write
 #define lseek _lseek
 #define isatty _isatty
+
+/* P_tmpdir - POSIX temp directory path */
+static inline const char* _ff_get_tmpdir(void) {
+    const char *dir = getenv("TEMP");
+    if (dir == NULL) dir = getenv("TMP");
+    if (dir == NULL) dir = "C:\\Temp";
+    return dir;
+}
+#define P_tmpdir (_ff_get_tmpdir())
 
 /* MSVC doesn't have fork/exec - these would need separate handling */
 /* Files using these will need #ifndef _MSC_VER guards */
