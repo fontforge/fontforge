@@ -57,6 +57,15 @@
 
 #cmakedefine __CygWin 1
 
+
+/* MSVC compatibility */
+
+#ifdef _MSC_VER
+/* Use _stat64 for 64-bit file sizes on MSVC */
+# define stat _stat64
+# define fstat _fstat64
+#endif
+
 #cmakedefine _BrokenBitmapImages 1
 
 #cmakedefine _ModKeysAutoRepeat 1
