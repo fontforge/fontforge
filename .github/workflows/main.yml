@@ -6,41 +6,10 @@ on:
     branches: [ master ]
   workflow_dispatch:
 
-# Temporary simplified workflow for testing MSVC Python wheel compatibility
-# Builds Python modules only (no GUI) on Linux, macOS, and Windows (MSVC)
+# Temporary workflow for debugging Mac Python module crash
+# Only runs Mac build to speed up iteration
 
 jobs:
-  linux:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Install dependencies
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ninja-build gettext libfreetype-dev libglib2.0-dev libxml2-dev zlib1g-dev
-      - name: Configure
-        run: |
-          cmake -B build -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DENABLE_GUI=OFF \
-            -DENABLE_PYTHON_SCRIPTING=ON \
-            -DENABLE_PYTHON_EXTENSION=ON \
-            -DENABLE_LIBSPIRO=OFF \
-            -DENABLE_WOFF2=OFF \
-            -DENABLE_DOCS=OFF \
-            -DBUILD_SHARED_LIBS=ON
-      - name: Build
-        run: cmake --build build
-      - name: Run tests
-        run: ctest --test-dir build --output-on-failure
-      - name: Run pyhook smoke test
-        run: |
-          PYTHONPATH=build/lib python3 tests/pyhook_smoketest.py
-
   mac:
     runs-on: macos-14
     steps:
@@ -69,51 +38,25 @@ jobs:
         run: cmake --build build
       - name: Run tests
         run: ctest --test-dir build --output-on-failure
+      - name: Debug - Show library dependencies
+        run: |
+          echo "=== fontforge.so dependencies ==="
+          otool -L build/lib/fontforge*.so || true
+          echo "=== psMat.so dependencies ==="
+          otool -L build/lib/psMat*.so || true
+      - name: Debug - Try minimal import
+        run: |
+          cd build/lib
+          python3 -c "
+          import sys
+          print('Python:', sys.executable)
+          print('Path:', sys.path)
+          print('Attempting import...')
+          sys.stdout.flush()
+          import fontforge
+          print('Import succeeded!')
+          print('Version:', fontforge.__version__)
+          " 2>&1 || echo "Import failed with exit code $?"
       - name: Run pyhook smoke test
         run: |
           PYTHONPATH=build/lib python3 tests/pyhook_smoketest.py
-
-  windows-msvc:
-    runs-on: windows-latest
-    env:
-      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/vcpkg_cache
-    steps:
-      - uses: actions/checkout@v4
-      - name: Create vcpkg cache directory
-        run: mkdir -p ${{ github.workspace }}/vcpkg_cache
-        shell: bash
-      - name: Restore vcpkg cache
-        uses: actions/cache@v4
-        with:
-          path: ${{ github.workspace }}/vcpkg_cache
-          key: vcpkg-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
-          restore-keys: |
-            vcpkg-${{ runner.os }}-
-      - name: Setup vcpkg
-        uses: lukka/run-vcpkg@v11
-        with:
-          vcpkgJsonGlob: 'vcpkg.json'
-      - name: Setup MSVC
-        uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: x64
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-      - name: Configure
-        run: |
-          cmake -B build -G Ninja `
-            -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" `
-            -DCMAKE_BUILD_TYPE=Release `
-            -DENABLE_GUI=OFF `
-            -DENABLE_PYTHON_SCRIPTING=ON `
-            -DENABLE_PYTHON_EXTENSION=ON `
-            -DENABLE_LIBSPIRO=OFF `
-            -DENABLE_WOFF2=OFF `
-            -DENABLE_DOCS=OFF `
-            -DBUILD_SHARED_LIBS=ON
-      - name: Build
-        run: cmake --build build --config Release
-      - name: Run tests
-        run: ctest --test-dir build --output-on-failure
