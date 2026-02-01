@@ -166,3 +166,25 @@ Create working wheel manually before automating with cibuildwheel.
 
 ### Step 5: Iterate
 Add more Python versions and platforms based on success.
+
+---
+
+## Accessing CI Logs
+
+The test PR is https://github.com/fontforge/fontforge/pull/5746
+
+Using gh CLI with a token stored in `~/skeftok`:
+
+```bash
+# Check PR status
+GH_TOKEN=$(cat ~/skeftok) gh pr checks 5746
+
+# View specific job status
+GH_TOKEN=$(cat ~/skeftok) gh run view <run_id> --job <job_id>
+
+# View job annotations (errors/warnings)
+GH_TOKEN=$(cat ~/skeftok) gh run view <run_id>
+
+# Get failed log output
+GH_TOKEN=$(cat ~/skeftok) gh run view --log-failed --job=<job_id>
+```
