@@ -18862,7 +18862,7 @@ static PyObject *PyFFFont_addSmallCaps(PyFF_Font *self, PyObject *args, PyObject
     struct genericchange genchange;
     double lc_width=0, uc_width=0, vstem_factor=0, hscale=0, vscale=0, scheight=0, capheight=0;
     int dosymbols=0;
-    struct position_maps maps[2] = {{.cur_width = -1}, {.cur_width = 1}};
+    struct position_maps maps[2] = {{0, 0, -1, 0, 0}, {0, 0, 1, 0, 0}};
 
     if ( CheckIfFontClosed(self) )
 return (NULL);
