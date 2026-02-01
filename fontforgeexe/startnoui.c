@@ -36,9 +36,7 @@
 #include "ustring.h"
 
 #include <locale.h>
-#include <sys/time.h>
 #include <time.h>
-#include <unistd.h>
 
 #ifdef __Mac
 # include <stdlib.h>		/* getenv,setenv */
