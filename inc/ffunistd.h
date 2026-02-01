@@ -54,6 +54,11 @@
 #define R_OK 4
 #endif
 
+/* PATH_MAX - use MAX_PATH on Windows */
+#ifndef PATH_MAX
+#define PATH_MAX 260
+#endif
+
 /* Map POSIX names to MSVC equivalents */
 #define access _access
 #define unlink _unlink
