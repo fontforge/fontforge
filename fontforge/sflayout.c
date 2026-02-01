@@ -44,7 +44,7 @@
 #include "utype.h"
 
 #include <math.h>
-#include <unistd.h>
+#include "ffunistd.h"
 
 #ifndef _NO_LIBUNIBREAK
 #include <linebreak.h>

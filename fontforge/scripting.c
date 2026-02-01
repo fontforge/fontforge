@@ -90,7 +90,7 @@
 #include <setjmp.h>
 #include <time.h>
 #ifndef _MSC_VER
-#include <unistd.h>
+#include "ffunistd.h"
 #endif
 
 #ifdef HAVE_IEEEFP_H

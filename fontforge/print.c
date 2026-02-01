@@ -51,7 +51,7 @@
 #include <stdlib.h>
 #include <sys/types.h>
 #include <time.h>
-#include <unistd.h>
+#include "ffunistd.h"
 #if !defined(__MINGW32__)
 #include <sys/wait.h>
 #endif

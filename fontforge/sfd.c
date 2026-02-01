@@ -67,7 +67,7 @@
 #include <stdbool.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <unistd.h>
+#include "ffunistd.h"
 #include <stdio.h>
 
 #ifdef _WIN32

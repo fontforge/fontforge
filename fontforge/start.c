@@ -40,7 +40,7 @@
 #include <locale.h>
 #include <sys/time.h>
 #include <time.h>
-#include <unistd.h>
+#include "ffunistd.h"
 #ifdef __Mac
 # include <stdlib.h>		/* getenv,setenv */
 #endif

@@ -56,7 +56,7 @@
 #include "utype.h"
 
 #include <math.h>
-#include <unistd.h>
+#include "ffunistd.h"
 
 static FontViewBase *fv_list=NULL;
 

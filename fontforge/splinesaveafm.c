@@ -56,11 +56,11 @@
 #include <time.h>
 
 #ifndef _MSC_VER
-#include <unistd.h>
+#include "ffunistd.h"
 #endif
 
 #ifdef __CygWin
- #include <unistd.h>
+ #include "ffunistd.h"
 #endif
 
 static void *mygets(FILE *file,char *buffer,int size) {

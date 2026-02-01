@@ -37,7 +37,7 @@
 /* POSIX headers */
 #if defined(__unix__) || defined(__APPLE__)
 #define HAVE_POSIX 1
-#include <unistd.h>
+#include "ffunistd.h"
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <spawn.h>

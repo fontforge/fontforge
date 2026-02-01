@@ -51,7 +51,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
-#include <unistd.h>
+#include "ffunistd.h"
 
 int new_em_size = 1000;
 int new_fonts_are_order2 = false;

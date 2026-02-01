@@ -51,7 +51,7 @@
 #include "winfonts.h"
 
 #include <math.h>
-#include <unistd.h>
+#include "ffunistd.h"
 
 static char *cleancopy(const char *name) {
     const char *fpt;

@@ -54,7 +54,7 @@
 #include <math.h>
 #include <stdarg.h>
 #include <time.h>
-#include <unistd.h>
+#include "ffunistd.h"
 
 #if !defined(__MINGW32__)
 # include <pwd.h>
@@ -63,7 +63,7 @@
 #ifdef __CygWin
  #include <sys/stat.h>
  #include <sys/types.h>
- #include <unistd.h>
+ #include "ffunistd.h"
 #endif
 
 extern int autohint_before_generate;

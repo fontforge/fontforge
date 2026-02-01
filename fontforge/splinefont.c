@@ -63,7 +63,7 @@
 #include <math.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <unistd.h>
+#include "ffunistd.h"
 
 void SFUntickAll(SplineFont *sf) {
     int i;
