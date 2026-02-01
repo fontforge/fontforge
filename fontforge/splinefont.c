@@ -916,7 +916,7 @@ static char *ForceFileToHaveName(FILE *file, const char *exten) {
     FILE *newfile;
 
     for (;;) {
-	sprintf( tmpfilename, P_tmpdir "/fontforge%d-%d", getpid(), try++ );
+	sprintf( tmpfilename, "%s/fontforge%d-%d", P_tmpdir, getpid(), try++ );
 	if ( exten!=NULL )
 	    strcat(tmpfilename,exten);
 	if ( ff_access( tmpfilename, F_OK )==-1 &&
