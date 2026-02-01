@@ -49,7 +49,7 @@
 #include "ustring.h"
 #include "utype.h"
 
-#include <dirent.h>
+#include "ffdir.h"
 #include <math.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -913,8 +913,8 @@ return( map->cidmax );
 static char *SearchDirForCidMap(const char *dir,char *registry,char *ordering,
 	int supplement,char **maybefile) {
     char maybe[FILENAME_MAX+1];
-    struct dirent *ent;
-    DIR *d;
+    FF_DirEntry *ent;
+    FF_Dir *d;
     int len, rlen = strlen(registry), olen=strlen(ordering);
     char *pt, *end, *ret;
     int test, best = -1;
@@ -929,17 +929,17 @@ return( NULL );
 	best = strtol(pt,NULL,10);
     }
 
-    d = opendir(dir);
+    d = ff_opendir(dir);
     if ( d==NULL )
 return( NULL );
-    while ( (ent = readdir(d))!=NULL ) {
-	if ( (len = strlen(ent->d_name))<8 )
+    while ( (ent = ff_readdir(d))!=NULL ) {
+	if ( (len = strlen(ent->name))<8 )
     continue;
-	if ( strcmp(ent->d_name+len-7,".cidmap")!=0 )
+	if ( strcmp(ent->name+len-7,".cidmap")!=0 )
     continue;
-	if ( strncmp(ent->d_name,registry,rlen)!=0 || ent->d_name[rlen]!='-' )
+	if ( strncmp(ent->name,registry,rlen)!=0 || ent->name[rlen]!='-' )
     continue;
-	pt = ent->d_name+rlen+1;
+	pt = ent->name+rlen+1;
 	if ( strncmp(pt,ordering,olen)!=0 || pt[olen]!='-' )
     continue;
 	pt += olen+1;
@@ -952,15 +952,15 @@ return( NULL );
 	    ret = malloc(strlen(dir)+1+len+1);
 	    strcpy(ret,dir);
 	    strcat(ret,"/");
-	    strcat(ret,ent->d_name);
-	    closedir(d);
+	    strcat(ret,ent->name);
+	    ff_closedir(d);
 return( ret );
 	} else if ( test>best ) {
 	    best = test;
-	    strcpy(maybe,ent->d_name);
+	    strcpy(maybe,ent->name);
 	}
     }
-    closedir(d);
+    ff_closedir(d);
     if ( best>-1 ) {
 	ret = malloc(strlen(dir)+1+strlen(maybe)+1);
 	strcpy(ret,dir);

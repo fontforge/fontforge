@@ -43,7 +43,7 @@
 #include "ustring.h"
 #include "utype.h"
 
-#include <dirent.h>		/* for opendir,etc. */
+#include "ffdir.h"		/* for ff_opendir,etc. */
 #include <errno.h>		/* for errors */
 #include <fcntl.h>		/* for open */
 #include <math.h>
@@ -680,51 +680,51 @@ return( name );
 
 #ifndef __MINGW32__
 static char *FindGfFile(char *tempdir) {
-    DIR *temp;
-    struct dirent *ent;
+    FF_Dir *temp;
+    FF_DirEntry *ent;
     char buffer[1025], *ret=NULL;
 
-    temp = opendir(tempdir);
+    temp = ff_opendir(tempdir);
     if ( temp!=NULL ) {
-	while ( (ent=readdir(temp))!=NULL ) {
-	    if ( strcmp(ent->d_name,".")==0 || strcmp(ent->d_name,"..")==0 )
+	while ( (ent=ff_readdir(temp))!=NULL ) {
+	    if ( strcmp(ent->name,".")==0 || strcmp(ent->name,"..")==0 )
 	continue;
-	    if ( strlen(ent->d_name)>2 && strcmp(ent->d_name+strlen(ent->d_name)-2,"gf")==0 ) {
+	    if ( strlen(ent->name)>2 && strcmp(ent->name+strlen(ent->name)-2,"gf")==0 ) {
 		strcpy(buffer,tempdir);
 		strcat(buffer,"/");
-		strcat(buffer,ent->d_name);
+		strcat(buffer,ent->name);
 		ret = copy(buffer);
 	break;
 	    }
 	}
-	closedir(temp);
+	ff_closedir(temp);
     }
 return( ret );
 }
 
 static void cleantempdir(char *tempdir) {
-    DIR *temp;
-    struct dirent *ent;
+    FF_Dir *temp;
+    FF_DirEntry *ent;
     char buffer[1025], *eod;
     char *todelete[100];
     int cnt=0;
 
-    temp = opendir(tempdir);
+    temp = ff_opendir(tempdir);
     if ( temp!=NULL ) {
 	strcpy(buffer,tempdir);
 	strcat(buffer,"/");
 	eod = buffer+strlen(buffer);
-	while ( (ent=readdir(temp))!=NULL ) {
-	    if ( strcmp(ent->d_name,".")==0 || strcmp(ent->d_name,"..")==0 )
+	while ( (ent=ff_readdir(temp))!=NULL ) {
+	    if ( strcmp(ent->name,".")==0 || strcmp(ent->name,"..")==0 )
 	continue;
-	    strcpy(eod,ent->d_name);
+	    strcpy(eod,ent->name);
 	    /* Hmm... doing an unlink right here means changing the dir file */
 	    /*  which might mean we could not read it properly. So save up the*/
 	    /*  things we need to delete and trash them later */
 	    if ( cnt<99 )
 		todelete[cnt++] = copy(buffer);
 	}
-	closedir(temp);
+	ff_closedir(temp);
 	todelete[cnt] = NULL;
 	for ( cnt=0; todelete[cnt]!=NULL; ++cnt ) {
 	    ff_unlink(todelete[cnt]);
