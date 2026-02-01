@@ -257,6 +257,9 @@ endif()
 # This is pretty bad...
 target_include_directories(fontforge PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
 
+# Export all symbols from the DLL on Windows (mimics MinGW's --export-all-symbols)
+set_target_properties(fontforge PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+
 target_link_libraries(fontforge
   PUBLIC
     fontforge_common_headers
