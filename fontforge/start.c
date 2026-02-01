@@ -38,7 +38,9 @@
 #include "psfont.h"
 
 #include <locale.h>
+#ifndef _MSC_VER
 #include <sys/time.h>
+#endif
 #include <time.h>
 #include "ffunistd.h"
 #ifdef __Mac
