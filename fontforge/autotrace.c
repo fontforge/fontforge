@@ -193,7 +193,7 @@ static SplinePointList *localSplinesFromEntities(Entity *ent, Color bgcol, int i
 return( head );
 }
 
-#if !defined(__MINGW32__)
+#if !defined(__MINGW32__) && !defined(_MSC_VER)
 /* I think this is total paranoia. but it's annoying to have linker complaints... */
 static int mytempnam(char *buffer) {
     char *dir;
@@ -240,7 +240,7 @@ return( NULL );
 #endif
 
 
-#if defined(__MINGW32__)
+#if defined(__MINGW32__) || defined(_MSC_VER)
 static char* add_arg(char* buffer, const char* s)
 {
     while( *s ) *buffer++ = *s++;
@@ -678,7 +678,7 @@ return( name );
 return( name );
 }
 
-#ifndef __MINGW32__
+#if !defined(__MINGW32__) && !defined(_MSC_VER)
 static char *FindGfFile(char *tempdir) {
     FF_Dir *temp;
     FF_DirEntry *ent;
@@ -757,7 +757,7 @@ void MfArgsInit(void) {
 }
 
 SplineFont *SFFromMF(char *filename) {
-#if defined(__MINGW32__)
+#if defined(__MINGW32__) || defined(_MSC_VER)
 return (NULL);
 #else
     char *tempdir;
