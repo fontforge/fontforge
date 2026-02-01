@@ -27,7 +27,7 @@
 
 #include <fontforge-config.h>
 
-#include "fontforgeui.h"
+#include "baseviews.h"
 
 FontViewBase *fv_active_in_ui = NULL;
 SplineChar *sc_active_in_ui = NULL;

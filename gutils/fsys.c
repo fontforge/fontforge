@@ -888,8 +888,8 @@ return NULL;
 off_t GFileGetSize(char *name) {
 /* Get the binary file size for file 'name'. Return -1 if error. */
 #ifdef _MSC_VER
-    struct _stat buf;
-    if ( _stat(name, &buf) )
+    struct _stat64 buf;
+    if ( _stat64(name, &buf) )
 	return( -1 );
 #else
     struct stat buf;
