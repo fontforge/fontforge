@@ -33,6 +33,7 @@
 #include "plugin.h"
 
 #include "gfile.h"
+#include "intl.h"
 #include "uiinterface.h"
 
 #include <string>  /* for std::string */
