@@ -91,7 +91,18 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <time.h>
+#ifndef _MSC_VER
 #include <unistd.h>
+#endif
+
+/* MSVC stat compatibility */
+#ifdef _MSC_VER
+typedef struct __stat64 ff_stat_t;
+#define ff_fstat(f, b) _fstat64(f, b)
+#else
+typedef struct stat ff_stat_t;
+#define ff_fstat(f, b) fstat(f, b)
+#endif
 
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
@@ -3263,7 +3274,7 @@ static void bLoadTableFromFile(Context *c) {
     char *tstr, *end;
     struct ttf_table *tab;
     FILE *file;
-    struct stat statb;
+    ff_stat_t statb;
     char *t; char *locfilename;
 
     tstr = c->a.vals[1].u.sval;
@@ -3281,8 +3292,8 @@ static void bLoadTableFromFile(Context *c) {
     free(locfilename); free(t);
     if ( file==NULL )
 	ScriptErrorString(c,"Could not open file: ", c->a.vals[2].u.sval );
-    if ( fstat(fileno(file),&statb)==-1 )
-	ScriptErrorString(c,"fstat() failed on: ", c->a.vals[2].u.sval );
+    if ( ff_fstat(fileno(file),&statb)==-1 )
+	ScriptErrorString(c,"ff_fstat() failed on: ", c->a.vals[2].u.sval );
 
     for ( tab=sf->ttf_tab_saved; tab!=NULL && tab->tag!=tag; tab=tab->next );
     if ( tab==NULL ) {
