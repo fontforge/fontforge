@@ -31,7 +31,11 @@
 #include "basics.h"
 
 /* For mode_t */
+#ifdef _MSC_VER
+typedef unsigned short mode_t;
+#else
 #include <sys/types.h>
+#endif
 
 /* home directories for fontforge */
 enum { Cache, Config, Data };

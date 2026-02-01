@@ -40,16 +40,23 @@
 #include <errno.h>			/* for mkdir_p */
 #include <fcntl.h>
 #include <stdio.h>
-#include <sys/param.h>
 #include <sys/stat.h>		/* for mkdir */
 #include <sys/types.h>
-#include <unistd.h>
 
-#if !defined(__MINGW32__)
- #include <pwd.h>
-#else
+#ifdef _MSC_VER
+ #include <direct.h>
+ #include <io.h>
  #include <shlobj.h>
  #include <windows.h>
+#elif defined(__MINGW32__)
+ #include <shlobj.h>
+ #include <windows.h>
+ #include <sys/param.h>
+ #include <unistd.h>
+#else
+ #include <pwd.h>
+ #include <sys/param.h>
+ #include <unistd.h>
 #endif
 
 static char *program_root = NULL;
