@@ -70,7 +70,15 @@
 /* For messages in the shortcuts domain */
 #define H_(str)		(str)
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 char *sgettext(const char *msgid);
 void gettext_locale(char *buffer, int size);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_INTL_H */

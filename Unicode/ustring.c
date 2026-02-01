@@ -27,12 +27,14 @@
 
 #include <fontforge-config.h>
 
-#include "ffglib.h"
 #include "ustring.h"
 #include "utype.h"
 
+#include "ffglib_compat.h"
+
 #include <assert.h>
 #include <stddef.h>
+#include <stdlib.h>
 
 long uc_strcmp(const unichar_t *str1,const char *str2) {
     long ch1, ch2;
@@ -119,21 +121,21 @@ return(ch1-ch2);
 }
 
 void cu_strcpy(char *to, const unichar_t *from) {
-    register unichar_t ch;
+    unichar_t ch;
     while ( (ch = *from++) != '\0' )
 	*(to++) = ch;
     *to = 0;
 }
 
 void uc_strcpy(unichar_t *to, const char *from) {
-    register unichar_t ch;
+    unichar_t ch;
     while ( (ch = *(unsigned char *) from++) != '\0' )
 	*(to++) = ch;
     *to = 0;
 }
 
 void u_strcpy(unichar_t *to, const unichar_t *from) {
-    register unichar_t ch;
+    unichar_t ch;
     while ( (ch = *from++) != '\0' )
 	*(to++) = ch;
     *to = 0;
@@ -149,22 +151,22 @@ char *cc_strncpy(char *to, const char *from, int len) {
 }
 
 
-void u_strncpy(register unichar_t *to, const unichar_t *from, int len) {
-    register unichar_t ch;
+void u_strncpy(unichar_t *to, const unichar_t *from, int len) {
+    unichar_t ch;
     while ( (ch = *from++) != '\0' && --len>=0 )
 	*(to++) = ch;
     *to = 0;
 }
 
-void cu_strncpy(register char *to, const unichar_t *from, int len) {
-    register unichar_t ch;
+void cu_strncpy(char *to, const unichar_t *from, int len) {
+    unichar_t ch;
     while ( (ch = *from++) != '\0' && --len>=0 )
 	*(to++) = ch;
     *to = 0;
 }
 
-void uc_strncpy(register unichar_t *to, const char *from, int len) {
-    register unichar_t ch;
+void uc_strncpy(unichar_t *to, const char *from, int len) {
+    unichar_t ch;
     while ( (ch = *(unsigned char *) from++) != '\0' && --len>=0 )
 	*(to++) = ch;
     *to = 0;
@@ -195,8 +197,8 @@ void u_strncat(unichar_t *to, const unichar_t *from, int len) {
 }
 
 
-int u_strlen(register const unichar_t *str) {
-    register int len = 0;
+int u_strlen(const unichar_t *str) {
+    int len = 0;
 
     while ( *str++!='\0' )
 	++len;
@@ -212,7 +214,7 @@ int c_strlen( const char * p )
 
 
 unichar_t *u_strchr(const unichar_t *str ,unichar_t ch) {
-    register unichar_t test;
+    unichar_t test;
 
     while ( (test=*(str++))!='\0' )
 	if ( test==ch )
@@ -222,7 +224,8 @@ return( NULL );
 }
 
 unichar_t *u_strrchr(const unichar_t *str ,unichar_t ch) {
-    register unichar_t test, *last = NULL;
+    unichar_t test;
+    unichar_t *last = NULL;
 
     while ( (test=*(str++))!='\0' )
 	if ( test==ch )
@@ -321,7 +324,7 @@ unichar_t *u_copynallocm(const unichar_t *pt, long n, long m) {
     if ( n*sizeof(unichar_t)>=MEMORY_MASK )
 	n = MEMORY_MASK/sizeof(unichar_t)-1;
 #endif
-    res = malloc((m+1)*sizeof(unichar_t));
+    res = (unichar_t *) malloc((m+1)*sizeof(unichar_t));
     memcpy(res,pt,n*sizeof(unichar_t));
     res[n]='\0';
 return(res);
@@ -860,7 +863,7 @@ long utf82u_strlen(const char *utf8_str) {
     return( len );
 }
 
-void utf8_strncpy(register char *to, const char *from, int len) {
+void utf8_strncpy(char *to, const char *from, int len) {
     /* copy n characters NOT bytes */
     const char *old = from;
     while ( len && *old ) {
@@ -989,7 +992,7 @@ return( newcr );
 
 int AllAscii(const char *txt) {
 /* Verify string only All ASCII printable characters */
-    register unsigned char ch;
+    unsigned char ch;
 
     if ( txt==NULL )
 	return( false );
@@ -1044,16 +1047,16 @@ int endswith(const char *haystack,const char *needle) {
     int nedlen = strlen( needle );
     if( haylen < nedlen )
 	return 0;
-    char* p = strstr( haystack + haylen - nedlen, needle );
+    const char* p = strstr( haystack + haylen - nedlen, needle );
     return p == ( haystack + haylen - nedlen );
 }
 
 int endswithi(const char *haystackZ,const char *needleZ) {
-    gchar* haystack = g_ascii_strdown(haystackZ,-1);
-    gchar* needle   = g_ascii_strdown(needleZ,-1);
+    char* haystack = ff_ascii_strdown(haystackZ,-1);
+    char* needle   = ff_ascii_strdown(needleZ,-1);
     int ret = endswith( haystack, needle );
-    g_free( haystack );
-    g_free( needle );
+    free( haystack );
+    free( needle );
     return ret;
 }
 
@@ -1062,8 +1065,8 @@ int endswithi_partialExtension( const char *haystackZ,const char *needleZ) {
     if( nedlen == 0 ) {
 	return 0;
     }
-    gchar* haystack = g_ascii_strdown(haystackZ,-1);
-    gchar* needle   = g_ascii_strdown(needleZ,-1);
+    char* haystack = ff_ascii_strdown(haystackZ,-1);
+    char* needle   = ff_ascii_strdown(needleZ,-1);
     int ret = 0;
     int i = nedlen-1;
     ret |= endswith( haystack, needle );
@@ -1071,8 +1074,8 @@ int endswithi_partialExtension( const char *haystackZ,const char *needleZ) {
 	needle[i] = '\0';
 	ret |= endswith( haystack, needle );
     }
-    g_free( haystack );
-    g_free( needle );
+    free( haystack );
+    free( needle );
     return ret;
 }
 
@@ -1173,7 +1176,7 @@ char* tostr( int v )
 void realloc_tail(char** p_buf, size_t size_delta, char** p_tail,
                   char** p_proc) {
     size_t new_size = size_delta + (*p_tail - *p_buf);
-    char* new_buf = realloc(*p_buf, new_size);
+    char* new_buf = (char*) realloc(*p_buf, new_size);
     *p_tail = new_buf + new_size;
     if (p_proc) *p_proc = new_buf + (*p_proc - *p_buf);
     *p_buf = new_buf;

@@ -5,6 +5,10 @@
 
 #include "splinefont.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern int WriteWOFFFont(char *fontname, SplineFont *sf, enum fontformat format, int32_t *bsizes, enum bitmapformat bf, int flags, EncMap *enc, int layer);
 extern int _WriteWOFFFont(FILE *woff, SplineFont *sf, enum fontformat format, int32_t *bsizes, enum bitmapformat bf, int flags, EncMap *enc, int layer);
 extern SplineFont *_SFReadWOFF(FILE *woff, int flags, enum openflags openflags, char *filename, char *chosenname, struct fontdict *fd);
@@ -16,6 +20,10 @@ extern int woff2_convert_woff2_to_ttf(const uint8_t *data, size_t length, uint8_
 extern int WriteWOFF2Font(char *fontname, SplineFont *sf, enum fontformat format, int32_t *bsizes, enum bitmapformat bf, int flags, EncMap *enc, int layer);
 extern int _WriteWOFF2Font(FILE *woff, SplineFont *sf, enum fontformat format, int32_t *bsizes, enum bitmapformat bf, int flags, EncMap *enc, int layer);
 extern SplineFont *_SFReadWOFF2(FILE *woff, int flags, enum openflags openflags, char *filename, char *chosenname, struct fontdict *fd);
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* FONTFORGE_WOFF_H */

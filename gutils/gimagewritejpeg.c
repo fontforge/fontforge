@@ -74,7 +74,7 @@ static void transferImageToBuffer(struct _GImage *base,JSAMPLE *buffer,int w,int
     ppt = (uint32_t *) (base->data + ypos*base->bytes_per_line);
     if ( base->image_type==it_index && base->clut==NULL ) {
 	unsigned char *px = (unsigned char *) ppt; int col;
-	register int bit=0x80;
+	int bit=0x80;
 	for ( pt = buffer, end = pt+3*w; pt<end; ) {
 	    if ( *px&bit ) col = 0xffffff;
 	    else col = 0;
@@ -85,7 +85,7 @@ static void transferImageToBuffer(struct _GImage *base,JSAMPLE *buffer,int w,int
 	}
     } else if ( base->image_type==it_index ) {
 	unsigned char *px = (unsigned char *) ppt; int col;
-	register int bit=0x80;
+	int bit=0x80;
 	for ( pt = buffer, end = pt+3*w; pt<end; ) {
 	    if ( *px&bit ) col = base->clut->clut[1];
 	    else col = base->clut->clut[0];

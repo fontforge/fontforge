@@ -24,7 +24,7 @@ ssize_t getdelim_(char **lineptr, size_t *n, int delimiter, FILE *stream) {
     }
 
     if (*lineptr == NULL) {
-        *lineptr = malloc(128);
+        *lineptr = (char*) malloc(128);
         if (*lineptr == NULL) {
             return -1;
         }
@@ -38,7 +38,7 @@ ssize_t getdelim_(char **lineptr, size_t *n, int delimiter, FILE *stream) {
             if (new_size < 128) {
                 new_size = 128;
             }
-            char *new_ptr = realloc(*lineptr, new_size);
+            char *new_ptr = (char*) realloc(*lineptr, new_size);
             if (new_ptr == NULL) {
                 return -1;
             }

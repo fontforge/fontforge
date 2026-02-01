@@ -1,5 +1,21 @@
 # Distributed under the original FontForge BSD 3-clause license
 
+# Compile as C++ for GLib removal migration
+set_source_files_properties(
+  pua.c
+  zapfnomen.c
+  flaglist.c
+  crctab.c
+  glif_name_hash.c
+  plugin.c
+  sflayout.c
+  print.c
+  scripting.c
+  python.c
+  sfd.c
+  PROPERTIES LANGUAGE CXX
+)
+
 set(FONTFORGE_NOINST_HEADERS
   asmfpst.h
   autohint.h
@@ -120,6 +136,7 @@ add_library(fontforge
   ${FONTFORGE_NOINST_HEADERS}
   ${FONTFORGE_INST_HEADERS}
   activeinui.c
+  ffglib_compat.cpp
   asmfpst.c
   autohint.c
   autosave.c
@@ -140,6 +157,7 @@ add_library(fontforge
   effects.c
   encoding.c
   featurefile.c
+  ffprocess.c
   flaglist.c
   fontviewbase.c
   freetype.c
@@ -244,13 +262,19 @@ target_link_libraries(fontforge
     fontforge_common_headers
     Freetype::Freetype
     LibXml2::LibXml2
-    GLIB::GLIB
     Intl::Intl
   PRIVATE
     MathLib::MathLib
     Iconv::Iconv
     ZLIB::ZLIB
+    mINI
 )
+
+# GLIB is only needed for GUI builds
+if(TARGET GLIB::GLIB)
+  target_link_libraries(fontforge PUBLIC GLIB::GLIB)
+  target_compile_definitions(fontforge PUBLIC HAVE_GLIB=1)
+endif()
 
 if(APPLE)
   target_link_libraries(fontforge
@@ -273,6 +297,9 @@ if(ENABLE_PYTHON_SCRIPTING_RESULT)
 endif()
 if(ENABLE_WOFF2_RESULT)
   target_link_libraries(fontforge PRIVATE WOFF2::WOFF2)
+endif()
+if(ENABLE_LIBUNIBREAK_RESULT)
+  target_link_libraries(fontforge PRIVATE Libunibreak::Libunibreak)
 endif()
 
 if(${CMAKE_VERSION} VERSION_LESS "3.12.0")

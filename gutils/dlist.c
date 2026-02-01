@@ -121,7 +121,7 @@ void dlist_foreach_reverse_udata( struct dlistnode** list, dlist_foreach_udata_f
 
 void dlist_pushfront_external( struct dlistnode** list, void* ptr )
 {
-    struct dlistnodeExternal* n = calloc(1,sizeof(struct dlistnodeExternal));
+    struct dlistnodeExternal* n = (struct dlistnodeExternal*) calloc(1,sizeof(struct dlistnodeExternal));
     n->ptr = ptr;
     dlist_pushfront( list, (struct dlistnode*)n );
 }

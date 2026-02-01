@@ -47,6 +47,10 @@
 #  define PRINTF_FORMAT_ATTRIBUTE(x, y)
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern bool SetupUCharMap(const char* unichar_name, const char* local_name, bool is_local_utf8);
 
 extern char *copy(const char *);
@@ -139,7 +143,7 @@ extern char *latin1_2_utf8_copy(const char *lbuf);
 extern char *utf8_2_latin1_copy(const char *utf8buf);
 extern long utf8_strlen(const char *utf8_str);	 /* Count how many characters in the string NOT bytes */
 extern long utf82u_strlen(const char *utf8_str); /* Count how many shorts needed to represent in UCS2 */
-extern void utf8_strncpy(register char *to, const char *from, int len); /* copy n characters NOT bytes */
+extern void utf8_strncpy(char *to, const char *from, int len); /* copy n characters NOT bytes */
 extern char *def2utf8_copy(const char *from);
 extern char *utf82def_copy(const char *ufrom);
 extern char *utf82def_copy_safe(const char *ufrom);
@@ -237,6 +241,10 @@ char* tostr( int v );
  */
 void realloc_tail(char** p_buf, size_t size_delta, char** p_tail,
                   char** p_proc);
+
+#ifdef __cplusplus
+}
+#endif
 
 #pragma pop_macro("PRINTF_FORMAT_ATTRIBUTE")
 

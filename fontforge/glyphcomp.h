@@ -6,6 +6,10 @@
 
 #include <stdio.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum font_compare_flags {
 	fcf_outlines             = 1,
 	fcf_exact                = 2,
@@ -55,5 +59,9 @@ extern int CompareFonts(SplineFont *sf1, EncMap *map1, SplineFont *sf2, FILE *di
 extern int CompareGlyphs(Context *c, real pt_err, real spline_err, real pixel_off_frac, int bb_err, int comp_hints, int diffs_are_errors);
 extern int CompareLayer(Context *c, const SplineSet *ss1, const SplineSet *ss2, const RefChar *refs1, const RefChar *refs2, real pt_err, real spline_err, const char *name, int diffs_are_errors, SplinePoint **_hmfail);
 extern int LayersSimilar(Layer *ly1, Layer *ly2, double spline_err);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_GLYPHCOMP_H */

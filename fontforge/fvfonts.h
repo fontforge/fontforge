@@ -4,6 +4,10 @@
 #include "baseviews.h"
 #include "splinefont.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern AnchorClass *MCConvertAnchorClass(struct sfmergecontext *mc, AnchorClass *ac);
 extern BDFChar *BDFCharCopy(BDFChar *bc);
 extern int SFCIDFindCID(SplineFont *sf, int unienc, const char *name);
@@ -40,5 +44,9 @@ typedef enum font_pitch {
 /* Call RecomputePitch() in a cycle for each glyph, while treating pitch and
  * width as a state. */
 bool RecomputePitch(int16_t this_width, FontPitch* pitch, int* width);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_FVFONTS_H */

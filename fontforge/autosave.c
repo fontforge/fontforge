@@ -30,6 +30,7 @@
 #include "autosave.h"
 
 #include "baseviews.h"
+#include "ffglib_compat.h"
 #include "fontforgevw.h"
 #include "sfd.h"
 /*#include "ustring.h"*/
@@ -58,7 +59,7 @@ static char *getAutoDirName(void) {
     if ( dir!=NULL ) {
         buffer = smprintf("%s/autosave", dir);
         free(dir);
-        if ( access(buffer,F_OK)==-1 )
+        if ( ff_access(buffer,F_OK)==-1 )
             if ( GFileMkDir(buffer, 0755)==-1 ) {
 		free(buffer);
                 return NULL;
@@ -79,7 +80,7 @@ static void MakeAutoSaveName(SplineFont *sf) {
 	return;
     while ( 1 ) {
 	buffer = smprintf("%s/auto%06x-%d.asfd", autosavedir, getpid(), ++cnt);
-	if ( access(buffer,F_OK)==-1 ) {
+	if ( ff_access(buffer,F_OK)==-1 ) {
 	    sf->autosavename = buffer;
             free(autosavedir);
 	    return;
@@ -146,7 +147,7 @@ return;
 	if ( strcmp(entry->d_name,".")==0 || strcmp(entry->d_name,"..")==0 )
     continue;
 	buffer = smprintf("%s/%s",recoverdir,entry->d_name);
-	if ( unlink(buffer)!=0 ) {
+	if ( ff_unlink(buffer)!=0 ) {
 	    fprintf( stderr, "Failed to clean " );
 	    perror(buffer);
 	}

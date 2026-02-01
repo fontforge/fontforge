@@ -10,11 +10,19 @@ Modified bezctx_ps.h for FontForge by George Williams - 2007
 #include <bezctx.h>
 #include <spiroentrypoints.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 bezctx *new_bezctx_ff(void);
 
 struct splinepointlist;
 
 struct splinepointlist *
 bezctx_ff_close(bezctx *bc);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_BEZCTX_FF_H */
