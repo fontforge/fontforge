@@ -82,7 +82,8 @@ jobs:
       - name: Create vcpkg binary cache directory
         run: New-Item -ItemType Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE
       - name: Restore vcpkg binary cache
-        uses: actions/cache@v4
+        id: vcpkg-cache
+        uses: actions/cache/restore@v4
         with:
           path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
           key: vcpkg-binary-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
@@ -116,3 +117,9 @@ jobs:
         run: cmake --build build --config Release
       - name: Run tests
         run: ctest --test-dir build --output-on-failure
+      - name: Save vcpkg binary cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+          key: ${{ steps.vcpkg-cache.outputs.cache-primary-key }}
