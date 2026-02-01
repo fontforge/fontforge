@@ -12,6 +12,14 @@
 
 #include <stddef.h>
 
+/* GLib boolean constants */
+#ifndef FALSE
+#define FALSE 0
+#endif
+#ifndef TRUE
+#define TRUE 1
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
