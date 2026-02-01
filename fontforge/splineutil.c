@@ -53,7 +53,7 @@
 #include "tottf.h"
 #include "ustring.h"
 #include "utype.h"
-#include "views.h"		/* for FindSel structure */
+#include "baseviews.h"		/* for FindSel structure */
 
 #include <locale.h>
 

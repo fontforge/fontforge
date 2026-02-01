@@ -37,7 +37,6 @@
 #include "gfile.h"
 #include "gwidget.h"
 #include "ustring.h"
-#include "views.h"
 
 #include <dirent.h>
 #include <errno.h>
