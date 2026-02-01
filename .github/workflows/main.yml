@@ -133,6 +133,15 @@ jobs:
           Get-ChildItem build\lib
 
           $env:PYTHONPATH = "build\lib"
+
+          # Debug: check Python version and try to diagnose DLL issue
+          python --version
+          python -c "import sys; print('Python path:', sys.executable)"
+          python -c "import os; print('DLL dirs:', os.add_dll_directory if hasattr(os, 'add_dll_directory') else 'not available')"
+
+          # Try to load the DLL directly to get better error message
+          python -c "import ctypes; ctypes.CDLL(r'build\lib\fontforge.dll')"
+
           python tests/pyhook_smoketest.py
       - name: Save vcpkg binary cache
         if: always()
