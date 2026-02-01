@@ -46,7 +46,7 @@
 #include "splineutil.h"
 #include "utanvec.h"
 #include "ustring.h"
-#include "views.h"		/* For SCCharChangedUpdate */
+/* SCCharChangedUpdate comes from uiinterface.h via fontforge.h */
 
 #include <math.h>
 #include <stdlib.h>

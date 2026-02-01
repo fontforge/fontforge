@@ -59,7 +59,6 @@
 #include "ttfinstrs.h"
 #include "ustring.h"
 #include "utype.h"
-#include "views.h"
 
 #include <dirent.h>
 #include <limits.h>		/* For NAME_MAX or _POSIX_NAME_MAX */

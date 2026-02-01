@@ -42,7 +42,6 @@
 #include "stemdb.h"
 #include "tottfgpos.h"
 #include "utype.h"
-#include "views.h"
 
 #include <math.h>
 #include <stdio.h>

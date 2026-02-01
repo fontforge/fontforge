@@ -477,7 +477,9 @@ typedef struct fontview {
     int sel_index;
     struct lookup_subtable *cur_subtable;
     struct qg_data *qg;
+#ifdef HAVE_GLIB
     GPid pid_webfontserver;
+#endif
     bool script_unsaved; // Whether or not there's an unsaved script in script dialog
 } FontView;
 

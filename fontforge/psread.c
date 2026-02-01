@@ -40,7 +40,7 @@
 #include "splineutil2.h"
 #include "ustring.h"
 #include "utype.h"
-#include "views.h"		/* For CharViewBase */
+#include "baseviews.h"		/* For CharViewBase */
 
 #include <assert.h>
 #include <locale.h>
