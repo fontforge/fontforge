@@ -91,7 +91,7 @@ char *GFileRemoveExtension(char *path) {
  * \return A pointer to the input path
  */
 char *GFileNormalizePath(char *path) {
-#if defined(__MINGW32__)
+#if defined(_MSC_VER) || defined(__MINGW32__)
     char *ptr;
     for(ptr = path; *ptr; ptr++) {
         if (*ptr == '\\') {
@@ -110,7 +110,7 @@ char *GFileNormalizePath(char *path) {
  * \return A pointer to the input path
  */
 unichar_t *u_GFileNormalizePath(unichar_t *path) {
-#if defined(__MINGW32__)
+#if defined(_MSC_VER) || defined(__MINGW32__)
     unichar_t *ptr;
     for (ptr = path; *ptr; ptr++) {
         if (*ptr == '\\') {
@@ -324,7 +324,7 @@ return(ret);
 }
 
 int GFileIsAbsolute(const char *file) {
-#if defined(__MINGW32__)
+#if defined(_MSC_VER) || defined(__MINGW32__)
     if( (file[1]==':') && (('a'<=file[0] && file[0]<='z') || ('A'<=file[0] && file[0]<='Z')) )
 return ( true );
 #else
@@ -587,7 +587,7 @@ return(ret);
 }
 
 int u_GFileIsAbsolute(const unichar_t *file) {
-#if defined(__MINGW32__)
+#if defined(_MSC_VER) || defined(__MINGW32__)
     if( (file[1]==':') && (('a'<=file[0] && file[0]<='z') || ('A'<=file[0] && file[0]<='Z')) )
 return ( true );
 #else
@@ -739,7 +739,7 @@ const char *getLocaleDir(void) {
     static char *localedir = NULL;
     if (!localedir) {
 	if (devel_env) {
-#if defined(__MINGW32__)
+#if defined(_MSC_VER) || defined(__MINGW32__)
             localedir = smprintf("%s/share/locale", program_root);
 #else
             localedir = smprintf("%s/po", program_root);
@@ -756,7 +756,7 @@ const char *getPixmapDir(void) {
     if (!pixmapdir) {
 	if (devel_env) {
 	    /* GUI_THEME macro is imported from the CMake ${GUI_THEME} variable */
-#if defined(__MINGW32__)
+#if defined(_MSC_VER) || defined(__MINGW32__)
             char *theme_src = smprintf("%s/../../work/mingw64/fontforge/fontforgeexe/pixmaps/%s", program_root, GUI_THEME);
 #else
             char *theme_src = smprintf("%s/../fontforgeexe/pixmaps/%s", program_root, GUI_THEME);
@@ -781,7 +781,7 @@ const char *getHelpDir(void) {
 /* reimplementation of GFileGetHomeDir, avoiding copy().  Returns NULL if home
  * directory cannot be found */
 const char *getUserHomeDir(void) {
-#if defined(__MINGW32__)
+#if defined(_MSC_VER) || defined(__MINGW32__)
 	char* dir = getenv("APPDATA");
 	if( dir==NULL )
 	dir = getenv("USERPROFILE");
@@ -939,7 +939,7 @@ char *GFileGetHomeDocumentsDir(void)
     if( ret )
 	return ret;
 
-#if defined(__MINGW32__)
+#if defined(_MSC_VER) || defined(__MINGW32__)
 
     CHAR my_documents[MAX_PATH+2];
     HRESULT result = SHGetFolderPath(NULL, CSIDL_PERSONAL, NULL, SHGFP_TYPE_CURRENT, my_documents );
