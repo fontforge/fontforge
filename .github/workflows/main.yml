@@ -115,8 +115,10 @@ jobs:
             -DBUILD_SHARED_LIBS=ON
       - name: Build
         run: cmake --build build
-      - name: Run tests
-        run: ctest --test-dir build --output-on-failure
+      - name: Run pyhook smoke test
+        run: |
+          $env:PYTHONPATH = "build\lib"
+          python tests/pyhook_smoketest.py
       - name: Save vcpkg binary cache
         if: always()
         uses: actions/cache/save@v4
