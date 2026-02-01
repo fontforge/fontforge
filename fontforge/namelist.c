@@ -43,11 +43,18 @@ int recognizePUA = false;
 NameList *force_names_when_opening=NULL;
 NameList *force_names_when_saving=NULL;
 
-static struct psaltnames {
+struct psaltnames {
     const char *name;
     int unicode;
     int provenance;		/* 1=> Adobe PUA, 2=>AMS PUA, 3=>TeX */
-} psaltnames[];
+};
+/* Forward declaration - actual definition at end of file */
+#ifdef _MSC_VER
+/* MSVC doesn't support incomplete array forward declarations */
+extern struct psaltnames psaltnames[];
+#else
+static struct psaltnames psaltnames[];
+#endif
 
 static NameList agl_sans, agl, agl_nf, adobepua, greeksc, tex, ams;
 NameList *namelist_for_new_fonts = &agl_nf;
@@ -15371,7 +15378,11 @@ static NameList ams = {
 	NULL, NULL, 0, NULL
 };
 /* ************************************************************************** */
+#ifdef _MSC_VER
+struct psaltnames psaltnames[] = {
+#else
 static struct psaltnames psaltnames[] = {
+#endif
 	{ "AEmacron", 0x01e2, 0 },
 	{ "AEsmall", 0xf7e6, 0 },
 	{ "Aacutesmall", 0xf7e1, 0 },
