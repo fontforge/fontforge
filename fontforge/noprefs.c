@@ -489,6 +489,15 @@ static void DefaultXUID(void) {
     /* FontForge will use the same scheme */
     int r1, r2;
     char buffer[50];
+#ifdef _MSC_VER
+    unsigned int seed = (unsigned int)time(NULL);
+    srand(seed);
+    do {
+	r1 = rand()&0x3ff;
+    } while ( r1==0 );		/* I reserve "0" for me! */
+    ff_random_set_seed(seed + 1);
+    r2 = ff_random_int();
+#else
     struct timeval tv;
 
     gettimeofday(&tv,NULL);
@@ -499,6 +508,7 @@ static void DefaultXUID(void) {
     gettimeofday(&tv,NULL);
     ff_random_set_seed(tv.tv_usec+1);
     r2 = ff_random_int();
+#endif
     sprintf( buffer, "1021 %d %d", r1, r2 );
     if (xuid != NULL) free(xuid);
     xuid = copy(buffer);
