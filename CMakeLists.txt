@@ -108,7 +108,10 @@ set_font_family(mono "${FONT_FAMILIES_MONO}")
 # Required and default dependencies
 # Note: When adding a dependency, ensure it has an imported target (wherever appropriate)
 find_package(Freetype 2.3.7 REQUIRED)
-find_package(Gettext REQUIRED)
+# Gettext tools (msgmerge) not available in vcpkg on Windows
+if(NOT (MSVC AND NOT ENABLE_GUI))
+  find_package(Gettext REQUIRED)
+endif()
 find_package_with_target(Intl REQUIRED)
 # GLIB is required except on Windows MSVC builds without GUI
 if(NOT (MSVC AND NOT ENABLE_GUI))
