@@ -906,16 +906,7 @@ time_t GFileGetMTime(const char *name) {
     ff_stat_t buf;
     if ( ff_stat(name, &buf) )
 	return( 0 );
-#if defined(__MINGW32__) || defined(_MSC_VER)
     return( buf.st_mtime );
-#else
-    /* Use timespec if available for sub-second precision */
-#ifdef st_mtime
-    return( buf.st_mtim.tv_sec );
-#else
-    return( buf.st_mtime );
-#endif
-#endif
 }
 
 time_t GFileGetMTimeF(FILE *file) {
@@ -923,15 +914,7 @@ time_t GFileGetMTimeF(FILE *file) {
     ff_stat_t buf;
     if ( ff_fstat(fileno(file), &buf) )
 	return( 0 );
-#if defined(__MINGW32__) || defined(_MSC_VER)
     return( buf.st_mtime );
-#else
-#ifdef st_mtime
-    return( buf.st_mtim.tv_sec );
-#else
-    return( buf.st_mtime );
-#endif
-#endif
 }
 
 char *GFileReadAll(char *name) {
