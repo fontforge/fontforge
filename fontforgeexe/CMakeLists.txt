@@ -121,7 +121,8 @@ if(WIN32)
   string(REGEX REPLACE "^0+" "" FF_RC_DAY "${FF_RC_DAY}")
   configure_file(fontforge.exe.manifest.in fontforge.exe.manifest @ONLY)
   configure_file(fontforge.rc.in fontforge.rc @ONLY)
-  target_sources(fontforgeexe PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/fontforge.rc" "${CMAKE_CURRENT_BINARY_DIR}/fontforge.exe.manifest")
+  # Only add .rc file - it already includes the manifest via RT_MANIFEST
+  target_sources(fontforgeexe PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/fontforge.rc")
 endif()
 
 if(ENABLE_PYTHON_SCRIPTING_RESULT)
