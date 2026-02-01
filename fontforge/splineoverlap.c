@@ -38,6 +38,7 @@
 #include "splineutil2.h"
 
 #include <assert.h>
+#include <float.h>
 #include <math.h>
 #include <stdarg.h>
 
