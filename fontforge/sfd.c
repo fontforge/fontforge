@@ -2096,7 +2096,7 @@ static void SFDFpstClassNamesOut(FILE *sfd,int class_cnt,char **classnames,const
 FILE* MakeTemporaryFile(void) {
     FILE *ret = NULL;
 
-#ifndef __MINGW32__
+#if !defined(__MINGW32__) && !defined(_MSC_VER)
     char loc[256];
     const char *tmpdir = getenv("TMPDIR");
     if (!tmpdir) tmpdir = "/tmp";

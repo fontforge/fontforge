@@ -56,7 +56,7 @@
 #include <time.h>
 #include "ffunistd.h"
 
-#if !defined(__MINGW32__)
+#if !defined(__MINGW32__) && !defined(_MSC_VER)
 # include <pwd.h>
 #endif
 
