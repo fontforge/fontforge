@@ -69,10 +69,15 @@ jobs:
       - name: Debug - Run with lldb for stack trace
         run: |
           cd build/lib
-          echo "run" > /tmp/lldb_commands
-          echo "bt" >> /tmp/lldb_commands
-          echo "quit" >> /tmp/lldb_commands
-          lldb -b -s /tmp/lldb_commands -- python3 -c "import fontforge" 2>&1 | tail -100 || true
+          # Create lldb command file that waits for crash
+          cat > /tmp/lldb_cmds << 'EOF'
+          process handle SIGSEGV --stop true --notify true
+          run
+          bt all
+          quit
+          EOF
+          echo "=== Running under lldb ==="
+          lldb -b -s /tmp/lldb_cmds -- python3 -c "import fontforge" 2>&1 || true
       - name: Run pyhook smoke test
         run: |
           PYTHONPATH=build/lib python3 tests/pyhook_smoketest.py
