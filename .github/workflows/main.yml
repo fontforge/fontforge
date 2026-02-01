@@ -81,7 +81,6 @@ jobs:
         uses: lukka/run-vcpkg@v11
         with:
           vcpkgJsonGlob: 'vcpkg.json'
-          runVcpkgInstall: true
       - name: Setup MSVC
         uses: ilammy/msvc-dev-cmd@v1
         with:

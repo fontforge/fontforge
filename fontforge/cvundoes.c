@@ -51,6 +51,7 @@
 #include "ustring.h"
 #include "utype.h"
 
+#include "ffunistd.h"
 #include <math.h>
 
 #ifndef HAVE_EXECINFO_H
