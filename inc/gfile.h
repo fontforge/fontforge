@@ -30,9 +30,10 @@
 
 #include "basics.h"
 
-/* For mode_t */
+/* For mode_t and off_t */
 #ifdef _MSC_VER
 typedef unsigned short mode_t;
+typedef long long off_t;
 #else
 #include <sys/types.h>
 #endif
