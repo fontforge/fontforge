@@ -36,7 +36,6 @@ set(FONTFORGE_NOINST_HEADERS
   effects.h
   encoding.h
   featurefile.h
-  ffprocess.h
   fontforgeui.h
   fvcomposite.h
   fvfonts.h
