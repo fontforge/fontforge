@@ -48,6 +48,10 @@
  #include <io.h>
  #include <shlobj.h>
  #include <windows.h>
+ /* S_ISDIR not defined on MSVC */
+ #ifndef S_ISDIR
+ #define S_ISDIR(m) (((m) & _S_IFMT) == _S_IFDIR)
+ #endif
 #elif defined(__MINGW32__)
  #include <shlobj.h>
  #include <windows.h>
@@ -160,7 +164,7 @@ return EXIT_SUCCESS;
 }
 
 char *GFileGetHomeDir(void) {
-#if defined(__MINGW32__)
+#if defined(_MSC_VER) || defined(__MINGW32__)
     char* dir = getenv("HOME");
     if(!dir)
 	dir = getenv("USERPROFILE");

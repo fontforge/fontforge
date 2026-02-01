@@ -33,7 +33,10 @@
 /* For mode_t and off_t */
 #ifdef _MSC_VER
 typedef unsigned short mode_t;
+#ifndef _OFF_T_DEFINED
 typedef long long off_t;
+#define _OFF_T_DEFINED
+#endif
 #else
 #include <sys/types.h>
 #endif
