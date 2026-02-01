@@ -262,7 +262,7 @@ target_link_libraries(fontforge
     fontforge_common_headers
     Freetype::Freetype
     LibXml2::LibXml2
-    Intl::Intl
+    $<$<BOOL:${Intl_FOUND}>:Intl::Intl>
   PRIVATE
     MathLib::MathLib
     Iconv::Iconv
