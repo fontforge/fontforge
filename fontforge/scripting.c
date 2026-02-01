@@ -89,9 +89,7 @@
 #include <math.h>
 #include <setjmp.h>
 #include <time.h>
-#ifndef _MSC_VER
 #include "ffunistd.h"
-#endif
 
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */

@@ -54,14 +54,7 @@
 #include <math.h>
 #include <stdio.h>
 #include <time.h>
-
-#ifndef _MSC_VER
 #include "ffunistd.h"
-#endif
-
-#ifdef __CygWin
- #include "ffunistd.h"
-#endif
 
 static void *mygets(FILE *file,char *buffer,int size) {
     char *end = buffer+size-1;

@@ -55,9 +55,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#ifndef _MSC_VER
 #include "ffunistd.h"
-#endif
 
 #if __Mac
 # include "carbon.h"
