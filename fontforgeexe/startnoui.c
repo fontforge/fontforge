@@ -125,10 +125,10 @@ int fontforge_main( int argc, char **argv ) {
         }
     }
 
-    if ( default_encoding==NULL )
-	default_encoding=FindOrMakeEncoding("ISO8859-1");
-    if ( default_encoding==NULL )
-	default_encoding=&custom;	/* In case iconv is broken */
+    if ( GetDefaultEncoding()==NULL )
+	SetDefaultEncoding(FindOrMakeEncoding("ISO8859-1"));
+    if ( GetDefaultEncoding()==NULL )
+	SetDefaultEncoding(GetCustomEncoding());	/* In case iconv is broken */
     CheckIsScript(argc,argv);		/* Will run the script and exit if it is a script */
     if ( argc==2 ) {
 	pt = argv[1];
