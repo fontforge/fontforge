@@ -293,7 +293,16 @@ if(ENABLE_LIBREADLINE_RESULT)
   target_link_libraries(fontforge PUBLIC Readline::Readline)
 endif()
 if(ENABLE_PYTHON_SCRIPTING_RESULT)
-  target_link_libraries(fontforge PRIVATE Python3::Python)
+  if(APPLE)
+    # On macOS, don't link libfontforge directly to Python library.
+    # The Python symbols should be resolved at runtime from the interpreter
+    # that loads the extension module. Use -undefined dynamic_lookup to allow
+    # undefined symbols that will be resolved when the extension is loaded.
+    target_include_directories(fontforge PRIVATE ${Python3_INCLUDE_DIRS})
+    target_link_options(fontforge PRIVATE -undefined dynamic_lookup)
+  else()
+    target_link_libraries(fontforge PRIVATE Python3::Python)
+  endif()
 endif()
 if(ENABLE_WOFF2_RESULT)
   target_link_libraries(fontforge PRIVATE WOFF2::WOFF2)
