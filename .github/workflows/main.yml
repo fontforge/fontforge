@@ -75,8 +75,19 @@ jobs:
 
   windows-msvc:
     runs-on: windows-latest
+    env:
+      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/vcpkg-binary-cache
     steps:
       - uses: actions/checkout@v4
+      - name: Create vcpkg binary cache directory
+        run: New-Item -ItemType Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE
+      - name: Restore vcpkg binary cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
+          key: vcpkg-binary-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-binary-${{ runner.os }}-
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
         with:
@@ -94,7 +105,6 @@ jobs:
           cmake -B build -G Ninja `
             -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" `
             -DCMAKE_BUILD_TYPE=Release `
-            -DCMAKE_CXX_STANDARD=20 `
             -DENABLE_GUI=OFF `
             -DENABLE_PYTHON_SCRIPTING=ON `
             -DENABLE_PYTHON_EXTENSION=ON `
