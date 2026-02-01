@@ -67,10 +67,14 @@ static void initadobeenc(void) {
 }
 
 static void initrand(void) {
+#ifdef _MSC_VER
+    ff_random_set_seed((unsigned int)time(NULL));
+#else
     struct timeval tv;
 
     gettimeofday(&tv,NULL);
     ff_random_set_seed(tv.tv_usec);
+#endif
 }
 
 void InitSimpleStuff(void) {
