@@ -52,6 +52,9 @@
  #ifndef S_ISDIR
  #define S_ISDIR(m) (((m) & _S_IFMT) == _S_IFDIR)
  #endif
+ /* Use _stat64 for 64-bit file sizes on MSVC */
+ #define stat _stat64
+ #define fstat _fstat64
 #elif defined(__MINGW32__)
  #include <shlobj.h>
  #include <windows.h>
@@ -887,15 +890,9 @@ return NULL;
 
 off_t GFileGetSize(char *name) {
 /* Get the binary file size for file 'name'. Return -1 if error. */
-#ifdef _MSC_VER
-    struct _stat64 buf;
-    if ( _stat64(name, &buf) )
-	return( -1 );
-#else
     struct stat buf;
     if ( stat(name, &buf) )
 	return( -1 );
-#endif
     return( buf.st_size );
 }
 
