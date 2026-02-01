@@ -103,9 +103,13 @@ jobs:
           python-version: '3.11'
       - name: Configure
         run: |
+          # Use the Python from setup-python (not some other system Python)
+          $pythonExe = (Get-Command python).Source
+          Write-Host "Using Python: $pythonExe"
           cmake -B build -G "NMake Makefiles" `
             -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" `
             -DCMAKE_BUILD_TYPE=Release `
+            -DPython3_EXECUTABLE="$pythonExe" `
             -DENABLE_GUI=OFF `
             -DENABLE_PYTHON_SCRIPTING=ON `
             -DENABLE_PYTHON_EXTENSION=ON `
@@ -117,31 +121,11 @@ jobs:
         run: cmake --build build
       - name: Run pyhook smoke test
         run: |
-          # Debug: show what we have
-          Write-Host "=== build\bin contents ==="
-          Get-ChildItem build\bin -ErrorAction SilentlyContinue
-          Write-Host "=== build\lib contents ==="
-          Get-ChildItem build\lib -ErrorAction SilentlyContinue
-          Write-Host "=== vcpkg DLLs ==="
-          Get-ChildItem build\vcpkg_installed\x64-windows\bin\*.dll -ErrorAction SilentlyContinue
-
           # Copy DLLs to lib directory so Python can find them
           Copy-Item build\bin\*.dll build\lib\ -Force
           Copy-Item build\vcpkg_installed\x64-windows\bin\*.dll build\lib\ -Force -ErrorAction SilentlyContinue
-
-          Write-Host "=== build\lib after copy ==="
-          Get-ChildItem build\lib
-
           $env:PYTHONPATH = "build\lib"
-
-          # Debug: check Python version and try to diagnose DLL issue
           python --version
-          python -c "import sys; print('Python path:', sys.executable)"
-          python -c "import os; print('DLL dirs:', os.add_dll_directory if hasattr(os, 'add_dll_directory') else 'not available')"
-
-          # Try to load the DLL directly to get better error message
-          python -c "import ctypes; ctypes.CDLL(r'build\lib\fontforge.dll')"
-
           python tests/pyhook_smoketest.py
       - name: Save vcpkg binary cache
         if: always()
