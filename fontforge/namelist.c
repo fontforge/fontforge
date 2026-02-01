@@ -525,7 +525,7 @@ static void NameListFree(NameList *nl) {
 }
 /* ************************************************************************** */
 
-#include <dirent.h>
+#include "ffdir.h"
 #include <sys/types.h>
 
 NameList *LoadNamelist(char *filename) {
@@ -697,8 +697,8 @@ return( false );
 }
 
 void LoadNamelistDir(char *dir) {
-    DIR *diro;
-    struct dirent *ent;
+    FF_Dir *diro;
+    FF_DirEntry *ent;
     char buffer[1025];
     char *userConfigDir = NULL;
 
@@ -708,18 +708,18 @@ void LoadNamelistDir(char *dir) {
             return;
     }
 
-    diro = opendir(dir);
+    diro = ff_opendir(dir);
     if ( diro!=NULL ) {         /* It's ok not to have any */
-        while ( (ent = readdir(diro))!=NULL ) {
-            if ( isnamelist(ent->d_name) ) {
-                sprintf( buffer, "%s/%s", dir, ent->d_name );
+        while ( (ent = ff_readdir(diro))!=NULL ) {
+            if ( isnamelist(ent->name) ) {
+                sprintf( buffer, "%s/%s", dir, ent->name );
                 LoadNamelist(buffer);
             }
         }
-        closedir(diro);
+        ff_closedir(diro);
     }
 
-    if ( userConfigDir!=NULL ) 
+    if ( userConfigDir!=NULL )
         free(userConfigDir);
 
     return;

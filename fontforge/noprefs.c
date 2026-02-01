@@ -43,7 +43,6 @@
 #include "ustring.h"
 
 #include <assert.h>
-#include <dirent.h>
 #include <locale.h>
 #include <stdlib.h>
 #include <sys/time.h>

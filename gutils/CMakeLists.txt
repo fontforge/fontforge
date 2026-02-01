@@ -30,6 +30,7 @@ set_source_files_properties(
 
 add_library(gutils OBJECT
   dlist.c
+  ffdir.cpp
   fsys.c
   gcol.c
   gimagebmpP.h

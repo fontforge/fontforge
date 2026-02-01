@@ -86,7 +86,7 @@
 #include "utanvec.h"
 #include "utype.h"
 
-#include <dirent.h>
+#include "ffdir.h"
 #include <errno.h>
 #include <math.h>
 #include <stdarg.h>
@@ -21071,23 +21071,23 @@ extern void PyFF_FreePythonPersistent(void *python_persistent) {
 }
 
 static void LoadFilesInPythonInitDir(char *dir) {
-    DIR *diro;
-    struct dirent *ent;
+    FF_Dir *diro;
+    FF_DirEntry *ent;
     std::vector<char*> filelist;
 
-    diro = opendir(dir);
+    diro = ff_opendir(dir);
     if ( diro==NULL )		/* It's ok not to have any python init scripts */
 return;
 
-    while ( (ent = readdir(diro))!=NULL ) {
-	char *pt = strrchr(ent->d_name,'.');
+    while ( (ent = ff_readdir(diro))!=NULL ) {
+	char *pt = strrchr(ent->name,'.');
 	if ( pt==NULL )
     continue;
 	if ( strcmp(pt,".py")==0 ) {
-	    filelist.push_back(smprintf("%s/%s", dir, ent->d_name));
+	    filelist.push_back(smprintf("%s/%s", dir, ent->name));
 	}
     }
-    closedir(diro);
+    ff_closedir(diro);
 
     std::sort(filelist.begin(), filelist.end(),
 	      [](const char *a, const char *b) { return strcmp(a, b) < 0; });

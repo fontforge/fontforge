@@ -45,7 +45,7 @@
 #include "utype.h"
 
 #include <assert.h>
-#include <dirent.h>
+#include "ffdir.h"
 #include <math.h>
 #include <sys/types.h>
 
@@ -1051,8 +1051,8 @@ int FVImportImageTemplate(FontViewBase *fv,char *path,int format,int toback,
     const char *dirname;
     int i, val;
     int isu=false, ise=false, isc=false;
-    DIR *dir;
-    struct dirent *entry;
+    FF_Dir *dir;
+    FF_DirEntry *entry;
     SplineChar *sc;
     char start [1025];
 
@@ -1077,25 +1077,25 @@ return( false );
 	*name = '\0';
     }
 
-    if ( (dir = opendir(dirname))==NULL ) {
+    if ( (dir = ff_opendir(dirname))==NULL ) {
 	    ff_post_error(_("Nothing Loaded"),_("Nothing Loaded"));
 return( false );
     }
 
     tot = 0;
-    while ( (entry=readdir(dir))!=NULL ) {
-	pt = strrchr(entry->d_name,'.');
+    while ( (entry=ff_readdir(dir))!=NULL ) {
+	pt = strrchr(entry->name,'.');
 	if ( pt==NULL )
     continue;
 	if ( strmatch(pt,ext)!=0 )
     continue;
 	if ( !(
-		(isu && entry->d_name[0]=='u' && entry->d_name[1]=='n' && entry->d_name[2]=='i' && (val=strtol(entry->d_name+3,&end,16), end==pt)) ||
-		(isu && entry->d_name[0]=='u' && (val=strtol(entry->d_name+1,&end,16), end==pt)) ||
-		(isc && entry->d_name[0]=='c' && entry->d_name[1]=='i' && entry->d_name[2]=='d' && (val=strtol(entry->d_name+3,&end,10), end==pt)) ||
-		(ise && entry->d_name[0]=='e' && entry->d_name[1]=='n' && entry->d_name[2]=='c' && (val=strtol(entry->d_name+3,&end,10), end==pt)) ))
+		(isu && entry->name[0]=='u' && entry->name[1]=='n' && entry->name[2]=='i' && (val=strtol(entry->name+3,&end,16), end==pt)) ||
+		(isu && entry->name[0]=='u' && (val=strtol(entry->name+1,&end,16), end==pt)) ||
+		(isc && entry->name[0]=='c' && entry->name[1]=='i' && entry->name[2]=='d' && (val=strtol(entry->name+3,&end,10), end==pt)) ||
+		(ise && entry->name[0]=='e' && entry->name[1]=='n' && entry->name[2]=='c' && (val=strtol(entry->name+3,&end,10), end==pt)) ))
     continue;
-	sprintf (start, "%s/%s", dirname, entry->d_name);
+	sprintf (start, "%s/%s", dirname, entry->name);
 	if ( isu ) {
 	    i = SFFindSlot(fv->sf,fv->map,val,NULL);
 	    if ( i==-1 ) {
@@ -1140,7 +1140,7 @@ return( false );
 	    ++tot;
 	}
     }
-    closedir(dir);
+    ff_closedir(dir);
     if ( tot==0 )
 	ff_post_error(_("Nothing Loaded"),_("Nothing Loaded"));
 return( true );
