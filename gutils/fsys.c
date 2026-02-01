@@ -52,9 +52,6 @@
  #ifndef S_ISDIR
  #define S_ISDIR(m) (((m) & _S_IFMT) == _S_IFDIR)
  #endif
- /* Use _stat64 for 64-bit file sizes on MSVC */
- #define stat _stat64
- #define fstat _fstat64
 #elif defined(__MINGW32__)
  #include <shlobj.h>
  #include <windows.h>
