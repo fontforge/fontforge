@@ -20664,15 +20664,15 @@ static const char *spiro_names[] = { "spiroG4", "spiroG2", "spiroCorner",
 static int FinalizePythonTypes(python_type_info* typelist) {
     int i=0;
 
+    fprintf(stderr, "DEBUG: FinalizePythonTypes starting\n"); fflush(stderr);
+
     /* Build types first with custom initializers */
     for ( i=0; typelist[i].typeobj != NULL; ++i ) {
 	PyTypeObject * typ = typelist[i].typeobj;
 	type_initializer typ_init = typelist[i].setup_function;
 
 	if ( typ != NULL && typ_init != NULL ) {
-#ifdef DEBUG
-	    fprintf(stderr,"Building type %s\n", typ->tp_name);
-#endif
+	    fprintf(stderr,"DEBUG: Building type %s\n", typ->tp_name); fflush(stderr);
 	    if ( typ_init( typ ) < 0 ) {
 		fprintf(stderr,"Python initialization failed: setup of type %s failed\n",
 			typ->tp_name);
@@ -20681,19 +20681,21 @@ static int FinalizePythonTypes(python_type_info* typelist) {
 	}
     }
 
+    fprintf(stderr, "DEBUG: Custom initializers done, calling PyType_Ready...\n"); fflush(stderr);
+
     /* Let Python make the type ready */
     for ( i=0; typelist[i].typeobj != NULL; ++i ) {
 	PyTypeObject * typ = typelist[i].typeobj;
 
-#ifdef DEBUG
-	fprintf(stdout,"PyTypeReady(%s)\n", typ->tp_name);
-#endif
+	fprintf(stderr,"DEBUG: PyType_Ready(%s) at %p\n", typ->tp_name, (void*)typ); fflush(stderr);
 	if ( PyType_Ready(typ) < 0 ) {
 	    fprintf(stderr,"Python initialization failed: PyTypeReady(%s) failed\n",
 		    typ->tp_name);
 	    return -1;
 	}
+	fprintf(stderr,"DEBUG: PyType_Ready(%s) succeeded\n", typ->tp_name); fflush(stderr);
     }
+    fprintf(stderr, "DEBUG: FinalizePythonTypes done\n"); fflush(stderr);
     return 0;
 }
 
@@ -20729,11 +20731,15 @@ static int AddPythonTypesToModule( PyObject *module, python_type_info* typelist)
 static PyObject* CreatePyModule( module_definition *mdef ) {
     PyObject *module;
 
+    fprintf(stderr, "DEBUG: CreatePyModule for %s\n", mdef->module_name); fflush(stderr);
+
     if ( mdef->runtime.module != NULL )
 	return mdef->runtime.module;
 
+    fprintf(stderr, "DEBUG: Calling FinalizePythonTypes for %s...\n", mdef->module_name); fflush(stderr);
     if ( mdef->types != NULL && FinalizePythonTypes( mdef->types ) < 0 )
 	return NULL;
+    fprintf(stderr, "DEBUG: FinalizePythonTypes done for %s\n", mdef->module_name); fflush(stderr);
 
     mdef->runtime.pymod_def.m_name = mdef->module_name;
     mdef->runtime.pymod_def.m_doc = mdef->docstring;
@@ -21275,11 +21281,18 @@ return;
 PyMODINIT_FUNC fontforge_python_init(const char* modulename) {
     static int initted = false;
 
+    fprintf(stderr, "DEBUG: fontforge_python_init called, modulename=%s, initted=%d\n", modulename, initted);
+    fflush(stderr);
+
     if (!initted) {
+        fprintf(stderr, "DEBUG: Calling doinitFontForgeMain...\n"); fflush(stderr);
         doinitFontForgeMain();
+        fprintf(stderr, "DEBUG: doinitFontForgeMain done\n"); fflush(stderr);
         no_windowing_ui = running_script = true;
 
+        fprintf(stderr, "DEBUG: Calling CreateAllPyModules...\n"); fflush(stderr);
         CreateAllPyModules();
+        fprintf(stderr, "DEBUG: CreateAllPyModules done\n"); fflush(stderr);
 
         // Register the internal module
         PyObject* modules = PySys_GetObject("modules");
