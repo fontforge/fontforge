@@ -73,6 +73,7 @@ jobs:
           cat > /tmp/lldb_cmds << 'EOF'
           process handle SIGSEGV --stop true --notify true
           run
+          continue
           bt all
           quit
           EOF
