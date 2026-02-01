@@ -9053,10 +9053,10 @@ return( sf );
 }
 
 void SFTimesFromFile(SplineFont *sf,FILE *file) {
-    struct stat b;
-    if ( fstat(fileno(file),&b)!=-1 ) {
-	sf->modificationtime = GetST_MTime(b);
-	sf->creationtime = GetST_MTime(b);
+    time_t mtime = GFileGetMTimeF(file);
+    if ( mtime != 0 ) {
+	sf->modificationtime = mtime;
+	sf->creationtime = mtime;
     }
 }
 

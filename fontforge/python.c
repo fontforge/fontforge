@@ -48,6 +48,7 @@
 #include "fvcomposite.h"
 #include "fvfonts.h"
 #include "fvimportbdf.h"
+#include "gfile.h"
 #include "glyphcomp.h"
 #include "langfreq.h"
 #include "lookups.h"
@@ -21107,10 +21108,7 @@ return;
 }
 
 static int dir_exists(const char* path) {
-    struct stat st;
-    if ( stat(path,&st)==0 && S_ISDIR(st.st_mode) )
-	return 1;
-    return 0;
+    return GFileIsDir(path);
 }
 
 static std::vector<char*> default_pyinit_dirs(void) {

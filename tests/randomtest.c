@@ -27,6 +27,8 @@
 
 #include <fontforge-config.h>
 
+#include "gfile.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,21 +37,10 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #endif
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <dirent.h>
 #include <math.h>
 #include <signal.h>
 #include <time.h>
-
-/* MSVC stat compatibility */
-#ifdef _MSC_VER
-typedef struct __stat64 ff_stat_t;
-#define ff_stat(p, b) _stat64(p, b)
-#else
-typedef struct stat ff_stat_t;
-#define ff_stat(p, b) stat(p, b)
-#endif
 
 #ifdef TEST_FREETYPE
 # include <ft2build.h>
@@ -185,7 +176,7 @@ static void FindFonts(char **fontdirs,char **extensions) {
     struct dirent *ent;
     int i, max;
     char buffer[1025];
-    ff_stat_t statb;
+    off_t filesize;
 
     max = 0;
     fcnt = 0;
@@ -199,7 +190,8 @@ exit(1);
 
 	while ( (ent = readdir(examples))!=NULL ) {
 	    snprintf(buffer,sizeof(buffer),"%s/%s", fontdirs[i], ent->d_name );
-	    if ( ff_stat(buffer,&statb)==-1 || S_ISDIR(statb.st_mode))
+	    filesize = GFileGetSize(buffer);
+	    if ( filesize==-1 || GFileIsDir(buffer))
 	continue;
 	    if ( extensions==NULL || extmatch(buffer,extensions)) {
 		if ( fcnt>=max ) {
@@ -211,7 +203,7 @@ exit(1);
 		    }
 		}
 		fontlist[fcnt].name = strdup(buffer);
-		fontlist[fcnt].len = statb.st_size;
+		fontlist[fcnt].len = filesize;
 		figurefiletype(&fontlist[fcnt]);
 		++fcnt;
 	    }

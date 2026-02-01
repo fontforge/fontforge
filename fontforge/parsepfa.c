@@ -2629,7 +2629,7 @@ return;
 FontDict *_ReadPSFont(FILE *in) {
     FILE *temp;
     struct fontparse fp;
-    struct stat b;
+    time_t mtime;
 
     temp = GFileTmpfile();
     if ( temp==NULL ) {
@@ -2649,9 +2649,10 @@ return(NULL);
 
     fclose(temp);
 
-    if ( fstat(fileno(in),&b)!=-1 ) {
-	fp.fd->modificationtime = GetST_MTime(b);
-	fp.fd->creationtime = GetST_MTime(b);
+    mtime = GFileGetMTimeF(in);
+    if ( mtime != 0 ) {
+	fp.fd->modificationtime = mtime;
+	fp.fd->creationtime = mtime;
     }
 return( fp.fd );
 }
