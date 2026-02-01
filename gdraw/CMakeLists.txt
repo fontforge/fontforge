@@ -5,6 +5,7 @@
 
 add_library(gdraw STATIC
   choosericons.c
+  ghelp.c
   colorP.h
   ctlvalues.c
   div_tables.c

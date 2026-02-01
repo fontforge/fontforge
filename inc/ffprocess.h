@@ -167,6 +167,19 @@ FFProcessResult ff_compress_file(const char *filename, FFCompressionType type);
  */
 FFProcessResult ff_decompress_in_place(const char *filename);
 
+/* ==================== MIME Type API ==================== */
+
+/**
+ * Guess MIME type from filename extension.
+ *
+ * Uses Python's mimetypes module if available, otherwise falls back
+ * to a built-in extension table covering common image/font types.
+ *
+ * @param path  Path or filename to check
+ * @return malloc'd MIME type string (caller frees), or NULL if unknown
+ */
+char *ff_guess_mime_type(const char *path);
+
 #ifdef __cplusplus
 }
 #endif
