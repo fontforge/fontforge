@@ -103,7 +103,7 @@ jobs:
           python-version: '3.11'
       - name: Configure
         run: |
-          cmake -B build -G Ninja `
+          cmake -B build -G "NMake Makefiles" `
             -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" `
             -DCMAKE_BUILD_TYPE=Release `
             -DENABLE_GUI=OFF `
@@ -114,7 +114,7 @@ jobs:
             -DENABLE_DOCS=OFF `
             -DBUILD_SHARED_LIBS=ON
       - name: Build
-        run: cmake --build build --config Release
+        run: cmake --build build
       - name: Run tests
         run: ctest --test-dir build --output-on-failure
       - name: Save vcpkg binary cache
