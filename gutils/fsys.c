@@ -56,11 +56,11 @@
  #include <shlobj.h>
  #include <windows.h>
  #include <sys/param.h>
- #include <unistd.h>
+ #include "ffunistd.h"
 #else
  #include <pwd.h>
  #include <sys/param.h>
- #include <unistd.h>
+ #include "ffunistd.h"
 #endif
 
 static char *program_root = NULL;
