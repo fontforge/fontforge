@@ -76,19 +76,19 @@ jobs:
   windows-msvc:
     runs-on: windows-latest
     env:
-      VCPKG_DEFAULT_BINARY_CACHE: ${{ github.workspace }}/vcpkg-binary-cache
+      VCPKG_BINARY_SOURCES: "clear;files,${{ github.workspace }}/vcpkg-cache,readwrite"
     steps:
       - uses: actions/checkout@v4
-      - name: Create vcpkg binary cache directory
-        run: New-Item -ItemType Directory -Force -Path $env:VCPKG_DEFAULT_BINARY_CACHE
       - name: Restore vcpkg binary cache
         id: vcpkg-cache
         uses: actions/cache/restore@v4
         with:
-          path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-          key: vcpkg-binary-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
+          path: vcpkg-cache
+          key: vcpkg-files-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
           restore-keys: |
-            vcpkg-binary-${{ runner.os }}-
+            vcpkg-files-${{ runner.os }}-
+      - name: Create vcpkg cache directory
+        run: New-Item -ItemType Directory -Force -Path vcpkg-cache
       - name: Setup vcpkg
         uses: lukka/run-vcpkg@v11
         with:
@@ -121,5 +121,5 @@ jobs:
         if: always()
         uses: actions/cache/save@v4
         with:
-          path: ${{ env.VCPKG_DEFAULT_BINARY_CACHE }}
-          key: ${{ steps.vcpkg-cache.outputs.cache-primary-key }}
+          path: vcpkg-cache
+          key: vcpkg-files-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
