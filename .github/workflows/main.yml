@@ -44,19 +44,35 @@ jobs:
           otool -L build/lib/fontforge*.so || true
           echo "=== psMat.so dependencies ==="
           otool -L build/lib/psMat*.so || true
-      - name: Debug - Try minimal import
+      - name: Debug - Try minimal import with crash report
         run: |
           cd build/lib
+          # Enable crash reporting
+          export MallocStackLogging=1
+          # Try import and capture any crash
           python3 -c "
           import sys
+          import faulthandler
+          faulthandler.enable()
           print('Python:', sys.executable)
-          print('Path:', sys.path)
           print('Attempting import...')
           sys.stdout.flush()
           import fontforge
           print('Import succeeded!')
           print('Version:', fontforge.__version__)
-          " 2>&1 || echo "Import failed with exit code $?"
+          " 2>&1 || {
+            echo "=== Import crashed with exit code $? ==="
+            echo "=== Checking for crash reports ==="
+            ls -la ~/Library/Logs/DiagnosticReports/ 2>/dev/null || true
+            cat ~/Library/Logs/DiagnosticReports/python3* 2>/dev/null | tail -100 || true
+          }
+      - name: Debug - Run with lldb for stack trace
+        run: |
+          cd build/lib
+          echo "run" > /tmp/lldb_commands
+          echo "bt" >> /tmp/lldb_commands
+          echo "quit" >> /tmp/lldb_commands
+          lldb -b -s /tmp/lldb_commands -- python3 -c "import fontforge" 2>&1 | tail -100 || true
       - name: Run pyhook smoke test
         run: |
           PYTHONPATH=build/lib python3 tests/pyhook_smoketest.py
