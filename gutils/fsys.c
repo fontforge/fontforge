@@ -694,14 +694,16 @@ void FindProgRoot(const char *prog) {
     tmp = smprintf("%s/share/fontforge", program_root);
     if (!GFileExists(tmp)) {
         free(tmp);
-        tmp = realpath(prog, NULL);
-        if (tmp) {
-            char *real_root = smprintf("%s/../..", tmp);
-            free(tmp);
-            free(program_root);
+        if (prog != NULL) {
+            tmp = realpath(prog, NULL);
+            if (tmp) {
+                char *real_root = smprintf("%s/../..", tmp);
+                free(tmp);
+                free(program_root);
 
-            program_root = GFileGetAbsoluteName(real_root);
-            free(real_root);
+                program_root = GFileGetAbsoluteName(real_root);
+                free(real_root);
+            }
         }
     } else {
         free(tmp);
