@@ -52,7 +52,7 @@
 #include <sys/types.h>		/* for waitpid */
 #include "ffunistd.h"		/* for access, unlink, fork, execvp, getcwd */
 
-#if !defined(__MINGW32__)
+#if !defined(__MINGW32__) && !defined(_MSC_VER)
 #include <sys/wait.h>		/* for waitpid */
 #endif
 

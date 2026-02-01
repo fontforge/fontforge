@@ -52,7 +52,7 @@
 #include <sys/types.h>
 #include <time.h>
 #include "ffunistd.h"
-#if !defined(__MINGW32__)
+#if !defined(__MINGW32__) && !defined(_MSC_VER)
 #include <sys/wait.h>
 #endif
 
@@ -2848,7 +2848,7 @@ return( (unichar_t *)calloc(1,sizeof(unichar_t)));
 /* ************************************************************************** */
 
 static void QueueIt(PI *pi) {
-    #if !defined(__MINGW32__)
+    #if !defined(__MINGW32__) && !defined(_MSC_VER)
     int pid;
     int stdinno, i, status;
     char *argv[40], buf[10];
