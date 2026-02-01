@@ -3657,14 +3657,15 @@ return( NULL );
     xmlFreeDoc(doc);
 
     if ( sf!=NULL ) {
-	struct stat b;
+	time_t mtime;
 	sf->layers[ly_fore].order2 = sf->layers[ly_back].order2 = sf->grid.order2 =
 		SFFindOrder(sf);
 	SFSetOrder(sf,sf->layers[ly_fore].order2);
 	sf->chosenname = chosenname;
-	if ( stat(filename,&b)!=-1 ) {
-	    sf->modificationtime = GetST_MTime(b);
-	    sf->creationtime = GetST_MTime(b);
+	mtime = GFileGetMTime(filename);
+	if ( mtime != 0 ) {
+	    sf->modificationtime = mtime;
+	    sf->creationtime = mtime;
 	}
     }
 return( sf );

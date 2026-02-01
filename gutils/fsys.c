@@ -52,14 +52,7 @@
  #ifndef S_ISDIR
  #define S_ISDIR(m) (((m) & _S_IFMT) == _S_IFDIR)
  #endif
- /* Use 64-bit stat for large file support */
- typedef struct __stat64 ff_stat_t;
- #define ff_stat(p, b) _stat64(p, b)
- #define ff_fstat(f, b) _fstat64(f, b)
 #elif defined(__MINGW32__)
- typedef struct stat ff_stat_t;
- #define ff_stat(p, b) stat(p, b)
- #define ff_fstat(f, b) fstat(f, b)
  #include <shlobj.h>
  #include <windows.h>
  #include <sys/param.h>
@@ -68,9 +61,6 @@
  #include <pwd.h>
  #include <sys/param.h>
  #include <unistd.h>
- typedef struct stat ff_stat_t;
- #define ff_stat(p, b) stat(p, b)
- #define ff_fstat(f, b) fstat(f, b)
 #endif
 
 static char *program_root = NULL;
@@ -901,6 +891,47 @@ off_t GFileGetSize(char *name) {
     if ( ff_stat(name, &buf) )
 	return( -1 );
     return( buf.st_size );
+}
+
+off_t GFileGetSizeF(FILE *file) {
+/* Get the binary file size for open file. Return -1 if error. */
+    ff_stat_t buf;
+    if ( ff_fstat(fileno(file), &buf) )
+	return( -1 );
+    return( buf.st_size );
+}
+
+time_t GFileGetMTime(const char *name) {
+/* Get the modification time for file 'name'. Return 0 if error. */
+    ff_stat_t buf;
+    if ( ff_stat(name, &buf) )
+	return( 0 );
+#if defined(__MINGW32__) || defined(_MSC_VER)
+    return( buf.st_mtime );
+#else
+    /* Use timespec if available for sub-second precision */
+#ifdef st_mtime
+    return( buf.st_mtim.tv_sec );
+#else
+    return( buf.st_mtime );
+#endif
+#endif
+}
+
+time_t GFileGetMTimeF(FILE *file) {
+/* Get the modification time for open file. Return 0 if error. */
+    ff_stat_t buf;
+    if ( ff_fstat(fileno(file), &buf) )
+	return( 0 );
+#if defined(__MINGW32__) || defined(_MSC_VER)
+    return( buf.st_mtime );
+#else
+#ifdef st_mtime
+    return( buf.st_mtim.tv_sec );
+#else
+    return( buf.st_mtime );
+#endif
+#endif
 }
 
 char *GFileReadAll(char *name) {
