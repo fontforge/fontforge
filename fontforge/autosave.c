@@ -44,7 +44,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <unistd.h>
+#include "ffunistd.h"
 
 int AutoSaveFrequency=5;
 

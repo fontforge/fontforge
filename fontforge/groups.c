@@ -33,7 +33,7 @@
 #include "ustring.h"
 #include "utype.h"
 
-#include <unistd.h>
+#include "ffunistd.h"
 
 Group *group_root = NULL;
 

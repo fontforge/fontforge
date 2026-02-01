@@ -52,7 +52,7 @@
 #include "ffdir.h"
 #include <math.h>
 #include <sys/types.h>
-#include <unistd.h>
+#include "ffunistd.h"
 
 Encoding *default_encoding = NULL;
 

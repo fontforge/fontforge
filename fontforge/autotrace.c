@@ -50,7 +50,7 @@
 #include <stdlib.h>		/* for getenv */
 #include <sys/stat.h>		/* for open */
 #include <sys/types.h>		/* for waitpid */
-#include <unistd.h>		/* for access, unlink, fork, execvp, getcwd */
+#include "ffunistd.h"		/* for access, unlink, fork, execvp, getcwd */
 
 #if !defined(__MINGW32__)
 #include <sys/wait.h>		/* for waitpid */

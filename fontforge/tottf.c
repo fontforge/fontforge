@@ -61,12 +61,12 @@
 #include <locale.h>
 #include <math.h>
 #include <time.h>
-#include <unistd.h>
+#include "ffunistd.h"
 
 #ifdef __CygWin
  #include <sys/stat.h>
  #include <sys/types.h>
- #include <unistd.h>
+ #include "ffunistd.h"
 #endif
 
 char *TTFFoundry=NULL;
