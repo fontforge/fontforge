@@ -44,6 +44,10 @@ jobs:
           otool -L build/lib/fontforge*.so || true
           echo "=== psMat.so dependencies ==="
           otool -L build/lib/psMat*.so || true
+          echo "=== libfontforge.4.dylib dependencies ==="
+          otool -L build/lib/libfontforge*.dylib || true
+          echo "=== Check for Python symbols in libfontforge ==="
+          nm -u build/lib/libfontforge.4.dylib 2>/dev/null | grep -i "Py" | head -30 || true
       - name: Debug - Check Python state
         run: |
           cd build/lib
