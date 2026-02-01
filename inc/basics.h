@@ -144,4 +144,12 @@ static inline int imax(int a, int b)
 # endif
 #endif
 
+/* Common MIN/MAX macros */
+#ifndef MAX
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+#endif
+#ifndef MIN
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
+#endif
+
 #endif /* FONTFORGE_BASICS_H */

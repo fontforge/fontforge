@@ -94,6 +94,7 @@ jobs:
           cmake -B build -G Ninja `
             -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" `
             -DCMAKE_BUILD_TYPE=Release `
+            -DCMAKE_CXX_STANDARD=20 `
             -DENABLE_GUI=OFF `
             -DENABLE_PYTHON_SCRIPTING=ON `
             -DENABLE_PYTHON_EXTENSION=ON `
