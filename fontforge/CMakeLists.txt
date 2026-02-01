@@ -264,7 +264,7 @@ target_link_libraries(fontforge
     shapers
     Freetype::Freetype
     LibXml2::LibXml2
-    Intl::Intl
+    $<$<BOOL:${Intl_FOUND}>:Intl::Intl>
   PRIVATE
     MathLib::MathLib
     Iconv::Iconv
