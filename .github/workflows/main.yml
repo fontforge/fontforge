@@ -119,14 +119,12 @@ jobs:
             -DBUILD_SHARED_LIBS=ON
       - name: Build
         run: cmake --build build
-      - name: Run pyhook smoke test
+      - name: Run pyhook tests
         run: |
           # Copy DLLs to lib directory so Python can find them
           Copy-Item build\bin\*.dll build\lib\ -Force
           Copy-Item build\vcpkg_installed\x64-windows\bin\*.dll build\lib\ -Force -ErrorAction SilentlyContinue
-          $env:PYTHONPATH = "build\lib"
-          python --version
-          python tests/pyhook_smoketest.py
+          ctest --test-dir build -R "_pyhook" --output-on-failure
       - name: Save vcpkg binary cache
         if: always()
         uses: actions/cache/save@v4
