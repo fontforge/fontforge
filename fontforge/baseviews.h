@@ -88,6 +88,23 @@ typedef struct pressedOn {
 					* this is a copy of that original spl */
 } PressedOn;
 
+/* FindSel: context for hit-testing spline elements.
+ * This is the core struct with no UI dependencies.
+ * UI code may wrap this in a larger struct if it needs to associate
+ * additional UI-specific data (like GEvent). */
+typedef struct findsel {
+    real fudge;		/* One pixel fudge factor */
+    real xl,xh, yl, yh;	/* One pixel fudge factor */
+    real c_xl,c_xh, c_yl, c_yh;		/* fudge rectangle for control points, larger than above if alt is depressed */
+    unsigned int select_controls: 1;	/* notice control points */
+    unsigned int seek_controls: 1;	/* notice control points before base points */
+    unsigned int all_controls: 1;	/* notice control points even if the base points aren't selected (in truetype point numbering mode where all cps are visible) */
+    unsigned int alwaysshowcontrolpoints: 1; /* if the BCP are forced on, then we want the selection code paths
+					      * to also know that so the user can drag the BCP of a non selected splinepoint */
+    real scale;
+    PressedOn *p;
+} FindSel;
+
 /* Note: These are ordered as they are displayed in the tools palette */
 enum cvtools {
 	cvt_pointer, cvt_magnify,

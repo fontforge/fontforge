@@ -35,11 +35,6 @@
 #include "baseviews.h"
 #ifdef HAVE_GLIB
 #include "ffglib.h"
-#else
-/* Provide fallback types when GLib is not available */
-typedef int GPid;
-typedef void *GTimer;
-typedef void *GList_Glib;
 #endif
 
 #include "dlist.h"
@@ -486,19 +481,7 @@ typedef struct fontview {
     bool script_unsaved; // Whether or not there's an unsaved script in script dialog
 } FontView;
 
-typedef struct findsel {
-    GEvent *e;
-    real fudge;		/* One pixel fudge factor */
-    real xl,xh, yl, yh;	/* One pixel fudge factor */
-    real c_xl,c_xh, c_yl, c_yh;		/* fudge rectangle for control points, larger than above if alt is depressed */
-    unsigned int select_controls: 1;	/* notice control points */
-    unsigned int seek_controls: 1;	/* notice control points before base points */
-    unsigned int all_controls: 1;	/* notice control points even if the base points aren't selected (in truetype point numbering mode where all cps are visible) */
-    unsigned int alwaysshowcontrolpoints:1; /* if the BCP are forced on, then we want the selection code paths
-					     * to also know that so the user can drag the BCP of a non selected splinepoint */
-    real scale;
-    PressedOn *p;
-} FindSel;
+/* FindSel is now defined in baseviews.h */
 
 typedef struct searchview {
     struct cvcontainer base;
