@@ -4042,7 +4042,6 @@ static void SetFS( FindSel *fs, PressedOn *p, CharView *cv, GEvent *event) {
 
     memset(fs,'\0',sizeof(*fs));
     fs->p = p;
-    fs->e = event;
     p->x = event->u.mouse.x;
     p->y = event->u.mouse.y;
     p->cx = (event->u.mouse.x-tab->xoff)/tab->scale;
