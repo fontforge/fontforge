@@ -52,7 +52,14 @@
  #ifndef S_ISDIR
  #define S_ISDIR(m) (((m) & _S_IFMT) == _S_IFDIR)
  #endif
+ /* Use 64-bit stat for large file support */
+ typedef struct __stat64 ff_stat_t;
+ #define ff_stat(p, b) _stat64(p, b)
+ #define ff_fstat(f, b) _fstat64(f, b)
 #elif defined(__MINGW32__)
+ typedef struct stat ff_stat_t;
+ #define ff_stat(p, b) stat(p, b)
+ #define ff_fstat(f, b) fstat(f, b)
  #include <shlobj.h>
  #include <windows.h>
  #include <sys/param.h>
@@ -61,6 +68,9 @@
  #include <pwd.h>
  #include <sys/param.h>
  #include <unistd.h>
+ typedef struct stat ff_stat_t;
+ #define ff_stat(p, b) stat(p, b)
+ #define ff_fstat(f, b) fstat(f, b)
 #endif
 
 static char *program_root = NULL;
@@ -124,7 +134,7 @@ unichar_t *u_GFileNormalizePath(unichar_t *path) {
 /* make directories.  make parent directories as needed,  with no error if
  * the path already exists */
 int mkdir_p(const char *path, mode_t mode) {
-	struct stat st;
+	ff_stat_t st;
 	const char *e;
 	char *p = NULL;
 	char tmp[1024];
@@ -135,7 +145,7 @@ int mkdir_p(const char *path, mode_t mode) {
 	if(!(e = strrchr(path, '/')))
 return -EINVAL;
 	/* ensure path is a directory */
-	r = stat(path, &st);
+	r = ff_stat(path, &st);
 	if (r == 0 && !S_ISDIR(st.st_mode))
 return -ENOTDIR;
 
@@ -338,8 +348,8 @@ return( false );
 }
 
 int GFileIsDir(const char *file) {
-  struct stat info;
-  if ( stat(file, &info)==-1 )
+  ff_stat_t info;
+  if ( ff_stat(file, &info)==-1 )
 return 0;
   else
 return( S_ISDIR(info.st_mode) );
@@ -887,8 +897,8 @@ return NULL;
 
 off_t GFileGetSize(char *name) {
 /* Get the binary file size for file 'name'. Return -1 if error. */
-    struct stat buf;
-    if ( stat(name, &buf) )
+    ff_stat_t buf;
+    if ( ff_stat(name, &buf) )
 	return( -1 );
     return( buf.st_size );
 }

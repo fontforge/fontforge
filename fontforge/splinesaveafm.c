@@ -56,12 +56,25 @@
 
 #include <sys/stat.h>
 #include <sys/types.h>		/* For stat */
+#ifndef _MSC_VER
 #include <unistd.h>
+#endif
 
 #ifdef __CygWin
  #include <sys/stat.h>
  #include <sys/types.h>
  #include <unistd.h>
+#endif
+
+/* MSVC stat compatibility */
+#ifdef _MSC_VER
+typedef struct __stat64 ff_stat_t;
+#define ff_stat(p, b) _stat64(p, b)
+#define ff_fstat(f, b) _fstat64(f, b)
+#else
+typedef struct stat ff_stat_t;
+#define ff_stat(p, b) stat(p, b)
+#define ff_fstat(f, b) fstat(f, b)
 #endif
 
 static void *mygets(FILE *file,char *buffer,int size) {
@@ -3441,7 +3454,7 @@ enum metricsformat { mf_none, mf_afm, mf_amfm, mf_tfm, mf_ofm, mf_pfm, mf_feat }
 static enum metricsformat MetricsFormatType(char *filename) {
     FILE *file = fopen(filename,"rb");
     unsigned char buffer[200];
-    struct stat sb;
+    ff_stat_t sb;
     int len;
 
     if ( file==NULL )
@@ -3449,7 +3462,7 @@ return( mf_none );
 
     len = fread(buffer,1,sizeof(buffer)-1,file);
     buffer[len] = '\0';
-    fstat(fileno(file),&sb);
+    ff_fstat(fileno(file),&sb);
     fclose(file);
 
     if ( strstr((char *) buffer,"StartFontMetrics")!=NULL )

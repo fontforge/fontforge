@@ -30,15 +30,26 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#ifndef _MSC_VER
 #include <strings.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <sys/wait.h>
 #include <unistd.h>
+#endif
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <dirent.h>
 #include <math.h>
 #include <signal.h>
 #include <time.h>
+
+/* MSVC stat compatibility */
+#ifdef _MSC_VER
+typedef struct __stat64 ff_stat_t;
+#define ff_stat(p, b) _stat64(p, b)
+#else
+typedef struct stat ff_stat_t;
+#define ff_stat(p, b) stat(p, b)
+#endif
 
 #ifdef TEST_FREETYPE
 # include <ft2build.h>
@@ -174,7 +185,7 @@ static void FindFonts(char **fontdirs,char **extensions) {
     struct dirent *ent;
     int i, max;
     char buffer[1025];
-    struct stat statb;
+    ff_stat_t statb;
 
     max = 0;
     fcnt = 0;
@@ -188,7 +199,7 @@ exit(1);
 
 	while ( (ent = readdir(examples))!=NULL ) {
 	    snprintf(buffer,sizeof(buffer),"%s/%s", fontdirs[i], ent->d_name );
-	    if ( stat(buffer,&statb)==-1 || S_ISDIR(statb.st_mode))
+	    if ( ff_stat(buffer,&statb)==-1 || S_ISDIR(statb.st_mode))
 	continue;
 	    if ( extensions==NULL || extmatch(buffer,extensions)) {
 		if ( fcnt>=max ) {
