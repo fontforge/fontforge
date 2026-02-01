@@ -18,8 +18,11 @@
 
 #ifdef _WIN32
 #include <windows.h>
+#include <lmcons.h>  // For UNLEN
 #else
 #include <langinfo.h>
+#include <pwd.h>
+#include <unistd.h>
 #endif
 
 namespace fs = std::filesystem;
@@ -206,6 +209,20 @@ extern "C" int ff_ascii_strcasecmp(const char *s1, const char *s2) {
            std::tolower(static_cast<unsigned char>(*s2));
 }
 
+extern "C" char *ff_ascii_strdown(const char *str, int len) {
+    if (str == nullptr) return nullptr;
+
+    size_t actual_len = (len < 0) ? std::strlen(str) : static_cast<size_t>(len);
+    char *result = static_cast<char *>(std::malloc(actual_len + 1));
+    if (!result) return nullptr;
+
+    for (size_t i = 0; i < actual_len; i++) {
+        result[i] = static_cast<char>(std::tolower(static_cast<unsigned char>(str[i])));
+    }
+    result[actual_len] = '\0';
+    return result;
+}
+
 extern "C" char *ff_uri_unescape_string(const char *escaped, const char *illegal_characters) {
     (void)illegal_characters;  // Not implemented
 
@@ -313,6 +330,116 @@ extern "C" long ff_get_utc_offset(long timestamp) {
     localtime_r(&t, &local_tm);
     return local_tm.tm_gmtoff;
 #endif
+}
+
+extern "C" const char *ff_get_real_name(void) {
+    static char name_buf[256];
+    static bool initialized = false;
+
+    if (!initialized) {
+#ifdef _WIN32
+        DWORD size = sizeof(name_buf);
+        if (!GetUserNameA(name_buf, &size)) {
+            std::strcpy(name_buf, "Unknown");
+        }
+#else
+        struct passwd *pw = getpwuid(getuid());
+        if (pw && pw->pw_gecos && pw->pw_gecos[0]) {
+            // pw_gecos often contains full name, possibly followed by comma-separated fields
+            const char *comma = std::strchr(pw->pw_gecos, ',');
+            size_t len = comma ? static_cast<size_t>(comma - pw->pw_gecos)
+                               : std::strlen(pw->pw_gecos);
+            if (len >= sizeof(name_buf)) len = sizeof(name_buf) - 1;
+            std::strncpy(name_buf, pw->pw_gecos, len);
+            name_buf[len] = '\0';
+        } else if (pw && pw->pw_name) {
+            std::strncpy(name_buf, pw->pw_name, sizeof(name_buf) - 1);
+            name_buf[sizeof(name_buf) - 1] = '\0';
+        } else {
+            std::strcpy(name_buf, "Unknown");
+        }
+#endif
+        initialized = true;
+    }
+    return name_buf;
+}
+
+extern "C" const char *ff_get_tmp_dir(void) {
+    static char tmp_buf[4096];
+    static bool initialized = false;
+
+    if (!initialized) {
+#ifdef _WIN32
+        DWORD len = GetTempPathA(sizeof(tmp_buf), tmp_buf);
+        if (len == 0 || len >= sizeof(tmp_buf)) {
+            std::strcpy(tmp_buf, "C:\\Temp");
+        } else {
+            // Remove trailing backslash if present
+            if (len > 0 && tmp_buf[len - 1] == '\\') {
+                tmp_buf[len - 1] = '\0';
+            }
+        }
+#else
+        const char *tmp = std::getenv("TMPDIR");
+        if (!tmp) tmp = std::getenv("TMP");
+        if (!tmp) tmp = std::getenv("TEMP");
+        if (!tmp) tmp = "/tmp";
+        std::strncpy(tmp_buf, tmp, sizeof(tmp_buf) - 1);
+        tmp_buf[sizeof(tmp_buf) - 1] = '\0';
+#endif
+        initialized = true;
+    }
+    return tmp_buf;
+}
+
+/* ============================================================================
+ * Byte array implementation
+ * ============================================================================ */
+
+extern "C" FFByteArray *ff_byte_array_new(void) {
+    FFByteArray *arr = static_cast<FFByteArray *>(std::malloc(sizeof(FFByteArray)));
+    if (!arr) return nullptr;
+
+    arr->capacity = 256;
+    arr->len = 0;
+    arr->data = static_cast<unsigned char *>(std::malloc(arr->capacity));
+    if (!arr->data) {
+        std::free(arr);
+        return nullptr;
+    }
+    return arr;
+}
+
+extern "C" void ff_byte_array_append(FFByteArray *arr, const unsigned char *data, size_t len) {
+    if (!arr || !data || len == 0) return;
+
+    // Grow if needed
+    if (arr->len + len > arr->capacity) {
+        size_t new_capacity = arr->capacity * 2;
+        while (new_capacity < arr->len + len) {
+            new_capacity *= 2;
+        }
+        unsigned char *new_data = static_cast<unsigned char *>(
+            std::realloc(arr->data, new_capacity));
+        if (!new_data) return;  // Failed to grow
+        arr->data = new_data;
+        arr->capacity = new_capacity;
+    }
+
+    std::memcpy(arr->data + arr->len, data, len);
+    arr->len += len;
+}
+
+extern "C" unsigned char *ff_byte_array_free(FFByteArray *arr, int free_data) {
+    if (!arr) return nullptr;
+
+    unsigned char *data = arr->data;
+    if (free_data) {
+        std::free(data);
+        data = nullptr;
+    }
+    std::free(arr);
+    return data;
 }
 
 /* ============================================================================
@@ -530,4 +657,36 @@ extern "C" char *ff_getcwd(char *buf, size_t size) {
 
     std::strcpy(buf, cwd_str.c_str());
     return buf;
+}
+
+extern "C" char *ff_canonical_path(const char *path) {
+    if (!path) return nullptr;
+
+    std::error_code ec;
+    fs::path p(path);
+
+    // Use absolute() first to handle non-existent paths,
+    // then lexically_normal() to resolve . and ..
+    fs::path abs = fs::absolute(p, ec);
+    if (ec) return nullptr;
+
+    fs::path result = abs.lexically_normal();
+
+    std::string result_str = result.string();
+    char *ret = static_cast<char *>(std::malloc(result_str.length() + 1));
+    if (!ret) return nullptr;
+
+    std::strcpy(ret, result_str.c_str());
+    return ret;
+}
+
+extern "C" int ff_remove_all(const char *path) {
+    if (!path) return -1;
+
+    std::error_code ec;
+    auto count = fs::remove_all(path, ec);
+    if (ec) {
+        return -1;
+    }
+    return static_cast<int>(count);
 }

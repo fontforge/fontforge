@@ -28,9 +28,14 @@
 #include <fontforge-config.h>
 
 #include "basics.h"
-#include "ffglib.h"
+#include "ffglib_compat.h"
+#include "ffprocess.h"
 #include "gfile.h"
 #include "ustring.h"
+
+#ifdef HAVE_GLIB
+#include "ffglib.h"
+#endif
 
 #include <errno.h>			/* for mkdir_p */
 #include <fcntl.h>
@@ -206,61 +211,18 @@ char *GFileGetAbsoluteName(const char *name) {
         name += 7;
     }
 
-#if GLIB_CHECK_VERSION(2, 58, 0)
-    gchar* abs = g_canonicalize_filename(name, NULL);
-    char *ret;
+    char *abs = ff_canonical_path(name);
+    if (!abs) {
+        return copy(name);  // Fallback to just copying
+    }
     // If the input ends with '/', preserve that trailing slash
-    if (name && (name = strrchr(name, '/')) && name[1] == '\0') {
-        ret = smprintf("%s/", abs);
-    } else {
-        ret = copy(abs);
+    const char *tail = strrchr(name, '/');
+    if (tail && tail[1] == '\0') {
+        char *ret = smprintf("%s/", abs);
+        free(abs);
+        return GFileNormalizePath(ret);
     }
-    g_free(abs);
-    return GFileNormalizePath(ret);
-#else
-    char *buffer, *pt, *spt, *rpt, *bpt;
-
-    if ( ! GFileIsAbsolute(name) ) {
-	static char dirname_[MAXPATHLEN+1];
-
-	if ( dirname_[0]=='\0' ) {
-	    getcwd(dirname_,sizeof(dirname_));
-	}
-
-	buffer = smprintf("%s/%s", dirname_, name);
-    } else {
-	buffer = copy(name);
-    }
-
-	/* Normalize out any .. */
-	spt = rpt = buffer;
-	while ( *spt!='\0' ) {
-	    if ( *spt=='/' )  {
-		if ( *++spt=='\0' )
-	break;
-	    }
-	    for ( pt = spt; *pt!='\0' && *pt!='/'; ++pt );
-	    if ( pt==spt )	/* Found // in a path spec, reduce to / (we've*/
-		savestrcpy(spt,spt+1); /*  skipped past the :// of the machine name) */
-	    else if ( pt==spt+1 && spt[0]=='.' && *pt=='/' ) {	/* Noop */
-		savestrcpy(spt,spt+2);
-	    } else if (pt==spt+1 && spt[0]=='.' && *pt=='\0') { /* Remove trailing /. */
-		pt = --spt;
-		*spt = '\0';
-	    } else if ( pt==spt+2 && spt[0]=='.' && spt[1]=='.' ) {
-		for ( bpt=spt-2 ; bpt>rpt && *bpt!='/'; --bpt );
-		if ( bpt>=rpt && *bpt=='/' ) {
-		    savestrcpy(bpt,pt);
-		    spt = bpt;
-		} else {
-		    rpt = pt;
-		    spt = pt;
-		}
-	    } else
-		spt = pt;
-	}
-    return buffer;
-#endif
+    return GFileNormalizePath(abs);
 }
 
 char *GFileBuildName(char *dir,char *fname,char *buffer,size_t size) {
@@ -463,24 +425,11 @@ FILE *GFileTmpfile() {
  *         where `recursive` is false.
  */
 int GFileRemove(const char *path, int recursive) {
-    GDir *dir;
-    const gchar *entry;
-
-    if (g_remove(path) != 0) {
-        if (recursive && (dir = g_dir_open(path, 0, NULL))) {
-            while ((entry = g_dir_read_name(dir))) {
-                gchar *fpath = g_build_filename(path, entry, NULL);
-                if (g_remove(fpath) != 0 && GFileIsDir(fpath)) {
-                    GFileRemove(fpath, recursive);
-                }
-                g_free(fpath);
-            }
-            g_dir_close(dir);
-        }
-        return (g_remove(path) == 0 || !GFileExists(path));
+    if (recursive) {
+        return ff_remove_all(path) >= 0;
+    } else {
+        return ff_unlink(path) == 0 || ff_rmdir(path) == 0 || !GFileExists(path);
     }
-
-    return true;
 }
 
 int GFileMkDir(const char *name, int mode) {
@@ -696,7 +645,7 @@ return(unlink(buffer));
 
 void FindProgRoot(const char *prog) {
     char *tmp = NULL;
-    gchar *rprog = NULL;
+    char *rprog = NULL;
     if (program_root != NULL) {
         return;
     }
@@ -710,13 +659,19 @@ void FindProgRoot(const char *prog) {
 
     if (prog != NULL) {
         if (strchr(prog, '/') == NULL) {
+            // Program invoked without path - need to search PATH
+            // For Python module context this won't happen (prog is NULL)
+#ifdef HAVE_GLIB
             prog = rprog = g_find_program_in_path(prog);
+#else
+            prog = NULL;  // Skip to fallback
+#endif
         }
         if (prog) {
             tmp = smprintf("%s/../..", prog);
+            program_root = GFileGetAbsoluteName(tmp);
+            free(tmp);
         }
-        program_root = GFileGetAbsoluteName(tmp);
-        free(tmp);
     }
 
     if (program_root == NULL) {
@@ -744,7 +699,7 @@ void FindProgRoot(const char *prog) {
 
 /* If the fontforge binary path includes "build" or "target" according to platform,
    we are in the development mode. */
-#if defined(__MINGW32__)
+#if defined(__MINGW32__) || defined(_MSC_VER)
     const char* dev_dir_test = "target";
 #else
     const char* dev_dir_test = "build";
@@ -753,7 +708,11 @@ void FindProgRoot(const char *prog) {
 	devel_env = true;
     }
 
+#ifdef HAVE_GLIB
     g_free(rprog);
+#else
+    free(rprog);
+#endif
     TRACE("Program root: %s\n", program_root);
 }
 
@@ -963,11 +922,6 @@ int GFileWriteAll(char *filepath, char *data) {
     return -1;
 }
 
-const char *getTempDir(void)
-{
-    return g_get_tmp_dir();
-}
-
 char *GFileGetHomeDocumentsDir(void)
 {
     static char* ret = 0;
@@ -1043,98 +997,6 @@ char *GFileDirName(const char *path) {
     return GFileDirNameEx(path, 0);
 }
 
-static int mime_comp(const void *k, const void *v) {
-    return strmatch((const char*)k, ((const char**)v)[0]);
-}
-
-char* GFileMimeType(const char *path) {
-    char* ret, *pt;
-    gboolean uncertain = false;
-    gchar* res = g_content_type_guess(path, NULL, 0, &uncertain);
-    gchar* mres = g_content_type_get_mime_type(res);
-    g_free(res);
-
-    if (!mres || uncertain || strstr(mres, "application/x-ext") || !strcmp(mres, "application/octet-stream")) {
-        path = GFileNameTail(path);
-        pt = (char *)strrchr(path, '.');
-
-        if (pt == NULL) {
-            if (!strmatch(path, "makefile") || !strmatch(path, "makefile~"))
-                ret = copy("application/x-makefile");
-            else if (!strmatch(path, "core"))
-                ret = copy("application/x-core");
-            else
-                ret = copy("application/octet-stream");
-        } else {
-            pt = copy(pt + 1);
-            int len = strlen(pt);
-            if (len && pt[len - 1] == '~') {
-                pt[len - 1] = '\0';
-            }
-
-            // array MUST be sorted by extension
-            static const char* ext_mimes[][2] = {
-                {"bdf",   "application/x-font-bdf"},
-                {"bin",   "application/x-macbinary"},
-                {"bz2",   "application/x-compressed"},
-                {"c",     "text/c"},
-                {"cff",   "application/x-font-type1"},
-                {"cid",   "application/x-font-cid"},
-                {"css",   "text/css"},
-                {"dfont", "application/x-mac-dfont"},
-                {"eps",   "text/ps"},
-                {"gai",   "font/otf"},
-                {"gif",   "image/gif"},
-                {"gz",    "application/x-compressed"},
-                {"h",     "text/h"},
-                {"hqx",   "application/x-mac-binhex40"},
-                {"html",  "text/html"},
-                {"jpeg",  "image/jpeg"},
-                {"jpg",   "image/jpeg"},
-                {"mov",   "video/quicktime"},
-                {"o",     "application/x-object"},
-                {"obj",   "application/x-object"},
-                {"otb",   "font/otf"},
-                {"otf",   "font/otf"},
-                {"pcf",   "application/x-font-pcf"},
-                {"pdf",   "application/pdf"},
-                {"pfa",   "application/x-font-type1"},
-                {"pfb",   "application/x-font-type1"},
-                {"png",   "image/png"},
-                {"ps",    "text/ps"},
-                {"pt3",   "application/x-font-type1"},
-                {"ras",   "image/x-cmu-raster"},
-                {"rgb",   "image/x-rgb"},
-                {"rpm",   "application/x-compressed"},
-                {"sfd",   "application/vnd.font-fontforge-sfd"},
-                {"sgi",   "image/x-sgi"},
-                {"snf",   "application/x-font-snf"},
-                {"svg",   "image/svg+xml"},
-                {"tar",   "application/x-tar"},
-                {"tbz",   "application/x-compressed"},
-                {"text",  "text/plain"},
-                {"tgz",   "application/x-compressed"},
-                {"ttf",   "font/ttf"},
-                {"txt",   "text/plain"},
-                {"wav",   "audio/wave"},
-                {"woff",  "font/woff"},
-                {"woff2", "font/woff2"},
-                {"xbm",   "image/x-xbitmap"},
-                {"xml",   "text/xml"},
-                {"xpm",   "image/x-xpixmap"},
-                {"z",     "application/x-compressed"},
-                {"zip",   "application/x-compressed"},
-            };
-
-            const char** elem = (const char **)bsearch(pt, ext_mimes,
-                sizeof(ext_mimes)/sizeof(ext_mimes[0]), sizeof(ext_mimes[0]),
-                mime_comp);
-            ret = copy(elem ? elem[1] : "application/octet-stream");
-            free(pt);
-        }
-    } else {
-        ret = copy(mres);
-    }
-    g_free(mres);
-    return ret;
+char *GFileMimeType(const char *path) {
+    return ff_guess_mime_type(path);
 }

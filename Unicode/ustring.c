@@ -27,12 +27,14 @@
 
 #include <fontforge-config.h>
 
-#include "ffglib.h"
 #include "ustring.h"
 #include "utype.h"
 
+#include "ffglib_compat.h"
+
 #include <assert.h>
 #include <stddef.h>
+#include <stdlib.h>
 
 long uc_strcmp(const unichar_t *str1,const char *str2) {
     long ch1, ch2;
@@ -1050,11 +1052,11 @@ int endswith(const char *haystack,const char *needle) {
 }
 
 int endswithi(const char *haystackZ,const char *needleZ) {
-    gchar* haystack = g_ascii_strdown(haystackZ,-1);
-    gchar* needle   = g_ascii_strdown(needleZ,-1);
+    char* haystack = ff_ascii_strdown(haystackZ,-1);
+    char* needle   = ff_ascii_strdown(needleZ,-1);
     int ret = endswith( haystack, needle );
-    g_free( haystack );
-    g_free( needle );
+    free( haystack );
+    free( needle );
     return ret;
 }
 
@@ -1063,8 +1065,8 @@ int endswithi_partialExtension( const char *haystackZ,const char *needleZ) {
     if( nedlen == 0 ) {
 	return 0;
     }
-    gchar* haystack = g_ascii_strdown(haystackZ,-1);
-    gchar* needle   = g_ascii_strdown(needleZ,-1);
+    char* haystack = ff_ascii_strdown(haystackZ,-1);
+    char* needle   = ff_ascii_strdown(needleZ,-1);
     int ret = 0;
     int i = nedlen-1;
     ret |= endswith( haystack, needle );
@@ -1072,8 +1074,8 @@ int endswithi_partialExtension( const char *haystackZ,const char *needleZ) {
 	needle[i] = '\0';
 	ret |= endswith( haystack, needle );
     }
-    g_free( haystack );
-    g_free( needle );
+    free( haystack );
+    free( needle );
     return ret;
 }
 

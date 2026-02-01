@@ -105,7 +105,6 @@ extern const char *getPixmapDir(void);
 extern const char *getHelpDir(void);
 extern const char *getUserHomeDir(void);
 extern char *getFontForgeUserDir(int dir);
-extern const char *getTempDir(void);
 
 /**
  * This is the full path of ~ on OSX and Linux
