@@ -56,6 +56,15 @@
 
 Encoding *default_encoding = NULL;
 
+/* Accessor functions for global encoding variables (needed for MSVC DLL exports) */
+Encoding *GetDefaultEncoding(void) {
+    return default_encoding;
+}
+
+void SetDefaultEncoding(Encoding *enc) {
+    default_encoding = enc;
+}
+
 static int32_t tex_base_encoding[] = {
     0x0000, 0x02d9, 0xfb01, 0xfb02, 0x2044, 0x02dd, 0x0141, 0x0142,
     0x02db, 0x02da, 0x000a, 0x02d8, 0x2212, 0x000d, 0x017d, 0x017e,
@@ -131,6 +140,11 @@ static int32_t unicode_from_MacSymbol[] = {
 /*  leave them out. I doubt they get used. */
 static Encoding texbase = { "TeX-Base-Encoding", 256, tex_base_encoding, NULL, NULL, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "", 0, 0, 0, NULL, NULL, NULL, NULL, NULL, 0, 0 };
        Encoding custom = { "Custom", 0, NULL, NULL, &texbase,                        1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, "", 0, 0, 0, NULL, NULL, NULL, NULL, NULL, 0, 0 };
+
+Encoding *GetCustomEncoding(void) {
+    return &custom;
+}
+
 static Encoding original = { "Original", 0, NULL, NULL, &custom,                     1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, "", 0, 0, 0, NULL, NULL, NULL, NULL, NULL, 0, 0 };
 static Encoding unicodebmp = { "UnicodeBmp", 65536, NULL, NULL, &original,           1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, "", 0, 0, 0, NULL, NULL, NULL, NULL, NULL, 0, 0 };
 static Encoding unicodefull = { "UnicodeFull", 17*65536, NULL, NULL, &unicodebmp,    1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, "", 0, 0, 0, NULL, NULL, NULL, NULL, NULL, 0, 0 };
