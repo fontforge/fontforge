@@ -148,7 +148,7 @@ return;
     if ( ftc->shared_ftc )
 return;
     if ( ftc->mappedfile )
-#if defined(__MINGW32__)
+#if defined(__MINGW32__) || defined(_MSC_VER)
 		UnmapViewOfFile(ftc->mappedfile);
 #else
 		munmap(ftc->mappedfile,ftc->len);
@@ -310,12 +310,12 @@ return( NULL );
 
 	fseek(ftc->file,0,SEEK_END);
 	ftc->len = ftell(ftc->file);
-#if defined (__MINGW32__)
+#if defined(__MINGW32__) || defined(_MSC_VER)
         ftc->mappedfile = NULL;
         {
             int fd = _fileno(ftc->file);
             if (fd != -1) {
-                HANDLE handle = CreateFileMapping((HANDLE)_get_osfhandle(fd), 
+                HANDLE handle = CreateFileMapping((HANDLE)_get_osfhandle(fd),
                                     NULL, PAGE_READONLY, 0, ftc->len, NULL);
                 if (handle != NULL) {
                     ftc->mappedfile = MapViewOfFile(handle, FILE_MAP_READ,
