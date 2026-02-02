@@ -45,6 +45,7 @@
 #include <assert.h>
 #include <locale.h>
 #include <math.h>
+#include <stddef.h>
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
