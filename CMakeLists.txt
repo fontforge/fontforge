@@ -108,21 +108,18 @@ set_font_family(mono "${FONT_FAMILIES_MONO}")
 # Required and default dependencies
 # Note: When adding a dependency, ensure it has an imported target (wherever appropriate)
 find_package(Freetype 2.3.7 REQUIRED)
-# Gettext/Intl not needed for MSVC non-GUI builds (Python wheel)
-if(NOT (MSVC AND NOT ENABLE_GUI))
+# Gettext/Intl and GLIB only needed for GUI builds
+if(ENABLE_GUI)
   find_package(Gettext REQUIRED)
   find_package_with_target(Intl REQUIRED)
-else()
-  # For MSVC non-GUI, skip libintl - strings will just pass through untranslated
-  set(Intl_FOUND FALSE)
-endif()
-# GLIB is required except on Windows MSVC builds without GUI
-if(NOT (MSVC AND NOT ENABLE_GUI))
   if(UNIX AND NOT APPLE)
     find_package(GLIB 2.6 REQUIRED COMPONENTS gio gobject)
   else()
     find_package(GLIB 2.58 REQUIRED COMPONENTS gio gobject)
   endif()
+else()
+  # Non-GUI builds use ffglib_compat, strings pass through untranslated
+  set(Intl_FOUND FALSE)
 endif()
 find_package(Iconv REQUIRED)
 find_package(LibXml2 REQUIRED)
