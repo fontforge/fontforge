@@ -43,6 +43,7 @@
 #include <locale.h>
 #include <math.h>
 #include <stdarg.h>
+#include <stddef.h>
 #include <stdlib.h>
 
 struct opentype_feature_friendlynames friendlies[] = {
