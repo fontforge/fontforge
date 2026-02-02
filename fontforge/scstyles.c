@@ -1781,7 +1781,7 @@ return( cnt );
 
 static double CaseMajorVerticalStemWidth(SplineFont *sf, int layer,
 	unichar_t *list, double tan_ia) {
-    const int MW=100;
+    enum { MW = 100 };
     struct widths { double width, total; } widths[MW];
     int cnt,i,j;
     double width, sum, total;
@@ -1867,7 +1867,7 @@ return( -1 );
 
     /* Do we have a StemSnapV entry? */
     /* If so, snap width to the closest value in it */
-    if ( sf->private!=NULL && (snaps = PSDictHasEntry(sf->private,"StemSnapV"))!=NULL ) {
+    if ( sf->private_dict!=NULL && (snaps = PSDictHasEntry(sf->private_dict,"StemSnapV"))!=NULL ) {
 	while ( *snaps==' ' || *snaps=='[' ) ++snaps;
 	/* Must get at least this close, else we'll just use what we found */
 	bestwidth = width; bestdiff = (sf->ascent+sf->descent)/100.0;
@@ -2186,7 +2186,7 @@ return( counter_len );
 static void SmallCapsPlacePoints(SplineSet *ss,AnchorPoint *aps,
 	int coord, StemInfo *hints,
 	struct overlaps *overlaps, int tot) {
-    struct ptpos { double old, new; int hint_index; } *ptpos;
+    struct ptpos { double old, new_pos; int hint_index; } *ptpos;
     int cnt, i, order2;
     double val;
     StemInfo *h;
@@ -2211,7 +2211,7 @@ static void SmallCapsPlacePoints(SplineSet *ss,AnchorPoint *aps,
 			if ( RealNear(val,h->start) || RealNear(val,h->start+h->width)) {
 			    sp->ticked = true;
 			    ptpos[sp->ptindex].hint_index = i;
-			    ptpos[sp->ptindex].new = overlaps[i].new_start +
+			    ptpos[sp->ptindex].new_pos = overlaps[i].new_start +
 				    (val-overlaps[i].start);
 		    break;
 			}
@@ -2238,14 +2238,14 @@ static void SmallCapsPlacePoints(SplineSet *ss,AnchorPoint *aps,
 		for ( i=0; i<tot; ++i ) {
 		    if ( val>=overlaps[i].start && val<overlaps[i].stop ) {
 			sp->ticked = true;
-			ptpos[sp->ptindex].new = overlaps[i].new_start +
+			ptpos[sp->ptindex].new_pos = overlaps[i].new_start +
 				(val-overlaps[i].start) *
 				    (overlaps[i].new_stop - overlaps[i].new_start)/
 				    (overlaps[i].stop - overlaps[i].start);
 		break;
 		    } else if ( i>0 && val>=overlaps[i-1].stop && val<=overlaps[i].start ) {
 			sp->ticked = true;
-			ptpos[sp->ptindex].new = overlaps[i-1].new_stop +
+			ptpos[sp->ptindex].new_pos = overlaps[i-1].new_stop +
 				(val-overlaps[i-1].stop) *
 				    (overlaps[i].new_start - overlaps[i-1].new_stop)/
 				    (overlaps[i].start - overlaps[i-1].stop);
@@ -2295,9 +2295,9 @@ static void SmallCapsPlacePoints(SplineSet *ss,AnchorPoint *aps,
 	    }
 	    if ( sp==last ) {
 		for ( sp=start->next->to; sp!=last; sp=sp->next->to ) {
-		    ptpos[sp->ptindex].new = ptpos[start->ptindex].new +
+		    ptpos[sp->ptindex].new_pos = ptpos[start->ptindex].new_pos +
 			    ((&sp->me.x)[coord] - ptpos[start->ptindex].old) *
-			      (ptpos[last->ptindex].new - ptpos[start->ptindex].new) /
+			      (ptpos[last->ptindex].new_pos - ptpos[start->ptindex].new_pos) /
 			      (ptpos[last->ptindex].old - ptpos[start->ptindex].old);
 		    sp->ticked = true;
 		}
@@ -2316,14 +2316,14 @@ static void SmallCapsPlacePoints(SplineSet *ss,AnchorPoint *aps,
 		for ( i=0; i<tot; ++i ) {
 		    if ( val>=overlaps[i].start && val<overlaps[i].stop ) {
 			sp->ticked = true;
-			ptpos[sp->ptindex].new = overlaps[i].new_start +
+			ptpos[sp->ptindex].new_pos = overlaps[i].new_start +
 				(val-overlaps[i].start) *
 				    (overlaps[i].new_stop - overlaps[i].new_start)/
 				    (overlaps[i].stop - overlaps[i].start);
 		break;
 		    } else if ( i>0 && val>=overlaps[i-1].stop && val<=overlaps[i].start ) {
 			sp->ticked = true;
-			ptpos[sp->ptindex].new = overlaps[i-1].new_stop +
+			ptpos[sp->ptindex].new_pos = overlaps[i-1].new_stop +
 				(val-overlaps[i-1].stop) *
 				    (overlaps[i].new_start - overlaps[i-1].new_stop)/
 				    (overlaps[i].start - overlaps[i-1].stop);
@@ -2332,7 +2332,7 @@ static void SmallCapsPlacePoints(SplineSet *ss,AnchorPoint *aps,
 		}
 		if ( !sp->ticked ) {
 		    IError( "Unticked point in remove space (smallcaps/italic/etc.)" );
-		    ptpos[sp->ptindex].new = ptpos[sp->ptindex].old;
+		    ptpos[sp->ptindex].new_pos = ptpos[sp->ptindex].old;
 		}
 	    }
 	    if ( sp->next==NULL )
@@ -2376,21 +2376,21 @@ static void SmallCapsPlacePoints(SplineSet *ss,AnchorPoint *aps,
 	    for ( sp=spl->first; ; ) {
 		if ( sp->prev!=NULL ) {
 		    if ( ptpos[sp->prev->from->ptindex].old == ptpos[sp->ptindex].old )
-			(&sp->prevcp.x)[coord] = ptpos[sp->ptindex].new;
+			(&sp->prevcp.x)[coord] = ptpos[sp->ptindex].new_pos;
 		    else
-			(&sp->prevcp.x)[coord] = ptpos[sp->ptindex].new +
+			(&sp->prevcp.x)[coord] = ptpos[sp->ptindex].new_pos +
 				((&sp->prevcp.x)[coord] - ptpos[sp->ptindex].old)*
-				(ptpos[sp->prev->from->ptindex].new-ptpos[sp->ptindex].new)/
+				(ptpos[sp->prev->from->ptindex].new_pos-ptpos[sp->ptindex].new_pos)/
 				(ptpos[sp->prev->from->ptindex].old-ptpos[sp->ptindex].old);
 		}
 		if ( sp->next==NULL )
 	    break;
 		if ( ptpos[sp->next->to->ptindex].old == ptpos[sp->ptindex].old )
-		    (&sp->nextcp.x)[coord] = ptpos[sp->ptindex].new;
+		    (&sp->nextcp.x)[coord] = ptpos[sp->ptindex].new_pos;
 		else
-		    (&sp->nextcp.x)[coord] = ptpos[sp->ptindex].new +
+		    (&sp->nextcp.x)[coord] = ptpos[sp->ptindex].new_pos +
 			    ((&sp->nextcp.x)[coord] - ptpos[sp->ptindex].old)*
-			    (ptpos[sp->next->to->ptindex].new-ptpos[sp->ptindex].new)/
+			    (ptpos[sp->next->to->ptindex].new_pos-ptpos[sp->ptindex].new_pos)/
 			    (ptpos[sp->next->to->ptindex].old-ptpos[sp->ptindex].old);
 		sp = sp->next->to;
 		if ( sp==spl->first )
@@ -2404,11 +2404,11 @@ static void SmallCapsPlacePoints(SplineSet *ss,AnchorPoint *aps,
 		if ( sp->next==NULL )
 	    break;
 		if ( ptpos[sp->next->to->ptindex].old == ptpos[sp->ptindex].old )
-		    (&sp->nextcp.x)[coord] = ptpos[sp->ptindex].new;
+		    (&sp->nextcp.x)[coord] = ptpos[sp->ptindex].new_pos;
 		else
-		    (&sp->nextcp.x)[coord] = ptpos[sp->ptindex].new +
+		    (&sp->nextcp.x)[coord] = ptpos[sp->ptindex].new_pos +
 			    ((&sp->nextcp.x)[coord] - ptpos[sp->ptindex].old)*
-			    (ptpos[sp->next->to->ptindex].new-ptpos[sp->ptindex].new)/
+			    (ptpos[sp->next->to->ptindex].new_pos-ptpos[sp->ptindex].new_pos)/
 			    (ptpos[sp->next->to->ptindex].old-ptpos[sp->ptindex].old);
 		(&sp->next->to->prevcp.x)[coord] = (&sp->nextcp.x)[coord];
 		sp = sp->next->to;
@@ -2417,7 +2417,7 @@ static void SmallCapsPlacePoints(SplineSet *ss,AnchorPoint *aps,
 	    }
 	    for ( sp=spl->first; ; ) {
 		if ( sp->ticked ) {
-		    ptpos[sp->ptindex].new = ((&sp->nextcp.x)[coord] + (&sp->prevcp.x)[coord])/2;
+		    ptpos[sp->ptindex].new_pos = ((&sp->nextcp.x)[coord] + (&sp->prevcp.x)[coord])/2;
 		}
 		if ( sp->next==NULL )
 	    break;
@@ -2431,7 +2431,7 @@ static void SmallCapsPlacePoints(SplineSet *ss,AnchorPoint *aps,
     /* Finally move every point to its new location */
     for ( spl=ss; spl!=NULL; spl=spl->next ) {
 	for ( sp=spl->first; ; ) {
-	    (&sp->me.x)[coord] = ptpos[sp->ptindex].new;
+	    (&sp->me.x)[coord] = ptpos[sp->ptindex].new_pos;
 	    if ( sp->next==NULL )
 	break;
 	    sp = sp->next->to;
@@ -3134,7 +3134,7 @@ double SFStdVW(SplineFont *sf) {
     double stdvw = 0;
     char *ret;
 
-    if ( sf->private!=NULL && (ret=PSDictHasEntry(sf->private,"StdVW"))!=NULL )
+    if ( sf->private_dict!=NULL && (ret=PSDictHasEntry(sf->private_dict,"StdVW"))!=NULL )
 	stdvw = strtod(ret,NULL);
 
     if ( stdvw<=0 )
@@ -4157,9 +4157,9 @@ static double SearchBlues(SplineFont *sf,int type,double value) {
 	value = 4*sf->ascent/5;		/* Guess that the cap-height is 4/5 the ascent */
 
     blues = others = NULL;
-    if ( sf->private!=NULL ) {
-	blues = PSDictHasEntry(sf->private,"BlueValues");
-	others = PSDictHasEntry(sf->private,"OtherBlues");
+    if ( sf->private_dict!=NULL ) {
+	blues = PSDictHasEntry(sf->private_dict,"BlueValues");
+	others = PSDictHasEntry(sf->private_dict,"OtherBlues");
     }
     bestvalue = 0x100000;		/* Random number outside coord range */
     if ( blues!=NULL )
@@ -6862,7 +6862,7 @@ void MakeItalic(FontViewBase *fv,CharViewBase *cv, ItalicInfo *ii) {
 void InitXHeightInfo(SplineFont *sf, int layer, struct xheightinfo *xi) {
     int i, j, cnt, besti;
     double val;
-    const int MW=100;
+    enum { MW = 100 };
     struct widths { double width, total; } widths[MW];
 
     memset(xi,0,sizeof(*xi));

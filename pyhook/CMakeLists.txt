@@ -9,6 +9,9 @@ set_target_properties(psMat_pyhook PROPERTIES OUTPUT_NAME "psMat" PREFIX "")
 if(WIN32)
   set_target_properties(fontforge_pyhook PROPERTIES SUFFIX ".pyd")
   set_target_properties(psMat_pyhook PROPERTIES SUFFIX ".pyd")
+  # Put import libraries in a subdirectory to avoid collision with fontforge.lib from the main DLL
+  set_target_properties(fontforge_pyhook psMat_pyhook PROPERTIES
+    ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib/pyhook")
 endif()
 
 target_link_libraries(fontforge_pyhook PRIVATE fontforge)

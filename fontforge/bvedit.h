@@ -4,6 +4,10 @@
 #include "baseviews.h"
 #include "splinefont.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern BDFChar *BDFGetMergedChar(BDFChar *bc);
 extern BDFFloat *BDFFloatConvert(BDFFloat *sel, int todepth, int fromdepth);
 extern BDFFloat *BDFFloatCopy(BDFFloat *sel);
@@ -26,5 +30,9 @@ extern void BCUnlinkThisReference(struct fontviewbase *fv, BDFChar *bc);
 extern void BDFCharFindBounds(BDFChar *bc, IBounds *bb);
 extern void BDFFloatFree(BDFFloat *sel);
 extern void skewselect(BVTFunc *bvtf, real t);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_BVEDIT_H */

@@ -59,7 +59,7 @@ struct rangeinfo *SFUnicodeRanges(SplineFont *sf, int include_empty) {
     blocks = uniname_blocks(&num_blocks);
     cnt = 2 + num_planes + num_blocks;
 
-    ri = calloc(cnt + 1, sizeof(*ri));
+    ri = (struct rangeinfo*) calloc(cnt + 1, sizeof(*ri));
     if (ri == NULL) {
         NoMoreMemMessage();
         return NULL;

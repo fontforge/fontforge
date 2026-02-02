@@ -69,8 +69,8 @@ struct st {
 static int GetBlueFuzz(SplineFont *sf) {
     char *str, *end;
 
-    if ( sf == NULL || sf->private == NULL || 
-	(str=PSDictHasEntry( sf->private,"BlueFuzz" )) == NULL || !isdigit( str[0] ))
+    if ( sf == NULL || sf->private_dict == NULL || 
+	(str=PSDictHasEntry( sf->private_dict,"BlueFuzz" )) == NULL || !isdigit( str[0] ))
 return 1;
 return strtod( str, &end );
 }

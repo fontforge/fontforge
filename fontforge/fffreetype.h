@@ -47,14 +47,14 @@
 # include <ttobjs.h>
 #endif
 
-#if defined(__MINGW32__)
+#if defined(__MINGW32__) || defined(_MSC_VER)
 # include <Winsock2.h>
 # include <Windows.h>
 #else
 # include <sys/mman.h>
 #endif
 
-#include <unistd.h>
+#include "ffunistd.h"
 
 extern FT_Library ff_ft_context;
 

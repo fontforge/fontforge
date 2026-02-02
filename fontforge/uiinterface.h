@@ -32,6 +32,10 @@
 
 #include "basics.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* This encapsulates a set of callbacks and stubs. The callbacks get activated*/
 /*  when an event happens (a glyph in a font changes for example, then all */
 /*  charviews looking at it must be updated), and the stubs provide some simple*/
@@ -444,7 +448,7 @@ struct fv_interface {
 
    /* When we revert a font we need to change the alegence of all outline */
    /*  glyph windows to the new value of the font */
-    void (*reattach_cvs)(struct splinefont *old, struct splinefont *new);
+    void (*reattach_cvs)(struct splinefont *old, struct splinefont *new_sf);
 
    /* deselect any selected glyphs */
     void (*deselect_all)(struct fontviewbase *);
@@ -521,5 +525,9 @@ extern struct clip_interface *clip_interface;
 
 extern const char *NOUI_TTFNameIds(int id);
 extern const char *NOUI_MSLangString(int language);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_UIINTERFACE_H */

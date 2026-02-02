@@ -32,7 +32,7 @@
 
 static char *pixname(int i, int ncol) {
     static char one[2], two[3];
-    char *usable = "!#$%&'()*+,-./0123456789;:<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~ ";
+    const char *usable = "!#$%&'()*+,-./0123456789;:<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{|}~ ";
     static int len=0;
 
     if ( len==0 ) len = strlen(usable);
@@ -51,7 +51,7 @@ int GImageWriteXpm(GImage *gi, char *filename) {
     struct _GImage *base = gi->list_len==0?gi->u.image:gi->u.images[0];
     FILE *file;
     char stem[256];
-    char *pt,*color_type; uint8_t *scanline;
+    char *pt; const char *color_type; uint8_t *scanline;
     int i,j;
 
     /* This routine only exports mono or color-indexed type images */

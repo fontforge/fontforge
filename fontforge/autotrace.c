@@ -30,7 +30,7 @@
 #include "autotrace.h"
 
 #include "cvundoes.h"
-#include "ffglib.h"
+#include "ffglib_compat.h"
 #include "fontforgevw.h"
 #include "fvimportbdf.h"
 #include "gfile.h"
@@ -43,16 +43,16 @@
 #include "ustring.h"
 #include "utype.h"
 
-#include <dirent.h>		/* for opendir,etc. */
+#include "ffdir.h"		/* for ff_opendir,etc. */
 #include <errno.h>		/* for errors */
 #include <fcntl.h>		/* for open */
 #include <math.h>
 #include <stdlib.h>		/* for getenv */
 #include <sys/stat.h>		/* for open */
 #include <sys/types.h>		/* for waitpid */
-#include <unistd.h>		/* for access, unlink, fork, execvp, getcwd */
+#include "ffunistd.h"		/* for access, unlink, fork, execvp, getcwd */
 
-#if !defined(__MINGW32__)
+#if !defined(__MINGW32__) && !defined(_MSC_VER)
 #include <sys/wait.h>		/* for waitpid */
 #endif
 
@@ -193,7 +193,7 @@ static SplinePointList *localSplinesFromEntities(Entity *ent, Color bgcol, int i
 return( head );
 }
 
-#if !defined(__MINGW32__)
+#if !defined(__MINGW32__) && !defined(_MSC_VER)
 /* I think this is total paranoia. but it's annoying to have linker complaints... */
 static int mytempnam(char *buffer) {
     char *dir;
@@ -208,7 +208,7 @@ static int mytempnam(char *buffer) {
     else
 	strcpy(buffer,P_tmpdir);
     strcat(buffer,"/PfaEdXXXXXX");
-    fd = g_mkstemp(buffer);
+    fd = mkstemp(buffer);
 return( fd );
 }
 
@@ -240,7 +240,7 @@ return( NULL );
 #endif
 
 
-#if defined(__MINGW32__)
+#if defined(__MINGW32__) || defined(_MSC_VER)
 static char* add_arg(char* buffer, const char* s)
 {
     while( *s ) *buffer++ = *s++;
@@ -333,8 +333,8 @@ void _SCAutoTrace(SplineChar *sc, int layer, char **args) {
 	    fclose(ps);
 	}
 
-	unlink(tempname_in);
-	unlink(tempname_out);
+	ff_unlink(tempname_in);
+	ff_unlink(tempname_out);
     }
     if ( changed )
 	SCCharChangedUpdate(sc,layer);
@@ -420,7 +420,7 @@ return;
 	    dup2(fileno(ps),1);
 	    if ( strrchr(tempname,'/')!=NULL ) {	/* See comment above */
 		*strrchr(tempname,'/') = '\0';
-		chdir(tempname);
+		ff_chdir(tempname);
 	    }
 	    exit(execvp(prog,(char * const *)arglist)==-1);	/* If exec fails, then die */
 	} else if ( pid!=-1 ) {
@@ -451,7 +451,7 @@ return;
 	}
 	fclose(ps);
 	close(fd);
-	unlink(tempname);		/* Might not be needed, but probably is*/
+	ff_unlink(tempname);		/* Might not be needed, but probably is*/
     }
     if ( changed )
 	SCCharChangedUpdate(sc,layer);
@@ -620,7 +620,7 @@ return( NULL );
 	    strcat(buffer,prog);
 	    /* Under cygwin, applying access to "potrace" will find "potrace.exe" */
 	    /*  no need for special check to add ".exe" */
-	    if ( access(buffer,X_OK)!=-1 ) {
+	    if ( ff_access(buffer,X_OK)!=-1 ) {
 return( buffer );
 	    }
 	}
@@ -678,60 +678,60 @@ return( name );
 return( name );
 }
 
-#ifndef __MINGW32__
+#if !defined(__MINGW32__) && !defined(_MSC_VER)
 static char *FindGfFile(char *tempdir) {
-    DIR *temp;
-    struct dirent *ent;
+    FF_Dir *temp;
+    FF_DirEntry *ent;
     char buffer[1025], *ret=NULL;
 
-    temp = opendir(tempdir);
+    temp = ff_opendir(tempdir);
     if ( temp!=NULL ) {
-	while ( (ent=readdir(temp))!=NULL ) {
-	    if ( strcmp(ent->d_name,".")==0 || strcmp(ent->d_name,"..")==0 )
+	while ( (ent=ff_readdir(temp))!=NULL ) {
+	    if ( strcmp(ent->name,".")==0 || strcmp(ent->name,"..")==0 )
 	continue;
-	    if ( strlen(ent->d_name)>2 && strcmp(ent->d_name+strlen(ent->d_name)-2,"gf")==0 ) {
+	    if ( strlen(ent->name)>2 && strcmp(ent->name+strlen(ent->name)-2,"gf")==0 ) {
 		strcpy(buffer,tempdir);
 		strcat(buffer,"/");
-		strcat(buffer,ent->d_name);
+		strcat(buffer,ent->name);
 		ret = copy(buffer);
 	break;
 	    }
 	}
-	closedir(temp);
+	ff_closedir(temp);
     }
 return( ret );
 }
 
 static void cleantempdir(char *tempdir) {
-    DIR *temp;
-    struct dirent *ent;
+    FF_Dir *temp;
+    FF_DirEntry *ent;
     char buffer[1025], *eod;
     char *todelete[100];
     int cnt=0;
 
-    temp = opendir(tempdir);
+    temp = ff_opendir(tempdir);
     if ( temp!=NULL ) {
 	strcpy(buffer,tempdir);
 	strcat(buffer,"/");
 	eod = buffer+strlen(buffer);
-	while ( (ent=readdir(temp))!=NULL ) {
-	    if ( strcmp(ent->d_name,".")==0 || strcmp(ent->d_name,"..")==0 )
+	while ( (ent=ff_readdir(temp))!=NULL ) {
+	    if ( strcmp(ent->name,".")==0 || strcmp(ent->name,"..")==0 )
 	continue;
-	    strcpy(eod,ent->d_name);
+	    strcpy(eod,ent->name);
 	    /* Hmm... doing an unlink right here means changing the dir file */
 	    /*  which might mean we could not read it properly. So save up the*/
 	    /*  things we need to delete and trash them later */
 	    if ( cnt<99 )
 		todelete[cnt++] = copy(buffer);
 	}
-	closedir(temp);
+	ff_closedir(temp);
 	todelete[cnt] = NULL;
 	for ( cnt=0; todelete[cnt]!=NULL; ++cnt ) {
-	    unlink(todelete[cnt]);
+	    ff_unlink(todelete[cnt]);
 	    free(todelete[cnt]);
 	}
     }
-    rmdir(tempdir);
+    ff_rmdir(tempdir);
 }
 
 static char *MfArgs(void) {
@@ -757,7 +757,7 @@ void MfArgsInit(void) {
 }
 
 SplineFont *SFFromMF(char *filename) {
-#if defined(__MINGW32__)
+#if defined(__MINGW32__) || defined(_MSC_VER)
 return (NULL);
 #else
     char *tempdir;
@@ -795,7 +795,7 @@ return( NULL );
     if ( (pid=fork())==0 ) {
 	/* Child */
 	int fd;
-	chdir(tempdir);
+	ff_chdir(tempdir);
 	if ( !mf_showerrors ) {
 	    close(1);		/* mf generates a lot of verbiage to stdout. Throw it away */
 	    fd = open("/dev/null",O_WRONLY);

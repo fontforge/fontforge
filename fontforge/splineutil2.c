@@ -46,12 +46,12 @@
 #include "splineutil.h"
 #include "utanvec.h"
 #include "ustring.h"
-#include "views.h"		/* For SCCharChangedUpdate */
+/* SCCharChangedUpdate comes from uiinterface.h via fontforge.h */
 
 #include <math.h>
 #include <stdlib.h>
 #include <time.h>
-#include <unistd.h>
+#include "ffunistd.h"
 
 int new_em_size = 1000;
 int new_fonts_are_order2 = false;
@@ -3132,7 +3132,7 @@ SplineFont *SplineFontNew(void) {
 
     sf = SplineFontBlank(enclen);
     sf->onlybitmaps = true;
-    sf->new = true;
+    sf->isnew = true;
     sf->layers[ly_back].order2 = new_fonts_are_order2;
     sf->layers[ly_fore].order2 = new_fonts_are_order2;
     sf->grid.order2 = new_fonts_are_order2;

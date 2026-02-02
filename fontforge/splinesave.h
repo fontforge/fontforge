@@ -3,6 +3,10 @@
 
 #include "splinefont.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * It is like a == b, but also true if a is within tolerence of b.
  */
@@ -17,5 +21,9 @@ extern struct pschars *CID2ChrsSubrs2(SplineFont *cidmaster, struct fd2data *fds
 extern struct pschars *SplineFont2ChrsSubrs2(SplineFont *sf, int nomwid, int defwid, const int *bygid, int cnt, int flags, struct pschars **_subrs, int layer);
 extern void debug_printHintInstance(HintInstance* hi, int hin, char* msg);
 extern void RefCharsFreeRef(RefChar *ref);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_SPLINESAVE_H */

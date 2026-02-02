@@ -351,6 +351,13 @@ void FVSetWidth(FontView *fv,enum widthtype wtype) {
     FVCreateWidth(fv,0,FVDoit,wtype,buffer);
 }
 
+static void CVDoit(CreateWidthData *wd) {
+    CharView *cv = (CharView *) (wd->_fv);
+
+    DoChar(cv->b.sc,wd,(FontViewBase *) (cv->b.fv),NULL);
+    wd->done = true;
+}
+
 void CVSetWidth(CharView *cv,enum widthtype wtype) {
     char buf[10];
 

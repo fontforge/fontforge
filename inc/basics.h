@@ -72,9 +72,17 @@ typedef uint32_t unichar_t;
 #define VASSERT(v) ((void)(v))
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern void NoMoreMemMessage(void);
 extern void ExpandBuffer(void** p_buf, size_t elem_size, size_t increment,
                          int* p_maxalloc);
+
+#ifdef __cplusplus
+}
+#endif
 
 static inline int imin(int a, int b)
 {
@@ -134,6 +142,14 @@ static inline int imax(int a, int b)
 # ifndef MAXPATHLEN
 #  define MAXPATHLEN 4096
 # endif
+#endif
+
+/* Common MIN/MAX macros */
+#ifndef MAX
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+#endif
+#ifndef MIN
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #endif
 
 #endif /* FONTFORGE_BASICS_H */

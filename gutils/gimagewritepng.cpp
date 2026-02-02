@@ -36,7 +36,7 @@ static int a_file_must_define_something=0;	/* ANSI says so */
 #include <png.h>
 
 #include "gimage.h"
-#include "ffglib.h"
+#include "ffglib_compat.h"
 
 static void user_error_fn(png_structp png_ptr, png_const_charp error_msg) {
     fprintf(stderr, "%s\n", error_msg );
@@ -52,8 +52,8 @@ static void user_warning_fn(png_structp UNUSED(png_ptr), png_const_charp warning
 }
 
 static void mem_write_fn(png_structp png_ptr, png_bytep data, png_size_t sz) {
-    GByteArray *arr = (GByteArray*)(png_get_io_ptr(png_ptr));
-    g_byte_array_append(arr, data, sz);
+    FFByteArray *arr = (FFByteArray*)(png_get_io_ptr(png_ptr));
+    ff_byte_array_append(arr, data, sz);
 }
 
 static void mem_flush_fn(png_structp UNUSED(png_ptr)) {
@@ -181,30 +181,29 @@ return( 1 );
 }
 
 int GImageWritePngBuf(GImage *gi, char** buf, size_t* sz, int compression_level, int progressive) {
-    GByteArray *arr;
+    FFByteArray *arr;
     *buf = NULL;
     *sz = 0;
 
-    arr = g_byte_array_new();
+    arr = ff_byte_array_new();
     if (arr == NULL) {
         return false;
     }
 
     if (!GImageWritePngFull(gi, arr, true, compression_level, progressive)) {
-        g_byte_array_free(arr, true);
+        ff_byte_array_free(arr, true);
         return false;
     }
 
-    // The only reason we do this step is because we don't want
-    // to pollute g_free across function calls...
-    *buf = malloc(arr->len);
+    *buf = (char*) malloc(arr->len);
     if (*buf == NULL) {
+        ff_byte_array_free(arr, true);
         return false;
     }
     *sz = arr->len;
 
     memcpy(*buf, arr->data, arr->len);
-    g_byte_array_free(arr, true);
+    ff_byte_array_free(arr, true);
     return true;
 }
 

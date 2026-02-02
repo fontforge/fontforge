@@ -27,52 +27,13 @@
 
 #include <fontforge-config.h>
 
-#include "basics.h"
 #include "gfile.h"
-#include "gutils.h"
 #include "ustring.h"
-#include "utype.h"
 
-#include "ffglib.h"
-
-const char *GetAuthor(void) {
-    static char author[200] = {0};
-
-    if (author[0]) {
-        return author;
-    } else if (getenv("SOURCE_DATE_EPOCH")) {
-        const char *username = getenv("USER");
-        if (username) {
-            snprintf(author, sizeof(author), "%s", username);
-            return author;
-        }
-    }
-
-    return g_get_real_name(); // static buffer, should not be freed
-}
-
-time_t GetTime(void) {
-	time_t now;
-	const char *source_date_epoch = getenv("SOURCE_DATE_EPOCH");
-	if (source_date_epoch) {
-		now = atol(source_date_epoch);
-	} else {
-		now = time(NULL);
-	}
-
-	return now;
-}
-
-time_t GetST_MTime(struct stat s) {
-	time_t st_time;
-	if (getenv("SOURCE_DATE_EPOCH")) {
-		st_time = atol(getenv("SOURCE_DATE_EPOCH"));
-	} else {
-		st_time = s.st_mtime;
-	}
-
-	return st_time;
-}
+#include <gio/gio.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 
 static char* SupportedLocale(const char *locale, const char *fullspec, const char *filename) {
 /* If there's additional help files written for other languages, then check */
@@ -81,11 +42,11 @@ static char* SupportedLocale(const char *locale, const char *fullspec, const cha
 /* NOTE: If Docs are not maintained very well, maybe comment-out lang here. */
     int i;
     /* list languages in specific to generic order, ie: en_CA, en_GB, en... */
-    static char *supported[] = { "de","ja", NULL }; /* other html lang list */
+    static const char *supported[] = { "de","ja", NULL }; /* other html lang list */
 
     for ( i=0; supported[i]!=NULL; ++i ) {
         if ( strcmp(locale,supported[i])==0 ) {
-            char *pt = strrchr(filename, '/');
+            const char *pt = strrchr(filename, '/');
             return smprintf("%s/old/%s/%s", fullspec, supported[i], pt ? pt : filename);
         }
     }
@@ -143,11 +104,11 @@ void help(const char *file, const char *section) {
     }
 
     bool launched = false;
-    const char *help = getHelpDir();
-    if (help) {
-        char *path = CheckSupportedLocale(help, file);
+    const char *helpdir = getHelpDir();
+    if (helpdir) {
+        char *path = CheckSupportedLocale(helpdir, file);
         if (!path) {
-            path = smprintf("%s/%s", help, file);
+            path = smprintf("%s/%s", helpdir, file);
             if (!path) {
                 return;
             }

@@ -27,6 +27,8 @@
 
 #include <fontforge-config.h>
 
+#include "ffglib_compat.h"
+
 #include "autohint.h"
 #include "dumppfa.h"
 #include "featurefile.h"
@@ -54,7 +56,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <time.h>
-#include <unistd.h>
+#include "ffunistd.h"
 #include <assert.h>
 #include <stdarg.h>
 
@@ -470,11 +472,11 @@ static void PListAddIntArray(xmlNodePtr parent, const char *key, const char *ent
     }
 }
 
-static void PListAddPrivateArray(xmlNodePtr parent, const char *key, struct psdict *private) {
+static void PListAddPrivateArray(xmlNodePtr parent, const char *key, struct psdict *private_dict) {
     char *value;
-    if ( private==NULL )
+    if ( private_dict==NULL )
 return;
-    value = PSDictHasEntry(private,key);
+    value = PSDictHasEntry(private_dict,key);
     if ( value==NULL )
 return;
     xmlNewChildPrintf(parent, NULL, BAD_CAST "key", "postscript%s", key); // "<key>postscript%s</key>" key
@@ -512,11 +514,11 @@ return;
     // "</array>"
 }
 
-static void PListAddPrivateThing(xmlNodePtr parent, const char *key, struct psdict *private, char *type) {
+static void PListAddPrivateThing(xmlNodePtr parent, const char *key, struct psdict *private_dict, char *type) {
     char *value;
 
-    if ( private==NULL ) return;
-    value = PSDictHasEntry(private,key);
+    if ( private_dict==NULL ) return;
+    value = PSDictHasEntry(private_dict,key);
     if ( value==NULL ) return;
 
     while ( *value==' ' || *value=='[' ) ++value;
@@ -1341,18 +1343,18 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer, int
     PListAddInteger(dictnode,"postscriptUnderlineThickness",sf->uwidth);
     PListAddInteger(dictnode,"postscriptUnderlinePosition",sf->upos);
     PListAddBoolean(dictnode,"postscriptIsFixedPitch", SFIsFixedWidth(sf));
-    if ( sf->private!=NULL ) {
+    if ( sf->private_dict!=NULL ) {
 	char *pt;
-	PListAddPrivateArray(dictnode, "BlueValues", sf->private);
-	PListAddPrivateArray(dictnode, "OtherBlues", sf->private);
-	PListAddPrivateArray(dictnode, "FamilyBlues", sf->private);
-	PListAddPrivateArray(dictnode, "FamilyOtherBlues", sf->private);
-	PListAddPrivateArray(dictnode, "StemSnapH", sf->private);
-	PListAddPrivateArray(dictnode, "StemSnapV", sf->private);
-	PListAddPrivateThing(dictnode, "BlueFuzz", sf->private, "integer");
-	PListAddPrivateThing(dictnode, "BlueShift", sf->private, "integer");
-	PListAddPrivateThing(dictnode, "BlueScale", sf->private, "real");
-	if ( (pt=PSDictHasEntry(sf->private,"ForceBold"))!=NULL )
+	PListAddPrivateArray(dictnode, "BlueValues", sf->private_dict);
+	PListAddPrivateArray(dictnode, "OtherBlues", sf->private_dict);
+	PListAddPrivateArray(dictnode, "FamilyBlues", sf->private_dict);
+	PListAddPrivateArray(dictnode, "FamilyOtherBlues", sf->private_dict);
+	PListAddPrivateArray(dictnode, "StemSnapH", sf->private_dict);
+	PListAddPrivateArray(dictnode, "StemSnapV", sf->private_dict);
+	PListAddPrivateThing(dictnode, "BlueFuzz", sf->private_dict, "integer");
+	PListAddPrivateThing(dictnode, "BlueShift", sf->private_dict, "integer");
+	PListAddPrivateThing(dictnode, "BlueScale", sf->private_dict, "real");
+	if ( (pt=PSDictHasEntry(sf->private_dict,"ForceBold"))!=NULL )
 	    PListAddBoolean(dictnode, "postscriptForceBold", strstr(pt,"true")!=NULL ? true : false );
     }
     if ( sf->fondname!=NULL )
@@ -3245,7 +3247,7 @@ static void MakeKerningClasses(SplineFont *sf, struct ff_glyphclasses *group_bas
     if (sf->kerns->offsets) {
       int rowpos;
       for (rowpos = 0; rowpos < sf->kerns->first_cnt; rowpos ++) {
-        memcpy((void *)tmp_offsets + (rowpos * (sf->kerns->second_cnt + right_count)) * sizeof(int16_t), (void *)(sf->kerns->offsets) + (rowpos * sf->kerns->second_cnt) * sizeof(int16_t), sf->kerns->second_cnt * sizeof(int16_t));
+        memcpy((char *)tmp_offsets + (rowpos * (sf->kerns->second_cnt + right_count)) * sizeof(int16_t), (char *)(sf->kerns->offsets) + (rowpos * sf->kerns->second_cnt) * sizeof(int16_t), sf->kerns->second_cnt * sizeof(int16_t));
       }
       free(sf->kerns->offsets);
     }
@@ -3255,7 +3257,7 @@ static void MakeKerningClasses(SplineFont *sf, struct ff_glyphclasses *group_bas
     if (sf->kerns->offsets_flags) {
       int rowpos;
       for (rowpos = 0; rowpos < sf->kerns->first_cnt; rowpos ++) {
-        memcpy((void *)tmp_offsets_flags + (rowpos * (sf->kerns->second_cnt + right_count)) * sizeof(int), (void *)(sf->kerns->offsets_flags) + (rowpos * sf->kerns->second_cnt) * sizeof(int), sf->kerns->second_cnt * sizeof(int));
+        memcpy((char *)tmp_offsets_flags + (rowpos * (sf->kerns->second_cnt + right_count)) * sizeof(int), (char *)(sf->kerns->offsets_flags) + (rowpos * sf->kerns->second_cnt) * sizeof(int), sf->kerns->second_cnt * sizeof(int));
       }
       free(sf->kerns->offsets_flags);
     }
@@ -3265,7 +3267,7 @@ static void MakeKerningClasses(SplineFont *sf, struct ff_glyphclasses *group_bas
     if (sf->kerns->adjusts) {
       int rowpos;
       for (rowpos = 0; rowpos < sf->kerns->first_cnt; rowpos ++) {
-        memcpy((void *)tmp_adjusts + (rowpos * (sf->kerns->second_cnt + right_count)) * sizeof(DeviceTable), (void *)(sf->kerns->adjusts) + (rowpos * sf->kerns->second_cnt) * sizeof(DeviceTable), sf->kerns->second_cnt * sizeof(DeviceTable));
+        memcpy((char *)tmp_adjusts + (rowpos * (sf->kerns->second_cnt + right_count)) * sizeof(DeviceTable), (char *)(sf->kerns->adjusts) + (rowpos * sf->kerns->second_cnt) * sizeof(DeviceTable), sf->kerns->second_cnt * sizeof(DeviceTable));
       }
       free(sf->kerns->adjusts);
     }
@@ -3277,7 +3279,7 @@ static void MakeKerningClasses(SplineFont *sf, struct ff_glyphclasses *group_bas
     if (sf->vkerns->offsets) {
       int rowpos;
       for (rowpos = 0; rowpos < sf->vkerns->first_cnt; rowpos ++) {
-        memcpy((void *)tmp_offsets + (rowpos * (sf->vkerns->second_cnt + below_count)) * sizeof(int16_t), (void *)(sf->vkerns->offsets) + (rowpos * sf->vkerns->second_cnt) * sizeof(int16_t), sf->vkerns->second_cnt * sizeof(int16_t));
+        memcpy((char *)tmp_offsets + (rowpos * (sf->vkerns->second_cnt + below_count)) * sizeof(int16_t), (char *)(sf->vkerns->offsets) + (rowpos * sf->vkerns->second_cnt) * sizeof(int16_t), sf->vkerns->second_cnt * sizeof(int16_t));
       }
       free(sf->vkerns->offsets);
     }
@@ -3287,7 +3289,7 @@ static void MakeKerningClasses(SplineFont *sf, struct ff_glyphclasses *group_bas
     if (sf->vkerns->offsets_flags) {
       int rowpos;
       for (rowpos = 0; rowpos < sf->vkerns->first_cnt; rowpos ++) {
-        memcpy((void *)tmp_offsets_flags + (rowpos * (sf->vkerns->second_cnt + below_count)) * sizeof(int), (void *)(sf->vkerns->offsets_flags) + (rowpos * sf->vkerns->second_cnt) * sizeof(int), sf->vkerns->second_cnt * sizeof(int));
+        memcpy((char *)tmp_offsets_flags + (rowpos * (sf->vkerns->second_cnt + below_count)) * sizeof(int), (char *)(sf->vkerns->offsets_flags) + (rowpos * sf->vkerns->second_cnt) * sizeof(int), sf->vkerns->second_cnt * sizeof(int));
       }
       free(sf->vkerns->offsets_flags);
     }
@@ -3297,7 +3299,7 @@ static void MakeKerningClasses(SplineFont *sf, struct ff_glyphclasses *group_bas
     if (sf->vkerns->adjusts) {
       int rowpos;
       for (rowpos = 0; rowpos < sf->vkerns->first_cnt; rowpos ++) {
-        memcpy((void *)tmp_adjusts + (rowpos * (sf->vkerns->second_cnt + above_count)) * sizeof(DeviceTable), (void *)(sf->vkerns->adjusts) + (rowpos * sf->vkerns->second_cnt) * sizeof(DeviceTable), sf->vkerns->second_cnt * sizeof(DeviceTable));
+        memcpy((char *)tmp_adjusts + (rowpos * (sf->vkerns->second_cnt + above_count)) * sizeof(DeviceTable), (char *)(sf->vkerns->adjusts) + (rowpos * sf->vkerns->second_cnt) * sizeof(DeviceTable), sf->vkerns->second_cnt * sizeof(DeviceTable));
       }
       free(sf->vkerns->adjusts);
     }
@@ -3306,38 +3308,38 @@ static void MakeKerningClasses(SplineFont *sf, struct ff_glyphclasses *group_bas
   // Since the linear data need no repositioning, we can just use realloc. But it's important that we zero the new space in case it does not get filled.
   if (left_count > 0) {
     sf->kerns->firsts = realloc(sf->kerns->firsts, sizeof(char *) * (sf->kerns->first_cnt + left_count));
-    memset((void*)sf->kerns->firsts + sf->kerns->first_cnt * sizeof(char *), 0, left_count * sizeof(char *));
+    memset((char*)sf->kerns->firsts + sf->kerns->first_cnt * sizeof(char *), 0, left_count * sizeof(char *));
     sf->kerns->firsts_names = realloc(sf->kerns->firsts_names, sizeof(char *) * (sf->kerns->first_cnt + left_count));
-    memset((void*)sf->kerns->firsts_names + sf->kerns->first_cnt * sizeof(char *), 0, left_count * sizeof(char *));
+    memset((char*)sf->kerns->firsts_names + sf->kerns->first_cnt * sizeof(char *), 0, left_count * sizeof(char *));
     sf->kerns->firsts_flags = realloc(sf->kerns->firsts_flags, sizeof(int) * (sf->kerns->first_cnt + left_count));
-    memset((void*)sf->kerns->firsts_flags + sf->kerns->first_cnt * sizeof(int), 0, left_count * sizeof(int));
+    memset((char*)sf->kerns->firsts_flags + sf->kerns->first_cnt * sizeof(int), 0, left_count * sizeof(int));
     sf->kerns->first_cnt += left_count;
   }
   if (right_count > 0) {
     sf->kerns->seconds = realloc(sf->kerns->seconds, sizeof(char *) * (sf->kerns->second_cnt + right_count));
-    memset((void*)sf->kerns->seconds + sf->kerns->second_cnt * sizeof(char *), 0, right_count * sizeof(char *));
+    memset((char*)sf->kerns->seconds + sf->kerns->second_cnt * sizeof(char *), 0, right_count * sizeof(char *));
     sf->kerns->seconds_names = realloc(sf->kerns->seconds_names, sizeof(char *) * (sf->kerns->second_cnt + right_count));
-    memset((void*)sf->kerns->seconds_names + sf->kerns->second_cnt * sizeof(char *), 0, right_count * sizeof(char *));
+    memset((char*)sf->kerns->seconds_names + sf->kerns->second_cnt * sizeof(char *), 0, right_count * sizeof(char *));
     sf->kerns->seconds_flags = realloc(sf->kerns->seconds_flags, sizeof(int) * (sf->kerns->second_cnt + right_count));
-    memset((void*)sf->kerns->seconds_flags + sf->kerns->second_cnt * sizeof(int), 0, right_count * sizeof(int));
+    memset((char*)sf->kerns->seconds_flags + sf->kerns->second_cnt * sizeof(int), 0, right_count * sizeof(int));
     sf->kerns->second_cnt += right_count;
   }
   if (above_count > 0) {
     sf->vkerns->firsts = realloc(sf->vkerns->firsts, sizeof(char *) * (sf->vkerns->first_cnt + above_count));
-    memset((void*)sf->vkerns->firsts + sf->vkerns->first_cnt * sizeof(char *), 0, above_count * sizeof(char *));
+    memset((char*)sf->vkerns->firsts + sf->vkerns->first_cnt * sizeof(char *), 0, above_count * sizeof(char *));
     sf->vkerns->firsts_names = realloc(sf->vkerns->firsts_names, sizeof(char *) * (sf->vkerns->first_cnt + above_count));
-    memset((void*)sf->vkerns->firsts_names + sf->vkerns->first_cnt * sizeof(char *), 0, above_count * sizeof(char *));
+    memset((char*)sf->vkerns->firsts_names + sf->vkerns->first_cnt * sizeof(char *), 0, above_count * sizeof(char *));
     sf->vkerns->firsts_flags = realloc(sf->vkerns->firsts_flags, sizeof(int) * (sf->vkerns->first_cnt + above_count));
-    memset((void*)sf->vkerns->firsts_flags + sf->vkerns->first_cnt * sizeof(int), 0, above_count * sizeof(int));
+    memset((char*)sf->vkerns->firsts_flags + sf->vkerns->first_cnt * sizeof(int), 0, above_count * sizeof(int));
     sf->vkerns->first_cnt += above_count;
   }
   if (below_count > 0) {
     sf->vkerns->seconds = realloc(sf->vkerns->seconds, sizeof(char *) * (sf->vkerns->second_cnt + below_count));
-    memset((void*)sf->vkerns->seconds + sf->vkerns->second_cnt * sizeof(char *), 0, below_count * sizeof(char *));
+    memset((char*)sf->vkerns->seconds + sf->vkerns->second_cnt * sizeof(char *), 0, below_count * sizeof(char *));
     sf->vkerns->seconds_names = realloc(sf->vkerns->seconds_names, sizeof(char *) * (sf->vkerns->second_cnt + below_count));
-    memset((void*)sf->vkerns->seconds_names + sf->vkerns->second_cnt * sizeof(char *), 0, below_count * sizeof(char *));
+    memset((char*)sf->vkerns->seconds_names + sf->vkerns->second_cnt * sizeof(char *), 0, below_count * sizeof(char *));
     sf->vkerns->seconds_flags = realloc(sf->vkerns->seconds_flags, sizeof(int) * (sf->vkerns->second_cnt + below_count));
-    memset((void*)sf->vkerns->seconds_flags + sf->vkerns->second_cnt * sizeof(char *), 0, below_count * sizeof(int));
+    memset((char*)sf->vkerns->seconds_flags + sf->vkerns->second_cnt * sizeof(char *), 0, below_count * sizeof(int));
     sf->vkerns->second_cnt += below_count;
   }
   // Start copying.
@@ -3690,13 +3692,13 @@ static void UFOAddName(SplineFont *sf,char *value,int strid) {
 static void UFOAddPrivate(SplineFont *sf,char *key,char *value) {
     char *pt;
 
-    if ( sf->private==NULL )
-	sf->private = chunkalloc(sizeof(struct psdict));
+    if ( sf->private_dict==NULL )
+	sf->private_dict = chunkalloc(sizeof(struct psdict));
     for ( pt=value; *pt!='\0'; ++pt ) {	/* Value might contain white space. turn into spaces */
 	if ( *pt=='\n' || *pt=='\r' || *pt=='\t' )
 	    *pt = ' ';
     }
-    PSDictChangeEntry(sf->private, key, value);
+    PSDictChangeEntry(sf->private_dict, key, value);
 }
 
 static void UFOAddPrivateArray(SplineFont *sf,char *key,xmlDocPtr doc,xmlNodePtr value) {

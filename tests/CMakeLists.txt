@@ -9,10 +9,15 @@ if(NOT ENABLE_NATIVE_SCRIPTING AND NOT ENABLE_PYTHON_SCRIPTING_RESULT)
   return()
 endif()
 
-add_executable(systestdriver systestdriver.c)
-target_link_libraries(systestdriver PRIVATE GLIB::GLIB)
-if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+# systestdriver - standalone C++ test driver (no FontForge dependencies)
+add_executable(systestdriver systestdriver.cpp)
+target_link_libraries(systestdriver PRIVATE cxxopts)
+set_target_properties(systestdriver PROPERTIES CXX_STANDARD 11 CXX_STANDARD_REQUIRED ON)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   target_compile_options(systestdriver PRIVATE -Wall -pedantic)
+endif()
+if(MSVC)
+  target_compile_options(systestdriver PRIVATE /W4)
 endif()
 
 # Downloaded files

@@ -55,9 +55,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
+#include "ffunistd.h"
+
 #if __Mac
 # include "carbon.h"
 
@@ -290,13 +289,13 @@ struct macbinaryheader {
 static struct resource *PSToResources(FILE *res,FILE *pfbfile) {
     /* split the font up into as many small resources as we need and return */
     /*  an array pointing to the start of each */
-    struct stat statb;
+    off_t filesize;
     int cnt, type;
     struct resource *resstarts;
     int len,i;
 
-    fstat(fileno(pfbfile),&statb);
-    cnt = 3*(statb.st_size+0x800)/(0x800-2)+1;		/* should be (usually) a vast over estimate */
+    filesize = GFileGetSizeF(pfbfile);
+    cnt = 3*(filesize+0x800)/(0x800-2)+1;		/* should be (usually) a vast over estimate */
     resstarts = calloc(cnt+1,sizeof(struct resource));
 
     cnt = 0;
@@ -341,14 +340,14 @@ return( resstarts );
 
 static uint32_t TTFToResource(FILE *res,FILE *ttffile) {
     /* A truetype font just gets dropped into a resource */
-    struct stat statb;
+    off_t filesize;
     int ch;
     uint32_t resstart;
 
-    fstat(fileno(ttffile),&statb);
+    filesize = GFileGetSizeF(ttffile);
     resstart = ftell(res);
 
-    putlong(res,statb.st_size);
+    putlong(res,filesize);
     while ( (ch=getc(ttffile))!=EOF )
 	putc(ch,res);
 return( resstart );

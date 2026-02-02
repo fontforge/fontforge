@@ -33,9 +33,17 @@
 #include <sys/stat.h>
 #include <time.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern const char *GetAuthor(void);
 extern time_t GetTime(void);
 extern time_t GetST_MTime(struct stat s);
 extern void help(const char *filename, const char *section);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_GUTILS_H */

@@ -50,8 +50,8 @@
 #include "tottfgpos.h"
 #include "ustring.h"
 #include "utype.h"
-#include "views.h"
 
+#include "ffunistd.h"
 #include <math.h>
 
 #ifndef HAVE_EXECINFO_H

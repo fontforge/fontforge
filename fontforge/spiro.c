@@ -110,7 +110,7 @@ static SplineSet *_SpiroCP2SplineSet(spiro_cp *spiros) {
 	} else {
 	    int i;
 	    spiro_cp *nspiros;
-	    if ( (nspiros=malloc((n+1)*sizeof(spiro_cp)))==NULL ) {
+	    if ( (nspiros=(spiro_cp*)malloc((n+1)*sizeof(spiro_cp)))==NULL ) {
 		if ( lastty ) spiros[n-1].ty = lastty;
 		free(bc);
 		return( NULL );
@@ -152,7 +152,7 @@ static SplineSet *_SpiroCP2SplineSet(spiro_cp *spiros) {
  * @return The spline point list.
  */
 SplineSet *SpiroCP2SplineSet(spiro_cp *spiros) {
-    SplineSet *ss = calloc(1, sizeof(SplineSet));
+    SplineSet *ss = (SplineSet*)calloc(1, sizeof(SplineSet));
     int n;
 
     for (n = 0; spiros[n].ty != SPIRO_END; n++)
@@ -181,7 +181,7 @@ spiro_cp *SplineSet2SpiroCP(SplineSet *ss,uint16_t *_cnt) {
     break;
     }
 
-    ret = malloc((3*cnt+1)*sizeof(spiro_cp));
+    ret = (spiro_cp*)malloc((3*cnt+1)*sizeof(spiro_cp));
 
     for ( cnt=0, sp=ss->first; ; ) {
 	ret[cnt].x = sp->me.x;

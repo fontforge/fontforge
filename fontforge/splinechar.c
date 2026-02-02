@@ -30,7 +30,7 @@
 
 #include "cvundoes.h"
 #include "dumppfa.h"
-#include "ffglib.h"
+#include "ffglib_compat.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
 #include "lookups.h"
@@ -1300,7 +1300,7 @@ static int CheckBluePair(char *blues, char *others, int bluefuzz,
 	    while ( *others==' ' ) ++others;
 	    if ( *others==']' || *others=='}' )
 	break;
-	    temp = g_ascii_strtod(others,&end);
+	    temp = ff_ascii_strtod(others,&end);
 	    if ( temp!=rint(temp))
 		err |= pds_notintegral;
 	    else if ( end==others ) {
@@ -1324,7 +1324,7 @@ static int CheckBluePair(char *blues, char *others, int bluefuzz,
 	while ( *blues==' ' ) ++blues;
 	if ( *blues==']' || *blues=='}' )
     break;
-	temp = g_ascii_strtod(blues,&end);
+	temp = ff_ascii_strtod(blues,&end);
 	if ( temp!=rint(temp))
 	    err |= pds_notintegral;
 	else if ( end==blues ) {
@@ -1372,7 +1372,7 @@ return( true );
 return( false );
     ++str_val;
 
-    val = g_ascii_strtod(str_val,&end);
+    val = ff_ascii_strtod(str_val,&end);
     while ( *end==' ' ) ++end;
     if ( *end!=']' && *end!='}' )
 return( false );
@@ -1394,7 +1394,7 @@ static int CheckStemSnap(struct psdict *dict,char *snapkey, char *stdkey ) {
     if ( (str_val = PSDictHasEntry(dict,stdkey))!=NULL ) {
 	while ( *str_val==' ' ) ++str_val;
 	if ( *str_val=='[' && *str_val!='{' ) ++str_val;
-	std_val = g_ascii_strtod(str_val,&end);
+	std_val = ff_ascii_strtod(str_val,&end);
     }
 
     if ( (str_val = PSDictHasEntry(dict,snapkey))==NULL )
@@ -1409,7 +1409,7 @@ return( false );
 	while ( *str_val==' ' ) ++str_val;
 	if ( *str_val==']' && *str_val!='}' )
     break;
-	temp = g_ascii_strtod(str_val,&end);
+	temp = ff_ascii_strtod(str_val,&end);
 	if ( end==str_val )
 return( false );
 	str_val = end;
@@ -1434,44 +1434,44 @@ int ValidatePrivate(SplineFont *sf) {
     bigreal bluescale = .039625;
     int magicpointsize;
 
-    if ( sf->private==NULL )
+    if ( sf->private_dict==NULL )
 return( pds_missingblue );
 
-    if ( (bf = PSDictHasEntry(sf->private,"BlueFuzz"))!=NULL ) {
+    if ( (bf = PSDictHasEntry(sf->private_dict,"BlueFuzz"))!=NULL ) {
 	fuzz = strtol(bf,&end,10);
 	if ( *end!='\0' || fuzz<0 )
 	    errs |= pds_badbluefuzz;
     }
 
-    if ( (test=PSDictHasEntry(sf->private,"BlueScale"))!=NULL ) {
-	bluescale = g_ascii_strtod(test,&end);
+    if ( (test=PSDictHasEntry(sf->private_dict,"BlueScale"))!=NULL ) {
+	bluescale = ff_ascii_strtod(test,&end);
 	if ( *end!='\0' || end==test || bluescale<0 )
 	    errs |= pds_badbluescale;
     }
     magicpointsize = rint( bluescale*240 + 0.49 );
 
-    if ( (blues = PSDictHasEntry(sf->private,"BlueValues"))==NULL )
+    if ( (blues = PSDictHasEntry(sf->private_dict,"BlueValues"))==NULL )
 	errs |= pds_missingblue;
     else
-	errs |= CheckBluePair(blues,PSDictHasEntry(sf->private,"OtherBlues"),fuzz,magicpointsize);
+	errs |= CheckBluePair(blues,PSDictHasEntry(sf->private_dict,"OtherBlues"),fuzz,magicpointsize);
 
-    if ( (blues = PSDictHasEntry(sf->private,"FamilyBlues"))!=NULL )
-	errs |= CheckBluePair(blues,PSDictHasEntry(sf->private,"FamilyOtherBlues"),
+    if ( (blues = PSDictHasEntry(sf->private_dict,"FamilyBlues"))!=NULL )
+	errs |= CheckBluePair(blues,PSDictHasEntry(sf->private_dict,"FamilyOtherBlues"),
 		fuzz,magicpointsize)<<pds_shift;
 
 
-    if ( (test=PSDictHasEntry(sf->private,"BlueShift"))!=NULL ) {
+    if ( (test=PSDictHasEntry(sf->private_dict,"BlueShift"))!=NULL ) {
 	int val = strtol(test,&end,10);
 	if ( *end!='\0' || end==test || val<0 )
 	    errs |= pds_badblueshift;
     }
 
-    if ( !CheckStdW(sf->private,"StdHW"))
+    if ( !CheckStdW(sf->private_dict,"StdHW"))
 	errs |= pds_badstdhw;
-    if ( !CheckStdW(sf->private,"StdVW"))
+    if ( !CheckStdW(sf->private_dict,"StdVW"))
 	errs |= pds_badstdvw;
 
-    switch ( CheckStemSnap(sf->private,"StemSnapH", "StdHW")) {
+    switch ( CheckStemSnap(sf->private_dict,"StemSnapH", "StdHW")) {
       case false:
 	errs |= pds_badstemsnaph;
       break;
@@ -1479,7 +1479,7 @@ return( pds_missingblue );
 	errs |= pds_stemsnapnostdh;
       break;
     }
-    switch ( CheckStemSnap(sf->private,"StemSnapV", "StdVW")) {
+    switch ( CheckStemSnap(sf->private_dict,"StemSnapV", "StdVW")) {
       case false:
 	errs |= pds_badstemsnapv;
       break;

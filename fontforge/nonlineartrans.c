@@ -42,7 +42,7 @@
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
 
-static struct builtins { const char *name; enum operator op; } builtins[] = {
+static struct builtins { const char *name; enum nlt_operator op; } builtins[] = {
     { "x", op_x },
     { "y", op_y },
     { "log", op_log },
@@ -177,7 +177,7 @@ return( op_value );
     }
 }
 
-static void backup(struct expr_context *c,enum operator op, real val ) {
+static void backup(struct expr_context *c,enum nlt_operator op, real val ) {
     if ( c->backed_token!=op_base ) {
 	IError( "Attempt to back up twice.\nnear ...%s\n", c->cur );
 	c->had_error = true;
@@ -191,13 +191,13 @@ static struct expr *getexpr(struct expr_context *c);
 
 static struct expr *gete0(struct expr_context *c) {
     real val = 0;
-    enum operator op = gettoken(c,&val);
+    enum nlt_operator op = gettoken(c,&val);
     struct expr *ret;
 
-    switch ( (int)op ) { /* Cast avoids a warning that '(' in not in enum operator */
+    switch ( (int)op ) { /* Cast avoids a warning that '(' in not in enum nlt_operator */
       case op_value: case op_x: case op_y:
 	ret = calloc(1,sizeof(struct expr));
-	ret->operator = op;
+	ret->op = op;
 	ret->value = val;
 return( ret );
       case '(':
@@ -214,7 +214,7 @@ return(ret );
       case op_abs:
       case op_rint: case op_floor: case op_ceil:
 	ret = calloc(1,sizeof(struct expr));
-	ret->operator = op;
+	ret->op = op;
 	op = gettoken(c,&val);
 	if ( op!='(' ) {
 	    ff_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), "(" , c->cur );
@@ -222,7 +222,7 @@ return(ret );
 	}
 	ret->op1 = getexpr(c);
 	op = gettoken(c,&val);
-	if ( ret->operator==op_atan2 ) {
+	if ( ret->op==op_atan2 ) {
 	    if ( op!=',' ) {
 		ff_post_error(_("Bad Token"), _("Bad token. Expected \"%.10s\"\nnear ...%40s"), "," , c->cur );
 	    }
@@ -239,14 +239,14 @@ return( ret );
 return( gete0(c));
       case op_sub: case op_not:
 	ret = calloc(1,sizeof(struct expr));
-	ret->operator = op;
+	ret->op = op;
 	ret->op1 = gete0(c);
 return( ret );
       default:
 	ff_post_error(_("Bad Token"), _("Unexpected token.\nbefore ...%40s") , c->cur );
 	c->had_error = true;
 	ret = calloc(1,sizeof(struct expr));
-	ret->operator = op_value;
+	ret->op = op_value;
 	ret->value = val;
 return( ret );
     }
@@ -254,7 +254,7 @@ return( ret );
 
 static struct expr *gete1(struct expr_context *c) {
     real val = 0;
-    enum operator op;
+    enum nlt_operator op;
     struct expr *ret, *op1;
 
     op1 = gete0(c);
@@ -262,7 +262,7 @@ static struct expr *gete1(struct expr_context *c) {
     while ( op==op_pow ) {
 	ret = calloc(1,sizeof(struct expr));
 	ret->op1 = op1;
-	ret->operator = op;
+	ret->op = op;
 	ret->op2 = gete0(c);
 	op1 = ret;
 	op = gettoken(c,&val);
@@ -273,7 +273,7 @@ return( op1 );
 
 static struct expr *gete2(struct expr_context *c) {
     real val = 0;
-    enum operator op;
+    enum nlt_operator op;
     struct expr *ret, *op1;
 
     op1 = gete1(c);
@@ -281,7 +281,7 @@ static struct expr *gete2(struct expr_context *c) {
     while ( op==op_times || op==op_div || op==op_mod ) {
 	ret = calloc(1,sizeof(struct expr));
 	ret->op1 = op1;
-	ret->operator = op;
+	ret->op = op;
 	ret->op2 = gete1(c);
 	op1 = ret;
 	op = gettoken(c,&val);
@@ -292,7 +292,7 @@ return( op1 );
 
 static struct expr *gete3(struct expr_context *c) {
     real val = 0;
-    enum operator op;
+    enum nlt_operator op;
     struct expr *ret, *op1;
 
     op1 = gete2(c);
@@ -300,7 +300,7 @@ static struct expr *gete3(struct expr_context *c) {
     while ( op==op_add || op==op_sub ) {
 	ret = calloc(1,sizeof(struct expr));
 	ret->op1 = op1;
-	ret->operator = op;
+	ret->op = op;
 	ret->op2 = gete2(c);
 	op1 = ret;
 	op = gettoken(c,&val);
@@ -311,7 +311,7 @@ return( op1 );
 
 static struct expr *gete4(struct expr_context *c) {
     real val = 0;
-    enum operator op;
+    enum nlt_operator op;
     struct expr *ret, *op1;
 
     op1 = gete3(c);
@@ -319,7 +319,7 @@ static struct expr *gete4(struct expr_context *c) {
     while ( op==op_eq || op==op_ne || op==op_lt || op==op_le || op==op_gt || op==op_ge ) {
 	ret = calloc(1,sizeof(struct expr));
 	ret->op1 = op1;
-	ret->operator = op;
+	ret->op = op;
 	ret->op2 = gete3(c);
 	op1 = ret;
 	op = gettoken(c,&val);
@@ -330,7 +330,7 @@ return( op1 );
 
 static struct expr *gete5(struct expr_context *c) {
     real val = 0;
-    enum operator op;
+    enum nlt_operator op;
     struct expr *ret, *op1;
 
     op1 = gete4(c);
@@ -338,7 +338,7 @@ static struct expr *gete5(struct expr_context *c) {
     while ( op==op_and || op==op_or ) {
 	ret = calloc(1,sizeof(struct expr));
 	ret->op1 = op1;
-	ret->operator = op;
+	ret->op = op;
 	ret->op2 = gete4(c);
 	op1 = ret;
 	op = gettoken(c,&val);
@@ -349,7 +349,7 @@ return( op1 );
 
 static struct expr *getexpr(struct expr_context *c) {
     real val = 0;
-    enum operator op;
+    enum nlt_operator op;
     struct expr *ret, *op1;
 
     op1 = gete5(c);
@@ -357,7 +357,7 @@ static struct expr *getexpr(struct expr_context *c) {
     if ( op==op_if ) {
 	ret = calloc(1,sizeof(struct expr));
 	ret->op1 = op1;
-	ret->operator = op;
+	ret->op = op;
 	ret->op2 = getexpr(c);
 	op = gettoken(c,&val);
 	if ( op!=':' ) {
@@ -392,7 +392,7 @@ return( ret );
 static real evaluate_expr(struct expr_context *c, struct expr *e) {
     real val1, val2;
 
-    switch ( e->operator ) {
+    switch ( e->op ) {
       case op_value:
 return( e->value );
       case op_x:
@@ -408,7 +408,7 @@ return( !evaluate_expr(c,e->op1) );
       case op_abs:
       case op_rint: case op_floor: case op_ceil:
 	val1 = evaluate_expr(c,e->op1);
-	switch ( e->operator ) {
+	switch ( e->op ) {
 	  case op_log:
 	    if ( val1<=0 ) {
 		ff_post_error(_("Bad Value"),_("Attempt to take logarithm of %1$g in %2$.30s"), val1, c->sc->name );
@@ -455,7 +455,7 @@ return( evaluate_expr(c,e->op1) * evaluate_expr(c,e->op2) );
 	    c->had_error = true;
 return( 0 );
 	}
-	if ( e->operator==op_div )
+	if ( e->op==op_div )
 return( evaluate_expr(c,e->op1)/val2 );
 return( fmod(evaluate_expr(c,e->op1),val2) );
       case op_add:
@@ -491,7 +491,7 @@ return( evaluate_expr(c,e->op2) );
 	else
 return( evaluate_expr(c,e->op3) );
       default:
-	IError( "Bad operator %d in %s\n", e->operator, c->sc->name );
+	IError( "Bad operator %d in %s\n", e->op, c->sc->name );
 	c->had_error = true;
 return( 0 );
     }

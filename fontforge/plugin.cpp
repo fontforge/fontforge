@@ -33,13 +33,17 @@
 #include "plugin.h"
 
 #include "gfile.h"
+#include "intl.h"
 #include "uiinterface.h"
+
+#include <string>  /* for std::string */
+#include <ini.h>   /* mINI library for INI file parsing */
 
 int use_plugins = true; // Prefs variable
 int attempted_plugin_load = false;
 
 enum plugin_startup_mode_type plugin_startup_mode = sm_ask;
-GList_Glib *plugin_data = NULL;
+FFList *plugin_data = NULL;
 
 void FreePluginEntry(PluginEntry *pe) {
     free(pe->name);
@@ -60,7 +64,7 @@ void FreePluginEntry(PluginEntry *pe) {
 static PluginEntry *NewPluginEntry(const char *name, const char *pkgname,
                                    const char *modname, const char *url,
                                    enum plugin_startup_mode_type sm) {
-    PluginEntry *pe = malloc(sizeof(PluginEntry));
+    PluginEntry *pe = (PluginEntry *)malloc(sizeof(PluginEntry));
     pe->name = copy(name);
     pe->package_name = copy(pkgname);
     pe->summary = NULL;
@@ -85,7 +89,7 @@ static char *GetPluginDirName() {
 
     buf = smprintf("%s/plugin", dir);
     free(dir);
-    if (access(buf, F_OK) == -1)
+    if (ff_access(buf, F_OK) == -1)
         if (GFileMkDir(buf, 0755) == -1) {
             LogError(_("Could not create plugin directory '%s'"), buf);
             return (NULL);
@@ -93,10 +97,10 @@ static char *GetPluginDirName() {
     return buf;
 }
 
-char *PluginInfoString(PluginEntry *pe, int do_new, int *is_err) {
+const char *PluginInfoString(PluginEntry *pe, int do_new, int *is_err) {
     enum plugin_startup_mode_type sm = do_new ? pe->new_mode : pe->startup_mode;
     int err = true;
-    char *r = NULL;
+    const char *r = NULL;
     if (!pe->is_present) {
         r = N_("Not Found");
     } else if (sm != sm_on) {
@@ -117,7 +121,7 @@ char *PluginInfoString(PluginEntry *pe, int do_new, int *is_err) {
     return r;
 }
 
-char *PluginStartupModeString(enum plugin_startup_mode_type sm, int global) {
+const char *PluginStartupModeString(enum plugin_startup_mode_type sm, int global) {
     if (sm == sm_off) {
         return N_("Off");
     } else if (sm == sm_on) {
@@ -149,74 +153,83 @@ void SetPluginStartupMode(void *modevoid) {
 }
 
 void SavePluginConfig() {
-    GKeyFile *conf = g_key_file_new();
-    for (GList_Glib *i = plugin_data; i != NULL; i = i->next) {
+    mINI::INIStructure ini;
+
+    for (FFList *i = plugin_data; i != NULL; i = i->next) {
         PluginEntry *pe = (PluginEntry *) i->data;
         if (pe->startup_mode == sm_ask) {
             continue;    // Don't save merely discovered plugin config
         }
-        g_key_file_set_string(conf, pe->name, "Package name", pe->package_name);
-        g_key_file_set_string(conf, pe->name, "Module name", pe->module_name);
-        g_key_file_set_string(conf, pe->name, "Active", PluginStartupModeString(pe->startup_mode, false));
+        std::string section(pe->name);
+        if (pe->package_name != NULL) {
+            ini[section]["Package name"] = pe->package_name;
+        }
+        ini[section]["Module name"] = pe->module_name;
+        ini[section]["Active"] = PluginStartupModeString(pe->startup_mode, false);
         if (pe->package_url != NULL) {
-            g_key_file_set_string(conf, pe->name, "URL", pe->package_url);
+            ini[section]["URL"] = pe->package_url;
         }
     }
 
     char *pdir = GetPluginDirName();
     if (pdir != NULL) {
         char *fname = smprintf("%s/plugin_config.ini", pdir);
-        GError *gerror = NULL;
-        int ok = g_key_file_save_to_file(conf, fname, &gerror);
-        if (!ok && gerror != NULL) {
-            LogError(_("Error saving plugin configuration file '%s': %s"), fname, gerror->message);
-            g_error_free(gerror);
+        mINI::INIFile file(fname);
+        if (!file.write(ini)) {
+            LogError(_("Error saving plugin configuration file '%s'"), fname);
         }
         free(fname);
         free(pdir);
     }
-    g_key_file_free(conf);
 }
 
 static void LoadPluginConfig() {
-    GKeyFile *conf = g_key_file_new();
-    gchar **groups;
-    gsize glen;
-
     char *pdir = GetPluginDirName();
-    if (pdir != NULL) {
-        char *fname = smprintf("%s/plugin_config.ini", pdir);
-        GError *gerror = NULL;
-        g_key_file_load_from_file(conf, fname, G_KEY_FILE_NONE, &gerror);
-        if (gerror != NULL) {
-            if (!g_error_matches(gerror, G_FILE_ERROR, G_FILE_ERROR_NOENT)) {
-                LogError(_("Error reading plugin configuration file '%s': %s"), fname, gerror->message);
-            }
-            g_error_free(gerror);
-            gerror = NULL;
-        } else {
-            groups = g_key_file_get_groups(conf, &glen);
-            for (int i = 0; i < glen; ++i) {
-                char *modname = g_key_file_get_string(conf, groups[i], "Module name", NULL);
-                if (modname == NULL) {
-                    LogError(_("No module name for '%s' in plugin config -- skipping."), groups[i]);
-                    continue;
-                }
-                char *pkgname = g_key_file_get_string(conf, groups[i], "Package name", NULL);
-                char *sm_string = g_key_file_get_string(conf, groups[i], "Active", NULL);
-                char *url = g_key_file_get_string(conf, groups[i], "URL", NULL);
-                PluginEntry *pe = NewPluginEntry(groups[i], pkgname, modname, url, PluginStartupModeFromString(sm_string));
-                g_free(pkgname);
-                g_free(sm_string);
-                g_free(url);
-                plugin_data = g_list_append(plugin_data, pe);
-            }
-            g_strfreev(groups);
-        }
+    if (pdir == NULL) {
+        return;
+    }
+
+    char *fname = smprintf("%s/plugin_config.ini", pdir);
+    mINI::INIFile file(fname);
+    mINI::INIStructure ini;
+
+    if (!file.read(ini)) {
+        /* File doesn't exist or can't be read - not an error for new installs */
         free(fname);
         free(pdir);
+        return;
     }
-    g_key_file_free(conf);
+
+    for (auto const& section : ini) {
+        const std::string& name = section.first;
+        const auto& values = section.second;
+
+        if (!values.has("Module name")) {
+            LogError(_("No module name for '%s' in plugin config -- skipping."), name.c_str());
+            continue;
+        }
+        std::string modname = values.get("Module name");
+        if (modname.empty()) {
+            LogError(_("No module name for '%s' in plugin config -- skipping."), name.c_str());
+            continue;
+        }
+
+        std::string pkgname = values.get("Package name");
+        std::string sm_string = values.get("Active");
+        std::string url = values.get("URL");
+
+        PluginEntry *pe = NewPluginEntry(
+            name.c_str(),
+            pkgname.empty() ? NULL : pkgname.c_str(),
+            modname.c_str(),
+            url.empty() ? NULL : url.c_str(),
+            PluginStartupModeFromString(sm_string.empty() ? NULL : sm_string.c_str())
+        );
+        plugin_data = ff_list_append(plugin_data, pe);
+    }
+
+    free(fname);
+    free(pdir);
 }
 
 void LoadPlugin(PluginEntry *pe) {
@@ -273,7 +286,7 @@ void LoadPlugin(PluginEntry *pe) {
 }
 
 static void ReimportPlugins() {
-    GList_Glib *i;
+    FFList *i;
     if (!use_plugins) {
         return;
     }
@@ -415,7 +428,7 @@ static void LoadPluginMetadata(PluginEntry* pe) {
 static bool DiscoverPlugins(int do_import) {
     int do_ask = false;
     PluginEntry *pe = NULL;
-    GList_Glib *i;
+    FFList *i;
     PyObject *str, *str2, *iter, *entrypoint;
 
     iter = GetPluginEntryPoints();
@@ -453,7 +466,7 @@ static bool DiscoverPlugins(int do_import) {
         }
         if (i == NULL) {
             pe = NewPluginEntry(name, NULL, modname, NULL, plugin_startup_mode);
-            plugin_data = g_list_append(plugin_data, pe);
+            plugin_data = ff_list_append(plugin_data, pe);
         }
         Py_DECREF(str);
         Py_DECREF(str2);
@@ -532,7 +545,7 @@ void PyFF_ImportPlugins(int do_import) {
 
 extern PyObject *PyFF_GetPluginInfo(PyObject *UNUSED(noself), PyObject *UNUSED(args)) {
     PyObject *r, *d;
-    GList_Glib *l;
+    FFList *l;
     PluginEntry *pe;
 
     r = PyList_New(0);
@@ -555,7 +568,7 @@ extern PyObject *PyFF_GetPluginInfo(PyObject *UNUSED(noself), PyObject *UNUSED(a
 
 extern PyObject *PyFF_ConfigurePlugins(PyObject *UNUSED(noself), PyObject *args) {
     PyObject *iter = NULL, *item;
-    GList_Glib *l, *nl = NULL;
+    FFList *l, *nl = NULL;
     PluginEntry *pe;
     int type_error = false;
     if (args != NULL || PyTuple_Check(args) || PyTuple_Size(args) == 1) {
@@ -589,15 +602,15 @@ extern PyObject *PyFF_ConfigurePlugins(PyObject *UNUSED(noself), PyObject *args)
             }
             if (l == NULL) {
                 PyErr_Format(PyExc_ValueError, _("'%s' is not the name of a currently known plugin"), namestr);
-                g_list_free(g_steal_pointer(&nl));
+                ff_list_free(ff_steal_pointer(&nl));
                 return NULL;
             }
-            nl = g_list_append(nl, pe);
+            nl = ff_list_append(nl, pe);
             PyObject *smobj = PyDict_GetItemString(item, "enabled");
             pe->new_mode = PluginStartupModeFromString(PyUnicode_AsUTF8(smobj));
             if (pe->new_mode == sm_ask) {
                 PyErr_Format(PyExc_ValueError, _("Startup mode '%s' (for plugin '%s') must be 'on' or 'off'. (To set a discovered plugin to 'new' omit it from the list.)"), PyUnicode_AsUTF8(smobj), namestr);
-                g_list_free(g_steal_pointer(&nl));
+                ff_list_free(ff_steal_pointer(&nl));
                 return NULL;
             }
         }
@@ -614,13 +627,13 @@ extern PyObject *PyFF_ConfigurePlugins(PyObject *UNUSED(noself), PyObject *args)
         pe->startup_mode = pe->new_mode;
         if (pe->new_mode == sm_ask) {
             if (pe->is_present) {
-                nl = g_list_append(nl, pe);
+                nl = ff_list_append(nl, pe);
             } else {
                 FreePluginEntry(pe);
             }
         }
     }
-    g_list_free(plugin_data);
+    ff_list_free(plugin_data);
     plugin_data = nl;
     SavePluginConfig();
 

@@ -4,6 +4,10 @@
 #include "edgelist.h"
 #include "splinefont.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern EI *EIActiveEdgesFindStem(EI *apt, real i, int major);
 extern EI *EIActiveEdgesRefigure(EIList *el, EI *active, real i, int major, int *_change);
 extern EI *EIActiveListReorder(EI *active, int *change);
@@ -38,10 +42,14 @@ extern void SCGuessHHintInstancesList(SplineChar *sc, int layer);
 extern void SCGuessHintInstancesList(SplineChar *sc, int layer, StemInfo *hstem, StemInfo *vstem, DStemInfo *dstem, int hvforce, int dforce);
 extern void SCGuessVHintInstancesAndAdd(SplineChar *sc, int layer, StemInfo *stem, real guess1, real guess2);
 extern void SCGuessVHintInstancesList(SplineChar *sc, int layer);
-extern void SCModifyHintMasksAdd(SplineChar *sc, int layer, StemInfo *new);
+extern void SCModifyHintMasksAdd(SplineChar *sc, int layer, StemInfo *stem);
 extern void SFSCAutoHint(SplineChar *sc, int layer, BlueData *bd);
 extern void SplineCharAutoHint(SplineChar *sc, int layer, BlueData *bd);
 extern void _SplineCharAutoHint(SplineChar *sc, int layer, BlueData *bd, struct glyphdata *gd2, int gen_undoes);
 extern void SplineFontAutoHintRefs(SplineFont *_sf, int layer);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_AUTOHINT_H */

@@ -30,25 +30,25 @@
 #include "autosave.h"
 
 #include "baseviews.h"
+#include "ffglib_compat.h"
 #include "fontforgevw.h"
 #include "sfd.h"
 /*#include "ustring.h"*/
 #include "gfile.h"
 #include "gwidget.h"
 #include "ustring.h"
-#include "views.h"
 
-#include <dirent.h>
+#include "ffdir.h"
 #include <errno.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <unistd.h>
+#include "ffunistd.h"
 
 int AutoSaveFrequency=5;
 
-#if !defined(__MINGW32__)
+#if !defined(__MINGW32__) && !defined(_MSC_VER)
 # include <pwd.h>
 #endif
 
@@ -58,7 +58,7 @@ static char *getAutoDirName(void) {
     if ( dir!=NULL ) {
         buffer = smprintf("%s/autosave", dir);
         free(dir);
-        if ( access(buffer,F_OK)==-1 )
+        if ( ff_access(buffer,F_OK)==-1 )
             if ( GFileMkDir(buffer, 0755)==-1 ) {
 		free(buffer);
                 return NULL;
@@ -79,7 +79,7 @@ static void MakeAutoSaveName(SplineFont *sf) {
 	return;
     while ( 1 ) {
 	buffer = smprintf("%s/auto%06x-%d.asfd", autosavedir, getpid(), ++cnt);
-	if ( access(buffer,F_OK)==-1 ) {
+	if ( ff_access(buffer,F_OK)==-1 ) {
 	    sf->autosavename = buffer;
             free(autosavedir);
 	    return;
@@ -94,22 +94,22 @@ int DoAutoRecoveryExtended(int inquire)
 {
     char *buffer;
     char *recoverdir = getAutoDirName();
-    DIR *dir;
-    struct dirent *entry;
+    FF_Dir *dir;
+    FF_DirEntry *entry;
     int any = false;
     SplineFont *sf = NULL;
     int inquire_state=0;
 
     if ( recoverdir==NULL )
 return( false );
-    if ( (dir = opendir(recoverdir))==NULL ) {
+    if ( (dir = ff_opendir(recoverdir))==NULL ) {
         free(recoverdir);
 return( false );
     }
-    while ( (entry=readdir(dir))!=NULL ) {
-	if ( strcmp(entry->d_name,".")==0 || strcmp(entry->d_name,"..")==0 )
+    while ( (entry=ff_readdir(dir))!=NULL ) {
+	if ( strcmp(entry->name,".")==0 || strcmp(entry->name,"..")==0 )
     continue;
-	buffer = smprintf("%s/%s",recoverdir,entry->d_name);
+	buffer = smprintf("%s/%s",recoverdir,entry->name);
 	fprintf( stderr, "Recovering from %s... ", buffer);
 	if ( (sf = SFRecoverFile(buffer,inquire,&inquire_state)) ) {
 	    any=true;
@@ -120,7 +120,7 @@ return( false );
 	free(buffer);
     }
     free(recoverdir);
-    closedir(dir);
+    ff_closedir(dir);
 return( any );
 }
 
@@ -133,27 +133,27 @@ int DoAutoRecovery(int inquire )
 void CleanAutoRecovery(void) {
     char *buffer;
     char *recoverdir = getAutoDirName();
-    DIR *dir;
-    struct dirent *entry;
+    FF_Dir *dir;
+    FF_DirEntry *entry;
 
     if ( recoverdir==NULL )
 return;
-    if ( (dir = opendir(recoverdir))==NULL ) {
+    if ( (dir = ff_opendir(recoverdir))==NULL ) {
         free(recoverdir);
 return;
     }
-    while ( (entry=readdir(dir))!=NULL ) {
-	if ( strcmp(entry->d_name,".")==0 || strcmp(entry->d_name,"..")==0 )
+    while ( (entry=ff_readdir(dir))!=NULL ) {
+	if ( strcmp(entry->name,".")==0 || strcmp(entry->name,"..")==0 )
     continue;
-	buffer = smprintf("%s/%s",recoverdir,entry->d_name);
-	if ( unlink(buffer)!=0 ) {
+	buffer = smprintf("%s/%s",recoverdir,entry->name);
+	if ( ff_unlink(buffer)!=0 ) {
 	    fprintf( stderr, "Failed to clean " );
 	    perror(buffer);
 	}
 	free(buffer);
     }
     free(recoverdir);
-    closedir(dir);
+    ff_closedir(dir);
 }
 
 

@@ -33,7 +33,7 @@
 #include "bvedit.h"
 #include "dumppfa.h"
 #include "encoding.h"
-#include "ffglib.h"
+#include "ffglib_compat.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
 #include "gfile.h"
@@ -49,12 +49,21 @@
 #include "ustring.h"
 #include "utype.h"
 
-#include <dirent.h>
+#include "ffdir.h"
 #include <math.h>
 #include <sys/types.h>
-#include <unistd.h>
+#include "ffunistd.h"
 
 Encoding *default_encoding = NULL;
+
+/* Accessor functions for global encoding variables (needed for MSVC DLL exports) */
+Encoding *GetDefaultEncoding(void) {
+    return default_encoding;
+}
+
+void SetDefaultEncoding(Encoding *enc) {
+    default_encoding = enc;
+}
 
 static int32_t tex_base_encoding[] = {
     0x0000, 0x02d9, 0xfb01, 0xfb02, 0x2044, 0x02dd, 0x0141, 0x0142,
@@ -131,6 +140,11 @@ static int32_t unicode_from_MacSymbol[] = {
 /*  leave them out. I doubt they get used. */
 static Encoding texbase = { "TeX-Base-Encoding", 256, tex_base_encoding, NULL, NULL, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, "", 0, 0, 0, NULL, NULL, NULL, NULL, NULL, 0, 0 };
        Encoding custom = { "Custom", 0, NULL, NULL, &texbase,                        1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, "", 0, 0, 0, NULL, NULL, NULL, NULL, NULL, 0, 0 };
+
+Encoding *GetCustomEncoding(void) {
+    return &custom;
+}
+
 static Encoding original = { "Original", 0, NULL, NULL, &custom,                     1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, "", 0, 0, 0, NULL, NULL, NULL, NULL, NULL, 0, 0 };
 static Encoding unicodebmp = { "UnicodeBmp", 65536, NULL, NULL, &original,           1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, "", 0, 0, 0, NULL, NULL, NULL, NULL, NULL, 0, 0 };
 static Encoding unicodefull = { "UnicodeFull", 17*65536, NULL, NULL, &unicodebmp,    1, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, "", 0, 0, 0, NULL, NULL, NULL, NULL, NULL, 0, 0 };
@@ -566,8 +580,8 @@ return( item );
  *           to the first column.
  */
 static Encoding *ParseGlyphOrderAndAliasDB(FILE *file) {
-    GArray *enc_arr = g_array_sized_new(FALSE, TRUE, sizeof(int32_t), 256);
-    GArray *names_arr = g_array_sized_new(FALSE, TRUE, sizeof(char *), 256);
+    FFArray *enc_arr = ff_array_sized_new(FALSE, TRUE, sizeof(int32_t), 256);
+    FFArray *names_arr = ff_array_sized_new(FALSE, TRUE, sizeof(char *), 256);
     Encoding *item = NULL;
     char buffer[BUFSIZ];
     int enc, any = FALSE, has_1byte = FALSE;
@@ -576,7 +590,7 @@ static Encoding *ParseGlyphOrderAndAliasDB(FILE *file) {
         char *split = strchr(buffer, '\t'), *split2, *enc_name = NULL;
         if (split == NULL) {
             // Skip entries that do not contain at least two (tab separated) values
-            LogError(_("ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s"), enc_arr->len, g_strstrip(buffer));
+            LogError(_("ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %zu: %s"), ff_array_len(enc_arr), ff_strstrip(buffer));
             //enc = -1;
             //g_array_append_val(enc_arr, enc);
             //g_array_append_val(names_arr, enc_name);
@@ -584,15 +598,15 @@ static Encoding *ParseGlyphOrderAndAliasDB(FILE *file) {
         }
         *split++ = '\0';
         // Buffer now contains the first column
-        g_strstrip(buffer);
+        ff_strstrip(buffer);
         // split contains the second, and possibly the third column
-        g_strstrip(split);
+        ff_strstrip(split);
 
         // Optional third column
         split2 = strchr(split, '\t');
         if (split2 != NULL) {
             *split2++ = '\0';
-            g_strstrip(split2);
+            ff_strstrip(split2);
         }
 
         // Use the third column in preference to the first
@@ -605,17 +619,19 @@ static Encoding *ParseGlyphOrderAndAliasDB(FILE *file) {
             any = TRUE;
         }
 
-        if (enc != -1 && enc_arr->len < 256) {
+        if (enc != -1 && ff_array_len(enc_arr) < 256) {
             // We have a valid encoding within the first 256 entries
             has_1byte = TRUE;
         }
 
         // Append entry to our arrays
-        g_array_append_val(enc_arr, enc);
-        g_array_append_val(names_arr, enc_name);
+        ff_array_append(enc_arr, &enc);
+        ff_array_append(names_arr, &enc_name);
     }
 
-    if (enc_arr->len > 0) {
+    size_t enc_len = ff_array_len(enc_arr);
+    size_t names_len = ff_array_len(names_arr);
+    if (enc_len > 0) {
         // If we have mappings, we make an encoding.
         char *tmp_name = ff_ask_string(_("Encoding name"), "GlyphOrderAndAliasDB", _("Please name this encoding"));
         if (tmp_name != NULL) {
@@ -628,21 +644,21 @@ static Encoding *ParseGlyphOrderAndAliasDB(FILE *file) {
                 item->enc_name = tmp_name;
                 // We pad the map in accordance with existing code in FindOrMakeEncoding and elsewhere.
                 // Nobody knows why.
-                item->char_cnt = (enc_arr->len < 256) ? 256 : enc_arr->len;
+                item->char_cnt = (enc_len < 256) ? 256 : enc_len;
                 item->unicode = malloc(item->char_cnt * sizeof(int32_t));
-                memcpy(item->unicode, enc_arr->data, enc_arr->len * sizeof(int32_t));
-                if (item->char_cnt > enc_arr->len) {
+                memcpy(item->unicode, ff_array_data(enc_arr), enc_len * sizeof(int32_t));
+                if ((size_t)item->char_cnt > enc_len) {
                     // Pad the unfilled entries with -1
-                    memset(item->unicode + enc_arr->len, -1, sizeof(int32_t) * (enc_arr->len - item->char_cnt));
+                    memset(item->unicode + enc_len, -1, sizeof(int32_t) * (item->char_cnt - enc_len));
                 }
                 if (any) {
                     item->psnames = calloc(item->char_cnt, sizeof(char *));
-                    memcpy(item->psnames, names_arr->data, names_arr->len * sizeof(char *));
+                    memcpy(item->psnames, ff_array_data(names_arr), names_len * sizeof(char *));
                 }
 
                 item->is_custom = TRUE;
                 item->has_1byte = has_1byte;
-                if (enc_arr->len < 256) {
+                if (enc_len < 256) {
                     item->only_1byte = TRUE;
                 } else {
                     item->has_2byte = TRUE;
@@ -651,8 +667,8 @@ static Encoding *ParseGlyphOrderAndAliasDB(FILE *file) {
         }
     }
 
-    g_array_free(enc_arr, TRUE);
-    g_array_free(names_arr, TRUE);
+    ff_array_free(enc_arr, TRUE);
+    ff_array_free(names_arr, TRUE);
     return item;
 }
 
@@ -760,7 +776,7 @@ void DumpPfaEditEncodings(void) {
 
     for ( item=enclist; item!=NULL && item->builtin; item=item->next );
     if ( item==NULL ) {
-	unlink(getPfaEditEncodings());
+	ff_unlink(getPfaEditEncodings());
 return;
     }
 
@@ -911,8 +927,8 @@ return( map->cidmax );
 static char *SearchDirForCidMap(const char *dir,char *registry,char *ordering,
 	int supplement,char **maybefile) {
     char maybe[FILENAME_MAX+1];
-    struct dirent *ent;
-    DIR *d;
+    FF_DirEntry *ent;
+    FF_Dir *d;
     int len, rlen = strlen(registry), olen=strlen(ordering);
     char *pt, *end, *ret;
     int test, best = -1;
@@ -927,17 +943,17 @@ return( NULL );
 	best = strtol(pt,NULL,10);
     }
 
-    d = opendir(dir);
+    d = ff_opendir(dir);
     if ( d==NULL )
 return( NULL );
-    while ( (ent = readdir(d))!=NULL ) {
-	if ( (len = strlen(ent->d_name))<8 )
+    while ( (ent = ff_readdir(d))!=NULL ) {
+	if ( (len = strlen(ent->name))<8 )
     continue;
-	if ( strcmp(ent->d_name+len-7,".cidmap")!=0 )
+	if ( strcmp(ent->name+len-7,".cidmap")!=0 )
     continue;
-	if ( strncmp(ent->d_name,registry,rlen)!=0 || ent->d_name[rlen]!='-' )
+	if ( strncmp(ent->name,registry,rlen)!=0 || ent->name[rlen]!='-' )
     continue;
-	pt = ent->d_name+rlen+1;
+	pt = ent->name+rlen+1;
 	if ( strncmp(pt,ordering,olen)!=0 || pt[olen]!='-' )
     continue;
 	pt += olen+1;
@@ -950,15 +966,15 @@ return( NULL );
 	    ret = malloc(strlen(dir)+1+len+1);
 	    strcpy(ret,dir);
 	    strcat(ret,"/");
-	    strcat(ret,ent->d_name);
-	    closedir(d);
+	    strcat(ret,ent->name);
+	    ff_closedir(d);
 return( ret );
 	} else if ( test>best ) {
 	    best = test;
-	    strcpy(maybe,ent->d_name);
+	    strcpy(maybe,ent->name);
 	}
     }
-    closedir(d);
+    ff_closedir(d);
     if ( best>-1 ) {
 	ret = malloc(strlen(dir)+1+strlen(maybe)+1);
 	strcpy(ret,dir);
@@ -1796,10 +1812,10 @@ return(NULL);
     cidmaster->possub = sf->possub; sf->possub = NULL;
     cidmaster->kerns = sf->kerns; sf->kerns = NULL;
     cidmaster->vkerns = sf->vkerns; sf->vkerns = NULL;
-    if ( sf->private==NULL )
-	sf->private = calloc(1,sizeof(struct psdict));
-    if ( !PSDictHasEntry(sf->private,"lenIV"))
-	PSDictChangeEntry(sf->private,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
+    if ( sf->private_dict==NULL )
+	sf->private_dict = calloc(1,sizeof(struct psdict));
+    if ( !PSDictHasEntry(sf->private_dict,"lenIV"))
+	PSDictChangeEntry(sf->private_dict,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
     for ( fvs=sf->fv; fvs!=NULL; fvs=fvs->nextsame ) {
 	free(fvs->selected);
 	fvs->selected = calloc(fvs->sf->glyphcnt,sizeof(uint8_t));

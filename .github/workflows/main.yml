@@ -6,164 +6,128 @@ on:
     branches: [ master ]
   workflow_dispatch:
 
+# Temporary simplified workflow for testing MSVC Python wheel compatibility
+# Builds Python modules only (no GUI) on Linux, macOS, and Windows (MSVC)
+
 jobs:
   linux:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: ["ubuntu-latest"]
-        target: ["NoUI", "Debug"]
-        include:
-          - os: ubuntu-22.04
-            target: Release
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          path: repo
-      - uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
-      - name: Restore cached custom dependencies
-        id: cache-dependencies
-        uses: actions/cache@v4
-        with:
-          path: deps/install
-          key: ${{ matrix.os }}-deps-${{ hashFiles('repo/.github/workflows/scripts/setup_linux_deps.sh') }}
-      - name: Install dependencies and setup env vars
-        run: ${{ github.workspace }}/repo/.github/workflows/scripts/setup_linux_deps.sh
-      - name: Build FontForge
-        working-directory: repo
+          python-version: '3.11'
+      - name: Install dependencies
         run: |
-          FFCONFIG="-DCMAKE_INSTALL_PREFIX=$PREFIX -DENABLE_FONTFORGE_EXTRAS=ON -DENABLE_FREETYPE_DEBUGGER=$DEPSPREFIX/freetype"
-          if [ "${{ matrix.target }}" == "Debug" ]; then
-            FFCONFIG="$FFCONFIG -DENABLE_CODE_COVERAGE=ON -DCMAKE_BUILD_TYPE=Debug -DENABLE_DOCS=ON -DSPHINX_USE_VENV=ON"
-          elif [ "${{ matrix.target }}" == "NoUI" ]; then
-            FFCONFIG="$FFCONFIG -DENABLE_GUI=OFF -DENABLE_PYTHON_SCRIPTING=OFF"
-          fi
-          mkdir build && pushd build && cmake -GNinja $FFCONFIG .. && popd
-          ninja -C build all potfiles install
-      - name: Run FontForge tests
-        run: CTEST_PARALLEL_LEVEL=100 ninja -C repo/build check
-      - name: Build dist bundle
-        if: matrix.target == 'NoUI'
-        run: ninja -C repo/build dist
+          sudo apt-get update
+          sudo apt-get install -y ninja-build gettext libfreetype-dev libglib2.0-dev libxml2-dev zlib1g-dev
+      - name: Configure
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DENABLE_GUI=OFF \
+            -DENABLE_PYTHON_SCRIPTING=ON \
+            -DENABLE_PYTHON_EXTENSION=ON \
+            -DENABLE_LIBSPIRO=OFF \
+            -DENABLE_WOFF2=OFF \
+            -DENABLE_DOCS=OFF \
+            -DBUILD_SHARED_LIBS=ON
+      - name: Build
+        run: cmake --build build
+      - name: Run tests
+        run: ctest --test-dir build --output-on-failure
       - name: Run pyhook smoke test
-        if: matrix.target != 'NoUI'
-        working-directory: repo
         run: |
-          # There can be several Python versions installed. We must use the exact one discovered by CMake.
-          PYTHON=`grep -m1 'Python3_EXECUTABLE.*=' build/CMakeCache.txt | cut -d= -f2`
-          PYTHONPATH=$PYTHONPATH:$PREFIX/$($PYTHON -c "import sysconfig as sc; print(sc.get_path('platlib', 'posix_prefix', vars={'platbase': '.'}))")
-          $PYTHON tests/pyhook_smoketest.py
-      - name: Build AppImage
-        if: matrix.target == 'Release'
-        working-directory: repo/build
-        run: |
-          DESTDIR=appdir cmake -DCMAKE_INSTALL_PREFIX=/usr -P cmake_install.cmake
-          ../.github/workflows/scripts/ffappimagebuild.sh appdir $GITHUB_SHA
-      - name: Dist archive artifact
-        uses: actions/upload-artifact@v4
-        if: matrix.target == 'NoUI'
-        with:
-          name: dist-archive
-          path: repo/build/fontforge-*.tar.xz
-      - name: AppImage artifact
-        uses: actions/upload-artifact@v4
-        if: matrix.target == 'Release'
-        with:
-          name: appimage
-          path: repo/build/FontForge-*-x86_64.AppImage
-      - name: Update Potfile for Crowdin
-        if: matrix.target == 'Release' && github.ref == 'refs/heads/master' && github.repository == 'fontforge/fontforge' && github.event_name == 'push'
-        working-directory: repo
-        env:
-          CROWDIN_API_KEY: ${{ secrets.CROWDIN_API_KEY }}
-        run: java -jar $DEPSPREFIX/crowdin-cli.jar upload -c .crowdin.yml
+          PYTHONPATH=build/lib python3 tests/pyhook_smoketest.py
+
   mac:
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
         with:
-          path: repo
+          python-version: '3.11'
       - name: Install dependencies
         run: |
-          brew install pkg-config ruby cmake ninja
-          brew install cairo coreutils fontconfig gettext giflib gtk+3 gtkmm3 jpeg libpng libspiro libtiff libtool libuninameslist python@3 wget woff2
-          PREFIX=$GITHUB_WORKSPACE/target
-          echo "PREFIX=$PREFIX" >> $GITHUB_ENV
-          echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH:/usr/local/lib/pkgconfig:/usr/local/opt/libffi/lib/pkgconfig" >> $GITHUB_ENV
-          echo "PATH=/usr/local/opt/ruby/bin:/usr/local/opt/gettext/bin:$PATH" >> $GITHUB_ENV
-          # System Python libraries will be discovered by CMake
-          echo "PYTHONPATH=$PREFIX" >> $GITHUB_ENV
-      - name: Build FontForge
-        working-directory: repo
+          brew install ninja gettext freetype glib libxml2
+          echo "PKG_CONFIG_PATH=$(brew --prefix)/lib/pkgconfig:$(brew --prefix gettext)/lib/pkgconfig" >> $GITHUB_ENV
+      - name: Configure
         run: |
-          FFCONFIG="-DCMAKE_INSTALL_PREFIX=$PREFIX -DENABLE_FONTFORGE_EXTRAS=ON -DCMAKE_FIND_ROOT_PATH=/usr/local/opt/gettext"
-          mkdir build && pushd build && cmake -GNinja $FFCONFIG .. && popd
-          ninja -C build install
-      - name: Run FontForge tests
-        working-directory: repo
-        run: CTEST_PARALLEL_LEVEL=100 ninja -C build check
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_FIND_ROOT_PATH="$(brew --prefix gettext)" \
+            -DENABLE_GUI=OFF \
+            -DENABLE_PYTHON_SCRIPTING=ON \
+            -DENABLE_PYTHON_EXTENSION=ON \
+            -DENABLE_LIBSPIRO=OFF \
+            -DENABLE_WOFF2=OFF \
+            -DENABLE_DOCS=OFF \
+            -DBUILD_SHARED_LIBS=ON
+      - name: Build
+        run: cmake --build build
+      - name: Run tests
+        run: ctest --test-dir build --output-on-failure
       - name: Run pyhook smoke test
-        working-directory: repo
         run: |
-          # There can be several Python versions installed. We must use the exact one discovered by CMake.
-          PYTHON=`grep -m1 'Python3_EXECUTABLE.*=' build/CMakeCache.txt | cut -d= -f2`
-          PYTHONPATH=$PYTHONPATH:$PREFIX/$($PYTHON -c "import sysconfig as sc; print(sc.get_path('platlib', 'posix_prefix', vars={'platbase': '.'}))")
-          $PYTHON tests/pyhook_smoketest.py
-      - name: Build App Bundle
-        working-directory: repo/build
-        run: ninja macbundle
-      - name: App Bundle artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: appbundle
-          path: repo/build/osx/FontForge-*.dmg
-  windows:
+          PYTHONPATH=build/lib python3 tests/pyhook_smoketest.py
+
+  windows-msvc:
     runs-on: windows-latest
     env:
-      MSYS2_FC_CACHE_SKIP: true
-    strategy:
-      matrix:
-        arch: ["MINGW32", "MINGW64"]
+      VCPKG_BINARY_SOURCES: "clear;files,${{ github.workspace }}/vcpkg-cache,readwrite"
     steps:
       - uses: actions/checkout@v4
+      - name: Restore vcpkg binary cache
+        id: vcpkg-cache
+        uses: actions/cache/restore@v4
         with:
-          path: repo
-      - name: Checkout FontForgeBuilds
-        uses: actions/checkout@v4
+          path: vcpkg-cache
+          key: vcpkg-files-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-files-${{ runner.os }}-
+      - name: Create vcpkg cache directory
+        run: New-Item -ItemType Directory -Force -Path vcpkg-cache
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
         with:
-          repository: fontforge/fontforgebuilds
-          ref: master-local
-          path: fontforgebuilds
-      - name: Setup MSYS2
-        uses: msys2/setup-msys2@v2
+          vcpkgJsonGlob: 'vcpkg.json'
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
         with:
-          msystem: ${{ matrix.arch }}
-          update: true
-          install: git
-      - name: Run FontForgeBulds initialisation
-        working-directory: fontforgebuilds
-        shell: msys2 {0}
-        run: ./ffbuild.sh --github-actions --depsonly
-      - name: Run FontForgeBuilds
-        working-directory: fontforgebuilds
-        shell: msys2 {0}
+          arch: x64
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Configure
         run: |
-          ./ffbuild.sh --github-actions
-          FFPATH=`cygpath -m "$GITHUB_WORKSPACE/repo"` ./make-portable-package.sh ci
-      - name: Run InnoSetup
-        if: github.ref == 'refs/heads/master'
-        working-directory: fontforgebuilds/fontforge-setup
+          # Use the Python from setup-python (not some other system Python)
+          $pythonExe = (Get-Command python).Source
+          Write-Host "Using Python: $pythonExe"
+          cmake -B build -G "NMake Makefiles" `
+            -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DPython3_EXECUTABLE="$pythonExe" `
+            -DENABLE_GUI=OFF `
+            -DENABLE_PYTHON_SCRIPTING=ON `
+            -DENABLE_PYTHON_EXTENSION=ON `
+            -DENABLE_LIBSPIRO=OFF `
+            -DENABLE_WOFF2=OFF `
+            -DENABLE_DOCS=OFF `
+            -DBUILD_SHARED_LIBS=ON
+      - name: Build
+        run: cmake --build build
+      - name: Run pyhook tests
         run: |
-          winget install --id JRSoftware.InnoSetup -e -s winget
-          $env:path += ";$env:LOCALAPPDATA/Programs/Inno Setup 6"
-          iscc -Qp fontforgesetup.iss -DMSYSTEM=${{ matrix.arch }}
-      - name: Build artifacts
-        uses: actions/upload-artifact@v4
+          # Copy DLLs to lib directory so Python can find them
+          Copy-Item build\bin\*.dll build\lib\ -Force
+          Copy-Item build\vcpkg_installed\x64-windows\bin\*.dll build\lib\ -Force -ErrorAction SilentlyContinue
+          ctest --test-dir build -R "_pyhook" --output-on-failure
+      - name: Save vcpkg binary cache
+        if: always()
+        uses: actions/cache/save@v4
         with:
-          name: ${{ matrix.arch }}
-          path: |
-            fontforgebuilds/*.7z
-            fontforgebuilds/fontforge-setup/*.exe
+          path: vcpkg-cache
+          key: vcpkg-files-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}

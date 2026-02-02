@@ -31,6 +31,10 @@
 #include "baseviews.h"
 #include "splinefont.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct createbitmapdata {
     FontViewBase *fv;
     SplineFont *sf;
@@ -48,5 +52,9 @@ extern int bdfcontrol_lastwhich;
 
 void BitmapsDoIt(CreateBitmapData *bd,int32_t *sizes,int usefreetype);
 extern int BitmapControl(FontViewBase *fv, int32_t *sizes, int isavail, int rasterize);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_BITMAPCONTROL_H */

@@ -33,6 +33,8 @@
 #include "bvedit.h"
 #include "cvimages.h"
 #include "encoding.h"
+#include "ffglib_compat.h"
+#include "ffprocess.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
 #include "gfile.h"
@@ -49,7 +51,7 @@
 #include "winfonts.h"
 
 #include <math.h>
-#include <unistd.h>
+#include "ffunistd.h"
 
 static char *cleancopy(const char *name) {
     const char *fpt;
@@ -2189,49 +2191,27 @@ return( b );
 }
 
 static BDFFont *_SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback, EncMap *map) {
-    int i;
-    char *pt, *temp=NULL;
-    char buf[1500];
+    char *temp = NULL;
     BDFFont *ret;
+    FFCompressionType ctype;
 
-    pt = strrchr(filename,'.');
-    i = -1;
-    if ( pt!=NULL ) for ( i=0; compressors[i].ext!=NULL; ++i )
-	if ( strcmp(compressors[i].ext,pt+1)==0 )
-    break;
-    if ( i==-1 || compressors[i].ext==NULL ) i=-1;
-    else {
-	sprintf( buf, "%s %s", compressors[i].decomp, filename );
-	if ( system(buf)==0 )
-	    *pt='\0';
-	else {
-	    /* Assume no write access to file */
-	    char *dir = getenv("TMPDIR");
-	    if ( dir==NULL ) dir = P_tmpdir;
-	    temp = malloc(strlen(dir)+strlen(GFileNameTail(filename))+2);
-	    strcpy(temp,dir);
-	    strcat(temp,"/");
-	    strcat(temp,GFileNameTail(filename));
-	    *strrchr(temp,'.') = '\0';
-	    sprintf( buf, "%s -c %s > %s", compressors[i].decomp, filename, temp );
-	    if ( system(buf)==0 )
-		filename = temp;
-	    else {
-		free(temp);
-		ff_post_error(_("Decompress Failed!"),_("Decompress Failed!"));
-return( NULL );
-	    }
+    ctype = ff_compression_type(filename);
+    if ( ctype != FF_COMPRESS_NONE ) {
+	/* Decompress to temp file - original is not modified */
+	if ( ff_decompress_to_temp(filename, &temp) != FF_PROCESS_OK ) {
+	    ff_post_error(_("Decompress Failed!"),_("Decompress Failed!"));
+	    return( NULL );
 	}
+	filename = temp;
     }
-    ret = SFImportBDF(sf, filename,ispk, toback, map);
-    if ( temp!=NULL ) {
-	unlink(temp);
+
+    ret = SFImportBDF(sf, filename, ispk, toback, map);
+
+    if ( temp != NULL ) {
+	ff_unlink(temp);
 	free(temp);
-    } else if ( i!=-1 ) {
-	sprintf( buf, "%s %s", compressors[i].recomp, filename );
-	system(buf);
     }
-return( ret );
+    return( ret );
 }
 
 static void SFSetupBitmap(SplineFont *sf,BDFFont *strike,EncMap *map) {

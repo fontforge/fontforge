@@ -31,16 +31,18 @@
 #include "start.h"
 
 #include "encoding.h"
-#include "ffglib.h"
+#include "ffglib_compat.h"
 #include "fontforgevw.h"
 #include "gfile.h"
 #include "namelist.h"
 #include "psfont.h"
 
 #include <locale.h>
+#ifndef _MSC_VER
 #include <sys/time.h>
+#endif
 #include <time.h>
-#include <unistd.h>
+#include "ffunistd.h"
 #ifdef __Mac
 # include <stdlib.h>		/* getenv,setenv */
 #endif
@@ -65,11 +67,14 @@ static void initadobeenc(void) {
 }
 
 static void initrand(void) {
+#ifdef _MSC_VER
+    ff_random_set_seed((unsigned int)time(NULL));
+#else
     struct timeval tv;
 
     gettimeofday(&tv,NULL);
-    srand(tv.tv_usec);
-    g_random_set_seed(tv.tv_usec);
+    ff_random_set_seed(tv.tv_usec);
+#endif
 }
 
 void InitSimpleStuff(void) {
