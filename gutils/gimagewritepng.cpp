@@ -195,7 +195,7 @@ int GImageWritePngBuf(GImage *gi, char** buf, size_t* sz, int compression_level,
         return false;
     }
 
-    *buf = malloc(arr->len);
+    *buf = (char*) malloc(arr->len);
     if (*buf == NULL) {
         ff_byte_array_free(arr, true);
         return false;
