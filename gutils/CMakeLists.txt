@@ -1,44 +1,16 @@
 # Distributed under the original FontForge BSD 3-clause license
 
-# Compile as C++ for GLib removal migration
-# Start with files that don't use GLib
-set_source_files_properties(
-  dlist.c
-  gcol.c
-  gimage.c
-  gimagereadbmp.c
-  gimageread.c
-  gimagereadgif.c
-  gimagereadjpeg.c
-  gimagereadpng.c
-  gimagereadras.c
-  gimagereadrgb.c
-  gimagereadtiff.c
-  gimagereadxbm.c
-  gimagereadxpm.c
-  gimagewritebmp.c
-  gimagewritegimage.c
-  gimagewritejpeg.c
-  gimagewritexbm.c
-  gimagewritexpm.c
-  gwwintl.c
-  prefs.c
-  gutils.c
-  fsys.c
-  PROPERTIES LANGUAGE CXX
-)
-
 add_library(gutils OBJECT
-  dlist.c
+  dlist.cpp
   ffdir.cpp
-  fsys.c
+  fsys.cpp
   gcol.c
   gimagebmpP.h
   gimage.c
   gimagereadbmp.c
-  gimageread.c
+  gimageread.cpp
   gimagereadgif.c
-  gimagereadjpeg.c
+  gimagereadjpeg.cpp
   gimagereadpng.c
   gimagereadras.c
   gimagereadrgb.c
@@ -47,12 +19,12 @@ add_library(gutils OBJECT
   gimagereadxpm.c
   gimagewritebmp.c
   gimagewritegimage.c
-  gimagewritejpeg.c
-  gimagewritepng.c
+  gimagewritejpeg.cpp
+  gimagewritepng.cpp
   gimagewritexbm.c
-  gimagewritexpm.c
-  gutils.c
-  gwwintl.c
+  gimagewritexpm.cpp
+  gutils.cpp
+  gwwintl.cpp
   prefs.c
 )
 

@@ -1,21 +1,5 @@
 # Distributed under the original FontForge BSD 3-clause license
 
-# Compile as C++ for GLib removal migration
-set_source_files_properties(
-  pua.c
-  zapfnomen.c
-  flaglist.c
-  crctab.c
-  glif_name_hash.c
-  plugin.c
-  sflayout.c
-  print.c
-  scripting.c
-  python.c
-  sfd.c
-  PROPERTIES LANGUAGE CXX
-)
-
 set(FONTFORGE_NOINST_HEADERS
   asmfpst.h
   autohint.h
@@ -148,7 +132,7 @@ add_library(fontforge
   bitmapcontrol.c
   bvedit.c
   clipnoui.c
-  crctab.c
+  crctab.cpp
   cvexport.c
   cvimages.c
   cvundoes.c
@@ -167,7 +151,7 @@ add_library(fontforge
   fvimportbdf.c
   fvmetrics.c
   getline.c
-  glif_name_hash.c
+  glif_name_hash.cpp
   glyphcomp.c
   groups.c
   ikarus.c
@@ -192,18 +176,18 @@ add_library(fontforge
   parsettfatt.c
   parsettfbmf.c
   parsettfvar.c
-  plugin.c
-  print.c
+  plugin.cpp
+  print.cpp
   psread.c
   pua.c
-  python.c
+  python.cpp
   savefont.c
-  scripting.c
+  scripting.cpp
   scstyles.c
   search.c
-  sfd.c
+  sfd.cpp
   sfd1.c
-  sflayout.c
+  sflayout.cpp
   spiro.c
   splinechar.c
   splinefill.c
