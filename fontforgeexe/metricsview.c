@@ -3937,7 +3937,6 @@ static ShaperContext* MVMakeShaperContext(MetricsView *mv) {
     context->sf = mv->sf;
     context->mv = mv;
     context->apply_ticked_features = ApplyTickedFeatures;
-    context->fake_unicode = MVFakeUnicodeOfSc;
     context->get_enc_map = SFGetMap;
     context->get_char_width = MVCharWidth;
     context->get_metrics = MVGetMetrics;

@@ -58,9 +58,6 @@ typedef struct shaper_context {
         SplineFont* sf, uint32_t* flist, uint32_t script, uint32_t lang,
         bool gpos_only, int pixelsize, SplineChar** glyphs);
 
-    // Map glyphs without unicode value to a private area
-    int (*fake_unicode)(MetricsView* mv, SplineChar* sc);
-
     // Get encoding map
     EncMap* (*get_enc_map)(SplineFont* sf);
 
