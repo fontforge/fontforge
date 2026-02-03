@@ -103,7 +103,8 @@ enum ttf_flags {
     ttf_flag_symbol = 1 << 14,
     ttf_flag_dummyDSIG = 1 << 15,
     ttf_native_kern = 1 << 16,  // This applies mostly to U. F. O. right now.
-    // A hole from bit 17 to bit 28 for ps_flag_*. ps_flag_nohintsubs seems to be unused.
+    // A hole from bit 17 to bit 28 for ps_flag_*. ps_flag_nohintsubs seems to
+    // be unused.
     ttf_flag_oldkernmappedonly =
         1 << 29,  // Allow only mapped glyphs in the old-style "kern" table,
                   // required for Windows compatibility

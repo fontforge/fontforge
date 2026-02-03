@@ -731,7 +731,6 @@ typedef struct splinechar_ttf_map {
 } SplineCharTTFMap;
 
 /* Returns NULL if the name is valid, or error message. If the function returned
-   error message and set `questionable` to true, the name should be accepted, but
-   discouraged.
-   The error message should not be freed. */
-const char* SCNameCheck(const unichar_t *name, bool *questionable);
+   error message and set `questionable` to true, the name should be accepted,
+   but discouraged. The error message should not be freed. */
+const char* SCNameCheck(const unichar_t* name, bool* questionable);
