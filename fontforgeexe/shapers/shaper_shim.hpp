@@ -37,7 +37,8 @@ typedef struct splinefont SplineFont;
 typedef struct metricsview MetricsView;
 typedef struct encmap EncMap;
 
-static int INVALID_KERN_OFFSET = 0x7ffffff;
+static const int INVALID_KERN_OFFSET = 0x7ffffff;
+static const int FAKE_UNICODE_BASE = 0x110000;
 
 char* u2utf8_copy(const unichar_t* ubuf);
 int _WriteTTFFont(FILE* ttf, SplineFont* sf, int /*enum fontformat*/ format,
@@ -56,9 +57,6 @@ typedef struct shaper_context {
     struct opentype_str* (*apply_ticked_features)(
         SplineFont* sf, uint32_t* flist, uint32_t script, uint32_t lang,
         bool gpos_only, int pixelsize, SplineChar** glyphs);
-
-    // Map glyphs without unicode value to a private area
-    int (*fake_unicode)(MetricsView* mv, SplineChar* sc);
 
     // Get encoding map
     EncMap* (*get_enc_map)(SplineFont* sf);
