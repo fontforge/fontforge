@@ -175,6 +175,7 @@ static void SFDDumpHintList(FILE *sfd,const char *key, StemInfo *h);
 static void SFDDumpDHintList( FILE *sfd,const char *key, DStemInfo *d );
 static StemInfo *SFDReadHints(FILE *sfd);
 static DStemInfo *SFDReadDHints( SplineFont *sf,FILE *sfd,int old );
+static void SFDSizeMap(EncMap *map,int glyphcnt,int enccnt);
 
 static int PeekMatch(FILE *stream, const char * target) {
   // This returns 1 if target matches the next characters in the stream.
@@ -1250,12 +1251,10 @@ return;
 
 static void *SFDUnPickle(FILE *sfd, int python_data_has_lists) {
     int ch, quoted;
-    static int max = 0;
-    static char *buf = NULL;
-    char *pt, *end;
-    int cnt;
+    static char *buf = NULL, *end = NULL;
+    char *pt;
 
-    pt = buf; end = buf+max;
+    pt = buf;
     while ( (ch=nlgetc(sfd))!='"' && ch!='\n' && ch!=EOF );
     if ( ch!='"' )
 return( NULL );
@@ -1265,12 +1264,8 @@ return( NULL );
 	if ( !quoted && ch=='\\' )
 	    quoted = true;
 	else {
-	    if ( pt>=end ) {
-		cnt = pt-buf;
-		buf = realloc(buf,(max+=200)+1);
-		pt = buf+cnt;
-		end = buf+max;
-	    }
+	    if ( pt>=end )
+		realloc_tail(&buf, 200, &end, &pt);
 	    *pt++ = ch;
 	    quoted = false;
 	}
@@ -1889,7 +1884,6 @@ static void SFDDumpOtfFeatNames(FILE *sfd, SplineFont *sf) {
     struct otfname *on;
 	bool cv[100] = {false};
 	int cvnum, cvcount, i;
-	char prefix[3] = {0};
 
     for ( fn=sf->feat_names; fn!=NULL; fn=fn->next ) {
 	if ( (fn->tag & 0xffff0000) == (('s' << 24) | ('s' << 16)) ) {
@@ -2254,8 +2248,6 @@ int SFD_DumpSplineFontMetadata( FILE *sfd, SplineFont *sf )
 
     if ( sf->version!=NULL )
 	fprintf(sfd, "Version: %s\n", sf->version );
-    if ( sf->styleMapFamilyName!=NULL )
-	fprintf(sfd, "StyleMapFamilyName: %s\n", sf->styleMapFamilyName );
     if ( sf->fondname!=NULL )
 	fprintf(sfd, "FONDName: %s\n", sf->fondname );
     if ( sf->defbasefilename!=NULL )
@@ -3288,12 +3280,8 @@ char *getquotedeol(FILE *sfd) {
 	    /* FontForge doesn't write other escape sequences in this context. */
 	    /* So any other value of ch is assumed impossible. */
 	}
-	if ( pt>=end ) {
-	    pt = realloc(str,end-str+101);
-	    end = pt+(end-str)+100;
-	    str = pt;
-	    pt = end-100;
-	}
+	if ( pt>=end )
+	    realloc_tail(&str, 100, &end, &pt);
 	*pt++ = ch;
 	ch = nlgetc(sfd);
     }
@@ -3655,6 +3643,10 @@ static ImageList *SFDGetImage(FILE *sfd) {
     getint(sfd,&image_type);
     getint(sfd,&bpl);
     getint(sfd,&clutlen);
+    if ( clutlen < 0 || clutlen > 256 ) {
+        LogError(_("Invalid clut length %d in sfd file, must be between 0 and 256"), clutlen);
+        return NULL;
+    }
     gethex(sfd,&trans);
     image = GImageCreate(image_type,width,height);
     base = image->list_len==0?image->u.image:image->u.images[0];
@@ -3771,12 +3763,8 @@ static void SFDGetTtInstrs(FILE *sfd, SplineChar *sc) {
     int instr_len;
 
     while ( (ch=nlgetc(sfd))!=EOF ) {
-	if ( pt>=end ) {
-	    char *newbuf = realloc(buf,(end-buf+200));
-	    pt = newbuf+(pt-buf);
-	    end = newbuf+(end+200-buf);
-	    buf = newbuf;
-	}
+	if ( pt>=end )
+	    realloc_tail(&buf, 200, &end, &pt);
 	*pt++ = ch;
 	if ( pt-buf>backlen && strncmp(pt-backlen,end_tt_instrs,backlen)==0 ) {
 	    pt -= backlen;
@@ -3894,12 +3882,8 @@ static struct ttf_table *SFDGetTtTable(FILE *sfd, SplineFont *sf,struct ttf_tabl
 	which = 1;
 
     while ( (ch=nlgetc(sfd))!=EOF ) {
-	if ( pt>=end ) {
-	    char *newbuf = realloc(buf,(end-buf+200));
-	    pt = newbuf+(pt-buf);
-	    end = newbuf+(end+200-buf);
-	    buf = newbuf;
-	}
+	if ( pt>=end )
+	    realloc_tail(&buf, 200, &end, &pt);
 	*pt++ = ch;
 	if ( pt-buf>backlen && strncmp(pt-backlen,end_tt_instrs,backlen)==0 ) {
 	    pt -= backlen;
@@ -4713,6 +4697,7 @@ static PST1 *LigaCreateFromOldStyleMultiple(PST1 *liga) {
     while ( (pt = strrchr(liga->pst.u.lig.components,';'))!=NULL ) {
 	new = chunkalloc(sizeof( PST1 ));
 	*new = *liga;
+	new->pst.next = NULL;
 	new->pst.u.lig.components = copy(pt+1);
 	last->pst.next = (PST *) new;
 	last = new;
@@ -4778,6 +4763,29 @@ return;
 	map->enccount = enc+1;
     if ( enc>-1 )
 	map->map[enc] = orig_pos;
+}
+
+static void SFDFixDuplicateEnc(SplineFont* sf, int enc) {
+    if (enc < 0 || enc >= sf->map->encmax) return;
+
+    int32_t glyph_idx = sf->map->map[enc];
+    if (glyph_idx < 0 || glyph_idx >= sf->glyphcnt) return;
+
+    /* The last of the identically encoded glyphs occludes the others, so we
+     * keep it, and drop the encoding of the previously encountered duplicate.
+     */
+    SplineChar* dup_sc = sf->glyphs[glyph_idx];
+    if (dup_sc == NULL || dup_sc->orig_pos < 0) return;
+    LogError(_("Duplicate local encoding 0x%04x encountered in glyph %s. This "
+               "glyph will be unencoded."),
+             enc, dup_sc->name);
+
+    /* Append this glyph at the unencoded area at the end. */
+    dup_sc->unicodeenc = -1;
+    if (dup_sc->orig_pos < sf->map->backmax)
+        sf->map->backmap[dup_sc->orig_pos] = -1;
+    SFDSetEncMap(sf, dup_sc->orig_pos, sf->map->enccount);
+    SFDSizeMap(sf->map, sf->glyphcnt, sf->map->enccount + 1);
 }
 
 static void SCDefaultInterpolation(SplineChar *sc) {
@@ -5295,7 +5303,12 @@ return( NULL );
 	    } else {
 		sc->orig_pos = orig_pos++;
 	    }
-	    SFDSetEncMap(sf,sc->orig_pos,enc);
+	    if (enc != -1 && sf->map && sf->map->map[enc] != -1) {
+		/* Multiple glyphs with same encoding are not accessible from
+		   FontView, and we consider them corrupted. */
+		SFDFixDuplicateEnc(sf, enc);
+	    }
+	    SFDSetEncMap(sf, sc->orig_pos, enc);
 	} else if ( strmatch(tok,"AltUni:")==0 ) {
 	    int uni;
 	    while ( getint(sfd,&uni)==1 ) {
@@ -7691,13 +7704,11 @@ bool SFD_GetFontMetaData( FILE *sfd,
     }
     else if ( strmatch(tok,"StyleMapFamilyName:")==0 )
     {
-    sf->styleMapFamilyName = SFDReadUTF7Str(sfd);
+	d->lastStyleMapFamilyName = SFDReadUTF7Str(sfd);
     }
     /* Legacy attribute for StyleMapFamilyName. Deprecated. */
     else if ( strmatch(tok,"OS2FamilyName:")==0 )
     {
-    if (sf->styleMapFamilyName == NULL)
-        sf->styleMapFamilyName = SFDReadUTF7Str(sfd);
     }
     else if ( strmatch(tok,"FONDName:")==0 )
     {
@@ -7738,7 +7749,21 @@ bool SFD_GetFontMetaData( FILE *sfd,
     }
     else if ( strmatch(tok,"LangName:")==0 )
     {
+	struct ttflangname *english;
+
 	sf->names = SFDGetLangName(sfd,sf->names);
+
+	for ( english=sf->names; english!=NULL && english->lang!=0x409; english=english->next );
+	if ( english && d->lastStyleMapFamilyName ) {
+	    if ( english->names[ttf_family] ) {
+		LogError(_("'StyleMapFamilyName' entry has been ignored") );
+		free(d->lastStyleMapFamilyName);
+	    }
+	    else {
+		english->names[ttf_family] = d->lastStyleMapFamilyName;
+	    }
+	    d->lastStyleMapFamilyName = NULL;
+	}
     }
     else if ( strmatch(tok,"GaspTable:")==0 )
     {
@@ -8265,6 +8290,10 @@ bool SFD_GetFontMetaData( FILE *sfd,
 	for ( i=classstart; i<kc->first_cnt; ++i ) {
 	  if (kernclassversion < 3) {
 	    getint(sfd,&temp);
+	    if (temp < 0) {
+	      LogError(_("Corrupted SFD file: Invalid kern class name length %d. Aborting load."), temp);
+	      return false;
+	    }
 	    kc->firsts[i] = malloc(temp+1); kc->firsts[i][temp] = '\0';
 	    nlgetc(sfd);	/* skip space */
 	    fread(kc->firsts[i],1,temp,sfd);
@@ -8282,6 +8311,10 @@ bool SFD_GetFontMetaData( FILE *sfd,
 	for ( i=1; i<kc->second_cnt; ++i ) {
 	  if (kernclassversion < 3) {
 	    getint(sfd,&temp);
+	    if (temp < 0) {
+	      LogError(_("Corrupted SFD file: Invalid kern class name length %d. Aborting load."), temp);
+	      return false;
+	    }
 	    kc->seconds[i] = malloc(temp+1); kc->seconds[i][temp] = '\0';
 	    nlgetc(sfd);	/* skip space */
 	    fread(kc->seconds[i],1,temp,sfd);
@@ -8999,7 +9032,9 @@ exit( 1 );
 	    }
 	}
     }
-    if ( sf->cidmaster==NULL )
+
+    /* MM font has already been already fixed up. */
+    if (sf->cidmaster == NULL && sf->mm == NULL)
 	SFDFixupRefs(sf);
 
     if ( !haddupenc )

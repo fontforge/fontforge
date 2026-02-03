@@ -1113,19 +1113,10 @@ void UnlinkThisReference(FontViewBase *fv,SplineChar *sc,int layer) {
     }
 }
 
-static int MultipleValues(char *name, int local) {
-    char *buts[3];
-    buts[0] = _("_Yes"); buts[1]=_("_No"); buts[2] = NULL;
-    if ( ff_ask(_("Multiple"),(const char **) buts,0,1,_("There is already a glyph with this Unicode encoding\n(named %1$.40s, at local encoding %2$d).\nIs that what you want?"),name,local)==0 )
-return( true );
-
-return( false );
-}
-
-static int MultipleNames(void) {
+static int MultipleNames(const char *name) {
     char *buts[3];
     buts[0] = _("_Yes"); buts[1]=_("_Cancel"); buts[2] = NULL;
-    if ( ff_ask(_("Multiple"),(const char **) buts,0,1,_("There is already a glyph with this name,\ndo you want to swap names?"))==0 )
+    if ( ff_ask(_("Multiple"),(const char **) buts,0,1,_("There is already a glyph with name %.40s,\ndo you want to swap names?"), name)==0 )
 return( true );
 
 return( false );
@@ -1133,8 +1124,7 @@ return( false );
 
 int SCSetMetaData(SplineChar *sc,const char *name,int unienc,const char *comment) {
     SplineFont *sf = sc->parent;
-    int i, mv=0;
-    int isnotdef, samename=false, sameuni=false;
+    int samename=false, sameuni=false;
     struct altuni *alt;
 
     if ( sf->glyphs[sc->orig_pos]!=sc )
@@ -1147,33 +1137,48 @@ int SCSetMetaData(SplineChar *sc,const char *name,int unienc,const char *comment
 	samename = true;	/* No change, it must be good */
     }
     if ( alt!=NULL || !samename ) {
-	isnotdef = strcmp(name,".notdef")==0;
-	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL && sf->glyphs[i]->orig_pos!=sc->orig_pos ) {
-	    if ( unienc!=-1 && sf->glyphs[i]->unicodeenc==unienc ) {
-		if ( !mv && !MultipleValues(sf->glyphs[i]->name,i)) {
-return( false );
-		}
-		mv = 1;
-	    } else if ( !isnotdef && strcmp(name,sf->glyphs[i]->name)==0 ) {
-		if ( !MultipleNames()) {
-return( false );
-		}
-		free(sf->glyphs[i]->name);
-		sf->glyphs[i]->namechanged = true;
-		if ( strncmp(sc->name,"uni",3)==0 && sf->glyphs[i]->unicodeenc!=-1) {
-		    char buffer[12];
-		    if ( sf->glyphs[i]->unicodeenc<0x10000 )
-			sprintf( buffer,"uni%04X", sf->glyphs[i]->unicodeenc);
-		    else
-			sprintf( buffer,"u%04X", sf->glyphs[i]->unicodeenc);
-		    sf->glyphs[i]->name = copy(buffer);
-		} else {
-		    sf->glyphs[i]->name = sc->name;
-		    sc->name = NULL;
-		}
-	    break;
-	    }
-	}
+        int i;
+        if (unienc != -1) {
+            for (i = 0; i < sf->glyphcnt; ++i)
+                if (sf->glyphs[i] != NULL &&
+                    sf->glyphs[i]->orig_pos != sc->orig_pos &&
+                    sf->glyphs[i]->unicodeenc == unienc) {
+                    /* Duplicate encoding is never allowed */
+                    ff_post_notice(_("Duplicate encodings"),
+                                   _("There is already a glyph with Unicode "
+                                     "encoding 0x%1$04x named %2$.40s. The "
+                                     "current name and encoding will be kept."),
+                                   unienc, sf->glyphs[i]->name);
+                    return false;
+                }
+            /* Proceed to copy encoding and name. */
+        } else {
+	    /* For unencoded glyphs, check name duplication and propose to swap. */
+            int isnotdef = strcmp(name, ".notdef") == 0;
+            SplineChar* swap_sc = NULL;
+            for (i = 0; i < sf->glyphcnt && swap_sc == NULL; ++i)
+                if (!isnotdef && strcmp(name, sf->glyphs[i]->name) == 0) {
+                    if (!MultipleNames(name))
+                        return false;
+                    else
+                        swap_sc = sf->glyphs[i];
+                }
+            if (swap_sc) {
+                free(swap_sc->name);
+                swap_sc->namechanged = true;
+                if (strncmp(sc->name, "uni", 3) == 0 &&
+                    swap_sc->unicodeenc != -1) {
+                    if (swap_sc->unicodeenc < 0x10000)
+                        swap_sc->name =
+                            smprintf("uni%04X", swap_sc->unicodeenc);
+                    else
+                        swap_sc->name = smprintf("u%04X", swap_sc->unicodeenc);
+                } else {
+                    swap_sc->name = sc->name;
+                    sc->name = NULL;
+                }
+            }
+        }
 	if ( sc->unicodeenc!=unienc ) {
 	    struct splinecharlist *scl;
 	    int layer;
@@ -2828,4 +2833,44 @@ void SCRemoveVKern(SplineChar* sc) {
 	if( sc->parent->fv->cidmaster!=NULL )
 	    sc->parent->fv->cidmaster->changed = true;
     }
+}
+
+const char* SCNameCheck(const unichar_t *name, bool *p_questionable) {
+    bool bad = false, questionable = false;
+    extern int allow_utf8_glyphnames;
+
+    if (p_questionable) *p_questionable = questionable;
+
+    if ( uc_strcmp(name,".notdef")==0 )		/* This name is a special case and doesn't follow conventions */
+        return NULL;
+    if ( u_strlen(name)>31 ) {
+        return _("Glyph names are limited to 31 characters");
+    } else if ( *name=='\0' ) {
+        return _("Bad Name");
+    } else if ( isdigit(*name) || *name=='.' ) {
+        return _("A glyph name may not start with a digit nor a full stop (period)");
+    }
+
+    while ( *name ) {
+        if ( *name<=' ' || (!allow_utf8_glyphnames && *name>=0x7f) ||
+                *name=='(' || *name=='[' || *name=='{' || *name=='<' ||
+                *name==')' || *name==']' || *name=='}' || *name=='>' ||
+                *name=='%' || *name=='/' )
+            bad=true;
+        else if ( !isalnum(*name) && *name!='.' && *name!='_' )
+            questionable = true;
+        ++name;
+    }
+    if ( bad ) {
+        return _("A glyph name must be ASCII, without spaces and may not contain the characters \"([{<>}])/%%\", and should contain only alphanumerics, periods and underscores");
+    } else if ( questionable ) {
+        if (p_questionable == NULL) {
+            /* The caller doesn't care, just accept the name. */
+            return NULL;
+	} else {
+            *p_questionable = questionable;
+            return _("A glyph name should contain only alphanumerics, periods and underscores\nDo you want to use this name in spite of that?");
+        }
+    }
+    return NULL;
 }

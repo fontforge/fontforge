@@ -1796,8 +1796,6 @@ static void SplineFont2FullSubrs1(int flags,GlyphInfo *gi) {
 #endif	/* FONTFORGE_CONFIG_PS_REFS_GET_SUBRS */
 }
 
-typedef enum font_pitch { pitch_unknown, pitch_variable, pitch_fixed, pitch_dual } FontPitch;
-
 static FontPitch SFComputePitch(SplineFont *sf, int *p_width) {
     FontPitch pitch = pitch_unknown;
     int width = -1;
@@ -1811,31 +1809,8 @@ static FontPitch SFComputePitch(SplineFont *sf, int *p_width) {
 	     (strcmp(sf->glyphs[i]->name,".notdef")!=0 || sf->glyphs[i]->layers[ly_fore].splines!=NULL))
 	{
 	    int16_t this_width = sf->glyphs[i]->width;
-	    if (this_width == 0) {
-		/* Zero-width glyphs, such as control characters or diacritical marks
-		   don't affect the state. */
-		continue;
-	    }
-
-	    if (pitch == pitch_unknown) {
-		width = this_width;
-		pitch = pitch_fixed;
-	    } else if (pitch == pitch_fixed) {
-	    	if (this_width == 2*width) {
-		    pitch = pitch_dual;
-		} else if (2*this_width == width) {
-		    width = this_width;
-		    pitch = pitch_dual;
-		} else if (this_width != width){
-		    width = -1;
-		    pitch = pitch_variable;
-		    break; /* no further check necessary */
-		}
-	    } else if (pitch == pitch_dual && (this_width != width && this_width != 2*width)) {
-		width = -1;
-		pitch = pitch_variable;
-		break; /* no further check necessary */
-	    }
+	    if (!RecomputePitch(this_width, &pitch, &width))
+	    break;
 	}
     }
 

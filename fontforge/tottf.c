@@ -1147,7 +1147,7 @@ static void dumpcomposite(SplineChar *sc, struct glyphinfo *gi) {
 	    /*  scale factors, or rotations */
 	    /* That description does not match the behavior of their rasterizer*/
 	    /*  I've reverse engineered something else (see parsettf.c) */
-	    /*  http://fonts.apple.com/TTRefMan/RM06/Chap6glyf.html */
+	    /*  http://fonts.apple.com/TrueType-Reference-Manual/RM06/Chap6glyf.html */
 	    /* Adobe says that setting bit 12 means that this will not happen */
 	    /*  Apple doesn't mention bit 12 though...(but they do support it) */
 	}
@@ -1459,7 +1459,6 @@ static int dumpglyphs(SplineFont *sf,struct glyphinfo *gi) {
     FigureFullMetricsEnd(sf,gi,true);
 
     if ( fixed>0 ) {
-	gi->lasthwidth = 3;
 	gi->hfullcnt = 3;
     }
     for ( i=0; i<gi->gcnt; ++i ) {
@@ -6166,21 +6165,6 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
 	if ( sf->subfontcnt!=0 ) sf = sf->subfonts[0];
     }
 
-    // Temporarily assign a fake Private Area unicode point to all unmapped glyphs
-    if (flags & ttf_flag_fake_map_and_no_outlines) {
-	int fake_unicode_base = SFFakeUnicodeBase(sf);
-	if (fake_unicode_base == -1)
-	    fake_unicode_base = 0xfffd;
-
-	fake_mappings = calloc(sf->glyphcnt,sizeof(bool));
-	for (i = 0; i < sf->glyphcnt; ++i) {
-	    if (sf->glyphs[i] && sf->glyphs[i]->unicodeenc == -1) {
-		sf->glyphs[i]->unicodeenc = fake_unicode_base + sf->glyphs[i]->orig_pos;
-		fake_mappings[i] = true;
-	    }
-	}
-    }
-
     if ( sf->subfontcnt==0 ) {
 	anyglyphs = false;
 	for ( i=sf->glyphcnt-1; i>=0 ; --i ) {
@@ -6217,15 +6201,6 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
     } else {
 	if ( initTables(&at,sf,format,flags,bsizes,bf))
 	    dumpttf(ttf,&at);
-    }
-
-    // Remove temporarily assigned fake Private Area unicode point from all unmapped glyphs
-    if (flags & ttf_flag_fake_map_and_no_outlines) {
-	for (i = 0; i < sf->glyphcnt; ++i) {
-	    if (sf->glyphs[i] && fake_mappings[i])
-		sf->glyphs[i]->unicodeenc = -1;
-	}
-	free(fake_mappings);
     }
 
     switch_to_old_locale(&tmplocale, &oldlocale); // Switch to the cached locale.

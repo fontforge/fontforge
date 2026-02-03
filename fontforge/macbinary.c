@@ -2348,7 +2348,7 @@ static FOND *BuildFondList(FILE *f,long rlistpos,int subcnt,long rdata_pos,
 		cur->stylewidths[j].style = getushort(f);
 		cur->stylewidths[j].widthtab = malloc((cur->last-cur->first+3)*sizeof(short));
 		for ( k=cur->first; k<=cur->last+2; ++k )
-		    cur->stylewidths[j].widthtab[k] = getushort(f);
+		    cur->stylewidths[j].widthtab[k-cur->first] = getushort(f);
 	    }
 	}
 	if ( kernoff!=0 && (flags&ttf_onlykerns) ) {
@@ -2395,13 +2395,13 @@ static FOND *BuildFondList(FILE *f,long rlistpos,int subcnt,long rdata_pos,
 	    continue;		/* this style doesn't exist */
 		format = stringoffsets[j]-1;
 		stringlen = strings[0][0];
-		if ( format!=0 )
+		if ( format>0 )
 		    for ( k=0; k<strings[format][0]; ++k )
 			stringlen += strings[ strings[format][k+1]-1 ][0];
 		pt = cur->psnames[j] = malloc(stringlen+1);
 		strcpy(pt,strings[ 0 ]+1);
 		pt += strings[ 0 ][0];
-		if ( format!=0 )
+		if ( format>0 )
 		    for ( k=0; k<strings[format][0]; ++k ) {
 			strcpy(pt,strings[ strings[format][k+1]-1 ]+1);
 			pt += strings[ strings[format][k+1]-1 ][0];

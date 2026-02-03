@@ -483,7 +483,7 @@ return;
 }
 
 static void MVSetSubtables(SplineFont *sf) {
-    GTextInfo **ti;
+    GTextInfo **ti = NULL;
     OTLookup *otl;
     struct lookup_subtable *sub;
     int cnt, doit;
@@ -1622,9 +1622,8 @@ static SplineChar *MVSCFromUnicode(MetricsView *mv, SplineFont *sf, EncMap *map,
     int i;
     SplineChar *sc;
 
-    if ( mv->fake_unicode_base && ch>=mv->fake_unicode_base &&
-	    ch<=mv->fake_unicode_base+mv->sf->glyphcnt )
-return( mv->sf->glyphs[ch-mv->fake_unicode_base] );
+    if ( ch>=FAKE_UNICODE_BASE && ch<FAKE_UNICODE_BASE+mv->sf->glyphcnt )
+        return( mv->sf->glyphs[ch-FAKE_UNICODE_BASE] );
 
     i = SFFindSlot(sf,map,ch,NULL);
     if ( i==-1 )
@@ -1820,27 +1819,17 @@ static void MVVScroll(MetricsView *mv,struct sbevent *sb) {
 }
 
 static int MVFakeUnicodeOfSc(MetricsView *mv, SplineChar *sc) {
-
-    if ( sc->unicodeenc!=-1 )
-return( sc->unicodeenc );
-
-    if ( mv->fake_unicode_base==0 ) {		/* Not set */
-    	mv->fake_unicode_base = SFFakeUnicodeBase(mv->sf);
-    }
-
-    if ( mv->fake_unicode_base==-1 )
-return( 0xfffd );
+    if (sc->unicodeenc != -1)
+        return sc->unicodeenc;
     else
-return( mv->fake_unicode_base+sc->orig_pos );
+        return FAKE_UNICODE_BASE + sc->orig_pos;
 }
 
 static int MVOddMatch(MetricsView *mv,int uni,SplineChar *sc) {
     if ( sc->unicodeenc!=-1 )
 return( false );
-    else if ( mv->fake_unicode_base<=0 )
-return( uni==0xfffd );
     else
-return( uni>=mv->fake_unicode_base && sc->orig_pos == uni-mv->fake_unicode_base );
+return( uni>=FAKE_UNICODE_BASE && sc->orig_pos == uni-FAKE_UNICODE_BASE );
 }
 
 void MVSetSCs(MetricsView *mv, SplineChar **scs) {
@@ -1923,8 +1912,7 @@ return;					/* Nothing changed */
 
     missing = 0;
     for ( tpt=pt; tpt<ept; ++tpt )
-	if ( mv->fake_unicode_base>0 && *tpt>=mv->fake_unicode_base &&
-		*tpt<=mv->fake_unicode_base+mv->sf->glyphcnt )
+	if ( *tpt>=FAKE_UNICODE_BASE && *tpt<FAKE_UNICODE_BASE+mv->sf->glyphcnt )
 	    /* That's ok */;
 	else if ( SFFindSlot(mv->sf,mv->fv->b.map,*tpt,NULL)==-1 )
 	    ++missing;
@@ -3949,7 +3937,6 @@ static ShaperContext* MVMakeShaperContext(MetricsView *mv) {
     context->sf = mv->sf;
     context->mv = mv;
     context->apply_ticked_features = ApplyTickedFeatures;
-    context->fake_unicode = MVFakeUnicodeOfSc;
     context->get_enc_map = SFGetMap;
     context->get_char_width = MVCharWidth;
     context->get_metrics = MVGetMetrics;
@@ -4327,8 +4314,12 @@ static void MVChar(MetricsView *mv,GEvent *event)
 	    //      should always move up/down in the list of kerning words.
 	    if( active != mv->text )
 	    {
+		const unichar_t *title = _GGadgetGetTitle(active);
+		if (!title)
+		    return;
+
 		unichar_t *end;
-		double val = u_strtod(_GGadgetGetTitle(active),&end);
+		double val = u_strtod(title,&end);
 		if (isValidInt(end)) {
 		    int dir = ( event->u.chr.keysym == GK_Up || event->u.chr.keysym==GK_KP_Up ) ? 1 : -1;
 		    if( event->u.chr.state&ksm_control && event->u.chr.state&ksm_shift ) {
@@ -5186,7 +5177,7 @@ GTextInfo *SLOfFont(SplineFont *sf) {
     int s, l, i, k, cnt;
     extern GTextInfo scripts[], languages[];
     GTextInfo *ret = NULL;
-    char *sname, *lname, *temp;
+    char *sname=NULL, *lname, *temp;
     char sbuf[8], lbuf[8];
 
     LookupUIInit();

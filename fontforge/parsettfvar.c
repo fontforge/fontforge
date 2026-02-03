@@ -45,7 +45,7 @@
 /***************************************************************************/
 /*                                                                         */
 /* Apple documents these tables at                                         */
-/*    http://developer.apple.com/fonts/TTRefMan/RM06/Chap6[fgca]var.html   */
+/*    http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6[fgca]var.html   */
 /* The documentation for fvar is inconsistent. At one point it says that   */
 /*  countSizePairs should be 3, at another point 2. It should be 2.        */
 /* The documentation for gvar is not intelligible, cvar refers you to gvar */

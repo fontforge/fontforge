@@ -90,12 +90,7 @@ static void _dousage(void) {
     printf( "\t-quiet\t\t\t (don't print non-essential\n\t\t\t\t  information to stderr)\n" );
     printf( "\t-unique\t\t\t (if a fontforge is already running open all\n\t\t\t\t  arguments in it and have this process exit)\n" );
     printf( "\t-display display-name\t (sets the X display)\n" );
-    printf( "\t-depth val\t\t (sets the display depth if possible)\n" );
-    printf( "\t-vc val\t\t\t (sets the visual class if possible)\n" );
-    printf( "\t-cmap current|copy|private\t (sets the type of colormap)\n" );
-    printf( "\t-dontopenxdevices\t (in case that fails)\n" );
     printf( "\t-sync\t\t\t (syncs the display, debugging)\n" );
-    printf( "\t-keyboard ibm|mac|sun|ppc  (generates appropriate hotkeys in menus)\n" );
 #if MyMemory
     printf( "\t-memory\t\t\t (turns on memory checks, debugging)\n" );
 #endif
@@ -481,20 +476,6 @@ return( true );
 return( true );
 }
 
-static void  AddR(char *program_name, char *window_name, char *cmndline_val) {
-/* Add this command line value to this GUI resource.			*/
-/* These are the command line options expected when using this routine:	*/
-/*	-depth, -vc,-cmap or -colormap,-dontopenxdevices, -keyboard	*/
-    char *full;
-    if ((full = malloc(strlen(window_name)+strlen(cmndline_val)+4))!=NULL) {
-	strcpy(full,window_name);
-	strcat(full,": ");
-	strcat(full,cmndline_val);
-	GResourceAddResourceString(full,program_name);
-	free(full);
-    }
-}
-
 static int ReopenLastFonts(void) {
     char buffer[1024];
     char *ffdir = getFontForgeUserDir(Config);
@@ -741,16 +722,6 @@ int fontforge_main( int argc, char **argv ) {
 	    ++pt;
 	if ( strcmp(pt,"-sync")==0 )
 	    GResourceAddResourceString("Gdraw.Synchronize: true",argv[0]);
-	else if ( strcmp(pt,"-depth")==0 && i<argc-1 )
-	    AddR(argv[0],"Gdraw.Depth", argv[++i]);
-	else if ( strcmp(pt,"-vc")==0 && i<argc-1 )
-	    AddR(argv[0],"Gdraw.VisualClass", argv[++i]);
-	else if ( (strcmp(pt,"-cmap")==0 || strcmp(pt,"-colormap")==0) && i<argc-1 )
-	    AddR(argv[0],"Gdraw.Colormap", argv[++i]);
-	else if ( (strcmp(pt,"-dontopenxdevices")==0) )
-	    AddR(argv[0],"Gdraw.DontOpenXDevices", "true");
-	else if ( strcmp(pt,"-keyboard")==0 && i<argc-1 )
-	    AddR(argv[0],"Gdraw.Keyboard", argv[++i]);
 	else if ( strcmp(pt,"-display")==0 && i<argc-1 )
 	    display = argv[++i];
 # if MyMemory
@@ -942,14 +913,11 @@ exit( 0 );
 	} else if ( strcmp(pt,"-sync")==0 || strcmp(pt,"-memory")==0 ||
 		    strcmp(pt,"-nosplash")==0 || strcmp(pt,"-recover=none")==0 ||
 		    strcmp(pt,"-recover=clean")==0 || strcmp(pt,"-recover=auto")==0 ||
-		    strcmp(pt,"-dontopenxdevices")==0 || strcmp(pt,"-unique")==0 ||
+		    strcmp(pt,"-unique")==0 ||
 		    strcmp(pt,"-home")==0 || strcmp(pt,"-quiet")==0
 		    || strcmp(pt,"-forceuihidden")==0 )
 	    /* Already done, needed to be before display opened */;
-	else if ( (strcmp(pt,"-depth")==0 || strcmp(pt,"-vc")==0 ||
-		    strcmp(pt,"-cmap")==0 || strcmp(pt,"-colormap")==0 ||
-		    strcmp(pt,"-keyboard")==0 ||
-		    strcmp(pt,"-display")==0 || strcmp(pt,"-recover")==0 ) &&
+	else if ( ( strcmp(pt,"-display")==0 || strcmp(pt,"-recover")==0 ) &&
 		i<argc-1 )
 	    ++i; /* Already done, needed to be before display opened */
 	else if ( strcmp(pt,"-allglyphs")==0 )

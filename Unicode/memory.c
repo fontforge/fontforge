@@ -39,6 +39,13 @@ void NoMoreMemMessage(void) {
     fprintf(stderr, "Out of memory\n" );
 }
 
+void ExpandBuffer(void** p_buf, size_t elem_size, size_t increment,
+                  int* p_maxalloc) {
+    *p_buf = realloc(*p_buf, (*p_maxalloc + increment) * elem_size);
+    memset((char*)*p_buf + (*p_maxalloc) * elem_size, 0, increment * elem_size);
+    *p_maxalloc += increment;
+}
+
 char *copy(const char *str) {
     return str ? strdup(str) : NULL;
 }

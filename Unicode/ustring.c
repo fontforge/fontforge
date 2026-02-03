@@ -535,7 +535,7 @@ unichar_t *utf82u_strncpy(unichar_t *ubuf,const char *utf8buf,int len) {
 }
 
 unichar_t *utf82u_strcpy(unichar_t *ubuf,const char *utf8buf) {
-return( utf82u_strncpy(ubuf,utf8buf,strlen(utf8buf)+1));
+return( utf82u_strncpy(ubuf,utf8buf,c_strlen(utf8buf)+1));
 }
 
 unichar_t *utf82u_copyn(const char *utf8buf,int len) {
@@ -1168,4 +1168,13 @@ char* tostr( int v )
     static char buf[101];
     snprintf(buf,bufsz,"%d",v);
     return buf;
+}
+
+void realloc_tail(char** p_buf, size_t size_delta, char** p_tail,
+                  char** p_proc) {
+    size_t new_size = size_delta + (*p_tail - *p_buf);
+    char* new_buf = realloc(*p_buf, new_size);
+    *p_tail = new_buf + new_size;
+    if (p_proc) *p_proc = new_buf + (*p_proc - *p_buf);
+    *p_buf = new_buf;
 }

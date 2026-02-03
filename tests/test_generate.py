@@ -27,6 +27,9 @@ caliban.generate("Caliban.",bitmap_type="otb")
 print("...Generated X11 opentype bitmap")
 caliban.generate("Caliban.dfont",bitmap_type="dfont")
 print("...Generated dfont w/ apple bitmaps")
+caliban.generateTtc("Caliban.ttc", None)
+print("...Generated TTC")
+
 caliban.layers["Fore"].is_quadratic = 1
 caliban.setTableData("cvt ","")
 caliban.selection.all()

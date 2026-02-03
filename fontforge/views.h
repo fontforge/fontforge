@@ -420,7 +420,6 @@ typedef struct metricsview {
     GTextInfo *scriptlangs;
     int word_index;
     int layer;
-    int fake_unicode_base;
     GIC *gwgic;
     int ptsize, dpi;
     int ybaseline;

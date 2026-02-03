@@ -36,6 +36,18 @@ extern "C" {
 
 namespace ff::shapers {
 
+static hb_bool_t resolve_fake_encoding(hb_font_t* font, void* font_data,
+                                       hb_codepoint_t unicode,
+                                       hb_codepoint_t* glyph, void* user_data) {
+    hb_font_t* parent = (hb_font_t*)font_data;
+
+    if (unicode >= FAKE_UNICODE_BASE) {
+        *glyph = unicode - FAKE_UNICODE_BASE;
+        return true;
+    }
+    return hb_font_get_nominal_glyph(parent, unicode, glyph);
+}
+
 HarfBuzzShaper::HarfBuzzShaper(std::shared_ptr<ShaperContext> context)
     : context_(context) {
     FILE* ttf_file = GFileTmpfile();
@@ -70,14 +82,26 @@ HarfBuzzShaper::HarfBuzzShaper(std::shared_ptr<ShaperContext> context)
         hb_blob_create(blob, blob_size, HB_MEMORY_MODE_WRITABLE, NULL, NULL);
 
     hb_ttf_face = hb_face_create(hb_ttf_blob, 0);
+    hb_ttf_raw_font = hb_font_create(hb_ttf_face);
 
-    hb_ttf_font = hb_font_create(hb_ttf_face);
+    // To access unencoded glyphs with HarfBuzz, we need to assign them fake
+    // encodings above the canonic Unicode range. We also need to create a
+    // subfont with custom encoding resolution callback.
+    hb_ttf_font = hb_font_create_sub_font(hb_ttf_raw_font);
+    hb_font_funcs_t* funcs = hb_font_funcs_create();
+    hb_font_funcs_set_nominal_glyph_func(funcs, resolve_fake_encoding, NULL,
+                                         NULL);
+    hb_font_set_funcs(hb_ttf_font, funcs, hb_ttf_raw_font, NULL);
+
+    // Contrary to the name, it just decreases the reference.
+    hb_font_funcs_destroy(funcs);
 
     fclose(ttf_file);
 }
 
 HarfBuzzShaper::~HarfBuzzShaper() {
     hb_font_destroy(hb_ttf_font);
+    hb_font_destroy(hb_ttf_raw_font);
     hb_face_destroy(hb_ttf_face);
     hb_blob_destroy(hb_ttf_blob);
     delete[] blob;
@@ -278,16 +302,16 @@ ShaperOutput HarfBuzzShaper::apply_features(
     SplineChar** glyphs, const std::map<Tag, bool>& feature_map, Tag script,
     Tag lang, int pixelsize, bool vertical) {
     std::vector<unichar_t> u_vec;
+    // Assigned fake encodings will be interpreted by resolve_fake_encoding().
     for (size_t len = 0; glyphs[len] != NULL; ++len) {
-        u_vec.push_back(
-            (glyphs[len]->unicodeenc > 0)
-                ? glyphs[len]->unicodeenc
-                : context_->fake_unicode(context_->mv, glyphs[len]));
+        u_vec.push_back((glyphs[len]->unicodeenc > 0)
+                            ? glyphs[len]->unicodeenc
+                            : (glyphs[len]->ttf_glyph + FAKE_UNICODE_BASE));
     }
     u_vec.push_back(0);
 
     hb_buffer_t* hb_buffer = hb_buffer_create();
-    hb_buffer_add_utf32(hb_buffer, u_vec.data(), -1, 0, -1);
+    hb_buffer_add_codepoints(hb_buffer, u_vec.data(), -1, 0, -1);
 
     // Set script and language
     hb_script_t hb_script = hb_ot_tag_to_script(script);

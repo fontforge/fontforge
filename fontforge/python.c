@@ -187,7 +187,6 @@ static struct flaglist sfnt_name_mslangs[];
 /*SplineChar *sc_active_in_ui = NULL;*/
 /*int layer_active_in_ui = ly_fore;*/
 
-static PyObject *hook_dict;			/* Dictionary of python hook scripts (to be activated when certain fontforge events happen) */
 static PyObject *pickler, *unpickler;		/* cPickle.dumps, cPickle.loads */
 static PyObject *_new_point, *_new_contour, *_new_layer;	/* Python handles to c functions, needed for pickler */
 static void PyFF_PickleTypesInit(void);
@@ -6984,9 +6983,13 @@ return( Py_BuildValue("i", map->backmap[sc->orig_pos] ));
 }
 
 static PyObject *PyFF_Glyph_get_codepoint(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
+    char buffer[12];
     if ( sc==NULL || sc->unicodeenc < 0 )
-Py_RETURN_NONE;
-    return PyUnicode_FromFormat("U+%04X", sc->unicodeenc);
+        Py_RETURN_NONE;
+
+    /* PyUnicode_FromFormat() needs Python 3.12+ */
+    sprintf(buffer, "U+%04X", sc->unicodeenc);
+    return PyUnicode_FromString(buffer);
 }
 
 static PyObject *PyFF_Glyph_get_unicode(PyFF_Glyph *self, SplineChar *sc, void *UNUSED(closure)) {
@@ -18044,6 +18047,7 @@ static PyObject *PyFFFont_GenerateTTC(PyFF_Font *self, PyObject *args, PyObject 
     if ( CheckIfFontClosed(self) )
 return(NULL);
     fv = self->fv;
+    layer = fv->active_layer;
 
     if ( !PyArg_ParseTupleAndKeywords(args, keywds, "sO|sOOsi", (char **)genttc_keywords,
 	    &filename, &others, &bitmaptype, &flags, &ttcflags,
@@ -19465,6 +19469,10 @@ return (NULL);
 Py_RETURN( self );
 }
 
+static PyObject *PyFFFont_enter(PyFF_Font *self, PyObject *UNUSED(args)) {
+    Py_RETURN(self);
+}
+
 PyMethodDef PyFF_Font_methods[] = {
     { "appendSFNTName", (PyCFunction) PyFFFont_appendSFNTName, METH_VARARGS, "Adds or replaces a name in the sfnt 'name' table. Takes three arguments, a language, a string id, and the string value" },
     { "close", (PyCFunction) PyFFFont_close, METH_NOARGS, "Frees up memory for the current font. Any python pointers to it will become invalid." },
@@ -19564,6 +19572,8 @@ PyMethodDef PyFF_Font_methods[] = {
     { "validate", (PyCFunction)PyFFFont_validate, METH_VARARGS, "Check whether a font is valid and return True if it is." },
     { "reencode", (PyCFunction)PyFFFont_reencode, METH_VARARGS, "Reencodes the current font into the given encoding." },
     { "clearSpecialData", (PyCFunction)PyFFFont_clearSpecialData, METH_NOARGS, "Clear special data not accessible in FontForge." },
+    { "__enter__", (PyCFunction) PyFFFont_enter, METH_NOARGS, "Empty function declaring the entry into context statement." },
+    { "__exit__", (PyCFunction) PyFFFont_close, METH_FASTCALL, "Frees up memory for the current font. Any python pointers to it will become invalid." },
 
     // Leave some sentinel slots here so that the UI
     // code can add it's methods to the end of the object declaration.
@@ -20778,6 +20788,13 @@ static void CreateAllPyModules(void) {
         CreatePyModule( all_modules[i] );
 }
 
+static PyObject* GetRuntimePyModule(const char* module_name) {
+    PyObject* module = NULL;
+    for (unsigned i = 0; i < NUM_MODULES; i++)
+        if (strcmp(all_modules[i]->module_name, module_name) == 0)
+            module = all_modules[i]->runtime.module;
+    return module;
+}
 
 static void RegisterAllPyModules(void) {
     /* This adds all the modules to Python's 'builtin' module list.
@@ -20820,7 +20837,7 @@ void FontForge_FinalizeEmbeddedPython(void) {
 }
 
 /* This is called to start up the embedded python interpreter */
-void FontForge_InitializeEmbeddedPython(void) {
+void FontForge_InitializeEmbeddedPythonEx(int argc, wchar_t **argv) {
     // static int python_initialized is declared above.
     if ( python_initialized )
 	return;
@@ -20828,7 +20845,8 @@ void FontForge_InitializeEmbeddedPython(void) {
     PyConfig config;
     PyStatus status;
     PyConfig_InitPythonConfig(&config);
-
+    if (argc > 0)
+        PyConfig_SetArgv(&config, argc, argv);
     status = PyConfig_SetBytesString(&config, &config.program_name,
                                      "fontforge");
     if (PyStatus_Exception(status)) {
@@ -20854,6 +20872,10 @@ void FontForge_InitializeEmbeddedPython(void) {
     InitializePythonMainNamespace();
 }
 
+void FontForge_InitializeEmbeddedPython() {
+    FontForge_InitializeEmbeddedPythonEx(0, NULL);
+}
+
 static wchar_t ** copy_argv(char *arg0, int argc ,char **argv);
 
 /* PyFF_Main() -- This is called to run a script as the main task, by
@@ -20873,8 +20895,6 @@ _Noreturn void PyFF_Main(int argc,char **argv,int start, int do_inits,
 
     no_windowing_ui = running_script = true;
 
-    FontForge_InitializeEmbeddedPython();
-    PyFF_ProcessInitFiles(do_inits, do_plugins);
 
     /* Skip '-script' option */
     arg = argv[start];
@@ -20886,8 +20906,11 @@ _Noreturn void PyFF_Main(int argc,char **argv,int start, int do_inits,
     newargc = argc - start + 1;
     newargv = copy_argv(argv[0], newargc-1, &argv[start] );
 
+    FontForge_InitializeEmbeddedPythonEx(newargc, newargv);
+    PyFF_ProcessInitFiles(do_inits, do_plugins);
+
     /* Run Python */
-    exitcode = Py_Main( newargc, newargv );
+    exitcode = Py_RunMain();
     FontForge_FinalizeEmbeddedPython();
     exit(exitcode);
 }
@@ -21206,6 +21229,7 @@ void PyFF_InitFontHook(FontViewBase *fv) {
     /*  We have not added a window or menu to it yet */
     SplineFont *sf = fv->sf;
     PyObject *obj;
+    PyObject *fontforge_module = GetRuntimePyModule("fontforge");
 
     if ( fv->nextsame!=NULL )		/* Duplicate window looking at previously loaded font */
 return;
@@ -21229,10 +21253,19 @@ return;
     }
     Py_XDECREF(obj);
 
-    if ( sf->new )
-	PyFF_CallDictFunc(hook_dict,"newFontHook","f", fv );
-    else
-	PyFF_CallDictFunc(hook_dict,"loadFontHook","f", fv );
+    /* Uninitialized module probably means we are running a native script. */
+    if (!fontforge_module) return;
+
+    if (PyObject_HasAttrString(fontforge_module, "hooks")) {
+        PyObject* hook_dict = PyObject_GetAttrString(fontforge_module, "hooks");
+        if (sf->new)
+            PyFF_CallDictFunc(hook_dict, "newFontHook", "f", fv);
+        else
+            PyFF_CallDictFunc(hook_dict, "loadFontHook", "f", fv);
+        Py_DECREF(hook_dict);
+    } else {
+        LogError(_("FontForge Python hooks not found"));
+    }
 }
 
 
@@ -21260,10 +21293,7 @@ PyMODINIT_FUNC fontforge_python_init(const char* modulename) {
         initted = true;
     }
 
-    for ( unsigned i=0; i<NUM_MODULES; i++ )
-	if (strcmp(all_modules[i]->module_name, modulename)==0 )
-	    return all_modules[i]->runtime.module;
-    return NULL;
+    return GetRuntimePyModule(modulename);
 }
 
 #else

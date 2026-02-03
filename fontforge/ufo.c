@@ -1170,19 +1170,8 @@ static int UFOOutputFontInfo(const char *basedir, SplineFont *sf, int layer, int
     if (styleNameSynthetic)
 	    PListAddString(dictnode,"styleName",styleNameSynthetic);
     {
-        char* preferredFamilyName = fetchTTFAttribute(sf,ttf_preffamilyname);
-        char* preferredSubfamilyName = fetchTTFAttribute(sf,ttf_prefmodifiers);
-        char* styleMapFamily = NULL;
-        if (sf->styleMapFamilyName != NULL) {
-            /* Empty styleMapStyleName means we imported a UFO that does not have this field. Bypass the fallback. */
-            if (sf->styleMapFamilyName[0]!='\0')
-                styleMapFamily = sf->styleMapFamilyName;
-        } else if (preferredFamilyName != NULL && preferredSubfamilyName != NULL) {
-            styleMapFamily = malloc(strlen(preferredFamilyName)+strlen(preferredSubfamilyName)+2);
-            strcpy(styleMapFamily, preferredFamilyName);
-            strcat(styleMapFamily, " ");
-            strcat(styleMapFamily, preferredSubfamilyName);
-        } else if (sf->fullname != NULL) styleMapFamily = sf->fullname;
+        char* styleMapFamily = fetchTTFAttribute(sf,ttf_family);
+        if (styleMapFamily == NULL && sf->familyname != NULL) styleMapFamily = sf->familyname;
         if (styleMapFamily != NULL) PListAddString(dictnode,"styleMapFamilyName", styleMapFamily);
     }
     {
@@ -3840,8 +3829,8 @@ SplineFont *SFReadUFO(char *basedir, int flags) {
 		else free(valname);
 	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "styleMapFamilyName")==0 ) {
-		if (sf->styleMapFamilyName == NULL) sf->styleMapFamilyName = (char *) valname;
-		else free(valname);
+		if (strcmp((char *) valname, sf->familyname) != 0)
+		    UFOAddName(sf,(char *) valname, ttf_family);
 	    }
 	    else if ( xmlStrcmp(keyname,(xmlChar *) "styleMapStyleName")==0 ) {
 		if (strcmp((char *) valname, "regular")==0) sf->pfminfo.stylemap = 0x40;
@@ -4111,8 +4100,6 @@ SplineFont *SFReadUFO(char *basedir, int flags) {
     if ( sf->familyname==NULL )
 	sf->familyname = copy(sf->fontname);
     free(stylename); stylename = NULL;
-    if (sf->styleMapFamilyName == NULL)
-        sf->styleMapFamilyName = ""; // Empty default to disable fallback at export (not user-accessible anyway as of now).
     if ( sf->weight==NULL )
 	sf->weight = copy("Regular");
     // We can now free the document.
