@@ -8,3 +8,5 @@ fontforgeexe/shapers/*.cpp
 fontforgeexe/shapers/*.hpp
 fontforgeexe/gtk/*.cpp
 fontforgeexe/gtk/*.hpp
+fontforgeexe/gtk/widgets/*.cpp
+fontforgeexe/gtk/widgets/*.hpp

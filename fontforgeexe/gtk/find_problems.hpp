@@ -26,60 +26,54 @@
  */
 #pragma once
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "dialog.hpp"
 
-#include "gresource.h"
+#include <variant>
 
-typedef struct gwindow* GWindow;
+#include "widgets/num_entry.hpp"
 
-typedef struct {
-    const char* name;
-    uint32_t tag;
-} LanguageRec;
+namespace ff::dlg {
 
-enum ProblemRecType { prob_bool, prob_int, prob_double };
+using ProblemRecordValue = std::variant<std::monostate, int, double>;
+using ProblemRecordsOut = std::map<short /*cid*/, ProblemRecordValue>;
 
-typedef struct {
+struct ProblemRecord {
     short cid;
-    const char* label;
-    const char* tooltip;
+    std::string label;
+    std::string tooltip;
     bool active;
-    enum ProblemRecType type;
-    short parent_cid;
-    union {
-        int ival;
-        double dval;
-    } value;
     bool disabled;
-} ProblemRec;
-#define PROBLEM_REC_EMPTY \
-    { 0, NULL, NULL, false, prob_bool, 0, {0}, false }
+    short parent_cid;
+    ProblemRecordValue value;
+};
+struct ProblemTab {
+    std::string label;
+    std::vector<ProblemRecord> records;
+};
 
-typedef struct {
-    const char* label;
-    ProblemRec* records;
-} ProblemTab;
-#define PROBLEM_TAB_EMPTY \
-    { NULL, NULL }
+class FindProblemsDlg final : public Dialog {
+ private:
+    FindProblemsDlg(GWindow parent, const std::vector<ProblemTab>& pr_tabs,
+                    double near);
 
-int add_encoding_slots_dialog(GWindow parent, bool cid);
+    Gtk::HBox* build_record_box(const ProblemRecord& record,
+                                Glib::RefPtr<Gtk::SizeGroup> size_group);
+    Gtk::Notebook* build_notebook(const std::vector<ProblemTab>& pr_tabs);
 
-// Return comma-separated list of language tags, or NULL if the action was
-// canceled. The caller is responsible to release the returned pointer.
-char* language_list_dialog(GWindow parent, const LanguageRec* languages,
-                           const char* initial_tags);
+    void set_all_checkboxes(bool state);
 
-/* This function updates pr_tabs in-place to preserve the state of the dialog
-   between invocations.
+    using WidgetMap =
+        std::map<short /*cid*/,
+                 std::pair<Gtk::CheckButton, widgets::NumericalEntry*>>;
+    WidgetMap widget_map_;
+    widgets::DoubleEntry near_value_entry_;
 
-   Return value: true, if any problem record was selected. The selected records
-                 are marked as active in pr_tabs. */
-bool find_problems_dialog(GWindow parent, ProblemTab* pr_tabs, double* near);
+ public:
+    // Return only problem records ticked by the user, with their respective
+    // values.
+    static ProblemRecordsOut show(GWindow parent,
+                                  const std::vector<ProblemTab>& pr_tabs,
+                                  double& near);
+};
 
-void update_appearance();
-
-#ifdef __cplusplus
-}
-#endif
+}  // namespace ff::dlg
