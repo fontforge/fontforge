@@ -213,54 +213,41 @@ void SFDDumpUTF7Str(FILE *sfd, const char *str) {
 char *utf8toutf7_copy(const char *_str) {
     uint16_t ch;
     int prev_cnt=0, prev=0, in=0;
-    int i, len;
+    int len = 0;
     char *ret=NULL, *ostr=NULL;
     uint16_t *utf16_str, *pt;
 
     if ( _str==NULL )
         return( NULL );
 
-    utf16_str = utf82utf16_copy(_str);
+    pt = utf16_str = utf82utf16_copy(_str);
+    while ( *pt++!='\0' )
+	++len;
+    /* 5x buffer is guaranteed to suffice for UTF-7 encoded string. */
+    ostr = ret = malloc(5 * len+1);
 
-    for ( i=0; i<2; ++i ) {
         pt = utf16_str;
-	len= prev_cnt= prev= in=0;
+	prev_cnt= prev= in=0;
 	while ( (ch = *pt++)!='\0' ) {
 	    if ( ch<127 && ch!='\n' && ch!='\r' && ch!='\\' && ch!='~' &&
 		    ch!='+' && ch!='=' && ch!='"' ) {
 		if ( prev_cnt!=0 ) {
-		    if ( i ) {
-			prev<<= (prev_cnt==1?16:8);
-			ostr = base64_encode(ostr,prev);
-			prev_cnt=prev=0;
-		    } else
-			len += 4;
+		    prev<<= (prev_cnt==1?16:8);
+		    ostr = base64_encode(ostr,prev);
+		    prev_cnt=prev=0;
 		}
 		if ( in ) {
-		    if ( inbase64[ch]!=-1 || ch=='-' ) {
-			if ( i )
-			    *ostr++ = '-';
-			else
-			    ++len;
-		    }
+		    if ( inbase64[ch]!=-1 || ch=='-' )
+			*ostr++ = '-';
 		    in = 0;
 		}
-		if ( i )
-		    *ostr++ = ch;
-		else
-		    ++len;
+		*ostr++ = ch;
 	    } else if ( ch=='+' && !in ) {
-		if ( i ) {
-		    *ostr++ = '+';
-		    *ostr++ = '-';
-		} else
-		    len += 2;
+		*ostr++ = '+';
+		*ostr++ = '-';
 	    } else if ( prev_cnt== 0 ) {
 		if ( !in ) {
-		    if ( i )
-			*ostr++ = '+';
-		    else
-			++len;
+		    *ostr++ = '+';
 		    in = 1;
 		}
 		prev = ch;
@@ -268,21 +255,13 @@ char *utf8toutf7_copy(const char *_str) {
 	    } else if ( prev_cnt==2 ) {
 		prev<<=8;
 		prev += (ch>>8)&0xff;
-		if ( i ) {
-		    ostr = base64_encode(ostr,prev);
-		    prev_cnt=prev=0;
-		} else
-		    len += 4;
+		ostr = base64_encode(ostr,prev);
 		prev = (ch&0xff);
 		prev_cnt=1;
 	    } else {
 		prev<<=16;
 		prev |= ch;
-		if ( i ) {
-		    ostr = base64_encode(ostr,prev);
-		    prev_cnt=prev=0;
-		} else
-		    len += 4;
+		ostr = base64_encode(ostr,prev);
 		prev_cnt = prev = 0;
 	    }
 	}
@@ -294,32 +273,18 @@ char *utf8toutf7_copy(const char *_str) {
            output 4 chars. */
 	if ( prev_cnt==2 ) {
 	    prev<<=8;
-	    if ( i ) {
-		ostr = base64_encode(ostr,prev);
-		prev_cnt=prev=0;
-	    } else
-		len += 4;
+	    ostr = base64_encode(ostr,prev);
 	} else if ( prev_cnt==1 ) {
 	    prev<<=16;
-	    if ( i ) {
-		ostr = base64_encode(ostr,prev);
-		prev_cnt=prev=0;
-	    } else
-		len += 4;
+	    ostr = base64_encode(ostr,prev);
 	}
         /* Base64 block can optionally end with a hyphen '-'. We omit it at the
            end of the encoded string to preserve the existing SFD convention. */
         /*
-	if ( in ) {
-	    if ( i )
-		*ostr++ = '-';
-	    else
-		++len;
-	}
+	if ( in )
+	    *ostr++ = '-';
         */
-	if ( i==0 )
-	    ostr = ret = malloc(len+1);
-    }
+
     *ostr = '\0';
     free(utf16_str);
 return( ret );
