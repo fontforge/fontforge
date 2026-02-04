@@ -101,14 +101,13 @@ enum ttf_flags {
     ttf_flag_symbol = 1 << 14,
     ttf_flag_dummyDSIG = 1 << 15,
     ttf_native_kern = 1 << 16,  // This applies mostly to U. F. O. right now.
-    // A hole from bit 17 to bit 28 for ps_flag_*. ps_flag_nohintsubs seems to
-    // be unused.
     ttf_flag_no_outlines =
         1 << 17,  // HarfBuzz: Skip "glyf" and "CFF " tables for performance
     ttf_flag_oldkernmappedonly =
-        1 << 29,  // Allow only mapped glyphs in the old-style "kern" table,
+        1 << 18,  // Allow only mapped glyphs in the old-style "kern" table,
                   // required for Windows compatibility
-    ttf_flag_nomacnames = 1 << 30  // Don't autogenerate mac name entries
+    ttf_flag_nomacnames = 1 << 19  // Don't autogenerate mac name entries
+    // WARNING: These flags must not collide with ps_flags
 };
 
 enum ttc_flags { ttc_flag_trymerge = 0x1, ttc_flag_cff = 0x2 };
@@ -122,21 +121,22 @@ enum openflags {
 };
 
 enum ps_flags {
-    ps_flag_noflex = 0x20000,
-    ps_flag_nohints = 0x40000,
-    ps_flag_afm = 0x100000,
-    ps_flag_pfm = 0x200000,
-    ps_flag_tfm = 0x400000,
-    ps_flag_round = 0x800000,
+    // WARNING: These flags must not collide with ttf_flags
+    ps_flag_noflex = 1 << 21,
+    ps_flag_nohints = 1 << 22,
+    ps_flag_afm = 1 << 23,
+    ps_flag_pfm = 1 << 24,
+    ps_flag_tfm = 1 << 25,
+    ps_flag_round = 1 << 26,
     /* CFF fonts are wrapped up in some postscript sugar -- unless they are to
      */
     /*  go into a pdf file or an otf font */
-    ps_flag_nocffsugar = 0x1000000,
+    ps_flag_nocffsugar = 1 << 27,
     /* in type42 cid fonts we sometimes want an identity map from gid to cid */
-    ps_flag_identitycidmap = 0x2000000,
-    ps_flag_afmwithmarks = 0x4000000,
-    ps_flag_noseac = 0x8000000,
-    ps_flag_outputfontlog = 0x10000000,
+    ps_flag_identitycidmap = 1 << 28,
+    ps_flag_afmwithmarks = 1 << 29,
+    ps_flag_noseac = 1 << 30,
+    ps_flag_outputfontlog = 1 << 31,
     ps_flag_mask = (ps_flag_noflex | ps_flag_afm | ps_flag_pfm | ps_flag_tfm |
                     ps_flag_round)
 };
