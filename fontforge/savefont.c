@@ -1042,7 +1042,6 @@ int fmflag2ttfflag(int fmflags, bool is_postscript_or_cff) {
     if ( !is_postscript_or_cff ) {
 	if ( fmflags&fm_flag_afm ) ttfflags |= ps_flag_afm;
 	if ( fmflags&fm_flag_pfm ) ttfflags |= ps_flag_pfm;
-	if ( fmflags&fm_flag_nohintsubs ) ttfflags |= ps_flag_nohintsubs;
 	if ( fmflags&fm_flag_noflex ) ttfflags |= ps_flag_noflex;
 	if ( fmflags&fm_flag_nopshints ) ttfflags |= ps_flag_nohints;
 	if ( fmflags&fm_flag_round ) ttfflags |= ps_flag_round;
@@ -1198,10 +1197,8 @@ int GenerateScript(SplineFont *sf,char *filename,const char *bitmaptype, int fmf
 	    if ( fmflags&fm_flag_afm ) old_ps_flags |= ps_flag_afm;
 	    if ( fmflags&fm_flag_pfm ) old_ps_flags |= ps_flag_pfm;
 	    if ( fmflags&fm_flag_tfm ) old_ps_flags |= ps_flag_tfm;
-	    if ( fmflags&fm_flag_nohintsubs ) old_ps_flags |= ps_flag_nohintsubs;
 	    if ( fmflags&fm_flag_noflex ) old_ps_flags |= ps_flag_noflex;
 	    if ( fmflags&fm_flag_nopshints ) old_ps_flags |= ps_flag_nohints;
-	    if ( fmflags&fm_flag_restrict256 ) old_ps_flags |= ps_flag_restrict256;
 	    if ( fmflags&fm_flag_round ) old_ps_flags |= ps_flag_round;
 	    if ( fmflags&fm_flag_afmwithmarks ) old_ps_flags |= ps_flag_afmwithmarks;
 	    if ( i==bf_otb ) {

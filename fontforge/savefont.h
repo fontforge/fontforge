@@ -49,10 +49,10 @@ enum fm_flags { fm_flag_afm = 0x1,
                 fm_flag_dummyDSIG = 0x4000,
                 fm_flag_nofftm = 0x8000,
                 fm_flag_tfm = 0x10000,
-                fm_flag_nohintsubs = 0x20000,
+
                 fm_flag_noflex = 0x40000,
                 fm_flag_nopshints = 0x80000,
-                fm_flag_restrict256 = 0x100000,
+
                 fm_flag_round = 0x200000,
                 fm_flag_afmwithmarks = 0x400000,
                 fm_flag_pfed_lookups = 0x800000,
