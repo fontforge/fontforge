@@ -5420,7 +5420,7 @@ static void buildtablestructures(struct alltabs *at, SplineFont *sf,
 	at->tabdir.tabs[i++].length = at->bdflen;
     }
 
-    if ( (format==ff_otf || format==ff_otfcid) && !(flags&ttf_flag_fake_map_and_no_outlines) ) {
+    if ( (format==ff_otf || format==ff_otfcid) && !(flags&ttf_flag_no_outlines) ) {
 	at->tabdir.tabs[i].tag = CHR('C','F','F',' ');
 	at->tabdir.tabs[i].length = at->cfflen;
 	at->tabdir.tabs[i++].data = at->cfff;
@@ -5582,7 +5582,7 @@ static void buildtablestructures(struct alltabs *at, SplineFont *sf,
 	at->tabdir.tabs[i++].length = at->gasplen;
     }
 
-    if ( at->gi.glyphs!=NULL && !(flags&ttf_flag_fake_map_and_no_outlines) ) {
+    if ( at->gi.glyphs!=NULL && !(flags&ttf_flag_no_outlines) ) {
 	at->tabdir.tabs[i].tag = CHR('g','l','y','f');
 	at->tabdir.tabs[i].data = at->gi.glyphs;
 	at->tabdir.tabs[i++].length = at->gi.glyph_len;

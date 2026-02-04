@@ -26,8 +26,6 @@
  */
 #pragma once
 
-#include <limits.h>  // INT_MIN
-
 /* Any additions to this enum should be accounted for in
  * splinechar.c:VSMaskFromFormat() . There are also tables
  * indexed by values of this enum scattered throughout the
@@ -105,13 +103,12 @@ enum ttf_flags {
     ttf_native_kern = 1 << 16,  // This applies mostly to U. F. O. right now.
     // A hole from bit 17 to bit 28 for ps_flag_*. ps_flag_nohintsubs seems to
     // be unused.
+    ttf_flag_no_outlines =
+        1 << 17,  // HarfBuzz: Skip "glyf" and "CFF " tables for performance
     ttf_flag_oldkernmappedonly =
         1 << 29,  // Allow only mapped glyphs in the old-style "kern" table,
                   // required for Windows compatibility
-    ttf_flag_nomacnames = 1 << 30,  // Don't autogenerate mac name entries
-    ttf_flag_fake_map_and_no_outlines =
-        INT_MIN,  // HarfBuzz: Set fake unicode mappings for unmapped glyphs,
-                  //           skip "glyf" and "CFF " tables for performance
+    ttf_flag_nomacnames = 1 << 30  // Don't autogenerate mac name entries
 };
 
 enum ttc_flags { ttc_flag_trymerge = 0x1, ttc_flag_cff = 0x2 };
