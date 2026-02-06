@@ -84,6 +84,7 @@ enum bitmapformat {
 };
 
 enum ttf_flags {
+    // WARNING: These flags must not collide with ps_flags
     ttf_flag_shortps = 1 << 0,
     ttf_flag_nohints = 1 << 1,
     ttf_flag_applemode = 1 << 2,
@@ -102,7 +103,7 @@ enum ttf_flags {
     ttf_flag_dummyDSIG = 1 << 15,
     ttf_native_kern = 1 << 16,  // This applies mostly to U. F. O. right now.
     ttf_flag_no_outlines =
-        1 << 17,  // HarfBuzz: Skip "glyf" and "CFF " tables for performance
+        1 << 19,  // HarfBuzz: Skip "glyf" and "CFF " tables for performance
     ttf_flag_oldkernmappedonly =
         1 << 29,  // Allow only mapped glyphs in the old-style "kern" table,
                   // required for Windows compatibility
@@ -120,25 +121,23 @@ enum openflags {
 };
 
 enum ps_flags {
-    ps_flag_nohintsubs = 0x10000,
-    ps_flag_noflex = 0x20000,
-    ps_flag_nohints = 0x40000,
-    ps_flag_restrict256 = 0x80000,
-    ps_flag_afm = 0x100000,
-    ps_flag_pfm = 0x200000,
-    ps_flag_tfm = 0x400000,
-    ps_flag_round = 0x800000,
+    // WARNING: These flags must not collide with ttf_flags
+    ps_flag_noflex = 1 << 17,
+    ps_flag_nohints = 1 << 18,
+    ps_flag_afm = 1 << 20,
+    ps_flag_pfm = 1 << 21,
+    ps_flag_tfm = 1 << 22,
+    ps_flag_round = 1 << 23,
     /* CFF fonts are wrapped up in some postscript sugar -- unless they are to
-     */
-    /*  go into a pdf file or an otf font */
-    ps_flag_nocffsugar = 0x1000000,
+       go into a pdf file or an otf font */
+    ps_flag_nocffsugar = 1 << 24,
     /* in type42 cid fonts we sometimes want an identity map from gid to cid */
-    ps_flag_identitycidmap = 0x2000000,
-    ps_flag_afmwithmarks = 0x4000000,
-    ps_flag_noseac = 0x8000000,
-    ps_flag_outputfontlog = 0x10000000,
-    ps_flag_mask = (ps_flag_nohintsubs | ps_flag_noflex | ps_flag_afm |
-                    ps_flag_pfm | ps_flag_tfm | ps_flag_round)
+    ps_flag_identitycidmap = 1 << 25,
+    ps_flag_afmwithmarks = 1 << 26,
+    ps_flag_noseac = 1 << 27,
+    ps_flag_outputfontlog = 1 << 28,
+    ps_flag_mask = (ps_flag_noflex | ps_flag_afm | ps_flag_pfm | ps_flag_tfm |
+                    ps_flag_round)
 };
 
 enum layer_type {

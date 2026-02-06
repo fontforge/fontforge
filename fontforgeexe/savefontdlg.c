@@ -255,7 +255,6 @@ static int OPT_PSHints(GGadget *g, GEvent *e) {
 	    int flags = (&d->ps_flags)[which];
 	    /*GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_HintSubs),true);*/
 	    GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_Flex),true);
-	    /*GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_HintSubs),!(flags&ps_flag_nohintsubs));*/
 	    GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_Flex),!(flags&ps_flag_noflex));
 	} else {
 	    /*GGadgetSetEnabled(GWidgetGetControl(gw,CID_PS_HintSubs),false);*/
@@ -308,16 +307,12 @@ return( false );
 		    d->ps_flags |= ps_flag_pfm;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_TFM)) )
 		    d->ps_flags |= ps_flag_tfm;
-		/*if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_HintSubs)) )*/
-		    /*d->ps_flags |= ps_flag_nohintsubs;*/
 		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Flex)) )
 		    d->ps_flags |= ps_flag_noflex;
 		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Hints)) )
 		    d->ps_flags |= ps_flag_nohints;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Round)) )
 		    d->ps_flags |= ps_flag_round;
-		/*if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Restrict256)) )*/
-		    /*d->ps_flags |= ps_flag_restrict256;*/
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_FontLog)) )
 		    d->ps_flags |= ps_flag_outputfontlog;
 	    } else if ( d->sod_which==1 || d->sod_which==2 ) {	/* Open/TrueType */
@@ -358,8 +353,6 @@ return( false );
 		    d->sfnt_flags |= ps_flag_afm;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_AFMmarks)) )
 		    d->sfnt_flags |= ps_flag_afmwithmarks;
-		/*if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_HintSubs)) )*/
-		    /*d->sfnt_flags |= ps_flag_nohintsubs;*/
 		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Flex)) )
 		    d->sfnt_flags |= ps_flag_noflex;
 		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Hints)) )
@@ -379,8 +372,6 @@ return( false );
 		d->ps_flags = d->psotb_flags = 0;
 		if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_AFMmarks)) )
 		     d->psotb_flags = d->ps_flags |= ps_flag_afmwithmarks;
-		/*if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_HintSubs)) )*/
-		     /*d->psotb_flags = d->ps_flags |= ps_flag_nohintsubs;*/
 		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Flex)) )
 		     d->psotb_flags = d->ps_flags |= ps_flag_noflex;
 		if ( !GGadgetIsChecked(GWidgetGetControl(gw,CID_PS_Hints)) )
@@ -433,9 +424,7 @@ static void OptSetDefaults(GWindow gw,struct gfc_data *d,int which,int iscid) {
     /* which==3 => generating an sfnt based bitmap only font with a postscript outline font */
 
     GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_Hints),!(flags&ps_flag_nohints));
-    /*GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_HintSubs),!(flags&ps_flag_nohintsubs));*/
     GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_Flex),!(flags&ps_flag_noflex));
-    /*GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_Restrict256),flags&ps_flag_restrict256);*/
     GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_Round),flags&ps_flag_round);
 
     GGadgetSetChecked(GWidgetGetControl(gw,CID_PS_AFM),flags&ps_flag_afm);
