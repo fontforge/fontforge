@@ -1,0 +1,2 @@
+# Sphinx documentation build requirements
+sphinx>=4.0
