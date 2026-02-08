@@ -78,13 +78,52 @@ else()
     endif()
 
     if(NOT _skip_pyhook)
+      set(_dest \"\${CMAKE_INSTALL_PREFIX}/${PYHOOK_INSTALL_DIR}\")
+      set(_version \"${FONTFORGE_PYTHON_VERSION}\")
+
+      # Install the module files
       file(INSTALL
-        DESTINATION \"\${CMAKE_INSTALL_PREFIX}/${PYHOOK_INSTALL_DIR}\"
+        DESTINATION \"\${_dest}\"
         TYPE MODULE
         FILES
           \"$<TARGET_FILE:fontforge_pyhook>\"
           \"$<TARGET_FILE:psMat_pyhook>\"
       )
+
+      # Create dist-info directory so pip recognizes this installation
+      set(_distinfo \"\${_dest}/fontforge-\${_version}.dist-info\")
+      file(MAKE_DIRECTORY \"\${_distinfo}\")
+
+      # METADATA - minimal package metadata
+      file(WRITE \"\${_distinfo}/METADATA\" \"Metadata-Version: 2.1
+Name: fontforge
+Version: \${_version}
+Summary: FontForge font editor - Python bindings (installed with app)
+Home-page: https://fontforge.org
+License: GPL-3.0-or-later
+\")
+
+      # INSTALLER - marks this as installed by the app, not pip
+      file(WRITE \"\${_distinfo}/INSTALLER\" \"fontforge-app\")
+
+      # top_level.txt - which top-level modules are installed
+      file(WRITE \"\${_distinfo}/top_level.txt\" \"fontforge
+psMat
+\")
+
+      # RECORD - list of installed files (with empty hashes, which is allowed)
+      # Get the actual filenames
+      get_filename_component(_ff_name \"$<TARGET_FILE:fontforge_pyhook>\" NAME)
+      get_filename_component(_psmat_name \"$<TARGET_FILE:psMat_pyhook>\" NAME)
+      file(WRITE \"\${_distinfo}/RECORD\" \"\${_ff_name},,
+\${_psmat_name},,
+fontforge-\${_version}.dist-info/METADATA,,
+fontforge-\${_version}.dist-info/INSTALLER,,
+fontforge-\${_version}.dist-info/top_level.txt,,
+fontforge-\${_version}.dist-info/RECORD,,
+\")
+
+      message(STATUS \"Created fontforge-\${_version}.dist-info for pip compatibility\")
     endif()
   ")
 endif()

@@ -29,6 +29,11 @@
 
 #include "fontforge.h"
 
+/* Returns 0 when running embedded in the app (not pyhook) */
+int ff_is_pyhook_context(void) {
+    return 0;
+}
+
 int main( int argc, char **argv ) {
     return fontforge_main( argc, argv );
 }
