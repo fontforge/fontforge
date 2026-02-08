@@ -135,8 +135,9 @@ repair-wheel-command = "auditwheel repair -w {dest_dir} {wheel}"
 # Build separate wheels for each architecture
 archs = ["x86_64", "arm64"]
 
-# Environment for builds
-environment = { MACOSX_DEPLOYMENT_TARGET = "10.13" }
+# arm64 requires macOS 11.0+, x86_64 can target 10.13
+# Use 11.0 for both for simplicity
+environment = { MACOSX_DEPLOYMENT_TARGET = "11.0" }
 
 # Install build dependencies via Homebrew
 # Note: Homebrew handles architecture automatically on native runners
