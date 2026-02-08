@@ -306,7 +306,13 @@ endif()
 
 # No dev package -> no need to install if static
 if(BUILD_SHARED_LIBS)
-  if(WIN32 OR CYGWIN)
+  if(BUILDING_WHEEL)
+    # Wheel: install alongside Python modules for bundling
+    install(TARGETS fontforge
+      RUNTIME DESTINATION "."
+      LIBRARY DESTINATION "."
+    )
+  elseif(WIN32 OR CYGWIN)
     install(TARGETS fontforge RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
   else()
     install(TARGETS fontforge RUNTIME DESTINATION ${CMAKE_INSTALL_LIBDIR} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
