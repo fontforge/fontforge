@@ -16,8 +16,11 @@ project = 'FontForge'
 copyright = '2000-2012 by George Williams, 2012-2025 by FontForge authors'
 author = 'FontForge authors'
 
-# The full version, including alpha/beta/rc tags
-release = '20251009'
+# The full version - read from environment (set by ReadTheDocs) or default
+# ReadTheDocs sets READTHEDOCS_VERSION to the tag/branch name
+release = os.environ.get('READTHEDOCS_VERSION', '20251009')
+if release.startswith('v'):
+    release = release[1:]  # Strip 'v' prefix from tags
 
 
 # -- General configuration ---------------------------------------------------
