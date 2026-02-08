@@ -801,8 +801,17 @@ static PyObject *PyFF_UnicodeNames2FromLib(PyObject *UNUSED(self), PyObject *arg
     return( ret );
 }
 
+/* Defined in fontforgeexe (returns 0) or pyhook (returns 1) */
+extern "C" int ff_is_pyhook_context(void);
+
 static PyObject *PyFF_Version(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
-return( Py_BuildValue("s", FONTFORGE_VERSION ));
+    if (ff_is_pyhook_context()) {
+        /* Standalone Python module: return CalVer format */
+        return( Py_BuildValue("s", FONTFORGE_PYTHON_VERSION ));
+    } else {
+        /* Embedded in app: return numeric format */
+        return( Py_BuildValue("s", FONTFORGE_VERSION ));
+    }
 }
 
 
