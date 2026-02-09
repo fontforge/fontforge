@@ -1,6 +1,8 @@
 # FontForge Python Module
 
-FontForge is a powerful, open-source font editor. This package provides the Python bindings for FontForge, allowing you to create, edit, and convert fonts programmatically.
+FontForge is a powerful, open-source font editor. This package provides the
+Python bindings for FontForge, allowing you to create, edit, and convert fonts
+programmatically.
 
 ## Installation
 
@@ -82,6 +84,13 @@ Pre-built wheels are available for:
 - **Linux**: x86_64, aarch64 (manylinux_2_28)
 - **macOS**: x86_64, arm64 (macOS 11.0+)
 - **Windows**: x86_64
+
+## Security Considerations
+
+FontForge was designed for interactive use with trusted font files. The
+codebase has known vulnerabilities, including buffer overruns, that can cause
+crashes and may be exploitable. **Do not process untrusted input without
+thorough sandboxing.**
 
 ## Building from Source
 
