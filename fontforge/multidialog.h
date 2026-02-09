@@ -71,6 +71,12 @@ typedef struct multi_dlg_spec {
     MultiDlgCategory *categories;
 } MultiDlgSpec;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 extern void multiDlgFree(MultiDlgSpec *dlg, int do_top);
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_MULTIDIALOG_H */

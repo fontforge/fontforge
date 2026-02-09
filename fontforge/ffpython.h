@@ -74,12 +74,18 @@ extern int layer_active_in_ui;
 }
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 extern void FfPy_Replace_MenuItemStub(PyObject *(*func)(PyObject *,PyObject *));
 extern int PyFF_ConvexNibID(const char *);
 extern PyObject *PySC_From_SC(SplineChar *sc);
 extern PyObject *PyFV_From_FV(FontViewBase *fv);
 extern int FlagsFromTuple(PyObject *tuple,struct flaglist *flags,const char *flagkind);
 extern void PyFF_Glyph_Set_Layer(SplineChar *sc,int layer);
+#ifdef __cplusplus
+}
+#endif
 
 
 /********************************************************************************/
@@ -223,7 +229,13 @@ typedef struct ff_font {
 extern PyMethodDef PyFF_Font_methods[];
 extern PyMethodDef module_fontforge_methods[];
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 PyObject* PyFF_FontForFV(FontViewBase *fv);
 PyObject* PyFF_FontForFV_I(FontViewBase *fv);
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_FFPYTHON_H */
