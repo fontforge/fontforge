@@ -300,10 +300,12 @@ Detection uses `ff_is_pyhook_context()` function defined in:
 ## Install Conflict Handling
 
 ### App install over pip-installed module
-- Detects CalVer format in existing `fontforge.version()`
-- Skips module installation, prints message suggesting `pip uninstall fontforge`
+- Checks `INSTALLER` file in existing `fontforge-*.dist-info/`
+- If INSTALLER contains anything other than `fontforge-app` (e.g., `pip`), skips installation
+- Prints message suggesting `pip uninstall fontforge`
 
 ### App install (fresh or over previous app install)
+- If previous app install exists (INSTALLER = `fontforge-app`), removes old dist-info first
 - Installs modules to site-packages
 - Creates `fontforge-{version}.dist-info/` with:
   - `METADATA` - package metadata
@@ -313,8 +315,8 @@ Detection uses `ff_is_pyhook_context()` function defined in:
 - This allows `pip list` to show the install and `pip uninstall` to work
 
 ### pip install over app-installed module
-- pip sees existing dist-info with matching CalVer version
-- Performs proper upgrade/reinstall
+- pip sees existing dist-info with CalVer version
+- Performs proper upgrade/reinstall based on version comparison
 
 ## Resolved Decisions
 

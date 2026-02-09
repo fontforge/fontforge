@@ -50,36 +50,52 @@ else()
   endif()
 
   # Check at install time if pip-installed modules should be preserved
-  # If existing fontforge module has a dotted version (e.g., 2025.10.9), it's from pip
-  # If it has a plain numeric version (e.g., 20251009), it's from an app install
+  # We check the INSTALLER file in dist-info to determine the install source:
+  # - "pip" or other package managers → skip, preserve pip install
+  # - "fontforge-app" → proceed, update previous app install
+  # - no dist-info → fresh install, proceed
   install(CODE "
     set(_python_exe \"${Python3_EXECUTABLE}\")
     set(_skip_pyhook FALSE)
+    set(_dest \"\${CMAKE_INSTALL_PREFIX}/${PYHOOK_INSTALL_DIR}\")
 
-    # Check if fontforge module exists and get its version
-    execute_process(
-      COMMAND \"\${_python_exe}\" -c \"import fontforge; print(fontforge.version())\"
-      RESULT_VARIABLE _ff_result
-      OUTPUT_VARIABLE _ff_version
-      ERROR_QUIET
-      OUTPUT_STRIP_TRAILING_WHITESPACE
-    )
+    # Look for existing fontforge dist-info directory
+    file(GLOB _existing_distinfo \"\${_dest}/fontforge-*.dist-info\")
 
-    if(_ff_result EQUAL 0 AND _ff_version)
-      # Check if version contains a dot (pip wheel format: 2025.10.9)
-      string(FIND \"\${_ff_version}\" \".\" _dot_pos)
-      if(NOT _dot_pos EQUAL -1)
-        message(STATUS \"Existing fontforge module (version \${_ff_version}) appears to be pip-installed, skipping Python module installation\")
+    if(_existing_distinfo)
+      # Get the first match (should only be one)
+      list(GET _existing_distinfo 0 _distinfo_dir)
+      set(_installer_file \"\${_distinfo_dir}/INSTALLER\")
+
+      if(EXISTS \"\${_installer_file}\")
+        file(READ \"\${_installer_file}\" _installer_content)
+        string(STRIP \"\${_installer_content}\" _installer_content)
+
+        if(_installer_content STREQUAL \"fontforge-app\")
+          message(STATUS \"Existing fontforge module was installed by app, will be updated\")
+        else()
+          message(STATUS \"Existing fontforge module was installed by '\${_installer_content}', skipping Python module installation\")
+          message(STATUS \"To reinstall app modules, first run: pip uninstall fontforge\")
+          set(_skip_pyhook TRUE)
+        endif()
+      else()
+        # dist-info exists but no INSTALLER file - treat as external install
+        message(STATUS \"Existing fontforge dist-info found without INSTALLER file, skipping Python module installation\")
         message(STATUS \"To reinstall app modules, first run: pip uninstall fontforge\")
         set(_skip_pyhook TRUE)
-      else()
-        message(STATUS \"Existing fontforge module (version \${_ff_version}) is from app install, will be updated\")
       endif()
     endif()
 
     if(NOT _skip_pyhook)
-      set(_dest \"\${CMAKE_INSTALL_PREFIX}/${PYHOOK_INSTALL_DIR}\")
       set(_version \"${FONTFORGE_PYTHON_VERSION}\")
+
+      # Remove any existing app-installed dist-info (handles version upgrades)
+      if(_existing_distinfo)
+        foreach(_old_distinfo IN LISTS _existing_distinfo)
+          message(STATUS \"Removing old dist-info: \${_old_distinfo}\")
+          file(REMOVE_RECURSE \"\${_old_distinfo}\")
+        endforeach()
+      endif()
 
       # Install the module files
       file(INSTALL
