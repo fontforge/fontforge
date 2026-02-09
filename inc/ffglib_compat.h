@@ -245,6 +245,11 @@ FFList *ff_list_append(FFList *list, void *data);
  */
 void ff_list_free(FFList *list);
 
+/* Count number of elements in list.
+ * Compatible with g_list_length().
+ */
+unsigned int ff_list_length(FFList *list);
+
 /* Set pointer to NULL and return old value.
  * Compatible with g_steal_pointer().
  */

@@ -545,6 +545,15 @@ extern "C" void ff_list_free(FFList *list) {
     }
 }
 
+extern "C" unsigned int ff_list_length(FFList *list) {
+    unsigned int count = 0;
+    while (list != nullptr) {
+        ++count;
+        list = list->next;
+    }
+    return count;
+}
+
 extern "C" void *ff_steal_pointer_impl(void **pp) {
     void *tmp = *pp;
     *pp = nullptr;

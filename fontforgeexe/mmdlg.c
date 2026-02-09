@@ -1844,8 +1844,8 @@ continue;
 		mmw->old->instances[j] = NULL;
 	    }
 	if ( mmw->old->normal!=NULL ) {
-	    oldprivate = mmw->old->normal->private;
-	    mmw->old->normal->private = NULL;
+	    oldprivate = mmw->old->normal->private_dict;
+	    mmw->old->normal->private_dict = NULL;
 	    MMDetachOld(mmw->old->normal);
 	    mmw->old->normal = NULL;
 	}
@@ -1908,15 +1908,15 @@ continue;
     MMMatchGlyphs(setto);
     if ( setto->normal==NULL ) {
 	setto->normal = MMNewFont(setto,-1,familyname);
-	setto->normal->private = oldprivate;
+	setto->normal->private_dict = oldprivate;
     }
     if ( !isapple ) {
 	if ( fbt>0 && fbt<=1 ) {
 	    char buffer[20];
 	    sprintf(buffer,"%g", (double) fbt );
 	    if ( oldprivate==NULL )
-		setto->normal->private = calloc(1,sizeof(struct psdict));
-	    PSDictChangeEntry(setto->normal->private,"ForceBoldThreshold",buffer);
+		setto->normal->private_dict = calloc(1,sizeof(struct psdict));
+	    PSDictChangeEntry(setto->normal->private_dict,"ForceBoldThreshold",buffer);
 	}
     }
     if ( !isapple ) {
@@ -3086,7 +3086,7 @@ void MMWizard(MMSet *mm) {
     ogcd[k++].creator = GLabelCreate;
 
     if ( mmw.old!=NULL &&
-	    (pt = PSDictHasEntry(mmw.old->normal->private,"ForceBoldThreshold"))!=NULL )
+	    (pt = PSDictHasEntry(mmw.old->normal->private_dict,"ForceBoldThreshold"))!=NULL )
 	olabels[k].text = (unichar_t *) pt;
     else
 	olabels[k].text = (unichar_t *) ".3";
