@@ -85,10 +85,35 @@ jobs:
           name: sdist
           path: dist/*.tar.gz
 
+  # Test that the sdist can be installed from source
+  test_sdist:
+    name: Test source distribution
+    needs: build_sdist
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            cmake ninja-build \
+            libfreetype-dev libxml2-dev zlib1g-dev \
+            libpng-dev libjpeg-dev libtiff-dev
+
+      - name: Download sdist
+        uses: actions/download-artifact@v4
+        with:
+          name: sdist
+
+      - name: Install from sdist
+        run: pip install fontforge-*.tar.gz -v
+
+      - name: Test import
+        run: python -c "import fontforge; import psMat; print('fontforge version:', fontforge.version())"
+
   # Combine all artifacts into a single download
   combine_artifacts:
     name: Combine artifacts
-    needs: [build_wheels, build_sdist]
+    needs: [build_wheels, build_sdist, test_sdist]
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts
