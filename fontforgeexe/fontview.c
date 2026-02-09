@@ -751,7 +751,7 @@ return( 0 );
 	sf->save_to_dir = s2d;
 	free(sf->origname);
 	sf->origname = copy(filename);
-	sf->new = false;
+	sf->isnew = false;
 	if ( sf->mm!=NULL ) {
 	    int i;
 	    for ( i=0; i<sf->mm->instance_count; ++i ) {
@@ -759,7 +759,7 @@ return( 0 );
 		sf->mm->instances[i]->filename = filename;
 		free(sf->mm->instances[i]->origname);
 		sf->mm->instances[i]->origname = copy(filename);
-		sf->mm->instances[i]->new = false;
+		sf->mm->instances[i]->isnew = false;
 	    }
 	}
 	SplineFontSetUnChanged(sf);
@@ -3954,8 +3954,8 @@ return;
 
     map = FindCidMap(cidmaster->cidregistry,cidmaster->ordering,cidmaster->supplement,cidmaster);
     SFEncodeToMap(new,map);
-    if ( !PSDictHasEntry(new->private,"lenIV"))
-	PSDictChangeEntry(new->private,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
+    if ( !PSDictHasEntry(new->private_dict,"lenIV"))
+	PSDictChangeEntry(new->private_dict,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
     new->display_antialias = fv->b.sf->display_antialias;
     new->display_bbsized = fv->b.sf->display_bbsized;
     new->display_size = fv->b.sf->display_size;
@@ -3977,8 +3977,8 @@ return;
     sf->display_antialias = fv->b.sf->display_antialias;
     sf->display_bbsized = fv->b.sf->display_bbsized;
     sf->display_size = fv->b.sf->display_size;
-    sf->private = calloc(1,sizeof(struct psdict));
-    PSDictChangeEntry(sf->private,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
+    sf->private_dict = calloc(1,sizeof(struct psdict));
+    PSDictChangeEntry(sf->private_dict,"lenIV","1");		/* It's 4 by default, in CIDs the convention seems to be 1 */
     FVInsertInCID((FontViewBase *) fv,sf);
 }
 
@@ -4256,7 +4256,7 @@ static void fllistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 	    mi->ti.disabled = fvs==NULL;
 	  break;
 	  case MID_Revert:
-	    mi->ti.disabled = fv->b.sf->origname==NULL || fv->b.sf->new;
+	    mi->ti.disabled = fv->b.sf->origname==NULL || fv->b.sf->isnew;
 	  break;
 	  case MID_RevertToBackup:
 	    /* We really do want to use filename here and origname above */
@@ -7132,7 +7132,7 @@ static FontView *__FontViewCreate(SplineFont *sf) {
     /* Filename != NULL if we opened an sfd file. Sfd files know whether */
     /*  the font is compact or not and should not depend on a global flag */
     /* If a font is new, then compaction will make it vanish completely */
-    if ( sf->fv==NULL && compact_font_on_open && sf->filename==NULL && !sf->new ) {
+    if ( sf->fv==NULL && compact_font_on_open && sf->filename==NULL && !sf->isnew ) {
 	sf->compacted = true;
 	for ( i=0; i<sf->subfontcnt; ++i )
 	    sf->subfonts[i]->compacted = true;

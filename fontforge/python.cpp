@@ -801,8 +801,19 @@ static PyObject *PyFF_UnicodeNames2FromLib(PyObject *UNUSED(self), PyObject *arg
     return( ret );
 }
 
-/* Defined in fontforgeexe (returns 0) or pyhook (returns 1) */
-extern "C" int ff_is_pyhook_context(void);
+/* Detect whether we're running as standalone Python module (pyhook) or embedded in app.
+ * - Windows: compile-time detection (SKBUILD defined for wheel builds)
+ * - Linux/macOS: weak symbol in library, strong symbol in pyhook overrides via interposition
+ */
+#if defined(_WIN32)
+  #if defined(SKBUILD)
+    extern "C" int ff_is_pyhook_context(void) { return 1; }
+  #else
+    extern "C" int ff_is_pyhook_context(void) { return 0; }
+  #endif
+#else
+  extern "C" __attribute__((weak)) int ff_is_pyhook_context(void) { return 0; }
+#endif
 
 static PyObject *PyFF_Version(PyObject *UNUSED(self), PyObject *UNUSED(args)) {
     if (ff_is_pyhook_context()) {

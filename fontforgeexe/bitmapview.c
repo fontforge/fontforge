@@ -1639,7 +1639,7 @@ static void fllistcheck(GWindow gw,struct gmenuitem *mi,GEvent *e) {
     for ( mi = mi->sub; mi->ti.text!=NULL || mi->ti.line ; ++mi ) {
 	switch ( mi->mid ) {
 	  case MID_Revert:
-	    mi->ti.disabled = bv->bdf->sf->origname==NULL || bv->bdf->sf->new;
+	    mi->ti.disabled = bv->bdf->sf->origname==NULL || bv->bdf->sf->isnew;
 	  break;
 	  case MID_Recent:
 	    mi->ti.disabled = !RecentFilesAny();
