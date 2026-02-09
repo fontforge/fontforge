@@ -226,7 +226,7 @@ static PyFF_Layer *LayerFromLayer(Layer *,PyFF_Layer *);
 /* ************************************************************************** */
 /* Find python objects corresponding to non-python structures */
 /* ************************************************************************** */
-PyObject* PyFF_FontForFV( FontViewBase *fv ) {
+extern "C" PyObject* PyFF_FontForFV( FontViewBase *fv ) {
     if ( fv==NULL )
 	return NULL;
     if ( fv->python_fv_object==NULL ) {
@@ -236,7 +236,7 @@ PyObject* PyFF_FontForFV( FontViewBase *fv ) {
     }
     return (PyObject *)fv->python_fv_object;
 }
-PyObject* PyFF_FontForFV_I( FontViewBase *fv ) {
+extern "C" PyObject* PyFF_FontForFV_I( FontViewBase *fv ) {
     PyObject* pyfv = PyFF_FontForFV(fv);
     Py_XINCREF(pyfv);
     return pyfv;
@@ -355,7 +355,7 @@ return( i );
  * If flagkind is not NULL, then it is used in any error message to identify
  * the kind of flags being parsed.
  */
-int FlagsFromTuple(PyObject *tuple,struct flaglist *flags, const char *flagkind) {
+extern "C" int FlagsFromTuple(PyObject *tuple,struct flaglist *flags, const char *flagkind) {
     int ret = 0,temp;
     int i;
     const char *str = NULL;
@@ -409,7 +409,7 @@ return( Py_BuildValue("d", val->u.fval ));
 return( NULL );
 }
 
-PyObject *PySC_From_SC(SplineChar *sc) {
+extern "C" PyObject *PySC_From_SC(SplineChar *sc) {
     if ( sc->python_sc_object==NULL ) {
 	PyFF_Glyph *glyph = (PyFF_Glyph *)PyFF_GlyphType.tp_alloc(&PyFF_GlyphType,0);
 	sc->python_sc_object = glyph;
@@ -426,7 +426,7 @@ static PyObject *PySC_From_SC_I(SplineChar *sc) {
 return( s );
 }
 
-void PyFF_Glyph_Set_Layer(SplineChar *sc,int layer) {
+extern "C" void PyFF_Glyph_Set_Layer(SplineChar *sc,int layer) {
     PyObject *pysc = PySC_From_SC(sc);
     ((PyFF_Glyph *) pysc)->layer = layer;
 }
@@ -1215,7 +1215,7 @@ static PyObject *PyFF_onAppClosing(PyObject *self, PyObject *args) {
     return( ret );
 }
 
-void python_call_onClosingFunctions()
+extern "C" void python_call_onClosingFunctions()
 {
     for (PyObject *func : closingFunctionList) {
 	if (func) {
@@ -1376,9 +1376,9 @@ Py_RETURN_NONE;
 return( reto );
 }
 
-int NibCheck(SplineSet *ss);
+static int NibCheck(SplineSet *ss);
 
-int PyFF_ConvexNibID(const char *tok) {
+extern "C" int PyFF_ConvexNibID(const char *tok) {
    int r = ConvexNibID(tok);
    if ( r==-1 )
 	PyErr_Format(PyExc_TypeError, "Unrecognized convex nib context name" );
@@ -1633,7 +1633,7 @@ struct flaglist multiqstntype[] = {
     FLAGLIST_EMPTY /* Sentinel */
 };
 
-void multiDlgFree(MultiDlgSpec *dlg, int do_top) {
+extern "C" void multiDlgFree(MultiDlgSpec *dlg, int do_top) {
     for (int i=0; i<dlg->len; ++i) {
 	MultiDlgCategory *category = &dlg->categories[i];
 	for (int j=0; j<category->len; ++j) {
@@ -1657,7 +1657,7 @@ void multiDlgFree(MultiDlgSpec *dlg, int do_top) {
 	free(dlg);
 }
 
-void multiDlgPrint(MultiDlgSpec *dlg) {
+static void multiDlgPrint(MultiDlgSpec *dlg) {
     for (int i=0; i<dlg->len; ++i) {
 	MultiDlgCategory *category = dlg->categories + i;
 	if (dlg->len>1)
@@ -1795,7 +1795,7 @@ static int multiDlgDecodeCategory(MultiDlgCategory *category, PyObject *spec, Py
     return true;
 }
 
-PyObject *multiDlgExtractAnswers(MultiDlgSpec *dspec) {
+static PyObject *multiDlgExtractAnswers(MultiDlgSpec *dspec) {
     PyObject *r = PyDict_New(), *k=NULL, *v=NULL, *vtuple=NULL;
     int c, q, a, ai;
 
@@ -4576,7 +4576,7 @@ static PyObject *PyFFLayer_Harmonize(PyFF_Layer *self) {
     return _PyFFLayer_Action(self,&SplineCharHarmonize);
 }
 
-int NibCheck(SplineSet *nib) {
+static int NibCheck(SplineSet *nib) {
     enum ShapeType pt;
     SplineSet *ss;
 
@@ -10222,7 +10222,7 @@ PyTypeObject PyFF_GlyphType = {
     0,                         /* tp_version_tag */
 };
 
-PyObject *PyFF_Glyph_get_wrapper(PyFF_Glyph* self, glyph_accessors* raw_getset) {
+static PyObject *PyFF_Glyph_get_wrapper(PyFF_Glyph* self, glyph_accessors* raw_getset) {
     SplineChar *sc = PyFF_Glyph_GetSC(self);
     if (sc == NULL) {
 	return NULL;
@@ -10230,7 +10230,7 @@ PyObject *PyFF_Glyph_get_wrapper(PyFF_Glyph* self, glyph_accessors* raw_getset) 
     return (raw_getset->getter)(self, sc, raw_getset->closure);
 }
 
-int PyFF_Glyph_set_wrapper(PyFF_Glyph* self, PyObject* value, glyph_accessors* raw_getset) {
+static int PyFF_Glyph_set_wrapper(PyFF_Glyph* self, PyObject* value, glyph_accessors* raw_getset) {
     SplineChar *sc = PyFF_Glyph_GetSC(self);
     if (sc == NULL) {
 	return -1;
@@ -11733,7 +11733,7 @@ static int PyFF_MathDeviceIndexAssign( PyFF_MathDeviceTable *self, PyObject *ind
 }
 
 /* Compare with dictionary for testing purposes */
-PyObject *PyFF_MathDeviceTableCompare(PyFF_MathDeviceTable *self, PyObject *other, int op){
+static PyObject *PyFF_MathDeviceTableCompare(PyFF_MathDeviceTable *self, PyObject *other, int op){
     struct MATH *math = SFGetMathTable(self->font);
     if (math == NULL)
         return NULL;
@@ -20350,7 +20350,7 @@ static module_definition module_def_fontforge = {
 /* ************************************************************************** */
 /* ************************* initializer routines *************************** */
 /* ************************************************************************** */
-void FfPy_Replace_MenuItemStub(PyObject *(*func)(PyObject *,PyObject *)) {
+extern "C" void FfPy_Replace_MenuItemStub(PyObject *(*func)(PyObject *,PyObject *)) {
     int i;
     PyMethodDef *methods = module_fontforge_methods;
     for ( i=0; methods[i].ml_name!=NULL; ++i )
@@ -20853,7 +20853,7 @@ void FontForge_FinalizeEmbeddedPython(void) {
 }
 
 /* This is called to start up the embedded python interpreter */
-void FontForge_InitializeEmbeddedPythonEx(int argc, wchar_t **argv) {
+static void FontForge_InitializeEmbeddedPythonEx(int argc, wchar_t **argv) {
     // static int python_initialized is declared above.
     if ( python_initialized )
 	return;
