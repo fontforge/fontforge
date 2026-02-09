@@ -42,7 +42,11 @@ jobs:
             FFCONFIG="$FFCONFIG -DENABLE_GUI=OFF -DENABLE_PYTHON_SCRIPTING=OFF"
           fi
           mkdir build && pushd build && cmake -GNinja $FFCONFIG .. && popd
-          ninja -C build all potfiles install
+          if [ "${{ matrix.target }}" == "NoUI" ]; then
+            ninja -C build all install
+          else
+            ninja -C build all potfiles install
+          fi
       - name: Run FontForge tests
         run: CTEST_PARALLEL_LEVEL=100 ninja -C repo/build check
       - name: Build dist bundle
