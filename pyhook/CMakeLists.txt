@@ -57,7 +57,9 @@ else()
   install(CODE "
     set(_python_exe \"${Python3_EXECUTABLE}\")
     set(_skip_pyhook FALSE)
-    set(_dest \"\${CMAKE_INSTALL_PREFIX}/${PYHOOK_INSTALL_DIR}\")
+    # Handle DESTDIR for staged installs (AppImage, packaging)
+    set(_destdir \"\$ENV{DESTDIR}\")
+    set(_dest \"\${_destdir}\${CMAKE_INSTALL_PREFIX}/${PYHOOK_INSTALL_DIR}\")
 
     # Look for existing fontforge dist-info directory
     file(GLOB _existing_distinfo \"\${_dest}/fontforge-*.dist-info\")
