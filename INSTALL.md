@@ -22,6 +22,16 @@ sudo ninja install
 
 For even more details on the build system itself, see [this wiki page](https://github.com/fontforge/fontforge/wiki/CMake-guide-for-FontForge).
 
+## Python Module
+
+FontForge's Python bindings are also available directly from PyPI:
+
+```sh
+pip install fontforge
+```
+
+If you install the Python module via pip, building and installing FontForge from source will detect this and skip installing the Python module to avoid conflicts. To switch back to app-installed modules, first run `pip uninstall fontforge`.
+
 **Attention, Designers Who Love TrueType Hinting:** 
 Run `cmake` with `-DENABLE_FREETYPE_DEBUGGER=/path/to/freetype/source`. 
 This option enables advanced features for debugging TrueType font hints, such as stepping through hinting instructions one by one.

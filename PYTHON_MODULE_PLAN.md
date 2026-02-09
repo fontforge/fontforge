@@ -17,13 +17,12 @@ Two top-level modules (historical, not changing):
 
 ## Build Scenarios
 
-| Scenario | Detection | GUI | `fontforge.version()` | libfontforge Location | Module Location |
-|----------|-----------|-----|----------------------|----------------------|-----------------|
-| **Wheel** | `SKBUILD` defined | OFF | CalVer (`2025.10.9`) | Wheel root | Wheel root |
-| **Distro module-only** | Manual cmake | OFF | CalVer (`2025.10.9`) | System libdir | site-packages |
-| **App + module** | Manual cmake | ON | Numeric (`20251009`) | System libdir | site-packages |
+| Scenario | Detection | GUI | libfontforge Location | Module Location |
+|----------|-----------|-----|----------------------|-----------------|
+| **Wheel** | `SKBUILD` defined | OFF | Wheel root | Wheel root |
+| **System install** | Manual cmake | ON or OFF | System libdir | site-packages |
 
-The version format allows detection of context: CalVer = standalone module, Numeric = embedded in app.
+Both scenarios install Python modules that return CalVer from `fontforge.version()`. The numeric version format is only returned when Python is embedded in the running FontForge application (not when importing the module from site-packages).
 
 ## Dependencies
 
@@ -227,7 +226,7 @@ Existing Python docs: `doc/sphinx/scripting/python/` (5,300+ lines in Sphinx RST
 - Primary docs remain at fontforge.org
 - Link from PyPI via `[project.urls]` Documentation field
 - Consider also publishing Python subset to ReadTheDocs for discoverability
-- PyPI landing page uses a Python-focused README (TBD)
+- PyPI landing page uses `README_PYPI.md`
 
 ### PyPI URLs
 ```toml
@@ -290,12 +289,12 @@ Issues = "https://github.com/fontforge/fontforge/issues"
 
 | Context | Returns | Example |
 |---------|---------|---------|
-| Standalone module (pyhook) | CalVer | `2025.10.9` |
-| Embedded in app | Numeric | `20251009` |
+| Python module (imported from site-packages or wheel) | CalVer | `2025.10.9` |
+| Python embedded in running FontForge application | Numeric | `20251009` |
 
 Detection uses `ff_is_pyhook_context()` function defined in:
-- `pyhook/fontforgepyhook.c` → returns 1
-- `fontforgeexe/main.c` → returns 0
+- `pyhook/fontforgepyhook.c` → returns 1 (module context)
+- `fontforgeexe/main.c` → returns 0 (app context)
 
 ## Install Conflict Handling
 
