@@ -150,8 +150,13 @@ if(HAVE_PTHREAD_H)
 endif()
 
 if (ENABLE_HARFBUZZ)
-  find_package(PkgConfig REQUIRED)
-  pkg_check_modules(HarfBuzz REQUIRED IMPORTED_TARGET harfbuzz)
+  if(MSVC)
+    find_package(harfbuzz CONFIG REQUIRED)
+    add_library(PkgConfig::HarfBuzz ALIAS harfbuzz::harfbuzz)
+  else()
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(HarfBuzz REQUIRED IMPORTED_TARGET harfbuzz)
+  endif()
 endif()
 
 # Requirements for options
