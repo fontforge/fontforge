@@ -149,6 +149,11 @@ if(HAVE_PTHREAD_H)
   find_package(Threads)
 endif()
 
+if (ENABLE_HARFBUZZ)
+  find_package(PkgConfig REQUIRED)
+  pkg_check_modules(HarfBuzz REQUIRED IMPORTED_TARGET harfbuzz)
+endif()
+
 # Requirements for options
 if(ENABLE_GUI)
   find_package(PkgConfig REQUIRED)
@@ -157,9 +162,6 @@ if(ENABLE_GUI)
   alias_imported_target(GDK3::GDK3 PkgConfig::GDK3)
   pkg_check_modules(GTK3 REQUIRED IMPORTED_TARGET gtk+-3.0)
   pkg_check_modules(GTKMM REQUIRED IMPORTED_TARGET gtkmm-3.0)
-  if (ENABLE_HARFBUZZ)
-    pkg_check_modules(HarfBuzz REQUIRED IMPORTED_TARGET harfbuzz)
-  endif()
 endif()
 
 if(ENABLE_FREETYPE_DEBUGGER)

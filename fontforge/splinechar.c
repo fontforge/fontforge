@@ -2874,3 +2874,10 @@ const char* SCNameCheck(const unichar_t *name, bool *p_questionable) {
     }
     return NULL;
 }
+
+const char* SCGetName(const SplineChar* sc) { return sc->name; }
+
+void SCGetEncoding(const SplineChar* sc, int* p_unicodeenc, int* p_ttf_glyph) {
+    if (p_unicodeenc) *p_unicodeenc = sc->unicodeenc;
+    if (p_ttf_glyph) *p_ttf_glyph = sc->ttf_glyph;
+}

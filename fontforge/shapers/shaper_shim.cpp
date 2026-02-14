@@ -128,8 +128,8 @@ struct shaper_out shaper_apply_features(cpp_IShaper* shaper,
     }
 
     if (shaper) {
-        auto output = ishaper->apply_features(glyphs, feature_map, Tag(script),
-                                              Tag(lang), pixelsize, vertical);
+        auto output = ishaper->mv_apply_features(
+            glyphs, feature_map, Tag(script), Tag(lang), pixelsize, vertical);
         MetricsCore* metrics =
             (MetricsCore*)calloc(output.second.size() + 1, sizeof(MetricsCore));
         memcpy(metrics, output.second.data(),
@@ -140,10 +140,11 @@ struct shaper_out shaper_apply_features(cpp_IShaper* shaper,
     }
 }
 
-void shaper_scale_metrics(cpp_IShaper* shaper, MetricsView* mv, double iscale,
-                          double scale, bool vertical) {
+void shaper_scale_metrics(cpp_IShaper* shaper, MetricsView* mv,
+                          MetricsCore* metrics, double iscale, double scale,
+                          bool vertical) {
     ff::shapers::IShaper* ishaper = toCPP(shaper);
-    ishaper->scale_metrics(mv, iscale, scale, vertical);
+    ishaper->scale_metrics(mv, metrics, iscale, scale, vertical);
 }
 
 uint32_t* shaper_default_features(cpp_IShaper* shaper, uint32_t script,

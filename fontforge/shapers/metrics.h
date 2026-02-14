@@ -26,9 +26,18 @@
  */
 #pragma once
 
+#include <stdbool.h>
 #include <stdint.h>
 
+typedef struct splinechar SplineChar;
+
 typedef struct metrics_core {
+    SplineChar* sc;
+
+    /* Glyph index in TTF font, if applicable. May be set to INVALID_CODEPOINT.
+     */
+    uint32_t codepoint;
+
     /* The shaper fills values in font units (scaled=false), and they are later
        rescaled to UI pixel units (scaled=true). */
     bool scaled;
@@ -38,3 +47,10 @@ typedef struct metrics_core {
     int xoff, yoff;
     int16_t kernafter;
 } MetricsCore;
+
+#define INVALID_CODEPOINT (uint32_t)(-1)
+
+typedef struct splinechar_ttf_map {
+    SplineChar* glyph;
+    int ttf_glyph;
+} SplineCharTTFMap;

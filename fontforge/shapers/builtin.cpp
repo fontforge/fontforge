@@ -25,13 +25,26 @@
 #include <assert.h>
 #include <math.h>
 
-extern "C" {
-#include "splinechar.h"
-}
-
 namespace ff::shapers {
 
-ShaperOutput BuiltInShaper::apply_features(
+std::vector<MetricsCore> BuiltInShaper::apply_features(
+    const std::vector<unichar_t>& ubuf, const std::map<Tag, bool>& feature_map,
+    Tag script, Tag lang, bool vertical) {
+    std::vector<SplineChar*> glyphs;
+
+    // ubuf is zero-terminated, ignore its last zero element.
+    for (unichar_t u : ubuf) {
+        if (u != 0)
+            glyphs.push_back(context_->get_or_make_char(context_->sf, u, NULL));
+    }
+    glyphs.push_back(NULL);  // NULL-terminated array
+    ShaperOutput shaper_output = mv_apply_features(glyphs.data(), feature_map,
+                                                   script, lang, 0, vertical);
+    scale_metrics(NULL, shaper_output.second.data(), 1.0, 1.0, vertical);
+    return shaper_output.second;
+}
+
+ShaperOutput BuiltInShaper::mv_apply_features(
     SplineChar** glyphs, const std::map<Tag, bool>& feature_map, Tag script,
     Tag lang, int pixelsize, bool vertical) {
     // Zero-terminated list of enabled features
@@ -64,23 +77,29 @@ ShaperOutput BuiltInShaper::apply_features(
     return {ots_arr_, metrics};
 }
 
-void BuiltInShaper::scale_metrics(MetricsView* mv, double iscale, double scale,
-                                  bool vertical) {
-    MetricsCore* metrics = context_->get_metrics(mv, NULL);
+void BuiltInShaper::scale_metrics(MetricsView* mv, MetricsCore* metrics,
+                                  double iscale, double scale, bool vertical) {
     // Calculate positions.
     int x = 10;
     int y = 10;
     for (int i = 0; ots_arr_[i].sc != NULL; ++i) {
         assert(!metrics[i].scaled);
-        SplineChar* sc = ots_arr_[i].sc;
-        metrics[i].dwidth = rint(iscale * context_->get_char_width(mv, sc));
+        SplineChar* sc = metrics[i].sc = ots_arr_[i].sc;
+        int16_t width, vwidth;
+        int ttf_glyph = -1;
+
+        context_->get_encoding(sc, NULL, &ttf_glyph);
+        metrics[i].codepoint = ttf_glyph;
+
+        context_->get_char_metrics(mv, sc, &width, &vwidth);
+        metrics[i].dwidth = rint(iscale * width);
         metrics[i].dx = x;
         metrics[i].xoff = rint(iscale * ots_arr_[i].vr.xoff);
         metrics[i].yoff = rint(iscale * ots_arr_[i].vr.yoff);
         metrics[i].kernafter = rint(iscale * ots_arr_[i].vr.h_adv_off);
         x += metrics[i].dwidth + metrics[i].kernafter;
 
-        metrics[i].dheight = rint(sc->vwidth * scale);
+        metrics[i].dheight = rint(vwidth * scale);
         metrics[i].dy = y;
         if (vertical) {
             metrics[i].kernafter = rint(iscale * ots_arr_[i].vr.v_adv_off);

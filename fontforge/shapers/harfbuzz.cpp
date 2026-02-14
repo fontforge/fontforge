@@ -30,8 +30,6 @@
 
 extern "C" {
 #include "gfile.h"
-#include "splinechar.h"
-#include "splinefont_enums.h"
 }
 
 namespace ff::shapers {
@@ -52,12 +50,9 @@ HarfBuzzShaper::HarfBuzzShaper(std::shared_ptr<ShaperContext> context)
     : context_(context) {
     FILE* ttf_file = GFileTmpfile();
 
-    _WriteTTFFont(ttf_file, context_->sf, ff_ttf, NULL, bf_ttf,
-                  ttf_flag_otmode | ttf_flag_no_outlines,
-                  context_->get_enc_map(context_->sf), ly_fore);
+    SplineCharTTFMap* ttf_map =
+        context_->write_font_into_memory(ttf_file, context_->sf);
 
-    // Build map of TTF codepoints
-    SplineCharTTFMap* ttf_map = MakeGlyphTTFMap(context_->sf);
     for (SplineCharTTFMap* entry = ttf_map; entry->glyph != NULL; ++entry) {
         ttf_map_[entry->ttf_glyph] = entry->glyph;
     }
@@ -129,17 +124,13 @@ std::vector<hb_feature_t> HarfBuzzShaper::hb_features(
     return hb_feature_vec;
 }
 
-std::pair<SplineChar**, std::vector<MetricsCore>>
-HarfBuzzShaper::extract_shaped_data(hb_buffer_t* hb_buffer) {
+std::vector<MetricsCore> HarfBuzzShaper::extract_shaped_data(
+    hb_buffer_t* hb_buffer) {
     unsigned int glyph_count;
     hb_glyph_info_t* glyph_info_arr =
         hb_buffer_get_glyph_infos(hb_buffer, &glyph_count);
     hb_glyph_position_t* glyph_pos_arr =
         hb_buffer_get_glyph_positions(hb_buffer, &glyph_count);
-
-    // Return NULL-terminated raw C-style array of pointers
-    SplineChar** glyphs_after_gpos =
-        (SplineChar**)calloc(glyph_count + 1, sizeof(SplineChar*));
 
     std::vector<MetricsCore> metrics(glyph_count + 1);
 
@@ -156,12 +147,15 @@ HarfBuzzShaper::extract_shaped_data(hb_buffer_t* hb_buffer) {
         SplineChar* glyph_out = (ttf_map_it != ttf_map_.end())
                                     ? ttf_map_it->second
                                     : get_notdef_glyph();
+        int16_t width, vwidth;
+        context_->get_char_metrics(NULL, glyph_out, &width, &vwidth);
 
-        glyphs_after_gpos[i] = glyph_out;
+        metrics[i].sc = glyph_out;
+        metrics[i].codepoint = glyph_info.codepoint;
 
         // Fill unscaled metrics in font units
-        metrics[i].dwidth = glyph_out->width;
-        metrics[i].dheight = glyph_out->vwidth;
+        metrics[i].dwidth = width;
+        metrics[i].dheight = vwidth;
 
         metrics[i].xoff = glyph_pos.x_offset;
         metrics[i].yoff = glyph_pos.y_offset;
@@ -181,7 +175,7 @@ HarfBuzzShaper::extract_shaped_data(hb_buffer_t* hb_buffer) {
     metrics.back().dy = total_y_advance;
     metrics.back().scaled = false;
 
-    return {glyphs_after_gpos, metrics};
+    return metrics;
 }
 
 std::vector<MetricsCore> HarfBuzzShaper::reverse_rtl_metrics(
@@ -195,6 +189,8 @@ std::vector<MetricsCore> HarfBuzzShaper::reverse_rtl_metrics(
 
     for (int i = 0; i < glyph_count; ++i) {
         int rev_idx = glyph_count - i - 1;
+        fixed_metrics[i].sc = reverse_metrics[rev_idx].sc;
+        fixed_metrics[i].codepoint = reverse_metrics[rev_idx].codepoint;
         fixed_metrics[i].dwidth = reverse_metrics[rev_idx].dwidth;
         fixed_metrics[i].dheight = reverse_metrics[rev_idx].dheight;
 
@@ -238,10 +234,8 @@ std::vector<MetricsCore> HarfBuzzShaper::reverse_ttb_metrics(
 }
 
 std::vector<int> HarfBuzzShaper::compute_kerning_deltas(
-    hb_buffer_t* hb_buffer, struct opentype_str* ots_arr) {
-    unsigned int glyph_count;
-    hb_glyph_info_t* glyph_info_arr =
-        hb_buffer_get_glyph_infos(hb_buffer, &glyph_count);
+    const std::vector<MetricsCore>& metrics, struct opentype_str* ots_arr) {
+    size_t glyph_count = metrics.size() - 1;  // Ignore auxiliary data
 
     // Retrieve the current kerning offsets and apply them manually if they
     // differ from their initial value. The initial value doesn't need
@@ -255,8 +249,8 @@ std::vector<int> HarfBuzzShaper::compute_kerning_deltas(
         }
 
         // Keep initial kerning offsets when they are first encountered
-        auto key = std::make_pair(glyph_info_arr[i].codepoint,
-                                  glyph_info_arr[i + 1].codepoint);
+        auto key =
+            std::make_pair(metrics[i].codepoint, metrics[i + 1].codepoint);
         // Insert only if absent
         initial_kerning_.insert({key, kerning_offset});
 
@@ -268,19 +262,17 @@ std::vector<int> HarfBuzzShaper::compute_kerning_deltas(
     return kerning_deltas;
 }
 
-std::vector<int> HarfBuzzShaper::compute_width_deltas(hb_buffer_t* hb_buffer,
-                                                      SplineChar** glyphs) {
-    unsigned int glyph_count;
-    hb_glyph_info_t* glyph_info_arr =
-        hb_buffer_get_glyph_infos(hb_buffer, &glyph_count);
+std::vector<int> HarfBuzzShaper::compute_width_deltas(
+    const std::vector<MetricsCore>& metrics) {
+    size_t glyph_count = metrics.size() - 1;  // Ignore auxiliary data
 
     // Compute width deltas for glyphs which might have changed.
     std::vector<int> width_deltas;
     for (int i = 0; i < glyph_count; ++i) {
-        int16_t width = glyphs[i]->width;
+        int16_t width = metrics[i].dwidth;  // Glyph width before adjustments.
 
         // Keep initial widths when they are first encountered
-        auto key = glyph_info_arr[i].codepoint;
+        auto key = metrics[i].codepoint;
         // Insert only if absent
         initial_width_.insert({key, width});
 
@@ -292,20 +284,11 @@ std::vector<int> HarfBuzzShaper::compute_width_deltas(hb_buffer_t* hb_buffer,
     return width_deltas;
 }
 
-ShaperOutput HarfBuzzShaper::apply_features(
-    SplineChar** glyphs, const std::map<Tag, bool>& feature_map, Tag script,
-    Tag lang, int pixelsize, bool vertical) {
-    std::vector<unichar_t> u_vec;
-    // Assigned fake encodings will be interpreted by resolve_fake_encoding().
-    for (size_t len = 0; glyphs[len] != NULL; ++len) {
-        u_vec.push_back((glyphs[len]->unicodeenc > 0)
-                            ? glyphs[len]->unicodeenc
-                            : (glyphs[len]->ttf_glyph + FAKE_UNICODE_BASE));
-    }
-    u_vec.push_back(0);
-
+std::vector<MetricsCore> HarfBuzzShaper::apply_features(
+    const std::vector<unichar_t>& ubuf, const std::map<Tag, bool>& feature_map,
+    Tag script, Tag lang, bool vertical) {
     hb_buffer_t* hb_buffer = hb_buffer_create();
-    hb_buffer_add_codepoints(hb_buffer, u_vec.data(), -1, 0, -1);
+    hb_buffer_add_codepoints(hb_buffer, ubuf.data(), -1, 0, -1);
 
     // Set script and language
     hb_script_t hb_script = hb_ot_tag_to_script(script);
@@ -329,40 +312,8 @@ ShaperOutput HarfBuzzShaper::apply_features(
              hb_feature_vec.size());
 
     // Retrieve the results
-    auto [glyphs_after_gpos, metrics] = extract_shaped_data(hb_buffer);
+    std::vector<MetricsCore> metrics = extract_shaped_data(hb_buffer);
     int glyph_count = metrics.size() - 1;
-
-    std::vector<int> width_deltas =
-        compute_width_deltas(hb_buffer, glyphs_after_gpos);
-
-    if (rtl) {
-        // HarfBuzz reverses the order of an RTL output buffer
-        std::reverse(glyphs_after_gpos, glyphs_after_gpos + glyph_count);
-        std::reverse(width_deltas.begin(), width_deltas.end());
-    }
-
-    // Zero-terminated list of features
-    std::vector<uint32_t> flist;
-    for (const auto& [feature, enabled] : feature_map) {
-        if (enabled) {
-            flist.push_back(feature);
-        }
-    }
-    flist.push_back(0);
-
-    // Apply legacy shaper for GPOS to retrieve kerning pair references. Metrics
-    // calculated by the legacy shaper are ignored, except for kerning deltas.
-    struct opentype_str* ots_arr = context_->apply_ticked_features(
-        context_->sf, flist.data(), (uint32_t)script, (uint32_t)lang, true,
-        pixelsize, glyphs_after_gpos);
-
-    // For simplicity, all characters are marked with the same direction.
-    for (int i = 0; i < glyph_count; ++i) {
-        ots_arr[i].r2l = rtl;
-    }
-
-    std::vector<int> kerning_deltas =
-        compute_kerning_deltas(hb_buffer, ots_arr);
 
     // Perhaps counterintuitively, when setting RTL direction for RTL
     // languages, HarfBuzz would reverse the glyph order in the output
@@ -377,6 +328,62 @@ ShaperOutput HarfBuzzShaper::apply_features(
         metrics = reverse_ttb_metrics(metrics);
     }
 
+    // Cleanup
+    hb_buffer_destroy(hb_buffer);
+
+    return metrics;
+}
+
+ShaperOutput HarfBuzzShaper::mv_apply_features(
+    SplineChar** glyphs, const std::map<Tag, bool>& feature_map, Tag script,
+    Tag lang, int pixelsize, bool vertical) {
+    std::vector<unichar_t> u_vec;
+    // Assigned fake encodings will be interpreted by resolve_fake_encoding().
+    for (size_t len = 0; glyphs[len] != NULL; ++len) {
+        int unicodeenc = -1, ttf_glyph = -1;
+        context_->get_encoding(glyphs[len], &unicodeenc, &ttf_glyph);
+        u_vec.push_back((unicodeenc > 0) ? unicodeenc
+                                         : (ttf_glyph + FAKE_UNICODE_BASE));
+    }
+    u_vec.push_back(0);
+
+    std::vector<MetricsCore> metrics =
+        apply_features(u_vec, feature_map, script, lang, vertical);
+
+    std::vector<int> width_deltas = compute_width_deltas(metrics);
+
+    // glyphs_after_gpos is NULL-terminated thanks to metrics auxiliary data
+    std::vector<SplineChar*> glyphs_after_gpos;
+    std::transform(metrics.begin(), metrics.end(),
+                   std::back_inserter(glyphs_after_gpos),
+                   [](const MetricsCore& m) { return m.sc; });
+
+    // Zero-terminated list of features
+    std::vector<uint32_t> flist;
+    for (const auto& [feature, enabled] : feature_map) {
+        if (enabled) {
+            flist.push_back(feature);
+        }
+    }
+    flist.push_back(0);
+
+    // Apply legacy shaper for GPOS to retrieve kerning pair references. Metrics
+    // calculated by the legacy shaper are ignored, except for kerning deltas.
+    struct opentype_str* ots_arr = context_->apply_ticked_features(
+        context_->sf, flist.data(), (uint32_t)script, (uint32_t)lang, true,
+        pixelsize, glyphs_after_gpos.data());
+
+    // For simplicity, all characters are marked with the same direction.
+    size_t glyph_count = metrics.size() - 1;  // Ignore auxiliary data
+    hb_script_t hb_script = hb_ot_tag_to_script(script);
+    bool rtl =
+        (hb_script_get_horizontal_direction(hb_script) == HB_DIRECTION_RTL);
+    for (int i = 0; i < glyph_count; ++i) {
+        ots_arr[i].r2l = rtl;
+    }
+
+    std::vector<int> kerning_deltas = compute_kerning_deltas(metrics, ots_arr);
+
     // Compute the accumulated shifts dx for each glyph as partial sums of
     // kerning and width deltas. Adjust glyph widths as appropriate.
     int shift = 0;
@@ -388,18 +395,14 @@ ShaperOutput HarfBuzzShaper::apply_features(
         metrics[i].dwidth += width_deltas[i];
     }
 
-    // Cleanup
-    hb_buffer_destroy(hb_buffer);
-
     return {ots_arr, metrics};
 }
 
-void HarfBuzzShaper::scale_metrics(MetricsView* mv, double iscale, double scale,
-                                   bool vertical) {
+void HarfBuzzShaper::scale_metrics(MetricsView* mv, MetricsCore* metrics,
+                                   double iscale, double scale, bool vertical) {
     int glyphcnt = 0;
-    MetricsCore* metrics = context_->get_metrics(mv, &glyphcnt);
     int x0 = 10, y0 = 10;
-    for (int i = 0; i < glyphcnt; ++i) {
+    for (int i = 0; metrics[i].sc != NULL; ++i) {
         MetricsCore& m = metrics[i];
         assert(!m.scaled);
         m.dx = x0 + m.dx * scale;
@@ -598,7 +601,7 @@ SplineChar* HarfBuzzShaper::get_notdef_glyph() {
         "uni000D", "glyph1", "glyph2"};
     for (const std::string& name : notdef_names) {
         for (const auto& [idx, sc] : ttf_map_) {
-            if (name == sc->name) {
+            if (name == context_->get_name(sc)) {
                 notdef_glyph_ = sc;
                 return notdef_glyph_;
             }

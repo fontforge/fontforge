@@ -30,6 +30,7 @@ extern "C" {
 
 #include "basics.h"
 #include "metrics.h"
+#include "ustring.h"
 
 typedef struct splinechar SplineChar;
 typedef struct splinechar_ttf_map SplineCharTTFMap;
@@ -39,12 +40,6 @@ typedef struct encmap EncMap;
 
 static const int INVALID_KERN_OFFSET = 0x7ffffff;
 static const int FAKE_UNICODE_BASE = 0x110000;
-
-char* u2utf8_copy(const unichar_t* ubuf);
-int _WriteTTFFont(FILE* ttf, SplineFont* sf, int /*enum fontformat*/ format,
-                  int32_t* bsizes, int /*enum bitmapformat*/ bf, int flags,
-                  EncMap* enc, int layer);
-extern SplineCharTTFMap* MakeGlyphTTFMap(SplineFont* sf);
 
 /* Dummy incomplete type which can be casted to C++ type ff::shapers::IShaper */
 typedef struct cpp_IShaper cpp_IShaper;
@@ -58,14 +53,10 @@ typedef struct shaper_context {
         SplineFont* sf, uint32_t* flist, uint32_t script, uint32_t lang,
         bool gpos_only, int pixelsize, SplineChar** glyphs);
 
-    // Get encoding map
-    EncMap* (*get_enc_map)(SplineFont* sf);
-
-    // Case-specific glyph width computation, not to be used in general case.
-    int16_t (*get_char_width)(MetricsView* mv, SplineChar* sc);
-
-    // Accessor for MetricsView::metrics
-    MetricsCore* (*get_metrics)(MetricsView* mv, int* p_glyphcnt);
+    // Glyph metrics callback, optional for HarfBuzz. May accept mv=NULL, and in
+    // that case plain SplineChar metrics are retrieved.
+    void (*get_char_metrics)(MetricsView* mv, SplineChar* sc, int16_t* width,
+                             int16_t* vwidth);
 
     // Retrieve current kerning value from glyph data
     int (*get_kern_offset)(struct opentype_str* glyph);
@@ -77,6 +68,16 @@ typedef struct shaper_context {
     // absent and necessary
     SplineChar* (*get_or_make_char)(SplineFont* sf, int unienc,
                                     const char* name);
+
+    // Create a binary blob with font data, return its encoding map
+    SplineCharTTFMap* (*write_font_into_memory)(FILE* ttf, SplineFont* sf);
+
+    // SplineChar::name accessor
+    const char* (*get_name)(const SplineChar* sc);
+
+    // SplineChar::unicodeenc, SplineChar::ttf_glyph accessor
+    void (*get_encoding)(const SplineChar* sc, int* p_unicodeenc,
+                         int* p_ttf_glyph);
 
 } ShaperContext;
 
@@ -126,8 +127,9 @@ struct shaper_out shaper_apply_features(cpp_IShaper* shaper,
                                         uint32_t lang, int pixelsize,
                                         bool vertical);
 
-void shaper_scale_metrics(cpp_IShaper* shaper, MetricsView* mv, double iscale,
-                          double scale, bool vertical);
+void shaper_scale_metrics(cpp_IShaper* shaper, MetricsView* mv,
+                          MetricsCore* metrics, double iscale, double scale,
+                          bool vertical);
 
 uint32_t* shaper_default_features(cpp_IShaper* shaper, uint32_t script,
                                   uint32_t lang, bool vertical);

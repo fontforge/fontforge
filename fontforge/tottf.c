@@ -6000,7 +6000,7 @@ static void dumpttf(FILE *ttf,struct alltabs *at) {
     /* ttfcopyfile closed all the files (except ttf) */
 }
 
-SplineCharTTFMap* MakeGlyphTTFMap(SplineFont *sf) {
+static SplineCharTTFMap* MakeGlyphTTFMap(SplineFont *sf) {
     int i,k,max, map_idx;
     SplineChar *sc;
     SplineCharTTFMap *map = NULL;
@@ -6152,7 +6152,6 @@ int _WriteTTFFont(FILE *ttf,SplineFont *sf,enum fontformat format,
 	int32_t *bsizes, enum bitmapformat bf,int flags,EncMap *map, int layer) {
     struct alltabs at;
     int i, anyglyphs;
-    bool *fake_mappings = NULL;
 
     short_too_long_warned = 0; // This is a static variable defined for putshort.
     /* TrueType probably doesn't need this, but OpenType does for floats in dictionaries */
@@ -6235,6 +6234,15 @@ return( 0 );
     if ( fclose(ttf)==-1 )
 return( 0 );
 return( ret );
+}
+
+/* A special version of TrueType font, which drops all outlines for performance.
+ */
+SplineCharTTFMap* WriteTTFFontForShaper(FILE* ttf, SplineFont* sf) {
+    _WriteTTFFont(ttf, sf, ff_ttf, NULL, bf_ttf,
+                  ttf_flag_otmode | ttf_flag_no_outlines, sf->map, ly_fore);
+    // Build map of TTF codepoints
+    return MakeGlyphTTFMap(sf);
 }
 
 /* ************************************************************************** */

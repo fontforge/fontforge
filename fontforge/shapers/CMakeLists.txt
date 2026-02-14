@@ -9,9 +9,12 @@ add_library(shapers OBJECT
   shaper_shim.cpp
 )
 
+if(BUILD_SHARED_LIBS)
+  set_property(TARGET shapers PROPERTY POSITION_INDEPENDENT_CODE ON)
+endif()
+
 target_link_libraries(shapers PRIVATE
   fontforge_common_headers
-  fontforge
   gunicode
 )
 

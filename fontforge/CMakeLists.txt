@@ -92,7 +92,6 @@ set(FONTFORGE_INST_HEADERS
   groups.h
   lookups.h
   mem.h
-  metrics.h
   mm.h
   namehash.h
   nonlineartrans.h
@@ -219,6 +218,8 @@ add_library(fontforge
   zapfnomen.c
 )
 
+add_subdirectory(shapers)
+
 if(ENABLE_WOFF2_RESULT)
   target_sources(fontforge PRIVATE woff2.cc)
 endif()
@@ -247,6 +248,7 @@ set_target_properties(fontforge PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 target_link_libraries(fontforge
   PUBLIC
     fontforge_common_headers
+    shapers
     Freetype::Freetype
     LibXml2::LibXml2
     $<$<BOOL:${Intl_FOUND}>:Intl::Intl>

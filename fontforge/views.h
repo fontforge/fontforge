@@ -41,7 +41,6 @@
 #include "ggadget.h"
 #include "multidialog.h"
 #include "search.h"
-#include "metrics.h"
 
 #ifdef __cplusplus
 extern "C" {

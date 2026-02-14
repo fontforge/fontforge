@@ -89,7 +89,6 @@ if(ENABLE_GUI)
     wordlistparser.h
   )
 
-  add_subdirectory(shapers)
   add_subdirectory(gtk)
 
   if(APPLE)

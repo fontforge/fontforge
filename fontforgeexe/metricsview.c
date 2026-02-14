@@ -45,6 +45,7 @@
 #include "splineoverlap.h"
 #include "splineutil.h"
 #include "splineutil2.h"
+#include "tottf.h"
 #include "tottfgpos.h"
 #include "ustring.h"
 #include "utype.h"
@@ -938,16 +939,19 @@ static void MVCreateFields(MetricsView *mv,int i) {
 static void MVSetSb(MetricsView *mv);
 static int MVSetVSb(MetricsView *mv);
 
-static int16_t MVCharWidth(MetricsView *mv, SplineChar *sc) {
-    BDFChar * bdfc = mv->bdf!=NULL ? mv->bdf->glyphs[sc->orig_pos] : BDFPieceMealCheck(mv->show,sc->orig_pos);
-    return bdfc->width;
-}
-
-static MetricsCore* MVGetMetrics(MetricsView *mv, int* p_glyphcnt) {
-    if (p_glyphcnt) {
-	*p_glyphcnt = mv->glyphcnt;
+static void MVCharMetrics(MetricsView* mv, SplineChar* sc, int16_t* width,
+                          int16_t* vwidth) {
+    if (width) {
+        if (mv) {
+            BDFChar* bdfc = mv->bdf != NULL
+                                ? mv->bdf->glyphs[sc->orig_pos]
+                                : BDFPieceMealCheck(mv->show, sc->orig_pos);
+            *width = bdfc->width;
+        } else
+            *width = sc->width;
     }
-    return mv->metrics;
+
+    if (vwidth) *vwidth = sc->vwidth;
 }
 
 void MVRefreshMetric(MetricsView *mv) {
@@ -958,7 +962,7 @@ void MVRefreshMetric(MetricsView *mv) {
     for ( cnt=0; mv->glyphs[cnt].sc!=NULL; ++cnt ) {
 	MVRefreshValues(mv,cnt);
     }
-    shaper_scale_metrics(mv->shaper, mv, iscale, scale, mv->vertical);
+    shaper_scale_metrics(mv->shaper, mv, mv->metrics, iscale, scale, mv->vertical);
     MVSetVSb(mv);
     MVSetSb(mv);
 }
@@ -3932,17 +3936,18 @@ static void ellistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
     }
 }
 
-static ShaperContext* MVMakeShaperContext(MetricsView *mv) {
-    ShaperContext *context = calloc(1,sizeof(ShaperContext));
+static ShaperContext* MVMakeShaperContext(MetricsView* mv) {
+    ShaperContext* context = calloc(1, sizeof(ShaperContext));
     context->sf = mv->sf;
     context->mv = mv;
     context->apply_ticked_features = ApplyTickedFeatures;
-    context->get_enc_map = SFGetMap;
-    context->get_char_width = MVCharWidth;
-    context->get_metrics = MVGetMetrics;
+    context->get_char_metrics = MVCharMetrics;
     context->get_kern_offset = MVGetKernOffset;
     context->script_is_rtl = ScriptIsRightToLeft;
     context->get_or_make_char = SFGetOrMakeChar;
+    context->write_font_into_memory = WriteTTFFontForShaper;
+    context->get_name = SCGetName;
+    context->get_encoding = SCGetEncoding;
 
     return context;
 }

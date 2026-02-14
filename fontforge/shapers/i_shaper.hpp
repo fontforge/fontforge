@@ -27,11 +27,13 @@
 #include <vector>
 
 #include "metrics.h"
+#include "opentype_str.h"
 #include "tag.hpp"
+
+typedef uint32_t unichar_t;
 
 typedef struct splinechar SplineChar;
 typedef struct metricsview MetricsView;
-struct opentype_str;
 
 namespace ff::shapers {
 
@@ -45,18 +47,28 @@ class IShaper {
     // shaper in the system.
     virtual const char* name() const = 0;
 
+    // ubuf - buffer of Unicode encodings. External shapers (e.g. HarfBuzz) can
+    // only accept Unicode-based input, so unencoded glyphs need to be mapped to
+    // fake encodings.
+    virtual std::vector<MetricsCore> apply_features(
+        const std::vector<unichar_t>& ubuf,
+        const std::map<Tag, bool>& feature_map, Tag script, Tag lang,
+        bool vertical) = 0;
+
     // glyphs - a sequence of glyphs to be shaped
     // NOTE: the glyph sequence can't be passed as a Unicode string, since some
     // glyphs don't have encoding at all, and the shaper should still be able to
     // apply features which involve these glyphs.
-    virtual ShaperOutput apply_features(SplineChar** glyphs,
-                                        const std::map<Tag, bool>& feature_map,
-                                        Tag script, Tag lang, int pixelsize,
-                                        bool vertical) = 0;
+    //
+    // TODO(iorsh): eliminate the reliance on SplineChar structure when
+    // modernizing the Metrics View.
+    virtual ShaperOutput mv_apply_features(
+        SplineChar** glyphs, const std::map<Tag, bool>& feature_map, Tag script,
+        Tag lang, int pixelsize, bool vertical) = 0;
 
     // Scale glyph sequence metrics from font units to pixels
-    virtual void scale_metrics(MetricsView* mv, double iscale, double scale,
-                               bool vertical) = 0;
+    virtual void scale_metrics(MetricsView* mv, MetricsCore* metrics,
+                               double iscale, double scale, bool vertical) = 0;
 
     // OpenType features enabled by default
     virtual std::set<Tag> default_features(Tag script, Tag lang,

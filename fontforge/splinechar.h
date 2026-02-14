@@ -29,6 +29,7 @@
 #include <stdint.h>
 
 #include "basics.h"
+#include "shapers/opentype_str.h"
 
 #ifndef _NO_LIBSPIRO
 #include <spiroentrypoints.h>
@@ -694,43 +695,9 @@ typedef struct splinechar {
     unichar_t* user_decomp;  // User decomposition for building this character
 } SplineChar;
 
-struct vr {
-    int16_t xoff, yoff, h_adv_off, v_adv_off;
-    struct valdev* adjust;
-};
-
-struct opentype_str {
-    struct splinechar* sc;
-    struct vr vr; /* Scaled and rounded gpos modifications (device table info
-                     included in xoff, etc. not in adjusts) */
-    struct kernpair* kp;
-    struct kernclass* kc;
-    unsigned int prev_kc0 : 1;
-    unsigned int next_kc0 : 1;
-    int16_t advance_width; /* Basic advance, modifications in vr, scaled and
-                              rounded */
-    /* Er... not actually set by ApplyLookups, but somewhere the caller */
-    /*  can stash info. (Extract width from hinted bdf if possible, tt */
-    /*  instructions can change it from the expected value) */
-    int16_t kc_index;
-    int16_t lig_pos;     /* when skipping marks to form a ligature keep track of
-                            what ligature element a mark was attached to */
-    int16_t context_pos; /* When doing a contextual match remember which glyphs
-                            are used, and where in the match they occur. Skipped
-                            glyphs have -1 */
-    int32_t orig_index;
-    void* fl;
-    unsigned int line_break_after : 1;
-    unsigned int r2l : 1;
-    int16_t bsln_off;
-};
-
-typedef struct splinechar_ttf_map {
-    SplineChar* glyph;
-    int ttf_glyph;
-} SplineCharTTFMap;
-
 /* Returns NULL if the name is valid, or error message. If the function returned
    error message and set `questionable` to true, the name should be accepted,
    but discouraged. The error message should not be freed. */
 const char* SCNameCheck(const unichar_t* name, bool* questionable);
+const char* SCGetName(const SplineChar* sc);
+void SCGetEncoding(const SplineChar* sc, int* p_unicodeenc, int* p_ttf_glyph);
