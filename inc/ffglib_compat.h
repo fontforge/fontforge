@@ -223,8 +223,8 @@ void *ff_array_data(FFArray *arr);
 /* Get number of elements in array */
 size_t ff_array_len(FFArray *arr);
 
-/* Free the array and optionally its data */
-void ff_array_free(FFArray *arr, int free_data);
+/* Free the array and optionally its data, nulls the pointer */
+void ff_array_free(FFArray **p_arr, int free_data);
 
 /* ============================================================================
  * Linked list (replaces GList)
@@ -254,6 +254,33 @@ unsigned int ff_list_length(FFList *list);
  * Compatible with g_steal_pointer().
  */
 void *ff_steal_pointer_impl(void **pp);
+
+/* ============================================================================
+ * Regex functions
+ * ============================================================================ */
+
+/* Check if string matches regex pattern (case-insensitive).
+ * Returns 1 if match, 0 if no match or error.
+ */
+int ff_regex_match(const char *str, const char *pattern);
+
+/* ============================================================================
+ * Sorted string set (case-insensitive, no duplicates)
+ * ============================================================================ */
+
+typedef struct FFStringSet FFStringSet;
+
+/* Create a new string set */
+FFStringSet *ff_stringset_new(void);
+
+/* Insert a string (duplicates ignored, case-insensitive) */
+void ff_stringset_insert(FFStringSet *ss, const char *str);
+
+/* Iterate over strings in sorted order */
+void ff_stringset_foreach(FFStringSet *ss, void (*fn)(const char *, void *), void *user_data);
+
+/* Free the string set, nulls the pointer */
+void ff_stringset_free(FFStringSet **p_ss);
 
 #ifdef __cplusplus
 }

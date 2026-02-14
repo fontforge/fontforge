@@ -14,6 +14,9 @@
 #include <ctime>
 #include <filesystem>
 #include <random>
+#include <regex>
+#include <set>
+#include <string>
 #include <system_error>
 
 #ifdef _WIN32
@@ -505,12 +508,14 @@ extern "C" size_t ff_array_len(FFArray *arr) {
     return arr ? arr->len : 0;
 }
 
-extern "C" void ff_array_free(FFArray *arr, int free_data) {
-    if (arr) {
+extern "C" void ff_array_free(FFArray **p_arr, int free_data) {
+    if (p_arr && *p_arr) {
+        FFArray *arr = *p_arr;
         if (free_data && arr->data) {
             std::free(arr->data);
         }
         delete arr;
+        *p_arr = nullptr;
     }
 }
 
@@ -698,4 +703,60 @@ extern "C" int ff_remove_all(const char *path) {
         return -1;
     }
     return static_cast<int>(count);
+}
+
+/* ============================================================================
+ * Regex functions using std::regex
+ * ============================================================================ */
+
+extern "C" int ff_regex_match(const char *str, const char *pattern) {
+    if (!str || !pattern) return 0;
+
+    try {
+        std::regex re(pattern, std::regex::ECMAScript | std::regex::icase);
+        return std::regex_match(str, re) ? 1 : 0;
+    } catch (const std::regex_error&) {
+        return 0;
+    }
+}
+
+/* ============================================================================
+ * Sorted string set using std::set
+ * ============================================================================ */
+
+namespace {
+    struct CaseInsensitiveCompare {
+        bool operator()(const std::string& a, const std::string& b) const {
+            return ff_ascii_strcasecmp(a.c_str(), b.c_str()) < 0;
+        }
+    };
+}
+
+struct FFStringSet {
+    std::set<std::string, CaseInsensitiveCompare> data;
+};
+
+extern "C" FFStringSet *ff_stringset_new(void) {
+    return new (std::nothrow) FFStringSet();
+}
+
+extern "C" void ff_stringset_insert(FFStringSet *ss, const char *str) {
+    if (ss && str) {
+        ss->data.insert(str);
+    }
+}
+
+extern "C" void ff_stringset_foreach(FFStringSet *ss, void (*fn)(const char *, void *), void *user_data) {
+    if (ss && fn) {
+        for (const auto& s : ss->data) {
+            fn(s.c_str(), user_data);
+        }
+    }
+}
+
+extern "C" void ff_stringset_free(FFStringSet **p_ss) {
+    if (p_ss && *p_ss) {
+        delete *p_ss;
+        *p_ss = nullptr;
+    }
 }
