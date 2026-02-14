@@ -667,8 +667,8 @@ static Encoding *ParseGlyphOrderAndAliasDB(FILE *file) {
         }
     }
 
-    ff_array_free(enc_arr, TRUE);
-    ff_array_free(names_arr, TRUE);
+    ff_array_free(&enc_arr, TRUE);
+    ff_array_free(&names_arr, TRUE);
     return item;
 }
 

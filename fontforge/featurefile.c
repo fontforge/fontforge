@@ -1728,56 +1728,8 @@ static void UniOut(FILE *out,char *name ) {
     }
 }
 
-/* Simple sorted string set for language systems */
-typedef struct {
-    char **items;
-    size_t count;
-    size_t capacity;
-} StringSet;
-
-static StringSet *stringset_new(void) {
-    StringSet *ss = (StringSet *)calloc(1, sizeof(StringSet));
-    if (ss) {
-        ss->capacity = 32;
-        ss->items = (char **)malloc(ss->capacity * sizeof(char *));
-        if (!ss->items) { free(ss); return NULL; }
-    }
-    return ss;
-}
-
-static void stringset_insert(StringSet *ss, const char *str) {
-    /* Check for duplicates */
-    for (size_t i = 0; i < ss->count; i++) {
-        if (ff_ascii_strcasecmp(ss->items[i], str) == 0) return;
-    }
-    /* Grow if needed */
-    if (ss->count >= ss->capacity) {
-        ss->capacity *= 2;
-        ss->items = (char **)realloc(ss->items, ss->capacity * sizeof(char *));
-    }
-    ss->items[ss->count++] = copy(str);
-}
-
-static int stringset_cmp(const void *a, const void *b) {
-    return ff_ascii_strcasecmp(*(const char **)a, *(const char **)b);
-}
-
-static void stringset_foreach_sorted(StringSet *ss, void (*fn)(const char *, FILE *), FILE *out) {
-    qsort(ss->items, ss->count, sizeof(char *), stringset_cmp);
-    for (size_t i = 0; i < ss->count; i++) {
-        fn(ss->items[i], out);
-    }
-}
-
-static void stringset_free(StringSet *ss) {
-    if (ss) {
-        for (size_t i = 0; i < ss->count; i++) free(ss->items[i]);
-        free(ss->items);
-        free(ss);
-    }
-}
-
-static void dump_header_languagesystem_entry(const char *key, FILE *out) {
+static void dump_header_languagesystem_entry(const char *key, void *user_data) {
+    FILE *out = (FILE *)user_data;
     fprintf(out, "languagesystem %s;\n", key);
 }
 
@@ -1794,7 +1746,7 @@ static void dump_header_languagesystem(FILE *out, SplineFont *sf) {
         return;
     }
 
-    StringSet *ht = stringset_new();
+    FFStringSet *ht = ff_stringset_new();
     if (!ht) { free(scripts); return; }
 
     for ( isgpos=0; isgpos<2; ++isgpos ) {
@@ -1821,7 +1773,7 @@ static void dump_header_languagesystem(FILE *out, SplineFont *sf) {
 						  snprintf(key,sizeof key,"%c%c%c%c %c%c%c%c",
 							 scripts[s]>>24, scripts[s]>>16, scripts[s]>>8, scripts[s],
 							 langs[l]>>24, langs[l]>>16, langs[l]>>8, langs[l] );
-						  stringset_insert( ht, key );
+						  ff_stringset_insert( ht, key );
 						}
 					    }
 					}
@@ -1835,8 +1787,8 @@ static void dump_header_languagesystem(FILE *out, SplineFont *sf) {
         free(feats);
     }
     if (has_DFLT) { dump_header_languagesystem_entry("DFLT dflt", out); }
-    stringset_foreach_sorted( ht, dump_header_languagesystem_entry, out );
-    stringset_free(ht);
+    ff_stringset_foreach( ht, dump_header_languagesystem_entry, out );
+    ff_stringset_free(&ht);
     free(scripts);
     fprintf( out, "\n" );
 }
@@ -7552,50 +7504,7 @@ static void CopySplineFontGroupsForFeatureFile(SplineFont *sf, struct parseState
 }
 
 static bool fea_isInUFO(char *filename) {
-    /* Match pattern: .*ufo[23]?[/\\]features.fea$ */
-    /* Check if filename ends with /features.fea or \features.fea */
-    /* and has "ufo", "ufo2", or "ufo3" before the path separator */
-    size_t len = strlen(filename);
-    const char *suffix = "/features.fea";
-    size_t suffix_len = strlen(suffix);
-
-    /* Check for /features.fea or \features.fea suffix */
-    if (len < suffix_len) return false;
-    const char *end = filename + len - suffix_len;
-    if (strcmp(end, "/features.fea") != 0 && strcmp(end, "\\features.fea") != 0)
-        return false;
-
-    /* Find the path separator before "features.fea" */
-    const char *sep = end;
-    /* Look backwards for "ufo", "ufo2", or "ufo3" before sep */
-    while (sep > filename) {
-        sep--;
-        if (*sep == '/' || *sep == '\\') {
-            /* Check if the directory name starts with "ufo" */
-            const char *dir = sep + 1;
-            size_t dir_len = end - dir;
-            if (dir_len >= 3 && strncasecmp(dir, "ufo", 3) == 0) {
-                /* Accept "ufo", "ufo2", "ufo3" */
-                if (dir_len == 3 ||
-                    (dir_len == 4 && (dir[3] == '2' || dir[3] == '3'))) {
-                    return true;
-                }
-            }
-            break;
-        }
-    }
-    /* Also check if the path starts with "ufo" (no leading separator) */
-    if (sep == filename) {
-        const char *dir = filename;
-        size_t dir_len = end - dir;
-        if (dir_len >= 3 && strncasecmp(dir, "ufo", 3) == 0) {
-            if (dir_len == 3 ||
-                (dir_len == 4 && (dir[3] == '2' || dir[3] == '3'))) {
-                return true;
-            }
-        }
-    }
-    return false;
+    return ff_regex_match(filename, ".*ufo[23]?[/\\\\]features\\.fea$");
 }
 
 void SFApplyFeatureFile(SplineFont *sf,FILE *file,char *filename,bool ignore_invalid_replacement) {
