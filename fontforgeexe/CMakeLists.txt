@@ -63,7 +63,7 @@ if(ENABLE_GUI)
     openfontdlg.c
     pluginui.c
     prefs.c
-    problems.c
+    problems.cpp
     pythonui.c
     savefontdlg.c
     scriptingdlg.c
