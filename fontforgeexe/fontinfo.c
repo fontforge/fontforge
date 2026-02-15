@@ -34,6 +34,7 @@
 #include "encoding.h"
 #include "featurefile.h"
 #include "fontforgeui.h"
+#include "gfile.h"
 #include "gkeysym.h"
 #include "gresedit.h"
 #include "gutils.h"
@@ -4093,7 +4094,7 @@ return( changed );
 
 char* DumpSplineFontMetadata(SplineFont *sf) {
     FILE *sfd;
-    if ( (sfd=MakeTemporaryFile()) ) {
+    if ( (sfd=GFileTmpfile()) ) {
 	SFD_DumpSplineFontMetadata( sfd, sf );
 	char *str = FileToAllocatedString( sfd );
 	fclose(sfd);

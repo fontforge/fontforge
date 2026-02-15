@@ -2065,37 +2065,6 @@ static void SFDFpstClassNamesOut(FILE *sfd,int class_cnt,char **classnames,const
     }
 }
 
-FILE* MakeTemporaryFile(void) {
-    FILE *ret = NULL;
-
-#if !defined(__MINGW32__) && !defined(_MSC_VER)
-    char loc[256];
-    const char *tmpdir = getenv("TMPDIR");
-    if (!tmpdir) tmpdir = "/tmp";
-    snprintf(loc, sizeof(loc), "%s/fontforge-XXXXXX", tmpdir);
-    int fd = mkstemp(loc);
-
-    if (fd != -1) {
-        ret = fdopen(fd, "w+");
-        ff_unlink(loc);
-    }
-#else
-    HANDLE hFile = INVALID_HANDLE_VALUE;
-    for (int retries = 0; hFile == INVALID_HANDLE_VALUE && retries < 10; retries++) {
-        wchar_t *temp = _wtempnam(NULL, L"FontForge");
-        hFile = CreateFileW(temp, GENERIC_READ|GENERIC_WRITE, 0, NULL,
-            CREATE_NEW, FILE_ATTRIBUTE_TEMPORARY|FILE_FLAG_DELETE_ON_CLOSE, NULL);
-        free(temp);
-    }
-    ret = _fdopen(_open_osfhandle((intptr_t)hFile, 0), "wb+");
-    if (ret == NULL && hFile != INVALID_HANDLE_VALUE) {
-        CloseHandle(hFile);
-    }
-#endif
-    return ret;
-}
-
-
 /**
  * Read an entire file from the given open file handle and return that data
  * as an allocated string that the caller must free.

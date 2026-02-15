@@ -37,6 +37,7 @@
 #include "dumppfa.h"
 #include "encoding.h"
 #include "ffglib.h"
+#include "ffprocess.h"
 #include "fontforgeui.h"
 #include "fvcomposite.h"
 #include "fvfonts.h"
@@ -4266,7 +4267,7 @@ static void fllistcheck(GWindow gw, struct gmenuitem *mi, GEvent *UNUSED(e)) {
 		    char *buf = malloc(strlen(fv->b.sf->filename)+20);
 		    strcpy(buf,fv->b.sf->filename);
 		    if ( fv->b.sf->compression!=0 )
-			strcat(buf,compressors[fv->b.sf->compression-1].ext);
+			strcat(buf,ff_compression_ext(ff_compression_from_legacy(fv->b.sf->compression)));
 		    strcat(buf,"~");
 		    if ( access(buf,F_OK)==0 )
 			fv->b.sf->backedup = bs_backedup;

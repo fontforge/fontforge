@@ -1414,10 +1414,6 @@ typedef struct anchorpos {
     unsigned int ticked: 1;	/* Used as a mark to mark */
 } AnchorPos;
 
-struct compressors { char *ext, *decomp, *recomp; };
-#define COMPRESSORS_EMPTY { NULL, NULL, NULL }
-extern struct compressors compressors[];
-
 enum archive_list_style { ars_tar, ars_zip };
 
 struct archivers {

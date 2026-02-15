@@ -3964,7 +3964,7 @@ char* SFDCreateUndoForLookup( SplineFont *sf, int lookup_type )
     int gid = 0;
     SplineChar *sc = 0;
     PST *pst = 0;
-    FILE* sfd = MakeTemporaryFile();
+    FILE* sfd = GFileTmpfile();
     SFD_DumpLookup( sfd, sf );
     for ( gid=0; gid<sf->glyphcnt; ++gid )
     {
@@ -4049,11 +4049,11 @@ static char* SFDTrimUndoOldToNew( SplineFont *sf, char* oldstr, char* newstr ) {
 
     /* open temporary files */
     FILE *of, *nf, *retf;
-    if ( !(retf=MakeTemporaryFile()) )
+    if ( !(retf=GFileTmpfile()) )
 	    goto error0SFDTrimUndoOldToNew;
-    if ( !(of=MakeTemporaryFile()) )
+    if ( !(of=GFileTmpfile()) )
 	    goto error1SFDTrimUndoOldToNew;
-    if ( !(nf=MakeTemporaryFile()) )
+    if ( !(nf=GFileTmpfile()) )
 	    goto error2SFDTrimUndoOldToNew;
 
     int glyphsWithUndoInfoCount = 0;

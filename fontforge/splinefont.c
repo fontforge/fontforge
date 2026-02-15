@@ -882,17 +882,6 @@ return( NULL );
 return( finalfile );
 }
 
-struct compressors compressors[] = {
-    { ".gz", "gunzip", "gzip" },
-    { ".bz2", "bunzip2", "bzip2" },
-    { ".bz", "bunzip2", "bzip2" },
-    { ".Z", "gunzip", "compress" },
-    { ".lzma", "unlzma", "lzma" },
-/* file types which are both archived and compressed (.tgz, .zip) are handled */
-/*  by the archiver above */
-    COMPRESSORS_EMPTY
-};
-
 char *Decompress(char *name, int compression) {
     char *tmpfn = NULL;
     FFProcessResult result;
