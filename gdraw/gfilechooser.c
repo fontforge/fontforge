@@ -1838,6 +1838,7 @@ char** GFileChooserGetMultipleFiles(const char* multipath) {
 
         if (fpt == NULL) fpt = file + strlen(file);
         full = malloc(c_strlen(path) + 1 + (fpt - file) + 1);
+	full[0] = '\0';
 
         if (path) {
             strcpy(full, path);
@@ -1848,5 +1849,6 @@ char** GFileChooserGetMultipleFiles(const char* multipath) {
         file = fpt + 2;
     } while (*fpt != '\0');
 
+    free(path);
     return path_list;
 }
