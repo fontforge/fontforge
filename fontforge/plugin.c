@@ -390,13 +390,20 @@ static void LoadPluginMetadata(PluginEntry* pe) {
     function_args = PyTuple_Pack(1, pe->entrypoint);
     if (function_args != NULL) {
         dist = PyObject_Call(func, function_args, NULL);
+        Py_DECREF(function_args);
     }
-    Py_XDECREF(func);
-    Py_XDECREF(function_args);
+    /* Note: func is a borrowed reference from PyDict_GetItemString, don't DECREF */
 
-    if (dist == NULL) {
-        PyErr_Print();
-        PyErr_SetString(PyExc_RuntimeError, "Could not retrieve distribution");
+    Py_DECREF(globals);
+    Py_DECREF(locals);
+
+    if (dist == NULL || dist == Py_None) {
+        if (dist == NULL) {
+            PyErr_Print();
+        }
+        PyErr_Format(PyExc_RuntimeError,
+            "Could not retrieve distribution for plugin '%s'", pe->name);
+        Py_XDECREF(dist);
         return;
     }
 
@@ -409,7 +416,7 @@ static void LoadPluginMetadata(PluginEntry* pe) {
         Py_XDECREF(metadata);
     }
 
-    Py_XDECREF(dist);
+    Py_DECREF(dist);
 }
 
 static bool DiscoverPlugins(int do_import) {
