@@ -2007,11 +2007,6 @@ int SFGenerateFont(SplineFont *sf,int layer,int family,EncMap *map) {
 	    bitmaptypes[i].text = (unichar_t *) _((char *) bitmaptypes[i].text);
     }
 
-    if ( family==gf_macfamily ) {
-	old_sfnt_flags |=  ttf_flag_applemode;
-	old_sfnt_flags &= ~ttf_flag_otmode;
-    }
-
     if ( family ) {
 	/* I could just disable the menu item, but I think it's a bit confusing*/
 	/*  and I want people to know why they can't generate a family */
@@ -2668,6 +2663,10 @@ return( 0 );
 
     d.ps_flags = old_ps_flags;
     d.sfnt_flags = old_sfnt_flags;
+    if ( family==gf_macfamily ) {
+	d.sfnt_flags |=  ttf_flag_applemode;
+	d.sfnt_flags &= ~ttf_flag_otmode;
+    }
     d.psotb_flags = old_ps_flags | (old_psotb_flags&~ps_flag_mask);
 
     GFD_FigureWhich(&d);
