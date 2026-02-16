@@ -33,6 +33,7 @@
 #include "autohint.h"
 #include "cvundoes.h"
 #include "edgelist.h"
+#include "ffglib_compat.h"
 #include "fontforge.h"
 #include "gfile.h"
 #include "gutils.h"
@@ -3110,7 +3111,7 @@ SplineFont *SplineFontBlank(int charcnt) {
     sf->copyright = copy(buffer);
     if ( xuid!=NULL ) {
 	sf->xuid = malloc(strlen(xuid)+20);
-	sprintf(sf->xuid,"[%s %d]", xuid, (rand()&0xffffff));
+	sprintf(sf->xuid,"[%s %d]", xuid, (ff_random_int()&0xffffff));
     }
     sprintf( buffer, "%d-%d-%d: Created with FontForge (http://fontforge.org)", tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday );
     sf->comments = copy(buffer);
@@ -3155,7 +3156,7 @@ return;
     else
 	++pt;
     if ( random )
-	val = rand()&0xffffff;
+	val = ff_random_int()&0xffffff;
     else {
 	val = strtol(pt,NULL,10);
 	val = (val+1)&0xffffff;

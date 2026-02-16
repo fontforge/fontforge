@@ -882,11 +882,9 @@ return( NULL );
 return( finalfile );
 }
 
-char *Decompress(char *name, int compression) {
+char *Decompress(char *name) {
     char *tmpfn = NULL;
     FFProcessResult result;
-
-    (void)compression;  /* Extension is detected by ff_decompress_to_temp */
 
     result = ff_decompress_to_temp(name, &tmpfn);
     if (result != FF_PROCESS_OK) {
@@ -1027,11 +1025,11 @@ SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openflags ope
 	if ( ctype != FF_COMPRESS_NONE ) {
 	    if ( file!=NULL ) {
 		char *spuriousname = ForceFileToHaveName(file, ff_compression_ext(ctype));
-		tmpfn = Decompress(spuriousname, 0);
+		tmpfn = Decompress(spuriousname);
 		fclose(file); file = NULL;
 		ff_unlink(spuriousname); free(spuriousname);
 	    } else
-		tmpfn = Decompress(strippedname, 0);
+		tmpfn = Decompress(strippedname);
 	    if ( tmpfn!=NULL ) {
 		strippedname = tmpfn;
 	    } else {

@@ -231,7 +231,7 @@ char *utf8toutf7_copy(const char *_str) {
     while ( *pt++!='\0' )
 	++len;
     /* 5x buffer is guaranteed to suffice for UTF-7 encoded string. */
-    ostr = ret = malloc(5 * len+1);
+    ostr = ret = (char *)malloc(5 * len+1);
 
         pt = utf16_str;
 	prev_cnt= prev= in=0;

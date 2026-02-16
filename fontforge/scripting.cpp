@@ -1584,7 +1584,7 @@ static void bATan2(Context *c) {
 
 static void bRand(Context *c) {
     c->return_val.type = v_int;
-    c->return_val.u.ival = rand();
+    c->return_val.u.ival = ff_random_int();
 }
 
 static void bFileAccess(Context *c) {

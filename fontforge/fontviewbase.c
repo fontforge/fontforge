@@ -1733,7 +1733,7 @@ return;
 	    char *tmpf;
 	    strcat(buf,ff_compression_ext(ff_compression_from_legacy(old->compression)));
 	    strcat(buf,"~");
-	    tmpf = Decompress(buf,old->compression-1);
+	    tmpf = Decompress(buf);
 	    if ( tmpf==NULL )
 		temp = NULL;
 	    else {
@@ -1752,7 +1752,7 @@ return;
 	    char *buf = malloc(strlen(old->filename)+20);
 	    strcpy(buf,old->filename);
 	    strcat(buf,ff_compression_ext(ff_compression_from_legacy(old->compression)));
-	    tmpf = Decompress(buf,old->compression-1);
+	    tmpf = Decompress(buf);
 	    if ( tmpf==NULL )
 		temp = NULL;
 	    else {

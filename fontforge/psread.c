@@ -29,6 +29,7 @@
 
 #include "autohint.h"
 #include "cvimages.h"
+#include "ffglib_compat.h"
 #include "cvundoes.h"
 #include "fontforge.h"
 #include "namelist.h"
@@ -3877,12 +3878,10 @@ SplineChar *PSCharStringToSplines(uint8_t *type1, int len, struct pscontext *con
 		}
 	      break;
 	      case 23: /* random */
-		/* This function returns something (0,1]. It's not clear to me*/
-		/*  if rand includes 0 and RAND_MAX or not, but this approach */
-		/*  should work no matter what */
+		/* This function returns something (0,1]. */
 		do {
-		    stack[sp] = (rand()/(RAND_MAX-1));
-		} while ( stack[sp]==0 || stack[sp]>1 );
+		    stack[sp] = ff_random_double();
+		} while ( stack[sp]==0 );
 		++sp;
 	      break;
 	      case 16: /* callothersubr */

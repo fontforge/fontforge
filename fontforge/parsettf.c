@@ -31,6 +31,7 @@
 
 #include "cvundoes.h"
 #include "encoding.h"
+#include "ffglib_compat.h"
 #include "fontforge.h"
 #include "fvimportbdf.h"
 #include "gfile.h"
@@ -5201,7 +5202,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
     /*  (even type42)							      */
     if ( xuid!=NULL && info->fd==NULL && info->xuid==NULL ) {
 	info->xuid = malloc(strlen(xuid)+20);
-	sprintf(info->xuid,"[%s %d]", xuid, (rand()&0xffffff));
+	sprintf(info->xuid,"[%s %d]", xuid, (ff_random_int()&0xffffff));
     }
 
     if ( info->postscript_start!=0 ) {

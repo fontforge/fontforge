@@ -34,11 +34,11 @@ extern "C" {
  */
 size_t ff_utf8_strlen(const char *str, int maxlen);
 
-/* Locale-independent string to double conversion.
+/* Locale-independent string to double conversion for PostScript data.
  * Always uses '.' as decimal separator regardless of locale.
- * Compatible with g_ascii_strtod().
+ * Callers must strip leading whitespace; no leading '+' is expected.
  */
-double ff_ascii_strtod(const char *nptr, char **endptr);
+double ff_strtod(const char *nptr, char **endptr);
 
 /* Locale-independent double to string conversion.
  * Always uses '.' as decimal separator regardless of locale.

@@ -33,6 +33,7 @@
 #include "dumpbdf.h"
 #include "dumppfa.h"
 #include "encoding.h"
+#include "ffglib_compat.h"
 #include "fontforge.h"
 #include "fvfonts.h"
 #include "gfile.h"
@@ -2129,7 +2130,7 @@ static void dumpcfftopdict(SplineFont *sf,struct alltabs *at) {
 	dumpintoper(cfff,0,(12<<8)|7);
     }
     if ( sf->uniqueid!=-1 && sf->use_uniqueid )
-	dumpintoper(cfff, sf->uniqueid?sf->uniqueid:4000000 + (rand()&0x3ffff), 13 );
+	dumpintoper(cfff, sf->uniqueid?sf->uniqueid:4000000 + (ff_random_int()&0x3ffff), 13 );
     SplineFontLayerFindBounds(sf,at->gi.layer,&b);
     at->gi.xmin = b.minx;
     at->gi.ymin = b.miny;
@@ -2221,7 +2222,7 @@ static void dumpcffcidtopdict(SplineFont *sf,struct alltabs *at) {
     dumpdbloper(cfff,sf->cidversion,(12<<8)|31);
     dumpintoper(cfff,cidcnt,(12<<8)|34);
     if ( sf->use_uniqueid )
-	dumpintoper(cfff, sf->uniqueid?sf->uniqueid:4000000 + (rand()&0x3ffff), (12<<8)|35 );
+	dumpintoper(cfff, sf->uniqueid?sf->uniqueid:4000000 + (ff_random_int()&0x3ffff), (12<<8)|35 );
 
     dumpsid(cfff,at,sf->copyright,1);
     dumpsid(cfff,at,sf->fullname?sf->fullname:sf->fontname,2);

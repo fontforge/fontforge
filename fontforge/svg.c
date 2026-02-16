@@ -33,6 +33,7 @@
 #include "cvimages.h"
 #include "dumppfa.h"
 #include "encoding.h"
+#include "ffglib_compat.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
 #include "gfile.h"
@@ -3448,7 +3449,7 @@ return( NULL );
     /* Give ourselves an xuid, just in case they want to convert to PostScript*/
     if ( xuid!=NULL ) {
 	sf->xuid = malloc(strlen(xuid)+20);
-	sprintf(sf->xuid,"[%s %d]", xuid, (rand()&0xffffff));
+	sprintf(sf->xuid,"[%s %d]", xuid, (ff_random_int()&0xffffff));
     }
 
     ff_progress_change_total(cnt);

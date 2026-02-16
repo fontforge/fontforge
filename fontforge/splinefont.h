@@ -1651,7 +1651,7 @@ extern SplineFont *_ReadSplineFont(FILE *file, const char *filename, enum openfl
 extern SplineFont *ReadSplineFont(const char *filename,enum openflags);	/* Don't use this, use LoadSF instead */
 extern void ArchiveCleanup(char *archivedir);
 extern char *Unarchive(char *name, char **_archivedir);
-extern char *Decompress(char *name, int compression);
+extern char *Decompress(char *name);
 extern uint16_t MacStyleCode( SplineFont *sf, uint16_t *psstyle );
 extern char **NamesReadUFO(char *filename);
 extern char *SFSubfontnameStart(char *fname);

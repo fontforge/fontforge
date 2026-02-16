@@ -51,7 +51,27 @@ extern "C" size_t ff_utf8_strlen(const char *str, int maxlen) {
     return count;
 }
 
-extern "C" double ff_ascii_strtod(const char *nptr, char **endptr) {
+/*
+ * Locale-independent strtod for parsing PostScript font data.
+ *
+ * On most platforms we use std::from_chars which is clean and efficient.
+ * However, libc++ (used on macOS) still lacks floating-point from_chars
+ * support as of 2024, so we fall back to a manual implementation there.
+ * Once libc++ adds support, the manual version can be removed.
+ */
+
+#if defined(__APPLE__) || (defined(_LIBCPP_VERSION) && _LIBCPP_VERSION < 190000)
+#define FF_USE_MANUAL_STRTOD 1
+#else
+#include <charconv>
+#define FF_USE_MANUAL_STRTOD 0
+#endif
+
+#if FF_USE_MANUAL_STRTOD
+
+// Manual implementation for macOS/libc++ (no whitespace or leading + handling;
+// callers already strip whitespace, and PostScript data has no leading +)
+static double ff_strtod_manual(const char *nptr, char **endptr) {
     const char *p = nptr;
     double result = 0.0;
     double fraction = 0.0;
@@ -61,50 +81,17 @@ extern "C" double ff_ascii_strtod(const char *nptr, char **endptr) {
     int exponent = 0;
     bool has_digits = false;
 
-    // Skip leading whitespace
-    while (std::isspace(static_cast<unsigned char>(*p))) p++;
-
-    // Handle sign
     if (*p == '-') {
         sign = -1;
         p++;
-    } else if (*p == '+') {
-        p++;
     }
 
-    // Handle special values: infinity
-    if ((*p == 'i' || *p == 'I') &&
-        (p[1] == 'n' || p[1] == 'N') &&
-        (p[2] == 'f' || p[2] == 'F')) {
-        p += 3;
-        if ((*p == 'i' || *p == 'I') &&
-            (p[1] == 'n' || p[1] == 'N') &&
-            (p[2] == 'i' || p[2] == 'I') &&
-            (p[3] == 't' || p[3] == 'T') &&
-            (p[4] == 'y' || p[4] == 'Y')) {
-            p += 5;
-        }
-        if (endptr) *endptr = const_cast<char *>(p);
-        return sign * HUGE_VAL;
-    }
-
-    // Handle special values: NaN
-    if ((*p == 'n' || *p == 'N') &&
-        (p[1] == 'a' || p[1] == 'A') &&
-        (p[2] == 'n' || p[2] == 'N')) {
-        p += 3;
-        if (endptr) *endptr = const_cast<char *>(p);
-        return std::nan("");
-    }
-
-    // Parse integer part
     while (std::isdigit(static_cast<unsigned char>(*p))) {
         result = result * 10.0 + (*p - '0');
         has_digits = true;
         p++;
     }
 
-    // Parse fractional part (using '.' as decimal separator)
     if (*p == '.') {
         p++;
         while (std::isdigit(static_cast<unsigned char>(*p))) {
@@ -116,13 +103,11 @@ extern "C" double ff_ascii_strtod(const char *nptr, char **endptr) {
         result += fraction / divisor;
     }
 
-    // If no digits found, return 0 and set endptr to start
     if (!has_digits) {
         if (endptr) *endptr = const_cast<char *>(nptr);
         return 0.0;
     }
 
-    // Parse exponent
     if (*p == 'e' || *p == 'E') {
         const char *exp_start = p;
         p++;
@@ -139,13 +124,39 @@ extern "C" double ff_ascii_strtod(const char *nptr, char **endptr) {
             }
             result *= std::pow(10.0, exp_sign * exponent);
         } else {
-            // No digits after E, backtrack
             p = exp_start;
         }
     }
 
     if (endptr) *endptr = const_cast<char *>(p);
     return sign * result;
+}
+
+#endif // FF_USE_MANUAL_STRTOD
+
+extern "C" double ff_strtod(const char *nptr, char **endptr) {
+#if FF_USE_MANUAL_STRTOD
+    return ff_strtod_manual(nptr, endptr);
+#else
+    const char *p = nptr;
+    const char *end = p;
+
+    while (*end == '-' || *end == '.' || *end == 'e' || *end == 'E' ||
+           *end == '+' || std::isdigit(static_cast<unsigned char>(*end))) {
+        end++;
+    }
+
+    double result = 0.0;
+    auto [ptr, ec] = std::from_chars(p, end, result);
+
+    if (ec == std::errc{}) {
+        if (endptr) *endptr = const_cast<char *>(ptr);
+        return result;
+    } else {
+        if (endptr) *endptr = const_cast<char *>(nptr);
+        return 0.0;
+    }
+#endif
 }
 
 extern "C" char *ff_ascii_formatd(char *dest, size_t dest_len, const char *format, double value) {

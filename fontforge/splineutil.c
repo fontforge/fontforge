@@ -2694,7 +2694,7 @@ return( NULL );
     while ( *pt==' ' || *pt=='[' ) ++pt;
     while ( *pt!=']' && *pt!='\0' ) {
 	pscontext->blend_values[ pscontext->instance_count ] =
-		ff_ascii_strtod(pt,&end);
+		ff_strtod(pt,&end);
 	if ( pt==end )
     break;
 	++(pscontext->instance_count);
@@ -2755,7 +2755,7 @@ return( NULL );
 	    break;
 		}
 		mm->positions[ipos*mm->axis_count+apos] =
-			ff_ascii_strtod(pt,&end);
+			ff_strtod(pt,&end);
 		if ( pt==end )
 	    break;
 		++apos;
@@ -2789,8 +2789,8 @@ return( NULL );
 		while ( *pt==' ' ) ++pt;
 		if ( *pt=='[' ) {
 		    ++pt;
-		    designs[ppos] = ff_ascii_strtod(pt,&end);
-		    blends[ppos] = ff_ascii_strtod(end,&end);
+		    designs[ppos] = ff_strtod(pt,&end);
+		    blends[ppos] = ff_strtod(end,&end);
 		    if ( blends[ppos]<0 || blends[ppos]>1 ) {
 			LogError( _("Bad value for blend in /BlendDesignMap for axis %s."), mm->axes[apos] );
 			if ( blends[ppos]<0 ) blends[ppos] = 0;
@@ -2836,7 +2836,7 @@ return( NULL );
 		if ( pt!=NULL ) {
 		    pt = MMExtractNth(pt,ipos);
 		    if ( pt!=NULL ) {
-			bigreal val = ff_ascii_strtod(pt,NULL);
+			bigreal val = ff_strtod(pt,NULL);
 			free(pt);
 			switch ( item ) {
 			  case 0: fd->fontinfo->italicangle = val; break;

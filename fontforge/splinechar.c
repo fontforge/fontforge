@@ -1300,7 +1300,7 @@ static int CheckBluePair(char *blues, char *others, int bluefuzz,
 	    while ( *others==' ' ) ++others;
 	    if ( *others==']' || *others=='}' )
 	break;
-	    temp = ff_ascii_strtod(others,&end);
+	    temp = ff_strtod(others,&end);
 	    if ( temp!=rint(temp))
 		err |= pds_notintegral;
 	    else if ( end==others ) {
@@ -1324,7 +1324,7 @@ static int CheckBluePair(char *blues, char *others, int bluefuzz,
 	while ( *blues==' ' ) ++blues;
 	if ( *blues==']' || *blues=='}' )
     break;
-	temp = ff_ascii_strtod(blues,&end);
+	temp = ff_strtod(blues,&end);
 	if ( temp!=rint(temp))
 	    err |= pds_notintegral;
 	else if ( end==blues ) {
@@ -1372,7 +1372,7 @@ return( true );
 return( false );
     ++str_val;
 
-    val = ff_ascii_strtod(str_val,&end);
+    val = ff_strtod(str_val,&end);
     while ( *end==' ' ) ++end;
     if ( *end!=']' && *end!='}' )
 return( false );
@@ -1394,7 +1394,7 @@ static int CheckStemSnap(struct psdict *dict,char *snapkey, char *stdkey ) {
     if ( (str_val = PSDictHasEntry(dict,stdkey))!=NULL ) {
 	while ( *str_val==' ' ) ++str_val;
 	if ( *str_val=='[' && *str_val!='{' ) ++str_val;
-	std_val = ff_ascii_strtod(str_val,&end);
+	std_val = ff_strtod(str_val,&end);
     }
 
     if ( (str_val = PSDictHasEntry(dict,snapkey))==NULL )
@@ -1409,7 +1409,7 @@ return( false );
 	while ( *str_val==' ' ) ++str_val;
 	if ( *str_val==']' && *str_val!='}' )
     break;
-	temp = ff_ascii_strtod(str_val,&end);
+	temp = ff_strtod(str_val,&end);
 	if ( end==str_val )
 return( false );
 	str_val = end;
@@ -1444,7 +1444,7 @@ return( pds_missingblue );
     }
 
     if ( (test=PSDictHasEntry(sf->private_dict,"BlueScale"))!=NULL ) {
-	bluescale = ff_ascii_strtod(test,&end);
+	bluescale = ff_strtod(test,&end);
 	if ( *end!='\0' || end==test || bluescale<0 )
 	    errs |= pds_badbluescale;
     }

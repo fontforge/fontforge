@@ -31,6 +31,7 @@
 
 #include "autohint.h"
 #include "bvedit.h"
+#include "ffglib_compat.h"
 #include "fontforge.h"
 #include "fvfonts.h"
 #include "gfile.h"
@@ -1878,7 +1879,7 @@ static void dumprequiredfontinfo(void (*dumpchar)(int ch,void *data), void *data
 	cnt += 7;
 
     if ( sf->uniqueid==0 )
-	uniqueid = 4000000 + (rand()&0x3ffff);
+	uniqueid = 4000000 + (ff_random_int()&0x3ffff);
     else
 	uniqueid = sf->uniqueid ;
     sf->tempuniqueid = uniqueid;
@@ -2133,7 +2134,7 @@ static void dumptype42(FILE *out, SplineFont *sf, int format, int flags,
     dumpfontinfo((DumpChar) fputc,out,sf,format);
 
     if ( sf->uniqueid==0 )
-	uniqueid = 4000000 + (rand()&0x3ffff);
+	uniqueid = 4000000 + (ff_random_int()&0x3ffff);
     else
 	uniqueid = sf->uniqueid ;
     sf->tempuniqueid = uniqueid;
@@ -2566,7 +2567,7 @@ static int dumpcidstuff(FILE *out,SplineFont *cidmaster,int flags,EncMap *map,in
 	    ceil(res.maxx), ceil(res.maxy));
 
     if ( cidmaster->use_uniqueid ) {
-	fprintf( out,"/UIDBase %d def\n", cidmaster->uniqueid?cidmaster->uniqueid: 4000000 + (rand()&0x3ffff) );
+	fprintf( out,"/UIDBase %d def\n", cidmaster->uniqueid?cidmaster->uniqueid: 4000000 + (ff_random_int()&0x3ffff) );
 	if ( cidmaster->xuid!=NULL && cidmaster->use_xuid ) {
 	    fprintf( out,"/XUID %s def\n", cidmaster->xuid );
 	    /* SFIncrementXUID(cidmaster); */ /* Unique ID management in CID fonts is too complex for this simple trick to work */
