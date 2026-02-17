@@ -35,8 +35,9 @@ static int a_file_must_define_something=0;	/* ANSI says so */
 
 #include <png.h>
 
+#include <vector>
+
 #include "gimage.h"
-#include "ffglib_compat.h"
 
 static void user_error_fn(png_structp png_ptr, png_const_charp error_msg) {
     fprintf(stderr, "%s\n", error_msg );
@@ -52,8 +53,8 @@ static void user_warning_fn(png_structp UNUSED(png_ptr), png_const_charp warning
 }
 
 static void mem_write_fn(png_structp png_ptr, png_bytep data, png_size_t sz) {
-    FFByteArray *arr = (FFByteArray*)(png_get_io_ptr(png_ptr));
-    ff_byte_array_append(arr, data, sz);
+    auto *vec = static_cast<std::vector<unsigned char>*>(png_get_io_ptr(png_ptr));
+    vec->insert(vec->end(), data, data + sz);
 }
 
 static void mem_flush_fn(png_structp UNUSED(png_ptr)) {
@@ -181,29 +182,21 @@ return( 1 );
 }
 
 int GImageWritePngBuf(GImage *gi, char** buf, size_t* sz, int compression_level, int progressive) {
-    FFByteArray *arr;
+    std::vector<unsigned char> vec;
     *buf = NULL;
     *sz = 0;
 
-    arr = ff_byte_array_new();
-    if (arr == NULL) {
+    if (!GImageWritePngFull(gi, &vec, true, compression_level, progressive)) {
         return false;
     }
 
-    if (!GImageWritePngFull(gi, arr, true, compression_level, progressive)) {
-        ff_byte_array_free(arr, true);
-        return false;
-    }
-
-    *buf = (char*) malloc(arr->len);
+    *buf = (char*) malloc(vec.size());
     if (*buf == NULL) {
-        ff_byte_array_free(arr, true);
         return false;
     }
-    *sz = arr->len;
+    *sz = vec.size();
 
-    memcpy(*buf, arr->data, arr->len);
-    ff_byte_array_free(arr, true);
+    memcpy(*buf, vec.data(), vec.size());
     return true;
 }
 

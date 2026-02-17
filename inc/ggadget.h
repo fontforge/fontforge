@@ -32,13 +32,6 @@
 #include "intl.h"
 struct giocontrol;
 
-#ifndef MAX
-#define MAX(x,y)   (((x) > (y)) ? (x) : (y))
-#endif
-#ifndef MIN
-#define MIN(x,y)   (((x) < (y)) ? (x) : (y))
-#endif
-
 typedef struct gtextinfo {
     unichar_t *text;
     GImage *image;

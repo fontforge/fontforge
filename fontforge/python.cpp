@@ -10537,58 +10537,6 @@ return( -1 );
 return( 0 );
 }
 
-static PyObject *PyFFCvt_Slice( PyObject *self, Py_ssize_t start, Py_ssize_t end ) {
-    PyFF_Cvt *c = (PyFF_Cvt *) self;
-    struct ttf_table *cvt;
-    int len, i;
-    PyObject *ret;
-    if ( CheckIfFontClosed(c->font) )
-	return( NULL );
-
-    cvt = c->cvt;
-    if ( cvt==NULL || end<start || end <0 || 2*start>=cvt->len ) {
-	PyErr_Format(PyExc_ValueError, "Slice specification out of range" );
-return( NULL );
-    }
-
-    len = end-start + 1;
-
-    ret = PyTuple_New(len);
-    for ( i=start; i<=end; ++i )
-	PyTuple_SetItem(ret,i-start,Py_BuildValue("i",memushort(cvt->data,cvt->len,2*i)));
-
-return( (PyObject *) ret );
-}
-
-static int PyFFCvt_SliceAssign( PyObject *_self, Py_ssize_t start, Py_ssize_t end, PyObject *rpl ) {
-    PyFF_Cvt *c = (PyFF_Cvt *) _self;
-    struct ttf_table *cvt;
-    int len, i;
-    if ( CheckIfFontClosed(c->font) )
-	return( -1 );
-
-    cvt = c->cvt;
-    if ( cvt==NULL || end<start || end <0 || 2*start>=cvt->len ) {
-	PyErr_Format(PyExc_ValueError, "Slice specification out of range" );
-return( -1 );
-    }
-
-    len = end-start + 1;
-
-    if ( len!=PySequence_Size(rpl) ) {
-	if ( !PyErr_Occurred())
-	    PyErr_Format(PyExc_ValueError, "Replacement is different size than slice" );
-return( -1 );
-    }
-    for ( i=start; i<=end; ++i ) {
-	memputshort(cvt->data,sizeof(uint16_t)*i,
-		PyLong_AsLong(PySequence_GetItem(rpl,i-start)));
-	if ( PyErr_Occurred())
-return( -1 );
-    }
-return( 0 );
-}
-
 static int PyFFCvt_Contains(PyObject *_self, PyObject *_val) {
     PyFF_Cvt *c = (PyFF_Cvt *) _self;
     struct ttf_table *cvt;

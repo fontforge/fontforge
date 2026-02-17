@@ -406,55 +406,6 @@ extern "C" const char *ff_get_tmp_dir(void) {
     return tmp_buf;
 }
 
-/* ============================================================================
- * Byte array implementation
- * ============================================================================ */
-
-extern "C" FFByteArray *ff_byte_array_new(void) {
-    FFByteArray *arr = static_cast<FFByteArray *>(std::malloc(sizeof(FFByteArray)));
-    if (!arr) return nullptr;
-
-    arr->capacity = 256;
-    arr->len = 0;
-    arr->data = static_cast<unsigned char *>(std::malloc(arr->capacity));
-    if (!arr->data) {
-        std::free(arr);
-        return nullptr;
-    }
-    return arr;
-}
-
-extern "C" void ff_byte_array_append(FFByteArray *arr, const unsigned char *data, size_t len) {
-    if (!arr || !data || len == 0) return;
-
-    // Grow if needed
-    if (arr->len + len > arr->capacity) {
-        size_t new_capacity = arr->capacity * 2;
-        while (new_capacity < arr->len + len) {
-            new_capacity *= 2;
-        }
-        unsigned char *new_data = static_cast<unsigned char *>(
-            std::realloc(arr->data, new_capacity));
-        if (!new_data) return;  // Failed to grow
-        arr->data = new_data;
-        arr->capacity = new_capacity;
-    }
-
-    std::memcpy(arr->data + arr->len, data, len);
-    arr->len += len;
-}
-
-extern "C" unsigned char *ff_byte_array_free(FFByteArray *arr, int free_data) {
-    if (!arr) return nullptr;
-
-    unsigned char *data = arr->data;
-    if (free_data) {
-        std::free(data);
-        data = nullptr;
-    }
-    std::free(arr);
-    return data;
-}
 
 /* ============================================================================
  * Dynamic array implementation

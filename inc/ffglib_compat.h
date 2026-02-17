@@ -182,28 +182,6 @@ char *ff_canonical_path(const char *path);
 int ff_remove_all(const char *path);
 
 /* ============================================================================
- * Byte array (replaces GByteArray)
- * ============================================================================ */
-
-typedef struct FFByteArray {
-    unsigned char *data;
-    size_t len;
-    size_t capacity;
-} FFByteArray;
-
-/* Create a new byte array */
-FFByteArray *ff_byte_array_new(void);
-
-/* Append bytes to the array */
-void ff_byte_array_append(FFByteArray *arr, const unsigned char *data, size_t len);
-
-/* Free the byte array and optionally its data.
- * If free_data is true, returns NULL.
- * If free_data is false, returns the data pointer (caller takes ownership).
- */
-unsigned char *ff_byte_array_free(FFByteArray *arr, int free_data);
-
-/* ============================================================================
  * Dynamic array (replaces GArray)
  * ============================================================================ */
 
