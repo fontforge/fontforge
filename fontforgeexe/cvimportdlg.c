@@ -567,7 +567,7 @@ static int GFD_ImportOk(GGadget *g, GEvent *e) {
 	ImportParams *ip = ImportParamsState();
 
 	GFileChooserGetChildren(d->gfc,NULL,NULL,&tf);
-	if ( *_GGadgetGetTitle(tf)=='\0' )
+	if ( *_GGadgetGetTitle(tf)=='\0' || !temp)
 return( true );
 	GDrawSetCursor(GGadgetGetWindow(g),ct_watch);
 	if ( d->fv!=NULL ) {
@@ -579,17 +579,18 @@ return( true );
 	}
 	free(ret);
 	if ( d->fv!=NULL ) {
+	    char** path_list = GFileChooserGetMultipleFiles(temp);
 	    int toback = GGadgetIsChecked(d->background);
-	    if ( toback && strchr(temp,';')!=NULL && format<3 )
+	    if ( toback && path_list[1]!=NULL && format<3 )
 		ff_post_error(_("Only One Font"),_("Only one font may be imported into the background"));
 	    else if ( format==fv_bdf )
-		d->done = FVImportBDF((FontViewBase *) d->fv,temp,false, toback);
+		d->done = FVImportBDFs((FontViewBase *) d->fv,path_list,false, toback);
 	    else if ( format==fv_ttf )
 		d->done = FVImportMult((FontViewBase *) d->fv,temp,toback,bf_ttf);
 	    else if ( format==fv_pk )		/* pk */
-		d->done = FVImportBDF((FontViewBase *) d->fv,temp,true, toback);
+		d->done = FVImportBDFs((FontViewBase *) d->fv,path_list,true, toback);
 	    else if ( format==fv_pcf )		/* pcf */
-		d->done = FVImportBDF((FontViewBase *) d->fv,temp,2, toback);
+		d->done = FVImportBDFs((FontViewBase *) d->fv,path_list,2, toback);
 	    else if ( format==fv_mac )
 		d->done = FVImportMult((FontViewBase *) d->fv,temp,toback,bf_nfntmacbin);
 	    else if ( format==fv_win )
@@ -598,34 +599,38 @@ return( true );
 		d->done = FVImportMult((FontViewBase *) d->fv,temp,toback,bf_palm);
 	    else if ( format==fv_image ) {
 		ShowImportOptions(ip, d->opts_shown, sp_scale);
-		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,true,ip);
+		d->done = FVImportImages((FontViewBase *) d->fv,path_list,format,toback,true,ip);
 	    } else if ( format==fv_imgtemplate ) {
 		ShowImportOptions(ip, d->opts_shown, sp_scale);
 		d->done = FVImportImageTemplate((FontViewBase *) d->fv,temp,format,toback,true,ip);
 	    } else if ( format==fv_eps ) {
 		ShowImportOptions(ip, d->opts_shown, sp_eps);
-		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,true,ip);
+		d->done = FVImportImages((FontViewBase *) d->fv,path_list,format,toback,true,ip);
 	    } else if ( format==fv_epstemplate ) {
 		ShowImportOptions(ip, d->opts_shown, sp_eps);
 		d->done = FVImportImageTemplate((FontViewBase *) d->fv,temp,format,toback,true,ip);
 	    } else if ( format==fv_pdf ) {
 		ShowImportOptions(ip, d->opts_shown, sp_eps);
-		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,true,ip);
+		d->done = FVImportImages((FontViewBase *) d->fv,path_list,format,toback,true,ip);
 	    } else if ( format==fv_pdftemplate ) {
 		ShowImportOptions(ip, d->opts_shown, sp_eps);
 		d->done = FVImportImageTemplate((FontViewBase *) d->fv,temp,format,toback,true,ip);
 	    } else if ( format==fv_svg ) {
 		ShowImportOptions(ip, d->opts_shown, sp_svg);
-		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,true,ip);
+		d->done = FVImportImages((FontViewBase *) d->fv,path_list,format,toback,true,ip);
 	    } else if ( format==fv_svgtemplate ) {
 		ShowImportOptions(ip, d->opts_shown, sp_svg);
 		d->done = FVImportImageTemplate((FontViewBase *) d->fv,temp,format,toback,true,ip);
 	    } else if ( format==fv_glif )
-		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,true,ip);
+		d->done = FVImportImages((FontViewBase *) d->fv,path_list,format,toback,true,ip);
 	    else if ( format==fv_gliftemplate )
 		d->done = FVImportImageTemplate((FontViewBase *) d->fv,temp,format,toback,true,ip);
 	    else if ( format>=fv_pythonbase )
-		d->done = FVImportImages((FontViewBase *) d->fv,temp,format,toback,true,ip);
+		d->done = FVImportImages((FontViewBase *) d->fv,path_list,format,toback,true,ip);
+
+	    for (char** p_path = path_list; *p_path != NULL; ++p_path)
+		free(*p_path);
+	    free(path_list);
 	} else if ( d->bv!=NULL )
 	    d->done = BVImportImage(d->bv,temp);
 	else {

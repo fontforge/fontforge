@@ -9,6 +9,7 @@ extern "C" {
 #endif
 
 extern int FVImportBDF(FontViewBase *fv, char *filename, int ispk, int toback);
+extern int FVImportBDFs(FontViewBase *fv, char **path_list, int ispk, int toback);
 extern int FVImportMult(FontViewBase *fv, char *filename, int toback, int bf);
 extern SplineFont *SFFromBDF(char *filename, int ispk, int toback);
 extern void SFCheckPSBitmap(SplineFont *sf);

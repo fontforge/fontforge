@@ -991,55 +991,50 @@ void SCAddScaleImage(SplineChar *sc,GImage *image,bool doclear, int layer,
     SCInsertImage(sc,image,scale,sc->parent->ascent,0,layer);
 }
 
-int FVImportImages(FontViewBase *fv,char *path,int format,int toback,
+int FVImportImages(FontViewBase *fv,char** path_list,int format,int toback,
                    bool preclear, ImportParams *ip) {
     GImage *image;
-    /*struct _GImage *base;*/
     int tot;
-    char *start = path, *endpath=path;
-    int i;
+    int idx, file_idx = 0;
     SplineChar *sc;
 
     tot = 0;
-    for ( i=0; i<fv->map->enccount; ++i ) if ( fv->selected[i]) {
-	sc = SFMakeChar(fv->sf,fv->map,i);
-	endpath = strchr(start,';');
-	if ( endpath!=NULL ) *endpath = '\0';
+    for ( idx=0; idx<fv->map->enccount && path_list[file_idx] != NULL; ++idx ) if ( fv->selected[idx]) {
+	char* image_path = path_list[file_idx++];
+	sc = SFMakeChar(fv->sf,fv->map,idx);
 	if ( format==fv_image ) {
-	    image = GImageRead(start);
+	    image = GImageRead(image_path);
 	    if ( image==NULL ) {
-		ff_post_error(_("Bad image file"),_("Bad image file: %.100s"),start);
+		ff_post_error(_("Bad image file"),_("Bad image file: %.100s"),image_path);
 return(false);
 	    }
 	    ++tot;
 	    SCAddScaleImage(sc,image,true,toback?ly_back:ly_fore, ip);
 	} else if ( format==fv_svg ) {
-	    SCImportSVG(sc,toback?ly_back:fv->active_layer,start,NULL,0,preclear,ip);
+	    SCImportSVG(sc,toback?ly_back:fv->active_layer,image_path,NULL,0,preclear,ip);
 	    ++tot;
 	} else if ( format==fv_glif ) {
-	    SCImportGlif(sc,toback?ly_back:fv->active_layer,start,NULL,0,preclear,ip);
+	    SCImportGlif(sc,toback?ly_back:fv->active_layer,image_path,NULL,0,preclear,ip);
 	    ++tot;
 	} else if ( format==fv_eps ) {
-	    SCImportPS(sc,toback?ly_back:fv->active_layer,start,preclear,ip);
+	    SCImportPS(sc,toback?ly_back:fv->active_layer,image_path,preclear,ip);
 	    ++tot;
 	} else if ( format==fv_pdf ) {
-	    SCImportPDF(sc,toback?ly_back:fv->active_layer,start,preclear,ip);
+	    SCImportPDF(sc,toback?ly_back:fv->active_layer,image_path,preclear,ip);
 	    ++tot;
 #ifndef _NO_PYTHON
 	} else if ( format>=fv_pythonbase ) {
-	    PyFF_SCImport(sc,format-fv_pythonbase,start, toback?ly_back:fv->active_layer,preclear);
+	    PyFF_SCImport(sc,format-fv_pythonbase,image_path, toback?ly_back:fv->active_layer,preclear);
 	    ++tot;
 #endif
 	}
-	if ( endpath==NULL )
-    break;
-	start = endpath+1;
     }
     if ( tot==0 )
 	ff_post_error(_("Nothing Selected"),_("You must select a glyph before you can import an image into it"));
-    else if ( endpath!=NULL )
+    else if ( path_list[file_idx]!=NULL )
 	ff_post_error(_("More Images Than Selected Glyphs"),_("More Images Than Selected Glyphs"));
-return( true );
+
+    return( true );
 }
 
 int FVImportImageTemplate(FontViewBase *fv,char *path,int format,int toback,
