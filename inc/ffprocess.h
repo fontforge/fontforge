@@ -18,7 +18,7 @@
 #ifndef FONTFORGE_FFPROCESS_H
 #define FONTFORGE_FFPROCESS_H
 
-#include <stddef.h>  /* for size_t */
+#include <stddef.h> /* for size_t */
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,9 +35,9 @@ extern "C" {
 
 typedef enum {
     FF_PROCESS_OK = 0,
-    FF_PROCESS_NOT_FOUND,    /* Command not found in PATH */
-    FF_PROCESS_FAILED,       /* Execution failed */
-    FF_PROCESS_NO_BACKEND    /* No POSIX or Python available */
+    FF_PROCESS_NOT_FOUND, /* Command not found in PATH */
+    FF_PROCESS_FAILED,    /* Execution failed */
+    FF_PROCESS_NO_BACKEND /* No POSIX or Python available */
 } FFProcessResult;
 
 /**
@@ -49,8 +49,8 @@ typedef enum {
  * @param stderr_buf If non-NULL, receives malloc'd stderr (caller frees)
  * @return Result code
  */
-FFProcessResult ff_run_command(char **argv, const char *workdir,
-                               char **stdout_buf, char **stderr_buf);
+FFProcessResult ff_run_command(char** argv, const char* workdir,
+                               char** stdout_buf, char** stderr_buf);
 
 /**
  * Run a command and capture binary stdout (may contain NUL bytes).
@@ -61,8 +61,9 @@ FFProcessResult ff_run_command(char **argv, const char *workdir,
  * @param out_len    Receives length of output data
  * @return Result code
  */
-FFProcessResult ff_run_command_binary(char **argv, const char *workdir,
-                                      unsigned char **out_data, size_t *out_len);
+FFProcessResult ff_run_command_binary(char** argv, const char* workdir,
+                                      unsigned char** out_data,
+                                      size_t* out_len);
 
 /**
  * Decompress a file to a temporary file.
@@ -70,10 +71,11 @@ FFProcessResult ff_run_command_binary(char **argv, const char *workdir,
  * Supports: .gz, .bz2, .lzma, .xz
  *
  * @param filename   Path to compressed file
- * @param out_tmpfile Receives malloc'd path to temp file (caller frees and unlinks)
+ * @param out_tmpfile Receives malloc'd path to temp file (caller frees and
+ * unlinks)
  * @return Result code
  */
-FFProcessResult ff_decompress_to_temp(const char *filename, char **out_tmpfile);
+FFProcessResult ff_decompress_to_temp(const char* filename, char** out_tmpfile);
 
 /**
  * Extract a file from an archive to a temporary directory.
@@ -81,13 +83,15 @@ FFProcessResult ff_decompress_to_temp(const char *filename, char **out_tmpfile);
  * Supports: .zip, .tar, .tar.gz, .tar.bz2, .tgz, .tbz2
  *
  * @param archive     Path to archive file
- * @param member      Specific member to extract (NULL = let user choose or extract all)
- * @param out_tmpdir  Receives malloc'd path to temp directory (caller frees/cleans)
+ * @param member      Specific member to extract (NULL = let user choose or
+ * extract all)
+ * @param out_tmpdir  Receives malloc'd path to temp directory (caller
+ * frees/cleans)
  * @param out_file    Receives malloc'd path to extracted file (caller frees)
  * @return Result code
  */
-FFProcessResult ff_extract_from_archive(const char *archive, const char *member,
-                                        char **out_tmpdir, char **out_file);
+FFProcessResult ff_extract_from_archive(const char* archive, const char* member,
+                                        char** out_tmpdir, char** out_file);
 
 /**
  * Check if we're running as a Python module (Python started us).
@@ -106,11 +110,11 @@ int ff_running_as_python_module(void);
  */
 typedef enum {
     FF_COMPRESS_NONE = 0,
-    FF_COMPRESS_GZ,      /* .gz - gzip */
-    FF_COMPRESS_BZ2,     /* .bz2, .bz - bzip2 */
-    FF_COMPRESS_LZMA,    /* .lzma - lzma */
-    FF_COMPRESS_XZ,      /* .xz - xz */
-    FF_COMPRESS_Z,       /* .Z - compress */
+    FF_COMPRESS_GZ,   /* .gz - gzip */
+    FF_COMPRESS_BZ2,  /* .bz2, .bz - bzip2 */
+    FF_COMPRESS_LZMA, /* .lzma - lzma */
+    FF_COMPRESS_XZ,   /* .xz - xz */
+    FF_COMPRESS_Z,    /* .Z - compress */
     FF_COMPRESS_COUNT
 } FFCompressionType;
 
@@ -120,7 +124,7 @@ typedef enum {
  * @param filename  Path to check
  * @return Compression type, or FF_COMPRESS_NONE if not recognized
  */
-FFCompressionType ff_compression_type(const char *filename);
+FFCompressionType ff_compression_type(const char* filename);
 
 /**
  * Convert legacy SplineFont.compression value to FFCompressionType.
@@ -146,7 +150,7 @@ int ff_compression_to_legacy(FFCompressionType type);
  * @param type  Compression type
  * @return Extension string including dot (e.g., ".gz"), or "" for NONE
  */
-const char *ff_compression_ext(FFCompressionType type);
+const char* ff_compression_ext(FFCompressionType type);
 
 /**
  * Compress a file in place.
@@ -156,7 +160,7 @@ const char *ff_compression_ext(FFCompressionType type);
  * @param type      Compression type to use
  * @return Result code
  */
-FFProcessResult ff_compress_file(const char *filename, FFCompressionType type);
+FFProcessResult ff_compress_file(const char* filename, FFCompressionType type);
 
 /**
  * Decompress a file in place.
@@ -165,7 +169,7 @@ FFProcessResult ff_compress_file(const char *filename, FFCompressionType type);
  * @param filename  Path to compressed file (extension will be removed)
  * @return Result code
  */
-FFProcessResult ff_decompress_in_place(const char *filename);
+FFProcessResult ff_decompress_in_place(const char* filename);
 
 /* ==================== MIME Type API ==================== */
 
@@ -178,7 +182,7 @@ FFProcessResult ff_decompress_in_place(const char *filename);
  * @param path  Path or filename to check
  * @return malloc'd MIME type string (caller frees), or NULL if unknown
  */
-char *ff_guess_mime_type(const char *path);
+char* ff_guess_mime_type(const char* path);
 
 #ifdef __cplusplus
 }

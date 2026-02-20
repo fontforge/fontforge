@@ -46,16 +46,15 @@ struct FF_Dir {
     FF_DirEntry current;
     bool has_current;
 
-    FF_Dir(const char *p) : path(p), iter(fs::path(p)), end(), has_current(false) {}
+    FF_Dir(const char* p)
+        : path(p), iter(fs::path(p)), end(), has_current(false) {}
 
-    void rewind() {
-        iter = fs::directory_iterator(fs::path(path));
-    }
+    void rewind() { iter = fs::directory_iterator(fs::path(path)); }
 };
 
 extern "C" {
 
-FF_Dir *ff_opendir(const char *path) {
+FF_Dir* ff_opendir(const char* path) {
     try {
         if (!fs::is_directory(path)) {
             return nullptr;
@@ -66,7 +65,7 @@ FF_Dir *ff_opendir(const char *path) {
     }
 }
 
-FF_DirEntry *ff_readdir(FF_Dir *dir) {
+FF_DirEntry* ff_readdir(FF_Dir* dir) {
     if (!dir) {
         return nullptr;
     }
@@ -74,12 +73,13 @@ FF_DirEntry *ff_readdir(FF_Dir *dir) {
         if (dir->iter == dir->end) {
             return nullptr;
         }
-        const auto &entry = *dir->iter;
+        const auto& entry = *dir->iter;
         std::string name = entry.path().filename().string();
         if (name.length() >= sizeof(dir->current.name)) {
             name = name.substr(0, sizeof(dir->current.name) - 1);
         }
-        std::strncpy(dir->current.name, name.c_str(), sizeof(dir->current.name) - 1);
+        std::strncpy(dir->current.name, name.c_str(),
+                     sizeof(dir->current.name) - 1);
         dir->current.name[sizeof(dir->current.name) - 1] = '\0';
         dir->has_current = true;
         ++dir->iter;
@@ -89,11 +89,9 @@ FF_DirEntry *ff_readdir(FF_Dir *dir) {
     }
 }
 
-void ff_closedir(FF_Dir *dir) {
-    delete dir;
-}
+void ff_closedir(FF_Dir* dir) { delete dir; }
 
-void ff_rewinddir(FF_Dir *dir) {
+void ff_rewinddir(FF_Dir* dir) {
     if (dir) {
         try {
             dir->rewind();

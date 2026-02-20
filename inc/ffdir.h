@@ -42,20 +42,20 @@ typedef struct FF_Dir FF_Dir;
 
 /* Directory entry - contains the filename */
 typedef struct {
-    char name[260];  /* MAX_PATH on Windows, enough for most Unix systems */
+    char name[260]; /* MAX_PATH on Windows, enough for most Unix systems */
 } FF_DirEntry;
 
 /* Open a directory for iteration. Returns NULL on error. */
-FF_Dir *ff_opendir(const char *path);
+FF_Dir* ff_opendir(const char* path);
 
 /* Read the next directory entry. Returns NULL when no more entries. */
-FF_DirEntry *ff_readdir(FF_Dir *dir);
+FF_DirEntry* ff_readdir(FF_Dir* dir);
 
 /* Close the directory handle. */
-void ff_closedir(FF_Dir *dir);
+void ff_closedir(FF_Dir* dir);
 
 /* Rewind directory to the beginning. */
-void ff_rewinddir(FF_Dir *dir);
+void ff_rewinddir(FF_Dir* dir);
 
 #ifdef __cplusplus
 }

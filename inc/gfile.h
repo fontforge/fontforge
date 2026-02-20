@@ -33,19 +33,14 @@
 #include <stdio.h>
 #include <time.h>
 
-/* For mode_t and off_t */
+/* For stat compatibility - must include sys/types.h before sys/stat.h */
+#include <sys/types.h>
+#include <sys/stat.h>
+
+/* For mode_t (not defined by MSVC) */
 #ifdef _MSC_VER
 typedef unsigned short mode_t;
-#ifndef _OFF_T_DEFINED
-typedef long long off_t;
-#define _OFF_T_DEFINED
 #endif
-#else
-#include <sys/types.h>
-#endif
-
-/* MSVC stat compatibility - provides ff_stat_t, ff_stat(), ff_fstat() */
-#include <sys/stat.h>
 
 #ifdef _MSC_VER
 typedef struct __stat64 ff_stat_t;

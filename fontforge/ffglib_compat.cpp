@@ -32,14 +32,15 @@ namespace fs = std::filesystem;
 
 /* ============================================================================
  * String functions
- * ============================================================================ */
+ * ============================================================================
+ */
 
-extern "C" size_t ff_utf8_strlen(const char *str, int maxlen) {
+extern "C" size_t ff_utf8_strlen(const char* str, int maxlen) {
     if (str == nullptr) return 0;
 
     size_t count = 0;
-    const unsigned char *p = reinterpret_cast<const unsigned char *>(str);
-    const unsigned char *end = (maxlen >= 0) ? p + maxlen : nullptr;
+    const unsigned char* p = reinterpret_cast<const unsigned char*>(str);
+    const unsigned char* end = (maxlen >= 0) ? p + maxlen : nullptr;
 
     while (*p && (end == nullptr || p < end)) {
         // Count only lead bytes (not continuation bytes 10xxxxxx)
@@ -71,8 +72,8 @@ extern "C" size_t ff_utf8_strlen(const char *str, int maxlen) {
 
 // Manual implementation for macOS/libc++ (no whitespace or leading + handling;
 // callers already strip whitespace, and PostScript data has no leading +)
-static double ff_strtod_manual(const char *nptr, char **endptr) {
-    const char *p = nptr;
+static double ff_strtod_manual(const char* nptr, char** endptr) {
+    const char* p = nptr;
     double result = 0.0;
     double fraction = 0.0;
     double divisor = 1.0;
@@ -104,12 +105,12 @@ static double ff_strtod_manual(const char *nptr, char **endptr) {
     }
 
     if (!has_digits) {
-        if (endptr) *endptr = const_cast<char *>(nptr);
+        if (endptr) *endptr = const_cast<char*>(nptr);
         return 0.0;
     }
 
     if (*p == 'e' || *p == 'E') {
-        const char *exp_start = p;
+        const char* exp_start = p;
         p++;
         if (*p == '-') {
             exp_sign = -1;
@@ -128,18 +129,18 @@ static double ff_strtod_manual(const char *nptr, char **endptr) {
         }
     }
 
-    if (endptr) *endptr = const_cast<char *>(p);
+    if (endptr) *endptr = const_cast<char*>(p);
     return sign * result;
 }
 
-#endif // FF_USE_MANUAL_STRTOD
+#endif  // FF_USE_MANUAL_STRTOD
 
-extern "C" double ff_strtod(const char *nptr, char **endptr) {
+extern "C" double ff_strtod(const char* nptr, char** endptr) {
 #if FF_USE_MANUAL_STRTOD
     return ff_strtod_manual(nptr, endptr);
 #else
-    const char *p = nptr;
-    const char *end = p;
+    const char* p = nptr;
+    const char* end = p;
 
     while (*end == '-' || *end == '.' || *end == 'e' || *end == 'E' ||
            *end == '+' || std::isdigit(static_cast<unsigned char>(*end))) {
@@ -150,27 +151,28 @@ extern "C" double ff_strtod(const char *nptr, char **endptr) {
     auto [ptr, ec] = std::from_chars(p, end, result);
 
     if (ec == std::errc{}) {
-        if (endptr) *endptr = const_cast<char *>(ptr);
+        if (endptr) *endptr = const_cast<char*>(ptr);
         return result;
     } else {
-        if (endptr) *endptr = const_cast<char *>(nptr);
+        if (endptr) *endptr = const_cast<char*>(nptr);
         return 0.0;
     }
 #endif
 }
 
-extern "C" char *ff_ascii_formatd(char *dest, size_t dest_len, const char *format, double value) {
+extern "C" char* ff_ascii_formatd(char* dest, size_t dest_len,
+                                  const char* format, double value) {
     if (dest == nullptr || dest_len == 0) return dest;
 
     // Format using snprintf
     std::snprintf(dest, dest_len, format, value);
 
     // Find what the locale uses as decimal point and replace with '.'
-    std::lconv *locale_info = std::localeconv();
+    std::lconv* locale_info = std::localeconv();
     if (locale_info && locale_info->decimal_point &&
         locale_info->decimal_point[0] != '.' &&
         locale_info->decimal_point[0] != '\0') {
-        char *decimal_point = std::strchr(dest, locale_info->decimal_point[0]);
+        char* decimal_point = std::strchr(dest, locale_info->decimal_point[0]);
         if (decimal_point) {
             *decimal_point = '.';
         }
@@ -179,11 +181,11 @@ extern "C" char *ff_ascii_formatd(char *dest, size_t dest_len, const char *forma
     return dest;
 }
 
-extern "C" char *ff_strstrip(char *str) {
+extern "C" char* ff_strstrip(char* str) {
     if (str == nullptr) return nullptr;
 
     // Skip leading whitespace
-    char *start = str;
+    char* start = str;
     while (std::isspace(static_cast<unsigned char>(*start))) start++;
 
     // If all whitespace, truncate string
@@ -193,7 +195,7 @@ extern "C" char *ff_strstrip(char *str) {
     }
 
     // Find end of string
-    char *end = start + std::strlen(start) - 1;
+    char* end = start + std::strlen(start) - 1;
     while (end > start && std::isspace(static_cast<unsigned char>(*end))) end--;
 
     // Terminate after last non-whitespace
@@ -207,7 +209,7 @@ extern "C" char *ff_strstrip(char *str) {
     return str;
 }
 
-extern "C" int ff_ascii_strcasecmp(const char *s1, const char *s2) {
+extern "C" int ff_ascii_strcasecmp(const char* s1, const char* s2) {
     if (s1 == nullptr && s2 == nullptr) return 0;
     if (s1 == nullptr) return -1;
     if (s2 == nullptr) return 1;
@@ -223,37 +225,39 @@ extern "C" int ff_ascii_strcasecmp(const char *s1, const char *s2) {
            std::tolower(static_cast<unsigned char>(*s2));
 }
 
-extern "C" char *ff_ascii_strdown(const char *str, int len) {
+extern "C" char* ff_ascii_strdown(const char* str, int len) {
     if (str == nullptr) return nullptr;
 
     size_t actual_len = (len < 0) ? std::strlen(str) : static_cast<size_t>(len);
-    char *result = static_cast<char *>(std::malloc(actual_len + 1));
+    char* result = static_cast<char*>(std::malloc(actual_len + 1));
     if (!result) return nullptr;
 
     for (size_t i = 0; i < actual_len; i++) {
-        result[i] = static_cast<char>(std::tolower(static_cast<unsigned char>(str[i])));
+        result[i] =
+            static_cast<char>(std::tolower(static_cast<unsigned char>(str[i])));
     }
     result[actual_len] = '\0';
     return result;
 }
 
-extern "C" char *ff_uri_unescape_string(const char *escaped, const char *illegal_characters) {
+extern "C" char* ff_uri_unescape_string(const char* escaped,
+                                        const char* illegal_characters) {
     (void)illegal_characters;  // Not implemented
 
     if (escaped == nullptr) return nullptr;
 
     size_t len = std::strlen(escaped);
-    char *result = static_cast<char *>(std::malloc(len + 1));
+    char* result = static_cast<char*>(std::malloc(len + 1));
     if (!result) return nullptr;
 
-    const char *src = escaped;
-    char *dst = result;
+    const char* src = escaped;
+    char* dst = result;
 
     while (*src) {
         if (*src == '%' && src[1] && src[2]) {
             // Decode %XX
-            char hex[3] = { src[1], src[2], '\0' };
-            char *end;
+            char hex[3] = {src[1], src[2], '\0'};
+            char* end;
             long val = std::strtol(hex, &end, 16);
             if (end == hex + 2 && val >= 0 && val <= 255) {
                 *dst++ = static_cast<char>(val);
@@ -275,14 +279,15 @@ extern "C" char *ff_uri_unescape_string(const char *escaped, const char *illegal
 
 /* ============================================================================
  * Random number functions - using C++ <random>
- * ============================================================================ */
+ * ============================================================================
+ */
 
 namespace {
-    std::mt19937& get_random_engine() {
-        static std::mt19937 engine(std::random_device{}());
-        return engine;
-    }
+std::mt19937& get_random_engine() {
+    static std::mt19937 engine(std::random_device{}());
+    return engine;
 }
+}  // namespace
 
 extern "C" void ff_random_set_seed(unsigned int seed) {
     get_random_engine().seed(seed);
@@ -306,9 +311,10 @@ extern "C" int ff_random_int_range(int begin, int end) {
 
 /* ============================================================================
  * System/locale functions
- * ============================================================================ */
+ * ============================================================================
+ */
 
-extern "C" int ff_get_charset(const char **charset) {
+extern "C" int ff_get_charset(const char** charset) {
 #ifdef _WIN32
     static char charset_buf[32];
     UINT cp = GetACP();
@@ -320,7 +326,7 @@ extern "C" int ff_get_charset(const char **charset) {
     if (charset) *charset = charset_buf;
     return 0;
 #else
-    const char *cs = nl_langinfo(CODESET);
+    const char* cs = nl_langinfo(CODESET);
     if (charset) *charset = cs;
     // Check if it's UTF-8 (case-insensitive, handle variations)
     if (cs && (strcasecmp(cs, "UTF-8") == 0 || strcasecmp(cs, "UTF8") == 0)) {
@@ -346,7 +352,7 @@ extern "C" long ff_get_utc_offset(long timestamp) {
 #endif
 }
 
-extern "C" const char *ff_get_real_name(void) {
+extern "C" const char* ff_get_real_name(void) {
     static char name_buf[256];
     static bool initialized = false;
 
@@ -357,10 +363,11 @@ extern "C" const char *ff_get_real_name(void) {
             std::strcpy(name_buf, "Unknown");
         }
 #else
-        struct passwd *pw = getpwuid(getuid());
+        struct passwd* pw = getpwuid(getuid());
         if (pw && pw->pw_gecos && pw->pw_gecos[0]) {
-            // pw_gecos often contains full name, possibly followed by comma-separated fields
-            const char *comma = std::strchr(pw->pw_gecos, ',');
+            // pw_gecos often contains full name, possibly followed by
+            // comma-separated fields
+            const char* comma = std::strchr(pw->pw_gecos, ',');
             size_t len = comma ? static_cast<size_t>(comma - pw->pw_gecos)
                                : std::strlen(pw->pw_gecos);
             if (len >= sizeof(name_buf)) len = sizeof(name_buf) - 1;
@@ -378,7 +385,7 @@ extern "C" const char *ff_get_real_name(void) {
     return name_buf;
 }
 
-extern "C" const char *ff_get_tmp_dir(void) {
+extern "C" const char* ff_get_tmp_dir(void) {
     static char tmp_buf[4096];
     static bool initialized = false;
 
@@ -394,7 +401,7 @@ extern "C" const char *ff_get_tmp_dir(void) {
             }
         }
 #else
-        const char *tmp = std::getenv("TMPDIR");
+        const char* tmp = std::getenv("TMPDIR");
         if (!tmp) tmp = std::getenv("TMP");
         if (!tmp) tmp = std::getenv("TEMP");
         if (!tmp) tmp = "/tmp";
@@ -406,31 +413,32 @@ extern "C" const char *ff_get_tmp_dir(void) {
     return tmp_buf;
 }
 
-
 /* ============================================================================
  * Dynamic array implementation
- * ============================================================================ */
+ * ============================================================================
+ */
 
 struct FFArray {
-    char *data;
+    char* data;
     size_t len;
     size_t capacity;
     size_t element_size;
     bool clear_new;
 };
 
-extern "C" FFArray *ff_array_sized_new(int zero_terminated, int clear,
-                                        size_t element_size, size_t initial_capacity) {
+extern "C" FFArray* ff_array_sized_new(int zero_terminated, int clear,
+                                       size_t element_size,
+                                       size_t initial_capacity) {
     (void)zero_terminated;  // Not used
 
-    FFArray *arr = new (std::nothrow) FFArray;
+    FFArray* arr = new (std::nothrow) FFArray;
     if (!arr) return nullptr;
 
     arr->element_size = element_size;
     arr->len = 0;
     arr->capacity = initial_capacity > 0 ? initial_capacity : 16;
     arr->clear_new = clear != 0;
-    arr->data = static_cast<char *>(std::malloc(arr->capacity * element_size));
+    arr->data = static_cast<char*>(std::malloc(arr->capacity * element_size));
     if (!arr->data) {
         delete arr;
         return nullptr;
@@ -441,38 +449,37 @@ extern "C" FFArray *ff_array_sized_new(int zero_terminated, int clear,
     return arr;
 }
 
-extern "C" void ff_array_append(FFArray *arr, const void *val) {
+extern "C" void ff_array_append(FFArray* arr, const void* val) {
     if (!arr) return;
 
     // Grow if needed
     if (arr->len >= arr->capacity) {
         size_t new_capacity = arr->capacity * 2;
-        char *new_data = static_cast<char *>(
+        char* new_data = static_cast<char*>(
             std::realloc(arr->data, new_capacity * arr->element_size));
         if (!new_data) return;
         if (arr->clear_new) {
             std::memset(new_data + arr->capacity * arr->element_size, 0,
-                       (new_capacity - arr->capacity) * arr->element_size);
+                        (new_capacity - arr->capacity) * arr->element_size);
         }
         arr->data = new_data;
         arr->capacity = new_capacity;
     }
 
-    std::memcpy(arr->data + arr->len * arr->element_size, val, arr->element_size);
+    std::memcpy(arr->data + arr->len * arr->element_size, val,
+                arr->element_size);
     arr->len++;
 }
 
-extern "C" void *ff_array_data(FFArray *arr) {
+extern "C" void* ff_array_data(FFArray* arr) {
     return arr ? arr->data : nullptr;
 }
 
-extern "C" size_t ff_array_len(FFArray *arr) {
-    return arr ? arr->len : 0;
-}
+extern "C" size_t ff_array_len(FFArray* arr) { return arr ? arr->len : 0; }
 
-extern "C" void ff_array_free(FFArray **p_arr, int free_data) {
+extern "C" void ff_array_free(FFArray** p_arr, int free_data) {
     if (p_arr && *p_arr) {
-        FFArray *arr = *p_arr;
+        FFArray* arr = *p_arr;
         if (free_data && arr->data) {
             std::free(arr->data);
         }
@@ -483,10 +490,11 @@ extern "C" void ff_array_free(FFArray **p_arr, int free_data) {
 
 /* ============================================================================
  * Linked list implementation
- * ============================================================================ */
+ * ============================================================================
+ */
 
-extern "C" FFList *ff_list_append(FFList *list, void *data) {
-    FFList *node = static_cast<FFList *>(std::malloc(sizeof(FFList)));
+extern "C" FFList* ff_list_append(FFList* list, void* data) {
+    FFList* node = static_cast<FFList*>(std::malloc(sizeof(FFList)));
     if (!node) return list;
     node->data = data;
     node->next = nullptr;
@@ -496,7 +504,7 @@ extern "C" FFList *ff_list_append(FFList *list, void *data) {
     }
 
     // Find the tail
-    FFList *tail = list;
+    FFList* tail = list;
     while (tail->next != nullptr) {
         tail = tail->next;
     }
@@ -504,15 +512,15 @@ extern "C" FFList *ff_list_append(FFList *list, void *data) {
     return list;
 }
 
-extern "C" void ff_list_free(FFList *list) {
+extern "C" void ff_list_free(FFList* list) {
     while (list != nullptr) {
-        FFList *next = list->next;
+        FFList* next = list->next;
         std::free(list);
         list = next;
     }
 }
 
-extern "C" unsigned int ff_list_length(FFList *list) {
+extern "C" unsigned int ff_list_length(FFList* list) {
     unsigned int count = 0;
     while (list != nullptr) {
         ++count;
@@ -521,17 +529,18 @@ extern "C" unsigned int ff_list_length(FFList *list) {
     return count;
 }
 
-extern "C" void *ff_steal_pointer_impl(void **pp) {
-    void *tmp = *pp;
+extern "C" void* ff_steal_pointer_impl(void** pp) {
+    void* tmp = *pp;
     *pp = nullptr;
     return tmp;
 }
 
 /* ============================================================================
  * Filesystem functions using std::filesystem
- * ============================================================================ */
+ * ============================================================================
+ */
 
-extern "C" int ff_access(const char *path, int mode) {
+extern "C" int ff_access(const char* path, int mode) {
     if (!path) return -1;
 
     std::error_code ec;
@@ -568,7 +577,7 @@ extern "C" int ff_access(const char *path, int mode) {
     return 0;
 }
 
-extern "C" int ff_unlink(const char *path) {
+extern "C" int ff_unlink(const char* path) {
     if (!path) return -1;
 
     std::error_code ec;
@@ -578,7 +587,7 @@ extern "C" int ff_unlink(const char *path) {
     return -1;
 }
 
-extern "C" int ff_rmdir(const char *path) {
+extern "C" int ff_rmdir(const char* path) {
     if (!path) return -1;
 
     std::error_code ec;
@@ -595,7 +604,7 @@ extern "C" int ff_rmdir(const char *path) {
     return -1;
 }
 
-extern "C" int ff_mkdir(const char *path, int mode) {
+extern "C" int ff_mkdir(const char* path, int mode) {
     (void)mode;  // std::filesystem doesn't take mode on Windows
 
     if (!path) return -1;
@@ -611,7 +620,7 @@ extern "C" int ff_mkdir(const char *path, int mode) {
     return -1;
 }
 
-extern "C" int ff_chdir(const char *path) {
+extern "C" int ff_chdir(const char* path) {
     if (!path) return -1;
 
     std::error_code ec;
@@ -619,7 +628,7 @@ extern "C" int ff_chdir(const char *path) {
     return ec ? -1 : 0;
 }
 
-extern "C" char *ff_getcwd(char *buf, size_t size) {
+extern "C" char* ff_getcwd(char* buf, size_t size) {
     if (!buf || size == 0) return nullptr;
 
     std::error_code ec;
@@ -635,7 +644,7 @@ extern "C" char *ff_getcwd(char *buf, size_t size) {
     return buf;
 }
 
-extern "C" char *ff_canonical_path(const char *path) {
+extern "C" char* ff_canonical_path(const char* path) {
     if (!path) return nullptr;
 
     std::error_code ec;
@@ -649,14 +658,14 @@ extern "C" char *ff_canonical_path(const char *path) {
     fs::path result = abs.lexically_normal();
 
     std::string result_str = result.string();
-    char *ret = static_cast<char *>(std::malloc(result_str.length() + 1));
+    char* ret = static_cast<char*>(std::malloc(result_str.length() + 1));
     if (!ret) return nullptr;
 
     std::strcpy(ret, result_str.c_str());
     return ret;
 }
 
-extern "C" int ff_remove_all(const char *path) {
+extern "C" int ff_remove_all(const char* path) {
     if (!path) return -1;
 
     std::error_code ec;
@@ -669,9 +678,10 @@ extern "C" int ff_remove_all(const char *path) {
 
 /* ============================================================================
  * Regex functions using std::regex
- * ============================================================================ */
+ * ============================================================================
+ */
 
-extern "C" int ff_regex_match(const char *str, const char *pattern) {
+extern "C" int ff_regex_match(const char* str, const char* pattern) {
     if (!str || !pattern) return 0;
 
     try {
@@ -684,31 +694,34 @@ extern "C" int ff_regex_match(const char *str, const char *pattern) {
 
 /* ============================================================================
  * Sorted string set using std::set
- * ============================================================================ */
+ * ============================================================================
+ */
 
 namespace {
-    struct CaseInsensitiveCompare {
-        bool operator()(const std::string& a, const std::string& b) const {
-            return ff_ascii_strcasecmp(a.c_str(), b.c_str()) < 0;
-        }
-    };
-}
+struct CaseInsensitiveCompare {
+    bool operator()(const std::string& a, const std::string& b) const {
+        return ff_ascii_strcasecmp(a.c_str(), b.c_str()) < 0;
+    }
+};
+}  // namespace
 
 struct FFStringSet {
     std::set<std::string, CaseInsensitiveCompare> data;
 };
 
-extern "C" FFStringSet *ff_stringset_new(void) {
+extern "C" FFStringSet* ff_stringset_new(void) {
     return new (std::nothrow) FFStringSet();
 }
 
-extern "C" void ff_stringset_insert(FFStringSet *ss, const char *str) {
+extern "C" void ff_stringset_insert(FFStringSet* ss, const char* str) {
     if (ss && str) {
         ss->data.insert(str);
     }
 }
 
-extern "C" void ff_stringset_foreach(FFStringSet *ss, void (*fn)(const char *, void *), void *user_data) {
+extern "C" void ff_stringset_foreach(FFStringSet* ss,
+                                     void (*fn)(const char*, void*),
+                                     void* user_data) {
     if (ss && fn) {
         for (const auto& s : ss->data) {
             fn(s.c_str(), user_data);
@@ -716,7 +729,7 @@ extern "C" void ff_stringset_foreach(FFStringSet *ss, void (*fn)(const char *, v
     }
 }
 
-extern "C" void ff_stringset_free(FFStringSet **p_ss) {
+extern "C" void ff_stringset_free(FFStringSet** p_ss) {
     if (p_ss && *p_ss) {
         delete *p_ss;
         *p_ss = nullptr;

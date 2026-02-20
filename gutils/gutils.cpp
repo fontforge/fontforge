@@ -37,13 +37,13 @@
 #include <sys/stat.h>
 #include <time.h>
 
-const char *GetAuthor(void) {
+const char* GetAuthor(void) {
     static char author[200] = {0};
 
     if (author[0]) {
         return author;
     } else if (getenv("SOURCE_DATE_EPOCH")) {
-        const char *username = getenv("USER");
+        const char* username = getenv("USER");
         if (username) {
             snprintf(author, sizeof(author), "%s", username);
             return author;
@@ -54,24 +54,24 @@ const char *GetAuthor(void) {
 }
 
 time_t GetTime(void) {
-	time_t now;
-	const char *source_date_epoch = getenv("SOURCE_DATE_EPOCH");
-	if (source_date_epoch) {
-		now = atol(source_date_epoch);
-	} else {
-		now = time(NULL);
-	}
+    time_t now;
+    const char* source_date_epoch = getenv("SOURCE_DATE_EPOCH");
+    if (source_date_epoch) {
+        now = atol(source_date_epoch);
+    } else {
+        now = time(NULL);
+    }
 
-	return now;
+    return now;
 }
 
 time_t GetST_MTime(struct stat s) {
-	time_t st_time;
-	if (getenv("SOURCE_DATE_EPOCH")) {
-		st_time = atol(getenv("SOURCE_DATE_EPOCH"));
-	} else {
-		st_time = s.st_mtime;
-	}
+    time_t st_time;
+    if (getenv("SOURCE_DATE_EPOCH")) {
+        st_time = atol(getenv("SOURCE_DATE_EPOCH"));
+    } else {
+        st_time = s.st_mtime;
+    }
 
-	return st_time;
+    return st_time;
 }

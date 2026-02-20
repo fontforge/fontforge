@@ -93,7 +93,8 @@ static bool resolve_args(const ArgData& args, std::vector<std::string>& argv) {
             }
         }
         if (!found) {
-            fprintf(stderr, "could not resolve the location to %s\n", arg.c_str());
+            fprintf(stderr, "could not resolve the location to %s\n",
+                    arg.c_str());
             return false;
         }
     }
@@ -135,7 +136,8 @@ static bool setup_test_dir(ArgData& args) {
 
 #ifdef _WIN32
 
-static int run_process(const std::string& workdir, const std::vector<std::string>& argv_vec) {
+static int run_process(const std::string& workdir,
+                       const std::vector<std::string>& argv_vec) {
     // Build command line
     std::string cmdline;
     for (size_t i = 0; i < argv_vec.size(); i++) {
@@ -158,15 +160,8 @@ static int run_process(const std::string& workdir, const std::vector<std::string
     std::vector<char> cmdline_buf(cmdline.begin(), cmdline.end());
     cmdline_buf.push_back('\0');
 
-    if (!CreateProcessA(
-            nullptr,
-            cmdline_buf.data(),
-            nullptr, nullptr,
-            FALSE,
-            0,
-            nullptr,
-            workdir.c_str(),
-            &si, &pi)) {
+    if (!CreateProcessA(nullptr, cmdline_buf.data(), nullptr, nullptr, FALSE, 0,
+                        nullptr, workdir.c_str(), &si, &pi)) {
         fprintf(stderr, "CreateProcess failed: %lu\n", GetLastError());
         return 1;
     }
@@ -184,7 +179,8 @@ static int run_process(const std::string& workdir, const std::vector<std::string
 
 #else  // POSIX
 
-static int run_process(const std::string& workdir, const std::vector<std::string>& argv_vec) {
+static int run_process(const std::string& workdir,
+                       const std::vector<std::string>& argv_vec) {
     pid_t pid = fork();
 
     if (pid < 0) {
@@ -224,7 +220,8 @@ static int run_process(const std::string& workdir, const std::vector<std::string
 
 #endif
 
-static int run_executable(const ArgData& args, const std::vector<std::string>& argv_vec) {
+static int run_executable(const ArgData& args,
+                          const std::vector<std::string>& argv_vec) {
     // Print command
     fprintf(stderr, "Running:");
     for (const auto& s : argv_vec) {
@@ -236,7 +233,8 @@ static int run_executable(const ArgData& args, const std::vector<std::string>& a
     return run_process(args.workdir.string(), argv_vec);
 }
 
-static int run_ff_systest(const ArgData& args, const std::vector<std::string>& extra_args) {
+static int run_ff_systest(const ArgData& args,
+                          const std::vector<std::string>& extra_args) {
     std::vector<std::string> test_args;
     test_args.push_back(args.binary);
     test_args.push_back("-lang");
@@ -250,7 +248,8 @@ static int run_ff_systest(const ArgData& args, const std::vector<std::string>& e
     return run_executable(args, test_args);
 }
 
-static int run_pyhook_systest(const ArgData& args, const std::vector<std::string>& extra_args) {
+static int run_pyhook_systest(const ArgData& args,
+                              const std::vector<std::string>& extra_args) {
 #ifdef _WIN32
     // Add exedir to PATH
     std::string path = args.exedir.string() + ";" + get_env("PATH");
@@ -277,19 +276,24 @@ int main(int argc, char* argv[]) {
     std::vector<std::string> extra_args;
 
     try {
-        cxxopts::Options options("systestdriver", "System test driver for FontForge");
+        cxxopts::Options options("systestdriver",
+                                 "System test driver for FontForge");
 
-        options.add_options()
-            ("m,mode", "The mode to run in (ff|py|pyhook)", cxxopts::value<std::string>())
-            ("b,binary", "The path to the executable", cxxopts::value<std::string>())
-            ("c,script", "The path to the test script", cxxopts::value<std::string>())
-            ("d,desc", "The test description", cxxopts::value<std::string>())
-            ("e,exedir", "Directory containing built executables", cxxopts::value<std::string>())
-            ("l,libdir", "Directory containing built libraries", cxxopts::value<std::string>())
-            ("a,argdir", "Directories to resolve test arguments", cxxopts::value<std::vector<std::string>>())
-            ("s,skip-as-pass", "Exit 0 instead of 77 for skipped tests")
-            ("h,help", "Print usage")
-        ;
+        options.add_options()("m,mode", "The mode to run in (ff|py|pyhook)",
+                              cxxopts::value<std::string>())(
+            "b,binary", "The path to the executable",
+            cxxopts::value<std::string>())("c,script",
+                                           "The path to the test script",
+                                           cxxopts::value<std::string>())(
+            "d,desc", "The test description", cxxopts::value<std::string>())(
+            "e,exedir", "Directory containing built executables",
+            cxxopts::value<std::string>())(
+            "l,libdir", "Directory containing built libraries",
+            cxxopts::value<std::string>())(
+            "a,argdir", "Directories to resolve test arguments",
+            cxxopts::value<std::vector<std::string>>())(
+            "s,skip-as-pass", "Exit 0 instead of 77 for skipped tests")(
+            "h,help", "Print usage");
 
         options.allow_unrecognised_options();
 
@@ -301,13 +305,18 @@ int main(int argc, char* argv[]) {
         }
 
         if (result.count("mode")) args.mode = result["mode"].as<std::string>();
-        if (result.count("binary")) args.binary = result["binary"].as<std::string>();
-        if (result.count("script")) args.script = result["script"].as<std::string>();
+        if (result.count("binary"))
+            args.binary = result["binary"].as<std::string>();
+        if (result.count("script"))
+            args.script = result["script"].as<std::string>();
         if (result.count("desc")) args.desc = result["desc"].as<std::string>();
-        if (result.count("exedir")) args.exedir = result["exedir"].as<std::string>();
-        if (result.count("libdir")) args.libdir = result["libdir"].as<std::string>();
+        if (result.count("exedir"))
+            args.exedir = result["exedir"].as<std::string>();
+        if (result.count("libdir"))
+            args.libdir = result["libdir"].as<std::string>();
         if (result.count("argdir")) {
-            for (const auto& dir : result["argdir"].as<std::vector<std::string>>()) {
+            for (const auto& dir :
+                 result["argdir"].as<std::vector<std::string>>()) {
                 args.argdirs.push_back(fs::path(dir));
             }
         }
@@ -341,15 +350,19 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    fprintf(stderr, "Test %s(mode=%s): %s\n", args.script.string().c_str(), args.mode.c_str(), args.desc.c_str());
+    fprintf(stderr, "Test %s(mode=%s): %s\n", args.script.string().c_str(),
+            args.mode.c_str(), args.desc.c_str());
 
     int retcode = 0;
 
     if (!resolve_args(args, extra_args)) {
-        fprintf(stderr, "Test %s skipped as a required file is missing!\n", args.script.string().c_str());
+        fprintf(stderr, "Test %s skipped as a required file is missing!\n",
+                args.script.string().c_str());
         retcode = args.skip_as_pass ? 0 : 77;
     } else if (!setup_test_dir(args)) {
-        fprintf(stderr, "Test %s errored as test directory could not be set up\n", args.script.string().c_str());
+        fprintf(stderr,
+                "Test %s errored as test directory could not be set up\n",
+                args.script.string().c_str());
         retcode = 1;
     } else {
         if (args.mode == "pyhook") {
@@ -358,8 +371,12 @@ int main(int argc, char* argv[]) {
             retcode = run_ff_systest(args, extra_args);
         }
 
-        fprintf(stderr, "Test %s %s with exit code %d\n", args.script.string().c_str(),
-            retcode == 0 ? "passed" : retcode == 77 ? "skipped" : "failed", retcode);
+        fprintf(stderr, "Test %s %s with exit code %d\n",
+                args.script.string().c_str(),
+                retcode == 0    ? "passed"
+                : retcode == 77 ? "skipped"
+                                : "failed",
+                retcode);
     }
 
     return retcode;

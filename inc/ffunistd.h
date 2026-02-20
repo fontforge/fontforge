@@ -77,7 +77,7 @@
 
 /* P_tmpdir - POSIX temp directory path */
 static inline char* _ff_get_tmpdir(void) {
-    char *dir = getenv("TEMP");
+    char* dir = getenv("TEMP");
     if (dir == NULL) dir = getenv("TMP");
     if (dir == NULL) dir = (char*)"C:\\Temp";
     return dir;
