@@ -27,6 +27,7 @@
 
 #include <fontforge-config.h>
 
+#include "charview_private.h"
 #include "cvundoes.h"
 #include "fontforgeui.h"
 #include "spiro.h"

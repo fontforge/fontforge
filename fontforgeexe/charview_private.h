@@ -31,6 +31,10 @@
 #include "gdraw.h"
 #include "views.h"
 
+#ifdef HAVE_GLIB
+#include "ffglib.h"
+#endif
+
 
 #define MID_Fit		2001
 #define MID_ZoomIn	2002
@@ -255,5 +259,27 @@ extern void CVMerge(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void CVMergeToLine(GWindow gw,struct gmenuitem *mi,GEvent *e);
 extern void CVLSelectLayer(CharView *cv, int layer);
 
+#ifdef HAVE_GLIB
+/**
+ * Get all the selected points in the current cv.
+ * Caller must g_list_free() the returned value.
+ */
+extern GList_Glib* CVGetSelectedPoints(CharView *cv);
+
+/**
+ * This will call your visitor function 'f' on any selected BCP. This
+ * is regardless of if the BCP is the next or prev BCP for it's
+ * splinepoint.
+ *
+ * This function doesn't use udata at all, it simply passes it on to
+ * your visitor function so it may do something with it like record
+ * results or take optional parameters.
+ */
+extern void visitSelectedControlPoints( GHashTable *col, visitSelectedControlPointsVisitor f, gpointer udata );
+/**
+ * NOTE: doesn't do all, just all on selected spline.
+ */
+extern void visitAllControlPoints( GHashTable *col, visitSelectedControlPointsVisitor f, gpointer udata );
+#endif
 
 #endif /* FONTFORGE_CHARVIEW_PRIVATE_H */

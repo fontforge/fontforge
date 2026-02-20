@@ -33,10 +33,6 @@
 #include "ttfinstrs.h"
 
 #include "baseviews.h"
-#ifdef HAVE_GLIB
-#include "ffglib.h"
-#endif
-
 #include "dlist.h"
 #include "ggadget.h"
 #include "multidialog.h"
@@ -475,9 +471,6 @@ typedef struct fontview {
     int sel_index;
     struct lookup_subtable *cur_subtable;
     struct qg_data *qg;
-#ifdef HAVE_GLIB
-    GPid pid_webfontserver;
-#endif
     bool script_unsaved; // Whether or not there's an unsaved script in script dialog
 } FontView;
 
@@ -955,11 +948,6 @@ extern void CVSetCharChanged(CharView *cv,int changed);
 extern int CVAnySel(CharView *cv, int *anyp, int *anyr, int *anyi, int *anya);
 extern int CVAnySelPoints(CharView *cv);
 
-/**
- * Get all the selected points in the current cv.
- * Caller must g_list_free() the returned value.
- */
-extern GList_Glib* CVGetSelectedPoints(CharView *cv);
 extern void CVSelectPointAt(CharView *cv);
 extern int CVClearSel(CharView *cv);
 extern int CVSetSel(CharView *cv,int mask);
@@ -1455,21 +1443,6 @@ extern void CVVisitAllControlPoints( CharView *cv, bool preserveState,
  */
 extern void CVUnselectAllBCP( CharView *cv );
 
-
-/**
- * This will call your visitor function 'f' on any selected BCP. This
- * is regardless of if the BCP is the next or prev BCP for it's
- * splinepoint.
- *
- * This function doesn't use udata at all, it simply passes it on to
- * your visitor function so it may do something with it like record
- * results or take optional parameters.
- */
-extern void visitSelectedControlPoints( GHashTable *col, visitSelectedControlPointsVisitor f, gpointer udata );
-/**
- * NOTE: doesn't do all, just all on selected spline.
- */
-extern void visitAllControlPoints( GHashTable *col, visitSelectedControlPointsVisitor f, gpointer udata );
 
 extern void CVVisitAdjacentToSelectedControlPoints( CharView *cv, bool preserveState,
 						    visitSelectedControlPointsVisitor f, void* udata );

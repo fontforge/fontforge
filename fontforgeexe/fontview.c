@@ -7184,8 +7184,6 @@ static FontView *__FontViewCreate(SplineFont *sf) {
     PyFF_InitFontHook((FontViewBase *)fv);
 #endif
 
-    fv->pid_webfontserver = 0;
-
 return( fv );
 }
 

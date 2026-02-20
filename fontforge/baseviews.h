@@ -28,9 +28,6 @@
 #ifndef FONTFORGE_BASEVIEWS_H
 #define FONTFORGE_BASEVIEWS_H
 
-#ifdef HAVE_GLIB
-#include "ffglib.h"
-#endif
 #include "splinefont.h"
 #include "sd.h"
 

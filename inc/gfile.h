@@ -44,6 +44,19 @@ typedef long long off_t;
 #include <sys/types.h>
 #endif
 
+/* MSVC stat compatibility - provides ff_stat_t, ff_stat(), ff_fstat() */
+#include <sys/stat.h>
+
+#ifdef _MSC_VER
+typedef struct __stat64 ff_stat_t;
+#define ff_stat(p, b) _stat64(p, b)
+#define ff_fstat(f, b) _fstat64(f, b)
+#else
+typedef struct stat ff_stat_t;
+#define ff_stat(p, b) stat(p, b)
+#define ff_fstat(f, b) fstat(f, b)
+#endif
+
 /* home directories for fontforge */
 enum { Cache, Config, Data };
 
