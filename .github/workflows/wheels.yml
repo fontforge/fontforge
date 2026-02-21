@@ -1,13 +1,14 @@
 # Build Python wheels for PyPI distribution
-# Triggered on version tags or manual dispatch
+# Triggered on YYYYMMDD version tags (e.g., 20260220)
+# Wheels are built with CalVer version (e.g., 2026.2.20)
 
 name: Build Wheels
 
 on:
-  # Build on version tags
+  # Build on YYYYMMDD version tags
   push:
     tags:
-      - 'v[0-9]*'
+      - '[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]'
   # Allow manual trigger for testing
   workflow_dispatch:
     inputs:
