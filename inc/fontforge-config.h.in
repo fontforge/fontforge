@@ -33,6 +33,9 @@
 /* The tagged version of FontForge. Additional versioning information in fontforge-version-extras.h */
 #define FONTFORGE_VERSION "@PROJECT_VERSION@"
 
+/* CalVer format for Python module (e.g., 2025.10.9 from 20251009) */
+#define FONTFORGE_PYTHON_VERSION "@FONTFORGE_PYTHON_VERSION@"
+
 /* The install prefix configured at configure/compile time, used as a last resort */
 #define FONTFORGE_INSTALL_PREFIX "@CMAKE_INSTALL_PREFIX@"
 
@@ -56,6 +59,7 @@
 /* Cygwin specific defines */
 
 #cmakedefine __CygWin 1
+
 
 #cmakedefine _BrokenBitmapImages 1
 
@@ -97,6 +101,8 @@
 #cmakedefine _NO_LIBPNG 1
 
 #cmakedefine _NO_LIBSPIRO 1
+
+#cmakedefine _NO_LIBUNIBREAK 1
 
 #cmakedefine _NO_LIBTIFF 1
 

@@ -42,7 +42,6 @@
 #include "stemdb.h"
 #include "tottfgpos.h"
 #include "utype.h"
-#include "views.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -538,9 +537,9 @@ void QuickBlues(SplineFont *_sf, int layer, BlueData *bd) {
     bd->base = base; bd->basebelow = basebelow;
 
     bcnt = 0;
-    if ( (pt=PSDictHasEntry(sf->private,"BlueValues"))!=NULL )
+    if ( (pt=PSDictHasEntry(sf->private_dict,"BlueValues"))!=NULL )
 	bcnt = PVAddBlues(bd,bcnt,pt);
-    if ( (pt=PSDictHasEntry(sf->private,"OtherBlues"))!=NULL )
+    if ( (pt=PSDictHasEntry(sf->private_dict,"OtherBlues"))!=NULL )
 	bcnt = PVAddBlues(bd,bcnt,pt);
     if ( bcnt==0 ) {
 	if ( basebelow==-1e10 ) basebelow = base;
@@ -2002,7 +2001,7 @@ return;
     (*hm)[index>>3] &= ~(0x80>>(index&7));
 }
 
-void SCModifyHintMasksAdd(SplineChar *sc,int layer, StemInfo *new) {
+void SCModifyHintMasksAdd(SplineChar *sc,int layer, StemInfo *stem) {
     SplineSet *spl;
     SplinePoint *sp;
     RefChar *ref;
@@ -2016,9 +2015,9 @@ void SCModifyHintMasksAdd(SplineChar *sc,int layer, StemInfo *new) {
     /* We've added a new stem. Figure out where it goes and modify the */
     /*  hintmasks accordingly */
 
-    for ( index=0, h=sc->hstem; h!=NULL && h!=new; ++index, h=h->next );
+    for ( index=0, h=sc->hstem; h!=NULL && h!=stem; ++index, h=h->next );
     if ( h==NULL )
-	for ( h=sc->vstem; h!=NULL && h!=new; ++index, h=h->next );
+	for ( h=sc->vstem; h!=NULL && h!=stem; ++index, h=h->next );
     if ( h==NULL )
 return;
 
@@ -3372,12 +3371,12 @@ int SplineCharIsFlexible(SplineChar *sc,int layer) {
     int i;
     MMSet *mm;
 
-    pt = PSDictHasEntry(sc->parent->private,"BlueShift");
+    pt = PSDictHasEntry(sc->parent->private_dict,"BlueShift");
     blueshift = 7;		/* use default value here */
     if ( pt!=NULL ) {
 	blueshift = strtol(pt,NULL,10);
 	if ( blueshift>21 ) blueshift = 21;
-    } else if ( PSDictHasEntry(sc->parent->private,"BlueValues")!=NULL )
+    } else if ( PSDictHasEntry(sc->parent->private_dict,"BlueValues")!=NULL )
 	blueshift = 7;
     if ( sc->parent->mm==NULL )
 return( _SplineCharIsFlexible(sc,layer,blueshift));
@@ -3432,12 +3431,12 @@ int SplineFontIsFlexible(SplineFont *sf,int layer, int flags) {
 return( 0 );
     }
 	
-    pt = PSDictHasEntry(sf->private,"BlueShift");
+    pt = PSDictHasEntry(sf->private_dict,"BlueShift");
     blueshift = 21;		/* maximum possible flex, not default */
     if ( pt!=NULL ) {
 	blueshift = strtol(pt,NULL,10);
 	if ( blueshift>21 ) blueshift = 21;
-    } else if ( PSDictHasEntry(sf->private,"BlueValues")!=NULL )
+    } else if ( PSDictHasEntry(sf->private_dict,"BlueValues")!=NULL )
 	blueshift = 7;	/* The BlueValues array may depend on BlueShift having its default value */
 
     for ( i=0; i<sf->glyphcnt; ++i )

@@ -57,13 +57,40 @@ Trivial example
 
 .. _python.extension:
 
-FontForge as a python extension
+FontForge as a Python extension
 -------------------------------
 
-In addition to embedding Python, FontForge typically installs a Python
-module accessible to the system's ``python`` executable, which can be
-accessed using:
+FontForge's Python modules can be used independently of the GUI application.
+
+Installation via pip
+^^^^^^^^^^^^^^^^^^^^
+
+::
+
+   pip install fontforge
+
+Pre-built wheels are available for:
+
+- Linux: x86_64, aarch64
+- macOS: x86_64, arm64
+- Windows: x86_64
+
+The wheels include all required native libraries (FreeType, libxml2, etc.).
+
+Installation from system packages
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+When FontForge is installed via system package manager or built from source
+with ``-DENABLE_PYTHON_EXTENSION=ON``, the modules are installed to the
+system Python's site-packages.
+
+Usage
+^^^^^
 
 ::
 
    >>> import fontforge
+   >>> import psMat
+
+For technical details on building wheels and the extension architecture,
+see :doc:`python-extension`.

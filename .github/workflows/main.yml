@@ -42,7 +42,11 @@ jobs:
             FFCONFIG="$FFCONFIG -DENABLE_GUI=OFF -DENABLE_PYTHON_SCRIPTING=OFF"
           fi
           mkdir build && pushd build && cmake -GNinja $FFCONFIG .. && popd
-          ninja -C build all potfiles install
+          if [ "${{ matrix.target }}" == "NoUI" ]; then
+            ninja -C build all install
+          else
+            ninja -C build all potfiles install
+          fi
       - name: Run FontForge tests
         run: CTEST_PARALLEL_LEVEL=100 ninja -C repo/build check
       - name: Build dist bundle
@@ -80,6 +84,7 @@ jobs:
         env:
           CROWDIN_API_KEY: ${{ secrets.CROWDIN_API_KEY }}
         run: java -jar $DEPSPREFIX/crowdin-cli.jar upload -c .crowdin.yml
+
   mac:
     runs-on: macos-14
     steps:
@@ -120,6 +125,7 @@ jobs:
         with:
           name: appbundle
           path: repo/build/osx/FontForge-*.dmg
+
   windows:
     runs-on: windows-latest
     env:
@@ -167,3 +173,63 @@ jobs:
           path: |
             fontforgebuilds/*.7z
             fontforgebuilds/fontforge-setup/*.exe
+
+  # Test Python module build with MSVC toolchain
+  # This ensures compatibility with Python.org Windows builds (which use MSVC)
+  windows-msvc:
+    runs-on: windows-latest
+    env:
+      VCPKG_BINARY_SOURCES: "clear;files,${{ github.workspace }}/vcpkg-cache,readwrite"
+    steps:
+      - uses: actions/checkout@v4
+      - name: Restore vcpkg binary cache
+        id: vcpkg-cache
+        uses: actions/cache/restore@v4
+        with:
+          path: vcpkg-cache
+          key: vcpkg-files-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: |
+            vcpkg-files-${{ runner.os }}-
+      - name: Create vcpkg cache directory
+        run: New-Item -ItemType Directory -Force -Path vcpkg-cache
+      - name: Setup vcpkg
+        uses: lukka/run-vcpkg@v11
+        with:
+          vcpkgJsonGlob: 'vcpkg.json'
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Configure
+        run: |
+          $pythonExe = (Get-Command python).Source
+          Write-Host "Using Python: $pythonExe"
+          cmake -B build -G "NMake Makefiles" `
+            -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_ROOT/scripts/buildsystems/vcpkg.cmake" `
+            -DCMAKE_BUILD_TYPE=Release `
+            -DPython3_EXECUTABLE="$pythonExe" `
+            -DENABLE_GUI=OFF `
+            -DENABLE_PYTHON_SCRIPTING=ON `
+            -DENABLE_PYTHON_EXTENSION=ON `
+            -DENABLE_LIBSPIRO=OFF `
+            -DENABLE_WOFF2=OFF `
+            -DENABLE_DOCS=OFF `
+            -DBUILD_SHARED_LIBS=ON
+      - name: Build
+        run: cmake --build build
+      - name: Run pyhook tests
+        run: |
+          # Copy DLLs to lib directory so Python can find them
+          Copy-Item build\bin\*.dll build\lib\ -Force
+          Copy-Item build\vcpkg_installed\x64-windows\bin\*.dll build\lib\ -Force -ErrorAction SilentlyContinue
+          ctest --test-dir build -R "_pyhook" --output-on-failure
+      - name: Save vcpkg binary cache
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: vcpkg-cache
+          key: vcpkg-files-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}

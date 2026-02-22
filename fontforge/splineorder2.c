@@ -39,7 +39,7 @@
 #include <locale.h>
 #include <math.h>
 #include <time.h>
-#include <unistd.h>
+#include "ffunistd.h"
 #ifdef HAVE_IEEEFP_H
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif

@@ -31,6 +31,7 @@
 
 #include "cvundoes.h"
 #include "encoding.h"
+#include "ffglib_compat.h"
 #include "fontforge.h"
 #include "fvimportbdf.h"
 #include "gfile.h"
@@ -3624,64 +3625,64 @@ return( copy( "[]" ));
 return( ret );
 }
 
-static void privateadd(struct psdict *private,char *key,char *value) {
+static void privateadd(struct psdict *private_dict,char *key,char *value) {
     if ( value==NULL )
 return;
-    private->keys[private->next] = copy(key);
-    private->values[private->next++] = value;
+    private_dict->keys[private_dict->next] = copy(key);
+    private_dict->values[private_dict->next++] = value;
 }
 
-static void privateaddint(struct psdict *private,char *key,int val) {
+static void privateaddint(struct psdict *private_dict,char *key,int val) {
     char buf[20];
     if ( val==0 )
 return;
     sprintf( buf,"%d", val );
-    privateadd(private,key,copy(buf));
+    privateadd(private_dict,key,copy(buf));
 }
 
-static void privateaddintarray(struct psdict *private,char *key,int val) {
+static void privateaddintarray(struct psdict *private_dict,char *key,int val) {
     char buf[20];
     if ( val==0 )
 return;
     sprintf( buf,"[%d]", val );
-    privateadd(private,key,copy(buf));
+    privateadd(private_dict,key,copy(buf));
 }
 
-static void privateaddreal(struct psdict *private,char *key,double val,double def) {
+static void privateaddreal(struct psdict *private_dict,char *key,double val,double def) {
     char buf[40];
     if ( val==def )
 return;
     sprintf( buf,"%g", val );
-    privateadd(private,key,copy(buf));
+    privateadd(private_dict,key,copy(buf));
 }
 
-static void cffprivatefillup(struct psdict *private, struct topdicts *dict) {
-    private->cnt = 14;
-    private->keys = malloc(14*sizeof(char *));
-    private->values = malloc(14*sizeof(char *));
-    privateadd(private,"BlueValues",
+static void cffprivatefillup(struct psdict *private_dict, struct topdicts *dict) {
+    private_dict->cnt = 14;
+    private_dict->keys = malloc(14*sizeof(char *));
+    private_dict->values = malloc(14*sizeof(char *));
+    privateadd(private_dict,"BlueValues",
 	    realarray2str(dict->bluevalues,sizeof(dict->bluevalues)/sizeof(dict->bluevalues[0]),true));
-    privateadd(private,"OtherBlues",
+    privateadd(private_dict,"OtherBlues",
 	    realarray2str(dict->otherblues,sizeof(dict->otherblues)/sizeof(dict->otherblues[0]),true));
-    privateadd(private,"FamilyBlues",
+    privateadd(private_dict,"FamilyBlues",
 	    realarray2str(dict->familyblues,sizeof(dict->familyblues)/sizeof(dict->familyblues[0]),true));
-    privateadd(private,"FamilyOtherBlues",
+    privateadd(private_dict,"FamilyOtherBlues",
 	    realarray2str(dict->familyotherblues,sizeof(dict->familyotherblues)/sizeof(dict->familyotherblues[0]),true));
-    privateaddreal(private,"BlueScale",dict->bluescale,0.039625);
-    privateaddreal(private,"BlueShift",dict->blueshift,7);
-    privateaddreal(private,"BlueFuzz",dict->bluefuzz,1);
-    privateaddintarray(private,"StdHW",dict->stdhw);
-    privateaddintarray(private,"StdVW",dict->stdvw);
-    privateadd(private,"StemSnapH",
+    privateaddreal(private_dict,"BlueScale",dict->bluescale,0.039625);
+    privateaddreal(private_dict,"BlueShift",dict->blueshift,7);
+    privateaddreal(private_dict,"BlueFuzz",dict->bluefuzz,1);
+    privateaddintarray(private_dict,"StdHW",dict->stdhw);
+    privateaddintarray(private_dict,"StdVW",dict->stdvw);
+    privateadd(private_dict,"StemSnapH",
 	    realarray2str(dict->stemsnaph,sizeof(dict->stemsnaph)/sizeof(dict->stemsnaph[0]),false));
-    privateadd(private,"StemSnapV",
+    privateadd(private_dict,"StemSnapV",
 	    realarray2str(dict->stemsnapv,sizeof(dict->stemsnapv)/sizeof(dict->stemsnapv[0]),false));
     if ( dict->forcebold )
-	privateadd(private,"ForceBold",copy("true"));
+	privateadd(private_dict,"ForceBold",copy("true"));
     if ( dict->forceboldthreshold!=0 )
-	privateaddreal(private,"ForceBoldThreshold",dict->forceboldthreshold,0);
-    privateaddint(private,"LanguageGroup",dict->languagegroup);
-    privateaddreal(private,"ExpansionFactor",dict->expansionfactor,0.06);
+	privateaddreal(private_dict,"ForceBoldThreshold",dict->forceboldthreshold,0);
+    privateaddint(private_dict,"LanguageGroup",dict->languagegroup);
+    privateaddreal(private_dict,"ExpansionFactor",dict->expansionfactor,0.06);
 }
 
 static SplineFont *cffsffillup(struct topdicts *subdict, char **strings,
@@ -3720,8 +3721,8 @@ static SplineFont *cffsffillup(struct topdicts *subdict, char **strings,
     sf->strokedfont = subdict->painttype==2;
 
     if ( subdict->private_size>0 ) {
-	sf->private = calloc(1,sizeof(struct psdict));
-	cffprivatefillup(sf->private,subdict);
+	sf->private_dict = calloc(1,sizeof(struct psdict));
+	cffprivatefillup(sf->private_dict,subdict);
     }
 return( sf );
 }
@@ -3773,8 +3774,8 @@ static void cffinfofillup(struct ttfinfo *info, struct topdicts *dict,
     info->strokedfont = dict->painttype==2;
 
     if ( dict->private_size>0 ) {
-	info->private = calloc(1,sizeof(struct psdict));
-	cffprivatefillup(info->private,dict);
+	info->private_dict = calloc(1,sizeof(struct psdict));
+	cffprivatefillup(info->private_dict,dict);
     }
     if ( dict->ros_registry!=-1 ) {
 	info->cidregistry = copy(getstrid(dict->ros_registry,strings,scnt,info));
@@ -5201,7 +5202,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
     /*  (even type42)							      */
     if ( xuid!=NULL && info->fd==NULL && info->xuid==NULL ) {
 	info->xuid = malloc(strlen(xuid)+20);
-	sprintf(info->xuid,"[%s %d]", xuid, (rand()&0xffffff));
+	sprintf(info->xuid,"[%s %d]", xuid, (ff_random_int()&0xffffff));
     }
 
     if ( info->postscript_start!=0 ) {
@@ -6163,7 +6164,7 @@ static SplineFont *SFFillFromTTF(struct ttfinfo *info) {
     if ( info->vhea_start!=0 && info->vmetrics_start!=0 )
 	sf->hasvmetrics = true;
     sf->descent = info->descent;
-    sf->private = info->private;
+    sf->private_dict = info->private_dict;
     sf->xuid = info->xuid;
     sf->uniqueid = info->uniqueid;
     sf->pfminfo = info->pfminfo;

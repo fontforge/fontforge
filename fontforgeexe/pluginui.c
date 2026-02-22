@@ -261,7 +261,7 @@ struct plg_data {
 
 static int PLUG_OK(GGadget *g, GEvent *e) {
     int len, i;
-    GList_Glib *l;
+    FFList *l;
     struct plg_data *d = (struct plg_data *) GDrawGetUserData(GGadgetGetWindow(g));
 
     if (e->type != et_controlevent || e->u.control.subtype != et_buttonactivate) {
@@ -275,13 +275,13 @@ static int PLUG_OK(GGadget *g, GEvent *e) {
         }
     }
 
-    g_list_free(g_steal_pointer(&plugin_data)); // Won't free ->data elements
+    ff_list_free(ff_steal_pointer(&plugin_data)); // Won't free ->data elements
     GGadget *list = GWidgetGetControl(d->gw, CID_PluginList);
     GTextInfo **ti = GGadgetGetList(list, &len);
     for (i = 0; i < len; ++i) {
         PluginEntry *pe = (PluginEntry *) ti[i]->userdata;
         pe->startup_mode = pe->new_mode;
-        plugin_data = g_list_append(plugin_data, pe);
+        plugin_data = ff_list_append(plugin_data, pe);
     }
     SavePluginConfig();
 
@@ -346,8 +346,8 @@ static unichar_t *pluginDescString(PluginEntry *pe, int *has_err) {
 
 static void FigurePluginList(struct plg_data *d) {
     GGadget *list = GWidgetGetControl(d->gw, CID_PluginList);
-    GList_Glib *p;
-    int l = g_list_length(plugin_data), i, has_err;
+    FFList *p;
+    int l = ff_list_length(plugin_data), i, has_err;
 
     GGadgetClearList(list);
 

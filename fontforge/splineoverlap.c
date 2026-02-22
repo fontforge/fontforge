@@ -38,6 +38,7 @@
 #include "splineutil2.h"
 
 #include <assert.h>
+#include <float.h>
 #include <math.h>
 #include <stdarg.h>
 
@@ -990,7 +991,7 @@ struct inter_data {
     Monotonic *m, *otherm;
     bigreal t, othert;
     BasePoint inter;
-    int new;
+    int is_new;
 };
 
 static void SplitMonotonicAtT(Monotonic *m,int which,bigreal t,bigreal coord,
@@ -1025,7 +1026,7 @@ static void SplitMonotonicAtT(Monotonic *m,int which,bigreal t,bigreal coord,
 	cy = ((sy->a*t+sy->b)*t+sy->c)*t+sy->d;
 	if ( which==1 ) cy = coord; else if ( which==0 ) cx = coord;	/* Correct for rounding errors */
 	if ( pt!=NULL ) { cx = pt->inter.x; cy = pt->inter.y; }
-	id->new = false;
+	id->is_new = false;
     } else {
 	SONotify("Break monotonic from t = %f to t = %f at t = %f.\n", m->tstart, m->tend, t);
 	othert = t;
@@ -1060,7 +1061,7 @@ static void SplitMonotonicAtT(Monotonic *m,int which,bigreal t,bigreal coord,
 	} else {
 	    m->b.miny = otherm->b.maxy = cy;
 	}
-	id->new = true;
+	id->is_new = true;
     }
     id->m = m; id->otherm = otherm;
     id->t = t; id->othert = othert;
@@ -1212,7 +1213,7 @@ static void SplitMonotonicAtFlex(Monotonic *m,int which,bigreal coord,
       }
       if (doit) SplitMonotonicAtT(m,which,t,coord,id);
       else {
-        id->new = 1;
+        id->is_new = 1;
         id->t = t;
         id->inter.x = evalSpline(m->s, t, 0);
         id->inter.y = evalSpline(m->s, t, 1);
@@ -1569,15 +1570,15 @@ ValidateMListTs_IF_VERBOSE(il->monos)
     for ( Intersection * il = ilist; il!=NULL; il=il->next ) {
 ValidateMListTs_IF_VERBOSE(il->monos)
     }
-    if ( !id1.new && !id2.new ) {
+    if ( !id1.is_new && !id2.is_new ) {
     for ( Intersection * il = ilist; il!=NULL; il=il->next ) {
 ValidateMListTs_IF_VERBOSE(il->monos)
     }
 return( ilist );
     }
-    if ( !id1.new )
+    if ( !id1.is_new )
 	id2.inter = id1.inter; // Use the senior intersection if possible.
-    /* else if ( !id2.new ) */		/* We only use id2.inter */
+    /* else if ( !id2.is_new ) */		/* We only use id2.inter */
 	/* id1.inter = id2.inter;*/
     // ilist = check = _AddIntersection(ilist,id1.m,id1.otherm,id1.t,id1.othert,&id2.inter);
     // ilist = _AddIntersection(ilist,id2.m,id2.otherm,id2.t,id2.othert,&id2.inter);	/* Use id1.inter to avoid rounding errors */
@@ -2658,15 +2659,15 @@ static void MonosMarkConnected(Monotonic *startm,int needed,bigreal test,int whi
     }
 }
 
-static int IsNeeded(enum overlap_type ot,int winding, int nwinding, int ew, int new) {
+static int IsNeeded(enum overlap_type ot,int winding, int nwinding, int ew, int ew_new) {
     if ( ot==over_remove || ot==over_rmselected ) {
 return( winding==0 || nwinding==0 );
     } else if ( ot==over_intersect || ot==over_intersel ) {
 return( !( (winding>-2 && winding<2 && nwinding>-2 && nwinding<2) ||
 		    ((winding<=-2 || winding>=2) && (nwinding<=-2 || nwinding>=2))));
     } else if ( ot == over_exclude ) {
-return( !( (( winding==0 || nwinding==0 ) && ew==0 && new==0 ) ||
-		    (winding!=0 && (( ew!=0 && new==0 ) || ( ew==0 && new!=0))) ));
+return( !( (( winding==0 || nwinding==0 ) && ew==0 && ew_new==0 ) ||
+		    (winding!=0 && (( ew!=0 && ew_new==0 ) || ( ew==0 && ew_new!=0))) ));
     }
 return( false );
 }
@@ -2677,7 +2678,7 @@ static void FigureNeeds(Monotonic *ms,int which, extended test, Monotonic **spac
     /*  find the value of the other coord on that line */
     /*  Order them (by the other coord) */
     /*  then run along that line figuring out which monotonics are needed */
-    int i, winding, ew, close, n;
+    int i, winding, ew, ew_new, close, n;
 
     TryHarderWhenClose(which,space,MonotonicFindAt(ms,which,test,space),NULL);
 
@@ -2685,12 +2686,12 @@ static void FigureNeeds(Monotonic *ms,int which, extended test, Monotonic **spac
     for ( i=0; space[i]!=NULL; ++i ) {
 	int needed;
 	Monotonic *m, *nm;
-	int new;
+	int is_new;
 	int nwinding, nnwinding, nneeded, nnew, niwinding, niew, nineeded, inneeded, inwinding, inew;
       /* retry: */
 	needed = false;
 	nwinding=winding;
-	new=ew;
+	ew_new=ew;
 	m = space[i];
 	if ( m->mutual_collapse )
     continue;
@@ -2700,7 +2701,7 @@ static void FigureNeeds(Monotonic *ms,int which, extended test, Monotonic **spac
 	    nm = space[i+n];
 	} while ( nm!=NULL && nm->mutual_collapse );
 	if ( m->exclude )
-	    new += ( (&m->xup)[which] ? 1 : -1 );
+	    ew_new += ( (&m->xup)[which] ? 1 : -1 );
 	else
 	    nwinding += ( (&m->xup)[which] ? 1 : -1 );
 	/* We do some look ahead and figure out the neededness of the next */
@@ -2714,7 +2715,7 @@ static void FigureNeeds(Monotonic *ms,int which, extended test, Monotonic **spac
 	/* nineeded -- next mono is needed with reversed order */
 	/* inneeded -- cur mono is needed with reversed order */
 	niwinding = winding; niew = ew;
-	nnwinding = nwinding; nnew = new;
+	nnwinding = nwinding; nnew = ew_new;
 	if ( nm!=NULL ) {
 	    if ( nm->exclude ) {
 		nnew += ( (&nm->xup)[which] ? 1 : -1 );
@@ -2729,8 +2730,8 @@ static void FigureNeeds(Monotonic *ms,int which, extended test, Monotonic **spac
 	    inew += ( (&m->xup)[which] ? 1 : -1 );
 	else
 	    inwinding += ( (&m->xup)[which] ? 1 : -1 );
-	needed = IsNeeded(ot,winding,nwinding,ew,new);
-	nneeded = IsNeeded(ot,nwinding,nnwinding,new,nnew);
+	needed = IsNeeded(ot,winding,nwinding,ew,ew_new);
+	nneeded = IsNeeded(ot,nwinding,nnwinding,ew_new,nnew);
 	nineeded = IsNeeded(ot,winding,niwinding,ew,niew);
 	inneeded = IsNeeded(ot,niwinding,inwinding,niew,inew);
 	if ( nm!=NULL )
@@ -2772,7 +2773,7 @@ static void FigureNeeds(Monotonic *ms,int which, extended test, Monotonic **spac
 	    }
 	}
 	winding = nwinding;
-	ew = new;
+	ew = ew_new;
     }
     if ( winding!=0 )
 	SOError( "Winding number did not return to 0 when %s=%g\n",
@@ -3359,7 +3360,7 @@ static SplineSet *JoinAllNeeded(Intersection *ilist) {
 return( head );
 }
 
-static SplineSet *MergeOpenAndFreeClosed(SplineSet *new,SplineSet *old,
+static SplineSet *MergeOpenAndFreeClosed(SplineSet *new_ss,SplineSet *old,
 	enum overlap_type ot) {
     SplineSet *next;
 
@@ -3368,15 +3369,15 @@ static SplineSet *MergeOpenAndFreeClosed(SplineSet *new,SplineSet *old,
 	if ( old->first->prev==NULL ||
 		(( ot==over_rmselected || ot==over_intersel || ot==over_fisel) &&
 		  !SSIsSelected(old)) ) {
-	    old->next = new;
-	    new = old;
+	    old->next = new_ss;
+	    new_ss = old;
 	} else {
 	    old->next = NULL;
 	    SplinePointListFree(old);
 	}
 	old = next;
     }
-return(new);
+return(new_ss);
 }
 
 void FreeMonotonics(Monotonic *m) {
@@ -3534,15 +3535,15 @@ static SplineSet *SSRemoveTiny(SplineSet *base) {
 		    }
 		} else {
 		    /* Leave the spline, since it goes places, but move the two points together */
-		    BasePoint new;
-		    new.x = (sp->me.x+nsp->me.x)/2;
-		    new.y = (sp->me.y+nsp->me.y)/2;
-		    dx = new.x-sp->me.x; dy = new.y-sp->me.y;
-		    sp->me = new;
+		    BasePoint newpt;
+		    newpt.x = (sp->me.x+nsp->me.x)/2;
+		    newpt.y = (sp->me.y+nsp->me.y)/2;
+		    dx = newpt.x-sp->me.x; dy = newpt.y-sp->me.y;
+		    sp->me = newpt;
 		    sp->nextcp.x += dx; sp->nextcp.y += dy;
 		    sp->prevcp.x += dx; sp->prevcp.y += dy;
-		    dx = new.x-nsp->me.x; dy = new.y-nsp->me.y;
-		    nsp->me = new;
+		    dx = newpt.x-nsp->me.x; dy = newpt.y-nsp->me.y;
+		    nsp->me = newpt;
 		    nsp->nextcp.x += dx; nsp->nextcp.y += dy;
 		    nsp->prevcp.x += dx; nsp->prevcp.y += dy;
 		    if (sp->next->order2) {

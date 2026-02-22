@@ -3,6 +3,10 @@
 
 #include "ttf.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* The MATH table */
 extern void otf_read_math(FILE *ttf, struct ttfinfo *info);
 extern void otf_read_math_used(FILE *ttf, struct ttfinfo *info);
@@ -23,5 +27,9 @@ extern void readttfmort_glyphsused(FILE *ttf, struct ttfinfo *info);
 extern void readttfopbd(FILE *ttf, struct ttfinfo *info);
 extern void readttfprop(FILE *ttf, struct ttfinfo *info);
 extern void GuessNamesFromGSUB(FILE *ttf, struct ttfinfo *info);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_PARSETTFATT_H */

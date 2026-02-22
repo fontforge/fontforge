@@ -12,6 +12,7 @@ means use the old interpreter)
 
    scripting-alpha
    python
+   python-extension
 
 .. contents::
    :backlinks: none

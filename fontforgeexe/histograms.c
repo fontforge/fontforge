@@ -563,7 +563,7 @@ static void HistResize(struct hist_dlg *hist) {
 static void HistSet(struct hist_dlg *hist) {
     char *primary, *secondary;
     char *temp;
-    struct psdict *p = hist->private ? hist->private : hist->sf->private;
+    struct psdict *p = hist->private ? hist->private : hist->sf->private_dict;
     const unichar_t *ret1, *ret2;
 
     switch ( hist->which ) {
@@ -584,7 +584,7 @@ static void HistSet(struct hist_dlg *hist) {
 	    (*ret2=='\0' || uc_strcmp(ret2,"[]")==0 ) && p==NULL )
 return;
     if ( p==NULL ) {
-	hist->sf->private = p = calloc(1,sizeof(struct psdict));
+	hist->sf->private_dict = p = calloc(1,sizeof(struct psdict));
 	p->cnt = 10;
 	p->keys = calloc(10,sizeof(char *));
 	p->values = calloc(10,sizeof(char *));
@@ -757,7 +757,7 @@ void SFHistogram(SplineFont *sf,int layer, struct psdict *private, uint8_t *sele
     hist.sf = sf;
     hist.layer = layer;
     hist.private = private;
-    if ( private==NULL ) private = sf->private;
+    if ( private==NULL ) private = sf->private_dict;
     hist.selected = selected;
     hist.which = which;
     hist.barwidth = 6;

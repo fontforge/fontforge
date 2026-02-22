@@ -1,10 +1,8 @@
 ---
 BasedOnStyle: Google
----
-Language:                               Cpp
-Standard:                               c++17
-AccessModifierOffset: -3
+Standard: c++17
 IndentWidth: 4
+AccessModifierOffset: -3
 SpacesBeforeTrailingComments: 2
 SortIncludes: false
 IndentAccessModifiers: false

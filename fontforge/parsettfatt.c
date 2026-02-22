@@ -776,7 +776,7 @@ static AnchorClass **MarkGlyphsProcessMarks(FILE *ttf,int markoffset,
     AnchorClass **classes = calloc(classcnt,sizeof(AnchorClass *)), *ac;
     char buf[50];
     int i, cnt;
-    struct mr { uint16_t class, offset; } *at_offsets;
+    struct mr { uint16_t classnum, offset; } *at_offsets;
     SplineChar *sc;
 
     fseek(ttf,markoffset,SEEK_SET);
@@ -807,10 +807,10 @@ return( NULL );
 
     at_offsets = malloc(cnt*sizeof(struct mr));
     for ( i=0; i<cnt; ++i ) {
-	at_offsets[i].class = getushort(ttf);
+	at_offsets[i].classnum = getushort(ttf);
 	at_offsets[i].offset = getushort(ttf);
-	if ( at_offsets[i].class>=classcnt ) {
-	    at_offsets[i].class = 0;
+	if ( at_offsets[i].classnum>=classcnt ) {
+	    at_offsets[i].classnum = 0;
 	    if ( markglyphs[i]>=info->glyph_cnt )
 		LogError( _("Class out of bounds in GPOS mark sub-table") );
 	    else
@@ -825,7 +825,7 @@ return( NULL );
 	if ( sc==NULL || at_offsets[i].offset==0 )
     continue;
 	sc->anchor = readAnchorPoint(ttf,markoffset+at_offsets[i].offset,
-		classes[at_offsets[i].class],at_mark,sc->anchor,info);
+		classes[at_offsets[i].classnum],at_mark,sc->anchor,info);
     }
     free(at_offsets);
 return( classes );
@@ -1439,8 +1439,8 @@ return;
 
 	cnt = 0;
 	for ( i=0; i<rcnt; ++i ) for ( j=0; j<rules[i].scnt; ++j ) {
-	    rule[cnt].u.class.nclasses = rules[i].subrules[j].classindeces;
-	    rule[cnt].u.class.ncnt = rules[i].subrules[j].ccnt;
+	    rule[cnt].u.fpc_class.nclasses = rules[i].subrules[j].classindeces;
+	    rule[cnt].u.fpc_class.ncnt = rules[i].subrules[j].ccnt;
 	    rules[i].subrules[j].classindeces = NULL;
 	    rule[cnt].lookup_cnt = rules[i].subrules[j].scnt;
 	    rule[cnt].lookups = rules[i].subrules[j].sl;
@@ -1615,14 +1615,14 @@ return;
 
 	cnt = 0;
 	for ( i=0; i<rcnt; ++i ) for ( j=0; j<rules[i].scnt; ++j ) {
-	    rule[cnt].u.class.nclasses = rules[i].subrules[j].classindeces;
-	    rule[cnt].u.class.ncnt = rules[i].subrules[j].ccnt;
+	    rule[cnt].u.fpc_class.nclasses = rules[i].subrules[j].classindeces;
+	    rule[cnt].u.fpc_class.ncnt = rules[i].subrules[j].ccnt;
 	    rules[i].subrules[j].classindeces = NULL;
-	    rule[cnt].u.class.bclasses = rules[i].subrules[j].bci;
-	    rule[cnt].u.class.bcnt = rules[i].subrules[j].bccnt;
+	    rule[cnt].u.fpc_class.bclasses = rules[i].subrules[j].bci;
+	    rule[cnt].u.fpc_class.bcnt = rules[i].subrules[j].bccnt;
 	    rules[i].subrules[j].bci = NULL;
-	    rule[cnt].u.class.fclasses = rules[i].subrules[j].fci;
-	    rule[cnt].u.class.fcnt = rules[i].subrules[j].fccnt;
+	    rule[cnt].u.fpc_class.fclasses = rules[i].subrules[j].fci;
+	    rule[cnt].u.fpc_class.fcnt = rules[i].subrules[j].fccnt;
 	    rules[i].subrules[j].fci = NULL;
 	    rule[cnt].lookup_cnt = rules[i].subrules[j].scnt;
 	    rule[cnt].lookups = rules[i].subrules[j].sl;

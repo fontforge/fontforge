@@ -28,9 +28,12 @@
 #ifndef FONTFORGE_BASEVIEWS_H
 #define FONTFORGE_BASEVIEWS_H
 
-#include "ffglib.h"
 #include "splinefont.h"
 #include "sd.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 #define free_with_debug(x) { fprintf(stderr,"%p FREE()\n",x); free(x); }
 
@@ -81,6 +84,23 @@ typedef struct pressedOn {
     SplinePointList *pretransform_spl; /* If we want to draw an image of the original spl while doing something
 					* this is a copy of that original spl */
 } PressedOn;
+
+/* FindSel: context for hit-testing spline elements.
+ * This is the core struct with no UI dependencies.
+ * UI code may wrap this in a larger struct if it needs to associate
+ * additional UI-specific data (like GEvent). */
+typedef struct findsel {
+    real fudge;		/* One pixel fudge factor */
+    real xl,xh, yl, yh;	/* One pixel fudge factor */
+    real c_xl,c_xh, c_yl, c_yh;		/* fudge rectangle for control points, larger than above if alt is depressed */
+    unsigned int select_controls: 1;	/* notice control points */
+    unsigned int seek_controls: 1;	/* notice control points before base points */
+    unsigned int all_controls: 1;	/* notice control points even if the base points aren't selected (in truetype point numbering mode where all cps are visible) */
+    unsigned int alwaysshowcontrolpoints: 1; /* if the BCP are forced on, then we want the selection code paths
+					      * to also know that so the user can drag the BCP of a non selected splinepoint */
+    real scale;
+    PressedOn *p;
+} FindSel;
 
 /* Note: These are ordered as they are displayed in the tools palette */
 enum cvtools {
@@ -301,7 +321,7 @@ extern void FVRound2Int(FontViewBase *fv,real factor);
 extern void FVCanonicalStart(FontViewBase *fv);
 extern void FVCanonicalContours(FontViewBase *fv);
 extern void FVCluster(FontViewBase *fv);
-extern void CIDSetEncMap(FontViewBase *fv, SplineFont *new );
+extern void CIDSetEncMap(FontViewBase *fv, SplineFont *new_sf );
 extern void FVInsertInCID(FontViewBase *fv,SplineFont *sf);
 
 extern void FVAutoHint(FontViewBase *fv);
@@ -410,8 +430,8 @@ enum search_flags { sv_reverse = 0x1, sv_flips = 0x2, sv_rotate = 0x4,
 enum flipset { flip_none = 0, flip_x, flip_y, flip_xy };
 
 extern struct python_import_export {
-    struct _object *import;	/* None becomes NULL */
-    struct _object *export;	/* None becomes NULL */
+    struct _object *py_import;	/* None becomes NULL */
+    struct _object *py_export;	/* None becomes NULL */
     struct _object *data;	/* None stays None */
     char *name;
     char *extension;
@@ -448,5 +468,9 @@ extern void AutoKern2(SplineFont *sf, int layer,SplineChar **left,SplineChar **r
 extern void MVSelectFirstKerningTable(struct metricsview *mv);
 
 extern float joinsnap;
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_BASEVIEWS_H */

@@ -32,6 +32,10 @@
 
 #include "splinefont.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum fm_flags { fm_flag_afm = 0x1,
                 fm_flag_pfm = 0x2,
                 fm_flag_shortps = 0x4,
@@ -49,10 +53,10 @@ enum fm_flags { fm_flag_afm = 0x1,
                 fm_flag_dummyDSIG = 0x4000,
                 fm_flag_nofftm = 0x8000,
                 fm_flag_tfm = 0x10000,
-                fm_flag_nohintsubs = 0x20000,
+
                 fm_flag_noflex = 0x40000,
                 fm_flag_nopshints = 0x80000,
-                fm_flag_restrict256 = 0x100000,
+
                 fm_flag_round = 0x200000,
                 fm_flag_afmwithmarks = 0x400000,
                 fm_flag_pfed_lookups = 0x800000,
@@ -76,6 +80,10 @@ extern int GenerateScript(SplineFont *sf, char *filename, const char *bitmaptype
 
 #ifdef FONTFORGE_CONFIG_WRITE_PFM
 extern int WritePfmFile(char *filename, SplineFont *sf, EncMap *map, int layer);
+#endif
+
+#ifdef __cplusplus
+}
 #endif
 
 #endif /* FONTFORGE_SAVEFONT_H */

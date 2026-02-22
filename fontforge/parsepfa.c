@@ -44,7 +44,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <unistd.h>
+#include "ffunistd.h"
 
 struct fontparse {
     FontDict *fd, *mainfd;
@@ -876,10 +876,10 @@ static struct fontdict *MakeEmptyFont(void) {
     ret = calloc(1,sizeof(struct fontdict));
     ret->fontinfo = calloc(1,sizeof(struct fontinfo));
     ret->chars = calloc(1,sizeof(struct pschars));
-    ret->private = calloc(1,sizeof(struct private));
-    ret->private->subrs = calloc(1,sizeof(struct pschars));
-    ret->private->private = calloc(1,sizeof(struct psdict));
-    ret->private->leniv = 4;
+    ret->psprivate = calloc(1,sizeof(struct psprivate));
+    ret->psprivate->subrs = calloc(1,sizeof(struct pschars));
+    ret->psprivate->private_dict = calloc(1,sizeof(struct psdict));
+    ret->psprivate->leniv = 4;
     ret->encoding_name = &custom;
     ret->fontinfo->fstype = -1;
 return( ret );
@@ -1259,7 +1259,7 @@ static void findstring(struct fontparse *fp,struct pschars *subrs,int index,char
 		*bpt++ = val;
 	}
 	decodestr((unsigned char *) buffer,bpt-buffer);
-	bs = buffer + fp->fd->private->leniv;
+	bs = buffer + fp->fd->psprivate->leniv;
 	if ( bpt<bs ) bs=bpt;		/* garbage */
 	subrs->lens[index] = bpt-bs;
 	subrs->keys[index] = copy(nametok);
@@ -1553,7 +1553,7 @@ return;
 	}
 return;
     } else if ( fp->insubs ) {
-	struct pschars *subrs = fp->fd->private->subrs;
+	struct pschars *subrs = fp->fd->psprivate->subrs;
 	while ( isspace(*line)) ++line;
 	if ( strncmp(line,"dup ",4)==0 ) {
 	    int i;
@@ -1755,18 +1755,18 @@ return;
 	    fp->insubs = 0;
 return;
 	} else if ( strstr(line,"/Subrs")!=NULL ) {
-	    if ( fp->fd->private->subrs->next>0 ) {
+	    if ( fp->fd->psprivate->subrs->next>0 ) {
 		fp->ignore = true;
 		LogError( _("Ignoring duplicate /Subrs entry") );
 	    } else {
-		InitChars(fp->fd->private->subrs,line);
+		InitChars(fp->fd->psprivate->subrs,line);
 		fp->ignore = false;
 	    }
 	    fp->insubs = 1;
 	    fp->inchars = 0;
 return;
 	} else if ( fp->multiline ) {
-	    ContinueValue(fp,fp->fd->private->private,line);
+	    ContinueValue(fp,fp->fd->psprivate->private_dict,line);
 return;
 	}
 	if ( endtok==NULL ) {
@@ -1789,8 +1789,8 @@ return;
 		fp->fd->uniqueid = strtol(endtok,NULL,10);
 	} else {
 	    if ( mycmp("lenIV",line+1,endtok)==0 )
-		fp->fd->private->leniv = strtol(endtok,NULL,10);	/* We need this value */
-	    AddValue(fp,fp->fd->private->private,line,endtok);
+		fp->fd->psprivate->leniv = strtol(endtok,NULL,10);	/* We need this value */
+	    AddValue(fp,fp->fd->psprivate->private_dict,line,endtok);
 	}
     } else if ( fp->incidsysteminfo ) {
 	if ( endtok==NULL && strncmp(line,"end", 3)==0 ) {
@@ -1816,7 +1816,7 @@ return;
 		InitDict(fp->fd->blendprivate,line);
 	    } else {
 		fp->inprivate = 1;
-		InitDict(fp->fd->private->private,line);
+		InitDict(fp->fd->psprivate->private_dict,line);
 	    }
 return;
 	} else if ( strstr(line,"/FontInfo")!=NULL && (strstr(line,"dict")!=NULL || strstr(line,"<<")!=NULL)) {
@@ -1982,8 +1982,8 @@ static void addinfo(struct fontparse *fp,char *line,char *tok,char *binstart,int
     char *pt;
 
     decodestr((unsigned char *) binstart,binlen);
-    binstart += fp->fd->private->leniv;
-    binlen -= fp->fd->private->leniv;
+    binstart += fp->fd->psprivate->leniv;
+    binlen -= fp->fd->psprivate->leniv;
     if ( binlen<0 ) {
 	LogError( _("Bad CharString. Does not include lenIV bytes.") );
 return;
@@ -1991,7 +1991,7 @@ return;
 
  retry:
     if ( fp->insubs ) {
-	struct pschars *chars = /*fp->insubs ?*/ fp->fd->private->subrs /*: fp->fd->private->othersubrs*/;
+	struct pschars *chars = /*fp->insubs ?*/ fp->fd->psprivate->subrs /*: fp->fd->psprivate->othersubrs*/;
 	while ( isspace(*line)) ++line;
 	if ( strncmp(line,"dup ",4)==0 ) {
 	    int i = strtol(line+4,NULL,10);
@@ -2439,28 +2439,28 @@ static void figurecids(struct fontparse *fp,FILE *temp) {
 	    fd->cidstrs[i] = NULL;
 	else {
 	    fd->cidstrs[i] = readt1str(temp,offsets[i],fd->cidlens[i],
-		    fd->fds[fd->cidfds[i]]->private->leniv);
-	    fd->cidlens[i] -= fd->fds[fd->cidfds[i]]->private->leniv;
+		    fd->fds[fd->cidfds[i]]->psprivate->leniv);
+	    fd->cidlens[i] -= fd->fds[fd->cidfds[i]]->psprivate->leniv;
 	}
 	ff_progress_next();
     }
     free(offsets);
 
     for ( k=0; k<fd->fdcnt; ++k ) {
-	struct private *private = fd->fds[k]->private;
-	char *ssubroff = PSDictHasEntry(private->private,"SubrMapOffset");
-	char *ssdbytes = PSDictHasEntry(private->private,"SDBytes");
-	char *ssubrcnt = PSDictHasEntry(private->private,"SubrCount");
+	struct psprivate *psprivate = fd->fds[k]->psprivate;
+	char *ssubroff = PSDictHasEntry(psprivate->private_dict,"SubrMapOffset");
+	char *ssdbytes = PSDictHasEntry(psprivate->private_dict,"SDBytes");
+	char *ssubrcnt = PSDictHasEntry(psprivate->private_dict,"SubrCount");
 	int subroff, sdbytes, subrcnt;
 
 	if ( ssubroff!=NULL && ssdbytes!=NULL && ssubrcnt!=NULL &&
 		(subroff=strtol(ssubroff,NULL,10))>=0 &&
 		(sdbytes=strtol(ssdbytes,NULL,10))>0 &&
 		(subrcnt=strtol(ssubrcnt,NULL,10))>0 ) {
-	    private->subrs->cnt = subrcnt;
-	    private->subrs->values = calloc(subrcnt,sizeof(uint8_t *));
-	    private->subrs->lens = calloc(subrcnt,sizeof(int));
-	    leniv = private->leniv;
+	    psprivate->subrs->cnt = subrcnt;
+	    psprivate->subrs->values = calloc(subrcnt,sizeof(uint8_t *));
+	    psprivate->subrs->lens = calloc(subrcnt,sizeof(int));
+	    leniv = psprivate->leniv;
 	    offsets = malloc((subrcnt+1)*sizeof(int));
 	    fseek(temp,subroff,SEEK_SET);
 	    for ( i=0; i<=subrcnt; ++i ) {
@@ -2468,18 +2468,18 @@ static void figurecids(struct fontparse *fp,FILE *temp) {
 		    val = (val<<8) + getc(temp);
 		offsets[i] = val;
 		if ( i!=0 )
-		    private->subrs->lens[i-1] = offsets[i]-offsets[i-1];
+		    psprivate->subrs->lens[i-1] = offsets[i]-offsets[i-1];
 	    }
 	    for ( i=0; i<subrcnt; ++i ) {
-		private->subrs->values[i] = readt1str(temp,offsets[i],
-			private->subrs->lens[i],leniv);
+		psprivate->subrs->values[i] = readt1str(temp,offsets[i],
+			psprivate->subrs->lens[i],leniv);
 	    }
-	    private->subrs->next = i;
+	    psprivate->subrs->next = i;
 	    free(offsets);
 	}
-	PSDictRemoveEntry(private->private,"SubrMapOffset");
-	PSDictRemoveEntry(private->private,"SDBytes");
-	PSDictRemoveEntry(private->private,"SubrCount");
+	PSDictRemoveEntry(psprivate->private_dict,"SubrMapOffset");
+	PSDictRemoveEntry(psprivate->private_dict,"SDBytes");
+	PSDictRemoveEntry(psprivate->private_dict,"SubrCount");
     }
 }
 
@@ -2586,7 +2586,7 @@ return;
 return;
 	    } else if ( strstr(buffer,"/Subrs")!=NULL && strstr(buffer,"array")!=NULL ) {
 		/* Same case as above */
-		InitChars(fp->fd->private->subrs,buffer);
+		InitChars(fp->fd->psprivate->subrs,buffer);
 		fp->insubs = 1;
 		decryptagain(fp,in,rdtok);
 return;
@@ -2629,7 +2629,7 @@ return;
 FontDict *_ReadPSFont(FILE *in) {
     FILE *temp;
     struct fontparse fp;
-    struct stat b;
+    time_t mtime;
 
     temp = GFileTmpfile();
     if ( temp==NULL ) {
@@ -2649,9 +2649,10 @@ return(NULL);
 
     fclose(temp);
 
-    if ( fstat(fileno(in),&b)!=-1 ) {
-	fp.fd->modificationtime = GetST_MTime(b);
-	fp.fd->creationtime = GetST_MTime(b);
+    mtime = GFileGetMTimeF(in);
+    if ( mtime != 0 ) {
+	fp.fd->modificationtime = mtime;
+	fp.fd->creationtime = mtime;
     }
 return( fp.fd );
 }
@@ -2701,9 +2702,9 @@ return;
     free(dict);
 }
 
-static void PrivateFree(struct private *prv) {
+static void PrivateFree(struct psprivate *prv) {
     PSCharsFree(prv->subrs);
-    PSDictFree(prv->private);
+    PSDictFree(prv->private_dict);
     free(prv);
 }
 
@@ -2730,7 +2731,7 @@ void PSFontFree(FontDict *fd) {
     free(fd->ordering);
     FontInfoFree(fd->fontinfo);
     PSCharsFree(fd->chars);
-    PrivateFree(fd->private);
+    PrivateFree(fd->psprivate);
     if ( fd->charprocs!=NULL ) {
 	for ( i=0; i<fd->charprocs->cnt; ++i )
 	    free(fd->charprocs->keys[i]);

@@ -5,6 +5,10 @@
 
 #include "splinefont.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct sfd_getfontmetadatadata {
 	// these indicate if we saw some metadata or not.
 	// perhaps the caller wants to do something special
@@ -31,25 +35,6 @@ typedef struct sfd_getfontmetadatadata {
 extern void SFD_GetFontMetaDataData_Init(SFD_GetFontMetaDataData* d);
 extern bool SFD_GetFontMetaData(FILE *sfd, char *tok, SplineFont *sf, SFD_GetFontMetaDataData* d);
 extern void SFD_GetFontMetaDataVoid(FILE *sfd, char *tok, SplineFont *sf, void* d);
-
-/**
- * Create, open and unlink a new temporary file. This allows the
- * caller to write to and read from the file without needing to worry
- * about cleaning up the filesystem at all.
- *
- * On Linux, this will create a new file in /tmp with a secure name,
- * open it, and delete the file from the filesystem. The application
- * can still happily use the file as it has it open, but once it is
- * closed or the application itself closes (or crashes) then the file
- * will be expunged for you by the kernel.
- *
- * The caller can fclose() the returned file. Other applications will
- * not be able to find the file by name anymore when this call
- * returns.
- *
- * This function returns 0 if error encountered.
- */
-extern FILE* MakeTemporaryFile(void);
 
 /*
  * Convert the contents of a File* to a newly allocated string
@@ -135,5 +120,9 @@ extern void visitSFDFragment(FILE *sfd, SplineFont *sf, visitSFDFragmentFunc ufu
 
 extern void SFDDumpUTF7Str(FILE *sfd, const char *_str);
 extern char *SFDReadUTF7Str(FILE *sfd);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_SFD_H */

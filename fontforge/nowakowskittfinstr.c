@@ -380,7 +380,7 @@ return closest;
 static int GetBlueFuzz(SplineFont *sf) {
     char *str, *end;
 
-    if ( sf->private==NULL || (str=PSDictHasEntry(sf->private,"BlueFuzz"))==NULL || !isdigit(str[0]) )
+    if ( sf->private_dict==NULL || (str=PSDictHasEntry(sf->private_dict,"BlueFuzz"))==NULL || !isdigit(str[0]) )
 return 1;
 return strtod(str, &end);
 }
@@ -391,7 +391,7 @@ static int GetBlueScale(SplineFont *sf) {
     double bs;
     int result;
 
-    if ( sf->private==NULL || (str=PSDictHasEntry(sf->private,"BlueScale"))==NULL )
+    if ( sf->private_dict==NULL || (str=PSDictHasEntry(sf->private_dict,"BlueScale"))==NULL )
 return 42;
 
     bs = strtod(str, &end);
@@ -440,7 +440,7 @@ return results;
 }
 
 static real *GetNParsePSArray(SplineFont *sf, const char *name, int *rescnt) {
-return ParsePSArray(PSDictHasEntry(sf->private, name), rescnt);
+return ParsePSArray(PSDictHasEntry(sf->private_dict, name), rescnt);
 }
 
 /* Tell if the two segments, [b1,o1] and [b2,o2] intersect.
@@ -482,12 +482,12 @@ static void GICImportBlues(GlobalInstrCt *gic) {
     real *values;
 
     int HasPSBlues =
-             (PSDictHasEntry(gic->sf->private, "BlueValues") != NULL) ||
-             (PSDictHasEntry(gic->sf->private, "OtherBlues") != NULL);
+             (PSDictHasEntry(gic->sf->private_dict, "BlueValues") != NULL) ||
+             (PSDictHasEntry(gic->sf->private_dict, "OtherBlues") != NULL);
 
     int HasPSFamilyBlues =
-             (PSDictHasEntry(gic->sf->private, "FamilyBlues") != NULL) ||
-             (PSDictHasEntry(gic->sf->private, "FamilyOtherBlues") != NULL);
+             (PSDictHasEntry(gic->sf->private_dict, "FamilyBlues") != NULL) ||
+             (PSDictHasEntry(gic->sf->private_dict, "FamilyOtherBlues") != NULL);
 
     const char *PrimaryBlues = HasPSBlues ? "BlueValues" : "FamilyBlues";
     const char *OtherBlues = HasPSBlues ? "OtherBlues" : "FamilyOtherBlues";

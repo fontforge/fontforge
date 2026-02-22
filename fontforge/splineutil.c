@@ -32,7 +32,7 @@
 #include "cvundoes.h"
 #include "dumppfa.h"
 #include "encoding.h"
-#include "ffglib.h"
+#include "ffglib_compat.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
 #include "fvimportbdf.h"
@@ -53,7 +53,7 @@
 #include "tottf.h"
 #include "ustring.h"
 #include "utype.h"
-#include "views.h"		/* for FindSel structure */
+#include "baseviews.h"		/* for FindSel structure */
 
 #include <locale.h>
 
@@ -2446,8 +2446,8 @@ static void SplineFontMetaData(SplineFont *sf,struct fontdict *fd) {
 	sf->ascent = 8*em/10;
     sf->descent = em-sf->ascent;
 
-    sf->private = fd->private->private; fd->private->private = NULL;
-    PSDictRemoveEntry(sf->private, "OtherSubrs");
+    sf->private_dict = fd->psprivate->private_dict; fd->psprivate->private_dict = NULL;
+    PSDictRemoveEntry(sf->private_dict, "OtherSubrs");
 
     sf->cidregistry = copy(fd->registry);
     sf->ordering = copy(fd->ordering);
@@ -2549,8 +2549,8 @@ static void _SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext 
     EncMap *map;
 
     if ( istype2 )
-	fd->private->subrs->bias = fd->private->subrs->cnt<1240 ? 107 :
-	    fd->private->subrs->cnt<33900 ? 1131 : 32768;
+	fd->psprivate->subrs->bias = fd->psprivate->subrs->cnt<1240 ? 107 :
+	    fd->psprivate->subrs->cnt<33900 ? 1131 : 32768;
     sf->glyphmax = sf->glyphcnt = istype3 ? fd->charprocs->next : fd->chars->next;
     if ( sf->map==NULL ) {
 	sf->map = map = EncMapNew(256+CharsNotInEncoding(fd),sf->glyphcnt,fd->encoding_name);
@@ -2613,7 +2613,7 @@ static void _SplineFontFromType1(SplineFont *sf, FontDict *fd, struct pscontext 
     for ( i=0; i<sf->glyphcnt; ++i ) {
 	if ( !istype3 )
 	    sf->glyphs[i] = PSCharStringToSplines(fd->chars->values[i],fd->chars->lens[i],
-		    pscontext,fd->private->subrs,NULL,fd->chars->keys[i]);
+		    pscontext,fd->psprivate->subrs,NULL,fd->chars->keys[i]);
 	else
 	    sf->glyphs[i] = fd->charprocs->values[i];
 	if ( sf->glyphs[i]!=NULL ) {
@@ -2694,7 +2694,7 @@ return( NULL );
     while ( *pt==' ' || *pt=='[' ) ++pt;
     while ( *pt!=']' && *pt!='\0' ) {
 	pscontext->blend_values[ pscontext->instance_count ] =
-		g_ascii_strtod(pt,&end);
+		ff_strtod(pt,&end);
 	if ( pt==end )
     break;
 	++(pscontext->instance_count);
@@ -2755,7 +2755,7 @@ return( NULL );
 	    break;
 		}
 		mm->positions[ipos*mm->axis_count+apos] =
-			g_ascii_strtod(pt,&end);
+			ff_strtod(pt,&end);
 		if ( pt==end )
 	    break;
 		++apos;
@@ -2789,8 +2789,8 @@ return( NULL );
 		while ( *pt==' ' ) ++pt;
 		if ( *pt=='[' ) {
 		    ++pt;
-		    designs[ppos] = g_ascii_strtod(pt,&end);
-		    blends[ppos] = g_ascii_strtod(end,&end);
+		    designs[ppos] = ff_strtod(pt,&end);
+		    blends[ppos] = ff_strtod(end,&end);
 		    if ( blends[ppos]<0 || blends[ppos]>1 ) {
 			LogError( _("Bad value for blend in /BlendDesignMap for axis %s."), mm->axes[apos] );
 			if ( blends[ppos]<0 ) blends[ppos] = 0;
@@ -2836,7 +2836,7 @@ return( NULL );
 		if ( pt!=NULL ) {
 		    pt = MMExtractNth(pt,ipos);
 		    if ( pt!=NULL ) {
-			bigreal val = g_ascii_strtod(pt,NULL);
+			bigreal val = ff_strtod(pt,NULL);
 			free(pt);
 			switch ( item ) {
 			  case 0: fd->fontinfo->italicangle = val; break;
@@ -2847,7 +2847,7 @@ return( NULL );
 		}
 	    }
 	}
-	fd->private->private = PSDictCopy(sf->private);
+	fd->psprivate->private_dict = PSDictCopy(sf->private_dict);
 	if ( fd->blendprivate!=NULL ) {
 	    static char *arrnames[] = { "BlueValues", "OtherBlues", "FamilyBlues", "FamilyOtherBlues", "StdHW", "StdVW", "StemSnapH", "StemSnapV", NULL };
 	    static char *scalarnames[] = { "ForceBold", "BlueFuzz", "BlueScale", "BlueShift", NULL };
@@ -2855,7 +2855,7 @@ return( NULL );
 		pt = PSDictHasEntry(fd->blendprivate,scalarnames[item]);
 		if ( pt!=NULL ) {
 		    pt = MMExtractNth(pt,ipos);
-		    PSDictChangeEntry(fd->private->private,scalarnames[item],pt);
+		    PSDictChangeEntry(fd->psprivate->private_dict,scalarnames[item],pt);
 		    free(pt);
 		}
 	    }
@@ -2863,7 +2863,7 @@ return( NULL );
 		pt = PSDictHasEntry(fd->blendprivate,arrnames[item]);
 		if ( pt!=NULL ) {
 		    pt = MMExtractArrayNth(pt,ipos);
-		    PSDictChangeEntry(fd->private->private,arrnames[item],pt);
+		    PSDictChangeEntry(fd->psprivate->private_dict,arrnames[item],pt);
 		    free(pt);
 		}
 	    }
@@ -2945,9 +2945,9 @@ return( NULL );
 	sf->subfonts[i]->uni_interp = sf->uni_interp;
 	sf->subfonts[i]->map = encmap;
 	if ( fd->fds[i]->fonttype==2 )
-	    fd->fds[i]->private->subrs->bias =
-		    fd->fds[i]->private->subrs->cnt<1240 ? 107 :
-		    fd->fds[i]->private->subrs->cnt<33900 ? 1131 : 32768;
+	    fd->fds[i]->psprivate->subrs->bias =
+		    fd->fds[i]->psprivate->subrs->cnt<1240 ? 107 :
+		    fd->fds[i]->psprivate->subrs->cnt<33900 ? 1131 : 32768;
     }
 
     map = FindCidMap(sf->cidregistry,sf->ordering,sf->supplement,sf);
@@ -2958,7 +2958,7 @@ return( NULL );
 	uni = CID2NameUni(map,i,buffer,sizeof(buffer));
 	pscontext->is_type2 = fd->fds[j]->fonttype==2;
 	chars[i] = PSCharStringToSplines(fd->cidstrs[i],fd->cidlens[i],
-		    pscontext,fd->fds[j]->private->subrs,
+		    pscontext,fd->fds[j]->psprivate->subrs,
 		    NULL,buffer);
 	chars[i]->vwidth = sf->subfonts[j]->ascent+sf->subfonts[j]->descent;
 	chars[i]->unicodeenc = uni;
@@ -5559,9 +5559,9 @@ void FPSTRuleContentsFree(struct fpst_rule *r, enum fpossub_format format) {
 	free(r->u.glyph.fore);
       break;
       case pst_class:
-	free(r->u.class.nclasses);
-	free(r->u.class.bclasses);
-	free(r->u.class.fclasses);
+	free(r->u.fpc_class.nclasses);
+	free(r->u.fpc_class.bclasses);
+	free(r->u.fpc_class.fclasses);
       break;
       case pst_reversecoverage:
 	free(r->u.rcoverage.replacements);
@@ -5606,21 +5606,21 @@ return( NULL );
 	    t->u.glyph.fore = copy(f->u.glyph.fore);
 	  break;
 	  case pst_class:
-	    t->u.class.ncnt = f->u.class.ncnt;
-	    t->u.class.bcnt = f->u.class.bcnt;
-	    t->u.class.fcnt = f->u.class.fcnt;
-	    t->u.class.nclasses = malloc( f->u.class.ncnt*sizeof(uint16_t));
-	    memcpy(t->u.class.nclasses,f->u.class.nclasses,
-		    f->u.class.ncnt*sizeof(uint16_t));
-	    if ( t->u.class.bcnt!=0 ) {
-		t->u.class.bclasses = malloc( f->u.class.bcnt*sizeof(uint16_t));
-		memcpy(t->u.class.bclasses,f->u.class.bclasses,
-			f->u.class.bcnt*sizeof(uint16_t));
+	    t->u.fpc_class.ncnt = f->u.fpc_class.ncnt;
+	    t->u.fpc_class.bcnt = f->u.fpc_class.bcnt;
+	    t->u.fpc_class.fcnt = f->u.fpc_class.fcnt;
+	    t->u.fpc_class.nclasses = malloc( f->u.fpc_class.ncnt*sizeof(uint16_t));
+	    memcpy(t->u.fpc_class.nclasses,f->u.fpc_class.nclasses,
+		    f->u.fpc_class.ncnt*sizeof(uint16_t));
+	    if ( t->u.fpc_class.bcnt!=0 ) {
+		t->u.fpc_class.bclasses = malloc( f->u.fpc_class.bcnt*sizeof(uint16_t));
+		memcpy(t->u.fpc_class.bclasses,f->u.fpc_class.bclasses,
+			f->u.fpc_class.bcnt*sizeof(uint16_t));
 	    }
-	    if ( t->u.class.fcnt!=0 ) {
-		t->u.class.fclasses = malloc( f->u.class.fcnt*sizeof(uint16_t));
-		memcpy(t->u.class.fclasses,f->u.class.fclasses,
-			f->u.class.fcnt*sizeof(uint16_t));
+	    if ( t->u.fpc_class.fcnt!=0 ) {
+		t->u.fpc_class.fclasses = malloc( f->u.fpc_class.fcnt*sizeof(uint16_t));
+		memcpy(t->u.fpc_class.fclasses,f->u.fpc_class.fclasses,
+			f->u.fpc_class.fcnt*sizeof(uint16_t));
 	    }
 	  break;
 	  case pst_reversecoverage:
@@ -6597,7 +6597,7 @@ return;
     TtfTablesFree(sf->ttf_tab_saved);
     UndoesFree(sf->grid.undoes);
     UndoesFree(sf->grid.redoes);
-    PSDictFree(sf->private);
+    PSDictFree(sf->private_dict);
     TTFLangNamesFree(sf->names);
     for ( i=0; i<sf->subfontcnt; ++i )
 	SplineFontFree(sf->subfonts[i]);

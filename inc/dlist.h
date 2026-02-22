@@ -69,6 +69,9 @@ struct dlistnodeExternal {
     void* ptr;
 };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /**
  * Push the node onto the head of the list
@@ -147,6 +150,9 @@ typedef void (*dlist_visitor_func_type)( struct dlistnode* );
  */
 extern void dlist_trim_to_limit( struct dlistnode** list, int limit, dlist_visitor_func_type f );
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_DLIST_H */
 

@@ -4,6 +4,10 @@
 #include "splinefont.h"
 #include "ttf.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Apple Advanced Typography Tables */
 
 extern void aat_dumpacnt(struct alltabs *at, SplineFont *sf);
@@ -24,5 +28,9 @@ extern int16_t *PerGlyphDefBaseline(SplineFont *sf, int *def_baseline);
 extern void FigureBaseOffsets(SplineFont *sf, int def_bsln, int offsets[32]);
 
 extern int Macable(SplineFont *sf, OTLookup *otl);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_TOTTFAAT_H */
