@@ -1962,7 +1962,7 @@ void SCTickValidationState(SplineChar *sc,int layer) {
     }
 }
 
-int VSMaskFromFormat(SplineFont *sf, int layer, enum fontformat format) {
+enum validation_state VSMaskFromFormat(SplineFont *sf, int layer, enum fontformat format) {
     if ( format==ff_cid || format==ff_cffcid || format==ff_otfcid || format==ff_otfciddfont )
 return( vs_maskcid );
     else if ( format<=ff_cff )

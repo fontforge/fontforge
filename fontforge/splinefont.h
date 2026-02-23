@@ -1836,7 +1836,7 @@ extern AnchorClass *SCValidateAnchors(SplineChar *sc);
 extern void SCTickValidationState(SplineChar *sc,int layer);
 extern int ValidatePrivate(SplineFont *sf);
 extern int SFValidate(SplineFont *sf, int layer, int force);
-extern int VSMaskFromFormat(SplineFont *sf, int layer, enum fontformat format);
+extern enum validation_state VSMaskFromFormat(SplineFont *sf, int layer, enum fontformat format);
 
 extern char *RandomParaFromScript(uint32_t script, uint32_t *lang, SplineFont *sf);
 

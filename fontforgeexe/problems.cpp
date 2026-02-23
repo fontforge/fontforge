@@ -28,13 +28,16 @@
 
 #include <fontforge-config.h>
 
-#include "autohint.h"
-#include "cvundoes.h"
+extern "C" {
 #include "fontforgeui.h"
-#include "fvfonts.h"
 #include "gkeysym.h"
 #include "gresedit.h"
 #include "gwidget.h"
+}
+
+#include "autohint.h"
+#include "cvundoes.h"
+#include "fvfonts.h"
 #include "namelist.h"
 #include "splineorder2.h"
 #include "splineoverlap.h"
@@ -449,11 +452,11 @@ return;
 
 static int explain_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
-	struct problems *p = GDrawGetUserData(gw);
+	struct problems *p = (struct problems *) GDrawGetUserData(gw);
 	p->doneexplain = true;
     } else if ( event->type==et_controlevent &&
 	    event->u.control.subtype == et_buttonactivate ) {
-	struct problems *p = GDrawGetUserData(gw);
+	struct problems *p = (struct problems *) GDrawGetUserData(gw);
 	if ( GGadgetGetCid(event->u.control.g)==CID_Stop )
 	    p->finish = true;
 	else if ( GGadgetGetCid(event->u.control.g)==CID_Fix )
@@ -461,7 +464,7 @@ static int explain_e_h(GWindow gw, GEvent *event) {
 	p->doneexplain = true;
     } else if ( event->type==et_controlevent &&
 	    event->u.control.subtype == et_radiochanged ) {
-	struct problems *p = GDrawGetUserData(gw);
+	struct problems *p = (struct problems *) GDrawGetUserData(gw);
 	p->ignorethis = GGadgetIsChecked(event->u.control.g);
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
@@ -487,7 +490,7 @@ static void ExplainIt(struct problems *p, SplineChar *sc, char *explain,
 return;
     if ( p->explainw==NULL ) {
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor;
+	wattrs.mask = (enum window_attr_mask)(wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor);
 	wattrs.event_masks = ~(1<<et_charup);
 	wattrs.undercursor = 1;
 	wattrs.cursor = ct_pointer;
@@ -505,7 +508,7 @@ return;
 	label[0].text_is_1byte = true;
 	gcd[0].gd.label = &label[0];
 	gcd[0].gd.pos.x = 6; gcd[0].gd.pos.y = 6; gcd[0].gd.pos.width = 400-12;
-	gcd[0].gd.flags = gg_visible | gg_enabled;
+	gcd[0].gd.flags = (enum gg_flags) (gg_visible | gg_enabled);
 	gcd[0].creator = GLabelCreate;
 	varray[0] = &gcd[0]; varray[1] = NULL;
 
@@ -513,7 +516,7 @@ return;
 	label[4].text_is_1byte = true;
 	gcd[4].gd.label = &label[4];
 	gcd[4].gd.pos.x = 6; gcd[4].gd.pos.y = gcd[0].gd.pos.y+12; gcd[4].gd.pos.width = 400-12;
-	gcd[4].gd.flags = gg_visible | gg_enabled;
+	gcd[4].gd.flags = (enum gg_flags) (gg_visible | gg_enabled);
 	gcd[4].creator = GLabelCreate;
 	varray[2] = &gcd[4]; varray[3] = NULL;
 
@@ -521,13 +524,13 @@ return;
 	label[5].text_is_1byte = true;
 	gcd[5].gd.label = &label[5];
 	gcd[5].gd.pos.x = 6; gcd[5].gd.pos.y = gcd[4].gd.pos.y+12;
-	gcd[5].gd.flags = gg_visible | gg_enabled;
+	gcd[5].gd.flags = (enum gg_flags) (gg_visible | gg_enabled);
 	gcd[5].creator = GCheckBoxCreate;
 	varray[4] = &gcd[5]; varray[5] = NULL;
 
 	gcd[1].gd.pos.x = 15-3; gcd[1].gd.pos.y = gcd[5].gd.pos.y+20;
 	gcd[1].gd.pos.width = -1; gcd[1].gd.pos.height = 0;
-	gcd[1].gd.flags = gg_visible | gg_enabled | gg_but_default;
+	gcd[1].gd.flags = (enum gg_flags) (gg_visible | gg_enabled | gg_but_default);
 	label[1].text = (unichar_t *) _("_Next");
 	label[1].text_is_1byte = true;
 	label[1].text_in_resource = true;
@@ -550,7 +553,7 @@ return;
 
 	gcd[2].gd.pos.x = -15; gcd[2].gd.pos.y = gcd[1].gd.pos.y+3;
 	gcd[2].gd.pos.width = -1; gcd[2].gd.pos.height = 0;
-	gcd[2].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+	gcd[2].gd.flags = (enum gg_flags) (gg_visible | gg_enabled | gg_but_cancel);
 	label[2].text = (unichar_t *) _("_Stop");
 	label[2].text_is_1byte = true;
 	label[2].text_in_resource = true;
@@ -562,13 +565,13 @@ return;
 	barray[11] = &gcd[2]; barray[12] = GCD_Glue;
 	barray[13] = NULL;
 
-	boxes[2].gd.flags = gg_enabled|gg_visible;
+	boxes[2].gd.flags = (enum gg_flags) (gg_enabled|gg_visible);
 	boxes[2].gd.u.boxelements = barray;
 	boxes[2].creator = GHBoxCreate;
 	varray[6] = &boxes[2]; varray[7] = NULL; varray[8] = NULL;
 
 	boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
-	boxes[0].gd.flags = gg_enabled|gg_visible;
+	boxes[0].gd.flags = (enum gg_flags) (gg_enabled|gg_visible);
 	boxes[0].gd.u.boxelements = varray;
 	boxes[0].creator = GHVGroupCreate;
 
@@ -756,21 +759,21 @@ static int HVITest(struct problems *p,BasePoint *to, BasePoint *from,
     int isto;
     int type;
     BasePoint *base, *other;
-    static char *hmsgs[5] = {
+    static const char *hmsgs[5] = {
 	N_("The selected line segment is nearly horizontal"),
 	N_("The control point above the selected point is nearly horizontal"),
 	N_("The control point below the selected point is nearly horizontal"),
 	N_("The control point right of the selected point is nearly horizontal"),
 	N_("The control point left of the selected point is nearly horizontal")
     };
-    static char *vmsgs[5] = {
+    static const char *vmsgs[5] = {
 	N_("The selected line segment is nearly vertical"),
 	N_("The control point above the selected point is nearly vertical"),
 	N_("The control point below the selected point is nearly vertical"),
 	N_("The control point right of the selected point is nearly vertical"),
 	N_("The control point left of the selected point is nearly vertical")
     };
-    static char *imsgs[5] = {
+    static const char *imsgs[5] = {
 	N_("The selected line segment is near the italic angle"),
 	N_("The control point above the selected point is near the italic angle"),
 	N_("The control point below the selected point is near the italic angle"),
@@ -2119,10 +2122,10 @@ return( p->mg[i].rpl );
 return( NULL );
 }
 
-static void mgreplace(char **base, char *str,char *end, char *new, SplineChar *sc, PST *pst) {
+static void mgreplace(char **base, char *str,char *end, const char *new_str, SplineChar *sc, PST *pst) {
     PST *p, *ps;
 
-    if ( new==NULL || *new=='\0' ) {
+    if ( new_str==NULL || *new_str=='\0' ) {
 	if ( *base==str && *end=='\0' && sc!=NULL ) {
 	    /* We deleted the last name from the pst, it is meaningless, remove it */
 	    if ( sc->possub==pst )
@@ -2139,9 +2142,9 @@ static void mgreplace(char **base, char *str,char *end, char *new, SplineChar *s
 	else
 	    strcpy(str,end+1);	/* Skip the space */
     } else {
-	char *res = malloc(strlen(*base)+strlen(new)-(end-str)+1);
+	char *res = (char *) malloc(strlen(*base)+strlen(new_str)-(end-str)+1);
 	strncpy(res,*base,str-*base);
-	strcpy(res+(str-*base),new);
+	strcpy(res+(str-*base),new_str);
 	strcat(res,end);
 	free(*base);
 	*base = res;
@@ -2175,14 +2178,14 @@ struct mgask_data {
     struct problems *p;
 };
 
-static void mark_to_replace(struct problems *p,struct mgask_data *d, char *rpl) {
+static void mark_to_replace(struct problems *p,struct mgask_data *d, const char *rpl) {
     int ch;
 
     if ( p->rpl_cnt >= p->rpl_max ) {
 	if ( p->rpl_max == 0 )
-	    p->mg = malloc((p->rpl_max = 30)*sizeof(struct mgrpl));
+	    p->mg = (struct mgrpl *) malloc((p->rpl_max = 30)*sizeof(struct mgrpl));
 	else
-	    p->mg = realloc(p->mg,(p->rpl_max += 30)*sizeof(struct mgrpl));
+	    p->mg = (struct mgrpl *) realloc(p->mg,(p->rpl_max += 30)*sizeof(struct mgrpl));
     }
     ch = *d->end; *d->end = '\0';
     p->mg[p->rpl_cnt].search = copy( d->start );
@@ -2199,7 +2202,7 @@ static void mark_to_replace(struct problems *p,struct mgask_data *d, char *rpl) 
 
 static int MGA_RplChange(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
-	struct mgask_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	struct mgask_data *d = (struct mgask_data *) GDrawGetUserData(GGadgetGetWindow(g));
 	const unichar_t *rpl = _GGadgetGetTitle(g);
 	GGadgetSetEnabled(GWidgetGetControl(d->gw,CID_Rpl),*rpl!=0);
     }
@@ -2208,7 +2211,7 @@ return( true );
 
 static int MGA_Rpl(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	struct mgask_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	struct mgask_data *d = (struct mgask_data *) GDrawGetUserData(GGadgetGetWindow(g));
 	const unichar_t *_rpl = _GGadgetGetTitle(GWidgetGetControl(d->gw,CID_RplText));
 	char *rpl = cu_copy(_rpl);
 	if ( GGadgetIsChecked(GWidgetGetControl(d->gw,CID_Always)))
@@ -2222,7 +2225,7 @@ return( true );
 
 static int MGA_Delete(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	struct mgask_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	struct mgask_data *d = (struct mgask_data *) GDrawGetUserData(GGadgetGetWindow(g));
 	if ( GGadgetIsChecked(GWidgetGetControl(d->gw,CID_Always)))
 	    mark_to_replace(d->p,d,"");
 	mgreplace(d->_str,d->start,d->end,"",d->sc,d->pst);
@@ -2233,7 +2236,7 @@ return( true );
 
 static int MGA_Skip(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	struct mgask_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+	struct mgask_data *d = (struct mgask_data *) GDrawGetUserData(GGadgetGetWindow(g));
 	d->done = d->skipped = true;
     }
 return( true );
@@ -2241,7 +2244,7 @@ return( true );
 
 static int mgask_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
-	struct mgask_data *d = GDrawGetUserData(gw);
+	struct mgask_data *d = (struct mgask_data *) GDrawGetUserData(gw);
 	d->done = d->skipped = true;
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
@@ -2256,18 +2259,18 @@ return( true );
 static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32_t tag,
 	SplineChar *sc,enum missingglyph_type which,void *data) {
     char buffer[200];
-    static char *pstnames[] = { "", N_("position"), N_("pair"), N_("substitution"),
+    static const char *pstnames[] = { "", N_("position"), N_("pair"), N_("substitution"),
 	N_("alternate subs"), N_("multiple subs"), N_("ligature"), NULL };
-    static char *fpstnames[] = { N_("Contextual position"), N_("Contextual substitution"),
+    static const char *fpstnames[] = { N_("Contextual position"), N_("Contextual substitution"),
 	N_("Chaining position"), N_("Chaining substitution"), N_("Reverse chaining subs"), NULL };
-    static char *asmnames[] = { N_("Indic reordering"), N_("Contextual substitution"),
+    static const char *asmnames[] = { N_("Indic reordering"), N_("Contextual substitution"),
 	N_("Lig"), NULL, N_("Simple"), N_("Contextual insertion"), NULL, NULL, NULL,
 	NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 	N_("Kerning"), NULL };
-    PST *pst = data;
-    FPST *fpst = data;
-    ASM *sm = data;
-    KernClass *kc = data;
+    PST *pst = (PST *) data;
+    FPST *fpst = (FPST *) data;
+    ASM *sm = (ASM *) data;
+    KernClass *kc = (KernClass *) data;
     char end_ch;
     GRect pos;
     GWindow gw;
@@ -2306,12 +2309,12 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32_t ta
     d.start = str;
     d.end = end;
     d.sc = sc;
-    d.pst = which==mg_pst ? data : NULL;
+    d.pst = which==mg_pst ? (PST *) data : NULL;
     d.p = p;
     d.tag = tag;
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_centered|wam_restrict|wam_isdlg;
+    wattrs.mask = (enum window_attr_mask)(wam_events|wam_cursor|wam_utf8_wtitle|wam_centered|wam_restrict|wam_isdlg);
     wattrs.event_masks = ~(1<<et_charup);
     wattrs.is_dlg = 1;
     wattrs.restrict_input_to_me = 1;
@@ -2332,38 +2335,38 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32_t ta
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = 6;
-    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.flags = (enum gg_flags) (gg_visible | gg_enabled);
     gcd[k++].creator = GLabelCreate;
 
     label[k].text = (unichar_t *) _(" refers to a missing glyph");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13;
-    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.flags = (enum gg_flags) (gg_visible | gg_enabled);
     gcd[k++].creator = GLabelCreate;
 
     label[k].text = (unichar_t *) str;
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13;
-    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.flags = (enum gg_flags) (gg_visible | gg_enabled);
     gcd[k++].creator = GLabelCreate;
 
     label[k].text = (unichar_t *) _("Replace With:");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 5; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+16;
-    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.flags = (enum gg_flags) (gg_visible | gg_enabled);
     gcd[k++].creator = GLabelCreate;
 
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+13; gcd[k].gd.pos.width = ptwidth-20;
-    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.flags = (enum gg_flags) (gg_visible | gg_enabled);
     gcd[k].gd.cid = CID_RplText;
     gcd[k].gd.handle_controlevent = MGA_RplChange;
     gcd[k++].creator = GTextFieldCreate;
 
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+30;
-    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.flags = (enum gg_flags) (gg_visible | gg_enabled);
     label[k].text = (unichar_t *) _("Always");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
@@ -2374,13 +2377,13 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32_t ta
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+20;
-    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.flags = (enum gg_flags) (gg_visible | gg_enabled);
     gcd[k].gd.cid = CID_Ignore;
     gcd[k++].creator = GCheckBoxCreate;
 
     gcd[k].gd.pos.x = 10-3; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+30 -3;
     gcd[k].gd.pos.width = -1;
-    gcd[k].gd.flags = gg_visible | gg_but_default;
+    gcd[k].gd.flags = (enum gg_flags) (gg_visible | gg_but_default);
     label[k].text = (unichar_t *) _("Replace");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
@@ -2391,7 +2394,7 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32_t ta
     gcd[k].gd.pos.x = 10+blen+(ptwidth-3*blen-GGadgetScale(20))/2;
     gcd[k].gd.pos.y = gcd[k-1].gd.pos.y+3;
     gcd[k].gd.pos.width = -1;
-    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.flags = (enum gg_flags) (gg_visible | gg_enabled);
     label[k].text = (unichar_t *) _("Remove");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
@@ -2401,7 +2404,7 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32_t ta
 
     gcd[k].gd.pos.x = -10; gcd[k].gd.pos.y = gcd[k-1].gd.pos.y;
     gcd[k].gd.pos.width = -1;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_cancel;
+    gcd[k].gd.flags = (enum gg_flags) (gg_visible | gg_enabled | gg_but_cancel);
     label[k].text = (unichar_t *) _("Skip");
     label[k].text_is_1byte = true;
     gcd[k].gd.label = &label[k];
@@ -2411,7 +2414,7 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32_t ta
 
     gcd[k].gd.pos.x = 2; gcd[k].gd.pos.y = 2;
     gcd[k].gd.pos.width = pos.width-4; gcd[k].gd.pos.height = pos.height-4;
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_pos_in_pixels;
+    gcd[k].gd.flags = (enum gg_flags) (gg_visible | gg_enabled | gg_pos_in_pixels);
     gcd[k++].creator = GGroupCreate;
 
     GGadgetsCreate(gw,gcd);
@@ -2426,8 +2429,8 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32_t ta
 return( !d.skipped );
 }
 
-static int StrMissingGlyph(struct problems *p,char **_str,SplineChar *sc,int which, void *data) {
-    char *end, ch, *str = *_str, *new;
+static int StrMissingGlyph(struct problems *p,char **_str,SplineChar *sc,enum missingglyph_type which, void *data) {
+    char *end, ch, *str = *_str, *new_str;
     int off;
     int found = false;
     SplineFont *sf = p->fv!=NULL ? p->fv->b.sf : p->cv!=NULL ? p->cv->b.sc->parent : p->msc->parent;
@@ -2450,10 +2453,10 @@ return( false );
 	*end = ch;
 	if ( ssc==NULL ) {
 	    off = end-*_str;
-	    if ( (new = missinglookup(p,str))!=NULL ) {
-		mgreplace(_str, str,end, new, sc, which==mg_pst ? data : NULL);
+	    if ( (new_str = missinglookup(p,str))!=NULL ) {
+		mgreplace(_str, str,end, new_str, sc, which==mg_pst ? (PST*)data : NULL);
 		changed = true;
-		off += (strlen(new)-(end-str));
+		off += (strlen(new_str)-(end-str));
 	    } else {
 		if ( mgAsk(p,_str,str,end,0,sc,which,data)) {
 		    changed = true;
@@ -2504,7 +2507,7 @@ return( found );
 static int KCMissingGlyph(struct problems *p,KernClass *kc,int isv) {
     int i;
     int found = false;
-    int which = isv ? mg_vkern : mg_kern;
+    enum missingglyph_type which = isv ? mg_vkern : mg_kern;
 
     for ( i=0; i<kc->first_cnt; ++i ) if ( kc->firsts[i]!=NULL )
 	found |= StrMissingGlyph(p,&kc->firsts[i],NULL,which,kc);
@@ -2559,7 +2562,7 @@ static int LookupFeaturesMissScript(struct problems *p,OTLookup *otl,OTLookup *n
     FeatureScriptLangList *fsl;
     struct scriptlanglist *sl;
     char buffer[400];
-    char *buts[4];
+    const char *buts[4];
 
     if ( script==DEFAULT_SCRIPT )
 return( false );
@@ -2625,7 +2628,7 @@ return(false);
 	    buts[0] = _("_OK"); buts[1] = _("_Skip"); buts[2]="_Ignore"; buts[3] = NULL;
 	    ret = ff_ask(_("Missing Script"),(const char **) buts,0,1,buffer);
 	    if ( ret==0 ) {
-		sl = chunkalloc(sizeof(struct scriptlanglist));
+		sl = (struct scriptlanglist*)chunkalloc(sizeof(struct scriptlanglist));
 		sl->script = script;
 		sl->lang_cnt = 1;
 		sl->langs[0] = DEFAULT_LANG;
@@ -2658,17 +2661,17 @@ return( false );
 return( found );
 }
 
-static int StrMissingScript(struct problems *p,SplineFont *sf,OTLookup *otl,char *class) {
+static int StrMissingScript(struct problems *p,SplineFont *sf,OTLookup *otl,char *class_name) {
     char *pt, *start;
     int ch;
     SplineChar *sc;
     uint32_t script;
     int found = 0;
 
-    if ( class==NULL )
+    if ( class_name==NULL )
 return( false );
 
-    for ( pt=class; *pt && p->missingscriptinfeature; ) {
+    for ( pt=class_name; *pt && p->missingscriptinfeature; ) {
 	while ( *pt==' ' ) ++pt;
 	if ( *pt=='\0' )
     break;
@@ -2899,14 +2902,20 @@ static ProblemRec pr_points[] = {
         "Even in PostScript fonts it is generally a good idea to use "
         "integral values."),
      false, prob_bool},
-    {CID_XNear, N_("_X near¹"),
+    {CID_XNear,
+     N_("_X near¹"),
      N_("Allows you to check that vertical stems in several characters start "
         "at the same location."),
-     false, prob_double, .value.dval = 0.0},
-    {CID_YNear, N_("_Y near¹"),
+     false,
+     prob_double,
+     {.dval = 0.0}},
+    {CID_YNear,
+     N_("_Y near¹"),
      N_("Allows you to check that horizontal stems in several characters "
         "start at the same location."),
-     false, prob_double, .value.dval = 0.0},
+     false,
+     prob_double,
+     {.dval = 0.0}},
     {CID_YNearStd, N_("Y near¹ _standard heights"),
      N_("Allows you to find points which are slightly off from the baseline, "
         "xheight, cap height, ascender, descender heights."),
@@ -2926,7 +2935,9 @@ static ProblemRec pr_points[] = {
         "to make a significant difference in the shape of the curve. The "
         "minimum relevant distance is computed as a factor of distance between "
         "the main points."),
-     false, prob_double, .value.dval = 0.5},
+     false,
+     prob_double,
+     {.dval = 0.5}},
     {CID_PointsTooClose, N_("Poin_ts too close"),
      N_("If two adjacent points on the same path are less than a few emunits "
         "apart they will cause problems for some of FontForge's commands. "
@@ -2959,7 +2970,8 @@ static ProblemRec pr_paths[] = {
      N_("PostScript and TrueType require that when a path reaches its maximum "
         "or minimum position there must be a point at that location."),
      false, prob_bool},
-    {CID_TooManyPoints, N_("_More points than:"),
+    {CID_TooManyPoints,
+     N_("_More points than:"),
      N_("The PostScript Language Reference Manual (Appendix B) says that an "
         "interpreter need not support paths with more than 1500 points. I "
         "think this count includes control points. From PostScript's point of "
@@ -2967,7 +2979,9 @@ static ProblemRec pr_paths[] = {
         "Modern interpreters tend to support paths with more points than this "
         "limit. (Note a truetype font after conversion to PS will "
         "contain twice as many control points)"),
-     false, prob_int, .value.ival = 1500},
+     false,
+     prob_int,
+     {.ival = 1500}},
     PROBLEM_REC_EMPTY};
 
 static ProblemRec pr_refs[] = {
@@ -2991,12 +3005,15 @@ static ProblemRec pr_refs[] = {
      N_("Type1 and 2 fonts only support translation of references. The first "
         "four entries of the transformation matrix should be [1 0 0 1]."),
      false, prob_bool},
-    {CID_TooDeepRefs, N_("References neste_d deeper than:"),
+    {CID_TooDeepRefs,
+     N_("References neste_d deeper than:"),
      N_("The Type 2 Charstring Reference (Appendix B) says that subroutines "
         "may not be nested more than 10 deep. Each nesting level for "
         "references requires one subroutine level, and hints may require "
         "another level."),
-     false, prob_int, .value.ival = 9},
+     false,
+     prob_int,
+     {.ival = 9}},
     {CID_PtMatchRefsOutOfDate, N_("References with out of date point matching"),
      N_("If a glyph has been edited so that it has a different number of "
         "points now, then any references which use point matching and "
@@ -3016,9 +3033,12 @@ static ProblemRec pr_hints[] = {
      N_("Often if a point is slightly off from a hint it is because a stem is "
         "made up of several segments, and one of them has the wrong width."),
      false, prob_bool},
-    {CID_HintWidthNear, N_("Hint _width near¹"),
-     N_("Allows you to check that stems have consistent widths.."), false,
-     prob_double, .value.dval = 50.0},
+    {CID_HintWidthNear,
+     N_("Hint _width near¹"),
+     N_("Allows you to check that stems have consistent widths.."),
+     false,
+     prob_double,
+     {.dval = 50.0}},
     /* GT: The _3 is used to mark an accelerator */
     {CID_Stem3, N_("Almost stem_3 hint"),
      N_("This checks if the character almost, but not exactly, conforms to "
@@ -3026,13 +3046,20 @@ static ProblemRec pr_hints[] = {
         "horizontally, there must be exactly three hints, and they must have "
         "the same width and they must be evenly spaced."),
      false, prob_bool},
-    {CID_ShowExactStem3, N_("_Show exact *stem3"),
-     N_("Shows when this character is exactly a stem3 hint"), false, prob_bool,
+    {CID_ShowExactStem3,
+     N_("_Show exact *stem3"),
+     N_("Shows when this character is exactly a stem3 hint"),
+     false,
+     prob_bool,
+     {},
      .parent_cid = CID_Stem3},
-    {CID_TooManyHints, N_("_More hints than:"),
+    {CID_TooManyHints,
+     N_("_More hints than:"),
      N_("The Type 2 Charstring Reference (Appendix B) says that there may be "
         "at most 96 horizontal and vertical stem hints in a character."),
-     false, prob_int, .value.ival = 96},
+     false,
+     prob_int,
+     {.ival = 96}},
     {CID_OverlappedHints, N_("_Overlapped hints"),
      N_("Either a glyph should have no overlapping hints, or a glyph with "
         "hint masks should have no overlapping hints within a hint mask."),
@@ -3069,27 +3096,45 @@ static ProblemRec pr_cid[] = {
     PROBLEM_REC_EMPTY};
 
 static ProblemRec pr_bb[] = {
-    {CID_BBYMax, N_("Glyph bounding box above"),
+    {CID_BBYMax,
+     N_("Glyph bounding box above"),
      N_("Are there any glyph's whose bounding boxes extend above this number?"),
-     false, prob_int, .value.ival = 0},
-    {CID_BBYMin, N_("Glyph bounding box below"),
+     false,
+     prob_int,
+     {.ival = 0}},
+    {CID_BBYMin,
+     N_("Glyph bounding box below"),
      N_("Are there any glyph's whose bounding boxes extend below this number?"),
-     false, prob_int, .value.ival = 0},
-    {CID_BBXMax, N_("Glyph bounding box right of"),
+     false,
+     prob_int,
+     {.ival = 0}},
+    {CID_BBXMax,
+     N_("Glyph bounding box right of"),
      N_("Are there any glyphs whose bounding boxes extend to the right of this "
         "number?"),
-     false, prob_int, .value.ival = 0},
-    {CID_BBXMin, N_("Glyph bounding box left of"),
+     false,
+     prob_int,
+     {.ival = 0}},
+    {CID_BBXMin,
+     N_("Glyph bounding box left of"),
      N_("Are there any glyph's whose bounding boxes extend to the left of this "
         "number?"),
-     false, prob_int, .value.ival = 0},
-    {CID_AdvanceWidth, N_("Check advance:"),
+     false,
+     prob_int,
+     {.ival = 0}},
+    {CID_AdvanceWidth,
+     N_("Check advance:"),
      N_("Check for characters whose advance width is not the displayed value."),
-     false, prob_int, .value.ival = 0},
-    {CID_VAdvanceWidth, N_("Check vertical advance:"),
+     false,
+     prob_int,
+     {.ival = 0}},
+    {CID_VAdvanceWidth,
+     N_("Check vertical advance:"),
      N_("Check for characters whose vertical advance width is not the "
         "displayed value."),
-     false, prob_int, .value.ival = 0},
+     false,
+     prob_int,
+     {.ival = 0}},
     PROBLEM_REC_EMPTY};
 
 static ProblemRec pr_random[] = {
@@ -3113,19 +3158,17 @@ static ProblemRec pr_random[] = {
      false, prob_bool},
     PROBLEM_REC_EMPTY};
 
-static ProblemTab pr_tabs[] = {
-    {N_("Points"), pr_points},
-    {N_("Paths"), pr_paths},
-    {N_("References"), pr_refs},
-    {N_("Hints"), pr_hints},
-    {N_("ATT"), pr_att},
-    {N_("CID"), pr_cid},
-    {N_("Bounding Box"), pr_bb},
-    {N_("Random"), pr_random},
-    PROBLEM_TAB_EMPTY};
+static ProblemTab pr_tabs[] = {{N_("Points"), pr_points},
+                               {N_("Paths"), pr_paths},
+                               {N_("References"), pr_refs},
+                               {N_("Hints"), pr_hints},
+                               {N_("ATT"), pr_att},
+                               {N_("CID"), pr_cid},
+                               {N_("Bounding Box"), pr_bb},
+                               {N_("Random"), pr_random},
+                               PROBLEM_TAB_EMPTY};
 
-static void adjust_problem_records(FontView* fv,
-                                   ProblemTab* problem_tabs) {
+static void adjust_problem_records(FontView* fv, ProblemTab* problem_tabs) {
     static SplineFont* lastsf = NULL;
     static bool loc_initialized = false;
     SplineFont* sf = fv->b.sf;
@@ -3385,7 +3428,7 @@ struct val_data {
     int layer;
 };
 
-static char *vserrornames[] = {
+static const char *vserrornames[] = {
     N_("Open Contour"),
     N_("Self Intersecting"),
     N_("Wrong Direction"),
@@ -3411,7 +3454,7 @@ static char *vserrornames[] = {
     N_("Glyph contains overlapped hints (in the same hintmask)")
 };
 
-static char *privateerrornames[] = {
+static const char *privateerrornames[] = {
     N_("Odd number of elements in BlueValues/OtherBlues array."),
     N_("Elements in BlueValues/OtherBlues array are disordered."),
     N_("Too many elements in BlueValues/OtherBlues array."),
@@ -3452,7 +3495,7 @@ char *VSErrorsFromMask(int mask, int private_mask) {
 	    len += strlen( _(vserrornames[m]))+2;
     if ( private_mask != 0 )
 	len += strlen( _("Bad Private Dictionary")) +2;
-    ret = malloc(len+1);
+	ret = (char *) malloc(len+1);
     len = 0;
     for ( m=0, bit=(vs_known<<1) ; bit<=vs_last; ++m, bit<<=1 )
 	if ( (mask&bit) && vserrornames[m]!=NULL ) {
@@ -4399,7 +4442,7 @@ static int VWCheckup(struct val_data *vw) {
 			"in PostScript and SVG but causes problems in TrueType.\n"
 			"Should I consider that an error here?"))==0 ) {
 		a_change = true;
-		vw->mask |= vs_nonintegral;
+		vw->mask = (enum validation_state) (vw->mask | vs_nonintegral);
 	    }
 	}
 	if ( sc!=NULL && sc->layers[vw->layer].validation_state!=sc->layers[vw->layer].old_vs ) {
@@ -4498,7 +4541,8 @@ void SFValidationWindow(SplineFont *sf,int layer,enum fontformat format) {
     SplineFont *sub;
     SplineChar *sc;
     int as, ds, ld;
-    int mask, needs_blue;
+    int needs_blue;
+    enum validation_state mask;
 
     if ( sf->cidmaster )
 	sf = sf->cidmaster;
@@ -4546,7 +4590,7 @@ return;
 	}
     }
 
-    valwin = chunkalloc(sizeof(struct val_data));
+    valwin = (struct val_data *)chunkalloc(sizeof(struct val_data));
     valwin->sf = sf;
     valwin->mask = mask;
     valwin->needs_blue = needs_blue;
@@ -4556,7 +4600,7 @@ return;
     valwin->need_to_check_with_user_on_mask = (format==ff_none && !sf->layers[layer].order2 );
 
     memset(&wattrs,0,sizeof(wattrs));
-    wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg;
+    wattrs.mask = (enum window_attr_mask)(wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg);
     wattrs.event_masks = -1;
     wattrs.cursor = ct_mypointer;
     sprintf( buffer, _("Validation of %.100s"), sf->fontname );
@@ -4578,16 +4622,16 @@ return;
     memset(&boxes,0,sizeof(boxes));
 
     k = 0;
-    gcd[k].gd.flags = gg_visible | gg_enabled;
+    gcd[k].gd.flags = (enum gg_flags) (gg_visible | gg_enabled);
     gcd[k].gd.u.drawable_e_h = vwv_e_h;
     gcd[k++].creator = GDrawableCreate;
 
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_sb_vert;
+    gcd[k].gd.flags = (enum gg_flags) (gg_visible | gg_enabled | gg_sb_vert);
     gcd[k].gd.handle_controlevent = VW_VScroll;
     gcd[k++].creator = GScrollBarCreate;
     harray[0] = &gcd[k-2]; harray[1] = &gcd[k-1]; harray[2] = NULL; harray[3] = NULL;
 
-    gcd[k].gd.flags = gg_visible | gg_enabled | gg_but_default;
+    gcd[k].gd.flags = (enum gg_flags) (gg_visible | gg_enabled | gg_but_default);
     label[k].text = (unichar_t *) _("_OK");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
@@ -4596,16 +4640,16 @@ return;
     gcd[k++].creator = GButtonCreate;
     butarray[0] = GCD_Glue; butarray[1] = &gcd[k-1]; butarray[2] = GCD_Glue; butarray[3] = NULL;
 
-    boxes[2].gd.flags = gg_enabled|gg_visible;
+    boxes[2].gd.flags = (enum gg_flags) (gg_enabled|gg_visible);
     boxes[2].gd.u.boxelements = harray;
     boxes[2].creator = GHVGroupCreate;
 
-    boxes[3].gd.flags = gg_enabled|gg_visible;
+    boxes[3].gd.flags = (enum gg_flags) (gg_enabled|gg_visible);
     boxes[3].gd.u.boxelements = butarray;
     boxes[3].creator = GHBoxCreate;
     varray[0] = &boxes[2]; varray[1] = &boxes[3]; varray[2] = NULL;
 
-    boxes[0].gd.flags = gg_enabled|gg_visible;
+    boxes[0].gd.flags = (enum gg_flags) (gg_enabled|gg_visible);
     boxes[0].gd.u.boxelements = varray;
     boxes[0].creator = GVBoxCreate;
 

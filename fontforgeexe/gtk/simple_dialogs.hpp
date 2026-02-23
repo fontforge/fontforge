@@ -47,11 +47,11 @@ typedef struct {
     const char* tooltip;
     bool active;
     enum ProblemRecType type;
-    short parent_cid;
     union {
         int ival;
         double dval;
     } value;
+    short parent_cid;
     bool disabled;
 } ProblemRec;
 #define PROBLEM_REC_EMPTY \

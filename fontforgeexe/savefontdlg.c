@@ -1473,7 +1473,7 @@ return;
 	    /* No point in validating type3 fonts */;
 	else if ( (old_validate = GGadgetIsChecked(d->validate))) {
 	    int vs = SFValidate(d->sf,layer,false);
-	    int mask = VSMaskFromFormat(d->sf,layer,oldformatstate);
+	    enum validation_state mask = VSMaskFromFormat(d->sf,layer,oldformatstate);
 	    int blues = ValidatePrivate(d->sf)& ~pds_missingblue;
 	    if ( (vs&mask) || blues!=0 ) {
 		const char *rsb[3];
