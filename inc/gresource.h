@@ -100,7 +100,7 @@ typedef struct gresimage {
 
 typedef struct gresfont {
     GFont *fi;
-    char *rstr;
+    const char *rstr;
     uint8_t can_free_name;
 } GResFont;
 
