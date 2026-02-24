@@ -27,29 +27,13 @@
 #pragma once
 
 #include "dialog.hpp"
+#include "find_problems_shim.hpp"
 
 #include <variant>
 
 #include "widgets/num_entry.hpp"
 
 namespace ff::dlg {
-
-using ProblemRecordValue = std::variant<std::monostate, int, double>;
-using ProblemRecordsOut = std::map<short /*cid*/, ProblemRecordValue>;
-
-struct ProblemRecord {
-    short cid;
-    std::string label;
-    std::string tooltip;
-    bool active;
-    bool disabled;
-    short parent_cid;
-    ProblemRecordValue value;
-};
-struct ProblemTab {
-    std::string label;
-    std::vector<ProblemRecord> records;
-};
 
 class FindProblemsDlg final : public Dialog {
  private:

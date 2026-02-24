@@ -27,6 +27,7 @@
 
 #include "find_problems.hpp"
 
+#include "application.hpp"
 #include "utils.hpp"
 #include "intl.h"
 
@@ -193,6 +194,27 @@ ProblemRecordsOut FindProblemsDlg::show(GWindow parent,
     near = dialog.near_value_entry_.get_value();
 
     return records_out;
+}
+
+bool find_problems_dialog(GWindow parent, std::vector<ProblemTab>& pr_tabs,
+                          double* near) {
+    // To avoid instability, the GTK application is lazily initialized only when
+    // a GTK window is invoked.
+    ff::app::GtkApp();
+
+    ff::dlg::ProblemRecordsOut result =
+        ff::dlg::FindProblemsDlg::show(parent, pr_tabs, *near);
+
+    for (ProblemTab& tab : pr_tabs) {
+        for (ProblemRecord& rec : tab.records) {
+            rec.active = result.count(rec.cid);
+            if (rec.active) {
+                rec.value = result[rec.cid];
+            }
+        }
+    }
+
+    return (!result.empty());
 }
 
 }  // namespace ff::dlg

@@ -28,6 +28,10 @@
 
 #include <fontforge-config.h>
 
+#include <vector>
+#include <assert.h>
+#include <math.h>
+
 extern "C" {
 #include "fontforgeui.h"
 #include "gkeysym.h"
@@ -48,10 +52,10 @@ extern "C" {
 #include "tottfgpos.h"
 #include "ttf.h"
 #include "ustring.h"
-#include "gtk/simple_dialogs.hpp"
+#include "gtk/find_problems_shim.hpp"
 
-#include <assert.h>
-#include <math.h>
+using ff::dlg::ProblemRecord;
+using ff::dlg::ProblemTab;
 
 /* ************************************************************************** */
 /* ***************************** Problems Dialog **************************** */
@@ -2894,41 +2898,39 @@ static void DummyFindProblems(CharView *cv) {
 	GDrawDestroyWindow(p.explainw);
 }
 
-static ProblemRec pr_points[] = {
+static std::vector<ProblemRecord> pr_points = {
     {CID_NonIntegral, N_("Non-_integral coordinates"),
      N_("The coordinates of all points and control points in truetype "
         "must be integers (if they are not integers then FontForge will "
         "round them when it outputs them, potentially causing havoc). "
         "Even in PostScript fonts it is generally a good idea to use "
         "integral values."),
-     false, prob_bool},
+     false},
     {CID_XNear,
      N_("_X near¹"),
      N_("Allows you to check that vertical stems in several characters start "
         "at the same location."),
      false,
-     prob_double,
-     {.dval = 0.0}},
+     0.0},
     {CID_YNear,
      N_("_Y near¹"),
      N_("Allows you to check that horizontal stems in several characters "
         "start at the same location."),
      false,
-     prob_double,
-     {.dval = 0.0}},
+     0.0},
     {CID_YNearStd, N_("Y near¹ _standard heights"),
      N_("Allows you to find points which are slightly off from the baseline, "
         "xheight, cap height, ascender, descender heights."),
-     false, prob_bool},
+     false},
     {CID_CpStd, N_("_Control points near horizontal/vertical"),
      N_("Allows you to find control points which are almost, but not quite "
         "horizontal or vertical from their base point (or at the italic "
         "angle)."),
-     false, prob_bool},
+     false},
     {CID_CpOdd, N_("Control points _beyond spline"),
      N_("Allows you to find control points which when projected onto the line "
         "segment between the two end points lie outside of those end points"),
-     false, prob_bool},
+     false},
     {CID_IrrelevantCP,
      N_("Check for _irrelevant control points with factor (%)"),
      N_("Control points are irrelevant if they are too close to the main point "
@@ -2936,40 +2938,38 @@ static ProblemRec pr_points[] = {
         "minimum relevant distance is computed as a factor of distance between "
         "the main points."),
      false,
-     prob_double,
-     {.dval = 0.5}},
+     0.5},
     {CID_PointsTooClose, N_("Poin_ts too close"),
      N_("If two adjacent points on the same path are less than a few emunits "
         "apart they will cause problems for some of FontForge's commands. "
         "PostScript shouldn't care though."),
-     false, prob_bool},
+     false},
     {CID_PointsTooFar, N_("_Points too far"),
      N_("Most font formats cannot specify adjacent points (or control "
         "points) which are more than 32767 em-units apart in either the x or "
         "y direction"),
-     false, prob_bool},
-    PROBLEM_REC_EMPTY};
+     false}};
 
-static ProblemRec pr_paths[] = {
+static std::vector<ProblemRecord> pr_paths = {
     {CID_OpenPaths, N_("O_pen paths"),
      N_("All paths should be closed loops, there "
         "should be no exposed endpoints"),
-     false, prob_bool},
+     false},
     {CID_IntersectingPaths, N_("Intersecting paths"),
-     N_("No paths with within a glyph should intersect"), false, prob_bool},
+     N_("No paths with within a glyph should intersect"), false},
     {CID_LineStd, N_("_Edges near horizontal/vertical"),
      N_("Allows you to find lines which are almost, but not quite horizontal "
         "or vertical (or at the italic angle)."),
-     false, prob_bool},
+     false},
     {CID_Direction, N_("Check _outermost paths clockwise"),
      N_("FontForge internally uses paths drawn in a clockwise direction. This "
         "lets you check that they are. Before doing this test insure that no "
         "paths self-intersect."),
-     false, prob_bool},
+     false},
     {CID_MissingExtrema, N_("Check _missing extrema"),
      N_("PostScript and TrueType require that when a path reaches its maximum "
         "or minimum position there must be a point at that location."),
-     false, prob_bool},
+     false},
     {CID_TooManyPoints,
      N_("_More points than:"),
      N_("The PostScript Language Reference Manual (Appendix B) says that an "
@@ -2980,31 +2980,29 @@ static ProblemRec pr_paths[] = {
         "limit. (Note a truetype font after conversion to PS will "
         "contain twice as many control points)"),
      false,
-     prob_int,
-     {.ival = 1500}},
-    PROBLEM_REC_EMPTY};
+     1500}};
 
-static ProblemRec pr_refs[] = {
+static std::vector<ProblemRecord> pr_refs = {
     {CID_FlippedRefs, N_("Check _flipped references"),
      N_("PostScript and TrueType require that paths be drawn in a clockwise "
         "direction. If you have a reference that has been flipped then the "
         "paths in that reference will probably be counter-clockwise. You "
         "should unlink it and do Element->Correct direction on it."),
-     false, prob_bool},
+     false},
     {CID_RefBadTransformTTF,
      N_("References with bad TrueType transformation matrices"),
      N_("TrueType requires that all scaling and rotational entries in a "
         "transformation matrix be between -2 and 2"),
-     false, prob_bool},
+     false},
     {CID_MixedContoursRefs, N_("Mixed contours and references"),
      N_("TrueType glyphs can either contain references or contours. Not "
         "both."),
-     false, prob_bool},
+     false},
     {CID_RefBadTransformPS,
      N_("References with bad PostScript transformation matrices"),
      N_("Type1 and 2 fonts only support translation of references. The first "
         "four entries of the transformation matrix should be [1 0 0 1]."),
-     false, prob_bool},
+     false},
     {CID_TooDeepRefs,
      N_("References neste_d deeper than:"),
      N_("The Type 2 Charstring Reference (Appendix B) says that subroutines "
@@ -3012,45 +3010,41 @@ static ProblemRec pr_refs[] = {
         "references requires one subroutine level, and hints may require "
         "another level."),
      false,
-     prob_int,
-     {.ival = 9}},
+     9},
     {CID_PtMatchRefsOutOfDate, N_("References with out of date point matching"),
      N_("If a glyph has been edited so that it has a different number of "
         "points now, then any references which use point matching and "
         "depended on that glyph's point count will be incorrect."),
-     false, prob_bool},
+     false},
     {CID_MultUseMyMetrics, N_("Multiple references with use-my-metrics"),
      N_("There may be at most one reference with the use-my-metrics bit set"),
-     false, prob_bool},
-    PROBLEM_REC_EMPTY};
+     false}};
 
-static ProblemRec pr_hints[] = {
+static std::vector<ProblemRecord> pr_hints = {
     {CID_HintNoPt, N_("_Hints controlling no points"),
      N_("Ghostview (perhaps other interpreters) has a problem when a hint "
         "exists without any points that lie on it."),
-     false, prob_bool},
+     false},
     {CID_PtNearHint, N_("_Points near¹ hint edges"),
      N_("Often if a point is slightly off from a hint it is because a stem is "
         "made up of several segments, and one of them has the wrong width."),
-     false, prob_bool},
+     false},
     {CID_HintWidthNear,
      N_("Hint _width near¹"),
      N_("Allows you to check that stems have consistent widths.."),
      false,
-     prob_double,
-     {.dval = 50.0}},
+     50.0},
     /* GT: The _3 is used to mark an accelerator */
     {CID_Stem3, N_("Almost stem_3 hint"),
      N_("This checks if the character almost, but not exactly, conforms to "
         "the requirements for a stem3 hint. That is, either vertically or "
         "horizontally, there must be exactly three hints, and they must have "
         "the same width and they must be evenly spaced."),
-     false, prob_bool},
+     false},
     {CID_ShowExactStem3,
      N_("_Show exact *stem3"),
      N_("Shows when this character is exactly a stem3 hint"),
      false,
-     prob_bool,
      {},
      .parent_cid = CID_Stem3},
     {CID_TooManyHints,
@@ -3058,127 +3052,113 @@ static ProblemRec pr_hints[] = {
      N_("The Type 2 Charstring Reference (Appendix B) says that there may be "
         "at most 96 horizontal and vertical stem hints in a character."),
      false,
-     prob_int,
-     {.ival = 96}},
+     96},
     {CID_OverlappedHints, N_("_Overlapped hints"),
      N_("Either a glyph should have no overlapping hints, or a glyph with "
         "hint masks should have no overlapping hints within a hint mask."),
-     false, prob_bool},
-    PROBLEM_REC_EMPTY};
+     false}};
 
-static ProblemRec pr_att[] = {
+static std::vector<ProblemRecord> pr_att = {
     {CID_MissingGlyph, N_("Check for missing _glyph names"),
      N_("Check whether a substitution, kerning class, etc. uses a glyph name "
         "which does not match any glyph in the font"),
-     false, prob_bool},
+     false},
     {CID_MissingScriptInFeature, N_("Check for missing _scripts in features"),
      N_("In every lookup that uses a glyph, check that at "
         "least one feature is active for the glyph's script."),
-     false, prob_bool},
+     false},
     {CID_BadSubs, N_("Check substitutions for empty chars"),
      N_("Check for characters which contain 'GSUB' entries which refer to "
         "empty characters"),
-     false, prob_bool},
+     false},
     {CID_MissingAnchor, N_("Check for incomplete mark to base subtables"),
      N_("The OpenType documentation suggests in a rather confusing way "
         "that if a base glyph (or base mark) contains an anchor point "
         "for one class in a lookup subtable, then it should contain "
         "anchors for all classes in the subtable"),
-     false, prob_bool},
-    PROBLEM_REC_EMPTY};
+     false}};
 
-static ProblemRec pr_cid[] = {
+static std::vector<ProblemRecord> pr_cid = {
     {CID_CIDMultiple, N_("Check for CIDs defined _twice"),
-     N_("Check whether a CID is defined in more than one sub-font"), false,
-     prob_bool},
+     N_("Check whether a CID is defined in more than one sub-font"), false},
     {CID_CIDBlank, N_("Check for _undefined CIDs"),
-     N_("Check whether a CID is undefined in all sub-fonts"), false, prob_bool},
-    PROBLEM_REC_EMPTY};
+     N_("Check whether a CID is undefined in all sub-fonts"), false}};
 
-static ProblemRec pr_bb[] = {
+static std::vector<ProblemRecord> pr_bb = {
     {CID_BBYMax,
      N_("Glyph bounding box above"),
      N_("Are there any glyph's whose bounding boxes extend above this number?"),
      false,
-     prob_int,
-     {.ival = 0}},
+     0},
     {CID_BBYMin,
      N_("Glyph bounding box below"),
      N_("Are there any glyph's whose bounding boxes extend below this number?"),
      false,
-     prob_int,
-     {.ival = 0}},
+     0},
     {CID_BBXMax,
      N_("Glyph bounding box right of"),
      N_("Are there any glyphs whose bounding boxes extend to the right of this "
         "number?"),
      false,
-     prob_int,
-     {.ival = 0}},
+     0},
     {CID_BBXMin,
      N_("Glyph bounding box left of"),
      N_("Are there any glyph's whose bounding boxes extend to the left of this "
         "number?"),
      false,
-     prob_int,
-     {.ival = 0}},
+     0},
     {CID_AdvanceWidth,
      N_("Check advance:"),
      N_("Check for characters whose advance width is not the displayed value."),
      false,
-     prob_int,
-     {.ival = 0}},
+     0},
     {CID_VAdvanceWidth,
      N_("Check vertical advance:"),
      N_("Check for characters whose vertical advance width is not the "
         "displayed value."),
      false,
-     prob_int,
-     {.ival = 0}},
-    PROBLEM_REC_EMPTY};
+     0}};
 
-static ProblemRec pr_random[] = {
+static std::vector<ProblemRecord> pr_random = {
     {CID_Bitmaps, N_("Check missing _bitmaps"),
      N_("Are there any outline characters which don't have a bitmap version in "
         "one of the bitmap fonts? Conversely are there any bitmap characters "
         "without a corresponding outline character?"),
-     false, prob_bool},
+     false},
     {CID_BitmapWidths, N_("Bitmap/outline _advance mismatch"),
      N_("Are there any bitmap glyphs whose advance width is not is expected "
         "from scaling and rounding the outline's advance width?"),
-     false, prob_bool},
+     false},
     {CID_MultUni, N_("Check multiple Unicode"),
      N_("Check for multiple characters with the same Unicode code point"),
-     false, prob_bool},
+     false},
     {CID_MultName, N_("Check multiple names"),
-     N_("Check for multiple characters with the same name"), false, prob_bool},
+     N_("Check for multiple characters with the same name"), false},
     {CID_UniNameMisMatch, N_("Check Unicode/name mismatch"),
      N_("Check for characters whose name maps to a unicode code point which "
         "does not map the character's assigned code point."),
-     false, prob_bool},
-    PROBLEM_REC_EMPTY};
+     false}};
 
-static ProblemTab pr_tabs[] = {{N_("Points"), pr_points},
+static std::vector<ProblemTab> pr_tabs = {{N_("Points"), pr_points},
                                {N_("Paths"), pr_paths},
                                {N_("References"), pr_refs},
                                {N_("Hints"), pr_hints},
                                {N_("ATT"), pr_att},
                                {N_("CID"), pr_cid},
                                {N_("Bounding Box"), pr_bb},
-                               {N_("Random"), pr_random},
-                               PROBLEM_TAB_EMPTY};
+                               {N_("Random"), pr_random}};
 
-static void adjust_problem_records(FontView* fv, ProblemTab* problem_tabs) {
+static void adjust_problem_records(FontView* fv, std::vector<ProblemTab>& problem_tabs) {
     static SplineFont* lastsf = NULL;
     static bool loc_initialized = false;
     SplineFont* sf = fv->b.sf;
 
     if (!loc_initialized) {
-        for (ProblemTab* tab = problem_tabs; tab->label != NULL; ++tab) {
-            tab->label = S_(tab->label);
-            for (ProblemRec* rec = tab->records; rec->label != NULL; ++rec) {
-                rec->label = S_(rec->label);
-                rec->tooltip = S_(rec->tooltip);
+        for (ProblemTab& tab : problem_tabs) {
+            tab.label = S_(tab.label.c_str());
+            for (ProblemRecord& rec : tab.records) {
+                rec.label = S_(rec.label.c_str());
+                rec.tooltip = S_(rec.tooltip.c_str());
             }
         }
         loc_initialized = true;
@@ -3188,19 +3168,19 @@ static void adjust_problem_records(FontView* fv, ProblemTab* problem_tabs) {
         SplineChar* ssc = SFGetChar(sf, ' ', NULL);
 
         assert(problem_tabs[6].records[0].cid == CID_BBYMax);
-        problem_tabs[6].records[0].value.ival = sf->ascent;
+        problem_tabs[6].records[0].value = sf->ascent;
 
         assert(problem_tabs[6].records[1].cid == CID_BBYMin);
-        problem_tabs[6].records[1].value.ival = -sf->descent;
+        problem_tabs[6].records[1].value = -sf->descent;
 
         assert(problem_tabs[6].records[2].cid == CID_BBXMax);
-        problem_tabs[6].records[2].value.ival = sf->ascent + sf->descent;
+        problem_tabs[6].records[2].value = sf->ascent + sf->descent;
 
         assert(problem_tabs[6].records[4].cid == CID_AdvanceWidth);
-        problem_tabs[6].records[4].value.ival = ssc ? ssc->width : 0;
+        problem_tabs[6].records[4].value = ssc ? ssc->width : 0;
 
         assert(problem_tabs[6].records[5].cid == CID_VAdvanceWidth);
-        problem_tabs[6].records[5].value.ival = sf->ascent + sf->descent;
+        problem_tabs[6].records[5].value = sf->ascent + sf->descent;
 
         lastsf = sf;
     }
@@ -3226,144 +3206,144 @@ static void adjust_problem_records(FontView* fv, ProblemTab* problem_tabs) {
     problem_tabs[6].records[5].disabled = (!sf->hasvmetrics);
 }
 
-static void apply_dialog_results(const ProblemTab* problem_tabs,
+static void apply_dialog_results(const std::vector<ProblemTab>& problem_tabs,
                                  struct problems* p) {
     near = p->near;
 
-    for (const ProblemTab* tab = problem_tabs; tab->label != NULL; ++tab) {
-        for (const ProblemRec* rec = tab->records; rec->label != NULL; ++rec) {
+    for (const ProblemTab& tab : problem_tabs) {
+        for (const ProblemRecord& rec : tab.records) {
             /* Points */
-            if (rec->cid == CID_NonIntegral)
-                nonintegral = p->nonintegral = rec->active;
-            if (rec->cid == CID_XNear) {
-                doxnear = p->xnearval = rec->active;
-                if (doxnear) p->xval = xval = rec->value.dval;
+            if (rec.cid == CID_NonIntegral)
+                nonintegral = p->nonintegral = rec.active;
+            if (rec.cid == CID_XNear) {
+                doxnear = p->xnearval = rec.active;
+                if (doxnear) p->xval = xval = std::get<double>(rec.value);
             }
-            if (rec->cid == CID_YNear) {
-                doynear = p->ynearval = rec->active;
-                if (doynear) p->yval = yval = rec->value.dval;
+            if (rec.cid == CID_YNear) {
+                doynear = p->ynearval = rec.active;
+                if (doynear) p->yval = yval = std::get<double>(rec.value);
             }
-            if (rec->cid == CID_YNearStd)
-                doynearstd = p->ynearstd = rec->active;
-            if (rec->cid == CID_CpStd) cpstd = p->cpnearstd = rec->active;
-            if (rec->cid == CID_CpOdd) cpodd = p->cpodd = rec->active;
-            if (rec->cid == CID_IrrelevantCP) {
-                irrelevantcp = p->irrelevantcontrolpoints = rec->active;
+            if (rec.cid == CID_YNearStd)
+                doynearstd = p->ynearstd = rec.active;
+            if (rec.cid == CID_CpStd) cpstd = p->cpnearstd = rec.active;
+            if (rec.cid == CID_CpOdd) cpodd = p->cpodd = rec.active;
+            if (rec.cid == CID_IrrelevantCP) {
+                irrelevantcp = p->irrelevantcontrolpoints = rec.active;
                 if (irrelevantcp)
                     p->irrelevantfactor = irrelevantfactor =
-                        rec->value.dval / 100.0;
+                        std::get<double>(rec.value) / 100.0;
             }
-            if (rec->cid == CID_PointsTooClose)
-                pointstooclose = p->pointstooclose = rec->active;
-            if (rec->cid == CID_PointsTooFar)
-                pointstoofar = p->pointstoofar = rec->active;
+            if (rec.cid == CID_PointsTooClose)
+                pointstooclose = p->pointstooclose = rec.active;
+            if (rec.cid == CID_PointsTooFar)
+                pointstoofar = p->pointstoofar = rec.active;
 
             /* Paths */
-            if (rec->cid == CID_OpenPaths)
-                openpaths = p->openpaths = rec->active;
-            if (rec->cid == CID_IntersectingPaths)
-                intersectingpaths = p->intersectingpaths = rec->active;
-            if (rec->cid == CID_LineStd) linestd = p->linenearstd = rec->active;
-            if (rec->cid == CID_Direction)
-                direction = p->direction = rec->active;
-            if (rec->cid == CID_MissingExtrema)
-                missingextrema = p->missingextrema = rec->active;
-            if (rec->cid == CID_TooManyPoints) {
-                toomanypoints = p->toomanypoints = rec->active;
-                if (toomanypoints) p->pointsmax = pointsmax = rec->value.ival;
+            if (rec.cid == CID_OpenPaths)
+                openpaths = p->openpaths = rec.active;
+            if (rec.cid == CID_IntersectingPaths)
+                intersectingpaths = p->intersectingpaths = rec.active;
+            if (rec.cid == CID_LineStd) linestd = p->linenearstd = rec.active;
+            if (rec.cid == CID_Direction)
+                direction = p->direction = rec.active;
+            if (rec.cid == CID_MissingExtrema)
+                missingextrema = p->missingextrema = rec.active;
+            if (rec.cid == CID_TooManyPoints) {
+                toomanypoints = p->toomanypoints = rec.active;
+                if (toomanypoints) p->pointsmax = pointsmax = std::get<int>(rec.value);
             }
 
             /* Refs */
-            if (rec->cid == CID_FlippedRefs)
-                flippedrefs = p->flippedrefs = rec->active;
-            if (rec->cid == CID_RefBadTransformTTF)
-                refsbadtransformttf = p->refsbadtransformttf = rec->active;
-            if (rec->cid == CID_MixedContoursRefs)
-                mixedcontoursrefs = p->mixedcontoursrefs = rec->active;
-            if (rec->cid == CID_RefBadTransformPS)
-                refsbadtransformps = p->refsbadtransformps = rec->active;
-            if (rec->cid == CID_TooDeepRefs) {
-                toodeeprefs = p->toodeeprefs = rec->active;
-                if (toodeeprefs) p->refdepthmax = refdepthmax = rec->value.ival;
+            if (rec.cid == CID_FlippedRefs)
+                flippedrefs = p->flippedrefs = rec.active;
+            if (rec.cid == CID_RefBadTransformTTF)
+                refsbadtransformttf = p->refsbadtransformttf = rec.active;
+            if (rec.cid == CID_MixedContoursRefs)
+                mixedcontoursrefs = p->mixedcontoursrefs = rec.active;
+            if (rec.cid == CID_RefBadTransformPS)
+                refsbadtransformps = p->refsbadtransformps = rec.active;
+            if (rec.cid == CID_TooDeepRefs) {
+                toodeeprefs = p->toodeeprefs = rec.active;
+                if (toodeeprefs) p->refdepthmax = refdepthmax = std::get<int>(rec.value);
             }
-            if (rec->cid == CID_PtMatchRefsOutOfDate)
-                ptmatchrefsoutofdate = p->ptmatchrefsoutofdate = rec->active;
-            if (rec->cid == CID_MultUseMyMetrics)
-                multusemymetrics = p->multusemymetrics = rec->active;
+            if (rec.cid == CID_PtMatchRefsOutOfDate)
+                ptmatchrefsoutofdate = p->ptmatchrefsoutofdate = rec.active;
+            if (rec.cid == CID_MultUseMyMetrics)
+                multusemymetrics = p->multusemymetrics = rec.active;
 
             /* Hints */
-            if (rec->cid == CID_HintNoPt)
-                hintnopt = p->hintwithnopt = rec->active;
-            if (rec->cid == CID_PtNearHint)
-                ptnearhint = p->ptnearhint = rec->active;
-            if (rec->cid == CID_HintWidthNear) {
-                hintwidth = p->hintwidthnearval = rec->active;
-                if (hintwidth) widthval = p->widthval = rec->value.dval;
+            if (rec.cid == CID_HintNoPt)
+                hintnopt = p->hintwithnopt = rec.active;
+            if (rec.cid == CID_PtNearHint)
+                ptnearhint = p->ptnearhint = rec.active;
+            if (rec.cid == CID_HintWidthNear) {
+                hintwidth = p->hintwidthnearval = rec.active;
+                if (hintwidth) widthval = p->widthval = std::get<double>(rec.value);
             }
-            if (rec->cid == CID_Stem3) stem3 = p->stem3 = rec->active;
-            if (rec->cid == CID_ShowExactStem3 && stem3)
-                showexactstem3 = p->showexactstem3 = rec->active;
-            if (rec->cid == CID_TooManyHints) {
-                toomanyhints = p->toomanyhints = rec->active;
-                if (toomanyhints) p->hintsmax = hintsmax = rec->value.ival;
+            if (rec.cid == CID_Stem3) stem3 = p->stem3 = rec.active;
+            if (rec.cid == CID_ShowExactStem3 && stem3)
+                showexactstem3 = p->showexactstem3 = rec.active;
+            if (rec.cid == CID_TooManyHints) {
+                toomanyhints = p->toomanyhints = rec.active;
+                if (toomanyhints) p->hintsmax = hintsmax = std::get<int>(rec.value);
             }
-            if (rec->cid == CID_OverlappedHints)
-                overlappedhints = p->overlappedhints = rec->active;
+            if (rec.cid == CID_OverlappedHints)
+                overlappedhints = p->overlappedhints = rec.active;
 
             /* ATT */
-            if (rec->cid == CID_MissingGlyph)
-                missingglyph = p->missingglyph = rec->active;
-            if (rec->cid == CID_MissingScriptInFeature)
+            if (rec.cid == CID_MissingGlyph)
+                missingglyph = p->missingglyph = rec.active;
+            if (rec.cid == CID_MissingScriptInFeature)
                 missingscriptinfeature = p->missingscriptinfeature =
-                    rec->active;
-            if (rec->cid == CID_BadSubs) badsubs = p->badsubs = rec->active;
-            if (rec->cid == CID_MissingAnchor)
-                missinganchor = p->missinganchor = rec->active;
+                    rec.active;
+            if (rec.cid == CID_BadSubs) badsubs = p->badsubs = rec.active;
+            if (rec.cid == CID_MissingAnchor)
+                missinganchor = p->missinganchor = rec.active;
 
             /* CID */
             if (p->fv->b.cidmaster != NULL) {
-                if (rec->cid == CID_CIDMultiple)
-                    cidmultiple = p->cidmultiple = rec->active;
-                if (rec->cid == CID_CIDBlank)
-                    cidblank = p->cidblank = rec->active;
+                if (rec.cid == CID_CIDMultiple)
+                    cidmultiple = p->cidmultiple = rec.active;
+                if (rec.cid == CID_CIDBlank)
+                    cidblank = p->cidblank = rec.active;
             }
 
             /* Bounding Box */
-            if (rec->cid == CID_BBYMax) {
-                bbymax = p->bbymax = rec->active;
-                if (bbymax) bbymax_val = p->bbymax_val = rec->value.ival;
+            if (rec.cid == CID_BBYMax) {
+                bbymax = p->bbymax = rec.active;
+                if (bbymax) bbymax_val = p->bbymax_val = std::get<int>(rec.value);
             }
-            if (rec->cid == CID_BBYMin) {
-                bbymin = p->bbymin = rec->active;
-                if (bbymin) bbymin_val = p->bbymin_val = rec->value.ival;
+            if (rec.cid == CID_BBYMin) {
+                bbymin = p->bbymin = rec.active;
+                if (bbymin) bbymin_val = p->bbymin_val = std::get<int>(rec.value);
             }
-            if (rec->cid == CID_BBXMax) {
-                bbxmax = p->bbxmax = rec->active;
-                if (bbxmax) bbxmax_val = p->bbxmax_val = rec->value.ival;
+            if (rec.cid == CID_BBXMax) {
+                bbxmax = p->bbxmax = rec.active;
+                if (bbxmax) bbxmax_val = p->bbxmax_val = std::get<int>(rec.value);
             }
-            if (rec->cid == CID_BBXMin) {
-                bbxmin = p->bbxmin = rec->active;
-                if (bbxmin) bbxmin_val = p->bbxmin_val = rec->value.ival;
+            if (rec.cid == CID_BBXMin) {
+                bbxmin = p->bbxmin = rec.active;
+                if (bbxmin) bbxmin_val = p->bbxmin_val = std::get<int>(rec.value);
             }
-            if (rec->cid == CID_AdvanceWidth) {
-                advancewidth = p->advancewidth = rec->active;
+            if (rec.cid == CID_AdvanceWidth) {
+                advancewidth = p->advancewidth = rec.active;
                 if (advancewidth)
-                    advancewidthval = p->advancewidthval = rec->value.ival;
+                    advancewidthval = p->advancewidthval = std::get<int>(rec.value);
             }
-            if (p->fv->b.sf->hasvmetrics && rec->cid == CID_VAdvanceWidth) {
-                vadvancewidth = p->vadvancewidth = rec->active;
+            if (p->fv->b.sf->hasvmetrics && rec.cid == CID_VAdvanceWidth) {
+                vadvancewidth = p->vadvancewidth = rec.active;
                 if (vadvancewidth)
-                    vadvancewidthval = p->vadvancewidthval = rec->value.ival;
+                    vadvancewidthval = p->vadvancewidthval = std::get<int>(rec.value);
             }
 
             /* Random */
-            if (rec->cid == CID_Bitmaps) bitmaps = p->bitmaps = rec->active;
-            if (rec->cid == CID_BitmapWidths)
-                bitmapwidths = p->bitmapwidths = rec->active;
-            if (rec->cid == CID_MultUni) multuni = p->multuni = rec->active;
-            if (rec->cid == CID_MultName) multname = p->multname = rec->active;
-            if (rec->cid == CID_UniNameMisMatch)
-                uninamemismatch = p->uninamemismatch = rec->active;
+            if (rec.cid == CID_Bitmaps) bitmaps = p->bitmaps = rec.active;
+            if (rec.cid == CID_BitmapWidths)
+                bitmapwidths = p->bitmapwidths = rec.active;
+            if (rec.cid == CID_MultUni) multuni = p->multuni = rec.active;
+            if (rec.cid == CID_MultName) multname = p->multname = rec.active;
+            if (rec.cid == CID_UniNameMisMatch)
+                uninamemismatch = p->uninamemismatch = rec.active;
         }
     }
 }

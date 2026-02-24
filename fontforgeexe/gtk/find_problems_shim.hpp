@@ -26,28 +26,37 @@
  */
 #pragma once
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include <map>
+#include <string>
+#include <vector>
+#include <variant>
 
-#include "gresource.h"
+namespace ff::dlg {
 
-typedef struct gwindow* GWindow;
+using ProblemRecordValue = std::variant<std::monostate, int, double>;
+using ProblemRecordsOut = std::map<short /*cid*/, ProblemRecordValue>;
 
-typedef struct {
-    const char* name;
-    uint32_t tag;
-} LanguageRec;
+struct ProblemRecord {
+    short cid;
+    std::string label;
+    std::string tooltip;
+    bool active;
+    ProblemRecordValue value;
+    short parent_cid;
+    bool disabled;
+};
 
-int add_encoding_slots_dialog(GWindow parent, bool cid);
+struct ProblemTab {
+    std::string label;
+    std::vector<ProblemRecord> records;
+};
 
-// Return comma-separated list of language tags, or NULL if the action was
-// canceled. The caller is responsible to release the returned pointer.
-char* language_list_dialog(GWindow parent, const LanguageRec* languages,
-                           const char* initial_tags);
+/* This function updates pr_tabs in-place to preserve the state of the dialog
+   between invocations.
 
-void update_appearance();
+   Return value: true, if any problem record was selected. The selected records
+                 are marked as active in pr_tabs. */
+bool find_problems_dialog(GWindow parent, std::vector<ProblemTab>& pr_tabs,
+                          double* near);
 
-#ifdef __cplusplus
-}
-#endif
+}  // namespace ff::dlg
