@@ -2906,18 +2906,14 @@ static std::vector<ProblemRecord> pr_points = {
         "Even in PostScript fonts it is generally a good idea to use "
         "integral values."),
      false},
-    {CID_XNear,
-     N_("_X near¹"),
+    {CID_XNear, N_("_X near¹"),
      N_("Allows you to check that vertical stems in several characters start "
         "at the same location."),
-     false,
-     0.0},
-    {CID_YNear,
-     N_("_Y near¹"),
+     false, 0.0},
+    {CID_YNear, N_("_Y near¹"),
      N_("Allows you to check that horizontal stems in several characters "
         "start at the same location."),
-     false,
-     0.0},
+     false, 0.0},
     {CID_YNearStd, N_("Y near¹ _standard heights"),
      N_("Allows you to find points which are slightly off from the baseline, "
         "xheight, cap height, ascender, descender heights."),
@@ -2937,8 +2933,7 @@ static std::vector<ProblemRecord> pr_points = {
         "to make a significant difference in the shape of the curve. The "
         "minimum relevant distance is computed as a factor of distance between "
         "the main points."),
-     false,
-     0.5},
+     false, 0.5},
     {CID_PointsTooClose, N_("Poin_ts too close"),
      N_("If two adjacent points on the same path are less than a few emunits "
         "apart they will cause problems for some of FontForge's commands. "
@@ -2970,8 +2965,7 @@ static std::vector<ProblemRecord> pr_paths = {
      N_("PostScript and TrueType require that when a path reaches its maximum "
         "or minimum position there must be a point at that location."),
      false},
-    {CID_TooManyPoints,
-     N_("_More points than:"),
+    {CID_TooManyPoints, N_("_More points than:"),
      N_("The PostScript Language Reference Manual (Appendix B) says that an "
         "interpreter need not support paths with more than 1500 points. I "
         "think this count includes control points. From PostScript's point of "
@@ -2979,8 +2973,7 @@ static std::vector<ProblemRecord> pr_paths = {
         "Modern interpreters tend to support paths with more points than this "
         "limit. (Note a truetype font after conversion to PS will "
         "contain twice as many control points)"),
-     false,
-     1500}};
+     false, 1500}};
 
 static std::vector<ProblemRecord> pr_refs = {
     {CID_FlippedRefs, N_("Check _flipped references"),
@@ -3003,14 +2996,12 @@ static std::vector<ProblemRecord> pr_refs = {
      N_("Type1 and 2 fonts only support translation of references. The first "
         "four entries of the transformation matrix should be [1 0 0 1]."),
      false},
-    {CID_TooDeepRefs,
-     N_("References neste_d deeper than:"),
+    {CID_TooDeepRefs, N_("References neste_d deeper than:"),
      N_("The Type 2 Charstring Reference (Appendix B) says that subroutines "
         "may not be nested more than 10 deep. Each nesting level for "
         "references requires one subroutine level, and hints may require "
         "another level."),
-     false,
-     9},
+     false, 9},
     {CID_PtMatchRefsOutOfDate, N_("References with out of date point matching"),
      N_("If a glyph has been edited so that it has a different number of "
         "points now, then any references which use point matching and "
@@ -3029,10 +3020,8 @@ static std::vector<ProblemRecord> pr_hints = {
      N_("Often if a point is slightly off from a hint it is because a stem is "
         "made up of several segments, and one of them has the wrong width."),
      false},
-    {CID_HintWidthNear,
-     N_("Hint _width near¹"),
-     N_("Allows you to check that stems have consistent widths.."),
-     false,
+    {CID_HintWidthNear, N_("Hint _width near¹"),
+     N_("Allows you to check that stems have consistent widths.."), false,
      50.0},
     /* GT: The _3 is used to mark an accelerator */
     {CID_Stem3, N_("Almost stem_3 hint"),
@@ -3047,12 +3036,10 @@ static std::vector<ProblemRecord> pr_hints = {
      false,
      {},
      .parent_cid = CID_Stem3},
-    {CID_TooManyHints,
-     N_("_More hints than:"),
+    {CID_TooManyHints, N_("_More hints than:"),
      N_("The Type 2 Charstring Reference (Appendix B) says that there may be "
         "at most 96 horizontal and vertical stem hints in a character."),
-     false,
-     96},
+     false, 96},
     {CID_OverlappedHints, N_("_Overlapped hints"),
      N_("Either a glyph should have no overlapping hints, or a glyph with "
         "hint masks should have no overlapping hints within a hint mask."),
@@ -3085,39 +3072,27 @@ static std::vector<ProblemRecord> pr_cid = {
      N_("Check whether a CID is undefined in all sub-fonts"), false}};
 
 static std::vector<ProblemRecord> pr_bb = {
-    {CID_BBYMax,
-     N_("Glyph bounding box above"),
+    {CID_BBYMax, N_("Glyph bounding box above"),
      N_("Are there any glyph's whose bounding boxes extend above this number?"),
-     false,
-     0},
-    {CID_BBYMin,
-     N_("Glyph bounding box below"),
+     false, 0},
+    {CID_BBYMin, N_("Glyph bounding box below"),
      N_("Are there any glyph's whose bounding boxes extend below this number?"),
-     false,
-     0},
-    {CID_BBXMax,
-     N_("Glyph bounding box right of"),
+     false, 0},
+    {CID_BBXMax, N_("Glyph bounding box right of"),
      N_("Are there any glyphs whose bounding boxes extend to the right of this "
         "number?"),
-     false,
-     0},
-    {CID_BBXMin,
-     N_("Glyph bounding box left of"),
+     false, 0},
+    {CID_BBXMin, N_("Glyph bounding box left of"),
      N_("Are there any glyph's whose bounding boxes extend to the left of this "
         "number?"),
-     false,
-     0},
-    {CID_AdvanceWidth,
-     N_("Check advance:"),
+     false, 0},
+    {CID_AdvanceWidth, N_("Check advance:"),
      N_("Check for characters whose advance width is not the displayed value."),
-     false,
-     0},
-    {CID_VAdvanceWidth,
-     N_("Check vertical advance:"),
+     false, 0},
+    {CID_VAdvanceWidth, N_("Check vertical advance:"),
      N_("Check for characters whose vertical advance width is not the "
         "displayed value."),
-     false,
-     0}};
+     false, 0}};
 
 static std::vector<ProblemRecord> pr_random = {
     {CID_Bitmaps, N_("Check missing _bitmaps"),
@@ -3139,16 +3114,14 @@ static std::vector<ProblemRecord> pr_random = {
         "does not map the character's assigned code point."),
      false}};
 
-static std::vector<ProblemTab> pr_tabs = {{N_("Points"), pr_points},
-                               {N_("Paths"), pr_paths},
-                               {N_("References"), pr_refs},
-                               {N_("Hints"), pr_hints},
-                               {N_("ATT"), pr_att},
-                               {N_("CID"), pr_cid},
-                               {N_("Bounding Box"), pr_bb},
-                               {N_("Random"), pr_random}};
+static std::vector<ProblemTab> pr_tabs = {
+    {N_("Points"), pr_points},   {N_("Paths"), pr_paths},
+    {N_("References"), pr_refs}, {N_("Hints"), pr_hints},
+    {N_("ATT"), pr_att},         {N_("CID"), pr_cid},
+    {N_("Bounding Box"), pr_bb}, {N_("Random"), pr_random}};
 
-static void adjust_problem_records(FontView* fv, std::vector<ProblemTab>& problem_tabs) {
+static void adjust_problem_records(FontView* fv,
+                                   std::vector<ProblemTab>& problem_tabs) {
     static SplineFont* lastsf = NULL;
     static bool loc_initialized = false;
     SplineFont* sf = fv->b.sf;
@@ -3223,8 +3196,7 @@ static void apply_dialog_results(const std::vector<ProblemTab>& problem_tabs,
                 doynear = p->ynearval = rec.active;
                 if (doynear) p->yval = yval = std::get<double>(rec.value);
             }
-            if (rec.cid == CID_YNearStd)
-                doynearstd = p->ynearstd = rec.active;
+            if (rec.cid == CID_YNearStd) doynearstd = p->ynearstd = rec.active;
             if (rec.cid == CID_CpStd) cpstd = p->cpnearstd = rec.active;
             if (rec.cid == CID_CpOdd) cpodd = p->cpodd = rec.active;
             if (rec.cid == CID_IrrelevantCP) {
@@ -3239,18 +3211,17 @@ static void apply_dialog_results(const std::vector<ProblemTab>& problem_tabs,
                 pointstoofar = p->pointstoofar = rec.active;
 
             /* Paths */
-            if (rec.cid == CID_OpenPaths)
-                openpaths = p->openpaths = rec.active;
+            if (rec.cid == CID_OpenPaths) openpaths = p->openpaths = rec.active;
             if (rec.cid == CID_IntersectingPaths)
                 intersectingpaths = p->intersectingpaths = rec.active;
             if (rec.cid == CID_LineStd) linestd = p->linenearstd = rec.active;
-            if (rec.cid == CID_Direction)
-                direction = p->direction = rec.active;
+            if (rec.cid == CID_Direction) direction = p->direction = rec.active;
             if (rec.cid == CID_MissingExtrema)
                 missingextrema = p->missingextrema = rec.active;
             if (rec.cid == CID_TooManyPoints) {
                 toomanypoints = p->toomanypoints = rec.active;
-                if (toomanypoints) p->pointsmax = pointsmax = std::get<int>(rec.value);
+                if (toomanypoints)
+                    p->pointsmax = pointsmax = std::get<int>(rec.value);
             }
 
             /* Refs */
@@ -3264,7 +3235,8 @@ static void apply_dialog_results(const std::vector<ProblemTab>& problem_tabs,
                 refsbadtransformps = p->refsbadtransformps = rec.active;
             if (rec.cid == CID_TooDeepRefs) {
                 toodeeprefs = p->toodeeprefs = rec.active;
-                if (toodeeprefs) p->refdepthmax = refdepthmax = std::get<int>(rec.value);
+                if (toodeeprefs)
+                    p->refdepthmax = refdepthmax = std::get<int>(rec.value);
             }
             if (rec.cid == CID_PtMatchRefsOutOfDate)
                 ptmatchrefsoutofdate = p->ptmatchrefsoutofdate = rec.active;
@@ -3278,14 +3250,16 @@ static void apply_dialog_results(const std::vector<ProblemTab>& problem_tabs,
                 ptnearhint = p->ptnearhint = rec.active;
             if (rec.cid == CID_HintWidthNear) {
                 hintwidth = p->hintwidthnearval = rec.active;
-                if (hintwidth) widthval = p->widthval = std::get<double>(rec.value);
+                if (hintwidth)
+                    widthval = p->widthval = std::get<double>(rec.value);
             }
             if (rec.cid == CID_Stem3) stem3 = p->stem3 = rec.active;
             if (rec.cid == CID_ShowExactStem3 && stem3)
                 showexactstem3 = p->showexactstem3 = rec.active;
             if (rec.cid == CID_TooManyHints) {
                 toomanyhints = p->toomanyhints = rec.active;
-                if (toomanyhints) p->hintsmax = hintsmax = std::get<int>(rec.value);
+                if (toomanyhints)
+                    p->hintsmax = hintsmax = std::get<int>(rec.value);
             }
             if (rec.cid == CID_OverlappedHints)
                 overlappedhints = p->overlappedhints = rec.active;
@@ -3294,8 +3268,7 @@ static void apply_dialog_results(const std::vector<ProblemTab>& problem_tabs,
             if (rec.cid == CID_MissingGlyph)
                 missingglyph = p->missingglyph = rec.active;
             if (rec.cid == CID_MissingScriptInFeature)
-                missingscriptinfeature = p->missingscriptinfeature =
-                    rec.active;
+                missingscriptinfeature = p->missingscriptinfeature = rec.active;
             if (rec.cid == CID_BadSubs) badsubs = p->badsubs = rec.active;
             if (rec.cid == CID_MissingAnchor)
                 missinganchor = p->missinganchor = rec.active;
@@ -3311,29 +3284,35 @@ static void apply_dialog_results(const std::vector<ProblemTab>& problem_tabs,
             /* Bounding Box */
             if (rec.cid == CID_BBYMax) {
                 bbymax = p->bbymax = rec.active;
-                if (bbymax) bbymax_val = p->bbymax_val = std::get<int>(rec.value);
+                if (bbymax)
+                    bbymax_val = p->bbymax_val = std::get<int>(rec.value);
             }
             if (rec.cid == CID_BBYMin) {
                 bbymin = p->bbymin = rec.active;
-                if (bbymin) bbymin_val = p->bbymin_val = std::get<int>(rec.value);
+                if (bbymin)
+                    bbymin_val = p->bbymin_val = std::get<int>(rec.value);
             }
             if (rec.cid == CID_BBXMax) {
                 bbxmax = p->bbxmax = rec.active;
-                if (bbxmax) bbxmax_val = p->bbxmax_val = std::get<int>(rec.value);
+                if (bbxmax)
+                    bbxmax_val = p->bbxmax_val = std::get<int>(rec.value);
             }
             if (rec.cid == CID_BBXMin) {
                 bbxmin = p->bbxmin = rec.active;
-                if (bbxmin) bbxmin_val = p->bbxmin_val = std::get<int>(rec.value);
+                if (bbxmin)
+                    bbxmin_val = p->bbxmin_val = std::get<int>(rec.value);
             }
             if (rec.cid == CID_AdvanceWidth) {
                 advancewidth = p->advancewidth = rec.active;
                 if (advancewidth)
-                    advancewidthval = p->advancewidthval = std::get<int>(rec.value);
+                    advancewidthval = p->advancewidthval =
+                        std::get<int>(rec.value);
             }
             if (p->fv->b.sf->hasvmetrics && rec.cid == CID_VAdvanceWidth) {
                 vadvancewidth = p->vadvancewidth = rec.active;
                 if (vadvancewidth)
-                    vadvancewidthval = p->vadvancewidthval = std::get<int>(rec.value);
+                    vadvancewidthval = p->vadvancewidthval =
+                        std::get<int>(rec.value);
             }
 
             /* Random */
