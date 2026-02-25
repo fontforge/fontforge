@@ -61,24 +61,21 @@ typedef struct basepoint {
     real y;
 } BasePoint;
 
-#define BASEPOINT_EMPTY \
-    { (real)0.0, (real)0.0 }
+#define BASEPOINT_EMPTY {(real)0.0, (real)0.0}
 
 typedef struct dbounds {
     real minx, maxx;
     real miny, maxy;
 } DBounds;
 
-#define DBOUNDS_EMPTY \
-    { (real)0.0, (real)0.0, (real)0.0, (real)0.0 }
+#define DBOUNDS_EMPTY {(real)0.0, (real)0.0, (real)0.0, (real)0.0}
 
 typedef struct ipoint {
     int x;
     int y;
 } IPoint;
 
-#define IPOINT_EMPTY \
-    { 0, 0 }
+#define IPOINT_EMPTY {0, 0}
 
 enum spreadMethod { sm_pad, sm_reflect, sm_repeat };
 
@@ -147,8 +144,8 @@ typedef struct splinepoint {
     unsigned int prevcpselected : 2; /* Is the prev BCP selected */
     unsigned int pointtype : 2;
     unsigned int isintersection : 1;
-    unsigned int
-        flexy : 1; /* When "freetype_markup" is on in charview.c:DrawPoint */
+    unsigned int flexy
+        : 1; /* When "freetype_markup" is on in charview.c:DrawPoint */
     unsigned int flexx : 1;  /* flexy means select nextcp, and flexx means draw
                                 circle around nextcp */
     unsigned int roundx : 1; /* For true type hinting */
@@ -244,8 +241,8 @@ typedef struct refchar {
     /* inside composites */
     unsigned int round_translation_to_grid : 1; /* Retain the ttf
                                                    "round_to_grid" info. */
-    unsigned int
-        point_match_out_of_date : 1; /* Someone has edited a base glyph */
+    unsigned int point_match_out_of_date
+        : 1; /* Someone has edited a base glyph */
     int16_t adobe_enc;
     int orig_pos;
     int unicode_enc;   /* used by paste */
@@ -481,8 +478,8 @@ typedef struct spline {
     unsigned int touched : 1;
     unsigned int leftedge : 1;
     unsigned int rightedge : 1;
-    unsigned int
-        acceptableextrema : 1; /* This spline has extrema, but we don't care */
+    unsigned int acceptableextrema
+        : 1; /* This spline has extrema, but we don't care */
     SplinePoint* from;
     SplinePoint* to;
     Spline1D splines[2]; /* splines[0] is the x spline, splines[1] is y */
@@ -526,10 +523,10 @@ typedef struct steminfo {
     unsigned int haspointright : 1;
     unsigned int hasconflicts : 1; /* Does this stem have conflicts within its
                                       cluster? */
-    unsigned int
-        used : 1; /* Temporary for counter hints or hint substitution */
-    unsigned int
-        tobeused : 1; /* Temporary for counter hints or hint substitution */
+    unsigned int used
+        : 1; /* Temporary for counter hints or hint substitution */
+    unsigned int tobeused
+        : 1; /* Temporary for counter hints or hint substitution */
     unsigned int active : 1; /* Currently active hint in Review Hints dlg */
     /*  displayed differently in char display */
     unsigned int enddone : 1; /* Used by ttf instructing, indicates a prev */
@@ -542,8 +539,8 @@ typedef struct steminfo {
     unsigned int reordered : 1; /* In AutoHinting. Means we changed the start of
                                    the hint, need to test for out of order */
     unsigned int pendingpt : 1; /* A pending stem creation, not a true stem */
-    unsigned int
-        linearedges : 1; /* If we have a nice rectangle then we aren't */
+    unsigned int linearedges
+        : 1; /* If we have a nice rectangle then we aren't */
     /*  interested in the orientation which is */
     /*  wider than long */
     int16_t hintnumber; /* when dumping out hintmasks we need to know */
@@ -629,9 +626,9 @@ typedef struct splinechar {
     unsigned int unlink_rm_ovrlp_save_undo : 1;
     unsigned int inspiro : 1;
     unsigned int lig_caret_cnt_fixed : 1;
-    unsigned int
-        suspendMetricsViewEventPropagation : 1; /* rect tool might do this while
-                                                   drawing */
+    unsigned int suspendMetricsViewEventPropagation
+        : 1; /* rect tool might do this while
+                drawing */
     /* 5 bits left (one more if we ignore compositionunit below) */
 #if HANYANG
     unsigned int compositionunit : 1;

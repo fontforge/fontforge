@@ -48,7 +48,7 @@ static std::string css_color(Color col, bool enabled = true) {
     return value_string;
 }
 
-template <auto GBox::*PROP>
+template <auto GBox::* PROP>
 std::string color_property(const GBox& box_resource, bool enabled) {
     return css_color(box_resource.*PROP, enabled);
 }
