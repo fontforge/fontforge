@@ -27,9 +27,10 @@
 #pragma once
 
 #include <map>
-#include <string>
 #include <vector>
 #include <variant>
+
+#include "l10n_text.hpp"
 
 namespace ff::dlg {
 
@@ -38,8 +39,8 @@ using ProblemRecordsOut = std::map<short /*cid*/, ProblemRecordValue>;
 
 struct ProblemRecord {
     short cid;
-    std::string label;
-    std::string tooltip;
+    L10nText label;
+    L10nText tooltip;
     bool active;
     ProblemRecordValue value;
     short parent_cid;
@@ -47,7 +48,7 @@ struct ProblemRecord {
 };
 
 struct ProblemTab {
-    std::string label;
+    L10nText label;
     std::vector<ProblemRecord> records;
 };
 

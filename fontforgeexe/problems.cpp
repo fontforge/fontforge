@@ -3126,17 +3126,6 @@ static void adjust_problem_records(FontView* fv,
     static bool loc_initialized = false;
     SplineFont* sf = fv->b.sf;
 
-    if (!loc_initialized) {
-        for (ProblemTab& tab : problem_tabs) {
-            tab.label = S_(tab.label.c_str());
-            for (ProblemRecord& rec : tab.records) {
-                rec.label = S_(rec.label.c_str());
-                rec.tooltip = S_(rec.tooltip.c_str());
-            }
-        }
-        loc_initialized = true;
-    }
-
     if (lastsf != sf) {
         SplineChar* ssc = SFGetChar(sf, ' ', NULL);
 
