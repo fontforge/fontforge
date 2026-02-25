@@ -138,12 +138,14 @@ Gtk::Notebook* FindProblemsDlg::build_notebook(
             tab.records.cbegin(), tab.records.cend(), [](const auto& rec) {
                 return std::holds_alternative<std::monostate>(rec.value);
             });
-        auto size_group =
+        auto width_group =
             align_entries ? Gtk::SizeGroup::create(Gtk::SIZE_GROUP_HORIZONTAL)
                           : (Glib::RefPtr<Gtk::SizeGroup>)nullptr;
 
+        auto height_group = Gtk::SizeGroup::create(Gtk::SIZE_GROUP_VERTICAL);
         for (const ProblemRecord& record : tab.records) {
-            Gtk::HBox* record_box = build_record_box(record, size_group);
+            Gtk::HBox* record_box = build_record_box(record, width_group);
+            height_group->add_widget(*record_box);
 
             record_page->pack_start(*record_box, Gtk::PACK_SHRINK);
         }
