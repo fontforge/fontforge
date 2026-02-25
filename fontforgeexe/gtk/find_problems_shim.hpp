@@ -58,6 +58,6 @@ struct ProblemTab {
    Return value: true, if any problem record was selected. The selected records
                  are marked as active in pr_tabs. */
 bool find_problems_dialog(GWindow parent, std::vector<ProblemTab>& pr_tabs,
-                          double* near);
+                          double& near);
 
 }  // namespace ff::dlg

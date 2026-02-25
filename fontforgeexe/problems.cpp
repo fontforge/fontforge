@@ -3169,149 +3169,147 @@ static void adjust_problem_records(FontView* fv,
 }
 
 static void apply_dialog_results(const std::vector<ProblemTab>& problem_tabs,
-                                 struct problems* p) {
-    near = p->near;
+                                 struct problems& p) {
+    near = p.near;
 
     for (const ProblemTab& tab : problem_tabs) {
         for (const ProblemRecord& rec : tab.records) {
             /* Points */
             if (rec.cid == CID_NonIntegral)
-                nonintegral = p->nonintegral = rec.active;
+                nonintegral = p.nonintegral = rec.active;
             if (rec.cid == CID_XNear) {
-                doxnear = p->xnearval = rec.active;
-                if (doxnear) p->xval = xval = std::get<double>(rec.value);
+                doxnear = p.xnearval = rec.active;
+                if (doxnear) p.xval = xval = std::get<double>(rec.value);
             }
             if (rec.cid == CID_YNear) {
-                doynear = p->ynearval = rec.active;
-                if (doynear) p->yval = yval = std::get<double>(rec.value);
+                doynear = p.ynearval = rec.active;
+                if (doynear) p.yval = yval = std::get<double>(rec.value);
             }
-            if (rec.cid == CID_YNearStd) doynearstd = p->ynearstd = rec.active;
-            if (rec.cid == CID_CpStd) cpstd = p->cpnearstd = rec.active;
-            if (rec.cid == CID_CpOdd) cpodd = p->cpodd = rec.active;
+            if (rec.cid == CID_YNearStd) doynearstd = p.ynearstd = rec.active;
+            if (rec.cid == CID_CpStd) cpstd = p.cpnearstd = rec.active;
+            if (rec.cid == CID_CpOdd) cpodd = p.cpodd = rec.active;
             if (rec.cid == CID_IrrelevantCP) {
-                irrelevantcp = p->irrelevantcontrolpoints = rec.active;
+                irrelevantcp = p.irrelevantcontrolpoints = rec.active;
                 if (irrelevantcp)
-                    p->irrelevantfactor = irrelevantfactor =
+                    p.irrelevantfactor = irrelevantfactor =
                         std::get<double>(rec.value) / 100.0;
             }
             if (rec.cid == CID_PointsTooClose)
-                pointstooclose = p->pointstooclose = rec.active;
+                pointstooclose = p.pointstooclose = rec.active;
             if (rec.cid == CID_PointsTooFar)
-                pointstoofar = p->pointstoofar = rec.active;
+                pointstoofar = p.pointstoofar = rec.active;
 
             /* Paths */
-            if (rec.cid == CID_OpenPaths) openpaths = p->openpaths = rec.active;
+            if (rec.cid == CID_OpenPaths) openpaths = p.openpaths = rec.active;
             if (rec.cid == CID_IntersectingPaths)
-                intersectingpaths = p->intersectingpaths = rec.active;
-            if (rec.cid == CID_LineStd) linestd = p->linenearstd = rec.active;
-            if (rec.cid == CID_Direction) direction = p->direction = rec.active;
+                intersectingpaths = p.intersectingpaths = rec.active;
+            if (rec.cid == CID_LineStd) linestd = p.linenearstd = rec.active;
+            if (rec.cid == CID_Direction) direction = p.direction = rec.active;
             if (rec.cid == CID_MissingExtrema)
-                missingextrema = p->missingextrema = rec.active;
+                missingextrema = p.missingextrema = rec.active;
             if (rec.cid == CID_TooManyPoints) {
-                toomanypoints = p->toomanypoints = rec.active;
+                toomanypoints = p.toomanypoints = rec.active;
                 if (toomanypoints)
-                    p->pointsmax = pointsmax = std::get<int>(rec.value);
+                    p.pointsmax = pointsmax = std::get<int>(rec.value);
             }
 
             /* Refs */
             if (rec.cid == CID_FlippedRefs)
-                flippedrefs = p->flippedrefs = rec.active;
+                flippedrefs = p.flippedrefs = rec.active;
             if (rec.cid == CID_RefBadTransformTTF)
-                refsbadtransformttf = p->refsbadtransformttf = rec.active;
+                refsbadtransformttf = p.refsbadtransformttf = rec.active;
             if (rec.cid == CID_MixedContoursRefs)
-                mixedcontoursrefs = p->mixedcontoursrefs = rec.active;
+                mixedcontoursrefs = p.mixedcontoursrefs = rec.active;
             if (rec.cid == CID_RefBadTransformPS)
-                refsbadtransformps = p->refsbadtransformps = rec.active;
+                refsbadtransformps = p.refsbadtransformps = rec.active;
             if (rec.cid == CID_TooDeepRefs) {
-                toodeeprefs = p->toodeeprefs = rec.active;
+                toodeeprefs = p.toodeeprefs = rec.active;
                 if (toodeeprefs)
-                    p->refdepthmax = refdepthmax = std::get<int>(rec.value);
+                    p.refdepthmax = refdepthmax = std::get<int>(rec.value);
             }
             if (rec.cid == CID_PtMatchRefsOutOfDate)
-                ptmatchrefsoutofdate = p->ptmatchrefsoutofdate = rec.active;
+                ptmatchrefsoutofdate = p.ptmatchrefsoutofdate = rec.active;
             if (rec.cid == CID_MultUseMyMetrics)
-                multusemymetrics = p->multusemymetrics = rec.active;
+                multusemymetrics = p.multusemymetrics = rec.active;
 
             /* Hints */
-            if (rec.cid == CID_HintNoPt)
-                hintnopt = p->hintwithnopt = rec.active;
+            if (rec.cid == CID_HintNoPt) hintnopt = p.hintwithnopt = rec.active;
             if (rec.cid == CID_PtNearHint)
-                ptnearhint = p->ptnearhint = rec.active;
+                ptnearhint = p.ptnearhint = rec.active;
             if (rec.cid == CID_HintWidthNear) {
-                hintwidth = p->hintwidthnearval = rec.active;
+                hintwidth = p.hintwidthnearval = rec.active;
                 if (hintwidth)
-                    widthval = p->widthval = std::get<double>(rec.value);
+                    widthval = p.widthval = std::get<double>(rec.value);
             }
-            if (rec.cid == CID_Stem3) stem3 = p->stem3 = rec.active;
+            if (rec.cid == CID_Stem3) stem3 = p.stem3 = rec.active;
             if (rec.cid == CID_ShowExactStem3 && stem3)
-                showexactstem3 = p->showexactstem3 = rec.active;
+                showexactstem3 = p.showexactstem3 = rec.active;
             if (rec.cid == CID_TooManyHints) {
-                toomanyhints = p->toomanyhints = rec.active;
+                toomanyhints = p.toomanyhints = rec.active;
                 if (toomanyhints)
-                    p->hintsmax = hintsmax = std::get<int>(rec.value);
+                    p.hintsmax = hintsmax = std::get<int>(rec.value);
             }
             if (rec.cid == CID_OverlappedHints)
-                overlappedhints = p->overlappedhints = rec.active;
+                overlappedhints = p.overlappedhints = rec.active;
 
             /* ATT */
             if (rec.cid == CID_MissingGlyph)
-                missingglyph = p->missingglyph = rec.active;
+                missingglyph = p.missingglyph = rec.active;
             if (rec.cid == CID_MissingScriptInFeature)
-                missingscriptinfeature = p->missingscriptinfeature = rec.active;
-            if (rec.cid == CID_BadSubs) badsubs = p->badsubs = rec.active;
+                missingscriptinfeature = p.missingscriptinfeature = rec.active;
+            if (rec.cid == CID_BadSubs) badsubs = p.badsubs = rec.active;
             if (rec.cid == CID_MissingAnchor)
-                missinganchor = p->missinganchor = rec.active;
+                missinganchor = p.missinganchor = rec.active;
 
             /* CID */
-            if (p->fv->b.cidmaster != NULL) {
+            if (p.fv->b.cidmaster != NULL) {
                 if (rec.cid == CID_CIDMultiple)
-                    cidmultiple = p->cidmultiple = rec.active;
-                if (rec.cid == CID_CIDBlank)
-                    cidblank = p->cidblank = rec.active;
+                    cidmultiple = p.cidmultiple = rec.active;
+                if (rec.cid == CID_CIDBlank) cidblank = p.cidblank = rec.active;
             }
 
             /* Bounding Box */
             if (rec.cid == CID_BBYMax) {
-                bbymax = p->bbymax = rec.active;
+                bbymax = p.bbymax = rec.active;
                 if (bbymax)
-                    bbymax_val = p->bbymax_val = std::get<int>(rec.value);
+                    bbymax_val = p.bbymax_val = std::get<int>(rec.value);
             }
             if (rec.cid == CID_BBYMin) {
-                bbymin = p->bbymin = rec.active;
+                bbymin = p.bbymin = rec.active;
                 if (bbymin)
-                    bbymin_val = p->bbymin_val = std::get<int>(rec.value);
+                    bbymin_val = p.bbymin_val = std::get<int>(rec.value);
             }
             if (rec.cid == CID_BBXMax) {
-                bbxmax = p->bbxmax = rec.active;
+                bbxmax = p.bbxmax = rec.active;
                 if (bbxmax)
-                    bbxmax_val = p->bbxmax_val = std::get<int>(rec.value);
+                    bbxmax_val = p.bbxmax_val = std::get<int>(rec.value);
             }
             if (rec.cid == CID_BBXMin) {
-                bbxmin = p->bbxmin = rec.active;
+                bbxmin = p.bbxmin = rec.active;
                 if (bbxmin)
-                    bbxmin_val = p->bbxmin_val = std::get<int>(rec.value);
+                    bbxmin_val = p.bbxmin_val = std::get<int>(rec.value);
             }
             if (rec.cid == CID_AdvanceWidth) {
-                advancewidth = p->advancewidth = rec.active;
+                advancewidth = p.advancewidth = rec.active;
                 if (advancewidth)
-                    advancewidthval = p->advancewidthval =
+                    advancewidthval = p.advancewidthval =
                         std::get<int>(rec.value);
             }
-            if (p->fv->b.sf->hasvmetrics && rec.cid == CID_VAdvanceWidth) {
-                vadvancewidth = p->vadvancewidth = rec.active;
+            if (p.fv->b.sf->hasvmetrics && rec.cid == CID_VAdvanceWidth) {
+                vadvancewidth = p.vadvancewidth = rec.active;
                 if (vadvancewidth)
-                    vadvancewidthval = p->vadvancewidthval =
+                    vadvancewidthval = p.vadvancewidthval =
                         std::get<int>(rec.value);
             }
 
             /* Random */
-            if (rec.cid == CID_Bitmaps) bitmaps = p->bitmaps = rec.active;
+            if (rec.cid == CID_Bitmaps) bitmaps = p.bitmaps = rec.active;
             if (rec.cid == CID_BitmapWidths)
-                bitmapwidths = p->bitmapwidths = rec.active;
-            if (rec.cid == CID_MultUni) multuni = p->multuni = rec.active;
-            if (rec.cid == CID_MultName) multname = p->multname = rec.active;
+                bitmapwidths = p.bitmapwidths = rec.active;
+            if (rec.cid == CID_MultUni) multuni = p.multuni = rec.active;
+            if (rec.cid == CID_MultName) multname = p.multname = rec.active;
             if (rec.cid == CID_UniNameMisMatch)
-                uninamemismatch = p->uninamemismatch = rec.active;
+                uninamemismatch = p.uninamemismatch = rec.active;
         }
     }
 }
@@ -3338,10 +3336,10 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     }
 
     adjust_problem_records(fv, pr_tabs);
-    do_apply = find_problems_dialog(fv->gw, pr_tabs, &p.near);
+    do_apply = find_problems_dialog(fv->gw, pr_tabs, p.near);
 
     if (do_apply) {
-	apply_dialog_results(pr_tabs, &p);
+	apply_dialog_results(pr_tabs, p);
 	show_selected_problems(&p);
     }
 

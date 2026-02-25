@@ -197,13 +197,13 @@ ProblemRecordsOut FindProblemsDlg::show(GWindow parent,
 }
 
 bool find_problems_dialog(GWindow parent, std::vector<ProblemTab>& pr_tabs,
-                          double* near) {
+                          double& near) {
     // To avoid instability, the GTK application is lazily initialized only when
     // a GTK window is invoked.
     ff::app::GtkApp();
 
     ff::dlg::ProblemRecordsOut result =
-        ff::dlg::FindProblemsDlg::show(parent, pr_tabs, *near);
+        ff::dlg::FindProblemsDlg::show(parent, pr_tabs, near);
 
     for (ProblemTab& tab : pr_tabs) {
         for (ProblemRecord& rec : tab.records) {
