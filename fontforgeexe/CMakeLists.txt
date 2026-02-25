@@ -111,7 +111,7 @@ if(ENABLE_GUI)
 
   # GLIB is only needed for GUI builds
   if(TARGET GLIB::GLIB)
-    target_link_libraries(fontforgeexe PRIVATE GLIB::GLIB)
+    target_link_libraries(fontforgeexe PRIVATE GLIB::GLIB PkgConfig::GLibMM)
     target_compile_definitions(fontforgeexe PRIVATE HAVE_GLIB=1)
   endif()
 else()

@@ -35,6 +35,9 @@
 #include <glib-object.h>
 #include <glib.h>
 #include <glib/gstdio.h>
+#ifdef __cplusplus
+#include <glibmm/ustring.h>
+#endif
 
 #ifdef __GNU__
 # define extended	double

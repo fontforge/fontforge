@@ -3,6 +3,7 @@ inc/ffdir.h
 inc/ffglib_compat.h
 inc/ffprocess.h
 inc/ffunistd.h
+inc/l10n_text.hpp
 fontforge/splinechar.h
 fontforge/splinefont_enums.h
 fontforge/std_maps.cpp
