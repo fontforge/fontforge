@@ -26,14 +26,17 @@
  */
 #pragma once
 
-#include <iostream>
+#include <variant>
 #include <gtkmm.h>
 
 namespace ff::widgets {
 
+using NumericalValue = std::variant<std::monostate, int, double>;
+
 class NumericalEntry : public Gtk::Entry {
  public:
     NumericalEntry();
+    virtual NumericalValue get_num_value() const = 0;
 
  protected:
     virtual bool validate_text(const Glib::ustring& text) const = 0;
@@ -46,6 +49,7 @@ class IntegerEntry : public NumericalEntry {
  public:
     void set_value(int val);
     int get_value() const;
+    NumericalValue get_num_value() const override { return get_value(); };
 
  private:
     bool validate_text(const Glib::ustring& text) const override;
@@ -57,6 +61,7 @@ class DoubleEntry : public NumericalEntry {
 
     void set_value(double val);
     double get_value() const;
+    NumericalValue get_num_value() const override { return get_value(); };
 
  private:
     std::string decimal_point_;

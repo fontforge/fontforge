@@ -34,15 +34,15 @@
 
 namespace ff::dlg {
 
-using ProblemRecordValue = std::variant<std::monostate, int, double>;
-using ProblemRecordsOut = std::map<short /*cid*/, ProblemRecordValue>;
+using NumericalValue = std::variant<std::monostate, int, double>;
+using ProblemRecordsOut = std::map<short /*cid*/, NumericalValue>;
 
 struct ProblemRecord {
     short cid;
     L10nText label;
     L10nText tooltip;
     bool active;
-    ProblemRecordValue value;
+    NumericalValue value;
     short parent_cid;
     bool disabled;
 };

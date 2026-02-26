@@ -178,17 +178,9 @@ ProblemRecordsOut FindProblemsDlg::show(GWindow parent,
             const auto& [checkbox, entry] = dialog.widget_map_[record.cid];
             if (!checkbox.get_active()) continue;
 
-            ProblemRecordValue new_value = record.value;
-            if (std::holds_alternative<int>(record.value)) {
-                auto int_entry = dynamic_cast<widgets::IntegerEntry*>(entry);
-                if (int_entry) {
-                    new_value = int_entry->get_value();
-                }
-            } else if (std::holds_alternative<double>(record.value)) {
-                auto double_entry = dynamic_cast<widgets::DoubleEntry*>(entry);
-                if (double_entry) {
-                    new_value = double_entry->get_value();
-                }
+            NumericalValue new_value;
+            if (entry) {
+                new_value = entry->get_num_value();
             }
             records_out.emplace(record.cid, new_value);
         }
