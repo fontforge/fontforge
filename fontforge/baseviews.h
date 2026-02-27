@@ -28,18 +28,8 @@
 #ifndef FONTFORGE_BASEVIEWS_H
 #define FONTFORGE_BASEVIEWS_H
 
-#include "splinechar.h"
-
-typedef struct splinefont SplineFont;
-typedef struct encmap EncMap;
-typedef struct bdffont BDFFont;
-typedef struct anchorpoint AnchorPoint;
-typedef struct enc Encoding;
-struct lookup_subtable;
-enum overlap_type;
-struct simplifyinfo;
-struct metricsview;
-
+#include "splinefont.h"
+#include "sd.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -230,6 +220,64 @@ struct pov_data {
     double tilt;		/* Angle which drawing plane is tilted with respect to projection plane */
     double d;			/* Distance to projection plane */
     double sintilt;		/* Used internally */
+};
+
+enum counter_type { ct_squish, ct_retain, ct_auto };
+
+struct lcg_zones {
+    /* info for unhinted processing */
+     /* everything abvoe this should be moved down (default xheight/2) */
+    int top_zone;
+     /* everything below this should be moved up (default xheight/2) */
+     /* anything in between should be stationary */
+    int bottom_zone;
+
+    /* info for hinted processing */
+     /* everything above & at this should be moved down */
+     /* also anything on the other side of a hint from this should be moved down */
+    int top_bound;
+     /* everything below & at this should be moved down */
+     /* also anything on the other side of a hint from this should be moved down */
+    int bottom_bound;
+
+    enum counter_type counter_type;
+
+    SplineSet *(*embolden_hook)(SplineSet *,struct lcg_zones *,SplineChar *,int layer);
+    int wants_hints;
+    double serif_height, serif_fuzz;
+
+    double stroke_width;	/* negative number to lighten, positive to embolden */
+    int removeoverlap;
+
+    BlueData bd;
+    double stdvw;
+};
+/* This order is the same order as the radio buttons in the embolden dlg */
+enum embolden_type { embolden_lcg, embolden_cjk, embolden_auto, embolden_custom, embolden_error };
+
+struct ci_zones {
+    double start, width;
+    double moveto, newwidth;		/* Only change width for diagonal stems*/
+};
+
+struct counterinfo {
+    double c_factor, c_add;		/* For counters */
+    double sb_factor, sb_add;		/* For side bearings */
+    int correct_italic;
+
+    BlueData bd;
+    double stdvw;
+
+    SplineChar *sc;
+    int layer;
+    DBounds bb;				/* Value before change */
+    double top_y, bottom_y, boundary;
+    int has_two_zones;
+#define TOP_Z	0
+#define BOT_Z	1
+    int cnts[2];
+    int maxes[2];
+    struct ci_zones *zones[2];
 };
 
 enum fvformats { fv_bdf, fv_ttf, fv_pk, fv_pcf, fv_mac, fv_win, fv_palm,

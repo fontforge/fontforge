@@ -917,6 +917,7 @@ enum transdlg_flags { tdf_enableback=0x1, tdf_enablekerns=0x2,
 extern void TransformDlgCreate(void *data,void (*transfunc)(void *,real *,int,BVTFunc *,enum fvtrans_flags),
 	int (*getorigin)(void *,BasePoint *,int), enum transdlg_flags flags,
 	enum cvtools cvt);
+// extern void BitmapDlg(FontView *fv,SplineChar *sc, int isavail);
 extern int SimplifyDlg(SplineFont *sf,struct simplifyinfo *smpl);
 extern void CVReviewHints(CharView *cv);
 extern void CVCreateHint(CharView *cv,int ishstem,int preserveundoes);
@@ -1265,6 +1266,8 @@ extern const char *UI_TTFNameIds(int id);
 extern const char *UI_MSLangString(int language);
 extern void FontInfoInit(void);
 extern void LookupUIInit(void);
+extern void _ImportParamsDlg(ImportParams *ip);
+extern void _ExportParamsDlg(ExportParams *ep);
 #ifndef _NO_PYTHON
 extern void _PluginDlg(void);
 #endif

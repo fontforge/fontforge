@@ -1173,7 +1173,7 @@ return( NULL );
     Py_XINCREF(data);
 
     if ( ie_cnt>=ie_max )
-    py_ie = (struct python_import_export *)realloc(py_ie,((ie_max += 10)+1)*sizeof(struct python_import_export));
+	py_ie = (struct python_import_export *)realloc(py_ie,((ie_max += 10)+1)*sizeof(struct python_import_export));
     py_ie[ie_cnt].py_import = importfunc;
     py_ie[ie_cnt].py_export = exportfunc;
     py_ie[ie_cnt].data = data;

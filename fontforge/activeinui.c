@@ -28,7 +28,6 @@
 #include <fontforge-config.h>
 
 #include "baseviews.h"
-#include "splinefont_enums.h"
 
 FontViewBase *fv_active_in_ui = NULL;
 SplineChar *sc_active_in_ui = NULL;

@@ -698,13 +698,3 @@ typedef struct splinechar {
 const char* SCNameCheck(const unichar_t* name, bool* questionable);
 const char* SCGetName(const SplineChar* sc);
 void SCGetEncoding(const SplineChar* sc, int* p_unicodeenc, int* p_ttf_glyph);
-
-enum overlap_type {
-    over_remove,
-    over_rmselected,
-    over_intersect,
-    over_intersel,
-    over_exclude,
-    over_findinter,
-    over_fisel
-};

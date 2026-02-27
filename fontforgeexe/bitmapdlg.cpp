@@ -26,7 +26,8 @@
  */
 
 extern "C" {
-#include "bdffont.h"
+#include "splinefill.h"
+#include "splinefont.h"
 #include "bitmapcontrol.h"
 #include "splinefont_enums.h"
 }
@@ -48,7 +49,7 @@ void BitmapDlg(FontViewBase* fv, GWindow gw, SplineChar* sc, int isavail) {
     bd.done = false;
 
     ff::dlg::BitmapSizes sizes;
-    for (BDFFont* bdf = SFGetBdfFont(bd.sf); bdf != NULL; bdf = bdf->next) {
+    for (BDFFont* bdf = bd.sf->bitmaps; bdf != NULL; bdf = bdf->next) {
         sizes.emplace_back(bdf->pixelsize, BDFDepth(bdf));
     }
 
@@ -56,7 +57,8 @@ void BitmapDlg(FontViewBase* fv, GWindow gw, SplineChar* sc, int isavail) {
     // a GTK window is invoked.
     ff::app::GtkApp();
 
-    ff::dlg::BitmapsDlg dialog(gw, dlg_mode, sizes, SFIsBitmap(bd.sf),
+    bool is_bitmap = bd.sf->onlybitmaps && bd.sf->bitmaps != NULL;
+    ff::dlg::BitmapsDlg dialog(gw, dlg_mode, sizes, is_bitmap,
                                sc != NULL);
     bool is_ok = dialog.show();
     if (!is_ok) return;
