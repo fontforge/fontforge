@@ -31,7 +31,6 @@
 #include "autotrace.h"
 #include "autowidth.h"
 #include "bitmapchar.h"
-#include "bitmapcontrol.h"
 #include "bvedit.h"
 #include "cvundoes.h"
 #include "fontforgeui.h"

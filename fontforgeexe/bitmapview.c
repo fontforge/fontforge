@@ -29,7 +29,6 @@
 #include <fontforge-config.h>
 
 #include "bitmapchar.h"
-#include "bitmapcontrol.h"
 #include "bvedit.h"
 #include "cvundoes.h"
 #include "encoding.h"

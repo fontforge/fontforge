@@ -31,7 +31,6 @@
 #include "autosave.h"
 #include "autotrace.h"
 #include "autowidth.h"
-#include "bitmapcontrol.h"
 #include "charview_private.h"
 #include "cvruler.h"
 #include "cvundoes.h"

@@ -35,6 +35,7 @@ extern "C" {
 #include "gtk/bitmaps_dlg.hpp"
 #include "gtk/simple_dialogs.hpp"
 
+extern "C"
 void BitmapDlg(FontViewBase* fv, GWindow gw, SplineChar* sc, int isavail) {
     CreateBitmapData bd;
     bool rasterize = true;

@@ -51,7 +51,6 @@ typedef struct createbitmapdata {
 
 void BitmapsDoIt(CreateBitmapData *bd,int32_t *sizes);
 extern int BitmapControl(FontViewBase *fv, int32_t *sizes, int isavail, int rasterize);
-extern void BitmapDlg(FontViewBase *fv, GWindow gw, SplineChar *sc, int isavail);
 
 #ifdef __cplusplus
 }

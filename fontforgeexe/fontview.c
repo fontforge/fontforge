@@ -32,7 +32,6 @@
 #include "autowidth.h"
 #include "autowidth2.h"
 #include "bitmapchar.h"
-#include "bitmapcontrol.h"
 #include "bvedit.h"
 #include "cvundoes.h"
 #include "dumppfa.h"
