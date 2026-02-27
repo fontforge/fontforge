@@ -27,6 +27,7 @@
 
 #include <fontforge-config.h>
 
+#include "charview_private.h"
 #include "cvundoes.h"
 #include "fontforgeui.h"
 #include "spiro.h"
@@ -1394,13 +1395,6 @@ static void touchControlPointsVisitor ( void* key,
 {
     SPTouchControl( sp, which, (int)(intptr_t)udata );
 }
-
-#ifndef MAX
-#define MAX(x,y)   (((x) > (y)) ? (x) : (y))
-#endif
-#ifndef MIN
-#define MIN(x,y)   (((x) < (y)) ? (x) : (y))
-#endif
 
 BasePoint nearest_point_on_line_segment(BasePoint p1, BasePoint p2, BasePoint p3) {
 	double x_diff = p2.x - p1.x;

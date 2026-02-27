@@ -34,6 +34,10 @@ typedef struct gwindow* GWindow;
 
 enum bd_scope { bd_all, bd_selected, bd_current };
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct createbitmapdata {
     FontViewBase *fv;
     SplineFont *sf;
@@ -48,5 +52,9 @@ typedef struct createbitmapdata {
 void BitmapsDoIt(CreateBitmapData *bd,int32_t *sizes);
 extern int BitmapControl(FontViewBase *fv, int32_t *sizes, int isavail, int rasterize);
 extern void BitmapDlg(FontViewBase *fv, GWindow gw, SplineChar *sc, int isavail);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_BITMAPCONTROL_H */

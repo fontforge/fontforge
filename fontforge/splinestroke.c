@@ -41,7 +41,10 @@
 #include "utanvec.h"
 
 #include <assert.h>
+#ifndef _MSC_VER
 #include <complex.h>
+#endif
+#include <float.h>
 #include <math.h>
 
 #define CIRCOFF 0.551915
@@ -1679,6 +1682,17 @@ static void MiterJoin(JoinParams *jpp);
  * the implementation below use complex arithmetic to calculate the center,
  * foci, and axes. 
  */
+#ifdef _MSC_VER
+/* MSVC doesn't support C99 complex numbers, fall back to miter join */
+static void RoundJoin(JoinParams *jpp, int rv) {
+    if ( rv ) {
+	DoubleBackJC(jpp->c, jpp->cur, jpp->sxy, jpp->oxy, jpp->ut_fm,
+	             jpp->is_right, 0);
+	return;
+    }
+    MiterJoin(jpp);
+}
+#else
 static void RoundJoin(JoinParams *jpp, int rv) {
     BasePoint p0, p1, p2, p1p, p12a, angle, h0, h2;
     bigreal p12d, x1, y1, w, major, minor;
@@ -1728,6 +1742,7 @@ static void RoundJoin(JoinParams *jpp, int rv) {
 
     SSAppendArc(jpp->cur, major, minor, angle, h0, h2, jpp->is_right, true);
 }
+#endif
 
 static void MiterJoin(JoinParams *jpp) {
     BasePoint ixy, refp, cow, coi, clip1, clip2, ut;

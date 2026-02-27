@@ -30,7 +30,7 @@
 
 #include "flaglist.h"
 #include "splinefont.h"
-#include "views.h"
+#include "baseviews.h"
 
 #pragma push_macro("real")
 #undef real
@@ -62,16 +62,23 @@
         PyObject_HEAD_INIT(type) size,
 #endif
 
+/* These variables are defined in activeinui.c (compiled as C), so they need
+ * extern "C" linkage when referenced from C++ code like python.c */
+#ifdef __cplusplus
+extern "C" {
+#endif
 extern SplineChar *sc_active_in_ui;
 extern FontViewBase *fv_active_in_ui;
 extern int layer_active_in_ui;
-
 extern void FfPy_Replace_MenuItemStub(PyObject *(*func)(PyObject *,PyObject *));
 extern int PyFF_ConvexNibID(const char *);
 extern PyObject *PySC_From_SC(SplineChar *sc);
 extern PyObject *PyFV_From_FV(FontViewBase *fv);
 extern int FlagsFromTuple(PyObject *tuple,struct flaglist *flags,const char *flagkind);
 extern void PyFF_Glyph_Set_Layer(SplineChar *sc,int layer);
+#ifdef __cplusplus
+}
+#endif
 
 
 /********************************************************************************/
@@ -206,7 +213,7 @@ typedef struct ff_font {
     /* Type-specific fields go here. */
     FontViewBase *fv;
     PyFF_LayerInfoArray *layers;
-    PyFF_Private *private;
+    PyFF_Private *priv;
     PyFF_Cvt *cvt;
     PyFF_Selection *selection;
     PyFF_Math *math;
@@ -215,7 +222,13 @@ typedef struct ff_font {
 extern PyMethodDef PyFF_Font_methods[];
 extern PyMethodDef module_fontforge_methods[];
 
+#ifdef __cplusplus
+extern "C" {
+#endif
 PyObject* PyFF_FontForFV(FontViewBase *fv);
 PyObject* PyFF_FontForFV_I(FontViewBase *fv);
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_FFPYTHON_H */

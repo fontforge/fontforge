@@ -49,7 +49,7 @@ static std::string css_color(Color col, bool enabled = true) {
     return value_string;
 }
 
-template <auto GBox::*PROP>
+template <auto GBox::* PROP>
 std::string color_property(const GBox& box_resource, bool enabled) {
     return css_color(box_resource.*PROP, enabled);
 }
@@ -268,6 +268,8 @@ std::string build_color_only_styles(const GResInfo* gdraw_ri) {
         css_selector_map_color = {
             {"GList", "treeview", "selected"},
             {"GList", "combobox menuitem", "hover"},
+            {"GTabSet", "header", "checked"},
+            {"GTabSet", "tab", "checked"},
         };
 
     std::string styles;
@@ -304,7 +306,7 @@ std::string build_styles(const GResInfo* gdraw_ri) {
 
     static const std::map<std::string, Selector> css_selector_map = {
         {"", {"box", {"tooltip"}}},
-        {"GLabel", {"label", {"button", "tooltip"}}},
+        {"GLabel", {"label", {"button", "tooltip", "tab"}}},
         {"GButton", {"button", {"spinbutton"}}},
         {"GDefaultButton", {"button#ok", {}}},
         {"GCancelButton", {"button#cancel", {}}},
@@ -362,6 +364,7 @@ std::string build_styles(const GResInfo* gdraw_ri) {
     }
 
     styles += build_color_only_styles(gdraw_ri);
+    styles += "tab { margin-bottom: 1px; }\n";
 
     return styles;
 }

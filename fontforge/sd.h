@@ -35,6 +35,10 @@
 
 #include "splinefont.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 struct epattern {
     struct entity *tile;
     real width, height;
@@ -208,5 +212,9 @@ extern void InitExportParams(ExportParams *ep);
 extern ExportParams *ExportParamsState(void);
 extern void _ImportParamsDlg(ImportParams *ip);
 extern void _ExportParamsDlg(ExportParams *ep);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_SD_H */

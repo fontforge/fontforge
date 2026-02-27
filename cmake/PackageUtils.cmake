@@ -42,3 +42,28 @@ macro(find_package_auto auto_option)
     set(${auto_option}_RESULT ${${ARGV1}_FOUND})
   endif()
 endmacro()
+
+# pkg_check_auto - pkg-config based alternative to find_package_auto
+#
+# Usage: pkg_check_auto(ENABLE_OPTION TargetName pkg-config-name)
+#
+# If ENABLE_OPTION is truthy, calls pkg_check_modules to find the package.
+# Creates an aliased target TargetName::TargetName from PkgConfig::TargetName.
+# Sets ENABLE_OPTION_RESULT to the result.
+#
+macro(pkg_check_auto auto_option target_name pkg_name)
+  if(${auto_option})
+    unset(_pkg_check_auto_required)
+    if(NOT ${${auto_option}} STREQUAL "AUTO")
+      set(_pkg_check_auto_required REQUIRED)
+    endif()
+
+    pkg_check_modules(${target_name} ${_pkg_check_auto_required} IMPORTED_TARGET ${pkg_name})
+    set(${auto_option}_RESULT ${${target_name}_FOUND})
+
+    if(${target_name}_FOUND AND NOT TARGET ${target_name}::${target_name})
+      include(${PROJECT_SOURCE_DIR}/cmake/TargetUtils.cmake)
+      alias_imported_target(${target_name}::${target_name} PkgConfig::${target_name})
+    endif()
+  endif()
+endmacro()

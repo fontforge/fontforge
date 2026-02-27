@@ -633,7 +633,7 @@ static int GTextFieldSelForeword(unichar_t *text,int end) {
 return( end );
 }
 
-static void GTextFieldSelectWord(GTextField *gt,int mid, int16_t *start, int16_t *end) {
+static void GTextFieldSelectWord(GTextField *gt,int mid, int32_t *start, int32_t *end) {
     unichar_t *text;
     unichar_t ch = gt->text[mid];
 
@@ -664,7 +664,7 @@ static void GTextFieldSelectWord(GTextField *gt,int mid, int16_t *start, int16_t
 }
 
 static void GTextFieldSelectWords(GTextField *gt,int last) {
-    int16_t ss, se;
+    int32_t ss, se;
     GTextFieldSelectWord(gt,gt->sel_base,&gt->sel_start,&gt->sel_end);
     if ( last!=gt->sel_base ) {
 	GTextFieldSelectWord(gt,last,&ss,&se);
@@ -2185,7 +2185,7 @@ static void gtextfield_redraw(GGadget *g) {
 
 static void gtextfield_move(GGadget *g, int32_t x, int32_t y ) {
     GTextField *gt = (GTextField *) g;
-    int fxo=0, fyo=0, bxo, byo;
+    int fxo=0, fyo=0, bxo=0, byo=0;
 
     if ( gt->listfield || gt->numericfield ) {
 	fxo = ((GListField *) gt)->fieldrect.x - g->r.x;
@@ -2209,7 +2209,7 @@ static void gtextfield_move(GGadget *g, int32_t x, int32_t y ) {
 static void gtextfield_resize(GGadget *g, int32_t width, int32_t height ) {
     GTextField *gt = (GTextField *) g;
     int gtwidth=width, gtheight=height, oldheight=0;
-    int fxo=0, fwo=0, fyo=0, bxo, byo;
+    int fxo=0, fwo=0, fyo=0, bxo=0, byo=0;
     int l;
 
     if ( gt->listfield || gt->numericfield ) {

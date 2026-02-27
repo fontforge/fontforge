@@ -30,7 +30,7 @@
 
 #include "cvundoes.h"
 #include "dumppfa.h"
-#include "ffglib.h"
+#include "ffglib_compat.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
 #include "lookups.h"
@@ -1113,19 +1113,10 @@ void UnlinkThisReference(FontViewBase *fv,SplineChar *sc,int layer) {
     }
 }
 
-static int MultipleValues(char *name, int local) {
-    char *buts[3];
-    buts[0] = _("_Yes"); buts[1]=_("_No"); buts[2] = NULL;
-    if ( ff_ask(_("Multiple"),(const char **) buts,0,1,_("There is already a glyph with this Unicode encoding\n(named %1$.40s, at local encoding %2$d).\nIs that what you want?"),name,local)==0 )
-return( true );
-
-return( false );
-}
-
-static int MultipleNames(void) {
+static int MultipleNames(const char *name) {
     char *buts[3];
     buts[0] = _("_Yes"); buts[1]=_("_Cancel"); buts[2] = NULL;
-    if ( ff_ask(_("Multiple"),(const char **) buts,0,1,_("There is already a glyph with this name,\ndo you want to swap names?"))==0 )
+    if ( ff_ask(_("Multiple"),(const char **) buts,0,1,_("There is already a glyph with name %.40s,\ndo you want to swap names?"), name)==0 )
 return( true );
 
 return( false );
@@ -1133,8 +1124,7 @@ return( false );
 
 int SCSetMetaData(SplineChar *sc,const char *name,int unienc,const char *comment) {
     SplineFont *sf = sc->parent;
-    int i, mv=0;
-    int isnotdef, samename=false, sameuni=false;
+    int samename=false, sameuni=false;
     struct altuni *alt;
 
     if ( sf->glyphs[sc->orig_pos]!=sc )
@@ -1147,33 +1137,48 @@ int SCSetMetaData(SplineChar *sc,const char *name,int unienc,const char *comment
 	samename = true;	/* No change, it must be good */
     }
     if ( alt!=NULL || !samename ) {
-	isnotdef = strcmp(name,".notdef")==0;
-	for ( i=0; i<sf->glyphcnt; ++i ) if ( sf->glyphs[i]!=NULL && sf->glyphs[i]->orig_pos!=sc->orig_pos ) {
-	    if ( unienc!=-1 && sf->glyphs[i]->unicodeenc==unienc ) {
-		if ( !mv && !MultipleValues(sf->glyphs[i]->name,i)) {
-return( false );
-		}
-		mv = 1;
-	    } else if ( !isnotdef && strcmp(name,sf->glyphs[i]->name)==0 ) {
-		if ( !MultipleNames()) {
-return( false );
-		}
-		free(sf->glyphs[i]->name);
-		sf->glyphs[i]->namechanged = true;
-		if ( strncmp(sc->name,"uni",3)==0 && sf->glyphs[i]->unicodeenc!=-1) {
-		    char buffer[12];
-		    if ( sf->glyphs[i]->unicodeenc<0x10000 )
-			sprintf( buffer,"uni%04X", sf->glyphs[i]->unicodeenc);
-		    else
-			sprintf( buffer,"u%04X", sf->glyphs[i]->unicodeenc);
-		    sf->glyphs[i]->name = copy(buffer);
-		} else {
-		    sf->glyphs[i]->name = sc->name;
-		    sc->name = NULL;
-		}
-	    break;
-	    }
-	}
+        int i;
+        if (unienc != -1) {
+            for (i = 0; i < sf->glyphcnt; ++i)
+                if (sf->glyphs[i] != NULL &&
+                    sf->glyphs[i]->orig_pos != sc->orig_pos &&
+                    sf->glyphs[i]->unicodeenc == unienc) {
+                    /* Duplicate encoding is never allowed */
+                    ff_post_notice(_("Duplicate encodings"),
+                                   _("There is already a glyph with Unicode "
+                                     "encoding 0x%1$04x named %2$.40s. The "
+                                     "current name and encoding will be kept."),
+                                   unienc, sf->glyphs[i]->name);
+                    return false;
+                }
+            /* Proceed to copy encoding and name. */
+        } else {
+	    /* For unencoded glyphs, check name duplication and propose to swap. */
+            int isnotdef = strcmp(name, ".notdef") == 0;
+            SplineChar* swap_sc = NULL;
+            for (i = 0; i < sf->glyphcnt && swap_sc == NULL; ++i)
+                if (!isnotdef && strcmp(name, sf->glyphs[i]->name) == 0) {
+                    if (!MultipleNames(name))
+                        return false;
+                    else
+                        swap_sc = sf->glyphs[i];
+                }
+            if (swap_sc) {
+                free(swap_sc->name);
+                swap_sc->namechanged = true;
+                if (strncmp(sc->name, "uni", 3) == 0 &&
+                    swap_sc->unicodeenc != -1) {
+                    if (swap_sc->unicodeenc < 0x10000)
+                        swap_sc->name =
+                            smprintf("uni%04X", swap_sc->unicodeenc);
+                    else
+                        swap_sc->name = smprintf("u%04X", swap_sc->unicodeenc);
+                } else {
+                    swap_sc->name = sc->name;
+                    sc->name = NULL;
+                }
+            }
+        }
 	if ( sc->unicodeenc!=unienc ) {
 	    struct splinecharlist *scl;
 	    int layer;
@@ -1295,7 +1300,7 @@ static int CheckBluePair(char *blues, char *others, int bluefuzz,
 	    while ( *others==' ' ) ++others;
 	    if ( *others==']' || *others=='}' )
 	break;
-	    temp = g_ascii_strtod(others,&end);
+	    temp = ff_strtod(others,&end);
 	    if ( temp!=rint(temp))
 		err |= pds_notintegral;
 	    else if ( end==others ) {
@@ -1319,7 +1324,7 @@ static int CheckBluePair(char *blues, char *others, int bluefuzz,
 	while ( *blues==' ' ) ++blues;
 	if ( *blues==']' || *blues=='}' )
     break;
-	temp = g_ascii_strtod(blues,&end);
+	temp = ff_strtod(blues,&end);
 	if ( temp!=rint(temp))
 	    err |= pds_notintegral;
 	else if ( end==blues ) {
@@ -1367,7 +1372,7 @@ return( true );
 return( false );
     ++str_val;
 
-    val = g_ascii_strtod(str_val,&end);
+    val = ff_strtod(str_val,&end);
     while ( *end==' ' ) ++end;
     if ( *end!=']' && *end!='}' )
 return( false );
@@ -1389,7 +1394,7 @@ static int CheckStemSnap(struct psdict *dict,char *snapkey, char *stdkey ) {
     if ( (str_val = PSDictHasEntry(dict,stdkey))!=NULL ) {
 	while ( *str_val==' ' ) ++str_val;
 	if ( *str_val=='[' && *str_val!='{' ) ++str_val;
-	std_val = g_ascii_strtod(str_val,&end);
+	std_val = ff_strtod(str_val,&end);
     }
 
     if ( (str_val = PSDictHasEntry(dict,snapkey))==NULL )
@@ -1404,7 +1409,7 @@ return( false );
 	while ( *str_val==' ' ) ++str_val;
 	if ( *str_val==']' && *str_val!='}' )
     break;
-	temp = g_ascii_strtod(str_val,&end);
+	temp = ff_strtod(str_val,&end);
 	if ( end==str_val )
 return( false );
 	str_val = end;
@@ -1429,44 +1434,44 @@ int ValidatePrivate(SplineFont *sf) {
     bigreal bluescale = .039625;
     int magicpointsize;
 
-    if ( sf->private==NULL )
+    if ( sf->private_dict==NULL )
 return( pds_missingblue );
 
-    if ( (bf = PSDictHasEntry(sf->private,"BlueFuzz"))!=NULL ) {
+    if ( (bf = PSDictHasEntry(sf->private_dict,"BlueFuzz"))!=NULL ) {
 	fuzz = strtol(bf,&end,10);
 	if ( *end!='\0' || fuzz<0 )
 	    errs |= pds_badbluefuzz;
     }
 
-    if ( (test=PSDictHasEntry(sf->private,"BlueScale"))!=NULL ) {
-	bluescale = g_ascii_strtod(test,&end);
+    if ( (test=PSDictHasEntry(sf->private_dict,"BlueScale"))!=NULL ) {
+	bluescale = ff_strtod(test,&end);
 	if ( *end!='\0' || end==test || bluescale<0 )
 	    errs |= pds_badbluescale;
     }
     magicpointsize = rint( bluescale*240 + 0.49 );
 
-    if ( (blues = PSDictHasEntry(sf->private,"BlueValues"))==NULL )
+    if ( (blues = PSDictHasEntry(sf->private_dict,"BlueValues"))==NULL )
 	errs |= pds_missingblue;
     else
-	errs |= CheckBluePair(blues,PSDictHasEntry(sf->private,"OtherBlues"),fuzz,magicpointsize);
+	errs |= CheckBluePair(blues,PSDictHasEntry(sf->private_dict,"OtherBlues"),fuzz,magicpointsize);
 
-    if ( (blues = PSDictHasEntry(sf->private,"FamilyBlues"))!=NULL )
-	errs |= CheckBluePair(blues,PSDictHasEntry(sf->private,"FamilyOtherBlues"),
+    if ( (blues = PSDictHasEntry(sf->private_dict,"FamilyBlues"))!=NULL )
+	errs |= CheckBluePair(blues,PSDictHasEntry(sf->private_dict,"FamilyOtherBlues"),
 		fuzz,magicpointsize)<<pds_shift;
 
 
-    if ( (test=PSDictHasEntry(sf->private,"BlueShift"))!=NULL ) {
+    if ( (test=PSDictHasEntry(sf->private_dict,"BlueShift"))!=NULL ) {
 	int val = strtol(test,&end,10);
 	if ( *end!='\0' || end==test || val<0 )
 	    errs |= pds_badblueshift;
     }
 
-    if ( !CheckStdW(sf->private,"StdHW"))
+    if ( !CheckStdW(sf->private_dict,"StdHW"))
 	errs |= pds_badstdhw;
-    if ( !CheckStdW(sf->private,"StdVW"))
+    if ( !CheckStdW(sf->private_dict,"StdVW"))
 	errs |= pds_badstdvw;
 
-    switch ( CheckStemSnap(sf->private,"StemSnapH", "StdHW")) {
+    switch ( CheckStemSnap(sf->private_dict,"StemSnapH", "StdHW")) {
       case false:
 	errs |= pds_badstemsnaph;
       break;
@@ -1474,7 +1479,7 @@ return( pds_missingblue );
 	errs |= pds_stemsnapnostdh;
       break;
     }
-    switch ( CheckStemSnap(sf->private,"StemSnapV", "StdVW")) {
+    switch ( CheckStemSnap(sf->private_dict,"StemSnapV", "StdVW")) {
       case false:
 	errs |= pds_badstemsnapv;
       break;
@@ -1957,7 +1962,7 @@ void SCTickValidationState(SplineChar *sc,int layer) {
     }
 }
 
-int VSMaskFromFormat(SplineFont *sf, int layer, enum fontformat format) {
+enum validation_state VSMaskFromFormat(SplineFont *sf, int layer, enum fontformat format) {
     if ( format==ff_cid || format==ff_cffcid || format==ff_otfcid || format==ff_otfciddfont )
 return( vs_maskcid );
     else if ( format<=ff_cff )
@@ -2828,4 +2833,51 @@ void SCRemoveVKern(SplineChar* sc) {
 	if( sc->parent->fv->cidmaster!=NULL )
 	    sc->parent->fv->cidmaster->changed = true;
     }
+}
+
+const char* SCNameCheck(const unichar_t *name, bool *p_questionable) {
+    bool bad = false, questionable = false;
+    extern int allow_utf8_glyphnames;
+
+    if (p_questionable) *p_questionable = questionable;
+
+    if ( uc_strcmp(name,".notdef")==0 )		/* This name is a special case and doesn't follow conventions */
+        return NULL;
+    if ( u_strlen(name)>31 ) {
+        return _("Glyph names are limited to 31 characters");
+    } else if ( *name=='\0' ) {
+        return _("Bad Name");
+    } else if ( isdigit(*name) || *name=='.' ) {
+        return _("A glyph name may not start with a digit nor a full stop (period)");
+    }
+
+    while ( *name ) {
+        if ( *name<=' ' || (!allow_utf8_glyphnames && *name>=0x7f) ||
+                *name=='(' || *name=='[' || *name=='{' || *name=='<' ||
+                *name==')' || *name==']' || *name=='}' || *name=='>' ||
+                *name=='%' || *name=='/' )
+            bad=true;
+        else if ( !isalnum(*name) && *name!='.' && *name!='_' )
+            questionable = true;
+        ++name;
+    }
+    if ( bad ) {
+        return _("A glyph name must be ASCII, without spaces and may not contain the characters \"([{<>}])/%%\", and should contain only alphanumerics, periods and underscores");
+    } else if ( questionable ) {
+        if (p_questionable == NULL) {
+            /* The caller doesn't care, just accept the name. */
+            return NULL;
+	} else {
+            *p_questionable = questionable;
+            return _("A glyph name should contain only alphanumerics, periods and underscores\nDo you want to use this name in spite of that?");
+        }
+    }
+    return NULL;
+}
+
+const char* SCGetName(const SplineChar* sc) { return sc->name; }
+
+void SCGetEncoding(const SplineChar* sc, int* p_unicodeenc, int* p_ttf_glyph) {
+    if (p_unicodeenc) *p_unicodeenc = sc->unicodeenc;
+    if (p_ttf_glyph) *p_ttf_glyph = sc->ttf_glyph;
 }

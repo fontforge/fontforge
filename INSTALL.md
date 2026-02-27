@@ -6,7 +6,7 @@ The exact method to do this depends on your OS distribution.
 To download all dependencies on Ubuntu, run:
 
 ```sh
-sudo apt-get install libjpeg-dev libtiff5-dev libpng-dev libfreetype-dev libgif-dev libgtk-3-dev libxml2-dev libpango1.0-dev libcairo2-dev libspiro-dev libwoff-dev python3-dev ninja-build cmake build-essential gettext;
+sudo apt-get install libjpeg-dev libtiff5-dev libpng-dev libfreetype-dev libgif-dev libgtk-3-dev libgtkmm-3.0-dev libxml2-dev libpango1.0-dev libcairo2-dev libspiro-dev libwoff-dev python3-dev ninja-build cmake build-essential gettext;
 ```
 
 Now run the build and installation scripts:
@@ -21,6 +21,16 @@ sudo ninja install
 ```
 
 For even more details on the build system itself, see [this wiki page](https://github.com/fontforge/fontforge/wiki/CMake-guide-for-FontForge).
+
+## Python Module
+
+FontForge's Python bindings are also available directly from PyPI:
+
+```sh
+pip install fontforge
+```
+
+If you install the Python module via pip, building and installing FontForge from source will detect this and skip installing the Python module to avoid conflicts. To switch back to app-installed modules, first run `pip uninstall fontforge`.
 
 **Attention, Designers Who Love TrueType Hinting:** 
 Run `cmake` with `-DENABLE_FREETYPE_DEBUGGER=/path/to/freetype/source`. 

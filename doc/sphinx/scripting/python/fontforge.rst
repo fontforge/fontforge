@@ -414,6 +414,15 @@ Module functions
 
       Retain all recognized font tables that do not have a native format.
 
+   This function can also be used with the ``with`` statement, in which case
+   there is no need to call :meth:`font.close()` explicitly:
+
+   ::
+
+      with fontforge.open('somefont.sfd') as fnt:
+          # do something
+          fnt.generate('somefont.ttf')
+
 .. function:: parseTTInstrs(string)
 
    Returns a binary string each byte of which corresponds to a truetype
@@ -1694,7 +1703,8 @@ must be created through the font.
 
 .. attribute:: glyph.codepoint
 
-   Unicode code point for this glyph in U+XXXX format, or ``None``. (readonly)
+   Unicode code point for this glyph in U+XXXX format for the Basic Multilingual
+   Plane, and up to U+XXXXXX for the supplementary planes, or ``None``. (readonly)
 
 .. attribute:: glyph.color
 
@@ -2748,11 +2758,12 @@ must be created through the font.
 
    Draw the glyph's outline to the `pen argument. <http://robofab.org/objects/pens.html>`_
 
-.. method:: glyph.glyphPen([replace=False])
+.. method:: glyph.glyphPen([replace=True])
 
    Creates a new glyphPen which will draw into the current glyph. By default
    the pen will replace any existing contours and references, but setting the
    optional keyword argument, ``replace`` to false will retain the old contents.
+   Replacing the foreground layer will also reset the advance.
 
 .. method:: glyph.addInflections()
 

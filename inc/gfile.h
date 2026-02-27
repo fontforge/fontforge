@@ -30,11 +30,34 @@
 
 #include "basics.h"
 
-/* For mode_t */
+#include <stdio.h>
+#include <time.h>
+
+/* For stat compatibility - must include sys/types.h before sys/stat.h */
 #include <sys/types.h>
+#include <sys/stat.h>
+
+/* For mode_t (not defined by MSVC) */
+#ifdef _MSC_VER
+typedef unsigned short mode_t;
+#endif
+
+#ifdef _MSC_VER
+typedef struct __stat64 ff_stat_t;
+#define ff_stat(p, b) _stat64(p, b)
+#define ff_fstat(f, b) _fstat64(f, b)
+#else
+typedef struct stat ff_stat_t;
+#define ff_stat(p, b) stat(p, b)
+#define ff_fstat(f, b) fstat(f, b)
+#endif
 
 /* home directories for fontforge */
 enum { Cache, Config, Data };
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 int mkdir_p(const char *path, mode_t mode);
 
@@ -92,6 +115,9 @@ extern int u_GFileMkDir(unichar_t *name);
 extern int u_GFileRmDir(unichar_t *name);
 extern int u_GFileUnlink(unichar_t *name);
 extern off_t GFileGetSize(char *name);
+extern off_t GFileGetSizeF(FILE *file);
+extern time_t GFileGetMTime(const char *name);
+extern time_t GFileGetMTimeF(FILE *file);
 extern char *GFileReadAll(char *name);
 extern int   GFileWriteAll(char *filepath, char *data);
 extern void  FindProgRoot(const char *prog);
@@ -101,7 +127,6 @@ extern const char *getPixmapDir(void);
 extern const char *getHelpDir(void);
 extern const char *getUserHomeDir(void);
 extern char *getFontForgeUserDir(int dir);
-extern const char *getTempDir(void);
 
 /**
  * This is the full path of ~ on OSX and Linux
@@ -138,7 +163,8 @@ extern char *GFileDirName(const char *path);
  **/
 extern char* getLibexecDir_NonWindows(void);
 
-
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_GFILE_H */

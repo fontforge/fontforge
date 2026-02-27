@@ -33,6 +33,8 @@
 #include "bvedit.h"
 #include "cvimages.h"
 #include "encoding.h"
+#include "ffglib_compat.h"
+#include "ffprocess.h"
 #include "fontforgevw.h"
 #include "fvfonts.h"
 #include "gfile.h"
@@ -49,7 +51,7 @@
 #include "winfonts.h"
 
 #include <math.h>
-#include <unistd.h>
+#include "ffunistd.h"
 
 static char *cleancopy(const char *name) {
     const char *fpt;
@@ -2189,49 +2191,27 @@ return( b );
 }
 
 static BDFFont *_SFImportBDF(SplineFont *sf, char *filename,int ispk, int toback, EncMap *map) {
-    int i;
-    char *pt, *temp=NULL;
-    char buf[1500];
+    char *temp = NULL;
     BDFFont *ret;
+    FFCompressionType ctype;
 
-    pt = strrchr(filename,'.');
-    i = -1;
-    if ( pt!=NULL ) for ( i=0; compressors[i].ext!=NULL; ++i )
-	if ( strcmp(compressors[i].ext,pt+1)==0 )
-    break;
-    if ( i==-1 || compressors[i].ext==NULL ) i=-1;
-    else {
-	sprintf( buf, "%s %s", compressors[i].decomp, filename );
-	if ( system(buf)==0 )
-	    *pt='\0';
-	else {
-	    /* Assume no write access to file */
-	    char *dir = getenv("TMPDIR");
-	    if ( dir==NULL ) dir = P_tmpdir;
-	    temp = malloc(strlen(dir)+strlen(GFileNameTail(filename))+2);
-	    strcpy(temp,dir);
-	    strcat(temp,"/");
-	    strcat(temp,GFileNameTail(filename));
-	    *strrchr(temp,'.') = '\0';
-	    sprintf( buf, "%s -c %s > %s", compressors[i].decomp, filename, temp );
-	    if ( system(buf)==0 )
-		filename = temp;
-	    else {
-		free(temp);
-		ff_post_error(_("Decompress Failed!"),_("Decompress Failed!"));
-return( NULL );
-	    }
+    ctype = ff_compression_type(filename);
+    if ( ctype != FF_COMPRESS_NONE ) {
+	/* Decompress to temp file - original is not modified */
+	if ( ff_decompress_to_temp(filename, &temp) != FF_PROCESS_OK ) {
+	    ff_post_error(_("Decompress Failed!"),_("Decompress Failed!"));
+	    return( NULL );
 	}
+	filename = temp;
     }
-    ret = SFImportBDF(sf, filename,ispk, toback, map);
-    if ( temp!=NULL ) {
-	unlink(temp);
+
+    ret = SFImportBDF(sf, filename, ispk, toback, map);
+
+    if ( temp != NULL ) {
+	ff_unlink(temp);
 	free(temp);
-    } else if ( i!=-1 ) {
-	sprintf( buf, "%s %s", compressors[i].recomp, filename );
-	system(buf);
     }
-return( ret );
+    return( ret );
 }
 
 static void SFSetupBitmap(SplineFont *sf,BDFFont *strike,EncMap *map) {
@@ -2295,47 +2275,36 @@ static void SFMergeBitmaps(SplineFont *sf,BDFFont *strikes,EncMap *map) {
 static void SFAddToBackground(SplineFont *sf,BDFFont *bdf);
 
 int FVImportBDF(FontViewBase *fv, char *filename, int ispk, int toback) {
+    char *path_list[2] = {filename, NULL};
+    return FVImportBDFs(fv, path_list, ispk, toback);
+}
+
+int FVImportBDFs(FontViewBase *fv, char **path_list, int ispk, int toback) {
     BDFFont *b, *anyb=NULL;
-    char *buf, *eod, *fpt, *file, *full, *freeme;
+    char *buf, *full;
     int fcnt, any = 0;
     int oldenccnt = fv->map->enccount;
 
-    freeme = filename = copy(filename);
-    eod = strrchr(filename,'/');
-    if (eod != NULL) {
-        *eod = '\0';
-        file = eod+1;
-    } else {
-        file = filename;
-        filename = ".";
-    }
-    fcnt = 1;
-    fpt = file;
-    while (( fpt=strstr(fpt,"; "))!=NULL )
-	{ ++fcnt; fpt += 2; }
+    for (fcnt = 0; path_list[fcnt] != NULL; ++fcnt);
 
-    buf = smprintf(_("Loading font from %.100s"), filename);
+    buf = smprintf(_("Loading font from %.100s"), path_list[0]);
     ff_progress_start_indicator(10,_("Loading..."),buf,_("Reading Glyphs"),0,fcnt);
     ff_progress_enable_stop(false);
     free(buf);
 
-    do {
-	fpt = strstr(file,"; ");
-	if ( fpt!=NULL ) *fpt = '\0';
-	full = smprintf("%s/%s", filename, file);
+    for (char** p_path = path_list; *p_path != NULL; ++p_path) {
+	full = *p_path;
 	buf = smprintf(_("Loading font from %.100s"), full);
 	ff_progress_change_line1(buf);
 	free(buf);
 	b = _SFImportBDF(fv->sf,full,ispk,toback, fv->map);
-	free(full);
-	if ( fpt!=NULL ) ff_progress_next_stage();
+	ff_progress_next_stage();
 	if ( b!=NULL ) {
 	    anyb = b;
 	    any = true;
 	    FVRefreshAll(fv->sf);
 	}
-	file = fpt+2;
-    } while ( fpt!=NULL );
+    }
     ff_progress_end_indicator();
     if ( oldenccnt != fv->map->enccount ) {
 	FontViewBase *fvs;
@@ -2346,10 +2315,9 @@ int FVImportBDF(FontViewBase *fv, char *filename, int ispk, int toback) {
 	FontViewReformatAll(fv->sf);
     }
     if ( anyb==NULL ) {
-	ff_post_error( _("No Bitmap Font"), _("Could not find a bitmap font in %s"), filename );
+	ff_post_error( _("No Bitmap Font"), _("Could not find a bitmap font in %s"), path_list[0]);
     } else if ( toback )
 	SFAddToBackground(fv->sf,anyb);
-    free(freeme);
 return( any );
 }
 

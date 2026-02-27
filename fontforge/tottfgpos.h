@@ -4,6 +4,10 @@
 #include "splinefont.h"
 #include "ttf.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Open type Advanced Typography Tables */
 extern void otf_dumpgpos(struct alltabs *at, SplineFont *sf);
 extern void otf_dumpgsub(struct alltabs *at, SplineFont *sf);
@@ -30,5 +34,9 @@ extern SplineChar **SFGlyphsFromNames(SplineFont *sf, char *names);
 
 /* The MATH table */
 extern void otf_dump_math(struct alltabs *at, SplineFont *sf);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_TOTTFGPOS_H */

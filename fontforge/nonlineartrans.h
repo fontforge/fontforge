@@ -31,6 +31,10 @@
 #include "baseviews.h"
 #include "splinefont.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "ustring.h"
 #include "utype.h"
 
@@ -39,7 +43,7 @@
 # include <ieeefp.h>		/* Solaris defines isnan in ieeefp rather than math.h */
 #endif
 
-enum operator {
+enum nlt_operator {
     op_base = 0x100,			/* Bigger than any character */
 
     op_x, op_y,				/* Returns current x & y values, no operands */
@@ -57,7 +61,7 @@ enum operator {
 };
 
 struct expr {
-    enum operator operator;
+    enum nlt_operator op;
     struct expr *op1, *op2, *op3;
     real value;
 };
@@ -65,7 +69,7 @@ struct expr {
 struct expr_context {
     char *start, *cur;
     unsigned int had_error: 1;
-    enum operator backed_token;
+    enum nlt_operator backed_token;
     real backed_val;
 
     real x, y;
@@ -85,5 +89,9 @@ extern int SCNLTrans(SplineChar *sc, int layer, char *x_expr, char *y_expr);
 extern int SSNLTrans(SplineSet *ss, char *x_expr, char *y_expr);
 extern void CVYPerspective(CharViewBase *cv, bigreal x_vanish, bigreal y_vanish);
 extern void FVPointOfView(FontViewBase *fv, struct pov_data *pov);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_NONLINEARTRANS_H */

@@ -475,16 +475,16 @@ static void BuildFPSTRule(struct node *node,struct att_dlg *att) {
 	    }
 	  break;
 	  case pst_class:
-	    if ( r->u.class.bcnt!=0 ) {
+	    if ( r->u.fpc_class.bcnt!=0 ) {
 		if ( i ) {
 		    gb.pt = gb.base;
-		    GrowBufferAddStr(&gb,P_("Backtrack class: ","Backtrack classes: ",r->u.class.bcnt));
-		    for ( j=r->u.class.bcnt-1; j>=0; --j ) {
-			if ( fpst->bclassnames==NULL || fpst->bclassnames[r->u.class.bclasses[j]]==NULL ) {
-			    sprintf( buf, "%d ", r->u.class.bclasses[j] );
+		    GrowBufferAddStr(&gb,P_("Backtrack class: ","Backtrack classes: ",r->u.fpc_class.bcnt));
+		    for ( j=r->u.fpc_class.bcnt-1; j>=0; --j ) {
+			if ( fpst->bclassnames==NULL || fpst->bclassnames[r->u.fpc_class.bclasses[j]]==NULL ) {
+			    sprintf( buf, "%d ", r->u.fpc_class.bclasses[j] );
 			    GrowBufferAddStr(&gb,buf);
 			} else
-			    GrowBufferAddStr(&gb,fpst->bclassnames[r->u.class.bclasses[j]]);
+			    GrowBufferAddStr(&gb,fpst->bclassnames[r->u.fpc_class.bclasses[j]]);
 		    }
 		    lines[len].label = copy((char*)gb.base);
 		    lines[len].parent = node;
@@ -493,28 +493,28 @@ static void BuildFPSTRule(struct node *node,struct att_dlg *att) {
 	    }
 	    if ( i ) {
 		gb.pt = gb.base;
-		GrowBufferAddStr(&gb, P_("Class","Classes",r->u.class.ncnt));
-		for ( j=0; j<r->u.class.ncnt; ++j ) {
-		    if ( fpst->nclassnames==NULL || fpst->nclassnames[r->u.class.nclasses[j]]==NULL ) {
-			sprintf( buf, "%d ", r->u.class.nclasses[j] );
+		GrowBufferAddStr(&gb, P_("Class","Classes",r->u.fpc_class.ncnt));
+		for ( j=0; j<r->u.fpc_class.ncnt; ++j ) {
+		    if ( fpst->nclassnames==NULL || fpst->nclassnames[r->u.fpc_class.nclasses[j]]==NULL ) {
+			sprintf( buf, "%d ", r->u.fpc_class.nclasses[j] );
 			GrowBufferAddStr(&gb,buf);
 		    } else
-			GrowBufferAddStr(&gb,fpst->nclassnames[r->u.class.nclasses[j]]);
+			GrowBufferAddStr(&gb,fpst->nclassnames[r->u.fpc_class.nclasses[j]]);
 		}
 		lines[len].label = copy((char*)gb.base);
 		lines[len].parent = node;
 	    }
 	    ++len;
-	    if ( r->u.class.fcnt!=0 ) {
+	    if ( r->u.fpc_class.fcnt!=0 ) {
 		if ( i ) {
 		    gb.pt = gb.base;
-		    GrowBufferAddStr(&gb, P_("Lookahead Class","Lookahead Classes",r->u.class.fcnt));
-		    for ( j=0; j<r->u.class.fcnt; ++j ) {
-			if ( fpst->fclassnames==NULL || fpst->fclassnames[r->u.class.fclasses[j]]==NULL ) {
-			    sprintf( buf, "%d ", r->u.class.fclasses[j] );
+		    GrowBufferAddStr(&gb, P_("Lookahead Class","Lookahead Classes",r->u.fpc_class.fcnt));
+		    for ( j=0; j<r->u.fpc_class.fcnt; ++j ) {
+			if ( fpst->fclassnames==NULL || fpst->fclassnames[r->u.fpc_class.fclasses[j]]==NULL ) {
+			    sprintf( buf, "%d ", r->u.fpc_class.fclasses[j] );
 			    GrowBufferAddStr(&gb,buf);
 			} else
-			    GrowBufferAddStr(&gb,fpst->fclassnames[r->u.class.fclasses[j]]);
+			    GrowBufferAddStr(&gb,fpst->fclassnames[r->u.fpc_class.fclasses[j]]);
 		    }
 		    lines[len].label = copy((char*)gb.base);
 		    lines[len].parent = node;

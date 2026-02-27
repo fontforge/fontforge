@@ -27,12 +27,13 @@
 
 #include <fontforge-config.h>
 
+#include "ffglib_compat.h"
 #include "fontforgevw.h"
 #include "groups.h"
 #include "ustring.h"
 #include "utype.h"
 
-#include <unistd.h>
+#include "ffunistd.h"
 
 Group *group_root = NULL;
 
@@ -118,7 +119,7 @@ void SaveGroupList(void) {
     if ( groupfilename==NULL )
 return;
     if ( group_root==NULL || (group_root->kid_cnt==0 && group_root->glyphs==NULL )) {
-	unlink(groupfilename);
+	ff_unlink(groupfilename);
 return;
     }
     groups = fopen(groupfilename,"w");

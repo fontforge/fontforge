@@ -34,6 +34,7 @@
 #include "encoding.h"
 #include "featurefile.h"
 #include "fontforgeui.h"
+#include "gfile.h"
 #include "gkeysym.h"
 #include "gresedit.h"
 #include "gutils.h"
@@ -2221,12 +2222,12 @@ static void PSPrivate_MatrixInit(struct matrixinit *mi,struct gfi_data *d) {
     mi->col_cnt = 2;
     mi->col_init = psprivate_ci;
 
-    mi->initial_row_cnt = sf->private==NULL?0:sf->private->next;
+    mi->initial_row_cnt = sf->private_dict==NULL?0:sf->private_dict->next;
     md = calloc(2*(mi->initial_row_cnt+1),sizeof(struct matrix_data));
-    if ( sf->private!=NULL ) {
-	for ( i=j=0; i<sf->private->next; ++i ) {
-	    md[2*j  ].u.md_str = copy(sf->private->keys[i]);
-	    md[2*j+1].u.md_str = copy(sf->private->values[i]);
+    if ( sf->private_dict!=NULL ) {
+	for ( i=j=0; i<sf->private_dict->next; ++i ) {
+	    md[2*j  ].u.md_str = copy(sf->private_dict->keys[i]);
+	    md[2*j+1].u.md_str = copy(sf->private_dict->values[i]);
 	    ++j;
 	}
     }
@@ -2604,10 +2605,10 @@ static void GFI_CancelClose(struct gfi_data *d) {
     for ( isgpos=0; isgpos<2; ++isgpos ) {
 	struct lkdata *lk = &d->tables[isgpos];
 	for ( i=0; i<lk->cnt; ++i ) {
-	    if ( lk->all[i].new )
+	    if ( lk->all[i].isnew )
 		SFRemoveLookup(d->sf,lk->all[i].lookup,0);
 	    else for ( j=0; j<lk->all[i].subtable_cnt; ++j ) {
-		if ( lk->all[i].subtables[j].new )
+		if ( lk->all[i].subtables[j].isnew )
 		    SFRemoveLookupSubTable(d->sf,lk->all[i].subtables[j].subtable,0);
 	    }
 	    free(lk->all[i].subtables);
@@ -4093,7 +4094,7 @@ return( changed );
 
 char* DumpSplineFontMetadata(SplineFont *sf) {
     FILE *sfd;
-    if ( (sfd=MakeTemporaryFile()) ) {
+    if ( (sfd=GFileTmpfile()) ) {
 	SFD_DumpSplineFontMetadata( sfd, sf );
 	char *str = FileToAllocatedString( sfd );
 	fclose(sfd);
@@ -4542,8 +4543,8 @@ return(true);
 	for ( j=0; j<_sf->subfontcnt; ++j )
 	    _sf->subfonts[j]->hasvmetrics = vmetrics;
 
-	PSDictFree(sf->private);
-	sf->private = GFI_ParsePrivate(d);
+	PSDictFree(sf->private_dict);
+	sf->private_dict = GFI_ParsePrivate(d);
 
 	if ( d->names_set )
 	    StoreTTFNames(d);
@@ -6167,7 +6168,7 @@ return( true );
 	    lk->all[k] = lk->all[k-1];
 	memset(&lk->all[k],0,sizeof(struct lkinfo));
 	lk->all[k].lookup = otl;
-	lk->all[k].new = true;
+	lk->all[k].isnew = true;
 	lk->all[k].selected = true;
 	++lk->cnt;
 	if ( isgpos ) {
@@ -6242,7 +6243,7 @@ return( true );
 	    lk->all[i].subtables[k] = lk->all[i].subtables[k-1];
 	memset(&lk->all[i].subtables[k],0,sizeof(struct lksubinfo));
 	lk->all[i].subtables[k].subtable = sub;
-	lk->all[i].subtables[k].new = true;
+	lk->all[i].subtables[k].isnew = true;
 	sub->next = lk->all[i].lookup->subtables;
 	lk->all[i].lookup->subtables = sub;
 	++lk->all[i].subtable_cnt;
@@ -6402,11 +6403,11 @@ static int GFI_LookupRevertLookup(GGadget *g, GEvent *e) {
 
 	/* First remove any new lookups, subtables */
 	for ( i=0; i<lk->cnt; ++i ) {
-	    if ( lk->all[i].new )
+	    if ( lk->all[i].isnew )
 		SFRemoveLookup(gfi->sf,lk->all[i].lookup,0);
 	    else {
 		for ( j=0; j<lk->all[i].subtable_cnt; ++j )
-		    if ( lk->all[i].subtables[j].new )
+		    if ( lk->all[i].subtables[j].isnew )
 			SFRemoveLookupSubTable(gfi->sf,lk->all[i].subtables[j].subtable,0);
 	    }
 	}
@@ -6878,14 +6879,14 @@ static void AALTCreateNew(SplineFont *sf, struct lkdata *lk) {
 	    lk->all[k] = lk->all[k-1];
 	memset(&lk->all[0],0,sizeof(struct lkinfo));
 	lk->all[0].lookup = otl;
-	lk->all[0].new = true;
+	lk->all[0].isnew = true;
 	++lk->cnt;
 
 	/* Now add the new subtable */
 	lk->all[0].subtables = calloc(1,sizeof(struct lksubinfo));
 	lk->all[0].subtable_cnt = lk->all[0].subtable_max = 1;
 	lk->all[0].subtables[0].subtable = otl->subtables;
-	lk->all[0].subtables[0].new = true;
+	lk->all[0].subtables[0].isnew = true;
     }
 
     SllkFree(sllk,sllk_cnt);

@@ -32,13 +32,6 @@
 #include "intl.h"
 struct giocontrol;
 
-#ifndef MAX
-#define MAX(x,y)   (((x) > (y)) ? (x) : (y))
-#endif
-#ifndef MIN
-#define MIN(x,y)   (((x) < (y)) ? (x) : (y))
-#endif
-
 typedef struct gtextinfo {
     unichar_t *text;
     GImage *image;
@@ -451,6 +444,7 @@ void GFileChooserSetBookmarks(unichar_t **b);
 void GFileChooserSetPaths(GGadget *g, const char* const* path);
 unichar_t **GFileChooserGetBookmarks(void);
 void GFileChooserSetPrefsChangedCallback(void *data, void (*p_c)(void *));
+char **GFileChooserGetMultipleFiles(const char* multipath);
 
 void GHVBoxSetExpandableCol(GGadget *g,int col);
 void GHVBoxSetExpandableRow(GGadget *g,int row);
@@ -590,6 +584,7 @@ extern int GGadgetUndoMacEnglishOptionCombinations(GEvent *event);
 
 /* Among other things, this routine sets global icon cache up. */
 extern void GGadgetInit(void);
+extern void GTabSetInit();
 extern int GGadgetWithin(GGadget *g, int x, int y);
 extern void GMenuItemArrayFree(GMenuItem *mi);
 extern void GMenuItem2ArrayFree(GMenuItem2 *mi);

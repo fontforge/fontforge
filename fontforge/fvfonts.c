@@ -531,6 +531,7 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into,struct sfmergecontext
     nsc->parent = into;
     nsc->orig_pos = -2;
     nsc->name = copy(sc->name);
+    nsc->comment = copy(sc->comment);
     nsc->hstem = StemInfoCopy(nsc->hstem);
     nsc->vstem = StemInfoCopy(nsc->vstem);
     nsc->dstem = DStemInfoCopy(nsc->dstem);
@@ -550,6 +551,10 @@ SplineChar *SplineCharCopy(SplineChar *sc,SplineFont *into,struct sfmergecontext
     nsc->altuni = AltUniCopy(nsc->altuni,into);
     nsc->charinfo = NULL;
     nsc->views = NULL;
+#ifndef _NO_PYTHON
+    nsc->python_sc_object = NULL;
+    nsc->python_temporary = NULL;
+#endif
 return(nsc);
 }
 
@@ -1651,4 +1656,34 @@ return( NULL );
     new->changed = true;
     new->map = EncMapFromEncoding(new,enc);
 return( new );
+}
+
+bool RecomputePitch(int16_t this_width, FontPitch* pitch, int* width) {
+    if (this_width == 0) {
+        /* Zero-width glyphs, such as control characters or diacritical marks
+           don't affect the state. */
+        return true;
+    }
+
+    if (*pitch == pitch_unknown) {
+        *width = this_width;
+        *pitch = pitch_fixed;
+    } else if (*pitch == pitch_fixed) {
+        if (this_width == 2 * (*width)) {
+            *pitch = pitch_dual;
+        } else if (2 * this_width == *width) {
+            *width = this_width;
+            *pitch = pitch_dual;
+        } else if (this_width != *width) {
+            *width = -1;
+            *pitch = pitch_variable;
+            return false; /* no further check necessary */
+        }
+    } else if (*pitch == pitch_dual &&
+               (this_width != *width && this_width != 2 * (*width))) {
+        *width = -1;
+        *pitch = pitch_variable;
+        return false; /* no further check necessary */
+    }
+    return true;
 }

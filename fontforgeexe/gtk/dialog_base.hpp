@@ -44,7 +44,8 @@ class DialogBase : public Gtk::Dialog {
     Gtk::ResponseType run();
 
     // Add Help context to be opened if the user presses "F1".
-    void set_help_context(const std::string& file, const std::string& section);
+    void set_help_context(const std::string& file,
+                          const std::string& section = "");
 
     // Allow window resize in horizontal direction only.
     void set_hints_horizontal_resize_only();

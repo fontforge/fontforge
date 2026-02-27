@@ -47,6 +47,10 @@
 #  define PRINTF_FORMAT_ATTRIBUTE(x, y)
 #endif
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern bool SetupUCharMap(const char* unichar_name, const char* local_name, bool is_local_utf8);
 
 extern char *copy(const char *);
@@ -233,6 +237,14 @@ extern char* str_replace_all( char* s, char* orig, char* replacement, int free_s
 
 int toint( char* v );
 char* tostr( int v );
+/* reallocate buffer and adjust its tail and intermediate processor if present
+ */
+void realloc_tail(char** p_buf, size_t size_delta, char** p_tail,
+                  char** p_proc);
+
+#ifdef __cplusplus
+}
+#endif
 
 #pragma pop_macro("PRINTF_FORMAT_ATTRIBUTE")
 

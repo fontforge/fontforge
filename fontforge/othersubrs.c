@@ -482,13 +482,13 @@ static const char **CopyLines(char **lines, int l,int is_copyright) {
     int i;
 
     if ( l==0 && !is_copyright ) {
-	ret = malloc(2*sizeof(char *));
+	ret = (const char **)malloc(2*sizeof(char *));
 	ret[0] = copy("{}");
 	ret[1] = NULL;
 return( ret );
     }
 
-    ret = malloc((l+1)*sizeof(char *));
+    ret = (const char **)malloc((l+1)*sizeof(char *));
     for ( i=0; i<l; ++i )
 	ret[i] = lines[i];
     ret[l] = NULL;
@@ -545,7 +545,7 @@ return( false );
 	} else {
 	    if ( l>=lmax ) {
 		lmax += 100;
-		lines = realloc(lines,lmax*sizeof(char *));
+		lines = (char **)realloc(lines,lmax*sizeof(char *));
 	    }
 	    lines[l++] = copy(buffer);
 	}
@@ -566,7 +566,7 @@ return( false );
 return( false );
     }
     while ( sub_num<14 ) {
-	osubs[sub_num] = calloc(2,sizeof(char *));
+	osubs[sub_num] = (const char **)calloc(2,sizeof(char *));
 	osubs[sub_num][0] = copy("{}");
 	++sub_num;
     }

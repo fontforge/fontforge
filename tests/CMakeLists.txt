@@ -9,10 +9,15 @@ if(NOT ENABLE_NATIVE_SCRIPTING AND NOT ENABLE_PYTHON_SCRIPTING_RESULT)
   return()
 endif()
 
-add_executable(systestdriver systestdriver.c)
-target_link_libraries(systestdriver PRIVATE GLIB::GLIB)
-if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+# systestdriver - standalone C++ test driver (no FontForge dependencies)
+add_executable(systestdriver systestdriver.cpp)
+target_link_libraries(systestdriver PRIVATE cxxopts)
+set_target_properties(systestdriver PROPERTIES CXX_STANDARD 17 CXX_STANDARD_REQUIRED ON)
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   target_compile_options(systestdriver PRIVATE -Wall -pedantic)
+endif()
+if(MSVC)
+  target_compile_options(systestdriver PRIVATE /W4)
 endif()
 
 # Downloaded files
@@ -29,17 +34,21 @@ add_custom_target(check
   COMMAND "${CMAKE_CTEST_COMMAND}" "--output-on-failure" "--force-new-ctest-process"
   DEPENDS
     test_dependencies
-    fontforgeexe
     systestdriver
   VERBATIM
   USES_TERMINAL
 )
 
+# fontforgeexe is only available when not building a wheel
+if(NOT BUILDING_WHEEL)
+  add_dependencies(check fontforgeexe)
+endif()
+
 if(ENABLE_PYTHON_SCRIPTING_RESULT AND ENABLE_PYTHON_EXTENSION_RESULT)
   add_dependencies(check fontforge_pyhook psMat_pyhook)
 endif()
 
-if(ENABLE_NATIVE_SCRIPTING)
+if(ENABLE_NATIVE_SCRIPTING AND NOT BUILDING_WHEEL)
   add_ff_test(test001.pe "Caliban.sfd" "Zapfino-4.0d3.dfont" "Zapfino-4.1d6.dfont" "Generate a few font files")
   add_ff_test(test002.pe "HanSans-Bold.otf"                                        "OTF CID font check")
   add_ff_test(test003.pe "MunhwaGothic-Bold"                                       "Non-OTF CID font check")
@@ -99,7 +108,6 @@ if(ENABLE_PYTHON_SCRIPTING_RESULT)
   add_py_test(test0003.py "BoxesAndBounds.sfd" "Bounding box sanity tests")
   add_py_test(test0004.py "OpenType script tag tests")
   add_py_test(test0101.py "NotoSans-Regular.ttc" "FontForge .ttc file open check")
-  add_py_test(test1001.py "Caliban.sfd" "Generate several font files")
   add_py_test(test1001a.py "Zapfino-4.0d3.dfont" "Point count check")
   add_py_test(test1001b.py "Zapfino-4.1d6.dfont" "Odd morx test without crashing")
   add_py_test(test1001c.py "Make new font")
@@ -134,6 +142,7 @@ if(ENABLE_PYTHON_SCRIPTING_RESULT)
   add_py_test(test932.py "Round-trip point selection tests")
   add_py_test(test933.py "Test for SplineSetJoin Expand Stroke logic")
   add_py_test(test934.py "SFDBitmapParsing.sfd" "Parsing of a malformed SFD")
+  add_py_test(test_generate.py "Caliban.sfd" "Generate several font files")
   add_py_test(test_fea_hyphens.py "Ambrosia.sfd" "Feature file with hyphens in glyph names")
   add_py_test(test_sfd_suppl_plane.py "Save TTF Names with emoji Unicode characters to SFD")
   add_py_test(test_fea_context_sub.py "Ambrosia.sfd" "Export contextual lookups to FEA")
@@ -141,4 +150,5 @@ if(ENABLE_PYTHON_SCRIPTING_RESULT)
   add_py_test(test_sfnt_name.py "Ambrosia.sfd" "Testing font.appendSFNTName() function")
   add_py_test(test_logging.py "Sanitization of logging functions")
   add_py_test(test_font_mark_classes_and_sets.py "font.markClasses, font.markSets getters and setters")
+  add_py_test(test_font_hooks.py "Set and activate Python hooks")
 endif()

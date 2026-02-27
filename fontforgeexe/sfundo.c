@@ -31,6 +31,7 @@
 #include "sfundo.h"
 
 #include "fvfonts.h"
+#include "gfile.h"
 #include "sfd.h"
 #include "uiinterface.h"
 #include "views.h"
@@ -71,7 +72,7 @@ SFUndoes* SFUndoCreateSFD( enum sfundotype t, char* staticmsg, char* sfdfrag )
 char* SFUndoToString( SFUndoes* undo )
 {
     FILE* sfd;
-    if( (sfd = MakeTemporaryFile()) )
+    if( (sfd = GFileTmpfile()) )
     {
 	fprintf(sfd,"BeginFontLevelUndo\n");
 	fprintf(sfd,"FontLevelUndoType:%d\n",undo->type);
@@ -154,7 +155,7 @@ void SFUndoPerform( SFUndoes* undo, SplineFont* sf )
     case sfut_fontinfo:
 	sfdchunk = undo->sfdchunk;
 //	printf("font level undo, font info sfd:%s\n", sfdchunk );
-	sfd = MakeTemporaryFile();
+	sfd = GFileTmpfile();
 	fwrite( sfdchunk, strlen(sfdchunk), 1, sfd );
 	fseek( sfd, 0, SEEK_SET );
 
@@ -172,7 +173,7 @@ void SFUndoPerform( SFUndoes* undo, SplineFont* sf )
 	}
 
 	// Roll it on back!
-	sfd = MakeTemporaryFile();
+	sfd = GFileTmpfile();
 	fwrite( sfdchunk, strlen(sfdchunk), 1, sfd );
 	fseek( sfd, 0, SEEK_SET );
 

@@ -357,17 +357,17 @@ Apple Advanced Typography
 As above I do not go deeply into the abilities of these tables, for more
 information see Apple's docs:
 
-* `The 'bsln' (baseline) table <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6bsln.html>`__
-* `The 'kern' table <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6kern.html>`__
-* `The 'lcar' (ligature caret) table <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6lcar.html>`__
-* `The 'morx' (extended glyph metamorphosis) table <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6morx.html>`__
+* `The 'bsln' (baseline) table <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6bsln.html>`__
+* `The 'kern' table <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6kern.html>`__
+* `The 'lcar' (ligature caret) table <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6lcar.html>`__
+* `The 'morx' (extended glyph metamorphosis) table <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6morx.html>`__
 
-  * `The 'mort' (older version of 'morx') table <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6mort.html>`__
-  * `The 'feat' (feature) table <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6feat.html>`__
+  * `The 'mort' (older version of 'morx') table <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6mort.html>`__
+  * `The 'feat' (feature) table <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6feat.html>`__
   * `Apple's Font Feature registry <http://developer.apple.com/fonts/Registry/index.html>`__
-  * `Description of the subtables of the 'mort'/'morx' tables <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6Tables.html>`__
-* `The 'opbd' (optical bounds) table <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6opbd.html>`__
-* `The 'prop' (glyph properties) table <http://developer.apple.com/fonts/TTRefMan/RM06/Chap6prop.html>`__
+  * `Description of the subtables of the 'mort'/'morx' tables <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6Tables.html>`__
+* `The 'opbd' (optical bounds) table <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6opbd.html>`__
+* `The 'prop' (glyph properties) table <http://developer.apple.com/fonts/TrueType-Reference-Manual/RM06/Chap6prop.html>`__
 
 FontForge will currently read and produce (if Apple mode is set in font
 generation) the following tables:

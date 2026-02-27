@@ -3,6 +3,11 @@
 
 #include "splinefont.h"
 #include "ttf.h"
+#include "shapers/metrics.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 extern char *utf8_verify_copy(const char *str);
 extern int32_t filechecksum(FILE *file);
@@ -16,7 +21,7 @@ extern int ttfcopyfile(FILE *ttf, FILE *other, int pos, const char *tab_name);
 extern int WriteTTC(const char *filename, struct sflist *sfs, enum fontformat format, enum bitmapformat bf, int flags, int layer, enum ttc_flags ttcflags);
 extern int WriteTTFFont(char *fontname, SplineFont *sf, enum fontformat format, int32_t *bsizes, enum bitmapformat bf, int flags, EncMap *enc, int layer);
 extern int _WriteTTFFont(FILE *ttf, SplineFont *sf, enum fontformat format, int32_t *bsizes, enum bitmapformat bf, int flags, EncMap *enc, int layer);
-extern SplineCharTTFMap* MakeGlyphTTFMap(SplineFont *sf);
+extern SplineCharTTFMap* WriteTTFFontForShaper(FILE *ttf, SplineFont *sf);
 extern int _WriteType42SFNTS(FILE *type42, SplineFont *sf, enum fontformat format, int flags, EncMap *enc, int layer);
 extern void cvt_unix_to_1904(long long time, int32_t result[2]);
 extern void DefaultTTFEnglishNames(struct ttflangname *dummy, SplineFont *sf);
@@ -30,5 +35,9 @@ extern void SFDummyUpCIDs(struct glyphinfo *gi, SplineFont *sf);
 extern void putfixed(FILE *file, real dval);
 extern void putlong(FILE *file, int val);
 extern void putshort(FILE *file, int sval);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* FONTFORGE_TOTTF_H */

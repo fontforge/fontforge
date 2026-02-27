@@ -12,11 +12,6 @@ target_include_directories(fontforge_common_headers
     "${CMAKE_CURRENT_BINARY_DIR}"
 )
 
-target_link_libraries(fontforge_common_headers
-  INTERFACE
-    GLIB::GLIB
-)
-
 if(ENABLE_CODE_COVERAGE_RESULT)
 target_link_libraries(fontforge_common_headers
   INTERFACE
