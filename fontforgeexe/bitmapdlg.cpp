@@ -35,8 +35,8 @@ extern "C" {
 #include "gtk/bitmaps_dlg.hpp"
 #include "gtk/simple_dialogs.hpp"
 
-extern "C"
-void BitmapDlg(FontViewBase* fv, GWindow gw, SplineChar* sc, int isavail) {
+extern "C" void BitmapDlg(FontViewBase* fv, GWindow gw, SplineChar* sc,
+                          int isavail) {
     CreateBitmapData bd;
     bool rasterize = true;
     std::string scope;
@@ -59,8 +59,7 @@ void BitmapDlg(FontViewBase* fv, GWindow gw, SplineChar* sc, int isavail) {
     ff::app::GtkApp();
 
     bool is_bitmap = bd.sf->onlybitmaps && bd.sf->bitmaps != NULL;
-    ff::dlg::BitmapsDlg dialog(gw, dlg_mode, sizes, is_bitmap,
-                               sc != NULL);
+    ff::dlg::BitmapsDlg dialog(gw, dlg_mode, sizes, is_bitmap, sc != NULL);
     bool is_ok = dialog.show();
     if (!is_ok) return;
 
