@@ -1,7 +1,7 @@
 # Distributed under the original FontForge BSD 3-clause license
 
 # * Run the 'pofiles' command to generate the binary .mo files
-# * Run the 'potfiles' ocmmand to generate the master .pot file
+# * Run the 'potfiles' command to generate the master .pot file
 #   (which contains all translatable strings)
 # * Run the 'fullpo' command to generate the .po files, merged
 #   with the master .pot file and with context
@@ -15,7 +15,10 @@ add_custom_target(potfiles
     --add-comments=GT:
     "-o${CMAKE_CURRENT_BINARY_DIR}/FontForge.pot"
     ../fontforge/*.c
+    ../fontforge/*.cpp
     ../fontforgeexe/*.c
+    ../fontforgeexe/*.cpp
+    ../fontforgeexe/gtk/*.cpp
     ../gdraw/*.c
     ../gutils/*.c
     ../inc/*.h
