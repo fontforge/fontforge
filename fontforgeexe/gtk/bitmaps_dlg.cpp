@@ -53,7 +53,8 @@ static std::string FormatBitmapSize(int px_size, double scale) {
 
 template <typename... ARGS>
 static std::string SizeString(const BitmapSizes& sizes, ARGS... args) {
-    char list_separator = ui_utils::get_list_separator();
+    std::string list_separator =
+        ui_utils::get_list_separator() + std::string(" ");
     std::string size_list;
     for (auto [px_size, depth] : sizes) {
         if (!size_list.empty()) size_list += list_separator;
