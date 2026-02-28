@@ -61,7 +61,7 @@ if(ENABLE_GUI)
     multidialog.c
     nonlineartransui.c
     openfontdlg.c
-    pluginui.c
+    pluginui.cpp
     prefs.c
     problems.cpp
     pythonui.c
