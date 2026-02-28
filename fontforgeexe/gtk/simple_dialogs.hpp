@@ -46,10 +46,18 @@ int add_encoding_slots_dialog(GWindow parent, bool cid);
 char* language_list_dialog(GWindow parent, const LanguageRec* languages,
                            const char* initial_tags);
 
-void show_properties_dialog(GWindow parent);
-
 void update_appearance();
 
 #ifdef __cplusplus
 }
+
+#include <vector>
+
+#include "l10n_text.hpp"
+
+using PropertyVec =
+    std::vector<std::pair<L10nText /*label*/, L10nText /*value*/>>;
+void show_properties_dialog(GWindow parent, const L10nText& title,
+                            const PropertyVec& properties);
+
 #endif

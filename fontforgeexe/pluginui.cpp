@@ -59,204 +59,23 @@ extern "C" GTextInfo *GTextInfoCopy(GTextInfo *ti);
 #define CID_OK           1016
 #define CID_Cancel       1017
 
-static int pluginfo_e_h(GWindow gw, GEvent *e) {
-    int *done = (int *) GDrawGetUserData(gw);
-    if (e->type == et_close) {
-        *done = true;
-    } else if (e->type == et_char && e->u.chr.keysym == GK_Return) {
-        *done = true;
-    }
-    return true;
-}
-
-static int PLUG_Info_OK(GGadget *g, GEvent *e) {
-    int *done = (int *) GDrawGetUserData(GGadgetGetWindow(g));
-    if (e->type == et_controlevent && e->u.control.subtype == et_buttonactivate) {
-        *done = true;
-    }
-    return true;
-}
-
-static void PluginInfoDlg(GWindow parent, PluginEntry *pe) {
-    GRect pos;
-    GWindow gw;
-    GWindowAttrs wattrs;
-    GGadgetCreateData gcd[14], boxes[4], *hvgrid[7][4], *okgrid[7], *mgrid[3];
-    GTextInfo label[14];
-    int done = false, k;
-
+static void PluginInfoDlg(GWindow parent, PluginEntry* pe) {
     if (no_windowing_ui) {
         return;
     }
 
-    show_properties_dialog(parent);
-
-    memset(&wattrs, 0, sizeof(wattrs));
-    wattrs.mask = (window_attr_mask)(wam_events | wam_cursor | wam_utf8_wtitle | wam_undercursor | wam_isdlg | wam_restrict);
-    wattrs.event_masks = ~(1 << et_charup);
-    wattrs.restrict_input_to_me = 1;
-    wattrs.undercursor = 1;
-    wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("Plugin Configuration");
-    wattrs.is_dlg = true;
-    pos.x = pos.y = 0;
-    pos.width = GDrawPointsToPixels(NULL, GGadgetScale(400));
-    pos.height = 0;
-    gw = GDrawCreateTopWindow(NULL, &pos, pluginfo_e_h, &done, &wattrs);
-
-    memset(&gcd, 0, sizeof(gcd));
-    memset(&boxes, 0, sizeof(boxes));
-    memset(&hvgrid, 0, sizeof(hvgrid));
-    memset(&label, 0, sizeof(label));
-
-    k = 0;
-    label[k].text = (unichar_t *) _("Name:");
-    label[k].text_is_1byte = true;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_flags)(gg_enabled | gg_visible);
-    gcd[k++].creator = GLabelCreate;
-    hvgrid[0][0] = &gcd[k - 1];
-
-    label[k].text = (unichar_t *) pe->name;
-    label[k].text_is_1byte = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_flags)(gg_enabled | gg_visible);
-    gcd[k++].creator = GLabelCreate;
-    hvgrid[0][1] = &gcd[k - 1];
-    hvgrid[0][2] = GCD_ColSpan;
-    hvgrid[0][3] = NULL;
-
-    label[k].text = (unichar_t *) _("Package Name:");
-    label[k].text_is_1byte = true;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_flags)(gg_enabled | gg_visible);
-    gcd[k++].creator = GLabelCreate;
-    hvgrid[1][0] = &gcd[k - 1];
-
-    label[k].text = (unichar_t *)(pe->package_name == NULL ? "[Unknown]" : pe->package_name);
-    label[k].text_is_1byte = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_flags)(gg_enabled | gg_visible);
-    gcd[k++].creator = GLabelCreate;
-    hvgrid[1][1] = &gcd[k - 1];
-    hvgrid[1][2] = GCD_ColSpan;
-    hvgrid[1][3] = NULL;
-
-    label[k].text = (unichar_t *) _("Module Name:");
-    label[k].text_is_1byte = true;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_flags)(gg_enabled | gg_visible);
-    gcd[k++].creator = GLabelCreate;
-    hvgrid[2][0] = &gcd[k - 1];
-
-    label[k].text = (unichar_t *)(pe->module_name == NULL ? "[Unknown]" : pe->module_name);
-    label[k].text_is_1byte = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_flags)(gg_enabled | gg_visible);
-    gcd[k++].creator = GLabelCreate;
-    hvgrid[2][1] = &gcd[k - 1];
-    hvgrid[2][2] = GCD_ColSpan;
-    hvgrid[2][3] = NULL;
-
-    label[k].text = (unichar_t *) _("'attrs' (if any):");
-    label[k].text_is_1byte = true;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_flags)(gg_enabled | gg_visible);
-    gcd[k++].creator = GLabelCreate;
-    hvgrid[3][0] = &gcd[k - 1];
-
-    label[k].text = (unichar_t *)(pe->attrs == NULL ? "" : pe->attrs);
-    label[k].text_is_1byte = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_flags)(gg_enabled | gg_visible);
-    gcd[k++].creator = GLabelCreate;
-    hvgrid[3][1] = &gcd[k - 1];
-    hvgrid[3][2] = GCD_ColSpan;
-    hvgrid[3][3] = NULL;
-
-    label[k].text = (unichar_t *) _("Package URL:");
-    label[k].text_is_1byte = true;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_flags)(gg_enabled | gg_visible);
-    gcd[k++].creator = GLabelCreate;
-    hvgrid[4][0] = &gcd[k - 1];
-
-    label[k].text = (unichar_t *)(pe->package_url == NULL ? "[Unknown]" : pe->package_url);
-    label[k].text_is_1byte = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_flags)(gg_enabled | gg_visible);
-    gcd[k++].creator = GLabelCreate;
-    hvgrid[4][1] = &gcd[k - 1];
-    hvgrid[4][2] = GCD_ColSpan;
-    hvgrid[4][3] = NULL;
-
-    label[k].text = (unichar_t *) _("Summary:");
-    label[k].text_is_1byte = true;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_flags)(gg_enabled | gg_visible);
-    gcd[k++].creator = GLabelCreate;
-    hvgrid[5][0] = &gcd[k - 1];
-
-    label[k].text = (unichar_t *)(pe->summary == NULL ? "[Unknown]" : pe->summary);
-    label[k].text_is_1byte = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_flags)(gg_enabled | gg_visible);
-    gcd[k++].creator = GLabelCreate;
-    hvgrid[5][1] = &gcd[k - 1];
-    hvgrid[5][2] = GCD_ColSpan;
-    hvgrid[5][3] = NULL;
-
-    hvgrid[6][0] = NULL;
-
-    boxes[2].gd.flags = (gg_flags)(gg_enabled | gg_visible);
-    boxes[2].gd.u.boxelements = hvgrid[0];
-    boxes[2].creator = GHVBoxCreate;
-
-    label[k].text = (unichar_t *) _("_OK");
-    label[k].text_is_1byte = true;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_flags)(gg_visible | gg_enabled);
-    gcd[k].gd.cid = CID_OK;
-    gcd[k].gd.handle_controlevent = PLUG_Info_OK;
-    gcd[k++].creator = GButtonCreate;
-    okgrid[0] = GCD_Glue;
-    okgrid[1] = GCD_Glue;
-    okgrid[2] = &gcd[k - 1];
-    okgrid[3] = GCD_Glue;
-    okgrid[4] = GCD_Glue;
-    okgrid[5] = GCD_Glue;
-    okgrid[6] = NULL;
-
-    boxes[3].gd.flags = (gg_flags)(gg_enabled | gg_visible);
-    boxes[3].gd.u.boxelements = okgrid;
-    boxes[3].creator = GHBoxCreate;
-
-    mgrid[0] = &boxes[2];
-    mgrid[1] = &boxes[3];
-    mgrid[2] = NULL;
-
-    boxes[0].gd.flags = (gg_flags)(gg_enabled | gg_visible);
-    boxes[0].gd.u.boxelements = mgrid;
-    boxes[0].creator = GVBoxCreate;
-
-    GGadgetsCreate(gw, boxes);
-    GHVBoxSetPadding(boxes[2].ret, 5, 6);
-    GHVBoxFitWindow(boxes[0].ret);
-
-    GDrawSetVisible(gw, true);
-
-    while (!done) {
-        GDrawProcessOneEvent(NULL);
-    }
-
-    GDrawDestroyWindow(gw);
+    PropertyVec properties = {
+        {_("Name:"), pe->name},
+        {_("Package Name:"),
+         pe->package_name == NULL ? _("[Unknown]") : pe->package_name},
+        {_("Module Name:"),
+         pe->module_name == NULL ? _("[Unknown]") : pe->module_name},
+        {_("'attrs' (if any):"), pe->attrs == NULL ? "" : pe->attrs},
+        {_("Package URL:"),
+         pe->package_url == NULL ? _("[Unknown]") : pe->package_url},
+        {_("Summary:"), pe->summary == NULL ? _("[Unknown]") : pe->summary},
+    };
+    show_properties_dialog(parent, _("Plugin Configuration"), properties);
 }
 
 struct plg_data {

@@ -25,11 +25,11 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "simple_dialogs.hpp"
-
 #include <numeric>
 #include <string>
 #include <gtkmm.h>
+
+#include "simple_dialogs.hpp"
 
 #include "intl.h"
 #include "application.hpp"
@@ -173,10 +173,8 @@ class ShowPropertiesDialog final : public DialogBase {
  public:
     Gtk::SpinButton* input;
 
-    ShowPropertiesDialog(
-        GWindow parent, const std::string& title,
-        const std::vector<std::pair<std::string /*label*/,
-                                    std::string /*value*/>>& properties)
+    ShowPropertiesDialog(GWindow parent, const L10nText& title,
+                         const PropertyVec& properties)
         : DialogBase(parent) {
         set_title(title);
         set_resizable(false);
@@ -202,14 +200,12 @@ class ShowPropertiesDialog final : public DialogBase {
 }  // namespace ff::dlg
 
 // Shim for the C code to call the dialog
-void show_properties_dialog(GWindow parent) {
+void show_properties_dialog(GWindow parent, const L10nText& title,
+                            const PropertyVec& properties) {
     // To avoid instability, the GTK application is lazily initialized only when
     // a GTK window is invoked.
     ff::app::GtkApp();
 
-    std::string title("test title");
-    std::vector<std::pair<std::string /*label*/, std::string /*value*/>>
-        properties = {{"label1", "prop1"}, {"lab2", "property2"}};
     ff::dlg::ShowPropertiesDialog dlg(parent, title, properties);
     dlg.run();
 }
