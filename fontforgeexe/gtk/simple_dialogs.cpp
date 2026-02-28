@@ -187,9 +187,19 @@ class ShowPropertiesDialog final : public DialogBase {
             label_widget->set_halign(Gtk::ALIGN_START);
             main_grid->attach(*label_widget, 0, i);
 
-            auto value_widget = Gtk::make_managed<Gtk::Label>(value);
+            Glib::ustring value_str = value;
+            auto value_widget = Gtk::make_managed<Gtk::Label>(value_str);
             value_widget->set_halign(Gtk::ALIGN_START);
             main_grid->attach(*value_widget, 1, i);
+
+            // Support clickable URLs in the value field
+            if (value_str.find("http://") == 0 ||
+                value_str.find("https://") == 0) {
+                value_widget->set_markup(
+                    "<a href=\"" + Glib::Markup::escape_text(value_str) +
+                    "\">" + Glib::Markup::escape_text(value_str) + "</a>");
+                value_widget->set_selectable(true);
+            }
         }
 
         get_content_area()->pack_start(*main_grid);
