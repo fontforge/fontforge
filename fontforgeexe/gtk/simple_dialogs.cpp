@@ -194,6 +194,7 @@ class ShowPropertiesDialog final : public DialogBase {
 
         get_content_area()->pack_start(*main_grid);
         show_all();
+        remove_cancel_button();
     }
 };
 
