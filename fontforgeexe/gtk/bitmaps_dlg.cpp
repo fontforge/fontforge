@@ -47,7 +47,7 @@ static std::string FormatBitmapSize(int px_size) {
 static std::string FormatBitmapSize(int px_size, double scale) {
     char decimal_point = ui_utils::get_decimal_point();
     char buffer[10];
-    sprintf(buffer, "%.1f", px_size * scale);
+    snprintf(buffer, sizeof(buffer), "%.1f", px_size * scale);
     return buffer;
 }
 
