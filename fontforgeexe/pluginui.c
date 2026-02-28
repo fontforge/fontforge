@@ -32,6 +32,7 @@
 #include "fontforgeui.h"
 #include "gkeysym.h"
 #include "plugin.h"
+#include "gtk/simple_dialogs.hpp"
 
 #include "assert.h"
 
@@ -74,7 +75,7 @@ static int PLUG_Info_OK(GGadget *g, GEvent *e) {
     return true;
 }
 
-static void PluginInfoDlg(PluginEntry *pe) {
+static void PluginInfoDlg(GWindow parent, PluginEntry *pe) {
     GRect pos;
     GWindow gw;
     GWindowAttrs wattrs;
@@ -85,6 +86,8 @@ static void PluginInfoDlg(PluginEntry *pe) {
     if (no_windowing_ui) {
         return;
     }
+
+    show_properties_dialog(parent);
 
     memset(&wattrs, 0, sizeof(wattrs));
     wattrs.mask = wam_events | wam_cursor | wam_utf8_wtitle | wam_undercursor | wam_isdlg | wam_restrict;
@@ -506,7 +509,7 @@ static int PLUG_PluginOp(GGadget *g, GEvent *e) {
             GListDelSelected(list);
         PLUG_EnableButtons(d);
     } else if (cid == CID_MoreInfo) {
-        PluginInfoDlg(pe);
+        PluginInfoDlg(GGadgetGetWindow(g), pe);
     } else if (cid == CID_Load) {
         if (pe->entrypoint != NULL) {
             LoadPlugin(pe);

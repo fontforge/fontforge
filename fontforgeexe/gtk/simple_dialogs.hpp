@@ -46,6 +46,8 @@ int add_encoding_slots_dialog(GWindow parent, bool cid);
 char* language_list_dialog(GWindow parent, const LanguageRec* languages,
                            const char* initial_tags);
 
+void show_properties_dialog(GWindow parent);
+
 void update_appearance();
 
 #ifdef __cplusplus

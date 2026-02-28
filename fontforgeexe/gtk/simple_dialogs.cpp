@@ -166,6 +166,54 @@ char* language_list_dialog(GWindow parent, const LanguageRec* languages,
     }
 }
 
+namespace ff::dlg {
+
+// A simple dialog to query the user for a number of new encoding slots to add.
+class ShowPropertiesDialog final : public DialogBase {
+ public:
+    Gtk::SpinButton* input;
+
+    ShowPropertiesDialog(
+        GWindow parent, const std::string& title,
+        const std::vector<std::pair<std::string /*label*/,
+                                    std::string /*value*/>>& properties)
+        : DialogBase(parent) {
+        set_title(title);
+        set_resizable(false);
+
+        auto main_grid = Gtk::make_managed<Gtk::Grid>();
+        for (size_t i = 0; i < properties.size(); ++i) {
+            const auto& [label, value] = properties[i];
+
+            auto label_widget = Gtk::make_managed<Gtk::Label>(label);
+            label_widget->set_halign(Gtk::ALIGN_START);
+            main_grid->attach(*label_widget, 0, i);
+
+            auto value_widget = Gtk::make_managed<Gtk::Label>(value);
+            value_widget->set_halign(Gtk::ALIGN_START);
+            main_grid->attach(*value_widget, 1, i);
+        }
+
+        get_content_area()->pack_start(*main_grid);
+        show_all();
+    }
+};
+
+}  // namespace ff::dlg
+
+// Shim for the C code to call the dialog
+void show_properties_dialog(GWindow parent) {
+    // To avoid instability, the GTK application is lazily initialized only when
+    // a GTK window is invoked.
+    ff::app::GtkApp();
+
+    std::string title("test title");
+    std::vector<std::pair<std::string /*label*/, std::string /*value*/>>
+        properties = {{"label1", "prop1"}, {"lab2", "property2"}};
+    ff::dlg::ShowPropertiesDialog dlg(parent, title, properties);
+    dlg.run();
+}
+
 void update_appearance() {
     ff::app::GtkApp();
     ff::app::load_legacy_style();
