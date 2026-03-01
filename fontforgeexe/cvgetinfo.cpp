@@ -42,6 +42,7 @@ extern "C" {
 #include "tottfgpos.h"
 #include "ustring.h"
 #include "utype.h"
+#include "gtk/simple_dialogs.hpp"
 
 #include <math.h>
 
@@ -649,99 +650,26 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
     GDrawDestroyWindow(gi.gw);
 }
 
-static void ImgGetInfo(CharView *cv, ImageList *img) {
-    static GIData gi;
-    GRect pos;
-    GWindowAttrs wattrs;
-    GGadgetCreateData gcd[12], boxes[3], *varray[11], *harray[6];
-    GTextInfo label[12];
+static void ImgGetInfo(CharView* cv, ImageList* img) {
     char posbuf[100], scalebuf[100], sizebuf[100];
-    struct _GImage *base = img->image->list_len==0?
-	    img->image->u.image:img->image->u.images[0];
+    struct _GImage* base = img->image->list_len == 0 ? img->image->u.image
+                                                     : img->image->u.images[0];
 
-    gi.cv = cv;
-    gi.sc = cv->b.sc;
-    gi.img = img;
-    gi.done = false;
+    snprintf(posbuf, sizeof(posbuf), "(%.0f, %.0f)", (double)img->xoff,
+             (double)(img->yoff - GImageGetHeight(img->image) * img->yscale));
 
-	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = (window_attr_mask)(wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict);
-	wattrs.event_masks = ~(1<<et_charup);
-	wattrs.restrict_input_to_me = 1;
-	wattrs.undercursor = 1;
-	wattrs.cursor = ct_pointer;
-	wattrs.utf8_window_title = _("Image Info");
-	wattrs.is_dlg = true;
-	pos.x = pos.y = 0;
-	pos.width = GGadgetScale(GDrawPointsToPixels(NULL,II_Width));
-	pos.height = GDrawPointsToPixels(NULL,II_Height);
-	gi.gw = GDrawCreateTopWindow(NULL,&pos,gi_e_h,&gi,&wattrs);
+    snprintf(scalebuf, sizeof(scalebuf), "(%.2f, %.2f)", (double)img->xscale,
+             (double)img->yscale);
 
-	memset(&gcd,0,sizeof(gcd));
-	memset(&label,0,sizeof(label));
+    snprintf(sizebuf, sizeof(sizebuf), _("%d x %d pixels"), (int)base->width,
+             (int)base->height);
 
-	sprintf( posbuf, _("Image at:      (%.0f,%.0f)"), (double) img->xoff,
-		(double) (img->yoff-GImageGetHeight(img->image)*img->yscale));
-	label[0].text = (unichar_t *) posbuf;
-	label[0].text_is_1byte = true;
-	gcd[0].gd.label = &label[0];
-	gcd[0].gd.pos.x = 5; gcd[0].gd.pos.y = 5;
-	gcd[0].gd.flags = gg_enabled|gg_visible;
-	gcd[0].creator = GLabelCreate;
-	varray[0] = &gcd[0]; varray[1] = NULL;
-
-	sprintf( scalebuf, _("Scaled by:    (%.2f,%.2f)"), (double) img->xscale, (double) img->yscale );
-	label[1].text = (unichar_t *) scalebuf;
-	label[1].text_is_1byte = true;
-	gcd[1].gd.label = &label[1];
-	gcd[1].gd.pos.x = 5; gcd[1].gd.pos.y = 19;
-	gcd[1].gd.flags = gg_enabled|gg_visible;
-	gcd[1].creator = GLabelCreate;
-	varray[2] = &gcd[1]; varray[3] = NULL;
-
-	sprintf( sizebuf, _("Image Size:  %d x %d  pixels"), (int) base->width, (int) base->height );
-	label[2].text = (unichar_t *) sizebuf;
-	label[2].text_is_1byte = true;
-	gcd[2].gd.label = &label[2];
-	gcd[2].gd.pos.x = 5; gcd[2].gd.pos.y = 19;
-	gcd[2].gd.flags = gg_enabled|gg_visible;
-	gcd[2].creator = GLabelCreate;
-	varray[4] = &gcd[2]; varray[5] = NULL;
-	varray[6] = GCD_Glue; varray[7] = NULL;
-
-	gcd[3].gd.pos.x = (II_Width-GIntGetResource(_NUM_Buttonsize)*100/GIntGetResource(_NUM_ScaleFactor)-6)/2; gcd[3].gd.pos.y = II_Height-32-3;
-	gcd[3].gd.pos.width = -1; gcd[3].gd.pos.height = 0;
-	gcd[3].gd.flags = gg_visible | gg_enabled | gg_but_default | gg_but_cancel;
-	label[3].text = (unichar_t *) _("_OK");
-	label[3].text_is_1byte = true;
-	label[3].text_in_resource = true;
-	gcd[3].gd.mnemonic = 'O';
-	gcd[3].gd.label = &label[3];
-	gcd[3].gd.handle_controlevent = GI_Cancel;
-	gcd[3].creator = GButtonCreate;
-	harray[0] = GCD_Glue; harray[1] = &gcd[3]; harray[2] = GCD_Glue; harray[3] = NULL;
-	varray[8] = &boxes[2]; varray[9] = NULL;
-	varray[10] = NULL;
-
-	memset(boxes,0,sizeof(boxes));
-	boxes[0].gd.pos.x = boxes[0].gd.pos.y = 2;
-	boxes[0].gd.flags = gg_enabled|gg_visible;
-	boxes[0].gd.u.boxelements = varray;
-	boxes[0].creator = GHVGroupCreate;
-
-	boxes[2].gd.flags = gg_enabled|gg_visible;
-	boxes[2].gd.u.boxelements = harray;
-	boxes[2].creator = GHBoxCreate;
-
-	GGadgetsCreate(gi.gw,boxes);
-	GHVBoxSetExpandableRow(boxes[0].ret,gb_expandglue);
-	GHVBoxSetExpandableCol(boxes[2].ret,gb_expandglue);
-	GHVBoxFitWindow(boxes[0].ret);
-
-    GDrawSetVisible(gi.gw,true);
-    while ( !gi.done )
-	GDrawProcessOneEvent(NULL);
-    GDrawDestroyWindow(gi.gw);
+    PropertyVec properties = {
+        {_("Image at:"), posbuf},
+        {_("Scaled by:"), scalebuf},
+        {_("Image Size:"), sizebuf},
+    };
+    show_properties_dialog(cv->gw, _("Image Info"), properties);
 }
 
 static AnchorClass *_AnchorClassUnused(SplineChar *sc,int *waslig, int classmatch) {
