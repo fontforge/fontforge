@@ -168,7 +168,7 @@ static const char *uc_accent_names[] = {
     "Diaeresis",
     NULL,
     "Ring",
-    "Acute",
+    "Hungarumlaut",  /* was incorrectly "Acute" - fixes #4892 */
     "Caron"
 };
 
