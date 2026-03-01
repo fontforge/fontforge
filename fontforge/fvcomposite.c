@@ -1784,7 +1784,10 @@ static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
 		(             GetChar(sf,*apt,dot) ==NULL || SCDependsOnSC(GetChar(sf,*apt,dot),destination)) &&
 		(dot==NULL || GetChar(sf,*apt,NULL)==NULL || SCDependsOnSC(GetChar(sf,*apt,NULL),destination)) )
 	    ++apt;
-	if ( *apt!='\0' && apt<end && PreferSpacingAccents)
+	/* Use spacing accent if found. We enter this branch when either
+	 * PreferSpacingAccents is true OR the combining accent doesn't exist,
+	 * so using the spacing accent is correct in both cases. */
+	if ( *apt!='\0' && apt<end )
 	    ach = *apt;
 	else if ( haschar(sf,uni,dot) && !SCDependsOnSC(GetChar(sf,uni,dot),destination))
 	    ach = uni;
