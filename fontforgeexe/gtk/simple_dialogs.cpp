@@ -168,7 +168,7 @@ char* language_list_dialog(GWindow parent, const LanguageRec* languages,
 
 namespace ff::dlg {
 
-// A simple dialog to query the user for a number of new encoding slots to add.
+// A simple dialog to display properties as name-value pairs.
 class ShowPropertiesDialog final : public DialogBase {
  public:
     Gtk::SpinButton* input;
@@ -210,7 +210,6 @@ class ShowPropertiesDialog final : public DialogBase {
 
 }  // namespace ff::dlg
 
-// Shim for the C code to call the dialog
 void show_properties_dialog(GWindow parent, const L10nText& title,
                             const PropertyVec& properties) {
     // To avoid instability, the GTK application is lazily initialized only when
