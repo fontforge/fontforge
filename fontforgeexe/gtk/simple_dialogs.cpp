@@ -180,6 +180,8 @@ class ShowPropertiesDialog final : public DialogBase {
         set_resizable(false);
 
         auto main_grid = Gtk::make_managed<Gtk::Grid>();
+        main_grid->set_column_spacing(ff::ui_utils::ui_font_em_size());
+
         for (size_t i = 0; i < properties.size(); ++i) {
             const auto& [label, value] = properties[i];
 

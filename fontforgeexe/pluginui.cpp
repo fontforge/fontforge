@@ -75,7 +75,7 @@ static void PluginInfoDlg(GWindow parent, PluginEntry* pe) {
          pe->package_url == NULL ? _("[Unknown]") : pe->package_url},
         {_("Summary:"), pe->summary == NULL ? _("[Unknown]") : pe->summary},
     };
-    show_properties_dialog(parent, _("Plugin Configuration"), properties);
+    show_properties_dialog(parent, _("Plugin Information"), properties);
 }
 
 struct plg_data {
