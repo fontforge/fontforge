@@ -24,7 +24,7 @@ if(ENABLE_GUI)
     cvdgloss.c
     cvexportdlg.c
     cvfreehand.c
-    cvgetinfo.c
+    cvgetinfo.cpp
     cvgridfit.c
     cvhand.c
     cvhints.c

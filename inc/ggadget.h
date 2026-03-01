@@ -184,6 +184,12 @@ enum gg_flags { gg_visible=1, gg_enabled=2, gg_pos_in_pixels=4,
 		gg_flow_noalignlabel = gg_tabset_scroll
 };
 
+#ifdef __cplusplus
+static inline enum gg_flags operator|(enum gg_flags lhs, enum gg_flags rhs) {
+    return (enum gg_flags) ((int) lhs | (int) rhs);
+}
+#endif
+
 typedef struct ggadgetdata {
     GRect pos;
     GBox *box;

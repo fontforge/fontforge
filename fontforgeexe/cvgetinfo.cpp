@@ -27,10 +27,12 @@
 
 #include <fontforge-config.h>
 
-#include "cvundoes.h"
-#include "dlist.h"
+extern "C" {
 #include "fontforgeui.h"
 #include "gkeysym.h"
+}
+#include "cvundoes.h"
+#include "dlist.h"
 #include "lookups.h"
 #include "parsettf.h"
 #include "spiro.h"
@@ -137,7 +139,7 @@ typedef struct gidata {
 
 static int GI_Cancel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	ci->done = true;
     }
 return( true );
@@ -145,7 +147,7 @@ return( true );
 
 static int GI_TransChange(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	ci->changed = true;
     }
 return( true );
@@ -153,7 +155,7 @@ return( true );
 
 static int GI_MatchPtChange(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	const unichar_t *t1 = _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_Match_Pt_Base));
 	const unichar_t *t2 = _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_Match_Pt_Ref));
 	while ( *t1==' ' ) ++t1;
@@ -181,7 +183,7 @@ return( true );
 static int GI_ROK_Do(GIData *ci) {
     int errs=false,i;
     real trans[6];
-    SplinePointList *spl, *new;
+    SplinePointList *spl, *new_spl;
     RefChar *ref = ci->rf, *subref;
     int usemy = GGadgetIsChecked(GWidgetGetControl(ci->gw,6+1000));
     int round = GGadgetIsChecked(GWidgetGetControl(ci->gw,7+1000));
@@ -252,13 +254,13 @@ return( true );		/* Didn't really change */
     if ( ref->layers[0].splines!=NULL )
 	for ( spl = ref->layers[0].splines; spl->next!=NULL; spl = spl->next );
     for ( subref = ref->sc->layers[ly_fore].refs; subref!=NULL; subref=subref->next ) {
-	new = SplinePointListTransform(SplinePointListCopy(subref->layers[0].splines),trans,tpt_AllPoints);
+	new_spl = SplinePointListTransform(SplinePointListCopy(subref->layers[0].splines),trans,tpt_AllPoints);
 	if ( spl==NULL )
-	    ref->layers[0].splines = new;
+	    ref->layers[0].splines = new_spl;
 	else
-	    spl->next = new;
-	if ( new!=NULL )
-	    for ( spl = new; spl->next!=NULL; spl = spl->next );
+	    spl->next = new_spl;
+	if ( new_spl!=NULL )
+	    for ( spl = new_spl; spl->next!=NULL; spl = spl->next );
     }
     ref->use_my_metrics = usemy;
     ref->round_translation_to_grid = round;
@@ -273,7 +275,7 @@ return( true );
 
 static int GI_ROK(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	if ( GI_ROK_Do(ci))
 	    ci->done = true;
     }
@@ -282,7 +284,7 @@ return( true );
 
 static int GI_Show(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	if ( ci->changed ) {
 	    char *buts[4];
 	    int ans;
@@ -306,7 +308,7 @@ return( true );
 
 static int gi_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
-	GIData *ci = GDrawGetUserData(gw);
+	GIData *ci = (GIData *)GDrawGetUserData(gw);
 	ci->done = true;
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
@@ -342,7 +344,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
     gi.done = false;
 
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.mask = (window_attr_mask)(wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict);
 	wattrs.event_masks = ~(1<<et_charup);
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
@@ -423,7 +425,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	label[6+j].text_is_1byte = true;
 	gcd[6+j].gd.label = &label[6+j];
 	gcd[6+j].gd.pos.x = 5; gcd[6+j].gd.pos.y = gcd[6+j-1].gd.pos.y+21;
-	gcd[6+j].gd.flags = gg_enabled|gg_visible| (ref->use_my_metrics?gg_cb_on:0);
+	gcd[6+j].gd.flags = gg_enabled|gg_visible| (gg_flags)(ref->use_my_metrics?gg_cb_on:0);
 	gcd[i+j].gd.cid = 6+1000;
 	gcd[6+j].gd.popup_msg = _("Only relevant in a truetype font, this flag indicates that the width\nof the composite glyph should be the same as the width of this reference.");
 	varray[l++] = &gcd[6+j];
@@ -434,7 +436,7 @@ static void RefGetInfo(CharView *cv, RefChar *ref) {
 	label[6+j].text_is_1byte = true;
 	gcd[6+j].gd.label = &label[6+j];
 	gcd[6+j].gd.pos.x = 5; gcd[6+j].gd.pos.y = gcd[6+j-1].gd.pos.y+14;
-	gcd[6+j].gd.flags = gg_enabled|gg_visible| (ref->round_translation_to_grid?gg_cb_on:0);
+	gcd[6+j].gd.flags = gg_enabled|gg_visible| (gg_flags)(ref->round_translation_to_grid?gg_cb_on:0);
 	gcd[i+j].gd.cid = 7+1000;
 	gcd[6+j].gd.popup_msg = _("Only relevant in a truetype font, this flag indicates that if the reference\nis translated, then the translation should be rounded during grid fitting.");
 	varray[l++] = &gcd[6+j];
@@ -663,7 +665,7 @@ static void ImgGetInfo(CharView *cv, ImageList *img) {
     gi.done = false;
 
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.mask = (window_attr_mask)(wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict);
 	wattrs.event_masks = ~(1<<et_charup);
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
@@ -798,7 +800,7 @@ static AnchorPoint *AnchorPointNew(CharView *cv) {
 
     if ( an==NULL )
 return(NULL);
-    ap = chunkalloc(sizeof(AnchorPoint));
+    ap = (AnchorPoint *)chunkalloc(sizeof(AnchorPoint));
     ap->anchor = an;
     ap->me.x = cv->p.cx; /* cv->p.cx = 0; */
     ap->me.y = cv->p.cy; /* cv->p.cy = 0; */
@@ -947,7 +949,7 @@ return;
     GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_Y),!ap->has_ttf_pt);
 
     AI_DisplayClass(ci,ap);
-    AI_DisplayRadio(ci,ap->type);
+    AI_DisplayRadio(ci,(anchor_type)ap->type);
 
     AI_SelectList(ci,ap);
     SCUpdateAll(ci->sc);
@@ -955,7 +957,7 @@ return;
 
 static int AI_Next(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 
 	if ( ci->ap->next==NULL )
 return( true );
@@ -966,7 +968,7 @@ return( true );
 
 static int AI_Prev(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	AnchorPoint *ap, *prev;
 
 	prev = NULL;
@@ -982,7 +984,7 @@ return( true );
 static int AI_Ok(GGadget *g, GEvent *e);
 static int AI_Delete(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	AnchorPoint *ap, *prev, *delete_it;
 
 	prev=NULL;
@@ -1036,19 +1038,19 @@ static GTextInfo **AnchorClassesLList(SplineFont *sf) {
     if ( sf->cidmaster ) sf=sf->cidmaster;
 
     for ( cnt=0, an=sf->anchor; an!=NULL; ++cnt, an=an->next );
-    ti = calloc(cnt+1,sizeof(GTextInfo*));
+    ti = (GTextInfo**)calloc(cnt+1,sizeof(GTextInfo*));
     for ( cnt=0, an=sf->anchor; an!=NULL; ++cnt, an=an->next ) {
-	ti[cnt] = calloc(1,sizeof(GTextInfo));
+	ti[cnt] = (GTextInfo*)calloc(1,sizeof(GTextInfo));
 	ti[cnt]->text = utf82u_copy(an->name);
 	ti[cnt]->fg = ti[cnt]->bg = COLOR_DEFAULT;
 	ti[cnt]->userdata = an;
     }
-    ti[cnt] = calloc(1,sizeof(GTextInfo));
+    ti[cnt] = (GTextInfo*)calloc(1,sizeof(GTextInfo));
 return( ti );
 }
 
 static int AI_NewClass(GGadget *g, GEvent *e) {
-    GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+    GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
     SplineFont *sf = ci->sc->parent;
     AnchorClass *ac;
     GTextInfo **ti;
@@ -1066,7 +1068,7 @@ return( true );
 
 static int AI_New(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	int waslig;
 	AnchorPoint *ap;
 	SplineFont *sf = ci->sc->parent;
@@ -1087,7 +1089,7 @@ return( true );
 
 static int AI_TypeChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	AnchorPoint *ap = ci->ap;
 
 	if ( GGadgetIsChecked(GWidgetGetControl(ci->gw,CID_Mark)) )
@@ -1132,7 +1134,7 @@ return;
 
 static int AI_LigIndexChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	int index, max;
 	int err=false;
 	AnchorPoint *ap = ci->ap, *aps;
@@ -1168,10 +1170,10 @@ return( true );
 
 static int AI_ANameChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	AnchorPoint *ap;
 	GTextInfo *ti = GGadgetGetListItemSelected(g);
-	AnchorClass *an = ti->userdata;
+	AnchorClass *an = (AnchorClass *)ti->userdata;
 	int change=0, max=0;
 	int ntype;
 	int sawentry, sawexit;
@@ -1234,7 +1236,7 @@ return( true );			/* No op */
 	    }
 	    if ( ci->ap->type!=ntype ) {
 		ci->ap->type = ntype;
-		AI_DisplayRadio(ci,ntype);
+		AI_DisplayRadio(ci,(anchor_type)ntype);
 	    }
 	    if ( ci->ap->type!=at_baselig )
 		ci->ap->lig_index = 0;
@@ -1252,7 +1254,7 @@ return( true );
 
 static int AI_PosChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	real dx=0, dy=0;
 	int err=false;
 	AnchorPoint *ap = ci->ap;
@@ -1273,7 +1275,7 @@ return( true );
 
 static int AI_MatchChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	const unichar_t *t1 = _GGadgetGetTitle(GWidgetGetControl(ci->gw,CID_MatchPt));
 	unichar_t *end;
 	AnchorPoint *ap = ci->ap;
@@ -1314,7 +1316,7 @@ static void AI_DoCancel(GIData *ci) {
 
 static int ai_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
-	AI_DoCancel( GDrawGetUserData(gw));
+	AI_DoCancel( (GIData *)GDrawGetUserData(gw));
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("ui/dialogs/getinfo.html", NULL);
@@ -1330,14 +1332,14 @@ return( true );
 
 static int AI_Cancel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	AI_DoCancel( GDrawGetUserData(GGadgetGetWindow(g)));
+	AI_DoCancel( (GIData *)GDrawGetUserData(GGadgetGetWindow(g)));
     }
 return( true );
 }
 
 static int AI_Ok(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	ci->done = true;
 	/* All the work has been done as we've gone along */
 	/* Well, we should reorder the list... */
@@ -1373,7 +1375,7 @@ return;
     gi.done = false;
 
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict;
+	wattrs.mask = (window_attr_mask)(wam_events|wam_cursor|wam_utf8_wtitle|wam_undercursor|wam_isdlg|wam_restrict);
 	wattrs.event_masks = ~(1<<et_charup);
 	wattrs.restrict_input_to_me = 1;
 	wattrs.undercursor = 1;
@@ -1813,7 +1815,7 @@ static void PI_FigureHintMask(GIData *ci) {
 	ci->cursp->hintmask = NULL;
     } else {
 	if ( ci->cursp->hintmask==NULL )
-	    ci->cursp->hintmask = chunkalloc(sizeof(HintMask));
+	    ci->cursp->hintmask = (HintMask*)chunkalloc(sizeof(HintMask));
 	else
 	    memset(ci->cursp->hintmask,0,sizeof(HintMask));
 	for ( i=0; i<len; ++i )
@@ -1853,7 +1855,7 @@ static void PI_Close(GIData *d) {
 
 static int PI_Cancel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	GIData *d = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *d = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	PI_DoCancel(d);
 	PI_Close(d);
     }
@@ -1871,7 +1873,7 @@ static void PI_DoOk(GIData *ci) {
 
 static int PI_Ok(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	PI_DoOk(ci);
     }
     return( true );
@@ -1879,7 +1881,7 @@ static int PI_Ok(GGadget *g, GEvent *e) {
 
 static int pi_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
-	PI_DoOk(GDrawGetUserData(gw));
+	PI_DoOk((GIData *)GDrawGetUserData(gw));
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("ui/dialogs/getinfo.html", NULL);
@@ -1893,7 +1895,7 @@ return( false );
 return( true );
 }
 
-static void mysprintf( char *buffer, char *format, real v) {
+static void mysprintf( char *buffer, const char *format, real v) {
     char *pt;
 
     if ( v<.0001 && v>-.0001 && v!=0 )
@@ -2125,7 +2127,7 @@ void PIChangePoint(GIData *ci) {
 
 static int PI_NextPrev(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	CharView *cv = ci->cv;
 	int cid = GGadgetGetCid(g);
 	SplinePointList *spl;
@@ -2184,7 +2186,7 @@ return( true );
 
 static int PI_InterpChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	SplinePoint *cursp = ci->cursp;
 
 	if ( GGadgetGetCid(g)==CID_Interpolated ) {
@@ -2225,7 +2227,7 @@ return( true );
 
 static int PI_NeverInterpChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	int never = GGadgetIsChecked(g);
 
 	GGadgetSetEnabled(GWidgetGetControl(ci->gw,CID_Interpolated),!never);
@@ -2240,7 +2242,7 @@ return( true );
 
 static int PI_BaseChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	real dx=0, dy=0;
 	int err=false;
 	SplinePoint *cursp = ci->cursp;
@@ -2271,7 +2273,7 @@ return( true );
     } else if ( e->type==et_controlevent &&
 	    e->u.control.subtype == et_textfocuschanged &&
 	    e->u.control.u.tf_focus.gained_focus ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	PI_FigureNext(ci);
 	PI_FigurePrev(ci);
     }
@@ -2280,7 +2282,7 @@ return( true );
 
 static int PI_NextChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	real dx=0, dy=0;
 	int err=false;
 	SplinePoint *cursp = ci->cursp;
@@ -2348,7 +2350,7 @@ return( true );
     } else if ( e->type==et_controlevent &&
 	    e->u.control.subtype == et_textfocuschanged &&
 	    e->u.control.u.tf_focus.gained_focus ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	PI_FigureNext(ci);
     }
 return( true );
@@ -2356,7 +2358,7 @@ return( true );
 
 static int PI_PrevChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	real dx=0, dy=0;
 	int err=false;
 	SplinePoint *cursp = ci->cursp;
@@ -2424,7 +2426,7 @@ return( true );
     } else if ( e->type==et_controlevent &&
 	    e->u.control.subtype == et_textfocuschanged &&
 	    e->u.control.u.tf_focus.gained_focus ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	PI_FigurePrev(ci);
     }
 return( true );
@@ -2432,7 +2434,7 @@ return( true );
 
 static int PI_NextIntChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	real x=0, y=0;
 	int err=false;
 	SplinePoint *cursp = ci->cursp;
@@ -2455,7 +2457,7 @@ return( true );
     } else if ( e->type==et_controlevent &&
 	    e->u.control.subtype == et_textfocuschanged &&
 	    e->u.control.u.tf_focus.gained_focus ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	PI_FigureNext(ci);
     }
 return( true );
@@ -2463,7 +2465,7 @@ return( true );
 
 static int PI_PrevIntChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_textchanged ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	real x=0, y=0;
 	int err=false;
 	SplinePoint *cursp = ci->cursp;
@@ -2486,7 +2488,7 @@ return( true );
     } else if ( e->type==et_controlevent &&
 	    e->u.control.subtype == et_textfocuschanged &&
 	    e->u.control.u.tf_focus.gained_focus ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	PI_FigureNext(ci);
     }
 return( true );
@@ -2494,7 +2496,7 @@ return( true );
 
 static int PI_NextDefChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	SplinePoint *cursp = ci->cursp;
 
 	cursp->nextcpdef = GGadgetIsChecked(g);
@@ -2516,7 +2518,7 @@ return( true );
 
 static int PI_PrevDefChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	SplinePoint *cursp = ci->cursp;
 
 	cursp->prevcpdef = GGadgetIsChecked(g);
@@ -2538,9 +2540,9 @@ return( true );
 
 static int PI_PTypeChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_radiochanged ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	SplinePoint *cursp = ci->cursp;
-	enum pointtype pt = GGadgetGetCid(g)-CID_Curve + pt_curve;
+	enum pointtype pt = (enum pointtype)(GGadgetGetCid(g)-CID_Curve + pt_curve);
 
 	if ( pt==cursp->pointtype ) {
 	    /* Can't happen */
@@ -2559,7 +2561,7 @@ return( true );
 
 static int PI_AspectChange(GGadget *g, GEvent *e) {
     if ( e==NULL || (e->type==et_controlevent && e->u.control.subtype == et_radiochanged )) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	int aspect = GTabSetGetSel(g);
 
 	_PI_ShowHints(ci,aspect==1);
@@ -2569,7 +2571,7 @@ return( true );
 
 static int PI_HintSel(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_listselected ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 
 	_PI_ShowHints(ci,true);
 
@@ -2622,7 +2624,7 @@ GTextInfo *SCHintList(SplineChar *sc,HintMask *hm) {
 
     for ( h=sc->hstem, i=0; h!=NULL; h=h->next, ++i );
     for ( h=sc->vstem     ; h!=NULL; h=h->next, ++i );
-    ti = calloc(i+1,sizeof(GTextInfo));
+    ti = (GTextInfo*)calloc(i+1,sizeof(GTextInfo));
 
     for ( h=sc->hstem, i=0; h!=NULL; h=h->next, ++i ) {
 	ti[i].fg = ti[i].bg = COLOR_DEFAULT;
@@ -2674,7 +2676,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
     GPoint pt;
     int j, defxpos, nextstarty, k, l;
 
-    gi = calloc(1,sizeof(GIData));
+    gi = (GIData*)calloc(1,sizeof(GIData));
 
     cur.main_background = nextcp.main_background = prevcp.main_background = COLOR_DEFAULT;
     cur.main_foreground = 0xff0000;
@@ -2692,7 +2694,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
     GDrawGetSize(root,&screensize);
 
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_positioned|wam_isdlg;
+	wattrs.mask = (window_attr_mask)(wam_events|wam_cursor|wam_utf8_wtitle|wam_positioned|wam_isdlg);
 	wattrs.event_masks = ~(1<<et_charup);
 	wattrs.restrict_input_to_me = 1;
 	wattrs.positioned = 1;
@@ -2724,7 +2726,7 @@ static void PointGetInfo(CharView *cv, SplinePoint *sp, SplinePointList *spl) {
 	memset(&pb,0,sizeof(pb));
 
 	j=k=0;
-	gi->gcd = malloc( gcdcount*sizeof(GGadgetCreateData) );
+	gi->gcd = (GGadgetCreateData *)malloc( gcdcount*sizeof(GGadgetCreateData) );
 	memcpy( gi->gcd, gcd, gcdcount*sizeof(GGadgetCreateData) );
 
 	label[j].text = (unichar_t *) _("_Normal");
@@ -3370,7 +3372,7 @@ static void SpiroChangePoint(GIData *ci) {
 
 static int PI_SpiroNextPrev(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	CharView *cv = ci->cv;
 	int cid = GGadgetGetCid(g);
 	SplinePointList *spl;
@@ -3430,7 +3432,7 @@ static int PI_SpiroChanged(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent &&
 	    (e->u.control.subtype == et_textchanged ||
 	     e->u.control.subtype == et_radiochanged)) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	double x,y;
 	int ty;
 	int err=false;
@@ -3460,7 +3462,7 @@ static void PI_SpiroDoOk(GIData *ci) {
 
 static int PI_SpiroOk(GGadget *g, GEvent *e) {
     if ( e->type==et_controlevent && e->u.control.subtype == et_buttonactivate ) {
-	GIData *ci = GDrawGetUserData(GGadgetGetWindow(g));
+	GIData *ci = (GIData *)GDrawGetUserData(GGadgetGetWindow(g));
 	PI_SpiroDoOk(ci);
     }
     return( true );
@@ -3468,7 +3470,7 @@ static int PI_SpiroOk(GGadget *g, GEvent *e) {
 
 static int spi_e_h(GWindow gw, GEvent *event) {
     if ( event->type==et_close ) {
-	PI_SpiroDoOk(GDrawGetUserData(gw));
+	PI_SpiroDoOk((GIData *)GDrawGetUserData(gw));
     } else if ( event->type==et_char ) {
 	if ( event->u.chr.keysym == GK_F1 || event->u.chr.keysym == GK_Help ) {
 	    help("ui/dialogs/getinfo.html", NULL);
@@ -3484,7 +3486,7 @@ return( true );
 
 static void SpiroPointGetInfo(CharView *cv, spiro_cp *scp, SplinePointList *spl) {
     CharViewTab* tab = CVGetActiveTab(cv);
-    GIData *gip = calloc(1, sizeof(GIData));
+    GIData *gip = (GIData*)calloc(1, sizeof(GIData));
     GRect pos;
     GWindowAttrs wattrs;
     GGadgetCreateData gcd[20];
@@ -3509,7 +3511,7 @@ static void SpiroPointGetInfo(CharView *cv, spiro_cp *scp, SplinePointList *spl)
     GDrawGetSize(root,&screensize);
 
 	memset(&wattrs,0,sizeof(wattrs));
-	wattrs.mask = wam_events|wam_cursor|wam_utf8_wtitle|wam_positioned|wam_isdlg|wam_restrict;
+	wattrs.mask = (window_attr_mask)(wam_events|wam_cursor|wam_utf8_wtitle|wam_positioned|wam_isdlg|wam_restrict);
 	wattrs.event_masks = ~(1<<et_charup);
 	wattrs.restrict_input_to_me = 1;
 	wattrs.positioned = 1;
@@ -3818,7 +3820,7 @@ void SCRefBy(SplineChar *sc) {
 	if ( cnt==0 )
 return;
 	if ( i==0 )
-	    deps = calloc(cnt+1,sizeof(unichar_t *));
+	    deps = (char **)calloc(cnt+1,sizeof(char *));
 	tot = cnt-1;
     }
 
@@ -3915,8 +3917,8 @@ return;
 	if ( tot==0 )
 return;
 	if ( j==0 ) {
-	    deps = calloc(tot+1,sizeof(char *));
-	    depsc = malloc(tot*sizeof(SplineChar *));
+	    deps = (char **)calloc(tot+1,sizeof(char *));
+	    depsc = (SplineChar **)malloc(tot*sizeof(SplineChar *));
 	}
     }
 
