@@ -409,7 +409,7 @@ void _PluginDlg(void) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 10;
     gcd[k].gd.pos.y = 6;
-    gcd[k].gd.flags = (gg_flags)(gg_enabled | gg_visible);
+    gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
     tradio[0] = &gcd[k - 1];
     tradio[1] = GCD_Glue;
@@ -418,7 +418,7 @@ void _PluginDlg(void) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_flags)(gg_visible | gg_enabled | (plugin_startup_mode == sm_on ? gg_cb_on : 0));
+    gcd[k].gd.flags = gg_visible | gg_enabled | (gg_flags)(plugin_startup_mode == sm_on ? gg_cb_on : 0);
     gcd[k].gd.u.radiogroup = 1;
     gcd[k].gd.popup_msg = _("When a new plugin is discovered it is recorded and activated");
     gcd[k].gd.cid = CID_SmOn;
@@ -429,7 +429,7 @@ void _PluginDlg(void) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_flags)(gg_visible | gg_enabled | (plugin_startup_mode == sm_off ? gg_cb_on : 0));
+    gcd[k].gd.flags = gg_visible | gg_enabled | (gg_flags)(plugin_startup_mode == sm_off ? gg_cb_on : 0);
     gcd[k].gd.u.radiogroup = 1;
     gcd[k].gd.popup_msg = _("When a new plugin is discovered it is recorded but not activated");
     gcd[k].gd.cid = CID_SmOff;
@@ -440,7 +440,7 @@ void _PluginDlg(void) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_flags)(gg_visible | gg_enabled | (plugin_startup_mode == sm_ask ? gg_cb_on : 0));
+    gcd[k].gd.flags = gg_visible | gg_enabled | (gg_flags)(plugin_startup_mode == sm_ask ? gg_cb_on : 0);
     gcd[k].gd.u.radiogroup = 1;
     gcd[k].gd.popup_msg = _("When a new plugin is discovered it is left unrecorded\nuntil configured in this dialog.");
     gcd[k].gd.cid = CID_SmAsk;
@@ -448,7 +448,7 @@ void _PluginDlg(void) {
     tradio[4] = &gcd[k - 1];
     tradio[5] = NULL;
 
-    boxes[2].gd.flags = (gg_flags)(gg_enabled | gg_visible);
+    boxes[2].gd.flags = gg_enabled | gg_visible;
     boxes[2].gd.u.boxelements = tradio;
     boxes[2].creator = GHBoxCreate;
 
@@ -458,14 +458,14 @@ void _PluginDlg(void) {
     gcd[k].gd.label = &label[k];
     gcd[k].gd.pos.x = 10;
     gcd[k].gd.pos.y = 6;
-    gcd[k].gd.flags = (gg_flags)(gg_enabled | gg_visible);
+    gcd[k].gd.flags = gg_enabled | gg_visible;
     gcd[k++].creator = GLabelCreate;
 
     label[k].text = (unichar_t *) _("_Top");
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_flags)(gg_visible | gg_enabled);
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.cid = CID_Top;
     gcd[k].gd.handle_controlevent = PLUG_PluginListOrder;
     gcd[k++].creator = GButtonCreate;
@@ -475,7 +475,7 @@ void _PluginDlg(void) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_flags)(gg_visible | gg_enabled);
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.cid = CID_Up;
     gcd[k].gd.handle_controlevent = PLUG_PluginListOrder;
     gcd[k++].creator = GButtonCreate;
@@ -485,7 +485,7 @@ void _PluginDlg(void) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_flags)(gg_visible | gg_enabled);
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.cid = CID_Down;
     gcd[k].gd.handle_controlevent = PLUG_PluginListOrder;
     gcd[k++].creator = GButtonCreate;
@@ -495,13 +495,13 @@ void _PluginDlg(void) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_flags)(gg_visible | gg_enabled);
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.cid = CID_Bottom;
     gcd[k].gd.handle_controlevent = PLUG_PluginListOrder;
     gcd[k++].creator = GButtonCreate;
     sbuttons[3] = &gcd[k - 1];
 
-    gcd[k].gd.flags = (gg_flags)(gg_visible | gg_enabled);
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k++].creator = GLineCreate;
     sbuttons[4] = &gcd[k - 1];
 
@@ -509,7 +509,7 @@ void _PluginDlg(void) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_flags)(gg_visible | gg_enabled);
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.cid = CID_Enable;
     gcd[k].gd.handle_controlevent = PLUG_PluginOp;
     gcd[k++].creator = GButtonCreate;
@@ -519,7 +519,7 @@ void _PluginDlg(void) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_flags)(gg_visible | gg_enabled);
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.cid = CID_Disable;
     gcd[k].gd.handle_controlevent = PLUG_PluginOp;
     gcd[k++].creator = GButtonCreate;
@@ -529,13 +529,13 @@ void _PluginDlg(void) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_flags)(gg_visible | gg_enabled);
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.cid = CID_Delete;
     gcd[k].gd.handle_controlevent = PLUG_PluginOp;
     gcd[k++].creator = GButtonCreate;
     sbuttons[7] = &gcd[k - 1];
 
-    gcd[k].gd.flags = (gg_flags)(gg_visible | gg_enabled);
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k++].creator = GLineCreate;
     sbuttons[8] = &gcd[k - 1];
 
@@ -543,7 +543,7 @@ void _PluginDlg(void) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_flags)(gg_visible | gg_enabled);
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.cid = CID_MoreInfo;
     gcd[k].gd.handle_controlevent = PLUG_PluginOp;
     gcd[k++].creator = GButtonCreate;
@@ -553,7 +553,7 @@ void _PluginDlg(void) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_flags)(gg_visible | gg_enabled);
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.cid = CID_Load;
     gcd[k].gd.handle_controlevent = PLUG_PluginOp;
     gcd[k++].creator = GButtonCreate;
@@ -563,7 +563,7 @@ void _PluginDlg(void) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_flags)(gg_visible | gg_enabled);
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.cid = CID_Web;
     gcd[k].gd.handle_controlevent = PLUG_PluginOp;
     gcd[k++].creator = GButtonCreate;
@@ -573,13 +573,13 @@ void _PluginDlg(void) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_flags)(gg_visible | gg_enabled);
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.cid = CID_Conf;
     gcd[k].gd.handle_controlevent = PLUG_PluginOp;
     gcd[k++].creator = GButtonCreate;
     sbuttons[12] = &gcd[k - 1];
 
-    gcd[k].gd.flags = (gg_flags)(gg_visible | gg_enabled);
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k++].creator = GLineCreate;
     sbuttons[13] = &gcd[k - 1];
 
@@ -587,7 +587,7 @@ void _PluginDlg(void) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_flags)(gg_visible | gg_enabled);
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.cid = CID_Revert;
     gcd[k].gd.handle_controlevent = PLUG_PluginOp;
     gcd[k++].creator = GButtonCreate;
@@ -596,11 +596,11 @@ void _PluginDlg(void) {
     sbuttons[15] = GCD_Glue;
     sbuttons[16] = NULL;
 
-    boxes[3].gd.flags = (gg_flags)(gg_enabled | gg_visible);
+    boxes[3].gd.flags = gg_enabled | gg_visible;
     boxes[3].gd.u.boxelements = sbuttons;
     boxes[3].creator = GVBoxCreate;
 
-    gcd[k].gd.flags = (gg_flags)(gg_visible | gg_enabled | gg_list_exactlyone);
+    gcd[k].gd.flags = gg_visible | gg_enabled | gg_list_exactlyone;
     gcd[k].gd.handle_controlevent = PLUG_PluginListChange;
     gcd[k].gd.cid = CID_PluginList;
     gcd[k].gd.pos.width = 200;
@@ -610,7 +610,7 @@ void _PluginDlg(void) {
     horiz[1] = &boxes[3];
     horiz[2] = NULL;
 
-    boxes[4].gd.flags = (gg_flags)(gg_enabled | gg_visible);
+    boxes[4].gd.flags = gg_enabled | gg_visible;
     boxes[4].gd.u.boxelements = horiz;
     boxes[4].creator = GHBoxCreate;
 
@@ -618,7 +618,7 @@ void _PluginDlg(void) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_flags)(gg_visible | gg_enabled);
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.cid = CID_OK;
     gcd[k].gd.handle_controlevent = PLUG_OK;
     gcd[k++].creator = GButtonCreate;
@@ -631,7 +631,7 @@ void _PluginDlg(void) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = (gg_flags)(gg_visible | gg_enabled);
+    gcd[k].gd.flags = gg_visible | gg_enabled;
     gcd[k].gd.cid = CID_Cancel;
     gcd[k].gd.handle_controlevent = PLUG_Cancel;
     gcd[k++].creator = GButtonCreate;
@@ -641,7 +641,7 @@ void _PluginDlg(void) {
     bbuttons[7] = GCD_Glue;
     bbuttons[8] = NULL;
 
-    boxes[5].gd.flags = (gg_flags)(gg_enabled | gg_visible);
+    boxes[5].gd.flags = gg_enabled | gg_visible;
     boxes[5].gd.u.boxelements = bbuttons;
     boxes[5].creator = GHBoxCreate;
 
@@ -651,7 +651,7 @@ void _PluginDlg(void) {
     vert[3] = &boxes[5];
     vert[4] = NULL;
 
-    boxes[0].gd.flags = (gg_flags)(gg_enabled | gg_visible);
+    boxes[0].gd.flags = gg_enabled | gg_visible;
     boxes[0].gd.u.boxelements = vert;
     boxes[0].creator = GVBoxCreate;
 
