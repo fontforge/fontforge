@@ -1845,7 +1845,11 @@ static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
 	    suffixes[scnt++] = "cap";
 
 	for ( i=0; test==NULL && i<scnt; ++i ) {
-	    if ( uni>=BottomAccent && uni<=TopAccent && (PreferSpacingAccents || !haschar(sf,uni,NULL)) ) {
+	    /* Always look for suffixed variants (.cap, .cyr, etc.) for uppercase
+	     * letters, regardless of PreferSpacingAccents setting. Having the
+	     * base combining accent (e.g. gravecomb) shouldn't prevent us from
+	     * finding the uppercase variant (e.g. gravecomb.cap). */
+	    if ( uni>=BottomAccent && uni<=TopAccent ) {
 		apt = accents[uni-BottomAccent]; end = apt+sizeof(accents[0])/sizeof(accents[0][0]);
 		while ( test==NULL && apt<end ) {
 		    int acc = *apt ? *apt : uni;
@@ -1863,8 +1867,8 @@ static SplineChar *GetGoodAccentGlyph(SplineFont *sf, int uni, int basech,
 		}
 	    }
 	}
-	if ( test==NULL && uni>=BottomAccent && uni<=TopAccent && isupper(basech) &&
-		(PreferSpacingAccents || !haschar(sf,uni,NULL)) ) {
+	/* Also look for capitalized accent names (e.g., Grave instead of grave) */
+	if ( test==NULL && uni>=BottomAccent && uni<=TopAccent && isupper(basech) ) {
 	    apt = accents[uni-BottomAccent]; end = apt+sizeof(accents[0])/sizeof(accents[0][0]);
 	    while ( test==NULL && apt<end ) {
 		int acc = *apt ? *apt : uni;
