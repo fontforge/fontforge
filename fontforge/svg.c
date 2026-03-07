@@ -1061,6 +1061,7 @@ int _ExportSVG(FILE *svg,SplineChar *sc,int layer,ExportParams *ep) {
     DBounds b;
     SplineChar *scc;
     SplineSet *orig;
+    RefChar *rf = NULL, *next = NULL;
 
     SplineCharLayerFindBounds(sc,layer,&b);
     if ( sc->parent!=NULL ) {
@@ -1099,6 +1100,12 @@ int _ExportSVG(FILE *svg,SplineChar *sc,int layer,ExportParams *ep) {
 	trans[5] = ascent;
 	if (sc->parent!=NULL) {
 	    scc = SplineCharCopy(sc, sc->parent, NULL);
+	    /* Unlink references before transforming the splines */
+	    for ( rf=scc->layers[layer].refs; rf!=NULL ; rf=next ) {
+		next = rf->next;
+		SCReinstanciateRefChar(scc,rf,layer);
+		SCRefToSplines(scc,rf,layer);
+	    }
 	    FVTrans(scc->parent->fv,scc,trans,NULL,
 	            fvt_nopreserve|fvt_dontmovewidth|fvt_noupdate);
 	} else {
