@@ -566,6 +566,7 @@ static void ProcessFileChooserPrefs(void) {
 #if _WIN32
     char *userProfile = getenv("USERPROFILE");
     unichar_t *u_userProfile = userProfile ? utf82u_copy(userProfile) : NULL;
+    u_GFileNormalizePath(u_userProfile);
 #endif
 
     GFileChooserSetShowHidden(gfc_showhidden);
