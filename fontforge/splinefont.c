@@ -770,7 +770,7 @@ return( name );
 #define TOC_NAME	"ff-archive-table-of-contents"
 
 char *Unarchive(char *name, char **_archivedir) {
-    char *dir = getenv("TMPDIR");
+    const char *dir = ff_get_tmp_dir();
     char *pt, *archivedir, *listfile, *desiredfile;
     char *finalfile;
     int i;
@@ -802,7 +802,6 @@ return( NULL );
 return( NULL );
     }
 
-    if ( dir==NULL ) dir = P_tmpdir;
     archivedir = malloc(strlen(dir)+100);
     sprintf( archivedir, "%s/ffarchive-%d-%d", dir, getpid(), ++cnt );
     if ( GFileMkDir(archivedir, 0755)!=0 ) {
@@ -880,7 +879,7 @@ static char *ForceFileToHaveName(FILE *file, const char *exten) {
     FILE *newfile;
 
     for (;;) {
-	sprintf( tmpfilename, "%s/fontforge%d-%d", P_tmpdir, getpid(), try++ );
+	sprintf( tmpfilename, "%s/fontforge%d-%d", ff_get_tmp_dir(), getpid(), try++ );
 	if ( exten!=NULL )
 	    strcat(tmpfilename,exten);
 	if ( ff_access( tmpfilename, F_OK )==-1 &&

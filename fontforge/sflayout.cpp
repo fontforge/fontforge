@@ -1341,8 +1341,7 @@ char *SFDefaultImage(SplineFont *sf,char *filename) {
 
     if ( filename==NULL ) {
 	static int cnt=0;
-	char *dir = getenv("TMPDIR");
-	if ( dir==NULL ) dir = P_tmpdir;
+	const char *dir = ff_get_tmp_dir();
 	filename = (char *)malloc(strlen(dir)+strlen(sf->fontname)+100);
 #ifdef _NO_LIBPNG
 	sprintf( filename, "%s/ff-preview-%s-%d-%d.bmp", dir, sf->fontname, getpid(), ++cnt );
