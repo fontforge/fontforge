@@ -644,6 +644,7 @@ struct archivers archivers[] = {
     { ".tbz2", "tar", "tar", "tfj", "xfj", "rfj", ars_tar },
     { ".tbz", "tar", "tar", "tfj", "xfj", "rfj", ars_tar },
 #ifdef _WIN32
+    /* In Windows 10/11 the built-in tar can handle zip files */
     { ".zip", "tar", "tar", "tfj", "xfj", "rfj", ars_tar },
 #else
     { ".zip", "unzip", "zip", "-Z1", "-q", "", ars_zip },
