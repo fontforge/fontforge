@@ -469,8 +469,12 @@ FFProcessResult ff_run_command(char** argv, const char* workdir,
 #endif
 
 #ifdef HAVE_POSIX
-    FFProcessResult r =
-        posix_chdir_run_command(argv, workdir, stdout_buf, stderr_buf);
+    FFProcessResult r = FF_PROCESS_OK;
+    if (workdir)
+        r = posix_chdir_run_command(argv, workdir, stdout_buf, stderr_buf);
+    else
+        r = posix_run_command(argv, stdout_buf, stderr_buf);
+
     if (r == FF_PROCESS_OK || r == FF_PROCESS_NOT_FOUND) {
         return r;
     }
