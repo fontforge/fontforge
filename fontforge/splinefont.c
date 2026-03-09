@@ -643,7 +643,11 @@ struct archivers archivers[] = {
     { ".tar.bz2", "tar", "tar", "tfj", "xfj", "rfj", ars_tar },
     { ".tbz2", "tar", "tar", "tfj", "xfj", "rfj", ars_tar },
     { ".tbz", "tar", "tar", "tfj", "xfj", "rfj", ars_tar },
+#ifdef _WIN32
+    { ".zip", "tar", "tar", "tfj", "xfj", "rfj", ars_tar },
+#else
     { ".zip", "unzip", "zip", "-Z1", "-q", "", ars_zip },
+#endif
     /* { ".tar.lzma", ? } */
     ARCHIVERS_EMPTY
 };
