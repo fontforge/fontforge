@@ -643,7 +643,12 @@ struct archivers archivers[] = {
     { ".tar.bz2", "tar", "tar", "tfj", "xfj", "rfj", ars_tar },
     { ".tbz2", "tar", "tar", "tfj", "xfj", "rfj", ars_tar },
     { ".tbz", "tar", "tar", "tfj", "xfj", "rfj", ars_tar },
-    { ".zip", "unzip", "zip", "-l", "", "", ars_zip },
+#ifdef _WIN32
+    /* In Windows 10/11 the built-in tar can handle zip files */
+    { ".zip", "tar", "tar", "tfj", "xfj", "rfj", ars_tar },
+#else
+    { ".zip", "unzip", "zip", "-Z1", "-q", "", ars_zip },
+#endif
     /* { ".tar.lzma", ? } */
     ARCHIVERS_EMPTY
 };
@@ -676,13 +681,10 @@ return( NULL );
     rewind(file);
 
     /* tar outputs its table of contents as a simple list of names */
-    /* zip includes a bunch of other info, headers (and lines for directories)*/
-
     linebuffer = malloc(linelenmax+3);
     fcnt = 0;
     files = malloc((nlcnt+1)*sizeof(char *));
 
-    if ( ars == ars_tar ) {
 	pt = linebuffer;
 	while ( (ch=getc(file))!=EOF ) {
 	    if ( ch=='\n' ) {
@@ -694,26 +696,6 @@ return( NULL );
 	    } else
 		*pt++ = ch;
 	}
-    } else {
-	/* Skip the first three lines, header info */
-	fgets(linebuffer,linelenmax+3,file);
-	fgets(linebuffer,linelenmax+3,file);
-	fgets(linebuffer,linelenmax+3,file);
-	pt = linebuffer;
-	while ( (ch=getc(file))!=EOF ) {
-	    if ( ch=='\n' ) {
-		*pt = '\0';
-		if ( linebuffer[0]==' ' && linebuffer[1]=='-' && linebuffer[2]=='-' )
-	break;		/* End of file list */
-		/* Blessed if I know what encoded was used for filenames */
-		/*  inside the zip file. I shall assume utf8, faut de mieux */
-		if ( pt-linebuffer>=28 && pt[-1]!='/' )
-		    files[fcnt++] = copy(linebuffer+28);
-		pt = linebuffer;
-	    } else
-		*pt++ = ch;
-	}
-    }
     files[fcnt] = NULL;
     fclose(file);
 
@@ -789,7 +771,7 @@ return( name );
 #define TOC_NAME	"ff-archive-table-of-contents"
 
 char *Unarchive(char *name, char **_archivedir) {
-    char *dir = getenv("TMPDIR");
+    const char *dir = ff_get_tmp_dir();
     char *pt, *archivedir, *listfile, *desiredfile;
     char *finalfile;
     int i;
@@ -821,7 +803,6 @@ return( NULL );
 return( NULL );
     }
 
-    if ( dir==NULL ) dir = P_tmpdir;
     archivedir = malloc(strlen(dir)+100);
     sprintf( archivedir, "%s/ffarchive-%d-%d", dir, getpid(), ++cnt );
     if ( GFileMkDir(archivedir, 0755)!=0 ) {
@@ -899,7 +880,7 @@ static char *ForceFileToHaveName(FILE *file, const char *exten) {
     FILE *newfile;
 
     for (;;) {
-	sprintf( tmpfilename, "%s/fontforge%d-%d", P_tmpdir, getpid(), try++ );
+	sprintf( tmpfilename, "%s/fontforge%d-%d", ff_get_tmp_dir(), getpid(), try++ );
 	if ( exten!=NULL )
 	    strcat(tmpfilename,exten);
 	if ( ff_access( tmpfilename, F_OK )==-1 &&

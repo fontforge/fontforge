@@ -196,17 +196,8 @@ return( head );
 #if !defined(__MINGW32__) && !defined(_MSC_VER)
 /* I think this is total paranoia. but it's annoying to have linker complaints... */
 static int mytempnam(char *buffer) {
-    char *dir;
     int fd;
-    /* char *old; */
-
-    if ( (dir=getenv("TMPDIR"))!=NULL )
-	strcpy(buffer,dir);
-#ifndef P_tmpdir
-#define P_tmpdir	"/tmp"
-#endif
-    else
-	strcpy(buffer,P_tmpdir);
+    strcpy(buffer,ff_get_tmp_dir());
     strcat(buffer,"/PfaEdXXXXXX");
     fd = mkstemp(buffer);
 return( fd );
@@ -214,17 +205,11 @@ return( fd );
 
 static char *mytempdir(void) {
     char buffer[1025];
-    char *dir, *eon;
+    char *eon;
     static int cnt=0;
     int tries=0;
 
-    if ( (dir=getenv("TMPDIR"))!=NULL )
-	strncpy(buffer,dir,sizeof(buffer)-1-5);
-#ifndef P_tmpdir
-#define P_tmpdir	"/tmp"
-#endif
-    else
-	strcpy(buffer,P_tmpdir);
+    strcpy(buffer,ff_get_tmp_dir());
     strcat(buffer,"/PfaEd");
     eon = buffer+strlen(buffer);
     while ( 1 ) {

@@ -20,6 +20,7 @@
 #include <ctype.h>
 #include <errno.h>
 #include <fontforge-config.h>
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -65,8 +66,8 @@ int ff_running_as_python_module(void) {
 
 #ifdef HAVE_POSIX
 
-static FFProcessResult posix_run_command(char** argv, const char* workdir,
-                                         char** stdout_buf, char** stderr_buf) {
+static FFProcessResult posix_run_command(char** argv, char** stdout_buf,
+                                         char** stderr_buf) {
     int stdout_pipe[2] = {-1, -1};
     int stderr_pipe[2] = {-1, -1};
     pid_t pid;
@@ -112,11 +113,6 @@ static FFProcessResult posix_run_command(char** argv, const char* workdir,
                                          STDERR_FILENO);
         posix_spawn_file_actions_addclose(&actions, stderr_pipe[1]);
     }
-
-    /* TODO: handle workdir - posix_spawn doesn't support it directly,
-     * would need posix_spawn_file_actions_addchdir_np on some systems
-     * or fall back to fork/exec */
-    (void)workdir;
 
     /* Spawn the process */
     int err = posix_spawnp(&pid, argv[0], &actions, NULL, argv, environ);
@@ -182,6 +178,25 @@ static FFProcessResult posix_run_command(char** argv, const char* workdir,
         result = FF_PROCESS_FAILED;
     }
 
+    return result;
+}
+
+static FFProcessResult posix_chdir_run_command(char** argv, const char* workdir,
+                                               char** stdout_buf,
+                                               char** stderr_buf) {
+    char current_dir[PATH_MAX];
+    if (getcwd(current_dir, sizeof(current_dir)) == NULL) {
+        return FF_PROCESS_FAILED;
+    }
+    if (chdir(workdir) != 0) {
+        return FF_PROCESS_FAILED;
+    }
+
+    FFProcessResult result = posix_run_command(argv, stdout_buf, stderr_buf);
+
+    if (chdir(current_dir) != 0) {
+        return FF_PROCESS_FAILED;
+    }
     return result;
 }
 
@@ -455,8 +470,12 @@ FFProcessResult ff_run_command(char** argv, const char* workdir,
 #endif
 
 #ifdef HAVE_POSIX
-    FFProcessResult r =
-        posix_run_command(argv, workdir, stdout_buf, stderr_buf);
+    FFProcessResult r = FF_PROCESS_OK;
+    if (workdir)
+        r = posix_chdir_run_command(argv, workdir, stdout_buf, stderr_buf);
+    else
+        r = posix_run_command(argv, stdout_buf, stderr_buf);
+
     if (r == FF_PROCESS_OK || r == FF_PROCESS_NOT_FOUND) {
         return r;
     }
