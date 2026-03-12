@@ -75,15 +75,6 @@
 #define lseek _lseek
 #define isatty _isatty
 
-/* P_tmpdir - POSIX temp directory path */
-static inline char* _ff_get_tmpdir(void) {
-    char* dir = getenv("TEMP");
-    if (dir == NULL) dir = getenv("TMP");
-    if (dir == NULL) dir = (char*)"C:\\Temp";
-    return dir;
-}
-#define P_tmpdir (_ff_get_tmpdir())
-
 /* MSVC doesn't have fork/exec - these would need separate handling */
 /* Files using these will need #ifndef _MSC_VER guards */
 
