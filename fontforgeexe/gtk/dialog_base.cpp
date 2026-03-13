@@ -118,6 +118,13 @@ void DialogBase::set_hints_horizontal_resize_only() {
                        Gdk::HINT_MIN_SIZE | Gdk::HINT_MAX_SIZE);
 }
 
+void DialogBase::remove_cancel_button() {
+    auto cancel_button = get_widget_for_response(Gtk::RESPONSE_CANCEL);
+    if (cancel_button) {
+        get_action_area()->remove(*cancel_button);
+    }
+}
+
 bool DialogBase::on_help_key_press(GdkEventKey* event) {
     if (event->keyval == GDK_KEY_F1 || event->keyval == GDK_KEY_Help) {
         help(help_file_.c_str(), help_section_.c_str());

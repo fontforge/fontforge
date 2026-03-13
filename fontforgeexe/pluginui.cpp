@@ -29,13 +29,16 @@
 
 #ifndef _NO_PYTHON
 
+extern "C" {
 #include "fontforgeui.h"
 #include "gkeysym.h"
+}
 #include "plugin.h"
+#include "gtk/simple_dialogs.hpp"
 
 #include "assert.h"
 
-extern GTextInfo *GTextInfoCopy(GTextInfo *ti);
+extern "C" GTextInfo *GTextInfoCopy(GTextInfo *ti);
 
 #define CID_SmOn         1000
 #define CID_SmOff        1001
@@ -56,202 +59,23 @@ extern GTextInfo *GTextInfoCopy(GTextInfo *ti);
 #define CID_OK           1016
 #define CID_Cancel       1017
 
-static int pluginfo_e_h(GWindow gw, GEvent *e) {
-    int *done = (int *) GDrawGetUserData(gw);
-    if (e->type == et_close) {
-        *done = true;
-    } else if (e->type == et_char && e->u.chr.keysym == GK_Return) {
-        *done = true;
-    }
-    return true;
-}
-
-static int PLUG_Info_OK(GGadget *g, GEvent *e) {
-    int *done = (int *) GDrawGetUserData(GGadgetGetWindow(g));
-    if (e->type == et_controlevent && e->u.control.subtype == et_buttonactivate) {
-        *done = true;
-    }
-    return true;
-}
-
-static void PluginInfoDlg(PluginEntry *pe) {
-    GRect pos;
-    GWindow gw;
-    GWindowAttrs wattrs;
-    GGadgetCreateData gcd[14], boxes[4], *hvgrid[7][4], *okgrid[7], *mgrid[3];
-    GTextInfo label[14];
-    int done = false, k;
-
+static void PluginInfoDlg(GWindow parent, PluginEntry* pe) {
     if (no_windowing_ui) {
         return;
     }
 
-    memset(&wattrs, 0, sizeof(wattrs));
-    wattrs.mask = wam_events | wam_cursor | wam_utf8_wtitle | wam_undercursor | wam_isdlg | wam_restrict;
-    wattrs.event_masks = ~(1 << et_charup);
-    wattrs.restrict_input_to_me = 1;
-    wattrs.undercursor = 1;
-    wattrs.cursor = ct_pointer;
-    wattrs.utf8_window_title = _("Plugin Configuration");
-    wattrs.is_dlg = true;
-    pos.x = pos.y = 0;
-    pos.width = GDrawPointsToPixels(NULL, GGadgetScale(400));
-    pos.height = 0;
-    gw = GDrawCreateTopWindow(NULL, &pos, pluginfo_e_h, &done, &wattrs);
-
-    memset(&gcd, 0, sizeof(gcd));
-    memset(&boxes, 0, sizeof(boxes));
-    memset(&hvgrid, 0, sizeof(hvgrid));
-    memset(&label, 0, sizeof(label));
-
-    k = 0;
-    label[k].text = (unichar_t *) _("Name:");
-    label[k].text_is_1byte = true;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible;
-    gcd[k++].creator = GLabelCreate;
-    hvgrid[0][0] = &gcd[k - 1];
-
-    label[k].text = (unichar_t *) pe->name;
-    label[k].text_is_1byte = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible;
-    gcd[k++].creator = GLabelCreate;
-    hvgrid[0][1] = &gcd[k - 1];
-    hvgrid[0][2] = GCD_ColSpan;
-    hvgrid[0][3] = NULL;
-
-    label[k].text = (unichar_t *) _("Package Name:");
-    label[k].text_is_1byte = true;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible;
-    gcd[k++].creator = GLabelCreate;
-    hvgrid[1][0] = &gcd[k - 1];
-
-    label[k].text = (unichar_t *)(pe->package_name == NULL ? "[Unknown]" : pe->package_name);
-    label[k].text_is_1byte = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible;
-    gcd[k++].creator = GLabelCreate;
-    hvgrid[1][1] = &gcd[k - 1];
-    hvgrid[1][2] = GCD_ColSpan;
-    hvgrid[1][3] = NULL;
-
-    label[k].text = (unichar_t *) _("Module Name:");
-    label[k].text_is_1byte = true;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible;
-    gcd[k++].creator = GLabelCreate;
-    hvgrid[2][0] = &gcd[k - 1];
-
-    label[k].text = (unichar_t *)(pe->module_name == NULL ? "[Unknown]" : pe->module_name);
-    label[k].text_is_1byte = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible;
-    gcd[k++].creator = GLabelCreate;
-    hvgrid[2][1] = &gcd[k - 1];
-    hvgrid[2][2] = GCD_ColSpan;
-    hvgrid[2][3] = NULL;
-
-    label[k].text = (unichar_t *) _("'attrs' (if any):");
-    label[k].text_is_1byte = true;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible;
-    gcd[k++].creator = GLabelCreate;
-    hvgrid[3][0] = &gcd[k - 1];
-
-    label[k].text = (unichar_t *)(pe->attrs == NULL ? "" : pe->attrs);
-    label[k].text_is_1byte = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible;
-    gcd[k++].creator = GLabelCreate;
-    hvgrid[3][1] = &gcd[k - 1];
-    hvgrid[3][2] = GCD_ColSpan;
-    hvgrid[3][3] = NULL;
-
-    label[k].text = (unichar_t *) _("Package URL:");
-    label[k].text_is_1byte = true;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible;
-    gcd[k++].creator = GLabelCreate;
-    hvgrid[4][0] = &gcd[k - 1];
-
-    label[k].text = (unichar_t *)(pe->package_url == NULL ? "[Unknown]" : pe->package_url);
-    label[k].text_is_1byte = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible;
-    gcd[k++].creator = GLabelCreate;
-    hvgrid[4][1] = &gcd[k - 1];
-    hvgrid[4][2] = GCD_ColSpan;
-    hvgrid[4][3] = NULL;
-
-    label[k].text = (unichar_t *) _("Summary:");
-    label[k].text_is_1byte = true;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible;
-    gcd[k++].creator = GLabelCreate;
-    hvgrid[5][0] = &gcd[k - 1];
-
-    label[k].text = (unichar_t *)(pe->summary == NULL ? "[Unknown]" : pe->summary);
-    label[k].text_is_1byte = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_enabled | gg_visible;
-    gcd[k++].creator = GLabelCreate;
-    hvgrid[5][1] = &gcd[k - 1];
-    hvgrid[5][2] = GCD_ColSpan;
-    hvgrid[5][3] = NULL;
-
-    hvgrid[6][0] = NULL;
-
-    boxes[2].gd.flags = gg_enabled | gg_visible;
-    boxes[2].gd.u.boxelements = hvgrid[0];
-    boxes[2].creator = GHVBoxCreate;
-
-    label[k].text = (unichar_t *) _("_OK");
-    label[k].text_is_1byte = true;
-    label[k].text_in_resource = true;
-    gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_visible | gg_enabled;
-    gcd[k].gd.cid = CID_OK;
-    gcd[k].gd.handle_controlevent = PLUG_Info_OK;
-    gcd[k++].creator = GButtonCreate;
-    okgrid[0] = GCD_Glue;
-    okgrid[1] = GCD_Glue;
-    okgrid[2] = &gcd[k - 1];
-    okgrid[3] = GCD_Glue;
-    okgrid[4] = GCD_Glue;
-    okgrid[5] = GCD_Glue;
-    okgrid[6] = NULL;
-
-    boxes[3].gd.flags = gg_enabled | gg_visible;
-    boxes[3].gd.u.boxelements = okgrid;
-    boxes[3].creator = GHBoxCreate;
-
-    mgrid[0] = &boxes[2];
-    mgrid[1] = &boxes[3];
-    mgrid[2] = NULL;
-
-    boxes[0].gd.flags = gg_enabled | gg_visible;
-    boxes[0].gd.u.boxelements = mgrid;
-    boxes[0].creator = GVBoxCreate;
-
-    GGadgetsCreate(gw, boxes);
-    GHVBoxSetPadding(boxes[2].ret, 5, 6);
-    GHVBoxFitWindow(boxes[0].ret);
-
-    GDrawSetVisible(gw, true);
-
-    while (!done) {
-        GDrawProcessOneEvent(NULL);
-    }
-
-    GDrawDestroyWindow(gw);
+    PropertyVec properties = {
+        {_("Name:"), pe->name},
+        {_("Package Name:"),
+         pe->package_name == NULL ? _("[Unknown]") : pe->package_name},
+        {_("Module Name:"),
+         pe->module_name == NULL ? _("[Unknown]") : pe->module_name},
+        {_("'attrs' (if any):"), pe->attrs == NULL ? "" : pe->attrs},
+        {_("Package URL:"),
+         pe->package_url == NULL ? _("[Unknown]") : pe->package_url},
+        {_("Summary:"), pe->summary == NULL ? _("[Unknown]") : pe->summary},
+    };
+    show_properties_dialog(parent, _("Plugin Information"), properties);
 }
 
 struct plg_data {
@@ -355,11 +179,11 @@ static void FigurePluginList(struct plg_data *d) {
         return;
     }
 
-    GTextInfo **ti = malloc((l + 1) * sizeof(GTextInfo *));
+    GTextInfo **ti = (GTextInfo **)malloc((l + 1) * sizeof(GTextInfo *));
     for (i = 0, p = plugin_data; p != NULL; ++i, p = p->next) {
         PluginEntry *pe = (PluginEntry *) p->data;
         pe->new_mode = pe->startup_mode;
-        ti[i] = calloc(1, sizeof(GTextInfo));
+        ti[i] = (GTextInfo *)calloc(1, sizeof(GTextInfo));
         ti[i]->text = pluginDescString(pe, &has_err);
         ti[i]->fg = ti[i]->bg = COLOR_DEFAULT;
         if (has_err) {
@@ -367,7 +191,7 @@ static void FigurePluginList(struct plg_data *d) {
         }
         ti[i]->userdata = pe;
     }
-    ti[i] = calloc(1, sizeof(GTextInfo));
+    ti[i] = (GTextInfo *)calloc(1, sizeof(GTextInfo));
     GGadgetSetList(list, ti, false);
 }
 
@@ -391,7 +215,7 @@ static void PLUG_EnableButtons(struct plg_data *d) {
 }
 
 static int PLUG_PluginListChange(GGadget *g, GEvent *e) {
-    struct plg_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+    struct plg_data *d = (struct plg_data *)GDrawGetUserData(GGadgetGetWindow(g));
     PLUG_EnableButtons(d);
     return true;
 }
@@ -399,42 +223,42 @@ static int PLUG_PluginListChange(GGadget *g, GEvent *e) {
 void GListMoveOneSelected(GGadget *list, int offset) {
     int32_t len;
     int i, pos = -1;
-    GTextInfo **old, **new, *tmp;
+    GTextInfo **old, **new_ti, *tmp;
 
     old = GGadgetGetList(list, &len);
-    new = calloc(len + 1, sizeof(GTextInfo *));
+    new_ti = (GTextInfo **)calloc(len + 1, sizeof(GTextInfo *));
     for (i = 0; i < len; i++) {
         if (old[i]->selected) {
             pos = i;
         }
-        new[i] = GTextInfoCopy(old[i]);
+        new_ti[i] = GTextInfoCopy(old[i]);
     }
-    new[len] = calloc(1, sizeof(GTextInfo));
+    new_ti[len] = (GTextInfo *)calloc(1, sizeof(GTextInfo));
     if (pos == -1 || pos == offset) {
-        GGadgetSetList(list, new, false);
+        GGadgetSetList(list, new_ti, false);
         return;
     }
     if (offset > pos) {
-        tmp = new[pos];
+        tmp = new_ti[pos];
         for (i = pos; i < offset; ++i) {
-            new[i] = new[i + 1];
+            new_ti[i] = new_ti[i + 1];
         }
-        new[offset] = tmp;
+        new_ti[offset] = tmp;
     } else {
-        tmp = new[pos];
+        tmp = new_ti[pos];
         for (i = pos; i > offset; --i) {
-            new[i] = new[i - 1];
+            new_ti[i] = new_ti[i - 1];
         }
-        new[offset] = tmp;
+        new_ti[offset] = tmp;
     }
-    GGadgetSetList(list, new, false);
+    GGadgetSetList(list, new_ti, false);
 }
 
 static int PLUG_PluginListOrder(GGadget *g, GEvent *e) {
     if ( e->type!=et_controlevent || e->u.control.subtype!=et_buttonactivate)
         return true;
 
-    struct plg_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+    struct plg_data *d = (struct plg_data *)GDrawGetUserData(GGadgetGetWindow(g));
     GGadget *list = GWidgetGetControl(d->gw, CID_PluginList);
     int cid = GGadgetGetCid(g);
     int pos = GGadgetGetFirstListSelectedItem(list), newpos, len;
@@ -474,7 +298,7 @@ static int PLUG_PluginOp(GGadget *g, GEvent *e) {
         return true;
     }
 
-    struct plg_data *d = GDrawGetUserData(GGadgetGetWindow(g));
+    struct plg_data *d = (struct plg_data *)GDrawGetUserData(GGadgetGetWindow(g));
     GGadget *list = GWidgetGetControl(d->gw, CID_PluginList);
     GTextInfo *i =  GGadgetGetListItemSelected(list);
     if (i == NULL) {
@@ -506,7 +330,7 @@ static int PLUG_PluginOp(GGadget *g, GEvent *e) {
             GListDelSelected(list);
         PLUG_EnableButtons(d);
     } else if (cid == CID_MoreInfo) {
-        PluginInfoDlg(pe);
+        PluginInfoDlg(GGadgetGetWindow(g), pe);
     } else if (cid == CID_Load) {
         if (pe->entrypoint != NULL) {
             LoadPlugin(pe);
@@ -558,7 +382,7 @@ void _PluginDlg(void) {
     }
 
     memset(&wattrs, 0, sizeof(wattrs));
-    wattrs.mask = wam_events | wam_cursor | wam_utf8_wtitle | wam_undercursor | wam_isdlg | wam_restrict;
+    wattrs.mask = (window_attr_mask)(wam_events | wam_cursor | wam_utf8_wtitle | wam_undercursor | wam_isdlg | wam_restrict);
     wattrs.event_masks = ~(1 << et_charup);
     wattrs.restrict_input_to_me = 1;
     wattrs.undercursor = 1;
@@ -594,7 +418,7 @@ void _PluginDlg(void) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_visible | gg_enabled | (plugin_startup_mode == sm_on ? gg_cb_on : 0);
+    gcd[k].gd.flags = gg_visible | gg_enabled | (gg_flags)(plugin_startup_mode == sm_on ? gg_cb_on : 0);
     gcd[k].gd.u.radiogroup = 1;
     gcd[k].gd.popup_msg = _("When a new plugin is discovered it is recorded and activated");
     gcd[k].gd.cid = CID_SmOn;
@@ -605,7 +429,7 @@ void _PluginDlg(void) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_visible | gg_enabled | (plugin_startup_mode == sm_off ? gg_cb_on : 0);
+    gcd[k].gd.flags = gg_visible | gg_enabled | (gg_flags)(plugin_startup_mode == sm_off ? gg_cb_on : 0);
     gcd[k].gd.u.radiogroup = 1;
     gcd[k].gd.popup_msg = _("When a new plugin is discovered it is recorded but not activated");
     gcd[k].gd.cid = CID_SmOff;
@@ -616,7 +440,7 @@ void _PluginDlg(void) {
     label[k].text_is_1byte = true;
     label[k].text_in_resource = true;
     gcd[k].gd.label = &label[k];
-    gcd[k].gd.flags = gg_visible | gg_enabled | (plugin_startup_mode == sm_ask ? gg_cb_on : 0);
+    gcd[k].gd.flags = gg_visible | gg_enabled | (gg_flags)(plugin_startup_mode == sm_ask ? gg_cb_on : 0);
     gcd[k].gd.u.radiogroup = 1;
     gcd[k].gd.popup_msg = _("When a new plugin is discovered it is left unrecorded\nuntil configured in this dialog.");
     gcd[k].gd.cid = CID_SmAsk;
