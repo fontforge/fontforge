@@ -4646,25 +4646,25 @@ struct flaglist strokeflags[] = {
 #define STROKE_OPTFORMAT "$ppppdddppss"
 #define STROKE_OPTARGS &si->removeinternal, &si->removeexternal, &si->extrema, &si->simplify, &si->accuracy_target, &si->joinlimit, &si->extendcap, &si->jlrelative, &si->ecrelative, &rostring, &acstring
 
-static char *strokekey_circ[]
+static const char *strokekey_circ[]
     = { "type", "width", "cap", "join", "angle", STROKE_OPTKEYS, NULL };
-static char *strokebkey_circ[]
+static const char *strokebkey_circ[]
     = { "type", "width", "cap", "join", "flags", NULL };
-static char *strokekey_ellip[]
+static const char *strokekey_ellip[]
     = { "type", "width", "minorwidth", "angle", "cap", "join", STROKE_OPTKEYS, NULL };
-static char *strokebkey_ellip[]
+static const char *strokebkey_ellip[]
     = { "type", "width", "minorwidth", "angle", "cap", "join", "flags", NULL };
-static char *strokekey_rect[]
+static const char *strokekey_rect[]
     = { "type", "width", "height", "angle", "cap", "join", STROKE_OPTKEYS, NULL };
-static char *strokebkey_rect[]
+static const char *strokebkey_rect[]
     = { "type", "width", "height", "angle", "flags", NULL };
-static char *strokekey_conv[]
+static const char *strokekey_conv[]
     = { "type", "contour", "angle", "cap", "join", STROKE_OPTKEYS, NULL };
-static char *strokebkey_conv[]
+static const char *strokebkey_conv[]
     = { "type", "contour", "flags", NULL };
 
 static int Stroke_Parse(StrokeInfo *si, PyObject *args, PyObject *keywds) {
-    char *type, *cap="nib", *join="nib", *rostring="layer",  *acstring="auto";
+    const char *type, *cap="nib", *join="nib", *rostring="layer",  *acstring="auto";
     const char *str;
     int c, j, f, r, a, toknum;
     PyObject *flagtuple=NULL;
@@ -4686,11 +4686,11 @@ static int Stroke_Parse(StrokeInfo *si, PyObject *args, PyObject *keywds) {
     if ( strcmp(str, "circular")==0 ) {
 	si->stroke_type = si_round;
 	if ( !PyArg_ParseTupleAndKeywords(args, keywds,
-                "sd|ssd" STROKE_OPTFORMAT, strokekey_circ, &type, &si->width,
+                "sd|ssd" STROKE_OPTFORMAT, (char**)strokekey_circ, &type, &si->width,
 		&cap, &join, &si->penangle, STROKE_OPTARGS) ) {
 	    PyErr_Clear();
 	    if ( !PyArg_ParseTupleAndKeywords(args, keywds, "sd|ssO",
-                strokebkey_circ, &type, &si->width,
+                (char**)strokebkey_circ, &type, &si->width,
 		&cap, &join, &flagtuple) ) {
 		PyErr_Format(PyExc_TypeError, "Wrong parameter set for "
 		                              "'circular' nib type" );
@@ -4701,12 +4701,12 @@ static int Stroke_Parse(StrokeInfo *si, PyObject *args, PyObject *keywds) {
                 || strcmp(str, "elliptical")==0 ) {
 	si->stroke_type = si_round;
 	if ( !PyArg_ParseTupleAndKeywords(args, keywds,
-                "sdd|dss" STROKE_OPTFORMAT, strokekey_ellip, &type,
+                "sdd|dss" STROKE_OPTFORMAT, (char**)strokekey_ellip, &type,
 	        &si->width, &si->height, &si->penangle, &cap, &join,
 	        STROKE_OPTARGS) ) {
 	    PyErr_Clear();
 	    if ( !PyArg_ParseTupleAndKeywords(args, keywds, "sddd|ssO",
-                strokebkey_ellip, &type, &si->width, &si->height,
+                (char**)strokebkey_ellip, &type, &si->width, &si->height,
 		&si->penangle, &cap, &join, &flagtuple) ) {
 		PyErr_Format(PyExc_TypeError, "Wrong parameter set for "
 		                              "'elliptical' nib type" );
@@ -4719,12 +4719,12 @@ static int Stroke_Parse(StrokeInfo *si, PyObject *args, PyObject *keywds) {
                 || strcmp(str, "square")==0 ) {
 	si->stroke_type = si_calligraphic;
 	if ( !PyArg_ParseTupleAndKeywords(args, keywds,
-                "sdd|dss" STROKE_OPTFORMAT, strokekey_rect, &type,
+                "sdd|dss" STROKE_OPTFORMAT, (char**)strokekey_rect, &type,
 	        &si->width, &si->height, &si->penangle, &cap, &join,
 	        STROKE_OPTARGS) ) {
 	    PyErr_Clear();
 	    if ( !PyArg_ParseTupleAndKeywords(args, keywds, "sddd|O",
-                strokebkey_rect, &type, &si->width, &si->height,
+                (char**)strokebkey_rect, &type, &si->width, &si->height,
 		&si->penangle, &flagtuple) ) {
 		PyErr_Format(PyExc_TypeError, "Wrong parameter set for "
 		                              "'calligraphic' nib type" );
@@ -4736,11 +4736,11 @@ static int Stroke_Parse(StrokeInfo *si, PyObject *args, PyObject *keywds) {
                 || strcmp(str, "polygonal")==0 ) {
 	si->stroke_type = si_nib;
 	if ( !PyArg_ParseTupleAndKeywords(args, keywds,
-                "sO|dss" STROKE_OPTFORMAT, strokekey_conv, &type,
+                "sO|dss" STROKE_OPTFORMAT, (char**)strokekey_conv, &type,
 	        &nib, &si->penangle, &cap, &join, STROKE_OPTARGS) ) {
 	    PyErr_Clear();
 	    if ( !PyArg_ParseTupleAndKeywords(args, keywds, "sO|O",
-                strokebkey_conv, &type, &nib, &flagtuple) ) {
+                (char**)strokebkey_conv, &type, &nib, &flagtuple) ) {
 		PyErr_Format(PyExc_TypeError, "Wrong parameter set for "
 		                              "'convex' nib type" );
 		return( -1 );
@@ -4835,7 +4835,7 @@ static int Stroke_Parse(StrokeInfo *si, PyObject *args, PyObject *keywds) {
 
 static int LayerArgToLayer(SplineFont *sf, PyObject* layerp);
 
-static char *layer_export_keywords[] = { "filename", "usetransform", "usesystem", "asksystem", NULL };
+static const char *layer_export_keywords[] = { "filename", "usetransform", "usesystem", "asksystem", NULL };
 
 static PyObject *PyFFLayer_export(PyFF_Layer *self, PyObject *args,
                                   PyObject *keywds) {
@@ -4851,7 +4851,7 @@ static PyObject *PyFFLayer_export(PyFF_Layer *self, PyObject *args,
     InitExportParams(&ep);
 
     if ( !PyArg_ParseTupleAndKeywords(args,keywds,"s|$ppp",
-                                      layer_export_keywords,&filename,
+                                      (char**)layer_export_keywords,&filename,
                                       &ep.use_transform, &use_system,
                                       &ask_system) )
 	return( NULL );
@@ -8791,7 +8791,7 @@ return(NULL);
 Py_RETURN( self );
 }
 
-static char *glyph_import_keywords[] = { "filename", "correctdir",
+static const char *glyph_import_keywords[] = { "filename", "correctdir",
     "simplify", "handle_clip", "handle_eraser", "scale", "accuracy",
     "default_joinlimit", "usesystem", "asksystem", "dimensions", NULL };
 
@@ -8820,7 +8820,7 @@ static PyObject *PyFFGlyph_import(PyObject *self, PyObject *args,
     InitImportParams(&ip);
 
     if ( !PyArg_ParseTupleAndKeywords(args, keywds,
-                "s|$pppppddppp", glyph_import_keywords, &filename,
+                "s|$pppppddppp", (char**)glyph_import_keywords, &filename,
                 &ip.correct_direction, &ip.simplify, &ip.clip, &ip.erasers,
                 &ip.scale, &ip.accuracy_target, &jl_tmp, &use_system,
 		&ask_system, &ip.dimensions) ) {
@@ -8892,7 +8892,7 @@ return(NULL);
 Py_RETURN( self );
 }
 
-static char *glyph_export_keywords[] = { "filename", "layer", "pixelsize",
+static const char *glyph_export_keywords[] = { "filename", "layer", "pixelsize",
     "bitdepth", "usetransform", "usesystem", "asksystem", NULL };
 
 static PyObject *PyFFGlyph_export(PyObject *self, PyObject *args,
@@ -8914,7 +8914,7 @@ static PyObject *PyFFGlyph_export(PyObject *self, PyObject *args,
     InitExportParams(&ep);
 
     if ( !PyArg_ParseTupleAndKeywords(args, keywds, "s|$Oiippp",
-                                      glyph_export_keywords, &filename,
+                                      (char**)glyph_export_keywords, &filename,
                                       &layerobj, &pixels, &bits,
                                       &ep.use_transform, &use_system,
                                       &ask_system) ) {

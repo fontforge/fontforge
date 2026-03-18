@@ -2686,7 +2686,6 @@ static void FigureNeeds(Monotonic *ms,int which, extended test, Monotonic **spac
     for ( i=0; space[i]!=NULL; ++i ) {
 	int needed;
 	Monotonic *m, *nm;
-	int is_new;
 	int nwinding, nnwinding, nneeded, nnew, niwinding, niew, nineeded, inneeded, inwinding, inew;
       /* retry: */
 	needed = false;

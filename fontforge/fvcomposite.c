@@ -1154,8 +1154,7 @@ return( greekalts );
 return( greekalts );
     }
 
-    if ( sf->uni_interp==ui_adobe && base>=0xf600 && base<=0xf7ff &&
-	    adobes_pua_alts[base-0xf600]!=0 )
+    if ( sf->uni_interp==ui_adobe && base>=0xf600 && base<=0xf7ff )
 return( adobes_pua_alts[base-0xf600]);
 
     if ( (upt = unialt(base))==NULL )
