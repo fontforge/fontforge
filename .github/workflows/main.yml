@@ -127,12 +127,16 @@ jobs:
           path: repo/build/osx/FontForge-*.dmg
 
   windows:
-    runs-on: windows-latest
+    runs-on: ${{ matrix.runner }}
     env:
       MSYS2_FC_CACHE_SKIP: true
     strategy:
       matrix:
-        arch: ["MINGW32", "MINGW64"]
+        include:
+          - arch: UCRT64
+            runner: windows-latest
+          - arch: CLANGARM64
+            runner: windows-11-arm
     steps:
       - uses: actions/checkout@v4
         with:
