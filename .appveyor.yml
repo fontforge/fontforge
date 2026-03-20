@@ -1,4 +1,4 @@
-image: Visual Studio 2019
+image: Visual Studio 2022
 platform:
   - x64
 branches:
@@ -10,8 +10,8 @@ environment:
     MBASH: C:\msys64\usr\bin\sh -lc
     MSYS2_FC_CACHE_SKIP: true
   matrix:
-    - MSYSTEM: MINGW32
-      MBITS: 32
+    - MSYSTEM: UCRT64
+      MBITS: 64
 for:
   -
     branches:
@@ -20,9 +20,6 @@ for:
     environment:
       global:
         APPVEYOR_CONFIG_PROD: 1
-      matrix: # This extends the default, so 32 bit is still built
-        - MSYSTEM: MINGW64
-          MBITS: 64
 
 clone_depth: 10
 
