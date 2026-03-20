@@ -66,17 +66,17 @@ jobs:
         run: |
           DESTDIR=appdir cmake -DCMAKE_INSTALL_PREFIX=/usr -P cmake_install.cmake
           ../.github/workflows/scripts/ffappimagebuild.sh appdir $GITHUB_SHA
-      - name: Dist archive artifact
+      - name: Source archive artifact
         uses: actions/upload-artifact@v4
         if: matrix.target == 'NoUI'
         with:
-          name: dist-archive
+          name: source-archive
           path: repo/build/fontforge-*.tar.xz
       - name: AppImage artifact
         uses: actions/upload-artifact@v4
         if: matrix.target == 'Release'
         with:
-          name: appimage
+          name: Linux_appimage
           path: repo/build/FontForge-*-x86_64.AppImage
       - name: Update Potfile for Crowdin
         if: matrix.target == 'Release' && github.ref == 'refs/heads/master' && github.repository == 'fontforge/fontforge' && github.event_name == 'push'
@@ -123,7 +123,7 @@ jobs:
       - name: App Bundle artifact
         uses: actions/upload-artifact@v4
         with:
-          name: appbundle
+          name: macOS_appbundle
           path: repo/build/osx/FontForge-*.dmg
 
   windows:
@@ -170,7 +170,7 @@ jobs:
       - name: Build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.arch }}
+          name: Win_${{ matrix.arch }}
           path: |
             fontforgebuilds/*.7z
             fontforgebuilds/fontforge-setup/*.exe
