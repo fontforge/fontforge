@@ -68,18 +68,30 @@ static std::string SizeString(const BitmapSizes& sizes, ARGS... args) {
     return size_list;
 }
 
+unsigned long int strict_strtoul(const char* nptr, char** endptr, int base) {
+    unsigned long int result = strtoul(nptr, endptr, base);
+    // Reject negative numbers
+    if (((long int)result) < 0 || result > kSizeError) {
+        if (endptr) {
+            *endptr = (char*)nptr;
+        }
+        return 0;
+    }
+    return result;
+}
+
 static BitmapSizes ParseList(const Glib::ustring& str) {
     BitmapSizes sizes;
     uint16_t size, depth;
     char* end = nullptr;
 
     for (const char* pt = str.c_str(); *pt != '\0';) {
-        size = strtoul(pt, &end, 10);
+        size = strict_strtoul(pt, &end, 10);
         if (*end == '@')
-            depth = strtoul(end + 1, &end, 10);
+            depth = strict_strtoul(end + 1, &end, 10);
         else
             depth = 1u;
-        if (size > 0) sizes.emplace_back(size, depth);
+        if (size > 0 && depth > 0) sizes.emplace_back(size, depth);
         if (*end != ' ' && *end != ',' && *end != ';' && *end != '\0') {
             // If the token is bad, we seek to its end and report its position
             // in a slight abuse of the return value.
