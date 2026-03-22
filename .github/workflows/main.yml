@@ -144,8 +144,8 @@ jobs:
       - name: Checkout FontForgeBuilds
         uses: actions/checkout@v4
         with:
-          repository: fontforge/fontforgebuilds
-          ref: master-local
+          repository: iorsh/fontforgebuilds
+          ref: win64
           path: fontforgebuilds
       - name: Setup MSYS2
         uses: msys2/setup-msys2@v2
