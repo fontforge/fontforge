@@ -66,17 +66,17 @@ jobs:
         run: |
           DESTDIR=appdir cmake -DCMAKE_INSTALL_PREFIX=/usr -P cmake_install.cmake
           ../.github/workflows/scripts/ffappimagebuild.sh appdir $GITHUB_SHA
-      - name: Dist archive artifact
+      - name: Source archive artifact
         uses: actions/upload-artifact@v4
         if: matrix.target == 'NoUI'
         with:
-          name: dist-archive
+          name: source-archive
           path: repo/build/fontforge-*.tar.xz
       - name: AppImage artifact
         uses: actions/upload-artifact@v4
         if: matrix.target == 'Release'
         with:
-          name: appimage
+          name: Linux_appimage
           path: repo/build/FontForge-*-x86_64.AppImage
       - name: Update Potfile for Crowdin
         if: matrix.target == 'Release' && github.ref == 'refs/heads/master' && github.repository == 'fontforge/fontforge' && github.event_name == 'push'
@@ -123,56 +123,57 @@ jobs:
       - name: App Bundle artifact
         uses: actions/upload-artifact@v4
         with:
-          name: appbundle
+          name: macOS_appbundle
           path: repo/build/osx/FontForge-*.dmg
 
   windows:
-    runs-on: windows-latest
+    runs-on: ${{ matrix.runner }}
     env:
       MSYS2_FC_CACHE_SKIP: true
     strategy:
       matrix:
-        arch: ["MINGW32", "MINGW64"]
+        include:
+          - arch: UCRT64
+            runner: windows-latest
+          - arch: CLANGARM64
+            runner: windows-11-arm
     steps:
       - uses: actions/checkout@v4
         with:
           path: repo
-      - name: Checkout FontForgeBuilds
-        uses: actions/checkout@v4
-        with:
-          repository: fontforge/fontforgebuilds
-          ref: master-local
-          path: fontforgebuilds
       - name: Setup MSYS2
         uses: msys2/setup-msys2@v2
         with:
           msystem: ${{ matrix.arch }}
           update: true
           install: git
-      - name: Run FontForgeBulds initialisation
-        working-directory: fontforgebuilds
+      - name: Install dependencies
+        working-directory: repo/Packaging/win
         shell: msys2 {0}
+        env:
+          BUILD_DIR: ${{ runner.temp }}/ffbuild
         run: ./ffbuild.sh --github-actions --depsonly
-      - name: Run FontForgeBuilds
-        working-directory: fontforgebuilds
+      - name: Build and package FontForge
+        working-directory: repo/Packaging/win
         shell: msys2 {0}
+        env:
+          BUILD_DIR: ${{ runner.temp }}/ffbuild
         run: |
           ./ffbuild.sh --github-actions
           FFPATH=`cygpath -m "$GITHUB_WORKSPACE/repo"` ./make-portable-package.sh ci
       - name: Run InnoSetup
         if: github.ref == 'refs/heads/master'
-        working-directory: fontforgebuilds/fontforge-setup
-        run: |
-          winget install --id JRSoftware.InnoSetup -e -s winget
-          $env:path += ";$env:LOCALAPPDATA/Programs/Inno Setup 6"
-          iscc -Qp fontforgesetup.iss -DMSYSTEM=${{ matrix.arch }}
+        working-directory: repo/Packaging/win/setup
+        env:
+          BUILD_DIR: ${{ runner.temp }}/ffbuild
+        run: iscc -Qp fontforgesetup.iss -DMSYSTEM=${{ matrix.arch }} -DBUILD_DIR="${{ runner.temp }}\ffbuild"
       - name: Build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.arch }}
+          name: Win_${{ matrix.arch }}
           path: |
-            fontforgebuilds/*.7z
-            fontforgebuilds/fontforge-setup/*.exe
+            ${{ runner.temp }}/ffbuild/*.7z
+            repo/Packaging/win/setup/*.exe
 
   # Test Python module build with MSVC toolchain
   # This ensures compatibility with Python.org Windows builds (which use MSVC)

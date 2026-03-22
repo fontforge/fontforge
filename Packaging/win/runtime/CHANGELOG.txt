@@ -1,0 +1,157 @@
+13/01/22:
+* Ensure uninstall of incompatible versions (particularly if changing from 32-bit to 64-bit and vice versa)
+* Change install version to match release tags (YYYYMMDD instead of DD-MM-YY)
+10/01/22:
+* Resync with latest master for the 20230101 release
+08/03/22:
+* Resync with latest master for the 20220308 release
+07/11/20:
+* Resync with latest master for the 20201107 release
+14/03/20:
+* Resync with latest master for the 20200314 release
+01/03/20:
+* Resync with latest master in preparation for the next release (a80c6ef)
+23/12/19:
+* Bundle DLLs required by Python lib-dynload (e.g. Tk/sqlite)
+16/08/19:
+* Cleaned up the batch scripts to work with Python 3, removed VcXsrv remnants
+01/08/19:
+* Update to the 20190108 release
+02/06/19:
+* Now built with the Python 3 binding
+13/04/19:
+* Update to the 20190413 release
+16/03/19:
+* Update to the 20190316 release
+* Switch to using the GDK backend over the X11 backend. VcXsrv has been removed.
+  * For this switch, the old version of FontForge must be installed first.
+31/07/17 (r2):
+* Compile run_fontforge with Visual Studio 2015 to avoid antivirus false positives
+31/07/17:
+* Upgrade to Pango 1.40.7
+* Sync with the 20170731 release
+17/06/17:
+* Upgrade to Freetype 2.8
+* Upgrade to Cairo 1.15.6
+* Upgrade to Pango 1.40.6
+* Rebuild all X11 dependencies from git master
+13/10/16:
+* Minor release to fix some crashes (20161012 release)
+04/10/16:
+* Sync with the 20161005 release.
+* Upgrade to Freetype 2.7.
+23/09/16:
+* Also bundle ssleay32.dll for the Python ssl module.
+14/09/16:
+* Updated application icons (finally)
+  You may need to clear your icon cache for it to take effect.
+13-08-16:
+* Sync with git master (prerelease)
+07-04-16:
+* Fix crash in kern pairs dialogue (#2681)
+* Fix preferences dialogue being too large (#2675)
+05-04-16:
+* Sync with the April 20160404 release
+04-07-15 (14-06-15) (r4):
+* Add in many more locales to bin/VcXsrv/locale/locale.alias
+  This should fix titles not being displayed properly. (#2323)
+14-06-15 (r3):
+* Fix another bug in Unicode filename handling (#2364)
+14-06-15:
+* Fix bug in Window titles not being displayed properly
+13-06-15:
+* Sync with the June 20150612 release
+* Fix clipboard pasting to/from FontForge
+* Patching FontForge to work with filenames regardless of current locale
+  (still somewhat experimental)
+30-05-15:
+* Patch Gnulib to make fopen and open assume UTF-8 filenames for opening files.
+  This allows files with non-ASCII/English filenames to be opened IFF a UTF-8
+  locale is used (see fontforge.bat)
+* Port the MetaFont import function to Windows
+* Fix autorecover 'forget' options (actually delete the files if a 'forget'
+  option is requested)
+* Fix saving hotkeys
+26-05-15:
+* Using GLib for Unicode file browsing (opening fix TBA)
+24-05-15:
+* Attempt fix at keyboard layout settings.
+19-05-15:
+* (Finally) do another 64-bit build
+01-05-15:
+* Build for the 20150430 release 
+03-04-15:
+* Build for 20150330 release (ab4d46) + 902919
+* Hovering over PDF files in the file browser should now be fast(er)
+  - Disabled scanning of fonts in the PDF files (slow, buggy)
+03-03-15:
+* Build for the 20150228 release (a875b4) + 7fc848
+03-01-15:
+* Downgraded glib to 2.42.0-1 (XP compatibility)
+31-12-14:
+* Build for the 20141230 release (6bfa9e)
+27-11-14:
+* Build for the 20141126 release (c4cea4)
+11-11-14:
+* Update to latest git version a7edc6
+* Fix potential PATH issue for PATHs containing double quotes (GH #1907)
+* Switch to different X server port (11) to avoid potential conflict with old
+  versions of FontForge (2012/2013 versions)
+    - Update VcXsrv_util to allow for dynamic switching of the port used
+24-10-14:
+* Update to latest git version 6df34b
+18-10-14:
+* Bug-fix for the file picker dialogue. Makes it much more robust to Windows
+  file paths.
+14-10-14:
+* Build for the 20141014 release
+20-06-14:
+* Upgrade to latest git version d4abd3
+  - SF issue #8 is fixed
+  - Menus are now not absurdly wide
+* Build FontForge with Cairo support
+  - Glyph outlines in the editing window are now anti-aliased
+  - The glyph fill operation should be faster
+  - Fontconfig is not used any more, unless Cairo is disabled (-usecairo=no)
+  - Fonts can be placed in share/fonts or a folder called 'ui-fonts' in your
+    preferences folder and FontForge can use them to display the user interface
+    correctly. If you installed FontForge, this will be 
+    %APPDATA%/FontForge/ui-fonts. This distribution comes pre-bundled with the
+    DejaVu fonts. Cantarell, Inconsolata and WenQuanYi has been dropped.
+* Bundle the Python executable (python.exe as ffpython.exe)
+  - This gives users direct access to the Python distribution bundled with
+    FontForge, so they may install extra Python modules if they need to.
+      - Unfortunately the Python extension cannot be used with the native
+        (official) Python installation as that has been compiled with MSVC.
+      - There are limits to what can be installed. Simple extensions are fine.
+        Trying to install something like numpy will not work.
+14-06-14:
+* Updated to the latest git version 4b0ceb
+* Patched libxcb (courtesy of VcXsrv), allowing libX11 to be upgraded to
+  the latest git version. Probably fixes a few GUI bugs.
+    - Updated all X libraries to the latest git version
+* Fixed resource loading (the background is now white)
+* Fixed scrolling in menus with the scroll wheel
+* Fixed the display of tool-tips
+31-05-13:
+* Updated to latest git version 416fb4 + snapping fix
+* TTC handling has been fixed
+* Some crashes in the Print dialogue have been fixed
+* The cursor used for scroll zooming has been fixed
+* Point snapping in the glyph editor has been fixed
+18-02-14:
+* 32-bit: Updated to the latest git version 493c5d
+* 32-bit: Updated Python 2.7 libraries
+* 32-bit: Now includes a copy of OpenSSL 1.0.1g for Python's hashlib
+17-02-14:
+* Updated to the latest git version 493c5d
+* 64-bit: First 64-bit build! May be unstable!
+* 64-bit: Switched to Python 3.4. Removed Python2.
+07-02-14:
+* Updated to the latest git version cae2da3
+17-01-14:
+* Fixed folder browser 'up' button when on the default folder
+* Set preferences to %APPDATA\FontForge for the installed
+  version, otherwise share\fontforge\preferences for the
+  portable version.
+* Made an installer version using InnoSetup
