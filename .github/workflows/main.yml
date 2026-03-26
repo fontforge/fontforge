@@ -172,7 +172,7 @@ jobs:
         with:
           name: Win_${{ matrix.arch }}
           path: |
-            ${{ runner.temp }}/ffbuild/*.7z
+            repo/Packaging/win/*.7z
             repo/Packaging/win/setup/*.exe
 
   # Test Python module build with MSVC toolchain
