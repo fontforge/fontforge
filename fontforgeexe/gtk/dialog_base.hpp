@@ -50,6 +50,11 @@ class DialogBase : public Gtk::Dialog {
     // Allow window resize in horizontal direction only.
     void set_hints_horizontal_resize_only();
 
+    // The Cancel button is added in this class as a named widget, so that it
+    // can be later styled with CSS. This functions removes the Cancel button
+    // from the dialog, if it is not needed.
+    void remove_cancel_button();
+
  private:
     GWindow parent_gwindow_ = nullptr;
 

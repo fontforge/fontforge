@@ -25,11 +25,11 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "simple_dialogs.hpp"
-
 #include <numeric>
 #include <string>
 #include <gtkmm.h>
+
+#include "simple_dialogs.hpp"
 
 #include "intl.h"
 #include "application.hpp"
@@ -164,6 +164,62 @@ char* language_list_dialog(GWindow parent, const LanguageRec* languages,
                             append_tag);
         return strdup(s.c_str());
     }
+}
+
+namespace ff::dlg {
+
+// A simple dialog to display properties as name-value pairs.
+class ShowPropertiesDialog final : public DialogBase {
+ public:
+    Gtk::SpinButton* input;
+
+    ShowPropertiesDialog(GWindow parent, const L10nText& title,
+                         const PropertyVec& properties)
+        : DialogBase(parent) {
+        set_title(title);
+        set_resizable(false);
+
+        auto main_grid = Gtk::make_managed<Gtk::Grid>();
+        main_grid->set_column_spacing(ff::ui_utils::ui_font_em_size());
+
+        for (size_t i = 0; i < properties.size(); ++i) {
+            const auto& [label, value] = properties[i];
+
+            auto label_widget = Gtk::make_managed<Gtk::Label>(label);
+            label_widget->set_halign(Gtk::ALIGN_START);
+            main_grid->attach(*label_widget, 0, i);
+
+            Glib::ustring value_str = value;
+            auto value_widget = Gtk::make_managed<Gtk::Label>(value_str);
+            value_widget->set_halign(Gtk::ALIGN_START);
+            main_grid->attach(*value_widget, 1, i);
+
+            // Support clickable URLs in the value field
+            if (value_str.find("http://") == 0 ||
+                value_str.find("https://") == 0) {
+                value_widget->set_markup(
+                    "<a href=\"" + Glib::Markup::escape_text(value_str) +
+                    "\">" + Glib::Markup::escape_text(value_str) + "</a>");
+                value_widget->set_selectable(true);
+            }
+        }
+
+        get_content_area()->pack_start(*main_grid);
+        show_all();
+        remove_cancel_button();
+    }
+};
+
+}  // namespace ff::dlg
+
+void show_properties_dialog(GWindow parent, const L10nText& title,
+                            const PropertyVec& properties) {
+    // To avoid instability, the GTK application is lazily initialized only when
+    // a GTK window is invoked.
+    ff::app::GtkApp();
+
+    ff::dlg::ShowPropertiesDialog dlg(parent, title, properties);
+    dlg.run();
 }
 
 void update_appearance() {

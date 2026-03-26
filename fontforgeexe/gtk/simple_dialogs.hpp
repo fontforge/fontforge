@@ -50,4 +50,14 @@ void update_appearance();
 
 #ifdef __cplusplus
 }
+
+#include <vector>
+
+#include "l10n_text.hpp"
+
+using PropertyVec =
+    std::vector<std::pair<L10nText /*label*/, L10nText /*value*/>>;
+void show_properties_dialog(GWindow parent, const L10nText& title,
+                            const PropertyVec& properties);
+
 #endif
