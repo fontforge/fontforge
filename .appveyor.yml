@@ -1,4 +1,4 @@
-image: Visual Studio 2019
+image: Visual Studio 2022
 platform:
   - x64
 branches:
@@ -10,19 +10,8 @@ environment:
     MBASH: C:\msys64\usr\bin\sh -lc
     MSYS2_FC_CACHE_SKIP: true
   matrix:
-    - MSYSTEM: MINGW32
-      MBITS: 32
-for:
-  -
-    branches:
-      only:
-        - /release\/.*/
-    environment:
-      global:
-        APPVEYOR_CONFIG_PROD: 1
-      matrix: # This extends the default, so 32 bit is still built
-        - MSYSTEM: MINGW64
-          MBITS: 64
+    - MSYSTEM: UCRT64
+      MBITS: 64
 
 clone_depth: 10
 
@@ -30,7 +19,6 @@ clone_depth: 10
 #cache:
 #  - 'C:\msys64\var\cache\pacman\pkg'
 install:
-  - git clone --depth=1 --branch=master-local https://github.com/fontforge/fontforgebuilds.git
   - >-
     move C:\msys64 C:\msys64_old &&
     curl -kLo msys2.tar.xz https://github.com/msys2/msys2-installer/releases/download/nightly-x86_64/msys2-base-x86_64-latest.tar.xz &&
@@ -40,20 +28,20 @@ install:
   - call %MBASH% "pacman -Syuu --noconfirm"
   - taskkill /f /fi "MODULES eq msys-2.0.dll" || exit /b 0
   - call %MBASH% "pacman -Suu --noconfirm"
-  - call %MBASH% "pacman -Suu --noconfirm" 
-  - call %MBASH% "cd $APPVEYOR_BUILD_FOLDER/fontforgebuilds; exec 0</dev/null; ./ffbuild.sh --appveyor --depsonly"
+  - call %MBASH% "pacman -Suu --noconfirm"
+  - call %MBASH% "cd $APPVEYOR_BUILD_FOLDER/Packaging/win; exec 0</dev/null; BUILD_DIR=$TEMP/ffbuild ./ffbuild.sh --appveyor --depsonly"
 build_script:
-  - call %MBASH% "cd $APPVEYOR_BUILD_FOLDER/fontforgebuilds; exec 0</dev/null; ./ffbuild.sh --appveyor"
-  - call %MBASH% "cd $APPVEYOR_BUILD_FOLDER/fontforgebuilds; exec 0</dev/null; FFPATH=`cygpath -m $APPVEYOR_BUILD_FOLDER` ./make-portable-package.sh appveyor"
-  - if "%APPVEYOR_REPO_BRANCH:~0,8%"=="release/" cd "%APPVEYOR_BUILD_FOLDER%/fontforgebuilds/fontforge-setup" && "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" -Qp fontforgesetup.iss
+  - call %MBASH% "cd $APPVEYOR_BUILD_FOLDER/Packaging/win; exec 0</dev/null; BUILD_DIR=$TEMP/ffbuild ./ffbuild.sh --appveyor"
+  - call %MBASH% "cd $APPVEYOR_BUILD_FOLDER/Packaging/win; exec 0</dev/null; BUILD_DIR=$TEMP/ffbuild FFPATH=`cygpath -m $APPVEYOR_BUILD_FOLDER` ./make-portable-package.sh appveyor"
+  - if "%APPVEYOR_REPO_BRANCH:~0,8%"=="release/" cd "%APPVEYOR_BUILD_FOLDER%/Packaging/win/setup" && "C:\Program Files (x86)\Inno Setup 6\ISCC.exe" -Qp fontforgesetup.iss -DBUILD_DIR="%TEMP%\ffbuild"
 test: off
 artifacts:
-  - path: fontforgebuilds\*-appveyor.7z
-    name: FontForge $(MBITS)-bit build
-  - path: fontforgebuilds\*-debugging-symbols.7z
-    name: FontForge $(MBITS)-bit debugging symbols
-  - path: fontforgebuilds\fontforge-setup\*.exe
-    name: FontForge $(MBITS)-bit setup
+  - path: Packaging\win\*-appveyor.7z
+    name: FontForge 64-bit build
+  - path: Packaging\win\*-debugging-symbols.7z
+    name: FontForge 64-bit debugging symbols
+  - path: Packaging\win\setup\*.exe
+    name: FontForge 64-bit setup
 #on_failure:
 #  - cat build/CMakeCache.txt || true
 #  - cat build/CMakeFiles/CMakeOutput.log || true

@@ -1,0 +1,18 @@
+run
+bt
+print "locals..."
+info locals
+up 1  
+info locals
+up 1 
+info locals
+up 1 
+info locals
+up 1 
+info locals
+up 1 
+info locals
+up 1 
+info locals
+up 1 
+q
