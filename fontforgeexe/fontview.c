@@ -5765,7 +5765,7 @@ static void do_Adobe_Pua(unichar_t *buf,int sob,int uni) {
 	int ch = adobes_pua_alts[uni-0xf600][i];
 	if ( ch==0 )
     break;
-	if ( ch>=0xf600 && ch<=0xf7ff ) {
+	if ( ch>=0xf600 && ch<=0xf7ff && adobes_pua_alts[ch-0xf600][0]!=0 ) {
 	    do_Adobe_Pua(buf+j,sob-j,ch);
 	    while ( buf[j]!=0 ) ++j;
 	} else
@@ -5867,7 +5867,8 @@ static void FVExpose(FontView *fv,GWindow pixmap, GEvent *event) {
 	      case gl_glyph:
 		if ( uni==0xad )
 		    buf[0] = '-';
-		else if ( fv->b.sf->uni_interp==ui_adobe && uni>=0xf600 && uni<=0xf7ff ) {
+		else if ( fv->b.sf->uni_interp==ui_adobe && uni>=0xf600 && uni<=0xf7ff &&
+			adobes_pua_alts[uni-0xf600][0]!=0 ) {
 		    use_utf8 = false;
 		    do_Adobe_Pua(buf,sizeof(buf),uni);
 		} else if ( uni>=0xe0020 && uni<=0xe007e ) {
