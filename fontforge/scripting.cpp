@@ -9125,6 +9125,7 @@ static void docall(Context *c,char *name,Val *val) {
     Val args[PE_ARG_MAX];
     int i;
     enum token_type tok;
+    char filename_buf[PATH_MAX];
     Context sub;
     struct builtins *found;
 
@@ -9249,16 +9250,19 @@ docall_expectint:   ScriptError(&sub,"Expected integer argument");
 	} else {
 	    if ( strchr(name,'/')==NULL && strchr(c->filename,'/')!=NULL ) {
 		char *pt;
-		sub.filename = strcpy((char *)malloc(strlen(c->filename)+strlen(name)+4),c->filename);
-		pt = strrchr(sub.filename,'/');
-		strcpy(pt+1,name);
+		strncpy(filename_buf, c->filename, PATH_MAX);
+		pt = strrchr(filename_buf,'/');
+		strncpy(pt+1,name, PATH_MAX - (pt + 1 - filename_buf));
+		sub.filename = filename_buf;
 	    }
 	    sub.script = fopen(sub.filename,"rb");
 	    if ( sub.script==NULL ) {
 		char *pt;
-		if ( sub.filename==name )
-		    sub.filename = strcpy((char *)malloc(strlen(name)+4),name);
-		pt = sub.filename + strlen(sub.filename);
+		if ( sub.filename==name ) {
+		    strncpy(filename_buf, name, PATH_MAX);
+		    sub.filename = filename_buf;
+		}
+		pt = filename_buf + strlen(filename_buf);
 		strcpy((char *)pt, ".ff");
 		sub.script = fopen(sub.filename,"rb");
 		if ( sub.script==NULL ) {
@@ -9279,8 +9283,6 @@ docall_expectint:   ScriptError(&sub,"Expected integer argument");
 		}
 		fclose(sub.script); sub.script = NULL;
 	    }
-	    if ( ( sub.filename!=NULL ) && ( sub.filename!=name ) )
-		free( sub.filename );
 	}
 	c->curfv = sub.curfv;
 	calldatafree(&sub);

@@ -345,7 +345,7 @@ static void IVBuildEdit(InstrDlg *iv) {
 static void instr_expose(struct instrinfo *ii,GWindow pixmap,GRect *rect) {
     int low, high;
     int i,x,y;
-    char loc[8], ins[8], val[8]; unichar_t uins[8], uname[30];
+    char loc[12], ins[8], val[8]; unichar_t uins[8], uname[30];
     int addr_end, num_end;
     static unichar_t nums[] = { '0', '0', '0', '0', '0', '0', '\0' };
     int indent;
@@ -1188,7 +1188,7 @@ return;
 static void short_expose(ShortView *sv,GWindow pixmap,GRect *rect) {
     int low, high;
     int x,y;
-    char cval[8], caddr[8];
+    char cval[8], caddr[12];
     int index;
 
     GDrawSetFont(pixmap,sv->gfont);

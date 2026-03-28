@@ -5370,7 +5370,7 @@ static struct glyphvariants *ttf_math_read_gvtable(FILE *ttf,struct ttfinfo *inf
     char *pt;
     int ic_offset, pcnt;
     SplineChar *sc;
-    char ebuf[10], buffer[50], *ext;
+    char ebuf[16], buffer[50], *ext;
 
     fseek(ttf,start,SEEK_SET);
     ga_offset = getushort(ttf);

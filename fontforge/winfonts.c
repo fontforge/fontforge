@@ -772,7 +772,7 @@ int FONFontDump(char *filename,SplineFont *sf, int32_t *sizes,int resol,
     unsigned short resource_table_off, resident_name_off, module_ref_off, non_resident_name_off, fontdir_off, font_off;
     char resident_name[200] = "";
     int fontdir_len = 2;
-    char non_resident_name[200] = "";
+    char non_resident_name[240] = "";
     IMAGE_OS2_HEADER NE_hdr;
     NE_TYPEINFO rc_type;
     NE_NAMEINFO rc_name;

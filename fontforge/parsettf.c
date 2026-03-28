@@ -5190,7 +5190,7 @@ static void readttfpostnames(FILE *ttf,struct ttfinfo *info) {
     int format, len, gc, val;
     uint32_t bounds;
     const char *name;
-    char buffer[30];
+    char buffer[32];
     uint16_t *indexes;
     extern const char *ttfstandardnames[];
     int notdefwarned = false;

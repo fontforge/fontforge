@@ -2535,7 +2535,6 @@ return;				/* no points. no side bearings */
 }
 
 static int CVExposeGlyphFill(CharView *cv, GWindow pixmap, GEvent *event, DRect* clip ) {
-    CharViewTab* tab = CVGetActiveTab(cv);
     int layer, cvlayer = CVLayer((CharViewBase *) cv);
     int filled = 0;
 

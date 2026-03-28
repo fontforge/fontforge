@@ -181,6 +181,7 @@ return;
 return;
 }
 
+#if defined(__MINGW32__)
 static char* replace_CJK_font_alias(const char* resource) {
     /* On Windows systems the default UI font doesn't support CJK. We prepend it
 	   with locale-specific font by replacing the predefined
@@ -217,6 +218,7 @@ static char* replace_CJK_font_alias(const char* resource) {
 
 	return result;
 }
+#endif
 
 void GResourceAddResourceString(const char *string,const char *prog) {
     char *ept, *value=NULL;
