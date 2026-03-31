@@ -1233,7 +1233,15 @@ return( NULL );
 
     quoted = false;
     while ( ((ch=nlgetc(sfd))!='"' || quoted) && ch!=EOF ) {
-	if ( !quoted && ch=='\\' )
+	if ( ch=='\r' ) {
+	    // ASCII-based pickle data is written with \r\n line endings in
+	    // Windows, because we write to SFD file in text mode. We want to
+	    // ignore \r in this case, otherwise it will be treated as a literal
+	    // character in the pickle data. This will not cause intentional \r
+	    // characters to be discarded, since these are escaped by pickler as
+	    // \u000D.
+	    continue;
+	} else if ( !quoted && ch=='\\' )
 	    quoted = true;
 	else {
 	    if ( pt>=end )
