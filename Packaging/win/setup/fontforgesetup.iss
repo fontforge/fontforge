@@ -52,6 +52,7 @@ InfoBeforeFile={#BUILD_DIR}\ReleasePackage\VERSION.txt
 OutputDir=.
 OutputBaseFilename=FontForge-{#MyAppVersionDesc}-Windows-{#ARCHDESC}
 SetupIconFile=Graphics\fontforge-installer-icon.ico
+UninstallDisplayIcon={app}\fontforge-installer-icon.ico
 ;WizardImageFile=Graphics\fontforge-wizard.bmp
 WizardSmallImageFile=Graphics\fontforge-wizard.bmp
 Compression=lzma2/max
@@ -92,6 +93,7 @@ Name: "quicklaunchicon"; Description: "{cm:CreateQuickLaunchIcon}"; GroupDescrip
 [Files]
 Source: "{#BUILD_DIR}\ReleasePackage\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs; Excludes: "fontforge.bat"
 Source: "fontforge.bat"; DestDir: "{app}"; Flags: ignoreversion;
+Source: "Graphics\fontforge-installer-icon.ico"; DestDir: "{app}"; Flags: ignoreversion;
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files
 
 [Icons]
