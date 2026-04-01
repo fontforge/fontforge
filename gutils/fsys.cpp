@@ -710,15 +710,10 @@ void FindProgRoot(const char *prog) {
     }
 #endif
 
-/* If the fontforge binary path includes "build" or "target" according to platform,
-   we are in the development mode. */
-#if defined(__MINGW32__) || defined(_MSC_VER)
-    const char* dev_dir_test = "target";
-#else
-    const char* dev_dir_test = "build";
-#endif
-    if (strstr(program_root, dev_dir_test)) {
-	devel_env = true;
+    /* If the fontforge binary path includes "build",
+       we are in the development mode. */
+    if (strstr(program_root, "build")) {
+        devel_env = true;
     }
 
 #ifdef HAVE_GLIB
@@ -741,11 +736,7 @@ const char *getLocaleDir(void) {
     static char *localedir = NULL;
     if (!localedir) {
 	if (devel_env) {
-#if defined(_MSC_VER) || defined(__MINGW32__)
-            localedir = smprintf("%s/share/locale", program_root);
-#else
             localedir = smprintf("%s/po", program_root);
-#endif
 	} else {
             localedir = smprintf("%s/share/locale", program_root);
 	}
@@ -757,12 +748,8 @@ const char *getPixmapDir(void) {
     static char *pixmapdir=NULL;
     if (!pixmapdir) {
 	if (devel_env) {
-	    /* GUI_THEME macro is imported from the CMake ${GUI_THEME} variable */
-#if defined(_MSC_VER) || defined(__MINGW32__)
-            char *theme_src = smprintf("%s/../../work/mingw64/fontforge/fontforgeexe/pixmaps/%s", program_root, GUI_THEME);
-#else
+            /* GUI_THEME macro is imported from the CMake ${GUI_THEME} variable */
             char *theme_src = smprintf("%s/../fontforgeexe/pixmaps/%s", program_root, GUI_THEME);
-#endif
             pixmapdir = GFileGetAbsoluteName(theme_src);
             free(theme_src);
 	} else {

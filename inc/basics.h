@@ -43,6 +43,10 @@ typedef uint32_t unichar_t;
 
 #define FF_PI 3.1415926535897932
 
+#if defined(_WIN32) && !defined(LIBINTL_VERSION)
+# define vsnprintf _vsprintf_p
+#endif
+
 /* A macro to mark unused function parameters with. We often
  * have such parameters, because of extensive use of callbacks.
  */

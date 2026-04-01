@@ -6,12 +6,6 @@ set -eo pipefail
 
 export LC_ALL=C
 
-BASE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-BUILD_DIR=${BUILD_DIR:-$BASE/build}
-# Convert Windows paths to Unix paths if needed
-if command -v cygpath &> /dev/null; then
-    BUILD_DIR=$(cygpath -u "$BUILD_DIR")
-fi
 BINARY=$BUILD_DIR/downloads/
 
 PACKAGE=$PMPREFIX-python
@@ -37,6 +31,7 @@ if [ ! -d $PYVER ]; then
 fi
 
 cd $PYVER
-rm -rfv "config-${PYVER}" idlelib test turtledemo config
-find . -regextype sed -regex ".*\.py[co]" | xargs rm -rfv
-find . -name __pycache__ | xargs rm -rfv
+echo "Stripping Python directory..."
+rm -rf "config-${PYVER}" idlelib test turtledemo config
+find . -regextype sed -regex ".*\.py[co]" | xargs rm -rf
+find . -name __pycache__ | xargs rm -rf

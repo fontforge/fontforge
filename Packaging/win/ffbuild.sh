@@ -149,7 +149,7 @@ done
 
 # Set working folders
 BASE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-BUILD_DIR=${BUILD_DIR:-$BASE/build}
+BUILD_DIR=${BUILD_DIR:-$(cd "$BASE/../.." && pwd)/build}
 # Convert Windows paths to Unix paths if needed (for MSYS2 compatibility)
 if command -v cygpath &> /dev/null; then
     BUILD_DIR=$(cygpath -u "$BUILD_DIR")
@@ -195,17 +195,20 @@ PYINST=python
 
 # Check for AppVeyor specific settings
 if (($appveyor)); then
+    echo "AppVeyor build settings enabled!"
     yes=1
     TAR="tar axf"
     export PYTHONHOME=/$MINGVER
     FFPATH=`cygpath -m $APPVEYOR_BUILD_FOLDER`
 elif (($ghactions)); then
+    echo "GitHub Actions build settings enabled!"
     yes=1
     TAR="tar axf"
     export PYTHONHOME=/$MINGVER
     FFPATH=`cygpath -m $GITHUB_WORKSPACE/repo`
 else
-    FFPATH=$WORK/fontforge
+    echo "Local build settings enabled!"
+    FFPATH=$(cd "$BASE/../.." && pwd)
     TAR="tar axvf"
 fi
 
@@ -227,7 +230,7 @@ export ACLOCAL_PATH="m4:/$MINGVER/share/aclocal"
 export ACLOCAL="/bin/aclocal"
 export M4="/bin/m4"
 # Compiler flags
-export LDFLAGS="-L/$MINGVER/lib -L/usr/local/lib -L/lib"
+export LDFLAGS="-L/$MINGVER/lib -L/usr/local/lib -L/lib -Wl,--allow-multiple-definition"
 export CFLAGS="-DWIN32 -I/$MINGVER/include -I/usr/local/include -I/include -g"
 export CPPFLAGS="${CFLAGS}"
 export LIBS=""
@@ -325,15 +328,8 @@ if (( ! $nomake )); then
         tar -C "$WORK" -axf "$SOURCE/$FREETYPE_ARCHIVE" || bail "FreeType extraction"
     fi
 
-    log_status "Finished installing prerequisites, attempting to install FontForge!"
-    # fontforge
-    if (( ! ($appveyor+$ghactions) )) && [ ! -d fontforge ]; then
-        log_status "Cloning the fontforge repository from https://github.com/$github/fontforge..."
-        git clone "https://github.com/$github/fontforge" || bail "Cloning fontforge"
-        cd "fontforge"
-    else
-        cd "$FFPATH";
-    fi
+    log_status "Finished installing prerequisites, proceeding to build FontForge!"
+    cd "$FFPATH";
 
     if [ -f CMakeLists.txt ]; then
         if [ ! -f build/fontforge.configure-complete ] || (($reconfigure)); then
@@ -463,6 +459,7 @@ if [ -d "$RELEASE/lib/$PYVER" ]; then
 else
     if [ ! -d "$BINARY/$PYVER" ]; then
         log_note "Python folder not found - running 'strip-python'..."
+        export BUILD_DIR
         $BASE/strip-python.sh "$PYVER" || bail "Python generation failed"
     fi
     cp -r "$BINARY/$PYVER" "$RELEASE/lib" || bail "Python folder could not be copied"
