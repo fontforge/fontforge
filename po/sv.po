@@ -111,8 +111,8 @@ msgstr "Inga kerningpar hittades i %.200s"
 msgid ""
 "%s has a bounding box which is too big for this algorithm to work. Ignored."
 msgstr ""
-"%s har en bounding box som är för stor för att den här algoritm ska fungera."
-" Ignoreras."
+"%s har en avgränsningsram som är för stor för att den här algoritmen ska "
+"fungera. Ignoreras."
 
 #: fontforge/autowidth2.c:505 fontforge/autowidth2.c:568
 #: fontforge/autowidth2.c:643 fontforge/autowidth2.c:760
@@ -149,8 +149,8 @@ msgid ""
 "I'm sorry this file is too complex for me to understand (or is erroneous, or"
 " is empty)"
 msgstr ""
-"Jag är ledsen att den här filen är för komplex för mig att förstå (eller är "
-"felaktig eller är tom)"
+"Tyvärr är den här filen för komplex för att jag ska kunna förstå den (eller "
+"så är den felaktig eller tom)"
 
 #: fontforge/cvimages.c:159 fontforge/cvimages.c:210 fontforge/cvimages.c:371
 #: fontforge/cvimages.c:404
@@ -167,24 +167,24 @@ msgid ""
 "This does not seem to be a plate file\n"
 "First line wrong"
 msgstr ""
-"Det här verkar inte vara en plattfil\n"
-"Första raden fel"
+"Det här verkar inte vara en plate-fil\n"
+"Första raden är felaktig"
 
 #: fontforge/cvimages.c:264
 msgid ""
 "This does not seem to be a plate file\n"
 "Expected left paren"
 msgstr ""
-"Det här verkar inte vara en plattfil\n"
-"Förväntad vänster paren"
+"Det här verkar inte vara en plate-fil\n"
+"Förväntade vänsterparentes"
 
 #: fontforge/cvimages.c:270
 msgid ""
 "This does not seem to be a plate file\n"
 "Expected one of 'voc[]z'"
 msgstr ""
-"Det här verkar inte vara en plattfil\n"
-"Förväntad en av 'voc[]z'"
+"Det här verkar inte vara en plate-fil\n"
+"Förväntade någon av 'voc[]z'"
 
 #: fontforge/cvimages.c:294
 msgid ""
@@ -198,8 +198,8 @@ msgstr ""
 msgid ""
 "I'm sorry this file is too complex for me to understand (or is erroneous)"
 msgstr ""
-"Jag är ledsen att den här filen är för komplex för mig att förstå (eller är "
-"felaktig)"
+"Tyvärr är den här filen för komplex för att jag ska kunna förstå den (eller "
+"så är den felaktig)"
 
 #: fontforge/cvimages.c:876
 msgid "Can't find the file"
@@ -352,7 +352,7 @@ msgid ""
 "It will not be copied."
 msgstr ""
 "Du försöker klistra in en referens till %1$s i %2$s.\n"
-"Men %1$s finns inte i den här fonten och jag kan inte heller hitta det ursprungliga tecknet som refereras till.\n"
+"Men %1$s finns inte i det här teckensnittet och jag kan inte heller hitta det ursprungliga tecknet som refereras till.\n"
 "Det kommer inte att kopieras."
 
 #: fontforge/cvundoes.c:2089 fontforge/cvundoes.c:2309
@@ -412,8 +412,8 @@ msgid ""
 "Would you like to copy the original splines (or delete the reference)?"
 msgstr ""
 "Du försöker klistra in en referens till %1$s i %2$s.\n"
-"Men %1$s finns inte i det här teckensnittet.\n"
-"Vill du kopiera de ursprungliga splines (eller ta bort referensen)?"
+"Men %1$s finns inte i det här typsnittet.\n"
+"Vill du kopiera de ursprungliga splinekurvorna (eller ta bort referensen)?"
 
 #: fontforge/cvundoes.c:2265
 msgid "Anchor Lost"
@@ -446,7 +446,7 @@ msgid ""
 "You are attempting to paste glyph instructions from one font to another. Generally this will not work unless the 'prep', 'fpgm' and 'cvt ' tables are the same.\n"
 "Do you want to continue anyway?"
 msgstr ""
-"Du försöker klistra in glyfinstruktioner från ett typsnitt till ett annat. I allmänhet fungerar inte det här om inte tabellerna 'prep', 'fpgm' och 'cvt' är desamma.\n"
+"Du försöker klistra in glyfinstruktioner från ett typsnitt till ett annat. I allmänhet fungerar inte det här, om inte tabellerna 'prep', 'fpgm' och 'cvt' är desamma.\n"
 "Vill du fortsätta ändå?"
 
 #: fontforge/cvundoes.c:2507
@@ -478,7 +478,7 @@ msgid ""
 "This font does not have vertical metrics enabled.\n"
 "Use Element->Font Info to enable them."
 msgstr ""
-"Det här teckensnittet har inte vertikala mått aktiverade.\n"
+"Det här typsnittet har inte vertikala mått aktiverade.\n"
 "Använd Element->Font Info för att aktivera dem."
 
 #: fontforge/cvundoes.c:2831 fontforge/cvundoes.c:2970
@@ -591,7 +591,7 @@ msgstr "Inga uppslagningar att kopiera"
 
 #: fontforge/cvundoes.c:2916 fontforgeexe/justifydlg.c:51
 msgid "Lookups"
-msgstr "Sökningar"
+msgstr "Uppslagningar"
 
 #: fontforge/cvundoes.c:2917
 msgid "Choose which lookups to copy"
@@ -675,7 +675,7 @@ msgstr "Kodningsnamn"
 #: fontforge/encoding.c:636 fontforge/encoding.c:737
 #: fontforgeexe/encodingui.c:196
 msgid "Please name this encoding"
-msgstr "namnge den här kodning"
+msgstr "Ange ett namn för den här kodningen"
 
 #: fontforge/encoding.c:724 fontforge/encoding.c:732
 msgid "Bad encoding file format"
@@ -685,8 +685,8 @@ msgstr "Fel kodning av filformat"
 msgid ""
 "This file contains an unnamed encoding, which cannot be named in a script"
 msgstr ""
-"Den här filen innehåller en icke namngiven kodning, som inte kan namnges i "
-"ett skript"
+"Den här filen innehåller en namnlös kodning som inte kan namnges i ett "
+"skript"
 
 #: fontforge/encoding.c:739
 #, c-format
@@ -772,7 +772,7 @@ msgstr "Hitta en cidmap-fil..."
 
 #: fontforge/encoding.c:1153
 msgid "Are you sure you don't want to use the cidmap I found?"
-msgstr "Vill du verkligen inte vill använda den cidmap jag hittade?"
+msgstr "Är du säker på att du inte vill använda cidmap-filen som jag hittade?"
 
 #: fontforge/encoding.c:1235 fontforge/encoding.c:1700
 msgid "_Add"
@@ -859,7 +859,7 @@ msgstr "Sluten parentes saknas i include på rad %d i %s"
 #: fontforge/featurefile.c:2469
 #, c-format
 msgid "No filename specified in include on line %d of %s"
-msgstr "Inget filnamn angivet i include på rad %d i %s"
+msgstr "Inget filnamn angavs i include på rad %d i %s"
 
 #: fontforge/featurefile.c:2475
 #, c-format
@@ -869,7 +869,7 @@ msgstr "Inkluderingar för djupt inbäddade på rad %d i %s"
 #: fontforge/featurefile.c:2510
 #, c-format
 msgid "Could not open include file (%s) on line %d of %s"
-msgstr "Det gick inte att öppna include-filen (%s) på rad %d i %s"
+msgstr "Kunde inte öppna include-filen (%s) på rad %d i %s"
 
 #: fontforge/featurefile.c:2516
 #, c-format
@@ -986,7 +986,7 @@ msgstr ""
 #: fontforge/featurefile.c:3314
 #, c-format
 msgid "Expected ';' in lookupflags on line %d of %s"
-msgstr "Förväntad ';' i lookupflags på rad %d i %s"
+msgstr "Förväntat ';' i lookupflags på rad %d i %s"
 
 #: fontforge/featurefile.c:3321
 #, c-format
@@ -996,7 +996,7 @@ msgstr "Oväntad token i lookupflags på rad %d i %s"
 #: fontforge/featurefile.c:3325
 #, c-format
 msgid "No flags specified in lookupflags on line %d of %s"
-msgstr "Inga flaggor angivna i lookupflags på rad %d i %s"
+msgstr "Inga flaggor angavs i lookupflags på rad %d i %s"
 
 #: fontforge/featurefile.c:3343
 #, c-format
@@ -1026,12 +1026,12 @@ msgstr "Förväntat kommatecken i enhetstabell på rad %d i %s"
 #: fontforge/featurefile.c:3514
 #, c-format
 msgid "Expected integer in caret on line %d of %s"
-msgstr "Förväntat heltal i caret på rad %d i %s"
+msgstr "Förväntat heltal i ligaturmarkör på rad %d i %s"
 
 #: fontforge/featurefile.c:3520
 #, c-format
 msgid "Expected '>' in caret on line %d of %s"
-msgstr "Förväntat '>' i caret på rad %d av %s"
+msgstr "Förväntat '>' i ligaturmarkör på rad %d i %s"
 
 #: fontforge/featurefile.c:3543
 #, c-format
@@ -1069,8 +1069,8 @@ msgid ""
 "Reference to a lookup which is not in the feature file but which is in the "
 "font, %.50s"
 msgstr ""
-"Hänvisning till ett uppslagsord som inte finns i feature file men som finns "
-"i fonten, %.50s"
+"Hänvisning till en uppslagning som inte finns i feature-filen men som finns "
+"i typsnittet, %.50s"
 
 #: fontforge/featurefile.c:3636
 msgid "Refers to Font"
@@ -1115,12 +1115,12 @@ msgstr "Förväntat klassnamn i mark class-definitionen på rad %d i %s"
 #: fontforge/featurefile.c:3805 fontforge/featurefile.c:4098
 #, c-format
 msgid "Lookups may only be specified after marked glyphs on line %d of %s"
-msgstr "Lookups får endast anges efter markerade glyfer på rad %d i %s"
+msgstr "Uppslagningar får endast anges efter markerade glyfer på rad %d i %s"
 
 #: fontforge/featurefile.c:3809 fontforge/featurefile.c:4102
 #, c-format
 msgid "Lookups must be defined before being used on line %d of %s"
-msgstr "Lookups måste definieras innan de används på rad %d i %s"
+msgstr "Uppslagningar måste definieras innan de används på rad %d i %s"
 
 #: fontforge/featurefile.c:3824
 #, c-format
@@ -1168,7 +1168,7 @@ msgid ""
 "When a single substitution is specified by glyph classes, those classes must"
 " be of the same length on line %d of %s"
 msgstr ""
-"När en enda substitution specificeras av glyfklasser måste de här klasser "
+"När en enda substitution specificeras av glyfklasser måste de här klasserna "
 "vara av samma längd på rad %d i %s"
 
 #: fontforge/featurefile.c:4507
@@ -1183,7 +1183,7 @@ msgstr ""
 #: fontforge/featurefile.c:4734
 #, c-format
 msgid "Lookup information attached to unmarked glyph on line %d of %s"
-msgstr "Sök information kopplad till omärkt glyf på rad %d i %s"
+msgstr "Uppslagningsinformation kopplad till en omarkerad glyf på rad %d i %s"
 
 #: fontforge/featurefile.c:4755 fontforge/featurefile.c:4958
 #, c-format
@@ -1216,7 +1216,7 @@ msgstr ""
 #: fontforge/featurefile.c:4886 fontforge/featurefile.c:4940
 #, c-format
 msgid "No substitution specified on line %d of %s"
-msgstr "Ingen substitution angiven på rad %d i %s"
+msgstr "Ingen substitution angavs på rad %d i %s"
 
 #: fontforge/featurefile.c:4891
 #, c-format
@@ -1271,7 +1271,7 @@ msgstr "Förväntat '{' i funktionsdefinitionen på rad %d i %s"
 #: fontforge/featurefile.c:5194
 #, c-format
 msgid "Unexpected end of file in lookup definition on line %d of %s"
-msgstr "Oväntat slut på filen i lookup-definitionen på rad %d i %s"
+msgstr "Oväntat filslut i definitionen av uppslagning på rad %d i %s"
 
 #: fontforge/featurefile.c:5198
 #, c-format
@@ -1290,15 +1290,15 @@ msgstr "Förväntade %s i uppslagsdefinitionen på rad %d i %s"
 #: fontforge/featurefile.c:5283
 #, c-format
 msgid "All entries in a lookup must have the same type on line %d of %s"
-msgstr "Alla poster i en lookup måste ha samma typ på rad %d i %s"
+msgstr "Alla poster i en uppslagning måste ha samma typ på rad %d i %s"
 
 #: fontforge/featurefile.c:5290
 #, c-format
 msgid ""
 "This lookup has no effect, I can't figure out its type on line %d of %s"
 msgstr ""
-"Den här uppslagning har ingen effekt, jag kan inte räkna ut dess typ på rad "
-"%d i %s"
+"Den här uppslagningen har ingen effekt, jag kan inte avgöra typen på rad %d "
+"i %s"
 
 #: fontforge/featurefile.c:5322
 #, c-format
@@ -1513,8 +1513,8 @@ msgid ""
 "You are attempting to clear %.30s which is referred to by\n"
 "another character. Are you sure you want to clear it?"
 msgstr ""
-"Du försöker rensa %.30s som refereras till av\n"
-"ett annat tecken. Vill du verkligen vill rensa det?"
+"Du försöker rensa %.30s, som refereras av\n"
+"ett annat tecken. Är du säker på att du vill rensa den?"
 
 #: fontforge/fontviewbase.c:381 fontforge/fontviewbase.c:382
 msgid "Building duplicate encodings"
@@ -1621,7 +1621,7 @@ msgid ""
 "Are you sure you want to replace Å?\n"
 "The ring will not join to the A."
 msgstr ""
-"Vill du verkligen vill byta ut Å?\n"
+"Är du säker på att du vill ersätta Å?\n"
 "Ringen kommer inte att ansluta till A."
 
 #: fontforge/fontviewbase.c:1480
@@ -1640,7 +1640,7 @@ msgid ""
 "Is that what you want?"
 msgstr ""
 "Teckensnittet %1$.40s i filen %2$.40s har ändrats.\n"
-"Om du återställer filen kommer de här ändringar att gå förlorade.\n"
+"Om du återställer filen kommer de här ändringarna att gå förlorade.\n"
 "Är det vad du vill?"
 
 #: fontforge/fontviewbase.c:1710 fontforgeexe/fontview.c:577
@@ -1656,8 +1656,8 @@ msgid ""
 "This font comes from an old format sfd file. Not all aspects of it can be "
 "reverted successfully."
 msgstr ""
-"Det här typsnitt kommer från en sfd-fil i gammalt format. Inte alla aspekter"
-" av det kan återställas framgångsrikt."
+"Det här typsnittet kommer från en SFD-fil i ett äldre format. Alla delar kan"
+" inte återställas korrekt."
 
 #: fontforge/fontviewbase.c:1842
 msgid "Glyph Name Changed"
@@ -1674,7 +1674,7 @@ msgstr ""
 
 #: fontforge/fontviewbase.c:1848 fontforgeexe/charview.c:6234
 msgid "Can't Find Glyph"
-msgstr "Kan inte hitta Glyph"
+msgstr "Kan inte hitta glyf"
 
 #: fontforge/fontviewbase.c:1848 fontforgeexe/charview.c:6234
 #, c-format
@@ -1683,19 +1683,19 @@ msgstr "Glyfen, %.80s, kan inte hittas i filen sfd"
 
 #: fontforge/freetype.c:76
 msgid "This version of FontForge expects freetype 2.3.7 or more."
-msgstr "Den här version av FontForge förväntar sig freetype 2.3.7 eller mer."
+msgstr "Den här versionen av FontForge kräver FreeType 2.3.7 eller senare."
 
 #: fontforge/freetype.c:649
 msgid "No ByteCode Interpreter"
-msgstr "Ingen ByteCode-tolkning"
+msgstr "Ingen bytekodstolk"
 
 #: fontforge/freetype.c:649
 msgid ""
 "These results are those of the freetype autohinter. They do not reflect the "
 "truetype instructions."
 msgstr ""
-"De här resultat gäller för freetype autohinter. De återspeglar inte "
-"truetype-instruktionerna."
+"De här resultaten kommer från FreeTypes autohintare. De återspeglar inte "
+"TrueType-instruktionerna."
 
 #. GT: the string "dotlessi" is the official postscript name for the glyph
 #. GT: containing an "i" without a dot on top of it. The name "dotlessi"
@@ -1734,7 +1734,7 @@ msgstr ""
 #: fontforge/fvfonts.c:323
 #, c-format
 msgid "No matching AnchorClass for %s"
-msgstr "Ingen matchande AnchorClass för %s"
+msgstr "Ingen matchande AnchorClass hittades för %s"
 
 #: fontforge/fvfonts.c:1246 fontforge/fvfonts.c:1254
 #: fontforgeexe/fvfontsdlg.c:59
@@ -1824,7 +1824,7 @@ msgid ""
 "I can't even imagine how to attempt to interpolate gradients in layer %d of "
 "%s"
 msgstr ""
-"Jag kan inte ens föreställa mig hur man försöker interpolera gradienter i "
+"Jag kan inte ens föreställa mig hur man skulle interpolera gradienter i "
 "lager %d av %s"
 
 #: fontforge/fvfonts.c:1517
@@ -1842,8 +1842,8 @@ msgstr "Olika streckmönster i lager %d av %s"
 msgid ""
 "I can't even imagine how to attempt to interpolate images in layer %d of %s"
 msgstr ""
-"Jag kan inte ens föreställa mig hur jag ska försöka interpolera bilder i "
-"lager %d av %s"
+"Jag kan inte ens föreställa mig hur man skulle interpolera bilder i lager %d"
+" av %s"
 
 #: fontforge/fvfonts.c:1551
 #, c-format
@@ -1863,8 +1863,8 @@ msgid ""
 "Interpolating between fonts with different spline orders (i.e. between "
 "postscript and truetype)"
 msgstr ""
-"Interpolering mellan teckensnitt med olika spline-ordning (t.ex. Mellan "
-"postscript och truetype)"
+"Interpolering mellan typsnitt med olika splineordning, alltså mellan "
+"PostScript och TrueType"
 
 #: fontforge/fvfonts.c:1623
 msgid ""
@@ -1903,7 +1903,7 @@ msgstr "Gissning av pixelstorlek baserat på teckensnittets nedstigning i %s"
 #: fontforge/fvimportbdf.c:682
 #, c-format
 msgid "FontForge does not support this bit depth %d (must be 1,2,4,8,16,32)"
-msgstr "FontForge stöder inte det här bitdjup %d (måste vara 1,2,4,8,16,32)"
+msgstr "FontForge stöder inte det här bitdjupet %d (måste vara 1,2,4,8,16,32)"
 
 #: fontforge/fvimportbdf.c:986
 msgid "Unexpected EOF in gf"
@@ -1961,8 +1961,7 @@ msgid ""
 "font with this pixelsize (%d)\n"
 "Do you want to overwrite it?"
 msgstr ""
-"Teckensnittsdatabasen innehåller redan ett bitmapps\n"
-"teckensnitt med den här pixelstorlek (%d)\n"
+"Teckensnittsdatabasen innehåller redan ett bitmappsteckensnitt med den här pixelstorleken (%d)\n"
 "Vill du skriva över det?"
 
 #: fontforge/fvimportbdf.c:2060
@@ -2026,7 +2025,7 @@ msgstr "Läsa glyfer"
 #: fontforge/fvimportbdf.c:2318
 #, c-format
 msgid "Could not find a bitmap font in %s"
-msgstr "Kunde inte hitta ett bitmappsfonte i %s"
+msgstr "Kunde inte hitta ett bitmappstypsnitt i %s"
 
 #: fontforge/fvimportbdf.c:2318
 msgid "No Bitmap Font"
@@ -2056,8 +2055,8 @@ msgstr "Glyfen \"%s\" skiljer sig åt\n"
 msgid ""
 "Glyph “%s” refers to %s with a different truetype point matching scheme\n"
 msgstr ""
-"Glyfen \"%s\" hänvisar till %s med ett annat truetype-"
-"punktmatchningsschema\n"
+"Glyfen ”%s” hänvisar till %s med ett annat matchningsschema för TrueType-"
+"punkter\n"
 
 #: fontforge/glyphcomp.c:1041 fontforge/glyphcomp.c:1056
 #, c-format
@@ -2090,8 +2089,8 @@ msgid ""
 "Glyph “%s” contains a reference which has different truetype point match "
 "specifications\n"
 msgstr ""
-"Glyfen \"%s\" innehåller en referens som har olika specifikationer för "
-"matchning av truetype-punkter\n"
+"Glyfen ”%s” innehåller en referens med andra inställningar för matchning av "
+"TrueType-punkter\n"
 
 #: fontforge/glyphcomp.c:1128
 #, c-format
@@ -2143,12 +2142,12 @@ msgstr "Ledtrådarna skiljer sig åt i glyfen \"%s\"\n"
 #: fontforge/glyphcomp.c:1168 fontforge/glyphcomp.c:1171
 #, c-format
 msgid "Glyph “%s” in %s has no truetype instructions\n"
-msgstr "Glyfen \"%s\" i %s har inga truetype-instruktioner\n"
+msgstr "Glyfen ”%s” i %s har inga TrueType-instruktioner\n"
 
 #: fontforge/glyphcomp.c:1175
 #, c-format
 msgid "Glyph “%s” has different truetype instructions\n"
-msgstr "Glyfen \"%s\" har olika truetype-instruktioner\n"
+msgstr "Glyfen ”%s” har andra TrueType-instruktioner\n"
 
 #: fontforge/glyphcomp.c:1210 fontforge/glyphcomp.c:1225
 #, c-format
@@ -2282,7 +2281,7 @@ msgstr "Uppslagsskillnader\n"
 #: fontforge/glyphcomp.c:1991
 #, c-format
 msgid "Lookup subtable %s (matched with %s)\n"
-msgstr "Slå upp undertabellen %s (matchad med %s)\n"
+msgstr "Uppslagsundertabell %s (matchad mot %s)\n"
 
 #: fontforge/glyphcomp.c:1993
 msgid "<Nothing>"
@@ -2328,12 +2327,12 @@ msgstr "\"%s\" i %s innehöll inte en substitutionsuppslagning till %s\n"
 #: fontforge/glyphcomp.c:2080
 #, c-format
 msgid "The kerning class subtable %s in %s fails to match %s in %s\n"
-msgstr "Kerningsklassen subtable %s i %s matchar inte %s i %s\n"
+msgstr "Kerningklassundertabellen %s i %s matchar inte %s i %s\n"
 
 #: fontforge/glyphcomp.c:2087
 #, c-format
 msgid "The context/chaining subtable %s in %s fails to match %s in %s\n"
-msgstr "Undertabellen %s i %s i sammanhanget/kedjan matchar inte %s i %s\n"
+msgstr "Kontext-/kedjeundertabellen %s i %s matchar inte %s i %s\n"
 
 #: fontforge/glyphcomp.c:2094
 #, c-format
@@ -2354,7 +2353,7 @@ msgstr "Ingen kerning mellan \"%s\" och %s i %s medan det är %d i %s\n"
 #: fontforge/glyphcomp.c:2189 fontforge/glyphcomp.c:2224
 #, c-format
 msgid "Lookups in %s but not in %s\n"
-msgstr "Sökningar i %s men inte i %s\n"
+msgstr "Uppslagningar i %s men inte i %s\n"
 
 #: fontforge/glyphcomp.c:2193 fontforge/glyphcomp.c:2228
 #, c-format
@@ -2364,7 +2363,7 @@ msgstr "Uppslag %s finns inte i %s\n"
 #: fontforge/glyphcomp.c:2206 fontforge/glyphcomp.c:2241
 #, c-format
 msgid "Lookups subtables in %s but not in %s\n"
-msgstr "Letar upp subtabeller i %s men inte i %s\n"
+msgstr "Uppslagsundertabeller i %s men inte i %s\n"
 
 #: fontforge/glyphcomp.c:2210 fontforge/glyphcomp.c:2245
 #, c-format
@@ -2387,9 +2386,9 @@ msgid ""
 "means, please send me (gww@silcom.com) a copy of this font so I can test "
 "with it."
 msgstr ""
-"Det här tecken (gid=%d) har en följande del (%d). Jag är inte säker på vad "
-"det betyder, skicka mig (gww@silcom.com) en kopia av det här typsnitt så att"
-" jag kan testa med det."
+"Det här tecknet (gid=%d) har en följande del (%d). Jag är inte säker på vad "
+"det betyder, skicka mig (gww@silcom.com) en kopia av det här typsnittet så "
+"att jag kan testa med det."
 
 #: fontforge/ikarus.c:630
 #, c-format
@@ -2405,8 +2404,8 @@ msgid ""
 "This looks like an ikarus format which I have seen examples of, but for which\n"
 "I have no documentation. FontForge does not support it yet.\n"
 msgstr ""
-"Det här ser ut som ett ikarus-format som jag har sett exempel på, men som\n"
-"Jag har ingen dokumentation. FontForge har inte stöd för det ännu.\n"
+"Det här ser ut som ett Ikarus-format som jag har sett exempel på, men som\n"
+"jag inte har någon dokumentation för. FontForge har ännu inte stöd för det.\n"
 
 #: fontforge/ikarus.c:640
 #, c-format
@@ -2820,7 +2819,7 @@ msgstr "Karaktärsvarianter 48"
 
 #: fontforge/lookups.c:121
 msgid "Character Variants 49"
-msgstr "Karaktärsvarianter 49"
+msgstr "Teckenvarianter 49"
 
 #: fontforge/lookups.c:122
 msgid "Character Variants 50"
@@ -3052,7 +3051,7 @@ msgstr "Expertformulär"
 
 #: fontforge/lookups.c:179
 msgid "Final Glyph On Line"
-msgstr "Final Glyph på nätet"
+msgstr "Sista glyf på raden"
 
 #: fontforge/lookups.c:180
 msgid "Terminal Forms #2"
@@ -4399,7 +4398,7 @@ msgstr "%s uppslag %d"
 #: fontforge/lookups.c:1789 fontforge/parsettfatt.c:6012
 #, c-format
 msgid "%s subtable"
-msgstr "%s underordnad tabell"
+msgstr "%s-undertabell"
 
 #. GT: This string is used to generate a name for an OpenType lookup subtable.
 #. GT:  %s is the lookup name, %d is the index of the subtable in the lookup
@@ -4531,8 +4530,8 @@ msgid ""
 "No replacement lists may be specified in this contextual lookup, use a "
 "nested lookup instead, starting at: %.20s..."
 msgstr ""
-"Inga ersättningslistor kan anges i den här kontextuella uppslagning, använd "
-"istället en nästlad uppslagning som börjar på: %.20s..."
+"Inga ersättningslistor kan anges i den här kontextuella uppslagningen, "
+"använd istället en nästlad uppslagning som börjar på: %.20s..."
 
 #: fontforge/lookups.c:4983
 #, c-format
@@ -4575,13 +4574,14 @@ msgstr "Okänd sökning: %s"
 #, c-format
 msgid "GSUB lookup referred to in this GPOS contextual lookup: %s"
 msgstr ""
-"GSUB-sökning som hänvisas till i den här GPOS-kontextuella sökning: %s"
+"GSUB-sökning som hänvisas till i den här GPOS-kontextuella sökningen: %s"
 
 #: fontforge/lookups.c:5009
 #, c-format
 msgid "GPOS lookup referred to in this GSUB contextual lookup: %s"
 msgstr ""
-"GPOS-uppslagsord som avses i det här GSUB-kontextuella uppslagsord: %s"
+"GPOS-uppslagning som det hänvisas till i den här GSUB-kontextuella "
+"uppslagningen: %s"
 
 #: fontforge/lookups.c:5014
 #, c-format
@@ -4624,7 +4624,7 @@ msgstr "Det finns ingen glyf med namnet \"%s\" i teckensnittet."
 #: fontforge/lookups.c:5164
 #, c-format
 msgid "%s is not a class name for the backtracking classes."
-msgstr "%s är inte ett klassnamn för backtracking-klasserna."
+msgstr "%s är inte ett klassnamn för bakåtblicksklasserna."
 
 #: fontforge/lookups.c:5166
 #, c-format
@@ -4656,8 +4656,8 @@ msgid ""
 "displayed on the screen"
 msgstr ""
 "ATM kräver att teckensnitt kodas med Macintosh Latin-kodning. Det här "
-"postscript-typsnitt går bra att skriva ut, men endast bitmappsversionerna "
-"visas på skärmen"
+"PostScript-teckensnittet går bra att skriva ut, men bara bitmappsversionerna"
+" kommer att visas på skärmen"
 
 #: fontforge/macbinary.c:894 fontforge/macbinary.c:1235
 msgid "The generated font won't work with ATM"
@@ -4665,7 +4665,7 @@ msgstr "Det genererade teckensnittet fungerar inte med ATM"
 
 #: fontforge/macbinary.c:1983
 msgid "Can't open temporary file for postscript output"
-msgstr "Kan inte öppna temporär fil för postscript-utmatning"
+msgstr "Kan inte öppna temporär fil för PostScript-utdata"
 
 #: fontforge/macbinary.c:2004
 #, c-format
@@ -4701,7 +4701,7 @@ msgstr "Det finns flera teckensnitt i den här filen, välj ett"
 
 #: fontforge/macbinary.c:2156
 msgid "Can't open temporary file for truetype output."
-msgstr "Det går inte att öppna en temporär fil för truetype-utdata."
+msgstr "Kan inte öppna temporär fil för TrueType-utdata."
 
 #: fontforge/macbinary.c:2755
 #, c-format
@@ -4721,7 +4721,7 @@ msgstr "Kunde inte hitta en teckensnittsfil med namnet %s"
 #, c-format
 msgid "%s is a mac resource file but contains no postscript or truetype fonts"
 msgstr ""
-"%s är en Mac-resursfil men innehåller inga Postscript- eller Truetype-"
+"%s är en Mac-resursfil men innehåller inga PostScript- eller TrueType-"
 "teckensnitt"
 
 #: fontforge/macenc.c:2237 fontforgeexe/fontinfo.c:865
@@ -5445,7 +5445,7 @@ msgid ""
 "upper limit, and the top of the base operator."
 msgstr ""
 "Minsta gap mellan botten på den övre gränsen och den övre gränsen för "
-"basoperatören.\n"
+"basoperatören."
 
 #: fontforge/mathconstants.c:66
 msgid "UpperLimitGapMin:"
@@ -5699,7 +5699,7 @@ msgid ""
 "and the ink of the fraction bar.."
 msgstr ""
 "Minsta tolererade mellanrum mellan nämnarens bläck och bläcket i bråkdelen "
-"bar...\n"
+"bar..."
 
 #: fontforge/mathconstants.c:88
 msgid "FractionDenominatorDisplayStyleGapMin:"
@@ -5711,7 +5711,7 @@ msgid ""
 "and the ink of the fraction bar in display style."
 msgstr ""
 "Minsta tolererade mellanrum mellan nämnarens övre del och bläcket i "
-"bråkstrecket i displaystil.\n"
+"bråkstrecket i displaystil."
 
 #: fontforge/mathconstants.c:89
 msgid ""
@@ -5801,7 +5801,7 @@ msgstr "RadikaltVertikaltGap:"
 msgid ""
 "Space between the ink to of the\n"
 "expression and the bar over it."
-msgstr "Mellanslag mellan bläcket till i uttrycket och strecket över det.\n"
+msgstr "Mellanslag mellan bläcket till i uttrycket och strecket över det."
 
 #: fontforge/mathconstants.c:98
 msgid "RadicalDisplayStyleVerticalGap:"
@@ -5904,7 +5904,7 @@ msgstr ""
 
 #: fontforge/mm.c:319 fontforge/mm.c:541
 msgid "The different instances of this mm have a different number of glyphs"
-msgstr "De olika instanserna av den här mm har olika antal glyfer"
+msgstr "De olika instanserna av den här MM har olika antal glyfer"
 
 #: fontforge/mm.c:323 fontforge/mm.c:327
 msgid "This glyph is defined in one instance font but not in another"
@@ -5920,14 +5920,14 @@ msgid ""
 "A reference in this glyph refers to a different encoding in different "
 "instances"
 msgstr ""
-"En referens i den här glyf hänvisar till en annan kodning i olika fall"
+"En referens i den här glyfen hänvisar till en annan kodning i olika fall"
 
 #: fontforge/mm.c:446 fontforge/mm.c:458
 msgid ""
 "A contour in this glyph contains a different number of points in different "
 "instances"
 msgstr ""
-"En kontur i den här glyf innehåller olika antal punkter i olika instanser"
+"En kontur i den här glyfen innehåller olika antal punkter i olika instanser"
 
 #: fontforge/mm.c:468
 msgid ""
@@ -6140,8 +6140,8 @@ msgid ""
 "Instance fonts may only contain a 'cvt ' table, but %.30s has some other "
 "truetype table as well"
 msgstr ""
-"Instance-teckensnitt kanske bara innehåller en \"cvt\"-tabell, men %.30s har"
-" också någon annan truetype-tabell"
+"Instansteckensnitt får bara innehålla en \"cvt\"-tabell, men %.30s har även "
+"någon annan TrueType-tabell"
 
 #: fontforge/mm.c:1185
 #, c-format
@@ -6243,7 +6243,7 @@ msgstr "AGL för nya teckensnitt"
 
 #: fontforge/namelist.c:7060
 msgid "Adobe Glyph List"
-msgstr "Adobe Glyph-lista"
+msgstr "Adobe Glyph List"
 
 #: fontforge/namelist.c:8362
 msgid "AGL with PUA"
@@ -6372,7 +6372,7 @@ msgstr ""
 "första \"%%%%\"-raden kommer att behandlas som ett första upphovsrättsmeddelande).\n"
 "De tre första subrutinerna är för flexhintar, nästa för hint\n"
 "(den här MÅSTE finnas med), den 14:e (eller 13 eftersom numreringen faktiskt börjar med 0) är för räknartips.\n"
-"Subrutinerna ska inte vara inneslutna i ett [ ] par.\n"
+"Subrutinerna ska inte vara inneslutna i ett [ ] par."
 
 #: fontforge/noprefs.c:190 fontforgeexe/prefs.c:302
 msgid "OtherSubrsFile"
@@ -6407,8 +6407,8 @@ msgid ""
 "Whether new fonts should contain splines of quadratic (truetype)\n"
 "or cubic (postscript & opentype)."
 msgstr ""
-"Huruvida nya teckensnitt ska innehålla splines av kvadratisk (truetype)\n"
-"eller kubisk (postscript & opentype)."
+"Om nya teckensnitt ska innehålla kvadratiska splines (TrueType)\n"
+"eller kubiska splines (PostScript och OpenType)."
 
 #: fontforge/noprefs.c:194 fontforgeexe/prefs.c:303
 msgid "FreeTypeInFontView"
@@ -6450,9 +6450,9 @@ msgid ""
 "and a CJK encoding table, use this flag to specify which\n"
 "should be loaded for the font."
 msgstr ""
-"När du laddar ett truetype- eller opentype-typsnitt som har både en unicode\n"
-"och en CJK-kodningstabell, använd den här flagga för att ange vilken\n"
-"ska laddas för teckensnittet."
+"När du läser in ett TrueType- eller OpenType-typsnitt som har både en Unicode-\n"
+"och en CJK-kodningstabell använder du den här flaggan för att ange vilken\n"
+"som ska läsas in för typsnittet."
 
 #: fontforge/noprefs.c:197 fontforgeexe/prefs.c:327
 msgid "AskUserForCMap"
@@ -6475,7 +6475,7 @@ msgid ""
 "FontForge thinks it understands."
 msgstr ""
 "Ange en lista med tabelltaggar med 4 bokstäver, åtskilda med kommatecken.\n"
-"FontForge kommer att göra en binär kopia av de här tabeller när den\n"
+"FontForge kommer att göra en binär kopia av de här tabellerna när den\n"
 "laddar ett True/OpenType-teckensnitt, och kommer att mata ut dem (oförändrade)\n"
 "när det genererar teckensnittet. Inkludera inte tabelltaggar som\n"
 "FontForge tror att den förstår."
@@ -6603,14 +6603,14 @@ msgid ""
 msgstr ""
 "Instruktioner i ett TrueType-typsnitt hänvisar till\n"
 "punkter med nummer, så om du redigerar en glyf\n"
-"på ett sådant sätt att vissa punkter har olika\n"
-"nummer (lägg till punkter, ta bort dem etc.) då\n"
-"instruktionerna kommer att tillämpas på fel\n"
+"på ett sådant sätt att vissa punkter får andra\n"
+"nummer, till exempel genom att lägga till eller ta bort punkter,\n"
+"kommer instruktionerna att tillämpas på fel\n"
 "punkter med katastrofala resultat.\n"
-"  Normalt kommer FontForge att ta bort instruktionerna\n"
+"  Normalt tar FontForge bort instruktionerna\n"
 "om den upptäcker att punkterna har omnumrerats\n"
-"för att undvika ovanstående problem. Du kan stänga av\n"
-"det här beteende av -- men var försiktig!"
+"för att undvika det här problemet. Du kan stänga av\n"
+"det här beteendet, men var försiktig!"
 
 #: fontforge/noprefs.c:208 fontforgeexe/prefs.c:376
 msgid "CopyTTFInstrs"
@@ -6669,7 +6669,7 @@ msgid ""
 "building accented glyphs."
 msgstr ""
 "Använd mellanrumsaccenter (Unicode: 02C0-02FF) i stället för\n"
-"kombinerande accenter (Unicode: 0300-036F) när du bygger glyfer med accenter.\n"
+"kombinerande accenter (Unicode: 0300-036F) när du bygger glyfer med accenter."
 
 #: fontforge/noprefs.c:213 fontforgeexe/prefs.c:387
 msgid ""
@@ -6681,7 +6681,7 @@ msgstr ""
 "FontForge stöder två olika hjälpprogram för att göra autotracing\n"
 " autotrace och potrace\n"
 "Om ditt system bara har en kommer den att använda den, om du har båda\n"
-"använd det här alternativ för att tala om för FontForge vilket som ska väljas."
+"använd det här alternativetet för att tala om för FontForge vilket som ska väljas."
 
 #: fontforge/noprefs.c:213 fontforgeexe/prefs.c:387
 msgid "PreferPotrace"
@@ -7047,9 +7047,9 @@ msgid ""
 "the MetricsView if you open one? Negative values mean there's no limit, "
 "which should be used sparingly."
 msgstr ""
-"När tecken väljs i FontView, hur många ska läggas in i MetricsView om man "
-"öppnar en sådan? Negativa värden innebär att det inte finns någon gräns, "
-"vilket bör användas sparsamt."
+"När tecken markeras i teckensnittsvyn, hur många ska då läggas in i måttvyn "
+"om du öppnar en sådan? Negativa värden betyder att det inte finns någon "
+"gräns, vilket bör användas sparsamt."
 
 #: fontforge/noprefs.c:270 fontforgeexe/prefs.c:358 fontforgeexe/prefs.c:2489
 msgid "ArrowMoveSize"
@@ -7171,7 +7171,7 @@ msgstr ""
 #: fontforge/nowakowskittfinstr.c:5174 fontforge/nowakowskittfinstr.c:5187
 #: fontforgeexe/ttfinstrsui.c:875 fontforgeexe/ttfinstrsui.c:888
 msgid "Can't instruct this glyph"
-msgstr "Kan inte instruera den här glyf"
+msgstr "Kan inte instruera den här glyfen"
 
 #: fontforge/nowakowskittfinstr.c:5175 fontforgeexe/ttfinstrsui.c:876
 #, c-format
@@ -7198,7 +7198,7 @@ msgid ""
 msgstr ""
 "TrueType stöder inte referenser som är skalade med mer än 200%%.  Men %1$.30s\n"
 "har varit i %2$.30s. Eventuella instruktioner\n"
-"tillagda skulle vara meningslösa.\n"
+"tillagda skulle vara meningslösa."
 
 #: fontforge/othersubrs.c:542
 msgid "Too many subroutines. We can deal with at most 14 (0-13)"
@@ -7286,7 +7286,7 @@ msgstr "Välj ett filformat..."
 
 #: fontforge/palmfonts.c:660
 msgid "What type(s) of palm font records do you want?"
-msgstr "Vilken eller vilka typer av palm font records vill du ha?"
+msgstr "Vilken eller vilka typer av palm-fontposter vill du ha?"
 
 #: fontforge/parsepdf.c:515
 msgid "Compressed object container is itself a compressed object"
@@ -7440,8 +7440,8 @@ msgid ""
 "This font contains a \"UniqueId\" variable, but the correct name for it is\n"
 "\t\"UniqueID\" (postscript is case conscious)\n"
 msgstr ""
-"Det här typsnitt innehåller en \"UniqueId\"-variabel, men det korrekta namnet för den är\n"
-"\t\"UniqueID\" (postscript är medvetet om versaler)\n"
+"Det här typsnittet innehåller variabeln \"UniqueId\", men det korrekta namnet är\n"
+"\t\"UniqueID\" (PostScript skiljer på versaler och gemener)\n"
 
 #: fontforge/parsepfa.c:1975
 #, c-format
@@ -7727,7 +7727,7 @@ msgstr "tabell med layoutfunktioner"
 
 #: fontforge/parsettf.c:950
 msgid "SIL Graphite layout feature table"
-msgstr "SIL Graphite layout funktionsbord"
+msgstr "SIL Graphite-layoutfunktionstabell"
 
 #: fontforge/parsettf.c:951
 msgid "FontForge time stamp table"
@@ -7767,7 +7767,7 @@ msgstr "Attributbord för glyfer i grafit"
 
 #: fontforge/parsettf.c:960
 msgid "Graphite glyph location in Glat table"
-msgstr "Grafitsymbolens placering i Glat bord"
+msgstr "Graphite-glyfens placering i Glat-tabellen"
 
 #: fontforge/parsettf.c:961
 msgid "glyph outline table"
@@ -7823,7 +7823,7 @@ msgstr "tabell för kerning"
 
 #: fontforge/parsettf.c:974
 msgid "ligature caret table"
-msgstr "ligatur caret bord"
+msgstr "tabell för ligaturmarkörer"
 
 #: fontforge/parsettf.c:975
 msgid "glyph location table"
@@ -7847,7 +7847,7 @@ msgstr "tabell för maximal profil"
 
 #: fontforge/parsettf.c:980
 msgid "anti-alias merge table"
-msgstr "Tabell för sammanslagning av anti-alias"
+msgstr "tabell för sammanslagning av kantutjämning"
 
 #: fontforge/parsettf.c:981
 msgid "metadata table"
@@ -7907,11 +7907,11 @@ msgstr "standard bitmappsgrafik tabell"
 
 #: fontforge/parsettf.c:996
 msgid "SIL Graphite rule table"
-msgstr "SIL Graphite regelbord"
+msgstr "SIL Graphite-regeltabell"
 
 #: fontforge/parsettf.c:997
 msgid "(unspecified) SIL Graphite table"
-msgstr "(ospecificerat) SIL Grafittabell"
+msgstr "(ospecificerad) SIL Graphite-tabell"
 
 #: fontforge/parsettf.c:998
 msgid "unknown SIL table"
@@ -7991,8 +7991,8 @@ msgid ""
 "This font contains both truetype and PostScript glyph descriptions\n"
 "  only one will be used.\n"
 msgstr ""
-"Det här typsnitt innehåller både truetype- och PostScript-glyfbeskrivningar\n"
-"  endast en kommer att användas.\n"
+"Det här typsnittet innehåller både TrueType- och PostScript-beskrivningar av glyfer.\n"
+"  Bara en av dem kommer att användas.\n"
 
 #: fontforge/parsettf.c:1261
 msgid ""
@@ -8036,7 +8036,8 @@ msgstr "Dålig glyfräkning"
 #, c-format
 msgid "Font file has bad glyph count field. maxp says: %d sizeof(loca)=>%d"
 msgstr ""
-"Teckensnittsfilen har fel glyph count-fält. maxp säger: %d sizeof(loca)=>%d"
+"Teckensnittsfilen har ett felaktigt fält för antal glyfer. maxp säger: %d "
+"sizeof(loca)=>%d"
 
 #: fontforge/parsettf.c:1470
 #, c-format
@@ -8189,8 +8190,7 @@ msgstr ""
 #: fontforge/parsettf.c:2172
 #, c-format
 msgid "Glyph %d attempts to reference glyph %d which is outside the font"
-msgstr ""
-"Glyph %d försöker referera till glyph %d som ligger utanför teckensnittet"
+msgstr "Glyf %d försöker referera till glyf %d som ligger utanför typsnittet"
 
 #: fontforge/parsettf.c:2182
 msgid "Reached end of file when reading composite glyph"
@@ -8212,7 +8212,9 @@ msgstr "Fel glyf (%d), dess datalängd är negativ"
 #: fontforge/parsettf.c:2239
 #, c-format
 msgid "Glyph bounding box data exceeds font bounding box data for GID %d"
-msgstr "Glyph bounding box-data överskrider font bounding box-data för GID %d"
+msgstr ""
+"Glyfens avgränsningsramsdata överskrider teckensnittets avgränsningsramsdata"
+" för GID %d"
 
 #: fontforge/parsettf.c:2254
 #, c-format
@@ -8377,8 +8379,8 @@ msgstr "Felaktig kodningsinformation i tabellen \"cmap\"."
 msgid ""
 "Encoding subtable for platform=%d, specific=%d has an unsupported format %d."
 msgstr ""
-"Kodning av subtable för plattform=%d, specifik=%d har ett format %d som inte"
-" stöds."
+"Kodningsundertabellen för plattform=%d, specifik=%d har ett format %d som "
+"inte stöds."
 
 #: fontforge/parsettf.c:4329
 #, c-format
@@ -8394,8 +8396,8 @@ msgid ""
 "Encoding subtable for platform=%d, specific=%d (which must be 14)\n"
 "has an unsupported format %d.\n"
 msgstr ""
-"Kodning av subtable för plattform=%d, specifik=%d (som måste vara 14)\n"
-"har ett format som inte stöds %d.\n"
+"Kodningsundertabellen för plattform=%d, specifik=%d (som måste vara 14)\n"
+"har ett format %d som inte stöds.\n"
 
 #: fontforge/parsettf.c:4395
 #, c-format
@@ -8405,7 +8407,7 @@ msgstr "Ingen glyf med unicode U+%05x i teckensnittet"
 #: fontforge/parsettf.c:4428
 #, c-format
 msgid "GID out of range (%d) in format 14 'cmap' subtable"
-msgstr "GID utanför intervallet (%d) i format 14 'cmap' subtable"
+msgstr "GID utanför intervallet (%d) i undertabell 14 i 'cmap'"
 
 #: fontforge/parsettf.c:4476
 msgid "Script|Japanese"
@@ -8585,7 +8587,8 @@ msgstr ""
 
 #: fontforge/parsettf.c:5431
 msgid "Invalid point match. Point would be after this reference."
-msgstr "Ogiltig punktmatchning. Punkten skulle vara efter den här referens."
+msgstr ""
+"Ogiltig punktmatchning. Punkten skulle hamna efter den här referensen."
 
 #: fontforge/parsettf.c:5456
 #, c-format
@@ -8618,9 +8621,9 @@ msgid ""
 "table. FontForge can only deal with one at a time, please pick which one you"
 " want to use"
 msgstr ""
-"Det här typsnitt innehåller både en TrueType \"glyf\"-tabell och en OpenType"
-" \"CFF\"-tabell. FontForge kan bara hantera en i taget, välj vilken du vill "
-"använda"
+"Det här typsnittet innehåller både en TrueType-tabell med 'glyf' och en "
+"OpenType-tabell med 'CFF '. FontForge kan bara hantera en i taget. Välj "
+"vilken du vill använda"
 
 #: fontforge/parsettf.c:5617
 #, c-format
@@ -8638,8 +8641,8 @@ msgid ""
 "therefore discouraged."
 msgstr ""
 "Namnen \"alefmaksurainitialarabic\" och \"alefmaksuramedialarabic\" i Adobe "
-"Glyph List överensstämmer inte med Unicode.  Användningen av de här glyfnamn"
-" avråds därför."
+"Glyph List överensstämmer inte med Unicode.  Användningen av de här "
+"glyfnamnen avråds därför."
 
 #: fontforge/parsettf.c:5769
 #, c-format
@@ -8684,7 +8687,7 @@ msgstr "GID utanför räckhåll."
 
 #: fontforge/parsettfatt.c:244 fontforge/parsettfatt.c:274
 msgid "coverage table extends beyond end of table"
-msgstr "täckbord sträcker sig längre än bordets ände"
+msgstr "täckningstabellen sträcker sig längre än slutet på tabellen"
 
 #: fontforge/parsettfatt.c:254
 msgid "Bad count."
@@ -8692,7 +8695,7 @@ msgstr "Dålig räkning."
 
 #: fontforge/parsettfatt.c:259 fontforge/parsettfatt.c:284
 msgid "End of file found in coverage table."
-msgstr "Slut på fil som finns i täckningstabellen."
+msgstr "Filslut hittades i täckningstabellen."
 
 #: fontforge/parsettfatt.c:265
 #, c-format
@@ -8718,7 +8721,7 @@ msgstr ""
 #: fontforge/parsettfatt.c:345
 #, c-format
 msgid "Bad class def table. start=%d cnt=%d, max glyph=%d"
-msgstr "Dålig klass def tabell. Start=%d cnt=%d, max glyph=%d"
+msgstr "Felaktig klassdefinitionstabell. start=%d cnt=%d, max glyf=%d"
 
 #: fontforge/parsettfatt.c:362
 #, c-format
@@ -8810,7 +8813,7 @@ msgid ""
 "Attempt to reference lookup %d (within a contextual lookup), but there are\n"
 " only %d lookups in %s"
 msgstr ""
-"Försök att referera till uppslagsordet %d (inom ett kontextuellt uppslagsord), men det finns\n"
+"Försök att referera till uppslagning %d (inom en kontextuell uppslagning), men det finns\n"
 " bara %d uppslagningar i %s"
 
 #. GT: This continues a multi-line error message, hence the leading space
@@ -8832,8 +8835,8 @@ msgid ""
 "Attempt to apply a lookup to a location out of the range of this contextual\n"
 " lookup seq=%d max=%d"
 msgstr ""
-"Försök att tillämpa en lookup på en plats som inte omfattas av den här kontextuella\n"
-" uppslagning seq=%d max=%d"
+"Försök att tillämpa en uppslagning på en plats utanför intervallet för den här kontextuella\n"
+" uppslagningen seq=%d max=%d"
 
 #: fontforge/parsettfatt.c:1160
 msgid " Bad contextual chaining table, ignored"
@@ -8877,13 +8880,13 @@ msgid ""
 "Attempt to apply a lookup to a location out of the range of this contextual\n"
 " lookup seq=%d, max=%d"
 msgstr ""
-"Försök att tillämpa en lookup på en plats som inte omfattas av den här kontextuella\n"
-" uppslagning seq=%d, max=%d"
+"Försök att tillämpa en uppslagning på en plats utanför intervallet för den här kontextuella\n"
+" uppslagningen seq=%d, max=%d"
 
 #: fontforge/parsettfatt.c:1723 fontforge/parsettfatt.c:1732
 #: fontforge/parsettfatt.c:1742 fontforge/parsettfatt.c:1753
 msgid "End of file in context chaining subtable."
-msgstr "Slut på fil i sammanhanget chaining subtable."
+msgstr "Slut på fil i undertabellen för kontextkedjning."
 
 #: fontforge/parsettfatt.c:1889
 msgid " Bad simple substitution table, ignored"
@@ -8990,8 +8993,8 @@ msgid ""
 "The 'size' feature of this font conforms to Adobe's early misinterpretation "
 "of the otf standard."
 msgstr ""
-"Funktionen \"storlek\" i det här typsnitt överensstämmer med Adobes tidiga "
-"feltolkning av otf-standarden."
+"Funktionen \"storlek\" i det här typsnittet överensstämmer med Adobes tidiga"
+" feltolkning av otf-standarden."
 
 #: fontforge/parsettfatt.c:2431
 #, c-format
@@ -9140,7 +9143,7 @@ msgstr "MarkSet-%d"
 #: fontforge/parsettfatt.c:3186
 #, c-format
 msgid "!!!! Unknown caret format %d !!!!"
-msgstr "!!!! Okänt caret-format %d !!!!"
+msgstr "!!!! Okänt ligaturmarkörformat %d !!!!"
 
 #: fontforge/parsettfatt.c:3224
 #, c-format
@@ -9235,7 +9238,7 @@ msgid ""
 "(like the learned constable) too cunning to be understood.\n"
 "I shall give up on it. Your ligatures may be incomplete.\n"
 msgstr ""
-"I ett försök att bearbeta ligaturerna i det här typsnitt har jag kommit fram till\n"
+"I ett försök att bearbeta ligaturerna i det här typsnittet har jag kommit fram till\n"
 "att tillståndsmaskinen i Apples mort/morx-tabell är\n"
 "(som den lärda konstapeln) för listig för att förstås.\n"
 "Jag ska ge upp det. Dina ligaturer kan vara ofullständiga.\n"
@@ -9316,14 +9319,14 @@ msgstr "Dåligt kern-par: glyfer vid %d & %d är null"
 #: fontforge/parsettfatt.c:5054
 #, c-format
 msgid "Kerning subtable 3 says the glyph count is %d, but maxp says %d"
-msgstr "Kerning subtable 3 säger att glyfantalet är %d, men maxp säger %d"
+msgstr ""
+"Kerningundertabell 3 säger att antalet glyfer är %d, men maxp säger %d"
 
 #: fontforge/parsettfatt.c:5087
 #, c-format
 msgid "Invalid or unsupported format (%d) for subtable of 'kern' table"
 msgstr ""
-"Ogiltigt format eller format som inte stöds (%d) för subtable i "
-"'kern'-tabellen"
+"Ogiltigt eller ej stött format (%d) för en undertabell i 'kern'-tabellen"
 
 #: fontforge/parsettfatt.c:5109 fontforge/parsettfatt.c:5133
 #: fontforge/parsettfatt.c:5154
@@ -9332,7 +9335,7 @@ msgstr "Slut på filen i feat-tabellen."
 
 #: fontforge/parsettfatt.c:5437
 msgid "Bad glyph variant subtable of MATH table."
-msgstr "Dålig glyfvariant subtable av MATH-tabellen."
+msgstr "Felaktig undertabell för glyfvarianter i MATH-tabellen."
 
 #: fontforge/parsettfatt.c:5565
 msgid "MATH table extends beyond table bounds"
@@ -9445,8 +9448,8 @@ msgid ""
 "Bad format of subtable %d (of %d) in bloc/EBLC of strike with pixelsize=%d. "
 "First=%d, last=%d.\n"
 msgstr ""
-"Felaktigt format för subtable %d (av %d) i bloc/EBLC of strike med "
-"pixelsize=%d. Första=%d, sista=%d.\n"
+"Felaktigt format för undertabell %d (av %d) i bloc/EBLC för strike med "
+"pixelstorlek=%d. Första=%d, sista=%d.\n"
 
 #: fontforge/parsettfbmf.c:481
 #, c-format
@@ -9462,8 +9465,8 @@ msgid ""
 "Do you want to load the bitmap fonts embedded in this true/open type file?\n"
 "(And if so, which)"
 msgstr ""
-"Vill du ladda de bitmappsfonter som är inbäddade i den här true/open type-fil?\n"
-"(Och i så fall vilka)"
+"Vill du läsa in de bitmappstypsnitt som är inbäddade i den här TrueType-/OpenType-filen?\n"
+"(I så fall vilka?)"
 
 #: fontforge/parsettfbmf.c:633 fontforgeexe/fontview.c:5208
 #: fontforgeexe/metricsview.c:3978
@@ -9650,7 +9653,7 @@ msgid ""
 "Skipping plugin %s: module '%s': Error calling 'fontforge_plugin_init' "
 "function"
 msgstr ""
-"Hoppa över insticksprogrammet %s: modul '%s': Fel vid anrop av funktionen "
+"Hoppar över insticksmodulen %s: modulen '%s': fel vid anrop av funktionen "
 "'fontforge_plugin_init'"
 
 #: fontforge/plugin.cpp:266
@@ -9658,13 +9661,13 @@ msgstr ""
 msgid ""
 "Skipping plugin %s: module '%s': Lacks 'fontforge_plugin_init' function"
 msgstr ""
-"Hoppa över insticksprogrammet %s: modul '%s': Saknar funktionen "
+"Hoppar över insticksmodulen %s: modulen '%s' saknar funktionen "
 "'fontforge_plugin_init'"
 
 #: fontforge/plugin.cpp:281
 #, c-format
 msgid "Skipping plugin %s: module '%s': Could not load."
-msgstr "Hoppa över insticksprogrammet %s: modul '%s': Kunde inte laddas."
+msgstr "Hoppar över insticksmodulen %s: modulen '%s' kunde inte läsas in."
 
 #: fontforge/plugin.cpp:308
 msgid ""
@@ -9679,11 +9682,11 @@ msgstr "Metoden 'entry_points()' hittades inte i modulen 'importlib.metadata'"
 
 #: fontforge/plugin.cpp:336
 msgid "Failed to retrieve plugin entry points"
-msgstr "Misslyckades med att hämta insticksmodul entry points"
+msgstr "Misslyckades med att hämta insticksmodulens ingångspunkter"
 
 #: fontforge/plugin.cpp:347
 msgid "Could not iterate 'fontforge_plugin' entry points."
-msgstr "Kunde inte iterera 'fontforge_plugin'-inmatningspunkter."
+msgstr "Kunde inte iterera över ingångspunkterna för 'fontforge_plugin'."
 
 #: fontforge/plugin.cpp:508
 #, c-format
@@ -9730,7 +9733,7 @@ msgstr "Generera PostScript-teckensnitt"
 
 #: fontforge/print.cpp:1558
 msgid "Failed to generate postscript font"
-msgstr "Misslyckades med att generera postscript-teckensnitt"
+msgstr "Misslyckades med att generera PostScript-teckensnitt"
 
 #: fontforge/print.cpp:1807 fontforge/print.cpp:2966 fontforge/print.cpp:2971
 #: fontforge/print.cpp:3104 fontforgeexe/displayfonts.c:698
@@ -9744,7 +9747,7 @@ msgstr "Varning för att teckensnittet Teckensnittet innehöll inga glyfer"
 #: fontforge/print.cpp:2966 fontforge/print.cpp:2971
 #, c-format
 msgid "Failed to generate postscript in file %s"
-msgstr "Misslyckades med att generera postscript i filen %s"
+msgstr "Misslyckades med att generera PostScript i filen %s"
 
 #: fontforge/print.cpp:3104 fontforgeexe/displayfonts.c:698
 #, c-format
@@ -9828,7 +9831,7 @@ msgstr ""
 
 #: fontforge/psread.c:1579 fontforge/psread.c:1588 fontforge/psread.c:1597
 msgid "Divide by zero in postscript code.\n"
-msgstr "Dividera med noll i postscript-kod.\n"
+msgstr "Division med noll i PostScript-kod.\n"
 
 #: fontforge/psread.c:1679
 msgid "Can't compare arrays\n"
@@ -10233,7 +10236,7 @@ msgstr "Fel typ av SFD-fil"
 #: fontforge/savefont.c:497
 #, c-format
 msgid "Bad offset: %d for subfont %s"
-msgstr "Fel offset: %d för subfont %s"
+msgstr "Fel offset: %d för underteckensnitt %s"
 
 #: fontforge/savefont.c:528
 #, c-format
@@ -10297,7 +10300,7 @@ msgstr "Spara teckensnitt med CID-nyckel"
 
 #: fontforge/savefont.c:820
 msgid "Saving multi-master font"
-msgstr "Spara multi-master font"
+msgstr "Spara multi-master-teckensnitt"
 
 #: fontforge/savefont.c:821
 msgid "Saving SVG font"
@@ -10491,8 +10494,8 @@ msgid ""
 "Adding new glyphs and referring to them when a glyph contains a bad truetype"
 " reference"
 msgstr ""
-"Lägga till nya glyfer och hänvisa till dem när en glyf innehåller en dålig "
-"truetype-referens"
+"Lägg till nya glyfer och hänvisa till dem när en glyf innehåller en felaktig"
+" TrueType-referens"
 
 #: fontforge/search.c:1451
 #, c-format
@@ -10602,7 +10605,7 @@ msgstr "Misslyckades med att hitta NameList: %s"
 
 #: fontforge/sfd.cpp:6723
 msgid "Missing Subtable definition found in chained context"
-msgstr "Saknad Subtable-definition hittad i kedjat sammanhang"
+msgstr "Saknad undertabellsdefinition hittades i kedjat sammanhang"
 
 #: fontforge/sfd.cpp:7697
 msgid "'StyleMapFamilyName' entry has been ignored"
@@ -10648,8 +10651,8 @@ msgid ""
 "You appear to have an old editing session on %s.\n"
 "Would you like to recover it?"
 msgstr ""
-"Det verkar som om du har en gammal redigeringssession på %s.\n"
-"Skulle du vilja återställa den?"
+"Det verkar finnas en gammal redigeringssession för %s.\n"
+"Vill du återställa den?"
 
 #: fontforge/sfd.cpp:9412
 #, c-format
@@ -10736,14 +10739,14 @@ msgstr "Du har just ändrat punktnumreringen för glyfen %s.%s%s%s"
 #: fontforge/splinechar.c:2647
 msgid " Instructions in this glyph (or one that refers to it) have been lost."
 msgstr ""
-" Instruktioner i den här glyf (eller en som hänvisar till den) har gått "
+" Instruktioner i den här glyfen (eller en som hänvisar till den) har gått "
 "förlorade."
 
 #: fontforge/splinechar.c:2648
 msgid ""
 " Instructions in this glyph (or one that refers to it) are now out of date."
 msgstr ""
-" Instruktioner i den här glyf (eller en som hänvisar till den) är nu "
+" Instruktioner i den här glyfen (eller en som hänvisar till den) är nu "
 "inaktuella."
 
 #: fontforge/splinechar.c:2649
@@ -10751,7 +10754,7 @@ msgid ""
 " At least one reference to this glyph used point matching. That match is now"
 " out of date."
 msgstr ""
-" Åtminstone en referens till den här glyf använde punktmatchning. Den "
+" Åtminstone en referens till den här glyfen använde punktmatchning. Den "
 "matchningen är nu föråldrad."
 
 #: fontforge/splinechar.c:2651
@@ -10799,7 +10802,7 @@ msgstr "%d pixlar"
 
 #: fontforge/splinefill.c:1469
 msgid "Generating bitmap font"
-msgstr "Generera bitmappsfonter"
+msgstr "Genererar bitmappstypsnitt"
 
 #: fontforge/splinefill.c:1475 fontforge/splinefill.c:1634
 msgid "Rasterizing..."
@@ -10807,7 +10810,7 @@ msgstr "Rastrering..."
 
 #: fontforge/splinefill.c:1628
 msgid "Generating anti-alias font"
-msgstr "Generering av anti-alias-teckensnitt"
+msgstr "Genererar kantutjämnat teckensnitt"
 
 #: fontforge/splinefont.c:759
 msgid "There are multiple files in this archive, pick one"
@@ -11071,11 +11074,11 @@ msgstr "Kunde inte hitta det refererade tecknet \"%s\" i %s"
 
 #: fontforge/splineutil.c:2702
 msgid "Multiple master font with more than 16 instances"
-msgstr "Multipel masterfont med mer än 16 instanser"
+msgstr "Flerfaldigt masterteckensnitt med mer än 16 instanser"
 
 #: fontforge/splineutil.c:2727
 msgid "Multiple master font with more than 4 axes"
-msgstr "Multipel masterfont med mer än 4 axlar"
+msgstr "Flerfaldigt masterteckensnitt med mer än 4 axlar"
 
 #: fontforge/splineutil.c:2735
 #, c-format
@@ -11211,11 +11214,11 @@ msgstr "Kunde inte hitta klippsökvägen med namnet %s."
 
 #: fontforge/svg.c:3305
 msgid "This font does not specify units-per-em"
-msgstr "Det här typsnitt anger inte enheter-per-em"
+msgstr "Det här typsnittet anger inte units per em"
 
 #: fontforge/svg.c:3441
 msgid "This font does not specify font-face"
-msgstr "Det här typsnitt anger inte font-face"
+msgstr "Det här typsnittet anger inte font-face"
 
 #: fontforge/svg.c:3646
 msgid "This file contains no SVG fonts."
@@ -11311,7 +11314,9 @@ msgstr ""
 #: fontforge/tottf.c:6053
 #, c-format
 msgid "Failed to open glyph to name map file for writing: %s"
-msgstr "Misslyckades med att öppna glyph to name map-filen för skrivning: %s"
+msgstr ""
+"Misslyckades med att öppna mappningsfilen från glyf till namn för skrivning:"
+" %s"
 
 #: fontforge/tottf.c:6178 fontforge/tottf.c:6185 fontforge/tottf.c:6188
 msgid "No Encoded Glyphs"
@@ -11361,10 +11366,11 @@ msgid ""
 "pairs (eg, they have a Unicode value of -1) To avoid this, go to Generate, "
 "Options, and check the \"Windows-compatible 'kern'\" option."
 msgstr ""
-"Obs: I Windows kan många program ha problem med det här typsnittets kerning,"
-" eftersom %d av dess glyph kern-par inte kan mappas till unicode-BMP kern-"
-"par (t.ex. Har de ett Unicode-värde på -1) För att undvika det här, gå till "
-"Generera, Alternativ och markera alternativet \"Windows-kompatibel 'kern'\"."
+"Obs: I Windows kan många program få problem med kerningen i det här "
+"typsnittet, eftersom %d av dess kern-par för glyfer inte kan mappas till "
+"Unicode-BMP-kernpar (till exempel om de har Unicode-värdet -1). För att "
+"undvika det här går du till Generera, Alternativ och markerar alternativet "
+"\"Windows-kompatibel 'kern'\"."
 
 #: fontforge/tottfgpos.c:728
 msgid "Glyphs must be ordered when creating coverage table"
@@ -11372,7 +11378,7 @@ msgstr "Glyfer måste beställas när du skapar täckningstabell"
 
 #: fontforge/tottfgpos.c:731
 msgid "-1 glyph index in dumpcoveragetable."
-msgstr "-1 glyph index i dumpcoveragetable."
+msgstr "-1-glyfindex i dumpcoveragetable."
 
 #: fontforge/tottfgpos.c:1404
 #, c-format
@@ -11398,7 +11404,7 @@ msgid ""
 "I miscalculated the size of subtable %s, this means the kerning output is "
 "wrong."
 msgstr ""
-"Jag räknade fel på storleken på subtable %s, vilket innebär att "
+"Jag räknade fel på storleken för undertabell %s, vilket innebär att "
 "kerningutmatningen är fel."
 
 #: fontforge/tottfgpos.c:1745
@@ -11581,7 +11587,7 @@ msgstr "Misslyckades med att läsa riktlinjerna."
 
 #: fontforge/ufo.c:2556
 msgid "Expected glyph file with format==1 or 2"
-msgstr "Förväntad glyph-fil med format==1 eller 2"
+msgstr "Förväntade en glyffil med format==1 eller 2"
 
 #: fontforge/ufo.c:2568
 msgid "Bad glyph name."
@@ -11682,7 +11688,8 @@ msgstr "kerning.plist refererar till en saknad kerningklass."
 #: fontforge/ufo.c:3657
 msgid "kerning.plist defines an offset between classes in different lookups."
 msgstr ""
-"kerning.plist definierar en förskjutning mellan klasser i olika lookups."
+"kerning.plist definierar en förskjutning mellan klasser i olika "
+"uppslagningar."
 
 #: fontforge/ufo.c:3658
 msgid "There is a kerning class index error."
@@ -11700,7 +11707,7 @@ msgstr ""
 
 #: fontforge/ufo.c:4083
 msgid "This font does not specify unitsPerEm, so we guess 1000."
-msgstr "Den här font anger inte unitsPerEm, så vi gissar på 1000."
+msgstr "Det här typsnittet anger inte unitsPerEm, så vi gissar på 1000."
 
 #: fontforge/ufo.c:4237 fontforge/ufo.c:4299
 msgid "No glyphs directory or no contents file"
@@ -11802,7 +11809,7 @@ msgstr "Rikta in punkterna"
 
 #: fontforgeexe/alignment.c:216 fontforgeexe/alignment.c:281
 msgid "How to align these points?"
-msgstr "Hur justerar man de här punkter?"
+msgstr "Hur justerar man de här punkterna?"
 
 #: fontforgeexe/alignment.c:358 fontforgeexe/anchorsaway.c:1240
 #: fontforgeexe/combinations.c:1124 fontforgeexe/cvhints.c:484
@@ -11975,7 +11982,7 @@ msgstr ""
 "För små pixelstorlekar kanske du vill använda förstoringsfaktorn\n"
 "faktorn nedan för att få en tydligare vy.\n"
 "\n"
-"Rullgardinsmenyn innehåller de pixelstorlekar där det finns korrigeringar av enhetstabellen.\n"
+"Rullgardinsmenyn innehåller de pixelstorlekar där det finns korrigeringar av enhetstabellen."
 
 #. GT: Short for: Magnification
 #. GT: Short for "Magnification"
@@ -11999,7 +12006,7 @@ msgstr ""
 
 #: fontforgeexe/anchorsaway.c:1301
 msgid "The X coordinate of the anchor point in this glyph"
-msgstr "X-koordinaten för ankarpunkten i den här glyf"
+msgstr "X-koordinaten för ankarpunkten i den här glyfen"
 
 #. GT: Short for Correction
 #: fontforgeexe/anchorsaway.c:1306 fontforgeexe/anchorsaway.c:1352
@@ -12026,16 +12033,17 @@ msgid ""
 "pixelsizes where rounding errors will have a\n"
 "proportionally greater effect."
 msgstr ""
-"Det här är antalet pixlar med vilket ankaret ska flyttas horisontellt när glyfen rastreras i\n"
-"rastreras i ovanstående storlek.  Den här information\n"
-"är en del av enhetstabellen för det här ankaret.\n"
+"Det här är antalet pixlar som ankaret\n"
+"ska flyttas horisontellt med när glyfen\n"
+"rastreras i storleken ovan. Den här informationen\n"
+"är en del av enhetstabellen för ankaret.\n"
 "Enhetstabeller är särskilt viktiga vid små\n"
-"pixelstorlekar där avrundningsfel kommer att ha en\n"
-"proportionellt större effekt.\n"
+"pixelstorlekar, där avrundningsfel får\n"
+"proportionellt större effekt."
 
 #: fontforgeexe/anchorsaway.c:1347
 msgid "The Y coordinate of the anchor point in this glyph"
-msgstr "Y-koordinaten för ankarpunkten i den här glyf"
+msgstr "Y-koordinaten för ankarpunkten i den här glyfen"
 
 #: fontforgeexe/anchorsaway.c:1370
 msgid ""
@@ -12047,12 +12055,13 @@ msgid ""
 "pixelsizes where rounding errors will have a\n"
 "proportionally greater effect."
 msgstr ""
-"Det här är antalet pixlar med vilket ankaret ska flyttas vertikalt när glyfen rastreras i\n"
-"rastreras i ovanstående storlek.  Den här information\n"
-"är en del av enhetstabellen för det här ankaret.\n"
+"Det här är antalet pixlar som ankaret\n"
+"ska flyttas vertikalt med när glyfen\n"
+"rastreras i storleken ovan. Den här informationen\n"
+"är en del av enhetstabellen för ankaret.\n"
 "Enhetstabeller är särskilt viktiga vid små\n"
-"pixelstorlekar där avrundningsfel kommer att ha en\n"
-"proportionellt större effekt.\n"
+"pixelstorlekar, där avrundningsfel får\n"
+"proportionellt större effekt."
 
 #: fontforgeexe/autowidth2dlg.c:65 fontforgeexe/kernclass.c:254
 #: fontforgeexe/kernclass.c:304 fontforgeexe/kernclass.c:1213
@@ -12096,7 +12105,7 @@ msgstr ""
 "FontForge kommer att försöka justera vänster och höger\n"
 "sidobäringar för de valda glyferna så att den genomsnittliga\n"
 "mellan glyferna i ett skript blir den angivna mängden. Du kan också ange ett minimi- och\n"
-"maximivärde för varje glyfs sidobäringar.\n"
+"maximivärde för varje glyfs sidobäringar."
 
 #: fontforgeexe/autowidth2dlg.c:166
 msgid "_Separation:"
@@ -12735,7 +12744,7 @@ msgstr "_Typsnittsinfo..."
 #: fontforgeexe/bitmapview.c:2211 fontforgeexe/fontview.c:5579
 #: fontforgeexe/metricsview.c:3489
 msgid "Glyph _Info..."
-msgstr "Glyph _Info..."
+msgstr "Glyf_info..."
 
 #: fontforgeexe/bitmapview.c:2212
 msgid "BDF Info..."
@@ -12753,7 +12762,7 @@ msgstr "Återskapa _Bitmap Glyphs..."
 
 #: fontforgeexe/bitmapview.c:2216
 msgid "Remove This Glyph"
-msgstr "Ta bort den här glyf"
+msgstr "Ta bort den här glyfen"
 
 #: fontforgeexe/bitmapview.c:2218 fontforgeexe/charview.c:11443
 #: fontforgeexe/fontview.c:4671
@@ -13010,7 +13019,7 @@ msgstr "Saknar glyfnamn"
 #: fontforgeexe/charinfo.c:872
 #, c-format
 msgid "You must specify a glyph name for subtable %s"
-msgstr "Du måste ange ett glyfnamn för subtable %s"
+msgstr "Du måste ange ett glyfnamn för undertabell %s"
 
 #: fontforgeexe/charinfo.c:884
 #, c-format
@@ -13018,8 +13027,8 @@ msgid ""
 "In lookup subtable %.30s you refer to a glyph named %.80s, which is not in "
 "the font yet. Was this intentional?"
 msgstr ""
-"I lookup subtable %.30s hänvisar du till en glyf som heter %.80s, som inte "
-"finns i typsnittet ännu. Var det här avsiktligt?"
+"I uppslagsundertabellen %.30s hänvisar du till en glyf som heter %.80s, men "
+"den finns inte i typsnittet ännu. Var det avsiktligt?"
 
 #: fontforgeexe/charinfo.c:894
 #, c-format
@@ -13067,7 +13076,7 @@ msgid ""
 "both must be unique within a font,\n"
 "do you want to swap them?"
 msgstr ""
-"Det finns redan en glyf med det här namn och den här kodning,\n"
+"Det finns redan en glyf med det här namn och den här kodningen,\n"
 "båda måste vara unika inom ett typsnitt,\n"
 "vill du byta ut dem?"
 
@@ -13077,7 +13086,7 @@ msgid ""
 "which must be unique within a font,\n"
 "do you want to swap the encodings of the two?"
 msgstr ""
-"Det finns redan en glyf med den här kodning,\n"
+"Det finns redan en glyf med den här kodningen,\n"
 "som måste vara unik inom ett typsnitt,\n"
 "vill du byta ut kodningarna för de två?"
 
@@ -13133,11 +13142,11 @@ msgstr "Kakel Max Y"
 
 #: fontforgeexe/charinfo.c:1420
 msgid "Ligature Caret Count"
-msgstr "Ligatur Caret Count"
+msgstr "Antal ligaturmarkörer"
 
 #: fontforgeexe/charinfo.c:1424
 msgid "Bad Lig. Caret Count"
-msgstr "Felaktig Lig. Caret Räkna"
+msgstr "Felaktigt antal ligaturmarkörer"
 
 #: fontforgeexe/charinfo.c:1424
 msgid "Unreasonable ligature caret count"
@@ -13193,7 +13202,7 @@ msgstr ""
 "Vid små pixelstorlekar (teckensnittsstorlekar på skärmen)\n"
 "kan de avrundningsfel som uppstår vara extremt fula. Med en enhetstabell kan du\n"
 "kan du ange justeringar av de avrundade felen.\n"
-"Varje pixelstorlek har sin egen justering.\n"
+"Varje pixelstorlek har sin egen justering."
 
 #: fontforgeexe/charinfo.c:2335
 msgid "PixelSize|New"
@@ -13343,11 +13352,11 @@ msgstr "Välj en färg"
 #: fontforgeexe/charinfo.c:3905
 #, c-format
 msgid "Glyph Info for %.40s"
-msgstr "Glyph-info för %.40s"
+msgstr "Glyfinfo för %.40s"
 
 #: fontforgeexe/charinfo.c:3906
 msgid "Glyph Info..."
-msgstr "Glyph Info..."
+msgstr "Glyfinfo..."
 
 #: fontforgeexe/charinfo.c:4005
 msgid "No components"
@@ -13363,7 +13372,7 @@ msgstr "Glyf sammansatt av:"
 
 #: fontforgeexe/charinfo.c:4322
 msgid "Glyph Info"
-msgstr "Glyf-information"
+msgstr "Glyfinfo"
 
 #: fontforgeexe/charinfo.c:4333
 msgid "Gl_yph Name:"
@@ -13414,7 +13423,7 @@ msgstr ""
 "\n"
 "I det första fallet används en variationsväljare\n"
 "0, i det andra fallet används lämplig\n"
-"kodpunkt.\n"
+"kodpunkt."
 
 #: fontforgeexe/charinfo.c:4443
 msgid "OT _Glyph Class:"
@@ -13470,9 +13479,9 @@ msgid ""
 "Omitting the others makes the behavior clearer."
 msgstr ""
 "Visa inte kolumner med 0:or.\n"
-"OpenType-lookupen tillåter upp till 8 typer\n"
-"av data, men nästan alla kerning lookups kommer att använda bara en.\n"
-"Om du utelämnar de andra blir beteendet tydligare."
+"En OpenType-uppslagning kan innehålla upp till 8 typer\n"
+"av data, men nästan alla kerninguppslagningar använder bara en.\n"
+"Om de andra utelämnas blir beteendet tydligare."
 
 #: fontforgeexe/charinfo.c:4561
 msgid "CounterHint|_New..."
@@ -13493,7 +13502,7 @@ msgid ""
 msgstr ""
 "\n"
 "\n"
-"Om standardnedbrytningen är olämplig för det här typsnitt kan du välja en egen nedbrytning."
+"Om standardnedbrytningen är olämplig för det här typsnittet kan du välja en egen nedbrytning."
 
 #: fontforgeexe/charinfo.c:4627
 msgid "Use default?"
@@ -13504,7 +13513,7 @@ msgid ""
 "For example, to build this character from U+0061 (lowercase a) as the base and U+030C (combining caron), write:\n"
 "0061 030C"
 msgstr ""
-"Om du t.ex. Vill bygga det här tecken från U+0061 (gemen a) som bas och U+030C (kombinerar caron) skriver du\n"
+"Om du t.ex. Vill bygga det här tecknet från U+0061 (gemen a) som bas och U+030C (kombinerar caron) skriver du\n"
 "0061 030C"
 
 #: fontforgeexe/charinfo.c:4655 fontforgeexe/cvstroke.c:2381
@@ -13611,7 +13620,7 @@ msgstr ""
 
 #: fontforgeexe/charinfo.c:4814
 msgid "Default Ligature Caret Count"
-msgstr "Standard Ligatur Caret Count"
+msgstr "Standardantal ligaturmarkörer"
 
 #: fontforgeexe/charinfo.c:4820 fontforgeexe/charinfo.c:4832
 #: fontforgeexe/charinfo.c:4839
@@ -13625,18 +13634,18 @@ msgid ""
 "outline glyph view (drag them from to origin to the\n"
 "appropriate place)."
 msgstr ""
-"Ligaturkaraktärernas placering används av en textredigerare\n"
-"när den behöver rita en textredigeringskaraktär inuti en\n"
-"ligatur. Det här innebär att det bör finnas en caret mellan\n"
+"Ligaturmarkörernas positioner används av en textredigerare\n"
+"när den behöver rita en textmarkör inne i en\n"
+"ligatur. Det innebär att det bör finnas en markör mellan\n"
 "varje ligaturkomponent, så om det finns n komponenter\n"
-"bör det finnas n-1 caret-platser.\n"
-"  Du kan justera caret-placeringarna själva i\n"
-"glyfvyn (dra dem från ursprunget till lämplig plats).\n"
-"Lämplig plats)."
+"bör det finnas n-1 markörpositioner.\n"
+"  Du kan justera markörpositionerna direkt i\n"
+"glyfkonturvyn (dra dem från ursprunget till\n"
+"lämplig plats)."
 
 #: fontforgeexe/charinfo.c:4826
 msgid "Ligature Caret Count:"
-msgstr "Ligatur Caret Count:"
+msgstr "Antal ligaturmarkörer:"
 
 #: fontforgeexe/charinfo.c:4855
 msgid "Variant Glyphs:"
@@ -13652,7 +13661,7 @@ msgstr ""
 
 #: fontforgeexe/charinfo.c:4870
 msgid "Glyph Extension Components"
-msgstr "Glyph Extension-komponenter"
+msgstr "Glyfutökningskomponenter"
 
 #: fontforgeexe/charinfo.c:4875
 msgid ""
@@ -13665,13 +13674,13 @@ msgid ""
 "glyph, while the EndLength is the similar region at the end\n"
 "of the glyph. The FullLength is the full length of the glyph."
 msgstr ""
-"En riktigt stor version av den här glyf kan bestå av följande komponentglyfer. De kommer att staplas antingen\n"
+"En riktigt stor version av den här glyfen kan bestå av följande komponentglyfer. De kommer att staplas antingen\n"
 "horisontellt eller vertikalt. Glyfer markerade som Extenders kan\n"
 "tas bort eller upprepas (för att skapa kortare eller längre versioner).\n"
 "StartLength är längden på den platta sektionen i början av glyfen\n"
 "glyfens början som kan vara överlappad med föregående glyf\n"
 "föregående glyf, medan EndLength är den liknande regionen i slutet\n"
-"av glyfen. FullLength är glyfens hela längd.\n"
+"av glyfen. FullLength är glyfens hela längd."
 
 #. GT: "Cor" is an abbreviation for correction
 #: fontforgeexe/charinfo.c:4880
@@ -13695,11 +13704,11 @@ msgid ""
 "box of the contents, or specify the bounds\n"
 "explicitly."
 msgstr ""
-"Om den här glyf används som ett mönster för att\n"
+"Om den här glyfen används som ett mönster för att\n"
 "någon annan glyf så är det användbart att specificera\n"
 "hur mycket blanksteg som ska omge kakelplattan.\n"
 "Ange antingen en marginal för att utöka innehållets\n"
-"innehållet, eller ange gränserna explicit.\n"
+"innehållet, eller ange gränserna explicit."
 
 #: fontforgeexe/charinfo.c:4936
 msgid "Tile Margin:"
@@ -13745,7 +13754,7 @@ msgstr "Ligaturer"
 
 #: fontforgeexe/charinfo.c:5066
 msgid "Lig. Carets"
-msgstr "Lig. Carets"
+msgstr "Ligaturmarkörer"
 
 #: fontforgeexe/charinfo.c:5071
 msgid "Components"
@@ -14066,11 +14075,11 @@ msgstr "Färgen på linjen som markerar vänster lager när det är valt"
 
 #: fontforgeexe/charview.c:273
 msgid "Ligature Caret Color"
-msgstr "Ligatur Caret Färg"
+msgstr "Färg för ligaturmarkörer"
 
 #: fontforgeexe/charview.c:273
 msgid "The color of the line(s) marking ligature carets"
-msgstr "Färgen på strecket (strecken) som markerar ligatur-carets"
+msgstr "Färgen på linjen eller linjerna som markerar ligaturmarkörer"
 
 #: fontforgeexe/charview.c:274
 msgid "Anchored Line Color"
@@ -14368,7 +14377,7 @@ msgstr "Anger en viktig pixel i rutnätet när deltan föreslås."
 
 #: fontforgeexe/charview.c:323
 msgid "Grid Fit Color"
-msgstr "Grid Fit Färg"
+msgstr "Färg för rutnätsanpassning"
 
 #: fontforgeexe/charview.c:323
 msgid "The color of grid-fit outlines"
@@ -14510,7 +14519,7 @@ msgstr "ItalicCor."
 
 #: fontforgeexe/charview.c:2818
 msgid "Lig.Caret"
-msgstr "Lig.caret"
+msgstr "Lig.markör"
 
 #: fontforgeexe/charview.c:2824
 msgid "TopAccent"
@@ -15061,7 +15070,7 @@ msgstr "_Bygga accentuerad glyf"
 #: fontforgeexe/charview.c:11407 fontforgeexe/fontview.c:4598
 #: fontforgeexe/metricsview.c:3461
 msgid "Build _Composite Glyph"
-msgstr "Bygg _Composite Glyph"
+msgstr "Bygg _sammansatt glyf"
 
 #: fontforgeexe/charview.c:11412 fontforgeexe/fontview.c:4608
 msgid "_References..."
@@ -15099,7 +15108,7 @@ msgstr "_Cluster"
 
 #: fontforgeexe/charview.c:11433 fontforgeexe/fontview.c:4662
 msgid "_Glyph Info..."
-msgstr "_Glyph Info..."
+msgstr "_Glyfinfo..."
 
 #: fontforgeexe/charview.c:11434
 msgid "Get _Info..."
@@ -15423,11 +15432,11 @@ msgstr "P_positioner"
 
 #: fontforgeexe/charview.c:11684
 msgid "Show _Grid Fit..."
-msgstr "Visa _Grid Fit..."
+msgstr "Visa _rutnätsanpassning..."
 
 #: fontforgeexe/charview.c:11685
 msgid "Show _Grid Fit (Live Update)..."
-msgstr "Visa _Grid Fit (liveuppdatering)..."
+msgstr "Visa _rutnätsanpassning (liveuppdatering)..."
 
 #: fontforgeexe/charview.c:11686 fontforgeexe/metricsview.c:3650
 msgid "_Bigger Point Size"
@@ -15560,7 +15569,7 @@ msgstr "_Visa kompositioner..."
 
 #: fontforgeexe/charview.c:11744
 msgid "Form_er Glyph"
-msgstr "Form_er Glyph"
+msgstr "Tidiga_re glyf"
 
 #: fontforgeexe/charview.c:11748
 msgid "N_umber Points"
@@ -15720,7 +15729,8 @@ msgstr "Ingen sekvens/uppslagning"
 #: fontforgeexe/contextchain.c:1061
 msgid ""
 "There are no entries in the Sequence/Lookup List, was this intentional?"
-msgstr "Det finns inga poster i Sequence/Lookup List, var det här avsiktligt?"
+msgstr ""
+"Det finns inga poster i listan Sekvens/Uppslagning. Var det avsiktligt?"
 
 #: fontforgeexe/contextchain.c:707 fontforgeexe/contextchain.c:740
 #: fontforgeexe/contextchain.c:1081
@@ -15782,16 +15792,16 @@ msgid ""
 "In a Reverse Chaining Substitution there must be exactly one coverage table "
 "to match"
 msgstr ""
-"I en Reverse Chaining Substitution måste det finnas exakt en täckningstabell"
-" att matcha"
+"I en omvänd kedjesubstitution måste det finnas exakt en täckningstabell att "
+"matcha"
 
 #: fontforgeexe/contextchain.c:1051 fontforgeexe/contextchain.c:1196
 msgid ""
 "In a Reverse Chaining Substitution there must be exactly as many "
 "replacements as there are glyph names in the match coverage table"
 msgstr ""
-"I en Reverse Chaining Substitution måste det finnas exakt lika många "
-"ersättningar som det finns glyfnamn i matchningstäckningstabellen"
+"I en omvänd kedjesubstitution måste det finnas exakt lika många ersättningar"
+" som det finns glyfnamn i matchningstäckningstabellen"
 
 #: fontforgeexe/contextchain.c:1051 fontforgeexe/contextchain.c:1196
 msgid "Replacement mismatch"
@@ -15820,8 +15830,8 @@ msgid ""
 "In a Reverse Chaining Substitution there must be exactly one coverage table "
 "with replacements"
 msgstr ""
-"I en Reverse Chaining Substitution måste det finnas exakt en täckningstabell"
-" med ersättningar"
+"I en omvänd kedjesubstitution måste det finnas exakt en täckningstabell med "
+"ersättningar"
 
 #: fontforgeexe/contextchain.c:1214 fontforgeexe/contextchain.c:1219
 #: fontforgeexe/contextchain.c:1226
@@ -15927,7 +15937,7 @@ msgstr "Redigera kedjeposition"
 
 #: fontforgeexe/contextchain.c:2011
 msgid "Edit Chaining Substitution"
-msgstr "Edit Chaining Substitution"
+msgstr "Redigera kedjesubstitution"
 
 #: fontforgeexe/contextchain.c:2012
 msgid "Edit Reverse Chaining Substitution"
@@ -16004,8 +16014,8 @@ msgid ""
 " hides some of the complexities of these rules,\n"
 " or a more complex form which gives you full control."
 msgstr ""
-"Den här dialog har två format. Ett enklare som\n"
-" döljer en del av komplexiteten i de här regler,\n"
+"Den här dialogen har två format. Ett enklare som\n"
+" döljer en del av komplexiteten i de här reglerna,\n"
 " eller en mer komplex form som ger dig full kontroll."
 
 #: fontforgeexe/contextchain.c:2271
@@ -16030,7 +16040,7 @@ msgstr "Ställ in från val"
 
 #: fontforgeexe/contextchain.c:2413 fontforgeexe/contextchain.c:2588
 msgid "Set this glyph list from a selection."
-msgstr "Ange den här glyf-lista från ett urval."
+msgstr "Ange den här glyfen-lista från ett urval."
 
 #: fontforgeexe/contextchain.c:2427 fontforgeexe/contextchain.c:2532
 #: fontforgeexe/contextchain.c:3129
@@ -16210,8 +16220,8 @@ msgid ""
 "The points have been changed. This may mean that the truetype instructions "
 "now refer to the wrong points and they may cause unexpected results."
 msgstr ""
-"Punkterna har ändrats. Det här kan innebära att truetype-instruktionerna nu "
-"hänvisar till fel punkter och att de kan orsaka oväntade resultat."
+"Punkterna har ändrats. Det här kan innebära att TrueType-instruktionerna nu "
+"hänvisar till fel punkter och därför kan ge oväntade resultat."
 
 #: fontforgeexe/cvdebug.c:2124
 msgid "Step into"
@@ -16352,7 +16362,7 @@ msgstr "Filen existerar"
 #: fontforgeexe/cvexportdlg.c:460 fontforgeexe/savefontdlg.c:1611
 #, c-format
 msgid "File, %s, exists. Replace it?"
-msgstr "Filen %s finns. Ersätta den?"
+msgstr "Filen %s finns redan. Vill du ersätta den?"
 
 #: fontforgeexe/cvexportdlg.c:535
 msgid "Create directory"
@@ -16484,8 +16494,8 @@ msgid ""
 "Only relevant in a truetype font, this flag indicates that the width\n"
 "of the composite glyph should be the same as the width of this reference."
 msgstr ""
-"Den här flagga är endast relevant i ett truetype-typsnitt och anger att bredden\n"
-"på den sammansatta glyfen ska vara densamma som bredden på den här referens."
+"Den här flaggan är bara relevant i ett TrueType-typsnitt och anger att bredden\n"
+"på den sammansatta glyfen ska vara densamma som bredden på den här referensen."
 
 #: fontforgeexe/cvgetinfo.c:432
 msgid "_Round To Grid"
@@ -16496,8 +16506,8 @@ msgid ""
 "Only relevant in a truetype font, this flag indicates that if the reference\n"
 "is translated, then the translation should be rounded during grid fitting."
 msgstr ""
-"Den här flagga är endast relevant i ett truetype-teckensnitt och anger att om referensen\n"
-"är översatt, så ska översättningen avrundas under rutnätsanpassningen."
+"Den här flaggan är bara relevant i ett TrueType-typsnitt och anger att om referensen\n"
+"flyttas, ska förflyttningen avrundas vid rutnätsanpassningen."
 
 #: fontforgeexe/cvgetinfo.c:443
 msgid "TrueType Point _Matching:"
@@ -16512,11 +16522,10 @@ msgid ""
 "point in the reference falls on top of the indicated point in the base\n"
 "character."
 msgstr ""
-"Den här flagga är endast relevant i ett truetype-typsnitt och anger att den här\n"
-"referens inte ska översättas normalt, utan dess position ska bestämmas\n"
-"ska bestämmas genom att flytta referensen så att den angivna\n"
-"punkten i referensen faller ovanpå den angivna punkten i bastecknet.\n"
-"Tecken."
+"Den här flaggan är bara relevant i ett TrueType-typsnitt och anger att den här\n"
+"referensen inte ska flyttas på vanligt sätt. I stället ska dess position\n"
+"bestämmas genom att referensen flyttas så att den angivna\n"
+"punkten i referensen hamnar ovanpå den angivna punkten i bastecknet."
 
 #: fontforgeexe/cvgetinfo.c:514
 msgid "Bounding Box:"
@@ -16648,7 +16657,7 @@ msgstr "AnchorPoint|_Ny"
 
 #: fontforgeexe/cvgetinfo.c:1592
 msgid "AnchorClass|New _Class"
-msgstr "AnchorClass|Ny _Class"
+msgstr "AnchorClass|Ny _klass"
 
 #: fontforgeexe/cvgetinfo.c:2034 fontforgeexe/cvgetinfo.c:2039
 #: fontforgeexe/cvruler.c:766
@@ -16769,7 +16778,7 @@ msgid ""
 "look nicer as this number approaches 0."
 msgstr ""
 "Det här är skillnaden i krökning mellan\n"
-"nästa och föregående splines. Konturer ser ofta snyggare när det här tal närmar sig 0.\n"
+"nästa och föregående splines. Konturer ser ofta snyggare när det här tal närmar sig 0."
 
 #: fontforgeexe/cvgetinfo.c:3108 fontforgeexe/cvgetinfo.c:3580
 #: fontforgeexe/lookupui.c:1961
@@ -16823,7 +16832,7 @@ msgstr "Visa"
 #: fontforgeexe/cvgetinfo.c:3903
 #, c-format
 msgid "Subtable %.60s in glyph %.60s"
-msgstr "Subtable %.60s i glyph %.60s"
+msgstr "Undertabell %.60s i glyf %.60s"
 
 #: fontforgeexe/cvgetinfo.c:3923
 msgid "Dependent Substitutions"
@@ -16831,7 +16840,7 @@ msgstr "Beroende substitutioner"
 
 #: fontforgeexe/cvgridfit.c:71
 msgid "Freetype rasterization failed."
-msgstr "Freetype-rasterisering misslyckades."
+msgstr "FreeType-rasterisering misslyckades."
 
 #: fontforgeexe/cvgridfit.c:125
 msgid "Pointsize Y"
@@ -16873,7 +16882,7 @@ msgstr "_Mono"
 
 #: fontforgeexe/cvgridfit.c:350 fontforgeexe/deltaui.c:304
 msgid "_Anti-Aliased"
-msgstr "_Anti-Aliased"
+msgstr "_Kantutjämnad"
 
 #: fontforgeexe/cvhints.c:223 fontforgeexe/cvhints.c:679
 #: fontforgeexe/layer2layer.c:228
@@ -18053,7 +18062,7 @@ msgstr "_Ansök"
 #: fontforgeexe/cvstroke.c:1568 fontforgeexe/cvstroke.c:1579
 #: fontforgeexe/cvstroke.c:1587
 msgid "Bad Gradient"
-msgstr "Dålig gradient"
+msgstr "Felaktig gradient"
 
 #: fontforgeexe/cvstroke.c:1539
 msgid "There must be at least 2 gradient stops"
@@ -18125,9 +18134,9 @@ msgid ""
 "With the color change happening along\n"
 "the line drawn in the view"
 msgstr ""
-"Gradienten kommer att vara en linjär gradient,\n"
-"Med färgförändringen som sker längs\n"
-"linjen som dras i vyn"
+"Gradienten blir linjär,\n"
+"med färgövergången längs\n"
+"linjen som ritas i vyn"
 
 #: fontforgeexe/cvstroke.c:1857
 msgid "Radial"
@@ -18141,10 +18150,11 @@ msgid ""
 "extending outward until it reaches the\n"
 "specified radius."
 msgstr ""
-"Gradienten kommer att vara en radiell gradient,\n"
-"med färgförändringen som sker i cirklar\n"
-"som börjar vid fokus (om det anges) och\n"
-"sträcker sig utåt tills den når den angivna radien.\n"
+"Gradienten blir radiell,\n"
+"med färgövergången i cirklar\n"
+"som börjar vid fokus, om det anges, och\n"
+"fortsätter utåt tills den når\n"
+"den angivna radien."
 
 #: fontforgeexe/cvstroke.c:1884
 msgid "_Pad"
@@ -18167,7 +18177,7 @@ msgid ""
 "Beyond the endpoints the gradient repeats itself\n"
 "This does not work for PostScript gradients."
 msgstr ""
-"Bortom ändpunkterna upprepar lutningen sig själv\n"
+"Bortom ändpunkterna upprepar sig gradienten.\n"
 "Det här fungerar inte för PostScript-gradienter."
 
 #: fontforgeexe/cvstroke.c:1906
@@ -18179,7 +18189,7 @@ msgid ""
 "Beyond the endpoint the gradient repeats itself, but reflected.\n"
 "This does not work for PostScript gradients"
 msgstr ""
-"Bortom slutpunkten upprepas gradienten, men reflekterad.\n"
+"Bortom ändpunkten upprepar sig gradienten, men spegelvänt.\n"
 "Det här fungerar inte för PostScript-gradienter"
 
 #: fontforgeexe/cvstroke.c:1923
@@ -18231,7 +18241,7 @@ msgstr ""
 
 #: fontforgeexe/cvstroke.c:2356
 msgid "Aspect Ratio same as Tile Glyph"
-msgstr "Aspect Ratio samma som Tile Glyph"
+msgstr "Samma bildförhållande som sidglyfen"
 
 #: fontforgeexe/cvstroke.c:2365 fontforgeexe/metricsview.c:854
 #: fontforgeexe/tilepath.c:1775
@@ -18403,19 +18413,19 @@ msgstr "Ingenting hittades."
 
 #: fontforgeexe/deltaui.c:189 fontforgeexe/deltaui.c:193
 msgid "No FreeType"
-msgstr "Nej FreeType"
+msgstr "Ingen FreeType"
 
 #: fontforgeexe/deltaui.c:189
 msgid "You must install the freetype library before using this command."
 msgstr ""
-"Du måste installera freetype-biblioteket innan du kan använda det här "
+"Du måste installera FreeType-biblioteket innan du kan använda det här "
 "kommandot."
 
 #: fontforgeexe/deltaui.c:193
 msgid ""
 "Your version of the freetype library does not contain the bytecode "
 "interpreter."
-msgstr "Din version av freetype-biblioteket innehåller inte bytecode-tolken."
+msgstr "Din version av FreeType-biblioteket innehåller inte bytekodstolken."
 
 #: fontforgeexe/deltaui.c:210
 msgid "No Instructions"
@@ -18435,7 +18445,7 @@ msgstr "Inte kvadratisk"
 
 #: fontforgeexe/deltaui.c:220
 msgid "This must be a truetype layer."
-msgstr "Det här måste vara ett truetype-lager."
+msgstr "Det här måste vara ett TrueType-lager."
 
 #: fontforgeexe/deltaui.c:234
 msgid "DELTA suggestions"
@@ -18454,7 +18464,7 @@ msgstr ""
 "den avsedda sidan av den pixeln.\n"
 "Om den är på fel sida kan du överväga att använda en DELTA\n"
 "instruktion för att justera den närmaste punkten vid den\n"
-"aktuella pixelstorleken.\n"
+"aktuella pixelstorleken."
 
 #: fontforgeexe/deltaui.c:262
 msgid "Rasterize at sizes:"
@@ -18495,7 +18505,7 @@ msgstr "Sortera|alfabetisk"
 
 #: fontforgeexe/deltaui.c:416
 msgid "Glyph Order"
-msgstr "Glyph-ordning"
+msgstr "Glyfordning"
 
 #: fontforgeexe/deltaui.c:643 fontforgeexe/deltaui.c:655
 #: fontforgeexe/deltaui.c:799 fontforgeexe/deltaui.c:811
@@ -18557,8 +18567,8 @@ msgid ""
 "file which it will find by reading its standard input."
 msgstr ""
 "Vilket annat kommando som helst med alla dess argument.\n"
-"Kommandot måste förvänta sig att hantera en postscript\n"
-"fil som det hittar genom att läsa dess standardinmatning."
+"Kommandot måste vara förberett på att hantera en PostScript-\n"
+"fil som det hittar genom att läsa från standard in."
 
 #: fontforgeexe/displayfonts.c:402
 msgid "Page_Size:"
@@ -18620,31 +18630,29 @@ msgid ""
 "font in which those characters are displayed."
 msgstr ""
 "Välj text och använd sedan den här listan för att ändra\n"
-"teckensnitt som de här tecken visas i."
+"teckensnittet som de här tecknen visas i."
 
 #: fontforgeexe/displayfonts.c:1651
 msgid ""
 "Select some text, this specifies the point\n"
 "size of those characters"
 msgstr ""
-"Välj en text, det här anger punktstorleken\n"
-"storleken på de här tecken"
+"Välj text, det här anger punktstorleken\n"
+"på de här tecknen"
 
 #: fontforgeexe/displayfonts.c:1653
 msgid ""
 "Select some text, this specifies the vertical\n"
 "size of those characters in em-units"
 msgstr ""
-"Välj en text, det här anger den vertikala storleken på de här tecken i em-"
-"enheter\n"
+"Välj text, det här anger den vertikala storleken på de här tecknen i em-"
+"enheter"
 
 #: fontforgeexe/displayfonts.c:1670
 msgid ""
 "Select some text, this specifies the pixel\n"
 "size of those characters"
-msgstr ""
-"Välj lite text, det här anger pixelstorleken\n"
-"pixelstorlek för de här tecken"
+msgstr "Välj text, det här anger pixelstorleken för de här tecknen"
 
 #: fontforgeexe/displayfonts.c:1674
 msgid "_AA"
@@ -18655,8 +18663,8 @@ msgid ""
 "Select some text, this controls whether those characters will be\n"
 "AntiAlias (greymap) characters, or bitmap characters"
 msgstr ""
-"Välj en text, det här styr om de här tecken ska vara\n"
-"AntiAlias-tecken (greymap) eller bitmappstecken"
+"Markera text. Det här styr om de tecknen ska vara\n"
+"kantutjämnade tecken (gråskala) eller bitmappstecken"
 
 #: fontforgeexe/displayfonts.c:1702 fontforgeexe/displayfonts.c:1714
 #: fontforgeexe/displayfonts.c:1727 fontforgeexe/displayfonts.c:1740
@@ -18672,15 +18680,15 @@ msgid ""
 "  FontForge -- uses FontForge's own rasterizer, not\n"
 "    freetype's. Only as last resort"
 msgstr ""
-"Anger filformat som används för att skicka teckensnittet till freetype\n"
-"  pfb -- är standard postscript typ1\n"
-"  ttf -- är truetype\n"
-"  otf -- är opentype\n"
-"  nohints -- freetype rastrerar utan hintar\n"
-"  bitmap -- skickas inte till freetype för rendering\n"
-"    bitmap-teckensnitt måste redan vara genererade\n"
-"  FontForge -- använder FontForge's egen rasterizer, inte\n"
-"    freetype's. Endast som sista utväg"
+"Anger vilket filformat som används för att skicka typsnittet till FreeType\n"
+"  pfb -- är standardformatet för PostScript Type 1\n"
+"  ttf -- är TrueType\n"
+"  otf -- är OpenType\n"
+"  nohints -- FreeType rastrerar utan hintning\n"
+"  bitmap -- skickas inte till FreeType för rendering\n"
+"    bitmappstypsnitt måste redan vara genererade\n"
+"  FontForge -- använder FontForges egen rasteriserare, inte\n"
+"    FreeTypes. Bara som sista utväg"
 
 #: fontforgeexe/displayfonts.c:1733
 msgid "nohints"
@@ -18752,7 +18760,7 @@ msgstr ""
 
 #: fontforgeexe/displayfonts.c:1938
 msgid "Full Pa_ge Glyph"
-msgstr "Full Pa_ge Glyph"
+msgstr "Helsi_deglyf"
 
 #: fontforgeexe/displayfonts.c:1938
 msgid "Full Pa_ge Glyphs"
@@ -18768,7 +18776,7 @@ msgstr ""
 
 #: fontforgeexe/displayfonts.c:1949
 msgid "_Multi Size Glyph"
-msgstr "_Multi Size Glyph"
+msgstr "_Flerskalig glyf"
 
 #: fontforgeexe/displayfonts.c:1949
 msgid "_Multi Size Glyphs"
@@ -22227,19 +22235,19 @@ msgstr "Namn"
 
 #: fontforgeexe/fontinfo.c:1449
 msgid "No Grid Fit"
-msgstr "Ingen Grid Fit"
+msgstr "Ingen rutnätsanpassning"
 
 #: fontforgeexe/fontinfo.c:1450
 msgid "Grid Fit"
-msgstr "Grid Fit"
+msgstr "Rutnätsanpassning"
 
 #: fontforgeexe/fontinfo.c:1454
 msgid "No Anti-Alias"
-msgstr "Ingen Anti-Alias"
+msgstr "Ingen kantutjämning"
 
 #: fontforgeexe/fontinfo.c:1455
 msgid "Anti-Alias"
-msgstr "Anti-Alias"
+msgstr "Kantutjämning"
 
 #: fontforgeexe/fontinfo.c:1459
 msgid "No Symmetric-Smooth"
@@ -22255,7 +22263,7 @@ msgstr "Inget rutnät med Sym-Smooth"
 
 #: fontforgeexe/fontinfo.c:1465
 msgid "Grid Fit w/ Sym-Smooth"
-msgstr "Grid Fit med Sym-Smooth"
+msgstr "Rutnätsanpassning med symmetrisk utjämning"
 
 #: fontforgeexe/fontinfo.c:1469
 msgid "Gasp|For Pixels Per EM <= Value"
@@ -22263,11 +22271,11 @@ msgstr "För Pixlar Per EM <= Värde"
 
 #: fontforgeexe/fontinfo.c:1470
 msgid "Gasp|Grid Fit"
-msgstr "Gasp|Grid Fit"
+msgstr "Gasp|Rutnätsanpassning"
 
 #: fontforgeexe/fontinfo.c:1471
 msgid "Gasp|Anti-Alias"
-msgstr "Gasp|Anti-Alias"
+msgstr "Gasp|Kantutjämning"
 
 #: fontforgeexe/fontinfo.c:1472
 msgid "Gasp|Symmetric Smoothing"
@@ -22275,7 +22283,7 @@ msgstr "Gasp|Symmetrisk utjämning"
 
 #: fontforgeexe/fontinfo.c:1473
 msgid "Gasp|Grid Fit w/ Sym Smooth"
-msgstr "Gasp|Grid Passar med Sym Smooth"
+msgstr "Gasp|Rutnätsanpassning med symmetrisk utjämning"
 
 #: fontforgeexe/fontinfo.c:1476
 msgid "Cubic"
@@ -22557,15 +22565,15 @@ msgstr ""
 
 #: fontforgeexe/fontinfo.c:3703
 msgid "The amount of space between words when using this font"
-msgstr "Mängden utrymme mellan orden när du använder det här typsnitt"
+msgstr "Mängden utrymme mellan orden när du använder det här typsnittet"
 
 #: fontforgeexe/fontinfo.c:3704
 msgid "The amount of stretchable space between words when using this font"
-msgstr "Mängden töjbart utrymme mellan ord när du använder det här typsnitt"
+msgstr "Mängden töjbart utrymme mellan ord när du använder det här typsnittet"
 
 #: fontforgeexe/fontinfo.c:3705
 msgid "The amount the space between words may shrink when using this font"
-msgstr "Utrymmet mellan orden kan krympa när du använder det här typsnitt"
+msgstr "Utrymmet mellan orden kan krympa när du använder det här typsnittet"
 
 #: fontforgeexe/fontinfo.c:3706
 msgid "The height of the lower case letters with flat tops"
@@ -22632,7 +22640,8 @@ msgstr "Felaktig Grid Passningsbord"
 
 #: fontforgeexe/fontinfo.c:4164
 msgid "The 'gasp' (Grid Fit) table must end with a pixel entry of 65535"
-msgstr "Tabellen \"gasp\" (Grid Fit) måste sluta med en pixelpost på 65535"
+msgstr ""
+"Tabellen 'gasp' (rutnätsanpassning) måste sluta med en pixelpost på 65535"
 
 #: fontforgeexe/fontinfo.c:4173
 msgid "Bad Copyright"
@@ -22687,13 +22696,13 @@ msgid ""
 "Is this really your intent?"
 msgstr ""
 "Du är på väg att ta bort ett lager.\n"
-"Då försvinner alla konturer i det lagret.\n"
-"Om det här är det sista kvadratiska lagret kommer det att\n"
-"förlorar alla truetype-instruktioner.\n"
+"Alla konturer i lagret kommer då att gå förlorade.\n"
+"Om det här är det sista kvadratiska lagret\n"
+"försvinner också alla TrueType-instruktioner.\n"
 "\n"
-"Radering av ett lager kan inte ångras.\n"
+"Det går inte att ångra att ta bort ett lager.\n"
 "\n"
-"Är det här verkligen din avsikt?"
+"Är det verkligen det du vill?"
 
 #: fontforgeexe/fontinfo.c:4198
 msgid "Removing instructions cannot be UNDONE!"
@@ -22710,12 +22719,12 @@ msgid ""
 "Is this really your intent?"
 msgstr ""
 "Du är på väg att ändra det sista kvadratiska\n"
-"lager till kubiskt. När det här händer kommer FontForge\n"
-"kommer att ta bort alla truetype-instruktioner.\n"
+"lagret till kubiskt. När det händer tar FontForge\n"
+"bort alla TrueType-instruktioner.\n"
 "\n"
 "Det här kan inte ångras.\n"
 "\n"
-"Är det här verkligen din avsikt?"
+"Är det verkligen det du vill?"
 
 #: fontforgeexe/fontinfo.c:4208
 #, c-format
@@ -22982,7 +22991,8 @@ msgid ""
 "that range."
 msgstr ""
 "Glyfnamn bör begränsas till tecken i ASCII-teckenuppsättningen,\n"
-"men det finns namn i detta namnlista som använder tecken utanför det här intervall.\n"
+"men det finns namn i den här namnlistan som använder tecken utanför\n"
+"det intervallet."
 
 #: fontforgeexe/fontinfo.c:4399 fontforgeexe/fontview.c:4982
 #: fontforgeexe/openfontdlg.c:462 fontforgeexe/prefs.c:1688
@@ -23252,7 +23262,7 @@ msgstr ""
 
 #: fontforgeexe/fontinfo.c:6521
 msgid "Select lookups from other fonts"
-msgstr "Välj uppslagsord från andra teckensnitt"
+msgstr "Välj uppslagningar från andra typsnitt"
 
 #: fontforgeexe/fontinfo.c:6570
 msgid "Import Lookup"
@@ -23320,11 +23330,11 @@ msgid ""
 "generated. The old information will be LOST.\n"
 " Is that what you want?"
 msgstr ""
-"Varning: Det finns redan några \"aalt\"-uppslagningar i\n"
-"teckensnittet. Om du fortsätter med det här kommando kommer de här\n"
-"kommer de här lookups att tas bort och nya lookups kommer att\n"
-"genereras. Den gamla informationen kommer att FÖRLORAS.\n"
-" Är det vad du vill?"
+"Varning: Det finns redan några 'aalt'-uppslagningar i\n"
+"typsnittet. Om du fortsätter med det här kommandot tas de\n"
+"bort och nya uppslagningar skapas. Den gamla informationen\n"
+"kommer att GÅ FÖRLORAD.\n"
+" Är det det du vill?"
 
 #: fontforgeexe/fontinfo.c:6976
 msgid ""
@@ -23336,13 +23346,12 @@ msgid ""
 "associated with the other feature tag(s).\n"
 " Is that what you want?"
 msgstr ""
-"Varning: Det finns redan några \"aalt\"-uppslagsord i\n"
-"teckensnittet men det finns andra funktionstaggar associerade\n"
-"med de här uppslagningar. Om du fortsätter med det här kommando\n"
-"kommer taggen \"aalt\" att tas bort från de här uppslagningar,\n"
-"och nya uppslagningar kommer att genereras som INTE kommer att vara\n"
-"associerade med den andra funktionstaggen (erna).\n"
-" Är det vad du vill?"
+"Varning: Det finns redan några 'aalt'-uppslagningar i\n"
+"typsnittet, men de är kopplade till andra funktionstaggar.\n"
+"Om du fortsätter med det här kommandot tas 'aalt'-taggen\n"
+"bort från de uppslagningarna, och nya uppslagningar\n"
+"skapas utan koppling till de andra funktionstaggarna.\n"
+" Är det det du vill?"
 
 #: fontforgeexe/fontinfo.c:6983
 msgid ""
@@ -23355,14 +23364,14 @@ msgid ""
 "other feature tags.\n"
 " Is that what you want?"
 msgstr ""
-"Varning: Det finns redan några \"aalt\"-uppslagningar i\n"
-"typsnittet, vissa har inga andra funktionstaggar associerade\n"
-"med dem och de här kommer att tas bort, andra har andra\n"
-"taggar associerade och de här kommer att finnas kvar medan 'aalt'-taggen\n"
-"taggen kommer att tas bort från uppslagsordet -- ett nytt uppslagsord\n"
-"kommer att genereras som inte är associerad med några\n"
-"andra funktionstaggar.\n"
-" Är det så du vill ha det?"
+"Varning: Det finns redan några 'aalt'-uppslagningar i\n"
+"typsnittet. Vissa har inga andra funktionstaggar kopplade\n"
+"till sig och kommer att tas bort. Andra har fler\n"
+"taggar kopplade till sig och blir kvar, medan 'aalt'-taggen\n"
+"tas bort från uppslagningen. En ny uppslagning\n"
+"skapas då utan koppling till några andra\n"
+"funktionstaggar.\n"
+" Är det det du vill?"
 
 #: fontforgeexe/fontinfo.c:7006 fontforgeexe/fontinfo.c:7008
 msgid "_Apply to All"
@@ -23396,7 +23405,7 @@ msgstr "_Sortera"
 
 #: fontforgeexe/fontinfo.c:7046 fontforgeexe/fontinfo.c:10387
 msgid "Add _Lookup"
-msgstr "Lägg till _Lookup"
+msgstr "Lägg till _uppslagning"
 
 #: fontforgeexe/fontinfo.c:7047 fontforgeexe/fontinfo.c:10398
 msgid "Add Sub_table"
@@ -23420,7 +23429,7 @@ msgstr "_Sammanfoga"
 
 #: fontforgeexe/fontinfo.c:7052
 msgid "Sa_ve Lookup..."
-msgstr "Sa_ve Lookup..."
+msgstr "Spa_ra uppslagning..."
 
 #: fontforgeexe/fontinfo.c:7054
 msgid "Add Language to Script..."
@@ -23603,9 +23612,9 @@ msgid ""
 "layers of this font. Cubic splines are generally easier to edit\n"
 "than quadratic (and you may still generate a truetype font from them)."
 msgstr ""
-"Använd kubiska (det vill säga postscript) splines för att hålla konturerna av alla\n"
-"lager av det här typsnitt. Kubiska splines är i allmänhet lättare att redigera\n"
-"än kvadratiska (och du kan fortfarande generera ett truetype-teckensnitt från dem)."
+"Använd kubiska splines, alltså PostScript-splines, för att lagra konturerna i alla\n"
+"lager i det här typsnittet. Kubiska splines är i allmänhet lättare att redigera\n"
+"än kvadratiska, och du kan fortfarande generera ett TrueType-teckensnitt från dem."
 
 #: fontforgeexe/fontinfo.c:8296
 msgid "All layers _quadratic"
@@ -23616,8 +23625,8 @@ msgid ""
 "Use quadratic (that is truetype) splines to hold the outlines of all\n"
 "layers of this font rather than cubic (postscript) splines."
 msgstr ""
-"Använd kvadratiska (det är truetype) splines för att hålla konturerna av alla\n"
-"lager av det här typsnitt snarare än kubiska (postscript) splines."
+"Använd kvadratiska splines, alltså TrueType-splines, för att lagra konturerna i alla\n"
+"lager i det här typsnittet i stället för kubiska PostScript-splines."
 
 #: fontforgeexe/fontinfo.c:8310
 msgid "_Mixed"
@@ -23630,7 +23639,7 @@ msgid ""
 "retain both quadratic and cubic versions of a font."
 msgstr ""
 "Ordningen på varje lager i teckensnittet kan styras\n"
-"individuellt. Det här kan vara användbart om du vill behålla både kvadratiska och kubiska versioner av ett typsnitt.\n"
+"individuellt. Det här kan vara användbart om du vill behålla både kvadratiska och kubiska versioner av ett typsnitt."
 
 #: fontforgeexe/fontinfo.c:8333
 msgid "Guidelines:"
@@ -23701,7 +23710,7 @@ msgid ""
 msgstr ""
 "Om den är inställd måste hela teckensnittet\n"
 "bäddas in i ett dokument när något tecken är det.\n"
-"Annars behöver dokumentskaparen bara inkludera de tecken som används.\n"
+"Annars behöver dokumentskaparen bara inkludera de tecken som används."
 
 #: fontforgeexe/fontinfo.c:8519
 msgid "Only Embed Bitmaps"
@@ -23780,7 +23789,7 @@ msgstr ""
 "fältet 0 och markera \"[*] Är Offset\" i de flesta fall.\n"
 "\n"
 "Obs: WinDescent är ett POSITIVT tal för\n"
-"saker som ligger under baslinjen\n"
+"saker som ligger under baslinjen"
 
 #: fontforgeexe/fontinfo.c:8667 fontforgeexe/fontinfo.c:8700
 #: fontforgeexe/fontinfo.c:8745 fontforgeexe/fontinfo.c:8778
@@ -23829,7 +23838,7 @@ msgstr ""
 "fältet 0 och markera \"[*] Är Offset\" i de flesta fall.\n"
 "\n"
 "OBS: Typo Descent är ett NEGATIVT tal för\n"
-"saker som ligger under baslinjen\n"
+"saker som ligger under baslinjen"
 
 #: fontforgeexe/fontinfo.c:8796
 msgid "Sets the TypoLinegap field in the OS/2 table, used on MS Windows"
@@ -23857,7 +23866,7 @@ msgstr ""
 "fältet 0 och markera \"[*] Är Offset\" i de flesta fall.\n"
 "\n"
 "OBS: hhea Descent är ett NEGATIVT värde för saker\n"
-"under baslinjen\n"
+"under baslinjen"
 
 #: fontforgeexe/fontinfo.c:8883
 msgid "Sets the linegap field in the hhea table, used on the mac"
@@ -23962,20 +23971,20 @@ msgid ""
 "\n"
 "The 'gasp' table only applies to truetype fonts."
 msgstr ""
-"Tabellen \"gasp\" ger dig kontroll över när rutnätsanpassning och\n"
-"anti-alias rastrering görs.\n"
-"Tabellen består av en (ordnad) lista med pixelstorlekar, var och en med\n"
-"en uppsättning flaggor. De här flaggor gäller för alla pixelstorlekar som är större än\n"
+"Tabellen 'gasp' låter dig styra när rutnätsanpassning och\n"
+"kantutjämnad rasterisering ska användas.\n"
+"Tabellen består av en ordnad lista över pixelstorlekar, där varje post har\n"
+"en uppsättning flaggor. Flaggorna gäller för alla pixelstorlekar som är större än\n"
 "föregående tabellpost men mindre än eller lika med den aktuella.\n"
-"Listan måste avslutas med en pixelstorlek på 65535.\n"
-"Version 1 av tabellen innehåller ytterligare två flaggor som\n"
-"gäller för MS ClearType rasterizer.\n"
+"Listan måste avslutas med pixelstorleken 65535.\n"
+"Version 1 av tabellen innehåller dessutom två extra flaggor som\n"
+"används av MS ClearType-rasteriseraren.\n"
 "\n"
-"Tabellen \"gasp\" gäller endast för truetype-teckensnitt."
+"Tabellen 'gasp' gäller bara för TrueType-typsnitt."
 
 #: fontforgeexe/fontinfo.c:9651
 msgid "Gasp|_Default"
-msgstr "Gasp|_Default"
+msgstr "Gasp|_Standard"
 
 #: fontforgeexe/fontinfo.c:9675
 msgid "_Language"
@@ -23999,13 +24008,13 @@ msgid ""
 "To associate or disassociate a truetype name to its postscript equivalent\n"
 "right click and select the appropriate menu item."
 msgstr ""
-"För att skapa ett nytt namn vänsterklickar du på knappen <Nytt> och väljer ett språk.\n"
-"För att ändra locale, vänsterklicka på den.\n"
-"Vänsterklicka på strängtypen om du vill ändra den.\n"
+"För att skapa ett nytt namn vänsterklickar du på knappen <Nytt> och väljer en lokal.\n"
+"Om du vill ändra lokalen vänsterklickar du på den.\n"
+"Om du vill ändra strängtypen vänsterklickar du på den.\n"
 "Om du vill ändra texten vänsterklickar du i den och skriver sedan.\n"
 "Om du vill ta bort ett namn högerklickar du på namnet och väljer Ta bort i menyn.\n"
-"För att associera eller disassociera ett truetypenamn till dess postscriptmotsvarighet\n"
-"högerklicka och välj lämpligt menyalternativ."
+"Om du vill koppla eller koppla bort ett TrueType-namn till dess PostScript-motsvarighet\n"
+"högerklickar du och väljer rätt menyalternativ."
 
 #. GT: when translating this please leave the "SIL Open Font License" in
 #. GT: English (possibly translating it in parentheses). I believe there
@@ -24040,8 +24049,8 @@ msgid ""
 "The OpenType Style Set ('ss01'-'ss20') and Character Variant ('cv01'-'cv99')\n"
 "features may be assigned human readable names here."
 msgstr ""
-"OpenType Style Set (\"ss01\"-\"ss20\") och Character Variant (\"cv01\"-\"cv99\")\n"
-"funktioner kan tilldelas mänskliga läsbara namn här."
+"OpenType-funktionerna Style Set ('ss01'-'ss20') och Character Variant ('cv01'-'cv99')\n"
+"kan tilldelas människoläsbara namn här."
 
 #: fontforgeexe/fontinfo.c:9781
 msgid ""
@@ -24050,9 +24059,9 @@ msgid ""
 "To change the feature, left click on it.\n"
 "To change the text, left click in it and then type.\n"
 msgstr ""
-"För att skapa ett nytt namn vänsterklickar du på knappen <Nytt> och väljer en locale (språk).\n"
-"För att ändra locale, vänsterklicka på den.\n"
-"För att ändra funktion, vänsterklicka på den.\n"
+"För att skapa ett nytt namn vänsterklickar du på knappen <Nytt> och väljer en lokal (språk).\n"
+"Om du vill ändra lokalen vänsterklickar du på den.\n"
+"Om du vill ändra funktionen vänsterklickar du på den.\n"
 "Om du vill ändra texten vänsterklickar du i den och skriver sedan.\n"
 
 #: fontforgeexe/fontinfo.c:9798
@@ -24065,7 +24074,7 @@ msgid ""
 " font project, a detailed changelog, and a list of contributors"
 msgstr ""
 "FONTLOG innehåller en beskrivning av fontprojektet, en detaljerad "
-"ändringslogg och en lista över bidragsgivare\n"
+"ändringslogg och en lista över bidragsgivare"
 
 #: fontforgeexe/fontinfo.c:9848
 msgid ""
@@ -24170,8 +24179,9 @@ msgid ""
 "All fonts with the same Style ID should share this name."
 msgstr ""
 "Det här ger en uppsättning namn som används för att identifiera\n"
-"stil för det här typsnitt. Namnen kan översättas till flera språk (engelska är obligatoriskt, andra är valfria)\n"
-"Alla teckensnitt med samma Style ID bör dela detta namn.\n"
+"stilen för det här typsnittet. Namnen kan översättas till flera\n"
+"språk (engelska är obligatoriskt, andra är valfria).\n"
+"Alla typsnitt med samma Style ID bör dela detta namn."
 
 #: fontforgeexe/fontinfo.c:10205
 msgid ""
@@ -24179,13 +24189,13 @@ msgid ""
 "To change the locale, left click on it.\n"
 "To change the text, left click in it and then type.\n"
 msgstr ""
-"För att skapa ett nytt namn vänsterklickar du på knappen <Nytt> och väljer en locale (språk).\n"
-"För att ändra locale, vänsterklicka på den.\n"
+"För att skapa ett nytt namn vänsterklickar du på knappen <Nytt> och väljer en lokal (språk).\n"
+"Om du vill ändra lokalen vänsterklickar du på den.\n"
 "Om du vill ändra texten vänsterklickar du i den och skriver sedan.\n"
 
 #: fontforgeexe/fontinfo.c:10247
 msgid "Mac Style Set:"
-msgstr "Mac Style Set:"
+msgstr "Mac-stiluppsättning:"
 
 #: fontforgeexe/fontinfo.c:10275
 msgid "FOND Name:"
@@ -24196,8 +24206,8 @@ msgid ""
 "Moves the currently selected lookup to be first in the lookup ordering\n"
 "or moves the currently selected subtable to be first in its lookup."
 msgstr ""
-"Flyttar den markerade uppslagsrutan så att den kommer först i uppslagsordningen\n"
-"eller flyttar den markerade undertabellen så att den kommer först i sin uppslagsordning."
+"Flyttar den markerade uppslagningen så att den kommer först i uppslagningsordningen,\n"
+"eller flyttar den markerade undertabellen så att den kommer först i sin uppslagning."
 
 #: fontforgeexe/fontinfo.c:10338
 msgid ""
@@ -24221,7 +24231,7 @@ msgid ""
 "or moves the currently selected subtable to be the last subtable in the lookup"
 msgstr ""
 "Flyttar den markerade uppslagningen till slutet av uppslagningskedjan\n"
-"eller flyttar den markerade subtabellen till att bli den sista subtabellen i lookupen"
+"eller flyttar den markerade undertabellen så att den blir den sista i uppslagningen"
 
 #: fontforgeexe/fontinfo.c:10371
 msgid "Sorts the lookups in a default ordering based on feature tags"
@@ -24233,8 +24243,8 @@ msgid ""
 "Adds a new lookup after the selected lookup\n"
 "or at the start of the lookup list if nothing is selected."
 msgstr ""
-"Lägger till en ny lookup efter den markerade lookupen\n"
-"eller i början av uppslagslistan om inget är markerat."
+"Lägger till en ny uppslagning efter den markerade uppslagningen\n"
+"eller först i uppslagningslistan om inget är markerat."
 
 #: fontforgeexe/fontinfo.c:10397
 msgid ""
@@ -24246,7 +24256,7 @@ msgstr ""
 
 #: fontforgeexe/fontinfo.c:10408
 msgid "Edits a lookup or lookup subtable."
-msgstr "Redigerar ett uppslagsord eller en subtabell för uppslagsord."
+msgstr "Redigerar en uppslagning eller en undertabell till en uppslagning."
 
 #: fontforgeexe/fontinfo.c:10419
 msgid "Edits the transformations in a lookup subtable."
@@ -24257,8 +24267,8 @@ msgid ""
 "Deletes any selected lookups and their subtables, or deletes any selected subtables.\n"
 "This will also delete any transformations associated with those subtables."
 msgstr ""
-"Raderar alla markerade lookups och deras subtables, eller raderar alla markerade subtables.\n"
-"Det här tar även bort alla transformationer som är associerade med de här subtabeller."
+"Tar bort markerade uppslagningar och deras undertabeller, eller markerade undertabeller.\n"
+"Det här tar också bort alla transformationer som är kopplade till de undertabellerna."
 
 #: fontforgeexe/fontinfo.c:10441
 msgid ""
@@ -24279,7 +24289,8 @@ msgstr ""
 #: fontforgeexe/fontinfo.c:10463
 msgid "Imports a lookup (and all its subtables) from another font."
 msgstr ""
-"Importerar en lookup (och alla dess subtables) från ett annat typsnitt."
+"Importerar en uppslagning, inklusive alla dess undertabeller, från ett annat"
+" typsnitt."
 
 #: fontforgeexe/fontinfo.c:10548
 msgid "Creation Date:"
@@ -24296,7 +24307,7 @@ msgid ""
 "Range field, change the pane to"
 msgstr ""
 "Den här ruta är endast informativ och visar de tecken som faktiskt finns i teckensnittet. Om du vill ställa in fältet OS/2 Unicode\n"
-"Range-fältet, ändra rutan till\n"
+"Range-fältet, ändra rutan till"
 
 #: fontforgeexe/fontinfo.c:10611
 msgid "OS/2 -> Charsets"
@@ -24366,7 +24377,7 @@ msgstr "Märk uppsättningar"
 
 #: fontforgeexe/fontinfo.c:10737
 msgid "OpenType|Lookups"
-msgstr "OpenType|Lookups"
+msgstr "OpenType|Uppslagningar"
 
 #: fontforgeexe/fontinfo.c:10744
 msgid "WOFF"
@@ -24816,11 +24827,11 @@ msgstr "Selec_t genom att slå upp undertabell..."
 
 #: fontforgeexe/fontview.c:4529
 msgid "Undo Fontlevel"
-msgstr "Ångra Fontlevel"
+msgstr "Ångra teckensnittsnivå"
 
 #: fontforgeexe/fontview.c:4534
 msgid "Copy _Lookup Data"
-msgstr "Kopiera _Lookup Data"
+msgstr "Kopiera _uppslagningsdata"
 
 #: fontforgeexe/fontview.c:4536 fontforgeexe/metricsview.c:3423
 msgid "Copy _VWidth"
@@ -24836,7 +24847,7 @@ msgstr "Klistra in efter"
 
 #: fontforgeexe/fontview.c:4542
 msgid "Sa_me Glyph As"
-msgstr "Sa_me Glyph As"
+msgstr "Sa_mma glyf som"
 
 #: fontforgeexe/fontview.c:4546
 msgid "Copy Layer To Layer"
@@ -24864,7 +24875,7 @@ msgstr "Lägg till subscripts/uperscripts..."
 
 #: fontforgeexe/fontview.c:4599
 msgid "Buil_d Duplicate Glyph"
-msgstr "Buil_d Duplicate Glyph"
+msgstr "_Bygg duplicerad glyf"
 
 #: fontforgeexe/fontview.c:4641
 msgid "_MATH Info..."
@@ -24892,7 +24903,7 @@ msgstr "Visa _Avhängiga"
 
 #: fontforgeexe/fontview.c:4647
 msgid "Mass Glyph _Rename..."
-msgstr "Mass Glyph _Rename..."
+msgstr "Massbyt _namn på glyfer..."
 
 #: fontforgeexe/fontview.c:4648
 msgid "Set _Color"
@@ -25009,7 +25020,7 @@ msgstr "Ladda namnlista"
 
 #: fontforgeexe/fontview.c:4924
 msgid "A name list with this name already exists. Replace it?"
-msgstr "En namnlista med detta namn finns redan. Ersätta den?"
+msgstr "En namnlista med detta namn finns redan. Vill du ersätta den?"
 
 #: fontforgeexe/fontview.c:4924 fontforgeexe/problems.cpp:2391
 #: fontforgeexe/searchview.c:805
@@ -25063,8 +25074,8 @@ msgstr "Byt namn efter namnlista"
 msgid ""
 "Rename the glyphs in this font to the names found in the selected namelist"
 msgstr ""
-"Byt namn på glyferna i det här typsnitt till de namn som finns i den valda "
-"namnlistan"
+"Byt namn på glyferna i det här typsnittet till de namn som finns i den valda"
+" namnlistan"
 
 #: fontforgeexe/fontview.c:4982 fontforgeexe/openfontdlg.c:462
 #: fontforgeexe/prefs.c:1688 fontforgeexe/prefs.c:2541
@@ -25074,7 +25085,7 @@ msgid ""
 "there are names in this namelist which use characters outside that range."
 msgstr ""
 "Glyfnamn bör begränsas till tecken i ASCII-teckenuppsättningen, men det "
-"finns namn i detta namnlista som använder tecken utanför det här intervall."
+"finns namn i den här namnlistan som använder tecken utanför det intervallet."
 
 #: fontforgeexe/fontview.c:4994
 msgid "Load glyph names"
@@ -25355,8 +25366,8 @@ msgid ""
 "A font for displaying unicode characters, normally used for FontView glyph "
 "labels."
 msgstr ""
-"Ett typsnitt för visning av Unicode-tecken, som normalt används för FontView"
-" glyf-etiketter."
+"Ett typsnitt för att visa Unicode-tecken, normalt använt för glyfetiketter i"
+" teckensnittsvyn."
 
 #: fontforgeexe/fontview.c:7071
 msgid "A monospace font family at the same size as DefaultFont"
@@ -25401,7 +25412,7 @@ msgstr ""
 
 #: fontforgeexe/fontview.c:7078
 msgid "Glyph Info Color"
-msgstr "Glyph Info Färg"
+msgstr "Glyfinfofärg"
 
 #: fontforgeexe/fontview.c:7079
 msgid "Color of the lines around glyph slots"
@@ -25562,7 +25573,7 @@ msgstr ""
 
 #: fontforgeexe/fontview.c:7095
 msgid "Metrics Glyph Contour Color"
-msgstr "Metrics Glyph Konturfärg"
+msgstr "Konturfärg för glyf i måttvy"
 
 #: fontforgeexe/fontview.c:7096
 msgid "Font"
@@ -25636,7 +25647,7 @@ msgstr "FontInfo.typsnitt"
 
 #: fontforgeexe/fontview.c:7151
 msgid "Font used in the Glyph Info dialog"
-msgstr "Teckensnitt som används i dialogrutan Glyph Info"
+msgstr "Typsnitt som används i dialogrutan Glyfinfo"
 
 #: fontforgeexe/fontview.c:7151
 msgid "GlyphInfo.Font"
@@ -25752,7 +25763,7 @@ msgstr "Färg som används för (vissa) glyfnamn i dialogrutan Visa ATT"
 
 #: fontforgeexe/fontview.c:7168
 msgid "Show ATT Glyph Name Color"
-msgstr "Visa ATT Glyph Namn Färg"
+msgstr "Visa färg för ATT-glyfnamn"
 
 #: fontforgeexe/fontview.c:7169
 msgid "Normal font used in the Advanced Typographic Tables dialog"
@@ -25880,10 +25891,10 @@ msgid ""
 "\n"
 "Press the help key or F1 to open a web page about this tool.\n"
 msgstr ""
-"Det här är en abstrakt klass som definierar gemensamma egenskaper för\n"
-"FontView, CharView, BitmapView och MetricsView.\n"
+"Det här är en abstrakt klass som definierar gemensamma funktioner för\n"
+"teckensnittsvyn, teckenvyn, bitmappsvyn och måttvyn.\n"
 "\n"
-"Tryck på hjälpknappen eller F1 för att öppna en webbsida om det här verktyg.\n"
+"Tryck på hjälptangenten eller F1 för att öppna en webbsida om det här verktyget.\n"
 
 #: fontforgeexe/fontview.c:7504
 msgid "Font View"
@@ -26151,7 +26162,7 @@ msgstr "Välj efter färg"
 
 #: fontforgeexe/groupsdlg.c:703
 msgid "Glyph names must be valid postscript names"
-msgstr "Glyfnamn måste vara giltiga postscriptnamn"
+msgstr "Glyfnamn måste vara giltiga PostScript-namn"
 
 #: fontforgeexe/groupsdlg.c:727
 msgid "Bad Range"
@@ -26233,7 +26244,7 @@ msgstr "Ställ in fontvyns urval till att vara de glyfer som anges här"
 
 #: fontforgeexe/groupsdlg.c:1293
 msgid "No Glyph Duplicates"
-msgstr "Inga glyph-duplikat"
+msgstr "Inga glyfduplicat"
 
 #: fontforgeexe/groupsdlg.c:1297
 msgid ""
@@ -26361,7 +26372,7 @@ msgstr "Utöka uppslagningar på"
 
 #: fontforgeexe/justifydlg.c:58
 msgid "Extend Lookups Off"
-msgstr "Förläng Lookups Off"
+msgstr "Förläng uppslagningar av"
 
 #: fontforgeexe/justifydlg.c:59
 msgid "Extend Max Lookups"
@@ -26369,11 +26380,11 @@ msgstr "Utöka maxuppslagningar"
 
 #: fontforgeexe/justifydlg.c:60
 msgid "Shrink Lookups On"
-msgstr "Shrink Lookups på"
+msgstr "Krymp uppslagningar på"
 
 #: fontforgeexe/justifydlg.c:61
 msgid "Shrink Lookups Off"
-msgstr "Shrink Lookups Off"
+msgstr "Krymp uppslagningar av"
 
 #: fontforgeexe/justifydlg.c:62
 msgid "Shrink Max Lookups"
@@ -26405,23 +26416,24 @@ msgstr "Glyfnamn|Ny"
 
 #: fontforgeexe/justifydlg.c:435
 msgid "Lookups turned ON to extend a line"
-msgstr "Lookups aktiveras för att förlänga en linje"
+msgstr "Uppslagningar aktiverade för att förlänga en linje"
 
 #: fontforgeexe/justifydlg.c:436
 msgid "Lookups turned OFF to extend a line"
-msgstr "Lookups avstängda för att förlänga en linje"
+msgstr "Uppslagningar inaktiverade för att förlänga en linje"
 
 #: fontforgeexe/justifydlg.c:437
 msgid "Lookups which specify the maximum size by which a glyph may grow"
-msgstr "Uppslagsord som anger den maximala storlek som en glyf får växa med"
+msgstr ""
+"Uppslagningar som anger den maximala storlek som en glyf får växa till"
 
 #: fontforgeexe/justifydlg.c:438
 msgid "Lookups turned ON to shrink a line"
-msgstr "Lookups slås på för att krympa en linje"
+msgstr "Uppslagningar aktiverade för att krympa en linje"
 
 #: fontforgeexe/justifydlg.c:439
 msgid "Lookups turned OFF to shrink a line"
-msgstr "Lookups avstängda för att krympa en rad"
+msgstr "Uppslagningar inaktiverade för att krympa en linje"
 
 #: fontforgeexe/justifydlg.c:440
 msgid "Lookups which specify the maximum size by which a glyph may shrink"
@@ -26557,7 +26569,7 @@ msgstr "_Från den här klass"
 
 #: fontforgeexe/kernclass.c:2098
 msgid "Glyph in two classes"
-msgstr "Glyph i två klasser"
+msgstr "Glyf i två klasser"
 
 #: fontforgeexe/kernclass.c:2099
 #, c-format
@@ -26654,8 +26666,9 @@ msgid ""
 "separation between all pairs of glyphs equal to this\n"
 "value."
 msgstr ""
-"Lägg till poster i uppslagsordet för att försöka göra den optiska\n"
-"mellan alla par av glyfer lika med det här värde.\n"
+"Lägg till poster i uppslagningen för att försöka göra den optiska\n"
+"separationen mellan alla glyfpar lika stor som det här\n"
+"värdet."
 
 #: fontforgeexe/kernclass.c:2941 fontforgeexe/lookupui.c:4988
 #: fontforgeexe/lookupui.c:5906
@@ -26688,7 +26701,7 @@ msgstr ""
 "Normalt baseras kerning på att uppnå en konstant (optisk)\n"
 "separation mellan glyfer, men ibland är det önskvärt att ha en\n"
 "att ha en kerningstabell där kerningen är baserad på\n"
-"närmaste avståndet mellan två glyfer (så om den önskade separationen är 0 så kommer glyferna faktiskt att röra vid varandra.\n"
+"närmaste avståndet mellan två glyfer (så om den önskade separationen är 0 så kommer glyferna faktiskt att röra vid varandra."
 
 #: fontforgeexe/kernclass.c:2991 fontforgeexe/lookupui.c:5037
 #: fontforgeexe/lookupui.c:5955
@@ -26727,7 +26740,7 @@ msgstr "VKern Efter Klasser"
 
 #: fontforgeexe/kernclass.c:3368
 msgid "KernClass|_New Lookup..."
-msgstr "KernClass|_New Lookup..."
+msgstr "KernClass|_Ny uppslagning..."
 
 #: fontforgeexe/layer2layer.c:104 fontforgeexe/layer2layer.c:129
 msgid "No significant differences found"
@@ -29179,7 +29192,7 @@ msgstr "Ingen uppslagstyp vald"
 
 #: fontforgeexe/lookupui.c:1793
 msgid "You must select a Lookup Type."
-msgstr "Du måste välja en Lookup Type."
+msgstr "Du måste välja en typ av uppslagning."
 
 #: fontforgeexe/lookupui.c:1797
 msgid "Unnamed lookup"
@@ -29254,13 +29267,14 @@ msgid ""
 "A feature is either a four letter OpenType feature\n"
 "tag, or a two number mac <feature,setting> combination."
 msgstr ""
-"De flesta uppslagningar kommer att vara kopplade till en funktion\n"
-"som är aktiv i ett specifikt skript för vissa språk.\n"
-"I vissa fall är uppslagsord inte knutna till någon\n"
-"funktion, utan kommer att åberopas av en annan uppslagning,\n"
-"en villkorlig sådan. I andra fall kan en uppslagning vara kopplad till flera funktioner.\n"
-"En feature är antingen en OpenType feature-tagg med fyra bokstäver\n"
-"tagg, eller en tvåsiffrig mac <feature, setting> kombination.\n"
+"De flesta uppslagningar är kopplade till en funktion\n"
+"som är aktiv i ett visst skript för vissa språk.\n"
+"I vissa fall är uppslagningar inte kopplade till någon\n"
+"funktion, utan anropas av en annan uppslagning,\n"
+"en villkorlig sådan. I andra fall kan en uppslagning\n"
+"vara kopplad till flera funktioner.\n"
+"En funktion är antingen en OpenType-funktionstagg med fyra bokstäver\n"
+"eller en tvådelad Mac-kombination av typen <funktion,inställning>."
 
 #: fontforgeexe/lookupui.c:2017 fontforgeexe/statemachine.c:1369
 msgid "Right To Left"
@@ -29449,8 +29463,9 @@ msgid ""
 "Omitting the others makes the behavior clearer."
 msgstr ""
 "Visa inte kolumner med 0:or.\n"
-"OpenType-lookupen tillåter upp till 8 typer av data, men nästan alla uppslagningar kommer bara att använda en eller två.\n"
-"Om du utelämnar de andra blir beteendet tydligare.\n"
+"En OpenType-uppslagning kan innehålla upp till 8 typer\n"
+"av data, men nästan alla uppslagningar använder bara en eller två.\n"
+"Om de andra utelämnas blir beteendet tydligare."
 
 #: fontforgeexe/lookupui.c:4852
 msgid "_Populate"
@@ -29578,7 +29593,7 @@ msgstr "Skapa en ny sökning"
 
 #: fontforgeexe/lookupui.c:5420 fontforgeexe/lookupui.c:5421
 msgid "Add a subtable to which lookup?"
-msgstr "Lägga till en subtabell till vilken lookup?"
+msgstr "Till vilken uppslagning vill du lägga till en undertabell?"
 
 #: fontforgeexe/lookupui.c:5572
 msgid "Select glyphs for the first part of the kern pair"
@@ -29723,7 +29738,7 @@ msgstr "Språk Tag:"
 
 #: fontforgeexe/lookupui.c:6521
 msgid "No Start Glyph"
-msgstr "Ingen start Glyph"
+msgstr "Ingen startglyf"
 
 #: fontforgeexe/lookupui.c:6521
 #, c-format
@@ -29776,7 +29791,7 @@ msgstr "Saknar suffix"
 
 #: fontforgeexe/lookupui.c:6712
 msgid "Mass Glyph Rename"
-msgstr "Mass Glyph byter namn"
+msgstr "Massbyte av glyfnamn"
 
 #: fontforgeexe/lookupui.c:6721
 msgid "Rename all glyphs in the selection"
@@ -29816,7 +29831,7 @@ msgstr "Byt ut den"
 
 #: fontforgeexe/lookupui.c:6793
 msgid "Optionally, add this mapping to the lookup subtable:"
-msgstr "Lägg eventuellt till den här mappningen i undertabellen för lookup:"
+msgstr "Du kan också lägga till den här mappningen i uppslagsundertabellen:"
 
 #: fontforgeexe/macencui.c:372
 msgid "Bad Language"
@@ -29987,7 +30002,7 @@ msgstr "Nedre vänster"
 
 #: fontforgeexe/math.c:754
 msgid "Glyph Construction"
-msgstr "Glyph konstruktion"
+msgstr "Glyfkonstruktion"
 
 #: fontforgeexe/math.c:866 fontforgeexe/math.c:888 fontforgeexe/math.c:1610
 msgid "Bad device table"
@@ -30250,7 +30265,7 @@ msgstr "Färg som används för att markera den valda glyfen"
 
 #: fontforgeexe/metricsview.c:5472
 msgid "Selected Glyph Col"
-msgstr "Vald Glyph Col"
+msgstr "Kolumn för vald glyf"
 
 #: fontforgeexe/metricsview.c:5473
 msgid "Color of field divider lines"
@@ -30349,7 +30364,7 @@ msgstr "MM Förändring Def vikter"
 
 #: fontforgeexe/mmdlg.c:634
 msgid "You may change the default instance of this font"
-msgstr "Du kan ändra standardinstansen för det här typsnitt"
+msgstr "Du kan ändra standardinstansen för det här typsnittet"
 
 #. GT: The following strings should be concatenated together, the result
 #. GT: translated, and then broken into lines by hand. I'm sure it would
@@ -30358,7 +30373,7 @@ msgstr "Du kan ändra standardinstansen för det här typsnitt"
 #. GT: that
 #: fontforgeexe/mmdlg.c:634
 msgid "You may specify the new instance of this font"
-msgstr "Du kan ange den nya instansen av det här typsnitt"
+msgstr "Du kan ange den nya instansen av det här typsnittet"
 
 #: fontforgeexe/mmdlg.c:641
 msgid "either by explicitly entering the contribution"
@@ -30427,8 +30442,8 @@ msgid ""
 "When building an Apple distortable font, you must specify at least one name "
 "for the axis"
 msgstr ""
-"När du skapar en Apple distortable font måste du ange minst ett namn för "
-"axeln"
+"När du skapar en Apple distortable-teckensnitt måste du ange minst ett namn "
+"för axeln"
 
 #: fontforgeexe/mmdlg.c:2071 fontforgeexe/mmdlg.c:2755
 msgid "Begin:"
@@ -30620,7 +30635,7 @@ msgstr "Y Expr:"
 #: fontforgeexe/nonlineartransui.c:212 fontforgeexe/nonlineartransui.c:220
 #: fontforgeexe/transform.c:93
 msgid "Glyph Origin"
-msgstr "Glyph Ursprung"
+msgstr "Glyfursprung"
 
 #: fontforgeexe/nonlineartransui.c:213 fontforgeexe/nonlineartransui.c:221
 #: fontforgeexe/transform.c:94
@@ -30812,8 +30827,8 @@ msgid ""
 "The plugin will be loaded in the order at the next restart\n"
 "of FontForge. You can also load it now. Would you like to?"
 msgstr ""
-"Insticksmodul kommer att laddas i ordningen vid nästa omstart av FontForge.\n"
-"Av FontForge. Du kan också ladda det nu. Skulle du vilja göra det?"
+"Insticksmodulen kommer att läsas in i rätt ordning vid nästa omstart\n"
+"av FontForge. Du kan också läsa in den nu. Vill du göra det?"
 
 #: fontforgeexe/pluginui.c:546
 msgid "_Ok"
@@ -30831,7 +30846,7 @@ msgid ""
 msgstr ""
 "Inställningsalternativet UsePlugins är för närvarande avaktiverat.\n"
 "FontForge kommer inte att ladda insticksmodulskonfigurationen eller\n"
-"försöka hitta om inte det här alternativ är aktiverat."
+"försöka hitta om inte det här alternativetet är aktiverat."
 
 #: fontforgeexe/pluginui.c:553
 msgid ""
@@ -30923,8 +30938,8 @@ msgid ""
 "When filling using freetype in the outline view,\n"
 "have freetype render the glyph antialiased."
 msgstr ""
-"När du fyller med freetype i konturvyn,\n"
-"låta freetype göra glyfen antialiaserad."
+"När du fyller med FreeType i konturvyn\n"
+"låter du FreeType rendera glyfen med kantutjämning."
 
 #: fontforgeexe/prefs.c:306
 msgid "ExportClipboard"
@@ -30939,11 +30954,12 @@ msgid ""
 "running it will force these to be exported with consequent\n"
 "loss of data."
 msgstr ""
-"Om du kör en X11 urklippshanterare kanske du vill stänga av\n"
-"att stänga av det här. FF kan lägga in saker i sitt interna urklipp\n"
-"som den inte kan exportera till X11 (saker som att kopiera mer än en glyf i fontvyn). Om du har en urklippshanterare\n"
-"körs kommer det att tvinga de här att exporteras med följd\n"
-"förlust av data.\n"
+"Om du kör en urklippshanterare för X11 kanske du vill\n"
+"stänga av det här. FF kan lägga saker i sitt interna urklipp\n"
+"som inte kan exporteras till X11, till exempel när mer än\n"
+"en glyf kopieras i typsnittsvyn. Om en urklippshanterare\n"
+"körs tvingas dessa objekt att exporteras, vilket kan leda till\n"
+"dataförlust."
 
 #: fontforgeexe/prefs.c:307
 msgid "AutoSaveFrequency"
@@ -31015,7 +31031,7 @@ msgstr "Standardformare"
 
 #: fontforgeexe/prefs.c:315
 msgid "The default shaper for MetricsView."
-msgstr "Standardformaren för MetricsView."
+msgstr "Standardformaren för måttvyn."
 
 #: fontforgeexe/prefs.c:329
 msgid "SeekCharacter"
@@ -31035,7 +31051,7 @@ msgstr "CompactOnOpen"
 
 #: fontforgeexe/prefs.c:330
 msgid "When a font is opened, should it be made compact?"
-msgstr "När en font öppnas, ska den göras kompakt?"
+msgstr "När ett teckensnitt öppnas, ska det göras kompakt?"
 
 #: fontforgeexe/prefs.c:331
 msgid ""
@@ -31045,7 +31061,7 @@ msgid ""
 "If set to -1 then all available undo/redo information is loaded without limit."
 msgstr ""
 "Antalet undo- och redooperationer som ska läsas in från sfd-filer.\n"
-"Med det här alternativet kan du bortse från undo-information när du laddar SFD-filer.\n"
+"Med det här alternativetet kan du bortse från undo-information när du laddar SFD-filer.\n"
 "Om inställningen är 0 laddas ingen undo/redo-information.\n"
 "Om inställningen är -1 läses all tillgänglig undo/redo-information in utan begränsning."
 
@@ -31215,8 +31231,8 @@ msgid ""
 "When copying glyphs from the font view, also copy the\n"
 "glyphs' truetype instructions."
 msgstr ""
-"När du kopierar glyfer från teckensnittsvyn kopierar du även\n"
-"glyfernas truetype-instruktioner."
+"När du kopierar glyfer från teckensnittsvyn kopieras också\n"
+"glyfernas TrueType-instruktioner."
 
 #: fontforgeexe/prefs.c:402
 msgid "AddCharToNameList"
@@ -31234,15 +31250,15 @@ msgid ""
 "so this preference item lets you turn off\n"
 " this behavior"
 msgstr ""
-"När du visar en lista med glyfnamn\n"
+"När en lista med glyfnamn visas\n"
 "(eller ibland bara ett enda glyfnamn)\n"
-"FontForge lägga till det unicode-tecken\n"
+"lägger FontForge till det Unicode-tecken\n"
 "som namnet hänvisar till inom parentes efter\n"
-"namnet. Det här görs eftersom vissa namn\n"
-"är obskyra.\n"
-"Vissa människor skulle föredra att inte se det här,\n"
-"så med det här inställningsobjektet kan du stänga av\n"
-" det här beteende"
+"namnet. Det görs eftersom vissa namn\n"
+"är svårtolkade.\n"
+"Vissa föredrar att inte se detta,\n"
+"så med den här inställningen kan du stänga av\n"
+"det beteendet."
 
 #: fontforgeexe/prefs.c:417
 msgid "StandardSlopeError"
@@ -31319,7 +31335,7 @@ msgid ""
 "inconsistently scaled at some PPEMs."
 msgstr ""
 "Se till att liknande eller lika stora räkneverk förblir desamma i rutnätsanpassade konturer.\n"
-"Om du aktiverar det här alternativet kan det leda till att glyfens avanceringsbredd\n"
+"Om du aktiverar det här alternativetet kan det leda till att glyfens avanceringsbredd\n"
 "skalas på ett inkonsekvent sätt vid vissa PPEM."
 
 #: fontforgeexe/prefs.c:526 fontforgeexe/savefontdlg.c:740
@@ -31329,10 +31345,10 @@ msgid ""
 "glyph names. Setting this option will cause FontForge to\n"
 "produce a file (with extension .g2n) containing those data."
 msgstr ""
-"När du genererar ett truetype- eller opentype-typsnitt är det ibland\n"
-"användbart att känna till mappningen mellan truetype glyph ids och\n"
-"glyfnamn. Om du ställer in det här alternativet kommer FontForge att\n"
-"producera en fil (med tillägget .g2n) som innehåller de här data."
+"När du genererar ett TrueType- eller OpenType-typsnitt kan det ibland\n"
+"vara användbart att känna till mappningen mellan TrueType-glyf-id:n och\n"
+"glyfnamn. Om du aktiverar det här alternativet skapar FontForge en fil\n"
+"(med filändelsen .g2n) som innehåller de uppgifterna."
 
 #: fontforgeexe/prefs.c:529
 msgid ""
@@ -31347,15 +31363,15 @@ msgid ""
 " Use of GDEF rather than lcar/prop\n"
 "If both this and OpenType are set, both formats are generated"
 msgstr ""
-"Apple och MS/Adobe skiljer sig åt när det gäller formatet för truetype- och opentype-filer.\n"
-"Det här styr standardinställningen för kryssrutan Apple i dialogrutan\n"
-"File->Generate Font-dialogrutan.\n"
+"Apple och MS/Adobe skiljer sig åt när det gäller formatet för TrueType- och OpenType-filer.\n"
+"Det här styr standardinställningen för kryssrutan Apple i\n"
+"dialogrutan Arkiv->Generera typsnitt.\n"
 "De viktigaste skillnaderna är:\n"
 " Bitmappsdata lagras i olika tabeller\n"
-" Skalade sammansatta glyfer behandlas på olika sätt\n"
-" Användning av GSUB i stället för morx(t)/feat\n"
-" Användning av GPOS i stället för kern/opbd\n"
-" Användning av GDEF i stället för lcar/prop\n"
+" Skalbara sammansatta glyfer hanteras olika\n"
+" GSUB används i stället för morx(t)/feat\n"
+" GPOS används i stället för kern/opbd\n"
+" GDEF används i stället för lcar/prop\n"
 "Om både det här och OpenType är inställt genereras båda formaten"
 
 #: fontforgeexe/prefs.c:530
@@ -31371,16 +31387,16 @@ msgid ""
 " Use of GDEF rather than lcar/prop\n"
 "If both this and Apple are set, both formats are generated"
 msgstr ""
-"Apple och MS/Adobe skiljer sig åt när det gäller formatet för truetype- och opentype-filer.\n"
-"Det här styr standardinställningen för kryssrutan OpenType i dialogrutan\n"
-"File->Generate Font-dialogrutan.\n"
+"Apple och MS/Adobe skiljer sig åt när det gäller formatet för TrueType- och OpenType-filer.\n"
+"Det här styr standardinställningen för kryssrutan OpenType i\n"
+"dialogrutan Arkiv->Generera typsnitt.\n"
 "De viktigaste skillnaderna är:\n"
 " Bitmappsdata lagras i olika tabeller\n"
-" Skalade sammansatta glyfer behandlas på olika sätt\n"
-" Användning av GSUB i stället för morx(t)/feat\n"
-" Användning av GPOS i stället för kern/opbd\n"
-" Användning av GDEF i stället för lcar/prop\n"
-"Om både this och Apple är inställda genereras båda formaten"
+" Skalbara sammansatta glyfer hanteras olika\n"
+" GSUB används i stället för morx(t)/feat\n"
+" GPOS används i stället för kern/opbd\n"
+" GDEF används i stället för lcar/prop\n"
+"Om både det här alternativet och Apple är valda genereras båda formaten"
 
 #: fontforgeexe/prefs.c:541
 msgid "Generic"
@@ -31579,7 +31595,7 @@ msgstr "Linjalalternativ"
 #: fontforgeexe/problems.cpp:1755
 msgid ""
 "This reference has been flipped, so the paths in it are drawn backwards"
-msgstr "Den här referens har vänts, så vägarna i den är ritade baklänges"
+msgstr "Den här referensen har vänts, så banorna i den ritas baklänges"
 
 #: fontforgeexe/problems.cpp:267 fontforgeexe/problems.cpp:606
 #: fontforgeexe/problems.cpp:1951
@@ -31619,7 +31635,7 @@ msgid ""
 "The name FontForge would like to assign to this glyph, %.30s, is already "
 "used by a different glyph."
 msgstr ""
-"Det namn som FontForge skulle vilja tilldela den här glyf, %.30s, används "
+"Det namn som FontForge skulle vilja tilldela den här glyfen, %.30s, används "
 "redan av en annan glyf."
 
 #: fontforgeexe/problems.cpp:323 fontforgeexe/problems.cpp:593
@@ -31807,8 +31823,8 @@ msgid ""
 "Change the encoding to \"Glyph Order\" and use\n"
 "Edit->Select->Wildcard with the following code point"
 msgstr ""
-"Två glyfer delar samma unicode-kodpunkt.\n"
-"Ändra kodningen till \"Glyph Order\" och använd\n"
+"Två glyfer delar samma Unicode-kodpunkt.\n"
+"Ändra kodningen till \"glyfordning\" och använd\n"
 "Redigera->Välj->Wildcard med följande kodpunkt"
 
 #: fontforgeexe/problems.cpp:625
@@ -31823,7 +31839,7 @@ msgid ""
 "Edit->Select->Wildcard with the following name"
 msgstr ""
 "Två glyfer har samma namn.\n"
-"Ändra kodningen till \"Glyph Order\" och använd\n"
+"Ändra kodningen till \"glyfordning\" och använd\n"
 "Redigera->Välj->Wildcard med följande namn"
 
 #: fontforgeexe/problems.cpp:627
@@ -31919,7 +31935,7 @@ msgstr "De två valda punkterna är slutpunkterna på en öppen väg"
 
 #: fontforgeexe/problems.cpp:1105
 msgid "The paths that make up this glyph intersect one another"
-msgstr "De banor som utgör den här glyf korsar varandra"
+msgstr "De banor som utgör den här glyfen korsar varandra"
 
 #: fontforgeexe/problems.cpp:1160
 msgid "The selected point is too far from the origin"
@@ -31985,9 +32001,9 @@ msgid ""
 "All entries (except translation) must be between [-2.0,2.0).\n"
 "Translation must be integral."
 msgstr ""
-"Den här referens har en transformationsmatris som inte kan uttryckas i truetype.\n"
-"Alla poster (utom översättning) måste ligga mellan [-2.0,2.0].\n"
-"Översättningen måste vara integral."
+"Den här referensen har en transformationsmatris som inte kan uttryckas i TrueType.\n"
+"Alla poster, utom förflyttning, måste ligga mellan [-2.0,2.0).\n"
+"Förflyttningen måste vara ett heltal."
 
 #: fontforgeexe/problems.cpp:1803
 msgid ""
@@ -32004,8 +32020,8 @@ msgid ""
 "This reference has a transformation matrix which cannot be expressed in Type1/2 fonts.\n"
 "No scaling or rotation allowed."
 msgstr ""
-"Den här referens har en transformationsmatris som inte kan uttryckas i typsnitt av typ 1/2.\n"
-"Ingen skalning eller rotation är tillåten."
+"Den här referensen har en transformationsmatris som inte kan uttryckas i Type1/2-teckensnitt.\n"
+"Skalning eller rotation är inte tillåten."
 
 #: fontforgeexe/problems.cpp:1847
 msgid "Both selected references have use-my-metrics set"
@@ -32025,15 +32041,15 @@ msgstr ""
 msgid ""
 "References are nested more deeply in this glyph than the maximum allowed"
 msgstr ""
-"Referenser är inbäddade djupare i den här glyf än det maximalt tillåtna"
+"Referenser är inbäddade djupare i den här glyfen än det maximalt tillåtna"
 
 #: fontforgeexe/problems.cpp:1895
 msgid "There are more points in this glyph than the maximum allowed"
-msgstr "Det finns fler punkter i den här glyf än det maximalt tillåtna"
+msgstr "Det finns fler punkter i den här glyfen än det maximalt tillåtna"
 
 #: fontforgeexe/problems.cpp:1909
 msgid "There are more hints in this glyph than the maximum allowed"
-msgstr "Det finns fler ledtrådar i den här glyf än det maximalt tillåtna"
+msgstr "Det finns fler ledtrådar i den här glyfen än det maximalt tillåtna"
 
 #: fontforgeexe/problems.cpp:1921
 msgid "This outline glyph is missing a bitmap version"
@@ -32107,7 +32123,7 @@ msgstr "Position för kedjekoppling"
 
 #: fontforgeexe/problems.cpp:2269
 msgid "Chaining substitution"
-msgstr "Chaining substitution"
+msgstr "Kedjesubstitution"
 
 #: fontforgeexe/problems.cpp:2269
 msgid "Reverse chaining subs"
@@ -32128,7 +32144,7 @@ msgstr "Lig"
 #: fontforgeexe/problems.cpp:2292
 #, c-format
 msgid "Glyph %1$.50s with a %2$s from lookup subtable %3$.50s"
-msgstr "Glyph %1$.50s med en %2$s från lookup subtable %3$.50s"
+msgstr "Glyf %1$.50s med en %2$s från uppslagsundertabellen %3$.50s"
 
 #: fontforgeexe/problems.cpp:2297 fontforgeexe/problems.cpp:2302
 #: fontforgeexe/problems.cpp:2307
@@ -32174,8 +32190,8 @@ msgid ""
 "The lookup %.30s which invokes lookup %.30s is active for glyph %.30s which has script '%c%c%c%c', yet this script does not appear in any of the features which apply the lookup.\n"
 "Would you like to add this script to one of those features?"
 msgstr ""
-"Uppslaget %.30s som anropar uppslaget %.30s är aktivt för glyfen %.30s som har skriptet '%c%c%c%c', men det här skript visas inte i någon av de funktioner som tillämpar uppslaget.\n"
-"Skulle du vilja lägga till det här skript i en av de här funktioner?"
+"Uppslagningen %.30s, som anropar uppslagningen %.30s, är aktiv för glyfen %.30s med skriptet '%c%c%c%c', men det skriptet förekommer inte i någon av funktionerna som använder uppslagningen.\n"
+"Vill du lägga till skriptet i någon av de funktionerna?"
 
 #: fontforgeexe/problems.cpp:2626
 #, c-format
@@ -32184,9 +32200,9 @@ msgid ""
 "\n"
 "Would you like to add this script to one of those features?"
 msgstr ""
-"Uppslagningen %.30s är aktiv för glyfen %.30s som har skriptet '%c%c%c%c', men det här skript förekommer inte i någon av de funktioner som tillämpar uppslagningen.\n"
+"Uppslagningen %.30s är aktiv för glyfen %.30s med skriptet '%c%c%c%c', men det skriptet förekommer inte i någon av funktionerna som använder uppslagningen.\n"
 "\n"
-"Skulle du vilja lägga till det här skriptet i en av de här funktioner?"
+"Vill du lägga till skriptet i någon av de funktionerna?"
 
 #: fontforgeexe/problems.cpp:2632
 msgid "_Skip"
@@ -32215,10 +32231,10 @@ msgid ""
 "outputs them, potentially causing havoc). Even in PostScript fonts it is "
 "generally a good idea to use integral values."
 msgstr ""
-"Koordinaterna för alla punkter och kontrollpunkter i truetype måste vara "
-"heltal (om de inte är heltal kommer FontForge att avrunda dem när de matas "
-"ut, vilket kan orsaka förödelse). Även i PostScript-teckensnitt är det i "
-"allmänhet en bra idé att använda heltalsvärden."
+"Koordinaterna för alla punkter och kontrollpunkter i TrueType måste vara "
+"heltal. Om de inte är det avrundar FontForge dem vid utmatning, vilket kan "
+"orsaka problem. Även i PostScript-teckensnitt är det i allmänhet en god idé "
+"att använda heltalsvärden."
 
 #: fontforgeexe/problems.cpp:2909
 msgid "_X near¹"
@@ -32393,11 +32409,12 @@ msgid ""
 "conversion to PS will contain twice as many control points)"
 msgstr ""
 "I PostScript Language Reference Manual (Appendix B) står det att en tolk "
-"inte behöver stödja banor med mer än 1500 punkter. Jag tror att det här "
-"antal inkluderar kontrollpunkter. Från PostScripts synvinkel utgör alla "
-"konturer i ett tecken en bana. Moderna tolkar tenderar att stödja banor med "
-"fler punkter än den här gräns. (Observera att ett truetype-teckensnitt efter"
-" konvertering till PS kommer innehålla dubbelt så många kontrollpunkter)"
+"inte behöver stödja banor med fler än 1500 punkter. Jag tror att den här "
+"räkningen även omfattar kontrollpunkter. Ur PostScripts perspektiv bildar "
+"alla konturer i ett tecken en enda bana. Moderna tolkar brukar stödja banor "
+"med fler punkter än den här gränsen. Observera att ett TrueType-teckensnitt "
+"efter konvertering till PS kommer att innehålla dubbelt så många "
+"kontrollpunkter."
 
 #: fontforgeexe/problems.cpp:2979
 msgid "Check _flipped references"
@@ -32623,7 +32640,7 @@ msgstr "Kontrollera om CID:n har definierats _två gånger"
 
 #: fontforgeexe/problems.cpp:3070
 msgid "Check whether a CID is defined in more than one sub-font"
-msgstr "Kontrollera om ett CID är definierat i mer än en sub-font"
+msgstr "Kontrollera om ett CID är definierat i mer än en underteckensnitt"
 
 #: fontforgeexe/problems.cpp:3071
 msgid "Check for _undefined CIDs"
@@ -33059,7 +33076,7 @@ msgstr "Återvalidera"
 
 #: fontforgeexe/problems.cpp:4193
 msgid "Open Glyph"
-msgstr "Öppna Glyph"
+msgstr "Öppna glyf"
 
 #: fontforgeexe/problems.cpp:4195
 msgid "Scroll To Glyph"
@@ -33294,7 +33311,7 @@ msgstr "PS Type3 Bitmap"
 
 #: fontforgeexe/savefontdlg.c:190
 msgid "No Bitmap Fonts"
-msgstr "Inga bitmappsfonter"
+msgstr "Inga bitmappstypsnitt"
 
 #: fontforgeexe/savefontdlg.c:207
 msgid "Pixel List"
@@ -33369,7 +33386,7 @@ msgid ""
 msgstr ""
 "AFM-formatet tillåter att viss information om kompositer\n"
 "(ungefär samma sak som mark till bas ankarklasser) att inkluderas. Det tenderar dock att göra AFM-filerna enorma eftersom den\n"
-"inte lagras på ett effektivt sätt.\n"
+"inte lagras på ett effektivt sätt."
 
 #: fontforgeexe/savefontdlg.c:633
 msgid "Output PFM"
@@ -33409,9 +33426,9 @@ msgid ""
 "generate new instructions, it will just make use of whatever is associated\n"
 "with each character."
 msgstr ""
-"Vill du att teckensnittsfilen ska innehålla truetype-hintar? Det här kommer inte\n"
-"generera nya instruktioner, det kommer bara att använda vad som är associerat\n"
-"med varje tecken."
+"Vill du att typsnittsfilen ska innehålla TrueType-hintar? Det här\n"
+"skapar inga nya instruktioner, utan använder bara det som redan är kopplat\n"
+"till varje tecken."
 
 #: fontforgeexe/savefontdlg.c:683
 msgid "PS Glyph Names"
@@ -33436,15 +33453,15 @@ msgid ""
 " Use of GPOS rather than kern/opbd\n"
 " Use of GDEF rather than lcar/prop"
 msgstr ""
-"Apple och MS/Adobe skiljer sig åt när det gäller formatet för truetype- och opentype-filer\n"
-"Det här gör att du kan välja vilken standard som ska följas för ditt typsnitt.\n"
+"Apple och MS/Adobe skiljer sig åt när det gäller formatet för TrueType- och OpenType-filer\n"
+"Det här låter dig välja vilken standard som ska följas för ditt typsnitt.\n"
 "De viktigaste skillnaderna är:\n"
-" Kraven för \"postscript\"-namnet i namntabellkonflikten\n"
+" Kraven på 'postscript'-namnet i namntabellen står i konflikt med varandra\n"
 " Bitmappsdata lagras i olika tabeller\n"
-" Skalade sammansatta tecken behandlas på olika sätt\n"
-" Användning av GSUB i stället för morx(t)/feat\n"
-" Användning av GPOS i stället för kern/opbd\n"
-" Användning av GDEF i stället för lcar/prop"
+" Skalade sammansatta tecken hanteras olika\n"
+" GSUB används i stället för morx(t)/feat\n"
+" GPOS används i stället för kern/opbd\n"
+" GDEF används i stället för lcar/prop"
 
 #: fontforgeexe/savefontdlg.c:706
 msgid ""
@@ -33458,15 +33475,15 @@ msgid ""
 " Use of GPOS rather than kern/opbd\n"
 " Use of GDEF rather than lcar/prop"
 msgstr ""
-"Apple och MS/Adobe skiljer sig åt när det gäller formatet för truetype- och opentype-filer\n"
-"Det här gör att du kan välja vilken standard som ska följas för ditt typsnitt.\n"
+"Apple och MS/Adobe skiljer sig åt när det gäller formatet för TrueType- och OpenType-filer\n"
+"Det här låter dig välja vilken standard som ska följas för ditt typsnitt.\n"
 "De viktigaste skillnaderna är:\n"
-" Kraven för \"postscript\"-namnet i namntabellkonflikten\n"
+" Kraven på 'postscript'-namnet i namntabellen står i konflikt med varandra\n"
 " Bitmappsdata lagras i olika tabeller\n"
-" Skalade sammansatta glyfer behandlas på olika sätt\n"
-" Användning av GSUB i stället för morx(t)/feat\n"
-" Användning av GPOS i stället för kern/opbd\n"
-" Användning av GDEF i stället för lcar/prop"
+" Skalade sammansatta glyfer hanteras olika\n"
+" GSUB används i stället för morx(t)/feat\n"
+" GPOS används i stället för kern/opbd\n"
+" GDEF används i stället för lcar/prop"
 
 #: fontforgeexe/savefontdlg.c:714
 msgid "Old style 'kern'"
@@ -33502,7 +33519,7 @@ msgstr ""
 
 #: fontforgeexe/savefontdlg.c:738
 msgid "Output Glyph Map"
-msgstr "Utgång Glyph Map"
+msgstr "Mata ut glyfkarta"
 
 #: fontforgeexe/savefontdlg.c:748
 msgid "Output OFM & CFG"
@@ -33553,7 +33570,7 @@ msgstr "Slå upp namn"
 
 #: fontforgeexe/savefontdlg.c:790
 msgid "Preserve the names of the GPOS/GSUB lookups and subtables"
-msgstr "Bevara namnen på GPOS/GSUB-uppslagsord och undertabeller"
+msgstr "Bevara namnen på GPOS/GSUB-uppslagningar och undertabeller"
 
 #: fontforgeexe/savefontdlg.c:798
 msgid "Save Guides"
@@ -33573,9 +33590,9 @@ msgid ""
 "Also if we output a truetype font from a\n"
 "cubic database, save the cubic splines."
 msgstr ""
-"Bevara alla bakgrunds- och spirolager.\n"
-"Även om vi matar ut ett truetype-teckensnitt från en\n"
-"kubisk databas, spara de kubiska splinesna."
+"Bevara alla bakgrunds- och spiro-lager.\n"
+"Om vi dessutom matar ut ett TrueType-teckensnitt från en\n"
+"kubisk databas ska de kubiska splinesna sparas."
 
 #: fontforgeexe/savefontdlg.c:821
 msgid "FFTM Table"
@@ -33694,10 +33711,9 @@ msgid ""
 "continue font generation (and omit this character)?"
 msgstr ""
 "Glyfen vid kodning %d heter \".notdef\" men innehåller en kontur. Eftersom "
-"den kallas \".notdef\" kommer den inte att ingå i det genererade "
-"teckensnittet. Du kan ge den ett nytt namn med hjälp av Element->Glyph Info."
-" Vill du fortsätta genereringen av teckensnittet (och utelämna det här "
-"tecknet)?"
+"den heter \".notdef\" kommer den inte att tas med i det genererade "
+"typsnittet. Du kan ge den ett nytt namn via Element->Glyfinfo. Vill du "
+"fortsätta generera typsnittet ändå, och utelämna det här tecknet?"
 
 #: fontforgeexe/savefontdlg.c:1355
 msgid "Not a CID format"
@@ -33784,8 +33800,8 @@ msgid ""
 "resource)"
 msgstr ""
 "Bitmapformatet \"NFNT\" används inte under OS/X (även om du fortfarande "
-"måste skapa ett (värdelöst) bitmapfont om du sparar en typ1 PostScript-"
-"resurs)"
+"måste skapa ett (värdelöst) bitmappsteckensnitt om du sparar en typ1 "
+"PostScript-resurs)"
 
 #: fontforgeexe/savefontdlg.c:1439
 msgid "The 'NFNT' bitmap format is obsolete"
@@ -33964,7 +33980,7 @@ msgstr ""
 " * Bitmappar är inblandade\n"
 " * Den sammanslagna glyf-tabellen har mer än 65534 glyfer\n"
 "\n"
-"(Sammanfogning kommer ta längre tid)\n"
+"(Sammanfogning kommer ta längre tid)"
 
 #: fontforgeexe/savefontdlg.c:2596
 msgid "As CFF fonts"
@@ -34039,7 +34055,7 @@ msgid ""
 "by removing the intersections"
 msgstr ""
 "När FontForge upptäcker att en utvidgad stroke kommer korsa sig själv,\n"
-"kommer inställningen av det här alternativ att få det att försöka göra saker trevliga\n"
+"kommer inställningen av det här alternativetet att få det att försöka göra saker trevliga\n"
 "genom att ta bort korsningarna"
 
 #: fontforgeexe/scstylesui.c:462
@@ -34206,7 +34222,7 @@ msgstr "Funktion Tag:"
 
 #: fontforgeexe/scstylesui.c:1037
 msgid "Glyph Extension:"
-msgstr "Glyph Extension:"
+msgstr "Glyfutökning:"
 
 #: fontforgeexe/scstylesui.c:1059
 msgid "Vertical Offset:"
@@ -34234,7 +34250,7 @@ msgstr "Små kepsar"
 
 #: fontforgeexe/scstylesui.c:1138
 msgid "Glyph Extensions"
-msgstr "Glyph-tillägg"
+msgstr "Glyfutökningar"
 
 #: fontforgeexe/scstylesui.c:1147
 msgid "Letters:"
@@ -34463,7 +34479,7 @@ msgid ""
 "The simple application of this algorithm will squeeze counters\n"
 "That is not normally seen in bold latin fonts"
 msgstr ""
-"Den enkla tillämpningen av den här algoritm kommer pressa räknare\n"
+"Den enkla tillämpningen av den här algoritmen kommer pressa räknare\n"
 "Det är inte normalt att se i feta latinska teckensnitt"
 
 #: fontforgeexe/scstylesui.c:2166
@@ -34765,7 +34781,7 @@ msgid ""
 "following transformations."
 msgstr ""
 "Tillåt en träff även om sökmönstret måste omvandlas genom en kombination av\n"
-"följande omvandlingar.\n"
+"följande omvandlingar."
 
 #: fontforgeexe/searchview.c:706
 msgid "Flipping"
@@ -34802,15 +34818,16 @@ msgid ""
 "are which form the right angle."
 msgstr ""
 "Om sökmönstret är en enda öppen kontur\n"
-"ska du inte matcha ändpunkterna. De anger bara\n"
-"den riktning från vilken kurvan ska röra sig mot nästa\n"
-"röra sig mot nästa punkt (som kommer att matchas),\n"
-"och det minsta avståndet mellan den första matchade punkten och den före den. Slutpunkterna för\n"
-"replace-konturen kommer också endast att användas för positionering.\n"
+"ska ändpunkterna inte matchas. De anger bara\n"
+"riktningen som kurvan ska röra sig i mot nästa\n"
+"punkt, som kommer att matchas, samt det minsta\n"
+"avståndet mellan den första matchade punkten\n"
+"och punkten före den. Ändpunkterna i\n"
+"ersättningskonturen används också bara för positionering.\n"
 "\n"
 "Det här gör att du kan matcha ett rätvinkligt hörn\n"
-"utan att behöva specificera exakt hur långa de kanter är som bildar den räta vinkeln.\n"
-"\n"
+"utan att behöva ange exakt hur långa de kanter är\n"
+"som bildar den räta vinkeln."
 
 #: fontforgeexe/searchview.c:776
 msgid "Search Selected Chars Only"
@@ -34951,7 +34968,7 @@ msgstr "Avsluta (%d, %d)"
 
 #: fontforgeexe/showatt.c:443
 msgid "Backtrack Match: "
-msgstr "Backtrack Match:"
+msgstr "Bakåtblicksmatchning: "
 
 #: fontforgeexe/showatt.c:459
 msgid "Match: "
@@ -34959,7 +34976,7 @@ msgstr "Match:"
 
 #: fontforgeexe/showatt.c:468
 msgid "Lookahead Match: "
-msgstr "Lookahead Match:"
+msgstr "Framåtblicksmatchning: "
 
 #: fontforgeexe/showatt.c:481
 msgid "Backtrack class: "
@@ -34992,7 +35009,7 @@ msgstr "Täckning %d:"
 #: fontforgeexe/showatt.c:549
 #, c-format
 msgid "Lookahead coverage %d: "
-msgstr "Lookahead täckning %d:"
+msgstr "Framåtblickstäckning %d: "
 
 #: fontforgeexe/showatt.c:565
 #, c-format
@@ -35009,7 +35026,7 @@ msgstr "Kedjekoppling Positionering"
 
 #: fontforgeexe/showatt.c:600
 msgid "Chaining Substitution"
-msgstr "Chaining Substitution"
+msgstr "Kedjesubstitution"
 
 #: fontforgeexe/showatt.c:601
 msgid "Reverse Chaining Subs"
@@ -35043,7 +35060,7 @@ msgstr "%s av %s"
 #: fontforgeexe/showatt.c:624
 #, c-format
 msgid "Backtrack class %d: "
-msgstr "Backtrack klass %d:"
+msgstr "Bakåtblicksklass %d: "
 
 #: fontforgeexe/showatt.c:634 fontforgeexe/showatt.c:712
 #, c-format
@@ -35053,7 +35070,7 @@ msgstr "Klass %d:"
 #: fontforgeexe/showatt.c:644
 #, c-format
 msgid "Lookahead class %d: "
-msgstr "Lookahead-klass %d:"
+msgstr "Framåtblicksklass %d: "
 
 #: fontforgeexe/showatt.c:655
 #, c-format
@@ -35188,7 +35205,7 @@ msgstr "Undertabell för glyfdefinition"
 #. GT: can have a cursor between f and i in the "fi" ligature)
 #: fontforgeexe/showatt.c:1504
 msgid "Ligature Caret Sub-Table"
-msgstr "Ligatur Caret Sub-Table"
+msgstr "Underordnad tabell för ligaturmarkörer"
 
 #: fontforgeexe/showatt.c:1509
 msgid "Mark Attachment Classes"
@@ -35369,7 +35386,7 @@ msgstr "'kern' Horisontell kerningstabell"
 
 #: fontforgeexe/showatt.c:2103
 msgid "'lcar' Ligature Caret Table"
-msgstr "\"lcar\" Ligatur Caret Tabell"
+msgstr "'lcar' tabell för ligaturmarkörer"
 
 #: fontforgeexe/showatt.c:2109
 msgid "'morx' Glyph Extended Metamorphosis Table"
@@ -35460,7 +35477,7 @@ msgstr "Jämför _Hints"
 
 #: fontforgeexe/showatt.c:3221
 msgid "Compare postscript hints and hintmasks and truetype instructions"
-msgstr "Jämför postscript-tips och hintmasks och truetype-instruktioner"
+msgstr "Jämför PostScript-hintar, hintmasker och TrueType-instruktioner"
 
 #: fontforgeexe/showatt.c:3229
 msgid "Compare Hint_Masks"
@@ -35529,7 +35546,7 @@ msgstr "Kerning & liknande"
 
 #: fontforgeexe/showatt.c:3321
 msgid "Compare Glyph _Substitution"
-msgstr "Jämför Glyph _Substitution"
+msgstr "Jämför glyf_substitution"
 
 #: fontforgeexe/showatt.c:3326
 msgid "Ligatures & such"
@@ -35557,7 +35574,7 @@ msgid ""
 "(both PostScript and TrueType suggest you retain these points)"
 msgstr ""
 "Normalt kommer simplify inte att ta bort punkter vid kurvornas extrema\n"
-"(både PostScript och TrueType föreslår att du behåller de här punkter)"
+"(både PostScript och TrueType föreslår att du behåller de här punkterna)"
 
 #: fontforgeexe/simplifydlg.c:213
 msgid "Allow _slopes to change"
@@ -35871,7 +35888,7 @@ msgstr "Redigera Ange Omarrangemang"
 
 #: fontforgeexe/statemachine.c:1317
 msgid "New Contextual Glyph Insertion"
-msgstr "Ny kontextuell glyph-infogning"
+msgstr "Ny kontextuell glyfinfogning"
 
 #: fontforgeexe/statemachine.c:1317
 msgid "New Contextual Kerning"
@@ -35941,10 +35958,11 @@ msgid ""
 "another. If you wish whitespace between tiles\n"
 "set this flag"
 msgstr ""
-"Normalt kommer Tile att bestå av allt\n"
-"inom den minsta avgränsande rutan för brickan --\n"
-"så angränsande plattor kommer stöta direkt på varandra. Om du vill ha ett mellanrum mellan plattorna\n"
-"sätt den här flagga\n"
+"Normalt består brickan av allt\n"
+"inom brickans minsta avgränsningsruta,\n"
+"så angränsande brickor ligger direkt intill\n"
+"varandra. Om du vill ha mellanrum mellan brickorna\n"
+"aktiverar du den här flaggan"
 
 #: fontforgeexe/tilepath.c:1121
 msgid "_Left"
@@ -35993,7 +36011,7 @@ msgid ""
 "height, then the selection should be scaled slightly."
 msgstr ""
 "Ett helt antal av urvalet kommer att användas för att täcka stigen.\n"
-"Om banans längd inte är jämnt delbar med markeringens höjd, bör markeringen skalas något.\n"
+"Om banans längd inte är jämnt delbar med markeringens höjd, bör markeringen skalas något."
 
 #: fontforgeexe/tilepath.c:1190
 msgid "_Scale"
@@ -37454,7 +37472,7 @@ msgstr "Instruktionerna ändrades"
 msgid ""
 "The instructions for %.80s have changed. Do you want to lose those changes?"
 msgstr ""
-"Instruktionerna för %.80s har ändrats. Vill du förlora de här ändringar?"
+"Instruktionerna för %.80s har ändrats. Vill du förlora de här ändringarna?"
 
 #: fontforgeexe/ttfinstrsui.c:1649
 msgid "Zones"
@@ -37462,7 +37480,7 @@ msgstr "Zoner"
 
 #: fontforgeexe/ttfinstrsui.c:1650
 msgid "Twilight Zone Point Count"
-msgstr "Twilight Zone poängräkning"
+msgstr "punktantal i Twilight Zone"
 
 #: fontforgeexe/ttfinstrsui.c:1652
 msgid "Max Stack Depth"
