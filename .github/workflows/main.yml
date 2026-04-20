@@ -17,16 +17,16 @@ jobs:
           - os: ubuntu-22.04
             target: Release
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           path: repo
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: 'temurin'
           java-version: '17'
       - name: Restore cached custom dependencies
         id: cache-dependencies
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: deps/install
           key: ${{ matrix.os }}-deps-${{ hashFiles('repo/.github/workflows/scripts/setup_linux_deps.sh') }}
@@ -67,13 +67,13 @@ jobs:
           DESTDIR=appdir cmake -DCMAKE_INSTALL_PREFIX=/usr -P cmake_install.cmake
           ../.github/workflows/scripts/ffappimagebuild.sh appdir $GITHUB_SHA
       - name: Source archive artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: matrix.target == 'NoUI'
         with:
           name: source-archive
           path: repo/build/fontforge-*.tar.xz
       - name: AppImage artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         if: matrix.target == 'Release'
         with:
           name: Linux_appimage
@@ -88,7 +88,7 @@ jobs:
   mac:
     runs-on: macos-14
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           path: repo
       - name: Install dependencies
@@ -121,7 +121,7 @@ jobs:
         working-directory: repo/build
         run: ninja macbundle
       - name: App Bundle artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: macOS_appbundle
           path: repo/build/osx/FontForge-*.dmg
@@ -138,7 +138,7 @@ jobs:
           - arch: CLANGARM64
             runner: windows-11-arm
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           path: repo
       - name: Setup MSYS2
@@ -168,7 +168,7 @@ jobs:
           BUILD_DIR: ${{ runner.temp }}/ffbuild
         run: iscc -Qp fontforgesetup.iss -DMSYSTEM=${{ matrix.arch }} -DBUILD_DIR="${{ runner.temp }}\ffbuild"
       - name: Build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: Win_${{ matrix.arch }}
           path: |
@@ -182,7 +182,7 @@ jobs:
     env:
       VCPKG_BINARY_SOURCES: "clear;files,${{ github.workspace }}/vcpkg-cache,readwrite"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Restore vcpkg binary cache
         id: vcpkg-cache
         uses: actions/cache/restore@v4
