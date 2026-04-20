@@ -37,11 +37,11 @@ jobs:
           # macOS x86_64
           - os: macos
             arch: x86_64
-            runner: macos-15-intel
+            runner: macos-13
           # macOS arm64 (native runner)
           - os: macos
             arch: arm64
-            runner: macos-15
+            runner: macos-14
           # Windows x86_64
           - os: windows
             arch: AMD64
