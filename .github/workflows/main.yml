@@ -93,7 +93,6 @@ jobs:
           path: repo
       - name: Install dependencies
         run: |
-          brew install pkg-config ruby cmake ninja
           brew install cairo coreutils fontconfig gettext giflib gtk+3 gtkmm3 jpeg libpng libspiro libtiff libtool libuninameslist python@3 wget woff2 --quiet
           PREFIX=$GITHUB_WORKSPACE/target
           echo "PREFIX=$PREFIX" >> $GITHUB_ENV
