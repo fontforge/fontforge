@@ -1840,6 +1840,8 @@ return;
 		    }
 
 		    for (gid=start; gid<=end; gid++) {
+			if (cur >= mappings_length)
+			    break;
 			mappings[cur] = uvals[0] = uni++;
 			add_mapping(basesf, mappings, uvals, 1, gid, pc->cmap_from_cid[font_num], cur);
 			cur++;
