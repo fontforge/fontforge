@@ -44,10 +44,11 @@ else()
       OUTPUT_VARIABLE _platlib_path_abs
       OUTPUT_STRIP_TRAILING_WHITESPACE)
     if(NOT _platlib_path_abs OR _platlib_path_abs_result)
-      message(FATAL_ERROR "Could not determine the path to install pyhook binaries to, got '${PYHOOK_INSTALL_DIR}' with return value ${_pyhook_install_dir_result}")
+      message(FATAL_ERROR "Could not determine the path to install pyhook binaries to, got '${_platlib_path_abs}' with return value ${_platlib_path_abs_result}")
     endif()
     # Convert platlib dir from absolute to prefix-relative
-    file(RELATIVE_PATH PYHOOK_INSTALL_DIR
+    file(RELATIVE_PATH
+      PYHOOK_INSTALL_DIR
       "${CMAKE_INSTALL_PREFIX}"
       "${_platlib_path_abs}")
     set(PYHOOK_INSTALL_DIR "${PYHOOK_INSTALL_DIR}" CACHE STRING "Path to install pyhook to")
