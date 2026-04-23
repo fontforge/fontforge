@@ -36,16 +36,20 @@ else()
   # So do it ourselves, getting the prefix-relative path instead
   if(NOT DEFINED PYHOOK_INSTALL_DIR)
     if(APPLE)
-      set(_PYHOOK_SYSCONFIG_PREFIX " 'posix_prefix',")
+      set(_PYHOOK_SYSCONFIG_PREFIX ", 'posix_prefix'")
     endif()
     execute_process(
-      COMMAND "${Python3_EXECUTABLE}" -c "import sysconfig as sc; print(sc.get_path('platlib',${_PYHOOK_SYSCONFIG_PREFIX} vars={'platbase': '.'}))"
-      RESULT_VARIABLE _pyhook_install_dir_result
-      OUTPUT_VARIABLE PYHOOK_INSTALL_DIR
+      COMMAND "${Python3_EXECUTABLE}" -c "import sysconfig as sc; print(sc.get_path('platlib'${_PYHOOK_SYSCONFIG_PREFIX}))"
+      RESULT_VARIABLE _platlib_path_abs_result
+      OUTPUT_VARIABLE _platlib_path_abs
       OUTPUT_STRIP_TRAILING_WHITESPACE)
-    if(NOT PYHOOK_INSTALL_DIR OR _pyhook_install_dir_result)
+    if(NOT _platlib_path_abs OR _platlib_path_abs_result)
       message(FATAL_ERROR "Could not determine the path to install pyhook binaries to, got '${PYHOOK_INSTALL_DIR}' with return value ${_pyhook_install_dir_result}")
     endif()
+    # Convert platlib dir from absolute to prefix-relative
+    file(RELATIVE_PATH PYHOOK_INSTALL_DIR
+      "${CMAKE_INSTALL_PREFIX}"
+      "${_platlib_path_abs}")
     set(PYHOOK_INSTALL_DIR "${PYHOOK_INSTALL_DIR}" CACHE STRING "Path to install pyhook to")
   endif()
 
