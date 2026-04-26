@@ -274,7 +274,7 @@ typedef struct bluedata {
 /* The OpenType spec says in one place that the default script is 'dflt' and */
 /*  in another that it is 'DFLT'. 'DFLT' is correct */
 #define DEFAULT_SCRIPT		CHR('D','F','L','T')
-#define REQUIRED_FEATURE	CHR(' ','R','Q','D')
+#define REQUIRED_FEATURE_	CHR(' ','R','Q','D')
 
 enum otlookup_type {
     ot_undef = 0,			/* Not a lookup type */
