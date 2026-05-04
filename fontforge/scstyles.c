@@ -2882,9 +2882,9 @@ void FVGenericChange(FontViewBase *fv, struct genericchange *genchange) {
     if ( sf->cidmaster!=NULL && genchange->gc == gc_subsuper )
 return;		/* Can't randomly add things to a CID keyed font */
 
-    if ( genchange->small != NULL ) {
-	genchange->italic_angle = genchange->small->italic_angle;
-	genchange->tan_ia = genchange->small->tan_ia;
+    if ( genchange->smallcaps != NULL ) {
+	genchange->italic_angle = genchange->smallcaps->italic_angle;
+	genchange->tan_ia = genchange->smallcaps->tan_ia;
     }
 
     for ( gid=0; gid<sf->glyphcnt; ++gid ) if ( (sc=sf->glyphs[gid])!=NULL )
@@ -3036,9 +3036,9 @@ void CVGenericChange(CharViewBase *cv, struct genericchange *genchange) {
     if ( genchange->gc != gc_generic || layer<0 )
 return;
 
-    if ( genchange->small != NULL ) {
-	genchange->italic_angle = genchange->small->italic_angle;
-	genchange->tan_ia = genchange->small->tan_ia;
+    if ( genchange->smallcaps != NULL ) {
+	genchange->italic_angle = genchange->smallcaps->italic_angle;
+	genchange->tan_ia = genchange->smallcaps->tan_ia;
     }
 
     genchange->g.cnt = genchange->m.cnt+2;
@@ -6433,7 +6433,7 @@ return;
     SCClearLayer(sc,layer);
 
     memset(&genchange,0,sizeof(genchange));
-    genchange.small = &small;
+    genchange.smallcaps = &small;
     genchange.gc = gc_smallcaps;
     genchange.extension_for_letters = "sc";
     genchange.extension_for_symbols = "taboldstyle";

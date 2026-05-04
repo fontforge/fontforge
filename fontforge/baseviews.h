@@ -388,7 +388,7 @@ struct genericchange {
     struct fixed_maps g;			/* Adjusted for each glyph */
     double vertical_offset;
     unsigned int dstem_control, serif_control;
-    struct smallcaps *small;
+    struct smallcaps *smallcaps;
 /* Filled in by called routine */
     SplineFont *sf;
     int layer;
