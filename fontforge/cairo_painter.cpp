@@ -622,13 +622,9 @@ Cairo::RefPtr<Cairo::FtFontFace> CairoPainter::select_face(
     }
 }
 
-void CairoPainter::init_document(const Cairo::RefPtr<Cairo::Context>& cr,
+void CairoPainter::setup_context(const Cairo::RefPtr<Cairo::Context>& cr,
                                  double scale,
-                                 const Cairo::Rectangle& printable_area,
-                                 const std::string& document_title,
-                                 double top_margin) {
-    set_surface_metadata(cr, document_title);
-
+                                 const Cairo::Rectangle& printable_area) {
     // To ensure faithful preview, the rendering must be identical on all
     // devices and all resolutions. This requires disabling of font metrics
     // rounding.
@@ -638,6 +634,15 @@ void CairoPainter::init_document(const Cairo::RefPtr<Cairo::Context>& cr,
 
     cr->translate(printable_area.x, printable_area.y);
     cr->scale(scale, scale);
+}
+
+void CairoPainter::init_document(const Cairo::RefPtr<Cairo::Context>& cr,
+                                 double scale,
+                                 const Cairo::Rectangle& printable_area,
+                                 const std::string& document_title,
+                                 double top_margin) {
+    set_surface_metadata(cr, document_title);
+    setup_context(cr, scale, printable_area);
 
     // White background
     cr->set_source_rgb(1, 1, 1);

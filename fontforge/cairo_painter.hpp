@@ -143,6 +143,9 @@ class CairoPainter {
     Cairo::RefPtr<Cairo::FtFontFace> select_face(
         const std::vector<std::string>& tags) const;
 
+    void setup_context(const Cairo::RefPtr<Cairo::Context>& cr, double scale,
+                       const Cairo::Rectangle& printable_area);
+
     void init_document(const Cairo::RefPtr<Cairo::Context>& cr, double scale,
                        const Cairo::Rectangle& printable_area,
                        const std::string& document_title, double top_margin);
