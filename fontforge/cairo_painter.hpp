@@ -26,38 +26,15 @@
  */
 #pragma once
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include <stdint.h>
-
-typedef struct splinechar SplineChar;
-typedef struct splinefont SplineFont;
-
-/* Dummy incomplete type which can be casted to C++ type
- * ff::utils::SplineFontProperties */
-typedef struct cpp_SplineFontProperties cpp_SplineFontProperties;
-
-/* Create a new SplineFontProperties object */
-cpp_SplineFontProperties* SFGetProperties(SplineFont* sf);
-cpp_SplineFontProperties* make_SplineFontProperties(int ascent, int descent,
-                                                    bool italic,
-                                                    int16_t os2_weight,
-                                                    int16_t os2_width,
-                                                    const char* styles);
-
-#ifdef __cplusplus
-}
-
 #include <iostream>
 #include <map>
 #include <cairomm/context.h>
 
-namespace ff::utils {
+#include "layout/layout_shim.hpp"
 
-struct GlyphLine;
-struct SplineFontProperties;
+typedef struct splinechar SplineChar;
+
+namespace ff::utils {
 
 using PrintGlyphMap = std::map<int, SplineChar*>;
 
@@ -65,7 +42,7 @@ using PrintGlyphMap = std::map<int, SplineChar*>;
 // default font (it doesn't need to be the regular face). The default font is
 // used when no modifiers are specified.
 using CairoFontFamily = std::vector<
-    std::pair<SplineFontProperties, Cairo::RefPtr<Cairo::FtFontFace>>>;
+    std::pair<layout::SplineFontProperties, Cairo::RefPtr<Cairo::FtFontFace>>>;
 
 using ParsedRichText =
     std::vector<std::pair<std::vector<std::string>, std::string>>;
@@ -74,14 +51,6 @@ using RichTextLineBuffer =
 using RichTextLayout =
     std::vector<std::pair<RichTextLineBuffer, double /*height*/>>;
 using PrintGlyphVec = std::vector<std::pair<int, SplineChar*>>;
-
-struct SplineFontProperties {
-    int ascent, descent;
-    bool italic;
-    int16_t os2_weight;
-    int16_t os2_width;
-    const char* styles;
-};
 
 class CairoPainter {
  public:
@@ -224,5 +193,3 @@ CairoFontFamily create_cairo_family(SplineFont* current_sf);
 ParsedRichText parse_xml_stream(std::istream& input);
 
 }  // namespace ff::utils
-
-#endif  // __cplusplus

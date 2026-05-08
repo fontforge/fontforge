@@ -58,7 +58,7 @@
 #include "utype.h"
 #include "winfonts.h"
 #include "woff.h"
-#include "cairo_painter.hpp"
+#include "layout/layout_shim.hpp"
 
 #include <locale.h>
 #include <math.h>

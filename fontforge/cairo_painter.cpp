@@ -39,23 +39,6 @@ extern "C" {
 extern SplineFont** FVCollectFamily(SplineFont* sf);
 }
 
-inline ff::utils::SplineFontProperties* toCPP(cpp_SplineFontProperties* p) {
-    return reinterpret_cast<ff::utils::SplineFontProperties*>(p);
-}
-
-inline cpp_SplineFontProperties* toC(ff::utils::SplineFontProperties* p) {
-    return reinterpret_cast<cpp_SplineFontProperties*>(p);
-}
-
-cpp_SplineFontProperties* make_SplineFontProperties(int ascent, int descent,
-                                                    bool italic,
-                                                    int16_t os2_weight,
-                                                    int16_t os2_width,
-                                                    const char* styles) {
-    return toC(new ff::utils::SplineFontProperties{
-        ascent, descent, italic, os2_weight, os2_width, styles});
-}
-
 namespace ff::utils {
 
 const std::string CairoPainter::kScaleToPage = "scale_to_page";
@@ -788,7 +771,7 @@ std::pair<double, double> CairoPainter::get_splinefont_metrics(
     cr->set_font_size(normalized_size);
 
     // Retrieve the real ascender and descender in Cairo context units
-    const SplineFontProperties& sf_properties = cairo_family_[0].first;
+    const layout::SplineFontProperties& sf_properties = cairo_family_[0].first;
     Cairo::FontExtents font_extents;
     cr->get_font_extents(font_extents);
 
@@ -826,7 +809,7 @@ Cairo::RefPtr<Cairo::FtFontFace> create_cairo_face(SplineFont* sf) {
 
 CairoFontFamily create_cairo_family(SplineFont* current_sf) {
     SplineFont** family_sfs = FVCollectFamily(current_sf);
-    SplineFontProperties* sf_properties = nullptr;
+    layout::SplineFontProperties* sf_properties = nullptr;
     Cairo::RefPtr<Cairo::FtFontFace> ft_face;
 
     CairoFontFamily family;

@@ -218,6 +218,7 @@ add_library(fontforge
   zapfnomen.c
 )
 
+add_subdirectory(layout)
 add_subdirectory(shapers)
 
 # TODO(iorsh): Move this to fontforge/layout/
@@ -258,6 +259,7 @@ set_target_properties(fontforge PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 target_link_libraries(fontforge
   PUBLIC
     fontforge_common_headers
+    layout
     shapers
     Freetype::Freetype
     LibXml2::LibXml2
