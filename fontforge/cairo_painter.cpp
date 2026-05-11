@@ -637,6 +637,7 @@ void CairoPainter::draw_line_sample_text(
         // Copy zero-terminated array into vector
         std::vector<unichar_t> uni_buf(unitext,
                                        unitext + u_strlen(unitext) + 1);
+        free(unitext);
 
         // TODO(iorsh): retrieve enabled features from UI.
         std::vector<MetricsCore> metrics = shaper->apply_features(
@@ -663,7 +664,7 @@ void CairoPainter::draw_line_sample_text(
         // TODO(iorsh): Use Cairo::Context::show_text_glyphs() to embed original
         // text information into PDF.
         cr->show_glyphs(cairo_glyphs);
-        x += metrics.back().dx;
+        x += size * metrics.back().dx / hb_scale;
     }
 }
 
