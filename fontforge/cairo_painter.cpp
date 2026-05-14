@@ -35,6 +35,7 @@
 extern "C" {
 #include "fffreetype.h"
 }
+#include "fvfonts.h"
 #include "gutils.h"
 #include "lookups.h"
 #include "splinechar.h"
@@ -603,7 +604,8 @@ void CairoPainter::draw_page_sample_text(
     for (auto line_it = start_line_it; line_it != end_line_it; ++line_it) {
         double height = line_it->second;
         y_start += height;
-        draw_line_sample_text(cr, line_it->first, y_start);
+        draw_line_sample_text(cr, line_it->first, printable_area.width,
+                              y_start);
     }
 }
 
@@ -624,10 +626,14 @@ double CairoPainter::calculate_height_sample_text(
 
 void CairoPainter::draw_line_sample_text(
     const Cairo::RefPtr<Cairo::Context>& cr,
-    const RichTextLineBuffer& line_buffer, double y_baseline) {
+    const RichTextLineBuffer& line_buffer, double width, double y_baseline) {
     // Perform the actual text drawing
-    double x = 0;
     SplineFont* sf = print_map_[0].second->parent;
+    double hb_scale = sf ? (sf->ascent + sf->descent) : 1000.0;
+    SplineChar* first_char = nullptr;
+    bool rtl = false;
+    double x = 0;
+
     for (const auto& [text, font_idx, size] : line_buffer) {
         auto face = cairo_family_[font_idx].face;
         auto shaper = cairo_family_[font_idx].shaper;
@@ -641,30 +647,49 @@ void CairoPainter::draw_line_sample_text(
 
         // TODO(iorsh): retrieve enabled features from UI.
         std::vector<MetricsCore> metrics = shaper->apply_features(
-            uni_buf, features, Tag("DFLT"), Tag("dflt"), false);
-        size_t n_glyphs =
-            metrics.size() - 1;  // Exclude auxiliary trailing element
-        double hb_scale = 1200;
+            uni_buf, features, Tag("DFLT"), Tag("dflt"), false, false);
+        // Remove auxiliary trailing element added for legacy C consumers
+        metrics.pop_back();
+
+        // For RTL lines, start x at the right edge and move left.
+        // For LTR lines, start at 0 and move right.
+        if (!first_char && uni_buf[0] > 0) {
+            first_char = SFGetChar(sf, uni_buf[0], nullptr);
+            rtl = SCRightToLeft(first_char);
+            if (rtl) {
+                x = width;
+            }
+        }
+
+        double seg_advance =
+            size * (metrics.back().dx + metrics.back().dwidth) / hb_scale;
+
+        // For RTL lines, allocate [x - seg_advance, x) for this segment.
+        double seg_origin = rtl ? (x - seg_advance) : x;
 
         std::vector<Cairo::Glyph> cairo_glyphs;
-        for (size_t i = 0; i < n_glyphs; ++i) {
-            double x_offset =
-                x + size * (metrics[i].dx + metrics[i].xoff) / hb_scale;
-            double y_offset =
-                y_baseline +
-                size * (metrics[i].dy + metrics[i].yoff) / hb_scale;
-            Cairo::Glyph cairo_glyph{metrics[i].codepoint, x_offset, y_offset};
+        // HarfBuzz metrics always run left-to-right, in RTL text the glyph
+        // order is reversed.
+        for (const auto& m : metrics) {
+            double x_offset = seg_origin + size * (m.dx + m.xoff) / hb_scale;
+            double y_offset = y_baseline + size * (m.dy - m.yoff) / hb_scale;
+            Cairo::Glyph cairo_glyph{m.codepoint, x_offset, y_offset};
             cairo_glyphs.push_back(cairo_glyph);
         }
 
         cr->set_font_face(face);
         cr->set_font_size(size);
 
-        cr->move_to(x, y_baseline);
+        cr->move_to(seg_origin, y_baseline);
         // TODO(iorsh): Use Cairo::Context::show_text_glyphs() to embed original
         // text information into PDF.
         cr->show_glyphs(cairo_glyphs);
-        x += size * metrics.back().dx / hb_scale;
+
+        if (rtl) {
+            x -= seg_advance;
+        } else {
+            x += seg_advance;
+        }
     }
 }
 
@@ -975,7 +1000,8 @@ CairoFontFamily create_cairo_family(SplineFont* current_sf, Tag script,
     ft_face = create_cairo_face(current_sf);
     shaper = create_shaper(current_sf);
     features = filter_features(current_sf, shaper, script, lang);
-    family.push_back(CairoFontRec{*sf_properties, ft_face, shaper, features});
+    family.push_back(
+        CairoFontRec{*sf_properties, ft_face, shaper, features, current_sf});
     delete sf_properties;
 
     if (family_sfs) {
@@ -984,8 +1010,8 @@ CairoFontFamily create_cairo_family(SplineFont* current_sf, Tag script,
             ft_face = create_cairo_face(*sf_it);
             shaper = create_shaper(*sf_it);
             features = filter_features(*sf_it, shaper, script, lang);
-            family.push_back(
-                CairoFontRec{*sf_properties, ft_face, shaper, features});
+            family.push_back(CairoFontRec{*sf_properties, ft_face, shaper,
+                                          features, *sf_it});
             delete sf_properties;
         }
     }

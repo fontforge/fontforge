@@ -48,6 +48,7 @@ struct CairoFontRec {
     Cairo::RefPtr<Cairo::FtFontFace> face;
     std::shared_ptr<shapers::IShaper> shaper;
     std::map<Tag, bool> features;
+    SplineFont* sf = nullptr;
 };
 
 // Several fonts comprising a family. By convention, the first element is the
@@ -199,7 +200,7 @@ class CairoPainter {
     // Draw a single rich text buffer.
     void draw_line_sample_text(const Cairo::RefPtr<Cairo::Context>& cr,
                                const RichTextLineBuffer& line_buffer,
-                               double y_baseline);
+                               double width, double y_baseline);
 
     void calculate_layout_sample_text(const Cairo::RefPtr<Cairo::Context>& cr,
                                       const Cairo::Rectangle& printable_area,
