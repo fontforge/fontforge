@@ -35,15 +35,28 @@
 namespace ff::ui_utils {
 
 static Cairo::TextExtents ui_font_extents(const std::string& sample_text) {
-    Cairo::RefPtr<Cairo::ImageSurface> srf =
-        Cairo::ImageSurface::create(Cairo::Format::FORMAT_RGB24, 100, 100);
-    Cairo::RefPtr<Cairo::Context> cairo_context = Cairo::Context::create(srf);
     Pango::FontDescription font =
         ff::app::ColorManager::instance().style_context()->get_font();
 
-    cairo_context->select_font_face(font.get_family(),
-                                    Cairo::FontSlant::FONT_SLANT_NORMAL,
-                                    Cairo::FontWeight::FONT_WEIGHT_NORMAL);
+    // Create the toy font face explicitly once and hold it in a static so its
+    // reference is released cleanly at program exit, preventing the
+    // FcPatternDuplicate leak that occurs inside cairo_toy_font_face_create().
+    // The destructor calls unreference() to balance the implicit reference.
+    struct ToyFontFace {
+        Cairo::RefPtr<Cairo::ToyFontFace> face;
+        explicit ToyFontFace(const std::string& family)
+            : face(Cairo::ToyFontFace::create(
+                  family, Cairo::FontSlant::FONT_SLANT_NORMAL,
+                  Cairo::FontWeight::FONT_WEIGHT_NORMAL)) {}
+        ~ToyFontFace() { face->unreference(); }
+    };
+    static ToyFontFace toy_face(font.get_family());
+
+    Cairo::RefPtr<Cairo::ImageSurface> srf =
+        Cairo::ImageSurface::create(Cairo::Format::FORMAT_RGB24, 100, 100);
+    Cairo::RefPtr<Cairo::Context> cairo_context = Cairo::Context::create(srf);
+
+    cairo_context->set_font_face(toy_face.face);
     cairo_context->set_font_size(font.get_size() / PANGO_SCALE *
                                  Gdk::Screen::get_default()->get_resolution() /
                                  72);
