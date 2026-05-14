@@ -55,6 +55,9 @@ class VerifiedEntry : public Gtk::Entry {
     Glib::RefPtr<Gtk::CssProvider> error_css_provider_;
     Verifier verifier_;
 
+    void set_error_state();
+    void clear_error_state();
+
     bool focus_in_event_slot(GdkEventFocus*);
     void changed_slot();
 };
