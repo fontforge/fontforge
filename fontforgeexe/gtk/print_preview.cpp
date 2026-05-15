@@ -146,7 +146,10 @@ Gtk::VBox* PrintPreviewWidget::build_sample_text_controls() {
     oneliner_event_box->set_above_child(true);
     build_sample_text_popover(oneliner_event_box);
 
+    script_lang_combo_ = Gtk::make_managed<Gtk::ComboBoxText>(true);
+
     Gtk::VBox* sample_text_box = Gtk::make_managed<Gtk::VBox>();
+    sample_text_box->pack_start(*script_lang_combo_, false, false);
     sample_text_box->pack_start(*oneliner_event_box, false, false);
 
     return sample_text_box;
