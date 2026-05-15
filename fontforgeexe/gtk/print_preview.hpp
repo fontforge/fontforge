@@ -71,6 +71,8 @@ class PrintPreviewWidget : public Gtk::Grid {
     // Build controls for sample text mode.
     Gtk::VBox* build_sample_text_controls();
 
+    void populate_script_lang_combo();
+
     // Calculate printable area: (x, y) are positive left/top margin offsets
     // from the upper left corner of the actual canvas - either paper or
     // preview_area. The prinable area is located within the page margins.

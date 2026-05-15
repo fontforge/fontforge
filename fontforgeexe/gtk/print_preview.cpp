@@ -28,8 +28,16 @@
 #include "print_preview.hpp"
 
 #include "intl.h"
+#include "l10n_text.hpp"
 #include "utils.hpp"
 #include "win32_utils.hpp"
+
+extern "C" {
+extern uint64_t* SFScriptsLangs(SplineFont* sf);
+}
+
+std::map<ff::Tag, L10nText> ScriptLabelsMap();
+std::map<ff::Tag, L10nText> LanguageLabelsMap();
 
 namespace ff::dlg {
 
@@ -116,6 +124,7 @@ PrintPreviewWidget::PrintPreviewWidget(const utils::CairoPainter& cairo_painter)
     Gtk::VBox* sample_text_controls = build_sample_text_controls();
 
     stack_ = Gtk::make_managed<Gtk::Stack>();
+    stack_->set_vhomogeneous(false);
     stack_->add(*size, FULL_DISPLAY);
     stack_->add(*scaling_option_, GLYPH_PAGES);
     stack_->add(*Gtk::make_managed<Gtk::Label>(), MULTI_SIZE);
@@ -133,6 +142,49 @@ PrintPreviewWidget::PrintPreviewWidget(const utils::CairoPainter& cairo_painter)
     show_all();
 }
 
+void PrintPreviewWidget::populate_script_lang_combo() {
+    // Show the id (tag code) in the text entry, not the display label.
+    script_lang_combo_->signal_changed().connect([this] {
+        Glib::ustring active_id = script_lang_combo_->get_active_id();
+        if (!active_id.empty())
+            script_lang_combo_->get_entry()->set_text(active_id);
+    });
+
+    SplineFont* sf = cairo_painter_.default_sf();
+
+    auto script_labels = ScriptLabelsMap();
+    auto lang_labels = LanguageLabelsMap();
+
+    uint64_t* scriptlangs = SFScriptsLangs(sf);
+    if (scriptlangs == nullptr) return;
+
+    for (int i = 0; scriptlangs[i] != 0; ++i) {
+        ff::Tag script_tag((uint32_t)(scriptlangs[i] >> 32));
+        ff::Tag lang_tag((uint32_t)(scriptlangs[i] & 0xFFFFFFFF));
+
+        auto sit = script_labels.find(script_tag);
+        auto lit = lang_labels.find(lang_tag);
+
+        Glib::ustring script_name = (sit != script_labels.end())
+                                        ? (Glib::ustring)sit->second
+                                        : (const char*)script_tag;
+        Glib::ustring lang_name = (lit != lang_labels.end())
+                                      ? (Glib::ustring)lit->second
+                                      : (const char*)lang_tag;
+
+        std::string id = std::string((const char*)script_tag) + "{" +
+                         std::string((const char*)lang_tag) + "}";
+        Glib::ustring title = script_name + "{" + lang_name + "}";
+
+        script_lang_combo_->append(id, title);
+    }
+
+    free(scriptlangs);
+
+    if (script_lang_combo_->get_model()->children().size() > 0)
+        script_lang_combo_->set_active(0);
+}
+
 Gtk::VBox* PrintPreviewWidget::build_sample_text_controls() {
     // One-liner preview of the sample text popup contents
     sample_text_oneliner_ = Gtk::make_managed<Gtk::Entry>();
@@ -147,10 +199,11 @@ Gtk::VBox* PrintPreviewWidget::build_sample_text_controls() {
     build_sample_text_popover(oneliner_event_box);
 
     script_lang_combo_ = Gtk::make_managed<Gtk::ComboBoxText>(true);
+    populate_script_lang_combo();
 
     Gtk::VBox* sample_text_box = Gtk::make_managed<Gtk::VBox>();
-    sample_text_box->pack_start(*script_lang_combo_, false, false);
     sample_text_box->pack_start(*oneliner_event_box, false, false);
+    sample_text_box->pack_start(*script_lang_combo_, false, false);
 
     return sample_text_box;
 }
