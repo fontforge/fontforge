@@ -5090,66 +5090,88 @@ return( true );
 return( true );
 }
 
-GTextInfo *SLOfFont(SplineFont *sf) {
+uint64_t* SFScriptsLangs(SplineFont* sf) {
     uint32_t *scripttags, *langtags;
-    int s, l, i, k, cnt;
+    uint64_t* ret;
+    int s, l, cnt = 0;
+
+    scripttags = SFScriptsInLookups(sf);
+    if (scripttags == NULL) return (NULL);
+
+    for (s = 0; scripttags[s] != 0; ++s) {
+        langtags = SFLangsInScript(sf, -1, scripttags[s]);
+        for (l = 0; langtags[l] != 0; ++l) ++cnt;
+        free(langtags);
+    }
+
+    ret = calloc(cnt + 1, sizeof(uint64_t));
+    cnt = 0;
+    for (s = 0; scripttags[s] != 0; ++s) {
+        langtags = SFLangsInScript(sf, -1, scripttags[s]);
+        for (l = 0; langtags[l] != 0; ++l)
+            ret[cnt++] = ((uint64_t)scripttags[s] << 32) | langtags[l];
+        free(langtags);
+    }
+    free(scripttags);
+    return (ret);
+}
+
+GTextInfo *SLOfFont(SplineFont *sf) {
+    uint64_t *scriptlangs;
+    uint32_t scripttag, langtag;
+    int i, cnt;
     extern GTextInfo scripts[], languages[];
-    GTextInfo *ret = NULL;
-    char *sname=NULL, *lname, *temp;
+    GTextInfo *ret;
+    char *sname, *lname, *temp;
     char sbuf[8], lbuf[8];
 
     LookupUIInit();
-    scripttags = SFScriptsInLookups(sf);
-    if ( scripttags==NULL )
+    scriptlangs = SFScriptsLangs(sf);
+    if ( scriptlangs==NULL )
 return( NULL );
 
-    for ( k=0; k<2; ++k ) {
-	cnt = 0;
-	for ( s=0; scripttags[s]!=0; ++s ) {
-	    if ( k ) {
-		for ( i=0; scripts[i].text!=NULL; ++i )
-		    if ( scripttags[s] == (intptr_t) (scripts[i].userdata))
-		break;
-		sname = (char *) (scripts[i].text);
-		sbuf[0] = scripttags[s]>>24;
-		sbuf[1] = scripttags[s]>>16;
-		sbuf[2] = scripttags[s]>>8;
-		sbuf[3] = scripttags[s];
-		sbuf[4] = 0;
-		if ( sname==NULL )
-		    sname = sbuf;
-	    }
-	    langtags = SFLangsInScript(sf,-1,scripttags[s]);
-	    /* This one can't be NULL */
-	    for ( l=0; langtags[l]!=0; ++l ) {
-		if ( k ) {
-		    for ( i=0; languages[i].text!=NULL; ++i )
-			if ( langtags[l] == (intptr_t) (languages[i].userdata))
-		    break;
-		    lname = (char *) (languages[i].text);
-		    lbuf[0] = langtags[l]>>24;
-		    lbuf[1] = langtags[l]>>16;
-		    lbuf[2] = langtags[l]>>8;
-		    lbuf[3] = langtags[l];
-		    lbuf[4] = 0;
-		    if ( lname==NULL )
-			lname = lbuf;
-		    temp = malloc(strlen(sname)+strlen(lname)+3);
-		    strcpy(temp,sname); strcat(temp,"{"); strcat(temp,lname); strcat(temp,"}");
-		    ret[cnt].text = (unichar_t *) temp;
-		    ret[cnt].text_is_1byte = true;
-		    temp = malloc(11);
-		    strcpy(temp,sbuf); temp[4] = '{'; strcpy(temp+5,lbuf); temp[9]='}'; temp[10] = 0;
-		    ret[cnt].userdata = temp;
-		}
-		++cnt;
-	    }
-	    free(langtags);
-	}
-	if ( !k )
-	    ret = calloc((cnt+1),sizeof(GTextInfo));
+    for ( cnt=0; scriptlangs[cnt]!=0; ++cnt );
+    ret = calloc((cnt+1),sizeof(GTextInfo));
+
+    for ( cnt=0; scriptlangs[cnt]!=0; ++cnt ) {
+        scripttag = scriptlangs[cnt] >> 32;
+        langtag = scriptlangs[cnt];
+
+        for ( i=0; scripts[i].text!=NULL; ++i )
+            if ( scripttag == (intptr_t) (scripts[i].userdata))
+        break;
+        sname = (char *) (scripts[i].text);
+        sbuf[0] = scripttag>>24;
+        sbuf[1] = scripttag>>16;
+        sbuf[2] = scripttag>>8;
+        sbuf[3] = scripttag;
+        sbuf[4] = 0;
+        if ( sname==NULL )
+            sname = sbuf;
+
+        for ( i=0; languages[i].text!=NULL; ++i )
+            if ( langtag == (intptr_t) (languages[i].userdata))
+        break;
+        lname = (char *) (languages[i].text);
+        lbuf[0] = langtag>>24;
+        lbuf[1] = langtag>>16;
+        lbuf[2] = langtag>>8;
+        lbuf[3] = langtag;
+        lbuf[4] = 0;
+        if ( lname==NULL )
+            lname = lbuf;
+
+        temp = malloc(strlen(sname)+strlen(lname)+3);
+        strcpy(temp,sname); strcat(temp,"{"); strcat(temp,lname); strcat(temp,"}");
+        ret[cnt].text = (unichar_t *) temp;
+        ret[cnt].text_is_1byte = true;
+
+        temp = malloc(11);
+        strcpy(temp,sbuf); temp[4] = '{'; strcpy(temp+5,lbuf); temp[9]='}'; temp[10] = 0;
+        ret[cnt].userdata = temp;
     }
-    free(scripttags);
+
+    free(scriptlangs);
 return( ret );
 }
 
