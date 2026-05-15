@@ -68,6 +68,9 @@ class PrintPreviewWidget : public Gtk::Grid {
     // Build and initialize the sample text popover
     void build_sample_text_popover(Gtk::Widget* parent_widget);
 
+    // Build controls for sample text mode.
+    Gtk::VBox* build_sample_text_controls();
+
     // Calculate printable area: (x, y) are positive left/top margin offsets
     // from the upper left corner of the actual canvas - either paper or
     // preview_area. The prinable area is located within the page margins.

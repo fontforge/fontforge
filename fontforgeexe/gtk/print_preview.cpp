@@ -113,25 +113,13 @@ PrintPreviewWidget::PrintPreviewWidget(const utils::CairoPainter& cairo_painter)
     scaling_option_->append(utils::CairoPainter::kScaleToPage,
                             "Scale glyphs to maximum height");
     scaling_option_->set_active_id(utils::CairoPainter::kScaleToPage);
-
-    // One-liner preview of the sample text popup contents
-    sample_text_oneliner_ = Gtk::make_managed<Gtk::Entry>();
-    sample_text_oneliner_->set_editable(false);
-    sample_text_oneliner_->set_can_focus(false);
-
-    // Make the one-liner preview sensitive to mouse click, which would bring up
-    // the sample text popup.
-    Gtk::EventBox* oneliner_event_box = Gtk::make_managed<Gtk::EventBox>();
-    oneliner_event_box->add(*sample_text_oneliner_);
-    oneliner_event_box->set_above_child(true);
-
-    build_sample_text_popover(oneliner_event_box);
+    Gtk::VBox* sample_text_controls = build_sample_text_controls();
 
     stack_ = Gtk::make_managed<Gtk::Stack>();
     stack_->add(*size, FULL_DISPLAY);
     stack_->add(*scaling_option_, GLYPH_PAGES);
     stack_->add(*Gtk::make_managed<Gtk::Label>(), MULTI_SIZE);
-    stack_->add(*oneliner_event_box, SAMPLE_TEXT);
+    stack_->add(*sample_text_controls, SAMPLE_TEXT);
 
     controls->pack_start(*radio_full_display_);
     controls->pack_start(*radio_glyph_pages_);
@@ -143,6 +131,25 @@ PrintPreviewWidget::PrintPreviewWidget(const utils::CairoPainter& cairo_painter)
     attach(aspect_wrapper, 0, 0);
     attach(*controls, 1, 0);
     show_all();
+}
+
+Gtk::VBox* PrintPreviewWidget::build_sample_text_controls() {
+    // One-liner preview of the sample text popup contents
+    sample_text_oneliner_ = Gtk::make_managed<Gtk::Entry>();
+    sample_text_oneliner_->set_editable(false);
+    sample_text_oneliner_->set_can_focus(false);
+
+    // Make the one-liner preview sensitive to mouse click, which would bring
+    // up the sample text popup.
+    Gtk::EventBox* oneliner_event_box = Gtk::make_managed<Gtk::EventBox>();
+    oneliner_event_box->add(*sample_text_oneliner_);
+    oneliner_event_box->set_above_child(true);
+    build_sample_text_popover(oneliner_event_box);
+
+    Gtk::VBox* sample_text_box = Gtk::make_managed<Gtk::VBox>();
+    sample_text_box->pack_start(*oneliner_event_box, false, false);
+
+    return sample_text_box;
 }
 
 Glib::ustring PrintPreviewWidget::label() { return _("Preview"); }
