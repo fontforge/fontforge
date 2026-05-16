@@ -34,6 +34,8 @@
 
 extern "C" {
 extern uint64_t* SFScriptsLangs(SplineFont* sf);
+extern uint32_t* SFFeaturesInScriptLang(SplineFont* sf, int gposgsub,
+                                        uint32_t script, uint32_t lang);
 }
 
 std::map<ff::Tag, L10nText> ScriptLabelsMap();
@@ -185,6 +187,31 @@ void PrintPreviewWidget::populate_script_lang_combo() {
         script_lang_combo_->set_active(0);
 }
 
+void PrintPreviewWidget::refresh_feature_tags_list() {
+    if (feature_tags_list_ == nullptr) return;
+
+    feature_tags_list_->clear_items();
+
+    SplineFont* sf = cairo_painter_.default_sf();
+    Glib::ustring entry_text = script_lang_combo_->get_entry()->get_text();
+
+    if (sf == nullptr || entry_text.size() < 10) return;
+
+    // tag_id format is "scri{lang}", for example "latn{dflt}".
+    const char* tag_id = entry_text.c_str();
+    ff::Tag script(tag_id);
+    ff::Tag lang(tag_id + 5);
+
+    uint32_t* features = SFFeaturesInScriptLang(sf, -2, script, lang);
+    if (features != nullptr) {
+        for (int i = 0; features[i] != 0; ++i) {
+            ff::Tag feat_tag(features[i]);
+            feature_tags_list_->append((const char*)feat_tag);
+        }
+        free(features);
+    }
+}
+
 Gtk::VBox* PrintPreviewWidget::build_sample_text_controls() {
     // One-liner preview of the sample text popup contents
     sample_text_oneliner_ = Gtk::make_managed<Gtk::Entry>();
@@ -201,9 +228,28 @@ Gtk::VBox* PrintPreviewWidget::build_sample_text_controls() {
     script_lang_combo_ = Gtk::make_managed<Gtk::ComboBoxText>(true);
     populate_script_lang_combo();
 
+    feature_tags_list_ =
+        Gtk::make_managed<Gtk::ListViewText>(1, false, Gtk::SELECTION_MULTIPLE);
+    feature_tags_list_->set_headers_visible(false);
+    feature_tags_list_->set_enable_search(false);
+    refresh_feature_tags_list();
+
+    // Connect script/lang combo changes to refresh feature list
+    script_lang_combo_->signal_changed().connect(
+        sigc::mem_fun(*this, &PrintPreviewWidget::refresh_feature_tags_list));
+
+    // Wrap feature list in a scrolled window
+    Gtk::ScrolledWindow* feature_tags_scroll =
+        Gtk::make_managed<Gtk::ScrolledWindow>();
+    feature_tags_scroll->set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
+    // TODO(iorsh): make expandable feature tag list.
+    feature_tags_scroll->set_size_request(-1, 120);
+    feature_tags_scroll->add(*feature_tags_list_);
+
     Gtk::VBox* sample_text_box = Gtk::make_managed<Gtk::VBox>();
     sample_text_box->pack_start(*oneliner_event_box, false, false);
     sample_text_box->pack_start(*script_lang_combo_, false, false);
+    sample_text_box->pack_start(*feature_tags_scroll, true, true);
 
     return sample_text_box;
 }

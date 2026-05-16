@@ -73,6 +73,8 @@ class PrintPreviewWidget : public Gtk::Grid {
 
     void populate_script_lang_combo();
 
+    void refresh_feature_tags_list();
+
     // Calculate printable area: (x, y) are positive left/top margin offsets
     // from the upper left corner of the actual canvas - either paper or
     // preview_area. The prinable area is located within the page margins.
@@ -104,6 +106,7 @@ class PrintPreviewWidget : public Gtk::Grid {
     Gtk::ComboBoxText* scaling_option_;
     Gtk::Entry* sample_text_oneliner_;
     Gtk::ComboBoxText* script_lang_combo_;
+    Gtk::ListViewText* feature_tags_list_;
     Gtk::Stack* stack_;
 
     widget::RichTechEditor* sample_text_;
