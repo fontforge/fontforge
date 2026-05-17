@@ -249,10 +249,20 @@ Gtk::VBox* PrintPreviewWidget::build_sample_text_controls() {
     feature_tags_scroll->set_size_request(-1, 120);
     feature_tags_scroll->add(*feature_tags_list_);
 
+    Gtk::VBox* opentype_controls = Gtk::make_managed<Gtk::VBox>();
+    opentype_controls->pack_start(*script_lang_combo_, false, false);
+    opentype_controls->pack_start(*feature_tags_scroll, true, true);
+    opentype_controls->set_border_width(0.5 * ui_utils::ui_font_em_size());
+
+    Gtk::Frame* opentype_frame =
+        Gtk::make_managed<Gtk::Frame>(_("OpenType features"));
+    opentype_frame->add(*opentype_controls);
+    opentype_frame->set_border_width(0.5 * ui_utils::ui_font_em_size());
+    opentype_frame->set_label_align(0.2);
+
     Gtk::VBox* sample_text_box = Gtk::make_managed<Gtk::VBox>();
     sample_text_box->pack_start(*oneliner_event_box, false, false);
-    sample_text_box->pack_start(*script_lang_combo_, false, false);
-    sample_text_box->pack_start(*feature_tags_scroll, true, true);
+    sample_text_box->pack_start(*opentype_frame, true, true);
 
     return sample_text_box;
 }
