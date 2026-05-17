@@ -112,6 +112,7 @@ PrintPreviewWidget::PrintPreviewWidget(const utils::CairoPainter& cairo_painter)
     size_entry_->set_numeric(true);
     size_entry_->set_adjustment(Gtk::Adjustment::create(20, 1, 120, 1, 3, 0));
     size->set_halign(Gtk::ALIGN_START);
+    size->set_valign(Gtk::ALIGN_START);
     size_entry_->signal_value_changed().connect(
         [this] { preview_area.queue_draw(); });
 
@@ -123,6 +124,8 @@ PrintPreviewWidget::PrintPreviewWidget(const utils::CairoPainter& cairo_painter)
     scaling_option_->append(utils::CairoPainter::kScaleToPage,
                             "Scale glyphs to maximum height");
     scaling_option_->set_active_id(utils::CairoPainter::kScaleToPage);
+    scaling_option_->set_valign(Gtk::ALIGN_START);
+
     Gtk::VBox* sample_text_controls = build_sample_text_controls();
 
     stack_ = Gtk::make_managed<Gtk::Stack>();
@@ -132,12 +135,12 @@ PrintPreviewWidget::PrintPreviewWidget(const utils::CairoPainter& cairo_painter)
     stack_->add(*Gtk::make_managed<Gtk::Label>(), MULTI_SIZE);
     stack_->add(*sample_text_controls, SAMPLE_TEXT);
 
-    controls->pack_start(*radio_full_display_);
-    controls->pack_start(*radio_glyph_pages_);
-    controls->pack_start(*radio_multi_size_);
-    controls->pack_start(*radio_sample_text_);
-    controls->pack_start(*stack_);
-    controls->set_valign(Gtk::ALIGN_START);
+    controls->pack_start(*radio_full_display_, Gtk::PACK_SHRINK);
+    controls->pack_start(*radio_glyph_pages_, Gtk::PACK_SHRINK);
+    controls->pack_start(*radio_multi_size_, Gtk::PACK_SHRINK);
+    controls->pack_start(*radio_sample_text_, Gtk::PACK_SHRINK);
+    controls->pack_start(*stack_, Gtk::PACK_EXPAND_WIDGET);
+    controls->set_vexpand(true);
 
     attach(aspect_wrapper, 0, 0);
     attach(*controls, 1, 0);
