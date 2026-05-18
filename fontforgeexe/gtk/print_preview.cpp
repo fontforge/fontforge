@@ -60,6 +60,20 @@ static const std::vector<double> kMultiPointsizes{
 // accomodate the CSS box-shadow.
 static const int wrapper_margin = 20;
 
+static std::pair<ff::Tag, ff::Tag> extract_script_lang_tags(
+    const Glib::ustring& entry_text) {
+    ff::Tag script("DFLT");
+    ff::Tag lang("dflt");
+
+    if (entry_text.size() >= 10) {
+        const char* tag_id = entry_text.c_str();
+        script = ff::Tag(tag_id);
+        lang = ff::Tag(tag_id + 5);
+    }
+
+    return {script, lang};
+}
+
 PrintPreviewWidget::PrintPreviewWidget(const utils::CairoPainter& cairo_painter)
     : aspect_wrapper(0.5, 0.5, 0.5),
       current_setup_(default_setup_),
@@ -197,13 +211,7 @@ void PrintPreviewWidget::refresh_feature_tags_list() {
 
     const utils::CairoFontRec& font_rec = cairo_painter_.default_rec();
     Glib::ustring entry_text = script_lang_combo_->get_entry()->get_text();
-
-    if (font_rec.sf == nullptr || entry_text.size() < 10) return;
-
-    // tag_id format is "scri{lang}", for example "latn{dflt}".
-    const char* tag_id = entry_text.c_str();
-    ff::Tag script(tag_id);
-    ff::Tag lang(tag_id + 5);
+    auto [script, lang] = extract_script_lang_tags(entry_text);
 
     uint32_t* features = SFFeaturesInScriptLang(font_rec.sf, -2, script, lang);
     std::set<Tag> default_features =
