@@ -251,9 +251,11 @@ Gtk::VBox* PrintPreviewWidget::build_sample_text_controls() {
     feature_tags_list_->set_enable_search(false);
     refresh_feature_tags_list();
 
-    // Connect script/lang combo changes to refresh feature list
     script_lang_combo_->signal_changed().connect(
         sigc::mem_fun(*this, &PrintPreviewWidget::refresh_feature_tags_list));
+
+    feature_tags_list_->get_selection()->signal_changed().connect(
+        sigc::mem_fun(preview_area, &Gtk::DrawingArea::queue_draw));
 
     // Wrap feature list in a scrolled window
     Gtk::ScrolledWindow* feature_tags_scroll =
