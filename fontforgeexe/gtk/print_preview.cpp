@@ -155,7 +155,7 @@ void PrintPreviewWidget::populate_script_lang_combo() {
             script_lang_combo_->get_entry()->set_text(active_id);
     });
 
-    SplineFont* sf = cairo_painter_.default_sf();
+    SplineFont* sf = cairo_painter_.default_rec().sf;
 
     auto script_labels = ScriptLabelsMap();
     auto lang_labels = LanguageLabelsMap();
@@ -195,21 +195,27 @@ void PrintPreviewWidget::refresh_feature_tags_list() {
 
     feature_tags_list_->clear_items();
 
-    SplineFont* sf = cairo_painter_.default_sf();
+    const utils::CairoFontRec& font_rec = cairo_painter_.default_rec();
     Glib::ustring entry_text = script_lang_combo_->get_entry()->get_text();
 
-    if (sf == nullptr || entry_text.size() < 10) return;
+    if (font_rec.sf == nullptr || entry_text.size() < 10) return;
 
     // tag_id format is "scri{lang}", for example "latn{dflt}".
     const char* tag_id = entry_text.c_str();
     ff::Tag script(tag_id);
     ff::Tag lang(tag_id + 5);
 
-    uint32_t* features = SFFeaturesInScriptLang(sf, -2, script, lang);
+    uint32_t* features = SFFeaturesInScriptLang(font_rec.sf, -2, script, lang);
+    std::set<Tag> default_features =
+        font_rec.shaper->default_features(script, lang, false);
     if (features != nullptr) {
         for (int i = 0; features[i] != 0; ++i) {
             ff::Tag feat_tag(features[i]);
             feature_tags_list_->append((const char*)feat_tag);
+            if (default_features.count(feat_tag) != 0) {
+                feature_tags_list_->get_selection()->select(
+                    Gtk::TreePath(std::to_string(i)));
+            }
         }
         free(features);
     }

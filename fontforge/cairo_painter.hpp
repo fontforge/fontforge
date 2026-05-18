@@ -72,7 +72,7 @@ class CairoPainter {
                  const PrintGlyphMap& print_map, const std::string& font_name);
 
     // The currently active face
-    SplineFont* default_sf() const { return cairo_family_[0].sf; }
+    const CairoFontRec& default_rec() const { return cairo_family_[0]; }
 
     // Draw full font display as a character grid.
     void draw_page_full_display(const Cairo::RefPtr<Cairo::Context>& cr,
