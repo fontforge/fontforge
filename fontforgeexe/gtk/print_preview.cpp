@@ -474,15 +474,8 @@ Cairo::Rectangle PrintPreviewWidget::calculate_printable_area(
 void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
                                    const Cairo::Rectangle& printable_area,
                                    int page_nr) {
-    double font_size = size_entry_->get_value();
-
-    gsize length = 0;
-    char* out_buffer = (char*)sample_text_->get_buffer()->serialize(
-        sample_text_->get_buffer(), widget::RichTechEditor::rich_text_mime_type,
-        sample_text_->get_buffer()->begin(), sample_text_->get_buffer()->end(),
-        length);
-
     if (radio_full_display_->get_active()) {
+        double font_size = size_entry_->get_value();
         cairo_painter_.draw_page_full_display(cr, printable_area, page_nr,
                                               font_size);
     } else if (radio_glyph_pages_->get_active()) {
@@ -490,8 +483,26 @@ void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
         cairo_painter_.draw_page_full_glyph(cr, printable_area, page_nr,
                                             active_option);
     } else if (radio_sample_text_->get_active()) {
-        cairo_painter_.draw_page_sample_text(cr, printable_area, page_nr,
-                                             out_buffer);
+        gsize length = 0;
+        Glib::RefPtr<Gtk::TextBuffer> buffer = sample_text_->get_buffer();
+        char* out_buffer = (char*)buffer->serialize(
+            buffer, widget::RichTechEditor::rich_text_mime_type,
+            buffer->begin(), buffer->end(), length);
+
+        Glib::ustring entry_text = script_lang_combo_->get_entry()->get_text();
+        auto [script, lang] = extract_script_lang_tags(entry_text);
+
+        std::map<Tag, bool> features;
+        std::vector<int> selected_rows = feature_tags_list_->get_selected();
+        std::set<int> selected_rows_set(selected_rows.begin(),
+                                        selected_rows.end());
+        for (int row_idx = 0; row_idx < feature_tags_list_->size(); ++row_idx) {
+            Tag feature(feature_tags_list_->get_text(row_idx).c_str());
+            features[feature] = selected_rows_set.count(row_idx) != 0;
+        }
+
+        cairo_painter_.draw_page_sample_text(
+            cr, printable_area, page_nr, out_buffer, script, lang, features);
     } else {
         cairo_painter_.draw_page_multisize(cr, kMultiPointsizes, printable_area,
                                            page_nr);

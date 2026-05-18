@@ -579,7 +579,8 @@ void CairoPainter::paginate_sample_text(double layout_height) {
 void CairoPainter::draw_page_sample_text(
     const Cairo::RefPtr<Cairo::Context>& cr,
     const Cairo::Rectangle& printable_area, int page_nr,
-    const std::string& sample_text) {
+    const std::string& sample_text, Tag script, Tag lang,
+    const std::map<Tag, bool>& features) {
     init_document(cr, printable_area, "Sample Text from " + font_name_,
                   top_margin_);
 
@@ -604,8 +605,8 @@ void CairoPainter::draw_page_sample_text(
     for (auto line_it = start_line_it; line_it != end_line_it; ++line_it) {
         double height = line_it->second;
         y_start += height;
-        draw_line_sample_text(cr, line_it->first, printable_area.width,
-                              y_start);
+        draw_line_sample_text(cr, line_it->first, printable_area.width, y_start,
+                              script, lang, features);
     }
 }
 
@@ -626,7 +627,8 @@ double CairoPainter::calculate_height_sample_text(
 
 void CairoPainter::draw_line_sample_text(
     const Cairo::RefPtr<Cairo::Context>& cr,
-    const RichTextLineBuffer& line_buffer, double width, double y_baseline) {
+    const RichTextLineBuffer& line_buffer, double width, double y_baseline,
+    Tag script, Tag lang, const std::map<Tag, bool>& features) {
     // Perform the actual text drawing
     SplineFont* sf = print_map_[0].second->parent;
     double hb_scale = sf ? (sf->ascent + sf->descent) : 1000.0;
@@ -637,7 +639,6 @@ void CairoPainter::draw_line_sample_text(
     for (const auto& [text, font_idx, size] : line_buffer) {
         auto face = cairo_family_[font_idx].face;
         auto shaper = cairo_family_[font_idx].shaper;
-        const auto& features = cairo_family_[font_idx].features;
 
         unichar_t* unitext = utf82u_copy(text.c_str());
         // Copy zero-terminated array into vector
@@ -645,9 +646,8 @@ void CairoPainter::draw_line_sample_text(
                                        unitext + u_strlen(unitext) + 1);
         free(unitext);
 
-        // TODO(iorsh): retrieve enabled features from UI.
         std::vector<MetricsCore> metrics = shaper->apply_features(
-            uni_buf, features, Tag("DFLT"), Tag("dflt"), false, false);
+            uni_buf, features, script, lang, false, false);
         // Remove auxiliary trailing element added for legacy C consumers
         metrics.pop_back();
 
@@ -969,22 +969,6 @@ std::shared_ptr<shapers::IShaper> create_shaper(SplineFont* sf) {
     return shapers::Factory(context);
 }
 
-std::map<Tag, bool> filter_features(SplineFont* sf,
-                                    std::shared_ptr<shapers::IShaper> shaper,
-                                    Tag script, Tag lang) {
-    std::set<Tag> default_features =
-        shaper->default_features(script, lang, false);
-    uint32_t* tags = SFFeaturesInScriptLang(sf, -2, script, lang);
-    int cnt;
-    for (cnt = 0; tags[cnt] != 0; ++cnt);
-    std::map<Tag, bool> feats;
-    for (int i = 0; i < cnt; ++i) {
-        feats[tags[i]] = default_features.count(tags[i]);
-    }
-
-    return feats;
-}
-
 CairoFontFamily create_cairo_family(SplineFont* current_sf, Tag script,
                                     Tag lang) {
     SplineFont** family_sfs = FVCollectFamily(current_sf);
@@ -999,9 +983,7 @@ CairoFontFamily create_cairo_family(SplineFont* current_sf, Tag script,
     sf_properties = toCPP(SFGetProperties(current_sf));
     ft_face = create_cairo_face(current_sf);
     shaper = create_shaper(current_sf);
-    features = filter_features(current_sf, shaper, script, lang);
-    family.push_back(
-        CairoFontRec{*sf_properties, ft_face, shaper, features, current_sf});
+    family.push_back(CairoFontRec{*sf_properties, ft_face, shaper, current_sf});
     delete sf_properties;
 
     if (family_sfs) {
@@ -1009,9 +991,8 @@ CairoFontFamily create_cairo_family(SplineFont* current_sf, Tag script,
             sf_properties = toCPP(SFGetProperties(*sf_it));
             ft_face = create_cairo_face(*sf_it);
             shaper = create_shaper(*sf_it);
-            features = filter_features(*sf_it, shaper, script, lang);
-            family.push_back(CairoFontRec{*sf_properties, ft_face, shaper,
-                                          features, *sf_it});
+            family.push_back(
+                CairoFontRec{*sf_properties, ft_face, shaper, *sf_it});
             delete sf_properties;
         }
     }
