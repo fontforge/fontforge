@@ -168,6 +168,10 @@ void PrintPreviewWidget::populate_script_lang_combo() {
         if (!active_id.empty())
             script_lang_combo_->get_entry()->set_text(active_id);
     });
+    // The default language must always be available, to provide automatic
+    // shaping regardless of the presence of OpenType features.
+    script_lang_combo_->append("DFLT{dflt}", _("Automatic shaping"));
+    script_lang_combo_->set_active(0);
 
     SplineFont* sf = cairo_painter_.default_rec().sf;
 
@@ -180,6 +184,7 @@ void PrintPreviewWidget::populate_script_lang_combo() {
     for (int i = 0; scriptlangs[i] != 0; ++i) {
         ff::Tag script_tag((uint32_t)(scriptlangs[i] >> 32));
         ff::Tag lang_tag((uint32_t)(scriptlangs[i] & 0xFFFFFFFF));
+        if (script_tag == "DFLT" && lang_tag == "dflt") continue;
 
         auto sit = script_labels.find(script_tag);
         auto lit = lang_labels.find(lang_tag);
@@ -199,9 +204,6 @@ void PrintPreviewWidget::populate_script_lang_combo() {
     }
 
     free(scriptlangs);
-
-    if (script_lang_combo_->get_model()->children().size() > 0)
-        script_lang_combo_->set_active(0);
 }
 
 void PrintPreviewWidget::refresh_feature_tags_list() {
