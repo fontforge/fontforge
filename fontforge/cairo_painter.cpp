@@ -655,7 +655,7 @@ void CairoPainter::draw_line_sample_text(
         // For LTR lines, start at 0 and move right.
         if (!first_char && uni_buf[0] > 0) {
             first_char = SFGetChar(sf, uni_buf[0], nullptr);
-            rtl = SCRightToLeft(first_char);
+            rtl = first_char != nullptr && SCRightToLeft(first_char);
             if (rtl) {
                 x = width;
             }

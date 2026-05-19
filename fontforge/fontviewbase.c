@@ -2199,8 +2199,8 @@ SplineFont** FVCollectFamily(SplineFont* sf_in) {
             if (sf->cidmaster != NULL) sf = sf->cidmaster;
 
             /* Skip the incoming argument, and other families */
-            if ((sf == sf_in) ||
-                (strcmp(sf_in->familyname, sf->familyname) != 0))
+            if (sf == sf_in || sf_in->familyname == NULL || sf->familyname == NULL ||
+                strcmp(sf_in->familyname, sf->familyname) != 0)
                 continue;
 
             family[cnt] = sf;

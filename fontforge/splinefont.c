@@ -394,7 +394,7 @@ void SplineFontSetUnChanged(SplineFont *sf) {
 }
 
 char* SFGetFullName(SplineFont *sf) {
-    return sf->fullname;
+    return sf->fullname ? sf->fullname : sf->fontname;
 }
 
 cpp_SplineFontProperties* SFGetProperties(SplineFont* sf) {
