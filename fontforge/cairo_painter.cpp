@@ -385,6 +385,55 @@ void CairoPainter::draw_line_full_display(
     }
 }
 
+// Returns [x_position, y_position, scale]
+std::array<double, 3> CairoPainter::calculate_full_glyph_location(
+    const std::string& scaling_option, const Cairo::RefPtr<Cairo::Context>& cr,
+    const Cairo::Rectangle& printable_area,
+    const Cairo::TextExtents& text_extents) const {
+    auto [sf_ascent, sf_descent] = get_splinefont_metrics(cr);
+    double x_min = 0, y_min = 0, scale = 1;
+    double pointsize = 0;
+    if (scaling_option == kScaleToPage) {
+        x_min = std::min(0.0, text_extents.x_bearing);
+        double x_max = std::max(text_extents.x_advance,
+                                text_extents.width + text_extents.x_bearing);
+        y_min =
+            std::min(sf_descent, -text_extents.y_bearing - text_extents.height);
+        double y_max = std::max(sf_ascent, -text_extents.y_bearing);
+
+        double x_scale =
+            (x_max > x_min) ? printable_area.width / (x_max - x_min) : 1e-5;
+        double y_scale =
+            (y_max > y_min) ? printable_area.height / (y_max - y_min) : 1e-5;
+        scale = std::min(x_scale, y_scale);
+    } else if (scaling_option == kScaleEmSize) {
+        x_min = std::min(0.0, text_extents.x_bearing);
+        y_min = sf_descent;
+        double y_max = sf_ascent;
+
+        double y_scale = printable_area.height / (y_max - y_min);
+        scale = y_scale;
+    } else if (scaling_option == kScaleMaxHeight) {
+        // Collect all glyphs to determine maximum y-extents
+        std::vector<Cairo::Glyph> glyphs(print_map_.size());
+        std::transform(print_map_.begin(), print_map_.end(), glyphs.begin(),
+                       [](const PrintGlyphVec::value_type& p) {
+                           return Cairo::Glyph{(unsigned long)p.first, 0.0,
+                                               0.0};
+                       });
+        Cairo::TextExtents big_text_extents;
+        cr->get_glyph_extents(glyphs, big_text_extents);
+        x_min = std::min(0.0, text_extents.x_bearing);
+        y_min = -big_text_extents.y_bearing - big_text_extents.height;
+        double y_max = -big_text_extents.y_bearing;
+
+        double y_scale = printable_area.height / (y_max - y_min);
+        scale = y_scale;
+    }
+
+    return {x_min, y_min, scale};
+}
+
 void CairoPainter::draw_page_full_glyph(const Cairo::RefPtr<Cairo::Context>& cr,
                                         const Cairo::Rectangle& printable_area,
                                         int page_nr,
@@ -418,19 +467,8 @@ void CairoPainter::draw_page_full_glyph(const Cairo::RefPtr<Cairo::Context>& cr,
     Cairo::TextExtents text_extents;
     cr->get_glyph_extents({glyph}, text_extents);
 
-    double x_min = std::min(0.0, text_extents.x_bearing);
-    double x_max = std::max(text_extents.x_advance,
-                            text_extents.width + text_extents.x_bearing);
-    double y_min =
-        std::min(sf_descent, -text_extents.y_bearing - text_extents.height);
-    double y_max = std::max(sf_ascent, -text_extents.y_bearing);
-
-    double x_scale =
-        (x_max > x_min) ? shifted_printable_area.width / (x_max - x_min) : 1e-5;
-    double y_scale = (y_max > y_min)
-                         ? shifted_printable_area.height / (y_max - y_min)
-                         : 1e-5;
-    double glyph_scale = std::min(x_scale, y_scale);
+    auto [x_min, y_min, glyph_scale] = calculate_full_glyph_location(
+        scaling_option, cr, shifted_printable_area, text_extents);
 
     cr->scale(glyph_scale, glyph_scale);
     cr->translate(-x_min, shifted_printable_area.height / glyph_scale + y_min);

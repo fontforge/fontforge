@@ -81,6 +81,12 @@ class CairoPainter {
         return cached_glyph_line_pagination_.size();
     }
 
+    std::array<double, 3> calculate_full_glyph_location(
+        const std::string& scaling_option,
+        const Cairo::RefPtr<Cairo::Context>& cr,
+        const Cairo::Rectangle& shifted_printable_area,
+        const Cairo::TextExtents& text_extents) const;
+
     // Draw glyphs scaled to fill the page.
     void draw_page_full_glyph(const Cairo::RefPtr<Cairo::Context>& cr,
                               const Cairo::Rectangle& printable_area,

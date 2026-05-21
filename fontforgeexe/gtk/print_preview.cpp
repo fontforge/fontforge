@@ -132,10 +132,10 @@ PrintPreviewWidget::PrintPreviewWidget(const utils::CairoPainter& cairo_painter)
 
     scaling_option_ = Gtk::make_managed<Gtk::ComboBoxText>();
     scaling_option_->append(utils::CairoPainter::kScaleToPage,
-                            "Scale glyphs to page size");
+                            "Scale each glyph to page size");
     scaling_option_->append(utils::CairoPainter::kScaleEmSize,
                             "Scale glyphs to em size");
-    scaling_option_->append(utils::CairoPainter::kScaleToPage,
+    scaling_option_->append(utils::CairoPainter::kScaleMaxHeight,
                             "Scale glyphs to maximum height");
     scaling_option_->set_active_id(utils::CairoPainter::kScaleToPage);
     scaling_option_->set_valign(Gtk::ALIGN_START);
