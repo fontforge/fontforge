@@ -79,6 +79,8 @@ bool ff_deserialize_html(const Glib::RefPtr<Gtk::TextBuffer>& content_buffer,
     auto tag_table = target_buffer->get_tag_table();
     auto bold_tag =
         tag_table ? tag_table->lookup("bold") : Glib::RefPtr<Gtk::TextTag>();
+    auto italic_tag =
+        tag_table ? tag_table->lookup("italic") : Glib::RefPtr<Gtk::TextTag>();
 
     Glib::RefPtr<Gtk::TextBuffer::Mark> cursor_mark =
         target_buffer->create_mark(iter, false);
@@ -97,8 +99,14 @@ bool ff_deserialize_html(const Glib::RefPtr<Gtk::TextBuffer>& content_buffer,
 
         bool has_b = std::find(current_tags.begin(), current_tags.end(), "b") !=
                      current_tags.end();
+        bool has_i = std::find(current_tags.begin(), current_tags.end(), "i") !=
+                     current_tags.end();
         if (has_b && bold_tag) {
             target_buffer->apply_tag(bold_tag, start_mark->get_iter(),
+                                     cursor_mark->get_iter());
+        }
+        if (has_i && italic_tag) {
+            target_buffer->apply_tag(italic_tag, start_mark->get_iter(),
                                      cursor_mark->get_iter());
         }
         target_buffer->delete_mark(start_mark);
