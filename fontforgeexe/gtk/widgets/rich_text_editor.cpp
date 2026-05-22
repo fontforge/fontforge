@@ -41,8 +41,17 @@ static ff::utils::ParsedRichText collapse_html_spaces(
     const ff::utils::ParsedRichText& input) {
     ff::utils::ParsedRichText collapsed;
     bool in_space = false;
+    bool prev_in_p = false;
+    auto tag_is_p = [](const std::string& tag) {
+        return tag == "p" || tag.substr(0, 2) == "p ";
+    };
 
     for (const auto& [tags, text] : input) {
+        bool cur_in_p =
+            std::find_if(tags.begin(), tags.end(), tag_is_p) != tags.end();
+        bool new_paragraph = cur_in_p && !prev_in_p;
+        prev_in_p = cur_in_p;
+
         std::string normalized_text;
         for (char ch : text) {
             if (std::isspace(static_cast<unsigned char>(ch))) {
@@ -56,6 +65,9 @@ static ff::utils::ParsedRichText collapse_html_spaces(
             }
         }
 
+        if (new_paragraph && !collapsed.empty()) {
+            normalized_text = '\n' + normalized_text;
+        }
         if (!normalized_text.empty()) {
             collapsed.emplace_back(tags, normalized_text);
         }
