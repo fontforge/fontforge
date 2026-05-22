@@ -1080,6 +1080,9 @@ ParsedRichText parse_xml_stream(std::istream& input) {
                           << "\", position " << input.tellg() << std::endl;
                 break;
             }
+        } else if (tag.size() > 0 && tag.back() == '/') {
+            // Self-closing tag, like <meta/>. We can ignore it, since it
+            // doesn't affect the style of any text.
         } else {
             current_tags.push_back(tag);
         }

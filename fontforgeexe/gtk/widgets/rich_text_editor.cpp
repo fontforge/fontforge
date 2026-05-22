@@ -33,8 +33,79 @@
 
 #include "intl.h"
 #include "../utils.hpp"
+#include "cairo_painter.hpp"
 
 namespace ff::widget {
+
+static ff::utils::ParsedRichText collapse_html_spaces(
+    const ff::utils::ParsedRichText& input) {
+    ff::utils::ParsedRichText collapsed;
+    bool in_space = false;
+
+    for (const auto& [tags, text] : input) {
+        std::string normalized_text;
+        for (char ch : text) {
+            if (std::isspace(static_cast<unsigned char>(ch))) {
+                if (!in_space) {
+                    normalized_text += ' ';
+                    in_space = true;
+                }
+            } else {
+                normalized_text += ch;
+                in_space = false;
+            }
+        }
+
+        if (!normalized_text.empty()) {
+            collapsed.emplace_back(tags, normalized_text);
+        }
+    }
+
+    return collapsed;
+}
+
+bool ff_deserialize_html(const Glib::RefPtr<Gtk::TextBuffer>& content_buffer,
+                         Gtk::TextBuffer::iterator& iter, const guint8* data,
+                         gsize length, bool create_tags) {
+    if (data == nullptr || length == 0) return true;
+    if (data[length - 1] == '\0') length -= 1;
+
+    std::string html((const char*)data, length);
+    std::istringstream html_stream(html);
+    ff::utils::ParsedRichText parsed =
+        collapse_html_spaces(ff::utils::parse_xml_stream(html_stream));
+
+    Glib::RefPtr<Gtk::TextBuffer> target_buffer = iter.get_buffer();
+    auto tag_table = target_buffer->get_tag_table();
+    auto bold_tag =
+        tag_table ? tag_table->lookup("bold") : Glib::RefPtr<Gtk::TextTag>();
+
+    Glib::RefPtr<Gtk::TextBuffer::Mark> cursor_mark =
+        target_buffer->create_mark(iter, false);
+
+    for (const auto& [current_tags, text] : parsed) {
+        if (text.empty()) continue;
+
+        // Skip the <head> tag, which contains styles and no actual text.
+        bool has_head = std::find(current_tags.begin(), current_tags.end(),
+                                  "head") != current_tags.end();
+        if (has_head) continue;
+
+        Glib::RefPtr<Gtk::TextBuffer::Mark> start_mark =
+            target_buffer->create_mark(cursor_mark->get_iter());
+        target_buffer->insert(cursor_mark->get_iter(), text);
+
+        bool has_b = std::find(current_tags.begin(), current_tags.end(), "b") !=
+                     current_tags.end();
+        if (has_b && bold_tag) {
+            target_buffer->apply_tag(bold_tag, start_mark->get_iter(),
+                                     cursor_mark->get_iter());
+        }
+        target_buffer->delete_mark(start_mark);
+    }
+
+    return true;
+}
 
 void dump_character(Glib::ustring& unicode_buffer, const gunichar& character) {
     Glib::ustring seq;
@@ -215,13 +286,65 @@ RichTechEditor::RichTechEditor(const std::vector<double>& pointsizes) {
     text_view_.set_wrap_mode(Gtk::WRAP_WORD);
     text_view_.set_hexpand();
     text_view_.set_vexpand();
+    g_signal_connect(text_view_.gobj(), "paste-clipboard",
+                     G_CALLBACK(&RichTechEditor::on_text_view_paste_clipboard),
+                     this);
 
-    auto result = text_view_.get_buffer()->register_serialize_format(
-        rich_text_mime_type, &ff_xml_serialize);
+    text_view_.get_buffer()->register_serialize_format(rich_text_mime_type,
+                                                       &ff_xml_serialize);
+    text_view_.get_buffer()->register_deserialize_format("text/html",
+                                                         &ff_deserialize_html);
 
     scrolled_.add(text_view_);
     attach(toolbar_, 0, 0);
     attach(scrolled_, 0, 1);
+}
+
+void RichTechEditor::on_text_view_paste_clipboard(GtkTextView* text_view,
+                                                  gpointer user_data) {
+    RichTechEditor* self = static_cast<RichTechEditor*>(user_data);
+    if (self == nullptr) return;
+
+    if (self->request_clipboard_rich_text()) {
+        g_signal_stop_emission_by_name(text_view, "paste-clipboard");
+    }
+}
+
+bool RichTechEditor::request_clipboard_rich_text() {
+    Glib::RefPtr<Gtk::Clipboard> clipboard = Gtk::Clipboard::get();
+    if (!clipboard) {
+        return false;
+    }
+
+    if (clipboard->wait_is_rich_text_available(text_view_.get_buffer())) {
+        clipboard->request_rich_text(
+            text_view_.get_buffer(),
+            sigc::mem_fun(*this,
+                          &RichTechEditor::on_clipboard_rich_text_received));
+        return true;
+    } else
+        return false;
+}
+
+void RichTechEditor::on_clipboard_rich_text_received(
+    const Glib::ustring& format, const std::string& text) {
+    Glib::RefPtr<Gtk::TextBuffer> buffer = text_view_.get_buffer();
+    if (!buffer || text.empty() || format.empty()) return;
+
+    Gtk::TextBuffer::iterator start, end;
+    if (buffer->get_selection_bounds(start, end)) {
+        buffer->erase(start, end);
+    }
+
+    Gtk::TextBuffer::iterator insert_it =
+        buffer->get_iter_at_mark(buffer->get_insert());
+
+    try {
+        buffer->deserialize(buffer, format, insert_it,
+                            reinterpret_cast<const guint8*>(text.data()),
+                            text.size());
+    } catch (const Glib::Error&) {
+    }
 }
 
 RichTechEditor::TagComboBox* RichTechEditor::build_stretch_combo(

@@ -132,6 +132,12 @@ class RichTechEditor : public Gtk::Grid {
     Gtk::ScrolledWindow scrolled_;
     Gtk::TextView text_view_;
 
+    static void on_text_view_paste_clipboard(GtkTextView* text_view,
+                                             gpointer user_data);
+    bool request_clipboard_rich_text();
+    void on_clipboard_rich_text_received(const Glib::ustring& format,
+                                         const std::string& text);
+
     TagComboBox* build_stretch_combo(Glib::RefPtr<Gtk::TextBuffer> text_buffer);
     TagComboBox* build_size_combo(Glib::RefPtr<Gtk::TextBuffer> text_buffer,
                                   const std::vector<double>& pointsizes);
