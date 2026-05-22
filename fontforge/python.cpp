@@ -18740,8 +18740,8 @@ return( true );
 	squash->lsb_percent = squash->stem_percent = squash->counter_percent = squash->rsb_percent =
 		PyFloat_AsDouble(po);
     } else if ( !PyArg_ParseTuple(po,"dddd",
-	    squash->lsb_percent, squash->stem_percent,
-	    squash->counter_percent, squash->rsb_percent ))
+	    &squash->lsb_percent, &squash->stem_percent,
+	    &squash->counter_percent, &squash->rsb_percent ))
 return( false );
 
 return( true );
