@@ -293,6 +293,7 @@ RichTechEditor::RichTechEditor(const std::vector<double>& pointsizes) {
         Gtk::make_managed<ClearFormattingButton>(text_view_.get_buffer());
     clear_button->set_icon_name("edit-clear-all");
     clear_button->set_tooltip_text(_("Clear Formatting"));
+    Gtk::ToolButton* hamburger_button = build_tools_menu();
 
     toolbar_.append(*bold_button);
     toolbar_.append(*italic_button);
@@ -300,6 +301,7 @@ RichTechEditor::RichTechEditor(const std::vector<double>& pointsizes) {
     toolbar_.append(*size_combo);
     toolbar_.append(*weight_combo);
     toolbar_.append(*clear_button);
+    toolbar_.append(*hamburger_button);
 
     toolbar_.set_hexpand();
 
@@ -497,6 +499,25 @@ RichTechEditor::TagComboBox* RichTechEditor::build_weight_combo(
 
     return Gtk::make_managed<TagComboBox>(text_view_.get_buffer(), default_id,
                                           tag_map, labels);
+}
+
+Gtk::ToolButton* RichTechEditor::build_tools_menu() {
+    Gtk::Menu* hamburger_menu = Gtk::make_managed<Gtk::Menu>();
+    Gtk::MenuItem* dummy_item = Gtk::make_managed<Gtk::MenuItem>(_("Dummy"));
+    hamburger_menu->append(*dummy_item);
+    hamburger_menu->show_all();
+
+    Gtk::ToolButton* hamburger_button = Gtk::make_managed<Gtk::ToolButton>();
+    hamburger_button->set_icon_name("open-menu-symbolic");
+    hamburger_button->set_tooltip_text(_("Import and export tools"));
+    hamburger_button->signal_clicked().connect(
+        [hamburger_menu, hamburger_button]() {
+            hamburger_menu->popup_at_widget(hamburger_button,
+                                            Gdk::GRAVITY_SOUTH_WEST,
+                                            Gdk::GRAVITY_NORTH_WEST, nullptr);
+        });
+
+    return hamburger_button;
 }
 
 ///////////////////////////////////////////////////////////////////////
