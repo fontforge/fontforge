@@ -38,6 +38,8 @@
 typedef struct splinechar SplineChar;
 
 using ff::layout::SplineFontProperties;
+using ParsedTag =
+    std::pair<std::string /*tag name*/, std::string /*tag value*/>;
 
 namespace ff::utils {
 
@@ -183,7 +185,7 @@ class CairoPainter {
 
     // Select specific face to print a text segment based on the tags which
     // apply to it. Returns an index into CairoPainter::cairo_family_.
-    size_t select_face(const std::vector<std::string>& tags,
+    size_t select_face(const std::vector<ParsedTag>& parsed_tags,
                        const SplineFontProperties& default_properties) const;
 
     double get_size(const std::vector<std::string>& tags);
@@ -229,5 +231,7 @@ CairoFontFamily create_cairo_family(SplineFont* current_sf, Tag script,
                                     Tag lang);
 
 ParsedRichText parse_xml_stream(std::istream& input);
+
+ParsedTag parse_tag(const std::string& complete_tag);
 
 }  // namespace ff::utils

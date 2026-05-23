@@ -48,6 +48,9 @@ cpp_SplineFontProperties* make_SplineFontProperties(int ascent, int descent,
 #include <string>
 #include <vector>
 
+using ParsedTag =
+    std::pair<std::string /*tag name*/, std::string /*tag value*/>;
+
 namespace ff::layout {
 
 struct SplineFontProperties {
@@ -57,7 +60,7 @@ struct SplineFontProperties {
     int16_t os2_width = -1;
     std::string styles;
 
-    static SplineFontProperties from_tags(const std::vector<std::string>& tags);
+    static SplineFontProperties from_tags(const std::vector<ParsedTag>& tags);
 
     // Merge properties, with the other object's meaningful fields taking
     // priority.
@@ -67,9 +70,6 @@ struct SplineFontProperties {
     // mathematical sense.
     int distance(const SplineFontProperties& other) const;
 };
-
-std::pair<std::string /*tag*/, std::string /*value*/> parse_tag(
-    const std::string& complete_tag);
 
 }  // namespace ff::layout
 

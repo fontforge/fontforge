@@ -37,7 +37,7 @@ extern "C" cpp_SplineFontProperties* make_SplineFontProperties(
 }
 
 SplineFontProperties SplineFontProperties::from_tags(
-    const std::vector<std::string>& tags) {
+    const std::vector<ParsedTag>& parsed_tags) {
     static const std::map<std::string, int16_t> widths{
         {"ultra-condensed", 1}, {"extra-condensed", 2}, {"condensed", 3},
         {"semi-condensed", 4},  {"medium", 5},          {"semi-expanded", 6},
@@ -49,8 +49,7 @@ SplineFontProperties SplineFontProperties::from_tags(
         {"bold", 700},    {"extra-bold", 800},  {"black", 900},
     };
     SplineFontProperties props;
-    for (const std::string& tag : tags) {
-        auto [tag_name, tag_value] = parse_tag(tag);
+    for (const auto& [tag_name, tag_value] : parsed_tags) {
         if (tag_name == "italic") {
             props.italic = true;
         } else if (tag_name == "bold") {
@@ -89,27 +88,6 @@ int SplineFontProperties::distance(const SplineFontProperties& other) const {
 
     return (int)(italic ^ other.italic) * 100 +
            std::fabs(os2_weight - other.os2_weight) + width_dist * 100;
-}
-
-std::pair<std::string /*tag*/, std::string /*value*/> parse_tag(
-    const std::string& complete_tag) {
-    // Attempt to match tag name and "value" attribute
-    // The string below is equivalent to ^(.+?)\s+value=\"(.+?)\"
-    std::regex re(R"-(^(.+?)\s+value=\"(.+?)\")-");
-    std::smatch tag_value_match;
-    if (std::regex_match(complete_tag, tag_value_match, re) &&
-        (tag_value_match.size() == 3)) {
-        // tag_value_match[0] holds the complete match, ignore it. We need just
-        // the capturing groups.
-        return {tag_value_match[1], tag_value_match[2]};
-    }
-
-    // Return tag name only, with "set" as value by convention.
-    auto space_it =
-        std::find_if(complete_tag.begin(), complete_tag.end(),
-                     [](unsigned char c) { return std::isspace(c); });
-    std::string tag_name(complete_tag.begin(), space_it);
-    return {tag_name, "set"};
 }
 
 }  // namespace ff::layout

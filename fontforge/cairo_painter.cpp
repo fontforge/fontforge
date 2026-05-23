@@ -514,10 +514,14 @@ void CairoPainter::calculate_layout_sample_text(
     double line_buffer_width = 0;
 
     for (const auto& [current_tags, text] : parsed_text) {
-        size_t font_idx = select_face(current_tags, default_properties);
+        std::vector<ParsedTag> parsed_tags;
+        for (const std::string& tag : current_tags) {
+            parsed_tags.emplace_back(parse_tag(tag));
+        }
+        size_t font_idx = select_face(parsed_tags, default_properties);
         Cairo::RefPtr<Cairo::FtFontFace> font_face =
             cairo_family_[font_idx].face;
-        select_face(current_tags, default_properties);
+        select_face(parsed_tags, default_properties);
         double font_size = get_size(current_tags);
         cr->set_font_face(font_face);
         cr->set_font_size(font_size);
@@ -827,7 +831,7 @@ SplineFontProperties CairoPainter::get_default_style(
             (i < rich_text.size()) ? rich_text[i].first : rich_text[0].first;
 
         for (const std::string& tag : segment_tags) {
-            auto [tag_name, tag_value] = layout::parse_tag(tag);
+            auto [tag_name, tag_value] = parse_tag(tag);
             if (sample_text_values.count(tag_name) == 0) {
                 sample_text_values[tag_name] = {tag_value};
             } else {
@@ -862,11 +866,12 @@ SplineFontProperties CairoPainter::get_default_style(
 }
 
 size_t CairoPainter::select_face(
-    const std::vector<std::string>& tags,
+    const std::vector<ParsedTag>& parsed_tags,
     const SplineFontProperties& default_properties) const {
     // Desired properties are derived from the default ones, with
     // segment-specific tags overriding them when applicable.
-    SplineFontProperties text_props = SplineFontProperties::from_tags(tags);
+    SplineFontProperties text_props =
+        SplineFontProperties::from_tags(parsed_tags);
     SplineFontProperties desired_properties = default_properties;
     desired_properties.merge(text_props);
 
@@ -884,7 +889,7 @@ size_t CairoPainter::select_face(
 double CairoPainter::get_size(const std::vector<std::string>& tags) {
     double size = 36.0;
     for (const std::string& tag : tags) {
-        auto [tag_name, tag_value] = layout::parse_tag(tag);
+        auto [tag_name, tag_value] = parse_tag(tag);
         double result{};
 
         if (tag_name == "size" &&
@@ -1096,6 +1101,26 @@ ParsedRichText parse_xml_stream(std::istream& input) {
     }
 
     return parsed_input;
+}
+
+ParsedTag parse_tag(const std::string& complete_tag) {
+    // Attempt to match tag name and "value" attribute
+    // The string below is equivalent to ^(.+?)\s+value=\"(.+?)\"
+    std::regex re(R"-(^(.+?)\s+value=\"(.+?)\")-");
+    std::smatch tag_value_match;
+    if (std::regex_match(complete_tag, tag_value_match, re) &&
+        (tag_value_match.size() == 3)) {
+        // tag_value_match[0] holds the complete match, ignore it. We need just
+        // the capturing groups.
+        return {tag_value_match[1], tag_value_match[2]};
+    }
+
+    // Return tag name only, with "set" as value by convention.
+    auto space_it =
+        std::find_if(complete_tag.begin(), complete_tag.end(),
+                     [](unsigned char c) { return std::isspace(c); });
+    std::string tag_name(complete_tag.begin(), space_it);
+    return {tag_name, "set"};
 }
 
 }  // namespace ff::utils
