@@ -30,6 +30,7 @@
 #include <iomanip>
 #include <iostream>
 #include <cstring>
+#include <fstream>
 
 #include "intl.h"
 #include "../utils.hpp"
@@ -503,8 +504,11 @@ RichTechEditor::TagComboBox* RichTechEditor::build_weight_combo(
 
 Gtk::ToolButton* RichTechEditor::build_tools_menu() {
     Gtk::Menu* hamburger_menu = Gtk::make_managed<Gtk::Menu>();
-    Gtk::MenuItem* dummy_item = Gtk::make_managed<Gtk::MenuItem>(_("Dummy"));
-    hamburger_menu->append(*dummy_item);
+    Gtk::MenuItem* save_item =
+        Gtk::make_managed<Gtk::MenuItem>(_("Save as XML"));
+    save_item->signal_activate().connect(
+        sigc::mem_fun(*this, &RichTechEditor::on_save_buffer_to_xml));
+    hamburger_menu->append(*save_item);
     hamburger_menu->show_all();
 
     Gtk::ToolButton* hamburger_button = Gtk::make_managed<Gtk::ToolButton>();
@@ -518,6 +522,40 @@ Gtk::ToolButton* RichTechEditor::build_tools_menu() {
         });
 
     return hamburger_button;
+}
+
+void RichTechEditor::on_save_buffer_to_xml() {
+    Gtk::FileChooserDialog dialog(_("Save as XML"),
+                                  Gtk::FILE_CHOOSER_ACTION_SAVE);
+    dialog.set_transient_for(*dynamic_cast<Gtk::Window*>(get_toplevel()));
+
+    dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
+    dialog.add_button(Gtk::Stock::SAVE, Gtk::RESPONSE_OK);
+
+    auto filter = Gtk::FileFilter::create();
+    filter->set_name(_("XML files"));
+    filter->add_pattern("*.ffxml");
+    dialog.add_filter(filter);
+
+    if (dialog.run() == Gtk::RESPONSE_OK) {
+        std::string filepath = dialog.get_filename();
+        Glib::RefPtr<Gtk::TextBuffer> buffer = text_view_.get_buffer();
+
+        Gtk::TextBuffer::iterator start = buffer->begin();
+        Gtk::TextBuffer::iterator end = buffer->end();
+
+        gsize length = 0;
+        guint8* serialized = ff_xml_serialize(buffer, start, end, length);
+
+        if (serialized != nullptr) {
+            std::ofstream file(filepath, std::ios::binary);
+            if (file.is_open()) {
+                file.write(reinterpret_cast<const char*>(serialized), length);
+                file.close();
+            }
+            delete[] serialized;
+        }
+    }
 }
 
 ///////////////////////////////////////////////////////////////////////
