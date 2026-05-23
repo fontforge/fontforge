@@ -688,6 +688,7 @@ void CairoPainter::draw_line_sample_text(
             uni_buf, features, script, lang, false, false);
         // Remove auxiliary trailing element added for legacy C consumers
         metrics.pop_back();
+        if (metrics.empty()) continue;
 
         // For RTL lines, start x at the right edge and move left.
         // For LTR lines, start at 0 and move right.
