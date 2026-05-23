@@ -77,6 +77,15 @@ static ff::utils::ParsedRichText collapse_html_spaces(
     return collapsed;
 }
 
+static std::string normalize_ff_xml_tag(const std::string& raw_tag) {
+    auto [tag_name, tag_value] = ff::utils::parse_tag(raw_tag);
+    if (tag_value == "set") {
+        return tag_name;
+    }
+
+    return tag_name + "|" + tag_value;
+}
+
 bool ff_deserialize_html(const Glib::RefPtr<Gtk::TextBuffer>& content_buffer,
                          Gtk::TextBuffer::iterator& iter, const guint8* data,
                          gsize length, bool create_tags) {
@@ -504,10 +513,14 @@ RichTechEditor::TagComboBox* RichTechEditor::build_weight_combo(
 
 Gtk::ToolButton* RichTechEditor::build_tools_menu() {
     Gtk::Menu* hamburger_menu = Gtk::make_managed<Gtk::Menu>();
+    Gtk::MenuItem* load_item = Gtk::make_managed<Gtk::MenuItem>(_("Load XML"));
+    load_item->signal_activate().connect(
+        sigc::mem_fun(*this, &RichTechEditor::on_load_buffer_from_xml));
     Gtk::MenuItem* save_item =
         Gtk::make_managed<Gtk::MenuItem>(_("Save as XML"));
     save_item->signal_activate().connect(
         sigc::mem_fun(*this, &RichTechEditor::on_save_buffer_to_xml));
+    hamburger_menu->append(*load_item);
     hamburger_menu->append(*save_item);
     hamburger_menu->show_all();
 
@@ -524,8 +537,68 @@ Gtk::ToolButton* RichTechEditor::build_tools_menu() {
     return hamburger_button;
 }
 
+void RichTechEditor::on_load_buffer_from_xml() {
+    Gtk::FileChooserDialog dialog(_("Load sample from XML"),
+                                  Gtk::FILE_CHOOSER_ACTION_OPEN);
+    dialog.set_transient_for(*dynamic_cast<Gtk::Window*>(get_toplevel()));
+
+    dialog.add_button(Gtk::Stock::CANCEL, Gtk::RESPONSE_CANCEL);
+    dialog.add_button(Gtk::Stock::OPEN, Gtk::RESPONSE_OK);
+
+    auto filter = Gtk::FileFilter::create();
+    filter->set_name(_("FontForge sample text"));
+    filter->add_pattern("*.ffxml");
+    dialog.add_filter(filter);
+
+    if (dialog.run() != Gtk::RESPONSE_OK) {
+        return;
+    }
+
+    std::ifstream file(dialog.get_filename(), std::ios::binary);
+    if (!file.is_open()) {
+        return;
+    }
+
+    ff::utils::ParsedRichText parsed = ff::utils::parse_xml_stream(file);
+
+    Glib::RefPtr<Gtk::TextBuffer> buffer = text_view_.get_buffer();
+    if (!buffer) {
+        return;
+    }
+
+    buffer->set_text("");
+    auto insert_it = buffer->begin();
+    auto cursor_mark = buffer->create_mark(insert_it, false);
+    auto tag_table = buffer->get_tag_table();
+
+    for (const auto& [raw_tags, text] : parsed) {
+        if (text.empty()) {
+            continue;
+        }
+
+        auto start_mark = buffer->create_mark(cursor_mark->get_iter());
+        buffer->insert(cursor_mark->get_iter(), text);
+
+        for (const std::string& raw_tag : raw_tags) {
+            std::string tag_name = normalize_ff_xml_tag(raw_tag);
+            if (tag_name == "ff_root") {
+                continue;
+            }
+
+            auto tag = tag_table ? tag_table->lookup(tag_name)
+                                 : Glib::RefPtr<Gtk::TextTag>();
+            if (tag) {
+                buffer->apply_tag(tag, start_mark->get_iter(),
+                                  cursor_mark->get_iter());
+            }
+        }
+
+        buffer->delete_mark(start_mark);
+    }
+}
+
 void RichTechEditor::on_save_buffer_to_xml() {
-    Gtk::FileChooserDialog dialog(_("Save as XML"),
+    Gtk::FileChooserDialog dialog(_("Save sample as XML"),
                                   Gtk::FILE_CHOOSER_ACTION_SAVE);
     dialog.set_transient_for(*dynamic_cast<Gtk::Window*>(get_toplevel()));
 
@@ -533,7 +606,7 @@ void RichTechEditor::on_save_buffer_to_xml() {
     dialog.add_button(Gtk::Stock::SAVE, Gtk::RESPONSE_OK);
 
     auto filter = Gtk::FileFilter::create();
-    filter->set_name(_("XML files"));
+    filter->set_name(_("FontForge sample text"));
     filter->add_pattern("*.ffxml");
     dialog.add_filter(filter);
 
