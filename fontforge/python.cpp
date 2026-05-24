@@ -20773,6 +20773,9 @@ static void RegisterAllPyModules(void) {
      * NOTE: This should only be called from the embedded python,
      *       when used from the pyhook, we can't (or shouldn't) do this
      */
+    if ( Py_IsInitialized() )
+        return;
+
     module_def_fontforge.runtime.modinit_func = CreatePyModule_fontforge;
     module_def_psMat.runtime.modinit_func = CreatePyModule_psMat;
     module_def_ff_internals.runtime.modinit_func = CreatePyModule_ff_internals;
@@ -20816,6 +20819,13 @@ static void FontForge_InitializeEmbeddedPythonEx(int argc, wchar_t **argv) {
     // static int python_initialized is declared above.
     if ( python_initialized )
 	return;
+
+    /* If Python is already running (pyhook/module mode), do not perform
+     * embedded initialization steps such as inittab registration or
+     * Py_InitializeFromConfig().
+     */
+    if ( Py_IsInitialized() )
+        return;
 
     PyConfig config;
     PyStatus status;
