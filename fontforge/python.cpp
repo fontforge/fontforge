@@ -18699,6 +18699,7 @@ static const char *italicize_keywords[] = {
     "u0448",
     "u0452",
     "u045f",
+    "xheight_percent",
     NULL
 };
 
@@ -18766,7 +18767,7 @@ static int Parse_ItalicArgs(ItalicInfo *ii, PyObject *args, PyObject *keywds) {
     int u045f = default_ii.cyrl_dzhe;
 
     *ii = default_ii;
-    if ( !PyArg_ParseTupleAndKeywords(args,keywds,"|ddOOOOOOiiiiiiiiiiiiiiiii",(char **)italicize_keywords,
+    if ( !PyArg_ParseTupleAndKeywords(args,keywds,"|ddOOOOOOiiiiiiiiiiiiiiiiid",(char **)italicize_keywords,
 	    &ii->italic_angle, &ii->italic_angle,
 	    &lc, &lc,
 	    &uc, &uc,
@@ -18774,7 +18775,8 @@ static int Parse_ItalicArgs(ItalicInfo *ii, PyObject *args, PyObject *keywds) {
 	    &deserif_flat, &deserif_slant, &deserif_pen,
 	    &bottom_serif, &xh_serif, &as_serif, &dg_serif, &ds_serif,
 	    &a, &f,
-	    &u0444, &u0438, &u043f, &u0442, &u0448, &u0452, &u045f ))
+	    &u0444, &u0438, &u043f, &u0442, &u0448, &u0452, &u045f,
+	    &ii->xheight_percent ))
 return( false );
     if ( !SquashParse(&ii->lc,lc) || !SquashParse(&ii->uc,uc) || !SquashParse(&ii->neither,symbols))
 return( false );

@@ -4814,7 +4814,7 @@ This type may not be pickled.
 
    Returns whether the named subtable contains a vertical kerning data
 
-.. method:: font.italicize(italic_angle=, ia=lc_condense=, lc=uc_condense=, uc=symbol_condense=, symbol=deserif_flat=, deserif_slant=, deserif_pen=, baseline_serifs=, xheight_serifs=, ascent_serifs=, descent_serifs=, diagonal_serifs=, a=, f=, u0438=, u043f=, u0442=, u0444=, u0448=, u0452=, u045f=)
+.. method:: font.italicize(italic_angle=, ia=lc_condense=, lc=uc_condense=, uc=symbol_condense=, symbol=deserif_flat=, deserif_slant=, deserif_pen=, baseline_serifs=, xheight_serifs=, ascent_serifs=, descent_serifs=, diagonal_serifs=, a=, f=, u0438=, u043f=, u0442=, u0444=, u0448=, u0452=, u045f=, xheight_percent=)
 
    This function uses keyword parameters. None are required, if omitted a
    default value will be used. Some keywords have abbreviations ("ia" for
@@ -4840,6 +4840,10 @@ This type may not be pickled.
    transformations of glyphs like "f", setting it to 1 will give "f" a tail
    which looks like a rotated version of its head, and setting it to 2 will
    simply extend the main stem of "f" below the baseline.
+
+   The ``xheight_percent`` keyword specifies how much the x-height should be
+   changed by the transformation. The default value is 0.95, which reduces the
+   x-height to 95% of its original size; a value of 1.0 means no change.
 
 .. method:: font.lookupSetFeatureList(lookup_name, feature_script_lang_tuple)
 
