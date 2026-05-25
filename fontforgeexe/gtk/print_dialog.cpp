@@ -40,7 +40,7 @@ extern char* SFGetFullName(SplineFont* sf);
 }
 
 #include "application.hpp"
-#include "cairo_painter.hpp"
+#include "layout/cairo_painter.hpp"
 #include "print_preview.hpp"
 
 using ff::utils::PrintGlyphMap;

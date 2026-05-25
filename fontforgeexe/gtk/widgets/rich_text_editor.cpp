@@ -34,7 +34,7 @@
 
 #include "intl.h"
 #include "../utils.hpp"
-#include "cairo_painter.hpp"
+#include "layout/cairo_painter.hpp"
 
 namespace ff::widget {
 

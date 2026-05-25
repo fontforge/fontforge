@@ -28,7 +28,7 @@
 
 #include <gtkmm.h>
 
-#include "cairo_painter.hpp"
+#include "layout/cairo_painter.hpp"
 #include "widgets/aspect_frame_bg.hpp"
 #include "widgets/rich_text_editor.hpp"
 

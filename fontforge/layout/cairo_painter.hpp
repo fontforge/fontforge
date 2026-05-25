@@ -31,9 +31,9 @@
 #include <memory>
 #include <cairomm/context.h>
 
-#include "layout/layout_shim.hpp"
-#include "shapers/i_shaper.hpp"
-#include "shapers/shaper_shim.hpp"
+#include "layout_shim.hpp"
+#include "../shapers/i_shaper.hpp"
+#include "../shapers/shaper_shim.hpp"
 
 typedef struct splinechar SplineChar;
 

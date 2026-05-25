@@ -33,14 +33,14 @@
 #include <sstream>
 
 extern "C" {
-#include "fffreetype.h"
+#include "../fffreetype.h"
 }
-#include "fvfonts.h"
+#include "../fvfonts.h"
 #include "gutils.h"
-#include "lookups.h"
-#include "splinechar.h"
-#include "tottf.h"
-#include "tottfgpos.h"
+#include "../lookups.h"
+#include "../splinechar.h"
+#include "../tottf.h"
+#include "../tottfgpos.h"
 #include "ustring.h"
 
 namespace ff::utils {
