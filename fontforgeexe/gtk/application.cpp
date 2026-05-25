@@ -37,6 +37,7 @@ extern "C" void GResEditDoInit(GResInfo* ri);
 namespace ff::app {
 
 Glib::RefPtr<Gtk::Application> GtkApp() {
+    std::cout << "Running GtkApp()" << std::endl;
     // Unique instance mode doesn't work well as long as the startup sequence is
     // handled in the legacy code. It would be possible to enable it once the
     // application main loop is started with Gtk::Application::run().
@@ -45,41 +46,72 @@ Glib::RefPtr<Gtk::Application> GtkApp() {
     static auto app = Gtk::Application::create("org.fontforge", app_flags);
     static bool initialized = false;
 
+    std::cout << "Initializing GtkApp()" << std::endl;
     if (!initialized) {
-        app->register_application();
+        if (app) {
+            std::cout << "Registering application" << std::endl;
+            app->register_application();
+            std::cout << "Application registration complete" << std::endl;
+        } else {
+            std::cout << "Application failure: Gtk::Application::create()) "
+                         "returned NULL"
+                      << std::endl;
+        }
+        std::cout << "Loading legacy style" << std::endl;
         load_legacy_style();
+        std::cout << "Legacy style loaded" << std::endl;
 
         initialized = true;
     }
+    std::cout << "GtkApp() initialization done" << std::endl;
 
     return app;
 }
 
 void load_legacy_style() {
+    std::cout << "Creating CSS provider" << std::endl;
     static Glib::RefPtr<Gtk::CssProvider> css_provider =
         Gtk::CssProvider::create();
+    if (css_provider)
+        std::cout << "CSS provider created" << std::endl;
+    else
+        std::cout << "CSS provider creation failed" << std::endl;
     static bool initialized = false;
 
     if (!initialized) {
         // Add CSS provider to the screen, so that it applies to all windows.
+        std::cout << "Retrieving GDK screen" << std::endl;
         auto screen = Gdk::Screen::get_default();
+        if (screen)
+            std::cout << "GDK screen retrieved" << std::endl;
+        else
+            std::cout << "GDK screen retrieval failed" << std::endl;
 
         // User-defined CSS should usually go with USER priority, but we reduce
         // it by 2 so that widget-specific customizations and the GTK inspector,
         // which also applies USER, would have priority over it.
-        Gtk::StyleContext::add_provider_for_screen(
-            screen, css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER - 2);
+        if (screen && css_provider) {
+            std::cout << "Adding CSS provider" << std::endl;
+            Gtk::StyleContext::add_provider_for_screen(
+                screen, css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER - 2);
+            std::cout << "CSS provider added" << std::endl;
+        }
 
         initialized = true;
     }
 
+    std::cout << "Iniializing GResInfo" << std::endl;
     for (GResInfo* re = &gdraw_ri; re != NULL; re = re->next)
         GResEditDoInit(re);
+    std::cout << "Building styles" << std::endl;
     std::string style = build_styles(&gdraw_ri);
+    std::cerr << "CSS data: " << std::endl << style << std::endl;
 
     // Load CSS styles
     try {
+        std::cout << "Loading CSS" << std::endl;
         css_provider->load_from_data(style);
+        std::cout << "CSS loaded" << std::endl;
     } catch (const Glib::Error& ex) {
         std::cerr << "Failed CSS data: " << std::endl << style << std::endl;
         std::cerr << "Error loading CSS: " << ex.what() << std::endl;
