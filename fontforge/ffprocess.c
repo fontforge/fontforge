@@ -51,12 +51,12 @@ extern char** environ;
  * vs FontForge app (we started Python).
  */
 #ifndef _NO_PYTHON
-extern int FontForge_PythonInitialized(void); /* from python.c */
+extern int FontForge_EmbeddedPythonInitialized(void); /* from python.c */
 #endif
 
 int ff_running_as_python_module(void) {
 #ifndef _NO_PYTHON
-    return !FontForge_PythonInitialized() && Py_IsInitialized();
+    return !FontForge_EmbeddedPythonInitialized() && Py_IsInitialized();
 #else
     return 0;
 #endif
