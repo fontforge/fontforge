@@ -46,7 +46,16 @@ Glib::RefPtr<Gtk::Application> GtkApp() {
     static bool initialized = false;
 
     if (!initialized) {
-        app->register_application();
+        if (app) {
+            // TODO(iorsh): Registration call sometimes freezes or crashes in
+            // Windows, we shall enable it after the GTK code takes over the
+            // main loop.
+            //
+            // app->register_application();
+        } else {
+            std::cerr << "Error: Failed to create Gtk::Application instance"
+                      << std::endl;
+        }
         load_legacy_style();
 
         initialized = true;
@@ -58,17 +67,23 @@ Glib::RefPtr<Gtk::Application> GtkApp() {
 void load_legacy_style() {
     static Glib::RefPtr<Gtk::CssProvider> css_provider =
         Gtk::CssProvider::create();
+    if (!css_provider)
+        std::cerr << "Error: Failed to create CSS provider" << std::endl;
     static bool initialized = false;
 
     if (!initialized) {
         // Add CSS provider to the screen, so that it applies to all windows.
         auto screen = Gdk::Screen::get_default();
+        if (!screen)
+            std::cerr << "Error: Failed to retrieve GDK screen" << std::endl;
 
         // User-defined CSS should usually go with USER priority, but we reduce
         // it by 2 so that widget-specific customizations and the GTK inspector,
         // which also applies USER, would have priority over it.
-        Gtk::StyleContext::add_provider_for_screen(
-            screen, css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER - 2);
+        if (screen && css_provider) {
+            Gtk::StyleContext::add_provider_for_screen(
+                screen, css_provider, GTK_STYLE_PROVIDER_PRIORITY_USER - 2);
+        }
 
         initialized = true;
     }
@@ -79,7 +94,7 @@ void load_legacy_style() {
 
     // Load CSS styles
     try {
-        css_provider->load_from_data(style);
+        css_provider && css_provider->load_from_data(style);
     } catch (const Glib::Error& ex) {
         std::cerr << "Failed CSS data: " << std::endl << style << std::endl;
         std::cerr << "Error loading CSS: " << ex.what() << std::endl;
