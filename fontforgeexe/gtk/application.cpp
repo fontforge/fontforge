@@ -50,7 +50,7 @@ Glib::RefPtr<Gtk::Application> GtkApp() {
     if (!initialized) {
         if (app) {
             std::cout << "Registering application" << std::endl;
-            app->register_application();
+            //     app->register_application();
             std::cout << "Application registration complete" << std::endl;
         } else {
             std::cout << "Application failure: Gtk::Application::create()) "
