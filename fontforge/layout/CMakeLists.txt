@@ -13,6 +13,7 @@ if(ENABLE_GUI)
   target_link_libraries(layout PRIVATE
     fontforge_common_headers
     gunicode
+    shapers
     PkgConfig::CairoMM
   )
   target_compile_definitions(layout PRIVATE ENABLE_CAIRO)
