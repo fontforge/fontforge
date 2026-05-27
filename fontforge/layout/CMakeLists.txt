@@ -16,6 +16,9 @@ if(ENABLE_GUI)
     shapers
     PkgConfig::CairoMM
   )
+  if(ENABLE_FREETYPE_DEBUGGER)
+    target_link_libraries(layout PRIVATE FreeTypeSource::FreeTypeSource)
+  endif()
   target_compile_definitions(layout PRIVATE ENABLE_CAIRO)
 endif()
 
