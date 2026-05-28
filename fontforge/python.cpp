@@ -20775,6 +20775,9 @@ static void RegisterAllPyModules(void) {
      * NOTE: This should only be called from the embedded python,
      *       when used from the pyhook, we can't (or shouldn't) do this
      */
+    if ( Py_IsInitialized() )
+        return;
+
     module_def_fontforge.runtime.modinit_func = CreatePyModule_fontforge;
     module_def_psMat.runtime.modinit_func = CreatePyModule_psMat;
     module_def_ff_internals.runtime.modinit_func = CreatePyModule_ff_internals;
@@ -20795,29 +20798,36 @@ static void UnreferenceAllPyModules(void) {
     }
 }
 
-static int python_initialized = 0;
+static int embedded_python_initialized = 0;
 
 /* Returns true if FontForge initialized Python (app mode),
  * false if Python was already running (module mode) */
-extern "C" int FontForge_PythonInitialized(void) {
-    return python_initialized;
+extern "C" int FontForge_EmbeddedPythonInitialized(void) {
+    return embedded_python_initialized;
 }
 
 void FontForge_FinalizeEmbeddedPython(void) {
-    // static int python_initialized is declared above.
-    if ( !python_initialized )
+    // static int embedded_python_initialized is declared above.
+    if ( !embedded_python_initialized )
 	return;
 
     Py_Finalize();
     UnreferenceAllPyModules(); // We want to NULL old references.
-    python_initialized = 0;
+    embedded_python_initialized = 0;
 }
 
 /* This is called to start up the embedded python interpreter */
 static void FontForge_InitializeEmbeddedPythonEx(int argc, wchar_t **argv) {
-    // static int python_initialized is declared above.
-    if ( python_initialized )
+    // static int embedded_python_initialized is declared above.
+    if ( embedded_python_initialized )
 	return;
+
+    /* If Python is already running (pyhook/module mode), do not perform
+     * embedded initialization steps such as inittab registration or
+     * Py_InitializeFromConfig().
+     */
+    if ( Py_IsInitialized() )
+        return;
 
     PyConfig config;
     PyStatus status;
@@ -20840,7 +20850,7 @@ static void FontForge_InitializeEmbeddedPythonEx(int argc, wchar_t **argv) {
         exit(1);
     }
     PyConfig_Clear(&config);
-    python_initialized = 1;
+    embedded_python_initialized = 1;
 
     /* The embedded python interpreter is now functionally
      * "running". We can modify it to our needs.
