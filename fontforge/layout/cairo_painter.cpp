@@ -34,13 +34,20 @@
 
 extern "C" {
 #include "../fffreetype.h"
+
+extern int SCRightToLeft(SplineChar* sc);
+extern int ScriptIsRightToLeft(uint32_t script);
+extern SplineCharTTFMap* WriteTTFFontForShaper(FILE* ttf, SplineFont* sf);
+extern const char* SCGetName(const SplineChar* sc);
+extern void SCGetEncoding(const SplineChar* sc, int* p_unicodeenc,
+                          int* p_ttf_glyph);
+extern void SCCharMetrics(SplineChar* sc, int16_t* width, int16_t* vwidth);
+extern SplineChar* SFGetChar(SplineFont* sf, int unienc, const char* name);
+extern SplineChar* SFGetOrMakeChar(SplineFont* sf, int unienc,
+                                   const char* name);
+extern SplineFont** FVCollectFamily(SplineFont* sf);
 }
-#include "../fvfonts.h"
 #include "gutils.h"
-#include "../lookups.h"
-#include "../splinechar.h"
-#include "../tottf.h"
-#include "../tottfgpos.h"
 #include "ustring.h"
 
 namespace ff::utils {
@@ -63,12 +70,13 @@ void CairoPainter::sort_glyphs(const PrintGlyphMap& print_map) {
     // Sort encoded glyphs first, unenecoded glyphs second.
     std::sort(
         print_map_.begin(), print_map_.end(), [](const auto& a, const auto& b) {
-            return (a.second->unicodeenc == -1)
-                       ? ((b.second->unicodeenc == -1) ? (a.first < b.first)
-                                                       : false)
-                       : ((b.second->unicodeenc == -1)
-                              ? true
-                              : (a.second->unicodeenc < b.second->unicodeenc));
+            int a_unicode;
+            int b_unicode;
+            SCGetEncoding(a.second, &a_unicode, NULL);
+            SCGetEncoding(b.second, &b_unicode, NULL);
+            return (a_unicode == -1)
+                       ? ((b_unicode == -1) ? (a.first < b.first) : false)
+                       : ((b_unicode == -1) ? true : (a_unicode < b_unicode));
         });
 }
 
@@ -156,7 +164,9 @@ std::vector<CairoPainter::GlyphLine> CairoPainter::split_to_lines(
     }
 
     size_t line_length = 0;
-    bool no_encoded_glyphs = print_map_.front().second->unicodeenc == -1;
+    int unicodeenc;
+    SCGetEncoding(print_map_.front().second, &unicodeenc, NULL);
+    bool no_encoded_glyphs = unicodeenc == -1;
 
     if (no_encoded_glyphs) {
         line_length = (max_slots >= 20)   ? 20
@@ -178,7 +188,8 @@ std::vector<CairoPainter::GlyphLine> CairoPainter::split_to_lines(
     std::map<int, std::vector<int>> cp_lines;
     PrintGlyphVec::const_iterator map_it = print_map_.begin();
     for (; map_it != print_map_.end(); ++map_it) {
-        int codepoint = map_it->second->unicodeenc;
+        int codepoint;
+        SCGetEncoding(map_it->second, &codepoint, NULL);
         if (codepoint == -1) {
             break;
         }
@@ -445,7 +456,8 @@ void CairoPainter::draw_page_full_glyph(const Cairo::RefPtr<Cairo::Context>& cr,
     auto glyph_it = print_map_.begin() + page_nr;
 
     // Print page title for glyph
-    std::string page_title(glyph_it->second->name + (" from " + font_name_));
+    std::string page_title(SCGetName(glyph_it->second) +
+                           (" from " + font_name_));
     init_document(cr, printable_area, page_title, full_glyph_top_margin_);
 
     // We are already in point units. Further rescale surface, exclude the top
@@ -672,8 +684,9 @@ void CairoPainter::draw_line_sample_text(
     const RichTextLineBuffer& line_buffer, double width, double y_baseline,
     Tag script, Tag lang, const std::map<Tag, bool>& features) {
     // Perform the actual text drawing
-    SplineFont* sf = print_map_[0].second->parent;
-    double hb_scale = sf ? (sf->ascent + sf->descent) : 1000.0;
+    const SplineFontProperties& default_sf_properties = cairo_family_[0].props;
+    double hb_scale =
+        default_sf_properties.ascent + default_sf_properties.descent;
     SplineChar* first_char = nullptr;
     bool rtl = false;
     double x = 0;
@@ -697,7 +710,8 @@ void CairoPainter::draw_line_sample_text(
         // For RTL lines, start x at the right edge and move left.
         // For LTR lines, start at 0 and move right.
         if (!first_char && uni_buf[0] > 0) {
-            first_char = SFGetChar(sf, uni_buf[0], nullptr);
+            first_char =
+                SFGetChar(cairo_family_[font_idx].sf, uni_buf[0], nullptr);
             rtl = first_char != nullptr && SCRightToLeft(first_char);
             if (rtl) {
                 x = width;
