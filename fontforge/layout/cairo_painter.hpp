@@ -69,8 +69,7 @@ using PrintGlyphVec = std::vector<std::pair<int, SplineChar*>>;
 
 class CairoPainter {
  public:
-    CairoPainter(const CairoFontFamily& cairo_family,
-                 const PrintGlyphMap& print_map, const std::string& font_name);
+    CairoPainter(SplineFont* sf);
 
     // The currently active face
     const CairoFontRec& default_rec() const { return cairo_family_[0]; }
@@ -227,8 +226,8 @@ class CairoPainter {
 };
 
 Cairo::RefPtr<Cairo::FtFontFace> create_cairo_face(SplineFont* sf);
-CairoFontFamily create_cairo_family(SplineFont* current_sf, Tag script,
-                                    Tag lang);
+CairoFontFamily create_cairo_family(SplineFont* current_sf);
+PrintGlyphMap build_glyph_map(SplineFont* sf);
 
 ParsedRichText parse_xml_stream(std::istream& input);
 

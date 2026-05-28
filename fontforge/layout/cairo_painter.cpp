@@ -46,6 +46,8 @@ extern SplineChar* SFGetChar(SplineFont* sf, int unienc, const char* name);
 extern SplineChar* SFGetOrMakeChar(SplineFont* sf, int unienc,
                                    const char* name);
 extern SplineFont** FVCollectFamily(SplineFont* sf);
+extern SplineCharTTFMap* MakeGlyphTTFMap(SplineFont* sf);
+extern char* SFGetFullName(SplineFont* sf);
 }
 #include "gutils.h"
 #include "ustring.h"
@@ -56,12 +58,12 @@ const std::string CairoPainter::kScaleToPage = "scale_to_page";
 const std::string CairoPainter::kScaleEmSize = "scale_to_em_size";
 const std::string CairoPainter::kScaleMaxHeight = "scale_to_max_height";
 
-CairoPainter::CairoPainter(const CairoFontFamily& cairo_family,
-                           const PrintGlyphMap& print_map,
-                           const std::string& font_name)
-    : cairo_face_(cairo_family[0].face),
-      cairo_family_(cairo_family),
-      font_name_(font_name) {
+CairoPainter::CairoPainter(SplineFont* sf) {
+    cairo_family_ = create_cairo_family(sf);
+    cairo_face_ = cairo_family_[0].face;
+    font_name_ = SFGetFullName(sf);
+
+    PrintGlyphMap print_map = build_glyph_map(sf);
     sort_glyphs(print_map);
 }
 
@@ -1027,8 +1029,7 @@ std::shared_ptr<shapers::IShaper> create_shaper(SplineFont* sf) {
     return shapers::Factory(context);
 }
 
-CairoFontFamily create_cairo_family(SplineFont* current_sf, Tag script,
-                                    Tag lang) {
+CairoFontFamily create_cairo_family(SplineFont* current_sf) {
     SplineFont** family_sfs = FVCollectFamily(current_sf);
     SplineFontProperties* sf_properties = nullptr;
     Cairo::RefPtr<Cairo::FtFontFace> ft_face;
@@ -1057,6 +1058,17 @@ CairoFontFamily create_cairo_family(SplineFont* current_sf, Tag script,
 
     free(family_sfs);
     return family;
+}
+
+PrintGlyphMap build_glyph_map(SplineFont* sf) {
+    // Build map of TTF codepoints
+    PrintGlyphMap print_map;
+    SplineCharTTFMap* ttf_map = MakeGlyphTTFMap(sf);
+    for (SplineCharTTFMap* entry = ttf_map; entry->glyph != NULL; ++entry) {
+        print_map[entry->ttf_glyph] = entry->glyph;
+    }
+    free(ttf_map);
+    return print_map;
 }
 
 bool tags_match(const std::string& opening_tag,
