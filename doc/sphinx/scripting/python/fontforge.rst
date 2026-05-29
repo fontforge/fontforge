@@ -4249,8 +4249,10 @@ This type may not be pickled.
 
    The ``type`` should be one of the strings "glyph", "class", "coverage" or
    "reversecoverage". The ``rule`` should be a string specifying a string to
-   match and a set of lookups to apply once the match has been made. (See
-   below for more details).
+   match and a set of lookups to apply once the match has been made. For
+   "glyph" and "class" subtables, ``rule`` may also be a sequence of strings;
+   passing a sequence creates one subtable containing multiple contextual rules.
+   (See below for more details).
 
    The remaining arguments are optional, keyword arguments.
 
