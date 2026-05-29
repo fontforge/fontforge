@@ -1,0 +1,26 @@
+# ========================================================
+# Description of GlyphAlignment.py
+# ========================================================
+# Made by: asdasdsasa(留幺)
+# Version: 202605292212
+# Hotkeys e.g:
+# ✓ Ctrl+ﾵ(Numpad5): Glyph alignment in FontView and CharView.
+# - ﾵ(Numpad5): Align selected elements in CharView. (no plan)
+# - Ctrl+Alt+ﾵ(Numpad5): Align selected element 1 to selected element 2 in CharView. (no plan)
+# ========================================================
+# Tools -> Glyph Alignment -> Select 1 of 15 below:
+# Ctrl+Numpad. : Center in Width
+# Ctrl+Numpad0: Center in Height
+# Ctrl+Numpad5: Center in Height & Width
+# Ctrl+Numpad8: Center Top
+# Ctrl+Numpad2: Center Bottom
+# Ctrl+Numpad4: Center Left
+# Ctrl+Numpad6: Center Right
+# Ctrl+Numpad7: Top Left
+# Ctrl+Numpad9: Top Right
+# Ctrl+Numpad1: Bottom Left
+# Ctrl+Numpad3: Bottom Right
+# Ctrl+Numpad/: Left
+# Ctrl+Numpad*: Right
+# Ctrl+Numpad-: Top
+# Ctrl+Numpad+: Bottom
