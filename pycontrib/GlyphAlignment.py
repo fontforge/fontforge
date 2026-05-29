@@ -81,7 +81,7 @@ def process_glyph_alignment(font_obj, glyph_name, align_type="center_both"):
             # 居右故需字形格局
             x_offset = glyph_width - bbox_xmax
 
-        # 4. 执行物理平移
+        # 4. 字形移动
         glyph.transform((1.0, 0.0, 0.0, 1.0, x_offset, y_offset))
         
         # 5. 还原原本文字宽高，防止字形意外缩水
@@ -203,7 +203,7 @@ for func, name in menus:
     fontforge.registerMenuItem(func, None, None, "Char", None, menu_tools, name)
 
 # ========================================================
-# 制作：留幺。其时：二空二六年五月廿九日。
+# 乍于留幺　时为二空二六年五月廿九日
 # Hotkeys e.g:
 # ✓ Ctrl+ﾵ(Numpad5): Glyph alignment in FontView and CharView.
 # - ﾵ(Numpad5): Align selected elements in CharView. (no plan)
@@ -367,7 +367,7 @@ for line in raw_hotkeys_lines:
     if menu_path not in existing_paths:
         lines_to_append.append(line)
 
-# 6. 执行安全追加，触发原生界面面板提示
+# 6. 执行安全追加，触发原生面板提示
 if lines_to_append:
 
     append_content = "\n\n" + "\n" + "\n".join(lines_to_append) + "\n"
