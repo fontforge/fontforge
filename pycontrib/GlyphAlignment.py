@@ -94,7 +94,7 @@ def process_glyph_alignment(font_obj, glyph_name, align_type="center_both"):
         return False
 
 # ========================================================
-# 识别Font以及Char窗口传参
+# 识别FontView，CharView窗口所传
 # ========================================================
 def run_alignment(menu_obj, passed_obj, align_type):
     if passed_obj is None: return
