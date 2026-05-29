@@ -221,8 +221,8 @@ for func, name in menus:
 # Ctrl+Numpad6: Center Right
 # Ctrl+Numpad7: Top Left
 # Ctrl+Numpad9: Top Right
-# Ctrl+Numpad3: Bottom Left
-# Ctrl+Numpad1: Bottom Right
+# Ctrl+Numpad1: Bottom Left
+# Ctrl+Numpad3: Bottom Right
 # Ctrl+Numpad/: Left
 # Ctrl+Numpad*: Right
 # Ctrl+Numpad-: Top
