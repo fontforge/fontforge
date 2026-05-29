@@ -31,6 +31,7 @@
 #include <charconv>
 #include <regex>
 #include <sstream>
+#include <set>
 
 extern "C" {
 #include "../fffreetype.h"
@@ -48,6 +49,7 @@ extern SplineChar* SFGetOrMakeChar(SplineFont* sf, int unienc,
 extern SplineFont** FVCollectFamily(SplineFont* sf);
 extern SplineCharTTFMap* MakeGlyphTTFMap(SplineFont* sf);
 extern char* SFGetFullName(SplineFont* sf);
+SplineChar** FVGetSelection(FontViewBase* fv);
 }
 #include "gutils.h"
 #include "ustring.h"
@@ -58,12 +60,32 @@ const std::string CairoPainter::kScaleToPage = "scale_to_page";
 const std::string CairoPainter::kScaleEmSize = "scale_to_em_size";
 const std::string CairoPainter::kScaleMaxHeight = "scale_to_max_height";
 
-CairoPainter::CairoPainter(SplineFont* sf) {
+CairoPainter::CairoPainter(SplineFont* sf, FontViewBase* fv) {
     cairo_family_ = create_cairo_family(sf);
     cairo_face_ = cairo_family_[0].face;
     font_name_ = SFGetFullName(sf);
 
     PrintGlyphMap print_map = build_glyph_map(sf);
+    if (fv) {
+        SplineChar** selected = FVGetSelection(fv);
+        std::set<SplineChar*> selected_set;
+        for (SplineChar** it = selected; *it != NULL; ++it) {
+            selected_set.insert(*it);
+        }
+        free(selected);
+
+        // When selection is not empty, keep only selected glyphs. When
+        // selection is empty, keep all glyphs.
+        if (!selected_set.empty()) {
+            for (auto it = print_map.begin(); it != print_map.end();) {
+                if (selected_set.find(it->second) == selected_set.end()) {
+                    it = print_map.erase(it);
+                } else {
+                    ++it;
+                }
+            }
+        }
+    }
     sort_glyphs(print_map);
 }
 
@@ -266,7 +288,8 @@ void CairoPainter::paginate_full_display(double char_area_height,
     bool divider_needed = has_encoded_glyphs && has_unencoded_glyphs &&
                           (divider_position % max_lines != 0);
 
-    int num_pages = (divider_needed && divider_pushes_line)
+    int num_pages = cached_glyph_lines_.empty() ? 1
+                    : (divider_needed && divider_pushes_line)
                         ? (cached_glyph_lines_.size() / max_lines) + 1
                         : ((cached_glyph_lines_.size() - 1) / max_lines) + 1;
     cached_glyph_line_pagination_ = {0};

@@ -27,11 +27,12 @@
 #pragma once
 
 typedef struct splinefont SplineFont;
+typedef struct fontviewbase FontViewBase;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-void print_dialog(SplineFont* sf);
+void print_dialog(SplineFont* sf, FontViewBase* fv);
 #ifdef __cplusplus
 }
 #endif

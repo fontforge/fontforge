@@ -1423,7 +1423,7 @@ static void FVMenuGtkPrint(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNU
 
     if ( fv->b.container!=NULL && fv->b.container->funcs->is_modal )
 return;
-    print_dialog(fv->b.sf);
+    print_dialog(fv->b.sf, &fv->b);
 }
 
 #if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)

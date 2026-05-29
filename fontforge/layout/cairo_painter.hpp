@@ -36,6 +36,7 @@
 #include "shaper_shim.hpp"
 
 typedef struct splinechar SplineChar;
+typedef struct fontviewbase FontViewBase;
 
 using ff::layout::SplineFontProperties;
 using ParsedTag =
@@ -69,7 +70,7 @@ using PrintGlyphVec = std::vector<std::pair<int, SplineChar*>>;
 
 class CairoPainter {
  public:
-    CairoPainter(SplineFont* sf);
+    CairoPainter(SplineFont* sf, FontViewBase* fv);
 
     // The currently active face
     const CairoFontRec& default_rec() const { return cairo_family_[0]; }

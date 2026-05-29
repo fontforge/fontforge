@@ -405,6 +405,8 @@ extern void FVRemoveUnused(FontViewBase *fv);
 extern void FVCompact(FontViewBase *fv);
 extern void FVDetachGlyphs(FontViewBase *fv);
 extern void FVDetachAndRemoveGlyphs(FontViewBase *fv);
+// NULL-terminated list of glyphs in the current selection. Caller should free when done.
+extern SplineChar **FVGetSelection(FontViewBase *fv);
 
 
 extern Undoes *_CVPreserveTState(CharViewBase *cv,PressedOn *);

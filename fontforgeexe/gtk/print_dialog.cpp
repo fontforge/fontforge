@@ -35,7 +35,7 @@
 
 using ff::utils::PrintGlyphMap;
 
-void print_dialog(SplineFont* sf) {
+void print_dialog(SplineFont* sf, FontViewBase* fv) {
     // To avoid instability, the GTK application is lazily initialized only when
     // a GTK window is invoked.
     ff::app::GtkApp();
@@ -46,7 +46,7 @@ void print_dialog(SplineFont* sf) {
     // The preview widget is also responsible for actual printing, which happens
     // after the print dialog has been closed. We should manage its lifecycle
     // independently.
-    ff::utils::CairoPainter cairo_painter(sf);
+    ff::utils::CairoPainter cairo_painter(sf, fv);
     ff::dlg::PrintPreviewWidget ff_preview_widget(cairo_painter);
 
     // The user should be able to select page size and orientation. This is

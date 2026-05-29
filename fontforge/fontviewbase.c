@@ -2210,3 +2210,25 @@ SplineFont** FVCollectFamily(SplineFont* sf_in) {
 
     return family;
 }
+
+SplineChar** FVGetSelection(FontViewBase* fv) {
+    int i, gid, cnt = 0;
+
+    for (i = 0; i < fv->map->enccount; ++i) {
+        if (fv->selected[i] && (gid = fv->map->map[i]) != -1 &&
+            fv->sf->glyphs[gid] != NULL)
+            ++cnt;
+    }
+
+    SplineChar** result = malloc((cnt + 1) * sizeof(SplineChar*));
+
+    cnt = 0;
+    for (i = 0; i < fv->map->enccount; ++i) {
+        if (fv->selected[i] && (gid = fv->map->map[i]) != -1 &&
+            fv->sf->glyphs[gid] != NULL)
+            result[cnt++] = fv->sf->glyphs[gid];
+    }
+    result[cnt] = NULL;
+
+    return result;
+}
