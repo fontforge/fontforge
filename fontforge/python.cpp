@@ -17392,24 +17392,15 @@ return( NULL );
 	}
     }
 
-    if ( PyUnicode_Check(rule_obj) || PyBytes_Check(rule_obj)) {
+    if ( PyUnicode_Check(rule_obj)) {
 	const char *rule_str;
-	Py_ssize_t rule_len;
-	if ( PyUnicode_Check(rule_obj)) {
-	    rule_str = PyUnicode_AsUTF8AndSize(rule_obj,&rule_len);
-	    if ( rule_str==NULL )
+	rule_str = PyUnicode_AsUTF8(rule_obj);
+	if ( rule_str==NULL )
 return( NULL );
-	} else {
-	    char *bytes_str;
-	    if ( PyBytes_AsStringAndSize(rule_obj,&bytes_str,&rule_len)==-1 )
+	rules.push_back(std::string(rule_str));
+    } else if ( PyBytes_Check(rule_obj)) {
+	PyErr_Format(PyExc_TypeError, "rule must be a string or a sequence of strings" );
 return( NULL );
-	    rule_str = bytes_str;
-	}
-	if ( memchr(rule_str,'\0',rule_len)!=NULL ) {
-	    PyErr_Format(PyExc_ValueError, "rule may not contain embedded null characters" );
-return( NULL );
-	}
-	rules.push_back(std::string(rule_str,rule_len));
     } else {
 	Py_ssize_t rule_cnt, i;
 
@@ -17430,31 +17421,18 @@ return( NULL );
 	for ( i=0; i<rule_cnt; ++i ) {
 	    PyObject *rule_item = PySequence_Fast_GET_ITEM(rule_sequence,i);
 	    const char *rule_str;
-	    Py_ssize_t rule_len;
 	    if ( PyUnicode_Check(rule_item)) {
-		rule_str = PyUnicode_AsUTF8AndSize(rule_item,&rule_len);
+		rule_str = PyUnicode_AsUTF8(rule_item);
 		if ( rule_str==NULL ) {
 		    Py_DECREF(rule_sequence);
 return( NULL );
 		}
-	    } else if ( PyBytes_Check(rule_item)) {
-		char *bytes_str;
-		if ( PyBytes_AsStringAndSize(rule_item,&bytes_str,&rule_len)==-1 ) {
-		    Py_DECREF(rule_sequence);
-return( NULL );
-		}
-		rule_str = bytes_str;
 	    } else {
 		Py_DECREF(rule_sequence);
-		PyErr_Format(PyExc_TypeError, "rule sequence items must be strings" );
+		PyErr_Format(PyExc_TypeError, "rule %d must be a string", (int) i );
 return( NULL );
 	    }
-	    if ( memchr(rule_str,'\0',rule_len)!=NULL ) {
-		Py_DECREF(rule_sequence);
-		PyErr_Format(PyExc_ValueError, "rule may not contain embedded null characters" );
-return( NULL );
-	    }
-	    rules.push_back(std::string(rule_str,rule_len));
+	    rules.push_back(std::string(rule_str));
 	}
 	Py_DECREF(rule_sequence);
 	rule_sequence = NULL;
@@ -17566,12 +17544,12 @@ return( NULL );
     for ( size_t i=0; i<rules.size(); ++i ) {
 	msg = FPSTRule_From_Str( sf,fpst,&fpst->rules[i],rules[i].data(),&is_warning);
 	if ( is_warning ) {
-	    LogError("%s",msg);
+	    LogError(_("Warning in rule %d: \"%s\""),(int) i,msg);
 	    free(msg);
 	    msg = NULL;
 	}
 	if ( msg!=NULL ) {
-	    PyErr_Format(PyExc_TypeError, "%s", msg );
+	    PyErr_Format(PyExc_TypeError, "Error in rule %d: \"%s\"", (int) i, msg );
 	    free(msg);
 	    SFRemoveLookupSubTable(sf,new_subtable,0);
 return( NULL );

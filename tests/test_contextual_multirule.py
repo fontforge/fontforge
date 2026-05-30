@@ -5,14 +5,6 @@ import tempfile
 import fontforge
 
 
-def assert_raises(exception_type, callback):
-    try:
-        callback()
-    except exception_type:
-        return
-    raise AssertionError("expected %s" % exception_type.__name__)
-
-
 def make_glyph(font, name, codepoint):
     glyph = font.createChar(codepoint, name)
     pen = glyph.glyphPen()
@@ -62,43 +54,46 @@ font.addContextualSubtable(
 
 assert font.getLookupSubtables("ctx") == ("ctx-1",)
 
-assert_raises(
-    ValueError,
-    lambda: font.addContextualSubtable(
-        "ctx",
-        "ctx-nul",
-        "class",
-        ("1 2 | 1 @<raise_020> |", "1\0 3 | 1 @<raise_040> |"),
-        bclasses=(None, ("baseA", "baseB"), ("markA",), ("markB",)),
-        mclasses=(None, ("target",)),
-    ),
-)
-
-assert_raises(
-    TypeError,
-    lambda: font.addContextualSubtable(
-        "ctx",
+for subtable, rule, error_type, error_message in [
+    (
         "ctx-non-string",
-        "class",
         ("1 2 | 1 @<raise_020> |", object()),
-        bclasses=(None, ("baseA", "baseB"), ("markA",), ("markB",)),
-        mclasses=(None, ("target",)),
+        TypeError,
+        "rule 1 must be a string",
     ),
-)
-
-assert font.getLookupSubtables("ctx") == ("ctx-1",)
-
-assert_raises(
-    TypeError,
-    lambda: font.addContextualSubtable(
-        "ctx",
+    (
+        "ctx-bytes",
+        b"1 2 | 1 @<raise_020> |",
+        TypeError,
+        "rule must be a string or a sequence of strings",
+    ),
+    (
+        "ctx-item-bytes",
+        ("1 2 | 1 @<raise_020> |", b"1 3 | 1 @<raise_040> |"),
+        TypeError,
+        "rule 1 must be a string",
+    ),
+    (
         "ctx-bad-parse",
-        "class",
         ("1 2 | 1 @<raise_020> |", "99 3 | 1 @<raise_040> |"),
-        bclasses=(None, ("baseA", "baseB"), ("markA",), ("markB",)),
-        mclasses=(None, ("target",)),
+        TypeError,
+        "Error in rule 1:",
     ),
-)
+]:
+    try:
+        font.addContextualSubtable(
+            "ctx",
+            subtable,
+            "class",
+            rule,
+            bclasses=(None, ("baseA", "baseB"), ("markA",), ("markB",)),
+            mclasses=(None, ("target",)),
+        )
+        raise AssertionError("no error raised, but expected")
+    except error_type as error:
+        assert error_message in str(error), "wrong error message for correct error type"
+    except Exception:
+        raise AssertionError("wrong error type")
 
 assert font.getLookupSubtables("ctx") == ("ctx-1",)
 
@@ -117,16 +112,22 @@ assert font.getLookupSubtables("glyph_ctx") == ("glyph_ctx-1",)
 
 with tempfile.TemporaryDirectory() as tmpdirname:
     sfd_path = os.path.join(tmpdirname, "ContextClassMultiRule.sfd")
+    fea_path = os.path.join(tmpdirname, "ContextClassMultiRule.fea")
     font.save(sfd_path)
+    font.close()
 
-    with open(sfd_path) as sfd_file:
-        sfd = sfd_file.read()
+    reopened = fontforge.open(sfd_path)
+    reopened.generateFeatureFile(fea_path)
+    reopened.close()
 
-    assert re.search(
-        r'^ChainPos2: class "ctx-1"\s+\d+\s+\d+\s+\d+\s+2$', sfd, re.MULTILINE
-    )
-    assert re.search(
-        r'^ContextPos2: glyph "glyph_ctx-1"\s+0\s+0\s+0\s+2$', sfd, re.MULTILINE
-    )
-    assert re.search(r"^ String: 6 target$", sfd, re.MULTILINE)
-    assert re.search(r"^ String: 5 baseA$", sfd, re.MULTILINE)
+    with open(fea_path) as fea_file:
+        fea = fea_file.read()
+
+    assert re.search(r"@cc2_match_1 = \[\\target \];", fea)
+    assert re.search(r"@cc2_back_1 = \[\\baseA \\baseB \];", fea)
+    assert re.search(r"@cc2_back_2 = \[\\markA \];", fea)
+    assert re.search(r"@cc2_back_3 = \[\\markB \];", fea)
+    assert re.search(r"pos @cc2_back_2 @cc2_back_1 @cc2_match_1'lookup raise_020", fea)
+    assert re.search(r"pos @cc2_back_3 @cc2_back_1 @cc2_match_1'lookup raise_040", fea)
+    assert re.search(r"pos\s+\\target'lookup raise_020", fea)
+    assert re.search(r"pos\s+\\baseA'lookup raise_040", fea)
