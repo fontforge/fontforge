@@ -48,7 +48,7 @@ def run_alignment(passed_obj, align_type):
     font_obj = passed_obj.font if hasattr(passed_obj, 'font') else fontforge.activeFont()
     if not font_obj: return
 
-    # 2. 所有字形为表（单选则包装成单元素列表，多选则直接提取）
+    # 2. 所选字形列表
     glyph_names = [passed_obj.glyphname] if hasattr(passed_obj, 'glyphname') else [g.glyphname for g in font_obj.selection.byGlyphs]
 
     # 3. 遍历令归置位
