@@ -1,12 +1,14 @@
 # ========================================================
 # Description of GlyphAlignment.py
 # ========================================================
-# Made by: asdasdsasa(留幺)
-# Version: 202605292212
+# Made by: asdasdsasa
+# Version: 202605302335
 # Hotkeys e.g:
 # ✓ Ctrl+ﾵ(Numpad5): Glyph alignment in FontView and CharView.
 # - ﾵ(Numpad5): Align selected elements in CharView. (no plan)
 # - Ctrl+Alt+ﾵ(Numpad5): Align selected element 1 to selected element 2 in CharView. (no plan)
+##Windows: C:\Users\YourUsername\AppData\Roaming\FontForge\python\
+##Linux\Mac: ~/.config/fontforge/python/
 # ========================================================
 # Tools -> Glyph Alignment -> Select 1 of 15 below:
 # Ctrl+Numpad. : Center in Width
@@ -24,3 +26,31 @@
 # Ctrl+Numpad*: Right
 # Ctrl+Numpad-: Top
 # Ctrl+Numpad+: Bottom
+# ========================================================
+# 说明GlyphAlignment.py
+# ========================================================
+# 制作: 留幺
+# 版本: 202605302335
+# 键位:
+# ✓ Ctrl+ﾵ(小键盘5): 字形置位用于字体本体窗口、字形编辑窗口。
+# - ﾵ(小键盘5): 所选置位用于字形编辑窗口 （或无）
+# - Ctrl+Alt+ﾵ(小键盘5): 所选其一置位其二，用于字形编辑窗口（或无）
+##Windows: C:\Users\用户名\AppData\Roaming\FontForge\python\
+##Linux\Mac: ~/.config/fontforge/python/
+# ========================================================
+# 工具 -> 字形置位 -> 十五居一：
+# Ctrl+小键盘. : 居中横
+# Ctrl+小键盘0: 居中从
+# Ctrl+小键盘5: 居中正
+# Ctrl+小键盘8: 居中上
+# Ctrl+小键盘2: 居中下
+# Ctrl+小键盘4: 居中左
+# Ctrl+小键盘6: 居中右
+# Ctrl+小键盘7: 居左上
+# Ctrl+小键盘9: 居右上
+# Ctrl+小键盘1: 居左下
+# Ctrl+小键盘3: 居右下
+# Ctrl+小键盘/: 居左
+# Ctrl+小键盘*: 居右
+# Ctrl+小键盘-: 居上
+# Ctrl+小键盘+: 居下
