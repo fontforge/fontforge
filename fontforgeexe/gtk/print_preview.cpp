@@ -364,6 +364,8 @@ void PrintPreviewWidget::build_compound_preview_area() {
         [this]() { page_counter_.get_layout()->set_width(-1); });
     // Initialize with some sane values to avoid unsightly GTK warnings.
     page_counter_.get_adjustment()->configure(1, 1, 2, 1, 1, 1);
+    page_counter_.signal_value_changed().connect(
+        [this] { preview_area.queue_draw(); });
 
     aspect_wrapper.set_hexpand(true);
     aspect_wrapper.set_vexpand(true);
@@ -371,6 +373,9 @@ void PrintPreviewWidget::build_compound_preview_area() {
 
     preview_area.signal_draw().connect(
         sigc::mem_fun(*this, &PrintPreviewWidget::draw_preview_area));
+    preview_area.add_events(Gdk::SCROLL_MASK);
+    preview_area.signal_scroll_event().connect(
+        sigc::mem_fun(*this, &PrintPreviewWidget::on_preview_area_scroll));
 
     overlay->add(preview_area);
     overlay->add_overlay(page_counter_);
@@ -564,6 +569,34 @@ bool PrintPreviewWidget::draw_preview_area(
 
     draw_page(cr, printable_area, page_nr);
 
+    return true;
+}
+
+bool PrintPreviewWidget::on_preview_area_scroll(GdkEventScroll* event) {
+    double delta = 0;
+    if (event->direction == GDK_SCROLL_UP) {
+        delta = -1;
+    } else if (event->direction == GDK_SCROLL_DOWN) {
+        delta = 1;
+    } else if (event->direction == GDK_SCROLL_SMOOTH) {
+        delta = event->delta_y;
+    } else {
+        return false;
+    }
+
+    if (delta == 0) {
+        return false;
+    }
+
+    double min_page = page_counter_.get_adjustment()->get_lower();
+    double max_page = page_counter_.get_adjustment()->get_upper() - 1;
+    double step = delta > 0 ? 1 : -1;
+    double new_value =
+        std::clamp(page_counter_.get_value() + step, min_page, max_page);
+
+    if (new_value != page_counter_.get_value()) {
+        page_counter_.set_value(new_value);
+    }
     return true;
 }
 

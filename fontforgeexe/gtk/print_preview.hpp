@@ -89,6 +89,8 @@ class PrintPreviewWidget : public Gtk::Grid {
 
     bool draw_preview_area(const Cairo::RefPtr<Cairo::Context>& cr);
 
+    bool on_preview_area_scroll(GdkEventScroll* event);
+
     void on_display_toggled();
 
     // Containers for compound preview area
