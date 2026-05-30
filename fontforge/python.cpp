@@ -99,6 +99,7 @@
 #include <wchar.h>
 
 #include <algorithm>
+#include <string>
 #include <vector>
 
 #ifdef __cplusplus
@@ -17336,7 +17337,8 @@ static const char *contextchain_keywords[] = {
 
 static PyObject *PyFFFont_addContextualSubtable(PyFF_Font *self, PyObject *args, PyObject *keywds) {
     SplineFont *sf;
-    char *lookup, *subtable, *after_str=NULL, *type, *rule;
+    char *lookup, *subtable, *after_str=NULL, *type;
+    PyObject *rule_obj=NULL, *rule_sequence=NULL;
     PyObject *bclasses=NULL, *mclasses=NULL, *fclasses=NULL;
     PyObject *bclassnames=NULL, *mclassnames=NULL, *fclassnames=NULL;
     struct lookup_subtable *new_subtable;
@@ -17348,12 +17350,13 @@ static PyObject *PyFFFont_addContextualSubtable(PyFF_Font *self, PyObject *args,
     char **backclassnames=NULL, **matchclassnames=NULL, **forclassnames=NULL;
     int is_warning;
     char *msg;
+    std::vector<std::string> rules;
 
     if ( CheckIfFontClosed(self) )
 return (NULL);
     sf = self->fv->sf;
-    if ( !PyArg_ParseTupleAndKeywords(args,keywds,"ssss|sOOOOOO", (char **)contextchain_keywords,
-	    &lookup, &subtable, &type, &rule,
+    if ( !PyArg_ParseTupleAndKeywords(args,keywds,"sssO|sOOOOOO", (char **)contextchain_keywords,
+	    &lookup, &subtable, &type, &rule_obj,
 	    &after_str, &bclasses, &mclasses, &fclasses,
 	    &bclassnames, &mclassnames, &fclassnames))
 return( NULL );
@@ -17387,6 +17390,53 @@ return( NULL );
 	    PyErr_Format(PyExc_TypeError, "Bad format, %s, for this lookup (must be one of \"glyph\", \"class\" or \"coverage\")", type );
 return( NULL );
 	}
+    }
+
+    if ( PyUnicode_Check(rule_obj)) {
+	const char *rule_str;
+	rule_str = PyUnicode_AsUTF8(rule_obj);
+	if ( rule_str==NULL )
+return( NULL );
+	rules.push_back(std::string(rule_str));
+    } else {
+	Py_ssize_t rule_cnt, i;
+
+	rule_sequence = PySequence_Fast(rule_obj, "rule must be a string or a sequence of strings");
+	if ( rule_sequence==NULL )
+return( NULL );
+	rule_cnt = PySequence_Fast_GET_SIZE(rule_sequence);
+	if ( rule_cnt==0 ) {
+	    Py_DECREF(rule_sequence);
+	    PyErr_Format(PyExc_ValueError, "rule sequence may not be empty" );
+return( NULL );
+	}
+	if ( rule_cnt>0xffff ) {
+	    Py_DECREF(rule_sequence);
+	    PyErr_Format(PyExc_OverflowError, "too many contextual rules in one subtable" );
+return( NULL );
+	}
+	for ( i=0; i<rule_cnt; ++i ) {
+	    PyObject *rule_item = PySequence_Fast_GET_ITEM(rule_sequence,i);
+	    const char *rule_str;
+	    if ( PyUnicode_Check(rule_item)) {
+		rule_str = PyUnicode_AsUTF8(rule_item);
+		if ( rule_str==NULL ) {
+		    Py_DECREF(rule_sequence);
+return( NULL );
+		}
+	    } else {
+		Py_DECREF(rule_sequence);
+		PyErr_Format(PyExc_TypeError, "rule %d must be a string", (int) i );
+return( NULL );
+	    }
+	    rules.push_back(std::string(rule_str));
+	}
+	Py_DECREF(rule_sequence);
+	rule_sequence = NULL;
+    }
+    if ( rules.size()>1 && (format==pst_coverage || format==pst_reversecoverage)) {
+	PyErr_Format(PyExc_TypeError, "multiple contextual rules are only supported for glyph or class subtables" );
+return( NULL );
     }
 
     if ( format==pst_class && mclasses==NULL ) {
@@ -17485,19 +17535,22 @@ return( NULL );
 	fpst->fclassnames = (char **)calloc(fcnt,sizeof(char *));
     else
 	fpst->fclassnames = forclassnames;
-    fpst->rule_cnt = 1;
-    fpst->rules = (struct fpst_rule *)calloc(1,sizeof(struct fpst_rule));
+    fpst->rule_cnt = (uint16_t) rules.size();
+    fpst->rules = (struct fpst_rule *)calloc(rules.size(),sizeof(struct fpst_rule));
 
-    msg = FPSTRule_From_Str( sf,fpst,fpst->rules,rule,&is_warning);
-    if ( is_warning ) {
-	LogError("%s",msg);
-	free(msg);
-	msg = NULL;
-    }
-    if ( msg!=NULL ) {
-	PyErr_Format(PyExc_TypeError, "%s", msg );
-	free(msg);
+    for ( size_t i=0; i<rules.size(); ++i ) {
+	msg = FPSTRule_From_Str( sf,fpst,&fpst->rules[i],rules[i].data(),&is_warning);
+	if ( is_warning ) {
+	    LogError(_("Warning in rule %d: \"%s\""),(int) i,msg);
+	    free(msg);
+	    msg = NULL;
+	}
+	if ( msg!=NULL ) {
+	    PyErr_Format(PyExc_TypeError, "Error in rule %d: \"%s\"", (int) i, msg );
+	    free(msg);
+	    SFRemoveLookupSubTable(sf,new_subtable,0);
 return( NULL );
+	}
     }
 
 Py_RETURN( self );
