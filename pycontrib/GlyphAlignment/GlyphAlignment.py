@@ -83,6 +83,8 @@ for dtype, zh, en in directions:
      fontforge.registerMenuItem(lambda m, p, dt=dtype: run_alignment(p, dt), None, None, "Font", None, menu_tools, zh if is_zh else en)
      fontforge.registerMenuItem(lambda m, p, dt=dtype: run_alignment(p, dt), None, None, "Char", None, menu_tools, zh if is_zh else en)
 # ========================================================
+# 【追加键位】
+# ========================================================
 import os, sys
 
 # 1. 自动根据操作系统，匹配路径和文件名
