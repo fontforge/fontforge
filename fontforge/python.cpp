@@ -17398,9 +17398,6 @@ return( NULL );
 	if ( rule_str==NULL )
 return( NULL );
 	rules.push_back(std::string(rule_str));
-    } else if ( PyBytes_Check(rule_obj)) {
-	PyErr_Format(PyExc_TypeError, "rule must be a string or a sequence of strings" );
-return( NULL );
     } else {
 	Py_ssize_t rule_cnt, i;
 

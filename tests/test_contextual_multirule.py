@@ -65,7 +65,7 @@ for subtable, rule, error_type, error_message in [
         "ctx-bytes",
         b"1 2 | 1 @<raise_020> |",
         TypeError,
-        "rule must be a string or a sequence of strings",
+        "rule 0 must be a string",
     ),
     (
         "ctx-item-bytes",
