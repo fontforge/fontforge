@@ -75,6 +75,18 @@ class CairoPainter {
     // The currently active face
     const CairoFontRec& default_rec() const { return cairo_family_[0]; }
 
+    // Returns true if the given SplineFontProperties member has more than one
+    // distinct value across the fonts in cairo_family_.
+    template <typename T>
+    bool family_has_multiple(T SplineFontProperties::* member) const {
+        if (cairo_family_.empty()) return false;
+        const T& first = cairo_family_[0].props.*member;
+        for (size_t i = 1; i < cairo_family_.size(); ++i) {
+            if (cairo_family_[i].props.*member != first) return true;
+        }
+        return false;
+    }
+
     // Draw full font display as a character grid.
     void draw_page_full_display(const Cairo::RefPtr<Cairo::Context>& cr,
                                 const Cairo::Rectangle& printable_area,

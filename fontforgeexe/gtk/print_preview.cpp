@@ -447,6 +447,15 @@ void PrintPreviewWidget::build_sample_text_popover(Gtk::Widget* parent_widget) {
             preview_area.queue_draw();
         });
 
+    bool enable_italic =
+        cairo_painter_.family_has_multiple(&SplineFontProperties::italic);
+    bool enable_stretch =
+        cairo_painter_.family_has_multiple(&SplineFontProperties::os2_width);
+    bool enable_weight =
+        cairo_painter_.family_has_multiple(&SplineFontProperties::os2_weight);
+    sample_text_->configure(enable_weight, enable_italic, enable_stretch,
+                            enable_weight);
+
     sample_text_oneliner_->set_text(sample_text_->get_buffer()->get_text());
 
     parent_widget->signal_button_press_event().connect(
