@@ -278,26 +278,25 @@ RichTechEditor::RichTechEditor(const std::vector<double>& pointsizes) {
     auto bold_tag = text_view_.get_buffer()->create_tag("bold");
     bold_tag->property_weight() = 700;
 
-    ToggleTagButton* bold_button =
+    bold_button_ =
         Gtk::make_managed<ToggleTagButton>(text_view_.get_buffer(), bold_tag);
-    bold_button->set_icon_name("format-text-bold");
-    bold_button->set_tooltip_text(_("Bold"));
+    bold_button_->set_icon_name("format-text-bold");
+    bold_button_->set_tooltip_text(_("Bold"));
 
     auto italic_tag = text_view_.get_buffer()->create_tag("italic");
     italic_tag->property_style() = Pango::STYLE_ITALIC;
 
-    ToggleTagButton* italic_button =
+    italic_button_ =
         Gtk::make_managed<ToggleTagButton>(text_view_.get_buffer(), italic_tag);
-    italic_button->set_icon_name("format-text-italic");
-    italic_button->set_tooltip_text(_("Italic"));
+    italic_button_->set_icon_name("format-text-italic");
+    italic_button_->set_tooltip_text(_("Italic"));
 
-    TagComboBox* stretch_combo = build_stretch_combo(text_view_.get_buffer());
-    TagComboBox* size_combo =
-        build_size_combo(text_view_.get_buffer(), pointsizes);
-    TagComboBox* weight_combo = build_weight_combo(text_view_.get_buffer());
-    stretch_combo->set_tooltip_text(_("Width Class"));
-    size_combo->set_tooltip_text(_("Font Size"));
-    weight_combo->set_tooltip_text(_("Weight Class"));
+    stretch_combo_ = build_stretch_combo();
+    size_combo_ = build_size_combo(pointsizes);
+    weight_combo_ = build_weight_combo();
+    stretch_combo_->set_tooltip_text(_("Width Class"));
+    size_combo_->set_tooltip_text(_("Font Size"));
+    weight_combo_->set_tooltip_text(_("Weight Class"));
 
     ClearFormattingButton* clear_button =
         Gtk::make_managed<ClearFormattingButton>(text_view_.get_buffer());
@@ -305,11 +304,11 @@ RichTechEditor::RichTechEditor(const std::vector<double>& pointsizes) {
     clear_button->set_tooltip_text(_("Clear Formatting"));
     Gtk::ToolButton* hamburger_button = build_tools_menu();
 
-    toolbar_.append(*bold_button);
-    toolbar_.append(*italic_button);
-    toolbar_.append(*stretch_combo);
-    toolbar_.append(*size_combo);
-    toolbar_.append(*weight_combo);
+    toolbar_.append(*bold_button_);
+    toolbar_.append(*italic_button_);
+    toolbar_.append(*stretch_combo_);
+    toolbar_.append(*size_combo_);
+    toolbar_.append(*weight_combo_);
     toolbar_.append(*clear_button);
     toolbar_.append(*hamburger_button);
 
@@ -330,6 +329,14 @@ RichTechEditor::RichTechEditor(const std::vector<double>& pointsizes) {
     scrolled_.add(text_view_);
     attach(toolbar_, 0, 0);
     attach(scrolled_, 0, 1);
+}
+
+void RichTechEditor::configure(bool bold_enabled, bool italic_enabled,
+                               bool stretch_enabled, bool weight_enabled) {
+    bold_button_->set_sensitive(bold_enabled);
+    italic_button_->set_sensitive(italic_enabled);
+    stretch_combo_->set_sensitive(stretch_enabled);
+    weight_combo_->set_sensitive(weight_enabled);
 }
 
 void RichTechEditor::on_text_view_paste_clipboard(GtkTextView* text_view,
@@ -379,8 +386,7 @@ void RichTechEditor::on_clipboard_rich_text_received(
     }
 }
 
-RichTechEditor::TagComboBox* RichTechEditor::build_stretch_combo(
-    Glib::RefPtr<Gtk::TextBuffer> text_buffer) {
+RichTechEditor::TagComboBox* RichTechEditor::build_stretch_combo() {
     std::string default_id = "width|medium";
 
     // By convention, TextBuffer::Tag with name e.g. "width|condensed" will
@@ -412,7 +418,7 @@ RichTechEditor::TagComboBox* RichTechEditor::build_stretch_combo(
     for (const auto& [tag_id, label, property] : property_vec) {
         // Create and register tag
         if (tag_id != default_id) {
-            auto tag = text_buffer->create_tag(tag_id);
+            auto tag = text_view_.get_buffer()->create_tag(tag_id);
             tag->property_stretch() = property;
             tag_map[tag_id] = tag;
         }
@@ -425,7 +431,6 @@ RichTechEditor::TagComboBox* RichTechEditor::build_stretch_combo(
 }
 
 RichTechEditor::TagComboBox* RichTechEditor::build_size_combo(
-    Glib::RefPtr<Gtk::TextBuffer> text_buffer,
     const std::vector<double>& pointsizes) {
     std::string default_id = "size|36";
 
@@ -451,7 +456,7 @@ RichTechEditor::TagComboBox* RichTechEditor::build_size_combo(
 
         // Create and register tag
         if (tag_id != default_id) {
-            auto tag = text_buffer->create_tag(tag_id);
+            auto tag = text_view_.get_buffer()->create_tag(tag_id);
             tag->property_size_points() = size_pt;
             tag_map[tag_id] = tag;
         }
@@ -463,8 +468,7 @@ RichTechEditor::TagComboBox* RichTechEditor::build_size_combo(
                                           tag_map, labels);
 }
 
-RichTechEditor::TagComboBox* RichTechEditor::build_weight_combo(
-    Glib::RefPtr<Gtk::TextBuffer> text_buffer) {
+RichTechEditor::TagComboBox* RichTechEditor::build_weight_combo() {
     std::string default_id = "weight|regular";
 
     // By convention, TextBuffer::Tag with name e.g. "weight|light" will
@@ -498,7 +502,7 @@ RichTechEditor::TagComboBox* RichTechEditor::build_weight_combo(
     for (const auto& [tag_id, label, weight, color] : property_vec) {
         // Create and register tag
         if (tag_id != default_id) {
-            auto tag = text_buffer->create_tag(tag_id);
+            auto tag = text_view_.get_buffer()->create_tag(tag_id);
             tag->property_weight() = weight;
             tag->property_foreground() = color;
             tag_map[tag_id] = tag;

@@ -34,6 +34,9 @@ class RichTechEditor : public Gtk::Grid {
  public:
     explicit RichTechEditor(const std::vector<double>& pointsizes);
 
+    void configure(bool bold_enabled, bool italic_enabled, bool stretch_enabled,
+                   bool weight_enabled);
+
     static const std::string rich_text_mime_type;
 
     // TextView accessors
@@ -128,9 +131,15 @@ class RichTechEditor : public Gtk::Grid {
     };
 
  protected:
-    Gtk::Toolbar toolbar_;
     Gtk::ScrolledWindow scrolled_;
     Gtk::TextView text_view_;
+
+    ToggleTagButton* bold_button_;
+    ToggleTagButton* italic_button_;
+    TagComboBox* stretch_combo_;
+    TagComboBox* size_combo_;
+    TagComboBox* weight_combo_;
+    Gtk::Toolbar toolbar_;
 
     static void on_text_view_paste_clipboard(GtkTextView* text_view,
                                              gpointer user_data);
@@ -138,10 +147,9 @@ class RichTechEditor : public Gtk::Grid {
     void on_clipboard_rich_text_received(const Glib::ustring& format,
                                          const std::string& text);
 
-    TagComboBox* build_stretch_combo(Glib::RefPtr<Gtk::TextBuffer> text_buffer);
-    TagComboBox* build_size_combo(Glib::RefPtr<Gtk::TextBuffer> text_buffer,
-                                  const std::vector<double>& pointsizes);
-    TagComboBox* build_weight_combo(Glib::RefPtr<Gtk::TextBuffer> text_buffer);
+    TagComboBox* build_stretch_combo();
+    TagComboBox* build_size_combo(const std::vector<double>& pointsizes);
+    TagComboBox* build_weight_combo();
     Gtk::ToolButton* build_tools_menu();
     void on_load_buffer_from_xml();
     void on_save_buffer_to_xml();
