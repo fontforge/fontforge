@@ -7,8 +7,14 @@
 # ✓ Ctrl+ﾵ(Numpad5): Glyph alignment in FontView and CharView.
 # - ﾵ(Numpad5): Align selected elements in CharView. (no plan)
 # - Ctrl+Alt+ﾵ(Numpad5): Align selected element 1 to selected element 2 in CharView. (no plan)
-##Windows: C:\Users\YourUsername\AppData\Roaming\FontForge\python\
-##Linux\Mac: ~/.config/fontforge/python/
+# ========================================================
+#***Recommended Workflow***
+# 1. Copy selected path(s) from Inkscape by Ctrl+C.
+# 2. Paste into the selected glyph in FontView or CharView of FontForge by Ctrl+V.
+# 3. Align the glyph(s) by hotkey.
+# ========================================================
+### Windows script folder: C:\Users\YourUsername\AppData\Roaming\FontForge\python\
+### Linux\Mac script folder: ~/.config/fontforge/python/
 # ========================================================
 # Tools -> Glyph Alignment -> Select 1 of 15 below:
 # Ctrl+Numpad. : Center in Width
@@ -35,8 +41,14 @@
 # ✓ Ctrl+ﾵ(小键盘5): 字形置位用于字体本体窗口、字形编辑窗口。
 # - ﾵ(小键盘5): 所选置位用于字形编辑窗口 （或无）
 # - Ctrl+Alt+ﾵ(小键盘5): 所选其一置位其二，用于字形编辑窗口（或无）
-##Windows: C:\Users\用户名\AppData\Roaming\FontForge\python\
-##Linux\Mac: ~/.config/fontforge/python/
+# ========================================================
+#***推荐作业流程***
+# 1. Inkscape复制所选物体路径。
+# 2. FontForge字体窗口，字形窗口皆可黏贴所选字形。
+# 3. 使用快捷按键，各个自动置位。
+# ========================================================
+### Windows安装路径: C:\Users\用户名\AppData\Roaming\FontForge\python\
+### Linux\Mac安装路径: ~/.config/fontforge/python/
 # ========================================================
 # 工具 -> 字形置位 -> 十五居一：
 # Ctrl+小键盘. : 居中横
@@ -54,3 +66,4 @@
 # Ctrl+小键盘*: 居右
 # Ctrl+小键盘-: 居上
 # Ctrl+小键盘+: 居下
+
