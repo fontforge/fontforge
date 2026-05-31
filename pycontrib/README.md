@@ -16,7 +16,5 @@ to just enter the following in a shell to run the script:
 
 ./load-font-and-show-name.py
 
-[Glyph Alignment README](GlyphAlignment/README.md)
-
-
+[Glyph Alignment README——字形置位说明](GlyphAlignment/README.md)
 

@@ -38,7 +38,7 @@ Linux\\Mac: \~/.config/fontforge/python/
 
 ========================================================
 
-Tools -> Glyph Alignment -> Select 1 of 15 below:
+###### Tools -> Glyph Alignment -> Select 1 of 15 below:
 
 Ctrl+Numpad. : Center in Width
 
@@ -110,7 +110,7 @@ Linux\\Mac: \~/.config/fontforge/python/
 
 ========================================================
 
-工具 -> 字形置位 -> 十五居一：
+###### 工具 -> 字形置位 -> 十五居一：
 
 Ctrl+小键盘. : 居中横
 
