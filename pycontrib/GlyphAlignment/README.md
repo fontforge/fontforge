@@ -40,9 +40,9 @@ Linux\\Mac: \~/.config/fontforge/python/
 
 ###### Tools -> Glyph Alignment -> Select 1 of 15 below:
 
-Ctrl+Numpad. : Center in Width
+Ctrl+Numpad. : Center in Height
 
-Ctrl+Numpad0: Center in Height
+Ctrl+Numpad0: Center in Width
 
 Ctrl+Numpad5: Center in Height \& Width
 
@@ -120,7 +120,7 @@ Ctrl+Numpad+: Bottom
 
 1\. Inkscape复制所选物体路径。
 
-2\. FontForge字体窗口，字形窗口皆可黏贴所选字形。
+2\. FontForge字体窗口，字形窗口黏贴所选字形。
 
 3\. 使用快捷按键，各个自动置位。
 
@@ -136,9 +136,9 @@ Linux\\Mac: \~/.config/fontforge/python/
 
 ###### 工具 -> 字形置位 -> 十五居一：
 
-Ctrl+小键盘. : 居中横
+Ctrl+小键盘. : 居中从
 
-Ctrl+小键盘0: 居中从
+Ctrl+小键盘0: 居中横
 
 Ctrl+小键盘5: 居中正
 
