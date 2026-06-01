@@ -996,10 +996,12 @@ std::pair<double, double> CairoPainter::get_splinefont_metrics(
     // Fontforge SplineFont::ascent doesn't always become the real ascent value
     // in the font. OS/2 metrics can modify that. Convert the FontForge ascent
     // value from font units to Cairo units:
-    double sf_ascent =
-        sf_properties.ascent * ((double)font_extents.ascent / ft_ascender);
-    double sf_descent =
-        sf_properties.descent * ((double)font_extents.descent / ft_descender);
+    double scale = (ft_ascender - ft_descender) != 0
+                       ? (double)(font_extents.ascent + font_extents.descent) /
+                             (ft_ascender - ft_descender)
+                       : 1000;
+    double sf_ascent = sf_properties.ascent * scale;
+    double sf_descent = -sf_properties.descent * scale;
 
     return {sf_ascent, sf_descent};
 }
