@@ -32,6 +32,7 @@
 #include "application.hpp"
 #include "layout/cairo_painter.hpp"
 #include "print_preview.hpp"
+#include "win32_utils.hpp"
 
 using ff::utils::PrintGlyphMap;
 
@@ -39,6 +40,11 @@ void print_dialog(SplineFont* sf, FontViewBase* fv) {
     // To avoid instability, the GTK application is lazily initialized only when
     // a GTK window is invoked.
     ff::app::GtkApp();
+
+    // On Windows 11 22H2+, offer to restore the legacy print dialog if needed.
+    if (!ensure_win32_legacy_print_dialog()) {
+        return;
+    }
 
     Glib::RefPtr<Gtk::PrintOperation> print_operation =
         Gtk::PrintOperation::create();

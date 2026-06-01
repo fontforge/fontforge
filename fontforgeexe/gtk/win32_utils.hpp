@@ -33,3 +33,9 @@ bool is_win32_display();
 
 // Get preferrable size for Win32 legacy print preview
 Gdk::Rectangle get_win32_print_preview_size();
+
+// On Windows 11, the modern print dialog replaces the legacy Win32 one.
+// GTK3 doesn't support the modern dialog, so we need to offer users to restore
+// the legacy dialog if they haven't done it yet. This function checks the
+// registry and, if legacy mode is not enabled, offers to enable it.
+bool ensure_win32_legacy_print_dialog();

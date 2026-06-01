@@ -27,6 +27,10 @@
 
 #include "win32_utils.hpp"
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 bool is_win32_display() {
     Glib::RefPtr<Gdk::Display> display = Gdk::Display::get_default();
     if (display) {
@@ -58,4 +62,51 @@ Gdk::Rectangle get_win32_print_preview_size() {
     // Falback to something reasonable
     preview_rectangle = Gdk::Rectangle(100, 100, 640, 480);
     return preview_rectangle;
+}
+
+bool ensure_win32_legacy_print_dialog() {
+#ifdef _WIN32
+    static constexpr const wchar_t* kRegPath =
+        L"Software\\Microsoft\\Print\\UnifiedPrintDialog";
+    static constexpr const wchar_t* kRegValue = L"PreferLegacyPrintDialog";
+
+    // Check current registry value.
+    DWORD data = 0;
+    DWORD data_size = sizeof(data);
+    LSTATUS status = RegGetValueW(HKEY_CURRENT_USER, kRegPath, kRegValue,
+                                  RRF_RT_REG_DWORD, nullptr, &data, &data_size);
+
+    // Already enabled — nothing to do.
+    if (status == ERROR_SUCCESS && data == 1) {
+        return true;
+    }
+
+    // Ask the user.
+    Gtk::MessageDialog dialog(
+        "Windows 11 has replaced the legacy print dialog with a modern one "
+        "that lacks print preview and some advanced options.\n\n"
+        "Would you like to restore the legacy print dialog for all Win32 "
+        "applications?",
+        false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO, true);
+    dialog.set_title("Restore Legacy Print Dialog");
+
+    if (dialog.run() != Gtk::RESPONSE_YES) {
+        return false;
+    }
+
+    // Write the registry key.
+    HKEY hkey;
+    status = RegCreateKeyExW(HKEY_CURRENT_USER, kRegPath, 0, nullptr,
+                             REG_OPTION_NON_VOLATILE, KEY_SET_VALUE, nullptr,
+                             &hkey, nullptr);
+    if (status != ERROR_SUCCESS) {
+        return false;
+    }
+
+    DWORD value = 1;
+    RegSetValueExW(hkey, kRegValue, 0, REG_DWORD,
+                   reinterpret_cast<const BYTE*>(&value), sizeof(value));
+    RegCloseKey(hkey);
+#endif
+    return true;
 }
