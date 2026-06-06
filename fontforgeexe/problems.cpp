@@ -79,64 +79,16 @@ struct problems {
     SplineChar *sc;
     SplineChar *msc;
     int layer;
-    unsigned int openpaths: 1;
-    unsigned int intersectingpaths: 1;
-    unsigned int nonintegral: 1;
-    unsigned int pointstooclose: 1;
-    unsigned int pointstoofar: 1;
-    unsigned int xnearval: 1;
-    unsigned int ynearval: 1;
-    unsigned int ynearstd: 1;		/* baseline, xheight, cap, ascent, descent, etc. */
-    unsigned int linenearstd: 1;	/* horizontal, vertical, italicangle */
-    unsigned int cpnearstd: 1;		/* control points near: horizontal, vertical, italicangle */
-    unsigned int cpodd: 1;		/* control points beyond points on spline */
-    unsigned int hintwithnopt: 1;
-    unsigned int ptnearhint: 1;
-    unsigned int hintwidthnearval: 1;
-    unsigned int missingextrema: 1;
-    unsigned int direction: 1;
-    unsigned int flippedrefs: 1;
-    unsigned int cidmultiple: 1;
-    unsigned int cidblank: 1;
-    unsigned int bitmaps: 1;
-    unsigned int bitmapwidths: 1;
-    unsigned int advancewidth: 1;
-    unsigned int vadvancewidth: 1;
-    unsigned int stem3: 1;
-    unsigned int showexactstem3: 1;
-    unsigned int irrelevantcontrolpoints: 1;
-    unsigned int multuni: 1;
-    unsigned int multname: 1;
-    unsigned int uninamemismatch: 1;
-    unsigned int missinganchor: 1;
-    unsigned int badsubs: 1;
-    unsigned int missingglyph: 1;
-    unsigned int missingscriptinfeature: 1;
-    unsigned int toomanypoints: 1;
-    unsigned int toomanyhints: 1;
-    unsigned int toodeeprefs: 1;
-    unsigned int ptmatchrefsoutofdate: 1;
-    unsigned int multusemymetrics: 1;
-    unsigned int refsbadtransformttf: 1;
-    unsigned int refsbadtransformps: 1;
-    unsigned int mixedcontoursrefs: 1;
-    unsigned int bbymax: 1;
-    unsigned int bbymin: 1;
-    unsigned int bbxmax: 1;
-    unsigned int bbxmin: 1;
-    unsigned int overlappedhints: 1;
+    std::map<int, bool> selected_records;
+    std::map<int, ff::dlg::NumericalValue> record_values;
     unsigned int explain: 1;
     unsigned int doneexplain: 1;
     unsigned int finish: 1;
     unsigned int ignorethis: 1;
-    double near, xval, yval, widthval;
+    double near;
     char *explaining;
     double found, expected;
     double xheight, caph, ascent, descent;
-    double irrelevantfactor;
-    int advancewidthval, vadvancewidthval;
-    int bbymax_val, bbymin_val, bbxmax_val, bbxmin_val;
-    int pointsmax, hintsmax, refdepthmax;
     GWindow explainw;
     GGadget *explaintext, *explainvals, *ignoregadg, *topbox;
     SplineChar *lastcharopened;
@@ -152,23 +104,7 @@ struct problems {
     EncMap *map;
 };
 
-static int openpaths=0, pointstooclose=0/*, missing=0*/, doxnear=0, doynear=0;
-static int nonintegral=0, pointstoofar=0;
-static int intersectingpaths=0, missingextrema=0;
-static int doynearstd=0, linestd=0, cpstd=0, cpodd=0, hintnopt=0, ptnearhint=0;
-static int hintwidth=0, direction=0, flippedrefs=0, bitmaps=0, bitmapwidths=0;
-static int cidblank=0, cidmultiple=0, advancewidth=0, vadvancewidth=0;
-static int bbymax=0, bbymin=0, bbxmax=0, bbxmin=0;
-static int irrelevantcp=0, missingglyph=0, missingscriptinfeature=0;
-static int badsubs=0, missinganchor=0, toomanypoints=0, pointsmax = 1500;
-static int multuni=0, multname=0, uninamemismatch=0, overlappedhints=0;
-static int toomanyhints=0, hintsmax=96, toodeeprefs=0, refdepthmax=9;
-static int ptmatchrefsoutofdate=0, refsbadtransformttf=0, refsbadtransformps=0;
-static int mixedcontoursrefs=0, multusemymetrics=0;
-static int stem3=0, showexactstem3=0;
-static double near=3, xval=0, yval=0, widthval=50, advancewidthval=0, vadvancewidthval=0;
-static double bbymax_val=0, bbymin_val=0, bbxmax_val=0, bbxmin_val=0;
-static double irrelevantfactor = .005;
+static double near=3;
 
 #define CID_Stop		2001
 #define CID_Next		2002
@@ -185,10 +121,6 @@ static double irrelevantfactor = .005;
 #define CID_HintNoPt		1007
 #define CID_PtNearHint		1008
 #define CID_HintWidthNear	1009
-#define CID_HintWidth		1010
-#define CID_Near		1011
-#define CID_XNearVal		1012
-#define CID_YNearVal		1013
 #define CID_LineStd		1014
 #define CID_Direction		1015
 #define CID_CpStd		1016
@@ -198,22 +130,16 @@ static double irrelevantfactor = .005;
 #define CID_FlippedRefs		1020
 #define CID_Bitmaps		1021
 #define CID_AdvanceWidth	1022
-#define CID_AdvanceWidthVal	1023
 #define CID_VAdvanceWidth	1024
-#define CID_VAdvanceWidthVal	1025
 #define CID_Stem3		1026
 #define CID_ShowExactStem3	1027
 #define CID_IrrelevantCP	1028
-#define CID_IrrelevantFactor	1029
 #define CID_BadSubs		1030
 #define CID_MissingGlyph	1031
 #define CID_MissingScriptInFeature 1032
 #define CID_TooManyPoints	1033
-#define CID_PointsMax		1034
 #define CID_TooManyHints	1035
-#define CID_HintsMax		1036
 #define CID_TooDeepRefs		1037
-#define CID_RefDepthMax		1038
 #define CID_MultUni		1040
 #define CID_MultName		1041
 #define CID_PtMatchRefsOutOfDate 1042
@@ -226,10 +152,6 @@ static double irrelevantfactor = .005;
 #define CID_BBYMin		1049
 #define CID_BBXMax		1050
 #define CID_BBXMin		1051
-#define CID_BBYMaxVal		1052
-#define CID_BBYMinVal		1053
-#define CID_BBXMaxVal		1054
-#define CID_BBXMinVal		1055
 #define CID_NonIntegral		1056
 #define CID_PointsTooFar	1057
 #define CID_BitmapWidths	1058
@@ -265,10 +187,10 @@ static void FixIt(struct problems *p) {
 	    IError("Could not find reference");
 return;
     } else if ( p->explaining==_("This glyph's advance width is different from the standard width") ) {
-	SCSynchronizeWidth(p->sc,p->advancewidthval,p->sc->width,NULL);
+	SCSynchronizeWidth(p->sc,std::get<int>(p->record_values[CID_AdvanceWidth]),p->sc->width,NULL);
 return;
     } else if ( p->explaining==_("This glyph's vertical advance is different from the standard width") ) {
-	p->sc->vwidth=p->vadvancewidthval;
+	p->sc->vwidth=std::get<int>(p->record_values[CID_VAdvanceWidth]);
 return;
     }
 
@@ -303,7 +225,7 @@ return;
     break;
     }
     if ( sp==NULL ) {
-	IError("Nothing selected");
+	IError("FixIt(): Nothing selected");
 return;
     }
 
@@ -419,12 +341,13 @@ return;
     } else if ( p->explaining==_("This path should have been drawn in a counter-clockwise direction") || p->explaining==_("This path should have been drawn in a clockwise direction") ) {
 	SplineSetReverse(spl);
     } else if ( p->explaining==_("This glyph contains control points which are probably too close to the main points to alter the look of the spline") ) {
+	double irrelevantfactor = std::get<double>(p->record_values[CID_IrrelevantCP]) / 100.0;
 	if ( sp->next!=NULL ) {
 	    double len = sqrt((sp->me.x-sp->next->to->me.x)*(sp->me.x-sp->next->to->me.x) +
 		    (sp->me.y-sp->next->to->me.y)*(sp->me.y-sp->next->to->me.y));
 	    double cplen = sqrt((sp->me.x-sp->nextcp.x)*(sp->me.x-sp->nextcp.x) +
 		    (sp->me.y-sp->nextcp.y)*(sp->me.y-sp->nextcp.y));
-	    if ( cplen!=0 && cplen<p->irrelevantfactor*len ) {
+	    if ( cplen!=0 && cplen<irrelevantfactor*len ) {
 		sp->nextcp = sp->me;
 		ncp_changed = true;
 	    }
@@ -434,7 +357,7 @@ return;
 		    (sp->me.y-sp->prev->from->me.y)*(sp->me.y-sp->prev->from->me.y));
 	    double cplen = sqrt((sp->me.x-sp->prevcp.x)*(sp->me.x-sp->prevcp.x) +
 		    (sp->me.y-sp->prevcp.y)*(sp->me.y-sp->prevcp.y));
-	    if ( cplen!=0 && cplen<p->irrelevantfactor*len ) {
+	    if ( cplen!=0 && cplen<irrelevantfactor*len ) {
 		sp->prevcp = sp->me;
 		pcp_changed = true;
 	    }
@@ -639,7 +562,7 @@ return;
     p->ignorethis = false;
 
     if ( sc!=p->lastcharopened || (CharView *) (sc->views)==NULL ) {
-	if ( p->cvopened!=NULL && CVValid(p->fv->b.sf,p->lastcharopened,p->cvopened) )
+	if ( CVValid(p->fv->b.sf,p->lastcharopened,p->cvopened) )
 	    GDrawDestroyWindow(p->cvopened->gw);
 	p->cvopened = NULL;
 	if ( (CharView *) (sc->views)!=NULL )
@@ -667,7 +590,7 @@ return;
 	GDrawProcessOneEvent(NULL);
     /*GDrawSetVisible(p->explainw,false);*/		/* KDE gets unhappy about this and refuses to show the window later. I don't know why */
 
-    if ( p->cv!=NULL ) {
+    if ( CVValid(p->fv->b.sf,p->sc,p->cv) ) {
 	CVClearSel(p->cv);
     } else {
 	for ( spl = p->sc->layers[p->layer].splines; spl!=NULL; spl = spl->next ) {
@@ -696,7 +619,7 @@ static int missing(struct problems *p,SplineSet *test, SplinePoint *sp) {
     if ( !p->explain )
 return( false );
 
-    if ( p->cv!=NULL )
+    if ( CVValid(p->fv->b.sf,p->sc,p->cv) )
 	spl = p->cv->b.layerheads[p->cv->b.drawmode]->splines;
     else
 	spl = p->sc->layers[p->layer].splines;
@@ -723,7 +646,7 @@ static int missingspline(struct problems *p,SplineSet *test, Spline *spline) {
     if ( !p->explain )
 return( false );
 
-    if ( p->cv!=NULL )
+    if ( CVValid(p->fv->b.sf,p->sc,p->cv) )
 	spl = p->cv->b.layerheads[p->cv->b.drawmode]->splines;
     else
 	spl = p->sc->layers[p->layer].splines;
@@ -895,7 +818,7 @@ return(false);
 	    if ( !missinghint(p->sc->hstem,bad) || !missinghint(p->sc->vstem,bad))
 		bad->active = false;
 	    if ( p->ignorethis )
-		p->stem3 = false;
+		p->selected_records[CID_Stem3] = false;
 return( true );
 	}
 return(false);
@@ -903,10 +826,10 @@ return(false);
 
     if ( h->width==h2->width && h->width==h3->width &&
 	    h2->start-h->start == h3->start-h2->start ) {
-	if ( p->showexactstem3 ) {
+	if ( p->selected_records[CID_ShowExactStem3] ) {
 	    ExplainIt(p,p->sc,_("This glyph can use a stem3 hint"),0,0);
 	    if ( p->ignorethis )
-		p->showexactstem3 = false;
+		p->selected_records[CID_ShowExactStem3] = false;
 	}
 return( false );		/* It IS a stem3, so don't complain */
     }
@@ -916,7 +839,7 @@ return( false );		/* It IS a stem3, so don't complain */
 		h2->start-h->start-p->near < h3->start-h2->start ) {
 	    ExplainIt(p,p->sc,_("The counters between these hints are not the same size, bad for a stem3 hint"),0,0);
 	    if ( p->ignorethis )
-		p->stem3 = false;
+		p->selected_records[CID_Stem3] = false;
 return( true );
 	}
 return( false );
@@ -933,7 +856,7 @@ return( false );
 		if ( !missinghint(p->sc->hstem,h3) || !missinghint(p->sc->vstem,h3))
 		    h3->active = false;
 		if ( p->ignorethis )
-		    p->stem3 = false;
+		    p->selected_records[CID_Stem3] = false;
 return( true );
 	    } else
 return( false );
@@ -945,7 +868,7 @@ return( false );
 		if ( !missinghint(p->sc->hstem,h2) || !missinghint(p->sc->vstem,h2))
 		    h2->active = false;
 		if ( p->ignorethis )
-		    p->stem3 = false;
+		    p->selected_records[CID_Stem3] = false;
 return( true );
 	    } else
 return( false );
@@ -957,7 +880,7 @@ return( false );
 		if ( !missinghint(p->sc->hstem,h) || !missinghint(p->sc->vstem,h))
 		    h->active = false;
 		if ( p->ignorethis )
-		    p->stem3 = false;
+		    p->selected_records[CID_Stem3] = false;
 return( true );
 	    } else
 return( false );
@@ -1029,6 +952,16 @@ return( r );
 return( NULL );
 }
 
+static void FigureStandardHeights(struct problems *p) {
+    BlueData bd;
+
+    QuickBlues(p->fv->b.sf,p->layer,&bd);
+    p->xheight = bd.xheight;
+    p->caph = bd.caph;
+    p->ascent = bd.ascent;
+    p->descent = bd.descent;
+}
+
 static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
     SplineSet *spl, *test;
     Spline *spline, *first;
@@ -1060,11 +993,11 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	spl = cur->splines;
     }
     p->sc = sc;
-    if (( p->ptnearhint || p->hintwidthnearval || p->hintwithnopt ) &&
+    if (( p->selected_records[CID_PtNearHint] || p->selected_records[CID_HintWidthNear] || p->selected_records[CID_HintNoPt] ) &&
 	    sc->changedsincelasthinted && !sc->manualhints )
 	SplineCharAutoHint(sc,p->layer,NULL);
 
-    if ( p->openpaths ) {
+    if ( p->selected_records[CID_OpenPaths] ) {
 	for ( test=spl; test!=NULL && !p->finish; test=test->next ) {
 	    /* I'm also including in "open paths" the special case of a */
 	    /*  singleton point with connects to itself */
@@ -1075,7 +1008,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		test->first->selected = test->last->selected = true;
 		ExplainIt(p,sc,_("The two selected points are the endpoints of an open path"),0,0);
 		if ( p->ignorethis ) {
-		    p->openpaths = false;
+		    p->selected_records[CID_OpenPaths] = false;
 	break;
 		}
 		if ( missing(p,test,NULL))
@@ -1084,7 +1017,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	}
     }
 
-    if ( p->intersectingpaths && !p->finish ) {
+    if ( p->selected_records[CID_IntersectingPaths] && !p->finish ) {
 	Spline *s, *s2;
 	int found;
 	spl = LayerAllSplines(cur);
@@ -1104,14 +1037,14 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    }
 	    ExplainIt(p,sc,_("The paths that make up this glyph intersect one another"),0,0);
 	    if ( p->ignorethis ) {
-		p->intersectingpaths = false;
+		p->selected_records[CID_IntersectingPaths] = false;
     /* break; */
 	    }
 	}
     }
 
-    if ( p->nonintegral && !p->finish ) {
-	for ( test=spl; test!=NULL && !p->finish && p->nonintegral; test=test->next ) {
+    if ( p->selected_records[CID_NonIntegral] && !p->finish ) {
+	for ( test=spl; test!=NULL && !p->finish && p->selected_records[CID_NonIntegral]; test=test->next ) {
 	    sp = test->first;
 	    do {
 		int interp = SPInterpolate(sp);
@@ -1128,7 +1061,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		    else
 			ExplainIt(p,sc,_("The selected point does not have integral control points"),0,0);
 		    if ( p->ignorethis ) {
-			p->nonintegral = false;
+			p->selected_records[CID_NonIntegral] = false;
 	    break;
 		    }
 		    if ( missing(p,test,nsp))
@@ -1138,17 +1071,17 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    break;
 		sp = sp->next->to;
 	    } while ( sp!=test->first && !p->finish );
-	    if ( !p->nonintegral )
+	    if ( !p->selected_records[CID_NonIntegral] )
 	break;
 	}
     }
 
-    if ( p->pointstoofar && !p->finish ) {
+    if ( p->selected_records[CID_PointsTooFar] && !p->finish ) {
 	SplinePoint *lastsp=NULL;
 	BasePoint lastpt;
 
 	memset(&lastpt,0,sizeof(lastpt));
-	for ( test=spl; test!=NULL && !p->finish && p->pointstoofar; test=test->next ) {
+	for ( test=spl; test!=NULL && !p->finish && p->selected_records[CID_PointsTooFar]; test=test->next ) {
 	    sp = test->first;
 	    do {
 		if ( BPTooFar(&lastpt,&sp->prevcp) ||
@@ -1163,7 +1096,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 			ExplainIt(p,sc,_("The selected points (or the intermediate control points) are too far apart"),0,0);
 		    }
 		    if ( p->ignorethis ) {
-			p->pointstoofar = false;
+			p->selected_records[CID_PointsTooFar] = false;
 	    break;
 		    }
 		    if ( missing(p,test,sp))
@@ -1178,13 +1111,13 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    break;
 		}
 	    } while ( !p->finish );
-	    if ( !p->pointstoofar )
+	    if ( !p->selected_records[CID_PointsTooFar] )
 	break;
 	}
     }
 
-    if ( p->pointstooclose && !p->finish ) {
-	for ( test=spl; test!=NULL && !p->finish && p->pointstooclose; test=test->next ) {
+    if ( p->selected_records[CID_PointsTooClose] && !p->finish ) {
+	for ( test=spl; test!=NULL && !p->finish && p->selected_records[CID_PointsTooClose]; test=test->next ) {
 	    sp = test->first;
 	    do {
 		if ( sp->next==NULL )
@@ -1195,7 +1128,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		    sp->selected = nsp->selected = true;
 		    ExplainIt(p,sc,_("The selected points are too close to each other"),0,0);
 		    if ( p->ignorethis ) {
-			p->pointstooclose = false;
+			p->selected_records[CID_PointsTooClose] = false;
 	    break;
 		    }
 		    if ( missing(p,test,nsp))
@@ -1203,22 +1136,23 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		}
 		sp = nsp;
 	    } while ( sp!=test->first && !p->finish );
-	    if ( !p->pointstooclose )
+	    if ( !p->selected_records[CID_PointsTooClose] )
 	break;
 	}
     }
 
-    if ( p->xnearval && !p->finish ) {
-	for ( test=spl; test!=NULL && !p->finish && p->xnearval; test=test->next ) {
+    if ( p->selected_records[CID_XNear] && !p->finish ) {
+	double xval = std::get<double>(p->record_values[CID_XNear]);
+	for ( test=spl; test!=NULL && !p->finish && p->selected_records[CID_XNear]; test=test->next ) {
 	    sp = test->first;
 	    do {
-		if ( sp->me.x-p->xval<p->near && p->xval-sp->me.x<p->near &&
-			sp->me.x!=p->xval ) {
+		if ( sp->me.x-xval<p->near && xval-sp->me.x<p->near &&
+			sp->me.x!=xval ) {
 		    changed = true;
 		    sp->selected = true;
-		    ExplainIt(p,sc,_("The x coord of the selected point is near the specified value"),sp->me.x,p->xval);
+		    ExplainIt(p,sc,_("The x coord of the selected point is near the specified value"),sp->me.x,xval);
 		    if ( p->ignorethis ) {
-			p->xnearval = false;
+			p->selected_records[CID_XNear] = false;
 	    break;
 		    }
 		    if ( missing(p,test,sp))
@@ -1228,22 +1162,23 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    break;
 		sp = sp->next->to;
 	    } while ( sp!=test->first && !p->finish );
-	    if ( !p->xnearval )
+	    if ( !p->selected_records[CID_XNear] )
 	break;
 	}
     }
 
-    if ( p->ynearval && !p->finish ) {
-	for ( test=spl; test!=NULL && !p->finish && p->ynearval; test=test->next ) {
+    if ( p->selected_records[CID_YNear] && !p->finish ) {
+	double yval = std::get<double>(p->record_values[CID_YNear]);
+	for ( test=spl; test!=NULL && !p->finish && p->selected_records[CID_YNear]; test=test->next ) {
 	    sp = test->first;
 	    do {
-		if ( sp->me.y-p->yval<p->near && p->yval-sp->me.y<p->near &&
-			sp->me.y != p->yval ) {
+		if ( sp->me.y-yval<p->near && yval-sp->me.y<p->near &&
+			sp->me.y != yval ) {
 		    changed = true;
 		    sp->selected = true;
-		    ExplainIt(p,sc,_("The y coord of the selected point is near the specified value"),sp->me.y,p->yval);
+		    ExplainIt(p,sc,_("The y coord of the selected point is near the specified value"),sp->me.y,yval);
 		    if ( p->ignorethis ) {
-			p->ynearval = false;
+			p->selected_records[CID_YNear] = false;
 	    break;
 		    }
 		    if ( missing(p,test,sp))
@@ -1253,15 +1188,16 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    break;
 		sp = sp->next->to;
 	    } while ( sp!=test->first && !p->finish );
-	    if ( !p->ynearval )
+	    if ( !p->selected_records[CID_YNear] )
 	break;
 	}
     }
 
-    if ( p->ynearstd && !p->finish ) {
+    if ( p->selected_records[CID_YNearStd] && !p->finish ) {
 	real expected;
 	char *msg;
-	for ( test=spl; test!=NULL && !p->finish && p->ynearstd; test=test->next ) {
+	FigureStandardHeights(p);
+	for ( test=spl; test!=NULL && !p->finish && p->selected_records[CID_YNearStd]; test=test->next ) {
 	    sp = test->first;
 	    do {
 		if (( sp->me.y-p->xheight<p->near && p->xheight-sp->me.y<p->near && sp->me.y!=p->xheight ) ||
@@ -1289,7 +1225,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		    }
 		    ExplainIt(p,sc,msg,sp->me.y,expected);
 		    if ( p->ignorethis ) {
-			p->ynearstd = false;
+			p->selected_records[CID_YNearStd] = false;
 	    break;
 		    }
 		    if ( missing(p,test,sp))
@@ -1299,15 +1235,15 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    break;
 		sp = sp->next->to;
 	    } while ( sp!=test->first && !p->finish );
-	    if ( !p->ynearstd )
+	    if ( !p->selected_records[CID_YNearStd] )
 	break;
 	}
     }
 
-    if ( p->linenearstd && !p->finish ) {
+    if ( p->selected_records[CID_LineStd] && !p->finish ) {
 	real ia = (90-p->fv->b.sf->italicangle)*(FF_PI/180);
 	int hasia = p->fv->b.sf->italicangle!=0;
-	for ( test=spl; test!=NULL && !p->finish && p->linenearstd; test = test->next ) {
+	for ( test=spl; test!=NULL && !p->finish && p->selected_records[CID_LineStd]; test = test->next ) {
 	    first = NULL;
 	    for ( spline = test->first->next; spline!=NULL && spline!=first && !p->finish; spline=spline->to->next ) {
 		if ( spline->knownlinear ) {
@@ -1315,7 +1251,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 			    hasia, ia)) {
 			changed = true;
 			if ( p->ignorethis ) {
-			    p->linenearstd = false;
+			    p->selected_records[CID_LineStd] = false;
 	    break;
 			}
 			if ( missingspline(p,test,spline))
@@ -1324,15 +1260,15 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		}
 		if ( first==NULL ) first = spline;
 	    }
-	    if ( !p->linenearstd )
+	    if ( !p->selected_records[CID_LineStd] )
 	break;
 	}
     }
 
-    if ( p->cpnearstd && !p->finish ) {
+    if ( p->selected_records[CID_CpStd] && !p->finish ) {
 	real ia = (90-p->fv->b.sf->italicangle)*(FF_PI/180);
 	int hasia = p->fv->b.sf->italicangle!=0;
-	for ( test=spl; test!=NULL && !p->finish && p->linenearstd; test = test->next ) {
+	for ( test=spl; test!=NULL && !p->finish && p->selected_records[CID_CpStd]; test = test->next ) {
 	    first = NULL;
 	    for ( spline = test->first->next; spline!=NULL && spline!=first && !p->finish; spline=spline->to->next ) {
 		if ( !spline->knownlinear ) {
@@ -1341,7 +1277,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 				hasia, ia)) {
 			changed = true;
 			if ( p->ignorethis ) {
-			    p->cpnearstd = false;
+			    p->selected_records[CID_CpStd] = false;
 	    break;
 			}
 			if ( missingspline(p,test,spline))
@@ -1352,7 +1288,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 				hasia, ia)) {
 			changed = true;
 			if ( p->ignorethis ) {
-			    p->cpnearstd = false;
+			    p->selected_records[CID_CpStd] = false;
 	    break;
 			}
 			if ( missingspline(p,test,spline))
@@ -1361,13 +1297,13 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		}
 		if ( first==NULL ) first = spline;
 	    }
-	    if ( !p->cpnearstd )
+	    if ( !p->selected_records[CID_CpStd] )
 	break;
 	}
     }
 
-    if ( p->cpodd && !p->finish ) {
-	for ( test=spl; test!=NULL && !p->finish && p->linenearstd; test = test->next ) {
+    if ( p->selected_records[CID_CpOdd] && !p->finish ) {
+	for ( test=spl; test!=NULL && !p->finish && p->selected_records[CID_CpOdd]; test = test->next ) {
 	    first = NULL;
 	    for ( spline = test->first->next; spline!=NULL && spline!=first && !p->finish; spline=spline->to->next ) {
 		if ( !spline->knownlinear ) {
@@ -1381,7 +1317,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 			     spline->from,p)) {
 			changed = true;
 			if ( p->ignorethis ) {
-			    p->cpodd = false;
+			    p->selected_records[CID_CpOdd] = false;
 	    break;
 			}
 			if ( missingspline(p,test,spline))
@@ -1392,7 +1328,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 			     spline->to,p)) {
 			changed = true;
 			if ( p->ignorethis ) {
-			    p->cpodd = false;
+			    p->selected_records[CID_CpOdd] = false;
 	    break;
 			}
 			if ( missingspline(p,test,spline))
@@ -1401,21 +1337,22 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		}
 		if ( first==NULL ) first = spline;
 	    }
-	    if ( !p->cpodd )
+	    if ( !p->selected_records[CID_CpOdd] )
 	break;
 	}
     }
 
-    if ( p->irrelevantcontrolpoints && !p->finish ) {
-	for ( test=spl; test!=NULL && !p->finish && p->irrelevantcontrolpoints; test = test->next ) {
-	    for ( sp=test->first; !p->finish && p->irrelevantcontrolpoints; ) {
+    if ( p->selected_records[CID_IrrelevantCP] && !p->finish ) {
+	double irrelevantfactor = std::get<double>(p->record_values[CID_IrrelevantCP]) / 100.0;
+	for ( test=spl; test!=NULL && !p->finish && p->selected_records[CID_IrrelevantCP]; test = test->next ) {
+	    for ( sp=test->first; !p->finish && p->selected_records[CID_IrrelevantCP]; ) {
 		int either = false;
 		if ( sp->prev!=NULL ) {
 		    double len = sqrt((sp->me.x-sp->prev->from->me.x)*(sp->me.x-sp->prev->from->me.x) +
 			    (sp->me.y-sp->prev->from->me.y)*(sp->me.y-sp->prev->from->me.y));
 		    double cplen = sqrt((sp->me.x-sp->prevcp.x)*(sp->me.x-sp->prevcp.x) +
 			    (sp->me.y-sp->prevcp.y)*(sp->me.y-sp->prevcp.y));
-		    if ( cplen!=0 && cplen<p->irrelevantfactor*len )
+		    if ( cplen!=0 && cplen<irrelevantfactor*len )
 			either = true;
 		}
 		if ( sp->next!=NULL ) {
@@ -1423,14 +1360,14 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 			    (sp->me.y-sp->next->to->me.y)*(sp->me.y-sp->next->to->me.y));
 		    double cplen = sqrt((sp->me.x-sp->nextcp.x)*(sp->me.x-sp->nextcp.x) +
 			    (sp->me.y-sp->nextcp.y)*(sp->me.y-sp->nextcp.y));
-		    if ( cplen!=0 && cplen<p->irrelevantfactor*len )
+		    if ( cplen!=0 && cplen<irrelevantfactor*len )
 			either = true;
 		}
 		if ( either ) {
 		    sp->selected = true;
 		    ExplainIt(p,sc,_("This glyph contains control points which are probably too close to the main points to alter the look of the spline"),0,0);
 		    if ( p->ignorethis ) {
-			p->irrelevantcontrolpoints = false;
+			p->selected_records[CID_IrrelevantCP] = false;
 	    break;
 		    }
 		}
@@ -1443,7 +1380,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	}
     }
 
-    if ( p->hintwithnopt && !p->finish ) {
+    if ( p->selected_records[CID_HintNoPt] && !p->finish ) {
 	int anys, anye;
       restarthhint:
 	for ( h=sc->hstem; h!=NULL ; h=h->next ) {
@@ -1469,7 +1406,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		if ( !missinghint(sc->hstem,h))
 		    h->active = false;
 		if ( p->ignorethis ) {
-		    p->hintwithnopt = false;
+		    p->selected_records[CID_HintNoPt] = false;
 	break;
 		}
 		if ( missinghint(sc->hstem,h))
@@ -1477,7 +1414,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    }
 	}
       restartvhint:
-	for ( h=sc->vstem; h!=NULL && p->hintwithnopt && !p->finish; h=h->next ) {
+	for ( h=sc->vstem; h!=NULL && p->selected_records[CID_HintNoPt] && !p->finish; h=h->next ) {
 	    anys = anye = false;
 	    for ( test=spl; test!=NULL && !p->finish && (!anys || !anye); test=test->next ) {
 		sp = test->first;
@@ -1496,7 +1433,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		changed = true;
 		ExplainIt(p,sc,_("This hint does not control any points"),0,0);
 		if ( p->ignorethis ) {
-		    p->hintwithnopt = false;
+		    p->selected_records[CID_HintNoPt] = false;
 	break;
 		}
 		if ( missinghint(sc->vstem,h))
@@ -1506,10 +1443,10 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	}
     }
 
-    if ( p->ptnearhint && !p->finish ) {
+    if ( p->selected_records[CID_PtNearHint] && !p->finish ) {
 	real found, expected;
 	h = NULL;
-	for ( test=spl; test!=NULL && !p->finish && p->ptnearhint; test=test->next ) {
+	for ( test=spl; test!=NULL && !p->finish && p->selected_records[CID_PtNearHint]; test=test->next ) {
 	    sp = test->first;
 	    do {
 		int hs = false, vs = false;
@@ -1552,7 +1489,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		    if ( h!=NULL )
 			h->active = false;
 		    if ( p->ignorethis ) {
-			p->ptnearhint = false;
+			p->selected_records[CID_PtNearHint] = false;
 	    break;
 		    }
 		    if ( missing(p,test,sp))
@@ -1562,14 +1499,14 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    break;
 		sp = sp->next->to;
 	    } while ( sp!=test->first && !p->finish );
-	    if ( !p->ptnearhint )
+	    if ( !p->selected_records[CID_PtNearHint] )
 	break;
 	}
     }
 
-    if ( p->overlappedhints && !p->finish && !cur->order2 && spl!=NULL ) {
+    if ( p->selected_records[CID_OverlappedHints] && !p->finish && !cur->order2 && spl!=NULL ) {
 	int anyhm=0;
-	for ( test=spl; test!=NULL && !p->finish && p->overlappedhints; test=test->next ) {
+	for ( test=spl; test!=NULL && !p->finish && p->selected_records[CID_OverlappedHints]; test=test->next ) {
 	    sp = test->first;
 	    do {
 		if ( sp->hintmask!=NULL ) {
@@ -1581,14 +1518,14 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 			changed = true;
 			ExplainIt(p,sc,_("The hint mask of the selected point contains overlapping hints"),0,0);
 			if ( p->ignorethis )
-			    p->overlappedhints = false;
+			    p->selected_records[CID_OverlappedHints] = false;
 			if ( missing(p,test,sp))
   goto restart;
 			if ( missingschint(h,sc))
   goto restart;
 			h->active = false;
 			sp->selected = false;
-			if ( !p->overlappedhints )
+			if ( !p->selected_records[CID_OverlappedHints] )
 	    break;
 		    }
 		}
@@ -1596,10 +1533,10 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	    break;
 		sp = sp->next->to;
 	    } while ( sp!=test->first && !p->finish );
-	    if ( !p->overlappedhints )
+	    if ( !p->selected_records[CID_OverlappedHints] )
 	break;
 	}
-	if ( p->overlappedhints && !anyhm ) {
+	if ( p->selected_records[CID_OverlappedHints] && !anyhm ) {
 	    h = SCHintOverlapInMask(sc,NULL);
 	    if ( h!=NULL ) {
 		h->active = true;
@@ -1612,19 +1549,20 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	}
     }
 
-    if ( p->hintwidthnearval && !p->finish ) {
+    if ( p->selected_records[CID_HintWidthNear] && !p->finish ) {
+	double widthval = std::get<double>(p->record_values[CID_HintWidthNear]);
 	StemInfo *hs = NULL, *vs = NULL;
 	for ( h=sc->hstem; h!=NULL; h=h->next ) {
-	    if ( h->width-p->widthval<p->near && p->widthval-h->width<p->near &&
-		    h->width!=p->widthval ) {
+	    if ( h->width-widthval<p->near && widthval-h->width<p->near &&
+		    h->width!=widthval ) {
 		h->active = true;
 		hs = h;
 	break;
 	    }
 	}
 	for ( h=sc->vstem; h!=NULL; h=h->next ) {
-	    if ( h->width-p->widthval<p->near && p->widthval-h->width<p->near &&
-		    h->width!=p->widthval ) {
+	    if ( h->width-widthval<p->near && widthval-h->width<p->near &&
+		    h->width!=widthval ) {
 		h->active = true;
 		vs = h;
 	break;
@@ -1633,23 +1571,23 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	if ( hs || vs ) {
 	    changed = true;
 	    ExplainIt(p,sc,hs?_("This glyph contains a horizontal hint near the specified width"):_("This glyph contains a vertical hint near the specified width"),
-		    hs?hs->width:vs->width,p->widthval);
+		    hs?hs->width:vs->width,widthval);
 	    if ( hs!=NULL && !missinghint(sc->hstem,hs)) hs->active = false;
 	    if ( vs!=NULL && !missinghint(sc->vstem,vs)) vs->active = false;
 	    if ( p->ignorethis )
-		p->hintwidthnearval = false;
+		p->selected_records[CID_HintWidthNear] = false;
 	    else if ( (hs!=NULL && missinghint(sc->hstem,hs)) &&
 		    ( vs!=NULL && missinghint(sc->vstem,vs)))
       goto restart;
 	}
     }
 
-    if ( p->stem3 && !p->finish )
+    if ( p->selected_records[CID_Stem3] && !p->finish )
 	changed |= Hint3Check(p,sc->hstem);
-    if ( p->stem3 && !p->finish )
+    if ( p->selected_records[CID_Stem3] && !p->finish )
 	changed |= Hint3Check(p,sc->vstem);
 
-    if ( p->direction && !p->finish ) {
+    if ( p->selected_records[CID_Direction] && !p->finish ) {
 	SplineSet **base, *ret, *ss;
 	Spline *s, *s2;
 	Layer *layer;
@@ -1689,14 +1627,14 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		else
 		    ExplainIt(p,sc,_("This path should have been drawn in a clockwise direction"),0,0);
 		if ( p->ignorethis ) {
-		    p->direction = false;
+		    p->selected_records[CID_Direction] = false;
 	    break;
 		}
 	    }
 	}
     }
 
-    if ( p->missingextrema && !p->finish ) {
+    if ( p->selected_records[CID_MissingExtrema] && !p->finish ) {
 	SplineSet *ss;
 	Spline *s, *first;
 	double len2, bound2 = p->sc->parent->extrema_bound;
@@ -1733,17 +1671,17 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		    if ( !SplineExistsInSS(first,ss))
 			first = s;
 		    if ( p->ignorethis ) {
-			p->missingextrema = false;
+			p->selected_records[CID_MissingExtrema] = false;
 	    break;
 		    }
 		}
 	    }
-	    if ( !p->missingextrema )
+	    if ( !p->selected_records[CID_MissingExtrema] )
 	break;
 	}
     }
 
-    if ( p->flippedrefs && !p->finish && ( cv==NULL || cv->b.drawmode==dm_fore )) {
+    if ( p->selected_records[CID_FlippedRefs] && !p->finish && ( cv==NULL || cv->b.drawmode==dm_fore )) {
 	RefChar *ref;
 	for ( ref = sc->layers[p->layer].refs; ref!=NULL ; ref = ref->next )
 	    ref->selected = false;
@@ -1755,14 +1693,14 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		ExplainIt(p,sc,_("This reference has been flipped, so the paths in it are drawn backwards"),0,0);
 		ref->selected = false;
 		if ( p->ignorethis ) {
-		    p->flippedrefs = false;
+		    p->selected_records[CID_FlippedRefs] = false;
 	break;
 		}
 	    }
 	}
     }
 
-    if ( p->refsbadtransformttf && !p->finish ) {
+    if ( p->selected_records[CID_RefBadTransformTTF] && !p->finish ) {
 	RefChar *ref;
 	for ( ref = sc->layers[p->layer].refs; ref!=NULL ; ref = ref->next )
 	    ref->selected = false;
@@ -1778,14 +1716,14 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		ExplainIt(p,sc,_("This reference has a transformation matrix which cannot be expressed in truetype.\nAll entries (except translation) must be between [-2.0,2.0).\nTranslation must be integral."),0,0);
 		ref->selected = false;
 		if ( p->ignorethis ) {
-		    p->refsbadtransformttf = false;
+		    p->selected_records[CID_RefBadTransformTTF] = false;
 	break;
 		}
 	    }
 	}
     }
 
-    if ( p->mixedcontoursrefs && !p->finish ) {
+    if ( p->selected_records[CID_MixedContoursRefs] && !p->finish ) {
 	RefChar *ref;
 	int hasref=0, hascontour = sc->layers[p->layer].splines!=NULL;
 	for ( ref = sc->layers[p->layer].refs; ref!=NULL ; ref = ref->next ) {
@@ -1803,14 +1741,14 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		ExplainIt(p,sc,_("This glyph contains both contours and references.\n(or contains a reference which has a bad transformation matrix and counts as a contour).\nThis cannot be expressed in the TrueType glyph format."),0,0);
 		ref->selected = false;
 		if ( p->ignorethis ) {
-		    p->mixedcontoursrefs = false;
+		    p->selected_records[CID_MixedContoursRefs] = false;
 	break;
 		}
 	    }
 	}
     }
 
-    if ( p->refsbadtransformps && !p->finish ) {
+    if ( p->selected_records[CID_RefBadTransformPS] && !p->finish ) {
 	RefChar *ref;
 	for ( ref = sc->layers[p->layer].refs; ref!=NULL ; ref = ref->next )
 	    ref->selected = false;
@@ -1824,14 +1762,14 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		ExplainIt(p,sc,_("This reference has a transformation matrix which cannot be expressed in Type1/2 fonts.\nNo scaling or rotation allowed."),0,0);
 		ref->selected = false;
 		if ( p->ignorethis ) {
-		    p->refsbadtransformps = false;
+		    p->selected_records[CID_RefBadTransformPS] = false;
 	break;
 		}
 	    }
 	}
     }
 
-    if ( p->multusemymetrics && !p->finish ) {
+    if ( p->selected_records[CID_MultUseMyMetrics] && !p->finish ) {
 	RefChar *ref, *found;
 	for ( ref = sc->layers[p->layer].refs; ref!=NULL ; ref = ref->next )
 	    ref->selected = false;
@@ -1848,7 +1786,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		    ref->selected = false;
 		    found->selected = false;
 		    if ( p->ignorethis ) {
-			p->multusemymetrics = false;
+			p->selected_records[CID_MultUseMyMetrics] = false;
 	break;
 		    }
 		}
@@ -1856,7 +1794,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	}
     }
 
-    if ( p->ptmatchrefsoutofdate && !p->finish ) {
+    if ( p->selected_records[CID_PtMatchRefsOutOfDate] && !p->finish ) {
 	RefChar *ref;
 	for ( ref = sc->layers[p->layer].refs; ref!=NULL ; ref = ref->next )
 	    ref->selected = false;
@@ -1867,52 +1805,55 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		ExplainIt(p,sc,_("This reference uses point-matching but it refers to a glyph\n(or a previous reference refers to a glyph)\nwhose points have been renumbered."),0,0);
 		ref->selected = false;
 		if ( p->ignorethis ) {
-		    p->ptmatchrefsoutofdate = false;
+		    p->selected_records[CID_PtMatchRefsOutOfDate] = false;
 	break;
 		}
 	    }
 	}
     }
 
-    if ( p->toodeeprefs && !p->finish ) {
+    if ( p->selected_records[CID_TooDeepRefs] && !p->finish ) {
+	int refdepthmax = std::get<int>(p->record_values[CID_TooDeepRefs]);
 	int cnt=SCRefDepth(sc,p->layer);
-	if ( cnt>p->refdepthmax ) {
+	if ( cnt>refdepthmax ) {
 	    changed = true;
-	    ExplainIt(p,sc,_("References are nested more deeply in this glyph than the maximum allowed"),cnt,p->refdepthmax);
+	    ExplainIt(p,sc,_("References are nested more deeply in this glyph than the maximum allowed"),cnt,refdepthmax);
 	    if ( p->ignorethis )
-		p->toodeeprefs = false;
+		p->selected_records[CID_TooDeepRefs] = false;
 	}
     }
 
-    if ( p->toomanypoints && !p->finish ) {
+    if ( p->selected_records[CID_TooManyPoints] && !p->finish ) {
+	int pointsmax = std::get<int>(p->record_values[CID_TooManyPoints]);
 	int cnt=0;
 	RefChar *r;
 	cnt = SPLPointCnt(sc->layers[p->layer].splines);
 	for ( r=sc->layers[p->layer].refs; r!=NULL ; r=r->next )
 	    cnt += SPLPointCnt(r->layers[0].splines);
-	if ( cnt>p->pointsmax ) {
+	if ( cnt>pointsmax ) {
 	    changed = true;
-	    ExplainIt(p,sc,_("There are more points in this glyph than the maximum allowed"),cnt,p->pointsmax);
+	    ExplainIt(p,sc,_("There are more points in this glyph than the maximum allowed"),cnt,pointsmax);
 	    if ( p->ignorethis )
-		p->toomanypoints = false;
+		p->selected_records[CID_TooManyPoints] = false;
 	}
     }
 
-    if ( p->toomanyhints && !p->finish ) {
+    if ( p->selected_records[CID_TooManyHints] && !p->finish ) {
+	int hintsmax = std::get<int>(p->record_values[CID_TooManyHints]);
 	int cnt=0;
 	for ( h=sc->hstem; h!=NULL; h=h->next )
 	    ++cnt;
 	for ( h=sc->vstem; h!=NULL; h=h->next )
 	    ++cnt;
-	if ( cnt>p->hintsmax ) {
+	if ( cnt>hintsmax ) {
 	    changed = true;
-	    ExplainIt(p,sc,_("There are more hints in this glyph than the maximum allowed"),cnt,p->hintsmax);
+	    ExplainIt(p,sc,_("There are more hints in this glyph than the maximum allowed"),cnt,hintsmax);
 	    if ( p->ignorethis )
-		p->toomanyhints = false;
+		p->selected_records[CID_TooManyHints] = false;
 	}
     }
 
-    if ( p->bitmaps && !p->finish && SCWorthOutputting(sc)) {
+    if ( p->selected_records[CID_Bitmaps] && !p->finish && SCWorthOutputting(sc)) {
 	BDFFont *bdf;
 
 	for ( bdf=sc->parent->bitmaps; bdf!=NULL; bdf=bdf->next ) {
@@ -1920,13 +1861,13 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		changed = true;
 		ExplainIt(p,sc,_("This outline glyph is missing a bitmap version"),0,0);
 		if ( p->ignorethis )
-		    p->bitmaps = false;
+		    p->selected_records[CID_Bitmaps] = false;
 	break;
 	    }
 	}
     }
 
-    if ( p->bitmapwidths && !p->finish && SCWorthOutputting(sc)) {
+    if ( p->selected_records[CID_BitmapWidths] && !p->finish && SCWorthOutputting(sc)) {
 	BDFFont *bdf;
 	double em = (sc->parent->ascent+sc->parent->descent);
 
@@ -1938,61 +1879,67 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		    ExplainIt(p,sc,_("This outline glyph's advance width is different from that of the bitmap's"),
 			    bc->width,rint( (sc->width*bdf->pixelsize)/em ));
 		    if ( p->ignorethis )
-			p->bitmapwidths = false;
+			p->selected_records[CID_BitmapWidths] = false;
 	break;
 		}
 	    }
 	}
     }
 
-    if ( p->advancewidth && !p->finish && SCWorthOutputting(sc)) {
-	if ( sc->width!=p->advancewidthval ) {
+    if ( p->selected_records[CID_AdvanceWidth] && !p->finish && SCWorthOutputting(sc)) {
+	int advancewidthval = std::get<int>(p->record_values[CID_AdvanceWidth]);
+	if ( sc->width!=advancewidthval ) {
 	    changed = true;
-	    ExplainIt(p,sc,_("This glyph's advance width is different from the standard width"),sc->width,p->advancewidthval);
+	    ExplainIt(p,sc,_("This glyph's advance width is different from the standard width"),sc->width,advancewidthval);
 	    if ( p->ignorethis )
-		p->advancewidth = false;
+		p->selected_records[CID_AdvanceWidth] = false;
 	}
     }
 
-    if ( p->vadvancewidth && !p->finish && SCWorthOutputting(sc)) {
-	if ( sc->vwidth!=p->vadvancewidthval ) {
+    if ( p->selected_records[CID_VAdvanceWidth] && p->fv->b.sf->hasvmetrics && !p->finish && SCWorthOutputting(sc)) {
+	int vadvancewidthval = std::get<int>(p->record_values[CID_VAdvanceWidth]);
+	if ( sc->vwidth!=vadvancewidthval ) {
 	    changed = true;
-	    ExplainIt(p,sc,_("This glyph's vertical advance is different from the standard width"),sc->vwidth,p->vadvancewidthval);
+	    ExplainIt(p,sc,_("This glyph's vertical advance is different from the standard width"),sc->vwidth,vadvancewidthval);
 	    if ( p->ignorethis )
-		p->vadvancewidth = false;
+		p->selected_records[CID_VAdvanceWidth] = false;
 	}
     }
 
-    if ( (p->bbymax || p->bbxmax || p->bbymin || p->bbxmin) && !p->finish &&
+    if ( (p->selected_records[CID_BBYMax] || p->selected_records[CID_BBXMax] || p->selected_records[CID_BBYMin] || p->selected_records[CID_BBXMin]) && !p->finish &&
 	    SCWorthOutputting(sc)) {
+	int bbymax_val = std::get<int>(p->record_values[CID_BBYMax]);
+	int bbymin_val = std::get<int>(p->record_values[CID_BBYMin]);
+	int bbxmax_val = std::get<int>(p->record_values[CID_BBXMax]);
+	int bbxmin_val = std::get<int>(p->record_values[CID_BBXMin]);
 	SplineCharFindBounds(sc,&bb);
-	if ( p->bbymax && bb.maxy > p->bbymax_val ) {
+	if ( p->selected_records[CID_BBYMax] && bb.maxy > bbymax_val ) {
 	    changed = true;
-	    ExplainIt(p,sc,_("This glyph is taller than desired"),bb.maxy,p->bbymax_val);
+	    ExplainIt(p,sc,_("This glyph is taller than desired"),bb.maxy,bbymax_val);
 	    if ( p->ignorethis )
-		p->bbymax = false;
+		p->selected_records[CID_BBYMax] = false;
 	}
-	if ( p->bbymin && bb.miny < p->bbymin_val ) {
+	if ( p->selected_records[CID_BBYMin] && bb.miny < bbymin_val ) {
 	    changed = true;
-	    ExplainIt(p,sc,_("This glyph extends further below the baseline than desired"),bb.miny,p->bbymin_val);
+	    ExplainIt(p,sc,_("This glyph extends further below the baseline than desired"),bb.miny,bbymin_val);
 	    if ( p->ignorethis )
-		p->bbymin = false;
+		p->selected_records[CID_BBYMin] = false;
 	}
-	if ( p->bbxmax && bb.maxx > p->bbxmax_val ) {
+	if ( p->selected_records[CID_BBXMax] && bb.maxx > bbxmax_val ) {
 	    changed = true;
-	    ExplainIt(p,sc,_("This glyph is wider than desired"),bb.maxx,p->bbxmax_val);
+	    ExplainIt(p,sc,_("This glyph is wider than desired"),bb.maxx,bbxmax_val);
 	    if ( p->ignorethis )
-		p->bbxmax = false;
+		p->selected_records[CID_BBXMax] = false;
 	}
-	if ( p->bbxmin && bb.minx < p->bbxmin_val ) {
+	if ( p->selected_records[CID_BBXMin] && bb.minx < bbxmin_val ) {
 	    changed = true;
-	    ExplainIt(p,sc,_("This glyph extends left further than desired"),bb.minx,p->bbxmin_val);
+	    ExplainIt(p,sc,_("This glyph extends left further than desired"),bb.minx,bbxmin_val);
 	    if ( p->ignorethis )
-		p->bbxmin = false;
+		p->selected_records[CID_BBXMin] = false;
 	}
     }
 
-    if ( p->badsubs && !p->finish ) {
+    if ( p->selected_records[CID_BadSubs] && !p->finish ) {
 	PST *pst;
 	char *pt, *end; int ch;
 	for ( pst = sc->possub ; pst!=NULL; pst=pst->next ) {
@@ -2011,32 +1958,32 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 			ExplainIt(p,sc,_("This glyph contains a substitution or ligature entry which refers to an empty char"),0,0);
 			free(p->badsubsname);
 			if ( p->ignorethis )
-			    p->badsubs = false;
+			    p->selected_records[CID_BadSubs] = false;
 		    } else
 			*end = ch;
 		    while ( *end==' ' ) ++end;
-		    if ( !p->badsubs )
+		    if ( !p->selected_records[CID_BadSubs] )
 		break;
 		}
-		if ( !p->badsubs )
+		if ( !p->selected_records[CID_BadSubs] )
 	    break;
 	    }
 	}
     }
 
-    if ( p->missinganchor && !p->finish ) {
+    if ( p->selected_records[CID_MissingAnchor] && !p->finish ) {
 	for (;;) {
 	    p->missinganchor_class = SCValidateAnchors(sc);
 	    if ( p->missinganchor_class == NULL )
 	break;
 	    ExplainIt(p,sc,_("This glyph contains anchor points from some, but not all anchor classes in a subtable"),0,0);
 	    if ( p->ignorethis )
-		p->missinganchor = false;
+		p->selected_records[CID_MissingAnchor] = false;
 	break;
 	}
     }
 
-    if ( p->multuni && !p->finish && sc->unicodeenc!=-1 ) {
+    if ( p->selected_records[CID_MultUni] && !p->finish && sc->unicodeenc!=-1 ) {
 	SplineFont *sf = sc->parent;
 	int i;
 	for ( i=0; i<sf->glyphcnt; ++i )
@@ -2046,12 +1993,12 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		p->glyphname = sf->glyphs[i]->name;
 		ExplainIt(p,sc,_("Two glyphs share the same unicode code point.\nChange the encoding to \"Glyph Order\" and use\nEdit->Select->Wildcard with the following code point"),0,0);
 		if ( p->ignorethis )
-		    p->multuni = false;
+		    p->selected_records[CID_MultUni] = false;
 	    }
 	}
     }
 
-    if ( p->multname && !p->finish ) {
+    if ( p->selected_records[CID_MultName] && !p->finish ) {
 	SplineFont *sf = sc->parent;
 	int i;
 	for ( i=0; i<sf->glyphcnt; ++i )
@@ -2061,12 +2008,12 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 		p->glyphenc = i;
 		ExplainIt(p,sc,_("Two glyphs have the same name.\nChange the encoding to \"Glyph Order\" and use\nEdit->Select->Wildcard with the following name"),0,0);
 		if ( p->ignorethis )
-		    p->multname = false;
+		    p->selected_records[CID_MultName] = false;
 	    }
 	}
     }
 
-    if ( p->uninamemismatch && !p->finish &&
+    if ( p->selected_records[CID_UniNameMisMatch] && !p->finish &&
 		strcmp(sc->name,".notdef")!=0 &&
 		strcmp(sc->name,".null")!=0 &&
 		strcmp(sc->name,"nonmarkingreturn")!=0 &&
@@ -2082,7 +2029,7 @@ static int SCProblems(CharView *cv,SplineChar *sc,struct problems *p) {
 	else
 	    ExplainIt(p,sc,_("This glyph is mapped to a unicode code point which is different from its name."),0,0);
 	if ( p->ignorethis )
-	    p->uninamemismatch = false;
+	    p->selected_records[CID_UniNameMisMatch] = false;
     }
 
 
@@ -2093,23 +2040,25 @@ return( changed );
 
 static int CIDCheck(struct problems *p,int cid) {
     int found = false;
+    if (p->fv->b.cidmaster == NULL)
+        return found;
 
-    if ( (p->cidmultiple || p->cidblank) && !p->finish ) {
+    if ( (p->selected_records[CID_CIDMultiple] || p->selected_records[CID_CIDBlank]) && !p->finish ) {
 	SplineFont *csf = p->fv->b.cidmaster;
 	int i, cnt;
 	for ( i=cnt=0; i<csf->subfontcnt; ++i )
 	    if ( cid<csf->subfonts[i]->glyphcnt &&
 		    SCWorthOutputting(csf->subfonts[i]->glyphs[cid]) )
 		++cnt;
-	if ( cnt>1 && p->cidmultiple ) {
+	if ( cnt>1 && p->selected_records[CID_CIDMultiple] ) {
 	    _ExplainIt(p,cid,_("This glyph is defined in more than one of the CID subfonts"),cnt,1);
 	    if ( p->ignorethis )
-		p->cidmultiple = false;
+		p->selected_records[CID_CIDMultiple] = false;
 	    found = true;
-	} else if ( cnt==0 && p->cidblank ) {
+	} else if ( cnt==0 && p->selected_records[CID_CIDBlank] ) {
 	    _ExplainIt(p,cid,_("This glyph is not defined in any of the CID subfonts"),0,0);
 	    if ( p->ignorethis )
-		p->cidblank = false;
+		p->selected_records[CID_CIDBlank] = false;
 	    found = true;
 	}
     }
@@ -2428,7 +2377,7 @@ static int mgAsk(struct problems *p,char **_str,char *str, char *end,uint32_t ta
     while ( !d.done )
 	GDrawProcessOneEvent(NULL);
     if ( GGadgetIsChecked(GWidgetGetControl(gw,CID_Ignore)))
-	p->missingglyph = false;
+	p->selected_records[CID_MissingGlyph] = false;
     GDrawDestroyWindow(gw);
 return( !d.skipped );
 }
@@ -2437,7 +2386,7 @@ static int StrMissingGlyph(struct problems *p,char **_str,SplineChar *sc,enum mi
     char *end, ch, *str = *_str, *new_str;
     int off;
     int found = false;
-    SplineFont *sf = p->fv!=NULL ? p->fv->b.sf : p->cv!=NULL ? p->cv->b.sc->parent : p->msc->parent;
+    SplineFont *sf = p->fv!=NULL ? p->fv->b.sf : CVValid(p->fv->b.sf,p->sc,p->cv) ? p->cv->b.sc->parent : p->msc->parent;
     SplineChar *ssc;
     int changed=false;
 
@@ -2445,7 +2394,7 @@ static int StrMissingGlyph(struct problems *p,char **_str,SplineChar *sc,enum mi
 return( false );
 
     while ( *str ) {
-	if ( p->finish || !p->missingglyph )
+	if ( p->finish || !p->selected_records[CID_MissingGlyph] )
     break;
 	while ( *str==' ' ) ++str;
 	for ( end=str; *end!='\0' && *end!=' '; ++end );
@@ -2488,7 +2437,7 @@ static int SCMissingGlyph(struct problems *p,SplineChar *sc) {
     PST *pst, *next;
     int found = false;
 
-    if ( !p->missingglyph || p->finish || sc==NULL )
+    if ( !p->selected_records[CID_MissingGlyph] || p->finish || sc==NULL )
 return( false );
 
     for ( pst=sc->possub; pst!=NULL; pst=next ) {
@@ -2640,7 +2589,7 @@ return(false);
 		otl->features->scripts = sl;
 		sf->changed = true;
 	    } else if ( ret==2 )
-		p->missingscriptinfeature = false;
+		p->selected_records[CID_MissingScriptInFeature] = false;
 return( true );
 	}
     }
@@ -2653,7 +2602,7 @@ static int SCMissingScriptFeat(struct problems *p,SplineFont *sf,SplineChar *sc)
     uint32_t script;
     AnchorPoint *ap;
 
-    if ( !p->missingscriptinfeature || p->finish || sc==NULL )
+    if ( !p->selected_records[CID_MissingScriptInFeature] || p->finish || sc==NULL )
 return( false );
     script = SCScriptFromUnicode(sc);
 
@@ -2675,7 +2624,7 @@ static int StrMissingScript(struct problems *p,SplineFont *sf,OTLookup *otl,char
     if ( class_name==NULL )
 return( false );
 
-    for ( pt=class_name; *pt && p->missingscriptinfeature; ) {
+    for ( pt=class_name; *pt && p->selected_records[CID_MissingScriptInFeature]; ) {
 	while ( *pt==' ' ) ++pt;
 	if ( *pt=='\0' )
     break;
@@ -2740,8 +2689,8 @@ static int CheckForATT(struct problems *p) {
     _sf = p->fv->b.sf;
     if ( _sf->cidmaster ) _sf = _sf->cidmaster;
 
-    if ( p->missingglyph && !p->finish ) {
-	if ( p->cv!=NULL )
+    if ( p->selected_records[CID_MissingGlyph] && !p->finish ) {
+	if ( CVValid(p->fv->b.sf,p->sc,p->cv) )
 	    found = SCMissingGlyph(p,p->cv->b.sc);
 	else if ( p->msc!=NULL )
 	    found = SCMissingGlyph(p,p->msc);
@@ -2757,16 +2706,16 @@ static int CheckForATT(struct problems *p) {
 		found |= KCMissingGlyph(p,kc,false);
 	    for ( kc=_sf->vkerns; kc!=NULL && !p->finish; kc=kc->next )
 		found |= KCMissingGlyph(p,kc,true);
-	    for ( fpst=_sf->possub; fpst!=NULL && !p->finish && p->missingglyph; fpst=fpst->next )
+	    for ( fpst=_sf->possub; fpst!=NULL && !p->finish && p->selected_records[CID_MissingGlyph]; fpst=fpst->next )
 		found |= FPSTMissingGlyph(p,fpst);
-	    for ( sm=_sf->sm; sm!=NULL && !p->finish && p->missingglyph; sm=sm->next )
+	    for ( sm=_sf->sm; sm!=NULL && !p->finish && p->selected_records[CID_MissingGlyph]; sm=sm->next )
 		found |= ASMMissingGlyph(p,sm);
 	}
 	ClearMissingState(p);
     }
 
-    if ( p->missingscriptinfeature && !p->finish ) {
-	if ( p->cv!=NULL )
+    if ( p->selected_records[CID_MissingScriptInFeature] && !p->finish ) {
+	if ( CVValid(p->fv->b.sf,p->sc,p->cv) )
 	    found = SCMissingScriptFeat(p,_sf,p->cv->b.sc);
 	else if ( p->msc!=NULL )
 	    found = SCMissingScriptFeat(p,_sf,p->msc);
@@ -2782,7 +2731,7 @@ static int CheckForATT(struct problems *p) {
 		found |= KCMissingScriptFeat(p,_sf,kc,false);
 	    for ( kc=_sf->vkerns; kc!=NULL && !p->finish; kc=kc->next )
 		found |= KCMissingScriptFeat(p,_sf,kc,true);
-	    for ( fpst=_sf->possub; fpst!=NULL && !p->finish && p->missingglyph; fpst=fpst->next )
+	    for ( fpst=_sf->possub; fpst!=NULL && !p->finish && p->selected_records[CID_MissingGlyph]; fpst=fpst->next )
 		found |= FPSTMissingScriptFeat(p,_sf,fpst);
 	    /* Apple's state machines don't have the concept of "script" */
 	    /*  for their feature/settings */
@@ -2797,8 +2746,9 @@ static void DoProbs(struct problems *p) {
     SplineChar *sc;
     BDFFont *bdf;
 
+    p->explain = true;
     ret = CheckForATT(p);
-    if ( p->cv!=NULL ) {
+    if ( CVValid(p->fv->b.sf,p->sc,p->cv) ) {
 	ret |= SCProblems(p->cv,NULL,p);
 	ret |= CIDCheck(p,p->cv->b.sc->orig_pos);
     } else if ( p->msc!=NULL ) {
@@ -2820,7 +2770,7 @@ static void DoProbs(struct problems *p) {
 			ret = true;
 		    }
 		}
-		if ( !p->finish && p->bitmaps && !SCWorthOutputting(sc)) {
+		if ( !p->finish && p->selected_records[CID_Bitmaps] && !SCWorthOutputting(sc)) {
 		    for ( bdf=p->fv->b.sf->bitmaps; bdf!=NULL; bdf=bdf->next )
 			if ( i<bdf->glyphcnt && bdf->glyphs[i]!=NULL ) {
 			    sc = SFMakeChar(p->fv->b.sf,p->fv->b.map,i);
@@ -2833,69 +2783,49 @@ static void DoProbs(struct problems *p) {
     }
     if ( !ret )
 	ff_post_error(_("No problems found"),_("No problems found"));
-}
-
-static void FigureStandardHeights(struct problems *p) {
-    BlueData bd;
-
-    QuickBlues(p->fv->b.sf,p->layer,&bd);
-    p->xheight = bd.xheight;
-    p->caph = bd.caph;
-    p->ascent = bd.ascent;
-    p->descent = bd.descent;
-}
-
-static void show_selected_problems(struct problems *p) {
-	p->explain = true;
-	if ( doynearstd )
-	    FigureStandardHeights(p);
-	if ( openpaths || intersectingpaths || pointstooclose  || doxnear || doynear ||
-		doynearstd || linestd || hintnopt || ptnearhint || hintwidth ||
-		direction || p->cidmultiple || p->cidblank || p->flippedrefs ||
-		p->bitmaps || p->advancewidth || p->vadvancewidth || p->stem3 ||
-		p->bitmapwidths || p->missinganchor ||
-		p->irrelevantcontrolpoints || p->badsubs || p->missingglyph ||
-		p->missingscriptinfeature || nonintegral || pointstoofar ||
-		p->toomanypoints || p->toomanyhints || p->missingextrema ||
-		p->toodeeprefs || multuni || multname || uninamemismatch ||
-		p->ptmatchrefsoutofdate || p->refsbadtransformttf ||
-		p->multusemymetrics || p->overlappedhints ||
-		p->mixedcontoursrefs || p->refsbadtransformps ||
-		p->bbymax || p->bbxmax || p->bbymin || p->bbxmin ) {
-	    DoProbs(p);
-	}
+    if ( p->explainw!=NULL )
+	GDrawDestroyWindow(p->explainw);
 }
 
 static void DummyFindProblems(CharView *cv) {
-    struct problems p;
+	struct problems p{};
 
-    memset(&p,0,sizeof(p));
     p.fv = (FontView *) (cv->b.fv);
     p.cv=cv;
     p.layer = CVLayer((CharViewBase *) cv);
     p.map = cv->b.fv->map;
     p.lastcharopened = cv->b.sc;
 
-    p.openpaths = true;
-    p.intersectingpaths = true;
-    p.direction = true;
-    p.flippedrefs = true;
-    p.missingextrema = true;
-    p.toomanypoints = true;
-    p.toomanyhints = true;
-    p.pointstoofar = true;
-    p.nonintegral = true;
-    p.missinganchor = true;
-    p.overlappedhints = true;
-
-    p.pointsmax = 1500;
-    p.hintsmax = 96;
-
-    p.explain = true;
+    p.selected_records[CID_OpenPaths] = true;
+    p.selected_records[CID_IntersectingPaths] = true;
+    p.selected_records[CID_Direction] = true;
+    p.selected_records[CID_FlippedRefs] = true;
+    p.selected_records[CID_MissingExtrema] = true;
+    p.selected_records[CID_TooManyPoints] = true;
+    p.selected_records[CID_TooManyHints] = true;
+    p.selected_records[CID_PointsTooFar] = true;
+    p.selected_records[CID_NonIntegral] = true;
+    p.selected_records[CID_MissingAnchor] = true;
+    p.selected_records[CID_OverlappedHints] = true;
 
     DoProbs(&p);
-    if ( p.explainw!=NULL )
-	GDrawDestroyWindow(p.explainw);
+}
+
+static int SFGetRepresentativeWidth(SplineFont* sf, bool vertical) {
+    // Retrieve ideographic space character for vertical fonts.
+    SplineChar* sc = SFGetChar(sf, vertical ? 0x3000 : ' ', NULL);
+    if (SCWorthOutputting(sc)) {
+        return vertical ? sc->vwidth : sc->width;
+    }
+
+    // Try to find some non-trivial glyph
+    for (int i = 0; i < sf->glyphcnt; ++i)
+        if (SCWorthOutputting(sf->glyphs[i])) {
+            int width = vertical ? sf->glyphs[i]->vwidth : sf->glyphs[i]->width;
+            if (width != 0) return width;
+        }
+
+    return 0;
 }
 
 static std::vector<ProblemRecord> pr_points = {
@@ -3127,8 +3057,6 @@ static void adjust_problem_records(FontView* fv,
     SplineFont* sf = fv->b.sf;
 
     if (lastsf != sf) {
-        SplineChar* ssc = SFGetChar(sf, ' ', NULL);
-
         assert(problem_tabs[6].records[0].cid == CID_BBYMax);
         problem_tabs[6].records[0].value = sf->ascent;
 
@@ -3139,10 +3067,10 @@ static void adjust_problem_records(FontView* fv,
         problem_tabs[6].records[2].value = sf->ascent + sf->descent;
 
         assert(problem_tabs[6].records[4].cid == CID_AdvanceWidth);
-        problem_tabs[6].records[4].value = ssc ? ssc->width : 0;
+        problem_tabs[6].records[4].value = SFGetRepresentativeWidth(sf, false);
 
         assert(problem_tabs[6].records[5].cid == CID_VAdvanceWidth);
-        problem_tabs[6].records[5].value = sf->ascent + sf->descent;
+        problem_tabs[6].records[5].value = SFGetRepresentativeWidth(sf, true);
 
         lastsf = sf;
     }
@@ -3174,151 +3102,17 @@ static void apply_dialog_results(const std::vector<ProblemTab>& problem_tabs,
 
     for (const ProblemTab& tab : problem_tabs) {
         for (const ProblemRecord& rec : tab.records) {
-            /* Points */
-            if (rec.cid == CID_NonIntegral)
-                nonintegral = p.nonintegral = rec.active;
-            if (rec.cid == CID_XNear) {
-                doxnear = p.xnearval = rec.active;
-                if (doxnear) p.xval = xval = std::get<double>(rec.value);
-            }
-            if (rec.cid == CID_YNear) {
-                doynear = p.ynearval = rec.active;
-                if (doynear) p.yval = yval = std::get<double>(rec.value);
-            }
-            if (rec.cid == CID_YNearStd) doynearstd = p.ynearstd = rec.active;
-            if (rec.cid == CID_CpStd) cpstd = p.cpnearstd = rec.active;
-            if (rec.cid == CID_CpOdd) cpodd = p.cpodd = rec.active;
-            if (rec.cid == CID_IrrelevantCP) {
-                irrelevantcp = p.irrelevantcontrolpoints = rec.active;
-                if (irrelevantcp)
-                    p.irrelevantfactor = irrelevantfactor =
-                        std::get<double>(rec.value) / 100.0;
-            }
-            if (rec.cid == CID_PointsTooClose)
-                pointstooclose = p.pointstooclose = rec.active;
-            if (rec.cid == CID_PointsTooFar)
-                pointstoofar = p.pointstoofar = rec.active;
-
-            /* Paths */
-            if (rec.cid == CID_OpenPaths) openpaths = p.openpaths = rec.active;
-            if (rec.cid == CID_IntersectingPaths)
-                intersectingpaths = p.intersectingpaths = rec.active;
-            if (rec.cid == CID_LineStd) linestd = p.linenearstd = rec.active;
-            if (rec.cid == CID_Direction) direction = p.direction = rec.active;
-            if (rec.cid == CID_MissingExtrema)
-                missingextrema = p.missingextrema = rec.active;
-            if (rec.cid == CID_TooManyPoints) {
-                toomanypoints = p.toomanypoints = rec.active;
-                if (toomanypoints)
-                    p.pointsmax = pointsmax = std::get<int>(rec.value);
-            }
-
-            /* Refs */
-            if (rec.cid == CID_FlippedRefs)
-                flippedrefs = p.flippedrefs = rec.active;
-            if (rec.cid == CID_RefBadTransformTTF)
-                refsbadtransformttf = p.refsbadtransformttf = rec.active;
-            if (rec.cid == CID_MixedContoursRefs)
-                mixedcontoursrefs = p.mixedcontoursrefs = rec.active;
-            if (rec.cid == CID_RefBadTransformPS)
-                refsbadtransformps = p.refsbadtransformps = rec.active;
-            if (rec.cid == CID_TooDeepRefs) {
-                toodeeprefs = p.toodeeprefs = rec.active;
-                if (toodeeprefs)
-                    p.refdepthmax = refdepthmax = std::get<int>(rec.value);
-            }
-            if (rec.cid == CID_PtMatchRefsOutOfDate)
-                ptmatchrefsoutofdate = p.ptmatchrefsoutofdate = rec.active;
-            if (rec.cid == CID_MultUseMyMetrics)
-                multusemymetrics = p.multusemymetrics = rec.active;
-
-            /* Hints */
-            if (rec.cid == CID_HintNoPt) hintnopt = p.hintwithnopt = rec.active;
-            if (rec.cid == CID_PtNearHint)
-                ptnearhint = p.ptnearhint = rec.active;
-            if (rec.cid == CID_HintWidthNear) {
-                hintwidth = p.hintwidthnearval = rec.active;
-                if (hintwidth)
-                    widthval = p.widthval = std::get<double>(rec.value);
-            }
-            if (rec.cid == CID_Stem3) stem3 = p.stem3 = rec.active;
-            if (rec.cid == CID_ShowExactStem3 && stem3)
-                showexactstem3 = p.showexactstem3 = rec.active;
-            if (rec.cid == CID_TooManyHints) {
-                toomanyhints = p.toomanyhints = rec.active;
-                if (toomanyhints)
-                    p.hintsmax = hintsmax = std::get<int>(rec.value);
-            }
-            if (rec.cid == CID_OverlappedHints)
-                overlappedhints = p.overlappedhints = rec.active;
-
-            /* ATT */
-            if (rec.cid == CID_MissingGlyph)
-                missingglyph = p.missingglyph = rec.active;
-            if (rec.cid == CID_MissingScriptInFeature)
-                missingscriptinfeature = p.missingscriptinfeature = rec.active;
-            if (rec.cid == CID_BadSubs) badsubs = p.badsubs = rec.active;
-            if (rec.cid == CID_MissingAnchor)
-                missinganchor = p.missinganchor = rec.active;
-
-            /* CID */
-            if (p.fv->b.cidmaster != NULL) {
-                if (rec.cid == CID_CIDMultiple)
-                    cidmultiple = p.cidmultiple = rec.active;
-                if (rec.cid == CID_CIDBlank) cidblank = p.cidblank = rec.active;
-            }
-
-            /* Bounding Box */
-            if (rec.cid == CID_BBYMax) {
-                bbymax = p.bbymax = rec.active;
-                if (bbymax)
-                    bbymax_val = p.bbymax_val = std::get<int>(rec.value);
-            }
-            if (rec.cid == CID_BBYMin) {
-                bbymin = p.bbymin = rec.active;
-                if (bbymin)
-                    bbymin_val = p.bbymin_val = std::get<int>(rec.value);
-            }
-            if (rec.cid == CID_BBXMax) {
-                bbxmax = p.bbxmax = rec.active;
-                if (bbxmax)
-                    bbxmax_val = p.bbxmax_val = std::get<int>(rec.value);
-            }
-            if (rec.cid == CID_BBXMin) {
-                bbxmin = p.bbxmin = rec.active;
-                if (bbxmin)
-                    bbxmin_val = p.bbxmin_val = std::get<int>(rec.value);
-            }
-            if (rec.cid == CID_AdvanceWidth) {
-                advancewidth = p.advancewidth = rec.active;
-                if (advancewidth)
-                    advancewidthval = p.advancewidthval =
-                        std::get<int>(rec.value);
-            }
-            if (p.fv->b.sf->hasvmetrics && rec.cid == CID_VAdvanceWidth) {
-                vadvancewidth = p.vadvancewidth = rec.active;
-                if (vadvancewidth)
-                    vadvancewidthval = p.vadvancewidthval =
-                        std::get<int>(rec.value);
-            }
-
-            /* Random */
-            if (rec.cid == CID_Bitmaps) bitmaps = p.bitmaps = rec.active;
-            if (rec.cid == CID_BitmapWidths)
-                bitmapwidths = p.bitmapwidths = rec.active;
-            if (rec.cid == CID_MultUni) multuni = p.multuni = rec.active;
-            if (rec.cid == CID_MultName) multname = p.multname = rec.active;
-            if (rec.cid == CID_UniNameMisMatch)
-                uninamemismatch = p.uninamemismatch = rec.active;
+            p.selected_records[rec.cid] = rec.active;
+            if (!std::holds_alternative<std::monostate>(rec.value))
+                p.record_values[rec.cid] = rec.value;
         }
     }
 }
 
 void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
-    struct problems p;
+	struct problems p{};
     bool do_apply = false;
 
-    memset(&p,0,sizeof(p));
     if ( fv==NULL ) fv = (FontView *) (cv->b.fv);
     p.fv = fv; p.cv=cv; p.msc = sc;
     p.near = near;
@@ -3336,15 +3130,14 @@ void FindProblems(FontView *fv,CharView *cv, SplineChar *sc) {
     }
 
     adjust_problem_records(fv, pr_tabs);
-    do_apply = find_problems_dialog(fv->gw, pr_tabs, p.near);
+
+    GWindow parent = (cv != NULL) ? cv->gw : fv->gw;
+    do_apply = find_problems_dialog(parent, pr_tabs, p.near);
 
     if (do_apply) {
 	apply_dialog_results(pr_tabs, p);
-	show_selected_problems(&p);
+	DoProbs(&p);
     }
-
-    if ( p.explainw!=NULL )
-	GDrawDestroyWindow(p.explainw);
 }
 
 /* ************************************************************************** */

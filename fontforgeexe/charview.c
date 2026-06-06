@@ -12445,6 +12445,8 @@ int CVValid(SplineFont *sf, SplineChar *sc, CharView *cv) {
     /*  from a font */
     CharView *test;
 
+    if ( cv==NULL )
+return( false );
     if ( cv->b.sc!=sc || sc->parent!=sf )
 return( false );
     if ( sc->orig_pos<0 || sc->orig_pos>sf->glyphcnt )
