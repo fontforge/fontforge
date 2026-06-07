@@ -38,6 +38,10 @@ VerifiedEntry::VerifiedEntry() {
     // prevent visual annoyance during the edit.
     signal_focus_in_event().connect(
         sigc::mem_fun(*this, &VerifiedEntry::focus_in_event_slot));
+
+    // Also remove the error highlight when contents change.
+    signal_changed().connect(
+        sigc::mem_fun(*this, &VerifiedEntry::changed_slot));
 }
 
 bool VerifiedEntry::verify() {
@@ -45,10 +49,7 @@ bool VerifiedEntry::verify() {
     Glib::ustring text = get_text();
     bool contents_valid = verifier_(text, start_pos, end_pos);
     if (!contents_valid) {
-        // Special CSS has higher priority than the legacy GDraw compatibility
-        // CSS, but lower than the GTK inspector CSS.
-        get_style_context()->add_provider(error_css_provider_,
-                                          GTK_STYLE_PROVIDER_PRIORITY_USER - 1);
+        set_error_state();
         select_region(start_pos, end_pos);
 
         // This widget is designed to clear highlight when the user focuses on
@@ -57,13 +58,31 @@ bool VerifiedEntry::verify() {
         // focus-in.
         Gtk::Window* top = dynamic_cast<Gtk::Window*>(get_toplevel());
         if (top) top->unset_focus();
+    } else {
+        clear_error_state();
     }
     return contents_valid;
 }
 
 bool VerifiedEntry::focus_in_event_slot(GdkEventFocus*) {
-    get_style_context()->remove_provider(error_css_provider_);
+    clear_error_state();
     return false;
+}
+
+void VerifiedEntry::changed_slot() { clear_error_state(); }
+
+void VerifiedEntry::set_error_state() {
+    // Special CSS has higher priority than the legacy GDraw compatibility
+    // CSS, but lower than the GTK inspector CSS.
+    get_style_context()->add_provider(error_css_provider_,
+                                      GTK_STYLE_PROVIDER_PRIORITY_USER - 1);
+    set_icon_from_icon_name("dialog-warning-symbolic",
+                            Gtk::ENTRY_ICON_SECONDARY);
+}
+
+void VerifiedEntry::clear_error_state() {
+    get_style_context()->remove_provider(error_css_provider_);
+    unset_icon(Gtk::ENTRY_ICON_SECONDARY);
 }
 
 }  // namespace ff::widgets

@@ -48,7 +48,7 @@ if(ENABLE_GUI)
     fvmetricsdlg.c
     gotodlg.c
     groupsdlg.c
-    histograms.c
+    histograms.cpp
     images.c
     justifydlg.c
     kernclass.c

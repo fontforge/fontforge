@@ -128,7 +128,6 @@ fontforge.FontInfo.Font: ^View.DefaultFont
 fontforge.GlyphInfo.Font: ^View.MonoFont
 fontforge.Groups.Font: ^View.DefaultFont
 fontforge.Histogram.GraphColor: #2020ff
-fontforge.Histogram.Font: 83% ^View.DefaultFont
 fontforge.KernClass.Font: ^View.MonoFont
 fontforge.KernClass.TextColor: #006080
 fontforge.KernFormat.Font: ^View.DefaultFont

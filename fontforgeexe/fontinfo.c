@@ -55,6 +55,8 @@
 #include "ustring.h"
 #include "utype.h"
 
+#include "gtk/show_histogram_shim.hpp"
+
 #include <locale.h>
 #include <math.h>
 #include <time.h>
@@ -2339,7 +2341,7 @@ static int PI_Hist(GGadget *g, GEvent *e) {
 	else
 return( true );		/* can't happen */
 	tempdict = GFI_ParsePrivate(d);
-	SFHistogram(d->sf,ly_fore,tempdict,NULL,NULL,h);
+	SFHistogram(d->gw, d->sf,ly_fore,tempdict,NULL,NULL,h);
 	ret = copy(PSDictHasEntry(tempdict,key));
 	if ( ret!=NULL ) {
 	    free(strings[r*cols+1].u.md_str);

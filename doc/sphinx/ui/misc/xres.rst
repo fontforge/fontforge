@@ -674,10 +674,6 @@ Misc Windows
 
    Sets the font used in the Groups dialog
 
-.. object:: fontforge.Histogram.Font
-
-   Sets the font used in the Histogram dialog
-
 .. object:: fontforge.KernClass.TextColor
 
    Color for kerning class names.

@@ -48,4 +48,9 @@ inline char get_list_separator() {
 // TODO(iorsh): Integrate this function into the global log collection
 void post_error(const char* title, const char* statement, ...);
 
+Glib::RefPtr<Gdk::Cursor> set_cursor(Gtk::Widget* widget,
+                                     const Glib::ustring& name);
+
+void unset_cursor(Gtk::Widget* widget, Glib::RefPtr<Gdk::Cursor> old_cursor);
+
 }  // namespace ff::ui_utils
