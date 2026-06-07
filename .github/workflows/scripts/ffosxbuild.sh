@@ -63,6 +63,53 @@ popd
 mkdir -p $APPDIR/Contents/MacOS
 ln -s ../Frameworks/Python.framework/Versions/$PYVER/bin/$PYTHON "$APPDIR/Contents/MacOS/FFPython"
 
+# --- Code signing -----------------------------------------------------------
+# This MUST run after lddx: its install_name_tool rewrites above invalidate the
+# linker's ad-hoc signatures on the collected dylibs/modules. On Apple Silicon
+# every Mach-O must carry a valid signature to load, so we re-sign everything.
+#
+# Defaults to ad-hoc ("-"), which makes the bundle launchable on arm64 with the
+# usual Gatekeeper bypass (right-click -> Open). To produce a hardened-runtime,
+# notarizable bundle instead, set CODESIGN_IDENTITY to a real
+# "Developer ID Application: Name (TEAMID)" identity (see #5112); CI sets this
+# automatically when signing secrets are present.
+IDENTITY="${CODESIGN_IDENTITY:--}"
+ENTITLEMENTS="${CODESIGN_ENTITLEMENTS:-$SCRIPT_BASE/../../../osx/entitlements.plist}"
+
+if [ "$IDENTITY" = "-" ]; then
+    echo "Ad-hoc signing the bundle..."
+    LIB_SIGN=(--force --timestamp=none --sign -)
+    APP_SIGN=(--force --timestamp=none --sign -)
+else
+    echo "Signing the bundle with identity: $IDENTITY"
+    # Hardened runtime + secure timestamp are required for notarization.
+    # Entitlements (incl. disable-library-validation, so the embedded Python
+    # interpreter can load third-party C extensions) go on the main app only.
+    LIB_SIGN=(--force --options runtime --timestamp --sign "$IDENTITY")
+    APP_SIGN=(--force --options runtime --timestamp --sign "$IDENTITY" --entitlements "$ENTITLEMENTS")
+fi
+
+# 1. Sign every nested Mach-O (dylibs, Python .so modules, helper executables).
+#    -type f skips the symlinks created above.
+echo "Signing nested Mach-O files..."
+find "$APPDIR" -type f | while read -r f; do
+    if file "$f" | grep -q "Mach-O"; then
+        codesign "${LIB_SIGN[@]}" "$f"
+    fi
+done
+
+# 2. Sign the embedded Python framework version.
+codesign "${LIB_SIGN[@]}" "$APPDIR/Contents/Frameworks/Python.framework/Versions/$PYVER"
+
+# 3. Sign the app bundle itself last (main executable receives entitlements).
+codesign "${APP_SIGN[@]}" "$APPDIR"
+
+# Verify integrity. Do NOT use spctl here: it rejects ad-hoc signatures by
+# design and would fail CI spuriously. notarytool (when enabled) is the real
+# Gatekeeper-level check.
+codesign --verify --strict --verbose=2 "$APPDIR"
+# ---------------------------------------------------------------------------
+
 # Package it up
 if [ ! -z "$CI" ]; then
     echo "Creating the dmg..."
