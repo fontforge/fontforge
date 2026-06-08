@@ -275,6 +275,11 @@ const std::string RichTechEditor::rich_text_mime_type =
     "application/vnd.fontforge.rich-text+xml";
 
 RichTechEditor::RichTechEditor(const std::vector<double>& pointsizes) {
+    scale_css_provider_ = Gtk::CssProvider::create();
+    text_view_.get_style_context()->add_provider(
+        scale_css_provider_, GTK_STYLE_PROVIDER_PRIORITY_USER - 1);
+    refresh_scale_css();
+
     auto bold_tag = text_view_.get_buffer()->create_tag("bold");
     bold_tag->property_weight() = 700;
 
@@ -317,6 +322,9 @@ RichTechEditor::RichTechEditor(const std::vector<double>& pointsizes) {
     text_view_.set_wrap_mode(Gtk::WRAP_WORD);
     text_view_.set_hexpand();
     text_view_.set_vexpand();
+    text_view_.add_events(Gdk::SCROLL_MASK);
+    text_view_.signal_scroll_event().connect(
+        sigc::mem_fun(*this, &RichTechEditor::on_text_view_scroll_event));
     g_signal_connect(text_view_.gobj(), "paste-clipboard",
                      G_CALLBACK(&RichTechEditor::on_text_view_paste_clipboard),
                      this);
@@ -347,6 +355,41 @@ void RichTechEditor::on_text_view_paste_clipboard(GtkTextView* text_view,
     if (self->request_clipboard_rich_text()) {
         g_signal_stop_emission_by_name(text_view, "paste-clipboard");
     }
+}
+
+bool RichTechEditor::on_text_view_scroll_event(GdkEventScroll* event) {
+    static const double zoom_sensitivity = 0.1;
+    if (!event || (event->state & GDK_CONTROL_MASK) == 0) {
+        return false;
+    }
+
+    double updated_scale = global_scale_;
+    if (event->direction == GDK_SCROLL_UP) {
+        updated_scale += zoom_sensitivity;
+    } else if (event->direction == GDK_SCROLL_DOWN) {
+        updated_scale -= zoom_sensitivity;
+    } else if (event->direction == GDK_SCROLL_SMOOTH) {
+        updated_scale -= event->delta_y * zoom_sensitivity;
+    } else {
+        return false;
+    }
+
+    updated_scale = std::clamp(updated_scale, 0.3, 3.0);
+
+    if (std::abs(updated_scale - global_scale_) < 0.000001) {
+        return true;
+    }
+
+    global_scale_ = updated_scale;
+    refresh_scale_css();
+
+    return true;
+}
+
+void RichTechEditor::refresh_scale_css() {
+    int relative_percent = static_cast<int>(global_scale_ * 100.0);
+    scale_css_provider_->load_from_data(
+        "textview {font-size: " + std::to_string(relative_percent) + "%;}");
 }
 
 bool RichTechEditor::request_clipboard_rich_text() {
@@ -432,6 +475,7 @@ RichTechEditor::TagComboBox* RichTechEditor::build_stretch_combo() {
 
 RichTechEditor::TagComboBox* RichTechEditor::build_size_combo(
     const std::vector<double>& pointsizes) {
+    double default_size = 36.0;
     std::string default_id = "size|36";
 
     std::vector<double> sorted_pointsizes = pointsizes;
@@ -454,10 +498,11 @@ RichTechEditor::TagComboBox* RichTechEditor::build_size_combo(
         sprintf(buffer, _("%s pt"), num_str.c_str());
         Glib::ustring label(buffer);
 
-        // Create and register tag
+        // Create and register tag. The display size is emulated by scaling
+        // relatively to the default size.
         if (tag_id != default_id) {
             auto tag = text_view_.get_buffer()->create_tag(tag_id);
-            tag->property_size_points() = size_pt;
+            tag->property_scale() = size_pt / default_size;
             tag_map[tag_id] = tag;
         }
 

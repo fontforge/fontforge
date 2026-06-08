@@ -131,6 +131,12 @@ class RichTechEditor : public Gtk::Grid {
     };
 
  protected:
+    // The global scale controls the display size of all text in the editor. It
+    // is convenient when the user wants to set the entire sample in a large or
+    // a small size, but still have a resonably scaled text in UI.
+    double global_scale_ = 1.0;
+    Glib::RefPtr<Gtk::CssProvider> scale_css_provider_;
+
     Gtk::ScrolledWindow scrolled_;
     Gtk::TextView text_view_;
 
@@ -143,6 +149,8 @@ class RichTechEditor : public Gtk::Grid {
 
     static void on_text_view_paste_clipboard(GtkTextView* text_view,
                                              gpointer user_data);
+    bool on_text_view_scroll_event(GdkEventScroll* event);
+    void refresh_scale_css();
     bool request_clipboard_rich_text();
     void on_clipboard_rich_text_received(const Glib::ustring& format,
                                          const std::string& text);
