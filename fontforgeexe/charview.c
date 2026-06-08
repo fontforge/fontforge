@@ -8706,14 +8706,9 @@ static void cv_ptlistcheck(CharView *cv, struct gmenuitem *mi) {
 	    else if ( notimplicit!=spl->first->dontinterpolate ) notimplicit = -2;
 	}
 	for ( spline=spl->first->next; spline!=NULL && spline!=first; spline = spline->to->next ) {
-	    /* On a closed contour this loop walks all the way back to spl->first,
-	       which was already accounted for in the per-contour preamble above.
-	       Skip the per-point bookkeeping for it here so it is not counted
-	       twice -- otherwise selecting just a contour's first point looks like
-	       two selected points (cnt==2), wrongly enabling Make Line/Make Arc and
-	       perturbing the other point-count conditions. The per-spline
-	       spline_selected tally below is unaffected: the wrap spline is a real
-	       spline and must still count. */
+	    /* On a closed contour the walk returns to spl->first, already handled
+	       in the preamble above, so skip it here. (spline_selected below still
+	       counts the wrap spline.) */
 	    if ( spline->to->selected && spline->to!=spl->first ) {
 		if ( type==-2 ) type = spline->to->pointtype;
 		else if ( type!=spline->to->pointtype ) type = -1;
