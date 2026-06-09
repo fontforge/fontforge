@@ -198,8 +198,7 @@ fontforge.registerMenuItem(lambda m, p: run_alignment(p, "custom_transform"), No
 # ========================================================
 # 【追加键位】
 # ========================================================
-import os
-import sys
+import os, sys
 
 # 1. 识别运行环境
 is_win = sys.platform.startswith("win")
@@ -234,7 +233,7 @@ except Exception:
     sys_lang = "en"
 is_zh_sys = bool(sys_lang and sys_lang.startswith("zh"))
 
-# 3. 基础菜单路径前缀（固定定义）
+# 3. 工具菜单，路径前缀
 zh_pfx = ("FontView.Menu.Tools.字形置位.", "CharView.Menu.Tools.字形置位.")
 en_pfx = ("FontView.Menu.Tools.Glyph Alignment.", "CharView.Menu.Tools.Glyph Alignment.")
 
@@ -259,7 +258,7 @@ else:
     
     suffixes = ["Center in Height & Width: Ctrl+ﾵ", "Center in Height: Ctrl+ﾮ", "Center in Width: Ctrl+ﾰ", "Center Top: Ctrl+ﾸ", "Center Bottom: Ctrl+ﾲ", "Center Left: Ctrl+ﾴ", "Center Right: Ctrl+ﾶ", "Top Left: Ctrl+ﾷ", "Bottom Left: Ctrl+ﾱ", "Top Right: Ctrl+ﾹ", "Bottom Right: Ctrl+ﾳ", "Top: Ctrl+ﾭ", "Bottom: Ctrl+ﾫ", "Left: Ctrl+ﾯ", "Right: Ctrl+ﾪ", "Transformation Command:ﾰ"]
 
-# 组合菜单快捷键
+# 组合卅行键位
 raw_hotkeys = [f"{p}{s}" for p in prefix for s in suffixes]
 
 # 6. 读取之前文件，过滤冲突语言键位，保留用户自定义键
@@ -279,11 +278,11 @@ for line in lines:
     is_valid = line.strip() and not line.strip().startswith("#") and ":" in line
     menu_path = line.split(":")[0].strip() if is_valid else ""
     
-    # 剔除冲突旧键
+    # 剔除冲突键位
     if menu_path.startswith(opp_prefix): 
         removed_count += 1
         continue  
-    # 记录今天已存在的键
+    # 记录应存键位
     if menu_path.startswith(prefix):     
         existing_paths.add(menu_path)  
         
