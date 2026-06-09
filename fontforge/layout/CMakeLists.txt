@@ -3,6 +3,7 @@
 add_library(layout OBJECT
   layout_shim.hpp
   layout_shim.cpp
+  i_printer.hpp
 )
 
 if(ENABLE_GUI)
