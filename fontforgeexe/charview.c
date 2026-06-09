@@ -8706,7 +8706,10 @@ static void cv_ptlistcheck(CharView *cv, struct gmenuitem *mi) {
 	    else if ( notimplicit!=spl->first->dontinterpolate ) notimplicit = -2;
 	}
 	for ( spline=spl->first->next; spline!=NULL && spline!=first; spline = spline->to->next ) {
-	    if ( spline->to->selected ) {
+	    /* On a closed contour the walk returns to spl->first, already handled
+	       in the preamble above, so skip it here. (spline_selected below still
+	       counts the wrap spline.) */
+	    if ( spline->to->selected && spline->to!=spl->first ) {
 		if ( type==-2 ) type = spline->to->pointtype;
 		else if ( type!=spline->to->pointtype ) type = -1;
 		selpt = spline->to;
@@ -8716,10 +8719,9 @@ static void cv_ptlistcheck(CharView *cv, struct gmenuitem *mi) {
 		    ++ccp_cnt;
 		if ( notimplicit==-1 ) notimplicit = spline->to->dontinterpolate;
 		else if ( notimplicit!=spline->to->dontinterpolate ) notimplicit = -2;
-		if ( spline->from->selected )
-		    ++spline_selected;
 	    }
 	    if ( spline->to->selected && spline->from->selected ) {
+		++spline_selected;
 		if ( acceptable==-1 )
 		    acceptable = spline->acceptableextrema;
 		else if ( acceptable!=spline->acceptableextrema )
