@@ -6,7 +6,7 @@
 
 Made by: asdasdsasa
 
-Version: 20260531
+Version: 20260609
 
 ========================================================
 
@@ -14,9 +14,9 @@ Version: 20260531
 
 ✓ Ctrl+ﾵ(Numpad5): Glyph alignment in FontView and CharView.
 
-\- ﾵ(Numpad5): Align selected elements in CharView. (no plan)
+✗ ﾵ(Numpad5): Align selected elements in CharView. 
 
-\- Ctrl+Alt+ﾵ(Numpad5): Align selected element 1 to selected element 2 in CharView. (no plan)
+✗ Ctrl+Alt+ﾵ(Numpad5): Align selected element 1 to selected element 2 in CharView. 
 
 ========================================================
 
@@ -32,7 +32,9 @@ Version: 20260531
 
 ###### Script Path
 
-Windows: C:\\Users\\YourUsername\\AppData\\Roaming\\FontForge\\python\\
+Windows Installable Version: C:\\Users\\YourUsername\\AppData\\Roaming\\FontForge\\python\\
+
+Windows Portable Version: FontForge\\share\\fontforge\\python\\
 
 Linux\\Mac: \~/.config/fontforge/python/
 
@@ -86,7 +88,7 @@ Ctrl+Numpad+: Bottom
 
 &#x20; Global: z, t     |  Both: zt, tz
 
-&#x20; Scale  : h, w    | Both: hw, wh
+&#x20; Scale  : w, h    | Both: wh, hw
 
 &#x20; Rotate: l, r      | Flip  : fh, fv
 
@@ -102,7 +104,7 @@ Ctrl+Numpad+: Bottom
 
 制作: 留幺
 
-版本: 20260531
+版本: 20260609
 
 ========================================================
 
@@ -110,9 +112,9 @@ Ctrl+Numpad+: Bottom
 
 ✓ Ctrl+ﾵ(小键盘5): 字形置位用于字体本体窗口、字形编辑窗口。
 
-\- ﾵ(小键盘5): 所选置位用于字形编辑窗口 （无）
+✗ ﾵ(小键盘5): 所选置位用于字形编辑窗口 。
 
-\- Ctrl+Alt+ﾵ(小键盘5): 所选其一置位其二，用于字形编辑窗口（无）
+✗ Ctrl+Alt+ﾵ(小键盘5): 所选其一置位其二，用于字形编辑窗口。
 
 ========================================================
 
@@ -128,7 +130,9 @@ Ctrl+Numpad+: Bottom
 
 ###### 脚本路径
 
-Windows: C:\\Users\\用户名\\AppData\\Roaming\\FontForge\\python\\
+Windows安装版本: C:\\Users\\用户名\\AppData\\Roaming\\FontForge\\python\\
+
+Windows无痕版本: FontForge\\share\\fontforge\\python\\
 
 Linux\\Mac: \~/.config/fontforge/python/
 
@@ -182,7 +186,7 @@ Ctrl+小键盘+: 居下
 
 &#x20; 纬经: z, t  | 并行: zt, tz
 
-&#x20; 高宽: h, w| 并行: hw,wh
+&#x20; 宽高: w, h| 并行: wh, hw
 
 &#x20; 顺逆: r, l   | 反倒: fh, fv
 
