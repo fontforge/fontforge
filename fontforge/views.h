@@ -1041,7 +1041,7 @@ extern void CVCheckResizeCursors(CharView *cv);
 extern void CVMouseDownHand(CharView *cv);
 extern void CVMouseUpHand(CharView *cv);
 extern void CVMouseDownTransform(CharView *cv);
-extern void CVMouseMoveTransform(CharView *cv);
+extern void CVMouseMoveTransform(CharView *cv, uint32_t input_state);
 extern void CVMouseUpTransform(CharView *cv);
 extern void CVMouseDownKnife(CharView *cv);
 extern void CVMouseMoveKnife(CharView *cv,PressedOn *);

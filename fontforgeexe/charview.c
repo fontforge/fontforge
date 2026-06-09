@@ -2106,7 +2106,10 @@ return;
 
 static void DrawTransOrigin(CharView *cv, GWindow pixmap) {
     CharViewTab* tab = CVGetActiveTab(cv);
-    int x = rint(cv->p.cx*tab->scale) + tab->xoff, y = cv->height-tab->yoff-rint(cv->p.cy*tab->scale);
+    real originx = cv->active_tool==cvt_scale ? cv->expandorigin.x : cv->p.cx;
+    real originy = cv->active_tool==cvt_scale ? cv->expandorigin.y : cv->p.cy;
+    int x = rint(originx*tab->scale) + tab->xoff;
+    int y = cv->height-tab->yoff-rint(originy*tab->scale);
 
     GDrawDrawLine(pixmap,x-4,y,x+4,y,transformorigincol);
     GDrawDrawLine(pixmap,x,y-4,x,y+4,transformorigincol);
@@ -3780,8 +3783,8 @@ return;
 return;
 
     if ( cv->active_tool==cvt_scale ) {
-	xdiff = 100.0 + (cv->info.x-cv->p.cx)/(4*tab->scale);
-	ydiff = 100.0 + (cv->info.y-cv->p.cy)/(4*tab->scale);
+	xdiff = cv->expandwidth==0  ? 100.0 : 100.0*(cv->info.x-cv->expandorigin.x)/cv->expandwidth;
+	ydiff = cv->expandheight==0 ? 100.0 : 100.0*(cv->info.y-cv->expandorigin.y)/cv->expandheight;
 	if ( xdiff>=100 || xdiff<=-100 || ydiff>=100 || ydiff<=-100 )
 	    sprintf(buffer,"%d%%%s%d%%", (int) xdiff, coord_sep, (int) ydiff );
 	else
@@ -4941,8 +4944,10 @@ return;
 
     SetFS(&fs,&p,cv,event);
     if ( cv->active_tool == cvt_freehand )
-	/* freehand does it's own kind of constraining */;
-    else if ( (event->u.mouse.state&ksm_shift) && !cv->p.rubberbanding ) {
+	/* freehand does its own kind of constraining */;
+    else if ( (event->u.mouse.state&ksm_shift) &&
+              !cv->p.rubberbanding &&
+              cv->active_tool!=cvt_scale) {
 	/* Constrained */
 
 	fake.u.mouse = event->u.mouse;
@@ -5097,7 +5102,7 @@ return;
       break;
       case cvt_rotate: case cvt_flip: case cvt_scale: case cvt_skew:
       case cvt_3d_rotate: case cvt_perspective:
-	CVMouseMoveTransform(cv);
+	CVMouseMoveTransform(cv, event->u.mouse.state);
       break;
       case cvt_knife:
 	CVMouseMoveKnife(cv,&p);

@@ -30,14 +30,26 @@
 #include "cvundoes.h"
 #include "fontforgeui.h"
 #include "nonlineartrans.h"
-
 #include <math.h>
+
+/* Cache the fixed point and original drag vector for the scale gesture. */
+static void ScaleSetOppositeOrigin(CharView *cv) {
+    BasePoint center;
+
+    CVFindCenter(cv, &center, !CVAnySel(cv,NULL,NULL,NULL,NULL));
+    cv->expandorigin.x = 2*center.x - cv->p.cx;
+    cv->expandorigin.y = 2*center.y - cv->p.cy;
+    cv->expandwidth    = cv->p.cx - cv->expandorigin.x;
+    cv->expandheight   = cv->p.cy - cv->expandorigin.y;
+}
 
 void CVMouseDownTransform(CharView *cv) {
     CVPreserveTState(cv);
+    if ( cv->active_tool==cvt_scale )
+        ScaleSetOppositeOrigin(cv);
 }
 
-void CVMouseMoveTransform(CharView *cv) {
+void CVMouseMoveTransform(CharView *cv, uint32_t input_state) {
     CharViewTab* tab = CVGetActiveTab(cv);
     real transform[6];
 
@@ -68,8 +80,20 @@ void CVMouseMoveTransform(CharView *cv) {
 	    }
 	  } break;
 	  case cvt_scale: {
-	      transform[0] = 1.0+(cv->info.x-cv->p.cx)/(400*tab->scale);
-	      transform[3] = 1.0+(cv->info.y-cv->p.cy)/(400*tab->scale);
+              /* Scale from cached opposite side/corner so dragged point tracks the mouse. */
+	      transform[0] = cv->expandwidth==0 ? 1 : (cv->info.x-cv->expandorigin.x)/cv->expandwidth;
+	      transform[3] = cv->expandheight==0 ? 1 : (cv->info.y-cv->expandorigin.y)/cv->expandheight;
+
+	      /* Shift key constrains interactive scaling to single dimension */
+              if ( input_state&ksm_shift ) {
+                  real dx = fabs(cv->info.x-cv->p.cx);
+                  real dy = fabs(cv->info.y-cv->p.cy);
+
+                  if ( cv->expandwidth==0 )       transform[0] = 1; // press centered horizontally, ver motion only
+                  else if ( cv->expandheight==0 ) transform[3] = 1; // press centered vertically, hor motion only
+                  else if ( dx>=dy )              transform[3] = 1; // hor drag dominant, lock ver scale
+                  else                            transform[0] = 1; // ver drag dominant, lock hor scale
+              }
 	  } break;
 	  case cvt_skew: {
 	    real angle = atan2(cv->info.y-cv->p.cy,cv->info.x-cv->p.cx);
@@ -108,8 +132,12 @@ void CVMouseMoveTransform(CharView *cv) {
 	  default:
 	  break;
 	}
-	    /* Make the pressed point be the center of the transformation */
-	if ( cv->active_tool!=cvt_perspective ) {
+	if ( cv->active_tool==cvt_scale ) {
+	    /* Translate scaled outline back so cached origin remains fixed */
+	    transform[4] = (1-transform[0])*cv->expandorigin.x;
+	    transform[5] = (1-transform[3])*cv->expandorigin.y;
+	} else if ( cv->active_tool!=cvt_perspective ) {
+	    /* Other transform tools: pressed point is center of the transformation */
 	    transform[4] = -cv->p.cx*transform[0] -
 			    cv->p.cy*transform[2] +
 			    cv->p.cx;
