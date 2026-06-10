@@ -522,19 +522,25 @@ This tool allows you to scale the selection by eye rather than by a set amount
 (if there is no selection then everything in the current layer will be scaled,
 as though all points in that layer were selected).
 
-When scaling a selection, FontForge scales the selection so the pressed point
-follows the mouse, while keeping the side or corner opposite the mouse press fixed.
+Double clicking on this tool icon will bring up the transform dialog with the
+"Scale..." option selected, useful for typing in scale percentages manually.
 
-Examples:
+When the scale tool is active, FontForge shows a bounding box around the
+selection, with draggable resize handles at the corners and edges:
 
-* Dragging near the upper right corner keeps the lower left corner fixed.
-* Dragging near the right edge keeps the left edge fixed and scales horizontally.
+.. image:: /images/cvscalemode.gif
+   :align: center
 
-If you hold down the shift key, FontForge scales in only one dimension, controlled
-by the direction of the mouse drag.
+* Dragging a corner resize handle scales the selection while keeping the opposite corner fixed.
 
-Double clicking on this will bring up the transform dialog with the "Scale..."
-option selected.
+* Dragging a left/right edge handle scales only horizontally while keeping the opposite edge fixed.
+
+* Dragging a top/bottom edge handle scales only vertically while keeping the opposite edge fixed.
+
+Clicking or dragging anywhere other than a bounding box handle does not start a
+scale operation, and is ignored. To change the selected points to scale, switch
+to the "pointer tool" to make a new selection, the come back to the scale tool
+to resize the selection.
 
 
 .. _charview.flip:

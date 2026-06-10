@@ -1099,6 +1099,9 @@ void _CVRestoreTOriginalState(CharViewBase *cv,PressedOn *p) {
 	img->xscale = uimg->xscale;
 	img->yscale = uimg->yscale;
     }
+    /* Restore metrics during incremental transforms to avoid mousemove drift. */
+    cv->sc->width  = undo->u.state.width;
+    cv->sc->vwidth = undo->u.state.vwidth;
 }
 
 void _CVUndoCleanup(CharViewBase *cv,PressedOn *p) {

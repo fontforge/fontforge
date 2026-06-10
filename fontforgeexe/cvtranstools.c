@@ -49,9 +49,9 @@ void CVMouseDownTransform(CharView *cv) {
         ScaleSetOppositeOrigin(cv);
 }
 
-void CVMouseMoveTransform(CharView *cv, uint32_t input_state) {
+void CVMouseMoveTransform(CharView *cv) {
     CharViewTab* tab = CVGetActiveTab(cv);
-    real transform[6];
+    real transform[6];    // PostScript-style 6-value transform
 
     CVRestoreTOriginalState(cv);
     if ( cv->info.x != cv->p.cx || cv->info.y != cv->p.cy ) {
@@ -81,19 +81,14 @@ void CVMouseMoveTransform(CharView *cv, uint32_t input_state) {
 	  } break;
 	  case cvt_scale: {
               /* Scale from cached opposite side/corner so dragged point tracks the mouse. */
-	      transform[0] = cv->expandwidth==0 ? 1 : (cv->info.x-cv->expandorigin.x)/cv->expandwidth;
+	      transform[0] = cv->expandwidth==0  ? 1 : (cv->info.x-cv->expandorigin.x)/cv->expandwidth;
 	      transform[3] = cv->expandheight==0 ? 1 : (cv->info.y-cv->expandorigin.y)/cv->expandheight;
 
-	      /* Shift key constrains interactive scaling to single dimension */
-              if ( input_state&ksm_shift ) {
-                  real dx = fabs(cv->info.x-cv->p.cx);
-                  real dy = fabs(cv->info.y-cv->p.cy);
-
-                  if ( cv->expandwidth==0 )       transform[0] = 1; // press centered horizontally, ver motion only
-                  else if ( cv->expandheight==0 ) transform[3] = 1; // press centered vertically, hor motion only
-                  else if ( dx>=dy )              transform[3] = 1; // hor drag dominant, lock ver scale
-                  else                            transform[0] = 1; // ver drag dominant, lock hor scale
-              }
+	      /* Edge handles constrain scaling to the dragged axis. */
+	      if ( cv->expandedge==ee_left || cv->expandedge==ee_right )
+	          transform[3] = 1;     // lt/rt? lock yscale=1
+	      else if ( cv->expandedge==ee_up || cv->expandedge==ee_down )
+	          transform[0] = 1;     // up/dn? lock xscale=1
 	  } break;
 	  case cvt_skew: {
 	    real angle = atan2(cv->info.y-cv->p.cy,cv->info.x-cv->p.cx);
@@ -146,7 +141,9 @@ void CVMouseMoveTransform(CharView *cv, uint32_t input_state) {
 			    cv->p.cy;
 	}
 	CVSetCharChanged(cv,true);
-	CVTransFunc(cv,transform,false);
+	/* Don't move 'advance width' when scale-tool 'no selection' means 'all points' */
+	CVTransFunc(cv, transform, cv->active_tool==cvt_scale && !CVAnySel(cv,NULL,NULL,NULL,NULL)
+	                           ? fvt_dontmovewidth : false);
     }
     SCUpdateAll(cv->b.sc);
     CVGridHandlePossibleFitChar(cv);

@@ -571,6 +571,29 @@ static void DrawTangentPoint( GWindow pixmap, int x, int y,
 	GDrawFillPoly(pixmap,gp,4,col);
 }
 
+/* Draw scale tool's selection bounds and draggable edge/corner handles */
+static void CVDrawScaleSelectionBox(CharView *cv, GWindow pixmap) {
+    static enum expandedge edges[] = { ee_nw, ee_up, ee_ne, ee_right, ee_se, ee_down, ee_sw, ee_left };
+    CharViewTab* tab = CVGetActiveTab(cv);
+    DBounds bb;
+    int i;
+
+    if ( !CVScaleSelectionBounds(cv,&bb) )
+	return;
+    CVDrawBB(cv,pixmap,&bb);
+    for ( i=0; i<sizeof(edges)/sizeof(edges[0]); ++i ) {
+	BasePoint pt, unit;
+	int x, y;
+
+	CVScaleHandlePoint(&bb, edges[i], &pt);
+	unit.x = pt.x-(bb.minx+bb.maxx)/2;
+	unit.y = pt.y-(bb.miny+bb.maxy)/2;
+	x =  tab->xoff + rint(pt.x*tab->scale);
+	y = -tab->yoff + cv->height - rint(pt.y*tab->scale);
+	DrawTangentPoint(pixmap, x, y, &unit, false, GDrawGetDefaultForeground(NULL));
+    }
+}
+
 static GRect* DrawPoint_SetupRectForSize( GRect* r, int cx, int cy, float sz )
 {
     float sizedelta = sz;
@@ -2841,6 +2864,10 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
 	    (cv->showvmetrics || cv->showhmetrics))
 	CVSideBearings(pixmap,cv);
 
+    /* Show scale handles while scale tool selected or actively dragging */
+    if ( cv->showing_tool==cvt_scale || cv->active_tool==cvt_scale || cv->b1_tool==cvt_scale )
+	CVDrawScaleSelectionBox(cv,pixmap);
+
     if ((( cv->active_tool >= cvt_scale && cv->active_tool <= cvt_perspective ) ||
 		cv->active_shape!=NULL ) &&
 	    cv->p.pressed )
@@ -4645,8 +4672,16 @@ return;		/* I treat this more like a modifier key change than a button press */
 	InSplineSet(&fs,cv->b.layerheads[cv->b.drawmode]->splines,cv->b.sc->inspiro && hasspiro());
 	if ( fs.p->sp==NULL && fs.p->spline==NULL )
 	    CVDoSnaps(cv,&fs);
+    } else if ( cv->active_tool==cvt_scale ) {
+	/* Ignore scale-tool clicks that miss the bounding box handles. */
+	if ( !CVScaleHandlePress(cv, fs.fudge) ) {
+	    cv->p.pressed = false;
+	    cv->active_tool = cvt_none;
+	    cv->showing_tool = old_showing_tool;
+	    return;
+	}
     } else {
-	/* Just snap to points */
+	/* Other transform tools still snap to points. */
 	NearSplineSetPoints(&fs,cv->b.layerheads[cv->b.drawmode]->splines,cv->b.sc->inspiro && hasspiro());
 	if ( fs.p->sp==NULL && fs.p->spline==NULL )
 	    CVDoSnaps(cv,&fs);
@@ -4931,9 +4966,10 @@ static void CVMouseMove(CharView *cv, GEvent *event ) {
 
     if ( !cv->p.pressed ) {
 	CVUpdateInfo(cv, event);
-	if ( cv->showing_tool==cvt_pointer ) {
+	if ( cv->showing_tool==cvt_pointer || cv->showing_tool==cvt_scale || cv->b1_tool==cvt_scale ) {
+	    /* Pointer and scale tools both use resize cursors over draggable handles */
 	    CVCheckResizeCursors(cv);
-	    if ( cv->dv!=NULL )
+	    if ( cv->showing_tool==cvt_pointer && cv->dv!=NULL )
 		CVDebugPointPopup(cv);
 	} else if ( cv->showing_tool == cvt_ruler )
 	    CVMouseMoveRuler(cv,event);
@@ -5102,7 +5138,7 @@ return;
       break;
       case cvt_rotate: case cvt_flip: case cvt_scale: case cvt_skew:
       case cvt_3d_rotate: case cvt_perspective:
-	CVMouseMoveTransform(cv, event->u.mouse.state);
+	CVMouseMoveTransform(cv);
       break;
       case cvt_knife:
 	CVMouseMoveKnife(cv,&p);

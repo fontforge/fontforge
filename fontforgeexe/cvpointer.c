@@ -326,82 +326,82 @@ return( false );
 return( true );
 }
 
-static void SplineSetFindSelBounds(SplinePointList *spl, DBounds *bounds,
-	int nosel, int inspiro) {
+/* Expand (possibly empty) bounds rectangle to include another rectangle */
+static void BoundsInclude(DBounds *bounds, bool *found, real minx, real miny,
+                                                        real maxx, real maxy) {
+    if ( !*found ) {
+	bounds->minx = minx; bounds->miny = miny;
+	bounds->maxx = maxx; bounds->maxy = maxy;
+	*found = true;
+	return;
+    }
+    if ( minx<bounds->minx ) bounds->minx = minx;
+    if ( miny<bounds->miny ) bounds->miny = miny;
+    if ( maxx>bounds->maxx ) bounds->maxx = maxx;
+    if ( maxy>bounds->maxy ) bounds->maxy = maxy;
+}
+
+static bool SplineSetFindSelBounds(SplinePointList *spl, DBounds *bounds, int nosel, int inspiro) {
     SplinePoint *sp, *first;
+    bool found = false;
     int i;
 
     for ( ; spl!=NULL; spl = spl->next ) {
 	if ( !inspiro ) {
 	    first = NULL;
 	    for ( sp = spl->first; sp!=first; sp = sp->next->to ) {
-		if ( nosel || sp->selected ) {
-		    if ( bounds->minx==0 && bounds->maxx==0 &&
-			 bounds->miny==0 && bounds->maxy == 0 ) {
-			bounds->minx = bounds->maxx = sp->me.x;
-			bounds->miny = bounds->maxy = sp->me.y;
-		    } else {
-			if ( sp->me.x<bounds->minx ) bounds->minx = sp->me.x;
-			if ( sp->me.x>bounds->maxx ) bounds->maxx = sp->me.x;
-			if ( sp->me.y<bounds->miny ) bounds->miny = sp->me.y;
-			if ( sp->me.y>bounds->maxy ) bounds->maxy = sp->me.y;
-		    }
-		}
+		if ( nosel || sp->selected )
+		    BoundsInclude(bounds, &found, sp->me.x, sp->me.y, sp->me.x, sp->me.y);
 		if ( first==NULL ) first = sp;
-		if ( sp->next==NULL )
-	    break;
+		if ( sp->next==NULL ) break;
 	    }
 	} else {
-	    for ( i=0; i<spl->spiro_cnt-1; ++i ) {
-		if ( nosel || SPIRO_SELECTED(&spl->spiros[i])) {
-		    if ( bounds->minx==0 && bounds->maxx==0 &&
-			 bounds->miny==0 && bounds->maxy == 0 ) {
-			bounds->minx = bounds->maxx = spl->spiros[i].x;
-			bounds->miny = bounds->maxy = spl->spiros[i].y;
-		    } else {
-			if ( spl->spiros[i].x<bounds->minx ) bounds->minx = spl->spiros[i].x;
-			if ( spl->spiros[i].x>bounds->maxx ) bounds->maxx = spl->spiros[i].x;
-			if ( spl->spiros[i].y<bounds->miny ) bounds->miny = spl->spiros[i].y;
-			if ( spl->spiros[i].y>bounds->maxy ) bounds->maxy = spl->spiros[i].y;
-		    }
-		}
-	    }
+	    for ( i=0; i<spl->spiro_cnt-1; ++i )
+		if ( nosel || SPIRO_SELECTED(&spl->spiros[i]))
+		    BoundsInclude(bounds,&found,spl->spiros[i].x,spl->spiros[i].y,
+			    spl->spiros[i].x,spl->spiros[i].y);
 	}
     }
+    return( found );
+}
+
+/* Find bounds for selected objects, or all objects when nosel is set */
+static bool CVSelectionBounds(CharView *cv, DBounds *bounds, bool nosel) {
+    bool found;
+    ImageList *img;
+
+    found = SplineSetFindSelBounds(cv->b.layerheads[cv->b.drawmode]->splines,
+	                           bounds, nosel, (cv->b.sc->inspiro && hasspiro()));
+    if ( cv->b.drawmode==dm_fore ) {
+	RefChar *rf;
+	for ( rf=cv->b.layerheads[cv->b.drawmode]->refs; rf!=NULL; rf=rf->next )
+	    if ( nosel || rf->selected )
+		BoundsInclude(bounds, &found, rf->bb.minx, rf->bb.miny,
+		                              rf->bb.maxx, rf->bb.maxy);
+    }
+    for ( img=cv->b.layerheads[cv->b.drawmode]->images; img!=NULL; img=img->next )
+	if ( nosel || img->selected )
+	    BoundsInclude(bounds, &found, img->bb.minx, img->bb.miny,
+	                                  img->bb.maxx, img->bb.maxy);
+
+    return( found );
+}
+
+/* Find scale box bounds, treat no selection as 'all objects selected' */
+bool CVScaleSelectionBounds(CharView *cv, DBounds *bounds) {
+    int anyp, anyr, anyi;
+
+    anyp = anyr = anyi = false;
+    CVAnySel(cv,&anyp,&anyr,&anyi,NULL);
+    return( CVSelectionBounds(cv, bounds, (!anyp && !anyr && !anyi)));
 }
 
 void CVFindCenter(CharView *cv, BasePoint *bp, int nosel) {
     DBounds b;
-    ImageList *img;
 
-    b.minx = b.miny = b.maxx = b.maxy = 0;
-    SplineSetFindSelBounds(cv->b.layerheads[cv->b.drawmode]->splines,&b,nosel,cv->b.sc->inspiro&& hasspiro());
-    if ( cv->b.drawmode==dm_fore ) {
-	RefChar *rf;
-	for ( rf=cv->b.layerheads[cv->b.drawmode]->refs; rf!=NULL; rf=rf->next ) {
-	    if ( nosel || rf->selected ) {
-		if ( b.minx==0 && b.maxx==0 )
-		    b = rf->bb;
-		else {
-		    if ( rf->bb.minx<b.minx ) b.minx = rf->bb.minx;
-		    if ( rf->bb.miny<b.miny ) b.miny = rf->bb.miny;
-		    if ( rf->bb.maxx>b.maxx ) b.maxx = rf->bb.maxx;
-		    if ( rf->bb.maxy>b.maxy ) b.maxy = rf->bb.maxy;
-		}
-	    }
-	}
-    }
-    for ( img=cv->b.layerheads[cv->b.drawmode]->images; img!=NULL; img=img->next ) {
-	if ( nosel || img->selected ) {
-	    if ( b.minx==0 && b.maxx==0 )
-		b = img->bb;
-	    else {
-		if ( img->bb.minx<b.minx ) b.minx = img->bb.minx;
-		if ( img->bb.miny<b.miny ) b.miny = img->bb.miny;
-		if ( img->bb.maxx>b.maxx ) b.maxx = img->bb.maxx;
-		if ( img->bb.maxy>b.maxy ) b.maxy = img->bb.maxy;
-	    }
-	}
+    if ( !CVSelectionBounds(cv, &b, nosel)) {
+	bp->x = bp->y = 0;
+	return;
     }
     bp->x = (b.minx+b.maxx)/2;
     bp->y = (b.miny+b.maxy)/2;
@@ -443,6 +443,56 @@ return( ee_down );
 return( ee_up );
 
 return( ee_none );
+}
+
+
+/* Return exact bounds point represented by scale edge or corner handle */
+void CVScaleHandlePoint(const DBounds *bb, enum expandedge edge, BasePoint *pt) {
+    real midx = (bb->minx+bb->maxx)/2;
+    real midy = (bb->miny+bb->maxy)/2;
+
+    pt->x = edge==ee_nw || edge==ee_sw || edge==ee_left  ? bb->minx :
+            edge==ee_ne || edge==ee_se || edge==ee_right ? bb->maxx : midx;
+    pt->y = edge==ee_sw || edge==ee_se || edge==ee_down  ? bb->miny :
+            edge==ee_nw || edge==ee_ne || edge==ee_up    ? bb->maxy : midy;
+}
+
+/* Hit-test the scale box handles using current point-snapping tolerance */
+static enum expandedge CVScaleHandleAt(real x, real y, real fudge, const DBounds *bb) {
+    int i;
+    static enum expandedge edges[] = { ee_nw, ee_ne, ee_se, ee_sw,           // corners
+                                       ee_up, ee_right, ee_down, ee_left };  // edges
+
+    for ( i=0; i<sizeof(edges)/sizeof(edges[0]); ++i ) {
+	BasePoint pt;
+	CVScaleHandlePoint(bb,edges[i],&pt);
+	if ( x>=pt.x-fudge && x<=pt.x+fudge && 
+	     y>=pt.y-fudge && y<=pt.y+fudge )
+	    return( edges[i] );
+    }
+    return( ee_none );
+}
+
+/* Convert scale-handle click into transform press at that handle point */
+bool CVScaleHandlePress(CharView *cv, real fudge) {
+    BasePoint pt;
+    DBounds bb;
+    enum expandedge edge;
+
+    if ( !CVScaleSelectionBounds(cv,&bb) ||
+	    (edge = CVScaleHandleAt(cv->p.cx,cv->p.cy,fudge,&bb))==ee_none ) {
+	cv->expandedge = ee_none;
+	return( false );
+    }
+    cv->expandedge = edge;
+    CVScaleHandlePoint(&bb,edge,&pt);
+    cv->p.cx     = pt.x;
+    cv->p.cy     = pt.y;
+    cv->p.sp     = NULL;
+    cv->p.spiro  = NULL;
+    cv->p.spline = NULL;
+    cv->p.anysel = true;
+    return( true );
 }
 
 static void SetCur(CharView *cv) {
@@ -498,6 +548,19 @@ void CVCheckResizeCursors(CharView *cv) {
     real fudge = 3.5/tab->scale;
 
     cv->expandedge = ee_none;
+    /* Keep scale handle cursors active while scale is selected or dragging */
+    if ( cv->showing_tool==cvt_scale || cv->active_tool==cvt_scale || cv->b1_tool==cvt_scale ) {
+	/* Scale tool's mouse cursor driven by selection box handles */
+	DBounds bb;
+	if ( CVScaleSelectionBounds(cv,&bb) )
+	    cv->expandedge = CVScaleHandleAt(cv->info.x, cv->info.y, fudge, &bb);
+
+	if ( cv->expandedge==ee_none )      // Empty scale-box area?
+	    GDrawSetCursor(cv->v,ct_scale); // ..use "scale cursor", not "pointer cursor"
+	else if ( cv->expandedge!=old_ee )  // Hover changed?
+	    SetCur(cv);                     // ..still use existing "resize cursor"
+	return;
+    }
     if ( cv->b.drawmode!=dm_grid ) {
 	for ( ref=cv->b.layerheads[cv->b.drawmode]->refs; ref!=NULL; ref=ref->next ) if ( ref->selected ) {
 	    if (( cv->expandedge = OnBB(cv,&ref->bb,fudge))!=ee_none )
