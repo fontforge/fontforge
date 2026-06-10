@@ -11,8 +11,10 @@ scripts that might help shine some light on how to perform certain
 tasks using the python interface to FontForge.
 
 The scripts are mostly setup to call fontforge on themselves when run.
-So for example, while in the simple directory you should be able 
+So for example, while in the simple directory you should be able
 to just enter the following in a shell to run the script:
 
 ./load-font-and-show-name.py
+
+[Glyph Alignment README——字形置位说明](GlyphAlignment/README.md)
 
