@@ -514,9 +514,10 @@ static void CVDrawBB(CharView *cv, GWindow pixmap, DBounds *bb) {
     GDrawSetDashedLine(pixmap,0,0,0);
 }
 
-static void DrawTangentPoint( GWindow pixmap, int x, int y,
-			      BasePoint *unit, int outline, Color col )
-{
+/* Draws tangent-style arrows using specified hv/diag arrow sizes */
+static void DrawTangentPointSized(GWindow pixmap, int x, int y,
+                                  BasePoint *unit, int outline, Color col,
+                                  float hv_size, float diag_size) {
     int dir;
     const int gp_sz = 4;
     GPoint gp[5];
@@ -540,7 +541,8 @@ static void DrawTangentPoint( GWindow pixmap, int x, int y,
 	}
     }
 
-    float sizedelta = 4;
+    float sizedelta = hv_size;    // horizontal/vertical arrow size
+
     if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
 	sizedelta *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
 
@@ -554,7 +556,7 @@ static void DrawTangentPoint( GWindow pixmap, int x, int y,
 	gp[2].x = x+sizedelta; gp[2].y = y;
     } else {
 	/* at a 45 angle, a value of 4 looks too small. I probably want 4*1.414 */
-	sizedelta = 5;
+	sizedelta = diag_size;     // diagonal arrow size
 	if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
 	    sizedelta *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
 	int xdiff = unit->x > 0 ?   sizedelta  : -1*sizedelta;
@@ -571,11 +573,31 @@ static void DrawTangentPoint( GWindow pixmap, int x, int y,
 	GDrawFillPoly(pixmap,gp,4,col);
 }
 
+// Draws directional arrows for tangent points
+static void DrawTangentPoint(GWindow pixmap, int x, int y,
+                             BasePoint *unit, int outline, Color col) {
+    const int hv_arrow_size   = 4;
+    const int diag_arrow_size = 5;
+
+    DrawTangentPointSized(pixmap, x, y, unit, outline, col,
+                          hv_arrow_size, diag_arrow_size);
+}
+
+/* Convert scale box handle into a fixed arrow direction for drawing */
+static void CVScaleHandleDirection(enum expandedge edge, BasePoint *unit) {
+    unit->x = edge==ee_nw || edge==ee_sw || edge==ee_left  ? -1 :
+              edge==ee_ne || edge==ee_se || edge==ee_right ?  1 : 0;
+    unit->y = edge==ee_sw || edge==ee_se || edge==ee_down  ? -1 :
+              edge==ee_nw || edge==ee_ne || edge==ee_up    ?  1 : 0;
+}
+
 /* Draw scale tool's selection bounds and draggable edge/corner handles */
 static void CVDrawScaleSelectionBox(CharView *cv, GWindow pixmap) {
     static enum expandedge edges[] = { ee_nw, ee_up, ee_ne, ee_right, ee_se, ee_down, ee_sw, ee_left };
     CharViewTab* tab = CVGetActiveTab(cv);
     DBounds bb;
+    const int scale_handle_hv_arrow_size   = 6;  // a little larger than tangent arrows
+    const int scale_handle_diag_arrow_size = 8;
     int i;
 
     if ( !CVScaleSelectionBounds(cv,&bb) )
@@ -586,11 +608,11 @@ static void CVDrawScaleSelectionBox(CharView *cv, GWindow pixmap) {
 	int x, y;
 
 	CVScaleHandlePoint(&bb, edges[i], &pt);
-	unit.x = pt.x-(bb.minx+bb.maxx)/2;
-	unit.y = pt.y-(bb.miny+bb.maxy)/2;
+	CVScaleHandleDirection(edges[i], &unit);
 	x =  tab->xoff + rint(pt.x*tab->scale);
 	y = -tab->yoff + cv->height - rint(pt.y*tab->scale);
-	DrawTangentPoint(pixmap, x, y, &unit, false, GDrawGetDefaultForeground(NULL));
+	DrawTangentPointSized(pixmap, x, y, &unit, false, GDrawGetDefaultForeground(NULL),
+                              scale_handle_hv_arrow_size, scale_handle_diag_arrow_size);
     }
 }
 
@@ -4674,7 +4696,7 @@ return;		/* I treat this more like a modifier key change than a button press */
 	    CVDoSnaps(cv,&fs);
     } else if ( cv->active_tool==cvt_scale ) {
 	/* Ignore scale-tool clicks that miss the bounding box handles. */
-	if ( !CVScaleHandlePress(cv, fs.fudge) ) {
+	if ( !CVScaleHandlePress(cv, CVSCALE_HANDLE_FUDGE/CVGetActiveTab(cv)->scale) ) {
 	    cv->p.pressed = false;
 	    cv->active_tool = cvt_none;
 	    cv->showing_tool = old_showing_tool;

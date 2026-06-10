@@ -357,9 +357,9 @@ static bool SplineSetFindSelBounds(SplinePointList *spl, DBounds *bounds, int no
 	    }
 	} else {
 	    for ( i=0; i<spl->spiro_cnt-1; ++i )
-		if ( nosel || SPIRO_SELECTED(&spl->spiros[i]))
-		    BoundsInclude(bounds,&found,spl->spiros[i].x,spl->spiros[i].y,
-			    spl->spiros[i].x,spl->spiros[i].y);
+		if ( nosel || SPIRO_SELECTED(&spl->spiros[i]) )
+		    BoundsInclude(bounds, &found, spl->spiros[i].x, spl->spiros[i].y,
+				                  spl->spiros[i].x, spl->spiros[i].y);
 	}
     }
     return( found );
@@ -545,7 +545,7 @@ void CVCheckResizeCursors(CharView *cv) {
     RefChar *ref;
     ImageList *img;
     int old_ee = cv->expandedge;
-    real fudge = 3.5/tab->scale;
+    real fudge = CVSCALE_HANDLE_FUDGE/tab->scale;    // fudge factor for mouse proximity to resizer handles
 
     cv->expandedge = ee_none;
     /* Keep scale handle cursors active while scale is selected or dragging */
