@@ -1142,6 +1142,7 @@ return( event->u.chr.state & ~bit );
 void CVToolsSetCursor(CharView *cv, int state, char *device) {
     int shouldshow;
     int cntrl;
+    int old_showing_tool = cv->showing_tool;
 
     if ( tools[0] == ct_pointer ) {
 	tools[cvt_pointer] = ct_mypointer;
@@ -1212,6 +1213,8 @@ void CVToolsSetCursor(CharView *cv, int state, char *device) {
 		GDrawSetCursor(cvtools,tools[shouldshow]);
 	}
 	cv->showing_tool = shouldshow;
+	if ( old_showing_tool==cvt_scale || shouldshow==cvt_scale )
+	    GDrawRequestExpose(cv->v,NULL,false);
     }
 
     if ( device==NULL || strcmp(device,"stylus")==0 ) {
@@ -1378,6 +1381,7 @@ static void ToolsMouse(CharView *cv, GEvent *event) {
 	else
 	    cv->pressed_display = cv->pressed_tool;
     } else if ( event->type == et_mouseup ) {
+	int old_b1_tool = cv->b1_tool;
 	if ( pos==cvt_freehand && event->u.mouse.clicks==2 ) {
 	    FreeHandStrokeDlg(CVFreeHandInfo());
 	} else if ( pos==cvt_pointer && event->u.mouse.clicks==2 ) {
@@ -1417,6 +1421,8 @@ static void ToolsMouse(CharView *cv, GEvent *event) {
 	    cv->pressed_tool = cv->pressed_display = cvt_none;
 	}
 	GDrawRequestExpose(cvtools,NULL,false);
+	if ( old_b1_tool!=cv->b1_tool && (old_b1_tool==cvt_scale || cv->b1_tool==cvt_scale) )
+	    GDrawRequestExpose(cv->v,NULL,false);
 	event->u.chr.state &= ~(1<<(7+event->u.mouse.button));
     }
     CVToolsSetCursor(cv,event->u.mouse.state,event->u.mouse.device);
