@@ -32,6 +32,7 @@
 #include <cairomm/context.h>
 
 #include "layout_shim.hpp"
+#include "i_printer.hpp"
 #include "i_shaper.hpp"
 #include "shaper_shim.hpp"
 
@@ -68,6 +69,54 @@ using RichTextLayout =
     std::vector<std::pair<RichTextLineBuffer, double /*height*/>>;
 using PrintGlyphVec = std::vector<std::pair<int, SplineChar*>>;
 
+class CairoPainter;
+
+class CairoContext : public ff::layout::PageContext {
+ public:
+    CairoContext(const Cairo::RefPtr<Cairo::Context>& cr,
+                 const Cairo::Rectangle& printable_area)
+        : cr_(cr), printable_area_(printable_area) {}
+
+    Cairo::RefPtr<Cairo::Context> cr_;
+    Cairo::Rectangle printable_area_;
+};
+
+class FullGlyphPrinter : public ff::layout::IPrinter {
+ public:
+    FullGlyphPrinter(const PrintGlyphVec& print_map,
+                     const CairoFontRec& font_rec,
+                     const std::string& scaling_option)
+        : print_map_(print_map),
+          font_rec_(font_rec),
+          scaling_option_(scaling_option) {}
+
+    size_t page_count() const override;
+    void add_page(size_t page_number,
+                  const ff::layout::PageContext* context) override;
+
+    static const std::string kScaleToPage;
+    static const std::string kScaleEmSize;
+    static const std::string kScaleMaxHeight;
+
+ private:
+    // TODO(iorsh): Storing reference is dangerous, consider other non-copying
+    // storage options.
+    const PrintGlyphVec& print_map_;
+    const CairoFontRec& font_rec_;
+    std::string scaling_option_;
+
+    // Get SplineFont ascent and descent in Cairo context units, normalized for
+    // font size 1pt.
+    std::pair<double, double> get_splinefont_metrics(
+        const Cairo::RefPtr<Cairo::Context>& cr) const;
+
+    std::array<double, 3> calculate_full_glyph_location(
+        const std::string& scaling_option,
+        const Cairo::RefPtr<Cairo::Context>& cr,
+        const Cairo::Rectangle& shifted_printable_area,
+        const Cairo::TextExtents& text_extents) const;
+};
+
 class CairoPainter {
  public:
     CairoPainter(SplineFont* sf, FontViewBase* fv);
@@ -95,17 +144,9 @@ class CairoPainter {
         return cached_glyph_line_pagination_.size();
     }
 
-    std::array<double, 3> calculate_full_glyph_location(
-        const std::string& scaling_option,
-        const Cairo::RefPtr<Cairo::Context>& cr,
-        const Cairo::Rectangle& shifted_printable_area,
-        const Cairo::TextExtents& text_extents) const;
-
     // Draw glyphs scaled to fill the page.
-    void draw_page_full_glyph(const Cairo::RefPtr<Cairo::Context>& cr,
-                              const Cairo::Rectangle& printable_area,
-                              int page_nr, const std::string& scaling_option);
-    size_t page_count_full_glyph() const { return print_map_.size(); }
+    std::unique_ptr<ff::layout::IPrinter> full_glyph_printer(
+        const std::string& scaling_option) const;
 
     // Draw formatted sample text.
     void draw_page_sample_text(const Cairo::RefPtr<Cairo::Context>& cr,
@@ -126,10 +167,6 @@ class CairoPainter {
 
     void invalidate_cached_layouts();
 
-    static const std::string kScaleToPage;
-    static const std::string kScaleEmSize;
-    static const std::string kScaleMaxHeight;
-
  private:
     // Currently active font face (for example, whose FontView invoked the Print
     // dialog).
@@ -147,11 +184,6 @@ class CairoPainter {
     PrintGlyphVec print_map_;
 
     std::string font_name_;
-
-    // All dimensions are in points
-    const double margin_ = 36;
-    const double top_margin_ = 96;
-    const double full_glyph_top_margin_ = 48;
 
     // A line of glyphs for full display. It has a prefix label, e.g. "05D0",
     // and a list of codepoints. All the index lists must have the same size,
@@ -202,17 +234,6 @@ class CairoPainter {
 
     double get_size(const std::vector<std::string>& tags);
 
-    void setup_context(const Cairo::RefPtr<Cairo::Context>& cr);
-
-    void init_document(const Cairo::RefPtr<Cairo::Context>& cr,
-                       const Cairo::Rectangle& printable_area,
-                       const std::string& document_title, double top_margin);
-
-    // Get SplineFont ascent and descent in Cairo context units, normalized for
-    // font size 1pt.
-    std::pair<double, double> get_splinefont_metrics(
-        const Cairo::RefPtr<Cairo::Context>& cr) const;
-
     void draw_line_full_display(const Cairo::RefPtr<Cairo::Context>& cr,
                                 const GlyphLine& glyph_line, double y_start,
                                 double left_code_area_width, double pointsize);
@@ -245,5 +266,13 @@ PrintGlyphMap build_glyph_map(SplineFont* sf);
 ParsedRichText parse_xml_stream(std::istream& input);
 
 ParsedTag parse_tag(const std::string& complete_tag);
+
+void setup_context(const Cairo::RefPtr<Cairo::Context>& cr);
+void init_document(const Cairo::RefPtr<Cairo::Context>& cr,
+                   const Cairo::Rectangle& printable_area,
+                   const std::string& document_title, double top_margin);
+
+void draw_line(const Cairo::RefPtr<Cairo::Context>& cr,
+               const Cairo::Rectangle& box, double level, bool horizontal);
 
 }  // namespace ff::utils
