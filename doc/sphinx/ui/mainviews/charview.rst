@@ -539,7 +539,7 @@ selection, with draggable resize handles at the corners and edges:
 
 Clicking or dragging anywhere other than a bounding box handle does not start a
 scale operation, and is ignored. To change the selected points to scale, switch
-to the "pointer tool" to make a new selection, the come back to the scale tool
+to the "pointer tool" to make a new selection, then come back to the scale tool
 to resize the selection.
 
 
