@@ -86,7 +86,14 @@ jobs:
         run: java -jar $DEPSPREFIX/crowdin-cli.jar upload -c .crowdin.yml
 
   mac:
-    runs-on: macos-14
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      matrix:
+        include:
+          - runner: macos-14
+            arch: arm64
+          - runner: macos-15-intel
+            arch: intel
     steps:
       - uses: actions/checkout@v6
         with:
@@ -160,7 +167,7 @@ jobs:
       - name: App Bundle artifact
         uses: actions/upload-artifact@v7
         with:
-          name: macOS_appbundle
+          name: macOS_appbundle_${{ matrix.arch }}
           path: repo/build/osx/FontForge-*.dmg
 
   windows:
