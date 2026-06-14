@@ -523,8 +523,9 @@ void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
         cairo_painter_.draw_page_sample_text(
             cr, printable_area, page_nr, out_buffer, script, lang, features);
     } else {
-        cairo_painter_.draw_page_multisize(cr, kMultiPointsizes, printable_area,
-                                           page_nr);
+        cairo_painter_.activate_multisize_printer(kMultiPointsizes);
+        ff::utils::CairoContext context(cr, printable_area);
+        cairo_painter_.add_page(page_nr, &context);
     }
 
     paginate();
@@ -539,7 +540,7 @@ size_t PrintPreviewWidget::paginate() {
     } else if (radio_sample_text_->get_active()) {
         num_pages = cairo_painter_.page_count_sample_text();
     } else {
-        num_pages = cairo_painter_.page_count_multisize();
+        num_pages = cairo_painter_.page_count();
     }
 
     // Changes to scale lead to focus changes which may inadvertently close the

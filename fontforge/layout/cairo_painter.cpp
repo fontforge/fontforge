@@ -56,14 +56,18 @@ SplineChar** FVGetSelection(FontViewBase* fv);
 
 namespace ff::utils {
 
-const std::string FullGlyphPrinter::kScaleToPage = "scale_to_page";
-const std::string FullGlyphPrinter::kScaleEmSize = "scale_to_em_size";
-const std::string FullGlyphPrinter::kScaleMaxHeight = "scale_to_max_height";
-
 // All dimensions are in points
 const double margin_ = 36;
 const double top_margin_ = 96;
 const double full_glyph_top_margin_ = 48;
+
+//////////////////////////////////////////////////////////////////////////////
+//                             FullGlyphPrinter                             //
+//////////////////////////////////////////////////////////////////////////////
+
+const std::string FullGlyphPrinter::kScaleToPage = "scale_to_page";
+const std::string FullGlyphPrinter::kScaleEmSize = "scale_to_em_size";
+const std::string FullGlyphPrinter::kScaleMaxHeight = "scale_to_max_height";
 
 size_t FullGlyphPrinter::page_count() const { return print_map_.size(); }
 
@@ -219,6 +223,87 @@ std::array<double, 3> FullGlyphPrinter::calculate_full_glyph_location(
     return {x_min, y_min, scale};
 }
 
+//////////////////////////////////////////////////////////////////////////////
+//                             MultiSizePrinter                             //
+//////////////////////////////////////////////////////////////////////////////
+
+void MultiSizePrinter::add_page(size_t page_nr,
+                                const ff::layout::PageContext* context) {
+    auto* cairo_ctx = dynamic_cast<const CairoContext*>(context);
+    if (!cairo_ctx) {
+        std::cerr << "Invalid page context passed to MultiSizePrinter"
+                  << std::endl;
+        return;
+    }
+
+    auto cr = cairo_ctx->cr_;
+    auto printable_area = cairo_ctx->printable_area_;
+
+    init_document(cr, printable_area,
+                  std::string("Sample Sizes of ") + SFGetFullName(font_rec_.sf),
+                  top_margin_);
+
+    if (pointsizes_.empty()) {
+        return;
+    }
+
+    double extravspace = pointsizes_[0] / 6;
+
+    double char_area_height = printable_area.height - margin_ - top_margin_;
+    lines_per_page_ = static_cast<int>(std::floor(
+        (char_area_height + extravspace) / (pointsizes_[0] + extravspace)));
+
+    // Set the user font face
+    cr->set_font_face(font_rec_.face);
+
+    double y_start = top_margin_;
+    for (size_t i = page_nr * lines_per_page_;
+         i <
+         std::min((page_nr + 1) * lines_per_page_, (size_t)print_map_.size());
+         ++i)
+        y_start += draw_line_multisize(cr, print_map_[i].first, y_start);
+    y_start += extravspace;
+}
+
+double MultiSizePrinter::draw_line_multisize(
+    const Cairo::RefPtr<Cairo::Context>& cr, int glyph_index,
+    double y_start) const {
+    // Compute line height by maximum glyph size
+    double maximum_size =
+        (pointsizes_.empty())
+            ? 1
+            : *std::max_element(pointsizes_.begin(), pointsizes_.end());
+    Cairo::FontExtents font_extents;
+    cr->set_font_size(maximum_size);
+    cr->get_font_extents(font_extents);
+    double height = font_extents.height;
+
+    Cairo::Glyph glyph{(unsigned long)glyph_index, 0, y_start + height};
+
+    for (double size : pointsizes_) {
+        Cairo::TextExtents text_extents;
+        cr->set_font_size(size);
+        cr->get_glyph_extents({glyph}, text_extents);
+        cr->show_glyphs({glyph});
+
+        glyph.x += text_extents.x_advance;
+    }
+
+    return height;
+}
+
+size_t MultiSizePrinter::page_count() const {
+    if (print_map_.empty()) {
+        return 1;
+    } else {
+        return (print_map_.size() - 1) / lines_per_page_ + 1;
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+//                               CairoPainter                               //
+//////////////////////////////////////////////////////////////////////////////
+
 CairoPainter::CairoPainter(SplineFont* sf, FontViewBase* fv) {
     cairo_family_ = create_cairo_family(sf);
     cairo_face_ = cairo_family_[0].face;
@@ -252,6 +337,12 @@ void CairoPainter::activate_full_glyph_printer(
     const std::string& scaling_option) {
     active_printer_ = std::make_unique<FullGlyphPrinter>(
         print_map_, cairo_family_[0], scaling_option);
+}
+
+void CairoPainter::activate_multisize_printer(
+    const std::vector<double>& pointsizes) {
+    active_printer_ = std::make_unique<MultiSizePrinter>(
+        print_map_, cairo_family_[0], pointsizes);
 }
 
 void CairoPainter::sort_glyphs(const PrintGlyphMap& print_map) {
@@ -816,72 +907,6 @@ void CairoPainter::draw_line_sample_text(
     }
 }
 
-// Rewritten PIMultiSize()
-void CairoPainter::draw_page_multisize(const Cairo::RefPtr<Cairo::Context>& cr,
-                                       const std::vector<double>& pointsizes,
-                                       const Cairo::Rectangle& printable_area,
-                                       int page_nr) {
-    init_document(cr, printable_area, "Sample Sizes of " + font_name_,
-                  top_margin_);
-
-    if (pointsizes.empty()) {
-        return;
-    }
-
-    double extravspace = pointsizes[0] / 6;
-
-    double char_area_height = printable_area.height - margin_ - top_margin_;
-    cached_lines_per_page_multisize_ = static_cast<int>(std::floor(
-        (char_area_height + extravspace) / (pointsizes[0] + extravspace)));
-
-    // Set the user font face
-    cr->set_font_face(cairo_face_);
-
-    double y_start = top_margin_;
-    for (size_t i = page_nr * cached_lines_per_page_multisize_;
-         i < std::min((page_nr + 1) * cached_lines_per_page_multisize_,
-                      (int)print_map_.size());
-         ++i)
-        y_start +=
-            draw_line_multisize(cr, pointsizes, print_map_[i].first, y_start);
-    y_start += extravspace;
-}
-
-double CairoPainter::draw_line_multisize(
-    const Cairo::RefPtr<Cairo::Context>& cr,
-    const std::vector<double>& pointsizes, int glyph_index, double y_start) {
-    // Compute line height by maximum glyph size
-    double maximum_size =
-        (pointsizes.empty())
-            ? 1
-            : *std::max_element(pointsizes.begin(), pointsizes.end());
-    Cairo::FontExtents font_extents;
-    cr->set_font_size(maximum_size);
-    cr->get_font_extents(font_extents);
-    double height = font_extents.height;
-
-    Cairo::Glyph glyph{(unsigned long)glyph_index, 0, y_start + height};
-
-    for (double size : pointsizes) {
-        Cairo::TextExtents text_extents;
-        cr->set_font_size(size);
-        cr->get_glyph_extents({glyph}, text_extents);
-        cr->show_glyphs({glyph});
-
-        glyph.x += text_extents.x_advance;
-    }
-
-    return height;
-}
-
-size_t CairoPainter::page_count_multisize() const {
-    if (print_map_.empty()) {
-        return 1;
-    } else {
-        return (print_map_.size() - 1) / cached_lines_per_page_multisize_ + 1;
-    }
-}
-
 void CairoPainter::invalidate_cached_layouts() {
     cached_glyph_lines_.clear();
     cached_max_slots_ = 0;
@@ -890,8 +915,6 @@ void CairoPainter::invalidate_cached_layouts() {
     cached_sample_text_.clear();
     cached_full_layout_.clear();
     cached_pagination_list_.clear();
-
-    cached_lines_per_page_multisize_ = 0;
 }
 
 SplineFontProperties CairoPainter::get_default_style(

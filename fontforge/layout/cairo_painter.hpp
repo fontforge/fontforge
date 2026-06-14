@@ -117,6 +117,28 @@ class FullGlyphPrinter : public ff::layout::IPrinter {
         const Cairo::TextExtents& text_extents) const;
 };
 
+class MultiSizePrinter : public ff::layout::IPrinter {
+ public:
+    MultiSizePrinter(const PrintGlyphVec& print_map,
+                     const CairoFontRec& font_rec,
+                     const std::vector<double>& pointsizes)
+        : print_map_(print_map), font_rec_(font_rec), pointsizes_(pointsizes) {}
+
+    size_t page_count() const override;
+    void add_page(size_t page_number,
+                  const ff::layout::PageContext* context) override;
+
+ private:
+    const PrintGlyphVec& print_map_;
+    const CairoFontRec& font_rec_;
+    std::vector<double> pointsizes_;
+
+    int lines_per_page_ = 0;
+
+    double draw_line_multisize(const Cairo::RefPtr<Cairo::Context>& cr,
+                               int glyph_index, double y_start) const;
+};
+
 class CairoPainter {
  public:
     CairoPainter(SplineFont* sf, FontViewBase* fv);
@@ -155,6 +177,7 @@ class CairoPainter {
 
     // Draw glyphs scaled to fill the page.
     void activate_full_glyph_printer(const std::string& scaling_option);
+    void activate_multisize_printer(const std::vector<double>& pointsizes);
 
     // Draw formatted sample text.
     void draw_page_sample_text(const Cairo::RefPtr<Cairo::Context>& cr,
@@ -167,11 +190,6 @@ class CairoPainter {
     }
 
     // Draw each glyph in multiple sizes.
-    void draw_page_multisize(const Cairo::RefPtr<Cairo::Context>& cr,
-                             const std::vector<double>& pointsizes,
-                             const Cairo::Rectangle& printable_area,
-                             int page_nr);
-    size_t page_count_multisize() const;
 
     void invalidate_cached_layouts();
 
@@ -224,8 +242,6 @@ class CairoPainter {
     // first line of the i-th page.
     std::vector<size_t> cached_pagination_list_;
 
-    int cached_lines_per_page_multisize_ = 0;
-
     void sort_glyphs(const PrintGlyphMap& print_map);
 
     // Returns vector of glyph lines.
@@ -263,10 +279,6 @@ class CairoPainter {
                                       const std::string& sample_text);
 
     void paginate_sample_text(double layout_height);
-
-    double draw_line_multisize(const Cairo::RefPtr<Cairo::Context>& cr,
-                               const std::vector<double>& pointsizes,
-                               int glyph_index, double y_start);
 };
 
 Cairo::RefPtr<Cairo::FtFontFace> create_cairo_face(SplineFont* sf);
