@@ -136,6 +136,15 @@ class CairoPainter {
         return false;
     }
 
+    size_t page_count() const {
+        return active_printer_ ? active_printer_->page_count() : 0;
+    }
+    void add_page(size_t page_number, const layout::PageContext* context) {
+        if (active_printer_) {
+            active_printer_->add_page(page_number, context);
+        }
+    }
+
     // Draw full font display as a character grid.
     void draw_page_full_display(const Cairo::RefPtr<Cairo::Context>& cr,
                                 const Cairo::Rectangle& printable_area,
@@ -145,8 +154,7 @@ class CairoPainter {
     }
 
     // Draw glyphs scaled to fill the page.
-    std::unique_ptr<ff::layout::IPrinter> full_glyph_printer(
-        const std::string& scaling_option) const;
+    void activate_full_glyph_printer(const std::string& scaling_option);
 
     // Draw formatted sample text.
     void draw_page_sample_text(const Cairo::RefPtr<Cairo::Context>& cr,
@@ -184,6 +192,8 @@ class CairoPainter {
     PrintGlyphVec print_map_;
 
     std::string font_name_;
+
+    std::unique_ptr<ff::layout::IPrinter> active_printer_;
 
     // A line of glyphs for full display. It has a prefix label, e.g. "05D0",
     // and a list of codepoints. All the index lists must have the same size,

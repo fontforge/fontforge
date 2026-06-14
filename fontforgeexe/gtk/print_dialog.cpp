@@ -53,7 +53,7 @@ void print_dialog(SplineFont* sf, FontViewBase* fv) {
     // after the print dialog has been closed. We should manage its lifecycle
     // independently.
     ff::utils::CairoPainter cairo_painter(sf, fv);
-    ff::dlg::PrintPreviewWidget ff_preview_widget(cairo_painter);
+    ff::dlg::PrintPreviewWidget ff_preview_widget(std::move(cairo_painter));
 
     // The user should be able to select page size and orientation. This is
     // particularly important for printing to PDF.

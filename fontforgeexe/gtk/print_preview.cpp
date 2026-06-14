@@ -74,10 +74,10 @@ static std::pair<ff::Tag, ff::Tag> extract_script_lang_tags(
     return {script, lang};
 }
 
-PrintPreviewWidget::PrintPreviewWidget(const utils::CairoPainter& cairo_painter)
+PrintPreviewWidget::PrintPreviewWidget(utils::CairoPainter&& cairo_painter)
     : aspect_wrapper(0.5, 0.5, 0.5),
       current_setup_(default_setup_),
-      cairo_painter_(cairo_painter) {
+      cairo_painter_(std::move(cairo_painter)) {
     if (is_win32_display()) {
         // In Windows the GTK preview tab is embedded in the native Print
         // Dialog. The native dialog is not resizable, and its size can't be
@@ -498,9 +498,9 @@ void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
                                               font_size);
     } else if (radio_glyph_pages_->get_active()) {
         Glib::ustring active_option = scaling_option_->get_active_id();
-        auto printer = cairo_painter_.full_glyph_printer(active_option);
+        cairo_painter_.activate_full_glyph_printer(active_option);
         ff::utils::CairoContext context(cr, printable_area);
-        printer->add_page(page_nr, &context);
+        cairo_painter_.add_page(page_nr, &context);
     } else if (radio_sample_text_->get_active()) {
         gsize length = 0;
         Glib::RefPtr<Gtk::TextBuffer> buffer = sample_text_->get_buffer();
@@ -535,9 +535,7 @@ size_t PrintPreviewWidget::paginate() {
     if (radio_full_display_->get_active()) {
         num_pages = cairo_painter_.page_count_full_display();
     } else if (radio_glyph_pages_->get_active()) {
-        Glib::ustring active_option = scaling_option_->get_active_id();
-        auto printer = cairo_painter_.full_glyph_printer(active_option);
-        num_pages = printer->page_count();
+        num_pages = cairo_painter_.page_count();
     } else if (radio_sample_text_->get_active()) {
         num_pages = cairo_painter_.page_count_sample_text();
     } else {

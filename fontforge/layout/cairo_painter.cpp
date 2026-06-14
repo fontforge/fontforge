@@ -248,10 +248,10 @@ CairoPainter::CairoPainter(SplineFont* sf, FontViewBase* fv) {
     sort_glyphs(print_map);
 }
 
-std::unique_ptr<ff::layout::IPrinter> CairoPainter::full_glyph_printer(
-    const std::string& scaling_option) const {
-    return std::make_unique<FullGlyphPrinter>(print_map_, cairo_family_[0],
-                                              scaling_option);
+void CairoPainter::activate_full_glyph_printer(
+    const std::string& scaling_option) {
+    active_printer_ = std::make_unique<FullGlyphPrinter>(
+        print_map_, cairo_family_[0], scaling_option);
 }
 
 void CairoPainter::sort_glyphs(const PrintGlyphMap& print_map) {
