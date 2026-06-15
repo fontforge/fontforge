@@ -117,6 +117,50 @@ class FullGlyphPrinter : public ff::layout::IPrinter {
         const Cairo::TextExtents& text_extents) const;
 };
 
+class FullDisplayPrinter : public ff::layout::IPrinter {
+ public:
+    FullDisplayPrinter(const PrintGlyphVec& print_map,
+                       const CairoFontRec& font_rec, double pointsize)
+        : print_map_(print_map), font_rec_(font_rec), pointsize_(pointsize) {}
+
+    size_t page_count() const override;
+    void add_page(size_t page_number,
+                  const ff::layout::PageContext* context) override;
+
+ private:
+    // A line of glyphs for full display. It has a prefix label, e.g. "05D0",
+    // and a list of codepoints. All the index lists must have the same size,
+    // which corresponds to the number of slots per line. An index can be -1,
+    // which means no glyph should be drawn at that slot.
+    struct GlyphLine {
+        std::string label;
+        bool encoded;
+        // Unicode codepoints or TTF glyph indexes, according to the value of
+        // the "encoded" flag
+        std::vector<int> indexes;
+    };
+
+    const PrintGlyphVec& print_map_;
+    const CairoFontRec& font_rec_;
+    double pointsize_;
+
+    // Full glyph display (grid), split into lines
+    std::vector<GlyphLine> glyph_lines_;
+    size_t max_slots_ = 0;
+    // Pagination list for glyph_lines_, with i-th entry designating the
+    // first line of the i-th page.
+    std::vector<size_t> glyph_line_pagination_;
+
+    // Returns vector of glyph lines.
+    std::vector<GlyphLine> split_to_lines(size_t max_slots) const;
+    void paginate_full_display(double char_area_height, double pointsize,
+                               double extravspace);
+    void draw_line_full_display(const Cairo::RefPtr<Cairo::Context>& cr,
+                                const GlyphLine& glyph_line, double y_start,
+                                double left_code_area_width,
+                                double pointsize) const;
+};
+
 class MultiSizePrinter : public ff::layout::IPrinter {
  public:
     MultiSizePrinter(const PrintGlyphVec& print_map,
@@ -168,12 +212,7 @@ class CairoPainter {
     }
 
     // Draw full font display as a character grid.
-    void draw_page_full_display(const Cairo::RefPtr<Cairo::Context>& cr,
-                                const Cairo::Rectangle& printable_area,
-                                int page_nr, double pointsize);
-    size_t page_count_full_display() const {
-        return cached_glyph_line_pagination_.size();
-    }
+    void activate_full_display_printer(double pointsize);
 
     // Draw glyphs scaled to fill the page.
     void activate_full_glyph_printer(const std::string& scaling_option);
@@ -213,27 +252,8 @@ class CairoPainter {
 
     std::unique_ptr<ff::layout::IPrinter> active_printer_;
 
-    // A line of glyphs for full display. It has a prefix label, e.g. "05D0",
-    // and a list of codepoints. All the index lists must have the same size,
-    // which corresponds to the number of slots per line. An index can be -1,
-    // which means no glyph should be drawn at that slot.
-    struct GlyphLine {
-        std::string label;
-        bool encoded;
-        // Unicode codepoints or TTF glyph indexes, according to the value of
-        // the "encoded" flag
-        std::vector<int> indexes;
-    };
-
     // Cached layout data, which should be invalidated whenever the painter
     // input changes.
-
-    // Full glyph display (grid), split into lines
-    std::vector<GlyphLine> cached_glyph_lines_;
-    size_t cached_max_slots_;
-    // Pagination list for cached_glyph_lines_, with i-th entry designating the
-    // first line of the i-th page.
-    std::vector<size_t> cached_glyph_line_pagination_;
 
     std::string cached_sample_text_;
     // Vector of output lines with calculated height.
@@ -244,12 +264,6 @@ class CairoPainter {
 
     void sort_glyphs(const PrintGlyphMap& print_map);
 
-    // Returns vector of glyph lines.
-    std::vector<GlyphLine> split_to_lines(size_t max_slots) const;
-
-    void paginate_full_display(double char_area_height, double pointsize,
-                               double extravspace);
-
     SplineFontProperties get_default_style(
         const ParsedRichText& rich_text) const;
 
@@ -259,10 +273,6 @@ class CairoPainter {
                        const SplineFontProperties& default_properties) const;
 
     double get_size(const std::vector<std::string>& tags);
-
-    void draw_line_full_display(const Cairo::RefPtr<Cairo::Context>& cr,
-                                const GlyphLine& glyph_line, double y_start,
-                                double left_code_area_width, double pointsize);
 
     // Calculate height of single line
     double calculate_height_sample_text(const Cairo::RefPtr<Cairo::Context>& cr,
@@ -296,5 +306,10 @@ void init_document(const Cairo::RefPtr<Cairo::Context>& cr,
 
 void draw_line(const Cairo::RefPtr<Cairo::Context>& cr,
                const Cairo::Rectangle& box, double level, bool horizontal);
+void draw_centered_text(const Cairo::RefPtr<Cairo::Context>& cr,
+                        const Cairo::Rectangle& box, const std::string& text);
+void draw_centered_glyph(const Cairo::RefPtr<Cairo::Context>& cr,
+                         const Cairo::Rectangle& box,
+                         unsigned long glyph_index);
 
 }  // namespace ff::utils

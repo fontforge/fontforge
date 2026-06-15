@@ -494,8 +494,9 @@ void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
                                    int page_nr) {
     if (radio_full_display_->get_active()) {
         double font_size = size_entry_->get_value();
-        cairo_painter_.draw_page_full_display(cr, printable_area, page_nr,
-                                              font_size);
+        cairo_painter_.activate_full_display_printer(font_size);
+        ff::utils::CairoContext context(cr, printable_area);
+        cairo_painter_.add_page(page_nr, &context);
     } else if (radio_glyph_pages_->get_active()) {
         Glib::ustring active_option = scaling_option_->get_active_id();
         cairo_painter_.activate_full_glyph_printer(active_option);
@@ -534,7 +535,7 @@ void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
 size_t PrintPreviewWidget::paginate() {
     size_t num_pages = 1;
     if (radio_full_display_->get_active()) {
-        num_pages = cairo_painter_.page_count_full_display();
+        num_pages = cairo_painter_.page_count();
     } else if (radio_glyph_pages_->get_active()) {
         num_pages = cairo_painter_.page_count();
     } else if (radio_sample_text_->get_active()) {

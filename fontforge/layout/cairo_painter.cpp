@@ -301,126 +301,14 @@ size_t MultiSizePrinter::page_count() const {
 }
 
 //////////////////////////////////////////////////////////////////////////////
-//                               CairoPainter                               //
+//                            FullDisplayPrinter                            //
 //////////////////////////////////////////////////////////////////////////////
 
-CairoPainter::CairoPainter(SplineFont* sf, FontViewBase* fv) {
-    cairo_family_ = create_cairo_family(sf);
-    cairo_face_ = cairo_family_[0].face;
-    font_name_ = SFGetFullName(sf);
-
-    PrintGlyphMap print_map = build_glyph_map(sf);
-    if (fv) {
-        SplineChar** selected = FVGetSelection(fv);
-        std::set<SplineChar*> selected_set;
-        for (SplineChar** it = selected; *it != NULL; ++it) {
-            selected_set.insert(*it);
-        }
-        free(selected);
-
-        // When selection is not empty, keep only selected glyphs. When
-        // selection is empty, keep all glyphs.
-        if (!selected_set.empty()) {
-            for (auto it = print_map.begin(); it != print_map.end();) {
-                if (selected_set.find(it->second) == selected_set.end()) {
-                    it = print_map.erase(it);
-                } else {
-                    ++it;
-                }
-            }
-        }
-    }
-    sort_glyphs(print_map);
+size_t FullDisplayPrinter::page_count() const {
+    return glyph_line_pagination_.empty() ? 1 : glyph_line_pagination_.size();
 }
 
-void CairoPainter::activate_full_glyph_printer(
-    const std::string& scaling_option) {
-    active_printer_ = std::make_unique<FullGlyphPrinter>(
-        print_map_, cairo_family_[0], scaling_option);
-}
-
-void CairoPainter::activate_multisize_printer(
-    const std::vector<double>& pointsizes) {
-    active_printer_ = std::make_unique<MultiSizePrinter>(
-        print_map_, cairo_family_[0], pointsizes);
-}
-
-void CairoPainter::sort_glyphs(const PrintGlyphMap& print_map) {
-    std::copy(print_map.begin(), print_map.end(), back_inserter(print_map_));
-    // Sort encoded glyphs first, unenecoded glyphs second.
-    std::sort(
-        print_map_.begin(), print_map_.end(), [](const auto& a, const auto& b) {
-            int a_unicode;
-            int b_unicode;
-            SCGetEncoding(a.second, &a_unicode, NULL);
-            SCGetEncoding(b.second, &b_unicode, NULL);
-            return (a_unicode == -1)
-                       ? ((b_unicode == -1) ? (a.first < b.first) : false)
-                       : ((b_unicode == -1) ? true : (a_unicode < b_unicode));
-        });
-}
-
-static void set_surface_metadata(const Cairo::RefPtr<Cairo::Context>& cr,
-                                 const std::string& title) {
-    std::string author = GetAuthor();
-    Cairo::RefPtr<Cairo::Surface> surface = cr->get_target();
-    cairo_surface_t* c_surface = static_cast<cairo_surface_t*>(surface->cobj());
-
-    Cairo::RefPtr<Cairo::PdfSurface> pdf_surface =
-        Cairo::RefPtr<Cairo::PdfSurface>::cast_dynamic(surface);
-    if (pdf_surface) {
-        cairo_pdf_surface_set_metadata(c_surface, CAIRO_PDF_METADATA_TITLE,
-                                       title.c_str());
-        cairo_pdf_surface_set_metadata(c_surface, CAIRO_PDF_METADATA_AUTHOR,
-                                       author.c_str());
-        cairo_pdf_surface_set_metadata(c_surface, CAIRO_PDF_METADATA_CREATOR,
-                                       "FontForge");
-    }
-    Cairo::RefPtr<Cairo::PsSurface> ps_surface =
-        Cairo::RefPtr<Cairo::PsSurface>::cast_dynamic(surface);
-    if (ps_surface) {
-        cairo_ps_surface_dsc_comment(c_surface, ("%%Title: " + title).c_str());
-        cairo_ps_surface_dsc_comment(c_surface, "%%Creator: FontForge");
-        cairo_ps_surface_dsc_comment(c_surface, ("%%For: " + author).c_str());
-    }
-}
-
-static void draw_centered_text(const Cairo::RefPtr<Cairo::Context>& cr,
-                               const Cairo::Rectangle& box,
-                               const std::string& text) {
-    Cairo::FontExtents extents;
-    cr->get_font_extents(extents);
-
-    Cairo::TextExtents text_extents;
-    cr->get_text_extents(text, text_extents);
-
-    // The text is aligned vertically so that its ascent and descent are
-    // together centered around the box horizontal middle line. This ensures
-    // that for multiple aligned boxes the text in them would also be aligned.
-    cr->move_to(box.x + (box.width - text_extents.width) / 2,
-                box.y + (box.height + extents.ascent) / 2);
-    cr->show_text(text);
-}
-
-static void draw_centered_glyph(const Cairo::RefPtr<Cairo::Context>& cr,
-                                const Cairo::Rectangle& box,
-                                unsigned long glyph_index) {
-    Cairo::FontExtents extents;
-    cr->get_font_extents(extents);
-
-    Cairo::Glyph glyph{glyph_index, 0.0, 0.0};
-    Cairo::TextExtents text_extents;
-    cr->get_glyph_extents({glyph}, text_extents);
-
-    // The text is aligned vertically so that its ascent and descent are
-    // together centered around the box horizontal middle line. This ensures
-    // that for multiple aligned boxes the text in them would also be aligned.
-    glyph.x = box.x + (box.width - text_extents.width) / 2;
-    glyph.y = box.y + (box.height + extents.ascent) / 2;
-    cr->show_glyphs({glyph});
-}
-
-std::vector<CairoPainter::GlyphLine> CairoPainter::split_to_lines(
+std::vector<FullDisplayPrinter::GlyphLine> FullDisplayPrinter::split_to_lines(
     size_t max_slots) const {
     std::vector<GlyphLine> glyph_lines;
     if (print_map_.empty()) {
@@ -506,18 +394,23 @@ std::vector<CairoPainter::GlyphLine> CairoPainter::split_to_lines(
     return glyph_lines;
 }
 
-void CairoPainter::paginate_full_display(double char_area_height,
-                                         double pointsize, double extravspace) {
+void FullDisplayPrinter::paginate_full_display(double char_area_height,
+                                               double pointsize,
+                                               double extravspace) {
     int max_lines = static_cast<int>(
         std::floor(char_area_height / (extravspace + pointsize)));
+    if (max_lines <= 0) {
+        glyph_line_pagination_ = {0};
+        return;
+    }
 
     auto first_unencoded = std::find_if(
-        cached_glyph_lines_.begin(), cached_glyph_lines_.end(),
+        glyph_lines_.begin(), glyph_lines_.end(),
         [](const auto& glyph_line) { return !glyph_line.encoded; });
-    int divider_position = first_unencoded - cached_glyph_lines_.begin();
+    int divider_position = first_unencoded - glyph_lines_.begin();
 
-    bool has_encoded_glyphs = (first_unencoded != cached_glyph_lines_.begin());
-    bool has_unencoded_glyphs = (first_unencoded != cached_glyph_lines_.end());
+    bool has_encoded_glyphs = (first_unencoded != glyph_lines_.begin());
+    bool has_unencoded_glyphs = (first_unencoded != glyph_lines_.end());
 
     // Check if the divider between encoded and unencoded glyphs forces putting
     // less lines on a page. Effectively, the divider requires extravspace.
@@ -528,114 +421,35 @@ void CairoPainter::paginate_full_display(double char_area_height,
     bool divider_needed = has_encoded_glyphs && has_unencoded_glyphs &&
                           (divider_position % max_lines != 0);
 
-    int num_pages = cached_glyph_lines_.empty() ? 1
+    int num_pages = glyph_lines_.empty() ? 1
                     : (divider_needed && divider_pushes_line)
-                        ? (cached_glyph_lines_.size() / max_lines) + 1
-                        : ((cached_glyph_lines_.size() - 1) / max_lines) + 1;
-    cached_glyph_line_pagination_ = {0};
+                        ? (glyph_lines_.size() / max_lines) + 1
+                        : ((glyph_lines_.size() - 1) / max_lines) + 1;
+    glyph_line_pagination_ = {0};
     for (size_t i = 1; i < num_pages; ++i) {
-        if (divider_pushes_line && divider_pushes_line &&
+        if (divider_needed && divider_pushes_line &&
             (i * max_lines > divider_position)) {
             // Shift unencoded lines if the divider pushes a line onto the next
             // page.
-            cached_glyph_line_pagination_.push_back(i * max_lines - 1);
+            glyph_line_pagination_.push_back(i * max_lines - 1);
         } else {
-            cached_glyph_line_pagination_.push_back(i * max_lines);
+            glyph_line_pagination_.push_back(i * max_lines);
         }
     }
 }
 
-// Rewritten PIFontDisplay()
-void CairoPainter::draw_page_full_display(
-    const Cairo::RefPtr<Cairo::Context>& cr,
-    const Cairo::Rectangle& printable_area, int page_nr, double pointsize) {
-    init_document(cr, printable_area, "Font Display for " + font_name_,
-                  top_margin_);
-
-    double extravspace = pointsize / 6;
-    double extrahspace = pointsize / 3;
-
-    // All dimensions are in points
-    double left_code_area_width = 36;
-    double top_code_area_height = 12;
-
-    double char_area_width =
-        printable_area.width - margin_ * 2 - left_code_area_width;
-    double char_area_height =
-        printable_area.height - margin_ - top_margin_ - top_code_area_height;
-    int max_slots = static_cast<int>(
-        std::floor(char_area_width / (extrahspace + pointsize)));
-
-    cr->set_source_rgb(0, 0, 0);
-
-    // Recalculate the layout only if the max_slots has changed.
-    if (max_slots != cached_max_slots_) {
-        cached_glyph_lines_ = split_to_lines(max_slots);
-        paginate_full_display(char_area_height, pointsize, extravspace);
-    }
-
-    size_t line_length = cached_glyph_lines_.empty()
-                             ? 16
-                             : cached_glyph_lines_[0].indexes.size();
-
-    static const std::array<std::string, 16> slot_labels = {
-        "0", "1", "2", "3", "4", "5", "6", "7",
-        "8", "9", "A", "B", "C", "D", "E", "F"};
-    for (size_t i = 0; i < line_length; ++i) {
-        Cairo::Rectangle slot{margin_ + left_code_area_width + extrahspace +
-                                  i * (extrahspace + pointsize),
-                              top_margin_, pointsize, top_code_area_height};
-        draw_centered_text(cr, slot, slot_labels[i]);
-    }
-
-    double y_start = top_margin_ + top_code_area_height + extravspace;
-
-    // Check page number
-    page_nr =
-        std::clamp(page_nr, 0, (int)cached_glyph_line_pagination_.size() - 1);
-
-    auto start_line_it =
-        cached_glyph_lines_.begin() + cached_glyph_line_pagination_[page_nr];
-    auto end_line_it = (page_nr == cached_glyph_line_pagination_.size() - 1)
-                           ? cached_glyph_lines_.end()
-                           : cached_glyph_lines_.begin() +
-                                 cached_glyph_line_pagination_[page_nr + 1];
-
-    for (auto line_it = start_line_it; line_it != end_line_it; ++line_it) {
-        // Draw a ruler between encoded and unencoded glyphs, if necessary.
-        if ((line_it != start_line_it) && !line_it->encoded &&
-            std::prev(line_it)->encoded) {
-            Cairo::Rectangle line_slot{
-                margin_ + left_code_area_width + extrahspace, y_start,
-                line_length * (extrahspace + pointsize) - extrahspace, 0};
-            draw_line(cr, line_slot, y_start, true);
-
-            // This provides a vertical shift after we have drawn a ruler
-            // between encoded and unencoded glyphs.
-            y_start += extravspace;
-        }
-
-        draw_line_full_display(cr, *line_it, y_start, left_code_area_width,
-                               pointsize);
-
-        y_start += (extravspace + pointsize);
-    }
-}
-
-void CairoPainter::draw_line_full_display(
+void FullDisplayPrinter::draw_line_full_display(
     const Cairo::RefPtr<Cairo::Context>& cr, const GlyphLine& glyph_line,
-    double y_start, double left_code_area_width, double pointsize) {
+    double y_start, double left_code_area_width, double pointsize) const {
     double extrahspace = pointsize / 3;
     Cairo::Rectangle slot{margin_, y_start, left_code_area_width, pointsize};
 
-    // Draw line label
     cr->select_font_face("times", Cairo::FONT_SLANT_NORMAL,
                          Cairo::FONT_WEIGHT_BOLD);
     cr->set_font_size(12.0);
     draw_centered_text(cr, slot, glyph_line.label);
 
-    // Set the user font face
-    cr->set_font_face(cairo_face_);
+    cr->set_font_face(font_rec_.face);
     cr->set_font_size(pointsize);
 
     for (size_t j = 0; j < glyph_line.indexes.size(); ++j) {
@@ -648,7 +462,6 @@ void CairoPainter::draw_line_full_display(
         glyph_unistr[0] = (unichar_t)codepoint;
         char* glyph_utf8 = u2utf8_copy(glyph_unistr);
 
-        // Print sample glyph
         Cairo::Rectangle glyph_slot{margin_ + left_code_area_width +
                                         extrahspace +
                                         j * (extrahspace + pointsize),
@@ -658,6 +471,182 @@ void CairoPainter::draw_line_full_display(
         } else {
             draw_centered_glyph(cr, glyph_slot, codepoint);
         }
+    }
+}
+
+void FullDisplayPrinter::add_page(size_t page_number,
+                                  const ff::layout::PageContext* context) {
+    auto* cairo_ctx = dynamic_cast<const CairoContext*>(context);
+    if (!cairo_ctx) {
+        std::cerr << "Invalid page context passed to FullDisplayPrinter"
+                  << std::endl;
+        return;
+    }
+
+    auto cr = cairo_ctx->cr_;
+    auto printable_area = cairo_ctx->printable_area_;
+
+    std::string title =
+        std::string("Font Display for ") + SFGetFullName(font_rec_.sf);
+    init_document(cr, printable_area, title, top_margin_);
+
+    double extravspace = pointsize_ / 6;
+    double extrahspace = pointsize_ / 3;
+
+    double left_code_area_width = 36;
+    double top_code_area_height = 12;
+
+    double char_area_width =
+        printable_area.width - margin_ * 2 - left_code_area_width;
+    double char_area_height =
+        printable_area.height - margin_ - top_margin_ - top_code_area_height;
+    int max_slots = static_cast<int>(
+        std::floor(char_area_width / (extrahspace + pointsize_)));
+
+    cr->set_source_rgb(0, 0, 0);
+
+    if (max_slots != max_slots_) {
+        glyph_lines_ = split_to_lines(max_slots);
+        paginate_full_display(char_area_height, pointsize_, extravspace);
+        max_slots_ = max_slots;
+    }
+
+    size_t line_length =
+        glyph_lines_.empty() ? 16 : glyph_lines_[0].indexes.size();
+
+    static const std::array<std::string, 16> slot_labels = {
+        "0", "1", "2", "3", "4", "5", "6", "7",
+        "8", "9", "A", "B", "C", "D", "E", "F"};
+    for (size_t i = 0; i < line_length; ++i) {
+        Cairo::Rectangle slot{margin_ + left_code_area_width + extrahspace +
+                                  i * (extrahspace + pointsize_),
+                              top_margin_, pointsize_, top_code_area_height};
+        draw_centered_text(cr, slot, slot_labels[i]);
+    }
+
+    double y_start = top_margin_ + top_code_area_height + extravspace;
+
+    if (glyph_line_pagination_.empty()) {
+        return;
+    }
+
+    int page_nr =
+        std::clamp((int)page_number, 0, (int)glyph_line_pagination_.size() - 1);
+
+    auto start_line_it = glyph_lines_.begin() + glyph_line_pagination_[page_nr];
+    auto end_line_it =
+        (page_nr == glyph_line_pagination_.size() - 1)
+            ? glyph_lines_.end()
+            : glyph_lines_.begin() + glyph_line_pagination_[page_nr + 1];
+
+    for (auto line_it = start_line_it; line_it != end_line_it; ++line_it) {
+        // Draw a ruler between encoded and unencoded glyphs, if necessary.
+        if ((line_it != start_line_it) && !line_it->encoded &&
+            std::prev(line_it)->encoded) {
+            Cairo::Rectangle line_slot{
+                margin_ + left_code_area_width + extrahspace, y_start,
+                line_length * (extrahspace + pointsize_) - extrahspace, 0};
+            draw_line(cr, line_slot, y_start, true);
+
+            // This provides a vertical shift after we have drawn a ruler
+            // between encoded and unencoded glyphs.
+            y_start += extravspace;
+        }
+
+        draw_line_full_display(cr, *line_it, y_start, left_code_area_width,
+                               pointsize_);
+
+        y_start += (extravspace + pointsize_);
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////
+//                               CairoPainter                               //
+//////////////////////////////////////////////////////////////////////////////
+
+CairoPainter::CairoPainter(SplineFont* sf, FontViewBase* fv) {
+    cairo_family_ = create_cairo_family(sf);
+    cairo_face_ = cairo_family_[0].face;
+    font_name_ = SFGetFullName(sf);
+
+    PrintGlyphMap print_map = build_glyph_map(sf);
+    if (fv) {
+        SplineChar** selected = FVGetSelection(fv);
+        std::set<SplineChar*> selected_set;
+        for (SplineChar** it = selected; *it != NULL; ++it) {
+            selected_set.insert(*it);
+        }
+        free(selected);
+
+        // When selection is not empty, keep only selected glyphs. When
+        // selection is empty, keep all glyphs.
+        if (!selected_set.empty()) {
+            for (auto it = print_map.begin(); it != print_map.end();) {
+                if (selected_set.find(it->second) == selected_set.end()) {
+                    it = print_map.erase(it);
+                } else {
+                    ++it;
+                }
+            }
+        }
+    }
+    sort_glyphs(print_map);
+}
+
+void CairoPainter::activate_full_glyph_printer(
+    const std::string& scaling_option) {
+    active_printer_ = std::make_unique<FullGlyphPrinter>(
+        print_map_, cairo_family_[0], scaling_option);
+}
+
+void CairoPainter::activate_full_display_printer(double pointsize) {
+    active_printer_ = std::make_unique<FullDisplayPrinter>(
+        print_map_, cairo_family_[0], pointsize);
+}
+
+void CairoPainter::activate_multisize_printer(
+    const std::vector<double>& pointsizes) {
+    active_printer_ = std::make_unique<MultiSizePrinter>(
+        print_map_, cairo_family_[0], pointsizes);
+}
+
+void CairoPainter::sort_glyphs(const PrintGlyphMap& print_map) {
+    std::copy(print_map.begin(), print_map.end(), back_inserter(print_map_));
+    // Sort encoded glyphs first, unenecoded glyphs second.
+    std::sort(
+        print_map_.begin(), print_map_.end(), [](const auto& a, const auto& b) {
+            int a_unicode;
+            int b_unicode;
+            SCGetEncoding(a.second, &a_unicode, NULL);
+            SCGetEncoding(b.second, &b_unicode, NULL);
+            return (a_unicode == -1)
+                       ? ((b_unicode == -1) ? (a.first < b.first) : false)
+                       : ((b_unicode == -1) ? true : (a_unicode < b_unicode));
+        });
+}
+
+static void set_surface_metadata(const Cairo::RefPtr<Cairo::Context>& cr,
+                                 const std::string& title) {
+    std::string author = GetAuthor();
+    Cairo::RefPtr<Cairo::Surface> surface = cr->get_target();
+    cairo_surface_t* c_surface = static_cast<cairo_surface_t*>(surface->cobj());
+
+    Cairo::RefPtr<Cairo::PdfSurface> pdf_surface =
+        Cairo::RefPtr<Cairo::PdfSurface>::cast_dynamic(surface);
+    if (pdf_surface) {
+        cairo_pdf_surface_set_metadata(c_surface, CAIRO_PDF_METADATA_TITLE,
+                                       title.c_str());
+        cairo_pdf_surface_set_metadata(c_surface, CAIRO_PDF_METADATA_AUTHOR,
+                                       author.c_str());
+        cairo_pdf_surface_set_metadata(c_surface, CAIRO_PDF_METADATA_CREATOR,
+                                       "FontForge");
+    }
+    Cairo::RefPtr<Cairo::PsSurface> ps_surface =
+        Cairo::RefPtr<Cairo::PsSurface>::cast_dynamic(surface);
+    if (ps_surface) {
+        cairo_ps_surface_dsc_comment(c_surface, ("%%Title: " + title).c_str());
+        cairo_ps_surface_dsc_comment(c_surface, "%%Creator: FontForge");
+        cairo_ps_surface_dsc_comment(c_surface, ("%%For: " + author).c_str());
     }
 }
 
@@ -908,10 +897,6 @@ void CairoPainter::draw_line_sample_text(
 }
 
 void CairoPainter::invalidate_cached_layouts() {
-    cached_glyph_lines_.clear();
-    cached_max_slots_ = 0;
-    cached_glyph_line_pagination_.clear();
-
     cached_sample_text_.clear();
     cached_full_layout_.clear();
     cached_pagination_list_.clear();
@@ -1214,6 +1199,40 @@ void draw_line(const Cairo::RefPtr<Cairo::Context>& cr,
         cr->line_to(level, box.y + box.height);
     }
     cr->stroke();
+}
+
+void draw_centered_text(const Cairo::RefPtr<Cairo::Context>& cr,
+                        const Cairo::Rectangle& box, const std::string& text) {
+    Cairo::FontExtents extents;
+    cr->get_font_extents(extents);
+
+    Cairo::TextExtents text_extents;
+    cr->get_text_extents(text, text_extents);
+
+    // The text is aligned vertically so that its ascent and descent are
+    // together centered around the box horizontal middle line. This ensures
+    // that for multiple aligned boxes the text in them would also be aligned.
+    cr->move_to(box.x + (box.width - text_extents.width) / 2,
+                box.y + (box.height + extents.ascent) / 2);
+    cr->show_text(text);
+}
+
+void draw_centered_glyph(const Cairo::RefPtr<Cairo::Context>& cr,
+                         const Cairo::Rectangle& box,
+                         unsigned long glyph_index) {
+    Cairo::FontExtents extents;
+    cr->get_font_extents(extents);
+
+    Cairo::Glyph glyph{glyph_index, 0.0, 0.0};
+    Cairo::TextExtents text_extents;
+    cr->get_glyph_extents({glyph}, text_extents);
+
+    // The text is aligned vertically so that its ascent and descent are
+    // together centered around the box horizontal middle line. This ensures
+    // that for multiple aligned boxes the text in them would also be aligned.
+    glyph.x = box.x + (box.width - text_extents.width) / 2;
+    glyph.y = box.y + (box.height + extents.ascent) / 2;
+    cr->show_glyphs({glyph});
 }
 
 }  // namespace ff::utils
