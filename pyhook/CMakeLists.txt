@@ -38,8 +38,9 @@ else()
     if(APPLE)
       set(_PYHOOK_SYSCONFIG_PREFIX " 'posix_prefix',")
     endif()
+    # strip leading 'local/' from 'platlib' path to avoid double 'local/' in 'posix_local' schemes when installing to /usr/local 
     execute_process(
-      COMMAND "${Python3_EXECUTABLE}" -c "import sysconfig as sc; print(sc.get_path('platlib',${_PYHOOK_SYSCONFIG_PREFIX} vars={'platbase': '.'}))"
+      COMMAND "${Python3_EXECUTABLE}" -c "import sysconfig as sc; p = sc.get_path('platlib',${_PYHOOK_SYSCONFIG_PREFIX} vars={'platbase': '.'}); print(p[6:] if p.startswith('local/') and sc.get_default_scheme() == 'posix_local' and not \"$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}\".endswith(sc.get_config_var('platbase')) else p)"
       RESULT_VARIABLE _pyhook_install_dir_result
       OUTPUT_VARIABLE PYHOOK_INSTALL_DIR
       OUTPUT_STRIP_TRAILING_WHITESPACE)
