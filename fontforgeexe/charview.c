@@ -514,9 +514,10 @@ static void CVDrawBB(CharView *cv, GWindow pixmap, DBounds *bb) {
     GDrawSetDashedLine(pixmap,0,0,0);
 }
 
-static void DrawTangentPoint( GWindow pixmap, int x, int y,
-			      BasePoint *unit, int outline, Color col )
-{
+/* Draws tangent-style arrows using specified hv/diag arrow sizes */
+static void DrawTangentPointSized(GWindow pixmap, int x, int y,
+                                  BasePoint *unit, int outline, Color col,
+                                  float hv_size, float diag_size) {
     int dir;
     const int gp_sz = 4;
     GPoint gp[5];
@@ -540,7 +541,8 @@ static void DrawTangentPoint( GWindow pixmap, int x, int y,
 	}
     }
 
-    float sizedelta = 4;
+    float sizedelta = hv_size;    // horizontal/vertical arrow size
+
     if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
 	sizedelta *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
 
@@ -554,7 +556,7 @@ static void DrawTangentPoint( GWindow pixmap, int x, int y,
 	gp[2].x = x+sizedelta; gp[2].y = y;
     } else {
 	/* at a 45 angle, a value of 4 looks too small. I probably want 4*1.414 */
-	sizedelta = 5;
+	sizedelta = diag_size;     // diagonal arrow size
 	if( prefs_cvEditHandleSize > prefs_cvEditHandleSize_default )
 	    sizedelta *= prefs_cvEditHandleSize / prefs_cvEditHandleSize_default;
 	int xdiff = unit->x > 0 ?   sizedelta  : -1*sizedelta;
@@ -569,6 +571,49 @@ static void DrawTangentPoint( GWindow pixmap, int x, int y,
 	GDrawDrawPoly(pixmap,gp,gp_sz,col);
     else
 	GDrawFillPoly(pixmap,gp,4,col);
+}
+
+// Draws directional arrows for tangent points
+static void DrawTangentPoint(GWindow pixmap, int x, int y,
+                             BasePoint *unit, int outline, Color col) {
+    const int hv_arrow_size   = 4;
+    const int diag_arrow_size = 5;
+
+    DrawTangentPointSized(pixmap, x, y, unit, outline, col,
+                          hv_arrow_size, diag_arrow_size);
+}
+
+/* Convert scale box handle into a fixed arrow direction for drawing */
+static void CVScaleHandleDirection(enum expandedge edge, BasePoint *unit) {
+    unit->x = edge==ee_nw || edge==ee_sw || edge==ee_left  ? -1 :
+              edge==ee_ne || edge==ee_se || edge==ee_right ?  1 : 0;
+    unit->y = edge==ee_sw || edge==ee_se || edge==ee_down  ? -1 :
+              edge==ee_nw || edge==ee_ne || edge==ee_up    ?  1 : 0;
+}
+
+/* Draw scale tool's selection bounds and draggable edge/corner handles */
+static void CVDrawScaleSelectionBox(CharView *cv, GWindow pixmap) {
+    static enum expandedge edges[] = { ee_nw, ee_up, ee_ne, ee_right, ee_se, ee_down, ee_sw, ee_left };
+    CharViewTab* tab = CVGetActiveTab(cv);
+    DBounds bb;
+    const int scale_handle_hv_arrow_size   = 6;  // a little larger than tangent arrows
+    const int scale_handle_diag_arrow_size = 8;
+    int i;
+
+    if ( !CVScaleSelectionBounds(cv,&bb) )
+	return;
+    CVDrawBB(cv,pixmap,&bb);
+    for ( i=0; i<sizeof(edges)/sizeof(edges[0]); ++i ) {
+	BasePoint pt, unit;
+	int x, y;
+
+	CVScaleHandlePoint(&bb, edges[i], &pt);
+	CVScaleHandleDirection(edges[i], &unit);
+	x =  tab->xoff + rint(pt.x*tab->scale);
+	y = -tab->yoff + cv->height - rint(pt.y*tab->scale);
+	DrawTangentPointSized(pixmap, x, y, &unit, false, GDrawGetDefaultForeground(NULL),
+                              scale_handle_hv_arrow_size, scale_handle_diag_arrow_size);
+    }
 }
 
 static GRect* DrawPoint_SetupRectForSize( GRect* r, int cx, int cy, float sz )
@@ -2106,7 +2151,10 @@ return;
 
 static void DrawTransOrigin(CharView *cv, GWindow pixmap) {
     CharViewTab* tab = CVGetActiveTab(cv);
-    int x = rint(cv->p.cx*tab->scale) + tab->xoff, y = cv->height-tab->yoff-rint(cv->p.cy*tab->scale);
+    real originx = cv->active_tool==cvt_scale ? cv->expandorigin.x : cv->p.cx;
+    real originy = cv->active_tool==cvt_scale ? cv->expandorigin.y : cv->p.cy;
+    int x = rint(originx*tab->scale) + tab->xoff;
+    int y = cv->height-tab->yoff-rint(originy*tab->scale);
 
     GDrawDrawLine(pixmap,x-4,y,x+4,y,transformorigincol);
     GDrawDrawLine(pixmap,x,y-4,x,y+4,transformorigincol);
@@ -2837,6 +2885,10 @@ static void CVExpose(CharView *cv, GWindow pixmap, GEvent *event ) {
     if ( cv->showsidebearings && cv->showfore &&
 	    (cv->showvmetrics || cv->showhmetrics))
 	CVSideBearings(pixmap,cv);
+
+    /* Show scale handles while scale tool selected or actively dragging */
+    if ( cv->showing_tool==cvt_scale || cv->active_tool==cvt_scale || cv->b1_tool==cvt_scale )
+	CVDrawScaleSelectionBox(cv,pixmap);
 
     if ((( cv->active_tool >= cvt_scale && cv->active_tool <= cvt_perspective ) ||
 		cv->active_shape!=NULL ) &&
@@ -3780,8 +3832,8 @@ return;
 return;
 
     if ( cv->active_tool==cvt_scale ) {
-	xdiff = 100.0 + (cv->info.x-cv->p.cx)/(4*tab->scale);
-	ydiff = 100.0 + (cv->info.y-cv->p.cy)/(4*tab->scale);
+	xdiff = cv->expandwidth==0  ? 100.0 : 100.0*(cv->info.x-cv->expandorigin.x)/cv->expandwidth;
+	ydiff = cv->expandheight==0 ? 100.0 : 100.0*(cv->info.y-cv->expandorigin.y)/cv->expandheight;
 	if ( xdiff>=100 || xdiff<=-100 || ydiff>=100 || ydiff<=-100 )
 	    sprintf(buffer,"%d%%%s%d%%", (int) xdiff, coord_sep, (int) ydiff );
 	else
@@ -4642,8 +4694,16 @@ return;		/* I treat this more like a modifier key change than a button press */
 	InSplineSet(&fs,cv->b.layerheads[cv->b.drawmode]->splines,cv->b.sc->inspiro && hasspiro());
 	if ( fs.p->sp==NULL && fs.p->spline==NULL )
 	    CVDoSnaps(cv,&fs);
+    } else if ( cv->active_tool==cvt_scale ) {
+	/* Ignore scale-tool clicks that miss the bounding box handles. */
+	if ( !CVScaleHandlePress(cv, CVSCALE_HANDLE_FUDGE/CVGetActiveTab(cv)->scale) ) {
+	    cv->p.pressed = false;
+	    cv->active_tool = cvt_none;
+	    cv->showing_tool = old_showing_tool;
+	    return;
+	}
     } else {
-	/* Just snap to points */
+	/* Other transform tools still snap to points. */
 	NearSplineSetPoints(&fs,cv->b.layerheads[cv->b.drawmode]->splines,cv->b.sc->inspiro && hasspiro());
 	if ( fs.p->sp==NULL && fs.p->spline==NULL )
 	    CVDoSnaps(cv,&fs);
@@ -4928,9 +4988,10 @@ static void CVMouseMove(CharView *cv, GEvent *event ) {
 
     if ( !cv->p.pressed ) {
 	CVUpdateInfo(cv, event);
-	if ( cv->showing_tool==cvt_pointer ) {
+	if ( cv->showing_tool==cvt_pointer || cv->showing_tool==cvt_scale || cv->b1_tool==cvt_scale ) {
+	    /* Pointer and scale tools both use resize cursors over draggable handles */
 	    CVCheckResizeCursors(cv);
-	    if ( cv->dv!=NULL )
+	    if ( cv->showing_tool==cvt_pointer && cv->dv!=NULL )
 		CVDebugPointPopup(cv);
 	} else if ( cv->showing_tool == cvt_ruler )
 	    CVMouseMoveRuler(cv,event);
@@ -4941,8 +5002,10 @@ return;
 
     SetFS(&fs,&p,cv,event);
     if ( cv->active_tool == cvt_freehand )
-	/* freehand does it's own kind of constraining */;
-    else if ( (event->u.mouse.state&ksm_shift) && !cv->p.rubberbanding ) {
+	/* freehand does its own kind of constraining */;
+    else if ( (event->u.mouse.state&ksm_shift) &&
+              !cv->p.rubberbanding &&
+              cv->active_tool!=cvt_scale) {
 	/* Constrained */
 
 	fake.u.mouse = event->u.mouse;

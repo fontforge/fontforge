@@ -1037,6 +1037,10 @@ extern void BVChar(BitmapView *cv, GEvent *event );
 extern void CVMouseDownPoint(CharView *cv,GEvent *event);
 extern void CVMouseMovePoint(CharView *cv,PressedOn *);
 extern void CVMouseUpPointer(CharView *cv );
+extern bool CVScaleSelectionBounds(CharView *cv, DBounds *bounds);
+extern void CVScaleHandlePoint(const DBounds *bb, enum expandedge edge, BasePoint *pt);
+#define CVSCALE_HANDLE_FUDGE 7.5    // #pixels for fudging mouse hover proximity to handles
+extern bool CVScaleHandlePress(CharView *cv, real fudge);
 extern void CVCheckResizeCursors(CharView *cv);
 extern void CVMouseDownHand(CharView *cv);
 extern void CVMouseUpHand(CharView *cv);
