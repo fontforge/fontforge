@@ -20,7 +20,7 @@ echo "DEPSPREFIX=$DEPSPREFIX" >> $GITHUB_ENV
 echo "PATH=$PATH:$DEPSPREFIX/bin:$PREFIX/bin:~/.local/bin" >> $GITHUB_ENV
 echo "LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$DEPSPREFIX/lib:$PREFIX/lib" >> $GITHUB_ENV
 echo "PKG_CONFIG_PATH=$PKG_CONFIG_PATH:$DEPSPREFIX/lib/pkgconfig" >> $GITHUB_ENV
-echo "PYTHONPATH=$PYTHONPATH:$PREFIX/$($PYTHON -c "import sysconfig as sc; p = sc.get_path('platlib', vars={'platbase': '.'}); print(p[6:] if p.startswith('local/') and sc.get_default_scheme() == 'posix_local' and not $PREFIX.endswith(sc.get_config_var('platbase')) else p)")" >> $GITHUB_ENV
+echo "PYTHONPATH=$PYTHONPATH:$PREFIX/$($PYTHON -c "import sysconfig as sc; p = sc.get_path('platlib', vars={'platbase': '.'}); print(p[6:] if p.startswith('local/') and sc.get_default_scheme() == 'posix_local' and not '$PREFIX'.endswith(sc.get_config_var('platbase')) else p)")" >> $GITHUB_ENV
 
 if [ ! -d deps/install ]; then
     echo "Custom dependencies not present - will build them"
