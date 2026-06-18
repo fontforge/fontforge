@@ -312,7 +312,6 @@ void PrintPreviewWidget::update_page_setup(
         current_setup_->get_paper_width(Gtk::UNIT_MM) /
         current_setup_->get_paper_height(Gtk::UNIT_MM);
 
-    cairo_painter_.invalidate_cached_layouts();
     aspect_wrapper.set(Gtk::ALIGN_CENTER, Gtk::ALIGN_CENTER, page_ratio, false);
     preview_area.queue_draw();
 }
@@ -495,13 +494,9 @@ void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
     if (radio_full_display_->get_active()) {
         double font_size = size_entry_->get_value();
         cairo_painter_.activate_full_display_printer(font_size);
-        ff::utils::CairoContext context(cr, printable_area);
-        cairo_painter_.add_page(page_nr, &context);
     } else if (radio_glyph_pages_->get_active()) {
         Glib::ustring active_option = scaling_option_->get_active_id();
         cairo_painter_.activate_full_glyph_printer(active_option);
-        ff::utils::CairoContext context(cr, printable_area);
-        cairo_painter_.add_page(page_nr, &context);
     } else if (radio_sample_text_->get_active()) {
         gsize length = 0;
         Glib::RefPtr<Gtk::TextBuffer> buffer = sample_text_->get_buffer();
@@ -521,28 +516,20 @@ void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
             features[feature] = selected_rows_set.count(row_idx) != 0;
         }
 
-        cairo_painter_.draw_page_sample_text(
-            cr, printable_area, page_nr, out_buffer, script, lang, features);
+        cairo_painter_.activate_sample_text_printer(out_buffer, script, lang,
+                                                    features);
     } else {
         cairo_painter_.activate_multisize_printer(kMultiPointsizes);
-        ff::utils::CairoContext context(cr, printable_area);
-        cairo_painter_.add_page(page_nr, &context);
     }
+
+    ff::utils::CairoContext context(cr, printable_area);
+    cairo_painter_.add_page(page_nr, &context);
 
     paginate();
 }
 
 size_t PrintPreviewWidget::paginate() {
-    size_t num_pages = 1;
-    if (radio_full_display_->get_active()) {
-        num_pages = cairo_painter_.page_count();
-    } else if (radio_glyph_pages_->get_active()) {
-        num_pages = cairo_painter_.page_count();
-    } else if (radio_sample_text_->get_active()) {
-        num_pages = cairo_painter_.page_count_sample_text();
-    } else {
-        num_pages = cairo_painter_.page_count();
-    }
+    size_t num_pages = cairo_painter_.page_count();
 
     // Changes to scale lead to focus changes which may inadvertently close the
     // sample text popover. When the popover is visible, we shall avoid touching

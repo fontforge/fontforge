@@ -183,6 +183,70 @@ class MultiSizePrinter : public ff::layout::IPrinter {
                                int glyph_index, double y_start) const;
 };
 
+class SampleTextPrinter : public ff::layout::IPrinter {
+ public:
+    SampleTextPrinter(const CairoFontFamily& cairo_family,
+                      const std::string& sample_text, Tag script, Tag lang,
+                      const std::map<Tag, bool>& features)
+        : cairo_face_(cairo_family[0].face),
+          cairo_family_(cairo_family),
+          sample_text_(sample_text),
+          script_(script),
+          lang_(lang),
+          features_(features) {}
+
+    size_t page_count() const override { return pagination_list_.size(); }
+    void add_page(size_t page_number,
+                  const ff::layout::PageContext* context) override;
+
+ private:
+    // TODO(iorsh): Storing reference is dangerous, consider other non-copying
+    // storage options.
+    // Currently active font face (for example, whose FontView invoked the Print
+    // dialog).
+    Cairo::RefPtr<Cairo::FtFontFace> cairo_face_;
+
+    // All the other currently open faces from the same family.
+    const CairoFontFamily& cairo_family_;
+
+    std::string sample_text_;
+    Tag script_;
+    Tag lang_;
+    std::map<Tag, bool> features_;
+    //     const PrintGlyphVec& print_map_;
+    //     const CairoFontRec& font_rec_;
+
+    RichTextLayout full_layout_;
+    // Pagination list for full_layout_, with i-th entry designating the
+    // first line of the i-th page.
+
+    // Vector of output lines with calculated height.
+    std::vector<size_t> pagination_list_;
+
+    // Calculate height of single line
+    double calculate_height(const Cairo::RefPtr<Cairo::Context>& cr,
+                            const RichTextLineBuffer& line_buffer);
+    void calculate_layout(const Cairo::RefPtr<Cairo::Context>& cr,
+                          const Cairo::Rectangle& printable_area,
+                          const std::string& sample_text);
+    void paginate(double layout_height);
+    SplineFontProperties get_default_style(
+        const ParsedRichText& rich_text) const;
+
+    // Draw a single rich text buffer.
+    void draw_line(const Cairo::RefPtr<Cairo::Context>& cr,
+                   const RichTextLineBuffer& line_buffer, double width,
+                   double y_baseline, Tag script, Tag lang,
+                   const std::map<Tag, bool>& features);
+
+    // Select specific face to print a text segment based on the tags which
+    // apply to it. Returns an index into CairoPainter::cairo_family_.
+    size_t select_face(const std::vector<ParsedTag>& parsed_tags,
+                       const SplineFontProperties& default_properties) const;
+
+    double get_size(const std::vector<std::string>& tags);
+};
+
 class CairoPainter {
  public:
     CairoPainter(SplineFont* sf, FontViewBase* fv);
@@ -216,79 +280,29 @@ class CairoPainter {
 
     // Draw glyphs scaled to fill the page.
     void activate_full_glyph_printer(const std::string& scaling_option);
+
+    // Draw each glyph in multiple sizes.
     void activate_multisize_printer(const std::vector<double>& pointsizes);
 
     // Draw formatted sample text.
-    void draw_page_sample_text(const Cairo::RefPtr<Cairo::Context>& cr,
-                               const Cairo::Rectangle& printable_area,
-                               int page_nr, const std::string& sample_text,
-                               Tag script, Tag lang,
-                               const std::map<Tag, bool>& features);
-    size_t page_count_sample_text() const {
-        return cached_pagination_list_.size();
-    }
-
-    // Draw each glyph in multiple sizes.
-
-    void invalidate_cached_layouts();
+    void activate_sample_text_printer(const std::string& sample_text,
+                                      Tag script, Tag lang,
+                                      const std::map<Tag, bool>& features);
 
  private:
-    // Currently active font face (for example, whose FontView invoked the Print
-    // dialog).
-    Cairo::RefPtr<Cairo::FtFontFace> cairo_face_;
-
     // All the other currently open faces from the same family.
     CairoFontFamily cairo_family_;
-
-    std::map<std::pair<bool /*bold*/, bool /*italic*/>,
-             Cairo::RefPtr<Cairo::FtFontFace>>
-        style_map_;
 
     // Sorted with encoded glyph first (ordered by encoding), unencoded glyphs
     // second (ordered by glyph index).
     PrintGlyphVec print_map_;
-
-    std::string font_name_;
 
     std::unique_ptr<ff::layout::IPrinter> active_printer_;
 
     // Cached layout data, which should be invalidated whenever the painter
     // input changes.
 
-    std::string cached_sample_text_;
-    // Vector of output lines with calculated height.
-    RichTextLayout cached_full_layout_;
-    // Pagination list for cached_full_layout_, with i-th entry designating the
-    // first line of the i-th page.
-    std::vector<size_t> cached_pagination_list_;
-
     void sort_glyphs(const PrintGlyphMap& print_map);
-
-    SplineFontProperties get_default_style(
-        const ParsedRichText& rich_text) const;
-
-    // Select specific face to print a text segment based on the tags which
-    // apply to it. Returns an index into CairoPainter::cairo_family_.
-    size_t select_face(const std::vector<ParsedTag>& parsed_tags,
-                       const SplineFontProperties& default_properties) const;
-
-    double get_size(const std::vector<std::string>& tags);
-
-    // Calculate height of single line
-    double calculate_height_sample_text(const Cairo::RefPtr<Cairo::Context>& cr,
-                                        const RichTextLineBuffer& line_buffer);
-
-    // Draw a single rich text buffer.
-    void draw_line_sample_text(const Cairo::RefPtr<Cairo::Context>& cr,
-                               const RichTextLineBuffer& line_buffer,
-                               double width, double y_baseline, Tag script,
-                               Tag lang, const std::map<Tag, bool>& features);
-
-    void calculate_layout_sample_text(const Cairo::RefPtr<Cairo::Context>& cr,
-                                      const Cairo::Rectangle& printable_area,
-                                      const std::string& sample_text);
-
-    void paginate_sample_text(double layout_height);
 };
 
 Cairo::RefPtr<Cairo::FtFontFace> create_cairo_face(SplineFont* sf);

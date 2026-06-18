@@ -561,105 +561,69 @@ void FullDisplayPrinter::add_page(size_t page_number,
 }
 
 //////////////////////////////////////////////////////////////////////////////
-//                               CairoPainter                               //
+//                            SampleTextPrinter                             //
 //////////////////////////////////////////////////////////////////////////////
 
-CairoPainter::CairoPainter(SplineFont* sf, FontViewBase* fv) {
-    cairo_family_ = create_cairo_family(sf);
-    cairo_face_ = cairo_family_[0].face;
-    font_name_ = SFGetFullName(sf);
-
-    PrintGlyphMap print_map = build_glyph_map(sf);
-    if (fv) {
-        SplineChar** selected = FVGetSelection(fv);
-        std::set<SplineChar*> selected_set;
-        for (SplineChar** it = selected; *it != NULL; ++it) {
-            selected_set.insert(*it);
-        }
-        free(selected);
-
-        // When selection is not empty, keep only selected glyphs. When
-        // selection is empty, keep all glyphs.
-        if (!selected_set.empty()) {
-            for (auto it = print_map.begin(); it != print_map.end();) {
-                if (selected_set.find(it->second) == selected_set.end()) {
-                    it = print_map.erase(it);
-                } else {
-                    ++it;
-                }
-            }
-        }
-    }
-    sort_glyphs(print_map);
-}
-
-void CairoPainter::activate_full_glyph_printer(
-    const std::string& scaling_option) {
-    active_printer_ = std::make_unique<FullGlyphPrinter>(
-        print_map_, cairo_family_[0], scaling_option);
-}
-
-void CairoPainter::activate_full_display_printer(double pointsize) {
-    active_printer_ = std::make_unique<FullDisplayPrinter>(
-        print_map_, cairo_family_[0], pointsize);
-}
-
-void CairoPainter::activate_multisize_printer(
-    const std::vector<double>& pointsizes) {
-    active_printer_ = std::make_unique<MultiSizePrinter>(
-        print_map_, cairo_family_[0], pointsizes);
-}
-
-void CairoPainter::sort_glyphs(const PrintGlyphMap& print_map) {
-    std::copy(print_map.begin(), print_map.end(), back_inserter(print_map_));
-    // Sort encoded glyphs first, unenecoded glyphs second.
-    std::sort(
-        print_map_.begin(), print_map_.end(), [](const auto& a, const auto& b) {
-            int a_unicode;
-            int b_unicode;
-            SCGetEncoding(a.second, &a_unicode, NULL);
-            SCGetEncoding(b.second, &b_unicode, NULL);
-            return (a_unicode == -1)
-                       ? ((b_unicode == -1) ? (a.first < b.first) : false)
-                       : ((b_unicode == -1) ? true : (a_unicode < b_unicode));
-        });
-}
-
-static void set_surface_metadata(const Cairo::RefPtr<Cairo::Context>& cr,
-                                 const std::string& title) {
-    std::string author = GetAuthor();
-    Cairo::RefPtr<Cairo::Surface> surface = cr->get_target();
-    cairo_surface_t* c_surface = static_cast<cairo_surface_t*>(surface->cobj());
-
-    Cairo::RefPtr<Cairo::PdfSurface> pdf_surface =
-        Cairo::RefPtr<Cairo::PdfSurface>::cast_dynamic(surface);
-    if (pdf_surface) {
-        cairo_pdf_surface_set_metadata(c_surface, CAIRO_PDF_METADATA_TITLE,
-                                       title.c_str());
-        cairo_pdf_surface_set_metadata(c_surface, CAIRO_PDF_METADATA_AUTHOR,
-                                       author.c_str());
-        cairo_pdf_surface_set_metadata(c_surface, CAIRO_PDF_METADATA_CREATOR,
-                                       "FontForge");
-    }
-    Cairo::RefPtr<Cairo::PsSurface> ps_surface =
-        Cairo::RefPtr<Cairo::PsSurface>::cast_dynamic(surface);
-    if (ps_surface) {
-        cairo_ps_surface_dsc_comment(c_surface, ("%%Title: " + title).c_str());
-        cairo_ps_surface_dsc_comment(c_surface, "%%Creator: FontForge");
-        cairo_ps_surface_dsc_comment(c_surface, ("%%For: " + author).c_str());
-    }
-}
-
-void CairoPainter::calculate_layout_sample_text(
-    const Cairo::RefPtr<Cairo::Context>& cr,
-    const Cairo::Rectangle& printable_area, const std::string& sample_text) {
-    // Recalculate the layout only if the sample text has changed.
-    if (sample_text == cached_sample_text_) {
+void SampleTextPrinter::add_page(size_t page_number,
+                                 const ff::layout::PageContext* context) {
+    auto* cairo_ctx = dynamic_cast<const CairoContext*>(context);
+    if (!cairo_ctx) {
+        std::cerr << "Invalid page context passed to FullDisplayPrinter"
+                  << std::endl;
         return;
     }
 
-    cached_sample_text_ = sample_text;
-    cached_full_layout_.clear();
+    auto cr = cairo_ctx->cr_;
+    auto printable_area = cairo_ctx->printable_area_;
+
+    std::string font_name = SFGetFullName(cairo_family_[0].sf);
+    init_document(cr, printable_area, "Sample Text from " + font_name,
+                  top_margin_);
+
+    calculate_layout(cr, printable_area, sample_text_);
+    paginate(printable_area.height - top_margin_);
+
+    // Check page number
+    if (page_number >= pagination_list_.size()) return;
+
+    // Print sample text in black
+    cr->set_source_rgb(0, 0, 0);
+
+    // TODO(iorsh): Consider the baseline instead of height
+    auto start_line_it = full_layout_.begin() + pagination_list_[page_number];
+    auto end_line_it =
+        (page_number == pagination_list_.size() - 1)
+            ? full_layout_.end()
+            : full_layout_.begin() + pagination_list_[page_number + 1];
+
+    double y_start = top_margin_;
+    for (auto line_it = start_line_it; line_it != end_line_it; ++line_it) {
+        double height = line_it->second;
+        y_start += height;
+        draw_line(cr, line_it->first, printable_area.width, y_start, script_,
+                  lang_, features_);
+    }
+}
+
+double SampleTextPrinter::calculate_height(
+    const Cairo::RefPtr<Cairo::Context>& cr,
+    const RichTextLineBuffer& line_buffer) {
+    double height = 0;
+    for (const auto& [text, font_idx, size] : line_buffer) {
+        auto face = cairo_family_[font_idx].face;
+        Cairo::FontExtents font_extents;
+        cr->set_font_face(face);
+        cr->set_font_size(size);
+        cr->get_font_extents(font_extents);
+        height = std::max(height, font_extents.height);
+    }
+    return height;
+}
+
+void SampleTextPrinter::calculate_layout(
+    const Cairo::RefPtr<Cairo::Context>& cr,
+    const Cairo::Rectangle& printable_area, const std::string& sample_text) {
+    full_layout_.clear();
 
     setup_context(cr);
 
@@ -730,9 +694,8 @@ void CairoPainter::calculate_layout_sample_text(
                 line_buffer.emplace_back(printable_subblock, font_idx,
                                          font_size);
 
-                double line_height =
-                    calculate_height_sample_text(cr, line_buffer);
-                cached_full_layout_.emplace_back(line_buffer, line_height);
+                double line_height = calculate_height(cr, line_buffer);
+                full_layout_.emplace_back(line_buffer, line_height);
 
                 line_buffer.clear();
                 line_buffer_width = 0;
@@ -757,78 +720,81 @@ void CairoPainter::calculate_layout_sample_text(
     }
 
     // Collect leftovers from the end of text sample.
-    double line_height = calculate_height_sample_text(cr, line_buffer);
-    cached_full_layout_.emplace_back(line_buffer, line_height);
+    double line_height = calculate_height(cr, line_buffer);
+    full_layout_.emplace_back(line_buffer, line_height);
 }
 
-void CairoPainter::paginate_sample_text(double layout_height) {
-    cached_pagination_list_ = {0};
+void SampleTextPrinter::paginate(double layout_height) {
+    pagination_list_ = {0};
     double block_height = 0;
-    for (size_t i = 0; i < cached_full_layout_.size(); ++i) {
-        double line_height = cached_full_layout_[i].second;
+    for (size_t i = 0; i < full_layout_.size(); ++i) {
+        double line_height = full_layout_[i].second;
         if ((block_height > 0) &&
             (block_height + line_height > layout_height)) {
             // This line starts a new page
-            cached_pagination_list_.push_back(i);
+            pagination_list_.push_back(i);
             block_height = 0;
         }
         block_height += line_height;
     }
 }
 
-void CairoPainter::draw_page_sample_text(
-    const Cairo::RefPtr<Cairo::Context>& cr,
-    const Cairo::Rectangle& printable_area, int page_nr,
-    const std::string& sample_text, Tag script, Tag lang,
-    const std::map<Tag, bool>& features) {
-    init_document(cr, printable_area, "Sample Text from " + font_name_,
-                  top_margin_);
-
-    calculate_layout_sample_text(cr, printable_area, sample_text);
-    paginate_sample_text(printable_area.height - top_margin_);
-
-    // Check page number
-    page_nr = std::clamp(page_nr, 0, (int)cached_pagination_list_.size() - 1);
-
-    // Print sample text in black
-    cr->set_source_rgb(0, 0, 0);
-
-    // TODO(iorsh): Consider the baseline instead of height
-    auto start_line_it =
-        cached_full_layout_.begin() + cached_pagination_list_[page_nr];
-    auto end_line_it = (page_nr == cached_pagination_list_.size() - 1)
-                           ? cached_full_layout_.end()
-                           : cached_full_layout_.begin() +
-                                 cached_pagination_list_[page_nr + 1];
-
-    double y_start = top_margin_;
-    for (auto line_it = start_line_it; line_it != end_line_it; ++line_it) {
-        double height = line_it->second;
-        y_start += height;
-        draw_line_sample_text(cr, line_it->first, printable_area.width, y_start,
-                              script, lang, features);
+SplineFontProperties SampleTextPrinter::get_default_style(
+    const ParsedRichText& rich_text) const {
+    if (rich_text.empty()) {
+        return cairo_family_[0].props;
     }
+
+    // Collect values for all tags in the sample text. A special value "set" is
+    // used for tags without arguments, like <bold> and <italic>. A special
+    // value "" is used for tags which are sometimes set and sometimes unset.
+    std::map<std::string, std::vector<std::string>> sample_text_values;
+    for (size_t i = 0; i <= rich_text.size(); ++i) {
+        // Traverse the first segment once again to collect tags which were
+        // initially unset.
+        const std::vector<std::string>& segment_tags =
+            (i < rich_text.size()) ? rich_text[i].first : rich_text[0].first;
+
+        for (const std::string& tag : segment_tags) {
+            auto [tag_name, tag_value] = parse_tag(tag);
+            if (sample_text_values.count(tag_name) == 0) {
+                sample_text_values[tag_name] = {tag_value};
+            } else {
+                sample_text_values[tag_name].push_back(tag_value);
+            }
+        }
+    }
+
+    // If a particular property is not mentioned explicitly in the text, its
+    // default should be taken from the currently active face.
+    //
+    // For example, consider text tagged with upright and italics only, without
+    // any weight mentions. If the active face is normal, we should use Normal
+    // and Italic. If the active face is bold, we should use Bold and Bold
+    // Italic.
+    SplineFontProperties default_properties{
+        0,
+        0,  // ascent and descent are not used
+        (sample_text_values.count("italic") == 0)
+            ? cairo_family_[0].props.italic
+            : false,
+        (sample_text_values.count("bold") == 0)
+            ? cairo_family_[0].props.os2_weight
+            : (int16_t)400,
+        (sample_text_values.count("width") == 0)
+            ? cairo_family_[0].props.os2_width
+            : (int16_t)5,
+        ""  // style names are not used
+    };
+
+    return default_properties;
 }
 
-double CairoPainter::calculate_height_sample_text(
-    const Cairo::RefPtr<Cairo::Context>& cr,
-    const RichTextLineBuffer& line_buffer) {
-    double height = 0;
-    for (const auto& [text, font_idx, size] : line_buffer) {
-        auto face = cairo_family_[font_idx].face;
-        Cairo::FontExtents font_extents;
-        cr->set_font_face(face);
-        cr->set_font_size(size);
-        cr->get_font_extents(font_extents);
-        height = std::max(height, font_extents.height);
-    }
-    return height;
-}
-
-void CairoPainter::draw_line_sample_text(
-    const Cairo::RefPtr<Cairo::Context>& cr,
-    const RichTextLineBuffer& line_buffer, double width, double y_baseline,
-    Tag script, Tag lang, const std::map<Tag, bool>& features) {
+void SampleTextPrinter::draw_line(const Cairo::RefPtr<Cairo::Context>& cr,
+                                  const RichTextLineBuffer& line_buffer,
+                                  double width, double y_baseline, Tag script,
+                                  Tag lang,
+                                  const std::map<Tag, bool>& features) {
     // Perform the actual text drawing
     const SplineFontProperties& default_sf_properties = cairo_family_[0].props;
     double hb_scale =
@@ -896,64 +862,7 @@ void CairoPainter::draw_line_sample_text(
     }
 }
 
-void CairoPainter::invalidate_cached_layouts() {
-    cached_sample_text_.clear();
-    cached_full_layout_.clear();
-    cached_pagination_list_.clear();
-}
-
-SplineFontProperties CairoPainter::get_default_style(
-    const ParsedRichText& rich_text) const {
-    if (rich_text.empty()) {
-        return cairo_family_[0].props;
-    }
-
-    // Collect values for all tags in the sample text. A special value "set" is
-    // used for tags without arguments, like <bold> and <italic>. A special
-    // value "" is used for tags which are sometimes set and sometimes unset.
-    std::map<std::string, std::vector<std::string>> sample_text_values;
-    for (size_t i = 0; i <= rich_text.size(); ++i) {
-        // Traverse the first segment once again to collect tags which were
-        // initially unset.
-        const std::vector<std::string>& segment_tags =
-            (i < rich_text.size()) ? rich_text[i].first : rich_text[0].first;
-
-        for (const std::string& tag : segment_tags) {
-            auto [tag_name, tag_value] = parse_tag(tag);
-            if (sample_text_values.count(tag_name) == 0) {
-                sample_text_values[tag_name] = {tag_value};
-            } else {
-                sample_text_values[tag_name].push_back(tag_value);
-            }
-        }
-    }
-
-    // If a particular property is not mentioned explicitly in the text, its
-    // default should be taken from the currently active face.
-    //
-    // For example, consider text tagged with upright and italics only, without
-    // any weight mentions. If the active face is normal, we should use Normal
-    // and Italic. If the active face is bold, we should use Bold and Bold
-    // Italic.
-    SplineFontProperties default_properties{
-        0,
-        0,  // ascent and descent are not used
-        (sample_text_values.count("italic") == 0)
-            ? cairo_family_[0].props.italic
-            : false,
-        (sample_text_values.count("bold") == 0)
-            ? cairo_family_[0].props.os2_weight
-            : (int16_t)400,
-        (sample_text_values.count("width") == 0)
-            ? cairo_family_[0].props.os2_width
-            : (int16_t)5,
-        ""  // style names are not used
-    };
-
-    return default_properties;
-}
-
-size_t CairoPainter::select_face(
+size_t SampleTextPrinter::select_face(
     const std::vector<ParsedTag>& parsed_tags,
     const SplineFontProperties& default_properties) const {
     // Desired properties are derived from the default ones, with
@@ -974,7 +883,7 @@ size_t CairoPainter::select_face(
     return closest_face - cairo_family_.begin();
 }
 
-double CairoPainter::get_size(const std::vector<std::string>& tags) {
+double SampleTextPrinter::get_size(const std::vector<std::string>& tags) {
     double size = 36.0;
     for (const std::string& tag : tags) {
         auto [tag_name, tag_value] = parse_tag(tag);
@@ -986,6 +895,101 @@ double CairoPainter::get_size(const std::vector<std::string>& tags) {
         }
     }
     return size;
+}
+
+//////////////////////////////////////////////////////////////////////////////
+//                               CairoPainter                               //
+//////////////////////////////////////////////////////////////////////////////
+
+CairoPainter::CairoPainter(SplineFont* sf, FontViewBase* fv) {
+    cairo_family_ = create_cairo_family(sf);
+
+    PrintGlyphMap print_map = build_glyph_map(sf);
+    if (fv) {
+        SplineChar** selected = FVGetSelection(fv);
+        std::set<SplineChar*> selected_set;
+        for (SplineChar** it = selected; *it != NULL; ++it) {
+            selected_set.insert(*it);
+        }
+        free(selected);
+
+        // When selection is not empty, keep only selected glyphs. When
+        // selection is empty, keep all glyphs.
+        if (!selected_set.empty()) {
+            for (auto it = print_map.begin(); it != print_map.end();) {
+                if (selected_set.find(it->second) == selected_set.end()) {
+                    it = print_map.erase(it);
+                } else {
+                    ++it;
+                }
+            }
+        }
+    }
+    sort_glyphs(print_map);
+}
+
+void CairoPainter::activate_full_glyph_printer(
+    const std::string& scaling_option) {
+    active_printer_ = std::make_unique<FullGlyphPrinter>(
+        print_map_, cairo_family_[0], scaling_option);
+}
+
+void CairoPainter::activate_full_display_printer(double pointsize) {
+    active_printer_ = std::make_unique<FullDisplayPrinter>(
+        print_map_, cairo_family_[0], pointsize);
+}
+
+void CairoPainter::activate_multisize_printer(
+    const std::vector<double>& pointsizes) {
+    active_printer_ = std::make_unique<MultiSizePrinter>(
+        print_map_, cairo_family_[0], pointsizes);
+}
+
+void CairoPainter::activate_sample_text_printer(
+    const std::string& sample_text, Tag script, Tag lang,
+    const std::map<Tag, bool>& features) {
+    active_printer_ = std::make_unique<SampleTextPrinter>(
+        cairo_family_, sample_text, script, lang, features);
+}
+
+void CairoPainter::sort_glyphs(const PrintGlyphMap& print_map) {
+    std::copy(print_map.begin(), print_map.end(), back_inserter(print_map_));
+    // Sort encoded glyphs first, unenecoded glyphs second.
+    std::sort(
+        print_map_.begin(), print_map_.end(), [](const auto& a, const auto& b) {
+            int a_unicode;
+            int b_unicode;
+            SCGetEncoding(a.second, &a_unicode, NULL);
+            SCGetEncoding(b.second, &b_unicode, NULL);
+            return (a_unicode == -1)
+                       ? ((b_unicode == -1) ? (a.first < b.first) : false)
+                       : ((b_unicode == -1) ? true : (a_unicode < b_unicode));
+        });
+}
+
+static void set_surface_metadata(const Cairo::RefPtr<Cairo::Context>& cr,
+                                 const std::string& title) {
+    std::string author = GetAuthor();
+    Cairo::RefPtr<Cairo::Surface> surface = cr->get_target();
+    cairo_surface_t* c_surface = static_cast<cairo_surface_t*>(surface->cobj());
+
+    Cairo::RefPtr<Cairo::PdfSurface> pdf_surface =
+        Cairo::RefPtr<Cairo::PdfSurface>::cast_dynamic(surface);
+    if (pdf_surface) {
+        cairo_pdf_surface_set_metadata(c_surface, CAIRO_PDF_METADATA_TITLE,
+                                       title.c_str());
+        cairo_pdf_surface_set_metadata(c_surface, CAIRO_PDF_METADATA_AUTHOR,
+                                       author.c_str());
+        cairo_pdf_surface_set_metadata(c_surface, CAIRO_PDF_METADATA_CREATOR,
+                                       "FontForge");
+    }
+    Cairo::RefPtr<Cairo::PsSurface> ps_surface =
+        Cairo::RefPtr<Cairo::PsSurface>::cast_dynamic(surface);
+    if (ps_surface) {
+        cairo_ps_surface_dsc_comment(c_surface, ("%%Title: " + title).c_str());
+        cairo_ps_surface_dsc_comment(c_surface, "%%Creator: FontForge");
+        cairo_ps_surface_dsc_comment(c_surface, ("%%For: " + author).c_str());
+    }
 }
 
 Cairo::RefPtr<Cairo::FtFontFace> create_cairo_face(SplineFont* sf) {
