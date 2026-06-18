@@ -36,11 +36,25 @@ else()
   # So do it ourselves, getting the prefix-relative path instead
   if(NOT DEFINED PYHOOK_INSTALL_DIR)
     if(APPLE)
-      set(_PYHOOK_SYSCONFIG_PREFIX " 'posix_prefix',")
+      set(_pycode "import sysconfig as sc; print(sc.get_path('platlib','posix_prefix', vars={'platbase': '.'}))")
+    else()
+      set(_pycode "
+import sysconfig as sc
+p = sc.get_path('platlib', vars={'platbase': '.'})
+# sc.get_default_scheme() does no exist in Python < 3.10
+scheme = getattr(sc, 'get_default_scheme', lambda: None)()
+# strip leading 'local/' from 'platlib' in 'posix_local' to avoid '/usr/local/local/...' (#5840)
+if (
+  scheme == 'posix_local' and
+  \"$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}\" != sc.get_config_var('platbase') and
+  p.startswith('local/')
+):
+  p = p[6:]
+print(p)
+")
     endif()
-    # strip leading 'local/' from 'platlib' path to avoid double 'local/' in 'posix_local' schemes when installing to /usr/local 
     execute_process(
-      COMMAND "${Python3_EXECUTABLE}" -c "import sysconfig as sc; p = sc.get_path('platlib',${_PYHOOK_SYSCONFIG_PREFIX} vars={'platbase': '.'}); print(p[6:] if p.startswith('local/') and sc.get_default_scheme() == 'posix_local' and not \"$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}\".endswith(sc.get_config_var('platbase')) else p)"
+      COMMAND "${Python3_EXECUTABLE}" -c "${_pycode}"
       RESULT_VARIABLE _pyhook_install_dir_result
       OUTPUT_VARIABLE PYHOOK_INSTALL_DIR
       OUTPUT_STRIP_TRAILING_WHITESPACE)

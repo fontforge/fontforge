@@ -491,6 +491,7 @@ log_status "Stripping Python cache files (*.pyc,*.pyo,__pycache__)..."
 find "$RELEASE/lib/$PYVER" -regextype sed -regex ".*\.py[co]" | xargs rm -rfv
 find "$RELEASE/lib/$PYVER" -name "__pycache__" | xargs rm -rfv
 
+# no need to check for 'posix_local' scheme because we are on MSYS2
 PY_DLLS_SRC_PATH=`/$MINGVER/bin/python.exe -c "import sysconfig as sc; print(sc.get_path('platlib', vars={'platbase': '.'}))"`
 
 log_status "Copying the Python extension dlls..."
