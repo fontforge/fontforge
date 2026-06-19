@@ -33,7 +33,7 @@ fi
 # Now we bundle the Python libraries
 echo "Bundling Python libraries..."
 
-PY_DLLS_PATH=`$PYTHON -c "import sysconfig as sc; print(sc.get_path('platlib', 'posix_prefix', vars={'platbase': '.'}))"`
+PY_DLLS_PATH=`$PYTHON "$GITHUB_WORKSPACE/repo/pyhook/get_pyhook_install_dir.py" "" "APPLE"`
 
 PYLIB=$(otool -L $APPDIR/Contents/Resources/opt/local/bin/fontforge | grep -i python | sed -e 's/ \(.*\)//')
 PYVER=$(echo $PYLIB | rev | cut -d/ -f2 | rev)
