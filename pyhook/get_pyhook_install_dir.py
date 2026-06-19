@@ -11,8 +11,8 @@ else:
 
     # sc.get_default_scheme() does not exist in Python < 3.10
     scheme = getattr(sc, "get_default_scheme", lambda: None)()
-    # strip leading "local/" from "platlib" path to avoid double "local/" on
-    # "posix_local" schemes when not installing to "platbase"
+    # "posix_local" prepends "local/", causing double "local/" if installing to
+    # /usr/local. Remove it unless installing directly to platbase (e.g., /usr).
     if (
         scheme == "posix_local" and
         install_dir_full != sc.get_config_var("platbase") and
