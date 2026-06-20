@@ -517,9 +517,7 @@ Cairo::Rectangle PrintPreviewWidget::calculate_printable_area(
     return printable_area;
 }
 
-void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
-                                   const Cairo::Rectangle& printable_area,
-                                   int page_nr) {
+void PrintPreviewWidget::activate_cairo_printer() {
     if (radio_full_display_->get_active()) {
         double font_size = size_entry_->get_value();
         cairo_painter_.activate_full_display_printer(font_size);
@@ -550,6 +548,12 @@ void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
     } else {
         cairo_painter_.activate_multisize_printer(kMultiPointsizes);
     }
+}
+
+void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
+                                   const Cairo::Rectangle& printable_area,
+                                   int page_nr) {
+    activate_cairo_printer();
 
     ff::utils::CairoContext context(cr, printable_area);
     cairo_painter_.add_page(page_nr, &context);
