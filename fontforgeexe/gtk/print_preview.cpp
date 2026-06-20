@@ -561,7 +561,7 @@ size_t PrintPreviewWidget::paginate() {
     // sample text popover. When the popover is visible, we shall avoid touching
     // the scale. It would be updated automatically after the popover closes and
     // the preview area refreshes.
-    if (!sample_text_->is_visible()) {
+    if (!sample_text_oneliner_ || !sample_text_->is_visible()) {
         size_t old_num_pages = page_counter_.get_adjustment()->get_upper() - 1;
         size_t new_value =
             std::clamp((size_t)page_counter_.get_value(), (size_t)1, num_pages);
