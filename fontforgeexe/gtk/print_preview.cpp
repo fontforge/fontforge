@@ -269,6 +269,38 @@ Gtk::Widget* PrintPreviewWidget::build_opentype_controls() {
     return opentype_frame;
 }
 
+void PrintPreviewWidget::build_sample_text_editor() {
+    sample_text_ = Gtk::make_managed<widget::RichTechEditor>(kMultiPointsizes);
+    sample_text_->set_hexpand();
+    sample_text_->set_vexpand();
+    sample_text_->get_buffer()->set_text("Sample text\nSecond sample line.");
+    sample_text_->get_buffer()->signal_changed().connect([this] {
+        preview_area.queue_draw();
+        sample_text_oneliner_->set_text(sample_text_->get_buffer()->get_text());
+    });
+    sample_text_->get_buffer()->signal_apply_tag().connect(
+        [this](const Glib::RefPtr<Gtk::TextBuffer::Tag>&,
+               const Gtk::TextBuffer::iterator&,
+               const Gtk::TextBuffer::iterator&) {
+            preview_area.queue_draw();
+        });
+    sample_text_->get_buffer()->signal_remove_tag().connect(
+        [this](const Glib::RefPtr<Gtk::TextBuffer::Tag>&,
+               const Gtk::TextBuffer::iterator&,
+               const Gtk::TextBuffer::iterator&) {
+            preview_area.queue_draw();
+        });
+
+    bool enable_italic =
+        cairo_painter_.family_has_multiple(&SplineFontProperties::italic);
+    bool enable_stretch =
+        cairo_painter_.family_has_multiple(&SplineFontProperties::os2_width);
+    bool enable_weight =
+        cairo_painter_.family_has_multiple(&SplineFontProperties::os2_weight);
+    sample_text_->configure(enable_weight, enable_italic, enable_stretch,
+                            enable_weight);
+}
+
 Gtk::VBox* PrintPreviewWidget::build_sample_text_controls() {
     // One-liner preview of the sample text popup contents
     sample_text_oneliner_ = Gtk::make_managed<Gtk::Entry>();
@@ -431,36 +463,7 @@ void PrintPreviewWidget::build_sample_text_popover(Gtk::Widget* parent_widget) {
     text_popover->set_modal(true);
     text_popover->set_constrain_to(Gtk::POPOVER_CONSTRAINT_WINDOW);
 
-    sample_text_ = Gtk::make_managed<widget::RichTechEditor>(kMultiPointsizes);
-    sample_text_->set_hexpand();
-    sample_text_->set_vexpand();
-    sample_text_->get_buffer()->set_text("Sample text\nSecond sample line.");
-    sample_text_->get_buffer()->signal_changed().connect([this] {
-        preview_area.queue_draw();
-        sample_text_oneliner_->set_text(sample_text_->get_buffer()->get_text());
-    });
-    sample_text_->get_buffer()->signal_apply_tag().connect(
-        [this](const Glib::RefPtr<Gtk::TextBuffer::Tag>&,
-               const Gtk::TextBuffer::iterator&,
-               const Gtk::TextBuffer::iterator&) {
-            preview_area.queue_draw();
-        });
-    sample_text_->get_buffer()->signal_remove_tag().connect(
-        [this](const Glib::RefPtr<Gtk::TextBuffer::Tag>&,
-               const Gtk::TextBuffer::iterator&,
-               const Gtk::TextBuffer::iterator&) {
-            preview_area.queue_draw();
-        });
-
-    bool enable_italic =
-        cairo_painter_.family_has_multiple(&SplineFontProperties::italic);
-    bool enable_stretch =
-        cairo_painter_.family_has_multiple(&SplineFontProperties::os2_width);
-    bool enable_weight =
-        cairo_painter_.family_has_multiple(&SplineFontProperties::os2_weight);
-    sample_text_->configure(enable_weight, enable_italic, enable_stretch,
-                            enable_weight);
-
+    build_sample_text_editor();
     sample_text_oneliner_->set_text(sample_text_->get_buffer()->get_text());
 
     parent_widget->signal_button_press_event().connect(
