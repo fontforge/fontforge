@@ -304,6 +304,25 @@ size_t MultiSizePrinter::page_count() const {
 //                            FullDisplayPrinter                            //
 //////////////////////////////////////////////////////////////////////////////
 
+FullDisplayPrinter::FullDisplayPrinter(const Cairo::Rectangle& printable_area,
+                                       const PrintGlyphVec& print_map,
+                                       const CairoFontRec& font_rec,
+                                       double pointsize)
+    : print_map_(print_map), font_rec_(font_rec), pointsize_(pointsize) {
+    extravspace_ = pointsize_ / 6;
+    extrahspace_ = pointsize_ / 3;
+
+    double char_area_width =
+        printable_area.width - margin_ * 2 - left_code_area_width_;
+    double char_area_height =
+        printable_area.height - margin_ - top_margin_ - top_code_area_height_;
+    int max_slots = static_cast<int>(
+        std::floor(char_area_width / (extrahspace_ + pointsize_)));
+
+    glyph_lines_ = split_to_lines(max_slots);
+    paginate(char_area_height, pointsize_, extravspace_);
+}
+
 size_t FullDisplayPrinter::page_count() const {
     return glyph_line_pagination_.empty() ? 1 : glyph_line_pagination_.size();
 }
@@ -394,9 +413,8 @@ std::vector<FullDisplayPrinter::GlyphLine> FullDisplayPrinter::split_to_lines(
     return glyph_lines;
 }
 
-void FullDisplayPrinter::paginate_full_display(double char_area_height,
-                                               double pointsize,
-                                               double extravspace) {
+void FullDisplayPrinter::paginate(double char_area_height, double pointsize,
+                                  double extravspace) {
     int max_lines = static_cast<int>(
         std::floor(char_area_height / (extravspace + pointsize)));
     if (max_lines <= 0) {
@@ -438,7 +456,7 @@ void FullDisplayPrinter::paginate_full_display(double char_area_height,
     }
 }
 
-void FullDisplayPrinter::draw_line_full_display(
+void FullDisplayPrinter::draw_glyphs_line(
     const Cairo::RefPtr<Cairo::Context>& cr, const GlyphLine& glyph_line,
     double y_start, double left_code_area_width, double pointsize) const {
     double extrahspace = pointsize / 3;
@@ -490,26 +508,7 @@ void FullDisplayPrinter::add_page(size_t page_number,
         std::string("Font Display for ") + SFGetFullName(font_rec_.sf);
     init_document(cr, printable_area, title, top_margin_);
 
-    double extravspace = pointsize_ / 6;
-    double extrahspace = pointsize_ / 3;
-
-    double left_code_area_width = 36;
-    double top_code_area_height = 12;
-
-    double char_area_width =
-        printable_area.width - margin_ * 2 - left_code_area_width;
-    double char_area_height =
-        printable_area.height - margin_ - top_margin_ - top_code_area_height;
-    int max_slots = static_cast<int>(
-        std::floor(char_area_width / (extrahspace + pointsize_)));
-
     cr->set_source_rgb(0, 0, 0);
-
-    if (max_slots != max_slots_) {
-        glyph_lines_ = split_to_lines(max_slots);
-        paginate_full_display(char_area_height, pointsize_, extravspace);
-        max_slots_ = max_slots;
-    }
 
     size_t line_length =
         glyph_lines_.empty() ? 16 : glyph_lines_[0].indexes.size();
@@ -518,13 +517,13 @@ void FullDisplayPrinter::add_page(size_t page_number,
         "0", "1", "2", "3", "4", "5", "6", "7",
         "8", "9", "A", "B", "C", "D", "E", "F"};
     for (size_t i = 0; i < line_length; ++i) {
-        Cairo::Rectangle slot{margin_ + left_code_area_width + extrahspace +
-                                  i * (extrahspace + pointsize_),
-                              top_margin_, pointsize_, top_code_area_height};
+        Cairo::Rectangle slot{margin_ + left_code_area_width_ + extrahspace_ +
+                                  i * (extrahspace_ + pointsize_),
+                              top_margin_, pointsize_, top_code_area_height_};
         draw_centered_text(cr, slot, slot_labels[i]);
     }
 
-    double y_start = top_margin_ + top_code_area_height + extravspace;
+    double y_start = top_margin_ + top_code_area_height_ + extravspace_;
 
     if (glyph_line_pagination_.empty()) {
         return;
@@ -544,19 +543,19 @@ void FullDisplayPrinter::add_page(size_t page_number,
         if ((line_it != start_line_it) && !line_it->encoded &&
             std::prev(line_it)->encoded) {
             Cairo::Rectangle line_slot{
-                margin_ + left_code_area_width + extrahspace, y_start,
-                line_length * (extrahspace + pointsize_) - extrahspace, 0};
+                margin_ + left_code_area_width_ + extrahspace_, y_start,
+                line_length * (extrahspace_ + pointsize_) - extrahspace_, 0};
             draw_line(cr, line_slot, y_start, true);
 
             // This provides a vertical shift after we have drawn a ruler
             // between encoded and unencoded glyphs.
-            y_start += extravspace;
+            y_start += extravspace_;
         }
 
-        draw_line_full_display(cr, *line_it, y_start, left_code_area_width,
-                               pointsize_);
+        draw_glyphs_line(cr, *line_it, y_start, left_code_area_width_,
+                         pointsize_);
 
-        y_start += (extravspace + pointsize_);
+        y_start += (extravspace_ + pointsize_);
     }
 }
 
@@ -934,9 +933,10 @@ void CairoPainter::activate_full_glyph_printer(
         print_map_, cairo_family_[0], scaling_option);
 }
 
-void CairoPainter::activate_full_display_printer(double pointsize) {
+void CairoPainter::activate_full_display_printer(
+    const Cairo::Rectangle& printable_area, double pointsize) {
     active_printer_ = std::make_unique<FullDisplayPrinter>(
-        print_map_, cairo_family_[0], pointsize);
+        printable_area, print_map_, cairo_family_[0], pointsize);
 }
 
 void CairoPainter::activate_multisize_printer(

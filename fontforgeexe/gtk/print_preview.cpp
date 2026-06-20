@@ -517,10 +517,11 @@ Cairo::Rectangle PrintPreviewWidget::calculate_printable_area(
     return printable_area;
 }
 
-void PrintPreviewWidget::activate_cairo_printer() {
+void PrintPreviewWidget::activate_cairo_printer(
+    const Cairo::Rectangle& printable_area) {
     if (radio_full_display_->get_active()) {
         double font_size = size_entry_->get_value();
-        cairo_painter_.activate_full_display_printer(font_size);
+        cairo_painter_.activate_full_display_printer(printable_area, font_size);
     } else if (radio_glyph_pages_->get_active()) {
         Glib::ustring active_option = scaling_option_->get_active_id();
         cairo_painter_.activate_full_glyph_printer(active_option);
@@ -553,7 +554,7 @@ void PrintPreviewWidget::activate_cairo_printer() {
 void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
                                    const Cairo::Rectangle& printable_area,
                                    int page_nr) {
-    activate_cairo_printer();
+    activate_cairo_printer(printable_area);
 
     ff::utils::CairoContext context(cr, printable_area);
     cairo_painter_.add_page(page_nr, &context);
