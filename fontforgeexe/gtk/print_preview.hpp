@@ -69,6 +69,7 @@ class PrintPreviewWidget : public Gtk::Grid {
     void build_sample_text_popover(Gtk::Widget* parent_widget);
 
     // Build controls for sample text mode.
+    Gtk::Widget* build_opentype_controls();
     Gtk::VBox* build_sample_text_controls();
 
     void populate_script_lang_combo();
