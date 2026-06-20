@@ -108,7 +108,7 @@ class PrintPreviewWidget : public Gtk::Grid {
 
     Gtk::SpinButton* size_entry_;
     Gtk::ComboBoxText* scaling_option_;
-    Gtk::Entry* sample_text_oneliner_;
+    Gtk::Entry* sample_text_oneliner_ = nullptr;
     Gtk::ComboBoxText* script_lang_combo_;
     Gtk::ListViewText* feature_tags_list_;
     Gtk::Stack* stack_;

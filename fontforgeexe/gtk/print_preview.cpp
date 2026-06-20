@@ -276,7 +276,9 @@ void PrintPreviewWidget::build_sample_text_editor() {
     sample_text_->get_buffer()->set_text("Sample text\nSecond sample line.");
     sample_text_->get_buffer()->signal_changed().connect([this] {
         preview_area.queue_draw();
-        sample_text_oneliner_->set_text(sample_text_->get_buffer()->get_text());
+        if (sample_text_oneliner_ != nullptr)
+            sample_text_oneliner_->set_text(
+                sample_text_->get_buffer()->get_text());
     });
     sample_text_->get_buffer()->signal_apply_tag().connect(
         [this](const Glib::RefPtr<Gtk::TextBuffer::Tag>&,
@@ -302,22 +304,37 @@ void PrintPreviewWidget::build_sample_text_editor() {
 }
 
 Gtk::VBox* PrintPreviewWidget::build_sample_text_controls() {
-    // One-liner preview of the sample text popup contents
-    sample_text_oneliner_ = Gtk::make_managed<Gtk::Entry>();
-    sample_text_oneliner_->set_editable(false);
-    sample_text_oneliner_->set_can_focus(false);
+    Gtk::Widget* sample_text_holder = nullptr;
 
-    // Make the one-liner preview sensitive to mouse click, which would bring
-    // up the sample text popup.
-    Gtk::EventBox* oneliner_event_box = Gtk::make_managed<Gtk::EventBox>();
-    oneliner_event_box->add(*sample_text_oneliner_);
-    oneliner_event_box->set_above_child(true);
-    build_sample_text_popover(oneliner_event_box);
+    // In Windows the GTK preview tab is embedded in the native Print Dialog.
+    // Advanced UI controls such as popovers or even descendant modal windows
+    // don't work well when the parent has no top-lever Gtk::Window object. Thus
+    // we simplify the UI and put the sample text editor directly in the Preview
+    // tab.
+    // TODO: Revise this approach when upgrading to GTK4.
+    if (is_win32_display()) {
+        build_sample_text_editor();
+        sample_text_holder = sample_text_;
+        sample_text_->set_hexpand(false);
+    } else {
+        // One-liner preview of the sample text popup contents
+        sample_text_oneliner_ = Gtk::make_managed<Gtk::Entry>();
+        sample_text_oneliner_->set_editable(false);
+        sample_text_oneliner_->set_can_focus(false);
+
+        // Make the one-liner preview sensitive to mouse click, which would
+        // bring up the sample text popup.
+        Gtk::EventBox* oneliner_event_box = Gtk::make_managed<Gtk::EventBox>();
+        oneliner_event_box->add(*sample_text_oneliner_);
+        oneliner_event_box->set_above_child(true);
+        build_sample_text_popover(oneliner_event_box);
+        sample_text_holder = oneliner_event_box;
+    }
 
     Gtk::Widget* opentype_frame = build_opentype_controls();
 
     Gtk::VBox* sample_text_box = Gtk::make_managed<Gtk::VBox>();
-    sample_text_box->pack_start(*oneliner_event_box, false, false);
+    sample_text_box->pack_start(*sample_text_holder, false, true);
     sample_text_box->pack_start(*opentype_frame, true, true);
 
     return sample_text_box;
