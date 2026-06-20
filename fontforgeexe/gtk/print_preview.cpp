@@ -347,12 +347,15 @@ void PrintPreviewWidget::draw_page_cb(
     Cairo::RefPtr<Cairo::Context> cr = context->get_cairo_context();
     Glib::RefPtr<Gtk::PageSetup> setup = context->get_page_setup();
 
-    // The physical paper page is measured in points (1/72 in). The Cairo
-    // context provided by Gtk::PrintOperation already accounts for the physical
-    // size, and we don't need to scale it any further. Accordingly, all
+    // We need to align resolution between the physical paper, Cairo context and
+    // our conventions. The physical paper page is normally measured in points
+    // (1/72 in). The Cairo context provided by Gtk::PrintOperation carries its
+    // own resolution, and must be scaled to points. After the scaling all
     // dimensions should be passed to Cairo::Context in points.
     Cairo::Rectangle printable_area =
         calculate_printable_area(setup, Gtk::UNIT_POINTS);
+
+    cr->scale(context->get_dpi_x() / 72.0, context->get_dpi_y() / 72.0);
 
     draw_page(cr, printable_area, page_nr);
 }
