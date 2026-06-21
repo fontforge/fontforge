@@ -95,13 +95,13 @@ void print_dialog(GWindow gw, SplineFont* sf, FontViewBase* fv) {
             print_operation->set_n_pages((int)num_pages);
         });
 
-    {
+    if (!is_win32_display()) {
         // This is a terrible hack to make the print dialog modal to the legacy
         // GDraw window. We create a temporary modal dialog, and run the print
         // operation from it. The print operation will then use this dialog as
         // the transient parent for the native print dialog, making it modal to
         // the GDraw window. After the print operation is done, we exit the
-        // temporary dialog.
+        // temporary dialog. It also doesn't work on Windows.
         //
         // TODO(iorsh): remove this hack after the transition to GTK is
         // complete.
@@ -116,5 +116,7 @@ void print_dialog(GWindow gw, SplineFont* sf, FontViewBase* fv) {
             parent_window.response(0);
         });
         parent_window.run();
+    } else {
+        print_operation->run(Gtk::PRINT_OPERATION_ACTION_PRINT_DIALOG);
     }
 }
