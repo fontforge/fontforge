@@ -374,6 +374,15 @@ void PrintPreviewWidget::update_page_setup(
     preview_area.queue_draw();
 }
 
+size_t PrintPreviewWidget::begin_print(
+    const Glib::RefPtr<Gtk::PrintContext>& context) {
+    Cairo::Rectangle printable_area =
+        calculate_printable_area(context->get_page_setup(), Gtk::UNIT_POINTS);
+    activate_cairo_printer(context->get_cairo_context(), printable_area);
+
+    return paginate();
+}
+
 Glib::RefPtr<Gtk::PageSetup> PrintPreviewWidget::create_default_setup() {
     Glib::RefPtr<Gtk::PageSetup> A4_setup = Gtk::PageSetup::create();
 
@@ -556,8 +565,6 @@ void PrintPreviewWidget::activate_cairo_printer(
 void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
                                    const Cairo::Rectangle& printable_area,
                                    int page_nr) {
-    activate_cairo_printer(cr, printable_area);
-
     ff::utils::CairoContext context(cr, printable_area);
     cairo_painter_.add_page(page_nr, &context);
 
@@ -602,6 +609,7 @@ bool PrintPreviewWidget::draw_preview_area(
     // Cairo::Context correspond to the physical paper size.
     cr->scale(scale, scale);
 
+    activate_cairo_printer(cr, printable_area);
     draw_page(cr, printable_area, page_nr);
 
     return true;

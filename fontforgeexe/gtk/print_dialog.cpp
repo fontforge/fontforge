@@ -83,7 +83,14 @@ void print_dialog(SplineFont* sf, FontViewBase* fv) {
     print_operation->signal_begin_print().connect(
         [print_operation,
          &ff_preview_widget](const Glib::RefPtr<Gtk::PrintContext>& context) {
-            size_t num_pages = ff_preview_widget.paginate();
+            // On Win32 backend, signal_update_custom_widget is not emitted
+            // while changing printer in the native dialog, so refresh from
+            // final settings before pagination/printing.
+            ff_preview_widget.update_page_setup(
+                context->get_page_setup(),
+                print_operation->get_print_settings());
+
+            size_t num_pages = ff_preview_widget.begin_print(context);
             print_operation->set_n_pages((int)num_pages);
         });
 

@@ -47,12 +47,7 @@ class PrintPreviewWidget : public Gtk::Grid {
     void update_page_setup(const Glib::RefPtr<Gtk::PageSetup>& setup,
                            const Glib::RefPtr<Gtk::PrintSettings>& settings);
 
-    void activate_cairo_printer(const Cairo::RefPtr<Cairo::Context>& cr,
-                                const Cairo::Rectangle& printable_area);
-
-    // Refresh layout information in CairoPainter and return total number of
-    // pages.
-    size_t paginate();
+    size_t begin_print(const Glib::RefPtr<Gtk::PrintContext>& context);
 
  private:
     // Create the default A4-based page setup
@@ -97,6 +92,13 @@ class PrintPreviewWidget : public Gtk::Grid {
     bool on_preview_area_scroll(GdkEventScroll* event);
 
     void on_display_toggled();
+
+    void activate_cairo_printer(const Cairo::RefPtr<Cairo::Context>& cr,
+                                const Cairo::Rectangle& printable_area);
+
+    // Refresh layout information in CairoPainter and return total number of
+    // pages.
+    size_t paginate();
 
     // Containers for compound preview area
     widget::AspectFrameWithBackground aspect_wrapper;
