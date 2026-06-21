@@ -568,6 +568,22 @@ void FullDisplayPrinter::add_page(size_t page_number,
 //                            SampleTextPrinter                             //
 //////////////////////////////////////////////////////////////////////////////
 
+SampleTextPrinter::SampleTextPrinter(const Cairo::RefPtr<Cairo::Context>& cr,
+                                     const Cairo::Rectangle& printable_area,
+                                     const CairoFontFamily& cairo_family,
+                                     const std::string& sample_text, Tag script,
+                                     Tag lang,
+                                     const std::map<Tag, bool>& features)
+    : cairo_face_(cairo_family[0].face),
+      cairo_family_(cairo_family),
+      sample_text_(sample_text),
+      script_(script),
+      lang_(lang),
+      features_(features) {
+    calculate_layout(cr, printable_area, sample_text_);
+    paginate(printable_area.height - top_margin_);
+}
+
 void SampleTextPrinter::add_page(size_t page_number,
                                  const ff::layout::PageContext* context) {
     auto* cairo_ctx = dynamic_cast<const CairoContext*>(context);
@@ -583,9 +599,6 @@ void SampleTextPrinter::add_page(size_t page_number,
     std::string font_name = SFGetFullName(cairo_family_[0].sf);
     init_document(cr, printable_area, "Sample Text from " + font_name,
                   top_margin_);
-
-    calculate_layout(cr, printable_area, sample_text_);
-    paginate(printable_area.height - top_margin_);
 
     // Check page number
     if (page_number >= pagination_list_.size()) return;
@@ -952,10 +965,11 @@ void CairoPainter::activate_multisize_printer(
 }
 
 void CairoPainter::activate_sample_text_printer(
-    const std::string& sample_text, Tag script, Tag lang,
-    const std::map<Tag, bool>& features) {
+    const Cairo::RefPtr<Cairo::Context>& cr,
+    const Cairo::Rectangle& printable_area, const std::string& sample_text,
+    Tag script, Tag lang, const std::map<Tag, bool>& features) {
     active_printer_ = std::make_unique<SampleTextPrinter>(
-        cairo_family_, sample_text, script, lang, features);
+        cr, printable_area, cairo_family_, sample_text, script, lang, features);
 }
 
 void CairoPainter::sort_glyphs(const PrintGlyphMap& print_map) {

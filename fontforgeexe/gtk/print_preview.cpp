@@ -518,6 +518,7 @@ Cairo::Rectangle PrintPreviewWidget::calculate_printable_area(
 }
 
 void PrintPreviewWidget::activate_cairo_printer(
+    const Cairo::RefPtr<Cairo::Context>& cr,
     const Cairo::Rectangle& printable_area) {
     if (radio_full_display_->get_active()) {
         double font_size = size_entry_->get_value();
@@ -544,8 +545,8 @@ void PrintPreviewWidget::activate_cairo_printer(
             features[feature] = selected_rows_set.count(row_idx) != 0;
         }
 
-        cairo_painter_.activate_sample_text_printer(out_buffer, script, lang,
-                                                    features);
+        cairo_painter_.activate_sample_text_printer(
+            cr, printable_area, out_buffer, script, lang, features);
     } else {
         cairo_painter_.activate_multisize_printer(printable_area,
                                                   kMultiPointsizes);
@@ -555,7 +556,7 @@ void PrintPreviewWidget::activate_cairo_printer(
 void PrintPreviewWidget::draw_page(const Cairo::RefPtr<Cairo::Context>& cr,
                                    const Cairo::Rectangle& printable_area,
                                    int page_nr) {
-    activate_cairo_printer(printable_area);
+    activate_cairo_printer(cr, printable_area);
 
     ff::utils::CairoContext context(cr, printable_area);
     cairo_painter_.add_page(page_nr, &context);

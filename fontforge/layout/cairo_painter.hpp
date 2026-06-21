@@ -189,15 +189,11 @@ class MultiSizePrinter : public ff::layout::IPrinter {
 
 class SampleTextPrinter : public ff::layout::IPrinter {
  public:
-    SampleTextPrinter(const CairoFontFamily& cairo_family,
+    SampleTextPrinter(const Cairo::RefPtr<Cairo::Context>& cr,
+                      const Cairo::Rectangle& printable_area,
+                      const CairoFontFamily& cairo_family,
                       const std::string& sample_text, Tag script, Tag lang,
-                      const std::map<Tag, bool>& features)
-        : cairo_face_(cairo_family[0].face),
-          cairo_family_(cairo_family),
-          sample_text_(sample_text),
-          script_(script),
-          lang_(lang),
-          features_(features) {}
+                      const std::map<Tag, bool>& features);
 
     size_t page_count() const override { return pagination_list_.size(); }
     void add_page(size_t page_number,
@@ -291,7 +287,9 @@ class CairoPainter {
                                     const std::vector<double>& pointsizes);
 
     // Draw formatted sample text.
-    void activate_sample_text_printer(const std::string& sample_text,
+    void activate_sample_text_printer(const Cairo::RefPtr<Cairo::Context>& cr,
+                                      const Cairo::Rectangle& printable_area,
+                                      const std::string& sample_text,
                                       Tag script, Tag lang,
                                       const std::map<Tag, bool>& features);
 
