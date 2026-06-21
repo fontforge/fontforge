@@ -167,10 +167,10 @@ class FullDisplayPrinter : public ff::layout::IPrinter {
 
 class MultiSizePrinter : public ff::layout::IPrinter {
  public:
-    MultiSizePrinter(const PrintGlyphVec& print_map,
+    MultiSizePrinter(const Cairo::Rectangle& printable_area,
+                     const PrintGlyphVec& print_map,
                      const CairoFontRec& font_rec,
-                     const std::vector<double>& pointsizes)
-        : print_map_(print_map), font_rec_(font_rec), pointsizes_(pointsizes) {}
+                     const std::vector<double>& pointsizes);
 
     size_t page_count() const override;
     void add_page(size_t page_number,
@@ -287,7 +287,8 @@ class CairoPainter {
     void activate_full_glyph_printer(const std::string& scaling_option);
 
     // Draw each glyph in multiple sizes.
-    void activate_multisize_printer(const std::vector<double>& pointsizes);
+    void activate_multisize_printer(const Cairo::Rectangle& printable_area,
+                                    const std::vector<double>& pointsizes);
 
     // Draw formatted sample text.
     void activate_sample_text_printer(const std::string& sample_text,

@@ -547,7 +547,8 @@ void PrintPreviewWidget::activate_cairo_printer(
         cairo_painter_.activate_sample_text_printer(out_buffer, script, lang,
                                                     features);
     } else {
-        cairo_painter_.activate_multisize_printer(kMultiPointsizes);
+        cairo_painter_.activate_multisize_printer(printable_area,
+                                                  kMultiPointsizes);
     }
 }
 

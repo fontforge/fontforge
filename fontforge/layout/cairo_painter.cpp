@@ -227,6 +227,22 @@ std::array<double, 3> FullGlyphPrinter::calculate_full_glyph_location(
 //                             MultiSizePrinter                             //
 //////////////////////////////////////////////////////////////////////////////
 
+MultiSizePrinter::MultiSizePrinter(const Cairo::Rectangle& printable_area,
+                                   const PrintGlyphVec& print_map,
+                                   const CairoFontRec& font_rec,
+                                   const std::vector<double>& pointsizes)
+    : print_map_(print_map), font_rec_(font_rec), pointsizes_(pointsizes) {
+    if (pointsizes_.empty()) {
+        return;
+    }
+
+    double extravspace = pointsizes_[0] / 6;
+
+    double char_area_height = printable_area.height - margin_ - top_margin_;
+    lines_per_page_ = static_cast<int>(std::floor(
+        (char_area_height + extravspace) / (pointsizes_[0] + extravspace)));
+}
+
 void MultiSizePrinter::add_page(size_t page_nr,
                                 const ff::layout::PageContext* context) {
     auto* cairo_ctx = dynamic_cast<const CairoContext*>(context);
@@ -243,16 +259,6 @@ void MultiSizePrinter::add_page(size_t page_nr,
                   std::string("Sample Sizes of ") + SFGetFullName(font_rec_.sf),
                   top_margin_);
 
-    if (pointsizes_.empty()) {
-        return;
-    }
-
-    double extravspace = pointsizes_[0] / 6;
-
-    double char_area_height = printable_area.height - margin_ - top_margin_;
-    lines_per_page_ = static_cast<int>(std::floor(
-        (char_area_height + extravspace) / (pointsizes_[0] + extravspace)));
-
     // Set the user font face
     cr->set_font_face(font_rec_.face);
 
@@ -262,7 +268,6 @@ void MultiSizePrinter::add_page(size_t page_nr,
          std::min((page_nr + 1) * lines_per_page_, (size_t)print_map_.size());
          ++i)
         y_start += draw_line_multisize(cr, print_map_[i].first, y_start);
-    y_start += extravspace;
 }
 
 double MultiSizePrinter::draw_line_multisize(
@@ -940,9 +945,10 @@ void CairoPainter::activate_full_display_printer(
 }
 
 void CairoPainter::activate_multisize_printer(
+    const Cairo::Rectangle& printable_area,
     const std::vector<double>& pointsizes) {
     active_printer_ = std::make_unique<MultiSizePrinter>(
-        print_map_, cairo_family_[0], pointsizes);
+        printable_area, print_map_, cairo_family_[0], pointsizes);
 }
 
 void CairoPainter::activate_sample_text_printer(
