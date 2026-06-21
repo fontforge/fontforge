@@ -28,11 +28,12 @@
 
 typedef struct splinefont SplineFont;
 typedef struct fontviewbase FontViewBase;
+typedef struct gwindow* GWindow;
 
 #ifdef __cplusplus
 extern "C" {
 #endif
-void print_dialog(SplineFont* sf, FontViewBase* fv);
+void print_dialog(GWindow gw, SplineFont* sf, FontViewBase* fv);
 #ifdef __cplusplus
 }
 #endif

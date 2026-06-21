@@ -30,13 +30,14 @@
 #include <gtkmm.h>
 
 #include "application.hpp"
+#include "dialog_base.hpp"
 #include "layout/cairo_painter.hpp"
 #include "print_preview.hpp"
 #include "win32_utils.hpp"
 
 using ff::utils::PrintGlyphMap;
 
-void print_dialog(SplineFont* sf, FontViewBase* fv) {
+void print_dialog(GWindow gw, SplineFont* sf, FontViewBase* fv) {
     // To avoid instability, the GTK application is lazily initialized only when
     // a GTK window is invoked.
     ff::app::GtkApp();
@@ -94,5 +95,26 @@ void print_dialog(SplineFont* sf, FontViewBase* fv) {
             print_operation->set_n_pages((int)num_pages);
         });
 
-    print_operation->run(Gtk::PRINT_OPERATION_ACTION_PRINT_DIALOG);
+    {
+        // This is a terrible hack to make the print dialog modal to the legacy
+        // GDraw window. We create a temporary modal dialog, and run the print
+        // operation from it. The print operation will then use this dialog as
+        // the transient parent for the native print dialog, making it modal to
+        // the GDraw window. After the print operation is done, we exit the
+        // temporary dialog.
+        //
+        // TODO(iorsh): remove this hack after the transition to GTK is
+        // complete.
+        ff::dlg::DialogBase parent_window(gw);
+        parent_window.set_modal();
+        parent_window.show_all();
+        Glib::signal_idle().connect_once([print_operation, &parent_window]() {
+            print_operation->run(Gtk::PRINT_OPERATION_ACTION_PRINT_DIALOG,
+                                 parent_window);
+
+            // Invoke response and effectively exit the temporary dialog.
+            parent_window.response(0);
+        });
+        parent_window.run();
+    }
 }
