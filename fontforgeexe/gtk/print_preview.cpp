@@ -74,7 +74,8 @@ static std::pair<ff::Tag, ff::Tag> extract_script_lang_tags(
     return {script, lang};
 }
 
-PrintPreviewWidget::PrintPreviewWidget(utils::CairoPainter&& cairo_painter)
+PrintPreviewWidget::PrintPreviewWidget(utils::CairoPainter&& cairo_painter,
+                                       const std::string& sample_text)
     : aspect_wrapper(0.5, 0.5, 0.5),
       current_setup_(default_setup_),
       cairo_painter_(std::move(cairo_painter)) {
@@ -141,6 +142,7 @@ PrintPreviewWidget::PrintPreviewWidget(utils::CairoPainter&& cairo_painter)
     scaling_option_->set_valign(Gtk::ALIGN_START);
 
     Gtk::VBox* sample_text_controls = build_sample_text_controls();
+    sample_text_->get_buffer()->set_text(sample_text);
 
     stack_ = Gtk::make_managed<Gtk::Stack>();
     stack_->set_vhomogeneous(false);
@@ -273,7 +275,6 @@ void PrintPreviewWidget::build_sample_text_editor() {
     sample_text_ = Gtk::make_managed<widget::RichTechEditor>(kMultiPointsizes);
     sample_text_->set_hexpand();
     sample_text_->set_vexpand();
-    sample_text_->get_buffer()->set_text("Sample text\nSecond sample line.");
     sample_text_->get_buffer()->signal_changed().connect([this] {
         preview_area.queue_draw();
         if (sample_text_oneliner_ != nullptr)

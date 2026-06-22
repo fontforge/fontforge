@@ -49,6 +49,7 @@
 #include "mm.h"
 #include "namelist.h"
 #include "nonlineartrans.h"
+#include "print.h"
 #include "psfont.h"
 #include "pua.h"
 #include "scripting.h"
@@ -1423,7 +1424,12 @@ static void FVMenuGtkPrint(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNU
 
     if ( fv->b.container!=NULL && fv->b.container->funcs->is_modal )
 return;
-    print_dialog(gw, fv->b.sf, &fv->b);
+    unichar_t *u_sample_text = PrtBuildDef(fv->b.sf, NULL, NULL);
+    char *sample_text = u2utf8_copy(u_sample_text);
+    free(u_sample_text);
+
+    print_dialog(gw, fv->b.sf, &fv->b, sample_text);
+    free(sample_text);
 }
 
 #if !defined(_NO_FFSCRIPT) || !defined(_NO_PYTHON)

@@ -36,7 +36,8 @@ namespace ff::dlg {
 
 class PrintPreviewWidget : public Gtk::Grid {
  public:
-    PrintPreviewWidget(utils::CairoPainter&& cairo_painter);
+    PrintPreviewWidget(utils::CairoPainter&& cairo_painter,
+                       const std::string& sample_text);
 
     static Glib::ustring label();
 
