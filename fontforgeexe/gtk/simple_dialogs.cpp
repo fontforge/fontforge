@@ -50,6 +50,9 @@ class MessageDialog final : public DialogBase {
         set_resizable(false);
 
         auto label_widget = Gtk::make_managed<Gtk::Label>(label);
+        label_widget->set_use_markup(true);
+        label_widget->set_line_wrap(true);
+        label_widget->set_max_width_chars(70);
         get_content_area()->pack_start(*label_widget);
 
         show_all();
