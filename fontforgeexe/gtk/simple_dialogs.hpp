@@ -39,6 +39,9 @@ typedef struct {
     uint32_t tag;
 } LanguageRec;
 
+int show_yesno_message_dialog(GWindow parent, const char* title,
+                              const char* message);
+
 int add_encoding_slots_dialog(GWindow parent, bool cid);
 
 // Return comma-separated list of language tags, or NULL if the action was
