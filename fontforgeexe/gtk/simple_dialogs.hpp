@@ -33,6 +33,8 @@ extern "C" {
 #include "gresource.h"
 
 typedef struct gwindow* GWindow;
+typedef struct splinefont SplineFont;
+typedef struct fontviewbase FontViewBase;
 
 typedef struct {
     const char* name;
@@ -48,6 +50,9 @@ int add_encoding_slots_dialog(GWindow parent, bool cid);
 // canceled. The caller is responsible to release the returned pointer.
 char* language_list_dialog(GWindow parent, const LanguageRec* languages,
                            const char* initial_tags);
+
+void print_dialog(GWindow gw, SplineFont* sf, FontViewBase* fv,
+                  char* sample_text);
 
 void update_appearance();
 

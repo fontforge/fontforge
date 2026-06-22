@@ -48,6 +48,7 @@
 #include "mm.h"
 #include "namelist.h"
 #include "prefs.h"
+#include "print.h"
 #include "sfd.h"
 #include "spiro.h"
 #include "splinefill.h"
@@ -61,6 +62,7 @@
 #include "wordlistparser.h"
 
 #include "cv_mids.h"
+#include "gtk/simple_dialogs.hpp"
 
 #include <locale.h>
 #include <math.h>
@@ -6342,8 +6344,15 @@ static void CVAddWordList(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUS
 
 static void CVMenuPrint(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     CharView *cv = (CharView *) GDrawGetUserData(gw);
+    SplineFont *sf = cv->b.sc->parent;
+    FontViewBase *fv = cv->b.fv;
 
-    PrintFFDlg(NULL,cv->b.sc,NULL);
+    unichar_t *u_sample_text = PrtBuildDef(sf, NULL, NULL);
+    char *sample_text = u2utf8_copy(u_sample_text);
+    free(u_sample_text);
+
+    print_dialog(gw, sf, fv, sample_text);
+    free(sample_text);
 }
 
 #if !defined(_NO_PYTHON)

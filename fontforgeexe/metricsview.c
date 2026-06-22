@@ -50,6 +50,7 @@
 #include "ustring.h"
 #include "utype.h"
 #include "wordlistparser.h"
+#include "gtk/simple_dialogs.hpp"
 #include "shapers/shaper_shim.hpp"
 #include "mv_mids.h"
 
@@ -2247,7 +2248,10 @@ static void MVMenuGenerateTTC(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *
 
 static void MVMenuPrint(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {
     MetricsView *mv = (MetricsView *) GDrawGetUserData(gw);
-    PrintFFDlg(NULL, NULL, mv);
+
+    char *sample_text = GGadgetGetTitle8(mv->text);
+    print_dialog(gw, mv->sf, &mv->fv->b, sample_text);
+    free(sample_text);
 }
 
 static void MVUndo(GWindow gw, struct gmenuitem *UNUSED(mi), GEvent *UNUSED(e)) {

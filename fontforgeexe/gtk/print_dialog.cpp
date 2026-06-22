@@ -25,8 +25,6 @@
  * ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "print_dialog.hpp"
-
 #include <gtkmm.h>
 
 #include "application.hpp"
