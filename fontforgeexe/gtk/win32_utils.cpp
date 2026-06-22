@@ -27,9 +27,14 @@
 
 #include "win32_utils.hpp"
 
+#include <filesystem>
 #ifdef _WIN32
 #include <windows.h>
 #endif
+
+extern "C" {
+#include "ustring.h"
+}
 
 bool is_win32_display() {
     Glib::RefPtr<Gdk::Display> display = Gdk::Display::get_default();
@@ -64,7 +69,7 @@ Gdk::Rectangle get_win32_print_preview_size() {
     return preview_rectangle;
 }
 
-bool ensure_win32_legacy_print_dialog() {
+bool ensure_win32_legacy_print_dialog(GWindow parent) {
 #ifdef _WIN32
     static constexpr const wchar_t* kRegPath =
         L"Software\\Microsoft\\Print\\UnifiedPrintDialog";
@@ -81,16 +86,26 @@ bool ensure_win32_legacy_print_dialog() {
         return true;
     }
 
-    // Ask the user.
-    Gtk::MessageDialog dialog(
-        "Windows 11 has replaced the legacy print dialog with a modern one "
-        "that lacks print preview and some advanced options.\n\n"
-        "Would you like to restore the legacy print dialog for all Win32 "
-        "applications?",
-        false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO, true);
-    dialog.set_title("Restore Legacy Print Dialog");
+    // Convert wide-char registry constants to UTF-8 for display.
+    std::string reg_path_utf8 = std::filesystem::path(kRegPath).string();
+    std::string reg_value_utf8 = std::filesystem::path(kRegValue).string();
+    std::replace(reg_path_utf8.begin(), reg_path_utf8.end(), '\\', '/');
+    std::string reg_key_utf8 = "<tt>HKEY_CURRENT_USER/" + reg_path_utf8 + "/" +
+                               reg_value_utf8 + "</tt>";
 
-    if (dialog.run() != Gtk::RESPONSE_YES) {
+    char* message = smprintf(
+        _("Windows 11 has replaced the legacy print dialog with a modern one "
+          "that lacks print preview and some advanced options. Would you like "
+          "to restore the legacy print dialog? This change will enable "
+          "printing in FontForge and also affect legacy Win32 "
+          "applications.\n"
+          "This change will set the registry key %s to 1"),
+        reg_key_utf8.c_str());
+
+    int response = show_yesno_message_dialog(
+        parent, _("Restore Legacy Print Dialog"), message);
+    free(message);
+    if (response != Gtk::RESPONSE_YES) {
         return false;
     }
 

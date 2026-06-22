@@ -28,6 +28,8 @@
 
 #include <gtkmm.h>
 
+#include "simple_dialogs.hpp"
+
 // Check GDK backend for Win32-specific capabilities
 bool is_win32_display();
 
@@ -38,4 +40,4 @@ Gdk::Rectangle get_win32_print_preview_size();
 // GTK3 doesn't support the modern dialog, so we need to offer users to restore
 // the legacy dialog if they haven't done it yet. This function checks the
 // registry and, if legacy mode is not enabled, offers to enable it.
-bool ensure_win32_legacy_print_dialog();
+bool ensure_win32_legacy_print_dialog(GWindow parent);

@@ -43,7 +43,7 @@ void print_dialog(GWindow gw, SplineFont* sf, FontViewBase* fv) {
     ff::app::GtkApp();
 
     // On Windows 11 22H2+, offer to restore the legacy print dialog if needed.
-    if (!ensure_win32_legacy_print_dialog()) {
+    if (!ensure_win32_legacy_print_dialog(gw)) {
         return;
     }
 
