@@ -18,8 +18,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-01 15:10+0300\n"
-"PO-Revision-Date: 2025-08-01 12:08\n"
+"POT-Creation-Date: 2026-06-24 16:52+0300\n"
+"PO-Revision-Date: 2026-06-24 06:08\n"
 "Last-Translator: \n"
 "Language-Team: German\n"
 "Language: de_DE\n"
@@ -8065,12 +8065,6 @@ msgstr "Gl_yphen-Beschriftung mit"
 msgid "Language"
 msgstr "Sprache"
 
-msgid "Language List"
-msgstr "Sprachen-Liste"
-
-msgid "Language Missing"
-msgstr "Sprache fehlt"
-
 msgid "Language Tag:"
 msgstr "Markierungselement der Sprache:"
 
@@ -11990,19 +11984,15 @@ msgstr "Reflektieren"
 msgid "Refresh File List"
 msgstr "Dateiliste aktualisieren"
 
-#. GT: Refs is an abbreviation for References. Space is tight here
 msgid "Refs"
 msgstr "Referenzen"
 
-#. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 msgid "Refs neste_d deeper than:"
 msgstr "Referenzen verschachtelt _tiefer als:"
 
-#. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 msgid "Refs with bad ps transformation matrices"
 msgstr "Referenzen mit ungültigen ps-Transformationsmatrizen"
 
-#. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 msgid "Refs with bad tt transformation matrices"
 msgstr "Referenzen mit ungültigen tt-Transformationsmatrizen"
 
@@ -13204,15 +13194,6 @@ msgstr "_Alle auswählen"
 msgid "Select a ligature to view"
 msgstr "Wähle eine Ligatur zum Anzeigen"
 
-msgid ""
-"Select as many languages as needed\n"
-"Hold down the control key when clicking\n"
-"to make disjoint selections."
-msgstr ""
-"Wähle so viele Sprachen wie nötig.\n"
-"Halte die Kontroll-Taste gedrückt,\n"
-"um mehrere Sprachen auszuwählen."
-
 msgid "Select by Color"
 msgstr "Nach Farbe auswählen"
 
@@ -13533,10 +13514,6 @@ msgstr "Einstellung-Id:"
 
 msgid "Settings"
 msgstr "Einstellungen"
-
-#, c-format
-msgid "Several language tags, including '%s', are not in the list of known languages and will be omitted"
-msgstr "Mehrere Markierungselemente der Sprachen, einschließlich '%s', sind nicht in der Liste der bekannten Sprachen und werden ausgelassen"
 
 msgid "Shades"
 msgstr "Nuancen"
@@ -15366,10 +15343,6 @@ msgstr "Instruktionen für %.80s haben sich geändert. Möchtest du diese Änder
 
 msgid "The italic correction of the composed glyph. Should be independent of glyph size"
 msgstr "Kursiv-Korrektur zusammengesetzter Glyphe. Sollte unabhängig sein von der Glyphengröße"
-
-#, c-format
-msgid "The language, '%s', is not in the list of known languages and will be omitted"
-msgstr "Die Sprache '%s', ist nicht in der Liste der bekannten Sprachen und wird ausgelassen"
 
 msgid "The layers do not match"
 msgstr "Die Ebenen stimmen nicht überein"
@@ -18153,13 +18126,6 @@ msgstr "Eine Glyphe muß ausgewählt sein, bevor ein Bild in sie importiert werd
 
 msgid "You must select at least one language for each script."
 msgstr "Mindestens eine Sprache muß für jedes Schriftsystem ausgewählt werden."
-
-msgid ""
-"You must select at least one language.\n"
-"Use the \"Default\" language if nothing else fits."
-msgstr ""
-"Mindestens eine Sprache muß ausgewählt sein.\n"
-"Verwende die \"Standard\"-Sprache, wenn nichts anderes passt."
 
 msgid "You must select at least one script if you provide a feature tag."
 msgstr "Mindestens ein Schriftsystem muß auswählt werden, wenn ein Markierungselement der Schrift-Funktionen angeben ist."

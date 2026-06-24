@@ -13,8 +13,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-01 15:10+0300\n"
-"PO-Revision-Date: 2025-08-01 12:08\n"
+"POT-Creation-Date: 2026-06-24 16:52+0300\n"
+"PO-Revision-Date: 2026-06-24 06:08\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Traditional\n"
 "Language: zh_TW\n"
@@ -7576,6 +7576,12 @@ msgstr "卡爾梅克語"
 msgid "Kamba"
 msgstr "卡姆帕語"
 
+msgid "Kana Extended-A"
+msgstr "緬甸文擴展-A"
+
+msgid "Kana Extended-B"
+msgstr "緬甸文擴展-B"
+
 msgid "Kanbun"
 msgstr "漢文"
 
@@ -7764,12 +7770,6 @@ msgstr "字圖加標籤依據(_Y)"
 
 msgid "Language"
 msgstr "語言"
-
-msgid "Language List"
-msgstr "語言清單"
-
-msgid "Language Missing"
-msgstr "缺少語言"
 
 msgid "Language Tag:"
 msgstr "語言標記："
@@ -11641,19 +11641,15 @@ msgstr "反射"
 msgid "Refresh File List"
 msgstr "重新整理檔案清單"
 
-#. GT: Refs is an abbreviation for References. Space is tight here
 msgid "Refs"
 msgstr "參照"
 
-#. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 msgid "Refs neste_d deeper than:"
 msgstr "巢狀參照深於(_D)："
 
-#. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 msgid "Refs with bad ps transformation matrices"
 msgstr "參照不當的 ps 變換字框"
 
-#. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 msgid "Refs with bad tt transformation matrices"
 msgstr "參照不當的 tt 變換字框"
 
@@ -13159,10 +13155,6 @@ msgstr "設定識別號："
 
 msgid "Settings"
 msgstr "設定值"
-
-#, c-format
-msgid "Several language tags, including '%s', are not in the list of known languages and will be omitted"
-msgstr "多個語言標記，包含 '%s'，並不在已知語言集清單之中而將被省略"
 
 msgid "Shades"
 msgstr "陰影"
@@ -14925,10 +14917,6 @@ msgstr "組合字圖的斜體校正。應該是獨立於字圖尺寸"
 
 msgid "The kerning values for class 0 (\"Everything Else\") should always be 0"
 msgstr "字距微調值用於類別 0 (\"所有其他東西\") 應該自動為 0"
-
-#, c-format
-msgid "The language, '%s', is not in the list of known languages and will be omitted"
-msgstr "語言，'%s'，並不在已知語言集清單之中而將被省略"
 
 msgid "The layers do not match"
 msgstr "圖層不匹配"
@@ -17437,13 +17425,6 @@ msgstr "您必須選取查找子表格以包含這對字距微調對"
 
 msgid "You must select at least one language for each script."
 msgstr "您必須選取至少一種語言用於每個文字。"
-
-msgid ""
-"You must select at least one language.\n"
-"Use the \"Default\" language if nothing else fits."
-msgstr ""
-"您必須選取至少一個語言。\n"
-"如果沒有任何其他東西符合，就使用「預設」語言。"
 
 msgid "You must select at least one script if you provide a feature tag."
 msgstr "如果您提供特徵標記，您就必須選取至少一種文字。"

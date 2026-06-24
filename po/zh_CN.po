@@ -22,8 +22,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-01 15:10+0300\n"
-"PO-Revision-Date: 2025-08-01 12:08\n"
+"POT-Creation-Date: 2026-06-24 16:52+0300\n"
+"PO-Revision-Date: 2026-06-24 06:08\n"
 "Last-Translator: \n"
 "Language-Team: Chinese Simplified\n"
 "Language: zh_CN\n"
@@ -339,6 +339,10 @@ msgid "%d pixels"
 msgstr "%d 像素"
 
 #, c-format
+msgid "%d x %d pixels"
+msgstr "%d x %d 像素"
+
+#, c-format
 msgid "%d@%d pixel bitmap"
 msgstr "%d@%d像素位图"
 
@@ -544,6 +548,9 @@ msgstr "'GSUB' 字形替换表"
 
 msgid "'JSTF' Justification Table"
 msgstr "'JSTF' 对齐表"
+
+msgid "'StyleMapFamilyName' entry has been ignored"
+msgstr "“StyleMapFamilyName”条目已被忽略"
 
 msgid "'attrs' (if any):"
 msgstr "'attrs' (如果有):"
@@ -1198,6 +1205,15 @@ msgstr "增添极值点(_D)"
 msgid "A_lign"
 msgstr "对齐(_L)"
 
+msgid "Aari"
+msgstr "阿里语"
+
+msgid "Abaza"
+msgstr "阿巴札语"
+
+msgid "Abkhazian"
+msgstr "阿布哈兹语"
+
 msgid "Above Base Forms"
 msgstr "基底形式之上"
 
@@ -1243,6 +1259,12 @@ msgstr "精度目标："
 
 msgid "Accuracy _Target:"
 msgstr "精度目标(_T)："
+
+msgid "Achi"
+msgstr "阿奇语"
+
+msgid "Acholi"
+msgstr "阿乔利语"
 
 msgid "Activate diagonal stem processing"
 msgstr "激活对角线字干处理"
@@ -1305,6 +1327,9 @@ msgstr "添加极值(_X)"
 
 msgid "Add Encoding Name..."
 msgstr "增加编码…"
+
+msgid "Add Encoding Slots..."
+msgstr "增加编码位…"
 
 msgid "Add Entry Anchor..."
 msgstr "增加入口锚点..."
@@ -1521,8 +1546,14 @@ msgstr "前导宽度不"
 msgid "Advance width of glyph %.30s must be less than 127"
 msgstr "字形 %.30s 的前导宽度必须小于127"
 
+msgid "Adyghe"
+msgstr "阿迪格语"
+
 msgid "Aegean Numbers"
 msgstr "爱琴数字"
+
+msgid "Afar"
+msgstr "阿法尔语"
 
 msgid "Afm Save Failed"
 msgstr "Afm保存失败"
@@ -1533,11 +1564,17 @@ msgstr "南非语"
 msgid "After rotating or skewing a glyph you should probably apply Element->Add Extrema"
 msgstr "旋转或倾斜字形后可能要执行“基础->增加极值”"
 
+msgid "Agaw"
+msgstr "阿高人语"
+
 msgid "Ahead Classes"
 msgstr "向前类属"
 
 msgid "Ahom"
 msgstr "阿洪姆文"
+
+msgid "Aiton"
+msgstr "艾通语"
 
 msgid "Akan"
 msgstr "阿坎语"
@@ -1644,6 +1681,9 @@ msgid ""
 "characters start at the same location."
 msgstr "允许您检查多个字符的水平字干是否从同一位置开始。"
 
+msgid "Allows you to check that horizontal stems in several characters start at the same location."
+msgstr "允许您检查多个字符的水平字干是否从同一位置开始。"
+
 msgid "Allows you to check that stems have consistent widths.."
 msgstr "允许您检查字干是否具有一致的宽度。"
 
@@ -1652,11 +1692,17 @@ msgid ""
 "characters start at the same location."
 msgstr "允许您检查多个字符的垂直字干是否从同一位置开始。"
 
+msgid "Allows you to check that vertical stems in several characters start at the same location."
+msgstr "允许您检查多个字符中的字干是否从同一位置开始。"
+
 msgid ""
 "Allows you to find control points which are almost,\n"
 "but not quite horizontal or vertical\n"
 "from their base point\n"
 "(or at the italic angle)."
+msgstr "允许您查找几乎但不完全水平或垂直于其基点（或斜体角度）的控制点。"
+
+msgid "Allows you to find control points which are almost, but not quite horizontal or vertical from their base point (or at the italic angle)."
 msgstr "允许您查找几乎但不完全水平或垂直于其基点（或斜体角度）的控制点。"
 
 msgid ""
@@ -1665,16 +1711,27 @@ msgid ""
 "outside of those end points"
 msgstr "允许您查找控制点，这些控制点在投影到两个端点之间的线段时位于这些端点之外"
 
+msgid "Allows you to find control points which when projected onto the line segment between the two end points lie outside of those end points"
+msgstr "允许您查找控制点，这些控制点在投影到两个端点之间的线段时位于这些端点之外"
+
 msgid ""
 "Allows you to find lines which are almost,\n"
 "but not quite horizontal or vertical\n"
 "(or at the italic angle)."
 msgstr "允许您查找几乎但不完全水平或垂直（或呈斜体角度）的线条。"
 
+msgid "Allows you to find lines which are almost, but not quite horizontal or vertical (or at the italic angle)."
+msgstr "允许您查找几乎但不完全水平或垂直（或呈斜体角度）的线条。"
+
 msgid ""
 "Allows you to find points which are slightly\n"
 "off from the baseline, xheight, cap height,\n"
 "ascender, descender heights."
+msgstr ""
+"允许您查找与基线、x 高度、大写字母高度、\n"
+"上升部、下降部高度略有偏差的点。"
+
+msgid "Allows you to find points which are slightly off from the baseline, xheight, cap height, ascender, descender heights."
 msgstr ""
 "允许您查找与基线、x 高度、大写字母高度、\n"
 "上升部、下降部高度略有偏差的点。"
@@ -1707,6 +1764,9 @@ msgstr "按下空格键时还会启用预览模式。"
 msgid "Alt Subs"
 msgstr "交替替代"
 
+msgid "Altai"
+msgstr "阿尔泰语"
+
 msgid "Alternate Annotation Forms"
 msgstr "替代注释形式"
 
@@ -1736,6 +1796,9 @@ msgstr ""
 "编辑字形时始终显示控制点。\n"
 "可以在菜单“视图/显示”中关闭此功能，如果最初显示控制点，此设置将生效。\n"
 "更改需要重新启动 fontforge。"
+
+msgid "Americanist IPA"
+msgstr "美国注音符号"
 
 msgid "Amount"
 msgstr "总量"
@@ -1892,6 +1955,9 @@ msgstr "古代符号"
 
 msgid "Angle:"
 msgstr "角度："
+
+msgid "Anglo-Saxon"
+msgstr "古英语"
 
 msgid "Anti-Alias"
 msgstr "抗锯齿"
@@ -2152,8 +2218,11 @@ msgstr "阿拉伯文从右到左"
 msgid "Arabic Supplement"
 msgstr "阿拉伯文补充"
 
+msgid "Aragonese"
+msgstr "阿拉贡语"
+
 msgid "Archives"
-msgstr "存档"
+msgstr "存档包"
 
 msgid "Arcs"
 msgstr "弧线"
@@ -2165,6 +2234,9 @@ msgid ""
 "Are there any bitmap glyphs whose advance width\n"
 "is not is expected from scaling and rounding\n"
 "the outline's advance width?"
+msgstr "是否存在一些位图字形，其步进宽度不是通过缩放和舍入轮廓的步进宽度来预期的？"
+
+msgid "Are there any bitmap glyphs whose advance width is not is expected from scaling and rounding the outline's advance width?"
 msgstr "是否存在一些位图字形，其步进宽度不是通过缩放和舍入轮廓的步进宽度来预期的？"
 
 msgid "Are there any glyph's whose bounding boxes extend above this number?"
@@ -2185,6 +2257,9 @@ msgid ""
 msgstr ""
 "是否存在在位图字体中没有位图版本的轮廓字符？\n"
 "相反，是否存在没有相应轮廓字符的位图字符？"
+
+msgid "Are there any outline characters which don't have a bitmap version in one of the bitmap fonts? Conversely are there any bitmap characters without a corresponding outline character?"
+msgstr "是否存在在位图字体中没有位图版本的轮廓字符？相反，是否存在没有相应轮廓字符的位图字符？"
 
 msgid "Are you sure you don't want to use the cidmap I found?"
 msgstr "您确定不使用我找到的 cidmap 吗？"
@@ -2259,6 +2334,9 @@ msgstr "长宽比与tile字形相同"
 msgid "Assamese"
 msgstr "阿萨姆语"
 
+msgid "Asturian"
+msgstr "阿斯图里亚斯语"
+
 msgid "At End"
 msgstr "终点"
 
@@ -2285,6 +2363,9 @@ msgid ""
 "you to specify adjustments to the rounded\n"
 "Every pixel size my have its own adjustment."
 msgstr "在较小的像素尺寸（屏幕字体大小）下，发生的舍入误差可能非常严重。设备表允许您指定对舍入的调整。每个像素尺寸都有自己的调整。"
+
+msgid "Athapaskan languages"
+msgstr "阿萨巴斯卡语支"
 
 #, c-format
 msgid ""
@@ -2470,8 +2551,14 @@ msgstr "询问Autotrace"
 msgid "Autotracing..."
 msgstr "自动追踪中…"
 
+msgid "Avatime"
+msgstr "阿瓦蒂梅语"
+
 msgid "Avestan"
 msgstr "阿维斯塔文"
+
+msgid "Awadhi"
+msgstr "阿瓦德语"
 
 msgid "Ax => xA"
 msgstr "Ax ⇒ xA"
@@ -2529,6 +2616,9 @@ msgstr "艾马拉语"
 
 msgid "Azebaijani (roman)"
 msgstr "阿塞拜疆语(罗马字母)"
+
+msgid "Azerbaijani"
+msgstr "阿塞拜疆语"
 
 msgid "Azeri (Cyrillic)"
 msgstr "阿塞拜疆文（西里尔文）"
@@ -2620,7 +2710,7 @@ msgid_plural "Backtrack classes: "
 msgstr[0] "逆溯类属:"
 
 msgid "Backup SFD"
-msgstr "备份SFD"
+msgstr "备份 SFD"
 
 #, c-format
 msgid "Bad Anchor Point: %s"
@@ -3289,11 +3379,23 @@ msgstr "/BlendDesignMap 中轴 %s 的混合值错误。"
 msgid "Bad xfig file"
 msgstr "错误的 xfig 文件"
 
+msgid "Badaga"
+msgstr "巴达加语"
+
+msgid "Baghelkhandi"
+msgstr "巴格尔坎德语"
+
+msgid "Bagri"
+msgstr "巴格里文"
+
 msgid "Balancing..."
 msgstr "正在平衡..."
 
 msgid "Balinese"
 msgstr "巴厘文"
+
+msgid "Balkar"
+msgstr "巴尔卡尔语"
 
 msgid "Ball (Round Cap)"
 msgstr "圆球（圆头）"
@@ -3303,6 +3405,12 @@ msgstr "巴姆穆文"
 
 msgid "Bamum Supplement"
 msgstr "巴姆穆文补充"
+
+msgid "Banda"
+msgstr "班达人语"
+
+msgid "Bandjalang"
+msgstr "班贾朗语"
 
 msgid "Bar Width:"
 msgstr "条宽："
@@ -3352,6 +3460,9 @@ msgstr "用于拉丁文、希腊文、西里尔文的基线。"
 msgid "Bases"
 msgstr "基底"
 
+msgid "Bashkir"
+msgstr "巴什基尔语"
+
 msgid "Basic Latin"
 msgstr "基本拉丁文"
 
@@ -3366,6 +3477,18 @@ msgstr "巴索奥瓦文"
 
 msgid "Batak"
 msgstr "巴塔克文"
+
+msgid "Batak Angkola"
+msgstr "巴塔克安科拉语"
+
+msgid "Batak Toba"
+msgstr "巴塔克多巴语"
+
+msgid "Baulé"
+msgstr "巴ule语"
+
+msgid "Bavarian"
+msgstr "巴伐利亚语"
 
 msgid "Be_vel"
 msgstr "截角(_V)"
@@ -3382,11 +3505,17 @@ msgstr "基底标记之下"
 msgid "Below Base Substitutions"
 msgstr "基底替代之下"
 
+msgid "Bench"
+msgstr "本奇语"
+
 msgid "Bengali"
 msgstr "孟加拉文"
 
 msgid "Bengali Bangladesh"
 msgstr "孟加拉塔卡"
+
+msgid "Beria Erfe"
+msgstr "贝里亚埃尔费"
 
 msgid ""
 "Beyond the endpoint the gradient repeats itself, but reflected.\n"
@@ -3411,6 +3540,9 @@ msgstr ""
 
 msgid "Bhaiksuki"
 msgstr "比克舒基文"
+
+msgid "Bible Cree"
+msgstr "圣经克里语"
 
 #. GT: I don't really understand these "Big Op Space" things. They have
 #. GT: something to do with TeX and are roughly defined a few strings down
@@ -3448,7 +3580,7 @@ msgid "Bitmap"
 msgstr "位图"
 
 msgid "Bitmap Fonts"
-msgstr "位图字体"
+msgstr "位图字型"
 
 msgid "Bitmap Magnification..."
 msgstr "位图缩放…"
@@ -3569,6 +3701,12 @@ msgstr "边框"
 
 msgid "Bosnian"
 msgstr "爱沙尼亚语"
+
+msgid "Bosnian (Cyrillic)"
+msgstr "波斯尼亚语（西里尔字母）"
+
+msgid "Bosnian (Latin)"
+msgstr "波斯尼亚语（拉丁字母）"
 
 msgid "Both"
 msgstr "两者"
@@ -3732,6 +3870,9 @@ msgstr "白俄罗斯语"
 msgid "Byzantine Music"
 msgstr "拜占庭乐符"
 
+msgid "Byzantine Music & Music & Ancient Greek Music"
+msgstr "拜占庭音乐 & 音乐 & 古希腊音乐"
+
 msgid "Byzantine Musical Symbols"
 msgstr "拜占庭乐符"
 
@@ -3839,6 +3980,12 @@ msgstr "中日韩统一表意文字扩展 G"
 
 msgid "CJK Unified Ideographs Extension H"
 msgstr "中日韩统一表意文字扩展 H"
+
+msgid "CJK Unified Ideographs Extension I"
+msgstr "中日韩统一表意文字扩展区 I"
+
+msgid "CJK Unified Ideographs Extension J"
+msgstr "中日韩统一表意文字扩展区 J"
 
 msgid ""
 "CLEAR\n"
@@ -4504,6 +4651,9 @@ msgstr "检查自身相交"
 msgid "Check Unicode/Name mismatch"
 msgstr "检查 Unicode /名称不匹配"
 
+msgid "Check Unicode/name mismatch"
+msgstr "检查 Unicode /名称不匹配"
+
 msgid "Check VAdvance:\n"
 msgstr "检查垂直间距:\n"
 
@@ -4516,11 +4666,17 @@ msgstr "检查缺失极值(_M)"
 msgid "Check _outermost paths clockwise"
 msgstr "检查顺时针方向最外边的路径"
 
+msgid "Check advance:"
+msgstr "检查间距:"
+
 msgid "Check for CIDs defined _twice"
 msgstr "检查CID定义了两次(_T)"
 
 msgid "Check for _irrelevant control points"
 msgstr "检查不相关控制点(_I)"
+
+msgid "Check for _irrelevant control points with factor (%)"
+msgstr "检查是否存在无关控制点（百分比）(_I)"
 
 msgid "Check for _undefined CIDs"
 msgstr "检查未定义的CID"
@@ -4534,6 +4690,9 @@ msgstr "检查步进宽度不是显示值的字符。"
 msgid ""
 "Check for characters whose name maps to a unicode code point\n"
 "which does not map the character's assigned code point."
+msgstr "检查名称映射到 Unicode 码位的字符，但该码位未映射字符的指定码位。"
+
+msgid "Check for characters whose name maps to a unicode code point which does not map the character's assigned code point."
 msgstr "检查名称映射到 Unicode 码位的字符，但该码位未映射字符的指定码位。"
 
 msgid "Check for characters whose vertical advance width is not the displayed value."
@@ -4551,6 +4710,9 @@ msgstr "检查缺失手写体(_S)"
 msgid "Check for missing glyph names"
 msgstr "检查缺失字形名称"
 
+msgid "Check for multiple characters with the same Unicode code point"
+msgstr "检查是否存在多个具有相同 Unicode 代码点的字符"
+
 msgid "Check for multiple characters with the same name"
 msgstr "检查多个同名字符"
 
@@ -4563,6 +4725,9 @@ msgstr "检查多重名称"
 msgid "Check multiple Unicode"
 msgstr "检查多重 Unicode"
 
+msgid "Check multiple names"
+msgstr "检查多重名称"
+
 msgid "Check substitutions for empty chars"
 msgstr "查找空字符的替代"
 
@@ -4572,6 +4737,9 @@ msgid ""
 msgstr ""
 "保存前检查字形轮廓是否存在标准错误\n"
 "这可能会很慢。"
+
+msgid "Check vertical advance:"
+msgstr "检查垂直间距:"
 
 msgid "Check whether a CID is defined in more than one sub-font"
 msgstr "检查某个 CID 是否在多个子字体中定义"
@@ -5171,10 +5339,19 @@ msgstr "控制垂直字腔（用于中日韩）"
 msgid "Control Vertical Mapping (use for Latin, Greek, Cyrillic)"
 msgstr "控制垂直映射（用于拉丁语、希腊语、西里尔语）"
 
+msgid "Control points _beyond spline"
+msgstr "控制点在样条线之外(_B)"
+
 msgid ""
 "Control points are irrelevant if they are too close to the main\n"
 "point to make a significant difference in the shape of the curve."
 msgstr "如果控制点距离主要点太近，则不会对曲线的形状产生明显的影响，因此控制点是无关紧要的。"
+
+msgid "Control points are irrelevant if they are too close to the main point to make a significant difference in the shape of the curve. The minimum relevant distance is computed as a factor of distance between the main points."
+msgstr "如果控制点距离主点过近，以至于对曲线形状的影响微乎其微，则这些控制点无关紧要。最小相关距离的计算方法是主点之间距离的倍数。"
+
+msgid "Control points near horizontal/vertical/italic"
+msgstr "控制点临近水平/垂直/倾斜"
 
 msgid "ControlPoint|Default"
 msgstr "默认"
@@ -5267,6 +5444,9 @@ msgstr "版权文本（在名称窗格中）必须全部为 ASCII。因此，请
 msgid "Cor:"
 msgstr "修正:"
 
+msgid "Core python package 'importlib.metadata' not found: Cannot discover plugins"
+msgstr "找不到核心 Python 包“importlib.metadata”：无法发现插件"
+
 msgid "Core python package 'pkg_resources' not found: Cannot discover plugins"
 msgstr "未找到核心 Python 包‘pkg_resources’：未能发现插件"
 
@@ -5301,6 +5481,10 @@ msgstr ""
 
 msgid "Corrections must be between -128 and 127 (and should be smaller)"
 msgstr "修正值必须介于 -128 和 127 之间（并且应该更小）"
+
+#, c-format
+msgid "Corrupted SFD file: Invalid kern class name length %d. Aborting load."
+msgstr "SFD 文件损坏：字偶距类名长度无效 %d。中止加载。"
 
 msgid "Corsican"
 msgstr "科西嘉文"
@@ -5556,6 +5740,9 @@ msgstr "三次方"
 msgid "Cuneiform"
 msgstr "楔形文字"
 
+msgid "Cuneiform (& Numbers and Punctuation)"
+msgstr "楔形文字(& 数字和标点符号)"
+
 msgid "Cuneiform Numbers and Punctuation"
 msgstr "楔形数字和标点符号"
 
@@ -5660,6 +5847,9 @@ msgstr "CVT"
 #, c-format
 msgid "Cvt %d was changed from %d (%.2f) to %d (%.2f) by the previous instruction"
 msgstr "Cvt %d 被上一条指令从 %d (%.2f) 更改为 %d (%.2f)"
+
+msgid "Cypriot Arabic"
+msgstr "塞浦路斯阿拉伯语"
 
 msgid "Cypriot Syllabary"
 msgstr "塞浦路斯文字音表"
@@ -5792,6 +5982,9 @@ msgstr "定义组(_E)…"
 
 msgid "Danish"
 msgstr "丹麦语"
+
+msgid "Dari"
+msgstr "达利语"
 
 msgid "Darker Border:"
 msgstr "更暗边框："
@@ -6454,8 +6647,15 @@ msgstr "复制数据"
 msgid "Duplicate definition of subroutine %d"
 msgstr "子例程 %d 的定义重复"
 
+msgid "Duplicate encodings"
+msgstr "重复编码"
+
 msgid "Duplicate lib data."
 msgstr "重复lib数据。"
+
+#, c-format
+msgid "Duplicate local encoding 0x%04x encountered in glyph %s. This glyph will be unencoded."
+msgstr "在字形 %s 中遇到重复的本地编码 0x%04x。该字形将被取消编码。"
 
 msgid "Duplicate name"
 msgstr "复制名称"
@@ -6542,6 +6742,9 @@ msgstr ""
 msgid "Early Dynastic Cuneiform"
 msgstr "早王朝楔形文字"
 
+msgid "Eastern Abenaki"
+msgstr "东阿贝纳基语"
+
 msgid "Edges near horizontal/vertical/italic"
 msgstr "边线临近水平线/垂直线/倾斜线"
 
@@ -6585,7 +6788,7 @@ msgid "Edit Filter List"
 msgstr "编辑过滤列表"
 
 msgid "Edit Font Filters"
-msgstr "编辑字体过滤器"
+msgstr "编辑字型过滤器"
 
 msgid "Edit Indic Rearrangement"
 msgstr "编辑印地文调整"
@@ -6626,6 +6829,9 @@ msgstr "埃及圣书体格式控制符"
 msgid "Egyptian Hieroglyphs"
 msgstr "埃及圣书体文字"
 
+msgid "Egyptian Hieroglyphs Extended-A"
+msgstr "埃及象形文字扩展-A"
+
 msgid ""
 "Either a glyph should have no overlapping hints,\n"
 "or a glyph with hint masks should have no overlapping\n"
@@ -6633,6 +6839,9 @@ msgid ""
 msgstr ""
 "字形不应有重叠渲染调整，\n"
 "或者带有渲染调整遮罩的字形不应有渲染调整遮罩内的重叠渲染调整。"
+
+msgid "Either a glyph should have no overlapping hints, or a glyph with hint masks should have no overlapping hints within a hint mask."
+msgstr "字形不应有重叠渲染调整，或者带有渲染调整遮罩的字形不应有渲染调整遮罩内的重叠渲染调整。"
 
 msgid ""
 "Either:\n"
@@ -6671,6 +6880,9 @@ msgstr "以利买文"
 
 msgid "Em Units"
 msgstr "M全字单位"
+
+msgid "Emberá-Baudó"
+msgstr "安贝拉-包多语"
 
 msgid "Embolden as appropriate for Chinese, Japanese, Korean scripts"
 msgstr "加粗适用于中文、日文、韩文文字"
@@ -6910,6 +7122,10 @@ msgstr "解析颜色组件时出错。"
 #, c-format
 msgid "Error reading plugin configuration file '%s': %s"
 msgstr "读取插件配置文件‘%s’时出错：%s"
+
+#, c-format
+msgid "Error saving plugin configuration file '%s'"
+msgstr "保存插件配置文件“%s”时出错"
 
 #, c-format
 msgid "Error saving plugin configuration file '%s': %s"
@@ -7379,7 +7595,7 @@ msgid "Extra-Expanded (150%)"
 msgstr "加宽至150%"
 
 msgid "Extract from PDF"
-msgstr "从PDF提取"
+msgstr "从 PDF 提取"
 
 msgid "Extraneous glyphs"
 msgstr "多余的字形"
@@ -7521,6 +7737,9 @@ msgstr "无法读取引导线。"
 msgid "Failed to rename the new hotkeys file over your old one!\n"
 msgstr "无法将新的热键文件重命名为旧的热键文件！\n"
 
+msgid "Failed to retrieve plugin entry points"
+msgstr "无法检索插件入口点"
+
 #, c-format
 msgid "Failed to write %s"
 msgstr "无法写入 %s"
@@ -7543,6 +7762,9 @@ msgstr "法罗语（冰岛语）"
 
 msgid "Feature"
 msgstr "特征"
+
+msgid "Feature Name"
+msgstr "特征名"
 
 msgid "Feature Tag:"
 msgstr "特征标签："
@@ -7581,6 +7803,9 @@ msgstr "毛毡笔或刷头"
 msgid "Fi_ll"
 msgstr "填充(_L)"
 
+msgid "Field"
+msgstr "字段"
+
 msgid "Figure out flex hints after every change"
 msgstr "每次修改后计算flex渲调提示"
 
@@ -7616,7 +7841,7 @@ msgid "Filter"
 msgstr "过滤"
 
 msgid "Filter:"
-msgstr "过滤:"
+msgstr "过滤："
 
 msgid "Filter|New"
 msgstr "新建"
@@ -7895,6 +8120,9 @@ msgstr "字体:"
 msgid "FontForge"
 msgstr "FontForge"
 
+msgid "FontForge Python hooks not found"
+msgstr "未找到 FontForge Python 钩子"
+
 msgid ""
 "FontForge can generate two styles of ttc file.\n"
 "In the first each font is a separate entity\n"
@@ -7979,6 +8207,9 @@ msgid ""
 "Before doing this test insure that\n"
 "no paths self-intersect."
 msgstr "FontForge 内部使用按顺时针方向绘制的路径。这样您就可以检查它们是否是。在进行此测试之前，请确保没有路径自相交。"
+
+msgid "FontForge internally uses paths drawn in a clockwise direction. This lets you check that they are. Before doing this test insure that no paths self-intersect."
+msgstr "FontForge 内部使用顺时针方向绘制的路径。这可以帮助您检查路径是否确实如此。在进行此测试之前，请确保所有路径都不自相交。"
 
 msgid "FontForge is a font editor for outline and bitmap fonts that lets you create, edit, or convert, a range of fonts, including PostScript, TrueType, OpenType, cid-keyed, multi-master, cff, SVG and BitMap (bdf, FON, NFNT) fonts."
 msgstr "FontForge是一个矢量字体和位图字体的编辑器。你可以用它来创造，编辑或者转换一些字体。支持的字体格式包括PostScript，TrueType，OpenType，CID-keyed，multi-master，CFF，SVG和位图（bdf，PON，NFNT）。"
@@ -8078,7 +8309,7 @@ msgid ""
 msgstr "FontForge 在为新字体中的码位分配字形名称时将使用此名录。"
 
 msgid "FontForge's SFD"
-msgstr "FontForge SFD格式"
+msgstr "FontForge SFD"
 
 msgid "FontInfo Origin Lines Color"
 msgstr "FontInfo 原点线条颜色"
@@ -8273,6 +8504,10 @@ msgstr "全长"
 msgid "Fullname"
 msgstr "全称"
 
+#, c-format
+msgid "Function %s() called with a message string containing unescaped format character(s): \"%s\""
+msgstr "函数 %s() 被调用，传入的消息字符串包含未转义的格式字符：“%s”"
+
 msgid ""
 "Function DEFinition\n"
 "Pops a value (n) and starts the nth\n"
@@ -8362,6 +8597,9 @@ msgstr "加利西亚语"
 
 msgid "Galla"
 msgstr "盖拉语"
+
+msgid "Garay"
+msgstr "加萊文"
 
 msgid "Gasp|Anti-Alias"
 msgstr "抗锯齿"
@@ -8517,6 +8755,9 @@ msgid ""
 "hint exists without any points that lie on it."
 msgstr "Ghostview（或许是其他解释器）在存在渲染调整而没有任何点存在时会出现问题。"
 
+msgid "Ghostview (perhaps other interpreters) has a problem when a hint exists without any points that lie on it."
+msgstr "Ghostview（或许是其他解释器）在存在渲染调整而没有任何点存在时会出现问题。"
+
 msgid "Gl_yph Name:"
 msgstr "字形名称(_N):"
 
@@ -8648,9 +8889,21 @@ msgstr "字形信息(_I)…"
 msgid "Glyph _Metadata"
 msgstr "字形元数据(_M)"
 
+msgid "Glyph bounding box above"
+msgstr "字形边界框上方"
+
+msgid "Glyph bounding box below"
+msgstr "字形边界框下方"
+
 #, c-format
 msgid "Glyph bounding box data exceeds font bounding box data for GID %d"
 msgstr "字形边界框数据超出了 GID %d 的字体边界框数据"
+
+msgid "Glyph bounding box left of"
+msgstr "字形边界框左方"
+
+msgid "Glyph bounding box right of"
+msgstr "字形边界框右方"
 
 msgid "Glyph composed of:"
 msgstr "字形合成自："
@@ -8978,6 +9231,9 @@ msgstr "对称平滑网格拟合"
 msgid "Grid Fitting"
 msgstr "网格拟合"
 
+msgid "Gros Ventre"
+msgstr "格罗斯文特语"
+
 msgid "Group"
 msgid_plural "Groups"
 msgstr[0] "组"
@@ -9035,6 +9291,9 @@ msgstr "古尔木其文"
 
 msgid "Gurmukhi2"
 msgstr "古尔木其文2"
+
+msgid "Gurung Khema"
+msgstr "古隆凯玛文"
 
 msgid "HFlex Hint Color"
 msgstr "水平Flex渲调提示颜色"
@@ -9203,6 +9462,9 @@ msgstr "渲调提示替换点(_S)"
 
 msgid "Hint _Width Near¹"
 msgstr "渲调提示宽度靠近¹(_W)"
+
+msgid "Hint _width near¹"
+msgstr "渲染调整宽度临近¹(_W)"
 
 #, c-format
 msgid "Hint mask (or counter mask) with too many hints in %s"
@@ -9392,11 +9654,17 @@ msgstr[0] "水平: %d 基线"
 msgid "Horseshoe E and A"
 msgstr "马蹄形 E 和 A"
 
+msgid "How many CID slots do you wish to add?"
+msgstr "你想增加多少CID位？"
+
 msgid "How many entries should there be in the cvt table?"
 msgstr "应该有多少个条目出现在cvt 表中？"
 
 msgid "How many most-recent Undos should be kept?"
 msgstr "应该保留多少个最近的撤消？"
+
+msgid "How many unencoded glyph slots do you wish to add?"
+msgstr "你想增加多少未编码的字形位？"
 
 msgid "How to align these points?"
 msgstr "如何对齐这些点？"
@@ -9563,6 +9831,9 @@ msgid ""
 "point count will be incorrect."
 msgstr "如果对字形进行了编辑，导致其现在具有不同的点数，则任何使用点匹配且依赖于该字形的点数的引用都将是不正确的。"
 
+msgid "If a glyph has been edited so that it has a different number of points now, then any references which use point matching and depended on that glyph's point count will be incorrect."
+msgstr "如果对字形进行了编辑，导致其现在具有不同的点数，则任何使用点匹配且依赖于该字形的点数的引用都将是不正确的。"
+
 msgid ""
 "If a glyph in the second font is missing from the first, then\n"
 "add it to the first with the outlines of the second font in\n"
@@ -9653,6 +9924,11 @@ msgid ""
 "If two adjacent points on the same path are less than a few\n"
 "emunits apart they will cause problems for some of FontForge's\n"
 "commands. PostScript shouldn't care though."
+msgstr ""
+"如果同一路径上的两个相邻点之间的距离小于几个 em 单位，它们将导致 FontForge 的某些\n"
+"命令出现问题。不过 PostScript 不会在意。"
+
+msgid "If two adjacent points on the same path are less than a few emunits apart they will cause problems for some of FontForge's commands. PostScript shouldn't care though."
 msgstr ""
 "如果同一路径上的两个相邻点之间的距离小于几个 em 单位，它们将导致 FontForge 的某些\n"
 "命令出现问题。不过 PostScript 不会在意。"
@@ -9760,12 +10036,18 @@ msgstr "图像信息"
 msgid "Image Path"
 msgstr "图像路径"
 
+msgid "Image Size:"
+msgstr "图像大小:"
+
 #, c-format
 msgid "Image Size:  %d x %d  pixels"
 msgstr "图像尺寸：%d x %d 像素"
 
 msgid "Image Template"
 msgstr "图形模板"
+
+msgid "Image at:"
+msgstr "图像位于:"
 
 #, c-format
 msgid "Image at:      (%.0f,%.0f)"
@@ -9901,6 +10183,9 @@ msgid ""
 "least one feature is active for the glyph's script."
 msgstr "在每个使用字形的查找中，检查字形文字是否至少有一个特征处于活动状态。"
 
+msgid "In every lookup that uses a glyph, check that at least one feature is active for the glyph's script."
+msgstr "在每个使用字形的查找中，检查字形文字是否至少有一个特征处于活动状态。"
+
 #, c-format
 msgid "In font %1$d the advance width of glyph %2$.30s does not scale the base advance width properly, it shall be forced to the proper value"
 msgstr "在字体 %1$d 中，字形 %2$.30s 的间距宽度无法正确缩放基底间距宽度，应将其强制调整为正确的值"
@@ -9948,7 +10233,7 @@ msgid "In the design size range, the bottom top must be more than the design siz
 msgstr "在设计尺寸范围内，顶部字段的值必须大于设计尺寸。"
 
 msgid "In the saved font, force all glyph names to match those in the specified namelist"
-msgstr "在保存的字体中，强制所有字形名称与指定名称列表中的名称匹配"
+msgstr "在保存的字型中，强制所有字形名称与指定名称列表中的名称匹配"
 
 msgid ""
 "In this format you define a series of glyph classes and\n"
@@ -10280,6 +10565,9 @@ msgstr "处理字形"
 msgid "Intersecting Paths"
 msgstr "交叉的路径"
 
+msgid "Intersecting paths"
+msgstr "相交路径"
+
 msgid "Intra Class Distance"
 msgstr "类属距离"
 
@@ -10291,6 +10579,9 @@ msgstr "介绍"
 
 msgid "Inuktitut"
 msgstr "因纽特语"
+
+msgid "Inuktitut (Latin)"
+msgstr "因纽特语（拉丁）"
 
 #, c-format
 msgid "Invalid CID range in glyph class on line %d of %s"
@@ -10307,6 +10598,10 @@ msgid "Invalid character outside of string in sfnts array"
 msgstr "sfnts 数组中字符串外部的无效字符"
 
 #, c-format
+msgid "Invalid clut length %d in sfd file, must be between 0 and 256"
+msgstr "sfd 文件中 clut 长度 %d 无效，必须介于 0 和 256 之间。"
+
+#, c-format
 msgid "Invalid comment string (negative length?) in 'PfEd' table for glyph %s."
 msgstr "字形 %s 的‘PfEd’表中的注释字符串无效（长度为负数？）。"
 
@@ -10317,6 +10612,9 @@ msgstr "“%c%c%c%c”的压缩表长度无效。"
 #, c-format
 msgid "Invalid cursive position on line %d of %s"
 msgstr "无效位置于行%d （ %s）"
+
+msgid "Invalid field"
+msgstr "无效字段"
 
 #, c-format
 msgid "Invalid font count in TTC %s."
@@ -10739,6 +11037,9 @@ msgstr "契丹小字"
 msgid "Khmer"
 msgstr "高棉文"
 
+msgid "Khmer & Khmer Symbols"
+msgstr "高棉文 & 高棉文符号"
+
 msgid "Khmer Symbols"
 msgstr "高棉文符号"
 
@@ -10748,11 +11049,20 @@ msgstr "科杰基文"
 msgid "Khudawadi"
 msgstr "库达本德文"
 
+msgid "Kinyarwanda"
+msgstr "基尼亚卢旺达语"
+
 msgid "Kinyarwanda/Ruanda"
 msgstr "卢旺达"
 
+msgid "Kirat Rai"
+msgstr "基拉特拉伊文"
+
 msgid "Kirghiz"
 msgstr "吉尔吉斯语"
+
+msgid "Konkani"
+msgstr "孔卡尼文"
 
 msgid "Korean"
 msgstr "朝鲜语"
@@ -10762,6 +11072,9 @@ msgstr "旧体谚文"
 
 msgid "Kurdish"
 msgstr "库尔德语"
+
+msgid "K’iche"
+msgstr "基切语"
 
 msgid "LBearing:"
 msgstr "左边距："
@@ -10806,7 +11119,7 @@ msgid "Language List"
 msgstr "语言列表"
 
 msgid "Language Missing"
-msgstr "缺语言"
+msgstr "缺少语言"
 
 msgid "Language Tag:"
 msgstr "语言标签："
@@ -11228,6 +11541,9 @@ msgstr "线性文字 B 表意符号"
 msgid "Linear B Syllabary"
 msgstr "线性文字 B 字音表"
 
+msgid "Linear B Syllabary/Ideograms & Aegean Numbers"
+msgstr "线形文字B 音节文字/表意文字 & 爱琴海数字"
+
 msgid "Lining Figures"
 msgstr "线状图形"
 
@@ -11524,6 +11840,9 @@ msgstr "法语(卢森堡公国)"
 
 msgid "Lycian"
 msgstr "吕基亚文"
+
+msgid "Lycian/Carian/Lydian"
+msgstr "吕基亚字母/卡里亚字母/吕底亚字母"
 
 msgid "Lydian"
 msgstr "吕底亚文"
@@ -12265,6 +12584,9 @@ msgstr "MetaFont错误退出"
 msgid "Metadata (xml):"
 msgstr "元数据(xml):"
 
+msgid "Method 'entry_points()' not found in module 'importlib.metadata'"
+msgstr "模块“importlib.metadata”中未找到方法“entry_points()”"
+
 msgid "Metrics"
 msgstr "尺寸"
 
@@ -12348,6 +12670,11 @@ msgid ""
 "Minimum distance between the baseline of an upper\n"
 "limit and the bottom of the base operator."
 msgstr "上限基线与基数运算符底部之间的最小距离。"
+
+msgid ""
+"Minimum distance between the baseline of an upper\n"
+"limit and the top of the base operator."
+msgstr "上限基线与基准运算符顶部之间的最小距离。"
 
 msgid ""
 "Minimum distance between the baseline of the\n"
@@ -12458,6 +12785,9 @@ msgstr "各式数学符号 B"
 
 msgid "Miscellaneous Symbols"
 msgstr "其他符号"
+
+msgid "Miscellaneous Symbols Supplement"
+msgstr "各式符号补充"
 
 msgid "Miscellaneous Symbols and Arrows"
 msgstr "各式符号与箭头"
@@ -12700,6 +13030,9 @@ msgid ""
 "which are more than 32767 em-units apart in either the x or y direction"
 msgstr "大多数字体格式无法指定 x 或 y 方向上相距超过 32767 em 单位的相邻点（或控制点）"
 
+msgid "Most font formats cannot specify adjacent points (or control points) which are more than 32767 em-units apart in either the x or y direction"
+msgstr "大多数字体格式无法指定 x 或 y 方向上相距超过 32767 em 单位的相邻点（或控制点）"
+
 msgid ""
 "Most lookups will be attached to a feature\n"
 "active in a specific script for certain languages.\n"
@@ -12907,6 +13240,9 @@ msgstr "语言的多个名称"
 msgid "Multiple names when parsing %s for unicode %x"
 msgstr "为 unicode %2$x 解析 %1$s 时出现多个名称"
 
+msgid "Multiple references with use-my-metrics"
+msgstr "多个引用使用 use-my-metrics"
+
 msgid "Multiple refs with use-my-metrics"
 msgstr "多个引用使用 use-my-metrics"
 
@@ -12939,6 +13275,9 @@ msgstr "缅甸文扩展 A"
 
 msgid "Myanmar Extended-B"
 msgstr "缅甸文扩展 B"
+
+msgid "Myanmar Extended-C"
+msgstr "缅甸文扩展-C"
 
 msgid ""
 "N PUSH Bytes\n"
@@ -13683,6 +14022,9 @@ msgstr "非 Unicode 字形"
 msgid "Non-_Integral coordinates"
 msgstr "非整数坐标(_I)"
 
+msgid "Non-_integral coordinates"
+msgstr "非整数坐标(_I)"
+
 msgid "Non-existant glyph"
 msgstr "不存在字形"
 
@@ -14088,6 +14430,9 @@ msgstr "开(_N)"
 msgid "O_pen Paths"
 msgstr "开放的路径(_P)"
 
+msgid "O_pen paths"
+msgstr "打开路径(_P)"
+
 msgid "O_verlap"
 msgstr "重叠(_V)"
 
@@ -14183,11 +14528,17 @@ msgid ""
 "has the wrong width."
 msgstr "通常，如果某个点与渲染调整稍微偏离，那是因为字干由几个段组成，而其中一个段的宽度不对。"
 
+msgid "Often if a point is slightly off from a hint it is because a stem is made up of several segments, and one of them has the wrong width."
+msgstr "通常，如果某个点与渲染调整稍微偏离，那是因为字干由几个段组成，而其中一个段的宽度不对。"
+
 msgid "Ogham"
 msgstr "欧甘文"
 
 msgid "Ol Chiki"
 msgstr "奥尔奇基文"
+
+msgid "Ol Onal"
+msgstr "普密吉文"
 
 msgid "Old Hungarian"
 msgstr "古匈牙利文"
@@ -14372,7 +14723,7 @@ msgid "Open Contour"
 msgstr "开放轮廓线"
 
 msgid "Open Font"
-msgstr "打开字体"
+msgstr "打开字型"
 
 msgid "Open Glyph"
 msgstr "打开字形"
@@ -14553,7 +14904,7 @@ msgid "Outline Default Button"
 msgstr "轮廓默认按钮"
 
 msgid "Outline Fonts"
-msgstr "轮廓字体"
+msgstr "向量字型"
 
 msgid "Outline Glyphs\n"
 msgstr "轮廓字形\n"
@@ -15073,6 +15424,102 @@ msgstr "字重(_W)"
 msgid "Papiamentu"
 msgstr "帕比亚门图语"
 
+msgid "Parameter Name 1"
+msgstr "参数名 1"
+
+msgid "Parameter Name 10"
+msgstr "参数名 10"
+
+msgid "Parameter Name 11"
+msgstr "参数名 11"
+
+msgid "Parameter Name 12"
+msgstr "参数名 12"
+
+msgid "Parameter Name 13"
+msgstr "参数名 13"
+
+msgid "Parameter Name 14"
+msgstr "参数名 14"
+
+msgid "Parameter Name 15"
+msgstr "参数名 15"
+
+msgid "Parameter Name 16"
+msgstr "参数名 16"
+
+msgid "Parameter Name 17"
+msgstr "参数名 17"
+
+msgid "Parameter Name 18"
+msgstr "参数名 18"
+
+msgid "Parameter Name 19"
+msgstr "参数名 19"
+
+msgid "Parameter Name 2"
+msgstr "参数名 2"
+
+msgid "Parameter Name 20"
+msgstr "参数名 20"
+
+msgid "Parameter Name 21"
+msgstr "参数名 21"
+
+msgid "Parameter Name 22"
+msgstr "参数名 22"
+
+msgid "Parameter Name 23"
+msgstr "参数名 23"
+
+msgid "Parameter Name 24"
+msgstr "参数名 24"
+
+msgid "Parameter Name 25"
+msgstr "参数名 25"
+
+msgid "Parameter Name 26"
+msgstr "参数名 26"
+
+msgid "Parameter Name 27"
+msgstr "参数名 27"
+
+msgid "Parameter Name 28"
+msgstr "参数名 28"
+
+msgid "Parameter Name 29"
+msgstr "参数名 29"
+
+msgid "Parameter Name 3"
+msgstr "参数名 3"
+
+msgid "Parameter Name 30"
+msgstr "参数名 30"
+
+msgid "Parameter Name 31"
+msgstr "参数名 31"
+
+msgid "Parameter Name 32"
+msgstr "参数名 32"
+
+msgid "Parameter Name 4"
+msgstr "参数名 4"
+
+msgid "Parameter Name 5"
+msgstr "参数名 5"
+
+msgid "Parameter Name 6"
+msgstr "参数名 6"
+
+msgid "Parameter Name 7"
+msgstr "参数名 7"
+
+msgid "Parameter Name 8"
+msgstr "参数名 8"
+
+msgid "Parameter Name 9"
+msgstr "参数名 9"
+
 msgid "Parent Folder"
 msgstr "上层目录"
 
@@ -15082,6 +15529,10 @@ msgstr "解析错误"
 #, c-format
 msgid "ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s"
 msgstr "ParseGlyphOrderAndAliasDB：索引 %d 处无效（非制表符分隔条目）：%s"
+
+#, c-format
+msgid "ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %zu: %s"
+msgstr "ParseGlyphOrderAndAliasDB：索引 %zu 处存在无效条目（非制表符分隔）：%s"
 
 msgid "Parts List"
 msgstr "部件列表"
@@ -15221,6 +15672,12 @@ msgstr "像素大小？"
 msgid "PixelSize|New"
 msgstr "新建"
 
+msgid "Plane 15 (Supplementary Private Use Area-A)"
+msgstr "平面15（补充私用区-A）"
+
+msgid "Plane 16 (Supplementary Private Use Area-B)"
+msgstr "平面16（补充私用区-B）"
+
 msgid "Playing Cards"
 msgstr "纸牌"
 
@@ -15296,6 +15753,9 @@ msgstr "请指定文字"
 msgid "Plugin Configuration"
 msgstr "插件配置"
 
+msgid "Plugin Information"
+msgstr "插件信息"
+
 msgid "PluginStartupMode:"
 msgstr "插件启动模式:"
 
@@ -15349,8 +15809,15 @@ msgstr "72dpi屏幕上点的大小"
 msgid "Point sizes on a 75 dpi screen"
 msgstr "75dpi屏幕上点的大小"
 
+msgid "Point sizes on a 96 PPI monitor"
+msgstr "96 PPI 显示器上的点大小"
+
 msgid "Point sizes on a 96 dpi screen"
 msgstr "96dpi屏幕上点的大小"
+
+#, c-format
+msgid "Point sizes on this monitor (%d PPI)"
+msgstr "此显示器上的点大小（%d PPI）"
 
 #, c-format
 msgid "Point: %d (%d)"
@@ -15409,10 +15876,10 @@ msgid "Pop stack underflow on pop in %s"
 msgstr "在 %s 中，执行 pop 操作时发生堆栈下溢"
 
 msgid "Popup"
-msgstr "弹出窗口"
+msgstr "弹窗"
 
 msgid "Popup windows"
-msgstr "弹出窗口"
+msgstr "弹出窗口（弹窗）"
 
 msgid "Portuguese"
 msgstr "葡萄牙语"
@@ -15462,10 +15929,16 @@ msgid ""
 "Element->Correct direction on it."
 msgstr "PostScript 和 TrueType 要求路径以顺时针方向绘制。如果您有一个已翻转的引用，则该引用中的路径可能为逆时针。您应该取消链接并对其执行“元素->更正方向”。"
 
+msgid "PostScript and TrueType require that paths be drawn in a clockwise direction. If you have a reference that has been flipped then the paths in that reference will probably be counter-clockwise. You should unlink it and do Element->Correct direction on it."
+msgstr "PostScript 和 TrueType 要求路径以顺时针方向绘制。如果您有一个已翻转的引用，则该引用中的路径可能为逆时针。您应该取消链接并对其执行“元素->更正方向”。"
+
 msgid ""
 "PostScript and TrueType require that when a path\n"
 "reaches its maximum or minimum position\n"
 "there must be a point at that location."
+msgstr "PostScript 和 TrueType 要求当路径到达其最大或最小位置时该位置必须有一个点。"
+
+msgid "PostScript and TrueType require that when a path reaches its maximum or minimum position there must be a point at that location."
 msgstr "PostScript 和 TrueType 要求当路径到达其最大或最小位置时该位置必须有一个点。"
 
 msgid "PostScript font program (Compact Font Format 2)"
@@ -15818,6 +16291,9 @@ msgstr "拉贾斯坦语"
 msgid "Rakar Forms"
 msgstr "Rakar 形"
 
+msgid "Rakhine"
+msgstr "若开语"
+
 msgid "Random"
 msgstr "随机"
 
@@ -15991,11 +16467,23 @@ msgstr "解析“glyf”表时对字形 %d 的引用超出范围。"
 msgid "Reference to transient memory out of bounds in put in %s"
 msgstr "在 %s 中，put 操作引用了超出范围的临时内存"
 
+msgid "References"
+msgstr "参考"
+
 msgid "References are nested more deeply in this glyph than the maximum allowed"
 msgstr "此字形中引用的嵌套深度超出了允许的最大深度"
 
 msgid "References may not be dragged into the guidelines layer"
 msgstr "参照不可拖放到引导层"
+
+msgid "References with bad PostScript transformation matrices"
+msgstr "引用中包含错误的 PostScript 变换矩阵"
+
+msgid "References with bad TrueType transformation matrices"
+msgstr "引用中包含错误的 TrueType 变换矩阵"
+
+msgid "References with out of date point matching"
+msgstr "参照了过期匹配点"
 
 msgid "Refers to Font"
 msgstr "参照到字体"
@@ -16006,19 +16494,18 @@ msgstr "镜像"
 msgid "Refresh File List"
 msgstr "刷新文件列表"
 
-#. GT: Refs is an abbreviation for References. Space is tight here
+msgid "Refresh Shaper"
+msgstr "刷新塑形器"
+
 msgid "Refs"
 msgstr "参照"
 
-#. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 msgid "Refs neste_d deeper than:"
 msgstr "参照递归深度超过(_D):"
 
-#. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 msgid "Refs with bad ps transformation matrices"
 msgstr "ps 变换矩阵错误的引用"
 
-#. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 msgid "Refs with bad tt transformation matrices"
 msgstr "tt 变换矩阵错误的引用"
 
@@ -16843,8 +17330,32 @@ msgstr "与上相同，但适用于小特征（例如衬线）的终端，其可
 msgid "Same table tag, '%c%c%c%c', appears twice in sfnt header"
 msgstr "相同的表标记“%c%c%c%c”在 sfnt 标头中出现两次"
 
+msgid "Sami (Inari)"
+msgstr "萨米语（伊纳里"
+
 msgid "Sami (Lappish)"
 msgstr "萨米语（拉普兰语）"
+
+msgid "Sami (Lule) (Norway)"
+msgstr "萨米族（Lule）（挪威）"
+
+msgid "Sami (Lule) (Sweden)"
+msgstr "萨米族（Lule）（瑞典）"
+
+msgid "Sami (Northern) (Finland)"
+msgstr "萨米语（北，芬兰）"
+
+msgid "Sami (Northern) (Sweden)"
+msgstr "萨米语（北，瑞典）"
+
+msgid "Sami (Skolt)"
+msgstr "萨米语（斯科尔特）"
+
+msgid "Sami (Southern) (Norway)"
+msgstr "萨米语（南，挪威）"
+
+msgid "Sami (Southern) (Sweden)"
+msgstr "萨米语（南，瑞典）"
 
 msgid "Samoan"
 msgstr "萨摩亚语"
@@ -17061,6 +17572,9 @@ msgstr "缩放以适合（杂项）"
 
 msgid "Scale..."
 msgstr "缩放..."
+
+msgid "Scaled by:"
+msgstr "缩放至:"
 
 #, c-format
 msgid "Scaled by:    (%.2f,%.2f)"
@@ -17286,6 +17800,9 @@ msgstr "RSymbol"
 msgid "Script|Roman"
 msgstr "罗马文字"
 
+msgid "Script|Sidetic"
+msgstr "西德提克文"
+
 msgid "Script|Simplified Chinese"
 msgstr "简体中文"
 
@@ -17298,6 +17815,9 @@ msgstr "苏美尔-阿卡德楔形文字"
 msgid "Script|Sundanese"
 msgstr "巽他语"
 
+msgid "Script|Sunuwar"
+msgstr "苏努瓦尔文"
+
 msgid "Script|Syloti Nagri"
 msgstr "西洛蒂城体"
 
@@ -17309,6 +17829,9 @@ msgstr "塔加洛语 (Tagalog)"
 
 msgid "Script|Tagbanwa"
 msgstr "塔格班瓦语 (Tagbanwa)"
+
+msgid "Script|Tai Yo"
+msgstr "泰优文"
 
 msgid "Script|Tamil"
 msgstr "泰米尔语"
@@ -17479,8 +18002,9 @@ msgid ""
 "Hold down the control key when clicking\n"
 "to make disjoint selections."
 msgstr ""
-"根据需要选择多种语言\n"
-"单击时按住Ctrl键以多选。"
+"根据需要选择任意数量的语言\n"
+"按住 Ctrl 键并单击\n"
+"可进行不连续的选择。"
 
 msgid "Select by Color"
 msgstr "按颜色选择"
@@ -17631,6 +18155,9 @@ msgstr "分离"
 msgid "Separation marks only meaningful in contextual chaining lookups, starting at: %.20s..."
 msgstr "分隔符仅在上下文链查找中有意义，开始于：%.20s..."
 
+msgid "Sepedi"
+msgstr "北索托语"
+
 #, c-format
 msgid "Sequence number out of bounds, must be less than %d (number of classes in list above)"
 msgstr "序列号超出范围，必须小于 %d（上面列表中的类属数）"
@@ -17644,6 +18171,9 @@ msgstr "塞尔维亚语"
 
 msgid "Serbian (Cyrillic)"
 msgstr "塞尔维亚语(西里尔语)"
+
+msgid "Serbian (Cyrillic) (Bosnia and Herzegovina)"
+msgstr "塞尔维亚语（西里尔，波黑）"
 
 msgid "Serbian (Latin)"
 msgstr "塞尔维亚语(拉丁语)"
@@ -18082,6 +18612,9 @@ msgstr "形状"
 
 msgid "Sharada"
 msgstr "沙勒德文"
+
+msgid "Sharada Supplement"
+msgstr "夏拉达文补充"
 
 msgid "Sharp/Closed Loops"
 msgstr "尖锐/闭合环形"
@@ -19268,6 +19801,9 @@ msgstr "Sundanese (罗马字母)"
 msgid "Sundanese Supplement"
 msgstr "巽他文补充"
 
+msgid "Sunuwar"
+msgstr "苏努瓦尔文"
+
 msgid "Sup1:"
 msgstr "上标1:"
 
@@ -19417,6 +19953,9 @@ msgstr "符号及象形扩展 A"
 msgid "Symbols for Legacy Computing"
 msgstr "传统电脑符号"
 
+msgid "Symbols for Legacy Computing Supplement"
+msgstr "遗留计算符号补充"
+
 msgid "Symbols:"
 msgstr "符号："
 
@@ -19560,6 +20099,9 @@ msgstr "标签过长"
 msgid "Tagalog"
 msgstr "他加禄文"
 
+msgid "Tagalog/Hanunoo/Buhid/Tagbanwa"
+msgstr "他加禄字母/哈努诺文/布希德字母/塔格班瓦字母"
+
 msgid "Tagbanwa"
 msgstr "蒂亚格班瓦文"
 
@@ -19580,6 +20122,9 @@ msgstr "越南傣文"
 
 msgid "Tai Xuan Jing Symbols"
 msgstr "太玄经符号"
+
+msgid "Tai Yo"
+msgstr "泰优"
 
 msgid "Tajik"
 msgstr "塔吉克语"
@@ -19611,6 +20156,9 @@ msgstr "西夏文"
 msgid "Tangut Components"
 msgstr "西夏文部件"
 
+msgid "Tangut Components Supplement"
+msgstr "西夏文部件补充"
+
 msgid "Tangut Supplement"
 msgstr "西夏文补充"
 
@@ -19625,6 +20173,9 @@ msgstr "渐变/开放环形"
 
 msgid "Tatar"
 msgstr "塔塔尔语"
+
+msgid "Tatar (Tatarstan)"
+msgstr "鞑靼语（鞑靼斯坦）"
 
 msgid "TeX Table"
 msgstr "TeX表"
@@ -19878,6 +20429,13 @@ msgstr ""
 "享受设计开放字体的乐趣！🔣🔧🥳"
 
 msgid ""
+"The OpenType Style Set ('ss01'-'ss20') and Character Variant ('cv01'-'cv99')\n"
+"features may be assigned human readable names here."
+msgstr ""
+"OpenType样式集（'ss01'-'ss20'）和字符变体（'cv01'-'cv99'）\n"
+"特征可以在此处分配易于人类理解的名称。"
+
+msgid ""
 "The OpenType Style Set features ('ss01'-'ss20') may\n"
 "be assigned human readable names here."
 msgstr "可以在此处为 OpenType 样式集特征 ('ss01'-'ss20') 分配可读的名称。"
@@ -19887,6 +20445,9 @@ msgid ""
 "that if a base glyph (or base mark) contains an anchor point\n"
 "for one class in a lookup subtable, then it should contain\n"
 "anchors for all classes in the subtable"
+msgstr "OpenType 文档以一种相当令人困惑的方式建议如果基本字形（或基本标记）包含查找子表中一个类的锚点，那么它应该包含子表中所有类的锚点"
+
+msgid "The OpenType documentation suggests in a rather confusing way that if a base glyph (or base mark) contains an anchor point for one class in a lookup subtable, then it should contain anchors for all classes in the subtable"
 msgstr "OpenType 文档以一种相当令人困惑的方式建议如果基本字形（或基本标记）包含查找子表中一个类的锚点，那么它应该包含子表中所有类的锚点"
 
 msgid "The PFM file contains information Windows needs to install a PostScript® font."
@@ -19920,6 +20481,9 @@ msgid ""
 "interpreters tend to support paths with more points than this limit.\n"
 "(Note a truetype font after conversion to PS will contain\n"
 "twice as many control points)"
+msgstr "PostScript 语言参考手册（附录 B）指出，解释器不需要支持超过 1500 个点的路径。我认为这个数字包括控制点。从 PostScript 的角度来看，字符中的所有轮廓构成一条路径。新式解释器倾向于支持点数超过此限制的路径。（请注意，转换为 PostScript 后的 TrueType 字体将包含两倍的控制点）"
+
+msgid "The PostScript Language Reference Manual (Appendix B) says that an interpreter need not support paths with more than 1500 points. I think this count includes control points. From PostScript's point of view, all the contours in a character make up one path. Modern interpreters tend to support paths with more points than this limit. (Note a truetype font after conversion to PS will contain twice as many control points)"
 msgstr "PostScript 语言参考手册（附录 B）指出，解释器不需要支持超过 1500 个点的路径。我认为这个数字包括控制点。从 PostScript 的角度来看，字符中的所有轮廓构成一条路径。新式解释器倾向于支持点数超过此限制的路径。（请注意，转换为 PostScript 后的 TrueType 字体将包含两倍的控制点）"
 
 #, c-format
@@ -19959,6 +20523,12 @@ msgid ""
 "in a character."
 msgstr "Type 2 字符串参考（附录 B）指出，一个字符中最多可以有 96 个水平和垂直字干渲染调整。"
 
+msgid "The Type 2 Charstring Reference (Appendix B) says that subroutines may not be nested more than 10 deep. Each nesting level for references requires one subroutine level, and hints may require another level."
+msgstr "类型 2 字符字符串参考（附录 B）指出，子例程嵌套深度不得超过 10 层。引用的每一层嵌套都需要一层子例程嵌套，而渲染调整可能需要另一层嵌套。"
+
+msgid "The Type 2 Charstring Reference (Appendix B) says that there may be at most 96 horizontal and vertical stem hints in a character."
+msgstr "Type 2 字符串参考（附录 B）指出，一个字符中最多可以有 96 个水平和垂直字干渲染调整。"
+
 msgid ""
 "The UsePlugins preferences option is currently off.\n"
 "FontForge will not load plugin configuration or\n"
@@ -19991,6 +20561,14 @@ msgstr "TTF调试窗口的背景"
 
 msgid "The box around the up/down arrows of a numeric field (spinner)"
 msgstr "数字字段(微调器)的向上/向下箭头周围的框"
+
+#, c-format
+msgid "The character list in the cvParameters block in feature %c%c%c%c is ignored."
+msgstr "特征 %c%c%c%c 的 cvParameters 区块中的字符列表已被忽略。"
+
+#, c-format
+msgid "The character list in the feature parameter table of '%c%c%c%c' is ignored."
+msgstr "特征参数表中的字符列表“%c%c%c%c”将被忽略。"
 
 #, c-format
 msgid ""
@@ -20278,6 +20856,9 @@ msgstr ""
 "TrueType 中所有点和控制点的坐标都必须是整数（如果不是整数，则 FontForge 在输出时会对其进行四舍五入，这可能会造成混乱）。\n"
 "即使在 PostScript 字体中，使用整数值通常也是一个好主意。"
 
+msgid "The coordinates of all points and control points in truetype must be integers (if they are not integers then FontForge will round them when it outputs them, potentially causing havoc). Even in PostScript fonts it is generally a good idea to use integral values."
+msgstr "TrueType 字体中所有点和控制点的坐标必须是整数（如果不是整数，FontForge 会在输出时进行四舍五入，这可能会导致问题）。即使是 PostScript 字体，通常也建议使用整数值。"
+
 #, c-format
 msgid "The correction on line %d is too big.  It must be between -128 and 127"
 msgstr "行 %d 的修正太大。它必须介于 -128 和 127 之间"
@@ -20315,6 +20896,10 @@ msgstr "%2$.30s 和 %3$.30s 的私人词典中均不存在“%1$.20s”条目"
 
 msgid "The extra glue place above and below displayed limits"
 msgstr "展示的限制上下方的额外黏合位置"
+
+#, c-format
+msgid "The feature '%c%c%c%c' cannot contain Tooltip Text, Sample Text or Parameter Names."
+msgstr "特征“%c%c%c%c”不能包含工具提示文本、示例文本或参数名称。"
 
 #, c-format
 msgid ""
@@ -21199,6 +21784,18 @@ msgid "There is a splinefont level undo, but it does not contain any information
 msgstr "有样条字体级别撤消，但它不包含执行撤消的任何信息。这是一个应用程序错误，请报告您上次对查找表执行的操作，以便开发人员可以尝试重现该问题并修复。"
 
 #, c-format
+msgid "There is already a glyph with Unicode encoding 0x%1$04x named %2$.40s. The current name and encoding will be kept."
+msgstr "已存在一个名为 %2$.40s 的字形，其 Unicode 编码为 0x%1$04x。当前名称和编码将保持不变。"
+
+#, c-format
+msgid ""
+"There is already a glyph with name %.40s,\n"
+"do you want to swap names?"
+msgstr ""
+"已经存在一个名为 %.40s 的字形，\n"
+"您想交换名称吗？"
+
+#, c-format
 msgid ""
 "There is already a glyph with this Unicode encoding\n"
 "(named %1$.40s, at local encoding %2$d).\n"
@@ -21380,6 +21977,9 @@ msgid ""
 msgstr ""
 "这将检查字符是否几乎（但不完全）符合 stem3 渲染调整的要求。\n"
 "也就是说，无论是垂直还是水平，都必须恰好有三个渲染调整，并且它们必须具有相同的宽度，并且必须均匀分布。"
+
+msgid "This checks if the character almost, but not exactly, conforms to the requirements for a stem3 hint. That is, either vertically or horizontally, there must be exactly three hints, and they must have the same width and they must be evenly spaced."
+msgstr "这将检查字符是否几乎（但不完全）符合 stem3 渲染调整的要求。也就是说，无论是垂直还是水平，都必须恰好有三个渲染调整，并且它们必须具有相同的宽度，并且必须均匀分布。"
 
 msgid "This contextual rule applies no lookups."
 msgstr "此上下文规则不应用任何查找。"
@@ -22168,8 +22768,14 @@ msgstr "到它们自己的名称"
 msgid "To:"
 msgstr "到："
 
+msgid "Todhri"
+msgstr "托特里文"
+
 msgid "Todo"
 msgstr "Todo"
+
+msgid "Tolong Siki"
+msgstr "托隆西基"
 
 msgid "Tonga"
 msgstr "汤加语"
@@ -22275,6 +22881,9 @@ msgstr "工具"
 msgid "ToolsPalette.Font"
 msgstr "ToolsPalette.Font"
 
+msgid "Tooltip Text"
+msgstr "工具提示文本"
+
 msgid "Top Accent"
 msgstr "顶部重音符"
 
@@ -22311,8 +22920,11 @@ msgstr "左上"
 msgid "TopRight"
 msgstr "右上"
 
+msgid "Torki"
+msgstr "托尔基语"
+
 msgid "Toto"
-msgstr "投投文"
+msgstr "投投字母"
 
 msgid "Trace Color"
 msgstr "跟踪轨迹颜色"
@@ -22473,12 +23085,18 @@ msgstr ""
 "TrueType 字形可以包含引用或轮廓。\n"
 "不能同时包含两者。"
 
+msgid "TrueType glyphs can either contain references or contours. Not both."
+msgstr "TrueType 字形可以包含引用或轮廓。不能同时包含两者。"
+
 msgid ""
 "TrueType requires that all scaling and rotational\n"
 "entries in a transformation matrix be between -2 and 2"
 msgstr ""
 "TrueType 要求变换矩阵中的所有缩放和旋转\n"
 "项都介于 -2 和 2 之间"
+
+msgid "TrueType requires that all scaling and rotational entries in a transformation matrix be between -2 and 2"
+msgstr "TrueType 要求变换矩阵中所有缩放和旋转元素的值都必须介于 -2 和 2 之间"
 
 msgid "TrueTypeName|New"
 msgstr "新建"
@@ -22499,6 +23117,9 @@ msgstr "聪加语"
 
 msgid "Tswana"
 msgstr "茨瓦纳语"
+
+msgid "Tulu-Tigalari"
+msgstr "图陆-提加拉里文"
 
 msgid "Turkish"
 msgstr "土耳其语"
@@ -22550,7 +23171,7 @@ msgid "Type of distortable font:"
 msgstr "可变形字体类型:"
 
 msgid "Type1"
-msgstr "1型"
+msgstr "Adobe Type1"
 
 msgid ""
 "Type1 and 2 fonts only support translation of references.\n"
@@ -22560,11 +23181,14 @@ msgstr ""
 "Type1 和 2 字体仅支持引用转换。\n"
 "变换矩阵的前四个条目应为 [1 0 0 1]。"
 
+msgid "Type1 and 2 fonts only support translation of references. The first four entries of the transformation matrix should be [1 0 0 1]."
+msgstr "Type1 和 2 字体仅支持引用转换。变换矩阵的前四个条目应为 [1 0 0 1]。"
+
 msgid "Type11 (CID 2)"
 msgstr "Type11 (CID 2)"
 
 msgid "Type2"
-msgstr "2型"
+msgstr "Adobe Type2"
 
 msgid "Type2 fonts do not support the Type1 callothersubrs operator"
 msgstr "Type2 字体不支持 Type1 callothersubrs 运算符"
@@ -22573,7 +23197,7 @@ msgid "Type2 fonts do not support the Type1 setcurrentpoint operator"
 msgstr "Type2 字体不支持 Type1 setcurrentpoint 运算符"
 
 msgid "Type3"
-msgstr "3型"
+msgstr "Adobe Type3"
 
 msgid "Type42"
 msgstr "42型"
@@ -22876,7 +23500,7 @@ msgid "Unified Canadian Aboriginal Syllabics Extended-A"
 msgstr "统一加拿大土著音节扩展 A"
 
 msgid "Unified Font Object"
-msgstr "统一字体对象"
+msgstr "统一字体格式（UFO）"
 
 msgid "Unified Font Object (UFO3)"
 msgstr "统一字体对象 (UFO3)"
@@ -23071,6 +23695,10 @@ msgstr "未保存的文字"
 
 msgid "Unspecified Language"
 msgstr "未知语言"
+
+#, c-format
+msgid "Unsupported GDEF table version: %d.%d"
+msgstr "不支持的 GDEF 表版本: %d.%d"
 
 #, c-format
 msgid "Unsupported decode filter parameters : %s"
@@ -24656,8 +25284,8 @@ msgid ""
 "You must select at least one language.\n"
 "Use the \"Default\" language if nothing else fits."
 msgstr ""
-"您必须选择至少一种语言。\n"
-"若没有其他语言适合，则使用“默认”语言。"
+"您必须至少选择一种语言。\n"
+"如果没有其他合适的语言，请使用“默认”语言。"
 
 msgid "You must select at least one script if you provide a feature tag."
 msgstr "若有特征标签，则至少选一种文字"
@@ -24760,6 +25388,9 @@ msgstr "祖鲁语"
 #, c-format
 msgid "[%d] (%g,%g) %g x %g length %g"
 msgstr "[%d] (%g,%g) %g x %g 长度 %g"
+
+msgid "[Unknown]"
+msgstr "[未知]"
 
 msgid "_128 pixel outline"
 msgstr "_128 像素轮廓"
@@ -25003,6 +25634,9 @@ msgstr "控制点信息(_C)"
 
 msgid "_Control Points near horizontal/vertical"
 msgstr "控制点临近水平/垂直"
+
+msgid "_Control points near horizontal/vertical"
+msgstr "控制点临近水平/垂直(_C)"
 
 msgid "_Convert to CID"
 msgstr "转换到CID(_C)"
@@ -25730,6 +26364,9 @@ msgstr "显示ATT(_S)"
 msgid "_Show Exact *stem3"
 msgstr "显示确切的 *stem3"
 
+msgid "_Show exact *stem3"
+msgstr "显示确切的 *stem3(_S)"
+
 msgid "_Side Bearings"
 msgstr "侧边距(_S)"
 
@@ -26105,6 +26742,9 @@ msgstr "假"
 
 msgid "family name"
 msgstr "字族名称"
+
+msgid "featname|Sample Text"
+msgstr "示例文本"
 
 msgid "font descriptor table"
 msgstr "字体描述表"

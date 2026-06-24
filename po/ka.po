@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-01 15:10+0300\n"
-"PO-Revision-Date: 2025-08-01 12:08\n"
+"POT-Creation-Date: 2026-06-24 16:52+0300\n"
+"PO-Revision-Date: 2026-06-24 06:08\n"
 "Last-Translator: \n"
 "Language-Team: Georgian\n"
 "Language: ka_GE\n"
@@ -3280,12 +3280,6 @@ msgstr "ლაკი"
 msgid "Language"
 msgstr "ენა"
 
-msgid "Language List"
-msgstr "ენების სია"
-
-msgid "Language Missing"
-msgstr "ენა აკლია"
-
 msgid "Language Tag:"
 msgstr "ენის ჭდე:"
 
@@ -4690,7 +4684,6 @@ msgstr "მიმართვა:"
 msgid "Refresh File List"
 msgstr "ფაილების სიის განახლება"
 
-#. GT: Refs is an abbreviation for References. Space is tight here
 msgid "Refs"
 msgstr "მიმართვები"
 
@@ -5092,15 +5085,6 @@ msgstr "_ყველას მონიშვნა"
 msgid "Select a ligature to view"
 msgstr "გადაბმის შეთვალიერება"
 
-msgid ""
-"Select as many languages as needed\n"
-"Hold down the control key when clicking\n"
-"to make disjoint selections."
-msgstr ""
-"აირჩიეთ სასურველი ოდენობის ენები\n"
-"დააწექით Ctrl-ღილაკს დაწკაპებისას,\n"
-"ცალ-ცალკე მონიშვნისთვის."
-
 msgid "Select by Color"
 msgstr "ფერით შერჩევა"
 
@@ -5215,10 +5199,6 @@ msgstr ""
 "იმ უკიდურესი მნიშვნელობების მითითება,\n"
 "რომლითაც ამ დამწერლობის ასონიშანი ასცდება და\n"
 "ჩამოსცდება ძირითადი ხაზს. განსხვავდება ენების მიხედვით"
-
-#, c-format
-msgid "Several language tags, including '%s', are not in the list of known languages and will be omitted"
-msgstr "რამდენიმე ენის ჭდე, მათ შორის „%s“ არაა ცნობილი ენების სიაში და გამოტოვებული იქნება"
 
 msgid "Shadowing glyphs"
 msgstr "ასონიშნები დაჩრდილვით"
@@ -5735,10 +5715,6 @@ msgstr ""
 
 msgid "The human-readable fontname text (in the Names pane) must be entirely ASCII."
 msgstr "შრიფტის ადვილად წასაკითხი დასახელება (სახელთა არეში) უნდა იყოს სრულად ლათინური ASCII."
-
-#, c-format
-msgid "The language, '%s', is not in the list of known languages and will be omitted"
-msgstr "ენა „%s“ არაა ცნობილი ენების სიაში და გამოტოვებული იქნება"
 
 msgid "The layers do not match"
 msgstr "შრეები არ ემთხვევა"
@@ -6516,13 +6492,6 @@ msgstr "უნდა მიუთითოთ ცნობარის სახ
 
 msgid "You must select at least one language for each script."
 msgstr "ერთი ენა მაინც უნდა აირჩიოთ თითოეული დამწერლობისთვის."
-
-msgid ""
-"You must select at least one language.\n"
-"Use the \"Default\" language if nothing else fits."
-msgstr ""
-"უნდა აირჩიოთ ერთი ენა მაინც.\n"
-"გამოიყენეთ „ნაგულისხმევი“ თუ არცერთი არ ერგება."
 
 msgid "You must specify a pattern"
 msgstr "უნდა მიუთითოთ ნიმუში"

@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-01 15:10+0300\n"
-"PO-Revision-Date: 2025-08-01 12:08\n"
+"POT-Creation-Date: 2026-06-24 16:52+0300\n"
+"PO-Revision-Date: 2026-06-24 06:08\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Language: es_ES\n"
@@ -220,7 +220,7 @@ msgstr " acoplado"
 
 #, c-format
 msgid "!!!! Unknown caret format %d !!!!"
-msgstr "¡¡¡¡ Formato desconocido de circunflejo: %d !!!!"
+msgstr "¡¡¡¡Formato desconocido de circunflejo: %d!!!!\n"
 
 #, c-format
 msgid "!!!!! Bad Base Coord format (%d) for '%c%c%c%c' in '%c%c%c%c' script in 'BASE' table"
@@ -334,6 +334,10 @@ msgstr "mapa de bits de %d píxeles"
 #, c-format
 msgid "%d pixels"
 msgstr "%d píxeles"
+
+#, c-format
+msgid "%d x %d pixels"
+msgstr "%d x %d píxeles"
 
 #, c-format
 msgid "%d@%d pixel bitmap"
@@ -541,6 +545,9 @@ msgstr "Tabla de sustitución de glifos \"GSUB\""
 
 msgid "'JSTF' Justification Table"
 msgstr "Tabla de justificación \"JSTF\""
+
+msgid "'StyleMapFamilyName' entry has been ignored"
+msgstr "La entrada \"StyleMapFamilyName\" ha sido ignorada"
 
 msgid "'attrs' (if any):"
 msgstr "\"attrs\" (si hay alguno):"
@@ -1355,6 +1362,9 @@ msgstr "Añadir e_xtremos"
 msgid "Add Encoding Name..."
 msgstr "Añadir nombre de codificación..."
 
+msgid "Add Encoding Slots..."
+msgstr "Añadir ranuras de codificación..."
+
 msgid "Add Entry Anchor..."
 msgstr "Aladir ancla de entrada..."
 
@@ -1714,8 +1724,11 @@ msgstr ""
 "Te permite verificar que las astas horizontales en varios\n"
 "caracteres comienzan en la misma ubicación."
 
+msgid "Allows you to check that horizontal stems in several characters start at the same location."
+msgstr "Permite verificar que las astas horizontales en varios caracteres comiencen en la misma ubicación."
+
 msgid "Allows you to check that stems have consistent widths.."
-msgstr "Te permite verificar que las astas tienen anchos consistentes."
+msgstr "Permite verificar que las astas tengan anchos consistentes."
 
 msgid ""
 "Allows you to check that vertical stems in several\n"
@@ -1723,6 +1736,9 @@ msgid ""
 msgstr ""
 "Te permite verificar que las astas verticales en varios\n"
 "caracteres comienzan en la misma ubicación."
+
+msgid "Allows you to check that vertical stems in several characters start at the same location."
+msgstr "Permite verificar que las astas verticales en varios caracteres comiencen en la misma ubicación."
 
 msgid ""
 "Allows you to find control points which are almost,\n"
@@ -1734,6 +1750,9 @@ msgstr ""
 " pero no completamente, una horizontal o una vertical\n"
 "con sus puntos base (o de igual pendiente que las cursivas)."
 
+msgid "Allows you to find control points which are almost, but not quite horizontal or vertical from their base point (or at the italic angle)."
+msgstr "Permite encontrar los puntos de control que casi forman, pero no completamente, una horizontal o una vertical con sus puntos base (o con el ángulo de inclinación de las cursivas)."
+
 msgid ""
 "Allows you to find control points which when projected\n"
 "onto the line segment between the two end points lie\n"
@@ -1742,6 +1761,9 @@ msgstr ""
 "Te permite encontrar puntos de control que, al ser proyectados\n"
 "en el segmento de línea entre los dos puntos finales, se \n"
 "encuentran fuera de esos puntos finales"
+
+msgid "Allows you to find control points which when projected onto the line segment between the two end points lie outside of those end points"
+msgstr "Permite encontrar puntos de control que, al ser proyectados en el segmento de línea entre los dos puntos finales, se encuentran fuera de esos puntos finales"
 
 msgid ""
 "Allows you to find lines which are almost,\n"
@@ -1752,6 +1774,9 @@ msgstr ""
 "completamente horizontales o verticales\n"
 "(o inclinados al igual que las cursivas)."
 
+msgid "Allows you to find lines which are almost, but not quite horizontal or vertical (or at the italic angle)."
+msgstr "Permite encontrar líneas que son casi pero no completamente horizontales o verticales (o con el ángulo de inclinación de las cursivas)."
+
 msgid ""
 "Allows you to find points which are slightly\n"
 "off from the baseline, xheight, cap height,\n"
@@ -1761,6 +1786,9 @@ msgstr ""
 "fuera de la línea base, altura x, altura del \n"
 "tope, alturas del ascensor o \n"
 "descensor."
+
+msgid "Allows you to find points which are slightly off from the baseline, xheight, cap height, ascender, descender heights."
+msgstr "Permite encontrar puntos ligeramente fuera de la línea base, altura x, altura del tope, alturas del ascensor o descensor."
 
 msgid "Allows you to select optional behavior when generating the font"
 msgstr "Permite optimizar los parámetros utilizados para generar la fuente"
@@ -2281,6 +2309,9 @@ msgstr ""
 "no se espere al escalar y redondear\n"
 "el ancho de avance del contorno?"
 
+msgid "Are there any bitmap glyphs whose advance width is not is expected from scaling and rounding the outline's advance width?"
+msgstr "¿Hay algún glifo de mapa de bits cuyo ancho de avance no se espere al escalar y redondear el ancho de avance del contorno?"
+
 msgid "Are there any glyph's whose bounding boxes extend above this number?"
 msgstr "¿Hay algún glifo cuyos cuadros delimitadores se extiendan por encima de este número?"
 
@@ -2299,6 +2330,9 @@ msgid ""
 msgstr ""
 "¿Hay algún carácter de contorno que no tenga una versión de mapa de bits en una de las fuentes de mapa de bits?\n"
 "Contrariamente, ¿hay algún caracter de mapa de bits sin un caracter de contorno correspondiente?"
+
+msgid "Are there any outline characters which don't have a bitmap version in one of the bitmap fonts? Conversely are there any bitmap characters without a corresponding outline character?"
+msgstr "¿Hay algún carácter de contorno que no tenga una versión de mapa de bits en una de las fuentes de mapa de bits? Contrariamente, ¿hay algún caracter de mapa de bits sin un caracter de contorno correspondiente?"
 
 msgid "Are you sure you don't want to use the cidmap I found?"
 msgstr "¿Estás seguro de que no quieres usar el cidmap que he encontrado?"
@@ -3615,6 +3649,9 @@ msgstr "Bengalí"
 msgid "Bengali Bangladesh"
 msgstr "Bengalí de Bangladesh"
 
+msgid "Beria Erfe"
+msgstr "Beria Erfe"
+
 msgid "Beti"
 msgstr "Beti"
 
@@ -4127,6 +4164,12 @@ msgstr "CJK, ideógrafos unificados, extensión G"
 msgid "CJK Unified Ideographs Extension H"
 msgstr "CJK, ideógrafos unificados, extensión H"
 
+msgid "CJK Unified Ideographs Extension I"
+msgstr "CJK, ideógrafos unificados, extensión I"
+
+msgid "CJK Unified Ideographs Extension J"
+msgstr "CJK, ideógrafos unificados, extensión J"
+
 msgid ""
 "CLEAR\n"
 "Pops all elements on stack"
@@ -4378,6 +4421,9 @@ msgstr "Catalán"
 
 msgid "Caucasian Albanian"
 msgstr "Albanés caucásico"
+
+msgid "Cayuga"
+msgstr "Cayuga"
 
 msgid "Cebuano"
 msgstr "Cebuano"
@@ -4826,6 +4872,9 @@ msgstr "Revisar autointersección"
 msgid "Check Unicode/Name mismatch"
 msgstr "Verificar discrepancia entre Unicode y nombre"
 
+msgid "Check Unicode/name mismatch"
+msgstr "Verificar discrepancia entre Unicode y nombre"
+
 msgid "Check VAdvance:\n"
 msgstr "Verificar avance V:\n"
 
@@ -4838,11 +4887,17 @@ msgstr "Verificar nodos extremos faltantes(_M)"
 msgid "Check _outermost paths clockwise"
 msgstr "Trayect_os externos en sentido horario"
 
+msgid "Check advance:"
+msgstr "Verificar avance:"
+
 msgid "Check for CIDs defined _twice"
 msgstr "Verificar CIDs definidos dos veces(_T)"
 
 msgid "Check for _irrelevant control points"
 msgstr "Ver_ificar puntos de control irrelevantes"
+
+msgid "Check for _irrelevant control points with factor (%)"
+msgstr "Ver_ificar puntos de control irrelevantes con factor (%)"
 
 msgid "Check for _undefined CIDs"
 msgstr "Verificar CIDs sin definir(_B)"
@@ -4860,6 +4915,9 @@ msgstr ""
 "Verificar caracteres cuyos nombres se mapean a un punto de código Unicode\n"
 "que no se mapea al punto de código asignado por el carácter."
 
+msgid "Check for characters whose name maps to a unicode code point which does not map the character's assigned code point."
+msgstr "Verificar caracteres cuyos nombres se mapean a un punto de código Unicode que no se mapea al punto de código asignado por el carácter."
+
 msgid "Check for characters whose vertical advance width is not the displayed value."
 msgstr "Verificar caracteres cuyo ancho de avance vertical no es el valor mostrado."
 
@@ -4875,6 +4933,9 @@ msgstr "Verificar e_scrituras faltantes en características"
 msgid "Check for missing glyph names"
 msgstr "Verificar nombres de glifos faltantes"
 
+msgid "Check for multiple characters with the same Unicode code point"
+msgstr "Verificar múltiples caracteres con el mismo punto de código Unicode"
+
 msgid "Check for multiple characters with the same name"
 msgstr "Verificar múltiples caracteres con el mismo nombre"
 
@@ -4887,6 +4948,9 @@ msgstr "Verificar nombres múltiples"
 msgid "Check multiple Unicode"
 msgstr "Verificar Unicode múltiple"
 
+msgid "Check multiple names"
+msgstr "Verificar nombres múltiples"
+
 msgid "Check substitutions for empty chars"
 msgstr "Verificar sustituciones para caracteres vacíos"
 
@@ -4896,6 +4960,9 @@ msgid ""
 msgstr ""
 "Verifica los contornos de glifos para errores estándar antes\n"
 "de guardar. Esto puede ser lento."
+
+msgid "Check vertical advance:"
+msgstr "Verificar avance vertical:"
 
 msgid "Check whether a CID is defined in more than one sub-font"
 msgstr "Verificar si ha sido definido un CID en más de una subfuente"
@@ -4923,6 +4990,9 @@ msgstr "Chichewa"
 
 msgid "Chiga"
 msgstr "Kiga"
+
+msgid "Chimila"
+msgstr "Chimila"
 
 msgid "Chin"
 msgstr "Chin"
@@ -5344,6 +5414,9 @@ msgstr "Separador de número común"
 msgid "Comorian"
 msgstr "Comorano"
 
+msgid "Comox"
+msgstr "Kʼómoks"
+
 msgid "Compact"
 msgstr "Compacto"
 
@@ -5530,12 +5603,21 @@ msgstr "Controlar contadores verticales (usar para CJK)"
 msgid "Control Vertical Mapping (use for Latin, Greek, Cyrillic)"
 msgstr "Controlar el mapeo vertical (usar para latino, griego, cirílico)"
 
+msgid "Control points _beyond spline"
+msgstr "Puntos de control fuera de la curva(_B)"
+
 msgid ""
 "Control points are irrelevant if they are too close to the main\n"
 "point to make a significant difference in the shape of the curve."
 msgstr ""
 "Un punto de control se considera irrelevante si está demasiado cerca a su punto\n"
 "principal como para mostrar una diferencia significativa el trazado de la curva."
+
+msgid "Control points are irrelevant if they are too close to the main point to make a significant difference in the shape of the curve. The minimum relevant distance is computed as a factor of distance between the main points."
+msgstr "Los puntos de control son irrelevantes si están demasiado cerca del punto principal como para marcar una diferencia significativa en la forma de la curva. La distancia mínima relevante se calcula como un factor de distancia entre los puntos principales."
+
+msgid "Control points near horizontal/vertical/italic"
+msgstr "Puntos de control casi horizontales/verticales/inclinados"
 
 msgid "ControlPoint|Default"
 msgstr "Predeterminado"
@@ -5628,6 +5710,9 @@ msgstr "El texto de copyright (en el panel Nombres) debe ser totalmente ASCII. P
 msgid "Cor:"
 msgstr "Corrección:"
 
+msgid "Core python package 'importlib.metadata' not found: Cannot discover plugins"
+msgstr "El paquete nucleo de python \"importlib.metadata\" no fue encontrado: No se pueden escanear los plugins"
+
 msgid "Core python package 'pkg_resources' not found: Cannot discover plugins"
 msgstr "El paquete nucleo de python 'pkg_resources' no fue encontrado: No se pueden escanear los plugins"
 
@@ -5666,6 +5751,10 @@ msgstr ""
 
 msgid "Corrections must be between -128 and 127 (and should be smaller)"
 msgstr "Las correcciones deben estar entre -128 y 127 (y deben ser más pequeñas)"
+
+#, c-format
+msgid "Corrupted SFD file: Invalid kern class name length %d. Aborting load."
+msgstr "Archivo SFD corrupto: longitud %d inválida para el nombre de la clase de interletraje. Abortando carga."
 
 msgid "Corsican"
 msgstr "Corso"
@@ -5735,7 +5824,7 @@ msgstr "No se pudo abrir la imagen"
 
 #, c-format
 msgid "Could not open include file (%s) on line %d of %s"
-msgstr "No se pudo abrir el archivo de inclusión (%s) en la línea %d de %s"
+msgstr "No se pudo abrir el archivo include (%s) en la línea %d de %s"
 
 #, c-format
 msgid "Could not open output file: %s"
@@ -6035,6 +6124,9 @@ msgstr "Cvt"
 msgid "Cvt %d was changed from %d (%.2f) to %d (%.2f) by the previous instruction"
 msgstr "El cvt %d fue cambiado de %d (%.2f) a %d (%.2f) por la instrucción anterior"
 
+msgid "Cypriot Arabic"
+msgstr "Árabe chipriota"
+
 msgid "Cypriot Syllabary"
 msgstr "Silabario chipriota"
 
@@ -6204,7 +6296,7 @@ msgid "De_lete"
 msgstr "E_liminar"
 
 msgid "De_sign Size:"
-msgstr "Tam. diseño"
+msgstr "Tamaño del di_seño:"
 
 msgid "Debug Raster Cha_nges"
 msgstr "Depurar los cambios de rasterizació_n"
@@ -6893,8 +6985,15 @@ msgstr "Duplicar datos"
 msgid "Duplicate definition of subroutine %d"
 msgstr "Definición duplicada de la subrutina %d"
 
+msgid "Duplicate encodings"
+msgstr "Codificaciones duplicadas"
+
 msgid "Duplicate lib data."
 msgstr "Duplicar datos de la librería."
+
+#, c-format
+msgid "Duplicate local encoding 0x%04x encountered in glyph %s. This glyph will be unencoded."
+msgstr "Se ha encontrado una codificación local duplicada 0x%04x en el glifo %s. Este glifo se descodificará."
 
 msgid "Duplicate name"
 msgstr "Nombre duplicado"
@@ -6983,6 +7082,9 @@ msgstr ""
 
 msgid "Early Dynastic Cuneiform"
 msgstr "Cuneiforme de la dinastía temprana"
+
+msgid "Eastern Abenaki"
+msgstr "Abenaki oriental"
 
 msgid "Eastern Cham"
 msgstr "Cham oriental"
@@ -7086,6 +7188,9 @@ msgstr "Controles de formato de hieroglíficos egipcios"
 msgid "Egyptian Hieroglyphs"
 msgstr "Hieroglíficos egipcios"
 
+msgid "Egyptian Hieroglyphs Extended-A"
+msgstr "Hieroglifos egipcios extendidos - A"
+
 msgid ""
 "Either a glyph should have no overlapping hints,\n"
 "or a glyph with hint masks should have no overlapping\n"
@@ -7094,6 +7199,9 @@ msgstr ""
 "O bien un glifo no debería tener pistas superpuestas,\n"
 "o un glifo con máscaras de pistas no debería tener sugerencias\n"
 "superpuestas dentro de una máscara de pistas."
+
+msgid "Either a glyph should have no overlapping hints, or a glyph with hint masks should have no overlapping hints within a hint mask."
+msgstr "O bien un glifo no debería tener pistas superpuestas, o un glifo con máscaras de pistas no debería tener sugerencias superpuestas dentro de una máscara de pistas."
 
 msgid ""
 "Either:\n"
@@ -7133,6 +7241,18 @@ msgstr "Elimaico"
 
 msgid "Em Units"
 msgstr "Unid. eme"
+
+msgid "Emberá-Baudó"
+msgstr "Emberá-Baudó"
+
+msgid "Emberá-Catío"
+msgstr "Emberá-Catío"
+
+msgid "Emberá-Chamí"
+msgstr "Emberá-Chamí"
+
+msgid "Emberá-Tadó"
+msgstr "Emberá-Tadó"
 
 msgid "Embolden as appropriate for Chinese, Japanese, Korean scripts"
 msgstr "Engrosa como sea apropiado para los sistemas de escritura chino, japonés y coreano"
@@ -7247,7 +7367,7 @@ msgstr "Fin del archivo en la tabla feat"
 
 #, c-format
 msgid "End of file in include on line %d of %s"
-msgstr "Fin del archivo incluido en la línea %d de %s"
+msgstr "Fin del archivo include en la línea %d de %s"
 
 #, c-format
 msgid "End of file when reading features in %s table"
@@ -7357,6 +7477,9 @@ msgstr "Entrada"
 msgid "Entry (%d,%d)"
 msgstr "Entrada (%d,%d)"
 
+msgid "Epena"
+msgstr "Epena"
+
 msgid "Error Bound"
 msgstr "Límite de error"
 
@@ -7376,6 +7499,10 @@ msgstr "Error al analizar el componente de color."
 #, c-format
 msgid "Error reading plugin configuration file '%s': %s"
 msgstr "Error al leer el archivo de configuración del plugin: '%s': %s"
+
+#, c-format
+msgid "Error saving plugin configuration file '%s'"
+msgstr "Error al guardar el archivo de configuración del plugin: ''%s\""
 
 #, c-format
 msgid "Error saving plugin configuration file '%s': %s"
@@ -8008,6 +8135,9 @@ msgstr "Error al leer la pauta."
 msgid "Failed to rename the new hotkeys file over your old one!\n"
 msgstr "¡Error al renombrar el nuevo archivo de teclas acceso rápido sobre el antiguo!\n"
 
+msgid "Failed to retrieve plugin entry points"
+msgstr "Error al recuperar los puntos de entrada del plugin"
+
 #, c-format
 msgid "Failed to write %s"
 msgstr "Error al escribir %s"
@@ -8042,6 +8172,9 @@ msgstr "Fe'fe'"
 
 msgid "Feature"
 msgstr "Característica"
+
+msgid "Feature Name"
+msgstr "Nombre de la característica"
 
 msgid "Feature Tag:"
 msgstr "Etiqueta de característica:"
@@ -8079,6 +8212,9 @@ msgstr "Pluma de fieltro o punta de pincel"
 
 msgid "Fi_ll"
 msgstr "Re_llenar"
+
+msgid "Field"
+msgstr "Campo"
 
 msgid "Figure out flex hints after every change"
 msgstr "Volver a calcular los ajustes flex después de cada modificación"
@@ -8400,6 +8536,9 @@ msgstr "Fuente:"
 msgid "FontForge"
 msgstr "FontForge"
 
+msgid "FontForge Python hooks not found"
+msgstr "No se han encontrado los hooks de Python para FontForge"
+
 msgid ""
 "FontForge can generate two styles of ttc file.\n"
 "In the first each font is a separate entity\n"
@@ -8496,6 +8635,9 @@ msgstr ""
 "verificar que estén en esa dirección. Antes de realizar\n"
 "esta prueba, asegúrate de que no haya intersecciones en\n"
 "los trazados."
+
+msgid "FontForge internally uses paths drawn in a clockwise direction. This lets you check that they are. Before doing this test insure that no paths self-intersect."
+msgstr "FontForge internamente usa trazados dibujados en una dirección en sentido horario. Esto te permite verificar que estén en esa dirección. Antes de realizar esta prueba, asegúrate de que no haya intersecciones en los trazados."
 
 msgid "FontForge is a font editor for outline and bitmap fonts that lets you create, edit, or convert, a range of fonts, including PostScript, TrueType, OpenType, cid-keyed, multi-master, cff, SVG and BitMap (bdf, FON, NFNT) fonts."
 msgstr "FontForge es un editor tipográfico que te permite crear, editar o convertir una gama de fuentes, incluyendo fuentes en formato PostScript, TrueType, OpenType, cid-keyed, multi-master, CFF, SVG, BDF, FON y NFNT."
@@ -8816,6 +8958,10 @@ msgstr "Longitud completa"
 msgid "Fullname"
 msgstr "Nombre completo"
 
+#, c-format
+msgid "Function %s() called with a message string containing unescaped format character(s): \"%s\""
+msgstr "Función %s() llamada con una cadena de mensaje que contiene caracteres de formato sin escapar: \"%s\""
+
 msgid ""
 "Function DEFinition\n"
 "Pops a value (n) and starts the nth\n"
@@ -8918,6 +9064,9 @@ msgstr "Galla"
 msgid "Ganda"
 msgstr "Ganda"
 
+msgid "Garay"
+msgstr "Garay"
+
 msgid "Garhwali"
 msgstr "Garhwali"
 
@@ -8951,6 +9100,9 @@ msgstr "_Versión"
 #. GT: This is a pun on the old latin drinking song "Gaudeamus igature!"
 msgid "Gaudeamus Ligature!"
 msgstr "¡Alabemos la ligadura!"
+
+msgid "Geba Karen"
+msgstr "Bwe oriental"
 
 msgid "General"
 msgstr "General"
@@ -9088,6 +9240,9 @@ msgid ""
 msgstr ""
 "Ghostview (y quizás otros intérpretes) tienen problemas cuando\n"
 "existe un ajuste que no se aplica a ningún punto."
+
+msgid "Ghostview (perhaps other interpreters) has a problem when a hint exists without any points that lie on it."
+msgstr "Ghostview (y quizás otros intérpretes) tienen problemas cuando existe una pista que no se aplica a ningún punto."
 
 msgid "Gilaki"
 msgstr "Guilakí"
@@ -9229,9 +9384,21 @@ msgstr "_Información del glifo..."
 msgid "Glyph _Metadata"
 msgstr "Metadatos del carácter(_N)"
 
+msgid "Glyph bounding box above"
+msgstr "Cuadro delimitador superior del glifo"
+
+msgid "Glyph bounding box below"
+msgstr "Cuadro delimitador inferior del glifo"
+
 #, c-format
 msgid "Glyph bounding box data exceeds font bounding box data for GID %d"
 msgstr "Los datos del cuadro delimitador exceden los datos del cuadro delimitador de la fuente para el GID %d"
+
+msgid "Glyph bounding box left of"
+msgstr "Cuadro delimitador izquierdo del glifo"
+
+msgid "Glyph bounding box right of"
+msgstr "Cuadro delimitador derecho del glifo"
 
 msgid "Glyph composed of:"
 msgstr "Carácter compuesto de:"
@@ -9569,6 +9736,9 @@ msgstr "Ajuste a la cuadrícula con suavizado simétrico"
 msgid "Grid Fitting"
 msgstr "Ajuste a la cuadrícula"
 
+msgid "Gros Ventre"
+msgstr "Atsina"
+
 msgid "Group"
 msgid_plural "Groups"
 msgstr[0] "Grupo"
@@ -9637,6 +9807,9 @@ msgstr "Gurmují"
 msgid "Gurmukhi2"
 msgstr "Gurmují 2"
 
+msgid "Gurung Khema"
+msgstr "Gurung Khema"
+
 msgid "Gusii"
 msgstr "Gusii"
 
@@ -9700,6 +9873,9 @@ msgstr "Anchos medios"
 msgid "Halfwidth and Fullwidth Forms"
 msgstr "Formas de medio ancho y de ancho completo"
 
+msgid "Halkomelem"
+msgstr "Halkomelem"
+
 msgid "Hammer-Banna"
 msgstr "Hammer-Banna"
 
@@ -9756,6 +9932,9 @@ msgstr "Hatrán"
 
 msgid "Hausa"
 msgstr "Hausa"
+
+msgid "Havasupai-Walapai-Yavapai"
+msgstr "Havasupai-Walapai-Yavapai"
 
 msgid "Have the measure tool show horizontal and vertical distances on the canvas."
 msgstr "Hacer que la herramienta de medición muestre distancias horizontales y verticales en el lienzo."
@@ -9851,6 +10030,9 @@ msgid "Hint _Substitution Pts"
 msgstr "Punto_s de sustitución de pistas"
 
 msgid "Hint _Width Near¹"
+msgstr "Ancho de las pistas cerca de¹(_W)"
+
+msgid "Hint _width near¹"
 msgstr "Ancho de las pistas cerca de¹(_W)"
 
 #, c-format
@@ -10059,11 +10241,17 @@ msgstr[1] "Horizontal: %d líneas base"
 msgid "Horseshoe E and A"
 msgstr "A y E en forma de herradura"
 
+msgid "How many CID slots do you wish to add?"
+msgstr "¿Cuántas ranuras CID deseas añadir?"
+
 msgid "How many entries should there be in the cvt table?"
 msgstr "¿Cuántas entradas debería haber en la tabla cvt?"
 
 msgid "How many most-recent Undos should be kept?"
 msgstr "¿Cuándos deshaceres recientes deberían ser conservados?"
+
+msgid "How many unencoded glyph slots do you wish to add?"
+msgstr "¿Cuántas ranuras de glifos sin codificar desea añadir?"
 
 msgid "How to align these points?"
 msgstr "¿Cómo alinear estos puntos?"
@@ -10245,6 +10433,9 @@ msgstr ""
 "use coincidencia de puntos y dependa del conteo de\n"
 "puntos de ese glifo será incorrecta."
 
+msgid "If a glyph has been edited so that it has a different number of points now, then any references which use point matching and depended on that glyph's point count will be incorrect."
+msgstr "Si un glifo ha sido editado para tener un número de puntos diferente, entonces cualquier referencia que use coincidencia de puntos y dependa del conteo de puntos de ese glifo será incorrecta."
+
 msgid ""
 "If a glyph in the second font is missing from the first, then\n"
 "add it to the first with the outlines of the second font in\n"
@@ -10366,6 +10557,9 @@ msgstr ""
 "distancia de unidades em demasiado corta, causarán problemas\n"
 "para algunos de los comandos de FontForge. Sin embargo, esto\n"
 "no debería importarle a PostScript."
+
+msgid "If two adjacent points on the same path are less than a few emunits apart they will cause problems for some of FontForge's commands. PostScript shouldn't care though."
+msgstr "Si dos puntos adyacentes de un mismo trazado tienen una distancia de unidades em demasiado corta, causarán problemas para algunos de los comandos de FontForge. Sin embargo, esto no debería importarle a PostScript."
 
 msgid ""
 "If two glyphs differ, then add the outlines of the second glyph\n"
@@ -10501,12 +10695,18 @@ msgstr "Información de la imagen"
 msgid "Image Path"
 msgstr "Trazado de la imágen"
 
+msgid "Image Size:"
+msgstr "Tamaño de imagen:"
+
 #, c-format
 msgid "Image Size:  %d x %d  pixels"
 msgstr "Tamaño de imagen: %d x %d píxeles"
 
 msgid "Image Template"
 msgstr "Plantilla imagen"
+
+msgid "Image at:"
+msgstr "Imagen en:"
 
 #, c-format
 msgid "Image at:      (%.0f,%.0f)"
@@ -10647,6 +10847,9 @@ msgstr ""
 "al menos una característica esté activa para \n"
 "la escritura del glifo."
 
+msgid "In every lookup that uses a glyph, check that at least one feature is active for the glyph's script."
+msgstr "En cada búsqueda que usa un glifo, verificar que al menos una característica esté activa para la escritura del glifo."
+
 #, c-format
 msgid "In font %1$d the advance width of glyph %2$.30s does not scale the base advance width properly, it shall be forced to the proper value"
 msgstr "En la fuente %1$d el ancho de avance del glifo %2$.30s no escala el ancho de avance base correctamente. Se deberá forzar al valor apropiado"
@@ -10741,7 +10944,7 @@ msgstr "Incluye espacios en blanco debajo del mosaico"
 
 #, c-format
 msgid "Include filename too long on line %d of %s"
-msgstr "Nombre de archivo demasiado largo en la línea %d de %s"
+msgstr "Nombre de archivo include demasiado largo en la línea %d de %s"
 
 #, c-format
 msgid "Includes nested too deeply on line %d of %s"
@@ -11038,7 +11241,7 @@ msgid "Interpolating between fonts with different spline orders (i.e. between po
 msgstr "Interpolación entre fuentes con diferentes órdenes de curvas (por ejemplo, entre PostScript y TrueType)"
 
 msgid "Interpretation:"
-msgstr "Interpretación"
+msgstr "Interpretación:"
 
 #. GT: See the long comment at "Property|New"
 #. GT: The msgstr should contain a translation of "None", ignore "Interpretation|"
@@ -11055,6 +11258,9 @@ msgstr "Interpretando glifos"
 
 msgid "Intersecting Paths"
 msgstr "Trazados intersectados"
+
+msgid "Intersecting paths"
+msgstr "Trazados intersecados"
 
 msgid "Intra Class Distance"
 msgstr "Distancia de intraclase "
@@ -11089,6 +11295,10 @@ msgid "Invalid character outside of string in sfnts array"
 msgstr "Carácter no válido fuera de cadena en el array sfnts"
 
 #, c-format
+msgid "Invalid clut length %d in sfd file, must be between 0 and 256"
+msgstr "Longitud de CLUT %d inválida en el archivo SFD. Debe estar entre 0 y 256"
+
+#, c-format
 msgid "Invalid comment string (negative length?) in 'PfEd' table for glyph %s."
 msgstr "Cadena de comentario no válida (¿lontigud negativa?) en la tabla \"PfEd\" para el glifo %s."
 
@@ -11099,6 +11309,9 @@ msgstr "Longitud de tabla comprimida inválida para \"%c%c%c%c\"."
 #, c-format
 msgid "Invalid cursive position on line %d of %s"
 msgstr "Posición cursiva no válida en la línea %d de %s"
+
+msgid "Invalid field"
+msgstr "Campo inválido"
 
 #, c-format
 msgid "Invalid font count in TTC %s."
@@ -11332,6 +11545,9 @@ msgstr ""
 "Salto relativo (JMPR)\n"
 "Desapila el desplazamiento (en bytes) para mover el puntero de instrucciones"
 
+msgid "Judeo-Tat"
+msgstr "Juhuri"
+
 msgid "Jula"
 msgstr "Yulá"
 
@@ -11386,6 +11602,9 @@ msgstr "Cabilio"
 
 msgid "Kachchi"
 msgstr "Kacchi"
+
+msgid "Kadiwéu"
+msgstr "Kadiweu"
 
 msgid "Kaithi"
 msgstr "Kaithi"
@@ -11595,6 +11814,9 @@ msgstr "Jakasio"
 msgid "Khamti Shan"
 msgstr "Shan de Hkamti"
 
+msgid "Khamyang"
+msgstr "Khamyang"
+
 msgid "Khanty-Kazim"
 msgstr "Janti-Kazym"
 
@@ -11612,6 +11834,9 @@ msgstr "Khasi"
 
 msgid "Khengkha"
 msgstr "Khengkha"
+
+msgid "Khinalug"
+msgstr "Khinalug"
 
 msgid "Khitan Small Script"
 msgstr "Escritura kitán pequeña"
@@ -11654,6 +11879,9 @@ msgstr "Kiñaruanda"
 
 msgid "Kinyarwanda/Ruanda"
 msgstr "Kinyarwanda/Ruanda"
+
+msgid "Kirat Rai"
+msgstr "Kirat Rai"
 
 msgid "Kirghiz"
 msgstr "Kirguís"
@@ -11730,6 +11958,9 @@ msgstr "Crimchaco"
 msgid "Kuanyama"
 msgstr "Kuanyama"
 
+msgid "Kube"
+msgstr "Kube"
+
 msgid "Kui"
 msgstr "Kui"
 
@@ -11753,6 +11984,9 @@ msgstr "Kuy"
 
 msgid "Kwak'wala"
 msgstr "Kwak'wala"
+
+msgid "Kâte"
+msgstr "Kâte"
 
 msgid "K’iche"
 msgstr "Quiché"
@@ -12232,8 +12466,8 @@ msgid ""
 "Limit the font so that only the glyphs referenced in the first 256 encodings\n"
 "will be included in the file"
 msgstr ""
-"Reducir la fuente de modo que se incluyan sólo los primeros 256\n"
-"caracteres en el archivo"
+"Limita la fuente para que solo los glifos referenciados en las primeras 256 codificaciones\n"
+"se incluyan en el archivo"
 
 msgid "Limits"
 msgstr "Límites"
@@ -12318,6 +12552,9 @@ msgstr "Literales"
 
 msgid "Lithuanian"
 msgstr "Lituano"
+
+msgid "Liv"
+msgstr "Livón"
 
 msgid "Load Bitmap Fonts"
 msgstr "Cargar fuentes de mapa de bits"
@@ -12604,6 +12841,9 @@ msgstr "Luo"
 
 msgid "Luri"
 msgstr "Luri"
+
+msgid "Lushootseed"
+msgstr "Lushootseed"
 
 msgid "Luxembourgish"
 msgstr "Luxemburgués"
@@ -12939,6 +13179,9 @@ msgstr "Maninká"
 
 msgid "Manipuri"
 msgstr "Manipurí"
+
+msgid "Mano"
+msgstr "Mah"
 
 msgid "Mansi"
 msgstr "Mansi"
@@ -13435,6 +13678,9 @@ msgstr "MetaFont finalizó con un error"
 msgid "Metadata (xml):"
 msgstr "Metadatos (xml):"
 
+msgid "Method 'entry_points()' not found in module 'importlib.metadata'"
+msgstr "El método \"entry_points()\" no fue encontrado en el módulo \"importlib.metadata\""
+
 msgid "Metrics"
 msgstr "Métricas"
 
@@ -13529,6 +13775,13 @@ msgid ""
 msgstr ""
 "Distancia mínima entre la línea base de un límite\n"
 "superior y la parte inferior del operador base."
+
+msgid ""
+"Minimum distance between the baseline of an upper\n"
+"limit and the top of the base operator."
+msgstr ""
+"Distancia mínima entre la línea base de un límite\n"
+"superior y la parte superior del operador base."
 
 msgid ""
 "Minimum distance between the baseline of the\n"
@@ -13676,6 +13929,9 @@ msgstr "Símbolos matemáticos misceláneos-B"
 msgid "Miscellaneous Symbols"
 msgstr "Símbolos misceláneos"
 
+msgid "Miscellaneous Symbols Supplement"
+msgstr "Símbolos misceláneos, suplemento"
+
 msgid "Miscellaneous Symbols and Arrows"
 msgstr "Símbolos y flechas misceláneos"
 
@@ -13740,7 +13996,7 @@ msgstr "Falta el archivo cidmap"
 
 #, c-format
 msgid "Missing close parenthesis in include on line %d of %s"
-msgstr "Falta un paréntesis de cierre en la línea %d de %s"
+msgstr "Falta un paréntesis de cierre en include en la línea %d de %s"
 
 msgid "Missing color component."
 msgstr "Falta el componente de color."
@@ -13906,7 +14162,7 @@ msgstr "Más imágenes que glifos seleccionados"
 
 #. GT: More Parameters
 msgid "More Params"
-msgstr "Más Param."
+msgstr "Más parámetros"
 
 msgid "More configuration parameters for the \"abstract\" gadget."
 msgstr "Más parámetros de configuración para el gadget \"abstract\"."
@@ -13934,6 +14190,9 @@ msgstr ""
 "La mayoría de los formatos de fuente no pueden especificar puntos\n"
 "adyacentes (o puntos de control) que están separados más de\n"
 "32767 unidades em (cuadratines), ya sea en la dirección x o y"
+
+msgid "Most font formats cannot specify adjacent points (or control points) which are more than 32767 em-units apart in either the x or y direction"
+msgstr "La mayoría de los formatos de fuente no pueden especificar puntos adyacentes (o puntos de control) que están separados más de 32767 unidades em (cuadratines), ya sea en la dirección x o y"
 
 msgid ""
 "Most lookups will be attached to a feature\n"
@@ -14158,6 +14417,9 @@ msgstr "Múltiples nombres para el idioma"
 msgid "Multiple names when parsing %s for unicode %x"
 msgstr "Múltiples nombres al analizar %s para unicode %x"
 
+msgid "Multiple references with use-my-metrics"
+msgstr "Múltiples referencias con Usar-mis-métricas"
+
 msgid "Multiple refs with use-my-metrics"
 msgstr "Múltiples referencias con Usar-mis-métricas"
 
@@ -14196,6 +14458,9 @@ msgstr "Birmania extendido-A"
 
 msgid "Myanmar Extended-B"
 msgstr "Birmania extendido-B"
+
+msgid "Myanmar Extended-C"
+msgstr "Birmania extendido-C"
 
 msgid ""
 "N PUSH Bytes\n"
@@ -14822,7 +15087,7 @@ msgstr "No se encontraron diferencias"
 
 #, c-format
 msgid "No filename specified in include on line %d of %s"
-msgstr "No se ha especificado nombre de archivo en la línea %d de %s"
+msgstr "No se ha especificado nombre de archivo en include en la línea %d de %s"
 
 #, c-format
 msgid "No flags specified in lookupflags on line %d of %s"
@@ -14998,6 +15263,9 @@ msgstr "Glifos no Unicode"
 msgid "Non-_Integral coordinates"
 msgstr "Coordenadas no integrales"
 
+msgid "Non-_integral coordinates"
+msgstr "Coordenadas no integrales"
+
 msgid "Non-existant glyph"
 msgstr "Glifo no existente"
 
@@ -15138,6 +15406,9 @@ msgstr ""
 
 msgid "North Slavey"
 msgstr "Slavé del norte"
+
+msgid "Northern Emberá"
+msgstr "Emberá del norte"
 
 msgid "Northern Sami"
 msgstr "Sami del norte"
@@ -15289,6 +15560,9 @@ msgstr "Numerador 2:"
 msgid "Num3:"
 msgstr "Numerador 3:"
 
+msgid "Numanggang"
+msgstr "Numanggang"
+
 msgid "Number Forms"
 msgstr "Formas numéricas"
 
@@ -15345,6 +15619,9 @@ msgstr "Inuktitut de Nunavik"
 
 msgid "Nushu"
 msgstr "Nü shu"
+
+msgid "Nuu-chah-nulth"
+msgstr "Nuu-chah-nulth"
 
 msgid "Nyamwezi"
 msgstr "Nyamwezi"
@@ -15438,6 +15715,9 @@ msgid "O_n"
 msgstr "Activado(_N)"
 
 msgid "O_pen Paths"
+msgstr "Trazados abiertos(_P)"
+
+msgid "O_pen paths"
 msgstr "Trazados abiertos(_P)"
 
 msgid "O_verlap"
@@ -15539,6 +15819,9 @@ msgstr ""
 "de varios segmentos, y uno de ellos tiene el\n"
 "ancho incorrecto."
 
+msgid "Often if a point is slightly off from a hint it is because a stem is made up of several segments, and one of them has the wrong width."
+msgstr "A menudo, si un punto se desvía ligeramente de una pista, es porque un asta está hecha de varios segmentos, y uno de ellos tiene el ancho incorrecto."
+
 msgid "Ogham"
 msgstr "Ogam"
 
@@ -15550,6 +15833,9 @@ msgstr "Ojibwa"
 
 msgid "Ol Chiki"
 msgstr "Ol Chiki"
+
+msgid "Ol Onal"
+msgstr "Ol Onal"
 
 msgid "Old Hungarian"
 msgstr "Húngaro antiguo"
@@ -15564,7 +15850,7 @@ msgid "Old Italic (Etruscan, Oscan, etc.)"
 msgstr "Italiano antiguo (Etrusco, Oscano, etc.)"
 
 msgid "Old North Arabian"
-msgstr "Árabe antiguo del Norte"
+msgstr "Árabe antiguo del norte"
 
 msgid "Old Outline Color"
 msgstr "Color del contorno antiguo"
@@ -15582,7 +15868,7 @@ msgid "Old Sogdian"
 msgstr "Sogdiano antiguo"
 
 msgid "Old South Arabian"
-msgstr "Árabe antiguo del Sur"
+msgstr "Árabe antiguo del sur"
 
 msgid "Old Style"
 msgstr "Estilo antiguo"
@@ -15652,6 +15938,9 @@ msgstr "Una de las fuentes %1$d,%2$d no tiene el glifo %3$d"
 
 msgid "One of the multiple master instances contains quadratic splines. It must be converted to cubic splines before it can be used in a multiple master"
 msgstr "Una de las instancias múltiples maestras contiene curvas cuadráticas. Debe ser convertida a cúbicas antes de que pueda ser utilizada en una múltiple maestra"
+
+msgid "Oneida"
+msgstr "Oneida"
 
 msgid ""
 "Only Bitmaps may be embedded.\n"
@@ -15736,6 +16025,9 @@ msgstr "Sólo se utilizarán los primeros 256 glifos en la codificación"
 
 msgid "Only upper case"
 msgstr "Solo mayúsculas"
+
+msgid "Onondaga"
+msgstr "Onondaga"
 
 msgid "Opacity"
 msgstr "Opacidad"
@@ -16483,6 +16775,102 @@ msgstr "_Peso"
 msgid "Papiamentu"
 msgstr "Papiamento"
 
+msgid "Parameter Name 1"
+msgstr "Nombre del parámetro 1"
+
+msgid "Parameter Name 10"
+msgstr "Nombre del parámetro 10"
+
+msgid "Parameter Name 11"
+msgstr "Nombre del parámetro 11"
+
+msgid "Parameter Name 12"
+msgstr "Nombre del parámetro 12"
+
+msgid "Parameter Name 13"
+msgstr "Nombre del parámetro 13"
+
+msgid "Parameter Name 14"
+msgstr "Nombre del parámetro 14"
+
+msgid "Parameter Name 15"
+msgstr "Nombre del parámetro 15"
+
+msgid "Parameter Name 16"
+msgstr "Nombre del parámetro 16"
+
+msgid "Parameter Name 17"
+msgstr "Nombre del parámetro 17"
+
+msgid "Parameter Name 18"
+msgstr "Nombre del parámetro 18"
+
+msgid "Parameter Name 19"
+msgstr "Nombre del parámetro 19"
+
+msgid "Parameter Name 2"
+msgstr "Nombre del parámetro 2"
+
+msgid "Parameter Name 20"
+msgstr "Nombre del parámetro 20"
+
+msgid "Parameter Name 21"
+msgstr "Nombre del parámetro 21"
+
+msgid "Parameter Name 22"
+msgstr "Nombre del parámetro 22"
+
+msgid "Parameter Name 23"
+msgstr "Nombre del parámetro 23"
+
+msgid "Parameter Name 24"
+msgstr "Nombre del parámetro 24"
+
+msgid "Parameter Name 25"
+msgstr "Nombre del parámetro 25"
+
+msgid "Parameter Name 26"
+msgstr "Nombre del parámetro 26"
+
+msgid "Parameter Name 27"
+msgstr "Nombre del parámetro 27"
+
+msgid "Parameter Name 28"
+msgstr "Nombre del parámetro 28"
+
+msgid "Parameter Name 29"
+msgstr "Nombre del parámetro 29"
+
+msgid "Parameter Name 3"
+msgstr "Nombre del parámetro 3"
+
+msgid "Parameter Name 30"
+msgstr "Nombre del parámetro 30"
+
+msgid "Parameter Name 31"
+msgstr "Nombre del parámetro 31"
+
+msgid "Parameter Name 32"
+msgstr "Nombre del parámetro 32"
+
+msgid "Parameter Name 4"
+msgstr "Nombre del parámetro 4"
+
+msgid "Parameter Name 5"
+msgstr "Nombre del parámetro 5"
+
+msgid "Parameter Name 6"
+msgstr "Nombre del parámetro 6"
+
+msgid "Parameter Name 7"
+msgstr "Nombre del parámetro 7"
+
+msgid "Parameter Name 8"
+msgstr "Nombre del parámetro 8"
+
+msgid "Parameter Name 9"
+msgstr "Nombre del parámetro 9"
+
 msgid "Parent Folder"
 msgstr "Carpeta padre"
 
@@ -16492,6 +16880,10 @@ msgstr "Error de análisis"
 #, c-format
 msgid "ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %d: %s"
 msgstr "ParseGlyphOrderAndAliasDB: No válido (entrada no separada por pestañas) en el índice %d: %s"
+
+#, c-format
+msgid "ParseGlyphOrderAndAliasDB: Invalid (non-tab separated entry) at index %zu: %s"
+msgstr "ParseGlyphOrderAndAliasDB: No válido (entrada no separada por pestañas) en el índice %zu: %s"
 
 msgid "Parts List"
 msgstr "Lista de partes"
@@ -16620,6 +17012,12 @@ msgstr "Imágenes"
 msgid "Piemontese"
 msgstr "Piemontés"
 
+msgid "Pilagá"
+msgstr "Pilagá"
+
+msgid "Pite Sami"
+msgstr "Sami de Pite"
+
 msgid "Pixel List"
 msgstr "Lista de píxeles"
 
@@ -16645,6 +17043,12 @@ msgstr "¿Tamaño de los píxeles?"
 
 msgid "PixelSize|New"
 msgstr "Nuevo"
+
+msgid "Plane 15 (Supplementary Private Use Area-A)"
+msgstr "Plano 15 (área de uso privado suplementaria-A)"
+
+msgid "Plane 16 (Supplementary Private Use Area-B)"
+msgstr "Plano 16 (área de uso privado suplementaria-B)"
 
 msgid "Playing Cards"
 msgstr "Cartas"
@@ -16721,6 +17125,9 @@ msgstr "Por favor especifica un sistema de escritura"
 msgid "Plugin Configuration"
 msgstr "Configuración del plugin"
 
+msgid "Plugin Information"
+msgstr "Información del plugin"
+
 msgid "PluginStartupMode:"
 msgstr "Modo de inicio del plugin:"
 
@@ -16781,8 +17188,15 @@ msgstr "Tamaño de puntos en una pantalla de 72 ppp"
 msgid "Point sizes on a 75 dpi screen"
 msgstr "Tamaño de puntos en una pantalla de 75 ppp"
 
+msgid "Point sizes on a 96 PPI monitor"
+msgstr "Tamaño de puntos en un monitor PPI de 96"
+
 msgid "Point sizes on a 96 dpi screen"
 msgstr "Tamaño de puntos en una pantalla de 96 ppp"
+
+#, c-format
+msgid "Point sizes on this monitor (%d PPI)"
+msgstr "Tamaño de puntos en este monitor (%d PPI)"
 
 #, c-format
 msgid "Point: %d (%d)"
@@ -16900,6 +17314,9 @@ msgstr ""
 "antihorario. Deberías desvincularla y ejecutar\n"
 "Elemento->Corregir dirección en ella."
 
+msgid "PostScript and TrueType require that paths be drawn in a clockwise direction. If you have a reference that has been flipped then the paths in that reference will probably be counter-clockwise. You should unlink it and do Element->Correct direction on it."
+msgstr "PostScript y TrueType requieren que los trazados sean dibujados en un sentido horario. Si tienes una referencia que ha sido volteada, entonces los trazados en esa referencia probablemente se encontrarán en un sentido antihorario. Deberías desvincularla y ejecutar Elemento->Corregir dirección en ella."
+
 msgid ""
 "PostScript and TrueType require that when a path\n"
 "reaches its maximum or minimum position\n"
@@ -16908,6 +17325,9 @@ msgstr ""
 "PostScript y TrueType requieren que, cuando un \n"
 "trazado alcance su posición máxima o mínima,\n"
 "haya un punto en esa ubicación."
+
+msgid "PostScript and TrueType require that when a path reaches its maximum or minimum position there must be a point at that location."
+msgstr "PostScript y TrueType requieren que, cuando un trazado alcance su posición máxima o mínima, haya un punto en esa ubicación."
 
 msgid "PostScript font program (Compact Font Format 2)"
 msgstr "Programa de fuentes PostScript (formato de fuente compacta 2)"
@@ -17459,11 +17879,26 @@ msgstr "Referencia al glifo %d fuera de límites al analizar la tabla \"glyf\"."
 msgid "Reference to transient memory out of bounds in put in %s"
 msgstr "Referencia a la memoria transitoria fuera de límites en la inserción en %s"
 
+msgid "References"
+msgstr "Referencias"
+
 msgid "References are nested more deeply in this glyph than the maximum allowed"
 msgstr "En este carácter las referencias se encuentran anidadas en un nivel superior al máximo permitido"
 
 msgid "References may not be dragged into the guidelines layer"
 msgstr "Las referencias no pueden ser arrastradas a la capa de pautas"
+
+msgid "References neste_d deeper than:"
+msgstr "Referencias ani_dadas más profundamente que:"
+
+msgid "References with bad PostScript transformation matrices"
+msgstr "Referencias con matrices de transformación PostScript incorrectas"
+
+msgid "References with bad TrueType transformation matrices"
+msgstr "Referencias con matrices de transformación TrueType incorrectas"
+
+msgid "References with out of date point matching"
+msgstr "Referencias con coincidencia de puntos obsoleta"
 
 msgid "Refers to Font"
 msgstr "Se refiere a la fuente"
@@ -17477,19 +17912,15 @@ msgstr "Actualizar lista de archivos"
 msgid "Refresh Shaper"
 msgstr "Actualizar moldeador"
 
-#. GT: Refs is an abbreviation for References. Space is tight here
 msgid "Refs"
 msgstr "Refs"
 
-#. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 msgid "Refs neste_d deeper than:"
 msgstr "Refs. ani_dadas más profundamente que:"
 
-#. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 msgid "Refs with bad ps transformation matrices"
 msgstr "Refs. con matrices de transformación PS incorrectas"
 
-#. GT: Refs is an abbreviation for References. Space is somewhat constrained here
 msgid "Refs with bad tt transformation matrices"
 msgstr "Refs. con matrices de transformación TT incorrectas"
 
@@ -18618,6 +19049,9 @@ msgstr "Escala a ajustar (Misc)"
 msgid "Scale..."
 msgstr "Escalar..."
 
+msgid "Scaled by:"
+msgstr "Escalada por:"
+
 #, c-format
 msgid "Scaled by:    (%.2f,%.2f)"
 msgstr "Escalado por: (%.2f,%.2f)"
@@ -18845,6 +19279,9 @@ msgstr "Símbolo R"
 msgid "Script|Roman"
 msgstr "Romano"
 
+msgid "Script|Sidetic"
+msgstr "Sidético"
+
 msgid "Script|Simplified Chinese"
 msgstr "Chino simplificado"
 
@@ -18857,6 +19294,9 @@ msgstr "Cuneiforme sumero-acadia"
 msgid "Script|Sundanese"
 msgstr "Sondanés"
 
+msgid "Script|Sunuwar"
+msgstr "Sunuwar"
+
 msgid "Script|Syloti Nagri"
 msgstr "Silôṭi Nagri"
 
@@ -18868,6 +19308,9 @@ msgstr "Tagalo"
 
 msgid "Script|Tagbanwa"
 msgstr "Tagbanuá"
+
+msgid "Script|Tai Yo"
+msgstr "Tai Yo"
 
 msgid "Script|Tamil"
 msgstr "Tamil"
@@ -19041,8 +19484,8 @@ msgid ""
 "Hold down the control key when clicking\n"
 "to make disjoint selections."
 msgstr ""
-"Selecciona tantos idiomas como sean necesarios\n"
-"Manten presionada la tecla Control al hacer clic\n"
+"Seleccione tantos idiomas como sean necesarios.\n"
+"Mantenga presionada la tecla Control al hacer clic\n"
 "para hacer selecciones desconjuntas."
 
 msgid "Select by Color"
@@ -19193,6 +19636,9 @@ msgstr "Semiexpandido (112.5%)"
 
 msgid "Sena"
 msgstr "Sena"
+
+msgid "Seneca"
+msgstr "Seneca"
 
 msgid "Separate ratios for horizontal and vertical stems"
 msgstr "Relaciones separadas para astas horizontales y verticales"
@@ -19688,6 +20134,9 @@ msgstr "Formas"
 msgid "Sharada"
 msgstr "Sharada"
 
+msgid "Sharada Supplement"
+msgstr "Sharada, suplemento"
+
 msgid "Sharp/Closed Loops"
 msgstr "Afilada/bucles cerrados"
 
@@ -19832,6 +20281,9 @@ msgstr "Factor de expansión de margen lateral"
 
 msgid "Side Bearings:"
 msgstr "Márgenes laterales:"
+
+msgid "Sidetic"
+msgstr "Sidético"
 
 msgid "Silesian"
 msgstr "Silesio"
@@ -20719,6 +21171,9 @@ msgstr "Brazos rectos/vertical"
 msgid "Straight Arms/Wedge"
 msgstr "Brazos rectos/cuña"
 
+msgid "Straits Salish"
+msgstr "Salish del Estrecho Norte"
+
 msgid "Stretch:"
 msgstr "Extensión:"
 
@@ -20951,6 +21406,9 @@ msgstr "Sondanés (romano)"
 msgid "Sundanese Supplement"
 msgstr "Sondanés, suplemento"
 
+msgid "Sunuwar"
+msgstr "Sunuwar"
+
 msgid "Sup1:"
 msgstr "Superíndice 1:"
 
@@ -21114,6 +21572,9 @@ msgstr "Símbolos y pictografías extendidas-A"
 
 msgid "Symbols for Legacy Computing"
 msgstr "Símbolos para cómputo heredado"
+
+msgid "Symbols for Legacy Computing Supplement"
+msgstr "Símbolos para cómputo heredado, suplemento"
 
 msgid "Symbols:"
 msgstr "Símbolos:"
@@ -21286,6 +21747,9 @@ msgstr "Tagbanuá"
 msgid "Tags"
 msgstr "Etiquetas"
 
+msgid "Tahaggart Tamahaq"
+msgstr "Tamahaq Tahaggart"
+
 msgid "Tahitian"
 msgstr "Tahitiano"
 
@@ -21304,6 +21768,9 @@ msgstr "Tai Viet"
 msgid "Tai Xuan Jing Symbols"
 msgstr "Símbolos Tai Xuan Jing"
 
+msgid "Tai Yo"
+msgstr "Tai Yo"
+
 msgid "Tajik"
 msgstr "Tayiko"
 
@@ -21313,7 +21780,13 @@ msgstr "Tayico"
 msgid "Takri"
 msgstr "Takri"
 
+msgid "Talysh"
+msgstr "Talish"
+
 msgid "Tamashek"
+msgstr "Tamashek"
+
+msgid "Tamasheq"
 msgstr "Tamashek"
 
 msgid "Tamazight"
@@ -21340,6 +21813,9 @@ msgstr "Tangut"
 msgid "Tangut Components"
 msgstr "Tangut, componentes"
 
+msgid "Tangut Components Supplement"
+msgstr "Componentes tangut, suplemento"
+
 msgid "Tangut Supplement"
 msgstr "Tangut, suplemento"
 
@@ -21360,6 +21836,12 @@ msgstr "Tártaro"
 
 msgid "Tatar (Tatarstan)"
 msgstr "Tártaro (Tatarstan)"
+
+msgid "Tawallammat Tamajaq"
+msgstr "Tamajaq Tawallammat"
+
+msgid "Tayart Tamajeq"
+msgstr "Tamashek de Tayart"
 
 msgid "TeX Table"
 msgstr "Tabla TeX"
@@ -21638,9 +22120,14 @@ msgstr ""
 "Las fuentes bajo la OFL pueden ser usadas, estudiadas, copiadas, modificadas, embebidas, combinadas y redistribuidas al mismo tiempo que le dan a sus autores suficiente control e integridad artística. Para más detalles, incluyendo preguntas frecuentes, entra a http://scripts.sil.org/OFL.\n"
 "\n"
 "Los metadatos de esta fuente ayudarán a los usuarios, diseñadores y canales de distribución a saber quién eres, cómo contactarte y qué derechos estás otorgando.\n"
-"Al lanzar versiones modificadas, recuerda añadir tu aviso adicional, incluyendo cualquier nombre reservado de fuente, o RFN. FontForge solía agregar RFNs por defecto, pero ya no lo hace debido a que son usados por una minoría de las fuentes OFL, y los RFNs de FontForge eran a menudo legalmente no válidos. Por favor accede al sitio oficial de SIL FAQ y al issue №4434 del GitHub de FontForge para más información.\n"
+"Al lanzar versiones modificadas, recuerda añadir tu aviso adicional, incluyendo cualquier nombre reservado de fuente, o RFN. FontForge solía agregar RFNs por defecto, pero ya no lo hace debido a que son usados por una minoría de las fuentes OFL, y los RFNs de FontForge eran a menudo legalmente no válidos. Por favor accede al sitio oficial de SIL FAQ y a la incidencia no. 4434 de GitHub de FontForge para más información.\n"
 "\n"
 "¡Diviértete diseñando fuentes abiertas! 🔣🔧🥳"
+
+msgid ""
+"The OpenType Style Set ('ss01'-'ss20') and Character Variant ('cv01'-'cv99')\n"
+"features may be assigned human readable names here."
+msgstr "Aquí se pueden asignar nombres legibles para las características del conjunto de estilos de OpenType (\"ss01\"-\"ss20\") y la variante de caracteres (\"cv01\"-\"cv99\")."
 
 msgid ""
 "The OpenType Style Set features ('ss01'-'ss20') may\n"
@@ -21659,6 +22146,9 @@ msgstr ""
 "que si un glifo base (o marca base) contiene un punto de anclaje\n"
 "para una clase en una subtabla de búsquedas, entonces debería\n"
 "contener anclas para todas las clases en la subtabla"
+
+msgid "The OpenType documentation suggests in a rather confusing way that if a base glyph (or base mark) contains an anchor point for one class in a lookup subtable, then it should contain anchors for all classes in the subtable"
+msgstr "La documentación de OpenType sugiere de forma algo confusa que si un glifo base (o marca base) contiene un punto de anclaje para una clase en una subtabla de búsquedas, entonces debería contener anclas para todas las clases en la subtabla"
 
 msgid "The PFM file contains information Windows needs to install a PostScript® font."
 msgstr "El archivo PFM contiene información que Windows necesita para instalar una fuente PostScript®."
@@ -21699,6 +22189,9 @@ msgstr ""
 "Los intérpretes modernos tienden a soportar rutas con más puntos que este límite.\n"
 "(Nota que una fuente TrueType después de la conversión a PS contendrá\n"
 "el doble de puntos de control)"
+
+msgid "The PostScript Language Reference Manual (Appendix B) says that an interpreter need not support paths with more than 1500 points. I think this count includes control points. From PostScript's point of view, all the contours in a character make up one path. Modern interpreters tend to support paths with more points than this limit. (Note a truetype font after conversion to PS will contain twice as many control points)"
+msgstr "El Manual de Referencia de Idiomas PostScript (apéndice B) dice que un intérprete no necesita soportar rutas con más de 1500 puntos. Creo que este conteo incluye puntos de control. Desde el punto de vista de PostScript, todos los contornos en un carácter componen una ruta. Los intérpretes modernos tienden a soportar rutas con más puntos que este límite (ten en cuenta que una fuente TrueType después de la conversión a PS contendrá el doble de puntos de control)."
 
 #, c-format
 msgid ""
@@ -21743,6 +22236,12 @@ msgstr ""
 "puede haber como máximo 96 pistas de astas horizontales y verticales\n"
 "en un carácter."
 
+msgid "The Type 2 Charstring Reference (Appendix B) says that subroutines may not be nested more than 10 deep. Each nesting level for references requires one subroutine level, and hints may require another level."
+msgstr "Esta referencia de cadena de caracteres type2 (apéndice B) dice que las subrutinas no pueden estar nidadas más de 10 veces. Cada nivel de anidación para las referencias requiere un nivel de subrutina, y las pistas pueden requerir otro nivel."
+
+msgid "The Type 2 Charstring Reference (Appendix B) says that there may be at most 96 horizontal and vertical stem hints in a character."
+msgstr "La referencia de cadena de caracteres type2 (apéndice B) dice que haber como máximo 96 pistas de astas horizontales y verticales en un carácter."
+
 msgid ""
 "The UsePlugins preferences option is currently off.\n"
 "FontForge will not load plugin configuration or\n"
@@ -21777,6 +22276,14 @@ msgstr "El fondo de la ventana de depuración TTF"
 
 msgid "The box around the up/down arrows of a numeric field (spinner)"
 msgstr "La caja alrededor de las flechas de arriba/abajo de un campo numérico (spinner)"
+
+#, c-format
+msgid "The character list in the cvParameters block in feature %c%c%c%c is ignored."
+msgstr "Se ignora la lista de caracteres en el bloque cvParameters en la característica %c%c%c%c."
+
+#, c-format
+msgid "The character list in the feature parameter table of '%c%c%c%c' is ignored."
+msgstr "Se ignora la lista de caracteres en la tabla de parámetros de características de \"%c%c%c%c\"."
 
 #, c-format
 msgid ""
@@ -22067,6 +22574,9 @@ msgstr ""
 "Incluso en fuentes PostScript, generalmente es una buena idea\n"
 "usar valores enteros."
 
+msgid "The coordinates of all points and control points in truetype must be integers (if they are not integers then FontForge will round them when it outputs them, potentially causing havoc). Even in PostScript fonts it is generally a good idea to use integral values."
+msgstr "Las coordenadas de todos los puntos y puntos de control en TrueType deben ser enteros (si no lo son, FontForge las redondeará al exportarlas, potencialmente causando fallos). Incluso en fuentes PostScript, generalmente es una buena idea usar valores enteros."
+
 #, c-format
 msgid "The correction on line %d is too big.  It must be between -128 and 127"
 msgstr "La corrección en la línea %d es demasiado grande. Debe estar entre -128 y 127"
@@ -22107,6 +22617,10 @@ msgstr "La entrada \"%1$.20s\" no está presente en el diccionario privado tanto
 
 msgid "The extra glue place above and below displayed limits"
 msgstr "El espacio de pegamento sobre y debajo de los límites mostrados"
+
+#, c-format
+msgid "The feature '%c%c%c%c' cannot contain Tooltip Text, Sample Text or Parameter Names."
+msgstr "La característica \"%c%c%c%c\" no puede contener texto de información de la herramienta, texto de muestra o nombres de parámetros."
 
 #, c-format
 msgid ""
@@ -23032,7 +23546,19 @@ msgid "There is a single byte character (%d) using one of the slots needed for d
 msgstr "Existe un carácter de un byte (%d) que utiliza un lugar reservado para caracteres de dos bytes"
 
 msgid "There is a splinefont level undo, but it does not contain any information to perform the undo. This is an application error, please report what you last did to the lookup tables so the developers can try to reproduce the issue and fix it."
-msgstr "Hay un nivel de deshacer de splinefont, pero no contiene ninguna información para realizar el deshacer. Esto es un error de aplicación, por favor reporta lo último que le hiciste a las tablas de búsqueda para que lo desarrolladores puedan intentar reproducir el problema y arreglarlo."
+msgstr "Hay un nivel de deshacer de splinefont, pero no contiene ninguna información para realizar el deshacer. Esto es un error de aplicación, por favor reporta lo último que le hiciste a las tablas de búsqueda para que lo desarrolladores puedan intentar reproducir la incidencia y arreglarla."
+
+#, c-format
+msgid "There is already a glyph with Unicode encoding 0x%1$04x named %2$.40s. The current name and encoding will be kept."
+msgstr "Ya hay un glifo con codificación Unicode 0x%1$04x llamado %2$.40s. El nombre actual y la codificación serán reconocidos."
+
+#, c-format
+msgid ""
+"There is already a glyph with name %.40s,\n"
+"do you want to swap names?"
+msgstr ""
+"Ya existe un carácter con el nombre %.40s,\n"
+"¿Quieres intercambiar los nombres?"
 
 #, c-format
 msgid ""
@@ -23225,6 +23751,9 @@ msgstr ""
 "Eso es, que de forma vertical u horizontal, debe haber\n"
 "exactamente tres pistas, las cuales deben tener el mismo\n"
 "ancho y estar espaciadas uniformemente."
+
+msgid "This checks if the character almost, but not exactly, conforms to the requirements for a stem3 hint. That is, either vertically or horizontally, there must be exactly three hints, and they must have the same width and they must be evenly spaced."
+msgstr "Esto verifica si el carácter casi, pero no exactamente, cumple con los requisitos para una pista de tipo stem3. Eso es, que de forma vertical u horizontal, debe haber exactamente tres pistas, las cuales deben tener el mismo ancho y estar espaciadas uniformemente."
 
 msgid "This contextual rule applies no lookups."
 msgstr "Esta regla contextual no aplica búsquedas."
@@ -23916,6 +24445,9 @@ msgstr "Esta ventana muestra un solo glifo de mapa de bits"
 msgid "This window displays metrics information about a font"
 msgstr "Esta ventana muestra la información de las métricas sobre una fuente"
 
+msgid "Thompson"
+msgstr "Nlaka'pamux"
+
 msgid "Threshold between \"thin\" and \"thick\":"
 msgstr "Umbral entre \"delgadas\" y \"gruesas\":"
 
@@ -24082,11 +24614,20 @@ msgstr "A sus propios nombres"
 msgid "To:"
 msgstr "Hasta:"
 
+msgid "Tobo"
+msgstr "Tobo"
+
+msgid "Todhri"
+msgstr "Todhri"
+
 msgid "Todo"
 msgstr "Todo"
 
 msgid "Tok Pisin"
 msgstr "Tok Pisin"
+
+msgid "Tolong Siki"
+msgstr "Tolong Siki"
 
 msgid "Toma"
 msgstr "Toma"
@@ -24194,6 +24735,9 @@ msgstr "Herramientas"
 
 msgid "ToolsPalette.Font"
 msgstr "Fuente de la paleta de herramientas"
+
+msgid "Tooltip Text"
+msgstr "Texto de información de herramienta"
 
 msgid "Top Accent"
 msgstr "Acento superior"
@@ -24398,6 +24942,9 @@ msgstr ""
 "Los glifos TrueType pueden contener referencias o contornos.\n"
 "Pero no ambos."
 
+msgid "TrueType glyphs can either contain references or contours. Not both."
+msgstr "Los glifos TrueType pueden contener referencias o contornos. Pero no ambos."
+
 msgid ""
 "TrueType requires that all scaling and rotational\n"
 "entries in a transformation matrix be between -2 and 2"
@@ -24405,6 +24952,9 @@ msgstr ""
 "TrueType requiere que todas las entradas de escalado\n"
 "y rotación en una matriz de transformación estén entre\n"
 "-2 y 2"
+
+msgid "TrueType requires that all scaling and rotational entries in a transformation matrix be between -2 and 2"
+msgstr "TrueType requiere que todas las entradas de escalado y rotación en una matriz de transformación estén entre -2 y 2"
 
 msgid "TrueTypeName|New"
 msgstr "Nuevo"
@@ -24434,6 +24984,9 @@ msgstr "Setsuana"
 msgid "Tulu"
 msgstr "Tulu"
 
+msgid "Tulu-Tigalari"
+msgstr "Tulu-Tigalari"
+
 msgid "Tumbuka"
 msgstr "Tumbuka"
 
@@ -24448,6 +25001,9 @@ msgstr "Turcomano"
 
 msgid "Turoyo Aramaic"
 msgstr "Arameo turoyo"
+
+msgid "Tuscarora"
+msgstr "Tuscarora"
 
 msgid "Tuvalu"
 msgstr "Tuvaluano"
@@ -24510,6 +25066,9 @@ msgstr ""
 "Las primeras cuatro entradas de la matriz de transformación deben ser\n"
 "[1 0 0 1]."
 
+msgid "Type1 and 2 fonts only support translation of references. The first four entries of the transformation matrix should be [1 0 0 1]."
+msgstr "Las fuentes de tipo 1 y 2 solo soportan la traducción de referencias. Las primeras cuatro entradas de la matriz de transformación deben ser [1 0 0 1]."
+
 msgid "Type11 (CID 2)"
 msgstr "Type11 (CID 2)"
 
@@ -24569,6 +25128,9 @@ msgstr "U+%04x"
 msgid "U_nlink Reference"
 msgstr "Reemplazar refere_ncia"
 
+msgid "Udi"
+msgstr "Udi"
+
 msgid "Udmurt"
 msgstr "Udmurto"
 
@@ -24586,6 +25148,9 @@ msgstr "Ultraexpandido (200%)"
 
 msgid "Umbundu"
 msgstr "Umbundu"
+
+msgid "Ume Sami"
+msgstr "Sami de Ume"
 
 msgid ""
 "UnTouch Point\n"
@@ -25053,6 +25618,10 @@ msgid "Unspecified Language"
 msgstr "Idioma no especificado"
 
 #, c-format
+msgid "Unsupported GDEF table version: %d.%d"
+msgstr "Versión de tabla GDEF no soportada: %d.%d"
+
+#, c-format
 msgid "Unsupported decode filter parameters : %s"
 msgstr "Parámetros de filtro de decodificación no soportados: %s"
 
@@ -25116,6 +25685,9 @@ msgstr "Erguida/sin ajuste de texto"
 
 msgid "Upright/Some Wrapping"
 msgstr "Erguida/algo de ajuste de texto"
+
+msgid "Uralic Phonetic Alphabet"
+msgstr "Alfabeto fonético urálico"
 
 msgid "Urdu"
 msgstr "Urdú"
@@ -25623,6 +26195,9 @@ msgstr "Gbe Waci"
 msgid "Wagdi"
 msgstr "Wagdi"
 
+msgid "Wakhi"
+msgstr "Wají"
+
 msgid "Walloon"
 msgstr "Valón"
 
@@ -25718,7 +26293,7 @@ msgstr "Advertencia: La fuente no contiene glifos"
 
 #, c-format
 msgid "Warning: FontForge's implementation of include statements in UFO features.fea files was wrong. Please correct your path `%s` as per the specification for guaranteed future compatibility. (See GitHub issue №4629 for more info.)"
-msgstr "Advertencia: La implementación de FontForge de declaraciones de inclusión en los archivos de UFO features.fea estaba equivocada. Por favor, corrije tu ruta `%s` según la especificación para compatibilidad futura garantizada. (Consulta el problema de GitHub No. 4629 para más información.)"
+msgstr "Advertencia: La implementación de FontForge de declaraciones de include en los archivos features.fea de UFO estaba equivocada. Por favor, corrige tu ruta\"%s\" según la especificación para compatibilidad futura garantizada (consulta la incidencia no. 4629 de GitHub para más información)."
 
 #, c-format
 msgid ""
@@ -25920,6 +26495,9 @@ msgstr "Peso, ancho, solo pendiente"
 
 msgid "Welsh"
 msgstr "Galés"
+
+msgid "Wendat"
+msgstr "Wendat"
 
 msgid "West-Cree"
 msgstr "Cree del este"
@@ -26482,6 +27060,9 @@ msgstr "Tipo de archivo SFD incorrecto"
 msgid "Wuding-Luquan Yi"
 msgstr "Yi, Wuding-Luquan"
 
+msgid "Wyandot"
+msgstr "Wyandot"
+
 #. GT: X is a coordinate
 msgid "X"
 msgstr "X"
@@ -26658,7 +27239,7 @@ msgid ""
 "But %1$s does not exist in this font, nor can I find the original character referred to.\n"
 "It will not be copied."
 msgstr ""
-"Está intentando pegar una referencia a %1$s into %2$s.\n"
+"Estás intentando pegar una referencia a %1$s into %2$s.\n"
 "Pero %1$s no existe en esta fuente, ni puedo encontrar el carácter original al que se refiere.\n"
 "No se copiará."
 
@@ -26668,7 +27249,7 @@ msgid ""
 "But %1$s does not exist in this font.\n"
 "Would you like to copy the original splines (or delete the reference)?"
 msgstr ""
-"Está intentando pegar una referencia a %1$s en %2$s.\n"
+"Estás intentando pegar una referencia a %1$s en %2$s.\n"
 "Pero %1$s no existe en esta fuente.\n"
 "¿Desea copiar las curvas originales (o eliminar la referencia)?"
 
@@ -26788,7 +27369,7 @@ msgid "You must select a Lookup Type."
 msgstr "Debe seleccionar un tipo de búsqueda."
 
 msgid "You must select a glyph before you can import an image into it"
-msgstr "Debe seleccionar un glifo antes de poder importarle una imagen"
+msgstr "Debes seleccionar un glifo antes de poder importarle una imagen"
 
 msgid "You must select a lookup subtable to contain this kerning pair"
 msgstr "Debe seleccionar una subtabla de búsqueda para contener este par de interletraje"
@@ -26801,7 +27382,7 @@ msgid ""
 "Use the \"Default\" language if nothing else fits."
 msgstr ""
 "Debe seleccionar al menos un idioma.\n"
-"Usa el idioma \"Predeterminado\" si nada más encaja."
+"Usa el idioma \"predeterminado\" si no se encuentra el solicitado."
 
 msgid "You must select at least one script if you provide a feature tag."
 msgstr "Debe seleccionar al menos una escritura si proporciona una etiqueta de características."
@@ -26916,6 +27497,9 @@ msgstr "Zulú"
 #, c-format
 msgid "[%d] (%g,%g) %g x %g length %g"
 msgstr "[%d] (%g,%g) %g x %g longitud %g"
+
+msgid "[Unknown]"
+msgstr "[Desconocido]"
 
 msgid "_128 pixel outline"
 msgstr "Contorno de _128 pixeles"
@@ -27159,6 +27743,9 @@ msgstr "Información del punto de _control"
 
 msgid "_Control Points near horizontal/vertical"
 msgstr "Puntos de _control casi horiz./vert."
+
+msgid "_Control points near horizontal/vertical"
+msgstr "_Puntos de control cerca de horizontal/vertical"
 
 msgid "_Convert to CID"
 msgstr "_Convertir a CID"
@@ -27886,6 +28473,9 @@ msgstr "Mo_strar ATT"
 msgid "_Show Exact *stem3"
 msgstr "_Mostrar exacto *stem3"
 
+msgid "_Show exact *stem3"
+msgstr "_Mostrar exacto *stem3"
+
 msgid "_Side Bearings"
 msgstr "Márgene_s laterales"
 
@@ -27965,7 +28555,7 @@ msgid "_Touching"
 msgstr "_Tocándose"
 
 msgid "_Transform Pen:"
-msgstr "Modificar pluma:(_T)"
+msgstr "_Transformar pluma:"
 
 msgid "_Transform..."
 msgstr "_Transformar..."
@@ -28261,6 +28851,9 @@ msgstr "falso"
 
 msgid "family name"
 msgstr "nombre de familia"
+
+msgid "featname|Sample Text"
+msgstr "Texto de ejemplo"
 
 msgid "font descriptor table"
 msgstr "tabla de descriptor de fuente"
@@ -28715,7 +29308,7 @@ msgstr "Nombres ΤεΧ"
 
 #, c-format
 msgid "“%s” in %s contains an anchor point (%g,%g) class %s which differs from its counterpart by point matching\n"
-msgstr "“%1$s” en %2$s contiene una clase %5$s del punto de anclaje (%3$g,%4$g), que difiere de su contraparte por correspondencia de puntos\n"
+msgstr "“%s” en %s contiene una clase %s del punto de anclaje (%g,%g), que difiere de su contraparte por correspondencia de puntos\n"
 
 #, c-format
 msgid "“%s” in %s did not contain a pairwise positioning lookup ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d to %s ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"
@@ -28731,7 +29324,7 @@ msgstr "“%s” en %s no contenía una búsqueda de sustitución de %s\n"
 
 #, c-format
 msgid "“%s” in %s did not contain an anchor point (%g,%g) class %s\n"
-msgstr "“%1$s” en %2$s no contenía una clase %5$s del punto de anclaje (%3$g,%4$g)\n"
+msgstr "“%s” en %s no contenía una clase %s del punto de anclaje (%g,%g)\n"
 
 msgid "←_Left"
 msgstr "←Izquierda(_L)"

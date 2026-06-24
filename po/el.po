@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-08-01 15:10+0300\n"
-"PO-Revision-Date: 2025-08-01 12:08\n"
+"POT-Creation-Date: 2026-06-24 16:52+0300\n"
+"PO-Revision-Date: 2026-06-24 06:08\n"
 "Last-Translator: \n"
 "Language-Team: Greek\n"
 "Language: el_GR\n"
@@ -550,12 +550,6 @@ msgstr "Κορεάτικη"
 
 msgid "Kurdish"
 msgstr "Κουρδική"
-
-msgid "Language List"
-msgstr "Κατάλογος γλωσσών"
-
-msgid "Language Missing"
-msgstr "Άγνωστη γλώσσα"
 
 msgid "Lang|Arabic"
 msgstr "Αραβική"
