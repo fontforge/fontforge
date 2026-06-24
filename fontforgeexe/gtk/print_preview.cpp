@@ -60,6 +60,14 @@ static const std::vector<double> kMultiPointsizes{
 // accomodate the CSS box-shadow.
 static const int wrapper_margin = 20;
 
+// Preserve the dialog state between invocations
+static struct {
+    std::string radio_selection = FULL_DISPLAY;
+    size_t full_display_size = 20;
+    std::string full_page_scaling = utils::FullGlyphPrinter::kScaleToPage;
+    std::string sample_text = "";
+} persistent;
+
 static std::pair<ff::Tag, ff::Tag> extract_script_lang_tags(
     const Glib::ustring& entry_text) {
     ff::Tag script("DFLT");
@@ -103,9 +111,13 @@ PrintPreviewWidget::PrintPreviewWidget(utils::CairoPainter&& cairo_painter,
         Gtk::make_managed<Gtk::RadioButton>(group, _("Sample Text"), true);
 
     radio_full_display_->set_name(FULL_DISPLAY);
+    radio_full_display_->set_active(persistent.radio_selection == FULL_DISPLAY);
     radio_glyph_pages_->set_name(GLYPH_PAGES);
+    radio_glyph_pages_->set_active(persistent.radio_selection == GLYPH_PAGES);
     radio_multi_size_->set_name(MULTI_SIZE);
+    radio_multi_size_->set_active(persistent.radio_selection == MULTI_SIZE);
     radio_sample_text_->set_name(SAMPLE_TEXT);
+    radio_sample_text_->set_active(persistent.radio_selection == SAMPLE_TEXT);
 
     radio_full_display_->signal_toggled().connect(
         sigc::mem_fun(*this, &PrintPreviewWidget::on_display_toggled));
@@ -125,7 +137,8 @@ PrintPreviewWidget::PrintPreviewWidget(utils::CairoPainter&& cairo_painter,
 
     size_entry_->set_width_chars(3);
     size_entry_->set_numeric(true);
-    size_entry_->set_adjustment(Gtk::Adjustment::create(20, 1, 120, 1, 3, 0));
+    size_entry_->set_adjustment(
+        Gtk::Adjustment::create(persistent.full_display_size, 1, 120, 1, 3, 0));
     size->set_halign(Gtk::ALIGN_START);
     size->set_valign(Gtk::ALIGN_START);
     size_entry_->signal_value_changed().connect(
@@ -138,11 +151,16 @@ PrintPreviewWidget::PrintPreviewWidget(utils::CairoPainter&& cairo_painter,
                             "Scale glyphs to em size");
     scaling_option_->append(utils::FullGlyphPrinter::kScaleMaxHeight,
                             "Scale glyphs to maximum height");
-    scaling_option_->set_active_id(utils::FullGlyphPrinter::kScaleToPage);
+    scaling_option_->set_active_id(persistent.full_page_scaling);
     scaling_option_->set_valign(Gtk::ALIGN_START);
 
     Gtk::VBox* sample_text_controls = build_sample_text_controls();
-    sample_text_->get_buffer()->set_text(sample_text);
+    if (persistent.sample_text.empty())
+        sample_text_->get_buffer()->set_text(sample_text);
+    else {
+        std::istringstream istream(persistent.sample_text);
+        sample_text_->load_buffer(istream);
+    }
 
     stack_ = Gtk::make_managed<Gtk::Stack>();
     stack_->set_vhomogeneous(false);
@@ -532,16 +550,19 @@ void PrintPreviewWidget::activate_cairo_printer(
     const Cairo::Rectangle& printable_area) {
     if (radio_full_display_->get_active()) {
         double font_size = size_entry_->get_value();
+        persistent.full_display_size = (size_t)font_size;
         cairo_painter_.activate_full_display_printer(printable_area, font_size);
     } else if (radio_glyph_pages_->get_active()) {
-        Glib::ustring active_option = scaling_option_->get_active_id();
-        cairo_painter_.activate_full_glyph_printer(active_option);
+        persistent.full_page_scaling = scaling_option_->get_active_id();
+        cairo_painter_.activate_full_glyph_printer(
+            persistent.full_page_scaling);
     } else if (radio_sample_text_->get_active()) {
         gsize length = 0;
         Glib::RefPtr<Gtk::TextBuffer> buffer = sample_text_->get_buffer();
         char* out_buffer = (char*)buffer->serialize(
             buffer, widget::RichTechEditor::rich_text_mime_type,
             buffer->begin(), buffer->end(), length);
+        persistent.sample_text = out_buffer;
 
         Glib::ustring entry_text = script_lang_combo_->get_entry()->get_text();
         auto [script, lang] = extract_script_lang_tags(entry_text);
@@ -556,7 +577,7 @@ void PrintPreviewWidget::activate_cairo_printer(
         }
 
         cairo_painter_.activate_sample_text_printer(
-            cr, printable_area, out_buffer, script, lang, features);
+            cr, printable_area, persistent.sample_text, script, lang, features);
     } else {
         cairo_painter_.activate_multisize_printer(printable_area,
                                                   kMultiPointsizes);
@@ -648,7 +669,8 @@ void PrintPreviewWidget::on_display_toggled() {
     for (auto r : {radio_full_display_, radio_glyph_pages_, radio_multi_size_,
                    radio_sample_text_}) {
         if (r->get_active()) {
-            stack_->set_visible_child(r->get_name());
+            persistent.radio_selection = r->get_name();
+            stack_->set_visible_child(persistent.radio_selection);
         }
     }
     preview_area.queue_draw();
