@@ -15,8 +15,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: fontforge\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-06-24 16:52+0300\n"
-"PO-Revision-Date: 2026-06-24 06:08\n"
+"POT-Creation-Date: 2026-06-24 17:21+0300\n"
+"PO-Revision-Date: 2026-06-24 14:20\n"
 "Last-Translator: \n"
 "Language-Team: Spanish\n"
 "Language: es_ES\n"
@@ -220,7 +220,7 @@ msgstr " acoplado"
 
 #, c-format
 msgid "!!!! Unknown caret format %d !!!!"
-msgstr "¡¡¡¡Formato desconocido de circunflejo: %d!!!!\n"
+msgstr "¡¡¡¡Formato desconocido de circunflejo: %d!!!!"
 
 #, c-format
 msgid "!!!!! Bad Base Coord format (%d) for '%c%c%c%c' in '%c%c%c%c' script in 'BASE' table"
@@ -29308,7 +29308,7 @@ msgstr "Nombres ΤεΧ"
 
 #, c-format
 msgid "“%s” in %s contains an anchor point (%g,%g) class %s which differs from its counterpart by point matching\n"
-msgstr "“%s” en %s contiene una clase %s del punto de anclaje (%g,%g), que difiere de su contraparte por correspondencia de puntos\n"
+msgstr "“%1$s” en %2$s contiene una clase %5$s del punto de anclaje (%3$g,%4$g), que difiere de su contraparte por correspondencia de puntos\n"
 
 #, c-format
 msgid "“%s” in %s did not contain a pairwise positioning lookup ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d to %s ∆x=%d ∆y=%d ∆x_adv=%d ∆y_adv=%d\n"
@@ -29324,7 +29324,7 @@ msgstr "“%s” en %s no contenía una búsqueda de sustitución de %s\n"
 
 #, c-format
 msgid "“%s” in %s did not contain an anchor point (%g,%g) class %s\n"
-msgstr "“%s” en %s no contenía una clase %s del punto de anclaje (%g,%g)\n"
+msgstr "“%1$s” en %2$s no contenía una clase %5$s del punto de anclaje (%3$g,%4$g)\n"
 
 msgid "←_Left"
 msgstr "←Izquierda(_L)"
