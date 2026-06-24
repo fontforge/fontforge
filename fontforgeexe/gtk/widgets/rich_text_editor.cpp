@@ -347,6 +347,45 @@ void RichTechEditor::configure(bool bold_enabled, bool italic_enabled,
     weight_combo_->set_sensitive(weight_enabled);
 }
 
+void RichTechEditor::load_buffer(std::istream& istream) {
+    ff::utils::ParsedRichText parsed = ff::utils::parse_xml_stream(istream);
+
+    Glib::RefPtr<Gtk::TextBuffer> buffer = text_view_.get_buffer();
+    if (!buffer) {
+        return;
+    }
+
+    buffer->set_text("");
+    auto insert_it = buffer->begin();
+    auto cursor_mark = buffer->create_mark(insert_it, false);
+    auto tag_table = buffer->get_tag_table();
+
+    for (const auto& [raw_tags, text] : parsed) {
+        if (text.empty()) {
+            continue;
+        }
+
+        auto start_mark = buffer->create_mark(cursor_mark->get_iter());
+        buffer->insert(cursor_mark->get_iter(), text);
+
+        for (const std::string& raw_tag : raw_tags) {
+            std::string tag_name = normalize_ff_xml_tag(raw_tag);
+            if (tag_name == "ff_root") {
+                continue;
+            }
+
+            auto tag = tag_table ? tag_table->lookup(tag_name)
+                                 : Glib::RefPtr<Gtk::TextTag>();
+            if (tag) {
+                buffer->apply_tag(tag, start_mark->get_iter(),
+                                  cursor_mark->get_iter());
+            }
+        }
+
+        buffer->delete_mark(start_mark);
+    }
+}
+
 void RichTechEditor::on_text_view_paste_clipboard(GtkTextView* text_view,
                                                   gpointer user_data) {
     RichTechEditor* self = static_cast<RichTechEditor*>(user_data);
@@ -608,42 +647,7 @@ void RichTechEditor::on_load_buffer_from_xml() {
         return;
     }
 
-    ff::utils::ParsedRichText parsed = ff::utils::parse_xml_stream(file);
-
-    Glib::RefPtr<Gtk::TextBuffer> buffer = text_view_.get_buffer();
-    if (!buffer) {
-        return;
-    }
-
-    buffer->set_text("");
-    auto insert_it = buffer->begin();
-    auto cursor_mark = buffer->create_mark(insert_it, false);
-    auto tag_table = buffer->get_tag_table();
-
-    for (const auto& [raw_tags, text] : parsed) {
-        if (text.empty()) {
-            continue;
-        }
-
-        auto start_mark = buffer->create_mark(cursor_mark->get_iter());
-        buffer->insert(cursor_mark->get_iter(), text);
-
-        for (const std::string& raw_tag : raw_tags) {
-            std::string tag_name = normalize_ff_xml_tag(raw_tag);
-            if (tag_name == "ff_root") {
-                continue;
-            }
-
-            auto tag = tag_table ? tag_table->lookup(tag_name)
-                                 : Glib::RefPtr<Gtk::TextTag>();
-            if (tag) {
-                buffer->apply_tag(tag, start_mark->get_iter(),
-                                  cursor_mark->get_iter());
-            }
-        }
-
-        buffer->delete_mark(start_mark);
-    }
+    load_buffer(file);
 }
 
 void RichTechEditor::on_save_buffer_to_xml() {

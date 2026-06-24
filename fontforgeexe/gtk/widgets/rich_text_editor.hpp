@@ -37,6 +37,9 @@ class RichTechEditor : public Gtk::Grid {
     void configure(bool bold_enabled, bool italic_enabled, bool stretch_enabled,
                    bool weight_enabled);
 
+    // Load buffer from XML stream
+    void load_buffer(std::istream& istream);
+
     static const std::string rich_text_mime_type;
 
     // TextView accessors
